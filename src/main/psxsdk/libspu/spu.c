@@ -1,6 +1,7 @@
-/* PsyQ 4.0 LIBSPU SPU: _spu_init, _spu_FwriteByIO, _spu_FiDMA, _spu_Fr_, _spu_t, _spu_Fw, _spu_Fr,
- * _spu_FsetRXX, _spu_FsetRXXa, _spu_FgetRXXa, _spu_FsetPCR, _spu_FsetDelayW, _spu_FsetDelayR and
- * _spu_Fw1ts. .text 0x80088740..0x800892D4, a verbatim LIBSCAN module span
+/* PsyQ 4.0 LIBSPU SPU: _spu_init, _spu_FwriteByIO, _spu_FiDMA, _spu_Fr_,
+ * _spu_t, _spu_Fw, _spu_Fr, _spu_FsetRXX, _spu_FsetRXXa, _spu_FgetRXXa,
+ * _spu_FsetPCR, _spu_FsetDelayW, _spu_FsetDelayR and _spu_Fw1ts. .text
+ * 0x80088740..0x800892D4, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "psx.h"
@@ -119,14 +120,15 @@ s32 _spu_init(s32 a0) {
 
     _spu_inTransfer = 1;
     /* FAKE: SPUCNT stored through a pointer; the member store
-       `_spu_RXX->rxx.spucnt = 0xC000` lets sched lift the _spu_IRQCallback zero store
-       above the sh (score 4). */
+       `_spu_RXX->rxx.spucnt = 0xC000` lets sched lift the _spu_IRQCallback zero
+       store above the sh (score 4). */
     spucnt = &_spu_RXX->rxx.spucnt;
     *spucnt = 0xC000;
     _spu_transferCallback = 0;
     _spu_IRQCallback = 0;
     return 0;
 }
+
 /* PsyQ LIBSPU spu.c: `_spu_FwriteByIO` (static) — verbatim-linked Sony object.
    C refs: Xeeynamo/psyz decomp/src/libspu/spu.c:111 and
    sotn-decomp psxsdk/libspu/spu.c (_spu_writeByIO). */
@@ -179,6 +181,7 @@ void _spu_FwriteByIO(u8 *addr, u32 size) {
         } while ((_spu_RXX->rxx.spustat & 0x7FF) != spustat);
     }
 }
+
 /* PsyQ LIBSPU spu.c: _spu_FiDMA + _spu_Fr_ — two further exported entry
    points that splat merged into func_800889D4
    (docs/naming/libscan/boundary_fixes.md); both must stay immediately after
@@ -188,9 +191,9 @@ void _spu_FwriteByIO(u8 *addr, u32 size) {
    Do NOT spell that label's symbol name in this file: engine/queue.py's
    not_a_c_function_text() word-searches the raw .c text (comments included)
    and would misread it as a C function. */
-/* PsyQ LIBSPU spu.c `_spu_FiDMA` (C ref: Xeeynamo/psyz decomp/src/libspu/spu.c:161).
-   SPU DMA-completion interrupt handler: waits for the transfer-mode bits
-   (0x30) in SPUCNT to clear with a bounded spin, then
+/* PsyQ LIBSPU spu.c `_spu_FiDMA` (C ref: Xeeynamo/psyz
+   decomp/src/libspu/spu.c:161). SPU DMA-completion interrupt handler: waits for
+   the transfer-mode bits (0x30) in SPUCNT to clear with a bounded spin, then
    dispatches either the installed transfer callback or the SPU DMA event. */
 void _spu_FiDMA(void) {
     u32 timeout;
@@ -198,8 +201,7 @@ void _spu_FiDMA(void) {
     if (D_800A2D2C == 0) {
         _spu_Fw1ts();
     }
-    _spu_RXX->rxx.spucnt =
-        _spu_RXX->rxx.spucnt & ~0x30;
+    _spu_RXX->rxx.spucnt = _spu_RXX->rxx.spucnt & ~0x30;
     timeout = 0;
     while (_spu_RXX->rxx.spucnt & 0x30) {
         timeout++;
@@ -213,6 +215,7 @@ void _spu_FiDMA(void) {
     }
     DeliverEvent(0xF0000009, 0x20);
 }
+
 /* PsyQ 4.0 LIBSPU spu.c: _spu_Fr_ — unreferenced in BB2 (dead code carried
    by the linked Sony object; SpuRGetAllKeysStatus/S_SCA precedent).
    C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_r_); this build's
@@ -228,6 +231,7 @@ void _spu_Fr_(s32 addr, u16 spu_addr, s32 size) {
     D_800A2D2C = 1;
     *D_800A2CE8 = 0x1000200;
 }
+
 /* PsyQ 4.0 LIBSPU spu.c: _spu_t — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_t) */
 typedef char *va_list;
@@ -320,6 +324,7 @@ s32 _spu_t(s32 mode, ...) {
     }
     return 0;
 }
+
 s32 _spu_Fw(s32 a0, s32 a1) {
     if (_spu_transMode == 0) {
         _spu_t(2, _spu_tsa << _spu_mem_mode_plus);
@@ -330,12 +335,14 @@ s32 _spu_Fw(s32 a0, s32 a1) {
     }
     return a1;
 }
+
 s32 _spu_Fr(s32 a0, s32 a1) {
     _spu_t(2, _spu_tsa << _spu_mem_mode_plus);
     _spu_t(0);
     _spu_t(3, a0, a1);
     return a1;
 }
+
 void _spu_FsetRXX(s32 arg0, u32 arg1, s32 arg2) {
     if (arg2 == 0) {
         _spu_RXX->raw[arg0] = arg1;
@@ -343,6 +350,7 @@ void _spu_FsetRXX(s32 arg0, u32 arg1, s32 arg2) {
     }
     _spu_RXX->raw[arg0] = arg1 >> _spu_mem_mode_plus;
 }
+
 s32 _spu_FsetRXXa(s32 index, s32 val) {
     s32 aligned;
     if (_spu_mem_mode != 0) {
@@ -353,8 +361,10 @@ s32 _spu_FsetRXXa(s32 index, s32 val) {
         }
     }
     aligned = (s32)((u32)val >> _spu_mem_mode_plus);
-    if (index == -2) goto ret_val_m2;
-    if (index != -1) goto store;
+    if (index == -2)
+        goto ret_val_m2;
+    if (index != -1)
+        goto store;
     return aligned & 0xFFFF;
 ret_val_m2:
     return val;
@@ -362,6 +372,7 @@ store:
     _spu_RXX->raw[index] = aligned;
     return val;
 }
+
 s32 _spu_FgetRXXa(s32 index, s32 mode) {
     u16 val = _spu_RXX->raw[index];
     if (mode == -1) {
@@ -369,6 +380,7 @@ s32 _spu_FgetRXXa(s32 index, s32 mode) {
     }
     return val << _spu_mem_mode_plus;
 }
+
 void _spu_FsetPCR(s32 arg0) {
     *D_800A2CEC &= 0xFFF8FFFF;
     if (arg0 != 0) {
@@ -377,13 +389,17 @@ void _spu_FsetPCR(s32 arg0) {
         *D_800A2CEC |= 0x50000;
     }
 }
+
 extern volatile u32 *g_spu_dma_ctrl;
+
 void _spu_FsetDelayW(void) {
     *g_spu_dma_ctrl = (*g_spu_dma_ctrl & DMA_CHAN_MASK) | DMA_SPU_FROM_RAM;
 }
+
 void _spu_FsetDelayR(void) {
     *g_spu_dma_ctrl = (*g_spu_dma_ctrl & DMA_CHAN_MASK) | DMA_SPU_TO_RAM;
 }
+
 /* LIBSPU spu.c WASTE_TIME(): the 4.0 rev's out-of-line busy-wait. */
 void _spu_Fw1ts(void) {
     /* FAKE: volatile locals admitted on SOTN precedent (owner rulings Q50
@@ -391,7 +407,7 @@ void _spu_Fw1ts(void) {
        in the target; the plain-local spelling keeps both in registers
        (score 25). SOTN's WASTE_TIME() runs the same counter/accumulator
        loop on its volatile pair (src/main/psxsdk/libspu/spu.c:7-11). */
-    volatile s32 i;     /* SOTN: src/main/psxsdk/libspu/spu.c:14 @db41b28 */
+    volatile s32 i;       /* SOTN: src/main/psxsdk/libspu/spu.c:14 @db41b28 */
     volatile s32 v = 0xD; /* SOTN: src/main/psxsdk/libspu/spu.c:15 @db41b28 */
     for (i = 0; i < 0x3C; i++) {
         v = v * 13;

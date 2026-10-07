@@ -1,6 +1,6 @@
-/* PsyQ 4.0 LIBSND SSTICK: SsSetTickMode. .text 0x80085544..0x800856B0, a verbatim LIBSCAN module
- * span (docs/naming/libscan/matches.json), Q106 D3.
- * C ref: sotn-decomp src/main/psxsdk/libsnd/sstick.c. */
+/* PsyQ 4.0 LIBSND SSTICK: SsSetTickMode. .text 0x80085544..0x800856B0, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. C
+ * ref: sotn-decomp src/main/psxsdk/libsnd/sstick.c. */
 #include "common.h"
 #include "libsnd_i.h"
 

@@ -1,6 +1,6 @@
-/* PsyQ 4.0 LIBAPI C114: _96_remove, the BIOS A(0x72) trampoline, after the module's two leading
- * data words. .text 0x800831D0..0x800831F0, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBAPI C114: _96_remove, the BIOS A(0x72) trampoline, after the
+ * module's two leading data words. .text 0x800831D0..0x800831F0, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "include_asm.h"
 
 __asm__(

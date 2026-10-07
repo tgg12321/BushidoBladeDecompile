@@ -1,6 +1,7 @@
-/* PsyQ 4.0 LIBSND SSSTOP (the Jun-06-1997 4.0 build): _SsSndStop, SsSeqStop and SsSepStop. .text
- * 0x80085270..0x80085448, a bit-verbatim module span (memory/closer/libsnd-hunt-report.md "New
- * verbatim result"; docs/naming/libscan/ambiguous_resolutions.md), Q106 D3. */
+/* PsyQ 4.0 LIBSND SSSTOP (the Jun-06-1997 4.0 build): _SsSndStop, SsSeqStop and
+ * SsSepStop. .text 0x80085270..0x80085448, a bit-verbatim module span
+ * (memory/closer/libsnd-hunt-report.md "New verbatim result";
+ * docs/naming/libscan/ambiguous_resolutions.md), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 
@@ -52,10 +53,6 @@ void _SsSndStop(s16 a0, s16 a1) {
     score->unk5E = 0x7F;
 }
 
-void SsSeqStop(s16 a0) {
-    _SsSndStop(a0, 0);
-}
+void SsSeqStop(s16 a0) { _SsSndStop(a0, 0); }
 
-void SsSepStop(s16 a0, s16 a1) {
-    _SsSndStop(a0, a1);
-}
+void SsSepStop(s16 a0, s16 a1) { _SsSndStop(a0, a1); }

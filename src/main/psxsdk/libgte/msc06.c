@@ -1,5 +1,6 @@
-/* PsyQ 4.0 LIBGTE MSC06: LoadAverage12, LoadAverage0, LoadAverageShort12, LoadAverageShort0,
- * LoadAverageByte and LoadAverageCol. .text 0x8007E1AC..0x8007E43C, a verbatim LIBSCAN module span
+/* PsyQ 4.0 LIBGTE MSC06: LoadAverage12, LoadAverage0, LoadAverageShort12,
+ * LoadAverageShort0, LoadAverageByte and LoadAverageCol. .text
+ * 0x8007E1AC..0x8007E43C, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "include_asm.h"
 
@@ -13,11 +14,15 @@ INCLUDE_ASM("asm/funcs", LoadAverage12);
  * object. Twin of func_8007E1AC differing only in the
  * gpf/gpl sf parameter (0 vs 1). Hand-written GTE asm; canonical body. */
 INCLUDE_ASM("asm/funcs", LoadAverage0);
-/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly
+ * body. */
 INCLUDE_ASM("asm/funcs", LoadAverageShort12);
-/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly
+ * body. */
 INCLUDE_ASM("asm/funcs", LoadAverageShort0);
-/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly
+ * body. */
 INCLUDE_ASM("asm/funcs", LoadAverageByte);
-/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly body. */
+/* Original LIBGTE assembly; fixed-register ABI is explicit in the assembly
+ * body. */
 INCLUDE_ASM("asm/funcs", LoadAverageCol);

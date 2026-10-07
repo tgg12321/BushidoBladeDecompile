@@ -17,19 +17,19 @@ typedef struct {
     s32 dsr;
 } SioReq;
 
-extern volatile SioRegs *D_800A3044;  /* SIO registers */
-extern volatile u32 *D_800A3048;      /* SIO_DATA as a word */
-extern s32 D_800A304C;                /* interrupt handler record */
-extern volatile u32 *D_800A305C;      /* I_STAT (I_MASK at [1]) */
-extern s16 D_800A3060[];              /* packet size -> SIO_CTRL rx bits */
-extern s16 D_800A3074[];              /* SIO_CTRL rx bits -> packet size */
-extern s32 D_800A307C;                /* "sio" device control block */
+extern volatile SioRegs *D_800A3044; /* SIO registers */
+extern volatile u32 *D_800A3048;     /* SIO_DATA as a word */
+extern s32 D_800A304C;               /* interrupt handler record */
+extern volatile u32 *D_800A305C;     /* I_STAT (I_MASK at [1]) */
+extern s16 D_800A3060[];             /* packet size -> SIO_CTRL rx bits */
+extern s16 D_800A3074[];             /* SIO_CTRL rx bits -> packet size */
+extern s32 D_800A307C;               /* "sio" device control block */
 
 /* Module state (.bss): shadow SIO registers, wait callback, requests. */
 extern volatile SioRegs regs;
 extern s32 (*CombWaitCallback)(s32, s32);
 extern volatile SioReq sen;
-extern volatile SioReq D_800F1AFC;    /* rec */
+extern volatile SioReq D_800F1AFC; /* rec */
 
 extern s32 ResetGraph(s32);
 extern void DelDrv(const char *);
@@ -62,8 +62,7 @@ void DelCOMB(void) {
     }
 }
 
-void ChangeClearSIO(s32 val) {
-}
+void ChangeClearSIO(s32 val) {}
 
 static s32 SioAnsyncRead(u8 *buf, s32 len) {
     if (D_800F1AFC.flag) {
@@ -314,7 +313,7 @@ s32 _comb_control(u32 cmd, u32 arg, u32 param) {
             s32 (**slot)(s32, s32) = &CombWaitCallback;
 
             ret = (s32)*slot;
-            *slot = (s32 (*)(s32, s32))param;
+            *slot = (s32(*)(s32, s32))param;
         }
         break;
     case 5:
@@ -381,7 +380,8 @@ static s32 HandleSio(void) {
         }
         D_800A3044->ctrl ^= 2;
     }
-    if (sen.flag && (D_800A3044->stat & 1) && (D_800A3044->stat & 0x80) == sen.dsr) {
+    if (sen.flag && (D_800A3044->stat & 1) &&
+        (D_800A3044->stat & 0x80) == sen.dsr) {
         if (sen.len == 0) {
             sen.flag = 0;
             DeliverEvent(0xF000000B, 0x800);
@@ -416,13 +416,9 @@ static s32 r_sioinit(void) {
     return 0;
 }
 
-static s32 r_sioopen(void) {
-    return 0;
-}
+static s32 r_sioopen(void) { return 0; }
 
-static s32 r_sioclose(void) {
-    return 0;
-}
+static s32 r_sioclose(void) { return 0; }
 
 static s32 r_sioremove(void) {
     D_800A305C[1] &= ~0x100;
@@ -483,6 +479,4 @@ static s32 r_siostrategy(Fcb *fcb, s32 mode) {
     return -1;
 }
 
-static s32 __nulldev(void) {
-    return 0;
-}
+static s32 __nulldev(void) { return 0; }

@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSND SSSV: SsSetSerialVol. .text 0x80085448..0x80085544, a verbatim LIBSCAN module
- * span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSND SSSV: SsSetSerialVol. .text 0x80085448..0x80085544, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 

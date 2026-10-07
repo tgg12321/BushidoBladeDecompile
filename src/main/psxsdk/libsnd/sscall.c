@@ -1,11 +1,12 @@
-/* PsyQ 4.0 LIBSND SSCALL: SsSeqCalledTbyT. .text 0x80083F6C..0x800841E0, a verbatim LIBSCAN module
- * span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSND SSCALL: SsSeqCalledTbyT. .text 0x80083F6C..0x800841E0, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
-extern s16 _snd_seq_s_max;  /* _snd_seq_s_max */
-extern s16 _snd_seq_t_max;  /* _snd_seq_t_max */
+/* Declarations from the file this module was split from
+ * (src/main/psxsdk/libspu/spu.c, ex main.c). */
+extern s16 _snd_seq_s_max; /* _snd_seq_s_max */
+extern s16 _snd_seq_t_max; /* _snd_seq_t_max */
 
 static void SsSeqCalledTbyT(void) {
     int i;

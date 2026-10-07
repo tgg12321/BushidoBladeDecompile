@@ -1,6 +1,7 @@
-/* PsyQ 4.0 LIBETC INTR_VB: the VSync interrupt hooks (startIntrVSync, trapIntrVSync, setIntrVSync
- * and the module's memclr, sys_MemClear; SOTN libetc/intr_vb.c). .text 0x800832A0..0x800833C8, a
- * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBETC INTR_VB: the VSync interrupt hooks (startIntrVSync,
+ * trapIntrVSync, setIntrVSync and the module's memclr, sys_MemClear; SOTN
+ * libetc/intr_vb.c). .text 0x800832A0..0x800833C8, a verbatim LIBSCAN module
+ * span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libetc_internal.h"
 

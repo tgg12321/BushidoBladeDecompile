@@ -1,21 +1,19 @@
-/* PsyQ 4.0 LIBETC INTR_DMA: the DMA interrupt hooks (startIntrDMA, trapIntrDMA, setIntrDMA and the
- * module's memclr, sys_MemClear2; SOTN libetc/intr_dma.c). .text 0x800833C8..0x80083670, a verbatim
- * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBETC INTR_DMA: the DMA interrupt hooks (startIntrDMA, trapIntrDMA,
+ * setIntrDMA and the module's memclr, sys_MemClear2; SOTN libetc/intr_dma.c).
+ * .text 0x800833C8..0x80083670, a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libetc_internal.h"
 
 /* .rodata 0x80016394..0x800163C0: trapIntrDMA's bus-error report (moved from
- * src/text1a_b_tail_rodata.c, Q106 D4: every reader is in this file, in link order). */
+ * src/text1a_b_tail_rodata.c, Q106 D4: every reader is in this file, in link
+ * order). */
 
 /* D_80016394: 1 string(s), 28B @ 0x80016394 */
-const char D_80016394[28] =
-    "DMA bus error: code=%08x\n\0\0\0"
-    ;
+const char D_80016394[28] = "DMA bus error: code=%08x\n\0\0\0";
 
 /* D_800163B0: 1 string(s), 16B @ 0x800163B0 */
-const char D_800163B0[16] =
-    "MADR[%d]=%08x\n\0\0"
-    ;
+const char D_800163B0[16] = "MADR[%d]=%08x\n\0\0";
 
 extern s32 D_800A2640[8];
 /* PsyQ 4.0 LIBETC intr_dma.c module state (verbatim-linked Sony object;
@@ -27,6 +25,7 @@ extern u32 *D_800A2660;
 
 void trapIntrDMA(void);
 s32 setIntrDMA(s32, s32);
+
 s32 startIntrDMA(void) {
     sys_MemClear2((s32 *)&D_800A2640, 8);
     *D_800A263C = 0;
@@ -66,10 +65,12 @@ s32 setIntrDMA(s32 a0, s32 a1) {
     if (a1 != prev) {
         if (a1 != 0) {
             D_800A2640[a0] = a1;
-            *D_800A263C = (*D_800A263C & 0xFFFFFF) | 0x800000 | (1 << (a0 + 16));
+            *D_800A263C =
+                (*D_800A263C & 0xFFFFFF) | 0x800000 | (1 << (a0 + 16));
         } else {
             D_800A2640[a0] = 0;
-            *D_800A263C = ((*D_800A263C & 0xFFFFFF) | 0x800000) & ~(1 << (a0 + 16));
+            *D_800A263C =
+                ((*D_800A263C & 0xFFFFFF) | 0x800000) & ~(1 << (a0 + 16));
         }
     }
     return prev;

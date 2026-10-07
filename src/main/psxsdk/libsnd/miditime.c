@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSND MIDITIME: _SsReadDeltaValue. .text 0x80085064..0x80085114, a verbatim LIBSCAN
- * module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSND MIDITIME: _SsReadDeltaValue. .text 0x80085064..0x80085114, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 

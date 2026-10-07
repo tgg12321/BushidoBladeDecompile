@@ -1,9 +1,10 @@
 #ifndef PSXSDK_LIBSPU_H
 #define PSXSDK_LIBSPU_H
 
-/* PsyQ LIBSPU public types and entry points (Sony's libspu.h; SOTN include/psxsdk/libspu.h).
- * Type layouts and prototypes are spelled as BB2's code uses them (the module definitions in
- * src/main/psxsdk/libspu/). Library-internal state: src/main/psxsdk/libspu/libspu_internal.h. */
+/* PsyQ LIBSPU public types and entry points (Sony's libspu.h; SOTN
+ * include/psxsdk/libspu.h). Type layouts and prototypes are spelled as BB2's
+ * code uses them (the module definitions in src/main/psxsdk/libspu/).
+ * Library-internal state: src/main/psxsdk/libspu/libspu_internal.h. */
 
 #include "common.h"
 
@@ -55,6 +56,7 @@ typedef struct {
         /* 0x14 */ s32 reverb;
         /* 0x18 */ s32 mix;
     } cd;
+
     struct {
         /* 0x1C */ SpuVolume volume;
         /* 0x20 */ s32 reverb;

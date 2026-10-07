@@ -1,19 +1,20 @@
-/* PsyQ 4.0 LIBETC VSYNC: VSync and v_wait (SOTN libetc/vsync.c). .text 0x800828CC..0x80082AB0, a
- * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBETC VSYNC: VSync and v_wait (SOTN libetc/vsync.c). .text
+ * 0x800828CC..0x80082AB0, a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include <psxsdk/libapi.h>
 #include <psxsdk/libc.h>
 #include <psxsdk/libetc.h>
 
-/* .rodata 0x80016318..0x80016328: v_wait's timeout message (moved from src/text1a_b_tail_rodata.c,
- * Q106 D4: every reader is in this file, in link order). */
+/* .rodata 0x80016318..0x80016328: v_wait's timeout message (moved from
+ * src/text1a_b_tail_rodata.c, Q106 D4: every reader is in this file, in link
+ * order). */
 
 /* D_80016318: 1 string(s), 16B @ 0x80016318 */
-const char D_80016318[16] =
-    "VSync: timeout\n\0"
-    ;
+const char D_80016318[16] = "VSync: timeout\n\0";
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
+/* Declarations from the file this module was split from
+ * (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
 extern volatile s32 Vcount;
 
 extern volatile s32 *g_vsync_gpu_stat_reg;

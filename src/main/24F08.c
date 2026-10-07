@@ -1,4 +1,5 @@
-/* func_80034708 alone. .text 0x80034708 (ROM 0x24F08). Start boundary: G8 (cc1 -G8 by proof).
+/* func_80034708 alone. .text 0x80034708 (ROM 0x24F08). Start boundary: G8 (cc1
+ * -G8 by proof).
  *
  * Compiled -G8 (Makefile GP_FILES). The
  * original compiler knew the 4-byte cursor array D_800A3174 was small data:
@@ -11,7 +12,6 @@
 #include "bb2.h"
 #include "gte.h"
 #include "bb2_const.h"
-
 
 /* This menu's two cursors ([0] = P1 row 0..11, [1] = P2 row 0..3) and its
  * colour / format strings. */
@@ -40,22 +40,38 @@ void func_80034708(void) {
     rand();
     off = D_800A3178;
     on = D_800A3180;
-    func_8003D52C(D_800A3188, (s32)(D_800A3174[0] == 0 ? on : off), (s8)D_80102778.unk_4[0]);
-    func_8003D52C(D_800A3190, (s32)(D_800A3174[1] == 0 ? on : off), (s8)D_80102778.unk_4[1]);
-    func_8003D52C(D_800A3188, (s32)(D_800A3174[0] == 1 ? on : off), (s8)D_80102778.unk_4[2]);
-    func_8003D52C(D_800A3190, (s32)(D_800A3174[1] == 1 ? on : off), (s8)D_80102778.unk_4[3]);
-    func_8003D52C(D_800A3198, (s32)(D_800A3174[0] == 2 ? on : off), (s8)D_80102778.unk_4[4]);
-    func_8003D52C(D_800A3190, (s32)(D_800A3174[1] == 2 ? on : off), (s8)D_80102778.unk_4[5]);
-    func_8003D52C(D_800A31A0, (s32)(D_800A3174[0] == 3 ? on : off), D_80102778.unk_0[0] >> 8);
-    func_8003D52C(D_800A31A8, (s32)(D_800A3174[1] == 3 ? on : off), D_80102778.unk_0[1] >> 8);
-    func_8003D52C(D_800A31B0, (s32)(D_800A3174[0] == 4 ? on : off), (s8)D_80102778.unk_C);
-    func_8003D52C(D_800A31B0, (s32)(D_800A3174[0] == 5 ? on : off), (s8)D_80102778.unk_D);
-    func_8003D52C(D_800A31B8, (s32)(D_800A3174[0] == 6 ? on : off), (s8)D_80102778.unk_E);
-    func_8003D52C(D_80010834, (s32)(D_800A3174[0] == 7 ? on : off), (s8)D_80102778.unk_F);
-    func_8003D52C(D_80010840, (s32)(D_800A3174[0] == 8 ? on : off), D_80106A50.flags & 1);
-    func_8003D52C(D_800A31C0, (s32)(D_800A3174[0] == 9 ? on : off), (D_80106A50.flags >> 1) & 1);
-    func_8003D52C(D_800A31C8, (s32)(D_800A3174[0] == 10 ? on : off), D_800A36F9);
-    func_8003D52C(D_800A31D0, (s32)(D_800A3174[0] == 11 ? on : off), D_800A3690);
+    func_8003D52C(D_800A3188, (s32)(D_800A3174[0] == 0 ? on : off),
+                  (s8)D_80102778.unk_4[0]);
+    func_8003D52C(D_800A3190, (s32)(D_800A3174[1] == 0 ? on : off),
+                  (s8)D_80102778.unk_4[1]);
+    func_8003D52C(D_800A3188, (s32)(D_800A3174[0] == 1 ? on : off),
+                  (s8)D_80102778.unk_4[2]);
+    func_8003D52C(D_800A3190, (s32)(D_800A3174[1] == 1 ? on : off),
+                  (s8)D_80102778.unk_4[3]);
+    func_8003D52C(D_800A3198, (s32)(D_800A3174[0] == 2 ? on : off),
+                  (s8)D_80102778.unk_4[4]);
+    func_8003D52C(D_800A3190, (s32)(D_800A3174[1] == 2 ? on : off),
+                  (s8)D_80102778.unk_4[5]);
+    func_8003D52C(D_800A31A0, (s32)(D_800A3174[0] == 3 ? on : off),
+                  D_80102778.unk_0[0] >> 8);
+    func_8003D52C(D_800A31A8, (s32)(D_800A3174[1] == 3 ? on : off),
+                  D_80102778.unk_0[1] >> 8);
+    func_8003D52C(
+        D_800A31B0, (s32)(D_800A3174[0] == 4 ? on : off), (s8)D_80102778.unk_C);
+    func_8003D52C(
+        D_800A31B0, (s32)(D_800A3174[0] == 5 ? on : off), (s8)D_80102778.unk_D);
+    func_8003D52C(
+        D_800A31B8, (s32)(D_800A3174[0] == 6 ? on : off), (s8)D_80102778.unk_E);
+    func_8003D52C(
+        D_80010834, (s32)(D_800A3174[0] == 7 ? on : off), (s8)D_80102778.unk_F);
+    func_8003D52C(
+        D_80010840, (s32)(D_800A3174[0] == 8 ? on : off), D_80106A50.flags & 1);
+    func_8003D52C(D_800A31C0, (s32)(D_800A3174[0] == 9 ? on : off),
+                  (D_80106A50.flags >> 1) & 1);
+    func_8003D52C(
+        D_800A31C8, (s32)(D_800A3174[0] == 10 ? on : off), D_800A36F9);
+    func_8003D52C(
+        D_800A31D0, (s32)(D_800A3174[0] == 11 ? on : off), D_800A3690);
 
     for (i = 0; i < 2; i++) {
         if (g_pad_state.pressed & (0x1000 << (i * 16))) {
@@ -169,5 +185,6 @@ void func_80034708(void) {
     }
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
-s16 D_800A3174[2] = { 0, 0 };
+/* Q65: this file's initialized small data (.sdata), in address order; values
+ * from the original EXE. */
+s16 D_800A3174[2] = {0, 0};

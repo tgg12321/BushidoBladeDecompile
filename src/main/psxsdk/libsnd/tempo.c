@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSND TEMPO: _SsSndTempo. .text 0x800856B0..0x800858D0, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSND TEMPO: _SsSndTempo. .text 0x800856B0..0x800858D0, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 
@@ -21,7 +21,8 @@ void _SsSndTempo(s16 a0, s16 a1) {
             return;
         }
         if (score->unk94 > score->unkAC || score->unk94 < score->unkAC) {
-            score->unk94 = (score->unk94 > score->unkAC) ? score->unk94 - 1 : score->unk94 + 1;
+            score->unk94 = (score->unk94 > score->unkAC) ? score->unk94 - 1
+                                                         : score->unk94 + 1;
         }
     } else {
         if (score->unk94 > score->unkAC) {

@@ -1,8 +1,10 @@
-/* PsyQ LIBSND VM_NOWOF: _SsVmKeyOffNow. .text 0x800871D4..0x800872A4. Not a verbatim LIBSCAN span: BB2
- * links an interim LIBSND build, between PsyQ 4.0 and 4.1, that no archived release holds
- * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109), libscan near tier: VM_NOWOF
- * (PsyQ 4.1) matches 50/52 words at 0x800871D4, unique, and the near-verbatim UT_KEYV names
- * _SsVmKeyOffNow -> EXE jal 0x800871D4 (docs/naming/libscan/near_manifest.csv); VM_NOWOF's only XDEF
+/* PsyQ LIBSND VM_NOWOF: _SsVmKeyOffNow. .text 0x800871D4..0x800872A4. Not a
+ * verbatim LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0
+ * and 4.1, that no archived release holds
+ * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109),
+ * libscan near tier: VM_NOWOF (PsyQ 4.1) matches 50/52 words at 0x800871D4,
+ * unique, and the near-verbatim UT_KEYV names _SsVmKeyOffNow -> EXE jal
+ * 0x800871D4 (docs/naming/libscan/near_manifest.csv); VM_NOWOF's only XDEF
  * (+0x0, PsyQ 4.0 LIBSND.LIB). */
 #include "common.h"
 #include "libsnd_i.h"

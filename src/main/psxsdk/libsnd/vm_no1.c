@@ -1,8 +1,10 @@
-/* PsyQ LIBSND VM_NO1: vmNoiseOn. .text 0x80086CF8..0x800871D4. Not a verbatim LIBSCAN span: BB2 links
- * an interim LIBSND build, between PsyQ 4.0 and 4.1, that no archived release holds
- * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109), libscan near tier: the
- * near-verbatim UT_KEYV's REL26 at +0x32C names vmNoiseOn in all six builds -> EXE jal 0x80086CF8
- * (docs/naming/libscan/near_manifest.csv), VM_NO1's only XDEF (+0x0, PsyQ 4.0 LIBSND.LIB). */
+/* PsyQ LIBSND VM_NO1: vmNoiseOn. .text 0x80086CF8..0x800871D4. Not a verbatim
+ * LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0 and 4.1,
+ * that no archived release holds (memory/closer/libsnd-hunt-report.md). Module
+ * start (owner ruling Q109), libscan near tier: the near-verbatim UT_KEYV's
+ * REL26 at +0x32C names vmNoiseOn in all six builds -> EXE jal 0x80086CF8
+ * (docs/naming/libscan/near_manifest.csv), VM_NO1's only XDEF (+0x0, PsyQ 4.0
+ * LIBSND.LIB). */
 #include "common.h"
 #include "libsnd_i.h"
 
@@ -33,7 +35,7 @@ void vmNoiseOn(u8 vc) {
     u32 idx;
 
     score = &_ss_score[_svm_cur.seq_sep_no & 0xFF]
-                       [(_svm_cur.seq_sep_no & 0xFF00) >> 8];
+                      [(_svm_cur.seq_sep_no & 0xFF00) >> 8];
 
     voll_t = score->unk58 * 0x81;
     volr_t = score->unk5A * 0x81;

@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSPU S_SCA: SpuSetCommonAttr. .text 0x8008AF9C..0x8008B330, a verbatim LIBSCAN module
- * span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSPU S_SCA: SpuSetCommonAttr. .text 0x8008AF9C..0x8008B330, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libspu_internal.h"
 

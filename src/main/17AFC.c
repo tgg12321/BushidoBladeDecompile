@@ -1,5 +1,5 @@
-/* 80 game functions, among them math_LerpAngle. .text 0x800272FC (ROM 0x17AFC). Start boundary:
- * PHASE (rodata-align site 2). */
+/* 80 game functions, among them math_LerpAngle. .text 0x800272FC (ROM 0x17AFC).
+ * Start boundary: PHASE (rodata-align site 2). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -14,6 +14,7 @@ extern u8 D_800A38AA;
 extern u8 D_800A38AB;
 
 INCLUDE_RODATA("asm/rodata", D_80010478);
+
 s32 func_800272FC(s32 a0) {
     s32 v1;
     if (a0 < 0) {
@@ -30,6 +31,7 @@ s32 func_800272FC(s32 a0) {
     }
     return v1;
 }
+
 void func_80027334(MotionFrame *arg0) {
     arg0->unk_0C[0x18] = 0x3F5;
     arg0->unk_0C[0x19] = 0x2B6;
@@ -44,49 +46,54 @@ void func_80027334(MotionFrame *arg0) {
     arg0->unk_0C[0x20] = 0;
     arg0->unk_0C[0x23] = 0xBCD;
 }
-/* D_800A376A / D_800A376B are one u8 per player (the hit-limb bits); a0 is the player. Every
- * `*(&D_800A376A + a0)` below reaches [1] through [0]'s address. FAKE (owner ruling Q97): declared
- * u8[2] (memory/grind/judge-decl-cleanup/followups/func_8002738C.c12-merge-variant.diff), the
- * cheat-sweep lane reported func_8003B2C8 at 12 and func_8003B328 at 16 (scores not banked). */
+
+/* D_800A376A / D_800A376B are one u8 per player (the hit-limb bits); a0 is the
+ * player. Every
+ * `*(&D_800A376A + a0)` below reaches [1] through [0]'s address. FAKE (owner
+ * ruling Q97): declared u8[2]
+ * (memory/grind/judge-decl-cleanup/followups/func_8002738C.c12-merge-variant.diff),
+ * the cheat-sweep lane reported func_8003B2C8 at 12 and func_8003B328 at 16
+ * (scores not banked). */
 void func_8002738C(s32 a0, s32 a1) {
     if (D_800A38DC != 0) {
         return;
     }
     switch (a1) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-            *(&D_800A376A + a0) |= 0x10; /* FAKE: Q97 */
-            break;
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-            *(&D_800A376A + a0) |= 0x01; /* FAKE: Q97 */
-            break;
-        case 10:
-        case 11:
-        case 12:
-        case 13:
-            *(&D_800A376A + a0) |= 0x02; /* FAKE: Q97 */
-            break;
-        case 14:
-        case 15:
-        case 16:
-        case 17:
-            *(&D_800A376A + a0) |= 0x04; /* FAKE: Q97 */
-            break;
-        case 18:
-        case 19:
-        case 20:
-        case 21:
-            *(&D_800A376A + a0) |= 0x08; /* FAKE: Q97 */
-            break;
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+        *(&D_800A376A + a0) |= 0x10; /* FAKE: Q97 */
+        break;
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+        *(&D_800A376A + a0) |= 0x01; /* FAKE: Q97 */
+        break;
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+        *(&D_800A376A + a0) |= 0x02; /* FAKE: Q97 */
+        break;
+    case 14:
+    case 15:
+    case 16:
+    case 17:
+        *(&D_800A376A + a0) |= 0x04; /* FAKE: Q97 */
+        break;
+    case 18:
+    case 19:
+    case 20:
+    case 21:
+        *(&D_800A376A + a0) |= 0x08; /* FAKE: Q97 */
+        break;
     }
 }
+
 void func_80027438(Unk80101EC8Record *a0, s32 a1, s16 a2) {
     s16 v1;
     v1 = D_800A38DC;
@@ -97,42 +104,44 @@ void func_80027438(Unk80101EC8Record *a0, s32 a1, s16 a2) {
         return;
     }
     switch (a1) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-            a0->unk_272 += a2;
-            break;
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-            a0->unk_26C = 0;
-            a0->unk_90 = 0;
-            a0->unk_8A = 0;
-            break;
-        case 10:
-        case 11:
-        case 12:
-        case 13:
-            a0->unk_270 += a2;
-            break;
-        case 14:
-        case 15:
-        case 16:
-        case 17:
-        case 18:
-        case 19:
-        case 20:
-        case 21:
-            a0->unk_26E += a2;
-            break;
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+        a0->unk_272 += a2;
+        break;
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+        a0->unk_26C = 0;
+        a0->unk_90 = 0;
+        a0->unk_8A = 0;
+        break;
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+        a0->unk_270 += a2;
+        break;
+    case 14:
+    case 15:
+    case 16:
+    case 17:
+    case 18:
+    case 19:
+    case 20:
+    case 21:
+        a0->unk_26E += a2;
+        break;
     }
 }
+
 void func_800274BC(s32 *arg0, s16 *arg1) {
-    u32 dist_sq = (u32)((arg0[0] * arg0[0]) + (arg0[1] * arg0[1]) + (arg0[2] * arg0[2]));
+    u32 dist_sq =
+        (u32)((arg0[0] * arg0[0]) + (arg0[1] * arg0[1]) + (arg0[2] * arg0[2]));
     u32 log2_val;
     if (dist_sq < 0x400) {
         log2_val = ((u32)(g_sqrt_table_u8[dist_sq])) >> 3;
@@ -171,8 +180,7 @@ void func_800274BC(s32 *arg0, s16 *arg1) {
     arg1[2] = (s16)(((-arg0[2]) << 12) / ((s32)log2_val));
 }
 
-void func_80027640(Unk80101EC8Record *arg0)
-{
+void func_80027640(Unk80101EC8Record *arg0) {
     VECTOR tgt;
     VECTOR dir;
     s32 idx;
@@ -232,7 +240,8 @@ void func_80027640(Unk80101EC8Record *arg0)
     func_80032854(arg0->index, 0x30, &arg0->unk_F4.x, 0);
 }
 
-void func_800278C0(s32 a0, Unk80101EC8Record *ptr, s32 cmd, Tbl8008E194 *a3, s32 *stack_a2, s32 stack_v1) {
+void func_800278C0(s32 a0, Unk80101EC8Record *ptr, s32 cmd, Tbl8008E194 *a3,
+                   s32 *stack_a2, s32 stack_v1) {
     Unk80101EC8Record *chk_obj;
 
     if (a0 == 1) {
@@ -275,10 +284,11 @@ void func_800278C0(s32 a0, Unk80101EC8Record *ptr, s32 cmd, Tbl8008E194 *a3, s32
 
     func_80032854(ptr->other->index, 0x24, stack_a2, (s16 *)0);
 }
+
 s32 func_8002798C(Unk80101EC8Record *a0) {
     s32 ret = 0;
     u16 v1 = a0->unk_6A;
-    
+
     if (v1 == 6 || v1 == 0x25 || v1 == 0x33 || v1 == 4 || v1 == 0x14) {
         goto check_88;
     }
@@ -291,39 +301,37 @@ s32 func_8002798C(Unk80101EC8Record *a0) {
             goto final_1;
         }
     }
-    
-check_88:
-    {
-        s16 v88 = a0->unk_88;
-        s32 a0_6a;
-        if (v88 == -1) {
-            goto done;
-        }
-        a0_6a = a0->unk_6A;
-        if ((u16)a0_6a == 0xF) {
-            goto final_1;
-        }
-        if ((u32)(a0_6a - 0x1C) < 2) {
-            goto final_1;
-        }
-        if ((u32)(a0_6a - 0x1E) < 2) {
-            goto final_1;
-        }
-        if ((u32)(a0_6a - 0x20) < 2) {
-            goto final_1;
-        }
-        if ((u16)a0_6a == 0x2B) {
-            goto final_1;
-        }
+
+check_88: {
+    s16 v88 = a0->unk_88;
+    s32 a0_6a;
+    if (v88 == -1) {
         goto done;
     }
-    
+    a0_6a = a0->unk_6A;
+    if ((u16)a0_6a == 0xF) {
+        goto final_1;
+    }
+    if ((u32)(a0_6a - 0x1C) < 2) {
+        goto final_1;
+    }
+    if ((u32)(a0_6a - 0x1E) < 2) {
+        goto final_1;
+    }
+    if ((u32)(a0_6a - 0x20) < 2) {
+        goto final_1;
+    }
+    if ((u16)a0_6a == 0x2B) {
+        goto final_1;
+    }
+    goto done;
+}
+
 final_1:
     ret = 1;
 done:
     return ret;
 }
-
 
 void func_80027A58(Unk80101EC8Record *a0) {
     s16 v1 = a0->unk_86;
@@ -338,11 +346,15 @@ void func_80027A58(Unk80101EC8Record *a0) {
         }
     }
 }
+
 extern u8 D_8008EB74[3][2][2];
-s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
-    /* FAKE: tbl, tbl_arg: copies of the stack-passed parameter `rec`, kept because GCC 2.7.2
-     * halves the register priority of an unmodified stack parameter (local-alloc doubles
-     * its live length); Ruling 12. (rec used directly: score 78) */
+
+s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
+                  s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
+    /* FAKE: tbl, tbl_arg: copies of the stack-passed parameter `rec`, kept
+     * because GCC 2.7.2 halves the register priority of an unmodified stack
+     * parameter (local-alloc doubles its live length); Ruling 12. (rec used
+     * directly: score 78) */
     Tbl8008E194 *tbl;     /* the record, read field by field */
     Tbl8008E194 *tbl_arg; /* the record, passed on to func_800278C0 */
     s16 *vec;
@@ -358,9 +370,12 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
     s32 same;
     s32 code;
 
-    /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector, reached by the first's address: handed to
-     * func_800203B4 and read here as vec[0..2] (owner ruling Q96). Declared as s16[3] or {x,y,z}, cse rewrites the dot's [0] read to
-     * this register (score 2; memory/grind/judge-decl-cleanup/followups/func_80027AD8.vec-investigation.md). */
+    /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector, reached by the
+     * first's address: handed to func_800203B4 and read here as vec[0..2]
+     * (owner ruling Q96). Declared as s16[3] or {x,y,z}, cse rewrites the dot's
+     * [0] read to this register (score 2;
+     * memory/grind/judge-decl-cleanup/followups/func_80027AD8.vec-investigation.md).
+     */
     vec = &D_800A37E8;
     player = ch->index;
     opp = ch->other;
@@ -370,7 +385,8 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
     *out = 0;
     if (ch->unk_0C == 0x1C) {
         dot = (ch->unk_1EC.x * D_800A37E8 + ch->unk_1EC.y * D_800A37EA +
-               ch->unk_1EC.z * D_800A37EC) >> 12;
+               ch->unk_1EC.z * D_800A37EC) >>
+              12;
         dot &= 0x1FFF;
         if (dot >= 0x1000) {
             dot -= 0x2000;
@@ -403,12 +419,14 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
         ch->unk_286 = 7;
         return 1;
     }
-    if ((st == 2 || st == 0x1B || st == 0x28 || st == 0x26) && ch->unk_40 < ch->unk_A0) {
+    if ((st == 2 || st == 0x1B || st == 0x28 || st == 0x26) &&
+        ch->unk_40 < ch->unk_A0) {
         if (pass == 0) {
             diff = opp->unk_20 - ch->unk_20;
             cat = func_800272FC(diff);
-            /* FAKE: diff's sign bit taken ahead of the same / unk_B4 stores and the func_80032854 call; read
-             * at its use in the table index, ch and limb swap $s0 / $s1 across the function: score 102 */
+            /* FAKE: diff's sign bit taken ahead of the same / unk_B4 stores and
+             * the func_80032854 call; read at its use in the table index, ch
+             * and limb swap $s0 / $s1 across the function: score 102 */
             sign = (u32)diff >> 31;
             same = ch->unk_AF == opp->unk_AF;
             ch->unk_B4 = opp->unk_B4 = same;
@@ -492,8 +510,9 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
             func_80027A58(ch);
             return 1;
         }
-        /* FAKE: duplicate the real count/return tail across switch arms so flow.c
-         * raises tbl's reg_n_refs before jump2 cross-jump merges it. (cases 0, 1-3 goto the case 4-5 copy: score 31) */
+        /* FAKE: duplicate the real count/return tail across switch arms so
+         * flow.c raises tbl's reg_n_refs before jump2 cross-jump merges it.
+         * (cases 0, 1-3 goto the case 4-5 copy: score 31) */
         if (pass == 1 && tbl->unkD == 2) {
             ch->unk_272++;
         }
@@ -513,8 +532,9 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
             func_80027A58(ch);
             return 1;
         }
-        /* FAKE: duplicate the real count/return tail across switch arms so flow.c
-         * raises tbl's reg_n_refs before jump2 cross-jump merges it. (cases 0, 1-3 goto the case 4-5 copy: score 31) */
+        /* FAKE: duplicate the real count/return tail across switch arms so
+         * flow.c raises tbl's reg_n_refs before jump2 cross-jump merges it.
+         * (cases 0, 1-3 goto the case 4-5 copy: score 31) */
         if (pass == 1 && tbl->unkD == 2) {
             ch->unk_272++;
         }
@@ -528,8 +548,9 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
     case 4:
     case 5:
         if (!flag) {
-            /* FAKE: duplicate the real count/return tail across switch arms so flow.c
-             * raises tbl's reg_n_refs before jump2 cross-jump merges it. (cases 0, 1-3 goto the case 4-5 copy: score 31) */
+            /* FAKE: duplicate the real count/return tail across switch arms so
+             * flow.c raises tbl's reg_n_refs before jump2 cross-jump merges it.
+             * (cases 0, 1-3 goto the case 4-5 copy: score 31) */
             if (pass == 1 && tbl->unkD == 2) {
                 ch->unk_272++;
             }
@@ -586,6 +607,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh, s32 fla
         return 0;
     }
 }
+
 s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
     s32 temp_a1;
     Unk80101EC8Record *temp_s4;
@@ -597,7 +619,8 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
     temp_s4 = arg0->other;
     ret = 1;
     temp_a1 = arg0->unk_6A;
-    /* FAKE: redundant mask of the u16 state code, reproduces the target's andi $v1,$a1,0xFFFF; without it score 9 */
+    /* FAKE: redundant mask of the u16 state code, reproduces the target's andi
+     * $v1,$a1,0xFFFF; without it score 9 */
     temp_v1 = temp_a1 & 0xFFFF;
     if (temp_v1 == 4) {
         goto ret_one;
@@ -607,136 +630,157 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
     }
     {
         u16 temp_v0 = temp_s4->unk_6A;
-            if (temp_v0 == 4) {
-                goto ret_one;
+        if (temp_v0 == 4) {
+            goto ret_one;
+        }
+        if (temp_v0 == 0x14) {
+            goto ret_one;
+        }
+        {
+            s32 d_val;
+            s32 temp_a1_2;
+            s32 temp_s5;
+
+            if (temp_v1 != 0x13) {
+                if (((u32)(temp_a1 - 0x19) >= 2U) && (temp_v1 != 2) &&
+                    (temp_v1 != 0x26) && (temp_v1 != 0x1B) &&
+                    (temp_v1 != 0x15) && (temp_v1 != 0x25) &&
+                    (temp_v1 != 0x2C) && (temp_v1 != 0xC)) {
+                ret_one:
+                    return 1;
+                }
             }
-            if (temp_v0 == 0x14) {
-                goto ret_one;
+            var_s1 = 0;
+            d_val = D_800A3824;
+            temp_a1_2 = (d_val >> arg0->index) & 1;
+            temp_s5 = (d_val >> temp_s4->index) & 1;
+            if (arg0->unk_8C != 0) {
+                var_s1 = temp_a1_2 == 0;
+            }
+            if (var_s1 != 0) {
+                s16 temp_v1_2 = arg0->unk_0C;
+                if (temp_v1_2 != 0x1D) {
+                    if (temp_v1_2 != 0xE) {
+                        goto block_20;
+                    }
+                    return ret;
+                }
+                goto block_49;
+            }
+        block_20: {
+            s16 temp_v1_3 = temp_s4->unk_288[temp_s5];
+            if (temp_v1_3 == 0) {
+                /* the target tests unk_288 signed here (lh + blez), against its
+                 * u16 declaration */
+                if ((s16)arg0->unk_288[temp_a1_2] > 0) {
+                    var_v0 = 0x19;
+                    if (var_s1 == 0) {
+                    set_0xB:
+                        var_v0 = 0xB;
+                    }
+                do_store_calls:
+                    arg0->unk_286 = var_v0;
+                do_calls:
+                    func_80032854(arg0->index, 1, arg1, (s16 *)0);
+                    func_80032854(arg0->index, 0x25, arg1, (s16 *)0);
+                    return ret;
+                }
+                goto block_49;
             }
             {
-                s32 d_val;
-                s32 temp_a1_2;
-                s32 temp_s5;
-
-                if (temp_v1 != 0x13) {
-                    if (((u32)(temp_a1 - 0x19) >= 2U) && (temp_v1 != 2) && (temp_v1 != 0x26) && (temp_v1 != 0x1B) && (temp_v1 != 0x15) && (temp_v1 != 0x25) && (temp_v1 != 0x2C) && (temp_v1 != 0xC)) {
-                    ret_one:
-                        return 1;
-                    }
-                }
-                var_s1 = 0;
-                d_val = D_800A3824;
-                temp_a1_2 = (d_val >> arg0->index) & 1;
-                temp_s5 = (d_val >> temp_s4->index) & 1;
-                if (arg0->unk_8C != 0) {
-                    var_s1 = temp_a1_2 == 0;
-                }
-                if (var_s1 != 0) {
-                    s16 temp_v1_2 = arg0->unk_0C;
-                    if (temp_v1_2 != 0x1D) {
-                        if (temp_v1_2 != 0xE) {
-                            goto block_20;
-                        }
-                        return ret;
-                    }
-                    goto block_49;
-                }
-            block_20:
-                {
-                    s16 temp_v1_3 = temp_s4->unk_288[temp_s5];
-                    if (temp_v1_3 == 0) {
-                        /* the target tests unk_288 signed here (lh + blez), against its u16 declaration */
-                        if ((s16)arg0->unk_288[temp_a1_2] > 0) {
-                            var_v0 = 0x19;
-                            if (var_s1 == 0) {
-                            set_0xB:
-                                var_v0 = 0xB;
+                s16 temp_v0_3 = arg0->unk_288[temp_a1_2];
+                s16 var_v0_2;
+                if (temp_v0_3 == temp_v1_3) {
+                    /* FAKE: do-while(0) loop-note ref weighting, mechanism:
+                     * flow.c REG_N_REFS += loop_depth feeding global.c
+                     * allocno_compare. */
+                    do {
+                        func_80032854(arg0->index, 1, arg1, (s16 *)0);
+                        func_80032854(arg0->index, 0x25, arg1, (s16 *)0);
+                    } while (0);
+                    /* FAKE: (s16) view of the u16 unk_288: the target reloads
+                     * it with lh here; without the cast lhu, score 1 */
+                    if ((s16)arg0->unk_288[temp_a1_2] == 5) {
+                        if (arg0->unk_0E == 6 || arg0->unk_0E == 7 ||
+                            temp_s4->unk_0E == 6 || temp_s4->unk_0E == 7) {
+                            if (var_s1 != 0) {
+                                goto sel19;
                             }
-                        do_store_calls:
-                            arg0->unk_286 = var_v0;
-                        do_calls:
-                            func_80032854(arg0->index, 1, arg1, (s16 *)0);
-                            func_80032854(arg0->index, 0x25, arg1, (s16 *)0);
-                            return ret;
+                            var_v0_2 = 0xB;
+                            goto block_48;
+                        sel19:
+                            /* FAKE: store duplicated into this arm instead of
+                             * sharing block_48's copy, mechanism: jump2
+                             * cross-jump tail merge (jump.c find_cross_jump)
+                             * chooses which copy survives inline. */
+                            arg0->unk_286 = 0x19;
+                            goto block_49;
                         }
+                        D_800A38A8 = 1;
+                        D_800A3876 = -1;
                         goto block_49;
                     }
                     {
-                        s16 temp_v0_3 = arg0->unk_288[temp_a1_2];
-                        s16 var_v0_2;
-                        if (temp_v0_3 == temp_v1_3) {
-                            do { /* FAKE: do-while(0) loop-note ref weighting, mechanism: flow.c REG_N_REFS += loop_depth feeding global.c allocno_compare. */
-                                func_80032854(arg0->index, 1, arg1, (s16 *)0);
-                                func_80032854(arg0->index, 0x25, arg1, (s16 *)0);
-                            } while (0);
-                            /* FAKE: (s16) view of the u16 unk_288: the target reloads it with lh here; without the cast lhu, score 1 */
-                            if ((s16)arg0->unk_288[temp_a1_2] == 5) {
-                                if (arg0->unk_0E == 6 || arg0->unk_0E == 7 || temp_s4->unk_0E == 6 || temp_s4->unk_0E == 7) {
-                                    if (var_s1 != 0) {
-                                        goto sel19;
-                                    }
-                                    var_v0_2 = 0xB;
-                                    goto block_48;
-                                sel19:
-                                    /* FAKE: store duplicated into this arm instead of sharing block_48's copy, mechanism: jump2 cross-jump tail merge (jump.c find_cross_jump) chooses which copy survives inline. */
-                                    arg0->unk_286 = 0x19;
-                                    goto block_49;
-                                }
-                                D_800A38A8 = 1;
-                                D_800A3876 = -1;
-                                goto block_49;
-                            }
-                            {
-                                /* FAKE: named intermediate for the selected constant, mechanism: cse.c/expand LUID ordering keeps the two constants materialised in target's order (written as a plain ternary they re-merge in canonical order). */
-                                s32 sel = (var_s1 == 0) ? 0xB : 0x19;
-                                var_v0_2 = sel;
-                            }
-                            goto block_48;
+                        /* FAKE: named intermediate for the selected constant,
+                         * mechanism: cse.c/expand LUID ordering keeps the two
+                         * constants materialised in target's order (written as
+                         * a plain ternary they re-merge in canonical order). */
+                        s32 sel = (var_s1 == 0) ? 0xB : 0x19;
+                        var_v0_2 = sel;
+                    }
+                    goto block_48;
+                }
+                if (temp_v1_3 < temp_v0_3) {
+                    s16 var_v0_4 = 0x19;
+                    if (var_s1 == 0) {
+                        goto set_0xB;
+                    }
+                    /* FAKE: store duplicated into the `<` arm instead of
+                     * sharing do_store_calls's copy, mechanism: jump2
+                     * cross-jump tail merge (jump.c find_cross_jump). */
+                    arg0->unk_286 = var_v0_4;
+                    goto do_calls;
+                }
+                func_80032854(arg0->index, 0x26, arg1, (s16 *)0);
+                func_80032854(arg0->index, 0x2D, arg1, (s16 *)0);
+                var_v0_2 = 0x1A;
+                if (var_s1 == 0) {
+                    s32 temp_v1_4 = -arg0->unk_1C8.vy;
+                    s32 temp_v1_5 =
+                        (s32)(Judge[(temp_v1_4 + 0x400) & 0xFFF] *
+                                  temp_s4->unk_114[temp_s5].vx +
+                              Judge[temp_v1_4 & 0xFFF] *
+                                  temp_s4->unk_114[temp_s5].vz) >>
+                        0xC;
+                    s32 temp_a0_2 = temp_s4->unk_114[temp_s5].vy;
+                    s32 var_a1 = temp_a0_2;
+                    s32 var_v0_3;
+                    if (temp_a0_2 < 0) {
+                        var_a1 = -temp_a0_2;
+                    }
+                    var_v0_3 = temp_v1_5;
+                    if (temp_v1_5 < 0) {
+                        var_v0_3 = -temp_v1_5;
+                    }
+                    if (var_v0_3 < var_a1) {
+                        var_v0_2 = 0x14;
+                        if (temp_a0_2 > 0) {
+                            var_v0_2 = 0x13;
                         }
-                        if (temp_v1_3 < temp_v0_3) {
-                            s16 var_v0_4 = 0x19;
-                            if (var_s1 == 0) {
-                                goto set_0xB;
-                            }
-                            /* FAKE: store duplicated into the `<` arm instead of sharing do_store_calls's copy, mechanism: jump2 cross-jump tail merge (jump.c find_cross_jump). */
-                            arg0->unk_286 = var_v0_4;
-                            goto do_calls;
+                    } else {
+                        var_v0_2 = 0x15;
+                        if (temp_v1_5 <= 0) {
+                            var_v0_2 = 0x16;
                         }
-                        func_80032854(arg0->index, 0x26, arg1, (s16 *)0);
-                        func_80032854(arg0->index, 0x2D, arg1, (s16 *)0);
-                        var_v0_2 = 0x1A;
-                        if (var_s1 == 0) {
-                            s32 temp_v1_4 = -arg0->unk_1C8.vy;
-                            s32 temp_v1_5 = (s32)(Judge[(temp_v1_4 + 0x400) & 0xFFF] * temp_s4->unk_114[temp_s5].vx + Judge[temp_v1_4 & 0xFFF] * temp_s4->unk_114[temp_s5].vz) >> 0xC;
-                            s32 temp_a0_2 = temp_s4->unk_114[temp_s5].vy;
-                            s32 var_a1 = temp_a0_2;
-                            s32 var_v0_3;
-                            if (temp_a0_2 < 0) {
-                                var_a1 = -temp_a0_2;
-                            }
-                            var_v0_3 = temp_v1_5;
-                            if (temp_v1_5 < 0) {
-                                var_v0_3 = -temp_v1_5;
-                            }
-                            if (var_v0_3 < var_a1) {
-                                var_v0_2 = 0x14;
-                                if (temp_a0_2 > 0) {
-                                    var_v0_2 = 0x13;
-                                }
-                            } else {
-                                var_v0_2 = 0x15;
-                                if (temp_v1_5 <= 0) {
-                                    var_v0_2 = 0x16;
-                                }
-                            }
-                        }
-                    block_48:
-                        arg0->unk_286 = var_v0_2;
                     }
                 }
-            block_49:
-                return ret;
+            block_48:
+                arg0->unk_286 = var_v0_2;
             }
+        }
+        block_49:
+            return ret;
+        }
     }
 }
 
@@ -754,39 +798,61 @@ void func_8002872C(void) {
         base = &D_80101EC8[i];
 
         cmp_a1 = base->unk_0C;
-        if (cmp_a1 != 0x1B) goto next;
+        if (cmp_a1 != 0x1B)
+            goto next;
 
-        if (base->unk_46 != 0) goto next;
+        if (base->unk_46 != 0)
+            goto next;
 
         cmp_a2 = base->unk_6A;
-        if (cmp_a2 != 0xB) goto next;
+        if (cmp_a2 != 0xB)
+            goto next;
 
-        if (base->unk_40 != base->unk_A7) goto next;
+        if (base->unk_40 != base->unk_A7)
+            goto next;
 
         ptr = base->other;
         a0_raw = ptr->unk_6A;
         v1 = a0_raw & 0xFFFF;
 
-        if (v1 == 0x26) goto match;
-        if (v1 == cmp_a1) goto match;
-        if (v1 == 2) goto match;
-        if (v1 == 0x15) goto match;
-        if ((u32)(a0_raw - 0x24) < 2) goto match;
-        if (v1 == 8) goto match;
-        if ((u32)(a0_raw - 0x22) < 2) goto match;
-        if (v1 == 0) goto match;
-        if (v1 == 0x10) goto match;
-        if (v1 == 0x13) goto match;
-        if ((u32)(a0_raw - 0x30) < 2) goto match;
-        if (v1 == 0x1A) goto match;
-        if (v1 == cmp_a2) goto match;
-        if (v1 == 0x12) goto match;
-        if (v1 == 0x2A) goto match;
-        if (v1 == 0xC) goto match;
-        if (v1 != 0x19) goto next;
+        if (v1 == 0x26)
+            goto match;
+        if (v1 == cmp_a1)
+            goto match;
+        if (v1 == 2)
+            goto match;
+        if (v1 == 0x15)
+            goto match;
+        if ((u32)(a0_raw - 0x24) < 2)
+            goto match;
+        if (v1 == 8)
+            goto match;
+        if ((u32)(a0_raw - 0x22) < 2)
+            goto match;
+        if (v1 == 0)
+            goto match;
+        if (v1 == 0x10)
+            goto match;
+        if (v1 == 0x13)
+            goto match;
+        if ((u32)(a0_raw - 0x30) < 2)
+            goto match;
+        if (v1 == 0x1A)
+            goto match;
+        if (v1 == cmp_a2)
+            goto match;
+        if (v1 == 0x12)
+            goto match;
+        if (v1 == 0x2A)
+            goto match;
+        if (v1 == 0xC)
+            goto match;
+        if (v1 != 0x19)
+            goto next;
 
     match:
-        if (!(D_800A387C < D_800A3134)) goto next;
+        if (!(D_800A387C < D_800A3134))
+            goto next;
 
         base->other->unk_286 = 0x1C;
         func_80027A58(base->other);
@@ -802,6 +868,7 @@ void func_8002872C(void) {
         i++;
     } while (i < 2);
 }
+
 extern s32 D_800A3144[2];
 
 /* Body-overlap push between the two characters (D_80101EC8[0] and
@@ -847,7 +914,8 @@ void func_800288C8(void) {
     s32 dist;
     /* FAKE: two values -- the copy of the squared distance that is the
      * gte_Lzc input (its only reader), then the table byte. A fresh copy local
-     * takes $v1 (the target's is $a0). Same shape as func_8002A458's temp2 (Q28). */
+     * takes $v1 (the target's is $a0). Same shape as func_8002A458's temp2
+     * (Q28). */
     s32 tbl;
     s32 pen;
     s32 bias;
@@ -874,8 +942,8 @@ void func_800288C8(void) {
             dy = SPAD->unk78[0][i].y - SPAD->unk78[1][j].y;
             dz = SPAD->unk78[0][i].z - SPAD->unk78[1][j].z;
             reach = D_800A3144[i] + D_800A3144[j];
-            if (dx > reach || dx < -reach || dy > reach || dy < -reach
-                || dz > reach || dz < -reach) {
+            if (dx > reach || dx < -reach || dy > reach || dy < -reach ||
+                dz > reach || dz < -reach) {
                 continue;
             }
             dist = dx * dx + dy * dy + dz * dz;
@@ -926,15 +994,15 @@ void func_800288C8(void) {
         return;
     }
     flag1 = 0;
-    if (D_80101EC8[0].unk_6A == 0x13 || D_80101EC8[0].unk_6A == 0x1B
-        || D_80101EC8[0].unk_6A == 0x30) {
+    if (D_80101EC8[0].unk_6A == 0x13 || D_80101EC8[0].unk_6A == 0x1B ||
+        D_80101EC8[0].unk_6A == 0x30) {
         if (D_80101EC8[0].unk_14E > 0x9C4) {
             flag1 = 1;
         }
     }
     flag2 = 0;
-    if (D_80101EC8[1].unk_6A == 0x13 || D_80101EC8[1].unk_6A == 0x1B
-        || D_80101EC8[1].unk_6A == 0x30) {
+    if (D_80101EC8[1].unk_6A == 0x13 || D_80101EC8[1].unk_6A == 0x1B ||
+        D_80101EC8[1].unk_6A == 0x30) {
         if (D_80101EC8[1].unk_14E > 0x9C4) {
             flag2 = 1;
         }
@@ -959,8 +1027,8 @@ void func_800288C8(void) {
                 func_80027A58(&D_80101EC8[1]);
             }
             if (facing > 0x600 && D_80101EC8[1].unk_6A == 0x15) {
-                if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7
-                    || D_80101EC8[1].unk_0E == 6 || D_80101EC8[1].unk_0E == 7) {
+                if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7 ||
+                    D_80101EC8[1].unk_0E == 6 || D_80101EC8[1].unk_0E == 7) {
                     func_80032854(1, 0x21, &D_80101EC8[1].unk_F4.x, 0);
                     func_80032854(1, 0x2D, &D_80101EC8[1].unk_F4.x, 0);
                     D_80101EC8[1].unk_286 = 5;
@@ -976,8 +1044,8 @@ void func_800288C8(void) {
             func_80027A58(&D_80101EC8[0]);
         }
         if (facing > 0x600 && D_80101EC8[0].unk_6A == 0x15) {
-            if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7
-                || D_80101EC8[1].unk_0E == 6 || D_80101EC8[1].unk_0E == 7) {
+            if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7 ||
+                D_80101EC8[1].unk_0E == 6 || D_80101EC8[1].unk_0E == 7) {
                 func_80032854(0, 0x21, &D_80101EC8[0].unk_F4.x, 0);
                 func_80032854(0, 0x2D, &D_80101EC8[0].unk_F4.x, 0);
                 D_80101EC8[0].unk_286 = 5;
@@ -994,6 +1062,7 @@ void func_800288C8(void) {
         D_80101EC8[1].unk_134.vz += push2_z;
     }
 }
+
 /* One 16-byte entry of the list func_8004678C returns (terminated by a zero
  * `type`); func_8002906C clears every entry's `used`. */
 typedef struct {
@@ -1038,10 +1107,12 @@ s32 func_800290B8(s32 idx, s32 flag, LeafPos *tbl) {
     LeafPos *c;
     s32 i;
     s32 n;
-    s32 temp;  /* two values: the grid row i / 2, then the list index passed to
-                * func_80044B30 (Ruling 11) */
-    s32 temp2; /* two values: the grid column i & 1, then the triangle number
-                * (Ruling 11) */
+    /* two values: the grid row i / 2, then the list index passed to
+     * func_80044B30 (Ruling 11) */
+    s32 temp;
+    /* two values: the grid column i & 1, then the triangle number
+     * (Ruling 11) */
+    s32 temp2;
 
     scr->unk84 = tbl[idx * 4];
     scr->unk78 = scr->unk84;
@@ -1067,12 +1138,18 @@ s32 func_800290B8(s32 idx, s32 flag, LeafPos *tbl) {
 
     rec = (PosRec *)func_8004678C();
     for (temp = 0; rec->type != 0; temp++, rec++) {
-        if (rec->used != 0) continue;
-        if (rec->y > scr->unk84.y) continue;
-        if (rec->x < scr->unk78.x) continue;
-        if (scr->unk84.x < rec->x) continue;
-        if (rec->z < scr->unk78.z) continue;
-        if (scr->unk84.z < rec->z) continue;
+        if (rec->used != 0)
+            continue;
+        if (rec->y > scr->unk84.y)
+            continue;
+        if (rec->x < scr->unk78.x)
+            continue;
+        if (scr->unk84.x < rec->x)
+            continue;
+        if (rec->z < scr->unk78.z)
+            continue;
+        if (scr->unk84.z < rec->z)
+            continue;
 
         scr->unk100[0].x = rec->x;
         scr->unk100[0].z = rec->z;
@@ -1086,20 +1163,24 @@ s32 func_800290B8(s32 idx, s32 flag, LeafPos *tbl) {
                 b = &tbl[idx * 4 + 2];
                 c = &tbl[idx * 4 + 3];
             }
-            if (func_8002E6B0((s32 *)a, (s32 *)b, (s32 *)c, &scr->unk100[0].x) != 0) {
-                if (rec->type != 2) goto hit;
+            if (func_8002E6B0(
+                    (s32 *)a, (s32 *)b, (s32 *)c, &scr->unk100[0].x) != 0) {
+                if (rec->type != 2)
+                    goto hit;
                 if (flag != 0 && idx == 0) {
                     idx = 1;
                     temp2 = -1;
                     continue;
                 }
-                func_80044B30(temp, func_8002FC80((VECTOR *)a, (VECTOR *)b, (VECTOR *)c));
+                func_80044B30(
+                    temp, func_8002FC80((VECTOR *)a, (VECTOR *)b, (VECTOR *)c));
                 func_80033550(a);
                 rec->used = 1;
                 return 0;
             }
         }
-        if (flag == 0 || idx == 0) continue;
+        if (flag == 0 || idx == 0)
+            continue;
     hit:
         scr->unk100[0].y = (scr->unk78.y + scr->unk84.y) / 2;
         return 1;
@@ -1107,17 +1188,18 @@ s32 func_800290B8(s32 idx, s32 flag, LeafPos *tbl) {
     return 0;
 }
 
-/* 1 when the box unk78 (min) / unk84 (max) and the box unk90 (min) / unk9C (max)
- * overlap on all three axes. */
+/* 1 when the box unk78 (min) / unk84 (max) and the box unk90 (min) / unk9C
+ * (max) overlap on all three axes. */
 static inline s32 box_overlap(Unk1F8002B8Rec *scr) {
-    return scr->unk78.x <= scr->unk9C.x && scr->unk84.x >= scr->unk90.x
-        && scr->unk78.y <= scr->unk9C.y && scr->unk84.y >= scr->unk90.y
-        && scr->unk78.z <= scr->unk9C.z && scr->unk84.z >= scr->unk90.z;
+    return scr->unk78.x <= scr->unk9C.x && scr->unk84.x >= scr->unk90.x &&
+           scr->unk78.y <= scr->unk9C.y && scr->unk84.y >= scr->unk90.y &&
+           scr->unk78.z <= scr->unk9C.z && scr->unk84.z >= scr->unk90.z;
 }
 
 /* Both are defined further down this file. */
 extern s32 func_8002DAD0(Unk1F8002B8Rec *obj);
-extern s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2);
+extern s32 func_8002DE20(
+    Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2);
 
 /* Blade contact test between the two records at D_80101EC8 (stride 0x44C),
  * called by func_8002C61C (its result goes to D_800A3824). Returns -1 unless
@@ -1131,8 +1213,8 @@ extern s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos 
  * 0x28 or 0x26: fills grid 0 (and grid 1: the +0xE 4/5 shape, or the unk48
  * points when +0x8C is set). If +0x40 is inside +0xA1..+0xA3 and func_800290B8
  * hits grid 0, or +0x8C is set, +0x40 is inside +0xA2..+0xA4 and it hits grid
- * 1, effects 1, 0x26 and 0x2D play at scr->unk100[0], +0x286 becomes 0x19 (+0x8C
- * set, first case) or 0xB, and +0xAD is cleared.
+ * 1, effects 1, 0x26 and 0x2D play at scr->unk100[0], +0x286 becomes 0x19
+ * (+0x8C set, first case) or 0xB, and +0xAD is cleared.
  *
  * Then both records' grids are rebuilt (y raised to 100000 when +0x96 is set,
  * +0x92 is 0 or +0xC is 0x1F), count[c] is the record's triangle count (2, or
@@ -1152,8 +1234,8 @@ s32 func_80029454(void) {
     LeafPos saved[16];
     s32 count[2];
     /* Loop counters, each used by several loops: i by the two record loops and
-     * the halving loop's outer loop, j by the halving loop's inner loop and both
-     * passes' outer loops, n by both passes' inner loops, k by the save,
+     * the halving loop's outer loop, j by the halving loop's inner loop and
+     * both passes' outer loops, n by both passes' inner loops, k by the save,
      * bounds and restore loops. */
     s32 i;
     s32 j;
@@ -1181,8 +1263,8 @@ s32 func_80029454(void) {
         if (rec->unk_0E == 6 || rec->unk_0E == 7) {
             continue;
         }
-        if (!(rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28
-              || rec->unk_6A == 0x26)) {
+        if (!(rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 ||
+              rec->unk_6A == 0x26)) {
             continue;
         }
         if (rec->unk_0E == 4 || rec->unk_0E == 5) {
@@ -1206,15 +1288,16 @@ s32 func_80029454(void) {
                 ws[7] = rec->unk_234[1];
             }
         }
-        if (rec->unk_40 >= rec->unk_A1[0] && rec->unk_40 <= rec->unk_A3[0]
-            && func_800290B8(0, rec->unk_0E == 4 || rec->unk_0E == 5, ws) != 0) {
+        if (rec->unk_40 >= rec->unk_A1[0] && rec->unk_40 <= rec->unk_A3[0] &&
+            func_800290B8(0, rec->unk_0E == 4 || rec->unk_0E == 5, ws) != 0) {
             func_80032854(i, 1, &scr->unk100[0].x, 0);
             func_80032854(i, 0x26, &scr->unk100[0].x, 0);
             func_80032854(i, 0x2D, &scr->unk100[0].x, 0);
             rec->unk_286 = rec->unk_8C != 0 ? 0x19 : 0xB;
             rec->unk_AD = 0;
-        } else if (rec->unk_8C != 0 && rec->unk_40 >= rec->unk_A1[1]
-                   && rec->unk_40 <= rec->unk_A3[1] && func_800290B8(1, 0, ws) != 0) {
+        } else if (
+            rec->unk_8C != 0 && rec->unk_40 >= rec->unk_A1[1] &&
+            rec->unk_40 <= rec->unk_A3[1] && func_800290B8(1, 0, ws) != 0) {
             func_80032854(i, 1, &scr->unk100[0].x, 0);
             func_80032854(i, 0x26, &scr->unk100[0].x, 0);
             func_80032854(i, 0x2D, &scr->unk100[0].x, 0);
@@ -1347,8 +1430,9 @@ s32 func_80029454(void) {
                     scr->unk9C.z = scr->unk6C[k]->z;
                 }
             }
-            if (box_overlap(scr)
-                && func_8002DE20(scr, scr->unk6C[0], scr->unk6C[1], scr->unk6C[2]) != 0) {
+            if (box_overlap(scr) &&
+                func_8002DE20(
+                    scr, scr->unk6C[0], scr->unk6C[1], scr->unk6C[2]) != 0) {
                 for (k = 0; k < 16; k++) {
                     SPAD->unkA8[0][k] = saved[k];
                 }
@@ -1453,8 +1537,9 @@ s32 func_80029454(void) {
                     scr->unk9C.z = scr->unk6C[k]->z;
                 }
             }
-            if (box_overlap(scr)
-                && func_8002DE20(scr, scr->unk6C[0], scr->unk6C[1], scr->unk6C[2]) != 0) {
+            if (box_overlap(scr) &&
+                func_8002DE20(
+                    scr, scr->unk6C[0], scr->unk6C[1], scr->unk6C[2]) != 0) {
                 for (k = 0; k < 16; k++) {
                     SPAD->unkA8[0][k] = saved[k];
                 }
@@ -1467,6 +1552,7 @@ s32 func_80029454(void) {
     }
     return -1;
 }
+
 /* Sweeps a character's weapon segment against its limb spheres. The scratch
  * record at 0x1F8002B8 (`scr`, the one func_8002E838 / func_8002EA24 /
  * func_8002CA8C use) gets its two segment-end pointers (+0x60 -> scr+0x0,
@@ -1506,8 +1592,10 @@ s32 func_80029454(void) {
 extern char D_80010478[];
 extern void printf();
 extern void func_8002E838(Unk1F8002B8Rec *scr);
-extern s32 func_8002EA24(Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq);
+extern s32 func_8002EA24(
+    Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq);
 extern s32 func_80054434(void);
+
 void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 id = obj->index;
@@ -1631,8 +1719,8 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
             if (func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E) != 0) {
                 s32 bit = 1 << i;
                 *hit |= bit;
-                if (rec->unk_00 != 0
-                    && func_8002EA24(scr, pos, rec->unk_10, rec->unk_12) != 0) {
+                if (rec->unk_00 != 0 &&
+                    func_8002EA24(scr, pos, rec->unk_10, rec->unk_12) != 0) {
                     *deep |= bit;
                 }
             }
@@ -1642,8 +1730,8 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     scr->unkA8.y = scr->unk60[0]->y - qy / 4;
     scr->unkA8.z = scr->unk60[0]->z - qz / 4;
     if (func_80053614(&scr->unkA8.x, &scr->unk60[1]->x, &scr->unk100[0].x,
-                      &scr->unkF8.vx, (s32)work) != 0
-        && func_80054434() != 7) {
+                      &scr->unkF8.vx, (s32)work) != 0 &&
+        func_80054434() != 7) {
         if (*hit != 0) {
             p = scr->unk60[0];
             dx = scr->unk100[0].x - p->x;
@@ -1668,17 +1756,21 @@ done:
     D_800A37EA = -qy;
     D_800A37EC = -qz;
 }
+
 extern void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2);
 extern s32 func_8002CD58(Unk1F8002B8Rec *obj);
+
 void func_8002AB08(s32 mode) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
-    /* FAKE: second handle to D_800A37E8 (pointer-alias-fake-exception). The target rematerializes
-     * the address at each of its three call sites (lui/addiu straight into $a1/$a3). This local is
-     * one pseudo with a REG_EQUIV to the symbol (local-alloc.c update_equiv_regs) that global.c
-     * leaves unallocated (lowest priority, live across the whole function), so reload1.c substitutes
-     * the symbol at each use; spelled directly, cse keeps the address in one callee-saved register
-     * across the first call. Same local as func_80027AD8's `vec = &D_800A37E8;` in this file; the
-     * three scalars reached through it as one vector: owner ruling Q96. */
+    /* FAKE: second handle to D_800A37E8 (pointer-alias-fake-exception). The
+     * target rematerializes the address at each of its three call sites
+     * (lui/addiu straight into $a1/$a3). This local is one pseudo with a
+     * REG_EQUIV to the symbol (local-alloc.c update_equiv_regs) that global.c
+     * leaves unallocated (lowest priority, live across the whole function), so
+     * reload1.c substitutes the symbol at each use; spelled directly, cse keeps
+     * the address in one callee-saved register across the first call. Same
+     * local as func_80027AD8's `vec = &D_800A37E8;` in this file; the three
+     * scalars reached through it as one vector: owner ruling Q96. */
     s16 *vec = &D_800A37E8;
     s32 i;
 
@@ -1692,31 +1784,37 @@ void func_8002AB08(s32 mode) {
         u32 mask_c;
         s32 npass;
         s32 pass;
-        /* alt: two values -- the pass's blade (0: the unk00 / unk_210 points, 1: the unk48 / unk_234
-         * points; also read by the knockback's velocity index, the last pass's blade, as the target
-         * does at 0x8002B8C0), then whether the nearest hit came from that blade. The 4/5 arm's
-         * `alt = 0;` re-stores the held 0 (target `move $fp,$zero` 0x8002AF18), owner Q85.
-         * Ruling 11 (reused-local-necessity.md). */
+        /* alt: two values -- the pass's blade (0: the unk00 / unk_210 points,
+         * 1: the unk48 / unk_234 points; also read by the knockback's velocity
+         * index, the last pass's blade, as the target does at 0x8002B8C0), then
+         * whether the nearest hit came from that blade. The 4/5 arm's `alt =
+         * 0;` re-stores the held 0 (target `move $fp,$zero` 0x8002AF18), owner
+         * Q85. Ruling 11 (reused-local-necessity.md). */
         s32 alt;
-        /* temp1 / temp2: two values each -- the indices of the pass's two points (per-branch constants,
-         * Q20), then the squared distance of the opponent to the blade's first / second point. The
-         * unk_8C arm's `temp1 = 0; temp2 = 1;` re-store the held values (target 0x8002AEF0 /
-         * 0x8002AEF4, the stores that arm shares with pass 0), owner Q85. Ruling 11. */
+        /* temp1 / temp2: two values each -- the indices of the pass's two
+         * points (per-branch constants, Q20), then the squared distance of the
+         * opponent to the blade's first / second point. The unk_8C arm's `temp1
+         * = 0; temp2 = 1;` re-store the held values (target 0x8002AEF0 /
+         * 0x8002AEF4, the stores that arm shares with pass 0), owner Q85.
+         * Ruling 11. */
         s32 temp1;
         s32 temp2;
         s32 nseg;
-        /* idx: two values -- the triangle index of the segment loop, then the index of the nearest
-         * hit, the Q34 plain copy `idx = temp3;` (target `addu $s5,$s4,$zero` 0x8002B538). Ruling 11. */
+        /* idx: two values -- the triangle index of the segment loop, then the
+         * index of the nearest hit, the Q34 plain copy `idx = temp3;` (target
+         * `addu $s5,$s4,$zero` 0x8002B538). Ruling 11. */
         s32 idx;
-        /* dx / dy / dz: the x / y / z offset between two points, one value per use -- the segment's
-         * length vector, a hit point from the reference point, the blade's two points from the opponent,
-         * the blade direction, the scaled push (dy: the first two only). Ruling 11. */
+        /* dx / dy / dz: the x / y / z offset between two points, one value per
+         * use -- the segment's length vector, a hit point from the reference
+         * point, the blade's two points from the opponent, the blade direction,
+         * the scaled push (dy: the first two only). Ruling 11. */
         s32 dx;
         s32 dy;
         s32 dz;
         s32 best;
-        /* temp3: two values -- the hit-slot counter of the nearest-hit search, then whether the
-         * nearest hit came from the alternate blade. Ruling 11. */
+        /* temp3: two values -- the hit-slot counter of the nearest-hit search,
+         * then whether the nearest hit came from the alternate blade.
+         * Ruling 11. */
         s32 temp3;
         s32 j;
         BoneHitRec *rec;
@@ -1725,8 +1823,9 @@ void func_8002AB08(s32 mode) {
         s32 bit;
         s32 diff;
         s32 ang;
-        /* work: four values -- the segment length squared, a hit's distance past its radius, the
-         * facing difference to the opponent's velocity, then the push weight. Ruling 11. */
+        /* work: four values -- the segment length squared, a hit's distance
+         * past its radius, the facing difference to the opponent's velocity,
+         * then the push weight. Ruling 11. */
         s32 work;
         s32 flag;
         s32 strong;
@@ -1754,10 +1853,10 @@ void func_8002AB08(s32 mode) {
         if (npass != 0 && (other->unk_0E == 4 || other->unk_0E == 5)) {
             npass++;
         }
-        if ((other->unk_0E == 6 || other->unk_0E == 7)
-            && (other->unk_6A == 2 || other->unk_6A == 0x1B || other->unk_6A == 0x28
-                || other->unk_6A == 0x26)
-            && other->unk_40 == other->unk_A1[0]) {
+        if ((other->unk_0E == 6 || other->unk_0E == 7) &&
+            (other->unk_6A == 2 || other->unk_6A == 0x1B ||
+             other->unk_6A == 0x28 || other->unk_6A == 0x26) &&
+            other->unk_40 == other->unk_A1[0]) {
             if (other->unk_34A != 0) {
                 other->unk_34A -= 1;
                 scr->unk00.unk00[0] = SPAD->unk00[i == 0][1];
@@ -1765,26 +1864,31 @@ void func_8002AB08(s32 mode) {
                 func_8002A458(self, &hit, &deep, 0);
                 mask_a |= hit;
             } else {
-                func_80032854(i == 0, 0x32, i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
+                func_80032854(
+                    i == 0, 0x32,
+                    i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
                 npass = 0;
             }
         }
-        if ((other->unk_0C == 0x1D || other->unk_0C == 0xE) && other->unk_26C != 0
-            && (other->unk_6A == 2 || other->unk_6A == 0x1B || other->unk_6A == 0x28
-                || other->unk_6A == 0x26)
-            && other->unk_40 == other->unk_A1[1] && other->unk_34A != 0) {
+        if ((other->unk_0C == 0x1D || other->unk_0C == 0xE) &&
+            other->unk_26C != 0 &&
+            (other->unk_6A == 2 || other->unk_6A == 0x1B ||
+             other->unk_6A == 0x28 || other->unk_6A == 0x26) &&
+            other->unk_40 == other->unk_A1[1] && other->unk_34A != 0) {
             other->unk_34A -= 1;
             scr->unk00.unk00[0] = SPAD->unk48[i == 0][1];
             scr->unk00.unk00[1] = SPAD->unk48[i == 0][0];
             func_8002A458(self, &hit, &deep, other->unk_0C == 0xE);
-            func_80032854(i == 0, 0x2A, i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
+            func_80032854(
+                i == 0, 0x2A,
+                i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
             mask_a |= hit;
         }
         for (pass = 0; pass < npass; pass++) {
-            /* deep_on: func_8002CA8C's third argument (it runs the deep-hit test only when set): one
-             * value, written per arm as per-branch constants 1 / 1 / 0 (Q20); the unk_8C arm's
-             * `deep_on = 1;` is the 0x8002AEFC store it shares with pass 0, owner Q85.
-             * Ruling 11. */
+            /* deep_on: func_8002CA8C's third argument (it runs the deep-hit
+             * test only when set): one value, written per arm as per-branch
+             * constants 1 / 1 / 0 (Q20); the unk_8C arm's `deep_on = 1;` is the
+             * 0x8002AEFC store it shares with pass 0, owner Q85. Ruling 11. */
             s32 deep_on;
 
             if (pass == 0) {
@@ -1814,12 +1918,18 @@ void func_8002AB08(s32 mode) {
                 scr->unk00.unk00[2] = other->unk_234[temp1];
                 scr->unk00.unk00[3] = other->unk_234[temp2];
             }
-            scr->unk00.unk00[4].x = (scr->unk00.unk00[0].x + scr->unk00.unk00[2].x) / 2;
-            scr->unk00.unk00[4].y = (scr->unk00.unk00[0].y + scr->unk00.unk00[2].y) / 2;
-            scr->unk00.unk00[4].z = (scr->unk00.unk00[0].z + scr->unk00.unk00[2].z) / 2;
-            scr->unk00.unk00[5].x = (scr->unk00.unk00[1].x + scr->unk00.unk00[3].x) / 2;
-            scr->unk00.unk00[5].y = (scr->unk00.unk00[1].y + scr->unk00.unk00[3].y) / 2;
-            scr->unk00.unk00[5].z = (scr->unk00.unk00[1].z + scr->unk00.unk00[3].z) / 2;
+            scr->unk00.unk00[4].x =
+                (scr->unk00.unk00[0].x + scr->unk00.unk00[2].x) / 2;
+            scr->unk00.unk00[4].y =
+                (scr->unk00.unk00[0].y + scr->unk00.unk00[2].y) / 2;
+            scr->unk00.unk00[4].z =
+                (scr->unk00.unk00[0].z + scr->unk00.unk00[2].z) / 2;
+            scr->unk00.unk00[5].x =
+                (scr->unk00.unk00[1].x + scr->unk00.unk00[3].x) / 2;
+            scr->unk00.unk00[5].y =
+                (scr->unk00.unk00[1].y + scr->unk00.unk00[3].y) / 2;
+            scr->unk00.unk00[5].z =
+                (scr->unk00.unk00[1].z + scr->unk00.unk00[3].z) / 2;
             dx = scr->unk00.unk00[1].x - scr->unk00.unk00[3].x;
             dy = scr->unk00.unk00[1].y - scr->unk00.unk00[3].y;
             dz = scr->unk00.unk00[1].z - scr->unk00.unk00[3].z;
@@ -1921,20 +2031,21 @@ void func_8002AB08(s32 mode) {
             return;
         }
         near = 0;
-        if ((other->unk_40 >= other->unk_A1[0] - 3 && other->unk_40 < other->unk_A1[0])
-            || (other->unk_40 >= other->unk_A1[1] - 3 && other->unk_40 < other->unk_A1[1])) {
+        if ((other->unk_40 >= other->unk_A1[0] - 3 &&
+             other->unk_40 < other->unk_A1[0]) ||
+            (other->unk_40 >= other->unk_A1[1] - 3 &&
+             other->unk_40 < other->unk_A1[1])) {
             near = 1;
         }
         guard = 0;
-        if ((other->unk_0E == 6 || other->unk_0E == 7 || other->unk_0C == 0x1D
-             || other->unk_0C == 0xE)
-            && (mask_a & (1 << idx))) {
+        if ((other->unk_0E == 6 || other->unk_0E == 7 ||
+             other->unk_0C == 0x1D || other->unk_0C == 0xE) &&
+            (mask_a & (1 << idx))) {
             guard = 1;
         }
-        if (guard == 0
-            && (!(other->unk_6A == 2 || other->unk_6A == 0x1B || other->unk_6A == 0x28
-                  || other->unk_6A == 0x26)
-                || near == 0)) {
+        if (guard == 0 && (!(other->unk_6A == 2 || other->unk_6A == 0x1B ||
+                             other->unk_6A == 0x28 || other->unk_6A == 0x26) ||
+                           near == 0)) {
             bit = 1 << idx;
             temp3 = (mask_a & bit) != 0;
             if (temp3) {
@@ -1974,8 +2085,9 @@ void func_8002AB08(s32 mode) {
                 diff = 0x1000 - diff;
             }
             if (diff < 0x400) {
-                work = (ratan2(other->unk_114[alt].vx, other->unk_114[alt].vz) + 0x800
-                     - self->unk_1D8) & 0xFFF;
+                work = (ratan2(other->unk_114[alt].vx, other->unk_114[alt].vz) +
+                        0x800 - self->unk_1D8) &
+                       0xFFF;
                 if (work >= 0x800) {
                     work = 0x1000 - work;
                 }
@@ -1985,23 +2097,28 @@ void func_8002AB08(s32 mode) {
                 }
                 dx = dx / 4 + (other->unk_114[temp3].vx * work / 2 >> 11);
                 dz = dz / 4 + (other->unk_114[temp3].vz * work / 2 >> 11);
-                if (other->unk_6A == 3 || other->unk_6A == 7 || other->unk_6A == 0xD
-                    || other->unk_6A == 0x2C) {
+                if (other->unk_6A == 3 || other->unk_6A == 7 ||
+                    other->unk_6A == 0xD || other->unk_6A == 0x2C) {
                     self->unk_134.vx += dx / 2;
                     self->unk_134.vz += dz / 2;
                 } else {
                     self->unk_134.vx += dx;
                     self->unk_134.vz += dz;
                 }
-                if ((self->unk_6A == 0x13 || self->unk_6A == 0x1B || self->unk_6A == 0x30)
-                    && other->unk_6A == 0x15) {
-                    if (self->unk_0E == 6 || self->unk_0E == 7 || other->unk_0E == 6
-                        || other->unk_0E == 7) {
+                if ((self->unk_6A == 0x13 || self->unk_6A == 0x1B ||
+                     self->unk_6A == 0x30) &&
+                    other->unk_6A == 0x15) {
+                    if (self->unk_0E == 6 || self->unk_0E == 7 ||
+                        other->unk_0E == 6 || other->unk_0E == 7) {
                         other->unk_286 = 5;
                         func_80032854(i == 0, 0x21,
-                                      i == 0 ? &D_80101EC8[1].unk_F4.x : &D_80101EC8[0].unk_F4.x, 0);
+                                      i == 0 ? &D_80101EC8[1].unk_F4.x
+                                             : &D_80101EC8[0].unk_F4.x,
+                                      0);
                         func_80032854(i == 0, 0x2D,
-                                      i == 0 ? &D_80101EC8[1].unk_F4.x : &D_80101EC8[0].unk_F4.x, 0);
+                                      i == 0 ? &D_80101EC8[1].unk_F4.x
+                                             : &D_80101EC8[0].unk_F4.x,
+                                      0);
                     } else {
                         D_800A38A8 = 1;
                         D_800A3876 = i;
@@ -2017,8 +2134,8 @@ void func_8002AB08(s32 mode) {
         if (other->unk_AE == 0) {
             continue;
         }
-        if (other->unk_8C != 0
-            && (other->unk_40 < other->unk_A1[alt] || other->unk_40 > other->unk_A3[alt])) {
+        if (other->unk_8C != 0 && (other->unk_40 < other->unk_A1[alt] ||
+                                   other->unk_40 > other->unk_A3[alt])) {
             continue;
         }
         flag = 0;
@@ -2037,24 +2154,28 @@ void func_8002AB08(s32 mode) {
         if (mask_b & (1 << idx) & ~mask_c) {
             strong = 0;
         }
-        /* func_80027AD8's sixth argument is a record pointer on its pass-1 calls (func_80031B24) and,
-         * on this pass-0 call, the 0/1 alternate-blade flag the target passes in that slot: its
-         * `tbl == NULL ? 0xB : 0x19` picks the same reaction func_80029454 picks from +0x8C. */
+        /* func_80027AD8's sixth argument is a record pointer on its pass-1
+         * calls (func_80031B24) and, on this pass-0 call, the 0/1
+         * alternate-blade flag the target passes in that slot: its `tbl == NULL
+         * ? 0xB : 0x19` picks the same reaction func_80029454 picks from +0x8C.
+         */
         func_80027AD8(0, self, idx, ang, strong, (Tbl8008E194 *)alt, flag, 0);
         other->unk_AD = 0;
     }
 }
+
 s32 func_8002BC68(s32 arg0) {
     s32 temp_a3;
     s32 temp_t1;
     s32 var_a0;
     u32 temp_a0;
     u32 var_t0;
-    /* FAKE: pointer alias to D_80101EC8[0] / [1] (pointer-alias-fake-exception).
-     * The record pointers hold the table base in a register (target: lui/addiu t2,
-     * addiu t3,t2,0x44C, then lw/sw off t2/t3). Without them every access is a
-     * symbol+offset constant address, which mips.h:2300 GO_IF_LEGITIMATE_ADDRESS
-     * accepts as is, so no base register exists (the handle-free form costs an instruction). */
+    /* FAKE: pointer alias to D_80101EC8[0] / [1]
+     * (pointer-alias-fake-exception). The record pointers hold the table base
+     * in a register (target: lui/addiu t2, addiu t3,t2,0x44C, then lw/sw off
+     * t2/t3). Without them every access is a symbol+offset constant address,
+     * which mips.h:2300 GO_IF_LEGITIMATE_ADDRESS accepts as is, so no base
+     * register exists (the handle-free form costs an instruction). */
     Unk80101EC8Record *t2_base;
     Unk80101EC8Record *t3_base;
 
@@ -2064,7 +2185,7 @@ s32 func_8002BC68(s32 arg0) {
     temp_t1 = t2_base->unk_D8.z - t3_base->unk_D8.z;
     temp_a0 = (temp_a3 * temp_a3) + (temp_t1 * temp_t1);
     if (temp_a0 < 0x400U) {
-        var_t0 = ((u32) (g_sqrt_table_u8[temp_a0])) >> 3;
+        var_t0 = ((u32)(g_sqrt_table_u8[temp_a0])) >> 3;
     } else {
         s32 sp_tmp;
         /* Canonical GTE LZCS island (mtc2/swc2 — no C form). The $13-$15
@@ -2097,10 +2218,10 @@ s32 func_8002BC68(s32 arg0) {
             var_t0 = (hi << 16) >> (0x13 - v1_m);
         }
     }
-    if (((s32) var_t0) < arg0) {
-        var_a0 = ((arg0 - ((s32) var_t0)) * 0x50) / 100;
+    if (((s32)var_t0) < arg0) {
+        var_a0 = ((arg0 - ((s32)var_t0)) * 0x50) / 100;
     } else {
-        var_a0 = (arg0 - ((s32) var_t0)) / 16;
+        var_a0 = (arg0 - ((s32)var_t0)) / 16;
     }
     {
         s32 temp_v0 = arg0 - 0x64;
@@ -2110,19 +2231,21 @@ s32 func_8002BC68(s32 arg0) {
         t3_base->unk_134.vx = (temp_a3 * temp_v1_3) / temp_v0;
         t3_base->unk_134.vz = (temp_t1 * temp_v1_3) / temp_v0;
     }
-    return (s32) var_t0;
+    return (s32)var_t0;
 }
+
 s32 func_8002BEA0(void) {
     s32 temp_a3;
     s32 temp_t1;
     s32 var_a0;
     u32 temp_a0;
     u32 var_t0;
-    /* FAKE: pointer alias to D_80101EC8[0] / [1] (pointer-alias-fake-exception).
-     * The record pointers hold the table base in a register (target: lui/addiu t2,
-     * addiu t3,t2,0x44C, then lw/sw off t2/t3). Without them every access is a
-     * symbol+offset constant address, which mips.h:2300 GO_IF_LEGITIMATE_ADDRESS
-     * accepts as is, so no base register exists (the handle-free form costs an instruction). */
+    /* FAKE: pointer alias to D_80101EC8[0] / [1]
+     * (pointer-alias-fake-exception). The record pointers hold the table base
+     * in a register (target: lui/addiu t2, addiu t3,t2,0x44C, then lw/sw off
+     * t2/t3). Without them every access is a symbol+offset constant address,
+     * which mips.h:2300 GO_IF_LEGITIMATE_ADDRESS accepts as is, so no base
+     * register exists (the handle-free form costs an instruction). */
     Unk80101EC8Record *t2_base;
     Unk80101EC8Record *t3_base;
 
@@ -2132,7 +2255,7 @@ s32 func_8002BEA0(void) {
     temp_t1 = t2_base->unk_F4.z - t3_base->unk_F4.z;
     temp_a0 = (temp_a3 * temp_a3) + (temp_t1 * temp_t1);
     if (temp_a0 < 0x400U) {
-        var_t0 = ((u32) (g_sqrt_table_u8[temp_a0])) >> 3;
+        var_t0 = ((u32)(g_sqrt_table_u8[temp_a0])) >> 3;
     } else {
         s32 sp_tmp;
         /* Canonical GTE LZCS island (mtc2/swc2 — no C form). The $13-$15
@@ -2165,10 +2288,10 @@ s32 func_8002BEA0(void) {
             var_t0 = (hi << 16) >> (0x13 - v1_m);
         }
     }
-    if (((s32) var_t0) < 0x44C) {
-        var_a0 = ((0x44C - ((s32) var_t0)) * 0x50) / 100;
+    if (((s32)var_t0) < 0x44C) {
+        var_a0 = ((0x44C - ((s32)var_t0)) * 0x50) / 100;
     } else {
-        var_a0 = (0x44C - ((s32) var_t0)) / 16;
+        var_a0 = (0x44C - ((s32)var_t0)) / 16;
     }
     {
         s32 temp_v0 = 0x3E8;
@@ -2178,7 +2301,7 @@ s32 func_8002BEA0(void) {
         t3_base->unk_134.vx = (temp_a3 * temp_v1_3) / temp_v0;
         t3_base->unk_134.vz = (temp_t1 * temp_v1_3) / temp_v0;
     }
-    return (s32) var_t0 - 0x44C;
+    return (s32)var_t0 - 0x44C;
 }
 
 void func_8002C0DC(void) {
@@ -2232,6 +2355,7 @@ void func_8002C0DC(void) {
         }
     }
 }
+
 /* Accumulates a character's shadow vectors in PSX scratchpad RAM.  Everything
  * this function writes lives in the one record at 0x1F8002B8 that `scr` points
  * at: two vectors, unkA8 and unkB8 (this function does not touch unkB4 /
@@ -2346,9 +2470,9 @@ void func_8002C61C(void) {
      * unk_3C / unk_286 / unk_0C / unk_F4 / unk_28C at displacements off them,
      * while unk_AD, unk_6A and the unk_210 / unk_234 copy loops use the
      * absolute address.  Without the pointers those five fields' accesses
-     * become absolute lui pairs (GO_IF_LEGITIMATE_ADDRESS, gcc-2.7.2 mips.h:2286)
-     * and cse keeps &D_80101EC8[0].unk_6A in $s0 instead (later also
-     * &D_80101EC8[0].unk_286 in $s1): 12 more instructions. */
+     * become absolute lui pairs (GO_IF_LEGITIMATE_ADDRESS, gcc-2.7.2
+     * mips.h:2286) and cse keeps &D_80101EC8[0].unk_6A in $s0 instead (later
+     * also &D_80101EC8[0].unk_286 in $s1): 12 more instructions. */
     Unk80101EC8Record *s1 = &D_80101EC8[0];
     Unk80101EC8Record *s0 = &D_80101EC8[1];
     s32 i;
@@ -2365,9 +2489,11 @@ void func_8002C61C(void) {
         func_8002872C();
         func_800288C8();
         D_800A3824 = func_80029454();
-        if (D_800A3824 < 0) goto do_calc;
+        if (D_800A3824 < 0)
+            goto do_calc;
         func_8002C22C();
-        if (D_800A3824 < 0) goto do_calc;
+        if (D_800A3824 < 0)
+            goto do_calc;
         if (s1->unk_AD != 0 || s0->unk_AD != 0) {
             func_800283D0(s1, &SPAD->unk2B8.rec.unk13C.x);
             func_800283D0(s0, &SPAD->unk2B8.rec.unk13C.x);
@@ -2379,12 +2505,12 @@ void func_8002C61C(void) {
         func_8002AB08(0);
     after_calc:
 
-        if (s1->unk_3C >= 3 && s0->unk_3C >= 3 &&
-            D_800A38A8 != 0 && s1->unk_286 == -1 &&
-            s0->unk_286 == -1 && s1->unk_0C != 0x1F &&
+        if (s1->unk_3C >= 3 && s0->unk_3C >= 3 && D_800A38A8 != 0 &&
+            s1->unk_286 == -1 && s0->unk_286 == -1 && s1->unk_0C != 0x1F &&
             s0->unk_0C != 0x1F) {
             s32 diff = s1->unk_F4.y - s0->unk_F4.y;
-            if (diff < 0) diff = -diff;
+            if (diff < 0)
+                diff = -diff;
             if (diff < 0x3E8) {
                 s1->unk_286 = 0xA;
                 s0->unk_286 = 0xA;
@@ -2394,7 +2520,6 @@ void func_8002C61C(void) {
                 D_800A389C = 0;
             }
         }
-
     }
 
     if (D_80101EC8[0].unk_6A == 5) {
@@ -2416,12 +2541,21 @@ void func_8002C61C(void) {
     }
 
     for (i = 0; i < 2; i++) {
-        D_80101EC8[i].unk_18C.x = (SPAD->unkA8[i][1].x + SPAD->unkA8[i][2].x + SPAD->unkA8[i][3].x) / 3;
-        D_80101EC8[i].unk_18C.y = (SPAD->unkA8[i][1].y + SPAD->unkA8[i][2].y + SPAD->unkA8[i][3].y) / 3;
-        D_80101EC8[i].unk_18C.z = (SPAD->unkA8[i][1].z + SPAD->unkA8[i][2].z + SPAD->unkA8[i][3].z) / 3;
-        D_80101EC8[i].unk_174.x = (SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2;
-        D_80101EC8[i].unk_174.y = (SPAD->unkA8[i][4].y + SPAD->unkA8[i][5].y) / 2;
-        D_80101EC8[i].unk_174.z = (SPAD->unkA8[i][4].z + SPAD->unkA8[i][5].z) / 2;
+        D_80101EC8[i].unk_18C.x =
+            (SPAD->unkA8[i][1].x + SPAD->unkA8[i][2].x + SPAD->unkA8[i][3].x) /
+            3;
+        D_80101EC8[i].unk_18C.y =
+            (SPAD->unkA8[i][1].y + SPAD->unkA8[i][2].y + SPAD->unkA8[i][3].y) /
+            3;
+        D_80101EC8[i].unk_18C.z =
+            (SPAD->unkA8[i][1].z + SPAD->unkA8[i][2].z + SPAD->unkA8[i][3].z) /
+            3;
+        D_80101EC8[i].unk_174.x =
+            (SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2;
+        D_80101EC8[i].unk_174.y =
+            (SPAD->unkA8[i][4].y + SPAD->unkA8[i][5].y) / 2;
+        D_80101EC8[i].unk_174.z =
+            (SPAD->unkA8[i][4].z + SPAD->unkA8[i][5].z) / 2;
     }
 
     {
@@ -2434,8 +2568,11 @@ void func_8002C61C(void) {
         }
     }
 }
-extern s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s32 r_sq);
-extern s32 func_8002D780(s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq);
+
+extern s32 func_8002D320(
+    s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s32 r_sq);
+extern s32 func_8002D780(
+    s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq);
 
 void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
@@ -2484,25 +2621,22 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
         }
 
         if (a1 != 0) {
-            hit = func_8002D780(0, scr, (s32 *)&SPAD->unkA8[id][i],
-                                r, rec->unk_0E);
+            hit = func_8002D780(
+                0, scr, (s32 *)&SPAD->unkA8[id][i], r, rec->unk_0E);
             if (hit != 0) {
                 if (rec->unk_00 != 0 && a2 != 0) {
-                    if (func_8002D780(1, scr, (s32 *)0,
-                                      rec->unk_10,
-                                      rec->unk_12) != 0) {
+                    if (func_8002D780(
+                            1, scr, (s32 *)0, rec->unk_10, rec->unk_12) != 0) {
                         hitMask |= 1 << i;
                     }
                 }
             }
         } else {
-            hit = func_8002D320(0, scr, &SPAD->unkA8[id][i],
-                                r, rec->unk_0E);
+            hit = func_8002D320(0, scr, &SPAD->unkA8[id][i], r, rec->unk_0E);
             if (hit != 0) {
                 if (rec->unk_00 != 0 && a2 != 0) {
-                    if (func_8002D320(1, scr, NULL,
-                                      rec->unk_10,
-                                      rec->unk_12) != 0) {
+                    if (func_8002D320(1, scr, NULL, rec->unk_10, rec->unk_12) !=
+                        0) {
                         hitMask |= 1 << i;
                     }
                 }
@@ -2516,6 +2650,7 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
     scr->unkB4 = seenMask;
     scr->unkC4 = hitMask;
 }
+
 /* Orients a triangle's local frame. The three vertex pointers obj->unk60[0..2]
  * give edge vectors a = v1 - v0 (obj->unkA8) and b = v2 - v0 (obj->unkB8);
  * the GTE outer product n = a x b lands in obj->unkC8. If every
@@ -2560,9 +2695,10 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
     s32 sp_tmp3;
     s32 len_sq;
     s32 xz_sq;
-    /* FAKE: temp holds two values (Ruling 11): n.x*n.x + n.z*n.z of the scaled n
-     * (the squared length fed to the table lookup and the leading-zero count)
-     * and then the square-root table byte. Ablated (2026-10-06): one local per value: score 6. */
+    /* FAKE: temp holds two values (Ruling 11): n.x*n.x + n.z*n.z of the scaled
+     * n (the squared length fed to the table lookup and the leading-zero count)
+     * and then the square-root table byte. Ablated (2026-10-06): one local per
+     * value: score 6. */
     s32 temp;
     s32 nxz_len;
 
@@ -2604,12 +2740,13 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
         "swc2   $27, 8($12)\n"
         :: "r"(&obj->unkC8) : "$12", "memory");
 
-    if ((u32)(obj->unkC8.x + 0x3FFF) < 0x7FFF
-        && (u32)(obj->unkC8.y + 0x3FFF) < 0x7FFF
-        && (u32)(obj->unkC8.z + 0x3FFF) < 0x7FFF) {
-        /* FAKE: len holds two values (Ruling 11): |n|, the square root of len_sq read
-         * by the `< 0x4000` guard, and then |a.xz|, the square root of xz_sq
-         * passed to ratan2 for the pitch. Ablated (2026-10-06): one local per value: score 3. */
+    if ((u32)(obj->unkC8.x + 0x3FFF) < 0x7FFF &&
+        (u32)(obj->unkC8.y + 0x3FFF) < 0x7FFF &&
+        (u32)(obj->unkC8.z + 0x3FFF) < 0x7FFF) {
+        /* FAKE: len holds two values (Ruling 11): |n|, the square root of
+         * len_sq read by the `< 0x4000` guard, and then |a.xz|, the square root
+         * of xz_sq passed to ratan2 for the pitch. Ablated (2026-10-06): one
+         * local per value: score 3. */
         s32 len;
         /* gte_sqr0() -- inline_o.h:1749: square IR1-IR3 (still n). */
         __asm__ volatile(
@@ -2646,13 +2783,13 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
             }
             {
                 s32 shift = 0x16 - (lzcr & ~1);
-                len = (u32)(g_sqrt_table_u8[(u32)len_sq >> shift] << 16) >> (0x13 - ((u32)shift >> 1));
+                len = (u32)(g_sqrt_table_u8[(u32)len_sq >> shift] << 16) >>
+                      (0x13 - ((u32)shift >> 1));
             }
         }
         if ((u32)len < 0x4000) {
             obj->unkF8.vy = 0x800 - ratan2(obj->unkA8.x, obj->unkA8.z);
-            xz_sq = obj->unkA8.x * obj->unkA8.x
-                  + obj->unkA8.z * obj->unkA8.z;
+            xz_sq = obj->unkA8.x * obj->unkA8.x + obj->unkA8.z * obj->unkA8.z;
             if ((u32)xz_sq < 0x400) {
                 len = (u32)g_sqrt_table_u8[xz_sq] >> 3;
             } else {
@@ -2674,7 +2811,8 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
                 }
                 {
                     s32 shift = 0x16 - (lzcr & ~1);
-                    len = (u32)(g_sqrt_table_u8[(u32)xz_sq >> shift] << 16) >> (0x13 - ((u32)shift >> 1));
+                    len = (u32)(g_sqrt_table_u8[(u32)xz_sq >> shift] << 16) >>
+                          (0x13 - ((u32)shift >> 1));
                 }
             }
             obj->unkF8.vx = 0x800 - ratan2(obj->unkA8.y, len);
@@ -2755,8 +2893,7 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
     obj->unkC8.x >>= 6;
     obj->unkC8.y >>= 6;
     obj->unkC8.z >>= 6;
-    temp = obj->unkC8.x * obj->unkC8.x
-           + obj->unkC8.z * obj->unkC8.z;
+    temp = obj->unkC8.x * obj->unkC8.x + obj->unkC8.z * obj->unkC8.z;
     if ((u32)temp < 0x400) {
         nxz_len = (u32)g_sqrt_table_u8[temp] >> 3;
     } else {
@@ -2848,7 +2985,9 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
         :: "r"(&obj->unkB8) : "$12", "memory");
     return 1;
 }
-s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s32 r_sq) {
+
+s32 func_8002D320(
+    s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         SVECTOR *vin;
         Vec3i32 *vout;
@@ -2873,9 +3012,10 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s3
             : : "r"(vout) : "$12", "memory");
     }
     {
-        /* x: four values -- unk100[0].x, then x * x + y * y, then r_sq minus that, then
-         * its square root (the sphere's half-chord along z). Ruling 11. The name stays
-         * because x is the LZC island's operand below. */
+        /* x: four values -- unk100[0].x, then x * x + y * y, then r_sq minus
+         * that, then its square root (the sphere's half-chord along z).
+         * Ruling 11. The name stays because x is the LZC island's operand
+         * below. */
         s32 x;
         s32 y;
         s32 sp_var;
@@ -2888,12 +3028,15 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s3
         s32 neg_threshold = -threshold;
 
         x = obj->unk100[0].x;
-        if (x < neg_threshold || threshold < x) return 0;
+        if (x < neg_threshold || threshold < x)
+            return 0;
         y = obj->unk100[0].y;
-        if (y < neg_threshold || threshold < y) return 0;
+        if (y < neg_threshold || threshold < y)
+            return 0;
 
         x = x * x + y * y;
-        if (r_sq < x) return 0;
+        if (r_sq < x)
+            return 0;
         x = r_sq - x;
 
         if ((u32)x < 0x400) {
@@ -2933,15 +3076,17 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s3
             max_z = bz;
         }
         z = obj->unk100[0].z;
-        if (max_z < z - x) return 0;
+        if (max_z < z - x)
+            return 0;
         if (z + x < min_z) {
-            ret = 1; /* FAKE: dead store -- overwritten by `ret = 0;` on the
-                      * next statement, never read.  Mechanism: jump.c's
-                      * store-flag if-conversion requires SINGLE-SET 0/1 arms;
-                      * the two-set arm keeps target's unfolded diamond (bnez;
-                      * move v0,zero delay; addiu v0,1) instead of folding the
-                      * pair to `slt` + `xori v0,v0,1`.  Family:
-                      * dead-store-fake-exception. */
+            /* FAKE: dead store -- overwritten by `ret = 0;` on the
+             * next statement, never read.  Mechanism: jump.c's
+             * store-flag if-conversion requires SINGLE-SET 0/1 arms;
+             * the two-set arm keeps target's unfolded diamond (bnez;
+             * move v0,zero delay; addiu v0,1) instead of folding the
+             * pair to `slt` + `xori v0,v0,1`.  Family:
+             * dead-store-fake-exception. */
+            ret = 1;
             ret = 0;
         } else {
             ret = 1;
@@ -2949,6 +3094,7 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s3
         return ret;
     }
 }
+
 /* func_8002D518 - segment/circle test in x/z. Returns 0 when p1 and p2 lie
  * on the same side outside the +-threshold band in x or in z; otherwise solves
  * the quadratic for where the segment p1 -> p2 meets the circle of squared
@@ -2971,12 +3117,16 @@ s32 func_8002D518(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
     x2 = p2[0];
 
     if (x1 < x2) {
-        if (x2 < -threshold) return 0;
-        if (threshold >= x1) goto z_check;
+        if (x2 < -threshold)
+            return 0;
+        if (threshold >= x1)
+            goto z_check;
         return 0;
     } else {
-        if (x1 < -threshold) return 0;
-        if (threshold < x2) return 0;
+        if (x1 < -threshold)
+            return 0;
+        if (threshold < x2)
+            return 0;
     }
 
 z_check:
@@ -2984,123 +3134,116 @@ z_check:
     z2 = p2[1];
 
     if (z1 < z2) {
-        if (z2 < -threshold) return 0;
-        if (threshold >= z1) goto dist_calc;
+        if (z2 < -threshold)
+            return 0;
+        if (threshold >= z1)
+            goto dist_calc;
         return 0;
     } else {
-        if (z1 < -threshold) return 0;
-        if (threshold < z2) return 0;
+        if (z1 < -threshold)
+            return 0;
+        if (threshold < z2)
+            return 0;
     }
 
-dist_calc:
-    {
-        s32 ax = p2[0] - p1[0];
-        s32 x1r = p1[0];
-        s32 az = p2[1] - p1[1];
-        s32 z1r = p1[1];
+dist_calc: {
+    s32 ax = p2[0] - p1[0];
+    s32 x1r = p1[0];
+    s32 az = p2[1] - p1[1];
+    s32 z1r = p1[1];
 
-        s32 ax_sq = ax * ax;
-        s32 az_sq = az * az;
-        s32 cx = ax * x1r;
-        s32 cz = az * z1r;
-        s32 x1_sq = x1r * x1r;
-        s32 z1_sq = z1r * z1r;
+    s32 ax_sq = ax * ax;
+    s32 az_sq = az * az;
+    s32 cx = ax * x1r;
+    s32 cz = az * z1r;
+    s32 x1_sq = x1r * x1r;
+    s32 z1_sq = z1r * z1r;
 
-        s32 dot2 = (cx + cz) * 2;
-        s32 dot2_9 = dot2 >> 9;
-        s32 c_val = ((x1_sq + z1_sq) - r_sq) >> 9;
-        s32 dist_sq = ax_sq + az_sq;
+    s32 dot2 = (cx + cz) * 2;
+    s32 dot2_9 = dot2 >> 9;
+    s32 c_val = ((x1_sq + z1_sq) - r_sq) >> 9;
+    s32 dist_sq = ax_sq + az_sq;
 
-        s32 disc = (dot2_9 * dot2_9) - ((dist_sq >> 9) * (c_val << 2));
-        s32 result;
+    s32 disc = (dot2_9 * dot2_9) - ((dist_sq >> 9) * (c_val << 2));
+    s32 result;
 
-        if (disc < 0) {
-            result = 0;
+    if (disc < 0) {
+        result = 0;
+    } else {
+        if ((u32)disc < 0x400u) {
+            disc = g_sqrt_table_u8[disc] >> 3;
         } else {
-            if ((u32)disc < 0x400u) {
-                disc = g_sqrt_table_u8[disc] >> 3;
-            } else {
-                s32 sp_tmp;
-                s32 lzcr;
-                u32 ud;
+            s32 sp_tmp;
+            s32 lzcr;
+            u32 ud;
+            ud = disc;
+            lzcr = 0;
+            if (disc >= 0) {
+                /* FAKE: redundant same-value re-store of the LOCAL `ud`
+                 * (it already holds `disc` on entry to this arm), mechanism:
+                 * cse.c make_regs_eqv - with a SINGLE def cse puts `ud` and
+                 * `disc` into one quantity, rewrites the post-join
+                 * `ud >> shift` read to disc's register and DELETES the copy
+                 * insn outright (no `addu $a0,$a2`). The second def makes the
+                 * pseudo multiply-defined across the join, invalidating that
+                 * equivalence, so both copies survive cse and global_alloc
+                 * lands them in target's $a2/$a0 pair; the redundant store
+                 * itself is dropped before final output (zero emitted
+                 * bytes). */
                 ud = disc;
-                lzcr = 0;
-                if (disc >= 0) {
-                    /* FAKE: redundant same-value re-store of the LOCAL `ud`
-                     * (it already holds `disc` on entry to this arm), mechanism:
-                     * cse.c make_regs_eqv - with a SINGLE def cse puts `ud` and
-                     * `disc` into one quantity, rewrites the post-join
-                     * `ud >> shift` read to disc's register and DELETES the copy
-                     * insn outright (no `addu $a0,$a2`). The second def makes the pseudo
-                     * multiply-defined across the join, invalidating that
-                     * equivalence, so both copies survive cse and global_alloc
-                     * lands them in target's $a2/$a0 pair; the redundant store
-                     * itself is dropped before final output (zero emitted
-                     * bytes). */
-                    ud = disc;
-                    __asm__ volatile(
-                        "addu   $t4, %1, $zero\n"
-                        "mtc2   $t4, $30\n"
-                        "nop\n"
-                        "nop\n"
-                        "addu   $t4, $sp, $zero\n"
-                        "swc2   $31, 0($t4)\n"
-                        : "=m"(sp_tmp)
-                        : "r"(ud)
-                        : "$12");
-                    lzcr = sp_tmp;
-                }
-                {
-                    s32 shift = 0x16 - (lzcr & ~1);
-                    s32 tval = g_sqrt_table_u8[ud >> shift];
-                    s32 half = (u32)shift >> 1;
-                    disc = (u32)(tval << 16) >> (0x13 - half);
-                }
+                __asm__ volatile(
+                    "addu   $t4, %1, $zero\n"
+                    "mtc2   $t4, $30\n"
+                    "nop\n"
+                    "nop\n"
+                    "addu   $t4, $sp, $zero\n"
+                    "swc2   $31, 0($t4)\n"
+                    : "=m"(sp_tmp)
+                    : "r"(ud)
+                    : "$12");
+                lzcr = sp_tmp;
             }
             {
-                s32 neg_b = -dot2;
-                s32 num1;
-                s32 denom;
-                s32 t1_val;
-                s32 t2_val;
-                disc <<= 9;
-                num1 = (neg_b + disc) << 8;
-                denom = dist_sq * 2;
-                t1_val = num1 / denom;
-                t2_val = ((neg_b - disc) << 8) / denom;
-
-                {
-                    s32 flag = 0;
-                    if (t1_val >= 0) {
-                        flag = t2_val < 0x101;
-                    }
-                    result = flag;
-                }
+                s32 shift = 0x16 - (lzcr & ~1);
+                s32 tval = g_sqrt_table_u8[ud >> shift];
+                s32 half = (u32)shift >> 1;
+                disc = (u32)(tval << 16) >> (0x13 - half);
             }
         }
-        return result;
+        {
+            s32 neg_b = -dot2;
+            s32 num1;
+            s32 denom;
+            s32 t1_val;
+            s32 t2_val;
+            disc <<= 9;
+            num1 = (neg_b + disc) << 8;
+            denom = dist_sq * 2;
+            t1_val = num1 / denom;
+            t2_val = ((neg_b - disc) << 8) / denom;
+
+            {
+                s32 flag = 0;
+                if (t1_val >= 0) {
+                    flag = t2_val < 0x101;
+                }
+                result = flag;
+            }
+        }
     }
+    return result;
+}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-s32 func_8002D780(s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq) {
+s32 func_8002D780(
+    s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         obj->unkF8.vx = pos[0] - obj->unk60[0]->x;
         obj->unkF8.vy = pos[1] - obj->unk60[0]->y;
         obj->unkF8.vz = pos[2] - obj->unk60[0]->z;
-        /* gte_ApplyRotMatrix(&obj->unkF8, &obj->unk100[0]) -- gtemac.h 4.3 :354-357 = inline_o.h 4.3 gte_ldv0 :16-20,
-         * gte_rtv0 :426-430 (post-DMPSX word 0x4A486012 for the placeholder 0x0000013f),
+        /* gte_ApplyRotMatrix(&obj->unkF8, &obj->unk100[0]) -- gtemac.h 4.3
+         * :354-357 = inline_o.h 4.3 gte_ldv0 :16-20, gte_rtv0 :426-430
+         * (post-DMPSX word 0x4A486012 for the placeholder 0x0000013f),
          * gte_stlvnl :904-909 */
         __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
@@ -3116,7 +3259,8 @@ s32 func_8002D780(s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_
 
     {
         s32 y = obj->unk100[0].z;
-        if (y < -threshold || threshold < y) return 0;
+        if (y < -threshold || threshold < y)
+            return 0;
     }
 
     {
@@ -3128,10 +3272,12 @@ s32 func_8002D780(s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_
         s32 cz = (z0 + z2) / 3;
         s32 px = obj->unk100[0].x;
         s32 pz = obj->unk100[0].y;
-        /* FAKE: cross_center and cross_point each hold three values, one per side test (Ruling 11):
-         * the 2-D cross product of one edge of the triangle (0,0), (x0,z0), (x2,z2) with the
-         * centroid's offset (cross_center) and with the query point's offset (cross_point), for
-         * the edge (0,0)-(x0,z0), then (0,0)-(x2,z2), then (x0,z0)-(x2,z2). Ablated (2026-10-06): a pair per side test: score 36. */
+        /* FAKE: cross_center and cross_point each hold three values, one per
+         * side test (Ruling 11): the 2-D cross product of one edge of the
+         * triangle (0,0), (x0,z0), (x2,z2) with the centroid's offset
+         * (cross_center) and with the query point's offset (cross_point), for
+         * the edge (0,0)-(x0,z0), then (0,0)-(x2,z2), then (x0,z0)-(x2,z2).
+         * Ablated (2026-10-06): a pair per side test: score 36. */
         s32 cross_center = z0 * cx - x0 * cz;
         s32 cross_point = z0 * px - x0 * pz;
 
@@ -3139,22 +3285,27 @@ s32 func_8002D780(s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_
             cross_center = z2 * cx - x2 * cz;
             cross_point = z2 * px - x2 * pz;
             if ((cross_center ^ cross_point) >= 0) {
-                /* FAKE: ax holds cx - x0 ahead of the dx set-up; in the product the subtraction
-                 * moves (score 2). */
+                /* FAKE: ax holds cx - x0 ahead of the dx set-up; in the product
+                 * the subtraction moves (score 2). */
                 s32 ax = cx - x0;
                 s32 dx;
-                /* FAKE: the third edge test's edge difference z2 - z0 is staged through the
-                 * `flag` parameter (its own job, the mode test at entry, is finished: nothing
-                 * reads `flag` after `if (flag == 0)`, and this value is consumed by the two
-                 * products below and never needed again), instead of through a fresh
-                 * block-local, mechanism: local-alloc.c local_alloc admission (local-alloc.c:472
-                 * REG_BASIC_BLOCK >= 0 && REG_N_DEATHS == 1) - a pseudo referenced in two basic
-                 * blocks (the entry test and this block) is left to global.c, so block 7's
-                 * local-alloc quantity table seats dx first in $v1 and global_alloc, reaching the
-                 * parameter's pseudo third in allocno order, seats it in $a0, the lowest free
-                 * register at that turn (the entry copy from $a0 is folded away by combine AFTER
-                 * flow has fixed the pseudo's REG_BASIC_BLOCK as global) -- the target's seats;
-                 * a block-local dz ties dx in qty_compare_1 and takes $v1 itself. Ablated (2026-10-06): a block-local dz: score 9. */
+                /* FAKE: the third edge test's edge difference z2 - z0 is staged
+                 * through the `flag` parameter (its own job, the mode test at
+                 * entry, is finished: nothing reads `flag` after `if (flag ==
+                 * 0)`, and this value is consumed by the two products below and
+                 * never needed again), instead of through a fresh block-local,
+                 * mechanism: local-alloc.c local_alloc admission
+                 * (local-alloc.c:472 REG_BASIC_BLOCK >= 0 && REG_N_DEATHS == 1)
+                 * - a pseudo referenced in two basic blocks (the entry test and
+                 * this block) is left to global.c, so block 7's local-alloc
+                 * quantity table seats dx first in $v1 and global_alloc,
+                 * reaching the parameter's pseudo third in allocno order, seats
+                 * it in $a0, the lowest free register at that turn (the entry
+                 * copy from $a0 is folded away by combine AFTER flow has fixed
+                 * the pseudo's REG_BASIC_BLOCK as global) -- the target's
+                 * seats; a block-local dz ties dx in qty_compare_1 and takes
+                 * $v1 itself. Ablated (2026-10-06): a block-local dz: score 9.
+                 */
                 flag = z2 - z0;
                 dx = x2 - x0;
                 cross_center = (flag * ax) - (dx * (cz - z0));
@@ -3181,17 +3332,21 @@ s32 func_8002D780(s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_
             s32 lzcr = 0;
             if (dist >= 0) {
                 /* FAKE: same-value re-store of the local `m`, mechanism: cse.c
-                 * invalidate_skipped_block - cse_end_of_basic_block follows the `dist < 0`
-                 * skip over this arm (skip_blocks) and only a SET of `m` inside the skipped
-                 * arm invalidates the m == dist equivalence made by the copy above, so the
-                 * `(u32)m >> shift` read below keeps reading the $a0 copy instead of being
-                 * canonicalised to dist ($s1); without it the srlv reads $s1. The copy
-                 * itself is the target's `addu $a0,$s1,$zero` at 0x8002D980 (the delay slot
-                 * of the `dist < 0x400` branch), and the sibling func_8002D518 in this file
-                 * ships the same re-store of its `ud` copy. Ablated (2026-10-06): without the re-store: score 4. */
+                 * invalidate_skipped_block - cse_end_of_basic_block follows the
+                 * `dist < 0` skip over this arm (skip_blocks) and only a SET of
+                 * `m` inside the skipped arm invalidates the m == dist
+                 * equivalence made by the copy above, so the
+                 * `(u32)m >> shift` read below keeps reading the $a0 copy
+                 * instead of being canonicalised to dist ($s1); without it the
+                 * srlv reads $s1. The copy itself is the target's `addu
+                 * $a0,$s1,$zero` at 0x8002D980 (the delay slot of the `dist <
+                 * 0x400` branch), and the sibling func_8002D518 in this file
+                 * ships the same re-store of its `ud` copy. Ablated
+                 * (2026-10-06): without the re-store: score 4. */
                 m = dist;
-                /* gte_Lzc(m, &sp_var) -- gtemac.h 4.3 :174-178 = inline_o.h 4.3 gte_ldlzc :207-210,
-                 * gte_nop :1095-1097 (x2), gte_stlzc :1074-1077 */
+                /* gte_Lzc(m, &sp_var) -- gtemac.h 4.3 :174-178 = inline_o.h 4.3
+                 * gte_ldlzc :207-210, gte_nop :1095-1097 (x2), gte_stlzc
+                 * :1074-1077 */
                 __asm__ volatile ("move  $12,%0": :"r"(m):"$12","$13","$14","$15","memory");
                 __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -3202,7 +3357,8 @@ s32 func_8002D780(s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_
             }
             {
                 s32 shift = 0x16 - (lzcr & ~1);
-                sqrt_val = (u32)(g_sqrt_table_u8[(u32)m >> shift] << 16) >> (0x13 - ((u32)shift >> 1));
+                sqrt_val = (u32)(g_sqrt_table_u8[(u32)m >> shift] << 16) >>
+                           (0x13 - ((u32)shift >> 1));
             }
         }
 
@@ -3212,22 +3368,27 @@ s32 func_8002D780(s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_
         p118->y = obj->unkA8.y - obj->unk100[0].y;
         p124->x = obj->unkB8.x - obj->unk100[0].x;
         p124->y = obj->unkB8.y - obj->unk100[0].y;
-        if (func_8002D518(sqrt_val, dist, (s32 *)p118, (s32 *)p124) != 0) return 1;
+        if (func_8002D518(sqrt_val, dist, (s32 *)p118, (s32 *)p124) != 0)
+            return 1;
 
         p10C = &obj->unk100[1];
         p10C->x = -obj->unk100[0].x;
         p10C->y = -obj->unk100[0].y;
-        if (func_8002D518(sqrt_val, dist, (s32 *)p10C, (s32 *)p118) != 0) return 1;
+        if (func_8002D518(sqrt_val, dist, (s32 *)p10C, (s32 *)p118) != 0)
+            return 1;
 
-        if (func_8002D518(sqrt_val, dist, (s32 *)p10C, (s32 *)p124) != 0) return 1;
+        if (func_8002D518(sqrt_val, dist, (s32 *)p10C, (s32 *)p124) != 0)
+            return 1;
         return 0;
     }
 }
+
 /* func_8002DAD0 -- canonical GTE islands and C body.
  * Owner cluster grant: tools/grinder/owner_cluster_grants.txt.
  * The LZC load and store are separate Sony macro statements. GCC supplies
  * the &sp_tmp register and materializes its stack address outside the island.
- * Provenance: pre-slim-2026-10-01:memory/grind/func_8002DAD0/psyq_inline_o_provenance.md.
+ * Provenance:
+ * pre-slim-2026-10-01:memory/grind/func_8002DAD0/psyq_inline_o_provenance.md.
  */
 s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     MATRIX *mat;
@@ -3247,7 +3408,8 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
      * equivalent to (`move $12,%0` · `lw $13,($12)` · `lw $14,4($12)` ·
      * `ctc2 $13,$0` · `lw $15,8($12)` · `ctc2 $14,$2` · `ctc2 $15,$4`).
      * Loads the OP diagonal (RT11/RT22/RT33) into cop2 control regs
-     * $0/$2/$4 from vecA. Cluster membership: [[cop2-addressing-preamble-cluster]]. */
+     * $0/$2/$4 from vecA. Cluster membership:
+     * [[cop2-addressing-preamble-cluster]]. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -3309,7 +3471,8 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
      * natural ascending pick of $a0 that the target uses; a variable
      * referenced in more than one basic block is a GLOBAL allocno
      * (reg_renumber == -1 during global_conflicts), so no preference is
-     * stamped at all and dist_sq lands in $a0. Ablated (2026-10-06): a block-local dz: score 6. */
+     * stamped at all and dist_sq lands in $a0. Ablated (2026-10-06): a
+     * block-local dz: score 6. */
     dist = obj->unkC8.z;
     dist >>= 6;
     dist_sq = obj->unkC8.x * obj->unkC8.x + dist * dist;
@@ -3323,10 +3486,11 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
             /* Sony PsyQ macro gte_Lzc(r1,r2) - gtemac.h:174-178, whose
              * body is gte_ldlzc (inline_o.h:207-211) + 2x gte_nop
              * (inline_o.h:1095) + gte_stlzc (inline_o.h:1074-1077), each
-             * expanded to equivalent instructions: `move $12,%0` · `mtc2 $12,$30` · `nop` ·
-             * `nop` · `move $12,%0` · `swc2 $31,($12)`. The second
-             * `move $12,%0` takes &sp_tmp through an r operand. GCC
-             * materialises its stack address before this island. LZCS in, LZCR out. */
+             * expanded to equivalent instructions: `move $12,%0` · `mtc2
+             * $12,$30` · `nop` · `nop` · `move $12,%0` · `swc2 $31,($12)`. The
+             * second `move $12,%0` takes &sp_tmp through an r operand. GCC
+             * materialises its stack address before this island. LZCS in, LZCR
+             * out. */
             __asm__ volatile(
                 "addu   $t4, %0, $zero\n"
                 "mtc2   $t4, $30\n"
@@ -3343,7 +3507,8 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
         }
         {
             s32 shift = 0x16 - (lzcr & ~1);
-            dist = (u32)(g_sqrt_table_u8[(u32)dist_sq >> shift] << 16) >> (0x13 - ((u32)shift >> 1));
+            dist = (u32)(g_sqrt_table_u8[(u32)dist_sq >> shift] << 16) >>
+                   (0x13 - ((u32)shift >> 1));
         }
     }
 
@@ -3364,9 +3529,9 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     RotMatrixX(obj->unkF8.vx, mat);
 
     /* Sony PsyQ DMPSX macro gte_SetRotMatrix(r1) - inline_o.h:272-284,
-     * expanded to equivalent instructions (all 11 instructions, including the $13/$14 re-use
-     * order): loads the 5 packed rotation-matrix words at r into cop2
-     * control regs $0..$4. */
+     * expanded to equivalent instructions (all 11 instructions, including the
+     * $13/$14 re-use order): loads the 5 packed rotation-matrix words at r into
+     * cop2 control regs $0..$4. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -3440,18 +3605,17 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
  * macro, character for character (engine/gtemacro.py PINNED): inline_o.h
  * gte_ldv0 :16-20, gte_rtv0 :426-430, gte_stlvnl :904-909, and gtemac.h
  * gte_ApplyRotMatrix :354-357. One deviation: gte_rtv0's DMPSX placeholder
- * `.word 0x0000013f` is carried as the post-DMPSX word 0x4A486012 (no DMPSX pass
- * in this build; owner-granted, tools/grinder/owner_cluster_grants.txt).
+ * `.word 0x0000013f` is carried as the post-DMPSX word 0x4A486012 (no DMPSX
+ * pass in this build; owner-granted, tools/grinder/owner_cluster_grants.txt).
  * cross_a / cross_b: Ruling 11 (see their declaration). */
 extern s32 D_800A314C;
 
 /* Rotates the three points p0/p1/p2 (relative to the origin) by the current GTE
- * rotation matrix, cuts the rotated triangle with the plane z = 0, and returns 1
- * if the resulting segment (x1,y1)-(x2,y2) touches the triangle (0,0) / A / B in
- * the x-y plane: either endpoint inside it (same side of every edge as the
+ * rotation matrix, cuts the rotated triangle with the plane z = 0, and returns
+ * 1 if the resulting segment (x1,y1)-(x2,y2) touches the triangle (0,0) / A / B
+ * in the x-y plane: either endpoint inside it (same side of every edge as the
  * centroid), or the segment crossing one of its edges. */
-s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2)
-{
+s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2) {
     s32 i;
     s32 max_i;
     s32 min_i;
@@ -3473,7 +3637,8 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2)
      * for the second. Ruling 11 (ordinary-c-judge-decidable.md). */
     s32 cross_a;
     s32 cross_b;
-    s32 cross_ab2; /* edge A-B x ((x2,y2) - A): its own value, see ruling11.md */
+    /* edge A-B x ((x2,y2) - A): its own value, see ruling11.md */
+    s32 cross_ab2;
 
     obj->unkF8.vx = p0->x - obj->unk60[0]->x;
     obj->unkF8.vy = p0->y - obj->unk60[0]->y;
@@ -3555,8 +3720,14 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2)
         D_800A314C++;
         dz_a = 1;
     }
-    x1 = obj->unk118[min_i].x + (-obj->unk118[min_i].z * (obj->unk118[max_i].x - obj->unk118[min_i].x)) / dz_a;
-    y1 = obj->unk118[min_i].y + (-obj->unk118[min_i].z * (obj->unk118[max_i].y - obj->unk118[min_i].y)) / dz_a;
+    x1 = obj->unk118[min_i].x +
+         (-obj->unk118[min_i].z *
+          (obj->unk118[max_i].x - obj->unk118[min_i].x)) /
+             dz_a;
+    y1 = obj->unk118[min_i].y +
+         (-obj->unk118[min_i].z *
+          (obj->unk118[max_i].y - obj->unk118[min_i].y)) /
+             dz_a;
 
     /* where the edge through the middle point crosses z = 0 */
     mid_i = 3 - min_i - max_i;
@@ -3566,16 +3737,28 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2)
             D_800A314C++;
             dz_b = 1;
         }
-        x2 = obj->unk118[min_i].x + (-obj->unk118[min_i].z * (obj->unk118[mid_i].x - obj->unk118[min_i].x)) / dz_b;
-        y2 = obj->unk118[min_i].y + (-obj->unk118[min_i].z * (obj->unk118[mid_i].y - obj->unk118[min_i].y)) / dz_b;
+        x2 = obj->unk118[min_i].x +
+             (-obj->unk118[min_i].z *
+              (obj->unk118[mid_i].x - obj->unk118[min_i].x)) /
+                 dz_b;
+        y2 = obj->unk118[min_i].y +
+             (-obj->unk118[min_i].z *
+              (obj->unk118[mid_i].y - obj->unk118[min_i].y)) /
+                 dz_b;
     } else {
         dz_b = obj->unk118[max_i].z - obj->unk118[mid_i].z;
         if (dz_b == 0) {
             D_800A314C++;
             dz_b = 1;
         }
-        x2 = obj->unk118[mid_i].x + (-obj->unk118[mid_i].z * (obj->unk118[max_i].x - obj->unk118[mid_i].x)) / dz_b;
-        y2 = obj->unk118[mid_i].y + (-obj->unk118[mid_i].z * (obj->unk118[max_i].y - obj->unk118[mid_i].y)) / dz_b;
+        x2 = obj->unk118[mid_i].x +
+             (-obj->unk118[mid_i].z *
+              (obj->unk118[max_i].x - obj->unk118[mid_i].x)) /
+                 dz_b;
+        y2 = obj->unk118[mid_i].y +
+             (-obj->unk118[mid_i].z *
+              (obj->unk118[max_i].y - obj->unk118[mid_i].y)) /
+                 dz_b;
     }
 
     cx = (obj->unkA8.x + obj->unkB8.x) / 3;
@@ -3588,8 +3771,10 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2)
         cross_a = obj->unkB8.y * cx - obj->unkB8.x * cy;
         cross_b = obj->unkB8.y * x1 - obj->unkB8.x * y1;
         if ((cross_a ^ cross_b) >= 0) {
-            cross_a = (obj->unkB8.y - obj->unkA8.y) * (cx - obj->unkA8.x) - (obj->unkB8.x - obj->unkA8.x) * (cy - obj->unkA8.y);
-            cross_b = (obj->unkB8.y - obj->unkA8.y) * (x1 - obj->unkA8.x) - (obj->unkB8.x - obj->unkA8.x) * (y1 - obj->unkA8.y);
+            cross_a = (obj->unkB8.y - obj->unkA8.y) * (cx - obj->unkA8.x) -
+                      (obj->unkB8.x - obj->unkA8.x) * (cy - obj->unkA8.y);
+            cross_b = (obj->unkB8.y - obj->unkA8.y) * (x1 - obj->unkA8.x) -
+                      (obj->unkB8.x - obj->unkA8.x) * (y1 - obj->unkA8.y);
             if ((cross_a ^ cross_b) >= 0) {
                 return 1;
             }
@@ -3602,8 +3787,10 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2)
         cross_a = obj->unkB8.y * cx - obj->unkB8.x * cy;
         cross_b = obj->unkB8.y * x2 - obj->unkB8.x * y2;
         if ((cross_a ^ cross_b) >= 0) {
-            cross_a = (obj->unkB8.y - obj->unkA8.y) * (cx - obj->unkA8.x) - (obj->unkB8.x - obj->unkA8.x) * (cy - obj->unkA8.y);
-            cross_b = (obj->unkB8.y - obj->unkA8.y) * (x2 - obj->unkA8.x) - (obj->unkB8.x - obj->unkA8.x) * (y2 - obj->unkA8.y);
+            cross_a = (obj->unkB8.y - obj->unkA8.y) * (cx - obj->unkA8.x) -
+                      (obj->unkB8.x - obj->unkA8.x) * (cy - obj->unkA8.y);
+            cross_b = (obj->unkB8.y - obj->unkA8.y) * (x2 - obj->unkA8.x) -
+                      (obj->unkB8.x - obj->unkA8.x) * (y2 - obj->unkA8.y);
             if ((cross_a ^ cross_b) >= 0) {
                 return 1;
             }
@@ -3613,7 +3800,8 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2)
     cross_a = obj->unkA8.y * x1 - obj->unkA8.x * y1;
     cross_b = obj->unkA8.y * x2 - obj->unkA8.x * y2;
     if ((cross_a ^ cross_b) >= 0) {
-        cross_a = (y2 - y1) * (obj->unkA8.x - x1) - (x2 - x1) * (obj->unkA8.y - y1);
+        cross_a =
+            (y2 - y1) * (obj->unkA8.x - x1) - (x2 - x1) * (obj->unkA8.y - y1);
         cross_b = (y2 - y1) * -x1 - (x2 - x1) * -y1;
         if ((cross_a ^ cross_b) >= 0) {
             return 1;
@@ -3623,32 +3811,37 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2)
     cross_a = obj->unkB8.y * x1 - obj->unkB8.x * y1;
     cross_b = obj->unkB8.y * x2 - obj->unkB8.x * y2;
     if ((cross_a ^ cross_b) >= 0) {
-        cross_a = (y2 - y1) * (obj->unkB8.x - x1) - (x2 - x1) * (obj->unkB8.y - y1);
+        cross_a =
+            (y2 - y1) * (obj->unkB8.x - x1) - (x2 - x1) * (obj->unkB8.y - y1);
         cross_b = (y2 - y1) * -x1 - (x2 - x1) * -y1;
         if ((cross_a ^ cross_b) >= 0) {
             return 1;
         }
     }
     /* the segment against edge A-B */
-    cross_a = (obj->unkB8.y - obj->unkA8.y) * (x1 - obj->unkA8.x) - (obj->unkB8.x - obj->unkA8.x) * (y1 - obj->unkA8.y);
-    cross_ab2 = (obj->unkB8.y - obj->unkA8.y) * (x2 - obj->unkA8.x) - (obj->unkB8.x - obj->unkA8.x) * (y2 - obj->unkA8.y);
+    cross_a = (obj->unkB8.y - obj->unkA8.y) * (x1 - obj->unkA8.x) -
+              (obj->unkB8.x - obj->unkA8.x) * (y1 - obj->unkA8.y);
+    cross_ab2 = (obj->unkB8.y - obj->unkA8.y) * (x2 - obj->unkA8.x) -
+                (obj->unkB8.x - obj->unkA8.x) * (y2 - obj->unkA8.y);
     if ((cross_a ^ cross_ab2) >= 0) {
-        cross_a = (y2 - y1) * (obj->unkA8.x - x1) - (x2 - x1) * (obj->unkA8.y - y1);
-        cross_b = (y2 - y1) * (obj->unkB8.x - x1) - (x2 - x1) * (obj->unkB8.y - y1);
+        cross_a =
+            (y2 - y1) * (obj->unkA8.x - x1) - (x2 - x1) * (obj->unkA8.y - y1);
+        cross_b =
+            (y2 - y1) * (obj->unkB8.x - x1) - (x2 - x1) * (obj->unkB8.y - y1);
         if ((cross_a ^ cross_b) >= 0) {
             return 1;
         }
     }
     return 0;
 }
+
 /* Point-in-triangle test: is arg3 on the same side of each triangle edge as
  * the centroid? For each of the three edges (arg0->arg1, arg0->arg2,
  * arg1->arg2) the 2D cross product of the edge vector with the centroid
  * offset and with the query-point offset must have the same sign; the sign
  * agreement is tested as `(cc ^ cp) >= 0`. Same idiom as the triangle test
  * inside func_8002D780 in this file. */
-s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3)
-{
+s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
     s32 center_x = ((arg0[0] + arg1[0]) + arg2[0]) / 3;
     s32 center_z = ((arg0[2] + arg1[2]) + arg2[2]) / 3;
     s32 cross_center;
@@ -3657,22 +3850,27 @@ s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3)
     {
         s32 dz = arg1[2] - arg0[2];
         s32 dx = arg1[0] - arg0[0];
-        cross_center = (dz * (center_x - arg0[0])) - (dx * (center_z - arg0[2]));
+        cross_center =
+            (dz * (center_x - arg0[0])) - (dx * (center_z - arg0[2]));
         cross_point = (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
     }
     if ((cross_center ^ cross_point) >= 0) {
         {
             s32 dz = arg2[2] - arg0[2];
             s32 dx = arg2[0] - arg0[0];
-            cross_center = (dz * (center_x - arg0[0])) - (dx * (center_z - arg0[2]));
-            cross_point = (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
+            cross_center =
+                (dz * (center_x - arg0[0])) - (dx * (center_z - arg0[2]));
+            cross_point =
+                (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
         }
         if ((cross_center ^ cross_point) >= 0) {
             {
                 s32 dz = arg2[2] - arg1[2];
                 s32 dx = arg2[0] - arg1[0];
-                cross_center = (dz * (center_x - arg1[0])) - (dx * (center_z - arg1[2]));
-                cross_point = (dz * (arg3[0] - arg1[0])) - (dx * (arg3[2] - arg1[2]));
+                cross_center =
+                    (dz * (center_x - arg1[0])) - (dx * (center_z - arg1[2]));
+                cross_point =
+                    (dz * (arg3[0] - arg1[0])) - (dx * (arg3[2] - arg1[2]));
             }
             if ((cross_center ^ cross_point) >= 0) {
                 return 1;
@@ -3681,6 +3879,7 @@ s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3)
     }
     return 0;
 }
+
 void func_8002E838(Unk1F8002B8Rec *scr) {
     s32 sp_tmp;
     MATRIX *mat;
@@ -3693,8 +3892,7 @@ void func_8002E838(Unk1F8002B8Rec *scr) {
     scr->unkA8.y = scr->unk60[1]->y - scr->unk60[0]->y;
     scr->unkA8.z = scr->unk60[1]->z - scr->unk60[0]->z;
     angle = ratan2(scr->unkA8.x, scr->unkA8.z);
-    dist_sq = scr->unkA8.x * scr->unkA8.x
-            + scr->unkA8.z * scr->unkA8.z;
+    dist_sq = scr->unkA8.x * scr->unkA8.x + scr->unkA8.z * scr->unkA8.z;
     scr->unkF8.vy = 0x800 - angle;
 
     if ((u32)dist_sq < 0x400) {
@@ -3783,6 +3981,7 @@ void func_8002E838(Unk1F8002B8Rec *scr) {
         "swc2   $27, 8($12)\n"
         :: "r"(vec) : "$12", "memory");
 }
+
 s32 func_8002EA24(Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq) {
     SVECTOR *vin;
     Vec3i32 *vout;
@@ -3808,9 +4007,9 @@ s32 func_8002EA24(Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq) {
 
     {
         s32 y;
-        /* a0_var: two values -- r_sq - (x * x + y * y), then its square root (the sphere's
-         * half-chord along z). Ruling 11. The name stays because a0_var is the LZC island's
-         * operand below. */
+        /* a0_var: two values -- r_sq - (x * x + y * y), then its square root
+         * (the sphere's half-chord along z). Ruling 11. The name stays because
+         * a0_var is the LZC island's operand below. */
         s32 a0_var;
         s32 sp_var;
         s32 min_z;
@@ -3822,12 +4021,15 @@ s32 func_8002EA24(Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq) {
         s32 sq;
 
         x = scr->unk100[0].x;
-        if (x < neg_threshold || threshold < x) return 0;
+        if (x < neg_threshold || threshold < x)
+            return 0;
         y = scr->unk100[0].y;
-        if (y < neg_threshold || threshold < y) return 0;
+        if (y < neg_threshold || threshold < y)
+            return 0;
 
         sq = x * x + y * y;
-        if (r_sq < sq) return 0;
+        if (r_sq < sq)
+            return 0;
         a0_var = r_sq - sq;
 
         if ((u32)a0_var < 0x400) {
@@ -3863,7 +4065,8 @@ s32 func_8002EA24(Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq) {
             max_z = az;
         }
         z = scr->unk100[0].z;
-        if (max_z < z - a0_var || z + a0_var < min_z) return 0;
+        if (max_z < z - a0_var || z + a0_var < min_z)
+            return 0;
         return 1;
     }
 }
@@ -3887,7 +4090,8 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     } else {
         s32 lzcr = 0;
         if (dist_sq >= 0) {
-            /* gtemac.h gte_Lzc :174-178 = inline_o.h: gte_ldlzc :207-210, gte_nop :1095-1097, gte_nop :1095-1097, gte_stlzc :1074-1077 */
+            /* gtemac.h gte_Lzc :174-178 = inline_o.h: gte_ldlzc :207-210,
+             * gte_nop :1095-1097, gte_nop :1095-1097, gte_stlzc :1074-1077 */
             __asm__ volatile ("move  $12,%0": :"r"(dist_sq):"$12","$13","$14","$15","memory");
             __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -3898,7 +4102,8 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
         }
         {
             s32 shift = 0x16 - (lzcr & ~1);
-            dist = (u32)(g_sqrt_table_u8[(u32)dist_sq >> shift] << 16) >> (0x13 - ((u32)shift >> 1));
+            dist = (u32)(g_sqrt_table_u8[(u32)dist_sq >> shift] << 16) >>
+                   (0x13 - ((u32)shift >> 1));
         }
     }
 
@@ -3930,9 +4135,10 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     __asm__ volatile ("ctc2  $13,$2": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("ctc2  $14,$3": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory");
-    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word is the
-     * post-DMPSX word .word 0x4A486012 in place of the header's DMPSX placeholder
-     * .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner Q61 per-function grant) */
+    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word
+     * is the post-DMPSX word .word 0x4A486012 in place of the header's DMPSX
+     * placeholder .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner
+     * Q61 per-function grant) */
     __asm__ volatile ("move  $12,%0": :"r"(vec_in):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -3978,9 +4184,10 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     __asm__ volatile ("ctc2  $13,$2": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("ctc2  $14,$3": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory");
-    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word is the
-     * post-DMPSX word .word 0x4A486012 in place of the header's DMPSX placeholder
-     * .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner Q61 per-function grant) */
+    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word
+     * is the post-DMPSX word .word 0x4A486012 in place of the header's DMPSX
+     * placeholder .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner
+     * Q61 per-function grant) */
     __asm__ volatile ("move  $12,%0": :"r"(vec):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -3997,6 +4204,7 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
 }
+
 void func_8002EECC(void *arg0, void *arg1) {
     MATRIX *src = arg0;
     MATRIX *dst = arg1;
@@ -4016,33 +4224,58 @@ void func_8002EECC(void *arg0, void *arg1) {
     temp_a2 = (temp_t2 * temp_t1) - (temp_t0 * temp_a3);
     temp_v1 = src->m[0][1];
     temp_v0 = src->m[0][2];
-    temp_v1_2 = ((src->m[0][0] * (temp_a2 >> 0xC)) + (src->m[1][0] * (((temp_v1 * temp_a3) - (temp_v0 * temp_t1)) >> 0xC)) + (src->m[2][0] * (((temp_v0 * temp_t0) - (temp_v1 * temp_t2)) >> 0xC))) >> 0xC;
+    temp_v1_2 =
+        ((src->m[0][0] * (temp_a2 >> 0xC)) +
+         (src->m[1][0] * (((temp_v1 * temp_a3) - (temp_v0 * temp_t1)) >> 0xC)) +
+         (src->m[2][0] *
+          (((temp_v0 * temp_t0) - (temp_v1 * temp_t2)) >> 0xC))) >>
+        0xC;
     dst->m[0][0] = (temp_a2 / temp_v1_2);
-    dst->m[0][1] = (((src->m[0][1] * src->m[2][2]) - (src->m[0][2] * src->m[2][1])) / temp_v1_2);
-    dst->m[0][2] = (((src->m[0][2] * src->m[1][1]) - (src->m[0][1] * src->m[1][2])) / temp_v1_2);
-    dst->m[1][0] = (((src->m[1][0] * src->m[2][2]) - (src->m[1][2] * src->m[2][0])) / temp_v1_2);
-    dst->m[1][1] = (((src->m[0][2] * src->m[2][0]) - (src->m[0][0] * src->m[2][2])) / temp_v1_2);
-    dst->m[1][2] = (((src->m[0][0] * src->m[1][2]) - (src->m[0][2] * src->m[1][0])) / temp_v1_2);
-    dst->m[2][0] = (((src->m[1][1] * src->m[2][0]) - (src->m[1][0] * src->m[2][1])) / temp_v1_2);
-    dst->m[2][1] = (((src->m[0][0] * src->m[2][1]) - (src->m[0][1] * src->m[2][0])) / temp_v1_2);
-    dst->m[2][2] = (((src->m[0][1] * src->m[1][0]) - (src->m[0][0] * src->m[1][1])) / temp_v1_2);
+    dst->m[0][1] =
+        (((src->m[0][1] * src->m[2][2]) - (src->m[0][2] * src->m[2][1])) /
+         temp_v1_2);
+    dst->m[0][2] =
+        (((src->m[0][2] * src->m[1][1]) - (src->m[0][1] * src->m[1][2])) /
+         temp_v1_2);
+    dst->m[1][0] =
+        (((src->m[1][0] * src->m[2][2]) - (src->m[1][2] * src->m[2][0])) /
+         temp_v1_2);
+    dst->m[1][1] =
+        (((src->m[0][2] * src->m[2][0]) - (src->m[0][0] * src->m[2][2])) /
+         temp_v1_2);
+    dst->m[1][2] =
+        (((src->m[0][0] * src->m[1][2]) - (src->m[0][2] * src->m[1][0])) /
+         temp_v1_2);
+    dst->m[2][0] =
+        (((src->m[1][1] * src->m[2][0]) - (src->m[1][0] * src->m[2][1])) /
+         temp_v1_2);
+    dst->m[2][1] =
+        (((src->m[0][0] * src->m[2][1]) - (src->m[0][1] * src->m[2][0])) /
+         temp_v1_2);
+    dst->m[2][2] =
+        (((src->m[0][1] * src->m[1][0]) - (src->m[0][0] * src->m[1][1])) /
+         temp_v1_2);
 }
+
 void func_8002F2D0(MATRIX *a0, s16 *a1);
+
 void func_8002F2D0(MATRIX *a0, s16 *a1) {
     MATRIX *m;
     Unk1F8002B8Rec *scr;
     MATRIX *mat;
     Vec3i32 *vec;
     s32 c0, c1, c2;
-    /* work holds two values (Ruling 11): the 3x3 determinant (the divisor of the six
-     * cofactors) and then the square root of i0*i0 + i1*i1 (the ratan2 length). */
+    /* work holds two values (Ruling 11): the 3x3 determinant (the divisor of
+     * the six cofactors) and then the square root of i0*i0 + i1*i1 (the ratan2
+     * length). */
     s32 work;
     s32 d0;
     s32 i0, i1, i2;
     s32 r0, r1, r2;
     s32 ang_z, ang_y;
-    /* temp holds two values (Ruling 11): i0*i0 + i1*i1 (the squared length fed to the
-     * table lookup and the leading-zero count) and then the square-root table byte. */
+    /* temp holds two values (Ruling 11): i0*i0 + i1*i1 (the squared length fed
+     * to the table lookup and the leading-zero count) and then the square-root
+     * table byte. */
     s32 temp;
     s32 sp_tmp;
 
@@ -4069,7 +4302,8 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     } else {
         s32 lzcr = 0;
         if (temp >= 0) {
-            /* gtemac.h gte_Lzc :174-178 = inline_o.h: gte_ldlzc :207-210, gte_nop :1095-1097, gte_nop :1095-1097, gte_stlzc :1074-1077 */
+            /* gtemac.h gte_Lzc :174-178 = inline_o.h: gte_ldlzc :207-210,
+             * gte_nop :1095-1097, gte_nop :1095-1097, gte_stlzc :1074-1077 */
             __asm__ volatile ("move  $12,%0": :"r"(temp):"$12","$13","$14","$15","memory");
             __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -4115,9 +4349,10 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     vec->x = r0;
     vec->y = r1;
     vec->z = r2;
-    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word is the
-     * post-DMPSX word .word 0x4A486012 in place of the header's DMPSX placeholder
-     * .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner Q61 per-function grant) */
+    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word
+     * is the post-DMPSX word .word 0x4A486012 in place of the header's DMPSX
+     * placeholder .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner
+     * Q61 per-function grant) */
     __asm__ volatile ("move  $12,%0": :"r"(vec):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -4138,21 +4373,24 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     a1[1] = -ang_y;
     a1[2] = -ang_z;
 }
+
 void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     MATRIX *m;
     Unk1F8002B8Rec *scr;
     MATRIX *mat;
     Vec3i32 *vec;
     s32 c0, c1, c2;
-    /* work holds two values (Ruling 11): the 3x3 determinant (the divisor of the six
-     * cofactors) and then the square root of i0*i0 + i1*i1 (the ratan2 length). */
+    /* work holds two values (Ruling 11): the 3x3 determinant (the divisor of
+     * the six cofactors) and then the square root of i0*i0 + i1*i1 (the ratan2
+     * length). */
     s32 work;
     s32 d0;
     s32 i0, i1, i2;
     s32 r0, r1, r2;
     s32 ang_z, ang_y;
-    /* temp holds two values (Ruling 11): i0*i0 + i1*i1 (the squared length fed to the
-     * table lookup and the leading-zero count) and then the square-root table byte. */
+    /* temp holds two values (Ruling 11): i0*i0 + i1*i1 (the squared length fed
+     * to the table lookup and the leading-zero count) and then the square-root
+     * table byte. */
     s32 temp;
     s32 sp_tmp;
 
@@ -4193,7 +4431,8 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     } else {
         s32 lzcr = 0;
         if (temp >= 0) {
-            /* gtemac.h gte_Lzc :174-178 = inline_o.h: gte_ldlzc :207-210, gte_nop :1095-1097, gte_nop :1095-1097, gte_stlzc :1074-1077 */
+            /* gtemac.h gte_Lzc :174-178 = inline_o.h: gte_ldlzc :207-210,
+             * gte_nop :1095-1097, gte_nop :1095-1097, gte_stlzc :1074-1077 */
             __asm__ volatile ("move  $12,%0": :"r"(temp):"$12","$13","$14","$15","memory");
             __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -4239,9 +4478,10 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     vec->x = r0;
     vec->y = r1;
     vec->z = r2;
-    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word is the
-     * post-DMPSX word .word 0x4A486012 in place of the header's DMPSX placeholder
-     * .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner Q61 per-function grant) */
+    /* inline_o.h: gte_ldlv0 :95-103, gte_rtv0 :426-430; gte_rtv0's command word
+     * is the post-DMPSX word .word 0x4A486012 in place of the header's DMPSX
+     * placeholder .word 0x0000013f (MVMVA sf=1 mx=rot v=V0 cv=none lm=0; owner
+     * Q61 per-function grant) */
     __asm__ volatile ("move  $12,%0": :"r"(vec):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $14,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("lhu   $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -4262,6 +4502,7 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     angles[1] = -ang_y;
     angles[2] = -ang_z;
 }
+
 s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
     VECTOR *p;
     s32 ret;
@@ -4335,11 +4576,13 @@ s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
     }
     return ret;
 }
+
 s32 func_8002FDB0(Unk80101EC8Record *arg0) {
     LeafPos *pt;
 
-    /* The character's points 2 and 3 relative to its point 1, into the collision record's unkA8 and
-     * unkB8 (0x1F800360 / 0x1F800370, the GTE operands below); the GTE's product lands in unkC8. */
+    /* The character's points 2 and 3 relative to its point 1, into the
+     * collision record's unkA8 and unkB8 (0x1F800360 / 0x1F800370, the GTE
+     * operands below); the GTE's product lands in unkC8. */
     pt = SPAD->unkA8[arg0->index];
     SPAD->unk2B8.rec.unkA8.x = pt[2].x - pt[1].x;
     SPAD->unk2B8.rec.unkA8.y = pt[2].y - pt[1].y;
@@ -4386,16 +4629,16 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
     return 0 < SPAD->unk2B8.rec.unkC8.y;
 }
 
-
-/* func_8002FF20 -- pure-C head + four PsyQ SDK GTE macro islands (gte_SetRotMatrix,
- * gte_ldlv0, gte_rtv0 = cop2 MVMVA .word 0x4A486012, gte_stlvnl), character-identical to
- * the func_800203B4 (src/code6cac.c, inline_asm_canonical.txt:367), func_8002E838 (:373)
- * and func_80031890 (:374) authorized spellings. Each island is the verbatim body of the
- * named Sony PsyQ GTE macro (PsyQ 4.5 inline_c.h) -- cluster condition 3 as clarified by
- * owner Ruling A 2026-09-02 ([[cop2-addressing-preamble-cluster]]). Carrier under the
+/* func_8002FF20 -- pure-C head + four PsyQ SDK GTE macro islands
+ * (gte_SetRotMatrix, gte_ldlv0, gte_rtv0 = cop2 MVMVA .word 0x4A486012,
+ * gte_stlvnl), character-identical to the func_800203B4 (src/code6cac.c,
+ * inline_asm_canonical.txt:367), func_8002E838 (:373) and func_80031890 (:374)
+ * authorized spellings. Each island is the verbatim body of the named Sony PsyQ
+ * GTE macro (PsyQ 4.5 inline_c.h) -- cluster condition 3 as clarified by owner
+ * Ruling A 2026-09-02 ([[cop2-addressing-preamble-cluster]]). Carrier under the
  * 2026-09-01 widened cop2 materialize-then-copy owner grant (registry row
- * tools/grinder/owner_cluster_grants.txt:29): the three $t4 copy sources here are
- * $v0/$v0/$v0. COMPLETED-INLINE-ASM-CANONICAL (inline_asm_canonical.txt).
+ * tools/grinder/owner_cluster_grants.txt:29): the three $t4 copy sources here
+ * are $v0/$v0/$v0. COMPLETED-INLINE-ASM-CANONICAL (inline_asm_canonical.txt).
  * `vec` is ONE named local used by both the gte_ldv0 and gte_stlvnl operands so
  * cse.c materializes `addiu $v0,$s0,0x2C` once and island 3 reuses $v0.
  */
@@ -4451,9 +4694,9 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
         :: "r"(mat_local) : "$12", "$13", "$14", "$15");
     vec = &arg0->pos;
     /* PsyQ 4.5 inline_c.h:101-110 macro gte_ldlv0(r0) --- verbatim macro body:
-     * lhu/lhu/sll/or packs VX0/VY0 (s32 x,y) into one word, mtc2 to $0, lwc2 VZ0
-     * into $1; the 2-cycle GTE load delay is carried as explicit nops (maspsx does
-     * not supply them in the full-build context). */
+     * lhu/lhu/sll/or packs VX0/VY0 (s32 x,y) into one word, mtc2 to $0, lwc2
+     * VZ0 into $1; the 2-cycle GTE load delay is carried as explicit nops
+     * (maspsx does not supply them in the full-build context). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -4483,19 +4726,21 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     arg0->pos.z >>= 1;
 }
 
-/* func_800300B4 -- pure-C body (GTE rotate+translate of the object's local vector, then
- * dispatch) + four PsyQ SDK GTE macro islands (gte_SetRotMatrix, gte_ldlv0,
- * gte_rtv0 = cop2 MVMVA .word 0x4A486012, gte_stlvnl) in the older-SDK `move $12,%0`
- * materialize-then-copy spelling, character-identical to the func_800203B4
- * (src/code6cac.c:1860-1872, inline_asm_canonical.txt:367) authorized islands -- only the
- * operand expression differs (&arg0->pos vs vec). Each island is the verbatim body of the
- * named Sony PsyQ GTE macro (PsyQ Run-time Library Release 4.5 inline_c.h): cluster
- * condition 3 as clarified by owner Ruling A 2026-09-02 ([[cop2-addressing-preamble-cluster]])
- * admits GPR instructions that are the macro's own published text, e.g. `gte_ldlv0`'s
- * `lhu/lhu/sll/or` VX0/VY0 pack (inline_c.h:101-110). Enumerated carrier under the owner
- * cluster grant (registry row tools/grinder/owner_cluster_grants.txt:23);
- * COMPLETED-INLINE-ASM-CANONICAL (inline_asm_canonical.txt).
- * One FAKE: do-while(0) wrap around gte_stlvnl (see the annotation). */
+/* func_800300B4 -- pure-C body (GTE rotate+translate of the object's local
+ * vector, then dispatch) + four PsyQ SDK GTE macro islands (gte_SetRotMatrix,
+ * gte_ldlv0, gte_rtv0 = cop2 MVMVA .word 0x4A486012, gte_stlvnl) in the
+ * older-SDK `move $12,%0` materialize-then-copy spelling, character-identical
+ * to the func_800203B4 (src/code6cac.c:1860-1872, inline_asm_canonical.txt:367)
+ * authorized islands -- only the operand expression differs (&arg0->pos vs
+ * vec). Each island is the verbatim body of the named Sony PsyQ GTE macro (PsyQ
+ * Run-time Library Release 4.5 inline_c.h): cluster condition 3 as clarified by
+ * owner Ruling A 2026-09-02 ([[cop2-addressing-preamble-cluster]]) admits GPR
+ * instructions that are the macro's own published text, e.g. `gte_ldlv0`'s
+ * `lhu/lhu/sll/or` VX0/VY0 pack (inline_c.h:101-110). Enumerated carrier under
+ * the owner cluster grant (registry row
+ * tools/grinder/owner_cluster_grants.txt:23); COMPLETED-INLINE-ASM-CANONICAL
+ * (inline_asm_canonical.txt). One FAKE: do-while(0) wrap around gte_stlvnl (see
+ * the annotation). */
 /* GTE rotate+translate of the object's local vector, then dispatch */
 void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
@@ -4508,9 +4753,10 @@ void func_800300B4(Obj80106A78 *arg0) {
     playerData = game_GetPlayerData(arg0->owner < 1);
     mat = (MATRIX *)playerData[arg0->unk_09];
 
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r) (PsyQ 4.5 inline_c.h) - loads the 5
-     * packed rotation-matrix words at r into cop2 control regs R11R12..R33.
-     * The SDK macro body hardcodes $12-$15 and copies the operand into $12. */
+    /* PsyQ libgte inline macro gte_SetRotMatrix(r) (PsyQ 4.5 inline_c.h) -
+     * loads the 5 packed rotation-matrix words at r into cop2 control regs
+     * R11R12..R33. The SDK macro body hardcodes $12-$15 and copies the operand
+     * into $12. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -4524,11 +4770,12 @@ void func_800300B4(Obj80106A78 *arg0) {
         "ctc2   $14, $3\n"
         "ctc2   $15, $4\n"
         :: "r"(mat) : "$12", "$13", "$14", "$15");
-    /* PsyQ libgte inline macro gte_ldlv0(r) - load the 32-bit VECTOR at r into V0: pack
-     * vx/vy (s32 -> s16 halves) into VXY0 ($0), lwc2 vz into VZ0 ($1). Body verbatim from
-     * PsyQ Run-time Library Release 4.5 inline_c.h:101-110 (lhu/lhu/sll/or/mtc2/lwc2,
-     * clobbers $12,$13) in the older-SDK `move $12,%0` spelling. Then the 2-cycle GTE load
-     * delay and gte_rtv0() (MVMVA sf=1, rotation matrix x V0, no translation). */
+    /* PsyQ libgte inline macro gte_ldlv0(r) - load the 32-bit VECTOR at r into
+     * V0: pack vx/vy (s32 -> s16 halves) into VXY0 ($0), lwc2 vz into VZ0 ($1).
+     * Body verbatim from PsyQ Run-time Library Release 4.5 inline_c.h:101-110
+     * (lhu/lhu/sll/or/mtc2/lwc2, clobbers $12,$13) in the older-SDK `move
+     * $12,%0` spelling. Then the 2-cycle GTE load delay and gte_rtv0() (MVMVA
+     * sf=1, rotation matrix x V0, no translation). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lhu    $14, 4($12)\n"
@@ -4540,12 +4787,16 @@ void func_800300B4(Obj80106A78 *arg0) {
         "nop\n"
         "nop\n"
         :: "r"(&arg0->pos) : "$12", "$13", "$14");
-    /* PsyQ libgte inline macro gte_rtv0() (PsyQ 4.5 inline_c.h) - GTE MVMVA sf=1,
-     * mx=rotation matrix, v=V0, cv=none --- cop2 command 0x0486012. */
+    /* PsyQ libgte inline macro gte_rtv0() (PsyQ 4.5 inline_c.h) - GTE MVMVA
+     * sf=1, mx=rotation matrix, v=V0, cv=none --- cop2 command 0x0486012. */
     __asm__ volatile(".word 0x4A486012");
-    /* PsyQ libgte inline macro gte_stlvnl(r) (PsyQ 4.5 inline_c.h) - store MAC1/MAC2/MAC3
+    /* PsyQ libgte inline macro gte_stlvnl(r) (PsyQ 4.5 inline_c.h) - store
+     * MAC1/MAC2/MAC3
      * ($25/$26/$27) to r. */
-    do { /* FAKE: do-while(0) wrap around gte_stlvnl, mechanism: flow.c loop-note ref weighting (loop_depth doubles the &mac def+asm refs so local-alloc seats it in $s2 ahead of arg0). */
+    /* FAKE: do-while(0) wrap around gte_stlvnl, mechanism: flow.c loop-note ref
+     * weighting (loop_depth doubles the &mac def+asm refs so local-alloc seats
+     * it in $s2 ahead of arg0). */
+    do {
         __asm__ volatile(
             "move   $12, %0\n"
             "swc2   $25, 0($12)\n"
@@ -4566,6 +4817,7 @@ void func_800300B4(Obj80106A78 *arg0) {
     func_80049718(lookup, 1, mac, dir);
     func_800393C8(arg0->slot, lookup, mac, dir);
 }
+
 void func_80030208(void) {
     Obj80106A78 *obj;
     s32 i;
@@ -4594,6 +4846,7 @@ void func_80030208(void) {
         func_800393C8(obj->slot, lookup, &obj->pos, obj->rot);
     }
 }
+
 void func_8003032C(s32 *a0, s16 *a1) {
     s32 angle;
     s16 cos_val;
@@ -4610,7 +4863,8 @@ void func_8003032C(s32 *a0, s16 *a1) {
         rx = cos_val * cos_val; /* FAKE: dead store; without it score 6 */
         vx = *((s32 *)(((u8 *)a0) + 0x44));
         sin_val = Judge[angle & 0xFFF];
-        rx = ((vx * cos_val) + (vx * sin_val)) >> 12; /* FAKE: dead store; without it score 19 */
+        /* FAKE: dead store; without it score 19 */
+        rx = ((vx * cos_val) + (vx * sin_val)) >> 12;
         vz = *((s32 *)(((u8 *)a0) + 0x4C));
         rx = ((vx * cos_val) + (vz * sin_val)) >> 12;
         rz = -((((-vx) * sin_val) + (vz * cos_val)) >> 12);
@@ -4623,6 +4877,7 @@ void func_8003032C(s32 *a0, s16 *a1) {
     } while (0);
     *((s32 *)(((u8 *)a0) + 0x48)) = v48 >> 2;
 }
+
 void func_8003043C(void) {
     s32 i;
 
@@ -4649,7 +4904,6 @@ void func_8003047C(Unk80101EC8Record *a0) {
     D_800A36F2[a0->index] = D_8008E338[a0->unk_0A][0];
 }
 
-
 void func_80030524(void) {
     s32 i = 0;
     do {
@@ -4660,8 +4914,16 @@ void func_80030524(void) {
         }
     } while (++i < 12);
 }
+
 Obj80106A78 *func_80030580(Unk80101EC8Record *arg0, s32 arg1) {
-    /* FAKE: unwritten leading pad (phantom-frame-slot volatile pad local family, owner ruling 2026-08-18; row granted by owner ruling 2026-09-02): reserves the 16 untouched locals bytes the target frame holds beyond our single combine-orphan slot (target vars=24, ours 8; zero ($sp) references in asm/funcs/func_80030580.s). Mechanism: reload alter_reg / get_frame_size counts the never-accessed volatile object and emits no instruction. SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. */
+    /* FAKE: unwritten leading pad (phantom-frame-slot volatile pad local
+     * family, owner ruling 2026-08-18; row granted by owner ruling 2026-09-02):
+     * reserves the 16 untouched locals bytes the target frame holds beyond our
+     * single combine-orphan slot (target vars=24, ours 8; zero ($sp) references
+     * in asm/funcs/func_80030580.s). Mechanism: reload alter_reg /
+     * get_frame_size counts the never-accessed volatile object and emits no
+     * instruction. SOTN-master precedent: volatile u32 pad[4]; // FAKE at
+     * st/sel/stream.c:80. */
     volatile u32 pre_pad[4]; /* !FAKE: without it score 2 */
     Obj80106A78 *obj;
     Tbl8008E194 *tbl;
@@ -4669,7 +4931,8 @@ Obj80106A78 *func_80030580(Unk80101EC8Record *arg0, s32 arg1) {
 
     obj = D_80106A78;
     for (i = 0; i < 12; i++, obj++) {
-        if (obj->kind == -1 && obj->slot == 0xFF) break;
+        if (obj->kind == -1 && obj->slot == 0xFF)
+            break;
     }
     obj->slot = i;
     obj->kind = arg1;
@@ -4716,7 +4979,9 @@ Obj80106A78 *func_80030580(Unk80101EC8Record *arg0, s32 arg1) {
     obj->unk_00 = 0;
     return obj;
 }
+
 extern Obj80106A78 *func_80030580(Unk80101EC8Record *, s32);
+
 s32 func_800307D0(Unk80101EC8Record *a0) {
     s32 count;
     s32 idx;
@@ -4748,8 +5013,13 @@ s32 func_800307D0(Unk80101EC8Record *a0) {
     }
     return id;
 }
-typedef struct { s32 x, y, z; } Vec3_copy;
+
+typedef struct {
+    s32 x, y, z;
+} Vec3_copy;
+
 extern Obj80106A78 *func_80030580(Unk80101EC8Record *, s32);
+
 void func_80030900(Unk80101EC8Record *a0, Vec3i32 *a1) {
     Obj80106A78 *p;
     s32 rnd;
@@ -4775,6 +5045,7 @@ void func_80030900(Unk80101EC8Record *a0, Vec3i32 *a1) {
     }
     a0->unk_330--;
 }
+
 void func_80030A2C(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
     Obj80106A78 *p;
     s32 rnd;
@@ -4796,7 +5067,6 @@ void func_80030A2C(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
     p->unk_07 = 1;
     p->unk_0B = a0->unk_12;
 }
-
 
 s32 func_80030B10(Unk80101EC8Record *arg0, s32 arg1) {
     s32 count = arg0->unk_330;
@@ -4878,6 +5148,7 @@ s32 func_80030BA8(Unk80101EC8Record *arg0) {
     }
     return -1;
 }
+
 void func_80030D04(void) {
     s32 i = 0;
     do {
@@ -4886,8 +5157,9 @@ void func_80030D04(void) {
         }
     } while (++i < 12);
 }
-void func_80030D48(void) {
-}
+
+void func_80030D48(void) {}
+
 s32 math_LerpAngle(s32 arg0, s32 arg1, s32 arg2) {
     arg0 = (arg0 - arg1) & 0xFFF;
     if (arg0 >= 0x800) {
@@ -4895,10 +5167,11 @@ s32 math_LerpAngle(s32 arg0, s32 arg1, s32 arg2) {
     }
     return arg1 + ((arg0 * arg2) >> 12);
 }
-/* Per-frame update of the twelve 0x64-byte records at D_80106A78: velocity turn,
- * spin decay, gravity, collision test through func_8005344C, reflection off the
- * returned normal, func_80032854 cues, and the rest / re-hop logic. Scratch
- * vectors live in its layout of the scratchpad area at 0x1F8002B8
+
+/* Per-frame update of the twelve 0x64-byte records at D_80106A78: velocity
+ * turn, spin decay, gravity, collision test through func_8005344C, reflection
+ * off the returned normal, func_80032854 cues, and the rest / re-hop logic.
+ * Scratch vectors live in its layout of the scratchpad area at 0x1F8002B8
  * (Unk1F8002B8_8005344C). */
 void func_80030D7C(void) {
     Unk1F8002B8_8005344C *scr;
@@ -4917,9 +5190,10 @@ void func_80030D7C(void) {
          * bounce restitution factor D_8008E194[kind].unkA. One local, not two:
          * ordinary-c-judge-decidable.md Ruling 11. */
         s32 work;
-        /* temp holds two values: the ratan2() heading of the velocity (turn block) and
-         * the func_8005344C() collision result (cleared when func_80054434() == 7).
-         * One local, not two: ordinary-c-judge-decidable.md Ruling 11. */
+        /* temp holds two values: the ratan2() heading of the velocity (turn
+         * block) and the func_8005344C() collision result (cleared when
+         * func_80054434() == 7). One local, not two:
+         * ordinary-c-judge-decidable.md Ruling 11. */
         s32 temp;
 
         if (obj->kind == -1) {
@@ -4933,8 +5207,8 @@ void func_80030D7C(void) {
         if (obj->unk_50 != 0) {
             obj->unk_00++;
         }
-        if (obj->kind == 0x10 && obj->unk_50 != 0 && obj->unk_05 == 0
-            && obj->unk_00 >= 14) {
+        if (obj->kind == 0x10 && obj->unk_50 != 0 && obj->unk_05 == 0 &&
+            obj->unk_00 >= 14) {
             temp = ratan2(obj->vel.x, obj->vel.z);
             work = (0x4E - obj->unk_00) * 96 / 64;
             if (work < 0) {
@@ -4942,22 +5216,29 @@ void func_80030D7C(void) {
             } else if (work > 0x42) {
                 work = 0x42;
             }
-            scr->unk10.x = (Judge[(temp + 0x400) & 0xFFF] * obj->vel.x
-                                    - Judge[temp & 0xFFF] * obj->vel.z) >> 12;
+            scr->unk10.x = (Judge[(temp + 0x400) & 0xFFF] * obj->vel.x -
+                            Judge[temp & 0xFFF] * obj->vel.z) >>
+                           12;
             scr->unk10.y = obj->vel.y;
-            scr->unk10.z = (Judge[temp & 0xFFF] * obj->vel.x
-                                    + Judge[(temp + 0x400) & 0xFFF] * obj->vel.z) >> 12;
+            scr->unk10.z = (Judge[temp & 0xFFF] * obj->vel.x +
+                            Judge[(temp + 0x400) & 0xFFF] * obj->vel.z) >>
+                           12;
             scr->unk20.x = scr->unk10.x;
             half = work / 2;
-            scr->unk20.y = (Judge[(half + 0x400) & 0xFFF] * scr->unk10.y
-                                    - Judge[half & 0xFFF] * scr->unk10.z) >> 12;
-            scr->unk20.z = (Judge[half & 0xFFF] * scr->unk10.y
-                                    + Judge[(half + 0x400) & 0xFFF] * scr->unk10.z) >> 12;
-            obj->vel.x = (Judge[(work - temp + 0x400) & 0xFFF] * scr->unk20.x
-                                    - Judge[(work - temp) & 0xFFF] * scr->unk20.z) >> 12;
+            scr->unk20.y = (Judge[(half + 0x400) & 0xFFF] * scr->unk10.y -
+                            Judge[half & 0xFFF] * scr->unk10.z) >>
+                           12;
+            scr->unk20.z = (Judge[half & 0xFFF] * scr->unk10.y +
+                            Judge[(half + 0x400) & 0xFFF] * scr->unk10.z) >>
+                           12;
+            obj->vel.x = (Judge[(work - temp + 0x400) & 0xFFF] * scr->unk20.x -
+                          Judge[(work - temp) & 0xFFF] * scr->unk20.z) >>
+                         12;
             obj->vel.y = scr->unk20.y;
-            obj->vel.z = (Judge[(work - temp) & 0xFFF] * scr->unk20.x
-                                    + Judge[(work - temp + 0x400) & 0xFFF] * scr->unk20.z) >> 12;
+            obj->vel.z =
+                (Judge[(work - temp) & 0xFFF] * scr->unk20.x +
+                 Judge[(work - temp + 0x400) & 0xFFF] * scr->unk20.z) >>
+                12;
             obj->rot_vel[0] = obj->rot_vel[0] * 63 / 64;
             obj->rot_vel[1] = obj->rot_vel[1] * 63 / 64;
             obj->rot_vel[2] = obj->rot_vel[2] * 63 / 64;
@@ -4975,7 +5256,8 @@ void func_80030D7C(void) {
         scr->unk00.z = obj->pos.z + obj->vel.z;
         obj->pos.y -= 8;
         nrm = scr->unk30;
-        temp = func_8005344C(&obj->pos.x, &scr->unk00.x, &scr->unk10.x, nrm, (s32)&scr->unk38);
+        temp = func_8005344C(
+            &obj->pos.x, &scr->unk00.x, &scr->unk10.x, nrm, (s32)&scr->unk38);
         if (temp != 0 && func_80054434() == 7) {
             temp = 0;
         }
@@ -4985,9 +5267,9 @@ void func_80030D7C(void) {
                 obj->kind = -1;
                 continue;
             }
-            dot = (obj->vel.x * nrm[0]
-                   + obj->vel.y * nrm[1]
-                   + obj->vel.z * nrm[2]) / 2048;
+            dot = (obj->vel.x * nrm[0] + obj->vel.y * nrm[1] +
+                   obj->vel.z * nrm[2]) /
+                  2048;
             obj->vel.x -= nrm[0] * dot / 4096;
             obj->vel.y -= nrm[1] * dot / 4096;
             obj->vel.z -= nrm[2] * dot / 4096;
@@ -4998,8 +5280,7 @@ void func_80030D7C(void) {
                 obj->vel.x = obj->vel.x * work / 4096;
                 obj->vel.y = obj->vel.y * work / 4096;
                 obj->vel.z = obj->vel.z * work / 4096;
-                spd = obj->vel.x * obj->vel.x
-                    + obj->vel.z * obj->vel.z;
+                spd = obj->vel.x * obj->vel.x + obj->vel.z * obj->vel.z;
                 if (scr->unk30[1] >= -0x7FF) {
                     obj->rot_vel[1] += (rng_Next() & 1) ? spd / 64 : -spd / 64;
                     if (obj->kind != 0xE && obj->unk_04 != 0) {
@@ -5008,11 +5289,13 @@ void func_80030D7C(void) {
                 }
                 if (obj->kind == 0xE) {
                     if (obj->unk_04 != 0) {
-                        func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x, 0);
+                        func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2F,
+                                      &obj->pos.x, 0);
                     }
                 } else if (obj->kind < 0x12) {
                     if (spd > 0x10) {
-                        func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2C, &obj->pos.x, 0);
+                        func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2C,
+                                      &obj->pos.x, 0);
                     }
                 } else if (obj->kind >= 0x12 && obj->kind < 0x1E) {
                     if (spd > 0x10) {
@@ -5027,7 +5310,8 @@ void func_80030D7C(void) {
                     obj->vel.y = -150;
                     obj->vel.z = Judge[(obj->rot[1] + 0x400) & 0xFFF] / 64;
                     obj->unk_05 = 2;
-                    func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x, 0);
+                    func_80032854(
+                        (obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x, 0);
                 }
             }
             obj->unk_04 = 0;
@@ -5040,8 +5324,8 @@ void func_80030D7C(void) {
         } else {
             obj->pos = scr->unk00;
         }
-        if (obj->vel.y >= -15 && obj->vel.y <= 15 && obj->vel.x >= -3 && obj->vel.x <= 3
-            && obj->vel.z >= -3 && obj->vel.z <= 3) {
+        if (obj->vel.y >= -15 && obj->vel.y <= 15 && obj->vel.x >= -3 &&
+            obj->vel.x <= 3 && obj->vel.z >= -3 && obj->vel.z <= 3) {
             if (temp != 0) {
                 if (D_800A38DC == 3) {
                     obj->kind = -1;
@@ -5064,7 +5348,8 @@ void func_80030D7C(void) {
                 obj->vel.y = -150;
                 obj->vel.z = Judge[(obj->rot[1] + 0x400) & 0xFFF] / 64;
                 obj->unk_05 = 2;
-                func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x, 0);
+                func_80032854(
+                    (obj->kind ^ D_800A36F2[0]) != 0, 0x2F, &obj->pos.x, 0);
             }
         }
         if (obj->unk_07 == 2) {
@@ -5082,6 +5367,7 @@ void func_80030D7C(void) {
     }
     func_80030208();
 }
+
 /* GTE rotate-velocity-by-table-angle (sibling of func_8002E838) */
 void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
     MATRIX *mat;
@@ -5106,7 +5392,8 @@ void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
 
     mat = &scr->unkD8;
     angle1 = D_8008EBA0[idx] & 0xFFF;
-    angle2 = (((ent->pos.x * 16) + ent->pos.y + (ent->pos.z * 8)) & 0x7FF) - 0x400;
+    angle2 =
+        (((ent->pos.x * 16) + ent->pos.y + (ent->pos.z * 8)) & 0x7FF) - 0x400;
     /* identity 3x3 rotation matrix at scr->unkD8 */
     scr->unkD8.m[0][0] = 0x1000;
     scr->unkD8.m[0][1] = 0;
@@ -5174,7 +5461,10 @@ void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
     ent->pos.y += ent->vel.y / 2;
     ent->pos.z += ent->vel.z / 2;
 }
-extern s32 func_80027AD8(s32, Unk80101EC8Record *, s32, s32, s32, Tbl8008E194 *, s32, s32 *);
+
+extern s32 func_80027AD8(
+    s32, Unk80101EC8Record *, s32, s32, s32, Tbl8008E194 *, s32, s32 *);
+
 void func_80031B24(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 i;
@@ -5194,14 +5484,18 @@ void func_80031B24(void) {
 
     obj = D_80106A78;
     for (i = 0; i < 12; i++, obj++) {
-        if (obj->kind == -1) continue;
-        if (obj->unk_04 == 0) continue;
-        if (obj->unk_50 == 0) continue;
+        if (obj->kind == -1)
+            continue;
+        if (obj->unk_04 == 0)
+            continue;
+        if (obj->unk_50 == 0)
+            continue;
         other = obj->owner == 0;
         ch = &D_80101EC8[other];
         st = ch->unk_6A;
-        if (st == 4 || st == 0x14 || st == 0xF || st == 0x1C || st == 0x1D || st == 0x1E ||
-            st == 0x1F || st == 0x20 || st == 0x21 || st == 0x11) {
+        if (st == 4 || st == 0x14 || st == 0xF || st == 0x1C || st == 0x1D ||
+            st == 0x1E || st == 0x1F || st == 0x20 || st == 0x21 ||
+            st == 0x11) {
             continue;
         }
 
@@ -5215,33 +5509,42 @@ void func_80031B24(void) {
         rec = D_800F5F68[other];
         for (j = 0; j < 22; j++, rec++) {
             LeafPos *pos;
-            if (ch->unk_26C == 0 && j >= 6 && j <= 9) continue;
+            if (ch->unk_26C == 0 && j >= 6 && j <= 9)
+                continue;
             pos = &SPAD->unkA8[other][j];
             hit = func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E);
             if (hit != 0) {
                 deep = 0;
                 if (rec->unk_00 != 0 && D_8008E194[obj->kind].unkD == 0) {
-                    deep = func_8002EA24(scr, pos, rec->unk_10, rec->unk_12) != 0;
+                    deep =
+                        func_8002EA24(scr, pos, rec->unk_10, rec->unk_12) != 0;
                 }
                 break;
             }
         }
-        if (hit == 0) continue;
+        if (hit == 0)
+            continue;
 
         diff = (ch->unk_1C8.vy - ratan2(obj->vel.x, obj->vel.z)) & 0xFFF;
-        if (diff >= 0x800) diff = 0x1000 - diff;
-        func_800274BC((s32 *)&obj->vel,
-                      /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector, reached by the first's address and
-                       * handed to func_800274BC as its s16 vector (owner rulings Q96 / Q117; the s16[3] and {x,y,z}
-                       * forms score 2 in func_80027AD8). */
-                      &D_800A37E8);
+        if (diff >= 0x800)
+            diff = 0x1000 - diff;
+        func_800274BC(
+            (s32 *)&obj->vel,
+            /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector, reached by
+             * the first's address and handed to func_800274BC as its s16 vector
+             * (owner rulings Q96 / Q117; the s16[3] and {x,y,z} forms score 2
+             * in func_80027AD8). */
+            &D_800A37E8);
         obj->pos.x -= obj->vel.x / 2;
         obj->pos.y -= obj->vel.y / 2;
         obj->pos.z -= obj->vel.z / 2;
-        r = func_80027AD8(1, ch, j, diff, deep, &D_8008E194[obj->kind], 0, &flag);
-        if (r == 2) continue;
+        r = func_80027AD8(
+            1, ch, j, diff, deep, &D_8008E194[obj->kind], 0, &flag);
+        if (r == 2)
+            continue;
         if (r != 0) {
-            func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2B, &SPAD->unkA8[other][j].x, 0);
+            func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2B,
+                          &SPAD->unkA8[other][j].x, 0);
             func_8002FF20(obj, rec->bone);
             obj->unk_04 = 0;
             st = ch->unk_6A;
@@ -5252,23 +5555,27 @@ void func_80031B24(void) {
         }
         kind = obj->kind;
         if (kind == 0xF) {
-            func_80032854(other ^ 1, 0xE, &SPAD->unkA8[other][j].x,
-                          /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector, reached by the first's address and
-                           * handed to func_80032854 as its s16 vector (owner rulings Q96 / Q117; the s16[3] and {x,y,z}
-                           * forms score 2 in func_80027AD8). */
-                          &D_800A37E8);
+            func_80032854(
+                other ^ 1, 0xE, &SPAD->unkA8[other][j].x,
+                /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector, reached
+                 * by the first's address and handed to func_80032854 as its s16
+                 * vector (owner rulings Q96 / Q117; the s16[3] and {x,y,z}
+                 * forms score 2 in func_80027AD8). */
+                &D_800A37E8);
             obj->kind = -1;
             continue;
         }
         if (kind == 0xE) {
             func_80032854((D_800A36F2[0] ^ 0xE) != 0, 0x2F, &obj->pos.x, 0);
         } else if (flag == 0) {
-            func_80032854((kind ^ D_800A36F2[0]) != 0, 0x2B, &SPAD->unkA8[other][j].x, 0);
+            func_80032854(
+                (kind ^ D_800A36F2[0]) != 0, 0x2B, &SPAD->unkA8[other][j].x, 0);
         }
         func_80031890(scr, obj, j);
         obj->unk_04 = 0;
     }
 }
+
 void func_80032040(void) {
     s32 i;
     for (i = 0; i < 4; i++) {
@@ -5277,7 +5584,9 @@ void func_80032040(void) {
 }
 
 Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
-    /* FAKE: constant holders for the speed (0x50) and the initial y velocity (-0xC8); as literals the li pair reorders (speed: score 12; vel_y: score 7). */
+    /* FAKE: constant holders for the speed (0x50) and the initial y velocity
+     * (-0xC8); as literals the li pair reorders (speed: score 12; vel_y: score
+     * 7). */
     s32 speed = 0x50;
     s32 vel_y = -0xC8;
     s32 i = 0;
@@ -5287,10 +5596,12 @@ Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
 
     for (; i < 4; i++) {
         s0 = ptr;
-        if (s0->unk_00 == 0) break;
+        if (s0->unk_00 == 0)
+            break;
         ptr = s0 + 1;
     }
-    if (i == 4) return 0;
+    if (i == 4)
+        return 0;
 
     s0->unk_00 = type;
     s0->unk_01 = 1;
@@ -5299,25 +5610,30 @@ Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
     s0->unk_04.x = src->unk_F4.x;
     {
         s32 v1 = src->unk_1A;
-        if (v1 < 0) v1 += 0x1F;
+        if (v1 < 0)
+            v1 += 0x1F;
         s0->unk_04.y = src->unk_B8.vy - (v1 >> 5);
     }
     s0->unk_04.z = src->unk_F4.z;
     s0->unk_1C.x = ((s32)Judge[src->unk_1C8.vy & 0xFFF] * speed) >> 12;
     s0->unk_1C.y = vel_y;
-    s0->unk_1C.z = ((s32)Judge[(src->unk_1C8.vy + 0x400) & 0xFFF] * speed) >> 12;
+    s0->unk_1C.z =
+        ((s32)Judge[(src->unk_1C8.vy + 0x400) & 0xFFF] * speed) >> 12;
     s0->unk_10 = s0->unk_04;
     s0->unk_28 = src->unk_B8.vy;
     sp_area[1] = src->unk_1C8.vy;
     {
-        /* FAKE: unk_B2 read into a0_arg before cmd is chosen; read at the call the argument registers rotate (score 20). */
+        /* FAKE: unk_B2 read into a0_arg before cmd is chosen; read at the call
+         * the argument registers rotate (score 20). */
         s32 a0_arg = src->unk_B2;
         s32 cmd = 0xD;
-        if (type == 1) cmd = 0xC;
+        if (type == 1)
+            cmd = 0xC;
         func_80032854(a0_arg, cmd, &s0->unk_04.x, sp_area);
     }
     return s0;
 }
+
 void func_800321E8(void) {
     Unk1F8002B8_8005344C *scr = &SPAD->unk2B8.v8005344C;
     Unk80104E88Rec *base = D_80104E88;
@@ -5332,7 +5648,9 @@ void func_800321E8(void) {
             scr->unk00.x = base->unk_04.x + base->unk_1C.x;
             scr->unk00.y = base->unk_04.y + base->unk_1C.y;
             scr->unk00.z = base->unk_04.z + base->unk_1C.z;
-            if (func_8005344C(&base->unk_04.x, &scr->unk00.x, &scr->unk10.x, scr->unk30, (s32)&scr->unk38) != 0 || base->unk_04.y > base->unk_28) {
+            if (func_8005344C(&base->unk_04.x, &scr->unk00.x, &scr->unk10.x,
+                              scr->unk30, (s32)&scr->unk38) != 0 ||
+                base->unk_04.y > base->unk_28) {
                 base->unk_00 = 0;
             } else {
                 base->unk_04 = scr->unk00;
@@ -5342,93 +5660,108 @@ void func_800321E8(void) {
         base++;
     } while (i < 4);
 }
+
 void func_80032314(void) {
     Unk80104E88Rec *t0 = D_80104E88;
     s32 t1 = 0;
-    /* FAKE: a second, byte cursor a3 at each record's unk_02, read for unk_02 (*a3),
-       unk_03 (a3 + 1) and unk_04 (a3 + 2..); reading them through t0 drops the second
-       induction register (score 21). */
+    /* FAKE: a second, byte cursor a3 at each record's unk_02, read for unk_02
+       (*a3), unk_03 (a3 + 1) and unk_04 (a3 + 2..); reading them through t0
+       drops the second induction register (score 21). */
     u8 *a3 = &D_80104E88[0].unk_02;
     Unk80101EC8Record *ent;
     s32 state;
 
 loop:
-    if (t0->unk_00 == 0) goto next;
+    if (t0->unk_00 == 0)
+        goto next;
     {
-        /* FAKE: named intermediate (no-new-park-categories.md, named-intermediate entry): `v1_v` holds
-         * the 0/1 record index so the index is a variable, not a comparison. Written
-         * directly (&D_80101EC8[cmp]), fold-const.c:3282-3323 turns the
-         * multiply by a comparison operand into a COND_EXPR and the record address
-         * becomes a branch (7 insns short; the target multiplies sltiu by 0x44C). Ablated (2026-10-06): score 13. */
+        /* FAKE: named intermediate (no-new-park-categories.md,
+         * named-intermediate entry): `v1_v` holds the 0/1 record index so the
+         * index is a variable, not a comparison. Written directly
+         * (&D_80101EC8[cmp]), fold-const.c:3282-3323 turns the multiply by a
+         * comparison operand into a COND_EXPR and the record address becomes a
+         * branch (7 insns short; the target multiplies sltiu by 0x44C). Ablated
+         * (2026-10-06): score 13. */
         s32 v1_v = (*(u8 *)(a3 + 1) == 0);
         ent = &D_80101EC8[v1_v];
     }
     state = (u16)ent->unk_6A;
-    if ((state & 0xFFFF) == 4) goto next;
+    if ((state & 0xFFFF) == 4)
+        goto next;
     /* FAKE: single-level do-while(0) wrap (body executes once), mechanism:
      * the wrap's NOTE_INSN_LOOP notes make flow.c weight in-wrap reg_n_refs
      * by loop_depth, re-ranking global.c allocno priorities (walker 4390 <
-     * ent 4761 < mult-temp 8000) into the target $a1/$a2/$a3 seating. Ablated (2026-10-06): score 15. */
+     * ent 4761 < mult-temp 8000) into the target $a1/$a2/$a3 seating. Ablated
+     * (2026-10-06): score 15. */
     do {
-    if ((state & 0xFFFF) == 0x14) goto next;
-    if ((state & 0xFFFF) == 0xF) goto next;
-    if ((u32)(state - 0x1C) < 2) goto next;
-    if ((u32)(state - 0x1E) < 2) goto next;
-    if ((u32)(state - 0x20) < 2) goto next;
-    if ((state & 0xFFFF) == 0x11) goto next;
-    {
-        s32 dx = ent->unk_F4.x - *(s32 *)(a3 + 2);
-        s32 dy = ent->unk_F4.y - *(s32 *)(a3 + 6);
-        s32 dz = ent->unk_F4.z - *(s32 *)(a3 + 0xA);
-        u32 dist_sq;
-        u32 log2_val;
-        dist_sq = (u32)(dx * dx + dy * dy + dz * dz);
-        if (dist_sq < 0x400) {
-            log2_val = (u32)(g_sqrt_table_u8[dist_sq]) >> 3;
-        } else {
-            s32 clz = 0;
-            s32 sp_tmp;
-            if ((s32)dist_sq >= 0) {
-                /* Hand-written GTE leading-zero-count block (LZCS in, LZCR out) —
-                 * canonical inline asm, identical to the user-authorized block in
-                 * the matched sibling func_800274BC (src/code6cac_b.c:292). */
-                __asm__ volatile(
-                    "addu   $t4, %1, $zero\n"
-                    "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
-                    "nop\n"
-                    "nop\n"
-                    "addu   $t4, $sp, $zero\n" /* &sp_tmp (at 0($sp)) */
-                    "swc2   $31, 0($t4)\n"     /* sp_tmp <- LZCR */
-                    : "=m"(sp_tmp)
-                    : "r"(dist_sq)
-                    : "$12");
-                clz = sp_tmp;
+        if ((state & 0xFFFF) == 0x14)
+            goto next;
+        if ((state & 0xFFFF) == 0xF)
+            goto next;
+        if ((u32)(state - 0x1C) < 2)
+            goto next;
+        if ((u32)(state - 0x1E) < 2)
+            goto next;
+        if ((u32)(state - 0x20) < 2)
+            goto next;
+        if ((state & 0xFFFF) == 0x11)
+            goto next;
+        {
+            s32 dx = ent->unk_F4.x - *(s32 *)(a3 + 2);
+            s32 dy = ent->unk_F4.y - *(s32 *)(a3 + 6);
+            s32 dz = ent->unk_F4.z - *(s32 *)(a3 + 0xA);
+            u32 dist_sq;
+            u32 log2_val;
+            dist_sq = (u32)(dx * dx + dy * dy + dz * dz);
+            if (dist_sq < 0x400) {
+                log2_val = (u32)(g_sqrt_table_u8[dist_sq]) >> 3;
+            } else {
+                s32 clz = 0;
+                s32 sp_tmp;
+                if ((s32)dist_sq >= 0) {
+                    /* Hand-written GTE leading-zero-count block (LZCS in, LZCR
+                     * out) — canonical inline asm, identical to the
+                     * user-authorized block in the matched sibling
+                     * func_800274BC (src/code6cac_b.c:292). */
+                    __asm__ volatile(
+                        "addu   $t4, %1, $zero\n"
+                        "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
+                        "nop\n"
+                        "nop\n"
+                        "addu   $t4, $sp, $zero\n" /* &sp_tmp (at 0($sp)) */
+                        "swc2   $31, 0($t4)\n"     /* sp_tmp <- LZCR */
+                        : "=m"(sp_tmp)
+                        : "r"(dist_sq)
+                        : "$12");
+                    clz = sp_tmp;
+                }
+                {
+                    u32 v1_m;
+                    u32 idx;
+                    u32 hi;
+                    v1_m = 0x16 - (clz & (u32)-2);
+                    idx = dist_sq >> v1_m;
+                    v1_m = v1_m >> 1;
+                    hi = (u32)((u8)(g_sqrt_table_u8[idx]));
+                    log2_val = (hi << 16) >> (0x13 - v1_m);
+                }
             }
             {
-                u32 v1_m;
-                u32 idx;
-                u32 hi;
-                v1_m = 0x16 - (clz & (u32)-2);
-                idx = dist_sq >> v1_m;
-                v1_m = v1_m >> 1;
-                hi = (u32)((u8)(g_sqrt_table_u8[idx]));
-                log2_val = (hi << 16) >> (0x13 - v1_m);
+                if (log2_val < (u32)(*a3 * 30 + 0x1F4)) {
+                    ent->unk_286 = 5;
+                    t0->unk_00 = 0;
+                }
             }
         }
-        {
-            if (log2_val < (u32)(*a3 * 30 + 0x1F4)) {
-                ent->unk_286 = 5;
-                t0->unk_00 = 0;
-            }
-        }
-    }
     } while (0);
 next:
     t1 += 1;
     a3 += 0x2C;
     t0++;
-    if (t1 < 4) goto loop;
+    if (t1 < 4)
+        goto loop;
 }
+
 void func_800324D0(Unk80101EC8Record *rec) {
     u8 *ptr;
     u8 c;
@@ -5480,33 +5813,70 @@ void func_800324D0(Unk80101EC8Record *rec) {
              * pass (after reload) re-merges the identical tails so not one
              * duplicated instruction materialises. */
             switch (c - 0x80) {
-                case 0: rec->unk_A1[0] = val; c = *ptr; ptr++; continue;
-                case 1: rec->unk_A3[0] = val; c = *ptr; ptr++; continue;
-                case 2: rec->unk_A7 = val; c = *ptr; ptr++; continue;
-                case 3: rec->unk_A8 = val; c = *ptr; ptr++; continue;
-                case 4: rec->unk_A9 = val; c = *ptr; ptr++; continue;
-                case 5: rec->unk_A5 = val; break;
-                case 6: rec->unk_A6 = val; break;
-                case 7: rec->unk_A1[1] = val; break;
-                case 8: rec->unk_A3[1] = val; break;
-                case 9: rec->unk_AA = val; break;
-                case 10: rec->unk_AB = val; break;
-                case 11: rec->unk_AC = val; break;
+            case 0:
+                rec->unk_A1[0] = val;
+                c = *ptr;
+                ptr++;
+                continue;
+            case 1:
+                rec->unk_A3[0] = val;
+                c = *ptr;
+                ptr++;
+                continue;
+            case 2:
+                rec->unk_A7 = val;
+                c = *ptr;
+                ptr++;
+                continue;
+            case 3:
+                rec->unk_A8 = val;
+                c = *ptr;
+                ptr++;
+                continue;
+            case 4:
+                rec->unk_A9 = val;
+                c = *ptr;
+                ptr++;
+                continue;
+            case 5:
+                rec->unk_A5 = val;
+                break;
+            case 6:
+                rec->unk_A6 = val;
+                break;
+            case 7:
+                rec->unk_A1[1] = val;
+                break;
+            case 8:
+                rec->unk_A3[1] = val;
+                break;
+            case 9:
+                rec->unk_AA = val;
+                break;
+            case 10:
+                rec->unk_AB = val;
+                break;
+            case 11:
+                rec->unk_AC = val;
+                break;
             }
         }
         c = *ptr;
         ptr++;
     }
 }
-/* func_800325E0 -- 3D positional sound pan/volume: listener-relative delta of *arg1,
- * distance attenuation via the D_8008D118 log table (GTE LZCS/LZCR leading-zero-count
- * island for the >= 0x400 range, same template as the authorized siblings
- * func_800274BC / func_80032314 / func_8002E838 in this file), then a Judge-table
- * (sin/cos) left/right pan scaled by distance, clamped to 0x7F, dispatched to
- * func_8005C650(arg0, L, R).  Enumerated carrier under the owner cop2 cluster grant
- * (tools/grinder/owner_cluster_grants.txt:24; .claude/rules/cop2-addressing-preamble-cluster.md);
- * COMPLETED-INLINE-ASM-CANONICAL.  Everything outside the island is ordinary C with no
- * FAKE constructs.
+
+/* func_800325E0 -- 3D positional sound pan/volume: listener-relative delta of
+ * *arg1, distance attenuation via the D_8008D118 log table (GTE LZCS/LZCR
+ * leading-zero-count island for the >= 0x400 range, same template as the
+ * authorized siblings func_800274BC / func_80032314 / func_8002E838 in this
+ * file), then a Judge-table (sin/cos) left/right pan scaled by distance,
+ * clamped to 0x7F, dispatched to func_8005C650(arg0, L, R).  Enumerated carrier
+ * under the owner cop2 cluster grant
+ * (tools/grinder/owner_cluster_grants.txt:24;
+ * .claude/rules/cop2-addressing-preamble-cluster.md);
+ * COMPLETED-INLINE-ASM-CANONICAL.  Everything outside the island is ordinary C
+ * with no FAKE constructs.
  */
 void func_800325E0(s32 arg0, s32 *arg1) {
     s32 sp_tmp;
@@ -5530,15 +5900,18 @@ void func_800325E0(s32 arg0, s32 *arg1) {
         if (dist_sq < 0x400U) {
             dist_volume = (u32)(u8)(g_sqrt_table_u8[dist_sq]) >> 3;
         } else {
-            /* PsyQ 4.5 SDK GTE macro body: gte_Lzc(dist_sq, &sp_tmp) (gtemac.h:174-178) =
-             * gte_ldlzc(r0) `mtc2 %0,$30` (inline_c.h:228-231) + gte_nop() x2 `nop`
-             * (inline_c.h:1346-1347) + gte_stlzc(r0) `swc2 $31,0(%0)` (inline_c.h:1318-1322).
-             * The `addu $t4,%1,$zero` and `addiu $v0,$sp,0x10` / `addu $t4,$v0,$zero`
-             * operand materialisations are the cop2-addressing-preamble idiom the owner
-             * cluster grant covers (.claude/rules/cop2-addressing-preamble-cluster.md;
-             * registry tools/grinder/owner_cluster_grants.txt:24); nothing outside the
-             * macro body is in the island.  Same spelling as the matched siblings
-             * func_800274BC / func_80032314 / func_8002E838 (inline_asm_canonical.txt).
+            /* PsyQ 4.5 SDK GTE macro body: gte_Lzc(dist_sq, &sp_tmp)
+             * (gtemac.h:174-178) = gte_ldlzc(r0) `mtc2 %0,$30`
+             * (inline_c.h:228-231) + gte_nop() x2 `nop` (inline_c.h:1346-1347)
+             * + gte_stlzc(r0) `swc2 $31,0(%0)` (inline_c.h:1318-1322). The
+             * `addu $t4,%1,$zero` and `addiu $v0,$sp,0x10` / `addu
+             * $t4,$v0,$zero` operand materialisations are the
+             * cop2-addressing-preamble idiom the owner cluster grant covers
+             * (.claude/rules/cop2-addressing-preamble-cluster.md; registry
+             * tools/grinder/owner_cluster_grants.txt:24); nothing outside the
+             * macro body is in the island.  Same spelling as the matched
+             * siblings func_800274BC / func_80032314 / func_8002E838
+             * (inline_asm_canonical.txt).
              */
             __asm__ volatile(
                 "addu   $t4, %1, $zero\n"
@@ -5552,8 +5925,9 @@ void func_800325E0(s32 arg0, s32 *arg1) {
                 : "r"(dist_sq)
                 : "$2", "$12");
             {
-                /* FAKE: v0_m holds the -2 mask (li -2 into v0, and v0,v1,v0); as a literal the mask
-                   lands in v1 and the clz in v0 (score 3). */
+                /* FAKE: v0_m holds the -2 mask (li -2 into v0, and v0,v1,v0);
+                   as a literal the mask lands in v1 and the clz in v0 (score
+                   3). */
                 u32 v0_m = (u32)-2;
                 u32 v1_m;
                 u32 idx;
@@ -5574,8 +5948,9 @@ void func_800325E0(s32 arg0, s32 *arg1) {
     }
 
     listener_angle = D_800A36B4->unk_10.vy;
-    projected_pan = (s32)((dx * (s32)Judge[(listener_angle + 0x400) & 0xFFF])
-                       + (dz * (s32)Judge[listener_angle & 0xFFF])) >> 12;
+    projected_pan = (s32)((dx * (s32)Judge[(listener_angle + 0x400) & 0xFFF]) +
+                          (dz * (s32)Judge[listener_angle & 0xFFF])) >>
+                    12;
     pan_sign = ~(u32)projected_pan;
     pan_sign >>= 31;
     if (projected_pan < 0) {
@@ -5584,8 +5959,10 @@ void func_800325E0(s32 arg0, s32 *arg1) {
 
     pan_L = (s32)((0x7530 - projected_pan) << 12) / 30000;
     pan_R = (s32)((0x2710 - projected_pan) << 12) / 10000;
-    if (pan_L < 0) pan_L = 0;
-    if (pan_R < 0) pan_R = 0;
+    if (pan_L < 0)
+        pan_L = 0;
+    if (pan_R < 0)
+        pan_R = 0;
 
     {
         s32 tmp = pan_L;
@@ -5597,11 +5974,14 @@ void func_800325E0(s32 arg0, s32 *arg1) {
 
     pan_L = (s32)(distance_scale * pan_L) >> 16;
     pan_R = (s32)(distance_scale * pan_R) >> 16;
-    if (pan_L >= 0x80) pan_L = 0x7F;
-    if (pan_R >= 0x80) pan_R = 0x7F;
+    if (pan_L >= 0x80)
+        pan_L = 0x7F;
+    if (pan_R >= 0x80)
+        pan_R = 0x7F;
 
     func_8005C650(arg0, pan_L, pan_R);
 }
+
 void func_80032854(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     s32 s0;
     s32 s4;
@@ -5751,6 +6131,7 @@ void func_80032854(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
         break;
     }
 }
+
 void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
     s32 pos[3];
     s32 base;
@@ -5771,9 +6152,9 @@ void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
     }
 
     if (D_800A38DC == 3 &&
-        ((u32)(kind - 0x15) < 2 || (u32)(kind - 0x17) < 2 || (u32)(kind - 0x19) < 2 ||
-         kind == 0x26 || (u32)(kind - 0x36) < 2 || (u32)(kind - 0x38) < 2 ||
-         (u32)(kind - 0x3A) < 2 || kind == 0x47)) {
+        ((u32)(kind - 0x15) < 2 || (u32)(kind - 0x17) < 2 ||
+         (u32)(kind - 0x19) < 2 || kind == 0x26 || (u32)(kind - 0x36) < 2 ||
+         (u32)(kind - 0x38) < 2 || (u32)(kind - 0x3A) < 2 || kind == 0x47)) {
         if (obj->index == 1) {
             base += D_8008EBCC[D_800A384C];
         } else {
@@ -5794,8 +6175,7 @@ void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
                 pos[1] = obj->unk_1B0[0];
                 pos[2] = obj->unk_198[0].z;
                 func_80061A3C(pos, obj->unk_1BA,
-                              D_8008EBE0[D_8008E5A8[obj->unk_0C]],
-                              obj->index);
+                              D_8008EBE0[D_8008E5A8[obj->unk_0C]], obj->index);
                 if ((0x60 >> obj->unk_B1) & 1) {
                     func_80032854(obj->index, 9, pos, 0);
                 }
@@ -5817,8 +6197,7 @@ void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
                 pos[1] = obj->unk_1B0[1];
                 pos[2] = obj->unk_198[1].z;
                 func_80061A3C(pos, obj->unk_1C2,
-                              D_8008EBE0[D_8008E5A8[obj->unk_0C]],
-                              obj->index);
+                              D_8008EBE0[D_8008E5A8[obj->unk_0C]], obj->index);
                 if ((0x60 >> obj->unk_B1) & 1) {
                     func_80032854(obj->index, 9, pos, 0);
                 }
@@ -5842,77 +6221,209 @@ void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
     case 4:
         func_80032854(obj->index, 10, &obj->unk_174.x, 0);
         break;
-    case 7:  func_800325E0(base + 0x31, &obj->unk_F4.x); break;
-    case 8:  func_800325E0(base + 0x32, &obj->unk_F4.x); break;
-    case 9:  func_800325E0(base + 0x33, &obj->unk_F4.x); break;
-    case 10: func_800325E0(base + 0x37, &obj->unk_F4.x); break;
-    case 11: func_800325E0(base + 0x38, &obj->unk_F4.x); break;
-    case 12: func_800325E0(base + 0x39, &obj->unk_F4.x); break;
-    case 13: func_800325E0(base + 0x3D, &obj->unk_F4.x); break;
-    case 14: func_800325E0(base + 0x3E, &obj->unk_F4.x); break;
-    case 15: func_800325E0(base + 0x3D, &obj->unk_F4.x); break;
-    case 16: func_800325E0(base + 0x3F, &obj->unk_F4.x); break;
-    case 17: func_800325E0(base + 0x40, &obj->unk_F4.x); break;
-    case 18: func_800325E0(base + 0x22, &obj->unk_F4.x); break;
-    case 19: func_800325E0(base + 0x23, &obj->unk_F4.x); break;
-    case 20: func_800325E0(base + 0x24, &obj->unk_F4.x); break;
-    case 21: func_800325E0(base + 0x25, &obj->unk_F4.x); break;
-    case 22: func_800325E0(base + 0x26, &obj->unk_F4.x); break;
-    case 23: func_800325E0(base + 0x27, &obj->unk_F4.x); break;
-    case 24: func_800325E0(base + 0x28, &obj->unk_F4.x); break;
-    case 25: func_800325E0(base + 0x29, &obj->unk_F4.x); break;
-    case 26: func_800325E0(base + 0x2A, &obj->unk_F4.x); break;
-    case 27: func_800325E0(row + 0x41, &obj->unk_F4.x); break;
-    case 28: func_800325E0(row + 0x42, &obj->unk_F4.x); break;
-    case 29: func_800325E0(row + 0x43, &obj->unk_F4.x); break;
-    case 30: func_800325E0(row + 0x44, &obj->unk_F4.x); break;
-    case 31: func_800325E0(tri + 0x71, &obj->unk_F4.x); break;
-    case 32: func_800325E0(tri + 0x72, &obj->unk_F4.x); break;
-    case 33: func_800325E0(tri + 0x73, &obj->unk_F4.x); break;
-    case 34: func_800325E0(0x77, &obj->unk_F4.x); break;
-    case 35: func_800325E0(0x7A, &obj->unk_F4.x); break;
-    case 36: func_800325E0(base + 0x3A, &obj->unk_F4.x); break;
-    case 37: func_800325E0(base + 0x36, &obj->unk_F4.x); break;
-    case 38: func_800325E0(base + 0x2B, &obj->unk_F4.x); break;
-    case 39: func_800325E0(base + 0x2C, &obj->unk_F4.x); break;
-    case 40: func_800325E0(base2 + 0x31, &obj->other->unk_F4.x); break;
-    case 41: func_800325E0(base2 + 0x32, &obj->other->unk_F4.x); break;
-    case 42: func_800325E0(base2 + 0x33, &obj->other->unk_F4.x); break;
-    case 43: func_800325E0(base2 + 0x37, &obj->other->unk_F4.x); break;
-    case 44: func_800325E0(base2 + 0x38, &obj->other->unk_F4.x); break;
-    case 45: func_800325E0(base2 + 0x39, &obj->other->unk_F4.x); break;
-    case 46: func_800325E0(base2 + 0x3D, &obj->other->unk_F4.x); break;
-    case 47: func_800325E0(base2 + 0x3E, &obj->other->unk_F4.x); break;
-    case 48: func_800325E0(base2 + 0x3D, &obj->other->unk_F4.x); break;
-    case 49: func_800325E0(base2 + 0x3F, &obj->other->unk_F4.x); break;
-    case 50: func_800325E0(base2 + 0x40, &obj->other->unk_F4.x); break;
-    case 51: func_800325E0(base2 + 0x22, &obj->other->unk_F4.x); break;
-    case 52: func_800325E0(base2 + 0x23, &obj->other->unk_F4.x); break;
-    case 53: func_800325E0(base2 + 0x24, &obj->other->unk_F4.x); break;
-    case 54: func_800325E0(base2 + 0x25, &obj->other->unk_F4.x); break;
-    case 55: func_800325E0(base2 + 0x26, &obj->other->unk_F4.x); break;
-    case 56: func_800325E0(base2 + 0x27, &obj->other->unk_F4.x); break;
-    case 57: func_800325E0(base2 + 0x28, &obj->other->unk_F4.x); break;
-    case 58: func_800325E0(base2 + 0x29, &obj->other->unk_F4.x); break;
-    case 59: func_800325E0(base2 + 0x2A, &obj->other->unk_F4.x); break;
-    case 60: func_800325E0(row2 + 0x41, &obj->other->unk_F4.x); break;
-    case 61: func_800325E0(row2 + 0x42, &obj->other->unk_F4.x); break;
-    case 62: func_800325E0(row2 + 0x43, &obj->other->unk_F4.x); break;
-    case 63: func_800325E0(row2 + 0x44, &obj->other->unk_F4.x); break;
-    case 64: func_800325E0(tri2 + 0x71, &obj->other->unk_F4.x); break;
-    case 65: func_800325E0(tri2 + 0x72, &obj->other->unk_F4.x); break;
-    case 66: func_800325E0(tri2 + 0x73, &obj->other->unk_F4.x); break;
-    case 67: func_800325E0(0x77, &obj->other->unk_F4.x); break;
-    case 68: func_800325E0(0x7A, &obj->other->unk_F4.x); break;
-    case 69: func_800325E0(base2 + 0x3A, &obj->other->unk_F4.x); break;
-    case 70: func_800325E0(base2 + 0x36, &obj->other->unk_F4.x); break;
-    case 71: func_800325E0(base2 + 0x2B, &obj->other->unk_F4.x); break;
-    case 72: func_800325E0(base2 + 0x2C, &obj->other->unk_F4.x); break;
+    case 7:
+        func_800325E0(base + 0x31, &obj->unk_F4.x);
+        break;
+    case 8:
+        func_800325E0(base + 0x32, &obj->unk_F4.x);
+        break;
+    case 9:
+        func_800325E0(base + 0x33, &obj->unk_F4.x);
+        break;
+    case 10:
+        func_800325E0(base + 0x37, &obj->unk_F4.x);
+        break;
+    case 11:
+        func_800325E0(base + 0x38, &obj->unk_F4.x);
+        break;
+    case 12:
+        func_800325E0(base + 0x39, &obj->unk_F4.x);
+        break;
+    case 13:
+        func_800325E0(base + 0x3D, &obj->unk_F4.x);
+        break;
+    case 14:
+        func_800325E0(base + 0x3E, &obj->unk_F4.x);
+        break;
+    case 15:
+        func_800325E0(base + 0x3D, &obj->unk_F4.x);
+        break;
+    case 16:
+        func_800325E0(base + 0x3F, &obj->unk_F4.x);
+        break;
+    case 17:
+        func_800325E0(base + 0x40, &obj->unk_F4.x);
+        break;
+    case 18:
+        func_800325E0(base + 0x22, &obj->unk_F4.x);
+        break;
+    case 19:
+        func_800325E0(base + 0x23, &obj->unk_F4.x);
+        break;
+    case 20:
+        func_800325E0(base + 0x24, &obj->unk_F4.x);
+        break;
+    case 21:
+        func_800325E0(base + 0x25, &obj->unk_F4.x);
+        break;
+    case 22:
+        func_800325E0(base + 0x26, &obj->unk_F4.x);
+        break;
+    case 23:
+        func_800325E0(base + 0x27, &obj->unk_F4.x);
+        break;
+    case 24:
+        func_800325E0(base + 0x28, &obj->unk_F4.x);
+        break;
+    case 25:
+        func_800325E0(base + 0x29, &obj->unk_F4.x);
+        break;
+    case 26:
+        func_800325E0(base + 0x2A, &obj->unk_F4.x);
+        break;
+    case 27:
+        func_800325E0(row + 0x41, &obj->unk_F4.x);
+        break;
+    case 28:
+        func_800325E0(row + 0x42, &obj->unk_F4.x);
+        break;
+    case 29:
+        func_800325E0(row + 0x43, &obj->unk_F4.x);
+        break;
+    case 30:
+        func_800325E0(row + 0x44, &obj->unk_F4.x);
+        break;
+    case 31:
+        func_800325E0(tri + 0x71, &obj->unk_F4.x);
+        break;
+    case 32:
+        func_800325E0(tri + 0x72, &obj->unk_F4.x);
+        break;
+    case 33:
+        func_800325E0(tri + 0x73, &obj->unk_F4.x);
+        break;
+    case 34:
+        func_800325E0(0x77, &obj->unk_F4.x);
+        break;
+    case 35:
+        func_800325E0(0x7A, &obj->unk_F4.x);
+        break;
+    case 36:
+        func_800325E0(base + 0x3A, &obj->unk_F4.x);
+        break;
+    case 37:
+        func_800325E0(base + 0x36, &obj->unk_F4.x);
+        break;
+    case 38:
+        func_800325E0(base + 0x2B, &obj->unk_F4.x);
+        break;
+    case 39:
+        func_800325E0(base + 0x2C, &obj->unk_F4.x);
+        break;
+    case 40:
+        func_800325E0(base2 + 0x31, &obj->other->unk_F4.x);
+        break;
+    case 41:
+        func_800325E0(base2 + 0x32, &obj->other->unk_F4.x);
+        break;
+    case 42:
+        func_800325E0(base2 + 0x33, &obj->other->unk_F4.x);
+        break;
+    case 43:
+        func_800325E0(base2 + 0x37, &obj->other->unk_F4.x);
+        break;
+    case 44:
+        func_800325E0(base2 + 0x38, &obj->other->unk_F4.x);
+        break;
+    case 45:
+        func_800325E0(base2 + 0x39, &obj->other->unk_F4.x);
+        break;
+    case 46:
+        func_800325E0(base2 + 0x3D, &obj->other->unk_F4.x);
+        break;
+    case 47:
+        func_800325E0(base2 + 0x3E, &obj->other->unk_F4.x);
+        break;
+    case 48:
+        func_800325E0(base2 + 0x3D, &obj->other->unk_F4.x);
+        break;
+    case 49:
+        func_800325E0(base2 + 0x3F, &obj->other->unk_F4.x);
+        break;
+    case 50:
+        func_800325E0(base2 + 0x40, &obj->other->unk_F4.x);
+        break;
+    case 51:
+        func_800325E0(base2 + 0x22, &obj->other->unk_F4.x);
+        break;
+    case 52:
+        func_800325E0(base2 + 0x23, &obj->other->unk_F4.x);
+        break;
+    case 53:
+        func_800325E0(base2 + 0x24, &obj->other->unk_F4.x);
+        break;
+    case 54:
+        func_800325E0(base2 + 0x25, &obj->other->unk_F4.x);
+        break;
+    case 55:
+        func_800325E0(base2 + 0x26, &obj->other->unk_F4.x);
+        break;
+    case 56:
+        func_800325E0(base2 + 0x27, &obj->other->unk_F4.x);
+        break;
+    case 57:
+        func_800325E0(base2 + 0x28, &obj->other->unk_F4.x);
+        break;
+    case 58:
+        func_800325E0(base2 + 0x29, &obj->other->unk_F4.x);
+        break;
+    case 59:
+        func_800325E0(base2 + 0x2A, &obj->other->unk_F4.x);
+        break;
+    case 60:
+        func_800325E0(row2 + 0x41, &obj->other->unk_F4.x);
+        break;
+    case 61:
+        func_800325E0(row2 + 0x42, &obj->other->unk_F4.x);
+        break;
+    case 62:
+        func_800325E0(row2 + 0x43, &obj->other->unk_F4.x);
+        break;
+    case 63:
+        func_800325E0(row2 + 0x44, &obj->other->unk_F4.x);
+        break;
+    case 64:
+        func_800325E0(tri2 + 0x71, &obj->other->unk_F4.x);
+        break;
+    case 65:
+        func_800325E0(tri2 + 0x72, &obj->other->unk_F4.x);
+        break;
+    case 66:
+        func_800325E0(tri2 + 0x73, &obj->other->unk_F4.x);
+        break;
+    case 67:
+        func_800325E0(0x77, &obj->other->unk_F4.x);
+        break;
+    case 68:
+        func_800325E0(0x7A, &obj->other->unk_F4.x);
+        break;
+    case 69:
+        func_800325E0(base2 + 0x3A, &obj->other->unk_F4.x);
+        break;
+    case 70:
+        func_800325E0(base2 + 0x36, &obj->other->unk_F4.x);
+        break;
+    case 71:
+        func_800325E0(base2 + 0x2B, &obj->other->unk_F4.x);
+        break;
+    case 72:
+        func_800325E0(base2 + 0x2C, &obj->other->unk_F4.x);
+        break;
     }
 }
 
 /* Tail word after func_80032C50's 73-entry compiler-generated switch table. */
-const u32 D_800107BC[1] = { 0x00000000 };
+const u32 D_800107BC[1] = {0x00000000};
 
 void func_8003339C(Unk80101EC8Record *base) {
     u8 *s0;
@@ -5921,7 +6432,8 @@ void func_8003339C(Unk80101EC8Record *base) {
 
     p = base->unk_58;
     a1val = p[4];
-    if (a1val == 0) goto done;
+    if (a1val == 0)
+        goto done;
     s0 = p + 5;
 
 loop:
@@ -5951,8 +6463,8 @@ loop:
        which sets LABEL_OUTSIDE_LOOP_P on `done:`, making reorg.c's
        mostly_true_jump return -1 instead of 1 for the `bnez done` below,
        preserving target's branch sense. SOTN master-branch evidence in
-       pre-slim-2026-10-01:memory/project/sotn-do-while-zero-research-2026-06-04.md. This is
-       the ONLY no-semantic-purpose wrapper sanctioned in BB2 source --
+       pre-slim-2026-10-01:memory/project/sotn-do-while-zero-research-2026-06-04.md.
+       This is the ONLY no-semantic-purpose wrapper sanctioned in BB2 source --
        NOT a precedent for other codegen-coercion constructs. */
     do {
         if ((u32)a1val < 0x80) {
@@ -5976,11 +6488,13 @@ loop:
         s0 += 1;
     } while (0);
 
-    if (a1val != 0) goto loop;
+    if (a1val != 0)
+        goto loop;
 
 done:
     return;
 }
+
 s32 func_80033498(void) {
     s16 idx = D_800A36A4 - 2;
     switch (idx) {
@@ -6000,7 +6514,9 @@ s32 func_80033498(void) {
         return 0xFF;
     }
 }
+
 extern u8 D_800A391D;
+
 void func_80033510(void) {
     s32 i = 3;
     s16 *p1 = &D_800A3750[3];
@@ -6019,6 +6535,7 @@ void func_80033510(void) {
         } while (i >= 0);
     }
 }
+
 void func_80033550(LeafPos *arg0) {
     s32 i;
 
@@ -6074,60 +6591,64 @@ void func_800335D8(void) {
             rnd = rng & 0x3FF;
             type = *tbl;
 
-            if (type == 1) goto handle_type_1;
-            if (type < 2) goto skip;
-            if (type < 7) goto handle_type_2_6;
+            if (type == 1)
+                goto handle_type_1;
+            if (type < 2)
+                goto skip;
+            if (type < 7)
+                goto handle_type_2_6;
             continue;
 
         handle_type_1:
-            if (buf[i] != 0) goto skip;
+            if (buf[i] != 0)
+                goto skip;
             buf[i] = 1;
             goto call_default;
 
-        handle_type_2_6:
-            {
-                s32 adj = type - 2;
-                s32 count;
-                s32 scount;
-                s32 thresh;
-                s32 limit;
+        handle_type_2_6: {
+            s32 adj = type - 2;
+            s32 count;
+            s32 scount;
+            s32 thresh;
+            s32 limit;
 
-                count = (u16)buf[i] + 1;
-                buf[i] = count;
-                scount = (s16)count;
-                thresh = D_8008EA44[adj].a;
-                limit = thresh * 30;
+            count = (u16)buf[i] + 1;
+            buf[i] = count;
+            scount = (s16)count;
+            thresh = D_8008EA44[adj].a;
+            limit = thresh * 30;
 
-                if (limit < scount) {
-                    s32 ratio = ((scount - limit) << 10) / (D_8008EA44[adj].b * 30);
+            if (limit < scount) {
+                s32 ratio = ((scount - limit) << 10) / (D_8008EA44[adj].b * 30);
 
-                    if (rnd < ratio) {
-                        buf[i] = 0;
-                        type = *tbl;
-                        if ((u32)(type - 5) < 2) {
-                            func_800325E0(0x7B + i, D_8008EA00[type]);
-                            continue;
-                        }
-                        goto call_default;
+                if (rnd < ratio) {
+                    buf[i] = 0;
+                    type = *tbl;
+                    if ((u32)(type - 5) < 2) {
+                        func_800325E0(0x7B + i, D_8008EA00[type]);
+                        continue;
                     }
+                    goto call_default;
                 }
-                goto skip;
             }
+            goto skip;
+        }
 
-        call_default:
-            {
-                u8 val = *data;
-                func_8005C650(0x7B + i, val, val);
-            }
+        call_default: {
+            u8 val = *data;
+            func_8005C650(0x7B + i, val, val);
+        }
         skip:;
         }
     }
 }
+
 void func_80033898(void) {
     gpu_ResetGraphMode1();
     D_800A37B8 = 0;
     D_800A3834 = 3;
 }
+
 void func_800338CC(void) {
     s32 sp[2];
     s32 count;
@@ -6187,7 +6708,7 @@ void func_800338CC(void) {
                 sp[1] = t2;
             }
         }
-block_12:
+    block_12:
         if (count >= 0xB) {
             i = count;
             do {
@@ -6236,7 +6757,7 @@ block_12:
             }
         }
         goto set_count;
-append_last:
+    append_last:
         D_801077B0[count] = val;
         count++;
     }
@@ -6245,6 +6766,7 @@ set_count:
     D_800A3783 = 0;
     D_800A37BC = 0;
 }
+
 void func_80033BC0(void) {
     u8 a0 = D_800A3783;
     u8 b = D_800A391F;
@@ -6255,7 +6777,8 @@ void func_80033BC0(void) {
         if (a0 == 0x14) {
             u8 z = D_8008D9EC[D_80101EC8[0].unk_0A];
             s32 val = 2;
-            if (z != 0) val = 3;
+            if (z != 0)
+                val = 3;
             D_800A38A4 = val;
             D_800A3834 = 0x12;
         } else {
@@ -6292,10 +6815,12 @@ void func_80033BC0(void) {
         }
     }
 }
+
 void func_80033D38(void) {
-    /* FAKE: pointer to the record, admitted on SOTN precedent (Q50, Q53); mechanism: its
-     * register (t1) is the base of every times[] access and of the shift loop's pointer;
-     * written directly, each D_80106A50.times[] access is its own lui/addu/%lo. */
+    /* FAKE: pointer to the record, admitted on SOTN precedent (Q50, Q53);
+     * mechanism: its register (t1) is the base of every times[] access and of
+     * the shift loop's pointer; written directly, each D_80106A50.times[]
+     * access is its own lui/addu/%lo. */
     FileRecord *rec = &D_80106A50; /* SOTN: src/dra/4CE2C.c:63 @db41b28 */
     s32 n = 3;
     s32 j;
@@ -6321,6 +6846,7 @@ void func_80033D38(void) {
         rec->times[n].unk_4 = D_800A3858;
     }
 }
+
 s32 func_80033DF4(void) {
     u8 state;
     s32 tableIndex;
@@ -6366,8 +6892,8 @@ s32 func_80033DF4(void) {
         return 0;
     } else {
         u8 *table = cpu_practice_honmokuroku_data_tbl[tableIndex];
-        u8 (*ranks)[5] = D_8008EC24;
-        u8 (*moves)[5] = D_8008E908;
+        u8(*ranks)[5] = D_8008EC24;
+        u8(*moves)[5] = D_8008E908;
         s32 entry;
         s32 row;
 
@@ -6385,6 +6911,7 @@ s32 func_80033DF4(void) {
         return 1;
     }
 }
+
 void func_80033FE4(void) {
     s32 v1;
     if (D_800A36F0 != 0) {
@@ -6411,7 +6938,6 @@ void func_80033FE4(void) {
         D_800A3834 = 8;
     }
 }
-
 
 void func_800340A0(void) {
     u8 p1, p2, round;
@@ -6450,6 +6976,7 @@ void func_800340A0(void) {
     D_800F65F8[D_800A3874][1] = D_800A3899;
     D_800A3874 = D_800A3874 + 1;
 }
+
 void func_80034200(void) {
     s32 shift = 0;
     s32 i = 0;
@@ -6484,7 +7011,9 @@ void func_80034200(void) {
 
     D_800A3784 = acc;
 }
+
 extern void func_80034200(void);
+
 void func_800342A0(void) {
     func_80034200();
     if (D_800A3874 == D_800A389B) {
@@ -6508,14 +7037,13 @@ void func_800342A0(void) {
         D_800A38B8 = 0;
         D_800A3920 = 0;
         v1 = 0;
-loop:
-        {
-            s32 v0 = D_800A3874;
-            v0 = v0 << 1;
-            v0 = v0 + (s32)a1;
-            v0 = *((u8 *)v0 + v1);
-            D_80102778.unk_4[v1] = v0;
-        }
+    loop: {
+        s32 v0 = D_800A3874;
+        v0 = v0 << 1;
+        v0 = v0 + (s32)a1;
+        v0 = *((u8 *)v0 + v1);
+        D_80102778.unk_4[v1] = v0;
+    }
         {
             s32 v0 = D_800A3874;
             v0 = v0 << 1;
@@ -6524,16 +7052,20 @@ loop:
             D_80102778.unk_4[2 + v1] = v0;
         }
         v1++;
-        if (v1 < 2) goto loop;
+        if (v1 < 2)
+            goto loop;
         gpu_InitDisplay();
         func_800372C0();
         D_800A3834 = 0;
     }
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order; values
+ * from the original EXE. */
 s32 D_800A3140 = 0;
-s32 D_800A3144[2] = { 0x15e, 0x172 };  /* address taken (lui/addiu) in func_800288C8: size from the blob label */
+/* address taken (lui/addiu) in func_800288C8: size from the blob label */
+s32 D_800A3144[2] = {0x15e, 0x172};
 s32 D_800A314C = 0;
-/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+/* Q65: tentative definitions (COMMON) of the small data this file reaches
+ * gp-relative. */
 u8 D_800A36F2[2];

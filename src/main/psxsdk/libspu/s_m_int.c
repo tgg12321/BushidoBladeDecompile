@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSPU S_M_INT: _spu_gcSPU. .text 0x800896A0..0x800899A8, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSPU S_M_INT: _spu_gcSPU. .text 0x800896A0..0x800899A8, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libspu_internal.h"
 

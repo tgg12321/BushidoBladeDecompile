@@ -1,6 +1,6 @@
-/* PsyQ 4.0 LIBGPU EXT: LoadTPage, LoadClut, LoadClut2, SetDefDrawEnv and SetDefDispEnv. .text
- * 0x8007A4D8..0x8007A788, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106
- * D3. */
+/* PsyQ 4.0 LIBGPU EXT: LoadTPage, LoadClut, LoadClut2, SetDefDrawEnv and
+ * SetDefDispEnv. .text 0x8007A4D8..0x8007A788, a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include <psxsdk/libgpu.h>
 
@@ -33,6 +33,7 @@ u16 LoadClut(u32 *a0, s32 a1, s32 a2) {
     LoadImage(&buf, a0);
     return GetClut(a1, a2);
 }
+
 u16 LoadClut2(u32 *a0, s32 a1, s32 a2) {
     RECT buf;
     buf.x = a1;
@@ -42,6 +43,7 @@ u16 LoadClut2(u32 *a0, s32 a1, s32 a2) {
     LoadImage(&buf, a0);
     return GetClut(a1, a2);
 }
+
 DRAWENV *SetDefDrawEnv(DRAWENV *env, s32 x, s32 y, s32 w, s32 h) {
     s32 ret;
     ret = GetVideoMode();

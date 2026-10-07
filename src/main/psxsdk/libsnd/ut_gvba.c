@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSND UT_GVBA: SsUtGetVBaddrInSB. .text 0x800859F0..0x80085A40, a verbatim LIBSCAN
- * module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSND UT_GVBA: SsUtGetVBaddrInSB. .text 0x800859F0..0x80085A40, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 

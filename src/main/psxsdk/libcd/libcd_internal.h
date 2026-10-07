@@ -1,13 +1,15 @@
 #ifndef LIBCD_INTERNAL_H
 #define LIBCD_INTERNAL_H
 
-/* PsyQ LIBCD library-internal state and the BIOS-layer (bios.c) entry points the command layer
- * (sys.c) calls (SOTN src/main/psxsdk/libcd/libcd_internal.h). */
+/* PsyQ LIBCD library-internal state and the BIOS-layer (bios.c) entry points
+ * the command layer (sys.c) calls (SOTN
+ * src/main/psxsdk/libcd/libcd_internal.h). */
 
 #include <psxsdk/libcd.h>
 
 extern s32 CD_status; /* Sony's int CD_status (bios.c) */
-extern u8 CD_pos[4]; /* Sony's u_char CD_pos[4] (SOTN: src/main/psxsdk/libcd/bios.c:42 @aa53500) */
+/* Sony's u_char CD_pos[4] (SOTN: src/main/psxsdk/libcd/bios.c:42 @aa53500) */
+extern u8 CD_pos[4];
 extern u8 CD_mode;
 extern u8 CD_com;
 extern CdlCB CD_cbsync;

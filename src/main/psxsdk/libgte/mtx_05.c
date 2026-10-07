@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBGTE MTX_05: ApplyMatrix. .text 0x8007ED6C..0x8007EDBC, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBGTE MTX_05: ApplyMatrix. .text 0x8007ED6C..0x8007EDBC, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "include_asm.h"
 
 /* func_8007ED6C = LIBGTE MTX_05 ApplyMatrix â€” verbatim-linked Sony PsyQ 4.0

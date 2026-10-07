@@ -1,5 +1,6 @@
-/* PsyQ 4.0 LIBSPU S_STSA: SpuSetTransferStartAddr. .text 0x8008AE24..0x8008AE7C, a verbatim LIBSCAN
- * module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSPU S_STSA: SpuSetTransferStartAddr. .text
+ * 0x8008AE24..0x8008AE7C, a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libspu_internal.h"
 

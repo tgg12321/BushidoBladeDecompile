@@ -1,8 +1,8 @@
 #ifndef PSXSDK_LIBSN_H
 #define PSXSDK_LIBSN_H
 
-/* SN Systems host-file (PCdrv) entry points (PsyQ's libsn.h), spelled as BB2's code uses them
- * (src/main/psxsdk/libsn/). */
+/* SN Systems host-file (PCdrv) entry points (PsyQ's libsn.h), spelled as BB2's
+ * code uses them (src/main/psxsdk/libsn/). */
 
 #include "common.h"
 

@@ -1,5 +1,5 @@
-/* 12 game functions, among them pad_ResetState. .text 0x80017FA0 (ROM 0x87A0). Start boundary:
- * LEGACY (the splat 6CAC segment edge). */
+/* 12 game functions, among them pad_ResetState. .text 0x80017FA0 (ROM 0x87A0).
+ * Start boundary: LEGACY (the splat 6CAC segment edge). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -10,80 +10,41 @@
 
 /* Extern function declarations */
 
-
-
-
-
-
 extern s32 memcpy(s32 *, s32, s32);
 extern s32 func_80054434(void);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 extern void func_80018300(Func80017A44Output *);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 typedef struct {
-    s32 d0[3];      /* 0x00 delta to focus 0 (GTE input) */
-    s32 d1[3];      /* 0x0C delta to focus 1 (GTE input) */
-    s32 vel[3];     /* 0x18 velocity / GTE vector */
-    s32 dpos[3];    /* 0x24 displacement added to every node */
-    s32 sq[3];      /* 0x30 GTE squares */
-    s32 pos[3];     /* 0x3C node position */
-    s32 cpos[3];    /* 0x48 node position >> 5 */
-    s32 unk54[3];   /* 0x54 */
-    s32 nsph;       /* 0x60 ellipsoid count */
-    s32 sph[3][6];  /* 0x64 ellipsoid foci 0 and 1 */
-    s32 rad[3];     /* 0xAC ellipsoid bounds (sum of the two focus distances) */
-    s32 ground;     /* 0xB8 ground height */
+    s32 d0[3];     /* 0x00 delta to focus 0 (GTE input) */
+    s32 d1[3];     /* 0x0C delta to focus 1 (GTE input) */
+    s32 vel[3];    /* 0x18 velocity / GTE vector */
+    s32 dpos[3];   /* 0x24 displacement added to every node */
+    s32 sq[3];     /* 0x30 GTE squares */
+    s32 pos[3];    /* 0x3C node position */
+    s32 cpos[3];   /* 0x48 node position >> 5 */
+    s32 unk54[3];  /* 0x54 */
+    s32 nsph;      /* 0x60 ellipsoid count */
+    s32 sph[3][6]; /* 0x64 ellipsoid foci 0 and 1 */
+    s32 rad[3];    /* 0xAC ellipsoid bounds (sum of the two focus distances) */
+    s32 ground;    /* 0xB8 ground height */
     s32 force[0][3]; /* 0xBC force table, indexed by the node's packed bytes */
 } Scr1F800000;
+
 #define SCR ((Scr1F800000 *)0x1F800000)
-/* func_80017FA0 - copies the scene quad's collision volumes (a0->unkC) into scratchpad
- * RAM (0x1F800000). unk00 is written scaled by 128 (the ground word); count is the
- * volume count, and each volume writes its two foci (three words each, scaled by 4) at
- * a 0x18 stride plus its bound from unk68. Nothing happens when a0->unkC is null.
+
+/* func_80017FA0 - copies the scene quad's collision volumes (a0->unkC) into
+ * scratchpad RAM (0x1F800000). unk00 is written scaled by 128 (the ground
+ * word); count is the volume count, and each volume writes its two foci (three
+ * words each, scaled by 4) at a 0x18 stride plus its bound from unk68. Nothing
+ * happens when a0->unkC is null.
  *
  * The outer loop's entry guard is spelled against the live counter,
- * `if (i < ptr->count)`, not `if (ptr->count > 0)`: `i` then survives to frame layout,
- * so mips.c:compute_frame_size emits the target's empty 8-byte leaf frame
+ * `if (i < ptr->count)`, not `if (ptr->count > 0)`: `i` then survives to frame
+ * layout, so mips.c:compute_frame_size emits the target's empty 8-byte leaf
+ * frame
  * (`addiu sp,sp,-8` in the beqz delay slot / `addiu sp,sp,8`) while `i` lives
  * entirely in a register (the "folded loop-guard compare" producer of
  * .claude/rules/phantom-slot-frame-lever.md; same spelling as
@@ -91,8 +52,9 @@ typedef struct {
  * must keep its loop notes, because the target's `ac_base` store
  * (`sw v0,0xAC(t3)` with `addiu t3,t3,4`) is loop.c's reduced form. */
 void func_80017FA0(SceneQuad *a0) {
-    /* FAKE: temp takes the block pointer for the null test and ptr a copy after it (lw v0 / move t1,v0);
-     * tested as ptr itself the load goes straight to t1 and the move drops: score 3 */
+    /* FAKE: temp takes the block pointer for the null test and ptr a copy after
+     * it (lw v0 / move t1,v0); tested as ptr itself the load goes straight to
+     * t1 and the move drops: score 3 */
     Unk8003F6D8Coll *temp;
     Unk8003F6D8Coll *ptr;
 
@@ -123,17 +85,17 @@ void func_80017FA0(SceneQuad *a0) {
              * insns against the target's 61); as a goto loop each store keeps
              * its absolute address and maspsx expands it to the target's
              * `lui $at ; addu $at,$a1,$at ; sw $2,%lo($at)` shape
-             * (tools/maspsx/maspsx/__init__.py:1183). Ablated (2026-10-06): score 12. */
-            inner:
-                {
-                    s32 *dp = (s32 *)((u8 *)ptr + data_off);
-                    *(s32 *)(0x1F800064 + sp_inner) = dp[2] << 2;
-                    data_off += 0x10;
-                    *(s32 *)(0x1F800068 + sp_inner) = dp[3] << 2;
-                    j++;
-                    *(s32 *)(0x1F80006C + sp_inner) = dp[4] << 2;
-                    sp_inner += 0xC;
-                }
+             * (tools/maspsx/maspsx/__init__.py:1183). Ablated (2026-10-06):
+             * score 12. */
+            inner: {
+                s32 *dp = (s32 *)((u8 *)ptr + data_off);
+                *(s32 *)(0x1F800064 + sp_inner) = dp[2] << 2;
+                data_off += 0x10;
+                *(s32 *)(0x1F800068 + sp_inner) = dp[3] << 2;
+                j++;
+                *(s32 *)(0x1F80006C + sp_inner) = dp[4] << 2;
+                sp_inner += 0xC;
+            }
                 if (j < 2) {
                     goto inner;
                 }
@@ -147,59 +109,68 @@ void func_80017FA0(SceneQuad *a0) {
     }
 
     SCR->nsph = a0->unkC->count;
-end:
-    ;
+end:;
 }
-/* func_80018094 -- loads the GTE rotation/translation from the quad's MATRIX (arg0->unk4),
- * runs func_80017FA0, writes that MATRIX's translation minus the object's (arg1->matrix.t)
- * to scratchpad, scales it by a factor derived from its length (byte-LUT integer
- * sqrt, GTE LZC above 0x400; 0x100 beyond 250000), copies the MATRIX to arg1->matrix and
- * runs func_80018300.
+
+/* func_80018094 -- loads the GTE rotation/translation from the quad's MATRIX
+ * (arg0->unk4), runs func_80017FA0, writes that MATRIX's translation minus the
+ * object's (arg1->matrix.t) to scratchpad, scales it by a factor derived from
+ * its length (byte-LUT integer sqrt, GTE LZC above 0x400; 0x100 beyond 250000),
+ * copies the MATRIX to arg1->matrix and runs func_80018300.
  *
  * COMPLETED-INLINE-ASM-CANONICAL: three PsyQ GTE inline-asm islands
  * (gte_SetRotMatrix, gte_SetTransMatrix, gte_Lzc), granted for this function by
- * the owner cop2 cluster ruling (.claude/rules/cop2-addressing-preamble-cluster.md,
- * SetRotMatrix/long-vector sub-family); everything around them is C. The LZC
- * island's operand list is exactly the granted form
+ * the owner cop2 cluster ruling
+ * (.claude/rules/cop2-addressing-preamble-cluster.md, SetRotMatrix/long-vector
+ * sub-family); everything around them is C. The LZC island's operand list is
+ * exactly the granted form
  * `: "=m"(sp_tmp[0]) : "r"(lut) : "$2", "$12"`.
  *
  * Two register details shape the C around the LZC island:
  * (1) the pre-island `move $a0,$a1` (target parks it in the `beqz` delay slot):
- *     the `lut = sum_sq;` copy survives cse only if a NOTE_INSN_LOOP_END sits between
- *     the small arm's terminating BARRIER and the LZC arm's label, which is what an `if`
- *     with no else whose body is `do { ...; goto lzc_done; } while (0);` emits
- *     (tools/gcc-2.7.2/cse.c:8100-8125, the follow-jumps gate's backward walk).
- * (2) the small arm's LUT byte in $v0 (not $a0): `lut` and `sum_sq` have identical
- *     conflict sets and both prefer $4, so global.c's allocno_compare priority alone
- *     decides which takes $a0. A do-while(0) around the LZC arm raises that region's
- *     flow.c loop depth, so the same references count for more and `lut` wins the
- *     sort (BB2_ALLOC_DEBUG on the instrumented cc1).
- * Each of the three do-while(0) wraps and the 16-byte sp_tmp is load-bearing.
+ *     the `lut = sum_sq;` copy survives cse only if a NOTE_INSN_LOOP_END sits
+ * between the small arm's terminating BARRIER and the LZC arm's label, which is
+ * what an `if` with no else whose body is `do { ...; goto lzc_done; } while
+ * (0);` emits (tools/gcc-2.7.2/cse.c:8100-8125, the follow-jumps gate's
+ * backward walk). (2) the small arm's LUT byte in $v0 (not $a0): `lut` and
+ * `sum_sq` have identical conflict sets and both prefer $4, so global.c's
+ * allocno_compare priority alone decides which takes $a0. A do-while(0) around
+ * the LZC arm raises that region's flow.c loop depth, so the same references
+ * count for more and `lut` wins the sort (BB2_ALLOC_DEBUG on the instrumented
+ * cc1). Each of the three do-while(0) wraps and the 16-byte sp_tmp is
+ * load-bearing.
  */
-typedef struct { s32 pad[9]; s32 x, y, z; } ScrV;
+typedef struct {
+    s32 pad[9];
+    s32 x, y, z;
+} ScrV;
+
 #define SCRV ((ScrV *)0x1F800000)
+
 void func_80018094(SceneQuad *arg0, Func80017A44Output *arg1) {
-    /* FAKE: frame layout -- unwritten tail sp_tmp[1..3] on the live LZC-output object;
-     * sp_tmp must be 9-16 bytes (s32[3] and s32[4] are byte-identical). From
-     * asm/funcs/func_80018094.s: frame 0x30 = outgoing args 0x10 + locals 0x10 +
-     * callee-saves 0x10 (s0/s1/ra at 0x20/0x24/0x28); the only locals traffic in the
-     * whole target is the island's `swc2 $31,0($t4)` with $t4 = $sp+0x10 and the
-     * matching `lw $v1,0x10($sp)`, i.e. 4 bytes written of a 16-byte locals region. A
-     * 4-byte locals set yields ALIGN8(4)+16+16 = 0x28 != 0x30 (function.c
-     * assign_stack_local / mips.c compute_frame_size). OVERSIZED-LOCALS carve-out of
-     * .claude/rules/dead-vars-local-array.md (extend the live locals object, not a
-     * dead pad): sp_tmp[0] is the live LZC output. (as s32 sp_tmp[1]: score 8) */
+    /* FAKE: frame layout -- unwritten tail sp_tmp[1..3] on the live LZC-output
+     * object; sp_tmp must be 9-16 bytes (s32[3] and s32[4] are byte-identical).
+     * From asm/funcs/func_80018094.s: frame 0x30 = outgoing args 0x10 + locals
+     * 0x10 + callee-saves 0x10 (s0/s1/ra at 0x20/0x24/0x28); the only locals
+     * traffic in the whole target is the island's `swc2 $31,0($t4)` with $t4 =
+     * $sp+0x10 and the matching `lw $v1,0x10($sp)`, i.e. 4 bytes written of a
+     * 16-byte locals region. A 4-byte locals set yields ALIGN8(4)+16+16 = 0x28
+     * != 0x30 (function.c assign_stack_local / mips.c compute_frame_size).
+     * OVERSIZED-LOCALS carve-out of .claude/rules/dead-vars-local-array.md
+     * (extend the live locals object, not a dead pad): sp_tmp[0] is the live
+     * LZC output. (as s32 sp_tmp[1]: score 8) */
     s32 sp_tmp[4];
     s32 dx, dy, dz;
     s32 sum_sq;
     s32 scale;
     u32 lut;
 
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r0) --- inline_c.h:297-310 (same spelling
-     * as func_80019310 / func_800300B4; "memory" clobber ADDED, not SDK text -- precedent
-     * src/code6cac_b.c:1116-1123 (func_8002D320's lwc2-read island: `"r"(vin) : "$12", "memory"`),
-     * the same committed precedent FUNCTION that func_80019310's own CLOBBER PROVENANCE
-     * paragraph cites in this file. */
+    /* PsyQ libgte inline macro gte_SetRotMatrix(r0) --- inline_c.h:297-310
+     * (same spelling as func_80019310 / func_800300B4; "memory" clobber ADDED,
+     * not SDK text -- precedent src/code6cac_b.c:1116-1123 (func_8002D320's
+     * lwc2-read island: `"r"(vin) : "$12", "memory"`), the same committed
+     * precedent FUNCTION that func_80019310's own CLOBBER PROVENANCE paragraph
+     * cites in this file. */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -213,7 +184,8 @@ void func_80018094(SceneQuad *arg0, Func80017A44Output *arg1) {
         "ctc2   $14, $3\n"
         "ctc2   $15, $4\n"
         :: "r"(arg0->unk4) : "$12", "$13", "$14", "$15", "memory");
-    /* PsyQ libgte inline macro gte_SetTransMatrix(r0) --- inline_c.h:360-369. */
+    /* PsyQ libgte inline macro gte_SetTransMatrix(r0) --- inline_c.h:360-369.
+     */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 20($12)\n"
@@ -242,90 +214,108 @@ void func_80018094(SceneQuad *arg0, Func80017A44Output *arg1) {
     } else {
         {
             /* FAKE: do{...}while(0) around the whole else-arm body -- flow.c
-             * life_analysis / basic_block_loop_depth (tools/gcc-2.7.2/flow.c:440-471):
-             * NOTE_INSN_LOOP_BEG/END raise the block's loop depth, and every reference in
-             * the region is then weighted by that depth in `reg_n_refs[regno] += loop_depth`
-             * (flow.c:2081), the numerator of global.c's allocno_compare priority.
-             * Family: do-while-zero-exception. Ablated (2026-10-06): score 13. */
+             * life_analysis / basic_block_loop_depth
+             * (tools/gcc-2.7.2/flow.c:440-471): NOTE_INSN_LOOP_BEG/END raise
+             * the block's loop depth, and every reference in the region is then
+             * weighted by that depth in `reg_n_refs[regno] += loop_depth`
+             * (flow.c:2081), the numerator of global.c's allocno_compare
+             * priority. Family: do-while-zero-exception. Ablated (2026-10-06):
+             * score 13. */
             do {
-            /* FAKE: the LZC island's input operand staged through `lut`, the local the LZC arm
-             * already owns for its LUT byte, mechanism: cse.c cse_end_of_basic_block's
-             * follow-jumps gate (see the small arm's note) lets this copy survive to RA, where
-             * global.c find_reg seats it at $a0 and reorg.c fills the `beqz` delay slot with it
-             * -- reproducing the target's pre-island `move $a0,$a1` with no asm-operand device.
-             * Liveness (bound 3): `lut` holds nothing at this point (its LZC-arm write comes
-             * later), and the staged value is consumed by the island BEFORE that write, so the
-             * borrow is safe in both directions.
-             * Family: staged-value-reused-variable. (island input sum_sq, no copy: score 10) */
-            lut = sum_sq;
-            if (sum_sq < 0x400) {
-                /* FAKE: do{...}while(0) around the small arm's body, with the arm exited by
-                 * `goto lzc_done` so this `if` has NO else, mechanism: cse.c
-                 * cse_end_of_basic_block's follow-jumps gate -- expand_end_loop emits
-                 * NOTE_INSN_LOOP_END after the `goto`'s BARRIER and before the if's false
-                 * label, and the gate's backward walk (tools/gcc-2.7.2/cse.c:8112-8118)
-                 * stops on a LOOP_END note, so cse1 AND cse2 refuse to extend the block into
-                 * the LZC arm and the `lut = sum_sq;` island-input copy survives.
-                 * Family: do-while-zero-exception. Ablated (2026-10-06): score 10. */
-                do {
-                    sum_sq = (u8)(g_sqrt_table_u8[sum_sq]) >> 3;
-                    goto lzc_done;
-                } while (0);
-            }
-            {
-                s32 shift_a, shift_b;
-                /* FAKE: third do{...}while(0), around the LZC arm's body -- the same
-                 * flow.c loop-depth weighting lifts `lut`'s three in-arm references
-                 * (the island operand, the LUT byte set, the <<16 use) from weight 2 to
-                 * weight 3, so allocno_n_refs[lut] goes 8 -> 11 while sum_sq's goes 19 -> 21,
-                 * and global.c's allocno_compare priority
-                 * (floor_log2(n_refs)*n_refs/live_length*10000) becomes 47142 for `lut` versus
-                 * 40000 for `sum_sq`. `lut` is then allocated first and takes $a0, sum_sq $a1,
-                 * exactly as the target seats them, and the small arm's LUT byte is free to
-                 * stay in its own short-lived pseudo at $v0. One wrap level is not enough:
-                 * each of the three wraps is load-bearing and none subsumes another.
-                 * Family: do-while-zero-exception. Ablated (2026-10-06): score 13. */
-                /* PsyQ libgte inline macro gte_Lzc(r1,r2) --- gtemac.h:174-178, which
-                 * expands to gte_ldlzc(r1) (inline_c.h:228-231, `mtc2 %0,$30`), two
-                 * gte_nop() (inline_c.h:1346-1347), then gte_stlzc(r2)
-                 * (inline_c.h:1318-1322, `swc2 $31,0(%0)`).  DISCLOSURE OF THE ADDRESSING
-                 * PREAMBLE: the two `addu $t4, ..., $zero` moves and the `addiu $v0,$sp,0x10`
-                 * are NOT part of those macros own text -- they are the operand-addressing
-                 * preamble the original build inline expansion emitted around them (the
-                 * `addu $t4,$aN,$zero` + cop2 idiom of the 28-function cluster in
-                 * .claude/rules/cop2-addressing-preamble-cluster.md, of which this function
-                 * is an enumerated member).  They are written literally here because
-                 * the island must reproduce those bytes; `"=m"(sp_tmp[0])` names the frame
-                 * slot the `addiu $v0,$sp,0x10` computes, and `"r"(lut)` the ldlzc input.
-                 * The operand list is exactly the granted form -- no extra output, tied, or
-                 * clobber operand. */
-                do {
-                __asm__ volatile(
-                    "addu   $t4, %1, $zero\n"
-                    "mtc2   $t4, $30\n"
-                    "nop\n"
-                    "nop\n"
-                    "addiu  $v0, $sp, 0x10\n"
-                    "addu   $t4, $v0, $zero\n"
-                    "swc2   $31, 0($t4)\n"
-                    : "=m"(sp_tmp[0])
-                    : "r"(lut)
-                    : "$2", "$12");
-                {
-                    /* FAKE: the -2 mask held in a local that then takes the masked count (li -2 /
-                     * and v0,v1,v0); as `0x16 - (sp_tmp[0] & -2)` the load and the AND move to $a0:
-                     * score 4 */
-                    s32 tmp = -2;
-                    tmp = sp_tmp[0] & tmp;
-                    shift_a = 0x16 - tmp;
+                /* FAKE: the LZC island's input operand staged through `lut`,
+                 * the local the LZC arm already owns for its LUT byte,
+                 * mechanism: cse.c cse_end_of_basic_block's follow-jumps gate
+                 * (see the small arm's note) lets this copy survive to RA,
+                 * where global.c find_reg seats it at $a0 and reorg.c fills the
+                 * `beqz` delay slot with it
+                 * -- reproducing the target's pre-island `move $a0,$a1` with no
+                 * asm-operand device. Liveness (bound 3): `lut` holds nothing
+                 * at this point (its LZC-arm write comes later), and the staged
+                 * value is consumed by the island BEFORE that write, so the
+                 * borrow is safe in both directions.
+                 * Family: staged-value-reused-variable. (island input sum_sq,
+                 * no copy: score 10) */
+                lut = sum_sq;
+                if (sum_sq < 0x400) {
+                    /* FAKE: do{...}while(0) around the small arm's body, with
+                     * the arm exited by `goto lzc_done` so this `if` has NO
+                     * else, mechanism: cse.c cse_end_of_basic_block's
+                     * follow-jumps gate -- expand_end_loop emits
+                     * NOTE_INSN_LOOP_END after the `goto`'s BARRIER and before
+                     * the if's false label, and the gate's backward walk
+                     * (tools/gcc-2.7.2/cse.c:8112-8118) stops on a LOOP_END
+                     * note, so cse1 AND cse2 refuse to extend the block into
+                     * the LZC arm and the `lut = sum_sq;` island-input copy
+                     * survives. Family: do-while-zero-exception. Ablated
+                     * (2026-10-06): score 10. */
+                    do {
+                        sum_sq = (u8)(g_sqrt_table_u8[sum_sq]) >> 3;
+                        goto lzc_done;
+                    } while (0);
                 }
-                shift_b = shift_a >> 1;
-                lut = (u8)(g_sqrt_table_u8[sum_sq >> shift_a]);
-                sum_sq = ((s32)(lut << 16)) >> (0x13 - shift_b);
-                } while (0);
-            }
-        lzc_done:
-            scale = ((sum_sq << 6) / 500) + 0xC0;
+                {
+                    s32 shift_a, shift_b;
+                    /* FAKE: third do{...}while(0), around the LZC arm's body --
+                     * the same flow.c loop-depth weighting lifts `lut`'s three
+                     * in-arm references (the island operand, the LUT byte set,
+                     * the <<16 use) from weight 2 to weight 3, so
+                     * allocno_n_refs[lut] goes 8 -> 11 while sum_sq's goes 19
+                     * -> 21, and global.c's allocno_compare priority
+                     * (floor_log2(n_refs)*n_refs/live_length*10000) becomes
+                     * 47142 for `lut` versus 40000 for `sum_sq`. `lut` is then
+                     * allocated first and takes $a0, sum_sq $a1, exactly as the
+                     * target seats them, and the small arm's LUT byte is free
+                     * to stay in its own short-lived pseudo at $v0. One wrap
+                     * level is not enough: each of the three wraps is
+                     * load-bearing and none subsumes another. Family:
+                     * do-while-zero-exception. Ablated (2026-10-06): score 13.
+                     */
+                    /* PsyQ libgte inline macro gte_Lzc(r1,r2) ---
+                     * gtemac.h:174-178, which expands to gte_ldlzc(r1)
+                     * (inline_c.h:228-231, `mtc2 %0,$30`), two gte_nop()
+                     * (inline_c.h:1346-1347), then gte_stlzc(r2)
+                     * (inline_c.h:1318-1322, `swc2 $31,0(%0)`).  DISCLOSURE OF
+                     * THE ADDRESSING PREAMBLE: the two `addu $t4, ..., $zero`
+                     * moves and the `addiu $v0,$sp,0x10` are NOT part of those
+                     * macros own text -- they are the operand-addressing
+                     * preamble the original build inline expansion emitted
+                     * around them (the `addu $t4,$aN,$zero` + cop2 idiom of the
+                     * 28-function cluster in
+                     * .claude/rules/cop2-addressing-preamble-cluster.md, of
+                     * which this function is an enumerated member).  They are
+                     * written literally here because the island must reproduce
+                     * those bytes; `"=m"(sp_tmp[0])` names the frame slot the
+                     * `addiu $v0,$sp,0x10` computes, and `"r"(lut)` the ldlzc
+                     * input. The operand list is exactly the granted form -- no
+                     * extra output, tied, or clobber operand. */
+                    do {
+                        __asm__ volatile(
+                            "addu   $t4, %1, $zero\n"
+                            "mtc2   $t4, $30\n"
+                            "nop\n"
+                            "nop\n"
+                            "addiu  $v0, $sp, 0x10\n"
+                            "addu   $t4, $v0, $zero\n"
+                            "swc2   $31, 0($t4)\n"
+                            : "=m"(sp_tmp[0])
+                            : "r"(lut)
+                            : "$2", "$12");
+                        {
+                            /* FAKE: the -2 mask held in a local that then takes
+                             * the masked count (li -2 / and v0,v1,v0); as `0x16
+                             * - (sp_tmp[0] & -2)` the load and the AND move to
+                             * $a0: score 4 */
+                            s32 tmp = -2;
+                            tmp = sp_tmp[0] & tmp;
+                            shift_a = 0x16 - tmp;
+                        }
+                        shift_b = shift_a >> 1;
+                        lut = (u8)(g_sqrt_table_u8[sum_sq >> shift_a]);
+                        sum_sq = ((s32)(lut << 16)) >> (0x13 - shift_b);
+                    } while (0);
+                }
+            lzc_done:
+                scale = ((sum_sq << 6) / 500) + 0xC0;
             } while (0);
         }
     }
@@ -336,43 +326,42 @@ void func_80018094(SceneQuad *arg0, Func80017A44Output *arg1) {
     arg1->matrix = *arg0->unk4;
     func_80018300(arg1);
 }
+
 /* func_80018300 -- COMPLETED-INLINE-ASM-CANONICAL.
- * Distance-constraint pass over a chain of 64-byte nodes. arg0->edge_count is the
- * link count, arg0->records the node array, arg0->edges a table of 16-byte links (dist =
- * rest length, ends = two packed node indices). For each link the node pair is
- * bisected (the midpoint replaces the node named by the low index half if
- * its index (state) is negative, else the node named by the high half, and that
- * node's field_C..field_14 are quartered) until every axis delta is within 3x the
- * rest length; the delta >> 3 is then squared on the
- * GTE, its length taken through the D_8008D118 byte-LUT integer sqrt (GTE LZC
- * above 0x400), and the delta >> 3 is scaled on the GTE by
- * f = ((len - rest) << 14) / len (GPF sf=1: (f * d) >> 12) into
- * the 0x1F8000BC output array. The last link is emitted after the loop without
- * the bisection.
+ * Distance-constraint pass over a chain of 64-byte nodes. arg0->edge_count is
+ * the link count, arg0->records the node array, arg0->edges a table of 16-byte
+ * links (dist = rest length, ends = two packed node indices). For each link the
+ * node pair is bisected (the midpoint replaces the node named by the low index
+ * half if its index (state) is negative, else the node named by the high half,
+ * and that node's field_C..field_14 are quartered) until every axis delta is
+ * within 3x the rest length; the delta >> 3 is then squared on the GTE, its
+ * length taken through the D_8008D118 byte-LUT integer sqrt (GTE LZC above
+ * 0x400), and the delta >> 3 is scaled on the GTE by f = ((len - rest) << 14) /
+ * len (GPF sf=1: (f * d) >> 12) into the 0x1F8000BC output array. The last link
+ * is emitted after the loop without the bisection.
  *
  * GTE ISLANDS: census member of the owner cop2 cluster ruling
- * (.claude/rules/cop2-addressing-preamble-cluster.md; per-function registry row,
- * commit eeda6664b). Each island is one PsyQ GTE
- * macro as spelled in PsyQ inline_o.h, the "DMPSX version 3" macro header
- * (Xeeynamo/croc@f30ff1ee include/psyq/inline_o.h, sha256 27a4abd6...81a9d6;
- * its $PSLibId$ is unexpanded, so no release is pinned), in three classes:
- * (a) 14 load/store islands (gte_ldlvl, gte_stlvnl, gte_ldlzc, gte_stlzc,
- * gte_lddp, gte_stlvl) = `move $12,%0` + the cop2 transfer; (b) 4 command
- * islands (gte_sqr0, gte_gpf12) = nop, nop + the cop2 command word; (c) 2
- * gte_nop islands = one bare `nop` each (inline_o.h:3068), filling the
- * post-loop LZC result delay (target mtc2 $t4,$30; nop; nop at 0x80018720-28).
- * Every statement clobbers "$12","$13","$14","$15","memory" as the header
- * writes it. That header is where the target's `addu $t4,<src>,$zero`
- * preamble comes from, and its clobber list is what the target's register
- * footprint shows: $t5-$t7 carry no value anywhere in the function,
- * count/out/data/radius sit in $s0/$s1/$t8/$t9 (with "$12","memory" they land
- * in $t7/$t8/$t5/$t6), and reload spills the constant island operands to $s2
- * (reload1.c bad_spill_regs <- regs_explicitly_used; "$12","memory" alone does
- * not match). Here each macro's statements
- * are joined into one __asm__ with the macro's own operand and clobber list,
- * and the header's `($12)` addressing is written `0($12)` (same encoding).
- * gte_sqr0 / gte_gpf12 carry the real cop2 words (0x4AA00428 SQR sf=0 lm=1,
- * 0x4B98003D GPF sf=1) in place of inline_o.h's DMPSX placeholders
+ * (.claude/rules/cop2-addressing-preamble-cluster.md; per-function registry
+ * row, commit eeda6664b). Each island is one PsyQ GTE macro as spelled in PsyQ
+ * inline_o.h, the "DMPSX version 3" macro header (Xeeynamo/croc@f30ff1ee
+ * include/psyq/inline_o.h, sha256 27a4abd6...81a9d6; its $PSLibId$ is
+ * unexpanded, so no release is pinned), in three classes: (a) 14 load/store
+ * islands (gte_ldlvl, gte_stlvnl, gte_ldlzc, gte_stlzc, gte_lddp, gte_stlvl) =
+ * `move $12,%0` + the cop2 transfer; (b) 4 command islands (gte_sqr0,
+ * gte_gpf12) = nop, nop + the cop2 command word; (c) 2 gte_nop islands = one
+ * bare `nop` each (inline_o.h:3068), filling the post-loop LZC result delay
+ * (target mtc2 $t4,$30; nop; nop at 0x80018720-28). Every statement clobbers
+ * "$12","$13","$14","$15","memory" as the header writes it. That header is
+ * where the target's `addu $t4,<src>,$zero` preamble comes from, and its
+ * clobber list is what the target's register footprint shows: $t5-$t7 carry no
+ * value anywhere in the function, count/out/data/radius sit in $s0/$s1/$t8/$t9
+ * (with "$12","memory" they land in $t7/$t8/$t5/$t6), and reload spills the
+ * constant island operands to $s2 (reload1.c bad_spill_regs <-
+ * regs_explicitly_used; "$12","memory" alone does not match). Here each macro's
+ * statements are joined into one __asm__ with the macro's own operand and
+ * clobber list, and the header's `($12)` addressing is written `0($12)` (same
+ * encoding). gte_sqr0 / gte_gpf12 carry the real cop2 words (0x4AA00428 SQR
+ * sf=0 lm=1, 0x4B98003D GPF sf=1) in place of inline_o.h's DMPSX placeholders
  * 0x00000f3f / 0x000012bf; both words are the target's own bytes. */
 void func_80018300(Func80017A44Output *arg0) {
     s32 *out;
@@ -388,13 +377,14 @@ void func_80018300(Func80017A44Output *arg0) {
     u32 len;
     /* FAKE: frame layout -- lz must be 17-24 bytes (s32 [5] and [6] are
      * byte-identical; [1], [4] and [7] are not). OVERSIZED-LOCALS carve-out
-     * (.claude/rules/dead-vars-local-array.md), extending the LIVE locals object:
-     * lz[0] is the GTE LZC output, written by gte_stlzc and read back. Frame math
-     * from asm/funcs/func_80018300.s alone: frame 0x28, three saves $s0-$s2 at
-     * 0x18/0x1C/0x20 (ALIGN8(12) = 16), no calls so no outgoing-args area, locals
-     * region 0x00-0x17 = 24 bytes; the ONLY $sp traffic in it is the island's
-     * `swc2 $31,0($t4)` ($t4 = $sp) and `lw $v1,0($sp)` -- 4 bytes. A fully
-     * written 4-byte object gives ALIGN8(4)+16 = 0x18 != 0x28. (as s32 lz[1]: score 8) */
+     * (.claude/rules/dead-vars-local-array.md), extending the LIVE locals
+     * object: lz[0] is the GTE LZC output, written by gte_stlzc and read back.
+     * Frame math from asm/funcs/func_80018300.s alone: frame 0x28, three saves
+     * $s0-$s2 at 0x18/0x1C/0x20 (ALIGN8(12) = 16), no calls so no outgoing-args
+     * area, locals region 0x00-0x17 = 24 bytes; the ONLY $sp traffic in it is
+     * the island's `swc2 $31,0($t4)` ($t4 = $sp) and `lw $v1,0($sp)` -- 4
+     * bytes. A fully written 4-byte object gives ALIGN8(4)+16 = 0x18 != 0x28.
+     * (as s32 lz[1]: score 8) */
     s32 lz[6];
     s32 f;
 
@@ -406,10 +396,10 @@ void func_80018300(Func80017A44Output *arg0) {
      * which holds nothing yet here (and, in the loop, nothing between the range
      * check and its reassignment after the divide); the word is consumed by the
      * two node-pointer statements before `thresh = radius * 3` overwrites it.
-     * mechanism: global.c find_reg -- as its own pseudo the word has no conflict
-     * with dx/dy/p2 and takes the lowest free reg ($a1); sharing thresh's pseudo
-     * seats it in $t1 as the target does.
-     * Family: staged-value-reused-variable. (its own local: score 5) */
+     * mechanism: global.c find_reg -- as its own pseudo the word has no
+     * conflict with dx/dy/p2 and takes the lowest free reg ($a1); sharing
+     * thresh's pseudo seats it in $t1 as the target does. Family:
+     * staged-value-reused-variable. (its own local: score 5) */
     thresh = data->ends.pair;
     radius = data->dist;
     p1 = &base[thresh >> 16];
@@ -498,7 +488,8 @@ void func_80018300(Func80017A44Output *arg0) {
              * byte in sum's $a0 (a fresh shift local, a fresh byte expression
              * or dropping the len = lz[0] copy each break the match).
              * Family: staged-value-reused-variable; same sum-for-byte reuse
-             * as func_8002F2D0 (src/code6cac_b.c). (fresh shift / byte locals: score 22) */
+             * as func_8002F2D0 (src/code6cac_b.c). (fresh shift / byte locals:
+             * score 22) */
             len = lz[0];
             len = 0x16 - (len & ~1);
             sum = g_sqrt_table_u8[sum >> len];
@@ -578,7 +569,8 @@ void func_80018300(Func80017A44Output *arg0) {
             "move   $12, %0\n"
             "swc2   $31, 0($12)\n"
             : : "r"(lz) : "$12", "$13", "$14", "$15", "memory");
-        /* FAKE: same staged len/sum reuse as the loop's LZC arm above (fresh shift / byte locals: score 3). */
+        /* FAKE: same staged len/sum reuse as the loop's LZC arm above (fresh
+         * shift / byte locals: score 3). */
         len = lz[0];
         len = 0x16 - (len & ~1);
         sum = g_sqrt_table_u8[sum >> len];
@@ -611,32 +603,35 @@ void func_80018300(Func80017A44Output *arg0) {
         "swc2   $11, 8($12)\n"
         : : "r"(out) : "$12", "$13", "$14", "$15", "memory");
 }
+
 void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1);
 void func_80019310(SceneQuad *arg0, Func80017A44Output *arg1);
+
 /* func_800187F4 -- COMPLETED-INLINE-ASM-CANONICAL.
  * Node-chain integrator. func_8001924C calls it for each scene quad (arg0;
  * unkC enables collision) whose flag bit 0 is clear, with the quad's object
- * (arg1: points, the 8-byte anchor vectors; count, the node count; records, the 64-byte
- * nodes). func_80018094 first sets up the GTE rotation/translation. Per node
- * (pos, velocity field_C..field_14, state index, force counts field_1C / field_20,
- * packed force-table indices field_24 / field_2C): state >= 0 springs the node toward its GTE-transformed
- * anchor (or snaps to it at 0) and ends there; state -0xFF..-1 first pulls the
- * position toward the anchor and then integrates like state < -0xFF: the indexed
- * scratchpad forces are added / subtracted, the node is pushed out of the ground and out of each
- * collision ellipsoid (inside when its distances to the two foci sum below the
- * bound; lengths via the D_8008D118 byte-LUT integer sqrt, with the GTE
- * leading-zero count above 0x400; the push applied on the GTE with GPF/GPL), and
- * the velocity is damped by 7/8 with 0x190 added to Y.
+ * (arg1: points, the 8-byte anchor vectors; count, the node count; records, the
+ * 64-byte nodes). func_80018094 first sets up the GTE rotation/translation. Per
+ * node (pos, velocity field_C..field_14, state index, force counts field_1C /
+ * field_20, packed force-table indices field_24 / field_2C): state >= 0 springs
+ * the node toward its GTE-transformed anchor (or snaps to it at 0) and ends
+ * there; state -0xFF..-1 first pulls the position toward the anchor and then
+ * integrates like state < -0xFF: the indexed scratchpad forces are added /
+ * subtracted, the node is pushed out of the ground and out of each collision
+ * ellipsoid (inside when its distances to the two foci sum below the bound;
+ * lengths via the D_8008D118 byte-LUT integer sqrt, with the GTE leading-zero
+ * count above 0x400; the push applied on the GTE with GPF/GPL), and the
+ * velocity is damped by 7/8 with 0x190 added to Y.
  *
  * GTE ISLANDS: each island is one PsyQ Run-time Library 4.3 inline_o.h macro
  * (or gtemac.h gte_Lzc), written statement for statement as the header writes
  * it: the copy pinned in engine/gtemacro.py PINNED (silent-hill-decomp@a1f407cb
- * include/psyq/inline_o.h, sha256 76f28032...; gtemac.h 9fe028fd...), class route
- * inline-asm-policy.md § Owner ruling 2026-09-26. The seven gte_rtv0tr / gte_sqr0 /
- * gte_gpf0 / gte_gpl12 units carry the post-DMPSX command word in place of the
- * header's DMPSX placeholder, under § Per-function grant: func_800187F4 (owner
- * ruling Q29): 0x0000027f -> 0x4A480012, 0x00000f3f -> 0x4AA00428,
- * 0x000012ff -> 0x4B90003D, 0x0000133f -> 0x4BA8003E. */
+ * include/psyq/inline_o.h, sha256 76f28032...; gtemac.h 9fe028fd...), class
+ * route inline-asm-policy.md § Owner ruling 2026-09-26. The seven gte_rtv0tr /
+ * gte_sqr0 / gte_gpf0 / gte_gpl12 units carry the post-DMPSX command word in
+ * place of the header's DMPSX placeholder, under § Per-function grant:
+ * func_800187F4 (owner ruling Q29): 0x0000027f -> 0x4A480012, 0x00000f3f ->
+ * 0x4AA00428, 0x000012ff -> 0x4B90003D, 0x0000133f -> 0x4BA8003E. */
 void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
     Func80017A44Record *node;
     s32 i;
@@ -648,17 +643,18 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
     s32 tot, pen;
     /* FAKE: frame layout -- lz must be 17-24 bytes (s32 [5] and [6] are
      * byte-identical). OVERSIZED-LOCALS carve-out
-     * (.claude/rules/dead-vars-local-array.md), extending the LIVE locals object:
-     * lz[0] and lz[1] are the two GTE leading-zero-count outputs, written by
-     * gte_stlzc and read back. Frame from asm/funcs/func_800187F4.s alone: frame 0x78 = outgoing args
-     * 0x10 + locals 0x40 + ten saves $s0-$s7/$fp/$ra at 0x50-0x74; the only locals
-     * traffic is lz[0]/lz[1] at sp+0x10/0x14 and the count spill at sp+0x48.
-     * Of the 0x40, 8 are the spill slot and 32 (0x28-0x47) are the four 8-byte
-     * phantom slots of the combine orphan-USE loop-guard pseudos (the frame of the
-     * lz[2] form: 0x68); the 24 bytes left (sp+0x10-0x27) are this object's:
-     * lz[0]/lz[1] written by gte_stlzc, then a 16-byte unwritten tail.
-     * lz[2] gives frame 0x68, lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78,
-     * lz[7]/lz[8] 0x80. (as s32 lz[2]: score 24) */
+     * (.claude/rules/dead-vars-local-array.md), extending the LIVE locals
+     * object: lz[0] and lz[1] are the two GTE leading-zero-count outputs,
+     * written by gte_stlzc and read back. Frame from asm/funcs/func_800187F4.s
+     * alone: frame 0x78 = outgoing args 0x10 + locals 0x40 + ten saves
+     * $s0-$s7/$fp/$ra at 0x50-0x74; the only locals traffic is lz[0]/lz[1] at
+     * sp+0x10/0x14 and the count spill at sp+0x48. Of the 0x40, 8 are the spill
+     * slot and 32 (0x28-0x47) are the four 8-byte phantom slots of the combine
+     * orphan-USE loop-guard pseudos (the frame of the lz[2] form: 0x68); the 24
+     * bytes left (sp+0x10-0x27) are this object's: lz[0]/lz[1] written by
+     * gte_stlzc, then a 16-byte unwritten tail. lz[2] gives frame 0x68,
+     * lz[3]/lz[4] 0x70, lz[5]/lz[6] 0x78, lz[7]/lz[8] 0x80. (as s32 lz[2]:
+     * score 24) */
     s32 lz[6];
 
     func_80018094(arg0, arg1);
@@ -667,7 +663,8 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
 
     for (i = 0; i < count; i++, node++) {
         /* Ruling 11 (reused local): three values, all loop indices -- the
-         * add-force loop's, the subtract-force loop's and the ellipsoid loop's. */
+         * add-force loop's, the subtract-force loop's and the ellipsoid loop's.
+         */
         s32 idx;
         /* Ruling 11 (reused local): two values, both force counts -- node
          * field_1C (forces added) and node field_20 (forces subtracted). */
@@ -681,8 +678,8 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
             __asm__ volatile ("move  $12,%0": :"r"(&arg1->points[i]):"$12","$13","$14","$15","memory");
             __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-            /* gte_rtv0tr() -- inline_o.h 4.3 :451-455; post-DMPSX word 0x4A480012
-             * for the header placeholder 0x0000027f (owner Q29) */
+            /* gte_rtv0tr() -- inline_o.h 4.3 :451-455; post-DMPSX word
+             * 0x4A480012 for the header placeholder 0x0000027f (owner Q29) */
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
             __asm__ volatile (".word 0x4A480012": : :"$12","$13","$14","$15","memory");
@@ -693,13 +690,21 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
             __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
             if (node->index > 0) {
                 SCR->pos[0] += SCR->dpos[0];
-                node->field_C = node->field_C / 2 + ((((SCR->vel[0] << 7) - SCR->pos[0]) * node->index) >> 8);
+                node->field_C =
+                    node->field_C / 2 +
+                    ((((SCR->vel[0] << 7) - SCR->pos[0]) * node->index) >> 8);
                 node->pos[0] = SCR->pos[0] + node->field_C;
                 SCR->pos[1] += SCR->dpos[1];
-                node->field_10 = node->field_10 / 2 + ((((SCR->vel[1] << 7) - SCR->pos[1]) * node->index + (0x100 - node->index) * 25) >> 8);
+                node->field_10 =
+                    node->field_10 / 2 +
+                    ((((SCR->vel[1] << 7) - SCR->pos[1]) * node->index +
+                      (0x100 - node->index) * 25) >>
+                     8);
                 node->pos[1] = SCR->pos[1] + node->field_10;
                 SCR->pos[2] += SCR->dpos[2];
-                node->field_14 = node->field_14 / 2 + ((((SCR->vel[2] << 7) - SCR->pos[2]) * node->index) >> 8);
+                node->field_14 =
+                    node->field_14 / 2 +
+                    ((((SCR->vel[2] << 7) - SCR->pos[2]) * node->index) >> 8);
                 node->pos[2] = SCR->pos[2] + node->field_14;
             } else {
                 node->pos[0] = SCR->vel[0] << 7;
@@ -713,8 +718,8 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
             __asm__ volatile ("move  $12,%0": :"r"(&arg1->points[i]):"$12","$13","$14","$15","memory");
             __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-            /* gte_rtv0tr() -- inline_o.h 4.3 :451-455; post-DMPSX word 0x4A480012
-             * for the header placeholder 0x0000027f (owner Q29) */
+            /* gte_rtv0tr() -- inline_o.h 4.3 :451-455; post-DMPSX word
+             * 0x4A480012 for the header placeholder 0x0000027f (owner Q29) */
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
             __asm__ volatile (".word 0x4A480012": : :"$12","$13","$14","$15","memory");
@@ -723,9 +728,12 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
             __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
-            SCR->pos[0] -= (((SCR->vel[0] << 7) - SCR->pos[0]) * node->index) >> 8;
-            SCR->pos[1] -= (((SCR->vel[1] << 7) - SCR->pos[1]) * node->index) >> 8;
-            SCR->pos[2] -= (((SCR->vel[2] << 7) - SCR->pos[2]) * node->index) >> 8;
+            SCR->pos[0] -=
+                (((SCR->vel[0] << 7) - SCR->pos[0]) * node->index) >> 8;
+            SCR->pos[1] -=
+                (((SCR->vel[1] << 7) - SCR->pos[1]) * node->index) >> 8;
+            SCR->pos[2] -=
+                (((SCR->vel[2] << 7) - SCR->pos[2]) * node->index) >> 8;
         }
         vx = node->field_C;
         vy = node->field_10;
@@ -789,7 +797,8 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
                  * then the focus-1 table byte. */
                 s32 temp;
                 /* Ruling 11 (reused local): two values -- the focus-0 squared
-                 * distance, then the distance (scaled to its push factor below). */
+                 * distance, then the distance (scaled to its push factor
+                 * below). */
                 s32 work;
 
                 r = SCR->rad[idx];
@@ -813,8 +822,9 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
                 __asm__ volatile ("lwc2  $9,($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("lwc2  $10,4($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("lwc2  $11,8($12)": : :"$12","$13","$14","$15","memory");
-                /* gte_sqr0() -- inline_o.h 4.3 :646-650; post-DMPSX word 0x4AA00428
-                 * for the header placeholder 0x00000f3f (owner Q29) */
+                /* gte_sqr0() -- inline_o.h 4.3 :646-650; post-DMPSX word
+                 * 0x4AA00428 for the header placeholder 0x00000f3f (owner Q29)
+                 */
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile (".word 0x4AA00428": : :"$12","$13","$14","$15","memory");
@@ -832,8 +842,9 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
                      * the leading-zero count, then the table shift. */
                     s32 nbits;
 
-                    /* gte_Lzc(r1,r2) -- gtemac.h 4.3 :174-178 = gte_ldlzc :207-210,
-                     * gte_nop :1095-1097 twice, gte_stlzc :1074-1077 */
+                    /* gte_Lzc(r1,r2) -- gtemac.h 4.3 :174-178 = gte_ldlzc
+                     * :207-210, gte_nop :1095-1097 twice, gte_stlzc :1074-1077
+                     */
                     __asm__ volatile ("move  $12,%0": :"r"(temp):"$12","$13","$14","$15","memory");
                     __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
                     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -868,8 +879,9 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
                 __asm__ volatile ("lwc2  $9,($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("lwc2  $10,4($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("lwc2  $11,8($12)": : :"$12","$13","$14","$15","memory");
-                /* gte_sqr0() -- inline_o.h 4.3 :646-650; post-DMPSX word 0x4AA00428
-                 * for the header placeholder 0x00000f3f (owner Q29) */
+                /* gte_sqr0() -- inline_o.h 4.3 :646-650; post-DMPSX word
+                 * 0x4AA00428 for the header placeholder 0x00000f3f (owner Q29)
+                 */
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile (".word 0x4AA00428": : :"$12","$13","$14","$15","memory");
@@ -886,8 +898,9 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
                      * the leading-zero count, then the table shift. */
                     s32 nbits2;
 
-                    /* gte_Lzc(r1,r2) -- gtemac.h 4.3 :174-178 = gte_ldlzc :207-210,
-                     * gte_nop :1095-1097 twice, gte_stlzc :1074-1077 */
+                    /* gte_Lzc(r1,r2) -- gtemac.h 4.3 :174-178 = gte_ldlzc
+                     * :207-210, gte_nop :1095-1097 twice, gte_stlzc :1074-1077
+                     */
                     __asm__ volatile ("move  $12,%0": :"r"(sq2):"$12","$13","$14","$15","memory");
                     __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
                     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
@@ -911,8 +924,9 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
                 __asm__ volatile ("lwc2  $9,($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("lwc2  $10,4($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("lwc2  $11,8($12)": : :"$12","$13","$14","$15","memory");
-                /* gte_gpf0() -- inline_o.h 4.3 :721-725; post-DMPSX word 0x4B90003D
-                 * for the header placeholder 0x000012ff (owner Q29) */
+                /* gte_gpf0() -- inline_o.h 4.3 :721-725; post-DMPSX word
+                 * 0x4B90003D for the header placeholder 0x000012ff (owner Q29)
+                 */
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile (".word 0x4B90003D": : :"$12","$13","$14","$15","memory");
@@ -931,8 +945,9 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
                 /* gte_lddp(r1) -- inline_o.h 4.3 :144-147 */
                 __asm__ volatile ("move  $12,%0": :"r"(work):"$12","$13","$14","$15","memory");
                 __asm__ volatile ("mtc2  $12,$8": : :"$12","$13","$14","$15","memory");
-                /* gte_gpl12() -- inline_o.h 4.3 :726-730; post-DMPSX word 0x4BA8003E
-                 * for the header placeholder 0x0000133f (owner Q29) */
+                /* gte_gpl12() -- inline_o.h 4.3 :726-730; post-DMPSX word
+                 * 0x4BA8003E for the header placeholder 0x0000133f (owner Q29)
+                 */
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile (".word 0x4BA8003E": : :"$12","$13","$14","$15","memory");
@@ -947,8 +962,9 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
                 /* gte_lddp(r1) -- inline_o.h 4.3 :144-147 */
                 __asm__ volatile ("move  $12,%0": :"r"(dist2):"$12","$13","$14","$15","memory");
                 __asm__ volatile ("mtc2  $12,$8": : :"$12","$13","$14","$15","memory");
-                /* gte_gpl12() -- inline_o.h 4.3 :726-730; post-DMPSX word 0x4BA8003E
-                 * for the header placeholder 0x0000133f (owner Q29) */
+                /* gte_gpl12() -- inline_o.h 4.3 :726-730; post-DMPSX word
+                 * 0x4BA8003E for the header placeholder 0x0000133f (owner Q29)
+                 */
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile (".word 0x4BA8003E": : :"$12","$13","$14","$15","memory");
@@ -967,11 +983,13 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
         node->pos[2] = SCR->pos[2] + SCR->dpos[2] + node->field_14;
     }
 }
+
 void func_8001924C(SceneQuad *arg0, s32 arg1) {
     s32 i = 0;
     SceneQuad *s0;
-    /* FAKE: pointer alias -- g_file_data_buf's address held in an integer local. Referenced directly, its
-     * lui/addiu is scheduled after `move s0,a0` (score 2); held as a u8 * the addu operands swap (score 2). */
+    /* FAKE: pointer alias -- g_file_data_buf's address held in an integer
+     * local. Referenced directly, its lui/addiu is scheduled after `move s0,a0`
+     * (score 2); held as a u8 * the addu operands swap (score 2). */
     s32 buf;
 
     if (i < arg1) {
@@ -990,31 +1008,32 @@ void func_8001924C(SceneQuad *arg0, s32 arg1) {
         } while (i < arg1);
     }
 }
-/* func_80019310 - GTE rotate-and-scale of an SVECTOR array into a 0x40-stride VECTOR
- * table, then a 32-byte MATRIX copy into the descriptor. Pure-C body plus four PsyQ SDK
- * GTE macro islands, each cited to its Sony libgte macro NAME and its header line range
- * in inline_c.h (the PsyQ inline-GTE header; the copy cited is rood-reverse's
- * include/psx/inline_c.h):
- *   gte_SetRotMatrix(r0)   -- inline_c.h:297-310
- *   gte_SetTransMatrix(r0) -- inline_c.h:360-369
- *   gte_ldv0(r0)           -- inline_c.h:16-20
- *   gte_stlvnl(r0)         -- inline_c.h:1111-1117
- * plus the raw cop2 MVMVA sf=1/mx=rot/v=V0/cv=TR command (.word 0x4A480012), which is the
- * gte_rtv0()-class operation encoded directly. The islands use the same `move $12, %0`
- * macro-body spelling as func_800203B4 (owner grant, widened cop2
- * materialize-then-copy anchor; func_80019310 is named in that grant record,
- * pre-slim-2026-10-01:docs/grind/decisions.md:17921).
+
+/* func_80019310 - GTE rotate-and-scale of an SVECTOR array into a 0x40-stride
+ * VECTOR table, then a 32-byte MATRIX copy into the descriptor. Pure-C body
+ * plus four PsyQ SDK GTE macro islands, each cited to its Sony libgte macro
+ * NAME and its header line range in inline_c.h (the PsyQ inline-GTE header; the
+ * copy cited is rood-reverse's include/psx/inline_c.h): gte_SetRotMatrix(r0) --
+ * inline_c.h:297-310 gte_SetTransMatrix(r0) -- inline_c.h:360-369 gte_ldv0(r0)
+ * -- inline_c.h:16-20 gte_stlvnl(r0)         -- inline_c.h:1111-1117 plus the
+ * raw cop2 MVMVA sf=1/mx=rot/v=V0/cv=TR command (.word 0x4A480012), which is
+ * the gte_rtv0()-class operation encoded directly. The islands use the same
+ * `move $12, %0` macro-body spelling as func_800203B4 (owner grant, widened
+ * cop2 materialize-then-copy anchor; func_80019310 is named in that grant
+ * record, pre-slim-2026-10-01:docs/grind/decisions.md:17921).
  *
- * CLOBBER PROVENANCE (do not read the "memory" clobbers as SDK text): of the four macros
- * above, ONLY gte_stlvnl publishes "memory" in its own clobber list (inline_c.h:1116);
- * gte_SetRotMatrix, gte_SetTransMatrix and gte_ldv0 publish only "$12","$13","$14" (or no
- * clobber list at all, for gte_ldv0). The "memory" clobber on those three islands is ADDED
- * here, and is cited to the committed same-file precedent func_8002D320
- * (src/code6cac_b.c), whose lwc2 read island carries exactly that added truthful
- * clobber; func_800300B4 carries the same addition. It is truthful in each case: islands 1-2 read the MATRIX through $12, island 3
- * reads the SVECTOR through $12, island 4 writes out[] which the C below reads. Its
- * byte-visible effect is on island 1, where it makes GCC re-read the MATRIX pointer before
- * the SetTransMatrix island (target 0x8001934C).
+ * CLOBBER PROVENANCE (do not read the "memory" clobbers as SDK text): of the
+ * four macros above, ONLY gte_stlvnl publishes "memory" in its own clobber list
+ * (inline_c.h:1116); gte_SetRotMatrix, gte_SetTransMatrix and gte_ldv0 publish
+ * only "$12","$13","$14" (or no clobber list at all, for gte_ldv0). The
+ * "memory" clobber on those three islands is ADDED here, and is cited to the
+ * committed same-file precedent func_8002D320 (src/code6cac_b.c), whose lwc2
+ * read island carries exactly that added truthful clobber; func_800300B4
+ * carries the same addition. It is truthful in each case: islands 1-2 read the
+ * MATRIX through $12, island 3 reads the SVECTOR through $12, island 4 writes
+ * out[] which the C below reads. Its byte-visible effect is on island 1, where
+ * it makes GCC re-read the MATRIX pointer before the SetTransMatrix island
+ * (target 0x8001934C).
  *
  * COMPLETED-INLINE-ASM-CANONICAL (listed in inline_asm_canonical.txt). */
 void func_80019310(SceneQuad *arg0, Func80017A44Output *arg1) {
@@ -1022,10 +1041,11 @@ void func_80019310(SceneQuad *arg0, Func80017A44Output *arg1) {
     s32 i;
     Func80017A44Record *dst;
 
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r0) --- inline_c.h:297-310. Macro body
-     * hardcodes $12-$14 (published clobbers, inline_c.h:310); the `move $12, %0` preamble
-     * and $15 are the granted func_800203B4 spelling. The "memory" clobber is ADDED, not
-     * SDK text -- precedent src/code6cac_b.c:935 (func_8002D320). */
+    /* PsyQ libgte inline macro gte_SetRotMatrix(r0) --- inline_c.h:297-310.
+     * Macro body hardcodes $12-$14 (published clobbers, inline_c.h:310); the
+     * `move $12, %0` preamble and $15 are the granted func_800203B4 spelling.
+     * The "memory" clobber is ADDED, not SDK text -- precedent
+     * src/code6cac_b.c:935 (func_8002D320). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 0($12)\n"
@@ -1039,10 +1059,11 @@ void func_80019310(SceneQuad *arg0, Func80017A44Output *arg1) {
         "ctc2   $14, $3\n"
         "ctc2   $15, $4\n"
         :: "r"(arg0->unk4) : "$12", "$13", "$14", "$15", "memory");
-    /* PsyQ libgte inline macro gte_SetTransMatrix(r0) --- inline_c.h:360-369. Translation
-     * vector words 20/24/28 into cop2 control regs $5..$7; published clobbers are
-     * "$12","$13","$14" (inline_c.h:369). The "memory" clobber is ADDED, not SDK text --
-     * precedent src/code6cac_b.c:935 (func_8002D320). */
+    /* PsyQ libgte inline macro gte_SetTransMatrix(r0) --- inline_c.h:360-369.
+     * Translation vector words 20/24/28 into cop2 control regs $5..$7;
+     * published clobbers are
+     * "$12","$13","$14" (inline_c.h:369). The "memory" clobber is ADDED, not
+     * SDK text -- precedent src/code6cac_b.c:935 (func_8002D320). */
     __asm__ volatile(
         "move   $12, %0\n"
         "lw     $13, 20($12)\n"
@@ -1055,11 +1076,12 @@ void func_80019310(SceneQuad *arg0, Func80017A44Output *arg1) {
 
     dst = arg1->records;
     for (i = 0; i < arg1->count; i++) {
-        /* PsyQ libgte inline macro gte_ldv0(r0) --- inline_c.h:16-20. lwc2 VXY0/VZ0; the
-         * macro publishes NO clobber list at all, so both the "$12" and the "memory"
-         * clobbers here are ADDED, not SDK text -- precedent src/code6cac_b.c:935
-         * (func_8002D320), whose lwc2 read island carries exactly this pair. The 2-cycle
-         * GTE load delay is carried as the two explicit nops. */
+        /* PsyQ libgte inline macro gte_ldv0(r0) --- inline_c.h:16-20. lwc2
+         * VXY0/VZ0; the macro publishes NO clobber list at all, so both the
+         * "$12" and the "memory" clobbers here are ADDED, not SDK text --
+         * precedent src/code6cac_b.c:935 (func_8002D320), whose lwc2 read
+         * island carries exactly this pair. The 2-cycle GTE load delay is
+         * carried as the two explicit nops. */
         __asm__ volatile(
             "move   $12, %0\n"
             "lwc2   $0, 0($12)\n"
@@ -1067,18 +1089,21 @@ void func_80019310(SceneQuad *arg0, Func80017A44Output *arg1) {
             "nop\n"
             "nop\n"
             :: "r"(&arg1->points[i]) : "$12", "memory");
-        /* Sony libgte macro gte_mvmva(sf,mx,v,cv,lm) --- inline_c.h:816-817, whose body is
-         * gte_mvmva_core(r0) at inline_c.h:809-814 (`nop; nop; .word <literal>`). Our
-         * instance is gte_mvmva(1,0,0,0,0): sf=1, mx=rotation, v=V0, cv=TR, lm=0. It is
-         * spelled as a bare `.word 0x4A480012` (the ASPSX 2.34 encoding of that cop2
-         * command) rather than through the macro because the macro composes its literal in
-         * a different word encoding (0x000013bf | sf<<25 | ...) that this assembler does
-         * not accept. The two GTE-latency nops the macro body places ahead of the
-         * command are carried at the tail of the preceding gte_ldv0 island above. */
+        /* Sony libgte macro gte_mvmva(sf,mx,v,cv,lm) --- inline_c.h:816-817,
+         * whose body is gte_mvmva_core(r0) at inline_c.h:809-814 (`nop; nop;
+         * .word <literal>`). Our instance is gte_mvmva(1,0,0,0,0): sf=1,
+         * mx=rotation, v=V0, cv=TR, lm=0. It is spelled as a bare `.word
+         * 0x4A480012` (the ASPSX 2.34 encoding of that cop2 command) rather
+         * than through the macro because the macro composes its literal in a
+         * different word encoding (0x000013bf | sf<<25 | ...) that this
+         * assembler does not accept. The two GTE-latency nops the macro body
+         * places ahead of the command are carried at the tail of the preceding
+         * gte_ldv0 island above. */
         __asm__ volatile(".word 0x4A480012");
-        /* PsyQ libgte inline macro gte_stlvnl(r0) --- inline_c.h:1111-1117. Stores
-         * MAC1/MAC2/MAC3. This is the ONE island whose "memory" clobber IS the macro's own
-         * published clobber list (inline_c.h:1116); "$12" is added with the preamble. */
+        /* PsyQ libgte inline macro gte_stlvnl(r0) --- inline_c.h:1111-1117.
+         * Stores MAC1/MAC2/MAC3. This is the ONE island whose "memory" clobber
+         * IS the macro's own published clobber list (inline_c.h:1116); "$12" is
+         * added with the preamble. */
         __asm__ volatile(
             "move   $12, %0\n"
             "swc2   $25, 0($12)\n"
@@ -1095,19 +1120,24 @@ void func_80019310(SceneQuad *arg0, Func80017A44Output *arg1) {
     }
     arg1->matrix = *arg0->unk4;
 }
+
 void func_8001945C(void) {
     D_80106A50.color[0] = 0x11;
     D_80106A50.color[1] = 0x44;
     D_80106A50.color[2] = 0x88;
 }
+
 s32 func_80019488(void) {
-    return (D_80106A50.color[0] & 0xF) | ((D_80106A50.color[1] & 0xF) << 4) | ((D_80106A50.color[2] & 0xF) << 8);
+    return (D_80106A50.color[0] & 0xF) | ((D_80106A50.color[1] & 0xF) << 4) |
+           ((D_80106A50.color[2] & 0xF) << 8);
 }
+
 void func_800194C0(s32 arg0) {
     D_800A3912 = arg0 & 0xF;
     D_800A3913 = (arg0 >> 4) & 0xF;
     D_800A3914 = (arg0 >> 8) & 0xF;
 }
+
 void pad_ResetState(void) {
     g_pad_state.type[0] = 4;
     g_pad_state.type[1] = 4;
@@ -1116,11 +1146,13 @@ void pad_ResetState(void) {
     g_pad_state.released = 0;
     g_pad_state.unheld = -1;
 }
+
 void pad_ResetStateMarkValid(void) {
     pad_ResetState();
     g_pad_state.valid[0] = 1;
     g_pad_state.valid[1] = 1;
 }
+
 void func_80019568(s32 arg0) {
     PadState pad;
     s32 pkts[4];
@@ -1135,7 +1167,8 @@ void func_80019568(s32 arg0) {
     pkts[2] = g_pad_buf[1][0];
     pkts[3] = g_pad_buf[1][1];
     do {
-        /* FAKE: rec holds the packet's address for the loop body; indexing the packet bytes at each read adds a second induction (score 18). */
+        /* FAKE: rec holds the packet's address for the loop body; indexing the
+         * packet bytes at each read adds a second induction (score 18). */
         u8 *rec = (u8 *)pkts + i * 8;
         s32 valid = 0;
         s32 bits;
@@ -1145,8 +1178,9 @@ void func_80019568(s32 arg0) {
 
             pad.type[i] = rec[1] >> 4;
             valid = 1;
-            /* FAKE: the `pad.valid[i] = valid;` store is written into BOTH arms rather
-             * than once after the join (family: duplicated-statement-into-arms,
+            /* FAKE: the `pad.valid[i] = valid;` store is written into BOTH arms
+             * rather than once after the join (family:
+             * duplicated-statement-into-arms,
              * .claude/rules/duplicated-statement-into-arms.md).  mechanism:
              * loop.c scan_loop (loop.c:695-716) only creates a movable for the
              * `1`-holding pseudo when it has a single set or consecutive sets;

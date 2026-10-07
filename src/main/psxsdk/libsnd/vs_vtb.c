@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSND VS_VTB: SsVabTransBody. .text 0x800884C4..0x80088584, a verbatim LIBSCAN module
- * span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSND VS_VTB: SsVabTransBody. .text 0x800884C4..0x80088584, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 

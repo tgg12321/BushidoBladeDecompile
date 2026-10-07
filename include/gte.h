@@ -23,21 +23,30 @@
 #include <psxsdk/libgte.h>
 
 /* ---- COP2 vector/matrix register loads (lwc2) ----------------------- */
-#define gte_ldv0(p)  __asm__ volatile ("lwc2 $0, 0(%0)\n\tlwc2 $1, 4(%0)" :: "r"(p))
-#define gte_ldv1(p)  __asm__ volatile ("lwc2 $2, 0(%0)\n\tlwc2 $3, 4(%0)" :: "r"(p))
-#define gte_ldv2(p)  __asm__ volatile ("lwc2 $4, 0(%0)\n\tlwc2 $5, 4(%0)" :: "r"(p))
-#define gte_ldv3(v0, v1, v2) do { gte_ldv0(v0); gte_ldv1(v1); gte_ldv2(v2); } while (0)
+#define gte_ldv0(p)                                                            \
+    __asm__ volatile ("lwc2 $0, 0(%0)\n\tlwc2 $1, 4(%0)" :: "r"(p))
+#define gte_ldv1(p)                                                            \
+    __asm__ volatile ("lwc2 $2, 0(%0)\n\tlwc2 $3, 4(%0)" :: "r"(p))
+#define gte_ldv2(p)                                                            \
+    __asm__ volatile ("lwc2 $4, 0(%0)\n\tlwc2 $5, 4(%0)" :: "r"(p))
+#define gte_ldv3(v0, v1, v2)                                                   \
+    do {                                                                       \
+        gte_ldv0(v0);                                                          \
+        gte_ldv1(v1);                                                          \
+        gte_ldv2(v2);                                                          \
+    } while (0)
 
 #define gte_ldrgb(p) __asm__ volatile ("lwc2 $6, 0(%0)" :: "r"(p))
 
 /* ---- COP2 result stores (swc2 / mfc2) ------------------------------- */
-#define gte_stsxy(p)  __asm__ volatile ("swc2 $14, 0(%0)" :: "r"(p))
-#define gte_stsxy3(p0, p1, p2) do { \
-    __asm__ volatile ("swc2 $12, 0(%0)" :: "r"(p0)); \
-    __asm__ volatile ("swc2 $13, 0(%0)" :: "r"(p1)); \
-    __asm__ volatile ("swc2 $14, 0(%0)" :: "r"(p2)); \
-} while (0)
-#define gte_stsz(p)   __asm__ volatile ("swc2 $19, 0(%0)" :: "r"(p))
+#define gte_stsxy(p) __asm__ volatile ("swc2 $14, 0(%0)" :: "r"(p))
+#define gte_stsxy3(p0, p1, p2)                                                 \
+    do {                                                                       \
+        __asm__ volatile ("swc2 $12, 0(%0)" :: "r"(p0));                         \
+        __asm__ volatile ("swc2 $13, 0(%0)" :: "r"(p1));                         \
+        __asm__ volatile ("swc2 $14, 0(%0)" :: "r"(p2));                         \
+    } while (0)
+#define gte_stsz(p) __asm__ volatile ("swc2 $19, 0(%0)" :: "r"(p))
 
 #define gte_stmac0(out) __asm__ volatile ("mfc2 %0, $24" : "=r"(out))
 #define gte_stmac1(out) __asm__ volatile ("mfc2 %0, $25" : "=r"(out))
@@ -50,24 +59,42 @@
  * uniformly. Each macro has no operands: the GTE state must already be
  * populated via gte_LDxx. Read results out with gte_STxx.                */
 
-#define gte_rtps()   __asm__ volatile (".word 0x4A180001")  /* perspective xform single   */
-#define gte_rtpt()   __asm__ volatile (".word 0x4A280030")  /* perspective xform triple   */
-#define gte_nclip()  __asm__ volatile (".word 0x4A400006")  /* normal clip                */
-#define gte_avsz3()  __asm__ volatile (".word 0x4A48002D")  /* avg Z over 3 vertices      */
-#define gte_avsz4()  __asm__ volatile (".word 0x4A58002E")  /* avg Z over 4 vertices      */
-#define gte_dpcs()   __asm__ volatile (".word 0x4A780010")  /* depth cue single           */
-#define gte_dpct()   __asm__ volatile (".word 0x4AF8002A")  /* depth cue triple           */
-#define gte_intpl()  __asm__ volatile (".word 0x4A980011")  /* interpolation              */
-#define gte_sqr()    __asm__ volatile (".word 0x4AA00428")  /* square                     */
-#define gte_ncs()    __asm__ volatile (".word 0x4AC8041E")  /* normal color               */
-#define gte_nct()    __asm__ volatile (".word 0x4AD80420")  /* normal color triple        */
-#define gte_ncds()   __asm__ volatile (".word 0x4AE80413")  /* normal color depth single  */
-#define gte_ncdt()   __asm__ volatile (".word 0x4AF80416")  /* normal color depth triple  */
-#define gte_nccs()   __asm__ volatile (".word 0x4B08041B")  /* normal color color single  */
-#define gte_ncct()   __asm__ volatile (".word 0x4B18043F")  /* normal color color triple  */
-#define gte_cdp()    __asm__ volatile (".word 0x4B280414")  /* color depth queue          */
-#define gte_cc()     __asm__ volatile (".word 0x4B38041C")  /* color col                  */
-#define gte_dpcl()   __asm__ volatile (".word 0x4A680029")  /* depth cue color light      */
+/* perspective xform single   */
+#define gte_rtps() __asm__ volatile (".word 0x4A180001")
+/* perspective xform triple   */
+#define gte_rtpt() __asm__ volatile (".word 0x4A280030")
+/* normal clip                */
+#define gte_nclip() __asm__ volatile (".word 0x4A400006")
+/* avg Z over 3 vertices      */
+#define gte_avsz3() __asm__ volatile (".word 0x4A48002D")
+/* avg Z over 4 vertices      */
+#define gte_avsz4() __asm__ volatile (".word 0x4A58002E")
+/* depth cue single           */
+#define gte_dpcs() __asm__ volatile (".word 0x4A780010")
+/* depth cue triple           */
+#define gte_dpct() __asm__ volatile (".word 0x4AF8002A")
+/* interpolation              */
+#define gte_intpl() __asm__ volatile (".word 0x4A980011")
+/* square                     */
+#define gte_sqr() __asm__ volatile (".word 0x4AA00428")
+/* normal color               */
+#define gte_ncs() __asm__ volatile (".word 0x4AC8041E")
+/* normal color triple        */
+#define gte_nct() __asm__ volatile (".word 0x4AD80420")
+/* normal color depth single  */
+#define gte_ncds() __asm__ volatile (".word 0x4AE80413")
+/* normal color depth triple  */
+#define gte_ncdt() __asm__ volatile (".word 0x4AF80416")
+/* normal color color single  */
+#define gte_nccs() __asm__ volatile (".word 0x4B08041B")
+/* normal color color triple  */
+#define gte_ncct() __asm__ volatile (".word 0x4B18043F")
+/* color depth queue          */
+#define gte_cdp() __asm__ volatile (".word 0x4B280414")
+/* color col                  */
+#define gte_cc() __asm__ volatile (".word 0x4B38041C")
+/* depth cue color light      */
+#define gte_dpcl() __asm__ volatile (".word 0x4A680029")
 
 /* ---- MVMVA: multiply matrix by vector + accumulate ------------------ *
  * sf  -- shift fraction (0: no shift / Q12; 1: >>12 / Q0).
@@ -79,7 +106,7 @@
  * assembler computes the constant at assembly time via GAS expressions.
  * Reference: PsyQ libgte gte_MVMVA in inline_n.h (replaces `cop2 IMM`
  * with `.word` form so neither maspsx nor as need GTE-aware decoding). */
-#define gte_mvmva(sf, mx, v, cv, lm) \
+#define gte_mvmva(sf, mx, v, cv, lm)                                           \
     __asm__ volatile (".word 0x4A400012 + (" #sf "<<19) + (" #mx "<<17) + (" #v "<<15) + (" #cv "<<13) + (" #lm "<<10)")
 
 /* ---- Generic control-register / data-register transfer -------------- *
@@ -88,9 +115,21 @@
  * (gte_SetRotMatrix, gte_SetTransVector, ...) which decompose into
  * sequences of these. For matching decomp work it's often clearer to
  * emit the raw transfers and let the surrounding C be obvious.        */
-#define gte_ctc2(val, reg) __asm__ volatile ("ctc2 %0, $" #reg :: "r"(val))   /* CPU -> GTE ctrl reg */
-#define gte_mtc2(val, reg) __asm__ volatile ("mtc2 %0, $" #reg :: "r"(val))   /* CPU -> GTE data reg */
-#define gte_cfc2(reg)      ({ s32 _r; __asm__ volatile ("cfc2 %0, $" #reg : "=r"(_r)); _r; })
-#define gte_mfc2(reg)      ({ s32 _r; __asm__ volatile ("mfc2 %0, $" #reg : "=r"(_r)); _r; })
+/* CPU -> GTE ctrl reg */
+#define gte_ctc2(val, reg) __asm__ volatile ("ctc2 %0, $" #reg :: "r"(val))
+/* CPU -> GTE data reg */
+#define gte_mtc2(val, reg) __asm__ volatile ("mtc2 %0, $" #reg :: "r"(val))
+#define gte_cfc2(reg)                                                          \
+    ({                                                                         \
+        s32 _r;                                                                \
+        __asm__ volatile ("cfc2 %0, $" #reg : "=r"(_r));                        \
+        _r;                                                                    \
+    })
+#define gte_mfc2(reg)                                                          \
+    ({                                                                         \
+        s32 _r;                                                                \
+        __asm__ volatile ("mfc2 %0, $" #reg : "=r"(_r));                        \
+        _r;                                                                    \
+    })
 
 #endif /* GTE_H */

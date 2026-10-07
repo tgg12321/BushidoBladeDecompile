@@ -1,5 +1,5 @@
-/* 44 game functions. .text 0x80044800 (ROM 0x35000). Start boundary: GP (a per-file gp split,
- * Q65). */
+/* 44 game functions. .text 0x80044800 (ROM 0x35000). Start boundary: GP (a
+ * per-file gp split, Q65). */
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
@@ -31,10 +31,12 @@ void func_80044800(void) {
     rec = (Unk800A9CF8Entry *)D_800A9CF8.unkC;
     for (i = 0; i < D_800A9CF8.unk6; rec++, i++) {
         frame = rec->unk58;
-        if (frame < 0) continue;
+        if (frame < 0)
+            continue;
         if (frame < D_800A9CF8.unk2) {
             sv.vx = 0;
-            /* FAKE: angle read ahead of the sv.vz store; read at its uses the loads reorder (score 12). */
+            /* FAKE: angle read ahead of the sv.vz store; read at its uses the
+             * loads reorder (score 12). */
             angle = rec->unk5C;
             sv.vz = 0;
             scan = (s16 *)(D_800A9CF8.unk8 + frame * 12);
@@ -50,7 +52,8 @@ void func_80044800(void) {
             func_800417D0(&rec->node);
             MulMatrix2(&mat, &rec->node.xf.mat);
             cos_val = Judge[(angle + 0x400) & 0xFFF];
-            /* FAKE: cz / sz / cx / sx: the four products staged ahead of the sums; computed in the sums the multiplies reorder (score 61). */
+            /* FAKE: cz / sz / cx / sx: the four products staged ahead of the
+             * sums; computed in the sums the multiplies reorder (score 61). */
             cz = cos_val * sv.vz;
             sin_val = Judge[angle & 0xFFF];
             sz = sin_val * sv.vz;
@@ -66,12 +69,14 @@ void func_80044800(void) {
             rec->unk58 = frame;
             if (D_800A9CF8.unk4 == 0x12) {
                 /* FAKE: rec is reused (restored from ent below) for the paired
-                 * game_GetCharData entry, an Unk800A6690Rec reached only through its
-                 * node member (both records start with the node); a separate
-                 * Unk80101DF0Record * local scores 70. */
+                 * game_GetCharData entry, an Unk800A6690Rec reached only
+                 * through its node member (both records start with the node); a
+                 * separate Unk80101DF0Record * local scores 70. */
                 ent = rec;
-                rec = (Unk800A9CF8Entry *)((Unk800A6690Rec *)D_800A9CF8.unk10 + i);
-                /* FAKE: last staged ahead of the scan address; in the expression the subtraction moves (score 8). */
+                rec = (Unk800A9CF8Entry *)((Unk800A6690Rec *)D_800A9CF8.unk10 +
+                                           i);
+                /* FAKE: last staged ahead of the scan address; in the
+                 * expression the subtraction moves (score 8). */
                 last = D_800A9CF8.unk2 - 1;
                 scan = (s16 *)(D_800A9CF8.unk8 + (frame + last) * 12);
                 sv.vx = *scan++;
@@ -106,10 +111,12 @@ void func_80044800(void) {
 void func_80044B30(s32 a0, s32 a1) {
     Unk800A9CF8Entry *p;
 
-    if (a0 >= D_800A9CF8.unk6) return;
+    if (a0 >= D_800A9CF8.unk6)
+        return;
 
     p = (Unk800A9CF8Entry *)D_800A9CF8.unkC + a0;
-    if (p->unk58 != -1) return;
+    if (p->unk58 != -1)
+        return;
 
     switch (D_800A9CF8.unk4) {
     case 4:
@@ -145,11 +152,13 @@ void func_80044B30(s32 a0, s32 a1) {
         p->node.work.t[2] = p->node.xf.mat.t[2];
     }
 }
+
 void func_80044C70(s32 a0) {
     func_80044100((s32)D_800A9CF8.unk0, a0);
     D_800A9CF8.unkC += a0;
     D_800A9CF8.unk8 += a0;
 }
+
 void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     s32 sp18[3];
     s32 sp28[3];
@@ -174,6 +183,7 @@ void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
 
     LoadAverage12(sp18, sp28, 0x1000 - a2, a2, a3);
 }
+
 void func_80044DE4(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     s32 sp18[3];
     s32 sp28[3];
@@ -187,21 +197,25 @@ void func_80044DE4(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     sp28[2] = -a1[1];
     LoadAverage12(sp18, sp28, 0x1000 - a2, a2, a3);
 }
-s32 func_80044E64(void) {
-    return 0x25;
-}
-s32 func_80044E6C(void) {
-    return 0x26;
-}
 
-typedef struct { s16 start_sector; s16 length_sectors; } NdataInfEntry;
+s32 func_80044E64(void) { return 0x25; }
+
+s32 func_80044E6C(void) { return 0x26; }
+
+typedef struct {
+    s16 start_sector;
+    s16 length_sectors;
+} NdataInfEntry;
+
 extern NdataInfEntry D_800963EC[];
 
 void func_80044E74(s32 a0, s32 a1) {
     game_FrameLoop();
-    cdrom_StartReadAt(0, a1, D_800963EC[a0].start_sector, D_800963EC[a0].length_sectors);
+    cdrom_StartReadAt(
+        0, a1, D_800963EC[a0].start_sector, D_800963EC[a0].length_sectors);
     game_FrameLoop();
 }
+
 void func_80044ED8(s32 a0, s32 a1) {
     if (a0 >= 0x1F) {
         a0 -= 0x1B;
@@ -211,11 +225,10 @@ void func_80044ED8(s32 a0, s32 a1) {
     }
 }
 
-
 extern void func_80044E74(s32, s32);
-void func_80044F30(s32 a0, s32 a1) {
-    func_80044E74(a0 + 0x27, a1);
-}
+
+void func_80044F30(s32 a0, s32 a1) { func_80044E74(a0 + 0x27, a1); }
+
 void func_80044F50(s32 a0, s32 a1, s32 a2) {
     if (!a0) {
         func_80044E74(a1 + 0x83, a2);
@@ -223,11 +236,12 @@ void func_80044F50(s32 a0, s32 a1, s32 a2) {
         func_80044E74(a1 + 0x10C, a2);
     }
 }
-void func_80044F80(s32 a0, s32 a1) {
-    func_80044E74(a0 + 0x4D, a1);
-}
+
+void func_80044F80(s32 a0, s32 a1) { func_80044E74(a0 + 0x4D, a1); }
+
 extern s32 D_800A3240;
 extern char D_8001528C[];
+
 s32 func_80044FA0(s32 a0, s32 a1) {
     s32 v0;
     s32 s0;
@@ -259,16 +273,21 @@ do_return:
     func_80044E74(a0, a1);
     return s0;
 }
+
 extern s32 func_800457DC(void);
+
 s32 func_80045080(s32 a0) {
-    /* FAKE: val reads the length ahead of the func_800457DC call; at its use the lh moves after
-       the call and a0 * 4 is kept in s0 instead (score 9). */
+    /* FAKE: val reads the length ahead of the func_800457DC call; at its use
+       the lh moves after the call and a0 * 4 is kept in s0 instead (score 9).
+     */
     s32 val = D_800963EC[a0].length_sectors << 11;
     return func_800457DC() - val;
 }
-/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+
+/* Q65: this file's statics (.sbss, allocated per file in link order by
+ * PSYLINK), in address order. */
 static s32 D_800A3398;
-static s32 D_800A339C;  /* not named by any code or data: size from the gap */
+static s32 D_800A339C; /* not named by any code or data: size from the gap */
 static s32 D_800A33A0;
 static s32 D_800A33A4;
 static s32 D_800A33A8;
@@ -279,7 +298,9 @@ void seq_Start(s32 a0, s32 a1) {
     D_800A3398 = a1;
     D_800A3244 = 1;
 }
+
 extern s16 D_800973EC[];
+
 s32 func_800450F4(s32 a0, s32 a1) {
     s32 *a2_ptr;
     s32 v1;
@@ -309,15 +330,13 @@ s32 func_800450F4(s32 a0, s32 a1) {
     }
     return 1;
 }
-void seq_Reset(void) {
-    D_800A3244 = 0;
-}
-s32 seq_GetState(void) {
-    return D_800A3244;
-}
-void func_800451A0(void) {
-    cdrom_StartReadAt(1, (s32)D_800963EC, 0, 2);
-}
+
+void seq_Reset(void) { D_800A3244 = 0; }
+
+s32 seq_GetState(void) { return D_800A3244; }
+
+void func_800451A0(void) { cdrom_StartReadAt(1, (s32)D_800963EC, 0, 2); }
+
 void func_800451D0(void) {
     s32 i;
     for (i = 9; i >= 0; i--) {
@@ -329,6 +348,7 @@ void func_800451D0(void) {
     D_800A33A8 = 0;
     func_80049E1C();
 }
+
 void func_80045230(s32 a0) {
     s32 v1;
     if (!a0) {
@@ -344,6 +364,7 @@ void func_80045230(s32 a0) {
         func_80052C10();
     }
 }
+
 void func_80045294(s32 a0, s32 a1) {
     s32 sum;
     s32 i;
@@ -371,6 +392,7 @@ void func_80045294(s32 a0, s32 a1) {
     D_800A33A0 += a1;
     D_800A33A4 -= a1;
 }
+
 /* Remove the table entry whose id == a0: undo its contribution via
    func_80045294(index + 1, -amt), shift the following records down one slot,
    clear the freed tail slot, decrement the count. */
@@ -395,6 +417,7 @@ void func_800453E0(s32 a0) {
         }
     }
 }
+
 void func_80045510(s32 a0, s32 a1) {
     s32 i;
     s32 diff;
@@ -402,13 +425,15 @@ void func_80045510(s32 a0, s32 a1) {
     for (i = 0; i < D_800A33AC; i++) {
         if (D_800EED10[i].id == a0) {
             diff = a1 - D_800EED10[i].amt;
-            if (diff == 0) return;
+            if (diff == 0)
+                return;
             func_80045294(i + 1, diff);
             D_800EED10[i].amt = a1;
             return;
         }
     }
 }
+
 s32 *func_800455AC(s32 a0) {
     Unk800EED10Entry *e;
     s32 idx;
@@ -424,20 +449,24 @@ s32 *func_800455AC(s32 a0) {
     e->fn = 0;
     return (s32 *)ret;
 }
+
 void func_80045600(s32 a0, s32 a1) {
     s32 i = 0;
     s32 count = D_800A33AC;
     Unk800EED10Entry *e;
-    if (i >= count) goto not_found;
+    if (i >= count)
+        goto not_found;
     {
         Unk800EED10Entry *p = D_800EED10;
         do {
-            /* FAKE: the cursor `p` and the tested entry `e` are two names for one
-               walk; mechanism: the target keeps both live (`move a3,a2` at the
-               loop head, `addiu a2,a3,16` in the back-edge slot, `sw ...,8(a3)`
-               after the loop).  One pointer `e` walked by `e++` scores 7. */
+            /* FAKE: the cursor `p` and the tested entry `e` are two names for
+               one walk; mechanism: the target keeps both live (`move a3,a2` at
+               the loop head, `addiu a2,a3,16` in the back-edge slot, `sw
+               ...,8(a3)` after the loop).  One pointer `e` walked by `e++`
+               scores 7. */
             e = p;
-            if (e->id == a0) goto found;
+            if (e->id == a0)
+                goto found;
             i++;
             p = e + 1;
         } while (i < count);
@@ -447,8 +476,8 @@ found:
         s32 cur = D_800A33A0;
         s32 rest = D_800A33A4;
         /* FAKE: the parameter a0 (the id, dead here) reused for the entry's new
-           amt; the target computes it into $a0 (`subu a0,a1,v0`).  A fresh local
-           scores 17. */
+           amt; the target computes it into $a0 (`subu a0,a1,v0`).  A fresh
+           local scores 17. */
         a0 = a1 - cur;
         cur += a0;
         rest -= a0;
@@ -460,6 +489,7 @@ found:
 not_found:
     func_80052C10();
 }
+
 void func_80045694(s32 a0, s32 a1) {
     s32 i;
     s32 count = D_800A33AC;
@@ -470,6 +500,7 @@ void func_80045694(s32 a0, s32 a1) {
         }
     }
 }
+
 void func_800456F0(s32 a0) {
     s32 i;
     s32 count = D_800A33AC;
@@ -480,6 +511,7 @@ void func_800456F0(s32 a0) {
         }
     }
 }
+
 s32 *func_8004574C(s32 arg0) {
     s32 i;
     s32 count = D_800A33AC;
@@ -490,6 +522,7 @@ s32 *func_8004574C(s32 arg0) {
     }
     return NULL;
 }
+
 s32 func_800457A0(s32 a0) {
     s32 *v0 = func_8004574C(a0);
     if (v0) {
@@ -497,27 +530,24 @@ s32 func_800457A0(s32 a0) {
     }
     return 0;
 }
-void func_800457D4(void) {
-}
-s32 func_800457DC(void) {
-    return D_800A33A4;
-}
-s32 func_800457E8(void) {
-    return 0x45000 - D_800A33A8;
-}
-s32 func_800457FC(void) {
-    return D_800A33A0;
-}
-s32 func_80045808(void) {
-    return 0x45000;
-}
-void *func_80045814(void) {
-    return &D_800A9D10;
-}
+
+void func_800457D4(void) {}
+
+s32 func_800457DC(void) { return D_800A33A4; }
+
+s32 func_800457E8(void) { return 0x45000 - D_800A33A8; }
+
+s32 func_800457FC(void) { return D_800A33A0; }
+
+s32 func_80045808(void) { return 0x45000; }
+
+void *func_80045814(void) { return &D_800A9D10; }
+
 void func_80045824(s32 a0, s32 a1, s32 a2) {
     func_80045230(a1 + a2);
     func_800520B8(a0, a1, a2);
 }
+
 extern void func_80044ED8(s32, s32);
 extern void func_80045AA4(s32, s32);
 
@@ -530,10 +560,10 @@ Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
     if (v0 != 0) {
         s1 = (Unk80045878Obj *)v0[1];
     } else {
-        s1 = (Unk80045878Obj *) func_800455AC(a0);
-        func_80045600(a0, sizeof(Unk80045878Obj) + ((s32) s1));
+        s1 = (Unk80045878Obj *)func_800455AC(a0);
+        func_80045600(a0, sizeof(Unk80045878Obj) + ((s32)s1));
         func_80045230(0);
-        func_80045694(a0, (s32) (&func_80045AA4));
+        func_80045694(a0, (s32)(&func_80045AA4));
         s1->unk_08 = -1;
         s1->unk_06 = 0;
     }
@@ -541,21 +571,22 @@ Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
     if (func_8004574C(s3) != 0) {
         func_800400F8(s1);
     }
-    if (((func_8004574C(s3) != 0) && (s1->unk_08 == a1)) && (s1->unk_06 != (-2))) {
+    if (((func_8004574C(s3) != 0) && (s1->unk_08 == a1)) &&
+        (s1->unk_06 != (-2))) {
         s1->unk_06 = 0;
     } else {
         s1->unk_20 = a2;
-        s0 = (s32) func_800455AC(s3);
+        s0 = (s32)func_800455AC(s3);
         s1->unk_1C = s0;
         if (a2 != 0) {
             func_80044ED8(a1, a2);
         } else {
             func_80044ED8(a1, s0);
-            s0 = s0 + ((((u32) ((s32 *) s0)[*((s32 *) s0)]) >> 2) << 2);
+            s0 = s0 + ((((u32)((s32 *)s0)[*((s32 *)s0)]) >> 2) << 2);
             func_80045230(s0);
         }
         func_80045600(s3, s0);
-        func_80045694(s3, (s32) (&func_80045AA4));
+        func_80045694(s3, (s32)(&func_80045AA4));
         s1->unk_06 = 1;
         s1->unk_24 = 0;
         s1->unk_00.word = 0;
@@ -568,11 +599,14 @@ Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
     s1->unk_18.word = 0x8000;
     return s1;
 }
+
 void func_80045A28(s32 a0, s32 a1) {
     func_80045510(a0 + 3, a1);
     func_80045230(0);
 }
+
 extern void func_800456F0(s32);
+
 void func_80045A50(s32 a0) {
     s32 a0p3 = a0 + 3;
     func_8005B644(a0);
@@ -581,10 +615,13 @@ void func_80045A50(s32 a0) {
     func_800453E0(a0p3);
     func_800453E0(a0);
 }
-/* Not the definition's spelling: snd_VabFakeOpen (3AB48.c) takes an s16 second parameter, but
- * the original's calls here pass it unextended (an s16 prototype sign-extends the argument:
- * sll/sra in func_80045AA4, lh for lw in func_80046048; measured). */
+
+/* Not the definition's spelling: snd_VabFakeOpen (3AB48.c) takes an s16 second
+ * parameter, but the original's calls here pass it unextended (an s16 prototype
+ * sign-extends the argument: sll/sra in func_80045AA4, lh for lw in
+ * func_80046048; measured). */
 extern s32 snd_VabFakeOpen(s32, s32);
+
 void func_80045AA4(s32 a0, s32 a1) {
     Unk80045878Obj *ptr;
     s32 idx;
@@ -596,15 +633,18 @@ void func_80045AA4(s32 a0, s32 a1) {
     func_80044100(idx, a1);
     func_80044100(a0, a1);
     ptr = (Unk80045878Obj *)func_800457A0(idx);
-    if (ptr == 0) return;
+    if (ptr == 0)
+        return;
     ptr->unk_1C = ptr->unk_1C + a1;
     func_8004019C(ptr, a1);
     if ((ptr->unk_00.word >> 1) & 1) {
-        /* FAKE: idx (a0 - 3) is reused for the sound index; a fresh local swaps the s0 / s1 seats (score 8) */
+        /* FAKE: idx (a0 - 3) is reused for the sound index; a fresh local swaps
+         * the s0 / s1 seats (score 8) */
         idx = 3 * ptr->unk_04 + 1;
         snd_VabFakeOpen(a1, idx);
     }
 }
+
 extern s16 D_800993FC[];
 extern void func_80044F50(s32, s32, s32);
 extern void func_80046048(s32, s32);
@@ -745,10 +785,12 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     func_80045600(6, dl);
     func_80045694(6, (s32)&func_80046048);
 }
+
 void func_80046020(void) {
     func_800453E0(6);
     func_8005B6AC();
 }
+
 void func_80046048(s32 a0, s32 a1) {
     s32 *s0;
     s32 count;
@@ -776,6 +818,7 @@ void func_80046048(s32 a0, s32 a1) {
     } while (count != -1);
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order; values
+ * from the original EXE. */
 s32 D_800A3240 = 1;
 s32 D_800A3244 = 0;

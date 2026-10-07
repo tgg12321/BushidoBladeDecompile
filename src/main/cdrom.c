@@ -1,15 +1,15 @@
-/* The CD read and audio layer: cdrom_IsIdle, cdrom_StartRead, cdrom_StartReadAt, cdrom_Pause,
- * cdrom_GetFileSize, cdrom_StartAudio, cdrom_ReadWait, cdrom_LoadExec, and sys_Exec, which runs
- * the executable cdrom_LoadExec reads. .text 0x80036D88 (ROM 0x27588). Start boundary: G8 (the end
- * of 26940.c's -G8 unit). */
+/* The CD read and audio layer: cdrom_IsIdle, cdrom_StartRead,
+ * cdrom_StartReadAt, cdrom_Pause, cdrom_GetFileSize, cdrom_StartAudio,
+ * cdrom_ReadWait, cdrom_LoadExec, and sys_Exec, which runs the executable
+ * cdrom_LoadExec reads. .text 0x80036D88 (ROM 0x27588). Start boundary: G8 (the
+ * end of 26940.c's -G8 unit). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
 
-s32 cdrom_IsIdle(void) {
-    return D_80101E58.rec.unk02 == 0;
-}
+s32 cdrom_IsIdle(void) { return D_80101E58.rec.unk02 == 0; }
+
 s32 cdrom_StartRead(s32 a0, s32 a1) {
     s32 reloaded;
 
@@ -27,17 +27,19 @@ s32 cdrom_StartRead(s32 a0, s32 a1) {
     D_80101E58.rec.unk18 = (u32)(reloaded + 0x7FF) >> 11;
     return 1;
 }
+
 s32 cdrom_StartReadAt(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (cdrom_StartRead(arg0, arg1) == 0) {
         return 0;
     }
-    CdIntToPos(CdPosToInt(&D_80101E58.rec.pair.loc) + arg2, &D_80101E58.rec.pair.loc);
+    CdIntToPos(
+        CdPosToInt(&D_80101E58.rec.pair.loc) + arg2, &D_80101E58.rec.pair.loc);
     D_80101E58.rec.unk18 = arg3;
     return 1;
 }
-s32 func_80036EA8(s32 arg0, s32 arg1) {
-    return (&D_8008F12C)[arg0] + arg1;
-}
+
+s32 func_80036EA8(s32 arg0, s32 arg1) { return (&D_8008F12C)[arg0] + arg1; }
+
 void cdrom_Pause(void) {
     CdReadyCallback(0);
     cdrom_SetMix(0, 0, 0, 0);
@@ -47,9 +49,9 @@ void cdrom_Pause(void) {
     D_80101E58.rec.unk02 = 0xB;
     D_80101E58.unk04 = 0;
 }
-u32 cdrom_GetFileSize(s32 arg0) {
-    return g_cd_file_table[arg0].size;
-}
+
+u32 cdrom_GetFileSize(s32 arg0) { return g_cd_file_table[arg0].size; }
+
 void game_FrameLoop(void) {
     u16 *p;
     func_8003AA78();
@@ -69,6 +71,7 @@ void game_FrameLoop(void) {
     }
     func_8003AAB0();
 }
+
 s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
     if (D_80101E58.rec.unk02 != 0) {
         return 0;
@@ -76,8 +79,9 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
 
     D_80101E58.rec.unk00 = arg0;
     D_80101E58.rec.pair = g_cd_file_table[D_80101E58.rec.unk00];
-    D_80101E58.rec.unk14 = CdPosToInt(&g_cd_file_table[D_80101E58.rec.unk00].loc) +
-                           ((u32)g_cd_file_table[D_80101E58.rec.unk00].size >> 11) - 0x96;
+    D_80101E58.rec.unk14 =
+        CdPosToInt(&g_cd_file_table[D_80101E58.rec.unk00].loc) +
+        ((u32)g_cd_file_table[D_80101E58.rec.unk00].size >> 11) - 0x96;
 
     if (arg1 < 0) {
         D_80101E58.rec.unk34 = 0;
@@ -97,11 +101,14 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
 
     return 1;
 }
+
 s32 func_80037110(s32 arg0) {
     Unk8008F13CRow *s0 = &D_8008F13C[arg0];
     if (cdrom_StartAudio(func_80036EA8(5, s0->unk_0), s0->unk_1) != 0) {
         if (s0->unk_4 != -1) {
-            D_80101E58.rec.unk14 = CdPosToInt(&g_cd_file_table[D_80101E58.rec.unk00].loc) + s0->unk_4;
+            D_80101E58.rec.unk14 =
+                CdPosToInt(&g_cd_file_table[D_80101E58.rec.unk00].loc) +
+                s0->unk_4;
         }
         return 1;
     }
@@ -109,30 +116,31 @@ s32 func_80037110(s32 arg0) {
 }
 
 s32 func_800371AC(void) {
-    s32 ret = ((s32 (*)())func_80037110)();
+    s32 ret = ((s32(*)())func_80037110)();
     if (ret) {
         D_80101E58.rec.unk04 = 1;
         return 1;
     }
     return 0;
 }
-void func_800371E8(s16 arg0) {
-    D_80101E58.rec.unk0A = arg0;
-}
+
+void func_800371E8(s16 arg0) { D_80101E58.rec.unk0A = arg0; }
+
 s32 func_800371F8(void) {
-    if (((s32 (*)())cdrom_StartAudio)() != 0) {
+    if (((s32(*)())cdrom_StartAudio)() != 0) {
         D_80101E58.rec.unk04 = 1;
         return 1;
     }
     return 0;
 }
+
 void func_80037234(void) {
     D_80101E58.rec.unk04 = 0;
     D_80101E58.rec.unk08 = 1;
 }
-void func_80037250(void) {
-    D_80101E58.rec.unk04 = 0;
-}
+
+void func_80037250(void) { D_80101E58.rec.unk04 = 0; }
+
 void func_80037260(void) {
     while (D_80101E58.rec.unk02 != 0x16) {
         func_8003AA48();
@@ -140,12 +148,14 @@ void func_80037260(void) {
         VSync(2);
     }
 }
+
 void func_800372C0(void) {
     if (D_80101E58.rec.unk02 != 0) {
         cdrom_Pause();
     }
     game_FrameLoop();
 }
+
 s32 cdrom_ReadWait(s32 nbytes, s32 buf, s32 mode) {
     s32 v = nbytes;
     nbytes += 0x7FF;
@@ -161,6 +171,7 @@ s32 cdrom_ReadWait(s32 nbytes, s32 buf, s32 mode) {
     } while (v > 0);
     return v;
 }
+
 /* Loads a PS-EXE from disc (renamed cdrom_LoadExec 2026-09-07; was
  * special_camera_get_rot_dir - nothing camera-related). Seeks to entry
  * D_8008F12C[6] (=156, MOVOVL.EXE) of g_cd_file_table, reads
@@ -182,7 +193,8 @@ void cdrom_LoadExec(EXEC *dest) {
     for (;;) {
         CdControl(2, (u8 *)&g_cd_file_table[index].loc, 0);
         v0 = cdrom_ReadWait(0x800, (s32)sp_buf, mode);
-        if (v0 != 0) continue;
+        if (v0 != 0)
+            continue;
 
         *dest = *(EXEC *)&sp_buf[0x10];
 
@@ -190,9 +202,11 @@ void cdrom_LoadExec(EXEC *dest) {
         CdIntToPos(pos + 1, &sp_buf2);
         CdControl(2, (u8 *)&sp_buf2, 0);
         v0 = cdrom_ReadWait(dest->t_size, dest->t_addr, mode);
-        if (v0 == 0) break;
+        if (v0 == 0)
+            break;
     }
 }
+
 void sys_Exec(s32 a0, s32 *a1, s32 a2) {
     EXEC exec;
     VSync(0);
@@ -216,6 +230,7 @@ void sys_Exec(s32 a0, s32 *a1, s32 a2) {
     VSync(0);
     SetDispMask(1);
 }
+
 void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     /* n.b.! needs to be 25-32 bytes (inclusive): target frame 0x48 - callee
        saves (6 regs @ 0x30-0x44 = 24) - outgoing args (16) = 32-byte locals

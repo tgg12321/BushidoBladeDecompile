@@ -1,31 +1,9 @@
-/* 12 game functions, among them gpu_AddDrawMove. .text 0x800401CC (ROM 0x309CC). Start boundary:
- * G8 (cc1 -G8 by proof). */
+/* 12 game functions, among them gpu_AddDrawMove. .text 0x800401CC (ROM
+ * 0x309CC). Start boundary: G8 (cc1 -G8 by proof). */
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 #include "bb2.h"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
 
@@ -33,8 +11,8 @@ extern s32 D_800A3234;
 extern u16 D_80094AF4[];
 extern u8 D_80094B48[];
 
-
-/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+/* Q65: this file's statics (.sbss, allocated per file in link order by
+ * PSYLINK), in address order. */
 /* Cursor in the 10-packet bank selected by frame parity. */
 static DR_MOVE *D_800A3378;
 
@@ -74,6 +52,7 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
         D_800A3378++;
     }
 }
+
 void func_80040304(s32 a0, s32 a1) {
     Unk80045878Obj *ptr;
     s32 mask;
@@ -117,6 +96,7 @@ void func_80040304(s32 a0, s32 a1) {
         } while (i < 5);
     }
 }
+
 void func_80040400(Unk80045878Node *a0, Unk80045878Node *a1, s16 a2) {
     while (a1->node.unk2 != -1) {
         a1++;
@@ -132,10 +112,12 @@ void func_80040400(Unk80045878Node *a0, Unk80045878Node *a1, s16 a2) {
     a1->unk58 = 0;
     a1[1].node.unk2 = -1;
 }
+
 Unk80045878Node *func_8004046C(s32 a0, s32 a1) {
     Unk80045878Obj *base = func_8004153C(a0);
     return base->unk_1A34[a1];
 }
+
 void func_800404A0(Unk80045878Node *a0, s32 a1) {
     if (a0->node.unk2 == -1) {
         return;
@@ -145,6 +127,7 @@ void func_800404A0(Unk80045878Node *a0, s32 a1) {
         a0++;
     } while (a0->node.unk2 != -1);
 }
+
 void func_800404D8(void) {
     s32 i;
     for (i = 0; i < 3; i++) {
@@ -152,12 +135,15 @@ void func_800404D8(void) {
         g_player_char_ids[i] = 0;
     }
 }
+
 extern void func_80040594(Unk80045878Obj *);
 extern void func_800408F8(Unk80045878Obj *);
 extern void func_80040B44(Unk80045878Obj *);
-/* Not the definition's spelling: snd_VabFakeOpen (3AB48.c) takes an s16 second parameter, but
- * the original's call here passes it unextended (an s16 prototype adds sll/sra, measured). */
+/* Not the definition's spelling: snd_VabFakeOpen (3AB48.c) takes an s16 second
+ * parameter, but the original's call here passes it unextended (an s16
+ * prototype adds sll/sra, measured). */
 extern s32 snd_VabFakeOpen(s32, s32);
+
 Unk80045878Obj *func_80040510(s32 a0, s32 a1, s32 a2) {
     Unk80045878Obj *ptr;
     ptr = func_80045878(a0, a1, a2);
@@ -171,8 +157,8 @@ Unk80045878Obj *func_80040510(s32 a0, s32 a1, s32 a2) {
     func_8003E120();
     return ptr;
 }
-void func_80040594(Unk80045878Obj *a0)
-{
+
+void func_80040594(Unk80045878Obj *a0) {
     s32 *rmd;
     s32 *sec;
     s32 count;
@@ -194,19 +180,25 @@ void func_80040594(Unk80045878Obj *a0)
     count = rmd[0];
     sec = (s32 *)((s32)rmd + (((u32)rmd[count] >> 2) << 2));
 
-    if (seq_GetState() == 0) goto call_b644;
-    if (a0->unk_04 == 1) goto after_b644;
+    if (seq_GetState() == 0)
+        goto call_b644;
+    if (a0->unk_04 == 1)
+        goto after_b644;
 
 call_b644:
     func_8005B644(a0->unk_04);
 
 after_b644:
-    if (count < 6) goto simple;
+    if (count < 6)
+        goto simple;
 
     {
         ptr = (s32 *)((s32)rmd + (((u32)rmd[count - 1] >> 2) << 2));
-        ptr = (s32 *)((s32)ptr + func_8005C2A8(ptr, a0->unk_04 * 3 + 1,
-                                               (s32 *)((s32)rmd + (((u32)rmd[count + 1] >> 2) << 2))));
+        ptr =
+            (s32 *)((s32)ptr +
+                    func_8005C2A8(
+                        ptr, a0->unk_04 * 3 + 1,
+                        (s32 *)((s32)rmd + (((u32)rmd[count + 1] >> 2) << 2))));
 
         if (ptr == 0) {
             func_80052C10();
@@ -231,7 +223,9 @@ after_select:
     }
 
     {
-        /* FAKE: texA / texB computed ahead of the unk_28 store; passed in the calls, the address arithmetic moves below sw unk_28 and the s-registers re-seat (score 72). */
+        /* FAKE: texA / texB computed ahead of the unk_28 store; passed in the
+         * calls, the address arithmetic moves below sw unk_28 and the
+         * s-registers re-seat (score 72). */
         s32 *texA = (s32 *)((s32)rmd + (((u32)rmd[1] >> 2) << 2));
         s32 *texB;
         texB = (s32 *)((s32)rmd + (((u32)rmd[4] >> 2) << 2));
@@ -241,19 +235,24 @@ after_select:
     }
 
     {
-        if (a0->unk_04 == 1) goto case_1;
-        if (a0->unk_04 >= 2) goto done_cases;
-        if (a0->unk_04 != 0) goto done_cases;
+        if (a0->unk_04 == 1)
+            goto case_1;
+        if (a0->unk_04 >= 2)
+            goto done_cases;
+        if (a0->unk_04 != 0)
+            goto done_cases;
 
         func_80047EE8(sec, 0);
-        if (func_8003E2A0() != 0) goto done_cases;
+        if (func_8003E2A0() != 0)
+            goto done_cases;
         func_800432A0(a0->unk_14, 0, 0, -0x140, 0xE8);
         func_800480C0((s32)sec, 0, 0, 0, -0x140, 0xF0);
         goto done_cases;
 
     case_1:
         func_80047FBC(sec, 0, 0x80, 0);
-        if (func_8003E2A0() != 1) goto case_1_else;
+        if (func_8003E2A0() != 1)
+            goto case_1_else;
         func_800432A0(a0->unk_14, 0x80, 0, -0x140, 0xE8);
         func_800480C0((s32)sec, 0, 0x80, 0, -0x140, 0xF0);
         goto case_1_done;
@@ -267,10 +266,12 @@ after_select:
 
 done_cases:
     DrawSync(0);
-    func_80041988(a0->unk_04, a0->unk_08, g_player_char_ids[a0->unk_04], (s32)sec);
+    func_80041988(
+        a0->unk_04, a0->unk_08, g_player_char_ids[a0->unk_04], (s32)sec);
 
     {
-        a0->unk_00.word = (a0->unk_00.word & 0xFFE0FFFF) | ((g_player_char_ids[a0->unk_04] & 0x1F) << 16);
+        a0->unk_00.word = (a0->unk_00.word & 0xFFE0FFFF) |
+                          ((g_player_char_ids[a0->unk_04] & 0x1F) << 16);
         g_player_char_ids[a0->unk_04] = 0;
     }
 
@@ -278,7 +279,6 @@ done_cases:
     a0->unk_24 = (void *)(a0->unk_1C + off);
     func_80045A28(a0->unk_04, off);
 }
-
 
 extern Unk80094B96Rec D_80094B96[21];
 
@@ -302,7 +302,9 @@ void func_800408F8(Unk80045878Obj *a0) {
 
     {
         Unk80045878Node *p = a0->unk_2C;
-        /* FAKE: base keeps the array start (move t1,a3); &a0->unk_2C[v1] rebuilds it from a0 (addiu 44 + addu) and the mflo temps move to t1 (score 9) */
+        /* FAKE: base keeps the array start (move t1,a3); &a0->unk_2C[v1]
+         * rebuilds it from a0 (addiu 44 + addu) and the mflo temps move to t1
+         * (score 9) */
         Unk80045878Node *base = p;
         s32 i = 0;
 
@@ -334,6 +336,7 @@ void func_800408F8(Unk80045878Obj *a0) {
 
     func_80040A78(a0);
 }
+
 void func_80040A78(Unk80045878Obj *arg0) {
     s32 var_a1;
     Unk80045878Node *n;
@@ -366,6 +369,7 @@ void func_80040A78(Unk80045878Obj *arg0) {
         var_a1 += 1;
     } while (var_a1 < 0x14);
 }
+
 void func_80040B44(Unk80045878Obj *arg0) {
     s32 seen[18];
     Unk80045878Node *t5;
@@ -392,7 +396,8 @@ void func_80040B44(Unk80045878Obj *arg0) {
     } while (i >= 0);
 
     a0_val = *t3;
-    if (a0_val == 0xFFFF) goto done;
+    if (a0_val == 0xFFFF)
+        goto done;
 
     {
         do {
@@ -403,9 +408,11 @@ void func_80040B44(Unk80045878Obj *arg0) {
             t3++;
             a3 = *t3;
             t3++;
-            /* FAKE: the slot address as integer arithmetic; &seen[a3] swaps the addu operands (score 1) */
+            /* FAKE: the slot address as integer arithmetic; &seen[a3] swaps the
+             * addu operands (score 1) */
             a1 = (s32 *)(a3 * 4 + (s32)&seen[0]);
-            /* FAKE: t2 copies a0_val ahead of the seen[] test; with a0_val itself the load and the cursor step re-seat (score 9). */
+            /* FAKE: t2 copies a0_val ahead of the seen[] test; with a0_val
+             * itself the load and the cursor step re-seat (score 9). */
             t2 = a0_val;
 
             if (*a1 == 0) {
@@ -426,6 +433,7 @@ void func_80040B44(Unk80045878Obj *arg0) {
 done:
     t5->unk58 = 0;
 }
+
 void func_80040CB8(Unk80045878Obj *arg0) {
     s16 id;
     Unk80045878Node *slot = arg0->unk_8B4;
@@ -454,8 +462,9 @@ void func_80040CB8(Unk80045878Obj *arg0) {
         one = 1;
     } while (0);
     link = (s32)&arg0->unk_2C[1];
-    /* FAKE: tbl walks the records' unk_08 members (a cursor at +8, stepped by a record): a record
-       pointer reads unk_08 at 8(a3) off D_80094B96 (score 2), D_80094B96[i].unk_08 scores 21. */
+    /* FAKE: tbl walks the records' unk_08 members (a cursor at +8, stepped by a
+       record): a record pointer reads unk_08 at 8(a3) off D_80094B96 (score 2),
+       D_80094B96[i].unk_08 scores 21. */
     tbl = &D_80094B96[0].unk_08;
     // FAKE: wrap emits loop notes around the body, so flow.c weights every
     // reference inside it by loop_depth 2. That weighting is what seats the
@@ -480,7 +489,9 @@ void func_80040CB8(Unk80045878Obj *arg0) {
             *(s16 *)(ent - 0x52) = one;
             *(s16 *)(ent - 0x4E) = 0;
             {
-                /* FAKE: w reads unk_16 ahead of the slot step and the *ent store; read at its store the sw zero moves above it (score 2). */
+                /* FAKE: w reads unk_16 ahead of the slot step and the *ent
+                 * store; read at its store the sw zero moves above it (score
+                 * 2). */
                 u16 w = arg0->unk_16;
                 slot++;
                 *(s32 *)ent = 0;
@@ -491,10 +502,12 @@ void func_80040CB8(Unk80045878Obj *arg0) {
         link += 0x68;
         i++;
         tbl = (s16 *)((u8 *)tbl + sizeof(Unk80094B96Rec));
-        if (i < 0x12) goto loop;
+        if (i < 0x12)
+            goto loop;
     } while (0);
     slot->node.unk2 = -1;
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order; values
+ * from the original EXE. */
 s32 D_800A3234 = -1;

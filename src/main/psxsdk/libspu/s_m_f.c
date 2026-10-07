@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSPU S_M_F: SpuFree. .text 0x800899A8..0x80089A24, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSPU S_M_F: SpuFree. .text 0x800899A8..0x80089A24, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libspu_internal.h"
 

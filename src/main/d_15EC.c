@@ -562,9 +562,8 @@ const char D_80010DEC[17568] =
     "DATA0\\M104.DAT\0\0DATA0\\M103.DAT\0\0"
     "DATA0\\M102.DAT\0\0DATA0\\M101.DAT\0\0"
     "DATA0\\M100.DAT\0\0DATA0\\M002.DAT\0\0"
-    "DATA0\\M001.DAT\0\0DATA0\\M000.DAT\0\0"
-    ;
+    "DATA0\\M001.DAT\0\0DATA0\\M000.DAT\0\0";
 
-/* D_8001528C: 40 bytes @ 0x8001528C - "Marionation over flow. No.%d (-%dbyte)\n" */
+/* D_8001528C: 40 bytes @ 0x8001528C - "Marionation over flow. No.%d
+ * (-%dbyte)\n" */
 const char D_8001528C[40] = "Marionation over flow. No.%d (-%dbyte)\n";
-

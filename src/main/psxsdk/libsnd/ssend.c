@@ -1,13 +1,14 @@
-/* PsyQ 4.0 LIBSND SSEND: SsEnd (SOTN libsnd/ssend.c). .text 0x80083954..0x80083A18, a verbatim
- * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSND SSEND: SsEnd (SOTN libsnd/ssend.c). .text
+ * 0x80083954..0x80083A18, a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 #include <psxsdk/libapi.h>
 #include <psxsdk/libetc.h>
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
+/* Declarations from the file this module was split from
+ * (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
 void InterruptCallback(void);
-
 
 void SsEnd(void) {
     if (_snd_seq_tick_env.unk4 != 0) {

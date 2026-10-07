@@ -1,80 +1,30 @@
-/* 10 game functions, among them bits_ExtractMask3F83F8 and bits_DepositMask3F83F8. .text
- * 0x80035438 (ROM 0x25C38). Start boundary: the end of the EXPAND_LB run; one object by the
- * per-file gp model (Q65 merge group). */
+/* 10 game functions, among them bits_ExtractMask3F83F8 and
+ * bits_DepositMask3F83F8. .text 0x80035438 (ROM 0x25C38). Start boundary: the
+ * end of the EXPAND_LB run; one object by the per-file gp model (Q65 merge
+ * group). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
 
-/* ---- merged from code6cac_b2_pre.c (owner ruling Q65: one original file) ---- */
+/* ---- merged from code6cac_b2_pre.c (owner ruling Q65: one original file) ----
+ */
 /* First half of src/code6cac_b2.c (split for Phase B sec.15.1 rodata-cleanup -
- * code6cac_b2 was split into _pre and _post around replay_camera_rob_back_loose2
- * (extracted to its own .c file), preserving sibling function text addresses). */
+ * code6cac_b2 was split into _pre and _post around
+ * replay_camera_rob_back_loose2 (extracted to its own .c file), preserving
+ * sibling function text addresses). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
 
 /* Extern function declarations */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 extern void AddPrim(void *, void *);
-
-
-
-
-
-
-
-
-
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 extern u8 D_800A3740;
+
 void func_80035438(void) {
     s32 a0;
     D_800A3740 = 1;
@@ -86,7 +36,9 @@ void func_80035438(void) {
     }
     func_80068ECC(a0);
 }
+
 extern u8 D_800A31D8;
+
 void func_80035480(void) {
     gpu_ResetGraphMode1();
     gpu_InitDisplay();
@@ -114,30 +66,43 @@ void func_8003553C(void) {
 
     g = (POLY_G4 *)D_800A38B4;
     SetPolyG4(g);
-    g->x0 = 0; g->y0 = 0;
-    g->x1 = 640; g->y1 = 0;
-    g->x2 = 0; g->y2 = 240;
-    g->x3 = 640; g->y3 = 240;
-    g->r0 = 0; g->g0 = 0; g->b0 = 0x80;
-    g->r1 = 0; g->g1 = 0; g->b1 = 0x80;
-    g->r2 = 0; g->g2 = 0; g->b2 = 0;
-    g->r3 = 0; g->g3 = 0; g->b3 = 0;
+    g->x0 = 0;
+    g->y0 = 0;
+    g->x1 = 640;
+    g->y1 = 0;
+    g->x2 = 0;
+    g->y2 = 240;
+    g->x3 = 640;
+    g->y3 = 240;
+    g->r0 = 0;
+    g->g0 = 0;
+    g->b0 = 0x80;
+    g->r1 = 0;
+    g->g1 = 0;
+    g->b1 = 0x80;
+    g->r2 = 0;
+    g->g2 = 0;
+    g->b2 = 0;
+    g->r3 = 0;
+    g->g3 = 0;
+    g->b3 = 0;
     AddPrim(g_gpu_ot_ptr + 0x1007, g);
     g += 1;
     D_800A38B4 = (u32 *)g;
 }
+
 void func_800355E8(void) {
     snd_SerialMixOn();
     func_80037110(1);
     func_800371E8(1);
 }
 
-/* ---- merged from replay_camera_rob_back_loose2.c (owner ruling Q65: one original file) ---- */
+/* ---- merged from replay_camera_rob_back_loose2.c (owner ruling Q65: one
+ * original file) ---- */
 /* Sub-TU split out from src/code6cac_b2.c (Phase B §15.1). Same includes
  * + inline externs as code6cac_b2.c so cc1 sees identical declarations. */
 #include "common.h"
 #include "include_asm.h"
-
 
 void func_80035618(s32 arg0) {
     s32 temp;
@@ -187,7 +152,8 @@ void func_80035618(s32 arg0) {
 
         temp = func_8003ACB8();
         if (temp == 1) {
-            func_80077940((D_80106A50.unk_00 | D_800A38E4 | 0x7007) & 0x003FF3FF);
+            func_80077940(
+                (D_80106A50.unk_00 | D_800A38E4 | 0x7007) & 0x003FF3FF);
             func_80077984(0x80118800);
             D_800A3740 = 3;
             func_800355E8();
@@ -230,61 +196,21 @@ void func_80035618(s32 arg0) {
     }
 }
 
-/* ---- merged from code6cac_b2_post.c (owner ruling Q65: one original file) ---- */
+/* ---- merged from code6cac_b2_post.c (owner ruling Q65: one original file)
+ * ---- */
 /* Padding NOP macro */
 
 /* Extern function declarations */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Continuation of src/code6cac_b2.c (split for Phase B sec.15.1 rodata-cleanup -
- * replay_camera_rob_back_loose2 extracted to its own .c file, requiring this
+/* Continuation of src/code6cac_b2.c (split for Phase B sec.15.1 rodata-cleanup
+ * - replay_camera_rob_back_loose2 extracted to its own .c file, requiring this
  * file to be split around it to preserve text addresses). */
 extern u8 D_800A31D9;
 extern void func_80035618(s32);
 extern void func_8003553C(void);
 extern void func_80035438(void);
 extern void func_800355E8(void);
+
 void func_80035828(void) {
     s32 ret;
 
@@ -483,6 +409,7 @@ void func_80035828(void) {
         D_800A36F1 = 2;
     }
 }
+
 void func_80035DC8(void) {
     gpu_ResetGraphMode1();
     gpu_InitDisplay();
@@ -495,6 +422,7 @@ void func_80035DC8(void) {
     D_800A3834 = 0x1B;
     gpu_SetDispMaskOn();
 }
+
 void func_80035E38(void) {
     D_800A36F1 = 1;
     func_8003553C();
@@ -503,6 +431,7 @@ void func_80035E38(void) {
         D_800A36F1 = 2;
     }
 }
+
 s32 bits_ExtractMask3F83F8(s32 a0) {
     s32 result = 0;
     s32 i = 0;
@@ -520,6 +449,7 @@ s32 bits_ExtractMask3F83F8(s32 a0) {
     } while (i < 0x1B);
     return result;
 }
+
 s32 bits_DepositMask3F83F8(s32 a0) {
     s32 result = 0;
     s32 i = 0;
@@ -538,9 +468,11 @@ s32 bits_DepositMask3F83F8(s32 a0) {
     return result;
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order; values
+ * from the original EXE. */
 u8 D_800A31D8 = 1;
 u8 D_800A31D9 = 1;
 u8 D_800A31DA = 0;
-/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+/* Q65: tentative definitions (COMMON) of the small data this file reaches
+ * gp-relative. */
 u8 D_800A3740;

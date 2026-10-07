@@ -1,8 +1,8 @@
 /* The CD module's two state-machine steppers, func_80036140 and func_80036940.
- * .text 0x80036140 (ROM 0x26940). Start boundary: G8. Their own translation unit,
- * compiled -G8 (Makefile GP_FILES; owner ruling 2026-09-26, Q10): both read
- * g_cd_result (and func_80036140 g_cd_atv, D_800A36B8, D_800A3840, D_800A3854)
- * straight off $gp, which the original compiler emits only at -G8.
+ * .text 0x80036140 (ROM 0x26940). Start boundary: G8. Their own translation
+ * unit, compiled -G8 (Makefile GP_FILES; owner ruling 2026-09-26, Q10): both
+ * read g_cd_result (and func_80036140 g_cd_atv, D_800A36B8, D_800A3840,
+ * D_800A3854) straight off $gp, which the original compiler emits only at -G8.
  * g_cd_atv, D_800A36B8 and g_cd_result are declared here as in
  * 26730.c, the way their bytes show the original did: file-scope
  * tentative definitions (no initializer; their original bytes are zero).
@@ -16,14 +16,23 @@
 CdlATV g_cd_atv;
 CdlATV D_800A36B8;
 u8 g_cd_result[8];
+
 void func_80036140(void) {
     CdlATV atv;
 
     if (D_800A3854 > 0) {
-        atv.val0 = (D_800A36B8.val0 * D_800A3840 + g_cd_atv.val0 * (D_800A3854 - D_800A3840)) / D_800A3854;
-        atv.val1 = (D_800A36B8.val1 * D_800A3840 + g_cd_atv.val1 * (D_800A3854 - D_800A3840)) / D_800A3854;
-        atv.val2 = (D_800A36B8.val2 * D_800A3840 + g_cd_atv.val2 * (D_800A3854 - D_800A3840)) / D_800A3854;
-        atv.val3 = (D_800A36B8.val3 * D_800A3840 + g_cd_atv.val3 * (D_800A3854 - D_800A3840)) / D_800A3854;
+        atv.val0 = (D_800A36B8.val0 * D_800A3840 +
+                    g_cd_atv.val0 * (D_800A3854 - D_800A3840)) /
+                   D_800A3854;
+        atv.val1 = (D_800A36B8.val1 * D_800A3840 +
+                    g_cd_atv.val1 * (D_800A3854 - D_800A3840)) /
+                   D_800A3854;
+        atv.val2 = (D_800A36B8.val2 * D_800A3840 +
+                    g_cd_atv.val2 * (D_800A3854 - D_800A3840)) /
+                   D_800A3854;
+        atv.val3 = (D_800A36B8.val3 * D_800A3840 +
+                    g_cd_atv.val3 * (D_800A3854 - D_800A3840)) /
+                   D_800A3854;
         CdMix(&atv);
         if (++D_800A3840 >= D_800A3854) {
             D_800A3854 = 0;
@@ -103,9 +112,11 @@ void func_80036140(void) {
             if (ret == 1) {
                 if (!(g_cd_result[4] & 0x80)) {
                     D_80101E58.rec.unk3C = 0;
-                    if (CdPosToInt((CdlLOC *)&g_cd_result[3]) >= D_80101E58.rec.unk14) {
+                    if (CdPosToInt((CdlLOC *)&g_cd_result[3]) >=
+                        D_80101E58.rec.unk14) {
                         cdrom_SetMix(0, 0, 0, 0);
-                        D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
+                        D_80101E58.rec.unk02 =
+                            D_80101E58.rec.unk0A ? 0x10 : 0x1C;
                     }
                 }
             } else if (ret == 5) {
@@ -133,7 +144,8 @@ void func_80036140(void) {
                     s32 pos = CdPosToInt((CdlLOC *)&g_cd_result[5]);
                     if (pos >= D_80101E58.rec.unk14) {
                         cdrom_SetMix(0, 0, 0, 0);
-                        D_80101E58.rec.unk02 = D_80101E58.rec.unk0A ? 0x10 : 0x1C;
+                        D_80101E58.rec.unk02 =
+                            D_80101E58.rec.unk0A ? 0x10 : 0x1C;
                     } else if (pos >= D_80101E58.rec.unk14 - 0x96) {
                         if (D_80101E58.rec.unk44 == 0) {
                             D_80101E58.rec.unk44 = D_80101E58.rec.unk14 - pos;
@@ -210,7 +222,9 @@ void func_80036140(void) {
     }
     }
 }
+
 extern void func_80036140(void);
+
 void func_80036940(void) {
     u8 param[4];
 
@@ -343,7 +357,8 @@ void func_80036940(void) {
     }
 }
 
-/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+/* Q65: tentative definitions (COMMON) of the small data this file reaches
+ * gp-relative. */
 CdlATV D_800A36B8;
 CdlATV g_cd_atv;
 u8 g_cd_result[8];

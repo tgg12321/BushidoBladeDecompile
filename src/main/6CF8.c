@@ -1,13 +1,13 @@
-/* The game's boot and main loop: main(), the PCdrv host-file loaders (pcdrv_LoadFile,
- * pcdrv_LoadSectors), display setup wrappers, rng_SetSeed / rng_Next and scratchpad_Save /
- * scratchpad_Restore. .text 0x800164F8 (ROM 0x6CF8). Start boundary: the first game .text object
- * (LEGACY: a splat segment edge). */
+/* The game's boot and main loop: main(), the PCdrv host-file loaders
+ * (pcdrv_LoadFile, pcdrv_LoadSectors), display setup wrappers, rng_SetSeed /
+ * rng_Next and scratchpad_Save / scratchpad_Restore. .text 0x800164F8 (ROM
+ * 0x6CF8). Start boundary: the first game .text object (LEGACY: a splat segment
+ * edge). */
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
 #include "bb2_const.h"
 #include "gte.h"
-
 
 /* Forward declarations for called functions */
 
@@ -32,20 +32,16 @@ extern u8 D_800A30E8;
 extern RECT D_800A30D4;
 extern s32 D_800A30DC;
 
-
-
 extern void __main(void);
-/* Not the bb2.h spelling: the definition (3AB48.c) takes an s16 first parameter, but this call
- * passes it unextended (an s16 prototype adds sll/sra here, measured). */
+/* Not the bb2.h spelling: the definition (3AB48.c) takes an s16 first
+ * parameter, but this call passes it unextended (an s16 prototype adds sll/sra
+ * here, measured). */
 extern s32 func_80060414(s32, s32, s32);
 
-
-
-
-
 /* func_800164F8 -- spins 10000 times executing `break 1` (0x0001000D). The loop
- * is ordinary C; only the break has no C form, so it is a one-instruction island
- * (spelled as its word: maspsx cannot assemble `break` with a code operand). */
+ * is ordinary C; only the break has no C form, so it is a one-instruction
+ * island (spelled as its word: maspsx cannot assemble `break` with a code
+ * operand). */
 void func_800164F8(void) {
     s32 i;
 
@@ -53,6 +49,7 @@ void func_800164F8(void) {
         __asm__ volatile(".word 0x0001000D"); /* break 1 */
     }
 }
+
 s32 pcdrv_LoadFile(s32 a0, u8 *dest) {
     s32 fd;
     s32 total;
@@ -83,6 +80,7 @@ s32 pcdrv_LoadFile(s32 a0, u8 *dest) {
     PCclose(fd);
     return total;
 }
+
 s32 pcdrv_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
     s32 fd;
     s32 i;
@@ -102,6 +100,7 @@ s32 pcdrv_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
     PCclose(fd);
     return count << 11;
 }
+
 s32 math_FovToScreenDist(s32 a0) {
     s32 tmp = (a0 << 12) / 360;
     s32 v1 = tmp / 2;
@@ -109,6 +108,7 @@ s32 math_FovToScreenDist(s32 a0) {
     s16 sin_val = Judge[v1 & 0xFFF];
     return (cos_val * 320) / sin_val;
 }
+
 void gpu_SetDrawEnvBg(s32 a0, s32 a1, s32 a2, s32 a3) {
     s32 i;
 
@@ -120,24 +120,19 @@ void gpu_SetDrawEnvBg(s32 a0, s32 a1, s32 a2, s32 a3) {
 
 /* --- Decompiled functions --- */
 
-u32 file_GetFlag0(void) {
-    return D_80106A50.flags & 1;
-}
+u32 file_GetFlag0(void) { return D_80106A50.flags & 1; }
 
-u32 file_GetFlag1(void) {
-    return (D_80106A50.flags >> 1) & 1;
-}
+u32 file_GetFlag1(void) { return (D_80106A50.flags >> 1) & 1; }
 
-u32 file_GetFlag2(void) {
-    return (D_80106A50.flags >> 2) & 1;
-}
+u32 file_GetFlag2(void) { return (D_80106A50.flags >> 2) & 1; }
 
 void func_800167EC(void) {
     s32 i;
-    /* FAKE: pointer to the record, admitted on SOTN precedent (owner rulings Q50, Q53; that
-     * function also writes its global directly beside the pointer) -- cse addresses the header
-     * stores off rec's register and loop.c strength-reduces rec->times[i] into a pointer
-     * copied from it, so unk_00 is stored at 0(base) and the loop walks base by 8. */
+    /* FAKE: pointer to the record, admitted on SOTN precedent (owner rulings
+     * Q50, Q53; that function also writes its global directly beside the
+     * pointer) -- cse addresses the header stores off rec's register and loop.c
+     * strength-reduces rec->times[i] into a pointer copied from it, so unk_00
+     * is stored at 0(base) and the loop walks base by 8. */
     FileRecord *rec = &D_80106A50; /* SOTN: src/st/st0/2A218.c:48 @db41b28 */
 
     D_800A3710 = 0;
@@ -153,9 +148,7 @@ void func_800167EC(void) {
     func_8001945C();
 }
 
-void gpu_ResetGraphMode1(void) {
-    ResetGraph(1);
-}
+void gpu_ResetGraphMode1(void) { ResetGraph(1); }
 
 void gpu_InitDisplay(void) {
     SetDispMask(0);
@@ -164,18 +157,14 @@ void gpu_InitDisplay(void) {
     DrawSync(0);
 }
 
-void gpu_SetDispMaskOn(void) {
-    SetDispMask(1);
-}
+void gpu_SetDispMaskOn(void) { SetDispMask(1); }
 
-void sys_StubEmpty(void) {
-}
+void sys_StubEmpty(void) {}
 
-void rcnt_StartCnt1Wrapper(void) {
-    rcnt_StartCnt1();
-}
+void rcnt_StartCnt1Wrapper(void) { rcnt_StartCnt1(); }
 
 extern void SetGraphDebug(s32);
+
 void disp_Init(void) {
     ResetGraph(0);
     SetGraphDebug(0);
@@ -191,7 +180,9 @@ void disp_Init(void) {
     ClearImage(&g_gpu_clear_rect, 0, 0, 0);
     DrawSync(0);
 }
+
 extern void InitPAD(u8 *, s32, u8 *, s32);
+
 void sys_Init(void) {
     ResetCallback();
     InitPAD((u8 *)g_pad_buf[0], 8, (u8 *)g_pad_buf[1], 8);
@@ -204,6 +195,7 @@ void sys_Init(void) {
     memcard_Init();
     rcnt_StartCnt1Wrapper();
 }
+
 void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
     RECT rect;
     s32 i;
@@ -228,11 +220,14 @@ void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
 
             for (j = 0; j < rect.w * rect.h; j++, pixels++) {
                 u32 pixel = *pixels;
-                /* FAKE: (s32) makes the shift signed; unsigned: score 1 (srl for the target's sra) */
+                /* FAKE: (s32) makes the shift signed; unsigned: score 1 (srl
+                 * for the target's sra) */
                 s32 value = (s32)(pixel & 0x1F) >> 1;
                 u32 temp;
 
-                pixel &= 0xFFFF; /* FAKE: no-op mask of the u16 read; removed: score 1 (the andi goes) */
+                /* FAKE: no-op mask of the u16 read; removed: score 1 (the andi
+                 * goes) */
+                pixel &= 0xFFFF;
                 temp = pixel >> 1;
                 temp &= 0x1E0;
                 value += temp;
@@ -252,15 +247,16 @@ void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
     SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x280, 0xF0);
     SetDispMask(1);
 }
+
 void sys_Panic(void) {
     printf(g_str_overflow);
     while (1) {
         func_800164F8();
     }
 }
-void file_ResetDmaFlag(void) {
-    g_file_dma_flag = 0;
-}
+
+void file_ResetDmaFlag(void) { g_file_dma_flag = 0; }
+
 void eff_Init(void) {
     s32 size;
 
@@ -274,8 +270,10 @@ void eff_Init(void) {
     }
     g_file_dma_flag = 1;
 }
+
 extern void memcpy(u32, u32, s32);
 extern s32 snd_VabFakeOpen(s32, s16);
+
 void file_LoadSoundData(void) {
     s32 size;
 
@@ -289,11 +287,13 @@ void file_LoadSoundData(void) {
     func_8005C614();
     D_800A3906 = 1;
 }
+
 extern u32 D_800A3798;
 extern u8 D_800A3744;
 extern u8 D_800A3745;
 extern u8 D_800A3746;
 extern u8 D_800A36B0;
+
 void sys_GameInit(void) {
     printf(g_str_limit, 0x8010DB00);
     func_800167EC();
@@ -319,9 +319,7 @@ void sys_GameInit(void) {
     D_800A3928 = 0;
 }
 
-void gpu_WaitDrawSync(void) {
-    DrawSync(0);
-}
+void gpu_WaitDrawSync(void) { DrawSync(0); }
 
 void func_80016E60(GpuDb *arg0, s32 arg1) {
     u32 ot[2];
@@ -343,7 +341,8 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
        and leaves it at the LATER position, so sched.c:3256's parameter-copy pin
        (leading run of hard-register-source SETs) no longer applies, sched1's
        birthing_insn_p boost (sched.c:2504) emits it after the two init insns,
-       and sched2's INSN_LUID tie-break (sched.c:2462) orders the groups s1,s2,s5. Removing it scores 4. */
+       and sched2's INSN_LUID tie-break (sched.c:2462) orders the groups
+       s1,s2,s5. Removing it scores 4. */
     ot_base = arg0;
     if (D_800A38DC == 2) {
         special = D_800A389A < 1;
@@ -375,11 +374,12 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
         DrawSync(0);
         VSync(2);
         /* FAKE: single-level do { } while (0) wrap around the two env
-           publishes (do-while-zero family, .claude/rules/do-while-zero-exception.md);
-           effect: env is seated in $s0 and select in $s1, the target's assignment.
-           mechanism: the wrap's loop notes make flow.c weight env's three in-loop
-           references at loop_depth 3 instead of 2, lifting its global.c
-           allocno_compare priority above select's. Unwrapped, score 21. */
+           publishes (do-while-zero family,
+           .claude/rules/do-while-zero-exception.md); effect: env is seated in
+           $s0 and select in $s1, the target's assignment. mechanism: the wrap's
+           loop notes make flow.c weight env's three in-loop references at
+           loop_depth 3 instead of 2, lifting its global.c allocno_compare
+           priority above select's. Unwrapped, score 21. */
         do {
             PutDispEnv(&env->disp);
             PutDrawEnv(&env->draw);
@@ -431,9 +431,9 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
     ResetRCnt(0xF2000001);
     D_800A36B0 = 1;
 }
-void rng_SetSeed(s32 a0) {
-    g_rng_state = a0;
-}
+
+void rng_SetSeed(s32 a0) { g_rng_state = a0; }
+
 s32 rng_Next(void) {
     s32 seed = g_rng_state;
     s32 result = seed * 5497 + 0x7FA9;
@@ -441,16 +441,17 @@ s32 rng_Next(void) {
     g_rng_state = seed;
     return seed & 0x7FFF;
 }
+
 void main(void) {
     s32 idx;
     GpuDb *env;
     u32 *ot;
-    /* D_800A390D (frames left to skip presenting) as read this frame; the next frame
-     * passes it to func_80019568. */
+    /* D_800A390D (frames left to skip presenting) as read this frame; the next
+     * frame passes it to func_80019568. */
     s32 skip;
-    /* FAKE: second handle on D_800A3770 - the target keeps &D_800A3770 in $s4 for the
-     * whole loop (lui/addiu at 0x80017260); D_800A3770[idx] at both uses re-forms the
-     * address there and scores 14. */
+    /* FAKE: second handle on D_800A3770 - the target keeps &D_800A3770 in $s4
+     * for the whole loop (lui/addiu at 0x80017260); D_800A3770[idx] at both
+     * uses re-forms the address there and scores 14. */
     u32 *tbl;
 
     __main();
@@ -491,7 +492,8 @@ loop:
     func_8003D330();
 
     do {
-        if (GetRCnt(0xF2000001u) >= ((D_800A36F1 - 1) << 8) + 0x80) break;
+        if (GetRCnt(0xF2000001u) >= ((D_800A36F1 - 1) << 8) + 0x80)
+            break;
         rand();
     } while (1);
 
@@ -526,13 +528,19 @@ loop:
         D_800A36AC++;
     }
 
-    if (D_800A3834 != 1) goto loop;
-    if (skip != 0) goto loop;
-    if (g_pad_state.pressed & 0x08000800u) goto call_func;
-    if (D_800A38DC != 2) goto loop;
-    if (D_800A3713 == 0) goto loop;
+    if (D_800A3834 != 1)
+        goto loop;
+    if (skip != 0)
+        goto loop;
+    if (g_pad_state.pressed & 0x08000800u)
+        goto call_func;
+    if (D_800A38DC != 2)
+        goto loop;
+    if (D_800A3713 == 0)
+        goto loop;
     D_800A3713--;
-    if (D_800A3713 != 0) goto loop;
+    if (D_800A3713 != 0)
+        goto loop;
 call_func:
     func_80016E60(env, idx);
     goto loop;
@@ -542,7 +550,8 @@ void func_800174F4(void) {
     u32 ot[2];
     DRAWENV env;
     /* temp: holds two values, the case-1/2 fade loop's iteration count and
-     * the case-20 D_800A37A8[] code passed to func_80060414 (owner ruling 11). */
+     * the case-20 D_800A37A8[] code passed to func_80060414 (owner ruling 11).
+     */
     s32 temp;
     s32 prim;
     /* temp2: holds two values, the g_disp_enable switch selector and the
@@ -569,8 +578,7 @@ void func_800174F4(void) {
             for (i = 0; i < temp; i++) {
                 prim = func_8005D554(prim, g_disp_enable);
             }
-        }
-        else if ((rand() & 7) == 0) {
+        } else if ((rand() & 7) == 0) {
             func_8005D554(prim, g_disp_enable);
         }
         break;
@@ -610,19 +618,20 @@ void func_800174F4(void) {
     DrawOTag(g_gpu_ot_ptr + 1);
     DrawSync(0);
 }
+
 void obj_ClearAll(void) {
     s32 i;
-    /* FAKE: the table walked by byte offset: the target's one induction variable is the
-       record's offset (`li v0,364` ... `addiu v0,v0,-52`); indexed by record, loop.c keeps
-       the index beside its scaled copy: score 4. */
-    for (i = 7 * sizeof(Func80017A44Output); i >= 0; i -= sizeof(Func80017A44Output)) {
+    /* FAKE: the table walked by byte offset: the target's one induction
+       variable is the record's offset (`li v0,364` ... `addiu v0,v0,-52`);
+       indexed by record, loop.c keeps the index beside its scaled copy:
+       score 4. */
+    for (i = 7 * sizeof(Func80017A44Output); i >= 0;
+         i -= sizeof(Func80017A44Output)) {
         ((Func80017A44Output *)((u8 *)g_file_data_buf + i))->points = 0;
     }
 }
 
-s32 obj_CalcOffset(s32 a0, s32 a1) {
-    return (a0 << 6) + (a1 << 4);
-}
+s32 obj_CalcOffset(s32 a0, s32 a1) { return (a0 << 6) + (a1 << 4); }
 
 s32 math_Distance3D(s32 *a0, s32 *a1) {
     s32 in[3];
@@ -634,6 +643,7 @@ s32 math_Distance3D(s32 *a0, s32 *a1) {
     Square12(in, out);
     return SquareRoot12(out[0] + out[1] + out[2]) << 2;
 }
+
 s32 math_Distance3D_16(s32 *a0, s32 *a1) {
     s32 in[3];
     s32 out[4];
@@ -644,6 +654,7 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
     Square12(in, out);
     return SquareRoot12(out[0] + out[1] + out[2]) << 4;
 }
+
 /* Adds an edge between records a and b unless a == b, both records have a
  * non-negative index, or an edge a->b or b->a already exists. Returns 1 when
  * an edge was added. */
@@ -740,9 +751,11 @@ void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
     while ((group_count = *groups++) != 0) {
         group_id = *groups++;
         for (i = 0; i < group_count - 1; i++) {
-            dist = math_Distance3D_16((s32 *)&center, record_base[groups[i]].pos);
+            dist =
+                math_Distance3D_16((s32 *)&center, record_base[groups[i]].pos);
             for (j = i + 1; j < group_count; j++) {
-                if (dist < math_Distance3D_16((s32 *)&center, record_base[groups[j]].pos)) {
+                if (dist < math_Distance3D_16(
+                               (s32 *)&center, record_base[groups[j]].pos)) {
                     func_80017848(a1, group_id, groups[i], groups[j]);
                 } else {
                     func_80017848(a1, group_id, groups[j], groups[i]);
@@ -752,6 +765,7 @@ void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
         groups += group_count;
     }
 }
+
 s32 func_80017D84(Func80017A44Input *a0) {
     Func80017A44Output *p;
     s32 i;
@@ -759,11 +773,14 @@ s32 func_80017D84(Func80017A44Input *a0) {
 
     p = g_file_data_buf;
     for (i = 0; i < 8; i++) {
-        if (p->points == 0) break;
+        if (p->points == 0)
+            break;
         p++;
     }
-    if (i == 8) return -1;
-    if (D_800A30E8 < i) D_800A30E8 = i;
+    if (i == 8)
+        return -1;
+    if (D_800A30E8 < i)
+        D_800A30E8 = i;
     p->count = a0->count;
     p->points = a0->points;
     p->matrix = *a0->matrix;
@@ -775,19 +792,21 @@ s32 func_80017D84(Func80017A44Input *a0) {
     func_80017A44(a0, p);
     return i;
 }
-void obj_Clear(s32 a0) {
-    g_file_data_buf[a0].points = 0;
-}
+
+void obj_Clear(s32 a0) { g_file_data_buf[a0].points = 0; }
+
 void obj_UpdatePosition(s32 a0, s32 a1) {
     Func80017A44Output *ptr = &g_file_data_buf[a0];
 
     ptr->records = (Func80017A44Record *)((u8 *)ptr->records + a1);
     ptr->edges = (Func80017848Edge *)(ptr->records + ptr->count);
 }
+
 void obj_AddValue(s32 a0, s32 a1) {
     Func80017A44Output *ptr = &g_file_data_buf[a0];
     ptr->points = (SVECTOR *)((u8 *)ptr->points + a1);
 }
+
 void scratchpad_Save(void) {
     vu32 *src = (vu32 *)0x1F800000;
     u32 *dst = (u32 *)&g_scratchpad_save;
@@ -796,6 +815,7 @@ void scratchpad_Save(void) {
         *dst++ = *src++;
     }
 }
+
 void scratchpad_Restore(void) {
     u32 *src = (u32 *)&g_scratchpad_save;
     vu32 *dst = (vu32 *)0x1F800000;
@@ -805,17 +825,18 @@ void scratchpad_Restore(void) {
     }
 }
 
-void sys_StubEmpty2(void) {
-}
+void sys_StubEmpty2(void) {}
 
-void sys_StubEmpty3(s32 arg0, s32 arg1, s32 arg2) {
-}
+void sys_StubEmpty3(s32 arg0, s32 arg1, s32 arg2) {}
 
-/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order; values
+ * from the original EXE. */
 s32 D_800A30DC = 0x13400;
-s32 D_800A30E0[2] = { (s32)g_str_build_date, 0x190 };  /* not named by any code or data: size from the gap */
+/* not named by any code or data: size from the gap */
+s32 D_800A30E0[2] = {(s32)g_str_build_date, 0x190};
 u8 D_800A30E8 = 0;
-/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+/* Q65: tentative definitions (COMMON) of the small data this file reaches
+ * gp-relative. */
 u8 D_800A3690;
 u8 g_disp_fade;
 s32 D_800A36AC;

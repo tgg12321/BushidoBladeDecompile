@@ -1,8 +1,8 @@
 #ifndef BB2_H
 #define BB2_H
 
-/* Declarations of the game's objects and functions for the translation units in src/main/
- * (SLUS_006.63's game code); their types are in game.h. */
+/* Declarations of the game's objects and functions for the translation units in
+ * src/main/ (SLUS_006.63's game code); their types are in game.h. */
 
 #include "game.h"
 
@@ -45,17 +45,17 @@ extern MenuOption D_8009BC0C[8];
 /* 0x8009BCC4: the three scroll pages' origins, s16 (x, y) pairs for pages 4..6
  * (0x8009BCC4..0x8009BCCF). Object model evidence from the original binary:
  * func_800720FC reads (x, y) of entry `mode` through ONE index register
- * (`sll $a2,mode,2`, then `lhu %lo(D_8009BCC4)($at)` and `lhu %lo(D_8009BCC6)($at)`
- * with the same $a2), and its scroll loop reads page p's pair at
- * 0x8009BCB4 + p * 4 for p = 4..6 (asm lines 220-233), i.e. entries 0..2 of
- * this table. Replaces the splat
- * per-word symbols D_8009BCC4 / D_8009BCC6 (per-word splat symbol -> aggregate
- * merge family, owner ruling). */
+ * (`sll $a2,mode,2`, then `lhu %lo(D_8009BCC4)($at)` and `lhu
+ * %lo(D_8009BCC6)($at)` with the same $a2), and its scroll loop reads page p's
+ * pair at 0x8009BCB4 + p * 4 for p = 4..6 (asm lines 220-233), i.e. entries
+ * 0..2 of this table. Replaces the splat per-word symbols D_8009BCC4 /
+ * D_8009BCC6 (per-word splat symbol -> aggregate merge family, owner ruling).
+ */
 extern s16 D_8009BCC4[3][2];
 
 /* 0x8009BCD0: the current scroll offset, one s16 per axis. func_800720FC walks
- * it with a 2-byte step bounded by &D_8009BCD0 + 4 (asm lines 220-288). Replaces
- * D_8009BCD0 / D_8009BCD2 (same merge family). */
+ * it with a 2-byte step bounded by &D_8009BCD0 + 4 (asm lines 220-288).
+ * Replaces D_8009BCD0 / D_8009BCD2 (same merge family). */
 extern s16 D_8009BCD0[2];
 
 extern Unk8009BCF8Record D_8009BCF8[2][10];
@@ -63,12 +63,12 @@ extern Unk8009BCF8Record D_8009BCF8[2][10];
 /* 0x8009BD20: two 2-byte records, {0x01, 0x02} and {0x03, 0x04}
  * (asm/data/7D920.data.s:23805-23817, splat's D_8009BD20 / D_8009BD21 dlabels).
  * Object model evidence from the original binary: func_800747D8 takes the table
- * base into a register (`lui $a2,%hi(D_8009BD20); addiu $a2,$a2,%lo(D_8009BD20)`
- * at 0x800749B4) and adds the column; func_80074488 (0x800746A8-0x800746D4) and
- * func_800770B8 (0x80077338-0x80077344) index it with the row shifted left 1 (a
- * 2-byte stride); func_80074488 reads both columns (column 0 at %lo(D_8009BD20),
- * column 1 at %lo(D_8009BD21)), func_800770B8 only column 1 at
- * %lo(D_8009BD21). */
+ * base into a register (`lui $a2,%hi(D_8009BD20); addiu
+ * $a2,$a2,%lo(D_8009BD20)` at 0x800749B4) and adds the column; func_80074488
+ * (0x800746A8-0x800746D4) and func_800770B8 (0x80077338-0x80077344) index it
+ * with the row shifted left 1 (a 2-byte stride); func_80074488 reads both
+ * columns (column 0 at %lo(D_8009BD20), column 1 at %lo(D_8009BD21)),
+ * func_800770B8 only column 1 at %lo(D_8009BD21). */
 extern u8 D_8009BD20[2][2];
 
 extern u8 *D_800A36A0;
@@ -93,8 +93,8 @@ extern Unk8009BC94Record D_8009BC94[][6];
  * `addiu $a0,$s7,-0x18` -- base+offset addressing of one object at a 12-byte
  * stride. Data: all four records share one shape (word 0 = 0x0001001F,
  * word 2 = 0). Replaces the splat per-word scalars D_8009B398 / D_8009B3A4 /
- * D_8009B3B0 / D_8009B3BC in C (per-word splat symbol -> aggregate merge family,
- * owner ruling); the dlabels stay in asm/data as data labels (no C
+ * D_8009B3B0 / D_8009B3BC in C (per-word splat symbol -> aggregate merge
+ * family, owner ruling); the dlabels stay in asm/data as data labels (no C
  * handle; func_8005E54C reaches record 2 as &D_8009B398[j + 2]). */
 extern Unk8009B0E0Record D_8009B398[4];
 extern Unk8009B400Record D_8009B400[10];
@@ -126,10 +126,11 @@ extern Unk8009B400Record D_8009B5F0[2][2];
 /* 0x8009B490: 2 x 2 table of 8-byte sprite records (Unk8009B400Record),
  * 0x8009B490..0x8009B4AF. Object model evidence from the original binary:
  * asm/funcs/func_8005E54C.s forms ONE stride `sll $s0,$s0,4` (row counter * 16)
- * and adds it to both %lo(D_8009B490) (column 0) and %lo(D_8009B498) (column 1),
- * the same shape as D_8009B5F0 above. Data: all four records share the
- * {s16, s16, u8 x4} shape; D_8009B4B0 (a 12-byte sheet header) follows. Replaces
- * the splat per-word labels D_8009B490 / D_8009B498 in C (per-word splat symbol
+ * and adds it to both %lo(D_8009B490) (column 0) and %lo(D_8009B498) (column
+ * 1), the same shape as D_8009B5F0 above. Data: all four records share the
+ * {s16, s16, u8 x4} shape; D_8009B4B0 (a 12-byte sheet header) follows.
+ * Replaces the splat per-word labels D_8009B490 / D_8009B498 in C (per-word
+ * splat symbol
  * -> aggregate merge family, owner ruling). */
 extern Unk8009B400Record D_8009B490[2][2];
 
@@ -139,18 +140,18 @@ extern Unk8009B0E0Record D_8009B158;
 
 /* 0x8009B164: 2 x 2 table of 8-byte sprite records (Unk8009B400Record),
  * 0x8009B164..0x8009B183. Object model evidence from the original binary:
- * asm/funcs/func_8005C8A8.s forms ONE base %hi/%lo(D_8009B164) in $s1 and passes
- * `addiu $v1,$s1,0x10` (row 1) as the second draw's cell table, and stores the
- * x of column 1 of each row through the splat labels D_8009B16C (row 0) and
- * D_8009B17C (row 1). Replaces the splat per-word labels D_8009B164 /
+ * asm/funcs/func_8005C8A8.s forms ONE base %hi/%lo(D_8009B164) in $s1 and
+ * passes `addiu $v1,$s1,0x10` (row 1) as the second draw's cell table, and
+ * stores the x of column 1 of each row through the splat labels D_8009B16C (row
+ * 0) and D_8009B17C (row 1). Replaces the splat per-word labels D_8009B164 /
  * D_8009B16C / D_8009B17C in C (per-word splat symbol -> aggregate merge
  * family). */
 extern Unk8009B400Record D_8009B164[2][2];
 
 /* 0x8009B184: 2 x 8-byte sprite records (Unk8009B400Record), 0x8009B184..
  * 0x8009B193. Object model evidence from the original binary:
- * asm/funcs/func_8005C8A8.s forms ONE base %hi/%lo(D_8009B184) in $a2, passes it
- * as a cell table (the sheet header's count is 2) and stores record 0's x
+ * asm/funcs/func_8005C8A8.s forms ONE base %hi/%lo(D_8009B184) in $a2, passes
+ * it as a cell table (the sheet header's count is 2) and stores record 0's x
  * through it (`sh $v0,0x0($a2)`); record 1's x is the splat label D_8009B18C.
  * Replaces the splat per-word labels D_8009B184 / D_8009B18C in C (per-word
  * splat symbol -> aggregate merge family). */
@@ -166,20 +167,22 @@ extern Unk8009B2BCRecord D_8009B2BC[3];
 extern Unk800EFAE8Ctrl D_800EFAE8;
 extern Unk800F0C10Record D_800F0C10[4][3];
 
-/* Per-effect-mode state, modes 0..0x11 (func_80065800 and its per-mode init and step
- * functions). Object model evidence (the original binary): asm/funcs/func_80065800.s
- * :39-45 addresses the position records as base + mode*12 (sll/addu/sll, then
- * %lo(D_800F0CA0)($at)) and :147-152 the timers as base + mode*2; modes 8/9 read
- * element mode-2, base - 4 + mode*2 (:351-356). The init functions
- * func_80064E90..func_800652AC fill the records and initialise the timers; the step
- * functions func_800652F4..func_800657B0 advance the timers. Replaces the splat
- * per-word scalars D_800F0BA8..D_800F0BCA and D_800F0CA0..D_800F0D74. */
+/* Per-effect-mode state, modes 0..0x11 (func_80065800 and its per-mode init and
+ * step functions). Object model evidence (the original binary):
+ * asm/funcs/func_80065800.s :39-45 addresses the position records as base +
+ * mode*12 (sll/addu/sll, then %lo(D_800F0CA0)($at)) and :147-152 the timers as
+ * base + mode*2; modes 8/9 read element mode-2, base - 4 + mode*2 (:351-356).
+ * The init functions func_80064E90..func_800652AC fill the records and
+ * initialise the timers; the step functions func_800652F4..func_800657B0
+ * advance the timers. Replaces the splat per-word scalars
+ * D_800F0BA8..D_800F0BCA and D_800F0CA0..D_800F0D74. */
 extern s16 D_800F0BA8[18];
 
 extern Unk800F0C10Record D_800F0CA0[18];
 extern StageFuncEntry g_stage_init_tbl[];
 
-/* 0x8008D090: the per-mode main-loop handlers, indexed by D_800A3834 (defined in src/main/d_7D870.c). */
+/* 0x8008D090: the per-mode main-loop handlers, indexed by D_800A3834 (defined
+ * in src/main/d_7D870.c). */
 extern void (*g_module_func_tbl[])(void);
 
 extern u8 cpu_practice_honmokuroku_data_tbl[][4];
@@ -192,9 +195,9 @@ extern u8 g_sqrt_table_u8[0x400];
 extern MenuDatEntry menuDat[18];
 
 /* D_8008EB40: 3 rows x 3 s16 angle offsets, read as [row][col] with row, col
- * in 0..2 from the pad bits (func_800233AC, func_80023648); 0x8008EB40..0x8008EB51,
- * then 2 bytes of word-alignment padding before D_8008EB54 (dlabel 0x14 bytes,
- * asm/data/7D920.data.s). */
+ * in 0..2 from the pad bits (func_800233AC, func_80023648);
+ * 0x8008EB40..0x8008EB51, then 2 bytes of word-alignment padding before
+ * D_8008EB54 (dlabel 0x14 bytes, asm/data/7D920.data.s). */
 extern s16 D_8008EB40[3][3];
 
 /* Judge: the sine table, one full turn in 0x1000 steps, 1.0 = 0x1000
@@ -203,11 +206,11 @@ extern s16 D_8008EB40[3][3];
  * with a 12-bit angle). */
 extern s16 Judge[0x1000];
 
-/* The 16 slots func_800645B0 spawns and func_800646E8 draws (bit i of D_800A3444
- * live): slot i's position.  Both functions address it as base + i*12
- * (asm/funcs/func_800645B0.s:31-55, func_800646E8.s:93-109).  Replaces the splat
- * per-word scalars D_800F0D78 / D_800F0D7C / D_800F0D80 (the last was misnamed
- * "videoDec": it is slot 0's z). */
+/* The 16 slots func_800645B0 spawns and func_800646E8 draws (bit i of
+ * D_800A3444 live): slot i's position.  Both functions address it as base +
+ * i*12 (asm/funcs/func_800645B0.s:31-55, func_800646E8.s:93-109).  Replaces the
+ * splat per-word scalars D_800F0D78 / D_800F0D7C / D_800F0D80 (the last was
+ * misnamed "videoDec": it is slot 0's z). */
 extern Vec3i32 D_800F0D78[16];
 
 extern Unk800EED10Entry D_800EED10[10];
@@ -220,9 +223,10 @@ extern BoneHitRec D_8008D59C[22];
 
 /* The 6 slots func_8006288C spawns and func_8006295C draws (bit i of D_800A3460
  * live): slot i's position and its RotMatrixZYX angles.  Both functions
- * address them as base + i*12 / base + i*8 (asm/funcs/func_8006288C.s:20-44, the
- * 0xC / 0x8 induction steps at :49-53).  Replaces the splat per-word scalars
- * D_800F0FB8 / D_800F0FBC / D_800F0FC0 and D_800F10A0 / D_800F10A2 / D_800F10A4. */
+ * address them as base + i*12 / base + i*8 (asm/funcs/func_8006288C.s:20-44,
+ * the 0xC / 0x8 induction steps at :49-53).  Replaces the splat per-word
+ * scalars D_800F0FB8 / D_800F0FBC / D_800F0FC0 and D_800F10A0 / D_800F10A2 /
+ * D_800F10A4. */
 extern Vec3i32 D_800F0FB8[6];
 
 extern SVec4i16 D_800F10A0[6];
@@ -247,31 +251,40 @@ extern SVec4i16 *D_8008D88C[32];
 extern SVec4i16 D_8008D774[2];
 extern SVec4i16 D_800A3138;
 extern u8 D_8008D9EC[];
-extern u8 D_8008DA08[0x48];         /* 0x8008DA08..0x8008DA4F (asm/data/7D920.data.s dlabel D_8008DA08) */
-extern s16 D_8008DA50[];          /* [unk_0A] (func_80023F08) */
-extern s16 D_8008DA94[];          /* [unk_0A] (func_80023F08) */
-extern s16 D_8008DAD8[];          /* [unk_0A] (func_80023F08) */
-extern u16 D_8008DB1C[27][8];      /* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_48 model id (func_80020E74) */
-extern u8 D_8008DD5C[27][8];        /* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_84 */
-extern u16 D_8008DE34[27][6];       /* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_1C */
-extern u16 D_8008DF78[27][6];       /* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_1E / unk_20 */
+/* 0x8008DA08..0x8008DA4F (asm/data/7D920.data.s dlabel D_8008DA08) */
+extern u8 D_8008DA08[0x48];
+extern s16 D_8008DA50[]; /* [unk_0A] (func_80023F08) */
+extern s16 D_8008DA94[]; /* [unk_0A] (func_80023F08) */
+extern s16 D_8008DAD8[]; /* [unk_0A] (func_80023F08) */
+/* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_48 model id (func_80020E74) */
+extern u16 D_8008DB1C[27][8];
+/* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_84 */
+extern u8 D_8008DD5C[27][8];
+/* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_1C */
+extern u16 D_8008DE34[27][6];
+/* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_1E / unk_20 */
+extern u16 D_8008DF78[27][6];
 extern Tbl8008E194 D_8008E194[];
 
 /* 8 initialized byte pairs (asm/data/7D920.data.s, 0x8009BD58: {0,0} {1,0}
  * {2,0} {3,0} {4,1} {5,1} {6,1} {7,0}); func_80077904 returns [n][0] and
  * caches [n][1] in D_800A35E0, n = D_8009BD24.unk14_0 (base + n*2,
- * asm/funcs/func_80077904.s).  Replaces the splat per-byte scalar D_8009BD59. */
+ * asm/funcs/func_80077904.s).  Replaces the splat per-byte scalar D_8009BD59.
+ */
 extern u8 D_8009BD58[8][2];
 
 extern Obj80106A78 D_80106A78[12];
-extern s8 D_8008E338[27][5];        /* [unk_0A][i] -> Unk80101EC8Record.unk_332[i] (func_8003047C);
-                                       0x8008E338..0x8008E3BE, then one alignment byte */
-extern u16 D_8008E3C0[28];          /* [unk_0A] -> Unk80101EC8Record.unk_274 */
-extern u16 D_8008E3F8[27][4];       /* [unk_0A][i] -> Unk80101EC8Record.unk_276[i] */
-extern u16 D_8008E4D0[27][4];       /* [unk_0A][i] -> Unk80101EC8Record.unk_27E[i] */
+/* [unk_0A][i] -> Unk80101EC8Record.unk_332[i] (func_8003047C);
+   0x8008E338..0x8008E3BE, then one alignment byte */
+extern s8 D_8008E338[27][5];
+extern u16 D_8008E3C0[28]; /* [unk_0A] -> Unk80101EC8Record.unk_274 */
+/* [unk_0A][i] -> Unk80101EC8Record.unk_276[i] */
+extern u16 D_8008E3F8[27][4];
+/* [unk_0A][i] -> Unk80101EC8Record.unk_27E[i] */
+extern u16 D_8008E4D0[27][4];
 extern u8 D_8008E5A8[];
-extern u8 D_8008E5CC[][8];         /* [unk_0A][unk_0E] of D_80101EC8 */
-extern u8 D_8008E6A4[][6];         /* [unk_0A][unk_0E] of D_80101EC8 */
+extern u8 D_8008E5CC[][8]; /* [unk_0A][unk_0E] of D_80101EC8 */
+extern u8 D_8008E6A4[][6]; /* [unk_0A][unk_0E] of D_80101EC8 */
 extern u8 D_8008E748;
 extern u8 D_8008E75C;
 extern LeafThreshold D_8008EA44[5];
@@ -288,27 +301,32 @@ extern s32 D_8008EB10;
 extern s32 D_8008EB14;
 extern s32 D_8008EB18;
 extern u8 D_8008EB1C[][2];
-extern u8 D_8008EB28[8][2];         /* [unk_0E][flag] -> Unk80101EC8Record.unk_12 */
-extern u8 D_8008EB38[8];            /* [unk_0E] -> Unk80101EC8Record.unk_12 */
+/* [unk_0E][flag] -> Unk80101EC8Record.unk_12 */
+extern u8 D_8008EB28[8][2];
+extern u8 D_8008EB38[8]; /* [unk_0E] -> Unk80101EC8Record.unk_12 */
 extern Tbl8008EB54Entry D_8008EB54[6];
 extern u8 D_8008EB6C[6];
 extern u8 D_8008EB80[];
-extern u16 D_8008EBA0[22];          /* per-limb angle (func_80031890: [j], j < 22) */
+/* per-limb angle (func_80031890: [j], j < 22) */
+extern u16 D_8008EBA0[22];
 extern s32 D_8008EBCC[];
 extern s32 D_8008EBE0[];
 extern u8 D_8008EBF4[6];
 extern LeafThreshold D_8008EBFC[6];
 extern u8 D_8008EC30[4];
 extern s16 D_8008F12C;
-/* 0x8008F13C: twelve 8-byte rows func_80037110 reads by index (asm/data 0x8008F13C..0x8008F19B):
- * unk_0, the group-5 file func_80036EA8 resolves; unk_1, cdrom_StartAudio's second argument;
- * unk_4, an offset added to the file's start sector (-1: none). */
+
+/* 0x8008F13C: twelve 8-byte rows func_80037110 reads by index (asm/data
+ * 0x8008F13C..0x8008F19B): unk_0, the group-5 file func_80036EA8 resolves;
+ * unk_1, cdrom_StartAudio's second argument; unk_4, an offset added to the
+ * file's start sector (-1: none). */
 typedef struct {
     u8 unk_0;
     u8 unk_1;
     u16 unk_2;
     s32 unk_4;
 } Unk8008F13CRow;
+
 extern Unk8008F13CRow D_8008F13C[12];
 extern u8 D_8008F19C[];
 extern u8 D_8008F1A8[];
@@ -321,9 +339,9 @@ extern s32 D_80090600;
 extern s32 D_80090604;
 extern s16 D_80090608;
 
-/* Two per-stage tables (initialized data, asm/data/7D920.data.s), indexed by the
- * stage id func_80046EA0 passes to func_8003DA8C: 38 s32 at 0x8009060C, then
- * s16 pairs at 0x800906A4 (base + id*4, [0] tested, [1] passed to
+/* Two per-stage tables (initialized data, asm/data/7D920.data.s), indexed by
+ * the stage id func_80046EA0 passes to func_8003DA8C: 38 s32 at 0x8009060C,
+ * then s16 pairs at 0x800906A4 (base + id*4, [0] tested, [1] passed to
  * func_8003DBE4; asm/funcs/func_8003DA8C.s), 39 to the next object at
  * 0x80090740 (the last one zero).  Replaces the splat per-halfword scalar
  * StatusUpBuf (pair 0's [1]). */
@@ -333,17 +351,20 @@ extern s16 D_800906A4[39][2];
 extern u16 D_80094C68[];
 extern StatusFlagRec D_80099D88[];
 extern CpuLevelEntry D_8009A8C8[][8];
-extern u8 D_8009A9B4[][2];         /* byte pairs (func_80055138) */
-extern u8 D_800A3100[][4];         /* [D_8008D9EC flag] -> 3 bytes (func_80041BF4 args), stride 4 */
-extern s16 D_800A310C[4];          /* 0x800A310C..0x800A3113 (asm/data/91C98.data.s dlabel D_800A310C) */
+extern u8 D_8009A9B4[][2]; /* byte pairs (func_80055138) */
+/* [D_8008D9EC flag] -> 3 bytes (func_80041BF4 args), stride 4 */
+extern u8 D_800A3100[][4];
+/* 0x800A310C..0x800A3113 (asm/data/91C98.data.s dlabel D_800A310C) */
+extern s16 D_800A310C[4];
 extern s32 D_800A3134;
 extern s32 D_800A3140;
 extern u8 D_800A31DA;
 extern u8 D_800A3670;
 extern u8 D_800A3671;
-/* Three angles: func_80044504 passes the array to math_RotMatrixZXY (u16 *, reads [0..2]);
- * func_8003EDC0 zeroes them.  Replaces the splat per-halfword symbols D_800A367A /
- * D_800A367C.  The label's last two bytes (0x800A367E) are not accessed. */
+/* Three angles: func_80044504 passes the array to math_RotMatrixZXY (u16 *,
+ * reads [0..2]); func_8003EDC0 zeroes them.  Replaces the splat per-halfword
+ * symbols D_800A367A / D_800A367C.  The label's last two bytes (0x800A367E) are
+ * not accessed. */
 extern u16 D_800A3678[3];
 extern u8 D_800A3680;
 extern s32 g_comb_recv_buf_plus_0x4;
@@ -351,7 +372,8 @@ extern u8 D_800A3690;
 extern s32 g_comb_send_buf_plus_0x4;
 extern s16 D_800A36A4;
 extern s32 D_800A36AC;
-extern Rec44 *D_800A36B4; /* the active camera record (func_8001E404 / func_8001E6E4) */
+/* the active camera record (func_8001E404 / func_8001E6E4) */
+extern Rec44 *D_800A36B4;
 extern CdlATV D_800A36B8;
 extern s16 D_800A36C2;
 extern s32 D_800A36C4;
@@ -365,7 +387,8 @@ extern MoveScript *D_800A36D8;
 extern u8 D_800A36E8;
 extern u8 D_800A36F0;
 extern u8 D_800A36F1;
-extern u8 D_800A36F2[2];             /* per-player byte, [unk_04] (func_8003047C) */
+/* per-player byte, [unk_04] (func_8003047C) */
+extern u8 D_800A36F2[2];
 extern u8 D_800A36F4;
 extern s16 D_800A36F6;
 extern u8 D_800A36F9;
@@ -378,20 +401,21 @@ extern s32 D_800A371C;
 extern u8 D_800A3728;
 extern s8 D_800A3748;
 
-/* 4-entry s16 leaf random/scratch buffer (named_syms.txt: g_leaf_random_buffer). func_800335D8
-   walks it from D_800A3750 to D_800A3750+8 at a 2-byte stride; func_80033510 clears it from the
-   last element down (asm/funcs/func_80033510.s starts at 0x800A3756). */
+/* 4-entry s16 leaf random/scratch buffer (named_syms.txt:
+   g_leaf_random_buffer). func_800335D8 walks it from D_800A3750 to D_800A3750+8
+   at a 2-byte stride; func_80033510 clears it from the last element down
+   (asm/funcs/func_80033510.s starts at 0x800A3756). */
 extern s16 D_800A3750[4];
 
 extern u8 D_800A3758;
 
-/* libcd's 8-byte CD status/result buffer (u_char result[8]) that CdSync / CdReady
- * fill: func_80036940 and func_80036140 test result[0] (the status byte) and
- * func_80036140 reads result[4] and hands &result[3] / &result[5] (the reported
- * position) to CdPosToInt. A tentative definition in the CD module's file, like
- * the CdlATV blocks: result[0] is read gp-relative, result[4] with lui/%lo
- * (the owner Q62 global COMMON model; the tentative definition is in
- * src/main/26940.c). */
+/* libcd's 8-byte CD status/result buffer (u_char result[8]) that CdSync /
+ * CdReady fill: func_80036940 and func_80036140 test result[0] (the status
+ * byte) and func_80036140 reads result[4] and hands &result[3] / &result[5]
+ * (the reported position) to CdPosToInt. A tentative definition in the CD
+ * module's file, like the CdlATV blocks: result[0] is read gp-relative,
+ * result[4] with lui/%lo (the owner Q62 global COMMON model; the tentative
+ * definition is in src/main/26940.c). */
 extern u8 g_cd_result[8];
 
 extern u8 D_800A3769;
@@ -401,7 +425,8 @@ extern u8 D_800A376C;
 extern s16 D_800A376E;
 extern s32 D_800A3778;
 extern u8 D_800A377B;
-extern u8 D_800A377C[]; /* round-result table: 0/1/2 per round, indexed by round */
+/* round-result table: 0/1/2 per round, indexed by round */
+extern u8 D_800A377C[];
 
 /* Two buffer addresses selected by frame parity: sys_GameInit sets 0x801D8800 /
  * 0x801EBC00, func_80016E60 and main read [D_800A36AC & 1] (base + i*4).
@@ -453,7 +478,8 @@ extern s16 D_800A3876;
 extern u8 *D_800A3878;
 extern s32 D_800A387C;
 extern u8 D_800A3880;
-extern MotionFrame *D_800A3888[2];  /* per player: preset motion frames (func_80020D70, func_80023F08) */
+/* per player: preset motion frames (func_80020D70, func_80023F08) */
+extern MotionFrame *D_800A3888[2];
 extern u8 D_800A389A;
 extern u8 D_800A389B;
 extern u16 D_800A389C;
@@ -464,8 +490,12 @@ extern s16 D_800A38AE;
 extern u8 D_800A38B0;
 extern u8 D_800A38B8;
 extern s16 D_800A38BA;
-extern u8 D_800A38C0[2];          /* per player: character of the D_800A3888 motion set (0xFF = none) */
-extern u16 D_800A38C4[2];         /* per slot: model id in the D_800A3860[i] buffer (func_80020E74); [1] = 0xFFFF: func_8001DB9C started a sequence at 0x80190800 (D_800A3860[1]'s buffer); func_80020D38 calls seq_Reset for it */
+/* per player: character of the D_800A3888 motion set (0xFF = none) */
+extern u8 D_800A38C0[2];
+/* per slot: model id in the D_800A3860[i] buffer (func_80020E74); [1] = 0xFFFF:
+ * func_8001DB9C started a sequence at 0x80190800 (D_800A3860[1]'s buffer);
+ * func_80020D38 calls seq_Reset for it */
+extern u16 D_800A38C4[2];
 extern u8 D_800A38D4;
 extern s16 D_800A38DC;
 extern u8 D_800A38DE;
@@ -510,7 +540,8 @@ extern Unk800A3D40Rec D_800A3D40[];
 /* The three stage lights' position / direction words: stage_SetLightPosDir
  * stores pos[a2] / dir[a2] (base + a2*4), stage_ClearLighting zeroes all six,
  * stage_ApplyLighting passes pair i to sys_StubEmpty3(pos, dir, i).  Replaces
- * the splat per-word scalars D_800A93B4 / D_800A93B8 / D_800A93C0 / D_800A93C4. */
+ * the splat per-word scalars D_800A93B4 / D_800A93B8 / D_800A93C0 / D_800A93C4.
+ */
 extern s32 g_stage_light_pos[3];
 
 extern s32 g_stage_light_dir[3];
@@ -525,9 +556,9 @@ extern Rec44 D_800F6608;
 extern u8 D_800F65F8[8][2];
 
 extern Unk800F68E0Rec D_800F68E0[0xB4];
-/* The two InitPAD receive buffers, 0x24 bytes apart: sys_Init passes g_pad_buf and
- * g_pad_buf + 0x24 (asm/funcs/func_80016A18.s:6-11), and func_80019568 copies the first two
- * words of each.  0x48 bytes up to D_800FF5C8. */
+/* The two InitPAD receive buffers, 0x24 bytes apart: sys_Init passes g_pad_buf
+ * and g_pad_buf + 0x24 (asm/funcs/func_80016A18.s:6-11), and func_80019568
+ * copies the first two words of each.  0x48 bytes up to D_800FF5C8. */
 extern s32 g_pad_buf[2][9];
 extern s32 D_800FF5C8;
 extern s32 D_800FF5CC;
@@ -544,11 +575,11 @@ extern Unk80101DF0Record D_800EF070;
 extern Unk800F62E0Rec D_800F62E0[8];
 extern AnimRotFunc g_anim_func_table[6];
 
-/* The CD file table at 0x8008EC34: one 8-byte record per disc file, indexed by the
- * file numbers func_80036EA8 forms. `loc` is sought (cdrom_StartRead copies the record
- * into D_80101E58.rec.pair, whose position is sought; cdrom_LoadExec seeks to it
- * directly); `size` is cdrom_StartRead's sector count, cdrom_GetFileSize's result and
- * cdrom_StartAudio's end position. */
+/* The CD file table at 0x8008EC34: one 8-byte record per disc file, indexed by
+ * the file numbers func_80036EA8 forms. `loc` is sought (cdrom_StartRead copies
+ * the record into D_80101E58.rec.pair, whose position is sought; cdrom_LoadExec
+ * seeks to it directly); `size` is cdrom_StartRead's sector count,
+ * cdrom_GetFileSize's result and cdrom_StartAudio's end position. */
 extern CdFileEntry g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
 
 extern CdState D_80101E58;
@@ -556,13 +587,14 @@ extern Unk801027B0Pack D_80102760; /* the common motion pack */
 extern PracticeParams D_80102778;
 extern PadState g_pad_state;
 extern Unk801027B0Pack D_801027B0[]; /* per character */
-/* [i] points to block i's slots, the words after its header word (func_80044010 records it and
- * 32D04's D_80103658[i] holds the slot count).  Each slot is a word holding a block-relative
- * offset that func_80044010 turns into an address by adding the block's base, unless header
- * bit 15 marks the block relocated; func_80044098 subtracts the base again (and clears bit 15),
- * and func_80044100 moves [i] by a1 / 4 words and adds a1 to each slot.  func_800432A0 /
- * func_800433E4 store a slot to scratchpad word 0, the u16 * cursor func_80043454 reads, and
- * func_8003FA24 reads u16 data through one. */
+/* [i] points to block i's slots, the words after its header word (func_80044010
+ * records it and 32D04's D_80103658[i] holds the slot count).  Each slot is a
+ * word holding a block-relative offset that func_80044010 turns into an address
+ * by adding the block's base, unless header bit 15 marks the block relocated;
+ * func_80044098 subtracts the base again (and clears bit 15), and func_80044100
+ * moves [i] by a1 / 4 words and adds a1 to each slot.  func_800432A0 /
+ * func_800433E4 store a slot to scratchpad word 0, the u16 * cursor
+ * func_80043454 reads, and func_8003FA24 reads u16 data through one. */
 extern s32 *D_80103608[];
 extern Unk80104E88Rec D_80104E88[];
 extern s32 MotDataBaseAddress;
@@ -610,7 +642,8 @@ extern s32 D_800A32BC;
 extern u32 D_800A32C8[2];
 extern Unk80101DF0Record *D_800A370C;
 extern Unk80101DF0Record *D_800A3708; /* defined in main/32D04.c */
-extern s32 D_800A3924;               /* tentative definitions in main/28514.c and main/memcard.c */
+/* tentative definitions in main/28514.c and main/memcard.c */
+extern s32 D_800A3924;
 extern void func_800520B8(s32, s32, s32);
 extern u8 D_800A37A8[];
 extern u16 D_800A37C4;
@@ -633,8 +666,9 @@ extern s32 D_800F10D0[];
 extern s32 D_800F10EC;
 extern s32 D_800F10F0;
 extern s32 D_800F1138;
-/* A 16-byte vector: thirteen 51268 functions store x / y / z, and func_80061064 passes its
- * address to func_80041E10, which copies all 16 bytes to D_800A9B28. */
+/* A 16-byte vector: thirteen 51268 functions store x / y / z, and func_80061064
+ * passes its address to func_80041E10, which copies all 16 bytes to D_800A9B28.
+ */
 extern VECTOR D_800F1140;
 extern s32 D_800F1178;
 extern s32 D_800F117C;
@@ -644,7 +678,8 @@ extern s16 D_800F6650;
 extern s16 D_800F6656;
 extern u8 D_801027A0;
 extern u8 D_801027D8;
-extern void *D_80102C00[640]; /* the draw queue: record pointers (0x80102C00..0x801035FF) */
+/* the draw queue: record pointers (0x80102C00..0x801035FF) */
+extern void *D_80102C00[640];
 extern s32 chractar_use_pset_combo_id_table[];
 extern Func80017A44Output g_file_data_buf[8];
 extern s32 g_player_char_ids[];
@@ -674,8 +709,8 @@ extern void func_8001924C(SceneQuad *, s32);
 extern void func_8001945C(void);
 extern s32 func_80019488(void);
 extern void func_800194C0(s32);
-/* No prototype: the definition (87A0.c) is void (s32), but 6CF8 func_80016E60 calls it with no
- * argument (the original sets no $a0 before that jal). */
+/* No prototype: the definition (87A0.c) is void (s32), but 6CF8 func_80016E60
+ * calls it with no argument (the original sets no $a0 before that jal). */
 extern void func_80019568();
 extern void func_8001979C(s32, u32 *);
 extern void func_800198D0(s32, s32, MotionFrame *, u16 *);
@@ -685,7 +720,8 @@ extern void func_8001CD68(Unk8001CD68Rec *);
 extern void func_8001DA2C(void);
 extern s32 func_8001DB58(void);
 extern void func_8001DBE4(void);
-extern void func_8001F1C4(Unk80101EC8Record *, Rec1C *, MotionFrame *, MotionFrame *);
+extern void func_8001F1C4(
+    Unk80101EC8Record *, Rec1C *, MotionFrame *, MotionFrame *);
 extern void func_8001F860(Unk80101EC8Record *, s32);
 extern void func_800203B4(Unk80101EC8Record *, s32, s16 *);
 extern void func_800207C8(Unk80101EC8Record *, LeafPos *, LeafPos *, LeafPos *);
@@ -803,8 +839,9 @@ extern void func_80042E90(void);
 extern void func_800432A0(s16, s16, s16, s16, s32);
 extern void func_80044010(s32 *, s16);
 extern void func_80044098(s16);
-/* No prototype: the definition (32D04.c) is void (s32, s32), but 368E4 func_800466C0 calls it
- * as func_80044100(8) (the original sets no $a1 before that jal). */
+/* No prototype: the definition (32D04.c) is void (s32, s32), but 368E4
+ * func_800466C0 calls it as func_80044100(8) (the original sets no $a1 before
+ * that jal). */
 extern void func_80044100();
 extern s32 func_8004428C(s32 *, s16 *);
 extern s32 func_80044378(s32, s32 *, s16 *);
@@ -860,8 +897,9 @@ extern void func_80049E1C(void);
 extern void func_8004A1FC(Unk800F62E0Rec *);
 extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
 extern void func_800523E0(MATRIX *, MATRIX *, s32, MATRIX *);
-/* No prototype: the definition (canonical asm in 3AB48.c) takes no arguments, but 2B344
- * func_8003EDC0 / func_8003FA24 pass it one (the original loads $a0 before those jals). */
+/* No prototype: the definition (canonical asm in 3AB48.c) takes no arguments,
+ * but 2B344 func_8003EDC0 / func_8003FA24 pass it one (the original loads $a0
+ * before those jals). */
 extern void func_80052C10();
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s16 *, s32);
 extern s32 func_80053584(s32 *, s32 *, s32 *, s16 *);
@@ -1013,9 +1051,9 @@ extern void sys_Panic(void);
 extern void sys_StubEmpty2(void);
 extern void sys_StubEmpty3(s32, s32, s32);
 
-/* Game-side declarations of Sony library functions whose spelling differs from the library's
- * definition (src/main/psxsdk/). Reconciling them is Phase 2 work; until then they stay here,
- * where the game code has always seen them. */
+/* Game-side declarations of Sony library functions whose spelling differs from
+ * the library's definition (src/main/psxsdk/). Reconciling them is Phase 2
+ * work; until then they stay here, where the game code has always seen them. */
 extern void ResetGraph(s32);
 
 #endif /* BB2_H */

@@ -1,7 +1,8 @@
-/* LIBSPU code between SR_GAKS and S_N2P: func_8008B488. .text 0x8008B488..0x8008BA94. By link order
- * and size it is probably LIBSPU S_SVA (SpuSetVoiceAttr; memory/closer/libsnd-hunt-report.md,
- * PROBABLE), but no libscan xref or near-tier evidence identifies it, so the region stays one gap file
- * (owner rulings Q106 D3, Q109), named by its ROM offset. */
+/* LIBSPU code between SR_GAKS and S_N2P: func_8008B488. .text
+ * 0x8008B488..0x8008BA94. By link order and size it is probably LIBSPU S_SVA
+ * (SpuSetVoiceAttr; memory/closer/libsnd-hunt-report.md, PROBABLE), but no
+ * libscan xref or near-tier evidence identifies it, so the region stays one gap
+ * file (owner rulings Q106 D3, Q109), named by its ROM offset. */
 #include "common.h"
 #include "libspu_internal.h"
 
@@ -29,8 +30,9 @@ void func_8008B488(SpuVoiceAttr *attr) {
     mask = attr->mask;
     bSetAll = mask == 0;
     for (voice = 0; voice < 24; voice++) {
-        u16 temp; /* two values: the clamped sustain rate (SR block), then the
-                   * clamped sustain level (SL block); Ruling 11 */
+        /* two values: the clamped sustain rate (SR block), then the
+         * clamped sustain level (SL block); Ruling 11 */
+        u16 temp;
 
         if ((attr->voice & (1 << voice)) == 0) {
             continue;
@@ -49,8 +51,8 @@ void func_8008B488(SpuVoiceAttr *attr) {
 
             center = _spu_voice_centerNote[voice];
             note = attr->note;
-            _spu_RXX->raw[pos + 2] =
-                _spu_note2pitch(center >> 8, center & 0xFF, note >> 8, note & 0xFF);
+            _spu_RXX->raw[pos + 2] = _spu_note2pitch(
+                center >> 8, center & 0xFF, note >> 8, note & 0xFF);
         }
         if (bSetAll || (mask & 0x1)) {
             u16 volmode_left;

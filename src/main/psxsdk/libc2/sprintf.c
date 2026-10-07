@@ -4,18 +4,24 @@
 #include <psxsdk/libc.h>
 
 /* Declarations from the file this TU was split from (text1b_b.c). */
-#define __va_rounded_size(TYPE) (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
+#define __va_rounded_size(TYPE)                                                \
+    (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
 
 /* PsyQ LIBC SPRINTF: sprintf — verbatim-linked Sony object; C ref: SOTN
  * src/main/psxsdk/libc/sprintf.c (sotn-decomp @8bd7c77). Two differences for
  * BB2's build: %c reads its slot as s32 (target `lw`), and the '+' flag
  * is a plain else-if (SOTN's do-while(0) FAKE is not needed here). */
-#define __va_rounded_size(TYPE) (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
-#define va_start(AP, LASTARG) (AP = ((char*)&(LASTARG) + __va_rounded_size(LASTARG)))
-#define va_arg(AP, TYPE) (AP = ((char*)(AP)) += __va_rounded_size(TYPE), *((TYPE*)((char*)(AP) - __va_rounded_size(TYPE))))
+#define __va_rounded_size(TYPE)                                                \
+    (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
+#define va_start(AP, LASTARG)                                                  \
+    (AP = ((char *)&(LASTARG) + __va_rounded_size(LASTARG)))
+#define va_arg(AP, TYPE)                                                       \
+    (AP = ((char *)(AP)) += __va_rounded_size(TYPE),                           \
+     *((TYPE *)((char *)(AP) - __va_rounded_size(TYPE))))
 typedef void *va_list;
-#define LOH(x) (*(s16*)&(x))
-#define LOW(x) (*(s32*)&(x))
+#define LOH(x) (*(s16 *)&(x))
+#define LOW(x) (*(s32 *)&(x))
+
 typedef struct {
     u32 leftJustified : 1;
     u32 prependPlus : 1;
@@ -32,15 +38,15 @@ typedef struct {
 
 extern printf_info D_8009BE10;
 
-s32 sprintf(char* out, char* f, ...) {
+s32 sprintf(char *out, char *f, ...) {
     char buf[0x200];
     printf_info info;
     va_list args;
-    char* hexChars;
+    char *hexChars;
     s32 written;
     s32 num;
     s32 len;
-    char* bufPtr;
+    char *bufPtr;
     u32 ch;
 
     va_start(args, f);
@@ -104,7 +110,7 @@ s32 sprintf(char* out, char* f, ...) {
          * adjacent), which keeps args in its stack slot as in the target.
          * Admitted for sprintf only by owner Ruling 7; the truthful
          * &buf[sizeof(buf)] spelling does not reproduce the target. */
-        bufPtr = (char*)&args - sizeof(printf_info) - 4;
+        bufPtr = (char *)&args - sizeof(printf_info) - 4;
 
         if (info.leftJustified) {
             info.leadingZeros = 0;
@@ -273,7 +279,7 @@ s32 sprintf(char* out, char* f, ...) {
             break;
 
         case 's':
-            bufPtr = va_arg(args, char*);
+            bufPtr = va_arg(args, char *);
             if (info.alternativeForm) {
                 len = *bufPtr++;
                 if (info.usePrecision) {
@@ -284,7 +290,7 @@ s32 sprintf(char* out, char* f, ...) {
             } else if (!info.usePrecision) {
                 len = strlen(bufPtr);
             } else {
-                char* ptr = memchr(bufPtr, 0, info.precision);
+                char *ptr = memchr(bufPtr, 0, info.precision);
                 len = ptr - bufPtr;
                 if (ptr == 0) {
                     len = info.precision;
@@ -293,7 +299,7 @@ s32 sprintf(char* out, char* f, ...) {
             break;
 
         case 'n':
-            bufPtr = va_arg(args, s32*);
+            bufPtr = va_arg(args, s32 *);
             if (info.isHalf) {
                 LOH(*bufPtr) = written;
             } else if (info.isLong) {

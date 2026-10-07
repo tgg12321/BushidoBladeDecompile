@@ -1,5 +1,6 @@
-/* PsyQ 4.0 LIBSND UT_REV: SsUtSetReverbType and SsUtGetReverbType. .text 0x80085EE4..0x80085F98, a
- * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSND UT_REV: SsUtSetReverbType and SsUtGetReverbType. .text
+ * 0x80085EE4..0x80085F98, a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 
@@ -25,6 +26,5 @@ s16 SsUtSetReverbType(s16 a0) {
     }
     return -1;
 }
-s16 SsUtGetReverbType(void) {
-    return _svm_rattr.mode;
-}
+
+s16 SsUtGetReverbType(void) { return _svm_rattr.mode; }

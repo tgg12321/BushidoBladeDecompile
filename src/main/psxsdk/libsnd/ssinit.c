@@ -1,5 +1,6 @@
-/* PsyQ 4.0 LIBSND SSINIT: _SsInit (SOTN libsnd/ssinit.c). .text 0x80083A48..0x80083B30, a verbatim
- * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSND SSINIT: _SsInit (SOTN libsnd/ssinit.c). .text
+ * 0x80083A48..0x80083B30, a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 

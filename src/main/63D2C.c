@@ -1,5 +1,5 @@
-/* 5 game functions. .text 0x8007352C (ROM 0x63D2C). Start boundary: G8 (the end of 5ED34.c's -G8
- * unit). */
+/* 5 game functions. .text 0x8007352C (ROM 0x63D2C). Start boundary: G8 (the end
+ * of 5ED34.c's -G8 unit). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -10,12 +10,7 @@ extern void AddPrim(void *, void *);
 extern const u8 D_800159A0[16];
 extern s32 func_80073C78();
 
-
-
-
 extern const u8 D_800159A0[];
-
-
 
 s32 func_8007352C(Unk8007352CEnv *env) {
     Unk8009B0E0Record *hdr = env->header;
@@ -23,7 +18,8 @@ s32 func_8007352C(Unk8007352CEnv *env) {
     Unk8009B400Record *e;
     s32 clut;
     s16 i;
-    /* FAKE: x1 computed ahead of y1 and read once in the bounds test; at its use: score 2. */
+    /* FAKE: x1 computed ahead of y1 and read once in the bounds test; at its
+     * use: score 2. */
     s32 x0, y0, x1, y1;
 
     clut = GetClut(hdr->cx, hdr->cy);
@@ -61,9 +57,8 @@ s32 func_8007352C(Unk8007352CEnv *env) {
     }
     return (s32)sp;
 }
+
 /* END func_8007352C */
-
-
 
 s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
     Unk8009B400Record *e = env->table;
@@ -163,18 +158,19 @@ s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
     env->ft4_out = (s32)p;
     return (s32)p;
 }
+
 extern VECTOR D_8009BCD4;
 
 s32 func_80073C78(env, angle, mode)
-    Unk8007352CEnv *env;
-    s16 angle;
-    s32 mode;
+Unk8007352CEnv *env;
+s16 angle;
+s32 mode;
 {
     s16 i;
     u32 tpage;
     u32 clut;
-    /* FAKE: du0 / dv0 stay 0 in this walker (func_80073728 sets them per mirror mode); u / v
-       written without them: score 33. */
+    /* FAKE: du0 / dv0 stay 0 in this walker (func_80073728 sets them per mirror
+       mode); u / v written without them: score 33. */
     s16 du0, dv0;
     s16 du1, dv1;
     u16 ub, vb;
@@ -235,11 +231,14 @@ s32 func_80073C78(env, angle, mode)
         ScaleMatrixL(&mtx, &D_8009BCD4);
         SetRotMatrix(&mtx);
         for (j = 0; j < 4; j++) {
-            vec[j].vx = (((e->x - cx) + e->w * (j & 1)) * env->scale_x >> 8) * 2;
+            vec[j].vx =
+                (((e->x - cx) + e->w * (j & 1)) * env->scale_x >> 8) * 2;
             if (mode == 1 || mode == 3) {
                 vec[j].vx = -vec[j].vx;
             }
-            vec[j].vy = (((e->y - cy) + ((e->h * (j & 2)) >> 1)) * env->scale_y >> 8) * 2;
+            vec[j].vy =
+                (((e->y - cy) + ((e->h * (j & 2)) >> 1)) * env->scale_y >> 8) *
+                2;
             if (mode == 2 || mode == 3) {
                 vec[j].vy = -vec[j].vy;
             }
@@ -285,9 +284,6 @@ s32 func_80073C78(env, angle, mode)
     return (s32)p;
 }
 
-
-
-
 void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
     Unk8007352CEnv s;
     s32 i;
@@ -295,7 +291,8 @@ void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
     TILE *t;
     POLY_F4 *q;
 
-    if (arg1 != 0) goto skip_init;
+    if (arg1 != 0)
+        goto skip_init;
     t = arg0->unk_04.unk_10;
     SetTile(t);
     func_80069A30(t);
@@ -381,10 +378,8 @@ void func_80074488(Unk8006EACCRec *arg0) {
     s16 rect[4];
 
     i = 0;
-    mask = (1 << SELWORK->f3C[0])
-         + (1 << (SELWORK->f65 + 5))
-         + (1 << (SELWORK->f67 + 8))
-         + (1 << (SELWORK->f66 + 9));
+    mask = (1 << SELWORK->f3C[0]) + (1 << (SELWORK->f65 + 5)) +
+           (1 << (SELWORK->f67 + 8)) + (1 << (SELWORK->f66 + 9));
     s.ot_idx = 2;
     table = arg0->unk_00.v80076FF8->unk_34;
     do {
@@ -393,11 +388,16 @@ void func_80074488(Unk8006EACCRec *arg0) {
         s.semi = 0;
         if ((mask >> i) & 1) {
             if (i < 5) {
-                s.col_b = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                s.col_b =
+                    ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) -
+                    0x80;
                 s.y = SELWORK->f40[0][1];
             } else if (i < 8) {
                 if (SELWORK->f3C[0] == 0) {
-                    s.col_b = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                    s.col_b =
+                        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >>
+                         12) -
+                        0x80;
                     s.x = SELWORK->f40[0][0];
                     s.y = SELWORK->f40[0][1];
                 } else {
@@ -405,7 +405,10 @@ void func_80074488(Unk8006EACCRec *arg0) {
                 }
             } else if (i < 10) {
                 if (SELWORK->f3C[0] == 1) {
-                    s.col_b = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                    s.col_b =
+                        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >>
+                         12) -
+                        0x80;
                     s.x = SELWORK->f40[0][0];
                     s.y = SELWORK->f40[0][1];
                 } else {
@@ -413,7 +416,10 @@ void func_80074488(Unk8006EACCRec *arg0) {
                 }
             } else if (i < 14) {
                 if (SELWORK->f3C[0] == 2) {
-                    s.col_b = ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
+                    s.col_b =
+                        ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >>
+                         12) -
+                        0x80;
                     s.x = SELWORK->f40[0][0];
                     s.y = SELWORK->f40[0][1];
                 } else {
@@ -436,8 +442,7 @@ void func_80074488(Unk8006EACCRec *arg0) {
                 s.has_color = 0;
             }
         }
-        if ((u16)(i - 10) >= 4 ||
-            D_8009BD20[SELWORK->f67][0] + 9 == i ||
+        if ((u16)(i - 10) >= 4 || D_8009BD20[SELWORK->f67][0] + 9 == i ||
             D_8009BD20[SELWORK->f67][1] + 9 == i) {
             s.header = table[i];
             s.table = s.header->cells;
@@ -455,11 +460,13 @@ void func_80074488(Unk8006EACCRec *arg0) {
     rect[0] = 0xBC;
     rect[1] = 0x25;
     rect[3] = 1;
-    /* The original passes its own context base here, unadjusted (func_80074488.s:196-217):
-     * func_80069898 reads +0x18 as its TILE cursor (func_80069898.s:11, 37 / 65 / 91, 94),
-     * and in this context +0x18 is the DR_MODE cursor. */
+    /* The original passes its own context base here, unadjusted
+     * (func_80074488.s:196-217): func_80069898 reads +0x18 as its TILE cursor
+     * (func_80069898.s:11, 37 / 65 / 91, 94), and in this context +0x18 is the
+     * DR_MODE cursor. */
     func_80069898((s32 *)arg0, (u16 *)rect, 2);
 }
 
-/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
-u8 * D_800A36A0;
+/* Q65: tentative definitions (COMMON) of the small data this file reaches
+ * gp-relative. */
+u8 *D_800A36A0;

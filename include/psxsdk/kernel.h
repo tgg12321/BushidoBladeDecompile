@@ -1,12 +1,13 @@
 #ifndef PSXSDK_KERNEL_H
 #define PSXSDK_KERNEL_H
 
-/* PsyQ kernel types (Sony's kernel.h, which holds struct EXEC; SOTN declares EXEC in
- * include/psxsdk/libapi.h). */
+/* PsyQ kernel types (Sony's kernel.h, which holds struct EXEC; SOTN declares
+ * EXEC in include/psxsdk/libapi.h). */
 
 #include "common.h"
 
-/* PsyQ libapi struct EXEC: the PS-EXE header body (0x3C bytes, 0x10 into the image). */
+/* PsyQ libapi struct EXEC: the PS-EXE header body (0x3C bytes, 0x10 into the
+ * image). */
 typedef struct EXEC {
     u32 pc0, gp0;
     u32 t_addr, t_size;

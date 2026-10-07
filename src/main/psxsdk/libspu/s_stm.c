@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSPU S_STM: SpuSetTransferMode. .text 0x8008AE7C..0x8008AEB0, a verbatim LIBSCAN
- * module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSPU S_STM: SpuSetTransferMode. .text 0x8008AE7C..0x8008AEB0, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libspu_internal.h"
 
@@ -9,14 +9,14 @@ s32 SpuSetTransferMode(s32 mode) {
     s32 transMode;
 
     switch (mode) {
-        case 0:
-            transMode = 0;
-            break;
-        case 1:
-            transMode = 1;
-            break;
-        default:
-            transMode = 0;
+    case 0:
+        transMode = 0;
+        break;
+    case 1:
+        transMode = 1;
+        break;
+    default:
+        transMode = 0;
     }
     _spu_trans_mode = mode;
     _spu_transMode = transMode;

@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBGTE FGO_03: RotMatrixZYX. .text 0x8007F5EC..0x8007F87C, a verbatim LIBSCAN module
- * span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBGTE FGO_03: RotMatrixZYX. .text 0x8007F5EC..0x8007F87C, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "include_asm.h"
 
 /* func_8007F5EC: hand-coded asm in original PSY-Q source.

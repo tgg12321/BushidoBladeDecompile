@@ -1,6 +1,6 @@
 /* PsyQ 4.0 LIBSPU SR_GAKS: SpuRGetAllKeysStatus and SpuGetAllKeysStatus. .text
- * 0x8008B330..0x8008B488, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106
- * D3. */
+ * 0x8008B330..0x8008B488, a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libspu_internal.h"
 
@@ -48,6 +48,7 @@ static s32 SpuRGetAllKeysStatus(s32 min, s32 max, s8 *status) {
 
     return 0;
 }
+
 /* PsyQ LIBSPU sr_gaks.c: SpuGetAllKeysStatus — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libspu/sr_gaks.c
    (SpuRGetAllKeysStatus inlined with min=0, max=NUM_SPU_CHANNELS) */

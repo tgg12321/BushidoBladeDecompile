@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBC2 STRLEN: strlen. .text 0x800791D8..0x80079208, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBC2 STRLEN: strlen. .text 0x800791D8..0x80079208, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include <psxsdk/libc.h>
 

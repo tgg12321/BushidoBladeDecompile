@@ -1,10 +1,10 @@
 #ifndef PSXSDK_LIBETC_H
 #define PSXSDK_LIBETC_H
 
-/* PsyQ LIBETC entry points (Sony's libetc.h; SOTN include/psxsdk/libetc.h). Each prototype agrees
- * with its C definition in src/main/psxsdk/libetc/; where that differs from PsyQ's LIBETC.H
- * spelling the entry carries a PsyQ: note. Library-internal entry points:
- * src/main/psxsdk/libetc/libetc_internal.h. */
+/* PsyQ LIBETC entry points (Sony's libetc.h; SOTN include/psxsdk/libetc.h).
+ * Each prototype agrees with its C definition in src/main/psxsdk/libetc/; where
+ * that differs from PsyQ's LIBETC.H spelling the entry carries a PsyQ: note.
+ * Library-internal entry points: src/main/psxsdk/libetc/libetc_internal.h. */
 
 #include "common.h"
 

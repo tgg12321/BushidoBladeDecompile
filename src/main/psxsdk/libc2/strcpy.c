@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBC2 STRCPY: strcpy. .text 0x80079194..0x800791D8, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBC2 STRCPY: strcpy. .text 0x80079194..0x800791D8, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include <psxsdk/libc.h>
 

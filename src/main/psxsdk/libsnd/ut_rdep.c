@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSND UT_RDEP: SsUtSetReverbDepth. .text 0x80085E4C..0x80085EE4, a verbatim LIBSCAN
- * module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSND UT_RDEP: SsUtSetReverbDepth. .text 0x80085E4C..0x80085EE4, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 

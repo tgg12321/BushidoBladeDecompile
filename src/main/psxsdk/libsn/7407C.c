@@ -1,6 +1,8 @@
-/* SN Systems runtime: PCread and _SN_read (the PC file server). .text 0x8008387C..0x80083954: an
- * unidentified region between verbatim LIBSCAN modules (docs/naming/libscan/matches.json;
- * memory/closer/psyq-library-census.md), one file per gap (Q106 D3), named by its ROM offset. */
+/* SN Systems runtime: PCread and _SN_read (the PC file server). .text
+ * 0x8008387C..0x80083954: an unidentified region between verbatim LIBSCAN
+ * modules (docs/naming/libscan/matches.json;
+ * memory/closer/psyq-library-census.md), one file per gap (Q106 D3), named by
+ * its ROM offset. */
 #include "common.h"
 #include "include_asm.h"
 #include <psxsdk/libsn.h>
@@ -33,4 +35,5 @@ s32 PCread(s32 addr, s32 dest, s32 len) {
     }
     return total;
 }
+
 INCLUDE_ASM("asm/funcs", _SN_read);

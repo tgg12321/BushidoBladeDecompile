@@ -1,10 +1,12 @@
-/* 4 game functions. .text 0x80040D48 (ROM 0x31548). Start boundary: PHASE (rodata-align site 4). */
+/* 4 game functions. .text 0x80040D48 (ROM 0x31548). Start boundary: PHASE
+ * (rodata-align site 4). */
 #include "common.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 #include "bb2.h"
 
 extern s32 D_80094CFC[];
+
 void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     Unk80045878Obj *s4;
     Unk80045878Node *s5;
@@ -26,8 +28,8 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     s4->unk_2C[0].node.xf.rot.vz = a3[2];
 
     s4->unk_2C[0].node.work.t[0] = a2[0];
-    /* FAKE: s5 holds s4 + 0x2C here and the linked record pointer in the copy loop below;
-     * a fresh loop local scores 35, dropping this first role 46. */
+    /* FAKE: s5 holds s4 + 0x2C here and the linked record pointer in the copy
+     * loop below; a fresh loop local scores 35, dropping this first role 46. */
     s5 = s4->unk_2C;
     s4->unk_2C[0].node.work.t[1] = a2[1];
     s3 = &s4->unk_2C[1];
@@ -39,8 +41,8 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     case 0: {
         s32 *tbl;
         Unk80045878Node *p;
-        /* FAKE: s0 is the counter of all four loops in this function; a counter per loop
-         * scores 15. */
+        /* FAKE: s0 is the counter of all four loops in this function; a counter
+         * per loop scores 15. */
         s0 = 1;
         tbl = D_80094CFC;
         /* FAKE: s1 copies the parameter arg4; using arg4 directly scores 78. */
@@ -57,7 +59,9 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
             s32 idx;
             Unk80045878Node *a4p;
             a4p = &s3[s0];
-            /* FAKE: idx re-read from *tbl before each component, as the target reloads it and recomputes idx * 6; one read computes it once (score 48) */
+            /* FAKE: idx re-read from *tbl before each component, as the target
+             * reloads it and recomputes idx * 6; one read computes it once
+             * (score 48) */
             idx = *tbl;
             a4p->node.xf.rot.vx = s1[idx * 3];
             idx = *tbl;
@@ -103,11 +107,16 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         s3->node.work.t[0] = 0;
         s3->node.work.t[2] = 0;
         break;
-    case 2: break;
-    case 3: break;
-    case 4: break;
-    case 5: break;
-    case 6: break;
+    case 2:
+        break;
+    case 3:
+        break;
+    case 4:
+        break;
+    case 5:
+        break;
+    case 6:
+        break;
     }
 
     {
@@ -125,8 +134,8 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 
     s0 = 1;
     s3->node.unk0 = 0xA;
-    /* FAKE: unk58 stored through a pointer; the member store lets sched sink it below the
-       D_800A3820 load (score 5). */
+    /* FAKE: unk58 stored through a pointer; the member store lets sched sink it
+       below the D_800A3820 load (score 5). */
     {
         s32 *p58 = &s3->unk58;
         *p58 = (s32)s4->unk_18F4;
@@ -188,8 +197,8 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 }
 
 extern s32 D_80094CFC[];
-void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4)
-{
+
+void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
     s32 i = 1;
     s32 *tbl = D_80094CFC;
     Unk80045878Obj *base = g_player_ptrs[a0];
@@ -204,15 +213,16 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4)
     out2 = a4 + 1;
     do {
         offset = (*tbl) * 6;
-        p = (u16 *) (offset + (s32) a1);
+        p = (u16 *)(offset + (s32)a1);
         buf.vx = p[0];
         buf.vy = -p[1];
         buf.vz = -p[2];
         math_RotMatrixZYX(&buf, a4);
         tbl++;
-        /* FAKE: offset becomes the a2-side address (addu s0,s0,s2); a fresh sum loads through v1 (score 4) */
-        offset = offset + (s32) a2;
-        p = (u16 *) offset;
+        /* FAKE: offset becomes the a2-side address (addu s0,s0,s2); a fresh sum
+         * loads through v1 (score 4) */
+        offset = offset + (s32)a2;
+        p = (u16 *)offset;
         buf.vx = p[0];
         buf.vy = -p[1];
         buf.vz = -p[2];
@@ -225,24 +235,25 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4)
     a2 += 0x6C;
     i = 0x12;
     stptr2 = &ents[18];
-    /* FAKE: a second copy of a4 + 1 for the second loop (s3); reusing out2 drops the copy and moves lw t0,24(sp) up (score 4) */
+    /* FAKE: a second copy of a4 + 1 for the second loop (s3); reusing out2
+     * drops the copy and moves lw t0,24(sp) up (score 4) */
     out3 = a4 + 1;
-    loop2:
-    func_80044DE4((s16 *) a1, (s16 *) a2, a3, (s32)stptr2->node.work.t);
+loop2:
+    func_80044DE4((s16 *)a1, (s16 *)a2, a3, (s32)stptr2->node.work.t);
     a1 += 6;
     a2 += 6;
-    buf.vx = *((u16 *) a1);
+    buf.vx = *((u16 *)a1);
     a1 += 2;
-    buf.vy = -(*((u16 *) a1));
+    buf.vy = -(*((u16 *)a1));
     a1 += 2;
-    buf.vz = -(*((u16 *) a1));
+    buf.vz = -(*((u16 *)a1));
     a1 += 2;
     math_RotMatrixZYX(&buf, a4);
-    buf.vx = *((u16 *) a2);
+    buf.vx = *((u16 *)a2);
     a2 += 2;
-    buf.vy = -(*((u16 *) a2));
+    buf.vy = -(*((u16 *)a2));
     a2 += 2;
-    buf.vz = -(*((u16 *) a2));
+    buf.vz = -(*((u16 *)a2));
     a2 += 2;
     math_RotMatrixZYX(&buf, out3);
     func_800523E0(a4, out3, a3, &stptr2->node.work);
@@ -259,6 +270,7 @@ extern s32 func_800545F4;
 extern s32 D_800545F8;
 extern s32 D_800545FC;
 extern s32 D_80054600;
+
 void func_80041398(s32 a0) {
     s32 **t0 = D_80015820;
     s32 t1 = 0;
@@ -284,6 +296,7 @@ void func_80041398(s32 a0) {
         t0++;
     } while (t1 < 4);
 }
+
 void func_80041430(s32 a0, s32 a1) {
     Unk80045878Obj **base;
     Unk80045878Obj *s0;

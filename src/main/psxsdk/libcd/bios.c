@@ -1,19 +1,22 @@
-/* PsyQ 4.0 LIBCD BIOS: the CD-ROM controller driver (getintr .. cdrom_IrqHandler, the module's
- * static `callback`; $Id: bios.c,v 1.86; SOTN libcd/bios.c). .text 0x80080828..0x80082000, a
- * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBCD BIOS: the CD-ROM controller driver (getintr ..
+ * cdrom_IrqHandler, the module's static `callback`; $Id: bios.c,v 1.86; SOTN
+ * libcd/bios.c). .text 0x80080828..0x80082000, a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "psx.h"
 #include <psxsdk/libc.h>
 #include <psxsdk/libetc.h>
 #include "libcd_internal.h"
 
-/* .rodata 0x8001607C..0x8001622C: the module's strings in front of getintr's jump table
- * (0x8001622C..0x80016240, emitted with getintr below): the CD_comstr / CD_intstr command and
- * interrupt names (read through those .data tables, asm/data/7D920.data.s), then get_alarm's and
- * getintr's messages (moved from src/text1a_b_post_rodata.c, Q106 D4: every C reader is in this
+/* .rodata 0x8001607C..0x8001622C: the module's strings in front of getintr's
+ * jump table (0x8001622C..0x80016240, emitted with getintr below): the
+ * CD_comstr / CD_intstr command and interrupt names (read through those .data
+ * tables, asm/data/7D920.data.s), then get_alarm's and getintr's messages
+ * (moved from src/text1a_b_post_rodata.c, Q106 D4: every C reader is in this
  * file, in link order). */
 
-/* D_8001607C: 29 string(s), 316B @ 0x8001607C (the CD_comstr / CD_intstr names) */
+/* D_8001607C: 29 string(s), 316B @ 0x8001607C (the CD_comstr / CD_intstr names)
+ */
 const char D_8001607C[316] =
     "CdlReadS\0\0\0\0CdlSeekP\0\0\0\0"
     "CdlSeekL\0\0\0\0CdlGetTD\0\0\0\0CdlGetTN"
@@ -25,38 +28,25 @@ const char D_8001607C[316] =
     "CdlPlay\0CdlSetloc\0\0\0CdlNop\0\0CdlS"
     "ync\0DiskError\0\0\0DataEnd\0Acknowle"
     "dge\0Complete\0\0\0\0DataReady\0\0\0NoIn"
-    "tr\0\0"
-    ;
+    "tr\0\0";
 
 /* D_800161B8: 1 string(s), 16B @ 0x800161B8 */
-const char D_800161B8[16] =
-    "CD timeout: \0\0\0\0"
-    ;
+const char D_800161B8[16] = "CD timeout: \0\0\0\0";
 
 /* D_800161C8: 1 string(s), 28B @ 0x800161C8 */
-const char D_800161C8[28] =
-    "%s:(%s) Sync=%s, Ready=%s\n\0\0"
-    ;
+const char D_800161C8[28] = "%s:(%s) Sync=%s, Ready=%s\n\0\0";
 
 /* D_800161E4: 1 string(s), 12B @ 0x800161E4 */
-const char D_800161E4[12] =
-    "DiskError: \0"
-    ;
+const char D_800161E4[12] = "DiskError: \0";
 
 /* D_800161F0: 1 string(s), 28B @ 0x800161F0 */
-const char D_800161F0[28] =
-    "com=%s,code=(%02x:%02x)\n\0\0\0\0"
-    ;
+const char D_800161F0[28] = "com=%s,code=(%02x:%02x)\n\0\0\0\0";
 
 /* D_8001620C: 1 string(s), 20B @ 0x8001620C */
-const char D_8001620C[20] =
-    "CDROM: unknown intr\0"
-    ;
+const char D_8001620C[20] = "CDROM: unknown intr\0";
 
 /* D_80016220: 2 string(s), 12B @ 0x80016220 */
-const char D_80016220[12] =
-    "(%d)\n\0\0\0\0\0\0\0"
-    ;
+const char D_80016220[12] = "(%d)\n\0\0\0\0\0\0\0";
 
 /* libcd bios.c module types/helpers, hoisted above getintr (their first
  * user). */
@@ -69,11 +59,12 @@ typedef struct {
 /* bios.c's own module state, restated from Sony's source (owner ruling Q42):
  * the IRQ-mutated interrupt status block (written by getintr from the CD IRQ
  * callback). bb2.ld links this object's .data at 0x800A1494, between the two
- * halves of the split data asm. It is the only C handle to those three bytes. */
-static volatile CD_intr Intr = {0}; /* SOTN: src/main/psxsdk/libcd/bios.c:80 @db41b28 */
+ * halves of the split data asm. It is the only C handle to those three bytes.
+ */
+/* SOTN: src/main/psxsdk/libcd/bios.c:80 @db41b28 */
+static volatile CD_intr Intr = {0};
 
-static inline void _memcpy(void *_dst, void *_src, u32 _size)
-{
+static inline void _memcpy(void *_dst, void *_src, u32 _size) {
     char *pDst = (char *)_dst;
     char *pSrc = (char *)_src;
     if (pDst == 0) {
@@ -92,10 +83,12 @@ static inline void _memcpy(void *_dst, void *_src, u32 _size)
  * value). */
 typedef char Result_t[8];
 extern s32 CD_status1; /* 0x800A11C8 = Sony CD_status1 */
-extern s32 CD_nopen;     /* Sony CD_nopen */
-extern s32 D_800A127C[];   /* per-command flags: INT3 is only the acknowledge, completion follows as INT2 (SOTN D_80032B68) */
-extern s32 D_800A137C[];   /* per-command "status valid" flags */
-extern void Result;    /* Result_t result buffers */
+extern s32 CD_nopen;   /* Sony CD_nopen */
+/* per-command flags: INT3 is only the acknowledge, completion follows as INT2
+ * (SOTN D_80032B68) */
+extern s32 D_800A127C[];
+extern s32 D_800A137C[]; /* per-command "status valid" flags */
+extern void Result;      /* Result_t result buffers */
 extern void Result_plus_0x8;
 extern void Result_plus_0x10;
 extern volatile u8 *g_cd_reg0;
@@ -105,8 +98,10 @@ extern volatile u8 *g_cd_reg3;
 extern void printf();
 
 s32 getintr(void) {
-    /* FAKE: volatile locals admitted on SOTN precedent (owner rulings Q50 route A, Q53) -- every access becomes a $sp-slot memory round-trip instead of a register, as in the target. Ablated (2026-10-06): score 68. */
-    volatile char nReg; /* SOTN: src/main/psxsdk/libcd/bios.c:116 @db41b28 */
+    /* FAKE: volatile locals admitted on SOTN precedent (owner rulings Q50 route
+     * A, Q53) -- every access becomes a $sp-slot memory round-trip instead of a
+     * register, as in the target. Ablated (2026-10-06): score 68. */
+    volatile char nReg;    /* SOTN: src/main/psxsdk/libcd/bios.c:116 @db41b28 */
     volatile Result_t buf; /* SOTN: src/main/psxsdk/libcd/bios.c:117 @db41b28 */
     s32 i, j;
     s32 bHasError;
@@ -199,51 +194,36 @@ s32 getintr(void) {
     }
 }
 
-/* .rodata 0x80016240..0x800162CC: the rest of the module's strings, after getintr's jump table:
- * CD_sync, CD_ready, CD_cw (with the rcsid "$Id: bios.c,v 1.86 ...", which the module's .data block
- * D_800A1498 points at), CD_init and CD_datasync's (moved from src/text1a_b_tail_rodata.c, Q106 D4:
+/* .rodata 0x80016240..0x800162CC: the rest of the module's strings, after
+ * getintr's jump table: CD_sync, CD_ready, CD_cw (with the rcsid "$Id:
+ * bios.c,v 1.86 ...", which the module's .data block D_800A1498 points at),
+ * CD_init and CD_datasync's (moved from src/text1a_b_tail_rodata.c, Q106 D4:
  * every C reader is in this file, in link order). */
 
 /* D_80016240: 1 string(s), 8B @ 0x80016240 */
-const char D_80016240[8] =
-    "CD_sync\0"
-    ;
+const char D_80016240[8] = "CD_sync\0";
 
 /* D_80016248: 1 string(s), 12B @ 0x80016248 */
-const char D_80016248[12] =
-    "CD_ready\0\0\0\0"
-    ;
+const char D_80016248[12] = "CD_ready\0\0\0\0";
 
 /* D_80016254: 1 string(s), 8B @ 0x80016254 */
-const char D_80016254[8] =
-    "%s...\n\0\0"
-    ;
+const char D_80016254[8] = "%s...\n\0\0";
 
 /* D_8001625C: 1 string(s), 16B @ 0x8001625C */
-const char D_8001625C[16] =
-    "%s: no param\n\0\0\0"
-    ;
+const char D_8001625C[16] = "%s: no param\n\0\0\0";
 
 /* D_8001626C: 2 string(s), 60B @ 0x8001626C */
-const char D_8001626C[60] =
-    "CD_cw\0\0\0$Id: bios.c,v 1.86 1997/"
-    "03/28 07:42:42 makoto Exp $\0"
-    ;
+const char D_8001626C[60] = "CD_cw\0\0\0$Id: bios.c,v 1.86 1997/"
+                            "03/28 07:42:42 makoto Exp $\0";
 
 /* D_800162A8: 1 string(s), 12B @ 0x800162A8 */
-const char D_800162A8[12] =
-    "CD_init:\0\0\0\0"
-    ;
+const char D_800162A8[12] = "CD_init:\0\0\0\0";
 
 /* D_800162B4: 1 string(s), 12B @ 0x800162B4 */
-const char D_800162B4[12] =
-    "addr=%08x\n\0\0"
-    ;
+const char D_800162B4[12] = "addr=%08x\n\0\0";
 
 /* D_800162C0: 1 string(s), 12B @ 0x800162C0 */
-const char D_800162C0[12] =
-    "CD_datasync\0"
-    ;
+const char D_800162C0[12] = "CD_datasync\0";
 
 extern void printf();
 extern s32 getintr(void);
@@ -253,33 +233,33 @@ extern void Result_plus_0x10;
 
 /* PsyQ libcd bios.c's command-timeout alarm (Sony's Alarm_t {int, int, char *};
  * SOTN: src/main/psxsdk/libcd/bios.c:24 @aa53500; object map:
- * pre-slim-2026-10-01:memory/closer/libcd-identity.md): armed and polled by libcd's command
- * wait loops in src/main/psxsdk/libcd/bios.c. */
+ * pre-slim-2026-10-01:memory/closer/libcd-identity.md): armed and polled by
+ * libcd's command wait loops in src/main/psxsdk/libcd/bios.c. */
 typedef struct {
     s32 time;   /* 0x800F19B8: VSync(-1) deadline */
     s32 count;  /* 0x800F19BC: poll count */
     char *name; /* 0x800F19C0: caller name for the timeout report */
 } Alarm_t;
+
 extern Alarm_t Alarm;
 
-/* bios.c's alarm helpers, as in Sony's source (SOTN: src/main/psxsdk/libcd/bios.c:95 @aa53500).
- * SOTN reaches its `volatile Alarm_t Alarm` only through the non-volatile view
+/* bios.c's alarm helpers, as in Sony's source (SOTN:
+ * src/main/psxsdk/libcd/bios.c:95 @aa53500). SOTN reaches its `volatile Alarm_t
+ * Alarm` only through the non-volatile view
  * `((Alarm_t *)&Alarm)->`; Alarm is declared non-volatile above, which is
  * that view without the cast. */
-static inline void set_alarm(char *name)
-{
+static inline void set_alarm(char *name) {
     Alarm.time = VSync(-1) + 0x3C0;
     Alarm.count = 0;
     Alarm.name = name;
 }
 
 /* SOTN: src/main/psxsdk/libcd/bios.c:102 @aa53500 */
-static inline s32 get_alarm(void)
-{
+static inline s32 get_alarm(void) {
     if (Alarm.time < VSync(-1) || Alarm.count++ > 0x3C0000) {
         puts(D_800161B8);
-        printf(&D_800161C8, Alarm.name, CD_comstr[CD_com],
-               CD_intstr[Intr.sync], CD_intstr[Intr.ready]);
+        printf(&D_800161C8, Alarm.name, CD_comstr[CD_com], CD_intstr[Intr.sync],
+               CD_intstr[Intr.ready]);
         CD_flush();
         return -1;
     }
@@ -287,8 +267,7 @@ static inline s32 get_alarm(void)
 }
 
 /* SOTN: src/main/psxsdk/libcd/bios.c:210 @aa53500 */
-static inline void callback(void)
-{
+static inline void callback(void) {
     s32 status;
     u8 saved;
 
@@ -309,8 +288,7 @@ static inline void callback(void)
 }
 
 /* SOTN: src/main/psxsdk/libcd/bios.c:232 @aa53500 */
-s32 CD_sync(s32 mode, u8 *result)
-{
+s32 CD_sync(s32 mode, u8 *result) {
     s32 sync;
 
     set_alarm(D_80016240);
@@ -332,9 +310,9 @@ s32 CD_sync(s32 mode, u8 *result)
         }
     }
 }
+
 /* SOTN: src/main/psxsdk/libcd/bios.c:260 @aa53500 */
-s32 CD_ready(s32 mode, u8 *result)
-{
+s32 CD_ready(s32 mode, u8 *result) {
     s32 c;
     s32 ready;
 
@@ -363,15 +341,17 @@ s32 CD_ready(s32 mode, u8 *result)
         }
     }
 }
+
 /* PsyQ 4.0 LIBCD BIOS: CD_cw — verbatim-linked Sony object;
  * C ref: SOTN src/main/psxsdk/libcd/bios.c (v1.77; BB2 links v1.86, which sets
  * CD_mode before issuing the command and copies the result unconditionally). */
 
-extern s32 D_800A12FC[];  /* per-command "clears ready" flags; [com + 0x40] = param count */
-extern s32 D_800A13FC[];  /* per-command "needs param" flags (= D_800A12FC + 0x40) */
+/* per-command "clears ready" flags; [com + 0x40] = param count */
+extern s32 D_800A12FC[];
+/* per-command "needs param" flags (= D_800A12FC + 0x40) */
+extern s32 D_800A13FC[];
 
-s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async)
-{
+s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async) {
     /* FAKE: one counter for both loops (the CD_pos copy and the parameter
      * write), reused exactly as SOTN's CD_cw reuses its i (owner rulings
      * Q51, Q53); separate counters do not reproduce the target's allocation. */
@@ -405,7 +385,8 @@ s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async)
      * &D_800A12FC from the ready-flag read above live and forms the count's
      * address as that base + 0x100 (asm/funcs/CD_cw.s: `addiu $v0, $v1, 0x100`
      * at 0x80081460). */
-    for (i = 0; i < D_800A12FC[com + 0x40]; i++) { /* SOTN: src/main/psxsdk/libcd/bios.c:314 @aa53500 */
+    /* SOTN: src/main/psxsdk/libcd/bios.c:314 @aa53500 */
+    for (i = 0; i < D_800A12FC[com + 0x40]; i++) {
         *g_cd_reg2 = param[i];
     }
     CD_com = com;
@@ -439,6 +420,7 @@ s32 CD_vol(CdlATV *vol) {
     *g_cd_reg3 = 0x20;
     return 0;
 }
+
 extern volatile u32 *g_com_delay_reg;
 
 void CD_flush(void) {
@@ -459,7 +441,9 @@ void CD_flush(void) {
     *g_cd_reg3 = 0;
     *g_com_delay_reg = 0x1325;
 }
+
 extern volatile u16 *g_cd_spu_voice;
+
 /* PsyQ 4.0 LIBCD bios.c v1.86: CD_initvol — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libcd/bios.c */
 s32 CD_initvol(void) {
@@ -484,9 +468,11 @@ s32 CD_initvol(void) {
     *g_cd_reg3 = 0x20;
     return 0;
 }
+
 extern s32 CD_status1;
 extern void InterruptCallback(s32, void *);
 void cdrom_IrqHandler(void);
+
 void CD_initintr(void) {
     CD_cbready = 0;
     CD_cbsync = 0;
@@ -495,6 +481,7 @@ void CD_initintr(void) {
     ResetCallback();
     InterruptCallback(2, cdrom_IrqHandler);
 }
+
 extern void D_800A1498;
 
 s32 CD_init(void) {
@@ -547,13 +534,13 @@ s32 CD_init(void) {
     }
     return 0;
 }
+
 extern void printf();
 
 extern volatile u32 *g_cd_dma_ctrl;
 
 /* SOTN: src/main/psxsdk/libcd/bios.c:459 @aa53500 */
-s32 CD_datasync(s32 mode)
-{
+s32 CD_datasync(s32 mode) {
     /* FAKE: one return value written on each of the three exits, reused exactly
      * as SOTN's CD_datasync reuses its ret (owner rulings Q51, Q53); a direct
      * return on each exit compiles to 94 insns instead of the target's 91. */
@@ -599,6 +586,7 @@ s32 CD_getsector(s32 a0, s32 a1) {
     *g_com_delay_reg = 0x1325;
     return 0;
 }
+
 s32 CD_getsector2(s32 a0, s32 a1) {
     *g_cd_reg0 = 0;
     *g_cd_reg3 = CD_REQ_WANT_DATA;
@@ -611,9 +599,10 @@ s32 CD_getsector2(s32 a0, s32 a1) {
     }
     *g_cd_dma_ctrl = DMA_CD_TO_RAM_CHOPPED;
     {
-        /* FAKE: volatile dummy local (Route B, Q48) -- the target stores the CHCR read-back to
-         * its own $sp slot (sw $v0,0($sp) at 0x80081EF8, 8-byte frame); a non-volatile local or
-         * a bare `*g_cd_dma_ctrl;` drops the store and the frame. */
+        /* FAKE: volatile dummy local (Route B, Q48) -- the target stores the
+         * CHCR read-back to its own $sp slot (sw $v0,0($sp) at 0x80081EF8,
+         * 8-byte frame); a non-volatile local or a bare `*g_cd_dma_ctrl;` drops
+         * the store and the frame. */
         volatile s32 tmp;
         tmp = *g_cd_dma_ctrl;
     }
@@ -621,10 +610,8 @@ s32 CD_getsector2(s32 a0, s32 a1) {
 }
 
 extern s32 D_800A1460;
-void CD_set_test_parmnum(s32 a0) {
-    D_800A1460 = a0;
-}
 
+void CD_set_test_parmnum(s32 a0) { D_800A1460 = a0; }
 
 extern void Result_plus_0x8;
 extern void Result;
@@ -636,14 +623,17 @@ void cdrom_IrqHandler(void) {
     s2 = *g_cd_reg0 & 3;
     do {
         s0 = getintr();
-        if (s0 == 0) break;
+        if (s0 == 0)
+            break;
         if (s0 & 4) {
             if (CD_cbready != 0) {
                 CD_cbready(Intr.ready, &Result_plus_0x8);
             }
         }
-        if (!(s0 & 2)) continue;
-        if (CD_cbsync == 0) continue;
+        if (!(s0 & 2))
+            continue;
+        if (CD_cbsync == 0)
+            continue;
         CD_cbsync(Intr.sync, &Result);
     } while (1);
     *g_cd_reg0 = s2;

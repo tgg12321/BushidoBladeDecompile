@@ -1,9 +1,10 @@
-/* PsyQ 4.0 LIBGTE GEO_00: rsin and sin_1. .text 0x8007DF20..0x8007DFEC, a verbatim LIBSCAN module
- * span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBGTE GEO_00: rsin and sin_1. .text 0x8007DF20..0x8007DFEC, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include <psxsdk/libgte.h>
 
 extern s32 sin_1(s32);
+
 s32 rsin(s32 a0) {
     s32 v;
     if (a0 < 0) {
@@ -12,6 +13,7 @@ s32 rsin(s32 a0) {
     }
     return sin_1(a0 & 0xFFF);
 }
+
 extern s16 rsin_tbl[];
 extern s16 g_sin_lut_q3[];
 

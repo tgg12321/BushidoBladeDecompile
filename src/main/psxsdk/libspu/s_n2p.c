@@ -1,6 +1,6 @@
-/* PsyQ 4.0 LIBSPU S_N2P: _spu_2pitch, _spu_note2pitch and _spu_pitch2note. .text
- * 0x8008BA94..0x8008BD88, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106
- * D3. */
+/* PsyQ 4.0 LIBSPU S_N2P: _spu_2pitch, _spu_note2pitch and _spu_pitch2note.
+ * .text 0x8008BA94..0x8008BD88, a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libspu_internal.h"
 
@@ -28,6 +28,7 @@ inline u32 _spu_2pitch(u32 atten, u32 rem) {
     }
     return (lower + (((upper - lower) >> 5) * frac)) >> 12;
 }
+
 /* _spu_note2pitch: pitch of note/fine relative to the centre note/fine
  * (128 fine steps per semitone, 0x600 per octave): 0x1000 shifted by the
  * whole octaves, then the remaining steps walked through the inlined
@@ -64,7 +65,8 @@ u16 _spu_note2pitch(u16 cen_note, u16 cen_fine, u16 note, u16 fine) {
        birthing_insn_p (reg_n_sets[regno]==1) does not boost a two-set pseudo
        to LAUNCH_PRIORITY, so the widening `andi` is emitted before the
        inlinee's `li 0x103B` as in the target; a fresh single-set local or no
-       staging leaves the pair reversed (.claude/rules/staged-value-reused-variable.md). */
+       staging leaves the pair reversed
+       (.claude/rules/staged-value-reused-variable.md). */
     diff = atten;
     pitch = _spu_2pitch(diff, (rem < 0) ? -rem : rem);
     if (pitch >= 0x4000) {
@@ -72,6 +74,7 @@ u16 _spu_note2pitch(u16 cen_note, u16 cen_fine, u16 note, u16 fine) {
     }
     return pitch;
 }
+
 s32 _spu_pitch2note(u16 cen_note, u16 cen_fine, u16 pitch) {
     u16 search;
     s32 bit;
@@ -111,7 +114,8 @@ s32 _spu_pitch2note(u16 cen_note, u16 cen_fine, u16 pitch) {
         curve >>= 12;
         upper = scale * curve;
         step = (upper - lower) >> 5;
-        for (inner = 0, base = i * 32, acc = 0, next = step; inner < 0x20; inner++) {
+        for (inner = 0, base = i * 32, acc = 0, next = step; inner < 0x20;
+             inner++) {
             lo = lower + acc;
             hi = lower + next;
             lo >>= 12;

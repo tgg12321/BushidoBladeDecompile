@@ -1,5 +1,6 @@
-/* PsyQ 4.0 LIBSND VM_N2P: note2pitch and note2pitch2. .text 0x80086B38..0x80086CF8, a verbatim
- * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSND VM_N2P: note2pitch and note2pitch2. .text
+ * 0x80086B38..0x80086CF8, a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 

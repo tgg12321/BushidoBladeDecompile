@@ -1,5 +1,6 @@
-/* The 4 game functions after func_80034708. .text 0x80034F88 (ROM 0x25788). Start boundary: G8
- * (the end of 24F08.c's -G8 unit); the last file of the EXPAND_LB run. */
+/* The 4 game functions after func_80034708. .text 0x80034F88 (ROM 0x25788).
+ * Start boundary: G8 (the end of 24F08.c's -G8 unit); the last file of the
+ * EXPAND_LB run. */
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
@@ -23,15 +24,17 @@ void func_80034F88(void) {
          * D_80106A50.flags), mechanism: global.c allocation priority
          * floor_log2(nrefs)*nrefs*10000/live_length -- blocks 1 and 2 cannot be
          * reached from this handle because global.c:1275 assigns exactly one
-         * hard register per allocno and GCC 2.7.2 does no live-range splitting. */
+         * hard register per allocno and GCC 2.7.2 does no live-range splitting.
+         */
         u8 *q = &D_80106A50.flags;
 
         u = *q;
         u = u & 0xF8;
         *q = u;
-        u = 0; /* FAKE: cse2 value invalidator, mechanism: cse2 (cse.c) forwards
-                * the sb into the following lbu only while the stored value's
-                * pseudo still holds it. */
+        /* FAKE: cse2 value invalidator, mechanism: cse2 (cse.c) forwards
+         * the sb into the following lbu only while the stored value's
+         * pseudo still holds it. */
+        u = 0;
         u = *q;
         c = p->unk20_0;
         if (c) {
@@ -48,10 +51,11 @@ void func_80034F88(void) {
             u8 *r = &D_80106A50.flags;
 
             v = *r;
-            /* FAKE: bits 1 and 2 are read back at their word position (<< 1 / << 2;
-               c is only tested): read plain, each extract adds an srl (srl + andi 1
-               where the target tests andi 2 / andi 4), score 4 (2 per site);
-               tested directly (`if (p->unk20_1) {` / `if (p->unk20_2) {`), 35. */
+            /* FAKE: bits 1 and 2 are read back at their word position (<< 1 /
+               << 2; c is only tested): read plain, each extract adds an srl
+               (srl + andi 1 where the target tests andi 2 / andi 4), score 4 (2
+               per site); tested directly (`if (p->unk20_1) {` / `if
+               (p->unk20_2) {`), 35. */
             c = p->unk20_1 << 1;
             if (c) {
                 c = v | 2;
@@ -87,6 +91,7 @@ void func_80034F88(void) {
         }
     }
 }
+
 void func_8003504C(void) {
     Unk8009BD24Block *p;
     s32 i;
@@ -111,7 +116,8 @@ void func_8003504C(void) {
     do {
         s32 lv = (&D_8008D55C)[s[0]];
         D_80102778.unk_4[i] = lv;
-        if ((u32)(lv - 3) < 2 || (s8)lv == new_var || (u32)(lv - 18) < 2 || (s8)lv == new_var2) {
+        if ((u32)(lv - 3) < 2 || (s8)lv == new_var || (u32)(lv - 18) < 2 ||
+            (s8)lv == new_var2) {
             if ((s8)D_80102778.unk_D == 0) {
                 D_80102778.unk_4[i] = D_80102778.unk_4[i] - 3;
             }
@@ -152,17 +158,17 @@ void func_8003504C(void) {
                 u8 *da = dst_d;
                 u8 *db = dst_a;
                 s32 off = j << 1;
-            loop_inner:
-                {
-                    u8 *pp = (u8 *)p + off;
-                    *db = (&D_8008D55C)[pp[0]];
-                    off += 10;
-                    k++;
-                    *da = pp[1];
-                    db++;
-                    da++;
-                }
-                if (k < 2) goto loop_inner;
+            loop_inner: {
+                u8 *pp = (u8 *)p + off;
+                *db = (&D_8008D55C)[pp[0]];
+                off += 10;
+                k++;
+                *da = pp[1];
+                db++;
+                da++;
+            }
+                if (k < 2)
+                    goto loop_inner;
                 dst_d += 2;
                 j++;
                 dst_a += 2;
@@ -227,5 +233,5 @@ void func_80035280(void) {
         p->unk21[i].unk3 = t;
     }
 }
-void func_80035430(void) {
-}
+
+void func_80035430(void) {}

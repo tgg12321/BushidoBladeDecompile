@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSPU S_SK: SpuSetKey. .text 0x8008AAD4..0x8008ACD0, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSPU S_SK: SpuSetKey. .text 0x8008AAD4..0x8008ACD0, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libspu_internal.h"
 

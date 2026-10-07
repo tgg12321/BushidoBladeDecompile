@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBGTE MTX_01: ApplyRotMatrixLV. .text 0x8007EA0C..0x8007EB4C, a verbatim LIBSCAN module
- * span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBGTE MTX_01: ApplyRotMatrixLV. .text 0x8007EA0C..0x8007EB4C, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "include_asm.h"
 
 /* func_8007EA0C = LIBGTE MTX_01 ApplyRotMatrixLV - verbatim-linked Sony PsyQ

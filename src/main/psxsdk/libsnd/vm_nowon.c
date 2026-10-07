@@ -1,9 +1,12 @@
-/* PsyQ LIBSND VM_NOWON: _SsVmKeyOnNow. .text 0x800872A4..0x80087770. Not a verbatim LIBSCAN span: BB2
- * links an interim LIBSND build, between PsyQ 4.0 and 4.1, that no archived release holds
- * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109), libscan near tier: the
- * near-verbatim UT_KEYV's REL26 at +0x348 names _SsVmKeyOnNow in all six builds -> EXE jal 0x800872A4
- * (docs/naming/libscan/near_manifest.csv). VM_NOWON's only XDEF is _SsVmKeyOnNow (+0x0, PsyQ 4.0
- * LIBSND.LIB), so the module ends where that function does. */
+/* PsyQ LIBSND VM_NOWON: _SsVmKeyOnNow. .text 0x800872A4..0x80087770. Not a
+ * verbatim LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0
+ * and 4.1, that no archived release holds
+ * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109),
+ * libscan near tier: the near-verbatim UT_KEYV's REL26 at +0x348 names
+ * _SsVmKeyOnNow in all six builds -> EXE jal 0x800872A4
+ * (docs/naming/libscan/near_manifest.csv). VM_NOWON's only XDEF is
+ * _SsVmKeyOnNow (+0x0, PsyQ 4.0 LIBSND.LIB), so the module ends where that
+ * function does. */
 #include "common.h"
 #include "libsnd_i.h"
 
@@ -33,7 +36,7 @@ void _SsVmKeyOnNow(s32 vagCount, u16 pitch) {
     pos = _svm_cur.voice * 8;
     voll_t = volr_t;
     score = &_ss_score[_svm_cur.seq_sep_no & 0xFF]
-                       [(_svm_cur.seq_sep_no & 0xFF00) >> 8];
+                      [(_svm_cur.seq_sep_no & 0xFF00) >> 8];
     if (_svm_cur.seq_sep_no != 0x21) {
         voll_t = (voll_t * score->unk58) / 127;
         volr_t = (volr_t * score->unk5A) / 127;

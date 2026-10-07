@@ -1,33 +1,15 @@
-/* Rotation-matrix and colour math (math_RotMatrixZXY / YXZ / XYZ, math_Rotate2D, math_RgbToHsv,
- * ...) and the primitive texture-offset helpers (gpu_OffsetTexPolyFT3..gpu_OffsetClut). .text
- * 0x80042504 (ROM 0x32D04). Start boundary: G8 (the -G8 run ends). */
+/* Rotation-matrix and colour math (math_RotMatrixZXY / YXZ / XYZ,
+ * math_Rotate2D, math_RgbToHsv,
+ * ...) and the primitive texture-offset helpers
+ * (gpu_OffsetTexPolyFT3..gpu_OffsetClut). .text 0x80042504 (ROM 0x32D04). Start
+ * boundary: G8 (the -G8 run ends). */
 #include "common.h"
 #include "bb2.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 #include "gte.h"
 
-
-
-
-
-
-
-
-
 /* --- Functions 0x800401CC - 0x800466C0 (text1a segment, 126 funcs) --- */
-
-
-
-
-
-
-
-
-
-
-
-
 
 void func_80042504(s32 *hsv, s32 *rgb) {
     s32 h = hsv[0];
@@ -58,20 +40,46 @@ void func_80042504(s32 *hsv, s32 *rgb) {
     t = v * (0x1000 - ((s * (0x1000 - f)) >> 12));
     t = t >> 12;
 
-    if ((u32)i >= 6U) goto out;
+    if ((u32)i >= 6U)
+        goto out;
     switch (i) {
-    case 0: r = v; g = t; b = p; goto out;
-    case 1: r = q; g = v; b = p; goto out;
-    case 2: r = p; g = v; b = t; goto out;
-    case 3: r = p; g = q; b = v; goto out;
-    case 4: r = t; g = p; b = v; goto out;
-    case 5: r = v; g = p; b = q; goto out;
+    case 0:
+        r = v;
+        g = t;
+        b = p;
+        goto out;
+    case 1:
+        r = q;
+        g = v;
+        b = p;
+        goto out;
+    case 2:
+        r = p;
+        g = v;
+        b = t;
+        goto out;
+    case 3:
+        r = p;
+        g = q;
+        b = v;
+        goto out;
+    case 4:
+        r = t;
+        g = p;
+        b = v;
+        goto out;
+    case 5:
+        r = v;
+        g = p;
+        b = q;
+        goto out;
     }
 out:
     rgb[0] = r;
     rgb[1] = g;
     rgb[2] = b;
 }
+
 /* RGB -> HSV (4.12 fixed point). Inverse of rob_life_ctrl_2 above.
  * Outputs a1[] = { hue, sat, val }; val (V) = max(r,g,b) is the third
  * output channel, held separately from the max used for the chroma
@@ -157,6 +165,7 @@ void math_RgbToHsv(s32 *a0, s32 *a1) {
     a1[1] = sat;
     a1[2] = val;
 }
+
 void func_8004283C(s32 a0) {
     if (a0) {
         D_800F6650 = 1;
@@ -164,9 +173,9 @@ void func_8004283C(s32 a0) {
         D_800F6650 = 0;
     }
 }
-s32 func_80042864(void) {
-    return D_800F6650;
-}
+
+s32 func_80042864(void) { return D_800F6650; }
+
 void math_RotMatrixZXY(u16 *a0, MATRIX *a1) {
     s32 angA, angB;
     s16 sinA, sinB, sinC;
@@ -254,12 +263,13 @@ void math_RotMatrixZXY(u16 *a0, MATRIX *a1) {
     sinB_sinC = sinB * sinC;
     a1->m[1][2] = (negSinAxcosB_12_cosC + sinB_sinC) >> 12;
 }
+
 /* Euler angles (a0[0..2], 12-bit) -> the 3x3 rotation part of *a1, Y-X-Z order.
  *
  * cosA is read through a `u16 rawA` staging local and sign-extended with an
- * explicit (s16) cast, with the `a1->m[1][2] = -sinA;` store placed between the load
- * and the cast: combine will not merge a MEM load into a later user across a
- * store, so the target's lhu + sll 16 + sra 16 shape survives (sched1 then
+ * explicit (s16) cast, with the `a1->m[1][2] = -sinA;` store placed between the
+ * load and the cast: combine will not merge a MEM load into a later user across
+ * a store, so the target's lhu + sll 16 + sra 16 shape survives (sched1 then
  * hoists the store back out at no instruction cost).  Both halves matter: the
  * store after the cast, or the same interleave without the u16 local, is inert.
  *
@@ -337,6 +347,7 @@ void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
     sinB_sinC = sinB * sinC;
     a1->m[2][1] = (scb_cosC + sinB_sinC) >> 12;
 }
+
 void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     s32 angA, angB, angC;
     s16 sinA, sinB, sinC, cosA;
@@ -394,15 +405,17 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     a1->m[2][1] = (csb12_sinC + sinA_cosC) >> 12;
 }
 
-
 extern void math_RotMatrixXYZ();
+
 void func_80042E90(void) {
     g_anim_func_table[0] = math_RotMatrixZYX;
-    /* the three below take their angles as u16 * (read unsigned), not SVECTOR * */
+    /* the three below take their angles as u16 * (read unsigned), not SVECTOR *
+     */
     g_anim_func_table[2] = (AnimRotFunc)math_RotMatrixZXY;
     g_anim_func_table[4] = (AnimRotFunc)math_RotMatrixYXZ;
     g_anim_func_table[5] = (AnimRotFunc)math_RotMatrixXYZ;
 }
+
 void math_TransposeMatrixInPlace(MATRIX *a0) {
     /* FAKE: statement staging — saving one
        side of all three pairs up front seats x/y/z in $a1/$v1/$v0 for
@@ -422,6 +435,7 @@ void math_TransposeMatrixInPlace(MATRIX *a0) {
     a0->m[1][2] = t;
     a0->m[2][1] = z;
 }
+
 void math_Rotate2D(s32 *a0, s32 *a1, s32 a2) {
     s16 sin_val, cos_val;
     s32 x, y;
@@ -437,6 +451,7 @@ void math_Rotate2D(s32 *a0, s32 *a1, s32 a2) {
     *a1 = (cos_x + sin_y) >> 12;
     *a0 = (sin_x - cos_y) >> 12;
 }
+
 void math_MatrixToAnglesYXZ(MATRIX *a0, SVECTOR *a1) {
     SVECTOR rot;
     VECTOR result;
@@ -486,6 +501,7 @@ extern s32 D_800951D8;
 extern s32 D_80095280;
 extern s32 D_80095328;
 extern s32 D_800A3828;
+
 void func_800430E4(s32 arg0, s32 arg1, s16 arg2, u8 *arg3) {
     MATRIX *dst = (MATRIX *)0x1F8003A0;
     s32 t0;
@@ -524,8 +540,10 @@ s32 func_80043244(s32 a0) {
     }
     return ret;
 }
+
 s32 func_80043278(s32 a0) {
-    /* FAKE: constant holder for the 0xFFFFF000 mask; with the literal the function is one insn longer (score 4) */
+    /* FAKE: constant holder for the 0xFFFFF000 mask; with the literal the
+     * function is one insn longer (score 4) */
     s32 mask = (s32)0xFFFFF000;
     s32 v0 = a0 >> *(s32 *)0x1F800008;
     s32 a0_new = v0 >> 11;
@@ -533,12 +551,14 @@ s32 func_80043278(s32 a0) {
     v0 = v0 >> a0_new;
     return v0 & 0xFFF;
 }
+
 extern u16 D_80103658[];
 extern void func_80043454(s16, s16, s16, s16);
+
 void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     u16 arg4_lo = arg4;
-    /* FAKE: the index (an s32 copy of arg0) and the count table's base in locals: arg0 / the
-       table at the use, score 4 each. */
+    /* FAKE: the index (an s32 copy of arg0) and the count table's base in
+       locals: arg0 / the table at the use, score 4 each. */
     s32 idx = arg0;
     u16 *cnt_base = D_80103658;
     u16 *countPtr;
@@ -546,32 +566,42 @@ void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
 
     countPtr = &cnt_base[idx];
     i = 0;
-    if (*countPtr == 0) goto done;
+    if (*countPtr == 0)
+        goto done;
     {
-        s32 **base_addr = D_80103608; /* FAKE: the base table in a local; at the use: score 4 */
+        /* FAKE: the base table in a local; at the use: score 4 */
+        s32 **base_addr = D_80103608;
         s32 **basePtr = &base_addr[idx];
-        u16 *cntPtr = countPtr; /* FAKE (score 5 read through countPtr): countPtr's
+        /* FAKE (score 5 read through countPtr): countPtr's
            caller-save home ($a1) must die before the loop's jal; this rebind
            gives the loop reads their own callee-save home ($s1), reproducing
            the target's addu $s1,$a1,$zero copy */
+        u16 *cntPtr = countPtr;
     /* FAKE: the loop goto-formed; as a do-while: score 21. */
     loop:
         *(s32 *)0x1F800000 = (*basePtr)[i];
         func_80043454(arg1, arg2, arg3, arg4_lo);
         i++;
-        if (i < *cntPtr) goto loop;
+        if (i < *cntPtr)
+            goto loop;
     }
-    done:
-    ;
+done:;
 }
+
 void func_80043398(s16 a0, s16 a1, s16 a2, s16 a3, s16 a4) {
-    func_800432A0(a0, (s16)(a1 << 6), (s16)(a2 << 8), (s16)(a3 << 6), (s16)(a4 << 8));
+    func_800432A0(
+        a0, (s16)(a1 << 6), (s16)(a2 << 8), (s16)(a3 << 6), (s16)(a4 << 8));
 }
+
 /* Old-style definition: the only caller, func_80045B68, passes every
  * argument as a plain int (no sign-extension at the call site), so no
  * prototype was in scope there; the body narrows each argument itself. */
-void func_800433E4(arg0, arg1, arg2, arg3, arg4, arg5)
-    s16 arg0; s16 arg1; s16 arg2; s16 arg3; s16 arg4; s16 arg5;
+void func_800433E4(arg0, arg1, arg2, arg3, arg4, arg5) s16 arg0;
+s16 arg1;
+s16 arg2;
+s16 arg3;
+s16 arg4;
+s16 arg5;
 {
     *(s32 *)0x1F800000 = D_80103608[arg0][arg1];
     func_80043454(arg2, arg3, arg4, arg5);
@@ -585,6 +615,7 @@ void gpu_OffsetTPageClutAt0And4(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
 void gpu_OffsetTPageClutAt6And2(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
 /* Read cursor into the primitive packet stream, kept in scratchpad word 0. */
 #define SCRATCH_PTR (*(u16 **)0x1F800000)
+
 /* Walk a packet stream of primitive groups (the cursor starts at the
  * scratchpad word) and shift every textured primitive's texture source by
  * (arg0, arg1) and its CLUT by (arg2, arg3): via gpu_OffsetTexPoly* for
@@ -611,7 +642,8 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
             mode = 2;
             SCRATCH_PTR = SCRATCH_PTR + (count & 0x7FFF) + 1;
             if ((u32)SCRATCH_PTR & 3) {
-                SCRATCH_PTR = (u16 *)((u8 *)SCRATCH_PTR + (4 - ((u32)SCRATCH_PTR & 3)));
+                SCRATCH_PTR =
+                    (u16 *)((u8 *)SCRATCH_PTR + (4 - ((u32)SCRATCH_PTR & 3)));
             }
         } else {
             SCRATCH_PTR = p + 2;
@@ -641,20 +673,28 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                     while (--count != -1) {
                         switch (kind) {
                         case 0:
-                            gpu_OffsetTexPolyFT3(SCRATCH_PTR, arg0, arg1, arg2, arg3);
-                            gpu_OffsetTexPolyFT3((POLY_FT3 *)SCRATCH_PTR + 1, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyFT3(
+                                SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyFT3((POLY_FT3 *)SCRATCH_PTR + 1,
+                                                 arg0, arg1, arg2, arg3);
                             break;
                         case 1:
-                            gpu_OffsetTexPolyFT4(SCRATCH_PTR, arg0, arg1, arg2, arg3);
-                            gpu_OffsetTexPolyFT4((POLY_FT4 *)SCRATCH_PTR + 1, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyFT4(
+                                SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyFT4((POLY_FT4 *)SCRATCH_PTR + 1,
+                                                 arg0, arg1, arg2, arg3);
                             break;
                         case 2:
-                            gpu_OffsetTexPolyGT3(SCRATCH_PTR, arg0, arg1, arg2, arg3);
-                            gpu_OffsetTexPolyGT3((POLY_GT3 *)SCRATCH_PTR + 1, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyGT3(
+                                SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyGT3((POLY_GT3 *)SCRATCH_PTR + 1,
+                                                 arg0, arg1, arg2, arg3);
                             break;
                         case 3:
-                            gpu_OffsetTexPolyGT4(SCRATCH_PTR, arg0, arg1, arg2, arg3);
-                            gpu_OffsetTexPolyGT4((POLY_GT4 *)SCRATCH_PTR + 1, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyGT4(
+                                SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                            gpu_OffsetTexPolyGT4((POLY_GT4 *)SCRATCH_PTR + 1,
+                                                 arg0, arg1, arg2, arg3);
                             break;
                         }
                         SCRATCH_PTR += D_80095588[type];
@@ -662,7 +702,8 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                     break;
                 case 1:
                     while (--count != -1) {
-                        gpu_OffsetTPageClutAt0And4((s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                        gpu_OffsetTPageClutAt0And4(
+                            (s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
                         b = (u8 *)SCRATCH_PTR;
                         switch (kind) {
                         case 0:
@@ -699,7 +740,8 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                     break;
                 case 2:
                     while (--count != -1) {
-                        gpu_OffsetTPageClutAt6And2((s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
+                        gpu_OffsetTPageClutAt6And2(
+                            (s16 *)SCRATCH_PTR, arg0, arg1, arg2, arg3);
                         b = (u8 *)SCRATCH_PTR;
                         switch (kind) {
                         case 0:
@@ -716,12 +758,14 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                             SCRATCH_PTR += 12;
                             break;
                         case 2:
-                            /* FAKE: cases 2/3 repeat cases 0/1 (one body per kind, as in
-                               mode 1) instead of sharing their labels. jump2 cross-jump
-                               re-merges the copies (bytes identical to `case 0: case 2:`),
-                               but flow.c counts them before global RA: the extra refs and
-                               live length seat count/base/kind in s3/s4/s5 as the target
-                               does. Shared labels: score 109. */
+                            /* FAKE: cases 2/3 repeat cases 0/1 (one body per
+                               kind, as in mode 1) instead of sharing their
+                               labels. jump2 cross-jump re-merges the copies
+                               (bytes identical to `case 0: case 2:`), but
+                               flow.c counts them before global RA: the extra
+                               refs and live length seat count/base/kind in
+                               s3/s4/s5 as the target does. Shared labels: score
+                               109. */
                             b[1] += arg1;
                             b[5] += arg1;
                             b[9] += arg1;
@@ -853,20 +897,24 @@ void gpu_OffsetTexPolyGT4(POLY_GT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
     cy = (dcy + ((clut >> 6) & 0x1FF)) & 0x1FF;
     p->clut = cx | ((clut & 0x8000) | (cy << 6));
 }
+
 void gpu_OffsetTPageClutAt0And4(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
     s16 r1;
     r1 = gpu_OffsetTPage(a0[0], a1, a2);
     a0[0] = r1;
     a0[2] = gpu_OffsetClut(a0[2], a3, a4);
 }
+
 extern s16 gpu_OffsetTPage(s16, s16, s16);
 extern s16 gpu_OffsetClut(s16, s16, s32);
+
 void gpu_OffsetTPageClutAt6And2(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4) {
     s16 r1;
     r1 = gpu_OffsetTPage(a0[3], a1, a2);
     a0[3] = r1;
     a0[1] = gpu_OffsetClut(a0[1], a3, a4);
 }
+
 s16 gpu_OffsetTPage(s16 a0, s16 a1, s16 a2) {
     s32 low = (a0 & 0xF) + (a1 >> 6);
     s32 mid;
@@ -875,6 +923,7 @@ s16 gpu_OffsetTPage(s16 a0, s16 a1, s16 a2) {
     mid &= 1;
     return (s16)(low | ((a0 & ~0x1F) | (mid << 4)));
 }
+
 s16 gpu_OffsetClut(s16 a0, s16 a1, s32 a2) {
     s32 low = (a1 >> 4) + (a0 & 0x3F);
     s32 mid;
@@ -882,11 +931,13 @@ s16 gpu_OffsetClut(s16 a0, s16 a1, s32 a2) {
     mid = (a2 + (((u32)(a0 << 17)) >> 23)) & 0x1FF;
     return (s16)(low | ((a0 & (s16)0x8000) | (mid << 6)));
 }
-/* Relocates a block of pointer slots in place. p[0] is the header word: the slot count in its low
- * 15 bits, bit 15 set once the block is relocated. Marks the block relocated (keeping the low
- * halfword), records its first slot and count in D_80103608 / D_80103658 [slot], and, if it was not
- * relocated yet, turns each slot's block-relative offset into an address by adding the block's base.
- * func_80044098 is the inverse. */
+
+/* Relocates a block of pointer slots in place. p[0] is the header word: the
+ * slot count in its low 15 bits, bit 15 set once the block is relocated. Marks
+ * the block relocated (keeping the low halfword), records its first slot and
+ * count in D_80103608 / D_80103658 [slot], and, if it was not relocated yet,
+ * turns each slot's block-relative offset into an address by adding the block's
+ * base. func_80044098 is the inverse. */
 void func_80044010(s32 *p, s16 slot) {
     s32 *base = p;
     s32 hdr;
@@ -905,6 +956,7 @@ void func_80044010(s32 *p, s16 slot) {
         }
     }
 }
+
 void func_80044098(s16 a0) {
     s32 *v1;
     s32 a4;
@@ -938,6 +990,7 @@ void func_80044098(s16 a0) {
         }
     }
 }
+
 void func_80044100(s32 a0, s32 a1) {
     s32 *ptr = D_80103608[a0];
     s32 count = D_80103658[a0];
@@ -951,9 +1004,11 @@ void func_80044100(s32 a0, s32 a1) {
         } while (count != -1);
     }
 }
+
 typedef char *va_list;
 #define va_start(ap, last) ((ap) = (va_list)(&(last) + 1))
 #define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
+
 s32 func_80044170(s32 *a0, ...) {
     s32 *base;
     s32 old_first;
@@ -968,7 +1023,8 @@ s32 func_80044170(s32 *a0, ...) {
     old_first = *base;
     va_start(ap, a0);
     count = va_arg(ap, s32);
-    /* FAKE: a0 reused for the slot table (base + 1); its own local: score 38. */
+    /* FAKE: a0 reused for the slot table (base + 1); its own local: score 38.
+     */
     a0 = base + 1;
     *base = count;
     slots = a0;
@@ -999,13 +1055,15 @@ s32 func_80044170(s32 *a0, ...) {
     *slots = dest - (s32)base;
     return dest;
 }
+
 s32 func_8004428C(s32 *base, s16 *offsets) {
-    s32 *b = base; /* FAKE: prologue pair order -- single forward-order
-                      param alias (pointer-alias-fake-exception);
-                      combine merges the
-                      single-use param's entry copy into this init at the
-                      later insn position, yielding target's s3-pair-first
-                      prologue */
+    /* FAKE: prologue pair order -- single forward-order
+       param alias (pointer-alias-fake-exception);
+       combine merges the
+       single-use param's entry copy into this init at the
+       later insn position, yielding target's s3-pair-first
+       prologue */
+    s32 *b = base;
     s32 *slots = b + 1;
     s32 count = 0;
     s32 *dest = (s32 *)((s32)b + b[1]);
@@ -1023,25 +1081,27 @@ s32 func_8004428C(s32 *base, s16 *offsets) {
     }
 
     {
-    s32 stop = -2; /* FAKE: constant-holder, named-local-fake-exception; the literal scores 2 */
-    walker = slots;
-    do {
-        if (v1 >= 0) {
-            size = walker[1];
-            cur_off = walker[0];
-            *slots = (s32)dest - (s32)b;
-            slots++;
-            count++;
-            size = size - cur_off;
-            func_800520B8((s32)b + cur_off, (s32)dest, size);
-            size = (u32)size >> 2;
-            size = size << 2;
-            dest = (s32 *)((s32)dest + size);
-        }
-        walker++;
-        v1 = *offsets;
-        offsets++;
-    } while (v1 != stop);
+        /* FAKE: constant-holder, named-local-fake-exception; the literal scores
+         * 2 */
+        s32 stop = -2;
+        walker = slots;
+        do {
+            if (v1 >= 0) {
+                size = walker[1];
+                cur_off = walker[0];
+                *slots = (s32)dest - (s32)b;
+                slots++;
+                count++;
+                size = size - cur_off;
+                func_800520B8((s32)b + cur_off, (s32)dest, size);
+                size = (u32)size >> 2;
+                size = size << 2;
+                dest = (s32 *)((s32)dest + size);
+            }
+            walker++;
+            v1 = *offsets;
+            offsets++;
+        } while (v1 != stop);
     }
     ret = (s32)dest;
 
@@ -1051,6 +1111,7 @@ done:
     *slots = v1;
     return ret;
 }
+
 s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
     s16 *fp;
     s16 *scan;
@@ -1112,7 +1173,9 @@ s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
     *dest_arr = data_ptr - (s32)orig_dest;
     return data_ptr;
 }
+
 extern s16 D_8010367E;
+
 void func_80044498(void) {
     s32 i = 0x13;
     s16 *p = &D_8010367E;
@@ -1120,15 +1183,15 @@ void func_80044498(void) {
         *p-- = 0;
     }
 }
-void func_800444BC(void) {
-    func_80044504(D_800A378C);
-}
-void func_800444E0(void) {
-    func_80044504(D_800A378C);
-}
+
+void func_800444BC(void) { func_80044504(D_800A378C); }
+
+void func_800444E0(void) { func_80044504(D_800A378C); }
+
 extern MATRIX D_80101BD0;
 
 extern void func_8004A4E0(void);
+
 void func_80044504(u32 *a0) {
     math_RotMatrixZXY(D_800A3678, &D_80101BD0);
     MulMatrix(&D_80101BD0, &D_800A3708->xf.mat);
@@ -1158,15 +1221,17 @@ void func_80044504(u32 *a0) {
     func_80046E54(1);
     D_800A3820 = D_80102C00;
 }
-void func_80044650(void) {
-    func_80052C10();
-}
+
+void func_80044650(void) { func_80052C10(); }
+
 s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     s32 v0;
     /* FAKE: keeps reorg.c relax_delay_slots from inverting the two default-path
        j/nop pairs in the stage-id switch (NOTE_INSN_LOOP_BEG sets
-       LABEL_OUTSIDE_LOOP_P, suppressing the invert-jump peephole); removed: score 4 */
-    do { } while (0);
+       LABEL_OUTSIDE_LOOP_P, suppressing the invert-jump peephole); removed:
+       score 4 */
+    do {
+    } while (0);
     D_800A9CF8.unk0 = a1;
     D_800A9CF8.unk2 = *a0++;
     D_800A9CF8.unk8 = (s32)a0;
@@ -1186,8 +1251,8 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     }
     return a2 + D_800A9CF8.unk6 * 104;
 }
-void func_8004473C(void)
-{
+
+void func_8004473C(void) {
     Unk800A6690Rec *src;
     Unk800A9CF8Entry *dst;
     s32 i;
@@ -1213,7 +1278,8 @@ void func_8004473C(void)
     }
 }
 
-/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+/* Q65: tentative definitions (COMMON) of the small data this file reaches
+ * gp-relative. */
 Unk80101DF0Record *D_800A3708;
 u32 *D_800A378C;
 s32 D_800A3790;

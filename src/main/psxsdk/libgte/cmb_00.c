@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBGTE CMB_00: RotTransPers4. .text 0x8007F2DC..0x8007F35C, a verbatim LIBSCAN module
- * span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBGTE CMB_00: RotTransPers4. .text 0x8007F2DC..0x8007F35C, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "include_asm.h"
 
 /* func_8007F2DC = LIBGTE CMB_00 RotTransPers4 â€” verbatim-linked Sony PsyQ 4.0

@@ -1,6 +1,6 @@
-/* PsyQ 4.0 LIBC2 MEMMOVE: memmove (LIBC and LIBC2 MEMMOVE are byte-identical; libc2/ as for
- * sprintf.c). .text 0x8007A28C..0x8007A2F8, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBC2 MEMMOVE: memmove (LIBC and LIBC2 MEMMOVE are byte-identical;
+ * libc2/ as for sprintf.c). .text 0x8007A28C..0x8007A2F8, a verbatim LIBSCAN
+ * module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include <psxsdk/libc.h>
 

@@ -1,9 +1,10 @@
 #ifndef PSXSDK_LIBSND_H
 #define PSXSDK_LIBSND_H
 
-/* PsyQ LIBSND public types and entry points (Sony's libsnd.h; SOTN include/psxsdk/libsnd.h).
- * Type layouts and prototypes are spelled as BB2's code uses them (the module definitions in
- * src/main/psxsdk/libsnd/). Library-internal state: src/main/psxsdk/libsnd/libsnd_i.h. */
+/* PsyQ LIBSND public types and entry points (Sony's libsnd.h; SOTN
+ * include/psxsdk/libsnd.h). Type layouts and prototypes are spelled as BB2's
+ * code uses them (the module definitions in src/main/psxsdk/libsnd/).
+ * Library-internal state: src/main/psxsdk/libsnd/libsnd_i.h. */
 
 #include "common.h"
 

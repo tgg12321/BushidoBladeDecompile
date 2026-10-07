@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSPU S_GKS: SpuGetKeyStatus. .text 0x8008ACD0..0x8008AD64, a verbatim LIBSCAN module
- * span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSPU S_GKS: SpuGetKeyStatus. .text 0x8008ACD0..0x8008AD64, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libspu_internal.h"
 
@@ -12,8 +12,9 @@ s32 SpuGetKeyStatus(s32 arg0) {
     u16 volumex;
 
     voice = -1;
-    /* FAKE: the bit search's register setup. `i = 0` ahead of `one = 1` rather than in the for
-     * header (score 2), and `one` a named 1 rather than a literal (literal: srav/andi, score 4). */
+    /* FAKE: the bit search's register setup. `i = 0` ahead of `one = 1` rather
+     * than in the for header (score 2), and `one` a named 1 rather than a
+     * literal (literal: srav/andi, score 4). */
     i = 0;
     one = 1;
     for (; i < 0x18; i++) {

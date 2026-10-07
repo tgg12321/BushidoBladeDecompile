@@ -1,6 +1,6 @@
 /* PsyQ 4.0 LIBSND VS_VH: SsVabOpenHead, SsVabOpenHeadSticky, SsVabFakeHead and
- * SsVabOpenHeadWithMode. .text 0x80088058..0x800884C4, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+ * SsVabOpenHeadWithMode. .text 0x80088058..0x800884C4, a verbatim LIBSCAN
+ * module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libsnd_i.h"
 
@@ -15,6 +15,7 @@ s16 SsVabOpenHeadSticky(s32 a0, s16 a1, s32 a2) {
 s16 SsVabFakeHead(s32 a0, s16 a1, s32 a2) {
     return SsVabOpenHeadWithMode((u8 *)a0, a1, 1, (u32)a2);
 }
+
 /* PsyQ 4.0 LIBSND vs_vh: SsVabOpenHeadWithMode — verbatim-linked Sony object;
    C ref: sotn-decomp src/main/psxsdk/libsnd/vs_vh.c */
 s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
@@ -50,7 +51,9 @@ s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
             }
         }
     } else {
-        /* FAKE: var_a2 is the _svm_vab_used base here and the header cursor below (one local, two roles); indexing _svm_vab_used directly swaps a2 / a3 through the body (score 14). */
+        /* FAKE: var_a2 is the _svm_vab_used base here and the header cursor
+         * below (one local, two roles); indexing _svm_vab_used directly swaps
+         * a2 / a3 through the body (score 14). */
         var_a2 = _svm_vab_used;
         if (var_a2[vabid] == 0) {
             _svm_vab_used[vabid] = 1;

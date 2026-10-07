@@ -1,7 +1,7 @@
-/* The memory-card layer: memcard_Init / memcard_Quit, the software and hardware event waits
- * (memcard_PollSwEvents..memcard_AckHwEvents), memcard_CountFiles, memcard_ReadFile and
- * memcard_WriteFile. .text 0x800375EC (ROM 0x27DEC). Start boundary: LEGACY (a tooling split, no
- * evidence either way). */
+/* The memory-card layer: memcard_Init / memcard_Quit, the software and hardware
+ * event waits (memcard_PollSwEvents..memcard_AckHwEvents), memcard_CountFiles,
+ * memcard_ReadFile and memcard_WriteFile. .text 0x800375EC (ROM 0x27DEC). Start
+ * boundary: LEGACY (a tooling split, no evidence either way). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -12,94 +12,7 @@
 const char g_str_memcard_fmt[12] = "bu%1d%1d:*";
 const char D_800109BC[12] = "bu%1d%1d:%s";
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* GP-relative extern data (for decompiled functions) */
-
-
-
-
-
-
-
-
-
-
-
 
 extern s32 g_memcard_sw_event_ioe;
 extern s32 g_memcard_sw_event_err;
@@ -110,25 +23,11 @@ extern s32 g_memcard_hw_event_err;
 extern s32 g_memcard_hw_event_timeout;
 extern s32 g_memcard_hw_event_new;
 
-
-
-
-
-
-
 extern s32 g_memcard_file_count;
-
-
-
-
-
-
-
 
 /* Extern function declarations for decompiled functions */
 
 extern struct DIRENTRY g_memcard_file_list[];
-
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
@@ -156,6 +55,7 @@ void memcard_Init(void) {
     EnableEvent(g_memcard_hw_event_timeout);
     EnableEvent(g_memcard_hw_event_new);
 }
+
 void memcard_Quit(void) {
     EnterCriticalSection();
     CloseEvent(g_memcard_sw_event_ioe);
@@ -169,6 +69,7 @@ void memcard_Quit(void) {
     ExitCriticalSection();
     StopCARD();
 }
+
 s32 memcard_PollSwEventsTimeout(void) {
     extern s32 D_800A3924;
     s32 result;
@@ -192,6 +93,7 @@ s32 memcard_PollSwEventsTimeout(void) {
     }
     return result;
 }
+
 s32 memcard_PollSwEvents(void) {
     if (TestEvent(g_memcard_sw_event_ioe) == 1) {
         return 1;
@@ -204,27 +106,39 @@ s32 memcard_PollSwEvents(void) {
     }
     return (TestEvent(g_memcard_sw_event_new) == 1) * 4;
 }
+
 void memcard_AckSwEvents(void) {
     TestEvent(g_memcard_sw_event_ioe);
     TestEvent(g_memcard_sw_event_err);
     TestEvent(g_memcard_sw_event_timeout);
     TestEvent(g_memcard_sw_event_new);
 }
+
 s32 memcard_WaitHwEvent(void) {
     s32 one = 1;
 loop:
-    if (TestEvent(g_memcard_hw_event_ioe) == one) { return 1; }
-    if (TestEvent(g_memcard_hw_event_err) == one) { return 2; }
-    if (TestEvent(g_memcard_hw_event_timeout) == one) { return 3; }
-    if (TestEvent(g_memcard_hw_event_new) != one) { goto loop; }
+    if (TestEvent(g_memcard_hw_event_ioe) == one) {
+        return 1;
+    }
+    if (TestEvent(g_memcard_hw_event_err) == one) {
+        return 2;
+    }
+    if (TestEvent(g_memcard_hw_event_timeout) == one) {
+        return 3;
+    }
+    if (TestEvent(g_memcard_hw_event_new) != one) {
+        goto loop;
+    }
     return 4;
 }
+
 void memcard_AckHwEvents(void) {
     TestEvent(g_memcard_hw_event_ioe);
     TestEvent(g_memcard_hw_event_err);
     TestEvent(g_memcard_hw_event_timeout);
     TestEvent(g_memcard_hw_event_new);
 }
+
 s32 memcard_CountFiles(s32 arg0, s32 arg1) {
     struct DIRENTRY *var_s0;
     s32 var_s1;
@@ -242,19 +156,23 @@ s32 memcard_CountFiles(s32 arg0, s32 arg1) {
     g_memcard_file_count = var_s1;
     return var_s1;
 }
+
 s32 func_80037AA4(void) {
     struct DIRENTRY *var_v1;
     s32 var_a1;
     s32 var_a2;
-    /* FAKE: reused -- the byte total, then the block count; 0xF - (var_v0 >> sh) returned directly: score 15. */
+    /* FAKE: reused -- the byte total, then the block count; 0xF - (var_v0 >>
+     * sh) returned directly: score 15. */
     s32 var_a0;
-    /* FAKE: reused -- each entry's size in the loop, then the rounded total; its own local for either value: score 2. */
+    /* FAKE: reused -- each entry's size in the loop, then the rounded total;
+     * its own local for either value: score 2. */
     s32 var_v0;
-    s32 sh; /* FAKE: shift-amount constant-holder (SOTN cd.c new_var2 shape) -- survives
-               cse past the guard join and raises var_a0's allocation priority so
-               global-alloc assigns a0/v1 in target order; reload's constant-equivalence
-               (update_equiv_regs) then substitutes 13 and deletes the li: zero extra bytes;
-               literal 0xD: score 11. */
+    /* FAKE: shift-amount constant-holder (SOTN cd.c new_var2 shape) -- survives
+       cse past the guard join and raises var_a0's allocation priority so
+       global-alloc assigns a0/v1 in target order; reload's constant-equivalence
+       (update_equiv_regs) then substitutes 13 and deletes the li: zero extra
+       bytes; literal 0xD: score 11. */
+    s32 sh;
 
     sh = 0xD;
     var_a1 = 0;
@@ -276,6 +194,7 @@ s32 func_80037AA4(void) {
     var_a0 = var_v0 >> sh;
     return 0xF - var_a0;
 }
+
 s32 func_80037B00(u8 *arg0) {
     s32 var_t1;
     s32 var_t2;
@@ -295,7 +214,8 @@ s32 func_80037B00(u8 *arg0) {
             var_t2 = 0;
             var_a1 = var_a3->name;
             var_a2 = (s8 *)arg0;
-            /* the bound is 21 bytes: the compare runs one byte past name[20] into attr, as the target does */
+            /* the bound is 21 bytes: the compare runs one byte past name[20]
+             * into attr, as the target does */
             var_t0 = var_a3->name + 0x15;
             while (1) {
                 var_v1 = (u8)*var_a2;
@@ -327,7 +247,9 @@ s32 func_80037B00(u8 *arg0) {
     }
     return 0;
 }
+
 typedef void (*Func79A30_5)(s32 *, s32 *, s32, s32, s32);
+
 s32 memcard_ReadFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 sp18[8];
     s32 temp_v0;
@@ -343,8 +265,11 @@ s32 memcard_ReadFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     read(temp_v0, arg3, arg4);
     return -(memcard_WaitHwEvent() != 1);
 }
+
 extern void write(s32, s32, s32);
-s32 memcard_WriteFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
+
+s32 memcard_WriteFile(
+    s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
     s32 sp18[8];
     s32 temp_v0;
 
@@ -367,7 +292,8 @@ s32 memcard_WriteFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5
     return -(memcard_WaitHwEvent() != 1);
 }
 
-/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+/* Q65: tentative definitions (COMMON) of the small data this file reaches
+ * gp-relative. */
 s32 g_memcard_fd;
 s32 g_memcard_sw_event_ioe;
 s32 g_memcard_sw_event_err;

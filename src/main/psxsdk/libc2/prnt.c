@@ -1,6 +1,7 @@
-/* PsyQ 4.0 LIBC2 PRNT: prnt, the printf formatter. .text 0x80079244..0x800798CC and its .rodata
- * 0x80015A68..0x80015C7C (the digit and "(null)" strings, then the format switch's jump table),
- * a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBC2 PRNT: prnt, the printf formatter. .text 0x80079244..0x800798CC
+ * and its .rodata 0x80015A68..0x80015C7C (the digit and "(null)" strings, then
+ * the format switch's jump table), a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -10,19 +11,13 @@
 #define NULL ((void *)0)
 
 /* D_80015A68: 1 string(s), 20B @ 0x80015A68 */
-const char D_80015A68[20] =
-    "0123456789abcdef\0\0\0\0"
-    ;
+const char D_80015A68[20] = "0123456789abcdef\0\0\0\0";
 
 /* D_80015A7C: 1 string(s), 8B @ 0x80015A7C */
-const char D_80015A7C[8] =
-    "(null)\0\0"
-    ;
+const char D_80015A7C[8] = "(null)\0\0";
 
 /* D_80015A84: 1 string(s), 20B @ 0x80015A84 */
-const char D_80015A84[20] =
-    "0123456789ABCDEF\0\0\0\0"
-    ;
+const char D_80015A84[20] = "0123456789ABCDEF\0\0\0\0";
 
 /* PsyQ 4.0 LIBC2 PRNT: prnt — verbatim-linked Sony object;
  * C ref: 4.3BSD-Tahoe _doprnt, lib/libc/stdio/doprnt.c
@@ -31,13 +26,13 @@ const char D_80015A84[20] =
  * ARG(): the target sign-extends %h for o/u/x (lh at all four ARG sites), which
  * is 5.35's va_arg(argp, short); 5.36 (1988-10-24) changed that to
  * (short unsigned)va_arg(argp, int). Transcription diff and provenance:
- * pre-slim-2026-10-01:memory/grind/prnt/evidence.md. BB2's build does not count ordinary
- * characters in the return value. The digit/"(null)" strings are the named
- * arrays above rather than literals: they were written so while this file also
- * held LIBC SPRINTF (a separate object in the original link), because GCC pools
- * identical string literals within one translation unit and would have folded
- * sprintf's two digit strings into these, dropping 40 bytes of .rodata. The switch table is
- * compiler-emitted. */
+ * pre-slim-2026-10-01:memory/grind/prnt/evidence.md. BB2's build does not count
+ * ordinary characters in the return value. The digit/"(null)" strings are the
+ * named arrays above rather than literals: they were written so while this file
+ * also held LIBC SPRINTF (a separate object in the original link), because GCC
+ * pools identical string literals within one translation unit and would have
+ * folded sprintf's two digit strings into these, dropping 40 bytes of .rodata.
+ * The switch table is compiler-emitted. */
 #define PRNT_LONGINT 0x01
 #define PRNT_LONGDBL 0x02
 #define PRNT_SHORTINT 0x04
@@ -52,12 +47,14 @@ extern u8 _ctype__plus_0x1;
 #define isdigit(c) ((&_ctype__plus_0x1)[c] & 4)
 #define todigit(c) ((c) - '0')
 
-#define __va_rounded_size(TYPE) (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
-#define prnt_va_arg(AP, TYPE) \
+#define __va_rounded_size(TYPE)                                                \
+    (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
+#define prnt_va_arg(AP, TYPE)                                                  \
     (AP += __va_rounded_size(TYPE), *((TYPE *)(AP - __va_rounded_size(TYPE))))
-#define PRNT_ARG() \
-    _ulong = flags & PRNT_LONGINT ? prnt_va_arg(argp, long) : \
-        flags & PRNT_SHORTINT ? prnt_va_arg(argp, short) : prnt_va_arg(argp, int)
+#define PRNT_ARG()                                                             \
+    _ulong = flags & PRNT_LONGINT    ? prnt_va_arg(argp, long)                 \
+             : flags & PRNT_SHORTINT ? prnt_va_arg(argp, short)                \
+                                     : prnt_va_arg(argp, int)
 
 s32 prnt(s32 fd, u8 *fmt0, char *argp) {
     u8 *fmt;
@@ -101,11 +98,14 @@ s32 prnt(s32 fd, u8 *fmt0, char *argp) {
             continue;
         }
 
-        flags = 0; dprec = 0; fpprec = 0; width = 0;
+        flags = 0;
+        dprec = 0;
+        fpprec = 0;
+        width = 0;
         prec = -1;
         sign = '\0';
 
-rflag:
+    rflag:
         switch (*++fmt) {
         case ' ':
             if (!sign) {
@@ -142,8 +142,15 @@ rflag:
         case '0':
             flags |= PRNT_ZEROPAD;
             goto rflag;
-        case '1': case '2': case '3': case '4':
-        case '5': case '6': case '7': case '8': case '9':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
             n = 0;
             do {
                 n = 10 * n + todigit(*fmt);
@@ -233,9 +240,9 @@ rflag:
             if (flags & PRNT_ALT && _ulong != 0) {
                 flags |= PRNT_HEXPREFIX;
             }
-nosign:
+        nosign:
             sign = '\0';
-number:
+        number:
             if ((dprec = prec) >= 0) {
                 flags &= ~PRNT_ZEROPAD;
             }
@@ -251,7 +258,7 @@ number:
                 }
             }
             size = buf + PRNT_BUF - t;
-pforw:
+        pforw:
             fieldsz = size + fpprec;
             if (sign) {
                 fieldsz++;

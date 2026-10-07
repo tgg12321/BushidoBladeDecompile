@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBGTE MTX_00A: ScaleMatrixL. .text 0x8007E8DC..0x8007EA0C, a verbatim LIBSCAN module
- * span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBGTE MTX_00A: ScaleMatrixL. .text 0x8007E8DC..0x8007EA0C, a
+ * verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "include_asm.h"
 
 /* func_8007E8DC = LIBGTE MTX_00A ScaleMatrixL â€” verbatim-linked Sony PsyQ 4.0

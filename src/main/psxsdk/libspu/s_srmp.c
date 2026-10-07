@@ -1,5 +1,6 @@
-/* PsyQ 4.0 LIBSPU S_SRMP: SpuSetReverbModeParam. .text 0x80089F3C..0x8008A434, a verbatim LIBSCAN
- * module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSPU S_SRMP: SpuSetReverbModeParam. .text 0x80089F3C..0x8008A434,
+ * a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3.
+ */
 #include "common.h"
 #include "libspu_internal.h"
 
@@ -10,7 +11,6 @@
    the depth/zero split threads off the var_s4 flag. Reverb preset table:
    D_800A2D94 (= Sony rev_param table, 10 entries x 0x44). */
 extern RevParamEntry _spu_rev_param[]; /* rev_param preset table */
-
 
 static inline void _memcpy(char *dst, char *src, u32 size) {
     while (size--) {
@@ -39,7 +39,8 @@ s32 SpuSetReverbModeParam(SpuReverbAttr *attr) {
             var_s0 &= ~0x100;
             sp58 = 1;
         }
-        if (var_s0 >= 0xA || _SpuIsInAllocateArea_(_spu_rev_startaddr[var_s0])) {
+        if (var_s0 >= 0xA ||
+            _SpuIsInAllocateArea_(_spu_rev_startaddr[var_s0])) {
             return -1;
         }
         var_s4 = 1;
@@ -68,14 +69,16 @@ s32 SpuSetReverbModeParam(SpuReverbAttr *attr) {
         case 8: /* SPU_REV_MODE_DELAY */
             var_s6 = 1;
             if (!var_s4) {
-                _memcpy((char *)&entry, (char *)&_spu_rev_param[_spu_rev_attr.mode],
+                _memcpy((char *)&entry,
+                        (char *)&_spu_rev_param[_spu_rev_attr.mode],
                         sizeof(RevParamEntry));
                 entry.flags = 0x0C011C00;
             }
             _spu_rev_attr.delay = attr->delay;
             entry.mLSAME = ((_spu_rev_attr.delay << 0xD) / 0x7F) - entry.dAPF1;
             entry.mRSAME = ((_spu_rev_attr.delay << 0xC) / 0x7F) - entry.dAPF2;
-            entry.mLCOMB1 = ((_spu_rev_attr.delay << 0xC) / 0x7F) + entry.mRCOMB1;
+            entry.mLCOMB1 =
+                ((_spu_rev_attr.delay << 0xC) / 0x7F) + entry.mRCOMB1;
             entry.dLSAME = ((_spu_rev_attr.delay << 0xC) / 0x7F) + entry.dRSAME;
             entry.mLAPF1 = ((_spu_rev_attr.delay << 0xC) / 0x7F) + entry.mLAPF2;
             entry.mRAPF1 = ((_spu_rev_attr.delay << 0xC) / 0x7F) + entry.mRAPF2;
@@ -91,7 +94,8 @@ s32 SpuSetReverbModeParam(SpuReverbAttr *attr) {
             var_fp = 1;
             if (!var_s4) {
                 if (!var_s6) {
-                    _memcpy((char *)&entry, (char *)&_spu_rev_param[_spu_rev_attr.mode],
+                    _memcpy((char *)&entry,
+                            (char *)&_spu_rev_param[_spu_rev_attr.mode],
                             sizeof(RevParamEntry));
                     entry.flags = 0x80;
                 } else {

@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBSPU S_SR: SpuSetReverb. .text 0x80089D60..0x80089E30, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSPU S_SR: SpuSetReverb. .text 0x80089D60..0x80089E30, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libspu_internal.h"
 
@@ -16,7 +16,8 @@ s32 SpuSetReverb(s32 on_off) {
         break;
 
     case 1:
-        if ((_spu_rev_reserve_wa != on_off) && _SpuIsInAllocateArea_(_spu_rev_offsetaddr)) {
+        if ((_spu_rev_reserve_wa != on_off) &&
+            _SpuIsInAllocateArea_(_spu_rev_offsetaddr)) {
             cnt = _spu_RXX->rxx.spucnt;
             _spu_rev_flag = 0;
             cnt &= ~0x80;

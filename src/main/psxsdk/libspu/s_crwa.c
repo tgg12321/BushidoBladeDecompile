@@ -1,9 +1,11 @@
-/* PsyQ 4.0 LIBSPU S_CRWA: SpuClearReverbWorkArea. .text 0x8008A928..0x8008AAC4, a verbatim LIBSCAN
- * module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBSPU S_CRWA: SpuClearReverbWorkArea. .text 0x8008A928..0x8008AAC4,
+ * a verbatim LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3.
+ */
 #include "common.h"
 #include "libspu_internal.h"
 
-/* Declarations from the file this module was split from (src/main/psxsdk/libspu/spu.c, ex main.c). */
+/* Declarations from the file this module was split from
+ * (src/main/psxsdk/libspu/spu.c, ex main.c). */
 extern s32 _spu_zerobuf;
 
 /* PsyQ 4.0 LIBSPU s_crwa: SpuClearReverbWorkArea — verbatim-linked Sony
@@ -15,7 +17,8 @@ s32 SpuClearReverbWorkArea(u32 rev_mode) {
        from its $sp slot around the WaitEvent loop, as in the target; the
        plain-local spelling keeps it in a register (score 36). SOTN holds it
        in a `volatile s32`; typed here as the callback it stores. */
-    void (* volatile callback)(); /* SOTN: src/main/psxsdk/libspu/s_crwa.c:10 @db41b28 */
+    /* SOTN: src/main/psxsdk/libspu/s_crwa.c:10 @db41b28 */
+    void (* volatile callback)();
     s32 oldTransmode;
     s32 var_s2;
     s32 var_s3;

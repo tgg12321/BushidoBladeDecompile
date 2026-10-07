@@ -1,8 +1,10 @@
-/* PsyQ LIBSND VM_INIT: _SsVmInit. .text 0x80086818..0x80086B38 (VM_N2P follows). Not a verbatim
- * LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0 and 4.1, that no archived release
- * holds (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109), libscan xref tier:
- * the verbatim SSINIT module's REL26 at +0x80 names _SsVmInit -> EXE jal 0x80086818
- * (docs/naming/libscan/near_manifest.csv), VM_INIT's only XDEF (+0x0, PsyQ 4.0 LIBSND.LIB). */
+/* PsyQ LIBSND VM_INIT: _SsVmInit. .text 0x80086818..0x80086B38 (VM_N2P
+ * follows). Not a verbatim LIBSCAN span: BB2 links an interim LIBSND build,
+ * between PsyQ 4.0 and 4.1, that no archived release holds
+ * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109),
+ * libscan xref tier: the verbatim SSINIT module's REL26 at +0x80 names
+ * _SsVmInit -> EXE jal 0x80086818 (docs/naming/libscan/near_manifest.csv),
+ * VM_INIT's only XDEF (+0x0, PsyQ 4.0 LIBSND.LIB). */
 #include "common.h"
 #include "libsnd_i.h"
 
@@ -35,7 +37,8 @@ void _SsVmInit(s32 a0) {
     } while (i < 0x10);
 
     {
-        /* FAKE: masked holds (u8)a0 as a u16; read from a0 twice the andi lands in v0 and the byte store takes s1 (score 3). */
+        /* FAKE: masked holds (u8)a0 as a u16; read from a0 twice the andi lands
+         * in v0 and the byte store takes s1 (score 3). */
         u16 masked = (u8)a0;
         if (masked >= 0x18) {
             _SsVmMaxVoice = 0x18;

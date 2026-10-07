@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBGTE MTX_08: ScaleMatrix. .text 0x8007EDBC..0x8007EEEC, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBGTE MTX_08: ScaleMatrix. .text 0x8007EDBC..0x8007EEEC, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "include_asm.h"
 
 /* func_8007EDBC: hand-coded asm in the original PSY-Q source (display.c packed

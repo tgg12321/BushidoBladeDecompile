@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBGTE FGO_01: RotMatrix. .text 0x8007F35C..0x8007F5EC, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBGTE FGO_01: RotMatrix. .text 0x8007F35C..0x8007F5EC, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "include_asm.h"
 
 /* motutil_GetWalkDir: hand-coded asm in original PSY-Q source.

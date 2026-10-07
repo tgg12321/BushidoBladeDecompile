@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBGTE RATAN: ratan2. .text 0x8007FD5C..0x8007FEDC, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBGTE RATAN: ratan2. .text 0x8007FD5C..0x8007FEDC, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include <psxsdk/libgte.h>
 

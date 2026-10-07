@@ -1,11 +1,12 @@
-/* func_8006E534..func_80073200. .text 0x8006E534 (ROM 0x5ED34). Start boundary: G8.
- * Compiled -G8 (Makefile GP_FILES; per-file -G8 by proof, owner rulings Q10,
- * Q44 and Q54). Their original bytes reach the small globals 0x800A32E8..0x800A35CA
- * (40 addresses, 403 accesses) straight off $gp, which the original compiler
- * emits only at -G8, and no function outside this range gp-accesses any of them.
- * func_8006E8CC, func_8006E950, func_8006EA28 and func_80072F30 have no gp access
- * and compile to identical bytes at -G8 and -G0 (Q54). Proof and both-ways
- * listings: pre-slim-2026-10-01:memory/grind/func_80070F78/g8-evidence.md. */
+/* func_8006E534..func_80073200. .text 0x8006E534 (ROM 0x5ED34). Start boundary:
+ * G8. Compiled -G8 (Makefile GP_FILES; per-file -G8 by proof, owner rulings
+ * Q10, Q44 and Q54). Their original bytes reach the small globals
+ * 0x800A32E8..0x800A35CA (40 addresses, 403 accesses) straight off $gp, which
+ * the original compiler emits only at -G8, and no function outside this range
+ * gp-accesses any of them. func_8006E8CC, func_8006E950, func_8006EA28 and
+ * func_80072F30 have no gp access and compile to identical bytes at -G8 and -G0
+ * (Q54). Proof and both-ways listings:
+ * pre-slim-2026-10-01:memory/grind/func_80070F78/g8-evidence.md. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -26,7 +27,8 @@ extern u8 D_800A32E8;
 extern u8 D_800A32E9;
 extern RECT D_800A32EC;
 
-/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+/* Q65: this file's statics (.sbss, allocated per file in link order by
+ * PSYLINK), in address order. */
 static s16 D_800A3540[2];
 static s16 D_800A3544[2];
 static s32 D_800A3548;
@@ -39,7 +41,7 @@ static Unk800A3560Slots D_800A3560;
 static Unk8009BD24Block *D_800A3568;
 static s32 D_800A356C;
 static s16 D_800A3570;
-static s32 D_800A3574;  /* not named by any code or data: size from the gap */
+static s32 D_800A3574; /* not named by any code or data: size from the gap */
 static s16 D_800A3578;
 static s16 D_800A357C;
 static s16 D_800A3580;
@@ -148,9 +150,7 @@ s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
     return 1;
 }
 
-Unk8006E49CRec *func_8006E8AC(s32 a0) {
-    return &D_800A35AC[a0];
-}
+Unk8006E49CRec *func_8006E8AC(s32 a0) { return &D_800A35AC[a0]; }
 
 void func_8006E8CC(Unk8006E950Head *a0) {
     Unk8009BD24Block *p;
@@ -170,6 +170,7 @@ void func_8006E8CC(Unk8006E950Head *a0) {
     LoadImage(&rect, (u32 *)data);
     DrawSync(0);
 }
+
 void func_8006E950(s32 a0, Unk8006E950Head *a1) {
     s32 s3;
     RECT rect;
@@ -197,6 +198,7 @@ void func_8006E950(s32 a0, Unk8006E950Head *a1) {
 
     func_8006E8CC(a1);
 }
+
 s32 func_8006EA28(Unk8006EA28Rec *a0) {
     func_8006920C((s32 *)a0, (s32)a0->unk_54);
     func_8006920C((s32 *)a0, (s32)a0->unk_58);
@@ -210,9 +212,11 @@ s32 func_8006EA28(Unk8006EA28Rec *a0) {
     func_8005C2A8(a0->unk_00.unk_00, 1, a0->unk_00.unk_04);
     return a0->unk_00.unk_04;
 }
+
 extern void (*D_8009BC1C[7])(Unk8006EACCRec *);
 void func_8006EC0C(void);
 void func_8006F528(Unk8006EACCRec *);
+
 s32 func_8006EACC(s32 arg0, s32 arg1) {
     Unk8006EACCRec sp10;
     Unk8006E49CRec *temp_v0;
@@ -245,27 +249,35 @@ s32 func_8006EACC(s32 arg0, s32 arg1) {
     D_8009BC1C[D_800A3580](&sp10);
     return D_800A35A0;
 }
+
 void func_8006EC0C(void) {
     s32 state = D_800A3578 & 0xFF;
 
-    if (state == 2) goto fade_out;
+    if (state == 2)
+        goto fade_out;
     if (state < 3) {
-        if (state == 1) goto ramp_up;
+        if (state == 1)
+            goto ramp_up;
         goto done;
     }
-    if (state == 3) goto ramp_up;
-    if (state == 4) goto fade_out;
+    if (state == 3)
+        goto ramp_up;
+    if (state == 4)
+        goto fade_out;
     goto done;
 
 ramp_up:
     D_800A3570 = (s16)(D_800A3570 + 0x20);
-    if ((s32)(s16)D_800A3570 < 0x1E8) goto done;
+    if ((s32)(s16)D_800A3570 < 0x1E8)
+        goto done;
     {
-        s16 v3584 = D_800A3584; /* FAKE: read ahead of the D_800A3570 store; at its use: score 2 */
+        /* FAKE: read ahead of the D_800A3570 store; at its use: score 2 */
+        s16 v3584 = D_800A3584;
         u16 word = D_800A3578;
         D_800A3570 = 0x1E8;
         D_800A3580 = v3584;
-        if ((word >> 8) != 0) goto done;
+        if ((word >> 8) != 0)
+            goto done;
         D_800A3578 = word + 1;
     }
     goto done;
@@ -275,12 +287,14 @@ fade_out:
         func_8005C650(5, 0x7F, 0x7F);
     }
     D_800A3570 = (s16)(D_800A3570 - 0x20);
-    if ((s32)(s16)D_800A3570 > 0) goto done;
+    if ((s32)(s16)D_800A3570 > 0)
+        goto done;
     D_800A3570 = 0;
     D_800A3578 = 0;
 
-done: ;
+done:;
 }
+
 extern u8 D_8009BC7C[];
 extern SelectEntryE534 D_8009BC40[][6];
 extern u8 D_800A32E8;
@@ -351,13 +365,14 @@ void func_8006ECF4(Unk8006EACCRec *arg0) {
             goto p1_dispatch;
         }
         /* FAKE: the default `s.header = s0 + sel;` is written TWICE --
-         * once in the switch default above and once at `default_p0:` -- instead of
-         * sharing one copy behind the label: the shared copy flips jump2's
+         * once in the switch default above and once at `default_p0:` -- instead
+         * of sharing one copy behind the label: the shared copy flips jump2's
          * cross-jump merge direction (same instruction count, different block
-         * layout).  The statement is real on both paths (the target recomputes p0
-         * for i == 0 at .L8006EF14).  Family: duplicated-statement-into-arms.
-         * One shared copy: score 20. */
-        if (i == 0) goto default_p0;
+         * layout).  The statement is real on both paths (the target recomputes
+         * p0 for i == 0 at .L8006EF14).  Family:
+         * duplicated-statement-into-arms. One shared copy: score 20. */
+        if (i == 0)
+            goto default_p0;
         if (D_800A32E8 != sel || D_800A32E9 != D_800A3554) {
             rectbuf = D_800A32F4;
             LoadImage(&rectbuf, (u32 *)a2);
@@ -368,10 +383,14 @@ void func_8006ECF4(Unk8006EACCRec *arg0) {
         s.header = s0 + sel;
     p1_dispatch:;
 
-        if (D_800A35B0 != 0) goto p1_idx;
-        if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) goto p1_idx;
-        if (D_800A35BC != 2) goto p1_fallback;
-        if (D_800A3568->unk14_17) goto p1_idx;
+        if (D_800A35B0 != 0)
+            goto p1_idx;
+        if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2)
+            goto p1_idx;
+        if (D_800A35BC != 2)
+            goto p1_fallback;
+        if (D_800A3568->unk14_17)
+            goto p1_idx;
     p1_fallback:
         s.table = s3->unk_00[1];
         goto p1_done;
@@ -387,7 +406,6 @@ void func_8006ECF4(Unk8006EACCRec *arg0) {
         }
     }
 }
-
 
 void func_8006F038(Unk8006EACCRec *arg0) {
     TILE *temp_s0;
@@ -415,10 +433,10 @@ void func_8006F038(Unk8006EACCRec *arg0) {
     AddPrim(g_gpu_ot_ptr, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 }
+
 extern void func_80072E10(Unk8006EACCRec *);
 extern void func_80073200(Unk8006EACCRec *);
 extern s32 func_80073C78();
-
 
 void func_8006F100(Unk8006EACCRec *arg0) {
     Unk8007352CEnv s;
@@ -494,18 +512,20 @@ void func_8006F100(Unk8006EACCRec *arg0) {
              * a local operand is not TREE_CONSTANT, so the tree keeps the
              * grouping and cse propagates 0x140 back into the addiu
              * (byte-neutral: 266 insns either way). Block scope keeps loop.c
-             * from hoisting it into a callee-save. Both literals inline (cx and cy):
-             * score 44. */
+             * from hoisting it into a callee-save. Both literals inline (cx and
+             * cy): score 44. */
             s32 cx = 0x140;
 
-            s.x = D_8009BC94[i][D_800A3590[i]].x + (t1 + cx) - ((dx * s.scale_x >> 8) / 2);
+            s.x = D_8009BC94[i][D_800A3590[i]].x + (t1 + cx) -
+                  ((dx * s.scale_x >> 8) / 2);
         }
         {
             /* FAKE: same constant-holder mechanism as `cx` above, for the
              * vertical centre 0x9D (scored with `cx`). */
             s32 cy = 0x9D;
 
-            s.y = D_8009BC94[i][D_800A3590[i]].y + (t2 + cy) - ((dy * s.scale_y >> 8) / 2);
+            s.y = D_8009BC94[i][D_800A3590[i]].y + (t2 + cy) -
+                  ((dy * s.scale_y >> 8) / 2);
         }
         s.ft4_out = arg0->unk_04.unk_00;
         if (i != 0) {
@@ -526,14 +546,15 @@ void func_8006F100(Unk8006EACCRec *arg0) {
     }
     D_800A355C++;
 }
+
 void func_8006F528(Unk8006EACCRec *arg0) {
     Unk8007352CEnv s;
     RECT rect;
     Unk8009B0E0Record **ctx;
     TILE *prim;
     s16 state;
-    /* FAKE: the holder between the header's cells and s.table; stored directly at all five sites:
-       score 26 (one site at a time: 13 / 3 / 4 / 3 / 3). */
+    /* FAKE: the holder between the header's cells and s.table; stored directly
+       at all five sites: score 26 (one site at a time: 13 / 3 / 4 / 3 / 3). */
     Unk8009B400Record *p1;
 
     s.semi = 0;
@@ -615,9 +636,9 @@ void func_8006F528(Unk8006EACCRec *arg0) {
     case 2:
     case 4: {
         /* FAKE: one-use alias of D_800A35C4 for the offset store: written
-           `D_800A35C4->unk_10[0] = offset_x`, the D_800A35C4 load (`lw a1`) sinks from the
-           state test to the store, the test's 2 moves from $a2 to $a1 and offset_x from
-           $v0 to $v1 (score 8). */
+           `D_800A35C4->unk_10[0] = offset_x`, the D_800A35C4 load (`lw a1`)
+           sinks from the state test to the store, the test's 2 moves from $a2
+           to $a1 and offset_x from $v0 to $v1 (score 8). */
         Unk800A35C4Rec *blk;
         s32 x;
         s32 offset_x;
@@ -677,18 +698,22 @@ void func_8006F528(Unk8006EACCRec *arg0) {
     s.ft4_out = arg0->unk_04.unk_00;
     arg0->unk_04.unk_00 = func_80073728(&s, 2);
 }
+
 extern void func_80070188(Unk8006EACCRec *);
 extern void func_80073200(Unk8006EACCRec *);
+
 void func_8006F97C(Unk8006EACCRec *arg0) {
     Unk8007352CEnv s;
     s16 shift[2];
     u16 rect[4];
     Unk8009B0E0Record **ctx;
-    /* the sprite sheet's cell array (8-byte Unk8009B400Record cells), which starts just
-       past the sheet's 12-byte Unk8009B0E0Record headers: three on ctx[0] (normal, then
-       one highlight per player, +0x24), one on every other sheet (+0xC).
-       SEL.BIN/SEL1.BIN/SEL2.BIN census: pre-slim-2026-10-01:memory/grind/func_8006F97C/evidence.md.
-       FAKE: the holder between the header's cells and s.table; stored directly: score 98. */
+    /* the sprite sheet's cell array (8-byte Unk8009B400Record cells), which
+       starts just past the sheet's 12-byte Unk8009B0E0Record headers: three on
+       ctx[0] (normal, then one highlight per player, +0x24), one on every other
+       sheet (+0xC). SEL.BIN/SEL1.BIN/SEL2.BIN census:
+       pre-slim-2026-10-01:memory/grind/func_8006F97C/evidence.md. FAKE: the
+       holder between the header's cells and s.table; stored directly: score 98.
+     */
     Unk8009B400Record *cells;
     s16 i;
     s16 row;
@@ -720,7 +745,9 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
                 s.has_color = 1;
             }
             if (D_800A35C4->unk_00[i] != 0x1E) {
-                s.y += (D_800A35C4->unk_00[i] * rsin((D_800A35C4->unk_08 * 288) & 0xFE0)) >> 12;
+                s.y += (D_800A35C4->unk_00[i] *
+                        rsin((D_800A35C4->unk_08 * 288) & 0xFE0)) >>
+                       12;
             }
             break;
         }
@@ -743,7 +770,9 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
                 s.has_color = 1;
             }
             if (D_800A35C4->unk_00[i] != 0x1E) {
-                s.y += (D_800A35C4->unk_00[i] * rsin((D_800A35C4->unk_08 * 288) & 0xFE0)) >> 12;
+                s.y += (D_800A35C4->unk_00[i] *
+                        rsin((D_800A35C4->unk_08 * 288) & 0xFE0)) >>
+                       12;
             }
             break;
         }
@@ -761,7 +790,8 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
 
     for (row = 0; row < 4; row++) {
         for (col = 0; col < 5; col++) {
-            if ((D_800A35BC == 0 || D_800A35BC == 1 || D_800A35BC == 2 || D_800A35BC == 3) &&
+            if ((D_800A35BC == 0 || D_800A35BC == 1 || D_800A35BC == 2 ||
+                 D_800A35BC == 3) &&
                 col == 4 && (row == 1 || row == 3)) {
                 continue;
             }
@@ -775,10 +805,15 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
                     } else {
                         shift[i] = 9;
                     }
-                    if (col == D_800A358C[i] && row == D_800A3588[i] && D_800A35C4->unk_00[i] != 0) {
+                    if (col == D_800A358C[i] && row == D_800A3588[i] &&
+                        D_800A35C4->unk_00[i] != 0) {
                         s.has_color = 1;
                         s.col_r = s.col_g = s.col_b =
-                            ((rsin(((D_800A35C4->unk_08 & 0x1F) << shift[i]) + i * 511) * 63) >> 12) - 0x40;
+                            ((rsin(((D_800A35C4->unk_08 & 0x1F) << shift[i]) +
+                                   i * 511) *
+                              63) >>
+                             12) -
+                            0x40;
                         break;
                     }
                 }
@@ -792,13 +827,14 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
                 s.y = col << 4;
                 s.x = row * 116 + (row >> 1) * 20;
                 s.has_color = 0;
-                /* FAKE: the draw tail is written in both arms (duplicated-statement-into-
-                 * arms). The target shows two tails that jump2 cross-jumped: this arm
-                 * ends `lw v0,84(fp); addiu a0,sp,24` BEFORE .L80070014, and the other
-                 * arm reaches .L80070014 by `j` with `addiu a0,sp,24` in the delay slot
-                 * (asm/funcs/func_8006F97C.s:409-410, 444-447). One shared tail after
-                 * the if/else puts the a0 setup after the label (sched cannot cross the
-                 * join): score 29. */
+                /* FAKE: the draw tail is written in both arms
+                 * (duplicated-statement-into- arms). The target shows two tails
+                 * that jump2 cross-jumped: this arm ends `lw v0,84(fp); addiu
+                 * a0,sp,24` BEFORE .L80070014, and the other arm reaches
+                 * .L80070014 by `j` with `addiu a0,sp,24` in the delay slot
+                 * (asm/funcs/func_8006F97C.s:409-410, 444-447). One shared tail
+                 * after the if/else puts the a0 setup after the label (sched
+                 * cannot cross the join): score 29. */
                 s.header = ctx[21];
                 cells = s.header->cells;
                 s.table = cells;
@@ -825,9 +861,10 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
     rect[0] = 0xC6;
     rect[1] = 0x25;
     rect[3] = 1;
-    /* The original passes its own context base here, unadjusted (func_8006F97C.s:498-514):
-     * func_80069898 reads +0x18 as its TILE cursor (func_80069898.s:11, 37 / 65 / 91, 94),
-     * and in this context +0x18 is the DR_MODE cursor. */
+    /* The original passes its own context base here, unadjusted
+     * (func_8006F97C.s:498-514): func_80069898 reads +0x18 as its TILE cursor
+     * (func_80069898.s:11, 37 / 65 / 91, 94), and in this context +0x18 is the
+     * DR_MODE cursor. */
     func_80069898((s32 *)arg0, rect, 1);
     func_80070188(arg0);
     func_8006ECF4(arg0);
@@ -836,8 +873,10 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
     func_80072E10(arg0);
     func_80073200(arg0);
 }
+
 extern s16 D_800A3530[];
 extern s16 D_800A3534[];
+
 void func_80070188(Unk8006EACCRec *arg0) {
     Unk8007352CEnv s;
     Unk8009B0E0Record **sheets;
@@ -934,7 +973,8 @@ void func_80070188(Unk8006EACCRec *arg0) {
             s.sprt_out = arg0->unk_04.unk_0C;
             arg0->unk_04.unk_0C = func_8007352C(&s);
         }
-        if ((D_800A354C & (0x40 << (port * 16))) && D_800A3560.rec[i].unk0 == 0xFF) {
+        if ((D_800A354C & (0x40 << (port * 16))) &&
+            D_800A3560.rec[i].unk0 == 0xFF) {
             if (*flags & 1) {
                 D_800A3560.rec[i].unk2 = 0xFF;
                 D_800A3590[i] = 2;
@@ -950,7 +990,8 @@ void func_80070188(Unk8006EACCRec *arg0) {
                     }
                     D_800A358C[1] = 0;
                     if (D_800A35C4->unk_00[0] == 0) {
-                        D_800A3560.rec[1].unk1 = D_8009BC40[0][D_800A3588[1]].value;
+                        D_800A3560.rec[1].unk1 =
+                            D_8009BC40[0][D_800A3588[1]].value;
                         D_8009BC7C[D_8009BC40[0][D_800A3588[1]].value] |= 4;
                     }
                     break;
@@ -987,18 +1028,24 @@ void func_80070188(Unk8006EACCRec *arg0) {
             s.header = sheets[i];
         }
         s.table = s.header->cells;
-        s.col_r = s.col_g = s.col_b = ((rsin(((D_800A35C4->unk_08 & 0x1F) << D_800A3530[i]) + i * 511) * 63) >> 12) - 0x40;
+        s.col_r = s.col_g = s.col_b =
+            ((rsin(((D_800A35C4->unk_08 & 0x1F) << D_800A3530[i]) + i * 511) *
+              63) >>
+             12) -
+            0x40;
         s.x = *col * 116 + 0x4E + (*col >> 1) * 20;
         s.y = *row * 16 + 0x80;
         s.ot_idx = 7;
         s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C(&s);
     }
-    if (D_800A3580 == 0 && D_800A3560.rec[0].unk0 != 0xFF && D_800A35C4->unk_00[0] == 0) {
+    if (D_800A3580 == 0 && D_800A3560.rec[0].unk0 != 0xFF &&
+        D_800A35C4->unk_00[0] == 0) {
         if (D_800A35BC == 2 && (D_800A3568->unk14_17)) {
             D_800A3554 = 1;
         }
-        if ((D_800A3560.rec[1].unk0 != 0xFF && D_800A35C4->unk_00[1] == 0) || D_800A35B0 + D_800A3554 == 0) {
+        if ((D_800A3560.rec[1].unk0 != 0xFF && D_800A35C4->unk_00[1] == 0) ||
+            D_800A35B0 + D_800A3554 == 0) {
             D_800A3578 = 1;
             D_800A3558 = 0;
             if (D_800A35BC == 2) {
@@ -1010,8 +1057,6 @@ void func_80070188(Unk8006EACCRec *arg0) {
     }
     func_8005C6D0();
 }
-
-
 
 extern void func_80070F78(Unk8006EACCRec *a0, Unk8007352CEnv *s);
 extern void func_8006ECF4(Unk8006EACCRec *);
@@ -1026,16 +1071,18 @@ typedef struct IconC70 {
 } IconC70;
 
 void func_80070C70(Unk8006EACCRec *arg0) {
-    s32 c60 = 0x60; /* FAKE: constant-holder local, mechanism: local-alloc/global.c keeps a
-                     * live-across-call pseudo in a callee-saved register (the target's
-                     * `li s4,96` + one `li a1,0x60` at the first call site (asm:36) plus two
-                     * `move a1,s4` at the other two (asm:85,170)); the inline literal re-materializes
-                     * `li a1,0x60` at each call site (score 7). */
+    /* FAKE: constant-holder local, mechanism: local-alloc/global.c keeps a
+     * live-across-call pseudo in a callee-saved register (the target's
+     * `li s4,96` + one `li a1,0x60` at the first call site (asm:36) plus two
+     * `move a1,s4` at the other two (asm:85,170)); the inline literal
+     * re-materializes `li a1,0x60` at each call site (score 7). */
+    s32 c60 = 0x60;
     Unk8007352CEnv prim;
     u16 rect[4];
     Unk8009B0E0Record **ctx;
     s32 var_s0;
-    /* FAKE: the holder between the header's cells and prim.table; stored directly: score 11. */
+    /* FAKE: the holder between the header's cells and prim.table; stored
+     * directly: score 11. */
     Unk8009B400Record *t;
     u8 code;
 
@@ -1046,10 +1093,11 @@ void func_80070C70(Unk8006EACCRec *arg0) {
     prim.scale_y = 0x100;
     prim.has_color = 0;
     ctx = D_800A35A8->unk_64;
-    /* NOT a coercion: the target itself stores zero to both fields twice - asm/funcs/
-     * func_80070C70.s emits `sw zero,48(sp)` / `sw zero,52(sp)` before the `lw s2,100(v1)`
-     * context fetch AND again after it.  The original source clears x/y a second
-     * time after fetching the context; both stores are in the matched 194 insns. */
+    /* NOT a coercion: the target itself stores zero to both fields twice -
+     * asm/funcs/ func_80070C70.s emits `sw zero,48(sp)` / `sw zero,52(sp)`
+     * before the `lw s2,100(v1)` context fetch AND again after it.  The
+     * original source clears x/y a second time after fetching the context; both
+     * stores are in the matched 194 insns. */
     prim.y = 0;
     prim.x = 0;
     prim.header = ctx[1];
@@ -1065,9 +1113,10 @@ void func_80070C70(Unk8006EACCRec *arg0) {
     rect[0] = 0xCC;
     rect[1] = 0x25;
     rect[3] = 1;
-    /* The original passes its own context base here, unadjusted (func_80070C70.s:48-61):
-     * func_80069898 reads +0x18 as its TILE cursor (func_80069898.s:11, 37 / 65 / 91, 94),
-     * and in this context +0x18 is the DR_MODE cursor. */
+    /* The original passes its own context base here, unadjusted
+     * (func_80070C70.s:48-61): func_80069898 reads +0x18 as its TILE cursor
+     * (func_80069898.s:11, 37 / 65 / 91, 94), and in this context +0x18 is the
+     * DR_MODE cursor. */
     func_80069898((s32 *)arg0, rect, 1);
     prim.header = ctx[0];
     t = prim.header[5].cells;
@@ -1085,20 +1134,20 @@ void func_80070C70(Unk8006EACCRec *arg0) {
     arg0->unk_04.unk_14++;
     prim.header = ctx[2];
     for (var_s0 = 0; var_s0 < 1 + D_800A35B0 + D_800A3558; var_s0++) {
-            code = D_800A3560.rec[var_s0].unk0;
-            if ((code != 5) && (code != 16)) {
-                t = prim.header->cells;
-                prim.table = t;
-                prim.table += D_800A3590[var_s0] * 2;
-                if (((D_800A35B0 + D_800A3558) != 0) || (D_800A35BC == 2)) {
-                    prim.x = 0x50 + var_s0 * 0x16C;
-                } else {
-                    prim.x = 0x105;
-                }
-                prim.sprt_out = arg0->unk_04.unk_0C;
-                prim.ot_idx = 1;
-                arg0->unk_04.unk_0C = func_8007352C(&prim);
+        code = D_800A3560.rec[var_s0].unk0;
+        if ((code != 5) && (code != 16)) {
+            t = prim.header->cells;
+            prim.table = t;
+            prim.table += D_800A3590[var_s0] * 2;
+            if (((D_800A35B0 + D_800A3558) != 0) || (D_800A35BC == 2)) {
+                prim.x = 0x50 + var_s0 * 0x16C;
+            } else {
+                prim.x = 0x105;
             }
+            prim.sprt_out = arg0->unk_04.unk_0C;
+            prim.ot_idx = 1;
+            arg0->unk_04.unk_0C = func_8007352C(&prim);
+        }
     }
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(prim.header, c60), 0);
     AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
@@ -1108,20 +1157,25 @@ void func_80070C70(Unk8006EACCRec *arg0) {
     func_80072E10(arg0);
     func_80073200(arg0);
 }
+
 extern u8 D_8009BC38[];
+
 void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
-    Unk8009B0E0Record **sheets; /* several values of one kind, a sprite-sheet header table:
-                  * D_800A35A8->unk_74 (loaded at entry and again in the
-                  * selected-slot arm) and D_800A35A8->unk_60 (the table the
-                  * last loop draws from). Ruling 11
-                  * (ordinary-c-judge-decidable.md), proof in
-                  * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md. */
+    /* several values of one kind, a sprite-sheet header table:
+     * D_800A35A8->unk_74 (loaded at entry and again in the
+     * selected-slot arm) and D_800A35A8->unk_60 (the table the
+     * last loop draws from). Ruling 11
+     * (ordinary-c-judge-decidable.md), proof in
+     * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md. */
+    Unk8009B0E0Record **sheets;
     s32 flag;
-    Unk8009B400Record *cells; /* several values of one kind: the cell table following a sheet
-                * header (s->header->cells in the two loop-2 draws, s->header[2].cells,
-                * after three headers, for the last loop). Ruling 11, proof in
-                * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md.
-                * FAKE: the holder between the header's cells and s->table; stored directly: score 9. */
+    /* several values of one kind: the cell table following a sheet
+     * header (s->header->cells in the two loop-2 draws, s->header[2].cells,
+     * after three headers, for the last loop). Ruling 11, proof in
+     * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md.
+     * FAKE: the holder between the header's cells and s->table; stored
+     * directly: score 9. */
+    Unk8009B400Record *cells;
     s16 i;
     s16 port;
     s16 port_ofs;
@@ -1149,13 +1203,14 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
         }
     }
     for (i = 0; i < 1 + D_800A35B0 + (port_ofs = D_800A3558); i++) {
-        RECT *vram; /* several values of one kind: player i's VRAM rect row,
-                   * D_800A35A8->unk_7C + i * 8, computed at the top of the
-                   * loop and again in the locked-slot arm. Ruling 11, proof in
-                   * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md. */
+        /* several values of one kind: player i's VRAM rect row,
+         * D_800A35A8->unk_7C + i * 8, computed at the top of the
+         * loop and again in the locked-slot arm. Ruling 11, proof in
+         * pre-slim-2026-10-01:memory/grind/func_80070F78/r11/README.md. */
+        RECT *vram;
 
-        /* FAKE: base and step as two statements, here and in the locked-slot arm;
-         * `vram = D_800A35A8->unk_7C + i * 8` scores 28 */
+        /* FAKE: base and step as two statements, here and in the locked-slot
+         * arm; `vram = D_800A35A8->unk_7C + i * 8` scores 28 */
         vram = D_800A35A8->unk_7C;
         vram += i * 8;
         port = i - port_ofs;
@@ -1182,10 +1237,12 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                 D_800A3544[i] = 7;
                 D_800A3540[i] = 0;
                 D_800A35C4->unk_04[i] = 0x1E;
-                if ((D_800A354C & (0x2000 << (port * 16))) && D_800A3590[i] < max) {
+                if ((D_800A354C & (0x2000 << (port * 16))) &&
+                    D_800A3590[i] < max) {
                     func_8005C650(0, 0x7F, 0x7F);
                     D_800A3590[i]++;
-                } else if ((D_800A354C & (0x8000 << (port * 16))) && min < D_800A3590[i]) {
+                } else if ((D_800A354C & (0x8000 << (port * 16))) &&
+                           min < D_800A3590[i]) {
                     func_8005C650(0, 0x7F, 0x7F);
                     D_800A3590[i]--;
                 }
@@ -1193,19 +1250,20 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                 if (D_800A35BC == 3) {
                     s32 sel;
                     s32 id;
-                    s32 *tim; /* FAKE: named intermediate for the address of the image
-                               * pointer LoadImage reads (named-intermediate entry,
-                               * no-new-park-categories.md). Under `*(...)` the sum is an
-                               * address and expands with EXPAND_SUM (INDIRECT_REF,
-                               * expr.c:4563), where PLUS_EXPR's both_summands (expr.c:5248,
-                               * "associate it to put the constant outside" :5257-5286) moves
-                               * the constant 0x14 outside (the load becomes `lw 0x14(reg)`);
-                               * assigned to a local it expands as a value (not EXPAND_SUM:
-                               * expr.c:5237-5239 goto binop), computing
-                               * id * 8 + 0x14 first as the target does (`addiu
-                               * $v0,$a0,0x14; addu $v1,$v1,$v0; ...; lw $a1,0($v1)`).
-                               * Same construct at the confirm and locked sites.
-                               * Written inline: score 27. */
+                    /* FAKE: named intermediate for the address of the image
+                     * pointer LoadImage reads (named-intermediate entry,
+                     * no-new-park-categories.md). Under `*(...)` the sum is an
+                     * address and expands with EXPAND_SUM (INDIRECT_REF,
+                     * expr.c:4563), where PLUS_EXPR's both_summands
+                     * (expr.c:5248, "associate it to put the constant outside"
+                     * :5257-5286) moves the constant 0x14 outside (the load
+                     * becomes `lw 0x14(reg)`); assigned to a local it expands
+                     * as a value (not EXPAND_SUM: expr.c:5237-5239 goto binop),
+                     * computing id * 8 + 0x14 first as the target does (`addiu
+                     * $v0,$a0,0x14; addu $v1,$v1,$v0; ...; lw $a1,0($v1)`).
+                     * Same construct at the confirm and locked sites.
+                     * Written inline: score 27. */
+                    s32 *tim;
 
                     func_8005C650(1, 0x7F, 0x7F);
                     D_800A3560.rec[1].unk2 = 0;
@@ -1222,7 +1280,9 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                 } else if (D_800A354C & (0x40 << (port * 16))) {
                     s32 sel;
                     s32 id;
-                    s32 *tim; /* FAKE: image pointer address, mechanism and score at the ==3 `tim` */
+                    /* FAKE: image pointer address, mechanism and score at the
+                     * ==3 `tim` */
+                    s32 *tim;
 
                     func_8005C650(1, 0x7F, 0x7F);
                     D_800A3560.rec[i].unk2 = D_8009BC38[D_800A3590[i]];
@@ -1258,7 +1318,8 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                     }
                 }
             } else {
-                if ((D_800A354C & (0x10 << (port * 16))) && D_800A3578 == 0 && D_800A35BC != 3) {
+                if ((D_800A354C & (0x10 << (port * 16))) && D_800A3578 == 0 &&
+                    D_800A35BC != 3) {
                     func_8005C650(2, 0x7F, 0x7F);
                     D_800A35C8[0] = 0xF;
                     D_800A35C8[1] = 0x14;
@@ -1298,7 +1359,12 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                 }
                 cells = s->header->cells;
                 s->table = cells;
-                s->col_r = s->col_g = s->col_b = ((rsin(((D_800A35C4->unk_08 & 0x1F) << D_800A3544[i]) + i * 511) * 63) >> 12) - 0x40;
+                s->col_r = s->col_g = s->col_b =
+                    ((rsin(((D_800A35C4->unk_08 & 0x1F) << D_800A3544[i]) +
+                           i * 511) *
+                      63) >>
+                     12) -
+                    0x40;
                 s->x = (D_800A3590[i] << 6) + 0x80;
                 s->y = 0xAC - (D_800A3594[i] << 5);
                 s->ft4_out = arg0->unk_04.unk_00;
@@ -1307,10 +1373,13 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
             }
         } else {
             if (D_800A3578 == 0) {
-                if (D_800A3560.rec[i == 0 ? 1 : 0].unk2 != 0xFF && D_800A35C4->unk_04[i == 0 ? 1 : 0] == 0) {
+                if (D_800A3560.rec[i == 0 ? 1 : 0].unk2 != 0xFF &&
+                    D_800A35C4->unk_04[i == 0 ? 1 : 0] == 0) {
                     s32 sel;
                     s32 id;
-                    s32 *tim; /* FAKE: image pointer address, mechanism and score at the ==3 `tim` */
+                    /* FAKE: image pointer address, mechanism and score at the
+                     * ==3 `tim` */
+                    s32 *tim;
 
                     func_8005C650(1, 0x7F, 0x7F);
                     flag = 2;
@@ -1352,7 +1421,8 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
     s->ot_idx = 0xC;
     cells = s->header[2].cells;
     for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
-        if (D_800A3560.rec[i].unk0 != 5 && D_800A3560.rec[i].unk0 != 0x10 && D_800A3578 != 3) {
+        if (D_800A3560.rec[i].unk0 != 5 && D_800A3560.rec[i].unk0 != 0x10 &&
+            D_800A3578 != 3) {
             s->table = cells;
             s->x = (D_800A3590[i] << 6) + 0x80;
             s->y = 0xAC - (D_800A3594[i] << 5);
@@ -1371,7 +1441,9 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
         if (D_800A35BC == 2) {
             D_800A3558 = 1;
         }
-        if (((D_800A3560.rec[1].unk2 != 0xFF && D_800A35C4->unk_04[1] == 0) || D_800A35B0 + D_800A3558 == 0) && flag != 1) {
+        if (((D_800A3560.rec[1].unk2 != 0xFF && D_800A35C4->unk_04[1] == 0) ||
+             D_800A35B0 + D_800A3558 == 0) &&
+            flag != 1) {
             D_800A3578 = 0x101;
             D_800A3584 = 2;
             D_800A3550 = 1;
@@ -1379,7 +1451,9 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
         }
     }
 }
+
 extern u8 D_8009BC7C[];
+
 s32 func_80071C20(void) {
     s32 v1;
     v1 = 3;
@@ -1388,6 +1462,7 @@ s32 func_80071C20(void) {
     }
     return v1;
 }
+
 void func_80071C4C(Unk8006EACCRec *arg0) {
     Unk8007352CEnv s;
     s32 i;
@@ -1428,8 +1503,10 @@ void func_80071C4C(Unk8006EACCRec *arg0) {
                 dx = s.table[idx].x + s.table[idx].w - obj[1].cells[0].x;
                 dy = s.table[idx].y + s.table[idx].h - obj[1].cells[0].y;
             }
-            s.x = D_8009BC94[i][D_800A3590[i]].x + 0x140 - ((dx * s.scale_x >> 8) / 2);
-            s.y = D_8009BC94[i][D_800A3590[i]].y + 0x9D - ((dy * s.scale_y >> 8) / 2);
+            s.x = D_8009BC94[i][D_800A3590[i]].x + 0x140 -
+                  ((dx * s.scale_x >> 8) / 2);
+            s.y = D_8009BC94[i][D_800A3590[i]].y + 0x9D -
+                  ((dy * s.scale_y >> 8) / 2);
             s.ft4_out = arg0->unk_04.unk_00;
             if (i != 0) {
                 arg0->unk_04.unk_00 = func_80073C78(&s, 0x1C0, 1);
@@ -1465,28 +1542,35 @@ void func_80071C4C(Unk8006EACCRec *arg0) {
     }
     func_8006F038(arg0);
 }
+
 void func_800720FC(Unk8006EACCRec *, Unk8009B0E0Record **, s32);
+
 void func_80072084(Unk8006EACCRec *a0) {
     func_800720FC(a0, D_800A35A8->unk_68, 0);
 }
+
 void func_800720AC(Unk8006EACCRec *a0) {
     func_800720FC(a0, D_800A35A8->unk_6C, 1);
 }
+
 void func_800720D4(Unk8006EACCRec *a0) {
     func_800720FC(a0, D_800A35A8->unk_70, 2);
 }
+
 void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
     Unk8007352CEnv s;
     u16 rect2[4];
     RECT rect;
     u8 *menu;
     Unk8009B0E0Record **sheets;
-    Unk8009B400Record *cells; /* several values of one kind: the cell table following the
-                * header(s) of each sheet drawn (s.header[1].cells for the
-                * two-header sheet, s.header->cells for the others). Ruling 11
-                * (ordinary-c-judge-decidable.md), proof in
-                * pre-slim-2026-10-01:memory/grind/func_800720FC/r11/.
-                * FAKE: the holder between the header's cells and s.table; stored directly: score 123. */
+    /* several values of one kind: the cell table following the
+     * header(s) of each sheet drawn (s.header[1].cells for the
+     * two-header sheet, s.header->cells for the others). Ruling 11
+     * (ordinary-c-judge-decidable.md), proof in
+     * pre-slim-2026-10-01:memory/grind/func_800720FC/r11/.
+     * FAKE: the holder between the header's cells and s.table; stored directly:
+     * score 123. */
+    Unk8009B400Record *cells;
     s32 i;
     s32 j;
     s32 d;
@@ -1516,7 +1600,8 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
         sheets = D_800A35A8->unk_74;
         s.header = sheets[4];
         cells = s.header[1].cells;
-        if (!(D_800A359C * 2 + D_800A3598 == 3 && D_800A35BC == 6 && mode == 2)) {
+        if (!(D_800A359C * 2 + D_800A3598 == 3 && D_800A35BC == 6 &&
+              mode == 2)) {
             s.table = cells;
             s.table += (D_800A359C + mode * 3) * 2 + D_800A3598;
             s.sprt_out = arg0->unk_04.unk_0C;
@@ -1524,7 +1609,8 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
         }
         s.header++;
         for (i = 0; i < 6; i++) {
-            if (!(i == 3 && D_800A35BC == 6 && mode == 2) && D_800A359C * 2 + D_800A3598 != i) {
+            if (!(i == 3 && D_800A35BC == 6 && mode == 2) &&
+                D_800A359C * 2 + D_800A3598 != i) {
                 s.table = cells + (mode * 6 + i);
                 s.sprt_out = arg0->unk_04.unk_0C;
                 arg0->unk_04.unk_0C = func_8007352C(&s);
@@ -1546,11 +1632,13 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
     D_800A35C4->unk_10[0] = D_800A35C0->draw.ofs[0] - D_8009BCC4[mode][0];
     D_800A35C4->unk_10[1] = D_800A35C0->draw.ofs[1] - D_8009BCC4[mode][1];
     if (((D_800A3578 & 0xFF) == 1 || (D_800A3578 & 0xFF) == 3) &&
-        D_800A3584 >= 4 && D_800A3584 < 7 && D_800A3580 >= 4 && D_800A3580 < 7) {
+        D_800A3584 >= 4 && D_800A3584 < 7 && D_800A3580 >= 4 &&
+        D_800A3580 < 7) {
         for (i = 0; i < 2; i++) {
             d = D_8009BCC4[D_800A3584 - 4][i] - D_8009BCC4[D_800A3580 - 4][i];
             d *= 30;
-            if ((d >= 0 ? d : -d) > (D_8009BCD0[i] >= 0 ? D_8009BCD0[i] : -D_8009BCD0[i])) {
+            if ((d >= 0 ? d : -d) >
+                (D_8009BCD0[i] >= 0 ? D_8009BCD0[i] : -D_8009BCD0[i])) {
                 D_8009BCD0[i] += d * 32 / 488;
             } else {
                 D_8009BCD0[i] = d;
@@ -1575,14 +1663,16 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
-    s.scale_x = 0x100; /* FAKE: dead store (overwritten by 0x180 below before any
-                        * read) - the shipped code performs it: asm lines 356-358
-                        * store 0x100 to both scales and lines 364-367 then store
-                        * 0x180/0x120; GCC 2.7.2 has no dead-store elimination for
-                        * the stack descriptor, so only a source that stores both
-                        * emits both. dead-store-fake-exception.md. Both removed:
-                        * score 3. */
-    s.scale_y = 0x100; /* FAKE: same dead store as above (asm line 358; scored there). */
+    /* FAKE: dead store (overwritten by 0x180 below before any
+     * read) - the shipped code performs it: asm lines 356-358
+     * store 0x100 to both scales and lines 364-367 then store
+     * 0x180/0x120; GCC 2.7.2 has no dead-store elimination for
+     * the stack descriptor, so only a source that stores both
+     * emits both. dead-store-fake-exception.md. Both removed:
+     * score 3. */
+    s.scale_x = 0x100;
+    /* FAKE: same dead store as above (asm line 358; scored there). */
+    s.scale_y = 0x100;
     s.y = 0;
     s.x = 0;
     s.ot_idx = 0xB;
@@ -1625,7 +1715,8 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
         D_800A359C = 2;
     }
 
-    s.col_r = s.col_g = s.col_b = ((rsin((D_800A35C4->unk_08 & 0x1F) * 128 + 0x1FF) * 63) >> 12) - 0x40;
+    s.col_r = s.col_g = s.col_b =
+        ((rsin((D_800A35C4->unk_08 & 0x1F) * 128 + 0x1FF) * 63) >> 12) - 0x40;
     s.scale_x = 0x100;
     s.scale_y = 0x100;
     s.y = 0;
@@ -1640,14 +1731,16 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
     rect2[0] = 0xB7;
     rect2[1] = 0x25;
     rect2[3] = 1;
-    /* The original passes its own context base here, unadjusted (func_800720FC.s:517-528):
-     * func_80069898 reads +0x18 as its TILE cursor (func_80069898.s:11, 37 / 65 / 91, 94),
-     * and in this context +0x18 is the DR_MODE cursor. */
+    /* The original passes its own context base here, unadjusted
+     * (func_800720FC.s:517-528): func_80069898 reads +0x18 as its TILE cursor
+     * (func_80069898.s:11, 37 / 65 / 91, 94), and in this context +0x18 is the
+     * DR_MODE cursor. */
     func_80069898((s32 *)arg0, rect2, 1);
     s.ot_idx = 0xA;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 2; j++) {
-            if (i == D_800A359C && j == D_800A3598 && (D_800A3578 & 0xFF) == 0) {
+            if (i == D_800A359C && j == D_800A3598 &&
+                (D_800A3578 & 0xFF) == 0) {
                 s.has_color = 1;
             } else {
                 s.has_color = 0;
@@ -1709,10 +1802,12 @@ end:
     func_8005C6D0();
 }
 
-
 POLY_G4 *func_80072BC4(s32 arg0, POLY_G4 *arg1) {
     u8 var_v0;
-    int fc_const; /* FAKE: constant holder -- 0xFC held from before the branch; the literal at each store rematerialises it at the r3 store and swaps v0 / v1: score 5 */
+    /* FAKE: constant holder -- 0xFC held from before the branch; the literal at
+     * each store rematerialises it at the r3 store and swaps v0 / v1: score 5
+     */
+    int fc_const;
 
     SetPolyG4(arg1);
     SetSemiTrans(arg1, 0);
@@ -1753,9 +1848,11 @@ POLY_G4 *func_80072BC4(s32 arg0, POLY_G4 *arg1) {
     AddPrim(g_gpu_ot_ptr + 0x18, arg1);
     return arg1 + 1;
 }
+
 /* func_80072CD4 - colours a Gouraud quad (POLY_G4) by mode: warm per-vertex
  * RGB triples (two variants on D_800A35C4's flag 4) for modes < 4, a fixed
- * dark set otherwise; then adds it to the OT and returns the next primitive slot. */
+ * dark set otherwise; then adds it to the OT and returns the next primitive
+ * slot. */
 POLY_G4 *func_80072CD4(s32 arg0, POLY_G4 *arg1) {
     SetPolyG4(arg1);
     SetSemiTrans(arg1, 0);
@@ -1842,9 +1939,8 @@ void func_80072E10(Unk8006EACCRec *arg0) {
     p = func_80072CD4(D_800A3580, p);
     arg0->unk_04.unk_08 = p;
 }
+
 /* END func_80072E10 */
-
-
 
 TILE *func_80072F30(s32 a0, TILE *a1) {
     SetTile(a1);
@@ -1862,6 +1958,7 @@ TILE *func_80072F30(s32 a0, TILE *a1) {
     AddPrim(g_gpu_ot_ptr + 0x17, a1);
     return a1 + 1;
 }
+
 TILE *func_80072FCC(s32 ignored, TILE *a1) {
     SetTile(a1);
     if (D_800A3580 < 4) {
@@ -1878,6 +1975,7 @@ TILE *func_80072FCC(s32 ignored, TILE *a1) {
     AddPrim(g_gpu_ot_ptr + 0x17, a1);
     return a1 + 1;
 }
+
 /* BEGIN func_80073060 */
 void func_80073060(Unk8006EACCRec *arg0) {
     TILE *p;
@@ -1921,6 +2019,7 @@ void func_80073060(Unk8006EACCRec *arg0) {
     }
     arg0->unk_04.unk_10 = p;
 }
+
 /* END func_80073060 */
 /* func_80073200 - draws three sprite-sheet layers: in modes D_800A3580 < 4,
  * four cells of ctx[4]'s sheet through func_80073728; then ctx[5]'s sheet and,
@@ -1930,7 +2029,8 @@ void func_80073060(Unk8006EACCRec *arg0) {
 void func_80073200(Unk8006EACCRec *arg0) {
     Unk8007352CEnv s;
     Unk8009B0E0Record **ctx;
-    /* FAKE: the holder between the header's cells and s.table; stored directly: score 15. */
+    /* FAKE: the holder between the header's cells and s.table; stored directly:
+     * score 15. */
     Unk8009B400Record *s1;
 
     s.x = 0;
@@ -1955,16 +2055,18 @@ void func_80073200(Unk8006EACCRec *arg0) {
             s.col_r = 0xA8;
             s.col_g = 0x6E;
             /* FAKE: `s.col_b = 0x14;` is written in BOTH arms instead of once
-             * at the join.  No extra instruction - jump2's find_cross_jump re-merges
-             * the two identical arm tails, so nothing extra materializes.
-             * mechanism: the FIRST scheduling pass, schedule_select's
-             * `potential_hazard` ready-list swap (tools/gcc-2.7.2/sched.c:2717):
-             * at equal priority a ready store (MIPS "memory" unit) always
-             * displaces a ready address-arith insn.  Keeping the `sb` stores
-             * out of the join block lets the first func_80073728 call's
+             * at the join.  No extra instruction - jump2's find_cross_jump
+             * re-merges the two identical arm tails, so nothing extra
+             * materializes. mechanism: the FIRST scheduling pass,
+             * schedule_select's `potential_hazard` ready-list swap
+             * (tools/gcc-2.7.2/sched.c:2717): at equal priority a ready store
+             * (MIPS "memory" unit) always displaces a ready address-arith insn.
+             * Keeping the `sb` stores out of the join block lets the first
+             * func_80073728 call's
              * `&s` argument set land 4th, after `sb v0,0x42(sp); li v0,0x14;
-             * sb v0,0x43(sp)`, as in the target (asm/funcs/func_80073200.s:59-62);
-             * with col_b stored once at the join it is emitted first: score 2. */
+             * sb v0,0x43(sp)`, as in the target
+             * (asm/funcs/func_80073200.s:59-62); with col_b stored once at the
+             * join it is emitted first: score 2. */
             s.col_b = 0x14;
         }
         s.ot_idx = 0x14;
@@ -2008,12 +2110,14 @@ void func_80073200(Unk8006EACCRec *arg0) {
         s.table = s1;
         s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C(&s);
-        SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0x20), 0);
+        SetDrawMode(
+            arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0x20), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
         arg0->unk_04.unk_14++;
     }
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order; values
+ * from the original EXE. */
 u8 D_800A32E8 = 0;
 u8 D_800A32E9 = 0;

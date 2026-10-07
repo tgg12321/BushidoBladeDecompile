@@ -1,6 +1,6 @@
-/* PsyQ 4.0 LIBGTE PATCHGTE: _patch_gte and the words it copies (D_8007FF44 up to the module end).
- * .text 0x8007FEDC..0x8007FF7C, a verbatim LIBSCAN module span (docs/naming/libscan/matches.json),
- * Q106 D3. */
+/* PsyQ 4.0 LIBGTE PATCHGTE: _patch_gte and the words it copies (D_8007FF44 up
+ * to the module end). .text 0x8007FEDC..0x8007FF7C, a verbatim LIBSCAN module
+ * span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "include_asm.h"
 
 __asm__(

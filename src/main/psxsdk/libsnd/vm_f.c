@@ -1,26 +1,27 @@
-/* PsyQ LIBSND VM_F: _SsVmFlush. .text 0x800863DC..0x80086818. Not a verbatim LIBSCAN span: BB2 links
- * an interim LIBSND build, between PsyQ 4.0 and 4.1, that no archived release holds
- * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109), libscan xref tier: the
- * verbatim SSCALL module's REL26 at +0x44 names _SsVmFlush -> EXE jal 0x800863DC
- * (docs/naming/libscan/near_manifest.csv), VM_F's only .text XDEF (+0x0, PsyQ 4.0 LIBSND.LIB). */
+/* PsyQ LIBSND VM_F: _SsVmFlush. .text 0x800863DC..0x80086818. Not a verbatim
+ * LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0 and 4.1,
+ * that no archived release holds (memory/closer/libsnd-hunt-report.md). Module
+ * start (owner ruling Q109), libscan xref tier: the verbatim SSCALL module's
+ * REL26 at +0x44 names _SsVmFlush -> EXE jal 0x800863DC
+ * (docs/naming/libscan/near_manifest.csv), VM_F's only .text XDEF (+0x0,
+ * PsyQ 4.0 LIBSND.LIB). */
 #include "common.h"
 #include "libsnd_i.h"
 
-extern s32 D_80103604;              /* psyz _svm_envx_ptr */
-extern void (*D_80102BF8)(s32);     /* psyz _autovol */
-extern void (*D_801027E8)(s32);     /* psyz _autopan */
+extern s32 D_80103604;          /* psyz _svm_envx_ptr */
+extern void (*D_80102BF8)(s32); /* psyz _autovol */
+extern void (*D_801027E8)(s32); /* psyz _autopan */
 
 /* Sony LIBSND `_SsVmFlush` (VM_F): sample every voice's envelope into
    _svm_voice[].unk6 and the 16-slot silence history ring, release the
-   noise state of voices silent in history slots 0-14, run the auto-volume / auto-pan
-   callbacks, flush the dirty shadow registers through SpuSetVoiceAttr
+   noise state of voices silent in history slots 0-14, run the auto-volume /
+   auto-pan callbacks, flush the dirty shadow registers through SpuSetVoiceAttr
    (func_8008B488), then write key-off / key-on / reverb masks and clear the
    pending key masks. Shape follows sotn-decomp
    src/main/psxsdk/libsnd/vmanager.c SpuVmFlush (US main build, matched);
    BB2's build reads the envelope with SpuGetVoiceEnvelope and writes the SPU
    through LIBSPU calls where SOTN pokes the registers directly. */
-void _SsVmFlush(void)
-{
+void _SsVmFlush(void) {
     s32 i;
     u32 env_mask;
     SpuVoiceAttr attr;

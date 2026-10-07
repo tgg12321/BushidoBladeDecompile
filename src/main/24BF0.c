@@ -1,5 +1,6 @@
-/* func_800343F0 and func_800344B4. .text 0x800343F0 (ROM 0x24BF0). Start boundary: PHASE
- * (rodata-align site 3), placed by the per-file gp model (Q65). */
+/* func_800343F0 and func_800344B4. .text 0x800343F0 (ROM 0x24BF0). Start
+ * boundary: PHASE (rodata-align site 3), placed by the per-file gp model (Q65).
+ */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -7,8 +8,9 @@
 #include "gte.h"
 #include "bb2_const.h"
 
-/* func_800343F0 lives here, not in code6cac_b_tu2.c: the file boundary follows the per-file gp
- * evidence (owner ruling Q65; docs/grind/rodata-align-2026-09-30.md section 7). */
+/* func_800343F0 lives here, not in code6cac_b_tu2.c: the file boundary follows
+ * the per-file gp evidence (owner ruling Q65;
+ * docs/grind/rodata-align-2026-09-30.md section 7). */
 
 void func_800343F0(void) {
     s8 val_85 = (s8)D_80102778.unk_D;
@@ -74,31 +76,29 @@ void func_800344B4(void) {
         g_disp_enable = 1;
         break;
 
-    case 5:
-        {
-            s32 v1 = (D_800A38E1 & 1) ? 0x21 : 0x20;
-            D_800A36A4 = (s16)v1;
-        }
+    case 5: {
+        s32 v1 = (D_800A38E1 & 1) ? 0x21 : 0x20;
+        D_800A36A4 = (s16)v1;
+    }
         D_800A3874 = 0;
         gpu_ResetGraphMode1();
         eff_Init();
         func_800342A0();
         goto skip_clear;
 
-    case 2:
+    case 2: {
+        s32 v1 = D_800A389A;
+        s32 cmp = (u32)v1 < 1u;
+        D_800A3713 = (u8)(cmp << 1);
         {
-            s32 v1 = D_800A389A;
-            s32 cmp = (u32)v1 < 1u;
-            D_800A3713 = (u8)(cmp << 1);
-            {
-                s32 da = (v1 != 0) ? 0x24 : 0x23;
-                D_800A36A4 = da;
-            }
-            D_80102778.unk_4[5] = 1;
-            if (v1 != 0) {
-                break;
-            }
+            s32 da = (v1 != 0) ? 0x24 : 0x23;
+            D_800A36A4 = da;
         }
+        D_80102778.unk_4[5] = 1;
+        if (v1 != 0) {
+            break;
+        }
+    }
         {
             u8 idx = D_8008D538[(s8)D_80102778.unk_4[0]];
             u8 val = D_8008D9EC[idx];

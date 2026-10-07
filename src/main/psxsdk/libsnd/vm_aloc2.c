@@ -1,8 +1,10 @@
-/* PsyQ LIBSND VM_ALOC2: _SsVmDoAllocate. .text 0x800861BC..0x800863CC (VM_DOFF follows). Not a
- * verbatim LIBSCAN span: BB2 links an interim LIBSND build, between PsyQ 4.0 and 4.1, that no archived
- * release holds (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109), libscan near
- * tier: the near-verbatim UT_KEYV's REL26 at +0x310 names _SsVmDoAllocate in all six builds -> EXE jal
- * 0x800861BC (docs/naming/libscan/near_manifest.csv), VM_ALOC2's only XDEF (+0x0, PsyQ 4.0
+/* PsyQ LIBSND VM_ALOC2: _SsVmDoAllocate. .text 0x800861BC..0x800863CC (VM_DOFF
+ * follows). Not a verbatim LIBSCAN span: BB2 links an interim LIBSND build,
+ * between PsyQ 4.0 and 4.1, that no archived release holds
+ * (memory/closer/libsnd-hunt-report.md). Module start (owner ruling Q109),
+ * libscan near tier: the near-verbatim UT_KEYV's REL26 at +0x310 names
+ * _SsVmDoAllocate in all six builds -> EXE jal 0x800861BC
+ * (docs/naming/libscan/near_manifest.csv), VM_ALOC2's only XDEF (+0x0, PsyQ 4.0
  * LIBSND.LIB). */
 #include "common.h"
 #include "libsnd_i.h"
@@ -26,7 +28,9 @@ void _SsVmDoAllocate(void) {
     for (i = 0; i < 16; i++) {
         _svm_envx_hist[i] &= ~(1 << _svm_cur.voice);
     }
-    /* FAKE: progIdx computed in both arms (duplicated-statement-into-arms); hoisted above the test the lhu becomes lh and the frame grows (score 19). */
+    /* FAKE: progIdx computed in both arms (duplicated-statement-into-arms);
+     * hoisted above the test the lhu becomes lh and the frame grows (score 19).
+     */
     if ((_svm_cur.tone_vag_idx & 1) > 0) {
         progIdx = (_svm_cur.tone_vag_idx - 1) / 2;
         vmSetStartAddr(_svm_pg[progIdx].reserved2);
@@ -37,6 +41,7 @@ void _SsVmDoAllocate(void) {
     _svm_sreg_buf[_svm_cur.voiceOffset + 4] =
         _svm_tn[_svm_cur.field_7_fake_program * 16 + _svm_cur.tone].adsr1;
     _svm_sreg_buf[_svm_cur.voiceOffset + 5] =
-        _svm_tn[_svm_cur.field_7_fake_program * 16 + _svm_cur.tone].adsr2 + _svm_damper;
+        _svm_tn[_svm_cur.field_7_fake_program * 16 + _svm_cur.tone].adsr2 +
+        _svm_damper;
     _svm_sreg_dirty[_svm_cur.voice] |= 0x30;
 }

@@ -1,6 +1,7 @@
-/* 92 game functions, among them bitstream_ReadBits, gpu_SetDrawMoveArray and math_AlignUp4. .text
- * 0x8003AB44 (ROM 0x2B344). Start boundary: LEGACY (a tooling split); one object by the per-file
- * gp model (Q65 merge group) and the rodata-align section 11 merge. */
+/* 92 game functions, among them bitstream_ReadBits, gpu_SetDrawMoveArray and
+ * math_AlignUp4. .text 0x8003AB44 (ROM 0x2B344). Start boundary: LEGACY (a
+ * tooling split); one object by the per-file gp model (Q65 merge group) and the
+ * rodata-align section 11 merge. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -9,109 +10,9 @@
 
 /* Extern function declarations */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* GP-relative extern data (for decompiled functions) */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* Extern function declarations for decompiled functions */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 extern u8 D_800A38AC;
@@ -120,58 +21,59 @@ extern s32 D_800A37D8;
 s32 func_8003AB44(void) {
     D_800A37B8++;
     switch (D_800A38AC) {
-        case 0:
-            D_800A38AC = 1;
+    case 0:
+        D_800A38AC = 1;
+        break;
+    case 1:
+        comb_ReadCtsSetRts();
+        D_800A37D8 = 0;
+        if (D_800A38A0 == 0) {
+            SetDispMask(1);
+            D_800A38AC = 2;
             break;
-        case 1:
-            comb_ReadCtsSetRts();
-            D_800A37D8 = 0;
-            if (D_800A38A0 == 0) {
-                SetDispMask(1);
-                D_800A38AC = 2;
-                break;
-            }
-            D_800A38AC = 3;
+        }
+        D_800A38AC = 3;
+        break;
+    case 2:
+        if (g_pad_state.pressed & 0x10) {
+            goto fail;
+        }
+        if (_comb_control(3, 1, 0) == 0) {
             break;
-        case 2:
-            if (g_pad_state.pressed & 0x10) {
-                goto fail;
-            }
-            if (_comb_control(3, 1, 0) == 0) {
-                break;
-            }
-            goto done;
-        case 3:
-            if (_comb_control(3, 1, 0) != 0) {
-                goto retry;
-            }
-            /* fall through */
-        done:
-            _comb_control(3, 0, 0);
-            D_800A38AC = 4;
+        }
+        goto done;
+    case 3:
+        if (_comb_control(3, 1, 0) != 0) {
+            goto retry;
+        }
+        /* fall through */
+    done:
+        _comb_control(3, 0, 0);
+        D_800A38AC = 4;
+        break;
+    retry:
+        D_800A37D8++;
+        if (D_800A37D8 < 4) {
             break;
-        retry:
-            D_800A37D8++;
-            if (D_800A37D8 < 4) {
-                break;
-            }
-            /* fall through */
-        fail:
-            comb_ResetClose();
-            return -1;
-        case 4:
-            SetDispMask(0);
-        case 5:
-        case 6:
-            D_800A38AC++;
-            break;
-        case 7:
-            D_800A3916 = 1;
-            comb_EnableEvents();
-            return 1;
+        }
+        /* fall through */
+    fail:
+        comb_ResetClose();
+        return -1;
+    case 4:
+        SetDispMask(0);
+    case 5:
+    case 6:
+        D_800A38AC++;
+        break;
+    case 7:
+        D_800A3916 = 1;
+        comb_EnableEvents();
+        return 1;
     }
     return 0;
 }
+
 s32 func_8003ACB8(void) {
     s32 temp_s0;
 
@@ -225,35 +127,37 @@ s32 func_8003ACB8(void) {
     ResetRCnt(0xF2000001);
     return temp_s0;
 }
+
 void func_8003AE5C(u8 *arg0) {
-    s32 *addr = (s32 *)0x80190800; /* FAKE: the load address in a local; at the call: score 11 */
+    /* FAKE: the load address in a local; at the call: score 11 */
+    s32 *addr = (s32 *)0x80190800;
     s32 result = -1;
     s32 done = 0;
 
     do {
         s32 cmd = *arg0++;
         switch (cmd) {
-            case 1:
-                result = *arg0;
-            case 0:
-            case 20:
-                done = 1;
-                break;
-            case 16:
-                arg0 += 5;
-                break;
-            case 17:
-                arg0 += 3;
-                break;
-            case 3:
-                arg0 += 2;
-                break;
-            case 19:
-                arg0 += 4;
-                break;
-            case 2:
-                arg0 += 0x1D;
-                break;
+        case 1:
+            result = *arg0;
+        case 0:
+        case 20:
+            done = 1;
+            break;
+        case 16:
+            arg0 += 5;
+            break;
+        case 17:
+            arg0 += 3;
+            break;
+        case 3:
+            arg0 += 2;
+            break;
+        case 19:
+            arg0 += 4;
+            break;
+        case 2:
+            arg0 += 0x1D;
+            break;
         }
     } while (!done);
 
@@ -264,17 +168,23 @@ void func_8003AE5C(u8 *arg0) {
         func_800602AC(result, addr);
     }
 }
+
 void func_8003AF40(s32 arg0) {
     if (D_80102778.unk_4[2 + arg0] == 0xFF) {
         D_80102778.unk_4[2 + arg0] = (&D_80102778.unk_4[2])[(u32)arg0 < 1u];
     }
-    func_80022580(arg0, (s8)D_80102778.unk_4[4 + arg0], (s8)D_80102778.unk_4[arg0], (s8)D_80102778.unk_4[2 + arg0], 0);
+    func_80022580(
+        arg0, (s8)D_80102778.unk_4[4 + arg0], (s8)D_80102778.unk_4[arg0],
+        (s8)D_80102778.unk_4[2 + arg0], 0);
     gpu_ResetGraphMode1();
     func_80020D38();
-    func_80040510(arg0, D_8008D578[(s8)D_80102778.unk_4[arg0]], (s32)0x80190800);
+    func_80040510(
+        arg0, D_8008D578[(s8)D_80102778.unk_4[arg0]], (s32)0x80190800);
 }
+
 void func_8003AFFC(void) {
-    s32 addr = (s32)0x80190800; /* FAKE: the load address in a local; at the call: score 12 */
+    /* FAKE: the load address in a local; at the call: score 12 */
+    s32 addr = (s32)0x80190800;
     s32 i;
 
     gpu_ResetGraphMode1();
@@ -283,7 +193,8 @@ void func_8003AFFC(void) {
 
     for (i = 0; i < 2; i++) {
         func_800493E4(D_80101EC8[i].unk_12);
-        func_800494D4(i, D_8008E5CC[D_80101EC8[i].unk_0A][D_80101EC8[i].unk_0E]);
+        func_800494D4(
+            i, D_8008E5CC[D_80101EC8[i].unk_0A][D_80101EC8[i].unk_0E]);
         if (D_80101EC8[i].unk_14 != -1) {
             func_800493E4(D_8008EB80[D_80101EC8[i].unk_14]);
             if (D_80101EC8[i].unk_14 == 14) {
@@ -294,6 +205,7 @@ void func_8003AFFC(void) {
 
     func_80049584(addr);
 }
+
 void func_8003B10C(s32 arg0) {
     s32 addr = (s32)0x80190800;
 
@@ -304,12 +216,15 @@ void func_8003B10C(s32 arg0) {
     func_800493E4(D_80101EC8[arg0].unk_12);
 
     if (D_800A38DC == 5) {
-        func_800494D4(arg0, D_8008E6A4[D_80101EC8[arg0].unk_0A][D_80101EC8[arg0].unk_0E]);
+        func_800494D4(
+            arg0, D_8008E6A4[D_80101EC8[arg0].unk_0A][D_80101EC8[arg0].unk_0E]);
     } else {
-        func_800494D4(arg0, D_8008E5CC[D_80101EC8[arg0].unk_0A][D_80101EC8[arg0].unk_0E]);
+        func_800494D4(
+            arg0, D_8008E5CC[D_80101EC8[arg0].unk_0A][D_80101EC8[arg0].unk_0E]);
     }
     func_80049584(addr);
 }
+
 void func_8003B20C(s32 arg0) {
     D_80102778.unk_4[4] = 0;
     D_80102778.unk_4[5] = 1;
@@ -326,6 +241,7 @@ void func_8003B20C(s32 arg0) {
     func_8003AF40(0);
     D_800A376C = D_8008D538[(s8)D_80102778.unk_4[0]];
 }
+
 void func_8003B2C8(void) {
     u8 *p = &D_80102778.unk_4[0];
     D_800A3836 = *p;
@@ -339,6 +255,7 @@ void func_8003B2C8(void) {
     }
     player_SetCharId(0, 0);
 }
+
 void func_8003B328(void) {
     u8 *p = &D_80102778.unk_4[0];
     u8 v_277C = *p;
@@ -353,6 +270,7 @@ void func_8003B328(void) {
     player_SetCharId(0, v_36C8);
     func_80022568(D_80101EC8);
 }
+
 s32 func_8003B3A4(u8 *arg0) {
     u8 idx;
     u8 a1;
@@ -363,11 +281,12 @@ s32 func_8003B3A4(u8 *arg0) {
         a1 = 0;
     }
     {
-        /* FAKE: store-only pointer alias — direct symbolic stores expand via the
-           assembler sb macro ($at), so the address never enters RA; the pointer
-           local makes it an RA-visible pseudo materialized into $v1 pre-branch,
-           matching target. Direct/ternary/diamond/offset forms measured 6/6/8/6.
-           Sanctioned per owner ruling 2026-07-14 (decisions.md), per-instance. */
+        /* FAKE: store-only pointer alias — direct symbolic stores expand via
+           the assembler sb macro ($at), so the address never enters RA; the
+           pointer local makes it an RA-visible pseudo materialized into $v1
+           pre-branch, matching target. Direct/ternary/diamond/offset forms
+           measured 6/6/8/6. Sanctioned per owner ruling 2026-07-14
+           (decisions.md), per-instance. */
         u8 *p = &D_80102778.unk_4[1];
         if (a1 != 0) {
             *p = 0xE;
@@ -389,6 +308,7 @@ s32 func_8003B3A4(u8 *arg0) {
     func_8003AFFC();
     return 5;
 }
+
 s32 func_8003B484(u8 *arg0) {
     D_800A3712 = 1;
     D_80102778.unk_4[1] = arg0[0];
@@ -398,6 +318,7 @@ s32 func_8003B484(u8 *arg0) {
     func_8003AFFC();
     return 3;
 }
+
 void func_8003B4DC(void) {
     D_800A3712 = 1;
     D_80102778.unk_4[2] = 0;
@@ -407,16 +328,19 @@ void func_8003B4DC(void) {
     func_8003AF40(1);
     func_8003AFFC();
 }
+
 void func_8003B534(s32 a0) {
     D_800A37B0 = a0;
     D_800A3834 = 6;
     D_800A3878 = D_800A3894 + (a0 * 4 + 1);
 }
+
 void func_8003B56C(s32 arg0) {
     D_800A390C = arg0;
     D_800A3834 = 6;
     D_800A3878 = D_800A385C + (arg0 * 4 - 4);
 }
+
 void func_8003B5A4(void) {
     s32 done;
     u8 *chardata;
@@ -432,90 +356,91 @@ void func_8003B5A4(void) {
         cmd = *ptr;
 
         switch (cmd) {
-            case 16: {
-                s32 ret = func_8003B3A4(D_800A3844);
-                D_800A3844 += ret;
-                break;
+        case 16: {
+            s32 ret = func_8003B3A4(D_800A3844);
+            D_800A3844 += ret;
+            break;
+        }
+
+        case 17: {
+            s32 ret = func_8003B484(D_800A3844);
+            D_800A3844 += ret;
+            break;
+        }
+
+        case 3: {
+            u8 *p = D_800A3844;
+            u8 byte0;
+            D_800A3844 = p + 1;
+            byte0 = p[0];
+            D_800A3844 = p + 2;
+            chardata[0] = byte0;
+            chardata[2] = p[1];
+            if ((s8)byte0 == D_800A3915) {
+                player_SetCharId(1, D_800A36F4);
             }
+            func_8003AF40(1);
+            func_8003AFFC();
+            break;
+        }
 
-            case 17: {
-                s32 ret = func_8003B484(D_800A3844);
-                D_800A3844 += ret;
-                break;
+        case 1: {
+            u8 byte;
+            u8 *p = D_800A3844;
+            u8 counter = D_800A37A0;
+            D_800A3844 = p + 1;
+            byte = *p;
+            D_800A37A0 = counter + 1;
+            D_800A36A4 = byte;
+            D_800A37A8[counter] = byte;
+            D_800A3834 = 22;
+            done = 1;
+            func_80022568(D_80101EC8);
+            D_800A3907 = 0;
+            break;
+        }
+
+        case 0:
+            if (D_800A380C == 0) {
+                D_800A38A4 = (D_8008D9EC[D_80101EC8[0].unk_0A] != 0);
+                D_800A3834 = 18;
+            } else {
+                D_800A3834 = 10;
             }
+            done = 1;
+            break;
 
-            case 3: {
-                u8 *p = D_800A3844;
-                u8 byte0;
-                D_800A3844 = p + 1;
-                byte0 = p[0];
-                D_800A3844 = p + 2;
-                chardata[0] = byte0;
-                chardata[2] = p[1];
-                if ((s8)byte0 == D_800A3915) {
-                    player_SetCharId(1, D_800A36F4);
-                }
-                func_8003AF40(1);
-                func_8003AFFC();
-                break;
-            }
+        case 19:
+            D_800A3834 = 6;
+            D_800A3878 = D_800A3844;
+            D_800A3844 += 4;
+            done = 1;
+            break;
 
-            case 1: {
-                u8 byte;
-                u8 *p = D_800A3844;
-                u8 counter = D_800A37A0;
-                D_800A3844 = p + 1;
-                byte = *p;
-                D_800A37A0 = counter + 1;
-                D_800A36A4 = byte;
-                D_800A37A8[counter] = byte;
-                D_800A3834 = 22;
-                done = 1;
-                func_80022568(D_80101EC8);
-                D_800A3907 = 0;
-                break;
-            }
+        case 2:
+            D_800A3894 = D_800A3844;
+            D_800A3844 += 0x1D;
+            func_8003B2C8();
+            func_8003AF40(0);
+            func_8003B3A4(D_800A3894 + 1);
+        case 18:
+            D_800A3834 = 0;
+            D_800A3907++;
+            done = 1;
+            break;
 
-            case 0:
-                if (D_800A380C == 0) {
-                    D_800A38A4 = (D_8008D9EC[D_80101EC8[0].unk_0A] != 0);
-                    D_800A3834 = 18;
-                } else {
-                    D_800A3834 = 10;
-                }
-                done = 1;
-                break;
-
-            case 19:
-                D_800A3834 = 6;
-                D_800A3878 = D_800A3844;
-                D_800A3844 += 4;
-                done = 1;
-                break;
-
-            case 2:
-                D_800A3894 = D_800A3844;
-                D_800A3844 += 0x1D;
-                func_8003B2C8();
-                func_8003AF40(0);
-                func_8003B3A4(D_800A3894 + 1);
-            case 18:
-                D_800A3834 = 0;
-                D_800A3907++;
-                done = 1;
-                break;
-
-            case 20:
-                D_800A385C = D_800A3844;
-                D_800A3844 += 12;
-                done = 1;
-                func_8003B4DC();
-                func_8003B56C(1);
-                D_800A38BA = 0;
-                break;
+        case 20:
+            D_800A385C = D_800A3844;
+            D_800A3844 += 12;
+            done = 1;
+            func_8003B4DC();
+            func_8003B56C(1);
+            D_800A38BA = 0;
+            break;
         }
     } while (!done);
 }
+
 void func_8003B870(void) {
     player_SetCharId(0, D_800A376A);
     player_SetCharId(1, 0);
@@ -526,6 +451,7 @@ void func_8003B870(void) {
     D_800A3834 = 0x17;
     gpu_SetDispMaskOn();
 }
+
 void func_8003B8E4(void) {
     D_800A37B8 = D_800A37B8 + 1;
     if (D_800A37B8 < 3) {
@@ -544,7 +470,8 @@ void func_8003B8E4(void) {
     }
 }
 
-/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+/* Q65: tentative definitions (COMMON) of the small data this file reaches
+ * gp-relative. */
 u16 D_800A37C4;
 s32 D_800A37D8;
 u8 D_800A38AC;
@@ -555,27 +482,9 @@ u8 D_800A3916;
 
 /* ---- merged from code6cac_c2.c (owner ruling Q65: one original file) ---- */
 
-
 /* Extern function declarations */
 
-
-
 extern DR_TPAGE D_800A3D30[2]; /* one per frame parity (D_800A3218) */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 extern Unk800A4750Rec D_800A4750[];
 extern Unk800A6690Rec D_800A6690[];
@@ -583,53 +492,16 @@ extern s16 D_800A7FE0[32][32];
 extern u16 D_800A87E0[];
 extern u8 g_stage_collision[];
 
-
-
 extern void func_8003AF40(s32);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 extern s32 func_80052C28(s32, s32);
 
-
-
-
 extern void gte_ReadFarColor(u8 *);
-
-
-
-
-
-
-
-
-
 
 extern s8 D_8008EA70[][2];
 
-
-
-
-
-
-
-
-
-
-
-
 extern void func_8003AFFC(void);
+
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
 void func_8003B9D0(void) {
@@ -644,8 +516,10 @@ void func_8003B9D0(void) {
     magic = 0x80190800;
     func_8001DA2C();
     game_Cleanup();
-    if (g_disp_enable != DISP_ACTIVE) gpu_InitDisplay();
-    if (g_disp_enable != DISP_DISABLED) gpu_SetDispMaskOn();
+    if (g_disp_enable != DISP_ACTIVE)
+        gpu_InitDisplay();
+    if (g_disp_enable != DISP_DISABLED)
+        gpu_SetDispMaskOn();
     func_800174F4();
     gpu_ResetGraphMode1();
     func_80020D38();
@@ -659,23 +533,34 @@ void func_8003B9D0(void) {
         if (qf & 0x30) {
             saved_first = D_80101EC8[0].unk_12;
             saved_44c = D_80101EC8[1].unk_12;
-            if (qf & 0x10) D_80101EC8[0].unk_12 = 0x32;
-            if (D_800A3878[3] & 0x20) D_80101EC8[1].unk_12 = 0x32;
+            if (qf & 0x10)
+                D_80101EC8[0].unk_12 = 0x32;
+            if (D_800A3878[3] & 0x20)
+                D_80101EC8[1].unk_12 = 0x32;
             func_8003AFFC();
             D_80101EC8[0].unk_12 = saved_first;
             D_80101EC8[1].unk_12 = saved_44c;
         }
     }
-    if (D_800A3878[3] & 0x1) a3_arg = D_80101EC8[0].unk_12; else a3_arg = -1;
-    if (D_800A3878[3] & 0x2) a0_arg = D_80101EC8[1].unk_12; else a0_arg = -1;
+    if (D_800A3878[3] & 0x1)
+        a3_arg = D_80101EC8[0].unk_12;
+    else
+        a3_arg = -1;
+    if (D_800A3878[3] & 0x2)
+        a0_arg = D_80101EC8[1].unk_12;
+    else
+        a0_arg = -1;
     flags = D_800A3878[3];
-    if (flags & 0x10) a3_arg = 0x32;
-    if (flags & 0x20) a0_arg = 0x32;
+    if (flags & 0x10)
+        a3_arg = 0x32;
+    if (flags & 0x20)
+        a0_arg = 0x32;
     D_800A390F = 0;
     func_80054884(D_800A376C, D_800A3878[0], 0, a3_arg, a0_arg, -1, -1, magic);
     func_80041688(0, 0);
     func_80041688(1, 0);
-    if (D_800A3878[3] & 0x40) func_8004659C(-1);
+    if (D_800A3878[3] & 0x40)
+        func_8004659C(-1);
     if ((s8)D_80102778.unk_4[1] == 0xE || (s8)D_80102778.unk_4[1] == 0x1D) {
         func_80041BF4(D_800A37B4, D_800A37B5, D_800A37B6);
     }
@@ -765,6 +650,7 @@ void func_8003BE10(void) {
     D_800A3834 = 0xB;
     gpu_SetDispMaskOn();
 }
+
 void func_8003BEA8(void) {
     s32 s0 = 0;
     s32 v0;
@@ -805,22 +691,21 @@ void func_8003BEA8(void) {
             }
             goto skip_bit;
         }
-    check_bit:
+    check_bit: {
+        s32 bit = (s16)D_80101EC8[0].unk_0A;
+        u8 val;
+        if (bit >= 0xC) {
+            bit = bit - 9;
+        }
         {
-            s32 bit = (s16)D_80101EC8[0].unk_0A;
-            u8 val;
-            if (bit >= 0xC) {
-                bit = bit - 9;
-            }
-            {
-                u8 *vptr = &D_80106A50.unk_04;
-                val = *vptr;
-                if (!((val >> bit) & 1)) {
-                    *vptr = val | (1 << bit);
-                    s0 = 1;
-                }
+            u8 *vptr = &D_80106A50.unk_04;
+            val = *vptr;
+            if (!((val >> bit) & 1)) {
+                *vptr = val | (1 << bit);
+                s0 = 1;
             }
         }
+    }
     skip_bit:
         if (s0 != 0) {
             D_800A3834 = 0x1A;
@@ -829,6 +714,7 @@ void func_8003BEA8(void) {
         }
     }
 }
+
 void func_8003BFC4(void) {
     s32 v;
     gpu_ResetGraphMode1();
@@ -845,7 +731,9 @@ void func_8003BFC4(void) {
 extern void func_8003B10C(s32);
 
 void func_8003C040(void) {
-    s32 a0; /* FAKE: func_8003AF40's 0 held in a local set on each dispatch path (move a0,zero in each branch's delay slot); the literal at the call scores 5 */
+    /* FAKE: func_8003AF40's 0 held in a local set on each dispatch path (move
+     * a0,zero in each branch's delay slot); the literal at the call scores 5 */
+    s32 a0;
     s32 sel;
     s8 *p;
     gpu_InitDisplay();
@@ -909,7 +797,8 @@ void func_8003C040(void) {
         }
     skip_copy:;
     }
-    func_80054884(0x16, (&D_8009016C)[D_800A38A4], 0, D_80101EC8[0].unk_12, -1, -1, -1, (s32)0x80118800);
+    func_80054884(0x16, (&D_8009016C)[D_800A38A4], 0, D_80101EC8[0].unk_12, -1,
+                  -1, -1, (s32)0x80118800);
     func_80041688(0, 0);
     func_80041688(1, 0);
     game_Cleanup();
@@ -923,6 +812,7 @@ void func_8003C040(void) {
     D_800A3834 = 0x13;
     gpu_SetDispMaskOn();
 }
+
 void func_8003C2C0(void) {
     D_800A37B8 = D_800A37B8 + 1;
     D_800A38B4 += func_8005FC9C((s32)D_800A38B4, 1);
@@ -951,9 +841,11 @@ void func_8003C2C0(void) {
         }
     }
 }
+
 void func_8003C42C(void) {
-    /* FAKE: frame layout -- only counts[0..2] are used (D_800A377C holds 0/1/2); counts[3]..[6]
-     * score 4, [7] or [8] gives the target's -0x38 frame. */
+    /* FAKE: frame layout -- only counts[0..2] are used (D_800A377C holds
+     * 0/1/2); counts[3]..[6] score 4, [7] or [8] gives the target's -0x38
+     * frame. */
     s32 counts[8];
     s32 i;
 
@@ -964,8 +856,8 @@ void func_8003C42C(void) {
     counts[1] = 0;
     counts[0] = 0;
     if (rounds > 0) {
-        /* FAKE: base / n are second handles of counts / rounds for the loop; using them
-         * directly scores 4. */
+        /* FAKE: base / n are second handles of counts / rounds for the loop;
+         * using them directly scores 4. */
         s32 *base = counts;
         s32 n = rounds;
         do {
@@ -974,8 +866,9 @@ void func_8003C42C(void) {
             i++;
         } while (i < n);
     }
-    /* FAKE: the counts[0] < counts[1] store is written in both decisive arms (here and in
-     * the tie-break below); one shared store after the if/else scores 11. */
+    /* FAKE: the counts[0] < counts[1] store is written in both decisive arms
+     * (here and in the tie-break below); one shared store after the if/else
+     * scores 11. */
     if (counts[0] != counts[1]) {
         D_800A382D = counts[0] < counts[1];
     } else {
@@ -984,10 +877,11 @@ void func_8003C42C(void) {
         counts[1] = 0;
         counts[0] = 0;
         if (rounds2 > 0) {
-            /* FAKE: base2 / n2, the same handles for the second tally; direct use scores 6. */
+            /* FAKE: base2 / n2, the same handles for the second tally; direct
+             * use scores 6. */
             s32 *base2 = counts;
             s32 n2 = rounds2;
-            u8 (*tbl)[2] = D_800F65F8;
+            u8(*tbl)[2] = D_800F65F8;
             do {
                 s32 j = 0;
                 s32 *p = base2;
@@ -1011,6 +905,7 @@ void func_8003C42C(void) {
     D_800A37B8 = 0;
     D_800A3834 = 0x15;
 }
+
 void func_8003C560(void) {
 
     D_800A37B8 = D_800A37B8 + 1;
@@ -1020,7 +915,9 @@ void func_8003C560(void) {
         }
     } else {
         if (D_800A37B8 == 0x1E) {
-            func_8005C650(D_8008D9EC[D_80101EC8[D_800A382D].unk_0A] != 0 ? 0xA8 : 0xA7, 0x7F, 0x7F);
+            func_8005C650(
+                D_8008D9EC[D_80101EC8[D_800A382D].unk_0A] != 0 ? 0xA8 : 0xA7,
+                0x7F, 0x7F);
         }
         if (D_800A37B8 == 0x43) {
             func_8005C650(0xA9, 0x7F, 0x7F);
@@ -1037,6 +934,7 @@ void func_8003C560(void) {
         }
     }
 }
+
 /*
  * Copies the three clock records (D_80106A50.times, frame counts at 30 fps)
  * into the record at func_80077D00(): minutes (/1800), seconds ((/30) % 60),
@@ -1080,10 +978,11 @@ void func_8003C714(void) {
         v = src->unk_0;
         s0->unk21[i].unk3 = v;
         i += 1;
-        /* FAKE: the call is spelled inside the loop on its exit path; the natural
-         * spelling is a counted loop followed by the call (the target places the
-         * jal right after the back-branch, asm/funcs/func_8003C714.s:77-79). Inside
-         * the loop it sets loop_has_call, which keeps the /1800 magic in the loop. */
+        /* FAKE: the call is spelled inside the loop on its exit path; the
+         * natural spelling is a counted loop followed by the call (the target
+         * places the jal right after the back-branch,
+         * asm/funcs/func_8003C714.s:77-79). Inside the loop it sets
+         * loop_has_call, which keeps the /1800 magic in the loop. */
         if (i >= 3) {
             func_8001CD68(&buf);
             break;
@@ -1098,6 +997,7 @@ void func_8003C714(void) {
     D_800A3834 = 0x1F;
     gpu_SetDispMaskOn();
 }
+
 void func_8003C8B4(void) {
     D_800A37B8 = D_800A37B8 + 1;
     D_800A38B4 += func_80060768((s32)D_800A38B4, 1, D_800A38E9) / 4;
@@ -1105,6 +1005,7 @@ void func_8003C8B4(void) {
         func_80033FE4();
     }
 }
+
 void func_8003C958(void) {
     gpu_InitDisplay();
     D_800A3817 = 0;
@@ -1113,6 +1014,7 @@ void func_8003C958(void) {
     D_800A3834 = 0x19;
     gpu_SetDispMaskOn();
 }
+
 void func_8003C9A4(void) {
     func_8003F1E4(0);
     D_800F6608.unk_00.x = 0;
@@ -1155,7 +1057,8 @@ void func_8003C9A4(void) {
         D_800A38B4 += func_8005FA98(0, (s32)D_800A38B4, 1) / 4;
     }
     D_800A3929 = D_800A3929 + 1;
-    if (D_800A3929 < 0x3C) return;
+    if (D_800A3929 < 0x3C)
+        return;
 
     func_800372C0();
     if (D_800A3817 == 0) {
@@ -1183,6 +1086,7 @@ void func_8003C9A4(void) {
         D_800A3834 = 8;
     }
 }
+
 void func_8003CCCC(void) {
     gpu_InitDisplay();
     game_Cleanup();
@@ -1190,6 +1094,7 @@ void func_8003CCCC(void) {
     D_800A3834 = 0x21;
     gpu_SetDispMaskOn();
 }
+
 void func_8003CD10(void) {
     func_8003F1E4(0);
     D_800F6608.unk_00.x = 0;
@@ -1210,7 +1115,9 @@ void func_8003CD10(void) {
         D_800A3834 = 8;
     }
 }
+
 extern s32 D_800A3818;
+
 void func_8003CE18(void) {
     s32 s0;
     s8 player;
@@ -1245,7 +1152,8 @@ void func_8003CE18(void) {
         }
         result = func_80022408(addr);
         D_800A3818 = result;
-        func_80054884(0x16, s0, result, (s32)D_80101EC8[0].unk_12, (s32)D_80101EC8[1].unk_12, -1, -1, 0);
+        func_80054884(0x16, s0, result, (s32)D_80101EC8[0].unk_12,
+                      (s32)D_80101EC8[1].unk_12, -1, -1, 0);
     }
     func_80041688(0, 0);
     func_80041688(1, 0);
@@ -1254,14 +1162,23 @@ void func_8003CE18(void) {
     D_800A3834 = 0x1D;
     gpu_SetDispMaskOn();
 }
+
 extern void func_8003B328(void);
 extern void func_8003B534(s32);
 extern SVECTOR D_800A312C;
+
 void func_8003CF84(void) {
-    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped carve-out, owner rulings 2026-08-17 + 2026-08-18): reconstructs the original frame's 16-byte allocated-but-untouched leading region (compiled-out >=7-word call). SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. Ablated (2026-10-06): score 17. */
+    /* FAKE: unwritten leading pad ([[dead-vars-local-array]] re-scoped
+     * carve-out, owner rulings 2026-08-17 + 2026-08-18): reconstructs the
+     * original frame's 16-byte allocated-but-untouched leading region
+     * (compiled-out >=7-word call). SOTN-master precedent: volatile u32 pad[4];
+     * // FAKE at st/sel/stream.c:80. Ablated (2026-10-06): score 17. */
     volatile u32 pre_pad[4];
     s32 vec[3];
-    /* FAKE: unwritten TRAILING pad (owner ruling 2026-08-18, this function only): the target frame has a second 8-byte allocated-but-untouched object above vec, which no phantom-slot producer reproduces. Ablated (2026-10-06): score 8. */
+    /* FAKE: unwritten TRAILING pad (owner ruling 2026-08-18, this function
+     * only): the target frame has a second 8-byte allocated-but-untouched
+     * object above vec, which no phantom-slot producer reproduces. Ablated
+     * (2026-10-06): score 8. */
     volatile u32 pad2[2];
     s16 *a;
     s32 *b;
@@ -1307,9 +1224,10 @@ void func_8003CF84(void) {
     if (flag != 0 || (g_pad_state.pressed & 0x400040) != 0) {
         func_800548DC();
         if (D_800A38DC == 4 || D_800A38DC == 6) {
-            /* FAKE: indexes past D_800A37D2 into D_800A37D3 by player number (owner Q63, this
-             * byte pair only): the target also reaches each byte through its own symbol, which
-             * no single array or struct gives. Ablated (2026-10-06): score 16. */
+            /* FAKE: indexes past D_800A37D2 into D_800A37D3 by player number
+             * (owner Q63, this byte pair only): the target also reaches each
+             * byte through its own symbol, which no single array or struct
+             * gives. Ablated (2026-10-06): score 16. */
             (&D_800A37D2)[D_800A3748] = (&D_800A37D2)[D_800A3748] + 1;
         }
         func_8001979C(0, D_80102760.unk_10);
@@ -1327,12 +1245,13 @@ void func_8003CF84(void) {
     }
     D_800A37B8 = D_800A37B8 + 1;
 }
-void func_8003D2C4(void) {
-    LoadImage(&D_800A3220, &D_80090178);
-}
+
+void func_8003D2C4(void) { LoadImage(&D_800A3220, &D_80090178); }
+
 extern s32 D_800A3218;
 extern s32 D_800A321C;
-/* Q65: this file's statics (.sbss, allocated per file in link order by PSYLINK), in address order. */
+/* Q65: this file's statics (.sbss, allocated per file in link order by
+ * PSYLINK), in address order. */
 static s32 D_800A3358;
 static s32 D_800A335C;
 static s32 D_800A3360;
@@ -1356,6 +1275,7 @@ void func_8003D2F4(void) {
         D_800A3358 = 0x20;
     }
 }
+
 void func_8003D330(void) {
     DR_TPAGE *p = &D_800A3D30[D_800A3218];
     OTag *ot;
@@ -1365,13 +1285,16 @@ void func_8003D330(void) {
     setaddr(p, ot->addr);
     ot->addr = (u32)p;
 }
+
 extern SPRT_8 D_800A3930[2][32];
+
 void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
     s32 n = D_800A3358;
     SPRT_8 *p;
     OTag *ot;
 
-    if (n == 0x20) return;
+    if (n == 0x20)
+        return;
     D_800A3358 = n + 1;
     p = &D_800A3930[D_800A3218][n];
     setlen(p, 3);
@@ -1386,12 +1309,14 @@ void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
     setaddr(p, ot->addr);
     ot->addr = (u32)p;
 }
+
 void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
     s32 ch;
     s32 start_x = x;
 
     ch = *str++;
-    if (ch == 0) return;
+    if (ch == 0)
+        return;
 
     do {
         if (ch == 0x20) {
@@ -1408,6 +1333,7 @@ void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
         ch = *str++;
     } while (ch != 0);
 }
+
 typedef char *va_list;
 #define va_start(ap, last) ((ap) = (va_list)(&(last) + 1))
 #define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
@@ -1447,7 +1373,8 @@ void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
     p = buf;
     while ((ch = *p++) != 0) {
         s32 row = D_800A3360;
-        if (row >= 0x1A) break;
+        if (row >= 0x1A)
+            break;
 
         if (ch == ' ') {
             D_800A335C++;
@@ -1456,19 +1383,25 @@ void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
             D_800A3360 = row + 1;
         } else if (ch == '~') {
             ch = *p++;
-            if (ch == 0) break;
+            if (ch == 0)
+                break;
             if (ch == 'c' || ch == 'C') {
                 s32 d1, d2, d3;
                 d1 = *p++;
-                if (d1 == 0) break;
+                if (d1 == 0)
+                    break;
                 d2 = *p++;
-                if (d2 == 0) break;
+                if (d2 == 0)
+                    break;
                 d3 = *p++;
-                if (d3 == 0) break;
-                D_800A3364 = ((d1 - '0') << 5) | ((d2 - '0') << 13) | ((d3 - '0') << 21);
+                if (d3 == 0)
+                    break;
+                D_800A3364 =
+                    ((d1 - '0') << 5) | ((d2 - '0') << 13) | ((d3 - '0') << 21);
             }
         } else {
-            func_8003D39C(D_800A335C * 8 + 0x10, row * 8 + 0x10, ch, D_800A3364);
+            func_8003D39C(
+                D_800A335C * 8 + 0x10, row * 8 + 0x10, ch, D_800A3364);
             D_800A335C++;
         }
         if (D_800A335C >= 0x4C) {
@@ -1490,7 +1423,9 @@ void func_8003D774(s32 arg0, s32 arg1) {
     ptr->unkC[1] = 0;
     ptr->unkC[0] = 0;
 }
+
 extern s32 bitstream_ReadBits(BitStream *, s32);
+
 s16 *func_8003D7B4(s32 arg0) {
     s32 i = 0;
     Unk800A3D40Rec *base = &D_800A3D40[arg0];
@@ -1504,7 +1439,9 @@ s16 *func_8003D7B4(s32 arg0) {
             nbits = 16;
         }
         val = (s16)bitstream_ReadBits(&base->bits, nbits);
-        sval = val; /* FAKE: the sign test reads an s32 copy of val; tested as val: score 2 (addiu a1,s0,-1 moves two slots) */
+        /* FAKE: the sign test reads an s32 copy of val; tested as val: score 2
+         * (addiu a1,s0,-1 moves two slots) */
+        sval = val;
         sign_bit = nbits - 1;
         if ((sval >> sign_bit) & 1) {
             val = val | (0xFFFF << sign_bit);
@@ -1515,13 +1452,12 @@ s16 *func_8003D7B4(s32 arg0) {
     return base->unkC;
 }
 
-/* Bitstream reader: returns the next `n` bits of the BitStream `s`, loading the next word
-   when the current one has fewer than `n` unread bits.
-   `m1 = 1 << avail; m1 -= 1;` is the user-sanctioned same-variable split-init
-   accumulation family (owner ruling 2026-06-13) -- both statements are live and the pair
+/* Bitstream reader: returns the next `n` bits of the BitStream `s`, loading the
+   next word when the current one has fewer than `n` unread bits. `m1 = 1 <<
+   avail; m1 -= 1;` is the user-sanctioned same-variable split-init accumulation
+   family (owner ruling 2026-06-13) -- both statements are live and the pair
    folds back into one emitted `addiu v0,v0,-1`. */
-s32 bitstream_ReadBits(BitStream *s, s32 n)
-{
+s32 bitstream_ReadBits(BitStream *s, s32 n) {
     s32 avail = s->avail;
     u32 r;
 
@@ -1530,9 +1466,10 @@ s32 bitstream_ReadBits(BitStream *s, s32 n)
         s32 shift;
         u32 *wp;
         u32 w;
-        /* FAKE: `hi` names the masked high-bit slice of the freshly loaded word; written into
-           the or (`r = (r << n) | ((w >> shift) & m2)`): score 17 -- s and n swap argument
-           registers (move a3,a0 / move a2,a1 for the target's move a2,a0 / move a3,a1). */
+        /* FAKE: `hi` names the masked high-bit slice of the freshly loaded
+           word; written into the or (`r = (r << n) | ((w >> shift) & m2)`):
+           score 17 -- s and n swap argument registers (move a3,a0 / move a2,a1
+           for the target's move a2,a0 / move a3,a1). */
         u32 hi;
 
         n -= avail;
@@ -1554,7 +1491,9 @@ s32 bitstream_ReadBits(BitStream *s, s32 n)
     }
     return r;
 }
+
 void gpu_SetDrawMoveArray(RECT *, s32, DR_MOVE (*)[2]);
+
 void func_8003D91C(void) {
     RECT buf;
     buf.x = 0;
@@ -1568,6 +1507,7 @@ void func_8003D91C(void) {
     buf.h = 8;
     gpu_SetDrawMoveArray(&buf, 0x13, D_800A4340);
 }
+
 void gpu_SetDrawMoveArray(RECT *a0, s32 a1, DR_MOVE (*a2)[2]) {
     s32 s4, s3;
     s32 s2;
@@ -1591,7 +1531,9 @@ void gpu_SetDrawMoveArray(RECT *a0, s32 a1, DR_MOVE (*a2)[2]) {
         } while (--s2 != -1);
     }
 }
+
 extern void func_8003DBE4(s32, s32, DR_MOVE (*)[2], s32, s32);
+
 void func_8003DA8C(s32 arg0, s32 arg1) {
     s16 *rec;
     s32 *ptr;
@@ -1601,7 +1543,8 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
     D_800905F8 = 0xFFFF;
     /* FAKE: the pair read through a pointer local; a direct
        `D_800906A4[arg0][0]` read is MEM_IN_STRUCT and is scheduled above the
-       D_800905F8 store (the same sched.c:834-839 exemption as below), score 9. */
+       D_800905F8 store (the same sched.c:834-839 exemption as below), score 9.
+     */
     rec = D_800906A4[arg0];
     if (rec[0] != 0) {
         {
@@ -1642,11 +1585,14 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
                D_80090608 just above, so both reads move ahead of the `sh`
                (score 8).  The target keeps them after it. */
             s32 idx = arg0 * 4;
-            func_8003DBE4(arg1, 0x1F, light_effect_col, *ptr, *(s16 *)((u8 *)D_800906A4 + 2 + idx));
-            func_8003DBE4(arg1, 0x13, D_800A4340, *ptr, *(s16 *)((u8 *)D_800906A4 + 2 + idx));
+            func_8003DBE4(arg1, 0x1F, light_effect_col, *ptr,
+                          *(s16 *)((u8 *)D_800906A4 + 2 + idx));
+            func_8003DBE4(arg1, 0x13, D_800A4340, *ptr,
+                          *(s16 *)((u8 *)D_800906A4 + 2 + idx));
         }
     }
 }
+
 void func_8003DBE4(s32 arg0, s32 arg1, DR_MOVE (*arg2)[2], s32 arg3, s32 arg4) {
     s32 limit;
     s32 step;
@@ -1701,11 +1647,13 @@ void func_8003DBE4(s32 arg0, s32 arg1, DR_MOVE (*arg2)[2], s32 arg3, s32 arg4) {
         addPrim(&D_800A378C[0xFFB], pkt);
     }
 }
+
 void func_8003DDF8(u32 arg0) {
     u32 *ptr = D_800A378C;
     arg0 &= 0xFFFFFF;
     ptr[0x3FFC / 4] = arg0;
 }
+
 /* func_8003DE14 - builds count-1 progressively fogged copies of the VRAM
  * rectangle `rect`. The original is first copied one rect height up; each
  * pass then blends every non-zero pixel toward the GTE far colour by
@@ -1742,7 +1690,8 @@ void func_8003DE14(RECT *rect, s32 count) {
     r = color_info[0];
     g = color_info[1];
     b = color_info[2];
-    target_color = (((u32)r >> 3) | (s32)-0x8000) | ((g & 0xF8) << 2) | ((b & 0xF8) << 7);
+    target_color =
+        (((u32)r >> 3) | (s32)-0x8000) | ((g & 0xF8) << 2) | ((b & 0xF8) << 7);
 
     i = 0;
     if (count > 0) {
@@ -1783,14 +1732,16 @@ void func_8003DE14(RECT *rect, s32 count) {
                             s32 sum;
                             s32 rp;
                             s32 gp;
-                            /* FAKE: `gm` names the green channel's masked result so that
-                             * g_src dies at the mask instead of at the store; mechanism:
-                             * global.c allocno priority (prio = nrefs*40000/live_length)
-                             * - naming gm takes green from 18 refs/livelen 18 to 18/16 and
-                             * red from 24/21 to 24/22, so pri(px)=44444 > pri(red)=43636
-                             * and px is allocated $a0 with red $a1 and green $v1, the
-                             * target's seat map; without the name red is 24/21=45714,
-                             * outranks px and steals $a0. */
+                            /* FAKE: `gm` names the green channel's masked
+                             * result so that g_src dies at the mask instead of
+                             * at the store; mechanism: global.c allocno
+                             * priority (prio = nrefs*40000/live_length)
+                             * - naming gm takes green from 18 refs/livelen 18
+                             * to 18/16 and red from 24/21 to 24/22, so
+                             * pri(px)=44444 > pri(red)=43636 and px is
+                             * allocated $a0 with red $a1 and green $v1, the
+                             * target's seat map; without the name red is
+                             * 24/21=45714, outranks px and steals $a0. */
                             s32 gm;
                             src++;
                             rp = r_src * complement;
@@ -1807,30 +1758,36 @@ void func_8003DE14(RECT *rect, s32 count) {
                             sum = px + b * factor;
                             px = sum >> 5;
                             gm = g_src & 0x3E0;
-                            *dst = (pixel & 0x8000) | r_src | gm | (px & 0x7C00);
+                            *dst =
+                                (pixel & 0x8000) | r_src | gm | (px & 0x7C00);
                         }
                     }
                     dst++;
                 loop_check:
                     j++;
-                /* FAKE: the inner loop's bound is routed through the algebraically
-                 * equivalent detour `+ rect->w - rect->w`, which combine folds back to the
-                 * direct `rect->w * rect->h` with ZERO emitted bytes.  Its only surviving
-                 * effect is the extra reg_n_refs that flow.c records BEFORE the fold.
-                 * Mechanism: local-alloc.c:1669-1684 `qty_compare_1` ranks the two
-                 * block-local halfword loads of the bound by
-                 * floor_log2(n_refs)*n_refs*size/(death-birth).  Both loads die at the
-                 * shared `mult`, so the earlier-born rect->w load has the strictly larger
-                 * denominator: at the natural 2 refs each (weighted x3 for loop depth =
-                 * 6) it scores floor_log2(6)*6/4 = 3 against the rect->h load's
-                 * floor_log2(6)*6/2 = 6, is sorted second, and is handed $v1 instead of the
-                 * target's $v0.  The detour's two extra reads CSE onto the same pseudo, so
-                 * flow counts 4 refs (weighted 12) and it scores floor_log2(12)*12/4 = 9 >
-                 * 6, sorts first and takes $v0 - the target's map `lh $v0,4($s0)` /
-                 * `lh $v1,6($s0)` / `mult $v0,$v1`.  Same family and same mechanism as
-                 * the `((s32)dst_buf + j) - j` extender below
-                 * ([[dead-store-fake-exception]] combine-foldable chain-extender clause,
-                 * owner ruling 2026-07-01). */
+                    /* FAKE: the inner loop's bound is routed through the
+                     * algebraically equivalent detour `+ rect->w - rect->w`,
+                     * which combine folds back to the direct `rect->w *
+                     * rect->h` with ZERO emitted bytes.  Its only surviving
+                     * effect is the extra reg_n_refs that flow.c records BEFORE
+                     * the fold. Mechanism: local-alloc.c:1669-1684
+                     * `qty_compare_1` ranks the two block-local halfword loads
+                     * of the bound by
+                     * floor_log2(n_refs)*n_refs*size/(death-birth).  Both loads
+                     * die at the shared `mult`, so the earlier-born rect->w
+                     * load has the strictly larger denominator: at the natural
+                     * 2 refs each (weighted x3 for loop depth = 6) it scores
+                     * floor_log2(6)*6/4 = 3 against the rect->h load's
+                     * floor_log2(6)*6/2 = 6, is sorted second, and is handed
+                     * $v1 instead of the target's $v0.  The detour's two extra
+                     * reads CSE onto the same pseudo, so flow counts 4 refs
+                     * (weighted 12) and it scores floor_log2(12)*12/4 = 9 > 6,
+                     * sorts first and takes $v0 - the target's map `lh
+                     * $v0,4($s0)` / `lh $v1,6($s0)` / `mult $v0,$v1`.  Same
+                     * family and same mechanism as the `((s32)dst_buf + j) - j`
+                     * extender below
+                     * ([[dead-store-fake-exception]] combine-foldable
+                     * chain-extender clause, owner ruling 2026-07-01). */
                 } while (j < rect->w * rect->h + rect->w - rect->w);
             }
 
@@ -1840,8 +1797,8 @@ void func_8003DE14(RECT *rect, s32 count) {
                 rect->x += rect->w;
             }
             /* FAKE: j chain extender on the dst_buf argument; mechanism:
-             * combine.c folds the +j/-j pair away but flow.c's reg_n_refs for j is
-             * counted before it, lifting j's allocno priority (global.c
+             * combine.c folds the +j/-j pair away but flow.c's reg_n_refs for j
+             * is counted before it, lifting j's allocno priority (global.c
              * allocno_compare) above `complement`'s so the $t4/$t5 seat pair
              * matches; without it j and complement swap registers. */
             LoadImage(rect, (u32 *)(((s32)dst_buf + j) - j));
@@ -1850,6 +1807,7 @@ void func_8003DE14(RECT *rect, s32 count) {
         } while (i < count);
     }
 }
+
 void func_8003E0E0(void) {
     RECT buf;
     buf.y = 0x1E1;
@@ -1858,6 +1816,7 @@ void func_8003E0E0(void) {
     buf.h = 1;
     func_8003DE14(&buf, 0x1F);
 }
+
 void func_8003E120(void) {
     RECT buf;
     buf.x = 0x140;
@@ -1866,7 +1825,9 @@ void func_8003E120(void) {
     buf.h = 8;
     func_8003DE14(&buf, 0x13);
 }
+
 extern s32 D_800A3228;
+
 void func_8003E164(s32 arg0) {
     RECT buf;
     Unk80045878Obj *s0;
@@ -1898,6 +1859,7 @@ void func_8003E164(s32 arg0) {
 end:
     D_800A3228 = arg0;
 }
+
 void func_8003E22C(void) {
     Unk80045878Obj *v1;
 
@@ -1913,18 +1875,20 @@ void func_8003E22C(void) {
         D_800A3228 = -1;
     }
 }
-s32 func_8003E2A0(void) {
-    return D_800A3228;
-}
+
+s32 func_8003E2A0(void) { return D_800A3228; }
+
 void func_8003E2AC(void) {
-    /* FAKE: the flag word's address held in p (one lui / addiu, lhu / sh off it); `D_800F6656 &= ~2` scores 6 */
+    /* FAKE: the flag word's address held in p (one lui / addiu, lhu / sh off
+     * it); `D_800F6656 &= ~2` scores 6 */
     s16 *p = &D_800F6656;
     *p &= ~2;
 }
-u32 func_8003E2C8(void) {
-    return D_800905F8;
-}
+
+u32 func_8003E2C8(void) { return D_800905F8; }
+
 extern void func_8003F388(s16 *arg0);
+
 void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s16 sp10[4];
     s16 sp18[4];
@@ -1958,7 +1922,8 @@ void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     temp_fp = temp_a2 / 2000;
     temp_s7 = temp_a3 / 2000;
     if ((arg0 == 0) && (arg1 == 0)) {
-        if ((var_s1 >= 0) && (var_s0 >= 0) && (var_s1 < 0x20) && (var_s0 < 0x20)) {
+        if ((var_s1 >= 0) && (var_s0 >= 0) && (var_s1 < 0x20) &&
+            (var_s0 < 0x20)) {
             sp10[0] = var_s1 - 0x10;
             sp10[2] = var_s0 - 0x10;
             func_8003F388(sp10);
@@ -2005,7 +1970,7 @@ void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         temp_s2 -= (s32)(temp_t0 * temp_lo) >> 0xC;
         sp20 = (s32)(temp_lo * 0x7D0) >> 0xC;
         if (var_s3 != -1) {
-loop_16:
+        loop_16:
             if (var_s1 >= 0) {
                 if ((var_s0 >= 0) && (var_s1 < 0x20) && (var_s0 < 0x20)) {
                     sp10[0] = var_s1 - 0x10;
@@ -2028,7 +1993,8 @@ loop_16:
                     } else {
                         var_s0 += 1;
                     }
-                    if ((var_s1 >= 0) && (var_s0 >= 0) && (var_s1 < 0x20) && (var_s0 < 0x20)) {
+                    if ((var_s1 >= 0) && (var_s0 >= 0) && (var_s1 < 0x20) &&
+                        (var_s0 < 0x20)) {
                         sp18[0] = var_s1 - 0x10;
                         sp18[2] = var_s0 - 0x10;
                         func_8003F388(sp18);
@@ -2051,22 +2017,27 @@ loop_16:
                 }
             }
         }
-        if ((temp_fp >= 0) && (temp_s7 >= 0) && (temp_fp < 0x20) && (temp_s7 < 0x20)) {
+        if ((temp_fp >= 0) && (temp_s7 >= 0) && (temp_fp < 0x20) &&
+            (temp_s7 < 0x20)) {
             sp10[0] = temp_fp - 0x10;
             sp10[2] = temp_s7 - 0x10;
             func_8003F388(sp10);
         }
     }
 }
+
 void func_8003E6A0(s32 arg0, s32 arg1) {
     func_8003E2D8(D_80101DF0.work.t[0], D_80101DF0.work.t[2], arg0, arg1);
 }
+
 extern s32 D_800A322C;
 extern s32 D_800927C0[64][32];
 extern s32 D_80090740[64][32];
 extern s32 D_80094840[];
-extern Unk800A6690Rec *D_800A7EF0[]; /* func_8003E6D8's buffer of the queued Unk800A6690Rec */
+/* func_8003E6D8's buffer of the queued Unk800A6690Rec */
+extern Unk800A6690Rec *D_800A7EF0[];
 extern Unk800A6690Rec **func_8003EB84(s32, s32, Unk800A6690Rec **);
+
 /* func_8003E6D8 - grid pass. D_800A3708's xf.rot is turned into a matrix
  * (func_80042A88) and applied to {0,0,0x1000}; ratan2 of the result, stored
  * to D_800A336C, picks ((a >> 6) & 0x3F) one of 64 tables of 32-bit row
@@ -2147,13 +2118,14 @@ void func_8003E6D8(s32 arg0) {
         "nop\n"
         "nop\n"
         :: "r"(vec) : "$12", "memory");
-    /* Sony libgte macro gte_mvmva(sf,mx,v,cv,lm) --- inline_c.h:816-817, whose body
-     * is gte_mvmva_core(r0) at inline_c.h:809-814 (`nop; nop; .word <literal>`).
-     * This instance is gte_mvmva(1,0,0,3,0): sf=1, mx=rotation, v=V0, cv=none,
-     * lm=0. It is spelled as the bare `.word 0x4A486012`, the final cop2 word:
-     * the macro's own literal is a DMPSX placeholder that Sony's dmpsx post-pass
-     * rewrites, and this build has no such pass. The core's two nops are
-     * carried at the tail of the gte_ldv0 island above (func_80019310's form). */
+    /* Sony libgte macro gte_mvmva(sf,mx,v,cv,lm) --- inline_c.h:816-817, whose
+     * body is gte_mvmva_core(r0) at inline_c.h:809-814 (`nop; nop; .word
+     * <literal>`). This instance is gte_mvmva(1,0,0,3,0): sf=1, mx=rotation,
+     * v=V0, cv=none, lm=0. It is spelled as the bare `.word 0x4A486012`, the
+     * final cop2 word: the macro's own literal is a DMPSX placeholder that
+     * Sony's dmpsx post-pass rewrites, and this build has no such pass. The
+     * core's two nops are carried at the tail of the gte_ldv0 island above
+     * (func_80019310's form). */
     __asm__ volatile(".word 0x4A486012");
     /* PsyQ libgte inline macro gte_stlvnl(r0) --- inline_c.h:1111-1117. */
     __asm__ volatile(
@@ -2206,7 +2178,8 @@ void func_8003E6D8(s32 arg0) {
                  * back into the one shift in the loop branch's delay slot
                  * (bytes unchanged); the second copy lifts bits' reg_n_refs
                  * 17->23 so global-alloc ranks it above a3 (pri 11500 vs
-                 * 8823), giving the target's bits->$t1 / a3->$t2. Ablated (2026-10-06): score 9. */
+                 * 8823), giving the target's bits->$t1 / a3->$t2. Ablated
+                 * (2026-10-06): score 9. */
                 bits <<= 1;
                 continue;
             }
@@ -2262,6 +2235,7 @@ void func_8003E6D8(s32 arg0) {
     pos[2] = -D_80101DF0.xf.rot.vz;
     func_800620B8(pos, D_80101DF0.xf.mat.t);
 }
+
 Unk800A6690Rec **func_8003EB84(s32 a0, s32 a1, Unk800A6690Rec **out) {
     s32 sp[0x20];
     s32 mask;
@@ -2345,7 +2319,9 @@ skip:
 
     return out;
 }
+
 extern s32 D_800A3230;
+
 /* func_8003EDC0 - unpacks a stream of u16 words in sections ended by -1:
  * (cell, id) pairs into the 16-byte record table (count kept in D_800A3368),
  * the transform-node records (header word, xf.mat.t, xf.rot; each node is
@@ -2437,9 +2413,11 @@ void func_8003EDC0(u16 *p, s32 arg1) {
 }
 
 /* ---- merged from config.c (owner ruling Q65: one original file) ---- */
-/* Rodata owned by config.c per func_8003FA24's reference at asm/funcs/func_8003FA24.s:240-241.
- * Re-attributed from asm/data/101C.rodata_c2_post.s. Named per named_syms.txt alias g_str_multipul_model_80010D8C.
- * Fixed [16] to match the asm/data block's exact byte content (14 chars + null + 1 pad). */
+/* Rodata owned by config.c per func_8003FA24's reference at
+ * asm/funcs/func_8003FA24.s:240-241. Re-attributed from
+ * asm/data/101C.rodata_c2_post.s. Named per named_syms.txt alias
+ * g_str_multipul_model_80010D8C. Fixed [16] to match the asm/data block's exact
+ * byte content (14 chars + null + 1 pad). */
 const char D_80010D8C[16] = "Multipul Model";
 
 /* Forward declarations */
@@ -2456,13 +2434,10 @@ void stage_ExecInitFunc(void) {
         g_stage_init_tbl[stage_GetId()].init();
     }
 }
-s32 func_8003F1C8(void) {
-    return D_800A336C;
-}
 
-void *game_GetCharData(void) {
-    return D_800A6690;
-}
+s32 func_8003F1C8(void) { return D_800A336C; }
+
+void *game_GetCharData(void) { return D_800A6690; }
 
 void func_8003F1E4(s32 a0) {
     if (a0) {
@@ -2487,9 +2462,9 @@ void func_8003F218(s32 a0) {
     }
     g_game_mirror_mode = (s16)D_800A322C;
 }
-s32 func_8003F268(void) {
-    return D_800A322C;
-}
+
+s32 func_8003F268(void) { return D_800A322C; }
+
 void stage_InitCollision(void) {
     s32 i, j;
     s32 col_center, row_center;
@@ -2530,6 +2505,7 @@ void stage_InitCollision(void) {
         }
     }
 }
+
 void func_8003F388(s16 *a0) {
     s32 x = a0[0] + 0x10;
     s32 y = a0[2] + 0x10;
@@ -2537,6 +2513,7 @@ void func_8003F388(s16 *a0) {
         g_stage_collision[y * 32 + x] |= 0x4;
     }
 }
+
 void func_8003F3D4(s16 *a0) {
     s32 x = a0[0] + 0x10;
     s32 y = a0[2] + 0x10;
@@ -2544,6 +2521,7 @@ void func_8003F3D4(s16 *a0) {
         g_stage_collision[y * 32 + x] |= 0x8;
     }
 }
+
 void func_8003F420(s32 a0, s32 a1) {
     s32 s3, s2, s1;
     s32 s0;
@@ -2605,7 +2583,8 @@ typedef struct {
     /* 0x04 */ Unk80045878Node *objs[3];
     /* 0x10 */ Unk8003F6D8Coll coll;
     /* 0x84 */ SVECTOR quads[3][2];
-} Func8003F6D8Inner; /* size 0xB4; sits at +0x1C of each 0xD0-byte record, records start at arg0+8 */
+} Func8003F6D8Inner; /* size 0xB4; sits at +0x1C of each 0xD0-byte record,
+                        records start at arg0+8 */
 
 typedef struct {
     /* 0x00 */ s16 unk0;
@@ -2629,7 +2608,8 @@ typedef struct {
 void func_8003F62C(Unk80045878Obj *a0) {
     Scene *s0;
     s0 = a0->unk_24;
-    if (s0 == 0) return;
+    if (s0 == 0)
+        return;
     if (s0->unk6) {
         func_8004016C(a0->unk_04);
         func_8003F824(a0, 0);
@@ -2653,8 +2633,10 @@ void func_8003F6D8(Scene *arg0) {
         Func8003F6D8Inner *in = &arg0->recs[i].inner;
         for (j = 0; j < in->count; j++) {
             MATRIX *mat = &in->objs[j]->node.xf.mat;
-            gte_SetMatrixRotTransIR(mat, &in->quads[j][0], &in->coll.foci[j][0]);
-            gte_SetMatrixRotTransIR(mat, &in->quads[j][1], &in->coll.foci[j][1]);
+            gte_SetMatrixRotTransIR(
+                mat, &in->quads[j][0], &in->coll.foci[j][0]);
+            gte_SetMatrixRotTransIR(
+                mat, &in->quads[j][1], &in->coll.foci[j][1]);
         }
     }
 }
@@ -2678,7 +2660,8 @@ void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
     s32 i;
 
     sc = arg0->unk_24;
-    if (sc == 0) return;
+    if (sc == 0)
+        return;
     cmds = (s16 *)arg0->unk_28;
     cur = sc->data;
     if (*cmds == -3) {
@@ -2695,7 +2678,9 @@ void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
                 func_80052C10();
             }
             rec = &sc->recs[sc->count];
-            /* FAKE: obj read from unk_1A34[i] ahead of the rec stores and kept across the func_8003FA24 call; re-read at each use the s-registers re-seat (score 53). */
+            /* FAKE: obj read from unk_1A34[i] ahead of the rec stores and kept
+             * across the func_8003FA24 call; re-read at each use the
+             * s-registers re-seat (score 53). */
             obj = arg0->unk_1A34[i];
             rec->cur = cur;
             rec->obj = obj;
@@ -2721,17 +2706,19 @@ void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
         func_80045A28(arg0->unk_04, cur - (u8 *)arg0->unk_1C);
     }
 }
+
 extern s16 D_80094AEC[];
 s16 *func_8003FE40(SVECTOR *a0, s32 a1, s16 *a2);
 
 u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
-    /* FAKE: frame layout (oversized live object): func_80017D84's argument plus an unwritten
-       tail (two or three words are byte-identical: three chosen); the argument alone gives a frame
-       8 short (0x48 for 0x50): score 16. */
+    /* FAKE: frame layout (oversized live object): func_80017D84's argument plus
+       an unwritten tail (two or three words are byte-identical: three chosen);
+       the argument alone gives a frame 8 short (0x48 for 0x50): score 16. */
     struct {
         Func80017A44Input in;
         s32 tail[3];
     } init;
+
     Unk80045878Node *obj;
     u16 *src;
     u16 *block;
@@ -2787,10 +2774,13 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     src = block;
     packet = (s16 *)0x1F800000;
     init.in.groups = packet;
-    /* FAKE: n reads each group count signed (lh) and is copied to count; read straight into count the load is lhu and the copy goes (score 8) */
+    /* FAKE: n reads each group count signed (lh) and is copied to count; read
+     * straight into count the load is lhu and the copy goes (score 8) */
     for (n = (s16)*src++, count = n; n != 0; n = (s16)*src++, count = n) {
         flags = *src++;
-        /* FAKE: mode computed once ahead of the record loop; indexing D_80094AEC with the expression moves the addiu s0 / andi pair (score 6). */
+        /* FAKE: mode computed once ahead of the record loop; indexing
+         * D_80094AEC with the expression moves the addiu s0 / andi pair (score
+         * 6). */
         mode = ((s16)flags >> 3) & 3;
         if (((s16)flags >> 3) & 1) {
             while (--count != -1) {
@@ -2811,7 +2801,8 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
             while (--count != -1) {
                 /* FAKE: identical arms (gouraud and flat triangle records keep
                  * the colour at the same offset); jump2 cross-jumping merges
-                 * them, leaving loop.c's hoisted `& 2` test. Ablated (2026-10-06): score 99. */
+                 * them, leaving loop.c's hoisted `& 2` test. Ablated
+                 * (2026-10-06): score 99. */
                 if (((s16)flags >> 3) & 2) {
                     value = ((u32)src[7] << 16) | src[6];
                 } else {
@@ -2850,8 +2841,11 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     rec->quad.unk3 = 0;
     return cur;
 }
+
 s16 *func_8003FE40(SVECTOR *a0, s32 a1, s16 *a2) {
-    s32 i; /* FAKE: also the point index read from a2 in the second loop; its own local there: score 12 */
+    /* FAKE: also the point index read from a2 in the second loop; its own local
+     * there: score 12 */
+    s32 i;
     for (i = 0; i < a1; i++) {
         a0[i].pad = -256;
     }
@@ -2903,18 +2897,21 @@ void func_8003FECC(Unk80045878Obj *a0, SceneRec *rec, s16 *a2) {
     in->count = n;
     in->coll.count = n;
 }
+
 s32 math_AlignUp4(s32 a0) {
     if (a0 & 3) {
         a0 = (a0 + 3) & ~3;
     }
     return a0;
 }
+
 void func_8003FFC4(Unk80045878Obj *a0) {
     Scene *v1 = a0->unk_24;
     if (v1) {
         v1->unk6 = 1;
     }
 }
+
 void func_8003FFE0(s32 a0) {
     Unk80045878Obj *v0 = func_8004153C(a0);
     if (v0) {
@@ -2924,6 +2921,7 @@ void func_8003FFE0(s32 a0) {
         }
     }
 }
+
 void func_8004001C(Scene *a0) {
     s32 i;
     for (i = 0; i < a0->count; i++) {
@@ -2931,6 +2929,7 @@ void func_8004001C(Scene *a0) {
         a0->recs[i].quad.unk2 = 1;
     }
 }
+
 void func_80040068(Scene *a0) {
     s32 i;
     for (i = 0; i < a0->count; i++) {
@@ -2938,6 +2937,7 @@ void func_80040068(Scene *a0) {
         a0->recs[i].quad.unk2 = 0;
     }
 }
+
 void func_800400B0(Unk80045878Obj *a0, s32 a1) {
     Scene *v1 = a0->unk_24;
     if (v1) {
@@ -2947,9 +2947,11 @@ void func_800400B0(Unk80045878Obj *a0, s32 a1) {
         }
     }
 }
-/* FAKE: the variable compare `s2->count > s0` is load-bearing — target's 0x28 frame is the combine-leftover of the folded
- * guard (phantom slot sp+20); a literal `> 0` compare yields frame 0x20 + RA
- * swap. Every statement here is live. Do not respell. Ablated (2026-10-06): score 16. */
+
+/* FAKE: the variable compare `s2->count > s0` is load-bearing — target's 0x28
+ * frame is the combine-leftover of the folded guard (phantom slot sp+20); a
+ * literal `> 0` compare yields frame 0x20 + RA swap. Every statement here is
+ * live. Do not respell. Ablated (2026-10-06): score 16. */
 void func_800400F8(Unk80045878Obj *a0) {
     Scene *s2;
     s32 s0;
@@ -2982,12 +2984,15 @@ void func_8004019C(Unk80045878Obj *a0, s32 a1) {
     }
 }
 
-/* Q65: this file's initialized small data (.sdata), in address order; values from the original EXE. */
+/* Q65: this file's initialized small data (.sdata), in address order; values
+ * from the original EXE. */
 s32 D_800A3218 = 0;
 s32 D_800A321C = 1;
-RECT D_800A3220 = { 0x3F0, 0x1DC, 0x10, 0x24 };
+RECT D_800A3220 = {0x3F0, 0x1DC, 0x10, 0x24};
 s32 D_800A3228 = -1;
 s32 D_800A322C = 0;
-s32 D_800A3230 = 0;  /* reached gp-relative by func_8003EDC0: size from the blob label */
-/* Q65: tentative definitions (COMMON) of the small data this file reaches gp-relative. */
+/* reached gp-relative by func_8003EDC0: size from the blob label */
+s32 D_800A3230 = 0;
+/* Q65: tentative definitions (COMMON) of the small data this file reaches
+ * gp-relative. */
 s32 D_800A3818;

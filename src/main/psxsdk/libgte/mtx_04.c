@@ -1,5 +1,5 @@
-/* PsyQ 4.0 LIBGTE MTX_04: MulMatrix2. .text 0x8007EC5C..0x8007ED6C, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBGTE MTX_04: MulMatrix2. .text 0x8007EC5C..0x8007ED6C, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "include_asm.h"
 
 /* calc_fc_frame_8007EC5C: hand-coded GTE 3x3-mvmva matrix transform.

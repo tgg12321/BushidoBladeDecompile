@@ -1,32 +1,31 @@
-/* PsyQ 4.0 LIBETC INTR: the interrupt dispatcher (ResetCallback .. memclr; $Id: intr.c,v 1.76; SOTN
- * libetc/intr.c). .text 0x80082AC0..0x800831D0, a verbatim LIBSCAN module span
- * (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBETC INTR: the interrupt dispatcher (ResetCallback .. memclr; $Id:
+ * intr.c,v 1.76; SOTN libetc/intr.c). .text 0x80082AC0..0x800831D0, a verbatim
+ * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include <psxsdk/libapi.h>
 #include "libetc_internal.h"
 #include <psxsdk/libc.h>
 
-/* .rodata 0x80016328..0x80016394: the module's rcsid "$Id: intr.c,v 1.76 ..." (pointed at only by
- * INTR's callbacks table, asm/data/91C98.data.s:1271) and trapIntr's two messages (moved from
- * src/text1a_b_tail_rodata.c, Q106 D4: every C reader is in this file, in link order). */
+/* .rodata 0x80016328..0x80016394: the module's rcsid "$Id: intr.c,v 1.76 ..."
+ * (pointed at only by INTR's callbacks table, asm/data/91C98.data.s:1271) and
+ * trapIntr's two messages (moved from src/text1a_b_tail_rodata.c, Q106 D4:
+ * every C reader is in this file, in link order). */
 
-/* D_80016328: 1 string(s), 52B @ 0x80016328 (the rcsid; only INTR's callbacks table, asm/data/91C98.data.s:1271, points here) */
+/* D_80016328: 1 string(s), 52B @ 0x80016328 (the rcsid; only INTR's callbacks
+ * table, asm/data/91C98.data.s:1271, points here) */
 const char D_80016328[52] =
-    "$Id: intr.c,v 1.76 1997/02/12 12:45:05 makoto Exp $\0"
-    ;
+    "$Id: intr.c,v 1.76 1997/02/12 12:45:05 makoto Exp $\0";
 
 /* D_8001635C: 1 string(s), 28B @ 0x8001635C */
-const char D_8001635C[28] =
-    "unexpected interrupt(%04x)\n\0"
-    ;
+const char D_8001635C[28] = "unexpected interrupt(%04x)\n\0";
 
 /* D_80016378: 1 string(s), 28B @ 0x80016378 */
-const char D_80016378[28] =
-    "intr timeout(%04x:%04x)\n\0\0\0\0"
-    ;
+const char D_80016378[28] = "intr timeout(%04x:%04x)\n\0\0\0\0";
 
-/* Declarations from the old ings2.c (its head and its VSYNC module) that this module uses. */
-extern volatile u16 *i_mask; /* libetc intr.c i_mask = (u16 *)0x1F801074, I_MASK (MMIO) */
+/* Declarations from the old ings2.c (its head and its VSYNC module) that this
+ * module uses. */
+/* libetc intr.c i_mask = (u16 *)0x1F801074, I_MASK (MMIO) */
+extern volatile u16 *i_mask;
 extern s32 *g_sys_irq_vtable;
 
 /* PsyQ 4.0 LIBETC INTR: intr.c v1.76 module state — verbatim-linked Sony
@@ -35,22 +34,22 @@ extern s32 *g_sys_irq_vtable;
    (JB_SP); i_stat/i_mask/d_pcr (0x800A2604/08/0C) = the module's
    MMIO pointer statics (0x1F801070/74/F0). */
 typedef struct {
-    u16 interruptsInitialized;   /* +0x00 = D_800A1578 */
-    u16 inInterrupt;             /* +0x02 */
-    void (*handlers[11])(void);  /* +0x04 */
-    u16 enabledInterruptsMask;   /* +0x30 */
-    u16 savedMask;               /* +0x32 */
-    s32 savedPcr;                /* +0x34 */
-    s32 buf[12];                 /* +0x38 jmp_buf; [1] = JB_SP = D_800A15B4 */
-    s32 stack[1024];             /* +0x68 */
-} intrEnv_t;                     /* sizeof 0x1068; memclr count 0x41A words */
-extern volatile u16 *i_stat;   /* i_stat = (u16 *)0x1F801070 (MMIO) */
-extern volatile s32 *d_pcr;   /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
+    u16 interruptsInitialized;  /* +0x00 = D_800A1578 */
+    u16 inInterrupt;            /* +0x02 */
+    void (*handlers[11])(void); /* +0x04 */
+    u16 enabledInterruptsMask;  /* +0x30 */
+    u16 savedMask;              /* +0x32 */
+    s32 savedPcr;               /* +0x34 */
+    s32 buf[12];                /* +0x38 jmp_buf; [1] = JB_SP = D_800A15B4 */
+    s32 stack[1024];            /* +0x68 */
+} intrEnv_t;                    /* sizeof 0x1068; memclr count 0x41A words */
+
+extern volatile u16 *i_stat; /* i_stat = (u16 *)0x1F801070 (MMIO) */
+extern volatile s32 *d_pcr;  /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
 extern intrEnv_t D_800A1578;
 
-s32 ResetCallback(void) {
-    return ((s32 (*)(void))g_sys_irq_vtable[3])();
-}
+s32 ResetCallback(void) { return ((s32(*)(void))g_sys_irq_vtable[3])(); }
+
 void *InterruptCallback(s32 irq, void (*func)()) {
     return ((void *(*)(s32, void (*)()))g_sys_irq_vtable[2])(irq, func);
 }
@@ -58,31 +57,24 @@ void *InterruptCallback(s32 irq, void (*func)()) {
 void *DMACallback(s32 dma, void (*func)()) {
     return ((void *(*)(s32, void (*)()))g_sys_irq_vtable[1])(dma, func);
 }
-void VSyncCallback(s32 a0) {
-    ((void (*)(s32, s32))g_sys_irq_vtable[5])(4, a0);
-}
 
-void VSyncCallbacks(void) {
-    ((void (*)(void))g_sys_irq_vtable[5])();
-}
-s32 StopCallback(void) {
-    return ((s32 (*)(void))g_sys_irq_vtable[4])();
-}
+void VSyncCallback(s32 a0) { ((void (*)(s32, s32))g_sys_irq_vtable[5])(4, a0); }
 
-s32 RestartCallback(void) {
-    return ((s32 (*)(void))g_sys_irq_vtable[6])();
-}
-s32 CheckCallback(void) {
-    return D_800A1578.inInterrupt;
-}
+void VSyncCallbacks(void) { ((void (*)(void))g_sys_irq_vtable[5])(); }
 
-u32 GetIntrMask(void) {
-    return *i_mask;
-}
+s32 StopCallback(void) { return ((s32(*)(void))g_sys_irq_vtable[4])(); }
+
+s32 RestartCallback(void) { return ((s32(*)(void))g_sys_irq_vtable[6])(); }
+
+s32 CheckCallback(void) { return D_800A1578.inInterrupt; }
+
+u32 GetIntrMask(void) { return *i_mask; }
 
 extern void trapIntr(void);
-/* FAKE: the BIOS call takes no argument; declared with one for startIntr (see there). */
+/* FAKE: the BIOS call takes no argument; declared with one for startIntr (see
+ * there). */
 extern void _96_remove(s32 *);
+
 u16 SetIntrMask(u16 arg0) {
     u16 old = *i_mask;
     *i_mask = arg0;
@@ -106,12 +98,14 @@ intrEnv_t *startIntr(void) {
     D_800A1578.interruptsInitialized = 1;
     g_sys_irq_vtable[5] = startIntrVSync();
     g_sys_irq_vtable[1] = startIntrDMA();
-    /* FAKE: _96_remove (BIOS A(72h)) takes no argument; passing g_sys_irq_vtable keeps the
-     * table pointer live in $a0 into the call as the target does; `_96_remove()` scores 3. */
+    /* FAKE: _96_remove (BIOS A(72h)) takes no argument; passing
+     * g_sys_irq_vtable keeps the table pointer live in $a0 into the call as the
+     * target does; `_96_remove()` scores 3. */
     _96_remove(g_sys_irq_vtable);
     ExitCriticalSection();
     return &D_800A1578;
 }
+
 /* PsyQ 4.0 LIBETC INTR: trapIntr + setIntr + stopIntr + restartIntr + memclr
    — verbatim-linked Sony object intr.c v1.76; C ref:
    sotn-decomp src/main/psxsdk/libetc/intr.c (v1.73; v1.76 deltas measured).
@@ -130,8 +124,8 @@ void trapIntr(void) {
         ReturnFromException();
     }
     D_800A1578.inInterrupt = 1;
-    while ((mask = (D_800A1578.enabledInterruptsMask & *i_stat) &
-                   *i_mask) != 0) {
+    while (
+        (mask = (D_800A1578.enabledInterruptsMask & *i_stat) & *i_mask) != 0) {
         for (i = 0; mask && i < 11; ++i, mask >>= 1) {
             if (mask & 1) {
                 *i_stat = ~(1 << i);
@@ -143,8 +137,7 @@ void trapIntr(void) {
     }
     if (*i_stat & *i_mask) {
         if (D_800A2610++ > 0x800) {
-            printf(&D_80016378, *i_stat,
-                         *i_mask);
+            printf(&D_80016378, *i_stat, *i_mask);
             D_800A2610 = 0;
             *i_stat = 0;
         }
