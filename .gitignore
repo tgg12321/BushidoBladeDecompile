@@ -61,6 +61,7 @@ tools/m2c/
 m2c_out/
 m2c_report.csv
 include/m2c_context.h
+include/m2c_context.h.m2c
 
 # Local model drafts (generated, not source)
 local_drafts/

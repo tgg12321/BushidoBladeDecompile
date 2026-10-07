@@ -92,11 +92,13 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      (87A0 43a813168; 17AFC CD58 / DAD0 / D780 6151b1808; func_80067D14 / func_800203B4 / func_80027AD8 21a094d90);
      _SpuSetAnyVoice reads `_spu_RQ[reg - 0xC4]` (D_800F7298 was a phantom base; 643796e7f); Q96 covers
      func_80031B24 (6151b1808). Phase 2 has no owner-blocked item left; what remains is ruled or debt rows.
-   - **Next session starts here:** Phase 3 step 0 — draft (scratch, unreviewed)
-     `tmp/p2/phase3_step0_draft.txt`: rule text N1-N6, a naming-reviewer rubric, wave flow, 20 first-wave
-     candidates. Process: never export GIT_DIR / GIT_WORK_TREE in a shell that runs tests (2026-10-06 the
-     grinder tests rewrote main's .git/config).
-   - func_800203B4's island operand (`auth:` re-hash) is still open, after the long tail.
+   - **Next session starts here:** Phase 3 step 0 — draft (unreviewed)
+     `memory/grind/phase3/step0_draft.txt`: rule text N1-N6, a naming-reviewer rubric, wave flow, 20
+     first-wave candidates. Process: never export GIT_DIR / GIT_WORK_TREE in a shell that runs tests
+     (2026-10-06 the grinder tests rewrote main's .git/config).
+   - func_800203B4's island grant: closed (21a094d90 typed the operands; its region grant verifies).
+   - Pre-Phase-3 cleanup (2026-10-06): C style (`.clang-format`, `tools/format.py`, format guard);
+     asm-region grants hash tokens (schema 2); source comments slimmed to labels + short descriptions.
    - Kept on purpose: original-call facts as commented declarations (func_80019568 / func_80044100 /
      func_80052C10 K&R; snd_VabFakeOpen, func_8005C2A8, func_80054434, func_80060414 local).
      **Owner ruling 2026-10-04:** func_8001C820 keeps its raw `(s32)((u8 *)s0 + 0x536)` argument rather

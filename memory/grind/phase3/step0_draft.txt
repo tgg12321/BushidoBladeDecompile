@@ -1,0 +1,119 @@
+PHASE 3 STEP 0: naming under owner ruling Q111 (draft for the owner; scratch, nothing applied)
+Worker 2, 2026-10-06. Sources: docs/grind/handoff-2026-10-03-restructure.md item 3, docs/naming/README.md,
+tools/naming_wave.py, .claude/agents/cheat-reviewer.md, engine/departures.py.
+
+(a) PROPOSED RULE TEXT (for docs/naming/README.md and the sweep README)
+-------------------------------------------------------------------------
+N1  The SOTN bar: a name is admissible when a reader can explain it from the code, and an adversarial
+    naming review agrees. Every read, write and call of the named thing must bear the name out:
+    - function: the verb describes the WHOLE effect of the body (all its writes, calls and the return);
+      the object noun matches what the body actually touches; nothing it does contradicts the name.
+    - global / member: every access (all TUs, and the asm of INCLUDE_ASM / canonical bodies) agrees in
+      role, width and lifetime; a name that holds for one use and not for another fails.
+    - type: one layout, and every field named by its accesses (Q105 principle).
+N2  Thin evidence keeps a neutral name: func_8XXXXXXX, D_8XXXXXXX, Unk<addr>Rec, unk_XX. A neutral name is
+    never wrong, so it always beats a plausible guess (README directive 2026-08-07 stands: a false name costs
+    more than an auto name).
+N3  Evidence classes, strongest first. A higher class overrides a lower one; within a class the narrower,
+    more specific citation wins; a conflict between two classes is a FAIL until resolved, never averaged:
+    E1  bit-verbatim PsyQ module XDEF / libscan-xref / in-binary string / hardware role (VERIFIED; unchanged).
+    E2  SOTN or psyz name for the SAME PsyQ routine or data (version caveats: BB2's libraries are 4.0-era,
+        docs/naming/libscan/psyq_versions.txt); Sony statics only after the verbatim placement is shown.
+    E3  computation restatement: the name says exactly what the body computes (emulation-proven or a short
+        pure leaf), e.g. `math_*`, `*_CrossY*`.
+    E4  typed restatement (Q103/Q107): a small body restated from admitted types, objects and calls.
+    E5  call-graph role: all callers use it the same way AND its callees/data establish the subsystem
+        (e.g. every caller passes a Rec44 camera record). Names only the role the whole graph supports.
+    E6  strings / debug text that the function prints but that do not name it (context, not identity).
+    Never evidence: Kengo matches, a family prefix alone, a name another rename invented, comments, prior
+    agent claims without re-derivation, size-only matches.
+N4  Subsystem prefixes (`camera_`, `model_`, `stage_`, `snd_`, `cd_`...) need E5 for the prefix itself;
+    a verb without a provable object stays neutral (`camera_Update`, not `camera_UpdateReplayTilt`).
+N5  Renaming an INFERRED name follows the same bar; a name that fails N1 is RESET, not kept for history.
+N6  Files: address-named game TUs take a subsystem name only when every function in the file carries an
+    admitted name of that subsystem (`tools/move_tu.py`), else they keep the ROM-offset name.
+
+(b) REVIEWER
+------------
+cheat-reviewer does not fit: its rubric is completion-bar items 1-6 (bytes, the wall, FAKE labels, types,
+simplest form). A name changes no bytes and none of those items asks whether a claim is TRUE across all
+uses. Its posture (default-FAIL, independent, JSON verdict, cite the rule) does fit, so the naming reviewer
+reuses the shape with a different rubric. Draft .claude/agents/naming-reviewer.md:
+  role:    default-FAIL adversarial reviewer for one naming manifest (rows: address/kind/old/new/class/
+           citations). Mechanical checks (oracle SHA1, naming_wave dry-run clean) are necessary, never
+           sufficient.
+  per row: R1 enumerate EVERY use yourself (grep src/include, asm/funcs, symbol files, the census row):
+              reads, writes, calls, address-taken sites; a use the manifest did not list = FAIL.
+           R2 the name's claim holds for each use (N1); one contradicting use = FAIL.
+           R3 the cited class is real and is the highest available (N3); a lower-class name where E1/E2
+              gives a different name = FAIL; Kengo / prefix-only / unattributed basis = FAIL.
+           R4 specificity: the name asserts no more than the evidence (N2/N4); prefer the neutral name when
+              the verb or noun is a guess.
+           R5 collisions: no existing symbol, struct, macro or SDK name is shadowed; no `_2` disambiguation
+              of a reused claim; Sony spelling for library code.
+           R6 the wave is identifier-only: the naming_wave manifest touches only the listed identifiers
+              and their key surfaces; prose and history untouched.
+  output:  JSON {decision PASS|FAIL per row and overall, row, evidence, next_action}; split = FAIL.
+  never:   approve its own suggested replacement name in the same review (re-submit for a fresh review).
+
+(c) A NAMING WAVE END TO END
+----------------------------
+ 1. Miner (read-only) writes a manifest under docs/naming/sweep-<date>/: one row per op (RENAME/RESET,
+    address, old -> new, class E1-E6, every use with file:line, the counter-evidence considered).
+ 2. Fresh naming-reviewer per manifest (R1-R6). FAIL rows are dropped or re-mined; nothing is edited by hand.
+ 3. Accepted rows go into the census inputs (action-overrides.csv or the sweep manifest build_census.py
+    reads), then `python3 docs/naming/build_census.py`.
+ 4. Clean tree, Grinder not running, orchestrator lock held:
+      python3 tools/naming_wave.py --from-census --only <addrs> --manifest tmp/wave.json      (dry run)
+    Check the manifest: every surface (C, headers, asm glabel + .s filename + INCLUDE_ASM, symbol files,
+    gate lists, queue, ledger dirs + layer2.jsonl func fields with renamed_from) and nothing in prose.
+    Data / members: tools/data_wave.py (globals), C edits for members (with a layer-2 review, as Q105).
+ 5. --apply, then:  verify-oracle --rebuild (SHA1 62efab4f...), engine tus-check, cmp of every object
+    (symbol-name diffs only), tools/check_completion_integrity.py, engine test.
+ 6. Keys: a rename changes the layer-2 key of every function that references the renamed identifier.
+    Departures stay sound (engine/departures.py is keyed by ADDRESS; a rename changes no address), and
+    naming_wave rewrites each moved ledger's layer2.jsonl `func` with a renamed_from chain. Proposed
+    bar: completed functions whose key moved ONLY by the wave's identifier substitution need no new
+    cheat review; the wave report lists every moved key with an identifier-only token diff (l2diff +
+    a token check that the only changed tokens are the wave's old->new pairs), and the naming reviewer's
+    R6 certifies it. Any other token change in a moved body fails the wave.
+ 7. One commit per wave: `naming: <wave>`; body = manifest path, review verdict, oracle line, moved-key
+    count; census regenerated in the same commit.
+
+(d) FIRST-WAVE CANDIDATES (strongest evidence; each still needs R1's full use list)
+------------------------------------------------------------------------------------
+Functions (current census name in brackets; INFERRED "*_helper" names carry no claim):
+ 1 0x8001A538 [md_game_helper] camera_CalcEye: RotMatrixX/Y/Z(-rot), eye = focus - dist * m[*][2]; all 5
+   callers pass a Rec44 camera record and an eye out-vector (E3+E5).
+ 2 0x80046BF4 [func_] camera_Place: rot = -angles, translation = target + R*(0,0,-dist), then the node
+   update / bone / collision / light refresh; callers pass &rec.unk_00 / &rec.unk_10 / dist (E4+E5).
+ 3 0x8001E404 [cpu_init_stage_and_camera_setup: misleading] camera_UpdateActive: chooses the active Rec44
+   (D_800F6608 / D_800F5328), sets the FOV, places it, stores D_800A36B4 (E5).
+ 4 0x8001BC70 [func_] camera_SetFixed: Rec44 D_800F6608 = character pos, fixed angles 0x120 / arg / 0,
+   dist 0x1162 (E4).
+ 5 0x80022408 [cpu_find_closest_hotspot: "cpu" wrong] stage_NearestArea: index of the stage's four quads
+   whose midpoint is nearest the given position in x/z (E3).
+ 6 0x800408F8 [func_] model_BuildNodes: unk_2C[0..20] from the D_80094B96 templates, scaled by unk_12 (E4).
+ 7 0x80040B44 [func_] model_MapNodeIds: the resource's id stream into unk_1A34[], duplicates into unk_10D4 (E4).
+ 8 0x80040CB8 [func_] model_BuildExtraNodes: unk_8B4[] from the template ids, -1 terminated (E4).
+ 9 0x80040D48 [mode_helper] model_ApplyMotionFrame: node rotations and the two extra nodes from a motion
+   frame's s16 triples, root from pos/rot, then queues the nodes on the draw list (E4+E5).
+10 0x800421C8 [game_helper] stage_ApplyLight: StageLight[a0]'s four colours, yaw / pitch to the light
+   records, parameter to func_80042478 (E4).
+11 0x80047210 [camera_InitBoneData] keep, or camera_CopyBoneMatrix: copy of D_80101DF0.xf.mat, row 1
+   halved (E3; the "Init" claim is weaker than the body).
+12 0x8002FDB0 [func_] collision_CrossYPositive: y of (p2 - p1) x (p3 - p1) for the character's points > 0
+   (E3, GTE OP).
+Globals:
+13 0x800A3820 g_draw_queue_cursor (void **; every write pushes or resets to 0x80102C00) (E4).
+14 0x80102C00 g_draw_queue (void *[640]; pushed by the draw builders (batch 7's sites), walked by func_8004A4E0 /
+   func_8004C404) (E5).
+15 0x800A38B4 g_prim_cursor (u32 *; the draw-chunk builders' primitive word cursor, P7b) (E4).
+16 0x800A36B4 g_active_camera (Rec44 *; written only by func_8001E404 / 8001E6E4, read by func_800325E0) (E5).
+17 0x800F6608 g_camera_fight / 0x800F5328 g_camera_close: the two Rec44 records (names pending R1: the
+   modes that select each must agree) (E5).
+18 0x80094B96 g_model_node_templates (Unk80094B96Rec[21]: parent, position, id) (E4).
+19 0x800A37E8 (s16 x,y,z): NOT proposed. func_8002A458 stores -q and the callees read vec[0..2], but no use shows
+   what the vector is (N2 example: stays D_).
+20 0x800EEDD0 g_cam_bone_data: keep (already named; now a MATRIX).
+Types: Unk80045878Obj -> (needs N1 across 40 bodies; propose for wave 2), Rec44 -> CameraRec (E5).
