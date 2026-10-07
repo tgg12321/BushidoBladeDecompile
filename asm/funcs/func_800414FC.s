@@ -2,7 +2,7 @@
 .set	noreorder
 .set noat
 .set noreorder
-glabel save_vc_ctrl
+glabel func_800414FC
     addiu   $sp,$sp,-0x8
     beqz    $a2,.L80041530_svc
     addiu   $v1,$a2,-0x1
@@ -22,7 +22,7 @@ glabel save_vc_ctrl
     addiu   $sp,$sp,0x8
     jr      $ra
     nop
-endlabel save_vc_ctrl
+endlabel func_800414FC
 .set	reorder
 .set	at
 .set reorder

@@ -304,9 +304,9 @@ void func_80041430(s32 a0, s32 a1) {
     base = &g_player_ptrs[a0];
     s0 = (Unk80045878Obj *)((u8 *)*base + a1);
     *base = s0;
-    save_vc_ctrl(a1, s0->unk_2C, 0x15);
-    save_vc_ctrl(a1, s0->unk_8B4, 0x14);
-    save_vc_ctrl(a1, s0->unk_10D4, 0x14);
+    func_800414FC(a1, s0->unk_2C, 0x15);
+    func_800414FC(a1, s0->unk_8B4, 0x14);
+    func_800414FC(a1, s0->unk_10D4, 0x14);
     {
         Unk80045878Node *c = s0->unk_10D4;
         do {

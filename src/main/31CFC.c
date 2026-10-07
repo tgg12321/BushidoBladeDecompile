@@ -10,7 +10,7 @@
 /* Adds delta to the parent pointer (node.unkC) of each of the n nodes that is
  * not null: func_80041430 moved the model object, and the three node arrays
  * with it, by delta bytes. */
-void save_vc_ctrl(s32 delta, Unk80045878Node *rec, s32 n) {
+void func_800414FC(s32 delta, Unk80045878Node *rec, s32 n) {
     s32 i;
 
     for (i = n - 1; i != -1; i--) {

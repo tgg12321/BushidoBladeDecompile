@@ -711,7 +711,7 @@ extern void func_80040D48(s32, s32, s32 *, s16 *, s16 *, s32);
 extern void func_80041188(s32, u8 *, u8 *, s32, MATRIX *);
 extern void func_80041398(s32);
 extern void func_80041430(s32, s32);
-extern void save_vc_ctrl(s32, Unk80045878Node *, s32);
+extern void func_800414FC(s32, Unk80045878Node *, s32);
 extern Unk80045878Obj *func_8004153C(s32);
 extern void func_800417D0(Unk80101DF0Record *);
 extern void func_800418D0(Unk80101DF0Record *);
