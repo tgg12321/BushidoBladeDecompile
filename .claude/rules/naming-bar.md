@@ -76,14 +76,19 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
    on rows it PASSes. Rows it FAILs are dropped or re-mined, never patched by hand.
 3. **Census:** `python3 docs/naming/build_census.py`.
 4. **Apply:** with a clean tree and the Grinder stopped, run `tools/naming_wave.py --from-census
-   --only <addrs>` (dry run, then `--apply`) and `tools/data_wave.py --manifest-csv <csv>`.
+   --only <addrs>` (dry run, then `--apply`), commit that as a temporary commit (data_wave refuses
+   paths already dirty), run `tools/data_wave.py --manifest-csv <csv> --apply`, then
+   `git reset --soft HEAD~1` so the wave lands as one commit. The pairs are every `old_names` /
+   `olds` entry of the two tools' `--manifest` JSON (an auto name and its alias may share a new
+   name).
    Members and types are edited in C; the keycheck takes global pairs, so a member rename needs a
    name unique in the tree (or waits for per-scope pairs). Then run the comment pass,
    `python3 tools/naming_keycheck.py --pairs <...> --sub-comments`. A comment naming a renamed
    identifier follows it, so no comment keeps a retired name.
 5. **Gates:** `verify-oracle --rebuild` (SHA1 == oracle); `tus-check`;
    `tools/check_completion_integrity.py`; `engine test`; then
-   `python3 tools/naming_keycheck.py --pairs <old=new,...>`. It fails closed. Every changed,
+   `python3 tools/naming_keycheck.py --from-manifests <naming_wave.json>,<data_wave.json>` (the
+   pairs come from the tools' own manifests; the report lists them). It fails closed. Every changed,
    added, deleted or renamed path must be the base with the pairs substituted, using the wave
    tools' own substitutions:
    - C and header tokens, and each comment in its place, change only by the pairs. A moved
@@ -92,9 +97,12 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
      moved ledger file moves unchanged, and nothing else under `memory/` changes.
    - The census CSV must equal a fresh `build_census.py` run (working tree only; it reads
      `build/bb2.map`, so it runs after the rebuild). `docs/naming/phase3/**` is the
-     only free path. Other text files (registries, gate lists, tools) change only by the pairs.
-   - `.claude/**` and the tool itself never change.
-   - A new non-auto name must not already exist, and an auto name must carry the old name's
+     only free path. Registries change line by line, only into what naming_wave / data_wave
+     emit for that line. Other text files (gate lists, tools) change only by the pairs.
+   - `.claude/**`, `movovl/**` (the overlay; the oracle does not cover it) and the tool itself
+     never change.
+   - A new non-auto name must not already exist in a build or tool file. An auto name must
+     carry the old name's address. Old names may share a new name only when they name one
      address.
    - No old name may survive in a build file (C comments included).
 

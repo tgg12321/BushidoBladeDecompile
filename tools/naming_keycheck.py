@@ -16,11 +16,22 @@ same substitutions the wave tools apply (tools/naming_wave.py, tools/data_wave.p
                               it reads build/bb2.map, so run after verify-oracle --rebuild).
                               In --new mode a changed census FAILS (re-derive it in the tree).
   docs/naming/phase3/**       wave metadata: allowed, listed.
-  .claude/**, this tool       any change FAILS.
+  .claude/**, movovl/**, this tool   any change FAILS (movovl/ is a separate binary the main
+                              oracle does not cover).
+  registries (named_syms.txt, symbol_addrs.txt, undefined_syms_auto.txt,
+  undefined_funcs_auto.txt)   each old line becomes exactly one output the wave tools produce
+                              for it (registry_ok): in-place rewrite; data_wave's rewrite with
+                              `was <that line's old name>`; or, when the new name stays defined,
+                              deletion, naming_wave's preserved-note line, or data_wave's
+                              `... is now object-defined` line. A link-breaking deletion is left
+                              to the build (SHA1).
   any other text file         equal to one of: whole-word substitution, sub_c, sub_hash, sub_py.
 A path rename must be the old path with the pairs substituted; an added or deleted file must be
 one side of such a rename. Two tree-wide checks: a non-auto new name must not already occur in
-the base tree (an auto name must carry the old name's address), and no old name may survive in
+the base tree's build, tool and rule files (src, include, asm, tools, engine, movovl, .claude,
+*.ld, *.txt, Makefile;
+docs/ and memory/ cite proposals), an auto name must carry the old name's address, several old
+names may share a new name only when they name one address, and no old name may survive in
 a build file (src/, include/, asm/, *.ld, root *.txt, Makefile; C comments included).
 
 --sub-comments is the wave's comment pass: it substitutes the pairs in the comments of every
@@ -37,6 +48,7 @@ Exit 0 = OK, 1 = a change the pairs do not explain, 2 = usage error.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import subprocess
@@ -57,7 +69,7 @@ AUTO = re.compile(r"^(?:func|D)_[0-9A-Fa-f]{8}$")
 SELF = "tools/naming_keycheck.py"
 METADATA = ("docs/naming/function-names.csv",)
 METADATA_DIRS = ("docs/naming/phase3/",)
-DENY_DIRS = (".claude/",)
+DENY_DIRS = (".claude/", "movovl/")  # rules/agents; the overlay (its own binary: no oracle here)
 LEDGER_DIRS = tuple(d + "/" for d in nw.LEDGER_DIRS)
 C_COMMENT = re.compile(r"/\*.*?\*/|//[^\n]*", re.S)
 
@@ -91,8 +103,6 @@ def parse_pairs(spec: str) -> dict[str, str]:
         pairs[old] = new
     if not pairs:
         sys.exit("no pairs given")
-    if len(set(pairs.values())) != len(pairs):
-        sys.exit("two old names map to one new name")
     return pairs
 
 
@@ -146,9 +156,141 @@ def ledger_of(path: str) -> tuple[str, str] | None:
     return None
 
 
+REGISTRIES = ("named_syms.txt", "symbol_addrs.txt", "undefined_syms_auto.txt",
+              "undefined_funcs_auto.txt")
+
+
 def base_addr(base: str, name: str) -> str | None:
-    """`name`'s address in the base tree (engine.layer2.addr_at: glabel file, registries, census)."""
-    return layer2.addr_at(name, lambda p: show(base, p))
+    """`name`'s address in the base tree: its own auto-name address, else the one address that
+    ALL of these agree on: its asm/funcs/<name>.s glabel, `name = 0x...;` lines in the
+    registries, and every census row naming it. None (unknown) when they disagree, when there is
+    none, or when `name` is a #define in src/ or include/ (a macro names no address)."""
+    if AUTO.match(name):
+        return name[-8:].upper()
+    if _is_macro(base, name):
+        return None
+    addrs = set()
+    a = layer2._asm_addr(show(base, f"asm/funcs/{name}.s"), name)
+    if a:
+        addrs.add(a.upper())
+    for reg in REGISTRIES:
+        for m in re.finditer(r"(?m)^\s*" + re.escape(name) + r"\s*=\s*0x([0-9A-Fa-f]{8})\s*;",
+                             show(base, reg) or ""):
+            addrs.add(m.group(1).upper())
+    # The census places C-defined names whose .s carries no address (hand-written listings);
+    # every row naming `name` counts, so a name it lists at two addresses stays unknown.
+    import csv
+    import io
+    for row in csv.DictReader(io.StringIO(show(base, METADATA[0]) or "")):
+        names = {row.get("current_name"), row.get("glabel"),
+                 *(x.strip() for x in (row.get("aliases") or "").split(";"))}
+        if name in names:
+            addrs.add((row.get("address") or "").upper().replace("0X", "").zfill(8))
+    return addrs.pop() if len(addrs) == 1 else None
+
+
+def _is_macro(base: str, name: str) -> bool:
+    """True when src/ or include/ #defines `name` in the base tree."""
+    r = subprocess.run(["git", "grep", "-q", "-E", r"^\s*#\s*define\s+" + re.escape(name) + r"\b",
+                        base, "--", "src", "include"], cwd=ROOT, capture_output=True)
+    return r.returncode == 0
+
+
+SYM_LINE = re.compile(r"^(\s*)([A-Za-z_]\w*)(\s*=\s*)(0x[0-9A-Fa-f]{8})(\s*;)(.*)$")
+DATE = r"\d{4}-\d{2}-\d{2}"
+
+
+def registry_outputs(line: str, rel: str, pairs: dict[str, str], deletable, dup_before
+                     ) -> list[list] | None:
+    """What the wave tools may turn one old registry line into: a list of alternatives, each a
+    list of 0 or 1 output lines (a str, or a compiled regex for a dated line). None = the line
+    must stay byte-identical."""
+    m = SYM_LINE.match(line)
+    if not m:
+        return None
+    indent, name, eq, addr, semi, tail = m.groups()
+    a8 = addr[2:].upper()
+    open_, close = ("// ", "") if rel == "symbol_addrs.txt" else ("/* ", " */")
+    if name not in pairs:
+        # naming_wave drops a destination's own reverse alias (`func_X = 0xX;`) once X is defined
+        if name in pairs.values() and AUTO.match(name) and name[-8:].upper() == a8:
+            return [[line], []]
+        return None
+    new = pairs[name]
+    rewritten = f"{indent}{new}{eq}{addr}{semi}{tail}"
+    outs: list[list] = [[rewritten]]                       # naming_wave in place / data_wave
+    if "data-wave" not in tail:                             # data_wave rewrite with provenance
+        outs.append([re.compile(re.escape(rewritten + "  " + open_) + f"data-wave {DATE}: was "
+                                + re.escape(name + close) + "$")])
+    if dup_before(new, a8):
+        outs.append([])                                     # data_wave's duplicate drop
+    if deletable(new, a8):
+        note = tail.strip()
+        if note:                                            # naming_wave keeps the note
+            note = note.strip("/*").strip("*/").strip()
+            kind = "RESET" if AUTO.match(new) and new[-8:].upper() == a8 else "RENAME"
+            outs.append([f"{indent}{open_}{kind} {addr}: retired name '{name}' \u2014 "
+                         f"preserved note: {note}{close}"])
+        else:
+            outs.append([])                                 # naming_wave deletes a bare line
+        outs.append([re.compile(re.escape(open_) + f"data-wave {DATE}: "
+                                + re.escape(f"{name} = {addr} retired; {new} is now object-defined"
+                                            + close) + "$")])
+    return outs
+
+
+def registry_ok(old: str, new: str, rel: str, pairs: dict[str, str], read_new=None) -> str | None:
+    """A registry (`name = 0xADDR;  /* ... */` lines) changed by the wave tools. Every old line
+    must become exactly one output the tools produce for it (registry_outputs):
+      - the in-place rewrite (pairs substituted in the name);
+      - data_wave's rewrite plus `  /* data-wave <date>: was <that line's old name> */`, only
+        when the old tail had no data-wave note;
+      - data_wave's duplicate drop: nothing, when an earlier output line already defines
+        (new, addr);
+      - when the new name stays defined (its own auto name, a (name, addr) still in the file, or
+        a glabel file at that address): naming_wave's deletion of a line without a comment, its
+        preserved-note line for a line with one (exactly `<RESET if the new name is the
+        address's auto name, else RENAME> <addr>: retired name '<old>' -- preserved note:
+        <the old comment, stripped as naming_wave strips it>`), or data_wave's
+        `<old> = <addr> retired; <new> is now object-defined` line;
+      - naming_wave's deletion of a destination's own reverse alias `func_X = 0xX;`.
+    A link-breaking deletion the matcher allows is caught by the build (SHA1). Returns None when
+    OK, else the first line no tool produces."""
+    got = new.split("\n")
+    remaining = {(mm.group(2), mm.group(4)[2:].upper()) for mm in map(SYM_LINE.match, got) if mm}
+    emitted: set[tuple[str, str]] = set()
+
+    def deletable(name: str, addr: str) -> bool:
+        if AUTO.match(name) and name[-8:].upper() == addr:
+            return True
+        if (name, addr) in remaining:
+            return True
+        return bool(read_new and layer2._asm_addr(read_new(f"asm/funcs/{name}.s"), name) == addr)
+
+    def fits(want, g: str) -> bool:
+        return want.match(g) is not None if isinstance(want, re.Pattern) else want == g
+
+    k = 0
+    for line in old.split("\n"):
+        outs = registry_outputs(line, rel, pairs, deletable, lambda n, a8: (n, a8) in emitted)
+        here = got[k] if k < len(got) else None
+        if outs is None:
+            if here != line:
+                return here if here is not None else f"missing: {line}"
+        elif here is not None and any(alt and fits(alt[0], here) for alt in outs):
+            pass
+        elif [] in outs:
+            continue
+        else:
+            return here if here is not None else f"missing: {line}"
+        # data_wave's `seen`: only its own rewrites of pair lines make a later one a duplicate
+        mo, mm = SYM_LINE.match(line), SYM_LINE.match(here)
+        if mo and mo.group(2) in pairs and mm:
+            emitted.add((mm.group(2), mm.group(4)[2:].upper()))
+        k += 1
+    if k != len(got):
+        return got[k]
+    return None
 
 
 def changed_files(base: str, new: str | None) -> list[tuple[str, str, str]]:
@@ -166,6 +308,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--pairs", default="")
     ap.add_argument("--pairs-file", default="")
+    ap.add_argument("--from-manifests", default="",
+                    help="comma-separated naming_wave / data_wave --manifest JSON files: the pairs "
+                         "are their ops' old names -> new name (the rule's source of the pairs)")
     ap.add_argument("--base", default="HEAD")
     ap.add_argument("--new", default=None, help="revision to check (default: working tree)")
     ap.add_argument("--sub-comments", action="store_true",
@@ -173,6 +318,12 @@ def main() -> int:
                          "src/ and include/ C file in the working tree, then exit")
     a = ap.parse_args()
     spec = a.pairs + "\n" + (Path(a.pairs_file).read_text(encoding="utf-8") if a.pairs_file else "")
+    for mf in filter(None, a.from_manifests.split(",")):
+        for op in json.loads(Path(mf).read_text(encoding="utf-8")).get("ops", []):
+            new_name = op.get("new_name") or op.get("new")
+            for o in op.get("old_names") or op.get("olds") or []:
+                if o != new_name:
+                    spec += f"\n{o}={new_name}"
     pairs = parse_pairs(spec)
     pat = re.compile(r"\b(" + "|".join(map(re.escape, sorted(pairs, key=len, reverse=True))) + r")\b")
     repl = lambda m: pairs[m.group(1)]  # noqa: E731
@@ -191,13 +342,27 @@ def main() -> int:
 
     fails: list[str] = []
     notes: list[str] = []
+    groups: dict[str, list[str]] = {}
+    for o, n in pairs.items():
+        groups.setdefault(n, []).append(o)
+    for n, olds in groups.items():
+        if len(olds) > 1:
+            addrs = {o: base_addr(a.base, o) for o in olds}
+            if None in addrs.values() or len({x.upper() for x in addrs.values()}) != 1:
+                fails.append(f"{', '.join(olds)} -> {n}: names of different (or unknown) "
+                             f"addresses may not share a new name ({addrs})")
     rows = changed_files(a.base, a.new)
     deleted = {p for st, p in rows if st == "D"}
     added = {p for st, p in rows if st == "A"}
     renames = {}  # new path -> old path
-    for d in deleted:
+    sources: dict[str, list[str]] = {}
+    for d in sorted(deleted):
         if map_path(d) != d and map_path(d) in added:
-            renames[map_path(d)] = d
+            sources.setdefault(map_path(d), []).append(d)
+    for target, olds in sources.items():
+        if len(olds) > 1:  # several aliases' files would land on one path: nothing to compare
+            fails.append(f"{target}: paths of a merged name collide ({', '.join(olds)})")
+        renames[target] = olds[0]
     work: list[tuple[str, str]] = []  # (old path, new path) to compare
     for st, p in rows:
         if st == "D":
@@ -218,7 +383,8 @@ def main() -> int:
     census_changed = False
     for old_path, new_path in work:
         if new_path == SELF or new_path.startswith(DENY_DIRS) or old_path.startswith(DENY_DIRS):
-            fails.append(f"{new_path}: changes to rules, agents or this tool are never part of a wave")
+            fails.append(f"{new_path}: rules, agents, the MOVOVL overlay and this tool are never part "
+                         f"of a wave")
             continue
         old = show(a.base, old_path)
         new = show(a.new, new_path)
@@ -265,6 +431,11 @@ def main() -> int:
             if new_path.startswith("src/"):
                 src_scan.add(new_path)
             continue
+        if new_path in REGISTRIES:
+            bad = registry_ok(old, new, new_path, pairs, lambda q: show(a.new, q))
+            if bad is not None:
+                fails.append(f"{new_path}: a line the wave tools do not produce: {bad[:120]}")
+            continue
         candidates = {pat.sub(repl, old), nw.sub_c(pat, repl, old)[0], nw.sub_hash(pat, repl, old)[0]}
         if new_path.endswith(".py"):
             candidates.add(nw.sub_py(pat, repl, old)[0])
@@ -298,7 +469,9 @@ def main() -> int:
         else:
             news.append(n)
     if news:
-        hits = git("grep", "-l", "-w", "-E", "|".join(news), a.base, check=False).splitlines()
+        hits = git("grep", "-l", "-w", "-E", "|".join(news), a.base, "--", "src", "include", "asm",
+                   "tools", "engine", "movovl", ".claude", "*.ld", "*.txt", "Makefile", ":!docs", ":!memory",
+                   check=False).splitlines()
         for h in hits:
             fails.append(f"new name already in the base tree: {h.split(':', 1)[1]}")
     grep_rev = [a.new] if a.new else ["--untracked"]
@@ -323,7 +496,9 @@ def main() -> int:
         for h in git("grep", "-l", "-w", "-E", "|".join(moved_stems), *grep_rev, "--", "src",
                      check=False).splitlines():
             src_scan.add(h.split(":", 1)[1] if a.new else h)
-    rev_pairs = {n: o for o, n in pairs.items()}
+    rev_pairs: dict[str, list[str]] = {}
+    for o, n in pairs.items():
+        rev_pairs.setdefault(n, []).append(o)
     moved = []
     for path in sorted(src_scan):
         new = show(a.new, path) or ""
@@ -331,14 +506,20 @@ def main() -> int:
         for name in sorted({m.group(1) for m in layer2.inlineasm._INCLUDE_ASM_MACRO_RE.finditer(new)} |
                            {m.group(1) for m in re.finditer(
                                r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*?\b([A-Za-z_]\w*)\s*\(", new)}):
-            old_name = rev_pairs.get(name, name)
             k_new = layer2.body_key(new, name, lambda p: show(a.new, p))
-            k_old = layer2.body_key(old, old_name, lambda p: show(a.base, p))
+            k_old, old_name = None, name
+            for cand in rev_pairs.get(name, []) + [name]:
+                k_old = layer2.body_key(old, cand, lambda p: show(a.base, p))
+                if k_old:
+                    old_name = cand
+                    break
             if k_new and k_old and k_new != k_old:
                 moved.append(f"{path}: {name}" + (f" (was {old_name})" if old_name != name else "")
                              + f"  {k_old[1]} -> {k_new[1]}")
 
     print(f"pairs: {len(pairs)}  changed paths: {len(rows)}")
+    for o, n in sorted(pairs.items()):
+        print(f"pair {o} -> {n}")
     for f in fails:
         print("FAIL", f)
     for n in notes:
