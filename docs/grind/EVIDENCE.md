@@ -21,14 +21,15 @@ it" was not a workable answer.
 
 | File | Contents |
 |---|---|
-| `evidence-2026-09-24.tar.gz` | Every cited `tmp/` file that still existed — 521 files, 36.4 MB raw, 4.2 MB compressed |
+| `evidence-2026-09-24.tar.gz` | Every cited `tmp/` file that still existed — 521 files, 36.4 MB raw, 4.2 MB compressed. Removed from the tree 2026-10-07; it lives in git history at `89e6194d0` |
 | `evidence-2026-09-24.manifest.txt` | `sha1  bytes  path` for all 521, so a citation can be checked without extracting |
 
 Paths are stored **verbatim**, including the leading `tmp/`. A citation of
 `tmp/grind/CD_ready/s58/splice.py` extracts to exactly that path:
 
 ```bash
-tar -xzf docs/grind/evidence-2026-09-24.tar.gz tmp/grind/CD_ready/s58/splice.py
+git show 89e6194d0:docs/grind/evidence-2026-09-24.tar.gz > tmp/evidence-2026-09-24.tar.gz
+tar -xzf tmp/evidence-2026-09-24.tar.gz tmp/grind/CD_ready/s58/splice.py
 grep 'CD_ready/s58/splice.py' docs/grind/evidence-2026-09-24.manifest.txt
 ```
 
