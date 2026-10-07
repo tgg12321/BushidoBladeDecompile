@@ -134,7 +134,8 @@ s32 sprintf(char *out, char *f, ...) {
         case 'i':
             num = va_arg(args, s32);
             /* FAKE: do-while(0) kept from SOTN; without it the va_arg load and
-             * the isHalf test swap v0/v1 and reorder */
+             * the isHalf test swap v0/v1 and reorder: score 5 (all four:
+             * 23) */
             do {
                 if (info.isHalf) {
                     num = (s16)num;
@@ -151,7 +152,8 @@ s32 sprintf(char *out, char *f, ...) {
         case 'u':
             num = va_arg(args, u32);
             /* FAKE: do-while(0) kept from SOTN; without it the va_arg load and
-             * the isHalf test swap v0/v1 and reorder */
+             * the isHalf test swap v0/v1 and reorder: score 8 (all four:
+             * 23) */
             do {
                 if (info.isHalf) {
                     num = (u16)num;
@@ -189,7 +191,8 @@ s32 sprintf(char *out, char *f, ...) {
         case 'o':
             num = va_arg(args, u32);
             /* FAKE: do-while(0) kept from SOTN; without it the va_arg load and
-             * the isHalf test swap v0/v1 and reorder */
+             * the isHalf test swap v0/v1 and reorder: score 5 (all four:
+             * 23) */
             do {
                 if (info.isHalf) {
                     num = (u16)num;
@@ -232,7 +235,8 @@ s32 sprintf(char *out, char *f, ...) {
         printHex:
             num = va_arg(args, u32);
             /* FAKE: do-while(0) kept from SOTN; without it the va_arg load and
-             * the isHalf test swap v0/v1 and reorder */
+             * the isHalf test swap v0/v1 and reorder: score 5 (all four:
+             * 23) */
             do {
                 if (info.isHalf) {
                     num = (u16)num;

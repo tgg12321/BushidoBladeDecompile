@@ -1317,7 +1317,7 @@ void func_8001C624(void) {
     /* FAKE: self-assigning round-trip through `local` (address-taken by the
      * func_80021D10 call above): the target holds these self-copy stores; the
      * libgte setVector comma-assign idiom, adjusting only the middle
-     * component. */
+     * component; without it: score 22, `local[1] -= 0x384` alone: score 14. */
     local[0] = local[0], local[1] = local[1] - 0x384, local[2] = local[2];
     e->unk_114[0].vx = 0;
     e->unk_114[0].vy = 0;
@@ -1453,7 +1453,8 @@ void func_8001C8DC(void) {
             p = &D_800A37D2;
             /* FAKE: indexes past D_800A37D2 into D_800A37D3 (owner Q63, this
              * byte pair only): the target also reaches each byte by its own
-             * symbol, which no single array or struct gives. */
+             * symbol, which no single array or struct gives; each byte by its
+             * own symbol here: score 13. */
             p[t != 0]++;
         }
     }
@@ -1466,10 +1467,11 @@ void func_8001C8DC(void) {
         s16 t;
         u8 *p;
         if ((t = D_80101EC8[0].unk_96) == 0 || D_80101EC8[1].unk_96 == 0) {
-            /* FAKE: second handle, as above (owner Q63). */
+            /* FAKE: second handle, as above (owner Q63); indexing &D_800A37D2
+             * here: score 8. */
             p = &D_800A37D2;
             /* FAKE: indexes past D_800A37D2 into D_800A37D3, as above (owner
-             * Q63). */
+             * Q63); each byte by its own symbol here: score 14. */
             p[t != 0]++;
         }
     } break;
@@ -2379,7 +2381,7 @@ void func_8001F1C4(Unk80101EC8Record *arg0, Rec1C *arg1, MotionFrame *arg2,
  * 0x1F holds elevation at 0x100). Also sets or eases a twist in obj+0x1EA
  * (states 0x1D/0xE with obj+0x8C != 0, or obj+0xE in 6..7 with obj+0x6A ==
  * 2), and adds random jitter to both sets when obj+0x26E is set and obj+0x96
- * == 0. The ground distance is the D_8008D118 byte-LUT integer sqrt (the
+ * == 0. The ground distance is the g_sqrt_table_u8 byte-LUT integer sqrt (the
  * func_8002E838 idiom), with one gte_Lzc per root. */
 void func_8001F2E4(Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
     s32 lzc_out;
@@ -2391,8 +2393,8 @@ void func_8001F2E4(Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
     s32 temp2;
     /* FAKE: constant-holder (named-local-fake-exception): tgt_x is 0 on every
      * path; the three arm writes reach both func_8002F770 calls unfolded and
-     * the pseudo takes $s2 as in the target. The literal 0, one initializer, or
-     * one write after the join do not match. */
+     * the pseudo takes $s2 as in the target. The literal 0: score 46; one
+     * initializer: score 43; one write after the join: score 46. */
     s32 tgt_x;
     /* dx / dz: two values each -- the partner-minus-obj x (z) offset of
      * obj+0x180 (0x188) for the elevation, then of the saved obj+0xF4 (0xFC)
@@ -3448,17 +3450,17 @@ done1_21280:
 
     if ((u32)(val >> 12) < 2) {
         u16 t1; /* FAKE: copy of val (shifting val directly: score 7) */
-        /* FAKE: holds the constant 4 (a literal does not match) */
+        /* FAKE: holds the constant 4 (a literal: score 16) */
         s32 t4;
-        /* FAKE: holds the constant 3 (a literal does not match) */
+        /* FAKE: holds the constant 3 (a literal: score 20) */
         s32 t3;
-        /* FAKE: holds the constant 1 (a literal does not match) */
+        /* FAKE: holds the constant 1 (a literal: score 20) */
         s32 t2;
-        /* FAKE: D_800A384C read once before the loop (reading in place does not
-         * match) */
+        /* FAKE: D_800A384C read once before the loop (reading in place: score
+         * 24) */
         u8 t0;
-        /* FAKE: D_800A38DC read once before the loop (reading in place does not
-         * match) */
+        /* FAKE: D_800A38DC read once before the loop (reading in place: score
+         * 20) */
         s32 mode;
         s32 k;
 
@@ -3494,7 +3496,7 @@ done1_21280:
         if (a0 == 0) {
             /* FAKE: loop tail duplicated into this arm (jump2 cross-jump
                re-merges it to identical bytes); with `goto next_21280` instead,
-               the counters and the record pointer swap $a1 / $a2 */
+               the counters and the record pointer swap $a1 / $a2: score 19 */
             k++;
             if (k < 3)
                 goto loop2_21280;
@@ -3854,7 +3856,8 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
         d++;
         /* FAKE: split increment (two s16 triplets per record, rot + pos): stops
          * loop.c reducing the p+6/p+10 address givs; combine re-merges the
-         * adds to one addiu (proven-spelling-class-reconstruction). */
+         * adds to one addiu (proven-spelling-class-reconstruction); one
+         * `p += 6`: score 3. */
         p += 3;
         p += 3;
     } while (i < 4);
@@ -4294,8 +4297,8 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
          * row pointer puts the table address in a register ahead of the
          * a0_idx * 6 row offset, as the target does; written directly as
          * D_8008EB40[a0_idx], EXPAND_SUM keeps the base a constant term until
-         * after the index insns. D_8008EB40[a0_idx][a1_idx] and D_8008EB40 +
-         * a0_idx * 3 also miss. */
+         * after the index insns (direct D_8008EB40[a0_idx]: score 13).
+         * D_8008EB40[a0_idx][a1_idx] and D_8008EB40 + a0_idx * 3 also miss. */
         s16(*tbl)[3] = D_8008EB40;
         s32 px;
         s16 *row;
@@ -4376,7 +4379,8 @@ void func_80023648(Unk80101EC8Record *arg0) {
     u16 kind = arg0->unk_6A;
     /* FAKE: pointer alias to D_8008EB40 (pointer-alias-fake-exception), as
      * in func_800233AC: the table
-     * address is in a register ahead of the a0 * 6 row offset. */
+     * address is in a register ahead of the a0 * 6 row offset; direct
+     * D_8008EB40[a0]: score 14. */
     s16(*tbl)[3];
 
     if (kind == 0x13 || kind == 0x1B || kind == 0x30) {
@@ -4417,7 +4421,8 @@ void func_80023648(Unk80101EC8Record *arg0) {
             /* FAKE: the clamped |arg0->unk_150| is staged through the existing
              * `a2` (its table-entry value is dead here): one multiply-set
              * pseudo keeps every staged value in $a2, as in the target;
-             * separate locals land in $a2/$a0/$a1. */
+             * separate locals land in $a2/$a0/$a1 (a fresh local here:
+             * score 15). */
             a2 = arg0->unk_150;
             if (a2 < 0) {
                 a2 = -a2;
@@ -4444,7 +4449,8 @@ void func_80023648(Unk80101EC8Record *arg0) {
 
                 tbl_val = D_800A310C[D_8008DA08[arg0->unk_0A]];
                 /* FAKE: the second read of arg0->unk_1A is staged through
-                 * the dead `sub_result`, as above. */
+                 * the dead `sub_result`, as above; reading in place: score
+                 * 11. */
                 sub_result = arg0->unk_1A;
                 mult_res = sub_result * tbl_val;
                 limit = (mult_res << 4) >> 12;
@@ -4460,7 +4466,7 @@ void func_80023648(Unk80101EC8Record *arg0) {
                     s16 sin_val = Judge[(arg0->unk_1C8.vy & 0xFFF)];
 
                     /* FAKE: the >>12 speed is staged through the dead `a2`, as
-                     * above. */
+                     * above; a fresh local or the shift inline: score 30. */
                     a2 = speed_prod >> 12;
 
                     arg0->unk_D8.x += (sin_val * a2) >> 16;

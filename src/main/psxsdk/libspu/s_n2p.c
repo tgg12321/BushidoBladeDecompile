@@ -56,7 +56,7 @@ u16 _spu_note2pitch(u16 cen_note, u16 cen_fine, u16 note, u16 fine) {
     }
     /* FAKE: staging the attenuation through the dead `diff` puts the
        widening `andi` before the inlinee's `li 0x103B`; a fresh local or no
-       staging reverses the pair (staged-value-reused-variable) */
+       staging reverses the pair: score 2 (staged-value-reused-variable) */
     diff = atten;
     pitch = _spu_2pitch(diff, (rem < 0) ? -rem : rem);
     if (pitch >= 0x4000) {

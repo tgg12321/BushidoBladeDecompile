@@ -62,7 +62,8 @@ s32 CheckCallback(void) { return D_800A1578.inInterrupt; }
 u32 GetIntrMask(void) { return *i_mask; }
 
 extern void trapIntr(void);
-/* FAKE: the BIOS call takes no argument; declared with one for startIntr. */
+/* FAKE: the BIOS call takes no argument; declared with one for startIntr
+ * (a no-argument call there: score 3). */
 extern void _96_remove(s32 *);
 
 u16 SetIntrMask(u16 arg0) {

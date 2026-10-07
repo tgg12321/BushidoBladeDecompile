@@ -507,7 +507,7 @@ void func_8006F100(Unk8006EACCRec *arg0) {
         }
         {
             /* FAKE: same constant-holder mechanism as `cx` above, for the
-             * vertical centre 0x9D (scored with `cx`). */
+             * vertical centre 0x9D; a literal alone scores 26. */
             s32 cy = 0x9D;
 
             s.y = D_8009BC94[i][D_800A3590[i]].y + (t2 + cy) -
@@ -1629,7 +1629,7 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
      * shipped code stores 0x100 to both scales, then 0x180/0x120. Both
      * removed: score 3 (dead-store-fake-exception) */
     s.scale_x = 0x100;
-    /* FAKE: same dead store as above (scored there). */
+    /* FAKE: same dead store as above; removed alone: score 1. */
     s.scale_y = 0x100;
     s.y = 0;
     s.x = 0;

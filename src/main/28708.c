@@ -398,9 +398,9 @@ finish:
 extern s32 func_8003800C(Unk800F34D8Save *);
 
 /* Load/save state-machine completion handler: dispatches on D_800A31F4
- * (4 = post-read, 6 = post-write), reaps func_800378A8()'s status, closes the
- * file and posts a result code to D_800A379E. The still-pending paths share
- * the fail_store end label (the shared-end-label recipe,
+ * (4 = post-read, 6 = post-write), reaps memcard_PollSwEvents()'s status,
+ * closes the file and posts a result code to D_800A379E. The still-pending
+ * paths share the fail_store end label (the shared-end-label recipe,
  * .claude/rules/shared-end-label.md). */
 void func_80038658(void) {
     s32 ret;
@@ -833,7 +833,7 @@ s32 func_80038C70(void) {
         /* FAKE: duplicate of load_sel2's store — jump2 cross-jump re-merges it
            (zero emitted bytes); the extra real def lifts sel2's reg_n_refs
            priority above result's so RA lands sel2->$s2 / result->$s3 (target).
-           SOTN duplicate-into-arms family. */
+           SOTN duplicate-into-arms family; `goto load_sel2` scores 13. */
         sel2 = D_800A3350;
         goto sel_dispatch;
     case 13:
@@ -1763,8 +1763,8 @@ void func_8003A728(PadState *a0) {
     s32 vsync;
     s32 c0lo;
     s32 t;
-    /* FAKE: constant-holder displaces the D_800A369C store from the slot
-     * before the branch (emits nothing); the literal: score 3 */
+    /* FAKE: constant-holder displaces the g_comb_send_buf_plus_0x4 store from
+     * the slot before the branch (emits nothing); the literal: score 3 */
     s32 zero;
 
     if (D_800A320C != 0) {

@@ -7,21 +7,6 @@
 #include "gte.h"
 #include "bb2_const.h"
 
-/* P1/P2 round scores and tiebreakers, declared here as single u8s (per-file
- * declarations: Q21-Q25, no-new-park-categories aggregate-merge exception):
- * every counting aggregate spelling of func_800340A0 misses the shipped code
- * (constant subscripts put element 0 behind a base register; the
- * index-variable and regrouped-condition spellings miss its round-result
- * stores or compares); dummy-index and pointer-alias spellings are refused
- * (Q22/Q23). src/main/9F9C.c declares the same bytes as D_800A3898[2] /
- * D_800A38AA[2] for func_8001CE60, whose player-indexed accesses single bytes
- * do not produce; no single declaration compiles both files with a counting
- * spelling. */
-extern u8 D_800A3898;
-extern u8 D_800A3899;
-extern u8 D_800A38AA;
-extern u8 D_800A38AB;
-
 /* Updates the two active player records in practice modes. The timed contest
  * chooses a winner, the distance/input checks choose follow-up states, and
  * the tail emits a mode-specific effect at the players' midpoint.
@@ -54,7 +39,7 @@ void func_80026DA4(void) {
             goto tail;
         /* FAKE: reuse the record pointers for the selected pair (restored at
          * the tail join), keeping them in the original's call-preserved
-         * registers.
+         * registers; separate pair locals, no join restore: score 18.
          * SOTN: src/st/lib/unk_3B53C.c:41-55
          * @db41b28eee52969244a52cc269c8163d1ed8826a */
         record = &D_80101EC8[idx];
@@ -89,7 +74,8 @@ void func_80026DA4(void) {
             }
         }
         /* FAKE: re-materialize the same record base after the drift loop;
-         * GCC keeps the original base load across the block boundary.
+         * GCC keeps the original base load across the block boundary;
+         * without it: score 61.
          * SOTN: src/weapon/w_011.c:343-348
          * @db41b28eee52969244a52cc269c8163d1ed8826a */
         record = D_80101EC8;
@@ -144,12 +130,14 @@ void func_80026DA4(void) {
     }
     /* FAKE: restore record zero at the three-path join after selected-pair
      * work, completing the pointer reuse above (record pointers kept in the
-     * original's call-preserved registers).
+     * original's call-preserved registers); reverted together with that reuse:
+     * score 18.
      * SOTN: src/st/lib/unk_3B53C.c:41-55
      * @db41b28eee52969244a52cc269c8163d1ed8826a */
     record = D_80101EC8;
 tail:
-    /* FAKE: restore the second fixed record with the first at this join.
+    /* FAKE: restore the second fixed record with the first at this join;
+     * D_80101EC8[1] direct in the tail: score 7.
      * SOTN: src/st/lib/unk_3B53C.c:41-55
      * @db41b28eee52969244a52cc269c8163d1ed8826a */
     partner = record + 1;

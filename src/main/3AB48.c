@@ -1116,7 +1116,8 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                 /* FAKE: the shared base (rec's 0x40A halfword + 100) is staged
                  * through hi2_val, completed below; a separate base local is
                  * tied to the lh result (target: lh v0; addiu v1,v0,100)
-                 * (staged-value-reused-variable) */
+                 * (staged-value-reused-variable); a separate base local: score
+                 * 6 */
                 hi2_val = rec->unk_40A + 100;
                 lo_val = hi2_val + lo * 40;
                 hi1_val = hi2_val + hi1 * 40;
@@ -1638,7 +1639,7 @@ void func_80056CB8(Unk80101EC8Record *arg0) {
         s32 idx;
 
         /* FAKE: idx names the byte-table index for the first lookup only, which
-         * steers loop strength reduction's giv choice */
+         * steers loop strength reduction's giv choice; `[i * 2]`: score 53 */
         idx = i * 2;
         obj = arg0;
         flags = D_8009A821[idx] << 8;
@@ -2038,7 +2039,7 @@ s32 func_80057ACC(
  * *arg3. FAKE: arg0->vtx is spelled at each of its five uses rather than cached
  * in a local (F3, no-new-park-categories entry 15; ruling 6b): cse folds them
  * to the target's two loads (the ratan2 call stops the fold); one local gives
- * one load. */
+ * one load: score 30. */
 void func_80057CC8(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;
     unsigned short next_idx;
@@ -2082,8 +2083,8 @@ void func_80057CC8(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
         /* FAKE: `base` and `half` name the antipode of ang_prev and half the
          * angular gap (named intermediates, no-new-park-categories entry 6):
          * block-local, they are allocated
-         * before global RA; as one expression the scratch is allocated globally
-         */
+         * before global RA; as one expression the scratch is allocated
+         * globally: score 6 */
         base = ang_prev + 0x800;
         half = (s32)(ang_prev - ang_next) / 2;
         ang_mid = base - half;
@@ -2126,7 +2127,7 @@ void func_80057E84(
     u8 hit_up;
     /* FAKE: one counter for the edge scan and the route copy, reused the way
      * SOTN's DebugCaptureScreen reuses its i for its file-search loop and its
-     * row countdown (Q51, Q53); a separate copy counter does not match. */
+     * row countdown (Q51, Q53); a separate copy counter: score 79. */
     s16 i; /* SOTN: src/dra/42398.c:75 @aa53500 */
     s16 next;
     s16 ax;
@@ -2740,7 +2741,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
                              * so pick2's body runs only by the goto above; the
                              * target compares twice, and failing either compare
                              * still reaches the script2 call test (redundant
-                             * condition, no-new-park-categories entry 16) */
+                             * condition, no-new-park-categories entry 16);
+                             * without the work2 == 5 arm: score 20 */
                             if (work2 == 5 &&
                                 p->other->unk_404[p->other->unk_86] <
                                     D_800A387C) {
@@ -3144,7 +3146,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                          * below): the target copies the script start into its
                          * own register and reads the 0x40 character-mask header
                          * through it while ep stays in $s6; read through ep the
-                         * allocation order shifts */
+                         * allocation order shifts: score 58 */
                         /* SOTN: src/st/no0/e_stone_rose.c:611 @aa53500 */
                         q = ep;
                         if (D_80099D88[p->unk_443].flags & 0xFF00) {
@@ -3787,8 +3789,8 @@ s32 snd_MoveVabBody(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 }
 
 /* SPU VAB compaction: sorts the resident VAB slots 1..15 by SPU address, then
- * walks them from the end of slot 0, moving down (func_8005BF78) the first slot
- * that is not already contiguous and every slot after it. `vabid` is never
+ * walks them from the end of slot 0, moving down (snd_MoveVabBody) the first
+ * slot that is not already contiguous and every slot after it. `vabid` is never
  * read. `addr` is assigned inside the first (otherwise empty) loop: the target
  * computes it after the loop's `count > 0` guard. */
 s32 func_8005C074(s16 vabid, s32 base) {
@@ -4395,7 +4397,8 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             x += ((u32)(D_800A3418 * 0x32) >> 0xF);
             /* FAKE: tmp1 is written twice (y base, then a copy of ft4) so
              * sched1 places the y base after the argument setup; dropping
-             * either write or one carrier for both halves does not match */
+             * either write or one carrier for both halves does not match (no
+             * y-base write: score 4; no ft4 copy: 35; one carrier: 30) */
             tmp1 = (s32)base_y - 0xC;
             s.x = x;
             D_800A3418 ^= rand();
@@ -4417,7 +4420,8 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
              */
             x = (s32)base_x - 0x32;
             x += ((u32)(D_800A3418 * 0x64) >> 0xF);
-            /* FAKE: tmp2 written twice, as tmp1 above */
+            /* FAKE: tmp2 written twice, as tmp1 above (no y-base write: score
+             * 4; no ft4 copy: 35) */
             tmp2 = (s32)base_y - 0x19;
             s.x = x;
             D_800A3418 ^= rand();
@@ -4453,10 +4457,10 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s16 i;
     s16 j;
     s16 shown;
-    Unk8009B0E0Record *hdr2;  /* FAKE: pointer alias of D_8009B398[2] */
-    Unk8009B0E0Record *hdr3;  /* FAKE: pointer alias of D_8009B398[3] */
-    Unk8009B400Record *cell2; /* FAKE: pointer alias of D_8009B3F0 */
-    Unk8009B400Record *cell3; /* FAKE: pointer alias of D_8009B3F8 */
+    Unk8009B0E0Record *hdr2;  /* FAKE: D_8009B398[2] alias; direct: score 16 */
+    Unk8009B0E0Record *hdr3;  /* FAKE: D_8009B398[3] alias; direct: score 12 */
+    Unk8009B400Record *cell2; /* FAKE: D_8009B3F0 alias; direct: score 18 */
+    Unk8009B400Record *cell3; /* FAKE: D_8009B3F8 alias; direct: score 6 */
 
     arg1--;
     tile = chunk->unk_00;
@@ -4558,8 +4562,8 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* FAKE: the tile loop's second sheet and cell, set ahead of the digit loop
      * (pointer-alias-fake-exception): their live range spans both loops, so
      * they are spilled and rematerialized inside the tile loop, and header[3]
-     * is not cse-related to header[2] (which would reverse the $s6/$s7 order)
-     */
+     * is not cse-related to header[2] (which would reverse the $s6/$s7 order);
+     * both direct: score 18 */
     /* FAKE: pointer alias; direct use scores 12 (both direct: 18) */
     hdr3 = &D_8009B398[3];
     cell3 = &D_8009B3F8; /* FAKE: pointer alias; direct use scores 6 */
@@ -4600,7 +4604,8 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         tile++;
         /* FAKE: the first sheet and cell (pointer-alias-fake-exception), named
          * a few insns before their stores so loop.c hoists them, header then
-         * cell; the cell's shorter live range takes $s6, the header $s7 */
+         * cell; the cell's shorter live range takes $s6, the header $s7; both
+         * direct: score 24 (all four direct: 17) */
         /* FAKE: pointer alias; direct use scores 16 (both direct: 24) */
         hdr2 = &D_8009B398[2];
         cell2 = &D_8009B3F0; /* FAKE: pointer alias; direct use scores 18 */
@@ -4933,7 +4938,8 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         points[1] = (arg0 >> (i * 4 + 2)) & 3;
         s.col_r = s.col_g = s.col_b = 0x40;
         for (j = 0; j < 2; j++) {
-            /* FAKE: the other player's points, as above. */
+            /* FAKE: the other player's points, as above; points[j ^ 1] here:
+             * score 59. */
             if (points[j] <= *(j ? &points[0] : &points[1])) {
                 if (points[j] != 3) {
                     s.has_color = 1;
@@ -5646,7 +5652,8 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
         cur1 = D_800A32B4;
         /* FAKE: increment staged through t1 (stored next line, then reused for
          * the product): the reassignment breaks cse's mem==reg equivalence, so
-         * the clamp re-read emits lh (staged-value-reused-variable) */
+         * the clamp re-read emits lh (staged-value-reused-variable); direct
+         * increment: score 8 (with t2's: 16) */
         t1 = cur1 + 1;
         D_800A32B4 = t1;
         t1 = (s32)((s16)cur1) * 0x1AA;
@@ -5667,7 +5674,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     *(s16 *)(tile_off + 0xA) = 0xBD;
     cur2 = D_800A32B6;
     /* FAKE: increment staged through t2, as t1 above: the clamp re-read emits
-     * lh (staged-value-reused-variable) */
+     * lh (staged-value-reused-variable); direct increment: score 8 */
     t2 = cur2 + 1;
     D_800A32B6 = t2;
     t2 = (s32)((s16)cur2) * 0x144;

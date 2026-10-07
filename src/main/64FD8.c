@@ -781,7 +781,7 @@ void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
             /* FAKE: placeholder tail duplicated into both arms so cse reuses
              * the work-area address; cross-jump merges the tails back. One
              * shared tail recomputes the address (duplicated-statement-into-
-             * arms, Q47) */
+             * arms, Q47): score 6 */
             arg2[SELWORK->f3C[arg3]] = 0x14;
             if (arg0 & (0x40 << (arg3 * 16))) {
                 func_8005C650(4, 0x7F, 0x7F);
@@ -1066,7 +1066,7 @@ s32 func_800770B8(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
 
     /* FAKE: empty do-while(0) bounds the scheduling region so the frame-save
        stores are not interleaved with the first body insns
-       (do-while-zero-exception) */
+       (do-while-zero-exception); without it: score 5 */
     do {
     } while (0);
     sp[0] = 0;
@@ -1084,7 +1084,7 @@ s32 func_800770B8(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
         SELWORK->f04 = list;
         /* FAKE: dead store (never read) takes work out of the call result's
            cse class so the 0x30/0x34 clears use $v0, not $s1
-           (dead-store-fake-exception, Q78) */
+           (dead-store-fake-exception, Q78); without it: score 2 */
         work = list;
         SELWORK->f30 = 0;
         SELWORK->f34 = 0;
@@ -1093,7 +1093,8 @@ s32 func_800770B8(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     do {
         SelWork *base = SELWORK;
         /* FAKE: row pointer alias to D_800A35D0, for the same-value re-set
-           below (pointer-alias-fake-exception) */
+           below (pointer-alias-fake-exception); direct D_800A35D0 with no
+           re-set: score 19 */
         s16(*row)[2];
         a2 = 0;
         base->f10.half[t0] = 0;
@@ -1123,7 +1124,7 @@ s32 func_800770B8(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
                 sp[t0] += 1;
                 /* FAKE: same-value dead store keeps D_800A35D0's lui/addiu
                    inside the outer loop instead of hoisted
-                   (dead-store-fake-exception) */
+                   (dead-store-fake-exception); without it: score 18 */
                 row = D_800A35D0;
             }
         }

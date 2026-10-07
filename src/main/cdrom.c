@@ -229,10 +229,10 @@ void sys_Exec(s32 a0, s32 *a1, s32 a2) {
 }
 
 void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
-    /* 25-32 bytes: the target's 0x48 frame implies a larger argv buffer than
-       the 24 bytes ever written (s32 [7] and [8] are byte-identical);
-       oversized-locals carve-out (dead-vars-local-array), owner ruling
-       2026-07-13. */
+    /* FAKE: frame layout. The target's 0x48 frame implies a larger argv
+       buffer than the 24 bytes ever written (s32 [7] and [8] are
+       byte-identical; sp[6], the bytes written: score 15); oversized-locals
+       carve-out (dead-vars-local-array), owner ruling 2026-07-13. */
     s32 sp[8];
     s32 v0;
 

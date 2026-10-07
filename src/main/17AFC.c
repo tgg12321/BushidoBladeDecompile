@@ -7,6 +7,16 @@
 #include "gte.h"
 #include "bb2_const.h"
 
+/* P1/P2 round scores and tiebreakers, declared here as single u8s (per-file
+ * declarations: Q21-Q25, no-new-park-categories aggregate-merge exception):
+ * every counting aggregate spelling of func_800340A0 misses the shipped code
+ * (constant subscripts put element 0 behind a base register; the
+ * index-variable and regrouped-condition spellings miss its round-result
+ * stores or compares); dummy-index and pointer-alias spellings are refused
+ * (Q22/Q23). src/main/9F9C.c declares the same bytes as D_800A3898[2] /
+ * D_800A38AA[2] for func_8001CE60, whose player-indexed accesses single bytes
+ * do not produce; no single declaration compiles both files with a counting
+ * spelling. */
 extern u8 D_800A3898;
 extern u8 D_800A3899;
 extern u8 D_800A38AA;
@@ -684,7 +694,8 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
                 s16 var_v0_2;
                 if (temp_v0_3 == temp_v1_3) {
                     /* FAKE: do-while(0) loop depth weights these refs in
-                     * register allocation (do-while-zero-exception) */
+                     * register allocation; without it score 12
+                     * (do-while-zero-exception) */
                     do {
                         func_80032854(arg0->index, 1, arg1, (s16 *)0);
                         func_80032854(arg0->index, 0x25, arg1, (s16 *)0);
@@ -702,7 +713,7 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
                         sel19:
                             /* FAKE: store duplicated into this arm instead of
                              * sharing block_48's copy; cross-jumping picks
-                             * which copy survives */
+                             * which copy survives; sharing it scores 2 */
                             arg0->unk_286 = 0x19;
                             goto block_49;
                         }
@@ -713,7 +724,7 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
                     {
                         /* FAKE: named intermediate for the selected constant
                          * keeps the two constants in the target's order (a
-                         * plain ternary reorders them) */
+                         * plain ternary reorders them: score 2) */
                         s32 sel = (var_s1 == 0) ? 0xB : 0x19;
                         var_v0_2 = sel;
                     }
@@ -725,7 +736,8 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
                         goto set_0xB;
                     }
                     /* FAKE: store duplicated into the `<` arm instead of
-                     * sharing do_store_calls's copy (cross-jump tail merge) */
+                     * sharing do_store_calls's copy (cross-jump tail merge);
+                     * sharing it scores 4 */
                     arg0->unk_286 = var_v0_4;
                     goto do_calls;
                 }
@@ -885,11 +897,11 @@ void func_800288C8(void) {
     s32 reach;
     /* FAKE: two values -- the squared distance, then its square root (clamped
      * to 1); a separate squared-distance local reorders the copy and the r*r
-     * test */
+     * test (score 7) */
     s32 dist;
     /* FAKE: two values -- the gte_Lzc input copy of the squared distance,
-     * then the table byte; a fresh copy local takes $v1, not the target's $a0
-     * (Q28) */
+     * then the table byte; a fresh copy local (or dist itself) takes $v1, not
+     * the target's $a0: score 13 (Q28) */
     s32 tbl;
     s32 pen;
     s32 bias;
@@ -1541,7 +1553,7 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     s32 temp;
     s32 hlen;
     /* temp2: the site-1 gte_ldlzc input copy of `temp`, then the
-     * D_8008D118 table byte (Ruling 11, Q28) */
+     * g_sqrt_table_u8 byte (Ruling 11, Q28) */
     s32 temp2;
     s32 len_sq;
     s32 hit_sq;
@@ -1685,7 +1697,8 @@ void func_8002AB08(s32 mode) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     /* FAKE: second handle to D_800A37E8, so the address is rematerialized at
      * each of the three calls as in the target; spelled directly, cse keeps it
-     * in a callee-saved register (pointer-alias-fake-exception; vector: Q96) */
+     * in a callee-saved register: score 6 (pointer-alias-fake-exception;
+     * vector: Q96) */
     s16 *vec = &D_800A37E8;
     s32 i;
 
@@ -2081,7 +2094,7 @@ s32 func_8002BC68(s32 arg0) {
     /* FAKE: pointer alias to D_80101EC8[0] / [1]: holds the table base in a
      * register as the target does; without it every access is an absolute
      * symbol+offset address (mips.h:2300 GO_IF_LEGITIMATE_ADDRESS accepts it
-     * as is), one instruction more (pointer-alias-fake-exception) */
+     * as is), one instruction more: score 14 (pointer-alias-fake-exception) */
     Unk80101EC8Record *t2_base;
     Unk80101EC8Record *t3_base;
 
@@ -2145,7 +2158,7 @@ s32 func_8002BEA0(void) {
     /* FAKE: pointer alias to D_80101EC8[0] / [1]: holds the table base in a
      * register as the target does; without it every access is an absolute
      * symbol+offset address (mips.h:2300 GO_IF_LEGITIMATE_ADDRESS accepts it
-     * as is), one instruction more (pointer-alias-fake-exception) */
+     * as is), one instruction more: score 14 (pointer-alias-fake-exception) */
     Unk80101EC8Record *t2_base;
     Unk80101EC8Record *t3_base;
 
@@ -2262,7 +2275,7 @@ void func_8002C22C(void) {
     /* FAKE: pointer alias to D_80101EC8[1]: the target holds record 1's base in
      * a register; without it every access is an absolute address
      * (GO_IF_LEGITIMATE_ADDRESS, gcc-2.7.2/config/mips/mips.h:2286) and the
-     * direct D_80101EC8[1] form costs ten instructions
+     * direct D_80101EC8[1] form costs ten instructions (score 26)
      * (pointer-alias-fake-exception) */
     Unk80101EC8Record *rec1 = &D_80101EC8[1];
 
@@ -2341,7 +2354,7 @@ void func_8002C61C(void) {
     /* FAKE: pointer aliases to D_80101EC8[0] / [1]: the target keeps both
      * bases in $s1 / $s0 for unk_3C / unk_286 / unk_0C / unk_F4 / unk_28C;
      * without them those accesses become absolute lui pairs
-     * (GO_IF_LEGITIMATE_ADDRESS, mips.h:2286): 12 more instructions
+     * (GO_IF_LEGITIMATE_ADDRESS, mips.h:2286): 12 more instructions, score 38
      * (pointer-alias-fake-exception) */
     Unk80101EC8Record *s1 = &D_80101EC8[0];
     Unk80101EC8Record *s0 = &D_80101EC8[1];
@@ -2467,7 +2480,7 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
         r = rec->unk_0C;
         /* FAKE: the AABB reject flag is staged through `hit` (set on
          * reject, read by the `continue` test, then overwritten by the call); a
-         * separate flag takes $a1 instead of the target's $s0 */
+         * separate flag takes $a1 instead of the target's $s0 (score 3) */
         hit = 0;
         x = SPAD->unkA8[id][i].x;
         if (scr->unk84.x < x - r || x + r < scr->unk78.x) {
@@ -3018,7 +3031,8 @@ dist_calc: {
             if (disc >= 0) {
                 /* FAKE: same-value re-store of `ud` (it already holds disc):
                  * with a single def cse merges ud into disc and deletes the
-                 * copy the target keeps in $a0; the store emits nothing */
+                 * copy the target keeps in $a0; the store emits nothing;
+                 * without it score 3 */
                 ud = disc;
                 __asm__ volatile(
                     "addu   $t4, %1, $zero\n"
@@ -4485,7 +4499,8 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
  * cop2-addressing-preamble-cluster); gte_ldlv0's lhu/lhu/sll/or pack is the
  * macro's own text (inline_c.h:101-110; owner Ruling A 2026-09-02,
  * cop2-addressing-preamble-cluster). One
- * FAKE: the do-while(0) wrap around gte_stlvnl (see its annotation). */
+ * FAKE: the do-while(0) wrap around gte_stlvnl (see its annotation;
+ * without it score 13). */
 void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
     s16 dir[4];
@@ -4532,7 +4547,8 @@ void func_800300B4(Obj80106A78 *arg0) {
     /* PsyQ 4.5 inline_c.h macro gte_stlvnl(r): MAC1/MAC2/MAC3
      * ($25/$26/$27) to r. */
     /* FAKE: do-while(0) around gte_stlvnl weights &mac's refs so it
-     * takes $s2 ahead of arg0 (do-while-zero-exception) */
+     * takes $s2 ahead of arg0; without it score 13
+     * (do-while-zero-exception) */
     do {
         __asm__ volatile(
             "move   $12, %0\n"
@@ -5523,7 +5539,8 @@ void func_800324D0(Unk80101EC8Record *rec) {
             ptr++;
             /* FAKE: the loop tail `c = *ptr; ptr++;` duplicated into the
              * first five arms; the extra walker refs steer register allocation
-             * and cross-jumping re-merges the tails */
+             * and cross-jumping re-merges the tails; a plain `break` in each
+             * scores 27 */
             switch (c - 0x80) {
             case 0:
                 rec->unk_A1[0] = val;
@@ -5579,7 +5596,8 @@ void func_800324D0(Unk80101EC8Record *rec) {
 }
 
 /* 3D positional sound pan/volume: listener-relative delta of *arg1,
- * distance attenuation via the D_8008D118 log table (GTE LZCS/LZCR island for
+ * distance attenuation via the g_sqrt_table_u8 byte-LUT square root (GTE
+ * LZCS/LZCR island for
  * >= 0x400), then a sin/cos left/right pan scaled by distance, clamped to 0x7F,
  * sent to func_8005C650(arg0, L, R). The island is an enumerated carrier
  * under the owner cop2 cluster grant (cop2-addressing-preamble-cluster);
@@ -6160,8 +6178,8 @@ loop:
     }
 
     /* FAKE: do-while(0) puts a loop note on `done:` so reorg keeps the
-     * target's branch sense for the `bnez done` below (do-while-zero-exception)
-     */
+     * target's branch sense for the `bnez done` below; without it score 1
+     * (do-while-zero-exception) */
     do {
         if ((u32)a1val < 0x80) {
             u8 val = s0[0];
@@ -6516,7 +6534,7 @@ void func_80033D38(void) {
     /* FAKE: pointer to the record, admitted on SOTN precedent (Q50, Q53);
      * mechanism: its register (t1) is the base of every times[] access and of
      * the shift loop's pointer; written directly, each D_80106A50.times[]
-     * access is its own lui/addu/%lo. */
+     * access is its own lui/addu/%lo: score 34. */
     FileRecord *rec = &D_80106A50; /* SOTN: src/dra/4CE2C.c:63 @db41b28 */
     s32 n = 3;
     s32 j;

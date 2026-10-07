@@ -407,7 +407,8 @@ void math_TransposeMatrixInPlace(MATRIX *a0) {
     /* FAKE: statement staging — saving one
        side of all three pairs up front seats x/y/z in $a1/$v1/$v0 for
        the whole body with the scratch reloads sharing $a2, and keeps
-       the load-delay nop at +0x18 unfilled, as in the target. */
+       the load-delay nop at +0x18 unfilled, as in the target; three plain
+       swaps: score 12. */
     s16 t, x, y, z;
     y = a0->m[0][1];
     x = a0->m[0][2];
@@ -606,9 +607,9 @@ void gpu_OffsetTPageClutAt6And2(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
 /* Walk a packet stream of primitive groups (the cursor starts at the
  * scratchpad word) and shift every textured primitive's texture source by
  * (arg0, arg1) and its CLUT by (arg2, arg3): via gpu_OffsetTexPoly* for
- * mode-0 groups, via func_80043E98 / func_80043F0C plus a per-vertex v shift
- * for mode-1 / mode-2 groups.  Untextured groups are skipped using the
- * per-type halfword sizes in D_80095588. */
+ * mode-0 groups, via gpu_OffsetTPageClutAt0And4 / gpu_OffsetTPageClutAt6And2
+ * plus a per-vertex v shift for mode-1 / mode-2 groups.  Untextured groups are
+ * skipped using the per-type halfword sizes in D_80095588. */
 void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
     s32 count;
     s32 mode;
@@ -819,9 +820,9 @@ void gpu_OffsetTexPolyFT3(POLY_FT3 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
     p->clut = cx | ((clut & 0x8000) | (cy << 6));
 }
 
-/* Quad counterpart of func_80043BD0: shift a textured quad's texture source
- * (tpage x/y by du/dv, all four vertex v by dv, clut x/y by dcx/dcy), each
- * packed u16 field updated in place inside its bit range. */
+/* Quad counterpart of gpu_OffsetTexPolyFT3: shift a textured quad's texture
+ * source (tpage x/y by du/dv, all four vertex v by dv, clut x/y by dcx/dcy),
+ * each packed u16 field updated in place inside its bit range. */
 void gpu_OffsetTexPolyFT4(POLY_FT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
     u16 tpage, clut;
     s32 tx, ty, cx, cy;
@@ -843,7 +844,7 @@ void gpu_OffsetTexPolyFT4(POLY_FT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
 /* Shift a gouraud-textured triangle's texture source: the tpage x field
  * (64-px pages) by du, the tpage y field (256-px pages) and every vertex v
  * by dv, and the clut x (16-px units) / y fields by dcx / dcy.  Same update
- * as func_80043BD0 on a POLY_GT3. */
+ * as gpu_OffsetTexPolyFT3 on a POLY_GT3. */
 void gpu_OffsetTexPolyGT3(POLY_GT3 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
     u16 tpage, clut;
     s32 tx, ty, cx, cy;
@@ -861,9 +862,9 @@ void gpu_OffsetTexPolyGT3(POLY_GT3 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
     p->clut = cx | ((clut & 0x8000) | (cy << 6));
 }
 
-/* Quad counterpart of func_80043D34: shift a gouraud-textured quad's texture
- * source (tpage x/y by du/dv, all four vertex v by dv, clut x/y by dcx/dcy),
- * each packed u16 field updated in place inside its bit range. */
+/* Quad counterpart of gpu_OffsetTexPolyGT3: shift a gouraud-textured quad's
+ * texture source (tpage x/y by du/dv, all four vertex v by dv, clut x/y by
+ * dcx/dcy), each packed u16 field updated in place inside its bit range. */
 void gpu_OffsetTexPolyGT4(POLY_GT4 *p, s32 du, s32 dv, s32 dcx, s32 dcy) {
     u16 tpage, clut;
     s32 tx, ty, cx, cy;
@@ -958,7 +959,7 @@ void func_80044098(s16 a0) {
                 *v1 -= (s32)a6;
                 /* FAKE: `v1++; v1--;` cancellation pair adds loop-weighted refs
                    so the pointer gets $v1 and the counter $a0 (F6 cancellation
-                   pair, no-new-park-categories) */
+                   pair, no-new-park-categories); without it: score 13 */
                 v1++;
                 v1--;
                 v1++;
@@ -1034,7 +1035,7 @@ s32 func_80044170(s32 *a0, ...) {
 
 s32 func_8004428C(s32 *base, s16 *offsets) {
     /* FAKE: param alias gives the target's prologue save order
-       (pointer-alias-fake-exception) */
+       (pointer-alias-fake-exception); base used directly: score 4 */
     s32 *b = base;
     s32 *slots = b + 1;
     s32 count = 0;

@@ -98,7 +98,7 @@ s32 func_80084CC0(s16 a0, s16 a1) {
     u8 prev;
     /* SOTN: src/main/psxsdk/libsnd/seqread.c:57 @aa53500 */
     /* FAKE: Q51 reused variable (Q53); a separate local per 0x90 arm changes
-       the register allocation order. */
+       the register allocation order: score 40. */
     u8 velocity;
     s32 ret;
     state = &_ss_score[a0][a1];

@@ -51,7 +51,7 @@ typedef struct {
     /* 0x24 */ CdlCB cbsync;  /* D_800A14F4 */
     /* 0x28 */ CdlCB cbready; /* D_800A14F8 */
     /* 0x2C */ s32 cbdata;    /* D_800A14FC */
-    /* 0x30 */ s32 tslmode;   /* D_800A1500 */
+    /* 0x30 */ s32 tslmode;   /* 0x800A1500 */
 } CdlREAD;
 
 extern volatile CdlREAD D_800A14D0;

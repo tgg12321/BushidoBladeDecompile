@@ -322,7 +322,7 @@ extern s32 D_800A13FC[];
 
 s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async) {
     /* FAKE: one counter for both loops, reused as SOTN's CD_cw reuses its i
-     * (Q51, Q53); separate counters miss the target's allocation. */
+     * (Q51, Q53); separate counters miss the target's allocation: score 7. */
     s32 i; /* SOTN: src/main/psxsdk/libcd/bios.c:292 @aa53500 */
 
     if (CD_debug > 1) {
@@ -350,7 +350,8 @@ s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async) {
     *g_cd_reg0 = 0;
     /* FAKE: the parameter count D_800A13FC[com] read through the preceding
      * table's base, verbatim SOTN (Q50/Q55, Q53): cse keeps &D_800A12FC live
-     * and forms the count's address as base + 0x100, as in the target. */
+     * and forms the count's address as base + 0x100, as in the target;
+     * D_800A13FC[com] read directly: score 23. */
     /* SOTN: src/main/psxsdk/libcd/bios.c:314 @aa53500 */
     for (i = 0; i < D_800A12FC[com + 0x40]; i++) {
         *g_cd_reg2 = param[i];
@@ -565,7 +566,7 @@ s32 CD_getsector2(s32 a0, s32 a1) {
     {
         /* FAKE: volatile dummy local (Route B, Q48): the target stores the CHCR
          * read-back to its own $sp slot (8-byte frame); a plain local or a
-         * bare read drops the store and the frame. */
+         * bare read drops the store and the frame: score 10 (51/60 insns). */
         volatile s32 tmp;
         tmp = *g_cd_dma_ctrl;
     }

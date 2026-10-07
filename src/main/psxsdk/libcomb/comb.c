@@ -304,7 +304,7 @@ s32 _comb_control(u32 cmd, u32 arg, u32 param) {
             /* FAKE: pointer alias to CombWaitCallback: the direct form folds
                both accesses to %lo(CombWaitCallback); through one pointer the
                address is a single pseudo shared by load and store, as in the
-               target. */
+               target; direct form: score 5. */
             s32 (**slot)(s32, s32) = &CombWaitCallback;
 
             ret = (s32)*slot;

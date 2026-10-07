@@ -122,13 +122,13 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     g_stage_variant = 0;
     /* FAKE: s1 = s4 routed through a delta-rebase detour that combine folds
        back (zero bytes); the extra refs lift s1's allocation priority above
-       the s2 pointer, as in the target */
+       the s2 pointer, as in the target; plain s1 = s4: score 32 */
     s1 = (s32 *)((s32)s4 - (s32)s0);
     s1 = (s32 *)((s32)s1 + (s32)s0);
     switch (stage_id) {
     case 3: {
         /* FAKE: once-written pointer naming the stage header's last word; it
-         * fixes the sched1 load/store order */
+         * fixes the sched1 load/store order; s0[s3 - 1] inline: score 9 */
         s32 *hp = (s32 *)((s3 << 2) + (s32)s0) - 1;
         s1 = s2;
         s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
@@ -413,7 +413,8 @@ void rcnt_GetCnt1(void) { GetRCnt(0xF2000001); }
 
 void game_Init(void) {
     /* FAKE: constant-holder locals set in source order ahead of the fence
-       below so 1 seats in $v0 and 2 in $v1 before the store tail */
+       below so 1 seats in $v0 and 2 in $v1 before the store tail; literals:
+       score 6 */
     s16 one;
     s16 two;
 
@@ -1076,7 +1077,8 @@ void func_80047ED0(s32 a0) { D_800A33D0 = (s16 *)((u8 *)D_800A33D0 + a0); }
 
 void func_80047EE8(s32 arg0, s32 arg1) {
     /* FAKE: unwritten volatile pad reproduces the target's untouched 32-byte
-     * locals region (sp+0x18..0x37) (phantom-frame pad). SOTN precedent:
+     * locals region (sp+0x18..0x37) (phantom-frame pad; without it: score
+     * 10). SOTN precedent:
      * `volatile u32 pad; // !FAKE:` (src/st/sel/2C048.c:564), `volatile u32
      * pad[4]; // FAKE` (src/st/sel/stream.c:80). */
     volatile u32 pre_pad[8];
@@ -1090,7 +1092,7 @@ void func_80047EE8(s32 arg0, s32 arg1) {
     saved = (s32)p;
     /* FAKE: dead store to a param; defeats cse2's substitution over
      * {arg0, p, saved} so the second pointer binds addu $s0,$s2,$v0, not $a0
-     * (dead-store-fake-exception) */
+     * (dead-store-fake-exception); without it: score 1 */
     arg0 = 0;
     p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
     v_off = *p;
@@ -1124,8 +1126,9 @@ void func_80047EE8(s32 arg0, s32 arg1) {
 }
 
 void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
-    // !FAKE: phantom-frame-slot pad (no-new-park-categories): target
-    // reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction touches
+    // !FAKE: phantom-frame-slot pad, without it: score 14
+    // (no-new-park-categories): target reserves 32 locals bytes at
+    // sp+0x18..sp+0x37 that no instruction touches
     volatile u32 pre_pad[8];
     u32 *p;
     s32 base_addr;
@@ -1134,7 +1137,7 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
     base_addr = arg0;
     p = (u32 *)arg0;
     /* FAKE: defeats cse2 folding the {arg0, p, base_addr} equivalence
-       class */
+       class; without it: score 1 */
     arg0 = 0;
     p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
@@ -1169,8 +1172,8 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
 }
 
 void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
-    // !FAKE: phantom-frame-slot pad: target reserves 32 locals bytes at
-    // sp+0x18..sp+0x37 that no instruction touches
+    // !FAKE: phantom-frame-slot pad (without it: score 20): target
+    // reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction touches
     volatile u32 pre_pad[8];
     u32 *p;
     s32 base_addr;
@@ -1178,8 +1181,9 @@ void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
     s32 new_var;
     base_addr = arg0;
     p = (u32 *)arg0;
-    // !FAKE: dead store to a parameter (as in func_80047FBC); defeats cse
-    // folding {arg0, p, base_addr}, which emits one base copy instead of two
+    // !FAKE: dead store to a parameter, as in func_80047FBC (without it:
+    // score 16); defeats cse folding {arg0, p, base_addr}, which emits
+    // one base copy instead of two
     arg0 = 0;
     p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
@@ -1222,7 +1226,8 @@ void func_800481E8(s32 arg0, s32 arg1) {
      * through $s0 first ($s0=$a0; $s2=$s0), as in the target. */
     /* FAKE: unwritten volatile pad reproduces the target's untouched 32-byte
      * locals region (sp+0x18..0x37), as the FAKE pads of func_80047EE8 /
-     * func_80047FBC (phantom-frame pad). SOTN precedent: `volatile u32 pad;
+     * func_80047FBC (phantom-frame pad; without it: score 10). SOTN
+     * precedent: `volatile u32 pad;
      * // !FAKE:` (src/st/sel/2C048.c:564), `volatile u32 pad[4]; // FAKE`
      * (src/st/sel/stream.c:80). */
     volatile u32 pre_pad[8];
@@ -1234,7 +1239,8 @@ void func_800481E8(s32 arg0, s32 arg1) {
     base = p;
     /* FAKE: dead store to a param -- breaks the $a0==base association:
      * without it GCC keeps arg0 live in $a0 and emits `addu $s0,$a0,$v0`;
-     * with it the second pointer binds to base in $s2, as in the target. */
+     * with it the second pointer binds to base in $s2, as in the target;
+     * without it: score 1. */
     arg0 = 0;
     p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
     p = (u32 *)((s32)base + (((*p) >> 2) << 2));
@@ -1449,7 +1455,7 @@ u16 cx, cy;
         p = tim + 2;
         /* !FAKE: cancellation pair (F6): bumping tim stops cse rebasing the
          * pixel-block reads onto tim, so they keep p as base as in the
-         * target; flow deletes both */
+         * target; flow deletes both; without the pair: score 7 */
         tim++;
         tim--;
         spr->x = x;
@@ -1846,8 +1852,8 @@ void func_800493E4(s32 arg0) {
     if (temp_v1 != 0xFF) {
         D_800EF980[temp_v1] = 1;
         /* FAKE: loop notes keep the D_80099CC9 lbu below the first sh (target
-           has the unfilled load-delay nop) and keep the shared 1 cached in $v1
-         */
+           has the unfilled load-delay nop) and keep the shared 1 cached in $v1;
+           without it: score 11 */
         do {
         } while (0);
         D_800EF980[D_80099CC9[idx]] = 1;
@@ -1875,7 +1881,8 @@ s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2) {
     s32 i;
     for (i = 0; i < arg1; i++) {
         /* FAKE: do-while(0) loop-note ref weighting flips the sum/i allocno
-           priority so sum seats in $v1 and i in $a3 (matches target). */
+           priority so sum seats in $v1 and i in $a3 (matches target); without
+           it: score 6. */
         do {
             sum += arg0;
             arg0 -= 1;
@@ -2085,9 +2092,9 @@ extern s16 D_80099D3C[];
  * loopless, so no back-edge carrier exists; hence the FAKE pad. SOTN
  * precedent: `volatile char pad[8] //! FAKE`. */
 void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
-    // !FAKE: phantom-frame-slot pad (no-new-park-categories): target
-    // reserves 8 locals bytes at sp+0x10..sp+0x17 that no instruction
-    // touches; without it: score 12
+    // !FAKE: phantom-frame-slot pad, without it: score 12
+    // (no-new-park-categories): target reserves 8 locals bytes at
+    // sp+0x10..sp+0x17 that no instruction touches
     volatile u32 pre_pad[2];
     u8 *new_var6;
     u8 temp_v1;
@@ -2119,7 +2126,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     obj->node.unk0 = 0;
     obj->node.unk1 = 0;
     /* FAKE: a1_val reads *p_anim ahead of each node's stores; read at the unk2
-       stores the lh moves down to them (first 29, second 6, both 35). */
+       stores the lh moves down to them (score: first 29, second 6, both 35). */
     a1_val = (*p_anim) * 2;
     obj->node.unk4 = 6;
     obj->node.unk8 = 0;

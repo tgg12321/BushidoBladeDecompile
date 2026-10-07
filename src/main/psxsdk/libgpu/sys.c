@@ -729,7 +729,8 @@ s32 get_ofs(s32 arg0, s32 arg1) {
 s32 get_tw(RECT *tw) {
     if (tw != 0) {
         /* FAKE: written-never-read scratch (SOTN dra/62DEC.c sp70[4] family;
-           dead-vars-local-array carve-out) */
+           dead-vars-local-array carve-out); without it: score 23 (25/33
+           insns) */
         u32 tmp[4];
         u8 r, b1;
         s32 g, b2;
@@ -1062,7 +1063,8 @@ s32 _exeque(void) {
         _qlog[0] = (s32)_que[_qout].func;
         D_8009BF6C = _que[_qout].arg;
         /* FAKE: do-while(0) keeps this log store between the arg log store
-         * and the _qout advance; without it both sink to the loop test. */
+         * and the _qout advance; without it both sink to the loop test: score
+         * 10. */
         do {
             D_8009BF70 = _que[_qout].cb_arg;
         } while (0);

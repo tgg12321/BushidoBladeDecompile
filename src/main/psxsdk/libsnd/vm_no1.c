@@ -72,7 +72,7 @@ void vmNoiseOn(u8 vc) {
        and lands in $s0 as in the target; vc at each use puts the index in $a0
        and drops $s3 from the frame (no-new-park-categories
        named-intermediate; once-written per ordinary-c-judge-decidable
-       Ruling 1) */
+       Ruling 1); vc at each use: score 34 */
     idx = vc;
     SpuSetNoiseClock((_svm_cur.note - _svm_cur.tone_center) & 0x3F);
 

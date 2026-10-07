@@ -41,7 +41,8 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
         }
         SetDrawMove(D_800A3378, &buf, u, v);
         pkt = (OTag *)D_800A3378;
-        /* FAKE: SDK bitfield view of an OT word retains tag length;
+        /* FAKE: SDK bitfield view of an OT word retains tag length
+         * (masked u32 copies, same behaviour: score 18; whole-word copies: 19);
          * SOTN PS1 use: src/main/psxsdk/libgpu/sys.c:288 */
         /* SOTN: include/psxsdk/libgpu.h:88 @db41b28eee52969244a52cc269c8163d1ed8826a */
         ot = (OTag *)D_800A378C;

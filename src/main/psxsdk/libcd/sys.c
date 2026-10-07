@@ -91,8 +91,8 @@ s32 CdControl(u8 a0, u8 *a1, u8 *a2) {
 
 loop:
     /* FAKE: do-while(0) loop-depth weighting seats count/a1/a2/idx/a0/saved/
-       elem/result in s0..s7; a real-loop restructure does not (do-while-zero)
-     */
+       elem/result in s0..s7; a real-loop restructure does not (do-while-zero);
+       without it: score 17 */
     do {
         CD_cbsync = 0;
 
@@ -142,7 +142,7 @@ s32 CdControlF(u8 a0, u8 *a1) {
 
 loop:
     /* FAKE: do-while(0) loop-depth weighting seats elem in s5 and result in
-       s6 (do-while-zero) */
+       s6 (do-while-zero); without it: score 20 */
     do {
         CD_cbsync = 0;
 

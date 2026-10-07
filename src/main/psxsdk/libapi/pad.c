@@ -125,7 +125,7 @@ s32 _IsVSync(void) {
         ret = 1;
     } else {
         /* FAKE: two-set else arm defeats the store-flag fold
-         * (dead-store-fake-exception) */
+         * (dead-store-fake-exception); ret = 0 alone: score 3 */
         ret = 1;
         ret = 0;
     }

@@ -1700,7 +1700,7 @@ void func_8003DE14(RECT *rect, s32 count) {
                             /* FAKE: naming gm makes g_src die at the mask, not
                              * the store; the allocno priorities then give px
                              * $a0, red $a1, green $v1 as in the target; without
-                             * it red outranks px and takes $a0 */
+                             * it red outranks px and takes $a0: score 17 */
                             s32 gm;
                             src++;
                             rp = r_src * complement;
@@ -1728,8 +1728,9 @@ void func_8003DE14(RECT *rect, s32 count) {
                      * combine folds away (zero bytes); the extra refs rank the
                      * rect->w load first in local-alloc so it takes $v0 as in
                      * the target (`lh $v0,4($s0)` / `lh $v1,6($s0)`); the
-                     * natural bound gives it $v1 (dead-store-fake-exception
-                     * chain extender, owner ruling 2026-07-01) */
+                     * natural bound gives it $v1: score 3
+                     * (dead-store-fake-exception chain extender, owner ruling
+                     * 2026-07-01) */
                 } while (j < rect->w * rect->h + rect->w - rect->w);
             }
 
@@ -1740,7 +1741,7 @@ void func_8003DE14(RECT *rect, s32 count) {
             }
             /* FAKE: j chain extender (+j/-j folds away); the extra refs lift j
              * above `complement` so the $t4/$t5 pair matches; without it they
-             * swap */
+             * swap: score 7 (all three FAKEs reverted: score 25) */
             LoadImage(rect, (u32 *)(((s32)dst_buf + j) - j));
             DrawSync(0);
             i++;
@@ -2309,7 +2310,7 @@ void func_8003EDC0(u16 *p, s32 arg1) {
         }
     }
     /* FAKE: the grid row counter i is reused as the run-table fill index; a
-     * fresh index local moves the row counter from $a3 to $a1. */
+     * fresh index local moves the row counter from $a3 to $a1: score 5. */
     i = 0;
     while ((w = *p++) != -1) {
         x = w % 32;
@@ -2324,7 +2325,8 @@ void func_8003EDC0(u16 *p, s32 arg1) {
     if (D_800A3230 >= 1000) {
         /* FAKE: the argument is unproven -- the halt stub ignores its
          * arguments (func_8003FA24 passes it a string). The target holds the
-         * count in $a0 at this jal; without the argument it is given $v1. */
+         * count in $a0 at this jal; without the argument it is given $v1:
+         * score 5. */
         func_80052C10(D_800A3230);
     }
     D_800A3678[0] = 0;

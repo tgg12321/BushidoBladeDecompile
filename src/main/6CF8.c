@@ -122,7 +122,7 @@ void func_800167EC(void) {
     s32 i;
     /* FAKE: pointer to the record beside direct global writes (Q50, Q53):
      * the header stores go off rec's register and the loop walks a pointer
-     * copied from it by 8. */
+     * copied from it by 8; D_80106A50 directly in the loop: score 19. */
     FileRecord *rec = &D_80106A50; /* SOTN: src/st/st0/2A218.c:48 @db41b28 */
 
     D_800A3710 = 0;
@@ -574,8 +574,8 @@ void func_800174F4(void) {
             break;
         }
         /* FAKE: the common `D_800A38F8 = cur + 1` store written in both arms
-         * (F7), as the target computes it per arm; one hoisted store gives 131
-         * insns, not the target's count. */
+         * (F7), as the target computes it per arm; one hoisted store: score 6
+         * (131/136 insns). */
         if (cur == temp2) {
             D_800A38F8 = cur + 1;
         } else {

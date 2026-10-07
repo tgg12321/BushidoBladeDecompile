@@ -26,7 +26,7 @@ void func_80034F88(void) {
         u = u & 0xF8;
         *q = u;
         /* FAKE: cse2 value invalidator: stops cse2 forwarding the sb into the
-         * following lbu. */
+         * following lbu; without it: score 27. */
         u = 0;
         u = *q;
         c = p->unk20_0;
@@ -38,7 +38,8 @@ void func_80034F88(void) {
         *q = c;
         {
             /* FAKE: the address object for flag blocks 1 and 2 (one hard
-             * register per allocno, no live-range splitting). */
+             * register per allocno, no live-range splitting); q reused or the
+             * global direct: score 39. */
             u8 *r = &D_80106A50.flags;
 
             v = *r;
@@ -67,7 +68,7 @@ void func_80034F88(void) {
         /* FAKE: the copy loop's counter is staged through the dead pointer q;
          * the loop-weighted references lift its allocation priority so it
          * takes $v1 and block 0's value lands in $a0, as in the target. No
-         * instruction is added. */
+         * instruction is added; a separate s32 counter: score 15. */
         for (q = 0; (s32)q < 3; q++) {
             c = p->unk17[(s32)q];
             D_80106A50.color[(s32)q] = c;
@@ -81,7 +82,7 @@ void func_8003504C(void) {
     u8 *s;
     /* FAKE: 5 and 20 held in locals so their `li`s are pre-loop insns
        scheduled ahead of the walker copy `s = p`; as literals they become loop
-       movables emitted behind the two p-copies. */
+       movables emitted behind the two p-copies; literals: score 4. */
     s32 new_var;
     s32 new_var2;
     s8 val;
@@ -164,7 +165,8 @@ void func_80035280(void) {
     u8 *src;
     /* FAKE: one hoisted pointer to the three 8-byte clock records
      * (D_80106A50.times) gives the target's single $a2 record cursor; indexing
-     * D_80106A50.times[i] at each use creates a second address movable. */
+     * D_80106A50.times[i] at each use creates a second address movable
+     * (score 24). */
     FileTimeRec *base;
     s32 i;
 
@@ -185,7 +187,7 @@ void func_80035280(void) {
          * through a named intermediate; they raise loop 2's insn count from 55
          * to 59, past loop.c's hoist threshold (58), so the /1800 magic
          * constant's lui/ori stays in the loop as in the target. combine folds
-         * the copies away. */
+         * the copies away; direct stores: score 15. */
         u8 mn;
         u8 sc;
         u8 hs;

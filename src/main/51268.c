@@ -164,7 +164,8 @@ void func_80060C60(void) {
 
 s32 func_80060CB8(s32 arg0, s32 arg1) {
     /* FAKE: single forward-order param alias; flips the s2/s1 save+copy pair
-     * order to the target's (param-local-alias-prologue-pair-flip) */
+     * order to the target's (param-local-alias-prologue-pair-flip); arg0
+     * throughout: score 4 */
     unsigned int new_var;
     RECT s;
     s32 v;
@@ -441,8 +442,7 @@ extern u8 D_800F115C;
 
 void func_80061658(s32 *arg0, s32 arg1) {
     /* FAKE: local pointer alias to D_800F116C keeps the address live in $a0
-     * across the switch; the direct-global form does not match (as in
-     * func_80061710) */
+     * across the switch; direct global: score 5 (as in func_80061710) */
     Unk1F800000Unk00 *v1 = &D_800F116C;
     s32 *p;
     u8 *q;
@@ -475,7 +475,7 @@ done:
 
 void func_80061710(s32 *arg0, s32 arg1) {
     /* FAKE: local pointer alias to D_800F116C keeps the address live in $a0
-     * across the switch; the direct-global form does not match */
+     * across the switch; direct global: score 5 */
     Unk1F800000Unk00 *v1 = &D_800F116C;
     s32 *p;
     u8 *q;
@@ -850,11 +850,11 @@ void func_800620B8(s16 *arg0, s32 *trans) {
     /* FAKE: pointer aliases of the four sprite tables
      * (pointer-alias-fake-exception): strip32 is set at the loop top so it is
      * hoisted where the target sets $fp; the other three are rebuilt in $t0 at
-     * each use. Tables used directly: 47; any one of the three: 3-7. */
-    TexRec *strip32; /* FAKE: alias of D_8009BA00 */
-    TexRec *alt32;   /* FAKE: alias of D_8009BA50 */
-    TexRec *strip16; /* FAKE: alias of D_8009BA30 */
-    TexRec *alt16;   /* FAKE: alias of D_8009BA58 */
+     * each use. Tables used directly: score 47; any one of the three: 3-7. */
+    TexRec *strip32; /* FAKE: alias of D_8009BA00; direct: score 35 */
+    TexRec *alt32;   /* FAKE: alias of D_8009BA50; direct: score 3 */
+    TexRec *strip16; /* FAKE: alias of D_8009BA30; direct: score 3 */
+    TexRec *alt16;   /* FAKE: alias of D_8009BA58; direct: score 7 */
 
     func_80060E38(arg0, trans);
     outer = D_800A3468;
@@ -889,7 +889,7 @@ void func_800620B8(s16 *arg0, s32 *trans) {
     strip16 = D_8009BA30; /* FAKE: alias; direct use scores 3 */
     alt16 = D_8009BA58;   /* FAKE: alias; direct use scores 7 */
     for (i = 0; D_800F1198[i].unk0 & 1; i++) {
-        strip32 = D_8009BA00; /* FAKE: alias, set here so loop.c hoists it */
+        strip32 = D_8009BA00; /* FAKE: hoisted alias; set pre-loop: score 6 */
         switch (D_800F1198[i].unk4 & 7) {
         case 3:
             *D_800A34A8 = 0x151;
@@ -901,9 +901,9 @@ void func_800620B8(s16 *arg0, s32 *trans) {
         sel_a:
             /* FAKE: `- strip32 + strip32` round trip: combine folds it away,
              * but the two extra uses rank strip32 high enough to get $fp;
-             * without it: 35. As pointer arithmetic the addu operands swap: 4;
-             * plain `&strip32[n]`: 38. (combine-foldable chain-extender,
-             * dead-store-fake-exception) */
+             * without it: score 35. As pointer arithmetic the addu operands
+             * swap: 4; plain `&strip32[n]`: 38. (combine-foldable
+             * chain-extender, dead-store-fake-exception) */
             D_800A348C = D_800A3488 =
                 (TexRec *)(((u32)D_800A32B8 % 6) * sizeof(*strip32) +
                            (s32)strip32 - (s32)strip32 + (s32)strip32);
@@ -1057,7 +1057,8 @@ s32 func_8006295C(void) {
 
     /* FAKE: the work-area base (D_800A34EC) is staged through `prim` before
      * prim becomes the quad cursor; keeps `mats = base + 0x78` out of the
-     * loop's giv init (target keeps `move s4,v0`) and puts base in s1. */
+     * loop's giv init (target keeps `move s4,v0`) and puts base in s1. A
+     * separate base local or the direct global: score 37. */
     prim = (POLY_FT4 *)D_800A34EC;
     count = 0;
     mats = (MATRIX *)((u8 *)prim + 0x78);
@@ -1501,7 +1502,8 @@ s32 func_80063E10(s32 lane) {
 
     /* FAKE: the work-area base (D_800A34EC) is staged through `prim` before
      * prim becomes the quad cursor: prim's pseudo lives across the calls and
-     * gets s2, where the target holds the base (a fresh local gets v0). */
+     * gets s2, where the target holds the base (a fresh local gets v0:
+     * score 12; direct global: 12). */
     prim = (POLY_FT4 *)D_800A34EC;
     mats = (MATRIX *)((u8 *)prim + 0x28);
     cm = (MATRIX *)((u8 *)prim + 0x168);
@@ -1534,7 +1536,7 @@ s32 func_80063E10(s32 lane) {
         /* FAKE: the slot's mask is named `bit` inside the test and not read
          * again; it stretches the D_800A3454[lane] address's life so loop.c
          * hoists it (target spills it to 32(sp)), and keeps combine from making
-         * the test srav/andi. */
+         * the test srav/andi. Without `bit`: score 43. */
         if (!(D_800A3454[lane] & (bit = 1 << i))) {
             continue;
         }
@@ -1744,7 +1746,8 @@ s32 func_80063E10(s32 lane) {
         }
     }
     /* FAKE: `end` keeps the fill position and prim walks the same buffer again
-     * to link each quad; with a fresh tail cursor sxy and prim swap s2/s3. */
+     * to link each quad; with a fresh tail cursor sxy and prim swap s2/s3:
+     * score 36. */
     end = prim;
     for (prim = D_800A37D4, k = 0; prim < end; prim++, k++) {
         D_800A34E8 = &prim->tag;
@@ -3128,7 +3131,7 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
     /* FAKE: unk00 / unk02 / unk04 / unk6C / unk80 are reached through the
      * plain pointers p0 / p2 / p4 / p6C / p80: member stores are
      * MEM_IN_STRUCT_P and let scalar accesses move across them (as members, p0:
-     * 6, p4: 2, p80: 2, p2: 24, p6C: 38; all five: 49). */
+     * scores 6, p4 2, p80 2, p2 24, p6C 38; all five 49). */
     u16 *p0 = &outer->unk00;
     u16 *p2 = &outer->unk02;
     u32 *p4 = &outer->unk04;
@@ -3666,7 +3669,8 @@ s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
 
             value = 5;
             /* FAKE: block fence keeps li v0,5 at the join-block head so
-               reorg steals it into all three incoming jump delay slots */
+               reorg steals it into all three incoming jump delay slots; without
+               it: score 4 */
             do {
             } while (0);
             p_2A = &D_800A34FC->unk_28.half[1];
@@ -3677,7 +3681,8 @@ s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
             p_12 = &D_800A34FC->unk_12;
             D_800A3524 = arg1;
             /* FAKE: sched fence keeps the D_800A3524 store adjacent to the
-               D_800A34FC load instead of sinking below the zero-stores */
+               D_800A34FC load instead of sinking below the zero-stores; without
+               it: score 2 */
             do {
             } while (0);
             D_800A3518 = 0;
@@ -3773,8 +3778,9 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     i = 0;
     arg1 <<= 4;
     one = 1;
-    /* FAKE: do{}while(0) around the loop seats sum in $t2 and bitpos in $t1;
-     * the `one` constant-holder schedules `li $t6,1` at the preheader. */
+    /* FAKE: do{}while(0) around the loop seats sum in $t2 and bitpos in $t1
+     * (without it: score 7); the `one` constant-holder schedules `li $t6,1`
+     * at the preheader (the literal: score 2; both: 9). */
     do {
         a3_off = 0;
         bitpos = 0;
@@ -3837,7 +3843,7 @@ s32 func_800693CC(s32 held, s32 pressed) {
     /* FAKE: frame layout. The draw context func_8006E390 fills is ten words
      * (siblings: s32 sp10[10]); the decoded input sits at word 12 and the
      * saved row mask at word 14 only to reproduce the target's 0x60 frame
-     * (sp+0x40 / sp+0x48); separate locals give the wrong frame. */
+     * (sp+0x40 / sp+0x48); separate locals give the wrong frame: score 11. */
     s32 context[15];
     s32 result;
     GpuDb *render_base;
@@ -3853,10 +3859,11 @@ s32 func_800693CC(s32 held, s32 pressed) {
     goto after_move;
 increment: {
     /* FAKE: the index-field clear mask, named so its load sits ahead of
-     * the alias (the literal moves `li -16` two slots). */
+     * the alias (the literal moves `li -16` two slots: score 2). */
     s32 clear_mask = ~0xF;
     /* FAKE: keep the availability address across the loop so GCC reloads
-     * its word each iteration; direct global reads hoist the word. */
+     * its word each iteration; direct global reads hoist the word: score 5
+     * (both loops: 10). */
     s32 *available = &D_8009BC04;
     do {
         s32 flags = D_800A34F8;
@@ -3870,7 +3877,8 @@ increment: {
     goto moved;
 decrement: {
     /* FAKE: keep the availability address across the loop so GCC reloads
-     * its word each iteration; direct global reads hoist the word. */
+     * its word each iteration; direct global reads hoist the word: score 5
+     * (both loops: 10). */
     s32 *available = &D_8009BC04;
     do {
         s32 flags = D_800A34F8;
@@ -3899,7 +3907,7 @@ after_move:
     if ((D_800A34F8 & 0xF) != 7) {
         if (((D_800A34F8 & 0xF) - 6) >= 0) {
             /* FAKE: one handle for the mask read-modify-write; the direct
-             * global form re-addresses D_8009BC08. */
+             * global form re-addresses D_8009BC08: score 9. */
             s32 *mask_ptr = &D_8009BC08;
             context[14] = *mask_ptr & 0x80;
             *mask_ptr = context[14] | (0x1F << ((D_800A34F8 & 0xF) - 5));
@@ -4208,7 +4216,8 @@ void func_80069E18(s32 arg0) {
 }
 
 /* FAKE: frame layout (oversized live object): the descriptor plus an
- * unwritten tail, so the locals region reaches the target's frame. */
+ * unwritten tail, so the locals region reaches the target's frame. The plain
+ * descriptor scores 12 (func_80069F80) / 14 (func_8006A1A0). */
 typedef struct {
     Unk8007352CEnv env;
     s32 tail[4];
@@ -5976,7 +5985,8 @@ void func_8006D808(
     *arg1 += 0xC;
 }
 
-/* FAKE: frame layout (oversized live object), as Env_69F80. */
+/* FAKE: frame layout (oversized live object), as Env_69F80; the plain
+ * descriptor: score 21. */
 typedef struct {
     Unk8007352CEnv env;
     s32 tail[2];

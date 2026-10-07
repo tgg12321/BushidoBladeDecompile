@@ -3,8 +3,8 @@
 #include "common.h"
 #include "libspu_internal.h"
 
-/* C ref: sotn-decomp src/psxsdk/libspu/s_sk.c; the S_SK relocs make _spu_RQ
- * one u16[4]. Its volatile declarations are Ruling-4
+/* C ref: sotn-decomp src/psxsdk/libspu/s_sk.c; S_SK reaches only _spu_RQ[0..3]
+ * (its relocations). Its volatile declarations are Ruling-4
  * (legitimate-volatile-interrupt-touched) grants. */
 
 void SpuSetKey(s32 on_off, u32 voice_bit) {
