@@ -47,7 +47,7 @@ RULING — per-file -G8 by proof; Q16 split/respelling order; -G8 screening scop
   object in gp range (a K1/K2/K3 object under [[per-file-gp-model]]: the `.sdata` range or an (A1) static or COMMON block)
   or honestly typed > 8 bytes — unless a both-ways build (full per-file pipeline at `-G8`
   and `-G0`) shows every access to it byte- and relocation-identical, banked in the ledger. It keeps the
-  source file's `NO_SR_FILES`, `EXPAND_LB_FILES`, `EXPAND_LH_FILES` memberships.
+  source file's `NO_SR_FILES`, `EXPAND_LH_FILES` memberships.
 - **(iv)** Every other function moves to the remaining file or a new adjacent `-G0` TU in original order, as
   a textually identical diff, with the source file's exact flags. A respelling under another rule lands FIRST
   (or is proven byte-neutral unsplit) — or, only when the ledger banks that it cannot be byte-neutral before
@@ -71,7 +71,7 @@ proof in `faa2ebb06^:memory/grind/camera_CalcAngles/g0proof/`). Staged, ALL requ
 the small-declared objects in that part get their real types first (each its own reviewed landing); the cut
 passes [[per-file-gp-model]]'s split tests in full (no shared gp symbol of any kind across the cut, so no Q67
 merge object's gp users are separated; [[rodata-object-alignment]] conditions 2-4; parts inherit
-`NO_SR_FILES`/`EXPAND_LB_FILES`/`EXPAND_LH_FILES`). Q89 is an added evidence class, not a waiver: it replaces
+`NO_SR_FILES`/`EXPAND_LH_FILES`). Q89 is an added evidence class, not a waiver: it replaces
 only (iii)'s "the TU holds only functions meeting (i)+(ii)" for this part, whose other functions qualify by a
 both-ways full build showing each byte- and relocation-identical. Everything else above still applies: (i)+(ii)
 banked for camera_CalcAngles; the rest of (iii) (no file-scope `__asm__`, `INCLUDE_ASM` or `INCLUDE_RODATA` in

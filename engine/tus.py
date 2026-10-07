@@ -120,7 +120,7 @@ def check(ld: str | Path = LD_SCRIPT, src: str | Path = SRC,
 
 
 # engine/buildconfig.py per-file flag sets, keyed by TU id (mirrors the Makefile).
-FLAG_LISTS = ("GP_FILES", "PSYQ_LIBRARY_FILES", "EXPAND_LB_FILES", "EXPAND_LH_FILES", "NO_SR_FILES")
+FLAG_LISTS = ("GP_FILES", "PSYQ_LIBRARY_FILES", "EXPAND_LH_FILES", "NO_SR_FILES")
 
 
 def flag_list_problems(src: str | Path = SRC, lists: dict[str, set] | None = None) -> list[str]:

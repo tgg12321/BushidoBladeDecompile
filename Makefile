@@ -139,7 +139,6 @@ PSYQ_LIBRARY_FILES := main/psxsdk/libcomb/comb main/psxsdk/libgpu/sys main/psxsd
 # -- Per-file lb/lh expansion opt-in --
 # ASPSX expands lb→lbu+sll+sra and lh→lhu+sll+sra in certain contexts.
 # These flags replicate that behavior via maspsx for files that need it.
-EXPAND_LB_FILES := main/175A4 main/17AFC main/24BF0 main/24F08 main/25788
 EXPAND_LH_FILES :=
 
 # -- Rodata alignment: object-relative, one rule for every C object --
@@ -158,12 +157,12 @@ NO_SR_FILES :=
 
 # Every per-file list names TU ids. An id that is not a TU stops the build: a
 # moved or renamed file must take its flags along, never silently lose them.
-FLAG_LISTS := GP_FILES PSYQ_LIBRARY_FILES EXPAND_LB_FILES EXPAND_LH_FILES NO_SR_FILES
+FLAG_LISTS := GP_FILES PSYQ_LIBRARY_FILES EXPAND_LH_FILES NO_SR_FILES
 $(foreach l,$(FLAG_LISTS),$(foreach f,$($(l)),$(if $(filter $(f),$(C_IDS)),,$(error $(l) names '$(f)', which is not a TU (no $(SRC_DIR)/$(f).c)))))
 
 # Helper: resolve CC/MASPSX flags based on whether file needs GP-relative
 cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))$(if $(filter $1,$(NO_SR_FILES)), -fno-strength-reduce)
-maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(PSYQ_LIBRARY_FILES)),, -G8)$(if $(filter $1,$(EXPAND_LB_FILES)), --expand-lb)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)
+maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(PSYQ_LIBRARY_FILES)),, -G8)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)
 
 # Shared pipeline dependencies for every C object. Without these, changing
 # pipeline/toolchain config can leave stale objects in place because

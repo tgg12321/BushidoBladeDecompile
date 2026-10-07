@@ -9,7 +9,7 @@ Every surface keyed by the id follows the file:
   - git mv src/OLD.c src/NEW.c
   - bb2.ld: every `build/src/OLD.o(<section>);` line, in place (link order kept)
   - Makefile per-file lists and engine/buildconfig.py sets (GP / PSYQ_LIBRARY /
-    EXPAND_LB / EXPAND_LH / NO_SR), in place
+    EXPAND_LH / NO_SR), in place
   - tools/canonical_asm_regions.json `file` (the islands are re-hashed from the
     moved file first; a mismatch refuses)
   - oracle/manifest.json corpus key and golden-fixture `file` (hash kept: the
@@ -35,7 +35,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-FLAG_LISTS = ("GP_FILES", "PSYQ_LIBRARY_FILES", "EXPAND_LB_FILES", "EXPAND_LH_FILES", "NO_SR_FILES")
+FLAG_LISTS = ("GP_FILES", "PSYQ_LIBRARY_FILES", "EXPAND_LH_FILES", "NO_SR_FILES")
 _ID_RE = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_.\-]*(/[A-Za-z0-9_][A-Za-z0-9_.\-]*)*$")
 RENAMES_HEADER = ("# TU renames (restructure, owner decision Q106 D9): old id, new id, and the\n"
                   "# HEAD the move was made on (`after:<sha>`; the move is the next commit that\n"

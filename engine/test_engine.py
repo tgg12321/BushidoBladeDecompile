@@ -5473,9 +5473,9 @@ def test_move_tu() -> None:
             "bb2.ld": ("SECTIONS {\n        build/src/gpu.o(.rodata);\n        build/src/comb.o(.rodata);\n"
                        "        build/src/gpu.o(.text);\n        build/src/comb.o(.text);\n"
                        "        build/src/comb.o(.bss);\n}\n"),
-            "Makefile": ("GP_FILES := gpu\nPSYQ_LIBRARY_FILES := comb gpu\nEXPAND_LB_FILES :=\n"
+            "Makefile": ("GP_FILES := gpu\nPSYQ_LIBRARY_FILES := comb gpu\n"
                          "EXPAND_LH_FILES :=\nNO_SR_FILES :=\n"),
-            "engine/buildconfig.py": ('GP_FILES = {"gpu"}\nEXPAND_LB_FILES = set()\nEXPAND_LH_FILES = set()\n'
+            "engine/buildconfig.py": ('GP_FILES = {"gpu"}\nEXPAND_LH_FILES = set()\n'
                                       'PSYQ_LIBRARY_FILES = {"comb", "gpu"}\nNO_SR_FILES = set()\n'),
             "oracle/manifest.json": json.dumps({"corpus": {"src/comb.c": "h1", "src/gpu.c": "h2"},
                                                 "golden_fixtures": [{"name": "f", "file": "src/comb.c"}]},
