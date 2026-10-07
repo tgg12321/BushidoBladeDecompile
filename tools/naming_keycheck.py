@@ -6,8 +6,10 @@ changed, added, deleted or renamed file must be explained by the wave's old->new
 same substitutions the wave tools apply (tools/naming_wave.py, tools/data_wave.py):
 
   src/**, include/** *.c *.h  ctokens(new) == ctokens(old with the pairs substituted in code,
-                              string literals (escape-aware) and comments): C tokens plus each
-                              comment at its place and `#define NAME(` adjacency. Files whose
+                              string literals (escape-aware) and comments), as is or after
+                              tools/format.py (a longer name can re-wrap or hoist a comment):
+                              C tokens plus each comment at its place and `#define NAME(`
+                              adjacency. Files whose
                               only change is in comments are listed for the reviewer.
   memory/**/layer2.jsonl      byte-equal to naming_wave.retarget_layer2_record(old) for its ledger's
                               rename (func retargeted, renamed_from extended, verdict_file moved).
@@ -129,6 +131,27 @@ def ctokens(text: str) -> list[str]:
         out.append(tok)
         prev = (prev + [tok])[-2:]
     return out
+
+
+_FMT = None
+
+
+def formatted(path: str, text: str) -> str | None:
+    """`text` as tools/format.py would land it (format guard: staged C is always formatted), or
+    None when the pinned clang-format is not installed. A rename can lengthen a line, and the
+    formatter then re-wraps or hoists a comment; the wave is checked against that output."""
+    global _FMT
+    if _FMT is None:
+        import format as cfmt  # tools/format.py
+        exe = CODE / ".venv/bin/clang-format"
+        _FMT = (cfmt, str(exe)) if exe.exists() else False
+    if not _FMT:
+        return None
+    cfmt, exe = _FMT
+    try:
+        return cfmt.format_text(exe, path, text)
+    except Exception:
+        return None
 
 
 def sub_comments(pat: re.Pattern, repl, text: str) -> tuple[str, int]:
@@ -420,6 +443,10 @@ def main() -> int:
         if new_path.endswith((".c", ".h")) and new_path.startswith(("src/", "include/")):
             want = sub_comments(pat, repl, nw.sub_c(pat, repl, old)[0])[0]
             t_want, t_new = ctokens(want), ctokens(new)
+            if t_want != t_new:
+                fw = formatted(new_path, want)
+                if fw is not None and ctokens(fw) == t_new:
+                    t_want = t_new  # the wave's text, as the formatter lands it
             if t_want == t_new and layer2.tokens(old) == layer2.tokens(new):
                 notes.append(f"{new_path}: comment substitutions only (read them)")
             if t_want != t_new:

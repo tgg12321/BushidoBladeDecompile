@@ -91,8 +91,9 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
    pairs come from the tools' own manifests; the report lists them). It fails closed. Every changed,
    added, deleted or renamed path must be the base with the pairs substituted, using the wave
    tools' own substitutions:
-   - C and header tokens, and each comment in its place, change only by the pairs. A moved
-     comment or a `#define NAME(` spacing change fails.
+   - C and header tokens, and each comment in its place, change only by the pairs, as is or as
+     `tools/format.py` lands them (a longer name can re-wrap or hoist a comment). Any other moved
+     comment, or a `#define NAME(` spacing change, fails.
    - Each moved `layer2.jsonl` must equal naming_wave's retarget of the old record. Every other
      moved ledger file moves unchanged, and nothing else under `memory/` changes.
    - The census CSV must equal a fresh `build_census.py` run (working tree only; it reads
