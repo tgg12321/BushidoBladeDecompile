@@ -37,6 +37,11 @@ error. So the burden of proof sits on the *name*, not on the doubt.
 
 ## Campaign status
 
+**Phase 3 (owner ruling Q111, 2026-10-04) — in progress.** The bar is now SOTN's: a name lands when it
+explains from the code across every use and a fresh `naming-reviewer` passes it
+(`.claude/rules/naming-bar.md`, which supersedes the evidence-class gate below; the classes now only
+settle conflicts). Waves live in `docs/naming/phase3/<wave>/` (census origin `sotn-review`, CORROBORATED).
+
 **Phase 1 — census (done).** Read-only with respect to the build: `function-names.csv`
 enumerates every function, attributes each name to a recorded evidence path, tiers it, and
 recommends KEEP / RESET / RENAME. Regenerable; it reads the tree rather than remembering it.

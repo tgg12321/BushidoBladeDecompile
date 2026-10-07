@@ -5,7 +5,7 @@ Universe = splat's per-function split files asm/funcs/*.s (the linker-authoritat
 glabel per function). For each function we determine name ORIGIN and a confidence TIER
 per the owner directive of 2026-08-07 (names-require-evidence).
 """
-import csv, os, re, subprocess, sys, json
+import csv, glob, os, re, subprocess, sys, json
 from collections import Counter, defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -372,6 +372,10 @@ MANIFESTS = [(J("docs", "naming", "apiscan", "rename_manifest.csv"), "apiscan-re
              (J("docs", "naming", "sweep-2026-10-03", "func_manifest_q107.csv"), None, None),
              # owner ruling Q108: _SendPAD split out of FlushCache.s (libscan-verbatim UPGRADE)
              (J("docs", "naming", "sweep-2026-10-03", "func_manifest_q108.csv"), None, None)]
+# Phase 3 waves (owner ruling Q111, .claude/rules/naming-bar.md): one directory per wave,
+# applied in name order, so a later wave's row for an address supersedes an earlier one.
+MANIFESTS += [(ap, None, None) for ap in
+              sorted(glob.glob(J("docs", "naming", "phase3", "*", "func_manifest*.csv")))]
 CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               "libscan-xref": ("libscan-xref", "VERIFIED"),
               "libscan-near": ("libscan-near", "CORROBORATED"),
@@ -386,6 +390,9 @@ CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
               "sony-struct-restatement": ("sony-struct-restatement", "CORROBORATED"),
               # owner ruling Q103 2026-10-03 (docs/naming/sweep-2026-10-03/README.md)
               "typed-restatement": ("typed-restatement", "CORROBORATED"),
+              # owner ruling Q111: explained from the code across every use + a fresh
+              # naming-reviewer PASS (.claude/rules/naming-bar.md)
+              "sotn-review": ("sotn-review", "CORROBORATED"),
               # __main: sole first call of main(), where cc1psx inserts `jal __main` (probe)
               "crt0-convention": ("hardware-role", "VERIFIED")}
 # RESET rows from a verified manifest (evidence_class reset-contradicted, proposed_name =
@@ -881,26 +888,14 @@ if os.path.exists(_bd):
                                 br.get("index", ""), br.get("spec_name", "")))[:1200]
 
 # ---------------------------------------------------------------- targeted overrides
-OVERRIDES = {
-    "cpu_set_move_command_and_dir_for_no_action_2": dict(
-        tier="SUSPECT", origin="kengo-derived", action="RENAME",
-        proposed_name="main",
-        extra="DECISIVE RENAME: this is the sole jal target of _start (asm/funcs/_start.s:42, jal 0x80017200) — a crt0's final call is main(). kengo_matches.csv gives kengo_name=gnd_land_hit_char_tsuba affinity-unique combined_score=0.00 (no basis). Current name is unrelated to both."),
-    "ang_hosei": dict(
-        tier="SUSPECT", origin="kengo-derived", action="RESET",
-        extra="CONFIRMED MISLEAD (owner): break-0x107 Marionation engine file-IO trampoline, not angle correction. inline_asm_canonical.txt:353 + docs/grind/auth-packets-2026-08-06.md batch 2. Call sites src/ings.c:141,143,170 are file-descriptor reads."),
-    "game_2d_CheckLifeGaugeNoDisp": dict(
-        tier="SUSPECT", origin="kengo-derived", action="RESET",
-        extra="CONFIRMED MISLEAD (owner): LIBGTE 3x3 matrix-vector multiply leaf (ctc2/mvmva/swc2), not a UI predicate. inline_asm_canonical.txt:346 + auth-packets-2026-08-06.md batch 2."),
-    "_SpuCallback": dict(
-        tier="SUSPECT", origin="libscan-rejected", action="RESET",
-        extra="DEMOTED RENAME (addendum 2026-08-07): the fe40a52b wave applied _SpuCallback from the LIBSPU/S_CB island placement at 0x800469A0, but the placement fails reachability (zero j/jal callers, zero word-sized data refs to 0x800469A0 in the whole image) and the body calls func_80045510 (game text, arg 9), not InterruptCallback as S_CB's sole external ref requires. It is a dead game one-liner byte-identical to the Sony stub. docs/naming/libscan/ambiguous_resolutions.md; tools/libscan/manifest.py filter 1 reproduces the rejection mechanically. RESET to func_800469A0."),
-}
+# Per-name rulings applied on top of the derived row (tier/origin/action, plus an `extra`
+# evidence prefix). The 2026-08-07 overrides (main, ang_hosei, game_2d_CheckLifeGaugeNoDisp,
+# _SpuCallback) were applied by the waves and retired 2026-10-07.
+OVERRIDES = {}
 by_name = {r["current_name"]: r for r in rows}
 for nm, ov in OVERRIDES.items():
     r = by_name.get(nm)
     if not r:
-        # Expected once the phase-2 wave has applied that row: the old name is gone.
         print(f"note: override target '{nm}' no longer present (wave applied?)", file=sys.stderr)
         continue
     extra = ov.pop("extra", "")
@@ -909,7 +904,7 @@ for nm, ov in OVERRIDES.items():
         r["evidence"] = (extra + " | " + r["evidence"])[:1200]
 
 # ---------------------------------------------------------------- write
-outdir = J("docs", "naming")
+outdir = os.environ.get("BUILD_CENSUS_OUTDIR") or J("docs", "naming")  # naming_keycheck re-derives
 os.makedirs(outdir, exist_ok=True)
 outp = os.path.join(outdir, "function-names.csv")
 cols = ["address", "current_name", "glabel", "name_layer", "aliases", "insns",
