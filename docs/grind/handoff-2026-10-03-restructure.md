@@ -29,7 +29,7 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
 
 1. **`_SendPAD`** — done: COMPLETED-INLINE-ASM-CANONICAL by owner ruling Q112 (rules 7b2e1706b, auth 2a3b1e6e4;
    PsyQ 4.0's own object names the module source `sendpad.s`). The queue is empty.
-2. **Phase 2 types** — long tail closed 2026-10-06 (owner questions open) (started 2026-10-03; census, harness and plan:
+2. **Phase 2 types** — closed 2026-10-06 (started 2026-10-03; census, harness and plan:
    `memory/grind/phase2-2026-10-03/README.txt`; gate `tools/check.sh`, commits via `tools/commit.sh`;
    helpers in `tools/game/` and `tools/struct/`). Every commit: SHA1 == oracle, all objects identical
    (or relocation-only for a symbol merge/retirement, stated in the body), INTEGRITY OK, a fresh
@@ -92,10 +92,8 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      (87A0 43a813168; 17AFC CD58 / DAD0 / D780 6151b1808; func_80067D14 / func_800203B4 / func_80027AD8 21a094d90);
      _SpuSetAnyVoice reads `_spu_RQ[reg - 0xC4]` (D_800F7298 was a phantom base; 643796e7f); Q96 covers
      func_80031B24 (6151b1808). Phase 2 has no owner-blocked item left; what remains is ruled or debt rows.
-   - **Next session starts here:** Phase 3 step 0 — draft (unreviewed)
-     `memory/grind/phase3/step0_draft.txt`: rule text N1-N6, a naming-reviewer rubric, wave flow, 20
-     first-wave candidates. Process: never export GIT_DIR / GIT_WORK_TREE in a shell that runs tests
-     (2026-10-06 the grinder tests rewrote main's .git/config).
+   - Process: never export GIT_DIR / GIT_WORK_TREE in a shell that runs tests (2026-10-06 the grinder tests
+     rewrote main's .git/config).
    - func_800203B4's island grant: closed (21a094d90 typed the operands; its region grant verifies).
    - Pre-Phase-3 cleanup (2026-10-06): C style (`.clang-format`, `tools/format.py`, format guard);
      asm-region grants hash tokens (schema 2); source comments slimmed to labels + short descriptions.
@@ -111,13 +109,32 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      untyped bases, scratchpad workspaces, unknown). Orchestrator plan: evidence-built aggregates, one
      object family per reviewed batch; order after item 8 — primitive holders + the OT batch, then the long
      tail by object (largest families first), then func_800203B4.
-3. **Phase 3 naming** — owner ruling Q111 (2026-10-04): naming standards are loosened to the SOTN standard
-   (explainable from the code plus an adversarial review); a naming-specific adversarial reviewer may be created.
-   Orchestrator plan: step 0 writes the rule text (what the SOTN bar requires, e.g. every read, write and call
-   of the named thing bears the name out; how the evidence classes relate), reviewed, in docs/naming/README.md
-   and the sweep README, and builds the naming reviewer in `.claude/agents/` if cheat-reviewer's rubric doesn't
-   fit; names then land through `tools/naming_wave.py`, and address-named game files take subsystem names file
-   by file (`tools/move_tu.py`). Sequencing per the original plan: after Phase 2.
+3. **Phase 3 naming** — in progress. Rule: `.claude/rules/naming-bar.md` (Q111; step-0 answers 2026-10-07: the
+   SOTN bar with advisory evidence classes; identifier-only key moves certified by `tools/naming_keycheck.py` +
+   the reviewer's R6; N6 file names only for single-subsystem files). Reviewer: `.claude/agents/naming-reviewer.md`.
+   Census origin `sotn-review` (CORROBORATED) from `docs/naming/phase3/<wave>/func_manifest*.csv`.
+   - **Next:** wave 1, the camera / model / stage candidates of the step-0 draft
+     (`memory/grind/phase3/step0_draft.txt` (d); each still needs the reviewer's full use list), then one
+     subsystem per wave with the 493 INFERRED names audited along the way, then types / members, then N6 files.
+   - File split audit (2026-10-07, scripts `tmp/p3split/`, not kept): every byte-proven boundary is a cut; 9
+     game-TU starts have no evidence either way (87A0, 175A4, 25C38, memcard, 28514, 28708, 2B344, 31CFC,
+     31D3C) and no merge is provable; the large files hold several original TUs whose cuts the bytes cannot
+     place (data order narrows but never places one). Done from it: 25C38's boundary relabelled LEGACY. Not
+     done: folding d_15EC, because its path pointers (0x800955E0) have no code reader, so 32D04 and 35000 are
+     equal owners (cheat-reviewer FAIL of the fold, 2026-10-07). **Deferred by the owner (2026-10-07):** 3AB48 stays one file; revisit after
+     naming, when logical domains are known. The question: is its hand-written asm block its own module(s)?
+     ASPSX probe (2026-10-07, real PsyQ 3.5 / 4.0 tools; scripts `tmp/p3probe/`, not kept): no Sony tool pads
+     a module; only a source `.align` does, relative to the object's start, and file-scope `.align 4` in a C
+     file gives the same bytes, so pads never prove an object. Sony's asm libraries rounded modules to 16 by
+     habit. The pad ends (0x8004C404, 0x8004E564, 0x80052720, 0x80052D00) cannot all come from one object at
+     0x8004A348, so the current file implies filler nops. Read as alignment pads, they give objects
+     0x8004C1F4.., 0x8004C404..0x8004E564, one unplaceable start in 0x8004E564..0x80052720, and
+     0x80052720..0x80052D00 (two starts land exactly on the previous padded end, ~1/16 by chance), plus the
+     rodata-forced C|C cut before func_80058580. The bytes cannot decide between the two readings.
+   - Debt: `EXPAND_LB_FILES` (Makefile) is a byte no-op, since every file already gets `--expand-lb`.
+   - Debt: the retired-name comment scan (1035 names, 0 hits on 2026-10-07) and the 18-case naming_keycheck
+     probe suite were scratch (`tmp/p3s0/`); neither is an engine test. Each wave's keycheck covers only its
+     own pairs.
 4. **Debt** —
    - Q96-Q99 retire as soon as a one-object spelling matches. Measured 2026-10-06 (Codex report, base
      71073622e; none retires): Q97 array / struct / union forms score func_8003B2C8 12, func_8003B328 16;
