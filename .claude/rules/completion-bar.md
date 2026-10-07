@@ -45,6 +45,9 @@ item that links them (e.g. [[phantom-frame-pad-family]]'s allowlist row and labe
      ([[phantom-frame-pad-family]]); detector-stripped frame coercion
      (`(void)&local`, lost-codegen inserts, unreferenced local arrays without their
      `engine/volatile_cheats.py _SANCTIONED_UNWRITTEN_PADS` row) — it cannot satisfy item 1.
+   - **Site comments (owner ruling Q118)**: [[site-comment-content]] (blocking) says what a
+     comment must carry at the site; other citations a rule asks for may live in the landing
+     record.
    - **Q55 stands (not changed by Q91):** a verified SOTN citation ([[sotn-precedent-suffices]],
      its conditions met) can still admit a construct items 2-3 refuse, as before: manual path
      only (never on a Judge PASS), `/* FAKE */`-labelled, simplest form, fresh layer-2. That
@@ -63,7 +66,8 @@ item that links them (e.g. [[phantom-frame-pad-family]]'s allowlist row and labe
 
 - **Blocking** — this file; the files it links for items 2, 3 and 6 ([[inline-asm-policy]],
   [[no-compiler-divergence]], [[mmio-volatile-type-level]],
-  [[legitimate-volatile-interrupt-touched]], [[review-discipline-before-commit]]); and
+  [[legitimate-volatile-interrupt-touched]], [[review-discipline-before-commit]],
+  [[site-comment-content]]); and
   [[no-new-park-categories]] / [[ordinary-c-judge-decidable]] as read through this file.
 - **Hygiene** — good practice, worked as codebase-wide cleanup, never a completion gate.
   Skipping one is recorded as a debt row in the landing commit body (`Hygiene debt:` line).

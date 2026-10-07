@@ -44,7 +44,9 @@ A member's island inherits the canonical-asm disposition ONLY when all hold:
 3. In-island GPR instructions limited to the cop2 addressing preamble. **The template is the named Sony PsyQ
    GTE macro body** the island reproduces (2026-09-02): GPR instructions that are the macro's own published
    text (e.g. `gte_ldlv0`'s `lhu/lhu/sll/or` pack, PsyQ 4.5 `inline_c.h:101-110`) are admitted; nothing outside
-   the named macro body. Every island comment cites the macro name and header line.
+   the named macro body. An island comment that names a macro names the one the island implements;
+   macro name, header line and departures go in its row or the landing record
+   ([[site-comment-content]], Q118; same as inline-asm-policy's 2026-09-23 route).
 4. Before `queue done`: fresh layer-2 `cheat-reviewer` on the applied diff AND `verify-oracle --rebuild`.
 
 **The load-bearing negative.** Membership closes the TAIL ISLAND only, once the pure-C body independently

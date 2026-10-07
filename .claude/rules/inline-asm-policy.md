@@ -43,7 +43,7 @@ A C body may carry GTE islands and be COMPLETED-INLINE-ASM-CANONICAL on macro-pr
 evidence instead of a STRONG scan tier when ALL hold:
 1. **Verbatim macro, pinned provenance.** Each island is one named GTE macro from a Sony PsyQ
    `inline_c.h` release, character-identical in instruction text, constraints and clobbers
-   (only separators/whitespace may differ). Row and comment cite release, macro, line range;
+   (only separators/whitespace may differ). Row cites release, macro, line range (Q118);
    record the `$PSLibId`, source URL + commit, header SHA-256, and confirm against a second
    independent copy (one copy only ⇒ not admitted).
 2. **Nothing else in the islands**: no preamble ([[cop2-addressing-preamble-cluster]]), no extra
@@ -69,7 +69,7 @@ is replacing the header's DMPSX placeholder `.word 0x0000xxxx` with a GTE comman
 for that placeholder per a source independent of BB2 (Sony doc/tool output, or a no-DMPSX SDK
 spelling, cited with URL + commit) AND byte-identical to the original's instruction there; the
 reviewer decodes every field (cmd 20-24, sf 19, mx 17-18, v 15-16, cv 13-14, lm 10, funct 0-5)
-against the sources; (C) the island comment and the row give both words; (D) everything else
+against the sources; (C) the row gives both words (Q118); (D) everything else
 in the 2026-09-23 ruling applies. Example: `gte_rtv0()` `0x0000013f` → `0x4A486012`
 (pcsx-redux/nugget@22037bd3 `psyq/include/inline_n.h:516-520`; PSn00bSDK@5d9aa2d3
 `libpsn00b/include/inline_c.h:1183-1186`).
