@@ -130,8 +130,7 @@ Commit rules:
 Legitimate — the lane need not close every function in one sitting.
 1. Write the measured floor, what you killed and how, and the new frontier into
    `memory/grind/<func>/`. A false floor is worse than none.
-2. `pwsh tools/manual_session.ps1 end` — asserts a clean tree, commits the ledger and the session's
-   `metrics/events.jsonl` (separate `metrics:` commit), relaunches the Grinder (`-NoRelaunch` to
+2. `pwsh tools/manual_session.ps1 end` — asserts a clean tree, commits the ledger, relaunches the Grinder (`-NoRelaunch` to
    leave it down).
 3. **Do NOT `queue rotate`** after one session, one layer-2 FAIL, an open owner question, or when the
    item is close — only when truly stuck across multiple sessions (rotation-not-foreclosure rule).

@@ -15,7 +15,7 @@ boundary:
     - a park the orchestrator CAN confirm (e.g. jtbl-infra: rules verified as
       canonical jump-table infrastructure).
 
-Pulls from metrics/headless_runs.jsonl (the run record), the session transcript
+Pulls from tmp/headless_runs.jsonl (the run record), the session transcript
 (via headless_audit), engine/queue.json (park status/reason), and git (the
 commit the worker made). Output is compact; --json for machine use.
 
@@ -38,7 +38,7 @@ sys.path.insert(0, str(REPO))
 import headless_audit as ha           # noqa: E402
 from engine import cheats, inlineasm  # noqa: E402
 
-RUNLOG = REPO / "metrics" / "headless_runs.jsonl"
+RUNLOG = REPO / "tmp" / "headless_runs.jsonl"
 QUEUE = REPO / "engine" / "queue.json"
 
 
@@ -110,12 +110,11 @@ def classify_outcome(rec: dict, item: dict | None, commits: list[str] | None = N
 
 
 def uncommitted_leftover() -> list[str]:
-    """Worker work left UNCOMMITTED (e.g. a budget cutoff mid-function). Excludes
-    metrics/* (append-only logs the runner's own post-check writes). Non-empty =>
-    the tree is dirty and the loop must NOT continue onto it."""
+    """Worker work left UNCOMMITTED (e.g. a budget cutoff mid-function).
+    Non-empty => the tree is dirty and the loop must NOT continue onto it."""
     out = []
     for ln in _git("status", "--porcelain").splitlines():
-        if ln.strip() and "metrics/" not in ln:
+        if ln.strip():
             out.append(ln.strip())
     return out
 
@@ -242,7 +241,7 @@ def main() -> int:
 
     runs = load_runs()
     if not runs:
-        print("no headless runs recorded (metrics/headless_runs.jsonl empty/absent).")
+        print("no headless runs recorded (tmp/headless_runs.jsonl empty/absent).")
         return 0
     rec = None
     if a.session:

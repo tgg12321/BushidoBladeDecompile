@@ -150,12 +150,6 @@ asm/data/800.rodata.s
 # User-local emulator launcher shortcuts (machine-specific abs paths)
 *.lnk
 
-# Generated metrics dashboard (regenerable from Postgres via report_html.py).
-# The append-only sources of truth (metrics/events.jsonl, metrics/experiments.jsonl)
-# ARE committed; only the rendered HTML is ignored.
-metrics/report.html
-metrics/*.html
-
 # decomp-permuter import.py makes a "nonmatchings/" dir relative to cwd; when a
 # grind permuter session runs it from the repo root it lands here (root). Always
 # a scratch artifact, never committed — tools/decomp-permuter has its own ignore.

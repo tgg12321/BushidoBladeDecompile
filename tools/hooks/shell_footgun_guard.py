@@ -94,7 +94,7 @@ def reasons_for(cmd: str) -> list[str]:
     if ENGINE_DIRECT_RE.search(cmd) and "eng.ps1" not in cmd:
         out.append(
             "Hand-rolled `python3 -m engine.cli ...`. Engine commands go through the "
-            "PowerShell wrapper so there is zero quoting and metrics get attributed: "
+            "PowerShell wrapper so there is zero quoting: "
             "`& tools/wteng.ps1 main <subcommand> ...`."
         )
 

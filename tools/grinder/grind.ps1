@@ -204,8 +204,8 @@ function Assert-CleanTree {
 function Reap-PermuterOrphans([string]$When) {
     # Backstop for the fresh-seed campaign discipline (owner directive
     # 2026-07-07): permuter campaigns must not outlive the session that seeded
-    # them. Workers harvest+stop their own campaigns (tools/permuter_campaign.py,
-    # which records the telemetry); this reaps whatever survived a crashed,
+    # them. Workers harvest+stop their own campaigns (tools/permuter_campaign.py);
+    # this reaps whatever survived a crashed,
     # timed-out, or discarded session, so orphans can never accumulate again
     # (2026-07-07 incident: ~100 workers, some 21h old, from dead sessions).
     # The backslash in the pattern keeps pgrep/pkill from matching their own
@@ -313,12 +313,6 @@ function Get-JudgeLimitReset([string]$AgentLog) {
         if ($t -le (Get-Date)) { $t = $t.AddDays(1) }
         return $t
     } catch { return $null }
-}
-
-function Record-Review([string]$func, [string]$layer, [string]$verdict, [string]$cause = '') {
-    # Review telemetry (2026-08-07 review-audit fix #5). Best-effort by the
-    # metrics contract: it can never raise, never block, never gate.
-    try { python tools/grinder/record_review.py $func $layer $verdict $cause 2>$null | Out-Null } catch { }
 }
 
 function Get-Layer1RoleFile {
@@ -436,14 +430,13 @@ construct as written; a construct you actually object to is a normal FAIL.
     Set-Content $briefPath -Value $task -Encoding utf8
     $v = $null
     for ($try = 1; $try -le 2; $try++) {
-        $v = Invoke-GrindAgent $briefPath $outPath $role $Layer1Model $MockLayer1Script -UsageFunc $func -UsageRole 'layer1'
+        $v = Invoke-GrindAgent $briefPath $outPath $role $Layer1Model $MockLayer1Script -UsageRole 'layer1'
         if ($v -and $v.decision) { break }
         Log "${func}: layer-1 attempt $try returned no parseable decision."
         if ($try -lt 2) { Start-Sleep -Seconds 30 }
     }
     if (-not $v -or -not $v.decision) {
         Log "${func}: layer-1 UNAVAILABLE — failing open to the Judge."
-        Record-Review $func 'layer1' 'UNAVAILABLE' 'unreachable'
         return $null
     }
     return $v
@@ -462,8 +455,8 @@ function Invoke-Judge([string]$func, [string]$TaskText) {
     $try = 0; $limitWaits = 0
     while ($true) {
         # NB: $Func deliberately NOT passed (judges never launch campaigns, so the
-        # GRIND_FUNC Stop-gate stays unarmed); UsageFunc carries it for telemetry.
-        $v = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'judge.md') $JudgeModel $MockJudgeScript -UsageFunc $func -UsageRole 'judge'
+        # GRIND_FUNC Stop-gate stays unarmed).
+        $v = Invoke-GrindAgent $briefPath $outPath (Join-Path $RolesDir 'judge.md') $JudgeModel $MockJudgeScript -UsageRole 'judge'
         if ($v -and $v.verdict -in @('PASS', 'FAIL', 'ESCALATE')) { return $v }
         $reset = if ($MockJudgeScript) { $null } else { Get-JudgeLimitReset ($outPath + '.agent.log') }
         if ($reset) {
@@ -534,7 +527,7 @@ $(if ($v.constraint) { "**Constraint recorded for any future session:** $($v.con
             python tools/grinder/grindlib.py constrain . $func ("canonical-asm GRANTED (pipeline, $date, tier $tier): integrate the whole-body form per canonical-asm-authorization-recipe to COMPLETED-INLINE-ASM-CANONICAL; the allowlist entry is already written.") | Out-Null
             Journal "$func JUDGE ESCALATE (canonical-asm-grant) — grant EXECUTED (tier $tier), function stays active."
             Log "${func}: judge ESCALATE — canonical-asm grant executed (tier $tier); staying active for integration."
-            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl inline_asm_canonical.txt 2>$null
+            git -C $Root add -- memory/grind docs/grind inline_asm_canonical.txt 2>$null
             git -C $Root commit -m "grind: $func canonical-asm grant executed (judge ESCALATE, ruling b9d91163) [skip-park-src-guard]" 2>$null | Out-Null
             return
         }
@@ -564,7 +557,7 @@ $(if ($v.constraint) { "**Constraint recorded for any future session:** $($v.con
             python tools/grinder/grindlib.py log-borderline . $func 'integration-handoff' "judge ESCALATE packet in docs/grind/decisions.md ($ref)" ("driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): $($did -join '; '); function stays ACTIVE.") $date | Out-Null
             Journal "$func JUDGE ESCALATE (integration-handoff) — EXECUTED by driver ($($did -join '; ')), function stays active."
             Log "${func}: judge ESCALATE — integration-handoff executed ($($did -join '; ')); staying active."
-            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl tools/grinder/scope_allow.txt 2>$null
+            git -C $Root add -- memory/grind docs/grind tools/grinder/scope_allow.txt 2>$null
             git -C $Root commit -m "grind: $func integration-handoff executed (judge ESCALATE, ruling 2026-08-19) [skip-park-src-guard]" 2>$null | Out-Null
             return
         }
@@ -576,7 +569,7 @@ $(if ($v.constraint) { "**Constraint recorded for any future session:** $($v.con
     Invoke-Eng @('queue', 'rotate', $func, '--reason', "ROTATED (judge ESCALATE $ekind refused; owner ruling 2026-09-08 rotation-not-foreclosure): $ref") | Out-Null
     Journal "$func JUDGE ESCALATE ($kind, $ekind) — refused + ROTATED (returns automatically; owner ruling 2026-09-08)."
     Log "${func}: judge ESCALATE — borderline-logged + rotated (returns automatically)."
-    git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
+    git -C $Root add -- memory/grind docs/grind engine/queue.json 2>$null
     git -C $Root commit -m "grind: $func rotated (judge ESCALATE refused) [skip-park-src-guard]" 2>$null | Out-Null
 }
 
@@ -634,7 +627,6 @@ Write your verdict JSON to the exact path given below.
 "@
     $v = Invoke-Judge $func $task
     $qShort = $question.Substring(0, [Math]::Min(80, $question.Length))
-    Record-Review $func 'judge' ([string]$v.verdict) 'ruling'
     if ($v.verdict -eq 'ESCALATE') {
         Add-Decision $func "ruling: $qShort" 'ESCALATE' $v.justification
         if ($v.constraint) { python tools/grinder/grindlib.py constrain . $func ([string]$v.constraint) | Out-Null }
@@ -668,7 +660,7 @@ Write your verdict JSON to the exact path given below.
         $n = (python tools/grinder/grindlib.py unban . $func ([string]$v.unban_construct) | Out-String).Trim()
         if ([int]$n -gt 0) { Log "${func}: $n superseded ban(s) cleared per judge narrowing." }
     }
-    git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+    git -C $Root add -- memory/grind docs/grind 2>$null
     git -C $Root commit -m "grind: $func judge ruling [skip-park-src-guard]" 2>$null | Out-Null
     Log "${func}: judge ruling $($v.verdict) recorded."
 }
@@ -710,7 +702,7 @@ function Bank-CandidateRefusal {
     python tools/grinder/grindlib.py constrain . $func $reason | Out-Null
     $bk = ''
     try { $bk = (python tools/grinder/grindlib.py candidate-block . $func $ground $bodyHash $remedy 2>$null | Out-String).Trim() } catch { }
-    $paths = @('memory/grind', 'docs/grind', 'metrics/events.jsonl')
+    $paths = @('memory/grind', 'docs/grind')
     if ($bk -match 'TRIPPED') {
         $date = Get-Date -Format 'yyyy-MM-dd'
         $rem  = if ($remedy) { $remedy } else { $reason }
@@ -776,7 +768,7 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
                  "OWNER-ESCALATION requesting these paths be added to tools/grinder/scope_allow.txt " +
                  "and return owner-gated. Do NOT re-propose the same out-of-scope edit."
             python tools/grinder/grindlib.py constrain . $func $c | Out-Null
-            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+            git -C $Root add -- memory/grind docs/grind 2>$null
             git -C $Root commit -m "grind: $func out-of-scope constraint banked [skip-park-src-guard]" 2>$null | Out-Null
             Log "${func}: banked out-of-scope constraint after $n identical rejections."
         }
@@ -790,7 +782,7 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
             Add-Decision $func 'scope livelock' 'ROTATED' $reason
             Journal "$func SCOPE-LIVELOCK — rotated after $n identical out-of-scope candidates ($($offStem -join ', '))."
             Log "${func}: SCOPE LIVELOCK — rotated so the queue advances (returns automatically)."
-            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
+            git -C $Root add -- memory/grind docs/grind engine/queue.json 2>$null
             git -C $Root commit -m "grind: $func rotated on scope livelock [skip-park-src-guard]" 2>$null | Out-Null
             $script:livelockParks++
             if ($script:livelockParks -ge 3) {
@@ -820,7 +812,6 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     if ($bodyHash) { $disp = (python tools/grinder/grindlib.py review-disposition . $func $bodyHash 2>$null | Out-String).Trim() }
     if ($disp -eq 'judge-failed') {
         Log "${func}: body $bodyHash is one the Judge already FAILED at FINAL CALL — rejected, no review spent."
-        Record-Review $func 'layer1' 'SKIP' 'judge-failed-body'
         Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\rejected\resubmit-judge-failed-$(Get-Date -Format 'MMdd-HHmm').c") -ErrorAction SilentlyContinue
         Revert-SessionEdits $func
         python tools/grinder/grindlib.py review-verdict . $func driver REJECT $bodyHash 'resubmission of a Judge-FAILed body (no review spent)' | Out-Null
@@ -828,14 +819,13 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         $newMod = (python tools/grinder/grindlib.py advance-modality . $func 2>&1 | Out-String).Trim()
         Add-Decision $func 'gate' 'REJECTED (identical to a Judge-FAILed body; no review spent)' "body hash $bodyHash — see the Judge FAIL on record in state.json review_ledger."
         Journal "${func}: driver REJECTED a resubmitted Judge-FAILed body (hash $bodyHash) — no review spent; next modality '$newMod'."
-        git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+        git -C $Root add -- memory/grind docs/grind 2>$null
         git -C $Root commit -m "grind: $func judge-failed body resubmission rejected [skip-park-src-guard]" 2>$null | Out-Null
         return
     }
     $l1 = $null
     if ($disp -eq 'judge-cleared' -or $disp -eq 'layer1-repeat') {
         Log "${func}: layer-1 SKIPPED ($disp, body $bodyHash) — straight to bytes + Judge FINAL CALL."
-        Record-Review $func 'layer1' 'SKIP' $disp
     } else {
         $l1 = Invoke-Layer1 $func $stem ((git -C $Root diff -- "src/$stem.c" | Out-String)) $bodyHash
     }
@@ -845,7 +835,6 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         # source is reverted like any FAIL — the fix-up session re-emits it with
         # the corrected citation and the full gate chain re-runs.
         $l1Summary = if ($l1.summary) { [string]$l1.summary } else { 'citation defect' }
-        Record-Review $func 'layer1' 'FAIL' 'citation'
         Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\rejected\layer1-citation-$(Get-Date -Format 'MMdd-HHmm').c") -ErrorAction SilentlyContinue
         Revert-SessionEdits $func
         $detail = "$l1Summary $(if ($l1.next_action) { [string]$l1.next_action })"
@@ -853,14 +842,13 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         Add-Decision $func 'layer-1 review' 'FAIL (citation-only)' $l1Summary
         Journal "${func}: LAYER-1 citation-only FAIL — routed to re-cite fix-up (no ban, no Judge cycle): $l1Summary"
         Log "${func}: LAYER-1 citation-only FAIL — fix-up brief queued."
-        git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+        git -C $Root add -- memory/grind docs/grind 2>$null
         git -C $Root commit -m "grind: $func layer-1 citation fix-up queued [skip-park-src-guard]" 2>$null | Out-Null
         return
     }
     if ($l1 -and $l1.decision -eq 'FAIL') {
         $l1Summary = if ($l1.summary) { [string]$l1.summary } else { 'layer-1 cheat-reviewer FAIL' }
         $l1Constructs = @($l1.evidence | ForEach-Object { [string]$_.construct } | Where-Object { $_ })
-        Record-Review $func 'layer1' 'FAIL' 'construct'
         Log "${func}: LAYER-1 FAIL — $l1Summary (no Judge cycle spent)."
         Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\rejected\layer1-fail-$(Get-Date -Format 'MMdd-HHmm').c") -ErrorAction SilentlyContinue
         Revert-SessionEdits $func
@@ -877,24 +865,20 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         Log "${func}: modality force-advanced after layer-1 FAIL — next session is '$newMod'."
         Add-Decision $func 'layer-1 review' 'FAIL' $l1Summary
         Journal "${func}: LAYER-1 FAILED a sandbox-0 candidate — $l1Summary"
-        git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+        git -C $Root add -- memory/grind docs/grind 2>$null
         git -C $Root commit -m "grind: $func layer-1 FAIL banked [skip-park-src-guard]" 2>$null | Out-Null
         return
     }
     if ($l1 -and $l1.decision) {
         # NEEDS_USER is NOT a stop here: it is precisely the authority question the
         # Judge's new ESCALATE verdict exists to route, and the Judge outranks
-        # layer-1 on policy. Record it and let the Judge rule.
-        Record-Review $func 'layer1' ([string]$l1.decision) $(if ($l1.decision -eq 'NEEDS_USER') { 'authority' } else { '' })
+        # layer-1 on policy. Log it and let the Judge rule.
         Log "${func}: layer-1 $($l1.decision) — proceeding to bytes + Judge."
     }
     $null = Invoke-Eng @('retire', $func)          # drops rules if any; SHA1-gated internally
     $vo = Invoke-Eng @('verify-oracle', '--rebuild', '--allow-dirty')
     if ($LASTEXITCODE -ne 0) {
         Log "${func}: FULL-BUILD SHA1 FAILED after retire — reverting, banking constraint."
-        # stage events BEFORE the broad checkout: `checkout -- .` restores the
-        # worktree FROM the index, so staged telemetry survives the revert
-        git -C $Root add -- metrics/events.jsonl 2>$null
         git -C $Root checkout -- . 2>$null
         Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore green build/ (2026-08-11: stale red build/ here false-tripped the post-session circuit-break)
         Bank-CandidateRefusal $func 'byte-fail' "candidate form failed full-build SHA1 on main (masked-0 register diff class) — reg-alloc gap is real" $bodyHash '' "grind: $func byte-fail constraint banked"
@@ -917,7 +901,6 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
                    "ruling Q39) — layer2 check: " + (($why -replace '\s+', ' ').Trim()))
         $reason = $reason.Substring(0, [Math]::Min(400, $reason.Length))
         Log "${func}: no single keyable definition — not sent to the Judge; banking."
-        git -C $Root add -- metrics/events.jsonl 2>$null
         git -C $Root checkout -- . 2>$null
         Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore canonical build/
         Journal "${func}: candidate has no single keyable definition — not judged, constraint banked."
@@ -961,7 +944,6 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
 "@
     $v = Invoke-Judge $func $task
     $sessionsTaken = ((Get-Content (Join-Path $Root "memory\grind\$func\state.json") -Raw | ConvertFrom-Json).session_count + 1)
-    Record-Review $func 'judge' ([string]$v.verdict) ([string]$v.fail_ground).ToLower()
     if ($bodyHash -and $v.verdict -ne 'ESCALATE') {
         $jSum = if ($v.justification) { ([string]$v.justification).Substring(0, [Math]::Min(200, ([string]$v.justification).Length)) } else { '' }
         python tools/grinder/grindlib.py review-verdict . $func judge ([string]$v.verdict) $bodyHash "final call: $jSum" | Out-Null
@@ -972,7 +954,6 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         # (Invoke-JudgeEscalation: grant executed, or borderline-logged + terminal
         # park — never a wait on the owner).
         Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\candidate.c") -ErrorAction SilentlyContinue
-        git -C $Root add -- metrics/events.jsonl 2>$null
         git -C $Root checkout -- . 2>$null
         Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore green build/
         Add-Decision $func 'final call' 'ESCALATE' $v.justification
@@ -1006,7 +987,6 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
                 $reason = $reason.Substring(0, [Math]::Min(500, $reason.Length))
                 Log "${func}: MERGE REFUSED after judge PASS — island-carrying body with no grant door; banking constraint."
                 Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\candidate.c") -ErrorAction SilentlyContinue
-                git -C $Root add -- metrics/events.jsonl 2>$null
                 git -C $Root checkout -- . 2>$null
                 Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore canonical build/
                 $remedy = "Either respell the $nIsl island(s) in C, or — if this function is enumerated by name in a LANDED owner cluster ruling — add a row for it to tools/grinder/owner_cluster_grants.txt citing that ruling (operator-only; sessions cannot reach that file)."
@@ -1035,7 +1015,6 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
             $reason = ("layer-2 record refused after a Judge PASS on body $l2Hash (owner ruling Q39): $why")
             $reason = $reason.Substring(0, [Math]::Min(400, $reason.Length))
             Log "${func}: layer-2 record REFUSED after judge PASS — not landing; banking."
-            git -C $Root add -- metrics/events.jsonl 2>$null
             git -C $Root checkout -- . 2>$null
             Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore canonical build/
             Journal "${func}: layer-2 record refused after judge PASS — candidate not landed."
@@ -1057,7 +1036,6 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
                        "canonical-asm grant (judge ESCALATE canonical-asm-grant per ruling 2026-08-18). gate: " + (($qd -replace '["\r\n\t]+', ' ') -replace '\s+', ' ').Trim())
             $reason = $reason.Substring(0, [Math]::Min(400, $reason.Length))
             Log "${func}: queue done REFUSED after judge PASS — banking constraint, grind continues."
-            git -C $Root add -- metrics/events.jsonl 2>$null
             git -C $Root checkout -- . 2>$null
             Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore canonical build/
             Journal "${func}: queue done refused a bytes-proven candidate — un-retired config cheat; constraint banked."
@@ -1119,7 +1097,6 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         }
         if ($LASTEXITCODE -ne 0) { Log "${func}: ledger NOT closed — $($closeOut -join ' ')" }
         git -C $Root add -A -- memory/grind docs/grind 2>$null
-        git -C $Root add -- metrics/events.jsonl 2>$null
         git -C $Root commit -m "grinder: close ledger for $func" | Out-Null
         Log "${func}: MERGED — $bucket."
     } else {
@@ -1129,7 +1106,6 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         # revert the tracked decisions.md/state.json we just wrote.
         # keep the byte-matching form as evidence, but main goes back to HEAD
         Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\rejected\judge-fail-$(Get-Date -Format 'MMdd-HHmm').c") -ErrorAction SilentlyContinue
-        git -C $Root add -- metrics/events.jsonl 2>$null   # staged telemetry survives the checkout
         git -C $Root checkout -- . 2>$null
         Invoke-Eng @('verify-oracle', '--rebuild') | Out-Null   # restore green build/
         if ($v.verdict -eq 'FAIL') {
@@ -1147,7 +1123,7 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         # Make the constraint BIND: ban the construct + force a modality change,
         # or route an annotation-only FAIL to the one-comment fix-up brief.
         $null = Set-FailRouting $func $v
-        git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+        git -C $Root add -- memory/grind docs/grind 2>$null
         git -C $Root commit -m "grind: $func judge FAIL banked [skip-park-src-guard]" 2>$null | Out-Null
         Log "${func}: judge FAILED the candidate — constraint banked, grind continues."
         $jShort = $v.justification.Substring(0, [Math]::Min(120, $v.justification.Length))
@@ -1166,8 +1142,8 @@ function Test-AgentApiError([string]$AgentLog) {
     # NULL and carries the code only in the `result` text ("API Error: 529
     # Overloaded"), so six 500/529 deaths of 190-266 s on 2026-09-03 outran the
     # 120 s spawn window, failed this test, and circuit-broke func_80017848
-    # twice. Parse the result blob the way record_usage.py does (first `{` to
-    # last `}`; the capture can carry stray stderr lines) and also match the
+    # twice. Parse the result blob (first `{` to last `}`; the capture can
+    # carry stray stderr lines) and also match the
     # status code in the result text.
     if (-not (Test-Path $AgentLog)) { return $false }
     $j = $null
@@ -1215,7 +1191,7 @@ function Get-LaneModel([string]$Requested) {
 function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
                            [string]$RoleFile, [string]$AgentModel,
                            [string]$MockScript, [string]$Func,
-                           [string]$UsageFunc, [string]$UsageRole = 'session',
+                           [string]$UsageRole = 'session',
                            [string]$Modality = '') {
     $requestedModel = $AgentModel
     $AgentModel = Get-LaneModel $AgentModel
@@ -1241,8 +1217,8 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
         $task = (Get-Content $BriefPath -Raw -Encoding utf8) +
             "`n`nWhen finished, write your outcome JSON to this exact absolute path (overwrite it):`n  $OutcomePath`n"
         $sid = [guid]::NewGuid().ToString()
-        # Exposed for the floor-attestation gate: engine events written by this
-        # spawn carry it as session_id (metrics stamps CLAUDE_SESSION_ID).
+        # Exposed for the floor-attestation gate (an empty id marks a mock spawn);
+        # the spawn also carries it as CLAUDE_SESSION_ID for the Stop gate.
         $script:LastSessionId = $sid
         $t0 = Get-Date
         # A stale agent.log from the previous spawn must never masquerade as this
@@ -1314,13 +1290,6 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
         }
         Remove-Job $job -Force -ErrorAction SilentlyContinue
         $script:LastAgentSeconds = ((Get-Date) - $t0).TotalSeconds
-        # Durable per-spawn usage telemetry: the agent.log result JSON (tokens,
-        # turns, duration, cost, error state) is OVERWRITTEN by the next spawn of
-        # the same func, so bank it into metrics/events.jsonl now as a
-        # "grind-agent-usage" event. Best-effort by the metrics contract — never
-        # raises, never blocks the driver (tools/grinder/record_usage.py).
-        $uFunc = if ($UsageFunc) { $UsageFunc } else { $Func }
-        try { python tools/grinder/record_usage.py ($OutcomePath + '.agent.log') $uFunc $UsageRole 2>$null | Out-Null } catch { }
         # MODEL FALLBACK (owner directive 2026-09-07): a usage-limit 429 on a
         # non-fallback model is not weather to wait out — it is a lane deadlock
         # in the making (three incidents, see the param block). Record the
@@ -1332,7 +1301,7 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
                 $script:ModelLimitedUntil[$AgentModel] = $reset
                 Log "$UsageRole lane: $AgentModel hit a usage-limit 429 (stated reset $($reset.ToString('HH:mm'))); falling back to $FallbackModel for this window."
                 Journal "model-fallback $UsageRole $AgentModel->$FallbackModel until $($reset.ToString('HH:mm'))"
-                return (Invoke-GrindAgent $BriefPath $OutcomePath $RoleFile $FallbackModel $MockScript $Func -UsageFunc $UsageFunc -UsageRole $UsageRole)
+                return (Invoke-GrindAgent $BriefPath $OutcomePath $RoleFile $FallbackModel $MockScript $Func -UsageRole $UsageRole)
             }
         }
     }
@@ -1345,14 +1314,9 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
 # writes can be left uncommitted by a circuit-break — they must never trip the
 # scope gate of a later session (2026-07-07 incident: the gate's broad checkout
 # also wiped concurrent uncommitted ledger work).
-$AllowedDirtyPattern = '^(\?\?|.M|M.|A.|.A)\s+("?)(memory/grind/|docs/grind/|tmp/|metrics/events\.jsonl|src/|include/)'
+$AllowedDirtyPattern = '^(\?\?|.M|M.|A.|.A)\s+("?)(memory/grind/|docs/grind/|tmp/|src/|include/)'
 
 function Revert-SessionEdits([string]$func = '') {
-    # Deliberately does NOT touch metrics/events.jsonl: events are append-only
-    # facts about engine/permuter commands that really ran — valid telemetry
-    # even from discarded sessions (owner directive 2026-07-07; reverting it
-    # here wiped every session's permuter-harvest events). The ledger commits
-    # sweep it up each boundary.
     git -C $Root checkout -- src include 2>$null
     # Granted scope_allow.txt paths must revert too. Once the session scope check
     # honours a grant (2026-08-22), a rejected candidate can leave a granted
@@ -1401,7 +1365,7 @@ while ($true) {
             }
             if ($ar.toolchain_moved) { Log "toolchain fingerprint moved -> $($ar.fingerprint); rotated candidates re-measured: $(@($ar.remeasured).Count)" }
             if (@(git -C $Root status --porcelain -- engine/queue.json docs/grind/journal.md | Where-Object { $_ }).Count) {
-                git -C $Root add -- engine/queue.json docs/grind/journal.md metrics/events.jsonl 2>$null
+                git -C $Root add -- engine/queue.json docs/grind/journal.md 2>$null
                 git -C $Root commit -m "grind: queue auto-return at session boundary [skip-park-src-guard]" 2>$null | Out-Null
             }
         }
@@ -1481,7 +1445,7 @@ while ($true) {
                 } else {
                     Log "${func}: CC1PSX SELF-DISPROOF — original compiler no closer; residual is source-side. Escalation proceeds."
                 }
-                git -C $Root add -- "memory/grind/$func" docs/grind/journal.md metrics/events.jsonl 2>$null
+                git -C $Root add -- "memory/grind/$func" docs/grind/journal.md 2>$null
                 git -C $Root commit -m "grind: $func cc1psx self-disproof banked [skip-park-src-guard]" 2>$null | Out-Null
             }
         } catch { Log "${func}: cc1psx gate skipped: $_" }
@@ -1593,7 +1557,6 @@ while ($true) {
     if ($violations.Count) {
         Log "${func}: SCOPE VIOLATION — $($violations -join ' | ') — session discarded."
         $script:lastDiscardReason = "SCOPE VIOLATION: you edited files outside the allowed surface ($($violations -join ' | ')). Touch ONLY your function's src file, memory/grind/<func>/, and tmp/."
-        git -C $Root add -- metrics/events.jsonl 2>$null   # staged telemetry survives the checkout
         git -C $Root checkout -- . 2>$null; git -C $Root clean -fd -- tmp 2>$null
         # ALSO purge untracked out-of-surface dirt: checkout only restores TRACKED
         # files, and `clean -fd -- tmp` skips gitignored tmp — so an untracked junk
@@ -1621,17 +1584,12 @@ while ($true) {
         # Judge cycle spent.
         $invalidReason = (python tools/grinder/grindlib.py validate . $outPath $modality $func 2>&1 | Out-String).Trim()
         $valid = ($LASTEXITCODE -eq 0)
-        if (-not $valid -and [string]$o.result -eq 'candidate-ready') {
-            $cause = if ($invalidReason -match 'BANNED') { 'banned' } else { 'selfvet' }
-            Record-Review $func 'layer1' 'REJECTED' $cause
-        }
         # FLOOR ATTESTATION (2026-09-16): the floor is the one self-reported
         # number the validator took on trust, and func_8006CCC8 s1 banked a
         # floor=94 from a C body it never wrote to disk — the queue ordered on
         # it and two later sessions aimed at it. A claimed DROP must now be
-        # corroborated by an engine measurement stamped with THIS spawn's
-        # session id, or by an attached artifact containing the number
-        # (ra_solver object-mode floors). Flat/worse floors are untouched.
+        # corroborated by an attached session artifact (tmp/ or the ledger dir)
+        # containing the number. Flat/worse floors are untouched.
         if ($valid) {
             $priorArg = if ($null -ne $priorFloor) { "$priorFloor" } else { '' }
             $attestWhy = (python tools/grinder/grindlib.py attest-floor . $outPath $func $script:LastSessionId $priorArg 2>&1 | Out-String).Trim()
@@ -1712,7 +1670,7 @@ while ($true) {
             if ($nowLines -gt $script:decisionsLines) {
                 @("", "## $(Get-Date -Format 'yyyy-MM-dd HH:mm') — $func — DISCARDED-SESSION MARKER (driver-stamped)", "",
                   "Text appended above by session s$sessionN of $func, which the driver DISCARDED as invalid ($invalidReason). It is not a ruling and carries no standing; terminal-sounding language in that span is void.") | Add-Content $Decisions
-                git -C $Root add -- docs/grind metrics/events.jsonl 2>$null
+                git -C $Root add -- docs/grind 2>$null
                 git -C $Root commit -m "grind: $func discarded-session marker stamped in decisions.md [skip-park-src-guard]" 2>$null | Out-Null
                 Log "${func}: discarded session's decisions.md append stamped void."
             }
@@ -1766,7 +1724,7 @@ while ($true) {
                 python tools/grinder/grindlib.py constrain . $func ("canonical-asm GRANT PATH ($escRef): author the whole-body form per canonical-asm-authorization-recipe and integrate; no owner wait.") | Out-Null
                 Log "${func}: CANONICAL-ASM GRANT PATH — stays active for authoring/integration (no owner wait)."
                 Journal "$func s$sessionN [$modality] canonical-asm grant path — stays active: $($o.headline)"
-                git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+                git -C $Root add -- memory/grind docs/grind 2>$null
                 git -C $Root commit -m "grind: $func canonical-asm grant path filed (stays active) [skip-park-src-guard]" 2>$null | Out-Null
             } elseif ($escRef -match 'INTEGRATION HANDOFF') {
                 # integration-handoff-self-serve (owner ruling 2026-08-19): a
@@ -1792,7 +1750,7 @@ while ($true) {
             # it via `git checkout -- .`, un-parking the function and bouncing it
             # straight back to the queue top forever (2026-07-18: ~40 sessions
             # burned re-parking motion_SetMotion; see grinder-park-queue-dirt-deadlock).
-            git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
+            git -C $Root add -- memory/grind docs/grind engine/queue.json 2>$null
             git -C $Root commit -m "grind: $func owner-gated disposition (ruling 2026-08-18, nothing pending) [skip-park-src-guard]" 2>$null | Out-Null
         }
         default {
@@ -1826,7 +1784,7 @@ while ($true) {
             if ($dodged -and $deferMod) {
                 Log "${func}: ESCALATION DEFERRED — flat escalation session banked a CONFIRMED lever (floor $($o.floor) >= prior $priorFloor); honored as progress, next session forced to '$deferMod' (owner ruling 2026-09-04)."
                 Journal "$func s$sessionN [escalation] DEFERRED by driver (CONFIRMED lever banked, floor=$($o.floor)) — next modality '$deferMod': $($o.headline)"
-                git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+                git -C $Root add -- memory/grind docs/grind 2>$null
                 git -C $Root commit -m "grind: $func escalation deferred on a confirmed lever (s$sessionN) [skip-park-src-guard]" 2>$null | Out-Null
             } elseif ($dodged) {
                 $tier = 'LOW'
@@ -1840,7 +1798,7 @@ while ($true) {
                     python tools/grinder/grindlib.py constrain . $func ("canonical-asm GRANT PATH ($ref): author the whole-body form per canonical-asm-authorization-recipe and integrate; no owner wait.") | Out-Null
                     Log "${func}: ESCALATION BACKSTOP — STRONG tier, canonical-asm grant path; stays active."
                     Journal "$func s$sessionN [escalation] AUTO-FILED by driver backstop — canonical-asm grant path (stays active): $ref"
-                    git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+                    git -C $Root add -- memory/grind docs/grind 2>$null
                     git -C $Root commit -m "grind: $func auto-filed canonical-asm grant path (backstop) [skip-park-src-guard]" 2>$null | Out-Null
                 } else {
                     # The ref carries its own title: RESOLVED BY STANDING RULING (floor <=
@@ -1851,7 +1809,7 @@ while ($true) {
                     Invoke-Eng @('queue', 'rotate', $func, '--reason', $bsReason) | Out-Null
                     Log "${func}: EXHAUSTION BACKSTOP — session dodged in escalation modality (floor $($o.floor) >= prior $priorFloor); driver auto-filed + rotated (returns automatically)."
                     Journal "$func s$sessionN [escalation] AUTO-FILED by driver backstop (session did not self-file) — rotated (returns automatically): $ref"
-                    git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
+                    git -C $Root add -- memory/grind docs/grind engine/queue.json 2>$null
                     git -C $Root commit -m "grind: $func rotated (exhaustion backstop) [skip-park-src-guard]" 2>$null | Out-Null
                 }
             } else {
@@ -1861,7 +1819,7 @@ while ($true) {
                 Journal "$func s$sessionN [$modality] floor=$($o.floor): $($o.headline)"
                 # keep the commit under the doc-budget guard's ledger cap (step 2c too)
                 python tools/grinder/grindlib.py compact-ledger . $func 2>$null | Out-Null
-                git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+                git -C $Root add -- memory/grind docs/grind 2>$null
                 git -C $Root commit -m "grind: $func ledger s$sessionN update [skip-park-src-guard]" 2>$null | Out-Null
             }
         }

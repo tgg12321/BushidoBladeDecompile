@@ -31,7 +31,6 @@ LEDGER_MAX = 64 * 1024
 LOG_CAPS = {
     "docs/grind/decisions.md": (1024 * 1024, "python tools/rotate_grind_logs.py"),
     "docs/grind/journal.md": (512 * 1024, "python tools/rotate_grind_logs.py"),
-    "metrics/events.jsonl": (40 * 1024 * 1024, "python tools/metrics/rotate.py"),
 }
 NEW_DOC_EXEMPT = ("memory/grind/", "docs/naming/data_evidence/")
 LEDGER_RE = re.compile(r"^memory/grind/[^/]+/(hypotheses|evidence)\.md$")

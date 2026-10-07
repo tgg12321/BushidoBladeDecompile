@@ -41,11 +41,7 @@ Set-Location $Root
 # reintroduces the footgun. Commit or stash first. This guard belongs to the
 # drill wrapper alone: grind.ps1's own -Once path keeps the discard behaviour,
 # which is by design for real sessions.
-# metrics/events.jsonl is the one allowed exception: it is append-only telemetry
-# that engine commands touch constantly, the driver never reverts it, and
-# requiring it clean would make the drill unrunnable in normal operation.
-$dirty = @(git -C $Root status --porcelain |
-           Where-Object { $_ -and ($_.Substring([Math]::Min(3, $_.Length)).Trim().Trim('"') -ne 'metrics/events.jsonl') })
+$dirty = @(git -C $Root status --porcelain | Where-Object { $_ })
 if ($dirty.Count) {
     Write-Host "DRILL PREFLIGHT: REFUSING TO RUN — the working tree is dirty ($($dirty.Count) path(s))." -ForegroundColor Red
     Write-Host "The drills exercise the grinder's discard path, which runs 'git checkout -- .' and" -ForegroundColor Yellow

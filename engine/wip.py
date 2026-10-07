@@ -15,7 +15,7 @@ candidate.c + meta.json directly); memory/wip is a legacy manual-path surface
 
 The contract + schema are documented in memory/wip/README.md. Failures here
 are SILENT (return None / empty list) — never raise into the queue hot path
-or the SessionStart hook. Mirrors metrics.py / queue_top.py's non-interference
+or the SessionStart hook. Mirrors queue_top.py's non-interference
 contract.
 """
 from __future__ import annotations

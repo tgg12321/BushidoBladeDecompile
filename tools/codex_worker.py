@@ -55,7 +55,6 @@ from pathlib import Path
 BRIDGE = Path.home() / ".claude" / "skills" / "codex" / "codex_bridge.py"
 SLUG = re.compile(r"^[a-z0-9][a-z0-9-]{1,47}$")
 ORACLE_SHA1 = "62efab4f73f992798c43e8c730aa43baa10bb4fa"
-MAIN_NOISE = {"metrics/events.jsonl"}
 DATA_ONLY = re.compile(r"^(src|include|asm)/")      # what Codex may build through `shadow`
 ENGINE_READONLY = ("sandbox", "canonical", "diagnose", "dossier", "verify-oracle", "tus-check", "test",
                    "fixtures-verify", "layer2", "queue")
@@ -340,7 +339,7 @@ def harvest(main, item, scratch):
         git(*HARVEST_CFG, "read-tree", base, cwd=scratch, env=env)
         # tmp/ is gitignored (naming it in an exclude pathspec makes `git add` fail once it exists);
         # a .gitignore edit that un-ignores it is refused by check_tree, and `commit` refuses tmp/.
-        git(*HARVEST_CFG, "add", "-A", "--", ".", ":(exclude)metrics/events.jsonl", cwd=scratch, env=env)
+        git(*HARVEST_CFG, "add", "-A", "--", ".", cwd=scratch, env=env)
         tree = git(*HARVEST_CFG, "write-tree", cwd=scratch, env=env)
     finally:
         idx.unlink(missing_ok=True)
@@ -430,7 +429,6 @@ def cmd_shadow(a):
           flush=True)
     r = subprocess.run(["pwsh", "-NoProfile", "-File", str(main / "tools" / "wteng.ps1"), str(trusted),
                         *a.args], env=clean_env())
-    git("checkout", "--", "metrics/events.jsonl", cwd=trusted, check=False)
     sys.exit(r.returncode)
 
 
@@ -836,7 +834,6 @@ def cmd_layer2(a):
     run_checked(["pwsh", "-NoProfile", "-File", str(main / "tools" / "wteng.ps1"), str(trusted), "layer2",
                  "record", a.func, "--verdict-file", rel, "--reviewer", a.reviewer, "--scope", a.scope],
                 f"layer2 record {a.func}")
-    git("checkout", "--", "metrics/events.jsonl", cwd=trusted, check=False)
     changed = sorted(e[3:] for e in git("status", "--porcelain", "-z", "-uall", cwd=trusted).split("\0") if e)
     copy = f"memory/grind/{a.func}/layer2_verdicts/{hashlib.sha1(vf.read_bytes()).hexdigest()}.json"
     new = (trusted / ledger).read_bytes() if (trusted / ledger).exists() else b""
@@ -1065,7 +1062,6 @@ def verify_tip(main, trusted, tip, paths):
         run_checked(["pwsh", "-NoProfile", "-File", wteng, str(trusted), "test"], "engine test suite")
     run_checked(["wsl", "bash", "-c", f"cd '{wsl_path(trusted)}' && source .venv/bin/activate && "
                  "python3 tools/check_completion_integrity.py"], "completion-integrity audit")
-    git("checkout", "--", "metrics/events.jsonl", cwd=trusted, check=False)
     if git("status", "--porcelain", cwd=trusted):
         refuse("the build/test left the trusted tree dirty: " + git("status", "--porcelain", cwd=trusted))
     marker.parent.mkdir(parents=True, exist_ok=True)

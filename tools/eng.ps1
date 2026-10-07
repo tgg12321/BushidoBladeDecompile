@@ -17,9 +17,6 @@
 # three times, which is what eats awk/sed/heredocs. This wrapper builds the WSL
 # command string itself, so callers pass plain tokens and never touch quoting.
 #
-# It also exports CLAUDE_SESSION_ID into the WSL env so engine/metrics.py can
-# attribute the run (otherwise session_id is null for interactive sessions).
-#
 # Exit code is propagated from the engine command.
 
 $ErrorActionPreference = 'Stop'
@@ -59,17 +56,9 @@ $parts = foreach ($a in $args) {
 }
 $cliArgs = $parts -join ' '
 
-# Optional metrics attribution: only set the env var inside WSL if we have one,
-# so we never stamp an empty string.
-$sidPrefix = ''
-if ($env:CLAUDE_SESSION_ID) {
-    $sid = $env:CLAUDE_SESSION_ID -replace "'", "'\''"
-    $sidPrefix = "CLAUDE_SESSION_ID='$sid' "
-}
-
 # Single-quote the (space-containing) cd path for bash; no double quotes anywhere
 # in this string, so PowerShell passes it as one clean argv element to wsl.
-$bashCmd = "cd '$wsldir' && source .venv/bin/activate && ${sidPrefix}python3 -m engine.cli $cliArgs"
+$bashCmd = "cd '$wsldir' && source .venv/bin/activate && python3 -m engine.cli $cliArgs"
 
 wsl bash -c $bashCmd
 exit $LASTEXITCODE

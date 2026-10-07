@@ -2084,49 +2084,36 @@ class TestCandidateBlockTripwire(unittest.TestCase):
 
 
 class TestFloorAttestation(unittest.TestCase):
-    """A self-reported floor DROP must be corroborated by this session's own
-    measurement (func_8006CCC8 s1, 2026-09-16: floor=94 banked off a C body that
-    was never written to disk)."""
+    """A self-reported floor DROP must be corroborated by a session artifact
+    containing the score (func_8006CCC8 s1, 2026-09-16: floor=94 banked off a C
+    body that was never written to disk)."""
 
     SID = "11111111-2222-3333-4444-555555555555"
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = self.tmp.name
-        os.makedirs(os.path.join(self.root, "metrics"))
-        self._write_event(self.SID, "func_X", "sandbox", 39)
 
     def tearDown(self):
         self.tmp.cleanup()
 
-    def _write_event(self, sid, func, command, score):
-        ev = {"schema": 1, "command": command, "func": func, "session_id": sid,
-              "payload": {"score": score}}
-        p = os.path.join(self.root, "metrics", "events.jsonl")
-        with open(p, "a", encoding="utf-8", newline="\n") as f:
-            f.write(json.dumps(ev) + "\n")
-
-    def test_measured_drop_passes(self):
-        ok, _ = G.attest_floor(self.root, "func_X", {"floor": 39}, self.SID, 77)
-        self.assertTrue(ok)
-
     def test_unmeasured_drop_is_invalid(self):
-        ok, why = G.attest_floor(self.root, "func_X", {"floor": 39}, "other-sid", 77)
+        ok, why = G.attest_floor(self.root, "func_X", {"floor": 39}, self.SID, 77)
         self.assertFalse(ok)
         self.assertIn("UNATTESTED FLOOR DROP", why)
-
-    def test_another_functions_measurement_does_not_attest(self):
-        self._write_event("other-sid", "func_Y", "sandbox", 39)
-        ok, _ = G.attest_floor(self.root, "func_X", {"floor": 39}, "other-sid", 77)
-        self.assertFalse(ok)
 
     def test_flat_or_worse_floor_is_never_gated(self):
         self.assertTrue(G.attest_floor(self.root, "func_X", {"floor": 77}, "x", 77)[0])
         self.assertTrue(G.attest_floor(self.root, "func_X", {"floor": 90}, "x", 77)[0])
 
     def test_mock_spawn_without_session_id_is_not_gated(self):
-        # drills and -MockSessionScript runs have no CLAUDE_SESSION_ID to match
+        # drills and -MockSessionScript runs have no session id
         self.assertTrue(G.attest_floor(self.root, "func_X", {"floor": 39}, "", 77)[0])
+
+    def test_candidate_ready_is_not_gated(self):
+        # Invoke-CandidatePath re-measures the candidate with `sandbox` itself
+        o = {"result": "candidate-ready", "floor": 0, "artifacts": []}
+        self.assertTrue(G.attest_floor(self.root, "func_X", o, self.SID, 77)[0])
 
     def test_unknown_prior_floor_is_not_gated(self):
         self.assertTrue(G.attest_floor(self.root, "func_X", {"floor": 39}, "x", None)[0])
@@ -2243,7 +2230,7 @@ class TestScopeViolations(unittest.TestCase):
     # single `?? memory/` line, so a fixture that skips the baseline commit
     # tests a path shape the driver never sees.
     BASELINE = ("src/keep.c", "include/keep.h", "memory/grind/keep",
-                "docs/grind/keep", "metrics/keep", "tools/grinder/keep")
+                "docs/grind/keep", "tools/grinder/keep")
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -2271,8 +2258,7 @@ class TestScopeViolations(unittest.TestCase):
     def test_allowed_surface_is_not_a_violation(self):
         for rel in ("src/main.c", "include/game.h",
                     "memory/grind/func_X/candidate.c",
-                    "docs/grind/journal.md", "tmp/scratch.txt",
-                    "metrics/events.jsonl"):
+                    "docs/grind/journal.md", "tmp/scratch.txt"):
             self._touch(rel)
         self.assertEqual(G.scope_violations(self.root, "func_X"), [])
 

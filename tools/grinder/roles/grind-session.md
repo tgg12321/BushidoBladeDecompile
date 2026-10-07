@@ -240,7 +240,9 @@ same work in fewer, bigger turns (owner policy 2026-07-20):
   that the driver discards the session as it always did. Don't rely on it.
 - Scratch: `tmp/grind/<func>/s<N>/`. Permuter logs and cc1 dumps go there and
   are listed in `artifacts` (permuter/forensics sessions are INVALID without
-  at least one real artifact file).
+  at least one real artifact file). A reported `floor` below the prior one is
+  INVALID unless an artifact there (or under `memory/grind/<func>/`) contains
+  that score — save the `sandbox` output that measured it.
 - Judge constraints and BANNED CONSTRUCTS in your brief are mechanically binding:
   the driver rejects a `candidate-ready` whose self-vet declares a banned
   construct, and the layer-1 cheat-reviewer runs on your diff BEFORE the Judge.

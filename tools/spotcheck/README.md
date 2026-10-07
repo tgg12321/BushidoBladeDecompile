@@ -302,9 +302,8 @@ removal, 2026-08-30.)
    longer-term fix — reclassifying these symbols as data in the split — would
    make the filter moot.
 2. **Should `spot_check_completed.py` be an engine subcommand?** It reuses
-   `engine.sandbox` / `score` / `cheats` directly and would pick up metrics
-   capture free via `engine/metrics.py`. `check_completion_integrity.py` set the
-   `tools/` precedent.
+   `engine.sandbox` / `score` / `cheats` directly.
+   `check_completion_integrity.py` set the `tools/` precedent.
 3. **Should attribute mode's baseline be materialised?** It derives vram+size
    from `build/bb2.elf` at run time, so it needs a build to exist. A committed
    `oracle/completed_bytes.json` (name → vram, size, sha1 of the *original*

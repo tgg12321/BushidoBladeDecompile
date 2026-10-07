@@ -72,7 +72,6 @@ in an `authorize` bucket and take the Judge-gated canonical-grant path ([[judge-
 - Hooks self-explain when they block; the `commit-msg` chain installs via
   `cp tools/hooks/commit_msg_chain.sh .git/hooks/commit-msg`. Root-write cleanliness is wired in
   `settings.local.json` (a fresh clone must re-enable it).
-- Metrics capture (`metrics/events.jsonl`) is silent and best-effort — see `metrics/README.md`.
 - Commit conventions: `docs/COMMIT_CONVENTIONS.md` (engine work uses `engine:`).
 
 ## Documentation budget (owner directive 2026-10-01)
@@ -92,7 +91,7 @@ auto-loaded ~100K tokens of rules. Don't rebuild that.
   commit body, not a new doc.
 - **Grind ledgers** ≤ 64 KB per file (`grindlib.py compact-ledger <func>`; the driver
   auto-compacts) and closed on completion. **Logs** are rotated: `tools/rotate_grind_logs.py`
-  (decisions/journal), `tools/metrics/rotate.py` (events.jsonl).
+  (decisions/journal).
 - **Harness memory** ≤ 10 notes of ≤ 6 KB: non-obvious, still-true facts the repo can't tell
   you. Add a bullet to an existing note; never duplicate a rule or doc.
 - Cite with `path:line`; content that's gone resolves at a tag or commit (`<tag>:path:line`).

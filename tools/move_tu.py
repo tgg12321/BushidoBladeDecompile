@@ -37,8 +37,6 @@ sys.path.insert(0, str(ROOT))
 
 FLAG_LISTS = ("GP_FILES", "PSYQ_LIBRARY_FILES", "EXPAND_LB_FILES", "EXPAND_LH_FILES", "NO_SR_FILES")
 _ID_RE = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_.\-]*(/[A-Za-z0-9_][A-Za-z0-9_.\-]*)*$")
-# Always-dirty capture file (metrics/README.md); every other tracked change refuses.
-DIRTY_IGNORED = {"metrics/events.jsonl"}
 RENAMES_HEADER = ("# TU renames (restructure, owner decision Q106 D9): old id, new id, and the\n"
                   "# HEAD the move was made on (`after:<sha>`; the move is the next commit that\n"
                   "# touches this row). Ids are paths under src/ without .c. Resolve a\n"
@@ -69,14 +67,7 @@ def git(root: Path, *args: str, check: bool = True) -> str:
 
 
 def dirty(root: Path) -> list[str]:
-    out = []
-    for line in git(root, "status", "--porcelain").splitlines():
-        path = line[3:].strip().strip('"')
-        if " -> " in path:
-            path = path.split(" -> ", 1)[1]
-        if path not in DIRTY_IGNORED:
-            out.append(line)
-    return out
+    return [line for line in git(root, "status", "--porcelain").splitlines() if line.strip()]
 
 
 def _sub_exact(text: str, old: str, new: str, want: int | None, what: str) -> tuple[str, int]:
@@ -231,7 +222,7 @@ def plan(root: Path, old: str, new: str) -> tuple[dict[str, bytes], list[str], l
     # leftovers: tracked references outside docs/memory that this tool does not own
     pat = (r"(^|[^A-Za-z0-9_/]|src/)" + re.escape(old)
            + r"(\.[co]([^A-Za-z0-9_]|$)|[^A-Za-z0-9_./]|$)")
-    out = git(root, "grep", "-n", "-E", pat, "--", ".", ":!docs", ":!memory", ":!metrics",
+    out = git(root, "grep", "-n", "-E", pat, "--", ".", ":!docs", ":!memory",
               ":!src", ":!bb2.ld", ":!tools/tu_renames.tsv", check=False)
     leftovers = [l for l in out.splitlines() if l.split(":", 1)[0] not in edits]
     return edits, notes, leftovers

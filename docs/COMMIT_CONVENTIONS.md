@@ -65,7 +65,6 @@ These prefixes are what `git log --grep '^<prefix>'` matches on. Keep them recog
 | `grinder: <change>` | Changes to the Grinder driver itself (`tools/grinder/`). |
 | `migrate: <topic>` | asm-until-matched representation migrations (INCLUDE_ASM conversion + rule retirement). |
 | `rules: <change>` | Owner rulings landed as `.claude/rules/` records (per ruling-record-lands-before-code). |
-| `metrics: <change>` | Metrics capture/reporting layer. |
 | `memory: <change>` | Repo memory maintenance (ledgers/wip). |
 | `audit: <topic>` | Changes to `tools/audit_*.py` or audit policy. |
 | `trace: <topic>` | Investigation notes that don't change source — typically commits to `docs/naming/*` or a research file. |

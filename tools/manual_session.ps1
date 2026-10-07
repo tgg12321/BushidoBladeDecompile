@@ -65,13 +65,13 @@ function Get-GrinderPid {
     return [int]$p
 }
 
-# Tracked-file dirt only. memory/grind, docs/grind, tmp/ and metrics/events.jsonl
-# are the Grinder's own working surfaces and are not "dirt" for our purposes --
-# this mirrors grind.ps1's $AllowedDirtyPattern.
+# Tracked-file dirt only. memory/grind, docs/grind and tmp/ are the Grinder's
+# own working surfaces and are not "dirt" for our purposes -- this mirrors
+# grind.ps1's $AllowedDirtyPattern.
 function Get-BlockingDirt {
     $lines = @(git -C $Root status --porcelain | Where-Object { $_ })
     return @($lines | Where-Object {
-        $_ -notmatch '^(\?\?|.M|M.|A.|.A|D.|.D)\s+"?(memory/grind/|docs/grind/|tmp/|metrics/events\.jsonl)'
+        $_ -notmatch '^(\?\?|.M|M.|A.|.A|D.|.D)\s+"?(memory/grind/|docs/grind/|tmp/)'
     })
 }
 
@@ -273,13 +273,6 @@ function Invoke-End {
 Banked by tools/manual_session.ps1 end so the Grinder resumes from what the
 manual lane learned. See the decomp-manual skill." -- @ledgerPaths 2>$null | Out-Null
         Say '[manual] ledger banked.' 'Green'
-    }
-
-    # Engine events accumulate in metrics/events.jsonl during the session; the
-    # convention is a separate metrics: capture commit (see git log).
-    if (@(git -C $Root status --porcelain -- metrics/events.jsonl | Where-Object { $_ }).Count) {
-        git -C $Root commit -q -m "metrics: capture from $($s.func) manual session" -- metrics/events.jsonl 2>$null | Out-Null
-        Say '[manual] metrics captured.' 'Green'
     }
 
     # Listed AFTER the banking commits so the report includes them.

@@ -22,7 +22,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from engine import canonical, score, inlineasm, cheats, metrics, volatile_cheats
+from engine import canonical, score, inlineasm, cheats, volatile_cheats
 from engine import diagnose
 from engine import queue as Q
 from engine import pipeline as P
@@ -2099,70 +2099,6 @@ void j(void) {
     eq("addr-coerced: func_volatile_cheat_count includes the coercion", cnt, 2)
     check("addr-coerced: strip also removes the orphaned declaration",
           "stk_a" not in volatile_cheats.strip_volatile_cheats_file(text5)[0])
-
-
-# --------------------------------------------------------------------------
-# metrics — the capture layer's non-negotiable: silent + swallow-on-failure
-# --------------------------------------------------------------------------
-
-@contextlib.contextmanager
-def _env(**kv):
-    """Temporarily set/clear env vars, restoring prior state on exit."""
-    old = {k: os.environ.get(k) for k in kv}
-    try:
-        for k, v in kv.items():
-            if v is None:
-                os.environ.pop(k, None)
-            else:
-                os.environ[k] = v
-        yield
-    finally:
-        for k, v in old.items():
-            if v is None:
-                os.environ.pop(k, None)
-            else:
-                os.environ[k] = v
-
-
-def test_metrics() -> None:
-    # 1. normal append: one parseable line, normalized fields lifted out
-    with tempfile.TemporaryDirectory() as td:
-        logp = Path(td) / "events.jsonl"
-        with _env(BB2_METRICS_LOG=str(logp), BB2_METRICS_DISABLE=None):
-            buf = io.StringIO()
-            with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
-                metrics.record_event("sandbox", "func_X",
-                                     {"score": 3, "file": "code6cac"},
-                                     extra={"disable": "all"})
-            eq("metrics: hot path prints nothing", buf.getvalue(), "")
-            lines = logp.read_text().splitlines()
-            eq("metrics: one event appended", len(lines), 1)
-            rec = json.loads(lines[0])
-            eq("metrics: command recorded", rec["command"], "sandbox")
-            eq("metrics: func recorded", rec["func"], "func_X")
-            eq("metrics: score normalized to top level", rec["score"], 3)
-            eq("metrics: file normalized to top level", rec["file"], "code6cac")
-            eq("metrics: full result preserved in payload", rec["payload"]["score"], 3)
-
-    # 2. THE non-negotiable: a forced write failure is swallowed AND silent.
-    #    A file where a directory is needed makes parent.mkdir()/open() fail.
-    with tempfile.TemporaryDirectory() as td:
-        blocker = Path(td) / "blocker"
-        blocker.write_text("x")
-        logp = blocker / "events.jsonl"
-        with _env(BB2_METRICS_LOG=str(logp), BB2_METRICS_DISABLE=None):
-            buf = io.StringIO()
-            with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
-                ret = metrics.record_event("retire", "func_Y", {"ok": True})
-            eq("metrics: failure swallowed (returns None, no raise)", ret, None)
-            eq("metrics: failure prints nothing", buf.getvalue(), "")
-
-    # 3. BB2_METRICS_DISABLE is a hard no-op (writes nothing)
-    with tempfile.TemporaryDirectory() as td:
-        logp = Path(td) / "events.jsonl"
-        with _env(BB2_METRICS_LOG=str(logp), BB2_METRICS_DISABLE="1"):
-            metrics.record_event("sandbox", "func_Z", {"score": 0})
-            check("metrics: DISABLE writes nothing", not logp.exists())
 
 
 def test_queue_reopen() -> None:
@@ -5862,7 +5798,6 @@ def main() -> int:
     test_orphaned_local_decls()
     test_dead_conditional_stores()
     test_fake_annotated_lever_d_bypass()
-    test_metrics()
     with _synth_addrs():
         test_queue_reopen()
     with _synth_addrs():

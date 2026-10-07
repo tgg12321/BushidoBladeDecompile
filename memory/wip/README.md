@@ -54,7 +54,7 @@ memory/wip/<func_name>/
       "lever_rule": "rule-slug",           // optional .claude/rules/<slug>.md reference
       "floor_was": 20,
       "floor_now": 12,
-      "session_id": "uuid"                  // optional CLAUDE_SESSION_ID for metrics
+      "session_id": "uuid"                  // optional CLAUDE_SESSION_ID
     }
   ],
   "prior_sessions_summary": [              // sessions folded out of sessions[] — ONE line each:

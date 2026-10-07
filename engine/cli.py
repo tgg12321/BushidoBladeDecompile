@@ -16,7 +16,6 @@ from . import canonical as CANON
 from . import diagnose as DIAG
 from . import integrate as INT
 from . import layer2 as L2
-from . import metrics as MET
 from . import orchestrator as ORCH
 from . import pipeline as P
 from . import queue as Q
@@ -28,14 +27,12 @@ def _print_finish_nudge(func: str) -> None:
     """Reminder printed after a successful retire: register reusable findings
     where future agents will see them. The old `capture-recipe` tool + the
     `tools/recipes/` library were archived 2026-05-26; `.claude/rules/` is the
-    live technique registry (auto-loads by `paths:` glob; the metrics layer
-    fingerprints each as a technique slug). See CLAUDE.md "The loop" step 6."""
+    live technique registry (auto-loads by `paths:` glob). See CLAUDE.md "The loop" step 6."""
     print(
         f"\n─ {func} verified (SHA1 == oracle). Before you commit — REGISTER FINDINGS ─\n"
         "  Did this match teach a reusable codegen pattern or a non-obvious gotcha?\n"
         "    • reusable pattern   → add/update .claude/rules/<slug>.md (give it a `paths:`\n"
-        "                           glob so it auto-loads on matching source reads; metrics\n"
-        "                           fingerprints it as a technique slug)\n"
+        "                           glob so it auto-loads on matching source reads)\n"
         "    • function-specific  → add a memory/ entry\n"
         "    • routine / no-op    → skip (don't manufacture a finding)\n"
         "  This human-written record is the durable one — there is no recipe-capture tool.\n"
@@ -186,11 +183,9 @@ def main() -> int:
                             "reference (e.g. mid-revert restoration).",
                 }
                 print(json.dumps(r, indent=2))
-                MET.record_event("verify-oracle", None, r, exit_code=3)
                 return 3
         r = O.verify(rebuild=a.rebuild)
         print(json.dumps(r, indent=2))
-        MET.record_event("verify-oracle", None, r, exit_code=0 if r.get("ok") else 1)
         return 0 if r.get("ok") else 1
 
     if a.cmd == "build":
@@ -198,7 +193,6 @@ def main() -> int:
         got = P.sha1(exe)
         ok = got == cfg.ORACLE_SHA1
         print(f"built {exe}\n  sha1 {got}\n  want {cfg.ORACLE_SHA1}\n  {'MATCH' if ok else 'MISMATCH'}")
-        MET.record_event("build", None, {"sha1": got, "ok": ok}, exit_code=0 if ok else 1)
         return 0 if ok else 1
 
     if a.cmd == "tus-check":
@@ -248,9 +242,6 @@ def main() -> int:
         if r.get("no_c_body") and not a.candidate and _ledger_cand.is_file():
             print(f"\n(scored the INCLUDE_ASM stub. A banked candidate exists — "
                   f"measure it with: --candidate {_ledger_cand.as_posix()})")
-        # The diff is printed, never folded into `r`: metrics.record_event
-        # persists `payload: result` verbatim into the committed
-        # metrics/events.jsonl, and a per-call instruction dump would bloat it.
         if a.diff:
             if not r.get("scorable"):
                 print(f"\n(no diff: {r.get('error', 'function not scorable')})")
@@ -261,7 +252,6 @@ def main() -> int:
                 from . import score as SC
                 _print_insn_diff(SC.insn_diff(r["disabled_o"],
                                               f"build/src/{r['file']}.o", a.func))
-        MET.record_event("sandbox", a.func, r, extra={"disable": a.disable})
         return 0
 
     if a.cmd == "queue":
@@ -296,7 +286,6 @@ def main() -> int:
         if a.action == "auto-return":
             r = Q.auto_return(rescan=not a.no_rescan, force_rescan=a.force_rescan)
             print(json.dumps(r, indent=2))
-            MET.record_event("queue-auto-return", None, r, exit_code=0)
             return 0
         if a.action in ("done", "rotate", "foreclose", "escalate", "park", "unpark"):
             if not a.func:
@@ -307,7 +296,6 @@ def main() -> int:
                  if a.action in ("rotate", "foreclose", "escalate", "park")
                  else Q.mark_unparked(a.func, a.reason))
             print(json.dumps(r, indent=2))
-            MET.record_event(f"queue-{a.action}", a.func, r, exit_code=0 if r.get("ok") else 1)
             return 0 if r.get("ok") else 1
         if a.action == "reopen":
             if not a.func or not a.file:
@@ -315,7 +303,6 @@ def main() -> int:
                 return 2
             r = Q.reopen(a.func, a.file, a.reason)
             print(json.dumps(r, indent=2))
-            MET.record_event("queue-reopen", a.func, r, exit_code=0 if r.get("ok") else 1)
             return 0 if r.get("ok") else 1
         return 0
 
@@ -378,7 +365,6 @@ def main() -> int:
     if a.cmd == "retire":
         r = INT.retire_function(a.func)
         print(json.dumps(r, indent=2))
-        MET.record_event("retire", a.func, r, exit_code=0 if r["ok"] else 1)
         if r["ok"]:
             _print_finish_nudge(a.func)
         return 0 if r["ok"] else 1
@@ -393,7 +379,6 @@ def main() -> int:
                 print(f"  SKIP {f}: {e}")
                 continue
             verdicts[d["verdict"]] += 1
-            MET.record_event("diagnose", f, d)
             print(f"  {d['verdict']:<13} {f:<30} (d{d['ndiff']}) {d['reason']}")
             if a.detail:
                 for tag, t, b in d["pairs"]:
@@ -407,14 +392,12 @@ def main() -> int:
     if a.cmd == "canonical":
         r = CANON.classify(a.func) if a.fast else CANON.classify_full(a.func)
         print(json.dumps(r, indent=2))
-        MET.record_event("canonical", a.func, r, extra={"fast": a.fast})
         return 0
 
     if a.cmd == "cc1psx-check":
         from . import cc1psx as CCX
         r = CCX.cc1psx_check(a.func, a.candidate or None)
         print(json.dumps(r, indent=2))
-        MET.record_event("cc1psx-check", a.func, r, exit_code=0 if r.get("ok") else 1)
         return 0 if r.get("ok") else 1
 
     if a.cmd == "dossier":

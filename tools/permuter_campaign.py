@@ -1,18 +1,10 @@
 #!/usr/bin/env python3
-"""permuter_campaign — launch/harvest decomp-permuter campaigns WITH telemetry.
+"""permuter_campaign — launch/harvest decomp-permuter campaigns.
 
-Owner directive 2026-07-07: permuter campaigns get real metrics (time-to-find
-distribution) and a fresh-seed stopping discipline. This wrapper is the
-STANDARD way to run campaigns — raw `permuter.py <dir>` invocations leave no
-telemetry and are what made "does long sampling ever pay?" unanswerable.
-
-Events land in metrics/events.jsonl via engine.metrics.record_event (same
-silent, best-effort contract as every engine command):
-
-  permuter-launch   {func, dir, label, jobs, base_score, pid}
-  permuter-harvest  {func, dir, label, elapsed_s, iterations, finds[], best_new_score,
-                     stopped, pid_alive}  — one `finds[]` entry per output-<score>-<ctr>
-                     dir, each with seconds_since_launch (mtime - launch ts)
+Owner directive 2026-07-07: permuter campaigns follow a fresh-seed stopping
+discipline. This wrapper is the STANDARD way to run campaigns: it records each
+campaign in a registry, and `harvest` reports the NEW finds (one `finds[]`
+entry per output-<score>-<ctr> dir, each with seconds_since_launch) since launch.
 
 Usage (WSL, repo root, venv active):
   python3 tools/permuter_campaign.py launch  --func <f> --dir tmp/perm_x [--label chassis] [-j 8] [--stop-on-zero] [--no-stack-diffs]
@@ -46,13 +38,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-
-try:  # best-effort telemetry; the reaper must run even if metrics deps are absent
-    from engine.metrics import record_event  # noqa: E402  (best-effort, never raises)
-except Exception:  # pragma: no cover
-    def record_event(*_a, **_k):  # type: ignore
-        return None
 
 REGISTRY = ROOT / "tmp" / "permuter_campaigns.json"
 META_NAME = "campaign_meta.json"
@@ -224,12 +209,6 @@ def cmd_launch(args):
                    "launch_ts": meta["launch_ts"], "active": True}
     _save_registry(reg)
 
-    result = {"ok": True, "score": base_score}
-    record_event("permuter-launch", args.func, result,
-                 extra={"dir": str(d), "label": meta["label"], "jobs": args.jobs,
-                        "base_score": base_score, "pid": proc.pid,
-                        "stack_diffs": not args.no_stack_diffs,
-                        "stop_on_zero": bool(args.stop_on_zero)})
     print(json.dumps({"launched": True, "pid": proc.pid, "base_score": base_score,
                       "dir": str(d), "label": meta["label"]}, indent=2))
 
@@ -291,8 +270,6 @@ def cmd_harvest(args):
         "stopped": stopped, "procs_killed": killed, "stop_reason": args.reason,
         "finds": finds,
     }
-    result = {"ok": True, "score": best_new}
-    record_event("permuter-harvest", func, result, extra=summary)
 
     if args.stop:
         reg = _load_registry()
@@ -393,9 +370,6 @@ def cmd_reap(args):
                 changed = True
         if changed:
             _save_registry(reg)
-        record_event("permuter-reap", "permuter_reaper", {"ok": True},
-                     extra={"ttl_s": args.ttl, "reaped": reaped,
-                            "groups_seen": len(groups)})
     print(json.dumps({"ok": True, "ttl_s": args.ttl, "groups_seen": len(groups),
                       "reaped": reaped, "dry_run": bool(args.dry_run)}, indent=2))
 
@@ -453,7 +427,6 @@ def cmd_wait(args):
            "novel": novel, "outputs_at_start": len(at_start),
            "iterations": iters, "pid_alive": _pid_alive(pid) if pid else None,
            "dir": str(d)}
-    record_event("permuter-wait", meta.get("func"), {"ok": True}, extra=out)
     print(json.dumps(out, indent=2))
 
 
@@ -478,7 +451,7 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    lp = sub.add_parser("launch", help="launch a campaign detached, with telemetry")
+    lp = sub.add_parser("launch", help="launch a campaign detached")
     lp.add_argument("--func", required=True)
     lp.add_argument("--dir", required=True, help="permuter workspace dir")
     lp.add_argument("--label", help="chassis/basin label (default: dir name)")

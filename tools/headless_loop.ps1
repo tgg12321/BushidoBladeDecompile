@@ -3,20 +3,20 @@
 .SYNOPSIS
   Headless driver for the BB2 decomp engine loop: runs `claude -p` once per
   queue item to take the TOP function to COMPLETED (pure C, or canonical asm
-  if genuinely hand-coded), with oracle + progress guardrails and per-run
-  metrics attribution.
+  if genuinely hand-coded), with oracle + progress guardrails and a per-run
+  record.
 
 .DESCRIPTION
   Each iteration:
     1. (pre-loop only) `eng verify-oracle --rebuild` to establish a clean baseline.
     2. Read the top active queue item (`eng queue next`).
-    3. Invoke `claude -p <loop-prompt>` with a fresh session id (so engine
-       metrics attribute the run), a model, and a permission mode.
+    3. Invoke `claude -p <loop-prompt>` with a fresh session id, a model, and a
+       permission mode.
     4. Authoritative post-check: `eng verify-oracle --rebuild` MUST still match the
        oracle SHA1. If not, the agent committed a broken build -> STOP immediately.
     5. Confirm progress: the engine `done` count went up OR the function was parked.
        If neither -> stuck -> STOP.
-    6. Append a run record to metrics/headless_runs.jsonl (func, model, session,
+    6. Append a run record to tmp/headless_runs.jsonl (func, model, session,
        cost, tokens, turns, oracle_ok, advanced).
     7. Stuck-function cap: if the SAME top function fails to complete (WIP-checkpoint
        or no-progress) for -MaxSameFunc consecutive iterations, STOP (exit 11).
@@ -80,7 +80,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $root   = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $engPs1 = Join-Path $PSScriptRoot 'eng.ps1'
-$runlog = Join-Path $root 'metrics/headless_runs.jsonl'
+$runlog = Join-Path $root 'tmp/headless_runs.jsonl'
 $wsldir = if ($root -match '^([A-Za-z]):[\\/](.*)$') {
     "/mnt/$($Matches[1].ToLower())/$($Matches[2] -replace '\\','/')"
 } else { $root -replace '\\','/' }
@@ -259,6 +259,7 @@ function is NOT completed; the COMPLETED gate rejects them.
 '@
 
 function Write-RunRecord($rec) {
+    New-Item -ItemType Directory -Force (Split-Path $runlog) | Out-Null
     ($rec | ConvertTo-Json -Compress -Depth 6) | Add-Content -Path $runlog -Encoding utf8
 }
 
@@ -305,15 +306,13 @@ try {
 
         if ($DryRun) {
             Write-Host "[headless] DRY RUN -- would invoke:"
-            Write-Host "  CLAUDE_SESSION_ID=$sid claude $($claudeArgs[0]) <prompt> $($claudeArgs[2..($claudeArgs.Count-1)] -join ' ')"
+            Write-Host "  claude $($claudeArgs[0]) <prompt> $($claudeArgs[2..($claudeArgs.Count-1)] -join ' ')"
             Write-Host "[headless] (no claude process spawned; no commit) -- stopping after dry run."
             break
         }
 
         $headBefore = Git-Head
-        $env:CLAUDE_SESSION_ID = $sid            # so engine/metrics.py attributes the run
         $raw = ($null | & claude @claudeArgs | Out-String)   # $null stdin -> skip the 3s "no stdin" wait
-        Remove-Item Env:\CLAUDE_SESSION_ID -ErrorAction SilentlyContinue
         $headAfter = Git-Head
 
         $res = $null

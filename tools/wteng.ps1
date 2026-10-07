@@ -99,23 +99,16 @@ if ($root -match '^([A-Za-z]):[\\/](.*)$') {
     $wsldir = $root -replace '\\', '/'
 }
 
-# Optional metrics attribution.
-$sid = ''
-if ($env:CLAUDE_SESSION_ID) {
-    $s = $env:CLAUDE_SESSION_ID -replace "'", "'\''"
-    $sid = "CLAUDE_SESSION_ID='$s' "
-}
-
 if ($rest[0] -ieq 'make') {
     $makeArgs = (@($rest | Select-Object -Skip 1) -join ' ')
-    $bashCmd  = "cd '$wsldir' && source .venv/bin/activate && ${sid}make $makeArgs"
+    $bashCmd  = "cd '$wsldir' && source .venv/bin/activate && make $makeArgs"
 } else {
     # Quote any token containing whitespace for bash.
     $parts = foreach ($a in $rest) {
         if ($a -match '\s') { "'" + ($a -replace "'", "'\''") + "'" } else { $a }
     }
     $cli = $parts -join ' '
-    $bashCmd = "cd '$wsldir' && source .venv/bin/activate && ${sid}python3 -m engine.cli $cli"
+    $bashCmd = "cd '$wsldir' && source .venv/bin/activate && python3 -m engine.cli $cli"
 }
 
 Write-Host "[wteng] target=$target  root=$root" -ForegroundColor DarkGray

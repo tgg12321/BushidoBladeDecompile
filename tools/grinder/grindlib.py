@@ -551,7 +551,7 @@ def add_scope_allow(root, func, paths, date):
 # catches — it can never invent one the driver would have allowed.
 _SCOPE_OK_RE = re.compile(
     r'^(\?\?|.M|M.|A.|.A)\s+("?)'
-    r'(memory/grind/|docs/grind/|tmp/|metrics/events\.jsonl|src/|include/)')
+    r'(memory/grind/|docs/grind/|tmp/|src/|include/)')
 
 
 def scope_allow_entries(root, func):
@@ -577,7 +577,7 @@ def scope_violations(root, func):
     """`git status --porcelain` lines outside a grind session's allowed surface.
 
     The session's surface is its own src file, memory/grind/<func>/, docs/grind/,
-    tmp/, metrics/events.jsonl, plus any per-function scope_allow.txt grant."""
+    tmp/, plus any per-function scope_allow.txt grant."""
     out = subprocess.run(["git", "-C", root, "status", "--porcelain"],
                          capture_output=True, text=True).stdout
     granted = set(scope_allow_entries(root, func))
@@ -974,65 +974,26 @@ def validate_outcome(o, modality, root, func=None):
 # flat or worse floor costs nothing if it is sloppy (the next session re-measures
 # it anyway), while a fabricated drop silently redirects the whole ledger.
 #
-# Attestation accepts either:
-#   (a) an `engine sandbox`/`build-c` event in metrics/events.jsonl stamped with
-#       THIS spawn's CLAUDE_SESSION_ID, for THIS function, whose score equals the
-#       reported floor — the engine writes those itself and a session cannot
-#       forge one without actually running the measurement; or
-#   (b) an attached, existing artifact under tmp/ or the function's own ledger
-#       dir whose text contains the claimed floor — the escape hatch for floors
-#       measured by the ra_solver object-mode workaround rather than by the
-#       sandbox (func_80056CB8 s22-s44).
-# Neither present => the drop was never measured anywhere => invalid session,
-# discarded and respawned, exactly like any other unproven claim.
-ATTEST_TAIL_BYTES = 4_000_000
-
-
-def _session_scores(root, func, sid):
-    """Scores the engine recorded for `func` under agent session `sid`."""
-    path = os.path.join(root, "metrics", "events.jsonl")
-    out = set()
-    try:
-        size = os.path.getsize(path)
-        with open(path, "rb") as f:
-            if size > ATTEST_TAIL_BYTES:
-                f.seek(size - ATTEST_TAIL_BYTES)
-                f.readline()          # drop the partial line
-            for raw in f:
-                if sid.encode() not in raw:
-                    continue
-                try:
-                    ev = json.loads(raw.decode("utf-8", "replace"))
-                except ValueError:
-                    continue
-                if ev.get("session_id") != sid or ev.get("func") != func:
-                    continue
-                if ev.get("command") not in ("sandbox", "build-c"):
-                    continue
-                sc = (ev.get("payload") or {}).get("score", ev.get("score"))
-                if isinstance(sc, int):
-                    out.add(sc)
-    except OSError:
-        return None                   # no telemetry at all -> cannot judge, don't block
-    return out
+# Attestation: an attached, existing artifact under tmp/ or the function's own
+# ledger dir whose text contains the claimed floor (e.g. the session's saved
+# `sandbox` output, or an ra_solver object-mode measurement as in func_80056CB8
+# s22-s44). None present => the drop was never shown measured => invalid
+# session, discarded and respawned, exactly like any other unproven claim.
 
 
 def attest_floor(root, func, o, sid, prior_floor):
     """(ok, reason). Gate a self-reported floor DROP on evidence from this
     session. Returns ok for anything else (flat/worse floor, unknown prior,
-    mock/drill spawns with no session id, missing telemetry)."""
+    mock/drill spawns with no session id)."""
     floor = o.get("floor")
+    if o.get("result") == "candidate-ready":
+        return True, ""               # the driver re-runs `sandbox` on the candidate itself
     if not isinstance(floor, int) or not isinstance(prior_floor, int):
         return True, ""
     if floor >= prior_floor:
         return True, ""
     if not sid:
         return True, ""               # mock/drill spawn: nothing to attest against
-    scores = _session_scores(root, func, sid)
-    if scores is None:
-        return True, ""
-    if floor in scores:
-        return True, ""
     for art in o.get("artifacts", []) or []:
         # Only a SESSION-PRODUCED artifact counts — the ledger dir or tmp/. Any
         # repo file would do otherwise (docs/grind/journal.md contains every
@@ -1050,15 +1011,13 @@ def attest_floor(root, func, o, sid, prior_floor):
                     return True, ""
         except OSError:
             continue
-    seen = ("none" if not scores
-            else ", ".join(str(x) for x in sorted(scores)[:6]))
     return False, (
         f"UNATTESTED FLOOR DROP: you reported floor={floor} (prior {prior_floor}) "
-        f"but this session recorded no engine measurement of {func} at that score "
-        f"(scores recorded this session: {seen}) and attached no artifact "
-        f"containing it. Apply the candidate body to src and measure it — a floor "
-        f"read off a chassis you did not write to disk is the func_8006CCC8 s1 "
-        f"failure. Re-run the measurement and resubmit.")
+        f"but attached no artifact under tmp/ or memory/grind/{func}/ containing "
+        f"that score. Apply the candidate body to src, measure it with `sandbox "
+        f"{func} --disable all`, save that output to a file and list it in "
+        f"`artifacts` — a floor read off a chassis you did not write to disk is "
+        f"the func_8006CCC8 s1 failure. Re-run the measurement and resubmit.")
 
 
 # Escalation trigger (2026-07-22): the ladder used to repeat forever with no way
@@ -2076,7 +2035,7 @@ MODALITY_PLAYBOOK = {
                    "catalog. Measure every form with sandbox; record deltas."),
     "permuter": ("Directed permuter on the diverging region: tools/permuter_annotate.py "
                  "--func <f> --hint <rule-slug>. Campaigns run ONLY via "
-                 "tools/permuter_campaign.py launch/harvest (telemetry; owner directive "
+                 "tools/permuter_campaign.py launch/harvest (owner directive "
                  "2026-07-07). Fresh-seed discipline per permuter-directives §Campaign "
                  "discipline: a basin yields early or not at all — if ~20-30 min after a "
                  "fresh seed there is no NOVEL find, harvest --stop and reseed a "
@@ -3716,6 +3675,7 @@ index line bears on your probe. Append new entries at the end as usual.
 - LOOK AT THE DIFF FIRST: `sandbox {func} --disable all --diff` shows WHERE the bytes differ, each hunk classed source-level (the C differs — reg-seat levers cannot close it) / operand-only (a real allocation seat) / not-scored (masked cascade artifact — do not chase). Run it before proposing any specific-register or scheduling hypothesis, and say which class you are attacking.
 - Save your best form to memory/grind/{func}/candidate.c before finishing (even if it did not improve the floor). Save disproven forms to memory/grind/{func}/rejected/<slug>.c.
 - Scratch space: tmp/grind/{func}/s{st['session_count'] + 1}/ — put permuter logs / cc1 dumps there and list them in artifacts.
+- A reported floor BELOW the prior one needs proof: save the `sandbox {func} --disable all` output that shows it to a file there and list it in artifacts, or the session is discarded (not needed for candidate-ready: the driver re-measures).
 - PASS ATTRIBUTION: before hypothesizing WHICH GCC pass produced a divergence, run
   `pwsh tools/grinder/dump.ps1 {func}` and READ the relevant dump in tmp/grind/{func}/dumps/
   (.combine for fold/copy survival, .lreg/.greg for allocation, .sched for ordering, .loop

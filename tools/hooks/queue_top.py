@@ -3,7 +3,7 @@
 
 Reads the committed queue directly (no toolchain, no build). Output is plain
 ASCII so the Windows console never mojibakes it. Never blocks the session; any
-error is swallowed (stdlib only, mirrors metrics_preflight.py's contract).
+error is swallowed (stdlib only).
 """
 from __future__ import annotations
 

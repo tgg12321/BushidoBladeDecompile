@@ -8,7 +8,7 @@ trace -- so you can tell whether an agent was EFFICIENT or wasted time WITHOUT
 ever pulling the transcript into context.
 
 Usage:
-  python3 tools/headless_audit.py --all                 # one line per headless run (metrics/headless_runs.jsonl)
+  python3 tools/headless_audit.py --all                 # one line per headless run (tmp/headless_runs.jsonl)
   python3 tools/headless_audit.py --latest              # newest transcript in the project dir
   python3 tools/headless_audit.py --session <uuid>      # by session id
   python3 tools/headless_audit.py --transcript <path>   # explicit file
@@ -25,7 +25,7 @@ from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-RUNLOG = REPO / "metrics" / "headless_runs.jsonl"
+RUNLOG = REPO / "tmp" / "headless_runs.jsonl"
 
 # Candidate locations for the Claude Code projects dir (WSL view first, then
 # native-home, then an explicit env override). We pick the subdir for THIS repo.
@@ -221,7 +221,7 @@ def load_runs() -> list[dict]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     g = ap.add_mutually_exclusive_group()
-    g.add_argument("--all", action="store_true", help="one line per headless run in metrics/headless_runs.jsonl")
+    g.add_argument("--all", action="store_true", help="one line per headless run in tmp/headless_runs.jsonl")
     g.add_argument("--latest", action="store_true", help="newest transcript in the project dir")
     g.add_argument("--session", help="session id (uuid)")
     g.add_argument("--transcript", help="explicit transcript path")
@@ -241,7 +241,7 @@ def main() -> int:
     if a.all:
         runs = load_runs()
         if not runs:
-            print("no headless runs recorded yet (metrics/headless_runs.jsonl is empty/absent).")
+            print("no headless runs recorded yet (tmp/headless_runs.jsonl is empty/absent).")
             return 0
         rows = []
         for r in runs:

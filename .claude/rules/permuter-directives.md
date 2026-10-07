@@ -44,15 +44,14 @@ python3 tools/permuter_campaign.py harvest --dir tools/decomp-permuter/<dir> --s
 
 The wrapper passes `--stack-diffs` by default (without it, frame/stack-offset gaps false-match at score 0).
 
-## Campaign discipline — fresh-seed windows + telemetry (owner directive 2026-07-07)
+## Campaign discipline — fresh-seed windows (owner directive 2026-07-07)
 
-- **Every campaign goes through `tools/permuter_campaign.py`** (`launch` / `harvest` / `status`); it logs
-  `permuter-launch` / `permuter-harvest` events to `metrics/events.jsonl`.
+- **Every campaign goes through `tools/permuter_campaign.py`** (`launch` / `harvest` / `status`).
 - **Stopping rule:** if ~20-30 minutes after a fresh seed no NOVEL find has landed (outside known attractor
   classes), `harvest --stop` and either reseed a structurally different chassis or switch modality. Long tails
   only re-find known attractors.
 - **Harvest everything, always,** before the session ends; campaigns never outlive their session (the Grinder
-  reaps survivors, losing their telemetry).
+  reaps survivors, losing their finds).
 
 ## Vetting permuter output — MANDATORY before surfacing
 
