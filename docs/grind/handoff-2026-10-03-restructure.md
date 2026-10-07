@@ -117,17 +117,14 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
    fit; names then land through `tools/naming_wave.py`, and address-named game files take subsystem names file
    by file (`tools/move_tu.py`). Sequencing per the original plan: after Phase 2.
 4. **Debt** —
-   - func_80031B24 hands `&D_800A37E8` to func_800274BC / func_80032854 unlabelled (outside Q96).
-   - Q97's struct form is unmeasured; Q96-Q99 retire as soon as a one-object spelling matches.
-   - D_8007E08C is not folded into InitGeom.s (tools read a function's address from its .s; e38643786).
-   - `queue regen` would list the 10 data-as-code labels (D_800521AC.., g_data_start..) as items.
-   - grindlib's self-vet check does not existence-check nested `src/` citations.
+   - Q96-Q99 retire as soon as a one-object spelling matches. Measured 2026-10-06 (Codex report, base
+     71073622e; none retires): Q97 array / struct / union forms score func_8003B2C8 12, func_8003B328 16;
+     Q96 aggregate forms func_80027AD8 2 (alias-cluster removal 83 / 6); Q98 direct element 9 / 8, cluster
+     17; Q99 direct members 2, typed state pointer 67, member pointers 6.
    - Comments in src/, inline_asm_canonical.txt row bodies and ledgers cite pre-restructure file names
      (D9: they stay; resolve via tu_renames.tsv).
-   - tools/grinder/scope_allow.txt's dormant func_800861BC grant names src/main/psxsdk/libsnd/libsnd_i.h,
-     a header class the driver's `add-scope-allow` regex does not cover.
-   - 87 game symbols are still declared locally in several TUs (some with conflicting types); hoist the
-     identical ones, fix the rest with Phase 2.
-   - SpuGetVoiceVolume has no prototype (two implicit calls in src/main/psxsdk/libsnd/ut_vvol.c);
-     near_manifest.csv's 0x80085FD8 evidence text predates SsUtGetDetVVol's 3-parameter form.
+   - Game symbols still declared locally in several TUs (Phase 2 hoisted the identical ones, 84373e6f8).
    - Hygiene rows in the 2026-10-03 commit bodies (`git log --grep="Hygiene debt" --since=2026-10-03`).
+   - Resolved since: D_8007E08C fold + SpuGetVoiceVolume prototype (54e21bed1); data-as-code labels
+     (d51106fd8, fdfb27257); self-vet nested citations (adb5c8ba8); internal-header scope grants
+     (817e8d366); near_manifest SsUtGetDetVVol (0efaafd19); func_80031B24's &D_800A37E8 (Q117, 6151b1808).
