@@ -134,7 +134,7 @@ know which subsystem owns it, look here.
 ### Stage / World
 - **File:** `code6cac_c2.c` (stage_*, stage open),
   `text1a*.c` (gnd_* helpers)
-- **Key functions:** `stage_GetId`, `func_800467A8`,
+- **Key functions:** `func_80046798`, `func_800467A8`,
   `func_80046F14`, `func_8003F274`, `func_8003F5CC`,
   `func_8003F568`, `func_8003F168`, `gnd_init_*`,
   `gnd_get_fog`, `gnd_set_fog*`, `gnd_open`, `gnd_close_*`,
@@ -323,16 +323,21 @@ full traces).  Indexed here by address range for reverse lookup:
 - Built by `func_80048BA4` (asm-only), consumed by `func_80052930`
   (text1b.c:10798, GTE MVMVA wrapper)
 
-### `0x8008_EAxx` range — win-animation sound trigger script (§15)
-- `g_winanim_per_stage_intro_frame[34]` (0x8008EAC0) — per-stage SFX
-  frame targets (130/135/230 frames; 0xFFFF = disabled)
-- `g_winanim_callout_a_frame` (0x8008EB04, 155f)
-- `g_winanim_callout_b_frame` (0x8008EB06, 159f)
-- `g_winanim_special_frame` (0x8008EB08, 160f)
-- `g_winanim_fanfare_frame` (0x8008EB0A, 198f)
-- `g_winanim_particle_frame` (0x8008EB0C, 159f)
-- `g_winanim_particle_offset_{x,y,z}` (0x8008EB10..18) = (0, -800, 0)
-- `g_winanim_event_subtable_eb1c` (0x8008EB1C, 12 bytes)
+### `0x8008_EAxx` range — `func_8003CF84` counter thresholds (§15)
+`func_8003CF84` compares the counter `D_800A37B8` with each s16 threshold
+and acts on a match (sounds go through `func_8005C650`):
+- `D_8008EAC0[34]` (0x8008EAC0) — indexed by the fighter's `unk_0A` class
+  index; mostly 130, else -1 (0xFFFF), 135, 230 or 0; queues `40 * p + 0x2D`
+- `D_8008EB04` (155) / `D_8008EB06` (159) — queue `40 * D_800A3748 + 0x31`
+  / `+ 0x36`
+- `D_8008EB08` (160) — queues 0x53 or 0x2B by `D_800A3748`
+- `D_8008EB0A` (198) — queues 0x71
+- `D_8008EB0C` (159) — builds a point with `func_80021D10`, adds
+  `D_8008EB10` / `D_8008EB14` / `D_8008EB18` (s32, = (0, -800, 0)) and
+  passes it to `func_800618B4`
+- `D_8008EB1C` (12 bytes; not read by `func_8003CF84`) — two-byte rows
+  `func_800224E0` indexes by `D_800A384C` and matches against the nibbles
+  of `D_8008DB1C`
 
 ### `0x8008_3Exx` range — DispStuff IRQ-callback alabels (§22)
 - `g_irq_handler_entry_no_pri` (0x80083EDC) — alabel inside DispStuff,

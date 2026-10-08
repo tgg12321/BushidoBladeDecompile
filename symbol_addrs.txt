@@ -129,13 +129,13 @@ D_800EEDF0 = 0x800EEDF0; // transform record (Unk80101DF0Record layout); func_80
 D_800EEDF8 = 0x800EEDF8; // +8 of D_800EEDF0: g_anim_func_table index (set to 4)  // data-wave 2026-10-07: was g_cam_interp
 
 // === func_800460E4 state, D_800A8FB0 grid, D_800948BC hooks ===
-D_80099478 = 0x80099478; // id func_800460E4 caches (-1 = none); stage_GetId returns it  // data-wave 2026-10-08: was g_stage_id
+D_80099478 = 0x80099478; // id func_800460E4 caches (-1 = none); func_80046798 returns it  // data-wave 2026-10-08: was g_stage_id
 D_8009947A = 0x8009947A; // 0/1: set by func_800460E4, gates func_800464C4 / func_8004659C; func_800467A8 returns it  // data-wave 2026-10-08: was g_stage_variant
 D_8009947C = 0x8009947C; // block whose address func_80046F14 returns (u8 is a stand-in)  // data-wave 2026-10-08: was g_stage_data
 D_800A8FB0 = 0x800A8FB0; // 32x32 grid filled by func_8003F274 and kin, read by the draw walks func_8003E6D8 / func_8003EB84  // data-wave 2026-10-08: was g_stage_collision
 D_800A93B0 = 0x800A93B0; // [3]: zeroed by func_8003F568, set by func_8003F5A8, passed by func_8003F5CC to the empty func_80017F98  // data-wave 2026-10-08: was g_stage_light_pos
 D_800A93BC = 0x800A93BC; // [3]: D_800A93B0's partner, same users  // data-wave 2026-10-08: was g_stage_light_dir
-D_800948BC = 0x800948BC; // {init, unk4} pairs indexed by stage_GetId(): func_8003F168 calls .init, func_8003E6D8 .unk4  // data-wave 2026-10-08: was g_stage_init_tbl
+D_800948BC = 0x800948BC; // {init, unk4} pairs indexed by func_80046798(): func_8003F168 calls .init, func_8003E6D8 .unk4  // data-wave 2026-10-08: was g_stage_init_tbl
 
 // === Game State ===
 D_800A336C = 0x800A336C; // game mode/state  // data-wave 2026-09-25: was g_game_mode

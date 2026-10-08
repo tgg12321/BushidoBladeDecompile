@@ -310,8 +310,9 @@ up the per-round arena state when a fight starts.  It builds:
 | `g_gnd_gauge_c_cur` | `0x800F6642` | Gauge C current |
 | `g_gnd_gauge_d_max` | `0x800F6644` | Gauge D max |
 
-A parallel cluster exists for Mario character at `g_mario_voice_data`
-(`0x800F5328` — see [sound.md](sound.md)).
+`D_800F5328` (`0x800F5328`) is a record of the same `Rec44` type: position,
+rotation and distance fed to `func_80046BF4` / `camera_CalcEye`;
+`g_listener_cam` points at it (9F9C.c:2100).
 
 ## `func_80033DF4` / `func_80033FE4` cluster (2026-05-17)
 
@@ -376,15 +377,13 @@ per-character move-enable bitmap.  `func_80033DF4` queries it as
 
 ## Cross-references (naming pass 2026-05-17; full traces at `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`)
 
-The post-fight WIN-animation sound trigger script lives in
-code6cac_c2.c:870-899.  Drives the "katinuki" (win) sequence that
-plays SFX cues at exact frame counts and transitions back to the
-title menu:
-
-- §15 Win-animation sound trigger cluster
-  — `g_winanim_per_stage_intro_frame[34]` (per-stage intro SFX frame
-  targets, mostly 130f or disabled), single triggers at frames
-  155/159/160/198 for callouts/special/fanfare, particle effect
-  spawned at +0/-800/+0 offset (upward) from `D_800A3818`.  Total
-  win-animation playback ≈ 200 frames (3.3s).  Per-character SFX
-  banks are 40-entry (0x28) blocks indexed by `40*p + base_id`.
+`func_8003CF84` (2B344.c) compares the counter `D_800A37B8` with s16
+thresholds and acts on each match (sounds go through `func_8005C650`):
+- §15 threshold cluster — `D_8008EAC0[34]` (indexed by the fighter's
+  `unk_0A` class index; mostly 130, else -1, 135, 230 or 0) queues
+  `40*p + 0x2D`; the single thresholds 155/159/160/198
+  (`D_8008EB04`..`D_8008EB0A`) queue `40*p + 0x31`, `40*p + 0x36`, 0x53 or
+  0x2B, and 0x71; at 159 (`D_8008EB0C`) a point from `func_80021D10` on
+  `D_800A3818`, offset by (0, -800, 0), goes to `func_800618B4`.  The
+  per-player sound ids are 40-entry (0x28) blocks indexed by
+  `40*p + base_id`.

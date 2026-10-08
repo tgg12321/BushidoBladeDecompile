@@ -279,7 +279,7 @@ opens 8 BIOS events at boot via `bios_OpenEvent`:
 | `memcard_event_pool_close_80037774` | `0x80037774` | Closes all 8 events (existing) |
 | `memcard_event_wait_class0xF4000001_with_timeout_80037804` | `0x80037804` | Polled wait with timeout (existing) |
 
-`g_memcard1_poll_count` (`0x800A3924`) is incremented per poll; forces
+`g_memcard_poll_count` (`0x800A3924`) is incremented per poll; forces
 result=2 after ≥0x78 (120) ticks.
 
 ## Cross-references (naming pass 2026-05-17; full traces at `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`)

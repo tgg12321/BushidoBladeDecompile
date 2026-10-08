@@ -85,7 +85,7 @@ typedef struct {
 typedef struct {
     s16 unk0;
     s16 unk2;
-    s16 unk4; /* stage id (func_80046798) */
+    s16 unk4; /* = func_80046798() (D_80099478) */
     s16 unk6; /* entry count */
     s32 unk8;
     s32 unkC;  /* entry table (stride 0x68) */

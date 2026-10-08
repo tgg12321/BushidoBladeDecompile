@@ -105,14 +105,14 @@ The former `config.c` (`0x8003F168..0x800401CC`, now the tail of
 
 - `game_GetMode` / `game_SetControllerPorts` / `game_SetPlayerCount` —
   basic options.
-- `func_8003F168` — calls the `.init` hook of `D_800948BC[stage_GetId()]`
+- `func_8003F168` — calls the `.init` hook of `D_800948BC[func_80046798()]`
   when it is non-null.
 - `func_8003F274` — rebuilds the 32x32 grid `D_800A8FB0` around the view
   node; the draw walks read it.
 - `md_option_reset_*` family (lines 518-535) — reset options to defaults.
 
 `D_800948BC` is an array of `{init, unk4}` function-pointer pairs indexed by
-`stage_GetId()`: `func_8003F168` calls `.init`, the draw walk `func_8003E6D8`
+`func_80046798()`: `func_8003F168` calls `.init`, the draw walk `func_8003E6D8`
 calls `.unk4`.
 
 ## Cursor / menu state primitives
@@ -150,7 +150,7 @@ per frame as the user moves the cursor and presses CROSS to commit.
 ## `D_80099478`
 
 `D_80099478` caches the id `func_800460E4` was last called with (-1 =
-none); `stage_GetId` returns it, and `func_8003F168` / `func_8003E6D8` index
+none); `func_80046798` returns it, and `func_8003F168` / `func_8003E6D8` index
 `D_800948BC` with it.
 
 ## Mode entries (handlers that set up modes)
