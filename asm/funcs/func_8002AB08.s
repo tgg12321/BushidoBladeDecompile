@@ -714,7 +714,7 @@ glabel func_8002AB08
     /* 1BD5C 8002B55C 00000000 */   nop
     /* 1BD60 8002B560 0A80053C */  lui        $a1, %hi(D_800A37E8)
     /* 1BD64 8002B564 E837A524 */  addiu      $a1, $a1, %lo(D_800A37E8)
-    /* 1BD68 8002B568 2F9D000C */  jal        func_800274BC
+    /* 1BD68 8002B568 2F9D000C */  jal        math_NegNormalize3D
     /* 1BD6C 8002B56C 14016426 */   addiu     $a0, $s3, 0x114
     /* 1BD70 8002B570 801F023C */  lui        $v0, (0x1F8000A8 >> 16)
     /* 1BD74 8002B574 A8004234 */  ori        $v0, $v0, (0x1F8000A8 & 0xFFFF)
@@ -1146,7 +1146,7 @@ glabel func_8002AB08
     /* 1C39C 8002BB9C 14018424 */  addiu      $a0, $a0, 0x114
     /* 1C3A0 8002BBA0 0A80053C */  lui        $a1, %hi(D_800A37E8)
     /* 1C3A4 8002BBA4 E837A524 */  addiu      $a1, $a1, %lo(D_800A37E8)
-    /* 1C3A8 8002BBA8 2F9D000C */  jal        func_800274BC
+    /* 1C3A8 8002BBA8 2F9D000C */  jal        math_NegNormalize3D
     /* 1C3AC 8002BBAC 21206402 */   addu      $a0, $s3, $a0
   .L8002BBB0:
     /* 1C3B0 8002BBB0 7400828F */  lw         $v0, %gp_rel(D_800A3140)($gp)

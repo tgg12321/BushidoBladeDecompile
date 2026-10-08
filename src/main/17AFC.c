@@ -146,7 +146,7 @@ void func_80027438(Unk80101EC8Record *a0, s32 a1, s16 a2) {
     }
 }
 
-void func_800274BC(s32 *arg0, s16 *arg1) {
+void math_NegNormalize3D(s32 *arg0, s16 *arg1) {
     u32 dist_sq =
         (u32)((arg0[0] * arg0[0]) + (arg0[1] * arg0[1]) + (arg0[2] * arg0[2]));
     u32 log2_val;
@@ -1068,7 +1068,7 @@ void func_8002906C(void) {
 
 s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3);
 s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2);
-void func_80033550(LeafPos *arg0);
+void func_80033550(Unk80107850Rec *arg0);
 
 /* Tests the unused PosRec entries inside grid `idx`'s x/z bounds against the
  * grid's two triangles (points 0,1,2 and 1,2,3) with func_8002E6B0. `tbl` holds
@@ -1078,12 +1078,12 @@ void func_80033550(LeafPos *arg0);
  * entry used and returns 0. Any other hit, or a miss with `flag` set and idx
  * not 0, stores the average of unk78.y and the top y in unk100[0].y and returns
  * 1. Returns 0 when the list runs out. */
-s32 func_800290B8(s32 idx, s32 flag, LeafPos *tbl) {
+s32 func_800290B8(s32 idx, s32 flag, Unk80107850Rec *tbl) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     PosRec *rec;
-    LeafPos *a;
-    LeafPos *b;
-    LeafPos *c;
+    Unk80107850Rec *a;
+    Unk80107850Rec *b;
+    Unk80107850Rec *c;
     s32 i;
     s32 n;
     /* two values: the grid row i / 2, then the list index passed to
@@ -1177,8 +1177,8 @@ static inline s32 box_overlap(Unk1F8002B8Rec *scr) {
 
 /* Both are defined further down this file. */
 extern s32 func_8002DAD0(Unk1F8002B8Rec *obj);
-extern s32 func_8002DE20(
-    Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2);
+extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
+                         Unk80107850Rec *p1, Unk80107850Rec *p2);
 
 /* Blade contact test between the two D_80101EC8 records (called by
  * func_8002C61C; the result goes to D_800A3824). Returns -1 unless both
@@ -1194,8 +1194,8 @@ extern s32 func_8002DE20(
  * restored. */
 s32 func_80029454(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
-    LeafPos *ws = SPAD->unkA8[0];
-    LeafPos saved[16];
+    Unk80107850Rec *ws = SPAD->unkA8[0];
+    Unk80107850Rec saved[16];
     s32 count[2];
     /* i, j, n, k: loop counters, each shared by several loops */
     s32 i;
@@ -1267,7 +1267,7 @@ s32 func_80029454(void) {
     }
 
     for (i = 0; i < 2; i++) {
-        LeafPos *dst = &ws[i * 8];
+        Unk80107850Rec *dst = &ws[i * 8];
         rec = &D_80101EC8[i];
         dst[0] = SPAD->unk00[i][0];
         dst[1] = SPAD->unk00[i][1];
@@ -1533,7 +1533,7 @@ extern char D_80010478[];
 extern void printf();
 extern void func_8002E838(Unk1F8002B8Rec *scr);
 extern s32 func_8002EA24(
-    Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq);
+    Unk1F8002B8Rec *scr, Unk80107850Rec *pos, s32 threshold, s32 r_sq);
 extern s32 func_80054434(void);
 
 void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
@@ -1561,7 +1561,7 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     s32 qx;
     s32 qy;
     s32 qz;
-    LeafPos *p;
+    Unk80107850Rec *p;
     BoneHitRec *rec;
     s32 i;
 
@@ -1645,7 +1645,7 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
             rec = D_800F5F68[id];
         } while (0);
         for (i = 0; i < 22; i++, rec++) {
-            LeafPos *pos;
+            Unk80107850Rec *pos;
             if (obj->unk_26C == 0 && i >= 6 && i <= 9) {
                 continue;
             }
@@ -1948,7 +1948,7 @@ void func_8002AB08(s32 mode) {
             }
         }
         if (mode == 1) {
-            func_800274BC(&other->unk_114[0].vx, vec);
+            math_NegNormalize3D(&other->unk_114[0].vx, vec);
             func_80032854(i, 4, &SPAD->unkA8[i][idx].x, vec);
             return;
         }
@@ -2065,7 +2065,7 @@ void func_8002AB08(s32 mode) {
             if ((other->unk_0C == 0x1D || other->unk_0C == 0xE) && alt != 0) {
                 flag = 1;
             } else {
-                func_800274BC(&other->unk_114[alt].vx, vec);
+                math_NegNormalize3D(&other->unk_114[alt].vx, vec);
             }
         }
         if (D_800A3140 == 0) {
@@ -2453,8 +2453,8 @@ void func_8002C61C(void) {
     }
 }
 
-extern s32 func_8002D320(
-    s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s32 r_sq);
+extern s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
+                         s32 threshold, s32 r_sq);
 extern s32 func_8002D780(
     s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq);
 
@@ -2849,8 +2849,8 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
     return 1;
 }
 
-s32 func_8002D320(
-    s32 flag, Unk1F8002B8Rec *obj, LeafPos *pos, s32 threshold, s32 r_sq) {
+s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
+                  s32 threshold, s32 r_sq) {
     if (flag == 0) {
         SVECTOR *vin;
         Vec3i32 *vout;
@@ -3407,7 +3407,8 @@ extern s32 D_800A314C;
  * 1 if the resulting segment (x1,y1)-(x2,y2) touches the triangle (0,0) / A / B
  * in the x-y plane: either endpoint inside it (same side of every edge as the
  * centroid), or the segment crossing one of its edges. */
-s32 func_8002DE20(Unk1F8002B8Rec *obj, LeafPos *p0, LeafPos *p1, LeafPos *p2) {
+s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
+                  Unk80107850Rec *p2) {
     s32 i;
     s32 max_i;
     s32 min_i;
@@ -3772,7 +3773,8 @@ void func_8002E838(Unk1F8002B8Rec *scr) {
         :: "r"(vec) : "$12", "memory");
 }
 
-s32 func_8002EA24(Unk1F8002B8Rec *scr, LeafPos *pos, s32 threshold, s32 r_sq) {
+s32 func_8002EA24(
+    Unk1F8002B8Rec *scr, Unk80107850Rec *pos, s32 threshold, s32 r_sq) {
     SVECTOR *vin;
     Vec3i32 *vout;
     scr->unkF8.vx = pos->x - scr->unk60[0]->x;
@@ -4354,7 +4356,7 @@ s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
 }
 
 s32 func_8002FDB0(Unk80101EC8Record *arg0) {
-    LeafPos *pt;
+    Unk80107850Rec *pt;
 
     /* The character's points 2 and 3 relative to its point 1, into the
      * collision record's unkA8 and unkB8 (0x1F800360 / 0x1F800370, the GTE
@@ -5251,7 +5253,7 @@ void func_80031B24(void) {
         hit = 0;
         rec = D_800F5F68[other];
         for (j = 0; j < 22; j++, rec++) {
-            LeafPos *pos;
+            Unk80107850Rec *pos;
             if (ch->unk_26C == 0 && j >= 6 && j <= 9)
                 continue;
             pos = &SPAD->unkA8[other][j];
@@ -5271,11 +5273,11 @@ void func_80031B24(void) {
         diff = (ch->unk_1C8.vy - ratan2(obj->vel.x, obj->vel.z)) & 0xFFF;
         if (diff >= 0x800)
             diff = 0x1000 - diff;
-        func_800274BC(
+        math_NegNormalize3D(
             (s32 *)&obj->vel,
             /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached
-             * by the first's address, passed to func_800274BC (Q96 / Q117; as
-             * s16[3] or {x,y,z}, func_80027AD8 scores 2) */
+             * by the first's address, passed to math_NegNormalize3D (Q96 /
+             * Q117; as s16[3] or {x,y,z}, func_80027AD8 scores 2) */
             &D_800A37E8);
         obj->pos.x -= obj->vel.x / 2;
         obj->pos.y -= obj->vel.y / 2;
@@ -5456,7 +5458,7 @@ loop:
                 s32 sp_tmp;
                 if ((s32)dist_sq >= 0) {
                     /* Hand-written GTE leading-zero count (LZCS in, LZCR out),
-                     * as in func_800274BC. */
+                     * as in math_NegNormalize3D. */
                     __asm__ volatile(
                         "addu   $t4, %1, $zero\n"
                         "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
@@ -5626,7 +5628,7 @@ void func_800325E0(s32 arg0, s32 *arg1) {
              * are the cop2 addressing preamble the owner cluster grant
              * covers (cop2-addressing-preamble-cluster); nothing else outside
              * the macro body is in the island. Same spelling as
-             * func_800274BC / func_80032314 / func_8002E838. */
+             * math_NegNormalize3D / func_80032314 / func_8002E838. */
             __asm__ volatile(
                 "addu   $t4, %1, $zero\n"
                 "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
@@ -6245,7 +6247,7 @@ void func_80033510(void) {
     }
 }
 
-void func_80033550(LeafPos *arg0) {
+void func_80033550(Unk80107850Rec *arg0) {
     s32 i;
 
     for (i = 0; i < 6; i++) {

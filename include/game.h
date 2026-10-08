@@ -26,14 +26,14 @@ typedef struct {
     u8 unk_0;
     u8 unk_1;
     s32 unk_4;
-} FileTimeRec;
+} TimeRec;
 
 typedef struct {
     s32 unk_00; /* 0x80106A50 */
     u8 unk_04;  /* 0x80106A54 */
     u8 unk_05[3];
-    FileTimeRec times[3]; /* 0x80106A58 */
-    u8 color[3];          /* 0x80106A70 */
+    TimeRec times[3]; /* 0x80106A58 */
+    u8 color[3];      /* 0x80106A70 */
     /* 0x80106A73: bits 0/1/2: func_800167AC, func_800167BC, func_800167D4 */
     u8 flags;
 } FileRecord;
@@ -316,7 +316,7 @@ typedef struct {
 
 typedef struct {
     s16 on, off;
-} Win77D94;
+} Unk80077D94Entry;
 
 /* NAR.BIN (resource file 0x32), the root 64FD8's func_800784E4 loads at its
  * work area + 0x58 (D_800A35F8). After the head: table, the cell table
@@ -331,7 +331,7 @@ typedef struct {
     Unk8009B0E0Record **hdr20;
     Unk8009B0E0Record **hdr24;
     Unk8009B0E0Record **hdr28;
-    Win77D94 *win2C;
+    Unk80077D94Entry *win2C;
     s16 *in30;
     s16 *out34;
     s32 img38[5];
@@ -693,7 +693,7 @@ typedef struct {
 typedef struct {
     s32 id;
     char *name;
-} MenuDatEntry;
+} Unk8008DCCCEntry;
 
 /* The file func_80020E74 loads into D_800A3860[slot] (slot = rec+0x4A, the
  * load slot func_80021280 sets; fighters with the same model id share it).
@@ -750,7 +750,7 @@ typedef struct {
    slot): the same s32 x/y/z triple as Vec3i32; func_800207C8 copies a
    scratchpad point (SPAD->unkA8) into Unk80101EC8Record.unk_180 as one
    12-byte object. */
-typedef Vec3i32 LeafPos;
+typedef Vec3i32 Unk80107850Rec;
 
 /* The PsyQ SVECTOR layout under a local name. */
 
@@ -1162,7 +1162,7 @@ typedef struct {
  * sizes the union to 0x60. */
 typedef union {
     u8 raw[0x60];
-    LeafPos unk00[6];
+    Unk80107850Rec unk00[6];
 } Unk1F8002B8Unk00;
 
 /* 17AFC's view of the last 0x148 bytes of the scratchpad,
@@ -1191,8 +1191,8 @@ typedef union {
  * func_8002AB08 use its points. */
 typedef struct {
     Unk1F8002B8Unk00 unk00;
-    LeafPos *unk60[3];
-    LeafPos *unk6C[3];
+    Unk80107850Rec *unk60[3];
+    Unk80107850Rec *unk6C[3];
     Vec3i32 unk78;
     Vec3i32 unk84;
     Vec3i32 unk90;
@@ -1253,10 +1253,10 @@ typedef union {
  * scratchpad; the scratchpad is shared scratch that other code also uses with
  * its own views (see Unk1F8002B8Rec). */
 typedef struct {
-    LeafPos unk00[2][3];
-    LeafPos unk48[2][2];
-    LeafPos unk78[2][2];
-    LeafPos unkA8[2][22];
+    Unk80107850Rec unk00[2][3];
+    Unk80107850Rec unk48[2][2];
+    Unk80107850Rec unk78[2][2];
+    Unk80107850Rec unkA8[2][22];
     Unk1F8002B8Union unk2B8;
 } ScrPad;
 
@@ -1520,12 +1520,12 @@ typedef struct Unk80101EC8Record {
     Vec3i32 unk_1F8;
     u8 unk_204[0x210 - 0x204];
     /* func_8002C61C: copy of scratchpad points 0x1F800000 + idx * 0x24 */
-    LeafPos unk_210[3];
+    Unk80107850Rec unk_210[3];
     /* func_8002C61C: copy of scratchpad points 0x1F800048 + idx * 0x18 */
-    LeafPos unk_234[2];
+    Unk80107850Rec unk_234[2];
     VECTOR unk_24C;
     /* func_80023F08: copy of scratchpad point unk00[idx][0] */
-    LeafPos unk_25C;
+    Unk80107850Rec unk_25C;
     s32 unk_268;
     s16 unk_26C;
     s16 unk_26E;
@@ -1689,7 +1689,7 @@ typedef struct {
 typedef struct {
     u8 a;
     u8 b;
-} LeafThreshold;
+} Unk8008EA44Entry;
 
 /* 6-row tables func_80026DA4 selects by D_80101EC8[0].unk_6A mode (row 0..5):
  * unk0 scales the Judge sin/cos offset, unk2 is added to y; D_8008EB6C[row] is
@@ -1702,7 +1702,7 @@ typedef struct {
 /* 0x18-byte per-character status record table at 0x80099D88, indexed by
  * character id in func_80055138, func_80055948, func_80055B60 and
  * func_80058580. */
-typedef struct StatusFlagRec {
+typedef struct Unk80099D88Rec {
     u16 flags;
     u8 unk2;
     u8 unk3;
@@ -1715,17 +1715,17 @@ typedef struct StatusFlagRec {
     /* +0xF: func_80058580's script-entry types 0..7 (et), indexed by type */
     u8 script_weight[8];
     u8 unk17;
-} StatusFlagRec; /* size 0x18 */
+} Unk80099D88Rec; /* size 0x18 */
 
 /* Rows of eight 4-byte entries starting at 0x8009A8C8: each 0x20-byte row ends
  * with a zero entry (0x8009A8E4 / 0x8009A904 / 0x8009A924). Both readers index
  * the column 1-based, [row][D_800A37A0 - 1]: func_80055138 reads unk0/unk1,
  * func_80058580 the mask halfword. */
-typedef struct CpuLevelEntry {
+typedef struct Unk8009A8C8Entry {
     u8 unk0;
     u8 unk1;
     u16 mask;
-} CpuLevelEntry;
+} Unk8009A8C8Entry;
 
 /* 0x44-byte record shared by the two camera-target objects at 0x800F5328 and
  * 0x800F6608 (func_8001B294 / func_8001B3C0 initialise them). +0x00 is one
@@ -1857,7 +1857,7 @@ typedef struct Unk80101DF0Record {
  * func_800470B0, func_80049F4C).  func_8004A09C fills one from a 22-halfword
  * template: the color matrix +0x38 (m[3][3]), the three lights' pitch / yaw /
  * on at +0x00 / +0x08 / +0x10, the u8 back color +0x58 and the s16 +0x5C;
- * func_8004A1FC then turns light i's pitch / yaw into the light matrix row i
+ * calc_LightMatrix then turns light i's pitch / yaw into the light matrix row i
  * (+0x18 + i*6, zero when off), scaled by +0x5C.  func_80049F4C hands record
  * 0's color matrix and back color to SetColorMatrix / SetBackColor; the light
  * matrix goes to gte_MulMatrix0ClearTrans (func_8004A940); func_80046F24 /
@@ -1883,7 +1883,7 @@ typedef struct {
  * 4 and 5, and func_8003EDC0 / func_800417D0 / func_800418D0 /
  * func_800472C0 index it by unk8 (4-byte stride).  _svm_vab_vh follows at
  * 0x800F66B8. */
-typedef void (*AnimRotFunc)(SVECTOR *, MATRIX *);
+typedef void (*RotMatrixFunc)(SVECTOR *, MATRIX *);
 
 /* The 0x68-byte records of the table func_8003F1D4 returns: a transform
  * node of the Unk80101DF0Record layout, then a byte flag. func_8003EDC0
@@ -2047,7 +2047,7 @@ typedef struct {
     u16 unk3E;             /* 0x80101E9E */
     s32 expected_pos;      /* 0x80101EA0 */
     s32 unk44;             /* 0x80101EA4 */
-} ReplayCamRec;
+} Unk80101E60Rec;
 
 /* The CD module's state block, one 0x50-byte object at 0x80101E58 (span
  * bounded by owner ruling Q43). cdrom_StartAudio forms the CdlSetfilter
@@ -2055,10 +2055,10 @@ typedef struct {
  * its CdFileEntry copy into rec.pair (one object for the scheduler);
  * func_80036940 forms &rec.pair off later members. */
 typedef struct {
-    u8 file;          /* 0x80101E58 */
-    u8 chan;          /* 0x80101E59 */
-    s32 unk04;        /* 0x80101E5C */
-    ReplayCamRec rec; /* 0x80101E60 .. 0x80101EA7 */
+    u8 file;            /* 0x80101E58 */
+    u8 chan;            /* 0x80101E59 */
+    s32 unk04;          /* 0x80101E5C */
+    Unk80101E60Rec rec; /* 0x80101E60 .. 0x80101EA7 */
 } CdState;
 
 /* Practice-lesson parameter block 0x80102778..0x80102787 (func_8001C444 sets
@@ -2075,7 +2075,7 @@ typedef struct {
     u8 unk_D;
     u8 unk_E;
     u8 unk_F;
-} PracticeParams;
+} Unk80102778Rec;
 
 typedef struct {
     s32 pos[3];
@@ -2124,11 +2124,11 @@ typedef struct {
     MATRIX matrix;
 } Func80017A44Output;
 
-/* The 16-byte scene quad (2B344 func_8003FA24 fills it in each SceneRec,
- * func_8003F824 copies it into Scene.quads; 87A0 func_8001924C steps one object
- * per quad): the object's g_file_data_buf index (unk0), its flags (unk2; bit 0
- * picks func_80019310 over func_800187F4), the object's matrix, its point table
- * end and its collision-volume block. */
+/* The 16-byte scene quad (2B344 func_8003FA24 fills it in each Unk8003F824Rec,
+ * func_8003F824 copies it into Unk8003F62CRec.quads; 87A0 func_8001924C steps
+ * one object per quad): the object's g_file_data_buf index (unk0), its flags
+ * (unk2; bit 0 picks func_80019310 over func_800187F4), the object's matrix,
+ * its point table end and its collision-volume block. */
 typedef struct {
     /* 0x00 */ s16 unk0;
     /* 0x02 */ u8 unk2;
@@ -2136,13 +2136,13 @@ typedef struct {
     /* 0x04 */ MATRIX *unk4;
     /* 0x08 */ u8 *unk8;
     /* 0x0C */ struct Unk8003F6D8Coll *unkC;
-} SceneQuad;
+} Unk80017FA0Rec;
 
 /* The collision volumes of one scene record (2B344 Func8003F6D8Inner +0x10;
- * SceneQuad.unkC points here): unk00 (func_800400B0 sets it; 87A0 func_80017FA0
- * scales it into the scratchpad's ground word), the volume count, each volume's
- * two foci (gte_SetMatrixRotTransIR writes each as three words) and its bound
- * (unk68). */
+ * Unk80017FA0Rec.unkC points here): unk00 (func_800400B0 sets it; 87A0
+ * func_80017FA0 scales it into the scratchpad's ground word), the volume count,
+ * each volume's two foci (gte_SetMatrixRotTransIR writes each as three words)
+ * and its bound (unk68). */
 typedef struct Unk8003F6D8Coll {
     /* 0x00 */ s32 unk00;
     /* 0x04 */ s32 count;

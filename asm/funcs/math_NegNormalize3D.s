@@ -1,4 +1,4 @@
-glabel func_800274BC
+glabel math_NegNormalize3D
     /* 17CBC 800274BC 21308000 */  addu       $a2, $a0, $zero
     /* 17CC0 800274C0 0000C28C */  lw         $v0, 0x0($a2)
     /* 17CC4 800274C4 00000000 */  nop
@@ -104,4 +104,4 @@ glabel func_800274BC
     /* 17E34 80027634 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 17E38 80027638 0800E003 */  jr         $ra
     /* 17E3C 8002763C 00000000 */   nop
-endlabel func_800274BC
+endlabel math_NegNormalize3D

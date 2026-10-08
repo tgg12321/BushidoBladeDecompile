@@ -398,9 +398,9 @@ extern void math_RotMatrixXYZ();
 void func_80042E90(void) {
     D_800F66A0[0] = math_RotMatrixZYX;
     /* the three below take their angles as u16 *, not SVECTOR * */
-    D_800F66A0[2] = (AnimRotFunc)math_RotMatrixZXY;
-    D_800F66A0[4] = (AnimRotFunc)math_RotMatrixYXZ;
-    D_800F66A0[5] = (AnimRotFunc)math_RotMatrixXYZ;
+    D_800F66A0[2] = (RotMatrixFunc)math_RotMatrixZXY;
+    D_800F66A0[4] = (RotMatrixFunc)math_RotMatrixYXZ;
+    D_800F66A0[5] = (RotMatrixFunc)math_RotMatrixXYZ;
 }
 
 void math_TransposeMatrixInPlace(MATRIX *a0) {

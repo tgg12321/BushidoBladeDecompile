@@ -2516,10 +2516,10 @@ def test_include_asm_whole_body() -> None:
                       '    __asm__ volatile("addu $8,$3,$0");\n    return arg0;\n}\n')
     eq("body-span: definition sharing a line with the previous `}`",
        inlineasm.func_cheat_asm_count(brace_prefixed, "_version"), 1)
-    knr = ('void func_8004A1FC(arg0) s16 *arg0; {\n'
+    knr = ('void calc_LightMatrix(arg0) s16 *arg0; {\n'
            '    __asm__ volatile("addu $8,$3,$0");\n}\n')
     eq("body-span: K&R parameter declarations between `)` and `{`",
-       inlineasm.func_cheat_asm_count(knr, "func_8004A1FC"), 1)
+       inlineasm.func_cheat_asm_count(knr, "calc_LightMatrix"), 1)
     # ...without letting an indented CALL be mistaken for a definition.
     call_only = ('extern int foo(int);\nvoid bar(void) {\n    foo(1);\n}\n')
     eq("body-span: an indented call is still not a definition",
@@ -2533,7 +2533,7 @@ def test_include_asm_whole_body() -> None:
           == inlineasm._func_body_span(brace_prefixed, "_version")
           is not None)
     check("body-span: volatile_cheats sees the K&R shape too",
-          volatile_cheats._func_body_span(knr, "func_8004A1FC") is not None)
+          volatile_cheats._func_body_span(knr, "calc_LightMatrix") is not None)
 
     # 4. generate(): a negative (UNKNOWN) count must NOT drop an item, and a
     #    measured-zero count still must.

@@ -4221,7 +4221,7 @@ void func_80069E18(s32 arg0) {
 typedef struct {
     Unk8007352CEnv env;
     s32 tail[4];
-} Env_69F80;
+} Unk80069F80Rec;
 
 void func_80069F80(s32 *arg0, s32 arg1) {
     /* FAKE: frame layout - `s` is the live descriptor (its address goes to
@@ -4229,7 +4229,7 @@ void func_80069F80(s32 *arg0, s32 arg1) {
      * brings the locals to the target's 0x70 frame (the 0x2C descriptor alone
      * gives 0x60; dead-vars-local-array OVERSIZED-LOCALS). The plain
      * descriptor: score 12. */
-    Env_69F80 s;
+    Unk80069F80Rec s;
     Unk8009B0E0Record **ptr;
     s32 x0;
     s32 c;
@@ -4305,7 +4305,7 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
      * brings the locals to the target's 0x70 frame (the 0x2C descriptor alone
      * gives 0x60; dead-vars-local-array OVERSIZED-LOCALS). The plain
      * descriptor: score 14. */
-    Env_69F80 s;
+    Unk80069F80Rec s;
     Unk8009B0E0Record **ptr;
     s32 x0;
     s32 c;
@@ -5985,12 +5985,12 @@ void func_8006D808(
     *arg1 += 0xC;
 }
 
-/* FAKE: frame layout (oversized live object), as Env_69F80; the plain
+/* FAKE: frame layout (oversized live object), as Unk80069F80Rec; the plain
  * descriptor: score 21. */
 typedef struct {
     Unk8007352CEnv env;
     s32 tail[2];
-} Env_8006DD94;
+} Unk8006DD94Rec;
 
 void func_8006DD94(s32 *arg0) {
     /* FAKE: frame layout - `s` is the live descriptor (its address goes to
@@ -5998,7 +5998,7 @@ void func_8006DD94(s32 *arg0) {
      * the target's 0x78 frame with rect at sp+0x50 (an 8-aligned slot,
      * BIGGEST_ALIGNMENT -- mips.h:1082) (dead-vars-local-array
      * OVERSIZED-LOCALS). The plain descriptor: score 21. */
-    Env_8006DD94 s;
+    Unk8006DD94Rec s;
     u16 rect[4];
     s16 i;
     Unk8006DD94List *q;

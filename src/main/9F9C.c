@@ -2684,9 +2684,9 @@ typedef struct {
     u16 flags;
     u16 id;
     u8 b[4];
-} StatusEvt;
+} Unk8001FAE4Entry;
 
-StatusEvt *func_8001FAE4(MoveScript *arg0) {
+Unk8001FAE4Entry *func_8001FAE4(MoveScript *arg0) {
     u16 v1;
     u16 *a0;
 
@@ -2694,7 +2694,7 @@ StatusEvt *func_8001FAE4(MoveScript *arg0) {
     v1 = *a0;
     while (v1 != 0) {
         if ((v1 & 0x4000) != 0) {
-            return (StatusEvt *)a0;
+            return (Unk8001FAE4Entry *)a0;
         }
         if ((v1 & 0xC000) != 0) {
             a0 += 4;
@@ -2748,7 +2748,7 @@ void func_8001FBE8(void);
 
 void func_8001FBE8(void) {
     Unk80101EC8Record *rec;
-    StatusEvt *ent;
+    Unk8001FAE4Entry *ent;
     u8 *data;
     MoveScript *snd;
     s32 lo;
@@ -3088,8 +3088,8 @@ void func_800206B0(s32 arg0, s32 arg1) {
  * nothing) into rec->unk_1B0[], and the two bones' headings into unk_1BA /
  * unk_1C2. GTE: PsyQ 4.3 inline_o.h statements; each gte_rtv0's DMPSX
  * placeholder .word 0x0000013f is the post-DMPSX .word 0x4A486012 (Q93). */
-void func_800207C8(Unk80101EC8Record *rec, LeafPos *bone_out, LeafPos *att_out,
-                   LeafPos *extra_out) {
+void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *bone_out,
+                   Unk80107850Rec *att_out, Unk80107850Rec *extra_out) {
     /* the func_80053614 probe in scratchpad: from (words 0..2), to (4..6), hit
      * (8..10), normal (12..13), work area (14..) */
     s32 *probe = (s32 *)0x1F8002B8;
@@ -3098,7 +3098,7 @@ void func_800207C8(Unk80101EC8Record *rec, LeafPos *bone_out, LeafPos *att_out,
     s32 *pos;
     SVec4i16 *v;
     BoneHitRec *hr;
-    LeafPos *o;
+    Unk80107850Rec *o;
     s32 i;
 
     bones = func_80046DEC(rec->index);

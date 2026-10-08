@@ -850,9 +850,9 @@ s32 func_8005490C(void) {
     func_8004211C();
     func_80047210();
     func_8003F274();
-    func_8004A1FC(&D_800F62E0[0]);
-    func_8004A1FC(&D_800F62E0[1]);
-    func_8004A1FC(&D_800F62E0[4]);
+    calc_LightMatrix(&D_800F62E0[0]);
+    calc_LightMatrix(&D_800F62E0[1]);
+    calc_LightMatrix(&D_800F62E0[4]);
     for (i = 0; i < 2; i++) {
         if (s->unk34[i] != 0) {
             s32 ang;
@@ -956,7 +956,7 @@ void func_800550E8(s32 arg0) {
 
 void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     Unk80101EC8Record *p = &D_80101EC8[arg0];
-    CpuLevelEntry *src;
+    Unk8009A8C8Entry *src;
     u8 *pair;
     u8 base;
     /* idx counts two loops: the eight bytes cleared at 0x444, then the two

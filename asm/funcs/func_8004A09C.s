@@ -67,7 +67,7 @@ glabel func_8004A09C
     /* 3A9A0 8004A1A0 120022A6 */  sh         $v0, 0x12($s1)
     /* 3A9A4 8004A1A4 00000296 */  lhu        $v0, 0x0($s0)
     /* 3A9A8 8004A1A8 02001026 */  addiu      $s0, $s0, 0x2
-    /* 3A9AC 8004A1AC 7F28010C */  jal        func_8004A1FC
+    /* 3A9AC 8004A1AC 7F28010C */  jal        calc_LightMatrix
     /* 3A9B0 8004A1B0 140022A6 */   sh        $v0, 0x14($s1)
     /* 3A9B4 8004A1B4 00000296 */  lhu        $v0, 0x0($s0)
     /* 3A9B8 8004A1B8 02001026 */  addiu      $s0, $s0, 0x2

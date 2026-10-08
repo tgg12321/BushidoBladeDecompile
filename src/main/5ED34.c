@@ -1042,12 +1042,12 @@ extern void func_8006ECF4(Unk8006EACCRec *);
 extern void func_80072E10(Unk8006EACCRec *);
 extern void func_80073200(Unk8006EACCRec *);
 
-typedef struct IconC70 {
+typedef struct Unk80070C70Rec {
     s16 sp48;
     s16 sp4A;
     s16 sp4C;
     s16 sp4E;
-} IconC70;
+} Unk80070C70Rec;
 
 void func_80070C70(Unk8006EACCRec *arg0) {
     /* FAKE: constant-holder local kept in a callee-saved register across

@@ -118,7 +118,7 @@ extern u8 cpu_practice_honmokuroku_data_tbl[][4];
  * are the last words of .text). */
 extern u8 g_sqrt_table_u8[0x400];
 
-extern MenuDatEntry menuDat[18];
+extern Unk8008DCCCEntry menuDat[18];
 
 /* 3 x 3 s16 angle offsets, [row][col] from the pad bits (func_800233AC,
  * func_80023648). */
@@ -198,7 +198,7 @@ extern u8 D_8008E5CC[][8]; /* [unk_0A][unk_0E] of D_80101EC8 */
 extern u8 D_8008E6A4[][6]; /* [unk_0A][unk_0E] of D_80101EC8 */
 extern u8 D_8008E748;
 extern u8 D_8008E75C;
-extern LeafThreshold D_8008EA44[5];
+extern Unk8008EA44Entry D_8008EA44[5];
 
 /* per-stage s16 table, 34 entries */
 extern s16 D_8008EAC0[34];
@@ -223,7 +223,7 @@ extern u16 D_8008EBA0[22];
 extern s32 D_8008EBCC[];
 extern s32 D_8008EBE0[];
 extern u8 D_8008EBF4[6];
-extern LeafThreshold D_8008EBFC[6];
+extern Unk8008EA44Entry D_8008EBFC[6];
 extern u8 D_8008EC30[4];
 extern s16 D_8008F12C;
 
@@ -256,8 +256,8 @@ extern s32 D_8009060C[38];
 
 extern s16 D_800906A4[39][2];
 extern u16 D_80094C68[];
-extern StatusFlagRec D_80099D88[];
-extern CpuLevelEntry D_8009A8C8[][8];
+extern Unk80099D88Rec D_80099D88[];
+extern Unk8009A8C8Entry D_8009A8C8[][8];
 extern u8 D_8009A9B4[][2]; /* byte pairs (func_80055138) */
 /* [D_8008D9EC flag] -> 3 bytes (func_80041BF4 args), stride 4 */
 extern u8 D_800A3100[][4];
@@ -470,7 +470,7 @@ extern Unk80101DF0Record D_800FF638;
 extern Unk80101DF0Record D_800EEDF0;
 extern Unk80101DF0Record D_800EF070;
 extern Unk800F62E0Rec D_800F62E0[8];
-extern AnimRotFunc D_800F66A0[6];
+extern RotMatrixFunc D_800F66A0[6];
 
 /* The CD file table at 0x8008EC34: one 8-byte record per disc file, indexed by
  * the file numbers func_80036EA8 forms. `loc` is sought (cdrom_StartRead copies
@@ -481,7 +481,7 @@ extern CdFileEntry g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
 
 extern CdState D_80101E58;
 extern Unk801027B0Pack D_80102760; /* the common motion pack */
-extern PracticeParams D_80102778;
+extern Unk80102778Rec D_80102778;
 extern PadState g_pad_state;
 extern Unk801027B0Pack D_801027B0[]; /* per load slot */
 /* [i] points to block i's slots, the words after its header word (func_80044010
@@ -501,7 +501,7 @@ extern s32 MotDataBaseAddress;
  * reads entry D_800A3783, then advances it). */
 extern u8 D_801077B0[24];
 
-extern LeafPos D_80107850[6];
+extern Unk80107850Rec D_80107850[6];
 extern void func_8001B748(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32);
 extern void func_8003D52C(u8 *, s32, ...);
 extern void func_80021A98(s32, MoveScript *, s32);
@@ -597,7 +597,7 @@ extern void snd_InitAndLoadCommonVab(void);
 extern void eff_ClearInitFlag(void);
 extern void func_800174F4(void);
 extern s32 func_80017D84(Func80017A44Input *);
-extern void func_8001924C(SceneQuad *, s32);
+extern void func_8001924C(Unk80017FA0Rec *, s32);
 extern void func_8001945C(void);
 extern s32 func_80019488(void);
 extern void func_800194C0(s32);
@@ -616,7 +616,8 @@ extern void func_8001F1C4(
     Unk80101EC8Record *, Rec1C *, MotionFrame *, MotionFrame *);
 extern void func_8001F860(Unk80101EC8Record *, s32);
 extern void func_800203B4(Unk80101EC8Record *, s32, s16 *);
-extern void func_800207C8(Unk80101EC8Record *, LeafPos *, LeafPos *, LeafPos *);
+extern void func_800207C8(
+    Unk80101EC8Record *, Unk80107850Rec *, Unk80107850Rec *, Unk80107850Rec *);
 extern void func_80020CDC(void);
 extern void func_80020D38(void);
 extern void func_80020D70(void);
@@ -785,7 +786,7 @@ extern void func_80049718(s32, s32, s32 *, s16 *);
 extern void func_80049A2C(s32, s32, s32);
 extern s32 func_80049C24(s32, s32);
 extern void func_80049E1C(void);
-extern void func_8004A1FC(Unk800F62E0Rec *);
+extern void calc_LightMatrix(Unk800F62E0Rec *);
 extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
 extern void func_800523E0(MATRIX *, MATRIX *, s32, MATRIX *);
 /* No prototype: defined with no arguments, but func_8003EDC0 / func_8003FA24

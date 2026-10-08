@@ -167,7 +167,7 @@ void func_80035280(void) {
      * (D_80106A50.times) gives the target's single $a2 record cursor; indexing
      * D_80106A50.times[i] at each use creates a second address movable
      * (score 24). */
-    FileTimeRec *base;
+    TimeRec *base;
     s32 i;
 
     p = func_80077D00();

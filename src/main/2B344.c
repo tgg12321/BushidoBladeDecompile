@@ -930,8 +930,8 @@ void func_8003C714(void) {
     Unk8009BD24Block *s0;
     s32 i;
     s32 a, b, c, v;
-    FileTimeRec *base;
-    FileTimeRec *src;
+    TimeRec *base;
+    TimeRec *src;
 
     s0 = func_80077D00();
     func_800372C0();
@@ -2499,24 +2499,24 @@ typedef struct {
 typedef struct {
     /* 0x00 */ s16 unk0;
     /* 0x02 */ u8 unk2[2];
-    /* 0x04 */ SceneQuad quad;
+    /* 0x04 */ Unk80017FA0Rec quad;
     /* 0x14 */ Unk80045878Node *obj;
     /* 0x18 */ u8 *cur;
     /* 0x1C */ Func8003F6D8Inner inner;
-} SceneRec; /* size 0xD0 */
+} Unk8003F824Rec; /* size 0xD0 */
 
 typedef struct {
     /* 0x000 */ s16 count;
     /* 0x002 */ s16 unk2;
     /* 0x004 */ s16 unk4;
     /* 0x006 */ s16 unk6;
-    /* 0x008 */ SceneRec recs[5];
-    /* 0x418 */ SceneQuad quads[5];
+    /* 0x008 */ Unk8003F824Rec recs[5];
+    /* 0x418 */ Unk80017FA0Rec quads[5];
     /* 0x468 */ u8 data[1];
-} Scene;
+} Unk8003F62CRec;
 
 void func_8003F62C(Unk80045878Obj *a0) {
-    Scene *s0;
+    Unk8003F62CRec *s0;
     s0 = a0->unk_24;
     if (s0 == 0)
         return;
@@ -2535,7 +2535,7 @@ void func_8003F62C(Unk80045878Obj *a0) {
     }
 }
 
-void func_8003F6D8(Scene *arg0) {
+void func_8003F6D8(Unk8003F62CRec *arg0) {
     s32 i;
     s32 j;
 
@@ -2558,14 +2558,14 @@ void func_8003F7F4(void) {
     D_800A3374 = 0;
 }
 
-extern u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur);
-void func_8003FECC(Unk80045878Obj *a0, SceneRec *rec, s16 *a2);
+extern u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur);
+void func_8003FECC(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2);
 
 void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
-    Scene *sc;
+    Unk8003F62CRec *sc;
     s16 *cmds;
     u8 *cur;
-    SceneRec *rec;
+    Unk8003F824Rec *rec;
     Unk80045878Node *obj;
     s32 i;
 
@@ -2620,7 +2620,7 @@ void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
 extern s16 D_80094AEC[];
 s16 *func_8003FE40(SVECTOR *a0, s32 a1, s16 *a2);
 
-u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
+u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     /* FAKE: frame layout (oversized live object): func_80017D84's argument plus
        an unwritten tail (two or three words are byte-identical: three chosen);
        the argument alone gives a frame 8 short (0x48 for 0x50): score 16. */
@@ -2783,7 +2783,7 @@ s16 *func_8003FE40(SVECTOR *a0, s32 a1, s16 *a2) {
     return a2;
 }
 
-void func_8003FECC(Unk80045878Obj *a0, SceneRec *rec, s16 *a2) {
+void func_8003FECC(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2) {
     Func8003F6D8Inner *in = &rec->inner;
     s32 n = in->count;
     s16 id = a2[0];
@@ -2815,7 +2815,7 @@ s32 math_AlignUp4(s32 a0) {
 }
 
 void func_8003FFC4(Unk80045878Obj *a0) {
-    Scene *v1 = a0->unk_24;
+    Unk8003F62CRec *v1 = a0->unk_24;
     if (v1) {
         v1->unk6 = 1;
     }
@@ -2824,14 +2824,14 @@ void func_8003FFC4(Unk80045878Obj *a0) {
 void func_8003FFE0(s32 a0) {
     Unk80045878Obj *v0 = func_8004153C(a0);
     if (v0) {
-        Scene *v1 = v0->unk_24;
+        Unk8003F62CRec *v1 = v0->unk_24;
         if (v1) {
             v1->unk2 = 1;
         }
     }
 }
 
-void func_8004001C(Scene *a0) {
+void func_8004001C(Unk8003F62CRec *a0) {
     s32 i;
     for (i = 0; i < a0->count; i++) {
         a0->quads[i].unk2 = 1;
@@ -2839,7 +2839,7 @@ void func_8004001C(Scene *a0) {
     }
 }
 
-void func_80040068(Scene *a0) {
+void func_80040068(Unk8003F62CRec *a0) {
     s32 i;
     for (i = 0; i < a0->count; i++) {
         a0->quads[i].unk2 = 0;
@@ -2848,7 +2848,7 @@ void func_80040068(Scene *a0) {
 }
 
 void func_800400B0(Unk80045878Obj *a0, s32 a1) {
-    Scene *v1 = a0->unk_24;
+    Unk8003F62CRec *v1 = a0->unk_24;
     if (v1) {
         s32 i;
         for (i = 0; i < v1->count; i++) {
@@ -2861,7 +2861,7 @@ void func_800400B0(Unk80045878Obj *a0, s32 a1) {
  * frame (phantom slot sp+20 left by the folded guard); a literal `> 0` gives
  * frame 0x20 and swaps registers: score 16 */
 void func_800400F8(Unk80045878Obj *a0) {
-    Scene *s2;
+    Unk8003F62CRec *s2;
     s32 s0;
     s2 = a0->unk_24;
     if (s2 != 0) {
@@ -2883,9 +2883,9 @@ void func_8004016C(s32 a0) {
 }
 
 void func_8004019C(Unk80045878Obj *a0, s32 a1) {
-    Scene *v1 = a0->unk_24;
+    Unk8003F62CRec *v1 = a0->unk_24;
     if (v1) {
-        v1 = (Scene *)((u8 *)v1 + a1);
+        v1 = (Unk8003F62CRec *)((u8 *)v1 + a1);
         a0->unk_24 = v1;
         a0->unk_28 = a0->unk_28 + a1;
         v1->unk6 = 1;

@@ -89,11 +89,11 @@ glabel func_80046BF4
   .L80046D50:
     /* 37550 80046D50 0F80103C */  lui        $s0, %hi(D_800F62E0)
     /* 37554 80046D54 E0621026 */  addiu      $s0, $s0, %lo(D_800F62E0)
-    /* 37558 80046D58 7F28010C */  jal        func_8004A1FC
+    /* 37558 80046D58 7F28010C */  jal        calc_LightMatrix
     /* 3755C 80046D5C 21200002 */   addu      $a0, $s0, $zero
-    /* 37560 80046D60 7F28010C */  jal        func_8004A1FC
+    /* 37560 80046D60 7F28010C */  jal        calc_LightMatrix
     /* 37564 80046D64 60000426 */   addiu     $a0, $s0, 0x60
-    /* 37568 80046D68 7F28010C */  jal        func_8004A1FC
+    /* 37568 80046D68 7F28010C */  jal        calc_LightMatrix
     /* 3756C 80046D6C 80010426 */   addiu     $a0, $s0, 0x180
     /* 37570 80046D70 3408010C */  jal        func_800420D0
     /* 37574 80046D74 00000000 */   nop

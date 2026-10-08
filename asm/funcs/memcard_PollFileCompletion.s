@@ -1,4 +1,4 @@
-glabel func_80038658
+glabel memcard_PollFileCompletion
     /* 28E58 80038658 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 28E5C 8003865C 2801838F */  lw         $v1, %gp_rel(D_800A31F4)($gp)
     /* 28E60 80038660 04000224 */  addiu      $v0, $zero, 0x4
@@ -60,4 +60,4 @@ glabel func_80038658
     /* 28F28 80038728 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 28F2C 8003872C 0800E003 */  jr         $ra
     /* 28F30 80038730 00000000 */   nop
-endlabel func_80038658
+endlabel memcard_PollFileCompletion

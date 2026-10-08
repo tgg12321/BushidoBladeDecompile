@@ -491,9 +491,9 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
         D_800A33C0 = a2;
     }
 
-    func_8004A1FC(&D_800F62E0[0]);
-    func_8004A1FC(&D_800F62E0[1]);
-    func_8004A1FC(&D_800F62E0[4]);
+    calc_LightMatrix(&D_800F62E0[0]);
+    calc_LightMatrix(&D_800F62E0[1]);
+    calc_LightMatrix(&D_800F62E0[4]);
     func_800420D0();
     func_8003F568();
     func_8003F5CC();
@@ -1423,10 +1423,10 @@ typedef struct {
     /* 0x14 */ u16 clut;
     /* 0x18 */ u32 *pixdata;
     /* 0x1C */ u32 *clutdata;
-} TimHdr485;
+} TimImageRec;
 
 void func_800485EC(tim, spr, x, y, cx, cy) u32 *tim;
-TimHdr485 *spr;
+TimImageRec *spr;
 s16 x, y;
 u16 cx, cy;
 {
@@ -2373,14 +2373,14 @@ void func_8004A09C(Unk800F62E0Rec *arg0, u16 *arg1) {
     arg0->light[2].pitch = *arg1++;
     arg0->light[2].yaw = *arg1++;
     arg0->light[2].on = *arg1++;
-    func_8004A1FC(arg0);
+    calc_LightMatrix(arg0);
     arg0->back[0] = *arg1++;
     arg0->back[1] = *arg1++;
     arg0->back[2] = *arg1;
     arg0->unk5C = *(arg1 + 1);
 }
 
-void func_8004A1FC(arg0) Unk800F62E0Rec *arg0;
+void calc_LightMatrix(arg0) Unk800F62E0Rec *arg0;
 {
     s16 i;
     Unk800F62E0Light *p;

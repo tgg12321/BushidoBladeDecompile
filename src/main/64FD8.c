@@ -1452,7 +1452,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
     s32 i;
     s32 x;
     s32 v;
-    Win77D94 *w;
+    Unk80077D94Entry *w;
     s32 *img;
 
     s.ot_idx = 2;
@@ -1577,7 +1577,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
     for (i = 0; i < 21; i++) {
         /* FAKE: integer-sum address gives the target's addu operand order;
            `&D_800A35F8->win2C[i]`: score 1; `w = win2C; w += i`: 2 */
-        w = (Win77D94 *)(i * 4 + (s32)D_800A35F8->win2C);
+        w = (Unk80077D94Entry *)(i * 4 + (s32)D_800A35F8->win2C);
         if (D_800A35F0 < w->off + 60 && D_800A35F0 >= w->on) {
             /* FAKE (duplicated-statement-into-arms): each arm stores its own
                r/g/b chain; cross-jump merges them. Shared tail: score 54. */

@@ -402,7 +402,7 @@ extern s32 func_8003800C(Unk800F34D8Save *);
  * closes the file and posts a result code to D_800A379E. The still-pending
  * paths share the fail_store end label (the shared-end-label recipe,
  * .claude/rules/shared-end-label.md). */
-void func_80038658(void) {
+void memcard_PollFileCompletion(void) {
     s32 ret;
     s32 fail;
 
@@ -450,7 +450,7 @@ s32 func_80038734(void) {
         D_800A31F8 = func_80037D14(0, 0);
     }
     func_800383A4();
-    func_80038658();
+    memcard_PollFileCompletion();
     return D_800A379E;
 }
 

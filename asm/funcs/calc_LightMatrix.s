@@ -1,4 +1,4 @@
-glabel func_8004A1FC
+glabel calc_LightMatrix
     /* 3A9FC 8004A1FC D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 3AA00 8004A200 2000B4AF */  sw         $s4, 0x20($sp)
     /* 3AA04 8004A204 21A08000 */  addu       $s4, $a0, $zero
@@ -85,4 +85,4 @@ glabel func_8004A1FC
     /* 3AB3C 8004A33C 3000BD27 */  addiu      $sp, $sp, 0x30
     /* 3AB40 8004A340 0800E003 */  jr         $ra
     /* 3AB44 8004A344 00000000 */   nop
-endlabel func_8004A1FC
+endlabel calc_LightMatrix

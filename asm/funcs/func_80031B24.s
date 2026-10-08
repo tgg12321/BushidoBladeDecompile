@@ -178,7 +178,7 @@ glabel func_80031B24
     /* 225CC 80031DCC 4000A98F */  lw         $t1, 0x40($sp)
     /* 225D0 80031DD0 0A80053C */  lui        $a1, %hi(D_800A37E8)
     /* 225D4 80031DD4 E837A524 */  addiu      $a1, $a1, %lo(D_800A37E8)
-    /* 225D8 80031DD8 2F9D000C */  jal        func_800274BC
+    /* 225D8 80031DD8 2F9D000C */  jal        math_NegNormalize3D
     /* 225DC 80031DDC 44002425 */   addiu     $a0, $t1, 0x44
     /* 225E0 80031DE0 01000424 */  addiu      $a0, $zero, 0x1
     /* 225E4 80031DE4 2130A002 */  addu       $a2, $s5, $zero

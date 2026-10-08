@@ -130,7 +130,7 @@ after2:
 extern void gte_SetMatrixRotTransIRVec(void *, void *, void *);
 
 void func_800417D0(Unk80101DF0Record *a0) {
-    AnimRotFunc func;
+    RotMatrixFunc func;
 
     if (a0->unk6 == 1) {
         return;
@@ -375,7 +375,7 @@ void func_80041EB0(s32 a0, s32 a1) {
     s32 angle;
     s32 *ptr;
 
-    /* FAKE: fp_ptr holds D_800F62E0 for the loop and the first func_8004A1FC
+    /* FAKE: fp_ptr holds D_800F62E0 for the loop and the first calc_LightMatrix
      * call; naming D_800F62E0 directly re-forms the address and the registers
      * rotate (score 45). */
     fp_ptr = D_800F62E0;
@@ -451,8 +451,8 @@ void func_80041EB0(s32 a0, s32 a1) {
         outer++;
     } while (outer < 2);
 
-    func_8004A1FC(fp_ptr);
-    func_8004A1FC(&D_800F62E0[1]);
+    calc_LightMatrix(fp_ptr);
+    calc_LightMatrix(&D_800F62E0[1]);
 }
 
 extern s16 D_800A3238[3];
@@ -542,17 +542,17 @@ void func_800422BC(s32 a0, s32 packed, s32 a2, s32 a3) {
     D_800F62E0[0].cmat.m[0][0] = r2;
     D_800F62E0[0].cmat.m[1][0] = g2;
     D_800F62E0[0].cmat.m[2][0] = b2;
-    func_8004A1FC(&D_800F62E0[0]);
+    calc_LightMatrix(&D_800F62E0[0]);
     D_800F62E0[1].cmat.m[0][0] = r2;
     D_800F62E0[1].cmat.m[1][0] = g2;
     D_800F62E0[1].cmat.m[2][0] = b2;
-    func_8004A1FC(&D_800F62E0[1]);
+    calc_LightMatrix(&D_800F62E0[1]);
     goto out;
 alt_scale:
     D_800F62E0[4].cmat.m[0][0] = r2;
     D_800F62E0[4].cmat.m[1][0] = g2;
     D_800F62E0[4].cmat.m[2][0] = b2;
-    func_8004A1FC(&D_800F62E0[4]);
+    calc_LightMatrix(&D_800F62E0[4]);
     goto out;
 raw:
     if (a2 != 0) {

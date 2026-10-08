@@ -248,11 +248,11 @@ glabel func_8005490C
     /* 454BC 80054CBC 00000000 */   nop
     /* 454C0 80054CC0 0F80103C */  lui        $s0, %hi(D_800F62E0)
     /* 454C4 80054CC4 E0621026 */  addiu      $s0, $s0, %lo(D_800F62E0)
-    /* 454C8 80054CC8 7F28010C */  jal        func_8004A1FC
+    /* 454C8 80054CC8 7F28010C */  jal        calc_LightMatrix
     /* 454CC 80054CCC 21200002 */   addu      $a0, $s0, $zero
-    /* 454D0 80054CD0 7F28010C */  jal        func_8004A1FC
+    /* 454D0 80054CD0 7F28010C */  jal        calc_LightMatrix
     /* 454D4 80054CD4 60000426 */   addiu     $a0, $s0, 0x60
-    /* 454D8 80054CD8 7F28010C */  jal        func_8004A1FC
+    /* 454D8 80054CD8 7F28010C */  jal        calc_LightMatrix
     /* 454DC 80054CDC 80010426 */   addiu     $a0, $s0, 0x180
   .L80054CE0:
     /* 454E0 80054CE0 3400828E */  lw         $v0, 0x34($s4)

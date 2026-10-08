@@ -57,7 +57,7 @@ glabel func_800422BC
     /* 32B94 80042394 1E6332A4 */  sh         $s2, %lo(D_800F631E)($at)
     /* 32B98 80042398 0F80013C */  lui        $at, %hi(D_800F6324)
     /* 32B9C 8004239C 246331A4 */  sh         $s1, %lo(D_800F6324)($at)
-    /* 32BA0 800423A0 7F28010C */  jal        func_8004A1FC
+    /* 32BA0 800423A0 7F28010C */  jal        calc_LightMatrix
     /* 32BA4 800423A4 C8FF0426 */   addiu     $a0, $s0, -0x38
     /* 32BA8 800423A8 0F80013C */  lui        $at, %hi(D_800F6378)
     /* 32BAC 800423AC 786333A4 */  sh         $s3, %lo(D_800F6378)($at)
@@ -65,7 +65,7 @@ glabel func_800422BC
     /* 32BB4 800423B4 7E6332A4 */  sh         $s2, %lo(D_800F637E)($at)
     /* 32BB8 800423B8 0F80013C */  lui        $at, %hi(D_800F6384)
     /* 32BBC 800423BC 846331A4 */  sh         $s1, %lo(D_800F6384)($at)
-    /* 32BC0 800423C0 7F28010C */  jal        func_8004A1FC
+    /* 32BC0 800423C0 7F28010C */  jal        calc_LightMatrix
     /* 32BC4 800423C4 28000426 */   addiu     $a0, $s0, 0x28
     /* 32BC8 800423C8 15090108 */  j          .L80042454
     /* 32BCC 800423CC 00000000 */   nop
@@ -77,7 +77,7 @@ glabel func_800422BC
     /* 32BE0 800423E0 9E6432A4 */  sh         $s2, %lo(D_800F649E)($at)
     /* 32BE4 800423E4 0F80013C */  lui        $at, %hi(D_800F64A4)
     /* 32BE8 800423E8 A46431A4 */  sh         $s1, %lo(D_800F64A4)($at)
-    /* 32BEC 800423EC 7F28010C */  jal        func_8004A1FC
+    /* 32BEC 800423EC 7F28010C */  jal        calc_LightMatrix
     /* 32BF0 800423F0 C8FF4424 */   addiu     $a0, $v0, -0x38
     /* 32BF4 800423F4 15090108 */  j          .L80042454
     /* 32BF8 800423F8 00000000 */   nop

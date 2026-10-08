@@ -36,7 +36,7 @@ typedef struct {
  * happens when a0->unkC is null. The outer guard tests the live counter
  * (`i < ptr->count`) for the target's empty 8-byte leaf frame
  * (phantom-slot-frame-lever). */
-void func_80017FA0(SceneQuad *a0) {
+void func_80017FA0(Unk80017FA0Rec *a0) {
     /* FAKE: temp takes the block pointer for the null test and ptr a copy after
      * it (lw v0 / move t1,v0); tested as ptr itself the load goes straight to
      * t1 and the move drops: score 3 */
@@ -103,7 +103,7 @@ typedef struct {
 
 #define SCRV ((ScrV *)0x1F800000)
 
-void func_80018094(SceneQuad *arg0, Func80017A44Output *arg1) {
+void func_80018094(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     /* FAKE: frame layout -- sp_tmp[0] is the live LZC output; the unwritten
      * tail sizes the 16-byte locals region of the 0x30 frame (as s32
      * sp_tmp[1]: score 8) (dead-vars-local-array, oversized-locals) */
@@ -463,8 +463,8 @@ void func_80018300(Func80017A44Output *arg0) {
         : : "r"(out) : "$12", "$13", "$14", "$15", "memory");
 }
 
-void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1);
-void func_80019310(SceneQuad *arg0, Func80017A44Output *arg1);
+void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
+void func_80019310(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
 
 /* func_800187F4 -- node-chain integrator, called by func_8001924C for each
  * scene quad whose flag bit 0 is clear. A node with state >= 0 springs toward
@@ -477,7 +477,7 @@ void func_80019310(SceneQuad *arg0, Func80017A44Output *arg1);
  * in place of the DMPSX placeholders (Q29): 0x0000027f -> 0x4A480012,
  * 0x00000f3f -> 0x4AA00428, 0x000012ff -> 0x4B90003D, 0x0000133f ->
  * 0x4BA8003E. */
-void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
+void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     Func80017A44Record *node;
     s32 i;
     s32 count;
@@ -801,9 +801,9 @@ void func_800187F4(SceneQuad *arg0, Func80017A44Output *arg1) {
     }
 }
 
-void func_8001924C(SceneQuad *arg0, s32 arg1) {
+void func_8001924C(Unk80017FA0Rec *arg0, s32 arg1) {
     s32 i = 0;
-    SceneQuad *s0;
+    Unk80017FA0Rec *s0;
     /* FAKE: pointer alias -- g_file_data_buf's address held in an integer
      * local. Referenced directly, its lui/addiu is scheduled after `move s0,a0`
      * (score 2); held as a u8 * the addu operands swap (score 2). */
@@ -838,7 +838,7 @@ void func_8001924C(SceneQuad *arg0, s32 arg1) {
  * clobber list at all), so on those three it is added, and truthful (the
  * islands read the MATRIX / SVECTOR and write out[]); on island 1 it makes GCC
  * re-read the MATRIX pointer before SetTransMatrix. */
-void func_80019310(SceneQuad *arg0, Func80017A44Output *arg1) {
+void func_80019310(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     s32 out[3];
     s32 i;
     Func80017A44Record *dst;

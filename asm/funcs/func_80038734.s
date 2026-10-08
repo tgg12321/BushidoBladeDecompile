@@ -11,7 +11,7 @@ glabel func_80038734
   .L80038758:
     /* 28F58 80038758 E9E0000C */  jal        func_800383A4
     /* 28F5C 8003875C 00000000 */   nop
-    /* 28F60 80038760 96E1000C */  jal        func_80038658
+    /* 28F60 80038760 96E1000C */  jal        memcard_PollFileCompletion
     /* 28F64 80038764 00000000 */   nop
     /* 28F68 80038768 D2068287 */  lh         $v0, %gp_rel(D_800A379E)($gp)
     /* 28F6C 8003876C 1000BF8F */  lw         $ra, 0x10($sp)
