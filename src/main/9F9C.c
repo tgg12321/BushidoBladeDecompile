@@ -1715,7 +1715,7 @@ void func_8001D790(void) {
         D_8008E5A8[(s8)D_80102778.unk_4[0]] != D_800A30FC ||
         D_8008E5A8[(s8)D_80102778.unk_4[1]] != D_800A30FD) {
         func_80020D38();
-        game_StageCleanup(D_800A36A4, s2);
+        func_80046EDC(D_800A36A4, s2);
         func_8002906C();
         snd_CloseListedVabs();
 

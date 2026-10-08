@@ -36,7 +36,7 @@ glabel func_8001D790
     /* E014 8001D814 00000000 */   nop
     /* E018 8001D818 0A80043C */  lui        $a0, %hi(D_800A36A4)
     /* E01C 8001D81C A4368484 */  lh         $a0, %lo(D_800A36A4)($a0)
-    /* E020 8001D820 B71B010C */  jal        game_StageCleanup
+    /* E020 8001D820 B71B010C */  jal        func_80046EDC
     /* E024 8001D824 21284002 */   addu      $a1, $s2, $zero
     /* E028 8001D828 1BA4000C */  jal        func_8002906C
     /* E02C 8001D82C 00000000 */   nop

@@ -547,7 +547,7 @@ void func_80046EA0(s32 a0) {
     }
 }
 
-void game_StageCleanup(s32 a0, s32 a1) {
+void func_80046EDC(s32 a0, s32 a1) {
     func_800460E4(a0, a1);
     func_800421C8(a0);
     func_8003E0E0();

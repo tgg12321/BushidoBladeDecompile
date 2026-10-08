@@ -718,10 +718,10 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
         n = (s->unk4 & 0x3F) - 1;
         if (a6 != 0) {
             a6 += ret;
-            game_StageCleanup(n, a6);
+            func_80046EDC(n, a6);
         } else {
             gpu_ResetGraphMode1();
-            game_StageCleanup(n, (s32)D_800A3770);
+            func_80046EDC(n, (s32)D_800A3770);
         }
     }
     if (s->unk4 & 0x8000) {

@@ -886,7 +886,7 @@ extern void func_80036F40(void);
 extern void *func_8003F1D4(void);
 extern void *func_80046DEC(s32);
 extern void func_80046B44(void);
-extern void game_StageCleanup(s32, s32);
+extern void func_80046EDC(s32, s32);
 extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
 extern s32 gte_SumSquares3(s32, s32, s32);

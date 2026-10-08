@@ -126,7 +126,7 @@ D_800A3710 = 0x800A3710;  /* data-wave 2026-09-25: was g_file_vram_timer */
 D_800A3716 = 0x800A3716;  /* data-wave 2026-10-07: was g_file_dma_flag */
 g_file_data_buf = 0x800F6740;
 g_anim_func_table = 0x800F66A0;
-g_char_data = 0x800A6690;
+D_800A6690 = 0x800A6690;  /* data-wave 2026-10-08: was g_char_data */
 g_char_setup_tbl = 0x80094E48;
 _svm_stereo_mono = 0x800FF578;  /* data-wave 2026-09-07: was g_memcard_busy */
 _SsVmMaxVoice = 0x80101BCC;  /* data-wave 2026-09-07: was g_memcard_slot */
@@ -207,8 +207,8 @@ g_special_cam_command_table = 0x8008F13C;
 g_tpage_slot_ptr            = 0x80103608;
 g_tpage_slot_count          = 0x80103658;
 g_disp_config               = 0x8009BD24;
-g_motion_state_code         = 0x800A379E;
-g_motion_data_base_ptr      = 0x800A3860;
+D_800A379E         = 0x800A379E;  /* data-wave 2026-10-08: was g_motion_state_code */
+D_800A3860      = 0x800A3860;  /* data-wave 2026-10-08: was g_motion_data_base_ptr */
 
 /* === Batch 2/3 memcard-event function renames (2026-05-17, refined) === */
 /* The 3 functions originally named game_event_* were refined to */
@@ -484,7 +484,7 @@ func_800467B8            = 0x800467B8;  /* 62-insn loader using saTan2InfoInit +
 func_80046B44              = 0x80046B44;  /* start-up init (sys_GameInit, func_8003BFC4) */
 func_80046DA8         = 0x80046DA8;  /* 15-insn stage init calling game_InitStageSound */
 /* RESET 0x80046EA0: retired name 'game_InitStageSound_80046EA0' — preserved note: 15-insn calling DispHira + stage_GetId + tslLineG5Init */
-game_StageCleanup_80046EDC      = 0x80046EDC;  /* 14-insn cleanup */
+/* RESET 0x80046EDC: retired name 'game_StageCleanup_80046EDC' — preserved note: 14-insn cleanup */
 /* Camera (4) */
 func_80046F24      = 0x80046F24;  /* 58-insn writing to D_800EEDB[4-C] matrix fields */
 /* RESET 0x8004700C: retired name 'camera_Transform_8004700C' — preserved note: 41-insn transform using D_800EEDB[0246] */
@@ -505,7 +505,7 @@ camera_CalcAngles_80047384      = 0x80047384;  /* 58-insn angle calc using repla
 /* 5 high-confidence + 22 medium proposals (full evidence in */
 /* docs/naming/data_evidence/). The 5 highs landed below. */
 /* 2026-09-23: g_replay_pos_x/y/z (3 of the 5) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
-g_pad_analog_substate           = 0x800A37C8;  /* halfword; sub-state for pad_FuncAnalog (values {0, 3}); paired with g_pad_analog_mode (D_800A31F4) */
+D_800A37C8           = 0x800A37C8;  /* halfword; sub-state for pad_FuncAnalog (values {0, 3}); paired with g_pad_analog_mode (D_800A31F4) */  /* data-wave 2026-10-08: was g_pad_analog_substate */
 D_800F65F8            = 0x800F65F8;  /* two-column byte table [D_800A3874][2]: func_800340A0 snapshots D_800A3898 / D_800A3899 into it */  /* data-wave 2026-10-08: was g_match_round_byte_a */
 
 /* === Data-symbol batch 7 (2026-05-17) -- highest-ref unproposed === */
@@ -525,7 +525,7 @@ _spu_RQ                  = 0x800F7420;  /* volatile u16[2] SPU register pair; wr
 g_memcard_sw_event_ioe     = 0x800A37DC;  /* BIOS event handle: class 0xF4000001 mode 4 (memcard I/O complete) */  /* data-wave 2026-09-24: was g_memcard_event_io_complete */
 g_memcard_sw_event_err      = 0x800A37F0;  /* BIOS event handle: class 0xF4000001 mode 0x8000 (memcard disconnect/error) */  /* data-wave 2026-09-24: was g_memcard_event_disconnect */
 g_mental_bar_packet_count       = 0x800A37A0;  /* packet-count companion to g_mental_bar_packet_buf at D_800A37A8 (+8 offset) */
-g_pad_analog_frame_counter      = 0x800A3814;  /* halfword incremented per frame in pad_FuncAnalog */
+D_800A3814      = 0x800A3814;  /* halfword incremented per frame in pad_FuncAnalog */  /* data-wave 2026-10-08: was g_pad_analog_frame_counter */
 g_round_frame_counter           = 0x800A3858;  /* match-elapsed-frame counter; centiseconds via (val % 30) * 100 / 30 */
 _snd_seq_tick_env                = 0x800A26CC;  /* 12-bit packed position written by SetBloodSpot (paired with g_blood_spot_timer) */  /* data-wave 2026-09-07: was g_blood_spot_pos */
 
@@ -548,7 +548,7 @@ g_spu_reg_voice_array           = 0x800F7298;  /* volatile u16[] SPU voice regis
 _spu_keystat                 = 0x800A2874;  /* SPU transfer/channel mask; OR'd with bit-masks */  /* data-wave 2026-09-07: was g_spu_xfer_mask */
 _spu_RQmask                = 0x800A28A0;  /* SPU voice key-on/off mask; bit = (regaddr - 0xC6) >> 1 */  /* data-wave 2026-09-07: was g_spu_voice_mask */
 /* Scratchpad pointer cache (text1b) */
-g_scratchpad_ptr_a4             = 0x800A34E8;  /* points to 0x1F8000A4 (scratchpad RAM) */
+D_800A34E8             = 0x800A34E8;  /* points to 0x1F8000A4 (scratchpad RAM) */  /* data-wave 2026-10-08: was g_scratchpad_ptr_a4 */
 g_scratchpad_ptr_b8             = 0x800A34EC;  /* points to 0x1F8000B8; deref'd as u16* */
 g_scratchpad_ptr_ac             = 0x800A3484;  /* points to 0x1F8000AC */
 /* Counters / state */
@@ -580,10 +580,10 @@ _spu_rev_flag         = 0x800A287C;  /* SPU transfer callback arg cache */  /* d
 g_spu_xfer_pending              = 0x800A2D2C;  /* SPU transfer-pending flag */
 /* GPU register pointer + text1a stream cursors */
 g_gpu_stat_reg_ptr              = 0x8009BF64;  /* pointer to GPU status/control register */
-g_text1a_size_remaining         = 0x800A33A4;  /* decremented per chunk consumed (init 0x45000) */
-g_text1a_size_cursor            = 0x800A33A8;  /* upper-bound position cursor */
+D_800A33A4         = 0x800A33A4;  /* decremented per chunk consumed (init 0x45000) */  /* data-wave 2026-10-08: was g_text1a_size_remaining */
+D_800A33A8            = 0x800A33A8;  /* upper-bound position cursor */  /* data-wave 2026-10-08: was g_text1a_size_cursor */
 /* Misc state */
-g_pad_press_countdown           = 0x800A3330;  /* 0x5A-frame countdown (pad press handler) */
+D_800A3330           = 0x800A3330;  /* 0x5A-frame countdown (pad press handler) */  /* data-wave 2026-10-08: was g_pad_press_countdown */
 g_sleep_menu_cursor_y           = 0x800A3360;  /* row (paired with g_sleep_menu_cursor_x at D_800A335C) */
 g_pad_press_tick_counter        = 0x800A3924;  /* tick counter in pad-press code */
 
@@ -710,10 +710,10 @@ D_800A389B                                    = 0x800A389B;  /* entry count p->u
 
 /* Tier 2 -- 1 newly-named ref (data only -- lower-risk promotions) */
 g_game_session_running                                  = 0x800A31DA;  /* ref: func_80035480 */
-g_pad_analog_mode                                       = 0x800A31F4;  /* ref: g_pad_analog_substate */
+D_800A31F4                                       = 0x800A31F4;  /* ref: g_pad_analog_substate */  /* data-wave 2026-10-08: was g_pad_analog_mode */
 g_damage_debug_enabled                                  = 0x800A31FC;  /* ref: damage_CalcHitDamage */
 g_damage_debug_pending                                  = 0x800A3203;  /* ref: damage_CalcHitDamage */
-g_text1a_active_count                                   = 0x800A33AC;  /* ref: saTan0Init */
+D_800A33AC                                   = 0x800A33AC;  /* ref: saTan0Init */  /* data-wave 2026-10-08: was g_text1a_active_count */
 g_gnd_landing_rand_seed                                 = 0x800A3418;  /* ref: bb2_rand */
 g_text1b_arg1_struct_ptr                                = 0x800A3524;  /* ref: g_text1b_render_arg_cache */
 g_leaf_muki_buffer                                      = 0x800A3678;  /* ref: func_80042874 */
@@ -728,15 +728,15 @@ g_voice_dialog_state                                    = 0x800A38AC;  /* ref: f
 g_prim_buf_cursor                               = 0x800A38B4;  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor */
 g_title_seq_state                                       = 0x800A38C4;  /* ref: title_mv_exec */
 D_800A38D6                               = 0x800A38D6;  /* ref: replay_camera_rob_back_win_near */  /* data-wave 2026-10-08: was g_replay_pos_change_count */
-g_motion_select_byte                                    = 0x800A391D;  /* ref: ki_attack_ougi */
+D_800A391D                                    = 0x800A391D;  /* ref: ki_attack_ougi */  /* data-wave 2026-10-08: was g_motion_select_byte */
 g_cpu_pattern_tick                                      = 0x800A3929;  /* ref: g_cpu_attack_idx */
 g_sound_buf_b                                           = 0x800EFB78;  /* ref: action_check_defense */
 g_text1b_glyph_buf_b                                    = 0x800F1154;  /* ref: g_text1b_glyph_cursor */
 g_mdec_fp_buf                                           = 0x800F62E0;  /* ref: replay_camera_rob_back_win_near */
 g_grid_pos_vec3                                         = 0x800F6608;  /* ref: suLeagueSystemInit */
-g_char_state                                            = 0x80101F00;  /* per-character struct base, 1100-byte stride (ref: g_motion_data_base_ptr) */
+D_80101F00                                            = 0x80101F00;  /* per-character struct base, 1100-byte stride (ref: g_motion_data_base_ptr) */  /* data-wave 2026-10-08: was g_char_state */
 D_80101FBC                                = 0x80101FBC;  /* ref: D_800A3748 */  /* data-wave 2026-10-08: was g_replay_camera_target_a */
-g_motion_keyframe_table_ptr                             = 0x801027B0;  /* Unk801027B0Pack[]: each character's motion pack section pointers */
+D_801027B0                             = 0x801027B0;  /* Unk801027B0Pack[]: each character's motion pack section pointers */  /* data-wave 2026-10-08: was g_motion_keyframe_table_ptr */
 VBLANK_MINUS                                      = 0x80104E80;  /* ref: md_game_check_change_main_mode_default */  /* data-wave 2026-09-07: was g_blood_spot_timer */
 
 /* === Function-medium promotion pass 2 (2026-05-17) -- 30 entries === */
@@ -773,7 +773,7 @@ file_io_state_advance_80038658                          = 0x80038658;  /* state-
 /* Animation emit / text1b family (1) */
 /* RESET 0x80061658: retired name 'anim_emit_21000CD_80061658' — preserved note: 2-variant opcode emitter (0x21000C/D) with cyan tint; sibling of anim_emit_210009 */
 /* AI + utility (5) */
-ai_compute_target_direction_80057094                    = 0x80057094;  /* AI 8-dir command translator using g_grid_pos_vec3 + getEnemyCharId */
+/* RESET 0x80057094: retired name 'ai_compute_target_direction_80057094' — preserved note: AI 8-dir command translator using g_grid_pos_vec3 + getEnemyCharId */
 /* RESET 0x80019488: retired name 'pack_status_nibble_triplet_80019488' — preserved note: returns 12-bit packed status: (D_80106A70/71/72 & 0xF) << {0,4,8} */
 /* RESET 0x80022224: retired name 'stage_find_far_corners_with_rand_80022224' — preserved note: picks 1 of 2 furthest stage corners; uses bb2_rand */
 /* RESET 0x80033898: retired name 'gpu_enable_and_state_reset_80033898' — preserved note: mode-transition hook: gpu_EnableDisplay + reset frame_counter + mode=3 */
@@ -816,15 +816,15 @@ g_bitmask_table_5_8009BEF4                              = 0x8009BEF4;  /* 5 entr
 /* === Rodata record-cluster pass (2026-05-17) -- 9 high-confidence === */
 /* Fixed-stride record clusters identified by sequential-label stride scan. */
 /* See pre-slim-2026-10-01:docs/naming/RODATA_RECORD_SCHEMA.md for the full 114-cluster catalog. */
-g_motion_descriptor_table_5x16                          = 0x8008D754;  /* 5 records x 16 bytes (referenced from g_per_record_ptr_table_8008D86C) */
-g_motion_descriptor_table_10x16                         = 0x8008D7C4;  /* 10 records x 16 bytes (companion cluster) */
-g_char_pose_data_table_3x68                             = 0x8008DA50;  /* 3 records x 68 bytes (.short) -- per-character pose/position data */
-g_char_anim_curve_table_3x324                           = 0x8008DE34;  /* 3 records x 324 bytes (.word) -- per-character animation curves */
+D_8008D754                          = 0x8008D754;  /* 5 records x 16 bytes (referenced from g_per_record_ptr_table_8008D86C) */  /* data-wave 2026-10-08: was g_motion_descriptor_table_5x16 */
+D_8008D7C4                         = 0x8008D7C4;  /* 10 records x 16 bytes (companion cluster) */  /* data-wave 2026-10-08: was g_motion_descriptor_table_10x16 */
+D_8008DA50                             = 0x8008DA50;  /* 3 records x 68 bytes (.short) -- per-character pose/position data */  /* data-wave 2026-10-08: was g_char_pose_data_table_3x68 */
+D_8008DE34                           = 0x8008DE34;  /* 3 records x 324 bytes (.word) -- per-character animation curves */  /* data-wave 2026-10-08: was g_char_anim_curve_table_3x324 */
 g_move_pattern_table_a_4x204                            = 0x8008F220;  /* 4 records x 204 bytes -- per-character move pattern A */
 g_move_pattern_table_b_4x204                            = 0x8008F6C8;  /* 4 records x 204 bytes -- per-character move pattern B (same header as A) */
 g_move_pattern_table_c_5x224                            = 0x8008FA0C;  /* 5 records x 224 bytes -- per-character move pattern C */
 g_move_pattern_table_d_3x224                            = 0x8008FF2C;  /* 3 records x 224 bytes -- per-character move pattern D */
-g_char_sprite_bitmap_block_3x8320                       = 0x80090740;  /* 3 records x 8320 bytes -- per-character sprite/font bitmap (16-bit row data) */
+D_80090740                       = 0x80090740;  /* 3 records x 8320 bytes -- per-character sprite/font bitmap (16-bit row data) */  /* data-wave 2026-10-08: was g_char_sprite_bitmap_block_3x8320 */
 
 /* === Rodata record-cluster pass 2 (2026-05-17) -- consumer-tied highs === */
 /* Clusters where the consumer function uniquely identifies the role. */
@@ -845,8 +845,8 @@ g_text1b_state_record_table_8x4_b                       = 0x800A32EC;  /* 4 x 8-
 g_text1b_misc_state_record_table_16x4                   = 0x800A3638;  /* 4 x 16-byte text1b state records */
 g_text1b_state_record_table_12x5_a                      = 0x8009B7A0;  /* 5 x 12-byte text1b state records */
 g_text1b_state_record_table_4x36                        = 0x800A3460;  /* 36 x 4-byte text1b state cells */
-g_motion_ex_state_table_8x5                             = 0x8009B8C8;  /* 5 x 8-byte records consumed by motion_SetExMotion */
-g_motion_ex_state_table_8x4                             = 0x8009B9D8;  /* 4 x 8-byte records, sibling for motion_SetExMotion */
+D_8009B8C8                             = 0x8009B8C8;  /* 5 x 8-byte records consumed by motion_SetExMotion */  /* data-wave 2026-10-08: was g_motion_ex_state_table_8x5 */
+D_8009B9D8                             = 0x8009B9D8;  /* 4 x 8-byte records, sibling for motion_SetExMotion */  /* data-wave 2026-10-08: was g_motion_ex_state_table_8x4 */
 
 /* === Per-char struct sub-fields (2026-05-17) -- record-0 instances === */
 /* See docs/naming/CHAR_STRUCT_SCHEMA.md for the second-half decode. */
@@ -861,7 +861,7 @@ g_char_pos_centroid_z                                   = 0x8010205C;  /* +0x194
 
 /* === Per-char struct sub-fields part 2 (2026-05-17) === */
 /* +0x210 / +0x234 are Unk80101EC8Record.unk_210 / unk_234 (include/code6cac.h). */
-g_char_vec3_b_w_or_alpha                                = 0x80102114;  /* +0x24C -- separately-accessed 7th word, likely W or alpha */
+D_80102114                                = 0x80102114;  /* +0x24C -- separately-accessed 7th word, likely W or alpha */  /* data-wave 2026-10-08: was g_char_vec3_b_w_or_alpha */
 
 /* World-position vec3 at +0xD8 -- delta'd between players for 2D distance via g_sqrt_table_u8 */
 g_char_world_pos_x                                      = 0x80101FA0;  /* +0xD8 -- world position X (record 0) */
@@ -870,9 +870,9 @@ g_char_world_pos_z                                      = 0x80101FA8;  /* +0xE0 
 /* Replay/stored position vec3 at +0xF4 -- mirrored from world_pos with -0x384 Y bias */
 g_char_stored_pos_y                                     = 0x80101FC0;  /* +0xF8 -- stored Y = world_pos_y - 0x384 (time bonus offset) */
 /* Char ID + keyframe pair -- decoded from func_80021904 / func_80021974 logic */
-g_char_id                                               = 0x80101F12;  /* +0x4A -- character ID (s16); used to index g_motion_data_base_ptr */
-g_char_curr_keyframe_idx                                = 0x80101F4C;  /* +0x84 -- current motion keyframe index (s16) */
-g_char_prev_keyframe_idx                                = 0x80101F4E;  /* +0x86 -- previous motion keyframe (curr -> prev at frame start) */
+D_80101F12                                               = 0x80101F12;  /* +0x4A -- character ID (s16); used to index g_motion_data_base_ptr */  /* data-wave 2026-10-08: was g_char_id */
+D_80101F4C                                = 0x80101F4C;  /* +0x84 -- current motion keyframe index (s16) */  /* data-wave 2026-10-08: was g_char_curr_keyframe_idx */
+D_80101F4E                                = 0x80101F4E;  /* +0x86 -- previous motion keyframe (curr -> prev at frame start) */  /* data-wave 2026-10-08: was g_char_prev_keyframe_idx */
 
 /* === Sony LIBSND _svm_voice per-voice records (struct SpuVoice, include/sound.h; */
 /* base _svm_voice 0x800F4E18, 0x36-byte records, 24 voices). The per-word rows */
@@ -914,7 +914,7 @@ g_status_up_data_buf                                    = 0x801027BC;  /* passed
 /* Found in text1b.c:14205-14223 init pattern: 12-byte state + 4-byte flag + 2-byte counter per motion id. */
 /* The per-id 12-byte state records and 2-byte counters are the arrays D_800F0CA0[18] and D_800F0BA8[18]
  * (include/game.h; merged 2026-09-30 with func_80065800, which retired their per-word alias names). */
-g_motion_ex_flag_table_4                                = 0x800F10E0;  /* 4-byte stride per motion id: init-done flag (set to 1) */
+D_800F10E0                                = 0x800F10E0;  /* 4-byte stride per motion id: init-done flag (set to 1) */  /* data-wave 2026-10-08: was g_motion_ex_flag_table_4 */
 
 /* === Pulled from symbol_addrs.txt (2026-05-17) -- 14 names === */
 /* Pre-existing semantic names in symbol_addrs.txt that hadn't been */
@@ -945,7 +945,7 @@ D_800A35A0                          = 0x800A35A0;  /* func_8006EACC's result (0 
 D_800A35BC                          = 0x800A35BC;  /* mode = arg2->unk14_0 (func_8006E534), compared with 0..6 across 5ED34.c */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_c */
 D_800A358A                          = 0x800A358A;  /* slot 1's column cursor, D_800A3588[1] */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_d */
 D_800A3560                          = 0x800A3560;  /* 2x3-byte per-slot records (union D_800A3560, include/game.h) */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_e */
-g_motion_shift_state_a                                  = 0x800A3550;  /* shorts; consumer: motion_ShiftControl */
+D_800A3550                                  = 0x800A3550;  /* shorts; consumer: motion_ShiftControl */  /* data-wave 2026-10-08: was g_motion_shift_state_a */
 g_status_up_data_state_a                                = 0x800A371C;  /* word; consumer: single_game_CheckStatusUpDataTotalOver */
 g_status_up_data_state_b                                = 0x800A3769;  /* byte; consumer: single_game_CheckStatusUpDataTotalOver */
 
@@ -976,12 +976,12 @@ g_menuctl_frame_counter                                 = 0x800A3514;  /* per-fr
 /* See also: g_comb_send_buf (0x800A3698), the 8-byte link-cable send buffer of */
 /* comb_Write8; 0x800A369C below is its bytes 4..7 (naming sweep 2026-09-29). */
 g_comb_send_buf_plus_0x4                                  = 0x800A369C;  /* +4 from g_comb_send_buf (0x800A3698) */  /* data-wave 2026-09-29: was g_pad_rec_current_hash */
-g_pad_rec_validated_packed                              = 0x800A36C0;  /* validated current-frame packed pad-record (set by comb_WaitRead8 on xor-checksum match; comb_Write8 is the sender) */
-g_pad_rec_validated_hash                                = 0x800A36C4;  /* matching hash for validated record */
-g_pad_rec_prev_packed                                   = 0x800A36D0;  /* previous-frame packed pad-record (copy of 3698 at end of update) */
-g_pad_rec_prev_hash                                     = 0x800A36D4;  /* matching hash for previous-frame record */
-g_pad_rec_playback_mode                                 = 0x800A38A0;  /* "vsync" flag: 0=record, 1=playback */
-g_pad_rec_skip_flag                                     = 0x800A3916;  /* 1 = skip buffer-update on this frame */
+D_800A36C0                              = 0x800A36C0;  /* validated current-frame packed pad-record (set by comb_WaitRead8 on xor-checksum match; comb_Write8 is the sender) */  /* data-wave 2026-10-08: was g_pad_rec_validated_packed */
+D_800A36C4                                = 0x800A36C4;  /* matching hash for validated record */  /* data-wave 2026-10-08: was g_pad_rec_validated_hash */
+D_800A36D0                                   = 0x800A36D0;  /* previous-frame packed pad-record (copy of 3698 at end of update) */  /* data-wave 2026-10-08: was g_pad_rec_prev_packed */
+D_800A36D4                                     = 0x800A36D4;  /* matching hash for previous-frame record */  /* data-wave 2026-10-08: was g_pad_rec_prev_hash */
+D_800A38A0                                 = 0x800A38A0;  /* "vsync" flag: 0=record, 1=playback */  /* data-wave 2026-10-08: was g_pad_rec_playback_mode */
+D_800A3916                                     = 0x800A3916;  /* 1 = skip buffer-update on this frame */  /* data-wave 2026-10-08: was g_pad_rec_skip_flag */
 
 /* === func_80033DF4 / func_80033FE4 cluster (2026-05-17) -- 7 highs === */
 /* Source: code6cac_b.c:3709 (func_80033DF4) and 3787 (func_80033FE4). */
@@ -1053,7 +1053,7 @@ D_800A38EE                                = 0x800A38EE;  /* table[3] of func_800
 /* RESET 0x8003879C: retired name 'motion_shift_set_mode1' — preserved note: sub-id=1, mode=1 (g_motion_state_code=1, g_pad_analog_substate=1) */
 /* RESET 0x800387C0: retired name 'motion_shift_set_mode2' — preserved note: sub-id=1, mode=2 */
 /* RESET 0x800387E8: retired name 'motion_shift_set_mode3' — preserved note: sub-id=9, mode=3 */
-g_motion_shift_flag2                                    = 0x800A38CC;  /* zeroed in motion_shift_set_mode1/2 but not in mode3 or hit_stop */
+D_800A38CC                                    = 0x800A38CC;  /* zeroed in motion_shift_set_mode1/2 but not in mode3 or hit_stop */  /* data-wave 2026-10-08: was g_motion_shift_flag2 */
 
 /* === Sound subsystem cluster (2026-05-17) -- 3 highs === */
 /* From sound.c around line 780-820 (init) and 829 (func_80047A90 */
@@ -1221,7 +1221,7 @@ g_gnd_init_arg_saved                                    = 0x800A36F6;  /* saved 
 /* and class-offset mapping.  Plus a "pos pointer" used in fighting */
 /* distance calc and a packed state word. */
 g_char_class_id_table                                   = 0x8008D538;  /* per-character class ID lookup; (&D)[char_id] -> class */
-g_char_lesson_idx_table                                 = 0x8008D55C;  /* per-character lesson index table; (&D)[idx] -> lesson byte */
+D_8008D55C                                 = 0x8008D55C;  /* per-character lesson index table; (&D)[idx] -> lesson byte */  /* data-wave 2026-10-08: was g_char_lesson_idx_table */
 g_listener_cam                                      = 0x800A36B4;  /* Rec44 view record pointer (func_8001E404 / func_8001E6E4); func_800325E0 reads its +0x20 eye */  /* data-wave 2026-10-07: was g_attacker_pos_ptr */
 D_800A3824                                   = 0x800A3824;  /* func_80029454()'s result (negative = skip); bits tested per fighter index */  /* data-wave 2026-10-08: was g_practice_state_word */
 D_801077B0                                   = 0x801077B0;  /* order list built and shuffled by func_800338CC; func_80033BC0 takes entry [D_800A3783] */  /* data-wave 2026-10-08: was g_practice_byte_table */
@@ -1301,9 +1301,9 @@ g_gnd_gauge_d_max                                       = 0x800F6644;  /* gauge 
 /* === Motion-ex flag table entries (2026-05-17) -- 3 highs === */
 /* The flag table base at 0x800F10E0 is g_motion_ex_flag_table_4. */
 /* Individual entries (init-done flags per motion ID, 4 entries total): */
-g_motion_ex_flag_id1                                    = 0x800F10E4;
-g_motion_ex_flag_id2                                    = 0x800F10E8;
-g_motion_ex_flag_id3                                    = 0x800F10EC;
+D_800F10E4                                    = 0x800F10E4;  /* data-wave 2026-10-08: was g_motion_ex_flag_id1 */
+D_800F10E8                                    = 0x800F10E8;  /* data-wave 2026-10-08: was g_motion_ex_flag_id2 */
+D_800F10EC                                    = 0x800F10EC;  /* data-wave 2026-10-08: was g_motion_ex_flag_id3 */
 
 /* === Motion-ex per-id init functions + counter cells (2026-05-17) -- 10 highs === */
 /* Each motion ID has its own init function in text1b.c:14220-14298 family. */
@@ -1358,7 +1358,7 @@ g_leaf_random_buffer                                    = 0x800A3750;  /* s16 ra
 /* index +4 of a larger ~24-entry s32 flag table starting at 0x800F10D0. */
 /* From text1b.c:13148: `*(s32 *)((s32)&D_800F10D0 + idx * 4) = 0;` */
 /* clears entries indexed by *(u16*)D_800A3468 (the text1b render state). */
-g_motion_state_flag_table                               = 0x800F10D0;  /* 24-entry s32 flag table; idx from *(u16*)D_800A3468; (g_motion_ex_flag_table_4 at +0x10 is the same array offset 4) */
+D_800F10D0                               = 0x800F10D0;  /* 24-entry s32 flag table; idx from *(u16*)D_800A3468; (g_motion_ex_flag_table_4 at +0x10 is the same array offset 4) */  /* data-wave 2026-10-08: was g_motion_state_flag_table */
 
 /* === GPU MoveImage wrapper (2026-05-17) -- 1 high === */
 /* func_8007B6C8: calls gpu_DebugCheckRect with the literal string */
@@ -1486,15 +1486,15 @@ D_800EEE24                                          = 0x800EEE24;  /* position t
 /* === Animation interp / camera transition counters (2026-05-17) -- 3 highs === */
 g_anim_stability_counter                                = 0x800A3310;  /* counts consecutive "stable" interp frames in dst[0x1F]-marked struct; >= 0xB switches to high-precision update */
 g_cam_transition_timer                                  = 0x800A36FC;  /* camera transition countdown; while != 0, runs interp + decrement on s2[+0x12] angle */
-g_char_pose_id_p1                                       = 0x800A30FC;  /* current char pose ID for P1 (compared against `*(&D_8008E5A8 + char_id)` for re-init check) */
+D_800A30FC                                       = 0x800A30FC;  /* current char pose ID for P1 (compared against `*(&D_8008E5A8 + char_id)` for re-init check) */  /* data-wave 2026-10-08: was g_char_pose_id_p1 */
 
 /* === Memcard section access iteration (2026-05-17) -- 2 highs === */
 /* From code6cac_c2.c around line 1100-1125: a function iterates over */
 /* memcard sections by column (D_800A335C: 0..0x4C) calling */
 /* _McAccessSection(col*8+0x10, row*8+0x10, ch, color).  D_800A3358 */
 /* is a paired state byte (also part of change_shadow_tex_reg cluster). */
-g_memcard_section_col                                   = 0x800A335C;  /* column iterator 0..0x4C (= 76 sections); col*8+0x10 = byte offset */
-g_memcard_section_state                                 = 0x800A3358;  /* paired state byte (0 / 0x20 / count); also shadow-tex blend mode */
+D_800A335C                                   = 0x800A335C;  /* column iterator 0..0x4C (= 76 sections); col*8+0x10 = byte offset */  /* data-wave 2026-10-08: was g_memcard_section_col */
+D_800A3358                                 = 0x800A3358;  /* paired state byte (0 / 0x20 / count); also shadow-tex blend mode */  /* data-wave 2026-10-08: was g_memcard_section_state */
 
 /* === Menu-control player select + char-struct field 0x12 (2026-05-17) -- 3 highs === */
 /* From code6cac_c2.c around line 200-232: a menu function reads */
@@ -1507,8 +1507,8 @@ g_menuctl_player_select_struct_ptr                      = 0x800A3878;  /* state 
 /* === code6cac_c2.c misc state names (2026-05-17) -- 4 highs === */
 g_menuctl_current_char_idx                              = 0x800A382D;  /* current char-struct index (0/1/2); used as `D_*0x44C` to compute D_80101EC8 offset */
 D_800A3818                             = 0x800A3818;  /* func_80022408 result stored by func_8003CE18; func_8003CF84 passes it to func_80021D10 */  /* data-wave 2026-10-08: was g_stage_helper_result_cache */
-g_menuctl_pending_flag                                  = 0x800A3894;  /* flag (set to 0 / tested != 0 in menuctl flow) */
-g_char_data_base_idx                                    = 0x800A3368;  /* base index subtracted from v1 to compute g_char_data array offset (v1 - D) * 0x68 */
+D_800A3894                                  = 0x800A3894;  /* flag (set to 0 / tested != 0 in menuctl flow) */  /* data-wave 2026-10-08: was g_menuctl_pending_flag */
+D_800A3368                                    = 0x800A3368;  /* base index subtracted from v1 to compute g_char_data array offset (v1 - D) * 0x68 */  /* data-wave 2026-10-08: was g_char_data_base_idx */
 
 /* === Sound streaming buffer manager (2026-05-17) -- 9 highs === */
 /* From text1a_c.c func_800451D0 (init) + saTan5TakeGetPos_80045230 */
@@ -1516,15 +1516,12 @@ g_char_data_base_idx                                    = 0x800A3368;  /* base i
 /* streaming buffer at g_snd_stream_buffer (0x800A9D10) with write */
 /* cursor + watermark tracking, plus a 10-slot control table with */
 /* per-slot data field + callback fn ptr. */
-g_snd_stream_slot_table                                 = 0x800EED10;  /* 10 entries x 0x10 bytes; +0 = state s16, +0xC = callback fn ptr */
-g_snd_stream_slot_callbacks                             = 0x800EED1C;  /* callback function pointer at offset +0xC of each slot */
-g_snd_stream_buffer                                     = 0x800A9D10;  /* ~282 KB streaming audio buffer base */
-g_snd_stream_write_pos                                  = 0x800A33A0;  /* current write position in buffer (init to &g_snd_stream_buffer) */
-g_snd_stream_buffer_size                                = 0x800A33A4;  /* buffer size = 0x45000 (282624 bytes) */
-g_snd_stream_pos_watermark                              = 0x800A33A8;  /* max offset reached (high-water mark); overflow triggers InitFadePanel */
-g_snd_stream_count                                      = 0x800A33AC;  /* sequence counter / used-slot count */
-g_snd_stream_header_state                               = 0x800A9CFE;  /* header state at -0x12 from buffer base; values 0x11/2/0xA */
-g_snd_stream_header_ptr                                 = 0x800A9D04;  /* header pointer at -0xC from buffer base */
+D_800EED10                                 = 0x800EED10;  /* 10 entries x 0x10 bytes; +0 = state s16, +0xC = callback fn ptr */  /* data-wave 2026-10-08: was g_snd_stream_slot_table */
+D_800EED1C                             = 0x800EED1C;  /* callback function pointer at offset +0xC of each slot */  /* data-wave 2026-10-08: was g_snd_stream_slot_callbacks */
+D_800A9D10                                     = 0x800A9D10;  /* ~282 KB streaming audio buffer base */  /* data-wave 2026-10-08: was g_snd_stream_buffer */
+D_800A33A0                                  = 0x800A33A0;  /* current write position in buffer (init to &g_snd_stream_buffer) */  /* data-wave 2026-10-08: was g_snd_stream_write_pos */
+D_800A9CFE                               = 0x800A9CFE;  /* header state at -0x12 from buffer base; values 0x11/2/0xA */  /* data-wave 2026-10-08: was g_snd_stream_header_state */
+D_800A9D04                                 = 0x800A9D04;  /* header pointer at -0xC from buffer base */  /* data-wave 2026-10-08: was g_snd_stream_header_ptr */
 
 /* === Match-round scoring cluster (2026-05-17) -- 6 highs === */
 /* From code6cac_b.c func_800340A0: per-round result computation. */
@@ -1596,14 +1593,14 @@ g_vsync_dma_region_snapshot                             = 0x800A151C;  /* snapsh
 /* === Menuctl state cluster extension (2026-05-17) -- 8 highs === */
 /* From text1b.c func_80068F70 (menu-mode init): additional state cells */
 /* alongside the previously-named menuctl cluster (D_800A34F8/4FC/50C/3514). */
-g_menuctl_scratch_ctx                                   = 0x800A3500;  /* transient context global -- multiply-overwritten arg-passing channel */
+D_800A3500                                   = 0x800A3500;  /* transient context global -- multiply-overwritten arg-passing channel */  /* data-wave 2026-10-08: was g_menuctl_scratch_ctx */
 g_menuctl_pad_result_1                                   = 0x800A350E;  /* pad-decode result entry 1 (s16) -- 2nd of g_menuctl_pad_result_buf 4-tuple */
-g_menuctl_pad_result_2                                   = 0x800A3510;  /* pad-decode result entry 2 */
-g_menuctl_pad_result_3                                   = 0x800A3512;  /* pad-decode result entry 3 */
-g_menuctl_init_state                                     = 0x800A3518;  /* state cell reset to 0 in func_80068F70; passed by ref to func_8006E390 */
+D_800A3510                                   = 0x800A3510;  /* pad-decode result entry 2 */  /* data-wave 2026-10-08: was g_menuctl_pad_result_2 */
+D_800A3512                                   = 0x800A3512;  /* pad-decode result entry 3 */  /* data-wave 2026-10-08: was g_menuctl_pad_result_3 */
+D_800A3518                                     = 0x800A3518;  /* state cell reset to 0 in func_80068F70; passed by ref to func_8006E390 */  /* data-wave 2026-10-08: was g_menuctl_init_state */
 g_menuctl_arg0_saved                                     = 0x800A351C;  /* saved arg0 of menu-init function (= original screen base before transform) */
-g_menuctl_call_counter                                   = 0x800A3528;  /* per-frame call counter (incremented inside menu-mode update) */
-g_menuctl_effect_handle                                  = 0x800A372C;  /* effect/rob-close handle stored after efc_rob_Close call in init */
+D_800A3528                                   = 0x800A3528;  /* per-frame call counter (incremented inside menu-mode update) */  /* data-wave 2026-10-08: was g_menuctl_call_counter */
+D_800A372C                                  = 0x800A372C;  /* effect/rob-close handle stored after efc_rob_Close call in init */  /* data-wave 2026-10-08: was g_menuctl_effect_handle */
 
 /* === Effect slot pools (2026-05-17) -- 4 highs === */
 /* From text1b.c func_8005B43C and get_point_value: 3 parallel slot */
@@ -1725,7 +1722,7 @@ _svm_cur_plus_0x18                              = 0x80102808;  /* player select 
 /* From text1b.c saTan1GaugeInit (line 13215): clears 28 entries each */
 /* of g_motion_state_flag_table and g_motion_state_secondary_flags, */
 /* plus 6 gauge state cells. */
-g_motion_state_secondary_flags                          = 0x800F1150;  /* 28-byte array paired with g_motion_state_flag_table (each motion-flag entry has a corresponding byte) */
+D_800F1150                          = 0x800F1150;  /* 28-byte array paired with g_motion_state_flag_table (each motion-flag entry has a corresponding byte) */  /* data-wave 2026-10-08: was g_motion_state_secondary_flags */
 g_satan1_gauge_state_a                                  = 0x800A344C;
 g_satan1_gauge_state_b                                  = 0x800A3450;
 g_satan1_gauge_state_c                                  = 0x800A3454;
@@ -1768,8 +1765,8 @@ D_800FF638                                  = 0x800FF638;  /* transform record B
 g_se_slot_table_180x16                                  = 0x800F68E0;  /* 180-entry x 0x10-byte SE slot table (saSeInit_2 iterates with stride 0x10 for 0xB4=180) */
 g_se_slot_next_idx                                      = 0x800A379C;  /* SE slot next-free index (reset 0; used in saSeInit_2 dispatch) */
 g_se_slot_cached_state                                  = 0x800A3714;  /* s16 cached slot state value (paired with _next_idx; reset together) */
-g_pad_rec_record_flag                                   = 0x800A3730;  /* bit-30 packing flag for pad-recording word (see g_pad_rec_validated_packed) */
-g_pad_rec_param_a                                       = 0x800A3870;  /* 2-bit field packed into bits 28-29 of pad-rec word */
+D_800A3730                                   = 0x800A3730;  /* bit-30 packing flag for pad-recording word (see g_pad_rec_validated_packed) */  /* data-wave 2026-10-08: was g_pad_rec_record_flag */
+D_800A3870                                       = 0x800A3870;  /* 2-bit field packed into bits 28-29 of pad-rec word */  /* data-wave 2026-10-08: was g_pad_rec_param_a */
 g_input_pause_pending_flag                              = 0x800A3318;  /* != 0 gates pause-menu entry; tested after D_800A3204 input flag (set in func_80038988) */
 g_result_screen_state_c                                  = 0x800A3350;  /* companion to g_result_screen_active_flag (0x800A3354); reset to 0 in same flow */
 
@@ -1784,7 +1781,7 @@ g_lesson_extra_arg_c                                    = 0x800A37B5;
 g_lesson_extra_arg_d                                    = 0x800A37B6;
 
 /* === code6cac.c misc state (2026-05-17) -- 5 highs === */
-g_char_pose_id_p2                                       = 0x800A30FD;  /* P2 char pose ID (paired with g_char_pose_id_p1 at +1; re-init check) */
+D_800A30FD                                       = 0x800A30FD;  /* P2 char pose ID (paired with g_char_pose_id_p1 at +1; re-init check) */  /* data-wave 2026-10-08: was g_char_pose_id_p2 */
 D_800A3778                                  = 0x800A3778;  /* stores func_800472B0()'s return (&D_800EEDD0); no reader */  /* data-wave 2026-10-07: was g_cam_bone_data_cached */
 g_char_struct_p1_field_6A                               = 0x80101F32;  /* per-char field +0x6A (u16; mode == 0x11 check) */
 g_char_struct_p1_field_FC                               = 0x80101FC4;  /* per-char field +0xFC; set to a0_val + passed to func_8003E6A0 */
@@ -1807,7 +1804,7 @@ g_sprite_anim_table                                     = 0x80094D40;  /* per-an
 /* === Attack scale factors + lookup tables (2026-05-17) -- 7 highs === */
 /* From text1a.c around lines 317, 347, 353-354: fixed-point scale */
 /* factors and dispatch tables for attack/animation. */
-g_char_field12_lookup_table                             = 0x80094C68;  /* u16 table; values stored into per-char struct +0x12 (g_char_struct_p?_field12) */
+D_80094C68                             = 0x80094C68;  /* u16 table; values stored into per-char struct +0x12 (g_char_struct_p?_field12) */  /* data-wave 2026-10-08: was g_char_field12_lookup_table */
 g_attack_scale_x                                        = 0x80094B96;  /* s16 fixed-point (12.4) scale factor for X */
 g_attack_scale_y                                        = 0x80094B98;  /* s16 fixed-point scale factor for Y */
 g_attack_scale_z                                        = 0x80094B9A;  /* s16 fixed-point scale factor for Z */
@@ -1821,9 +1818,9 @@ g_text1b_cached_byte                                    = 0x800A35E0;  /* u8 cac
 g_text1b_last_frame_id                                  = 0x800A324C;  /* cached previous frame ID; when changed, resets var_s1 */
 
 /* === GPU LoadImage packet buffer + status-up cache (2026-05-17) -- 3 highs === */
-g_gpu_loadimage_packet_buf                              = 0x800A4340;  /* 19-entry x 0x30 = 912-byte packet buffer for func_8003D9A0 initLoadImage loop */
+D_800A4340                              = 0x800A4340;  /* 19-entry x 0x30 = 912-byte packet buffer for func_8003D9A0 initLoadImage loop */  /* data-wave 2026-10-08: was g_gpu_loadimage_packet_buf */
 g_status_up_cached_idx                                  = 0x800905F8;  /* 0xFFFF sentinel or current idx cache for status-up records (paired with D_800906A4[i][1]) */
-g_gpu_shadow_prim_base                                  = 0x800A3D30;  /* base pointer to shadow primitive data (used by func_8003D330) */
+D_800A3D30                                  = 0x800A3D30;  /* base pointer to shadow primitive data (used by func_8003D330) */  /* data-wave 2026-10-08: was g_gpu_shadow_prim_base */
 
 /* === CD-ROM stream reader state (2026-05-17) -- 4 highs === */
 /* From code6cac_b2.c around line 388-408: CD-ROM streaming callback */
@@ -1841,7 +1838,7 @@ g_mottest_substate                                      = 0x800A376B;  /* reset 
 g_mottest_slot_value_table                              = 0x8008E748;  /* s8 table indexed by g_mottest_secondary_idx */
 
 /* === Motion func dispatch + lookup tables (2026-05-17) -- 3 highs === */
-g_motion_func_dispatch_offset                           = 0x8009BA60;  /* per-idx offset combined with g_motion_state_flag_table to select function pointer in chractar_use_pset_combo_id_table */
+D_8009BA60                           = 0x8009BA60;  /* per-idx offset combined with g_motion_state_flag_table to select function pointer in chractar_use_pset_combo_id_table */  /* data-wave 2026-10-08: was g_motion_func_dispatch_offset */
 g_vab_id_list                                 = 0x8009AD18;  /* u8[3] {7,3,6}: VAB ids for SsVabClose / snd_VabFakeOpen (func_8005BA8C, func_8005BD30, snd_CloseListedVabs) */  /* data-wave 2026-10-03: was g_byte_lookup_table_256 */
 g_player_byte_flags_table                               = 0x8009BC7C;  /* per-player byte flags indexed by D_800A3560.rec[i].unk1; bit & 2 test */
 
@@ -1856,15 +1853,15 @@ D_800A3808                                 = 0x800A3808;  /* data-wave 2026-09-2
 /* operations.  D_800F33D8 (draw-state struct) is reused as the 0x200-byte */
 /* memcard save data buffer in this context. */
 g_memcard_filename_buf                                  = 0x800A31F0;  /* filename buffer passed to func_80037B00 (file-open) and func_80037C34 (file-read with len 0x200) */
-g_memcard_op_active_flag                                = 0x800A320C;  /* = 1 set during memcard op, = 0 reset */
+D_800A320C                                = 0x800A320C;  /* = 1 set during memcard op, = 0 reset */  /* data-wave 2026-10-08: was g_memcard_op_active_flag */
 g_comb_write_wait_flag                                   = 0x800A382C;  /* set to 1 by comb_Write8 before write(), cleared by its wait callback func_8003A42C; comb_Write8 returns it */
 
 /* === Pad-rec bit counters + companion cluster (2026-05-17) -- 3 highs === */
 /* Companions to existing g_pad_rec_validated_packed / g_pad_rec_skip_flag */
 /* etc.  These accumulate bit counts from pad-input via func_8003A6FC. */
-g_pad_rec_bit_count_a                                   = 0x800A3908;  /* accumulated count of set bits in current pad input (incremented in func_8003A728) */
-g_pad_rec_bit_count_b                                   = 0x800A38FC;  /* accumulated count of set bits in g_pad_rec_validated_packed's lo word */
-g_pad_rec_misc_counter                                  = 0x800A38D0;  /* paired counter reset alongside _a/_b in func_8003B130 / func_80037804 */
+D_800A3908                                   = 0x800A3908;  /* accumulated count of set bits in current pad input (incremented in func_8003A728) */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_a */
+D_800A38FC                                   = 0x800A38FC;  /* accumulated count of set bits in g_pad_rec_validated_packed's lo word */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_b */
+D_800A38D0                                  = 0x800A38D0;  /* paired counter reset alongside _a/_b in func_8003B130 / func_80037804 */  /* data-wave 2026-10-08: was g_pad_rec_misc_counter */
 
 /* === Scene init flags + arg saves (2026-05-17) -- 4 highs === */
 g_scene_already_init_flag                               = 0x800A31D8;  /* 0 = first init, != 0 = re-init (triggers obj_InitAll cleanup); always set to 1 after */
@@ -1876,7 +1873,7 @@ g_scene_alt_arg_saved                                   = 0x800A3840;  /* paired
 /* From code6cac_c0.c func_80037D14: 5-state machine driving memcard */
 /* bios_A0_0xAB / 0xAC operations with event polling and completion. */
 g_memcard_op_state                                      = 0x800A31EC;  /* state 0-4 (0 = start AB, 1 = poll AB, 2 = start AC, 3 = poll AC, 4 = done/err) */
-g_memcard_op_input_flag                                 = 0x800A31E8;  /* input flag routing state 1 result (0 -> state 2, != 0 -> state 4) */
+D_800A31E8                                 = 0x800A31E8;  /* input flag routing state 1 result (0 -> state 2, != 0 -> state 4) */  /* data-wave 2026-10-08: was g_memcard_op_input_flag */
 g_memcard_op_result_code                                = 0x800A37F4;  /* result code (-1/-3 = errors, 1-4 = poll result codes) */
 g_memcard_op_completion_code                            = 0x800A3890;  /* copy of g_memcard_op_result_code at end (caller reads this) */
 
@@ -1897,10 +1894,10 @@ CombWaitCallback                                     = 0x800F1AE8;  /* SPU trans
 sen                                    = 0x800F1AEC;  /* != 0 = busy (caller returns -1); set to 1 when starting */  /* data-wave 2026-09-25: was g_spu_xfer_busy_flag */
 
 /* === Motion frame offset table + GTE vector template (2026-05-17) -- 6 highs === */
-g_motion_table_arg1_saved                               = 0x800A9CF8;  /* a1 saved by motion table fn */
-g_motion_table_arg0_saved                               = 0x800A9D00;  /* a0 saved; used as base of 12-byte stride array */
-g_motion_table_flag                                     = 0x800F6650;  /* motion table init flag (1 = init done, 0 = needs init) */
-g_snd_stream_slot_field_8                               = 0x800EED18;  /* offset +8 of each g_snd_stream_slot_table entry (sum accumulator / data ptr) */
+D_800A9CF8                               = 0x800A9CF8;  /* a1 saved by motion table fn */  /* data-wave 2026-10-08: was g_motion_table_arg1_saved */
+D_800A9D00                               = 0x800A9D00;  /* a0 saved; used as base of 12-byte stride array */  /* data-wave 2026-10-08: was g_motion_table_arg0_saved */
+D_800F6650                                     = 0x800F6650;  /* motion table init flag (1 = init done, 0 = needs init) */  /* data-wave 2026-10-08: was g_motion_table_flag */
+D_800EED18                               = 0x800EED18;  /* offset +8 of each g_snd_stream_slot_table entry (sum accumulator / data ptr) */  /* data-wave 2026-10-08: was g_snd_stream_slot_field_8 */
 D_800FF610                                   = 0x800FF610;  /* MATRIX: output of MulMatrix0 (0x8007E4DC); old 'vector template' claim refuted, sweep 2026-10-03 */  /* data-wave 2026-10-03: was g_gte_vector_template */
 
 /* === Effect vertex buffer (2026-05-17) -- 1 high === */
@@ -1911,8 +1908,8 @@ g_eff_vertex_buffer                                     = 0x800F1198;  /* 3-s32-
 /* (0x1F8000xx) pointers as ordinary main-RAM globals for fast access. */
 /* Naming convention: g_scratchpad_ptr_<hex offset> (per existing */
 /* g_scratchpad_ptr_18/20/30/etc. in recent_naming_findings.md). */
-g_scratchpad_ptr_50                                     = 0x800A3488;  /* -> 0x1F800050 */
-g_scratchpad_ptr_b0                                     = 0x800A348C;  /* -> 0x1F8000B0 */
+D_800A3488                                     = 0x800A3488;  /* -> 0x1F800050 */  /* data-wave 2026-10-08: was g_scratchpad_ptr_50 */
+D_800A348C                                     = 0x800A348C;  /* -> 0x1F8000B0 */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b0 */
 g_scratchpad_ptr_58                                     = 0x800A3490;  /* -> 0x1F800058 */
 g_scratchpad_ptr_5c                                     = 0x800A3494;  /* -> 0x1F80005C */
 g_scratchpad_ptr_60                                     = 0x800A3498;  /* -> 0x1F800060 */
@@ -1934,11 +1931,9 @@ g_scratchpad_ptr_98                                     = 0x800A34D4;  /* -> 0x1
 g_scratchpad_ptr_9a                                     = 0x800A34D8;  /* -> 0x1F80009A */
 g_scratchpad_ptr_9c                                     = 0x800A34DC;  /* -> 0x1F80009C */
 g_scratchpad_ptr_9e                                     = 0x800A34E0;  /* -> 0x1F80009E */
-g_scratchpad_ptr_a0                                     = 0x800A34E4;  /* -> 0x1F8000A0 */
+D_800A34E4                                     = 0x800A34E4;  /* -> 0x1F8000A0 */  /* data-wave 2026-10-08: was g_scratchpad_ptr_a0 */
 
 /* === Char struct +0x4A field + pointer tables (2026-05-17) -- 4 highs === */
-g_char_struct_p1_field_4A                               = 0x80101F12;  /* per-char field +0x4A (s16); used as index into g_char_v0_pointer_table */
-g_char_v0_pointer_table                                 = 0x800A3860;  /* 4-byte-per-entry pointer table indexed by char's +0x4A field */
 D_80102760                               = 0x80102760;  /* Unk801027B0Pack: the common motion pack's section pointers */  /* data-wave 2026-10-08: was g_practice_halfword_table */
 g_input_idle_flag                                       = 0x800A3804;  /* bool (v < 1); paired with D_800A3817 != check for state change detect */
 
@@ -1982,7 +1977,7 @@ g_char_id_saved_d                                       = 0x800A36C8;  /* compan
 
 /* === Misc state cells in code6cac_c_mid.c (2026-05-17) -- 5 highs === */
 g_result_timer_complete_flag                            = 0x800A333C;  /* = 0 reset, != 0 = result timer complete; tested before timer countdown */
-g_memcard_op_alt_handle                                 = 0x800A31F8;  /* alt memcard op handle (from func_80037D14 result) */
+D_800A31F8                                 = 0x800A31F8;  /* alt memcard op handle (from func_80037D14 result) */  /* data-wave 2026-10-08: was g_memcard_op_alt_handle */
 g_input_pause_pending_clear                             = 0x800A3204;  /* != 0 = clear pause-menu state on next frame */
 g_input_retry_counter_a                                 = 0x800A331C;  /* paired retry counter; ++ per failed input */
 g_input_retry_counter_b                                 = 0x800A3320;  /* paired counter (sibling) */
@@ -2024,10 +2019,10 @@ D_800EF07C                                 = 0x800EF07C;  /* +C */  /* data-wave
 
 /* === Sound stream stage + camera sector data (2026-05-17) -- 5 highs === */
 g_scratchpad_cached_data_ptr                            = 0x80095328;  /* pointer stashed into scratchpad 0x1F80001C for fast access */
-g_snd_stream_stage                                      = 0x800A9CFC;  /* stage value used during audio streaming (= v0 saved, returned as 'stage') */
-g_snd_stream_header_field_8                             = 0x800A9D08;  /* offset -0x8 from g_snd_stream_buffer; struct field accessed at base+0 and base-0x10 */
+D_800A9CFC                                      = 0x800A9CFC;  /* stage value used during audio streaming (= v0 saved, returned as 'stage') */  /* data-wave 2026-10-08: was g_snd_stream_stage */
+D_800A9D08                             = 0x800A9D08;  /* offset -0x8 from g_snd_stream_buffer; struct field accessed at base+0 and base-0x10 */  /* data-wave 2026-10-08: was g_snd_stream_header_field_8 */
 g_camera_sector_data_table                              = 0x800963EC;  /* camera per-entry data table; each entry has .start_sector field used by special_camera_check_pos_outside_ground */
-g_snd_stream_slot_field_4                               = 0x800EED14;  /* offset +4 of g_snd_stream_slot_table entries (per-slot data) */
+D_800EED14                               = 0x800EED14;  /* offset +4 of g_snd_stream_slot_table entries (per-slot data) */  /* data-wave 2026-10-08: was g_snd_stream_slot_field_4 */
 
 /* === SPU DMA control registers + transfer state (2026-05-17) -- 5 highs === */
 /* From main.c spu_TransferData family around line 1545-1557.  These */
@@ -2158,16 +2153,16 @@ g_text1b_post_render_countdown_plus_4                   = 0x800A32C0;  /* +4 fro
 g_text1b_state_record_table_8x4_a_plus_8                = 0x800A32D0;  /* +8 from g_text1b_state_record_table_8x4_a (0x800A32C8) */
 g_input_retry_counter_b_plus_4                          = 0x800A3324;  /* +4 from g_input_retry_counter_b (0x800A3320) */
 g_input_retry_counter_b_plus_8                          = 0x800A3328;  /* +8 from g_input_retry_counter_b (0x800A3320) */
-g_pad_press_countdown_plus_4                            = 0x800A3334;  /* +4 from g_pad_press_countdown (0x800A3330) */
+D_800A3334                            = 0x800A3334;  /* +4 from g_pad_press_countdown (0x800A3330) */  /* data-wave 2026-10-08: was g_pad_press_countdown_plus_4 */
 g_result_timer_complete_flag_plus_4                     = 0x800A3340;  /* +4 from g_result_timer_complete_flag (0x800A333C) */
 g_result_timer_complete_flag_plus_8                     = 0x800A3344;  /* +8 from g_result_timer_complete_flag (0x800A333C) */
 g_particle_slot_bitmap_plus_4                           = 0x800A3448;  /* +4 from g_particle_slot_bitmap (0x800A3444) */
-g_scratchpad_ptr_b8_plus_4                              = 0x800A34F0;  /* +4 from g_scratchpad_ptr_b8 (0x800A34EC) */
-g_scratchpad_ptr_b8_plus_6                              = 0x800A34F2;  /* +6 from g_scratchpad_ptr_b8 (0x800A34EC) */
+D_800A34F0                              = 0x800A34F0;  /* +4 from g_scratchpad_ptr_b8 (0x800A34EC) */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b8_plus_4 */
+D_800A34F2                              = 0x800A34F2;  /* +6 from g_scratchpad_ptr_b8 (0x800A34EC) */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b8_plus_6 */
 g_menuctl_arg0_saved_plus_4                             = 0x800A3520;  /* +4 from g_menuctl_arg0_saved (0x800A351C) */
-g_menuctl_call_counter_plus_4                           = 0x800A352C;  /* +4 from g_menuctl_call_counter (0x800A3528) */
-g_menuctl_call_counter_plus_8                           = 0x800A3530;  /* +8 from g_menuctl_call_counter (0x800A3528) */
-g_motion_shift_state_a_plus_8                           = 0x800A3558;  /* +8 from g_motion_shift_state_a (0x800A3550) */
+D_800A352C                           = 0x800A352C;  /* +4 from g_menuctl_call_counter (0x800A3528) */  /* data-wave 2026-10-08: was g_menuctl_call_counter_plus_4 */
+D_800A3530                           = 0x800A3530;  /* +8 from g_menuctl_call_counter (0x800A3528) */  /* data-wave 2026-10-08: was g_menuctl_call_counter_plus_8 */
+D_800A3558                           = 0x800A3558;  /* +8 from g_motion_shift_state_a (0x800A3550) */  /* data-wave 2026-10-08: was g_motion_shift_state_a_plus_8 */
 g_fade_next_dispatch_idx_plus_4                         = 0x800A3588;  /* +4 from g_fade_next_dispatch_idx (0x800A3584) */
 D_800A358C                   = 0x800A358C;  /* per-slot row cursor into D_8009BC40 (D_800A358C[i]) */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_d_plus_2 */
 D_800A3590                   = 0x800A3590;  /* per-slot index stepped within min..max; indexes D_8009BC94[i] */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_d_plus_6 */
@@ -2178,11 +2173,11 @@ D_800A35C0                   = 0x800A35C0;  /* = &g_gpu_db[D_800A36AC & 1]; draw
 g_mode_state_arg_alt_plus_4                             = 0x800A35DC;  /* +4 from g_mode_state_arg_alt (0x800A35D8) */
 g_leaf_muki_buffer_plus_8                               = 0x800A3680;  /* +8 from g_leaf_muki_buffer (0x800A3678) */
 g_comb_recv_buf_plus_0x4                          = 0x800A368C;  /* +4 from g_comb_recv_buf (0x800A3688) */  /* data-wave 2026-09-29: was g_comb_recv_buf_plus_4 */
-g_pad_rec_validated_packed_plus_2                       = 0x800A36C2;  /* +2 from g_pad_rec_validated_packed (0x800A36C0) */
-g_pad_rec_validated_hash_plus_2                         = 0x800A36C6;  /* +2 from g_pad_rec_validated_hash (0x800A36C4) */
-g_char_id_saved_d_plus_4                                = 0x800A36CC;  /* +4 from g_char_id_saved_d (0x800A36C8) */
-g_pad_rec_prev_packed_plus_2                            = 0x800A36D2;  /* +2 from g_pad_rec_prev_packed (0x800A36D0) */
-g_char_class_state_array_plus_2                         = 0x800A36F4;  /* +2 from g_char_class_state_array (0x800A36F2) */
+D_800A36C2                       = 0x800A36C2;  /* +2 from g_pad_rec_validated_packed (0x800A36C0) */  /* data-wave 2026-10-08: was g_pad_rec_validated_packed_plus_2 */
+D_800A36C6                         = 0x800A36C6;  /* +2 from g_pad_rec_validated_hash (0x800A36C4) */  /* data-wave 2026-10-08: was g_pad_rec_validated_hash_plus_2 */
+D_800A36CC                                = 0x800A36CC;  /* +4 from g_char_id_saved_d (0x800A36C8) */  /* data-wave 2026-10-08: was g_char_id_saved_d_plus_4 */
+D_800A36D2                            = 0x800A36D2;  /* +2 from g_pad_rec_prev_packed (0x800A36D0) */  /* data-wave 2026-10-08: was g_pad_rec_prev_packed_plus_2 */
+D_800A36F4                         = 0x800A36F4;  /* +2 from g_char_class_state_array (0x800A36F2) */  /* data-wave 2026-10-08: was g_char_class_state_array_plus_2 */
 g_gnd_fog_prev_plus_4                                   = 0x800A3724;  /* +4 from g_gnd_fog_prev (0x800A3720) */
 g_gnd_fog_prev_plus_8                                   = 0x800A3728;  /* +8 from g_gnd_fog_prev (0x800A3720) */
 g_leaf_random_buffer_plus_8                             = 0x800A3758;  /* +8 from g_leaf_random_buffer (0x800A3750) */
@@ -2194,15 +2189,15 @@ g_mental_bar_packet_count_plus_4                        = 0x800A37A4;  /* +4 fro
 g_mental_bar_packet_buf_plus_8                          = 0x800A37B0;  /* +8 from g_mental_bar_packet_buf (0x800A37A8) */
 g_global_frame_counter_plus_4                           = 0x800A37C4;  /* +4 from g_global_frame_counter (0x800A37C0) */
 g_global_frame_counter_plus_6                           = 0x800A37C6;  /* +6 from g_global_frame_counter (0x800A37C0) */
-g_pad_analog_substate_plus_8                            = 0x800A37D0;  /* +8 from g_pad_analog_substate (0x800A37C8) */
+D_800A37D0                            = 0x800A37D0;  /* +8 from g_pad_analog_substate (0x800A37C8) */  /* data-wave 2026-10-08: was g_pad_analog_substate_plus_8 */
 D_800A37E0                      = 0x800A37E0;  /* +4 from g_memcard_event_io_complete (0x800A37DC) */  /* data-wave 2026-09-29: was g_memcard_event_io_complete_plus_4 */
 D_800A37E1                      = 0x800A37E1;  /* +5 from g_memcard_event_io_complete (0x800A37DC) */  /* data-wave 2026-09-29: was g_memcard_event_io_complete_plus_5 */
-g_pad_analog_frame_counter_plus_2                       = 0x800A3816;  /* +2 from g_pad_analog_frame_counter (0x800A3814) */
+D_800A3816                       = 0x800A3816;  /* +2 from g_pad_analog_frame_counter (0x800A3814) */  /* data-wave 2026-10-08: was g_pad_analog_frame_counter_plus_2 */
 D_800A381E                      = 0x800A381E;  /* frame counter of func_8001CE60's D_800A38DC == 5 branch; cleared by func_800342A0 */  /* data-wave 2026-10-08: was g_stage_helper_result_cache_plus_6 */
 D_800A3828                            = 0x800A3828;  /* = &D_800F62E0[arg2] (func_800430E4); read by func_80054440 */  /* data-wave 2026-10-08: was g_practice_state_word_plus_4 */
-g_menuctl_current_char_idx_plus_1                       = 0x800A382E;  /* +1 from g_menuctl_current_char_idx (0x800A382D) */
-g_menuctl_current_char_idx_plus_3                       = 0x800A3830;  /* +3 from g_menuctl_current_char_idx (0x800A382D) */
-g_motion_data_base_ptr_plus_4                           = 0x800A3864;  /* +4 from g_motion_data_base_ptr (0x800A3860) */
+D_800A382E                       = 0x800A382E;  /* +1 from g_menuctl_current_char_idx (0x800A382D) */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx_plus_1 */
+D_800A3830                       = 0x800A3830;  /* +3 from g_menuctl_current_char_idx (0x800A382D) */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx_plus_3 */
+D_800A3864                           = 0x800A3864;  /* +4 from g_motion_data_base_ptr (0x800A3860) */  /* data-wave 2026-10-08: was g_motion_data_base_ptr_plus_4 */
 D_800A3876                              = 0x800A3876;  /* fighter index 0 / 1 / -1, set with D_800A38A8 = 1; read by func_80026DA4 */  /* data-wave 2026-10-08: was g_match_round_index_plus_2 */
 g_round_total_score_plus_4                              = 0x800A3880;  /* +4 from g_round_total_score (0x800A387C) */
 D_800A389C                             = 0x800A389C;  /* halfword frame counter of func_80026DA4 (reset at >= 0x2B) */  /* data-wave 2026-10-08: was g_match_round_byte_b_plus_1 */
@@ -2210,7 +2205,7 @@ g_voice_dialog_state_plus_2                             = 0x800A38AE;  /* +2 fro
 D_800A38B8                        = 0x800A38B8;  /* u8 counter: set to 1, incremented, cleared at 0x3C (9F9C.c func_8001CE60) */  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor_plus_4 */
 D_800A38C0                                 = 0x800A38C0;  /* +4 from g_file_heap_base (0x800A38BC) */  /* data-wave 2026-09-25: was g_file_heap_base_plus_4 */
 D_800A38C1                                 = 0x800A38C1;  /* +5 from g_file_heap_base (0x800A38BC) */  /* data-wave 2026-09-25: was g_file_heap_base_plus_5 */
-g_pad_rec_misc_counter_plus_4                           = 0x800A38D4;  /* +4 from g_pad_rec_misc_counter (0x800A38D0) */
+D_800A38D4                           = 0x800A38D4;  /* +4 from g_pad_rec_misc_counter (0x800A38D0) */  /* data-wave 2026-10-08: was g_pad_rec_misc_counter_plus_4 */
 g_gpu_ot256_ptr                        = 0x800A38D8;  /* +2 from D_800A38D6 */  /* data-wave 2026-09-24: was g_replay_pos_change_count_plus_2 */
 D_800A38DF                         = 0x800A38DF;  /* func_80022408(&D_80101EC8[D_800A3748].unk_F4); read by func_80022580 */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_1 */
 D_800A38E0                         = 0x800A38E0;  /* 0..3, set by func_8001C8DC at D_800A38E2 = 0x1F / 0x33 / 0x51; func_80021D10's third argument */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_2 */
@@ -2219,22 +2214,22 @@ D_800A38E4                       = 0x800A38E4;  /* bits_DepositMask3F83F8(D_800A
 D_800A38E8                       = 0x800A38E8;  /* 0xFF or data[3] & 0x7F (func_8001FBE8); lower bound on unk_40 in func_8002C0DC */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_6 */
 D_800A38F0                         = 0x800A38F0;  /* store-only: func_8002006C stores the change of D_800A387C */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_2 */
 D_800A38F4                         = 0x800A38F4;  /* frame clock of func_8001CE60's mode-5 branch (vs D_800A36CC * 30) */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_6 */
-g_pad_rec_bit_count_b_plus_8                            = 0x800A3904;  /* +8 from g_pad_rec_bit_count_b (0x800A38FC) */
+D_800A3904                            = 0x800A3904;  /* +8 from g_pad_rec_bit_count_b (0x800A38FC) */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_b_plus_8 */
 g_intro_render_busy_plus_1                              = 0x800A3907;  /* +1 from g_intro_render_busy (0x800A3906) */
-g_pad_rec_bit_count_a_plus_4                            = 0x800A390C;  /* +4 from g_pad_rec_bit_count_a (0x800A3908) */
+D_800A390C                            = 0x800A390C;  /* +4 from g_pad_rec_bit_count_a (0x800A3908) */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_a_plus_4 */
 g_mottest_test_count_plus_1                             = 0x800A3920;  /* +1 from g_mottest_test_count (0x800A391F) */
 g_cpu_pattern_tick_plus_7                               = 0x800A3930;  /* +7 from g_cpu_pattern_tick (0x800A3929) */
-g_motion_table_arg1_saved_plus_2                        = 0x800A9CFA;  /* +2 from g_motion_table_arg1_saved (0x800A9CF8) */
+D_800A9CFA                        = 0x800A9CFA;  /* +2 from g_motion_table_arg1_saved (0x800A9CF8) */  /* data-wave 2026-10-08: was g_motion_table_arg1_saved_plus_2 */
 D_800EF080                          = 0x800EF080;  /* +4 from g_snd_voice_init_byte_C (0x800EF07C) */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_C_plus_4 */
 D_800EF082                          = 0x800EF082;  /* +6 from g_snd_voice_init_byte_C (0x800EF07C) */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_C_plus_6 */
 D_800EF084                          = 0x800EF084;  /* +8 from g_snd_voice_init_byte_C (0x800EF07C) */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_C_plus_8 */
 g_effect_pool_b_24_field_4_plus_1                       = 0x800EFB7D;  /* +1 from g_effect_pool_b_24_field_4 (0x800EFB7C) */
-g_motion_ex_counter_id15_plus_6                         = 0x800F0BCC;  /* the halfword just past D_800F0BA8[18] */
-g_motion_state_flag_table_plus_4                        = 0x800F10D4;  /* +4 from g_motion_state_flag_table (0x800F10D0) */
-g_motion_state_flag_table_plus_8                        = 0x800F10D8;  /* +8 from g_motion_state_flag_table (0x800F10D0) */
-g_motion_ex_flag_id3_plus_4                             = 0x800F10F0;  /* +4 from g_motion_ex_flag_id3 (0x800F10EC) */
-g_motion_ex_flag_id3_plus_8                             = 0x800F10F4;  /* +8 from g_motion_ex_flag_id3 (0x800F10EC) */
-g_motion_state_secondary_flags_plus_1                   = 0x800F1151;  /* +1 from g_motion_state_secondary_flags (0x800F1150) */
+D_800F0BCC                         = 0x800F0BCC;  /* the halfword just past D_800F0BA8[18] */  /* data-wave 2026-10-08: was g_motion_ex_counter_id15_plus_6 */
+D_800F10D4                        = 0x800F10D4;  /* +4 from g_motion_state_flag_table (0x800F10D0) */  /* data-wave 2026-10-08: was g_motion_state_flag_table_plus_4 */
+D_800F10D8                        = 0x800F10D8;  /* +8 from g_motion_state_flag_table (0x800F10D0) */  /* data-wave 2026-10-08: was g_motion_state_flag_table_plus_8 */
+D_800F10F0                             = 0x800F10F0;  /* +4 from g_motion_ex_flag_id3 (0x800F10EC) */  /* data-wave 2026-10-08: was g_motion_ex_flag_id3_plus_4 */
+D_800F10F4                             = 0x800F10F4;  /* +8 from g_motion_ex_flag_id3 (0x800F10EC) */  /* data-wave 2026-10-08: was g_motion_ex_flag_id3_plus_8 */
+D_800F1151                   = 0x800F1151;  /* +1 from g_motion_state_secondary_flags (0x800F1150) */  /* data-wave 2026-10-08: was g_motion_state_secondary_flags_plus_1 */
 g_text1b_glyph_buf_b_plus_4                             = 0x800F1158;  /* +4 from g_text1b_glyph_buf_b (0x800F1154) */
 g_text1b_glyph_buf_e_plus_2                             = 0x800F116A;  /* +2 from g_text1b_glyph_buf_e (0x800F1168) */
 g_eff_vertex_buffer_plus_4                              = 0x800F119C;  /* +4 from g_eff_vertex_buffer (0x800F1198) */
@@ -2248,7 +2243,7 @@ g_gnd_init_complete_flag_plus_1                         = 0x800F6627;  /* +1 fro
 D_800F665A                                   = 0x800F665A;  /* +2 from g_game_p2_ctrl (0x800F6658) */  /* data-wave 2026-09-25: was g_game_p2_ctrl_plus_2 */
 D_80101BD0                                   = 0x80101BD0;  /* +4 from g_memcard_slot (0x80101BCC) */  /* data-wave 2026-09-29: was g_memcard_slot_plus_4 */
 g_char_struct_p1_field_BC_plus_4                        = 0x80101F88;  /* +4 from g_char_struct_p1_field_BC (0x80101F84) */
-g_char_world_pos_z_plus_8                               = 0x80101FB0;  /* +8 from g_char_world_pos_z (0x80101FA8) */
+D_80101FB0                               = 0x80101FB0;  /* +8 from g_char_world_pos_z (0x80101FA8) */  /* data-wave 2026-10-08: was g_char_world_pos_z_plus_8 */
 g_char_struct_p1_field_FC_plus_8                        = 0x80101FCC;  /* +8 from g_char_struct_p1_field_FC (0x80101FC4) */
 g_pad_state                         = 0x80102788;  /* PadState (include/code6cac.h), built by func_80019568 from the InitPAD buffers g_pad_buf */  /* data-wave 2026-10-03: was D_80102788 (2026-09-29: g_practice_lesson_flag_b_plus_1) */
 g_pad_state_plus_0x2                         = 0x8010278A;  /* g_pad_state.type[1] */  /* data-wave 2026-10-03: was D_8010278A (2026-09-29: g_practice_lesson_flag_b_plus_3) */
@@ -2281,27 +2276,27 @@ D_800EFB1C                                     = 0x800EFB1C;  /* 5 refs */  /* d
 D_800EFB20                                     = 0x800EFB20;  /* 5 refs */  /* data-wave 2026-09-25: was g_snd_data_subblock_2_ptr */
 D_800EFB24                                     = 0x800EFB24;  /* 5 refs */  /* data-wave 2026-09-25: was g_snd_data_subblock_3_ptr */
 D_800EFB28                                     = 0x800EFB28;  /* 5 refs */  /* data-wave 2026-09-25: was g_snd_data_subblock_4_ptr */
-g_motion_ex_extra_at_0                                  = 0x800F0FB8;  /* 5 refs */
-g_motion_ex_extra_at_4                                  = 0x800F0FBC;  /* 5 refs */
-g_motion_ex_extra_at_8                                  = 0x800F0FC0;  /* 5 refs */
-g_motion_state_aux_at_0                                 = 0x800F10A0;  /* 5 refs */
-g_motion_state_aux_at_2                                 = 0x800F10A2;  /* 5 refs */
-g_motion_state_aux_at_4                                 = 0x800F10A4;  /* 5 refs */
-g_motion_state_flag_at_3                                = 0x800F10DC;  /* 5 refs */
-g_motion_state_flag_at_11                               = 0x800F10FC;  /* 5 refs */
-g_motion_state_flag_at_12                               = 0x800F1100;  /* 5 refs */
-g_motion_state_flag_at_13                               = 0x800F1104;  /* 5 refs */
-g_motion_state_flag_at_14                               = 0x800F1108;  /* 5 refs */
-g_motion_state_flag_at_15                               = 0x800F110C;  /* 5 refs */
-g_motion_state_flag_at_18                               = 0x800F1118;  /* 5 refs */
-g_motion_state_flag_at_19                               = 0x800F111C;  /* 5 refs */
-g_motion_state_flag_at_20                               = 0x800F1120;  /* 5 refs */
-g_motion_state_flag_at_21                               = 0x800F1124;  /* 5 refs */
-g_motion_state_flag_at_22                               = 0x800F1128;  /* 5 refs */
-g_motion_state_flag_at_23                               = 0x800F112C;  /* 5 refs */
-g_motion_state_flag_at_24                               = 0x800F1130;  /* 5 refs */
-g_motion_state_flag_at_25                               = 0x800F1134;  /* 5 refs */
-g_motion_state_flag_at_26                               = 0x800F1138;  /* 5 refs */
+D_800F0FB8                                  = 0x800F0FB8;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_ex_extra_at_0 */
+D_800F0FBC                                  = 0x800F0FBC;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_ex_extra_at_4 */
+D_800F0FC0                                  = 0x800F0FC0;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_ex_extra_at_8 */
+D_800F10A0                                 = 0x800F10A0;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_aux_at_0 */
+D_800F10A2                                 = 0x800F10A2;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_aux_at_2 */
+D_800F10A4                                 = 0x800F10A4;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_aux_at_4 */
+D_800F10DC                                = 0x800F10DC;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_3 */
+D_800F10FC                               = 0x800F10FC;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_11 */
+D_800F1100                               = 0x800F1100;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_12 */
+D_800F1104                               = 0x800F1104;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_13 */
+D_800F1108                               = 0x800F1108;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_14 */
+D_800F110C                               = 0x800F110C;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_15 */
+D_800F1118                               = 0x800F1118;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_18 */
+D_800F111C                               = 0x800F111C;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_19 */
+D_800F1120                               = 0x800F1120;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_20 */
+D_800F1124                               = 0x800F1124;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_21 */
+D_800F1128                               = 0x800F1128;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_22 */
+D_800F112C                               = 0x800F112C;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_23 */
+D_800F1130                               = 0x800F1130;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_24 */
+D_800F1134                               = 0x800F1134;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_25 */
+D_800F1138                               = 0x800F1138;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_26 */
 g_text1b_gte_rgb_lookup_1024                                     = 0x800F2B70;  /* 10 refs */
 g_disp_state_buf                                     = 0x800F33D8;  /* 16 refs */
 D_800FF558                                     = 0x800FF558;  /* 8 refs */  /* data-wave 2026-09-30: was g_camera_view_state */
@@ -2404,15 +2399,15 @@ g_text1b_state_record_table_8x4_a_plus_8_plus_8              = 0x800A32D8;
 g_text1b_state_record_table_8x4_a_plus_8_plus_16             = 0x800A32E0;
 g_text1b_addr_800A3438                                       = 0x800A3438;
 g_text1b_quat_2bit_state                                       = 0x800A3440;
-g_menuctl_call_counter_plus_8_plus_4                         = 0x800A3534;
-g_menuctl_call_counter_plus_8_plus_16                        = 0x800A3540;
+D_800A3534                         = 0x800A3534;  /* data-wave 2026-10-08: was g_menuctl_call_counter_plus_8_plus_4 */
+D_800A3540                        = 0x800A3540;  /* data-wave 2026-10-08: was g_menuctl_call_counter_plus_8_plus_16 */
 g_text1b_addr_800A3544                                       = 0x800A3544;
 g_text1b_arg0_save_A3548                                       = 0x800A3548;
 D_800A3594                 = 0x800A3594;  /* data-wave 2026-10-08: was g_replay_motion_shared_state_d_plus_6_plus_4 */
 g_text1b_arg2_8_save                                   = 0x800A36E4;
 g_text1b_s16_base_ef9f2                                       = 0x800EF9F2;
 g_text1b_state_value_800EF9F4                                       = 0x800EF9F4;
-g_snd_data_header_FB0C                                       = 0x800EFB0C;
+D_800EFB0C                                       = 0x800EFB0C;  /* data-wave 2026-10-08: was g_snd_data_header_FB0C */
 D_800EFB14                                       = 0x800EFB14;  /* data-wave 2026-09-25: was g_snd_data_buf_base */
 D_800EFB18                                       = 0x800EFB18;  /* data-wave 2026-09-25: was g_snd_data_subblock_0_ptr */
 g_text1b_addr_800EFC8A                                       = 0x800EFC8A;
@@ -2420,27 +2415,27 @@ g_text1b_addr_800F0B78                                       = 0x800F0B78;
 g_text1b_addr_800F0B7C                                       = 0x800F0B7C;
 g_text1b_addr_800F0B98                                       = 0x800F0B98;
 g_text1b_addr_800F0BA4                                       = 0x800F0BA4;
-g_motion_ex_pool_b_flag                                       = 0x800F0BEC;
+D_800F0BEC                                       = 0x800F0BEC;  /* data-wave 2026-10-08: was g_motion_ex_pool_b_flag */
 g_text1b_flag_ptr_F0C04                                       = 0x800F0C04;
 g_text1b_addr_800F0C10                                       = 0x800F0C10;
 g_text1b_addr_800F0C14                                       = 0x800F0C14;
 g_text1b_addr_800F0C18                                       = 0x800F0C18;
-g_motion_ex_state_id17_data_ptr_plus_4                       = 0x800F0D78;
-g_motion_ex_state_id17_data_ptr_plus_8                       = 0x800F0D7C;
-g_motion_ex_pool_b_xyz_x                                       = 0x800F0E38;
-g_motion_ex_pool_b_xyz_y                                       = 0x800F0E3C;
-g_motion_ex_pool_b_xyz_z                                       = 0x800F0E40;
+D_800F0D78                       = 0x800F0D78;  /* data-wave 2026-10-08: was g_motion_ex_state_id17_data_ptr_plus_4 */
+D_800F0D7C                       = 0x800F0D7C;  /* data-wave 2026-10-08: was g_motion_ex_state_id17_data_ptr_plus_8 */
+D_800F0E38                                       = 0x800F0E38;  /* data-wave 2026-10-08: was g_motion_ex_pool_b_xyz_x */
+D_800F0E3C                                       = 0x800F0E3C;  /* data-wave 2026-10-08: was g_motion_ex_pool_b_xyz_y */
+D_800F0E40                                       = 0x800F0E40;  /* data-wave 2026-10-08: was g_motion_ex_pool_b_xyz_z */
 g_text1b_addr_800F0EC8                                       = 0x800F0EC8;
 g_text1b_addr_800F0ECC                                       = 0x800F0ECC;
 g_text1b_addr_800F0ED0                                       = 0x800F0ED0;
 g_text1b_addr_800F1000                                       = 0x800F1000;
 g_text1b_addr_800F1002                                       = 0x800F1002;
 g_text1b_addr_800F1004                                       = 0x800F1004;
-g_motion_ex_flag_id3_plus_8_plus_4                           = 0x800F10F8;
-g_motion_state_flag_at_15_plus_4                             = 0x800F1110;
-g_motion_state_flag_at_15_plus_8                             = 0x800F1114;
+D_800F10F8                           = 0x800F10F8;  /* data-wave 2026-10-08: was g_motion_ex_flag_id3_plus_8_plus_4 */
+D_800F1110                             = 0x800F1110;  /* data-wave 2026-10-08: was g_motion_state_flag_at_15_plus_4 */
+D_800F1114                             = 0x800F1114;  /* data-wave 2026-10-08: was g_motion_state_flag_at_15_plus_8 */
 patch0_plus_0xC                             = 0x800F1844;  /* data-wave 2026-09-25: was g_sys_int_rp_table_plus_8_plus_4 */
-g_char_p6_field_1E0                                          = 0x80103624;
+D_80103624                                          = 0x80103624;  /* data-wave 2026-10-08: was g_char_p6_field_1E0 */
 
 /* === Final cleanup batch: remaining 154 unnamed (2026-05-17) === */
 /* 154 addresses, pattern-based naming */
@@ -2476,7 +2471,7 @@ g_winanim_particle_offset_z                                  = 0x8008EB18;
 g_winanim_event_subtable_eb1c                                     = 0x8008EB1C;
 g_angle_raw_u16_lookup_EBA0                                   = 0x8008EBA0;
 g_c6cb_data_ptr_EC24                                   = 0x8008EC24;
-g_char_id_saved_d_init_tbl_EC30                                   = 0x8008EC30;
+D_8008EC30                                   = 0x8008EC30;  /* data-wave 2026-10-08: was g_char_id_saved_d_init_tbl_EC30 */
 g_offset_lookup_F12C                                  = 0x8008F12C;
 g_paired_byte_lookup_F19C_lo                               = 0x8008F19C;
 g_paired_byte_lookup_F19C_hi                               = 0x8008F19D;
@@ -2502,7 +2497,7 @@ _spu_rev_attr_plus_0xA                       = 0x800A2892;  /* data-wave 2026-09
 _spu_rev_attr_plus_0xC                       = 0x800A2894;  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset_plus_8_plus_8 */
 _spu_rev_attr_plus_0x10                      = 0x800A2898;  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset_plus_8_plus_12 */
 _spu_voice_centerNote_plus_0x2E                                         = 0x800A28D2;  /* data-wave 2026-09-29: was g_main_u16_base_A28D2 */
-g_char_pose_id_p2_plus_15                                    = 0x800A310C;
+D_800A310C                                    = 0x800A310C;  /* data-wave 2026-10-08: was g_char_pose_id_p2_plus_15 */
 D_800A3134                          = 0x800A3134;  /* data-wave 2026-09-29: was g_str_gn_bbm_800A3124_plus_8_plus_8 */
 g_c6cb_val87_save_A3140                                   = 0x800A3140;
 g_input_retry_counter_b_plus_8_plus_4                        = 0x800A332C;
@@ -2513,8 +2508,8 @@ g_display_addr_800A3658                                      = 0x800A3658;
 g_global_flag_A3670                                     = 0x800A3670;
 g_global_flag_A3671                                     = 0x800A3671;
 g_text1b_counter_800A36E8                            = 0x800A36E8;
-g_pad_analog_substate_plus_8_plus_2                          = 0x800A37D2;
-g_pad_analog_substate_plus_8_plus_3                          = 0x800A37D3;
+D_800A37D2                          = 0x800A37D2;  /* data-wave 2026-10-08: was g_pad_analog_substate_plus_8_plus_2 */
+D_800A37D3                          = 0x800A37D3;  /* data-wave 2026-10-08: was g_pad_analog_substate_plus_8_plus_3 */
 g_round_total_score_plus_4_plus_8                            = 0x800A3888;
 g_round_total_score_plus_4_plus_12                           = 0x800A388C;
 g_c2_value_A7FE0                                  = 0x800A7FE0;
@@ -2534,10 +2529,10 @@ _snd_ev_flag                                        = 0x800FF630;  /* data-wave 
 D_800FF6A8                                   = 0x800FF6A8;  /* data-wave 2026-09-29: was g_voice_state_ptr_plus_8 */
 _svm_vh                                         = 0x80101BC4;  /* data-wave 2026-09-07: was g_main_value_101BC4 */
 g_slot_array_16x256_80101BF0                               = 0x80101BF0;
-g_char_prev_keyframe_idx_plus_16                             = 0x80101F5E;
+D_80101F5E                             = 0x80101F5E;  /* data-wave 2026-10-08: was g_char_prev_keyframe_idx_plus_16 */
 g_char_p1_field_B3                                           = 0x80101F7B;
-g_char_world_pos_z_plus_8_plus_4                             = 0x80101FB4;
-g_char_world_pos_z_plus_8_plus_8                             = 0x80101FB8;
+D_80101FB4                             = 0x80101FB4;  /* data-wave 2026-10-08: was g_char_world_pos_z_plus_8_plus_4 */
+D_80101FB8                             = 0x80101FB8;  /* data-wave 2026-10-08: was g_char_world_pos_z_plus_8_plus_8 */
 g_char_struct_p1_field_FC_plus_8_plus_4                      = 0x80101FD0;
 g_char_struct_p1_field_FC_plus_8_plus_8                      = 0x80101FD4;
 g_char_struct_p1_field_FC_plus_8_plus_16                     = 0x80101FDC;
@@ -2564,7 +2559,7 @@ g_char_p3_field_74                                           = 0x801027D4;
 _svm_cur_plus_0x1                          = 0x801027F1;  /* data-wave 2026-09-07: was g_char_curr_keyframe_idx_p3_plus_13 */
 _svm_cur_plus_0x6                                           = 0x801027F6;  /* data-wave 2026-09-07: was g_char_p3_field_96 */
 _svm_cur_plus_0x16                                   = 0x80102806;  /* data-wave 2026-09-24: was g_weapon_frame_col_plus_10 */
-g_char_p6_field_23A                                          = 0x8010367E;
+D_8010367E                                          = 0x8010367E;  /* data-wave 2026-10-08: was g_char_p6_field_23A */
 _SsMarkCallback                                         = 0x80106FA8;  /* data-wave 2026-09-07: was g_char_p19_field_388 */
 _svm_vab_total                                         = 0x801077C8;  /* data-wave 2026-09-07: was g_char_p21_field_310 */
 _svm_envx_hist                                         = 0x80107898;  /* data-wave 2026-09-24: was g_char_p21_field_3E0 */
@@ -2594,7 +2589,6 @@ breakpoint_trap_loop_800164F8 = 0x800164F8;
 /* subsystem clusters (cpu_, mario_, pad_). Names derived from body */
 /* inspection + dominant-caller-prefix context. The src/ usages still */
 /* reference func_<addr>; these aliases enable semantic grep. */
-mario_test_satan_sword_trigger_8003FFE0 = 0x8003FFE0;
 
 /* === Cluster naming pass 2 aliases (2026-05-18) === */
 /* Semantic aliases for previously-unnamed func_* in 5 more subsystem */
@@ -2608,7 +2602,6 @@ mario_test_satan_sword_trigger_8003FFE0 = 0x8003FFE0;
 /* 2 UNCLEAR stubs deferred (calc_*_stub at 0x8002A458, 0x8002CA8C). */
 calc_AngleDelta_8001F860 = 0x8001F860;
 calc_NormVector_800274BC = 0x800274BC;
-disppracticemenutex_StoreCoords_80033550 = 0x80033550;
 
 /* === Medium-tier sole_caller_path helpers (2026-05-18) === */
 /* sole_caller_path proposals: function X is called ONLY by Y, so */
@@ -2644,10 +2637,10 @@ const_return_0x45000_80045808                      = 0x80045808;  /* 1-insn: ret
 g_scratchpad_ptr_c_1F80000C                                  = 0x1F80000C;  /* 14 refs; scratchpad RAM offset 0xC (0x1F800000 + 0xC); IRQ-save region */
 g_ot_used_max_plus_8_800A30F0                                = 0x800A30F0;  /* 19 refs; +8 from g_ot_used_max (0x800A30E8) */
 g_game_pad_index_800A3144                                    = 0x800A3144;  /* 11 refs; gp-relative; game state region; pad/player index */
-g_motion_init_flag_800A3207                                  = 0x800A3207;  /* 20 refs; u8 init-once flag (set to 1 on first motion_SetMotion) */
-g_motion_table_entry_800A35C8                                = 0x800A35C8;  /* 13 refs; in motion subsystem region (offset 0x1F8 into cluster) */
-g_char_id_saved_d_plus_2_800A36CA                            = 0x800A36CA;  /* 15 refs; +2 into g_char_id_saved_d (character ID save context) */
-g_pad_rec_prev_hash_plus_4_800A36D8                          = 0x800A36D8;  /* 19 refs; +4 from g_pad_rec_prev_hash (0x800A36D4) */
+D_800A3207                                  = 0x800A3207;  /* 20 refs; u8 init-once flag (set to 1 on first motion_SetMotion) */  /* data-wave 2026-10-08: was g_motion_init_flag_800A3207 */
+D_800A35C8                                = 0x800A35C8;  /* 13 refs; in motion subsystem region (offset 0x1F8 into cluster) */  /* data-wave 2026-10-08: was g_motion_table_entry_800A35C8 */
+D_800A36CA                            = 0x800A36CA;  /* 15 refs; +2 into g_char_id_saved_d (character ID save context) */  /* data-wave 2026-10-08: was g_char_id_saved_d_plus_2_800A36CA */
+D_800A36D8                          = 0x800A36D8;  /* 19 refs; +4 from g_pad_rec_prev_hash (0x800A36D4) */  /* data-wave 2026-10-08: was g_pad_rec_prev_hash_plus_4_800A36D8 */
 g_cd_result                          = 0x800A3760;  /* 71 refs; passed as arg1 to cpu_side_move_dir_4_wrapper_800801E8 (pass-5-renamed from Vu0SetLightColMatrix misnomer) */  /* data-wave 2026-09-24: was g_cpu_side_move_dir_4_arg1_800A3760 */
 g_frame_state_counter_800A377B                               = 0x800A377B;  /* 11 refs; s16 in frame-state cluster; frame-sync counter */
 D_800A37E8                                = 0x800A37E8;  /* 35 refs; s16 paired with g_round_timer; reload value */  /* data-wave 2026-09-25: was g_round_timer_reload_800A37E8 */
@@ -2659,7 +2652,7 @@ D_800F1858                      = 0x800F1858;  /* 12 refs; +8 from g_stdout_colu
 D_800F1B14               = 0x800F1B14;  /* 20 refs; 4-byte prefix to g_per_char_motion_buffer_table_1392 at 0x800F1B18 */  /* data-wave 2026-09-24: was g_per_char_motion_buffer_table_prefix_800F1B14 */
 D_800F2B68                      = 0x800F2B68;  /* 20 refs; 8 bytes before g_text1b_gte_rgb_lookup_1024 at 0x800F2B70 */  /* data-wave 2026-09-24: was g_text1b_gte_rgb_lookup_prefix_800F2B68 */
 g_char_struct_p1_field_286_8010214E                          = 0x8010214E;  /* 24 refs; per-character struct offset +0x286 at record 0 base */
-g_char_struct_p1_field_6D2_8010259A                          = 0x8010259A;  /* 24 refs; per-character struct offset +0x6D2 */
+D_8010259A                          = 0x8010259A;  /* 24 refs; per-character struct offset +0x6D2 */  /* data-wave 2026-10-08: was g_char_struct_p1_field_6D2_8010259A */
 
 /* === Data symbol naming pass 2 (6-9 ref unnamed) (2026-05-18) === */
 /* 30 cluster-evidenced D_* aliases. Selective filter: skipped 21 weak */
@@ -3184,12 +3177,12 @@ calc_dirvec_from_angles_8004A1FC = 0x8004A1FC;  /* for 3 entries: build vec3s @+
 /* RENAME 0x8003D9A0: retired name 'gpu_LoadImageBatch_8003D9A0' — preserved note: loop N entries (stride 0x30) calling initLoadImage with auto VRAM cursor (x+=[+4], y wraps at 0x200), saves rect to +0x18..+0x2C */
 /* RESET 0x8006D338: retired name 'saTan4GaugeDraw_8006D338' — preserved note: frame ctr++, get sprite buf, anim-obj setup (func_80069AE4), saTan4GaugeMain, draw_anim_obj (func_8006CFBC), composite draw func_8006CCC8 */
 /* RESET 0x80041430: retired name 'vc_RelocLoadedBlock_80041430' — preserved note: relocate loaded block internal ptrs by base (a1): add base to stored offsets; register sub-ctrls via save_vc_ctrl x3 (0x15,0x14,0x14); func_80040A78 */
-game_StageSetup_80054604 = 0x80054604;  /* stage/match init: bgm (snd_StopBgm/snd_LoadSelection), fill ctrl D_800EFAE8 (player pos s5-fp/stage data), FadeOut, game_SetPlayerCount, disp_CalcFov, tslDmaDrawListDelAll; mirrors game_StageCleanup */
+/* RESET 0x80054604: retired name 'game_StageSetup_80054604' — preserved note: stage/match init: bgm (snd_StopBgm/snd_LoadSelection), fill ctrl D_800EFAE8 (player pos s5-fp/stage data), FadeOut, game_SetPlayerCount, disp_CalcFov, tslDmaDrawListDelAll; mirrors game_StageCleanup */
 /* RESET 0x8004A4E0: retired name 'exec_loc_mat_list_8004A4E0' — preserved note: walks g_draw_queue (set by func_80044504), per-node opcode dispatch (jtbl_8001541C), GTE color reg ctc2 setup + calc_loc_mat_fw */
 /* RESET 0x8001A484: retired name 'DispSleepMenuTexAll_8001A484' — preserved note: loops 22x calling DispSleepMenuTex(D_800100A4, coords from tables s0/s1 stride 6) -- batch draw sleep/standby menu textures */
 /* RESET 0x800460E4: retired name 'md_game_ExecMode_800460E4' — preserved note: md_game mode dispatcher: dual jumptable (jtbl_800152B4/80015334) on mode id (s5-3), sets D_80099478, per-mode init+update+draw(func_800481E8)+md_game_check_mode+saSeMain+gpu_DrawSync */
 /* RESET 0x800464C4: retired name 'md_game_FlushDeferred_800464C4' — preserved note: if deferred flag D_8009947A set: get slot-7 obj, mode-switch on D_80099478, md_game_check_mode(7)+saSeMain, clear flag */
-game_StageMain_8005490C = 0x8005490C;  /* per-frame stage handler on ctrl struct D_800EFAE8 (built by game_StageSetup); phase machine on [+0] (-1 ret/0 init), first-frame relocates D_800EFB14 data + stage_InitCollision/func_80047210/FadeOut */
+/* RESET 0x8005490C: retired name 'game_StageMain_8005490C' — preserved note: per-frame stage handler on ctrl struct D_800EFAE8 (built by game_StageSetup); phase machine on [+0] (-1 ret/0 init), first-frame relocates D_800EFB14 data + stage_InitCollision/func_80047210/FadeOut */
 /* Kengo rename map apply-batch 2026-07-13 (docs/naming/kengo-rename-audit-2026-07-13.md):
    registry lines for glabel-applied names from 2971df5e that never got symbol-file
    entries. Names match the existing linker-authoritative glabels (unsuffixed). */

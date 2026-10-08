@@ -187,7 +187,7 @@ g_anim_select = 0x800A3238; // animation selection
 g_anim_counter = 0x800A3382; // frame counter
 
 // === Character Data ===
-g_char_data = 0x800A6690; // character data region
+D_800A6690 = 0x800A6690; // character data region  // data-wave 2026-10-08: was g_char_data
 g_char_setup_tbl = 0x80094E48; // character setup table
 
 // === Memory Card ===
