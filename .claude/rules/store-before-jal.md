@@ -14,7 +14,7 @@ Target:
 
 ```mips
 lhu  $v0, %lo(D_8008D59E)($at)    # lookup
-jal  game_GetPlayerData
+jal  func_80046DEC
 sh   $v0, 0x352($s0)              # delay slot: store BEFORE $v0 is overwritten
 lh   $v1, 0x352($s0)              # reload after the call
 sll  $v1, $v1, 2
@@ -29,7 +29,7 @@ Ours keeps the lookup in a callee-save across the call: an extra `$sN` save/rest
 ```c
 *(s16 *)(arg0 + 0x352) = *(u16 *)((u8 *)&D_8008D59E + arg1 * 20);
 src = *(s32 *)((((s32) *(s16 *)(arg0 + 0x352)) << 2)
-               + game_GetPlayerData(*(s16 *)(arg0 + 4)));
+               + func_80046DEC(*(s16 *)(arg0 + 4)));
 ```
 
 1. Store the value in its own statement BEFORE the call statement.
