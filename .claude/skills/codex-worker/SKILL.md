@@ -200,7 +200,9 @@ Every launch (`run`, `follow-up`, `research`) also refuses while any Codex task 
 be exactly the door), and when the tree Codex runs in has a project-level `.codex/`. `research` also proves,
 from inside a read-only sandbox, that `%TEMP%/bb2_wsl_bridge`, main's `tmp/` and `.git`, the snapshot and the
 worktrees root deny writes and WSL cannot start. Preflight scripts run inline (`pwsh -EncodedCommand`), never
-from a file. The owner's `~/.codex/rules/bb2-codex-eng.rules` is no longer used by these runs; moving it
+from a file. Every launch also refuses while the machine lets a sandboxed task reach another account
+(a stored `sandbox_users.json` in a Codex home, or broad / CodexSandbox* write on the checkout, its `.git`,
+`tools/`, the worktrees root or the WSL bridge dir); fixing that is the owner's call. The owner's `~/.codex/rules/bb2-codex-eng.rules` is no longer used by these runs; moving it
 aside is the owner's call.
 
 ## Codex's build door: `tools/codex_eng.ps1`

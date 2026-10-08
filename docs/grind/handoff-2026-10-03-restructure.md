@@ -132,6 +132,20 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      owner's ~/.codex loads MCP servers / plugins that act outside the sandbox; the stale May
      default.rules moved aside); read-only questions via `codex_worker.py research`. Owner's
      ~/.codex/rules/bb2-codex-eng.rules is now unused by Claude runs (owner may move it aside).
+   - **Codex is blocked until the owner fixes the machine** (security review 2026-10-07; codex_worker's
+     machine_guard refuses every launch meanwhile): Codex's leftover elevated-sandbox accounts
+     CodexSandboxOffline/Online are in BUILTIN\Users and their DPAPI passwords sit readable in
+     ~/.codex/.sandbox-secrets/sandbox_users.json, while C:\Users\Trenton\Desktop carries an explicit
+     `BUILTIN\Users: Modify` ACE inherited by the checkout and bb2-worktrees. Owner: retire those accounts and
+     the secrets file (the config now uses `sandbox = "unelevated"`) and remove that Desktop ACE; optionally
+     move ~/.codex/rules/bb2-codex-eng.rules aside and drop the owner-home Codex SIDs' write ACEs on the
+     checkout. Then make the first Codex `run` a deliberate smoke test (no workspace-write exec has run under
+     ~/.codex-claude yet). machine_guard itself awaits its own fresh review.
+   - Codex containment debt (final code review PASS with minors): codex_bridge.codex_processes returns [] on a
+     non-raising listing failure (return None on rc != 0); sync_auth_back AttributeError on non-object JSON;
+     cmd_research's worktree add sits outside try; a TASK_HOME top-level allowlist (managed_config.toml,
+     requirements.toml); the plain bridge still accepts --cd into main; SKILL "Hard rules" should list
+     `research`; a mid-step land/rebase refusal can leave scratch stale (re-sync it as tmp/p3w1/recover_c3.py did).
    - Debt: wire tools/check_retired_names.py into the integrity audit / hooks; bank the keycheck probe suites
      (`tmp/p3s0/kc_test.sh`, `tmp/kcrev*/`) as engine tests; keycheck hygiene (same_tokens belt, clang-format
      version check, report against the formatted text); comment nits (25C38 "these files", the Makefile
