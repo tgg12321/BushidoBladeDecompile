@@ -54,7 +54,7 @@ glabel func_8003993C
   .L80039A04:
     /* 2A204 80039A04 12800000 */  mflo       $s0
   .L80039A08:
-    /* 2A208 80039A08 AC1C010C */  jal        camera_GetBoneData
+    /* 2A208 80039A08 AC1C010C */  jal        func_800472B0
     /* 2A20C 80039A0C 00000000 */   nop
     /* 2A210 80039A10 0A80013C */  lui        $at, %hi(D_800A3778)
     /* 2A214 80039A14 783722AC */  sw         $v0, %lo(D_800A3778)($at)

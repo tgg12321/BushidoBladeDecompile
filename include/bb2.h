@@ -585,7 +585,7 @@ extern void cdrom_SetMix(s32, s32, s32, s32);
 extern s32 cdrom_StartAudio(s32, s32);
 extern s32 cdrom_StartRead(s32, s32);
 extern s32 cdrom_StartReadAt(s32, s32, s32, s32);
-extern void *camera_GetBoneData(void);
+extern void *func_800472B0(void);
 extern void eff_Init(void);
 extern u32 file_GetFlag0(void);
 extern u32 file_GetFlag1(void);

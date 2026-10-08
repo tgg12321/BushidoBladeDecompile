@@ -297,7 +297,7 @@ extern MATRIX D_800EEDB0;
 extern s32 D_800EF800[];
 extern u8 g_stage_data;
 extern s16 D_800F6654;
-extern MATRIX g_cam_bone_data;
+extern MATRIX D_800EEDD0;
 
 extern void func_80049E4C(void);
 extern void func_80049F4C(void);
@@ -605,13 +605,13 @@ typedef struct {
 } Block32;
 
 void func_80047210(void) {
-    g_cam_bone_data = D_80101DF0.xf.mat;
-    g_cam_bone_data.m[1][0] >>= 1;
-    g_cam_bone_data.m[1][1] >>= 1;
-    g_cam_bone_data.m[1][2] >>= 1;
+    D_800EEDD0 = D_80101DF0.xf.mat;
+    D_800EEDD0.m[1][0] >>= 1;
+    D_800EEDD0.m[1][1] >>= 1;
+    D_800EEDD0.m[1][2] >>= 1;
 }
 
-void *camera_GetBoneData(void) { return &g_cam_bone_data; }
+void *func_800472B0(void) { return &D_800EEDD0; }
 
 void camera_InitRotation(Unk80101DF0Record *node) {
     node->unk4 = 8;

@@ -6,7 +6,7 @@ glabel func_8001EFA0
     /* F7B0 8001EFB0 01004224 */  addiu      $v0, $v0, 0x1
     /* F7B4 8001EFB4 0A80013C */  lui        $at, %hi(D_800A37B8)
     /* F7B8 8001EFB8 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
-    /* F7BC 8001EFBC AC1C010C */  jal        camera_GetBoneData
+    /* F7BC 8001EFBC AC1C010C */  jal        func_800472B0
     /* F7C0 8001EFC0 00000000 */   nop
     /* F7C4 8001EFC4 099C033C */  lui        $v1, (0x9C09C09D >> 16)
     /* F7C8 8001EFC8 0A80063C */  lui        $a2, %hi(D_800A37B8)

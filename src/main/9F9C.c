@@ -2150,7 +2150,7 @@ void func_8001E800(void) {
 void func_8001E878(void) {
     PadState buf;
     s32 v0;
-    v0 = (s32)camera_GetBoneData();
+    v0 = (s32)func_800472B0();
     D_800A3778 = v0;
     func_8001A820(&D_80101EC8[0].unk_168, &D_80101EC8[1].unk_168,
                   &D_80101EC8[0], &D_80101EC8[1]);
@@ -2200,7 +2200,7 @@ void func_8001EA84(void) {
     Unk8001CD68Rec buf;
 
     D_800A37B8 += 1;
-    D_800A3778 = (s32)camera_GetBoneData();
+    D_800A3778 = (s32)func_800472B0();
     func_8001BC70(&D_80101EC8[D_800A3748 == 0], D_800A37B8 << 3);
     func_8001E404();
     func_80039320();
@@ -2309,7 +2309,7 @@ void func_8001EFA0(void) {
     s16 var_v0;
 
     D_800A37B8 += 1;
-    D_800A3778 = (s32)camera_GetBoneData();
+    D_800A3778 = (s32)func_800472B0();
     func_8001BCF0(&D_80101EC8[D_800A3748], (D_800A37B8 << 12) / 105);
     func_8001E404();
     func_80039320();

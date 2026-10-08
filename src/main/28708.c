@@ -1378,7 +1378,7 @@ void func_8003993C(void) {
         idx = D_800A37D0;
         prog = (idx << 12) / D_800A36F8;
     }
-    D_800A3778 = (s32)camera_GetBoneData();
+    D_800A3778 = (s32)func_800472B0();
     /* The frame record's address is written out at each argument (F3
      * compound-address duplication, no-new-park-categories); a `rec` local:
      * score 20. */

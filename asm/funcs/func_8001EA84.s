@@ -7,7 +7,7 @@ glabel func_8001EA84
     /* F298 8001EA98 01004224 */  addiu      $v0, $v0, 0x1
     /* F29C 8001EA9C 0A80013C */  lui        $at, %hi(D_800A37B8)
     /* F2A0 8001EAA0 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
-    /* F2A4 8001EAA4 AC1C010C */  jal        camera_GetBoneData
+    /* F2A4 8001EAA4 AC1C010C */  jal        func_800472B0
     /* F2A8 8001EAA8 00000000 */   nop
     /* F2AC 8001EAAC 0A80033C */  lui        $v1, %hi(D_800A3748)
     /* F2B0 8001EAB0 48376380 */  lb         $v1, %lo(D_800A3748)($v1)
