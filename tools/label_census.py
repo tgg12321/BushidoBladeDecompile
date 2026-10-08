@@ -132,8 +132,8 @@ def _glabels(lines):
 def _resolve(lines, func, allow_single_glabel):
     """-> (name_to_span_on, note_or_None).
 
-    32 address-named files carry a symbolic glabel (asm/funcs/func_8003F168.s
-    is `glabel stage_ExecInitFunc`). When the filename-derived name misses and
+    Some address-named files carry a symbolic glabel (asm/funcs/func_8008009C.s
+    is `glabel CdStatus`). When the filename-derived name misses and
     the file defines exactly ONE function, use it. Multi-glabel files stay
     strict -- there the name genuinely disambiguates.
     """

@@ -226,36 +226,36 @@ of `main.c`.
 | 1  (0x01) | 0x8001E878 | `mode_handler_01_GameFrameUpdate` | **Main per-frame fight**: camera, characters, collision, motion, stage tick |
 | 2  (0x02) | 0x80033898 | `gpu_enable_and_state_reset_80033898` | Display reset + transitions to mode 3 |
 | 3  (0x03) | 0x80034708 | `mode_handler_03_NoOp` | Empty (no-op placeholder) |
-| 4  (0x04) | 0x800397D4 | `mode_handler_04_GameSetup` | **Full game setup**: gpu_EnableDisplay + gnd_open + player count + DMA list |
+| 4  (0x04) | 0x800397D4 | `func_800397D4` | **Full game setup**: gpu_EnableDisplay + gnd_open + player count + DMA list |
 | 5  (0x05) | 0x8003993C | `mode_handler_05_NoOp` | Empty |
-| 6  (0x06) | 0x8003B9D0 | `mode_handler_06_GameTeardownVariant` | func_8001DA2C + game_Cleanup + conditional GPU |
+| 6  (0x06) | 0x8003B9D0 | `func_8003B9D0` | func_8001DA2C + game_Cleanup + conditional GPU |
 | 7  (0x07) | 0x8003BCB4 | `mode_handler_07_SubModeTransition` | md_game_check_change_sub_mode + pad input check |
 | 8  (0x08) | 0x80035480 | `scene_teardown_variant_80035480` | Scene cleanup variant; also the **global-reset target** (D_800A3928 trigger) |
 | 9  (0x09) | 0x80035828 | `mode_handler_09_NoOp` | Empty |
 | 10 (0x0A) | 0x8003BE10 | `mode_handler_10_GameTeardown` | gpu_EnableDisplay + player_Destroy(0/1) |
-| 11 (0x0B) | 0x8003BEA8 | `mode_handler_11_PadInputCheck` | Checks pad input mask 0x40 (action button) |
-| 12 (0x0C) | 0x8001EA04 | `mode_handler_12_RoundCleanup` | gnd_init_80041688(0/1) + game_Cleanup; end-of-round |
+| 11 (0x0B) | 0x8003BEA8 | `func_8003BEA8` | Checks pad input mask 0x40 (action button) |
+| 12 (0x0C) | 0x8001EA04 | `func_8001EA04` | gnd_init_80041688(0/1) + game_Cleanup; end-of-round |
 | 13 (0x0D) | 0x8001EA84 | `cpu_get_move_pattern_table_number` | CPU AI move-pattern lookup |
 | 14 (0x0E) | 0x80035430 | `mode_handler_14_NoOp` | Empty |
 | 15 (0x0F) | 0x8003BFC4 | `mode_handler_15_TeardownVariant` | Variant of mode 10 |
 | 16 (0x10) | 0x8001EEB4 | `hirahira_w_frie2` | "Falling/particles 2" — likely petal/snow effect |
-| 17 (0x11) | 0x8001EFA0 | `mode_handler_17_GameContinueFrame` | Increments g_practice_loop_frame, calls func_800472B0 |
+| 17 (0x11) | 0x8001EFA0 | `func_8001EFA0` | Increments g_practice_loop_frame, calls func_800472B0 |
 | 18 (0x12) | 0x8003C040 | `mode_handler_18_UnlockAnimDispatch` | **Unlock-celebration dispatch**: reads g_practice_unlock_anim_id (6/7=P1, 8/9=P2) |
 | 19 (0x13) | 0x8003C2C0 | `cpu_side_move_dir_2` | CPU AI sidestep direction |
-| 20 (0x14) | 0x8003C42C | `mode_handler_20_CountIterator` | Counts D_800A377C[] entries into 8-cell histogram |
-| 21 (0x15) | 0x8003C560 | `mode_handler_21_FrameTimerSfx` | Plays SFX 0xA4/0xA7 at counter==30 frames |
-| 22 (0x16) | 0x8003B870 | `mode_handler_22_VsModeInit` | **VS mode init**: player_SetCharId(0/1) + obj_InitChars + disp_SetFramebufferMode(1) |
-| 23 (0x17) | 0x8003B8E4 | `mode_handler_23_FrameDelay3` | Returns until frame counter >= 3 |
+| 20 (0x14) | 0x8003C42C | `func_8003C42C` | Counts D_800A377C[] entries into 8-cell histogram |
+| 21 (0x15) | 0x8003C560 | `func_8003C560` | Plays SFX 0xA4/0xA7 at counter==30 frames |
+| 22 (0x16) | 0x8003B870 | `func_8003B870` | **VS mode init**: player_SetCharId(0/1) + obj_InitChars + disp_SetFramebufferMode(1) |
+| 23 (0x17) | 0x8003B8E4 | `func_8003B8E4` | Returns until frame counter >= 3 |
 | 24 (0x18) | 0x8003C958 | `mode_handler_24_DispatchToMode25` | gpu_InitDisplay + reset state + sets dispatch_idx = 0x19 |
-| 25 (0x19) | 0x8003C9A4 | `mode_handler_25_PostBattleSetup` | Reads g_gnd_midpoint_x, game_SetControllerPorts(0) |
+| 25 (0x19) | 0x8003C9A4 | `func_8003C9A4` | Reads g_gnd_midpoint_x, game_SetControllerPorts(0) |
 | 26 (0x1A) | 0x80035DC8 | `scene_teardown_80035DC8` | Scene cleanup |
 | 27 (0x1B) | 0x80035E38 | `saRobDraw` | Draws robot AI (saRob = "sa" team rob) |
-| 28 (0x1C) | 0x8003CE18 | `mode_handler_28_PostBattleMisc` | func_8001DA2C + func_800372C0 |
-| 29 (0x1D) | 0x8003CF84 | `mode_handler_29_StageLeafUpdate` | mk_leaf_newpos + reads char struct fields |
+| 28 (0x1C) | 0x8003CE18 | `func_8003CE18` | func_8001DA2C + func_800372C0 |
+| 29 (0x1D) | 0x8003CF84 | `func_8003CF84` | mk_leaf_newpos + reads char struct fields |
 | 30 (0x1E) | 0x8003C714 | `SetCurrentCursor` | Menu cursor positioning |
 | 31 (0x1F) | 0x8003C8B4 | `mode_handler_31_TimerLoop` | Counts up to 241 frames or pad-input exit |
-| 32 (0x20) | 0x8003CCCC | `mode_handler_32_RebootDispatch` | gpu_InitDisplay + game_Cleanup + dispatch to 0x21 |
-| 33 (0x21) | 0x8003CD10 | `mode_handler_33_RebootBegin` | Mirrors mode_25 setup; final teardown |
+| 32 (0x20) | 0x8003CCCC | `func_8003CCCC` | gpu_InitDisplay + game_Cleanup + dispatch to 0x21 |
+| 33 (0x21) | 0x8003CD10 | `func_8003CD10` | Mirrors mode_25 setup; final teardown |
 
 ### Observed mode transitions and state flow
 

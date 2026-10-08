@@ -3253,8 +3253,8 @@ CD_initvol = 0x80081880;  /* programs CD-audio path regs (g_cd_reg0 block + D_80
 CD_initintr = 0x80081974;  /* irq_DisableInterrupts, clears cd state globals D_800A11B4..C8, irq_EnableInterrupts */
 CD_getsector = 0x80081D1C;  /* CD sector DMA -> RAM via g_cd_dma_ctrl + g_cd_reg0 block */
 CD_getsector2 = 0x80081E1C;  /* chopped CD DMA transfer; g_cd_reg0/g_cd_dma_ctrl */
-func_8003F168 = 0x8003F168;  /* dispatch D_800948BC[stage_GetId()] per-stage init fn ptr */
+func_8003F168 = 0x8003F168;  /* calls D_800948BC[stage_GetId()].init when non-null */
 func_8003F218 = 0x8003F218;  /* store D_800F665C + game_SetControllerPorts */
 func_8003F274 = 0x8003F274;  /* rebuilds the 32x32 grid D_800A8FB0 around the view node; read by the draw walks */
-func_8003F5CC = 0x8003F5CC;  /* 3x sys_StubEmpty3(light_ptr_i, target_ptr_i, i) - stubbed light apply, vestigial */
+func_8003F5CC = 0x8003F5CC;  /* func_80017F98(D_800A93B0[i], D_800A93BC[i], i) for i = 0..2; func_80017F98 is empty, so no effect */
 /* RENAME 0x800819C4: retired name 'cdrom_Initialize' — preserved note: glabel-authoritative name; called by cdrom_CheckReady between Shutdown/ConfigSPU */

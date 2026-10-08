@@ -104,7 +104,7 @@ know which subsystem owns it, look here.
   `code6cac_c2.c` tail (options), `text1a_*.c` (mental gauge / `efc_*`)
 - **Key functions:** `md_game_check_change_sub_mode`,
   `md_menu_logo_exec` (asm-only), `game_SetControllerPorts`,
-  `game_SetPlayerCount`, `stage_ExecInitFunc`, `stage_InitCollision`,
+  `game_SetPlayerCount`, `func_8003F168`, `stage_InitCollision`,
   `disp_mario_jimaku` (subtitles, asm), `DispPracticeMenuTex_*`,
   `DispUpdateStatusMessage`,
   `cpu_exec_match_round_stage_select_80016E60` (match/round stage select),
@@ -135,8 +135,8 @@ know which subsystem owns it, look here.
 - **File:** `code6cac_c2.c` (stage_*, stage open),
   `text1a*.c` (gnd_* helpers)
 - **Key functions:** `stage_GetId`, `stage_GetVariant`,
-  `stage_GetDataPtr`, `stage_InitCollision`, `stage_ApplyLighting`,
-  `stage_ClearLighting`, `stage_ExecInitFunc`, `gnd_init_*`,
+  `stage_GetDataPtr`, `stage_InitCollision`, `func_8003F5CC`,
+  `stage_ClearLighting`, `func_8003F168`, `gnd_init_*`,
   `gnd_get_fog`, `gnd_set_fog*`, `gnd_open`, `gnd_close_*`,
   `gnd_disp_loop_ctrl` (the gameplay draw)
 - **Key globals:** `g_stage_id`, `g_stage_variant`, `g_stage_data`,

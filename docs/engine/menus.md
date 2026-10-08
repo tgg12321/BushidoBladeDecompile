@@ -105,8 +105,8 @@ The former `config.c` (`0x8003F168..0x800401CC`, now the tail of
 
 - `game_GetMode` / `game_SetControllerPorts` / `game_SetPlayerCount` —
   basic options.
-- `stage_ExecInitFunc` — picks the per-stage initialization function from
-  `g_stage_init_tbl[stage_id]`.
+- `func_8003F168` — calls the `.init` hook of `g_stage_init_tbl[stage_GetId()]`
+  when it is non-null.
 - `stage_InitCollision` — builds the 32x32 collision grid for the
   current stage.
 - `md_option_reset_*` family (lines 518-535) — reset options to defaults.
@@ -251,11 +251,11 @@ Several menu-related mode handlers exist in `g_module_func_tbl`
 (see [main_loop.md](main_loop.md) for full table):
 
 - Mode 30 (`SetCurrentCursor`, `0x8003C714`) — menu cursor positioning
-- Mode 11 (`mode_handler_11_PadInputCheck`, `0x8003BEA8`) — pad input
+- Mode 11 (`func_8003BEA8`, `0x8003BEA8`) — pad input
   check (mask `0x40` = action button)
 - Mode 7 (`mode_handler_07_SubModeTransition`, `0x8003BCB4`) —
   sub-mode transition triggered by cross+circle (`0x400040`)
-- Mode 21 (`mode_handler_21_FrameTimerSfx`, `0x8003C560`) — plays
+- Mode 21 (`func_8003C560`, `0x8003C560`) — plays
   SFX 0xA4/0xA7 at frame counter == 0x1E
 
 ## Fade / transition state machine (2026-05-17)
