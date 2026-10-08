@@ -4311,6 +4311,109 @@ def test_layer2_addresses() -> None:
             os.chdir(cwd)
 
 
+def test_naming_wave_own_target() -> None:
+    """An address-named reference file can already belong to the live glabel."""
+    import naming_wave as nw
+    from unittest.mock import patch
+
+    # Keep the fixture inside the workspace; no git writes or build needed.
+    scratch = Path(__file__).resolve().parent.parent / "tmp"
+    scratch.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=scratch) as td:
+        root = Path(td)
+        funcs = root / "asm/funcs"
+        funcs.mkdir(parents=True)
+        src = root / "src/main/test.c"
+        src.parent.mkdir(parents=True)
+        src.write_text("void sem_OwnTargetProbe(void) {}\n", newline="\n")
+        target = funcs / "func_80001000.s"
+        body = ("glabel sem_OwnTargetProbe\n"
+                "/* 000000 80001000 0800E003 */ jr $ra\n"
+                "endlabel sem_OwnTargetProbe\n")
+        target.write_text(body, newline="\n")
+        caller = funcs / "caller.s"
+        caller.write_text("jal sem_OwnTargetProbe\n", newline="\n")
+
+        def op():
+            result = nw.Op("0x80001000", "RESET", "func_80001000",
+                           {"glabel": "sem_OwnTargetProbe"})
+            result.olds = {result.glabel}
+            return result
+
+        with patch.object(nw, "ROOT", root), \
+             patch.object(nw, "load_census", return_value=[]), \
+             patch.object(nw, "_SRC_DEF_CACHE", {}), \
+             patch.object(nw, "git_ignored", return_value=False), \
+             patch.object(nw, "asm_file_referenced", return_value=True):
+            own = op()
+            eq("naming_wave: own target passes preflight", nw.preflight([own]), {})
+            plan = nw.plan_wave(nw.Wave([own]))
+            eq("naming_wave: own target has no file moves", plan.file_renames, [])
+            eq("naming_wave: own target has no file deletes", plan.file_deletes, [])
+            nw.apply_plan(plan)
+            eq("naming_wave: own target labels rewritten in place", target.read_text(),
+               body.replace("sem_OwnTargetProbe", "func_80001000"))
+            eq("naming_wave: own target caller rewritten", caller.read_text(),
+               "jal func_80001000\n")
+            eq("naming_wave: own target C definition rewritten", src.read_text(),
+               "void func_80001000(void) {}\n")
+            check("naming_wave: own target never creates semantic-stem file",
+                  not (funcs / "sem_OwnTargetProbe.s").exists())
+
+            for desc, invalid in (
+                ("wrong opcode address", body.replace("80001000", "80001004")),
+                ("matching later glabel", "glabel other_func\n" + body),
+                ("missing opcode address", "glabel sem_OwnTargetProbe\n"),
+            ):
+                target.write_text(invalid, newline="\n")
+                rejected = op()
+                check(f"naming_wave: own target with {desc} refuses",
+                      bool(nw.preflight([rejected]).get(rejected.address)))
+
+            # Both filenames carrying the live glabel are still stale twins:
+            # remove the unreferenced target, then move the semantic-stem file.
+            target.write_text(body, newline="\n")
+            semantic = funcs / "sem_OwnTargetProbe.s"
+            semantic.write_text(body, newline="\n")
+            with patch.object(nw, "asm_file_referenced", return_value=False):
+                stale = op()
+                eq("naming_wave: same-glabel stale twin passes preflight",
+                   nw.preflight([stale]), {})
+                eq("naming_wave: same-glabel stale twin marked for deletion",
+                   stale.delete_stale, "asm/funcs/func_80001000.s")
+                plan = nw.plan_wave(nw.Wave([stale]))
+                eq("naming_wave: same-glabel stale twin plans semantic file move",
+                   plan.file_renames,
+                   [("asm/funcs/sem_OwnTargetProbe.s", "asm/funcs/func_80001000.s")])
+                # Exercise apply's filesystem fallback without git writes.
+                import subprocess
+                with patch.object(nw.subprocess, "run", return_value=
+                                  subprocess.CompletedProcess([], 1)):
+                    nw.apply_plan(plan)
+                check("naming_wave: same-glabel stale twin applies cleanly",
+                      not semantic.exists() and target.read_text() ==
+                      body.replace("sem_OwnTargetProbe", "func_80001000"))
+
+            # Same bytes do not make another glabel this function's file.
+            (funcs / "sem_OwnTargetProbe.s").write_text(body, newline="\n")
+            target.write_text(body.replace("sem_OwnTargetProbe", "other_func"),
+                              newline="\n")
+            other = op()
+            errors = nw.preflight([other])
+            check("naming_wave: referenced twin with different glabel still refuses",
+                  "it IS referenced by a build input" in
+                  "\n".join(errors.get(other.address, [])))
+            eq("naming_wave: refused twin is not marked for deletion",
+               other.delete_stale, None)
+            (funcs / "sem_OwnTargetProbe.s").unlink()
+            with patch.object(nw, "asm_file_referenced", return_value=False):
+                other = op()
+                errors = nw.preflight([other])
+                check("naming_wave: different function target still refuses",
+                      "its opcode bytes DIFFER" in
+                      "\n".join(errors.get(other.address, [])))
+
+
 def test_naming_wave_renames() -> None:
     """naming_wave rename mechanics the Q39 record depends on (round-5 review
     C1-C4): the stale-duplicate .s delete-then-rename still applies under the
@@ -5789,6 +5892,7 @@ def main() -> int:
     test_departures()
     test_layer2_addresses()
     test_layer2_asm_addr_after_glabel()
+    test_naming_wave_own_target()
     test_naming_wave_renames()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()

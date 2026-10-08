@@ -602,6 +602,20 @@ def build_ops(rows: list[dict], only: set[str] | None, allow_invalid: bool) -> t
 # --------------------------------------------------------------- preflight --
 
 
+def own_target_asm(op: Op, path: Path, text: str) -> bool:
+    """An already target-named reference file may still carry the live glabel."""
+    if not op.glabel or path.stem != op.new_name \
+            or path.with_name(f"{op.glabel}.s").exists():
+        return False
+    glabel = re.search(r"^[ \t]*glabel[ \t]+(\S+)", text, re.M)
+    if not glabel or glabel.group(1) != op.glabel:
+        return False
+    address = re.search(
+        r"/\*\s*[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\s+[0-9A-Fa-f]{8}\s*\*/",
+        text[glabel.end():])
+    return bool(address and "0x" + address.group(1).lower() == op.address)
+
+
 def preflight(ops: list[Op]) -> dict[str, list[str]]:
     """Collision + consistency checks, keyed by the address they condemn.
 
@@ -633,7 +647,8 @@ def preflight(ops: list[Op]) -> dict[str, list[str]]:
 
         # P4 — target .s filename must be free, or belong to this function.
         tgt_s = stems.get(op.new_name)
-        if tgt_s is not None and op.glabel != op.new_name:
+        if tgt_s is not None and op.glabel != op.new_name \
+                and not own_target_asm(op, tgt_s, read(tgt_s)):
             own_s = stems.get(op.glabel)
             orphan = not asm_file_referenced(op.new_name)
             twin = own_s is not None and opcodes_of(tgt_s) == opcodes_of(own_s) \

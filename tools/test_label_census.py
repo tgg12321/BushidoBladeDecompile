@@ -104,22 +104,22 @@ COP = """glabel func_C
 endlabel func_C
 """
 
-# 32 address-named files carry a symbolic glabel (asm/funcs/func_8003F168.s ->
-# `glabel stage_ExecInitFunc`).
-SYMBOLIC = """glabel stage_ExecInitFunc
-    /* 0 8003F168 00000000 */  addiu      $sp, $sp, -0x18
-    /* 4 8003F16C 00000000 */  beqz       $a0, .L8003F178
-    /* 8 8003F170 00000000 */   nop
-    /* C 8003F174 00000000 */  addu       $s0, $a0, $zero
-  .L8003F178:
-    /* 10 8003F178 00000000 */  jr         $ra
-    /* 14 8003F17C 00000000 */   nop
-endlabel stage_ExecInitFunc
+# Some address-named files carry a symbolic glabel (asm/funcs/func_<addr>.s whose
+# first line is `glabel <semantic name>`); synthetic names keep naming waves off it.
+SYMBOLIC = """glabel sem_SymbolicProbe
+    /* 0 80001010 00000000 */  addiu      $sp, $sp, -0x18
+    /* 4 80001014 00000000 */  beqz       $a0, .L80001020
+    /* 8 80001018 00000000 */   nop
+    /* C 8000101C 00000000 */  addu       $s0, $a0, $zero
+  .L80001020:
+    /* 10 80001020 00000000 */  jr         $ra
+    /* 14 80001024 00000000 */   nop
+endlabel sem_SymbolicProbe
 """
 
 TWO_GLABELS = SYMBOLIC + """glabel other_func
-    /* 18 8003F180 00000000 */  jr         $ra
-    /* 1C 8003F184 00000000 */   nop
+    /* 18 80001028 00000000 */  jr         $ra
+    /* 1C 8000102C 00000000 */   nop
 endlabel other_func
 """
 
@@ -306,21 +306,21 @@ f:
     # --- R2: single-glabel fallback on the target side -----------------------
 
     def test_single_glabel_resolves_mismatched_filename(self):
-        c = census(SYMBOLIC, "func_8003F168", allow_single_glabel=True)
+        c = census(SYMBOLIC, "func_80001010", allow_single_glabel=True)
         self.assertFalse(c["missing"])
         self.assertEqual(c["n_insns"], 6)
-        self.assertIn("stage_ExecInitFunc", c["note"])
-        self.assertIn(".L8003F178", c["labels"])
+        self.assertIn("sem_SymbolicProbe", c["note"])
+        self.assertIn(".L80001020", c["labels"])
 
     def test_single_glabel_fallback_is_opt_in(self):
-        self.assertTrue(census(SYMBOLIC, "func_8003F168")["missing"])
+        self.assertTrue(census(SYMBOLIC, "func_80001010")["missing"])
 
     def test_multi_glabel_file_stays_strict(self):
         self.assertTrue(
-            census(TWO_GLABELS, "func_8003F168", allow_single_glabel=True)["missing"])
+            census(TWO_GLABELS, "func_80001010", allow_single_glabel=True)["missing"])
 
     def test_matching_name_needs_no_note(self):
-        c = census(SYMBOLIC, "stage_ExecInitFunc", allow_single_glabel=True)
+        c = census(SYMBOLIC, "sem_SymbolicProbe", allow_single_glabel=True)
         self.assertFalse(c["missing"])
         self.assertIsNone(c["note"])
 
