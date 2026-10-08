@@ -209,10 +209,10 @@ typedef struct {
 extern NdataInfEntry D_800963EC[];
 
 void func_80044E74(s32 a0, s32 a1) {
-    game_FrameLoop();
+    func_80036F40();
     cdrom_StartReadAt(
         0, a1, D_800963EC[a0].start_sector, D_800963EC[a0].length_sectors);
-    game_FrameLoop();
+    func_80036F40();
 }
 
 void func_80044ED8(s32 a0, s32 a1) {
@@ -291,7 +291,7 @@ static s32 D_800A33A4;
 static s32 D_800A33A8;
 static s32 D_800A33AC;
 
-void seq_Start(s32 a0, s32 a1) {
+void func_800450BC(s32 a0, s32 a1) {
     func_80044E74(a0 + 0x25, a1);
     D_800A3398 = a1;
     D_800A3244 = 1;
@@ -329,9 +329,9 @@ s32 func_800450F4(s32 a0, s32 a1) {
     return 1;
 }
 
-void seq_Reset(void) { D_800A3244 = 0; }
+void func_80045188(void) { D_800A3244 = 0; }
 
-s32 seq_GetState(void) { return D_800A3244; }
+s32 func_80045194(void) { return D_800A3244; }
 
 void func_800451A0(void) { cdrom_StartReadAt(1, (s32)D_800963EC, 0, 2); }
 

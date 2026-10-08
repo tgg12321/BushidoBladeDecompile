@@ -46,7 +46,7 @@ glabel func_8001DCB0
     /* E554 8001DD54 00000000 */  nop
     /* E558 8001DD58 03004010 */  beqz       $v0, .L8001DD68
     /* E55C 8001DD5C 21200000 */   addu      $a0, $zero, $zero
-    /* E560 8001DD60 8105010C */  jal        player_SetCharId
+    /* E560 8001DD60 8105010C */  jal        func_80041604
     /* E564 8001DD64 21280000 */   addu      $a1, $zero, $zero
   .L8001DD68:
     /* E568 8001DD68 1080013C */  lui        $at, %hi(D_80102780)

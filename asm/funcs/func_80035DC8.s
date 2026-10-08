@@ -7,9 +7,9 @@ glabel func_80035DC8
     /* 265DC 80035DDC 00000000 */   nop
     /* 265E0 80035DE0 3783000C */  jal        func_80020CDC
     /* 265E4 80035DE4 00000000 */   nop
-    /* 265E8 80035DE8 7105010C */  jal        player_Destroy
+    /* 265E8 80035DE8 7105010C */  jal        func_800415C4
     /* 265EC 80035DEC 21200000 */   addu      $a0, $zero, $zero
-    /* 265F0 80035DF0 7105010C */  jal        player_Destroy
+    /* 265F0 80035DF0 7105010C */  jal        func_800415C4
     /* 265F4 80035DF4 01000424 */   addiu     $a0, $zero, 0x1
     /* 265F8 80035DF8 1D5B000C */  jal        eff_ClearInitFlag
     /* 265FC 80035DFC 00000000 */   nop

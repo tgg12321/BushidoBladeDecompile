@@ -171,9 +171,9 @@ void func_8006E950(s32 a0, Unk8006E950Head *a1) {
     s32 s3;
     RECT rect;
 
-    game_FrameLoop();
+    func_80036F40();
     cdrom_StartRead(func_80036EA8(2, a0), (s32)a1);
-    game_FrameLoop();
+    func_80036F40();
     func_8006E440((s32 *)a1);
 
     s3 = a1->unk_08;

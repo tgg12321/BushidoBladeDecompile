@@ -33,8 +33,8 @@ extern u8 g_disp_fade;
 extern s16 g_game_mirror_mode;
 extern s16 D_800F6658;
 extern s32 D_800A3790;
-extern s16 g_stage_id;
-extern s16 g_stage_variant;
+extern s16 D_80099478;
+extern s16 D_8009947A;
 extern Unk800F1198Record D_800F1198[];
 extern Unk800A9CF8Header D_800A9CF8;
 extern Unk800F0EC8Record D_800F0EC8[][10];
@@ -107,7 +107,7 @@ extern Unk800F0C10Record D_800F0C10[4][3];
 extern s16 D_800F0BA8[18];
 
 extern Unk800F0C10Record D_800F0CA0[18];
-extern StageFuncEntry g_stage_init_tbl[];
+extern StageFuncEntry D_800948BC[];
 
 /* The per-mode main-loop handlers, indexed by D_800A3834. */
 extern void (*g_module_func_tbl[])(void);
@@ -394,7 +394,7 @@ extern s16 D_800A38BA;
 extern u8 D_800A38C0[2];
 /* per slot: model id in the D_800A3860[i] buffer (func_80020E74); [1] = 0xFFFF:
  * func_8001DB9C started a sequence at 0x80190800 (D_800A3860[1]'s buffer);
- * func_80020D38 calls seq_Reset for it */
+ * func_80020D38 calls func_80045188 for it */
 extern u16 D_800A38C4[2];
 extern u8 D_800A38D4;
 extern s16 D_800A38DC;
@@ -437,11 +437,11 @@ extern u8 D_800A3929;
 extern Unk800A3D40Rec D_800A3D40[];
 
 /* The three stage lights' position / direction words: func_8003F5A8
- * stores pos[i] / dir[i], stage_ClearLighting zeroes all six,
+ * stores pos[i] / dir[i], func_8003F568 zeroes all six,
  * func_8003F5CC passes pair i to func_80017F98(pos, dir, i). */
-extern s32 g_stage_light_pos[3];
+extern s32 D_800A93B0[3];
 
-extern s32 g_stage_light_dir[3];
+extern s32 D_800A93BC[3];
 extern Rec44 D_800F5328;
 extern Rec44 D_800F6608;
 
@@ -882,7 +882,7 @@ extern s32 func_8007855C(s32);
 extern s32 func_80078824(s32);
 extern s32 func_800788B0(void);
 extern void game_Cleanup(void);
-extern void game_FrameLoop(void);
+extern void func_80036F40(void);
 extern void *func_8003F1D4(void);
 extern void *func_80046DEC(s32);
 extern void func_80046B44(void);
@@ -910,15 +910,15 @@ extern void func_80017E8C(s32);
 extern void func_80017714(void);
 extern void pad_ResetState(void);
 extern void pad_ResetStateMarkValid(void);
-extern void player_Destroy(s32);
-extern void player_SetCharId(s32, s32);
+extern void func_800415C4(s32);
+extern void func_80041604(s32, s32);
 extern void rcnt_StartCnt1(void);
 extern s32 rng_Next(void);
 extern void rng_SetSeed(s32);
 extern void scratchpad_Restore(void);
 extern void scratchpad_Save(void);
-extern void seq_Reset(void);
-extern void seq_Start(s32, s32);
+extern void func_80045188(void);
+extern void func_800450BC(s32, s32);
 extern void snd_CloseVab1(void);
 extern void snd_Init(void);
 extern s32 snd_LoadCommonVab(s32);
@@ -928,7 +928,7 @@ extern void func_80046AA0(void);
 extern void snd_VabFakeOpen8And4(s32);
 extern void snd_VabFakeOpen9(s32);
 extern void func_8003F5CC(void);
-extern void stage_ClearLighting(void);
+extern void func_8003F568(void);
 extern void func_8003F168(void);
 extern s32 stage_GetId(void);
 extern void *func_80046F14(void);

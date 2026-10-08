@@ -5,7 +5,7 @@ glabel func_80060CB8
     /* 514C4 80060CC4 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 514C8 80060CC8 21888000 */  addu       $s1, $a0, $zero
     /* 514CC 80060CCC 2400BFAF */  sw         $ra, 0x24($sp)
-    /* 514D0 80060CD0 D0DB000C */  jal        game_FrameLoop
+    /* 514D0 80060CD0 D0DB000C */  jal        func_80036F40
     /* 514D4 80060CD4 1800B0AF */   sw        $s0, 0x18($sp)
     /* 514D8 80060CD8 0A80023C */  lui        $v0, %hi(D_8009BD38)
     /* 514DC 80060CDC 38BD428C */  lw         $v0, %lo(D_8009BD38)($v0)
@@ -43,7 +43,7 @@ glabel func_80060CB8
     /* 51548 80060D48 21204000 */  addu       $a0, $v0, $zero
     /* 5154C 80060D4C 66DB000C */  jal        cdrom_StartRead
     /* 51550 80060D50 21282002 */   addu      $a1, $s1, $zero
-    /* 51554 80060D54 D0DB000C */  jal        game_FrameLoop
+    /* 51554 80060D54 D0DB000C */  jal        func_80036F40
     /* 51558 80060D58 00000000 */   nop
     /* 5155C 80060D5C 21200000 */  addu       $a0, $zero, $zero
     /* 51560 80060D60 80030224 */  addiu      $v0, $zero, 0x380

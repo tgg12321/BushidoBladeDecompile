@@ -194,9 +194,9 @@ void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
 
     SetDispMask(0);
     SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x140, 0xF0);
-    game_FrameLoop();
+    func_80036F40();
     cdrom_StartRead(func_80036EA8(2, 0x61), (s32)arg0);
-    game_FrameLoop();
+    func_80036F40();
     PutDispEnv(&g_gpu_db[1].disp);
     DrawSync(0);
     LoadImage(&rect, (u32 *)(arg0 + 0x14));

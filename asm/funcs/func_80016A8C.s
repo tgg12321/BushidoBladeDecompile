@@ -25,7 +25,7 @@ glabel func_80016A8C
     /* 72E8 80016AE8 40010724 */  addiu      $a3, $zero, 0x140
     /* 72EC 80016AEC D3E9010C */  jal        SetDefDispEnv
     /* 72F0 80016AF0 1000A2AF */   sw        $v0, 0x10($sp)
-    /* 72F4 80016AF4 D0DB000C */  jal        game_FrameLoop
+    /* 72F4 80016AF4 D0DB000C */  jal        func_80036F40
     /* 72F8 80016AF8 00000000 */   nop
     /* 72FC 80016AFC 02000424 */  addiu      $a0, $zero, 0x2
     /* 7300 80016B00 AADB000C */  jal        func_80036EA8
@@ -33,7 +33,7 @@ glabel func_80016A8C
     /* 7308 80016B08 21204000 */  addu       $a0, $v0, $zero
     /* 730C 80016B0C 66DB000C */  jal        cdrom_StartRead
     /* 7310 80016B10 21282002 */   addu      $a1, $s1, $zero
-    /* 7314 80016B14 D0DB000C */  jal        game_FrameLoop
+    /* 7314 80016B14 D0DB000C */  jal        func_80036F40
     /* 7318 80016B18 00000000 */   nop
     /* 731C 80016B1C 02EF010C */  jal        PutDispEnv
     /* 7320 80016B20 21200002 */   addu      $a0, $s0, $zero

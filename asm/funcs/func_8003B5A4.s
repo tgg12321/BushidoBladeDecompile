@@ -68,7 +68,7 @@ glabel func_8003B5A4
     /* 2BE98 8003B698 00000000 */   nop
     /* 2BE9C 8003B69C 0A80053C */  lui        $a1, %hi(D_800A36F4)
     /* 2BEA0 8003B6A0 F436A590 */  lbu        $a1, %lo(D_800A36F4)($a1)
-    /* 2BEA4 8003B6A4 8105010C */  jal        player_SetCharId
+    /* 2BEA4 8003B6A4 8105010C */  jal        func_80041604
     /* 2BEA8 8003B6A8 01000424 */   addiu     $a0, $zero, 0x1
   .L8003B6AC:
     /* 2BEAC 8003B6AC D0EB000C */  jal        func_8003AF40

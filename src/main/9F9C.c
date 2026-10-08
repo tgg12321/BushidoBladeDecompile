@@ -1824,7 +1824,7 @@ s32 func_8001DB58(void) {
 }
 
 void func_8001DB9C(void) {
-    seq_Start(D_8008D9EC[D_80101EC8[0].unk_0A] < 1, (s32)0x80190800);
+    func_800450BC(D_8008D9EC[D_80101EC8[0].unk_0A] < 1, (s32)0x80190800);
     D_800A38C4[1] = 0xFFFF;
 }
 
@@ -1883,7 +1883,7 @@ void func_8001DCB0(void) {
     SetGeomScreen(math_FovToScreenDist(D_800A38BA != 0 ? 0x50 : 0x2D));
     for (i = 0; i < 2; i++) {
         if (D_800A38DC != 0) {
-            player_SetCharId(0, 0);
+            func_80041604(0, 0);
         }
         func_80022580(i, (s8)D_80102778.unk_4[4 + i], (s8)D_80102778.unk_4[i],
                       (s8)D_80102778.unk_4[2 + i], 0);
@@ -3272,11 +3272,11 @@ void func_800207C8(Unk80101EC8Record *rec, LeafPos *bone_out, LeafPos *att_out,
 
 void func_80020CDC(void) {
     /* FAKE: direct D_800A38C4[1] puts the constant address in a pseudo that CSE
-     * keeps live across seq_Reset (+3 insns) */
+     * keeps live across func_80045188 (+3 insns) */
     u16 *p = D_800A38C4;
 
     if (p[1] == 0xFFFF) {
-        seq_Reset();
+        func_80045188();
     }
     D_800A3880 = 0;
     p[1] = 0;
@@ -3287,11 +3287,11 @@ void func_80020CDC(void) {
 
 void func_80020D38(void) {
     /* FAKE: direct D_800A38C4[1] puts the constant address in a pseudo that CSE
-     * keeps live across seq_Reset (+3 insns) */
+     * keeps live across func_80045188 (+3 insns) */
     u16 *p = D_800A38C4;
 
     if (p[1] == 0xFFFF) {
-        seq_Reset();
+        func_80045188();
     }
     p[1] = 0;
 }
@@ -3309,7 +3309,7 @@ void func_80020DDC(void) {
     s32 v1;
     s32 v2;
     cdrom_StartRead(func_80036EA8(1, 1), D_800A3830);
-    game_FrameLoop();
+    func_80036F40();
     v1 = D_800A3830;
     D_80102760.unk_00 = (u16 *)(v1 + 0x14);
     D_80102760.unk_04 = (u16 *)(v1 + *(s32 *)(v1 + 4));
@@ -3348,7 +3348,7 @@ void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
                 D_800A38C0[i] = j;
                 cdrom_StartReadAt(
                     func_80036EA8(1, 0), (s32)D_800A3888[i], j * 7, 7);
-                game_FrameLoop();
+                func_80036F40();
             }
         }
     }
@@ -3398,7 +3398,7 @@ void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
                 }
             }
             cdrom_StartRead(func_80036EA8(1, j + 2), (s32)D_800A3860[i]);
-            game_FrameLoop();
+            func_80036F40();
             D_801027B0[i].unk_00 = (u16 *)((s32)D_800A3860[i] + 0x6C +
                                            (D_800A3860[i]->unk_03 - 1) * 6);
             D_801027B0[i].unk_04 =

@@ -97,7 +97,7 @@ glabel func_80046BF4
     /* 3756C 80046D6C 80010426 */   addiu     $a0, $s0, 0x180
     /* 37570 80046D70 3408010C */  jal        func_800420D0
     /* 37574 80046D74 00000000 */   nop
-    /* 37578 80046D78 5AFD000C */  jal        stage_ClearLighting
+    /* 37578 80046D78 5AFD000C */  jal        func_8003F568
     /* 3757C 80046D7C 00000000 */   nop
     /* 37580 80046D80 73FD000C */  jal        func_8003F5CC
     /* 37584 80046D84 00000000 */   nop

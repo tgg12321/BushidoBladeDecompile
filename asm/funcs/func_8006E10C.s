@@ -34,7 +34,7 @@ glabel func_8006E10C
     /* 5E984 8006E184 3404858F */  lw         $a1, %gp_rel(D_800A3500)($gp)
     /* 5E988 8006E188 66DB000C */  jal        cdrom_StartRead
     /* 5E98C 8006E18C 21200002 */   addu      $a0, $s0, $zero
-    /* 5E990 8006E190 D0DB000C */  jal        game_FrameLoop
+    /* 5E990 8006E190 D0DB000C */  jal        func_80036F40
     /* 5E994 8006E194 00000000 */   nop
     /* 5E998 8006E198 CADB000C */  jal        cdrom_GetFileSize
     /* 5E99C 8006E19C 21200002 */   addu      $a0, $s0, $zero

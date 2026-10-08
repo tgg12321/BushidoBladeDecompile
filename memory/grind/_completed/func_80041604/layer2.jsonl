@@ -1,0 +1,1 @@
+{"func": "func_80041604", "addr": "80041604", "verdict": "PASS", "body_hash": "bf19079e6f7d527f", "body_kind": "c", "file": "main/31D3C", "reviewer": "cheat-reviewer:rev-w2b3", "scope": "cheat-cleanup", "date": "2026-10-06T13:43:19Z", "head": "afbefb601", "notes": "", "renamed_from": ["player_SetCharId"]}

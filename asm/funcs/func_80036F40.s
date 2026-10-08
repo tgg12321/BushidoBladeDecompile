@@ -1,4 +1,4 @@
-glabel game_FrameLoop
+glabel func_80036F40
     /* 27740 80036F40 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 27744 80036F44 1400BFAF */  sw         $ra, 0x14($sp)
     /* 27748 80036F48 9EEA000C */  jal        func_8003AA78
@@ -39,4 +39,4 @@ glabel game_FrameLoop
     /* 277C8 80036FC8 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 277CC 80036FCC 0800E003 */  jr         $ra
     /* 277D0 80036FD0 00000000 */   nop
-endlabel game_FrameLoop
+endlabel func_80036F40

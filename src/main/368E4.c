@@ -46,7 +46,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
 
     s0 = (s32 *)func_800457A0(7);
     if (s0 != NULL) {
-        if (g_stage_id == stage_id) {
+        if (D_80099478 == stage_id) {
             s7 = 1;
             switch (stage_id) {
             case 3:
@@ -71,7 +71,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         }
     }
 
-    g_stage_id = (s16)stage_id;
+    D_80099478 = (s16)stage_id;
     /* FAKE: s7 (the early-return flag above) reused as slot id 7 for
      * func_80045600 / func_80045694; the literal or a separate local scores 37.
      */
@@ -119,7 +119,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         }
     }
 
-    g_stage_variant = 0;
+    D_8009947A = 0;
     /* FAKE: s1 = s4 routed through a delta-rebase detour that combine folds
        back (zero bytes); the extra refs lift s1's allocation priority above
        the s2 pointer, as in the target; plain s1 = s4: score 32 */
@@ -133,7 +133,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         s1 = s2;
         s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
         s4 = (s32 *)((u8 *)s0 + ALIGN4(*hp));
-        g_stage_variant = 1;
+        D_8009947A = 1;
         break;
     }
     case 4:
@@ -153,11 +153,11 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
         s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
         func_80044010((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
-        g_stage_variant = 1;
+        D_8009947A = 1;
         break;
     case 34:
         s1 = s2;
-        g_stage_variant = 1;
+        D_8009947A = 1;
         s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[5]));
         break;
     }
@@ -185,13 +185,13 @@ void func_800464C4(void) {
     s32 *a0;
     s32 v0;
 
-    if (g_stage_variant == 0) {
+    if (D_8009947A == 0) {
         return;
     }
     s0 = (s32 *)func_800457A0(7);
     v0 = ((u32)s0[1] >> 2) << 2;
     a0 = (s32 *)((u8 *)s0 + v0);
-    switch (g_stage_id) {
+    switch (D_80099478) {
     case 0xD:
         v0 = ((u32)s0[6] >> 2) << 2;
         s1 = (s32 *)((u8 *)s0 + v0);
@@ -205,7 +205,7 @@ void func_800464C4(void) {
     func_80044010(a0, 7);
     func_8003EDC0((u16 *)s1, 7);
     func_80045510(7, (s32)((u8 *)s1 - (u8 *)s0));
-    g_stage_variant = 0;
+    D_8009947A = 0;
 }
 
 void func_8004659C(s32 a0) {
@@ -220,7 +220,7 @@ void func_8004659C(s32 a0) {
         func_800464C4();
         return;
     }
-    if (g_stage_variant == 0) {
+    if (D_8009947A == 0) {
         return;
     }
     v0 = func_800457A0(7);
@@ -245,8 +245,8 @@ void func_8004659C(s32 a0) {
 
 void func_8004668C(void) {
     func_800453E0(7);
-    g_stage_id = -1;
-    g_stage_variant = 0;
+    D_80099478 = -1;
+    D_8009947A = 0;
 }
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
@@ -259,7 +259,7 @@ void func_800466C0(s32 a0, s32 a1) {
     rounded = (a1 / 4) * 4;
     D_800A33B0 += rounded;
     D_800A33B4 += rounded;
-    switch (g_stage_id) {
+    switch (D_80099478) {
     case 4:
     case 7:
     case 18:
@@ -295,7 +295,7 @@ extern s16 D_800A324A;
 extern MATRIX D_800EEDB0;
 
 extern s32 D_800EF800[];
-extern u8 g_stage_data;
+extern u8 D_8009947C;
 extern s16 D_800F6654;
 extern MATRIX D_800EEDD0;
 
@@ -311,9 +311,9 @@ s32 func_80046780(void) { return D_800A33B0; }
 
 s32 func_8004678C(void) { return D_800A33B4; }
 
-s32 stage_GetId(void) { return g_stage_id; }
+s32 stage_GetId(void) { return D_80099478; }
 
-s32 func_800467A8(void) { return g_stage_variant; }
+s32 func_800467A8(void) { return D_8009947A; }
 
 s32 *func_800467B8(s32 a0) {
     s32 arg = a0;
@@ -396,8 +396,8 @@ void func_80046A60(void) { func_800453E0(0xA); }
 void func_80046A80(s32 a0, s32 a1) { func_80054FDC(a1); }
 
 void func_80046AA0(void) {
-    player_Destroy(0);
-    player_Destroy(1);
+    func_800415C4(0);
+    func_800415C4(1);
     func_8004668C();
     func_80046020();
     func_80049E1C();
@@ -495,7 +495,7 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
     func_8004A1FC(&D_800F62E0[1]);
     func_8004A1FC(&D_800F62E0[4]);
     func_800420D0();
-    stage_ClearLighting();
+    func_8003F568();
     func_8003F5CC();
 }
 
@@ -553,7 +553,7 @@ void game_StageCleanup(s32 a0, s32 a1) {
     func_8003E0E0();
 }
 
-void *func_80046F14(void) { return &g_stage_data; }
+void *func_80046F14(void) { return &D_8009947C; }
 
 void func_80046F24(void) {
     s32 num = (s32)D_800F62E0[0].lmat.m[0][0] << 12;

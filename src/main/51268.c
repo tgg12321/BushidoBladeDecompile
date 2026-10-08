@@ -171,7 +171,7 @@ s32 func_80060CB8(s32 arg0, s32 arg1) {
     s32 v;
     s32 ret;
     new_var = arg0;
-    game_FrameLoop();
+    func_80036F40();
     v = D_8009BD24.unk14_0;
     if (v == 0) {
         cdrom_StartRead(func_80036EA8(2, 0x3C), arg0);
@@ -184,7 +184,7 @@ s32 func_80060CB8(s32 arg0, s32 arg1) {
     } else {
         cdrom_StartRead(func_80036EA8(2, 0), new_var);
     }
-    game_FrameLoop();
+    func_80036F40();
     s.x = 0x380;
     s.y = 0;
     s.w = 0x80;
@@ -6113,7 +6113,7 @@ s32 func_8006E10C(void) {
     } while (0);
     v0 = func_80036EA8(a0v, a1v);
     cdrom_StartRead(v0, D_800A3500);
-    game_FrameLoop();
+    func_80036F40();
     cdrom_GetFileSize(v0);
     SetDispMask(0);
     SetDefDrawEnv(&g_gpu_db[0].draw, 0, 0, 0x280, ff0);

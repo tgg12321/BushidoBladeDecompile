@@ -29,13 +29,13 @@ s32 func_80041584(void) {
     return ret;
 }
 
-void player_Destroy(s32 a0) {
+void func_800415C4(s32 a0) {
     func_8004016C(a0);
     func_80045A50(a0);
     g_player_ptrs[a0] = 0;
 }
 
-void player_SetCharId(s32 a0, s32 a1) {
+void func_80041604(s32 a0, s32 a1) {
     Unk80045878Obj *ptr = g_player_ptrs[a0];
     if (ptr) {
         /* FAKE: the halfword read into an s32 local (lh); in the masked

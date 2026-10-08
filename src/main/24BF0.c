@@ -21,8 +21,8 @@ void func_800343F0(void) {
     D_800A38BA = val_86;
     D_800A3140 = val_87;
     D_800A36A4 = val_84;
-    player_SetCharId(0, 0);
-    player_SetCharId(1, 0);
+    func_80041604(0, 0);
+    func_80041604(1, 0);
     D_800A376A = 0;
     D_800A376B = 0;
     D_800A380C = 0;

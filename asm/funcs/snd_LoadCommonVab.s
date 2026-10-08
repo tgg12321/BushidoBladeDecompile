@@ -10,7 +10,7 @@ glabel snd_LoadCommonVab
     /* 4BFE4 8005B7E4 B4588424 */  addiu      $a0, $a0, %lo(D_800158B4)
     /* 4BFE8 8005B7E8 82E4010C */  jal        printf
     /* 4BFEC 8005B7EC 21282002 */   addu      $a1, $s1, $zero
-    /* 4BFF0 8005B7F0 D0DB000C */  jal        game_FrameLoop
+    /* 4BFF0 8005B7F0 D0DB000C */  jal        func_80036F40
     /* 4BFF4 8005B7F4 00000000 */   nop
     /* 4BFF8 8005B7F8 02000424 */  addiu      $a0, $zero, 0x2
     /* 4BFFC 8005B7FC AADB000C */  jal        func_80036EA8
@@ -21,7 +21,7 @@ glabel snd_LoadCommonVab
     /* 4C010 8005B810 21282002 */   addu      $a1, $s1, $zero
     /* 4C014 8005B814 CADB000C */  jal        cdrom_GetFileSize
     /* 4C018 8005B818 21200002 */   addu      $a0, $s0, $zero
-    /* 4C01C 8005B81C D0DB000C */  jal        game_FrameLoop
+    /* 4C01C 8005B81C D0DB000C */  jal        func_80036F40
     /* 4C020 8005B820 21804000 */   addu      $s0, $v0, $zero
     /* 4C024 8005B824 21202002 */  addu       $a0, $s1, $zero
     /* 4C028 8005B828 21280000 */  addu       $a1, $zero, $zero

@@ -3,10 +3,10 @@ glabel func_8003B870
     /* 2C074 8003B874 0A80053C */  lui        $a1, %hi(D_800A376A)
     /* 2C078 8003B878 6A37A590 */  lbu        $a1, %lo(D_800A376A)($a1)
     /* 2C07C 8003B87C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2C080 8003B880 8105010C */  jal        player_SetCharId
+    /* 2C080 8003B880 8105010C */  jal        func_80041604
     /* 2C084 8003B884 21200000 */   addu      $a0, $zero, $zero
     /* 2C088 8003B888 01000424 */  addiu      $a0, $zero, 0x1
-    /* 2C08C 8003B88C 8105010C */  jal        player_SetCharId
+    /* 2C08C 8003B88C 8105010C */  jal        func_80041604
     /* 2C090 8003B890 21280000 */   addu      $a1, $zero, $zero
     /* 2C094 8003B894 6B6D010C */  jal        func_8005B5AC
     /* 2C098 8003B898 00000000 */   nop

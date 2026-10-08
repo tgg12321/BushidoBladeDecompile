@@ -11,7 +11,7 @@ glabel func_800602AC
     /* 50AD0 800602D0 21202002 */  addu       $a0, $s1, $zero
     /* 50AD4 800602D4 66DB000C */  jal        cdrom_StartRead
     /* 50AD8 800602D8 21280002 */   addu      $a1, $s0, $zero
-    /* 50ADC 800602DC D0DB000C */  jal        game_FrameLoop
+    /* 50ADC 800602DC D0DB000C */  jal        func_80036F40
     /* 50AE0 800602E0 00000000 */   nop
     /* 50AE4 800602E4 CADB000C */  jal        cdrom_GetFileSize
     /* 50AE8 800602E8 21202002 */   addu      $a0, $s1, $zero

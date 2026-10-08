@@ -12,14 +12,14 @@ glabel func_8005B8B8
     /* 4C0E0 8005B8E0 02000424 */  addiu      $a0, $zero, 0x2
     /* 4C0E4 8005B8E4 AADB000C */  jal        func_80036EA8
     /* 4C0E8 8005B8E8 5D000524 */   addiu     $a1, $zero, 0x5D
-    /* 4C0EC 8005B8EC D0DB000C */  jal        game_FrameLoop
+    /* 4C0EC 8005B8EC D0DB000C */  jal        func_80036F40
     /* 4C0F0 8005B8F0 21804000 */   addu      $s0, $v0, $zero
     /* 4C0F4 8005B8F4 21200002 */  addu       $a0, $s0, $zero
     /* 4C0F8 8005B8F8 66DB000C */  jal        cdrom_StartRead
     /* 4C0FC 8005B8FC 21286002 */   addu      $a1, $s3, $zero
     /* 4C100 8005B900 CADB000C */  jal        cdrom_GetFileSize
     /* 4C104 8005B904 21200002 */   addu      $a0, $s0, $zero
-    /* 4C108 8005B908 D0DB000C */  jal        game_FrameLoop
+    /* 4C108 8005B908 D0DB000C */  jal        func_80036F40
     /* 4C10C 8005B90C 21884000 */   addu      $s1, $v0, $zero
     /* 4C110 8005B910 21206002 */  addu       $a0, $s3, $zero
     /* 4C114 8005B914 08000524 */  addiu      $a1, $zero, 0x8
@@ -29,7 +29,7 @@ glabel func_8005B8B8
     /* 4C124 8005B924 5E000524 */  addiu      $a1, $zero, 0x5E
     /* 4C128 8005B928 AADB000C */  jal        func_80036EA8
     /* 4C12C 8005B92C 21804000 */   addu      $s0, $v0, $zero
-    /* 4C130 8005B930 D0DB000C */  jal        game_FrameLoop
+    /* 4C130 8005B930 D0DB000C */  jal        func_80036F40
     /* 4C134 8005B934 21884000 */   addu      $s1, $v0, $zero
     /* 4C138 8005B938 21202002 */  addu       $a0, $s1, $zero
     /* 4C13C 8005B93C 21907002 */  addu       $s2, $s3, $s0
@@ -37,7 +37,7 @@ glabel func_8005B8B8
     /* 4C144 8005B944 21284002 */   addu      $a1, $s2, $zero
     /* 4C148 8005B948 CADB000C */  jal        cdrom_GetFileSize
     /* 4C14C 8005B94C 21202002 */   addu      $a0, $s1, $zero
-    /* 4C150 8005B950 D0DB000C */  jal        game_FrameLoop
+    /* 4C150 8005B950 D0DB000C */  jal        func_80036F40
     /* 4C154 8005B954 21885000 */   addu      $s1, $v0, $s0
     /* 4C158 8005B958 21204002 */  addu       $a0, $s2, $zero
     /* 4C15C 8005B95C 04000524 */  addiu      $a1, $zero, 0x4

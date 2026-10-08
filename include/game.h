@@ -1927,10 +1927,10 @@ typedef struct {
  * (func_80041430 rebases them as 0x15, 0x14 and 0x14 records), then three
  * 20-entry pointer tables.
  * - unk_00: flag word; func_80040594 sets bit 1 and keeps the character id in
- * bits 16..20, which player_SetCharId / func_80041650 read as the upper
+ * bits 16..20, which func_80041604 / func_80041650 read as the upper
  * halfword (half[1] & 0x1F).
  * - unk_04: the player index (func_80045878's a0); unk_06: a state
- * func_80040594 clears (func_80045878 sets 1, player_SetCharId -2); unk_08:
+ * func_80040594 clears (func_80045878 sets 1, func_80041604 -2); unk_08:
  * func_80045878's a1, indexing the D_80094C68 / D_80094B48 tables.
  * - unk_10 / unk_14 / unk_16: func_80045878's a0 / a0 / a0 + 3 (unk_14 / unk_16
  * are the func_80044010 / func_800432A0 ids); unk_12: the Q12 scale

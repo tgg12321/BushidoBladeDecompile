@@ -129,13 +129,13 @@ D_800EEDF0 = 0x800EEDF0; // transform record (Unk80101DF0Record layout); func_80
 D_800EEDF8 = 0x800EEDF8; // +8 of D_800EEDF0: g_anim_func_table index (set to 4)  // data-wave 2026-10-07: was g_cam_interp
 
 // === Stage ===
-g_stage_id = 0x80099478; // current stage index
-g_stage_variant = 0x8009947A; // stage variant
-g_stage_data = 0x8009947C; // stage data byte
-g_stage_collision = 0x800A8FB0; // collision grid 32x32
-g_stage_light_pos = 0x800A93B0; // light position [3]
-g_stage_light_dir = 0x800A93BC; // light direction [3]
-g_stage_init_tbl = 0x800948BC; // per-stage init functions
+D_80099478 = 0x80099478; // current stage index  // data-wave 2026-10-08: was g_stage_id
+D_8009947A = 0x8009947A; // stage variant  // data-wave 2026-10-08: was g_stage_variant
+D_8009947C = 0x8009947C; // stage data byte  // data-wave 2026-10-08: was g_stage_data
+D_800A8FB0 = 0x800A8FB0; // collision grid 32x32  // data-wave 2026-10-08: was g_stage_collision
+D_800A93B0 = 0x800A93B0; // light position [3]  // data-wave 2026-10-08: was g_stage_light_pos
+D_800A93BC = 0x800A93BC; // light direction [3]  // data-wave 2026-10-08: was g_stage_light_dir
+D_800948BC = 0x800948BC; // per-stage init functions  // data-wave 2026-10-08: was g_stage_init_tbl
 
 // === Game State ===
 D_800A336C = 0x800A336C; // game mode/state  // data-wave 2026-09-25: was g_game_mode

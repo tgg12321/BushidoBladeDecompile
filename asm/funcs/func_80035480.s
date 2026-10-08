@@ -14,9 +14,9 @@ glabel func_80035480
   .L800354B0:
     /* 25CB0 800354B0 3783000C */  jal        func_80020CDC
     /* 25CB4 800354B4 00000000 */   nop
-    /* 25CB8 800354B8 7105010C */  jal        player_Destroy
+    /* 25CB8 800354B8 7105010C */  jal        func_800415C4
     /* 25CBC 800354BC 21200000 */   addu      $a0, $zero, $zero
-    /* 25CC0 800354C0 7105010C */  jal        player_Destroy
+    /* 25CC0 800354C0 7105010C */  jal        func_800415C4
     /* 25CC4 800354C4 01000424 */   addiu     $a0, $zero, 0x1
     /* 25CC8 800354C8 1D5B000C */  jal        eff_ClearInitFlag
     /* 25CCC 800354CC 00000000 */   nop

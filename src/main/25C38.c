@@ -38,8 +38,8 @@ void func_80035480(void) {
         func_8003A41C();
     }
     func_80020CDC();
-    player_Destroy(0);
-    player_Destroy(1);
+    func_800415C4(0);
+    func_800415C4(1);
     eff_ClearInitFlag();
     if (D_800A31D8 != 0) {
         func_8005B72C();
@@ -395,8 +395,8 @@ void func_80035DC8(void) {
     gpu_ResetGraphMode1();
     func_80016888();
     func_80020CDC();
-    player_Destroy(0);
-    player_Destroy(1);
+    func_800415C4(0);
+    func_800415C4(1);
     eff_ClearInitFlag();
     func_8005B72C();
     func_80077820((s32)0x80118800);

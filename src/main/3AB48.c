@@ -3571,11 +3571,11 @@ s32 snd_LoadCommonVab(s32 arg0) {
 
     func_800858D0(0);
     printf(&D_800158B4, arg0);
-    game_FrameLoop();
+    func_80036F40();
     temp_v0 = func_80036EA8(2, 1);
     cdrom_StartRead(temp_v0, arg0);
     temp_s0 = cdrom_GetFileSize(temp_v0);
-    game_FrameLoop();
+    func_80036F40();
     D_800A3408 = 0;
     D_800A340C = 0x1010;
     g_vab_sticky_sbaddr = 0x1010;
@@ -3603,16 +3603,16 @@ s32 func_8005B8B8(s32 arg0) {
     func_8005B868();
     func_800858D0(0);
     t0 = func_80036EA8(2, 0x5D);
-    game_FrameLoop();
+    func_80036F40();
     cdrom_StartRead(t0, arg0);
     size = cdrom_GetFileSize(t0);
-    game_FrameLoop();
+    func_80036F40();
     ret = func_8005C2A8((Unk8005C2A8Pack *)arg0, 8, arg0 + size);
     t0_2 = func_80036EA8(2, 0x5E);
-    game_FrameLoop();
+    func_80036F40();
     cdrom_StartRead(t0_2, arg0 + ret);
     size = cdrom_GetFileSize(t0_2) + ret;
-    game_FrameLoop();
+    func_80036F40();
     return func_8005C2A8((Unk8005C2A8Pack *)(arg0 + ret), 4, arg0 + size) + ret;
 }
 
@@ -3635,10 +3635,10 @@ s32 func_8005B9FC(s32 a0) {
     s32 size;
     func_8005B9C4();
     task = func_80036EA8(2, 8);
-    game_FrameLoop();
+    func_80036F40();
     cdrom_StartRead(task, a0);
     size = cdrom_GetFileSize(task);
-    game_FrameLoop();
+    func_80036F40();
     return func_8005C2A8((Unk8005C2A8Pack *)a0, 9, a0 + size);
 }
 
@@ -3674,10 +3674,10 @@ s32 func_8005BA8C(s32 hdr, s32 arg1, s32 arg2, s32 arg3) {
         g_vab_vb_sbaddr[g_vab_id_list[i]] = 0;
     }
     task = func_80036EA8(2, arg1 + 9);
-    game_FrameLoop();
+    func_80036F40();
     cdrom_StartRead(task, (s32)p);
     size = cdrom_GetFileSize(task);
-    game_FrameLoop();
+    func_80036F40();
     ((s32 *)p)[12] += (s32)p;
     func_80062020(((s32 *)p)[12]);
     count = 3;
@@ -5296,7 +5296,7 @@ void func_8005FBC8(s32 arg0, u8 *arg1) {
     s32 s0;
     s0 = func_80036EA8(2, arg0 + 0x33);
     cdrom_StartRead(s0, (s32)arg1);
-    game_FrameLoop();
+    func_80036F40();
     cdrom_GetFileSize(s0);
     r1 = D_800A327C;
     r2 = D_800A3284;
@@ -5483,7 +5483,7 @@ void func_800602AC(s32 arg0, s32 *arg1) {
     u8 *q;
     s1 = func_80036EA8(2, arg0 + 0x3D);
     cdrom_StartRead(s1, (s32)arg1);
-    game_FrameLoop();
+    func_80036F40();
     cdrom_GetFileSize(s1);
     arg1[0] = arg1[0] + (s32)arg1;
     arg1[1] = arg1[1] + (s32)arg1;

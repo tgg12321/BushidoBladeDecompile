@@ -7,7 +7,7 @@ glabel func_800372C0
     /* 27AD4 800372D4 B0DB000C */  jal        cdrom_Pause
     /* 27AD8 800372D8 00000000 */   nop
   .L800372DC:
-    /* 27ADC 800372DC D0DB000C */  jal        game_FrameLoop
+    /* 27ADC 800372DC D0DB000C */  jal        func_80036F40
     /* 27AE0 800372E0 00000000 */   nop
     /* 27AE4 800372E4 1000BF8F */  lw         $ra, 0x10($sp)
     /* 27AE8 800372E8 1800BD27 */  addiu      $sp, $sp, 0x18

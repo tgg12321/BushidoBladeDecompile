@@ -178,7 +178,7 @@ void func_80040594(Unk80045878Obj *a0) {
     count = rmd[0];
     sec = (s32 *)((s32)rmd + (((u32)rmd[count] >> 2) << 2));
 
-    if (seq_GetState() == 0)
+    if (func_80045194() == 0)
         goto call_b644;
     if (a0->unk_04 == 1)
         goto after_b644;

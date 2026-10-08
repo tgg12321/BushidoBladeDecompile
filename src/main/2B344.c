@@ -245,7 +245,7 @@ void func_8003B2C8(void) {
         D_800A376A = 0;
         D_80102778.unk_4[0] = v0;
     }
-    player_SetCharId(0, 0);
+    func_80041604(0, 0);
 }
 
 void func_8003B328(void) {
@@ -258,7 +258,7 @@ void func_8003B328(void) {
     D_800A36F4 = v_376A;
     D_80102778.unk_4[0] = v_3836;
     D_800A376A = v_36C8;
-    player_SetCharId(0, v_36C8);
+    func_80041604(0, v_36C8);
     func_80022568(D_80101EC8);
 }
 
@@ -366,7 +366,7 @@ void func_8003B5A4(void) {
             chardata[0] = byte0;
             chardata[2] = p[1];
             if ((s8)byte0 == D_800A3915) {
-                player_SetCharId(1, D_800A36F4);
+                func_80041604(1, D_800A36F4);
             }
             func_8003AF40(1);
             func_8003AFFC();
@@ -431,8 +431,8 @@ void func_8003B5A4(void) {
 }
 
 void func_8003B870(void) {
-    player_SetCharId(0, D_800A376A);
-    player_SetCharId(1, 0);
+    func_80041604(0, D_800A376A);
+    func_80041604(1, 0);
     func_8005B5AC();
     func_80016888();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
@@ -475,7 +475,7 @@ extern Unk800A4750Rec D_800A4750[];
 extern Unk800A6690Rec D_800A6690[];
 extern s16 D_800A7FE0[32][32];
 extern u16 D_800A87E0[];
-extern u8 g_stage_collision[];
+extern u8 D_800A8FB0[];
 
 extern void func_8003AF40(s32);
 
@@ -619,8 +619,8 @@ void func_8003BE10(void) {
     gpu_ResetGraphMode1();
     func_80016888();
     func_80020CDC();
-    player_Destroy(0);
-    player_Destroy(1);
+    func_800415C4(0);
+    func_800415C4(1);
     eff_ClearInitFlag();
     func_8005B72C();
     func_80078824((s32)0x80118800);
@@ -702,8 +702,8 @@ void func_8003BFC4(void) {
     s32 v;
     gpu_ResetGraphMode1();
     func_80020CDC();
-    player_Destroy(0);
-    player_Destroy(1);
+    func_800415C4(0);
+    func_800415C4(1);
     eff_ClearInitFlag();
     v = func_80045814();
     func_80037540(v, (s32)0x80118000, 1, 0xCF8, 0xB01);
@@ -2108,7 +2108,7 @@ void func_8003E6D8(s32 arg0) {
             if (bits < 0) {
                 vidx = D_800A7FE0[row][col];
                 if (vidx >= 0) {
-                    a3 = g_stage_collision[row * 0x20 + col];
+                    a3 = D_800A8FB0[row * 0x20 + col];
                     do {
                         t0 = D_800A87E0[vidx++];
                         v1 = t0 & 0x7FFF;
@@ -2146,8 +2146,8 @@ void func_8003E6D8(s32 arg0) {
         ((Unk800A6690Rec *)*g_draw_queue_cursor)->unk58 = 0;
         g_draw_queue_cursor++;
     }
-    if (g_stage_init_tbl[stage_GetId()].unk4 != 0) {
-        g_stage_init_tbl[stage_GetId()].unk4();
+    if (D_800948BC[stage_GetId()].unk4 != 0) {
+        D_800948BC[stage_GetId()].unk4();
     }
     pos[0] = -D_80101DF0.xf.rot.vx;
     pos[1] = -D_80101DF0.xf.rot.vy;
@@ -2205,7 +2205,7 @@ skip:
                 if (t2 < 0) {
                     vidx = D_800A7FE0[t4][t1];
                     if (vidx >= 0) {
-                        a3 = g_stage_collision[t4 * 0x20 + t1];
+                        a3 = D_800A8FB0[t4 * 0x20 + t1];
                         do {
                             t0 = D_800A87E0[vidx++];
                             v1 = t0 & 0x7FFF;
@@ -2342,8 +2342,8 @@ extern void gte_SetMatrixRotTransIR(MATRIX *, SVECTOR *, VECTOR *);
 extern s32 D_80094A6C[];
 
 void func_8003F168(void) {
-    if (g_stage_init_tbl[stage_GetId()].init != 0) {
-        g_stage_init_tbl[stage_GetId()].init();
+    if (D_800948BC[stage_GetId()].init != 0) {
+        D_800948BC[stage_GetId()].init();
     }
 }
 
@@ -2383,7 +2383,7 @@ void func_8003F274(void) {
     s32 data;
     s32 adj_i;
     s32 adj_j;
-    s32 *ptr = (s32 *)g_stage_collision;
+    s32 *ptr = (s32 *)D_800A8FB0;
 
     i = 0xFF;
     do {
@@ -2409,7 +2409,7 @@ void func_8003F274(void) {
                         u32 x = (u32)(col_center + adj_j);
                         if (x < 0x20) {
                             s32 bits = (data >> ((15 - j) * 2)) & 3;
-                            g_stage_collision[(y << 5) + x] |= bits;
+                            D_800A8FB0[(y << 5) + x] |= bits;
                         }
                     }
                 }
@@ -2422,7 +2422,7 @@ void func_8003F388(s16 *a0) {
     s32 x = a0[0] + 0x10;
     s32 y = a0[2] + 0x10;
     if ((u32)x < 0x20 && (u32)y < 0x20) {
-        g_stage_collision[y * 32 + x] |= 0x4;
+        D_800A8FB0[y * 32 + x] |= 0x4;
     }
 }
 
@@ -2430,7 +2430,7 @@ void func_8003F3D4(s16 *a0) {
     s32 x = a0[0] + 0x10;
     s32 y = a0[2] + 0x10;
     if ((u32)x < 0x20 && (u32)y < 0x20) {
-        g_stage_collision[y * 32 + x] |= 0x8;
+        D_800A8FB0[y * 32 + x] |= 0x8;
     }
 }
 
@@ -2461,31 +2461,31 @@ void func_8003F420(s32 a0, s32 a1) {
 }
 
 void func_8003F52C(s32 a0, s32 a1, s32 a2) {
-    g_stage_collision[a1 * 32 + a0] = a2 & 3;
+    D_800A8FB0[a1 * 32 + a0] = a2 & 3;
 }
 
-u32 func_8003F54C(s32 a0, s32 a1) { return g_stage_collision[a1 * 32 + a0]; }
+u32 func_8003F54C(s32 a0, s32 a1) { return D_800A8FB0[a1 * 32 + a0]; }
 
-void stage_ClearLighting(void) {
+void func_8003F568(void) {
     g_game_flag_b = 0;
     g_game_flag_a = 0;
-    g_stage_light_pos[2] = 0;
-    g_stage_light_pos[1] = 0;
-    g_stage_light_pos[0] = 0;
-    g_stage_light_dir[2] = 0;
-    g_stage_light_dir[1] = 0;
-    g_stage_light_dir[0] = 0;
+    D_800A93B0[2] = 0;
+    D_800A93B0[1] = 0;
+    D_800A93B0[0] = 0;
+    D_800A93BC[2] = 0;
+    D_800A93BC[1] = 0;
+    D_800A93BC[0] = 0;
 }
 
 void func_8003F5A8(s32 a0, s32 a1, s32 a2) {
-    g_stage_light_pos[a2] = a0;
-    g_stage_light_dir[a2] = a1;
+    D_800A93B0[a2] = a0;
+    D_800A93BC[a2] = a1;
 }
 
 void func_8003F5CC(void) {
-    func_80017F98(g_stage_light_pos[0], g_stage_light_dir[0], 0);
-    func_80017F98(g_stage_light_pos[1], g_stage_light_dir[1], 1);
-    func_80017F98(g_stage_light_pos[2], g_stage_light_dir[2], 2);
+    func_80017F98(D_800A93B0[0], D_800A93BC[0], 0);
+    func_80017F98(D_800A93B0[1], D_800A93BC[1], 1);
+    func_80017F98(D_800A93B0[2], D_800A93BC[2], 2);
 }
 
 typedef struct {
