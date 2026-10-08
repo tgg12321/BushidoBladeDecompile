@@ -289,10 +289,16 @@ if [ "$INSTALL" = 1 ]; then
   if [ $rc -ne 0 ]; then
     echo "== NOT installing: self-check did not pass" >&2; exit $rc
   fi
-  PREV=$(sha1sum "$LIVE/build/cc1" | cut -d' ' -f1)
+  PREV=$(sha1sum "$LIVE/build/cc1" 2>/dev/null | cut -d' ' -f1)
   KEEP="$LIVE/build/cc1.PRE-RECIPE-${PREV:0:8}"
   echo "== installing over $LIVE/build/cc1"
-  [ -f "$KEEP" ] || cp -a "$LIVE/build/cc1" "$KEEP"
+  if [ -z "$PREV" ]; then
+    # missing or a dangling link (2026-10-08): nothing to keep; drop the link itself
+    echo "   no previous binary at $LIVE/build/cc1 (missing or dangling); nothing retained"
+    [ -L "$LIVE/build/cc1" ] && rm -f "$LIVE/build/cc1"
+  else
+    [ -f "$KEEP" ] || cp -a "$LIVE/build/cc1" "$KEEP"
+  fi
   # cp-then-rename: a plain cp fails ("Text file busy") while another
   # process runs the compiler; the rename leaves running processes on the old inode.
   cp "$SCRATCH/cc1" "$LIVE/build/cc1.new" && mv -f "$LIVE/build/cc1.new" "$LIVE/build/cc1" || {

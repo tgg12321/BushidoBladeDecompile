@@ -83,3 +83,13 @@ mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC
 - **Permanent guard:** `tools/hooks/shell_footgun_guard.py` rule 5 (04171ba7f) blocks `git worktree remove`
   and recursive deletes under `bb2-worktrees` unless they go through `tools/safe_remove_worktree.ps1`
   (detaches junctions with `cmd /c rmdir` first). Unit-tested on 8 cases.
+
+## 2026-10-08 -- FIXED (worktree-symlink/worktree-dep-missing): oracle cc1 replaced by a dangling symlink
+- **Root cause:** a reviewer's inline `wsl bash -c '...R=...; cd "$R/..." && ...; ln -sf "$R/..." ...'` expanded `$R`
+  to empty in the nested shells; the `cd` failed and the `ln -sf` ran in the main checkout, replacing
+  `tools/gcc-2.7.2/build/cc1` with a link to `/tools/gcc-2.7.2/build/cc1`.
+- **Fix:** `bash tools/build_oracle_cc1.sh --install` rebuilt it bit-identical (sha1 ac80146b, self-check PASS over
+  228 TUs); `verify-oracle --rebuild` SHA1 == oracle. The install step now handles a missing or dangling cc1.
+- **Permanent guard:** `tools/hooks/shell_footgun_guard.py` blocks a `$VAR` expansion plus a file write inside a
+  `wsl bash -c` body, and any direct ln/cp/mv/rm of `build/cc1` (install only via the script); `wsl.exe` now counts
+  as wsl. Unit-tested on 14 cases.

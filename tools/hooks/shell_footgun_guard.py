@@ -29,10 +29,15 @@ import sys
 
 NESTED_QUOTE_RE = re.compile(r"""'"'"'|'\\''""")
 ENGINE_DIRECT_RE = re.compile(r"\bpython3?\s+-m\s+engine\.cli\b")
-WSL_NEST_RE = re.compile(r"\bwsl\s+bash\s+-l?c\b")
+WSL_NEST_RE = re.compile(r"\bwsl(?:\.exe)?\s+bash\s+-l?c\b")
 HEREDOC_RE = re.compile(r"<<-?\s*[\"']?\w")
 FUNCDEF_RE = re.compile(r"\b[A-Za-z_]\w*\s*\(\)\s*\{")
 AWK_SED_DOLLAR_RE = re.compile(r"\b(?:awk|sed)\b[^|;&]*\\?\$")
+WSL_VAR_RE = re.compile(r"\$\{?[A-Za-z_]")
+WSL_WRITE_RE = re.compile(r"\b(?:ln|cp|mv|rm|tee|install)\s|[^>&2]>{1,2}\s*[^&\s]")
+ORACLE_CC1_WRITE_RE = re.compile(
+    r"\b(?:ln|cp|mv|rm|install|Copy-Item|Move-Item|Remove-Item|New-Item)\b[^\n;|&]*"
+    r"gcc-2\.7\.2[/\\]build[/\\]cc1(?![.\w])", re.IGNORECASE)
 # Rule 4: a heredoc-fed `python3 - <<TAG` run by the WINDOWS-side shell (Git Bash's
 # `python3` is the Windows Store Python) writes text-mode files with CRLF. Four
 # recurrences (2026-08-06, 09-01, 09-04, 09-22) — see memory
@@ -80,6 +85,15 @@ def _strip_heredoc_bodies(cmd: str) -> str:
     return "\n".join(out)
 
 
+_WSL_BODY_RE = re.compile(r"""(?:^|[;&|(\s])wsl(?:\.exe)?\s+bash\s+-l?c\s+(?:'([^']*)'|"((?:[^"\\]|\\.)*)")""")
+
+
+def _wsl_bodies(code: str) -> list[str]:
+    """The script argument of every `wsl bash -c '...'` / "..." invocation (the text
+    the nested bash runs), not prose that merely mentions it."""
+    return [a or b for a, b in _WSL_BODY_RE.findall(code)]
+
+
 def reasons_for(cmd: str) -> list[str]:
     out: list[str] = []
     # The wsl-nesting checks below look at the command, not heredoc data.
@@ -118,6 +132,15 @@ def reasons_for(cmd: str) -> list[str]:
                 "Shell function definition `() { ... }` inside `wsl bash -c '...'`. "
                 "Put the logic in a .py/.sh file in tmp/ and run that file instead."
             )
+        if any(WSL_VAR_RE.search(b) and WSL_WRITE_RE.search(b) for b in _wsl_bodies(code)):
+            out.append(
+                "`$VAR` expansion plus a file write (ln/cp/mv/rm/tee/>) inside `wsl bash "
+                "-c '...'`. A variable that expands to empty in one of the nested shells "
+                "turns `cd \"$R/x\" && ...; ln -sf \"$R/...\" ...` into a write in the CURRENT "
+                "directory, the main checkout (2026-10-08: main's oracle cc1 replaced by a "
+                "dangling symlink). Write a .sh under tmp/ that starts `set -eu` and `cd "
+                "<absolute path>`, and run that file."
+            )
         if AWK_SED_DOLLAR_RE.search(cmd):
             out.append(
                 "Inline awk/sed touching `$` inside `wsl bash -c '...'`. The `$` is parsed "
@@ -146,6 +169,15 @@ def reasons_for(cmd: str) -> list[str]:
             "build, and a recursive delete follows them and wipes MAIN's copies. Use "
             "`pwsh tools/safe_remove_worktree.ps1 <worktree-path>` (detaches junctions "
             "with `cmd /c rmdir`, then runs `git worktree remove`)."
+        )
+    # Rule 6: the operative oracle compiler is installed ONLY by
+    # tools/build_oracle_cc1.sh --install (self-checked); a direct ln/cp/mv/rm on it
+    # is how it was lost on 2026-10-08.
+    if ORACLE_CC1_WRITE_RE.search(code) and "build_oracle_cc1" not in code:
+        out.append(
+            "Direct write to the oracle compiler tools/gcc-2.7.2/build/cc1. It is "
+            "installed only by `bash tools/build_oracle_cc1.sh --install` "
+            "(docs/ORACLE-COMPILER.md); never ln/cp/mv/rm it by hand."
         )
     return out
 
