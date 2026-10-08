@@ -2,7 +2,7 @@
 # tools/codex_eng.ps1 <make | engine-subcommand args...>
 #
 # The ONE build/score door for a sandboxed Codex worker (skill: codex-worker). Codex's Windows
-# sandbox cannot start WSL; the Codex allow-rule ~/.codex/rules/bb2-codex-eng.rules (installed by
+# sandbox cannot start WSL; the Codex allow-rule ~/.codex-claude/rules/bb2-codex-eng.rules (installed by
 # tools/codex_worker.py) runs exactly `pwsh -NoProfile -File <MAIN>/tools/codex_eng.ps1 ...`
 # OUTSIDE the sandbox. This copy is main's, which the sandbox cannot write.
 #

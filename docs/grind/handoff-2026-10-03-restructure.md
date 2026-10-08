@@ -113,9 +113,29 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
    SOTN bar with advisory evidence classes; identifier-only key moves certified by `tools/naming_keycheck.py` +
    the reviewer's R6; N6 file names only for single-subsystem files). Reviewer: `.claude/agents/naming-reviewer.md`.
    Census origin `sotn-review` (CORROBORATED) from `docs/naming/phase3/<wave>/func_manifest*.csv`.
-   - **Next:** wave 1, the camera / model / stage candidates of the step-0 draft
-     (`memory/grind/phase3/step0_draft.txt` (d); each still needs the reviewer's full use list), then one
-     subsystem per wave with the 493 INFERRED names audited along the way, then types / members, then N6 files.
+   - Landed: wave01 c560d4f52 (camera_CalcEye, g_draw_queue / _cursor, g_prim_buf_cursor; 4 resets) + its
+     prose follow-up 12d46a075; gate fixes 7a26d87ee / 9ee4ff1d7 (registry recipes, formatter landing).
+   - **Next session starts here: apply wave02.** `docs/naming/phase3/wave02/` (untracked; 146 func + 4 data
+     RESET rows, all CONFIRM after four fresh pre-apply naming-reviewer batches): camera_GetBoneData,
+     g_cam_bone_data (+_h0/_h1), the 0x800A38B8 byte counter, and 145 zero-use analyzer `*_helper` tags.
+     Apply per naming-bar step 4 (census, naming_wave, temp commit, data_wave, soft reset, `naming_keycheck
+     --from-manifests ... --sub-comments`, format), gates, post-apply R6, one commit. Reviewer notes for R6:
+     tools/rename_funcs.py:46 becomes a self-map; docs/engine/main_loop.md:242 and cross_reference.md:187 cite
+     retired names.
+   - Wave 3 candidates: the 47 code-used analyzer tags (C4 inventory `tmp/codex/c4-helper-tags-result.md`:
+     efc_spawn, draw_anim_obj, ...); specific `mode_` names for the three D_800A3834 writers 0x8001C8DC /
+     0x80033FE4 / 0x8003B534; g_cam_bone_data_cached (0x800A3778, never read) and g_cam_bone_data2; re-mined
+     names for camera_Place / light_ApplyPreset / g_active_camera; then the remaining ~340 INFERRED names by
+     subsystem; types (Rec44 -> CameraRec, Unk80045878Obj); members need per-scope keycheck pairs first.
+   - Codex lane (`tmp/codex/backlog.md`): C1 3353d059f and C3 212fb353c landed; C2 / C4 research done. All
+     Claude-driven Codex now runs in an isolated CODEX_HOME `~/.codex-claude` (owner choice 2026-10-07: the
+     owner's ~/.codex loads MCP servers / plugins that act outside the sandbox; the stale May
+     default.rules moved aside); read-only questions via `codex_worker.py research`. Owner's
+     ~/.codex/rules/bb2-codex-eng.rules is now unused by Claude runs (owner may move it aside).
+   - Debt: wire tools/check_retired_names.py into the integrity audit / hooks; bank the keycheck probe suites
+     (`tmp/p3s0/kc_test.sh`, `tmp/kcrev*/`) as engine tests; keycheck hygiene (same_tokens belt, clang-format
+     version check, report against the formatted text); comment nits (25C38 "these files", the Makefile
+     lb/lh section header); stale registry comments.
    - File split audit (2026-10-07, scripts `tmp/p3split/`, not kept): every byte-proven boundary is a cut; 9
      game-TU starts have no evidence either way (87A0, 175A4, 25C38, memcard, 28514, 28708, 2B344, 31CFC,
      31D3C) and no merge is provable; the large files hold several original TUs whose cuts the bytes cannot

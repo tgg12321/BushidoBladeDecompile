@@ -6,7 +6,7 @@ description: >-
   verifies it, fresh default-FAIL adversarial reviewers must PASS, then the commit is rebased,
   conflicts resolved, fast-forwarded onto main under the reintegration lock, and pushed. Use when
   asked to have Codex solve, fix or work an item or issue, or to orchestrate Codex agents on this
-  repo. Read-only Codex questions use the plain `codex` skill instead.
+  repo. Read-only Codex questions on this repo run through `codex_worker.py research` (a disposable snapshot worktree, never the main checkout).
 ---
 
 # Codex worker: one issue, scratch worktree to pushed main
@@ -149,7 +149,7 @@ reviewers on the new key. Repeat until every required kind PASSes on the same ke
 needs an owner ruling stops at step 0's rule.
 
 **7. Land.** `python tools/codex_worker.py land <item>` (use `--dry-run` first if you like). It
-refuses while a run is live. Then, in the trusted tree:
+refuses while any Codex run is live, and refuses unless Codex is idle before it rebases. Then, in the trusted tree:
 1. Rebases onto the current main if main moved, and re-creates scratch at the result.
 2. Re-checks the review gate.
 3. Re-commits the same tree, so the repo hooks run on the reviewed content.
@@ -176,9 +176,36 @@ only with the owner's OK. Then add the landed hash to the item's Status line in
 `tmp/codex/backlog.md`. Report: the item, run ids, Codex usage before→after, each reviewer and
 verdict, the build SHA1, the landed hash, and the push result.
 
+## Read-only research: `codex_worker.py research`
+
+Questions, inventories and second opinions run as
+`python tools/codex_worker.py research <label> --prompt-file f.md [--effort low] [--timeout N]`: a read-only Codex task in a
+disposable detached worktree at main's HEAD (`../bb2-worktrees/codexr-<label>`, tracked files only: no
+`build/`, `tmp/` or toolchain), removed after the run. Never point Codex at the main checkout, not even
+read-only: Claude edits, commits and lands there while it reads.
+
+Codex never blocks Claude's own mainline commits. The steps that delete or re-create an item's scratch tree
+(`land`'s and `rebase`'s rebases, `rebase --continue`, `layer2`, `cleanup`, and `commit` when formatting
+changed the tree) **refuse** (exit 2) unless no Codex task is running: a Codex process's writable reach cannot
+be bounded from outside its sandbox. Each check runs before anything moves or is removed, so a refusal there leaves
+nothing half-done; if a task starts mid-step, a later check refuses and re-running the step finishes it. `land`, `rebase`, `commit`, `layer2`
+and `cleanup` also refuse while any item's run is live (the pin is global).
+
+Every Codex task runs in the bridge's isolated home `~/.codex-claude` (owner choice 2026-10-07: the owner's
+`~/.codex` loads MCP servers and plugins that act outside the sandbox). The bridge rewrites its minimal config
+(every outside-sandbox feature off) and copies the login in; a launch refuses unless `codex mcp list`,
+`plugin list` and `features list` show nothing loaded and no mcp/plugins/hooks directory exists there.
+Every launch (`run`, `follow-up`, `research`) also refuses while any Codex task or process is running, while
+`~/.codex-claude/rules/` holds any `*.rules` file other than the build door (and the door, when present, must
+be exactly the door), and when the tree Codex runs in has a project-level `.codex/`. `research` also proves,
+from inside a read-only sandbox, that `%TEMP%/bb2_wsl_bridge`, main's `tmp/` and `.git`, the snapshot and the
+worktrees root deny writes and WSL cannot start. Preflight scripts run inline (`pwsh -EncodedCommand`), never
+from a file. The owner's `~/.codex/rules/bb2-codex-eng.rules` is no longer used by these runs; moving it
+aside is the owner's call.
+
 ## Codex's build door: `tools/codex_eng.ps1`
 
-`run` installs `~/.codex/rules/bb2-codex-eng.rules`, which lets exactly
+`run` installs `~/.codex-claude/rules/bb2-codex-eng.rules`, which lets exactly
 `pwsh -NoProfile -File "<main>/tools/codex_eng.ps1" <cmd>` run outside the sandbox, one command
 per shell call. That script is main's copy, which Codex can't edit, and it calls
 `codex_worker.py shadow --from-pin`. That path:
