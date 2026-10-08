@@ -83,7 +83,7 @@ glabel func_80046BF4
     /* 37538 80046D38 F0FF2426 */   addiu     $a0, $s1, -0x10
     /* 3753C 80046D3C 841C010C */  jal        func_80047210
     /* 37540 80046D40 00000000 */   nop
-    /* 37544 80046D44 9DFC000C */  jal        stage_InitCollision
+    /* 37544 80046D44 9DFC000C */  jal        func_8003F274
     /* 37548 80046D48 00000000 */   nop
     /* 3754C 80046D4C F40293AF */  sw         $s3, %gp_rel(D_800A33C0)($gp)
   .L80046D50:

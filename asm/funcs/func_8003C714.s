@@ -5,7 +5,7 @@ glabel func_8003C714
     /* 2CF20 8003C720 1800B0AF */   sw        $s0, 0x18($sp)
     /* 2CF24 8003C724 B0DC000C */  jal        func_800372C0
     /* 2CF28 8003C728 21804000 */   addu      $s0, $v0, $zero
-    /* 2CF2C 8003C72C 225A000C */  jal        gpu_InitDisplay
+    /* 2CF2C 8003C72C 225A000C */  jal        func_80016888
     /* 2CF30 8003C730 00000000 */   nop
     /* 2CF34 8003C734 D681010C */  jal        func_80060758
     /* 2CF38 8003C738 00000000 */   nop

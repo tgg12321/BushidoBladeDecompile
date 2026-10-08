@@ -1,7 +1,7 @@
 glabel func_8003C040
     /* 2C840 8003C040 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 2C844 8003C044 2400BFAF */  sw         $ra, 0x24($sp)
-    /* 2C848 8003C048 225A000C */  jal        gpu_InitDisplay
+    /* 2C848 8003C048 225A000C */  jal        func_80016888
     /* 2C84C 8003C04C 2000B0AF */   sw        $s0, 0x20($sp)
     /* 2C850 8003C050 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 2C854 8003C054 00000000 */   nop
@@ -14,7 +14,7 @@ glabel func_8003C040
     /* 2C870 8003C070 0200422C */  sltiu      $v0, $v0, 0x2
     /* 2C874 8003C074 03004010 */  beqz       $v0, .L8003C084
     /* 2C878 8003C078 00000000 */   nop
-    /* 2C87C 8003C07C 1D5B000C */  jal        file_ResetDmaFlag
+    /* 2C87C 8003C07C 1D5B000C */  jal        eff_ClearInitFlag
     /* 2C880 8003C080 00000000 */   nop
   .L8003C084:
     /* 2C884 8003C084 0A80033C */  lui        $v1, %hi(D_800A38A4)

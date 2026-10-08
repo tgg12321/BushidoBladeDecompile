@@ -33,14 +33,14 @@ extern u8 D_800A31D8;
 
 void func_80035480(void) {
     gpu_ResetGraphMode1();
-    gpu_InitDisplay();
+    func_80016888();
     if (D_800A31DA == 0) {
         func_8003A41C();
     }
     func_80020CDC();
     player_Destroy(0);
     player_Destroy(1);
-    file_ResetDmaFlag();
+    eff_ClearInitFlag();
     if (D_800A31D8 != 0) {
         func_8005B72C();
         D_800A390E = -1;
@@ -393,11 +393,11 @@ void func_80035828(void) {
 
 void func_80035DC8(void) {
     gpu_ResetGraphMode1();
-    gpu_InitDisplay();
+    func_80016888();
     func_80020CDC();
     player_Destroy(0);
     player_Destroy(1);
-    file_ResetDmaFlag();
+    eff_ClearInitFlag();
     func_8005B72C();
     func_80077820((s32)0x80118800);
     D_800A3834 = 0x1B;

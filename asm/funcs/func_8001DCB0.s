@@ -10,7 +10,7 @@ glabel func_8001DCB0
     /* E4D0 8001DCD0 14000224 */  addiu      $v0, $zero, 0x14
     /* E4D4 8001DCD4 05006210 */  beq        $v1, $v0, .L8001DCEC
     /* E4D8 8001DCD8 00000000 */   nop
-    /* E4DC 8001DCDC 225A000C */  jal        gpu_InitDisplay
+    /* E4DC 8001DCDC 225A000C */  jal        func_80016888
     /* E4E0 8001DCE0 00000000 */   nop
     /* E4E4 8001DCE4 345A000C */  jal        gpu_SetDispMaskOn
     /* E4E8 8001DCE8 00000000 */   nop

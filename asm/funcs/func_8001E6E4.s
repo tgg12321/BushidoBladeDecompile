@@ -62,8 +62,8 @@ glabel func_8001E6E4
     /* EFD0 8001E7D0 21202002 */  addu       $a0, $s1, $zero
     /* EFD4 8001E7D4 1984010C */  jal        func_80061064
     /* EFD8 8001E7D8 21280002 */   addu      $a1, $s0, $zero
-    /* EFDC 8001E7DC 0A80013C */  lui        $at, %hi(D_800A36B4)
-    /* EFE0 8001E7E0 B43632AC */  sw         $s2, %lo(D_800A36B4)($at)
+    /* EFDC 8001E7DC 0A80013C */  lui        $at, %hi(g_listener_cam)
+    /* EFE0 8001E7E0 B43632AC */  sw         $s2, %lo(g_listener_cam)($at)
     /* EFE4 8001E7E4 6C00BF8F */  lw         $ra, 0x6C($sp)
     /* EFE8 8001E7E8 6800B28F */  lw         $s2, 0x68($sp)
     /* EFEC 8001E7EC 6400B18F */  lw         $s1, 0x64($sp)

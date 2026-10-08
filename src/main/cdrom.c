@@ -223,7 +223,7 @@ void sys_Exec(s32 a0, s32 *a1, s32 a2) {
     EnterCriticalSection();
     Exec(&exec, a0, a1);
     sys_Init();
-    file_LoadSoundData();
+    snd_InitAndLoadCommonVab();
     VSync(0);
     SetDispMask(1);
 }

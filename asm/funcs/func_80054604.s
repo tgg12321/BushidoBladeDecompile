@@ -58,7 +58,7 @@ glabel func_80054604
     /* 44ED8 800546D8 21104300 */  addu       $v0, $v0, $v1
     /* 44EDC 800546DC 00004294 */  lhu        $v0, 0x0($v0)
     /* 44EE0 800546E0 000020A6 */  sh         $zero, 0x0($s1)
-    /* 44EE4 800546E4 C51B010C */  jal        stage_GetDataPtr
+    /* 44EE4 800546E4 C51B010C */  jal        func_80046F14
     /* 44EE8 800546E8 020022A6 */   sh        $v0, 0x2($s1)
     /* 44EEC 800546EC E619010C */  jal        stage_GetId
     /* 44EF0 800546F0 21804000 */   addu      $s0, $v0, $zero

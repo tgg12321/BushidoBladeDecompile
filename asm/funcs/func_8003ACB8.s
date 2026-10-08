@@ -94,7 +94,7 @@ glabel func_8003ACB8
   .L8003AE20:
     /* 2B620 8003AE20 0A80013C */  lui        $at, %hi(D_800A3904)
     /* 2B624 8003AE24 043922A4 */  sh         $v0, %lo(D_800A3904)($at)
-    /* 2B628 8003AE28 225A000C */  jal        gpu_InitDisplay
+    /* 2B628 8003AE28 225A000C */  jal        func_80016888
     /* 2B62C 8003AE2C 00000000 */   nop
     /* 2B630 8003AE30 345A000C */  jal        gpu_SetDispMaskOn
     /* 2B634 8003AE34 00000000 */   nop

@@ -188,8 +188,8 @@ glabel func_8001E404
     /* EEB4 8001E6B4 30004426 */   addiu     $a0, $s2, 0x30
     /* EEB8 8001E6B8 F5FC000C */  jal        func_8003F3D4
     /* EEBC 8001E6BC 38004426 */   addiu     $a0, $s2, 0x38
-    /* EEC0 8001E6C0 0A80013C */  lui        $at, %hi(D_800A36B4)
-    /* EEC4 8001E6C4 B43632AC */  sw         $s2, %lo(D_800A36B4)($at)
+    /* EEC0 8001E6C0 0A80013C */  lui        $at, %hi(g_listener_cam)
+    /* EEC4 8001E6C4 B43632AC */  sw         $s2, %lo(g_listener_cam)($at)
     /* EEC8 8001E6C8 6C00BF8F */  lw         $ra, 0x6C($sp)
     /* EECC 8001E6CC 6800B28F */  lw         $s2, 0x68($sp)
     /* EED0 8001E6D0 6400B18F */  lw         $s1, 0x64($sp)

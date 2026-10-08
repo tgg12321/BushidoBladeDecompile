@@ -115,7 +115,7 @@ s32 func_8003ACB8(void) {
         }
         D_800A3904 = var_v0;
     }
-    gpu_InitDisplay();
+    func_80016888();
     gpu_SetDispMaskOn();
     ResetRCnt(0xF2000001);
     return temp_s0;
@@ -434,7 +434,7 @@ void func_8003B870(void) {
     player_SetCharId(0, D_800A376A);
     player_SetCharId(1, 0);
     func_8005B5AC();
-    gpu_InitDisplay();
+    func_80016888();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     D_800A37B8 = 0;
     D_800A3834 = 0x17;
@@ -500,7 +500,7 @@ void func_8003B9D0(void) {
     func_8001DA2C();
     game_Cleanup();
     if (g_disp_enable != DISP_ACTIVE)
-        gpu_InitDisplay();
+        func_80016888();
     if (g_disp_enable != DISP_DISABLED)
         gpu_SetDispMaskOn();
     func_800174F4();
@@ -617,11 +617,11 @@ call_bar:
 
 void func_8003BE10(void) {
     gpu_ResetGraphMode1();
-    gpu_InitDisplay();
+    func_80016888();
     func_80020CDC();
     player_Destroy(0);
     player_Destroy(1);
-    file_ResetDmaFlag();
+    eff_ClearInitFlag();
     func_8005B72C();
     func_80078824((s32)0x80118800);
     snd_SerialMixOn();
@@ -704,10 +704,10 @@ void func_8003BFC4(void) {
     func_80020CDC();
     player_Destroy(0);
     player_Destroy(1);
-    file_ResetDmaFlag();
+    eff_ClearInitFlag();
     v = func_80045814();
     func_80037540(v, (s32)0x80118000, 1, 0xCF8, 0xB01);
-    game_Init();
+    func_80046B44();
     D_800A3834 = 8;
 }
 
@@ -719,11 +719,11 @@ void func_8003C040(void) {
     s32 a0;
     s32 sel;
     s8 *p;
-    gpu_InitDisplay();
+    func_80016888();
     gpu_ResetGraphMode1();
     func_80020CDC();
     if (((u32)(D_800A38A4 - 4)) < 2u) {
-        file_ResetDmaFlag();
+        eff_ClearInitFlag();
     }
     {
         if (D_800A38A4 == 6) {
@@ -935,7 +935,7 @@ void func_8003C714(void) {
 
     s0 = func_80077D00();
     func_800372C0();
-    gpu_InitDisplay();
+    func_80016888();
     func_80060758();
     i = 0;
     base = D_80106A50.times;
@@ -981,7 +981,7 @@ void func_8003C8B4(void) {
 }
 
 void func_8003C958(void) {
-    gpu_InitDisplay();
+    func_80016888();
     D_800A3817 = 0;
     D_800A3929 = 0;
     D_800A37B8 = 0;
@@ -1063,7 +1063,7 @@ void func_8003C9A4(void) {
 }
 
 void func_8003CCCC(void) {
-    gpu_InitDisplay();
+    func_80016888();
     game_Cleanup();
     D_800A37B8 = 0;
     D_800A3834 = 0x21;
@@ -1099,7 +1099,7 @@ void func_8003CE18(void) {
 
     func_8001DA2C();
     func_800372C0();
-    gpu_InitDisplay();
+    func_80016888();
     gpu_ResetGraphMode1();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     func_8003E22C();
@@ -2377,7 +2377,7 @@ void func_8003F218(s32 a0) {
 
 s32 func_8003F268(void) { return D_800A322C; }
 
-void stage_InitCollision(void) {
+void func_8003F274(void) {
     s32 i, j;
     s32 col_center, row_center;
     s32 data;
@@ -2485,9 +2485,9 @@ void stage_SetLightPosDir(s32 a0, s32 a1, s32 a2) {
 }
 
 void stage_ApplyLighting(void) {
-    sys_StubEmpty3(g_stage_light_pos[0], g_stage_light_dir[0], 0);
-    sys_StubEmpty3(g_stage_light_pos[1], g_stage_light_dir[1], 1);
-    sys_StubEmpty3(g_stage_light_pos[2], g_stage_light_dir[2], 2);
+    func_80017F98(g_stage_light_pos[0], g_stage_light_dir[0], 0);
+    func_80017F98(g_stage_light_pos[1], g_stage_light_dir[1], 1);
+    func_80017F98(g_stage_light_pos[2], g_stage_light_dir[2], 2);
 }
 
 typedef struct {
@@ -2554,8 +2554,8 @@ void func_8003F6D8(Scene *arg0) {
 }
 
 void func_8003F7F4(void) {
-    obj_ClearAll();
-    sys_StubEmpty2();
+    func_80017714();
+    func_80017F90();
     g_game_flag_a = 0;
     g_game_flag_b = 0;
 }
@@ -2680,7 +2680,7 @@ u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur) {
     }
 
     init.in.buf = cur;
-    cur = cur + obj_CalcOffset(init.in.count, point_count);
+    cur = cur + func_80017738(init.in.count, point_count);
     cur = ((u32)cur & 3) ? cur + 2 : cur;
 
     src = block;
@@ -2870,7 +2870,7 @@ void func_800400F8(Unk80045878Obj *a0) {
         s0 = 0;
         if (s2->count > s0) {
             do {
-                obj_Clear(s2->recs[s0].unk0);
+                func_80017E8C(s2->recs[s0].unk0);
                 s0++;
             } while (s0 < s2->count);
         }

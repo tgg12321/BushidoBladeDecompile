@@ -196,7 +196,7 @@ void func_80027640(Unk80101EC8Record *arg0) {
     s32 vz;
 
     idx = arg0->index;
-    tbl = stage_GetDataPtr();
+    tbl = func_80046F14();
     cnt = arg0->unk_34C;
     if (cnt < 0x40) {
         arg0->unk_34C = cnt + 1;
@@ -341,7 +341,7 @@ void func_80027A58(Unk80101EC8Record *a0) {
     if (v1 == a0->unk_88) {
         if (a0->unk_8A) {
             if (func_8002798C(a0)) {
-                u8 *v0 = game_GetPlayerData(a0->index);
+                u8 *v0 = func_80046DEC(a0->index);
                 func_80030900(a0, *(s32 *)(v0 + 0x4C) + 0x14);
                 a0->unk_8A = 0;
                 a0->unk_86 = a0->unk_84;
@@ -4419,7 +4419,7 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
 
     arg0->unk_08 = 1;
     arg0->unk_09 = arg1;
-    playerData = game_GetPlayerData(arg0->owner < 1);
+    playerData = func_80046DEC(arg0->owner < 1);
     rot_mat = &arg0->mtx;
     s2_ptr = (s32 *)playerData[arg0->unk_09];
 
@@ -4509,7 +4509,7 @@ void func_800300B4(Obj80106A78 *arg0) {
     MATRIX *mat;
     s32 lookup;
 
-    playerData = game_GetPlayerData(arg0->owner < 1);
+    playerData = func_80046DEC(arg0->owner < 1);
     mat = (MATRIX *)playerData[arg0->unk_09];
 
     /* PsyQ 4.5 inline_c.h macro gte_SetRotMatrix(r): the 5 packed
@@ -5607,9 +5607,9 @@ void func_800325E0(s32 arg0, s32 *arg1) {
     s32 pan_L;
     s32 pan_R;
 
-    dx = D_800A36B4->w20 - arg1[0];
-    dy = D_800A36B4->w24 - arg1[1];
-    dz = D_800A36B4->w28 - arg1[2];
+    dx = g_listener_cam->w20 - arg1[0];
+    dy = g_listener_cam->w24 - arg1[1];
+    dz = g_listener_cam->w28 - arg1[2];
 
     if (((u32)(dx + 0x9C40) > 0x13880U) || ((u32)(dz + 0x9C40) > 0x13880U)) {
         dist_volume = 0x9C40;
@@ -5660,7 +5660,7 @@ void func_800325E0(s32 arg0, s32 *arg1) {
         distance_scale = 0;
     }
 
-    listener_angle = D_800A36B4->unk_10.vy;
+    listener_angle = g_listener_cam->unk_10.vy;
     projected_pan = (s32)((dx * (s32)Judge[(listener_angle + 0x400) & 0xFFF]) +
                           (dz * (s32)Judge[listener_angle & 0xFFF])) >>
                     12;
@@ -6762,7 +6762,7 @@ void func_800342A0(void) {
         v1++;
         if (v1 < 2)
             goto loop;
-        gpu_InitDisplay();
+        func_80016888();
         func_800372C0();
         D_800A3834 = 0;
     }

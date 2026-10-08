@@ -9,7 +9,7 @@
 #include "bb2_const.h"
 #include "gte.h"
 
-extern u8 g_file_dma_flag;
+extern u8 D_800A3716;
 extern s32 g_rng_state;
 extern RECT g_gpu_clear_rect;
 extern u32 g_scratchpad_save;
@@ -112,11 +112,11 @@ void gpu_SetDrawEnvBg(s32 a0, s32 a1, s32 a2, s32 a3) {
     }
 }
 
-u32 file_GetFlag0(void) { return D_80106A50.flags & 1; }
+u32 func_800167AC(void) { return D_80106A50.flags & 1; }
 
-u32 file_GetFlag1(void) { return (D_80106A50.flags >> 1) & 1; }
+u32 func_800167BC(void) { return (D_80106A50.flags >> 1) & 1; }
 
-u32 file_GetFlag2(void) { return (D_80106A50.flags >> 2) & 1; }
+u32 func_800167D4(void) { return (D_80106A50.flags >> 2) & 1; }
 
 void func_800167EC(void) {
     s32 i;
@@ -140,7 +140,7 @@ void func_800167EC(void) {
 
 void gpu_ResetGraphMode1(void) { ResetGraph(1); }
 
-void gpu_InitDisplay(void) {
+void func_80016888(void) {
     SetDispMask(0);
     ResetGraph(1);
     ClearImage(&g_gpu_clear_rect, 0, 0, 0);
@@ -149,7 +149,7 @@ void gpu_InitDisplay(void) {
 
 void gpu_SetDispMaskOn(void) { SetDispMask(1); }
 
-void sys_StubEmpty(void) {}
+void func_800168F0(void) {}
 
 void rcnt_StartCnt1Wrapper(void) { rcnt_StartCnt1(); }
 
@@ -245,12 +245,12 @@ void sys_Panic(void) {
     }
 }
 
-void file_ResetDmaFlag(void) { g_file_dma_flag = 0; }
+void eff_ClearInitFlag(void) { D_800A3716 = 0; }
 
 void eff_Init(void) {
     s32 size;
 
-    if (g_file_dma_flag != 0) {
+    if (D_800A3716 != 0) {
         return;
     }
     size = func_80060CB8(0x801D8800, 0x8010E800);
@@ -258,13 +258,13 @@ void eff_Init(void) {
     if (0xA000 < size) {
         sys_Panic();
     }
-    g_file_dma_flag = 1;
+    D_800A3716 = 1;
 }
 
 extern void memcpy(u32, u32, s32);
 extern s32 snd_VabFakeOpen(s32, s16);
 
-void file_LoadSoundData(void) {
+void snd_InitAndLoadCommonVab(void) {
     s32 size;
 
     snd_Init();
@@ -291,9 +291,9 @@ void sys_GameInit(void) {
     D_800A3770[0] = 0x801D8800;
     D_800A3770[1] = 0x801EBC00;
     D_800A3798 = 0x13400;
-    g_file_dma_flag = 0;
+    D_800A3716 = 0;
     D_800A3906 = 0;
-    file_LoadSoundData();
+    snd_InitAndLoadCommonVab();
     pad_ResetStateMarkValid();
     func_8003D2C4();
     func_8001C444();
@@ -302,7 +302,7 @@ void sys_GameInit(void) {
     D_800A3744 = 0;
     D_800A3745 = 0;
     D_800A3746 = 0;
-    game_Init();
+    func_80046B44();
     D_800A36F1 = 2;
     D_800A38C4[1] = 0;
     D_800A36B0 = 0;
@@ -596,7 +596,7 @@ void func_800174F4(void) {
     DrawSync(0);
 }
 
-void obj_ClearAll(void) {
+void func_80017714(void) {
     s32 i;
     /* FAKE: the table walked by byte offset, the target's one induction
        variable; indexed by record: score 4 */
@@ -606,7 +606,7 @@ void obj_ClearAll(void) {
     }
 }
 
-s32 obj_CalcOffset(s32 a0, s32 a1) { return (a0 << 6) + (a1 << 4); }
+s32 func_80017738(s32 a0, s32 a1) { return (a0 << 6) + (a1 << 4); }
 
 s32 math_Distance3D(s32 *a0, s32 *a1) {
     s32 in[3];
@@ -768,16 +768,16 @@ s32 func_80017D84(Func80017A44Input *a0) {
     return i;
 }
 
-void obj_Clear(s32 a0) { g_file_data_buf[a0].points = 0; }
+void func_80017E8C(s32 a0) { g_file_data_buf[a0].points = 0; }
 
-void obj_UpdatePosition(s32 a0, s32 a1) {
+void func_80017EB4(s32 a0, s32 a1) {
     Func80017A44Output *ptr = &g_file_data_buf[a0];
 
     ptr->records = (Func80017A44Record *)((u8 *)ptr->records + a1);
     ptr->edges = (Func80017848Edge *)(ptr->records + ptr->count);
 }
 
-void obj_AddValue(s32 a0, s32 a1) {
+void func_80017EF4(s32 a0, s32 a1) {
     Func80017A44Output *ptr = &g_file_data_buf[a0];
     ptr->points = (SVECTOR *)((u8 *)ptr->points + a1);
 }
@@ -800,9 +800,9 @@ void scratchpad_Restore(void) {
     }
 }
 
-void sys_StubEmpty2(void) {}
+void func_80017F90(void) {}
 
-void sys_StubEmpty3(s32 arg0, s32 arg1, s32 arg2) {}
+void func_80017F98(s32 arg0, s32 arg1, s32 arg2) {}
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
 s32 D_800A30DC = 0x13400;
@@ -819,7 +819,7 @@ u8 D_800A36F1;
 u8 D_800A36F9;
 s16 D_800A3710;
 u8 D_800A3713;
-u8 g_file_dma_flag;
+u8 D_800A3716;
 u8 D_800A3744;
 u32 *g_gpu_ot_ptr;
 u8 g_disp_enable;

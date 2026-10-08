@@ -15,7 +15,7 @@ glabel func_8003B9D0
     /* 2C204 8003BA04 14000224 */  addiu      $v0, $zero, 0x14
     /* 2C208 8003BA08 06006210 */  beq        $v1, $v0, .L8003BA24
     /* 2C20C 8003BA0C FF000224 */   addiu     $v0, $zero, 0xFF
-    /* 2C210 8003BA10 225A000C */  jal        gpu_InitDisplay
+    /* 2C210 8003BA10 225A000C */  jal        func_80016888
     /* 2C214 8003BA14 00000000 */   nop
     /* 2C218 8003BA18 0A80033C */  lui        $v1, %hi(D_800A3768)
     /* 2C21C 8003BA1C 68376390 */  lbu        $v1, %lo(D_800A3768)($v1)

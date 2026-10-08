@@ -313,7 +313,7 @@ s32 func_8004678C(void) { return D_800A33B4; }
 
 s32 stage_GetId(void) { return g_stage_id; }
 
-s32 stage_GetVariant(void) { return g_stage_variant; }
+s32 func_800467A8(void) { return g_stage_variant; }
 
 s32 *func_800467B8(s32 a0) {
     s32 arg = a0;
@@ -362,12 +362,12 @@ void func_80046914(void) { func_800453E0(8); }
 
 void snd_AllocSe(void) { func_800455AC(9); }
 
-void snd_SeNullCallback(void) {}
+void func_80046954(void) {}
 
 void func_8004695C(s32 a0) {
     func_80045230(a0);
     func_80045600(9, a0);
-    func_80045694(9, (s32)snd_SeNullCallback);
+    func_80045694(9, (s32)func_80046954);
 }
 
 void func_800469A0(s32 a0) { func_80045510(9, a0); }
@@ -395,7 +395,7 @@ void func_80046A60(void) { func_800453E0(0xA); }
 
 void func_80046A80(s32 a0, s32 a1) { func_80054FDC(a1); }
 
-void snd_StopAll(void) {
+void func_80046AA0(void) {
     player_Destroy(0);
     player_Destroy(1);
     func_8004668C();
@@ -411,7 +411,7 @@ void rcnt_StartCnt1(void) {
 
 void rcnt_GetCnt1(void) { GetRCnt(0xF2000001); }
 
-void game_Init(void) {
+void func_80046B44(void) {
     /* FAKE: constant-holder locals set in source order ahead of the fence
        below so 1 seats in $v0 and 2 in $v1 before the store tail; literals:
        score 6 */
@@ -486,7 +486,7 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
 
         func_800418D0(&D_80101DF0);
         func_80047210();
-        stage_InitCollision();
+        func_8003F274();
 
         D_800A33C0 = a2;
     }
@@ -507,9 +507,9 @@ void func_80046DA8(s32 a0) {
     func_800444BC();
 }
 
-s32 game_GetDummyFlag(void) { return 0; }
+s32 func_80046DE4(void) { return 0; }
 
-void *game_GetPlayerData(s32 a0) {
+void *func_80046DEC(s32 a0) {
     Unk80045878Obj *v0 = func_8004153C(a0);
     if (v0) {
         return v0->unk_1994;
@@ -517,7 +517,7 @@ void *game_GetPlayerData(s32 a0) {
     return NULL;
 }
 
-void *game_GetPlayerBase(s32 a0) {
+void *func_80046E18(s32 a0) {
     Unk80045878Obj *v0 = func_8004153C(a0);
     if (v0) {
         return v0->unk_2C;
@@ -553,7 +553,7 @@ void game_StageCleanup(s32 a0, s32 a1) {
     func_8003E0E0();
 }
 
-void *stage_GetDataPtr(void) { return &g_stage_data; }
+void *func_80046F14(void) { return &g_stage_data; }
 
 void func_80046F24(void) {
     s32 num = (s32)D_800F62E0[0].lmat.m[0][0] << 12;
@@ -613,7 +613,7 @@ void func_80047210(void) {
 
 void *func_800472B0(void) { return &D_800EEDD0; }
 
-void camera_InitRotation(Unk80101DF0Record *node) {
+void func_800472C0(Unk80101DF0Record *node) {
     node->unk4 = 8;
     node->unk8 = 0;
     node->unk2 = 0;
@@ -651,15 +651,15 @@ s16 *camera_CalcAngles(void) {
     return D_800A33C8;
 }
 
-void game_EffInit(void) { func_8004473C(); }
+void func_8004746C(void) { func_8004473C(); }
 
 void func_8004748C(void) { func_80044800(); }
 
-void game_AnimInit(void) { func_80048F58(0, 0); }
+void func_800474AC(void) { func_80048F58(0, 0); }
 
 void func_800474D0(void) { func_80048FFC(0); }
 
-void game_EffInit2(void) { func_8004473C(); }
+void func_800474F0(void) { func_8004473C(); }
 
 void func_80047510(void) { func_80044800(); }
 
@@ -667,9 +667,9 @@ void func_80047530(void) { func_800477E8(); }
 
 void func_80047550(void) { func_80047A90(); }
 
-void camera_InitBone2(void) {
-    camera_InitRotation(&g_cam_bone_data2);
-    g_cam_bone_data2.unk8 = 4;
+void func_80047570(void) {
+    func_800472C0(&D_800EEDF0);
+    D_800EEDF0.unk8 = 4;
 }
 
 void func_800475A4(void) {
@@ -681,7 +681,7 @@ void func_800475A4(void) {
     s32 computed;
     Unk80101DF0Record *base;
 
-    if (stage_GetVariant() != 0) {
+    if (func_800467A8() != 0) {
         return;
     }
 
@@ -697,9 +697,9 @@ void func_800475A4(void) {
                12;
     result.vz = computed;
 
-    /* FAKE: second C handle to g_cam_bone_data2 (pointer-alias-fake-exception);
+    /* FAKE: second C handle to D_800EEDF0 (pointer-alias-fake-exception);
      * the direct spelling scores 6. */
-    base = &g_cam_bone_data2;
+    base = &D_800EEDF0;
     {
         /* FAKE: s16 temporary for the negated pitch; storing -ratan2() straight
          * into the field moves its negu and the addiu: score 3 */
@@ -721,21 +721,21 @@ void func_800475A4(void) {
     }
 }
 
-void game_AnimStart(void) { func_80048F58(1, 0); }
+void func_80047738(void) { func_80048F58(1, 0); }
 
 void func_8004775C(void) { func_80048FFC(0); }
 
-void game_EffStart(void) { func_8004473C(); }
+void func_8004777C(void) { func_8004473C(); }
 
 void func_8004779C(void) { func_80044800(); }
 
-void game_Stub1(void) {}
+void func_800477BC(void) {}
 
-void game_Stub2(void) {}
+void func_800477C4(void) {}
 
-void game_Stub3(void) {}
+void func_800477CC(void) {}
 
-void game_Stub4(void) {}
+void func_800477D4(void) {}
 
 void func_800477DC(s32 a0) { D_800A33D0 = (s16 *)a0; }
 
@@ -1468,7 +1468,7 @@ u16 cx, cy;
 }
 
 s32 func_800486FC(void) {
-    if (file_GetFlag0()) {
+    if (func_800167AC()) {
         g_color_mode = 1;
     } else {
         g_color_mode = 0;
@@ -1645,7 +1645,7 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     MATRIX **player;
     Unk80045878Node *node;
 
-    player = game_GetPlayerData(D_800A33E0);
+    player = func_80046DEC(D_800A33E0);
     if (player == 0) {
         return;
     }

@@ -1,0 +1,1 @@
+{"func": "func_80017F98", "addr": "80017F98", "verdict": "PASS", "body_hash": "741627b508d8bdda", "body_kind": "c", "file": "main/6CF8", "reviewer": "p2-rev-ga9", "scope": "cheat-cleanup", "date": "2026-10-04T11:03:34Z", "head": "752914623", "notes": "", "renamed_from": ["sys_StubEmpty3"]}

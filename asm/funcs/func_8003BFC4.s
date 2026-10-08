@@ -9,7 +9,7 @@ glabel func_8003BFC4
     /* 2C7E0 8003BFE0 21200000 */   addu      $a0, $zero, $zero
     /* 2C7E4 8003BFE4 7105010C */  jal        player_Destroy
     /* 2C7E8 8003BFE8 01000424 */   addiu     $a0, $zero, 0x1
-    /* 2C7EC 8003BFEC 1D5B000C */  jal        file_ResetDmaFlag
+    /* 2C7EC 8003BFEC 1D5B000C */  jal        eff_ClearInitFlag
     /* 2C7F0 8003BFF0 00000000 */   nop
     /* 2C7F4 8003BFF4 0516010C */  jal        func_80045814
     /* 2C7F8 8003BFF8 00000000 */   nop
@@ -21,7 +21,7 @@ glabel func_8003BFC4
     /* 2C810 8003C010 F80C0724 */  addiu      $a3, $zero, 0xCF8
     /* 2C814 8003C014 50DD000C */  jal        func_80037540
     /* 2C818 8003C018 1000A2AF */   sw        $v0, 0x10($sp)
-    /* 2C81C 8003C01C D11A010C */  jal        game_Init
+    /* 2C81C 8003C01C D11A010C */  jal        func_80046B44
     /* 2C820 8003C020 00000000 */   nop
     /* 2C824 8003C024 08000224 */  addiu      $v0, $zero, 0x8
     /* 2C828 8003C028 0A80013C */  lui        $at, %hi(D_800A3834)

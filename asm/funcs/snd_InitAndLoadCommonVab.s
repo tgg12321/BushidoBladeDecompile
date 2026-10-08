@@ -1,4 +1,4 @@
-glabel func_80016CF8
+glabel snd_InitAndLoadCommonVab
     /* 74F8 80016CF8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 74FC 80016CFC 1400BFAF */  sw         $ra, 0x14($sp)
     /* 7500 80016D00 0F6D010C */  jal        snd_Init
@@ -32,4 +32,4 @@ glabel func_80016CF8
     /* 756C 80016D6C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 7570 80016D70 0800E003 */  jr         $ra
     /* 7574 80016D74 00000000 */   nop
-endlabel func_80016CF8
+endlabel snd_InitAndLoadCommonVab

@@ -1781,7 +1781,7 @@ void func_8001DA2C(void) {
 
 void func_8001DA8C(void) {
     snd_SerialMixOn();
-    if (file_GetFlag2()) {
+    if (func_800167D4()) {
         return;
     }
     switch (D_800A38DC) {
@@ -1818,7 +1818,7 @@ s32 func_8001DB58(void) {
         return 1;
     }
     if (v >= 2) {
-        return file_GetFlag2();
+        return func_800167D4();
     }
     return 1;
 }
@@ -1850,7 +1850,7 @@ void func_8001DBE4(void) {
         } while (i < 15);
     }
     func_8003AAB0();
-    gpu_InitDisplay();
+    func_80016888();
     gpu_SetDispMaskOn();
 }
 
@@ -1871,7 +1871,7 @@ void func_8001DCB0(void) {
 
     func_8005B5AC();
     if (g_disp_enable != DISP_ACTIVE) {
-        gpu_InitDisplay();
+        func_80016888();
         gpu_SetDispMaskOn();
     }
     func_800174F4();
@@ -2097,7 +2097,7 @@ common_tail:
     }
     func_8003F3D4(s2->h30[0]);
     func_8003F3D4(s2->h30[1]);
-    D_800A36B4 = s2;
+    g_listener_cam = s2;
 }
 
 void func_8001E6E4(s32 arg0) {
@@ -2129,7 +2129,7 @@ void func_8001E6E4(s32 arg0) {
         func_80061064(&local.unk_10.vx, &s2->w20);
     }
 
-    D_800A36B4 = s2;
+    g_listener_cam = s2;
 }
 
 void func_8001E800(void) {
@@ -2930,7 +2930,7 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
 
 /* Starts the rec->unk_350 frame counter, records bone index
  * D_8008D59C[arg1].bone at rec->unk_352, and rotates the vector arg2 by that
- * bone's matrix of game_GetPlayerData(rec->index) into rec->unk_354.
+ * bone's matrix of func_80046DEC(rec->index) into rec->unk_354.
  * GTE: gte_SetRotMatrix, gte_ldlv0 (long-vector gte_ldv0), MVMVA (.word
  * 0x4A486012), gte_stlvnl, by owner grant (widened cop2 materialize-then-copy
  * anchor), in func_8002FDB0's `move $12, %0` spelling. The local declaration
@@ -2943,7 +2943,7 @@ void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
 
     rec->unk_350 = 1;
     rec->unk_352 = D_8008D59C[arg1].bone;
-    src = ((MATRIX **)game_GetPlayerData(rec->index))[rec->unk_352];
+    src = ((MATRIX **)func_80046DEC(rec->index))[rec->unk_352];
     func_8002EECC(src, mat);
     /* gte_SetRotMatrix(r): the 5 packed rotation-matrix words at r into cop2
      * control regs $0..$4. */
@@ -2991,7 +2991,7 @@ void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
 
 /* rec->unk_350 is a frame counter func_800203B4 starts at 1. On the tick
  * where (counter & 7) == 2, the vector func_800203B4 stored at rec->unk_354
- * is rotated by matrix rec->unk_352 of game_GetPlayerData(pid) (GTE MVMVA),
+ * is rotated by matrix rec->unk_352 of func_80046DEC(pid) (GTE MVMVA),
  * scaled by (150 - counter) / 150, negated when its y exceeds 0x800, and
  * handed to func_80032854 with scratchpad point SPAD->unkA8[pid][rec->unk_352].
  * The counter is cleared on every call that finds it running (the original
@@ -3008,7 +3008,7 @@ void func_800204C0(Unk80101EC8Record *rec) {
     if (rec->unk_350 != 0) {
         rec->unk_350 += 1;
         if ((rec->unk_350 & 7) == 2) {
-            bones = game_GetPlayerData(pid);
+            bones = func_80046DEC(pid);
             /* inline_o.h: gte_SetRotMatrix :272-284 */
             __asm__ volatile ("move  $12,%0": :"r"(bones[rec->unk_352]):"$12","$13","$14","$15","memory");
             __asm__ volatile ("lw    $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -3076,7 +3076,7 @@ void func_800206B0(s32 arg0, s32 arg1) {
 }
 
 /* Places character rec->index's points in world space with its bone
- * matrices (game_GetPlayerData()): each of the 22 hit records' offsets
+ * matrices (func_80046DEC()): each of the 22 hit records' offsets
  * through its bone into bone_out (SPAD->unkA8[ch]); the attachment point set
  * D_8008D86C[unk_0E] (D_8008D774 when unk_12 == 50) through bone 18 into
  * att_out; when unk_8C != 0, the pair D_8008D88C[unk_14] through bone 19 into
@@ -3101,7 +3101,7 @@ void func_800207C8(Unk80101EC8Record *rec, LeafPos *bone_out, LeafPos *att_out,
     LeafPos *o;
     s32 i;
 
-    bones = game_GetPlayerData(rec->index);
+    bones = func_80046DEC(rec->index);
     hr = D_800F5F68[rec->index];
     o = bone_out;
     for (i = 0; i < 22; i++, hr++, o++) {
@@ -3736,7 +3736,7 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
 
 void func_80021D10(s32 arg0, s32 *arg1, s32 arg2) {
     s16 *temp_v0;
-    temp_v0 = (s16 *)stage_GetDataPtr() +
+    temp_v0 = (s16 *)func_80046F14() +
               ((D_800A36A4 * 0x18) + (arg2 * 6) + (arg0 * 3));
     arg1[0] = (s32)temp_v0[0];
     arg1[1] = (s32)temp_v0[1];
@@ -3766,7 +3766,7 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
     s32 best;
     s32 d;
 
-    stage = stage_GetDataPtr();
+    stage = func_80046F14();
     phase = rand();
     ofs = rand() & 7;
     base.x = pos[0];
@@ -3845,7 +3845,7 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
     s32 *r;
     s32 *w;
 
-    base = (s16 *)stage_GetDataPtr() + (D_800A36A4 * 3) * 8;
+    base = (s16 *)func_80046F14() + (D_800A36A4 * 3) * 8;
     i = 0;
     p = base;
     d = dists;
@@ -3909,7 +3909,7 @@ s32 func_80022408(Vec3i32 *arg0) {
     s32 dx;
     s32 dz;
     s32 dist;
-    p = stage_GetDataPtr();
+    p = func_80046F14();
     best_dist = 0x7FFFFFFF;
     i = 0;
     t1 = arg0->x;
@@ -5488,7 +5488,7 @@ skip_62:
           (rec->unk_6A == 4 || rec->unk_6A == 0x14)) ||
          (rec->unk_6A == 0x11 && arg0 != D_800A38AE &&
           rec->unk_AA == rec->unk_40))) {
-        MATRIX **bones = game_GetPlayerData(arg0);
+        MATRIX **bones = func_80046DEC(arg0);
         if (D_800A38DC != 0 || D_8008D9EC[D_80101EC8[0].unk_0A] == 0 ||
             D_800A37A0 != 1 || arg0 != D_800A37A0) {
             func_80032854(arg0, 0x2E, &rec->unk_F4.x, 0);

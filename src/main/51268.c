@@ -3613,7 +3613,7 @@ s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
     D_800A351C = (Unk8006E49CRec *)arg0;
     temp_s0 = arg0 + 0x58;
     D_800A3500 = temp_s0;
-    snd_StopAll();
+    func_80046AA0();
     func_8006E950(2, (Unk8006E950Head *)D_800A3500);
     D_800A372C = D_800A3500;
     v0_efc = func_8006919C(D_800A3500);

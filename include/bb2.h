@@ -13,7 +13,7 @@ extern GpuDb g_gpu_db[2];
 extern u32 *g_gpu_ot_ptr;
 extern void gpu_SetDispMaskOn(void);
 extern void gpu_ResetGraphMode1(void);
-extern void gpu_InitDisplay(void);
+extern void func_80016888(void);
 extern MoveChannel D_800EF848[];
 extern u16 D_80099C34[][7];
 
@@ -278,7 +278,7 @@ extern s16 D_800A36A4;
 extern s32 D_800A36AC;
 /* the Rec44 view record func_8001E404 / func_8001E6E4 last placed (read by
  * func_800325E0 as the listener) */
-extern Rec44 *D_800A36B4;
+extern Rec44 *g_listener_cam;
 extern CdlATV D_800A36B8;
 extern s16 D_800A36C2;
 extern s32 D_800A36C4;
@@ -438,7 +438,7 @@ extern Unk800A3D40Rec D_800A3D40[];
 
 /* The three stage lights' position / direction words: stage_SetLightPosDir
  * stores pos[i] / dir[i], stage_ClearLighting zeroes all six,
- * stage_ApplyLighting passes pair i to sys_StubEmpty3(pos, dir, i). */
+ * stage_ApplyLighting passes pair i to func_80017F98(pos, dir, i). */
 extern s32 g_stage_light_pos[3];
 
 extern s32 g_stage_light_dir[3];
@@ -464,7 +464,7 @@ extern s32 D_800FF5E0;
 extern Unk80101BF0Rec D_80101BF0[0x20];
 extern Unk80101DF0Record D_80101DF0;
 extern Unk80101DF0Record D_800FF638;
-extern Unk80101DF0Record g_cam_bone_data2;
+extern Unk80101DF0Record D_800EEDF0;
 extern Unk80101DF0Record D_800EF070;
 extern Unk800F62E0Rec D_800F62E0[8];
 extern AnimRotFunc g_anim_func_table[6];
@@ -587,11 +587,11 @@ extern s32 cdrom_StartRead(s32, s32);
 extern s32 cdrom_StartReadAt(s32, s32, s32, s32);
 extern void *func_800472B0(void);
 extern void eff_Init(void);
-extern u32 file_GetFlag0(void);
-extern u32 file_GetFlag1(void);
-extern u32 file_GetFlag2(void);
-extern void file_LoadSoundData(void);
-extern void file_ResetDmaFlag(void);
+extern u32 func_800167AC(void);
+extern u32 func_800167BC(void);
+extern u32 func_800167D4(void);
+extern void snd_InitAndLoadCommonVab(void);
+extern void eff_ClearInitFlag(void);
 extern void func_800174F4(void);
 extern s32 func_80017D84(Func80017A44Input *);
 extern void func_8001924C(SceneQuad *, s32);
@@ -884,8 +884,8 @@ extern s32 func_800788B0(void);
 extern void game_Cleanup(void);
 extern void game_FrameLoop(void);
 extern void *game_GetCharData(void);
-extern void *game_GetPlayerData(s32);
-extern void game_Init(void);
+extern void *func_80046DEC(s32);
+extern void func_80046B44(void);
 extern void game_StageCleanup(s32, s32);
 extern void gpu_SetDrawEnvBg(s32, s32, s32, s32);
 extern void gte_MulMatrix0ClearTrans(MATRIX *, MATRIX *, MATRIX *);
@@ -905,9 +905,9 @@ extern void memcard_Quit(void);
 extern s32 memcard_ReadFile(s32, s32, s32, s32, s32);
 extern s32 memcard_WaitHwEvent(void);
 extern s32 memcard_WriteFile(s32, s32, s32, s32, s32, s32, s32);
-extern s32 obj_CalcOffset(s32, s32);
-extern void obj_Clear(s32);
-extern void obj_ClearAll(void);
+extern s32 func_80017738(s32, s32);
+extern void func_80017E8C(s32);
+extern void func_80017714(void);
 extern void pad_ResetState(void);
 extern void pad_ResetStateMarkValid(void);
 extern void player_Destroy(s32);
@@ -924,19 +924,19 @@ extern void snd_Init(void);
 extern s32 snd_LoadCommonVab(s32);
 extern void snd_Quit(void);
 extern void snd_SerialMixOn(void);
-extern void snd_StopAll(void);
+extern void func_80046AA0(void);
 extern void snd_VabFakeOpen8And4(s32);
 extern void snd_VabFakeOpen9(s32);
 extern void stage_ApplyLighting(void);
 extern void stage_ClearLighting(void);
 extern void stage_ExecInitFunc(void);
 extern s32 stage_GetId(void);
-extern void *stage_GetDataPtr(void);
-extern void stage_InitCollision(void);
+extern void *func_80046F14(void);
+extern void func_8003F274(void);
 extern void sys_Init(void);
 extern void sys_Panic(void);
-extern void sys_StubEmpty2(void);
-extern void sys_StubEmpty3(s32, s32, s32);
+extern void func_80017F90(void);
+extern void func_80017F98(s32, s32, s32);
 
 /* Sony library functions the game declares differently from the library. */
 extern void ResetGraph(s32);

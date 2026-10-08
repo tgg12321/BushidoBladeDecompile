@@ -184,11 +184,11 @@ dlabel D_800A36B0
     /* 93EB3 800A36B3 */ .byte 0x00
 enddlabel D_800A36B0
 
-nonmatching D_800A36B4
+nonmatching g_listener_cam
 
-dlabel D_800A36B4
+dlabel g_listener_cam
     /* 93EB4 800A36B4 00000000 */ .word 0x00000000
-enddlabel D_800A36B4
+enddlabel g_listener_cam
 
 nonmatching D_800A36B8
 

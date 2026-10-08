@@ -34,7 +34,7 @@ typedef struct {
     u8 unk_05[3];
     FileTimeRec times[3]; /* 0x80106A58 */
     u8 color[3];          /* 0x80106A70 */
-    u8 flags;             /* 0x80106A73: bits 0/1/2 = file_GetFlag0/1/2 */
+    u8 flags;             /* 0x80106A73: bits 0/1/2 = func_800167AC/1/2 */
 } FileRecord;
 
 /* The 0x100-byte save block after the memory-card header (D_800F34D8 = the
@@ -680,7 +680,7 @@ typedef struct {
 
 /* 0x800948BC: per-stage function pairs, indexed by stage_GetId().
  * stage_ExecInitFunc calls .init; func_8003E6D8 calls .unk4 (e.g. entry 13
- * holds camera_InitBone2 / func_800475A4). */
+ * holds func_80047570 / func_800475A4). */
 typedef struct {
     void (*init)(void);
     void (*unk4)(void);
@@ -784,7 +784,7 @@ typedef struct {
 } Unk800EED10Entry;
 
 /* A hit record: one of the 22 test points of a character.  func_800207C8 places
- * point i at SPAD->unkA8[ch][i] (`ofs` rotated by game_GetPlayerData()'s matrix
+ * point i at SPAD->unkA8[ch][i] (`ofs` rotated by func_80046DEC()'s matrix
  * `bone`, plus that matrix's translation); the hit tests (func_8002A458,
  * func_8002CA8C, func_80031B24) take unk_0C / unk_0E as the first test's limits
  * and, when unk_00 != 0, unk_10 / unk_12 as a second test's. */
@@ -1554,7 +1554,7 @@ typedef struct Unk80101EC8Record {
     u8 unk_34E;
     u8 unk_34F[0x350 - 0x34F];
     s16 unk_350;
-    /* index into game_GetPlayerData()'s MATRIX * table and SPAD->unkA8[]
+    /* index into func_80046DEC()'s MATRIX * table and SPAD->unkA8[]
      * (func_800204C0) */
     s16 unk_352;
     /* func_800203B4's gte_stlvnl output; func_800204C0's gte_ldlv0 input */
@@ -1825,8 +1825,8 @@ typedef struct Unk8001CD68Rec {
  * passes a negated stack copy of xf.rot and &work to g_anim_func_table[unk8],
  * then copies work to xf.mat; func_80046BF4 writes work.t just before that
  * call. func_800475A4 passes &xf.rot to g_anim_func_table[0] and &xf.mat to
- * ApplyMatrix. g_cam_bone_data2 (0x800EEDF0) and D_800EF070 are two more
- * records of this layout: camera_InitRotation initialises the first,
+ * ApplyMatrix. D_800EEDF0 (0x800EEDF0) and D_800EF070 are two more
+ * records of this layout: func_800472C0 initialises the first,
  * func_800477E8 sets up the second and passes it to func_800417D0, which reads
  * unk6 as a state. rot is the RotMatrix-style angle SVECTOR the rotation
  * handlers take; mat and work are libgte MATRIXes. */
@@ -1876,7 +1876,7 @@ typedef struct {
  * (rot -> matrix, PsyQ RotMatrix shape).  func_80042E90 fills [0] ZYX, [2] ZXY,
  * [4] YXZ, [5] XYZ ([1] and [3] are never written); the nodes set unk8 to 0, 2,
  * 4 and 5, and func_8003EDC0 / func_800417D0 / func_800418D0 /
- * camera_InitRotation index it by unk8 (4-byte stride).  _svm_vab_vh follows at
+ * func_800472C0 index it by unk8 (4-byte stride).  _svm_vab_vh follows at
  * 0x800F66B8. */
 typedef void (*AnimRotFunc)(SVECTOR *, MATRIX *);
 
@@ -2105,8 +2105,8 @@ typedef struct {
 /* 6CF8's object record (sizeof = 0x34): g_file_data_buf holds eight,
  * func_80017D84 fills a free one from a Func80017A44Input and func_80017A44
  * builds its node / edge graph; 87A0 steps it (func_8001924C by the scene
- * quad's id). points: the input's point table, 0 = free (obj_Clear); count: its
- * node count; flags: the input's flags; records / edges: the node and edge
+ * quad's id). points: the input's point table, 0 = free (func_80017E8C); count:
+ * its node count; flags: the input's flags; records / edges: the node and edge
  * tables (edges right after the count 0x40-byte nodes); matrix: a copy of the
  * input's matrix. */
 typedef struct {

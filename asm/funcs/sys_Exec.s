@@ -40,7 +40,7 @@ glabel sys_Exec
     /* 27D00 80037500 21304002 */   addu      $a2, $s2, $zero
     /* 27D04 80037504 865A000C */  jal        sys_Init
     /* 27D08 80037508 00000000 */   nop
-    /* 27D0C 8003750C 3E5B000C */  jal        file_LoadSoundData
+    /* 27D0C 8003750C 3E5B000C */  jal        snd_InitAndLoadCommonVab
     /* 27D10 80037510 00000000 */   nop
     /* 27D14 80037514 330A020C */  jal        VSync
     /* 27D18 80037518 21200000 */   addu      $a0, $zero, $zero

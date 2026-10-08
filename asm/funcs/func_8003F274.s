@@ -1,4 +1,4 @@
-glabel stage_InitCollision
+glabel func_8003F274
     /* 2FA74 8003F274 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2FA78 8003F278 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2FA7C 8003F27C 0B80023C */  lui        $v0, %hi(D_800A8FB0)
@@ -73,4 +73,4 @@ glabel stage_InitCollision
     /* 2FB7C 8003F37C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2FB80 8003F380 0800E003 */  jr         $ra
     /* 2FB84 8003F384 00000000 */   nop
-endlabel stage_InitCollision
+endlabel func_8003F274

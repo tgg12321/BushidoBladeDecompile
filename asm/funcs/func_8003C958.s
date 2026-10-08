@@ -1,7 +1,7 @@
 glabel func_8003C958
     /* 2D158 8003C958 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2D15C 8003C95C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2D160 8003C960 225A000C */  jal        gpu_InitDisplay
+    /* 2D160 8003C960 225A000C */  jal        func_80016888
     /* 2D164 8003C964 00000000 */   nop
     /* 2D168 8003C968 19000224 */  addiu      $v0, $zero, 0x19
     /* 2D16C 8003C96C 0A80013C */  lui        $at, %hi(D_800A3817)

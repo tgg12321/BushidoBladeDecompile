@@ -75,7 +75,7 @@ s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
     D_800A35B0 = arg1;
     D_800A356C = arg0 + 0x58;
     D_800A35A8 = (Unk8006EA28Rec *)(arg0 + 0x58);
-    snd_StopAll();
+    func_80046AA0();
 
     switch (D_800A35BC) {
     case 0:

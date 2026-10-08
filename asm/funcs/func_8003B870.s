@@ -10,7 +10,7 @@ glabel func_8003B870
     /* 2C090 8003B890 21280000 */   addu      $a1, $zero, $zero
     /* 2C094 8003B894 6B6D010C */  jal        func_8005B5AC
     /* 2C098 8003B898 00000000 */   nop
-    /* 2C09C 8003B89C 225A000C */  jal        gpu_InitDisplay
+    /* 2C09C 8003B89C 225A000C */  jal        func_80016888
     /* 2C0A0 8003B8A0 00000000 */   nop
     /* 2C0A4 8003B8A4 01000424 */  addiu      $a0, $zero, 0x1
     /* 2C0A8 8003B8A8 21280000 */  addu       $a1, $zero, $zero

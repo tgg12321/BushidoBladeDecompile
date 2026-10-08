@@ -1,0 +1,1 @@
+{"func": "func_80017EB4", "addr": "80017EB4", "verdict": "PASS", "body_hash": "cdee45f44b97f793", "body_kind": "c", "file": "main/6CF8", "reviewer": "cheat-reviewer:rev-fclose1", "scope": "cheat-cleanup", "date": "2026-10-06T14:40:00Z", "head": "f2bcb4406", "notes": "", "renamed_from": ["obj_UpdatePosition"]}

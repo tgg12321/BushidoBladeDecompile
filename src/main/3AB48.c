@@ -683,7 +683,7 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     s->unk4 = *(s32 *)(((Unk800469C4Hdr *)s->unk2C)->unk4 + s->unk2C);
     s->unk2 = *(u16 *)(((Unk800469C4Hdr *)s->unk2C)->unk8 + s->unk2C);
     s->unk0 = 0;
-    t = stage_GetDataPtr();
+    t = func_80046F14();
     t += stage_GetId() * 24 + a1 * 6;
     s->unkC = *t++;
     s->unk10 = *t++;
@@ -848,7 +848,7 @@ s32 func_8005490C(void) {
     func_800420D0();
     func_8004211C();
     func_80047210();
-    stage_InitCollision();
+    func_8003F274();
     func_8004A1FC(&D_800F62E0[0]);
     func_8004A1FC(&D_800F62E0[1]);
     func_8004A1FC(&D_800F62E0[4]);
@@ -1044,7 +1044,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         p->unk_3F6 = pair[1];
         break;
     }
-    if (file_GetFlag1() && D_800A38DC != 3) {
+    if (func_800167BC() && D_800A38DC != 3) {
         p->unk_438 = p->unk_438 * 11 >> 4;
     }
     if (!(D_80099D88[p->unk_443].flags & 0xFF00)) {
@@ -1419,7 +1419,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
              : rec->unk_50->unk_08 < rec->unk_40)) {
         if (rec->unk_428 != -1) {
             if (rec->unk_424 != 0 &&
-                (file_GetFlag1() == 0 || D_800A38DC == 3)) {
+                (func_800167BC() == 0 || D_800A38DC == 3)) {
                 s32 slot;
                 s32 found;
 
@@ -2417,7 +2417,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                                           (p->unk_438 >> 8) + 1)) &&
                       (!(D_80099D88[p->unk_443].flags & 0xFF00) ||
                        (f & 0x40))) ||
-                    (file_GetFlag1() && D_800A38DC != 3)) {
+                    (func_800167BC() && D_800A38DC != 3)) {
                     work3 = !work3;
                 }
                 script1 = tbl[work3];
@@ -2569,7 +2569,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                      ? p->unk_148 - p->unk_B8.vy
                      : p->unk_B8.vy - p->unk_148) < 200 &&
                 !(D_80099D88[p->unk_443].flags & 0x8C00) &&
-                ((!file_GetFlag1() && D_800A38DC != 3) || D_800A38DC == 3)) {
+                ((!func_800167BC() && D_800A38DC != 3) || D_800A38DC == 3)) {
                 work3 = 0;
                 if ((p->unk_426 == 1 || p->unk_425 == 2) && (p->unk_430 & 8)) {
                     work3 = 1;

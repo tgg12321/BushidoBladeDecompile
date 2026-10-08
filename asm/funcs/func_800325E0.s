@@ -2,8 +2,8 @@ glabel func_800325E0
     /* 22DE0 800325E0 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 22DE4 800325E4 21508000 */  addu       $t2, $a0, $zero
     /* 22DE8 800325E8 0100073C */  lui        $a3, (0x13880 >> 16)
-    /* 22DEC 800325EC 0A80023C */  lui        $v0, %hi(D_800A36B4)
-    /* 22DF0 800325F0 B436428C */  lw         $v0, %lo(D_800A36B4)($v0)
+    /* 22DEC 800325EC 0A80023C */  lui        $v0, %hi(g_listener_cam)
+    /* 22DF0 800325F0 B436428C */  lw         $v0, %lo(g_listener_cam)($v0)
     /* 22DF4 800325F4 8038E734 */  ori        $a3, $a3, (0x13880 & 0xFFFF)
     /* 22DF8 800325F8 2800BFAF */  sw         $ra, 0x28($sp)
     /* 22DFC 800325FC 0000A38C */  lw         $v1, 0x0($a1)
@@ -83,8 +83,8 @@ glabel func_800325E0
     /* 22F14 80032714 00000000 */   nop
     /* 22F18 80032718 21400000 */  addu       $t0, $zero, $zero
   .L8003271C:
-    /* 22F1C 8003271C 0A80023C */  lui        $v0, %hi(D_800A36B4)
-    /* 22F20 80032720 B436428C */  lw         $v0, %lo(D_800A36B4)($v0)
+    /* 22F1C 8003271C 0A80023C */  lui        $v0, %hi(g_listener_cam)
+    /* 22F20 80032720 B436428C */  lw         $v0, %lo(g_listener_cam)($v0)
     /* 22F24 80032724 00000000 */  nop
     /* 22F28 80032728 12004384 */  lh         $v1, 0x12($v0)
     /* 22F2C 8003272C 00000000 */  nop

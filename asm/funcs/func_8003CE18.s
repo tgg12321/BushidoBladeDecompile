@@ -5,7 +5,7 @@ glabel func_8003CE18
     /* 2D624 8003CE24 2000B0AF */   sw        $s0, 0x20($sp)
     /* 2D628 8003CE28 B0DC000C */  jal        func_800372C0
     /* 2D62C 8003CE2C 00000000 */   nop
-    /* 2D630 8003CE30 225A000C */  jal        gpu_InitDisplay
+    /* 2D630 8003CE30 225A000C */  jal        func_80016888
     /* 2D634 8003CE34 00000000 */   nop
     /* 2D638 8003CE38 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 2D63C 8003CE3C 00000000 */   nop

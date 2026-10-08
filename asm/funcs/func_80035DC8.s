@@ -3,7 +3,7 @@ glabel func_80035DC8
     /* 265CC 80035DCC 1000BFAF */  sw         $ra, 0x10($sp)
     /* 265D0 80035DD0 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 265D4 80035DD4 00000000 */   nop
-    /* 265D8 80035DD8 225A000C */  jal        gpu_InitDisplay
+    /* 265D8 80035DD8 225A000C */  jal        func_80016888
     /* 265DC 80035DDC 00000000 */   nop
     /* 265E0 80035DE0 3783000C */  jal        func_80020CDC
     /* 265E4 80035DE4 00000000 */   nop
@@ -11,7 +11,7 @@ glabel func_80035DC8
     /* 265EC 80035DEC 21200000 */   addu      $a0, $zero, $zero
     /* 265F0 80035DF0 7105010C */  jal        player_Destroy
     /* 265F4 80035DF4 01000424 */   addiu     $a0, $zero, 0x1
-    /* 265F8 80035DF8 1D5B000C */  jal        file_ResetDmaFlag
+    /* 265F8 80035DF8 1D5B000C */  jal        eff_ClearInitFlag
     /* 265FC 80035DFC 00000000 */   nop
     /* 26600 80035E00 CB6D010C */  jal        func_8005B72C
     /* 26604 80035E04 00000000 */   nop
