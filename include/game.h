@@ -1684,8 +1684,8 @@ typedef struct {
 } Obj80106A78; /* sizeof == 0x64 */
 
 /* 2-byte {a,b} threshold pairs. D_8008EA44: indexed by (type - 2), 5 entries
-   (types 2..6); D_8008EBFC: indexed by leaf category, 6 entries (both read by
-   func_800335D8). */
+   (types 2..6); D_8008EBFC: indexed by the category func_80033498 returns, 6
+   entries (both read by func_800335D8). */
 typedef struct {
     u8 a;
     u8 b;
@@ -1699,9 +1699,9 @@ typedef struct {
     s16 unk2;
 } Tbl8008EB54Entry;
 
-/* 0x18-byte per-character status record table at 0x80099D88, indexed by
- * character id in func_80055138, func_80055948, func_80055B60 and
- * func_80058580. */
+/* 0x18-byte record table at 0x80099D88 (behaviour flags and random-pick
+ * weights), indexed by Unk80101EC8Record.unk_443 in func_80055138,
+ * func_80055948, func_80055B60 and func_80058580. */
 typedef struct Unk80099D88Rec {
     u16 flags;
     u8 unk2;
@@ -1942,7 +1942,8 @@ typedef struct {
  * - unk_18: written as the word 0x8000 by func_80045878, read as three colour
  * bytes by func_80041688.
  * - unk_1C / unk_20: the resource blocks func_80045878 stores; unk_24 / unk_28:
- * the scene block and command cursor (func_8003F824, func_8004019C).
+ * the attached Unk8003F62CRec block and command cursor (func_8003F824,
+ * func_8004019C).
  * - unk_2C[]: node 0 is the root (func_80049718 reads its xf.mat);
  * func_800408F8 builds 0..20, func_80040CB8 fills unk_8B4[] (unk2 = -1 ends
  * it), func_80040B44 copies duplicates into unk_10D4[] (unk58 = the source
@@ -2014,7 +2015,7 @@ typedef struct {
     u32 size;   /* the file's length in bytes */
 } CdFileEntry;
 
-/* The replay-camera / CD-read words at 0x80101E60..0x80101EA7: the tail of the
+/* The CD read / CD audio words at 0x80101E60..0x80101EA7: the tail of the
  * CD state block D_80101E58 (CdState below). Member widths follow the original
  * accesses; 0x80101E91..93 is alignment padding. unk3C..unk44 belong to the
  * object because func_80036140 (compiled -G8) keeps the address of its accesses
@@ -2061,7 +2062,7 @@ typedef struct {
     Unk80101E60Rec rec; /* 0x80101E60 .. 0x80101EA7 */
 } CdState;
 
-/* Practice-lesson parameter block 0x80102778..0x80102787 (func_8001C444 sets
+/* The parameter block 0x80102778..0x80102787 (func_8001C444 sets
  * every byte of it except 0x82/0x83): two u16 values, three per-player byte
  * pairs kept as one array (unk_4[2 * k + player], [0] = P1, [1] = P2), a
  * fourth per-player pair only other functions touch (unk_A, indexed by player
@@ -2109,11 +2110,11 @@ typedef struct {
 
 /* 6CF8's object record (sizeof = 0x34): g_file_data_buf holds eight,
  * func_80017D84 fills a free one from a Func80017A44Input and func_80017A44
- * builds its node / edge graph; 87A0 steps it (func_8001924C by the scene
- * quad's id). points: the input's point table, 0 = free (func_80017E8C); count:
- * its node count; flags: the input's flags; records / edges: the node and edge
- * tables (edges right after the count 0x40-byte nodes); matrix: a copy of the
- * input's matrix. */
+ * builds its node / edge graph; 87A0 steps it (func_8001924C by each
+ * Unk80017FA0Rec's unk0). points: the input's point table, 0 = free
+ * (func_80017E8C); count: its node count; flags: the input's flags; records /
+ * edges: the node and edge tables (edges right after the count 0x40-byte
+ * nodes); matrix: a copy of the input's matrix. */
 typedef struct {
     SVECTOR *points;
     s16 count;
@@ -2124,11 +2125,11 @@ typedef struct {
     MATRIX matrix;
 } Func80017A44Output;
 
-/* The 16-byte scene quad (2B344 func_8003FA24 fills it in each Unk8003F824Rec,
- * func_8003F824 copies it into Unk8003F62CRec.quads; 87A0 func_8001924C steps
- * one object per quad): the object's g_file_data_buf index (unk0), its flags
- * (unk2; bit 0 picks func_80019310 over func_800187F4), the object's matrix,
- * its point table end and its collision-volume block. */
+/* The 16-byte object descriptor (2B344 func_8003FA24 fills it in each
+ * Unk8003F824Rec, func_8003F824 copies it into Unk8003F62CRec.quads; 87A0
+ * func_8001924C steps one object per descriptor): the object's g_file_data_buf
+ * index (unk0), its flags (unk2; bit 0 picks func_80019310 over func_800187F4),
+ * the object's matrix, its point table end and its collision-volume block. */
 typedef struct {
     /* 0x00 */ s16 unk0;
     /* 0x02 */ u8 unk2;
@@ -2138,7 +2139,7 @@ typedef struct {
     /* 0x0C */ struct Unk8003F6D8Coll *unkC;
 } Unk80017FA0Rec;
 
-/* The collision volumes of one scene record (2B344 Func8003F6D8Inner +0x10;
+/* The collision volumes of one Unk8003F824Rec (2B344 Func8003F6D8Inner +0x10;
  * Unk80017FA0Rec.unkC points here): unk00 (func_800400B0 sets it; 87A0
  * func_80017FA0 scales it into the scratchpad's ground word), the volume count,
  * each volume's two foci (gte_SetMatrixRotTransIR writes each as three words)

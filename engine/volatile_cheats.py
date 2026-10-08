@@ -1684,7 +1684,7 @@ def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
     went stale: when inlineasm's span learned the two real definition shapes it
     had been missing (a definition sharing a line with the previous function's
     closing brace, and old-style K&R parameter declarations), this one kept the
-    narrow pattern — so display.c's func_8007DE08 and text1b.c's func_8004A1FC
+    narrow pattern — so display.c's func_8007DE08 and 368E4.c's calc_LightMatrix
     were policed by the inline-asm detector but still invisible to the VOLATILE
     detector. One span, one behaviour.
     """

@@ -398,7 +398,7 @@ finish:
 extern s32 func_8003800C(Unk800F34D8Save *);
 
 /* Load/save state-machine completion handler: dispatches on D_800A31F4
- * (4 = post-read, 6 = post-write), reaps memcard_PollSwEvents()'s status,
+ * (4 = after a write, 6 = after a read), reaps memcard_PollSwEvents()'s status,
  * closes the file and posts a result code to D_800A379E. The still-pending
  * paths share the fail_store end label (the shared-end-label recipe,
  * .claude/rules/shared-end-label.md). */

@@ -229,7 +229,7 @@ of `main.c`.
 | 7  (0x07) | 0x8003BCB4 | `mode_handler_07_SubModeTransition` | md_game_check_change_sub_mode + pad input check |
 | 8  (0x08) | 0x80035480 | `func_80035480` | Cleanup + set-up, selects mode 9, display on; also the **global-reset target** (D_800A3928 trigger) |
 | 9  (0x09) | 0x80035828 | `mode_handler_09_NoOp` | Empty |
-| 10 (0x0A) | 0x8003BE10 | `mode_handler_10_GameTeardown` | gpu_ResetGraphMode1 + func_80016888 + func_800415C4(0/1) |
+| 10 (0x0A) | 0x8003BE10 | `func_8003BE10` | gpu_ResetGraphMode1 + func_80016888 + func_80020CDC + func_800415C4(0/1) + eff_ClearInitFlag + func_8005B72C + func_80078824 + snd_SerialMixOn + cdrom_StartAudio + func_80037260, sets D_800A3834 = 0xB, display on (2B344.c:618-635) |
 | 11 (0x0B) | 0x8003BEA8 | `func_8003BEA8` | Checks pad input mask 0x40 (action button) |
 | 12 (0x0C) | 0x8001EA04 | `func_8001EA04` | func_80041688(0/1) + func_80061178; end-of-round |
 | 13 (0x0D) | 0x8001EA84 | `cpu_get_move_pattern_table_number` | CPU AI move-pattern lookup |
@@ -245,7 +245,7 @@ of `main.c`.
 | 23 (0x17) | 0x8003B8E4 | `func_8003B8E4` | Returns until frame counter >= 3 |
 | 24 (0x18) | 0x8003C958 | `func_8003C958` | func_80016888 + clears D_800A3817 / D_800A3929 / D_800A37B8, sets D_800A3834 = 0x19, display on |
 | 25 (0x19) | 0x8003C9A4 | `func_8003C9A4` | func_8003F1E4(0), then writes D_800F6608 fields (2B344.c:993-1000) |
-| 26 (0x1A) | 0x80035DC8 | `scene_teardown_80035DC8` | Scene cleanup |
+| 26 (0x1A) | 0x80035DC8 | `func_80035DC8` | gpu_ResetGraphMode1 + func_80016888 + func_80020CDC + func_800415C4(0/1) + eff_ClearInitFlag + func_8005B72C + func_80077820, sets D_800A3834 = 0x1B, display on (25C38.c:394-405) |
 | 27 (0x1B) | 0x80035E38 | `saRobDraw` | Draws robot AI (saRob = "sa" team rob) |
 | 28 (0x1C) | 0x8003CE18 | `func_8003CE18` | func_8001DA2C + func_800372C0 |
 | 29 (0x1D) | 0x8003CF84 | `func_8003CF84` | mk_leaf_newpos + reads char struct fields |

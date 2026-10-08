@@ -704,7 +704,7 @@ g_str_sio_800A3210                                   = 0x800A3210;  /* 'sio:' se
 /* RESET 0x80061250: retired name 'anim_emit_210009_with_setup_80061250' — preserved note: [func] refs: D_800F1180, D_800A3468, D_800F116C, D_800F1178 */
 /* RESET 0x80061454: retired name 'anim_emit_29000B_80061454' — preserved note: [func] refs: D_800F1180, D_800A3468, D_800F116C, D_800F1178 */
 /* RESET 0x80065000: retired name 'motion_ex_init_state_80065000' — preserved note: [func] refs: D_800A3468, D_800A347C */
-/* RESET 0x80077724: retired name 'setup_double_buffer_swap_80077724' — preserved note: [func] refs: g_disp_fb_base, g_frame_parity */
+/* RESET 0x80077724: retired name 'setup_double_buffer_swap_80077724' — preserved note: [func] refs: g_gpu_db, g_frame_parity */
 D_800A377C                              = 0x800A377C;  /* 0/1/2 per D_800A3874 entry, stored by func_800340A0; func_8001CE60 reads the last one */  /* data-wave 2026-10-08: was g_match_round_result_table */
 D_800A389B                                    = 0x800A389B;  /* entry count p->unk14_10 + 3 (func_8003504C); func_800342A0 stops when D_800A3874 reaches it */  /* data-wave 2026-10-08: was g_match_round_byte_b */
 
@@ -752,10 +752,10 @@ VBLANK_MINUS                                      = 0x80104E80;  /* ref: md_game
 /* RESET 0x80065264: retired name 'motion_ex_init_state_c_80065264' — preserved note: 3rd motion-ex init: writes D_800F0BA8[16] counter */
 /* RESET 0x80065484: retired name 'motion_ex_play_id5_dynamic_80065484' — preserved note: motion_SetExMotion(5) with 1x/2x/3x step multiplier */
 /* RESET 0x80065680: retired name 'motion_ex_play_idCE_80065680' — preserved note: motion_SetExMotion(0xC) + (0xE) with 11-play cap */
-/* File-IO / game-input state machine (3) */
-/* RENAME 0x80038658: retired name 'file_io_state_advance_80038658' — preserved note: state-machine advance on D_800A31F4; bios_FileClose_B on completion */
-/* RESET 0x80038734: retired name 'game_input_tick_80038734' — preserved note: pad_FuncAnalog + file_io_state_advance per-frame; returns D_800A379E */
-/* RESET 0x80038988: retired name 'file_io_state_dispatch_80038988' — preserved note: 186-insn higher-level dispatcher on game_input_tick result */
+/* Memory-card file state machine (3) */
+/* RENAME 0x80038658: retired name 'file_io_state_advance_80038658' — preserved note: states 4/6: polls memcard_PollSwEvents; on completion close(g_memcard_fd), a result code in D_800A379E, D_800A31F4 = 0 */
+/* RESET 0x80038734: retired name 'game_input_tick_80038734' — preserved note: func_80037D14 (state < 2) + func_800383A4 + memcard_PollFileCompletion; returns D_800A379E */
+/* RESET 0x80038988: retired name 'file_io_state_dispatch_80038988' — preserved note: 186-insn higher-level dispatcher on func_80038734's result */
 /* Effect / particle subsystem (5) */
 /* RESET 0x80049718: retired name 'efc_anim_vehicle_setup_80049718' — preserved note: 197-insn: emits per-effect OT entries; handles free vs vehicle-mounted */
 /* RESET 0x80049584: retired name 'efc_rob_type_dispatch_80049584' — preserved note: diffs D_80099C50 vs D_800EF980, dispatches efc_rob_set_type_particle on change */
@@ -1232,7 +1232,7 @@ D_801077B0                                   = 0x801077B0;  /* order list built 
 D_800A3378                                     = 0x800A3378;  /* cursor over the DR_MOVE packets of the parity bank D_800A9830[parity] (gpu_AddDrawMove: SetDrawMove, linked into the OT, ++) */  /* data-wave 2026-10-08: was g_text1a_record_ptr */
 D_800A3234                                     = 0x800A3234;  /* frame-parity bank last selected (D_800A36AC & 1), index into D_800A9830; init -1 (gpu_AddDrawMove) */  /* data-wave 2026-10-08: was g_text1a_record_idx */
 D_80094E08                              = 0x80094E08;  /* u8 lookup by obj->unk_08 (0xFF = none); values index D_80094DF0 */  /* data-wave 2026-10-08: was g_stage_lighting_idx_table */
-D_800F6340                                       = 0x800F6340;  /* D_800F62E0[1], a lighting record (light angles, lmat, cmat, back) passed to func_8004A1FC */  /* data-wave 2026-10-08: was g_text1a_buffer_a */
+D_800F6340                                       = 0x800F6340;  /* D_800F62E0[1], a lighting record (light angles, lmat, cmat, back) passed to calc_LightMatrix */  /* data-wave 2026-10-08: was g_text1a_buffer_a */
 g_gpu_store_buf                                   = 0x800A9A24;  /* TIM/texture data buffer passed to gpu_LoadImage */  /* data-wave 2026-09-24: was g_text1a_texture_data */
 D_800A323A                                    = 0x800A323A;  /* 12-bit fixed-point green channel ((a1 >> 8) & 0xFF) << 12 / 255 */  /* data-wave 2026-10-08: was g_text1a_color_green */
 D_800A323C                                     = 0x800A323C;  /* 12-bit fixed-point blue channel (a1 & 0xFF) << 12 / 255 */  /* data-wave 2026-10-08: was g_text1a_color_blue */
@@ -1288,10 +1288,10 @@ D_800F6640                                       = 0x800F6640;  /* D_800F6608.h3
 D_800F6642                                       = 0x800F6642;  /* D_800F6608.h30[1][1]: written 0, read only by func_8001E404's whole-record copy */  /* data-wave 2026-10-08: was g_gnd_gauge_c_cur */
 D_800F6644                                       = 0x800F6644;  /* D_800F6608.h30[1][2]: a cell z; 100 = out-of-range reset */  /* data-wave 2026-10-08: was g_gnd_gauge_d_max */
 
-/* === Practice-lesson init cluster (2026-05-17) -- 11 highs === */
-/* From code6cac.c:1345 func_8001C444 (init): sets up the lesson */
-/* parameters at 0x80102778-80102787, declared in C as the one aggregate */
-/* PracticeParams D_80102778 (code6cac.h, merged 2026-09-26 with */
+/* === func_8001C444 init cluster (2026-05-17) -- 11 highs === */
+/* From code6cac.c:1345 func_8001C444 (init): sets up the parameter */
+/* block at 0x80102778-80102787, declared in C as the one aggregate */
+/* Unk80102778Rec D_80102778 (include/bb2.h:484, merged 2026-09-26 with */
 /* func_80034708); its per-word names are retired. */
 
 
@@ -1849,7 +1849,7 @@ D_800A3908                                   = 0x800A3908;  /* accumulated count
 D_800A38FC                                   = 0x800A38FC;  /* accumulated count of set bits in D_800A36C0's lo word */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_b */
 D_800A38D0                                  = 0x800A38D0;  /* link check-failure counter, reset in func_8003B130 / func_80037804 */  /* data-wave 2026-10-08: was g_pad_rec_misc_counter */
 
-/* === Scene init flags + arg saves (2026-05-17) -- 4 highs === */
+/* === Init flags + CD-audio fade words (2026-05-17) -- 4 highs === */
 D_800A31D8                               = 0x800A31D8;  /* 0 = first init, != 0 = re-init (triggers obj_InitAll cleanup); always set to 1 after */  /* data-wave 2026-10-08: was g_scene_already_init_flag */
 D_800A31E4                               = 0x800A31E4;  /* paired init flag (= 0 / = 1 set) */  /* data-wave 2026-10-08: was g_scene_another_init_flag */
 D_800A3854                                       = 0x800A3854;  /* length of a CD-audio mix fade, set by func_80035F78 (26730.c:25-31); func_80036140 divides by it and zeroes it at the end (26940.c:17-35) */  /* data-wave 2026-10-08: was g_scene_arg_saved */
@@ -2847,9 +2847,9 @@ calc_line_seg_intersect_8005763C               = 0x8005763C;  /* 2D line-seg int
 /* RESET 0x80072F30: retired name 'hud_helper_80072F30' — preserved note: first-pass subsystem tag (hud); <-hud_layout_emit_tiles_80073060 */
 /* RESET 0x80072FCC: retired name 'hud_helper_80072FCC' — preserved note: first-pass subsystem tag (hud); <-hud_layout_emit_tiles_80073060 */
 /* RESET 0x80073728: retired name 'gnd_helper_80073728' — preserved note: first-pass subsystem tag (gnd); <-gnd_draw_texpage_2poly_8005D46C;<-gnd_render_affine_texpage_8005E54C;<-gnd_land_hit_char_tsuba */
-/* RESET 0x80077098: retired name 'setup_helper_80077098' — preserved note: first-pass subsystem tag (setup); <-setup_double_buffer_swap_80077724 */
+/* RESET 0x80077098: retired name 'setup_helper_80077098' — preserved note: first-pass subsystem tag (setup); <-func_80077724 */
 /* RESET 0x800770B8: retired name 'replay_camera_helper_800770B8' — preserved note: first-pass subsystem tag (replay_camera); <-replay_camera_apply_transform_and_flip_80077A80 */
-/* RESET 0x80077374: retired name 'setup_helper_80077374' — preserved note: first-pass subsystem tag (setup); <-setup_double_buffer_swap_80077724 */
+/* RESET 0x80077374: retired name 'setup_helper_80077374' — preserved note: first-pass subsystem tag (setup); <-func_80077724 */
 /* RESET 0x80077894: retired name 'mode_helper_80077894' — preserved note: first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
 /* RESET 0x80077904: retired name 'mode_helper_80077904' — preserved note: first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
 /* RESET 0x800779C8: retired name 'mode_helper_800779C8' — preserved note: first-pass subsystem tag (mode); <-mode_handler_09_NoOp */
@@ -3154,7 +3154,7 @@ draw_bg_and_sprites_80069E18                           = 0x80069E18;  /* full-sc
 /* RENAME 0x8007A458: retired name 'bios_PatchTable_8007A458' — preserved note: EnterCS + BIOS B-call, copies handler stub (D_8007A4C0) into BIOS table +0x6C */
 /* RENAME 0x8007FF7C: retired name 'cdrom_InitCallbacks_8007FF7C' — preserved note: waits cdrom_CheckReady (4 retries), then cdrom_SetCallbackA/B + sys_SetVsyncMode + sys_SetTimer; ret 1 ok / 0 fail */
 /* RENAME 0x8007CBB0: retired name 'gpu_PutDrawEnv_8007CBB0' — preserved note: clamps clip rect, builds GPU env packet (0xE1 drawmode/0xE3-E5 area+offset/0xE6) at D_800F1858, gpu_StartDmaList */
-/* RENAME 0x8004A1FC: retired name 'calc_dirvec_from_angles_8004A1FC' — preserved note: for 3 entries: build vec3s @+0x18 from angle pair via math_Cos/Sin scaled by mag [base+0x5C] */
+/* RENAME 0x8004A1FC: retired name 'calc_dirvec_from_angles_8004A1FC' — preserved note: for 3 entries: build vec3s @+0x18 from angle pair via rcos/rsin scaled by mag [base+0x5C] */
 /* RENAME 0x8007E11C: retired name 'math_Sqrt_8007E11C' — preserved note: fixed-point sqrt: GTE LZCS/LZCR leading-zero normalize + sqrt LUT D_8009C7A8, denorm by half-shift; ret 0 if input 0 */
 /* RESET 0x8001A67C: retired name 'calc_dir_from_points_8001A67C' — preserved note: dx/dz between pts A/B, distance via sqrt (LUT D_8008D118 + GTE LZC), normalize, per-comp angle via func_8001A62C -> [out+0]/[out+4] */
 /* RESET 0x8003F420: retired name 'stage_SetCollisionAtPos_8003F420' — preserved note: world (x,z)+0x7D00 /1000 -> grid cell, stage_SetCollision x4 on the 2x2 cell block around the position */

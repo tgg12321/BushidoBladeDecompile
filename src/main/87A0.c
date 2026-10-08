@@ -29,7 +29,7 @@ typedef struct {
 
 #define SCR ((Scr1F800000 *)0x1F800000)
 
-/* func_80017FA0 - copies the scene quad's collision volumes (a0->unkC) into
+/* func_80017FA0 - copies the Unk80017FA0Rec's collision volumes (a0->unkC) into
  * scratchpad RAM (0x1F800000). unk00 is written scaled by 128 (the ground
  * word); count is the volume count, and each volume writes its two foci (three
  * words each, scaled by 4) at a 0x18 stride plus its bound from unk68. Nothing
@@ -467,12 +467,12 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
 void func_80019310(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
 
 /* func_800187F4 -- node-chain integrator, called by func_8001924C for each
- * scene quad whose flag bit 0 is clear. A node with state >= 0 springs toward
- * (or snaps to) its GTE-transformed anchor; otherwise the indexed scratchpad
- * forces are applied, the node is pushed out of the ground and out of each
- * collision ellipsoid, and the velocity is damped by 7/8 with 0x190 added to Y.
- * GTE: PsyQ 4.3 inline_o.h macros (and gtemac.h gte_Lzc), statement for
- * statement (inline-asm-policy class route, owner ruling 2026-09-26); the
+ * Unk80017FA0Rec whose unk2 bit 0 is clear. A node with state >= 0 springs
+ * toward (or snaps to) its GTE-transformed anchor; otherwise the indexed
+ * scratchpad forces are applied, the node is pushed out of the ground and out
+ * of each collision ellipsoid, and the velocity is damped by 7/8 with 0x190
+ * added to Y. GTE: PsyQ 4.3 inline_o.h macros (and gtemac.h gte_Lzc), statement
+ * for statement (inline-asm-policy class route, owner ruling 2026-09-26); the
  * gte_rtv0tr / gte_sqr0 / gte_gpf0 / gte_gpl12 units carry their command words
  * in place of the DMPSX placeholders (Q29): 0x0000027f -> 0x4A480012,
  * 0x00000f3f -> 0x4AA00428, 0x000012ff -> 0x4B90003D, 0x0000133f ->

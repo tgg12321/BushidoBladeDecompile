@@ -520,7 +520,7 @@ def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
         line with the previous function's closing brace. A single optional `}`
         is allowed before the return type; arbitrary indentation still is NOT,
         because that is what distinguishes a definition from a call.
-      * `void func_8004A1FC(arg0) s16 *arg0; {` (text1b.c) — old-style K&R
+      * `void calc_LightMatrix(arg0) Unk800F62E0Rec *arg0;` (368E4.c) — old-style K&R
         parameter declarations sit between `)` and `{`.
     """
     # Leading whitespace is permitted ONLY after a closing `}`; a bare indented

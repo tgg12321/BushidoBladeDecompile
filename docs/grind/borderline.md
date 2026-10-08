@@ -578,7 +578,7 @@ EXPRESSION (not the asm template) be retyped to the member form (`&rec->unkA8`) 
 
 ## 2026-10-06 — func_80031B24 — extend Q96 to its &D_800A37E8 vector passes? — policy-question
 category: policy-question
-evidence: 17AFC func_80031B24 hands &D_800A37E8 (the D_800A37E8 / EA / EC s16 vector) to func_800274BC / func_80032854,
+evidence: 17AFC func_80031B24 hands &D_800A37E8 (the D_800A37E8 / EA / EC s16 vector) to math_NegNormalize3D / func_80032854,
 which read [0..2]: cross-symbol address derivation, refused by completion-bar item 3 except under Q96, which names only
 func_80027AD8 / func_8002AB08. One-object `s16 D_800A37E8[3]` scores 0 in func_80031B24 / 8002A458 / 8002AB08 but 2 in
 func_80027AD8 (Q96's basis: memory/grind/judge-decl-cleanup/followups/func_80027AD8.vec-investigation.md).

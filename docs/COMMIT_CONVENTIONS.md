@@ -12,7 +12,7 @@ The LIVE enforcement layer is the installed `commit-msg` chain — `tools/hooks/
 
 Examples:
 ```
-Match: func_80038658 — COMPLETED-C (grinder, 1 sessions)
+Match: memcard_PollFileCompletion — COMPLETED-C (grinder, 1 sessions)
 cheat-cleanup: func_800826CC -- retire 2 lost_codegen via volatile aliasing + switch
 auth: func_8004BB68 (text1b.c recursive subdivision, custom callee-save ABI)
 naming: medium-tier cleanup -- 2 more HELPER aliases for UNCLEAR stubs
