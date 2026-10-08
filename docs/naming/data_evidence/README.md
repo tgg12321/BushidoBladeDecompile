@@ -27,7 +27,7 @@ already-named functions from the 10-function batch in `evidence/`:
 | File | Proposed name | Confidence | Why |
 |------|---------------|-----------:|-----|
 | [D_800F1848.md](D_800F1848.md) | `g_rand_state` | high | LCG state owned exclusively by `bb2_rand` |
-| [D_8008F13C.md](D_8008F13C.md) | `g_special_cam_command_table` | high | 8-byte-stride command-descriptor table touched only by `special_cam_issue_command` |
+| [D_8008F13C.md](D_8008F13C.md) | `g_special_cam_command_table` (superseded by docs/naming/phase3/wave12: 0x8008F13C reset) | high | 8-byte-stride command-descriptor table touched only by `special_cam_issue_command` |
 | [D_80103608.md](D_80103608.md) | `g_tpage_slot_ptr` | medium-high | Paired-array slot pointer pool (manager pair + 10 consumers) |
 | [D_80103658.md](D_80103658.md) | `g_tpage_slot_count` | medium-high | Partner count array to the above |
 | [D_8009BD24.md](D_8009BD24.md) | `g_disp_config` (superseded by docs/naming/phase3/wave10: 0x8009BD24 reset) | medium-high | Display-config struct loaded by `disp_load_config_from_buf` |
@@ -55,11 +55,11 @@ unnamed `D_*` pool:
 | File | Proposed name | Confidence | Why |
 |------|---------------|-----------:|-----|
 | [D_8008D118.md](D_8008D118.md) | `g_isqrt_lut` (superseded: applied as `g_sqrt_table_u8`, sweep 2026-09-29 - floor(8*sqrt(i)), not inverse sqrt) | high | byte LUT indexed by sum-of-squares; used in marionation_camera_Exec + cpu_check_run_attack distance computations |
-| [D_800A36AC.md](D_800A36AC.md) | `g_frame_parity` | high | `& 1` selector for alternating framebuffers/CLUTs in func_80016E60 + func_8003DBE4 |
+| [D_800A36AC.md](D_800A36AC.md) | `g_frame_parity` (superseded by docs/naming/phase3/wave12: 0x800A36AC reset) | high | `& 1` selector for alternating framebuffers/CLUTs in func_80016E60 + func_8003DBE4 |
 | [D_800A3708.md](D_800A3708.md) | `g_stage_data_ptr` | high | stage data pointer; +0x4C/+0x54 are collision centers in stage_InitCollision |
 | [D_80101EC8.md](D_80101EC8.md) | `g_practice_menu_table` | high | base of per-character records, stride 0x44C matches D_80101F00 char_state stride |
 | [D_800A3748.md](D_800A3748.md) | `g_practice_menu_index` | high | index into g_practice_menu_table; -1 sentinel |
-| [D_800A378C.md](D_800A378C.md) | `g_palette_base_ptr` | medium | 4-byte-stride palette table indexed in func_8003DBE4 / func_8003DDF8 |
+| [D_800A378C.md](D_800A378C.md) | `g_palette_base_ptr` (superseded by docs/naming/phase3/wave12: 0x800A378C reset) | medium | 4-byte-stride palette table indexed in func_8003DBE4 / func_8003DDF8 |
 | [D_80102794.md](D_80102794.md) | `g_seq_active_voice_mask` | medium | bitmask of currently-active SEQ voices, diffed each tick in single_game_VoiceContorol |
 | [D_8009BC1C.md](D_8009BC1C.md) | `g_efc_buki_dispatch_table` | medium | function-pointer table indexed by D_800A3580 in func_8006EACC |
 | [D_800A3580.md](D_800A3580.md) | `g_efc_buki_dispatch_idx` | medium | index into above; range-check `(idx - 2) >= 2U` |
@@ -115,7 +115,7 @@ Continuing pass batch 6 (2026-05-17), next 27 symbols from ranks 61-90:
 | [D_800A3740.md](D_800A3740.md) | `g_replay_camera_mode` | medium | small enum {1, 3, 4} in replay_camera_rob_back_loose2 |
 | [D_800A36FA.md](D_800A36FA.md) | `g_gnd_init_flag` | medium | init flag cleared by gnd_init helpers |
 | [D_80101F32.md](D_80101F32.md) | `g_seq_state_p1` | medium | SEQ state code (paired with D_8010237E p2 side) |
-| [D_800A38C4.md](D_800A38C4.md) | `g_title_seq_state` | medium | title-screen SEQ active flag |
+| [D_800A38C4.md](D_800A38C4.md) | `g_title_seq_state` (superseded by docs/naming/phase3/wave12: 0x800A38C4 reset) | medium | title-screen SEQ active flag |
 | [D_800A384C.md](D_800A384C.md) | `g_practice_select_cursor` | medium | indexes halfword table at D_8008EB1C stride 2 |
 | [D_800A3500.md](D_800A3500.md) | `g_text1b_passthrough_arg` | medium | stashed arg passed to func_8006E950 |
 | [D_800A3518.md](D_800A3518.md) | `g_text1b_audio_state_a` | medium | audio-stream state, address-passed to func_8006E390 |
@@ -123,7 +123,7 @@ Continuing pass batch 6 (2026-05-17), next 27 symbols from ranks 61-90:
 | [D_800A37A8.md](D_800A37A8.md) | `g_mental_bar_packet_buf` | medium | byte array, indexed by D_800A37A0 counter |
 | [D_800F6608.md](D_800F6608.md) | `g_grid_pos_vec3` | medium | Vec3 of position; copied from player struct +0xB8 |
 | [D_800A3929.md](D_800A3929.md) | `g_cpu_pattern_tick` | medium | tick counter in cpu_get_move_pattern_table_number |
-| [D_800A376A.md](D_800A376A.md) | `g_tslTm_loaded_flags` | medium | per-slot 4-bit flags in tslDrTex1Init |
+| [D_800A376A.md](D_800A376A.md) | `g_tslTm_loaded_flags` (superseded by docs/naming/phase3/wave12: 0x800A376A reset) | medium | per-slot 4-bit flags in tslDrTex1Init |
 | [D_800EFB38.md](D_800EFB38.md) | `g_sound_buf_a` | medium | sound buffer A (paired with B at D_800EFB78) |
 | [D_800EFB78.md](D_800EFB78.md) | `g_sound_buf_b` | medium | sound buffer B |
 | [D_8010277E.md](D_8010277E.md) | `g_cpu_dir_buffer_e` | medium | byte in D_8010277C-F CPU AI dir cluster |

@@ -9,7 +9,7 @@ variables. The transitions are scattered across `code6cac_c2.c` and
 ## Mode dispatch recap
 
 Every frame, the main loop calls
-`g_module_func_tbl[D_800A3834]()`. The functions in `g_module_func_tbl`
+`D_8008D090[D_800A3834]()`. The functions in `D_8008D090`
 range from "title FMV" through "character select" to "fight" to "results
 screen" to "training mode". Each handler is responsible for:
 
@@ -136,8 +136,8 @@ The character select screen uses `selCharaID` (`0x80102092`) as the
 selected-character index. The per-character setup table is at
 `g_char_setup_tbl` (`0x80094E48`). Selection is driven by:
 
-- `chractar_use_pset_combo_id_table` (`0x8009BA7C`) — per-character pset
-  combo table
+- `D_8009BA7C` (`0x8009BA7C`) — 62 function pointers called through by
+  `func_80060A68` / `func_80060B70` (no character role shown)
 - `D_80094B88` (`0x80094B88`) — per-slot 5-bit codes stored by `func_80041604`
   (callers pass `D_800A36C8` / `D_800A36F4` / `D_800A376A`); not shown to be
   character ids
@@ -244,7 +244,7 @@ Per-frame menu input handler:
 
 ### Cross-reference with mode handlers
 
-Several menu-related mode handlers exist in `g_module_func_tbl`
+Several menu-related mode handlers exist in `D_8008D090`
 (see [main_loop.md](main_loop.md) for full table):
 
 - Mode 30 (`SetCurrentCursor`, `0x8003C714`) — menu cursor positioning

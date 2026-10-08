@@ -203,7 +203,7 @@ g_str_spu_timeout = 0x800163D8; // SPU timeout debug
 
 // === Data Section ===
 g_data_start = 0x8008D070; // .data section start
-D_8008D090 = 0x8008D090; // module init/cleanup pairs  // data-wave 2026-10-08: was g_module_func_tbl
+D_8008D090 = 0x8008D090; // 34 handler pointers; main calls entry D_800A3834 each frame  // data-wave 2026-10-08: was g_module_func_tbl
 // data-wave 2026-09-29: g_module_type_tbl = 0x8008D118 retired; g_sqrt_table_u8 is now object-defined
 
 // === BBM File Names (animation bundles) ===
@@ -213,7 +213,7 @@ g_str_bbm_k123 = 0x80010384; // K123.BBM
 g_str_bbm_t123 = 0x80010390; // T123.BBM
 g_str_bbm_s123 = 0x800103C0; // S123.BBM
 
-// === Kengo-derived data symbol names ===
+// === Data symbols once named from Kengo (only selCharaID keeps its Kengo name) ===
 D_8008DCCC = 0x8008DCCC;  // data-wave 2026-10-08: was menuDat
 D_8008E778 = 0x8008E778;  // data-wave 2026-10-08: was cpu_practice_honmokuroku_data_tbl
 g_cd_file_table = 0x8008EC34;  // CD file table CamPair[159]  // data-wave 2026-09-24: was SpecialCam

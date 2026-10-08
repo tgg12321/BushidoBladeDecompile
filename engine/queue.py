@@ -230,8 +230,8 @@ def _not_a_c_function(stem: str, func: str) -> bool:
         alone is not evidence: a bare second `glabel` in an included body, or a
         body that cannot be read, leaves the symbol outstanding;
       * it is declared `.aent <name>` — an alternate ENTRY into another function,
-        not a function of its own (3 symbols: g_data_start, g_module_func_tbl,
-        g_module_type_tbl);
+        not a function of its own (3 symbols: g_data_start, D_8008D090,
+        g_sqrt_table_u8);
       * it is placed by an instruction-less `glabel <name>` marker block — an
         address marker, not a body (1 symbol: D_80081F1C, declared `extern u8`
         and taken by address).

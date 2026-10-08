@@ -52,7 +52,7 @@ Companion documents:
    |    7..0x20+ -> menus, options, character select, replay,   |
    |               training (cpu_practice_*), katinuki, etc.    |
    |                                                            |
-   |  Dispatch: g_module_func_tbl[D_800A3834]()                 |
+   |  Dispatch: D_8008D090[D_800A3834]()                        |
    |  Camera:   special_camera_Exec(), special_camera_get_*()   |
    |  GPU:      change_shadow_tex_reg, gnd_get_fog              |
    |  Render:   gnd_disp_loop_ctrl() (per-mode draw)            |
@@ -90,7 +90,7 @@ address is the stable key.
 | --- | --- | --- |
 | `ings.c` | 0x800164F8-0x80017FA0 | Boot/init: `main`, `func_80016D78`, `disp_Init`, PC-drv file loaders, RNG, object-position math, scratchpad save/restore |
 | `code6cac.c` | 0x80017FA0-0x8001979C | mixed / unclear (11 functions, mostly unnamed) |
-| `code6cac_tu2.c` | 0x8001979C-0x80026DA4 | Game-mode handlers and match flow (`g_module_func_tbl` slots 1/12/17: `func_8001E878`, `func_8001EA04`, `func_8001EFA0`), practice-menu code (func_80021424), CPU move-pattern helpers; mixed |
+| `code6cac_tu2.c` | 0x8001979C-0x80026DA4 | Game-mode handlers and match flow (`D_8008D090` slots 1/12/17: `func_8001E878`, `func_8001EA04`, `func_8001EFA0`), practice-menu code (func_80021424), CPU move-pattern helpers; mixed |
 | `code6cac_b.c` | 0x80026DA4-0x800272FC | func_80026DA4 only (CPU/AI helper per its alias) |
 | `code6cac_b_tu2.c` | 0x800272FC-0x800343F0 | Fighter combat and CPU/AI: distance/separation, dodge checks, `cpu_set_move_command_and_dir`, `cpu_check_same_dir_timer`, GTE transforms |
 | `code6cac_b_tu3.c` | 0x800343F0-0x80034708 | 2 functions; mixed / unclear |
@@ -161,8 +161,8 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 
 ### Game-state dispatch
 - `D_800A3834` — **the** main game-mode register (0..0x20+). Each value is an
-  index into `g_module_func_tbl` (0x8008D090, an array of function pointers
-  paired with cleanup pointers). The main loop calls
+  index into `D_8008D090` (0x8008D090, an array of 34 handler function
+  pointers). The main loop calls
   `((void (*)(void))(&D_8008D090)[D_800A3834])()` every frame
   (`ings.c:625`).
 - `g_game_mode` (0x800A336C) — coarse game state (set up by `game_Init`).
@@ -174,7 +174,8 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
   `func_800174F4` draws each frame (6CF8.c:540-590); `bb2_const.h` names
   three of the values.
 - `D_800A36A8` — a 0/1 switch that multiplies the `func_8005D554` sprite passes.
-- `g_frame_parity` (D_800A36AC) — frame counter, low bit selects the active double-buffer slot.
+- `D_800A36AC` — presented-frame counter (++ after each DrawOTag); most readers take its low bit as the
+  double-buffer index, `func_8003C9A4` / `func_8003CD10` use the whole value.
 - `g_disp_fb_base` (0x800F7438) — base of the two 0x4090-byte
   drawenv+dispenv+OT structures (one per buffer).
 

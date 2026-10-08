@@ -885,7 +885,7 @@ yet in `src/*.c`) and compare to the proposer's category claim.
 | `0x80083698` | `syscall_wrapper_break_*` | `syscall_wrapper_break_80083698` | proposer right (`break 0, 259` trampoline with arg-reshuffle) |
 | `0x8008393C` | `syscall_wrapper_break_*` | `bios_FileReadRaw_8008393C` | proposer correct in shape (raw break trap), current alias more specific (`break 0, 261` = BIOS file-read raw) |
 | `0x800164AC` | `data_as_code_lb_table_*` | `data_as_code_lb_table_800164AC` | proposer right (18 of 19 insns are `lb $t0, ...($zero)` data-as-code) |
-| `0x80060758` | `replay_camera_check_stage_*` | `replay_camera_check_stage_80060758` only | **MISNOMER** demoted. 2-halfword clear of `g_text_render_cursor_a/b`; not a stage check. Kengo `name-unique` size collision (n_claimants=7, callee_overlap=0.00). Replacement `text_render_cursor_reset_80060758` added |
+| `0x80060758` | `replay_camera_check_stage_*` | `replay_camera_check_stage_80060758` only | **MISNOMER** demoted. 2-halfword clear of `D_800A32B4`/`D_800A32B6`; not a stage check. Kengo `name-unique` size collision (n_claimants=7, callee_overlap=0.00). Replacement `text_render_cursor_reset_80060758` added |
 
 ### Score
 

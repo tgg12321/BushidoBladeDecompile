@@ -64,7 +64,7 @@ Full body at `ings.c:584-675`. Structure:
 ```c
 void cpu_set_move_command_and_dir_for_no_action_2(void) {
     /* phase 1: bring up engine */
-    motion_Open();                 // run CTORs in g_module_func_tbl
+    motion_Open();                 // run CTORs
     func_800789D8(0x801FFF00);     // libapi InitTimer / PadInit
     func_80078968(2);              // VSync wait config
     sys_Init();                    // libgpu/libcd/libspu init + disp_Init
@@ -164,7 +164,7 @@ This is the entire main loop. It's a single forever-loop that:
 2. Updates per-frame "always on" subsystems: fog, voice control, special
    camera, ground/stage.
 3. Honors a global reset request (`D_800A3928`).
-4. Dispatches to the current mode function via `g_module_func_tbl[D_800A3834]`.
+4. Dispatches to the current mode function via `D_8008D090[D_800A3834]`.
 5. Waits for vsync window.
 6. Submits the built OT to the GPU.
 7. Optionally enters a pause/select submenu (`func_80016E60`).
@@ -202,7 +202,7 @@ link time, and is run automatically at boot. The mechanism is NOT used for
 the per-frame mode dispatch, which is a separate array starting at
 `D_8008D090`.
 
-## Mode dispatch — `g_module_func_tbl` at `D_8008D090`
+## Mode dispatch — `D_8008D090`
 
 The main loop's `((void (*)(void))(&D_8008D090)[D_800A3834])()` call uses
 `D_800A3834` (the main loop's handler index)
@@ -210,10 +210,10 @@ as an index into a 34-entry table of function pointers. Each function is one
 frame of that mode.
 
 **The table is statically initialized**, not BSS as previously thought — it's
-defined inline in `main.c:3055` as a `.global g_module_func_tbl` block of 34
+defined inline in `src/main/d_7D870.c:22` as a `.global D_8008D090` block of 34
 `.word` entries. Earlier docs assumed BSS-init based on the entries being
 zero in `asm/data/7D920.data.s`; the actual definition is in the inline asm
-of `main.c`.
+of `src/main/d_7D870.c`.
 
 ### Complete 34-mode dispatch table (decoded 2026-05-17)
 
@@ -328,7 +328,7 @@ mode 22 (VsModeInit) --> mode 23 (FrameDelay3, wait 3 frames)
    - `func_8005C6D0()` — ground-state per-frame update
 4. **Global reset** — `D_800A3928 != 0` triggers fade-to-black and reroutes
    to mode 8 (title).
-5. **Mode dispatch** — call `g_module_func_tbl[D_800A3834]()`. This is where
+5. **Mode dispatch** — call `D_8008D090[D_800A3834]()`. This is where
    gameplay logic runs.
 6. **Late housekeeping** — `ReturnVTMenu()`.
 7. **Wait for vsync window** — polled loop on timer counter.

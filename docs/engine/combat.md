@@ -331,7 +331,7 @@ mode, a lesson or an unlock.
 | `D_800A36F0` | `0x800A36F0` | 0/1: bit 0x20 / 0x10000 was still clear |
 | `D_800A3781` | `0x800A3781` | 0/1: bit 0x1000000 / 0x4000000 was still clear |
 | `D_800A38A4` | `0x800A38A4` | Selector 0..9 (6/7 from D_800A36F0, 8/9 from D_800A3781) |
-| `D_800A3834` | `0x800A3834` | g_module_func_tbl index (main loop) |
+| `D_800A3834` | `0x800A3834` | D_8008D090 index (main loop) |
 
 ### Lesson init params (set by func_8001C444)
 
@@ -349,7 +349,7 @@ mode, a lesson or an unlock.
 | `g_practice_lesson_count_b` | `0x80102785` | 4 |
 | `g_practice_lesson_flag_a/b` | `0x80102786/87` | 0 |
 
-### Lesson runtime params (fetched from `cpu_practice_honmokuroku_data_tbl`)
+### Row params (`func_80033DF4` copies a row of `D_8008E778`)
 
 | Symbol | Address | Role |
 |--------|---------|------|
@@ -360,7 +360,7 @@ mode, a lesson or an unlock.
 
 ### Cross-reference with mode handlers
 
-`func_80033FE4` selects these `g_module_func_tbl` entries
+`func_80033FE4` selects these `D_8008D090` entries
 (see [main_loop.md](main_loop.md) for full table):
 
 - `func_8003C040` (mode 0x12) branches on `D_800A38A4` (4..9) and

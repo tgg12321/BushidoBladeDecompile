@@ -500,7 +500,7 @@ category: policy-question
 
 Evidence: memory/grind/func_80020E74/evidence.md (measurements, mechanism), candidate.c (byte-exact body),
 dm/ (data-model script, private full-link harness), d38/ (failing single-object spellings).
-- With an honest data model (D_800A38C0[2], D_8008DB1C[27][8], menuDat[18], typed Tbl800A3860Entry /
+- With an honest data model (D_800A38C0[2], D_8008DB1C[27][8], D_8008DCCC[18], typed Tbl800A3860Entry /
   PracticeMenuRec.unk_48), candidate.c relinks to the oracle SHA1 (private link with build/ objects).
 - Its one blocked construct: `(&D_800A38C4)[i] = loads[i]; /* FAKE */` in the per-slot loop. The target
   stores to D_800A38C4 + 2*i (`addu $at,$at,$s4; sh %lo(D_800A38C4)($at)`), so the site is a real loop index.

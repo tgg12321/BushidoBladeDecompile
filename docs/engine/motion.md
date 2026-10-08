@@ -313,7 +313,7 @@ resets the per-id counter.
 28-entry s32 table (`func_80060C60` zeroes 28 entries) of dispatch
 offsets (values 0, 1, 2), not flags: `func_80060A68` / `func_80060B70`
 add `D_800F10D0[idx]` to `D_8009BA60[idx]` to pick a
-`chractar_use_pset_combo_id_table` entry and call it, and
+`D_8009BA7C` entry and call it, and
 `func_80061064` runs `func_80060B70` for every idx whose
 `D_800F1150[idx]` is nonzero. The slots the init functions store 1
 into: `func_80064ED8` [5] (`D_800F10E4`), `func_80064F20` [6]
@@ -370,6 +370,6 @@ One cluster from the placeholder-refinement pass:
   — `D_800F0E38` (`Unk800F0E38Record[12]`, x / y / z words at +0 / +4 /
   +8) + `D_800F0BEC` (12 × s16 per-slot age: 0 when `func_80062FEC`
   takes the slot, +1 per `func_80063084` pass). Allocated by
-  `func_80062FEC` (51268.c) via the `g_particle_slot_bitmap_plus_4`
+  `func_80062FEC` (51268.c) via the `D_800A3448`
   busy bitmap and drawn by `func_80063084`. Pool A (32 slots at
   `0x800F0D78` with random spread) is the parallel pool.

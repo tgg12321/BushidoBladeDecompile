@@ -11,7 +11,7 @@ know which subsystem owns it, look here.
 - **Key functions:** `cpu_set_move_command_and_dir_for_no_action_2`
   (main entry, ings.c:584), `sys_Init`, `func_80016D78`, `motion_Open`
   (CTOR runner), `gnd_disp_loop_ctrl`
-- **Key globals:** `D_800A3834` (mode), `g_frame_parity` (D_800A36AC) (frame slot),
+- **Key globals:** `D_800A3834` (mode), `D_800A36AC` (frame count),
   `D_800A3768` (the `func_800174F4` draw mode), `D_8008D070` (CTOR table), `D_8008D090`
   (mode dispatch table)
 - **Doc:** [main_loop.md](main_loop.md)
@@ -152,7 +152,7 @@ know which subsystem owns it, look here.
   `obj_InitPair`, `obj_InitAll`, `obj_Reset`, `obj_ExecTask`,
   `obj_InitTaskCamera`, `obj_UpdatePosition`
 - **Key globals:** `D_800A9A10` (model object slots), `D_80094B88` (per-slot codes),
-  `g_char_setup_tbl`, `chractar_use_pset_combo_id_table`
+  `g_char_setup_tbl`, `D_8009BA7C`
 
 ### System / IRQ / Timer
 - **File:** `ings2.c`, `system.c` (CD overlap)
@@ -309,8 +309,8 @@ full traces).  Indexed here by address range for reverse lookup:
 ### `0x800F_0xxx` range — flare slot pool (§20)
 - `D_800F0E38` (`Unk800F0E38Record[12]`, x / y / z at +0 / +4 / +8)
 - `D_800F0BEC` (12 × s16 per-slot age)
-- `g_particle_slot_bitmap_plus_4` (0x800A3448) — pool B busy bitmap
-- (Pool A is `g_particle_slot_bitmap` at 0x800A3444 / data at D_800F0D78..)
+- `D_800A3448` — live mask of the 12 flare slots
+- (Pool A's mask is `D_800A3444` / data at D_800F0D78..)
 
 ### `0x800F_33xx` range — saTan0Main MIDI dispatch (§11)
 - `g_seq_event_handler_90_NoteOn` (0x800F3340)

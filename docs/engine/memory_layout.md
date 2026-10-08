@@ -25,10 +25,10 @@ in this doc are KSEG0 virtual addresses (`0x8000_0000`+, cached).
 |   Entry @ 0x8008_36EC (__SN_ENTRY_POINT)     |
 +----------------------------------------------+ 0x8008_D070  <- g_data_start
 | .data: initialized globals                   |
-|   g_module_func_tbl @ 0x8008_D090 (mode      |
-|     dispatch table; entry per game-mode      |
-|     value of D_800A_3834)                    |
-|   g_module_type_tbl @ 0x8008_D118            |
+|   D_8008D090 @ 0x8008_D090 (handler          |
+|     table; main calls entry                  |
+|     D_800A_3834 each frame)                  |
+|   g_sqrt_table_u8 @ 0x8008_D118              |
 |   PsyQ libcd/libapi/libgpu data structs      |
 +----------------------------------------------+ 0x8009_4000  <- splat ends
 | .bss / engine globals zeroed at boot         |
@@ -309,10 +309,10 @@ flag table (at 0x800F10D0), 2-byte stride counter table (at
 Packed cursor/slot state + mode-state pointer + pad-result buffer +
 frame counter.  See [menus.md](menus.md).
 
-### g_module_func_tbl mode dispatch — `0x8008D_090..0xxx`
+### D_8008D090 handler table — `0x8008D090..0x8008D117`
 
 34-entry function-pointer table at `0x8008D090`, statically defined in
-`main.c:3055` inline asm.  Each entry is a "mode handler" function.
+`src/main/d_7D870.c:22` inline asm.  Each entry is a "mode handler" function.
 100% decoded as of 2026-05-17 — see [main_loop.md](main_loop.md) for
 the full per-mode table.
 

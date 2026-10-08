@@ -381,7 +381,7 @@ offset) plus the oracle link. Cuts sit at LIBSCAN module starts (docs/naming/lib
   (`libapi/c68.c`), because asm/funcs/FlushCache.s runs from 0x80078FF0 across SENDPAD's start 0x80079000
   to 0x80079028 (the `_SendPAD` mid-function XDEF, docs/naming/libscan/boundary_fixes.md).
 - **4b main_post.c → main/d_7D870.c + `psxsdk/libapi/a71.c`, `a72.c`.** Cuts at LIBAPI A71 (0x8008D050), A72
-  (0x8008D060) and A72's end 0x8008D070, where the game data begins (g_data_start, g_module_func_tbl, the first
+  (0x8008D060) and A72's end 0x8008D070, where the game data begins (g_data_start, D_8008D090, the first
   8 bytes of g_sqrt_table_u8; the rest of that table opens asm/data/7D920.data.s). No part has `.rodata` or
   data sections; no survivors. The one asm block that held DelDrv and the data is cut at 0x8008D070, each
   half keeping the block's `.set` wrapper; DelDrv's symbol size becomes its module's 0x10 (was 0xC0, the
