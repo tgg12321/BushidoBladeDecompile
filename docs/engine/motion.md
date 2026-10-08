@@ -29,7 +29,7 @@ disc/MOTION/X123.BBM   (per-character bone+motion bundle)
        v
    per-bone local matrix from rotation+translation
        |       (GTE matrix setup lives in the display-list opcode handlers
-       |        dispatched by exec_loc_mat_list_8004A4E0 — NOT in the
+       |        dispatched by func_8004A4E0 — NOT in the
        |        misnamed calc_loc_mat_fw* symbols; see the naming note below)
        v
    bone-tree walk: accumulate world matrix at each bone
@@ -220,14 +220,14 @@ verified against the bodies 2026-07-13):
   DISPATCHER (lhu; advance; jalr through a handler table). The GTE
   matrix work (`ctc2`/`mvmva`) lives in its dispatched handlers. This —
   not 0x8002AB08 — is what the display-list walker
-  `exec_loc_mat_list_8004A4E0` calls (5 jal sites, text1b.c).
+  `func_8004A4E0` calls (5 jal sites, text1b.c).
 - `calc_loc_mat_fw_80055B60` (0x80055B60, text1b.c) — enemy targeting /
   angle-difference helper (0xFFF-truncated deltas, ±0x800 angle wrap,
   `single_game_getEnemyCharId`).
 
 The actual per-bone local-matrix construction is performed inside the
 opcode handlers dispatched by 0x8004A940 during the
-`exec_loc_mat_list_8004A4E0` display-list walk; no single "calc_loc_mat"
+`func_8004A4E0` display-list walk; no single "calc_loc_mat"
 function exists under that name in BB2.
 
 ## Bone hierarchy walk

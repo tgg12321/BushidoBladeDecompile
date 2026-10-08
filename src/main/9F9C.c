@@ -3757,8 +3757,8 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
      * SOTN: src/dra/menu.c:138 @aa53500 */
     s32 i;
     /* Ruling 11 (ordinary-c-judge-decidable): holds three values -- the
-     * ray-walk step (1..40), the floor-climb step (1..40), then the chosen
-     * stage start-record index. */
+     * ray-walk step (1..40), the floor-climb step (1..40), then the index
+     * of the record chosen from func_80046F14's block. */
     s32 temp;
     s32 angle;
     s32 dx;

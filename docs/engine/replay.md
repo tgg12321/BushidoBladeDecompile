@@ -162,7 +162,7 @@ The scratchpad use is for inter-pass communication: the camera
 distance/scale computed in step 4-6 is consumed by `cpu_check_run_attack`
 in step 8.
 
-## game_FrameLoop / game_FrameInit
+## func_80036F40 / game_FrameInit
 
 `game_FrameInit` (0x80036EC0, now `cdrom_Pause`, `code6cac_b5_post.c`) sets up the "demo frame" mode
 (replay or title-screen demo):
@@ -173,23 +173,24 @@ in step 8.
 - `func_80080390(9, 0)` — stop SE channel XA
 - Set state values for "demo mode active"
 
-`game_FrameLoop` (`code6cac_b5_post.c`) is the demo-mode per-frame loop:
+`func_80036F40` (`code6cac_b5_post.c`) is a wait its callers enter around
+CD reads:
 
 ```c
+func_8003AA78();
 while (1) {
-    if (func_80036D88() != 0) break;     // D_80101E62 == 0?
-    func_8003AA48();                      // per-frame demo work
-    special_camera_Exec();                // tick special camera
-    if (D_800A3906 != 0) func_8005C6D0(); // ground tick
-    gnd_disp_loop_ctrl();                 // draw
-    *s0 = *s0 + 2;                        // advance frame counter
-    sys_VSync(2);                          // wait 2 vsyncs
+    if (cdrom_IsIdle() != 0) break;
+    func_8003AA48();
+    func_80036940();
+    if (D_800A3906 != 0) func_8005C6D0();
+    func_800174F4();
+    *p = *p + 2;                          // D_80101E58.rec.unk3E
+    VSync(2);
 }
+func_8003AAB0();
 ```
 
-This is a stripped-down version of the main game loop — it runs through
-the cinematic until the user presses a button (`func_80036D88` checks
-the abort flag).
+It returns as soon as the CD is idle; the game's frame loop is `main`.
 
 ## Win-camera variants — `replay_camera_rob_back_*`
 

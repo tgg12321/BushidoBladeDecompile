@@ -393,7 +393,7 @@ extern s16 D_800A38BA;
 /* per player: character of the D_800A3888 motion set (0xFF = none) */
 extern u8 D_800A38C0[2];
 /* per slot: model id in the D_800A3860[i] buffer (func_80020E74); [1] = 0xFFFF:
- * func_8001DB9C started a sequence at 0x80190800 (D_800A3860[1]'s buffer);
+ * func_8001DB9C passed 0x80190800 (D_800A3860[1]'s buffer) to func_800450BC;
  * func_80020D38 calls func_80045188 for it */
 extern u16 D_800A38C4[2];
 extern u8 D_800A38D4;
@@ -436,9 +436,9 @@ extern u8 D_800A3928;
 extern u8 D_800A3929;
 extern Unk800A3D40Rec D_800A3D40[];
 
-/* The three stage lights' position / direction words: func_8003F5A8
- * stores pos[i] / dir[i], func_8003F568 zeroes all six,
- * func_8003F5CC passes pair i to func_80017F98(pos, dir, i). */
+/* Three word pairs: the uncalled func_8003F5A8 stores pair i,
+ * func_8003F568 zeroes all six, func_8003F5CC passes pair i to
+ * func_80017F98(a, b, i), an empty function; nothing else reads them. */
 extern s32 D_800A93B0[3];
 
 extern s32 D_800A93BC[3];

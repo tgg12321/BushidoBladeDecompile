@@ -126,7 +126,7 @@ glabel func_80044E74
     addu       $s0, $a0, $zero        # s0 = file_id
     sw         $s1, 0x14($sp)
     sw         $ra, 0x18($sp)
-    jal        game_FrameLoop
+    jal        func_80036F40
      addu      $s1, $a1, $zero        # s1 = arg1 (dest / completion target)
     sll        $s0, $s0, 2            # byte_offset = file_id * 4
     addu       $a0, $zero, $zero
@@ -173,7 +173,7 @@ per-type size table). No code reads them.
 
 The mapping from filename to file-ID is NOT a pointer table at runtime — it
 is fixed at build time by the *order* in which the path-string pool appears
-in rodata. Code paths like `seq_Start(0x25, ...)` (`src/text1a_c_tu2.c:330`)
+in rodata. Code paths like `func_800450BC`'s `func_80044E74(a0 + 0x25, ...)` (`src/main/35000.c:295`)
 pass hard-coded numeric IDs that correspond to specific slots in the on-disc
 directory. The string pool exists only for debug / build identification —
 the shipped game does not perform name-based lookup.

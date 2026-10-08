@@ -100,7 +100,7 @@ address is the stable key.
 | `code6cac_b4.c` | 0x80035F30-0x80035FA8 | CD-audio mix setters (`cdrom_SetMix`) |
 | `code6cac_b4_post.c` | 0x80035FA8-0x80036140 | CD init and callbacks (`cdrom_Init`, `cdrom_ReadyCallback`), `snd_SerialMixOn` |
 | `code6cac_b5.c` | 0x80036140-0x80036D88 | The game CD module's two state-machine steppers |
-| `code6cac_b5_post.c` | 0x80036D88-0x800375EC | Game-side CD wrappers (`cdrom_StartRead`, `cdrom_LoadExec`), `sys_Exec`, `game_FrameLoop` |
+| `code6cac_b5_post.c` | 0x80036D88-0x800375EC | Game-side CD wrappers (`cdrom_StartRead`, `cdrom_LoadExec`), `sys_Exec`, `func_80036F40` |
 | `code6cac_c.c` | 0x800375EC-0x80037D14 | Memory-card wrappers (`memcard_Init` .. `memcard_WriteFile`) |
 | `code6cac_c0.c` | 0x80037D14-0x80037F08 | func_80037D14 (memory card; calls libcard `_card_*`) |
 | `code6cac_c_mid.c` | 0x80037F08-0x8003AB44 | Mixed: game-side link-cable `comb_*` wrappers, motion-shift mode setters, file-I/O state machine, `mode_handler_04` |
@@ -108,10 +108,10 @@ address is the stable key.
 | `text1a_pre.c` | 0x800401CC-0x80040D48 | Player-model ("rob") init, draw-move list (`gpu_AddDrawMove`) |
 | `text1a_pre_tu2.c` | 0x80040D48-0x800414FC | 4 functions; mixed / unclear |
 | `text1a_svc.c` | 0x800414FC-0x8004153C | `save_vc_ctrl` alone |
-| `text1a_post.c` | 0x8004153C-0x80042504 | Player-slot management (`player_Destroy`, `player_SetCharId`), effect dispatch |
+| `text1a_post.c` | 0x8004153C-0x80042504 | Slot management (`func_800415C4`, `func_80041604`), effect dispatch |
 | `text1a_c.c` | 0x80042504-0x80044800 | Matrix/colour math (`math_RotMatrix*`, `math_RgbToHsv`), primitive texture-offset helpers (`gpu_OffsetTexPoly*`), prim-buffer slots |
-| `text1a_c_tu2.c` | 0x80044800-0x800460E4 | Sound sequence scheduler (`seq_*`) and channel helpers |
-| `text1b.c` | 0x800460E4-0x8004A348 | Game/stage glue (`md_game_ExecMode`, `game_*Init`, `stage_GetVariant`), SE allocation/stop, camera bone setup |
+| `text1a_c_tu2.c` | 0x80044800-0x800460E4 | `func_800450BC` block load / copy family and channel helpers |
+| `text1b.c` | 0x800460E4-0x8004A348 | Game glue (`func_800460E4`, `game_*Init`, `func_800467A8`), SE allocation/stop, camera bone setup |
 | `text1b_tu1b.c` | 0x8004A348-0x80060A68 | 3D render core: GTE transform/clip kernels, stage/ground drawing, collision tests, `game_StageMain`/`game_StageSetup` |
 | `text1b_tu1c.c` | 0x80060A68-0x8006E534 | Effects and ex-motion: `efc_spawn_*`, `motion_ex_*`, animated sprite/object drawing |
 | `text1b_tu1d.c` | 0x8006E534-0x8007352C | HUD/overlay rendering, replay display setup |
@@ -184,8 +184,8 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
   (`bb2_const.h`)
 
 ### Stage / character
-- `g_stage_id` (0x80099478), `g_stage_variant` (0x8009947A),
-  `g_stage_collision` (0x800A8FB0) — 32x32 collision grid
+- `D_80099478` (id cached by `func_800460E4`), `D_8009947A` (0/1 flag),
+  `D_800A8FB0` — 32x32 cell grid read by the draw walks (no collision use)
 - `g_player_ptrs` (0x800A9A10) — array of player-object pointers (3 slots:
   P1, P2, prop/AI)
 - `g_player_char_ids` (0x80094B88) — character IDs per slot

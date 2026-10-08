@@ -223,7 +223,7 @@ This is a coarse who-owns-what map within main RAM .bss. Detail in
 | `0x800A_30xx..33xx` | Misc engine state (gp anchor at `0x800A30CC`) |
 | `0x800A_33xx..38xx` | Display, fade, character, game-mode state |
 | `0x800A_6690..` | `g_char_data` — per-character runtime data (~14 KB) |
-| `0x800A_8FB0..` | `g_stage_collision` — 32x32 stage collision grid |
+| `0x800A_8FB0..` | `D_800A8FB0` — 32x32 cell grid (read by the draw walks) |
 | `0x800A_9A10..` | `g_player_ptrs` — player object pointers |
 | `0x800E_EDB0..` | `g_cam_matrix` and camera state |
 | `0x800E_F7BC..` | `g_snd_config_tbl` and sound playback state |

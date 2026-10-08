@@ -73,13 +73,13 @@ know which subsystem owns it, look here.
 
 ### Sound / SPU
 - **File:** `text1b.c` (snd_* API + game state), `main.c` (spu_*
-  low-level + voice allocator), `text1a_c.c` (seq_*)
+  low-level + voice allocator), `text1a_c.c` (`func_800450BC` family)
 - **Key functions:** `snd_LoadBgm`, `snd_PlayBgm`, `snd_LoadSe`,
   `snd_PlaySe`, `snd_LoadSelection`, `snd_StopAll`, `snd_SetVolume`,
   `spu_NotifyChannel`, `coli_HitPauseKatana` + `coli_HitPauseKatana_2`
   + `exec_game` (voice-key allocator — misnamed),
-  `marionation_camera_Init_80036064` (XA stream), `seq_Start`,
-  `seq_Reset`, `single_game_VoiceContorol`
+  `marionation_camera_Init_80036064` (XA stream), `func_800450BC`,
+  `func_80045188`, `single_game_VoiceContorol`
 - **Key globals:** `g_snd_bgm_id`, `g_snd_se_id`, `g_snd_volume`,
   `g_spu_voice_key_a/b/c` (voice-key array), `g_snd_ch_data`
   (per-channel data), `g_snd_fade_curve`, `SND_CHANNEL_BGM=8`,
@@ -104,10 +104,10 @@ know which subsystem owns it, look here.
   `code6cac_c2.c` tail (options), `text1a_*.c` (mental gauge / `efc_*`)
 - **Key functions:** `md_game_check_change_sub_mode`,
   `md_menu_logo_exec` (asm-only), `game_SetControllerPorts`,
-  `game_SetPlayerCount`, `func_8003F168`, `stage_InitCollision`,
+  `game_SetPlayerCount`, `func_8003F168`, `func_8003F274`,
   `disp_mario_jimaku` (subtitles, asm), `DispPracticeMenuTex_*`,
   `DispUpdateStatusMessage`,
-  `cpu_exec_match_round_stage_select_80016E60` (match/round stage select),
+  `func_80016E60` (picks one of 3/6 menu entries from the pad),
   `FadeOut_*`, `CheckFadeEnd`, `InitFadePanel`
 - **Key globals:** `g_disp_fade`, `g_game_mode`, `g_game_pause`,
   `g_color_mode` (grayscale flag), `D_80102794` (pad input mask),
@@ -125,7 +125,7 @@ know which subsystem owns it, look here.
   `special_camera_get_rot_dir` (disc loader),
   `marionation_camera_Init_80036064` (XA),
   `marionation_camera_Init_80037468` (cinematic-mode entry),
-  `marionation_camera_GetMaxFrame`, `game_FrameInit`, `game_FrameLoop`
+  `marionation_camera_GetMaxFrame`, `game_FrameInit`, `func_80036F40`
 - **Key globals:** `SpecialCam` (`0x8008EC34` — disc table of
   cinematic entries), `D_8008EC38` (length table),
   `D_80101E5C..D_80101EA4` (replay state machine)
@@ -134,18 +134,19 @@ know which subsystem owns it, look here.
 ### Stage / World
 - **File:** `code6cac_c2.c` (stage_*, stage open),
   `text1a*.c` (gnd_* helpers)
-- **Key functions:** `stage_GetId`, `stage_GetVariant`,
-  `stage_GetDataPtr`, `stage_InitCollision`, `func_8003F5CC`,
-  `stage_ClearLighting`, `func_8003F168`, `gnd_init_*`,
+- **Key functions:** `stage_GetId`, `func_800467A8`,
+  `func_80046F14`, `func_8003F274`, `func_8003F5CC`,
+  `func_8003F568`, `func_8003F168`, `gnd_init_*`,
   `gnd_get_fog`, `gnd_set_fog*`, `gnd_open`, `gnd_close_*`,
   `gnd_disp_loop_ctrl` (the gameplay draw)
-- **Key globals:** `g_stage_id`, `g_stage_variant`, `g_stage_data`,
-  `g_stage_collision` (32x32 grid), `g_stage_light_pos`,
-  `g_stage_light_dir`, `g_stage_init_tbl` (per-stage init fn ptrs)
+- **Key globals:** `D_80099478`, `D_8009947A`, `D_8009947C`,
+  `D_800A8FB0` (32x32 grid read by the draw walks), `D_800A93B0` /
+  `D_800A93BC` (passed only to the empty `func_80017F98`), `D_800948BC`
+  (`{init, unk4}` hook pairs)
 
 ### Character / Player
 - **File:** `code6cac.c` (player_*), `text1b.c` (`obj_*`)
-- **Key functions:** `player_SetCharId`, `player_Destroy`,
+- **Key functions:** `func_80041604`, `func_800415C4`,
   `game_GetPlayerCount`, `obj_InitChars`, `obj_InitTask`,
   `obj_InitPair`, `obj_InitAll`, `obj_Reset`, `obj_ExecTask`,
   `obj_InitTaskCamera`, `obj_UpdatePosition`
@@ -169,9 +170,9 @@ If you've seen a global in the source and want to know what it does:
 ### `0x800A_0xxx` range (low BSS)
 - `g_player_ptrs` (0x800A9A10) — Character/Player
 - `g_player_char_ids` (0x80094B88) — Character/Player
-- `g_stage_init_tbl` (0x800948BC) — Stage
+- `D_800948BC` — hook pairs (`func_8003F168` / `func_8003E6D8`)
 - `g_snd_se_bank` (0x80099C34) — Sound
-- `g_stage_id`, `_variant`, `_data` (0x80099478..7C) — Stage
+- `D_80099478`, `D_8009947A`, `D_8009947C` — `func_800460E4` state / `func_80046F14` block
 - `g_cd_*` (0x800A11B4..14C0) — CD-ROM (system.c)
 - `g_sys_*` (0x800A14CC..2664) — System/IRQ
 - `g_spu_*`, `g_snd_*` (0x800A2870..3404) — Sound
@@ -180,7 +181,7 @@ If you've seen a global in the source and want to know what it does:
 - `g_game_timer` (0x800A3790) — Game state
 - `D_800A3834` — game-mode dispatch register
 - `g_char_data` (0x800A6690) — Character (14 KB region)
-- `g_stage_collision` (0x800A8FB0) — Stage (32x32 grid)
+- `D_800A8FB0` — 32x32 grid read by the draw walks
 - `SpecialCam` (0x8008EC34) — Replay/Camera disc table
 
 ### `0x800E_xxxx` range (mid BSS)

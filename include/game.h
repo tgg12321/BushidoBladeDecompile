@@ -679,7 +679,7 @@ typedef struct {
     /* 0x8 */ s32 unk8;
 } Unk800F0C10Record;
 
-/* 0x800948BC: per-stage function pairs, indexed by stage_GetId().
+/* 0x800948BC (D_800948BC): function-pointer pairs, indexed by stage_GetId().
  * func_8003F168 calls .init; func_8003E6D8 calls .unk4 (e.g. entry 13
  * holds func_80047570 / func_800475A4). */
 typedef struct {

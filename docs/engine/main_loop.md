@@ -208,7 +208,7 @@ the per-frame mode dispatch, which is a separate array starting at
 ## Mode dispatch — `g_module_func_tbl` at `D_8008D090`
 
 The main loop's `((void (*)(void))(&D_8008D090)[D_800A3834])()` call uses
-`D_800A3834` (the current "main game mode" / `g_practice_mode_dispatch_idx`)
+`D_800A3834` (the main loop's handler index)
 as an index into a 34-entry table of function pointers. Each function is one
 frame of that mode.
 
@@ -224,27 +224,27 @@ of `main.c`.
 |------|---------|---------|------|
 | 0  (0x00) | 0x8001DCB0 | `mode_handler_00_GameInit` | **Game init**: obj_InitChars + gpu_InitDisplay/Disable + gnd_disp_loop_ctrl + gnd_open |
 | 1  (0x01) | 0x8001E878 | `mode_handler_01_GameFrameUpdate` | **Main per-frame fight**: camera, characters, collision, motion, stage tick |
-| 2  (0x02) | 0x80033898 | `gpu_enable_and_state_reset_80033898` | Display reset + transitions to mode 3 |
+| 2  (0x02) | 0x80033898 | `func_80033898` | Display reset + transitions to mode 3 |
 | 3  (0x03) | 0x80034708 | `mode_handler_03_NoOp` | Empty (no-op placeholder) |
 | 4  (0x04) | 0x800397D4 | `func_800397D4` | **Full game setup**: gpu_EnableDisplay + gnd_open + player count + DMA list |
 | 5  (0x05) | 0x8003993C | `mode_handler_05_NoOp` | Empty |
 | 6  (0x06) | 0x8003B9D0 | `func_8003B9D0` | func_8001DA2C + game_Cleanup + conditional GPU |
 | 7  (0x07) | 0x8003BCB4 | `mode_handler_07_SubModeTransition` | md_game_check_change_sub_mode + pad input check |
-| 8  (0x08) | 0x80035480 | `scene_teardown_variant_80035480` | Scene cleanup variant; also the **global-reset target** (D_800A3928 trigger) |
+| 8  (0x08) | 0x80035480 | `func_80035480` | Cleanup + set-up, selects mode 9, display on; also the **global-reset target** (D_800A3928 trigger) |
 | 9  (0x09) | 0x80035828 | `mode_handler_09_NoOp` | Empty |
-| 10 (0x0A) | 0x8003BE10 | `mode_handler_10_GameTeardown` | gpu_EnableDisplay + player_Destroy(0/1) |
+| 10 (0x0A) | 0x8003BE10 | `mode_handler_10_GameTeardown` | gpu_ResetGraphMode1 + func_80016888 + func_800415C4(0/1) |
 | 11 (0x0B) | 0x8003BEA8 | `func_8003BEA8` | Checks pad input mask 0x40 (action button) |
 | 12 (0x0C) | 0x8001EA04 | `func_8001EA04` | gnd_init_80041688(0/1) + game_Cleanup; end-of-round |
 | 13 (0x0D) | 0x8001EA84 | `cpu_get_move_pattern_table_number` | CPU AI move-pattern lookup |
 | 14 (0x0E) | 0x80035430 | `mode_handler_14_NoOp` | Empty |
 | 15 (0x0F) | 0x8003BFC4 | `mode_handler_15_TeardownVariant` | Variant of mode 10 |
 | 16 (0x10) | 0x8001EEB4 | `hirahira_w_frie2` | "Falling/particles 2" — likely petal/snow effect |
-| 17 (0x11) | 0x8001EFA0 | `func_8001EFA0` | Increments g_practice_loop_frame, calls func_800472B0 |
-| 18 (0x12) | 0x8003C040 | `mode_handler_18_UnlockAnimDispatch` | **Unlock-celebration dispatch**: reads g_practice_unlock_anim_id (6/7=P1, 8/9=P2) |
+| 17 (0x11) | 0x8001EFA0 | `func_8001EFA0` | Increments D_800A37B8, calls func_800472B0 |
+| 18 (0x12) | 0x8003C040 | `func_8003C040` | Branches on D_800A38A4 (4..9), indexes D_8009016C / D_8008EA70 |
 | 19 (0x13) | 0x8003C2C0 | `cpu_side_move_dir_2` | CPU AI sidestep direction |
 | 20 (0x14) | 0x8003C42C | `func_8003C42C` | Counts D_800A377C[] entries into 8-cell histogram |
 | 21 (0x15) | 0x8003C560 | `func_8003C560` | Plays SFX 0xA4/0xA7 at counter==30 frames |
-| 22 (0x16) | 0x8003B870 | `func_8003B870` | **VS mode init**: player_SetCharId(0/1) + obj_InitChars + disp_SetFramebufferMode(1) |
+| 22 (0x16) | 0x8003B870 | `func_8003B870` | **VS mode init**: func_80041604(0/1) + obj_InitChars + disp_SetFramebufferMode(1) |
 | 23 (0x17) | 0x8003B8E4 | `func_8003B8E4` | Returns until frame counter >= 3 |
 | 24 (0x18) | 0x8003C958 | `mode_handler_24_DispatchToMode25` | gpu_InitDisplay + reset state + sets dispatch_idx = 0x19 |
 | 25 (0x19) | 0x8003C9A4 | `func_8003C9A4` | Reads g_gnd_midpoint_x, game_SetControllerPorts(0) |
@@ -270,17 +270,17 @@ mode 1 --> mode 18 (when lesson completes + P1/P2 unlock pending)
         --> mode 8 (title -- via global reset)
 ```
 
-**Lesson / practice flow:**
+**func_80033DF4 / func_80033FE4 flow:**
 ```
-func_80033DF4 (lesson check):
-  if (D_800A38E2 == 0x64 && unlocks pending):
-      sets g_practice_unlock_anim_id = 6/7/8/9
-      sets mode_dispatch_idx = 0x12  --> mode_handler_18_UnlockAnimDispatch
-      mode 18 reads unlock_anim_id and runs the right celebration
+func_80033DF4:
+  if (D_800A38E2 == 0x64):
+      D_800A36F0 / D_800A3781 = chosen D_80106A50.unk_00 bit was clear
+      then sets that bit
+  else: table row [D_800A38E2], D_800A38E2 += 1
 
-func_80033FE4 (unlock dispatch):
-  P1 unlocked  --> sets unlock_id = 6 or 7
-  P2 unlocked  --> sets unlock_id = 8 or 9
+func_80033FE4:
+  D_800A36F0  --> D_800A38A4 = 6 or 7, D_800A3834 = 0x12 (func_8003C040)
+  D_800A3781  --> D_800A38A4 = 8 or 9, D_800A3834 = 0x12
   else if D_800A38E9 < 3  --> mode 0x1A (scene_teardown_80035DC8)
   else                    --> mode 8 (title)
 ```
@@ -302,13 +302,12 @@ mode 22 (VsModeInit) --> mode 23 (FrameDelay3, wait 3 frames)
    per-frame work happens. The next frame's dispatch handles the actual logic.
 
 2. **Mode 8 is the "global reset target".** When `D_800A3928 != 0` triggers a
-   global reset, the main loop forces `g_practice_mode_dispatch_idx = 8` and
-   thus jumps to `scene_teardown_variant_80035480`. Many other paths also
+   global reset, the main loop forces `D_800A3834 = 8` and
+   thus jumps to `func_80035480`. Many other paths also
    end at mode 8 to reach the title.
 
-3. **Mode 18 is the unlock-celebration dispatcher.** It bridges the practice-
-   mode lesson-progress flow (modes 1/4/etc.) to the unlock-animation modes
-   selected via `g_practice_unlock_anim_id`.
+3. **Mode 18 (`func_8003C040`) dispatches on `D_800A38A4`.** `func_80033FE4`
+   selects it (`D_800A3834 = 0x12`) after setting `D_800A38A4` to 6..9.
 
 4. **Modes 16, 19, 27, 30** are Kengo-derived names that don't fit the
    `mode_handler_NN_*` pattern but still map to specific game features

@@ -16,7 +16,7 @@ direction, and timing. The AI's job is to:
 
 1. Decide what stance to be in (high, middle, low). (NB an earlier
    revision credited `D_800A36A4` as the stance selector — that global is
-   actually `g_stage_id_current`, the current stage/arena id; the stance
+   a table selector copied from a setting or a per-mode constant; the stance
    variable is not yet identified by name.)
 2. Decide what direction to face the opponent (4-way: forward / back /
    side-left / side-right).
@@ -122,17 +122,17 @@ scratchpad to decide. Uses the GTE scratchpad set up by
 
 Handles the "side-move" tactical retreat or sidestep. Reads the fighter's
 side-move cooldown counter (offset 0x34C, capped at 0x40), computes a target
-position from the stage-bound table `stage_GetDataPtr()`, then advances the
+position from the table `func_80046F14()` returns, then advances the
 fighter position toward it. Updates eight body/shadow position offsets
 (0xF4/0xFC + 0xD8/0xE0 + 0xB8/0xC0 + 0x104..0x13C).
 
-The side-move target depends on `g_stage_id_current` (`D_800A36A4`) — the
-current stage/arena id, not a stance:
-- Stage id 3: hardcoded `(0x2EE0, 0x1770)` (or sign-flipped based on
-  current position) — that arena's corner instead of the table.
-- Other stages: read from `stage_ptr + (stage_id*0xC + temp_s2*3) * 2`
-  — per-stage, per-fighter-index lookup, where
-  `stage_ptr = stage_GetDataPtr()`.
+The side-move target depends on `D_800A36A4` (a table selector, not a
+stance):
+- `D_800A36A4 == 3`: hardcoded `(0x2EE0, 0x1770)` (or sign-flipped based on
+  current position) instead of the table.
+- Otherwise: read from `base + (D_800A36A4*0xC + temp_s2*3) * 2`
+  — a per-selector, per-fighter-index lookup, where
+  `base = func_80046F14()`.
 
 ### `cpu_check_move_dir_pattern_enemy_attack` (`code6cac_tu2.c:1078`)
 
@@ -147,7 +147,7 @@ attack decision.
 ### `cpu_get_move_pattern_table_number` (`code6cac_tu2.c:2152`)
 
 The per-frame "practice mode" handler — runs the move-pattern table
-selection for the practice/tutorial mode. Increments `g_practice_loop_frame` (D_800A37B8) (a frame
+selection for the practice/tutorial mode. Increments `D_800A37B8` (a frame
 counter), calls `cpu_check_move_dir_pattern_enemy_attack` to set up the
 camera, then waits for pad input. The `g_cpu_attack_idx` (D_800A3817) register holds the
 "current selection" within the pattern table; pad-direction events cycle

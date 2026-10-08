@@ -313,22 +313,23 @@ up the per-round arena state when a fight starts.  It builds:
 A parallel cluster exists for Mario character at `g_mario_voice_data`
 (`0x800F5328` — see [sound.md](sound.md)).
 
-## Practice-lesson cluster (2026-05-17)
+## `func_80033DF4` / `func_80033FE4` cluster (2026-05-17)
 
-The practice mode tracks lesson progress + move-unlock state through
-several state cells, driven by `func_80033DF4` (lesson-progress
-checker) and `func_80033FE4` (move-unlock dispatcher).
+`func_80033DF4` steps a counter through a table and, at 0x64, sets two
+flags from bits of `D_80106A50.unk_00`; `func_80033FE4` turns the flags
+into a selector and the next handler index. No access shows a practice
+mode, a lesson or an unlock.
 
-### Lesson-progress state
+### Counter and flag state
 
 | Symbol | Address | Role |
 |--------|---------|------|
-| `g_practice_lesson_progress` | `0x800A38E2` | Progress counter (0x64 = complete) |
-| `g_practice_lesson_subcounter` | `0x800A38E9` | Sub-counter (< 3 triggers end-of-lesson) |
-| `g_practice_p1_move_unlock_pending` | `0x800A36F0` | bool: P1 unlocked a move |
-| `g_practice_p2_move_unlock_pending` | `0x800A3781` | bool: P2 unlocked a move |
-| `g_practice_unlock_anim_id` | `0x800A38A4` | Animation ID (6/7=P1, 8/9=P2) |
-| `g_practice_mode_dispatch_idx` | `0x800A3834` | g_module_func_tbl index |
+| `D_800A38E2` | `0x800A38E2` | Step counter: table row index, end branch at 0x64 |
+| `D_800A38E9` | `0x800A38E9` | Insertion rank 0..3 (func_80033D38); < 3 picks mode 0x1A |
+| `D_800A36F0` | `0x800A36F0` | 0/1: bit 0x20 / 0x10000 was still clear |
+| `D_800A3781` | `0x800A3781` | 0/1: bit 0x1000000 / 0x4000000 was still clear |
+| `D_800A38A4` | `0x800A38A4` | Selector 0..9 (6/7 from D_800A36F0, 8/9 from D_800A3781) |
+| `D_800A3834` | `0x800A3834` | g_module_func_tbl index (main loop) |
 
 ### Lesson init params (set by func_8001C444)
 
@@ -350,20 +351,20 @@ checker) and `func_80033FE4` (move-unlock dispatcher).
 
 | Symbol | Address | Role |
 |--------|---------|------|
-| `g_practice_lesson_param0` | `0x800A38DE` | Lesson table fetch via `&D_8008EC24 + char-class offset` |
-| `g_practice_lesson_param1` | `0x800A38EC` | Lesson table[1] |
-| `g_practice_lesson_param2` | `0x800A38ED` | Lesson table[2] |
-| `g_practice_lesson_param3` | `0x800A38EE` | Lesson table[3] |
+| `D_800A38DE` | `0x800A38DE` | `D_8008EC24[row][table[0]]` |
+| `D_800A38EC` | `0x800A38EC` | table[1]; `func_80041BF4`'s r |
+| `D_800A38ED` | `0x800A38ED` | table[2]; `func_80041BF4`'s g |
+| `D_800A38EE` | `0x800A38EE` | table[3]; `func_80041BF4`'s b |
 
 ### Cross-reference with mode handlers
 
-Practice mode flows through several `g_module_func_tbl` entries
+`func_80033FE4` selects these `g_module_func_tbl` entries
 (see [main_loop.md](main_loop.md) for full table):
 
-- `mode_handler_18_UnlockAnimDispatch` (`0x8003C040`, mode 0x12) is
-  the unlock-celebration dispatcher.  Reads `g_practice_unlock_anim_id`
-  to choose the specific character/move combo for the animation.
-- Mode 0x1A (`scene_teardown_80035DC8`) is the post-celebration teardown.
+- `func_8003C040` (mode 0x12) branches on `D_800A38A4` (4..9) and
+  indexes `D_8009016C` / `D_8008EA70` with it.
+- Mode 0x1A (`scene_teardown_80035DC8`) when neither flag is set and
+  `D_800A38E9 < 3`.
 
 ### Move-enable bitmap
 

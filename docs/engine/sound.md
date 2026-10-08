@@ -160,30 +160,25 @@ because the original implementation was for the "hit pause" effect where
 the engine slows the SPU voice rate during a blade strike (giving the
 recognizable BB2 "swoosh" on hits).
 
-## Sequence scheduler — `seq_*` (`text1a_c.c`)
+## `func_800450BC` block family (`text1a_c.c`)
 
-The `seq_*` family (`seq_Start`, `seq_Reset`, `seq_GetState` in
-`text1a_c.c:1480-1521`) is a small high-level sound sequencer. It plays
-**a sequence of cues** (boot music → mode-select music → in-game music)
-with timing controlled by frame counters.
+`func_800450BC`, `func_800450F4`, `func_80045188` and `func_80045194`
+(`text1a_c.c:1480-1521`) share one flag. Nothing here shows a sound
+sequence: there is no SEQ / libsnd call.
 
 State:
-- `D_800A3244` (`seq_GetState`) — 0=idle, 1=playing
-- `D_800A3398` — current sequence data pointer
-- `D_800963EE` — table of sequence base offsets
+- `D_800A3244` — set 1 by `func_800450BC`, cleared by `func_80045188` and
+  `func_800450F4`, returned by `func_80045194`
+- `D_800A3398` — address of the loaded block
+- `D_800973EC` — s16 entry table for ids 0x1E..0x24 (-1 = none)
 
-`seq_Start(seq_id, data_ptr)` starts a sequence at the data pointer,
-playing the cue id `seq_id + 0x25` (offset 0x25 is the sequencer's
-"start of sequence cues" marker).
+`func_800450BC(a0, dst)` reads NDATA file `a0 + 0x25` into `dst` through
+`func_80044E74`, stores `dst` in `D_800A3398` and sets `D_800A3244 = 1`.
 
-`func_800450F4(cue_id, callback)` advances the sequence to a specific cue,
-calling the data-pointer's offset table to find the cue's content and
-invoking `func_800520B8(cue_data, callback, length)` to play it.
-
-This is the layer above `snd_LoadBgm`/`snd_PlayBgm` — it handles the
-sequencing of multiple BGM segments (e.g., "play title theme → fade to
-character-select music"). Used during scene transitions where the same
-"theme" has multiple parts.
+`func_800450F4(id, dst)` returns 0 unless the flag is set and `id` maps
+through `D_800973EC`; it clears the flag if the block's first word is not
+5, and otherwise copies the entry's sub-block to `dst` with
+`func_800520B8(src, dst, length)`.
 
 ## Per-frame voice control
 
@@ -322,10 +317,9 @@ The encoding follows MIDI conventions:
 The function implements MIDI-style "running status" — if a byte's high
 bit is clear, it re-uses the last status byte stored at `state[0x16]`.
 
-This is the LOW-LEVEL event dispatcher.  The `seq_*` family
-(`seq_Start`, `seq_Reset`, etc., see [Sequence scheduler](#sequence-scheduler--seq_-text1a_cc))
-is the HIGH-LEVEL cue-sequencer that drives multiple BGM/SE segments
-through saTan0Main.
+This is the LOW-LEVEL event dispatcher.  The `func_800450BC` family
+(see [its section](#func_800450bc-block-family-text1a_cc)) only loads and
+copies blocks; no code shows it driving this dispatcher.
 
 **Mystery: the 5 dispatch slots are NEVER WRITTEN by BB2 code.**  A
 byte-level scan of both main and overlay binaries found zero stores to

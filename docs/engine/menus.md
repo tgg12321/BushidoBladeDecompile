@@ -105,14 +105,15 @@ The former `config.c` (`0x8003F168..0x800401CC`, now the tail of
 
 - `game_GetMode` / `game_SetControllerPorts` / `game_SetPlayerCount` —
   basic options.
-- `func_8003F168` — calls the `.init` hook of `g_stage_init_tbl[stage_GetId()]`
+- `func_8003F168` — calls the `.init` hook of `D_800948BC[stage_GetId()]`
   when it is non-null.
-- `stage_InitCollision` — builds the 32x32 collision grid for the
-  current stage.
+- `func_8003F274` — rebuilds the 32x32 grid `D_800A8FB0` around the view
+  node; the draw walks read it.
 - `md_option_reset_*` family (lines 518-535) — reset options to defaults.
 
-The stage init table `g_stage_init_tbl` (`0x800948BC`) is an array of
-function pointers — one per stage, called when entering that stage.
+`D_800948BC` is an array of `{init, unk4}` function-pointer pairs indexed by
+`stage_GetId()`: `func_8003F168` calls `.init`, the draw walk `func_8003E6D8`
+calls `.unk4`.
 
 ## Cursor / menu state primitives
 
@@ -146,10 +147,11 @@ selected-character index. The per-character setup table is at
 The mode handler for character select sets one entry of `g_player_char_ids`
 per frame as the user moves the cursor and presses CROSS to commit.
 
-## Stage select
+## `D_80099478`
 
-`g_stage_id` (`0x80099478`) is the selected stage. The stage-select menu
-dispatches the per-stage initialization via `g_stage_init_tbl`.
+`D_80099478` caches the id `func_800460E4` was last called with (-1 =
+none); `stage_GetId` returns it, and `func_8003F168` / `func_8003E6D8` index
+`D_800948BC` with it.
 
 ## Mode entries (handlers that set up modes)
 
@@ -197,9 +199,9 @@ the mode-select menu.
 `title_mv_exec` / `title_mv_exec2` (referenced) handle the title FMV
 (plays OPENING.STR via the MOVOVL.EXE overlay).
 
-`game_FrameLoop` (`code6cac_b5_post.c`) is a smaller per-frame "play a
-canned animation" loop used by title and demo modes — it spins until
-either a fixed frame count or a button press.
+`func_80036F40` (`code6cac_b5_post.c`) is a wait entered around CD reads:
+it runs per-frame work and `VSync(2)` until `cdrom_IsIdle()` returns
+non-zero.
 
 ## Replay / training overlap
 
@@ -277,6 +279,6 @@ State values (1-4):
 - 3 = ramp up alt
 - 4 = fade out alt (plays sfx 5 at peak)
 
-Note: `D_800A3578` (fade state value) is also named
-`g_replay_motion_shared_state_a` — the address is reused across the
-fade + replay-camera + motion-shift subsystems.
+Note: `D_800A3578` (fade state value) is a `5ED34.c` static: this fade
+reads its low byte, and the rest of the file stores and tests the whole
+halfword as its selection-screen state.
