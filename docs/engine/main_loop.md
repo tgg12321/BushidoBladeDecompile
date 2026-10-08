@@ -68,7 +68,7 @@ void cpu_set_move_command_and_dir_for_no_action_2(void) {
     func_800789D8(0x801FFF00);     // libapi InitTimer / PadInit
     func_80078968(2);              // VSync wait config
     sys_Init();                    // libgpu/libcd/libspu init + disp_Init
-    sys_GameInit();                // load game data, init game subsystems
+    func_80016D78();               // start-up clears and loads (sound bank, pad state)
     gpu_SetDispMask(1);            // turn the display ON
     func_80016A8C(0x80118800);     // load splash/logo bitmap
 
@@ -180,18 +180,15 @@ Disables interrupts, initializes the pad buffer (`func_80078C9C` — libapi
 event (`func_80078A58`), the display (`disp_Init`), camera state
 (`func_80035FE0`), pad-press state, then `sys_InitSound`.
 
-### `sys_GameInit` (`ings.c:390`)
-- Prints `"LIMIT:%08x"` debug
-- `kgm_clamp_patch_init` — zero file/disc flags
-- `func_80020D70` — early game data init
-- Sets `D_800A3770=0x801D8800`, `D_800A3774=0x801EBC00`, `D_800A3798=0x13400`
+### `func_80016D78` (`src/main/6CF8.c:287`)
+- Prints `g_str_limit` with `0x8010DB00`
+- `func_800167EC`, `func_80020D70`
+- Sets `D_800A3770[0]=0x801D8800`, `D_800A3770[1]=0x801EBC00`, `D_800A3798=0x13400`
   — the overlay-region scratch buffers
-- `file_LoadSoundData` — loads SE bank from disc to RAM
-- `func_80019534`, `katinuki_game_setData_8003D2C4`, `func_8001C444` —
-  game-data tables setup
-- `game_Init` (`text1b.c`) — initializes effect, gauge, character, and
-  pause state. Default state: `g_game_pause = 1`, `g_game_p1_ctrl = 0`,
-  `g_game_p2_ctrl = 2`, `g_game_timer = 0x23`.
+- Clears `D_800A3716` and `D_800A3906`, then `snd_InitAndLoadCommonVab`,
+  `pad_ResetStateMarkValid`, `func_8003D2C4`, `func_8001C444`
+- Zeroes `D_800A36F9`, `D_800A3690`, `D_800A3744..46`, runs `func_80046B44`,
+  sets `D_800A36F1 = 2`, and zeroes `D_800A38C4[1]`, `D_800A36B0`, `D_800A3928`.
 
 ### `motion_Open` (`ings2.c:501`)
 Runs an array of "constructor" function pointers stored at `D_8008D070`
@@ -223,21 +220,21 @@ of `main.c`.
 | Mode | Address | Handler | Role |
 |------|---------|---------|------|
 | 0  (0x00) | 0x8001DCB0 | `mode_handler_00_GameInit` | **Game init**: obj_InitChars + gpu_InitDisplay/Disable + gnd_disp_loop_ctrl + gnd_open |
-| 1  (0x01) | 0x8001E878 | `mode_handler_01_GameFrameUpdate` | **Main per-frame fight**: camera, characters, collision, motion, stage tick |
+| 1  (0x01) | 0x8001E878 | `func_8001E878` | **Main per-frame fight**: camera, characters, collision, motion, stage tick |
 | 2  (0x02) | 0x80033898 | `func_80033898` | Display reset + transitions to mode 3 |
 | 3  (0x03) | 0x80034708 | `mode_handler_03_NoOp` | Empty (no-op placeholder) |
 | 4  (0x04) | 0x800397D4 | `func_800397D4` | **Full game setup**: gpu_EnableDisplay + gnd_open + player count + DMA list |
 | 5  (0x05) | 0x8003993C | `mode_handler_05_NoOp` | Empty |
-| 6  (0x06) | 0x8003B9D0 | `func_8003B9D0` | func_8001DA2C + game_Cleanup + conditional GPU |
+| 6  (0x06) | 0x8003B9D0 | `func_8003B9D0` | func_8001DA2C + func_80061178 + conditional GPU |
 | 7  (0x07) | 0x8003BCB4 | `mode_handler_07_SubModeTransition` | md_game_check_change_sub_mode + pad input check |
 | 8  (0x08) | 0x80035480 | `func_80035480` | Cleanup + set-up, selects mode 9, display on; also the **global-reset target** (D_800A3928 trigger) |
 | 9  (0x09) | 0x80035828 | `mode_handler_09_NoOp` | Empty |
 | 10 (0x0A) | 0x8003BE10 | `mode_handler_10_GameTeardown` | gpu_ResetGraphMode1 + func_80016888 + func_800415C4(0/1) |
 | 11 (0x0B) | 0x8003BEA8 | `func_8003BEA8` | Checks pad input mask 0x40 (action button) |
-| 12 (0x0C) | 0x8001EA04 | `func_8001EA04` | gnd_init_80041688(0/1) + game_Cleanup; end-of-round |
+| 12 (0x0C) | 0x8001EA04 | `func_8001EA04` | func_80041688(0/1) + func_80061178; end-of-round |
 | 13 (0x0D) | 0x8001EA84 | `cpu_get_move_pattern_table_number` | CPU AI move-pattern lookup |
 | 14 (0x0E) | 0x80035430 | `mode_handler_14_NoOp` | Empty |
-| 15 (0x0F) | 0x8003BFC4 | `mode_handler_15_TeardownVariant` | Variant of mode 10 |
+| 15 (0x0F) | 0x8003BFC4 | `func_8003BFC4` | gpu_ResetGraphMode1 + func_800415C4(0/1) + ... + func_80046B44 (start-up init), then selects mode 8; main selects this slot first |
 | 16 (0x10) | 0x8001EEB4 | `hirahira_w_frie2` | "Falling/particles 2" — likely petal/snow effect |
 | 17 (0x11) | 0x8001EFA0 | `func_8001EFA0` | Increments D_800A37B8, calls func_800472B0 |
 | 18 (0x12) | 0x8003C040 | `func_8003C040` | Branches on D_800A38A4 (4..9), indexes D_8009016C / D_8008EA70 |
@@ -246,15 +243,15 @@ of `main.c`.
 | 21 (0x15) | 0x8003C560 | `func_8003C560` | Plays SFX 0xA4/0xA7 at counter==30 frames |
 | 22 (0x16) | 0x8003B870 | `func_8003B870` | **VS mode init**: func_80041604(0/1) + obj_InitChars + disp_SetFramebufferMode(1) |
 | 23 (0x17) | 0x8003B8E4 | `func_8003B8E4` | Returns until frame counter >= 3 |
-| 24 (0x18) | 0x8003C958 | `mode_handler_24_DispatchToMode25` | gpu_InitDisplay + reset state + sets dispatch_idx = 0x19 |
+| 24 (0x18) | 0x8003C958 | `func_8003C958` | func_80016888 + clears D_800A3817 / D_800A3929 / D_800A37B8, sets D_800A3834 = 0x19, display on |
 | 25 (0x19) | 0x8003C9A4 | `func_8003C9A4` | func_8003F1E4(0), then writes D_800F6608 fields (2B344.c:993-1000) |
 | 26 (0x1A) | 0x80035DC8 | `scene_teardown_80035DC8` | Scene cleanup |
 | 27 (0x1B) | 0x80035E38 | `saRobDraw` | Draws robot AI (saRob = "sa" team rob) |
 | 28 (0x1C) | 0x8003CE18 | `func_8003CE18` | func_8001DA2C + func_800372C0 |
 | 29 (0x1D) | 0x8003CF84 | `func_8003CF84` | mk_leaf_newpos + reads char struct fields |
 | 30 (0x1E) | 0x8003C714 | `SetCurrentCursor` | Menu cursor positioning |
-| 31 (0x1F) | 0x8003C8B4 | `mode_handler_31_TimerLoop` | Counts up to 241 frames or pad-input exit |
-| 32 (0x20) | 0x8003CCCC | `func_8003CCCC` | gpu_InitDisplay + game_Cleanup + dispatch to 0x21 |
+| 31 (0x1F) | 0x8003C8B4 | `func_8003C8B4` | D_800A37B8++ and func_80060768 primitives; func_80033FE4 on pad 0x400040 or D_800A37B8 >= 0xF1 (241); no loop |
+| 32 (0x20) | 0x8003CCCC | `func_8003CCCC` | gpu_InitDisplay + func_80061178 + dispatch to 0x21 |
 | 33 (0x21) | 0x8003CD10 | `func_8003CD10` | Mirrors mode_25 setup; final teardown |
 
 ### Observed mode transitions and state flow

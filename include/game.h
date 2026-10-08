@@ -1337,11 +1337,11 @@ typedef struct Unk800F1B18Slot {
     u32 cur;        /* +0x114 unread bits, left-aligned */
 } Unk800F1B18Slot;  /* sizeof == 0x118 */
 
-/* D_800F1B18[obj]: one character's motion decoder record (func_8001979C sets it
- * up, func_800198D0 decodes through it). stream is the motion bitstream (a byte
- * table of 3-byte keyframe offsets at +0x70); pose / code the initial channel
- * values and channel codes func_8001979C unpacks; ctr the round-robin counter
- * over the four cache slots. */
+/* D_800F1B18[slot]: one motion-stream decoder record, slot 0..2 (func_8001979C
+ * sets it up, func_800198D0 decodes through it). stream is the motion bitstream
+ * (a byte table of 3-byte keyframe offsets at +0x70); pose / code the initial
+ * channel values and channel codes func_8001979C unpacks; ctr the round-robin
+ * counter over the four cache slots. */
 typedef struct Unk800F1B18Rec {
     u32 *stream;             /* +0x000 */
     u16 pose[0x42];          /* +0x004 */

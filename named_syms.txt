@@ -481,7 +481,7 @@ func_800467B8            = 0x800467B8;  /* 62-insn loader using saTan2InfoInit +
 /* RESET 0x80047D94: retired name 'snd_CalcFade_80047D94' — preserved note: 50-insn fade calc using D_800EF7BC/C0 */
 /* RESET 0x80047E5C: retired name 'snd_GetFadeCurve_80047E5C' — preserved note: 27-insn fade curve lookup using D_800EF800/04 */
 /* Game lifecycle (4) */
-func_80046B44              = 0x80046B44;  /* start-up init (sys_GameInit, func_8003BFC4) */
+func_80046B44              = 0x80046B44;  /* start-up init (func_80016D78, func_8003BFC4) */
 func_80046DA8         = 0x80046DA8;  /* 15-insn stage init calling game_InitStageSound */
 /* RESET 0x80046EA0: retired name 'game_InitStageSound_80046EA0' — preserved note: 15-insn calling DispHira + func_80046798 + tslLineG5Init */
 /* RESET 0x80046EDC: retired name 'game_StageCleanup_80046EDC' — note: 14 insns; calls func_800460E4(a0, a1), func_800421C8(a0), func_8003E0E0() */
@@ -820,10 +820,10 @@ D_8008D754                          = 0x8008D754;  /* two 8-byte vectors; entry 
 D_8008D7C4                         = 0x8008D7C4;  /* two 8-byte records; entry [6] of D_8008D86C (func_800207C8) */  /* data-wave 2026-10-08: was g_motion_descriptor_table_10x16 */
 D_8008DA50                             = 0x8008DA50;  /* one s16 per class index (fighter record +0x0A), added to unk_104.vy (9F9C.c:4984-4990) */  /* data-wave 2026-10-08: was g_char_pose_data_table_3x68 */
 D_8008DE34                           = 0x8008DE34;  /* [27][6] halfword table by class; one read initialises fighter record +0x1C */  /* data-wave 2026-10-08: was g_char_anim_curve_table_3x324 */
-D_8008F220                            = 0x8008F220;  /* 4 records x 204 bytes -- per-character move pattern A */  /* data-wave 2026-10-08: was g_move_pattern_table_a_4x204 */
-D_8008F6C8                            = 0x8008F6C8;  /* 4 records x 204 bytes -- per-character move pattern B (same header as A) */  /* data-wave 2026-10-08: was g_move_pattern_table_b_4x204 */
-D_8008FA0C                            = 0x8008FA0C;  /* 5 records x 224 bytes -- per-character move pattern C */  /* data-wave 2026-10-08: was g_move_pattern_table_c_5x224 */
-D_8008FF2C                            = 0x8008FF2C;  /* 3 records x 224 bytes -- per-character move pattern D */  /* data-wave 2026-10-08: was g_move_pattern_table_d_3x224 */
+D_8008F220                            = 0x8008F220;  /* one 204-byte byte-coded command stream (D_800900EC entries 0, 5, 10, 11, 16, 22-31), read by the func_8003AE5C / func_8003B5A4 cursor */  /* data-wave 2026-10-08: was g_move_pattern_table_a_4x204 */
+D_8008F6C8                            = 0x8008F6C8;  /* one 204-byte command stream (D_800900EC entry 7) */  /* data-wave 2026-10-08: was g_move_pattern_table_b_4x204 */
+D_8008FA0C                            = 0x8008FA0C;  /* one 224-byte command stream (D_800900EC entry 13) */  /* data-wave 2026-10-08: was g_move_pattern_table_c_5x224 */
+D_8008FF2C                            = 0x8008FF2C;  /* one 224-byte command stream (D_800900EC entry 20) */  /* data-wave 2026-10-08: was g_move_pattern_table_d_3x224 */
 D_80090740                       = 0x80090740;  /* 64 rows x 128 bytes, row picked by (ratan2 angle >> 6) & 0x3F; ANDed word by word with D_80094840 into scratchpad */  /* data-wave 2026-10-08: was g_char_sprite_bitmap_block_3x8320 */
 
 /* === Rodata record-cluster pass 2 (2026-05-17) -- consumer-tied highs === */
@@ -836,8 +836,8 @@ _spu_addrMode                                     = 0x800A2CFC;  /* 9 x 4-byte S
 g_display_state_table_a_7                               = 0x8009BF58;  /* 7 x 4-byte display.c state cells (consumed by func_8007CAC8) */
 /* data-wave 2026-09-25: g_display_state_table_b_7 = 0x8009BF78 retired; _qin is now object-defined */
 D_8009B0E0                              = 0x8009B0E0;  /* nine 12-byte sprite-sheet headers (counts 2, 2, 2, 3, 2, 2, 4, 4, 6 at +2) drawn by func_8005C8A8 */  /* data-wave 2026-10-08: was g_cpu_no_action_table_24x3 */
-D_8009B1AC                              = 0x8009B1AC;  /* 3 x 16-byte records, sibling consumer (func_8005C8A8) */  /* data-wave 2026-10-08: was g_cpu_no_action_table_16x3 */
-D_8009B530                             = 0x8009B530;  /* 4 x 12-byte records consumed by func_8005E54C (CPU attack-arc helper) */  /* data-wave 2026-10-08: was g_cpu_attack_arc_table_12x4 */
+D_8009B1AC                              = 0x8009B1AC;  /* two 8-byte sprite cells (x, y, u, v, w, h); func_8005C8A8 draws them with header D_8009B0E0[4] */  /* data-wave 2026-10-08: was g_cpu_no_action_table_16x3 */
+D_8009B530                             = 0x8009B530;  /* one 12-byte sprite-sheet header (count 2), drawn by func_8005E54C with cell table D_8009B56C */  /* data-wave 2026-10-08: was g_cpu_attack_arc_table_12x4 */
 D_8009A830                          = 0x8009A830;  /* u8[8] (dlabel D_8009A830); func_80056FE8. 0x8009A838 (s8[8]) and 0x8009A840 (u8[16]) are separate tables, not rows of one 3x8 record */  /* data-wave 2026-10-08: was g_text1b_motion_byte_table_8x3 */
 D_800A327C                            = 0x800A327C;  /* RECT {0x380, 0, 0x40, 0x100}, LoadImage destination in func_8005FBC8 */  /* data-wave 2026-10-08: was g_text1b_byte_pair_table_8x7 */
 D_800A32C8                       = 0x800A32C8;  /* u32[2] bit masks {0x2000, 0x4000}, tested against *arg0 by func_800692C0 */  /* data-wave 2026-10-08: was g_text1b_state_record_table_8x4_a */
@@ -893,8 +893,8 @@ D_800A9830                             = 0x800A9830;  /* bank 0 of ten DR_MOVE p
 D_800A9920                             = 0x800A9920;  /* bank 1 of ten DR_MOVE packets (240 bytes); see D_800A9830 */  /* data-wave 2026-10-08: was g_shadow_record_b_table_240 */
 /* SE slot table */
 D_800F68E0                                      = 0x800F68E0;  /* 0xB4 16-byte timed event records (frame counter, frames seen, id, position, three angles): func_800393C8 adds, func_80039320 ages, func_8003993C replays them through func_80049718 */  /* data-wave 2026-10-08: was g_se_slot_table_16 */
-D_800F1B18                     = 0x800F1B18;  /* 1392-byte (0x570) per-character motion buffer, indexed by arg0 */  /* data-wave 2026-10-08: was g_per_char_motion_buffer_table_1392 */
-D_800F5F68                                   = 0x800F5F68;  /* 440-byte (0x1B8) per-character record, indexed by arg0 */  /* data-wave 2026-10-08: was g_per_char_record_440 */
+D_800F1B18                     = 0x800F1B18;  /* 0x570-byte motion-stream decoder records (Unk800F1B18Rec), indexed by decoder slot 0..2; func_8001979C sets one up, func_800198D0 decodes through it */  /* data-wave 2026-10-08: was g_per_char_motion_buffer_table_1392 */
+D_800F5F68                                   = 0x800F5F68;  /* BoneHitRec[2][22] (20 bytes each): one row of 22 hit-test records per fighter record, row = its index */  /* data-wave 2026-10-08: was g_per_char_record_440 */
 g_record_table_16_800A4750                              = 0x800A4750;  /* 16-byte stride, indexed by v1 in code6cac_c2 */
 
 /* === Address-taken buffers passed to named functions (2026-05-17) === */
@@ -959,14 +959,14 @@ D_800A3769                                = 0x800A3769;  /* byte: 0/1 set with D
 /*   - D_800A34FC is a struct pointer assigned from func_8006E49C */
 /*     (the mode-state allocator), accessed at offsets 0x12/0x10/0xE/ */
 /*     0xC/0x28/0x2A/0x30 */
-/*   - D_800A3514 is a pure frame counter (only += 1 or = 0) */
+/*   - D_800A3514 is a counter (only += 1 or = 0; see its line) */
 /*   - func_8006B92C is a menu input handler: parses pad input, */
 /*     decodes direction (1=down, 2=up), navigates cursor, */
 /*     calls func_8005C650 for menu sound effects */
 g_menuctl_state_bitfield                                = 0x800A34F8;  /* packed cursor/slot state */
 g_menuctl_mode_state_ptr                                = 0x800A34FC;  /* current screen's state struct pointer */
-D_800A350C                                = 0x800A350C;  /* s16 pad-decode result base (4 entries: 350C/350E/3510/3512) */  /* data-wave 2026-10-08: was g_menuctl_pad_result_buf */
-D_800A3514                                 = 0x800A3514;  /* per-frame tick counter (reset to 0, += 1 each frame) */  /* data-wave 2026-10-08: was g_menuctl_frame_counter */
+D_800A350C                                = 0x800A350C;  /* s16[2]: func_800692C0's per-axis step (its arg3): set to 1 / -1 / -6 / 0 and added to D_800A34FC->unk_0C[i]; zeroed by func_80068F70 with D_800A3510 / D_800A3512 */  /* data-wave 2026-10-08: was g_menuctl_pad_result_buf */
+D_800A3514                                 = 0x800A3514;  /* counter: += 1 per call of func_8006B898 / C168 / D338 / D74C / E068 and per cursor-row draw in func_8006A880; zeroed at init and on cursor moves; read as the rsin phase ((x & 0x1F) << 7) of a pulsing colour */  /* data-wave 2026-10-08: was g_menuctl_frame_counter */
 
 /* === Serial-link exchange words at 0x800A36C0-36D4 (2026-05-17) -- 7 highs === */
 /* Source: func_8003A728 (28708.c).  A packed input word and its check */
@@ -1112,13 +1112,13 @@ D_800A2668                                 = 0x800A2668;  /* boolean: 0 = not in
 g_vsync_gpu_stat_reg                                 = 0x800A1510;  /* libetc VSync static: .word 0x1F801814 (GPUSTAT pointer; SOTN vsync.c leaves it unnamed) */  /* data-wave 2026-10-03: was g_ings2_vsync_block_ptr */
 
 /* === Intro/video framebuffer + render state (2026-05-17) -- 6 highs === */
-/* From ings.c: sys_GameInit (line 414) sets up the FMV overlay region; */
+/* From 6CF8.c: func_80016D78 (:291-293) sets up the FMV overlay region; */
 /* func_80016E60 is the intro render loop that double-buffers between */
 /* D_800A3770[0] and [1] (toggled by D_800A36AC & 1). */
-g_video_fb_a                                            = 0x800A3770;  /* FMV overlay framebuffer A (= 0x801D8800 in sys_GameInit) */
+g_video_fb_a                                            = 0x800A3770;  /* FMV overlay framebuffer A (= 0x801D8800 in func_80016D78) */
 g_video_fb_size                                         = 0x800A3798;  /* = 0x13400 (78848 bytes) -- FMV region total size */
-D_800A36B0                                   = 0x800A36B0;  /* store-only: 0 in sys_GameInit, 1 in func_80016E60 before and after its menu loop */  /* data-wave 2026-10-08: was g_intro_render_active */
-D_800A3906                                     = 0x800A3906;  /* set 1 by snd_InitAndLoadCommonVab, 0 by sys_GameInit; gates func_8005C6D0 in func_80036F40 */  /* data-wave 2026-10-07: was g_intro_render_busy */
+D_800A36B0                                   = 0x800A36B0;  /* store-only: 0 in func_80016D78, 1 in func_80016E60 before and after its menu loop */  /* data-wave 2026-10-08: was g_intro_render_active */
+D_800A3906                                     = 0x800A3906;  /* set 1 by snd_InitAndLoadCommonVab, 0 by func_80016D78; gates func_8005C6D0 in func_80036F40 */  /* data-wave 2026-10-07: was g_intro_render_busy */
 g_pad_state_plus_0xC                                    = 0x80102794;  /* g_pad_state.pressed */  /* data-wave 2026-10-03: was g_pad_input_combined */
 
 /* === GPU packet queue + motion-save state (2026-05-17) -- 7 highs === */
@@ -1167,7 +1167,7 @@ g_mode_state_arg_alt                                    = 0x800A35D8;  /* arg0 s
 D_800A3570                                            = 0x800A3570;  /* s16 slide offset, 0..0x1E8 (488), stepped by +/-0x20 in func_8006EC0C; an x displacement and width in func_8006F528 (5ED34.c:266-288, :558-637) */  /* data-wave 2026-10-08: was g_fade_value */
 D_800A3580                                     = 0x800A3580;  /* the module's current mode: indexes the handler table at 0x8009BC1C, D_8009BCC4 and the menu table (5ED34.c:245, :1600, :1653) */  /* data-wave 2026-10-08: was g_fade_dispatch_idx */
 D_800A3584                                = 0x800A3584;  /* the module's next mode; func_8006EC0C copies it into D_800A3580 when D_800A3570 reaches 0x1E8 (5ED34.c:265-274) */  /* data-wave 2026-10-08: was g_fade_next_dispatch_idx */
-D_8009BC1C                                   = 0x8009BC1C;  /* fade-state dispatch table -- (&D_8009BC1C)[D_800A3580](sp10) */  /* data-wave 2026-10-08: was g_fade_dispatch_table */
+D_8009BC1C                                   = 0x8009BC1C;  /* 7-entry handler table (func_8006F97C, func_80070C70, func_8006F100, func_80071C4C, func_80072084, func_800720AC, func_800720D4); func_8006EACC calls (&D_8009BC1C)[D_800A3580](sp10) */  /* data-wave 2026-10-08: was g_fade_dispatch_table */
 
 /* === D_800F116C command-block cluster (2026-05-17) -- 4 highs === */
 /* From 51268.c func_800617C8 etc.  Complements the command block */
@@ -1209,8 +1209,8 @@ D_800A36FA                                         = 0x800A36FA;  /* three value
 D_800A36A4                                      = 0x800A36A4;  /* selector = D_80102778.unk_C or a per-mode constant; indexes tables (e.g. func_80046F14's block) */  /* data-wave 2026-10-08: was g_stage_id_current */
 D_800A390E                                         = 0x800A390E;  /* previous D_800A36A4: func_8001D790 compares and copies it; func_80035480 sets -1 */  /* data-wave 2026-10-08: was g_stage_id_prev */
 D_800F5328                                      = 0x800F5328;  /* Rec44 record (as D_800F6608): position, rotation, distance fed to func_80046BF4 / camera_CalcEye; g_listener_cam points at it (func_8001E404) */  /* data-wave 2026-10-08: was g_mario_voice_data */
-D_8008E5A8                                      = 0x8008E5A8;  /* per-char class lookup; indexed by g_practice_lesson_char_id (D_8010277C) */  /* data-wave 2026-10-08: was g_char_class_table */
-D_800A387C                                     = 0x800A387C;  /* round score; tested < 0x2711 (10001) limit */  /* data-wave 2026-10-08: was g_round_total_score */
+D_8008E5A8                                      = 0x8008E5A8;  /* u8 lookup, values 0..4, indexed by D_80102778.unk_4[0] / [1] (D_8010277C) or obj->unk_0C; func_8001D790 passes the values to func_8005BA8C, func_80032C50 indexes D_8008EBE0 with one */  /* data-wave 2026-10-08: was g_char_class_table */
+D_800A387C                                     = 0x800A387C;  /* planar distance between the two fighters (func_8001F888: SquareRoot0 of the unk_F4 x / z deltas of D_80101EC8[1] and [0]), stored each frame by func_8002006C; readers compare it with ranges (e.g. < 0x2711) */  /* data-wave 2026-10-08: was g_round_total_score */
 D_800A38BA                              = 0x800A38BA;  /* (s8)D_80102778.unk_E (func_800343F0); non-zero picks 0x50 over 0x2D for SetGeomScreen and gates per-fighter paths */  /* data-wave 2026-10-08: was g_practice_dispatch_active */
 D_800A36F6                                    = 0x800A36F6;  /* fighter index, written 0 or (D_800A38A0 != 0) (24BF0.c:19, :46, 25788.c:115); read as D_80101EC8[it] and compared with func_8001B690's arg0 (9F9C.c:930) */  /* data-wave 2026-10-08: was g_gnd_init_arg_saved */
 
@@ -1374,7 +1374,7 @@ D_800F10D0                               = 0x800F10D0;  /* 28-entry s32 table of
 /* RESET 0x800397D4: retired name 'mode_handler_04_GameSetup' — preserved note: full game setup: gpu_EnableDisplay + gnd_open + player count + DMA list */
 mode_handler_10_GameTeardown                            = 0x8003BE10;  /* gpu_ResetGraphMode1 + func_80016888 + func_800415C4(0/1) */
 /* RESET 0x8003BEA8: retired name 'mode_handler_11_PadInputCheck' — preserved note: checks g_pad_state.pressed & 0x40 (action button), returns state */
-/* RESET 0x8001EA04: retired name 'mode_handler_12_RoundCleanup' — preserved note: gnd_init_80041688(0/1) + game_Cleanup; round-end state */
+/* RESET 0x8001EA04: retired name 'mode_handler_12_RoundCleanup' — preserved note: func_80041688(0/1) + func_80061178; round-end state */
 /* RESET 0x8003BFC4: retired name 'mode_handler_15_TeardownVariant' — preserved note: gpu_ResetGraphMode1 + func_800415C4(0/1) (similar to mode_10) */
 /* RESET 0x8001EFA0: retired name 'mode_handler_17_GameContinueFrame' — preserved note: increments g_practice_loop_frame, func_800472B0, func_8001BCF0 */
 /* RESET 0x8003B870: retired name 'mode_handler_22_VsModeInit' — preserved note: player_SetCharId(0/1) + obj_InitChars + gpu_InitDisplay + disp_SetFramebufferMode(1) */
@@ -1383,7 +1383,7 @@ mode_handler_10_GameTeardown                            = 0x8003BE10;  /* gpu_Re
 /* RESET 0x8003C9A4: retired name 'mode_handler_25_PostBattleSetup' — preserved note: writes D_800F6608 fields (2B344.c:994-1000; the note said 'reads'), game_SetControllerPorts(0) */
 /* RESET 0x8003CE18: retired name 'mode_handler_28_PostBattleMisc' — preserved note: func_8001DA2C + func_800372C0 calls */
 /* RESET 0x8003C8B4: retired name 'mode_handler_31_TimerLoop' — preserved note: increments frame counter, calls func_80060768; exits on pad input or counter >= 0xF1 (241) */
-/* RESET 0x8003CCCC: retired name 'mode_handler_32_RebootDispatch' — preserved note: gpu_InitDisplay + game_Cleanup + sets dispatch_idx = 0x21 + gpu_DisableDisplay */
+/* RESET 0x8003CCCC: retired name 'mode_handler_32_RebootDispatch' — preserved note: gpu_InitDisplay + func_80061178 + sets dispatch_idx = 0x21 + gpu_DisableDisplay */
 /* RESET 0x8003CD10: retired name 'mode_handler_33_RebootBegin' — preserved note: mirrors mode_25 setup; final teardown state */
 
 /* === g_module_func_tbl mode handler decode (cont'd) -- 1 high === */
@@ -1401,7 +1401,7 @@ mode_handler_10_GameTeardown                            = 0x8003BE10;  /* gpu_Re
 /* where no actual work is done -- the dispatch happens elsewhere). */
 /* RESET 0x80034708: retired name 'mode_handler_03_NoOp' — preserved note: empty body -- no-op placeholder handler */
 /* RESET 0x8003993C: retired name 'mode_handler_05_NoOp' — preserved note: empty body -- no-op */
-/* RESET 0x8003B9D0: retired name 'mode_handler_06_GameTeardownVariant' — preserved note: func_8001DA2C + game_Cleanup + conditional gpu_InitDisplay/gpu_DisableDisplay */
+/* RESET 0x8003B9D0: retired name 'mode_handler_06_GameTeardownVariant' — preserved note: func_8001DA2C + func_80061178 + conditional gpu_InitDisplay/gpu_DisableDisplay */
 /* RESET 0x80035828: retired name 'mode_handler_09_NoOp' — preserved note: empty body -- no-op */
 mode_handler_14_NoOp                                    = 0x80035430;  /* empty body -- no-op */
 /* RESET 0x8003C42C: retired name 'mode_handler_20_CountIterator' — preserved note: counts D_800A377C[] entries into local 8-cell histogram */
@@ -1413,7 +1413,7 @@ mode_handler_14_NoOp                                    = 0x80035430;  /* empty 
 /* RESET 0x8001DCB0: retired name 'mode_handler_00_GameInit' — preserved note: main game-init: obj_InitChars + gpu_InitDisplay/Disable (conditional on D_800A3768 != 0x14) + gnd_disp_loop_ctrl + gpu_EnableDisplay + gnd_open */
 /* RESET 0x8003BCB4: retired name 'mode_handler_07_SubModeTransition' — preserved note: increments g_practice_loop_frame, calls md_game_check_change_sub_mode, branches on pad input (0x400040 = cross+circle), then katinuki_game_setData */
 
-/* g_module_func_tbl coverage: 34/34 modes named (100% complete) */
+/* g_module_func_tbl: 34 slots; only slots 10 and 14 keep a mode_handler_* name, the rest are func_<addr> */
 
 /* === Doc reconciliation: names proposed in recent_naming_findings.md but not yet in named_syms.txt (2026-05-17) -- 5 highs === */
 /* These names appear in pre-slim-2026-10-01:docs/engine/recent_naming_findings.md but */
@@ -1500,7 +1500,7 @@ D_800A3358                                 = 0x800A3358;  /* count of SPRT_8 gly
 D_800A3878                      = 0x800A3878;  /* state struct ptr; bits at +3 control which player's char-struct fields the menu modifies */  /* data-wave 2026-10-08: was g_menuctl_player_select_struct_ptr */
 
 /* === code6cac_c2.c misc state names (2026-05-17) -- 4 highs === */
-D_800A382D                              = 0x800A382D;  /* current char-struct index (0/1/2); used as `D_*0x44C` to compute D_80101EC8 offset */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx */
+D_800A382D                              = 0x800A382D;  /* func_8003C42C's tally result: counts[0] < counts[1] (0 / 1), or 2 on a second tie; func_8003C560 tests == 2, else indexes D_80101EC8 (stride 0x44C) with it */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx */
 D_800A3818                             = 0x800A3818;  /* func_80022408 result stored by func_8003CE18; func_8003CF84 passes it to func_80021D10 */  /* data-wave 2026-10-08: was g_stage_helper_result_cache */
 D_800A3894                                  = 0x800A3894;  /* byte pointer set from the cursor D_800A3844, read at +1 / +6 / a0*4+1 */  /* data-wave 2026-10-08: was g_menuctl_pending_flag */
 D_800A3368                                    = 0x800A3368;  /* count of D_800A4750 records func_8003EDC0 unpacks; the draw walks send ids at or above it to D_800A6690[v1 - D] (0x68-byte records) */  /* data-wave 2026-10-08: was g_char_data_base_idx */
@@ -1529,7 +1529,7 @@ D_800A38AA                                   = 0x800A38AA;  /* secondary per-sid
 D_800A38AB                                   = 0x800A38AB;  /* secondary counter [1] (D_800A38AA[1]) */  /* data-wave 2026-10-08: was g_match_p2_tiebreaker */
 
 /* === Misc state arrays in code6cac_b.c (2026-05-17) -- 4 highs === */
-D_800A36F2                                = 0x800A36F2;  /* per-char class state array; entries copied from D_8008E338 (5-byte stride); XOR'd with 0xE for state check */  /* data-wave 2026-10-08: was g_char_class_state_array */
+D_800A36F2                                = 0x800A36F2;  /* u8[2]: func_8003047C stores the first entry of row D_8008E338[unk_0A] (5-byte stride) in [a0->index]; [0] is XORed with object kinds (or 0xE) as func_80032854's first argument */  /* data-wave 2026-10-08: was g_char_class_state_array */
 D_80104E88                                   = 0x80104E88;  /* 4 entries x 0x2C bytes; flag byte at offset 0 (== 0 = empty slot); allocated by func_80032064 */  /* data-wave 2026-10-08: was g_effect_slot_table_4 */
 
 /* === Result-screen state machine (2026-05-17) -- 3 highs === */
@@ -1587,7 +1587,7 @@ g_vsync_dma_region_snapshot                             = 0x800A151C;  /* snapsh
 /* === func_80068F70 state cells (2026-05-17) -- 8 highs === */
 /* From 51268.c func_80068F70 and the functions it sets up. */
 D_800A3500                                   = 0x800A3500;  /* allocation cursor stepped past each block func_80068F70 sets up; func_8006E10C reads it as the CD read destination */  /* data-wave 2026-10-08: was g_menuctl_scratch_ctx */
-D_800A350E                                   = 0x800A350E;  /* pad-decode result entry 1 (s16) -- 2nd of g_menuctl_pad_result_buf 4-tuple */  /* data-wave 2026-10-08: was g_menuctl_pad_result_1 */
+D_800A350E                                   = 0x800A350E;  /* D_800A350C[1]: func_800692C0's second-axis step (see D_800A350C) */  /* data-wave 2026-10-08: was g_menuctl_pad_result_1 */
 D_800A3510                                   = 0x800A3510;  /* only two zero stores found */  /* data-wave 2026-10-08: was g_menuctl_pad_result_2 */
 D_800A3512                                   = 0x800A3512;  /* only a zero store found */  /* data-wave 2026-10-08: was g_menuctl_pad_result_3 */
 D_800A3518                                     = 0x800A3518;  /* counter bumped on every func_8006E390 call; its low bit picks the g_gpu_db buffer */  /* data-wave 2026-10-08: was g_menuctl_init_state */
@@ -1709,10 +1709,11 @@ _svm_cur_plus_0x7                                      = 0x801027F7;  /* row coo
 _svm_cur_plus_0xC                                      = 0x801027FC;  /* col coord 0..15 */  /* data-wave 2026-09-07: was g_weapon_frame_col */
 _svm_cur_plus_0x18                              = 0x80102808;  /* player select (& 1 for parity-indexed lookup) */  /* data-wave 2026-09-24: was g_weapon_frame_player_flag */
 
-/* === saTan1 gauge init + per-command status bytes (2026-05-17) -- 7 highs === */
-/* From text1b.c saTan1GaugeInit (line 13215): clears 28 entries each */
+/* === func_80060C60 clears + per-command status bytes (2026-05-17) -- 7 highs === */
+/* From 51268.c func_80060C60 (:145-163): clears 28 entries each */
 /* of D_800F10D0 and D_800F1150, */
-/* plus 6 gauge state cells. */
+/* plus 6 slot-allocator cells: D_800A344C[2] (live-slot counts), */
+/* D_800A3454[2] (in-use bitmasks), D_800A345C[2] (TexRec selectors). */
 D_800F1150                          = 0x800F1150;  /* 28-byte array of per-command status bytes paired with D_800F10D0; func_80061064 runs func_80060B70 for each nonzero entry */  /* data-wave 2026-10-08: was g_motion_state_secondary_flags */
 D_800A344C                                  = 0x800A344C;  /* data-wave 2026-10-08: was g_satan1_gauge_state_a */
 D_800A3450                                  = 0x800A3450;  /* data-wave 2026-10-08: was g_satan1_gauge_state_b */
@@ -1862,14 +1863,14 @@ D_800A31E8                                 = 0x800A31E8;  /* set to 1 when the p
 g_memcard_op_result_code                                = 0x800A37F4;  /* result code (-1/-3 = errors, 1-4 = poll result codes) */
 g_memcard_op_completion_code                            = 0x800A3890;  /* copy of g_memcard_op_result_code at end (caller reads this) */
 
-/* === sys_GameInit reset cluster (2026-05-17) -- 6 highs === */
-/* From ings.c sys_GameInit around line 427-436: state cells reset */
-/* during the game-data init phase. */
+/* === func_80016D78 reset cluster (2026-05-17) -- 6 highs === */
+/* From 6CF8.c func_80016D78 (:300-304): state cells reset */
+/* during start-up init. */
 g_init_screen_rect                                      = 0x800A30D4;  /* 16-byte Rect used as draw target (read as *Rect at line 317) */
-D_800A3744                                       = 0x800A3744;  /* zeroed by sys_GameInit; never read */  /* data-wave 2026-10-08: was g_sys_init_byte_a */
+D_800A3744                                       = 0x800A3744;  /* zeroed by func_80016D78; never read */  /* data-wave 2026-10-08: was g_sys_init_byte_a */
 D_800A3745                                       = 0x800A3745;  /* data-wave 2026-10-08: was g_sys_init_byte_b */
 D_800A3746                                       = 0x800A3746;  /* data-wave 2026-10-08: was g_sys_init_byte_c */
-D_800A36F9                                         = 0x800A36F9;  /* four-valued option (option line 10) cycled by func_80034708; zeroed by sys_GameInit */  /* data-wave 2026-10-08: was g_sys_init_flag */
+D_800A36F9                                         = 0x800A36F9;  /* four-valued option (option line 10) cycled by func_80034708; zeroed by func_80016D78 */  /* data-wave 2026-10-08: was g_sys_init_flag */
 D_800A3690                                     = 0x800A3690;  /* 0/1 option (option line 11) edited by func_80034708; selects the camera focus in func_8001A820 */  /* data-wave 2026-10-08: was g_sys_init_substate */
 
 /* === SPU transfer single-slot state (2026-05-17) -- 5 highs === */
@@ -1931,7 +1932,7 @@ g_buki_pre_hit_arg_alt                                  = 0x800A340C;  /* paired
 /* framebuffer parity. */
 D_800A3420                                       = 0x800A3420;  /* POLY_FT4 buffer base A (func_80060CB8's arg1); selected as the cursor at 0x800A37D4 when arg0 == 0 (51268.c:202-211) */  /* data-wave 2026-10-08: was g_gnd_fog_value_a */
 D_800A3424                                       = 0x800A3424;  /* POLY_FT4 buffer base B (arg1 + 0x4650); selected as the cursor at 0x800A37D4 when arg0 != 0 */  /* data-wave 2026-10-08: was g_gnd_fog_value_b */
-D_800A37D4                                        = 0x800A37D4;  /* currently selected fog value (also used as multi-purpose scratch by other systems -- see main_loop.md) */  /* data-wave 2026-10-08: was g_gnd_fog_active */
+D_800A37D4                                        = 0x800A37D4;  /* POLY_FT4 * output cursor of the selected buffer (D_800A3420 / D_800A3424, chosen by func_80060E04); the prim writers advance it and store it back */  /* data-wave 2026-10-08: was g_gnd_fog_active */
 D_800A3720                                          = 0x800A3720;  /* snapshot of the POLY_FT4 cursor at 0x800A37D4 taken by func_80060E04; later reads measure the cursor's advance from it */  /* data-wave 2026-10-08: was g_gnd_fog_prev */
 
 /* === Per-player slot active flag array (2026-05-17) -- 1 high === */
@@ -1958,7 +1959,7 @@ D_8009B2E0                           = 0x8009B2E0;  /* one 12-byte sprite-sheet 
 /* === Char struct +0xE field + lookup tables (2026-05-17) -- 4 highs === */
 g_char_lookup_table_b                                   = 0x8008E5CC;  /* sibling to g_char_class_id_table (D_8008D538); per-char data lookup */
 g_char_lookup_table_c                                   = 0x8008E6A4;  /* another per-char data table */
-D_800A36C8                                       = 0x800A36C8;  /* companion to g_char_id_saved_a/b; preserved during char_id context-save */  /* data-wave 2026-10-08: was g_char_id_saved_d */
+D_800A36C8                                       = 0x800A36C8;  /* func_8003B2C8 saves D_800A376A here; func_8003B328 restores it and passes it to func_80041604 */  /* data-wave 2026-10-08: was g_char_id_saved_d */
 
 /* === Misc state cells in code6cac_c_mid.c (2026-05-17) -- 5 highs === */
 D_800A333C                            = 0x800A333C;  /* latch set with D_800A3330 = 0x5A when the D_800A331C retry count reaches 5 or on case 3; while set the function shows message 0xA and runs the D_800A3330 countdown (28708.c:622-759) */  /* data-wave 2026-10-08: was g_result_timer_complete_flag */
@@ -2633,7 +2634,7 @@ D_800A37EC                                = 0x800A37EC;  /* 11 refs; +4 from tim
 g_file_state_field_800A381C                                  = 0x800A381C;  /* 16 refs; in file-subsystem state region (agent's plus_8 claim was wrong; using neutral name) */
 g_file_heap_state_flag_800A38B0                              = 0x800A38B0;  /* 40 refs; u8 init/busy flag in file subsystem (lbu/sb access) */
 D_800F1858                      = 0x800F1858;  /* 12 refs; +8 from g_stdout_column_counter (0x800F1850) */  /* data-wave 2026-09-25: was g_stdout_column_counter_plus_8_800F1858 */
-D_800F1B14               = 0x800F1B14;  /* 20 refs; 4-byte prefix to g_per_char_motion_buffer_table_1392 at 0x800F1B18 */  /* data-wave 2026-09-24: was g_per_char_motion_buffer_table_prefix_800F1B14 */
+D_800F1B14               = 0x800F1B14;  /* 20 refs; 4-byte prefix to the D_800F1B18 decoder records */  /* data-wave 2026-09-24: was g_per_char_motion_buffer_table_prefix_800F1B14 */
 D_800F2B68                      = 0x800F2B68;  /* 20 refs; 8 bytes before D_800F2B70 */  /* data-wave 2026-09-24: was g_text1b_gte_rgb_lookup_prefix_800F2B68 */
 g_char_struct_p1_field_286_8010214E                          = 0x8010214E;  /* 24 refs; per-character struct offset +0x286 at record 0 base */
 D_8010259A                          = 0x8010259A;  /* 24 refs; D_80101EC8[1] (0x80102314) + 0x286 */  /* data-wave 2026-10-08: was g_char_struct_p1_field_6D2_8010259A */
@@ -3102,17 +3103,17 @@ gte_rtpt_batch_8004A76C                            = 0x8004A76C;  /* GTE: rtpt l
 /* RESET 0x80042FA0: retired name 'calc_rotated_enemy_pos_80042FA0' — preserved note: computes a position rotated by an angle (math_Cos/Sin) relative to the enemy char (single_game_getEnemyCharId); outputs 3-vector */
 /* RESET 0x80053304: retired name 'init_move_to_target_80053304' — preserved note: stores current+target pos to ctx D_800EF9F8/D_800A33F4, computes distance (func_80052754), selects handler fn-ptr by dist threshold (0x9C3F), interpolates */
 /* RESET 0x80072CD4: retired name 'gpu_build_gradient_quad_80072CD4' — preserved note: initPolyG4 + mode-dependent gradient colors + gpu_SetSemiTransp + ot_Link */
-/* RESET 0x80072BC4: retired name 'gpu_build_quad_80072BC4' — preserved note: initPolyG4 + ot_Link (build+link a Gouraud quad; sibling of gpu_build_gradient_quad) */
+/* RESET 0x80072BC4: retired name 'gpu_build_quad_80072BC4' — preserved note: initPolyG4 + ot_Link (build+link a Gouraud quad; sibling of func_80072CD4) */
 /* RESET 0x8006A3CC: retired name 'draw_anim_sprite_8006A3CC' — preserved note: render sub-obj: satan_sprite_batch_render + saMotionSet + initTexPage + ot_Link */
 /* RESET 0x8006A494: retired name 'draw_anim_sprite_scaled_8006A494' — preserved note: as draw_anim_sprite but sets scale fields 0x20/0x24=0x100; func_80073728 + saMotionSet + initTexPage + ot_Link */
-gpu_draw_fullscreen_overlay_8006F038                   = 0x8006F038;  /* initTile full-screen 0x280x0xF0, color D_800A3550, gpu_SetSemiTransp, ot_Link (+texpage); fade/flash overlay */
+gpu_draw_fullscreen_overlay_8006F038                   = 0x8006F038;  /* SetTile full-screen 0x280 x 0xF0, grey D_800A3550, SetSemiTrans(1), AddPrim(g_gpu_ot_ptr); then SetDrawMode (tpage 0x40) + AddPrim; semi-transparent full-screen overlay */
 /* RESET 0x80074D2C: retired name 'draw_anim_sprite_pos_80074D2C' — preserved note: anim-sprite render at computed offset, OT-depth select; satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link */
-gpu_draw_layered_box_80069898                          = 0x80069898;  /* 3x initTile (y-offset layers, fading colors 0x80/0x40) + gpu_SetSemiTransp + ot_Link; shadowed box/panel */
+gpu_draw_layered_box_80069898                          = 0x80069898;  /* 3x SetTile at y, y-1, y-2 (grey 0x80 / 0x80 / 0x40, SetSemiTrans 0 / 1 / 1) + AddPrim(g_gpu_ot_ptr + arg2) */
 draw_bg_and_sprites_80069E18                           = 0x80069E18;  /* full-screen overlay tile + saMotionSet sprite + initTexPage + 3x func_8007352C; composite screen render */
 /* RESET 0x8006E950: retired name 'replay_setup_display_8006E950' — preserved note: game_FrameLoop + replay_camera_Init + 2x gpu_LoadImage (VRAM regions); replay-mode display init */
 /* RENAME 0x800484A0: retired name 'gpu_decode_load_image_800484A0' — preserved note: checks image header tag 0x10+flag, decodes via func_800486FC/8004876C into 0x400 buffer, gpu_LoadImage to VRAM */
 /* RESET 0x8006BB68: retired name 'draw_anim_sprites_seq_8006BB68' — preserved note: animated-sprite render (satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link) looped with frame-phase select (D_800A34F8>>13&7) */
-/* RESET 0x8002BEA0: retired name 'calc_fighter_separation_stored_8002BEA0' — preserved note: inter-fighter distance from STORED pos (+0xF4/+0xFC of both records) via sqrt LUT D_8008D118; sibling of calc_fighter_separation_vec (which uses world_pos +0xD8) */
+/* RESET 0x8002BEA0: retired name 'calc_fighter_separation_stored_8002BEA0' — preserved note: inter-fighter distance from STORED pos (+0xF4/+0xFC of both records) via sqrt LUT D_8008D118; sibling of func_8002BC68 (which uses world_pos +0xD8) */
 /* RESET 0x80053754: retired name 'move_to_target_step_80053754' — preserved note: per-frame handler for the move-to-target state machine (set as ctx[0x5C] by init_move_to_target when within distance threshold); processes ~28 char/ctx fields */
 /* RESET 0x80053E9C: retired name 'move_to_target_step_80053E9C' — preserved note: per-frame handler for the move-to-target state machine (set as ctx[0x5C] by init_move_to_target when beyond distance threshold) */
 /* RESET 0x80057E84: retired name 'coli_check_collision_80057E84' — preserved note: collision routine: reads char pos (+0xF4/+0xFC) + hit-record (+0x360/+0x368), calls segment-intersection func_8005763C; sibling of coli_find_nearest_edge_hit */

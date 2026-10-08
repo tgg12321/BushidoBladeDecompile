@@ -117,8 +117,8 @@ D_80101FC4 = a0_val;         // +0xFC -- stored Z
 The world_pos triple drives the 2D distance computation that gates
 CPU AI range checks (via `g_isqrt_lut`).  The stored_pos triple is
 a snapshot used by replay-camera / time-bonus calculations
-(the -0x384 = -900 frame Y bias matches the `g_round_frame_counter`
-chunking unit -- 30-second segments).
+(-0x384 = -900 is also the step `func_8001EA84` adds to the mode-3
+elapsed-frame clock `D_800A3858`: 30 seconds at 30 fps).
 
 ### 4. Two-arm flag pattern (`X || sibling`)
 

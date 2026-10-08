@@ -9,7 +9,7 @@ know which subsystem owns it, look here.
 - **File:** `ings.c` (high-level), `ings2.c` (BIOS shims), `main.c`
   (mid-game state)
 - **Key functions:** `cpu_set_move_command_and_dir_for_no_action_2`
-  (main entry, ings.c:584), `sys_Init`, `sys_GameInit`, `motion_Open`
+  (main entry, ings.c:584), `sys_Init`, `func_80016D78`, `motion_Open`
   (CTOR runner), `gnd_disp_loop_ctrl`
 - **Key globals:** `D_800A3834` (mode), `g_frame_parity` (D_800A36AC) (frame slot),
   `D_800A3768` (the `func_800174F4` draw mode), `D_8008D070` (CTOR table), `D_8008D090`
@@ -27,7 +27,8 @@ know which subsystem owns it, look here.
   `gnd_land_hit_char_die_main`, `katinuki_game_*`
 - **Key globals:** `D_80106A78` (active-move slots), `D_80106A50` (move
   enable bits), `Judge` (sin/cos LUT), `D_8008E194` (waza-table base),
-  `D_800A3380` (two presence flags), `g_anim_hit_data`
+  `D_800A3380` (two presence flags), `D_800A3384` (two position pointers
+  `func_80041EB0` sets light[1] from)
 - **Doc:** [combat.md](combat.md)
 
 ### CPU / AI

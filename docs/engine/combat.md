@@ -241,7 +241,7 @@ strike. The mechanic is implemented across several functions all named
 - `katinuki_game_get_katinuki_max_num_*` (5 variants at different addresses,
   all in `named_syms.txt`) — return the maximum number of consecutive
   katinuki finishes for the current game mode.
-- `katinuki_game_setData_8003D2C4` (called from `sys_GameInit`) — initializes
+- `katinuki_game_setData_8003D2C4` (called from `func_80016D78`) — initializes
   the katinuki state at boot.
 - `katinuki_game_getMyWeaponId` (`code6cac_b_tu2.c:63`) — looks up the
   fighter's weapon id for katinuki damage calculation.

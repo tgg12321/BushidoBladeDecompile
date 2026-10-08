@@ -176,13 +176,13 @@ D_800A36A8 = 0x800A36A8; // 0/1 switch that multiplies the func_8005D554 sprite 
 
 // === File I/O ===
 D_800A3710 = 0x800A3710; // VRAM transfer timer  // data-wave 2026-09-25: was g_file_vram_timer
-D_800A3716 = 0x800A3716; // eff_Init done flag (eff_ClearInitFlag / sys_GameInit clear it)  // data-wave 2026-10-07: was g_file_dma_flag
+D_800A3716 = 0x800A3716; // eff_Init done flag (eff_ClearInitFlag / func_80016D78 clear it)  // data-wave 2026-10-07: was g_file_dma_flag
 g_file_data_buf = 0x800F6740; // file data buffer
 
 // === Animation ===
 D_800F66A0 = 0x800F66A0; // rotation func ptrs  // data-wave 2026-10-08: was g_anim_func_table
 D_800A3380 = 0x800A3380; // 0/1 presence flags [2] (func_800420E8 / func_8004211C)  // data-wave 2026-10-08: was g_anim_hit_flags
-D_800A3384 = 0x800A3384; // hit data [2]  // data-wave 2026-10-08: was g_anim_hit_data
+D_800A3384 = 0x800A3384; // [2] position pointers: func_800420E8 stores [a0]; func_80041EB0 sets light[1] from the flagged ones  // data-wave 2026-10-08: was g_anim_hit_data
 // data-wave 2026-10-08: g_anim_select = 0x800A3238 retired; D_800A3238 is now object-defined
 D_800A3382 = 0x800A3382; // [1] of the D_800A3380 flag pair (0/1)  // data-wave 2026-10-08: was g_anim_counter
 

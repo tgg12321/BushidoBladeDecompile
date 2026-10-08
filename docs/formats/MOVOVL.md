@@ -148,7 +148,7 @@ size = func_8005B7C4(0x801D8800);
 if (size >= 0xD01) sys_Panic();
 bb2_memcpy(0x8010DB00, 0x801D8800, size);
 
-// src/ings.c:414 sys_GameInit — registers the region as a buffer
+// src/main/6CF8.c:291 func_80016D78 — registers the region as a buffer
 D_800A3770 = 0x801D8800;        // buffer base
 D_800A3774 = 0x801EBC00;        // buffer end
 D_800A3798 = 0x13400;           // buffer size = 78,848 bytes

@@ -57,7 +57,7 @@ in this doc are KSEG0 virtual addresses (`0x8000_0000`+, cached).
 |   g_memcard_data    0x80103600               |
 +----------------------------------------------+ 0x801D_8800  <- overlay region
 | D_800A3770 = 0x801D8800 (overlay scratch     |
-| base, set in sys_GameInit). Used as:         |
+| base, set in func_80016D78). Used as:        |
 |   - MOVOVL.EXE FMV overlay load target       |
 |     (file_LoadOverlay; ings.c:370)           |
 |   - sound-data scratch during                |

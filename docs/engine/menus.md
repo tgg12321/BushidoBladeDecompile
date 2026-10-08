@@ -221,8 +221,8 @@ reference these together (highest "naming multiplier" cluster).
 |--------|---------|------|
 | `g_menuctl_state_bitfield` | `0x800A34F8` | Packed cursor/slot state |
 | `g_menuctl_mode_state_ptr` | `0x800A34FC` | Current screen's state struct ptr (from `func_8006E49C`) |
-| `g_menuctl_pad_result_buf` | `0x800A350C` | s16 pad-decode result base (4 entries: 350C/350E/3510/3512) |
-| `g_menuctl_frame_counter` | `0x800A3514` | Per-frame tick counter |
+| `D_800A350C` | `0x800A350C` | s16[2]: `func_800692C0`'s per-axis step (1 / -1 / -6 / 0), added to `D_800A34FC->unk_0C[i]` |
+| `D_800A3514` | `0x800A3514` | Counter: += 1 per handler call or cursor-row draw; the rsin phase of a pulsing colour |
 
 ### Bitfield layout of `g_menuctl_state_bitfield`
 
@@ -264,9 +264,9 @@ table:
 | Symbol | Address | Role |
 |--------|---------|------|
 | `D_800A3570` | `0x800A3570` | s16 slide offset, 0..0x1E8 (488); an x displacement / width in `func_8006F528` |
-| `D_800A3580` | `0x800A3580` | The module's current mode; indexes g_fade_dispatch_table, D_8009BCC4 and the menu table |
+| `D_800A3580` | `0x800A3580` | The module's current mode; indexes D_8009BC1C, D_8009BCC4 and the menu table |
 | `D_800A3584` | `0x800A3584` | The next mode, copied into D_800A3580 when D_800A3570 reaches 0x1E8 |
-| `g_fade_dispatch_table` | `0x8009BC1C` | 5+ function-pointer entries |
+| `D_8009BC1C` | `0x8009BC1C` | 7 handler entries, called by `func_8006EACC` with `&sp10`; [1..3] drive the full-screen tile's grey level, [0] and [4..6] do not |
 
 State values (1-4):
 - 1 = ramp up

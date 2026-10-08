@@ -30,7 +30,7 @@ already-named functions from the 10-function batch in `evidence/`:
 | [D_8008F13C.md](D_8008F13C.md) | `g_special_cam_command_table` | high | 8-byte-stride command-descriptor table touched only by `special_cam_issue_command` |
 | [D_80103608.md](D_80103608.md) | `g_tpage_slot_ptr` | medium-high | Paired-array slot pointer pool (manager pair + 10 consumers) |
 | [D_80103658.md](D_80103658.md) | `g_tpage_slot_count` | medium-high | Partner count array to the above |
-| [D_8009BD24.md](D_8009BD24.md) | `g_disp_config` | medium-high | Display-config struct loaded by `disp_load_config_from_buf` |
+| [D_8009BD24.md](D_8009BD24.md) | `g_disp_config` (superseded by docs/naming/phase3/wave10: 0x8009BD24 reset) | medium-high | Display-config struct loaded by `disp_load_config_from_buf` |
 | [D_800A379E.md](D_800A379E.md) | `g_motion_state_code` | medium-high | Motion-state s16 returned by `game_state_advance` |
 
 Per-character state struct batch (2026-05-17), three symbols + one
