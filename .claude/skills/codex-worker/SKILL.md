@@ -197,7 +197,7 @@ agent is not. `run` / `follow-up` start only while no other Codex task is runnin
 
 ## Codex's build door: `tools/codex_eng.ps1`
 
-`run` installs `~/.codex-claude/rules/bb2-codex-eng.rules`, which lets exactly
+`run` installs `~/.codex/rules/bb2-codex-eng.rules`, which lets exactly
 `pwsh -NoProfile -File "<main>/tools/codex_eng.ps1" <cmd>` run outside the sandbox, one command
 per shell call. That script is main's copy, which Codex can't edit, and it calls
 `codex_worker.py shadow --from-pin`. That path:
