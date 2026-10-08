@@ -184,7 +184,7 @@ If you've seen a global in the source and want to know what it does:
 - `SpecialCam` (0x8008EC34) — Replay/Camera disc table
 
 ### `0x800E_xxxx` range (mid BSS)
-- `g_cam_matrix`, `g_cam_bone_data*` (0x800EEDB0..) — GPU camera
+- `D_800EEDB0`, `D_800EEDD0` (view matrix copies), `g_cam_bone_data2` (0x800EEDB0..) — GPU camera
 - `g_cam_fov_*` (0x800F62F8..) — GPU camera
 - `g_snd_config_tbl` (0x800EF7BC) — Sound
 - `g_snd_fade_curve` (0x800EF800) — Sound

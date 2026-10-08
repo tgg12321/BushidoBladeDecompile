@@ -124,7 +124,7 @@ g_player_char_ids = 0x80094B88; // character IDs [3]
 
 // === Camera ===
 D_800EEDB0 = 0x800EEDB0;  // data-wave 2026-09-29: was g_cam_matrix
-D_800EEDD0 = 0x800EEDD0; // camera bone data  // data-wave 2026-10-07: was g_cam_bone_data
+D_800EEDD0 = 0x800EEDD0; // MATRIX: D_80101DF0's matrix with row 1 halved (func_80047210)  // data-wave 2026-10-07: was g_cam_bone_data
 g_cam_bone_data2 = 0x800EEDF0; // camera bone data 2
 g_cam_interp = 0x800EEDF8; // camera interpolation timer
 

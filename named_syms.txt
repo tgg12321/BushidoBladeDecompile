@@ -319,7 +319,7 @@ func_80046E54          = 0x80046E54;  /* writes (a0 ? 1 : 0) to g_game_pause_fla
 func_80046E7C          = 0x80046E7C;  /* lh getter for g_game_pause_flag */
 /* RESET 0x80046E8C: retired name 'game_ResetTimer_80046E8C' — preserved note: writes 0x23 (35 frames) to g_round_timer */
 stage_GetDataPtr_80046F14       = 0x80046F14;  /* returns &D_8009947C (stage-data slot address) */
-func_800472B0     = 0x800472B0;  /* returns &g_cam_bone_data (companion to func_80047210) */
+func_800472B0     = 0x800472B0;  /* returns &D_800EEDD0 (the matrix func_80047210 writes) */
 game_Stub1_800477BC             = 0x800477BC;  /* literal `jr ra; nop` -- empty hook slot 1 */
 game_Stub2_800477C4             = 0x800477C4;  /* literal `jr ra; nop` -- empty hook slot 2 */
 game_Stub3_800477CC             = 0x800477CC;  /* literal `jr ra; nop` -- empty hook slot 3 */
@@ -1392,7 +1392,7 @@ mode_handler_10_GameTeardown                            = 0x8003BE10;  /* gpu_En
 mode_handler_11_PadInputCheck                           = 0x8003BEA8;  /* checks g_pad_state.pressed & 0x40 (action button), returns state */
 mode_handler_12_RoundCleanup                            = 0x8001EA04;  /* gnd_init_80041688(0/1) + game_Cleanup; round-end state */
 mode_handler_15_TeardownVariant                         = 0x8003BFC4;  /* gpu_EnableDisplay + player_Destroy (similar to mode_10) */
-mode_handler_17_GameContinueFrame                       = 0x8001EFA0;  /* increments g_practice_loop_frame, camera_GetBoneData, func_8001BCF0 */
+mode_handler_17_GameContinueFrame                       = 0x8001EFA0;  /* increments g_practice_loop_frame, func_800472B0, func_8001BCF0 */
 mode_handler_22_VsModeInit                              = 0x8003B870;  /* player_SetCharId(0/1) + obj_InitChars + gpu_InitDisplay + disp_SetFramebufferMode(1) */
 mode_handler_23_FrameDelay3                             = 0x8003B8E4;  /* increments g_practice_loop_frame, returns until counter >= 3 */
 mode_handler_24_DispatchToMode25                        = 0x8003C958;  /* gpu_InitDisplay + reset state + sets g_practice_mode_dispatch_idx = 0x19 */
@@ -1451,9 +1451,9 @@ D_800EEDBC                                         = 0x800EEDBC;  /* data-wave 2
 D_800EEDBE                                         = 0x800EEDBE;  /* data-wave 2026-09-29: was g_cam_matrix_m7 */
 D_800EEDC0                                         = 0x800EEDC0;  /* data-wave 2026-09-29: was g_cam_matrix_m8 */
 
-/* === Camera bone data init halves (2026-05-17) -- 3 highs === */
+/* === D_800EEDD0 matrix halves (2026-05-17) -- 3 highs === */
 /* From func_80047210 (368E4.c): copies 32-byte */
-/* g_cam_bone_data from D_80101DF0.xf.mat (0x80101E08), then halves 3 specific s16 fields. */
+/* D_800EEDD0 from D_80101DF0.xf.mat (0x80101E08), then halves 3 specific s16 fields. */
 /* 2026-09-23: g_cam_bone_data_template (1 of the 3) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
 D_800EEDD6                                      = 0x800EEDD6;  /* s16 field halved by func_80047210 (h >> 1) */  /* data-wave 2026-10-07: was g_cam_bone_data_h0 */
 D_800EEDD8                                      = 0x800EEDD8;  /* s16 field halved by func_80047210; new_var pointer base */  /* data-wave 2026-10-07: was g_cam_bone_data_h1 */
@@ -2219,7 +2219,7 @@ g_match_round_index_plus_2                              = 0x800A3876;  /* +2 fro
 g_round_total_score_plus_4                              = 0x800A3880;  /* +4 from g_round_total_score (0x800A387C) */
 g_match_round_byte_b_plus_1                             = 0x800A389C;  /* +1 from g_match_round_byte_b (0x800A389B) */
 g_voice_dialog_state_plus_2                             = 0x800A38AE;  /* +2 from g_voice_dialog_state (0x800A38AC) */
-D_800A38B8                        = 0x800A38B8;  /* +4 from g_cpu_move_pattern_cursor (0x800A38B4) */  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor_plus_4 */
+D_800A38B8                        = 0x800A38B8;  /* u8 counter: set to 1, incremented, cleared at 0x3C (9F9C.c func_8001CE60) */  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor_plus_4 */
 D_800A38C0                                 = 0x800A38C0;  /* +4 from g_file_heap_base (0x800A38BC) */  /* data-wave 2026-09-25: was g_file_heap_base_plus_4 */
 D_800A38C1                                 = 0x800A38C1;  /* +5 from g_file_heap_base (0x800A38BC) */  /* data-wave 2026-09-25: was g_file_heap_base_plus_5 */
 g_pad_rec_misc_counter_plus_4                           = 0x800A38D4;  /* +4 from g_pad_rec_misc_counter (0x800A38D0) */

@@ -239,7 +239,7 @@ of `main.c`.
 | 14 (0x0E) | 0x80035430 | `mode_handler_14_NoOp` | Empty |
 | 15 (0x0F) | 0x8003BFC4 | `mode_handler_15_TeardownVariant` | Variant of mode 10 |
 | 16 (0x10) | 0x8001EEB4 | `hirahira_w_frie2` | "Falling/particles 2" — likely petal/snow effect |
-| 17 (0x11) | 0x8001EFA0 | `mode_handler_17_GameContinueFrame` | Increments g_practice_loop_frame, camera_GetBoneData |
+| 17 (0x11) | 0x8001EFA0 | `mode_handler_17_GameContinueFrame` | Increments g_practice_loop_frame, calls func_800472B0 |
 | 18 (0x12) | 0x8003C040 | `mode_handler_18_UnlockAnimDispatch` | **Unlock-celebration dispatch**: reads g_practice_unlock_anim_id (6/7=P1, 8/9=P2) |
 | 19 (0x13) | 0x8003C2C0 | `cpu_side_move_dir_2` | CPU AI sidestep direction |
 | 20 (0x14) | 0x8003C42C | `mode_handler_20_CountIterator` | Counts D_800A377C[] entries into 8-cell histogram |
