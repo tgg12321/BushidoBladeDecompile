@@ -30,8 +30,8 @@ arg0 += 8;
 
 The hoisted load gives combine a use of `arg0` between the two defs, so it does not substitute; the
 target's split emits with no extra instructions. `flags` names the header's flag word — the
-idiomatic spelling (the matched sibling `efc_buki_draw_zanzou` in text1b.c uses the same
-hoist-then-advance idiom). Example: func_800484A0 (text1b.c), 2 → 0.
+idiomatic spelling (the matched sibling at 0x800482C8 in src/main/368E4.c uses the same
+hoist-then-advance idiom). Example: the function at 0x800484A0 (src/main/368E4.c), 2 → 0.
 
 ## Does NOT apply when
 
