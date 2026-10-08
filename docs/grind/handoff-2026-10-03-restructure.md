@@ -113,21 +113,28 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
    SOTN bar with advisory evidence classes; identifier-only key moves certified by `tools/naming_keycheck.py` +
    the reviewer's R6; N6 file names only for single-subsystem files). Reviewer: `.claude/agents/naming-reviewer.md`.
    Census origin `sotn-review` (CORROBORATED) from `docs/naming/phase3/<wave>/func_manifest*.csv`.
-   - Landed: wave01 c560d4f52 (camera_CalcEye, g_draw_queue / _cursor, g_prim_buf_cursor; 4 resets) + its
-     prose follow-up 12d46a075; gate fixes 7a26d87ee / 9ee4ff1d7 (registry recipes, formatter landing).
-   - **Next session starts here: apply wave02.** `docs/naming/phase3/wave02/` (untracked; 146 func + 4 data
-     RESET rows, all CONFIRM after four fresh pre-apply naming-reviewer batches): camera_GetBoneData,
-     g_cam_bone_data (+_h0/_h1), the 0x800A38B8 byte counter, and 145 zero-use analyzer `*_helper` tags.
-     Apply per naming-bar step 4 (census, naming_wave, temp commit, data_wave, soft reset, `naming_keycheck
-     --from-manifests ... --sub-comments`, format), gates, post-apply R6, one commit. Reviewer notes for R6:
-     tools/rename_funcs.py:46 becomes a self-map; docs/engine/main_loop.md:242 and cross_reference.md:187 cite
-     retired names.
-   - Wave 3 candidates: the 47 code-used analyzer tags (C4 inventory `tmp/codex/c4-helper-tags-result.md`:
-     efc_spawn, draw_anim_obj, ...); specific `mode_` names for the three D_800A3834 writers 0x8001C8DC /
-     0x80033FE4 / 0x8003B534; g_cam_bone_data_cached (0x800A3778, never read) and g_cam_bone_data2; re-mined
-     names for camera_Place / light_ApplyPreset / g_active_camera; then the remaining ~340 INFERRED names by
-     subsystem; types (Rec44 -> CameraRec, Unk80045878Obj); members need per-scope keycheck pairs first.
-   - Codex lane (`tmp/codex/backlog.md`): C1 3353d059f and C3 212fb353c landed; C2 / C4 research done. The stale May
+   - Landed: wave01 c560d4f52 (+ prose 12d46a075); wave02 02a604835 (camera_GetBoneData, g_cam_bone_data*, the
+     0x800A38B8 counter, 145 `*_helper` tags; + prose 43fbce957); wave03 0cf2ccc20 (132 resets incl. 54 gte_*, 45
+     motion_*/draw_*, the 6CF8 / 368E4 analyzer names; eff_ClearInitFlag, snd_InitAndLoadCommonVab, g_listener_cam;
+     KEEPs disp_Init / sys_Init / camera_CalcAngles; + prose 741468925, rule cite 8c605bbef); wave04 193a2e6d0 (26
+     resets: 14 mode_handler_NN_*, the six held 2B344.c stage_* / game_GetCharData, six efc_*; + prose 0680e9c48).
+     Each: SHA1 == oracle, keycheck OK, fresh pre-apply reviews, post-apply R6 PASS. Scripts: tmp/p3w2..p3w4/
+     (apply.sh, gates.sh; wave04 had no data rows).
+   - **Next: wave05.** RESET candidate from wave04's R6: stage_SetCollisionAtPos_8003F420 (alias; its basis was a
+     call to the retired stage_SetCollision). Re-mine:
+     game_StageCleanup 0x80046EDC (cited contradiction was false), 0x800421C8 (needs a prefixed game-style name;
+     SetLightingAndBgColor FAILed), sys_GameInit KEEP ("sys" unexplained), 16 efc_spawn + 6 mode_handler_* keep
+     candidates (tmp/codex/c6-efc-mode-result.md), draw_bg_and_sprites, stage_ClearLighting (glabel
+     efc_buki_get_vertex_color), g_stage_* data, D_800A377B alias. Neutral by mining: the three D_800A3834 writers,
+     func_80046BF4. Remaining INFERRED by subsystem: game_, get_/set_, mario_, ... (census tier INFERRED).
+   - Wave mechanics learned: verify-oracle --rebuild needs --allow-dirty on the applied tree; a FAILed row is dropped
+     or re-mined (a fresh reviewer per round); PASS-row evidence fixes from a reviewer are applied before commit.
+   - Prose debt (follow-up commits): docs/engine/*.md cite retired names (list in wave03's R6, commit 741468925 body);
+     locals named after reset claims (17AFC.c playerData, 368E4.c player); ledger stubs memory/grind/_completed/*.json
+     keep old func names (naming_wave moves only layer2.jsonl: tool-scope question).
+   - Codex lane (`tmp/codex/backlog.md`): C1 3353d059f, C3 212fb353c, C7 43f758f31 (naming_wave own-file P4)
+     landed; C2 / C4 / C6 research done; C5 (keycheck per-scope pairs, codex/keycheck-scoped-pairs) in review
+     round 4; when it lands, update naming-bar.md:85 / :118 (members / locals limits). The stale May
      ~/.codex/rules/default.rules (allow rules incl. `make` in main) was moved aside; read-only questions
      via `codex_worker.py research`.
    - Codex scope (owner 2026-10-07): keep Codex out of the main working tree; containment against a rogue
