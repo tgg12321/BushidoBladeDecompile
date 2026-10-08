@@ -24191,11 +24191,11 @@ dlabel D_8009BF30
     /* 8C740 8009BF40 00000000 */ .word 0x00000000
 enddlabel D_8009BF30
 
-nonmatching D_8009BF44
+nonmatching GPU_DATA
 
-dlabel D_8009BF44
+dlabel GPU_DATA
     /* 8C744 8009BF44 1018801F */ .word 0x1F801810
-enddlabel D_8009BF44
+enddlabel GPU_DATA
 
 nonmatching D_8009BF48
 
@@ -24203,47 +24203,47 @@ dlabel D_8009BF48
     /* 8C748 8009BF48 1418801F */ .word 0x1F801814
 enddlabel D_8009BF48
 
-nonmatching D_8009BF4C
+nonmatching DMA2_MADR
 
-dlabel D_8009BF4C
+dlabel DMA2_MADR
     /* 8C74C 8009BF4C A010801F */ .word 0x1F8010A0
-enddlabel D_8009BF4C
+enddlabel DMA2_MADR
 
-nonmatching D_8009BF50
+nonmatching DMA2_BCR
 
-dlabel D_8009BF50
+dlabel DMA2_BCR
     /* 8C750 8009BF50 A410801F */ .word 0x1F8010A4
-enddlabel D_8009BF50
+enddlabel DMA2_BCR
 
-nonmatching D_8009BF54
+nonmatching DMA2_CHCR
 
-dlabel D_8009BF54
+dlabel DMA2_CHCR
     /* 8C754 8009BF54 A810801F */ .word 0x1F8010A8
-enddlabel D_8009BF54
+enddlabel DMA2_CHCR
 
-nonmatching D_8009BF58
+nonmatching DMA6_MADR
 
-dlabel D_8009BF58
+dlabel DMA6_MADR
     /* 8C758 8009BF58 E010801F */ .word 0x1F8010E0
-enddlabel D_8009BF58
+enddlabel DMA6_MADR
 
-nonmatching D_8009BF5C
+nonmatching DMA6_BCR
 
-dlabel D_8009BF5C
+dlabel DMA6_BCR
     /* 8C75C 8009BF5C E410801F */ .word 0x1F8010E4
-enddlabel D_8009BF5C
+enddlabel DMA6_BCR
 
-nonmatching D_8009BF60
+nonmatching DMA6_CHCR
 
-dlabel D_8009BF60
+dlabel DMA6_CHCR
     /* 8C760 8009BF60 E810801F */ .word 0x1F8010E8
-enddlabel D_8009BF60
+enddlabel DMA6_CHCR
 
-nonmatching D_8009BF64
+nonmatching DPCR
 
-dlabel D_8009BF64
+dlabel DPCR
     /* 8C764 8009BF64 F010801F */ .word 0x1F8010F0
-enddlabel D_8009BF64
+enddlabel DPCR
 
 nonmatching _qlog
 
@@ -31000,23 +31000,23 @@ dlabel D_800A147C
     /* 91C7C 800A147C 0018801F */ .word 0x1F801800
 enddlabel D_800A147C
 
-nonmatching D_800A1480
+nonmatching libcd_CDRegister1
 
-dlabel D_800A1480
+dlabel libcd_CDRegister1
     /* 91C80 800A1480 0118801F */ .word 0x1F801801
-enddlabel D_800A1480
+enddlabel libcd_CDRegister1
 
-nonmatching D_800A1484
+nonmatching libcd_CDRegister2
 
-dlabel D_800A1484
+dlabel libcd_CDRegister2
     /* 91C84 800A1484 0218801F */ .word 0x1F801802
-enddlabel D_800A1484
+enddlabel libcd_CDRegister2
 
-nonmatching D_800A1488
+nonmatching libcd_CDRegister3
 
-dlabel D_800A1488
+dlabel libcd_CDRegister3
     /* 91C88 800A1488 0318801F */ .word 0x1F801803
-enddlabel D_800A1488
+enddlabel libcd_CDRegister3
 
 nonmatching D_800A148C
 

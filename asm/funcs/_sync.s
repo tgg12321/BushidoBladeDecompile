@@ -30,8 +30,8 @@ glabel _sync
     /* 6E384 8007DB84 33004014 */  bnez       $v0, .L8007DC54
     /* 6E388 8007DB88 FFFF0224 */   addiu     $v0, $zero, -0x1
   .L8007DB8C:
-    /* 6E38C 8007DB8C 0A80023C */  lui        $v0, %hi(D_8009BF54)
-    /* 6E390 8007DB90 54BF428C */  lw         $v0, %lo(D_8009BF54)($v0)
+    /* 6E38C 8007DB8C 0A80023C */  lui        $v0, %hi(DMA2_CHCR)
+    /* 6E390 8007DB90 54BF428C */  lw         $v0, %lo(DMA2_CHCR)($v0)
     /* 6E394 8007DB94 00000000 */  nop
     /* 6E398 8007DB98 0000428C */  lw         $v0, 0x0($v0)
     /* 6E39C 8007DB9C 0001033C */  lui        $v1, (0x1000000 >> 16)
@@ -61,8 +61,8 @@ glabel _sync
     /* 6E3F8 8007DBF8 B6F5010C */  jal        _exeque
     /* 6E3FC 8007DBFC 00000000 */   nop
   .L8007DC00:
-    /* 6E400 8007DC00 0A80023C */  lui        $v0, %hi(D_8009BF54)
-    /* 6E404 8007DC04 54BF428C */  lw         $v0, %lo(D_8009BF54)($v0)
+    /* 6E400 8007DC00 0A80023C */  lui        $v0, %hi(DMA2_CHCR)
+    /* 6E404 8007DC04 54BF428C */  lw         $v0, %lo(DMA2_CHCR)($v0)
     /* 6E408 8007DC08 00000000 */  nop
     /* 6E40C 8007DC0C 0000428C */  lw         $v0, 0x0($v0)
     /* 6E410 8007DC10 0001033C */  lui        $v1, (0x1000000 >> 16)

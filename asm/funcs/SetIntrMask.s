@@ -1,6 +1,6 @@
 glabel SetIntrMask
-    /* 7343C 80082C3C 0A80033C */  lui        $v1, %hi(D_800A2608)
-    /* 73440 80082C40 0826638C */  lw         $v1, %lo(D_800A2608)($v1)
+    /* 7343C 80082C3C 0A80033C */  lui        $v1, %hi(g_InterruptMask)
+    /* 73440 80082C40 0826638C */  lw         $v1, %lo(g_InterruptMask)($v1)
     /* 73444 80082C44 00000000 */  nop
     /* 73448 80082C48 00006294 */  lhu        $v0, 0x0($v1)
     /* 7344C 80082C4C 000064A4 */  sh         $a0, 0x0($v1)
@@ -17,8 +17,8 @@ glabel SetIntrMask
     /* 73478 80082C78 21100000 */   addu      $v0, $zero, $zero
     /* 7347C 80082C7C 0A80033C */  lui        $v1, %hi(i_stat)
     /* 73480 80082C80 0426638C */  lw         $v1, %lo(i_stat)($v1)
-    /* 73484 80082C84 0A80023C */  lui        $v0, %hi(D_800A2608)
-    /* 73488 80082C88 0826428C */  lw         $v0, %lo(D_800A2608)($v0)
+    /* 73484 80082C84 0A80023C */  lui        $v0, %hi(g_InterruptMask)
+    /* 73488 80082C88 0826428C */  lw         $v0, %lo(g_InterruptMask)($v0)
     /* 7348C 80082C8C 3333053C */  lui        $a1, (0x33333333 >> 16)
     /* 73490 80082C90 000040A4 */  sh         $zero, 0x0($v0)
     /* 73494 80082C94 00004294 */  lhu        $v0, 0x0($v0)
@@ -46,12 +46,12 @@ glabel SetIntrMask
     /* 734E8 80082CE8 01000224 */  addiu      $v0, $zero, 0x1
     /* 734EC 80082CEC A80C020C */  jal        startIntrVSync
     /* 734F0 80082CF0 C4FF02A6 */   sh        $v0, -0x3C($s0)
-    /* 734F4 80082CF4 0A80033C */  lui        $v1, %hi(D_800A2600)
-    /* 734F8 80082CF8 0026638C */  lw         $v1, %lo(D_800A2600)($v1)
+    /* 734F4 80082CF4 0A80033C */  lui        $v1, %hi(pCallbacks)
+    /* 734F8 80082CF8 0026638C */  lw         $v1, %lo(pCallbacks)($v1)
     /* 734FC 80082CFC F20C020C */  jal        startIntrDMA
     /* 73500 80082D00 140062AC */   sw        $v0, 0x14($v1)
-    /* 73504 80082D04 0A80043C */  lui        $a0, %hi(D_800A2600)
-    /* 73508 80082D08 0026848C */  lw         $a0, %lo(D_800A2600)($a0)
+    /* 73504 80082D04 0A80043C */  lui        $a0, %hi(pCallbacks)
+    /* 73508 80082D08 0026848C */  lw         $a0, %lo(pCallbacks)($a0)
     /* 7350C 80082D0C 760C020C */  jal        _96_remove
     /* 73510 80082D10 040082AC */   sw        $v0, 0x4($a0)
     /* 73514 80082D14 72E2010C */  jal        ExitCriticalSection

@@ -17,12 +17,12 @@ const char D_8001635C[28] = "unexpected interrupt(%04x)\n\0";
 
 const char D_80016378[28] = "intr timeout(%04x:%04x)\n\0\0\0\0";
 
-/* i_mask = (u16 *)0x1F801074, I_MASK (MMIO) */
-extern volatile u16 *i_mask;
-extern s32 *g_sys_irq_vtable;
+/* g_InterruptMask = (u16 *)0x1F801074, I_MASK (MMIO) */
+extern volatile u16 *g_InterruptMask;
+extern s32 *pCallbacks;
 
 /* intr.c module state (SOTN libetc/intr.c intrEnv_t). D_800A1578 = intrEnv;
- * i_stat/i_mask/d_pcr are the module's MMIO pointer statics
+ * i_stat/g_InterruptMask/d_pcr are the module's MMIO pointer statics
  * (0x1F801070/74/F0). */
 typedef struct {
     u16 interruptsInitialized;  /* +0x00 = D_800A1578 */
@@ -39,27 +39,27 @@ extern volatile u16 *i_stat; /* i_stat = (u16 *)0x1F801070 (MMIO) */
 extern volatile s32 *d_pcr;  /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
 extern intrEnv_t D_800A1578;
 
-s32 ResetCallback(void) { return ((s32(*)(void))g_sys_irq_vtable[3])(); }
+s32 ResetCallback(void) { return ((s32(*)(void))pCallbacks[3])(); }
 
 void *InterruptCallback(s32 irq, void (*func)()) {
-    return ((void *(*)(s32, void (*)()))g_sys_irq_vtable[2])(irq, func);
+    return ((void *(*)(s32, void (*)()))pCallbacks[2])(irq, func);
 }
 
 void *DMACallback(s32 dma, void (*func)()) {
-    return ((void *(*)(s32, void (*)()))g_sys_irq_vtable[1])(dma, func);
+    return ((void *(*)(s32, void (*)()))pCallbacks[1])(dma, func);
 }
 
-void VSyncCallback(s32 a0) { ((void (*)(s32, s32))g_sys_irq_vtable[5])(4, a0); }
+void VSyncCallback(s32 a0) { ((void (*)(s32, s32))pCallbacks[5])(4, a0); }
 
-void VSyncCallbacks(void) { ((void (*)(void))g_sys_irq_vtable[5])(); }
+void VSyncCallbacks(void) { ((void (*)(void))pCallbacks[5])(); }
 
-s32 StopCallback(void) { return ((s32(*)(void))g_sys_irq_vtable[4])(); }
+s32 StopCallback(void) { return ((s32(*)(void))pCallbacks[4])(); }
 
-s32 RestartCallback(void) { return ((s32(*)(void))g_sys_irq_vtable[6])(); }
+s32 RestartCallback(void) { return ((s32(*)(void))pCallbacks[6])(); }
 
 s32 CheckCallback(void) { return D_800A1578.inInterrupt; }
 
-u32 GetIntrMask(void) { return *i_mask; }
+u32 GetIntrMask(void) { return *g_InterruptMask; }
 
 extern void trapIntr(void);
 /* FAKE: the BIOS call takes no argument; declared with one for startIntr
@@ -67,8 +67,8 @@ extern void trapIntr(void);
 extern void _96_remove(s32 *);
 
 u16 SetIntrMask(u16 arg0) {
-    u16 old = *i_mask;
-    *i_mask = arg0;
+    u16 old = *g_InterruptMask;
+    *g_InterruptMask = arg0;
     return old;
 }
 
@@ -77,8 +77,9 @@ intrEnv_t *startIntr(void) {
     if (D_800A1578.interruptsInitialized) {
         return 0;
     }
-    /* i_mask deref is MMIO (0x1F801074) — volatile is hardware semantics */
-    *i_stat = (*i_mask = 0);
+    /* g_InterruptMask deref is MMIO (0x1F801074) — volatile is hardware
+     * semantics */
+    *i_stat = (*g_InterruptMask = 0);
     *d_pcr = 0x33333333;
     func_800831A4(&D_800A1578, 0x41A);
     if (setjmp(D_800A1578.buf) != 0) {
@@ -87,11 +88,11 @@ intrEnv_t *startIntr(void) {
     D_800A1578.buf[1] = (s32)&D_800A1578.stack[1004];
     HookEntryInt(D_800A1578.buf);
     D_800A1578.interruptsInitialized = 1;
-    g_sys_irq_vtable[5] = startIntrVSync();
-    g_sys_irq_vtable[1] = startIntrDMA();
+    pCallbacks[5] = startIntrVSync();
+    pCallbacks[1] = startIntrDMA();
     /* FAKE: _96_remove (BIOS A(72h)) takes no argument; passing the table
      * keeps it live in $a0 into the call; `_96_remove()` scores 3. */
-    _96_remove(g_sys_irq_vtable);
+    _96_remove(pCallbacks);
     ExitCriticalSection();
     return &D_800A1578;
 }
@@ -111,8 +112,8 @@ void trapIntr(void) {
         ReturnFromException();
     }
     D_800A1578.inInterrupt = 1;
-    while (
-        (mask = (D_800A1578.enabledInterruptsMask & *i_stat) & *i_mask) != 0) {
+    while ((mask = (D_800A1578.enabledInterruptsMask & *i_stat) &
+                   *g_InterruptMask) != 0) {
         for (i = 0; mask && i < 11; ++i, mask >>= 1) {
             if (mask & 1) {
                 *i_stat = ~(1 << i);
@@ -122,9 +123,9 @@ void trapIntr(void) {
             }
         }
     }
-    if (*i_stat & *i_mask) {
+    if (*i_stat & *g_InterruptMask) {
         if (D_800A2610++ > 0x800) {
-            printf(&D_80016378, *i_stat, *i_mask);
+            printf(&D_80016378, *i_stat, *g_InterruptMask);
             D_800A2610 = 0;
             *i_stat = 0;
         }
@@ -142,8 +143,8 @@ static IntrCallback setIntr(s32 irq, IntrCallback handler) {
 
     prevHandler = D_800A1578.handlers[irq];
     if (handler != prevHandler && D_800A1578.interruptsInitialized) {
-        mask = *i_mask;
-        *i_mask = 0;
+        mask = *g_InterruptMask;
+        *g_InterruptMask = 0;
         if (handler != 0) {
             D_800A1578.handlers[irq] = handler;
             mask = mask | (1 << irq);
@@ -166,7 +167,7 @@ static IntrCallback setIntr(s32 irq, IntrCallback handler) {
         if (irq == 6) {
             ChangeClearRCnt(2, handler == 0);
         }
-        *i_mask = mask;
+        *g_InterruptMask = mask;
     }
     return prevHandler;
 }
@@ -177,9 +178,9 @@ static intrEnv_t *stopIntr(void) {
         return 0;
     }
     EnterCriticalSection();
-    D_800A1578.savedMask = *i_mask;
+    D_800A1578.savedMask = *g_InterruptMask;
     D_800A1578.savedPcr = *d_pcr;
-    *i_stat = (*i_mask = 0);
+    *i_stat = (*g_InterruptMask = 0);
     *d_pcr &= 0x77777777;
     ResetEntryInt();
     D_800A1578.interruptsInitialized = 0;
@@ -193,7 +194,7 @@ static intrEnv_t *restartIntr(void) {
     }
     HookEntryInt(D_800A1578.buf);
     D_800A1578.interruptsInitialized = 1;
-    *i_mask = D_800A1578.savedMask;
+    *g_InterruptMask = D_800A1578.savedMask;
     *d_pcr = D_800A1578.savedPcr;
     ExitCriticalSection();
     return &D_800A1578;

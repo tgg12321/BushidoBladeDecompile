@@ -4,8 +4,8 @@ glabel _version
     /* 6E610 8007DE10 48BF428C */  lw         $v0, %lo(D_8009BF48)($v0)
     /* 6E614 8007DE14 07006334 */  ori        $v1, $v1, (0x10000007 & 0xFFFF)
     /* 6E618 8007DE18 000043AC */  sw         $v1, 0x0($v0)
-    /* 6E61C 8007DE1C 0A80053C */  lui        $a1, %hi(D_8009BF44)
-    /* 6E620 8007DE20 44BFA58C */  lw         $a1, %lo(D_8009BF44)($a1)
+    /* 6E61C 8007DE1C 0A80053C */  lui        $a1, %hi(GPU_DATA)
+    /* 6E620 8007DE20 44BFA58C */  lw         $a1, %lo(GPU_DATA)($a1)
     /* 6E624 8007DE24 FF00033C */  lui        $v1, (0xFFFFFF >> 16)
     /* 6E628 8007DE28 0000A28C */  lw         $v0, 0x0($a1)
     /* 6E62C 8007DE2C FFFF6334 */  ori        $v1, $v1, (0xFFFFFF & 0xFFFF)
@@ -21,8 +21,8 @@ glabel _version
     /* 6E654 8007DE54 FF3F4230 */  andi       $v0, $v0, 0x3FFF
     /* 6E658 8007DE58 25104300 */  or         $v0, $v0, $v1
     /* 6E65C 8007DE5C 0000A2AC */  sw         $v0, 0x0($a1)
-    /* 6E660 8007DE60 0A80023C */  lui        $v0, %hi(D_8009BF44)
-    /* 6E664 8007DE64 44BF428C */  lw         $v0, %lo(D_8009BF44)($v0)
+    /* 6E660 8007DE60 0A80023C */  lui        $v0, %hi(GPU_DATA)
+    /* 6E664 8007DE64 44BF428C */  lw         $v0, %lo(GPU_DATA)($v0)
     /* 6E668 8007DE68 0A80033C */  lui        $v1, %hi(D_8009BF48)
     /* 6E66C 8007DE6C 48BF638C */  lw         $v1, %lo(D_8009BF48)($v1)
     /* 6E670 8007DE70 0000428C */  lw         $v0, 0x0($v0)

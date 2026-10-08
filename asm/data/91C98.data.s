@@ -1278,11 +1278,11 @@ dlabel D_800A25E0
     /* 92DFC 800A25FC 78150A80 */ .word D_800A1578
 enddlabel D_800A25E0
 
-nonmatching D_800A2600
+nonmatching pCallbacks
 
-dlabel D_800A2600
+dlabel pCallbacks
     /* 92E00 800A2600 E0250A80 */ .word D_800A25E0
-enddlabel D_800A2600
+enddlabel pCallbacks
 
 nonmatching i_stat
 
@@ -1290,11 +1290,11 @@ dlabel i_stat
     /* 92E04 800A2604 7010801F */ .word 0x1F801070
 enddlabel i_stat
 
-nonmatching D_800A2608
+nonmatching g_InterruptMask
 
-dlabel D_800A2608
+dlabel g_InterruptMask
     /* 92E08 800A2608 7410801F */ .word 0x1F801074
-enddlabel D_800A2608
+enddlabel g_InterruptMask
 
 nonmatching d_pcr
 
@@ -1358,11 +1358,11 @@ dlabel D_800A2660
     /* 92E60 800A2660 8010801F */ .word 0x1F801080
 enddlabel D_800A2660
 
-nonmatching D_800A2664
+nonmatching video_mode
 
-dlabel D_800A2664
+dlabel video_mode
     /* 92E64 800A2664 00000000 */ .word 0x00000000
-enddlabel D_800A2664
+enddlabel video_mode
 
 nonmatching D_800A2668
 

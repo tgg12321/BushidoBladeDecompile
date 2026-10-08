@@ -1,6 +1,6 @@
 glabel _exeque
-    /* 6DED8 8007D6D8 0A80023C */  lui        $v0, %hi(D_8009BF54)
-    /* 6DEDC 8007D6DC 54BF428C */  lw         $v0, %lo(D_8009BF54)($v0)
+    /* 6DED8 8007D6D8 0A80023C */  lui        $v0, %hi(DMA2_CHCR)
+    /* 6DEDC 8007D6DC 54BF428C */  lw         $v0, %lo(DMA2_CHCR)($v0)
     /* 6DEE0 8007D6E0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6DEE4 8007D6E4 1400BFAF */  sw         $ra, 0x14($sp)
     /* 6DEE8 8007D6E8 1000B0AF */  sw         $s0, 0x10($sp)
@@ -19,8 +19,8 @@ glabel _exeque
     /* 6DF1C 8007D71C 84BF22AC */  sw         $v0, %lo(D_8009BF84)($at)
     /* 6DF20 8007D720 7B008310 */  beq        $a0, $v1, .L8007D910
     /* 6DF24 8007D724 00000000 */   nop
-    /* 6DF28 8007D728 0A80023C */  lui        $v0, %hi(D_8009BF54)
-    /* 6DF2C 8007D72C 54BF428C */  lw         $v0, %lo(D_8009BF54)($v0)
+    /* 6DF28 8007D728 0A80023C */  lui        $v0, %hi(DMA2_CHCR)
+    /* 6DF2C 8007D72C 54BF428C */  lw         $v0, %lo(DMA2_CHCR)($v0)
     /* 6DF30 8007D730 00000000 */  nop
     /* 6DF34 8007D734 0000428C */  lw         $v0, 0x0($v0)
     /* 6DF38 8007D738 00000000 */  nop
@@ -137,8 +137,8 @@ glabel _exeque
     /* 6E0E4 8007D8E4 00000000 */  nop
     /* 6E0E8 8007D8E8 09006210 */  beq        $v1, $v0, .L8007D910
     /* 6E0EC 8007D8EC 00000000 */   nop
-    /* 6E0F0 8007D8F0 0A80023C */  lui        $v0, %hi(D_8009BF54)
-    /* 6E0F4 8007D8F4 54BF428C */  lw         $v0, %lo(D_8009BF54)($v0)
+    /* 6E0F0 8007D8F0 0A80023C */  lui        $v0, %hi(DMA2_CHCR)
+    /* 6E0F4 8007D8F4 54BF428C */  lw         $v0, %lo(DMA2_CHCR)($v0)
     /* 6E0F8 8007D8F8 00000000 */  nop
     /* 6E0FC 8007D8FC 0000428C */  lw         $v0, 0x0($v0)
     /* 6E100 8007D900 0001033C */  lui        $v1, (0x1000000 >> 16)
@@ -157,8 +157,8 @@ glabel _exeque
     /* 6E130 8007D930 00000000 */  nop
     /* 6E134 8007D934 17006214 */  bne        $v1, $v0, .L8007D994
     /* 6E138 8007D938 00000000 */   nop
-    /* 6E13C 8007D93C 0A80023C */  lui        $v0, %hi(D_8009BF54)
-    /* 6E140 8007D940 54BF428C */  lw         $v0, %lo(D_8009BF54)($v0)
+    /* 6E13C 8007D93C 0A80023C */  lui        $v0, %hi(DMA2_CHCR)
+    /* 6E140 8007D940 54BF428C */  lw         $v0, %lo(DMA2_CHCR)($v0)
     /* 6E144 8007D944 00000000 */  nop
     /* 6E148 8007D948 0000428C */  lw         $v0, 0x0($v0)
     /* 6E14C 8007D94C 0001033C */  lui        $v1, (0x1000000 >> 16)

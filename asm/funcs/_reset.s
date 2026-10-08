@@ -30,12 +30,12 @@ glabel _reset
     /* 6E230 8007DA30 2D006214 */  bne        $v1, $v0, .L8007DAE8
     /* 6E234 8007DA34 00000000 */   nop
   .L8007DA38:
-    /* 6E238 8007DA38 0A80033C */  lui        $v1, %hi(D_8009BF54)
-    /* 6E23C 8007DA3C 54BF638C */  lw         $v1, %lo(D_8009BF54)($v1)
+    /* 6E238 8007DA38 0A80033C */  lui        $v1, %hi(DMA2_CHCR)
+    /* 6E23C 8007DA3C 54BF638C */  lw         $v1, %lo(DMA2_CHCR)($v1)
     /* 6E240 8007DA40 01040224 */  addiu      $v0, $zero, 0x401
     /* 6E244 8007DA44 000062AC */  sw         $v0, 0x0($v1)
-    /* 6E248 8007DA48 0A80033C */  lui        $v1, %hi(D_8009BF64)
-    /* 6E24C 8007DA4C 64BF638C */  lw         $v1, %lo(D_8009BF64)($v1)
+    /* 6E248 8007DA48 0A80033C */  lui        $v1, %hi(DPCR)
+    /* 6E24C 8007DA4C 64BF638C */  lw         $v1, %lo(DPCR)($v1)
     /* 6E250 8007DA50 0F80043C */  lui        $a0, %hi(ctlbuf)
     /* 6E254 8007DA54 9C188424 */  addiu      $a0, $a0, %lo(ctlbuf)
     /* 6E258 8007DA58 0000628C */  lw         $v0, 0x0($v1)
@@ -56,12 +56,12 @@ glabel _reset
     /* 6E294 8007DA94 BAF60108 */  j          .L8007DAE8
     /* 6E298 8007DA98 00000000 */   nop
   .L8007DA9C:
-    /* 6E29C 8007DA9C 0A80033C */  lui        $v1, %hi(D_8009BF54)
-    /* 6E2A0 8007DAA0 54BF638C */  lw         $v1, %lo(D_8009BF54)($v1)
+    /* 6E29C 8007DA9C 0A80033C */  lui        $v1, %hi(DMA2_CHCR)
+    /* 6E2A0 8007DAA0 54BF638C */  lw         $v1, %lo(DMA2_CHCR)($v1)
     /* 6E2A4 8007DAA4 01040224 */  addiu      $v0, $zero, 0x401
     /* 6E2A8 8007DAA8 000062AC */  sw         $v0, 0x0($v1)
-    /* 6E2AC 8007DAAC 0A80033C */  lui        $v1, %hi(D_8009BF64)
-    /* 6E2B0 8007DAB0 64BF638C */  lw         $v1, %lo(D_8009BF64)($v1)
+    /* 6E2AC 8007DAAC 0A80033C */  lui        $v1, %hi(DPCR)
+    /* 6E2B0 8007DAB0 64BF638C */  lw         $v1, %lo(DPCR)($v1)
     /* 6E2B4 8007DAB4 00000000 */  nop
     /* 6E2B8 8007DAB8 0000628C */  lw         $v0, 0x0($v1)
     /* 6E2BC 8007DABC 00000000 */  nop

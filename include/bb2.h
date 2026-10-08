@@ -494,7 +494,7 @@ extern Unk801027B0Pack D_801027B0[]; /* per load slot */
  * func_80043454 reads, and func_8003FA24 reads u16 data through one. */
 extern s32 *D_80103608[];
 extern Unk80104E88Rec D_80104E88[];
-extern s32 MotDataBaseAddress;
+extern s32 D_80104F38;
 
 /* func_800338CC's list: the set bit numbers of D_80106A50.unk_00 & mask,
  * shuffled, plus up to three appended values (D_800A391F entries; func_80033BC0

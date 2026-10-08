@@ -74,9 +74,9 @@ extern void Result;      /* Result_t result buffers */
 extern void Result_plus_0x8;
 extern void Result_plus_0x10;
 extern volatile u8 *g_cd_reg0;
-extern volatile u8 *g_cd_reg1;
-extern volatile u8 *g_cd_reg2;
-extern volatile u8 *g_cd_reg3;
+extern volatile u8 *libcd_CDRegister1;
+extern volatile u8 *libcd_CDRegister2;
+extern volatile u8 *libcd_CDRegister3;
 extern void printf();
 
 s32 getintr(void) {
@@ -89,7 +89,7 @@ s32 getintr(void) {
 
     *g_cd_reg0 = 1;
 
-    nReg = *g_cd_reg3 & 0x7;
+    nReg = *libcd_CDRegister3 & 0x7;
 
     if (nReg == 0) {
         return 0;
@@ -97,23 +97,23 @@ s32 getintr(void) {
 
     bHasError = 0;
 
-    while (nReg != (*g_cd_reg3 & 7)) {
-        nReg = *g_cd_reg3 & 0x7;
+    while (nReg != (*libcd_CDRegister3 & 7)) {
+        nReg = *libcd_CDRegister3 & 0x7;
     }
 
     for (i = 0; i < 8; i++) {
         if ((*g_cd_reg0 & 0x20) == 0) {
             break;
         }
-        buf[i] = *g_cd_reg1;
+        buf[i] = *libcd_CDRegister1;
     }
     for (j = i; j < 8; j++) {
         buf[j] = 0;
     }
 
     *g_cd_reg0 = 1;
-    *g_cd_reg3 = 7;
-    *g_cd_reg2 = 7;
+    *libcd_CDRegister3 = 7;
+    *libcd_CDRegister2 = 7;
     if (nReg != 3 || D_800A137C[CD_com]) {
         if (!(CD_status & 0x10) && (buf[0] & 0x10)) {
             CD_nopen++;
@@ -156,7 +156,7 @@ s32 getintr(void) {
         Intr.ready = bHasError ? 5 : 1;
         _memcpy(&Result_plus_0x8, &buf, sizeof(Result_t));
         *g_cd_reg0 = 0;
-        *g_cd_reg3 = 0;
+        *libcd_CDRegister3 = 0;
         return 4;
     case 4:
         Intr.ready = Intr.c = 4;
@@ -354,10 +354,10 @@ s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async) {
      * D_800A13FC[com] read directly: score 23. */
     /* SOTN: src/main/psxsdk/libcd/bios.c:314 @aa53500 */
     for (i = 0; i < D_800A12FC[com + 0x40]; i++) {
-        *g_cd_reg2 = param[i];
+        *libcd_CDRegister2 = param[i];
     }
     CD_com = com;
-    *g_cd_reg1 = com;
+    *libcd_CDRegister1 = com;
     if (async != 0) {
         return 0;
     }
@@ -379,12 +379,12 @@ s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async) {
 
 s32 CD_vol(CdlATV *vol) {
     *g_cd_reg0 = 2;
-    *g_cd_reg2 = vol->val0;
-    *g_cd_reg3 = vol->val1;
+    *libcd_CDRegister2 = vol->val0;
+    *libcd_CDRegister3 = vol->val1;
     *g_cd_reg0 = 3;
-    *g_cd_reg1 = vol->val2;
-    *g_cd_reg2 = vol->val3;
-    *g_cd_reg3 = 0x20;
+    *libcd_CDRegister1 = vol->val2;
+    *libcd_CDRegister2 = vol->val3;
+    *libcd_CDRegister3 = 0x20;
     return 0;
 }
 
@@ -393,19 +393,19 @@ extern volatile u32 *g_com_delay_reg;
 void CD_flush(void) {
     u8 v0;
     *g_cd_reg0 = 1;
-    v0 = *g_cd_reg3 & 7;
+    v0 = *libcd_CDRegister3 & 7;
     if (v0 != 0) {
         do {
             *g_cd_reg0 = 1;
-            *g_cd_reg3 = 7;
-            *g_cd_reg2 = 7;
-            v0 = *g_cd_reg3 & 7;
+            *libcd_CDRegister3 = 7;
+            *libcd_CDRegister2 = 7;
+            v0 = *libcd_CDRegister3 & 7;
         } while (v0 != 0);
     }
     Intr.ready = Intr.c = 0;
     Intr.sync = 2;
     *g_cd_reg0 = 0;
-    *g_cd_reg3 = 0;
+    *libcd_CDRegister3 = 0;
     *g_com_delay_reg = 0x1325;
 }
 
@@ -425,12 +425,12 @@ s32 CD_initvol(void) {
     vol.val0 = vol.val2 = 0x80;
     vol.val1 = vol.val3 = 0;
     *g_cd_reg0 = 2;
-    *g_cd_reg2 = vol.val0;
-    *g_cd_reg3 = vol.val1;
+    *libcd_CDRegister2 = vol.val0;
+    *libcd_CDRegister3 = vol.val1;
     *g_cd_reg0 = 3;
-    *g_cd_reg1 = vol.val2;
-    *g_cd_reg2 = vol.val3;
-    *g_cd_reg3 = 0x20;
+    *libcd_CDRegister1 = vol.val2;
+    *libcd_CDRegister2 = vol.val3;
+    *libcd_CDRegister3 = 0x20;
     return 0;
 }
 
@@ -466,20 +466,20 @@ s32 CD_init(void) {
     InterruptCallback(2, cdrom_IrqHandler);
 
     *g_cd_reg0 = 1;
-    v0 = *g_cd_reg3 & 7;
+    v0 = *libcd_CDRegister3 & 7;
     if (v0 != 0) {
         do {
             *g_cd_reg0 = 1;
-            *g_cd_reg3 = 7;
-            *g_cd_reg2 = 7;
-            v0 = *g_cd_reg3 & 7;
+            *libcd_CDRegister3 = 7;
+            *libcd_CDRegister2 = 7;
+            v0 = *libcd_CDRegister3 & 7;
         } while (v0 != 0);
     }
 
     Intr.ready = Intr.c = 0;
     Intr.sync = 2;
     *g_cd_reg0 = 0;
-    *g_cd_reg3 = 0;
+    *libcd_CDRegister3 = 0;
     *g_com_delay_reg = 0x1325;
 
     CD_cw(1, 0, 0, 0);
@@ -537,7 +537,7 @@ extern volatile u32 *g_cd_dma_size;
 
 s32 CD_getsector(s32 a0, s32 a1) {
     *g_cd_reg0 = 0;
-    *g_cd_reg3 = CD_REQ_WANT_DATA;
+    *libcd_CDRegister3 = CD_REQ_WANT_DATA;
     *g_cdrom_delay_reg = 0x20943;
     *g_com_delay_reg = 0x1323;
     *g_cd_dma_ctrl_b4 |= DMA_CD_ENABLE;
@@ -554,7 +554,7 @@ s32 CD_getsector(s32 a0, s32 a1) {
 
 s32 CD_getsector2(s32 a0, s32 a1) {
     *g_cd_reg0 = 0;
-    *g_cd_reg3 = CD_REQ_WANT_DATA;
+    *libcd_CDRegister3 = CD_REQ_WANT_DATA;
     *g_cdrom_delay_reg = 0x21020843;
     *g_com_delay_reg = 0x1325;
     *g_cd_dma_ctrl_b4 |= DMA_CD_ENABLE;

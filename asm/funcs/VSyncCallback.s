@@ -1,7 +1,7 @@
 glabel VSyncCallback
     /* 73350 80082B50 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 73354 80082B54 0A80023C */  lui        $v0, %hi(D_800A2600)
-    /* 73358 80082B58 0026428C */  lw         $v0, %lo(D_800A2600)($v0)
+    /* 73354 80082B54 0A80023C */  lui        $v0, %hi(pCallbacks)
+    /* 73358 80082B58 0026428C */  lw         $v0, %lo(pCallbacks)($v0)
     /* 7335C 80082B5C 21288000 */  addu       $a1, $a0, $zero
     /* 73360 80082B60 1000BFAF */  sw         $ra, 0x10($sp)
     /* 73364 80082B64 1400428C */  lw         $v0, 0x14($v0)
@@ -12,8 +12,8 @@ glabel VSyncCallback
     /* 73378 80082B78 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 7337C 80082B7C 0800E003 */  jr         $ra
     /* 73380 80082B80 00000000 */   nop
-    /* 73384 80082B84 0A80023C */  lui        $v0, %hi(D_800A2600)
-    /* 73388 80082B88 0026428C */  lw         $v0, %lo(D_800A2600)($v0)
+    /* 73384 80082B84 0A80023C */  lui        $v0, %hi(pCallbacks)
+    /* 73388 80082B88 0026428C */  lw         $v0, %lo(pCallbacks)($v0)
     /* 7338C 80082B8C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 73390 80082B90 1000BFAF */  sw         $ra, 0x10($sp)
     /* 73394 80082B94 1400428C */  lw         $v0, 0x14($v0)

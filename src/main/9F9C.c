@@ -1747,7 +1747,7 @@ void func_8001D904(void) {
     if (s1 >= 0xE81) {
         sys_Panic();
     }
-    s0 = &MotDataBaseAddress;
+    s0 = &D_80104F38;
     memcpy(s0, (s32)0x80190800, s1);
     snd_VabFakeOpen9((s32)s0 - s2);
 }
@@ -1763,7 +1763,7 @@ void func_8001D998(void) {
     if (s1 >= 0x1B19) {
         sys_Panic();
     }
-    s0 = &MotDataBaseAddress;
+    s0 = &D_80104F38;
     memcpy(s0, (s32)0x80190800, s1);
     snd_VabFakeOpen8And4((s32)s0 - s2);
 }

@@ -1,6 +1,6 @@
 glabel InterruptCallback
-    /* 732F0 80082AF0 0A80023C */  lui        $v0, %hi(D_800A2600)
-    /* 732F4 80082AF4 0026428C */  lw         $v0, %lo(D_800A2600)($v0)
+    /* 732F0 80082AF0 0A80023C */  lui        $v0, %hi(pCallbacks)
+    /* 732F4 80082AF4 0026428C */  lw         $v0, %lo(pCallbacks)($v0)
     /* 732F8 80082AF8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 732FC 80082AFC 1000BFAF */  sw         $ra, 0x10($sp)
     /* 73300 80082B00 0800428C */  lw         $v0, 0x8($v0)

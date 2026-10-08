@@ -88,24 +88,24 @@ glabel _dws
     /* 6D744 8007CF44 48BF638C */  lw         $v1, %lo(D_8009BF48)($v1)
     /* 6D748 8007CF48 0004023C */  lui        $v0, (0x4000000 >> 16)
     /* 6D74C 8007CF4C 000062AC */  sw         $v0, 0x0($v1)
-    /* 6D750 8007CF50 0A80033C */  lui        $v1, %hi(D_8009BF44)
-    /* 6D754 8007CF54 44BF638C */  lw         $v1, %lo(D_8009BF44)($v1)
+    /* 6D750 8007CF50 0A80033C */  lui        $v1, %hi(GPU_DATA)
+    /* 6D754 8007CF54 44BF638C */  lw         $v1, %lo(GPU_DATA)($v1)
     /* 6D758 8007CF58 0001023C */  lui        $v0, (0x1000000 >> 16)
     /* 6D75C 8007CF5C 000062AC */  sw         $v0, 0x0($v1)
-    /* 6D760 8007CF60 0A80023C */  lui        $v0, %hi(D_8009BF44)
-    /* 6D764 8007CF64 44BF428C */  lw         $v0, %lo(D_8009BF44)($v0)
+    /* 6D760 8007CF60 0A80023C */  lui        $v0, %hi(GPU_DATA)
+    /* 6D764 8007CF64 44BF428C */  lw         $v0, %lo(GPU_DATA)($v0)
     /* 6D768 8007CF68 0200A012 */  beqz       $s5, .L8007CF74
     /* 6D76C 8007CF6C 00000000 */   nop
     /* 6D770 8007CF70 00B0043C */  lui        $a0, (0xB0000000 >> 16)
   .L8007CF74:
     /* 6D774 8007CF74 000044AC */  sw         $a0, 0x0($v0)
-    /* 6D778 8007CF78 0A80033C */  lui        $v1, %hi(D_8009BF44)
-    /* 6D77C 8007CF7C 44BF638C */  lw         $v1, %lo(D_8009BF44)($v1)
+    /* 6D778 8007CF78 0A80033C */  lui        $v1, %hi(GPU_DATA)
+    /* 6D77C 8007CF7C 44BF638C */  lw         $v1, %lo(GPU_DATA)($v1)
     /* 6D780 8007CF80 0000228E */  lw         $v0, 0x0($s1)
     /* 6D784 8007CF84 00000000 */  nop
     /* 6D788 8007CF88 000062AC */  sw         $v0, 0x0($v1)
-    /* 6D78C 8007CF8C 0A80033C */  lui        $v1, %hi(D_8009BF44)
-    /* 6D790 8007CF90 44BF638C */  lw         $v1, %lo(D_8009BF44)($v1)
+    /* 6D78C 8007CF8C 0A80033C */  lui        $v1, %hi(GPU_DATA)
+    /* 6D790 8007CF90 44BF638C */  lw         $v1, %lo(GPU_DATA)($v1)
     /* 6D794 8007CF94 0400228E */  lw         $v0, 0x4($s1)
     /* 6D798 8007CF98 FFFF1026 */  addiu      $s0, $s0, -0x1
     /* 6D79C 8007CF9C 000062AC */  sw         $v0, 0x0($v1)
@@ -116,8 +116,8 @@ glabel _dws
   .L8007CFB0:
     /* 6D7B0 8007CFB0 0000438E */  lw         $v1, 0x0($s2)
     /* 6D7B4 8007CFB4 04005226 */  addiu      $s2, $s2, 0x4
-    /* 6D7B8 8007CFB8 0A80023C */  lui        $v0, %hi(D_8009BF44)
-    /* 6D7BC 8007CFBC 44BF428C */  lw         $v0, %lo(D_8009BF44)($v0)
+    /* 6D7B8 8007CFB8 0A80023C */  lui        $v0, %hi(GPU_DATA)
+    /* 6D7BC 8007CFBC 44BF428C */  lw         $v0, %lo(GPU_DATA)($v0)
     /* 6D7C0 8007CFC0 FFFF1026 */  addiu      $s0, $s0, -0x1
     /* 6D7C4 8007CFC4 000043AC */  sw         $v1, 0x0($v0)
     /* 6D7C8 8007CFC8 F9FF0416 */  bne        $s0, $a0, .L8007CFB0
@@ -129,17 +129,17 @@ glabel _dws
     /* 6D7DC 8007CFDC 48BF428C */  lw         $v0, %lo(D_8009BF48)($v0)
     /* 6D7E0 8007CFE0 02006334 */  ori        $v1, $v1, (0x4000002 & 0xFFFF)
     /* 6D7E4 8007CFE4 000043AC */  sw         $v1, 0x0($v0)
-    /* 6D7E8 8007CFE8 0A80023C */  lui        $v0, %hi(D_8009BF4C)
-    /* 6D7EC 8007CFEC 4CBF428C */  lw         $v0, %lo(D_8009BF4C)($v0)
+    /* 6D7E8 8007CFE8 0A80023C */  lui        $v0, %hi(DMA2_MADR)
+    /* 6D7EC 8007CFEC 4CBF428C */  lw         $v0, %lo(DMA2_MADR)($v0)
     /* 6D7F0 8007CFF0 0001043C */  lui        $a0, (0x1000201 >> 16)
     /* 6D7F4 8007CFF4 000052AC */  sw         $s2, 0x0($v0)
     /* 6D7F8 8007CFF8 00141400 */  sll        $v0, $s4, 16
-    /* 6D7FC 8007CFFC 0A80033C */  lui        $v1, %hi(D_8009BF50)
-    /* 6D800 8007D000 50BF638C */  lw         $v1, %lo(D_8009BF50)($v1)
+    /* 6D7FC 8007CFFC 0A80033C */  lui        $v1, %hi(DMA2_BCR)
+    /* 6D800 8007D000 50BF638C */  lw         $v1, %lo(DMA2_BCR)($v1)
     /* 6D804 8007D004 10004234 */  ori        $v0, $v0, 0x10
     /* 6D808 8007D008 000062AC */  sw         $v0, 0x0($v1)
-    /* 6D80C 8007D00C 0A80023C */  lui        $v0, %hi(D_8009BF54)
-    /* 6D810 8007D010 54BF428C */  lw         $v0, %lo(D_8009BF54)($v0)
+    /* 6D80C 8007D00C 0A80023C */  lui        $v0, %hi(DMA2_CHCR)
+    /* 6D810 8007D010 54BF428C */  lw         $v0, %lo(DMA2_CHCR)($v0)
     /* 6D814 8007D014 01028434 */  ori        $a0, $a0, (0x1000201 & 0xFFFF)
     /* 6D818 8007D018 000044AC */  sw         $a0, 0x0($v0)
   .L8007D01C:

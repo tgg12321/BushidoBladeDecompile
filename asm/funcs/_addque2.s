@@ -46,8 +46,8 @@ glabel _addque2
     /* 6DCA0 8007D4A0 00000000 */  nop
     /* 6DCA4 8007D4A4 26006214 */  bne        $v1, $v0, .L8007D540
     /* 6DCA8 8007D4A8 00000000 */   nop
-    /* 6DCAC 8007D4AC 0A80023C */  lui        $v0, %hi(D_8009BF54)
-    /* 6DCB0 8007D4B0 54BF428C */  lw         $v0, %lo(D_8009BF54)($v0)
+    /* 6DCAC 8007D4AC 0A80023C */  lui        $v0, %hi(DMA2_CHCR)
+    /* 6DCB0 8007D4B0 54BF428C */  lw         $v0, %lo(DMA2_CHCR)($v0)
     /* 6DCB4 8007D4B4 00000000 */  nop
     /* 6DCB8 8007D4B8 0000428C */  lw         $v0, 0x0($v0)
     /* 6DCBC 8007D4BC 0001033C */  lui        $v1, (0x1000000 >> 16)

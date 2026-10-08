@@ -48,10 +48,10 @@ g_gpu_move_param = 0x8009BF1C; // PsyQ libgpu sys.c MoveImage `u_long param[5]` 
 g_gpu_ctx = 0x8009BE74; // libgpu SYS state block (GpuCtx, 0x80 bytes; src/main/psxsdk/libgpu/sys.c)
 g_gpu_ot_end = 0x8009BF30; // OT list terminator
 g_gpu_stat_reg = 0x8009BF48; // GPU status register ptr
-g_gpu_data_reg = 0x8009BF44; // GPU data register ptr
-g_gpu_dma_madr = 0x8009BF4C; // GPU DMA base addr reg ptr
-g_gpu_dma_bcr = 0x8009BF50; // GPU DMA block count reg ptr
-g_gpu_dma_chcr = 0x8009BF54; // GPU DMA channel ctrl reg ptr
+GPU_DATA = 0x8009BF44; // GPU data register ptr  // data-wave 2026-10-08: was g_gpu_data_reg
+DMA2_MADR = 0x8009BF4C; // GPU DMA base addr reg ptr  // data-wave 2026-10-08: was g_gpu_dma_madr
+DMA2_BCR = 0x8009BF50; // GPU DMA block count reg ptr  // data-wave 2026-10-08: was g_gpu_dma_bcr
+DMA2_CHCR = 0x8009BF54; // GPU DMA channel ctrl reg ptr  // data-wave 2026-10-08: was g_gpu_dma_chcr
 g_gpu_vcount = 0x8009BF8C; // VSync counter
 g_gpu_draw_count = 0x8009BF90; // draw call counter
 ctlbuf = 0x800F189C; // GPU color index table  // data-wave 2026-09-25: was g_gpu_color_table
@@ -68,9 +68,9 @@ g_gte_saved_ra = 0x8009C798; // saved RA in GTE init
 
 // === CD-ROM Subsystem (system.c) ===
 g_cd_reg0 = 0x800A147C; // -> 0x1F801800 CD index/status register
-g_cd_reg1 = 0x800A1480; // -> 0x1F801801 CD register 1 (command / response)
-g_cd_reg2 = 0x800A1484; // -> 0x1F801802 CD register 2 (parameter / interrupt enable)
-g_cd_reg3 = 0x800A1488; // -> 0x1F801803 CD register 3 (request / interrupt flag)
+libcd_CDRegister1 = 0x800A1480; // -> 0x1F801801 CD register 1 (command / response)  // data-wave 2026-10-08: was g_cd_reg1
+libcd_CDRegister2 = 0x800A1484; // -> 0x1F801802 CD register 2 (parameter / interrupt enable)  // data-wave 2026-10-08: was g_cd_reg2
+libcd_CDRegister3 = 0x800A1488; // -> 0x1F801803 CD register 3 (request / interrupt flag)  // data-wave 2026-10-08: was g_cd_reg3
 g_com_delay_reg = 0x800A148C; // -> 0x1F801020 COM_DELAY memory-control register
 g_cd_spu_voice = 0x800A1490; // SPU voice register base ptr
 // data-wave 2026-09-07: g_cd_debug_level = 0x800A11C0 retired; CD_debug is now object-defined
@@ -111,11 +111,11 @@ _svm_vab_start = 0x80107810; // per-channel SPU address  // data-wave 2026-09-07
 _svm_vab_count = 0x80107808; // active sound channel count  // data-wave 2026-09-07: was g_snd_ch_count
 
 // === System / IRQ ===
-g_sys_irq_vtable = 0x800A2600; // interrupt handler vtable
-i_mask = 0x800A2608; // libetc intr.c I_MASK register pointer (0x1F801074); was g_sys_irq_counter
+pCallbacks = 0x800A2600; // interrupt handler vtable  // data-wave 2026-10-08: was g_sys_irq_vtable
+g_InterruptMask = 0x800A2608; // libetc intr.c I_MASK register pointer (0x1F801074); was g_sys_irq_counter  // data-wave 2026-10-08: was i_mask
 // data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined
 g_CdReadMode_value = 0x800A1500; // cdread tslmode (D_800A14D0.tslmode)  // data-wave 2026-09-24: was g_sys_timer
-g_sys_video_mode = 0x800A2664; // video mode (0=NTSC)
+video_mode = 0x800A2664; // video mode (0=NTSC)  // data-wave 2026-10-08: was g_sys_video_mode
 Vcount = 0x800A2634; // DMA memory region  // data-wave 2026-09-07: was g_sys_dma_region
 
 // === Player / Character ===

@@ -30,8 +30,8 @@ glabel trapIntr
     /* 735A0 80082DA0 01000224 */  addiu      $v0, $zero, 0x1
     /* 735A4 80082DA4 0A80013C */  lui        $at, %hi(D_800A157A)
     /* 735A8 80082DA8 7A1522A4 */  sh         $v0, %lo(D_800A157A)($at)
-    /* 735AC 80082DAC 0A80023C */  lui        $v0, %hi(D_800A2608)
-    /* 735B0 80082DB0 0826428C */  lw         $v0, %lo(D_800A2608)($v0)
+    /* 735AC 80082DAC 0A80023C */  lui        $v0, %hi(g_InterruptMask)
+    /* 735B0 80082DB0 0826428C */  lw         $v0, %lo(g_InterruptMask)($v0)
     /* 735B4 80082DB4 00008494 */  lhu        $a0, 0x0($a0)
     /* 735B8 80082DB8 00004294 */  lhu        $v0, 0x0($v0)
     /* 735BC 80082DBC 24186400 */  and        $v1, $v1, $a0
@@ -71,8 +71,8 @@ glabel trapIntr
     /* 73634 80082E34 0426848C */  lw         $a0, %lo(i_stat)($a0)
     /* 73638 80082E38 0A80033C */  lui        $v1, %hi(D_800A15A8)
     /* 7363C 80082E3C A8156394 */  lhu        $v1, %lo(D_800A15A8)($v1)
-    /* 73640 80082E40 0A80023C */  lui        $v0, %hi(D_800A2608)
-    /* 73644 80082E44 0826428C */  lw         $v0, %lo(D_800A2608)($v0)
+    /* 73640 80082E40 0A80023C */  lui        $v0, %hi(g_InterruptMask)
+    /* 73644 80082E44 0826428C */  lw         $v0, %lo(g_InterruptMask)($v0)
     /* 73648 80082E48 00008494 */  lhu        $a0, 0x0($a0)
     /* 7364C 80082E4C 00004294 */  lhu        $v0, 0x0($v0)
     /* 73650 80082E50 24186400 */  and        $v1, $v1, $a0
@@ -82,8 +82,8 @@ glabel trapIntr
   .L80082E60:
     /* 73660 80082E60 0A80053C */  lui        $a1, %hi(i_stat)
     /* 73664 80082E64 0426A58C */  lw         $a1, %lo(i_stat)($a1)
-    /* 73668 80082E68 0A80063C */  lui        $a2, %hi(D_800A2608)
-    /* 7366C 80082E6C 0826C68C */  lw         $a2, %lo(D_800A2608)($a2)
+    /* 73668 80082E68 0A80063C */  lui        $a2, %hi(g_InterruptMask)
+    /* 7366C 80082E6C 0826C68C */  lw         $a2, %lo(g_InterruptMask)($a2)
     /* 73670 80082E70 0000A394 */  lhu        $v1, 0x0($a1)
     /* 73674 80082E74 0000C294 */  lhu        $v0, 0x0($a2)
     /* 73678 80082E78 00000000 */  nop
@@ -150,8 +150,8 @@ glabel trapIntr
     /* 73764 80082F64 00000000 */  nop
     /* 73768 80082F68 38004010 */  beqz       $v0, .L8008304C
     /* 7376C 80082F6C 21108002 */   addu      $v0, $s4, $zero
-    /* 73770 80082F70 0A80023C */  lui        $v0, %hi(D_800A2608)
-    /* 73774 80082F74 0826428C */  lw         $v0, %lo(D_800A2608)($v0)
+    /* 73770 80082F70 0A80023C */  lui        $v0, %hi(g_InterruptMask)
+    /* 73774 80082F74 0826428C */  lw         $v0, %lo(g_InterruptMask)($v0)
     /* 73778 80082F78 00000000 */  nop
     /* 7377C 80082F7C 00004394 */  lhu        $v1, 0x0($v0)
     /* 73780 80082F80 000040A4 */  sh         $zero, 0x0($v0)
@@ -206,8 +206,8 @@ glabel trapIntr
     /* 73830 80083030 AC0A020C */  jal        ChangeClearRCnt
     /* 73834 80083034 0100452E */   sltiu     $a1, $s2, 0x1
   .L80083038:
-    /* 73838 80083038 0A80023C */  lui        $v0, %hi(D_800A2608)
-    /* 7383C 8008303C 0826428C */  lw         $v0, %lo(D_800A2608)($v0)
+    /* 73838 80083038 0A80023C */  lui        $v0, %hi(g_InterruptMask)
+    /* 7383C 8008303C 0826428C */  lw         $v0, %lo(g_InterruptMask)($v0)
     /* 73840 80083040 00000000 */  nop
     /* 73844 80083044 000053A4 */  sh         $s3, 0x0($v0)
     /* 73848 80083048 21108002 */  addu       $v0, $s4, $zero
@@ -232,8 +232,8 @@ glabel trapIntr
     /* 73890 80083090 21100000 */   addu      $v0, $zero, $zero
     /* 73894 80083094 6EE2010C */  jal        EnterCriticalSection
     /* 73898 80083098 00000000 */   nop
-    /* 7389C 8008309C 0A80023C */  lui        $v0, %hi(D_800A2608)
-    /* 738A0 800830A0 0826428C */  lw         $v0, %lo(D_800A2608)($v0)
+    /* 7389C 8008309C 0A80023C */  lui        $v0, %hi(g_InterruptMask)
+    /* 738A0 800830A0 0826428C */  lw         $v0, %lo(g_InterruptMask)($v0)
     /* 738A4 800830A4 0A80043C */  lui        $a0, %hi(d_pcr)
     /* 738A8 800830A8 0C26848C */  lw         $a0, %lo(d_pcr)($a0)
     /* 738AC 800830AC 00004394 */  lhu        $v1, 0x0($v0)
@@ -276,8 +276,8 @@ glabel trapIntr
     /* 7393C 8008313C 00000000 */   nop
     /* 73940 80083140 840C020C */  jal        HookEntryInt
     /* 73944 80083144 38000426 */   addiu     $a0, $s0, 0x38
-    /* 73948 80083148 0A80043C */  lui        $a0, %hi(D_800A2608)
-    /* 7394C 8008314C 0826848C */  lw         $a0, %lo(D_800A2608)($a0)
+    /* 73948 80083148 0A80043C */  lui        $a0, %hi(g_InterruptMask)
+    /* 7394C 8008314C 0826848C */  lw         $a0, %lo(g_InterruptMask)($a0)
     /* 73950 80083150 0A80033C */  lui        $v1, %hi(D_800A15A8 + 0x2)
     /* 73954 80083154 AA156394 */  lhu        $v1, %lo(D_800A15A8 + 0x2)($v1)
     /* 73958 80083158 01000224 */  addiu      $v0, $zero, 0x1
