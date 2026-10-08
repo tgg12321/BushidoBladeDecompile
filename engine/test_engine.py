@@ -5023,53 +5023,53 @@ def _test_datamodel_body() -> None:
         for d in ("asm/funcs", "include", "src"):
             Path(d).mkdir(parents=True)
         Path("named_syms.txt").write_text(
-            "g_leaf_slot_state = 0x800A3918;  /* 6-byte slot state table (per-leaf counter byte) */\n"
-            "g_leaf_position_table = 0x80107850;  /* 12-byte stride per leaf, 6 entries */\n"
-            "g_leaf_position_table_plus_4 = 0x80107854;  /* +4 from g_leaf_position_table (0x80107850) */\n"
-            "g_plain = 0x80107900;  /* just a flag */\n", encoding="utf-8")
+            "g_fixture_slot_state = 0x80F00018;  /* 6-byte slot table (one counter byte per slot) */\n"
+            "g_fixture_pos_table = 0x80F00050;  /* 12-byte stride per slot, 6 entries */\n"
+            "g_fixture_pos_table_plus_4 = 0x80F00054;  /* +4 from g_fixture_pos_table (0x80F00050) */\n"
+            "g_fixture_plain = 0x80F00100;  /* just a flag */\n", encoding="utf-8")
         Path("undefined_syms_auto.txt").write_text(
-            "D_800A3918 = 0x800A3918;\nD_80107850 = 0x80107850;\nD_80107854 = 0x80107854;\n"
-            "D_80107900 = 0x80107900;\n", encoding="utf-8")
+            "D_80F00018 = 0x80F00018;\nD_80F00050 = 0x80F00050;\nD_80F00054 = 0x80F00054;\n"
+            "D_80F00100 = 0x80F00100;\n", encoding="utf-8")
         Path("include/x.h").write_text(
-            "extern u8 D_800A3918;\nextern s32 D_80107850;\nextern s32 D_80107854;\n"
-            "extern u8 D_80107900;\n", encoding="utf-8")
+            "extern u8 D_80F00018;\nextern s32 D_80F00050;\nextern s32 D_80F00054;\n"
+            "extern u8 D_80F00100;\n", encoding="utf-8")
         Path("asm/funcs/func_A.s").write_text(
             "glabel func_A\n"
-            "    lui $at, %hi(D_800A3918)\n    addu $at, $at, $v1\n"
-            "    lbu $v0, %lo(D_800A3918)($at)\n"
-            "    lui $at, %hi(D_80107850)\n    sw $v1, %lo(D_80107850)($at)\n"
-            "    lui $at, %hi(D_80107854)\n    sw $a0, %lo(D_80107854)($at)\n"
-            "    lui $v0, %hi(D_80107900)\n    lbu $v0, %lo(D_80107900)($v0)\n"
+            "    lui $at, %hi(D_80F00018)\n    addu $at, $at, $v1\n"
+            "    lbu $v0, %lo(D_80F00018)($at)\n"
+            "    lui $at, %hi(D_80F00050)\n    sw $v1, %lo(D_80F00050)($at)\n"
+            "    lui $at, %hi(D_80F00054)\n    sw $a0, %lo(D_80F00054)($at)\n"
+            "    lui $v0, %hi(D_80F00100)\n    lbu $v0, %lo(D_80F00100)($v0)\n"
             "    jal func_B\n", encoding="utf-8")
         Path("asm/funcs/func_B.s").write_text(
-            "glabel func_B\n    lui $at, %hi(D_80107854)\n    lw $v0, %lo(D_80107854)($at)\n",
+            "glabel func_B\n    lui $at, %hi(D_80F00054)\n    lw $v0, %lo(D_80F00054)($at)\n",
             encoding="utf-8")
         Path("src/a.c").write_text('INCLUDE_ASM("asm/funcs", func_A);\n'
                                    'INCLUDE_ASM("asm/funcs", func_B);\n', encoding="utf-8")
         DM.reset_cache()
         rows, flags = DM.data_model("func_A")
         eq("one row per data symbol, callee excluded", len(rows), 4)
-        check("rows are address-ordered", rows[0].startswith("  D_800A3918"))
-        check("sub-symbol row marked", any("SUB-SYMBOL +4 of g_leaf_position_table" in r for r in rows))
-        check("census comment surfaced", any('"12-byte stride per leaf, 6 entries"' in r for r in rows))
-        check("header decl surfaced", any("decl `extern u8 D_800A3918;` (x.h)" in r for r in rows))
+        check("rows are address-ordered", rows[0].startswith("  D_80F00018"))
+        check("sub-symbol row marked", any("SUB-SYMBOL +4 of g_fixture_pos_table" in r for r in rows))
+        check("census comment surfaced", any('"12-byte stride per slot, 6 entries"' in r for r in rows))
+        check("header decl surfaced", any("decl `extern u8 D_80F00018;` (x.h)" in r for r in rows))
         check("asm xref lists the still-INCLUDE_ASM sibling", any("xref asm:func_B" in r for r in rows))
         kinds = [f.split(":")[0] for f in flags]
-        # D_800A3918: indexed + census ("table"); D_80107850: census ("stride");
-        # the split flag; D_80107850's plain lui/sw must NOT read as indexed.
+        # D_80F00018: indexed + census ("table"); D_80F00050: census ("stride");
+        # the split flag; D_80F00050's plain lui/sw must NOT read as indexed.
         eq("signals: 2x census-vs-decl + indexed + split-aggregate", sorted(kinds),
            sorted(["!! INDEXED-ACCESS", "!! CENSUS-VS-DECL", "!! CENSUS-VS-DECL",
                    "!! SPLIT-AGGREGATE"]))
         check("indexed flag names the indexed symbol only",
-              any("INDEXED-ACCESS: the target indexes D_800A3918" in f for f in flags)
-              and not any("INDEXED-ACCESS: the target indexes D_80107850" in f for f in flags))
+              any("INDEXED-ACCESS: the target indexes D_80F00018" in f for f in flags)
+              and not any("INDEXED-ACCESS: the target indexes D_80F00050" in f for f in flags))
         split = next(f for f in flags if f.startswith("!! SPLIT-AGGREGATE"))
         check("split flag names the sibling that keeps the config row alive",
               "still-INCLUDE_ASM func_B" in split)
-        check("plain flag global raises no signal", not any("D_80107900" in f for f in flags))
+        check("plain flag global raises no signal", not any("D_80F00100" in f for f in flags))
         # a declaration merge silences the signals it answers
         Path("include/x.h").write_text(
-            "extern u8 D_800A3918[6];\nextern LeafPos D_80107850[6];\nextern u8 D_80107900;\n",
+            "extern u8 D_80F00018[6];\nextern FixturePos D_80F00050[6];\nextern u8 D_80F00100;\n",
             encoding="utf-8")
         DM.reset_cache()
         _, flags2 = DM.data_model("func_A")

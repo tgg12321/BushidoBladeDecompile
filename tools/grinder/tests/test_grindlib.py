@@ -1346,21 +1346,22 @@ class TestDeclarationPunScan(unittest.TestCase):
 
     def test_flags_each_pun_shape(self):
         self._write("void f(s32 *p) {\n"
-                    "    *(Word3 *)(((u8 *)(&D_80107850)) + i * 12) = *(Word3 *)p;\n"
-                    "    if (*(&D_800A3918 + i) == 0) return;\n"
-                    "    (&g_leaf_slot_state)[i] = 1;\n"
+                    "    *(Word3 *)(((u8 *)(&D_80F00050)) + i * 12) = *(Word3 *)p;\n"
+                    "    if (*(&D_80F00018 + i) == 0) return;\n"
+                    "    (&g_fixture_slot_state)[i] = 1;\n"
                     "}\n")
         hits = G.scan_declaration_puns(self.root, "func_X")
         self.assertEqual(len(hits), 3, hits)
-        self.assertIn("[D_80107850]", hits[0])
-        self.assertIn("[D_800A3918]", hits[1])
-        self.assertIn("[g_leaf_slot_state]", hits[2])
+        self.assertIn("[D_80F00050]", hits[0])
+        self.assertIn("[D_80F00018]", hits[1])
+        self.assertIn("[g_fixture_slot_state]", hits[2])
 
     def test_clean_declaration_merge_is_silent(self):
-        self._write("void f(LeafPos *p) {\n"
-                    "    D_800A3918[i] = 1;\n"
-                    "    D_80107850[i] = *p;\n"
-                    "    q = &D_80107850[i];\n"
+        self._write("typedef struct { s32 x, y, z; } FixturePos;\n"
+                    "void f(FixturePos *p) {\n"
+                    "    D_80F00018[i] = 1;\n"
+                    "    D_80F00050[i] = *p;\n"
+                    "    q = &D_80F00050[i];\n"
                     "}\n")
         self.assertEqual(G.scan_declaration_puns(self.root, "func_X"), [])
 
