@@ -55,8 +55,8 @@ The same offset map is used for the 12-slot active-move array starting at
 
 ## Move-command stream
 
-Each move is described by an opcode-stream stored in the character's data
-(loaded from disc into `g_char_data` at `0x800A6690`). The streams are NOT
+Each move is described by an opcode-stream stored in the character's data.
+The streams are NOT
 plain animation timelines — they're tiny bytecode programs the AI/move
 selector advances each frame.
 

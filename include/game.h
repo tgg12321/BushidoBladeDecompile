@@ -695,11 +695,12 @@ typedef struct {
     char *name;
 } MenuDatEntry;
 
-/* Per-character record pointed to by D_800A3860[ch] (ch = rec+0x4A). f14 is
- * the modulus func_800213A0 / func_80021424 wrap rec+0x86 with. The u16
- * fields at +0x4E are indices into D_801027B0[ch].unk_00, as func_80021424
- * reads them: f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86] (ids 0x7FF1/2/4),
- * f54[rec+0x86][t] (id 0x7FF3), and
+/* The file func_80020E74 loads into D_800A3860[slot] (slot = rec+0x4A, the
+ * load slot func_80021280 sets; fighters with the same model id share it).
+ * f14 is the modulus func_800213A0 / func_80021424 wrap rec+0x86 with. The
+ * u16 fields at +0x4E are indices into D_801027B0[slot].unk_00, as
+ * func_80021424 reads them: f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86] (ids
+ * 0x7FF1/2/4), f54[rec+0x86][t] (id 0x7FF3), and
  * f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). f16 (func_800219E4) and
  * f18[class] (func_80021A3C; class = Unk80101EC8Record.unk_0A, 0..26 as
  * D_8008D538 holds and as the [27][6] class tables D_8008DE34 / D_8008DF78 are
@@ -707,10 +708,11 @@ typedef struct {
  * both readers load them with lhu. */
 typedef struct {
     u8 pad00[3];
-    /* func_80020E74: D_801027B0[ch].unk_00 = record + 0x6C + (unk_03 - 1) * 6
-     */
+    /* func_80020E74: D_801027B0[slot].unk_00 =
+     * record + 0x6C + (unk_03 - 1) * 6 */
     u8 unk_03;
-    /* D_801027B0[ch].unk_04 .. unk_10 = record + unk_04[k] (func_80020E74) */
+    /* D_801027B0[slot].unk_04 .. unk_10 = record + unk_04[k]
+     * (func_80020E74) */
     s32 unk_04[4];
     s16 f14;
     u16 f16;
@@ -720,14 +722,15 @@ typedef struct {
     u16 f66[11][3];
 } Tbl800A3860Entry;
 
-/* A loaded motion pack's five section pointers. D_801027B0[ch] for character
- * ch's pack (func_80020E74: unk_00 = record + 0x6C + (unk_03 - 1) * 6,
- * unk_04..unk_10 = record + unk_04[0..3]); D_80102760 for the common pack
- * (func_80020DDC: unk_00 = file + 0x14, the others file + its header words 1 /
- * 2 / 4; unk_0C unset). unk_00: halfword streams func_80021424 indexes (the f4E
- * / f54 / f66 / f16 / f18 entries); unk_04: 4-byte entries whose second
- * halfword offsets unk_08 (func_80021A98, func_8003993C); unk_0C:
- * func_80055138's table; unk_10: func_8001979C's motion bitstream. */
+/* A loaded motion pack's five section pointers. D_801027B0[i] for the pack
+ * loaded into D_800A3860[i] (func_80020E74:
+ * unk_00 = record + 0x6C + (unk_03 - 1) * 6, unk_04..unk_10 = record +
+ * unk_04[0..3]); D_80102760 for the common pack (func_80020DDC: unk_00 = file +
+ * 0x14, the others file + its header words 1 / 2 / 4; unk_0C unset). unk_00:
+ * halfword streams func_80021424 indexes (the f4E / f54 / f66 / f16 / f18
+ * entries); unk_04: 4-byte entries whose second halfword offsets unk_08
+ * (func_80021A98, func_8003993C); unk_0C: func_80055138's table; unk_10:
+ * func_8001979C's motion bitstream. */
 typedef struct Unk801027B0Pack {
     u16 *unk_00;
     u16 *unk_04;

@@ -150,7 +150,7 @@ know which subsystem owns it, look here.
   `game_GetPlayerCount`, `obj_InitChars`, `obj_InitTask`,
   `obj_InitPair`, `obj_InitAll`, `obj_Reset`, `obj_ExecTask`,
   `obj_InitTaskCamera`, `obj_UpdatePosition`
-- **Key globals:** `g_player_ptrs`, `g_player_char_ids`, `g_char_data`,
+- **Key globals:** `g_player_ptrs`, `g_player_char_ids`,
   `g_char_setup_tbl`, `chractar_use_pset_combo_id_table`
 
 ### System / IRQ / Timer
@@ -180,7 +180,7 @@ If you've seen a global in the source and want to know what it does:
 - `g_disp_enable`, `g_disp_fade` (0x800A3768, 0x800A36A8) — Display
 - `g_game_timer` (0x800A3790) — Game state
 - `D_800A3834` — game-mode dispatch register
-- `g_char_data` (0x800A6690) — Character (14 KB region)
+- `D_800A6690` — transform-node records queued by the grid draw walks
 - `D_800A8FB0` — 32x32 grid read by the draw walks
 - `SpecialCam` (0x8008EC34) — Replay/Camera disc table
 
@@ -295,11 +295,12 @@ full traces).  Indexed here by address range for reverse lookup:
 - `g_snd_data_buf_base` (0x800EFB14) — sound buffer base + header
 - `g_snd_data_subblock_{0..4}_ptr` (0x800EFB18..0x800EFB28) — 5 cached
   subblock pointers; relocated by `func_80054FDC(delta)` when buffer moves
-- `g_snd_data_header_FB0C` (0x800EFB0C) — header preceding the base
+- `D_800EFB0C` — `D_800EFAE8.unk24` (s16[4]): the negated rotation angles
+  `func_8005490C` writes; `func_8005507C` returns its address
 
-### `0x800F_0xxx` range — motion-ex effect-spawn substrate (§20)
-- `g_motion_ex_pool_b_xyz_{x,y,z}` (0x800F0E38/0xE3C/0xE40, 12 slots × 12 bytes)
-- `g_motion_ex_pool_b_flag` (0x800F0BEC, 12 × s16)
+### `0x800F_0xxx` range — flare slot pool (§20)
+- `D_800F0E38` (`Unk800F0E38Record[12]`, x / y / z at +0 / +4 / +8)
+- `D_800F0BEC` (12 × s16 per-slot age)
 - `g_particle_slot_bitmap_plus_4` (0x800A3448) — pool B busy bitmap
 - (Pool A is `g_particle_slot_bitmap` at 0x800A3444 / data at D_800F0D78..)
 

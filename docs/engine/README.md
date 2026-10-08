@@ -112,7 +112,7 @@ address is the stable key.
 | `text1a_c.c` | 0x80042504-0x80044800 | Matrix/colour math (`math_RotMatrix*`, `math_RgbToHsv`), primitive texture-offset helpers (`gpu_OffsetTexPoly*`), prim-buffer slots |
 | `text1a_c_tu2.c` | 0x80044800-0x800460E4 | `func_800450BC` block load / copy family and channel helpers |
 | `text1b.c` | 0x800460E4-0x8004A348 | Game glue (`func_800460E4`, `game_*Init`, `func_800467A8`), SE allocation/stop, camera bone setup |
-| `text1b_tu1b.c` | 0x8004A348-0x80060A68 | 3D render core: GTE transform/clip kernels, stage/ground drawing, collision tests, `game_StageMain`/`game_StageSetup` |
+| `text1b_tu1b.c` | 0x8004A348-0x80060A68 | 3D render core: GTE transform/clip kernels, stage/ground drawing, collision tests, `func_80054604` / `func_8005490C` (fill and play back the `D_800EFAE8` camera / motion block) |
 | `text1b_tu1c.c` | 0x80060A68-0x8006E534 | Effects and ex-motion: `efc_spawn_*`, `motion_ex_*`, animated sprite/object drawing |
 | `text1b_tu1d.c` | 0x8006E534-0x8007352C | HUD/overlay rendering, replay display setup |
 | `text1b_tu1e.c` | 0x8007352C-0x800747D8 | Sprite/animated-object drawing (5 functions) |
@@ -189,7 +189,8 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 - `g_player_ptrs` (0x800A9A10) — array of player-object pointers (3 slots:
   P1, P2, prop/AI)
 - `g_player_char_ids` (0x80094B88) — character IDs per slot
-- `g_char_data` (0x800A6690) — large character data region
+- `D_800A6690` — transform-node records (0x68 bytes) unpacked from a u16
+  stream and queued by the grid draw walks
 - `g_cam_matrix` (0x800EEDB0) — camera rotation matrix base
 
 ### Pad / controller

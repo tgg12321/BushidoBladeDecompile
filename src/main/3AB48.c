@@ -745,14 +745,15 @@ void func_800548DC(void) {
 
 extern s32 D_800A3250[2];
 
-/* Per-frame stage handler on the ctrl block D_800EFAE8. On the first frame
- * (unk0 == 0) it resolves the loaded data's offset table (unk2C) into the
- * camera stream (unk30), the per-player motion streams (unk34[], dropped when
- * they start with the "NULL" tag D_800A3250) and the per-player nibble tables
- * (unk3C[]). Every frame it places the camera (rotated about y by unk1E, plus
- * the stage offset unkC..unk14), then decodes and places each player's motion
- * frame. The block holds those addresses as integers: typed as pointers, the
- * relocation sums in func_80054FDC and func_80054604 swap their addu operands.
+/* Per-frame playback of the ctrl block D_800EFAE8 that func_80054604 fills.
+ * On the first frame (unk0 == 0) it resolves the loaded data's offset table
+ * (unk2C) into the camera stream (unk30), the per-player motion streams
+ * (unk34[], dropped when they start with the "NULL" tag D_800A3250) and the
+ * per-player nibble tables (unk3C[]). Every frame it places the camera (rotated
+ * about y by unk1E, plus the offset unkC..unk14 func_80054604 picks), then
+ * decodes and places each player's motion frame. The block holds those
+ * addresses as integers: typed as pointers, the relocation sums in
+ * func_80054FDC and func_80054604 swap their addu operands.
  */
 s32 func_8005490C(void) {
     /* FAKE: second handle to the ctrl block (pointer alias), as in

@@ -297,24 +297,30 @@ Stride 12 bytes per ID, 8 IDs total:
 
 | ID | Init function | Address |
 |----|--------------|---------|
-| 1 | `motion_ex_Init_id1` | `0x80064ED8` |
-| 2 | `motion_ex_Init_id2` | `0x80064F20` |
-| 3 | `motion_ex_Init_id3` | `0x80064F68` |
-| 4 | `motion_ex_Init_id4` | `0x80064FB4` |
-| 5 | `motion_ex_Init_id5` | `0x80065000` |
+| 1 | `func_80064ED8` | `0x80064ED8` |
+| 2 | `func_80064F20` | `0x80064F20` |
+| 3 | `func_80064F68` | `0x80064F68` |
+| 4 | `func_80064FB4` | `0x80064FB4` |
+| 5 | `func_80065000` | `0x80065000` |
 
 Each init reads 3 fields from `g_text1b_render_buf_ptr` (D_800A347C),
-writes them to its state block, sets the per-id flag, resets the
-per-id counter.
+writes them to its state block, stores 1 into its `D_800F10D0` slot,
+resets the per-id counter.
 
-### Per-id flag table — `g_motion_state_flag_table` (`0x800F10D0`)
+### Dispatch-offset table — `D_800F10D0`
 
-24-entry s32 flag table; index from `*(u16*)D_800A3468` (the text1b
-render state).  The previously-named `g_motion_ex_flag_table_4`
-(`0x800F10E0`) is actually +0x10 from the true base — it's index 4
-of this larger table.  Per-id flag aliases for IDs 1-3 exist
-(`g_motion_ex_flag_id1/2/3` at +4/+8/+0xC); IDs 4-7 don't follow
-strict +4 stride (see init functions for actual mapping).
+28-entry s32 table (`func_80060C60` zeroes 28 entries) of dispatch
+offsets (values 0, 1, 2), not flags: `func_80060A68` / `func_80060B70`
+add `D_800F10D0[idx]` to `D_8009BA60[idx]` to pick a
+`chractar_use_pset_combo_id_table` entry and call it, and
+`func_80061064` runs `func_80060B70` for every idx whose
+`D_800F1150[idx]` is nonzero. The slots the init functions store 1
+into: `func_80064ED8` [5] (`D_800F10E4`), `func_80064F20` [6]
+(`D_800F10E8`), `func_80064F68` [9] (`D_800F10F4`), `func_80064FB4`
+[10] (`D_800F10F8`), `func_80065000` [11] (`D_800F10FC`); also
+`func_800645B0` [7] (`D_800F10EC`) and `func_80062FEC` [8]
+(`D_800F10F0`). `D_800F10E0` is slot [4]. The id number of an init
+function is not its slot index.
 
 ### Per-id counter table — `g_motion_ex_counter_table_base` (`0x800F0BA8`)
 
@@ -332,39 +338,37 @@ Plus `g_motion_ex_counter_p1` (0x800F0BC0) and `g_motion_ex_counter_p2`
 (0x800F0BC4) for the per-player counters at offsets +0x18 and +0x1C
 from the table base.
 
-## Motion-shift state cluster (2026-05-17)
+## Memory-card setter cluster (2026-05-17)
 
-The "motion shift" subsystem (related to motion blending / state
-transitions) maintains a small state cluster.  Note that the variables
-overlap with the misnomer `pad_FuncAnalog` (which is actually a
-memcard state machine, not pad-analog handling) — the variables are
-reused across both subsystems.
+Not motion state: these cells were once read as a "motion shift"
+cluster, but every access belongs to the memory-card state machine
+`func_800383A4` (28708.c), which the four setters below arm
+(28708.c:457-485). Each sets the status code and the operation
+selector, zeroes the retry counter and sets the state to 1.
 
 | Symbol | Address | Role |
 |--------|---------|------|
-| `g_motion_state_code` | `0x800A379E` | Sub-id (1, 4, 9, 0xA) |
-| `g_pad_analog_substate` | `0x800A37C8` | Mode (0=hit-stop, 1/2/3=others) |
-| `g_pad_analog_mode` | `0x800A31F4` | State-machine variable |
-| `g_pad_analog_frame_counter` | `0x800A3814` | Per-frame tick |
-| `g_motion_shift_flag2` | `0x800A38CC` | Zeroed in mode 1/2 setters, NOT in mode 3 or hit_stop |
+| `D_800A379E` | `0x800A379E` | Operation status / result code; `func_80038734` returns it |
+| `D_800A37C8` | `0x800A37C8` | Operation selector (0 load, 1/2 write, 3 `memcard_Format`) |
+| `D_800A31F4` | `0x800A31F4` | State (1 start, 3/5/7 write/read/format, 4/6 wait on `memcard_PollSwEvents`, 0 idle) |
+| `D_800A3814` | `0x800A3814` | Retry counter |
+| `D_800A38CC` | `0x800A38CC` | Write-path flag; zeroed only by `func_8003879C` / `func_800387C0` |
 
-| Function | Address | Role |
-|----------|---------|------|
-| `motion_shift_check_m_hit_stop` | (existing) | Sets state to 0 (hit-stop) |
-| `motion_shift_set_mode1` | `0x8003879C` | Mode 1, sub-id 1 |
-| `motion_shift_set_mode2` | `0x800387C0` | Mode 2, sub-id 1 |
-| `motion_shift_set_mode3` | `0x800387E8` | Mode 3, sub-id 9 |
+| Function | Address | `D_800A379E` | `D_800A37C8` |
+|----------|---------|--------------|--------------|
+| `func_8003877C` | `0x8003877C` | 4 | 0 |
+| `func_8003879C` | `0x8003879C` | 1 | 1 |
+| `func_800387C0` | `0x800387C0` | 1 | 2 |
+| `func_800387E8` | `0x800387E8` | 9 | 3 |
 
 ## Cross-references (naming pass 2026-05-17; full traces at `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`)
 
-One cluster from the placeholder-refinement pass extends the motion-state
-data model:
+One cluster from the placeholder-refinement pass:
 
-- §20 Motion-ex pool B (12-slot effect-spawn pool)
-  — `g_motion_ex_pool_b_xyz_x/y/z` at `0x800F0E38` (12 slots × 12 bytes
-  column-major XYZ) + `g_motion_ex_pool_b_flag` at `0x800F0BEC` (12 ×
-  s16). Allocated by `func_80062FEC` (text1b_tu1c.c:1366) via the
-  `g_particle_slot_bitmap_plus_4` busy bitmap. Pool A (32 slots at
-  `0x800F0D78` with random spread, used by text1b.c:14236) and Pool B
-  (12 slots, no spread, precision effects) are two parallel substrates
-  for the motion-ex spawned-effect subsystem.
+- §20 Flare slot pool (12 slots)
+  — `D_800F0E38` (`Unk800F0E38Record[12]`, x / y / z words at +0 / +4 /
+  +8) + `D_800F0BEC` (12 × s16 per-slot age: 0 when `func_80062FEC`
+  takes the slot, +1 per `func_80063084` pass). Allocated by
+  `func_80062FEC` (51268.c) via the `g_particle_slot_bitmap_plus_4`
+  busy bitmap and drawn by `func_80063084`. Pool A (32 slots at
+  `0x800F0D78` with random spread) is the parallel pool.

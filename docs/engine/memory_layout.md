@@ -41,7 +41,7 @@ in this doc are KSEG0 virtual addresses (`0x8000_0000`+, cached).
 |     g_cd_*        0x800A11xx..0x800A14xx     |
 |     g_spu_*       0x800A2Cxx..0x800A2Dxx     |
 |     g_snd_*       0x800A33xx                 |
-|   g_char_data     0x800A6690 (~14 KB region) |
+|   D_800A6690      0x800A6690 (node records)  |
 |   g_player_ptrs   0x800A9A10                 |
 +----------------------------------------------+
 | Heap / scratch areas (not strictly .bss)     |
@@ -222,7 +222,7 @@ This is a coarse who-owns-what map within main RAM .bss. Detail in
 | `0x800A_2Cxx..2Dxx` | SPU register shadows (`g_spu_*`) |
 | `0x800A_30xx..33xx` | Misc engine state (gp anchor at `0x800A30CC`) |
 | `0x800A_33xx..38xx` | Display, fade, character, game-mode state |
-| `0x800A_6690..` | `g_char_data` — per-character runtime data (~14 KB) |
+| `0x800A_6690..` | `D_800A6690` — transform-node records (0x68 bytes; read by the draw walks) |
 | `0x800A_8FB0..` | `D_800A8FB0` — 32x32 cell grid (read by the draw walks) |
 | `0x800A_9A10..` | `g_player_ptrs` — player object pointers |
 | `0x800E_EDB0..` | `g_cam_matrix` and camera state |
@@ -276,19 +276,21 @@ table at `g_spu_voice_vol_table` (`0x800A28A4`, 24 entries × u16, default
 tail indices at `g_gpu_packet_write_idx` (0x8009BF78) /
 `g_gpu_packet_read_idx` (0x8009BF7C).  See [gpu_pipeline.md](gpu_pipeline.md).
 
-### Pad-recording (replay) — `0x800A_36C0..36D4`
+### Serial-link exchange words — `0x800A_36C0..36D4`
 
-3 dual-buffered slots for per-frame packed-pad records + hashes,
-used by the replay-sync flow at `func_8003A728`:
+Packed input words and check words (`D_800A37C4 << 16` | 16-bit XOR)
+exchanged over the serial link by `func_8003A728`: `comb_Write8` sends,
+`comb_WaitRead8` stores the partner's pair on a check match. Nothing is
+recorded or played back.
 
-| Slot | Packed addr | Hash addr |
-|------|------------|-----------|
-| Current | `D_800A3698` (`g_memcard_file_write_buf`, MISNAMED) | `g_pad_rec_current_hash` (`0x800A369C`) |
-| Validated | `g_pad_rec_validated_packed` (`0x800A36C0`) | `g_pad_rec_validated_hash` (`0x800A36C4`) |
-| Previous | `g_pad_rec_prev_packed` (`0x800A36D0`) | `g_pad_rec_prev_hash` (`0x800A36D4`) |
+| Slot | Input word | Check word |
+|------|------------|------------|
+| Send buffer | `g_comb_send_buf` (`0x800A3698`) | `g_comb_send_buf_plus_0x4` (`0x800A369C`) |
+| Received | `D_800A36C0` | `D_800A36C4` |
+| Previously sent | `D_800A36D0` | `D_800A36D4` (store-only) |
 
-Plus mode control at `g_pad_rec_playback_mode` (`0x800A38A0`) and
-`g_pad_rec_skip_flag` (`0x800A3916`).
+Plus this console's link side at `D_800A38A0` (set by the
+`_comb_control(3, 1, 0)` handshake) and the skip flag `D_800A3916`.
 
 ### Ground / arena init — `0x800F_6608..6644`
 

@@ -850,7 +850,6 @@ g_cd_reg1 = 0x800A1480;
 g_cd_reg2 = 0x800A1484;
 g_cd_setloc_flags = 0x800A112C;
 g_cd_spu_voice = 0x800A1490;
-D_800A6690 = 0x800A6690;  /* data-wave 2026-10-08: was g_char_data */
 g_color_mode = 0x800F6652;
 g_cos_lut_q2 = 0x8009B794;
 g_cos_lut_q4 = 0x8009A794;

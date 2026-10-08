@@ -480,7 +480,7 @@ extern CdState D_80101E58;
 extern Unk801027B0Pack D_80102760; /* the common motion pack */
 extern PracticeParams D_80102778;
 extern PadState g_pad_state;
-extern Unk801027B0Pack D_801027B0[]; /* per character */
+extern Unk801027B0Pack D_801027B0[]; /* per load slot */
 /* [i] points to block i's slots, the words after its header word (func_80044010
  * records it and D_80103658[i] holds the slot count).  Each slot is a
  * word holding a block-relative offset that func_80044010 turns into an address
