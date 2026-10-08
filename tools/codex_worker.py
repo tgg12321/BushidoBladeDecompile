@@ -465,9 +465,8 @@ def _bridge():
     return codex_bridge
 
 
-# The bridge runs every Codex task with CODEX_HOME = its TASK_HOME (one definition, the bridge's).
-TASK_HOME = _bridge().TASK_HOME
-RULES_FILE = TASK_HOME / "rules" / "bb2-codex-eng.rules"
+CODEX_HOME_DIR = Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex")
+RULES_FILE = CODEX_HOME_DIR / "rules" / "bb2-codex-eng.rules"
 BRIDGE_DIR = Path(tempfile.gettempdir()) / "bb2_wsl_bridge"
 RULES = """# Bushido Blade 2 decomp: the one build/score door for a sandboxed Codex worker.
 # Installed by tools/codex_worker.py. tools/codex_eng.ps1 -> `codex_worker.py shadow --from-pin`
@@ -493,25 +492,17 @@ def ensure_rules(main):
 
 
 def rules_only_door(main):
-    """Refuse unless the build door is the only rule Codex loads: RULES_FILE must hold exactly the
-    door, and no other *.rules file may exist in ~/.codex-claude/rules (an allow rule runs its command
-    OUTSIDE the sandbox; rules are Starlark, so no pattern can tell an allow rule by its spelling).
-    A rules file is moved aside by the owner, never edited or deleted by this tool."""
+    """Warn (not refuse) when ~/.codex/rules holds rules besides the build door: an allow rule runs its
+    command outside the sandbox, which could act in the main checkout. Owner 2026-10-07: containment is
+    not the goal, keeping Codex out of the main working tree is; the owner decides about other rules."""
     d = RULES_FILE.parent
     try:
-        files = sorted(d.glob("*.rules")) if d.exists() else []
-        for f in files:
-            text = f.read_text(encoding="utf-8", errors="replace")
-            if f == RULES_FILE:
-                if text != RULES.format(eng=eng_path(main)):
-                    refuse(f"{f} is not exactly the build door rule; re-run `run` to reinstall it, or "
-                           "inspect it")
-            else:
-                refuse(f"{f} is a Codex rules file besides the build door (an allow rule runs its command "
-                       "outside the sandbox); the owner must move it aside (e.g. rename it to "
-                       "*.disabled-<date>) before any Codex launch")
-    except OSError as e:
-        refuse(f"cannot read {d} to confirm only the build door rule loads: {e}")
+        others = [f.name for f in sorted(d.glob("*.rules")) if f != RULES_FILE] if d.exists() else []
+    except OSError:
+        others = []
+    if others:
+        print("codex_worker: warning -- other Codex rules files are loaded (" + ", ".join(others) + "); "
+              "an allow rule there may run commands outside the sandbox", file=sys.stderr)
 
 
 # tools/wsl_bridge.ps1's daemon runs any request file in %TEMP%/bb2_wsl_bridge in WSL as the user.
@@ -553,22 +544,7 @@ $o = (& wsl.exe -e true 2>&1 | Out-String) -replace "`0", ''
 if ($LASTEXITCODE -eq 0) { 'WSL-OPEN' } elseif ($o -match 'E_ACCESSDENIED') { 'WSL-DENIED' } else { "WSL-ERROR $o" }
 """
 PROBES = ("BRIDGE", "MAIN", "MAINGIT", "TRUSTED", "TRUSTEDBUILD", "WORKTREES", "WSL")
-RO_PROBE_PS = r"""
-function Probe([string]$tag, [string]$dir) {
-    if (-not $dir -or -not (Test-Path -LiteralPath $dir)) { return "$tag-NOPATH" }
-    $f = Join-Path $dir $env:BB2_PROBE_NAME
-    try { Set-Content -LiteralPath $f -Value 'x' -ErrorAction Stop; "$tag-WRITABLE" }
-    catch { if ($_.CategoryInfo.Reason -eq 'UnauthorizedAccessException') { "$tag-DENIED" } else { "$tag-ERROR $_" } }
-}
-Probe 'BRIDGE' $env:BB2_BRIDGE
-Probe 'MAIN' (Join-Path $env:BB2_MAIN 'tmp')
-Probe 'MAINGIT' (Join-Path $env:BB2_MAIN '.git')
-Probe 'SNAP' $env:BB2_SNAP
-Probe 'WORKTREES' (Split-Path -Parent $env:BB2_SNAP)
-$o = (& wsl.exe -e true 2>&1 | Out-String) -replace "`0", ''
-if ($LASTEXITCODE -eq 0) { 'WSL-OPEN' } elseif ($o -match 'E_ACCESSDENIED') { 'WSL-DENIED' } else { "WSL-ERROR $o" }
-"""
-RO_PROBES = ("BRIDGE", "MAIN", "MAINGIT", "SNAP", "WORKTREES", "WSL")
+
 
 
 def encoded(script):
@@ -577,53 +553,6 @@ def encoded(script):
     and owner-home Codex sandboxes may hold write ACEs on the main checkout)."""
     import base64
     return base64.b64encode(script.encode("utf-16-le")).decode("ascii")
-
-
-ACL_PS = r"""
-$broad = @('S-1-1-0', 'S-1-5-11', 'S-1-5-4', 'S-1-5-32-545', 'S-1-5-32-546')
-$write = [Security.AccessControl.FileSystemRights]'WriteData, AppendData, WriteExtendedAttributes, WriteAttributes, Delete, ChangePermissions, TakeOwnership'
-foreach ($p in ($env:BB2_ACL_PATHS -split ';')) {
-    if (-not $p -or -not (Test-Path -LiteralPath $p)) { continue }
-    $acl = Get-Acl -LiteralPath $p
-    foreach ($r in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
-        if ($r.AccessControlType -ne 'Allow' -or -not ($r.FileSystemRights -band $write)) { continue }
-        $sid = $r.IdentityReference.Value
-        $name = ''
-        try { $name = $r.IdentityReference.Translate([Security.Principal.NTAccount]).Value } catch {}
-        if ($broad -contains $sid -or $name -match 'CodexSandbox') { "BAD|$p|$sid $name|$($r.FileSystemRights)" }
-    }
-}
-'OK-END'
-"""
-
-
-def machine_guard(main):
-    """Refuse a Codex launch while the machine lets a sandboxed task reach outside its sandbox by
-    another account (security review 2026-10-07): Codex's elevated-sandbox accounts are members of
-    BUILTIN\\Users and their stored passwords are readable from a sandbox, so no broad group
-    (Everyone, Authenticated Users, INTERACTIVE, Users, Guests) and no CodexSandbox* account may hold
-    write on the main checkout, its .git and tools/, the worktrees root or the WSL bridge dir; and no
-    sandbox_users.json may exist in a Codex home. Fixing the machine is the owner's call."""
-    for home in (Path.home() / ".codex", TASK_HOME):
-        f = home / ".sandbox-secrets" / "sandbox_users.json"
-        if f.exists():
-            refuse(f"{f} exists: Codex elevated-sandbox account passwords are stored where a sandboxed "
-                   "task can read them; the owner must retire those accounts before any Codex launch")
-    paths = ";".join(str(x) for x in (main, main / ".git", main / "tools", main.parent / "bb2-worktrees",
-                                      BRIDGE_DIR))
-    try:
-        r = subprocess.run(["pwsh", "-NoProfile", "-EncodedCommand", encoded(ACL_PS)], capture_output=True,
-                           text=True, encoding="utf-8", errors="replace",
-                           env=clean_env(BB2_ACL_PATHS=paths))
-    except OSError as e:
-        refuse(f"cannot read ACLs to confirm the machine is safe for Codex: {e}")
-    lines = [x.strip() for x in r.stdout.splitlines() if x.strip()]
-    if r.returncode != 0 or "OK-END" not in lines:
-        refuse("cannot read ACLs to confirm the machine is safe for Codex: " + (r.stderr or r.stdout).strip()[-300:])
-    bad = [x for x in lines if x.startswith("BAD|")]
-    if bad:
-        refuse("broad or Codex-sandbox write access on paths Codex must not reach (owner's call to remove):\n  "
-               + "\n  ".join(bad[:12]))
 
 
 def no_codex_running(main):
@@ -646,42 +575,6 @@ def no_codex_running(main):
         refuse("a Codex process is running (pid " + ", ".join(str(p.get("pid")) for p in busy) + ")")
 
 
-def cap_sid_files():
-    """The sandbox-SID files of every Codex home a task may run under."""
-    return ";".join(str(h / "cap_sid") for h in (Path.home() / ".codex", TASK_HOME))
-
-
-def research_preflight(main, snap):
-    """Harden %TEMP%/bb2_wsl_bridge, then prove the read-only sandbox (cwd = snap) writes none of
-    RO_PROBES' targets and cannot start WSL."""
-    sys.path.insert(0, str(BRIDGE.parent))
-    import codex_bridge
-    probe_name = f"codex_probe_{os.getpid()}_{int(time.time() * 1000)}.tmp"
-    env = clean_env(BB2_MAIN=str(main), BB2_SNAP=str(snap), BB2_BRIDGE=str(BRIDGE_DIR),
-                    BB2_PROBE_NAME=probe_name, BB2_CAP_SIDS=cap_sid_files(), CODEX_HOME=str(TASK_HOME))
-    for script, sandboxed in ((HARDEN_PS, False), (RO_PROBE_PS, True)):
-        cmd = ["pwsh", "-NoProfile", "-EncodedCommand", encoded(script)]
-        if sandboxed:
-            cmd = [codex_bridge.find_exe(), "sandbox", "-P", ":read-only", "-C", str(snap), "--"] + cmd
-        try:
-            r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
-        except OSError as e:
-            refuse(f"research preflight could not run: {e}")
-        if not sandboxed and r.returncode != 0:
-            refuse("could not protect %TEMP%/bb2_wsl_bridge: " + (r.stderr or r.stdout).strip()[-400:])
-    for d in (BRIDGE_DIR, main / "tmp", main / ".git", snap, snap.parent):
-        try:
-            (d / probe_name).unlink(missing_ok=True)
-        except OSError as e:
-            refuse(f"cannot remove the probe file {d / probe_name}: {e}")
-    lines = {x.strip() for x in r.stdout.splitlines()}
-    for tag in RO_PROBES:
-        if f"{tag}-DENIED" not in lines:
-            refuse(f"the read-only Codex sandbox is not denied {tag}; probe said: "
-                   f"{(r.stdout + r.stderr).strip()[-500:]}")
-    print("codex_worker: read-only sandbox preflight OK (" + ", ".join(RO_PROBES) + " all denied)")
-
-
 def sandbox_preflight(main, scratch, trusted):
     """Close the bridge dir, then prove from inside a real Codex sandbox (cwd = scratch) that it can
     write none of: the bridge dir, the main checkout or its .git, the trusted worktree or its build/,
@@ -694,8 +587,8 @@ def sandbox_preflight(main, scratch, trusted):
             cmd = [codex_bridge.find_exe(), "sandbox", "-P", ":workspace", "-C", str(scratch), "--"] + cmd
         return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace",
                               env=clean_env(BB2_MAIN=str(main), BB2_TRUSTED=str(trusted),
-                                            BB2_BRIDGE=str(BRIDGE_DIR), BB2_CAP_SIDS=cap_sid_files(),
-                                            CODEX_HOME=str(TASK_HOME)))
+                                            BB2_BRIDGE=str(BRIDGE_DIR),
+                                            BB2_CAP_SIDS=str(CODEX_HOME_DIR / "cap_sid")))
     r = ps(HARDEN_PS, False)
     if r.returncode != 0:
         refuse("could not protect %TEMP%/bb2_wsl_bridge: " + (r.stderr or r.stdout).strip()[-400:])
@@ -751,8 +644,6 @@ def no_project_codex(tree):
 
 def launch(main, item, scratch, trusted, cmd):
     no_codex_running(main)
-    machine_guard(main)
-    _bridge().write_task_config()
     ensure_rules(main)
     no_project_codex(scratch)
     sandbox_preflight(main, scratch, trusted)
@@ -790,8 +681,6 @@ def cmd_follow(a):
     prev = latest_run(a.item)
     if not prev:
         refuse(f"no previous Codex run for {a.item}; use `run`")
-    if prev.get("codex_home") != str(TASK_HOME):
-        refuse(f"run {prev['run_id']} ran before the isolated task home; start a fresh `run`")
     if norm(prev.get("cwd", "")) != norm(scratch):
         refuse(f"run {prev['run_id']} ran in {prev.get('cwd')}, not {scratch}")
     note = (f"(Same rules as before: work only in {scratch}, no git writes; build/score only with "
@@ -818,7 +707,6 @@ def cmd_research(a):
     if not prompt.is_file():
         refuse(f"no prompt file {prompt}")
     no_codex_running(main)
-    machine_guard(main)
     rules_only_door(main)
     git("worktree", "prune", cwd=main)
     if snap.exists():
@@ -831,8 +719,6 @@ def cmd_research(a):
     rc = None
     try:
         no_project_codex(snap)
-        _bridge().write_task_config()
-        research_preflight(main, snap)
         rc = subprocess.run([sys.executable, str(BRIDGE), "run", "--prompt-file", str(prompt),
                              "--cd", str(snap), "--sandbox", "read-only", "--label", f"research-{a.label}",
                              "--by", "codex-worker", "--effort", a.effort, "--timeout", str(a.timeout)],

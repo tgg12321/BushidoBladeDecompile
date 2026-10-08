@@ -181,7 +181,7 @@ verdict, the build SHA1, the landed hash, and the push result.
 Questions, inventories and second opinions run as
 `python tools/codex_worker.py research <label> --prompt-file f.md [--effort low] [--timeout N]`: a read-only Codex task in a
 disposable detached worktree at main's HEAD (`../bb2-worktrees/codexr-<label>`, tracked files only: no
-`build/`, `tmp/` or toolchain), removed after the run. Never point Codex at the main checkout, not even
+`build/`, `tmp/` or toolchain); on exit the processes working in it are stopped and it is removed. Never point Codex at the main checkout, not even
 read-only: Claude edits, commits and lands there while it reads.
 
 Codex never blocks Claude's own mainline commits. The steps that delete or re-create an item's scratch tree
@@ -191,19 +191,9 @@ be bounded from outside its sandbox. Each check runs before anything moves or is
 nothing half-done; if a task starts mid-step, a later check refuses and re-running the step finishes it. `land`, `rebase`, `commit`, `layer2`
 and `cleanup` also refuse while any item's run is live (the pin is global).
 
-Every Codex task runs in the bridge's isolated home `~/.codex-claude` (owner choice 2026-10-07: the owner's
-`~/.codex` loads MCP servers and plugins that act outside the sandbox). The bridge rewrites its minimal config
-(every outside-sandbox feature off) and copies the login in; a launch refuses unless `codex mcp list`,
-`plugin list` and `features list` show nothing loaded and no mcp/plugins/hooks directory exists there.
-Every launch (`run`, `follow-up`, `research`) also refuses while any Codex task or process is running, while
-`~/.codex-claude/rules/` holds any `*.rules` file other than the build door (and the door, when present, must
-be exactly the door), and when the tree Codex runs in has a project-level `.codex/`. `research` also proves,
-from inside a read-only sandbox, that `%TEMP%/bb2_wsl_bridge`, main's `tmp/` and `.git`, the snapshot and the
-worktrees root deny writes and WSL cannot start. Preflight scripts run inline (`pwsh -EncodedCommand`), never
-from a file. Every launch also refuses while the machine lets a sandboxed task reach another account
-(a stored `sandbox_users.json` in a Codex home, or broad / CodexSandbox* write on the checkout, its `.git`,
-`tools/`, the worktrees root or the WSL bridge dir); fixing that is the owner's call. The owner's `~/.codex/rules/bb2-codex-eng.rules` is no longer used by these runs; moving it
-aside is the owner's call.
+The goal (owner 2026-10-07) is that Codex never works in the main working tree; containing a hostile
+agent is not. `run` / `follow-up` start only while no other Codex task is running, and warn when
+`~/.codex/rules/` holds rules besides the build door (an allow rule may run a command outside the sandbox).
 
 ## Codex's build door: `tools/codex_eng.ps1`
 
