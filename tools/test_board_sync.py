@@ -672,7 +672,7 @@ def test_load_inventory_filters_and_maps():
         0x80016410: "func_80016410",       # in text1b range -> kept
         0x80020010: "func_80020010",       # in display range -> kept
         0x80016420: "func_80037F08_ret",   # in range but EXCLUDED by name
-        0x80020020: "g_module_func_tbl",   # in range but EXCLUDED by name
+        0x80020020: "D_8008D090",   # in range but EXCLUDED by name
         0x70000000: "func_out_of_range",   # below TEXT_LO -> dropped
         0x80016460: "func_no_range_x",     # in range
     }
@@ -688,7 +688,7 @@ def test_load_inventory_filters_and_maps():
     eq("three real funcs kept", len(inv), 3)
     eq("text1b mapping", inv["func_80016410"], "text1b")
     eq("display mapping", inv["func_80020010"], "display")
-    check("excluded name dropped", "g_module_func_tbl" not in inv)
+    check("excluded name dropped", "D_8008D090" not in inv)
     check("excluded ret-label dropped", "func_80037F08_ret" not in inv)
     check("out-of-range dropped", "func_out_of_range" not in inv)
 

@@ -1148,9 +1148,9 @@ dlabel D_8008DB1C
     /* 7E4C8 8008DCC8 21032103 */ .word 0x03210321
 enddlabel D_8008DB1C
 
-nonmatching menuDat
+nonmatching D_8008DCCC
 
-dlabel menuDat
+dlabel D_8008DCCC
     /* 7E4CC 8008DCCC 21030000 */ .word 0x00000321
     /* 7E4D0 8008DCD0 08040180 */ .word 0x80010408
     /* 7E4D4 8008DCD4 21040000 */ .word 0x00000421
@@ -1187,7 +1187,7 @@ dlabel menuDat
     /* 7E550 8008DD50 14310A80 */ .word D_800A3114
     /* 7E554 8008DD54 00000000 */ .word 0x00000000
     /* 7E558 8008DD58 00000000 */ .word 0x00000000
-enddlabel menuDat
+enddlabel D_8008DCCC
 
 nonmatching D_8008DD5C
 
@@ -2201,9 +2201,9 @@ dlabel D_8008E75C
     /* 7EF77 8008E777 */ .byte 0x00
 enddlabel D_8008E75C
 
-nonmatching cpu_practice_honmokuroku_data_tbl
+nonmatching D_8008E778
 
-dlabel cpu_practice_honmokuroku_data_tbl
+dlabel D_8008E778
     /* 7EF78 8008E778 */ .byte 0x00
     /* 7EF79 8008E779 */ .byte 0xFF
     /* 7EF7A 8008E77A */ .byte 0x40
@@ -2604,7 +2604,7 @@ dlabel cpu_practice_honmokuroku_data_tbl
     /* 7F105 8008E905 */ .byte 0x00
     /* 7F106 8008E906 */ .byte 0x00
     /* 7F107 8008E907 */ .byte 0x00
-enddlabel cpu_practice_honmokuroku_data_tbl
+enddlabel D_8008E778
 
 nonmatching D_8008E908
 
@@ -19381,9 +19381,9 @@ dlabel D_80099D3C
     /* 8A550 80099D50 19045502 */ .word 0x02550419
 enddlabel D_80099D3C
 
-nonmatching InfoPosYTbl1
+nonmatching D_80099D54
 
-dlabel InfoPosYTbl1
+dlabel D_80099D54
     /* 8A554 80099D54 */ .short 0x0131
     /* 8A556 80099D56 */ .short 0x0151
     /* 8A558 80099D58 */ .short 0x0171
@@ -19410,7 +19410,7 @@ dlabel InfoPosYTbl1
     /* 8A582 80099D82 */ .short 0xFFFF
     /* 8A584 80099D84 */ .short 0xFFFF
     /* 8A586 80099D86 */ .short 0x0000
-enddlabel InfoPosYTbl1
+enddlabel D_80099D54
 
 nonmatching D_80099D88
 
@@ -21788,9 +21788,9 @@ dlabel D_8009ADC0
     /* 8B5D4 8009ADD4 D000300C */ .word 0x0C3000D0
 enddlabel D_8009ADC0
 
-nonmatching UesrWorkDef
+nonmatching D_8009ADD8
 
-dlabel UesrWorkDef
+dlabel D_8009ADD8
     /* 8B5D8 8009ADD8 00005000 */ .word 0x00500000
     /* 8B5DC 8009ADDC 0000200C */ .word 0x0C200000
     /* 8B5E0 8009ADE0 20005000 */ .word 0x00500020
@@ -21902,7 +21902,7 @@ dlabel UesrWorkDef
     /* 8B788 8009AF88 00005000 */ .word 0x00500000
     /* 8B78C 8009AF8C 8018200C */ .word 0x0C201880
     /* 8B790 8009AF90 20005000 */ .word 0x00500020
-enddlabel UesrWorkDef
+enddlabel D_8009ADD8
 
 nonmatching D_8009AF94
 
@@ -23321,9 +23321,9 @@ dlabel D_8009BA60
     /* 8C27B 8009BA7B */ .byte 0x00
 enddlabel D_8009BA60
 
-nonmatching chractar_use_pset_combo_id_table
+nonmatching D_8009BA7C
 
-dlabel chractar_use_pset_combo_id_table
+dlabel D_8009BA7C
     /* 8C27C 8009BA7C F03A0680 */ .word func_80063AF0
     /* 8C280 8009BA80 783B0680 */ .word func_80063B78
     /* 8C284 8009BA84 343B0680 */ .word func_80063B34
@@ -23386,7 +23386,7 @@ dlabel chractar_use_pset_combo_id_table
     /* 8C368 8009BB68 6C780680 */ .word func_8006786C
     /* 8C36C 8009BB6C 8C280680 */ .word func_8006288C
     /* 8C370 8009BB70 5C290680 */ .word func_8006295C
-enddlabel chractar_use_pset_combo_id_table
+enddlabel D_8009BA7C
 
 nonmatching D_8009BB74
 

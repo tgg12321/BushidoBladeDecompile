@@ -1470,7 +1470,7 @@ void func_8003D91C(void) {
     buf.y = 0x1E0;
     buf.w = 0x140;
     buf.h = 1;
-    gpu_SetDrawMoveArray(&buf, 0x1F, light_effect_col);
+    gpu_SetDrawMoveArray(&buf, 0x1F, D_800A3D70);
     buf.w = 0x40;
     buf.x = 0x140;
     buf.y = 0x1E0;
@@ -1551,7 +1551,7 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
                base; element reads are scheduled past the D_80090608 store
                above, ahead of the `sh`: score 8 */
             s32 idx = arg0 * 4;
-            func_8003DBE4(arg1, 0x1F, light_effect_col, *ptr,
+            func_8003DBE4(arg1, 0x1F, D_800A3D70, *ptr,
                           *(s16 *)((u8 *)D_800906A4 + 2 + idx));
             func_8003DBE4(arg1, 0x13, D_800A4340, *ptr,
                           *(s16 *)((u8 *)D_800906A4 + 2 + idx));

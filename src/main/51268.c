@@ -82,7 +82,7 @@ static s32 D_800A352C;
 /* Runs the command in the block D_800A3468 points at (idx = the block's low
  * halfword, unk00.h): copies the three words at unk0C and the three halfwords
  * at unk10 into unk20 / unk18, points D_800A347C / D_800A3478 at the copies,
- * clears D_800F10D0[idx], calls the chractar_use_pset_combo_id_table entry
+ * clears D_800F10D0[idx], calls the D_8009BA7C entry
  * D_8009BA60[idx] + D_800F10D0[idx], stores the result through unk14, and sets
  * D_800A32BC to 0xA when bit 21 of unk00.w is set. Member reads (not
  * *(u16 *)D_800A3468) let the second idx read (the D_8009BA60 index) rise
@@ -102,9 +102,8 @@ void func_80060A68(void) {
     D_800A3468->unk18[2] = D_800A3468->unk10[2];
     D_800A347C = D_800A3468->unk20;
 
-    result = ((s32(*)(void))chractar_use_pset_combo_id_table
-                  [D_8009BA60[D_800A3468->unk00.h] +
-                   D_800F10D0[D_800A3468->unk00.h]])();
+    result = ((s32(*)(void))D_8009BA7C[D_8009BA60[D_800A3468->unk00.h] +
+                                       D_800F10D0[D_800A3468->unk00.h]])();
     *D_800A3468->unk14 = result;
 
     if (D_800A3468->unk00.w & 0x200000) {
@@ -133,9 +132,7 @@ void func_80060B70(void) {
     func_80061FAC(dst16, dst_s32, D_800A3474);
 
     idx = D_800A3468->unk00.h;
-    result =
-        ((s32(*)(void))chractar_use_pset_combo_id_table[D_8009BA60[idx] +
-                                                        D_800F10D0[idx]])();
+    result = ((s32(*)(void))D_8009BA7C[D_8009BA60[idx] + D_800F10D0[idx]])();
 
     *D_800A3468->unk14 = result;
 }

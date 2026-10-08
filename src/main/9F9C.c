@@ -3329,7 +3329,7 @@ void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
      * the wrong frame); without it: score 20. */
     u16 loads[130];
     s32 i;
-    /* FAKE: one local for loop 1's character and loop 2's menuDat index;
+    /* FAKE: one local for loop 1's character and loop 2's D_8008DCCC index;
      * separate locals seat the index in $a1, the target keeps both in $s0
      * (score 3). */
     s32 j;
@@ -3392,8 +3392,8 @@ void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
 
     for (i = 0; i < 2; i++) {
         if (loads[i] != 0) {
-            for (j = 0; menuDat[j].id != 0; j++) {
-                if (menuDat[j].id == loads[i]) {
+            for (j = 0; D_8008DCCC[j].id != 0; j++) {
+                if (D_8008DCCC[j].id == loads[i]) {
                     break;
                 }
             }

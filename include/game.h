@@ -441,7 +441,7 @@ typedef struct {
 
 /* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is the
    character the round was fought with (func_8005E54C reads it at
-   j * 10 + i * 2 and picks UesrWorkDef / D_8009B58C by it; func_80060414 reads
+   j * 10 + i * 2 and picks D_8009ADD8 / D_8009B58C by it; func_80060414 reads
    player 0 round 0). Unk8009BD24Block.unk00. */
 typedef struct {
     u8 chr;
@@ -687,7 +687,7 @@ typedef struct {
     void (*unk4)(void);
 } Unk800948BCEntry;
 
-/* menuDat: model id -> BBM file name, ended by a zero id
+/* D_8008DCCC: model id -> BBM file name, ended by a zero id
  * (0x8008DCCC..0x8008DD5B). func_80020E74 loads the model of entry n from CD
  * file n + 2. */
 typedef struct {

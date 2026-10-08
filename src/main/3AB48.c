@@ -730,11 +730,11 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     return ret;
 }
 
-extern s16 InfoPosYTbl1[];
+extern s16 D_80099D54[];
 
 void func_80054884(
     s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {
-    func_80054604(InfoPosYTbl1[a0] + a1 - 0x131, a2, a3, a4, a5, a6, a7);
+    func_80054604(D_80099D54[a0] + a1 - 0x131, a2, a3, a4, a5, a6, a7);
 }
 
 void func_800548DC(void) {
@@ -1023,8 +1023,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         }
         break;
     case 3:
-        p->unk_443 =
-            cpu_practice_honmokuroku_data_tbl[D_800A38E2 - 1][0] + 0x1B;
+        p->unk_443 = D_8008E778[D_800A38E2 - 1][0] + 0x1B;
         base = D_800A38E2 / 10;
         p->unk_438 = base * 16 + 0x80;
         if (D_80099D88[p->unk_443].flags & 0x3000) {
@@ -4748,7 +4747,7 @@ s32 func_8005E51C(s32 a0, s32 a1, s32 a2) {
 
 extern Unk8009B0E0Record D_8009ADB4;
 extern Unk8009B400Record D_8009ADC0[3];
-extern Unk8009B400Record UesrWorkDef[][3];
+extern Unk8009B400Record D_8009ADD8[][3];
 extern Unk8009B0E0Record D_8009B4B0;
 extern Unk8009B400Record D_8009B4BC[5];
 extern Unk8009B0E0Record D_8009B4E4;
@@ -4958,7 +4957,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             if (c >= 12) {
                 c -= 2;
             }
-            s.table = UesrWorkDef[c];
+            s.table = D_8009ADD8[c];
             s.x = j * 320 + D_8009B58C[c];
             if (D_8009BD24.unk14_10 == 2) {
                 s.y = i * 24 - 8;

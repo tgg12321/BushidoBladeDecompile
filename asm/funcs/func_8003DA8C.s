@@ -69,8 +69,8 @@ glabel func_8003DA8C
     /* 2E380 8003DB80 21803002 */  addu       $s0, $s1, $s0
     /* 2E384 8003DB84 1000A2AF */  sw         $v0, 0x10($sp)
     /* 2E388 8003DB88 0000078E */  lw         $a3, 0x0($s0)
-    /* 2E38C 8003DB8C 0A80063C */  lui        $a2, %hi(light_effect_col)
-    /* 2E390 8003DB90 703DC624 */  addiu      $a2, $a2, %lo(light_effect_col)
+    /* 2E38C 8003DB8C 0A80063C */  lui        $a2, %hi(D_800A3D70)
+    /* 2E390 8003DB90 703DC624 */  addiu      $a2, $a2, %lo(D_800A3D70)
     /* 2E394 8003DB94 F9F6000C */  jal        func_8003DBE4
     /* 2E398 8003DB98 1F000524 */   addiu     $a1, $zero, 0x1F
     /* 2E39C 8003DB9C 21204002 */  addu       $a0, $s2, $zero

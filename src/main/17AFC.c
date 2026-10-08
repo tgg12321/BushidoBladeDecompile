@@ -6602,7 +6602,7 @@ s32 func_80033DF4(void) {
         D_800A3834 = 4;
         return 0;
     } else {
-        u8 *table = cpu_practice_honmokuroku_data_tbl[tableIndex];
+        u8 *table = D_8008E778[tableIndex];
         u8(*ranks)[5] = D_8008EC24;
         u8(*moves)[5] = D_8008E908;
         s32 entry;

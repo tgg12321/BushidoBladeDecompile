@@ -2745,7 +2745,7 @@ def test_queue_non_function_labels() -> None:
     labels = {
         "main/3AB48": ("D_800521AC", "D_800521FC", "D_80052344",
                         "D_80052394", "D_800545F8", "D_800545FC", "D_80054600"),
-        "main/d_7D870": ("g_data_start", "g_module_func_tbl", "g_sqrt_table_u8"),
+        "main/d_7D870": ("g_data_start", "D_8008D090", "g_sqrt_table_u8"),
     }
     texts = {stem: Path(f"src/{stem}.c").read_text(encoding="utf-8")
              for stem in labels}

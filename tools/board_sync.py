@@ -58,7 +58,7 @@ FIELD_SPECS = [
 ]
 
 # Non-functions that appear in build/bb2.map's .text symbol list (excluded from inventory).
-_MAP_EXCLUDE = {"g_module_func_tbl", "g_sqrt_table_u8", "func_80037F08_ret", "cdrom_IrqHandler"}
+_MAP_EXCLUDE = {"D_8008D090", "g_sqrt_table_u8", "func_80037F08_ret", "cdrom_IrqHandler"}
 
 
 # ---------------------------------------------------------------------------

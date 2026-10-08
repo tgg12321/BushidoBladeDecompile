@@ -20,7 +20,7 @@ extern u16 D_80099C34[][7];
 /* SDK OT_TYPE: one DMA tag word per table entry. */
 extern u32 *D_800A378C;
 
-extern DR_MOVE light_effect_col[31][2];
+extern DR_MOVE D_800A3D70[31][2];
 extern DR_MOVE D_800A4340[19][2];
 extern DR_MOVE D_800A9830[2][10];
 
@@ -110,15 +110,15 @@ extern Unk800F0C10Record D_800F0CA0[18];
 extern Unk800948BCEntry D_800948BC[];
 
 /* The per-mode main-loop handlers, indexed by D_800A3834. */
-extern void (*g_module_func_tbl[])(void);
+extern void (*D_8008D090[])(void);
 
-extern u8 cpu_practice_honmokuroku_data_tbl[][4];
+extern u8 D_8008E778[][4];
 
 /* g_sqrt_table_u8[i] = floor(8 * sqrt(i)), i = 0..0x3FF (the first 8 bytes
  * are the last words of .text). */
 extern u8 g_sqrt_table_u8[0x400];
 
-extern Unk8008DCCCEntry menuDat[18];
+extern Unk8008DCCCEntry D_8008DCCC[18];
 
 /* 3 x 3 s16 angle offsets, [row][col] from the pad bits (func_800233AC,
  * func_80023648). */
@@ -572,7 +572,7 @@ extern u8 D_801027A0;
 extern u8 D_801027D8;
 /* the draw queue: record pointers (0x80102C00..0x801035FF) */
 extern void *g_draw_queue[640];
-extern s32 chractar_use_pset_combo_id_table[];
+extern s32 D_8009BA7C[];
 extern Func80017A44Output g_file_data_buf[8];
 extern s32 D_80094B88[];
 extern Unk80045878Obj *D_800A9A10[];
