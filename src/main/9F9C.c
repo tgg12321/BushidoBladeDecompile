@@ -2010,7 +2010,7 @@ void func_8001DCB0(void) {
         func_8001B3C0(&D_80101EC8[0], &D_80101EC8[1]);
     }
     func_800392C8();
-    game_Cleanup();
+    func_80061178();
     func_8001DBE4();
     D_800A3768 = DISP_DISABLED;
     D_800A36A8 = 0;
@@ -2184,7 +2184,7 @@ void func_8001EA04(void) {
     u8 v;
     func_80041688(0, 0);
     func_80041688(1, 0);
-    game_Cleanup();
+    func_80061178();
     v = D_800A38D4;
     D_80101EC8[1].unk_31A = 0;
     D_80101EC8[0].unk_31A = 0;
@@ -2299,7 +2299,7 @@ void func_8001EEB4(void) {
         entry->unk_26C = 1;
     }
 
-    game_Cleanup();
+    func_80061178();
     D_800A37B8 = 0;
     D_800A3834 = 0x11;
 }

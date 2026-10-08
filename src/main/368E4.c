@@ -1349,12 +1349,12 @@ void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
             arg0 += 2;
             dx = ((s32)(dx_u << 16)) >> 16;
             dy = ((s32)(dy_u << 16)) >> 16;
-            func_800484A0(entry, dx + sx_arg2, dy + sx_arg3);
+            gpu_LoadTimClut(entry, dx + sx_arg2, dy + sx_arg3);
         } while ((count--) != 0);
     }
 }
 
-void func_800484A0(u8 *arg0, s16 arg1, s16 arg2) {
+void gpu_LoadTimClut(u8 *arg0, s16 arg1, s16 arg2) {
     RECT rect;
     u16 buf[512];
     u32 dim;

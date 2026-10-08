@@ -329,8 +329,8 @@ extern u8 D_800A377B;
 /* round-result table: 0/1/2 per round, indexed by round */
 extern u8 D_800A377C[];
 
-/* Two buffer addresses selected by frame parity: sys_GameInit sets 0x801D8800 /
- * 0x801EBC00, func_80016E60 and main read [D_800A36AC & 1]. */
+/* Two buffer addresses selected by frame parity: func_80016D78 sets 0x801D8800
+ * / 0x801EBC00, func_80016E60 and main read [D_800A36AC & 1]. */
 extern u32 D_800A3770[2];
 
 extern u8 D_800A3781;
@@ -884,7 +884,7 @@ extern Unk8009BD24Block *func_80077D00(void);
 extern s32 func_8007855C(s32);
 extern s32 func_80078824(s32);
 extern s32 func_800788B0(void);
-extern void game_Cleanup(void);
+extern void func_80061178(void);
 extern void func_80036F40(void);
 extern void *func_8003F1D4(void);
 extern void *func_80046DEC(s32);

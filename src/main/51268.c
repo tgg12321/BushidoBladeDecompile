@@ -289,7 +289,7 @@ void func_80061064(s16 *a0, s32 *a1) {
     }
 }
 
-void game_Cleanup(void) {
+void func_80061178(void) {
     func_80060C60();
     func_800421A4();
     D_800A32BC = 0;

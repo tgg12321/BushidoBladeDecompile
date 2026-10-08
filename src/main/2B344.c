@@ -498,7 +498,7 @@ void func_8003B9D0(void) {
 
     magic = 0x80190800;
     func_8001DA2C();
-    game_Cleanup();
+    func_80061178();
     if (D_800A3768 != DISP_ACTIVE)
         func_80016888();
     if (D_800A3768 != DISP_DISABLED)
@@ -784,7 +784,7 @@ void func_8003C040(void) {
                   -1, -1, (s32)0x80118800);
     func_80041688(0, 0);
     func_80041688(1, 0);
-    game_Cleanup();
+    func_80061178();
     p = D_8008EA70[D_800A38A4];
     if (p[0] >= 0) {
         snd_SerialMixOn();
@@ -1064,7 +1064,7 @@ void func_8003C9A4(void) {
 
 void func_8003CCCC(void) {
     func_80016888();
-    game_Cleanup();
+    func_80061178();
     D_800A37B8 = 0;
     D_800A3834 = 0x21;
     gpu_SetDispMaskOn();
@@ -1132,7 +1132,7 @@ void func_8003CE18(void) {
     }
     func_80041688(0, 0);
     func_80041688(1, 0);
-    game_Cleanup();
+    func_80061178();
     D_800A37B8 = 0;
     D_800A3834 = 0x1D;
     gpu_SetDispMaskOn();

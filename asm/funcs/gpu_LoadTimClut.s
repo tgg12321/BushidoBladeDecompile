@@ -1,4 +1,4 @@
-glabel func_800484A0
+glabel gpu_LoadTimClut
     /* 38CA0 800484A0 E0FBBD27 */  addiu      $sp, $sp, -0x420
     /* 38CA4 800484A4 1804B0AF */  sw         $s0, 0x418($sp)
     /* 38CA8 800484A8 21808000 */  addu       $s0, $a0, $zero
@@ -37,4 +37,4 @@ glabel func_800484A0
     /* 38D24 80048524 2004BD27 */  addiu      $sp, $sp, 0x420
     /* 38D28 80048528 0800E003 */  jr         $ra
     /* 38D2C 8004852C 00000000 */   nop
-endlabel func_800484A0
+endlabel gpu_LoadTimClut

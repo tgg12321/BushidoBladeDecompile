@@ -284,7 +284,7 @@ extern u8 D_800A3745;
 extern u8 D_800A3746;
 extern u8 D_800A36B0;
 
-void sys_GameInit(void) {
+void func_80016D78(void) {
     printf(g_str_limit, 0x8010DB00);
     func_800167EC();
     func_80020D70();
@@ -437,7 +437,7 @@ void main(void) {
     SetSp(0x801FFF00);
     SetMem(2);
     sys_Init();
-    sys_GameInit();
+    func_80016D78();
     SetDispMask(1);
     func_80016A8C((u8 *)0x80118800, env, idx);
 

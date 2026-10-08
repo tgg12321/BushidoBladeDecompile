@@ -14,7 +14,7 @@ glabel main
     /* 7A30 80017230 02000424 */   addiu     $a0, $zero, 0x2
     /* 7A34 80017234 865A000C */  jal        sys_Init
     /* 7A38 80017238 00000000 */   nop
-    /* 7A3C 8001723C 5E5B000C */  jal        sys_GameInit
+    /* 7A3C 8001723C 5E5B000C */  jal        func_80016D78
     /* 7A40 80017240 00000000 */   nop
     /* 7A44 80017244 A8EC010C */  jal        SetDispMask
     /* 7A48 80017248 01000424 */   addiu     $a0, $zero, 0x1
