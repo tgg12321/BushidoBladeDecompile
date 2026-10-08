@@ -303,7 +303,8 @@ Stride 12 bytes per ID, 8 IDs total:
 | 4 | `func_80064FB4` | `0x80064FB4` |
 | 5 | `func_80065000` | `0x80065000` |
 
-Each init reads 3 fields from `g_text1b_render_buf_ptr` (D_800A347C),
+Each init reads 3 words through `D_800A347C` (the current command
+block's three-word copy, 51268.c:103),
 writes them to its state block, stores 1 into its `D_800F10D0` slot,
 resets the per-id counter.
 

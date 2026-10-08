@@ -321,18 +321,22 @@ data more directly:
   rotation, translation zeroed) and text1b inline-asm vertex paths.
   Also drives LOD selection via the position-delta threshold at
   text1b.c:2359 (thresholds 0x4A00 / 0xA500 = LOD-cutoff distances).
-- §19 HUD sprite size packed lookup
-  — `g_text1b_sprite_size_packed_lookup` at `0x8009B850`. u16-per-entry
-  packed dimensions; consumed by `func_80060414` (text1b_tu1b.c:6013), the
-  HUD per-character sprite renderer called from `ings.c:759`. arg0
-  bit 15 = highlight/active-slot flag (selects `D_8009B7AC` geometry),
-  bits 14..0 = size table index. Width 55..566, height 42..169 ranges.
-- §21 text1b 2D-draw helper geometry banks
-  — 20+ tables at `0x8009B340..0x8009B850`, each owned by a specific
-  text1b 2D-UI draw helper. Cross-reference table in §21 maps each
-  geometry/static/p0/p1 table to its consumer function
-  (`func_8005D46C`, `gnd_land_hit_char_tsuba`, `func_8005FA98`,
-  `func_800600C8` digit-draw, `func_80060414` HUD-portrait,
-  `func_80060544` menu-draw). Naming prefixes: `_draw_p0_*` (geometry),
-  `_draw_p1_*` (params/texture), `_geom_*` (mode-specific geometry),
-  `_static_*` (static draw-list data).
+- §19 Packed sprite-position table
+  — `D_8009B850` at `0x8009B850`, 32 u16 entries, read only by
+  `func_80060414` (3AB48.c:5523-5524): entry `arg0 & 0x7FFF` gives
+  x = (v >> 7) + 0x37 and y = (v & 0x7F) + 0x2A, the walker's env x / y,
+  added to every cell's x / y (63D2C.c:27-28). arg0 bit 15 selects the
+  sprite-sheet header `D_8009B7AC[0]`; otherwise `[1]` or `[2]` by
+  `D_8009BD24.unk00[0][0].chr < 0xC` (3AB48.c:5525-5531).
+- §21 Sprite-sheet headers and cells
+  — tables at `0x8009B2C8..0x8009B850`: 12-byte `Unk8009B0E0Record`
+  headers (cx/cy, count, ubase/vbase) and 8-byte `Unk8009B400Record`
+  cells (x/y/w/h/u/v), include/game.h:185-221, read through
+  `func_8007352C` / `func_80073728` (63D2C.c:24-39). Each set has one
+  draw helper: `func_8005D46C` / `func_8005D554` (`D_8009B2C8`,
+  `D_8009B340`, `D_8009B358`, `D_8009B388`), `func_8005FA98`
+  (`D_8009B610`, `D_8009B634`, `D_8009B63C`, `D_8009B660`),
+  `func_800600C8` (`D_8009B6F0`, `D_8009B758`, and `D_8009B708`, one
+  cell per decimal digit of arg0), `func_80060414` (`D_8009B7AC`),
+  `func_80060544` (`D_8009B770`, `D_8009B7A0`, `D_8009B7D0`,
+  `D_8009B7D8`, `D_8009B800`, `D_8009B820`, `D_8009B840`).

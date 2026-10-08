@@ -264,12 +264,15 @@ names during the placeholder-refinement sprint (see
 the subsystem docs' naming-pass cross-references for
 full traces).  Indexed here by address range for reverse lookup:
 
-### `0x8009_xxxx` range — text1b 2D-UI render substrate
-- `g_text1b_draw_template_b2c8`, `..._p1_b340/b358/b388/b390/b610/b634/b660/b670/b678/b708/b758`,
-  `..._p0_b610_stride12/b63C_stride12/b6FC`, `..._draw_primitive_b6f0/b388/_data_b388`,
-  `..._geom_b770_offset/b7B8/b7C4`, `..._static_b7D0/b7D8/b800/b820/b840`
-  (0x8009B2C8..0x8009B850) — per-helper 2D-draw geometry banks (§21)
-- `g_text1b_sprite_size_packed_lookup` (0x8009B850) — HUD sprite size LUT (§19)
+### `0x8009_xxxx` range — sprite-sheet headers and cells
+- `D_8009B2C8`, `D_8009B610`, `D_8009B63C`, `D_8009B6F0`, `D_8009B770`,
+  `D_8009B7A0`, `D_8009B7AC` (12-byte `Unk8009B0E0Record` sprite-sheet headers) and
+  `D_8009B340`, `D_8009B358`, `D_8009B388`, `D_8009B634`, `D_8009B660`, `D_8009B708`,
+  `D_8009B758`, `D_8009B7D0`, `D_8009B7D8`, `D_8009B800`, `D_8009B820`, `D_8009B840`
+  (8-byte `Unk8009B400Record` sprite cells), 0x8009B2C8..0x8009B850 — each set read by
+  one draw helper through `func_8007352C` / `func_80073728` (§21)
+- `D_8009B850` (0x8009B850) — u16 packed screen positions: x = (v >> 7) + 0x37,
+  y = (v & 0x7F) + 0x2A, read by `func_80060414` (3AB48.c:5523-5524) (§19)
 - `g_trig_sin_cos_table_packed` (0x8009C928, 16384 bytes) — walk-direction
   cos/sin LUT consumed by `motutil_GetWalkDir` (§16)
 
@@ -278,10 +281,12 @@ full traces).  Indexed here by address range for reverse lookup:
   (0x800A26D4, was `_plus_4`), `g_alarm_callback_ptr` (0x800A26D8),
   `g_alarm_callback_pending` (0x800A26DC), `g_alarm_active_sentinel`
   (0x800A26DE), `g_alarm_pending_priority_flag` (0x800A26E0, NEW) — §22
-- `g_text1b_ot_prim_cursor` (0x800A36E0), `g_disp_state_buf_cursor`
-  (0x800A36EC) — display ptr cursors
+- `D_800A36E0` (0x800A36E0) — cursor over the current parity bank of the
+  DR_MODE buffer `D_800F1438` (51268.c:5210-5212, :5235)
+- `g_disp_state_buf_cursor` (0x800A36EC)
 - `g_main_flags_bitmask_reg` (0x800A289C) — main flags reg
-- `g_text1b_pad_state_arr` (0x800A35D0) — text1b pad state s16 array
+- `D_800A35D0` (0x800A35D0) — s16[2][2], one pair of steps per player that
+  `func_800692C0` adds into the SelWork f40 counters (51268.c:3829)
 
 ### `0x800E_F0xx` range — SPU voice0E setup cluster (§13/14)
 - `g_snd_voice_init_block` (0x800EF070, ~0x68 bytes) — SPU voice ID 0xE struct
