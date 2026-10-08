@@ -99,7 +99,7 @@ glabel func_80046BF4
     /* 37574 80046D74 00000000 */   nop
     /* 37578 80046D78 5AFD000C */  jal        stage_ClearLighting
     /* 3757C 80046D7C 00000000 */   nop
-    /* 37580 80046D80 73FD000C */  jal        stage_ApplyLighting
+    /* 37580 80046D80 73FD000C */  jal        func_8003F5CC
     /* 37584 80046D84 00000000 */   nop
     /* 37588 80046D88 6800BF8F */  lw         $ra, 0x68($sp)
     /* 3758C 80046D8C 6400B38F */  lw         $s3, 0x64($sp)

@@ -89,7 +89,7 @@ typedef struct {
     s16 unk6; /* entry count */
     s32 unk8;
     s32 unkC;  /* entry table (stride 0x68) */
-    s32 unk10; /* game_GetCharData() table (stride 0x68) */
+    s32 unk10; /* func_8003F1D4() table (stride 0x68) */
     s32 unk14;
 } Unk800A9CF8Header;
 
@@ -680,7 +680,7 @@ typedef struct {
 } Unk800F0C10Record;
 
 /* 0x800948BC: per-stage function pairs, indexed by stage_GetId().
- * stage_ExecInitFunc calls .init; func_8003E6D8 calls .unk4 (e.g. entry 13
+ * func_8003F168 calls .init; func_8003E6D8 calls .unk4 (e.g. entry 13
  * holds func_80047570 / func_800475A4). */
 typedef struct {
     void (*init)(void);
@@ -1881,7 +1881,7 @@ typedef struct {
  * 0x800F66B8. */
 typedef void (*AnimRotFunc)(SVECTOR *, MATRIX *);
 
-/* The 0x68-byte records of the table game_GetCharData returns: a transform
+/* The 0x68-byte records of the table func_8003F1D4 returns: a transform
  * node of the Unk80101DF0Record layout, then a byte flag. func_8003EDC0
  * fills them from a stream and calls g_anim_func_table[unk8] on &xf.rot /
  * &xf.mat (func_800418D0's call); func_8003E6D8 and func_8003EB84 queue each
@@ -1895,7 +1895,7 @@ typedef struct {
 /* The 0x68-byte entries of the D_800A9CF8.unkC table (the buffer
  * func_80044670 is handed; it returns the end, base + count * 104). Each
  * is a transform node of the Unk80101DF0Record layout paired with one
- * game_GetCharData entry of the same index (D_800A9CF8.unk10):
+ * func_8003F1D4 entry of the same index (D_800A9CF8.unk10):
  * func_8004473C initialises the node and copies the paired entry's
  * xf.mat.t into work.t; func_80044B30 / func_80044800 run the node from
  * the D_800A9CF8.unk8 key frames and queue it on g_draw_queue.

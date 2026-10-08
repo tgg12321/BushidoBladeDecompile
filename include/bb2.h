@@ -436,9 +436,9 @@ extern u8 D_800A3928;
 extern u8 D_800A3929;
 extern Unk800A3D40Rec D_800A3D40[];
 
-/* The three stage lights' position / direction words: stage_SetLightPosDir
+/* The three stage lights' position / direction words: func_8003F5A8
  * stores pos[i] / dir[i], stage_ClearLighting zeroes all six,
- * stage_ApplyLighting passes pair i to func_80017F98(pos, dir, i). */
+ * func_8003F5CC passes pair i to func_80017F98(pos, dir, i). */
 extern s32 g_stage_light_pos[3];
 
 extern s32 g_stage_light_dir[3];
@@ -883,7 +883,7 @@ extern s32 func_80078824(s32);
 extern s32 func_800788B0(void);
 extern void game_Cleanup(void);
 extern void game_FrameLoop(void);
-extern void *game_GetCharData(void);
+extern void *func_8003F1D4(void);
 extern void *func_80046DEC(s32);
 extern void func_80046B44(void);
 extern void game_StageCleanup(s32, s32);
@@ -927,9 +927,9 @@ extern void snd_SerialMixOn(void);
 extern void func_80046AA0(void);
 extern void snd_VabFakeOpen8And4(s32);
 extern void snd_VabFakeOpen9(s32);
-extern void stage_ApplyLighting(void);
+extern void func_8003F5CC(void);
 extern void stage_ClearLighting(void);
-extern void stage_ExecInitFunc(void);
+extern void func_8003F168(void);
 extern s32 stage_GetId(void);
 extern void *func_80046F14(void);
 extern void func_8003F274(void);

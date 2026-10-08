@@ -2341,7 +2341,7 @@ extern void gte_SetMatrixRotTransIR(MATRIX *, SVECTOR *, VECTOR *);
 
 extern s32 D_80094A6C[];
 
-void stage_ExecInitFunc(void) {
+void func_8003F168(void) {
     if (g_stage_init_tbl[stage_GetId()].init != 0) {
         g_stage_init_tbl[stage_GetId()].init();
     }
@@ -2349,7 +2349,7 @@ void stage_ExecInitFunc(void) {
 
 s32 func_8003F1C8(void) { return D_800A336C; }
 
-void *game_GetCharData(void) { return D_800A6690; }
+void *func_8003F1D4(void) { return D_800A6690; }
 
 void func_8003F1E4(s32 a0) {
     if (a0) {
@@ -2454,19 +2454,17 @@ void func_8003F420(s32 a0, s32 a1) {
     } else {
         s0 = 1;
     }
-    stage_SetCollision(s3, s2, 2);
-    stage_SetCollision(s3 + s1, s2, 2);
-    stage_SetCollision(s3, s2 + s0, 2);
-    stage_SetCollision(s3 + s1, s2 + s0, 2);
+    func_8003F52C(s3, s2, 2);
+    func_8003F52C(s3 + s1, s2, 2);
+    func_8003F52C(s3, s2 + s0, 2);
+    func_8003F52C(s3 + s1, s2 + s0, 2);
 }
 
-void stage_SetCollision(s32 a0, s32 a1, s32 a2) {
+void func_8003F52C(s32 a0, s32 a1, s32 a2) {
     g_stage_collision[a1 * 32 + a0] = a2 & 3;
 }
 
-u32 stage_GetCollision(s32 a0, s32 a1) {
-    return g_stage_collision[a1 * 32 + a0];
-}
+u32 func_8003F54C(s32 a0, s32 a1) { return g_stage_collision[a1 * 32 + a0]; }
 
 void stage_ClearLighting(void) {
     g_game_flag_b = 0;
@@ -2479,12 +2477,12 @@ void stage_ClearLighting(void) {
     g_stage_light_dir[0] = 0;
 }
 
-void stage_SetLightPosDir(s32 a0, s32 a1, s32 a2) {
+void func_8003F5A8(s32 a0, s32 a1, s32 a2) {
     g_stage_light_pos[a2] = a0;
     g_stage_light_dir[a2] = a1;
 }
 
-void stage_ApplyLighting(void) {
+void func_8003F5CC(void) {
     func_80017F98(g_stage_light_pos[0], g_stage_light_dir[0], 0);
     func_80017F98(g_stage_light_pos[1], g_stage_light_dir[1], 1);
     func_80017F98(g_stage_light_pos[2], g_stage_light_dir[2], 2);

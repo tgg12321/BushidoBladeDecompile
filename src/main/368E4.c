@@ -64,7 +64,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
                 s7 = 0;
                 break;
             }
-            stage_ExecInitFunc();
+            func_8003F168();
             if (s7 != 0) {
                 return;
             }
@@ -171,7 +171,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     DrawSync(0);
     func_80045600(s7, (s32)s1);
     func_80045694(s7, (s32)func_800466C0);
-    stage_ExecInitFunc();
+    func_8003F168();
     if (D_800A38DC != 0) {
         if (stage_id != 0x22) {
             func_8004659C(-1);
@@ -496,7 +496,7 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
     func_8004A1FC(&D_800F62E0[4]);
     func_800420D0();
     stage_ClearLighting();
-    stage_ApplyLighting();
+    func_8003F5CC();
 }
 
 void func_80046DA8(s32 a0) {

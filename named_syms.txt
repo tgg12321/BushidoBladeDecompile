@@ -762,11 +762,11 @@ file_io_state_advance_80038658                          = 0x80038658;  /* state-
 /* RESET 0x80038734: retired name 'game_input_tick_80038734' — preserved note: pad_FuncAnalog + file_io_state_advance per-frame; returns g_motion_state_code */
 file_io_state_dispatch_80038988                         = 0x80038988;  /* 186-insn higher-level dispatcher on game_input_tick result */
 /* Effect / particle subsystem (5) */
-efc_anim_vehicle_setup_80049718                         = 0x80049718;  /* 197-insn: emits per-effect OT entries; handles free vs vehicle-mounted */
-efc_rob_type_dispatch_80049584                          = 0x80049584;  /* diffs D_80099C50 vs D_800EF980, dispatches efc_rob_set_type_particle on change */
+/* RESET 0x80049718: retired name 'efc_anim_vehicle_setup_80049718' — preserved note: 197-insn: emits per-effect OT entries; handles free vs vehicle-mounted */
+/* RESET 0x80049584: retired name 'efc_rob_type_dispatch_80049584' — preserved note: diffs D_80099C50 vs D_800EF980, dispatches efc_rob_set_type_particle on change */
 /* RESET 0x80067200: retired name 'efc_gte_setup_and_draw_80067200' — preserved note: GTE rotation matrix loaded from g_scratchpad_ptr_30, textured-quad render */
-efc_init_phase1_setup_buffer_800678A8                   = 0x800678A8;  /* effect-init phase 1: type code + texture dims + per-mode defaults */
-efc_init_phase2_randomize_80067D14                      = 0x80067D14;  /* effect-init phase 2: per-particle randomisation via bb2_rand + GTE transforms */
+/* RESET 0x800678A8: retired name 'efc_init_phase1_setup_buffer_800678A8' — preserved note: effect-init phase 1: type code + texture dims + per-mode defaults */
+/* RESET 0x80067D14: retired name 'efc_init_phase2_randomize_80067D14' — preserved note: effect-init phase 2: per-particle randomisation via bb2_rand + GTE transforms */
 /* SEQ / SPU channel control (3) -- D_80106F28 = g_seq_bank_table */
 /* RENAME 0x80085270: retired name 'spu_channel_reset_80085270' — preserved note: single SPU channel reset (calls spu_NotifyChannel + spu_ResetCounter) */
 /* HUD / display (5) */
@@ -1380,20 +1380,20 @@ g_motion_state_flag_table                               = 0x800F10D0;  /* 24-ent
 /* Already named (existing): mode 2/8/13/16/19/26/27/30. */
 /* Modes 0/7/18 are asm-only (not yet in src). */
 mode_handler_01_GameFrameUpdate                         = 0x8001E878;  /* main per-frame fight: camera, characters, collision, motion, stage tick */
-mode_handler_04_GameSetup                               = 0x800397D4;  /* full game setup: gpu_EnableDisplay + gnd_open + player count + DMA list */
+/* RESET 0x800397D4: retired name 'mode_handler_04_GameSetup' — preserved note: full game setup: gpu_EnableDisplay + gnd_open + player count + DMA list */
 mode_handler_10_GameTeardown                            = 0x8003BE10;  /* gpu_EnableDisplay + gpu_InitDisplay + player_Destroy(0/1) */
-mode_handler_11_PadInputCheck                           = 0x8003BEA8;  /* checks g_pad_state.pressed & 0x40 (action button), returns state */
-mode_handler_12_RoundCleanup                            = 0x8001EA04;  /* gnd_init_80041688(0/1) + game_Cleanup; round-end state */
+/* RESET 0x8003BEA8: retired name 'mode_handler_11_PadInputCheck' — preserved note: checks g_pad_state.pressed & 0x40 (action button), returns state */
+/* RESET 0x8001EA04: retired name 'mode_handler_12_RoundCleanup' — preserved note: gnd_init_80041688(0/1) + game_Cleanup; round-end state */
 mode_handler_15_TeardownVariant                         = 0x8003BFC4;  /* gpu_EnableDisplay + player_Destroy (similar to mode_10) */
-mode_handler_17_GameContinueFrame                       = 0x8001EFA0;  /* increments g_practice_loop_frame, func_800472B0, func_8001BCF0 */
-mode_handler_22_VsModeInit                              = 0x8003B870;  /* player_SetCharId(0/1) + obj_InitChars + gpu_InitDisplay + disp_SetFramebufferMode(1) */
-mode_handler_23_FrameDelay3                             = 0x8003B8E4;  /* increments g_practice_loop_frame, returns until counter >= 3 */
+/* RESET 0x8001EFA0: retired name 'mode_handler_17_GameContinueFrame' — preserved note: increments g_practice_loop_frame, func_800472B0, func_8001BCF0 */
+/* RESET 0x8003B870: retired name 'mode_handler_22_VsModeInit' — preserved note: player_SetCharId(0/1) + obj_InitChars + gpu_InitDisplay + disp_SetFramebufferMode(1) */
+/* RESET 0x8003B8E4: retired name 'mode_handler_23_FrameDelay3' — preserved note: increments g_practice_loop_frame, returns until counter >= 3 */
 mode_handler_24_DispatchToMode25                        = 0x8003C958;  /* gpu_InitDisplay + reset state + sets g_practice_mode_dispatch_idx = 0x19 */
-mode_handler_25_PostBattleSetup                         = 0x8003C9A4;  /* reads g_gnd_midpoint_x via &D_800F6608, game_SetControllerPorts(0) */
-mode_handler_28_PostBattleMisc                          = 0x8003CE18;  /* func_8001DA2C + func_800372C0 calls */
+/* RESET 0x8003C9A4: retired name 'mode_handler_25_PostBattleSetup' — preserved note: reads g_gnd_midpoint_x via &D_800F6608, game_SetControllerPorts(0) */
+/* RESET 0x8003CE18: retired name 'mode_handler_28_PostBattleMisc' — preserved note: func_8001DA2C + func_800372C0 calls */
 mode_handler_31_TimerLoop                               = 0x8003C8B4;  /* increments frame counter, calls func_80060768; exits on pad input or counter >= 0xF1 (241) */
-mode_handler_32_RebootDispatch                          = 0x8003CCCC;  /* gpu_InitDisplay + game_Cleanup + sets dispatch_idx = 0x21 + gpu_DisableDisplay */
-mode_handler_33_RebootBegin                             = 0x8003CD10;  /* mirrors mode_25 setup; final teardown state */
+/* RESET 0x8003CCCC: retired name 'mode_handler_32_RebootDispatch' — preserved note: gpu_InitDisplay + game_Cleanup + sets dispatch_idx = 0x21 + gpu_DisableDisplay */
+/* RESET 0x8003CD10: retired name 'mode_handler_33_RebootBegin' — preserved note: mirrors mode_25 setup; final teardown state */
 
 /* === g_module_func_tbl mode handler decode (cont'd) -- 1 high === */
 /* Mode 18 confirmed from asm at pre-restructure-2026-10-03:asm/6CAC.s:41135: */
@@ -1410,12 +1410,12 @@ mode_handler_33_RebootBegin                             = 0x8003CD10;  /* mirror
 /* where no actual work is done -- the dispatch happens elsewhere). */
 /* RESET 0x80034708: retired name 'mode_handler_03_NoOp' — preserved note: empty body -- no-op placeholder handler */
 /* RESET 0x8003993C: retired name 'mode_handler_05_NoOp' — preserved note: empty body -- no-op */
-mode_handler_06_GameTeardownVariant                     = 0x8003B9D0;  /* func_8001DA2C + game_Cleanup + conditional gpu_InitDisplay/gpu_DisableDisplay */
+/* RESET 0x8003B9D0: retired name 'mode_handler_06_GameTeardownVariant' — preserved note: func_8001DA2C + game_Cleanup + conditional gpu_InitDisplay/gpu_DisableDisplay */
 /* RESET 0x80035828: retired name 'mode_handler_09_NoOp' — preserved note: empty body -- no-op */
 mode_handler_14_NoOp                                    = 0x80035430;  /* empty body -- no-op */
-mode_handler_20_CountIterator                           = 0x8003C42C;  /* counts D_800A377C[] entries into local 8-cell histogram */
-mode_handler_21_FrameTimerSfx                           = 0x8003C560;  /* increments g_practice_loop_frame, plays SFX 0xA4/0xA7 at counter==0x1E (30 frames) */
-mode_handler_29_StageLeafUpdate                         = 0x8003CF84;  /* calls mk_leaf_newpos + reads char struct fields via &D_80101ED2 + D_800A3748 * 0x44C */
+/* RESET 0x8003C42C: retired name 'mode_handler_20_CountIterator' — preserved note: counts D_800A377C[] entries into local 8-cell histogram */
+/* RESET 0x8003C560: retired name 'mode_handler_21_FrameTimerSfx' — preserved note: increments g_practice_loop_frame, plays SFX 0xA4/0xA7 at counter==0x1E (30 frames) */
+/* RESET 0x8003CF84: retired name 'mode_handler_29_StageLeafUpdate' — preserved note: calls mk_leaf_newpos + reads char struct fields via &D_80101ED2 + D_800A3748 * 0x44C */
 
 /* === Final 2 mode handlers from asm (2026-05-17) -- 2 highs === */
 /* Modes 0 and 7 are asm-only; decoded directly from asm/6CAC.s (the splat segment dump, deleted 2026-10-03; at tag pre-restructure-2026-10-03). */
@@ -2622,9 +2622,7 @@ cpu_load_replay_images_and_init_8005FBC8 = 0x8005FBC8;
 /* clusters (motion_, satan_, replay_camera_, efc_, camera_). Names */
 /* derived from body inspection + dominant-caller-prefix context. */
 replay_camera_check_bounds_and_set_flag_8003F388 = 0x8003F388;
-efc_effect_dispatch_child_recursive_800417D0 = 0x800417D0;
 satan_fire_disp_wrapper_80048A7C = 0x80048A7C;
-efc_ptr_array_offset_apply_8006920C = 0x8006920C;
 camera_init_matrix_table_8006E49C = 0x8006E49C;
 satan_sprite_batch_render_8007352C = 0x8007352C;
 replay_camera_decode_player_bits_80077940 = 0x80077940;
@@ -2978,12 +2976,12 @@ set_global_80037234                                = 0x80037234;  /* structural 
 set_field0x0_8003D774                              = 0x8003D774;  /* structural role; n=16 */
 /* RESET 0x8003E2AC: retired name 'copy_8003E2AC' — preserved note: structural role; n=7 */
 /* RESET 0x8003F1C8: retired name 'stub_8003F1C8' — preserved note: structural role; n=3 */
-stub_8003F1D4                                      = 0x8003F1D4;  /* structural role; n=4 */
+/* RESET 0x8003F1D4: retired name 'stub_8003F1D4' — preserved note: structural role; n=4 */
 /* RESET 0x8003F1E4: retired name 'set_global_8003F1E4' — preserved note: structural role; n=13 */
 /* RESET 0x8003F268: retired name 'stub_8003F268' — preserved note: structural role; n=3 */
-set_global_8003F52C                                = 0x8003F52C;  /* structural role; n=8 */
-get_global_8003F54C                                = 0x8003F54C;  /* structural role; n=7 */
-set_global_8003F5A8                                = 0x8003F5A8;  /* structural role; n=9 */
+/* RESET 0x8003F52C: retired name 'set_global_8003F52C' — preserved note: structural role; n=8 */
+/* RESET 0x8003F54C: retired name 'get_global_8003F54C' — preserved note: structural role; n=7 */
+/* RESET 0x8003F5A8: retired name 'set_global_8003F5A8' — preserved note: structural role; n=9 */
 /* RESET 0x8004019C: retired name 'copy_8004019C' — preserved note: structural role; n=12 */
 /* RESET 0x800404A0: retired name 'copy_800404A0' — preserved note: structural role; n=14 */
 /* RESET 0x80040A78: retired name 'rob_helper_80040A78' — preserved note: first-pass tag(clean-anchor); rob: <-['rob_life_ctrl'] ->[] */
@@ -3255,8 +3253,8 @@ CD_initvol = 0x80081880;  /* programs CD-audio path regs (g_cd_reg0 block + D_80
 CD_initintr = 0x80081974;  /* irq_DisableInterrupts, clears cd state globals D_800A11B4..C8, irq_EnableInterrupts */
 CD_getsector = 0x80081D1C;  /* CD sector DMA -> RAM via g_cd_dma_ctrl + g_cd_reg0 block */
 CD_getsector2 = 0x80081E1C;  /* chopped CD DMA transfer; g_cd_reg0/g_cd_dma_ctrl */
-stage_ExecInitFunc = 0x8003F168;  /* dispatch D_800948BC[stage_GetId()] per-stage init fn ptr */
+func_8003F168 = 0x8003F168;  /* dispatch D_800948BC[stage_GetId()] per-stage init fn ptr */
 func_8003F218 = 0x8003F218;  /* store D_800F665C + game_SetControllerPorts */
 func_8003F274 = 0x8003F274;  /* rebuilds the 32x32 grid D_800A8FB0 around the view node; read by the draw walks */
-stage_ApplyLighting = 0x8003F5CC;  /* 3x sys_StubEmpty3(light_ptr_i, target_ptr_i, i) - stubbed light apply, vestigial */
+func_8003F5CC = 0x8003F5CC;  /* 3x sys_StubEmpty3(light_ptr_i, target_ptr_i, i) - stubbed light apply, vestigial */
 /* RENAME 0x800819C4: retired name 'cdrom_Initialize' — preserved note: glabel-authoritative name; called by cdrom_CheckReady between Shutdown/ConfigSPU */

@@ -1228,7 +1228,7 @@ void func_8004473C(void) {
     Unk800A9CF8Entry *dst;
     s32 i;
 
-    D_800A9CF8.unk10 = (s32)(src = game_GetCharData());
+    D_800A9CF8.unk10 = (s32)(src = func_8003F1D4());
     dst = (Unk800A9CF8Entry *)D_800A9CF8.unkC;
     for (i = 0; i < D_800A9CF8.unk6; dst++, src++, i++) {
         dst->node.unk0 = 0;
