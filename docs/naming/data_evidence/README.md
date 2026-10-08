@@ -64,7 +64,7 @@ unnamed `D_*` pool:
 | [D_8009BC1C.md](D_8009BC1C.md) | `g_efc_buki_dispatch_table` | medium | function-pointer table indexed by D_800A3580 in func_8006EACC |
 | [D_800A3580.md](D_800A3580.md) | `g_efc_buki_dispatch_idx` | medium | index into above; range-check `(idx - 2) >= 2U` |
 | [D_800A3820.md](D_800A3820.md) | `g_hira_packet_cursor` | medium | s32-stride packet write cursor in DispHira; reset to &D_80102C00 |
-| [D_800F62E0.md](D_800F62E0.md) | `g_mdec_fp_buf` | medium | s16 coefficient buffer used by decBs0 (MDEC bitstream decoder) |
+| [D_800F62E0.md](D_800F62E0.md) | `g_mdec_fp_buf` (superseded by docs/naming/phase3/wave13: 0x800F62E0 reset; lighting records, not an MDEC buffer) | medium | s16 coefficient buffer used by decBs0 (MDEC bitstream decoder) |
 | [D_800A38B4.md](D_800A38B4.md) | `g_cpu_move_pattern_cursor` | medium | 4-byte-aligned cursor in cpu_get_move_pattern_table_number (198 references, the most-referenced unnamed global) |
 | [D_800A374C.md](D_800A374C.md) | `g_dma_buf_base` | medium | shared >16 KiB workspace; base for OT in _GetBattleSwichData, data buffer at +0x401C |
 | [D_800A3834.md](D_800A3834.md) | `g_game_mode_code` | medium | game state enum (0/1/9/0xD/0x1B); set by scene_teardown variants |

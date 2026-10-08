@@ -86,7 +86,7 @@ Identifiable libapi functions:
 | `sys_VSync` | `VSync` | Vblank wait. Debug `"VSync: timeout\n"` at 0x80016318 |
 
 Timer / IRQ globals:
-- `g_sys_irq_vtable` (`0x800A2600`) — interrupt vector table
+- `pCallbacks` (`0x800A2600`) — pointer to the INTR callbacks table (`D_800A25E0`)
 - `D_800A1578.inInterrupt` (`0x800A157A`) — LIBETC intrEnv's in-interrupt flag (CheckCallback's return)
 - `g_sys_vsync_mode` (`0x800A14CC`) — VSync wait mode
 

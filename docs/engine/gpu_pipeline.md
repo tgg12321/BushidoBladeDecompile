@@ -113,7 +113,7 @@ BB2 uses three PS1 DMA channels:
 
 - **Channel 2: GPU**. Linked-list mode for OT submission. Triggered by
   `gpu_DrawOTag` writing `0x01000401` (`DMA_GPU_LINKED_LIST`) to
-  `*g_gpu_dma_chcr`. Source is the OT's tail entry.
+  `*DMA2_CHCR`. Source is the OT's tail entry.
 - **Channel 3: CD-ROM**. Used for sector-aligned `bios_FileRead` and
   XA-ADPCM streaming. The GPU shares its OT direction control with the
   CD-ROM DMA — see `gpu.c`'s GP1_DMA_DIR_FIFO toggle.
@@ -277,7 +277,7 @@ via callbacks, located at `g_gpu_packet_queue_base` (`0x80103680`):
 | `g_gpu_motion_save_a` | `0x8009BF80` | s32 | `motion_make_table(0)` state saved during async draw |
 | `g_gpu_motion_save_b` | `0x8009BF88` | s32 | Parallel save for outer caller |
 | `g_gpu_loop_flag` | `0x8009BE7C` | s32 | Set to 1 during successful packet submit |
-| `g_gpu_status_alt_reg` | `0x8009BF60` | u32* | Parallel status reg; written `0x11000002` (GPU primitive header) |
+| `DMA6_CHCR` | `0x8009BF60` | u32* | DMA6 (OTC) channel control (`0x1F8010E8`); `_otc` writes 0, then `0x11000002`, and polls bit 24 |
 
 Each queue entry is a 0x60-byte slot containing a callback function and its
 saved args. When the GPU is ready, the handler dispatches the queued callback

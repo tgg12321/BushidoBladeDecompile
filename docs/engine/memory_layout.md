@@ -53,7 +53,7 @@ in this doc are KSEG0 virtual addresses (`0x8000_0000`+, cached).
 |     two adjacent 0x4090 buffers (draw+disp   |
 |     env + OT)                                |
 |   D_800F0D78[16]   0x800F0D78 (effect pos)   |
-|   MotDataBaseAddress 0x80104F38              |
+|   D_80104F38       0x80104F38 (VAB packs)    |
 |   g_memcard_data    0x80103600               |
 +----------------------------------------------+ 0x801D_8800  <- overlay region
 | D_800A3770 = 0x801D8800 (overlay scratch     |

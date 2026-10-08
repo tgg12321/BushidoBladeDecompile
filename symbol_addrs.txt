@@ -111,7 +111,7 @@ _svm_vab_start = 0x80107810; // per-channel SPU address  // data-wave 2026-09-07
 _svm_vab_count = 0x80107808; // active sound channel count  // data-wave 2026-09-07: was g_snd_ch_count
 
 // === System / IRQ ===
-pCallbacks = 0x800A2600; // interrupt handler vtable  // data-wave 2026-10-08: was g_sys_irq_vtable
+pCallbacks = 0x800A2600; // pointer to the libetc INTR callbacks table (D_800A25E0)  // data-wave 2026-10-08: was g_sys_irq_vtable
 g_InterruptMask = 0x800A2608; // libetc intr.c I_MASK register pointer (0x1F801074); was g_sys_irq_counter  // data-wave 2026-10-08: was i_mask
 // data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined
 g_CdReadMode_value = 0x800A1500; // cdread tslmode (D_800A14D0.tslmode)  // data-wave 2026-09-24: was g_sys_timer

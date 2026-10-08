@@ -89,7 +89,7 @@ _svm_vab_used = 0x80102A68;  /* data-wave 2026-09-07: was g_snd_ch_status */
 _svm_vab_start = 0x80107810;  /* data-wave 2026-09-07: was g_snd_ch_addr */
 _svm_vab_count = 0x80107808;  /* data-wave 2026-09-07: was g_snd_ch_count */
 pCallbacks = 0x800A2600;  /* data-wave 2026-10-08: was g_sys_irq_vtable */
-g_InterruptMask = 0x800A2608;  /* libetc intr.c i_mask: .word 0x1F801074 (I_MASK pointer); was g_sys_irq_counter */  /* data-wave 2026-10-08: was i_mask */
+g_InterruptMask = 0x800A2608;  /* libetc intr.c g_InterruptMask (SOTN): .word 0x1F801074 (I_MASK pointer); was g_sys_irq_counter */  /* data-wave 2026-10-08: was i_mask */
 /* data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined */
 g_CdReadMode_value = 0x800A1500;  /* D_800A14D0.tslmode; named only by cb_read */  /* data-wave 2026-09-24: was g_sys_timer */
 video_mode = 0x800A2664;  /* data-wave 2026-10-08: was g_sys_video_mode */
@@ -150,7 +150,7 @@ g_str_bbm_s123 = 0x800103C0;
 
 /* === Kengo-derived names (apply_kengo_names.py) === */
 
-/* === Kengo-derived globals (kengo_globals.py) === */
+/* === VAB sound-pack buffer (func_8001D904 / func_8001D998 copy packs here) === */
 D_80104F38 = 0x80104F38;  /* data-wave 2026-10-08: was MotDataBaseAddress */
 
 /* === Kengo-derived names (apply_kengo_names.py) === */
@@ -391,12 +391,12 @@ g_scratchpad_save               = 0x800F5370;  /* 0x3E0-byte main-RAM backup of 
 /* System config setters (2) */
 /* RENAME 0x8008289C: retired name 'sys_SetVsyncMode_8008289C' — preserved note: swap-and-return on g_vsync_mode */
 /* RENAME 0x800828B4: retired name 'sys_SetTimer_800828B4' — preserved note: swap-and-return on g_timer_setting */
-/* IRQ vector-table dispatchers (5) -- each calls g_psyq_io_vec_table->fn at fixed offset */
-/* RENAME 0x80082AC0: retired name 'irq_DisableInterrupts_80082AC0' — preserved note: jalr [g_psyq_io_vec_table+0xC] */
-InterruptCallback   = 0x80082AF0;  /* jalr [g_psyq_io_vec_table+0x8] */
-DMACallback  = 0x80082B20;  /* jalr [g_psyq_io_vec_table+0x4] */
-VSyncCallback           = 0x80082B50;  /* jalr [g_psyq_io_vec_table+0x14] with $a0=4, $a1=arg */
-StopCallback              = 0x80082BB4;  /* jalr [g_psyq_io_vec_table+0x10] */
+/* INTR callbacks-table dispatchers (5) -- each calls a slot of the table pCallbacks points to */
+/* RENAME 0x80082AC0: retired name 'irq_DisableInterrupts_80082AC0' — preserved note: jalr via pCallbacks, slot +0xC */
+InterruptCallback   = 0x80082AF0;  /* jalr via pCallbacks, slot +0x8 */
+DMACallback  = 0x80082B20;  /* jalr via pCallbacks, slot +0x4 */
+VSyncCallback           = 0x80082B50;  /* jalr via pCallbacks, slot +0x14, with $a0=4, $a1=arg */
+StopCallback              = 0x80082BB4;  /* jalr via pCallbacks, slot +0x10 */
 /* System counters (1) */
 CheckCallback     = 0x80082C14;  /* lhu of intrEnv.inInterrupt (D_800A1578 + 2) */
 /* Memory clear (2; identical bodies, position-distinct) */
@@ -412,7 +412,7 @@ SsInit           = 0x80083A18;  /* irq_DisableInterrupts + spu_Init + state clea
 /* RENAME 0x80083B30: retired name 'spu_Reset_80083B30' — preserved note: 8-insn wrapper around func_800892F8 */
 /* RENAME 0x80083B50: retired name 'spu_SetVolume_80083B50' — preserved note: 37-insn wrapper around func_8008AF9C (PsyQ SsVoVol-style) */
 
-/* === Data names landed by the ings2.c cluster audit (5) === */
+/* === ings2.c cluster audit data names (all since retired) === */
 /* data-wave 2026-09-24: g_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined */
 
 /* === Legacy renamer audit: Item 6/7 readability band (2026-05-17) === */
@@ -576,8 +576,8 @@ D_800A3478         = 0x800A3478;  /* = D_800A3468->unk18 (func_80060A68), the co
 _spu_env          = 0x800A2CD4;  /* SPU IRQ/pending-op mask */  /* data-wave 2026-09-07: was g_spu_pending_irq_mask */
 _spu_rev_flag         = 0x800A287C;  /* SPU transfer callback arg cache */  /* data-wave 2026-09-07: was g_spu_xfer_callback_arg */
 g_spu_xfer_pending              = 0x800A2D2C;  /* SPU transfer-pending flag */
-/* GPU register pointer + text1a stream cursors */
-DPCR              = 0x8009BF64;  /* pointer to GPU status/control register */  /* data-wave 2026-10-08: was g_gpu_stat_reg_ptr */
+/* LIBGPU SYS DPCR pointer + arena size cells */
+DPCR              = 0x8009BF64;  /* -> 0x1F8010F0 DMA control register (DPCR) */  /* data-wave 2026-10-08: was g_gpu_stat_reg_ptr */
 D_800A33A4         = 0x800A33A4;  /* remaining arena capacity (init 0x45000), reduced as blocks grow; func_800457DC returns it */  /* data-wave 2026-10-08: was g_text1a_size_remaining */
 D_800A33A8            = 0x800A33A8;  /* high-water mark of arena use, an offset from D_800A9D10 (func_80045230) */  /* data-wave 2026-10-08: was g_text1a_size_cursor */
 /* Misc state */
@@ -720,17 +720,17 @@ g_gpu_ot_ptr                                          = 0x800A374C;  /* ref: tsl
 D_800A376A                                    = 0x800A376A;  /* refs: func_8002738C, func_800343F0, func_8003B2C8, func_8003B328, func_8003B870 */  /* data-wave 2026-10-08: was g_tslTm_loaded_flags */
 D_800A37A8                                 = 0x800A37A8;  /* command-1 operand bytes of the running script (count D_800A37A0), shown one by one by func_800174F4 (6CF8.c:566-590) */  /* data-wave 2026-10-08: was g_mental_bar_packet_buf */
 g_draw_queue_cursor                                    = 0x800A3820;  /* data-wave 2026-10-07: was g_hira_packet_cursor */
-D_800A384C                                = 0x800A384C;  /* ref: title_mv_exec */  /* data-wave 2026-10-08: was g_practice_select_cursor */
-D_800A385C                                     = 0x800A385C;  /* ref: title_mv_exec */  /* data-wave 2026-10-08: was g_seq_check_pending */
+D_800A384C                                = 0x800A384C;  /* data-wave 2026-10-08: was g_practice_select_cursor */
+D_800A385C                                     = 0x800A385C;  /* data-wave 2026-10-08: was g_seq_check_pending */
 D_800A38AC                                    = 0x800A38AC;  /* ref: func_80019568 */  /* data-wave 2026-10-08: was g_voice_dialog_state */
 g_prim_buf_cursor                               = 0x800A38B4;  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor */
 D_800A38C4                                       = 0x800A38C4;  /* model id loaded per fighter slot; refs: func_80020CDC, func_80020E74, func_80021210, func_80021280 */  /* data-wave 2026-10-08: was g_title_seq_state */
-D_800A38D6                               = 0x800A38D6;  /* ref: replay_camera_rob_back_win_near */  /* data-wave 2026-10-08: was g_replay_pos_change_count */
+D_800A38D6                               = 0x800A38D6;  /* data-wave 2026-10-08: was g_replay_pos_change_count */
 D_800A391D                                    = 0x800A391D;  /* D_800A3918[5]: the last per-slot counter of D_800A3918 */  /* data-wave 2026-10-08: was g_motion_select_byte */
 D_800A3929                                      = 0x800A3929;  /* confirm delay of the D_800A3817 menu choice: 0 while choosing; on confirm 1 (counts to 0x3C) for choice 0, 0x3C for choices 1 / 2 (2B344.c:1004-1035) */  /* data-wave 2026-10-08: was g_cpu_pattern_tick */
 D_800EFB78                                           = 0x800EFB78;  /* ref: action_check_defense */  /* data-wave 2026-10-08: was g_sound_buf_b */
 D_800F1154                                    = 0x800F1154;  /* D_800F1150[4..7], per-command status bytes; func_8006133C stores &[0] in D_800F1180 */  /* data-wave 2026-10-08: was g_text1b_glyph_buf_b */
-D_800F62E0                                           = 0x800F62E0;  /* ref: replay_camera_rob_back_win_near */  /* data-wave 2026-10-08: was g_mdec_fp_buf */
+D_800F62E0                                           = 0x800F62E0;  /* data-wave 2026-10-08: was g_mdec_fp_buf */
 D_800F6608                                         = 0x800F6608;  /* ref: suLeagueSystemInit */  /* data-wave 2026-10-08: was g_grid_pos_vec3 */
 D_80101F00                                            = 0x80101F00;  /* +0x38 of D_80101EC8[0] (two 0x44C-byte records): the unheld word of the record's pad input */  /* data-wave 2026-10-08: was g_char_state */
 D_80101FBC                                = 0x80101FBC;  /* ref: D_800A3748 */  /* data-wave 2026-10-08: was g_replay_camera_target_a */
@@ -831,7 +831,7 @@ g_ang_hosei_state_pairs_3                               = 0x800A3308;  /* 3 x 8-
 D_800A14D0                                    = 0x800A14D0;  /* libcd cdread.c module state, CdlREAD (include/libcd.h) */  /* data-wave 2026-09-24: was g_irq_state_table_14 */
 D_8009B940                            = 0x8009B940;  /* one TexRec (CLUT x / y, u / v origin), chosen by func_80063084 when j == 0 */  /* data-wave 2026-10-08: was g_text1b_const_pair_table_12 */
 _spu_addrMode                                     = 0x800A2CFC;  /* 9 x 4-byte SPU state cells; consumed by main.c func_80088740 (SPU helper) */  /* data-wave 2026-09-29: was g_spu_state_table_9 */
-DMA6_MADR                               = 0x8009BF58;  /* 7 x 4-byte display.c state cells (consumed by func_8007CAC8) */  /* data-wave 2026-10-08: was g_display_state_table_a_7 */
+DMA6_MADR                               = 0x8009BF58;  /* -> 0x1F8010E0 DMA6 (OTC) base address; _otc */  /* data-wave 2026-10-08: was g_display_state_table_a_7 */
 /* data-wave 2026-09-25: g_display_state_table_b_7 = 0x8009BF78 retired; _qin is now object-defined */
 D_8009B0E0                              = 0x8009B0E0;  /* nine 12-byte sprite-sheet headers (counts 2, 2, 2, 3, 2, 2, 4, 4, 6 at +2) drawn by func_8005C8A8 */  /* data-wave 2026-10-08: was g_cpu_no_action_table_24x3 */
 D_8009B1AC                              = 0x8009B1AC;  /* two 8-byte sprite cells (x, y, u, v, w, h); func_8005C8A8 draws them with header D_8009B0E0[4] */  /* data-wave 2026-10-08: was g_cpu_no_action_table_16x3 */
@@ -1109,11 +1109,11 @@ g_irq_cdrom_ctrl_reg_ptr                                = 0x800A263C;  /* pointe
 D_800A2668                                 = 0x800A2668;  /* boolean: 0 = not init, then set to 1 */  /* data-wave 2026-09-25: was g_irq_cdrom_initialized */
 g_vsync_gpu_stat_reg                                 = 0x800A1510;  /* libetc VSync static: .word 0x1F801814 (GPUSTAT pointer; SOTN vsync.c leaves it unnamed) */  /* data-wave 2026-10-03: was g_ings2_vsync_block_ptr */
 
-/* === Intro/video framebuffer + render state (2026-05-17) -- 6 highs === */
-/* From 6CF8.c: func_80016D78 (:291-293) sets up the FMV overlay region; */
-/* func_80016E60 is the intro render loop that double-buffers between */
-/* D_800A3770[0] and [1] (toggled by D_800A36AC & 1). */
-D_800A3770                                            = 0x800A3770;  /* FMV overlay framebuffer A (= 0x801D8800 in func_80016D78) */  /* data-wave 2026-10-08: was g_video_fb_a */
+/* === Primitive-buffer bases + render state (2026-05-17) -- 6 highs === */
+/* From 6CF8.c: func_80016D78 (:291-292) stores two main-RAM primitive-buffer */
+/* bases in D_800A3770[0] / [1]; main (:455) and func_80016E60 (:340-344) */
+/* base g_prim_buf_cursor on D_800A3770[D_800A36AC & 1]. */
+D_800A3770                                            = 0x800A3770;  /* u32[2] primitive-buffer bases 0x801D8800 / 0x801EBC00 (func_80016D78); also a CD-read destination via func_80054604 */  /* data-wave 2026-10-08: was g_video_fb_a */
 D_800A3798                                         = 0x800A3798;  /* = 0x13400 (D_800A3770[1] - D_800A3770[0]), one store in func_80016D78; never read */  /* data-wave 2026-10-08: was g_video_fb_size */
 D_800A36B0                                   = 0x800A36B0;  /* store-only: 0 in func_80016D78, 1 in func_80016E60 before and after its menu loop */  /* data-wave 2026-10-08: was g_intro_render_active */
 D_800A3906                                     = 0x800A3906;  /* set 1 by snd_InitAndLoadCommonVab, 0 by func_80016D78; gates func_8005C6D0 in func_80036F40 */  /* data-wave 2026-10-07: was g_intro_render_busy */
@@ -1128,7 +1128,7 @@ _que                                 = 0x80103680;  /* function-pointer field (o
 g_gpu_packet_pending_arg1                               = 0x8009BF6C;  /* saved arg1 from last GPU-packet submit */
 g_gpu_motion_save_a                                     = 0x8009BF80;  /* motion_make_table(0) state saved during async draw */
 g_gpu_motion_save_b                                     = 0x8009BF88;  /* parallel motion_make_table save for outer caller */
-DMA6_CHCR                                    = 0x8009BF60;  /* parallel GPU status reg; cleared and written 0x11000002 (GPU primitive header) */  /* data-wave 2026-10-08: was g_gpu_status_alt_reg */
+DMA6_CHCR                                    = 0x8009BF60;  /* -> 0x1F8010E8 DMA6 (OTC) channel control; _otc writes 0 then 0x11000002 and polls bit 24 */  /* data-wave 2026-10-08: was g_gpu_status_alt_reg */
 
 /* === Effect/physics object cluster (2026-05-17) -- 4 highs === */
 /* From text1b.c func_80053304 (line 11052) + func_8005344C (11082): */
@@ -1564,7 +1564,7 @@ g_memcard_fd                           = 0x800A3794;  /* current open file handl
 g_gpu_prim_packet_header_0                              = 0x8009BF24;  /* first word: rect base (=arg0[0]) */
 g_gpu_prim_packet_header_1                              = 0x8009BF28;  /* second word: packed args ((arg2<<16)|arg1) */
 g_gpu_prim_packet_header_2                              = 0x8009BF2C;  /* third word: rect extent (=arg0[1]) */
-DMA6_BCR                                   = 0x8009BF5C;  /* pointer to a GPU control register (written via *p = arg1) */  /* data-wave 2026-10-08: was g_gpu_unknown_reg_ptr */
+DMA6_BCR                                   = 0x8009BF5C;  /* -> 0x1F8010E4 DMA6 (OTC) block control; _otc writes the entry count */  /* data-wave 2026-10-08: was g_gpu_unknown_reg_ptr */
 
 /* === Voice-slot 24-entry allocator state (2026-05-17) -- 3 highs === */
 /* From main.c around line 870: a 24-entry slot allocator with 3 parallel */
@@ -1580,7 +1580,7 @@ _svm_sreg_buf_plus_0x2                                   = 0x80102A7A;  /* s16 a
 /* g_vsync_gpu_stat_reg (0x800A1510). */
 g_vsync_rcnt1_count_reg                                     = 0x800A1514;  /* libetc VSync static: .word 0x1F801110 (root counter 1 count pointer) */  /* data-wave 2026-10-03: was g_vsync_counter_ptr */
 Hcount                                = 0x800A1518;  /* snapshot of *g_vsync_rcnt1_count_reg from prev call (for delta calc) */  /* data-wave 2026-09-29: was g_vsync_counter_snapshot */
-g_vsync_dma_region_snapshot                             = 0x800A151C;  /* snapshot of g_sys_dma_region at end of last sys_VSync */
+g_vsync_dma_region_snapshot                             = 0x800A151C;  /* snapshot of Vcount at the end of the last VSync */
 
 /* === func_80068F70 state cells (2026-05-17) -- 8 highs === */
 /* From 51268.c func_80068F70 and the functions it sets up. */
@@ -2624,7 +2624,7 @@ D_800A35C8                                = 0x800A35C8;  /* 13 refs; two countdo
 D_800A36CA                            = 0x800A36CA;  /* 15 refs; copy of the buffered move's command word */  /* data-wave 2026-10-08: was g_char_id_saved_d_plus_2_800A36CA */
 D_800A36D8                          = 0x800A36D8;  /* 19 refs; +4 from D_800A36D4 */  /* data-wave 2026-10-08: was g_pad_rec_prev_hash_plus_4_800A36D8 */
 g_cd_result                          = 0x800A3760;  /* 71 refs; passed as arg1 to cpu_side_move_dir_4_wrapper_800801E8 (pass-5-renamed from Vu0SetLightColMatrix misnomer) */  /* data-wave 2026-09-24: was g_cpu_side_move_dir_4_arg1_800A3760 */
-D_800A377B                               = 0x800A377B;  /* 11 refs; s16 in frame-state cluster; frame-sync counter */  /* data-wave 2026-10-08: was g_frame_state_counter_800A377B */
+D_800A377B                               = 0x800A377B;  /* data-wave 2026-10-08: was g_frame_state_counter_800A377B */
 D_800A37E8                                = 0x800A37E8;  /* 35 refs; s16 paired with g_round_timer; reload value */  /* data-wave 2026-09-25: was g_round_timer_reload_800A37E8 */
 D_800A37EA                                = 0x800A37EA;  /* 11 refs; paired secondary timer near g_game_timer (0x800A3790) */  /* data-wave 2026-09-25: was g_round_timer_plus_2_800A37EA */
 D_800A37EC                                = 0x800A37EC;  /* 11 refs; +4 from timer base */  /* data-wave 2026-09-29: was g_round_timer_plus_4_800A37EC */
@@ -3172,8 +3172,8 @@ CdReset = 0x800800DC;  /* mode 2 -> Shutdown; else Initialize (+ ConfigSPU if mo
 CdSetDebug = 0x80080168;  /* swaps debug level global D_800A11C0, returns old */
 CdIntToPos = 0x800806A4;  /* frames+150 -> min/sec/frame BCD triplet (magic-const div chains) */
 CdPosToInt = 0x800807A8;  /* BCD min/sec/frame triplet -> absolute frame count -150 */
-CD_vol = 0x80081718;  /* writes cmd via g_cd_reg0/g_cd_reg3 register-pointer block */
-CD_flush = 0x800817A0;  /* acks IRQ via g_cd_reg3, resets the libcd Intr status block (src/system.c) */
+CD_vol = 0x80081718;  /* writes cmd via g_cd_reg0/libcd_CDRegister3 register-pointer block */
+CD_flush = 0x800817A0;  /* acks IRQ via libcd_CDRegister3, resets the libcd Intr status block (src/system.c) */
 CD_initvol = 0x80081880;  /* programs CD-audio path regs (g_cd_reg0 block + D_800A1490) */
 CD_initintr = 0x80081974;  /* irq_DisableInterrupts, clears cd state globals D_800A11B4..C8, irq_EnableInterrupts */
 CD_getsector = 0x80081D1C;  /* CD sector DMA -> RAM via g_cd_dma_ctrl + g_cd_reg0 block */

@@ -15,7 +15,7 @@ the functions that select which waza animation plays next on which fighter.
 disc/MOTION/X123.BBM   (per-character bone+motion bundle)
        |
        v
-   bios_FileRead via libcd  ----> MotDataBaseAddress (0x80104F38)
+   bios_FileRead via libcd  (load destination not traced here)
        |
        v
    motion_LoadPreCalcData_*  (extract & sort frame data into RAM)
@@ -45,7 +45,7 @@ disc/MOTION/X123.BBM   (per-character bone+motion bundle)
 
 BBM = "Bushido Blade Motion bundle". Loaded by `file_LoadAll` in `ings.c`,
 the file is a single sequential block; the engine parses it after load into
-`MotDataBaseAddress`-relative tables. The exact layout has not been
+tables. The exact layout has not been
 exhaustively documented in C yet, but observed access patterns suggest:
 
 - Header: file size, table-of-contents offsets
@@ -62,16 +62,10 @@ character names like "Tatsumi", "Mikado", "Hongoh", etc.).
 
 ## RAM data structures
 
-### `MotDataBaseAddress` (0x80104F38)
-
-Base pointer to the loaded motion data region. Set during `file_LoadAll`
-chain; read by every `motion_*` function. Each fighter's active motion is
-indexed off this base.
-
 ### Per-fighter motion state (within fighter struct, offset 0x50)
 
 The "active move pointer" field (offset 0x50 of the fighter struct) points
-into `MotDataBaseAddress`-relative tables. The 0x12 field is the current
+into the loaded motion tables. The 0x12 field is the current
 move ID. The 0x58 field is the current command-stream pointer (see
 [combat.md](combat.md)).
 

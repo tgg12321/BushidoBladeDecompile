@@ -55,8 +55,7 @@ know which subsystem owns it, look here.
   `motion_SavePreCalcData_*`, `motion_ShiftControl` (shift dispatch),
   `motion_shift_check_*`, `calc_loc_mat_fw*` (matrix builders),
   `myRobGenei*` (afterimage)
-- **Key globals:** `MotDataBaseAddress` (0x80104F38), `D_800A3207`
-  (motion FSM state), `D_800A334C` (90-frame countdown of a memory-card message)
+- **Key globals:** `D_800A3207` (motion FSM state), `D_800A334C` (90-frame countdown of a memory-card message)
 - **Doc:** [motion.md](motion.md)
 
 ### GPU / Render
@@ -160,8 +159,8 @@ know which subsystem owns it, look here.
   `irq_DisableInterrupts`, `irq_AcknowledgeVblank`,
   `irq_EnableInterrupts`, `irq_SetAlarm`, `irq_Reset`,
   `EnterCriticalSection`, `ExitCriticalSection`
-- **Key globals:** `g_sys_irq_vtable`, `D_800A1578` (intrEnv; `.inInterrupt` = CheckCallback),
-  `g_sys_vsync_mode`, `g_sys_timer`, `g_sys_video_mode`,
+- **Key globals:** `pCallbacks`, `D_800A1578` (intrEnv; `.inInterrupt` = CheckCallback),
+  `g_sys_vsync_mode`, `g_sys_timer`, `video_mode`,
   `g_sys_dma_region`
 
 ## Reverse index: global → subsystem
@@ -207,7 +206,7 @@ If you've seen a global in the source and want to know what it does:
 ### `0x801xx_xxxx` range (high BSS, data + tables)
 - `g_memcard_slot` (0x80101BCC) — Memcard
 - `g_memcard_data` (0x80103600) — Memcard
-- `MotDataBaseAddress` (0x80104F38) — Motion
+- `D_80104F38` (0x80104F38) — Sound (VAB sound-pack buffer)
 - `D_80106A50..` — File I/O / character flags
 - `D_80106A78` — Combat (active-move slot array, 12 * 0x64 bytes)
 - `D_80107850..58` — AI tactical position arrays
