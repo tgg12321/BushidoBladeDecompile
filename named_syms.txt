@@ -305,7 +305,7 @@ g_match_round_index          = 0x800A3874;  /* match-round counter; indexes the 
 func_8004678C            = 0x8004678C;  /* gp-rel getter for g_snd_se_id (paired with snd_GetBgmId for g_snd_bgm_id) */
 /* RESET 0x800467A8: retired name 'stage_GetVariant_800467A8' — preserved note: lh getter for g_stage_variant (paired with stage_GetId for g_stage_id, +0x2 offset) */
 /* RESET 0x80046DE4: retired name 'game_GetDummyFlag_80046DE4' — preserved note: literal `return 0;` (jr ra; v0 = 0) -- the dummy-flag accessor stub */
-func_80046DEC     = 0x80046DEC;  /* func_8004153C(a0) + 0x1994 offset (player struct data field) */
+func_80046DEC     = 0x80046DEC;  /* func_8004153C(a0)->unk_1994: a MATRIX * table */
 /* RESET 0x80046E18: retired name 'game_GetPlayerBase_80046E18' — preserved note: func_8004153C(a0) + 0x2C offset (player struct base field) */
 /* RESET 0x80046E44: retired name 'game_DisablePause_80046E44' — preserved note: writes 0 to g_game_pause_flag */
 func_80046E54          = 0x80046E54;  /* writes (a0 ? 1 : 0) to g_game_pause_flag */
@@ -345,7 +345,7 @@ g_stage_variant                 = 0x8009947A;  /* paired with g_stage_id (=0x800
 /* RENAME 0x800165F8: retired name 'file_LoadSectors_800165F8' — preserved note: sibling of file_LoadAll, sector-based variant */
 eff_ClearInitFlag      = 0x80016C74;  /* 3-insn flag-clear setter */
 eff_Init       = 0x80016C80;  /* calls debug_printf + sys_Panic on failure */
-snd_InitAndLoadCommonVab     = 0x80016CF8;  /* calls saFidLoad + bb2_memcpy */
+snd_InitAndLoadCommonVab     = 0x80016CF8;  /* snd_Init + snd_LoadCommonVab + memcpy to 0x8010DB00 + snd_VabFakeOpen + func_8005C614 */
 /* File flag getters (3) -- each returns one bit of D_80106A73 */
 /* RESET 0x800167AC: retired name 'file_GetFlag0_800167AC' — preserved note: `return D_80106A73 & 1` */
 /* RESET 0x800167BC: retired name 'file_GetFlag1_800167BC' — preserved note: `return (D_80106A73 >> 1) & 1` */
@@ -354,7 +354,7 @@ func_800167D4          = 0x800167D4;  /* `return (D_80106A73 >> 2) & 1` */
 math_FovToScreenDist           = 0x800166C4;  /* uses Judge table for trig calc */
 gpu_SetDrawEnvBg = 0x80016768; /* writes to g_disp_fb_base + 0x18 */
 /* RENAME 0x80016868: retired name 'gpu_EnableDisplay_80016868' — preserved note: gpu_SetMode(1) wrapper */
-func_80016888        = 0x80016888;  /* gpu_SetDispMask(0) + gpu_SetMode(1) + 8007B4D0(g_disp_gp_base) + DrawSync */
+func_80016888        = 0x80016888;  /* SetDispMask(0) + ResetGraph(1) + ClearImage(640x480) + DrawSync */
 /* RENAME 0x800168D0: retired name 'gpu_DisableDisplay_800168D0' — preserved note: gpu_SetDispMask(1) wrapper */
 /* RENAME 0x80016E40: retired name 'gpu_SetDrawMode_80016E40' — preserved note: wrapper around gpu_DrawSync */
 disp_Init_80016918              = 0x80016918;  /* full PSX display init: SetMode/SetDebugLevel/InitDrawEnv*2/InitDispEnv*2/SetFramebufferMode */
@@ -373,7 +373,7 @@ rng_Next_800171B8               = 0x800171B8;  /* LCG step: 15-bit output, multi
 /* Object table helpers (4) -- all index D_800F6740 (g_file_data_buf) with stride 0x34 */
 func_80017714           = 0x80017714;  /* clear 8 entries (stride 0x34) of g_file_data_buf */
 /* RESET 0x80017738: retired name 'obj_CalcOffset_80017738' — preserved note: pure math: (a0<<6) + (a1<<4) -- offset into 64-byte row + 16-byte col */
-func_80017E8C              = 0x80017E8C;  /* clear single obj at g_file_data_buf + a0*0x34 */
+func_80017E8C              = 0x80017E8C;  /* g_file_data_buf[a0].points = 0 */
 /* RESET 0x80017EB4: retired name 'obj_UpdatePosition_80017EB4' — preserved note: update pos field of g_file_data_buf[a0] */
 /* RESET 0x80017EF4: retired name 'obj_AddValue_80017EF4' — preserved note: add a1 to field 0 of g_file_data_buf[a0] */
 /* Distance math (1; companion to math_Distance3D_80017748) */
@@ -486,14 +486,14 @@ func_800467B8            = 0x800467B8;  /* 62-insn loader using saTan2InfoInit +
 /* RESET 0x80047D94: retired name 'snd_CalcFade_80047D94' — preserved note: 50-insn fade calc using D_800EF7BC/C0 */
 /* RESET 0x80047E5C: retired name 'snd_GetFadeCurve_80047E5C' — preserved note: 27-insn fade curve lookup using D_800EF800/04 */
 /* Game lifecycle (4) */
-func_80046B44              = 0x80046B44;  /* 44-insn top-level game init */
+func_80046B44              = 0x80046B44;  /* start-up init (sys_GameInit, func_8003BFC4) */
 func_80046DA8         = 0x80046DA8;  /* 15-insn stage init calling game_InitStageSound */
 /* RESET 0x80046EA0: retired name 'game_InitStageSound_80046EA0' — preserved note: 15-insn calling DispHira + stage_GetId + tslLineG5Init */
 game_StageCleanup_80046EDC      = 0x80046EDC;  /* 14-insn cleanup */
 /* Camera (4) */
 func_80046F24      = 0x80046F24;  /* 58-insn writing to D_800EEDB[4-C] matrix fields */
 /* RESET 0x8004700C: retired name 'camera_Transform_8004700C' — preserved note: 41-insn transform using D_800EEDB[0246] */
-func_800472C0    = 0x800472C0;  /* 49-insn rotation init referencing D_800F66A0 */
+func_800472C0    = 0x800472C0;  /* resets an Unk80101DF0Record to identity (header fields, rot, t, mat) */
 camera_CalcAngles_80047384      = 0x80047384;  /* 58-insn angle calc using replay_camera_rob_back_loose3 + single_game_getEnemyCharId (previously proposed as camera_replay_compute_rot_80047384 in batch 6) */
 /* Position-distinct wrapper-grid duplicates (5; bodies identical to earlier-adopted siblings) */
 /* RESET 0x800474F0: retired name 'game_EffInit2_800474F0' — preserved note: same body as game_EffInit (calls func_8004473C) */
@@ -1123,7 +1123,7 @@ g_vsync_gpu_stat_reg                                 = 0x800A1510;  /* libetc VS
 g_video_fb_a                                            = 0x800A3770;  /* FMV overlay framebuffer A (= 0x801D8800 in sys_GameInit) */
 g_video_fb_size                                         = 0x800A3798;  /* = 0x13400 (78848 bytes) -- FMV region total size */
 g_intro_render_active                                   = 0x800A36B0;  /* flag: 0/1; set to 1 during intro render loop */
-D_800A3906                                     = 0x800A3906;  /* flag: 0 init, set during intro/video render */  /* data-wave 2026-10-07: was g_intro_render_busy */
+D_800A3906                                     = 0x800A3906;  /* set 1 by snd_InitAndLoadCommonVab, 0 by sys_GameInit; gates func_8005C6D0 in game_FrameLoop */  /* data-wave 2026-10-07: was g_intro_render_busy */
 g_pad_state_plus_0xC                                    = 0x80102794;  /* g_pad_state.pressed */  /* data-wave 2026-10-03: was g_pad_input_combined */
 
 /* === GPU packet queue + motion-save state (2026-05-17) -- 7 highs === */
@@ -1790,7 +1790,7 @@ g_lesson_extra_arg_d                                    = 0x800A37B6;
 
 /* === code6cac.c misc state (2026-05-17) -- 5 highs === */
 g_char_pose_id_p2                                       = 0x800A30FD;  /* P2 char pose ID (paired with g_char_pose_id_p1 at +1; re-init check) */
-D_800A3778                                  = 0x800A3778;  /* cached camera_GetBoneData() return; reread once per frame */  /* data-wave 2026-10-07: was g_cam_bone_data_cached */
+D_800A3778                                  = 0x800A3778;  /* stores func_800472B0()'s return (&D_800EEDD0); no reader */  /* data-wave 2026-10-07: was g_cam_bone_data_cached */
 g_char_struct_p1_field_6A                               = 0x80101F32;  /* per-char field +0x6A (u16; mode == 0x11 check) */
 g_char_struct_p1_field_FC                               = 0x80101FC4;  /* per-char field +0xFC; set to a0_val + passed to func_8003E6A0 */
 g_pad_state_plus_0x4                             = 0x8010278C;  /* g_pad_state.valid[0] (set to 1 by pad_ResetStateMarkValid) */  /* data-wave 2026-10-03: was g_practice_lesson_init_done */
@@ -3257,6 +3257,6 @@ CD_getsector = 0x80081D1C;  /* CD sector DMA -> RAM via g_cd_dma_ctrl + g_cd_reg
 CD_getsector2 = 0x80081E1C;  /* chopped CD DMA transfer; g_cd_reg0/g_cd_dma_ctrl */
 stage_ExecInitFunc = 0x8003F168;  /* dispatch D_800948BC[stage_GetId()] per-stage init fn ptr */
 func_8003F218 = 0x8003F218;  /* store D_800F665C + game_SetControllerPorts */
-func_8003F274 = 0x8003F274;  /* per-player collision setup: game_GetPlayerCount, D_800A8FB0 block */
+func_8003F274 = 0x8003F274;  /* rebuilds the 32x32 grid D_800A8FB0 around the view node; read by the draw walks */
 stage_ApplyLighting = 0x8003F5CC;  /* 3x sys_StubEmpty3(light_ptr_i, target_ptr_i, i) - stubbed light apply, vestigial */
 /* RENAME 0x800819C4: retired name 'cdrom_Initialize' — preserved note: glabel-authoritative name; called by cdrom_CheckReady between Shutdown/ConfigSPU */

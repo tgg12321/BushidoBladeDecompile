@@ -34,7 +34,8 @@ typedef struct {
     u8 unk_05[3];
     FileTimeRec times[3]; /* 0x80106A58 */
     u8 color[3];          /* 0x80106A70 */
-    u8 flags;             /* 0x80106A73: bits 0/1/2 = func_800167AC/1/2 */
+    /* 0x80106A73: bits 0/1/2: func_800167AC, func_800167BC, func_800167D4 */
+    u8 flags;
 } FileRecord;
 
 /* The 0x100-byte save block after the memory-card header (D_800F34D8 = the
@@ -1825,7 +1826,7 @@ typedef struct Unk8001CD68Rec {
  * passes a negated stack copy of xf.rot and &work to g_anim_func_table[unk8],
  * then copies work to xf.mat; func_80046BF4 writes work.t just before that
  * call. func_800475A4 passes &xf.rot to g_anim_func_table[0] and &xf.mat to
- * ApplyMatrix. D_800EEDF0 (0x800EEDF0) and D_800EF070 are two more
+ * ApplyMatrix. D_800EEDF0 and D_800EF070 are two more
  * records of this layout: func_800472C0 initialises the first,
  * func_800477E8 sets up the second and passes it to func_800417D0, which reads
  * unk6 as a state. rot is the RotMatrix-style angle SVECTOR the rotation
