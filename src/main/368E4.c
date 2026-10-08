@@ -439,7 +439,7 @@ void func_80046B44(void) {
     D_800F6650 = 0;
     D_800F6656 = 0;
     D_800F6658 = two;
-    g_game_mirror_mode = 0;
+    D_800F665C = 0;
     D_800A3790 = 0x23;
     D_800A33BC = 0;
 }
@@ -474,7 +474,7 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
         rot.vy = -a1->vy;
         rot.vz = -a1->vz;
 
-        g_anim_func_table[0](&rot, &matrix_buf);
+        D_800F66A0[0](&rot, &matrix_buf);
 
         ApplyMatrixLV(&matrix_buf, trans, result);
 
@@ -624,7 +624,7 @@ void func_800472C0(Unk80101DF0Record *node) {
     node->xf.rot.vx = 0;
     node->xf.rot.vy = 0;
     node->xf.rot.vz = 0;
-    g_anim_func_table[node->unk8](&node->xf.rot, &node->work);
+    D_800F66A0[node->unk8](&node->xf.rot, &node->work);
     node->work.t[2] = 0;
     node->work.t[1] = 0;
     node->work.t[0] = 0;
@@ -710,8 +710,8 @@ void func_800475A4(void) {
     base->xf.mat.t[0] = D_80101DF0.xf.mat.t[0];
     base->xf.mat.t[1] = D_80101DF0.xf.mat.t[1];
     base->xf.mat.t[2] = D_80101DF0.xf.mat.t[2] + 0x6590;
-    g_anim_func_table[4](&base->xf.rot, &buf1);
-    g_anim_func_table[0](&D_80101DF0.xf.rot, &buf2);
+    D_800F66A0[4](&base->xf.rot, &buf1);
+    D_800F66A0[0](&D_80101DF0.xf.rot, &buf2);
     MulMatrix0(&buf2, &buf1, &base->xf.mat);
 
     {
@@ -2012,7 +2012,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             obj->node.xf.rot.vx = rot_in[0];
             obj->node.xf.rot.vy = rot_in[1];
             obj->node.xf.rot.vz = rot_in[2];
-            g_anim_func_table[0](&obj->node.xf.rot, &obj->node.xf.mat);
+            D_800F66A0[0](&obj->node.xf.rot, &obj->node.xf.mat);
             obj->node.xf.mat.t[0] = pos[0];
             obj->node.xf.mat.t[1] = pos[1];
             obj->node.xf.mat.t[2] = pos[2];

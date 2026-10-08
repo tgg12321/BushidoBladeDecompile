@@ -144,7 +144,7 @@ void func_80044B30(s32 a0, s32 a1) {
     p->node.xf.rot.vx = 0;
     p->node.xf.rot.vz = 0;
     p->node.unk6 = 1;
-    g_anim_func_table[p->node.unk8](&p->node.xf.rot, &p->node.xf.mat);
+    D_800F66A0[p->node.unk8](&p->node.xf.rot, &p->node.xf.mat);
     if (D_800A9CF8.unk4 == 0x12) {
         p->node.work.t[0] = p->node.xf.mat.t[0];
         p->node.work.t[1] = p->node.xf.mat.t[1];

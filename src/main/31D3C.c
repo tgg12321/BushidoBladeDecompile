@@ -7,10 +7,10 @@
 
 extern u8 D_80094D40[];
 
-Unk80045878Obj *func_8004153C(s32 a0) { return g_player_ptrs[a0]; }
+Unk80045878Obj *func_8004153C(s32 a0) { return D_800A9A10[a0]; }
 
 s32 func_80041554(s32 a0) {
-    Unk80045878Obj *ptr = g_player_ptrs[a0];
+    Unk80045878Obj *ptr = D_800A9A10[a0];
     if (ptr) {
         return ptr->unk_08;
     }
@@ -21,7 +21,7 @@ s32 func_80041584(void) {
     s32 i;
     s32 ret = -1;
     for (i = 0; i < 3; i++) {
-        if (g_player_ptrs[i] == 0) {
+        if (D_800A9A10[i] == 0) {
             ret = i;
             break;
         }
@@ -32,11 +32,11 @@ s32 func_80041584(void) {
 void func_800415C4(s32 a0) {
     func_8004016C(a0);
     func_80045A50(a0);
-    g_player_ptrs[a0] = 0;
+    D_800A9A10[a0] = 0;
 }
 
 void func_80041604(s32 a0, s32 a1) {
-    Unk80045878Obj *ptr = g_player_ptrs[a0];
+    Unk80045878Obj *ptr = D_800A9A10[a0];
     if (ptr) {
         /* FAKE: the halfword read into an s32 local (lh); in the masked
          * expression it loads lhu (score 1) */
@@ -45,11 +45,11 @@ void func_80041604(s32 a0, s32 a1) {
             ptr->unk_06 = -2;
         }
     }
-    g_player_char_ids[a0] = a1;
+    D_80094B88[a0] = a1;
 }
 
 s32 func_80041650(s32 a0) {
-    Unk80045878Obj *ptr = g_player_ptrs[a0];
+    Unk80045878Obj *ptr = D_800A9A10[a0];
     if (ptr) {
         /* FAKE: the halfword read into an s32 local (lh); in the masked
          * expression it loads lhu (score 1) */
@@ -72,7 +72,7 @@ void func_80041688(s32 arg0, s32 arg1) {
     u8 *q;
     s32 b, r, g, v;
 
-    player = g_player_ptrs[arg0];
+    player = D_800A9A10[arg0];
     if (player == NULL)
         return;
 
@@ -136,7 +136,7 @@ void func_800417D0(Unk80101DF0Record *a0) {
         return;
     }
     if (a0->unk6 != 2) {
-        func = g_anim_func_table[a0->unk8];
+        func = D_800F66A0[a0->unk8];
         func(&a0->xf.rot, &a0->work);
     }
     if (a0->unkC != 0) {
@@ -156,7 +156,7 @@ void func_800418D0(Unk80101DF0Record *a0) {
     sp10.vx = -(u16)a0->xf.rot.vx;
     sp10.vy = -(u16)a0->xf.rot.vy;
     sp10.vz = -(u16)a0->xf.rot.vz;
-    g_anim_func_table[a0->unk8](&sp10, &a0->work);
+    D_800F66A0[a0->unk8](&sp10, &a0->work);
     a0->xf.mat = a0->work;
 }
 
@@ -355,13 +355,13 @@ test:
     }
 }
 
-extern s16 g_anim_select[3];
+extern s16 D_800A3238[3];
 extern VECTOR D_800A9B28;
 
 void func_80041E10(VECTOR *a0, s32 a1) {
-    g_anim_select[0] = (s16)((((a1 >> 16) & 0xFF) << 12) / 255);
-    g_anim_select[1] = (s16)((((a1 >> 8) & 0xFF) << 12) / 255);
-    g_anim_select[2] = (s16)(((a1 & 0xFF) << 12) / 255);
+    D_800A3238[0] = (s16)((((a1 >> 16) & 0xFF) << 12) / 255);
+    D_800A3238[1] = (s16)((((a1 >> 8) & 0xFF) << 12) / 255);
+    D_800A3238[2] = (s16)(((a1 & 0xFF) << 12) / 255);
     D_800A9B28 = *a0;
 }
 
@@ -393,7 +393,7 @@ void func_80041EB0(s32 a0, s32 a1) {
         if (ptr == 0) {
             goto skip;
         }
-        if (g_anim_select[0] < 0) {
+        if (D_800A3238[0] < 0) {
             goto skip;
         }
 
@@ -439,9 +439,9 @@ void func_80041EB0(s32 a0, s32 a1) {
             (s16)-ratan2(dy, (rcos(angle) * dz + rsin(angle) * dx) >> 12);
         tbl->light[1].yaw = (s16)angle;
         tbl->light[1].on = 1;
-        tbl->cmat.m[0][1] = g_anim_select[0];
-        tbl->cmat.m[1][1] = g_anim_select[1];
-        tbl->cmat.m[2][1] = g_anim_select[2];
+        tbl->cmat.m[0][1] = D_800A3238[0];
+        tbl->cmat.m[1][1] = D_800A3238[1];
+        tbl->cmat.m[2][1] = D_800A3238[2];
         goto end_loop;
 
     skip:
@@ -455,27 +455,27 @@ void func_80041EB0(s32 a0, s32 a1) {
     func_8004A1FC(&D_800F62E0[1]);
 }
 
-extern s16 g_anim_select[3];
+extern s16 D_800A3238[3];
 /* This file's statics (.sbss, allocated per file in link order), in address
  * order (Q65). */
-static s16 g_anim_hit_flags[2];
+static s16 D_800A3380[2];
 static s32 g_anim_hit_data[2];
 
 void func_800420D0(void) {
-    g_anim_hit_flags[1] = 0;
-    g_anim_hit_flags[0] = 0;
-    g_anim_select[0] = -1;
+    D_800A3380[1] = 0;
+    D_800A3380[0] = 0;
+    D_800A3238[0] = -1;
 }
 
 void func_800420E8(s32 a0, s32 a1) {
     if (a0 < 2) {
-        g_anim_hit_flags[a0] = 1;
+        D_800A3380[a0] = 1;
         g_anim_hit_data[a0] = a1;
     }
 }
 
 void func_8004211C(void) {
-    s32 val = g_anim_hit_flags[0] * 2 + g_anim_hit_flags[1];
+    s32 val = D_800A3380[0] * 2 + D_800A3380[1];
     switch (val) {
     case 1:
         func_80041EB0(0, g_anim_hit_data[1]);
@@ -586,4 +586,4 @@ void func_80042478(s32 a0) {
 }
 
 /* This file's initialized small data (.sdata), in address order (Q65). */
-s16 g_anim_select[3] = {0, 0, 0};
+s16 D_800A3238[3] = {0, 0, 0};

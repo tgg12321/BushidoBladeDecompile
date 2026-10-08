@@ -746,7 +746,7 @@ typedef struct {
     s32 x, y, z;
 } Vec3i32;
 
-/* A leaf position (g_leaf_position_table: 12-byte stride, 6 entries): the same
+/* A leaf position (D_80107850: 12-byte stride, 6 entries): the same
    s32 x/y/z triple as Vec3i32; func_800207C8 copies a scratchpad point
    (SPAD->unkA8) into Unk80101EC8Record.unk_180 as one 12-byte object. */
 typedef Vec3i32 LeafPos;
@@ -1826,9 +1826,9 @@ typedef struct Unk8001CD68Rec {
 /* Two 0x58-byte records set up side by side by func_80049E4C: 0x80101DF0
  * (unk0 = 0x64, unk8 = 5; pointer stored to D_800A3708) and 0x800FF638
  * (unk0 = 0x65, unk8 = 2; pointer stored to D_800A370C). func_800418D0
- * passes a negated stack copy of xf.rot and &work to g_anim_func_table[unk8],
+ * passes a negated stack copy of xf.rot and &work to D_800F66A0[unk8],
  * then copies work to xf.mat; func_80046BF4 writes work.t just before that
- * call. func_800475A4 passes &xf.rot to g_anim_func_table[0] and &xf.mat to
+ * call. func_800475A4 passes &xf.rot to D_800F66A0[0] and &xf.mat to
  * ApplyMatrix. D_800EEDF0 and D_800EF070 are two more
  * records of this layout: func_800472C0 initialises the first,
  * func_800477E8 sets up the second and passes it to func_800417D0, which reads
@@ -1845,7 +1845,7 @@ typedef struct Unk80101DF0Record {
     s16 unk2;                       /* +0x02 */
     s16 unk4;                       /* +0x04 */
     s16 unk6;                       /* +0x06 */
-    s16 unk8;                       /* +0x08 g_anim_func_table index */
+    s16 unk8;                       /* +0x08 D_800F66A0 index */
     s16 unkA;                       /* +0x0A */
     struct Unk80101DF0Record *unkC; /* +0x0C */
     Unk80101DF0Xform xf;            /* +0x10 */
@@ -1886,7 +1886,7 @@ typedef void (*AnimRotFunc)(SVECTOR *, MATRIX *);
 
 /* The 0x68-byte records of the table func_8003F1D4 returns: a transform
  * node of the Unk80101DF0Record layout, then a byte flag. func_8003EDC0
- * fills them from a stream and calls g_anim_func_table[unk8] on &xf.rot /
+ * fills them from a stream and calls D_800F66A0[unk8] on &xf.rot /
  * &xf.mat (func_800418D0's call); func_8003E6D8 and func_8003EB84 queue each
  * one on g_draw_queue at most once, guarded by unk58. */
 typedef struct {
@@ -1925,7 +1925,7 @@ typedef struct {
 } Unk80094B96Rec;
 
 /* The per-player model object func_80045878 builds (0x1A88 bytes, its
- * func_80045600 block) and g_player_ptrs[] / func_8004153C hand out. The header
+ * func_80045600 block) and D_800A9A10[] / func_8004153C hand out. The header
  * (0x00..0x2B) is followed by three arrays of 0x68-byte transform nodes
  * (func_80041430 rebases them as 0x15, 0x14 and 0x14 records), then three
  * 20-entry pointer tables.

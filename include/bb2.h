@@ -28,9 +28,9 @@ extern DR_MOVE D_800A9830[2][10];
  * (x 0x3F0, y 0x1DC, 16 x 36). */
 extern RECT D_800A3220;
 
-extern u8 g_disp_enable;
-extern u8 g_disp_fade;
-extern s16 g_game_mirror_mode;
+extern u8 D_800A3768;
+extern u8 D_800A36A8;
+extern s16 D_800F665C;
 extern s16 D_800F6658;
 extern s32 D_800A3790;
 extern s16 D_80099478;
@@ -467,7 +467,7 @@ extern Unk80101DF0Record D_800FF638;
 extern Unk80101DF0Record D_800EEDF0;
 extern Unk80101DF0Record D_800EF070;
 extern Unk800F62E0Rec D_800F62E0[8];
-extern AnimRotFunc g_anim_func_table[6];
+extern AnimRotFunc D_800F66A0[6];
 
 /* The CD file table at 0x8008EC34: one 8-byte record per disc file, indexed by
  * the file numbers func_80036EA8 forms. `loc` is sought (cdrom_StartRead copies
@@ -571,8 +571,8 @@ extern u8 D_801027D8;
 extern void *g_draw_queue[640];
 extern s32 chractar_use_pset_combo_id_table[];
 extern Func80017A44Output g_file_data_buf[8];
-extern s32 g_player_char_ids[];
-extern Unk80045878Obj *g_player_ptrs[];
+extern s32 D_80094B88[];
+extern Unk80045878Obj *D_800A9A10[];
 
 extern s32 bits_DepositMask3F83F8(s32);
 extern s32 bits_ExtractMask3F83F8(s32);

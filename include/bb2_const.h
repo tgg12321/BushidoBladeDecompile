@@ -1,7 +1,7 @@
 #ifndef BB2_CONST_H
 #define BB2_CONST_H
 
-/* Display enable states (g_disp_enable) */
+/* Display enable states (D_800A3768) */
 #define DISP_DISABLED 0xFF /* Display off / loading */
 #define DISP_ACTIVE 0x14   /* Normal active display */
 #define DISP_LOADING 10    /* Loading state */

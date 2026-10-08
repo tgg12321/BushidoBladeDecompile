@@ -1831,7 +1831,7 @@ void func_8001DB9C(void) {
 void func_8001DBE4(void) {
     s32 i;
 
-    if (g_disp_enable != DISP_ACTIVE) {
+    if (D_800A3768 != DISP_ACTIVE) {
         return;
     }
     func_8003AA78();
@@ -1870,7 +1870,7 @@ void func_8001DCB0(void) {
     s32 addr;
 
     func_8005B5AC();
-    if (g_disp_enable != DISP_ACTIVE) {
+    if (D_800A3768 != DISP_ACTIVE) {
         func_80016888();
         gpu_SetDispMaskOn();
     }
@@ -2012,8 +2012,8 @@ void func_8001DCB0(void) {
     func_800392C8();
     game_Cleanup();
     func_8001DBE4();
-    g_disp_enable = DISP_DISABLED;
-    g_disp_fade = 0;
+    D_800A3768 = DISP_DISABLED;
+    D_800A36A8 = 0;
     eff_Init();
     D_800A3670 = 0;
     D_800A3834 = 1;
@@ -2336,7 +2336,7 @@ void func_8001EFA0(void) {
         case 1:
             if (D_800A3748 == 0) {
                 func_8001DA2C();
-                g_disp_enable = 2;
+                D_800A3768 = 2;
                 func_80033BC0();
                 return;
             }

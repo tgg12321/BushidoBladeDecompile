@@ -130,8 +130,8 @@ void func_800404A0(Unk80045878Node *a0, s32 a1) {
 void func_800404D8(void) {
     s32 i;
     for (i = 0; i < 3; i++) {
-        g_player_ptrs[i] = 0;
-        g_player_char_ids[i] = 0;
+        D_800A9A10[i] = 0;
+        D_80094B88[i] = 0;
     }
 }
 
@@ -145,7 +145,7 @@ extern s32 snd_VabFakeOpen(s32, s32);
 Unk80045878Obj *func_80040510(s32 a0, s32 a1, s32 a2) {
     Unk80045878Obj *ptr;
     ptr = func_80045878(a0, a1, a2);
-    g_player_ptrs[a0] = ptr;
+    D_800A9A10[a0] = ptr;
     func_80040594(ptr);
     func_800408F8(ptr);
     func_80040B44(ptr);
@@ -263,13 +263,12 @@ after_select:
 
 done_cases:
     DrawSync(0);
-    func_80041988(
-        a0->unk_04, a0->unk_08, g_player_char_ids[a0->unk_04], (s32)sec);
+    func_80041988(a0->unk_04, a0->unk_08, D_80094B88[a0->unk_04], (s32)sec);
 
     {
         a0->unk_00.word = (a0->unk_00.word & 0xFFE0FFFF) |
-                          ((g_player_char_ids[a0->unk_04] & 0x1F) << 16);
-        g_player_char_ids[a0->unk_04] = 0;
+                          ((D_80094B88[a0->unk_04] & 0x1F) << 16);
+        D_80094B88[a0->unk_04] = 0;
     }
 
     DrawSync(0);

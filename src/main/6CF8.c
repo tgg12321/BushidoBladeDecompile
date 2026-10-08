@@ -179,8 +179,8 @@ void sys_Init(void) {
     StartPAD();
     ChangeClearPAD(0);
     disp_Init();
-    g_disp_enable = DISP_DISABLED;
-    g_disp_fade = 0;
+    D_800A3768 = DISP_DISABLED;
+    D_800A36A8 = 0;
     cdrom_Init();
     memcard_Init();
     rcnt_StartCnt1Wrapper();
@@ -461,7 +461,7 @@ loop:
 
     if (D_800A3928 != 0) {
         func_800372C0();
-        g_disp_enable = DISP_DISABLED;
+        D_800A3768 = DISP_DISABLED;
         D_800A3928 = 0;
         D_800A31DA = 0;
         D_800A3834 = 8;
@@ -532,12 +532,12 @@ void func_800174F4(void) {
      * case-20 D_800A37A8[] code passed to func_80060414 (owner ruling 11) */
     s32 temp;
     s32 prim;
-    /* holds two values: the g_disp_enable switch selector, then the case-20
+    /* holds two values: the D_800A3768 switch selector, then the case-20
      * D_800A37A0 limit (owner ruling 11) */
     s32 temp2;
 
     prim = (s32)D_800F33D8;
-    if (g_disp_enable == DISP_DISABLED) {
+    if (D_800A3768 == DISP_DISABLED) {
         return;
     }
     SetDefDrawEnv(&env, 0, (D_800A36AC & 1) ? 0xF0 : 0, 0x280, 0xF0);
@@ -545,19 +545,19 @@ void func_800174F4(void) {
     PutDrawEnv(&env);
     g_gpu_ot_ptr = ot;
     ClearOTagR(ot, 2);
-    temp2 = g_disp_enable;
+    temp2 = D_800A3768;
     switch (temp2) {
     case 1:
     case 2:
         prim = func_8005D46C(prim, temp2);
-        if (g_disp_fade != 0) {
+        if (D_800A36A8 != 0) {
             s32 i;
             temp = (rand() & 3) + 4;
             for (i = 0; i < temp; i++) {
-                prim = func_8005D554(prim, g_disp_enable);
+                prim = func_8005D554(prim, D_800A3768);
             }
         } else if ((rand() & 7) == 0) {
-            func_8005D554(prim, g_disp_enable);
+            func_8005D554(prim, D_800A3768);
         }
         break;
     case 10:
@@ -812,7 +812,7 @@ u8 D_800A30E8 = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
 u8 D_800A3690;
-u8 g_disp_fade;
+u8 D_800A36A8;
 s32 D_800A36AC;
 u8 D_800A36B0;
 u8 D_800A36F1;
@@ -822,7 +822,7 @@ u8 D_800A3713;
 u8 D_800A3716;
 u8 D_800A3744;
 u32 *g_gpu_ot_ptr;
-u8 g_disp_enable;
+u8 D_800A3768;
 u32 D_800A3770[2];
 s32 D_800A3784;
 u8 D_800A3788;

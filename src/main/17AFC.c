@@ -5290,7 +5290,7 @@ void func_80031B24(void) {
             obj->unk_04 = 0;
             st = ch->unk_6A;
             if (st == 8 || st == 0x23) {
-                g_disp_fade = 1;
+                D_800A36A8 = 1;
             }
             continue;
         }
@@ -6480,8 +6480,8 @@ void func_80033BC0(void) {
     u8 b = D_800A391F;
 
     if (a0 == b) {
-        g_disp_enable = DISP_DISABLED;
-        g_disp_fade = 0;
+        D_800A3768 = DISP_DISABLED;
+        D_800A36A8 = 0;
         if (a0 == 0x14) {
             u8 z = D_8008D9EC[D_80101EC8[0].unk_0A];
             s32 val = 2;
@@ -6693,7 +6693,7 @@ void func_80034200(void) {
     s32 innerBound;
     u8 *base;
 
-    g_disp_enable = DISP_LOADING;
+    D_800A3768 = DISP_LOADING;
     n = D_800A389B;
     if (i < n) {
         innerBound = D_800A3874;
@@ -6725,8 +6725,8 @@ extern void func_80034200(void);
 void func_800342A0(void) {
     func_80034200();
     if (D_800A3874 == D_800A389B) {
-        g_disp_enable = DISP_DISABLED;
-        g_disp_fade = 0;
+        D_800A3768 = DISP_DISABLED;
+        D_800A36A8 = 0;
         D_800A3834 = 0x14;
     } else {
         s32 v1;

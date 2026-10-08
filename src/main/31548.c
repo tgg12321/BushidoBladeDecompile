@@ -16,7 +16,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     s16 *s1;
     Unk80045878Obj *ent;
 
-    ent = g_player_ptrs[a0];
+    ent = D_800A9A10[a0];
     if (ent == 0) {
         return;
     }
@@ -87,7 +87,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         s2->node.xf.rot.vy = -s1[0x3A];
         s2->node.xf.rot.vz = -s1[0x3B];
 
-        g_anim_func_table[0](&s2->node.xf.rot, &s2->node.work);
+        D_800F66A0[0](&s2->node.xf.rot, &s2->node.work);
 
         s2[1].node.work.t[0] = s1[0x3C];
         s2[1].node.work.t[1] = -s1[0x3D];
@@ -96,7 +96,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         s2[1].node.xf.rot.vy = -s1[0x40];
         s2[1].node.xf.rot.vz = -s1[0x41];
 
-        g_anim_func_table[0](&s2[1].node.xf.rot, &s2[1].node.work);
+        D_800F66A0[0](&s2[1].node.xf.rot, &s2[1].node.work);
         break;
     }
     case 1:
@@ -201,7 +201,7 @@ extern s32 D_80094CFC[];
 void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
     s32 i = 1;
     s32 *tbl = D_80094CFC;
-    Unk80045878Obj *base = g_player_ptrs[a0];
+    Unk80045878Obj *base = D_800A9A10[a0];
     SVECTOR buf;
     Unk80045878Node *ents;
     MATRIX *out2;
@@ -301,7 +301,7 @@ void func_80041430(s32 a0, s32 a1) {
     Unk80045878Obj **base;
     Unk80045878Obj *s0;
     s32 i;
-    base = &g_player_ptrs[a0];
+    base = &D_800A9A10[a0];
     s0 = (Unk80045878Obj *)((u8 *)*base + a1);
     *base = s0;
     func_800414FC(a1, s0->unk_2C, 0x15);

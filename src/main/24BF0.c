@@ -41,7 +41,7 @@ void func_800344B4(void) {
     switch (D_800A38DC) {
     case 6:
         D_80102778.unk_E = 1;
-        g_disp_enable = 1;
+        D_800A3768 = 1;
         D_800A3834 = 0;
         D_800A36F6 = (D_800A38A0 != 0);
         goto skip_clear;
@@ -56,7 +56,7 @@ void func_800344B4(void) {
     case 1:
         D_80102778.unk_4[5] = 1;
         func_800338CC();
-        g_disp_enable = 1;
+        D_800A3768 = 1;
         func_80033BC0();
         goto skip_clear;
 
@@ -70,7 +70,7 @@ void func_800344B4(void) {
         D_800A3728 = 0;
         D_800A36A4 = 0x22;
         func_80033DF4();
-        g_disp_enable = 1;
+        D_800A3768 = 1;
         break;
 
     case 5: {
@@ -105,7 +105,7 @@ void func_800344B4(void) {
         break;
 
     case 4:
-        g_disp_enable = 1;
+        D_800A3768 = 1;
         break;
     }
 

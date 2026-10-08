@@ -451,7 +451,7 @@ void func_8003B8E4(void) {
         func_8003AE5C(D_800A3844);
         D_800A37C0 = 500;
         D_800A38F8 = 0;
-        g_disp_enable = DISP_ACTIVE;
+        D_800A3768 = DISP_ACTIVE;
         func_8001D790();
         func_8003B5A4();
         gpu_SetDrawEnvBg(1, 0, 0, 0);
@@ -499,9 +499,9 @@ void func_8003B9D0(void) {
     magic = 0x80190800;
     func_8001DA2C();
     game_Cleanup();
-    if (g_disp_enable != DISP_ACTIVE)
+    if (D_800A3768 != DISP_ACTIVE)
         func_80016888();
-    if (g_disp_enable != DISP_DISABLED)
+    if (D_800A3768 != DISP_DISABLED)
         gpu_SetDispMaskOn();
     func_800174F4();
     gpu_ResetGraphMode1();
@@ -548,8 +548,8 @@ void func_8003B9D0(void) {
         func_80041BF4(D_800A37B4, D_800A37B5, D_800A37B6);
     }
     func_8001DBE4();
-    g_disp_enable = DISP_DISABLED;
-    g_disp_fade = 0;
+    D_800A3768 = DISP_DISABLED;
+    D_800A36A8 = 0;
     snd_SerialMixOn();
     v0 = func_80036EA8(5, D_800A3878[1]);
     cdrom_StartAudio(v0, D_800A3878[2]);
@@ -1231,8 +1231,8 @@ static s32 D_800A3360;
 static s32 D_800A3364;
 static s32 D_800A3368;
 static s32 D_800A336C;
-static s32 g_game_flag_a;
-static s32 g_game_flag_b;
+static s32 D_800A3370;
+static s32 D_800A3374;
 
 void func_8003D2F4(void) {
     s32 v0;
@@ -2244,7 +2244,7 @@ extern s32 D_800A3230;
 /* func_8003EDC0 - unpacks a stream of u16 words in sections ended by -1:
  * (cell, id) pairs into the 16-byte record table (count kept in D_800A3368),
  * the transform-node records (header word, xf.mat.t, xf.rot; each node is
- * then passed to its g_anim_func_table handler), then the 32x32 cell grid,
+ * then passed to its D_800F66A0 handler), then the 32x32 cell grid,
  * each listed cell indexing a run of record ids (bit 15 ends a run) in the
  * run table. Cells are numbered row * 32 + column. */
 void func_8003EDC0(u16 *p, s32 arg1) {
@@ -2299,7 +2299,7 @@ void func_8003EDC0(u16 *p, s32 arg1) {
         } else {
             c->node.unk0 = 0;
         }
-        g_anim_func_table[c->node.unk8](&c->node.xf.rot, &c->node.xf.mat);
+        D_800F66A0[c->node.unk8](&c->node.xf.rot, &c->node.xf.mat);
         c->unk58 = 0;
     }
     for (i = 0; i < 32; i++) {
@@ -2372,7 +2372,7 @@ void func_8003F218(s32 a0) {
     if (!a0) {
         func_8003F1E4(0);
     }
-    g_game_mirror_mode = (s16)D_800A322C;
+    D_800F665C = (s16)D_800A322C;
 }
 
 s32 func_8003F268(void) { return D_800A322C; }
@@ -2467,8 +2467,8 @@ void func_8003F52C(s32 a0, s32 a1, s32 a2) {
 u32 func_8003F54C(s32 a0, s32 a1) { return D_800A8FB0[a1 * 32 + a0]; }
 
 void func_8003F568(void) {
-    g_game_flag_b = 0;
-    g_game_flag_a = 0;
+    D_800A3374 = 0;
+    D_800A3370 = 0;
     D_800A93B0[2] = 0;
     D_800A93B0[1] = 0;
     D_800A93B0[0] = 0;
@@ -2554,8 +2554,8 @@ void func_8003F6D8(Scene *arg0) {
 void func_8003F7F4(void) {
     func_80017714();
     func_80017F90();
-    g_game_flag_a = 0;
-    g_game_flag_b = 0;
+    D_800A3370 = 0;
+    D_800A3374 = 0;
 }
 
 extern u8 *func_8003FA24(SceneRec *rec, s16 *cmds, u8 *cur);

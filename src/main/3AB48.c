@@ -834,8 +834,8 @@ s32 func_8005490C(void) {
         rot.vx = 0;
         rot.vz = 0;
         rot.vy = s->unk1E;
-        g_anim_func_table[0](&rot, &m);
-        g_anim_func_table[0](&D_80101DF0.xf.rot, &D_80101DF0.work);
+        D_800F66A0[0](&rot, &m);
+        D_800F66A0[0](&D_80101DF0.xf.rot, &D_80101DF0.work);
         MulMatrix2(&m, &D_80101DF0.work);
         math_MatrixToAnglesYXZ(&D_80101DF0.work, &D_80101DF0.xf.rot);
         math_TransposeMatrixInPlace(&D_80101DF0.work);

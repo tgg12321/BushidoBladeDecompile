@@ -119,8 +119,8 @@ g_sys_video_mode = 0x800A2664; // video mode (0=NTSC)
 Vcount = 0x800A2634; // DMA memory region  // data-wave 2026-09-07: was g_sys_dma_region
 
 // === Player / Character ===
-g_player_ptrs = 0x800A9A10; // player struct pointers [3]
-g_player_char_ids = 0x80094B88; // character IDs [3]
+D_800A9A10 = 0x800A9A10; // player struct pointers [3]  // data-wave 2026-10-08: was g_player_ptrs
+D_80094B88 = 0x80094B88; // character IDs [3]  // data-wave 2026-10-08: was g_player_char_ids
 
 // === Camera ===
 D_800EEDB0 = 0x800EEDB0;  // data-wave 2026-09-29: was g_cam_matrix
@@ -140,11 +140,11 @@ D_800948BC = 0x800948BC; // {init, unk4} pairs indexed by func_80046798(): func_
 // === Game State ===
 D_800A336C = 0x800A336C; // game mode/state  // data-wave 2026-09-25: was g_game_mode
 D_800A322C = 0x800A322C; // player count  // data-wave 2026-09-25: was g_game_player_count
-g_game_mirror_mode = 0x800F665C; // player count mirror
+D_800F665C = 0x800F665C; // player count mirror  // data-wave 2026-10-08: was g_game_mirror_mode
 D_800F6656 = 0x800F6656; // P1 controller port  // data-wave 2026-09-25: was g_game_p1_ctrl
 D_800F6658 = 0x800F6658; // P2 controller port  // data-wave 2026-09-25: was g_game_p2_ctrl
-g_game_flag_a = 0x800A3370; // game flag A
-g_game_flag_b = 0x800A3374; // game flag B
+D_800A3370 = 0x800A3370; // game flag A  // data-wave 2026-10-08: was g_game_flag_a
+D_800A3374 = 0x800A3374; // game flag B  // data-wave 2026-10-08: was g_game_flag_b
 D_800F6654 = 0x800F6654; // pause state flag  // data-wave 2026-09-25: was g_game_pause
 D_800A3790 = 0x800A3790; // game timer  // data-wave 2026-09-25: was g_game_timer
 
@@ -171,8 +171,8 @@ D_800A324A = 0x800A324A; // active pad/selection  // data-wave 2026-09-25: was g
 // === Display ===
 g_gpu_db = 0x800F7438; // GpuDb[2] display double buffer (DRAWENV, DISPENV, OT per frame)  // data-wave 2026-09-24: was g_disp_fb_base
 // data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined
-g_disp_enable = 0x800A3768; // display enable
-g_disp_fade = 0x800A36A8; // display fade
+D_800A3768 = 0x800A3768; // display enable  // data-wave 2026-10-08: was g_disp_enable
+D_800A36A8 = 0x800A36A8; // display fade  // data-wave 2026-10-08: was g_disp_fade
 
 // === File I/O ===
 D_800A3710 = 0x800A3710; // VRAM transfer timer  // data-wave 2026-09-25: was g_file_vram_timer
@@ -180,11 +180,11 @@ D_800A3716 = 0x800A3716; // eff_Init done flag (eff_ClearInitFlag / sys_GameInit
 g_file_data_buf = 0x800F6740; // file data buffer
 
 // === Animation ===
-g_anim_func_table = 0x800F66A0; // rotation func ptrs
-g_anim_hit_flags = 0x800A3380; // hit flags [2]
+D_800F66A0 = 0x800F66A0; // rotation func ptrs  // data-wave 2026-10-08: was g_anim_func_table
+D_800A3380 = 0x800A3380; // hit flags [2]  // data-wave 2026-10-08: was g_anim_hit_flags
 g_anim_hit_data = 0x800A3384; // hit data [2]
-g_anim_select = 0x800A3238; // animation selection
-g_anim_counter = 0x800A3382; // frame counter
+// data-wave 2026-10-08: g_anim_select = 0x800A3238 retired; D_800A3238 is now object-defined
+D_800A3382 = 0x800A3382; // frame counter  // data-wave 2026-10-08: was g_anim_counter
 
 // === Character Data ===
 D_800A6690 = 0x800A6690; // transform-node records (Unk800A6690Rec, 0x68 bytes)  // data-wave 2026-10-08: was g_char_data
