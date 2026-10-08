@@ -28,11 +28,11 @@ glabel memcard_PollSwEventsTimeout
     /* 28064 80037864 00000000 */   nop
     /* 28068 80037868 04001024 */  addiu      $s0, $zero, 0x4
   .L8003786C:
-    /* 2806C 8003786C 5808828F */  lw         $v0, %gp_rel(D_800A3924)($gp)
+    /* 2806C 8003786C 5808828F */  lw         $v0, %gp_rel(g_memcard_poll_count)($gp)
     /* 28070 80037870 00000000 */  nop
     /* 28074 80037874 01004324 */  addiu      $v1, $v0, 0x1
     /* 28078 80037878 78004228 */  slti       $v0, $v0, 0x78
-    /* 2807C 8003787C 580883AF */  sw         $v1, %gp_rel(D_800A3924)($gp)
+    /* 2807C 8003787C 580883AF */  sw         $v1, %gp_rel(g_memcard_poll_count)($gp)
     /* 28080 80037880 03004014 */  bnez       $v0, .L80037890
     /* 28084 80037884 21100002 */   addu      $v0, $s0, $zero
     /* 28088 80037888 02001024 */  addiu      $s0, $zero, 0x2

@@ -2146,8 +2146,8 @@ void func_8003E6D8(s32 arg0) {
         ((Unk800A6690Rec *)*g_draw_queue_cursor)->unk58 = 0;
         g_draw_queue_cursor++;
     }
-    if (D_800948BC[stage_GetId()].unk4 != 0) {
-        D_800948BC[stage_GetId()].unk4();
+    if (D_800948BC[func_80046798()].unk4 != 0) {
+        D_800948BC[func_80046798()].unk4();
     }
     pos[0] = -D_80101DF0.xf.rot.vx;
     pos[1] = -D_80101DF0.xf.rot.vy;
@@ -2342,8 +2342,8 @@ extern void gte_SetMatrixRotTransIR(MATRIX *, SVECTOR *, VECTOR *);
 extern s32 D_80094A6C[];
 
 void func_8003F168(void) {
-    if (D_800948BC[stage_GetId()].init != 0) {
-        D_800948BC[stage_GetId()].init();
+    if (D_800948BC[func_80046798()].init != 0) {
+        D_800948BC[func_80046798()].init();
     }
 }
 

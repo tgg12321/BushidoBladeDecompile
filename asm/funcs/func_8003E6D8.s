@@ -277,7 +277,7 @@ glabel func_8003E6D8
     /* 2F2D8 8003EAD8 EEFFC414 */  bne        $a2, $a0, .L8003EA94
     /* 2F2DC 8003EADC FCFFC624 */   addiu     $a2, $a2, -0x4
   .L8003EAE0:
-    /* 2F2E0 8003EAE0 E619010C */  jal        stage_GetId
+    /* 2F2E0 8003EAE0 E619010C */  jal        func_80046798
     /* 2F2E4 8003EAE4 00000000 */   nop
     /* 2F2E8 8003EAE8 C0100200 */  sll        $v0, $v0, 3
     /* 2F2EC 8003EAEC 0980013C */  lui        $at, %hi(D_800948C0)
@@ -286,7 +286,7 @@ glabel func_8003E6D8
     /* 2F2F8 8003EAF8 00000000 */  nop
     /* 2F2FC 8003EAFC 0B004010 */  beqz       $v0, .L8003EB2C
     /* 2F300 8003EB00 4800A427 */   addiu     $a0, $sp, 0x48
-    /* 2F304 8003EB04 E619010C */  jal        stage_GetId
+    /* 2F304 8003EB04 E619010C */  jal        func_80046798
     /* 2F308 8003EB08 00000000 */   nop
     /* 2F30C 8003EB0C C0100200 */  sll        $v0, $v0, 3
     /* 2F310 8003EB10 0980013C */  lui        $at, %hi(D_800948C0)

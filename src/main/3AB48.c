@@ -684,7 +684,7 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     s->unk2 = *(u16 *)(((Unk800469C4Hdr *)s->unk2C)->unk8 + s->unk2C);
     s->unk0 = 0;
     t = func_80046F14();
-    t += stage_GetId() * 24 + a1 * 6;
+    t += func_80046798() * 24 + a1 * 6;
     s->unkC = *t++;
     s->unk10 = *t++;
     s->unk14 = *t++;

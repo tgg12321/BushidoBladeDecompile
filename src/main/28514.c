@@ -24,7 +24,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
     case 0:
         _card_info(p);
         D_800A31EC = 1;
-        D_800A3924 = 0;
+        g_memcard_poll_count = 0;
         D_800A3890 = 0;
         break;
     case 1: {
@@ -78,7 +78,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
         memcard_AckSwEvents();
         _card_load(p);
         D_800A31EC = 3;
-        D_800A3924 = 0;
+        g_memcard_poll_count = 0;
         break;
     case 3: {
         v1 = memcard_PollSwEventsTimeout();
@@ -129,4 +129,4 @@ s32 D_800A31EC = 0;
 /* Q65: tentative definitions (COMMON) of the small data reached gp-relative. */
 s32 D_800A37F4;
 s32 D_800A3890;
-s32 D_800A3924;
+s32 g_memcard_poll_count;

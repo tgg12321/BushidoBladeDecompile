@@ -85,7 +85,7 @@ typedef struct {
 typedef struct {
     s16 unk0;
     s16 unk2;
-    s16 unk4; /* stage id (stage_GetId) */
+    s16 unk4; /* stage id (func_80046798) */
     s16 unk6; /* entry count */
     s32 unk8;
     s32 unkC;  /* entry table (stride 0x68) */
@@ -679,13 +679,13 @@ typedef struct {
     /* 0x8 */ s32 unk8;
 } Unk800F0C10Record;
 
-/* 0x800948BC (D_800948BC): function-pointer pairs, indexed by stage_GetId().
+/* 0x800948BC (D_800948BC): function-pointer pairs, indexed by func_80046798().
  * func_8003F168 calls .init; func_8003E6D8 calls .unk4 (e.g. entry 13
  * holds func_80047570 / func_800475A4). */
 typedef struct {
     void (*init)(void);
     void (*unk4)(void);
-} StageFuncEntry;
+} Unk800948BCEntry;
 
 /* menuDat: model id -> BBM file name, ended by a zero id
  * (0x8008DCCC..0x8008DD5B). func_80020E74 loads the model of entry n from CD

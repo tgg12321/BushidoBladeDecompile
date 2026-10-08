@@ -1207,7 +1207,7 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     D_800A9CF8.unk2 = *a0++;
     D_800A9CF8.unk8 = (s32)a0;
     D_800A9CF8.unkC = a2;
-    v0 = stage_GetId();
+    v0 = func_80046798();
     D_800A9CF8.unk4 = v0;
     switch ((s16)v0) {
     case 7:

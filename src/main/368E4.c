@@ -311,7 +311,7 @@ s32 func_80046780(void) { return D_800A33B0; }
 
 s32 func_8004678C(void) { return D_800A33B4; }
 
-s32 stage_GetId(void) { return D_80099478; }
+s32 func_80046798(void) { return D_80099478; }
 
 s32 func_800467A8(void) { return D_8009947A; }
 
@@ -542,7 +542,7 @@ void func_80046E8C(void) { D_800A3790 = 0x23; }
 void func_80046EA0(s32 a0) {
     func_8003E6D8(a0);
     {
-        s32 v0 = stage_GetId();
+        s32 v0 = func_80046798();
         func_8003DA8C(v0, a0);
     }
 }

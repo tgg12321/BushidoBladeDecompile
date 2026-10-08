@@ -107,7 +107,7 @@ extern Unk800F0C10Record D_800F0C10[4][3];
 extern s16 D_800F0BA8[18];
 
 extern Unk800F0C10Record D_800F0CA0[18];
-extern StageFuncEntry D_800948BC[];
+extern Unk800948BCEntry D_800948BC[];
 
 /* The per-mode main-loop handlers, indexed by D_800A3834. */
 extern void (*g_module_func_tbl[])(void);
@@ -533,7 +533,7 @@ extern s32 D_800A32BC;
 extern u32 D_800A32C8[2];
 extern Unk80101DF0Record *D_800A370C;
 extern Unk80101DF0Record *D_800A3708;
-extern s32 D_800A3924;
+extern s32 g_memcard_poll_count;
 extern void func_800520B8(s32, s32, s32);
 extern u8 D_800A37A8[];
 extern u16 D_800A37C4;
@@ -930,7 +930,7 @@ extern void snd_VabFakeOpen9(s32);
 extern void func_8003F5CC(void);
 extern void func_8003F568(void);
 extern void func_8003F168(void);
-extern s32 stage_GetId(void);
+extern s32 func_80046798(void);
 extern void *func_80046F14(void);
 extern void func_8003F274(void);
 extern void sys_Init(void);

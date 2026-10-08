@@ -65,7 +65,7 @@ void memcard_Quit(void) {
 }
 
 s32 memcard_PollSwEventsTimeout(void) {
-    extern s32 D_800A3924;
+    extern s32 g_memcard_poll_count;
     s32 result;
     s32 one;
     s32 temp;
@@ -80,8 +80,8 @@ s32 memcard_PollSwEventsTimeout(void) {
     if (TestEvent(g_memcard_sw_event_new) == one) {
         result = 4;
     }
-    temp = D_800A3924;
-    D_800A3924 = temp + 1;
+    temp = g_memcard_poll_count;
+    g_memcard_poll_count = temp + 1;
     if (temp >= 0x78) {
         result = 2;
     }
@@ -296,4 +296,4 @@ s32 g_memcard_hw_event_err;
 s32 g_memcard_hw_event_timeout;
 s32 g_memcard_hw_event_new;
 s32 g_memcard_file_count;
-s32 D_800A3924;
+s32 g_memcard_poll_count;
