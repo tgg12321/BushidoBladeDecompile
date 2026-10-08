@@ -116,9 +116,9 @@ The "set/transition motion" decision function. Run by `saRobDraw`
 
 - `D_800A3207` — current motion-system state (1..4 represent boot, normal,
   hit-stop, special, reset)
-- `g_motion_play_countdown` (D_800A334C) — frame counter (decrements 0x5A=90 down to 0)
+- `D_800A334C` — the 90-frame display countdown of a memory-card message (0x5A down to 0)
 - `D_800A3354` — special state flag (transition pending)
-- `g_damage_debug_enabled` (D_800A31FC) — "no input" flag
+- `D_800A31FC` — a 0/1 flag of the memory-card status flow
 - `D_80102794` — pad input mask
 - `func_80038734()` — gets the current "selected motion index"
 

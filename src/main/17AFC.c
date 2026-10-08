@@ -56,8 +56,9 @@ void func_80027334(MotionFrame *arg0) {
     arg0->unk_0C[0x23] = 0xBCD;
 }
 
-/* D_800A376A / D_800A376B are one u8 per player (the hit-limb bits); a0 is
- * the player, and `*(&D_800A376A + a0)` reaches [1] through [0]'s address.
+/* func_8002738C ORs limb bits into `*(&D_800A376A + a0)`; its only caller
+ * passes a0 = 0 (func_80027AD8), so D_800A376B (written 0 elsewhere, never
+ * read) is not reached from here.
  * FAKE (Q97): two u8 scalars; as u8[2], func_8003B2C8 / func_8003B328 were
  * reported at 12 / 16 (not banked). */
 void func_8002738C(s32 a0, s32 a1) {

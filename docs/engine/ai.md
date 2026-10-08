@@ -138,7 +138,7 @@ stance):
 
 "Set up a fixed camera shot of the enemy's attack" — called from the
 practice/replay modes. Copies fighter offset 0x174 (the head bone position)
-to `g_grid_pos_vec3` (D_800F6608) (the camera target) and sets the camera distance/rotation
+to `D_800F6608.unk_00` (the point `camera_CalcEye` places the eye behind) and sets the camera distance/rotation
 parameters at `D_800F661A..D_800F6620` to a fixed `(0x120, arg1, 0, 0x1162)`.
 
 This is the "watch the enemy do their move" replay-camera helper, not an
@@ -149,9 +149,9 @@ attack decision.
 The per-frame "practice mode" handler — runs the move-pattern table
 selection for the practice/tutorial mode. Increments `D_800A37B8` (a frame
 counter), calls `cpu_check_move_dir_pattern_enemy_attack` to set up the
-camera, then waits for pad input. The `g_cpu_attack_idx` (D_800A3817) register holds the
-"current selection" within the pattern table; pad-direction events cycle
-through it.
+camera, then waits for pad input. `D_800A3817` is the cursor of a three-item pad
+menu: up / down step it through 0..2 with wrap, and the confirm button acts
+on it (2B344.c:1004-1062).
 
 This function is also where many of the `D_800A3834` transitions out of
 practice mode are decided — selections 0/1/2 each set a different next mode.

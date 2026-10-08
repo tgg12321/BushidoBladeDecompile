@@ -12,7 +12,7 @@ know which subsystem owns it, look here.
   (main entry, ings.c:584), `sys_Init`, `sys_GameInit`, `motion_Open`
   (CTOR runner), `gnd_disp_loop_ctrl`
 - **Key globals:** `D_800A3834` (mode), `g_frame_parity` (D_800A36AC) (frame slot),
-  `g_disp_enable` (display), `D_8008D070` (CTOR table), `D_8008D090`
+  `D_800A3768` (the `func_800174F4` draw mode), `D_8008D070` (CTOR table), `D_8008D090`
   (mode dispatch table)
 - **Doc:** [main_loop.md](main_loop.md)
 
@@ -27,7 +27,7 @@ know which subsystem owns it, look here.
   `gnd_land_hit_char_die_main`, `katinuki_game_*`
 - **Key globals:** `D_80106A78` (active-move slots), `D_80106A50` (move
   enable bits), `Judge` (sin/cos LUT), `D_8008E194` (waza-table base),
-  `g_anim_hit_flags`, `g_anim_hit_data`
+  `D_800A3380` (two presence flags), `g_anim_hit_data`
 - **Doc:** [combat.md](combat.md)
 
 ### CPU / AI
@@ -55,7 +55,7 @@ know which subsystem owns it, look here.
   `motion_shift_check_*`, `calc_loc_mat_fw*` (matrix builders),
   `myRobGenei*` (afterimage)
 - **Key globals:** `MotDataBaseAddress` (0x80104F38), `D_800A3207`
-  (motion FSM state), `g_motion_play_countdown` (D_800A334C) (motion frame counter)
+  (motion FSM state), `D_800A334C` (90-frame countdown of a memory-card message)
 - **Doc:** [motion.md](motion.md)
 
 ### GPU / Render
@@ -109,7 +109,7 @@ know which subsystem owns it, look here.
   `DispUpdateStatusMessage`,
   `func_80016E60` (picks one of 3/6 menu entries from the pad),
   `FadeOut_*`, `CheckFadeEnd`, `InitFadePanel`
-- **Key globals:** `g_disp_fade`, `g_game_mode`, `g_game_pause`,
+- **Key globals:** `D_800A36A8` (0/1 sprite-pass switch), `g_game_mode`, `g_game_pause`,
   `g_color_mode` (grayscale flag), `D_80102794` (pad input mask),
   `selCharaID`, `g_char_setup_tbl`
 - **Doc:** [menus.md](menus.md)
@@ -150,7 +150,7 @@ know which subsystem owns it, look here.
   `game_GetPlayerCount`, `obj_InitChars`, `obj_InitTask`,
   `obj_InitPair`, `obj_InitAll`, `obj_Reset`, `obj_ExecTask`,
   `obj_InitTaskCamera`, `obj_UpdatePosition`
-- **Key globals:** `g_player_ptrs`, `g_player_char_ids`,
+- **Key globals:** `D_800A9A10` (model object slots), `D_80094B88` (per-slot codes),
   `g_char_setup_tbl`, `chractar_use_pset_combo_id_table`
 
 ### System / IRQ / Timer
@@ -168,8 +168,8 @@ know which subsystem owns it, look here.
 If you've seen a global in the source and want to know what it does:
 
 ### `0x800A_0xxx` range (low BSS)
-- `g_player_ptrs` (0x800A9A10) — Character/Player
-- `g_player_char_ids` (0x80094B88) — Character/Player
+- `D_800A9A10` — model object slots (`func_80045878`)
+- `D_80094B88` — per-slot 5-bit codes (`func_80041604`)
 - `D_800948BC` — hook pairs (`func_8003F168` / `func_8003E6D8`)
 - `g_snd_se_bank` (0x80099C34) — Sound
 - `D_80099478`, `D_8009947A`, `D_8009947C` — `func_800460E4` state / `func_80046F14` block
@@ -177,7 +177,8 @@ If you've seen a global in the source and want to know what it does:
 - `g_sys_*` (0x800A14CC..2664) — System/IRQ
 - `g_spu_*`, `g_snd_*` (0x800A2870..3404) — Sound
 - `g_game_*` (0x800A322C..3374) — Game state
-- `g_disp_enable`, `g_disp_fade` (0x800A3768, 0x800A36A8) — Display
+- `D_800A3768`, `D_800A36A8` — the `func_800174F4` draw mode and a 0/1
+  sprite-pass switch
 - `g_game_timer` (0x800A3790) — Game state
 - `D_800A3834` — game-mode dispatch register
 - `D_800A6690` — transform-node records queued by the grid draw walks
@@ -194,9 +195,9 @@ If you've seen a global in the source and want to know what it does:
 - `MarioCam_str` (0x800F19D0) — Replay/Special-cam debug
 - `g_gpu_color_table` (0x800F189C) — GPU
 - `g_color_mode` (0x800F6652) — Menus (grayscale)
-- `g_game_p1_ctrl`, `g_game_p2_ctrl`, `g_game_mirror_mode`,
+- `g_game_p1_ctrl`, `g_game_p2_ctrl`, `D_800F665C` (write-only),
   `g_game_pause` (0x800F6654..665C) — Game state
-- `g_anim_func_table` (0x800F66A0) — Motion/Animation
+- `D_800F66A0` — table of rotation-matrix routines (`math_RotMatrixZYX` etc.)
 - `g_disp_fb_base`, `g_disp_fb_flag` (0x800F7438, 0x800F7450) — GPU
 - `g_file_data_buf` (0x800F6740) — File I/O
 - `g_memcard_busy` (0x800FF578) — Memcard
@@ -283,7 +284,8 @@ full traces).  Indexed here by address range for reverse lookup:
   (0x800A26DE), `g_alarm_pending_priority_flag` (0x800A26E0, NEW) — §22
 - `D_800A36E0` (0x800A36E0) — cursor over the current parity bank of the
   DR_MODE buffer `D_800F1438` (51268.c:5210-5212, :5235)
-- `g_disp_state_buf_cursor` (0x800A36EC)
+- `D_800A36EC` — base pointer set once to `D_800F33D8`, indexed
+  [frame][fighter]
 - `g_main_flags_bitmask_reg` (0x800A289C) — main flags reg
 - `D_800A35D0` (0x800A35D0) — s16[2][2], one pair of steps per player that
   `func_800692C0` adds into the SelWork f40 counters (51268.c:3829)
@@ -317,8 +319,9 @@ full traces).  Indexed here by address range for reverse lookup:
 - `g_seq_event_handler_B0_CtrlChange` (0x800F3350)
 - **NEVER WRITTEN** in shipped EXE (verified via byte-level binary
   scan); dispatch arms in saTan0Main are effectively dead code
-- `g_disp_state_buf` (0x800F33D8, 512 bytes) — display-state struct
-  doubling as memcard save/load payload (§17)
+- `D_800F33D8` (512 bytes) — one scratch region: `func_800174F4` primitive
+  output, the memcard save/load image (§17), per-frame Rec1C records and
+  `sys_Exec`'s argument
 - `g_main_dispatch_fn0..4` aliases retained pointing at the same addresses
 
 ### `0x800F_FF5x` range — camera view-state MATRIX (§18)

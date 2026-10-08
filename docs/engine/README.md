@@ -170,9 +170,10 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 - `g_game_timer` (0x800A3790) — global game timer (frames or ticks).
 
 ### Display / frame
-- `g_disp_enable` (0x800A3768) — 0xFF = display off / loading; 0x14 = active;
-  10 = loading. See `bb2_const.h`.
-- `g_disp_fade` (0x800A36A8) — 0..255 fade-to-black amount.
+- `D_800A3768` — a five-valued mode (0xFF, 1, 2, 10, 0x14) that selects what
+  `func_800174F4` draws each frame (6CF8.c:540-590); `bb2_const.h` names
+  three of the values.
+- `D_800A36A8` — a 0/1 switch that multiplies the `func_8005D554` sprite passes.
 - `g_frame_parity` (D_800A36AC) — frame counter, low bit selects the active double-buffer slot.
 - `g_disp_fb_base` (0x800F7438) — base of the two 0x4090-byte
   drawenv+dispenv+OT structures (one per buffer).
@@ -186,9 +187,10 @@ to make sense. Full vocabulary in `symbol_addrs.txt`.
 ### Stage / character
 - `D_80099478` (id cached by `func_800460E4`), `D_8009947A` (0/1 flag),
   `D_800A8FB0` — 32x32 cell grid read by the draw walks (no collision use)
-- `g_player_ptrs` (0x800A9A10) — array of player-object pointers (3 slots:
-  P1, P2, prop/AI)
-- `g_player_char_ids` (0x80094B88) — character IDs per slot
+- `D_800A9A10` — three slots for the model objects `func_80045878` builds
+  (`func_80041584` scans i < 3)
+- `D_80094B88` — per-slot 5-bit codes `func_80041604` stores and
+  `func_80040594` packs into the model object's flag word
 - `D_800A6690` — transform-node records (0x68 bytes) unpacked from a u16
   stream and queued by the grid draw walks
 - `g_cam_matrix` (0x800EEDB0) — camera rotation matrix base

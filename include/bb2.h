@@ -306,8 +306,9 @@ extern s32 D_800A371C;
 extern u8 D_800A3728;
 extern s8 D_800A3748;
 
-/* 4-entry s16 leaf random/scratch buffer: func_800335D8 walks it,
-   func_80033510 clears it from the last element down. */
+/* Four s16 counters / latches, one per D_8008E914 row func_800335D8 walks
+   (type 1 latches 1; types 2..6 count up until an rng_Next() draw clears
+   them); func_80033510 clears it from the last element down. */
 extern s16 D_800A3750[4];
 
 extern u8 D_800A3758;
@@ -425,8 +426,10 @@ extern u8 D_800A3913;
 extern u8 D_800A3914;
 extern u8 D_800A3915;
 
-/* Per-leaf slot state (a counter byte per leaf); D_800A391E is a separate
-   end marker, not an element. */
+/* Six per-slot counters, 0 = free: func_80033550 claims a slot with 1,
+   func_800335D8 advances and frees them, func_80033510 zeroes all six.
+   D_800A391E is not an element: it is its own countdown byte, and
+   func_800335D8 uses only its address, as the loop bound. */
 extern u8 D_800A3918[6];
 
 extern u8 D_800A391E;

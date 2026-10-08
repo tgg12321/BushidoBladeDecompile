@@ -119,14 +119,14 @@ g_sys_video_mode = 0x800A2664; // video mode (0=NTSC)
 Vcount = 0x800A2634; // DMA memory region  // data-wave 2026-09-07: was g_sys_dma_region
 
 // === Player / Character ===
-D_800A9A10 = 0x800A9A10; // player struct pointers [3]  // data-wave 2026-10-08: was g_player_ptrs
-D_80094B88 = 0x80094B88; // character IDs [3]  // data-wave 2026-10-08: was g_player_char_ids
+D_800A9A10 = 0x800A9A10; // model object pointers [3] (func_80045878's objects)  // data-wave 2026-10-08: was g_player_ptrs
+D_80094B88 = 0x80094B88; // per-slot 5-bit codes [3] (func_80041604)  // data-wave 2026-10-08: was g_player_char_ids
 
 // === Camera ===
 D_800EEDB0 = 0x800EEDB0;  // data-wave 2026-09-29: was g_cam_matrix
 D_800EEDD0 = 0x800EEDD0; // MATRIX: D_80101DF0's matrix with row 1 halved (func_80047210)  // data-wave 2026-10-07: was g_cam_bone_data
 D_800EEDF0 = 0x800EEDF0; // transform record (Unk80101DF0Record layout); func_80047570 / func_800475A4  // data-wave 2026-10-07: was g_cam_bone_data2
-D_800EEDF8 = 0x800EEDF8; // +8 of D_800EEDF0: g_anim_func_table index (set to 4)  // data-wave 2026-10-07: was g_cam_interp
+D_800EEDF8 = 0x800EEDF8; // +8 of D_800EEDF0: D_800F66A0 index (set to 4)  // data-wave 2026-10-07: was g_cam_interp
 
 // === func_800460E4 state, D_800A8FB0 grid, D_800948BC hooks ===
 D_80099478 = 0x80099478; // id func_800460E4 caches (-1 = none); func_80046798 returns it  // data-wave 2026-10-08: was g_stage_id
@@ -140,11 +140,11 @@ D_800948BC = 0x800948BC; // {init, unk4} pairs indexed by func_80046798(): func_
 // === Game State ===
 D_800A336C = 0x800A336C; // game mode/state  // data-wave 2026-09-25: was g_game_mode
 D_800A322C = 0x800A322C; // player count  // data-wave 2026-09-25: was g_game_player_count
-D_800F665C = 0x800F665C; // player count mirror  // data-wave 2026-10-08: was g_game_mirror_mode
+D_800F665C = 0x800F665C; // write-only (func_80046B44, func_8003F218)  // data-wave 2026-10-08: was g_game_mirror_mode
 D_800F6656 = 0x800F6656; // P1 controller port  // data-wave 2026-09-25: was g_game_p1_ctrl
 D_800F6658 = 0x800F6658; // P2 controller port  // data-wave 2026-09-25: was g_game_p2_ctrl
-D_800A3370 = 0x800A3370; // game flag A  // data-wave 2026-10-08: was g_game_flag_a
-D_800A3374 = 0x800A3374; // game flag B  // data-wave 2026-10-08: was g_game_flag_b
+D_800A3370 = 0x800A3370; // write-only word (0; func_8003F568 / func_8003F7F4)  // data-wave 2026-10-08: was g_game_flag_a
+D_800A3374 = 0x800A3374; // write-only word (0; func_8003F568 / func_8003F7F4)  // data-wave 2026-10-08: was g_game_flag_b
 D_800F6654 = 0x800F6654; // pause state flag  // data-wave 2026-09-25: was g_game_pause
 D_800A3790 = 0x800A3790; // game timer  // data-wave 2026-09-25: was g_game_timer
 
@@ -171,8 +171,8 @@ D_800A324A = 0x800A324A; // active pad/selection  // data-wave 2026-09-25: was g
 // === Display ===
 g_gpu_db = 0x800F7438; // GpuDb[2] display double buffer (DRAWENV, DISPENV, OT per frame)  // data-wave 2026-09-24: was g_disp_fb_base
 // data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined
-D_800A3768 = 0x800A3768; // display enable  // data-wave 2026-10-08: was g_disp_enable
-D_800A36A8 = 0x800A36A8; // display fade  // data-wave 2026-10-08: was g_disp_fade
+D_800A3768 = 0x800A3768; // five-valued mode (0xFF/1/2/10/0x14) func_800174F4 draws by  // data-wave 2026-10-08: was g_disp_enable
+D_800A36A8 = 0x800A36A8; // 0/1 switch that multiplies the func_8005D554 sprite passes  // data-wave 2026-10-08: was g_disp_fade
 
 // === File I/O ===
 D_800A3710 = 0x800A3710; // VRAM transfer timer  // data-wave 2026-09-25: was g_file_vram_timer
@@ -181,10 +181,10 @@ g_file_data_buf = 0x800F6740; // file data buffer
 
 // === Animation ===
 D_800F66A0 = 0x800F66A0; // rotation func ptrs  // data-wave 2026-10-08: was g_anim_func_table
-D_800A3380 = 0x800A3380; // hit flags [2]  // data-wave 2026-10-08: was g_anim_hit_flags
+D_800A3380 = 0x800A3380; // 0/1 presence flags [2] (func_800420E8 / func_8004211C)  // data-wave 2026-10-08: was g_anim_hit_flags
 g_anim_hit_data = 0x800A3384; // hit data [2]
 // data-wave 2026-10-08: g_anim_select = 0x800A3238 retired; D_800A3238 is now object-defined
-D_800A3382 = 0x800A3382; // frame counter  // data-wave 2026-10-08: was g_anim_counter
+D_800A3382 = 0x800A3382; // [1] of the D_800A3380 flag pair (0/1)  // data-wave 2026-10-08: was g_anim_counter
 
 // === Character Data ===
 D_800A6690 = 0x800A6690; // transform-node records (Unk800A6690Rec, 0x68 bytes)  // data-wave 2026-10-08: was g_char_data

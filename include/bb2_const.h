@@ -1,7 +1,8 @@
 #ifndef BB2_CONST_H
 #define BB2_CONST_H
 
-/* Display enable states (D_800A3768) */
+/* Values of D_800A3768, a five-valued mode (0xFF, 1, 2, 10, 0x14) that
+   selects what func_800174F4 draws each frame */
 #define DISP_DISABLED 0xFF /* Display off / loading */
 #define DISP_ACTIVE 0x14   /* Normal active display */
 #define DISP_LOADING 10    /* Loading state */

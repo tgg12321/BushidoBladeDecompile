@@ -247,7 +247,7 @@ of `main.c`.
 | 22 (0x16) | 0x8003B870 | `func_8003B870` | **VS mode init**: func_80041604(0/1) + obj_InitChars + disp_SetFramebufferMode(1) |
 | 23 (0x17) | 0x8003B8E4 | `func_8003B8E4` | Returns until frame counter >= 3 |
 | 24 (0x18) | 0x8003C958 | `mode_handler_24_DispatchToMode25` | gpu_InitDisplay + reset state + sets dispatch_idx = 0x19 |
-| 25 (0x19) | 0x8003C9A4 | `func_8003C9A4` | Reads g_gnd_midpoint_x, game_SetControllerPorts(0) |
+| 25 (0x19) | 0x8003C9A4 | `func_8003C9A4` | func_8003F1E4(0), then writes D_800F6608 fields (2B344.c:993-1000) |
 | 26 (0x1A) | 0x80035DC8 | `scene_teardown_80035DC8` | Scene cleanup |
 | 27 (0x1B) | 0x80035E38 | `saRobDraw` | Draws robot AI (saRob = "sa" team rob) |
 | 28 (0x1C) | 0x8003CE18 | `func_8003CE18` | func_8001DA2C + func_800372C0 |
@@ -352,13 +352,13 @@ the same code path every frame.
 The mode-1 (gameplay) handler is part of `gnd_disp_loop_ctrl`, defined at
 `ings.c:678`. It's the "actually draw a frame of gameplay" function:
 
-- Checks `g_disp_enable == DISP_DISABLED` (0xFF) and returns immediately if
-  the display is hidden.
+- Returns immediately when `D_800A3768 == DISP_DISABLED` (0xFF); `D_800A3768`
+  is the five-valued mode this function switches on.
 - Uses its own internal s0/s1 register pinning to set up two GPU packet
   buffers.
 - Walks the ground/scene draw pipeline using `s2` as a pointer to
-  `g_disp_state_buf` (`0x800F33D8`, a 512-byte draw-state struct; see
-  the 2026-05-17 naming pass).
+  `D_800F33D8` (a 512-byte scratch region that is also the memcard save/load
+  image).
 
 This function works closely with the OT in `g_dma_buf_base` (D_800A374C) (the live OT pointer)
 and `g_cpu_move_pattern_cursor` (D_800A38B4) (the live primitive heap pointer).

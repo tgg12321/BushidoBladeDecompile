@@ -34,15 +34,15 @@ in this doc are KSEG0 virtual addresses (`0x8000_0000`+, cached).
 | .bss / engine globals zeroed at boot         |
 |   gp window center: g_disp_gp_base 0x800A30CC|
 |   GP-relative globals (+/- 32KB from gp):    |
-|     g_disp_enable 0x800A3768 (gp + 0x69C)    |
-|     g_disp_fade   0x800A36A8 (gp + 0x5DC)    |
+|     D_800A3768    0x800A3768 (gp + 0x69C)    |
+|     D_800A36A8    0x800A36A8 (gp + 0x5DC)    |
 |     g_game_timer  0x800A3790 (gp + 0x6C4)    |
 |     SpecialCam    0x8008EC34 (gp - 0x4498)   |
 |     g_cd_*        0x800A11xx..0x800A14xx     |
 |     g_spu_*       0x800A2Cxx..0x800A2Dxx     |
 |     g_snd_*       0x800A33xx                 |
 |   D_800A6690      0x800A6690 (node records)  |
-|   g_player_ptrs   0x800A9A10                 |
+|   D_800A9A10      0x800A9A10 (model objects) |
 +----------------------------------------------+
 | Heap / scratch areas (not strictly .bss)     |
 |   D_800F5370 — scratchpad save buffer        |
@@ -200,7 +200,7 @@ Examples (from `named_syms.txt`):
 | --- | --- | --- |
 | 0x800A3308 | (BSS clear start, see `__SN_ENTRY_POINT.s`) | +0x023C |
 | 0x800A336C | `g_game_mode` | +0x02A0 |
-| 0x800A3768 | `g_disp_enable` | +0x069C |
+| 0x800A3768 | `D_800A3768` | +0x069C |
 | 0x800A3790 | `g_game_timer` | +0x06C4 |
 | 0x800A3834 | game-mode dispatch register | +0x0768 |
 | 0x800A2CDC | `g_spu_base_addr` | -0x03F0 |
@@ -224,7 +224,7 @@ This is a coarse who-owns-what map within main RAM .bss. Detail in
 | `0x800A_33xx..38xx` | Display, fade, character, game-mode state |
 | `0x800A_6690..` | `D_800A6690` — transform-node records (0x68 bytes; read by the draw walks) |
 | `0x800A_8FB0..` | `D_800A8FB0` — 32x32 cell grid (read by the draw walks) |
-| `0x800A_9A10..` | `g_player_ptrs` — player object pointers |
+| `0x800A_9A10..` | `D_800A9A10` — model object pointers (3 slots) |
 | `0x800E_EDB0..` | `g_cam_matrix` and camera state |
 | `0x800E_F7BC..` | `g_snd_config_tbl` and sound playback state |
 | `0x800F_5370..` | scratchpad save area |

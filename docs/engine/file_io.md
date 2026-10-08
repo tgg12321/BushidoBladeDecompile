@@ -287,9 +287,9 @@ result=2 after ≥0x78 (120) ticks.
 The memcard save/load payload buffer was identified in the
 placeholder-refinement pass:
 
-- §17 Display-state buffer + cursor
-  — `g_disp_state_buf` at `0x800F33D8` is a 512-byte (0x200) buffer that
-  serves both as a draw-state struct AND as the memcard save/load payload.
+- §17 `D_800F33D8` + `D_800A36EC`
+  — `D_800F33D8` is a 512-byte (0x200) scratch region with four users;
+  one is the memcard save/load payload.
   See `code6cac_c_mid.c:507` (write 0x200 bytes via `func_80037C34`) and
   `code6cac_c_mid.c:524` (read 0x200 bytes via `func_80037B90`). Cleared
   by `func_80038148` (code6cac_c_mid.c:321-329).

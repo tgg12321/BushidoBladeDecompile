@@ -17,6 +17,6 @@
 # reproducing it from a tentative definition (extern / static / initialized / -G0 differing).
 # Net additions require the commit tag [infra-rule: maspsx-comm] plus that evidence and a fresh
 # layer-2. Never globalize (initialized/static objects are legitimately gp at an offset:
-# g_anim_select+2/+4, D_800A34F0+2, D_800A3588+2 / D_800A358C+2).
+# D_800A3238+2/+4, D_800A34F0+2, D_800A3588+2 / D_800A358C+2).
 #
 # Evidence for the rows below: memory/grind/func_80036140/evidence.md § "maspsx_comm_syms rows".

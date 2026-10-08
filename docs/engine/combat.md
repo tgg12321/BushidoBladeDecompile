@@ -285,30 +285,31 @@ globals. See [sound.md](sound.md) for details.
 ## Ground / arena init (2026-05-17)
 
 `gnd_init_8001B294(p1_char_ptr, p2_char_ptr)` (`code6cac_tu2.c:841`) sets
-up the per-round arena state when a fight starts.  It builds:
+up the per-round arena state when a fight starts.  It initialises the `Rec44` record `D_800F6608`:
 
-- **Camera midpoint** (X/Y/Z averages of P1/P2 positions, +0xF4/+0xF8/+0xFC)
-- **4 gauge slots** with max/cur defaults (max=100, cur=0)
-- **Facing angle** (BAM): `0x400 - single_game_getEnemyCharId(dx, dy)`
-- **Round timer max** = 0x1388 (5000 frames)
-- **Init flag** (reset to 0 at end)
+- `unk_00`: the fighters' midpoint (the record's only midpoint write; other
+  writers copy a fighter's position, store constants or interpolate)
+- `h30[0]` / `h30[1]`: cell x / z set to 100 (the out-of-range reset), the
+  middle element to 0
+- `unk_10.vy`: `0x400 - ratan2` of the fighters' separation (9F9C.c:798-800)
+- `b1E`: cleared (9F9C.c:803)
 
-| Symbol | Address | Role |
+| Symbol | Address | Field / role |
 |--------|---------|------|
-| `g_gnd_midpoint_x` | `0x800F6608` | Midpoint of P1/P2 X positions |
-| `g_gnd_midpoint_y` | `0x800F660C` | Midpoint Y |
-| `g_gnd_midpoint_z` | `0x800F6610` | Midpoint Z |
-| `g_gnd_camera_flag` | `0x800F6618` | Camera/state flag |
-| `g_gnd_facing_angle` | `0x800F661A` | Facing angle in BAM |
-| `g_gnd_misc_counter` | `0x800F661C` | Counter |
-| `g_gnd_round_time_max` | `0x800F6620` | Round timer max = 0x1388 |
-| `g_gnd_init_complete_flag` | `0x800F6626` | Init flag (reset to 0 at end) |
-| `g_gnd_gauge_a_max` | `0x800F6638` | Gauge A max = 0x64 (100) |
-| `g_gnd_gauge_a_cur` | `0x800F663A` | Gauge A current = 0 |
-| `g_gnd_gauge_b_max` | `0x800F663C` | Gauge B max |
-| `g_gnd_gauge_c_max` | `0x800F6640` | Gauge C max |
-| `g_gnd_gauge_c_cur` | `0x800F6642` | Gauge C current |
-| `g_gnd_gauge_d_max` | `0x800F6644` | Gauge D max |
+| `D_800F6608` | `0x800F6608` | `unk_00.x`; `camera_CalcEye` places the eye behind `unk_00` |
+| `D_800F660C` | `0x800F660C` | `unk_00.y` |
+| `D_800F6610` | `0x800F6610` | `unk_00.z` |
+| `D_800F6618` | `0x800F6618` | `unk_10.vx`: the X rotation `camera_CalcEye` applies |
+| `D_800F661A` | `0x800F661A` | `unk_10.vy`: the Y rotation; also the angle `func_800325E0` pans by |
+| `D_800F661C` | `0x800F661C` | `unk_10.vz`: the Z rotation (written 0) |
+| `D_800F6620` | `0x800F6620` | `w18`: the eye's distance from `unk_00` |
+| `D_800F6626` | `0x800F6626` | `b1E`: hysteresis flag on `w18`, recomputed by `func_8001A820` |
+| `D_800F6638` | `0x800F6638` | `h30[0][0]`: cell x (`func_8003F3D4`'s column); 100 = out of range |
+| `D_800F663A` | `0x800F663A` | `h30[0][1]`: written 0; no role shown |
+| `D_800F663C` | `0x800F663C` | `h30[0][2]`: cell z (`func_8003F3D4`'s row); 100 = out of range |
+| `D_800F6640` | `0x800F6640` | `h30[1][0]`: cell x; 100 = out of range |
+| `D_800F6642` | `0x800F6642` | `h30[1][1]`: written 0; no role shown |
+| `D_800F6644` | `0x800F6644` | `h30[1][2]`: cell z; 100 = out of range |
 
 `D_800F5328` (`0x800F5328`) is a record of the same `Rec44` type: position,
 rotation and distance fed to `func_80046BF4` / `camera_CalcEye`;

@@ -84,19 +84,15 @@ masks are everywhere in the menu code:
 (Each mask is `(P2 button) | (P1 button)` because `D_80102794` packs both
 players in one 32-bit word.)
 
-## Fade-in / fade-out — `g_disp_fade`
+## Fade-in / fade-out
 
-`g_disp_fade` (`0x800A36A8`) is a 0..255 fade-to-black amount applied to
-the framebuffer. The fade is implemented as a fullscreen black quad
-inserted into the OT at increasing alpha.
+`D_800A36A8` (`0x800A36A8`) is not a fade amount: it is a 0/1 switch that
+multiplies the `func_8005D554` sprite passes (3AB48.c:4307-4310, :4349).
 
 Helpers:
 - `FadeOut_8003FFA8` / `FadeOut_8003FFC4` (asm-only) — animate fade out
 - `CheckFadeEnd` (asm-only) — query fade complete flag
 - `InitFadePanel` (asm-only) — set up the fullscreen black quad in the OT
-
-`g_disp_fade` is checked at the start of most menu handlers; the menu is
-not interactive while a fade is in progress.
 
 ## Configuration / options — tail of `code6cac_c2.c`
 
@@ -142,10 +138,9 @@ selected-character index. The per-character setup table is at
 
 - `chractar_use_pset_combo_id_table` (`0x8009BA7C`) — per-character pset
   combo table
-- `g_player_char_ids` (`0x80094B88`) — final selected char IDs [P1, P2, AI]
-
-The mode handler for character select sets one entry of `g_player_char_ids`
-per frame as the user moves the cursor and presses CROSS to commit.
+- `D_80094B88` (`0x80094B88`) — per-slot 5-bit codes stored by `func_80041604`
+  (callers pass `D_800A36C8` / `D_800A36F4` / `D_800A376A`); not shown to be
+  character ids
 
 ## `D_80099478`
 
@@ -268,9 +263,9 @@ table:
 
 | Symbol | Address | Role |
 |--------|---------|------|
-| `g_fade_value` | `0x800A3570` | s16 ramp value, 0..0x1E8 (488) |
-| `g_fade_dispatch_idx` | `0x800A3580` | Index into g_fade_dispatch_table |
-| `g_fade_next_dispatch_idx` | `0x800A3584` | Deferred next (loaded when ramp completes) |
+| `D_800A3570` | `0x800A3570` | s16 slide offset, 0..0x1E8 (488); an x displacement / width in `func_8006F528` |
+| `D_800A3580` | `0x800A3580` | The module's current mode; indexes g_fade_dispatch_table, D_8009BCC4 and the menu table |
+| `D_800A3584` | `0x800A3584` | The next mode, copied into D_800A3580 when D_800A3570 reaches 0x1E8 |
 | `g_fade_dispatch_table` | `0x8009BC1C` | 5+ function-pointer entries |
 
 State values (1-4):

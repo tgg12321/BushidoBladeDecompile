@@ -746,9 +746,10 @@ typedef struct {
     s32 x, y, z;
 } Vec3i32;
 
-/* A leaf position (D_80107850: 12-byte stride, 6 entries): the same
-   s32 x/y/z triple as Vec3i32; func_800207C8 copies a scratchpad point
-   (SPAD->unkA8) into Unk80101EC8Record.unk_180 as one 12-byte object. */
+/* A position (D_80107850: 12-byte stride, 6 entries, one per D_800A3918
+   slot): the same s32 x/y/z triple as Vec3i32; func_800207C8 copies a
+   scratchpad point (SPAD->unkA8) into Unk80101EC8Record.unk_180 as one
+   12-byte object. */
 typedef Vec3i32 LeafPos;
 
 /* The PsyQ SVECTOR layout under a local name. */

@@ -309,10 +309,11 @@ data more directly:
   halve table size. Used by `motutil_GetWalkDir` (display.c:2565,
   hand-coded asm) to build Tait-Bryan ZYX rotation matrices for walk
   direction. Distinct from `Judge` (`0x800973FC`, sin-only fade/envelope).
-- §17 Display-state buffer + cursor
-  — `g_disp_state_buf` (`0x800F33D8`, 512 bytes) + `g_disp_state_buf_cursor`
-  (`0x800A36EC`, +0x100 = matrix region). Doubles as the memcard save/load
-  payload (see `code6cac_c_mid.c:507/524`).
+- §17 `D_800F33D8` + `D_800A36EC`
+  — `D_800F33D8` (512 bytes) is one scratch region: `func_800174F4` primitive
+  output, the memcard save/load image, per-frame Rec1C records and `sys_Exec`'s
+  argument (see `code6cac_c_mid.c:507/524`); `D_800A36EC` is a base pointer set
+  once to it and indexed [frame][fighter].
 - §18 Camera view-state — PsyQ MATRIX struct
   — `g_camera_view_state` at `0x800FF558` is a 32-byte PsyQ `MATRIX`
   (3×3 rotation in `m[3][3]` + s32 translation `t[3]`). Distinct from
