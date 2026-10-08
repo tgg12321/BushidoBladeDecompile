@@ -3157,7 +3157,8 @@
     "kind": "misc",
     "name": "g_misc_800A151C",
     "why": "unclassified state cell",
-    "primary_file": "ings2.c"
+    "primary_file": "ings2.c",
+    "superseded": "wave14 (docs/naming/phase3/wave14/data_manifest.csv): landed as prevVcount (LIBETC VSYNC static, SOTN name; src/main/psxsdk/libetc/vsync.c); g_misc_800A151C never landed"
   },
   {
     "d": "D_800A2640",

@@ -55,7 +55,6 @@ Globals:
 - `g_file_vram_timer` (`0x800A3710`) — VRAM transfer cooldown
 - `g_file_dma_flag` (`0x800A3716`) — 1 if a DMA is in flight
 - `g_file_heap_base` (`0x800A38BC`) — heap pointer (also RNG state — see `rng_*`)
-- `g_file_data_buf` (`0x800F6740`) — generic file-data buffer
 
 The high-level `file_*` API hides the "open + read + close" trio: BB2's
 file load is always full-file or sector-range — there's no streaming

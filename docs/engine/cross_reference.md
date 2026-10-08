@@ -95,7 +95,7 @@ know which subsystem owns it, look here.
   `LWCard_SetAccessData`, `_McAccessSection`, `_CardCheckPulled`
 - **Key globals:** `g_file_flags`, `g_file_disc_type`,
   `g_file_disc_size`, `g_file_dma_flag`, `g_file_heap_base` (RNG
-  state!), `g_file_data_buf`, `g_cd_*` (libcd shadows),
+  state!), `g_cd_*` (libcd shadows),
   `g_memcard_busy`, `g_memcard_data`
 - **Doc:** [file_io.md](file_io.md)
 
@@ -111,7 +111,7 @@ know which subsystem owns it, look here.
   `FadeOut_*`, `CheckFadeEnd`, `InitFadePanel`
 - **Key globals:** `D_800A36A8` (0/1 sprite-pass switch), `g_game_mode`, `g_game_pause`,
   `g_color_mode` (grayscale flag), `D_80102794` (pad input mask),
-  `selCharaID`, `g_char_setup_tbl`
+  `g_char_setup_tbl`
 - **Doc:** [menus.md](menus.md)
 
 ### Replay / Special Camera
@@ -199,7 +199,7 @@ If you've seen a global in the source and want to know what it does:
   `g_game_pause` (0x800F6654..665C) — Game state
 - `D_800F66A0` — table of rotation-matrix routines (`math_RotMatrixZYX` etc.)
 - `g_disp_fb_base`, `g_disp_fb_flag` (0x800F7438, 0x800F7450) — GPU
-- `g_file_data_buf` (0x800F6740) — File I/O
+- `D_800F6740` (0x800F6740) — 8 object records of 0x34 bytes (`func_80017D84` allocates; 6CF8.c)
 - `g_memcard_busy` (0x800FF578) — Memcard
 - `g_pad_data` (0x800FF580) — Input
 

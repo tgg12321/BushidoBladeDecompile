@@ -132,8 +132,9 @@ meter that controls some advanced moves' availability.
 
 ## Character select
 
-The character select screen uses `selCharaID` (`0x80102092`) as the
-selected-character index. The per-character setup table is at
+No selected-character index is identified yet: `D_80102092` is player 0's
+facing-angle field `D_80101EC8[0].unk_1C8.vy` (src/main/17AFC.c:995), not a
+character id. The per-character setup table is at
 `g_char_setup_tbl` (`0x80094E48`). Selection is driven by:
 
 - `D_8009BA7C` (`0x8009BA7C`) — 62 function pointers called through by

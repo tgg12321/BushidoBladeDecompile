@@ -16,7 +16,8 @@ meaningful and explicitly NOT for bulk-renaming.
 The files in this directory take the opposite approach: pick one
 data symbol, read every function that touches it, document the
 access pattern, and propose a *semantically meaningful* name (e.g.,
-`g_rand_state`, `g_disp_config`, `g_tpage_slot_ptr`). One file per
+`g_rand_state`, `g_disp_config`, `g_tpage_slot_ptr`; the last two since
+reset, as the table notes). One file per
 symbol, more discursive than mechanical.
 
 ## What's here
@@ -28,8 +29,8 @@ already-named functions from the 10-function batch in `evidence/`:
 |------|---------------|-----------:|-----|
 | [D_800F1848.md](D_800F1848.md) | `g_rand_state` | high | LCG state owned exclusively by `bb2_rand` |
 | [D_8008F13C.md](D_8008F13C.md) | `g_special_cam_command_table` (superseded by docs/naming/phase3/wave12: 0x8008F13C reset) | high | 8-byte-stride command-descriptor table touched only by `special_cam_issue_command` |
-| [D_80103608.md](D_80103608.md) | `g_tpage_slot_ptr` | medium-high | Paired-array slot pointer pool (manager pair + 10 consumers) |
-| [D_80103658.md](D_80103658.md) | `g_tpage_slot_count` | medium-high | Partner count array to the above |
+| [D_80103608.md](D_80103608.md) | `g_tpage_slot_ptr` (superseded by docs/naming/phase3/wave14: 0x80103608 reset; 'tpage' unproven) | medium-high | Paired-array slot pointer pool (manager pair + 10 consumers) |
+| [D_80103658.md](D_80103658.md) | `g_tpage_slot_count` (superseded by docs/naming/phase3/wave14: 0x80103658 reset; 'tpage' unproven) | medium-high | Partner count array to the above |
 | [D_8009BD24.md](D_8009BD24.md) | `g_disp_config` (superseded by docs/naming/phase3/wave10: 0x8009BD24 reset) | medium-high | Display-config struct loaded by `disp_load_config_from_buf` |
 | [D_800A379E.md](D_800A379E.md) | `g_motion_state_code` | medium-high | Motion-state s16 returned by `game_state_advance` |
 

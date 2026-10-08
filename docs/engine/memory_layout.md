@@ -48,7 +48,7 @@ in this doc are KSEG0 virtual addresses (`0x8000_0000`+, cached).
 |   D_800F5370 — scratchpad save buffer        |
 |     (0xF8 * 4 = 0x3E0 bytes; see             |
 |      scratchpad_Save/Restore in ings.c:941)  |
-|   g_file_data_buf  0x800F6740                |
+|   D_800F6740       0x800F6740 (obj records)  |
 |   g_disp_fb_base   0x800F7438                |
 |     two adjacent 0x4090 buffers (draw+disp   |
 |     env + OT)                                |
@@ -228,7 +228,7 @@ This is a coarse who-owns-what map within main RAM .bss. Detail in
 | `0x800E_EDB0..` | `g_cam_matrix` and camera state |
 | `0x800E_F7BC..` | `g_snd_config_tbl` and sound playback state |
 | `0x800F_5370..` | scratchpad save area |
-| `0x800F_6740..` | `g_file_data_buf` — file-I/O buffer |
+| `0x800F_6740..` | `D_800F6740` — 8 object records (0x34 bytes each) |
 | `0x800F_7438..` | `g_disp_fb_base` — double drawenv+OT |
 | `0x80101_xxx..0x80107_xxx` | Late-allocated tables, motion data, character-anim runtime |
 
