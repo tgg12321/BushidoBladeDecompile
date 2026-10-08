@@ -25,15 +25,15 @@ glabel VSync
     /* 73124 80082924 21102002 */   addu      $v0, $s1, $zero
     /* 73128 80082928 07008018 */  blez       $a0, .L80082948
     /* 7312C 8008292C 00000000 */   nop
-    /* 73130 80082930 0A80023C */  lui        $v0, %hi(D_800A151C)
-    /* 73134 80082934 1C15428C */  lw         $v0, %lo(D_800A151C)($v0)
+    /* 73130 80082930 0A80023C */  lui        $v0, %hi(prevVcount)
+    /* 73134 80082934 1C15428C */  lw         $v0, %lo(prevVcount)($v0)
     /* 73138 80082938 00000000 */  nop
     /* 7313C 8008293C FFFF4224 */  addiu      $v0, $v0, -0x1
     /* 73140 80082940 540A0208 */  j          .L80082950
     /* 73144 80082944 21104400 */   addu      $v0, $v0, $a0
   .L80082948:
-    /* 73148 80082948 0A80023C */  lui        $v0, %hi(D_800A151C)
-    /* 7314C 8008294C 1C15428C */  lw         $v0, %lo(D_800A151C)($v0)
+    /* 73148 80082948 0A80023C */  lui        $v0, %hi(prevVcount)
+    /* 7314C 8008294C 1C15428C */  lw         $v0, %lo(prevVcount)($v0)
   .L80082950:
     /* 73150 80082950 02008018 */  blez       $a0, .L8008295C
     /* 73154 80082954 21280000 */   addu      $a1, $zero, $zero
@@ -75,8 +75,8 @@ glabel VSync
     /* 731D8 800829D8 3426428C */  lw         $v0, %lo(Vcount)($v0)
     /* 731DC 800829DC 0A80033C */  lui        $v1, %hi(g_vsync_rcnt1_count_reg)
     /* 731E0 800829E0 1415638C */  lw         $v1, %lo(g_vsync_rcnt1_count_reg)($v1)
-    /* 731E4 800829E4 0A80013C */  lui        $at, %hi(D_800A151C)
-    /* 731E8 800829E8 1C1522AC */  sw         $v0, %lo(D_800A151C)($at)
+    /* 731E4 800829E4 0A80013C */  lui        $at, %hi(prevVcount)
+    /* 731E8 800829E8 1C1522AC */  sw         $v0, %lo(prevVcount)($at)
     /* 731EC 800829EC 0000638C */  lw         $v1, 0x0($v1)
     /* 731F0 800829F0 21102002 */  addu       $v0, $s1, $zero
     /* 731F4 800829F4 0A80013C */  lui        $at, %hi(Hcount)

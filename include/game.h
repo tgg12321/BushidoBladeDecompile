@@ -2108,7 +2108,7 @@ typedef struct {
     s32 group_id;
 } Func80017848Edge;
 
-/* 6CF8's object record (sizeof = 0x34): g_file_data_buf holds eight,
+/* 6CF8's object record (sizeof = 0x34): D_800F6740 holds eight,
  * func_80017D84 fills a free one from a Func80017A44Input and func_80017A44
  * builds its node / edge graph; 87A0 steps it (func_8001924C by each
  * Unk80017FA0Rec's unk0). points: the input's point table, 0 = free
@@ -2127,7 +2127,7 @@ typedef struct {
 
 /* The 16-byte object descriptor (2B344 func_8003FA24 fills it in each
  * Unk8003F824Rec, func_8003F824 copies it into Unk8003F62CRec.quads; 87A0
- * func_8001924C steps one object per descriptor): the object's g_file_data_buf
+ * func_8001924C steps one object per descriptor): the object's D_800F6740
  * index (unk0), its flags (unk2; bit 0 picks func_80019310 over func_800187F4),
  * the object's matrix, its point table end and its collision-volume block. */
 typedef struct {

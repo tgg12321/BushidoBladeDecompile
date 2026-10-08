@@ -602,7 +602,7 @@ void func_80017714(void) {
        variable; indexed by record: score 4 */
     for (i = 7 * sizeof(Func80017A44Output); i >= 0;
          i -= sizeof(Func80017A44Output)) {
-        ((Func80017A44Output *)((u8 *)g_file_data_buf + i))->points = 0;
+        ((Func80017A44Output *)((u8 *)D_800F6740 + i))->points = 0;
     }
 }
 
@@ -746,7 +746,7 @@ s32 func_80017D84(Func80017A44Input *a0) {
     s32 i;
     Func80017A44Record *c;
 
-    p = g_file_data_buf;
+    p = D_800F6740;
     for (i = 0; i < 8; i++) {
         if (p->points == 0)
             break;
@@ -768,17 +768,17 @@ s32 func_80017D84(Func80017A44Input *a0) {
     return i;
 }
 
-void func_80017E8C(s32 a0) { g_file_data_buf[a0].points = 0; }
+void func_80017E8C(s32 a0) { D_800F6740[a0].points = 0; }
 
 void func_80017EB4(s32 a0, s32 a1) {
-    Func80017A44Output *ptr = &g_file_data_buf[a0];
+    Func80017A44Output *ptr = &D_800F6740[a0];
 
     ptr->records = (Func80017A44Record *)((u8 *)ptr->records + a1);
     ptr->edges = (Func80017848Edge *)(ptr->records + ptr->count);
 }
 
 void func_80017EF4(s32 a0, s32 a1) {
-    Func80017A44Output *ptr = &g_file_data_buf[a0];
+    Func80017A44Output *ptr = &D_800F6740[a0];
     ptr->points = (SVECTOR *)((u8 *)ptr->points + a1);
 }
 

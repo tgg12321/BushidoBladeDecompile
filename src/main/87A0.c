@@ -804,13 +804,13 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
 void func_8001924C(Unk80017FA0Rec *arg0, s32 arg1) {
     s32 i = 0;
     Unk80017FA0Rec *s0;
-    /* FAKE: pointer alias -- g_file_data_buf's address held in an integer
+    /* FAKE: pointer alias -- D_800F6740's address held in an integer
      * local. Referenced directly, its lui/addiu is scheduled after `move s0,a0`
      * (score 2); held as a u8 * the addu operands swap (score 2). */
     s32 buf;
 
     if (i < arg1) {
-        buf = (s32)g_file_data_buf;
+        buf = (s32)D_800F6740;
         s0 = arg0;
         do {
             if (s0->unk2 & 1) {

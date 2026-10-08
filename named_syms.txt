@@ -124,7 +124,7 @@ D_800A3768 = 0x800A3768;  /* data-wave 2026-10-08: was g_disp_enable */
 D_800A36A8 = 0x800A36A8;  /* data-wave 2026-10-08: was g_disp_fade */
 D_800A3710 = 0x800A3710;  /* data-wave 2026-09-25: was g_file_vram_timer */
 D_800A3716 = 0x800A3716;  /* data-wave 2026-10-07: was g_file_dma_flag */
-g_file_data_buf = 0x800F6740;
+D_800F6740 = 0x800F6740;  /* data-wave 2026-10-08: was g_file_data_buf */
 D_800F66A0 = 0x800F66A0;  /* data-wave 2026-10-08: was g_anim_func_table */
 D_800A6690 = 0x800A6690;  /* data-wave 2026-10-08: was g_char_data */
 g_char_setup_tbl = 0x80094E48;
@@ -204,8 +204,8 @@ D_8008F13C = 0x8008F13C;  /* data-wave 2026-10-08: was g_special_cam_command_tab
 
 /* === Medium-high data symbols (2026-05-17 batch 2) === */
 /* See docs/naming/data_evidence/D_{80103608,80103658,8009BD24,800A379E,800A3860}.md */
-g_tpage_slot_ptr            = 0x80103608;
-g_tpage_slot_count          = 0x80103658;
+D_80103608            = 0x80103608;  /* data-wave 2026-10-08: was g_tpage_slot_ptr */
+D_80103658          = 0x80103658;  /* data-wave 2026-10-08: was g_tpage_slot_count */
 D_8009BD24               = 0x8009BD24;  /* data-wave 2026-10-08: was g_disp_config */
 D_800A379E         = 0x800A379E;  /* data-wave 2026-10-08: was g_motion_state_code */
 D_800A3860      = 0x800A3860;  /* data-wave 2026-10-08: was g_motion_data_base_ptr */
@@ -928,7 +928,7 @@ D_8009ADD8                                             = 0x8009ADD8;  /* per-cha
 D_8009BA7C                        = 0x8009BA7C;  /* 62 function pointers, called by jalr in func_80060A68 / func_80060B70 */  /* data-wave 2026-10-08: was chractar_use_pset_combo_id_table */
 D_800A3D70                                        = 0x800A3D70;  /* DR_MOVE[31][2]: double-buffered VRAM moves set up by gpu_SetDrawMoveArray, queued by func_8003DBE4 */  /* data-wave 2026-10-08: was light_effect_col */
 D_800F19D0                                            = 0x800F19D0;  /* MarioCam structure */  /* data-wave 2026-09-24: was MarioCam_str */
-selCharaID                                              = 0x80102092;  /* selected character ID */
+D_80102092                                              = 0x80102092;  /* selected character ID */  /* data-wave 2026-10-08: was selCharaID */
 
 /* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
 /* Clusters driven by already-named consumer functions; semantic name */
@@ -1580,7 +1580,7 @@ _svm_sreg_buf_plus_0x2                                   = 0x80102A7A;  /* s16 a
 /* g_vsync_gpu_stat_reg (0x800A1510). */
 g_vsync_rcnt1_count_reg                                     = 0x800A1514;  /* libetc VSync static: .word 0x1F801110 (root counter 1 count pointer) */  /* data-wave 2026-10-03: was g_vsync_counter_ptr */
 Hcount                                = 0x800A1518;  /* snapshot of *g_vsync_rcnt1_count_reg from prev call (for delta calc) */  /* data-wave 2026-09-29: was g_vsync_counter_snapshot */
-g_vsync_dma_region_snapshot                             = 0x800A151C;  /* snapshot of Vcount at the end of the last VSync */
+prevVcount                             = 0x800A151C;  /* snapshot of Vcount at the end of the last VSync */  /* data-wave 2026-10-08: was g_vsync_dma_region_snapshot */
 
 /* === func_80068F70 state cells (2026-05-17) -- 8 highs === */
 /* From 51268.c func_80068F70 and the functions it sets up. */
@@ -1972,7 +1972,7 @@ g_char_struct_p2_field_FC                               = 0x80102410;  /* P2 cou
 
 /* === Unlock-anim tables + misc state (2026-05-17) -- 4 highs === */
 D_8008EA70                              = 0x8008EA70;  /* paired bytes table; indexed by D_800A38A4 * 2; each pair = (motion_id, sub_value) */  /* data-wave 2026-10-08: was g_unlock_anim_p_pair_table */
-g_unlock_anim_char_table                                = 0x8009016C;  /* char ID lookup indexed by unlock_anim_id; passed to func_80054884 */
+D_8009016C                                = 0x8009016C;  /* char ID lookup indexed by unlock_anim_id; passed to func_80054884 */  /* data-wave 2026-10-08: was g_unlock_anim_char_table */
 D_800A380C                                     = 0x800A380C;  /* simple incrementing counter (++D pattern) */  /* data-wave 2026-10-08: was g_misc_counter_380C */
 D_800A390F                                   = 0x800A390F;  /* one store of 0 (func_8003B9D0); never read */  /* data-wave 2026-10-08: was g_misc_init_flag_390F */
 

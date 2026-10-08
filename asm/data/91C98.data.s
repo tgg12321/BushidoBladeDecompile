@@ -156,11 +156,11 @@ dlabel Hcount
     /* 91D18 800A1518 00000000 */ .word 0x00000000
 enddlabel Hcount
 
-nonmatching D_800A151C
+nonmatching prevVcount
 
-dlabel D_800A151C
+dlabel prevVcount
     /* 91D1C 800A151C 00000000 */ .word 0x00000000
-enddlabel D_800A151C
+enddlabel prevVcount
 
 nonmatching D_800A1520
 

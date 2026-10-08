@@ -15,7 +15,7 @@ extern volatile s32 Vcount;
 extern volatile s32 *g_vsync_gpu_stat_reg;
 extern volatile s32 *g_vsync_rcnt1_count_reg;
 extern s32 Hcount;
-extern s32 D_800A151C;
+extern s32 prevVcount;
 void v_wait(s32 a0, s32 a1);
 
 s32 VSync(s32 a0) {
@@ -37,10 +37,10 @@ s32 VSync(s32 a0) {
         s32 count;
 
         if (a0 > 0) {
-            s32 base = D_800A151C - 1;
+            s32 base = prevVcount - 1;
             frame = base + a0;
         } else {
-            frame = D_800A151C;
+            frame = prevVcount;
         }
         count = 0;
         if (a0 > 0) {
@@ -60,7 +60,7 @@ s32 VSync(s32 a0) {
         }
     }
 
-    D_800A151C = Vcount;
+    prevVcount = Vcount;
     Hcount = *g_vsync_rcnt1_count_reg;
 
     return s1_val;

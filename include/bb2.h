@@ -573,7 +573,7 @@ extern u8 D_801027D8;
 /* the draw queue: record pointers (0x80102C00..0x801035FF) */
 extern void *g_draw_queue[640];
 extern s32 D_8009BA7C[];
-extern Func80017A44Output g_file_data_buf[8];
+extern Func80017A44Output D_800F6740[8];
 extern s32 D_80094B88[];
 extern Unk80045878Obj *D_800A9A10[];
 
