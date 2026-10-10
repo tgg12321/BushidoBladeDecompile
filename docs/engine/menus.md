@@ -134,8 +134,7 @@ meter that controls some advanced moves' availability.
 
 No selected-character index is identified yet: `D_80102092` is player 0's
 facing-angle field `D_80101EC8[0].unk_1C8.vy` (src/main/17AFC.c:995), not a
-character id. The per-character setup table is at
-`g_char_setup_tbl` (`0x80094E48`). Selection is driven by:
+character id. Selection is driven by:
 
 - `D_8009BA7C` (`0x8009BA7C`) — 62 function pointers called through by
   `func_80060A68` / `func_80060B70` (no character role shown)

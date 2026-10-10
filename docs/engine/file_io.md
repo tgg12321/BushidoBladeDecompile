@@ -77,7 +77,7 @@ Lower-level CD-ROM control:
 | `cdrom_SendCmd` / `cdrom_DmaToRam` / `cdrom_DmaChain` | Thin wrappers over PsyQ libcd |
 
 Globals:
-- `g_cd_reg0`, `libcd_CDRegister1..3` (-> 0x1F801800..3) — pointers to the
+- `libcd_CDRegister0..3` (-> 0x1F801800..3) — pointers to the
   CD-ROM hardware registers (mapped at `0x1F801800..0x1F801803`);
   `D_800A1490` (-> 0x1F801C00) is libcd's SPU register base, which
   `CD_initvol` uses for the main and CD volumes (bios.c:414-425)

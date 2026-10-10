@@ -396,7 +396,7 @@ DMACallback  = 0x80082B20;  /* jalr via pCallbacks, slot +0x4 */
 VSyncCallback           = 0x80082B50;  /* jalr via pCallbacks, slot +0x14, with $a0=4, $a1=arg */
 StopCallback              = 0x80082BB4;  /* jalr via pCallbacks, slot +0x10 */
 /* System counters (1) */
-CheckCallback     = 0x80082C14;  /* lhu of intrEnv_t.inInterrupt (D_800A1578 + 2) */
+CheckCallback     = 0x80082C14;  /* lhu of intrEnv_t.inInterrupt (intrEnv + 2) */
 /* Memory clear (2; identical bodies, position-distinct) */
 sys_MemClear_8008339C           = 0x8008339C;  /* word-by-word `for (i=a1; i>0; i--) *a0++ = 0` */
 sys_MemClear2_80083644          = 0x80083644;  /* identical body, distinct address */
@@ -897,7 +897,7 @@ D_800A4750                              = 0x800A4750;  /* 16-byte records; fille
 /* Each tail states what the object is at its uses. */
 D_80081F1C                            = 0x80081F1C;  /* code: the entry of cdrom_IrqHandler (bios.c:584), passed to InterruptCallback(2, ...) by CD_initintr / CD_init (bios.c:447, :466) */  /* data-wave 2026-10-09: was g_irq_handler_block_80081F1C */
 D_8008D9EC                             = 0x8008D9EC;  /* 0/1 flag byte table (0x00 x12 then 0x01s), read-only (26 byte reads), indexed by D_80101EC8[].unk_0A or D_8008D538[...] (17AFC.c:6457); not a SEQ buffer */  /* data-wave 2026-10-08: was g_seq_start_buffer_8008D9EC */
-/* RENAME 0x800A2614: retired name 'g_sys_mem_clear_dst_800A2614' — preserved note: destination buffer for sys_MemClear */
+/* RETIRE ALIAS 0x800A2614: retired name 'g_sys_mem_clear_dst_800A2614' (survivor g_irq_vsync_callbacks: trapIntrVSync's 8 callback slots, intr_vb.c:23-38; sys_MemClear only zeroes them, :18) */
 _spu_zerobuf                      = 0x800A28D4;  /* passed to saTan0GaugeDraw; gauge data block */  /* data-wave 2026-09-07: was g_satan0_gauge_data_block_800A28D4 */
 g_comb_recv_buf                                 = 0x800A3688;  /* 8-byte link-cable receive buffer: read(g_comb_read_fd, here, 8) in comb_Read8; checksum-verified by comb_WaitRead8 */
 g_comb_send_buf                                = 0x800A3698;  /* 8-byte link-cable send buffer: write(g_comb_write_fd, here, 8) in comb_Write8; packed by func_8003A728 */
@@ -1354,7 +1354,7 @@ D_800F10D0                               = 0x800F10D0;  /* 28-entry s32 table of
 /* === GPU MoveImage wrapper (2026-05-17) -- 1 high === */
 /* MoveImage (0x8007B6C8): calls checkRECT with the literal string */
 /* "MoveImage" (at D_80015F74), validates rect, packs (x,y) args, */
-/* submits g_gpu_move_param (20 bytes) via D_8009BE6C->addque2 (sys.c:314-329). */
+/* submits move_image (20 bytes) via D_8009BE6C->addque2 (sys.c:314-329). */
 /* Signature (RECT*, s16 x, s16 y) matches PSX libgpu's MoveImage. */
 /* RENAME 0x8007B6C8: retired name 'gpu_MoveImage' — preserved note: PSX libgpu MoveImage(RECT *rect, int x, int y) -- VRAM rect-copy primitive */
 
@@ -1555,12 +1555,12 @@ g_memcard_file_count                                    = 0x800A38C8;  /* number
 g_memcard_fd                           = 0x800A3794;  /* current open file handle from bios_FileOpen_B (saved across read/write) */  /* data-wave 2026-09-24: was g_memcard_file_handle_current */
 
 /* === MoveImage packet words 2-4 (2026-05-17) -- 4 highs === */
-/* Interior words of g_gpu_move_param (0x8009BF1C, 5 words; [0..1] */
+/* Interior words of move_image (0x8009BF1C, 5 words; [0..1] */
 /* are the packet header).  Only MoveImage (0x8007B6C8) writes them, */
 /* then submits the packet via D_8009BE6C->addque2 (sys.c:324-328). */
-D_8009BF24                              = 0x8009BF24;  /* g_gpu_move_param[2]: the source rect's x / y (sys.c:324) */  /* data-wave 2026-10-09: was g_gpu_prim_packet_header_0 */
-D_8009BF28                              = 0x8009BF28;  /* g_gpu_move_param[3]: destination (y << 16) | x (sys.c:323, :325) */  /* data-wave 2026-10-09: was g_gpu_prim_packet_header_1 */
-D_8009BF2C                              = 0x8009BF2C;  /* g_gpu_move_param[4]: the source rect's w / h (sys.c:326) */  /* data-wave 2026-10-09: was g_gpu_prim_packet_header_2 */
+D_8009BF24                              = 0x8009BF24;  /* move_image[2]: the source rect's x / y (sys.c:324) */  /* data-wave 2026-10-09: was g_gpu_prim_packet_header_0 */
+D_8009BF28                              = 0x8009BF28;  /* move_image[3]: destination (y << 16) | x (sys.c:323, :325) */  /* data-wave 2026-10-09: was g_gpu_prim_packet_header_1 */
+D_8009BF2C                              = 0x8009BF2C;  /* move_image[4]: the source rect's w / h (sys.c:326) */  /* data-wave 2026-10-09: was g_gpu_prim_packet_header_2 */
 DMA6_BCR                                   = 0x8009BF5C;  /* -> 0x1F8010E4 DMA6 (OTC) block control; _otc writes the entry count */  /* data-wave 2026-10-08: was g_gpu_unknown_reg_ptr */
 
 /* === Voice-slot 24-entry allocator state (2026-05-17) -- 3 highs === */
@@ -1652,7 +1652,7 @@ D_8009BD43                               = 0x8009BD43;  /* data-wave 2026-10-08:
 /* program root counters 0-2 and their I_MASK bits (libapi/counter.c). */
 D_8009BD68                                  = 0x8009BD68;  /* holds 0x1F801070 (I_STAT); [1] = I_MASK, where StartRCnt / StopRCnt set and clear a counter's bit (counter.c:61, :68) */  /* data-wave 2026-10-09: was g_irq_event_struct_ptr */
 D_8009BD6C                                  = 0x8009BD6C;  /* holds 0x1F801100, the root-counter registers (count / mode / target, 16-byte stride; counter.c:20-77) */  /* data-wave 2026-10-09: was g_irq_event_slots_3x16 */
-/* RENAME 0x8009BD70: retired name 'g_irq_event_masks_3' — preserved note: 3-entry per-slot bit-mask values (used to set/clear bits in D_8009BD68[1], I_MASK; counter.c:61, :68) */
+/* RETIRE ALIAS 0x8009BD70: retired name 'g_irq_event_masks_3' (survivor g_bitmask_table_4_8009BD70: 4 words, each root counter's I_MASK bit 0x10 / 0x20 / 0x40 / 0x01, set / cleared in D_8009BD68[1] by StartRCnt / StopRCnt, counter.c:61, :68) */
 /* RENAME 0x80078A68: retired name 'irq_event_slot_configure' — preserved note: func_80078A68(slot, arg1, arg2): writes config to slot */
 /* RENAME 0x80078B04: retired name 'irq_event_slot_read' — preserved note: func_80078B04(slot): reads u16 from slot */
 /* RENAME 0x80078B3C: retired name 'irq_event_slot_enable' — preserved note: func_80078B3C(slot): OR slot's mask into bitmask */
@@ -2019,7 +2019,7 @@ _svm_damper                                 = 0x800F66F8;  /* Y-offset added to 
 /* === Attack scale factor extensions + effect slot field+2 (2026-05-17) -- 5 highs === */
 D_80094B9C                                        = 0x80094B9C;  /* D_80094B96[0].unk_02[2]: s16, times a0->unk_12 >> 12 it becomes node work.t[2] */  /* data-wave 2026-10-08: was g_attack_scale_w */
 D_80094B9E                                        = 0x80094B9E;  /* D_80094B96[0].unk_08: s16 node id, -1 for none, stored into the next arg0->unk_8B4[] node (func_80040CB8) */  /* data-wave 2026-10-08: was g_attack_scale_v */
-D_800F6462                                 = 0x800F6462;  /* D_800F62E0[4].light[0].yaw (light-setup record 4; = StageLight[a0][4] & 0xFFF in func_800421C8) */  /* data-wave 2026-10-08: was g_effect_slot_a_field_2 */
+D_800F6462                                 = 0x800F6462;  /* D_800F62E0[4].light[0].yaw (light-setup record 4; = D_80094E48[a0][4] & 0xFFF in func_800421C8) */  /* data-wave 2026-10-08: was g_effect_slot_a_field_2 */
 D_800F6342                                 = 0x800F6342;  /* D_800F62E0[1].light[0].yaw (light-setup record 1) */  /* data-wave 2026-10-08: was g_effect_slot_b_field_2 */
 D_800F62E2                                 = 0x800F62E2;  /* D_800F62E0[0].light[0].yaw (light-setup record 0) */  /* data-wave 2026-10-08: was g_effect_slot_c_field_2 */
 
@@ -2611,7 +2611,7 @@ const_return_0x45000_80045808                      = 0x80045808;  /* 1-insn: ret
 /* + adjacency to existing named symbols. Address-suffixed per pass-5 */
 /* convention. NOTE: src/*.c usages stay as D_<addr>; promoting them */
 /* triggers the GCC cascade (LONG_TERM_DX_PROMOTION_FIX.md). */
-D_1F80000C                                  = 0x1F80000C;  /* 14 refs; scratchpad RAM offset 0xC (0x1F800000 + 0xC); IRQ-save region */  /* data-wave 2026-10-10: was g_scratchpad_ptr_c_1F80000C */
+D_1F80000C                                  = 0x1F80000C;  /* 14 refs; scratchpad RAM offset 0xC (0x1F800000 + 0xC) */  /* data-wave 2026-10-10: was g_scratchpad_ptr_c_1F80000C */
 D_800A30F0                                = 0x800A30F0;  /* u8[4] per-fighter flag that func_8001A820 sets and clears */  /* data-wave 2026-10-08: was g_ot_used_max_plus_8_800A30F0 */
 D_800A3144                                    = 0x800A3144;  /* 11 refs; gp-relative; two radii: func_800288C8 adds [i] + [j] and compares the sum with the separation of the two characters' points (17AFC.c:926-934) */  /* data-wave 2026-10-08: was g_game_pad_index_800A3144 */
 D_800A3207                                  = 0x800A3207;  /* 20 refs; u8 state, values 0-5 */  /* data-wave 2026-10-08: was g_motion_init_flag_800A3207 */
@@ -3167,12 +3167,12 @@ CdReset = 0x800800DC;  /* mode 2 -> Shutdown; else Initialize (+ ConfigSPU if mo
 CdSetDebug = 0x80080168;  /* swaps debug level global D_800A11C0, returns old */
 CdIntToPos = 0x800806A4;  /* frames+150 -> min/sec/frame BCD triplet (magic-const div chains) */
 CdPosToInt = 0x800807A8;  /* BCD min/sec/frame triplet -> absolute frame count -150 */
-CD_vol = 0x80081718;  /* writes cmd via g_cd_reg0/libcd_CDRegister3 register-pointer block */
+CD_vol = 0x80081718;  /* writes cmd via libcd_CDRegister0/libcd_CDRegister3 register-pointer block */
 CD_flush = 0x800817A0;  /* acks IRQ via libcd_CDRegister3, resets the libcd Intr status block (src/system.c) */
-CD_initvol = 0x80081880;  /* programs CD-audio path regs (g_cd_reg0 block + D_800A1490) */
+CD_initvol = 0x80081880;  /* programs CD-audio path regs (libcd_CDRegister0 block + D_800A1490) */
 CD_initintr = 0x80081974;  /* irq_DisableInterrupts, clears cd state globals D_800A11B4..C8, irq_EnableInterrupts */
-CD_getsector = 0x80081D1C;  /* CD sector DMA -> RAM via g_cd_dma_ctrl + g_cd_reg0 block */
-CD_getsector2 = 0x80081E1C;  /* chopped CD DMA transfer; g_cd_reg0/g_cd_dma_ctrl */
+CD_getsector = 0x80081D1C;  /* CD sector DMA -> RAM via g_cd_dma_ctrl + libcd_CDRegister0 block */
+CD_getsector2 = 0x80081E1C;  /* chopped CD DMA transfer; libcd_CDRegister0/g_cd_dma_ctrl */
 func_8003F168 = 0x8003F168;  /* calls D_800948BC[func_80046798()].init when non-null */
 func_8003F218 = 0x8003F218;  /* store D_800F665C + game_SetControllerPorts */
 func_8003F274 = 0x8003F274;  /* rebuilds the 32x32 grid D_800A8FB0 around the view node; read by the draw walks */

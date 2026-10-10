@@ -110,8 +110,7 @@ know which subsystem owns it, look here.
   `func_80016E60` (picks one of 3/6 menu entries from the pad),
   `FadeOut_*`, `CheckFadeEnd`, `InitFadePanel`
 - **Key globals:** `D_800A36A8` (0/1 sprite-pass switch), `g_game_mode`, `g_game_pause`,
-  `g_color_mode` (grayscale flag), `D_80102794` (pad input mask),
-  `g_char_setup_tbl`
+  `g_color_mode` (grayscale flag), `D_80102794` (pad input mask)
 - **Doc:** [menus.md](menus.md)
 
 ### Replay / Special Camera
@@ -151,7 +150,7 @@ know which subsystem owns it, look here.
   `obj_InitPair`, `obj_InitAll`, `obj_Reset`, `obj_ExecTask`,
   `obj_InitTaskCamera`, `obj_UpdatePosition`
 - **Key globals:** `D_800A9A10` (model object slots), `D_80094B88` (per-slot codes),
-  `g_char_setup_tbl`, `D_8009BA7C`
+  `D_8009BA7C`
 
 ### System / IRQ / Timer
 - **File:** `ings2.c`, `system.c` (CD overlap)
@@ -159,7 +158,7 @@ know which subsystem owns it, look here.
   `irq_DisableInterrupts`, `irq_AcknowledgeVblank`,
   `irq_EnableInterrupts`, `irq_SetAlarm`, `irq_Reset`,
   `EnterCriticalSection`, `ExitCriticalSection`
-- **Key globals:** `pCallbacks`, `D_800A1578` (intrEnv; `.inInterrupt` = CheckCallback),
+- **Key globals:** `pCallbacks`, `intrEnv` (`.inInterrupt` = CheckCallback's return),
   `g_sys_vsync_mode`, `g_sys_timer`, `video_mode`,
   `g_sys_dma_region`
 

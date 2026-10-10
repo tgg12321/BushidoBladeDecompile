@@ -23,8 +23,8 @@ THREE coercion patterns this module catches:
 
 3. **Plain `extern volatile T D_globalsym;` (scalar) on game-RAM symbols.** Same
    as #2 but spelled at declaration. The `D_` prefix marks anonymous game state
-   (splat-named) — `g_`-prefixed names (e.g. `g_cd_reg0`, `g_gpu_stat_reg`,
-   `g_cd_dma_ctrl`) follow the project's hardware/system-global naming convention
+   (splat-named) — named hardware-pointer globals (e.g. `libcd_CDRegister0`,
+   `GPU_STATUS`, `g_cd_dma_ctrl`) carry Sony or project names
    and are kept (the volatile reflects genuine hardware-mapped memory).
 
 Pointer-to-volatile declarations (`extern volatile T *name;` — the VARIABLE is a

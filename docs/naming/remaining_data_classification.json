@@ -5559,7 +5559,8 @@
     "kind": "asm_only",
     "name": "g_asm_1F800020",
     "why": "referenced only via inline asm",
-    "primary_file": "text1b.c"
+    "primary_file": "text1b.c",
+    "superseded": "wave19 (docs/naming/phase3/wave19/data_manifest.csv, 612e8d66f): stays D_1F800020; g_asm_1F800020 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_1F800110",
@@ -5569,7 +5570,8 @@
     "kind": "asm_only",
     "name": "g_asm_1F800110",
     "why": "referenced only via inline asm",
-    "primary_file": "text1b.c"
+    "primary_file": "text1b.c",
+    "superseded": "wave19 (docs/naming/phase3/wave19/data_manifest.csv, 612e8d66f): stays D_1F800110; g_asm_1F800110 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800790B4",
@@ -8824,7 +8826,8 @@
     "kind": "misc",
     "name": "g_misc_800A14F0",
     "why": "unclassified state cell",
-    "primary_file": "system.c"
+    "primary_file": "system.c",
+    "superseded": "wave19 (docs/naming/phase3/wave19/data_manifest.csv, 612e8d66f): stays D_800A14F0; g_misc_800A14F0 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A1578",
@@ -8835,7 +8838,7 @@
     "name": "g_struct_800A1578",
     "why": "address-taken struct",
     "primary_file": "ings2.c",
-    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A1578; g_struct_800A1578 never landed; primary_file is a pre-restructure TU id"
+    "superseded": "wave19 (docs/naming/phase3/wave19/data_manifest.csv, 612e8d66f): renamed intrEnv (SOTN), after wave18 (2ca56a705) kept D_800A1578; g_struct_800A1578 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A15B4",

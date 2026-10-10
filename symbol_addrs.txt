@@ -44,7 +44,7 @@ g_sin_table = 0x800973FC; // sine lookup table (4096 entries, s16)
 // === GPU Subsystem (gpu.c / display.c) ===
 // data-wave 2026-09-07: g_gpu_debug_func = 0x8009BE70 retired; GPU_printf is now object-defined
 D_8009BE6C = 0x8009BE6C; // pointer to _gpucb, the GPU callback table (sys.c:31) //  // data-wave 2026-10-09: was g_gpu_dev_table
-move_image = 0x8009BF1C; // PsyQ libgpu sys.c MoveImage `u_long param[5]` blit packet (head 2 words initialized: 0x04FFFFFF, 0x80000000)  // data-wave 2026-10-10: was g_gpu_move_param
+move_image = 0x8009BF1C; // PsyQ 4.0 libgpu SYS .data, MoveImage's blit packet (psyz sys.c:89 `u_long move_image[]`; SOTN's 3.3 sys.c uses a stack param[5]); head 2 words initialized: 0x04FFFFFF, 0x80000000  // data-wave 2026-10-10: was g_gpu_move_param
 g_gpu_ctx = 0x8009BE74; // libgpu SYS state block (GpuCtx, 0x80 bytes; src/main/psxsdk/libgpu/sys.c)
 g_gpu_ot_end = 0x8009BF30; // OT list terminator
 GPU_STATUS = 0x8009BF48; // GPU status register ptr  // data-wave 2026-10-10: was g_gpu_stat_reg
@@ -188,7 +188,7 @@ D_800A3382 = 0x800A3382; // [1] of the D_800A3380 flag pair (0/1)  // data-wave 
 
 // === Character Data ===
 D_800A6690 = 0x800A6690; // transform-node records (Unk800A6690Rec, 0x68 bytes)  // data-wave 2026-10-08: was g_char_data
-D_80094E48 = 0x80094E48; // character setup table  // data-wave 2026-10-10: was g_char_setup_tbl
+D_80094E48 = 0x80094E48; // 38 rows of 0x18 bytes: four packed light / back colours, a yaw / pitch word, the BG / far colour; read only by func_800421C8 (31D3C.c:500-519)  // data-wave 2026-10-10: was g_char_setup_tbl
 
 // === Memory Card ===
 _svm_stereo_mono = 0x800FF578; // memcard busy flag  // data-wave 2026-09-07: was g_memcard_busy

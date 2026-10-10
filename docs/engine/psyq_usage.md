@@ -87,7 +87,7 @@ Identifiable libapi functions:
 
 Timer / IRQ globals:
 - `pCallbacks` (`0x800A2600`) — pointer to the INTR callbacks table (`D_800A25E0`)
-- `D_800A1578.inInterrupt` (`0x800A157A`) — LIBETC intrEnv's in-interrupt flag (CheckCallback's return)
+- `intrEnv.inInterrupt` (`0x800A157A`) — LIBETC's in-interrupt flag (CheckCallback's return)
 - `g_sys_vsync_mode` (`0x800A14CC`) — VSync wait mode
 
 ## libspu — Sound Processing Unit

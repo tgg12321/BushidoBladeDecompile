@@ -15,8 +15,8 @@ change cc1's RTL tree shape — and thereby sched.c's INSN_PRIORITY emission ord
 The runtime value is identical; only the tree topology changes. Example (func_8007CBB0, REJECTED):
 
 ```c
-/* natural (PASS): */ x = (*D_8009BF48 & 0x7FF) | (((arg1 >> 31) << 10) | 0xE1000000);
-/* cheat:          */ x = ((arg1 >> 31) << 10) | (*D_8009BF48 & 0x7FF) | 0xE1000000;  /* found by enumeration */
+/* natural (PASS): */ x = (*GPU_STATUS & 0x7FF) | (((arg1 >> 31) << 10) | 0xE1000000);
+/* cheat:          */ x = ((arg1 >> 31) << 10) | (*GPU_STATUS & 0x7FF) | 0xE1000000;  /* found by enumeration */
 ```
 
 **Natural orderings are always free:** bit-position descending or ascending, source/struct field order, or

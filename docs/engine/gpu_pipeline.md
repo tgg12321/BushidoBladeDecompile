@@ -254,7 +254,7 @@ helper functions, identified by their debug-trace strings:
 |--------|---------|---------------------|
 | `gpu_DrawSyncCallback` | `0x8007B244` | Save old `g_gpu_draw_mode`, set new, return old. Debug trace: `"DrawSyncCallback(%08x)"`. PSX libgpu DrawSyncCallback equivalent. |
 | `gpu_DebugCheckRect` | `0x8007B3A8` | Validates rect against `D_8009BE78/7A` (screen width/height). Debug-logs `"%s:bad RECT"` and `"(%d,%d)-(%d,%d)"`. Called by other primitive wrappers as a pre-check. |
-| `MoveImage` | `0x8007B6C8` | `MoveImage(RECT *rect, int x, int y)` — VRAM rect-copy primitive. Fills `g_gpu_move_param[2..4]` and queues the 20-byte packet via `D_8009BE6C->addque2(D_8009BE6C->cwc, ...)` (sys.c:316-329). |
+| `MoveImage` | `0x8007B6C8` | `MoveImage(RECT *rect, int x, int y)` — VRAM rect-copy primitive. Fills `move_image[2..4]` and queues the 20-byte packet via `D_8009BE6C->addque2(D_8009BE6C->cwc, ...)` (sys.c:316-329). |
 | `gpu_DrawOTagEnv` | `0x8007BAB4` | `DrawOTagEnv(u_long *ot, DRAWENV *env)` — submits cmd 0x40 (= 64-byte DRAWENV size). Copies `_drawenv_q` struct. |
 
 ## GPU packet queue — async draw infrastructure

@@ -38,7 +38,7 @@ reach for the object model first.
 4. Write elements in TARGET's first-store order (cse reaches the base by a negative offset from the first
    store's address).
 
-Example: `MoveImage` — `g_gpu_move_param[5]` at 0x8009BF1C (PsyQ libgpu `u_long param[5]`) closed it to 0.
+Example: `MoveImage` — `move_image[5]` at 0x8009BF1C (PsyQ 4.0 libgpu SYS .data; psyz `u_long move_image[]`) closed it to 0.
 
 Related: [[header-type-correction-from-use-sites]] ·
 [[proven-spelling-class-reconstruction]]
