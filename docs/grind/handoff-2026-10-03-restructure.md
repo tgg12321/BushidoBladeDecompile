@@ -123,11 +123,14 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      functions are decided; wave11 named 18 types; waves 12-14 are data (resets, Sony/SOTN statics).
      Each: SHA1 == oracle, keycheck OK, fresh pre-apply reviews, post-apply R6 PASS. Scripts: tmp/p3wNN/
      (apply.sh, gates.sh; data-only template tmp/p3w13, functions + types tmp/p3w11).
-   - **Next: wave15** (data, game-side names an earlier inventory called KEEP-CANDIDATE: 62 RESET + 50 KEEP
-     rows mined in tmp/p3w15/, in pre-apply review). Held: GPU_STATUS 0x8009BF48 and libcd_CDRegister0
-     0x800A147C (data_wave's "now object-defined" note fails keycheck C9(c)); intrEnv 0x800A1578 (name already
-     in the tree); CD_ReadCallbackFunc (SOTN and psyz disagree). Waiting on C5: type FIELD-FIX rows and member
-     names (tmp/codex/c6-type-names*-result.md), then C9.
+     Waves 15-19 (2026-10-09/10): 4619ce635, 17a7a9c1f, fdb1007e5, 2ca56a705, 612e8d66f (+ prose 18d1036b9,
+     db5bcbec2, 6baa3bc30; wave19 prep a4e2c499a). Wave18 set the Sony-statics policy (psyz/SOTN name when
+     placement is shown verbatim, else D_ when unproven/contradicted, else KEEP); wave19 landed the rows held
+     for C9 (scratchpad, StageLight, GPU_STATUS, libcd_CDRegister0, intrEnv, move_image, retire-alias).
+     KEEP decisions: docs/naming/phase3/waveNN/data_keep.csv (never fed to data_wave).
+   - **Next:** CD_ReadCallbackFunc (SOTN and psyz disagree); info 0x8009BE74 (collides with existing uses);
+     cdrom_IrqHandler -> Sony local `callback`. Waiting on C5 (keycheck-scoped-pairs, round 18): type
+     FIELD-FIX rows and member names (tmp/codex/c6-type-names*-result.md).
    - Wave mechanics learned: verify-oracle --rebuild needs --allow-dirty on the applied tree; a FAILed row is dropped
      or re-mined (a fresh reviewer per round); PASS-row evidence fixes from a reviewer are applied before commit.
    - Prose debt (follow-up commits): docs/engine/*.md cite retired names (list in wave03's R6, commit 741468925 body);
@@ -137,7 +140,10 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      landed; C2 / C4 / C6 / C10-C12 research done (tmp/codex/c*-result.md); C5 (keycheck per-scope pairs,
      codex/keycheck-scoped-pairs) failed review rounds 4-13 on parser holes (verdicts in
      tmp/codex/reviews/keycheck-scoped-pairs.jsonl); round 14 moves the local-pair binding proof to a cc1
-     differential compile. When it lands, update naming-bar.md step 4 and its last line (members / locals limits). The stale May
+     differential compile; rounds 15-18 failed on synthetic-tree census misses (none in the real tree).
+     C9 (data_wave address coverage, retire-alias) landed f4f085344, which also repaired main's dead
+     working-tree "old name survives" grep. Review rounds use cached main-side baselines
+     (tmp/review-baseline/README.md). When C5 lands, update naming-bar.md step 4 and its last line (members / locals limits). The stale May
      ~/.codex/rules/default.rules (allow rules incl. `make` in main) was moved aside; read-only questions
      via `codex_worker.py research`.
    - Codex scope (owner 2026-10-07): keep Codex out of the main working tree; containment against a rogue
