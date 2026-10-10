@@ -66,9 +66,9 @@ know which subsystem owns it, look here.
   `gpu_InitDrawEnv`, `gpu_InitDispEnv`, `disp_Init`,
   `disp_SetFramebufferMode`, `gpu_SendData`, `gpu_StartDmaList`
 - **Key globals:** `g_disp_fb_base` (double-buffer base),
-  `g_gpu_dev_table` (libgpu device dispatch), `g_gpu_draw_env`,
+  `_gpucb` via `D_8009BE6C` (libgpu callback table), `g_gpu_draw_env`,
   `g_gpu_disp_env`, `g_gpu_ot_end`, `g_cam_matrix`, `g_sin_table`,
-  `g_sin_lut_q*`, `g_cos_lut_q*`, `g_gte_sqrt_table`
+  `rsin_tbl`, `SQRT`
 - **Doc:** [gpu_pipeline.md](gpu_pipeline.md)
 
 ### Sound / SPU

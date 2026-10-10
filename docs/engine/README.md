@@ -128,7 +128,7 @@ address is the stable key.
 | `main_post.c` | 0x8008D050-0x8008D120 | PsyQ libapi `AddDrv`/`DelDrv` and the data words ending `.text` |
 
 Rodata-only files (no `.text`): `ings_strings.c` (0x80010000-0x80010068, debug
-format strings + build date), `code6cac_b_rodata_pre.c` (0x80010868, 4 bytes),
+format strings + a date string, 0x8001004C), `code6cac_b_rodata_pre.c` (0x80010868, 4 bytes),
 `code6cac_b_rodata_post.c` (0x800109B0-0x800109D8, memory-card path formats),
 `text1a_filepaths.c`
 (0x80010DEC-0x800152B4, asset file-path table), `text1a_b_pre_rodata.c`

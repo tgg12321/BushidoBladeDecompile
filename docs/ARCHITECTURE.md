@@ -54,7 +54,7 @@ The exact boundaries depend on which `src/**/*.c` files are participating in eac
 
 ### Build identification
 
-The original was built **Fri Aug 7 22:26:32 1998** (string embedded at `0x8001004C` in `.rodata`). Toolchain identity was inferred from CVS `$Id:` tags in the linked PsyQ libraries:
+The EXE holds the date string **Fri Aug 7 22:26:32 1998** at `0x8001004C` in `.rodata` (`src/main/6CF8.c:22`; no code reads it, so it is not proven to be the build date). Toolchain identity was inferred from CVS `$Id:` tags in the linked PsyQ libraries:
 
 | Library | CVS tag | Confirms |
 |---|---|---|

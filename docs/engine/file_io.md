@@ -77,8 +77,10 @@ Lower-level CD-ROM control:
 | `cdrom_SendCmd` / `cdrom_DmaToRam` / `cdrom_DmaChain` | Thin wrappers over PsyQ libcd |
 
 Globals:
-- `g_cd_reg0..3` (-> 0x1F801800..3) / `g_cd_spu_voice` — pointers to the
-  CD-ROM hardware registers (mapped at `0x1F801800..0x1F801803`)
+- `g_cd_reg0`, `libcd_CDRegister1..3` (-> 0x1F801800..3) — pointers to the
+  CD-ROM hardware registers (mapped at `0x1F801800..0x1F801803`);
+  `D_800A1490` (-> 0x1F801C00) is libcd's SPU register base, which
+  `CD_initvol` uses for the main and CD volumes (bios.c:414-425)
 - `g_cd_status_a/b/c` — register shadows updated by IRQ
 - `g_cd_mode` — current command mode
 - `g_cd_callback_a/b` — installed async callbacks
@@ -187,74 +189,77 @@ sizes and the disc layout is fixed.
 - `cdrom_SendCmd`, `cdrom_DmaToRam`, `cdrom_DmaChain` cores
 - Several `func_8008XXXX` helpers that look like CD-IRQ handlers
 
-## CD-ROM streaming state (2026-05-17)
+## libcd cdread state (2026-05-17)
 
-`func_800826CC` (= Kengo `saEft00Add`) is the CD-ROM stream-control setup
-function (`system.c:1049`). It maintains a per-stream state cluster in
-the `0x800A14D0`-`0x800A14FC` range, saved across BIOS callback transitions:
+`CdRead` (`0x800826CC`, `src/main/psxsdk/libcd/cdread.c:166`) reads N whole
+sectors into a buffer; nothing streams. Its state is one Sony struct,
+`CdlREAD D_800A14D0` (`include/psxsdk/libcd.h:41-54`), whose members the code
+spells by name:
 
-| Symbol | Address | Role |
+| Member | Address | Role |
 |--------|---------|------|
-| `g_cdrom_streaming_arg1` | `0x800A14D4` | arg1 saved at op start |
-| `g_cdrom_streaming_arg1_copy` | `0x800A14D8` | = `g_cdrom_streaming_arg1` (read-back copy) |
-| `g_cdrom_mode_flags` | `0x800A14DC` | volatile s32 mode bits; mask `0x30` selects 200/246/249 |
-| `g_cdrom_setting_word` | `0x800A14E0` | Setting word derived from mode |
-| `g_irq_alarm_handle` | `0x800A14E4` | (existing) -1 = no alarm |
-| `g_cdrom_vsync_pre` | `0x800A14E8` | `sys_VSync(-1)` at op start |
-| `g_cdrom_vsync_post` | `0x800A14EC` | `sys_VSync(-1)` at op end |
-| `g_cdrom_pos_frames` | `0x800A14F0` | `cdrom_BcdToFrames(func_800800CC())` |
-| `g_cdrom_callback_a_saved` | `0x800A14F4` | Saved `cdrom_SetCallbackA` return |
-| `g_cdrom_callback_b_saved` | `0x800A14F8` | Saved `cdrom_SetCallbackB` return |
-| `g_cdrom_header_ptr_saved` | `0x800A14FC` | Saved `func_80080660_ret` header pointer |
-| `g_cdrom_callback_b_obj` | `0x80082050` | Object passed to `cdrom_SetCallbackB((s32)&D)` |
-| `g_cdrom_header_obj` | `0x80082320` | Object passed to `tslTmlGetHeda((s32)&D)` |
+| `sectors` | `0x800A14D0` | sector count requested (cdread.c:181) |
+| `buf` | `0x800A14D4` | CdRead's buffer argument (cdread.c:180) |
+| `p` | `0x800A14D8` | running write pointer: set from `buf` by `cd_read_retry` (:146), advanced one sector per transfer (:57, :89) |
+| `mode` | `0x800A14DC` | CdlSetmode byte: `mode & 0x30` picks `size`, `0x20` is ORed in (:167-179) |
+| `size` | `0x800A14E0` | sector size in words: 0x200 / 0x249 / 0x246 (:168-177) |
+| `cnt` | `0x800A14E4` | sectors left; -1 on error |
+| `t2` | `0x800A14E8` | `VSync(-1)` at the last sector or retry (:65, :149) |
+| `t1` | `0x800A14EC` | `VSync(-1)` when the read starts (:187), base of the 1200-frame timeout (:69, :199) |
+| `pos` | `0x800A14F0` | `CdPosToInt(CdLastPos())` (:141), advanced per sector |
+| `cbsync` / `cbready` / `cbdata` | `0x800A14F4` / `F8` / `FC` | callbacks saved by CdRead (:182-186), restored at the end (:75-78) |
+| `cb_read` | `0x80082050` | passed to `CdReadyCallback` by `cd_read_retry` (:142) |
+| `cb_data` | `0x80082320` | passed to `CdDataCallback` by `cd_read_retry` (:144) |
 
-## IRQ handlers (vsync + CD-ROM)
+## IRQ handlers (vsync + DMA)
 
-From `ings2.c:320-400`, the engine installs interrupt handlers for IRQ 0
-(vsync) and IRQ 3 (CD-ROM). Each handler has its own callback-slot array
-and registration function:
+PsyQ libetc installs interrupt handlers for IRQ 0 (vsync,
+`src/main/psxsdk/libetc/intr_vb.c`) and IRQ 3 (DMA,
+`src/main/psxsdk/libetc/intr_dma.c`). Each handler has its own
+callback-slot array and registration function:
 
 ### Vsync handler (IRQ 0)
 
-`irq_vsync_handler` (`0x800832F8`) fires on every vsync. Body:
+`trapIntrVSync` (`0x800832F8`, intr_vb.c:23-38) fires on every vsync:
 ```
-++g_irq_vsync_counter;
+++Vcount;
 for (i = 0; i < 8; i++) {
-    if (g_irq_vsync_callbacks[i] != 0)
-        ((void(*)(void))g_irq_vsync_callbacks[i])();
+    if (D_800A2614[i] != 0)
+        ((void(*)(void))D_800A2614[i])();
 }
 ```
 
-`irq_vsync_register_callback` (`0x80083370`) sets `callbacks[slot] = fn`.
-`func_800832A0` is the vsync init: writes `0x107` to control reg, clears
-counters/slots, hooks IRQ 0 to `irq_vsync_handler`.
+`setIntrVSync` (`0x80083370`) sets `D_800A2614[slot] = fn`.
+`startIntrVSync` (`0x800832A0`, intr_vb.c:15-21) writes `0x107` to root
+counter 1's mode register (via `D_800A2638`), clears `Vcount` and the slots,
+and hooks IRQ 0 to `trapIntrVSync`.
 
-### CD-ROM handler (IRQ 3)
+### DMA handler (IRQ 3)
 
-`irq_cdrom_handler` (`0x80083418`) fires on CD-ROM status changes:
+`trapIntrDMA` (`0x80083418`, intr_dma.c:29-50) dispatches the DICR flag bits
+of all seven DMA channels:
 ```
-bits = (*g_irq_cdrom_ctrl_reg_ptr >> 24) & 0x7F;
-// dispatch on status bits...
+while ((mask = (*D_800A263C >> 24) & 0x7F) != 0)
+    // for each set bit i: acknowledge it, call D_800A2640[i]
 ```
 
-`irq_cdrom_register_callback` (`0x8008359C`) — registrar companion.
+`setIntrDMA` (`0x8008359C`, intr_dma.c:52-66) — registrar companion; it also
+sets the channel's enable bit in DICR.
 
-**MISNOMER**: `conv_matrix_rotation` (`ings2.c:425`) is actually
-`irq_cdrom_init` — clears callback slots, clears CD-ROM IRQ control reg,
-hooks IRQ 3 to `irq_cdrom_handler`.  Body has nothing to do with matrix
-rotation; see `docs/naming/MISNOMERS.md`.
+`startIntrDMA` (`0x800833C8`, intr_dma.c:22-27; once misnamed
+`conv_matrix_rotation`, see `docs/naming/MISNOMERS.md`) clears the callback
+slots and DICR and hooks IRQ 3 to `trapIntrDMA`.
 
 ### IRQ state cluster
 
 | Symbol | Address | Role |
 |--------|---------|------|
-| `g_irq_vsync_callbacks` | `0x800A2614` | 8 × s32 vsync callback slots |
-| `g_irq_vsync_counter` | `0x800A2634` | volatile tick counter (++ in handler) |
-| `g_irq_vsync_ctrl_reg_ptr` | `0x800A2638` | pointer to vsync IRQ control reg (init `0x107`) |
-| `g_irq_cdrom_callbacks` | `0x800A2640` | 8 × s32 CD-ROM callback slots |
-| `g_irq_cdrom_ctrl_reg_ptr` | `0x800A263C` | pointer to CD-ROM IRQ control/status reg |
-| `g_irq_cdrom_initialized` | `0x800A2668` | boolean init flag |
+| `g_irq_vsync_callbacks` (C: `D_800A2614`) | `0x800A2614` | 8 × s32 vsync callback slots |
+| `Vcount` | `0x800A2634` | volatile vsync tick counter (++ in handler) |
+| `D_800A2638` | `0x800A2638` | -> 0x1F801114, root counter 1's mode register (`0x107` written by `startIntrVSync`) |
+| `D_800A2640` | `0x800A2640` | DMA-channel callback slots (`[i]` for DICR flag bit 24 + i, i < 7) |
+| `D_800A263C` | `0x800A263C` | -> 0x1F8010F4, DICR (the DMA interrupt register) |
+| `D_800A2668` | `0x800A2668` | boolean init flag |
 
 ## Memcard helpers (2026-05-17)
 

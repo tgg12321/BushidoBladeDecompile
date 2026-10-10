@@ -18,7 +18,7 @@ extern void _spu_Fw1ts(void);
 extern s32 D_800A2D2C;
 extern s32 spu_madr;
 extern s32 spu_bcr;
-/* Sony _spu_madr/_spu_bcr/_spu_chcr: pointers to the SPU DMA (ch4) MMIO
+/* psyz names (Sony's are unknown): pointers to the SPU DMA (ch4) MMIO
  * registers 0x1F8010C0/C4/C8; pointee volatile per mmio-volatile-type-level. */
 extern volatile s32 *dma_spu_madr;
 extern volatile s32 *dma_spu_bcr;

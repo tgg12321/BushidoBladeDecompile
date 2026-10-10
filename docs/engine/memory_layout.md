@@ -15,10 +15,10 @@ in this doc are KSEG0 virtual addresses (`0x8000_0000`+, cached).
 | (~64 KB, BIOS-owned; do NOT clobber)         |
 +----------------------------------------------+ 0x8001_0000  <- EXE load address
 | .rodata: strings, jump tables, LUTs          |     (PS-EXE header,
-|   Build date string "Fri Aug 7 22:26:32      |      .word 0x80010000)
-|     1998" at 0x8001_004C                     |
+|   Date string "Fri Aug 7 22:26:32 1998"      |      .word 0x80010000)
+|     at 0x8001_004C (no reader)               |
 |   Sine table g_sin_table @ 0x8009_73FC       |
-|   Sine/cos LUT pairs @ 0x8009_AF94..BF94     |
+|   libgte rsin_tbl @ 0x8009_BF94              |
 |   GTE sqrt table @ 0x8009_C7A8               |
 +----------------------------------------------+ 0x8001_6CAC  <- splat: .text
 | .text: 1,410 functions, ends ~0x8008_D070    |

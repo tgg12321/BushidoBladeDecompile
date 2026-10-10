@@ -32,7 +32,7 @@ for 3D scene + UI overlays.
 | --- | --- | --- |
 | `gpu_ClearOTag` | `display.c:189` | Initialize OT chain — backward-link all entries to point at the next; tail points at `g_gpu_ot_end` |
 | `func_8007B844` | `display.c:211` | Variant that uses libgpu's `ClearOTagR` (reverse-order clear) — most common |
-| `gpu_DrawOTag` | `display.c:229` | Kick the GPU DMA to walk the OT (`g_gpu_dev_table[6]`) |
+| `gpu_DrawOTag` | `display.c:229` | Kick the GPU DMA to walk the OT (`D_8009BE6C->addque2(D_8009BE6C->cwc, ot, 0, 0)`, libgpu sys.c:365) |
 | `gpu_CatPacket` | `gpu.c:556` | Insert a packet into the OT (low-level, prepends to slot) |
 
 The PS1 OT macros are inlined directly in code: `*ot = (next_addr & 0x00FFFFFF) | (size << 24);`
@@ -78,24 +78,23 @@ on the next vsync.
 
 ## GPU command path — the device table
 
-The engine maintains a function pointer table at `g_gpu_dev_table`
-(`0x8009BE6C`). The functions are PsyQ libgpu's low-level access primitives:
+libgpu SYS keeps a function pointer table, `_gpucb` (`0x8009BE2C`), reached
+through the pointer `D_8009BE6C` (`0x8009BE6C`); ResetGraph's debug print
+calls it `jtb` (`src/main/psxsdk/libgpu/sys.c:160`). The members are PsyQ
+libgpu's low-level access primitives (`GpuDevTable`, sys.c:12-29):
 
-| Index | Purpose (inferred) |
-| --- | --- |
-| 0 | GPU reset / init |
-| 1 | Display mask (on/off) |
-| 2 | Send command (`(cmd, packet, size, extra)`) — main packet sender |
-| 3 | Clear-image command (used by `func_8007B4D0`) |
-| 4 | Display enable / mask (gpu_SetDispMask helper) |
-| 5 | Send variable-length data block |
-| 6 | DrawOTag (used by `gpu_DrawOTag`) |
-| 7 | StoreImage |
-| 8 | LoadImage |
-| 9-10 | Mode / state |
-| 11 | ClearOTag (reverse-order, used by `func_8007B844`) |
-| 14 | IsDrawing |
-| 15 | DrawSync |
+| Index | Member | Use |
+| --- | --- | --- |
+| 0 | `rcsid` | the module's `$Id:` string, not a function |
+| 1-2 | `addque` / `addque2` | queue a call `(func, arg, len, cb_arg)` — the main sender |
+| 3 | `clr` | ClearImage (sys.c:290-302) |
+| 4 | `ctl` | GPU control writes (display mask, mode) |
+| 5 | `cwb` | DrawPrim's data write (sys.c:358) |
+| 6 | `cwc` | DrawOTag / DrawOTagEnv / MoveImage packet chain (sys.c:365, :385, :328) |
+| 7 / 8 | `drs` / `dws` | StoreImage / LoadImage (sys.c:311, :306) |
+| 9-10 | `exeque` / `getctl` | run the queue / read control state (sys.c:189) |
+| 11 | `otc` | ClearOTagR (sys.c:350) |
+| 12-15 | `param` / `reset` / `status` / `sync` | `reset` in ResetGraph (sys.c:177), `status` in GetODE (:493), `sync` in DrawSync (:247) |
 
 Calls go through this indirection because libgpu has multiple back-ends
 (NTSC vs PAL, debug emulator vs real hardware). PsyQ's debug builds
@@ -103,9 +102,9 @@ include a syntax checker; the released BB2 build uses the production
 back-end.
 
 Examples:
-- `gpu_LoadImage(rect, source)` (`display.c:127`) calls
-  `g_gpu_dev_table[2](g_gpu_dev_table[8], rect, 8, source)` — i.e., send
-  the LoadImage command (index 8) using the generic sender (index 2).
+- `LoadImage(rect, source)` (sys.c:304-307) calls
+  `D_8009BE6C->addque2(D_8009BE6C->dws, rect, 8, source)` — i.e., queue
+  the VRAM write (`dws`, index 8) through the generic sender (`addque2`).
 
 ## DMA channels used
 
@@ -255,7 +254,7 @@ helper functions, identified by their debug-trace strings:
 |--------|---------|---------------------|
 | `gpu_DrawSyncCallback` | `0x8007B244` | Save old `g_gpu_draw_mode`, set new, return old. Debug trace: `"DrawSyncCallback(%08x)"`. PSX libgpu DrawSyncCallback equivalent. |
 | `gpu_DebugCheckRect` | `0x8007B3A8` | Validates rect against `D_8009BE78/7A` (screen width/height). Debug-logs `"%s:bad RECT"` and `"(%d,%d)-(%d,%d)"`. Called by other primitive wrappers as a pre-check. |
-| `gpu_MoveImage` | `0x8007B6C8` | `MoveImage(RECT *rect, int x, int y)` — VRAM rect-copy primitive. Submits cmd 0x14 via `g_gpu_dev_table[2]`. |
+| `MoveImage` | `0x8007B6C8` | `MoveImage(RECT *rect, int x, int y)` — VRAM rect-copy primitive. Fills `g_gpu_move_param[2..4]` and queues the 20-byte packet via `D_8009BE6C->addque2(D_8009BE6C->cwc, ...)` (sys.c:316-329). |
 | `gpu_DrawOTagEnv` | `0x8007BAB4` | `DrawOTagEnv(u_long *ot, DRAWENV *env)` — submits cmd 0x40 (= 64-byte DRAWENV size). Copies `_drawenv_q` struct. |
 
 ## GPU packet queue — async draw infrastructure
@@ -271,11 +270,11 @@ via callbacks, located at `g_gpu_packet_queue_base` (`0x80103680`):
 | | `0x8010368C` | array | Slot[i] = data buffer (offset 0xC) |
 | `g_gpu_packet_write_idx` | `0x8009BF78` | s32 | Head pointer (mod 0x40 = 64) |
 | `g_gpu_packet_read_idx` | `0x8009BF7C` | volatile s32 | Tail pointer (drained by handler) |
-| `g_gpu_packet_pending_fn` | `0x8009BF68` | fn ptr | Last submitted callback fn |
-| `g_gpu_packet_pending_arg1` | `0x8009BF6C` | s32 | Last submitted arg1 |
-| `g_gpu_packet_pending_target` | `0x8009BF70` | s32 | Last submitted arg3 |
-| `g_gpu_motion_save_a` | `0x8009BF80` | s32 | `motion_make_table(0)` state saved during async draw |
-| `g_gpu_motion_save_b` | `0x8009BF88` | s32 | Parallel save for outer caller |
+| `_qlog` | `0x8009BF68` | fn ptr | function of the last executed call (sys.c:1026), printed by `get_alarm` |
+| `D_8009BF6C` | `0x8009BF6C` | s32 | its first argument (sys.c:1027), printed by `get_alarm` (:1168) |
+| `D_8009BF70` | `0x8009BF70` | s32 | its `cb_arg` (sys.c:1028), printed by `get_alarm` |
+| `D_8009BF80` | `0x8009BF80` | s32 | interrupt mask from `SetIntrMask(0)`, saved and restored by `_addque2` (sys.c:1018, :1029) |
+| `D_8009BF88` | `0x8009BF88` | s32 | the same around the GPU reset in `_reset` / `get_alarm` (sys.c:1097, :1117, :1169-1177) |
 | `g_gpu_loop_flag` | `0x8009BE7C` | s32 | Set to 1 during successful packet submit |
 | `DMA6_CHCR` | `0x8009BF60` | u32* | DMA6 (OTC) channel control (`0x1F8010E8`); `_otc` writes 0, then `0x11000002`, and polls bit 24 |
 
@@ -284,18 +283,19 @@ saved args. When the GPU is ready, the handler dispatches the queued callback
 to actually emit primitives. See `display.c:880-960` for the enqueue path
 (`func_8007D9C4` and family).
 
-## GPU mode tables
+## GPU type tables
 
-The engine supports multiple video modes (height/width combinations):
+ResetGraph sizes VRAM by the GPU type `_reset` returns:
 
 | Symbol | Address | Purpose |
 |--------|---------|---------|
-| `g_gpu_mode_heights_table` | `0x8009BF08` | 5 s16/s32 height values indexed by mode |
-| `g_bitmask_table_5_8009BEF4` | `0x8009BEF4` | 5 width values (MISNAMED — actually `g_gpu_mode_widths_table`, see MISNOMERS.md) |
-| `g_gpu_init_msg_buf` | `0x8009BE2C` | Buffer passed to debug_printf with `g_gpu_type` at gpu init |
+| `D_8009BF08` | `0x8009BF08` | 5 VRAM heights indexed by GPU type |
+| `D_8009BEF4` | `0x8009BEF4` | 5 VRAM widths indexed by GPU type (each 1024) |
+| `_gpucb` | `0x8009BE2C` | the GPU callback table; ResetGraph prints its address as `jtb=%08x` with `&g_gpu_ctx` |
 
-The `s0->width = D_8009BEF4[idx]` / `s0->height = D_8009BF08[idx]` pattern
-in `gpu.c:608-610` confirms the tables are paired and idx is the mode code.
+`g_gpu_ctx.type = _reset(a0)`, then `g_gpu_ctx.width = D_8009BEF4[type]` /
+`g_gpu_ctx.height = D_8009BF08[type]` (`src/main/psxsdk/libgpu/sys.c:166-169`):
+the tables are paired and the index is the GPU type, not a display mode.
 
 ## Cross-references (naming pass 2026-05-17; full traces at `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`)
 

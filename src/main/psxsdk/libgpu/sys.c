@@ -6,9 +6,9 @@
 #include <psxsdk/libgpu.h>
 #include "psx.h"
 
-/* PsyQ libgpu device table ("gpu" in the SDK's sys.c): a 0x40-byte struct of
- * function pointers at _gpucb, reached through the pointer D_8009BE6C
- * (0x8009BE6C). Member names/offsets are the PsyQ ones. */
+/* PsyQ libgpu device table (_gpucb in psyz's sys.c; psyz's "gpu" is the
+ * pointer): 0x40 bytes of function pointers at _gpucb, reached through the
+ * pointer D_8009BE6C (0x8009BE6C). Member names/offsets are the PsyQ ones. */
 typedef struct GpuDevTable {
     /* 0x00 */ const char *rcsid;
     /* 0x04 */ void (*addque)();

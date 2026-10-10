@@ -13,8 +13,8 @@ extern u8 D_800A3716;
 extern s32 g_rng_state;
 extern RECT g_gpu_clear_rect;
 extern u32 g_scratchpad_save;
-/* This file's .rodata: debug format strings, and the build date that D_800A30E0
- * (below) points at. */
+/* This file's .rodata: debug format strings, and the date string
+ * ("Fri Aug  7 22:26:32 1998") that D_800A30E0 (below) points at. */
 const char g_str_overflow[12] = "OVER FLOW\n";
 const char g_str_eff_init[28] = "eff_init:%08x size:%08x\n";
 const char g_str_limit[12] = "LIMIT:%08x\n";

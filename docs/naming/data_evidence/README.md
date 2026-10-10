@@ -79,7 +79,7 @@ Continuing pass batch 5 (2026-05-17), next 18 symbols from ranks 31-60:
 
 | File | Proposed name | Confidence | Why |
 |------|---------------|-----------:|-----|
-| [D_800A3044.md](D_800A3044.md) | `g_spu_reg_base_ptr` | high | SPU register block pointer; volatile-u16 +0xA OR'd with 0x20 == voice on/off |
+| [D_800A3044.md](D_800A3044.md) | `g_spu_reg_base_ptr` (superseded by docs/naming/phase3/wave18, 2ca56a705: 0x800A3044 reset; SIO port 1, not SPU) | high | SPU register block pointer; volatile-u16 +0xA OR'd with 0x20 == voice on/off |
 | [D_80106F28.md](D_80106F28.md) | `g_seq_bank_table` | high | bank pointer table; per-channel stride 0xB0 matches func_8008{5114,5210,5064} |
 | [D_800A334C.md](D_800A334C.md) | `g_motion_play_countdown` | high | u8 watchdog set to 0x5A (1.5s); paired with g_seq_active_voice_mask |
 | [D_800A3874.md](D_800A3874.md) | `g_match_round_index` | high | monotonic round counter; indexes D_800A377C and the per-round ranking table |

@@ -127,7 +127,8 @@
     "kind": "misc",
     "name": "g_misc_800A362C",
     "why": "unclassified state cell",
-    "primary_file": "text1b_b.c"
+    "primary_file": "text1b_b.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A362C; g_misc_800A362C never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_80095328",
@@ -1708,7 +1709,8 @@
     "kind": "misc",
     "name": "g_misc_800A2CEC",
     "why": "unclassified state cell",
-    "primary_file": "main.c"
+    "primary_file": "main.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): renamed dma_dpcr (psyz name); g_misc_800A2CEC never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A2D0C",
@@ -1808,7 +1810,8 @@
     "kind": "misc",
     "name": "g_misc_800A31F0",
     "why": "unclassified state cell",
-    "primary_file": "code6cac_c_mid.c"
+    "primary_file": "code6cac_c_mid.c",
+    "superseded": "wave17 (docs/naming/phase3/wave17/data_manifest.csv, fdb1007e5): stays D_800A31F0, a pointer to the const save-file name (src/main/28708.c:1902), not a state cell; g_misc_800A31F0 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A3218",
@@ -1978,7 +1981,8 @@
     "kind": "misc",
     "name": "g_misc_8007FF44",
     "why": "unclassified state cell",
-    "primary_file": "display.c"
+    "primary_file": "display.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_8007FF44; g_misc_8007FF44 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_80081F1C",
@@ -1988,7 +1992,8 @@
     "kind": "struct_addr",
     "name": "g_struct_80081F1C",
     "why": "address-taken struct",
-    "primary_file": "system.c"
+    "primary_file": "system.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_80081F1C; g_struct_80081F1C never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_8009B48E",
@@ -3119,7 +3124,8 @@
     "kind": "misc",
     "name": "g_misc_8009BD68",
     "why": "unclassified state cell",
-    "primary_file": "text1b_b.c"
+    "primary_file": "text1b_b.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_8009BD68; g_misc_8009BD68 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_8009BD70",
@@ -3139,7 +3145,8 @@
     "kind": "struct_addr",
     "name": "g_struct_800A14EC",
     "why": "address-taken struct",
-    "primary_file": "system.c"
+    "primary_file": "system.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A14EC; g_struct_800A14EC never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A1510",
@@ -3170,7 +3177,8 @@
     "kind": "struct_addr",
     "name": "g_struct_800A2640",
     "why": "address-taken struct",
-    "primary_file": "ings2.c"
+    "primary_file": "ings2.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A2640; g_struct_800A2640 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A2668",
@@ -3490,7 +3498,8 @@
     "kind": "misc",
     "name": "g_misc_800545F8",
     "why": "unclassified state cell",
-    "primary_file": "text1a.c"
+    "primary_file": "text1a.c",
+    "superseded": "wave17 (docs/naming/phase3/wave17/data_manifest.csv, fdb1007e5): stays D_800545F8, an instruction word of func_800545F4 that func_80041398 copies (src/main/31548.c:282), not a state cell; g_misc_800545F8 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800545FC",
@@ -3500,7 +3509,8 @@
     "kind": "misc",
     "name": "g_misc_800545FC",
     "why": "unclassified state cell",
-    "primary_file": "text1a.c"
+    "primary_file": "text1a.c",
+    "superseded": "wave17 (docs/naming/phase3/wave17/data_manifest.csv, fdb1007e5): stays D_800545FC, an instruction word of func_800545F4 that func_80041398 copies (src/main/31548.c:283), not a state cell; g_misc_800545FC never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_80054600",
@@ -3510,7 +3520,8 @@
     "kind": "misc",
     "name": "g_misc_80054600",
     "why": "unclassified state cell",
-    "primary_file": "text1a.c"
+    "primary_file": "text1a.c",
+    "superseded": "wave17 (docs/naming/phase3/wave17/data_manifest.csv, fdb1007e5): stays D_80054600, an instruction word of func_800545F4 that func_80041398 copies (src/main/31548.c:284), not a state cell; g_misc_80054600 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800832F8",
@@ -5030,7 +5041,8 @@
     "kind": "misc",
     "name": "g_misc_800A2D30",
     "why": "unclassified state cell",
-    "primary_file": "main.c"
+    "primary_file": "main.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): renamed spu_madr (psyz name); g_misc_800A2D30 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A2D34",
@@ -5040,7 +5052,8 @@
     "kind": "misc",
     "name": "g_misc_800A2D34",
     "why": "unclassified state cell",
-    "primary_file": "main.c"
+    "primary_file": "main.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): renamed spu_bcr (psyz name); g_misc_800A2D34 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A3074",
@@ -5230,7 +5243,8 @@
     "kind": "misc",
     "name": "g_misc_8009BD84",
     "why": "unclassified state cell",
-    "primary_file": "text1b_b.c"
+    "primary_file": "text1b_b.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_8009BD84; g_misc_8009BD84 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_8009BD88",
@@ -5240,7 +5254,8 @@
     "kind": "misc",
     "name": "g_misc_8009BD88",
     "why": "unclassified state cell",
-    "primary_file": "text1b_b.c"
+    "primary_file": "text1b_b.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_8009BD88; g_misc_8009BD88 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A14D0",
@@ -5260,7 +5275,8 @@
     "kind": "misc",
     "name": "g_misc_800A14D4",
     "why": "unclassified state cell",
-    "primary_file": "system.c"
+    "primary_file": "system.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A14D4; g_misc_800A14D4 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A14DC",
@@ -5270,7 +5286,8 @@
     "kind": "struct_addr",
     "name": "g_struct_800A14DC",
     "why": "address-taken struct",
-    "primary_file": "system.c"
+    "primary_file": "system.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A14DC; g_struct_800A14DC never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A14F4",
@@ -5280,7 +5297,8 @@
     "kind": "misc",
     "name": "g_misc_800A14F4",
     "why": "unclassified state cell",
-    "primary_file": "system.c"
+    "primary_file": "system.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A14F4; g_misc_800A14F4 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A14F8",
@@ -5290,7 +5308,8 @@
     "kind": "misc",
     "name": "g_misc_800A14F8",
     "why": "unclassified state cell",
-    "primary_file": "system.c"
+    "primary_file": "system.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A14F8; g_misc_800A14F8 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A14FC",
@@ -5560,7 +5579,8 @@
     "kind": "asm_only",
     "name": "g_asm_800790B4",
     "why": "referenced only via inline asm",
-    "primary_file": "text1b_b.c"
+    "primary_file": "text1b_b.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800790B4; g_asm_800790B4 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_8007A4C0",
@@ -5570,7 +5590,8 @@
     "kind": "asm_only",
     "name": "g_asm_8007A4C0",
     "why": "referenced only via inline asm",
-    "primary_file": "gpu.c"
+    "primary_file": "gpu.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_8007A4C0; g_asm_8007A4C0 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_8007A4CC",
@@ -5580,7 +5601,8 @@
     "kind": "asm_only",
     "name": "g_asm_8007A4CC",
     "why": "referenced only via inline asm",
-    "primary_file": "gpu.c"
+    "primary_file": "gpu.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_8007A4CC; g_asm_8007A4CC never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_80080014",
@@ -7971,7 +7993,8 @@
     "kind": "struct_addr",
     "name": "g_struct_800100A4",
     "why": "address-taken struct",
-    "primary_file": "code6cac.c"
+    "primary_file": "code6cac.c",
+    "superseded": "wave17 (docs/naming/phase3/wave17/data_manifest.csv, fdb1007e5): stays D_800100A4, the format string '%04x %04x %04x\\n' (asm/rodata/D_800100A4.s), not a struct; g_struct_800100A4 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_80015820",
@@ -8031,7 +8054,8 @@
     "kind": "misc",
     "name": "g_misc_800A2CE0",
     "why": "unclassified state cell",
-    "primary_file": "main.c"
+    "primary_file": "main.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): renamed dma_spu_madr (psyz name); g_misc_800A2CE0 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A2CE4",
@@ -8041,7 +8065,8 @@
     "kind": "misc",
     "name": "g_misc_800A2CE4",
     "why": "unclassified state cell",
-    "primary_file": "main.c"
+    "primary_file": "main.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): renamed dma_spu_bcr (psyz name); g_misc_800A2CE4 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A2CE8",
@@ -8051,7 +8076,8 @@
     "kind": "misc",
     "name": "g_misc_800A2CE8",
     "why": "unclassified state cell",
-    "primary_file": "main.c"
+    "primary_file": "main.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): renamed dma_spu_chcr (psyz name); g_misc_800A2CE8 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800109EC",
@@ -8691,7 +8717,8 @@
     "kind": "struct_addr",
     "name": "g_struct_8009BE2C",
     "why": "address-taken struct",
-    "primary_file": "gpu.c"
+    "primary_file": "gpu.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): renamed _gpucb (psyz name); g_struct_8009BE2C never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_8009BEF4",
@@ -8701,7 +8728,8 @@
     "kind": "misc",
     "name": "g_misc_8009BEF4",
     "why": "unclassified state cell",
-    "primary_file": "gpu.c"
+    "primary_file": "gpu.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_8009BEF4; g_misc_8009BEF4 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_8009BF08",
@@ -8711,7 +8739,8 @@
     "kind": "misc",
     "name": "g_misc_8009BF08",
     "why": "unclassified state cell",
-    "primary_file": "gpu.c"
+    "primary_file": "gpu.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_8009BF08; g_misc_8009BF08 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_8009BF58",
@@ -8741,7 +8770,8 @@
     "kind": "misc",
     "name": "g_misc_800A1460",
     "why": "unclassified state cell",
-    "primary_file": "system.c"
+    "primary_file": "system.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A1460; g_misc_800A1460 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A1498",
@@ -8761,7 +8791,8 @@
     "kind": "misc",
     "name": "g_misc_800A14D8",
     "why": "unclassified state cell",
-    "primary_file": "system.c"
+    "primary_file": "system.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A14D8; g_misc_800A14D8 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A14E0",
@@ -8771,7 +8802,8 @@
     "kind": "misc",
     "name": "g_misc_800A14E0",
     "why": "unclassified state cell",
-    "primary_file": "system.c"
+    "primary_file": "system.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A14E0; g_misc_800A14E0 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A14E8",
@@ -8781,7 +8813,8 @@
     "kind": "misc",
     "name": "g_misc_800A14E8",
     "why": "unclassified state cell",
-    "primary_file": "system.c"
+    "primary_file": "system.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A14E8; g_misc_800A14E8 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A14F0",
@@ -8801,7 +8834,8 @@
     "kind": "struct_addr",
     "name": "g_struct_800A1578",
     "why": "address-taken struct",
-    "primary_file": "ings2.c"
+    "primary_file": "ings2.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A1578; g_struct_800A1578 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A15B4",
@@ -8811,7 +8845,8 @@
     "kind": "struct_addr",
     "name": "g_struct_800A15B4",
     "why": "address-taken struct",
-    "primary_file": "ings2.c"
+    "primary_file": "ings2.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A15B4; g_struct_800A15B4 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A2604",
@@ -8841,7 +8876,8 @@
     "kind": "misc",
     "name": "g_misc_800A2638",
     "why": "unclassified state cell",
-    "primary_file": "ings2.c"
+    "primary_file": "ings2.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A2638; g_misc_800A2638 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A2660",
@@ -8851,7 +8887,8 @@
     "kind": "misc",
     "name": "g_misc_800A2660",
     "why": "unclassified state cell",
-    "primary_file": "ings2.c"
+    "primary_file": "ings2.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A2660; g_misc_800A2660 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A269C",
@@ -8861,7 +8898,8 @@
     "kind": "struct_addr",
     "name": "g_struct_800A269C",
     "why": "address-taken struct",
-    "primary_file": "ings2.c"
+    "primary_file": "ings2.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): renamed default_voice (psyz name); g_struct_800A269C never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A26AC",
@@ -8871,7 +8909,8 @@
     "kind": "struct_addr",
     "name": "g_struct_800A26AC",
     "why": "address-taken struct",
-    "primary_file": "ings2.c"
+    "primary_file": "ings2.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): renamed default_state (psyz name); g_struct_800A26AC never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A26E4",
@@ -8961,7 +9000,8 @@
     "kind": "struct_addr",
     "name": "g_struct_800A30D4",
     "why": "address-taken struct",
-    "primary_file": "ings.c"
+    "primary_file": "ings.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_800A30D4; g_struct_800A30D4 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_800A3200",
@@ -9081,7 +9121,8 @@
     "kind": "struct_addr",
     "name": "g_struct_8009BF24",
     "why": "address-taken struct",
-    "primary_file": "display.c"
+    "primary_file": "display.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_8009BF24; g_struct_8009BF24 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_8009BF28",
@@ -9091,7 +9132,8 @@
     "kind": "misc",
     "name": "g_misc_8009BF28",
     "why": "unclassified state cell",
-    "primary_file": "display.c"
+    "primary_file": "display.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_8009BF28; g_misc_8009BF28 never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_8009BF2C",
@@ -9101,7 +9143,8 @@
     "kind": "misc",
     "name": "g_misc_8009BF2C",
     "why": "unclassified state cell",
-    "primary_file": "display.c"
+    "primary_file": "display.c",
+    "superseded": "wave18 (docs/naming/phase3/wave18/data_manifest.csv, 2ca56a705): stays D_8009BF2C; g_misc_8009BF2C never landed; primary_file is a pre-restructure TU id"
   },
   {
     "d": "D_8008D59E",

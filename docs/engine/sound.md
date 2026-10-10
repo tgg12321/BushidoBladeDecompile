@@ -222,7 +222,7 @@ located adjacent to `g_spu_base_addr`:
 
 | Symbol | Address | Value | Role |
 |--------|---------|-------|------|
-| `g_spu_ctrl_reg_ptr` | `0x800A2CEC` | ptr | Pointer to SPU control register; `*p \|= 0xB0000` enables capture/transfer bits |
+| `dma_dpcr` | `0x800A2CEC` | ptr | Pointer to DPCR (0x1F8010F0), the DMA control register, not an SPU register; `_spu_init`'s `*p \|= 0xB0000` sets DMA channel 4's enable/priority (libspu spu.c:39) |
 | `g_spu_init_const_a` | `0x800A2D00` | `2` | Used during channel setup |
 | `g_spu_addr_shift` | `0x800A2D04` | `3` | Existing name; shift amount for channel addressing |
 | `g_spu_init_const_c` | `0x800A2D08` | `8` | |

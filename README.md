@@ -35,7 +35,7 @@ phase. Counts: `python3 tools/check_completion_integrity.py`; dated snapshot in
 | Publisher | SquareSoft (Japan: Square Co., Ltd.) |
 | Original release | 1998 (NA: SLUS-00663) |
 | Engine | "Marionation" (Lightweight proprietary; later reused for *Kengo* on PS2) |
-| Build date | Fri Aug 7 22:26:32 1998 (embedded in `.rodata` at `0x8001004C`) |
+| Date string | Fri Aug 7 22:26:32 1998 (in `.rodata` at `0x8001004C`; no code reads it, so "build date" is unproven) |
 | Compiler | GCC 2.7.2 (SN Systems fork / `cc1psx`) |
 | Assembler | ASPSX ~2.34 |
 | SDK | PsyQ 3.5 (DTL-S3000), copyright 1993–1997 |

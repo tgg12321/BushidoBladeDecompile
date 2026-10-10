@@ -19,8 +19,8 @@ The MOVOVL.EXE overlay additionally links `libmdec` for FMV playback.
 
 ## libgpu — `sys.c v1.129`
 
-Sony's GPU library. BB2 wraps everything via the dispatch table at
-`g_gpu_dev_table` (see [gpu_pipeline.md](gpu_pipeline.md)). The wrappers
+Sony's GPU library. Its calls go through the callback table `_gpucb`,
+reached via the pointer `D_8009BE6C` (see [gpu_pipeline.md](gpu_pipeline.md)). The wrappers
 in `gpu.c` and `display.c` use it via indirect calls.
 
 Identifiable libgpu functions (these are PsyQ originals, not BB2-custom):
@@ -106,9 +106,10 @@ source isn't tagged), but the linked functions are unambiguous:
 | `func_80078A68` | `SpuMalloc` / channel-alloc | SPU RAM management |
 
 Globals:
-- `g_spu_base_addr` (`0x800A2CDC`) — base of SPU register shadow
-- `g_spu_dma_ctrl` (`0x800A2CF0`), `g_spu_xfer_addr` (`0x800A2CF4`),
-  `g_spu_reverb_mode` (`0x800A2CF8`), etc.
+- `_spu_RXX` (`0x800A2CDC`) — pointer to the SPU registers (0x1F801C00)
+- `spu_delay` (`0x800A2CF0`, -> 0x1F801014, the SPU delay/size
+  memory-control register), `_spu_tsa` (`0x800A2CF4`),
+  `_spu_transMode` (`0x800A2CF8`), etc. (libspu spu.c)
 
 The `coli_HitPauseKatana` voice-allocator (despite the name) is BB2-custom
 on top of libspu — see [sound.md](sound.md).

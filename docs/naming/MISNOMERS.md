@@ -416,26 +416,31 @@ not worth it for a single name.
 Filing this as a soft misnomer (don't act, but document so future
 analysts don't get confused).
 
-### `conv_matrix_rotation` (src/ings2.c:372) -- actually CD-ROM IRQ init
+### `conv_matrix_rotation` (src/ings2.c:372) -- actually DMA IRQ init
+
+> Resolved: the function is PsyQ libetc's `startIntrDMA` (0x800833C8,
+> `src/main/psxsdk/libetc/intr_dma.c:22-27`). IRQ 3 is the DMA interrupt, not
+> CD-ROM: `D_800A263C` holds DICR (0x1F8010F4) and `D_800A2640` holds the
+> DMA-channel callbacks (wave18, 2ca56a705).
 
 The function body has NOTHING to do with matrix rotation conversion:
 
 ```c
 s32 conv_matrix_rotation(void) {
-    sys_MemClear2((s32 *)&D_800A2640, 8);       // clear g_irq_cdrom_callbacks
-    *(volatile s32 *)D_800A263C = 0;            // clear CD-ROM IRQ control reg
+    sys_MemClear2((s32 *)&D_800A2640, 8);       // clear the DMA callback slots
+    *(volatile s32 *)D_800A263C = 0;            // clear DICR
     ((void (*)(s32, void *))irq_EnableInterrupts)(3, (void *)D_80083418);
-                                                // hook IRQ 3 to irq_cdrom_handler
+                                                // hook IRQ 3 to trapIntrDMA
     return (s32)D_8008359C;                     // return registrar
 }
 ```
 
-It's the **CD-ROM IRQ initialization** function (a parallel to `func_800832A0`
-which is `vsync_Init`).  The "matrix rotation" name is completely wrong
+It's the **DMA IRQ initialization** function (a parallel to `func_800832A0`,
+now `startIntrVSync`).  The "matrix rotation" name is completely wrong
 and may have come from misclassification during early naming.
 
 **Action: left existing name.** Renaming would touch sibling files.
-Proposed canonical name: `irq_cdrom_init` (parallel to `vsync_Init`).
+Proposed canonical name then: `irq_cdrom_init`; landed as Sony's `startIntrDMA`.
 
 
 ## Pass 4: Cluster-trace findings (2026-05-17 end-of-session)
@@ -586,7 +591,7 @@ None load motion pre-calc data.
 |---|---|---|
 | 0x80037F08 | `func_80079A30(); bios_FormatDevice_B();` | `bios_FormatDevice_B_wrapper_80037F08` |
 | 0x8005B98C | `saFidLoad(a0, 8); saFidLoad(a0, 4);` | `saFidLoad_pair_8005B98C` |
-| 0x8007DC68 | `g_gpu_vcount = sys_VSync(-1) + 0xF0;` | `gpu_vcount_init_8007DC68` |
+| 0x8007DC68 | `D_8009BF8C = VSync(-1) + 0xF0; D_8009BF90 = 0;` (the alarm deadline and poll count, libgpu sys.c:1157-1160) | `set_alarm` (landed) |
 
 ### Family 5: `mario_getMarioVoiceData_*` (4 functions — 4 misnomers, 0 matches)
 
