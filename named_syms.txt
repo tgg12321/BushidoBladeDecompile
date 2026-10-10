@@ -850,23 +850,23 @@ D_8009B9D8                             = 0x8009B9D8;  /* TexRec table (4 x 8 byt
 /* See docs/naming/CHAR_STRUCT_SCHEMA.md for the second-half decode. */
 /* Each name is record[0] of D_80101EC8; same field in records */
 /* 1/2/3 is at base + N * 0x44C. */
-g_char_pos_midpoint_x                                   = 0x8010203C;  /* +0x174 in char_state -- midpoint X of (a1[-5] + a1[-2]) / 2 */
-g_char_pos_midpoint_y                                   = 0x80102040;  /* +0x178 -- midpoint Y of (a1[-4] + a1[-1]) / 2 */
-g_char_pos_midpoint_z                                   = 0x80102044;  /* +0x17C -- midpoint Z of (a1[-3] + a1[0]) / 2 */
-g_char_pos_centroid_x                                   = 0x80102054;  /* +0x18C -- centroid X of (a1[-14] + a1[-11] + a1[-8]) / 3 */
-g_char_pos_centroid_y                                   = 0x80102058;  /* +0x190 -- centroid Y */
-g_char_pos_centroid_z                                   = 0x8010205C;  /* +0x194 -- centroid Z */
+D_8010203C                                   = 0x8010203C;  /* +0x174 in char_state -- midpoint X of (a1[-5] + a1[-2]) / 2 */  /* data-wave 2026-10-09: was g_char_pos_midpoint_x */
+D_80102040                                   = 0x80102040;  /* +0x178 -- midpoint Y of (a1[-4] + a1[-1]) / 2 */  /* data-wave 2026-10-09: was g_char_pos_midpoint_y */
+D_80102044                                   = 0x80102044;  /* +0x17C -- midpoint Z of (a1[-3] + a1[0]) / 2 */  /* data-wave 2026-10-09: was g_char_pos_midpoint_z */
+D_80102054                                   = 0x80102054;  /* +0x18C -- centroid X of (a1[-14] + a1[-11] + a1[-8]) / 3 */  /* data-wave 2026-10-09: was g_char_pos_centroid_x */
+D_80102058                                   = 0x80102058;  /* +0x190 -- centroid Y */  /* data-wave 2026-10-09: was g_char_pos_centroid_y */
+D_8010205C                                   = 0x8010205C;  /* +0x194 -- centroid Z */  /* data-wave 2026-10-09: was g_char_pos_centroid_z */
 
 /* === Per-char struct sub-fields part 2 (2026-05-17) === */
 /* +0x210 / +0x234 are Unk80101EC8Record.unk_210 / unk_234 (include/code6cac.h). */
 D_80102114                                = 0x80102114;  /* +0x24C of D_80101EC8[0]: vx of VECTOR unk_24C (copied as a whole vector) */  /* data-wave 2026-10-08: was g_char_vec3_b_w_or_alpha */
 
 /* World-position vec3 at +0xD8 -- delta'd between players for 2D distance via g_sqrt_table_u8 */
-g_char_world_pos_x                                      = 0x80101FA0;  /* +0xD8 -- world position X (record 0) */
-g_char_world_pos_y                                      = 0x80101FA4;  /* +0xDC -- world position Y */
-g_char_world_pos_z                                      = 0x80101FA8;  /* +0xE0 -- world position Z (paired with X for 2D distance) */
+D_80101FA0                                      = 0x80101FA0;  /* +0xD8 -- world position X (record 0) */  /* data-wave 2026-10-09: was g_char_world_pos_x */
+D_80101FA4                                      = 0x80101FA4;  /* +0xDC -- world position Y */  /* data-wave 2026-10-09: was g_char_world_pos_y */
+D_80101FA8                                      = 0x80101FA8;  /* +0xE0 -- world position Z (paired with X for 2D distance) */  /* data-wave 2026-10-09: was g_char_world_pos_z */
 /* Replay/stored position vec3 at +0xF4 -- mirrored from world_pos with -0x384 Y bias */
-g_char_stored_pos_y                                     = 0x80101FC0;  /* +0xF8 -- stored Y = world_pos_y - 0x384 (time bonus offset) */
+D_80101FC0                                     = 0x80101FC0;  /* +0xF8 -- stored Y = world_pos_y - 0x384 (time bonus offset) */  /* data-wave 2026-10-09: was g_char_stored_pos_y */
 /* +0x4A load slot and the +0x84 / +0x86 indices (func_80021280, func_800213A0, func_80021424) */
 D_80101F12                                               = 0x80101F12;  /* +0x4A of D_80101EC8[0] (s16): load slot of the record's model id unk_48 in D_800A38C4 (func_80021280); indexes D_800A3860 */  /* data-wave 2026-10-08: was g_char_id */
 D_80101F4C                                = 0x80101F4C;  /* +0x84 of D_80101EC8[0] (s16): set at record setup; row of the loaded block's f4E table and the reset value of unk_86 */  /* data-wave 2026-10-08: was g_char_curr_keyframe_idx */
@@ -962,7 +962,7 @@ D_800A3769                                = 0x800A3769;  /* byte: 0/1 set with D
 /*     decodes direction (1=down, 2=up), navigates cursor, */
 /*     calls func_8005C650 for menu sound effects */
 g_menuctl_state_bitfield                                = 0x800A34F8;  /* packed cursor/slot state */
-g_menuctl_mode_state_ptr                                = 0x800A34FC;  /* current screen's state struct pointer */
+D_800A34FC                                = 0x800A34FC;  /* current screen's state struct pointer */  /* data-wave 2026-10-09: was g_menuctl_mode_state_ptr */
 D_800A350C                                = 0x800A350C;  /* s16[2]: func_800692C0's per-axis step (its arg3): set to 1 / -1 / -6 / 0 and added to D_800A34FC->unk_0C[i]; zeroed by func_80068F70 with D_800A3510 / D_800A3512 */  /* data-wave 2026-10-08: was g_menuctl_pad_result_buf */
 D_800A3514                                 = 0x800A3514;  /* counter: += 1 per call of func_8006B898 / C168 / D338 / D74C / E068 and per cursor-row draw in func_8006A880; zeroed at init and on cursor moves; read as the rsin phase ((x & 0x1F) << 7) of a pulsing colour */  /* data-wave 2026-10-08: was g_menuctl_frame_counter */
 
@@ -1217,7 +1217,7 @@ D_800A36F6                                    = 0x800A36F6;  /* fighter index, w
 /* two lookup tables in .data: the class ID table and a byte map into */
 /* the D_80102778.unk_4 id space.  Plus a "pos pointer" used in fighting */
 /* distance calc and a packed state word. */
-g_char_class_id_table                                   = 0x8008D538;  /* per-character class ID lookup; (&D)[char_id] -> class */
+D_8008D538                                   = 0x8008D538;  /* per-character class ID lookup; (&D)[char_id] -> class */  /* data-wave 2026-10-09: was g_char_class_id_table */
 D_8008D55C                                 = 0x8008D55C;  /* byte map from a table index into the D_80102778.unk_4 id space (skips 0-2 and 0x0F-0x11) */  /* data-wave 2026-10-08: was g_char_lesson_idx_table */
 g_listener_cam                                      = 0x800A36B4;  /* Rec44 view record pointer (func_8001E404 / func_8001E6E4); func_800325E0 reads its +0x20 eye */  /* data-wave 2026-10-07: was g_attacker_pos_ptr */
 D_800A3824                                   = 0x800A3824;  /* func_80029454()'s result (negative = skip); bits tested per fighter index */  /* data-wave 2026-10-08: was g_practice_state_word */
@@ -1542,8 +1542,8 @@ D_800A36F8                           = 0x800A36F8;  /* byte value compared again
 /* the "invalid/no-char" sentinel. */
 D_800A37D8                                  = 0x800A37D8;  /* retry counter of func_8003AB44's link-cable (COMB) handshake: zeroed in state 1, ++ per nonzero _comb_control(3, 1, 0), gives up at 4 */  /* data-wave 2026-10-08: was g_overlay_load_counter */
 D_800A3844                                = 0x800A3844;  /* byte cursor into the D_800900EC command streams: func_8003B20C sets it to D_800900EC[arg0] and passes it to func_8003AE5C, func_8003B5A4 advances it */  /* data-wave 2026-10-08: was g_file_overlay_arg_saved */
-g_char_id_saved_a                                       = 0x800A3836;  /* saved char ID (0xFF = invalid); part of context-preserve set */
-g_char_id_saved_b                                       = 0x800A3915;  /* paired char ID save (0xFF default) */
+D_800A3836                                       = 0x800A3836;  /* saved char ID (0xFF = invalid); part of context-preserve set */  /* data-wave 2026-10-09: was g_char_id_saved_a */
+D_800A3915                                       = 0x800A3915;  /* paired char ID save (0xFF default) */  /* data-wave 2026-10-09: was g_char_id_saved_b */
 
 /* === CD-ROM playback control cluster (2026-05-17) -- 4 highs === */
 /* From code6cac_b2.c around line 430-465: a 4-field BCD-tracked CD */
@@ -1589,7 +1589,7 @@ D_800A350E                                   = 0x800A350E;  /* D_800A350C[1]: fu
 D_800A3510                                   = 0x800A3510;  /* only two zero stores found */  /* data-wave 2026-10-08: was g_menuctl_pad_result_2 */
 D_800A3512                                   = 0x800A3512;  /* only a zero store found */  /* data-wave 2026-10-08: was g_menuctl_pad_result_3 */
 D_800A3518                                     = 0x800A3518;  /* counter bumped on every func_8006E390 call; its low bit picks the g_gpu_db buffer */  /* data-wave 2026-10-08: was g_menuctl_init_state */
-g_menuctl_arg0_saved                                     = 0x800A351C;  /* saved arg0 of menu-init function (= original screen base before transform) */
+D_800A351C                                     = 0x800A351C;  /* saved arg0 of menu-init function (= original screen base before transform) */  /* data-wave 2026-10-09: was g_menuctl_arg0_saved */
 D_800A3528                                   = 0x800A3528;  /* three-way cursor (wraps mod 3) moved by func_800692C0's decoded input */  /* data-wave 2026-10-08: was g_menuctl_call_counter */
 D_800A372C                                  = 0x800A372C;  /* arena pointer arg0 + 0x58 stored in init */  /* data-wave 2026-10-08: was g_menuctl_effect_handle */
 
@@ -1955,8 +1955,8 @@ D_800A326C                                = 0x800A326C;  /* rising cyclic count:
 D_8009B2E0                           = 0x8009B2E0;  /* one 12-byte sprite-sheet header handed to the sprite drawer (0x3C is the containing array's row stride) */  /* data-wave 2026-10-08: was g_eff_particle_template_table */
 
 /* === Char struct +0xE field + lookup tables (2026-05-17) -- 4 highs === */
-g_char_lookup_table_b                                   = 0x8008E5CC;  /* sibling to g_char_class_id_table (D_8008D538); per-char data lookup */
-g_char_lookup_table_c                                   = 0x8008E6A4;  /* another per-char data table */
+D_8008E5CC                                   = 0x8008E5CC;  /* sibling to g_char_class_id_table (D_8008D538); per-char data lookup */  /* data-wave 2026-10-09: was g_char_lookup_table_b */
+D_8008E6A4                                   = 0x8008E6A4;  /* another per-char data table */  /* data-wave 2026-10-09: was g_char_lookup_table_c */
 D_800A36C8                                       = 0x800A36C8;  /* func_8003B2C8 saves D_800A376A here; func_8003B328 restores it and passes it to func_80041604 */  /* data-wave 2026-10-08: was g_char_id_saved_d */
 
 /* === Misc state cells in code6cac_c_mid.c (2026-05-17) -- 5 highs === */
@@ -1987,10 +1987,10 @@ D_800A3914                                       = 0x800A3914;  /* (arg0 >> 8) &
 /* === P1 char-struct field block-copy cluster (2026-05-17) -- 4 highs === */
 /* From code6cac.c around line 1410-1420: 16-byte block copy + 12-byte */
 /* block copy of per-character struct fields. */
-g_char_struct_p1_field_B8                               = 0x80101F80;  /* per-char field +0xB8 (saved arg a) */
-g_char_struct_p1_field_BC                               = 0x80101F84;  /* per-char field +0xBC (saved arg b) */
-g_char_struct_p1_block_dst                              = 0x80101F90;  /* per-char field +0xC8; 16-byte Blk16 copy dst (from +0xB8 src) */
-g_char_struct_p1_block_dst_b                            = 0x801020C0;  /* per-char field +0x1F8; 12-byte Blk12 copy dst (from +0xE8 src) */
+D_80101F80                               = 0x80101F80;  /* per-char field +0xB8 (saved arg a) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_B8 */
+D_80101F84                               = 0x80101F84;  /* per-char field +0xBC (saved arg b) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_BC */
+D_80101F90                              = 0x80101F90;  /* per-char field +0xC8; 16-byte Blk16 copy dst (from +0xB8 src) */  /* data-wave 2026-10-09: was g_char_struct_p1_block_dst */
+D_801020C0                            = 0x801020C0;  /* per-char field +0x1F8; 12-byte Blk12 copy dst (from +0xE8 src) */  /* data-wave 2026-10-09: was g_char_struct_p1_block_dst_b */
 
 /* === Sound voice-init block byte fields + callback ptr (2026-05-17) -- 6 highs === */
 /* Fields within g_snd_voice_init_block (0x800EF070), accessed by */
@@ -2225,9 +2225,9 @@ _svm_voice_plus_0x1D                  = 0x800F4E35;  /* +7 from g_satan1_slot_st
 D_800F6627                         = 0x800F6627;  /* +1 from D_800F6626 (0x800F6626) */  /* data-wave 2026-10-08: was g_gnd_init_complete_flag_plus_1 */
 D_800F665A                                   = 0x800F665A;  /* +2 from g_game_p2_ctrl (0x800F6658) */  /* data-wave 2026-09-25: was g_game_p2_ctrl_plus_2 */
 D_80101BD0                                   = 0x80101BD0;  /* +4 from g_memcard_slot (0x80101BCC) */  /* data-wave 2026-09-29: was g_memcard_slot_plus_4 */
-g_char_struct_p1_field_BC_plus_4                        = 0x80101F88;  /* +4 from g_char_struct_p1_field_BC (0x80101F84) */
+D_80101F88                        = 0x80101F88;  /* +4 from g_char_struct_p1_field_BC (0x80101F84) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_BC_plus_4 */
 D_80101FB0                               = 0x80101FB0;  /* +0xE8 of D_80101EC8[0]: x of VECTOR unk_E8, set to (0, -0x384, 0) */  /* data-wave 2026-10-08: was g_char_world_pos_z_plus_8 */
-g_char_struct_p1_field_FC_plus_8                        = 0x80101FCC;  /* +8 from g_char_struct_p1_field_FC (0x80101FC4) */
+D_80101FCC                        = 0x80101FCC;  /* +8 from g_char_struct_p1_field_FC (0x80101FC4) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_FC_plus_8 */
 g_pad_state                         = 0x80102788;  /* PadState (include/code6cac.h), built by func_80019568 from the InitPAD buffers g_pad_buf */  /* data-wave 2026-10-03: was D_80102788 (2026-09-29: g_practice_lesson_flag_b_plus_1) */
 g_pad_state_plus_0x2                         = 0x8010278A;  /* g_pad_state.type[1] */  /* data-wave 2026-10-03: was D_8010278A (2026-09-29: g_practice_lesson_flag_b_plus_3) */
 g_pad_state_plus_0x6                      = 0x8010278E;  /* g_pad_state.valid[1] */  /* data-wave 2026-10-03: was g_practice_lesson_init_done_plus_2 */
@@ -2242,8 +2242,8 @@ D_80106A78                                     = 0x80106A78;  /* Obj80106A78[12]
 /* === Tier 2 batch: cross-character P2..PN paired fields (2026-05-17) === */
 /* 4 P2..PN addresses for already-named P1 fields in */
 /* D_80101EC8 (0x44C stride per char, 28 chars). */
-g_char_world_pos_x_p2                                   = 0x801023EC;  /* P2 of g_char_world_pos_x (P1 = 0x80101FA0) */
-g_char_world_pos_z_p2                                   = 0x801023F4;  /* P2 of g_char_world_pos_z (P1 = 0x80101FA8) */
+D_801023EC                                   = 0x801023EC;  /* P2 of g_char_world_pos_x (P1 = 0x80101FA0) */  /* data-wave 2026-10-09: was g_char_world_pos_x_p2 */
+D_801023F4                                   = 0x801023F4;  /* P2 of g_char_world_pos_z (P1 = 0x80101FA8) */  /* data-wave 2026-10-09: was g_char_world_pos_z_p2 */
 _snd_openflag                             = 0x801027E4;  /* 2 * 0x44C past D_80101F4C */  /* data-wave 2026-09-07: was g_char_curr_keyframe_idx_p3 */
 
 /* === Tier 3 batch: high-ref (>=5) unnamed addresses (2026-05-17) === */
@@ -2438,7 +2438,7 @@ g_tbl20_field2_D59E                                     = 0x8008D59E;
 g_byte_indirection_tbl_DA08                                     = 0x8008DA08;
 D_8008DB1C                                     = 0x8008DB1C;  /* data-wave 2026-10-08: was g_c6c_data_ptr_DB1C */
 D_8008E194                                   = 0x8008E194;  /* data-wave 2026-10-08: was g_per_player_tbl_14bytes_E194 */
-g_char_class_init_tbl_5bytes                                   = 0x8008E338;
+D_8008E338                                   = 0x8008E338;  /* data-wave 2026-10-09: was g_char_class_init_tbl_5bytes */
 D_8008E75C                                   = 0x8008E75C;  /* data-wave 2026-10-08: was g_s16_lookup_u8idx_E75C */
 D_8008E908                                   = 0x8008E908;  /* data-wave 2026-10-08: was g_buffer_base_E908 */
 D_8008EA44                                   = 0x8008EA44;  /* data-wave 2026-10-08: was g_threshold_lookup_EA44 */
@@ -2513,31 +2513,31 @@ D_800FF6A8                                   = 0x800FF6A8;  /* data-wave 2026-09
 _svm_vh                                         = 0x80101BC4;  /* data-wave 2026-09-07: was g_main_value_101BC4 */
 D_80101BF0                               = 0x80101BF0;  /* data-wave 2026-10-08: was g_slot_array_16x256_80101BF0 */
 D_80101F5E                             = 0x80101F5E;  /* data-wave 2026-10-08: was g_char_prev_keyframe_idx_plus_16 */
-g_char_p1_field_B3                                           = 0x80101F7B;
+D_80101F7B                                           = 0x80101F7B;  /* data-wave 2026-10-09: was g_char_p1_field_B3 */
 D_80101FB4                             = 0x80101FB4;  /* data-wave 2026-10-08: was g_char_world_pos_z_plus_8_plus_4 */
 D_80101FB8                             = 0x80101FB8;  /* data-wave 2026-10-08: was g_char_world_pos_z_plus_8_plus_8 */
-g_char_struct_p1_field_FC_plus_8_plus_4                      = 0x80101FD0;
-g_char_struct_p1_field_FC_plus_8_plus_8                      = 0x80101FD4;
-g_char_struct_p1_field_FC_plus_8_plus_16                     = 0x80101FDC;
-g_char_p1_field_118                                          = 0x80101FE0;
-g_char_p1_field_11C                                          = 0x80101FE4;
-g_char_p1_field_124                                          = 0x80101FEC;
-g_char_p1_field_128                                          = 0x80101FF0;
-g_char_p1_field_12C                                          = 0x80101FF4;
-g_char_p1_field_134                                          = 0x80101FFC;
-g_char_p1_field_138                                          = 0x80102000;
-g_char_p1_field_13C                                          = 0x80102004;
-g_char_p1_field_144                                          = 0x8010200C;
-g_char_p1_field_148                                          = 0x80102010;
-g_char_p1_field_14C                                          = 0x80102014;
-g_char_p1_field_14E                                          = 0x80102016;
-g_char_p1_field_150                                          = 0x80102018;
-g_char_p1_field_152                                          = 0x8010201A;
-g_char_p1_field_168                                          = 0x80102030;
-g_char_p1_field_31A                                          = 0x801021E2;
+D_80101FD0                      = 0x80101FD0;  /* data-wave 2026-10-09: was g_char_struct_p1_field_FC_plus_8_plus_4 */
+D_80101FD4                      = 0x80101FD4;  /* data-wave 2026-10-09: was g_char_struct_p1_field_FC_plus_8_plus_8 */
+D_80101FDC                     = 0x80101FDC;  /* data-wave 2026-10-09: was g_char_struct_p1_field_FC_plus_8_plus_16 */
+D_80101FE0                                          = 0x80101FE0;  /* data-wave 2026-10-09: was g_char_p1_field_118 */
+D_80101FE4                                          = 0x80101FE4;  /* data-wave 2026-10-09: was g_char_p1_field_11C */
+D_80101FEC                                          = 0x80101FEC;  /* data-wave 2026-10-09: was g_char_p1_field_124 */
+D_80101FF0                                          = 0x80101FF0;  /* data-wave 2026-10-09: was g_char_p1_field_128 */
+D_80101FF4                                          = 0x80101FF4;  /* data-wave 2026-10-09: was g_char_p1_field_12C */
+D_80101FFC                                          = 0x80101FFC;  /* data-wave 2026-10-09: was g_char_p1_field_134 */
+D_80102000                                          = 0x80102000;  /* data-wave 2026-10-09: was g_char_p1_field_138 */
+D_80102004                                          = 0x80102004;  /* data-wave 2026-10-09: was g_char_p1_field_13C */
+D_8010200C                                          = 0x8010200C;  /* data-wave 2026-10-09: was g_char_p1_field_144 */
+D_80102010                                          = 0x80102010;  /* data-wave 2026-10-09: was g_char_p1_field_148 */
+D_80102014                                          = 0x80102014;  /* data-wave 2026-10-09: was g_char_p1_field_14C */
+D_80102016                                          = 0x80102016;  /* data-wave 2026-10-09: was g_char_p1_field_14E */
+D_80102018                                          = 0x80102018;  /* data-wave 2026-10-09: was g_char_p1_field_150 */
+D_8010201A                                          = 0x8010201A;  /* data-wave 2026-10-09: was g_char_p1_field_152 */
+D_80102030                                          = 0x80102030;  /* data-wave 2026-10-09: was g_char_p1_field_168 */
+D_801021E2                                          = 0x801021E2;  /* data-wave 2026-10-09: was g_char_p1_field_31A */
 D_8010231A                              = 0x8010231A;  /* data-wave 2026-10-03: was g_practice_menu_table_p2_plus_6 */
-g_char_p2_field_96                                           = 0x801023AA;
-g_char_p2_field_31A                                          = 0x8010262E;
+D_801023AA                                           = 0x801023AA;  /* data-wave 2026-10-09: was g_char_p2_field_96 */
+D_8010262E                                          = 0x8010262E;  /* data-wave 2026-10-09: was g_char_p2_field_31A */
 D_801027D4                                           = 0x801027D4;  /* data-wave 2026-10-08: was g_char_p3_field_74 */
 _svm_cur_plus_0x1                          = 0x801027F1;  /* data-wave 2026-09-07: was g_char_curr_keyframe_idx_p3_plus_13 */
 _svm_cur_plus_0x6                                           = 0x801027F6;  /* data-wave 2026-09-07: was g_char_p3_field_96 */
@@ -2633,7 +2633,7 @@ D_800A38B0                              = 0x800A38B0;  /* u8 0/1/2, the per-play
 D_800F1858                      = 0x800F1858;  /* 12 refs; +8 from g_stdout_column_counter (0x800F1850) */  /* data-wave 2026-09-25: was g_stdout_column_counter_plus_8_800F1858 */
 D_800F1B14               = 0x800F1B14;  /* 20 refs; 4-byte prefix to the D_800F1B18 decoder records */  /* data-wave 2026-09-24: was g_per_char_motion_buffer_table_prefix_800F1B14 */
 D_800F2B68                      = 0x800F2B68;  /* 20 refs; 8 bytes before D_800F2B70 */  /* data-wave 2026-09-24: was g_text1b_gte_rgb_lookup_prefix_800F2B68 */
-g_char_struct_p1_field_286_8010214E                          = 0x8010214E;  /* 24 refs; per-character struct offset +0x286 at record 0 base */
+D_8010214E                          = 0x8010214E;  /* 24 refs; per-character struct offset +0x286 at record 0 base */  /* data-wave 2026-10-09: was g_char_struct_p1_field_286_8010214E */
 D_8010259A                          = 0x8010259A;  /* 24 refs; D_80101EC8[1] (0x80102314) + 0x286 */  /* data-wave 2026-10-08: was g_char_struct_p1_field_6D2_8010259A */
 
 /* === Data symbol naming pass 2 (6-9 ref unnamed) (2026-05-18) === */
