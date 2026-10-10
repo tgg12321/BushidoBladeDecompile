@@ -19,7 +19,7 @@ const char g_str_overflow[12] = "OVER FLOW\n";
 const char g_str_eff_init[28] = "eff_init:%08x size:%08x\n";
 const char g_str_limit[12] = "LIMIT:%08x\n";
 const char g_str_prim_overflow[24] = "common prim over flow\n";
-const char g_str_build_date[28] = "Fri Aug  7 22:26:32 1998\n";
+const char D_8001004C[28] = "Fri Aug  7 22:26:32 1998\n";
 
 extern void printf();
 extern void func_800164F8(void);
@@ -807,7 +807,7 @@ void func_80017F98(s32 arg0, s32 arg1, s32 arg2) {}
 /* Q65: this file's initialized small data (.sdata), in address order. */
 s32 D_800A30DC = 0x13400;
 /* not named by any code or data: size from the gap */
-s32 D_800A30E0[2] = {(s32)g_str_build_date, 0x190};
+s32 D_800A30E0[2] = {(s32)D_8001004C, 0x190};
 u8 D_800A30E8 = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
