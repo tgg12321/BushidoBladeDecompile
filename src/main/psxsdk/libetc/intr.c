@@ -21,7 +21,7 @@ const char D_80016378[28] = "intr timeout(%04x:%04x)\n\0\0\0\0";
 extern volatile u16 *g_InterruptMask;
 extern s32 *pCallbacks;
 
-/* intr.c module state (SOTN libetc/intr.c intrEnv_t). D_800A1578 = intrEnv;
+/* intr.c module state (SOTN libetc/intr.c:28, a static intrEnv_t);
  * i_stat/g_InterruptMask/d_pcr are the module's MMIO pointer statics
  * (0x1F801070/74/F0). */
 typedef struct {

@@ -48,7 +48,7 @@ D_8009B794 = 0x8009B794;  /* data-wave 2026-10-09: was g_cos_lut_q2 */
 D_8009A794 = 0x8009A794;  /* data-wave 2026-10-09: was g_cos_lut_q4 */
 /* data-wave 2026-09-07: g_gte_sqrt_table = 0x8009C7A8 retired; SQRT is now object-defined */
 g_gte_saved_ra = 0x8009C798;
-g_cd_reg0 = 0x800A147C;  /* -> 0x1F801800 CD index/status register (SOTN libcd_CDRegister0) */
+g_cd_reg0 = 0x800A147C;  /* -> 0x1F801800 CD index/status register (SOTN libcd/registers.h:4) */
 libcd_CDRegister1 = 0x800A1480;  /* -> 0x1F801801 CD register 1: command / response (index-dependent) */  /* data-wave 2026-10-08: was g_cd_reg1 */
 libcd_CDRegister2 = 0x800A1484;  /* -> 0x1F801802 CD register 2: parameter / interrupt enable (index-dependent) */  /* data-wave 2026-10-08: was g_cd_reg2 */
 libcd_CDRegister3 = 0x800A1488;  /* -> 0x1F801803 CD register 3: request / interrupt flag (index-dependent) */  /* data-wave 2026-10-08: was g_cd_reg3 */
@@ -398,7 +398,7 @@ DMACallback  = 0x80082B20;  /* jalr via pCallbacks, slot +0x4 */
 VSyncCallback           = 0x80082B50;  /* jalr via pCallbacks, slot +0x14, with $a0=4, $a1=arg */
 StopCallback              = 0x80082BB4;  /* jalr via pCallbacks, slot +0x10 */
 /* System counters (1) */
-CheckCallback     = 0x80082C14;  /* lhu of intrEnv.inInterrupt (D_800A1578 + 2) */
+CheckCallback     = 0x80082C14;  /* lhu of intrEnv_t.inInterrupt (D_800A1578 + 2) */
 /* Memory clear (2; identical bodies, position-distinct) */
 sys_MemClear_8008339C           = 0x8008339C;  /* word-by-word `for (i=a1; i>0; i--) *a0++ = 0` */
 sys_MemClear2_80083644          = 0x80083644;  /* identical body, distinct address */
