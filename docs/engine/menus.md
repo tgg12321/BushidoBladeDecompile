@@ -221,14 +221,15 @@ reference these together (highest "naming multiplier" cluster).
 | Symbol | Address | Role |
 |--------|---------|------|
 | `g_menuctl_state_bitfield` | `0x800A34F8` | Packed cursor/slot state |
-| `g_menuctl_mode_state_ptr` | `0x800A34FC` | Current screen's state struct ptr (from `func_8006E49C`) |
+| `D_800A34FC` | `0x800A34FC` | `Unk800A34FCRec *`: `func_8006E49C`'s result, stored by `func_80068F70` (src/main/51268.c:3618-3621) |
 | `D_800A350C` | `0x800A350C` | s16[2]: `func_800692C0`'s per-axis step (1 / -1 / -6 / 0), added to `D_800A34FC->unk_0C[i]` |
 | `D_800A3514` | `0x800A3514` | Counter: += 1 per handler call or cursor-row draw; the rsin phase of a pulsing colour |
 
 ### Bitfield layout of `g_menuctl_state_bitfield`
 
-- **bits 0-3**: rotating slot index (cycles 0..15 via the bit-cache
-  at `D_8009BC04`)
+- **bits 0-3**: rotating slot index 0..7 (8 wraps to 0 and 0 back to 7),
+  stepping past slots whose bit in `D_8009BC04` is clear
+  (src/main/51268.c:3864-3888)
 - **bits 10-12**: sub-cursor (advanced by case-2 action handlers)
 - **bits 13-15**: main cursor position (incremented/decremented by
   directional input)

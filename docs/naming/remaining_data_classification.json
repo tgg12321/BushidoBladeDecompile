@@ -1607,7 +1607,8 @@
     "kind": "misc",
     "name": "g_misc_80101FC4",
     "why": "unclassified state cell",
-    "primary_file": "code6cac.c"
+    "primary_file": "code6cac.c",
+    "superseded": "wave16 (docs/naming/phase3/wave16/data_manifest.csv): stays D_80101FC4 (D_80101EC8[0].unk_F4.z); g_misc_80101FC4 never landed"
   },
   {
     "d": "D_801020D8",
@@ -2787,7 +2788,8 @@
     "kind": "misc",
     "name": "g_misc_80102410",
     "why": "unclassified state cell",
-    "primary_file": "code6cac.c"
+    "primary_file": "code6cac.c",
+    "superseded": "wave16 (docs/naming/phase3/wave16/data_manifest.csv): stays D_80102410 (D_80101EC8[1].unk_F4.z); g_misc_80102410 never landed"
   },
   {
     "d": "D_80102780",
@@ -7438,7 +7440,8 @@
     "kind": "misc",
     "name": "g_misc_8010237E",
     "why": "unclassified state cell",
-    "primary_file": "code6cac.c"
+    "primary_file": "code6cac.c",
+    "superseded": "wave16 (docs/naming/phase3/wave16/data_manifest.csv): stays D_8010237E (D_80101EC8[1].unk_6A); g_misc_8010237E never landed"
   },
   {
     "d": "D_801023C1",

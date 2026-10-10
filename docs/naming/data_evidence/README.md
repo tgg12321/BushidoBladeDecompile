@@ -115,7 +115,7 @@ Continuing pass batch 6 (2026-05-17), next 27 symbols from ranks 61-90:
 | [D_800A33EA.md](D_800A33EA.md) | `g_gnd_target_id` | medium | -1 sentinel; target ID in gnd_close |
 | [D_800A3740.md](D_800A3740.md) | `g_replay_camera_mode` | medium | small enum {1, 3, 4} in replay_camera_rob_back_loose2 |
 | [D_800A36FA.md](D_800A36FA.md) | `g_gnd_init_flag` | medium | init flag cleared by gnd_init helpers |
-| [D_80101F32.md](D_80101F32.md) | `g_seq_state_p1` | medium | SEQ state code (paired with D_8010237E p2 side) |
+| [D_80101F32.md](D_80101F32.md) | `g_seq_state_p1` (superseded by docs/naming/phase3/wave16, 17a7a9c1f: 0x80101F32 reset; no SEQ use) | medium | SEQ state code (paired with D_8010237E p2 side) |
 | [D_800A38C4.md](D_800A38C4.md) | `g_title_seq_state` (superseded by docs/naming/phase3/wave12: 0x800A38C4 reset) | medium | title-screen SEQ active flag |
 | [D_800A384C.md](D_800A384C.md) | `g_practice_select_cursor` | medium | indexes halfword table at D_8008EB1C stride 2 |
 | [D_800A3500.md](D_800A3500.md) | `g_text1b_passthrough_arg` | medium | stashed arg passed to func_8006E950 |

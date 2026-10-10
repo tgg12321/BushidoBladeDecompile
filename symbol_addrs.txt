@@ -216,7 +216,7 @@ g_str_bbm_s123 = 0x800103C0; // S123.BBM
 // === Data symbols once named from Kengo (none keeps its Kengo name) ===
 D_8008DCCC = 0x8008DCCC;  // data-wave 2026-10-08: was menuDat
 D_8008E778 = 0x8008E778;  // data-wave 2026-10-08: was cpu_practice_honmokuroku_data_tbl
-g_cd_file_table = 0x8008EC34;  // CD file table CamPair[159]  // data-wave 2026-09-24: was SpecialCam
+g_cd_file_table = 0x8008EC34;  // CD file table CdFileEntry[159] (include/bb2.h:480)  // data-wave 2026-09-24: was SpecialCam
 D_80099D54 = 0x80099D54;  // data-wave 2026-10-08: was InfoPosYTbl1
 D_8009ADD8 = 0x8009ADD8;  // data-wave 2026-10-08: was UesrWorkDef
 D_8009BA7C = 0x8009BA7C;  // data-wave 2026-10-08: was chractar_use_pset_combo_id_table

@@ -2,7 +2,9 @@
 
 The per-character struct is an array indexed by character/slot id.
 Each record is **0x44C bytes (1100)**.  The array base is at
-`D_80101EC8 = 0x80101EC8` (named `g_practice_menu_table` until owner ruling Q103 reset it).  Record N spans
+`D_80101EC8 = 0x80101EC8` (named `g_practice_menu_table` until owner ruling Q103 reset it).  Q103 item 3
+keeps the record neutral: "per-character" in this file is its old reading, not a
+landed name, and the current layout is `Unk80101EC8Record` (include/game.h:1377).  Record N spans
 `0x80101EC8 + N * 0x44C` to `0x80101EC8 + (N+1) * 0x44C - 1`.
 
 | Record | Start | End |
@@ -46,16 +48,16 @@ which only has record-2 references).
 | +0x04C | s32 | 0,3   | 4  | (asm-only refs) | -- |
 | +0x054 | s32 | 2,3   | 24 | `s32 v0 = (&D_801027B4)[idx] + (v1 * 4);` | base of indexed table |
 | +0x05E | ?   | 0,1   | 22 | `D_80101F26 = 0;` and `s0 = &D_80102372` | cleared cell + base-of-array |
-| **+0x06A** | s16 | 0,1   | 57 | `if ((u16)D_80101F32 == 0x11 \|\| (u16)D_8010237E == 0x11)` | **SEQ subsystem state code** (formerly named `g_seq_state_p1`; really per-character) |
+| **+0x06A** | u16 | 0,1   | 57 | `if ((u16)D_80101EC8[0].unk_6A == 0x11 \|\| (u16)D_80101EC8[1].unk_6A == 0x11)` (9F9C.c:2046-2047) | `unk_6A` (include/game.h:1424): compared with many constants (6, 5, 0xF, 0x11, 0x13, 0x15, 0x1C, 0x21, 0x28: 9F9C.c:1656, 175A4.c:34/:52/:88, 17AFC.c:913/:982/:1010/:2409); no role established, no SEQ use |
 | +0x07A | ?   | 0,1   | 4  | (asm-only refs) | -- |
 | +0x084 | s16 | 0,2   | 12 | `*(u16 *)((u8 *)&D_80101F4E + offset) = *(u16 *)((u8 *)&D_80101F4C + offset);` | **previous-frame keyframe field** (copy-old-to-new pattern) |
 | +0x096 | s16 | 0,1,2 | 55 | `if (D_80101F5E != 0 \|\| D_801023AA != 0)` | flag tested across records (player-1 vs player-2 OR) |
 | +0x0AD | s8  | 0,1   | 12 | `if (D_80101F75 != 0 \|\| D_801023C1 != 0); D_801023C1 = 0; D_80101F75 = 0;` | one-shot trigger flag |
 | +0x0B1 | s8  | 0,1   | 4  | (asm-only refs) | -- |
-| +0x0D8 | s32 | 0,1   | 6  | `temp_a3 = D_80101FA0 - D_801023EC` | **inter-player X-delta** (subtraction between records) |
-| +0x0E0 | s32 | 0,1   | 7  | `temp_t1 = D_80101FA8 - D_801023F4` | **inter-player Z-delta** (paired with +0xD8) |
-| **+0x0F4** | s32 | 0,1   | 36 | `D_80101FBC = a1; func_8003E6A0(D_80101FBC, D_80101FC4)` | **position arg A** (formerly `g_replay_camera_target_a`) |
-| **+0x0FC** | s32 | 0,1   | 21 | `D_80101FC4 = a0_val; func_8003E6A0(D_80101FBC, D_80101FC4)` | **position arg B** (passed paired with +0x0F4) |
+| +0x0D8 | s32 | 0,1   | 6  | `temp_a3 = t2_base->unk_D8.x - t3_base->unk_D8.x` (17AFC.c:2104) | `unk_D8.x`, differenced between records 0 and 1 |
+| +0x0E0 | s32 | 0,1   | 7  | `temp_t1 = t2_base->unk_D8.z - t3_base->unk_D8.z` (17AFC.c:2105) | `unk_D8.z`, differenced between records 0 and 1 |
+| **+0x0F4** | s32 | 0,1   | 36 | `e->unk_F4.x = x;` (9F9C.c:1305); `func_8003E6A0(D_80101EC8[0].unk_F4.x, D_80101EC8[0].unk_F4.z)` (:2174) | `unk_F4.x` of the Vec3i32 `unk_F4` (include/game.h:1474); no role established |
+| **+0x0FC** | s32 | 0,1   | 21 | `e->unk_F4.z = z;` (9F9C.c:1307); the same `func_8003E6A0` call (:2174) | `unk_F4.z`; one read of many (9F9C.c:2580, 175A4.c:171, 17AFC.c:2169) |
 | +0x134 | s32 | 0,1   | 7  | `D_80101FFC = 0;` | cleared cell |
 | +0x13C | s32 | 0,1   | 9  | `D_80102004 = 0;` | cleared cell |
 | +0x14E | s16 | 0,1   | 5  | `D_80102016 = 0;` | cleared cell |
@@ -70,55 +72,57 @@ which only has record-2 references).
 Two names in `named_syms.txt` turn out to be record-0 field accesses,
 not standalone globals:
 
-- **`g_seq_state_p1 = 0x80101F32`** is `record[0] + 0x6A`.  The
-  corresponding fields in records 1, 2, 3 are at 0x8010237E, 0x801027CA,
-  0x80102C16.  The current name is fine but slightly misleading -- it's
-  not just "player 1's seq state", it's the SEQ field of record 0.
-- **`g_replay_camera_target_a = 0x80101FBC`** is `record[0] + 0xF4`.
-  Same situation -- it's record 0's "position arg A", not a single global.
+- **`0x80101F32`** is `D_80101EC8[0].unk_6A` (u16, include/game.h:1424).  The
+  same member of records 1, 2, 3 is at 0x8010237E, 0x801027CA,
+  0x80102C16.  Its old registry names are retired: wave16 reset it to
+  `D_80101F32`.
+- **`0x80101FBC`** is `D_80101EC8[0].unk_F4.x` (include/game.h:1474); wave05
+  reset it to `D_80101FBC`.
 
-These names are kept as-is because (a) they're already in code, and
-(b) the record-0 interpretation makes sense for the single-player flow
-where record 0 is always the active player.
+The C spells both as record members, so a role found for them names
+the member (`unk_6A`, `unk_F4`), not an interior global; no access ties
+record 0 to one player.
 
-### 2. World-position vec3 at +0xD8 (with stored copy at +0xF4) -- DECODED
+### 2. Triples at +0xD8 (`unk_D8`) and +0xF4 (`unk_F4`)
 
-Found via code6cac_b.c:765-771:
-
-```c
-temp_a3 = D_80101FA0 - D_801023EC;             // r[0]+0xD8 - r[1]+0xD8
-temp_t1 = D_80101FA8 - D_801023F4;             // r[0]+0xE0 - r[1]+0xE0
-temp_a0 = (temp_a3 * temp_a3) + (temp_t1 * temp_t1);   // squared distance
-var_t0 = ((u32) (*((&D_8008D118) + temp_a0))) >> 3;    // -> g_isqrt_lut!
-```
-
-And vec3 layout confirmed via code6cac.c:1407-1413 which reads all
-three components together and stores a biased copy:
+src/main/17AFC.c:2102-2108 differences records 0 and 1:
 
 ```c
-v1 = D_80101FA4;             // +0xDC -- middle (Y)
-a0_val = D_80101FA8;         // +0xE0
-D_80101FBC = a1;             // +0xF4 -- stored copy of X
-D_80101FC0 = v1 - 0x384;     // +0xF8 -- stored Y with -0x384 bias
-D_80101FC4 = a0_val;         // +0xFC -- stored Z
+temp_a3 = t2_base->unk_D8.x - t3_base->unk_D8.x;   // t2_base = D_80101EC8
+temp_t1 = t2_base->unk_D8.z - t3_base->unk_D8.z;   // t3_base = t2_base + 1
+temp_a0 = (temp_a3 * temp_a3) + (temp_t1 * temp_t1);
+if (temp_a0 < 0x400U) {
+    var_t0 = ((u32)(g_sqrt_table_u8[temp_a0])) >> 3;
 ```
 
-**Decoded fields:**
+and func_8001C624 (src/main/9F9C.c:1300-1307) copies `unk_D8` into
+`unk_F4` with a -0x384 bias on y:
 
-| Offset | Field | Role |
+```c
+x = e->unk_D8.x;
+y = e->unk_D8.y;
+z = e->unk_D8.z;
+e->unk_F4.x = x;
+e->unk_F4.y = y - 0x384;
+e->unk_F4.z = z;
+```
+
+**Members (record 0 addresses; neutral `D_` names since waves 05, 15 and 16):**
+
+| Offset | Member | Record 0 address |
 |---|---|---|
-| +0xD8 | `world_pos.x` (`g_char_world_pos_x` @ 0x80101FA0) | World-space X |
-| +0xDC | `world_pos.y` (`g_char_world_pos_y` @ 0x80101FA4) | World-space Y |
-| +0xE0 | `world_pos.z` (`g_char_world_pos_z` @ 0x80101FA8) | World-space Z |
-| +0xF4 | `stored_pos.x` (`g_replay_camera_target_a` @ 0x80101FBC) | Stored X (mirror) |
-| +0xF8 | `stored_pos.y` (`g_char_stored_pos_y` @ 0x80101FC0) | Stored Y with -0x384 bias |
-| +0xFC | `stored_pos.z` (paired with stored.x) | Stored Z |
+| +0xD8 | `unk_D8.x` | `D_80101FA0` |
+| +0xDC | `unk_D8.y` | `D_80101FA4` |
+| +0xE0 | `unk_D8.z` | `D_80101FA8` |
+| +0xF4 | `unk_F4.x` | `D_80101FBC` |
+| +0xF8 | `unk_F4.y` | `D_80101FC0` |
+| +0xFC | `unk_F4.z` | `D_80101FC4` |
 
-The world_pos triple drives the 2D distance computation that gates
-CPU AI range checks (via `g_isqrt_lut`).  The stored_pos triple is
-a snapshot used by replay-camera / time-bonus calculations
-(-0x384 = -900 is also the step `func_8001EA84` adds to the mode-3
-elapsed-frame clock `D_800A3858`: 30 seconds at 30 fps).
+What the triples hold is not established: `unk_D8` is passed by address
+to func_80021D10 / func_80021DB0 / func_80022224 (9F9C.c:1297, :4029-4051),
+stepped by `unk_104` and `unk_134` (:5228-5230, :5264-5266) and differenced
+between records 0 and 1 (17AFC.c:2104-2105, :2227-2228); `unk_F4` is also
+set to `unk_D8 + unk_E8` (9F9C.c:4060, :5286).
 
 ### 4. Two-arm flag pattern (`X || sibling`)
 
@@ -166,24 +170,23 @@ The second half of the record (+0x100..+0x44B) is sparsely accessed
 in the observable C source (record 0 mostly) but exposed enough
 structure to identify several sub-fields and clusters:
 
-### Position-pair sub-structs (+0x174 and +0x18C)
+### Vec3i32 members at +0x174 and +0x18C
 
-Two adjacent vec3 sub-structs, both **computed averages** of nearby
-caller-supplied vectors:
+Two adjacent Vec3i32 members that func_8002C61C fills with averages of
+scratchpad points (17AFC.c:2428-2442) and func_80022580 sets to `unk_F4`
+(9F9C.c:4100, :4102):
 
-| Offset | Field | Computation |
+| Offset | Member (rec[0] address) | func_8002C61C computation (record i) |
 |---|---|---|
-| +0x174 | `pos_midpoint.x` (`g_char_pos_midpoint_x` @ rec[0]: 0x8010203C) | `(a1[-5] + a1[-2]) / 2` |
-| +0x178 | `pos_midpoint.y` (rec[0]: 0x80102040) | `(a1[-4] + a1[-1]) / 2` |
-| +0x17C | `pos_midpoint.z` (rec[0]: 0x80102044) | `(a1[-3] + a1[0]) / 2` |
-| +0x18C | `pos_centroid.x` (`g_char_pos_centroid_x` @ rec[0]: 0x80102054) | `(a1[-14] + a1[-11] + a1[-8]) / 3` |
-| +0x190 | `pos_centroid.y` (rec[0]: 0x80102058) | `(a1[-13] + a1[-10] + a1[-7]) / 3` |
-| +0x194 | `pos_centroid.z` (rec[0]: 0x8010205C) | `(a1[-12] + a1[-9] + a1[-6]) / 3` |
+| +0x174 | `unk_174.x` (`D_8010203C`) | `(SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2` |
+| +0x178 | `unk_174.y` (`D_80102040`) | same, `.y` |
+| +0x17C | `unk_174.z` (`D_80102044`) | same, `.z` |
+| +0x18C | `unk_18C.x` (`D_80102054`) | `(SPAD->unkA8[i][1].x + [2].x + [3].x) / 3` |
+| +0x190 | `unk_18C.y` (`D_80102058`) | same, `.y` |
+| +0x194 | `unk_18C.z` (`D_8010205C`) | same, `.z` |
 
-The midpoint is averaged from 2 vectors (player + opponent?  body
-joint pair?); the centroid is averaged from 3 vectors (probably the
-body's 3 control points -- waist + head + feet or similar).  Both are
-stored in `char_state[N]`, computed per-frame.
+What the scratchpad points `SPAD->unkA8[i][k]` hold is not shown by
+these uses; wave15 reset the old registry names of these words.
 
 ### Reset block (+0x104..+0x14F)
 
@@ -238,8 +241,9 @@ interpolation** -- the current position is `pos + delta * t` style.
 The +0x230 word between the two blocks (offset +0x230..+0x233) isn't
 referenced separately, may be a 4-byte gap or part of vec3 B.
 
-13 new field names landed in named_syms.txt as `g_char_vec3_{a,b}_{pos,delta}_{x,y,z}`
-plus `g_char_vec3_b_w_or_alpha`.
+The 13 `g_char_vec3_*` field names once proposed here are no longer in
+named_syms.txt; the last one noted there, at 0x80102114, was reset to
+`D_80102114` (data-wave 2026-10-08).
 
 ### Record-2-only sub-arrays
 

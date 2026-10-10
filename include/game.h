@@ -702,8 +702,8 @@ typedef struct {
  * func_80021424 reads them: f4E[rec+0x84] (id 0x7FF0) / f4E[rec+0x86] (ids
  * 0x7FF1/2/4), f54[rec+0x86][t] (id 0x7FF3), and
  * f66[id - 0x7FF5][rec+0x86] (ids 0x7FF5..0x7FFF). f16 (func_800219E4) and
- * f18[class] (func_80021A3C; class = Unk80101EC8Record.unk_0A, 0..26 as
- * D_8008D538 holds and as the [27][6] class tables D_8008DE34 / D_8008DF78 are
+ * f18[unk_0A] (func_80021A3C; Unk80101EC8Record.unk_0A, 0..26 as
+ * D_8008D538 holds and as the [27][6] tables D_8008DE34 / D_8008DF78 are
  * sized; 27 halfwords end exactly at f4E) are indices into D_80102760.unk_00;
  * both readers load them with lhu. */
 typedef struct {
@@ -1381,7 +1381,7 @@ typedef struct Unk80101EC8Record {
     /* != 0: func_8001BE20 hands pad input to func_80055B60 */
     s16 unk_06;
     s16 unk_08;
-    /* class idx: row of D_8008E5CC / D_8008E6A4, index of D_8008D9EC */
+    /* row of D_8008E5CC / D_8008E6A4, index of D_8008D9EC */
     s16 unk_0A;
     s16 unk_0C;
     s16 unk_0E; /* column of D_8008E5CC / D_8008E6A4 */

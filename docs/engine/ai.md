@@ -50,15 +50,15 @@ committed, the move runs to completion under the per-frame pipeline.
 
 "No action" = AI is between moves. Builds a shuffled list of which moves
 are currently legal, starting from the global waza-enable constant
-`0x3EF3DF` (~26 bits) minus one bit disabled for the current character's
-class:
+`0x3EF3DF` (~26 bits) minus one bit picked through the byte table
+`D_8008D538`:
 
 1. Walks bits 0..26 of `D_80106A50` (a per-frame move-enable bitmap)
-   masked against `0x3EF3DF & ~(1 << g_char_class_id_table[char_id])`,
-   where `char_id = (s8)g_practice_lesson_char_id` (D_8010277C) and
-   `g_char_class_id_table` (D_8008D538) is the per-character class-id
-   byte table (values 0..0x1A — NOT a bitmask, and indexed by character,
-   not stance); for each enabled bit, appends the move ID to a buffer at
+   masked against `0x3EF3DF & ~(1 << D_8008D538[(s8)D_80102778.unk_4[0]])`
+   (src/main/17AFC.c:6372; `D_80102778.unk_4[0]` is `D_8010277C`).
+   `D_8008D538` holds byte values 0..0x1A (NOT a bitmask); what its index
+   and values stand for is not established (wave15 reset its old name);
+   for each enabled bit, appends the move ID to a buffer at
    `D_801077B0`.
 2. Shuffles the buffer 108 times (`bb2_rand() % count` is the RNG —
    `bb2_rand` (0x80079154) is the engine's LFSR pseudo-RNG).
@@ -186,11 +186,10 @@ plausible mechanisms are visible:
 - The `bb2_rand() % count` shuffling in
   `cpu_set_move_command_and_dir_for_no_action` is the primary "AI randomness"
   source.
-- Per-character `D_8008E338`-style tables and the per-character class-id
-  table `g_char_class_id_table` (D_8008D538, indexed by
-  `g_practice_lesson_char_id`) — which disables one per-class bit in the
-  global waza-enable constant `0x3EF3DF` — determine which moves are even
-  legal at any time.
+- `D_8008E338`-style tables and the byte table `D_8008D538` (indexed by
+  `D_80102778.unk_4[0]`; its value picks the one bit cleared from the
+  global waza-enable constant `0x3EF3DF`, src/main/17AFC.c:6372)
+  determine which moves are even legal at any time.
 - `D_8010277E..D_80102787` (initialized in `func_8001C444`, `code6cac.c:1337`)
   are small tactical AI flags — probably "be aggressive", "be defensive",
   etc.
