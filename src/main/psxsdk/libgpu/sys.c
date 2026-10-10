@@ -7,7 +7,7 @@
 #include "psx.h"
 
 /* PsyQ libgpu device table ("gpu" in the SDK's sys.c): a 0x40-byte struct of
- * function pointers at D_8009BE2C, reached through the pointer g_gpu_dev_table
+ * function pointers at _gpucb, reached through the pointer D_8009BE6C
  * (0x8009BE6C). Member names/offsets are the PsyQ ones. */
 typedef struct GpuDevTable {
     /* 0x00 */ const char *rcsid;
@@ -28,7 +28,7 @@ typedef struct GpuDevTable {
     /* 0x3C */ s32 (*sync)();
 } GpuDevTable;
 
-extern GpuDevTable *g_gpu_dev_table;
+extern GpuDevTable *D_8009BE6C;
 
 /* libgpu SYS state block: one 0x80-byte object at 0x8009BE74 (ResetGraph
  * clears 0x80 bytes from its base). Member names follow the API that owns each
@@ -81,7 +81,7 @@ extern GpuDrEnv D_800F1858;
 /* .rodata 0x80015E28..0x8001605C: this module's strings; every C reader is in
  * this file (Q106 D4). */
 
-/* the rcsid; only the device table D_8009BE2C points here */
+/* the rcsid; only the device table _gpucb points here */
 const char D_80015E28[52] =
     "$Id: sys.c,v 1.129 1996/12/25 03:36:20 noda Exp $\0\0\0";
 
@@ -146,10 +146,10 @@ extern volatile u32 *DMA2_MADR;
 extern volatile u32 *DMA2_BCR;
 extern volatile u32 *DMA2_CHCR;
 extern u8 ctlbuf[];
-extern s32 g_gpu_vcount;
-extern s32 g_gpu_draw_count;
+extern s32 D_8009BF8C;
+extern s32 D_8009BF90;
 
-extern s32 D_8009BE2C;
+extern s32 _gpucb;
 extern s32 D_8009BEF4[];
 extern s32 D_8009BF08[];
 
@@ -157,12 +157,12 @@ u32 ResetGraph(s32 a0) {
     switch (a0 & 7) {
     case 0:
     case 3:
-        printf(&D_80015E5C, &D_8009BE2C, &g_gpu_ctx);
+        printf(&D_80015E5C, &_gpucb, &g_gpu_ctx);
         /* fallthrough */
     case 5:
         memset(&g_gpu_ctx, 0, sizeof(g_gpu_ctx));
         ResetCallback();
-        GPU_cw((u32)g_gpu_dev_table & 0xFFFFFF);
+        GPU_cw((u32)D_8009BE6C & 0xFFFFFF);
         g_gpu_ctx.type = _reset(a0);
         g_gpu_ctx.queue_mode = 1;
         g_gpu_ctx.width = D_8009BEF4[g_gpu_ctx.type];
@@ -174,7 +174,7 @@ u32 ResetGraph(s32 a0) {
         if (g_gpu_ctx.debug_level >= 2) {
             GPU_printf(&D_80015E7C, a0);
         }
-        g_gpu_dev_table->reset(1);
+        D_8009BE6C->reset(1);
         break;
     }
 }
@@ -185,10 +185,10 @@ u32 SetGraphReverse(s32 a0) {
         GPU_printf(&D_80015E90, a0);
     }
     g_gpu_ctx.reverse = a0;
-    g_gpu_dev_table->ctl(0x08000000 | (g_gpu_ctx.reverse ? 0x80 : 0) |
-                         g_gpu_dev_table->getctl(8));
+    D_8009BE6C->ctl(
+        0x08000000 | (g_gpu_ctx.reverse ? 0x80 : 0) | D_8009BE6C->getctl(8));
     if (g_gpu_ctx.type == 2) {
-        g_gpu_dev_table->ctl(0x20000000 | (g_gpu_ctx.reverse ? 0x501 : 0x504));
+        D_8009BE6C->ctl(0x20000000 | (g_gpu_ctx.reverse ? 0x501 : 0x504));
     }
     return old;
 }
@@ -209,7 +209,7 @@ u32 SetGraphQueue(s32 a0) {
         GPU_printf(&D_80015ED4, a0);
     }
     if (a0 != g_gpu_ctx.queue_mode) {
-        g_gpu_dev_table->reset(1);
+        D_8009BE6C->reset(1);
         g_gpu_ctx.queue_mode = a0;
         DMACallback(2, 0);
     }
@@ -237,14 +237,14 @@ void SetDispMask(s32 a0) {
     if (!a0) {
         memset(&g_gpu_ctx.disp_env, -1, 0x14);
     }
-    g_gpu_dev_table->ctl(a0 ? 0x03000000 : 0x03000001);
+    D_8009BE6C->ctl(a0 ? 0x03000000 : 0x03000001);
 }
 
 void DrawSync(s32 a0) {
     if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(g_str_drawsync, a0);
     }
-    g_gpu_dev_table->sync(a0);
+    D_8009BE6C->sync(a0);
 }
 
 void checkRECT(const char *str, RECT *rect) {
@@ -289,26 +289,26 @@ extern void checkRECT(const char *, RECT *);
 
 s32 ClearImage(RECT *arg0, u8 arg1, u8 arg2, u8 arg3) {
     checkRECT(g_str_clearimage, arg0);
-    return g_gpu_dev_table->addque2(
-        g_gpu_dev_table->clr, arg0, 8,
+    return D_8009BE6C->addque2(
+        D_8009BE6C->clr, arg0, 8,
         ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
 }
 
 void ClearImage2(RECT *arg0, u8 arg1, u8 arg2, u8 arg3) {
     checkRECT(g_str_clearimage, arg0);
-    g_gpu_dev_table->addque2(
-        g_gpu_dev_table->clr, arg0, 8,
+    D_8009BE6C->addque2(
+        D_8009BE6C->clr, arg0, 8,
         0x80000000 | ((u32)arg3 << 16) | ((u32)arg2 << 8) | (u32)arg1);
 }
 
 s32 LoadImage(RECT *a0, u32 *a1) {
     checkRECT(g_str_loadimage, a0);
-    return g_gpu_dev_table->addque2(g_gpu_dev_table->dws, a0, 8, a1);
+    return D_8009BE6C->addque2(D_8009BE6C->dws, a0, 8, a1);
 }
 
 s32 StoreImage(RECT *a0, u32 *a1) {
     checkRECT(g_str_storeimage, a0);
-    return g_gpu_dev_table->addque2(g_gpu_dev_table->drs, a0, 8, a1);
+    return D_8009BE6C->addque2(D_8009BE6C->drs, a0, 8, a1);
 }
 
 extern u32 g_gpu_move_param[5];
@@ -324,8 +324,8 @@ s32 MoveImage(RECT *rect, int x, int y) {
     g_gpu_move_param[2] = *(u32 *)&rect->x;
     g_gpu_move_param[3] = packed;
     g_gpu_move_param[4] = *(u32 *)&rect->w;
-    return g_gpu_dev_table->addque2(
-        g_gpu_dev_table->cwc, g_gpu_move_param, sizeof(g_gpu_move_param), 0);
+    return D_8009BE6C->addque2(
+        D_8009BE6C->cwc, g_gpu_move_param, sizeof(g_gpu_move_param), 0);
 }
 
 extern u32 g_gpu_ot_end;
@@ -347,22 +347,22 @@ u32 *ClearOTagR(u32 *ot, s32 n) {
     if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(&D_80015F98, ot, n);
     }
-    g_gpu_dev_table->otc(ot, n);
+    D_8009BE6C->otc(ot, n);
     *ot = ((u32)&g_gpu_ot_end) & 0xFFFFFF;
     return ot;
 }
 
 void DrawPrim(u8 *a0) {
     u32 size = a0[3];
-    g_gpu_dev_table->sync(0);
-    g_gpu_dev_table->cwb(a0 + 4, size);
+    D_8009BE6C->sync(0);
+    D_8009BE6C->cwb(a0 + 4, size);
 }
 
 void DrawOTag(u32 *a0) {
     if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(g_str_drawotag, a0);
     }
-    g_gpu_dev_table->addque2(g_gpu_dev_table->cwc, a0, 0, 0);
+    D_8009BE6C->addque2(D_8009BE6C->cwc, a0, 0, 0);
 }
 
 DRAWENV *PutDrawEnv(DRAWENV *env) {
@@ -371,7 +371,7 @@ DRAWENV *PutDrawEnv(DRAWENV *env) {
     }
     SetDrawEnv2(&env->dr_env, env);
     env->dr_env.tag |= 0xFFFFFF;
-    g_gpu_dev_table->addque2(g_gpu_dev_table->cwc, &env->dr_env, 0x40, 0);
+    D_8009BE6C->addque2(D_8009BE6C->cwc, &env->dr_env, 0x40, 0);
     g_gpu_ctx.draw_env = *env;
     return env;
 }
@@ -382,7 +382,7 @@ void DrawOTagEnv(s32 arg0, DRAWENV *env) {
     }
     SetDrawEnv2(&env->dr_env, env);
     env->dr_env.tag = (env->dr_env.tag & 0xFF000000) | (arg0 & 0xFFFFFF);
-    g_gpu_dev_table->addque2(g_gpu_dev_table->cwc, &env->dr_env, 0x40, 0);
+    D_8009BE6C->addque2(D_8009BE6C->cwc, &env->dr_env, 0x40, 0);
     g_gpu_ctx.draw_env = *env;
 }
 
@@ -402,7 +402,7 @@ DISPENV *PutDispEnv(DISPENV *env) {
     if (g_gpu_ctx.debug_level >= 2) {
         GPU_printf(D_80015FF8, env);
     }
-    g_gpu_dev_table->ctl(
+    D_8009BE6C->ctl(
         g_gpu_ctx.type == 1 || g_gpu_ctx.type == 2
             ? ((env->disp.y & 0xFFF) << 12) | (get_dx(env) & 0xFFF) | 0x05000000
             : ((env->disp.y & 0x3FF) << 10) | (env->disp.x & 0x3FF) |
@@ -434,9 +434,9 @@ DISPENV *PutDispEnv(DISPENV *env) {
                     ? v_start + 2
                     : (v_end > (env->pad0 ? 312 : 258) ? (env->pad0 ? 312 : 258)
                                                        : v_end);
-        g_gpu_dev_table->ctl(
+        D_8009BE6C->ctl(
             ((h_end & 0xFFF) << 12) | 0x06000000 | (h_start & 0xFFF));
-        g_gpu_dev_table->ctl(
+        D_8009BE6C->ctl(
             ((v_end & 0x3FF) << 10) | 0x07000000 | (v_start & 0x3FF));
     }
     /* isinter..pad1 compared as one word: the shipped bytes are a single lw at
@@ -479,7 +479,7 @@ DISPENV *PutDispEnv(DISPENV *env) {
         } else {
             mode |= 0x24;
         }
-        g_gpu_dev_table->ctl(mode);
+        D_8009BE6C->ctl(mode);
     }
     memcpy((s32)&g_gpu_ctx.disp_env, env, sizeof(DISPENV));
     return env;
@@ -490,7 +490,7 @@ s32 GetDispEnv(s32 a0) {
     return a0;
 }
 
-u32 GetODE(void) { return g_gpu_dev_table->status() >> 31; }
+u32 GetODE(void) { return D_8009BE6C->status() >> 31; }
 
 void SetTexWindow(DR_TWIN *p, RECT *tw) {
     setlen(p, 2);
@@ -1155,13 +1155,13 @@ s32 _sync(s32 arg0) {
 }
 
 void set_alarm(void) {
-    g_gpu_vcount = VSync(-1) + 0xF0;
-    g_gpu_draw_count = 0;
+    D_8009BF8C = VSync(-1) + 0xF0;
+    D_8009BF90 = 0;
 }
 
 s32 get_alarm(void) {
     s32 temp_v0;
-    if (g_gpu_vcount < VSync(-1) || g_gpu_draw_count++ > 0xF0000) {
+    if (D_8009BF8C < VSync(-1) || D_8009BF90++ > 0xF0000) {
         *g_gpu_stat_reg;
         printf(g_str_gpu_timeout, (_qin - _qout) & 0x3F, *g_gpu_stat_reg,
                *DMA2_CHCR, *DMA2_MADR);

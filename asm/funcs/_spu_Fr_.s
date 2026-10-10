@@ -22,16 +22,16 @@ glabel _spu_Fr_
     /* 794B0 80088CB0 00000000 */   nop
     /* 794B4 80088CB4 0001043C */  lui        $a0, (0x1000200 >> 16)
     /* 794B8 80088CB8 00028434 */  ori        $a0, $a0, (0x1000200 & 0xFFFF)
-    /* 794BC 80088CBC 0A80023C */  lui        $v0, %hi(D_800A2CE0)
-    /* 794C0 80088CC0 E02C428C */  lw         $v0, %lo(D_800A2CE0)($v0)
+    /* 794BC 80088CBC 0A80023C */  lui        $v0, %hi(dma_spu_madr)
+    /* 794C0 80088CC0 E02C428C */  lw         $v0, %lo(dma_spu_madr)($v0)
     /* 794C4 80088CC4 00000000 */  nop
     /* 794C8 80088CC8 000051AC */  sw         $s1, 0x0($v0)
-    /* 794CC 80088CCC 0A80023C */  lui        $v0, %hi(D_800A2CE4)
-    /* 794D0 80088CD0 E42C428C */  lw         $v0, %lo(D_800A2CE4)($v0)
+    /* 794CC 80088CCC 0A80023C */  lui        $v0, %hi(dma_spu_bcr)
+    /* 794D0 80088CD0 E42C428C */  lw         $v0, %lo(dma_spu_bcr)($v0)
     /* 794D4 80088CD4 10001036 */  ori        $s0, $s0, 0x10
     /* 794D8 80088CD8 000050AC */  sw         $s0, 0x0($v0)
-    /* 794DC 80088CDC 0A80033C */  lui        $v1, %hi(D_800A2CE8)
-    /* 794E0 80088CE0 E82C638C */  lw         $v1, %lo(D_800A2CE8)($v1)
+    /* 794DC 80088CDC 0A80033C */  lui        $v1, %hi(dma_spu_chcr)
+    /* 794E0 80088CE0 E82C638C */  lw         $v1, %lo(dma_spu_chcr)($v1)
     /* 794E4 80088CE4 01000224 */  addiu      $v0, $zero, 0x1
     /* 794E8 80088CE8 0A80013C */  lui        $at, %hi(D_800A2D2C)
     /* 794EC 80088CEC 2C2D22AC */  sw         $v0, %lo(D_800A2D2C)($at)

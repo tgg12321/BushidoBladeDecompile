@@ -23,8 +23,8 @@ glabel ResetGraph
   .L8007AECC:
     /* 6B6CC 8007AECC 0180043C */  lui        $a0, %hi(D_80015E5C)
     /* 6B6D0 8007AED0 5C5E8424 */  addiu      $a0, $a0, %lo(D_80015E5C)
-    /* 6B6D4 8007AED4 0A80053C */  lui        $a1, %hi(D_8009BE2C)
-    /* 6B6D8 8007AED8 2CBEA524 */  addiu      $a1, $a1, %lo(D_8009BE2C)
+    /* 6B6D4 8007AED4 0A80053C */  lui        $a1, %hi(_gpucb)
+    /* 6B6D8 8007AED8 2CBEA524 */  addiu      $a1, $a1, %lo(_gpucb)
     /* 6B6DC 8007AEDC 0A80063C */  lui        $a2, %hi(D_8009BE74)
     /* 6B6E0 8007AEE0 74BEC624 */  addiu      $a2, $a2, %lo(D_8009BE74)
     /* 6B6E4 8007AEE4 82E4010C */  jal        printf

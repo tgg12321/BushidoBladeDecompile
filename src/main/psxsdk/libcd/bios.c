@@ -409,19 +409,19 @@ void CD_flush(void) {
     *g_com_delay_reg = 0x1325;
 }
 
-extern volatile u16 *g_cd_spu_voice;
+extern volatile u16 *D_800A1490;
 
 s32 CD_initvol(void) {
     CdlATV vol;
 
-    if (g_cd_spu_voice[0xDC] == 0 && g_cd_spu_voice[0xDD] == 0) {
-        g_cd_spu_voice[0xC0] = 0x3FFF;
-        g_cd_spu_voice[0xC1] = 0x3FFF;
+    if (D_800A1490[0xDC] == 0 && D_800A1490[0xDD] == 0) {
+        D_800A1490[0xC0] = 0x3FFF;
+        D_800A1490[0xC1] = 0x3FFF;
     }
 
-    g_cd_spu_voice[0xD8] = 0x3FFF;
-    g_cd_spu_voice[0xD9] = 0x3FFF;
-    g_cd_spu_voice[0xD5] = 0xC001;
+    D_800A1490[0xD8] = 0x3FFF;
+    D_800A1490[0xD9] = 0x3FFF;
+    D_800A1490[0xD5] = 0xC001;
     vol.val0 = vol.val2 = 0x80;
     vol.val1 = vol.val3 = 0;
     *g_cd_reg0 = 2;
@@ -531,7 +531,7 @@ s32 CD_datasync(s32 mode) {
 
 extern volatile u32 *g_com_delay_reg;
 extern volatile u32 *g_cdrom_delay_reg;
-extern volatile u32 *g_cd_dma_ctrl_b4;
+extern volatile u32 *D_800A14B4;
 extern volatile u32 *g_cd_dma_dest;
 extern volatile u32 *g_cd_dma_size;
 
@@ -540,7 +540,7 @@ s32 CD_getsector(s32 a0, s32 a1) {
     *libcd_CDRegister3 = CD_REQ_WANT_DATA;
     *g_cdrom_delay_reg = 0x20943;
     *g_com_delay_reg = 0x1323;
-    *g_cd_dma_ctrl_b4 |= DMA_CD_ENABLE;
+    *D_800A14B4 |= DMA_CD_ENABLE;
     *g_cd_dma_dest = a0;
     *g_cd_dma_size = a1 | 0x10000;
     while (!(*g_cd_reg0 & CD_STAT_DATA_REQ)) {
@@ -557,7 +557,7 @@ s32 CD_getsector2(s32 a0, s32 a1) {
     *libcd_CDRegister3 = CD_REQ_WANT_DATA;
     *g_cdrom_delay_reg = 0x21020843;
     *g_com_delay_reg = 0x1325;
-    *g_cd_dma_ctrl_b4 |= DMA_CD_ENABLE;
+    *D_800A14B4 |= DMA_CD_ENABLE;
     *g_cd_dma_dest = a0;
     *g_cd_dma_size = a1 | 0x10000;
     while (!(*g_cd_reg0 & CD_STAT_DATA_REQ)) {

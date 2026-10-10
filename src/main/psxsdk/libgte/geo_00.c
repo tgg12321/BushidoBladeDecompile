@@ -15,7 +15,7 @@ s32 rsin(s32 a0) {
 }
 
 extern s16 rsin_tbl[];
-extern s16 g_sin_lut_q3[];
+extern s16 D_8009AF94[];
 
 s32 sin_1(s32 a0) {
     if (a0 < 0x801) {
@@ -25,7 +25,7 @@ s32 sin_1(s32 a0) {
         return rsin_tbl[0x800 - a0];
     }
     if (a0 < 0xC01) {
-        return -g_sin_lut_q3[a0];
+        return -D_8009AF94[a0];
     }
     return -rsin_tbl[0x1000 - a0];
 }

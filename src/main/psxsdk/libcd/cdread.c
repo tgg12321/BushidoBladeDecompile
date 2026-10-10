@@ -30,14 +30,14 @@ static void cb_read(u8 intr, u8 *result) {
      * once below, so each is addressed as %hi/%lo of its own symbol instead
      * of off one `la` base; all through the struct: score 2 (Q99,
      * aggregate-merge-family) */
-    extern volatile s32 D_800A14E4, D_800A14E0, g_CdReadMode_value;
+    extern volatile s32 D_800A14E4, D_800A14E0, D_800A1500;
     s32 pos[3];
 
     D_800A1504 = result;
     if (intr == 1) {
         if (D_800A14E4 > 0) {
             if (D_800A14E0 == 0x200) {
-                if (g_CdReadMode_value & 1) {
+                if (D_800A1500 & 1) {
                     CdDataCallback(0);
                     CdGetSector2((s32)pos, 3);
                     CdDataSync(0);

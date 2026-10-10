@@ -4,8 +4,8 @@ glabel _SsInit
     /* 74250 80083A50 801F063C */  lui        $a2, (0x1F801C00 >> 16)
     /* 74254 80083A54 001CC634 */  ori        $a2, $a2, (0x1F801C00 & 0xFFFF)
     /* 74258 80083A58 21200000 */  addu       $a0, $zero, $zero
-    /* 7425C 80083A5C 0A80073C */  lui        $a3, %hi(D_800A269C)
-    /* 74260 80083A60 9C26E724 */  addiu      $a3, $a3, %lo(D_800A269C)
+    /* 7425C 80083A5C 0A80073C */  lui        $a3, %hi(default_voice)
+    /* 74260 80083A60 9C26E724 */  addiu      $a3, $a3, %lo(default_voice)
   .L80083A64:
     /* 74264 80083A64 21280000 */  addu       $a1, $zero, $zero
     /* 74268 80083A68 2118E000 */  addu       $v1, $a3, $zero
@@ -24,8 +24,8 @@ glabel _SsInit
     /* 74298 80083A98 801F063C */  lui        $a2, (0x1F801D80 >> 16)
     /* 7429C 80083A9C 801DC634 */  ori        $a2, $a2, (0x1F801D80 & 0xFFFF)
     /* 742A0 80083AA0 21200000 */  addu       $a0, $zero, $zero
-    /* 742A4 80083AA4 0A80033C */  lui        $v1, %hi(D_800A26AC)
-    /* 742A8 80083AA8 AC266324 */  addiu      $v1, $v1, %lo(D_800A26AC)
+    /* 742A4 80083AA4 0A80033C */  lui        $v1, %hi(default_state)
+    /* 742A8 80083AA8 AC266324 */  addiu      $v1, $v1, %lo(default_state)
   .L80083AAC:
     /* 742AC 80083AAC 00006294 */  lhu        $v0, 0x0($v1)
     /* 742B0 80083AB0 02006324 */  addiu      $v1, $v1, 0x2

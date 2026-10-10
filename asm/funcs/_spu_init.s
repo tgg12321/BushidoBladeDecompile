@@ -2,8 +2,8 @@ glabel _spu_init
     /* 78F40 80088740 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 78F44 80088744 1000B0AF */  sw         $s0, 0x10($sp)
     /* 78F48 80088748 21808000 */  addu       $s0, $a0, $zero
-    /* 78F4C 8008874C 0A80043C */  lui        $a0, %hi(D_800A2CEC)
-    /* 78F50 80088750 EC2C848C */  lw         $a0, %lo(D_800A2CEC)($a0)
+    /* 78F4C 8008874C 0A80043C */  lui        $a0, %hi(dma_dpcr)
+    /* 78F50 80088750 EC2C848C */  lw         $a0, %lo(dma_dpcr)($a0)
     /* 78F54 80088754 1800BFAF */  sw         $ra, 0x18($sp)
     /* 78F58 80088758 1400B1AF */  sw         $s1, 0x14($sp)
     /* 78F5C 8008875C 0000828C */  lw         $v0, 0x0($a0)

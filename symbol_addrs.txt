@@ -43,7 +43,7 @@ g_sin_table = 0x800973FC; // sine lookup table (4096 entries, s16)
 
 // === GPU Subsystem (gpu.c / display.c) ===
 // data-wave 2026-09-07: g_gpu_debug_func = 0x8009BE70 retired; GPU_printf is now object-defined
-g_gpu_dev_table = 0x8009BE6C; // GPU device function vtable
+D_8009BE6C = 0x8009BE6C; // GPU device function vtable  // data-wave 2026-10-09: was g_gpu_dev_table
 g_gpu_move_param = 0x8009BF1C; // PsyQ libgpu sys.c MoveImage `u_long param[5]` blit packet (head 2 words initialized: 0x04FFFFFF, 0x80000000)
 g_gpu_ctx = 0x8009BE74; // libgpu SYS state block (GpuCtx, 0x80 bytes; src/main/psxsdk/libgpu/sys.c)
 g_gpu_ot_end = 0x8009BF30; // OT list terminator
@@ -52,15 +52,15 @@ GPU_DATA = 0x8009BF44; // GPU data register ptr  // data-wave 2026-10-08: was g_
 DMA2_MADR = 0x8009BF4C; // GPU DMA base addr reg ptr  // data-wave 2026-10-08: was g_gpu_dma_madr
 DMA2_BCR = 0x8009BF50; // GPU DMA block count reg ptr  // data-wave 2026-10-08: was g_gpu_dma_bcr
 DMA2_CHCR = 0x8009BF54; // GPU DMA channel ctrl reg ptr  // data-wave 2026-10-08: was g_gpu_dma_chcr
-g_gpu_vcount = 0x8009BF8C; // VSync counter
-g_gpu_draw_count = 0x8009BF90; // draw call counter
+D_8009BF8C = 0x8009BF8C; // VSync counter  // data-wave 2026-10-09: was g_gpu_vcount
+D_8009BF90 = 0x8009BF90; // draw call counter  // data-wave 2026-10-09: was g_gpu_draw_count
 ctlbuf = 0x800F189C; // GPU color index table  // data-wave 2026-09-25: was g_gpu_color_table
 
 // === GPU: Sine/Cosine LUTs (display.c) ===
 // data-wave 2026-09-07: g_sin_lut_q1 = 0x8009BF94 retired; rsin_tbl is now object-defined
-g_sin_lut_q3 = 0x8009AF94; // sine LUT quadrant 3
-g_cos_lut_q2 = 0x8009B794; // cosine LUT quadrant 2
-g_cos_lut_q4 = 0x8009A794; // cosine LUT quadrant 4
+D_8009AF94 = 0x8009AF94; // sine LUT quadrant 3  // data-wave 2026-10-09: was g_sin_lut_q3
+D_8009B794 = 0x8009B794; // cosine LUT quadrant 2  // data-wave 2026-10-09: was g_cos_lut_q2
+D_8009A794 = 0x8009A794; // cosine LUT quadrant 4  // data-wave 2026-10-09: was g_cos_lut_q4
 
 // === GTE Tables (display.c) ===
 // data-wave 2026-09-07: g_gte_sqrt_table = 0x8009C7A8 retired; SQRT is now object-defined
@@ -72,7 +72,7 @@ libcd_CDRegister1 = 0x800A1480; // -> 0x1F801801 CD register 1 (command / respon
 libcd_CDRegister2 = 0x800A1484; // -> 0x1F801802 CD register 2 (parameter / interrupt enable)  // data-wave 2026-10-08: was g_cd_reg2
 libcd_CDRegister3 = 0x800A1488; // -> 0x1F801803 CD register 3 (request / interrupt flag)  // data-wave 2026-10-08: was g_cd_reg3
 g_com_delay_reg = 0x800A148C; // -> 0x1F801020 COM_DELAY memory-control register
-g_cd_spu_voice = 0x800A1490; // SPU voice register base ptr
+D_800A1490 = 0x800A1490; // SPU voice register base ptr  // data-wave 2026-10-09: was g_cd_spu_voice
 // data-wave 2026-09-07: g_cd_debug_level = 0x800A11C0 retired; CD_debug is now object-defined
 // data-wave 2026-09-07: g_cd_mode = 0x800A11C4 retired; CD_status is now object-defined
 // data-wave 2026-09-07: g_cd_param = 0x800A11D0 retired; CD_pos is now object-defined
@@ -82,7 +82,7 @@ CD_cbsync = 0x800A11B4; // CD callback A  // data-wave 2026-09-07: was g_cd_call
 CD_cbready = 0x800A11B8; // CD callback B  // data-wave 2026-09-07: was g_cd_callback_b
 // data-wave 2026-09-25: g_cd_init_flag = 0x800A11C8 retired; CD_status1 is now object-defined
 g_cdrom_delay_reg = 0x800A14B0; // -> 0x1F801018 CD-ROM delay register
-g_cd_dma_ctrl_b4 = 0x800A14B4; // CD DMA control B4 ptr
+D_800A14B4 = 0x800A14B4; // CD DMA control B4 ptr  // data-wave 2026-10-09: was g_cd_dma_ctrl_b4
 g_cd_dma_dest = 0x800A14B8; // CD DMA destination ptr
 g_cd_dma_size = 0x800A14BC; // CD DMA transfer size ptr
 g_cd_dma_ctrl = 0x800A14C0; // CD DMA control reg ptr
@@ -92,7 +92,7 @@ g_cd_setloc_flags = 0x800A112C; // per-command "issue CdlSetloc first" flags
 
 // === Sound / SPU Subsystem ===
 _spu_RXX = 0x800A2CDC; // SPU register base address  // data-wave 2026-09-07: was g_spu_base_addr
-g_spu_dma_ctrl = 0x800A2CF0; // SPU DMA control register ptr
+spu_delay = 0x800A2CF0; // SPU DMA control register ptr  // data-wave 2026-10-09: was g_spu_dma_ctrl
 _spu_tsa = 0x800A2CF4; // SPU transfer address (shifted)  // data-wave 2026-09-07: was g_spu_xfer_addr
 _spu_transMode = 0x800A2CF8; // SPU reverb mode (0=off)  // data-wave 2026-09-07: was g_spu_reverb_mode
 _spu_mem_mode_plus = 0x800A2D04; // SPU address shift factor  // data-wave 2026-09-07: was g_spu_addr_shift
@@ -114,7 +114,7 @@ _svm_vab_count = 0x80107808; // active sound channel count  // data-wave 2026-09
 pCallbacks = 0x800A2600; // pointer to the libetc INTR callbacks table (D_800A25E0)  // data-wave 2026-10-08: was g_sys_irq_vtable
 g_InterruptMask = 0x800A2608; // libetc intr.c I_MASK register pointer (0x1F801074); was g_sys_irq_counter  // data-wave 2026-10-08: was i_mask
 // data-wave 2026-09-24: g_sys_vsync_mode = 0x800A14CC retired; g_CdReadCallback_func is now object-defined
-g_CdReadMode_value = 0x800A1500; // cdread tslmode (D_800A14D0.tslmode)  // data-wave 2026-09-24: was g_sys_timer
+D_800A1500 = 0x800A1500; // cdread tslmode (D_800A14D0.tslmode)  // data-wave 2026-09-24: was g_sys_timer
 video_mode = 0x800A2664; // video mode (0=NTSC)  // data-wave 2026-10-08: was g_sys_video_mode
 Vcount = 0x800A2634; // DMA memory region  // data-wave 2026-09-07: was g_sys_dma_region
 

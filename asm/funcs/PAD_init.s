@@ -28,8 +28,8 @@ glabel PAD_init
     /* 69468 80078C68 0AE4010C */  jal        _send_pad
     /* 6946C 80078C6C 00000000 */   nop
     /* 69470 80078C70 01000224 */  addiu      $v0, $zero, 0x1
-    /* 69474 80078C74 0A80013C */  lui        $at, %hi(D_8009BD80)
-    /* 69478 80078C78 80BD22AC */  sw         $v0, %lo(D_8009BD80)($at)
+    /* 69474 80078C74 0A80013C */  lui        $at, %hi(is_pad_init)
+    /* 69478 80078C78 80BD22AC */  sw         $v0, %lo(is_pad_init)($at)
     /* 6947C 80078C7C 2000BF8F */  lw         $ra, 0x20($sp)
     /* 69480 80078C80 1C00B38F */  lw         $s3, 0x1C($sp)
     /* 69484 80078C84 1800B28F */  lw         $s2, 0x18($sp)

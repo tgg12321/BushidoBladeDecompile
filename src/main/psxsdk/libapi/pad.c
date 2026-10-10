@@ -10,11 +10,11 @@ extern volatile SioRegs *D_8009BD84;
 /* I_STAT (I_MASK at [1]), 0x1F801070 */
 extern volatile u32 *D_8009BD88;
 
-extern s32 D_8009BD80;
+extern s32 is_pad_init;
 
-void SetInitPadFlag(s32 a0) { D_8009BD80 = a0; }
+void SetInitPadFlag(s32 a0) { is_pad_init = a0; }
 
-s32 ReadInitPadFlag(void) { return D_8009BD80; }
+s32 ReadInitPadFlag(void) { return is_pad_init; }
 
 void _remove_ChgclrPAD(void);
 void _patch_pad(void);
@@ -31,7 +31,7 @@ void PAD_init(s32 a0, s32 a1, s32 a2, s32 a3) {
     SetPatchPad();
     PAD_init2(a0, a1, a2, a3);
     _send_pad();
-    D_8009BD80 = 1;
+    is_pad_init = 1;
 }
 
 void InitPAD2(s32, s32, s32, s32);
@@ -45,7 +45,7 @@ void InitPAD(s32 a0, s32 a1, s32 a2, s32 a3) {
     SetPatchPad();
     InitPAD2(a0, a1, a2, a3);
     _send_pad();
-    D_8009BD80 = 1;
+    is_pad_init = 1;
 }
 
 void StartPAD2(void);
@@ -65,7 +65,7 @@ void StopPAD(void) {
     DisablePAD();
     StopPAD2();
     RemovePatchPad();
-    D_8009BD80 = 0;
+    is_pad_init = 0;
 }
 
 extern void SysDeqIntRP(s32, u32 *);

@@ -28,8 +28,8 @@ glabel InitPAD
     /* 69504 80078D04 0AE4010C */  jal        _send_pad
     /* 69508 80078D08 00000000 */   nop
     /* 6950C 80078D0C 01000224 */  addiu      $v0, $zero, 0x1
-    /* 69510 80078D10 0A80013C */  lui        $at, %hi(D_8009BD80)
-    /* 69514 80078D14 80BD22AC */  sw         $v0, %lo(D_8009BD80)($at)
+    /* 69510 80078D10 0A80013C */  lui        $at, %hi(is_pad_init)
+    /* 69514 80078D14 80BD22AC */  sw         $v0, %lo(is_pad_init)($at)
     /* 69518 80078D18 2000BF8F */  lw         $ra, 0x20($sp)
     /* 6951C 80078D1C 1C00B38F */  lw         $s3, 0x1C($sp)
     /* 69520 80078D20 1800B28F */  lw         $s2, 0x18($sp)

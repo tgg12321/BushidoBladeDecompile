@@ -23903,11 +23903,11 @@ dlabel D_8009BD70
     /* 8C57C 8009BD7C 01000000 */ .word 0x00000001
 enddlabel D_8009BD70
 
-nonmatching D_8009BD80
+nonmatching is_pad_init
 
-dlabel D_8009BD80
+dlabel is_pad_init
     /* 8C580 8009BD80 00000000 */ .word 0x00000000
-enddlabel D_8009BD80
+enddlabel is_pad_init
 
 nonmatching D_8009BD84
 
@@ -23973,9 +23973,9 @@ dlabel D_8009BE10
     /* 8C628 8009BE28 9C894000 */ .word 0x0040899C
 enddlabel D_8009BE10
 
-nonmatching D_8009BE2C
+nonmatching _gpucb
 
-dlabel D_8009BE2C
+dlabel _gpucb
     /* 8C62C 8009BE2C 285E0180 */ .word 0x80015E28
     /* 8C630 8009BE30 D4D30780 */ .word _addque
     /* 8C634 8009BE34 F8D30780 */ .word _addque2
@@ -23992,12 +23992,12 @@ dlabel D_8009BE2C
     /* 8C660 8009BE60 C4D90780 */ .word _reset
     /* 8C664 8009BE64 B0CA0780 */ .word _status
     /* 8C668 8009BE68 20DB0780 */ .word _sync
-enddlabel D_8009BE2C
+enddlabel _gpucb
 
 nonmatching D_8009BE6C
 
 dlabel D_8009BE6C
-    /* 8C66C 8009BE6C 2CBE0980 */ .word D_8009BE2C
+    /* 8C66C 8009BE6C 2CBE0980 */ .word _gpucb
 enddlabel D_8009BE6C
 
 nonmatching GPU_printf

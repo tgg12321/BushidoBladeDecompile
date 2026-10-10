@@ -4,8 +4,8 @@
 #include "common.h"
 #include "libsnd_i.h"
 
-extern u16 D_800A269C;
-extern u16 D_800A26AC;
+extern u16 default_voice;
+extern u16 default_state;
 extern s32 _SsMarkCallback[32][16];
 
 /* PsyQ 4.0 LIBSND ssinit: _SsInit — verbatim-linked Sony object (census
@@ -17,13 +17,13 @@ void _SsInit(void) {
     var_a2 = (u16 *)0x1F801C00;
     for (i = 0; i < 24; i++) {
         for (j = 0; j < 8; j++) {
-            *var_a2++ = (&D_800A269C)[j];
+            *var_a2++ = (&default_voice)[j];
         }
     }
 
     var_a2 = (u16 *)0x1F801D80;
     for (i = 0; i < 16; i++) {
-        *var_a2++ = (&D_800A26AC)[i];
+        *var_a2++ = (&default_state)[i];
     }
 
     _SsVmInit(0x18);

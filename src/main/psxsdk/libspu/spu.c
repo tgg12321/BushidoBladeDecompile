@@ -10,19 +10,19 @@
 
 extern s32 _spu_mem_mode;
 extern s32 _spu_mem_mode_unit;
-extern volatile u32 *D_800A2CEC;
+extern volatile u32 *dma_dpcr;
 extern s32 _spu_addrMode;
 extern s32 D_800A2D1C;
 extern void printf(s32 *, s32 *);
 extern void _spu_Fw1ts(void);
 extern s32 D_800A2D2C;
-extern s32 D_800A2D30;
-extern s32 D_800A2D34;
+extern s32 spu_madr;
+extern s32 spu_bcr;
 /* Sony _spu_madr/_spu_bcr/_spu_chcr: pointers to the SPU DMA (ch4) MMIO
  * registers 0x1F8010C0/C4/C8; pointee volatile per mmio-volatile-type-level. */
-extern volatile s32 *D_800A2CE0;
-extern volatile s32 *D_800A2CE4;
-extern volatile s32 *D_800A2CE8;
+extern volatile s32 *dma_spu_madr;
+extern volatile s32 *dma_spu_bcr;
+extern volatile s32 *dma_spu_chcr;
 
 /* SPU-module debug strings (rodata 0x800163D8..0x80016420). */
 const char D_800163D8[16] = "SPU:T/O [%s]\n";
@@ -36,7 +36,7 @@ s32 _spu_init(s32 a0) {
     s32 channel;
     volatile u16 *spucnt;
 
-    *D_800A2CEC |= 0xB0000;
+    *dma_dpcr |= 0xB0000;
 
     _spu_transMode = 0;
     _spu_addrMode = 0;
@@ -211,10 +211,10 @@ void _spu_Fr_(s32 addr, u16 spu_addr, s32 size) {
     _spu_RXX->rxx.spucnt = _spu_RXX->rxx.spucnt | 0x30;
     _spu_Fw1ts();
     _spu_FsetDelayR();
-    *D_800A2CE0 = addr;
-    *D_800A2CE4 = (size << 16) | 0x10;
+    *dma_spu_madr = addr;
+    *dma_spu_bcr = (size << 16) | 0x10;
     D_800A2D2C = 1;
-    *D_800A2CE8 = 0x1000200;
+    *dma_spu_chcr = 0x1000200;
 }
 
 /* C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_t) */
@@ -292,18 +292,18 @@ s32 _spu_t(s32 mode, ...) {
             _spu_FsetDelayW();
         }
         count = va_arg(args, u32);
-        D_800A2D30 = count;
+        spu_madr = count;
         count = va_arg(args, u32);
-        D_800A2D34 = (count / 64);
-        D_800A2D34 += ((count % 64) ? 1 : 0);
-        *D_800A2CE0 = D_800A2D30;
-        *D_800A2CE4 = (D_800A2D34 << 16) | 0x10;
+        spu_bcr = (count / 64);
+        spu_bcr += ((count % 64) ? 1 : 0);
+        *dma_spu_madr = spu_madr;
+        *dma_spu_bcr = (spu_bcr << 16) | 0x10;
         if (D_800A2D2C == 1) {
             var_a2 = 0x1000200;
         } else {
             var_a2 = 0x1000201;
         }
-        *D_800A2CE8 = var_a2;
+        *dma_spu_chcr = var_a2;
         break;
     }
     return 0;
@@ -366,22 +366,22 @@ s32 _spu_FgetRXXa(s32 index, s32 mode) {
 }
 
 void _spu_FsetPCR(s32 arg0) {
-    *D_800A2CEC &= 0xFFF8FFFF;
+    *dma_dpcr &= 0xFFF8FFFF;
     if (arg0 != 0) {
-        *D_800A2CEC |= 0x30000;
+        *dma_dpcr |= 0x30000;
     } else {
-        *D_800A2CEC |= 0x50000;
+        *dma_dpcr |= 0x50000;
     }
 }
 
-extern volatile u32 *g_spu_dma_ctrl;
+extern volatile u32 *spu_delay;
 
 void _spu_FsetDelayW(void) {
-    *g_spu_dma_ctrl = (*g_spu_dma_ctrl & DMA_CHAN_MASK) | DMA_SPU_FROM_RAM;
+    *spu_delay = (*spu_delay & DMA_CHAN_MASK) | DMA_SPU_FROM_RAM;
 }
 
 void _spu_FsetDelayR(void) {
-    *g_spu_dma_ctrl = (*g_spu_dma_ctrl & DMA_CHAN_MASK) | DMA_SPU_TO_RAM;
+    *spu_delay = (*spu_delay & DMA_CHAN_MASK) | DMA_SPU_TO_RAM;
 }
 
 /* LIBSPU spu.c WASTE_TIME(): the 4.0 rev's out-of-line busy-wait. */

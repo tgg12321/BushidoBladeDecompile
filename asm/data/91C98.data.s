@@ -124,11 +124,11 @@ dlabel D_800A14FC
     /* 91CFC 800A14FC 00000000 */ .word 0x00000000
 enddlabel D_800A14FC
 
-nonmatching g_CdReadMode_value
+nonmatching D_800A1500
 
-dlabel g_CdReadMode_value
+dlabel D_800A1500
     /* 91D00 800A1500 00000000 */ .word 0x00000000
-enddlabel g_CdReadMode_value
+enddlabel D_800A1500
 
 nonmatching D_800A1504
 
@@ -1417,18 +1417,18 @@ dlabel D_800A2694
     /* 92E98 800A2698 E4974040 */ .word 0x404097E4
 enddlabel D_800A2694
 
-nonmatching D_800A269C
+nonmatching default_voice
 
-dlabel D_800A269C
+dlabel default_voice
     /* 92E9C 800A269C 00000000 */ .word 0x00000000
     /* 92EA0 800A26A0 00100030 */ .word 0x30001000
     /* 92EA4 800A26A4 BF000000 */ .word 0x000000BF
     /* 92EA8 800A26A8 00000000 */ .word 0x00000000
-enddlabel D_800A269C
+enddlabel default_voice
 
-nonmatching D_800A26AC
+nonmatching default_state
 
-dlabel D_800A26AC
+dlabel default_state
     /* 92EAC 800A26AC FF3FFF3F */ .word 0x3FFF3FFF
     /* 92EB0 800A26B0 00000000 */ .word 0x00000000
     /* 92EB4 800A26B4 00000000 */ .word 0x00000000
@@ -1437,7 +1437,7 @@ dlabel D_800A26AC
     /* 92EC0 800A26C0 00000000 */ .word 0x00000000
     /* 92EC4 800A26C4 00000000 */ .word 0x00000000
     /* 92EC8 800A26C8 00000000 */ .word 0x00000000
-enddlabel D_800A26AC
+enddlabel default_state
 
 nonmatching _snd_seq_tick_env
 
@@ -2077,35 +2077,35 @@ dlabel _spu_RXX
     /* 934DC 800A2CDC 001C801F */ .word 0x1F801C00
 enddlabel _spu_RXX
 
-nonmatching D_800A2CE0
+nonmatching dma_spu_madr
 
-dlabel D_800A2CE0
+dlabel dma_spu_madr
     /* 934E0 800A2CE0 C010801F */ .word 0x1F8010C0
-enddlabel D_800A2CE0
+enddlabel dma_spu_madr
 
-nonmatching D_800A2CE4
+nonmatching dma_spu_bcr
 
-dlabel D_800A2CE4
+dlabel dma_spu_bcr
     /* 934E4 800A2CE4 C410801F */ .word 0x1F8010C4
-enddlabel D_800A2CE4
+enddlabel dma_spu_bcr
 
-nonmatching D_800A2CE8
+nonmatching dma_spu_chcr
 
-dlabel D_800A2CE8
+dlabel dma_spu_chcr
     /* 934E8 800A2CE8 C810801F */ .word 0x1F8010C8
-enddlabel D_800A2CE8
+enddlabel dma_spu_chcr
 
-nonmatching D_800A2CEC
+nonmatching dma_dpcr
 
-dlabel D_800A2CEC
+dlabel dma_dpcr
     /* 934EC 800A2CEC F010801F */ .word 0x1F8010F0
-enddlabel D_800A2CEC
+enddlabel dma_dpcr
 
-nonmatching D_800A2CF0
+nonmatching spu_delay
 
-dlabel D_800A2CF0
+dlabel spu_delay
     /* 934F0 800A2CF0 1410801F */ .word 0x1F801014
-enddlabel D_800A2CF0
+enddlabel spu_delay
 
 nonmatching _spu_tsa
 
@@ -2183,17 +2183,17 @@ dlabel D_800A2D2C
     /* 9352C 800A2D2C 00000000 */ .word 0x00000000
 enddlabel D_800A2D2C
 
-nonmatching D_800A2D30
+nonmatching spu_madr
 
-dlabel D_800A2D30
+dlabel spu_madr
     /* 93530 800A2D30 00000000 */ .word 0x00000000
-enddlabel D_800A2D30
+enddlabel spu_madr
 
-nonmatching D_800A2D34
+nonmatching spu_bcr
 
-dlabel D_800A2D34
+dlabel spu_bcr
     /* 93534 800A2D34 00000000 */ .word 0x00000000
-enddlabel D_800A2D34
+enddlabel spu_bcr
 
 nonmatching _spu_AllocBlockNum
 

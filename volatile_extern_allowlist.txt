@@ -57,7 +57,7 @@ D_800A14F0    # cdread.c .pos — same §3 grant.
 D_800A14F4    # cdread.c .cbsync — same §3 grant.
 D_800A14F8    # cdread.c .cbready — same §3 grant.
 D_800A14FC    # cdread.c .cbdata — same §3 grant.
-g_CdReadMode_value    # cdread.c .tslmode — same §3 grant.
+D_800A1500    # cdread.c .tslmode — same §3 grant.
 # get_alarm / LIBGPU SYS.OBJ que-state pair (grant proposed 2026-09-04, grind s45/s46;
 # Judge PASS ruling docs/grind/decisions.md 2026-09-04 13:48, body bc13a6d76f47d945).
 # Both symbols live in the VERBATIM-matched LIBGPU/SYS region 0x8007AE7C-0x8007DF10
