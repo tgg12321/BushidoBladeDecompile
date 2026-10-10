@@ -1,7 +1,7 @@
 glabel _param
     /* 6DBA4 8007D3A4 0010023C */  lui        $v0, (0x10000000 >> 16)
-    /* 6DBA8 8007D3A8 0A80033C */  lui        $v1, %hi(D_8009BF48)
-    /* 6DBAC 8007D3AC 48BF638C */  lw         $v1, %lo(D_8009BF48)($v1)
+    /* 6DBA8 8007D3A8 0A80033C */  lui        $v1, %hi(GPU_STATUS)
+    /* 6DBAC 8007D3AC 48BF638C */  lw         $v1, %lo(GPU_STATUS)($v1)
     /* 6DBB0 8007D3B0 25208200 */  or         $a0, $a0, $v0
     /* 6DBB4 8007D3B4 000064AC */  sw         $a0, 0x0($v1)
     /* 6DBB8 8007D3B8 0A80023C */  lui        $v0, %hi(GPU_DATA)

@@ -84,8 +84,8 @@ glabel CD_sync
     /* 716E8 80080EE8 00000000 */   nop
     /* 716EC 80080EEC 2B004010 */  beqz       $v0, .L80080F9C
     /* 716F0 80080EF0 00000000 */   nop
-    /* 716F4 80080EF4 0A80023C */  lui        $v0, %hi(D_800A147C)
-    /* 716F8 80080EF8 7C14428C */  lw         $v0, %lo(D_800A147C)($v0)
+    /* 716F4 80080EF4 0A80023C */  lui        $v0, %hi(libcd_CDRegister0)
+    /* 716F8 80080EF8 7C14428C */  lw         $v0, %lo(libcd_CDRegister0)($v0)
     /* 716FC 80080EFC 00000000 */  nop
     /* 71700 80080F00 00004290 */  lbu        $v0, 0x0($v0)
     /* 71704 80080F04 00000000 */  nop
@@ -126,8 +126,8 @@ glabel CD_sync
     /* 71784 80080F84 C3030208 */  j          .L80080F0C
     /* 71788 80080F88 00000000 */   nop
   .L80080F8C:
-    /* 7178C 80080F8C 0A80023C */  lui        $v0, %hi(D_800A147C)
-    /* 71790 80080F90 7C14428C */  lw         $v0, %lo(D_800A147C)($v0)
+    /* 7178C 80080F8C 0A80023C */  lui        $v0, %hi(libcd_CDRegister0)
+    /* 71790 80080F90 7C14428C */  lw         $v0, %lo(libcd_CDRegister0)($v0)
     /* 71794 80080F94 00000000 */  nop
     /* 71798 80080F98 000051A0 */  sb         $s1, 0x0($v0)
   .L80080F9C:

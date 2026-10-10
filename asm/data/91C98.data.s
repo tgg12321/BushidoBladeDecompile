@@ -189,11 +189,11 @@ dlabel D_800A1520
     /* 91D74 800A1574 2E000000 */ .word 0x0000002E
 enddlabel D_800A1520
 
-nonmatching D_800A1578
+nonmatching intrEnv
 
-dlabel D_800A1578
+dlabel intrEnv
     /* 91D78 800A1578 */ .short 0x0000
-enddlabel D_800A1578
+enddlabel intrEnv
 
 nonmatching D_800A157A
 
@@ -1280,7 +1280,7 @@ dlabel D_800A25E0
     /* 92DF0 800A25F0 70300880 */ .word 0x80083070
     /* 92DF4 800A25F4 00000000 */ .word 0x00000000
     /* 92DF8 800A25F8 1C310880 */ .word 0x8008311C
-    /* 92DFC 800A25FC 78150A80 */ .word D_800A1578
+    /* 92DFC 800A25FC 78150A80 */ .word intrEnv
 enddlabel D_800A25E0
 
 nonmatching pCallbacks

@@ -1,7 +1,7 @@
 glabel _cwc
     /* 6DB58 8007D358 0004033C */  lui        $v1, (0x4000002 >> 16)
-    /* 6DB5C 8007D35C 0A80023C */  lui        $v0, %hi(D_8009BF48)
-    /* 6DB60 8007D360 48BF428C */  lw         $v0, %lo(D_8009BF48)($v0)
+    /* 6DB5C 8007D35C 0A80023C */  lui        $v0, %hi(GPU_STATUS)
+    /* 6DB60 8007D360 48BF428C */  lw         $v0, %lo(GPU_STATUS)($v0)
     /* 6DB64 8007D364 02006334 */  ori        $v1, $v1, (0x4000002 & 0xFFFF)
     /* 6DB68 8007D368 000043AC */  sw         $v1, 0x0($v0)
     /* 6DB6C 8007D36C 0A80023C */  lui        $v0, %hi(DMA2_MADR)

@@ -1,6 +1,6 @@
 glabel CD_vol
-    /* 71F18 80081718 0A80033C */  lui        $v1, %hi(D_800A147C)
-    /* 71F1C 8008171C 7C14638C */  lw         $v1, %lo(D_800A147C)($v1)
+    /* 71F18 80081718 0A80033C */  lui        $v1, %hi(libcd_CDRegister0)
+    /* 71F1C 8008171C 7C14638C */  lw         $v1, %lo(libcd_CDRegister0)($v1)
     /* 71F20 80081720 02000224 */  addiu      $v0, $zero, 0x2
     /* 71F24 80081724 000062A0 */  sb         $v0, 0x0($v1)
     /* 71F28 80081728 0A80033C */  lui        $v1, %hi(libcd_CDRegister2)
@@ -13,8 +13,8 @@ glabel CD_vol
     /* 71F44 80081744 01008290 */  lbu        $v0, 0x1($a0)
     /* 71F48 80081748 00000000 */  nop
     /* 71F4C 8008174C 000062A0 */  sb         $v0, 0x0($v1)
-    /* 71F50 80081750 0A80033C */  lui        $v1, %hi(D_800A147C)
-    /* 71F54 80081754 7C14638C */  lw         $v1, %lo(D_800A147C)($v1)
+    /* 71F50 80081750 0A80033C */  lui        $v1, %hi(libcd_CDRegister0)
+    /* 71F54 80081754 7C14638C */  lw         $v1, %lo(libcd_CDRegister0)($v1)
     /* 71F58 80081758 03000224 */  addiu      $v0, $zero, 0x3
     /* 71F5C 8008175C 000062A0 */  sb         $v0, 0x0($v1)
     /* 71F60 80081760 0A80033C */  lui        $v1, %hi(libcd_CDRegister1)

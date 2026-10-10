@@ -29,8 +29,8 @@ glabel CD_init
     /* 72230 80081A30 1C1FA524 */  addiu      $a1, $a1, %lo(D_80081F1C)
     /* 72234 80081A34 BC0A020C */  jal        InterruptCallback
     /* 72238 80081A38 02000424 */   addiu     $a0, $zero, 0x2
-    /* 7223C 80081A3C 0A80033C */  lui        $v1, %hi(D_800A147C)
-    /* 72240 80081A40 7C14638C */  lw         $v1, %lo(D_800A147C)($v1)
+    /* 7223C 80081A3C 0A80033C */  lui        $v1, %hi(libcd_CDRegister0)
+    /* 72240 80081A40 7C14638C */  lw         $v1, %lo(libcd_CDRegister0)($v1)
     /* 72244 80081A44 01000224 */  addiu      $v0, $zero, 0x1
     /* 72248 80081A48 000062A0 */  sb         $v0, 0x0($v1)
     /* 7224C 80081A4C 0A80023C */  lui        $v0, %hi(libcd_CDRegister3)
@@ -43,8 +43,8 @@ glabel CD_init
     /* 72268 80081A68 01000424 */   addiu     $a0, $zero, 0x1
     /* 7226C 80081A6C 07000324 */  addiu      $v1, $zero, 0x7
   .L80081A70:
-    /* 72270 80081A70 0A80023C */  lui        $v0, %hi(D_800A147C)
-    /* 72274 80081A74 7C14428C */  lw         $v0, %lo(D_800A147C)($v0)
+    /* 72270 80081A70 0A80023C */  lui        $v0, %hi(libcd_CDRegister0)
+    /* 72274 80081A74 7C14428C */  lw         $v0, %lo(libcd_CDRegister0)($v0)
     /* 72278 80081A78 00000000 */  nop
     /* 7227C 80081A7C 000044A0 */  sb         $a0, 0x0($v0)
     /* 72280 80081A80 0A80023C */  lui        $v0, %hi(libcd_CDRegister3)
@@ -71,8 +71,8 @@ glabel CD_init
     /* 722D0 80081AD0 961420A0 */  sb         $zero, %lo(D_800A1496)($at)
     /* 722D4 80081AD4 0A80023C */  lui        $v0, %hi(D_800A1496)
     /* 722D8 80081AD8 96144290 */  lbu        $v0, %lo(D_800A1496)($v0)
-    /* 722DC 80081ADC 0A80073C */  lui        $a3, %hi(D_800A147C)
-    /* 722E0 80081AE0 7C14E78C */  lw         $a3, %lo(D_800A147C)($a3)
+    /* 722DC 80081ADC 0A80073C */  lui        $a3, %hi(libcd_CDRegister0)
+    /* 722E0 80081AE0 7C14E78C */  lw         $a3, %lo(libcd_CDRegister0)($a3)
     /* 722E4 80081AE4 0A80033C */  lui        $v1, %hi(D_800A1494)
     /* 722E8 80081AE8 94146324 */  addiu      $v1, $v1, %lo(D_800A1494)
     /* 722EC 80081AEC 0A80013C */  lui        $at, %hi(D_800A1495)

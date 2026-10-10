@@ -1,8 +1,8 @@
 glabel _cwb
     /* 6DB08 8007D308 F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 6DB0C 8007D30C FFFFA624 */  addiu      $a2, $a1, -0x1
-    /* 6DB10 8007D310 0A80033C */  lui        $v1, %hi(D_8009BF48)
-    /* 6DB14 8007D314 48BF638C */  lw         $v1, %lo(D_8009BF48)($v1)
+    /* 6DB10 8007D310 0A80033C */  lui        $v1, %hi(GPU_STATUS)
+    /* 6DB14 8007D314 48BF638C */  lw         $v1, %lo(GPU_STATUS)($v1)
     /* 6DB18 8007D318 0004023C */  lui        $v0, (0x4000000 >> 16)
     /* 6DB1C 8007D31C 000062AC */  sw         $v0, 0x0($v1)
     /* 6DB20 8007D320 0A00A010 */  beqz       $a1, .L8007D34C

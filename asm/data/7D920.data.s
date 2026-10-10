@@ -10036,9 +10036,9 @@ dlabel D_80094E08
     /* 85647 80094E47 */ .byte 0xFF
 enddlabel D_80094E08
 
-nonmatching StageLight
+nonmatching D_80094E48
 
-dlabel StageLight
+dlabel D_80094E48
     /* 85648 80094E48 B5A79800 */ .word 0x0098A7B5
     /* 8564C 80094E4C 715D5F00 */ .word 0x005F5D71
     /* 85650 80094E50 A3849A00 */ .word 0x009A84A3
@@ -10267,7 +10267,7 @@ dlabel StageLight
     /* 859CC 800951CC 3F251F00 */ .word 0x001F253F
     /* 859D0 800951D0 5006000E */ .word 0x0E000650
     /* 859D4 800951D4 00000000 */ .word 0x00000000
-enddlabel StageLight
+enddlabel D_80094E48
 
 nonmatching D_800951D8
 
@@ -24159,7 +24159,7 @@ enddlabel D_8009BF08
 /* PsyQ libgpu MoveImage packet buffer (`u_long param[5]` in the SDK's sys.c).
  * param[0]/param[1] are the initialized VRAM-to-VRAM blit command words; the
  * tail three (D_8009BF24/28/2C below) are written per call. */
-dlabel g_gpu_move_param
+dlabel move_image
     /* 8C71C 8009BF1C FFFFFF04 */ .word 0x04FFFFFF
     /* 8C720 8009BF20 00000080 */ .word 0x80000000
 
@@ -24197,11 +24197,11 @@ dlabel GPU_DATA
     /* 8C744 8009BF44 1018801F */ .word 0x1F801810
 enddlabel GPU_DATA
 
-nonmatching D_8009BF48
+nonmatching GPU_STATUS
 
-dlabel D_8009BF48
+dlabel GPU_STATUS
     /* 8C748 8009BF48 1418801F */ .word 0x1F801814
-enddlabel D_8009BF48
+enddlabel GPU_STATUS
 
 nonmatching DMA2_MADR
 
@@ -30994,11 +30994,11 @@ dlabel D_800A1460
     /* 91C78 800A1478 00000000 */ .word 0x00000000
 enddlabel D_800A1460
 
-nonmatching D_800A147C
+nonmatching libcd_CDRegister0
 
-dlabel D_800A147C
+dlabel libcd_CDRegister0
     /* 91C7C 800A147C 0018801F */ .word 0x1F801800
-enddlabel D_800A147C
+enddlabel libcd_CDRegister0
 
 nonmatching libcd_CDRegister1
 

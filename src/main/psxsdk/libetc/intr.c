@@ -25,7 +25,7 @@ extern s32 *pCallbacks;
  * i_stat/g_InterruptMask/d_pcr are the module's MMIO pointer statics
  * (0x1F801070/74/F0). */
 typedef struct {
-    u16 interruptsInitialized;  /* +0x00 = D_800A1578 */
+    u16 interruptsInitialized;  /* +0x00 = intrEnv */
     u16 inInterrupt;            /* +0x02 */
     void (*handlers[11])(void); /* +0x04 */
     u16 enabledInterruptsMask;  /* +0x30 */
@@ -37,7 +37,7 @@ typedef struct {
 
 extern volatile u16 *i_stat; /* i_stat = (u16 *)0x1F801070 (MMIO) */
 extern volatile s32 *d_pcr;  /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
-extern intrEnv_t D_800A1578;
+extern intrEnv_t intrEnv;
 
 s32 ResetCallback(void) { return ((s32(*)(void))pCallbacks[3])(); }
 
@@ -57,7 +57,7 @@ s32 StopCallback(void) { return ((s32(*)(void))pCallbacks[4])(); }
 
 s32 RestartCallback(void) { return ((s32(*)(void))pCallbacks[6])(); }
 
-s32 CheckCallback(void) { return D_800A1578.inInterrupt; }
+s32 CheckCallback(void) { return intrEnv.inInterrupt; }
 
 u32 GetIntrMask(void) { return *g_InterruptMask; }
 
@@ -74,27 +74,27 @@ u16 SetIntrMask(u16 arg0) {
 
 /* startIntr (LIBETC intr.c static) */
 intrEnv_t *startIntr(void) {
-    if (D_800A1578.interruptsInitialized) {
+    if (intrEnv.interruptsInitialized) {
         return 0;
     }
     /* g_InterruptMask deref is MMIO (0x1F801074) — volatile is hardware
      * semantics */
     *i_stat = (*g_InterruptMask = 0);
     *d_pcr = 0x33333333;
-    func_800831A4(&D_800A1578, 0x41A);
-    if (setjmp(D_800A1578.buf) != 0) {
+    func_800831A4(&intrEnv, 0x41A);
+    if (setjmp(intrEnv.buf) != 0) {
         trapIntr();
     }
-    D_800A1578.buf[1] = (s32)&D_800A1578.stack[1004];
-    HookEntryInt(D_800A1578.buf);
-    D_800A1578.interruptsInitialized = 1;
+    intrEnv.buf[1] = (s32)&intrEnv.stack[1004];
+    HookEntryInt(intrEnv.buf);
+    intrEnv.interruptsInitialized = 1;
     pCallbacks[5] = startIntrVSync();
     pCallbacks[1] = startIntrDMA();
     /* FAKE: _96_remove (BIOS A(72h)) takes no argument; passing the table
      * keeps it live in $a0 into the call; `_96_remove()` scores 3. */
     _96_remove(pCallbacks);
     ExitCriticalSection();
-    return &D_800A1578;
+    return &intrEnv;
 }
 
 /* setIntr/stopIntr/restartIntr are statics referenced only through the
@@ -107,18 +107,18 @@ void trapIntr(void) {
     s32 i;
     u16 mask;
 
-    if (!D_800A1578.interruptsInitialized) {
+    if (!intrEnv.interruptsInitialized) {
         printf(&D_8001635C, *i_stat);
         ReturnFromException();
     }
-    D_800A1578.inInterrupt = 1;
-    while ((mask = (D_800A1578.enabledInterruptsMask & *i_stat) &
+    intrEnv.inInterrupt = 1;
+    while ((mask = (intrEnv.enabledInterruptsMask & *i_stat) &
                    *g_InterruptMask) != 0) {
         for (i = 0; mask && i < 11; ++i, mask >>= 1) {
             if (mask & 1) {
                 *i_stat = ~(1 << i);
-                if (D_800A1578.handlers[i] != 0) {
-                    D_800A1578.handlers[i]();
+                if (intrEnv.handlers[i] != 0) {
+                    intrEnv.handlers[i]();
                 }
             }
         }
@@ -132,7 +132,7 @@ void trapIntr(void) {
     } else {
         D_800A2610 = 0;
     }
-    D_800A1578.inInterrupt = 0;
+    intrEnv.inInterrupt = 0;
     ReturnFromException();
 }
 
@@ -141,18 +141,18 @@ static IntrCallback setIntr(s32 irq, IntrCallback handler) {
     IntrCallback prevHandler;
     s32 mask;
 
-    prevHandler = D_800A1578.handlers[irq];
-    if (handler != prevHandler && D_800A1578.interruptsInitialized) {
+    prevHandler = intrEnv.handlers[irq];
+    if (handler != prevHandler && intrEnv.interruptsInitialized) {
         mask = *g_InterruptMask;
         *g_InterruptMask = 0;
         if (handler != 0) {
-            D_800A1578.handlers[irq] = handler;
+            intrEnv.handlers[irq] = handler;
             mask = mask | (1 << irq);
-            D_800A1578.enabledInterruptsMask |= 1 << irq;
+            intrEnv.enabledInterruptsMask |= 1 << irq;
         } else {
-            D_800A1578.handlers[irq] = 0;
+            intrEnv.handlers[irq] = 0;
             mask = mask & ~(1 << irq);
-            D_800A1578.enabledInterruptsMask &= ~(1 << irq);
+            intrEnv.enabledInterruptsMask &= ~(1 << irq);
         }
         if (irq == 0) {
             ChangeClearPAD(handler == 0);
@@ -174,30 +174,30 @@ static IntrCallback setIntr(s32 irq, IntrCallback handler) {
 
 /* stopIntr (LIBETC intr.c static, vtable slot 0x800A25F0) */
 static intrEnv_t *stopIntr(void) {
-    if (!D_800A1578.interruptsInitialized) {
+    if (!intrEnv.interruptsInitialized) {
         return 0;
     }
     EnterCriticalSection();
-    D_800A1578.savedMask = *g_InterruptMask;
-    D_800A1578.savedPcr = *d_pcr;
+    intrEnv.savedMask = *g_InterruptMask;
+    intrEnv.savedPcr = *d_pcr;
     *i_stat = (*g_InterruptMask = 0);
     *d_pcr &= 0x77777777;
     ResetEntryInt();
-    D_800A1578.interruptsInitialized = 0;
-    return &D_800A1578;
+    intrEnv.interruptsInitialized = 0;
+    return &intrEnv;
 }
 
 /* restartIntr (LIBETC intr.c static, vtable slot 0x800A25F8) */
 static intrEnv_t *restartIntr(void) {
-    if (D_800A1578.interruptsInitialized) {
+    if (intrEnv.interruptsInitialized) {
         return 0;
     }
-    HookEntryInt(D_800A1578.buf);
-    D_800A1578.interruptsInitialized = 1;
-    *g_InterruptMask = D_800A1578.savedMask;
-    *d_pcr = D_800A1578.savedPcr;
+    HookEntryInt(intrEnv.buf);
+    intrEnv.interruptsInitialized = 1;
+    *g_InterruptMask = intrEnv.savedMask;
+    *d_pcr = intrEnv.savedPcr;
     ExitCriticalSection();
-    return &D_800A1578;
+    return &intrEnv;
 }
 
 /* memclr (LIBETC intr.c) */

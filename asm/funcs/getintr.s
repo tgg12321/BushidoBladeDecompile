@@ -1,7 +1,7 @@
 glabel getintr
     /* 71028 80080828 D0FFBD27 */  addiu      $sp, $sp, -0x30
-    /* 7102C 8008082C 0A80033C */  lui        $v1, %hi(D_800A147C)
-    /* 71030 80080830 7C14638C */  lw         $v1, %lo(D_800A147C)($v1)
+    /* 7102C 8008082C 0A80033C */  lui        $v1, %hi(libcd_CDRegister0)
+    /* 71030 80080830 7C14638C */  lw         $v1, %lo(libcd_CDRegister0)($v1)
     /* 71034 80080834 01000224 */  addiu      $v0, $zero, 0x1
     /* 71038 80080838 2800BFAF */  sw         $ra, 0x28($sp)
     /* 7103C 8008083C 2400B1AF */  sw         $s1, 0x24($sp)
@@ -33,8 +33,8 @@ glabel getintr
     /* 7109C 8008089C 21800000 */   addu      $s0, $zero, $zero
     /* 710A0 800808A0 1800A327 */  addiu      $v1, $sp, 0x18
   .L800808A4:
-    /* 710A4 800808A4 0A80023C */  lui        $v0, %hi(D_800A147C)
-    /* 710A8 800808A8 7C14428C */  lw         $v0, %lo(D_800A147C)($v0)
+    /* 710A4 800808A4 0A80023C */  lui        $v0, %hi(libcd_CDRegister0)
+    /* 710A8 800808A8 7C14428C */  lw         $v0, %lo(libcd_CDRegister0)($v0)
     /* 710AC 800808AC 00000000 */  nop
     /* 710B0 800808B0 00004290 */  lbu        $v0, 0x0($v0)
     /* 710B4 800808B4 00000000 */  nop
@@ -63,8 +63,8 @@ glabel getintr
     /* 71108 80080908 FCFF4014 */  bnez       $v0, .L800808FC
     /* 7110C 8008090C 00000000 */   nop
   .L80080910:
-    /* 71110 80080910 0A80033C */  lui        $v1, %hi(D_800A147C)
-    /* 71114 80080914 7C14638C */  lw         $v1, %lo(D_800A147C)($v1)
+    /* 71110 80080910 0A80033C */  lui        $v1, %hi(libcd_CDRegister0)
+    /* 71114 80080914 7C14638C */  lw         $v1, %lo(libcd_CDRegister0)($v1)
     /* 71118 80080918 01000224 */  addiu      $v0, $zero, 0x1
     /* 7111C 8008091C 000062A0 */  sb         $v0, 0x0($v1)
     /* 71120 80080920 0A80023C */  lui        $v0, %hi(libcd_CDRegister3)
@@ -286,8 +286,8 @@ glabel getintr
     /* 71434 80080C34 FBFF8614 */  bne        $a0, $a2, .L80080C24
     /* 71438 80080C38 01006324 */   addiu     $v1, $v1, 0x1
   .L80080C3C:
-    /* 7143C 80080C3C 0A80023C */  lui        $v0, %hi(D_800A147C)
-    /* 71440 80080C40 7C14428C */  lw         $v0, %lo(D_800A147C)($v0)
+    /* 7143C 80080C3C 0A80023C */  lui        $v0, %hi(libcd_CDRegister0)
+    /* 71440 80080C40 7C14428C */  lw         $v0, %lo(libcd_CDRegister0)($v0)
     /* 71444 80080C44 00000000 */  nop
     /* 71448 80080C48 000040A0 */  sb         $zero, 0x0($v0)
     /* 7144C 80080C4C 0A80033C */  lui        $v1, %hi(libcd_CDRegister3)

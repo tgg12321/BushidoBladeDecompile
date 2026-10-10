@@ -60,8 +60,8 @@ glabel _addque2
     /* 6DCD8 8007D4D8 19004014 */  bnez       $v0, .L8007D540
     /* 6DCDC 8007D4DC 00000000 */   nop
   .L8007D4E0:
-    /* 6DCE0 8007D4E0 0A80033C */  lui        $v1, %hi(D_8009BF48)
-    /* 6DCE4 8007D4E4 48BF638C */  lw         $v1, %lo(D_8009BF48)($v1)
+    /* 6DCE0 8007D4E0 0A80033C */  lui        $v1, %hi(GPU_STATUS)
+    /* 6DCE4 8007D4E4 48BF638C */  lw         $v1, %lo(GPU_STATUS)($v1)
     /* 6DCE8 8007D4E8 0004043C */  lui        $a0, (0x4000000 >> 16)
   .L8007D4EC:
     /* 6DCEC 8007D4EC 0000628C */  lw         $v0, 0x0($v1)

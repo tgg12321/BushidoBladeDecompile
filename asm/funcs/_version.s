@@ -1,7 +1,7 @@
 glabel _version
     /* 6E608 8007DE08 0010033C */  lui        $v1, (0x10000007 >> 16)
-    /* 6E60C 8007DE0C 0A80023C */  lui        $v0, %hi(D_8009BF48)
-    /* 6E610 8007DE10 48BF428C */  lw         $v0, %lo(D_8009BF48)($v0)
+    /* 6E60C 8007DE0C 0A80023C */  lui        $v0, %hi(GPU_STATUS)
+    /* 6E610 8007DE10 48BF428C */  lw         $v0, %lo(GPU_STATUS)($v0)
     /* 6E614 8007DE14 07006334 */  ori        $v1, $v1, (0x10000007 & 0xFFFF)
     /* 6E618 8007DE18 000043AC */  sw         $v1, 0x0($v0)
     /* 6E61C 8007DE1C 0A80053C */  lui        $a1, %hi(GPU_DATA)
@@ -13,8 +13,8 @@ glabel _version
     /* 6E634 8007DE34 02000324 */  addiu      $v1, $zero, 0x2
     /* 6E638 8007DE38 1D004310 */  beq        $v0, $v1, .L8007DEB0
     /* 6E63C 8007DE3C 00E1033C */   lui       $v1, (0xE1001000 >> 16)
-    /* 6E640 8007DE40 0A80023C */  lui        $v0, %hi(D_8009BF48)
-    /* 6E644 8007DE44 48BF428C */  lw         $v0, %lo(D_8009BF48)($v0)
+    /* 6E640 8007DE40 0A80023C */  lui        $v0, %hi(GPU_STATUS)
+    /* 6E644 8007DE44 48BF428C */  lw         $v0, %lo(GPU_STATUS)($v0)
     /* 6E648 8007DE48 00000000 */  nop
     /* 6E64C 8007DE4C 0000428C */  lw         $v0, 0x0($v0)
     /* 6E650 8007DE50 00106334 */  ori        $v1, $v1, (0xE1001000 & 0xFFFF)
@@ -23,8 +23,8 @@ glabel _version
     /* 6E65C 8007DE5C 0000A2AC */  sw         $v0, 0x0($a1)
     /* 6E660 8007DE60 0A80023C */  lui        $v0, %hi(GPU_DATA)
     /* 6E664 8007DE64 44BF428C */  lw         $v0, %lo(GPU_DATA)($v0)
-    /* 6E668 8007DE68 0A80033C */  lui        $v1, %hi(D_8009BF48)
-    /* 6E66C 8007DE6C 48BF638C */  lw         $v1, %lo(D_8009BF48)($v1)
+    /* 6E668 8007DE68 0A80033C */  lui        $v1, %hi(GPU_STATUS)
+    /* 6E66C 8007DE6C 48BF638C */  lw         $v1, %lo(GPU_STATUS)($v1)
     /* 6E670 8007DE70 0000428C */  lw         $v0, 0x0($v0)
     /* 6E674 8007DE74 0000628C */  lw         $v0, 0x0($v1)
     /* 6E678 8007DE78 00000000 */  nop
@@ -48,8 +48,8 @@ glabel _version
     /* 6E6B4 8007DEB4 08004010 */  beqz       $v0, .L8007DED8
     /* 6E6B8 8007DEB8 0009043C */   lui       $a0, (0x9000001 >> 16)
     /* 6E6BC 8007DEBC 01008434 */  ori        $a0, $a0, (0x9000001 & 0xFFFF)
-    /* 6E6C0 8007DEC0 0A80033C */  lui        $v1, %hi(D_8009BF48)
-    /* 6E6C4 8007DEC4 48BF638C */  lw         $v1, %lo(D_8009BF48)($v1)
+    /* 6E6C0 8007DEC0 0A80033C */  lui        $v1, %hi(GPU_STATUS)
+    /* 6E6C4 8007DEC4 48BF638C */  lw         $v1, %lo(GPU_STATUS)($v1)
     /* 6E6C8 8007DEC8 04000224 */  addiu      $v0, $zero, 0x4
     /* 6E6CC 8007DECC 000064AC */  sw         $a0, 0x0($v1)
     /* 6E6D0 8007DED0 B7F70108 */  j          .L8007DEDC

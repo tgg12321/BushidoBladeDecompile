@@ -497,10 +497,10 @@ extern void func_800422BC(s32, s32, s32, s32);
 extern void func_80042478(s32);
 
 /* 0x18-byte rows: four colour words, the angle word, a parameter */
-extern s32 StageLight[][6];
+extern s32 D_80094E48[][6];
 
 void func_800421C8(s32 a0) {
-    s32 *p = StageLight[a0];
+    s32 *p = D_80094E48[a0];
     s32 yaw;
     s32 pitch;
     func_800422BC(a0, *p++, 0, 0);

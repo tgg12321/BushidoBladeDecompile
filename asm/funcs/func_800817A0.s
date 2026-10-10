@@ -1,6 +1,6 @@
 glabel CD_flush
-    /* 71FA0 800817A0 0A80033C */  lui        $v1, %hi(D_800A147C)
-    /* 71FA4 800817A4 7C14638C */  lw         $v1, %lo(D_800A147C)($v1)
+    /* 71FA0 800817A0 0A80033C */  lui        $v1, %hi(libcd_CDRegister0)
+    /* 71FA4 800817A4 7C14638C */  lw         $v1, %lo(libcd_CDRegister0)($v1)
     /* 71FA8 800817A8 01000224 */  addiu      $v0, $zero, 0x1
     /* 71FAC 800817AC 000062A0 */  sb         $v0, 0x0($v1)
     /* 71FB0 800817B0 0A80023C */  lui        $v0, %hi(libcd_CDRegister3)
@@ -13,8 +13,8 @@ glabel CD_flush
     /* 71FCC 800817CC 01000424 */   addiu     $a0, $zero, 0x1
     /* 71FD0 800817D0 07000324 */  addiu      $v1, $zero, 0x7
   .L800817D4:
-    /* 71FD4 800817D4 0A80023C */  lui        $v0, %hi(D_800A147C)
-    /* 71FD8 800817D8 7C14428C */  lw         $v0, %lo(D_800A147C)($v0)
+    /* 71FD4 800817D4 0A80023C */  lui        $v0, %hi(libcd_CDRegister0)
+    /* 71FD8 800817D8 7C14428C */  lw         $v0, %lo(libcd_CDRegister0)($v0)
     /* 71FDC 800817DC 00000000 */  nop
     /* 71FE0 800817E0 000044A0 */  sb         $a0, 0x0($v0)
     /* 71FE4 800817E4 0A80023C */  lui        $v0, %hi(libcd_CDRegister3)
@@ -38,8 +38,8 @@ glabel CD_flush
     /* 72028 80081828 961420A0 */  sb         $zero, %lo(D_800A1496)($at)
     /* 7202C 8008182C 0A80023C */  lui        $v0, %hi(D_800A1496)
     /* 72030 80081830 96144290 */  lbu        $v0, %lo(D_800A1496)($v0)
-    /* 72034 80081834 0A80043C */  lui        $a0, %hi(D_800A147C)
-    /* 72038 80081838 7C14848C */  lw         $a0, %lo(D_800A147C)($a0)
+    /* 72034 80081834 0A80043C */  lui        $a0, %hi(libcd_CDRegister0)
+    /* 72038 80081838 7C14848C */  lw         $a0, %lo(libcd_CDRegister0)($a0)
     /* 7203C 8008183C 0A80033C */  lui        $v1, %hi(D_800A1494)
     /* 72040 80081840 94146324 */  addiu      $v1, $v1, %lo(D_800A1494)
     /* 72044 80081844 0A80013C */  lui        $at, %hi(D_800A1495)

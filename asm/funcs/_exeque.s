@@ -46,8 +46,8 @@ glabel _exeque
     /* 6DF84 8007D784 C80A020C */  jal        DMACallback
     /* 6DF88 8007D788 21280000 */   addu      $a1, $zero, $zero
   .L8007D78C:
-    /* 6DF8C 8007D78C 0A80043C */  lui        $a0, %hi(D_8009BF48)
-    /* 6DF90 8007D790 48BF848C */  lw         $a0, %lo(D_8009BF48)($a0)
+    /* 6DF8C 8007D78C 0A80043C */  lui        $a0, %hi(GPU_STATUS)
+    /* 6DF90 8007D790 48BF848C */  lw         $a0, %lo(GPU_STATUS)($a0)
     /* 6DF94 8007D794 00000000 */  nop
     /* 6DF98 8007D798 0000828C */  lw         $v0, 0x0($a0)
     /* 6DF9C 8007D79C 0004033C */  lui        $v1, (0x4000000 >> 16)

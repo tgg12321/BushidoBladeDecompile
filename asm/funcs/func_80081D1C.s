@@ -1,6 +1,6 @@
 glabel CD_getsector
-    /* 7251C 80081D1C 0A80023C */  lui        $v0, %hi(D_800A147C)
-    /* 72520 80081D20 7C14428C */  lw         $v0, %lo(D_800A147C)($v0)
+    /* 7251C 80081D1C 0A80023C */  lui        $v0, %hi(libcd_CDRegister0)
+    /* 72520 80081D20 7C14428C */  lw         $v0, %lo(libcd_CDRegister0)($v0)
     /* 72524 80081D24 0200063C */  lui        $a2, (0x20943 >> 16)
     /* 72528 80081D28 000040A0 */  sb         $zero, 0x0($v0)
     /* 7252C 80081D2C 0A80033C */  lui        $v1, %hi(libcd_CDRegister3)
@@ -31,8 +31,8 @@ glabel CD_getsector
     /* 72590 80081D90 BC14638C */  lw         $v1, %lo(D_800A14BC)($v1)
     /* 72594 80081D94 2528A200 */  or         $a1, $a1, $v0
     /* 72598 80081D98 000065AC */  sw         $a1, 0x0($v1)
-    /* 7259C 80081D9C 0A80033C */  lui        $v1, %hi(D_800A147C)
-    /* 725A0 80081DA0 7C14638C */  lw         $v1, %lo(D_800A147C)($v1)
+    /* 7259C 80081D9C 0A80033C */  lui        $v1, %hi(libcd_CDRegister0)
+    /* 725A0 80081DA0 7C14638C */  lw         $v1, %lo(libcd_CDRegister0)($v1)
   .L80081DA4:
     /* 725A4 80081DA4 00000000 */  nop
     /* 725A8 80081DA8 00006290 */  lbu        $v0, 0x0($v1)
