@@ -5861,7 +5861,634 @@ def test_layer2_asm_addr_after_glabel() -> None:
     eq("addresses: another function's file gives nothing", layer2._asm_addr(text, "D_8007E08C"), None)
 
 
+@contextlib.contextmanager
+def _data_wave_tree(files, rows):
+    import sys
+    from unittest.mock import patch
+    import data_wave as dw
+    (dw.ROOT / "tmp").mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=dw.ROOT / "tmp") as td:
+        root = Path(td)
+        for rel, text in files.items():
+            p = root / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(text, encoding="utf-8", newline="\n")
+        manifest = root / "rows.csv"
+        manifest.write_text("addr,proposed_name,verdict,kind,current_names\n" + rows, encoding="utf-8")
+        with patch.object(dw, "ROOT", root), patch.object(sys, "argv", [
+                "data_wave", "--manifest-csv", str(manifest), "--apply"]), \
+                patch.object(dw.subprocess, "run") as run:
+            run.return_value.returncode = 0
+            run.return_value.stdout = ""
+            yield dw, root
+
+
+def _data_wave_fixture_keycheck(files, rows):
+    """Apply a wave and check its manifest with in-memory Git reads (no Git writes)."""
+    import re
+    import sys
+    import naming_keycheck as nk
+    from unittest.mock import patch
+    with _data_wave_tree(files, rows) as (dw, root):
+        manifest = root / "wave.json"
+        sys.argv += ["--manifest", str(manifest)]
+        with contextlib.redirect_stdout(io.StringIO()):
+            eq("fixture wave applies", dw.main(), 0)
+        after = {rel: (root / rel).read_text(encoding="utf-8") for rel in files}
+        pairs = {old: op["new"] for op in json.loads(manifest.read_text())["ops"]
+                 for old in op["olds"]}
+        # Mirror the rebuilt map, which is ignored build output rather than a wave edit.
+        if "build/bb2.map" in after:
+            pat = re.compile(r"\b(" + "|".join(map(re.escape, pairs)) + r")\b")
+            after["build/bb2.map"] = pat.sub(lambda m: pairs[m.group()], after["build/bb2.map"])
+
+        def git_read(*args, **kwargs):
+            if args[0] == "ls-tree":
+                return "\n".join(files)
+            if args[0] == "ls-files":
+                return "\n".join(files)
+            if args[0] == "grep":
+                tree = files if "HEAD" in args else after
+                pat = re.compile(r"\b(?:" + args[args.index("-E") + 1] + r")\b")
+                return "\n".join(("HEAD:" if tree is files else "") + p
+                                 for p, text in tree.items() if pat.search(text))
+            raise AssertionError(args)
+
+        output = io.StringIO()
+        with patch.object(nk, "ROOT", root), \
+                patch.object(nk, "show", lambda rev, p: (files if rev else after).get(p)), \
+                patch.object(nk, "load_tree_texts", lambda rev, names=(): files if rev else after), \
+                patch.object(nk, "git", git_read), patch.object(nk, "_is_macro", return_value=False), \
+                patch.object(nk, "changed_files", return_value=[("M", p) for p in files
+                             if files[p] != after[p] and not p.startswith("build/")]), \
+                patch.object(sys, "argv", ["keycheck", "--from-manifests", str(manifest)]), \
+                contextlib.redirect_stdout(output):
+            result = nk.main()
+        if result:
+            print(output.getvalue())
+        eq("fixture manifest accepted by keycheck", result, 0)
+
+
+def test_data_wave_fixture_p3w6() -> None:
+    offsets = ("3AC", "3B0", "3B4", "3B8", "3BC", "3C0")
+    files = {"named_syms.txt": "", "symbol_addrs.txt": "", "undefined_syms_auto.txt": ""}
+    rows = ""
+    for offset in offsets:
+        addr, old = "1F800" + offset, "fixture_scratchpad_ptr_" + offset
+        for reg in files:
+            files[reg] += f"{old} = 0x{addr};\n"
+        rows += f"0x{addr},D_{addr},CONFIRM\n"
+    _data_wave_fixture_keycheck(files, rows)
+
+
+def test_data_wave_fixture_p3w17() -> None:
+    files = {"named_syms.txt": "fixture_char_setup_tbl = 0x80011048;\n",
+             "undefined_syms_auto.txt": "",
+             "asm/data/7D920.data.s": "dlabel fixture_module_lamp\n/* 1 80011048 00000000 */ .word 0\n",
+             "src/main/31D3C.c": "extern int fixture_module_lamp;\nint *p = &fixture_module_lamp;\n"}
+    rows = "0x80011048,D_80011048,CONFIRM\n"
+    for offset in ("3AC", "3B0", "3B4", "3B8", "3BC", "3C0", "3C4", "3C8"):
+        addr = "1F800" + offset
+        files["undefined_syms_auto.txt"] += f"fixture_spad_{offset} = 0x{addr};\n"
+        rows += f"0x{addr},D_{addr},CONFIRM\n"
+    _data_wave_fixture_keycheck(files, rows)
+
+
+def test_data_wave_fixture_p3w14() -> None:
+    files = {"named_syms.txt": "", "symbol_addrs.txt": "", "undefined_syms_auto.txt": "",
+             "asm/data/module.s": ""}
+    rows = ""
+    for addr, old, new in (("80011050", "fixture_gpu_stat_reg", "fixture_gpu_port"),
+                           ("80011054", "fixture_cd_reg0", "fixture_cd_port"),
+                           ("80011058", "fixture_ings2_u16_buf_a1578", "fixture_interrupt_blob")):
+        for reg in ("named_syms.txt", "symbol_addrs.txt", "undefined_syms_auto.txt"):
+            files[reg] += f"{old} = 0x{addr};\nD_{addr} = 0x{addr};\n"
+        files["asm/data/module.s"] += f"dlabel D_{addr}\n/* 1 {addr} 00000000 */ .word 0\n"
+        rows += f"0x{addr},{new},CONFIRM\n"
+    _data_wave_fixture_keycheck(files, rows)
+
+
+def test_data_wave_fixture_p3w9() -> None:
+    files = {"named_syms.txt": "fixture_str_build_date = 0x80011100;\n",
+             "symbol_addrs.txt": "fixture_str_build_date = 0x80011100;\n",
+             "src/main/6CF8.c": 'const char fixture_str_build_date[28] = "Fri Aug  7 22:26:32 1998\\n";\n',
+             "build/bb2.map": "    0x80011100 fixture_str_build_date\n",
+             "asm/data/93950.data.s": ""}
+    rows = "0x80011100,fixture_timestamp,CONFIRM\n"
+    for addr, word in (("80011104", "network"), ("80011108", "team"), ("8001110C", "vs"),
+                       ("80011110", "vscpu"), ("80011114", "story")):
+        files["named_syms.txt"] += f"fixture_str_mode_{word}_{addr} = 0x{addr};\n"
+        files["asm/data/93950.data.s"] += f"dlabel D_{addr}\n/* 1 {addr} 00000000 */ .word 0\n"
+        rows += f"0x{addr},fixture_str_{word}_{addr},CONFIRM\n"
+    _data_wave_fixture_keycheck(files, rows)
+    # The fixture's INCLUDE_RODATA row intentionally refuses, as permitted by C9.
+    test_data_wave_held_rename()
+
+
+def test_keycheck_registry_address_proof() -> None:
+    import naming_keycheck as nk
+    old = "alias = 0x80010000;\n"
+    note = "/* data-wave 2026-10-09: alias = 0x80010000 retired; target is now object-defined */\n"
+    for files in ({}, {"named_syms.txt": "target = 0x80010004;\n"},
+                  {"asm/data/a.s": "dlabel target\n/* 1 80010004 00000000 */ .word 0\n"},
+                  {"src/main/a.c": "int target = 0;\n"},
+                  {"src/main/a.c": "extern int target;\n", "build/bb2.map": "  0x80010000 target\n"},
+                  {"src/main/a.c": "int target = 0;\n", "build/bb2.map": "  0x80010004 target\n"},
+                  {"src/main/a.c": "int data[target];\n", "build/bb2.map": "  0x80010000 target\n"},
+                  {"src/main/a.c": "#define target 1\nint data;\n", "build/bb2.map": "  0x80010000 target\n"},
+                  {"named_syms.txt": "target = 0x80010000;\n",
+                   "symbol_addrs.txt": "target = 0x80010004;\n"}):
+        for output in ("", note):
+            check("unknown/different address rejects registry retirement",
+                  nk.registry_ok(old, output, "undefined_syms_auto.txt", {"alias": "target"},
+                                 files.get, list(files)) is not None)
+    for files in ({"named_syms.txt": "target = 0x80010000;\n"},
+                  {"symbol_addrs.txt": "target = 0x80010000;\n"},
+                  {"asm/data/a.s": "dlabel target\n/* 1 80010000 00000000 */ .word 0\n"},
+                  {"asm/funcs/a.s": "glabel target\n/* 1 80010000 00000000 */ nop\n"},
+                  {"src/main/a.c": "int target = 0;\n", "build/bb2.map": "  0x80010000 target\n"},
+                  {"src/main/a.c": "int target = 0;\n",
+                   "asm/data/a.s": "dlabel target\n/* 1 80010000 00000000 */ .word 0\n"}):
+        for output in ("", note):
+            eq("same address accepts registry retirement",
+               nk.registry_ok(old, output, "undefined_syms_auto.txt", {"alias": "target"},
+                              files.get, list(files)), None)
+    files = {"src/main/a.c": "volatile int fixture_gpu_port = 0;\n",
+             "build/bb2.map": "  0x80011050 fixture_gpu_port\n"}
+    note = "/* data-wave 2026-10-09: fixture_gpu_port = 0x80011050 retired; fixture_gpu_port is now object-defined */\n"
+    eq("non-auto destination's own object alias accepted",
+       nk.registry_ok("fixture_gpu_port = 0x80011050;\n", note, "named_syms.txt",
+                      {"old": "fixture_gpu_port"}, files.get, list(files)), None)
+
+
+def test_data_wave_scratchpad() -> None:
+    import data_wave as dw
+    for addr in ("0x1F800000", "0x1F8003AC", "0x1F8003FF", "0x80000000", "0x8FFFFFFF"):
+        check("data wave accepts " + addr, bool(dw.ADDR.fullmatch(addr)))
+    for addr in ("0x1F7FFFFF", "0x1F800400", "0x90000000", "0x00000000"):
+        check("data wave rejects " + addr, not dw.ADDR.fullmatch(addr))
+    with _data_wave_tree({"undefined_syms_auto.txt": "fixture_spad = 0x1F8003AC;\n",
+                          "src/main/a.c": "extern int fixture_spad;\n"},
+                         "0x1F8003AC,D_1F8003AC,CONFIRM\n") as (dw, root):
+        with contextlib.redirect_stdout(io.StringIO()):
+            eq("scratchpad wave applies", dw.main(), 0)
+        check("scratchpad auto name", "D_1F8003AC =" in (root / "undefined_syms_auto.txt").read_text())
+
+
+def test_data_wave_dlabel_only() -> None:
+    files = {"named_syms.txt": "fixture_setup = 0x80011048;\n",
+             "asm/data/module.s": "dlabel fixture_earlier\n/* 1 80011040 00000000 */ .word 0\n"
+                                  "dlabel fixture_module_lamp\n/* 5 80011048 00000000 */ .word 0\n",
+             "src/main/a.c": "extern int fixture_module_lamp;\n"}
+    with _data_wave_tree(files, "0x80011048,D_80011048,CONFIRM\n") as (dw, root):
+        with contextlib.redirect_stdout(io.StringIO()):
+            eq("dlabel-only wave applies", dw.main(), 0)
+        check("all dlabel aliases retired", "dlabel D_80011048" in (root / "asm/data/module.s").read_text())
+        check("dlabel reference retired", "fixture_module_lamp" not in (root / "src/main/a.c").read_text())
+        import naming_keycheck as nk
+        from unittest.mock import patch
+        with patch.object(nk, "show", lambda rev, path: files.get(path)), \
+                patch.object(nk, "load_tree_texts", return_value=files), \
+                patch.object(nk, "git", return_value="asm/data/module.s\n"), \
+                patch.object(nk, "_is_macro", return_value=False):
+            nk._ADDRESS_INDEXES.clear()
+            eq("keycheck finds module data label", nk.base_addr("HEAD", "fixture_module_lamp"), "80011048")
+
+
+def test_data_wave_object_target() -> None:
+    for definition in ({"src/main/a.c": "int D_80011044 = 0;\n"},
+                       {"asm/data/a.s": "dlabel D_80011044\n/* 1 80011044 00000000 */ .word 0\n"}):
+        files = {"named_syms.txt": "old = 0x80011044;\nD_80011044 = 0x80011044;\n", **definition}
+        with _data_wave_tree(files, "0x80011044,D_80011044,CONFIRM\n") as (dw, root):
+            with contextlib.redirect_stdout(io.StringIO()):
+                eq("object target applies", dw.main(), 0)
+            check("object target has no registry assignment",
+                  not any(dw.SYM_LINE.match(line) for line in (root / "named_syms.txt").read_text().splitlines()))
+
+
+def test_data_wave_cross_registry() -> None:
+    files = {"undefined_syms_auto.txt": "fixture_poll = 0x80011118;\n",
+             "named_syms.txt": "fixture_tick = 0x80011118;\nnew_counter = 0x80011118;\n"}
+    with _data_wave_tree(files, "0x80011118,new_counter,CONFIRM\n") as (dw, root):
+        with contextlib.redirect_stdout(io.StringIO()):
+            eq("cross-registry wave applies", dw.main(), 0)
+        lines = [line for rel in dw.REGISTRIES if (root / rel).exists()
+                 for line in (root / rel).read_text().splitlines() if dw.SYM_LINE.match(line)]
+        eq("one cross-registry definition", len(lines), 1)
+    _data_wave_fixture_keycheck({"undefined_syms_auto.txt": "fixture_poll = 0x80011118;\n",
+                                 "named_syms.txt": "fixture_tick = 0x80011118;\n"},
+                                "0x80011118,new_counter,CONFIRM\n")
+
+
+def test_data_wave_held_rename() -> None:
+    files = {"named_syms.txt": "fixture_str_build_date = 0x8001111C;\n",
+             "src/main/a.c": 'const char fixture_str_build_date[4] = "abc";\n',
+             "asm/data/a.s": "dlabel D_80011120\n/* 1 80011120 00000000 */ .word 0\n"}
+    with _data_wave_tree(files, "0x8001111C,build_date,CONFIRM\n0x80011120,data_word,CONFIRM\n") as (dw, root):
+        with contextlib.redirect_stdout(io.StringIO()):
+            eq("C-defined and auto-dlabel rename applies", dw.main(), 0)
+        check("C definition renamed", "char build_date" in (root / "src/main/a.c").read_text())
+        check("auto dlabel renamed", "dlabel data_word" in (root / "asm/data/a.s").read_text())
+    files = {"named_syms.txt": "old = 0x8001111C;\n",
+             "src/main/a.c": 'INCLUDE_RODATA("asm/rodata", old);\n',
+             "asm/rodata/old.s": "dlabel old\n/* 1 8001111C 00000000 */ .word 0\n"}
+    with _data_wave_tree(files, "0x8001111C,new,CONFIRM\n") as (dw, root):
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            try:
+                dw.main()
+            except SystemExit as e:
+                eq("INCLUDE_RODATA fails closed", e.code, 2)
+            else:
+                check("INCLUDE_RODATA refuses", False)
+        check("refusal names required file move", "asm/rodata/old.s" in err.getvalue())
+        for rel, text in files.items():
+            eq("refusal leaves " + rel + " untouched", (root / rel).read_text(), text)
+
+
+def test_data_wave_standalone() -> None:
+    import shutil
+    import subprocess
+    import sys
+    import data_wave as dw
+    scratch = Path(__file__).resolve().parent.parent / "tmp"
+    scratch.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=scratch) as td:
+        root = Path(td)
+        (root / "tools").mkdir()
+        (root / "engine").mkdir()
+        for name in ("data_wave.py", "naming_wave.py", "classify_inline_asm.py"):
+            shutil.copyfile(dw.ROOT / "tools" / name, root / "tools" / name)
+        for name in ("__init__.py", "layer2.py", "inlineasm.py"):
+            shutil.copyfile(dw.ROOT / "engine" / name, root / "engine" / name)
+        (root / "src").mkdir()
+        (root / "src/a.c").write_text("int fixture_standalone = 1;\n", encoding="utf-8")
+        (root / "named_syms.txt").write_text("fixture_standalone = 0x80011000;\n", encoding="utf-8")
+        manifest = root / "rows.csv"
+        manifest.write_text("addr,proposed_name\n0x80011000,fixture_standalone_new\n", encoding="utf-8")
+        env = dict(os.environ)
+        env.pop("PYTHONPATH", None)
+        result = subprocess.run([sys.executable, "tools/data_wave.py", "--manifest-csv", str(manifest)],
+                                cwd=root, env=env, capture_output=True, text=True)
+        eq("standalone data_wave imports engine", result.returncode, 0)
+        if result.returncode:
+            print(result.stderr)
+
+
+def test_data_wave_tentative_definitions() -> None:
+    import data_wave as dw
+    import naming_keycheck as nk
+    eq("tentative definition is discarded COMMON", dw.c_data_names("int fixture_common;\n"), set())
+    eq("disabled initialized definitions ignored", dw.c_data_names(
+        "#if 0\nint fixture_disabled = 1;\n#endif\n"
+        "#ifdef NON_MATCHING\nint fixture_nonmatching = 1;\n#endif\n"), set())
+    files = {"named_syms.txt": "fixture_common_alias = 0x80011000;\n",
+             "src/main/a.c": "int fixture_common_alias;\n",
+             "build/bb2.map": "Discarded input sections\n  0x80011000 fixture_common_alias\n"
+                               "Linker script and memory map\n"}
+    _data_wave_fixture_keycheck(files, "0x80011000,fixture_common_new,CONFIRM\n")
+    with _data_wave_tree(files, "0x80011000,fixture_common_new,CONFIRM\n") as (dw, root):
+        with contextlib.redirect_stdout(io.StringIO()):
+            dw.main()
+        check("COMMON keeps its linker assignment", "fixture_common_new =" in (root / "named_syms.txt").read_text())
+    proof = {"src/main/a.c": "int fixture_common_new;\n",
+             "build/bb2.map": "  0x80011000 fixture_common_new\n"}
+    check("COMMON plus map is not C object proof", nk.registry_ok(
+        "fixture_common_alias = 0x80011000;\n", "", "named_syms.txt",
+        {"fixture_common_alias": "fixture_common_new"}, proof.get, list(proof)) is not None)
+
+
+def test_data_wave_curated_dedupe() -> None:
+    files = {"named_syms.txt": "fixture_curated = 0x80011000; /* curated evidence */\n",
+             "symbol_addrs.txt": "fixture_splat = 0x80011000; // splat evidence\n",
+             "undefined_syms_auto.txt": "fixture_auto = 0x80011000;\n"}
+    rows = "0x80011000,fixture_curated_new,CONFIRM\n"
+    _data_wave_fixture_keycheck(files, rows)
+    with _data_wave_tree(files, rows) as (dw, root):
+        with contextlib.redirect_stdout(io.StringIO()):
+            dw.main()
+        for rel, note in (("named_syms.txt", "curated evidence"), ("symbol_addrs.txt", "splat evidence")):
+            text = (root / rel).read_text()
+            check("curated line and note retained in " + rel, "fixture_curated_new =" in text and note in text)
+        check("auto duplicate removed", "=" not in (root / "undefined_syms_auto.txt").read_text())
+
+
+def test_data_wave_fictional_symbols() -> None:
+    import re
+    import data_wave as dw
+    text = Path(__file__).read_text(encoding="utf-8")
+    start = text.index("def _data_wave_tree")
+    text = text[start:text.index("\ndef main()", start)]
+    check("fictional-symbol guard scans the actual test region", "def test_data_wave_fixture_p3w6" in text)
+    live = {name for names in dw.registry_defs().values() for name in names}
+    eq("C9 fixtures have no live named symbols", sorted(live & set(re.findall(r"\b[A-Za-z_]\w*\b", text))), [])
+
+
+def test_keycheck_index_once() -> None:
+    import naming_keycheck as nk
+    from unittest.mock import patch
+    files = {"named_syms.txt": "fixture_index_a = 0x80011000;\nfixture_index_b = 0x80011004;\n",
+             "src/main/a.c": "int fixture_index_a = 1;\nint fixture_index_b = 2;\n"}
+    nk._ADDRESS_INDEXES.clear()
+    with patch.object(nk, "load_tree_texts", return_value=files) as load:
+        for _ in range(50):
+            eq("indexed address a", nk.base_addr("fixture-rev", "fixture_index_a"), "80011000")
+            eq("indexed address b", nk.base_addr("fixture-rev", "fixture_index_b"), "80011004")
+        eq("each requested name indexed once", load.call_count, 2)
+    reads = []
+    def read_target(path):
+        reads.append(path)
+        return files.get(path)
+    pairs = {f"fixture_index_old_{i}": "fixture_index_a" for i in range(50)}
+    old = "".join(f"{name} = 0x80011000;\n" for name in pairs)
+    eq("many retired aliases share one target index", nk.registry_ok(
+        old, "", "undefined_syms_auto.txt", pairs, read_target, list(files)), None)
+    eq("target surfaces read once per index", len(reads), len(set(reads)))
+    nk._ADDRESS_INDEXES.clear()
+    bodies = {"src/a.c": "int fixture_batch = 1;\n", "named_syms.txt": "fixture_batch = 0x80011000;\n"}
+    nk._FILE_TEXTS.clear()
+    nk._INDEX_QUERIES.clear()
+    with patch.object(nk, "git", return_value="fixture-rev:src/a.c") as listing, \
+            patch.object(nk.subprocess, "run") as run:
+        def batch_read(*args, **kwargs):
+            from types import SimpleNamespace
+            output = b""
+            for query in kwargs["input"].decode().splitlines():
+                path = query.split(":", 1)[1]
+                if path in bodies:
+                    body = bodies[path].encode()
+                    output += b"deadbeef blob " + str(len(body)).encode() + b"\n" + body + b"\n"
+                else:
+                    output += query.encode() + b" missing\n"
+            return SimpleNamespace(stdout=output)
+        run.side_effect = batch_read
+        loaded = nk.load_tree_texts("fixture-rev", {"fixture_batch"})
+        eq("revision gets one candidate search", listing.call_count, 1)
+        eq("revision gets one batch read", run.call_count, 1)
+        for path, body in bodies.items():
+            eq("batch decodes " + path, loaded[path], body)
+
+
+def test_data_wave_retire_alias() -> None:
+    files = {"named_syms.txt": "fixture_false = 0x80011000; /* false evidence */\n"
+                               "fixture_true = 0x80011000; /* true evidence */\n",
+             "undefined_syms_auto.txt": "D_80011000 = 0x80011000;\n",
+             "src/main/a.c": "extern int fixture_false, fixture_true, D_80011000;\n"
+                             "int *fixture_use = &fixture_false;\n"}
+    rows = "0x80011000,fixture_true,CONFIRM,retire-alias,fixture_false\n"
+    _data_wave_fixture_keycheck(files, rows)
+    with _data_wave_tree(files, rows) as (dw, root):
+        with contextlib.redirect_stdout(io.StringIO()):
+            dw.main()
+        check("retire-alias keeps true line intact", "fixture_true = 0x80011000; /* true evidence */" in
+              (root / "named_syms.txt").read_text())
+        eq("retire-alias keeps auto alias intact", (root / "undefined_syms_auto.txt").read_text(),
+           files["undefined_syms_auto.txt"])
+        check("retired code spelling rewritten", "&fixture_true" in (root / "src/main/a.c").read_text())
+    bad = {**files, "named_syms.txt": "fixture_false = 0x80011000;\nfixture_true = 0x80011004;\n"}
+    with _data_wave_tree(bad, rows) as (dw, root), contextlib.redirect_stdout(io.StringIO()), \
+            contextlib.redirect_stderr(io.StringIO()):
+        try:
+            dw.main()
+        except SystemExit as e:
+            eq("retire-alias different-address survivor rejected", e.code, 2)
+        else:
+            check("retire-alias different-address refuses", False)
+
+
+def test_data_wave_commented_dedupe() -> None:
+    for survivor in ("D_80011200", "fixture_reset_rename_target"):
+        own = "D_80011200 = 0x80011200; /* survivor detail */\n" if survivor.startswith("D_") else ""
+        files = {"named_syms.txt": "fixture_home = 0x80011200; /* home detail */\n",
+                 "undefined_syms_auto.txt": "fixture_extra = 0x80011200; /* alias detail */\n" + own}
+        rows = f"0x80011200,{survivor},CONFIRM\n"
+        # Calls both actual main functions; Git tree reads/status alone are mocked.
+        _data_wave_fixture_keycheck(files, rows)
+        with _data_wave_tree(files, rows) as (dw, root):
+            with contextlib.redirect_stdout(io.StringIO()):
+                dw.main()
+            text = (root / "undefined_syms_auto.txt").read_text(encoding="utf-8")
+            check("dedupe kind matches survivor", dw.note_kind("0x80011200", survivor) + " 0x80011200:" in text)
+            check("dedupe names only disappearing alias", "retired name 'fixture_extra'" in text)
+            if own:
+                check("survivor duplicate cites its definition", "duplicate of named_syms.txt:1" in text)
+                check("survivor itself is not retired", "retired name 'D_80011200'" not in text)
+    with _data_wave_tree({"named_syms.txt": "fixture_empty = 0x80011200;\n",
+                          "undefined_syms_auto.txt": "fixture_empty_other = 0x80011200;\n"},
+                         "0x80011200,D_80011200,CONFIRM\n") as (dw, root):
+        with contextlib.redirect_stdout(io.StringIO()):
+            dw.main()
+        check("bare duplicate has no empty provenance", "preserved note:" not in
+              (root / "undefined_syms_auto.txt").read_text(encoding="utf-8"))
+    import naming_keycheck as nk
+    note = "/* duplicate of named_syms.txt:2 — preserved note: survivor detail */\n"
+    proof = {"named_syms.txt": "D_80011200 = 0x80011200;\n"}
+    check("duplicate note cannot cite a nonexistent definition", nk.registry_ok(
+        "D_80011200 = 0x80011200; /* survivor detail */\n", note, "undefined_syms_auto.txt",
+        {"fixture_before": "D_80011200"}, proof.get, list(proof)) is not None)
+
+
+def test_keycheck_lazy_candidates() -> None:
+    import naming_keycheck as nk
+    from unittest.mock import patch
+    files = {"named_syms.txt": "fixture_lazy = 0x80011200;\n",
+             "src/main/relevant.c": "int fixture_lazy = 1;\n",
+             "src/main/unrelated.c": "int fixture_unrelated = 1;\n"}
+    with _data_wave_tree(files, "0x80011200,D_80011200,CONFIRM\n") as (_, root), \
+            patch.object(nk, "ROOT", root), patch.object(nk, "git", return_value="src/main/relevant.c") as grep, \
+            patch.object(nk.nw, "read", wraps=nk.nw.read) as read:
+        nk._ADDRESS_INDEXES.clear()
+        nk._FILE_TEXTS.clear()
+        nk._INDEX_QUERIES.clear()
+        for _ in range(20):
+            nk.tree_address_index(None, {"fixture_lazy"})
+        eq("one candidate grep for repeated name", grep.call_count, 1)
+        paths = [call.args[0].relative_to(root).as_posix() for call in read.call_args_list]
+        check("unrelated source is never read", "src/main/unrelated.c" not in paths)
+        eq("relevant source is read once", paths.count("src/main/relevant.c"), 1)
+
+
+def test_data_wave_preflight_forms() -> None:
+    base = {"named_syms.txt": "fixture_bad = 0x80011200;\nfixture_kept = 0x80011200;\n"}
+    cases = [(base, "0x80011200,fixture_kept,CONFIRM,retire_alias,fixture_bad\n"),
+             (base, "0x80011200,fixture_kept,CONFIRM,retire-alias,fixture_bad\n"
+                    "0x80011200,fixture_bad,CONFIRM,retire-alias,fixture_kept\n"),
+             ({**base, "src/main/a.c": "int fixture_bad(void) { return 1; }\n"},
+              "0x80011200,fixture_kept,CONFIRM,retire-alias,fixture_bad\n"),
+             ({**base, "asm/data/a.s": "dlabel fixture_bad\n/* 1 80011200 00000000 */ .word 0\n"},
+              "0x80011200,fixture_kept,CONFIRM,retire-alias,fixture_bad\n"),
+             ({**base, "build/bb2.map": ".text 0x80011200 0x20\n  0x80011200 fixture_text_func\n"},
+              "0x80011200,fixture_kept,CONFIRM,retire-alias,fixture_bad\n")]
+    for files, rows in cases:
+        with _data_wave_tree(files, rows) as (dw, root), contextlib.redirect_stdout(io.StringIO()), \
+                contextlib.redirect_stderr(io.StringIO()):
+            try:
+                dw.main()
+            except SystemExit as e:
+                eq("invalid row form rejects before writes", e.code, 2)
+            else:
+                check("invalid row form must refuse", False)
+            for path, text in files.items():
+                eq("preflight refusal preserves " + path, (root / path).read_text(encoding="utf-8"), text)
+
+
+def test_keycheck_alias_auto_and_macro() -> None:
+    import sys
+    import naming_keycheck as nk
+    from unittest.mock import patch
+    for old, new, files in (("D_80011200", "func_80011200", {}),
+                            ("fixture_alias", "fixture_macro", {
+                             "named_syms.txt": "fixture_alias = 0x80011200;\nfixture_macro = 0x80011200;\n",
+                             "include/a.h": "#define fixture_macro 1\n"})):
+        with _data_wave_tree(files, "0x80011200,D_80011200,CONFIRM\n") as (_, root):
+            manifest = root / "forged.json"
+            manifest.write_text(json.dumps({"ops": [{"new": new, "olds": [old], "kind": "retire-alias"}]}),
+                                encoding="utf-8")
+            with patch.object(nk, "ROOT", root), \
+                    patch.object(nk, "load_tree_texts", lambda rev, names=(): files), \
+                    patch.object(nk, "changed_files", return_value=[]), patch.object(nk, "git", return_value=""), \
+                    patch.object(sys, "argv", ["keycheck", "--from-manifests", str(manifest)]), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                eq("forged auto/macro alias manifest fails closed", nk.main(), 1)
+
+
+def test_keycheck_pre_read_candidates() -> None:
+    import naming_keycheck as nk
+    from unittest.mock import patch
+    files = {"named_syms.txt": "fixture_cache_label = 0x80011300;\n",
+             "asm/data/module.s": "dlabel fixture_cache_label\n/* 1 80011300 00000000 */ .word 0\n",
+             "include/cache.h": "#define fixture_cache_macro 1\n"}
+    with _data_wave_tree(files, "0x80011300,D_80011300,CONFIRM\n") as (_, root), \
+            patch.object(nk, "ROOT", root), \
+            patch.object(nk, "git", return_value="asm/data/module.s\ninclude/cache.h"):
+        nk._ADDRESS_INDEXES.clear()
+        nk._FILE_TEXTS.clear()
+        nk._READ_TEXTS.clear()
+        nk._INDEX_QUERIES.clear()
+        for path in files:
+            nk.read_index_file(None, path)
+        index, macros = nk.tree_address_index(None, {"fixture_cache_label", "fixture_cache_macro"})
+        eq("pre-read label still enters proof index", index.get("fixture_cache_label"), {"80011300"})
+        check("pre-read macro still enters proof index", "fixture_cache_macro" in macros)
+
+
+def test_keycheck_real_git_round4() -> None:
+    """Unmocked Git in isolated temporary repositories; never changes the project Git tree."""
+    import subprocess
+    import sys
+    import data_wave as dw
+    import naming_keycheck as nk
+    from unittest.mock import patch
+    scratch = Path(__file__).resolve().parent.parent / "tmp"
+    scratch.mkdir(exist_ok=True)
+    for leave_old in (False, True):
+        with tempfile.TemporaryDirectory(dir=scratch) as td:
+            root = Path(td)
+            def run_git(*args):
+                return subprocess.run(["git", "-c", "user.name=Fixture", "-c",
+                        "user.email=fixture@example.invalid", "-c", "core.hooksPath=" + str(root / "no-hooks"), *args], cwd=root,
+                        check=True, capture_output=True, text=True).stdout.strip()
+            run_git("init", "--quiet")
+            files = {".gitignore": "tmp/\n",
+                     "named_syms.txt": "fixture_git_alias = 0x80011300; /* alias detail */\n",
+                     "undefined_syms_auto.txt": "D_80011300 = 0x80011300; /* auto detail */\n",
+                     "asm/data/module.s": "dlabel fixture_git_label\n/* 1 80011300 00000000 */ .word 0\n"}
+            if leave_old:
+                files["include/untouched.h"] = "extern int fixture_git_alias;\n"
+            for path, text in files.items():
+                p = root / path
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(text, encoding="utf-8", newline="\n")
+            run_git("add", ".")
+            run_git("commit", "--quiet", "-m", "fixture base")
+            base = run_git("rev-parse", "HEAD")
+            (root / "tmp").mkdir()
+            rows, manifest = root / "tmp/rows.csv", root / "tmp/wave.json"
+            rows.write_text("addr,proposed_name\n0x80011300,fixture_git_target\n", encoding="utf-8")
+            with patch.object(dw, "ROOT", root), patch.object(sys, "argv", [
+                    "data_wave", "--manifest-csv", str(rows), "--apply", "--manifest", str(manifest)]), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                eq("real-git fixture wave applies", dw.main(), 0)
+            if leave_old:
+                (root / "include/untouched.h").write_text(files["include/untouched.h"], encoding="utf-8")
+            def check_tree(rev):
+                argv = ["keycheck", "--base", base, "--from-manifests", str(manifest)]
+                if rev:
+                    argv += ["--new", rev]
+                output = io.StringIO()
+                with patch.object(nk, "ROOT", root), patch.object(sys, "argv", argv), \
+                        contextlib.redirect_stdout(output):
+                    result = nk.main()
+                eq("real-git " + ("revision" if rev else "working") + " wave result", result, int(leave_old))
+                if leave_old:
+                    check("untouched build spelling detected", "old name survives" in output.getvalue())
+            check_tree(None)
+            run_git("add", "-u")
+            run_git("commit", "--quiet", "-m", "fixture wave")
+            revision = run_git("rev-parse", "HEAD")
+            check_tree(revision)
+            for rev in (None, revision):
+                with patch.object(nk, "ROOT", root):
+                    try:
+                        options = ["--untracked"] if rev is None else []
+                        nk.git("grep", "-l", "-E", *options, "[", *([rev] if rev else []),
+                               "--", "asm", check=False)
+                    except subprocess.CalledProcessError as e:
+                        check("real grep errors reject instead of returning no hits", e.returncode > 1)
+                    else:
+                        check("real grep error must refuse", False)
+
+
+def test_data_wave_round4_edge_cases() -> None:
+    files = {"named_syms.txt": "fixture_array_alias = 0x80011300;\nD_80011300 = 0x80011300; /* array detail */\n",
+             "src/main/array.c": "int D_80011300[2][3] = {{0}};\n"}
+    with _data_wave_tree(files, "0x80011300,D_80011300,CONFIRM\n") as (dw, root):
+        with contextlib.redirect_stdout(io.StringIO()):
+            dw.main()
+        text = (root / "named_syms.txt").read_text(encoding="utf-8")
+        check("multi-bound array cites source", "duplicate of src/main/array.c:1" in text)
+        check("duplicate never cites map", "build/bb2.map" not in text)
+    with _data_wave_tree({}, "0x80011300,D_80011300,CONFIRM\n") as (dw, root), \
+            contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        try:
+            dw.main()
+        except SystemExit as e:
+            eq("empty identifier map refuses before edits", e.code, 2)
+        else:
+            check("empty identifier map must refuse", False)
+    import naming_keycheck as nk
+    old = "D_80011300 = 0x80011300; /* array detail */\n"
+    for home in ("../src/array.c", "build/bb2.map"):
+        proof = {home: "int D_80011300[2][3] = {{0}};\n"}
+        note = f"/* duplicate of {home}:1 — preserved note: array detail */\n"
+        check("duplicate home requires a build path", nk.registry_ok(old, note, "named_syms.txt",
+              {"fixture_old_array": "D_80011300"}, proof.get, list(proof)) is not None)
+
+
 def main() -> int:
+    test_data_wave_round4_edge_cases()
+    test_keycheck_pre_read_candidates()
+    test_keycheck_real_git_round4()
+    test_data_wave_commented_dedupe()
+    test_keycheck_lazy_candidates()
+    test_data_wave_preflight_forms()
+    test_keycheck_alias_auto_and_macro()
+    test_data_wave_standalone()
+    test_data_wave_tentative_definitions()
+    test_data_wave_curated_dedupe()
+    test_data_wave_fictional_symbols()
+    test_keycheck_index_once()
+    test_data_wave_retire_alias()
+    test_data_wave_scratchpad()
+    test_data_wave_dlabel_only()
+    test_data_wave_object_target()
+    test_data_wave_cross_registry()
+    test_data_wave_held_rename()
+    test_data_wave_fixture_p3w6()
+    test_data_wave_fixture_p3w17()
+    test_data_wave_fixture_p3w14()
+    test_data_wave_fixture_p3w9()
+    test_keycheck_registry_address_proof()
     test_datamodel()
     test_canonical()
     test_score()
