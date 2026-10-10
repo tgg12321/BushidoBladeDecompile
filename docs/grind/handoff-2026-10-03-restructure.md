@@ -118,23 +118,26 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      motion_*/draw_*, the 6CF8 / 368E4 analyzer names; eff_ClearInitFlag, snd_InitAndLoadCommonVab, g_listener_cam;
      KEEPs disp_Init / sys_Init / camera_CalcAngles; + prose 741468925, rule cite 8c605bbef); wave04 193a2e6d0 (26
      resets: 14 mode_handler_NN_*, the six held 2B344.c stage_* / game_GetCharData, six efc_*; + prose 0680e9c48).
-     Each: SHA1 == oracle, keycheck OK, fresh pre-apply reviews, post-apply R6 PASS. Scripts: tmp/p3w2..p3w4/
-     (apply.sh, gates.sh; wave04 had no data rows).
-   - **Next: wave05.** RESET candidate from wave04's R6: stage_SetCollisionAtPos_8003F420 (alias; its basis was a
-     call to the retired stage_SetCollision). Re-mine:
-     game_StageCleanup 0x80046EDC (cited contradiction was false), 0x800421C8 (needs a prefixed game-style name;
-     SetLightingAndBgColor FAILed), sys_GameInit KEEP ("sys" unexplained), 16 efc_spawn + 6 mode_handler_* keep
-     candidates (tmp/codex/c6-efc-mode-result.md), draw_bg_and_sprites, stage_ClearLighting (glabel
-     efc_buki_get_vertex_color), g_stage_* data, D_800A377B alias. Neutral by mining: the three D_800A3834 writers,
-     func_80046BF4. Remaining INFERRED by subsystem: game_, get_/set_, mario_, ... (census tier INFERRED).
+     Waves 05-14 (2026-10-08): 7500940f8, b888dd00d, cd488024d, 68effdb2b, a1b07908e, 01dff9184, 7966688e7,
+     3aed6ff51, 8a74ab6cd, 6a068d226, each with a `format: waveNN follow-up` prose commit. All 58 INFERRED
+     functions are decided; wave11 named 18 types; waves 12-14 are data (resets, Sony/SOTN statics).
+     Each: SHA1 == oracle, keycheck OK, fresh pre-apply reviews, post-apply R6 PASS. Scripts: tmp/p3wNN/
+     (apply.sh, gates.sh; data-only template tmp/p3w13, functions + types tmp/p3w11).
+   - **Next: wave15** (data, game-side names an earlier inventory called KEEP-CANDIDATE: 62 RESET + 50 KEEP
+     rows mined in tmp/p3w15/, in pre-apply review). Held: GPU_STATUS 0x8009BF48 and libcd_CDRegister0
+     0x800A147C (data_wave's "now object-defined" note fails keycheck C9(c)); intrEnv 0x800A1578 (name already
+     in the tree); CD_ReadCallbackFunc (SOTN and psyz disagree). Waiting on C5: type FIELD-FIX rows and member
+     names (tmp/codex/c6-type-names*-result.md), then C9.
    - Wave mechanics learned: verify-oracle --rebuild needs --allow-dirty on the applied tree; a FAILed row is dropped
      or re-mined (a fresh reviewer per round); PASS-row evidence fixes from a reviewer are applied before commit.
    - Prose debt (follow-up commits): docs/engine/*.md cite retired names (list in wave03's R6, commit 741468925 body);
      locals named after reset claims (17AFC.c playerData, 368E4.c player); ledger stubs memory/grind/_completed/*.json
      keep old func names (naming_wave moves only layer2.jsonl: tool-scope question).
    - Codex lane (`tmp/codex/backlog.md`): C1 3353d059f, C3 212fb353c, C7 43f758f31 (naming_wave own-file P4)
-     landed; C2 / C4 / C6 research done; C5 (keycheck per-scope pairs, codex/keycheck-scoped-pairs) in review
-     round 4; when it lands, update naming-bar.md:85 / :118 (members / locals limits). The stale May
+     landed; C2 / C4 / C6 / C10-C12 research done (tmp/codex/c*-result.md); C5 (keycheck per-scope pairs,
+     codex/keycheck-scoped-pairs) failed review rounds 4-13 on parser holes (verdicts in
+     tmp/codex/reviews/keycheck-scoped-pairs.jsonl); round 14 moves the local-pair binding proof to a cc1
+     differential compile. When it lands, update naming-bar.md step 4 and its last line (members / locals limits). The stale May
      ~/.codex/rules/default.rules (allow rules incl. `make` in main) was moved aside; read-only questions
      via `codex_worker.py research`.
    - Codex scope (owner 2026-10-07): keep Codex out of the main working tree; containment against a rogue
