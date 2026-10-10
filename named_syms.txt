@@ -1770,13 +1770,13 @@ D_800A37B6                                    = 0x800A37B6;  /* data-wave 2026-1
 /* === code6cac.c misc state (2026-05-17) -- 5 highs === */
 D_800A30FD                                       = 0x800A30FD;  /* caches D_8008E5A8[(s8)D_80102778.unk_4[1]] for func_8001D790's reload test (pair of D_800A30FC at -1) */  /* data-wave 2026-10-08: was g_char_pose_id_p2 */
 D_800A3778                                  = 0x800A3778;  /* stores func_800472B0()'s return (&D_800EEDD0); no reader */  /* data-wave 2026-10-07: was g_cam_bone_data_cached */
-g_char_struct_p1_field_6A                               = 0x80101F32;  /* per-char field +0x6A (u16; mode == 0x11 check) */
-g_char_struct_p1_field_FC                               = 0x80101FC4;  /* per-char field +0xFC; set to a0_val + passed to func_8003E6A0 */
+D_80101F32                               = 0x80101F32;  /* per-char field +0x6A (u16; mode == 0x11 check) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_6A */
+D_80101FC4                               = 0x80101FC4;  /* per-char field +0xFC; set to a0_val + passed to func_8003E6A0 */  /* data-wave 2026-10-09: was g_char_struct_p1_field_FC */
 g_pad_state_plus_0x4                             = 0x8010278C;  /* g_pad_state.valid[0] (set to 1 by pad_ResetStateMarkValid) */  /* data-wave 2026-10-03: was g_practice_lesson_init_done */
 
 /* === Attack-angle offset table + char field paired (2026-05-17) -- 2 highs === */
 D_8008EB40                             = 0x8008EB40;  /* s16 2D table, both indices from bits 12-15 of the fighter's unk_24.held; the value is added to the facing angle unk_1D8 (9F9C.c:4286-4410) */  /* data-wave 2026-10-08: was g_attack_angle_offset_table */
-g_char_struct_p2_field_6A                               = 0x8010237E;  /* per-char field +0x6A for P2 (= P1's g_char_struct_p1_field_6A + 0x44C); same 0x11 mode check */
+D_8010237E                               = 0x8010237E;  /* per-char field +0x6A for P2 (= P1's g_char_struct_p1_field_6A + 0x44C); same 0x11 mode check */  /* data-wave 2026-10-09: was g_char_struct_p2_field_6A */
 
 /* === Sprite rect tables + buffer banks (2026-05-17) -- 5 highs === */
 /* From text1a.c around line 55-77: sprite/texture loading.  D_80094AF4 */
@@ -1968,7 +1968,7 @@ D_800A3320                                 = 0x800A3320;  /* counts the status-5
 
 /* === P2 paired char-struct fields (2026-05-17) -- 2 highs === */
 D_80102408                                = 0x80102408;  /* D_80101EC8[1].unk_F4, fighter 1's position triple (D_80101FBC + 0x44C) */  /* data-wave 2026-10-08: was g_replay_camera_target_b */
-g_char_struct_p2_field_FC                               = 0x80102410;  /* P2 counterpart to g_char_struct_p1_field_FC (= P1 + 0x44C); +0xFC of entry 1 */
+D_80102410                               = 0x80102410;  /* P2 counterpart to g_char_struct_p1_field_FC (= P1 + 0x44C); +0xFC of entry 1 */  /* data-wave 2026-10-09: was g_char_struct_p2_field_FC */
 
 /* === D_800A38A4-indexed byte tables + misc state (2026-05-17) -- 4 highs === */
 D_8008EA70                              = 0x8008EA70;  /* paired bytes table; indexed by D_800A38A4 * 2; each pair = (motion_id, sub_value) */  /* data-wave 2026-10-08: was g_unlock_anim_p_pair_table */
