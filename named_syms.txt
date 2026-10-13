@@ -798,7 +798,7 @@ D_8008EB28                               = 0x8008EB28;  /* u8[8][2] (include/bb2
 D_8008EBCC                                = 0x8008EBCC;  /* 5 entries: {0, 0x33, 0x3A, 0x41, 0x48}, indexed by D_800A384C; each read is an offset added to a slot base */  /* data-wave 2026-10-08: was g_step_lookup_5_8008EBCC */
 D_8008EB80                             = 0x8008EB80;  /* byte lookup {0x0A..0x17}; index 14 (0x18, via D_8008EB8E) is also read */  /* data-wave 2026-10-08: was g_lookup_14entries_8008EB80 */
 D_80099C14                              = 0x80099C14;  /* -1-terminated list of 15 s16 player-matrix indices (16 halfwords), read by func_80048BA4 */  /* data-wave 2026-10-08: was g_lookup_8entries_80099C14 */
-g_lookup_4entries_800A3074                              = 0x800A3074;  /* 4-entry monotonic lookup */
+/* RESET 0x800A3074: retired name 'g_lookup_4entries_800A3074' — preserved note: 4-entry monotonic lookup */
 /* libcd per-command flag tables (3) -- s32[32] each, +0x80 stride */
 D_800A127C                                   = 0x800A127C;  /* 0/1 flags indexed by CD_com in getintr (bios.c:71, :140) */  /* data-wave 2026-10-09: was g_palette_32_800A127C */
 D_800A12FC                                   = 0x800A12FC;  /* per-command flags read by CD_cw (bios.c:319-320, :347, :356) */  /* data-wave 2026-10-09: was g_palette_32_800A12FC */
@@ -2429,7 +2429,6 @@ _SsSeqCalledTbyT_1per2                                         = 0x80083F1C;  /*
 D_8008D518                                     = 0x8008D518;  /* data-wave 2026-10-09: was g_func37110_lookup_D518 */
 D_8008D578                                = 0x8008D578;  /* data-wave 2026-10-08: was g_func40510_lookup_D578 */
 D_8008D59C                                     = 0x8008D59C;  /* data-wave 2026-10-08: was g_tbl20_field0_D59C */
-g_tbl20_field2_D59E                                     = 0x8008D59E;
 D_8008DA08                                     = 0x8008DA08;  /* data-wave 2026-10-09: was g_byte_indirection_tbl_DA08 */
 D_8008DB1C                                     = 0x8008DB1C;  /* data-wave 2026-10-08: was g_c6c_data_ptr_DB1C */
 D_8008E194                                   = 0x8008E194;  /* data-wave 2026-10-08: was g_per_player_tbl_14bytes_E194 */
