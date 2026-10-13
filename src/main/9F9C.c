@@ -3524,9 +3524,10 @@ void func_800213A0(Unk80101EC8Record *arg0) {
     arg0->unk_86 = (s16)((a1 + 1) % D_800A3860[arg0->unk_4A]->f14);
 }
 
-/* The 66-name animation/asset table read by func_80023F08 (12-byte stride:
- * 8 chars + null + pad). Defined here, between the switch tables of the
- * functions above and func_80021424's own, as in the original rodata order. */
+/* The 66-name animation/asset table (12-byte stride: 8 chars + null + pad).
+ * No code reads it; a data word at 0x8008D9E8 points at its first name.
+ * Defined here, between the switch tables of the functions above and
+ * func_80021424's own, as in the original rodata order. */
 const char D_800100FC[66][12] = {
     "WIN     ",    "KARAMI_ED", "RUN_ED  ", "RUN_ST  ", "CHAKUTI ", "APPEAR  ",
     "KAISHAKU_ST", "HAJIKARE",  "SERIEXIT", "SYAGAMI ", "HOM_ED  ", "HOM_AT  ",
