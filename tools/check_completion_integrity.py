@@ -60,6 +60,7 @@ from engine import queue as Q  # noqa: E402
 from engine import departures  # noqa: E402
 sys.path.insert(0, str(REPO / "tools"))
 import audit_asm_cheats as AAC  # noqa: E402  (the manual detector's island scanner)
+import check_retired_names as CRN  # noqa: E402  (naming waves' retired names in C comments)
 
 
 def _island_funcs(src_text: str | None, stem: str) -> dict[str, int]:
@@ -223,6 +224,11 @@ def main() -> int:
     # — catches a completion that bypassed `queue done`, e.g. a hand-edited
     # queue.json). Git or history read failures are violations too.
     violations.extend(departures.unreviewed_departures())
+
+    # Naming waves (.claude/rules/naming-bar.md): no C comment keeps a name a
+    # wave retired (completion-bar item 3: comments assert nothing false).
+    violations.extend(f"{path}:{line}: comment keeps retired name {name}"
+                      for path, line, name in CRN.scan(REPO)[2])
 
     print(f"COMPLETED-C:                    {total_completed_c} functions")
     print(f"COMPLETED-INLINE-ASM-CANONICAL: {total_completed_canon} functions")

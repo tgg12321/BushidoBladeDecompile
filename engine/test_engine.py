@@ -6465,7 +6465,37 @@ def test_data_wave_round4_edge_cases() -> None:
               {"fixture_old_array": "D_80011300"}, proof.get, list(proof)) is not None)
 
 
+def test_retired_names_audit() -> None:
+    """tools/check_retired_names.py passes its fixture self-test, and
+    check_completion_integrity.main() adds its hits to the violations before
+    its verdict."""
+    import ast
+    import contextlib
+    import io
+    import sys
+    repo_root = Path(__file__).resolve().parent.parent
+    sys.path.insert(0, str(repo_root / "tools"))
+    import check_retired_names as crn
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        status = crn.self_test()
+    eq("retired names: fixture self-test passes", (status, "FAIL" in out.getvalue()), (0, False))
+    src = (repo_root / "tools/check_completion_integrity.py").read_text(encoding="utf-8")
+    main_fn = next(n for n in ast.parse(src).body
+                   if isinstance(n, ast.FunctionDef) and n.name == "main")
+    wired = verdict_at = None
+    for i, st in enumerate(main_fn.body):
+        seg = ast.get_source_segment(src, st) or ""
+        if seg.startswith("violations.extend(") and "CRN.scan(REPO)" in seg:
+            wired = i
+        if isinstance(st, ast.If) and (ast.get_source_segment(src, st.test) or "") == "violations":
+            verdict_at = i if verdict_at is None else verdict_at
+    check("retired names: check_completion_integrity.main() runs the scan before its verdict",
+          wired is not None and verdict_at is not None and wired < verdict_at)
+
+
 def main() -> int:
+    test_retired_names_audit()
     test_data_wave_round4_edge_cases()
     test_keycheck_pre_read_candidates()
     test_keycheck_real_git_round4()
