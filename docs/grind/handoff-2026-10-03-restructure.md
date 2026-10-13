@@ -127,10 +127,15 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      db5bcbec2, 6baa3bc30; wave19 prep a4e2c499a). Wave18 set the Sony-statics policy (psyz/SOTN name when
      placement is shown verbatim, else D_ when unproven/contradicted, else KEEP); wave19 landed the rows held
      for C9 (scratchpad, StageLight, GPU_STATUS, libcd_CDRegister0, intrEnv, move_image, retire-alias).
+     Wave20 (2026-10-12) 7137d8c59 (+ prose 1f0d0e485): 2 data resets, 10 KEEPs. Every undecided data name
+     is now settled (inventory tmp/p3w20/inv/classes.csv: Sony verbatim, string labels, base+offset Q103,
+     owner-ruled). Held: 0x00000000 g_ings2_addr_0 (data_wave's ADDR regex refuses address 0; owner call:
+     extend the tool or hand-edit the registry).
      KEEP decisions: docs/naming/phase3/waveNN/data_keep.csv (never fed to data_wave).
-   - **Next:** CD_ReadCallbackFunc (SOTN and psyz disagree); info 0x8009BE74 (collides with existing uses);
-     cdrom_IrqHandler -> Sony local `callback`. Waiting on C5 (keycheck-scoped-pairs, round 18): type
-     FIELD-FIX rows and member names (tmp/codex/c6-type-names*-result.md).
+   - **Next:** land C5, then the type/member wave from tmp/codex/c6-type-names*-result.md (FIELD-FIX /
+     RENAME / RESET rows) plus the locals playerData (17AFC.c) and player (368E4.c). Older leads:
+     CD_ReadCallbackFunc (SOTN and psyz disagree); info 0x8009BE74 (collides with existing uses);
+     cdrom_IrqHandler -> Sony local `callback`.
    - Wave mechanics learned: verify-oracle --rebuild needs --allow-dirty on the applied tree; a FAILed row is dropped
      or re-mined (a fresh reviewer per round); PASS-row evidence fixes from a reviewer are applied before commit.
    - Prose debt (follow-up commits): docs/engine/*.md cite retired names (list in wave03's R6, commit 741468925 body);
@@ -141,6 +146,14 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      codex/keycheck-scoped-pairs) failed review rounds 4-13 on parser holes (verdicts in
      tmp/codex/reviews/keycheck-scoped-pairs.jsonl); round 14 moves the local-pair binding proof to a cc1
      differential compile; rounds 15-18 failed on synthetic-tree census misses (none in the real tree).
+     Rounds 19-29 hardened working-tree mode; the operative rule is now stage-first (the wave must be fully
+     staged, `git add -A`, before the keycheck; unstaged edits reject with that hint). Cheat scope (owner
+     2026-10-12): wave/operator mistakes via ordinary git use; adversarial git config is out of scope.
+     State 2026-10-13: round 29 (d33200e23) cheat FAIL (empty `git add -N` file counted as staged);
+     follow-up 34 fixes it (run 20261012-234255), committed as round 30 1f00591bb, awaiting fresh cheat +
+     code reviewers (message: tmp/codex/msg_keycheck-scoped-pairs.txt). On landing: naming-bar.md step 5 stage-first, step 4 member
+     and the locals lines; wave gates.sh must `git add -A` before the keycheck (apply.sh leaves edits
+     unstaged); fresh cheat-review of the rule edit.
      C9 (data_wave address coverage, retire-alias) landed f4f085344, which also repaired main's dead
      working-tree "old name survives" grep. Review rounds use cached main-side baselines
      (tmp/review-baseline/README.md). When C5 lands, update naming-bar.md step 4 and its last line (members / locals limits). The stale May
@@ -149,10 +162,12 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
    - Codex scope (owner 2026-10-07): keep Codex out of the main working tree; containment against a rogue
      agent is not a goal. The isolated CODEX_HOME and the machine guard were withdrawn; read-only questions
      run in `codex_worker.py research` snapshots, write tasks in codex-worker worktrees.
-   - Debt: wire tools/check_retired_names.py into the integrity audit / hooks; bank the keycheck probe suites
-     (`tmp/p3s0/kc_test.sh`, `tmp/kcrev*/`) as engine tests; keycheck hygiene (same_tokens belt, clang-format
-     version check, report against the formatted text); comment nits (25C38 "these files", the Makefile
-     lb/lh section header); stale registry comments.
+   - Debt: bank the keycheck probe suites (`tmp/p3s0/kc_test.sh`, `tmp/kcrev*/`, `tmp/rev-c5*/p2*.py`) as
+     engine tests; keycheck hygiene (same_tokens belt, clang-format version check, report against the
+     formatted text); comment nits (25C38 "these files", the Makefile lb/lh section header); stale registry
+     comments; wave20 R6 optional prose (named_syms.txt block header counts near :781, the :801 note,
+     .claude/rules/store-before-jal.md:30 example). check_retired_names runs in the integrity audit
+     (729c7e9f6).
    - File split audit (2026-10-07, scripts `tmp/p3split/`, not kept): every byte-proven boundary is a cut; 9
      game-TU starts have no evidence either way (87A0, 175A4, 25C38, memcard, 28514, 28708, 2B344, 31CFC,
      31D3C) and no merge is provable; the large files hold several original TUs whose cuts the bytes cannot
