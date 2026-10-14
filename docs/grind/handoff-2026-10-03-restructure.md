@@ -134,7 +134,12 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      KEEP decisions: docs/naming/phase3/waveNN/data_keep.csv (never fed to data_wave).
    - Wave21 (2026-10-14) bf769cb45 (+ prose bec701e4d): the first member / local wave; Vec2s16 ->
      Size2s16, 8 member resets, 5 local resets (playerData / player). Pre-apply 14/14 PASS, R6 PASS.
-   - **Next:** leads for wave23: func_8006BEC4's local `pos` (holds a size: RESET);
+   - Phase 3 plan (owner 2026-10-14, census tmp/p3census/): claim-making locals are bulk-reset
+     under Q119 (.claude/rules/naming-bulk-reset.md, 3fb741455), one wave per file, most-claims first
+     (17AFC, 32D04, 3AB48, 9F9C, 51268, 368E4, 2B344, 5ED34, 63D2C, ...); the 98 member claims and
+     ~50 unjudged types take normal waves; then the file-name pass. Wave23 (17AFC.c) 00d695d44 (+ prep
+     30e3e4a81): 56 resets, 31 dropped (25 nested-block locals the keycheck cannot rename yet).
+   - **Next:** further leads: func_8006BEC4's local `pos` (holds a size: RESET);
      Unk8003F824Rec.quad (no fresh neutral spelling for +0x04; member destinations must be unique
      tree-wide, so it needs a spelling choice); the never-accessed `pad` members (lead ruled: "pad"
      on untouched bytes is no false claim, KEEP); other `player` locals holding D_800A9A10 objects
