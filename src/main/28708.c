@@ -47,15 +47,15 @@ s32 memcard_Format(s32 a0, s32 a1) {
 }
 
 void func_80037F40(u8 *a0) {
-    s32 checksum;
+    s32 var_0;
     u8 *p;
     s32 i;
 
-    checksum = 0;
+    var_0 = 0;
     p = (u8 *)&D_80106A50;
     i = 0;
     do {
-        checksum += *p++;
+        var_0 += *p++;
         i++;
     } while ((u32)i < 0x24);
 
@@ -66,7 +66,7 @@ void func_80037F40(u8 *a0) {
         i = 0;
         do {
             base->rec[i] = D_80106A50;
-            base->sum[i] = checksum;
+            base->sum[i] = var_0;
             {
                 s32 j = 0;
                 do {
@@ -404,13 +404,13 @@ extern s32 func_8003800C(Unk800F34D8Save *);
  * .claude/rules/shared-end-label.md). */
 void memcard_PollFileCompletion(void) {
     s32 ret;
-    s32 fail;
+    s32 var_1;
 
     switch (D_800A31F4) {
     case 4:
         ret = memcard_PollSwEvents();
         if (ret == 0) {
-            fail = 1;
+            var_1 = 1;
             goto fail_store;
         }
         close(g_memcard_fd);
@@ -424,7 +424,7 @@ void memcard_PollFileCompletion(void) {
     case 6:
         ret = memcard_PollSwEvents();
         if (ret == 0) {
-            fail = 4;
+            var_1 = 4;
             goto fail_store;
         }
         close(g_memcard_fd);
@@ -442,7 +442,7 @@ void memcard_PollFileCompletion(void) {
     return;
 
 fail_store:
-    D_800A379E = fail;
+    D_800A379E = var_1;
 }
 
 s32 func_80038734(void) {
@@ -569,23 +569,23 @@ static u8 D_800A3354;
 s32 func_800388A8(void) {
     extern u8 D_800A3204;
     s32 result = 0;
-    u32 buttons;
+    u32 var_1;
     if (D_800A3204 != 0) {
         D_800A3204 = 0;
         D_800A3318 = 0;
     }
-    buttons = g_pad_state.pressed;
-    if (buttons & 0x400040) {
+    var_1 = g_pad_state.pressed;
+    if (var_1 & 0x400040) {
         func_8005C650(1, 0x7F, 0x7F);
         if (D_800A3318 == 0) {
             result = 1;
         } else {
             result = -1;
         }
-    } else if (buttons & (u32)0x80008000) {
+    } else if (var_1 & (u32)0x80008000) {
         func_8005C650(0, 0x7F, 0x7F);
         D_800A3318 = 0;
-    } else if (buttons & 0x20002000) {
+    } else if (var_1 & 0x20002000) {
         func_8005C650(0, 0x7F, 0x7F);
         D_800A3318 = 1;
     }
@@ -600,7 +600,7 @@ s32 func_80038988(void) {
     extern u8 D_800A3205;
     s32 result = 0;
     s32 v0;
-    s32 sel;
+    s32 var_2;
 
     if (D_800A3205) {
         D_800A331C = 0;
@@ -624,61 +624,61 @@ s32 func_80038988(void) {
         goto timer;
     }
 
-    sel = 0;
+    var_2 = 0;
     if (D_800A31FC == 0) {
         if (D_800A3338 == 1) {
             switch (v0 - 4) {
             case 0:
-                sel = 2;
+                var_2 = 2;
                 break;
             case 1:
-                sel = 3;
+                var_2 = 3;
                 break;
             case 2:
             case 6:
             case 10:
             case 11:
-                sel = 4;
+                var_2 = 4;
                 break;
             case 4:
-                sel = -1;
+                var_2 = -1;
                 break;
             default:
-                sel = 0;
+                var_2 = 0;
                 break;
             }
         } else {
             switch (v0 - 4) {
             case 0:
-                sel = 2;
+                var_2 = 2;
                 break;
             case 1:
-                sel = 3;
+                var_2 = 3;
                 break;
             case 2:
-                sel = 4;
+                var_2 = 4;
                 break;
             case 10:
-                sel = 1;
+                var_2 = 1;
                 break;
             case 11:
-                sel = 0xB;
+                var_2 = 0xB;
                 break;
             case 4:
-                sel = -1;
+                var_2 = -1;
                 break;
             case 6:
-                sel = 0x14;
+                var_2 = 0x14;
                 break;
             default:
-                sel = 0;
+                var_2 = 0;
                 break;
             }
         }
     }
 
-    if (sel >= 0) {
-        func_8006BEC4(sel, -1);
+    if (var_2 >= 0) {
+        func_8006BEC4(var_2, -1);
     }
 
     if (D_800A31FC != 0) {
@@ -773,9 +773,9 @@ s32 func_80038C70(void) {
     extern void func_800387C0(void);
     extern void func_800387E8(void);
     s32 result = 0;
-    s32 sel2 = -1;
+    s32 var_1 = -1;
     s32 v0;
-    s32 sel;
+    s32 var_3;
 
     if (!D_800A3207) {
         D_800A3207 = 1;
@@ -812,7 +812,7 @@ s32 func_80038C70(void) {
         v0 = 0x11;
     }
 
-    sel = 0;
+    var_3 = 0;
     if (D_800A31FC != 0) {
         goto sel_dispatch;
     }
@@ -829,35 +829,35 @@ s32 func_80038C70(void) {
 
     switch (v0) {
     case 0:
-        sel = 0x11;
+        var_3 = 0x11;
         /* FAKE: duplicate of load_sel2's store — jump2 cross-jump re-merges it
-           (zero emitted bytes); the extra real def lifts sel2's reg_n_refs
-           priority above result's so RA lands sel2->$s2 / result->$s3
+           (zero emitted bytes); the extra real def lifts var_1's reg_n_refs
+           priority above result's so RA lands var_1->$s2 / result->$s3
            (target). SOTN duplicate-into-arms family; `goto load_sel2`
            scores 13. */
-        sel2 = D_800A3350;
+        var_1 = D_800A3350;
         goto sel_dispatch;
     case 13:
     case 17:
-        sel = 6;
+        var_3 = 6;
     load_sel2:
-        sel2 = D_800A3350;
+        var_1 = D_800A3350;
         goto sel_dispatch;
     case 1:
-        sel = (-(D_800A38CC != 0)) & 7;
+        var_3 = (-(D_800A38CC != 0)) & 7;
         goto sel_dispatch;
     case 2:
-        sel = 8;
+        var_3 = 8;
         goto sel_dispatch;
     case 3:
-        sel = 9;
+        var_3 = 9;
         goto sel_dispatch;
     case 8:
     case8_sel:
-        sel = -1;
+        var_3 = -1;
         goto sel_dispatch;
     case 7:
-        sel = 5;
+        var_3 = 5;
         goto sel_dispatch;
     case 10:
         if (D_800A3206 == 0) {
@@ -866,7 +866,7 @@ s32 func_80038C70(void) {
         if (g_pad_state.pressed & 0x400040) {
             D_800A3206 = 0;
             func_8005C650(1, 0x7F, 0x7F);
-            sel = 0xD;
+            var_3 = 0xD;
             if (D_800A3350 == 0) {
                 func_800387E8();
                 goto sel_dispatch;
@@ -875,10 +875,10 @@ s32 func_80038C70(void) {
             D_800A3207 = 5;
             D_800A334C = 0x5A;
             D_800A3350 = 0;
-            sel = -1;
+            var_3 = -1;
             goto sel_dispatch;
         }
-        sel = 0xC;
+        var_3 = 0xC;
         if ((g_pad_state.pressed & 0xA000A000U) != 0) {
             D_800A3206 = 1;
         }
@@ -886,20 +886,20 @@ s32 func_80038C70(void) {
     case 9:
     case 11:
     case9_11_sel:
-        sel = 0xD;
+        var_3 = 0xD;
         goto sel_dispatch;
     case 12:
     case12_sel:
-        sel = 0xF;
+        var_3 = 0xF;
         goto sel_dispatch;
     default:
-        sel = 0;
+        var_3 = 0;
         goto sel_dispatch;
     }
 
 sel_dispatch:
-    if (sel >= 0) {
-        func_8006BEC4(sel, sel2);
+    if (var_3 >= 0) {
+        func_8006BEC4(var_3, var_1);
     }
 
     if (D_800A31FC != 0) {
@@ -1111,15 +1111,15 @@ void func_80039320(void) {
     s16 newval;
     /* FAKE: constant holder for the 0xFF free marker; the literal moves li 255
        below the table address (score 2) */
-    u8 fill;
+    u8 var_5;
 
     i = 0;
-    fill = 0xFF;
+    var_5 = 0xFF;
     p = D_80101BF0;
 
     do {
         if (p->unk_0 == D_800A36F8) {
-            p->unk_0 = fill;
+            p->unk_0 = var_5;
         }
         i++;
         p++;
@@ -1147,7 +1147,7 @@ void func_80039320(void) {
 void func_800393C8(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     extern s16 D_800A3714;
     extern u8 D_800A3209;
-    Unk800F68E0Rec *slot;
+    Unk800F68E0Rec *var_0;
     s32 i;
     s16 idx;
     s16 cur;
@@ -1156,39 +1156,39 @@ void func_800393C8(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     s32 raw;
     s32 rot;
 
-    slot = D_800F68E0;
+    var_0 = D_800F68E0;
     i = 0;
     do {
-        state = slot->unk_0;
+        state = var_0->unk_0;
         if (state != -1) {
-            seen = slot->unk_2;
+            seen = var_0->unk_2;
             if (seen == state - 1 && seen < 0xFF) {
-                raw = slot->unk_A << 16;
+                raw = var_0->unk_A << 16;
                 rot = raw >> 16;
                 if ((s32)((u32)raw >> 28) == arg0 &&
-                    slot->unk_4[0] == arg2[0] && slot->unk_4[1] == arg2[1] &&
-                    slot->unk_4[2] == arg2[2] &&
+                    var_0->unk_4[0] == arg2[0] && var_0->unk_4[1] == arg2[1] &&
+                    var_0->unk_4[2] == arg2[2] &&
                     ((rot - arg3[0]) & 0xFFF) == 0 &&
-                    ((slot->unk_C - arg3[1]) & 0xFFF) == 0 &&
-                    ((slot->unk_E - arg3[2]) & 0xFFF) == 0) {
-                    slot->unk_2 = seen + 1;
+                    ((var_0->unk_C - arg3[1]) & 0xFFF) == 0 &&
+                    ((var_0->unk_E - arg3[2]) & 0xFFF) == 0) {
+                    var_0->unk_2 = seen + 1;
                     return;
                 }
             }
         }
         i++;
-        slot++;
+        var_0++;
     } while (i < 0xB4);
 
     idx = D_800A3714;
-    slot = &D_800F68E0[idx];
+    var_0 = &D_800F68E0[idx];
     while (idx < 0xB4) {
-        if (slot->unk_0 == -1) {
+        if (var_0->unk_0 == -1) {
             break;
         }
         cur = idx + 1;
         D_800A3714 = cur;
-        slot++;
+        var_0++;
         idx = cur;
     }
 
@@ -1197,36 +1197,36 @@ void func_800393C8(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
         return;
     }
 
-    slot->unk_0 = 0;
-    slot->unk_3 = arg1;
-    slot->unk_2 = 0;
-    slot->unk_4[0] = arg2[0];
-    slot->unk_4[1] = arg2[1];
-    slot->unk_4[2] = arg2[2];
-    slot->unk_A = (arg3[0] & 0xFFF) | (arg0 << 12);
-    slot->unk_C = arg3[1];
-    slot->unk_E = arg3[2];
+    var_0->unk_0 = 0;
+    var_0->unk_3 = arg1;
+    var_0->unk_2 = 0;
+    var_0->unk_4[0] = arg2[0];
+    var_0->unk_4[1] = arg2[1];
+    var_0->unk_4[2] = arg2[2];
+    var_0->unk_A = (arg3[0] & 0xFFF) | (arg0 << 12);
+    var_0->unk_C = arg3[1];
+    var_0->unk_E = arg3[2];
 }
 
 void func_800395B4(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
     extern u8 D_800A3208;
     extern u8 D_800A379C;
-    Unk80101BF0Rec *slot;
+    Unk80101BF0Rec *var_0;
     u8 idx;
     /* FAKE: constant holder for the 0xFF free marker; with the literal the li
        is scheduled after the lbu and the load-delay nop is lost (score 4) */
-    u8 sentinel;
+    u8 var_2;
 
     if (D_800A3208 == 0) {
         idx = D_800A379C;
-        slot = &D_80101BF0[idx];
+        var_0 = &D_80101BF0[idx];
         if (idx < 0x20) {
-            sentinel = 0xFF;
+            var_2 = 0xFF;
         loop:
-            if (slot->unk_0 != sentinel) {
+            if (var_0->unk_0 != var_2) {
                 D_800A379C = idx + 1;
                 idx = idx + 1;
-                slot++;
+                var_0++;
                 if (idx < 0x20) {
                     goto loop;
                 }
@@ -1234,16 +1234,16 @@ void func_800395B4(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
         }
         if (D_800A379C != 0x20) {
             u8 tmp = D_800A36F8;
-            slot->unk_1 = arg0;
-            slot->unk_2 = arg1;
-            slot->unk_0 = tmp;
-            slot->unk_4[0] = arg2[0];
-            slot->unk_4[1] = arg2[1];
-            slot->unk_4[2] = arg2[2];
+            var_0->unk_1 = arg0;
+            var_0->unk_2 = arg1;
+            var_0->unk_0 = tmp;
+            var_0->unk_4[0] = arg2[0];
+            var_0->unk_4[1] = arg2[1];
+            var_0->unk_4[2] = arg2[2];
             if (arg3 != NULL) {
-                slot->unk_A[0] = arg3[0];
-                slot->unk_A[1] = arg3[1];
-                slot->unk_A[2] = arg3[2];
+                var_0->unk_A[0] = arg3[0];
+                var_0->unk_A[1] = arg3[1];
+                var_0->unk_A[2] = arg3[2];
             }
         }
     }
@@ -1359,25 +1359,25 @@ void func_8003993C(void) {
     s32 out_b1;
     s32 out_b2;
     s32 idx;
-    s32 prog;
+    s32 var_8;
     s32 i;
     Rec1C *p;
-    Unk80101EC8Record *rob;
+    Unk80101EC8Record *var_11;
     Unk80101BF0Rec *e;
     Unk800F68E0Rec *s;
     /* temp: the 0/1 weapon-set selector in the per-player loop, then the
      * replay window of the event loop (Ruling 11, ordinary-c-judge-decidable)
      */
     s32 temp;
-    u8 save40;
-    u8 *save58;
+    u8 var_15;
+    u8 *var_16;
 
     if (D_800A3782 != 0) {
         idx = (D_800A36F8 + D_800A37D0) % 120;
-        prog = (D_800A37D0 << 12) / 120;
+        var_8 = (D_800A37D0 << 12) / 120;
     } else {
         idx = D_800A37D0;
-        prog = (idx << 12) / D_800A36F8;
+        var_8 = (idx << 12) / D_800A36F8;
     }
     D_800A3778 = (s32)func_800472B0();
     /* The frame record's address is written out at each argument (F3
@@ -1385,11 +1385,11 @@ void func_8003993C(void) {
      * score 20. */
     func_8001BAE4(
         &D_800A36EC[idx][D_800A3748],
-        D_800A3748 == 0 ? &D_800A36EC[idx][1] : &D_800A36EC[idx][0], prog);
+        D_800A3748 == 0 ? &D_800A36EC[idx][1] : &D_800A36EC[idx][0], var_8);
     func_8001BBD8(
         &D_800A36EC[idx][D_800A3748],
-        D_800A3748 == 0 ? &D_800A36EC[idx][1] : &D_800A36EC[idx][0], prog);
-    func_8001E6E4(prog);
+        D_800A3748 == 0 ? &D_800A36EC[idx][1] : &D_800A36EC[idx][0], var_8);
+    func_8001E6E4(var_8);
 
     for (i = 0; i < 2; i++) {
         /* entry: the frame's entry in the practice weapon table (if arm) or
@@ -1398,10 +1398,10 @@ void func_8003993C(void) {
         u16 *entry;
 
         p = &D_800A36EC[idx][i];
-        rob = &D_80101EC8[i];
+        var_11 = &D_80101EC8[i];
         func_800198D0((p->hE >> 14) & 3, p->hE & 0x3FFF, &work[0], sp1C0);
         func_800198D0((p->h10 >> 14) & 3, p->h10 & 0x3FFF, &work[1], sp1C0);
-        func_8001F1C4(rob, p, &work[0], &work[1]);
+        func_8001F1C4(var_11, p, &work[0], &work[1]);
         func_80041188(
             i, (u8 *)&work[0], (u8 *)&work[1], p->h12, (MATRIX *)sp120);
         pos[0] = p->h4;
@@ -1412,42 +1412,42 @@ void func_8003993C(void) {
         rot[2] = 0;
         func_80040D48(i, 1, pos, rot, 0, p->hC);
         if (p->b18 & 1) {
-            func_80049718(rob->unk_12, i * 2 + 0x8000, 0, 0);
+            func_80049718(var_11->unk_12, i * 2 + 0x8000, 0, 0);
         }
         if (p->b18 & 4) {
-            func_80049718(D_8008EB80[rob->unk_14], i * 2 + 0x8001, 0, 0);
+            func_80049718(D_8008EB80[var_11->unk_14], i * 2 + 0x8001, 0, 0);
         }
         if (p->b18 & 2) {
-            func_80049A2C(rob->unk_12, i * 2, (p->b18 >> 4) & 1);
+            func_80049A2C(var_11->unk_12, i * 2, (p->b18 >> 4) & 1);
         }
         if (p->b18 & 8) {
             func_80049A2C(
-                D_8008EB80[rob->unk_14], i * 2 | 1, (p->b18 >> 5) & 1);
+                D_8008EB80[var_11->unk_14], i * 2 | 1, (p->b18 >> 5) & 1);
         }
-        func_800207C8(rob, SPAD->unkA8[i], SPAD->unk00[i], SPAD->unk48[i]);
-        func_8003984C(rob, &out_b1, &out_b2);
+        func_800207C8(var_11, SPAD->unkA8[i], SPAD->unk00[i], SPAD->unk48[i]);
+        func_8003984C(var_11, &out_b1, &out_b2);
         if (out_b1 != 1) {
-            rob->unk_B1 = out_b1;
+            var_11->unk_B1 = out_b1;
             if (out_b2 != -1) {
-                rob->unk_B2 = out_b2;
+                var_11->unk_B2 = out_b2;
             }
         }
-        save40 = rob->unk_40;
-        rob->unk_40 = p->b19;
-        save58 = rob->unk_58;
+        var_15 = var_11->unk_40;
+        var_11->unk_40 = p->b19;
+        var_16 = var_11->unk_58;
         if (p->b17 & 1) {
             entry = &D_80102760.unk_04[p->w0->unk_04 * 2];
-            rob->unk_58 = D_80102760.unk_08 + entry[1];
+            var_11->unk_58 = D_80102760.unk_08 + entry[1];
         } else {
             temp = (p->b17 >> 1) & 1;
             entry = &D_801027B0[temp].unk_04[p->w0->unk_04 * 2];
-            rob->unk_58 = D_801027B0[temp].unk_08 + entry[1];
+            var_11->unk_58 = D_801027B0[temp].unk_08 + entry[1];
         }
         if (p->b18 & 0x40) {
-            func_8003339C(rob);
+            func_8003339C(var_11);
         }
-        rob->unk_40 = save40;
-        rob->unk_58 = save58;
+        var_11->unk_40 = var_15;
+        var_11->unk_58 = var_16;
         func_80040304(i, (p->hA >> 12) & 7);
     }
 
@@ -1761,10 +1761,10 @@ typedef s32 (*FuncBufType)(void *);
  * reuse the buf8 local; own locals: score 33. */
 void func_8003A728(PadState *a0) {
     s32 buf8;
-    s32 packed;
+    s32 var_1;
     s32 hi16;
     s32 flag;
-    s32 vsync;
+    s32 var_4;
     s32 c0lo;
     s32 t;
     /* FAKE: constant-holder displaces the g_comb_send_buf_plus_0x4 store from
@@ -1773,21 +1773,21 @@ void func_8003A728(PadState *a0) {
 
     if (D_800A320C != 0) {
         buf8 = a0->held;
-        vsync = D_800A38A0;
+        var_4 = D_800A38A0;
         zero = 0;
-        packed = (vsync << 31) | (D_800A3730 << 30) | ((D_800A3870 & 3) << 28) |
-                 (a0->type[0] << 16) | (buf8 & 0xFFFF);
-        g_comb_send_buf = packed;
+        var_1 = (var_4 << 31) | (D_800A3730 << 30) | ((D_800A3870 & 3) << 28) |
+                (a0->type[0] << 16) | (buf8 & 0xFFFF);
+        g_comb_send_buf = var_1;
         hi16 = D_800A37C4 << 16;
-        packed = packed ^ (packed >> 16);
-        packed = packed ^ (hi16 >> 16);
-        packed = packed & 0xFFFF;
-        hi16 = hi16 | packed;
+        var_1 = var_1 ^ (var_1 >> 16);
+        var_1 = var_1 ^ (hi16 >> 16);
+        var_1 = var_1 & 0xFFFF;
+        hi16 = hi16 | var_1;
         g_comb_send_buf_plus_0x4 = hi16;
         flag = D_800A3916;
 
         if (flag != 0) {
-            if (vsync == 0) {
+            if (var_4 == 0) {
                 comb_Read8();
             } else {
                 if (((FuncBufType)comb_Write8)(&g_comb_send_buf) == 0) {

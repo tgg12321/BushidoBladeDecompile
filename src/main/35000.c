@@ -9,14 +9,14 @@
 void func_800433E4();
 
 void func_80044800(void) {
-    SVECTOR sv;
+    SVECTOR var_0;
     MATRIX mat;
     Unk800A9CF8Entry *rec;
     Unk800A9CF8Entry *ent;
     s32 i;
-    s32 frame;
+    s32 var_5;
     s32 angle;
-    s16 *scan;
+    s16 *var_7;
     s16 cos_val;
     s16 sin_val;
     s32 cz;
@@ -24,48 +24,48 @@ void func_80044800(void) {
     s32 cx;
     s32 sx;
     s32 last;
-    s32 fade;
+    s32 var_15;
     void **list;
 
     rec = (Unk800A9CF8Entry *)D_800A9CF8.unkC;
     for (i = 0; i < D_800A9CF8.unk6; rec++, i++) {
-        frame = rec->unk58;
-        if (frame < 0)
+        var_5 = rec->unk58;
+        if (var_5 < 0)
             continue;
-        if (frame < D_800A9CF8.unk2) {
-            sv.vx = 0;
-            /* FAKE: angle read ahead of the sv.vz store; read at its uses
+        if (var_5 < D_800A9CF8.unk2) {
+            var_0.vx = 0;
+            /* FAKE: angle read ahead of the var_0.vz store; read at its uses
              * the loads reorder (score 12). */
             angle = rec->unk5C;
-            sv.vz = 0;
-            scan = (s16 *)(D_800A9CF8.unk8 + frame * 12);
-            sv.vy = angle;
-            math_RotMatrixZYX(&sv, &mat);
-            sv.vx = *scan++;
-            sv.vy = *scan++;
-            sv.vz = *scan++;
-            rec->node.xf.rot.vx = *scan++;
-            rec->node.xf.rot.vy = *scan++;
-            rec->node.xf.rot.vz = *scan++;
+            var_0.vz = 0;
+            var_7 = (s16 *)(D_800A9CF8.unk8 + var_5 * 12);
+            var_0.vy = angle;
+            math_RotMatrixZYX(&var_0, &mat);
+            var_0.vx = *var_7++;
+            var_0.vy = *var_7++;
+            var_0.vz = *var_7++;
+            rec->node.xf.rot.vx = *var_7++;
+            rec->node.xf.rot.vy = *var_7++;
+            rec->node.xf.rot.vz = *var_7++;
             rec->node.unk6 = 0;
             func_800417D0(&rec->node);
             MulMatrix2(&mat, &rec->node.xf.mat);
             cos_val = Judge[(angle + 0x400) & 0xFFF];
             /* FAKE: cz / sz / cx / sx: the four products staged ahead of the
              * sums; computed in the sums the multiplies reorder (score 61). */
-            cz = cos_val * sv.vz;
+            cz = cos_val * var_0.vz;
             sin_val = Judge[angle & 0xFFF];
-            sz = sin_val * sv.vz;
-            cx = cos_val * sv.vx;
-            sx = sin_val * sv.vx;
+            sz = sin_val * var_0.vz;
+            cx = cos_val * var_0.vx;
+            sx = sin_val * var_0.vx;
             rec->node.xf.mat.t[0] += (sz + cx) >> 12;
-            rec->node.xf.mat.t[1] += sv.vy;
+            rec->node.xf.mat.t[1] += var_0.vy;
             rec->node.xf.mat.t[2] += (cz - sx) >> 12;
-            frame++;
-            if (frame >= D_800A9CF8.unk2) {
+            var_5++;
+            if (var_5 >= D_800A9CF8.unk2) {
                 rec->unk60 = 0x1000;
             }
-            rec->unk58 = frame;
+            rec->unk58 = var_5;
             if (D_800A9CF8.unk4 == 0x12) {
                 /* FAKE: rec is reused (restored from ent below) for the paired
                  * func_8003F1D4 entry, an Unk800A6690Rec reached only
@@ -74,32 +74,32 @@ void func_80044800(void) {
                 ent = rec;
                 rec = (Unk800A9CF8Entry *)((Unk800A6690Rec *)D_800A9CF8.unk10 +
                                            i);
-                /* FAKE: last staged ahead of the scan address; in the
+                /* FAKE: last staged ahead of the var_7 address; in the
                  * expression the subtraction moves (score 8). */
                 last = D_800A9CF8.unk2 - 1;
-                scan = (s16 *)(D_800A9CF8.unk8 + (frame + last) * 12);
-                sv.vx = *scan++;
-                sv.vy = *scan++;
-                sv.vz = *scan++;
-                rec->node.xf.rot.vx = *scan++;
-                rec->node.xf.rot.vy = *scan++;
-                rec->node.xf.rot.vz = *scan++;
+                var_7 = (s16 *)(D_800A9CF8.unk8 + (var_5 + last) * 12);
+                var_0.vx = *var_7++;
+                var_0.vy = *var_7++;
+                var_0.vz = *var_7++;
+                rec->node.xf.rot.vx = *var_7++;
+                rec->node.xf.rot.vy = *var_7++;
+                rec->node.xf.rot.vz = *var_7++;
                 rec->node.unk6 = 0;
                 func_800417D0(&rec->node);
-                rec->node.xf.mat.t[0] += sv.vx;
-                rec->node.xf.mat.t[1] += sv.vy;
-                rec->node.xf.mat.t[2] += sv.vz;
+                rec->node.xf.mat.t[0] += var_0.vx;
+                rec->node.xf.mat.t[1] += var_0.vy;
+                rec->node.xf.mat.t[2] += var_0.vz;
                 rec = ent;
             }
         } else {
-            fade = rec->unk60 - 0x40;
-            if (fade < 0) {
-                fade = 0;
+            var_15 = rec->unk60 - 0x40;
+            if (var_15 < 0) {
+                var_15 = 0;
             }
-            if (fade == 0 && D_800A9CF8.unk4 != 4) {
+            if (var_15 == 0 && D_800A9CF8.unk4 != 4) {
                 rec->unk58 = -2;
             }
-            rec->unk60 = fade;
+            rec->unk60 = var_15;
         }
         list = g_draw_queue_cursor;
         g_draw_queue_cursor = list + 1;
@@ -162,21 +162,21 @@ void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     s32 sp18[3];
     s32 sp28[3];
     s32 angle;
-    s32 radius;
+    s32 var_3;
 
     sp18[1] = a0[0];
     angle = a0[1];
-    radius = a0[2];
-    sp18[0] = (rsin(angle) * radius) >> 12;
-    sp18[2] = (rcos(angle) * radius) >> 12;
+    var_3 = a0[2];
+    sp18[0] = (rsin(angle) * var_3) >> 12;
+    sp18[2] = (rcos(angle) * var_3) >> 12;
     sp18[1] = -sp18[1];
     sp18[2] = -sp18[2];
 
     sp28[1] = a1[0];
     angle = a1[1];
-    radius = a1[2];
-    sp28[0] = (rsin(angle) * radius) >> 12;
-    sp28[2] = (rcos(angle) * radius) >> 12;
+    var_3 = a1[2];
+    sp28[0] = (rsin(angle) * var_3) >> 12;
+    sp28[2] = (rcos(angle) * var_3) >> 12;
     sp28[1] = -sp28[1];
     sp28[2] = -sp28[2];
 
@@ -646,11 +646,11 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     s16 sp18[120];
     s16 sp108[32];
     s32 *p;
-    s32 *hdr;
+    s32 *var_3;
     s32 last;
     s32 prev;
-    s32 dl;
-    s32 sec;
+    s32 var_6;
+    s32 var_7;
     s32 n;
     s32 i;
     s32 y;
@@ -661,17 +661,17 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     p = func_800455AC(6);
     if (arg3 != 0) {
-        hdr = (s32 *)arg3;
+        var_3 = (s32 *)arg3;
     } else {
-        hdr = p;
+        var_3 = p;
     }
-    func_80044F50(arg0, arg1, (s32)hdr);
+    func_80044F50(arg0, arg1, (s32)var_3);
 
-    last = (s32)hdr + (((u32)hdr[1] >> 2) << 2);
-    n = hdr[0];
-    sec = (s32)hdr + (((u32)hdr[n] >> 2) << 2);
+    last = (s32)var_3 + (((u32)var_3[1] >> 2) << 2);
+    n = var_3[0];
+    var_7 = (s32)var_3 + (((u32)var_3[n] >> 2) << 2);
     if (n >= 3) {
-        prev = (s32)hdr + (((u32)hdr[n - 1] >> 2) << 2);
+        prev = (s32)var_3 + (((u32)var_3[n - 1] >> 2) << 2);
     } else {
         prev = 0;
     }
@@ -696,16 +696,16 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         if (sp108[i] >= 0) {
             switch (n) {
             case 0:
-                func_800480C0(sec, i, 0, 0, -0x180, 0xF0);
+                func_800480C0(var_7, i, 0, 0, -0x180, 0xF0);
                 break;
             case 1:
-                func_800480C0(sec, i, 0, 0x40, -0x180, 0xF1);
+                func_800480C0(var_7, i, 0, 0x40, -0x180, 0xF1);
                 break;
             case 2:
-                func_800480C0(sec, i, 0x80, 0, -0x160, 0xF0);
+                func_800480C0(var_7, i, 0x80, 0, -0x160, 0xF0);
                 break;
             case 3:
-                func_800480C0(sec, i, 0x80, 0x40, -0x160, 0xF1);
+                func_800480C0(var_7, i, 0x80, 0x40, -0x160, 0xF1);
                 break;
             }
             sp108[i] = n;
@@ -735,13 +735,13 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     if (arg3 != 0) {
         dst = (s32 *)((s32)p + 4);
-        dl = func_80044378(last, dst, sp18);
+        var_6 = func_80044378(last, dst, sp18);
         func_80044010(dst, 6);
     } else {
-        dl = func_8004428C((s32 *)last, sp18);
+        var_6 = func_8004428C((s32 *)last, sp18);
         func_80044010((s32 *)last, 6);
     }
-    func_80045230(dl);
+    func_80045230(var_6);
 
     q = sp18;
     y = 0;
@@ -769,13 +769,13 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     }
 
     if (prev != 0) {
-        *p = dl - (s32)p;
-        dl = func_80049C24(prev, dl);
-        func_80045230(dl);
+        *p = var_6 - (s32)p;
+        var_6 = func_80049C24(prev, var_6);
+        func_80045230(var_6);
     } else {
         *p = 0;
     }
-    func_80045600(6, dl);
+    func_80045600(6, var_6);
     func_80045694(6, (s32)&func_80046048);
 }
 
