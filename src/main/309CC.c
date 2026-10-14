@@ -11,7 +11,7 @@ extern u8 D_80094B48[];
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by
  * PSYLINK), in address order. */
-/* Cursor in the 10-packet bank selected by frame parity. */
+/* Cursor in the 10-packet bank D_800A9830[D_800A36AC & 1]. */
 static DR_MOVE *D_800A3378;
 
 void gpu_AddDrawMove(s32 a0, s32 a1) {

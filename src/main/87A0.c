@@ -958,8 +958,8 @@ void func_80019568(s32 arg0) {
     pkts[2] = g_pad_buf[1][0];
     pkts[3] = g_pad_buf[1][1];
     do {
-        /* FAKE: rec holds the packet's address for the loop body; indexing the
-         * packet bytes at each read adds a second induction (score 18). */
+        /* FAKE: rec holds pkts + i * 8 for the loop body; indexing
+         * pkts' bytes at each read adds a second induction (score 18). */
         u8 *rec = (u8 *)pkts + i * 8;
         s32 valid = 0;
         s32 bits;

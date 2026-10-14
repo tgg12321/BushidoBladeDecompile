@@ -7,13 +7,13 @@
 #include "gte.h"
 #include "bb2_const.h"
 
-/* Updates the two active player records in practice modes. The timed contest
+/* Updates the two active player records in practice modes. The contest
  * chooses a winner, the distance/input checks choose follow-up states, and
  * the tail emits a mode-specific effect at the players' midpoint.
  *
  * FAKE: leave the two void callees undeclared, as in the matched SOTN callers
- * below; their implicit-int results keep the record-base load after the timer
- * call. Correct void declarations miss 7 instructions.
+ * below; their implicit-int results keep the record-base load after the
+ * func_8002BEA0 call. Correct void declarations miss 7 instructions.
  * SOTN: src/main/psxsdk/libsnd/ssclose.c:8 and
  * src/main/psxsdk/libsnd/vmanager.c:1107
  * @db41b28eee52969244a52cc269c8163d1ed8826a */

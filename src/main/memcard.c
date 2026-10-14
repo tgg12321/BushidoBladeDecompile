@@ -161,7 +161,7 @@ s32 func_80037AA4(void) {
     /* FAKE: reused -- each entry's size, then the rounded total; its own
      * local for either: score 2 */
     s32 var_v0;
-    /* FAKE: shift-amount constant-holder (SOTN new_var2 shape) raises var_a0's
+    /* FAKE: constant holder for the 13 (SOTN new_var2 shape) raises var_a0's
        allocation priority; reload folds the 13 back in; literal 0xD: score 11
      */
     s32 sh;

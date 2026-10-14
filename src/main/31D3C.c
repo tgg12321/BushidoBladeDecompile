@@ -59,9 +59,9 @@ s32 func_80041650(s32 a0) {
     return -1;
 }
 
-/* Sets or clears bit 0 of the flag byte in every bone record of player arg0,
- * then pushes the player's colour (greyscaled when func_800486FC() is set)
- * through func_80041398. */
+/* Sets or clears bit 0 of the flag byte in every bone record of
+ * D_800A9A10[arg0], then pushes its colour (greyscaled when func_800486FC() is
+ * set) through func_80041398. */
 void func_80041688(s32 arg0, s32 arg1) {
     /* !FAKE: frame layout: the 0x38 frame keeps 0x20 leading bytes
        untouched (phantom-frame pad); without it: score 6 */
