@@ -157,11 +157,13 @@ extern s32 D_800A30EC;
 /* Decode entry `frame` of D_800F1B18[obj]'s stream into `out` (33 words). The
    table at stream + 0x70 holds a 24-bit bit offset per group of 8 entries
    (index frame >> 3); an entry is its group's start plus frame & 7 delta
-   steps. The four slots of D_800F1B18[obj] keep the last decoded entries
-   (->frame, ->pose, ->rate) with the reader state after each, so an entry is
-   copied from a slot, continued from a slot holding frame - 1, or decoded from
-   its group's start. `work` holds the pose (+0x00), the rates (+0x84) and the
-   codes (+0x108). */
+   steps. rec->ctr steps through the four slots; of the slot it steps to and
+   the one before, one whose ->frame is frame is copied out (and the step is
+   undone), one holding frame - 1 is continued from, and otherwise the entry is
+   decoded from its group's start. When frame & 7 is below 7, the entry
+   (->frame, ->pose, ->rate) and the reader state after it are kept in that
+   slot. `work` holds the pose (+0x00), the rates (+0x84) and the codes
+   (+0x108, copied from rec->code when D_800A30EC is 0). */
 void func_800198D0(s32 obj, s32 frame, MotionFrame *out, u16 *work) {
     Unk800F1B18Rec *rec;
     u8 *tbl;
@@ -517,7 +519,8 @@ typedef struct {
  * arg2/arg3 = the fighter records; caller func_8001E878). Eases the focus
  * toward the fighters' midpoint (or arg0's position when D_800A3690 is set);
  * turns their separation (byte-LUT square root, GTE leading-zero count for
- * large inputs) into the value D_800F6608.w18 eases 1/12 toward, clamps w18,
+ * large inputs) into the value D_800F6608.w18 eases 1/12 toward (0xBB8 in
+ * some arg2->unk_6A states), clamps w18,
  * and sets a hysteresis flag for func_8003F1E4; eases unk_10.vy / vz toward
  * the facing yaw and zero roll; then per fighter bisects unk_10.vx (rot_x) so
  * the segment from its unk_B8 less 0xC8 in vy to the eye passes func_80053614's
@@ -3329,8 +3332,12 @@ void func_80020DDC(void) {
  * cdrom_StartReadAt(func_80036EA8(1, 0), D_800A3888[i], v * 7, 7). Then sets
  * D_80101EC8[0].unk_48 to D_8008DB1C[chr0][costume0] | costume0 << 12 and
  * D_80101EC8[1].unk_48 to the same of chr1 and costume1 (a copy of the first
- * when D_800A38DC is 3), and puts each id not already in D_800A38C4[] in a
- * load slot i, for which it calls cdrom_StartRead(func_80036EA8(1, j + 2),
+ * when D_800A38DC is 3). It then fills loads[0..1] from D_800A38C4[0..1]: it
+ * returns when every id is already there; equal ids give loads[0] = id0; an
+ * id found in D_800A38C4[0] stays and the other id goes to loads[1]; id1
+ * found only in D_800A38C4[1] gives loads[0] = id0; otherwise (also when id0
+ * is only in D_800A38C4[1]) loads[0] = id0 and loads[1] = id1. For each
+ * nonzero loads[i] it calls cdrom_StartRead(func_80036EA8(1, j + 2),
  * D_800A3860[i]), j the id's D_8008DCCC index, points D_801027B0[i] into
  * D_800A3860[i] and stores the id in D_800A38C4[i]. */
 void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
@@ -3769,8 +3776,9 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
     s32 i;
     /* Ruling 11 (ordinary-c-judge-decidable): holds three values -- the
      * horizontal step (1..40, dx / dz scaled by temp / 40), the vertical
-     * step (1..40, temp * 100 in y), then the index of the record chosen
-     * from func_80046F14's block. */
+     * step (1..40, temp * 100 in y), then the index of a record of
+     * func_80046F14's block (D_800A38E0 when D_800A38DC is 3, else the one of
+     * four nearest pos in x / z). */
     s32 temp;
     s32 angle;
     s32 dx;
@@ -4721,7 +4729,8 @@ extern void func_800204C0(Unk80101EC8Record *);
  * converts the pad bits, advances the move frame, runs the move script's
  * command list (unk_50 / unk_7C, func_80021424 / func_80021A98), decodes two
  * MotionFrames with func_800198D0 (at unk_40 and at unk_40 + 1, capped at
- * unk_58[1] - 1, each offset by *unk_54, and by unk_58[1] in some states) and
+ * unk_58[1] - 1, each offset by *unk_54, and by unk_58[1] in some states;
+ * state unk_6A 0x33 instead copies D_800A3888[arg0][unk_40] into both) and
  * mixes offsets from them into unk_E8 by a 4.12 weight (unk_42 or unk_318),
  * integrates the velocities (unk_104 / unk_134) into the position, resolves
  * it (func_8002304C), then refreshes the bone points, the flags unk_62,
