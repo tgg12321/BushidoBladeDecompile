@@ -134,7 +134,7 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      KEEP decisions: docs/naming/phase3/waveNN/data_keep.csv (never fed to data_wave).
    - Wave21 (2026-10-14) bf769cb45 (+ prose bec701e4d): the first member / local wave; Vec2s16 ->
      Size2s16, 8 member resets, 5 local resets (playerData / player). Pre-apply 14/14 PASS, R6 PASS.
-   - **Next:** leads for a wave22: func_8006BEC4's local `pos` (holds a size: RESET);
+   - **Next:** leads for wave23: func_8006BEC4's local `pos` (holds a size: RESET);
      Unk8003F824Rec.quad (no fresh neutral spelling for +0x04; member destinations must be unique
      tree-wide, so it needs a spelling choice); the never-accessed `pad` members (lead ruled: "pad"
      on untouched bytes is no false claim, KEEP); other `player` locals holding D_800A9A10 objects
