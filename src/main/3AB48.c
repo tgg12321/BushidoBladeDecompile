@@ -761,17 +761,16 @@ s32 func_8005490C(void) {
      * access: score 157 */
     Unk800EFAE8Ctrl *s = &D_800EFAE8;
     VECTOR vec;
-    /* The 0x84-byte motion frame func_800198D0 decodes, as s16 channels: the
-     * root offset, heading and distance load signed (lh) and the frame goes to
-     * func_80040D48's s16 * parameter. */
+    /* The 0x84 bytes func_800198D0 decodes, as s16: three of its fields load
+     * signed (lh), and the array goes to func_80040D48's s16 * parameter. */
     s16 frame[0x42];
     s16 *v;
     s32 i;
-    /* FAKE: one variable for the three player objects (func_8004153C(0) and (1)
+    /* FAKE: one variable for the three objects (func_8004153C(0) and (1)
      * on the first frame, func_8004153C(i) in the loop): shared, it takes $s0
      * for all three; one local per value: score 9 */
     Unk80045878Obj *player;
-    /* FAKE: one variable for the camera-rotated z of the camera and of player
+    /* FAKE: one variable for the camera-rotated z of the camera and of object
      * i's root offset: read in two blocks it is not tied to the subtraction and
      * takes $t0; one local per block: score 41 */
     s32 rot_z;
@@ -1802,7 +1801,7 @@ s32 func_800571C0(Unk80101EC8Record *obj) {
     s16 work[4];
     s32 ret;
     s8 nl;
-    /* temp holds two values: the count of clear probe steps on the right-hand
+    /* temp holds two values: the count of clear steps on the right-hand
      * side, then which side was chosen (0 right, 1 left; per-branch constants,
      * Q20) (Ruling 11, ordinary-c-judge-decidable). */
     s8 temp;
@@ -2100,7 +2099,7 @@ void func_80057CC8(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
 
 /* Route arg0 around the edges of its current polygon toward (goal_x, goal_z):
  * walk the vertex ring both ways from the vertex arg0 stands at, stepping to
- * the next corner while the segment to the goal is blocked by an edge, and
+ * the next corner while the segment to that point is blocked by an edge, and
  * append the cheaper of the two corner chains (up to 8 corners) to arg0's
  * route. */
 void func_80057E84(
@@ -2136,9 +2135,9 @@ void func_80057E84(
     s16 bx;
     s16 bz;
     NavPoly *poly;
-    /* route holds three values: the down route (&path[0]) in the down corner
-     * block, the up route (&path[1]) in the up corner block, and the cheaper of
-     * the two for the copy loop (Ruling 11, reused-local-necessity). */
+    /* route holds three values: &path[0] in the first corner block, &path[1]
+     * in the second corner block, and the cheaper of the two for the copy loop
+     * (Ruling 11, reused-local-necessity). */
     CpuRoute *route;
 
     go_dn = 1;
@@ -2165,12 +2164,12 @@ void func_80057E84(
     }
     for (iter = 0; iter < nedges; iter++) {
         /* vtx holds four values, each the address of one vertex's x/z pair: the
-         * edge's start (i) and end (next) in the edge scan, then the down
-         * corner (idx_dn) and the up corner (idx_up) (Ruling 11,
+         * edge's start (i) and end (next) in the edge scan, then the corners
+         * at idx_dn and idx_up (Ruling 11,
          * reused-local-necessity). */
         s16 *vtx;
-        /* node holds two values: the waypoint appended to the down route, then
-         * the one appended to the up route (Ruling 11, reused-local-necessity).
+        /* node holds two values: the waypoint appended to &path[0], then
+         * the one appended to &path[1] (Ruling 11, reused-local-necessity).
          */
         CpuWaypoint *node;
 
@@ -2381,8 +2380,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
     u16 *list;
     u8 *e;
     u8 *ep;
-    /* FAKE: second handle to the script start, see `q = ep;` (read through ep:
-     * score 58) */
+    /* FAKE: second handle to ep's value, see `q = ep;` (read through
+     * ep: score 58) */
     u8 *q;
     u16 off;
     s16 pbest;
@@ -2645,9 +2644,10 @@ s32 func_80058580(Unk80101EC8Record *p) {
             tz = p->unk_3A2;
             wtype = p->unk_39E;
         }
-        /* !FAKE: the trailing `&& wtype == 1` repeats the first test (redundant
-         * condition, no-new-park-categories entry 16): the target re-tests $s2
-         * after the || chain; without it the chain is two instructions shorter
+        /* !FAKE: the trailing `&& wtype == 1` repeats the first test
+         * (redundant condition, no-new-park-categories entry 16): the target
+         * re-tests $s2 after the || chain; without it the chain is two
+         * instructions shorter
          */
         if (!(wtype == 1 &&
               (p->other->unk_6A == 0xA || p->unk_443 == 0xA ||
@@ -3038,8 +3038,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
                         }
                         break;
                     }
-                    /* Q82: work2's best score (the Q75 value) is compared as an
-                     * s16, as the target does (sll 16; sra 16; slt). No cast,
+                    /* Q82: work2 (the Q75 value) is compared as an s16, as
+                     * the target does (sll 16; sra 16; slt). No cast,
                      * an s16 best or score local, or work2 as s16 all differ.
                      */
                     if ((s16)work2 < score) {
@@ -3126,9 +3126,9 @@ s32 func_80058580(Unk80101EC8Record *p) {
                     while (off != 0) {
                         /* work5 holds three values in turn, each read before
                          * the next write: case 2's pattern-word top bits
-                         * (work1 >> 27); the skill offset
-                         * ((0x1000 - lv) * 625 >> 10) - 400; a copy of the
-                         * entry type et for the et < 5 and et == 5 / 6 tests
+                         * (work1 >> 27); the offset
+                         * ((0x1000 - lv) * 625 >> 10) - 400; a copy of
+                         * et for the et < 5 and et == 5 / 6 tests
                          * (Q34) (Ruling 11, reused-local-necessity). */
                         s32 work5;
                         /* FAKE: opaque 1 (no-new-park-categories entry 2,
@@ -3144,10 +3144,10 @@ s32 func_80058580(Unk80101EC8Record *p) {
                         ep += 4;
                         /* FAKE: pass-through pointer alias
                          * (pointer-alias-fake-exception; SOTN precedent
-                         * below): the target copies the script start into its
+                         * below): the target copies ep's value into its
                          * own register and reads the 0x40 character-mask header
-                         * through it while ep stays in $s6; read through ep the
-                         * allocation order shifts: score 58 */
+                         * through it while ep stays in $s6; read through
+                         * ep the allocation order shifts: score 58 */
                         /* SOTN: src/st/no0/e_stone_rose.c:611 @aa53500 */
                         q = ep;
                         if (D_80099D88[p->unk_443].flags & 0xFF00) {
@@ -3219,9 +3219,9 @@ s32 func_80058580(Unk80101EC8Record *p) {
                         work1 = e[1] * 40;
                         hi = e[2] * 40;
                         /* FAKE: do-while(0): its loop depth weights et's
-                         * references so et is allocated ahead of ep (et $s5, ep
-                         * $s6, as in the target); unwrapped: score 10
-                         * (do-while-zero-exception) */
+                         * references so et is allocated ahead of ep
+                         * (et $s5, ep $s6, as in the target);
+                         * unwrapped: score 10 (do-while-zero-exception) */
                         do {
                             et = e[0] & 7;
                         } while (0);
@@ -4039,7 +4039,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 ot) {
        arg1`: score 58. */
     sel = *(s16 *)&arg1;
     mode_off = &chunk->unk_4D8;
-    /* FAKE: the chunk's 0x4F0 bytes (sizeof(Unk8005C8A8Rec)) spelled from
+    /* FAKE: the record's 0x4F0 bytes (sizeof(Unk8005C8A8Rec)) spelled from
      * mode_off as an int: combine folds it with no REG_EQUAL note, so size
      * keeps the target's sp+0x70 slot to the return and the deleted temp's
      * stale count takes the untouched sp+0x78; the literal or sizeof is
@@ -4452,7 +4452,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     TILE *tile;
     s32 cur;
     DR_MODE *mode_off;
-    /* FAKE: the returned size is the chunk's end minus its start;
+    /* FAKE: the returned size is the record's end minus its start;
      * sizeof(Unk8005D814Rec): score 76. */
     s32 end_off;
     s16 i;
@@ -4560,11 +4560,11 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     digit[0] = digit[0] / 100;
     digit[1] = digit[1] % 100;
     s.y = 0x29;
-    /* FAKE: the tile loop's second sheet and cell, set ahead of the digit loop
-     * (pointer-alias-fake-exception): their live range spans both loops, so
-     * they are spilled and rematerialized inside the tile loop, and header[3]
-     * is not cse-related to header[2] (which would reverse the $s6/$s7 order);
-     * both direct: score 18 */
+    /* FAKE: the tile loop's second sheet and cell, set ahead of the loop over
+     * digit[] (pointer-alias-fake-exception): their live range spans both
+     * loops, so they are spilled and rematerialized inside the tile loop, and
+     * header[3] is not cse-related to header[2] (which would reverse the
+     * $s6/$s7 order); both direct: score 18 */
     /* FAKE: pointer alias; direct use scores 12 (both direct: 18) */
     hdr3 = &D_8009B398[3];
     cell3 = &D_8009B3F8; /* FAKE: pointer alias; direct use scores 6 */
@@ -4634,7 +4634,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     TILE *tile;
     s32 cur;
     DR_MODE *mode_off;
-    /* FAKE: the returned size is the chunk's end minus its start;
+    /* FAKE: the returned size is the record's end minus its start;
      * sizeof(Unk8005D814Rec): score 53. */
     s32 end_off;
     s16 i;
@@ -4769,10 +4769,9 @@ extern u8 D_800A3270[];
 
 s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     Unk8005E54CRec *chunk = (Unk8005E54CRec *)arg1;
-    /* The per-player points pair: each round's points in the round rows,
-       then the per-player totals under them. The target addresses both
-       through the one frame slot sp+0x18 (a separate totals array does not
-       match). */
+    /* An s16 pair: the round rows' values, then the totals under them. The
+       target addresses both through the one frame slot sp+0x18 (a separate
+       totals array does not match). */
     s16 points[2];
     s16 wins[2];
     Unk8007352CEnv s;
@@ -4785,7 +4784,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s32 cur;
     s32 ft4;
     DR_MODE *mode_off;
-    /* FAKE: the returned size is the chunk's end minus its start;
+    /* FAKE: the returned size is the record's end minus its start;
      * sizeof(Unk8005E54CRec): score 75. */
     s32 end_off;
     /* FAKE: i counts the players (first loop) and then the rounds; j is the
@@ -4855,7 +4854,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             cur = func_8007352C(&s);
             for (j = 0; j < 2; j++) {
                 s.x = j * 70;
-                /* FAKE: the other player's points read through a selected
+                /* FAKE: element j ^ 1 read through a selected
                    address; points[j ^ 1] (both sites): score 110. */
                 if (points[j] > *(j ? &points[0] : &points[1])) {
                     s.table = &D_8009B4FC;
@@ -4925,7 +4924,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B524, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg2, mode_off);
-    /* The second DR_MODE goes at the chunk's end, past the size this function
+    /* The second DR_MODE goes at the record's end, past the size this function
      * returns (2B344 func_8003C560 advances its cursor g_prim_buf_cursor by
      * that size; 6CF8 func_800174F4 ignores it). */
     mode_off++;
@@ -4939,7 +4938,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         points[1] = (arg0 >> (i * 4 + 2)) & 3;
         s.col_r = s.col_g = s.col_b = 0x40;
         for (j = 0; j < 2; j++) {
-            /* FAKE: the other player's points, as above; points[j ^ 1] here:
+            /* FAKE: element j ^ 1, as above; points[j ^ 1] here:
              * score 59. */
             if (points[j] <= *(j ? &points[0] : &points[1])) {
                 if (points[j] != 3) {
@@ -5074,7 +5073,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     TILE *tile;
     s32 cur;
     DR_MODE *mode_off;
-    /* FAKE: the returned size is the chunk's end minus its start;
+    /* FAKE: the returned size is the record's end minus its start;
      * sizeof(Unk8005D814Rec): score 97. */
     s32 end_off;
     /* FAKE: i/row count the win-mark pips' players and rows; k and j are reused
@@ -5124,7 +5123,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
     SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B5A0[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3, mode_off);
-    /* The second DR_MODE goes at the chunk's end, past the size this function
+    /* The second DR_MODE goes at the record's end, past the size this function
      * returns (its caller, 9F9C func_8001CE60, advances its cursor
      * g_prim_buf_cursor by that size). */
     mode_off++;
@@ -5320,7 +5319,7 @@ s32 func_8005FC9C(s32 arg0, s32 arg1) {
     DR_MODE *mode_off;
     POLY_G4 *poly;
     DR_AREA *area;
-    /* FAKE: the returned size is the chunk's end minus its start;
+    /* FAKE: the returned size is the record's end minus its start;
      * sizeof(Unk8005FC9CRec): score 55. */
     s32 end_off;
     s16 j;
@@ -5430,7 +5429,7 @@ s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2) {
     s16 d[2];
     Unk800600C8Rec *chunk = (Unk800600C8Rec *)arg1;
     DR_MODE *mode_off = &chunk->unk_B4;
-    /* FAKE: the returned size is the chunk's end minus its start;
+    /* FAKE: the returned size is the record's end minus its start;
      * sizeof(Unk800600C8Rec): score 20. */
     s32 end_off = arg1 + sizeof(Unk800600C8Rec);
     s32 cur = arg1;
@@ -5511,7 +5510,7 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     Unk8007352CEnv s;
     Unk80060414Rec *chunk = (Unk80060414Rec *)arg1;
     DR_MODE *mode_off;
-    /* FAKE: the returned size is the chunk's end minus its start;
+    /* FAKE: the returned size is the record's end minus its start;
      * sizeof(Unk80060414Rec): score 22. */
     s32 end_off;
     mode_off = &chunk->unk_14;
@@ -5547,7 +5546,7 @@ extern Unk8009B400Record D_8009B840[2];
 s32 func_80060544(s32 arg0, s32 arg1) {
     Unk80060544Rec *chunk = (Unk80060544Rec *)arg0;
     Unk8007352CEnv s;
-    /* FAKE: the returned size is the chunk's end minus its start;
+    /* FAKE: the returned size is the record's end minus its start;
      * sizeof(Unk80060544Rec): score 25. */
     s32 end_off;
     s32 ft4;
