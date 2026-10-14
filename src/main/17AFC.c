@@ -149,9 +149,9 @@ void func_80027438(Unk80101EC8Record *a0, s32 a1, s16 a2) {
 void math_NegNormalize3D(s32 *arg0, s16 *arg1) {
     u32 dist_sq =
         (u32)((arg0[0] * arg0[0]) + (arg0[1] * arg0[1]) + (arg0[2] * arg0[2]));
-    u32 log2_val;
+    u32 var_1;
     if (dist_sq < 0x400) {
-        log2_val = ((u32)(g_sqrt_table_u8[dist_sq])) >> 3;
+        var_1 = ((u32)(g_sqrt_table_u8[dist_sq])) >> 3;
     } else {
         s32 sp_tmp;
         /* Hand-written GTE leading-zero count (LZCS in, LZCR out), as in
@@ -176,20 +176,20 @@ void math_NegNormalize3D(s32 *arg0, s16 *arg1) {
             idx = dist_sq >> v1_m;
             v1_m = v1_m >> 1;
             hi = (u32)((u8)(g_sqrt_table_u8[idx]));
-            log2_val = (hi << 16) >> (0x13 - v1_m);
+            var_1 = (hi << 16) >> (0x13 - v1_m);
         }
     }
-    arg1[0] = (s16)(((-arg0[0]) << 12) / ((s32)log2_val));
-    arg1[1] = (s16)(((-arg0[1]) << 12) / ((s32)log2_val));
-    arg1[2] = (s16)(((-arg0[2]) << 12) / ((s32)log2_val));
+    arg1[0] = (s16)(((-arg0[0]) << 12) / ((s32)var_1));
+    arg1[1] = (s16)(((-arg0[1]) << 12) / ((s32)var_1));
+    arg1[2] = (s16)(((-arg0[2]) << 12) / ((s32)var_1));
 }
 
 void func_80027640(Unk80101EC8Record *arg0) {
-    VECTOR tgt;
-    VECTOR dir;
+    VECTOR var_0;
+    VECTOR var_1;
     s32 idx;
     s16 *tbl;
-    s32 rate;
+    s32 var_4;
     u8 cnt;
     u16 *r1;
     void *r2;
@@ -202,36 +202,36 @@ void func_80027640(Unk80101EC8Record *arg0) {
     if (cnt < 0x40) {
         arg0->unk_34C = cnt + 1;
     }
-    rate = 0x3C - ((arg0->unk_34C - 1) * 4);
-    if (rate < 10) {
-        rate = 10;
+    var_4 = 0x3C - ((arg0->unk_34C - 1) * 4);
+    if (var_4 < 10) {
+        var_4 = 10;
     }
     if (D_800A36A4 == 3) {
         vx = 0x2EE0;
         if (arg0->other->unk_F4.x >= 0x3E9) {
             vx = -0x2710;
         }
-        dir.vx = vx;
+        var_1.vx = vx;
         vz = 0x1770;
         if (arg0->other->unk_F4.z > 0) {
             vz = -0x1770;
         }
-        dir.vz = vz;
-        tgt.vx = (dir.vx * rate + arg0->unk_F4.x * (100 - rate)) / 100;
-        tgt.vz = (dir.vz * rate + arg0->unk_F4.z * (100 - rate)) / 100;
+        var_1.vz = vz;
+        var_0.vx = (var_1.vx * var_4 + arg0->unk_F4.x * (100 - var_4)) / 100;
+        var_0.vz = (var_1.vz * var_4 + arg0->unk_F4.z * (100 - var_4)) / 100;
     } else {
         tbl += (D_800A36A4 * 12 + idx * 3);
-        tgt.vx = tbl[0];
-        tgt.vz = tbl[2];
+        var_0.vx = tbl[0];
+        var_0.vz = tbl[2];
     }
-    tgt.vx -= arg0->unk_F4.x;
-    tgt.vz -= arg0->unk_F4.z;
-    arg0->unk_F4.x += tgt.vx;
-    arg0->unk_F4.z += tgt.vz;
-    arg0->unk_D8.x += tgt.vx;
-    arg0->unk_D8.z += tgt.vz;
-    arg0->unk_B8.vx += tgt.vx;
-    arg0->unk_B8.vz += tgt.vz;
+    var_0.vx -= arg0->unk_F4.x;
+    var_0.vz -= arg0->unk_F4.z;
+    arg0->unk_F4.x += var_0.vx;
+    arg0->unk_F4.z += var_0.vz;
+    arg0->unk_D8.x += var_0.vx;
+    arg0->unk_D8.z += var_0.vz;
+    arg0->unk_B8.vx += var_0.vx;
+    arg0->unk_B8.vz += var_0.vz;
     arg0->unk_104.vx = 0;
     arg0->unk_104.vy = 0;
     arg0->unk_104.vz = 0;
@@ -244,7 +244,7 @@ void func_80027640(Unk80101EC8Record *arg0) {
     func_80032854(arg0->index, 0x30, &arg0->unk_F4.x, 0);
 }
 
-void func_800278C0(s32 a0, Unk80101EC8Record *ptr, s32 cmd, Tbl8008E194 *a3,
+void func_800278C0(s32 a0, Unk80101EC8Record *ptr, s32 arg2, Tbl8008E194 *a3,
                    s32 *stack_a2, s32 stack_v1) {
     Unk80101EC8Record *chk_obj;
 
@@ -276,12 +276,12 @@ void func_800278C0(s32 a0, Unk80101EC8Record *ptr, s32 cmd, Tbl8008E194 *a3,
         }
     }
 
-    if (cmd == 0) {
+    if (arg2 == 0) {
         func_80032854(ptr->other->index, 0x22, stack_a2, (s16 *)0);
         return;
     }
 
-    if (cmd < 6) {
+    if (arg2 < 6) {
         func_80032854(ptr->other->index, 0x23, stack_a2, (s16 *)0);
         return;
     }
@@ -353,7 +353,7 @@ void func_80027A58(Unk80101EC8Record *a0) {
 
 extern u8 D_8008EB74[3][2][2];
 
-s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
+s32 func_80027AD8(s32 pass, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
                   s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
     /* FAKE: tbl, tbl_arg: copies of the stack-passed parameter `rec` (an
      * unmodified stack parameter gets half the register priority); rec used
@@ -362,13 +362,13 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
     Tbl8008E194 *tbl_arg; /* the record, passed on to func_800278C0 */
     s16 *vec;
     s32 *scr;
-    s32 player;
-    Unk80101EC8Record *opp;
+    s32 var_4;
+    Unk80101EC8Record *var_5;
     s32 dot;
     s32 dot_lo;
-    u16 st;
+    u16 var_8;
     s32 diff;
-    s32 cat;
+    s32 var_10;
     u32 sign;
     s32 same;
     s32 code;
@@ -377,137 +377,137 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
      * first's address, passed to func_800203B4 and read as vec[0..2] (Q96); as
      * s16[3] or {x,y,z}: score 2 */
     vec = &D_800A37E8;
-    player = ch->index;
-    opp = ch->other;
+    var_4 = arg1->index;
+    var_5 = arg1->other;
     tbl = rec;
     tbl_arg = rec;
-    scr = &SPAD->unkA8[player][limb].x;
+    scr = &SPAD->unkA8[var_4][arg2].x;
     *out = 0;
-    if (ch->unk_0C == 0x1C) {
-        dot = (ch->unk_1EC.x * D_800A37E8 + ch->unk_1EC.y * D_800A37EA +
-               ch->unk_1EC.z * D_800A37EC) >>
+    if (arg1->unk_0C == 0x1C) {
+        dot = (arg1->unk_1EC.x * D_800A37E8 + arg1->unk_1EC.y * D_800A37EA +
+               arg1->unk_1EC.z * D_800A37EC) >>
               12;
         dot &= 0x1FFF;
         if (dot >= 0x1000) {
             dot -= 0x2000;
         }
         dot_lo = dot < 0x400;
-        if (!((0xE >> limb) & 1) || dot_lo) {
-            if (ch->unk_96 == 0) {
-                ch->unk_286 = 0x1E;
+        if (!((0xE >> arg2) & 1) || dot_lo) {
+            if (arg1->unk_96 == 0) {
+                arg1->unk_286 = 0x1E;
             }
-            if (pass == 0 && opp->unk_286 == -1) {
-                opp->unk_286 = tbl == NULL ? 0xB : 0x19;
+            if (pass == 0 && var_5->unk_286 == -1) {
+                var_5->unk_286 = tbl == NULL ? 0xB : 0x19;
             }
-            func_80032854(player, 0x12, scr, 0);
+            func_80032854(var_4, 0x12, scr, 0);
             return 0;
         }
     }
-    if (ch->unk_0C == 0xD && ch->unk_96 == 0 && ch->unk_6A != 0x2E) {
-        func_80027640(ch);
+    if (arg1->unk_0C == 0xD && arg1->unk_96 == 0 && arg1->unk_6A != 0x2E) {
+        func_80027640(arg1);
         return 2;
     }
-    st = ch->unk_6A;
-    if (st == 4 || st == 0x14) {
-        func_800203B4(ch, limb, vec);
-        func_800278C0(pass, ch, limb, tbl_arg, scr, arg6);
+    var_8 = arg1->unk_6A;
+    if (var_8 == 4 || var_8 == 0x14) {
+        func_800203B4(arg1, arg2, vec);
+        func_800278C0(pass, arg1, arg2, tbl_arg, scr, arg6);
         return 1;
     }
-    if (ch->unk_0C == 0x1F) {
-        func_800203B4(ch, limb, vec);
-        func_800278C0(pass, ch, limb, tbl_arg, scr, arg6);
-        ch->unk_286 = 7;
+    if (arg1->unk_0C == 0x1F) {
+        func_800203B4(arg1, arg2, vec);
+        func_800278C0(pass, arg1, arg2, tbl_arg, scr, arg6);
+        arg1->unk_286 = 7;
         return 1;
     }
-    if ((st == 2 || st == 0x1B || st == 0x28 || st == 0x26) &&
-        ch->unk_40 < ch->unk_A0) {
+    if ((var_8 == 2 || var_8 == 0x1B || var_8 == 0x28 || var_8 == 0x26) &&
+        arg1->unk_40 < arg1->unk_A0) {
         if (pass == 0) {
-            diff = opp->unk_20 - ch->unk_20;
-            cat = func_800272FC(diff);
+            diff = var_5->unk_20 - arg1->unk_20;
+            var_10 = func_800272FC(diff);
             /* FAKE: diff's sign bit taken before the same / unk_B4 stores and
-             * the call; read at its use, ch and limb swap $s0 / $s1:
+             * the call; read at its use, arg1 and arg2 swap $s0 / $s1:
              * score 102 */
             sign = (u32)diff >> 31;
-            same = ch->unk_AF == opp->unk_AF;
-            ch->unk_B4 = opp->unk_B4 = same;
-            func_80032854(player, same ? 0xF : 2, scr, 0);
-            code = ch->unk_286 = D_8008EB74[cat][sign][same];
+            same = arg1->unk_AF == var_5->unk_AF;
+            arg1->unk_B4 = var_5->unk_B4 = same;
+            func_80032854(var_4, same ? 0xF : 2, scr, 0);
+            code = arg1->unk_286 = D_8008EB74[var_10][sign][same];
             if (code == 0) {
-                func_80032854(player == 0, 0x25, scr, 0);
-                func_80032854(player, 0x25, scr, 0);
+                func_80032854(var_4 == 0, 0x25, scr, 0);
+                func_80032854(var_4, 0x25, scr, 0);
             } else if (code == 1) {
-                func_80032854(player == 0, 0x26, scr, 0);
-                func_80032854(player, 0x25, scr, 0);
-                func_80032854(player, 0x2D, scr, 0);
+                func_80032854(var_4 == 0, 0x26, scr, 0);
+                func_80032854(var_4, 0x25, scr, 0);
+                func_80032854(var_4, 0x2D, scr, 0);
             } else if (code == 2) {
-                func_80032854(player == 0, 0x26, scr, 0);
-                func_80032854(player, 0x26, scr, 0);
-                func_80032854(player, 0x2D, scr, 0);
-                func_80027A58(ch);
+                func_80032854(var_4 == 0, 0x26, scr, 0);
+                func_80032854(var_4, 0x26, scr, 0);
+                func_80032854(var_4, 0x2D, scr, 0);
+                func_80027A58(arg1);
             } else {
                 return 0;
             }
-            if (ch->unk_286 != 2) {
+            if (arg1->unk_286 != 2) {
                 return 0;
             }
             if (vec[1] * vec[1] < vec[0] * vec[0] + vec[2] * vec[2]) {
-                func_8001F860(ch, ratan2(vec[0], vec[2]));
-                ch->unk_134.vx -= vec[0] / 16;
-                ch->unk_134.vz -= vec[2] / 16;
+                func_8001F860(arg1, ratan2(vec[0], vec[2]));
+                arg1->unk_134.vx -= vec[0] / 16;
+                arg1->unk_134.vz -= vec[2] / 16;
             }
             return 0;
         }
         if (pass == 1) {
             if (tbl->unkC == 0) {
-                func_80032854(player, 2, scr, 0);
-                func_80032854(player, 0x25, scr, 0);
-                ch->unk_286 = 0;
+                func_80032854(var_4, 2, scr, 0);
+                func_80032854(var_4, 0x25, scr, 0);
+                arg1->unk_286 = 0;
                 *out = pass;
                 return 0;
             }
             if (tbl->unkC == 1) {
-                func_80032854(player, 2, scr, 0);
-                func_80032854(player, 0x25, scr, 0);
-                ch->unk_286 = 1;
-                func_8001F860(ch, ratan2(vec[0], vec[2]));
-                ch->unk_134.vx -= vec[0] / 16;
-                ch->unk_134.vz -= vec[2] / 16;
+                func_80032854(var_4, 2, scr, 0);
+                func_80032854(var_4, 0x25, scr, 0);
+                arg1->unk_286 = 1;
+                func_8001F860(arg1, ratan2(vec[0], vec[2]));
+                arg1->unk_134.vx -= vec[0] / 16;
+                arg1->unk_134.vz -= vec[2] / 16;
                 *out = pass;
                 return 0;
             }
         }
     }
-    if (D_800A38DC == 0 && player == 0) {
-        func_8002738C(0, limb);
+    if (D_800A38DC == 0 && var_4 == 0) {
+        func_8002738C(0, arg2);
     }
-    func_800278C0(pass, ch, limb, tbl_arg, scr, arg6);
-    st = ch->unk_6A;
-    if (st == 6 || st == 9) {
+    func_800278C0(pass, arg1, arg2, tbl_arg, scr, arg6);
+    var_8 = arg1->unk_6A;
+    if (var_8 == 6 || var_8 == 9) {
         if (flag) {
-            ch->unk_286 = ch->unk_1DA ? 6 : 7;
-            func_800203B4(ch, limb, vec);
+            arg1->unk_286 = arg1->unk_1DA ? 6 : 7;
+            func_800203B4(arg1, arg2, vec);
             return 1;
         }
-        ch->unk_286 = ch->unk_1DA ? 3 : 4;
-        func_80032854(player, 3, scr, 0);
-        func_80027438(ch, limb, 1);
+        arg1->unk_286 = arg1->unk_1DA ? 3 : 4;
+        func_80032854(var_4, 3, scr, 0);
+        func_80027438(arg1, arg2, 1);
         return 0;
     }
     if (pass == 1 && tbl->unk0 == 4) {
-        s16 kind = ch->unk_0A;
+        s16 kind = arg1->unk_0A;
         if (kind == 2 || kind == 4 || kind == 0xE || kind == 0xF) {
-            func_80027438(ch, limb, tbl->unkD == 2 ? 2 : 1);
-            ch->unk_286 = 0x1B;
-            func_80032854(player, 3, scr, 0);
+            func_80027438(arg1, arg2, tbl->unkD == 2 ? 2 : 1);
+            arg1->unk_286 = 0x1B;
+            func_80032854(var_4, 3, scr, 0);
             return 0;
         }
     }
-    switch (limb) {
+    switch (arg2) {
     case 0:
         if (flag) {
-            ch->unk_286 = thresh > 0x400 ? 6 : 9;
-            func_800203B4(ch, limb, vec);
-            func_80027A58(ch);
+            arg1->unk_286 = thresh > 0x400 ? 6 : 9;
+            func_800203B4(arg1, arg2, vec);
+            func_80027A58(arg1);
             return 1;
         }
         /* FAKE: count/return tail duplicated into each arm: the extra copies
@@ -515,22 +515,22 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
          * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
          * 4-5 copy: score 31 */
         if (pass == 1 && tbl->unkD == 2) {
-            ch->unk_272++;
+            arg1->unk_272++;
         }
         if (D_800A38DC != 5) {
-            ch->unk_272++;
+            arg1->unk_272++;
         }
-        ch->unk_286 = 5;
-        func_80032854(player, 3, scr, 0);
-        func_80027A58(ch);
+        arg1->unk_286 = 5;
+        func_80032854(var_4, 3, scr, 0);
+        func_80027A58(arg1);
         return 0;
     case 1:
     case 2:
     case 3:
         if (flag) {
-            ch->unk_286 = thresh > 0x400 ? 7 : 9;
-            func_800203B4(ch, limb, vec);
-            func_80027A58(ch);
+            arg1->unk_286 = thresh > 0x400 ? 7 : 9;
+            func_800203B4(arg1, arg2, vec);
+            func_80027A58(arg1);
             return 1;
         }
         /* FAKE: count/return tail duplicated into each arm: the extra copies
@@ -538,14 +538,14 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
          * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
          * 4-5 copy: score 31 */
         if (pass == 1 && tbl->unkD == 2) {
-            ch->unk_272++;
+            arg1->unk_272++;
         }
         if (D_800A38DC != 5) {
-            ch->unk_272++;
+            arg1->unk_272++;
         }
-        ch->unk_286 = 5;
-        func_80032854(player, 3, scr, 0);
-        func_80027A58(ch);
+        arg1->unk_286 = 5;
+        func_80032854(var_4, 3, scr, 0);
+        func_80027A58(arg1);
         return 0;
     case 4:
     case 5:
@@ -555,43 +555,43 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
              * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
              * 4-5 copy: score 31 */
             if (pass == 1 && tbl->unkD == 2) {
-                ch->unk_272++;
+                arg1->unk_272++;
             }
             if (D_800A38DC != 5) {
-                ch->unk_272++;
+                arg1->unk_272++;
             }
-            ch->unk_286 = 5;
-            func_80032854(player, 3, scr, 0);
-            func_80027A58(ch);
+            arg1->unk_286 = 5;
+            func_80032854(var_4, 3, scr, 0);
+            func_80027A58(arg1);
             return 0;
         }
-        ch->unk_286 = thresh > 0x400 ? 8 : 9;
-        func_800203B4(ch, limb, vec);
-        func_80027A58(ch);
+        arg1->unk_286 = thresh > 0x400 ? 8 : 9;
+        func_800203B4(arg1, arg2, vec);
+        func_80027A58(arg1);
         return 1;
     case 6:
     case 7:
     case 8:
     case 9:
         if (D_800A38DC != 5) {
-            ch->unk_26C = 0;
+            arg1->unk_26C = 0;
         }
-        ch->unk_286 = 4;
-        ch->unk_90 = 0;
-        func_80032854(player, 3, scr, 0);
-        func_80027A58(ch);
-        ch->unk_8A = 0;
+        arg1->unk_286 = 4;
+        arg1->unk_90 = 0;
+        func_80032854(var_4, 3, scr, 0);
+        func_80027A58(arg1);
+        arg1->unk_8A = 0;
         return 0;
     case 10:
     case 11:
     case 12:
     case 13:
         if (D_800A38DC != 5) {
-            ch->unk_270++;
+            arg1->unk_270++;
         }
-        ch->unk_286 = 5;
-        func_80032854(player, 3, scr, 0);
-        func_80027A58(ch);
+        arg1->unk_286 = 5;
+        func_80032854(var_4, 3, scr, 0);
+        func_80027A58(arg1);
         return 0;
     case 14:
     case 15:
@@ -602,11 +602,11 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
     case 20:
     case 21:
         if (D_800A38DC != 5) {
-            ch->unk_26E++;
+            arg1->unk_26E++;
         }
-        ch->unk_286 = 3;
-        func_80032854(player, 3, scr, 0);
-        func_80027A58(ch);
+        arg1->unk_286 = 3;
+        func_80032854(var_4, 3, scr, 0);
+        func_80027A58(arg1);
         return 0;
     }
 }
@@ -884,18 +884,18 @@ extern s32 D_800A3144[2];
  * except the three FAKE-annotated locals below (dist, tbl, shift). */
 void func_800288C8(void) {
     s32 lzc_out;
-    s32 hits;
+    s32 var_1;
     s32 i;
     s32 j;
     s32 c;
-    s32 push1_x;
-    s32 push1_z;
-    s32 push2_x;
-    s32 push2_z;
+    s32 var_5;
+    s32 var_6;
+    s32 var_7;
+    s32 var_8;
     s32 dx;
     s32 dy;
     s32 dz;
-    s32 reach;
+    s32 var_12;
     /* FAKE: two values -- the squared distance, then its square root (clamped
      * to 1); a separate squared-distance local reorders the copy and the r*r
      * test (score 7) */
@@ -904,11 +904,11 @@ void func_800288C8(void) {
      * then the table byte; a fresh copy local (or dist itself) takes $v1, not
      * the target's $a0: score 13 (Q28) */
     s32 tbl;
-    s32 pen;
-    s32 bias;
+    s32 var_15;
+    s32 var_16;
     s32 flag1;
     s32 flag2;
-    s32 facing;
+    s32 var_19;
 
     if (D_80101EC8[0].unk_6A == 0x28 || D_80101EC8[1].unk_6A == 0x28) {
         return;
@@ -921,23 +921,23 @@ void func_800288C8(void) {
         SPAD->unk78[c][1].y = (SPAD->unkA8[c][15].y + SPAD->unkA8[c][19].y) / 2;
         SPAD->unk78[c][1].z = (SPAD->unkA8[c][15].z + SPAD->unkA8[c][19].z) / 2;
     }
-    hits = 0;
-    push1_x = push1_z = push2_x = push2_z = 0;
+    var_1 = 0;
+    var_5 = var_6 = var_7 = var_8 = 0;
     for (i = 0; i < 2; i++) {
         for (j = 0; j < 2; j++) {
             dx = SPAD->unk78[0][i].x - SPAD->unk78[1][j].x;
             dy = SPAD->unk78[0][i].y - SPAD->unk78[1][j].y;
             dz = SPAD->unk78[0][i].z - SPAD->unk78[1][j].z;
-            reach = D_800A3144[i] + D_800A3144[j];
-            if (dx > reach || dx < -reach || dy > reach || dy < -reach ||
-                dz > reach || dz < -reach) {
+            var_12 = D_800A3144[i] + D_800A3144[j];
+            if (dx > var_12 || dx < -var_12 || dy > var_12 || dy < -var_12 ||
+                dz > var_12 || dz < -var_12) {
                 continue;
             }
             dist = dx * dx + dy * dy + dz * dz;
-            if (reach * reach < dist) {
+            if (var_12 * var_12 < dist) {
                 continue;
             }
-            hits++;
+            var_1++;
             tbl = dist;
             if ((u32)dist < 0x400) {
                 dist = (u32)g_sqrt_table_u8[dist] >> 3;
@@ -961,21 +961,21 @@ void func_800288C8(void) {
                     dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
                 }
             }
-            pen = reach - dist;
-            if (pen > 0x80) {
-                pen = 0x80;
+            var_15 = var_12 - dist;
+            if (var_15 > 0x80) {
+                var_15 = 0x80;
             }
             if (dist == 0) {
                 dist = 1;
             }
-            bias = (D_80101EC8[1].unk_20 - D_80101EC8[0].unk_20) / 4;
-            push1_x += (dx * (pen * (0x400 + bias)) / dist) >> 10;
-            push1_z += (dz * (pen * (0x400 + bias)) / dist) >> 10;
-            push2_x -= (dx * (pen * (0x400 - bias)) / dist) >> 10;
-            push2_z -= (dz * (pen * (0x400 - bias)) / dist) >> 10;
+            var_16 = (D_80101EC8[1].unk_20 - D_80101EC8[0].unk_20) / 4;
+            var_5 += (dx * (var_15 * (0x400 + var_16)) / dist) >> 10;
+            var_6 += (dz * (var_15 * (0x400 + var_16)) / dist) >> 10;
+            var_7 -= (dx * (var_15 * (0x400 - var_16)) / dist) >> 10;
+            var_8 -= (dz * (var_15 * (0x400 - var_16)) / dist) >> 10;
         }
     }
-    if (hits == 0) {
+    if (var_1 == 0) {
         return;
     }
     flag1 = 0;
@@ -992,26 +992,26 @@ void func_800288C8(void) {
             flag2 = 1;
         }
     }
-    facing = (D_80101EC8[0].unk_1C8.vy - D_80101EC8[1].unk_1C8.vy) & 0xFFF;
-    if (facing >= 0x800) {
-        facing = 0x1000 - facing;
+    var_19 = (D_80101EC8[0].unk_1C8.vy - D_80101EC8[1].unk_1C8.vy) & 0xFFF;
+    if (var_19 >= 0x800) {
+        var_19 = 0x1000 - var_19;
     }
     if (flag1) {
         if (flag2) {
-            if (facing > 0x600) {
+            if (var_19 > 0x600) {
                 func_80032854(0, 0x21, &D_80101EC8[0].unk_F4.x, 0);
                 D_80101EC8[1].unk_286 = 0xF;
                 D_80101EC8[0].unk_286 = 0xF;
                 func_80027A58(&D_80101EC8[0]);
                 func_80027A58(&D_80101EC8[1]);
-                hits = 0;
+                var_1 = 0;
             }
         } else {
-            if (facing < 0x400 && D_80101EC8[1].unk_6A == 0x15) {
+            if (var_19 < 0x400 && D_80101EC8[1].unk_6A == 0x15) {
                 D_80101EC8[1].unk_286 = 0x10;
                 func_80027A58(&D_80101EC8[1]);
             }
-            if (facing > 0x600 && D_80101EC8[1].unk_6A == 0x15) {
+            if (var_19 > 0x600 && D_80101EC8[1].unk_6A == 0x15) {
                 if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7 ||
                     D_80101EC8[1].unk_0E == 6 || D_80101EC8[1].unk_0E == 7) {
                     func_80032854(1, 0x21, &D_80101EC8[1].unk_F4.x, 0);
@@ -1024,11 +1024,11 @@ void func_800288C8(void) {
             }
         }
     } else if (flag2) {
-        if (facing < 0x400 && D_80101EC8[0].unk_6A == 0x15) {
+        if (var_19 < 0x400 && D_80101EC8[0].unk_6A == 0x15) {
             D_80101EC8[0].unk_286 = 0x10;
             func_80027A58(&D_80101EC8[0]);
         }
-        if (facing > 0x600 && D_80101EC8[0].unk_6A == 0x15) {
+        if (var_19 > 0x600 && D_80101EC8[0].unk_6A == 0x15) {
             if (D_80101EC8[0].unk_0E == 6 || D_80101EC8[0].unk_0E == 7 ||
                 D_80101EC8[1].unk_0E == 6 || D_80101EC8[1].unk_0E == 7) {
                 func_80032854(0, 0x21, &D_80101EC8[0].unk_F4.x, 0);
@@ -1040,11 +1040,11 @@ void func_800288C8(void) {
             }
         }
     }
-    if (hits != 0) {
-        D_80101EC8[0].unk_134.vx += push1_x;
-        D_80101EC8[0].unk_134.vz += push1_z;
-        D_80101EC8[1].unk_134.vx += push2_x;
-        D_80101EC8[1].unk_134.vz += push2_z;
+    if (var_1 != 0) {
+        D_80101EC8[0].unk_134.vx += var_5;
+        D_80101EC8[0].unk_134.vz += var_6;
+        D_80101EC8[1].unk_134.vx += var_7;
+        D_80101EC8[1].unk_134.vz += var_8;
     }
 }
 
@@ -1194,7 +1194,7 @@ extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
  * restored. */
 s32 func_80029454(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
-    Unk80107850Rec *ws = SPAD->unkA8[0];
+    Unk80107850Rec *var_1 = SPAD->unkA8[0];
     Unk80107850Rec saved[16];
     s32 count[2];
     /* i, j, n, k: loop counters, each shared by several loops */
@@ -1228,28 +1228,29 @@ s32 func_80029454(void) {
             continue;
         }
         if (rec->unk_0E == 4 || rec->unk_0E == 5) {
-            ws[0] = SPAD->unk00[i][0];
-            ws[1] = SPAD->unk00[i][2];
-            ws[2] = rec->unk_210[0];
-            ws[3] = rec->unk_210[2];
-            ws[4] = SPAD->unk00[i][0];
-            ws[5] = SPAD->unk00[i][1];
-            ws[6] = rec->unk_210[0];
-            ws[7] = rec->unk_210[1];
+            var_1[0] = SPAD->unk00[i][0];
+            var_1[1] = SPAD->unk00[i][2];
+            var_1[2] = rec->unk_210[0];
+            var_1[3] = rec->unk_210[2];
+            var_1[4] = SPAD->unk00[i][0];
+            var_1[5] = SPAD->unk00[i][1];
+            var_1[6] = rec->unk_210[0];
+            var_1[7] = rec->unk_210[1];
         } else {
-            ws[0] = SPAD->unk00[i][0];
-            ws[1] = SPAD->unk00[i][1];
-            ws[2] = rec->unk_210[0];
-            ws[3] = rec->unk_210[1];
+            var_1[0] = SPAD->unk00[i][0];
+            var_1[1] = SPAD->unk00[i][1];
+            var_1[2] = rec->unk_210[0];
+            var_1[3] = rec->unk_210[1];
             if (rec->unk_8C != 0) {
-                ws[4] = SPAD->unk48[i][0];
-                ws[5] = SPAD->unk48[i][1];
-                ws[6] = rec->unk_234[0];
-                ws[7] = rec->unk_234[1];
+                var_1[4] = SPAD->unk48[i][0];
+                var_1[5] = SPAD->unk48[i][1];
+                var_1[6] = rec->unk_234[0];
+                var_1[7] = rec->unk_234[1];
             }
         }
         if (rec->unk_40 >= rec->unk_A1[0] && rec->unk_40 <= rec->unk_A3[0] &&
-            func_800290B8(0, rec->unk_0E == 4 || rec->unk_0E == 5, ws) != 0) {
+            func_800290B8(0, rec->unk_0E == 4 || rec->unk_0E == 5, var_1) !=
+                0) {
             func_80032854(i, 1, &scr->unk100[0].x, 0);
             func_80032854(i, 0x26, &scr->unk100[0].x, 0);
             func_80032854(i, 0x2D, &scr->unk100[0].x, 0);
@@ -1257,7 +1258,7 @@ s32 func_80029454(void) {
             rec->unk_AD = 0;
         } else if (
             rec->unk_8C != 0 && rec->unk_40 >= rec->unk_A1[1] &&
-            rec->unk_40 <= rec->unk_A3[1] && func_800290B8(1, 0, ws) != 0) {
+            rec->unk_40 <= rec->unk_A3[1] && func_800290B8(1, 0, var_1) != 0) {
             func_80032854(i, 1, &scr->unk100[0].x, 0);
             func_80032854(i, 0x26, &scr->unk100[0].x, 0);
             func_80032854(i, 0x2D, &scr->unk100[0].x, 0);
@@ -1267,7 +1268,7 @@ s32 func_80029454(void) {
     }
 
     for (i = 0; i < 2; i++) {
-        Unk80107850Rec *dst = &ws[i * 8];
+        Unk80107850Rec *dst = &var_1[i * 8];
         rec = &D_80101EC8[i];
         dst[0] = SPAD->unk00[i][0];
         dst[1] = SPAD->unk00[i][1];
@@ -1291,7 +1292,7 @@ s32 func_80029454(void) {
 
     for (i = 0; i < 2; i++) {
         for (j = 0; j < 4; j++) {
-            p = (s32 *)((u8 *)ws + (i * 0x60 + j * 0x18));
+            p = (s32 *)((u8 *)var_1 + (i * 0x60 + j * 0x18));
             p[0] >>= 1;
             p[1] >>= 1;
             p[2] >>= 1;
@@ -1305,24 +1306,24 @@ s32 func_80029454(void) {
     for (j = 0; j < count[0]; j++) {
         switch (j) {
         case 0:
-            scr->unk60[0] = &ws[2];
-            scr->unk60[1] = &ws[3];
-            scr->unk60[2] = &ws[1];
+            scr->unk60[0] = &var_1[2];
+            scr->unk60[1] = &var_1[3];
+            scr->unk60[2] = &var_1[1];
             break;
         case 1:
-            scr->unk60[0] = &ws[0];
-            scr->unk60[1] = &ws[1];
-            scr->unk60[2] = &ws[2];
+            scr->unk60[0] = &var_1[0];
+            scr->unk60[1] = &var_1[1];
+            scr->unk60[2] = &var_1[2];
             break;
         case 2:
-            scr->unk60[0] = &ws[6];
-            scr->unk60[1] = &ws[7];
-            scr->unk60[2] = &ws[5];
+            scr->unk60[0] = &var_1[6];
+            scr->unk60[1] = &var_1[7];
+            scr->unk60[2] = &var_1[5];
             break;
         case 3:
-            scr->unk60[0] = &ws[4];
-            scr->unk60[1] = &ws[5];
-            scr->unk60[2] = &ws[6];
+            scr->unk60[0] = &var_1[4];
+            scr->unk60[1] = &var_1[5];
+            scr->unk60[2] = &var_1[6];
             break;
         }
         if (func_8002DAD0(scr) == 0) {
@@ -1351,24 +1352,24 @@ s32 func_80029454(void) {
         for (n = 0; n < count[1]; n++) {
             switch (n) {
             case 0:
-                scr->unk6C[0] = &ws[10];
-                scr->unk6C[1] = &ws[11];
-                scr->unk6C[2] = &ws[9];
+                scr->unk6C[0] = &var_1[10];
+                scr->unk6C[1] = &var_1[11];
+                scr->unk6C[2] = &var_1[9];
                 break;
             case 1:
-                scr->unk6C[0] = &ws[8];
-                scr->unk6C[1] = &ws[9];
-                scr->unk6C[2] = &ws[10];
+                scr->unk6C[0] = &var_1[8];
+                scr->unk6C[1] = &var_1[9];
+                scr->unk6C[2] = &var_1[10];
                 break;
             case 2:
-                scr->unk6C[0] = &ws[14];
-                scr->unk6C[1] = &ws[15];
-                scr->unk6C[2] = &ws[13];
+                scr->unk6C[0] = &var_1[14];
+                scr->unk6C[1] = &var_1[15];
+                scr->unk6C[2] = &var_1[13];
                 break;
             case 3:
-                scr->unk6C[0] = &ws[12];
-                scr->unk6C[1] = &ws[13];
-                scr->unk6C[2] = &ws[14];
+                scr->unk6C[0] = &var_1[12];
+                scr->unk6C[1] = &var_1[13];
+                scr->unk6C[2] = &var_1[14];
                 break;
             }
             scr->unk9C = *scr->unk6C[0];
@@ -1410,24 +1411,24 @@ s32 func_80029454(void) {
     for (j = 0; j < count[1]; j++) {
         switch (j) {
         case 0:
-            scr->unk60[0] = &ws[10];
-            scr->unk60[1] = &ws[11];
-            scr->unk60[2] = &ws[9];
+            scr->unk60[0] = &var_1[10];
+            scr->unk60[1] = &var_1[11];
+            scr->unk60[2] = &var_1[9];
             break;
         case 1:
-            scr->unk60[0] = &ws[8];
-            scr->unk60[1] = &ws[9];
-            scr->unk60[2] = &ws[10];
+            scr->unk60[0] = &var_1[8];
+            scr->unk60[1] = &var_1[9];
+            scr->unk60[2] = &var_1[10];
             break;
         case 2:
-            scr->unk60[0] = &ws[14];
-            scr->unk60[1] = &ws[15];
-            scr->unk60[2] = &ws[13];
+            scr->unk60[0] = &var_1[14];
+            scr->unk60[1] = &var_1[15];
+            scr->unk60[2] = &var_1[13];
             break;
         case 3:
-            scr->unk60[0] = &ws[12];
-            scr->unk60[1] = &ws[13];
-            scr->unk60[2] = &ws[14];
+            scr->unk60[0] = &var_1[12];
+            scr->unk60[1] = &var_1[13];
+            scr->unk60[2] = &var_1[14];
             break;
         }
         if (func_8002DAD0(scr) == 0) {
@@ -1458,24 +1459,24 @@ s32 func_80029454(void) {
             }
             switch (n) {
             case 0:
-                scr->unk6C[0] = &ws[2];
-                scr->unk6C[1] = &ws[3];
-                scr->unk6C[2] = &ws[1];
+                scr->unk6C[0] = &var_1[2];
+                scr->unk6C[1] = &var_1[3];
+                scr->unk6C[2] = &var_1[1];
                 break;
             case 1:
-                scr->unk6C[0] = &ws[0];
-                scr->unk6C[1] = &ws[1];
-                scr->unk6C[2] = &ws[2];
+                scr->unk6C[0] = &var_1[0];
+                scr->unk6C[1] = &var_1[1];
+                scr->unk6C[2] = &var_1[2];
                 break;
             case 2:
-                scr->unk6C[0] = &ws[6];
-                scr->unk6C[1] = &ws[7];
-                scr->unk6C[2] = &ws[5];
+                scr->unk6C[0] = &var_1[6];
+                scr->unk6C[1] = &var_1[7];
+                scr->unk6C[2] = &var_1[5];
                 break;
             case 3:
-                scr->unk6C[0] = &ws[4];
-                scr->unk6C[1] = &ws[5];
-                scr->unk6C[2] = &ws[6];
+                scr->unk6C[0] = &var_1[4];
+                scr->unk6C[1] = &var_1[5];
+                scr->unk6C[2] = &var_1[6];
                 break;
             }
             scr->unk9C = *scr->unk6C[0];
@@ -1519,12 +1520,12 @@ s32 func_80029454(void) {
  * q, and pushes the tip out by q*4. If the yaw difference to obj->other's
  * unk_1D8 is under 0x400, each of character `id`'s 22 records (D_800F5F68;
  * records 6..9 only when obj+0x26C is set) is tested: a func_8002EA24 test
- * with unk_0C / unk_0E sets bit i in *hit and, only when the record's first
+ * with unk_0C / unk_0E sets bit i in *arg1 and, only when the record's first
  * halfword is nonzero, a second test with unk_10 / unk_12 sets bit i in
- * *deep. Then func_80053614 casts the segment against the stage; when it
- * returns nonzero and func_80054434() != 7: if *hit is nonzero, the function
+ * *arg2. Then func_80053614 casts the segment against the stage; when it
+ * returns nonzero and func_80054434() != 7: if *arg1 is nonzero, the function
  * skips to the end when the cast point is no nearer the base than obj+0xF4
- * and otherwise clears *hit and *deep; then, unless `quiet`, effect 0xA
+ * and otherwise clears *arg1 and *arg2; then, unless `arg3`, effect 0xA
  * plays at the cast point. D_800A37E8.. receive -q.
  * GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc) per square root, inline_o.h
  * class (inline-asm-policy, owner ruling 2026-09-26). Everything else is
@@ -1537,10 +1538,10 @@ extern s32 func_8002EA24(
     Unk1F8002B8Rec *scr, Unk80107850Rec *pos, s32 threshold, s32 r_sq);
 extern s32 func_80054434(void);
 
-void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
+void func_8002A458(Unk80101EC8Record *obj, u32 *arg1, u32 *arg2, s32 arg3) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 id = obj->index;
-    Unk80101EC8Record *partner = obj->other;
+    Unk80101EC8Record *var_2 = obj->other;
     s32 work[64];
     s32 sp_tmp;
     s32 sp_tmp2;
@@ -1558,7 +1559,7 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
      * g_sqrt_table_u8 byte (Ruling 11, Q28) */
     s32 temp2;
     s32 len_sq;
-    s32 hit_sq;
+    s32 var_14;
     s32 qx;
     s32 qy;
     s32 qz;
@@ -1572,7 +1573,7 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     dx = scr->unk60[1]->x - scr->unk60[0]->x;
     dy = scr->unk60[1]->y - scr->unk60[0]->y;
     dz = scr->unk60[1]->z - scr->unk60[0]->z;
-    diff = (partner->unk_1D8 - ratan2(dx, dz)) & 0xFFF;
+    diff = (var_2->unk_1D8 - ratan2(dx, dz)) & 0xFFF;
     if (diff >= 0x800) {
         diff = 0x1000 - diff;
     }
@@ -1605,7 +1606,7 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     scr->unkF8.vx = -ratan2(dy, hlen);
     scr->unkF8.vy = ratan2(dx, dz);
     scr->unkF8.vz = 0;
-    if (quiet == 0) {
+    if (arg3 == 0) {
         func_80032854(id == 0, 0xB, &scr->unkC8.x, &scr->unkF8.vx);
     }
     len_sq = dx * dx + dy * dy + dz * dz;
@@ -1653,10 +1654,10 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
             pos = &SPAD->unkA8[id][i];
             if (func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E) != 0) {
                 s32 bit = 1 << i;
-                *hit |= bit;
+                *arg1 |= bit;
                 if (rec->unk_00 != 0 &&
                     func_8002EA24(scr, pos, rec->unk_10, rec->unk_12) != 0) {
-                    *deep |= bit;
+                    *arg2 |= bit;
                 }
             }
         }
@@ -1667,22 +1668,22 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     if (func_80053614(&scr->unkA8.x, &scr->unk60[1]->x, &scr->unk100[0].x,
                       &scr->unkF8.vx, (s32)work) != 0 &&
         func_80054434() != 7) {
-        if (*hit != 0) {
+        if (*arg1 != 0) {
             p = scr->unk60[0];
             dx = scr->unk100[0].x - p->x;
             dy = scr->unk100[0].y - p->y;
             dz = scr->unk100[0].z - p->z;
-            hit_sq = dx * dx + dy * dy + dz * dz;
+            var_14 = dx * dx + dy * dy + dz * dz;
             dx = obj->unk_F4.x - p->x;
             dy = obj->unk_F4.y - p->y;
             dz = obj->unk_F4.z - p->z;
-            if (hit_sq >= dx * dx + dy * dy + dz * dz) {
+            if (var_14 >= dx * dx + dy * dy + dz * dz) {
                 goto done;
             }
-            *deep = 0;
-            *hit = 0;
+            *arg2 = 0;
+            *arg1 = 0;
         }
-        if (quiet == 0) {
+        if (arg3 == 0) {
             func_80032854(id == 0, 0xA, &scr->unk100[0].x, 0);
         }
     }
@@ -2464,7 +2465,7 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
     s32 id = a0->index;
     BoneHitRec *recbase = D_800F5F68[id];
     BoneHitRec *rec;
-    s32 hitMask = 0;
+    s32 var_4 = 0;
     s32 seenMask = 0;
     s32 i;
 
@@ -2509,7 +2510,7 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
                 if (rec->unk_00 != 0 && a2 != 0) {
                     if (func_8002D780(
                             1, scr, (s32 *)0, rec->unk_10, rec->unk_12) != 0) {
-                        hitMask |= 1 << i;
+                        var_4 |= 1 << i;
                     }
                 }
             }
@@ -2519,7 +2520,7 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
                 if (rec->unk_00 != 0 && a2 != 0) {
                     if (func_8002D320(1, scr, NULL, rec->unk_10, rec->unk_12) !=
                         0) {
-                        hitMask |= 1 << i;
+                        var_4 |= 1 << i;
                     }
                 }
             }
@@ -2530,7 +2531,7 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
     }
 
     scr->unkB4 = seenMask;
-    scr->unkC4 = hitMask;
+    scr->unkC4 = var_4;
 }
 
 /* Orients a triangle's local frame. The vertices obj->unk60[0..2] give edge
@@ -3635,37 +3636,32 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
  * agreement is tested as `(cc ^ cp) >= 0`. Same idiom as the triangle test
  * inside func_8002D780 in this file. */
 s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
-    s32 center_x = ((arg0[0] + arg1[0]) + arg2[0]) / 3;
-    s32 center_z = ((arg0[2] + arg1[2]) + arg2[2]) / 3;
-    s32 cross_center;
-    s32 cross_point;
+    s32 var_0 = ((arg0[0] + arg1[0]) + arg2[0]) / 3;
+    s32 var_1 = ((arg0[2] + arg1[2]) + arg2[2]) / 3;
+    s32 var_2;
+    s32 var_3;
 
     {
         s32 dz = arg1[2] - arg0[2];
         s32 dx = arg1[0] - arg0[0];
-        cross_center =
-            (dz * (center_x - arg0[0])) - (dx * (center_z - arg0[2]));
-        cross_point = (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
+        var_2 = (dz * (var_0 - arg0[0])) - (dx * (var_1 - arg0[2]));
+        var_3 = (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
     }
-    if ((cross_center ^ cross_point) >= 0) {
+    if ((var_2 ^ var_3) >= 0) {
         {
             s32 dz = arg2[2] - arg0[2];
             s32 dx = arg2[0] - arg0[0];
-            cross_center =
-                (dz * (center_x - arg0[0])) - (dx * (center_z - arg0[2]));
-            cross_point =
-                (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
+            var_2 = (dz * (var_0 - arg0[0])) - (dx * (var_1 - arg0[2]));
+            var_3 = (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
         }
-        if ((cross_center ^ cross_point) >= 0) {
+        if ((var_2 ^ var_3) >= 0) {
             {
                 s32 dz = arg2[2] - arg1[2];
                 s32 dx = arg2[0] - arg1[0];
-                cross_center =
-                    (dz * (center_x - arg1[0])) - (dx * (center_z - arg1[2]));
-                cross_point =
-                    (dz * (arg3[0] - arg1[0])) - (dx * (arg3[2] - arg1[2]));
+                var_2 = (dz * (var_0 - arg1[0])) - (dx * (var_1 - arg1[2]));
+                var_3 = (dz * (arg3[0] - arg1[0])) - (dx * (arg3[2] - arg1[2]));
             }
-            if ((cross_center ^ cross_point) >= 0) {
+            if ((var_2 ^ var_3) >= 0) {
                 return 1;
             }
         }
@@ -3863,7 +3859,8 @@ s32 func_8002EA24(
     }
 }
 
-void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
+void func_8002EBDC(
+    s16 *vec_in, s16 *arg1, s32 *out, s32 scale_z, s32 scale_xy) {
     s32 sp_tmp;
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     MATRIX *mat;
@@ -3873,9 +3870,9 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
     s32 dist_sq;
     s32 dist;
 
-    angle1 = ratan2(dir[0], dir[2]);
+    angle1 = ratan2(arg1[0], arg1[2]);
     scr->unkF8.vy = 0x800 - angle1;
-    dist_sq = dir[0] * dir[0] + dir[2] * dir[2];
+    dist_sq = arg1[0] * arg1[0] + arg1[2] * arg1[2];
 
     if ((u32)dist_sq < 0x400) {
         dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
@@ -3899,7 +3896,7 @@ void func_8002EBDC(s16 *vec_in, s16 *dir, s32 *out, s32 scale_z, s32 scale_xy) {
         }
     }
 
-    angle2 = ratan2(dir[1], dist);
+    angle2 = ratan2(arg1[1], dist);
     mat = &scr->unkD8;
     scr->unkF8.vx = 0x800 - angle2;
 
@@ -4357,18 +4354,18 @@ s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
 }
 
 s32 func_8002FDB0(Unk80101EC8Record *arg0) {
-    Unk80107850Rec *pt;
+    Unk80107850Rec *var_0;
 
     /* The character's points 2 and 3 relative to its point 1, into the
      * collision record's unkA8 and unkB8 (0x1F800360 / 0x1F800370, the GTE
      * operands below); the GTE's product lands in unkC8. */
-    pt = SPAD->unkA8[arg0->index];
-    SPAD->unk2B8.rec.unkA8.x = pt[2].x - pt[1].x;
-    SPAD->unk2B8.rec.unkA8.y = pt[2].y - pt[1].y;
-    SPAD->unk2B8.rec.unkA8.z = pt[2].z - pt[1].z;
-    SPAD->unk2B8.rec.unkB8.x = pt[3].x - pt[1].x;
-    SPAD->unk2B8.rec.unkB8.y = pt[3].y - pt[1].y;
-    SPAD->unk2B8.rec.unkB8.z = pt[3].z - pt[1].z;
+    var_0 = SPAD->unkA8[arg0->index];
+    SPAD->unk2B8.rec.unkA8.x = var_0[2].x - var_0[1].x;
+    SPAD->unk2B8.rec.unkA8.y = var_0[2].y - var_0[1].y;
+    SPAD->unk2B8.rec.unkA8.z = var_0[2].z - var_0[1].z;
+    SPAD->unk2B8.rec.unkB8.x = var_0[3].x - var_0[1].x;
+    SPAD->unk2B8.rec.unkB8.y = var_0[3].y - var_0[1].y;
+    SPAD->unk2B8.rec.unkB8.z = var_0[3].z - var_0[1].z;
 
     /* gte_ldopv1(r) (the 3-word load, not gte_SetRotMatrix's 5): the packed
      * words holding the diagonal into cop2 control R11R12 / R22R23 / R33
@@ -4507,7 +4504,7 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
  * without it score 13). */
 void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
-    s16 dir[4];
+    s16 var_1[4];
     MATRIX mtx;
     s32 *mat_tbl;
     MATRIX *mat;
@@ -4568,11 +4565,11 @@ void func_800300B4(Obj80106A78 *arg0) {
     mac[2] += mat->t[2];
 
     MulMatrix0(mat, &arg0->mtx, &mtx);
-    func_8002F2D0(&mtx, dir);
+    func_8002F2D0(&mtx, var_1);
 
     lookup = D_8008EB80[arg0->kind];
-    func_80049718(lookup, 1, mac, dir);
-    func_800393C8(arg0->slot, lookup, mac, dir);
+    func_80049718(lookup, 1, mac, var_1);
+    func_800393C8(arg0->slot, lookup, mac, var_1);
 }
 
 void func_80030208(void) {
@@ -4769,7 +4766,7 @@ extern Obj80106A78 *func_80030580(Unk80101EC8Record *, s32);
 
 void func_80030900(Unk80101EC8Record *a0, Vec3i32 *a1) {
     Obj80106A78 *p;
-    s32 rnd;
+    s32 var_1;
     s32 i;
 
     p = func_80030580(a0, a0->unk_332[0]);
@@ -4778,11 +4775,11 @@ void func_80030900(Unk80101EC8Record *a0, Vec3i32 *a1) {
     p->vel.x = (rng_Next() & 0xFF) - 0x80;
     p->vel.y = -(rng_Next() & 0x3F) - 0x80;
     p->vel.z = (rng_Next() & 0xFF) - 0x80;
-    rnd = rng_Next();
-    if (rnd & 0x1000) {
-        p->rot_vel[0] = (rnd & 0x3FF) + 0x200;
+    var_1 = rng_Next();
+    if (var_1 & 0x1000) {
+        p->rot_vel[0] = (var_1 & 0x3FF) + 0x200;
     } else {
-        p->rot_vel[0] = -(rnd & 0x3FF) - 0x200;
+        p->rot_vel[0] = -(var_1 & 0x3FF) - 0x200;
     }
     p->rot_vel[1] = (rng_Next() & 0x7FF) - 0x400;
     p->rot_vel[2] = 0;
@@ -4795,7 +4792,7 @@ void func_80030900(Unk80101EC8Record *a0, Vec3i32 *a1) {
 
 void func_80030A2C(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
     Obj80106A78 *p;
-    s32 rnd;
+    s32 var_1;
 
     p = func_80030580(a0, a1);
     p->unk_04 = 0;
@@ -4803,11 +4800,11 @@ void func_80030A2C(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
     p->vel.x = (rng_Next() & 0xFF) - 0x80;
     p->vel.y = -(rng_Next() & 0x3F) - 0x80;
     p->vel.z = (rng_Next() & 0xFF) - 0x80;
-    rnd = rng_Next();
-    if (rnd & 0x1000) {
-        p->rot_vel[0] = (rnd & 0x3FF) + 0x200;
+    var_1 = rng_Next();
+    if (var_1 & 0x1000) {
+        p->rot_vel[0] = (var_1 & 0x3FF) + 0x200;
     } else {
-        p->rot_vel[0] = -(rnd & 0x3FF) - 0x200;
+        p->rot_vel[0] = -(var_1 & 0x3FF) - 0x200;
     }
     p->rot_vel[1] = (rng_Next() & 0x7FF) - 0x400;
     p->rot_vel[2] = 0;
@@ -4926,9 +4923,9 @@ void func_80030D7C(void) {
     s32 i;
     s32 half;
     s32 dot;
-    s32 spd;
+    s32 var_5;
     s16 kind;
-    s16 *nrm;
+    s16 *var_7;
 
     scr = &SPAD->unk2B8.v8005344C;
     obj = D_80106A78;
@@ -5001,24 +4998,24 @@ void func_80030D7C(void) {
         scr->unk00.y = obj->pos.y + obj->vel.y;
         scr->unk00.z = obj->pos.z + obj->vel.z;
         obj->pos.y -= 8;
-        nrm = scr->unk30;
+        var_7 = scr->unk30;
         temp = func_8005344C(
-            &obj->pos.x, &scr->unk00.x, &scr->unk10.x, nrm, (s32)&scr->unk38);
+            &obj->pos.x, &scr->unk00.x, &scr->unk10.x, var_7, (s32)&scr->unk38);
         if (temp != 0 && func_80054434() == 7) {
             temp = 0;
         }
         if (temp != 0) {
             if (obj->kind == 0xF) {
-                func_80032854(obj->owner, 0xE, &scr->unk10.x, nrm);
+                func_80032854(obj->owner, 0xE, &scr->unk10.x, var_7);
                 obj->kind = -1;
                 continue;
             }
-            dot = (obj->vel.x * nrm[0] + obj->vel.y * nrm[1] +
-                   obj->vel.z * nrm[2]) /
+            dot = (obj->vel.x * var_7[0] + obj->vel.y * var_7[1] +
+                   obj->vel.z * var_7[2]) /
                   2048;
-            obj->vel.x -= nrm[0] * dot / 4096;
-            obj->vel.y -= nrm[1] * dot / 4096;
-            obj->vel.z -= nrm[2] * dot / 4096;
+            obj->vel.x -= var_7[0] * dot / 4096;
+            obj->vel.y -= var_7[1] * dot / 4096;
+            obj->vel.z -= var_7[2] * dot / 4096;
             obj->pos = scr->unk10;
             kind = obj->kind;
             work = D_8008E194[kind].unkA;
@@ -5026,9 +5023,10 @@ void func_80030D7C(void) {
                 obj->vel.x = obj->vel.x * work / 4096;
                 obj->vel.y = obj->vel.y * work / 4096;
                 obj->vel.z = obj->vel.z * work / 4096;
-                spd = obj->vel.x * obj->vel.x + obj->vel.z * obj->vel.z;
+                var_5 = obj->vel.x * obj->vel.x + obj->vel.z * obj->vel.z;
                 if (scr->unk30[1] >= -0x7FF) {
-                    obj->rot_vel[1] += (rng_Next() & 1) ? spd / 64 : -spd / 64;
+                    obj->rot_vel[1] +=
+                        (rng_Next() & 1) ? var_5 / 64 : -var_5 / 64;
                     if (obj->kind != 0xE && obj->unk_04 != 0) {
                         func_80032854(obj->owner, 1, &obj->pos.x, 0);
                     }
@@ -5039,12 +5037,12 @@ void func_80030D7C(void) {
                                       &obj->pos.x, 0);
                     }
                 } else if (obj->kind < 0x12) {
-                    if (spd > 0x10) {
+                    if (var_5 > 0x10) {
                         func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2C,
                                       &obj->pos.x, 0);
                     }
                 } else if (obj->kind >= 0x12 && obj->kind < 0x1E) {
-                    if (spd > 0x10) {
+                    if (var_5 > 0x10) {
                         func_80032854(obj->owner, 0x29, &obj->pos.x, 0);
                     }
                 }
@@ -5121,7 +5119,7 @@ void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
     s32 angle1;
     s32 angle2;
     s32 sum_sq;
-    s32 adj;
+    s32 var_5;
 
     if (ent->kind != 0xE) {
         s32 vx = ent->vel.x;
@@ -5129,11 +5127,11 @@ void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
         s32 av = ent->rot_vel[1];
         sum_sq = vx * vx + vz * vz;
         if (rng_Next() & 1) {
-            adj = sum_sq / 64;
+            var_5 = sum_sq / 64;
         } else {
-            adj = -sum_sq / 64;
+            var_5 = -sum_sq / 64;
         }
-        ent->rot_vel[1] = av + adj;
+        ent->rot_vel[1] = av + var_5;
     }
 
     mat = &scr->unkD8;
@@ -5214,15 +5212,15 @@ extern s32 func_80027AD8(
 void func_80031B24(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 i;
-    s32 deep;
+    s32 var_2;
     Obj80106A78 *obj;
-    Vec3i32 *seg = scr->unk00.unk00;
-    Unk80101EC8Record *ch;
+    Vec3i32 *var_4 = scr->unk00.unk00;
+    Unk80101EC8Record *var_5;
     s32 other;
-    u16 st;
+    u16 var_7;
     BoneHitRec *rec;
     s32 j;
-    s32 hit;
+    s32 var_10;
     s32 diff;
     s32 r;
     s32 kind;
@@ -5237,41 +5235,41 @@ void func_80031B24(void) {
         if (obj->unk_50 == 0)
             continue;
         other = obj->owner == 0;
-        ch = &D_80101EC8[other];
-        st = ch->unk_6A;
-        if (st == 4 || st == 0x14 || st == 0xF || st == 0x1C || st == 0x1D ||
-            st == 0x1E || st == 0x1F || st == 0x20 || st == 0x21 ||
-            st == 0x11) {
+        var_5 = &D_80101EC8[other];
+        var_7 = var_5->unk_6A;
+        if (var_7 == 4 || var_7 == 0x14 || var_7 == 0xF || var_7 == 0x1C ||
+            var_7 == 0x1D || var_7 == 0x1E || var_7 == 0x1F || var_7 == 0x20 ||
+            var_7 == 0x21 || var_7 == 0x11) {
             continue;
         }
 
-        seg[0] = obj->prev_pos;
-        seg[1] = obj->pos;
-        scr->unk60[0] = &seg[0];
-        scr->unk60[1] = &seg[1];
+        var_4[0] = obj->prev_pos;
+        var_4[1] = obj->pos;
+        scr->unk60[0] = &var_4[0];
+        scr->unk60[1] = &var_4[1];
         func_8002E838(scr);
 
-        hit = 0;
+        var_10 = 0;
         rec = D_800F5F68[other];
         for (j = 0; j < 22; j++, rec++) {
             Unk80107850Rec *pos;
-            if (ch->unk_26C == 0 && j >= 6 && j <= 9)
+            if (var_5->unk_26C == 0 && j >= 6 && j <= 9)
                 continue;
             pos = &SPAD->unkA8[other][j];
-            hit = func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E);
-            if (hit != 0) {
-                deep = 0;
+            var_10 = func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E);
+            if (var_10 != 0) {
+                var_2 = 0;
                 if (rec->unk_00 != 0 && D_8008E194[obj->kind].unkD == 0) {
-                    deep =
+                    var_2 =
                         func_8002EA24(scr, pos, rec->unk_10, rec->unk_12) != 0;
                 }
                 break;
             }
         }
-        if (hit == 0)
+        if (var_10 == 0)
             continue;
 
-        diff = (ch->unk_1C8.vy - ratan2(obj->vel.x, obj->vel.z)) & 0xFFF;
+        diff = (var_5->unk_1C8.vy - ratan2(obj->vel.x, obj->vel.z)) & 0xFFF;
         if (diff >= 0x800)
             diff = 0x1000 - diff;
         math_NegNormalize3D(
@@ -5284,7 +5282,7 @@ void func_80031B24(void) {
         obj->pos.y -= obj->vel.y / 2;
         obj->pos.z -= obj->vel.z / 2;
         r = func_80027AD8(
-            1, ch, j, diff, deep, &D_8008E194[obj->kind], 0, &flag);
+            1, var_5, j, diff, var_2, &D_8008E194[obj->kind], 0, &flag);
         if (r == 2)
             continue;
         if (r != 0) {
@@ -5292,8 +5290,8 @@ void func_80031B24(void) {
                           &SPAD->unkA8[other][j].x, 0);
             func_8002FF20(obj, rec->bone);
             obj->unk_04 = 0;
-            st = ch->unk_6A;
-            if (st == 8 || st == 0x23) {
+            var_7 = var_5->unk_6A;
+            if (var_7 == 8 || var_7 == 0x23) {
                 D_800A36A8 = 1;
             }
             continue;
@@ -5330,13 +5328,13 @@ void func_80032040(void) {
 Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
     /* FAKE: constant holders for 0x50 (the factor of the two Judge[] products
      * stored to unk_1C.x / .z) and -0xC8 (stored to unk_1C.y); as literals the
-     * li pair reorders (speed: score 12; vel_y: score 7). */
-    s32 speed = 0x50;
-    s32 vel_y = -0xC8;
+     * li pair reorders (var_0: score 12; var_1: score 7). */
+    s32 var_0 = 0x50;
+    s32 var_1 = -0xC8;
     s32 i = 0;
     Unk80104E88Rec *ptr = D_80104E88;
     Unk80104E88Rec *s0;
-    s16 sp_area[3];
+    s16 var_5[3];
 
     for (; i < 4; i++) {
         s0 = ptr;
@@ -5359,13 +5357,13 @@ Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
         s0->unk_04.y = src->unk_B8.vy - (v1 >> 5);
     }
     s0->unk_04.z = src->unk_F4.z;
-    s0->unk_1C.x = ((s32)Judge[src->unk_1C8.vy & 0xFFF] * speed) >> 12;
-    s0->unk_1C.y = vel_y;
+    s0->unk_1C.x = ((s32)Judge[src->unk_1C8.vy & 0xFFF] * var_0) >> 12;
+    s0->unk_1C.y = var_1;
     s0->unk_1C.z =
-        ((s32)Judge[(src->unk_1C8.vy + 0x400) & 0xFFF] * speed) >> 12;
+        ((s32)Judge[(src->unk_1C8.vy + 0x400) & 0xFFF] * var_0) >> 12;
     s0->unk_10 = s0->unk_04;
     s0->unk_28 = src->unk_B8.vy;
-    sp_area[1] = src->unk_1C8.vy;
+    var_5[1] = src->unk_1C8.vy;
     {
         /* FAKE: unk_B2 read into a0_arg before cmd is chosen; read at the call
          * the argument registers rotate (score 20). */
@@ -5373,7 +5371,7 @@ Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
         s32 cmd = 0xD;
         if (type == 1)
             cmd = 0xC;
-        func_80032854(a0_arg, cmd, &s0->unk_04.x, sp_area);
+        func_80032854(a0_arg, cmd, &s0->unk_04.x, var_5);
     }
     return s0;
 }
@@ -5603,24 +5601,24 @@ void func_800324D0(Unk80101EC8Record *rec) {
 void func_800325E0(s32 arg0, s32 *arg1) {
     s32 sp_tmp;
     s32 dx, dy, dz;
-    u32 dist_volume;
+    u32 var_4;
     s32 distance_scale;
-    s16 listener_angle;
-    s32 projected_pan;
-    u32 pan_sign;
-    s32 pan_L;
-    s32 pan_R;
+    s16 var_6;
+    s32 var_7;
+    u32 var_8;
+    s32 var_9;
+    s32 var_10;
 
     dx = g_listener_cam->w20 - arg1[0];
     dy = g_listener_cam->w24 - arg1[1];
     dz = g_listener_cam->w28 - arg1[2];
 
     if (((u32)(dx + 0x9C40) > 0x13880U) || ((u32)(dz + 0x9C40) > 0x13880U)) {
-        dist_volume = 0x9C40;
+        var_4 = 0x9C40;
     } else {
         u32 dist_sq = (u32)((dx * dx) + (dy * dy) + (dz * dz));
         if (dist_sq < 0x400U) {
-            dist_volume = (u32)(u8)(g_sqrt_table_u8[dist_sq]) >> 3;
+            var_4 = (u32)(u8)(g_sqrt_table_u8[dist_sq]) >> 3;
         } else {
             /* gte_Lzc(dist_sq, &sp_tmp) -- gtemac.h:174-178: gte_ldlzc
              * (inline_c.h:228-231) + 2x gte_nop (inline_c.h:1346-1347) +
@@ -5654,49 +5652,49 @@ void func_800325E0(s32 arg0, s32 *arg1) {
                 idx = dist_sq >> v1_m;
                 v1_m = v1_m >> 1;
                 hi = (u32)((u8)(g_sqrt_table_u8[idx]));
-                dist_volume = (hi << 16) >> (0x13 - v1_m);
+                var_4 = (hi << 16) >> (0x13 - v1_m);
             }
         }
     }
 
-    distance_scale = (s32)((0x9C40 - dist_volume) << 11) / 32000;
+    distance_scale = (s32)((0x9C40 - var_4) << 11) / 32000;
     if (distance_scale < 0) {
         distance_scale = 0;
     }
 
-    listener_angle = g_listener_cam->unk_10.vy;
-    projected_pan = (s32)((dx * (s32)Judge[(listener_angle + 0x400) & 0xFFF]) +
-                          (dz * (s32)Judge[listener_angle & 0xFFF])) >>
-                    12;
-    pan_sign = ~(u32)projected_pan;
-    pan_sign >>= 31;
-    if (projected_pan < 0) {
-        projected_pan = -projected_pan;
+    var_6 = g_listener_cam->unk_10.vy;
+    var_7 = (s32)((dx * (s32)Judge[(var_6 + 0x400) & 0xFFF]) +
+                  (dz * (s32)Judge[var_6 & 0xFFF])) >>
+            12;
+    var_8 = ~(u32)var_7;
+    var_8 >>= 31;
+    if (var_7 < 0) {
+        var_7 = -var_7;
     }
 
-    pan_L = (s32)((0x7530 - projected_pan) << 12) / 30000;
-    pan_R = (s32)((0x2710 - projected_pan) << 12) / 10000;
-    if (pan_L < 0)
-        pan_L = 0;
-    if (pan_R < 0)
-        pan_R = 0;
+    var_9 = (s32)((0x7530 - var_7) << 12) / 30000;
+    var_10 = (s32)((0x2710 - var_7) << 12) / 10000;
+    if (var_9 < 0)
+        var_9 = 0;
+    if (var_10 < 0)
+        var_10 = 0;
 
     {
-        s32 tmp = pan_L;
-        if (pan_sign != 0) {
-            pan_L = pan_R;
-            pan_R = tmp;
+        s32 tmp = var_9;
+        if (var_8 != 0) {
+            var_9 = var_10;
+            var_10 = tmp;
         }
     }
 
-    pan_L = (s32)(distance_scale * pan_L) >> 16;
-    pan_R = (s32)(distance_scale * pan_R) >> 16;
-    if (pan_L >= 0x80)
-        pan_L = 0x7F;
-    if (pan_R >= 0x80)
-        pan_R = 0x7F;
+    var_9 = (s32)(distance_scale * var_9) >> 16;
+    var_10 = (s32)(distance_scale * var_10) >> 16;
+    if (var_9 >= 0x80)
+        var_9 = 0x7F;
+    if (var_10 >= 0x80)
+        var_10 = 0x7F;
 
-    func_8005C650(arg0, pan_L, pan_R);
+    func_8005C650(arg0, var_9, var_10);
 }
 
 void func_80032854(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
@@ -5855,8 +5853,8 @@ void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
     s32 base2;
     s32 row;
     s32 row2;
-    s32 tri;
-    s32 tri2;
+    s32 var_5;
+    s32 var_6;
 
     if (D_800A38DC == 3 && obj->index == 1 &&
         ((u32)(kind - 7) < 2 || (u32)(kind - 9) < 2 || (u32)(kind - 11) < 2 ||
@@ -5880,9 +5878,9 @@ void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
     }
 
     row = base + obj->unk_B2 * 4;
-    tri = obj->unk_B2 * 3;
+    var_5 = obj->unk_B2 * 3;
     row2 = base2 + obj->other->unk_B2 * 4;
-    tri2 = obj->other->unk_B2 * 3;
+    var_6 = obj->other->unk_B2 * 3;
 
     switch (kind) {
     case 0:
@@ -6011,13 +6009,13 @@ void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
         func_800325E0(row + 0x44, &obj->unk_F4.x);
         break;
     case 31:
-        func_800325E0(tri + 0x71, &obj->unk_F4.x);
+        func_800325E0(var_5 + 0x71, &obj->unk_F4.x);
         break;
     case 32:
-        func_800325E0(tri + 0x72, &obj->unk_F4.x);
+        func_800325E0(var_5 + 0x72, &obj->unk_F4.x);
         break;
     case 33:
-        func_800325E0(tri + 0x73, &obj->unk_F4.x);
+        func_800325E0(var_5 + 0x73, &obj->unk_F4.x);
         break;
     case 34:
         func_800325E0(0x77, &obj->unk_F4.x);
@@ -6110,13 +6108,13 @@ void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
         func_800325E0(row2 + 0x44, &obj->other->unk_F4.x);
         break;
     case 64:
-        func_800325E0(tri2 + 0x71, &obj->other->unk_F4.x);
+        func_800325E0(var_6 + 0x71, &obj->other->unk_F4.x);
         break;
     case 65:
-        func_800325E0(tri2 + 0x72, &obj->other->unk_F4.x);
+        func_800325E0(var_6 + 0x72, &obj->other->unk_F4.x);
         break;
     case 66:
-        func_800325E0(tri2 + 0x73, &obj->other->unk_F4.x);
+        func_800325E0(var_6 + 0x73, &obj->other->unk_F4.x);
         break;
     case 67:
         func_800325E0(0x77, &obj->other->unk_F4.x);
@@ -6694,18 +6692,18 @@ void func_80034200(void) {
     s32 i = 0;
     s32 acc = 0;
     u8 n;
-    s32 innerBound;
+    s32 var_4;
     u8 *base;
 
     D_800A3768 = DISP_LOADING;
     n = D_800A389B;
     if (i < n) {
-        innerBound = D_800A3874;
+        var_4 = D_800A3874;
         do {
             s32 useReal;
             s32 j;
             base = D_800F65F8[i];
-            useReal = (i < innerBound);
+            useReal = (i < var_4);
             j = 0;
             do {
                 if (useReal) {
