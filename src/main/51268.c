@@ -3226,14 +3226,14 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
     }
 }
 
-/* Per-frame update + draw of one lane's (arg1) effect particles, the middle of
+/* Per-frame update + draw of the D_800EFC78[arg1] records, the middle of
  * the func_800678A8 / func_80067D14 / func_80068D88 trio. For each live record
  * of D_800EFC78[arg1] (state 1): step its unk12 and derive r/g/b from it, take
  * its D_800F0C10[arg1] entry less D_800A3470 through gte_rtv0, set state 3
  * (and skip it) once r and g are both low or once the gte_sqr0 sum p_out[0..2]
  * passes *p_rad plus a rand() term, project three vertices, size the
- * sprite by type (arg0), then emit one to three POLY_FT4 quads and link them
- * into the context's OT index table.
+ * sprite by type (arg0), then emit up to three POLY_FT4 quads, storing
+ * *D_800A34D0 for each in zbuf[].
  * GTE: eleven PsyQ 4.3 inline_c.h macros; gte_rtv0, gte_sqr0 and gte_rtpt
  * carry the post-DMPSX command word (noted at each island). */
 void func_80067D14(s32 arg0, s32 arg1) {
@@ -4541,8 +4541,8 @@ extern s32 D_8009BC08;
 
 /* Draws the eight-row list screen from the MOD.BIN resource (ctx+4): the row
  * sheets (cursor row flashing, rows switched on in D_8009BC04 lit), a counter
- * frame, row 7, the frame icons and a TILE. arg0 = the draw
- * context func_8006E390 fills (+0x8 POLY_FT4 cursor, +0x14 SPRT cursor,
+ * frame, row 7, the frame icons and a TILE. arg0 = the words
+ * func_8006E390 fills (+0x8 POLY_FT4 cursor, +0x14 SPRT cursor,
  * +0x18 TILE cursor, +0x1C DR_MODE cursor, +0x20 DR_AREA cursor,
  * +0x24 DR_OFFSET cursor), accessed as byte offsets like func_8006A564;
  * arg1 = the display environment's clip RECT and ofs[2]; arg2 (passed by
@@ -4769,7 +4769,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     *(s32 *)(arg0 + 0x1C) += 0xC;
 }
 
-/* One argument: the caller's s32[10] draw context (asm reads a0 only). */
+/* One argument: the caller's s32[10] (asm reads a0 only). */
 void func_8006B120(s32 *arg0);
 
 void func_8006B120(s32 *arg0) {
