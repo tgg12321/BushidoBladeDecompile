@@ -129,8 +129,8 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      for C9 (scratchpad, StageLight, GPU_STATUS, libcd_CDRegister0, intrEnv, move_image, retire-alias).
      Wave20 (2026-10-12) 7137d8c59 (+ prose 1f0d0e485): 2 data resets, 10 KEEPs. Every undecided data name
      is now settled (inventory tmp/p3w20/inv/classes.csv: Sony verbatim, string labels, base+offset Q103,
-     owner-ruled). Held: 0x00000000 g_ings2_addr_0 (data_wave's ADDR regex refuses address 0; owner call:
-     extend the tool or hand-edit the registry).
+     owner-ruled). The held 0x00000000 g_ings2_addr_0 was retired by hand in wave22 92519032b (owner
+     2026-10-14; data_wave refuses address 0): __main's count is a link-time .ctors size, with no symbol.
      KEEP decisions: docs/naming/phase3/waveNN/data_keep.csv (never fed to data_wave).
    - Wave21 (2026-10-14) bf769cb45 (+ prose bec701e4d): the first member / local wave; Vec2s16 ->
      Size2s16, 8 member resets, 5 local resets (playerData / player). Pre-apply 14/14 PASS, R6 PASS.

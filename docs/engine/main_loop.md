@@ -190,17 +190,12 @@ event (`func_80078A58`), the display (`disp_Init`), camera state
 - Zeroes `D_800A36F9`, `D_800A3690`, `D_800A3744..46`, runs `func_80046B44`,
   sets `D_800A36F1 = 2`, and zeroes `D_800A38C4[1]`, `D_800A36B0`, `D_800A3928`.
 
-### `motion_Open` (`ings2.c:501`)
-Runs an array of "constructor" function pointers stored at `D_8008D070`
-through the end-marker `D_00000000`. The loop is hand-coded asm because it
-modifies `$s1` (the counter) as a side effect of each call. See also
-`motion_Close` (`ings2.c:502`), which is the symmetric tear-down.
-
-This is the engine's module init/cleanup mechanism — every subsystem that
-needs early initialization adds itself to the `D_8008D070`-rooted array at
-link time, and is run automatically at boot. The mechanism is NOT used for
-the per-frame mode dispatch, which is a separate array starting at
-`D_8008D090`.
+### `__main` (`psxsdk/libsn/73E98.c`)
+SN's C++ constructor walker (LIBSN module SNMAIN, a prebuilt PsyQ object), with
+`__do_global_dtors` its destructor twin. It calls each entry of the `.ctors`
+table at `D_8008D070`; the count is a link-time constant, `.ctors` size / 4,
+patched into the code. Here it is 0 (the game has no constructors), so nothing
+runs. The per-frame mode dispatch is a separate array starting at `D_8008D090`.
 
 ## Mode dispatch — `D_8008D090`
 

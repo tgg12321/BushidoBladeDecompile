@@ -86,21 +86,13 @@ hit-detection helpers walk them every frame.
 
 ## The `motion_*` functions
 
-### `motion_Open` / `motion_Close` (ings2.c:525, 543)
+### `__main` / `__do_global_dtors` (formerly `motion_Open` / `motion_Close`)
 
-These are MIS-NAMED — they're actually the engine-wide CTOR/DTOR runners.
-The Kengo rename labelled them `motion_Open/Close` because the matching PS2
-function happened to be in the motion subsystem (Lightweight likely
-re-used the same crt mechanism for both). What they actually do:
+SN's constructor and destructor walkers (LIBSN module SNMAIN), not motion code.
+Each calls the entries of `.ctors` / `.dtors` (from `D_8008D070`); the count is
+a link-time constant, the section size / 4, and is 0 here, so nothing runs.
 
-- Walk the function-pointer array at `D_8008D070`
-- Call each non-null function pointer; the loop terminator is `D_00000000`
-  (the count is encoded as the count *minus one* in `D_00000000`'s value
-  via raw inline-asm pointer arithmetic — a Lightweight idiom)
-- `motion_Open` runs the CTORs once at boot; `motion_Close` runs the
-  symmetric DTORs at shutdown
-
-Neither actually touches motion data. The real motion-init for the engine
+Neither touches motion data. The real motion-init for the engine
 runs during `file_LoadAll` of the per-character BBMs.
 
 ### `motion_SetMotion` (code6cac_c_mid.c:867)

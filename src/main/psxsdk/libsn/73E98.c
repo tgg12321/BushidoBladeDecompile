@@ -11,8 +11,11 @@ INCLUDE_ASM("asm/funcs", PCopen);
 INCLUDE_ASM("asm/funcs", PCclose);
 INCLUDE_ASM("asm/funcs", PClseek);
 INCLUDE_ASM("asm/funcs", __SN_ENTRY_POINT);
-/* __main: libgcc / crt0 constructor walker, and __do_global_dtors its
-   destructor-side twin; prebuilt PsyQ object whose 16-byte frame our cc1
-   cannot produce from C. */
+/* __main: SN's constructor walker (LIBSN module SNMAIN), and
+   __do_global_dtors its destructor-side twin; prebuilt PsyQ object whose
+   16-byte frame our cc1 cannot produce from C. It calls each entry of the
+   .ctors table (D_8008D070, the section start); the count is a link-time
+   constant, (.ctors size) / 4, patched into its lui/addiu pair: 0 here, as
+   the game has no constructors. */
 INCLUDE_ASM("asm/funcs", __main);
 INCLUDE_ASM("asm/funcs", __do_global_dtors);
