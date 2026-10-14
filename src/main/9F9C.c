@@ -13,19 +13,19 @@ extern s32 func_80054434(void);
 INCLUDE_RODATA("asm/rodata", D_800100A4);
 
 void func_8001979C(s32 arg0, u32 *arg1) {
-    s32 bits_left;
+    s32 var_0;
     Unk800F1B18Rec *base;
     s32 i;
     u32 cur;
     u32 hi;
-    s32 needed;
+    s32 var_5;
     s32 val;
-    s32 nd;
+    s32 var_7;
     s32 neg2;
     u32 lo;
     u32 lo2;
 
-    bits_left = 0x20;
+    var_0 = 0x20;
     base = &D_800F1B18[arg0];
 
     base->stream = arg1;
@@ -34,56 +34,56 @@ void func_8001979C(s32 arg0, u32 *arg1) {
 
     i = 0;
     do {
-        if (bits_left < 0xC) {
-            /* FAKE: nd names the width subtraction so the constant's load
+        if (var_0 < 0xC) {
+            /* FAKE: var_7 names the width subtraction so the constant's load
              * site separates from its use site (cse re-materialisation);
              * without it: score 2. */
-            nd = 0xC - bits_left;
+            var_7 = 0xC - var_0;
             /* FAKE: hi carries its own shift amount before the value, raising
              * its allocation priority so it keeps $v1; without: score 16. */
-            hi = 0x20 - bits_left;
+            hi = 0x20 - var_0;
             hi = cur >> hi;
             cur = *arg1;
             arg1++;
-            needed = nd;
-            /* FAKE: new bits_left routed through val, blocking cse's
+            var_5 = var_7;
+            /* FAKE: new var_0 routed through val, blocking cse's
              * cheapest-register rewrite; without: score 2. */
-            val = 0x20 - needed;
-            bits_left = val;
-            hi = hi << needed;
-            lo = cur >> bits_left;
-            cur <<= needed;
+            val = 0x20 - var_5;
+            var_0 = val;
+            hi = hi << var_5;
+            lo = cur >> var_0;
+            cur <<= var_5;
             hi = hi | lo;
             base->pose[i + 3] = hi;
         } else {
             base->pose[i + 3] = cur >> 20;
             cur <<= 0xC;
-            bits_left -= 0xC;
+            var_0 -= 0xC;
         }
         i++;
     } while (i < 0x3F);
 
     i = 0;
     do {
-        if (bits_left < 2) {
-            /* FAKE: nd, as in loop 1; without: score 2. */
-            nd = 2 - bits_left;
-            hi = 0x20 - bits_left;
+        if (var_0 < 2) {
+            /* FAKE: var_7, as in loop 1; without: score 2. */
+            var_7 = 2 - var_0;
+            hi = 0x20 - var_0;
             hi = cur >> hi;
             cur = *arg1;
             arg1++;
-            needed = nd;
-            val = 0x20 - needed;
-            bits_left = val;
-            hi = hi << needed;
-            lo2 = cur >> bits_left;
-            cur <<= needed;
+            var_5 = var_7;
+            val = 0x20 - var_5;
+            var_0 = val;
+            hi = hi << var_5;
+            lo2 = cur >> var_0;
+            cur <<= var_5;
             hi = hi | lo2;
             base->code[i + 3] = hi;
         } else {
             base->code[i + 3] = cur >> 30;
             cur <<= 2;
-            bits_left -= 2;
+            var_0 -= 2;
         }
         i++;
     } while (i < 0x3F);
@@ -97,8 +97,8 @@ void func_8001979C(s32 arg0, u32 *arg1) {
         i--;
     } while (i >= 0);
     /* FAKE: tail reuse of val (named-local-fake-exception constant-holder):
-     * this later set blocks cse's rewrite of the in-loop `val = 0x20 - needed;
-     * bits_left = val;`, keeping the target's subu + move copy pair in both
+     * this later set blocks cse's rewrite of the in-loop `val = 0x20 - var_5;
+     * var_0 = val;`, keeping the target's subu + move copy pair in both
      * loops; a direct literal store collapses both pairs (75 insns vs 77):
      * score 4. */
     val = 0;
@@ -154,18 +154,18 @@ extern s32 D_800A30EC;
         }                                                                      \
     }
 
-/* Decode entry `frame` of D_800F1B18[obj]'s stream into `out` (33 words). The
+/* Decode entry `arg1` of D_800F1B18[obj]'s stream into `out` (33 words). The
    table at stream + 0x70 holds a 24-bit offset per group of 8 entries (index
-   frame >> 3), in bits from the table's start (0x380 bits past the stream's);
-   an entry is its group's start plus frame & 7 delta steps. rec->ctr steps
+   arg1 >> 3), in bits from the table's start (0x380 bits past the stream's);
+   an entry is its group's start plus arg1 & 7 delta steps. rec->ctr steps
    through the four slots; of the slot it steps to and the one before, one
-   whose ->frame is frame is copied out (and the step is undone), one holding
-   frame - 1 is continued from, and otherwise the entry is decoded from its
-   group's start. When frame & 7 is below 7, the entry
+   whose ->frame is arg1 is copied out (and the step is undone), one holding
+   arg1 - 1 is continued from, and otherwise the entry is decoded from its
+   group's start. When arg1 & 7 is below 7, the entry
    (->frame, ->pose, ->rate) and the reader state after it are kept in that
    slot. `work` holds the pose (+0x00), the rates (+0x84) and the codes
    (+0x108, copied from rec->code when D_800A30EC is 0). */
-void func_800198D0(s32 obj, s32 frame, MotionFrame *out, u16 *work) {
+void func_800198D0(s32 obj, s32 arg1, MotionFrame *out, u16 *work) {
     Unk800F1B18Rec *rec;
     u8 *tbl;
     Unk800F1B18Slot *slot;
@@ -173,14 +173,14 @@ void func_800198D0(s32 obj, s32 frame, MotionFrame *out, u16 *work) {
     u32 *ptr;
     u32 cur;
     s32 bits;
-    s32 sub;
-    s32 key;
-    s32 ctr;
+    s32 var_7;
+    s32 var_8;
+    s32 var_9;
     /* Ruling 11 (ordinary-c-judge-decidable): two values, both loop indices --
      * the group-start loop's over the 63 values and the post-pass column
      * loop's. */
     s32 idx;
-    s32 ch;
+    s32 var_11;
     /* Ruling 11: two values, both loop indices -- the delta-step loop's and
      * the post-pass row loop's. */
     s32 idx2;
@@ -194,33 +194,33 @@ void func_800198D0(s32 obj, s32 frame, MotionFrame *out, u16 *work) {
     u32 field;
     s16 x;
 
-    sub = frame & 7;
-    key = frame >> 3;
+    var_7 = arg1 & 7;
+    var_8 = arg1 >> 3;
     rec = &D_800F1B18[obj];
     tbl = (u8 *)rec->stream + 0x70;
     if (D_800A30EC == 0) {
         COPY33(work + 0x84, rec->code);
     }
-    ctr = rec->ctr;
-    rec->ctr = ctr + 1;
-    slot = &rec->slot[(ctr + 1) & 3];
-    if (slot->frame == frame) {
+    var_9 = rec->ctr;
+    rec->ctr = var_9 + 1;
+    slot = &rec->slot[(var_9 + 1) & 3];
+    if (slot->frame == arg1) {
         COPY33(out, slot->pose);
         rec->ctr -= 1;
         return;
     }
-    prev = &rec->slot[ctr & 3];
-    if (prev->frame == frame) {
+    prev = &rec->slot[var_9 & 3];
+    if (prev->frame == arg1) {
         COPY33(out, prev->pose);
         rec->ctr -= 1;
         return;
     }
-    if (slot->frame != frame - 1) {
-        if (prev->frame == frame - 1) {
+    if (slot->frame != arg1 - 1) {
+        if (prev->frame == arg1 - 1) {
             slot = prev;
         } else {
-            off = ((tbl[key * 3] << 16) | (tbl[key * 3 + 1] << 8) |
-                   tbl[key * 3 + 2]) +
+            off = ((tbl[var_8 * 3] << 16) | (tbl[var_8 * 3 + 1] << 8) |
+                   tbl[var_8 * 3 + 2]) +
                   0x380;
             ptr = rec->stream + (off >> 5);
             shift = off & 0x1F;
@@ -256,12 +256,12 @@ void func_800198D0(s32 obj, s32 frame, MotionFrame *out, u16 *work) {
     bits = slot->bits;
     cur = slot->cur;
     COPY33(work, slot->pose);
-    if (sub >= 2) {
+    if (var_7 >= 2) {
         COPY33(work + 0x42, slot->rate);
     }
-    idx2 = sub - 1;
+    idx2 = var_7 - 1;
 decode:
-    for (; idx2 < sub; idx2++) {
+    for (; idx2 < var_7; idx2++) {
         GETBITS(field, 1);
         if (field) {
             GETBITS(field, 16);
@@ -277,12 +277,12 @@ decode:
             GETBITS(field, 16);
         }
         work[2] = field;
-        for (ch = 0; ch < 63; ch++) {
+        for (var_11 = 0; var_11 < 63; var_11++) {
             /* Ruling 11: four values -- the value's decoded delta, case 1's
              * magnitude, case 2's zero flag and case 3's magnitude. */
             s16 temp;
 
-            code = work[ch + 0x87];
+            code = work[var_11 + 0x87];
             if (code == 0) {
                 continue;
             }
@@ -369,11 +369,11 @@ decode:
             }
             }
             if (idx2 == 0) {
-                work[ch + 0x45] = temp;
-                work[ch + 3] += temp;
+                work[var_11 + 0x45] = temp;
+                work[var_11 + 3] += temp;
             } else {
-                work[ch + 3] += work[ch + 0x45] + temp;
-                work[ch + 0x45] += temp;
+                work[var_11 + 3] += work[var_11 + 0x45] + temp;
+                work[var_11 + 0x45] += temp;
             }
         }
     }
@@ -387,8 +387,8 @@ decode:
         p += 3;
     }
     COPY33(out, work);
-    if (sub < 7) {
-        slot->frame = frame;
+    if (var_7 < 7) {
+        slot->frame = arg1;
         COPY33(slot->pose, work);
         COPY33(slot->rate, work + 0x42);
         slot->ptr = ptr;
@@ -448,7 +448,7 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
     s32 dx;
     s32 dz;
     u32 dist_sq;
-    u32 log2_val;
+    u32 var_3;
     s32 sp_tmp;
     dx = arg1[0] - arg2[0];
     dz = arg1[2] - arg2[2];
@@ -459,7 +459,7 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
     }
     dist_sq = (dx * dx) + (dz * dz);
     if (dist_sq < 0x400U) {
-        log2_val = ((u32)((u8)(g_sqrt_table_u8[dist_sq]))) >> 3;
+        var_3 = ((u32)((u8)(g_sqrt_table_u8[dist_sq]))) >> 3;
     } else {
         u32 shift_a;
         u32 shift_b;
@@ -484,11 +484,11 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
             shift_a = 0x16 - li_v0;
         }
         shift_b = shift_a >> 1;
-        log2_val = (((u32)((u8)(g_sqrt_table_u8[dist_sq >> shift_a]))) << 16) >>
-                   (0x13 - shift_b);
+        var_3 = (((u32)((u8)(g_sqrt_table_u8[dist_sq >> shift_a]))) << 16) >>
+                (0x13 - shift_b);
     }
-    arg0[0] = (s16)math_FloorDiv2000(arg2[0] + ((dx << 10) / ((s32)log2_val)));
-    arg0[2] = (s16)math_FloorDiv2000(arg2[2] + ((dz << 10) / ((s32)log2_val)));
+    arg0[0] = (s16)math_FloorDiv2000(arg2[0] + ((dx << 10) / ((s32)var_3)));
+    arg0[2] = (s16)math_FloorDiv2000(arg2[2] + ((dz << 10) / ((s32)var_3)));
 }
 
 void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
@@ -532,32 +532,32 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
                    Unk80101EC8Record *arg3) {
     s32 lzc_out;
     CamScratch *scr;
-    Rec44 *cam;
+    Rec44 *var_2;
     s32 dx, dy, dz;
     s32 x, y, z;
     s32 shift;
     u32 dist_sq;
     u32 dist;
     u32 q;
-    s32 zoom;
-    s32 pitch0, pitch1;
-    s32 base_pitch;
+    s32 var_13;
+    s32 var_14, pitch1;
+    s32 var_16;
     s32 p;
     /* work holds three values, all unk_10.vx (rot_x) quantities: the
-     * per-fighter bisection angle (loop), the target angle max(pitch0, pitch1)
+     * per-fighter bisection angle (loop), the target angle max(var_14, pitch1)
      * clamped to 0x80..0x1C0, and the final eased step (Ruling 11,
      * ordinary-c-judge-decidable). */
     s32 work;
     s32 i, j;
 
     scr = (CamScratch *)0x1F800000;
-    cam = &D_800F6608;
-    cam->h30[0][0] = 0x64;
-    cam->h30[0][1] = 0;
-    cam->h30[0][2] = 0x64;
-    cam->h30[1][0] = 0x64;
-    cam->h30[1][1] = 0;
-    cam->h30[1][2] = 0x64;
+    var_2 = &D_800F6608;
+    var_2->h30[0][0] = 0x64;
+    var_2->h30[0][1] = 0;
+    var_2->h30[0][2] = 0x64;
+    var_2->h30[1][0] = 0x64;
+    var_2->h30[1][1] = 0;
+    var_2->h30[1][2] = 0x64;
     dx = arg1->x - arg0->x;
     dy = arg1->y - arg0->y;
     dz = arg1->z - arg0->z;
@@ -568,9 +568,9 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
     } else {
         scr->focus = *(CamVec *)arg0;
     }
-    cam->unk_00.x += (scr->focus.vx - cam->unk_00.x) / 4;
-    cam->unk_00.y += (scr->focus.vy - cam->unk_00.y) / 4;
-    cam->unk_00.z += (scr->focus.vz - cam->unk_00.z) / 4;
+    var_2->unk_00.x += (scr->focus.vx - var_2->unk_00.x) / 4;
+    var_2->unk_00.y += (scr->focus.vy - var_2->unk_00.y) / 4;
+    var_2->unk_00.z += (scr->focus.vz - var_2->unk_00.z) / 4;
 
     x = dx;
     y = dy;
@@ -609,49 +609,49 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
         arg3->unk_6A == 0x13 || arg3->unk_6A == 0x1B || arg3->unk_6A == 0x30) {
         q += 0x1000;
     }
-    zoom = ((dist + q) << 7) / 100;
+    var_13 = ((dist + q) << 7) / 100;
     if (dy < 0) {
         dy = -dy;
     }
-    zoom += dy;
+    var_13 += dy;
     if (arg2->unk_6A == 0xF || arg2->unk_6A == 0x1C || arg2->unk_6A == 0x1D ||
         arg2->unk_6A == 0x1E || arg2->unk_6A == 0x1F || arg2->unk_6A == 0x20 ||
         arg2->unk_6A == 0x21) {
-        zoom = 0xBB8;
+        var_13 = 0xBB8;
     }
-    cam->w18 += (zoom - cam->w18) / 12;
+    var_2->w18 += (var_13 - var_2->w18) / 12;
     if (!(arg2->unk_6A == 0xF || arg2->unk_6A == 0x1C || arg2->unk_6A == 0x1D ||
           arg2->unk_6A == 0x1E || arg2->unk_6A == 0x1F ||
           arg2->unk_6A == 0x20 || arg2->unk_6A == 0x21) &&
-        cam->w18 < 0x1770) {
-        cam->w18 = 0x1770;
+        var_2->w18 < 0x1770) {
+        var_2->w18 = 0x1770;
     }
-    if (cam->w18 > 100000) {
-        cam->w18 = 100000;
+    if (var_2->w18 > 100000) {
+        var_2->w18 = 100000;
     }
-    if (cam->b1E) {
-        cam->b1E = cam->w18 >= 0x558D;
+    if (var_2->b1E) {
+        var_2->b1E = var_2->w18 >= 0x558D;
     } else {
-        cam->b1E = cam->w18 >= 0x55F1;
+        var_2->b1E = var_2->w18 >= 0x55F1;
     }
-    func_8003F1E4(cam->b1E);
+    func_8003F1E4(var_2->b1E);
 
     if (arg2->unk_6A == 0x11) {
-        scr->yaw = cam->unk_10.vy;
+        scr->yaw = var_2->unk_10.vy;
     } else {
         scr->yaw = (0x400 - ratan2(dx, dz)) & 0xFFF;
     }
     scr->roll = 0;
-    cam->unk_10.vy += math_SignExt12Div(scr->yaw - cam->unk_10.vy, 8);
-    cam->unk_10.vz += math_SignExt12Div(scr->roll - cam->unk_10.vz, 8);
-    base_pitch = cam->unk_10.vx;
+    var_2->unk_10.vy += math_SignExt12Div(scr->yaw - var_2->unk_10.vy, 8);
+    var_2->unk_10.vz += math_SignExt12Div(scr->roll - var_2->unk_10.vz, 8);
+    var_16 = var_2->unk_10.vx;
 
     for (p = 0; p < 2; p++) {
         s32 hi, lo;
 
-        work = base_pitch;
-        cam->unk_10.vx = work;
-        camera_CalcEye(cam, &scr->eye.vx);
+        work = var_16;
+        var_2->unk_10.vx = work;
+        camera_CalcEye(var_2, &scr->eye.vx);
         if (p != 0) {
             scr->scr28 = arg3->unk_B8;
         } else {
@@ -661,7 +661,7 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
         if (func_80053614((s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
                           scr->nrm, (s32)&scr->unk60) &&
             scr->nrm[1] < -0x320) {
-            func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
+            func_8001A67C(var_2->h30[p], (s32 *)&scr->eye, scr->hit);
             if (D_800A30F0[p]) {
                 D_800A30F4[p] += 0x20;
             } else {
@@ -685,14 +685,14 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
-                cam->unk_10.vx = hi + d / 2;
-                camera_CalcEye(cam, &scr->eye.vx);
+                var_2->unk_10.vx = hi + d / 2;
+                camera_CalcEye(var_2, &scr->eye.vx);
                 if (func_80053614((s32 *)&scr->scr28, (s32 *)&scr->eye,
                                   scr->hit, scr->nrm, (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
-                    work = cam->unk_10.vx;
+                    work = var_2->unk_10.vx;
                 } else {
-                    hi = cam->unk_10.vx;
+                    hi = var_2->unk_10.vx;
                 }
             }
             work = hi;
@@ -715,15 +715,15 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
-                cam->unk_10.vx = lo + d / 2;
-                camera_CalcEye(cam, &scr->eye.vx);
+                var_2->unk_10.vx = lo + d / 2;
+                camera_CalcEye(var_2, &scr->eye.vx);
                 if (func_80053614((s32 *)&scr->scr28, (s32 *)&scr->eye,
                                   scr->hit, scr->nrm, (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
-                    func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
-                    lo = cam->unk_10.vx;
+                    func_8001A67C(var_2->h30[p], (s32 *)&scr->eye, scr->hit);
+                    lo = var_2->unk_10.vx;
                 } else {
-                    work = cam->unk_10.vx;
+                    work = var_2->unk_10.vx;
                 }
             }
             D_800A30F0[p] = 0;
@@ -731,19 +731,19 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
         if (p != 0) {
             pitch1 = work;
         } else {
-            pitch0 = work;
+            var_14 = work;
         }
     }
-    work = (pitch0 < pitch1) ? pitch1 : pitch0;
+    work = (var_14 < pitch1) ? pitch1 : var_14;
     if (work < 0x80) {
         work = 0x80;
     }
     if (work > 0x1C0) {
         work = 0x1C0;
     }
-    cam->unk_10.vx = base_pitch;
-    work = math_SignExt12Div(work - base_pitch, 8);
-    cam->unk_10.vx += work;
+    var_2->unk_10.vx = var_16;
+    work = math_SignExt12Div(work - var_16, 8);
+    var_2->unk_10.vx += work;
 }
 
 void func_8001B138(s32 *arg0) {
@@ -837,12 +837,12 @@ void func_8001B478(Unk80101EC8Record *obj) {
     Rec44 *s2 = &D_800F5328;
     s32 a2;
     s32 val;
-    s32 far;
+    s32 var_3;
 
     func_8003F1E4(0);
 
     val = (obj->unk_198[0].y + obj->unk_198[1].y) / 2 - obj->unk_180.y;
-    far = val >= 0x391;
+    var_3 = val >= 0x391;
 
     if (obj->unk_6A == 0x2A) {
         val = 0x200;
@@ -851,7 +851,7 @@ void func_8001B478(Unk80101EC8Record *obj) {
         s2->unk_00.z = obj->unk_180.z;
         val = obj->unk_180.y;
 
-        if (!far) {
+        if (!var_3) {
             s32 v = -(obj->unk_1A * 950);
             if (v < 0) {
                 v += 0xFFF;
@@ -972,10 +972,10 @@ void func_8001B748(
      * the w18 step; one local per role re-seats the products and moves the
      * loads (score 23). */
     s32 cur;
-    s32 use_high;
+    s32 var_8;
     s32 v;
     s32 t;
-    s32 dd;
+    s32 var_11;
     if (dst->b1F == 0) {
         dst->b1F = 1;
         dst->unk_00.x = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
@@ -996,7 +996,7 @@ void func_8001B748(
         0xC8) {
         D_800A3310 += 1;
     }
-    use_high = ((s16)D_800A3310) >= 0xB;
+    var_8 = ((s16)D_800A3310) >= 0xB;
     cur = dst->unk_00.x;
     t = ((frac * (a->h4)) + (inv_frac * (b->h4))) >> 12;
     dx = t - cur;
@@ -1018,7 +1018,7 @@ void func_8001B748(
         dz += 0xF;
     }
     dst->unk_00.z = cur + (dz >> 4);
-    if (use_high) {
+    if (var_8) {
         t = ((frac_s1 * 0x180) >> 12) + 0x80;
     } else {
         t = 0x80 - ((frac_s1 << 8) >> 12);
@@ -1030,17 +1030,17 @@ void func_8001B748(
     v = math_SignExt12Div(val - dst->unk_10.vy, 0x10);
     dst->unk_10.vz = 0;
     dst->unk_10.vy = dst->unk_10.vy + v;
-    if (use_high) {
+    if (var_8) {
         t = ((frac_s1 * 0x7D0) + (inv_s1 * 0x2EE0)) >> 12;
     } else {
         t = ((frac_s1 * 0x1F4) + (inv_s1 * 0x2EE0)) >> 12;
     }
     cur = dst->w18;
-    dd = t - cur;
-    if (dd < 0) {
-        dd += 0xF;
+    var_11 = t - cur;
+    if (var_11 < 0) {
+        var_11 += 0xF;
     }
-    dst->w18 = cur + (dd >> 4);
+    dst->w18 = cur + (var_11 >> 4);
     dst->h30[0][0] = 0x64;
     dst->h30[0][1] = 0;
     dst->h30[0][2] = 0x64;
@@ -1373,7 +1373,7 @@ void func_8001C8DC(void);
 
 void func_8001C8DC(void) {
     u8 prev;
-    s32 snd;
+    s32 var_1;
 
     if (D_80101EC8[0].unk_96 != 0 || D_80101EC8[1].unk_96 != 0) {
         D_800A382E++;
@@ -1440,9 +1440,9 @@ void func_8001C8DC(void) {
         }
         if (D_800A3728 = prev != D_800A38E0) {
             func_8001C624();
-            snd = func_80021904(0);
+            var_1 = func_80021904(0);
             D_80101EC8[0].unk_5E = 0;
-            func_80021A98(0, (MoveScript *)snd, 0);
+            func_80021A98(0, (MoveScript *)var_1, 0);
         }
         func_8001C51C();
         if (D_800A384C < 4) {
@@ -2394,16 +2394,16 @@ void func_8001F1C4(Unk80101EC8Record *arg0, Rec1C *arg1, MotionFrame *arg2,
 void func_8001F2E4(Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
     s32 lzc_out;
     s32 lzc_out2;
-    s32 tgt_z;
+    s32 var_2;
     /* temp2: two values -- the clamped elevation target that obj+0x1E8 eases
      * toward (0x100 in state 0x1F, 0 outside states 0x15/0x25), then the
      * clamped twist target that obj+0x1EA eases toward (Ruling 11). */
     s32 temp2;
-    /* FAKE: constant-holder (named-local-fake-exception): tgt_x is 0 on every
+    /* FAKE: constant-holder (named-local-fake-exception): var_4 is 0 on every
      * path; the three arm writes reach both func_8002F770 calls unfolded and
      * the pseudo takes $s2 as in the target. The literal 0: score 46; one
      * initializer: score 43; one write after the join: score 46. */
-    s32 tgt_x;
+    s32 var_4;
     /* dx / dz: two values each -- the partner-minus-obj x (z) offset of
      * obj+0x180 (0x188) for the elevation, then of the saved obj+0xF4 (0xFC)
      * position for the twist (Ruling 11). */
@@ -2423,20 +2423,20 @@ void func_8001F2E4(Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
     if (obj->unk_6A == 0x15 || obj->unk_6A == 0x25) {
         if (obj->unk_0C == 0x1F) {
             temp2 = 0x100;
-            tgt_x = 0;
-            tgt_z = 0;
+            var_4 = 0;
+            var_2 = 0;
         } else {
             s32 dist_sq;
             s32 dist;
 
-            tgt_z = (obj->unk_1D8 - obj->unk_1C8.vy) & 0xFFF;
-            if (tgt_z >= 0x800) {
-                tgt_z -= 0x1000;
+            var_2 = (obj->unk_1D8 - obj->unk_1C8.vy) & 0xFFF;
+            if (var_2 >= 0x800) {
+                var_2 -= 0x1000;
             }
-            if (tgt_z < -0x1FF) {
-                tgt_z = -0x1FF;
-            } else if (tgt_z >= 0x200) {
-                tgt_z = 0x1FF;
+            if (var_2 < -0x1FF) {
+                var_2 = -0x1FF;
+            } else if (var_2 >= 0x200) {
+                var_2 = 0x1FF;
             }
             dx = obj->other->unk_180.x - obj->unk_180.x;
             dz = obj->other->unk_180.z - obj->unk_180.z;
@@ -2469,15 +2469,15 @@ void func_8001F2E4(Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
             } else if (temp2 >= 0x100) {
                 temp2 = 0xFF;
             }
-            tgt_x = 0;
+            var_4 = 0;
         }
     } else {
-        tgt_x = 0;
+        var_4 = 0;
         temp2 = 0;
-        tgt_z = 0;
+        var_2 = 0;
     }
 
-    temp = (tgt_z - obj->unk_1E6) & 0xFFF;
+    temp = (var_2 - obj->unk_1E6) & 0xFFF;
     if (temp >= 0x800) {
         temp -= 0x1000;
     }
@@ -2487,8 +2487,8 @@ void func_8001F2E4(Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
         temp -= 0x1000;
     }
     obj->unk_1E8 = obj->unk_1E8 + temp / 8;
-    func_8002F770(&a->unk_0C[0x15], obj->unk_1E6, obj->unk_1E8, tgt_x);
-    func_8002F770(&b->unk_0C[0x15], obj->unk_1E6, obj->unk_1E8, tgt_x);
+    func_8002F770(&a->unk_0C[0x15], obj->unk_1E6, obj->unk_1E8, var_4);
+    func_8002F770(&b->unk_0C[0x15], obj->unk_1E6, obj->unk_1E8, var_4);
 
     t = obj->unk_0C;
     if ((t == 0x1D || t == 0xE) && obj->unk_8C != 0) {
@@ -2611,23 +2611,23 @@ s32 func_8001F888(void) {
  * by the damage count at arg0+0x270 clamped to 3.
  *
  * `short dmg` is a plain signed short local: GCC's lowering of it gives the
- * second `lhu`, the `sll 16 ; sra 15` and the 8-byte stack frame. `kind_full`
- * / `kind = kind_full & 0xFFFFU` mirror the target's
+ * second `lhu`, the `sll 16 ; sra 15` and the 8-byte stack frame. `var_0`
+ * / `kind = var_0 & 0xFFFFU` mirror the target's
  * `lhu $a1,0x6A ; andi $v1,$a1,0xFFFF`. */
 void func_8001F938(Unk80101EC8Record *arg0) {
-    u32 kind_full;
+    u32 var_0;
     u32 kind;
     s32 val;
     s32 a2;
     s32 idx;
     s32 factor;
-    kind_full = arg0->unk_6A;
-    kind = kind_full & 0xFFFFU;
+    var_0 = arg0->unk_6A;
+    kind = var_0 & 0xFFFFU;
     a2 = arg0->unk_1C;
-    if (kind == 0x11 || kind == 0xF || ((u32)((s32)kind_full - 0x1C)) < 2U ||
-        ((u32)((s32)kind_full - 0x1E)) < 2U ||
-        ((u32)((s32)kind_full - 0x20)) < 2U || kind == 0xE || kind == 0x2C ||
-        kind == 0xD || kind == 0x7 || kind == 0x33 || kind == 0x14) {
+    if (kind == 0x11 || kind == 0xF || ((u32)((s32)var_0 - 0x1C)) < 2U ||
+        ((u32)((s32)var_0 - 0x1E)) < 2U || ((u32)((s32)var_0 - 0x20)) < 2U ||
+        kind == 0xE || kind == 0x2C || kind == 0xD || kind == 0x7 ||
+        kind == 0x33 || kind == 0x14) {
         goto clamp;
     }
     if (kind == 0x2) {
@@ -2757,7 +2757,7 @@ void func_8001FBE8(void) {
     Unk80101EC8Record *rec;
     Unk8001FAE4Entry *ent;
     u8 *data;
-    MoveScript *snd;
+    MoveScript *var_3;
     s32 lo;
     s32 hi;
     s32 dz;
@@ -2845,11 +2845,11 @@ void func_8001FBE8(void) {
         D_800A3758 = 0xFF;
         D_800A371C = data[2] * 20;
         D_800A38E8 = data[3] & 0x7F;
-        snd = func_80021424(rec, ent->id, &rec->unk_5E);
-        func_80021A98(i, snd, rec->unk_5E);
+        var_3 = func_80021424(rec, ent->id, &rec->unk_5E);
+        func_80021A98(i, var_3, rec->unk_5E);
         rec->other->unk_4C = 1;
         rec->other->unk_5E = rec->unk_5E;
-        func_80021A98(i == 0, snd, rec->unk_5E);
+        func_80021A98(i == 0, var_3, rec->unk_5E);
         rec->unk_7A = 2;
         rec->other->unk_7A = 2;
         rec->other->unk_86 = rec->other->unk_84;
@@ -2875,7 +2875,7 @@ s32 func_8002006C(void) {
 }
 
 void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
-    s32 disc;
+    s32 var_0;
     s32 dx;
     s32 dz;
     s32 dist;
@@ -2904,21 +2904,21 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
             s32 dy2 = dy * 2;
             s32 a0;
 
-            disc = arg2 * arg2 + arg3 * dy2;
+            var_0 = arg2 * arg2 + arg3 * dy2;
 
-            if (disc >= 0) {
+            if (var_0 >= 0) {
                 s32 a2;
-                disc = SquareRoot0(disc << 10);
+                var_0 = SquareRoot0(var_0 << 10);
                 a2 = arg2 << 5;
-                a0 = ((a2 + disc) * dist) / dy2 / 32;
+                a0 = ((a2 + var_0) * dist) / dy2 / 32;
 
                 if (a0 < 0) {
-                    /* FAKE: dead dy reused as the arm-2 (a2-disc) temp:
-                     * disc's register preference flows through dy to the /32
+                    /* FAKE: dead dy reused as the arm-2 (a2-var_0) temp:
+                     * var_0's register preference flows through dy to the /32
                      * quotient, which takes $v1 as in the target. The
                      * natural spelling or a fresh temp: score 6; reusing
-                     * disc: 8. */
-                    dy = a2 - disc;
+                     * var_0: 8. */
+                    dy = a2 - var_0;
                     a0 = (dy * dist) / dy2 / 32;
                 }
             } else {
@@ -2998,26 +2998,26 @@ void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
 
 /* rec->unk_350 is a frame counter func_800203B4 starts at 1. On the tick
  * where (counter & 7) == 2, the vector func_800203B4 stored at rec->unk_354
- * is rotated by matrix rec->unk_352 of func_80046DEC(pid) (GTE MVMVA),
+ * is rotated by matrix rec->unk_352 of func_80046DEC(var_2) (GTE MVMVA),
  * scaled by (150 - counter) / 150, negated when its y exceeds 0x800, and
  * handed to func_80032854 with scratchpad point
- * SPAD->unkA8[pid][rec->unk_352]. The counter is cleared on every call that
+ * SPAD->unkA8[var_2][rec->unk_352]. The counter is cleared on every call that
  * finds it running (the original stores 0 under `>= 150` and then again
  * unconditionally). GTE: PsyQ 4.3 inline_o.h statements. */
 void func_800204C0(Unk80101EC8Record *rec) {
     s32 mac[3];
     s16 out[3];
-    s32 pid;
+    s32 var_2;
     s32 mul;
-    MATRIX **bones;
+    MATRIX **var_4;
 
-    pid = rec->index;
+    var_2 = rec->index;
     if (rec->unk_350 != 0) {
         rec->unk_350 += 1;
         if ((rec->unk_350 & 7) == 2) {
-            bones = func_80046DEC(pid);
+            var_4 = func_80046DEC(var_2);
             /* inline_o.h: gte_SetRotMatrix :272-284 */
-            __asm__ volatile ("move  $12,%0": :"r"(bones[rec->unk_352]):"$12","$13","$14","$15","memory");
+            __asm__ volatile ("move  $12,%0": :"r"(var_4[rec->unk_352]):"$12","$13","$14","$15","memory");
             __asm__ volatile ("lw    $13,($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("lw    $14,4($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("ctc2  $13,$0": : :"$12","$13","$14","$15","memory");
@@ -3055,7 +3055,7 @@ void func_800204C0(Unk80101EC8Record *rec) {
                 out[1] = -out[1];
                 out[2] = -out[2];
             }
-            func_80032854(pid, 4, &SPAD->unkA8[pid][rec->unk_352].x, out);
+            func_80032854(var_2, 4, &SPAD->unkA8[var_2][rec->unk_352].x, out);
         }
         if (rec->unk_350 >= 0x96) {
             rec->unk_350 = 0;
@@ -3084,35 +3084,35 @@ void func_800206B0(s32 arg0, s32 arg1) {
 
 /* Places character rec->index's points in world space with its bone
  * matrices (func_80046DEC()): each of the 22 hit records' offsets through
- * its bone into bone_out (the callers pass SPAD->unkA8[i]); the point set
+ * its bone into arg1 (the callers pass SPAD->unkA8[i]); the point set
  * D_8008D86C[unk_0E] (D_8008D774 when unk_12 == 50) through bone 18 into
- * att_out; when unk_8C != 0, the pair D_8008D88C[unk_14] through bone 19 into
- * extra_out. A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
- * matrix translation. Then: bone 11's y axis into rec->unk_1EC, bone_out[0]
+ * arg2; when unk_8C != 0, the pair D_8008D88C[unk_14] through bone 19 into
+ * arg3. A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
+ * matrix translation. Then: bone 11's y axis into rec->unk_1EC, arg1[0]
  * into rec->unk_180, the translations of bones 17 and 14 (y raised by (unk_1A *
  * 71) >> 11) into rec->unk_198[], the floor height under each (func_80053614
  * down a segment from y - 100 to y + 2000; the segment's lower end when it
  * finds nothing) into rec->unk_1B0[], and the two bones' headings into
  * unk_1BA / unk_1C2. GTE: PsyQ 4.3 inline_o.h statements; each gte_rtv0's DMPSX
  * placeholder .word 0x0000013f is the post-DMPSX .word 0x4A486012 (Q93). */
-void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *bone_out,
-                   Unk80107850Rec *att_out, Unk80107850Rec *extra_out) {
+void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
+                   Unk80107850Rec *arg2, Unk80107850Rec *arg3) {
     /* func_80053614's arguments in scratchpad: from (words 0..2), to (4..6),
      * hit (8..10), normal (12..13), work area (14..) */
-    s32 *probe = (s32 *)0x1F8002B8;
-    MATRIX **bones;
+    s32 *var_0 = (s32 *)0x1F8002B8;
+    MATRIX **var_1;
     MATRIX *m;
     s32 *pos;
     SVec4i16 *v;
-    BoneHitRec *hr;
+    BoneHitRec *var_5;
     Unk80107850Rec *o;
     s32 i;
 
-    bones = func_80046DEC(rec->index);
-    hr = D_800F5F68[rec->index];
-    o = bone_out;
-    for (i = 0; i < 22; i++, hr++, o++) {
-        m = bones[hr->bone];
+    var_1 = func_80046DEC(rec->index);
+    var_5 = D_800F5F68[rec->index];
+    o = arg1;
+    for (i = 0; i < 22; i++, var_5++, o++) {
+        m = var_1[var_5->bone];
         /* inline_o.h: gte_SetRotMatrix :272-284 */
         __asm__ volatile ("move  $12,%0": :"r"(m):"$12","$13","$14","$15","memory");
         __asm__ volatile ("lw    $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -3126,7 +3126,7 @@ void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *bone_out,
         __asm__ volatile ("ctc2  $14,$3": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory");
         /* inline_o.h: gte_ldv0 :16-20 */
-        __asm__ volatile ("move  $12,%0": :"r"(&hr->ofs):"$12","$13","$14","$15","memory");
+        __asm__ volatile ("move  $12,%0": :"r"(&var_5->ofs):"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
         /* inline_o.h: gte_rtv0 :426-430; .word 0x0000013f -> post-DMPSX .word
@@ -3144,7 +3144,7 @@ void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *bone_out,
         o->z += m->t[2];
     }
 
-    m = bones[18];
+    m = var_1[18];
     /* inline_o.h: gte_SetRotMatrix :272-284 */
     __asm__ volatile ("move  $12,%0": :"r"(m):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lw    $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -3162,7 +3162,7 @@ void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *bone_out,
     } else {
         v = D_8008D86C[rec->unk_0E];
     }
-    o = att_out;
+    o = arg2;
     for (i = 0; i < D_8008D864[rec->unk_0E]; i++, v++, o++) {
         /* inline_o.h: gte_ldv0 :16-20 */
         __asm__ volatile ("move  $12,%0": :"r"(v):"$12","$13","$14","$15","memory");
@@ -3184,7 +3184,7 @@ void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *bone_out,
     }
 
     if (rec->unk_8C != 0) {
-        m = bones[19];
+        m = var_1[19];
         /* inline_o.h: gte_SetRotMatrix :272-284 */
         __asm__ volatile ("move  $12,%0": :"r"(m):"$12","$13","$14","$15","memory");
         __asm__ volatile ("lw    $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -3198,7 +3198,7 @@ void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *bone_out,
         __asm__ volatile ("ctc2  $14,$3": : :"$12","$13","$14","$15","memory");
         __asm__ volatile ("ctc2  $15,$4": : :"$12","$13","$14","$15","memory");
         v = D_8008D88C[rec->unk_14];
-        o = extra_out;
+        o = arg3;
         for (i = 0; i < 2; i++, v++, o++) {
             /* inline_o.h: gte_ldv0 :16-20 */
             __asm__ volatile ("move  $12,%0": :"r"(v):"$12","$13","$14","$15","memory");
@@ -3220,7 +3220,7 @@ void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *bone_out,
         }
     }
 
-    m = bones[11];
+    m = var_1[11];
     /* inline_o.h: gte_SetRotMatrix :272-284 */
     __asm__ volatile ("move  $12,%0": :"r"(m):"$12","$13","$14","$15","memory");
     __asm__ volatile ("lw    $13,($12)": : :"$12","$13","$14","$15","memory");
@@ -3242,38 +3242,38 @@ void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *bone_out,
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
     __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
-    rec->unk_180 = bone_out[0];
+    rec->unk_180 = arg1[0];
     /* inline_o.h: gte_stlvnl :904-909 */
     __asm__ volatile ("move  $12,%0": :"r"(&rec->unk_1EC):"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
     __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
 
-    pos = bones[17]->t;
+    pos = var_1[17]->t;
     rec->unk_198[0].x = pos[0];
     rec->unk_198[0].y = pos[1] + ((rec->unk_1A * 71) >> 11);
     rec->unk_198[0].z = pos[2];
-    pos = bones[14]->t;
+    pos = var_1[14]->t;
     rec->unk_198[1].x = pos[0];
     rec->unk_198[1].y = pos[1] + ((rec->unk_1A * 71) >> 11);
     rec->unk_198[1].z = pos[2];
     for (i = 0; i < 2; i++) {
-        probe[0] = rec->unk_198[i].x;
-        probe[1] = rec->unk_198[i].y - 100;
-        probe[2] = rec->unk_198[i].z;
-        probe[4] = rec->unk_198[i].x;
-        probe[5] = rec->unk_198[i].y + 2000;
-        probe[6] = rec->unk_198[i].z;
-        if (func_80053614(&probe[0], &probe[4], &probe[8], (s16 *)&probe[12],
-                          (s32)&probe[14])) {
-            rec->unk_1B0[i] = probe[9];
+        var_0[0] = rec->unk_198[i].x;
+        var_0[1] = rec->unk_198[i].y - 100;
+        var_0[2] = rec->unk_198[i].z;
+        var_0[4] = rec->unk_198[i].x;
+        var_0[5] = rec->unk_198[i].y + 2000;
+        var_0[6] = rec->unk_198[i].z;
+        if (func_80053614(&var_0[0], &var_0[4], &var_0[8], (s16 *)&var_0[12],
+                          (s32)&var_0[14])) {
+            rec->unk_1B0[i] = var_0[9];
         } else {
-            rec->unk_1B0[i] = probe[5];
+            rec->unk_1B0[i] = var_0[5];
         }
     }
-    m = bones[17];
+    m = var_1[17];
     rec->unk_1BA = ratan2(m->m[0][2], m->m[2][2]) + 0x800;
-    m = bones[14];
+    m = var_1[14];
     rec->unk_1C2 = ratan2(m->m[0][2], m->m[2][2]) + 0x800;
 }
 
@@ -3328,26 +3328,26 @@ void func_80020DDC(void) {
     D_80102760.unk_10 = (u32 *)(v1 + v2);
 }
 
-/* For i = 0, 1 with v = chr0, then chr1 (when D_800A38DC is 1, 4 or 6): when
+/* For i = 0, 1 with v = arg0, then arg2 (when D_800A38DC is 1, 4 or 6): when
  * D_800A38C0[i] differs from v, stores v there and calls
  * cdrom_StartReadAt(func_80036EA8(1, 0), D_800A3888[i], v * 7, 7). Then sets
- * D_80101EC8[0].unk_48 to D_8008DB1C[chr0][costume0] | costume0 << 12 and
- * D_80101EC8[1].unk_48 to the same of chr1 and costume1 (a copy of the first
- * when D_800A38DC is 3). It then fills loads[0..1] from D_800A38C4[0..1]: it
- * returns when every id is already there; equal ids give loads[0] = id0; an
- * id found in D_800A38C4[0] stays and the other id goes to loads[1]; id1
- * found only in D_800A38C4[1] gives loads[0] = id0; otherwise (also when id0
- * is only in D_800A38C4[1]) loads[0] = id0 and loads[1] = id1. For each
- * nonzero loads[i] it calls cdrom_StartRead(func_80036EA8(1, j + 2),
+ * D_80101EC8[0].unk_48 to D_8008DB1C[arg0][arg1] | arg1 << 12 and
+ * D_80101EC8[1].unk_48 to the same of arg2 and arg3 (a copy of the first
+ * when D_800A38DC is 3). It then fills var_0[0..1] from D_800A38C4[0..1]: it
+ * returns when every id is already there; equal ids give var_0[0] = id0; an
+ * id found in D_800A38C4[0] stays and the other id goes to var_0[1]; id1
+ * found only in D_800A38C4[1] gives var_0[0] = id0; otherwise (also when id0
+ * is only in D_800A38C4[1]) var_0[0] = id0 and var_0[1] = id1. For each
+ * nonzero var_0[i] it calls cdrom_StartRead(func_80036EA8(1, j + 2),
  * D_800A3860[i]), j the id's D_8008DCCC index, points D_801027B0[i] into
  * D_800A3860[i] and stores the id in D_800A38C4[i]. */
-void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
-    /* FAKE: frame layout: only loads[0..1] are used; the target frame (0x140)
-     * reserves 0x100 untouched bytes after them (N = 129..132; loads[2] gives
+void func_80020E74(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    /* FAKE: frame layout: only var_0[0..1] are used; the target frame (0x140)
+     * reserves 0x100 untouched bytes after them (N = 129..132; var_0[2] gives
      * the wrong frame); without it: score 20. */
-    u16 loads[130];
+    u16 var_0[130];
     s32 i;
-    /* FAKE: one local for loop 1's chr0 / chr1 and loop 2's D_8008DCCC index;
+    /* FAKE: one local for loop 1's arg0 / arg2 and loop 2's D_8008DCCC index;
      * separate locals seat the index in $a1, the target keeps both in $s0
      * (score 3). */
     s32 j;
@@ -3358,9 +3358,9 @@ void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
 
     if (D_800A38DC == 1 || D_800A38DC == 4 || D_800A38DC == 6) {
         for (i = 0; i < 2; i++) {
-            j = chr0;
+            j = arg0;
             if (i != 0) {
-                j = chr1;
+                j = arg2;
             }
             if (D_800A38C0[i] != j) {
                 D_800A38C0[i] = j;
@@ -3371,16 +3371,16 @@ void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
         }
     }
 
-    loads[1] = 0;
-    loads[0] = 0;
+    var_0[1] = 0;
+    var_0[0] = 0;
     {
-        u16 id0 = D_8008DB1C[chr0][costume0] | (costume0 << 12);
+        u16 id0 = D_8008DB1C[arg0][arg1] | (arg1 << 12);
         u16 id1;
 
         if (D_800A38DC == 3) {
             id1 = id0;
         } else {
-            id1 = D_8008DB1C[chr1][costume1] | (costume1 << 12);
+            id1 = D_8008DB1C[arg2][arg3] | (arg3 << 12);
         }
         D_80101EC8[0].unk_48 = id0;
         D_80101EC8[1].unk_48 = id1;
@@ -3389,29 +3389,29 @@ void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
             if (D_800A38C4[0] == id1 || D_800A38C4[1] == id1) {
                 return;
             }
-            loads[0] = id0;
+            var_0[0] = id0;
         } else if (D_800A38C4[0] == id0) {
             if (D_800A38C4[1] == id1) {
                 return;
             }
-            loads[1] = id1;
+            var_0[1] = id1;
         } else if (D_800A38C4[0] == id1) {
             if (D_800A38C4[1] == id0) {
                 return;
             }
-            loads[1] = id0;
+            var_0[1] = id0;
         } else if (D_800A38C4[1] == id1) {
-            loads[0] = id0;
+            var_0[0] = id0;
         } else {
-            loads[0] = id0;
-            loads[1] = id1;
+            var_0[0] = id0;
+            var_0[1] = id1;
         }
     }
 
     for (i = 0; i < 2; i++) {
-        if (loads[i] != 0) {
+        if (var_0[i] != 0) {
             for (j = 0; D_8008DCCC[j].id != 0; j++) {
-                if (D_8008DCCC[j].id == loads[i]) {
+                if (D_8008DCCC[j].id == var_0[i]) {
                     break;
                 }
             }
@@ -3427,7 +3427,7 @@ void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
                 (u16 *)((s32)D_800A3860[i] + D_800A3860[i]->unk_04[2]);
             D_801027B0[i].unk_10 =
                 (u32 *)((s32)D_800A3860[i] + D_800A3860[i]->unk_04[3]);
-            D_800A38C4[i] = loads[i];
+            D_800A38C4[i] = var_0[i];
         }
     }
 }
@@ -3562,7 +3562,7 @@ const char D_800100FC[66][12] = {
 
 void *func_80021424(Unk80101EC8Record *rec, s32 id, s16 *out) {
     s16 t;
-    s32 ch;
+    s32 var_1;
 
     rec->unk_78 = 0;
     *out = 0;
@@ -3606,11 +3606,11 @@ void *func_80021424(Unk80101EC8Record *rec, s32 id, s16 *out) {
     }
     if (id & 0x8000) {
         if (rec->unk_4C != 0) {
-            ch = rec->other->unk_4A;
+            var_1 = rec->other->unk_4A;
         } else {
-            ch = rec->unk_4A;
+            var_1 = rec->unk_4A;
         }
-        return &D_801027B0[ch].unk_00[id & 0x7FFF];
+        return &D_801027B0[var_1].unk_00[id & 0x7FFF];
     }
     *out = 1;
     return &D_80102760.unk_00[id];
@@ -3765,12 +3765,12 @@ void func_80021D10(s32 arg0, s32 *arg1, s32 arg2) {
 void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
     Vec3i32 base;
     Vec3i32 cur;
-    Vec3i32 probe;
-    Vec3i32 hit;
-    s16 nrm[4];
-    s16 *stage;
+    Vec3i32 var_2;
+    Vec3i32 var_3;
+    s16 var_4[4];
+    s16 *var_5;
     s32 ofs;
-    s32 phase;
+    s32 var_7;
     /* the counter of both the 8-direction loop and the record search, as SOTN
      * reuses one counter across consecutive loops (Q51):
      * SOTN: src/dra/menu.c:138 @aa53500 */
@@ -3787,60 +3787,64 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
     s32 best;
     s32 d;
 
-    stage = func_80046F14();
-    phase = rand();
+    var_5 = func_80046F14();
+    var_7 = rand();
     ofs = rand() & 7;
     base.x = pos[0];
     base.y = pos[1] - 500;
     base.z = pos[2];
     for (i = 0; i < 8; i++) {
-        angle = (phase + ((ofs + i * 3) << 9)) & 0xFFF;
+        angle = (var_7 + ((ofs + i * 3) << 9)) & 0xFFF;
         dx = (Judge[(angle + 0x400) & 0xFFF] * 4000) / 4096;
         dz = (Judge[angle] * 4000) / 4096;
-        probe.x = base.x + dx;
-        probe.y = base.y;
-        probe.z = base.z + dz;
-        if (func_80053614(&base.x, &probe.x, &hit.x, nrm, 0x1F8002B8) != 0) {
+        var_2.x = base.x + dx;
+        var_2.y = base.y;
+        var_2.z = base.z + dz;
+        if (func_80053614(&base.x, &var_2.x, &var_3.x, var_4, 0x1F8002B8) !=
+            0) {
             continue;
         }
         cur = base;
         for (temp = 1; temp < 41; temp++) {
-            probe.y = base.y;
-            probe.x = base.x + (dx * temp) / 40;
-            probe.z = base.z + (dz * temp) / 40;
-            if (func_8005344C(&cur.x, &probe.x, &hit.x, nrm, 0x1F8002B8) != 0) {
+            var_2.y = base.y;
+            var_2.x = base.x + (dx * temp) / 40;
+            var_2.z = base.z + (dz * temp) / 40;
+            if (func_8005344C(&cur.x, &var_2.x, &var_3.x, var_4, 0x1F8002B8) !=
+                0) {
                 break;
             }
-            *out = probe;
+            *out = var_2;
             cur = *out;
         }
-        probe = *out;
-        probe.y += 4000;
-        if (func_80053614(&out->x, &probe.x, &hit.x, nrm, 0x1F8002B8) == 0) {
+        var_2 = *out;
+        var_2.y += 4000;
+        if (func_80053614(&out->x, &var_2.x, &var_3.x, var_4, 0x1F8002B8) ==
+            0) {
             continue;
         }
-        if (nrm[1] != -0x1000) {
+        if (var_4[1] != -0x1000) {
             continue;
         }
         cur = *out;
         for (temp = 1; temp < 41; temp++) {
-            probe.y = out->y + temp * 100;
-            if (func_8005344C(&cur.x, &probe.x, &hit.x, nrm, 0x1F8002B8) != 0 &&
-                nrm[1] == -0x1000) {
-                out->y = hit.y;
+            var_2.y = out->y + temp * 100;
+            if (func_8005344C(&cur.x, &var_2.x, &var_3.x, var_4, 0x1F8002B8) !=
+                    0 &&
+                var_4[1] == -0x1000) {
+                out->y = var_3.y;
                 return;
             }
-            cur.y = probe.y;
+            cur.y = var_2.y;
         }
     }
     if (D_800A38DC == 3) {
         temp = D_800A38E0;
     } else {
         best = 0x7FFFFFFF;
-        stage += D_800A36A4 * 24;
+        var_5 += D_800A36A4 * 24;
         for (i = 0, temp = 0; i < 4; i++) {
-            dx = stage[i * 6 + 3] - pos[0];
-            dz = stage[i * 6 + 5] - pos[2];
+            dx = var_5[i * 6 + 3] - pos[0];
+            dz = var_5[i * 6 + 5] - pos[2];
             d = dx * dx + dz * dz;
             if (d < best) {
                 best = d;
@@ -3848,10 +3852,10 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
             }
         }
     }
-    stage += temp * 6 + 3;
-    out->x = stage[0];
-    out->y = stage[1];
-    out->z = stage[2];
+    var_5 += temp * 6 + 3;
+    out->x = var_5[0];
+    out->y = var_5[1];
+    out->z = var_5[2];
 }
 
 void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
@@ -3982,11 +3986,11 @@ void func_80022568(Unk80101EC8Record *arg0) {
 
 void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     Unk80101EC8Record *p;
-    Vec3i32 other;
-    s32 level;
+    Vec3i32 var_1;
+    s32 var_2;
     s32 ang;
     s32 i;
-    s32 slot;
+    s32 var_5;
 
     p = &D_80101EC8[idx];
     D_800A3758 = 0xFF;
@@ -4021,17 +4025,17 @@ void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
 
     if (D_800A38DC == 3 && idx == 1) {
         p->unk_84 = func_800224E0(p);
-        level = (D_800A38E2 - 1) / 10 + 1;
-        p->unk_1C = level * 96 + ((level == 9) ? 0xA00 : 0x800);
-        if (level == 9) {
+        var_2 = (D_800A38E2 - 1) / 10 + 1;
+        p->unk_1C = var_2 * 96 + ((var_2 == 9) ? 0xA00 : 0x800);
+        if (var_2 == 9) {
             p->unk_20 = 0x1080;
         } else {
-            p->unk_20 = level * 64 + 0xC00;
+            p->unk_20 = var_2 * 64 + 0xC00;
         }
-        if (level == 9) {
+        if (var_2 == 9) {
             p->unk_08 = 0xE00;
         } else {
-            p->unk_08 = level * 80 + 0x150;
+            p->unk_08 = var_2 * 80 + 0x150;
         }
     } else {
         p->unk_84 = D_8008DD5C[p->unk_0A][p->unk_0E];
@@ -4041,36 +4045,36 @@ void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_8A = 0;
     p->unk_8E = -1;
     p->unk_90 = 0;
-    slot = (D_800A3670 != 0) ? D_800A38DF : 0;
+    var_5 = (D_800A3670 != 0) ? D_800A38DF : 0;
 
     switch (D_800A38DC) {
     case 0:
         if (arg4 != 0) {
-            other = p->other->unk_D8;
-            func_80022224(idx, &p->unk_D8.x, &other.x);
+            var_1 = p->other->unk_D8;
+            func_80022224(idx, &p->unk_D8.x, &var_1.x);
         } else {
             /* FAKE: default's two func_80021D10 calls repeated in this arm
              * (duplicated-statement-into-arms, Q47); cross-jump merges the
              * copies. With the copy, the dispatch tests mode == 0 first and
              * reaches case 2/3 through the target's `j`; every shared form
              * lays the dispatch out in another order. */
-            func_80021D10(idx, &p->unk_D8.x, slot);
-            func_80021D10(idx == 0, &other.x, slot);
+            func_80021D10(idx, &p->unk_D8.x, var_5);
+            func_80021D10(idx == 0, &var_1.x, var_5);
         }
         break;
     case 2:
     case 3:
         if (arg4 != 0) {
-            other = p->other->unk_D8;
-            func_80021DB0(idx, &p->unk_D8, &other.x);
+            var_1 = p->other->unk_D8;
+            func_80021DB0(idx, &p->unk_D8, &var_1.x);
         } else {
             func_80021D10(idx, &p->unk_D8.x, D_800A38E0);
-            func_80021D10(idx == 0, &other.x, D_800A38E0);
+            func_80021D10(idx == 0, &var_1.x, D_800A38E0);
         }
         break;
     default:
-        func_80021D10(idx, &p->unk_D8.x, slot);
-        func_80021D10(idx == 0, &other.x, slot);
+        func_80021D10(idx, &p->unk_D8.x, var_5);
+        func_80021D10(idx == 0, &var_1.x, var_5);
         break;
     }
 
@@ -4080,9 +4084,9 @@ void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_F4.x = p->unk_D8.x + p->unk_E8.x;
     p->unk_F4.y = p->unk_D8.y + p->unk_E8.y;
     p->unk_F4.z = p->unk_D8.z + p->unk_E8.z;
-    other.x += p->unk_E8.x;
-    other.y += p->unk_E8.y;
-    other.z += p->unk_E8.z;
+    var_1.x += p->unk_E8.x;
+    var_1.y += p->unk_E8.y;
+    var_1.z += p->unk_E8.z;
     p->unk_B8.vx = p->unk_F4.x;
     p->unk_B8.vy = p->unk_D8.y;
     p->unk_B8.vz = p->unk_F4.z;
@@ -4124,7 +4128,7 @@ void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_1C8.vx = 0;
     p->unk_1C8.vy = 0;
     p->unk_1C8.vz = 0;
-    ang = ratan2(other.x - p->unk_F4.x, other.z - p->unk_F4.z);
+    ang = ratan2(var_1.x - p->unk_F4.x, var_1.z - p->unk_F4.z);
     p->unk_1C8.vy = p->unk_1D8 = ang;
     if (p->unk_0C == 0x1F) {
         p->unk_1C8.vy = ang + 0x800;
@@ -4518,7 +4522,7 @@ void func_800238C4(Unk80101EC8Record *arg0) {
     s32 dx_delta;
     s32 dz_delta;
     s32 scratchpad;
-    s32 ok;
+    s32 var_9;
     if (arg0->unk_104.vy <= 0) {
         return;
     }
@@ -4548,10 +4552,10 @@ void func_800238C4(Unk80101EC8Record *arg0) {
     dst[1] = arg0->unk_B8.vy + 0x514;
     dst[2] = arg0->unk_B8.vz;
     s1 = func_80053614(src, dst, out, offsets, scratchpad);
-    ok = 1;
+    var_9 = 1;
     if (s1 != 0) {
         if ((out[1] - src[1]) >= 0x191) {
-            ok = arg0->unk_6A != 0x22;
+            var_9 = arg0->unk_6A != 0x22;
             goto ok_check;
         }
         if (offsets[1] < (-0x7FF)) {
@@ -4559,14 +4563,14 @@ void func_800238C4(Unk80101EC8Record *arg0) {
         }
         dst[0] += offsets[0] / 8;
         dst[2] += offsets[2] / 8;
-        ok = func_80053614(src, dst, out, offsets2, scratchpad) == 0;
+        var_9 = func_80053614(src, dst, out, offsets2, scratchpad) == 0;
         goto ok_check;
     }
     goto ok_check;
 ok_zero:
-    ok = 0;
+    var_9 = 0;
 ok_check:
-    if (!ok) {
+    if (!var_9) {
         return;
     }
     if (s1 == 0) {
@@ -4739,15 +4743,15 @@ extern void func_800204C0(Unk80101EC8Record *);
  * it (func_8002304C), then refreshes the bone points, the flags unk_62,
  * unk_AE and unk_288, the damping and the per-frame side effects. */
 void func_80023F08(s32 arg0, PadState *pad) {
-    MotionFrame pose[2];
+    MotionFrame var_0[2];
     Vec3i32 v[2];
     VECTOR pos;
     s16 ang[2];
-    s32 dir;
-    s16 alt;
+    s32 var_4;
+    s16 var_5;
     Unk80101EC8Record *rec;
-    u16 cmd;
-    u16 keys;
+    u16 var_7;
+    u16 var_8;
     u16 *ent;
     MoveScript *move;
     /* FAKE: one local reused for four values (no-new-park-categories entry
@@ -4756,18 +4760,18 @@ void func_80023F08(s32 arg0, PadState *pad) {
      * step and the -1/0/1 stick side. The target keeps all four in $a1; one
      * local per value: score 25. */
     s32 temp;
-    s32 face;
-    s32 face90;
-    s32 blend;
-    s32 cur_frame;
+    s32 var_12;
+    s32 var_13;
+    s32 var_14;
+    s32 var_15;
     s32 next;
-    s32 next_frame;
-    s32 motion;
-    s32 extra;
-    s32 hit;
+    s32 var_17;
+    s32 var_18;
+    s32 var_19;
+    s32 var_20;
     s16 frac;
-    s32 rest;
-    s32 perp;
+    s32 var_22;
+    s32 var_23;
 
     rec = &D_80101EC8[arg0];
     rec->unk_3C++;
@@ -4830,10 +4834,10 @@ void func_80023F08(s32 arg0, PadState *pad) {
         if ((rec->unk_6A == 0x15 || rec->unk_6A == 0x19 ||
              rec->unk_6A == 0x1A || rec->unk_6A == 0x13 ||
              rec->unk_6A == 0x30 || rec->unk_6A == 0x31) &&
-            func_800233AC(rec, &dir) != 0) {
+            func_800233AC(rec, &var_4) != 0) {
             u16 *table;
 
-            func_8001F860(rec, dir);
+            func_8001F860(rec, var_4);
             rec->unk_31A = 0;
             table = func_80021424(rec, rec->unk_50->unk_00, &rec->unk_5E);
             func_80021A98(arg0, func_80021424(rec, table[0xD], &rec->unk_5E),
@@ -4886,7 +4890,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         }
     } else if (rec->unk_50->unk_08 >= rec->unk_40) {
         ent = rec->unk_50->unk_0A;
-        while ((cmd = ent[0]) != 0) {
+        while ((var_7 = ent[0]) != 0) {
             /* FAKE (Q90, ordinary-c-judge-decidable): the entry's class mask
              * (one bit per character class unk_0A; bit set = the entry applies)
              * is a u32 only for the int->u32 conversion. With an int mask,
@@ -4895,64 +4899,64 @@ void func_80023F08(s32 arg0, PadState *pad) {
              * and. An s32 mask: score 3. */
             u32 mask;
 
-            if (!(cmd & 0x8000) ||
+            if (!(var_7 & 0x8000) ||
                 ((mask = ent[2] | (ent[3] << 16)) & (1 << rec->unk_0A))) {
-                switch (cmd & 0x30) {
+                switch (var_7 & 0x30) {
                 case 0x00:
-                    keys = rec->unk_24.held;
+                    var_8 = rec->unk_24.held;
                     break;
                 case 0x10:
-                    keys = rec->unk_24.pressed;
+                    var_8 = rec->unk_24.pressed;
                     break;
                 case 0x20:
-                    keys = rec->unk_24.unheld;
+                    var_8 = rec->unk_24.unheld;
                     break;
                 case 0x30:
-                    keys = rec->unk_24.released;
+                    var_8 = rec->unk_24.released;
                     break;
                 }
-                if (cmd & 0x2000) {
-                    keys = 0;
+                if (var_7 & 0x2000) {
+                    var_8 = 0;
                 }
                 if (rec->unk_6A == 0x11 && D_800A38AE == arg0) {
-                    keys = 0;
+                    var_8 = 0;
                 }
-                if ((cmd & 0xF) == 9) {
-                    cmd = (cmd & 0xFFF0) | 3;
+                if ((var_7 & 0xF) == 9) {
+                    var_7 = (var_7 & 0xFFF0) | 3;
                     if (rec->other->unk_6A != 6 &&
                         rec->other->unk_40 < rec->other->unk_AB) {
-                        keys = 0;
+                        var_8 = 0;
                     }
-                } else if ((cmd & 0xF) == 0xA) {
-                    cmd = (cmd & 0xFFF0) | 5;
+                } else if ((var_7 & 0xF) == 0xA) {
+                    var_7 = (var_7 & 0xFFF0) | 5;
                     if (rec->unk_26C == 0) {
-                        keys = 0;
+                        var_8 = 0;
                     }
                 }
-                if ((keys >> (cmd & 0xF)) & 1) {
-                    rec->unk_B0 = cmd;
-                    if (cmd & 0x1000) {
+                if ((var_8 >> (var_7 & 0xF)) & 1) {
+                    rec->unk_B0 = var_7;
+                    if (var_7 & 0x1000) {
                         rec->unk_4C = 1;
                     }
-                    move = func_80021424(rec, ent[1], &alt);
+                    move = func_80021424(rec, ent[1], &var_5);
                     if (rec->unk_50->unk_09 & 0x80) {
                         rec->unk_7C = move;
-                        rec->unk_82 = cmd;
+                        rec->unk_82 = var_7;
                         rec->unk_4C = 0;
-                        rec->unk_80 = alt;
+                        rec->unk_80 = var_5;
                     } else if (rec->unk_6A == 0x11) {
                         D_800A376E = 1;
                         D_800A36D8 = move;
-                        D_800A36CA = cmd;
-                        D_800A381C = alt;
+                        D_800A36CA = var_7;
+                        D_800A381C = var_5;
                     } else {
-                        rec->unk_5E = alt;
-                        func_80021A98(arg0, move, alt);
+                        rec->unk_5E = var_5;
+                        func_80021A98(arg0, move, var_5);
                     }
                     break;
                 }
             }
-            if (cmd & 0xC000) {
+            if (var_7 & 0xC000) {
                 ent += 4;
             } else {
                 ent += 2;
@@ -5096,30 +5100,30 @@ void func_80023F08(s32 arg0, PadState *pad) {
         next = rec->unk_58[1] - 1;
     }
     if (rec->unk_50->unk_09 & 0x40) {
-        motion = rec->unk_5E == 0 ? D_80101EC8[D_800A38AE].unk_4A + 1 : 0;
+        var_18 = rec->unk_5E == 0 ? D_80101EC8[D_800A38AE].unk_4A + 1 : 0;
         if (rec->unk_6A == 0x11 && D_800A38AE != arg0) {
-            extra = rec->unk_58[1];
+            var_19 = rec->unk_58[1];
         } else {
-            extra = 0;
+            var_19 = 0;
         }
     } else {
-        motion = rec->unk_5E == 0 ? rec->unk_4A + 1 : 0;
+        var_18 = rec->unk_5E == 0 ? rec->unk_4A + 1 : 0;
         if (rec->unk_6A == 0x15 && D_8008D9EC[rec->unk_0A] != 0) {
-            extra = rec->unk_58[1];
+            var_19 = rec->unk_58[1];
         } else {
-            extra = 0;
+            var_19 = 0;
         }
     }
-    cur_frame = extra + *rec->unk_54 + rec->unk_40;
-    next_frame = extra + *rec->unk_54 + next;
-    rec->unk_64 = (motion << 14) | cur_frame;
-    rec->unk_66 = (motion << 14) | next_frame;
+    var_15 = var_19 + *rec->unk_54 + rec->unk_40;
+    var_17 = var_19 + *rec->unk_54 + next;
+    rec->unk_64 = (var_18 << 14) | var_15;
+    rec->unk_66 = (var_18 << 14) | var_17;
     if (rec->unk_6A == 0x33) {
-        pose[1] = D_800A3888[arg0][rec->unk_40];
-        pose[0] = pose[1];
+        var_0[1] = D_800A3888[arg0][rec->unk_40];
+        var_0[0] = var_0[1];
     } else {
-        func_800198D0(motion, cur_frame, &pose[0], (u16 *)0x1F8001B0);
-        func_800198D0(motion, next_frame, &pose[1], (u16 *)0x1F8001B0);
+        func_800198D0(var_18, var_15, &var_0[0], (u16 *)0x1F8001B0);
+        func_800198D0(var_18, var_17, &var_0[1], (u16 *)0x1F8001B0);
     }
     if (rec->unk_7A != 0 && (rec->unk_6A == 6 || rec->unk_6A == 0x14) &&
         rec->unk_6C == 6) {
@@ -5130,7 +5134,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         math_RotMatrixZYXAngles(
             rec->unk_290.unk_06, rec->unk_290.unk_08, rec->unk_290.unk_0A, &m1);
         math_RotMatrixZYXAngles(
-            pose[0].unk_06, pose[0].unk_08, pose[0].unk_0A, &m2);
+            var_0[0].unk_06, var_0[0].unk_08, var_0[0].unk_0A, &m2);
         /* new frame's heading minus the previous frame's.  FAKE: spelled
          * -old + new so the old heading is computed first, as the target
          * does; new - old computes the new heading first (score 7). */
@@ -5140,27 +5144,29 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_1C8.vy += twist;
         func_8001B690(arg0, twist);
     }
-    func_8001F2E4(rec, &pose[0], &pose[1]);
+    func_8001F2E4(rec, &var_0[0], &var_0[1]);
     if (rec->unk_6A == 0x11) {
         rec->unk_154 = rec->unk_1C8.vy;
     }
     if (rec->unk_152 != 0) {
-        face = rec->unk_154;
+        var_12 = rec->unk_154;
     } else {
-        face = rec->unk_1C8.vy;
+        var_12 = rec->unk_1C8.vy;
     }
-    ang[0] = ang[1] = face;
-    face90 = face + 0x400;
+    ang[0] = ang[1] = var_12;
+    var_13 = var_12 + 0x400;
     v[0].x =
-        (pose[0].unk_04 * Judge[(pose[0].unk_02 - face90 + 0x400) & 0xFFF]) >>
+        (var_0[0].unk_04 * Judge[(var_0[0].unk_02 - var_13 + 0x400) & 0xFFF]) >>
         12;
-    v[0].y = -pose[0].unk_00;
-    v[0].z = (pose[0].unk_04 * Judge[(pose[0].unk_02 - face90) & 0xFFF]) >> 12;
+    v[0].y = -var_0[0].unk_00;
+    v[0].z =
+        (var_0[0].unk_04 * Judge[(var_0[0].unk_02 - var_13) & 0xFFF]) >> 12;
     v[1].x =
-        (pose[1].unk_04 * Judge[(pose[1].unk_02 - face90 + 0x400) & 0xFFF]) >>
+        (var_0[1].unk_04 * Judge[(var_0[1].unk_02 - var_13 + 0x400) & 0xFFF]) >>
         12;
-    v[1].y = -pose[1].unk_00;
-    v[1].z = (pose[1].unk_04 * Judge[(pose[1].unk_02 - face90) & 0xFFF]) >> 12;
+    v[1].y = -var_0[1].unk_00;
+    v[1].z =
+        (var_0[1].unk_04 * Judge[(var_0[1].unk_02 - var_13) & 0xFFF]) >> 12;
     v[0].x = (v[0].x * rec->unk_1A) >> 12;
     v[0].z = (v[0].z * rec->unk_1A) >> 12;
     v[1].x = (v[1].x * rec->unk_1A) >> 12;
@@ -5170,18 +5176,18 @@ void func_80023F08(s32 arg0, PadState *pad) {
         v[1].y = (v[1].y * rec->unk_1A) >> 12;
     }
     if (rec->unk_31A != 0) {
-        pose[1] = pose[0];
+        var_0[1] = var_0[0];
         ang[1] = ang[0];
-        pose[0] = rec->unk_290;
+        var_0[0] = rec->unk_290;
         ang[0] = rec->unk_314;
-        blend = rec->unk_318;
+        var_14 = rec->unk_318;
         rec->unk_66 = rec->unk_64;
         rec->unk_64 = rec->unk_316;
     } else {
-        blend = rec->unk_42;
+        var_14 = rec->unk_42;
     }
-    rest = 0x1000 - blend;
-    rec->unk_68 = blend;
+    var_22 = 0x1000 - var_14;
+    rec->unk_68 = var_14;
     if (rec->unk_31A != 0) {
         Vec3i32 vc;
 
@@ -5191,26 +5197,27 @@ void func_80023F08(s32 arg0, PadState *pad) {
             rec->unk_320.x += rec->unk_1F8.x - v[0].x;
             rec->unk_320.z += rec->unk_1F8.z - v[0].z;
         }
-        /* FAKE: perp staged ahead of the vc stores; in the Judge indices the
+        /* FAKE: var_23 staged ahead of the vc stores; in the Judge indices the
          * addiu moves (score 3). */
-        perp = ang[0] + 0x400;
-        vc.x =
-            (pose[0].unk_04 * Judge[(pose[0].unk_02 - perp + 0x400) & 0xFFF]) >>
-            12;
-        vc.y = -pose[0].unk_00;
-        vc.z = (pose[0].unk_04 * Judge[(pose[0].unk_02 - perp) & 0xFFF]) >> 12;
+        var_23 = ang[0] + 0x400;
+        vc.x = (var_0[0].unk_04 *
+                Judge[(var_0[0].unk_02 - var_23 + 0x400) & 0xFFF]) >>
+               12;
+        vc.y = -var_0[0].unk_00;
+        vc.z =
+            (var_0[0].unk_04 * Judge[(var_0[0].unk_02 - var_23) & 0xFFF]) >> 12;
         vc.x = (vc.x * rec->unk_1A) >> 12;
         vc.y = (vc.y * rec->unk_1A) >> 12;
         vc.z = (vc.z * rec->unk_1A) >> 12;
         vc.x -= rec->unk_320.x;
         vc.z -= rec->unk_320.z;
-        rec->unk_E8.x = (vc.x * rest + v[0].x * blend) >> 12;
-        rec->unk_E8.y = (vc.y * rest + v[0].y * blend) >> 12;
-        rec->unk_E8.z = (vc.z * rest + v[0].z * blend) >> 12;
+        rec->unk_E8.x = (vc.x * var_22 + v[0].x * var_14) >> 12;
+        rec->unk_E8.y = (vc.y * var_22 + v[0].y * var_14) >> 12;
+        rec->unk_E8.z = (vc.z * var_22 + v[0].z * var_14) >> 12;
     } else {
-        rec->unk_E8.x = (v[0].x * rest + v[1].x * blend) >> 12;
-        rec->unk_E8.y = (v[0].y * rest + v[1].y * blend) >> 12;
-        rec->unk_E8.z = (v[0].z * rest + v[1].z * blend) >> 12;
+        rec->unk_E8.x = (v[0].x * var_22 + v[1].x * var_14) >> 12;
+        rec->unk_E8.y = (v[0].y * var_22 + v[1].y * var_14) >> 12;
+        rec->unk_E8.z = (v[0].z * var_22 + v[1].z * var_14) >> 12;
     }
     if (rec->unk_7A != 0 && rec->unk_31A == 0) {
         rec->unk_D8.x += rec->unk_1F8.x - rec->unk_E8.x;
@@ -5316,7 +5323,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
     rec->unk_168.y = rec->unk_D8.y - 0x384;
     rec->unk_168.z = rec->unk_F4.z;
     func_80023E40(rec);
-    func_80041188(arg0, (u8 *)&pose[0], (u8 *)&pose[1], rec->unk_68,
+    func_80041188(arg0, (u8 *)&var_0[0], (u8 *)&var_0[1], rec->unk_68,
                   (MATRIX *)0x1F8001B0);
     scratchpad_Save();
     func_80040D48(
@@ -5411,7 +5418,7 @@ skip_62:
         func_80049A2C(
             D_8008EB80[rec->unk_14], (arg0 * 2) | 1, (rec->unk_62 >> 5) & 1);
     }
-    rec->unk_290 = pose[0];
+    rec->unk_290 = var_0[0];
     rec->unk_314 = ang[0];
     rec->unk_316 = rec->unk_64;
     if (rec->unk_31A != 0) {
@@ -5421,7 +5428,7 @@ skip_62:
         rec->unk_318 += rec->unk_31C;
         if (rec->unk_318 >= 0x1000) {
             rec->unk_31A = 0;
-            rec->unk_290 = pose[1];
+            rec->unk_290 = var_0[1];
             rec->unk_314 = ang[1];
             rec->unk_316 = rec->unk_66;
             rec->unk_1F8 = v[1];
@@ -5458,16 +5465,16 @@ skip_62:
     rec->unk_114[1].vy = SPAD->unk48[arg0][0].y - rec->unk_234[0].y;
     rec->unk_114[1].vz = SPAD->unk48[arg0][0].z - rec->unk_234[0].z;
     rec->unk_1DA = func_8002FDB0(rec);
-    hit = 0;
+    var_20 = 0;
     if ((rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 ||
          rec->unk_6A == 0x26) &&
         rec->unk_AD != 0) {
         if ((rec->unk_40 >= rec->unk_A1[0] && rec->unk_40 <= rec->unk_A3[0]) ||
             (rec->unk_40 >= rec->unk_A1[1] && rec->unk_40 <= rec->unk_A3[1])) {
-            hit = 1;
+            var_20 = 1;
         }
     }
-    rec->unk_AE = hit;
+    rec->unk_AE = var_20;
     rec->unk_288[0] = 0;
     rec->unk_288[1] = 0;
     if (rec->unk_AD != 0) {
