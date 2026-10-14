@@ -832,8 +832,9 @@ s32 func_80038C70(void) {
         sel = 0x11;
         /* FAKE: duplicate of load_sel2's store — jump2 cross-jump re-merges it
            (zero emitted bytes); the extra real def lifts sel2's reg_n_refs
-           priority above result's so RA lands sel2->$s2 / result->$s3 (target).
-           SOTN duplicate-into-arms family; `goto load_sel2` scores 13. */
+           priority above result's so RA lands sel2->$s2 / result->$s3
+           (target). SOTN duplicate-into-arms family; `goto load_sel2`
+           scores 13. */
         sel2 = D_800A3350;
         goto sel_dispatch;
     case 13:
@@ -1750,10 +1751,13 @@ extern s32 D_800A36D0;
 
 typedef s32 (*FuncBufType)(void *);
 
-/* One link-cable exchange: packs the vsync/state bits and the record's data
- * into g_comb_send_buf with a 16-bit xor check, sends/receives through
- * comb_Write8 / comb_Read8 (order set by D_800A3916), and on success folds the
- * partner's word back into the record at a0. FAKE: the tail's u16 loads
+/* Clears D_800A3870 while D_800A320C is 0. Otherwise packs bits of
+ * D_800A38A0, D_800A3730 and D_800A3870, a0->type[0] and the low half of
+ * a0->held into g_comb_send_buf, puts D_800A37C4 and a 16-bit xor check in
+ * g_comb_send_buf_plus_0x4, and calls comb_Write8, comb_Read8 or
+ * comb_WaitRead8 as D_800A3916 and D_800A38A0 select, returning early when
+ * a transfer fails or after comb_ResetClose. If D_800A3916 is then 0, it
+ * stores new values to a0->held and a0->type. FAKE: the tail's u16 loads
  * reuse the buf8 local; own locals: score 33. */
 void func_8003A728(PadState *a0) {
     s32 buf8;

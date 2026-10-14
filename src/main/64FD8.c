@@ -1444,9 +1444,9 @@ void func_80077D94(Unk8006EACCRec *arg0) {
     s16 *in;
     s16 *out;
     Unk8009B400Record *table;
-    /* FAKE: constant-holder for the tpage blend-mode bits func_8006E480 adds;
-       kept in $s7 instead of `li a1,0x20` per call; the literal: score 12
-       (named-local-fake-exception) */
+    /* FAKE: constant-holder for the 0x20 passed as func_8006E480's second
+       argument; kept in $s7 instead of `li a1,0x20` per call; the literal:
+       score 12 (named-local-fake-exception) */
     s32 abr;
     Unk8009B0E0Record **hp;
     s32 i;
