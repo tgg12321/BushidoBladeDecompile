@@ -2417,7 +2417,6 @@ D_80103624                                          = 0x80103624;  /* data-wave 
 
 /* === Final cleanup batch: remaining 154 unnamed (2026-05-17) === */
 /* 154 addresses, pattern-based naming */
-g_ings2_addr_0                                               = 0x00000000;
 D_800100A4                                     = 0x800100A4;  /* data-wave 2026-10-09: was g_str_sleep_menu_text */
 D_800109EC                               = 0x800109EC;  /* data-wave 2026-10-08: was g_c_mid_u16_src_109EC */
 D_80010A2C                               = 0x80010A2C;  /* data-wave 2026-10-08: was g_c_mid_u8_src_10A2C */
