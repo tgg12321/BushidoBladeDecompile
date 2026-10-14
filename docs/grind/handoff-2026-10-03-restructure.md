@@ -132,8 +132,10 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      owner-ruled). Held: 0x00000000 g_ings2_addr_0 (data_wave's ADDR regex refuses address 0; owner call:
      extend the tool or hand-edit the registry).
      KEEP decisions: docs/naming/phase3/waveNN/data_keep.csv (never fed to data_wave).
-   - **Next:** land C5, then the type/member wave from tmp/codex/c6-type-names*-result.md (FIELD-FIX /
-     RENAME / RESET rows) plus the locals playerData (17AFC.c) and player (368E4.c). Older leads:
+   - **Next:** apply wave21 (tmp/p3w21/: 14 pairs from the c6-type-names rows and the playerData /
+     player locals; pre-apply naming-reviewer 14/14 PASS, tmp/p3w21/verdict_pre.json; comment fixes it
+     lists ride in the wave). Deferred: Unk8003F824Rec.quad (no fresh neutral spelling for +0x04; member
+     destinations must be unique tree-wide). Older leads:
      CD_ReadCallbackFunc (SOTN and psyz disagree); info 0x8009BE74 (collides with existing uses);
      cdrom_IrqHandler -> Sony local `callback`.
    - Wave mechanics learned: verify-oracle --rebuild needs --allow-dirty on the applied tree; a FAILed row is dropped
@@ -149,21 +151,23 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      Rounds 19-29 hardened working-tree mode; the operative rule is now stage-first (the wave must be fully
      staged, `git add -A`, before the keycheck; unstaged edits reject with that hint). Cheat scope (owner
      2026-10-12): wave/operator mistakes via ordinary git use; adversarial git config is out of scope.
-     State 2026-10-13: round 29 (d33200e23) cheat FAIL (empty `git add -N` file counted as staged);
-     follow-up 34 fixes it (run 20261012-234255), committed as round 30 1f00591bb, awaiting fresh cheat +
-     code reviewers (message: tmp/codex/msg_keycheck-scoped-pairs.txt). On landing: naming-bar.md step 5 stage-first, step 4 member
-     and the locals lines; wave gates.sh must `git add -A` before the keycheck (apply.sh leaves edits
-     unstaged); fresh cheat-review of the rule edit.
+     C5 LANDED ec318aa70 (2026-10-14): round 30 failed on `git rm --cached` + `git add -N` (porcelain
+     DA); round 31 (by hand) rejects every status record with an unstaged change and every unmerged
+     record, cheat + code PASS. Rule 0d3adc3eb: naming-bar.md / naming-reviewer cover member and
+     local pairs and stage-first; wave gates.sh templates run `git add -A` before the keycheck. Landing note: WSL git cannot read a trusted
+     worktree whose `.git` holds a Windows gitdir, so the C5 tests that read the real tree failed in
+     `land`; a relative gitdir in that `.git` fixed it (codex_worker should create it that way).
      C9 (data_wave address coverage, retire-alias) landed f4f085344, which also repaired main's dead
      working-tree "old name survives" grep. Review rounds use cached main-side baselines
-     (tmp/review-baseline/README.md). When C5 lands, update naming-bar.md step 4 and its last line (members / locals limits). The stale May
+     (tmp/review-baseline/README.md). The stale May
      ~/.codex/rules/default.rules (allow rules incl. `make` in main) was moved aside; read-only questions
      via `codex_worker.py research`.
    - Codex scope (owner 2026-10-07): keep Codex out of the main working tree; containment against a rogue
      agent is not a goal. The isolated CODEX_HOME and the machine guard were withdrawn; read-only questions
      run in `codex_worker.py research` snapshots, write tasks in codex-worker worktrees.
    - Debt: bank the keycheck probe suites (`tmp/p3s0/kc_test.sh`, `tmp/kcrev*/`, `tmp/rev-c5*/p2*.py`) as
-     engine tests; keycheck hygiene (same_tokens belt, clang-format version check, report against the
+     engine tests; C5 notes (the docstring overclaims for hidden-flag paths outside the checked set;
+     the status field-count guard is untested; codex_worker trusted-worktree relative gitdir); keycheck hygiene (same_tokens belt, clang-format version check, report against the
      formatted text); comment nits (25C38 "these files", the Makefile lb/lh section header); stale registry
      comments; wave20 R6 optional prose (named_syms.txt block header counts near :781, the :801 note,
      .claude/rules/store-before-jal.md:30 example). check_retired_names runs in the integrity audit
