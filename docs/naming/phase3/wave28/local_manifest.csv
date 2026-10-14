@@ -1,0 +1,38 @@
+addr,current_names,proposed_name,kind,evidence,verdict,verifier_note
+local,func_800460E4:stage_id,arg0,param,"RESET-BULK (Q119). param stage_id (s32) of func_800460E4, src/main/368E4.c:38; claim word(s): stage. Destination: arg<position 0>.",CONFIRM,Q119 scope test
+local,func_800460E4:fp_ptr,var_7,local,"RESET-BULK (Q119). local fp_ptr (s32 *) of func_800460E4, src/main/368E4.c:44; claim word(s): fp. Destination: var_<declaration order 7>.",CONFIRM,Q119 scope test
+local,func_800466C0:rounded,var_0,local,"RESET-BULK (Q119). local rounded (s32) of func_800466C0, src/main/368E4.c:256; claim word(s): rounded. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_800467B8:chan,var_1,local,"RESET-BULK (Q119). local chan (s32) of func_800467B8, src/main/368E4.c:320; claim word(s): chan. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80046BF4:trans,var_2,local,"RESET-BULK (Q119). local trans (s32 [3]) of func_80046BF4, src/main/368E4.c:450; claim word(s): trans. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,camera_CalcAngles:dir,var_1,local,"RESET-BULK (Q119). local dir (VECTOR) of camera_CalcAngles, src/main/368E4.c:636; claim word(s): dir. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,camera_CalcAngles:yaw,var_3,local,"RESET-BULK (Q119). local yaw (s16) of camera_CalcAngles, src/main/368E4.c:638; claim word(s): yaw. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_800475A4:computed,var_5,local,"RESET-BULK (Q119). local computed (s32) of func_800475A4, src/main/368E4.c:681; claim word(s): computed. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_80047A90:jb,var_4,local,"RESET-BULK (Q119). local jb (s16 *) of func_80047A90, src/main/368E4.c:897; claim word(s): jb. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_80047A90:pt2,var_7,local,"RESET-BULK (Q119). local pt2 (s32 *) of func_80047A90, src/main/368E4.c:900; claim word(s): pt. Destination: var_<declaration order 7>.",CONFIRM,Q119 scope test
+local,func_80047A90:pt1,var_8,local,"RESET-BULK (Q119). local pt1 (s32 *) of func_80047A90, src/main/368E4.c:901; claim word(s): pt. Destination: var_<declaration order 8>.",CONFIRM,Q119 scope test
+local,func_80047A90:pa1,var_9,local,"RESET-BULK (Q119). local pa1 (s32 *) of func_80047A90, src/main/368E4.c:902; claim word(s): pa. Destination: var_<declaration order 9>.",CONFIRM,Q119 scope test
+local,func_80047A90:pa2,var_10,local,"RESET-BULK (Q119). local pa2 (s32 *) of func_80047A90, src/main/368E4.c:903; claim word(s): pa. Destination: var_<declaration order 10>.",CONFIRM,Q119 scope test
+local,func_80047A90:pt3,var_11,local,"RESET-BULK (Q119). local pt3 (s32 *) of func_80047A90, src/main/368E4.c:904; claim word(s): pt. Destination: var_<declaration order 11>.",CONFIRM,Q119 scope test
+local,func_80047D94:odd,var_3,local,"RESET-BULK (Q119). local odd (s32) of func_80047D94, src/main/368E4.c:1043; claim word(s): odd. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_800481E8:a0_for_call,var_4,local,"RESET-BULK (Q119). local a0_for_call (s32) of func_800481E8, src/main/368E4.c:1237; claim word(s): for call. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_800482C8:p_alt,var_2,local,"RESET-BULK (Q119). local p_alt (u8 *) of func_800482C8, src/main/368E4.c:1282; claim word(s): alt. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,func_800482C8:dim,var_4,local,"RESET-BULK (Q119). local dim (u32) of func_800482C8, src/main/368E4.c:1284; claim word(s): dim. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_800482C8:dim2,var_5,local,"RESET-BULK (Q119). local dim2 (u32) of func_800482C8, src/main/368E4.c:1285; claim word(s): dim. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_800482C8:head,var_6,local,"RESET-BULK (Q119). local head (s32) of func_800482C8, src/main/368E4.c:1286; claim word(s): head. Destination: var_<declaration order 6>.",CONFIRM,Q119 scope test
+local,gpu_LoadTimClut:dim,var_2,local,"RESET-BULK (Q119). local dim (u32) of gpu_LoadTimClut, src/main/368E4.c:1360; claim word(s): dim. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,func_80048864:mr,arg4,param,"RESET-BULK (Q119). param mr (s32) of func_80048864, src/main/368E4.c:1528; claim word(s): mr. Destination: arg<position 4>.",CONFIRM,Q119 scope test
+local,func_80048AD0:sound,var_1,local,"RESET-BULK (Q119). local sound (s32) of func_80048AD0, src/main/368E4.c:1595; claim word(s): sound. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80048FFC:ctl,var_1,local,"RESET-BULK (Q119). local ctl (s16 *) of func_80048FFC, src/main/368E4.c:1744; claim word(s): ctl. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80048FFC:xf,var_4,local,"RESET-BULK (Q119). local xf (s32) of func_80048FFC, src/main/368E4.c:1747; claim word(s): xf. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_80048FFC:yf,var_5,local,"RESET-BULK (Q119). local yf (s32) of func_80048FFC, src/main/368E4.c:1748; claim word(s): yf. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_80048FFC:dxf,var_8,local,"RESET-BULK (Q119). local dxf (s32) of func_80048FFC, src/main/368E4.c:1751; claim word(s): dxf. Destination: var_<declaration order 8>.",CONFIRM,Q119 scope test
+local,func_80048FFC:dyf,var_9,local,"RESET-BULK (Q119). local dyf (s32) of func_80048FFC, src/main/368E4.c:1752; claim word(s): dyf. Destination: var_<declaration order 9>.",CONFIRM,Q119 scope test
+local,func_80048FFC:period,var_11,local,"RESET-BULK (Q119). local period (s32) of func_80048FFC, src/main/368E4.c:1754; claim word(s): period. Destination: var_<declaration order 11>.",CONFIRM,Q119 scope test
+local,func_80048FFC:ch,var_13,local,"RESET-BULK (Q119). local ch (MoveChannel *) of func_80048FFC, src/main/368E4.c:1756; claim word(s): ch. Destination: var_<declaration order 13>.",CONFIRM,Q119 scope test
+local,func_80048FFC:phase,var_15,local,"RESET-BULK (Q119). local phase (s32) of func_80048FFC, src/main/368E4.c:1758; claim word(s): phase. Destination: var_<declaration order 15>.",CONFIRM,Q119 scope test
+local,func_80049584:unchanged,var_4,local,"RESET-BULK (Q119). local unchanged (s32) of func_80049584, src/main/368E4.c:1906; claim word(s): unchanged. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_80049584:rank,var_5,local,"RESET-BULK (Q119). local rank (s32) of func_80049584, src/main/368E4.c:1907; claim word(s): rank. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_80049718:part,var_4,local,"RESET-BULK (Q119). local part (Unk80045878Node *) of func_80049718, src/main/368E4.c:1989; claim word(s): part. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_80049718:side,var_5,local,"RESET-BULK (Q119). local side (s32) of func_80049718, src/main/368E4.c:1994; claim word(s): side. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_80049A2C:p_anim,var_4,local,"RESET-BULK (Q119). local p_anim (s16 *) of func_80049A2C, src/main/368E4.c:2102; claim word(s): anim. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_80049C24:hdr,var_14,local,"RESET-BULK (Q119). local hdr (s32) of func_80049C24, src/main/368E4.c:2192; claim word(s): hdr. Destination: var_<declaration order 14>.",CONFIRM,Q119 scope test

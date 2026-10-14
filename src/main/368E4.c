@@ -35,20 +35,20 @@ static s32 D_800A33E4;
 static s16 D_800A33E8[2];
 static s32 D_800A33EC;
 
-void func_800460E4(s32 stage_id, s32 arg1) {
+void func_800460E4(s32 arg0, s32 arg1) {
     s32 *s0;
     s32 s7;
     s32 *s6, *s4, *s2;
     s32 s3;
     s32 *s1;
-    s32 *fp_ptr;
+    s32 *var_7;
     s32 *sp10, *sp18, *sp20;
 
     s0 = (s32 *)func_800457A0(7);
     if (s0 != NULL) {
-        if (D_80099478 == stage_id) {
+        if (D_80099478 == arg0) {
             s7 = 1;
-            switch (stage_id) {
+            switch (arg0) {
             case 3:
                 break;
             case 4:
@@ -71,7 +71,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
         }
     }
 
-    D_80099478 = (s16)stage_id;
+    D_80099478 = (s16)arg0;
     /* FAKE: s7 (the early-return flag above) reused as slot id 7 for
      * func_80045600 / func_80045694; the literal or a separate local scores 37.
      */
@@ -79,9 +79,9 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     s0 = func_800455AC(7);
 
     if (arg1 != 0) {
-        func_80044F30(stage_id, arg1);
+        func_80044F30(arg0, arg1);
     } else {
-        func_80044F30(stage_id, (s32)s0);
+        func_80044F30(arg0, (s32)s0);
     }
 
     if (arg1 != 0) {
@@ -108,9 +108,9 @@ void func_800460E4(s32 stage_id, s32 arg1) {
             }
 
             if (arg1 != 0) {
-                fp_ptr = (s32 *)((u8 *)arg1 + ALIGN4(((s32 *)arg1)[s3]));
+                var_7 = (s32 *)((u8 *)arg1 + ALIGN4(((s32 *)arg1)[s3]));
             } else {
-                fp_ptr = s2;
+                var_7 = s2;
                 {
                     s32 off3 = ALIGN4(a0_ptr[1]);
                     func_80045230(PTR_OFF(s0, off3));
@@ -125,7 +125,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
        the s2 pointer, as in the target; plain s1 = s4: score 32 */
     s1 = (s32 *)((s32)s4 - (s32)s0);
     s1 = (s32 *)((s32)s1 + (s32)s0);
-    switch (stage_id) {
+    switch (arg0) {
     case 3: {
         /* FAKE: once-written pointer to s0[s3 - 1]; it fixes the sched1
          * load/store order; s0[s3 - 1] inline: score 9 */
@@ -163,7 +163,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     }
 
     func_80044010(s6, 7);
-    func_800481E8((s32)fp_ptr, 0);
+    func_800481E8((s32)var_7, 0);
     func_8003EDC0((u16 *)s4, 7);
     func_80054410((s32)sp10);
     D_800A33B0 = (s32)sp18;
@@ -173,7 +173,7 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     func_80045694(s7, (s32)func_800466C0);
     func_8003F168();
     if (D_800A38DC != 0) {
-        if (stage_id != 0x22) {
+        if (arg0 != 0x22) {
             func_8004659C(-1);
         }
     }
@@ -253,12 +253,12 @@ void func_8004668C(void) {
 extern void func_80047ED0(s32);
 
 void func_800466C0(s32 a0, s32 a1) {
-    s32 rounded;
+    s32 var_0;
     func_80044100(7, a1);
     func_8005441C(a1);
-    rounded = (a1 / 4) * 4;
-    D_800A33B0 += rounded;
-    D_800A33B4 += rounded;
+    var_0 = (a1 / 4) * 4;
+    D_800A33B0 += var_0;
+    D_800A33B4 += var_0;
     switch (D_80099478) {
     case 4:
     case 7:
@@ -317,7 +317,7 @@ s32 func_800467A8(void) { return D_8009947A; }
 
 s32 *func_800467B8(s32 a0) {
     s32 arg = a0;
-    s32 chan = 8;
+    s32 var_1 = 8;
     s32 *s2;
 
     if (func_800486FC()) {
@@ -330,7 +330,7 @@ s32 *func_800467B8(s32 a0) {
         } else {
             s32 *s1;
             s32 *s0;
-            s2 = func_800455AC(chan);
+            s2 = func_800455AC(var_1);
             func_80044F80(arg, (s32)s2);
             {
                 s32 off1 = (u32)s2[2] >> 2 << 2;
@@ -340,11 +340,11 @@ s32 *func_800467B8(s32 a0) {
             }
             func_80045230((s32)s1);
             func_80044010(s0, 9);
-            func_80045600(chan, (s32)s1);
+            func_80045600(var_1, (s32)s1);
             D_800A3248 = arg;
         }
     }
-    func_80045694(chan, (s32)func_800468DC);
+    func_80045694(var_1, (s32)func_800468DC);
     return s2;
 }
 
@@ -447,7 +447,7 @@ void func_80046B44(void) {
 void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
     s32 result[3];
     u16 count1;
-    s32 trans[3];
+    s32 var_2[3];
     SVECTOR rot;
     MATRIX matrix_buf;
 
@@ -466,9 +466,9 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
         D_80101DF0.xf.rot.vy = -a1->vy;
         D_80101DF0.xf.rot.vz = -a1->vz;
 
-        trans[0] = 0;
-        trans[1] = 0;
-        trans[2] = -a2;
+        var_2[0] = 0;
+        var_2[1] = 0;
+        var_2[2] = -a2;
 
         rot.vx = -a1->vx;
         rot.vy = -a1->vy;
@@ -476,7 +476,7 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
 
         D_800F66A0[0](&rot, &matrix_buf);
 
-        ApplyMatrixLV(&matrix_buf, trans, result);
+        ApplyMatrixLV(&matrix_buf, var_2, result);
 
         {
             D_80101DF0.work.t[0] = result[0] + a0->x;
@@ -633,21 +633,21 @@ void func_800472C0(Unk80101DF0Record *node) {
 
 s16 *camera_CalcAngles(void) {
     SVECTOR rot;
-    VECTOR dir;
+    VECTOR var_1;
     MATRIX mtx;
-    s16 yaw;
+    s16 var_3;
 
     math_RotMatrixYXZ((u16 *)&D_800A3708->xf.rot, &mtx);
     rot.vx = 0;
     rot.vy = 0;
     rot.vz = 0x1000;
-    ApplyMatrix(&mtx, &rot, &dir);
-    yaw = ratan2(dir.vx, dir.vz);
-    dir.vz = ((s32)Judge[(yaw + 0x400) & 0xFFF] * dir.vz +
-              (s32)Judge[yaw & 0xFFF] * dir.vx) >>
-             12;
-    D_800A33C8[0] = -ratan2(dir.vy, dir.vz);
-    D_800A33C8[1] = yaw;
+    ApplyMatrix(&mtx, &rot, &var_1);
+    var_3 = ratan2(var_1.vx, var_1.vz);
+    var_1.vz = ((s32)Judge[(var_3 + 0x400) & 0xFFF] * var_1.vz +
+                (s32)Judge[var_3 & 0xFFF] * var_1.vx) >>
+               12;
+    D_800A33C8[0] = -ratan2(var_1.vy, var_1.vz);
+    D_800A33C8[1] = var_3;
     return D_800A33C8;
 }
 
@@ -678,7 +678,7 @@ void func_800475A4(void) {
     MATRIX buf1;
     MATRIX buf2;
     s16 angle;
-    s32 computed;
+    s32 var_5;
     Unk80101DF0Record *base;
 
     if (func_800467A8() != 0) {
@@ -692,10 +692,10 @@ void func_800475A4(void) {
 
     angle = ratan2(result.vx, result.vz);
 
-    computed = ((s32)Judge[(angle + 0x400) & 0xFFF] * result.vz +
-                (s32)Judge[angle & 0xFFF] * result.vx) >>
-               12;
-    result.vz = computed;
+    var_5 = ((s32)Judge[(angle + 0x400) & 0xFFF] * result.vz +
+             (s32)Judge[angle & 0xFFF] * result.vx) >>
+            12;
+    result.vz = var_5;
 
     /* FAKE: second C handle to D_800EEDF0 (pointer-alias-fake-exception);
      * the direct spelling scores 6. */
@@ -703,7 +703,7 @@ void func_800475A4(void) {
     {
         /* FAKE: s16 temporary for the negated pitch; storing -ratan2() straight
          * into the field moves its negu and the addiu: score 3 */
-        s16 neg = -ratan2(result.vy, computed);
+        s16 neg = -ratan2(result.vy, var_5);
         base->xf.rot.vx = neg;
     }
     base->xf.rot.vy = angle;
@@ -894,25 +894,25 @@ void func_80047A90(void) {
     s32 a3;
     s32 v1;
     s32 a0;
-    s16 *jb;
+    s16 *var_4;
     s32 *p558;
     s32 *p59C;
-    s32 *pt2;
-    s32 *pt1;
-    s32 *pa1;
-    s32 *pa2;
-    s32 *pt3;
+    s32 *var_7;
+    s32 *var_8;
+    s32 *var_9;
+    s32 *var_10;
+    s32 *var_11;
     void **temp;
 
     i = 0;
-    /* FAKE: jb holds the Judge base ahead of the loop; indexing Judge
+    /* FAKE: var_4 holds the Judge base ahead of the loop; indexing Judge
      * directly re-forms it in the loop (score 5). */
-    jb = Judge;
+    var_4 = Judge;
     p558 = D_800EF558;
     p59C = D_800EF59C;
 loop1:
     i++;
-    *p59C = ((s32)jb[*p558 & 0xFFF] * 0x271) >> 10;
+    *p59C = ((s32)var_4[*p558 & 0xFFF] * 0x271) >> 10;
     p59C++;
     *p558 += 0x12;
     p558++;
@@ -920,50 +920,50 @@ loop1:
         goto loop1;
 
     i = 1;
-    pt2 = D_800EF59C;
-    pt1 = D_800EF59C + 0x11;
+    var_7 = D_800EF59C;
+    var_8 = D_800EF59C + 0x11;
 outer_loop:
-    pa1 = pt1;
+    var_9 = var_8;
     do {
         /* FAKE: loop-note ref weighting seats a3 in $a3 and i in $t0;
          * without it: score 10 */
         a3 = 0;
     } while (0);
     do {
-        /* FAKE: loop-note ref weighting seats pa2 in $a2 (shared with the
+        /* FAKE: loop-note ref weighting seats var_10 in $a2 (shared with the
          * loop-1 Judge base); without it: score 13 */
-        pa2 = pt2;
+        var_10 = var_7;
     } while (0);
     do {
-        /* FAKE: loop-note ref weighting keeps pt1 ($t1) ahead of pt2 ($t2)
+        /* FAKE: loop-note ref weighting keeps var_8 ($t1) ahead of var_7 ($t2)
          * in allocation order; without it: score 8 */
-        pt3 = pt1 + 0x11;
+        var_11 = var_8 + 0x11;
     } while (0);
 inner_loop:
-    a0 = 0x7D0 - (*pa1 - *pa2);
+    a0 = 0x7D0 - (*var_9 - *var_10);
     if (a0 < 0) {
         v1 = (a0 + 0xF) >> 4;
     } else {
         v1 = a0 / 10;
     }
-    *pa1 += v1;
+    *var_9 += v1;
     if (i == 8) {
         *(s32 *)((s8 *)D_800EF800 + a3) = v1;
-        pa1++;
+        var_9++;
         a3 += 4;
-        pa2++;
+        var_10++;
     } else {
         /* FAKE: loop tail duplicated into both arms (cross-jump re-merges it);
-         * seats pa2 in $a2, a3 in $a3; without it: score 16 */
-        pa1++;
+         * seats var_10 in $a2, a3 in $a3; without it: score 16 */
+        var_9++;
         a3 += 4;
-        pa2++;
+        var_10++;
     }
-    if ((s32)pa1 < (s32)pt3)
+    if ((s32)var_9 < (s32)var_11)
         goto inner_loop;
-    pt2 += 0x11;
+    var_7 += 0x11;
     i++;
-    pt1 += 0x11;
+    var_8 += 0x11;
     if (i < 9)
         goto outer_loop;
 
@@ -1040,15 +1040,15 @@ s32 func_80047D94(s32 a0) {
     s32 a1 = (a0 + 0x7D00) / 3200;
     s32 a0_div = a0 / 3200;
     s32 remainder = a0 - a0_div * 3200;
-    s32 odd = remainder & 1;
+    s32 var_3 = remainder & 1;
     D_800A33D4 = a1;
-    D_800A33D8 = odd;
+    D_800A33D8 = var_3;
     if ((u32)a1 >= 18) {
         return (s32)0xFFFE7960;
     }
     {
-        s32 val1 = D_800EF7BC[a1] * odd;
-        s32 val2 = D_800EF7BC[a1 + 1] * (0x1000 - odd);
+        s32 val1 = D_800EF7BC[a1] * var_3;
+        s32 val2 = D_800EF7BC[a1 + 1] * (0x1000 - var_3);
         return ((val1 + val2) >> 12) - 0x3F48;
     }
 }
@@ -1234,7 +1234,7 @@ void func_800481E8(s32 arg0, s32 arg1) {
     u32 *p;
     u32 *base;
     s32 count;
-    s32 a0_for_call;
+    s32 var_4;
     p = (u32 *)arg0;
     base = p;
     /* FAKE: dead store to a param -- breaks the $a0==base association:
@@ -1265,13 +1265,12 @@ void func_800481E8(s32 arg0, s32 arg1) {
             v0v = *((u16 *)p);
             new_var2 = word >> 2;
             /* compute early (target sched) */
-            a0_for_call = (s32)base + (new_var2 << 2);
+            var_4 = (s32)base + (new_var2 << 2);
             p = (u32 *)(((s32)p) + 2); /* always advance (target delay slot) */
             if ((s32)a3v < 0x280) {
                 v0v += 1;
             }
-            func_800482C8(
-                a0_for_call, (s32)a1v, (s32)a2v, (s32)a3v, (s32)(s16)v0v);
+            func_800482C8(var_4, (s32)a1v, (s32)a2v, (s32)a3v, (s32)(s16)v0v);
         } while ((count--) != 0);
     }
 }
@@ -1279,44 +1278,44 @@ void func_800481E8(s32 arg0, s32 arg1) {
 void func_800482C8(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
     RECT rect;
     u16 buf[512];
-    u8 *p_alt;
+    u8 *var_2;
     s32 flags;
-    u32 dim;
-    u32 dim2;
-    s32 head = arg0[0];
+    u32 var_4;
+    u32 var_5;
+    s32 var_6 = arg0[0];
     arg0 += 4;
-    if (head != 0x10)
+    if (var_6 != 0x10)
         return;
     flags = *(s32 *)arg0 & 8;
     arg0 += 4;
     if (flags != 0) {
-        p_alt = arg0;
-        arg0 = p_alt + (((u32) * (u32 *)p_alt >> 2) << 2);
-        p_alt += 4;
+        var_2 = arg0;
+        arg0 = var_2 + (((u32) * (u32 *)var_2 >> 2) << 2);
+        var_2 += 4;
     }
     arg0 += 8;
     rect.x = arg1;
     rect.y = arg2;
-    dim = *(u32 *)arg0;
-    rect.h = dim >> 16;
-    rect.w = dim;
+    var_4 = *(u32 *)arg0;
+    rect.h = var_4 >> 16;
+    rect.w = var_4;
     LoadImage(&rect, (u32 *)(arg0 + 4));
     if (flags == 0)
         return;
-    p_alt += 4;
+    var_2 += 4;
     rect.x = arg3;
     rect.y = arg4;
-    dim2 = *(u32 *)p_alt;
-    p_alt += 4;
-    rect.h = dim2 >> 16;
-    rect.w = dim2;
+    var_5 = *(u32 *)var_2;
+    var_2 += 4;
+    rect.h = var_5 >> 16;
+    rect.w = var_5;
     if (func_800486FC() != 0) {
-        math_GrayscaleRgb555((u16 *)p_alt, rect.w, buf);
+        math_GrayscaleRgb555((u16 *)var_2, rect.w, buf);
         LoadImage(&rect, (u32 *)buf);
         DrawSync(0);
         return;
     }
-    LoadImage(&rect, (u32 *)p_alt);
+    LoadImage(&rect, (u32 *)var_2);
 }
 
 void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
@@ -1357,7 +1356,7 @@ void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
 void gpu_LoadTimClut(u8 *arg0, s16 arg1, s16 arg2) {
     RECT rect;
     u16 buf[512];
-    u32 dim;
+    u32 var_2;
     s32 flags;
     if (arg0[0] != 0x10)
         return;
@@ -1369,10 +1368,10 @@ void gpu_LoadTimClut(u8 *arg0, s16 arg1, s16 arg2) {
     arg0 += 8;
     rect.x = arg1;
     rect.y = arg2;
-    dim = *(u32 *)arg0;
+    var_2 = *(u32 *)arg0;
     arg0 += 4;
-    rect.h = dim >> 16;
-    rect.w = dim;
+    rect.h = var_2 >> 16;
+    rect.w = var_2;
     if (func_800486FC() != 0) {
         math_GrayscaleRgb555((u16 *)arg0, rect.w, buf);
         LoadImage(&rect, (u32 *)buf);
@@ -1525,7 +1524,7 @@ s32 math_Grayscale3(s32 arg0, s32 arg1, s32 arg2) {
 }
 
 void func_80048864(
-    s32 mode, s32 sx, s32 sy, s32 w, s32 mr, s32 mg, s32 mb, s32 dx, s32 dy) {
+    s32 mode, s32 sx, s32 sy, s32 w, s32 arg4, s32 mg, s32 mb, s32 dx, s32 dy) {
     u16 buf[256];
     u16 out[256];
     RECT rect;
@@ -1557,7 +1556,7 @@ void func_80048864(
         src++;
         switch (mode) {
         case 0:
-            r = (r * mr) >> 15;
+            r = (r * arg4) >> 15;
             g = (g * mg) >> 15;
             b = (b * mb) >> 15;
             break;
@@ -1566,7 +1565,7 @@ void func_80048864(
             g = g << 11;
             b = b * 0x2B8;
             r = (r + g + b) >> 15;
-            r = (r * mr) >> 12;
+            r = (r * arg4) >> 12;
             g = (r * mg) >> 12;
             b = (r * mb) >> 12;
             break;
@@ -1592,7 +1591,7 @@ extern u8 D_80099BCC;
 
 s32 func_80048AD0(s32 arg0) {
     Unk80045878Obj *temp_v0;
-    s32 sound;
+    s32 var_1;
     u8 *base;
     s32 delta;
     u8 *p;
@@ -1602,10 +1601,10 @@ s32 func_80048AD0(s32 arg0) {
     if (temp_v0 == 0)
         return 0;
     D_800A33E0 = arg0;
-    sound = (&D_80099BCC)[temp_v0->unk_08];
-    if (sound == 0xFF)
+    var_1 = (&D_80099BCC)[temp_v0->unk_08];
+    if (var_1 == 0xFF)
         return 0;
-    base = (u8 *)func_800467B8(sound);
+    base = (u8 *)func_800467B8(var_1);
     p = base + ((*(u32 *)(base + 8) >> 2) << 2);
     /* FAKE: delta taken before the loop (subu a2 ahead of it); computed at the
      * call, p's registers shift (score 19) */
@@ -1614,15 +1613,15 @@ s32 func_80048AD0(s32 arg0) {
     /* FAKE: q = p + 0xA, the target's second cursor (addiu a1,v1,10; stores at
      * -8 / -6 / -9 / 0 from it); through p the cursor goes (score 11) */
     q = p + 0xA;
-    /* FAKE: the record counter reuses `sound`, inheriting its $a0
+    /* FAKE: the record counter reuses `var_1`, inheriting its $a0
        preference from func_800467B8's argument; a separate counter swaps
        $a0/$a2 with delta: score 6 */
-    for (sound = 0; sound < 0x11; sound++) {
-        *(s16 *)(q - 8 + sound * 0x68) = sound;
-        *(s16 *)(q - 6 + sound * 0x68) = 9;
-        p[sound * 0x68] = 0xF;
-        *(s8 *)(q - 9 + sound * 0x68) = 0;
-        *(s16 *)(q + sound * 0x68) = (s16)arg0;
+    for (var_1 = 0; var_1 < 0x11; var_1++) {
+        *(s16 *)(q - 8 + var_1 * 0x68) = var_1;
+        *(s16 *)(q - 6 + var_1 * 0x68) = 9;
+        p[var_1 * 0x68] = 0xF;
+        *(s8 *)(q - 9 + var_1 * 0x68) = 0;
+        *(s16 *)(q + var_1 * 0x68) = (s16)arg0;
     }
     func_800468B0(delta + 0x6E8);
     return 1;
@@ -1741,50 +1740,50 @@ void func_80048F58(s32 a0, s32 a1) {
 
 void func_80048FFC(s32 arg0) {
     RECT rect;
-    s16 *ctl;
+    s16 *var_1;
     s32 x;
     s32 y;
-    s32 xf;
-    s32 yf;
+    s32 var_4;
+    s32 var_5;
     s32 dx;
     s32 dy;
-    s32 dxf;
-    s32 dyf;
+    s32 var_8;
+    s32 var_9;
     s32 w;
-    s32 period;
+    s32 var_11;
     s32 i;
-    MoveChannel *ch;
+    MoveChannel *var_13;
     DR_MOVE *p;
-    s32 phase;
+    s32 var_15;
 
-    ch = &D_800EF848[arg0];
-    phase = ch->phase;
-    ctl = ch->ctl;
-    p = ch->move[D_800A36AC & 1];
-    x = ctl[0] & ~0x3F;
-    y = ctl[1] & ~0xFF;
-    xf = ctl[0] % 64;
-    yf = ctl[1] % 256;
-    w = ctl[2];
-    period = ctl[3];
-    dx = ctl[4] & ~0x3F;
-    dy = ctl[5] & ~0xFF;
-    dxf = ctl[4] % 64;
-    dyf = ctl[5] % 256;
+    var_13 = &D_800EF848[arg0];
+    var_15 = var_13->phase;
+    var_1 = var_13->ctl;
+    p = var_13->move[D_800A36AC & 1];
+    x = var_1[0] & ~0x3F;
+    y = var_1[1] & ~0xFF;
+    var_4 = var_1[0] % 64;
+    var_5 = var_1[1] % 256;
+    w = var_1[2];
+    var_11 = var_1[3];
+    dx = var_1[4] & ~0x3F;
+    dy = var_1[5] & ~0xFF;
+    var_8 = var_1[4] % 64;
+    var_9 = var_1[5] % 256;
     for (i = 0; i < 3; i++) {
-        s32 nx = dx + dxf;
-        s32 ny = dy + dyf;
-        s32 sy = y + yf;
-        s32 h1 = period - phase;
+        s32 nx = dx + var_8;
+        s32 ny = dy + var_9;
+        s32 sy = y + var_5;
+        s32 h1 = var_11 - var_15;
         /* FAKE: strip two's height taken as an s16 at the top of the level;
-         * rect.h = phase directly, an s32 copy or a (s16) cast drops the t1
+         * rect.h = var_15 directly, an s32 copy or a (s16) cast drops the t1
          * copy: score 57 */
-        s16 h2 = phase;
-        rect.x = x + xf;
+        s16 h2 = var_15;
+        rect.x = x + var_4;
         rect.y = sy;
         rect.w = w;
         rect.h = h1;
-        SetDrawMove(p, &rect, nx, ny + phase);
+        SetDrawMove(p, &rect, nx, ny + var_15);
         addPrim(&D_800A378C[0xFFF], p);
         p++;
         rect.y = sy + h1;
@@ -1792,17 +1791,17 @@ void func_80048FFC(s32 arg0) {
         SetDrawMove(p, &rect, nx, ny);
         addPrim(&D_800A378C[0xFFF], p);
         p++;
-        xf >>= 1;
-        yf >>= 1;
-        dxf >>= 1;
-        dyf >>= 1;
+        var_4 >>= 1;
+        var_5 >>= 1;
+        var_8 >>= 1;
+        var_9 >>= 1;
         w >>= 1;
-        period >>= 1;
-        phase >>= 1;
+        var_11 >>= 1;
+        var_15 >>= 1;
     }
-    ch->phase += ctl[6];
-    if (ch->phase >= ctl[3]) {
-        ch->phase %= ctl[3];
+    var_13->phase += var_1[6];
+    if (var_13->phase >= var_1[3]) {
+        var_13->phase %= var_1[3];
     }
 }
 
@@ -1903,33 +1902,33 @@ void func_80049584(s32 arg0) {
        pseudo crossing a call gets a call-saved reg, so sharing puts the
        counter in $s0 as in the target; a separate `total`: 12 insns differ */
     s32 i;
-    s32 unchanged;
-    s32 rank;
+    s32 var_4;
+    s32 var_5;
     s32 step;
     s32 lo;
     s32 hi;
 
-    unchanged = 1;
+    var_4 = 1;
     i = 0;
     dst = D_80099C50;
     src = D_800EF980;
     do {
         s16 v = *src;
         if ((v >= 0) != ((*dst) >= 0)) {
-            unchanged = 0;
+            var_4 = 0;
         }
         *dst = v;
         dst++;
         i++;
         src++;
     } while (i < 0x3A);
-    rank = 0;
+    var_5 = 0;
     i = 0;
     p = D_800EF980;
     do {
         if ((*p) >= 0) {
-            *p = (s16)rank;
-            rank++;
+            *p = (s16)var_5;
+            var_5++;
         }
         i++;
         p++;
@@ -1963,9 +1962,9 @@ void func_80049584(s32 arg0) {
 end:
     if (D_800A324C != i) {
         D_800A324C = i;
-        unchanged = 0;
+        var_4 = 0;
     }
-    if (unchanged == 0) {
+    if (var_4 == 0) {
         func_80046020();
         func_80045B68(D_800A33EC, i, D_800EF980, arg0);
         func_8003E120();
@@ -1986,12 +1985,12 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     s32 val58;
     Unk80045878Obj *slot_obj;
     Unk80045878Node *obj;
-    Unk80045878Node *part;
+    Unk80045878Node *var_4;
     /* FAKE: named intermediate (no-new-park-categories entry 6) set before
      * the call so the andi lands ahead of the copy of its result, as in the
      * target; written in the expression or after the call it takes $v0: score
      * 5 */
-    s32 side;
+    s32 var_5;
     if (D_800EF980[arg0] < 0) {
         func_80052C10();
     }
@@ -2021,31 +2020,31 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
              * (Q51); a local copy flips the $s0 allocation order: score 63 */
             /* SOTN: src/st/lib/e_shop.c:4621 @aa53500 */
             flags &= 0x7FFF;
-            side = flags & 1;
+            var_5 = flags & 1;
             slot_obj = func_8004153C(flags >> 1);
-            part = &slot_obj->unk_2C[19 + side];
-            part->node.work.t[0] =
-                (part->node.work.t[0] * slot_obj->unk_12) >> 12;
-            part->node.work.t[1] =
-                (part->node.work.t[1] * slot_obj->unk_12) >> 12;
-            part->node.work.t[2] =
-                (part->node.work.t[2] * slot_obj->unk_12) >> 12;
-            MulMatrix0(&slot_obj->unk_2C[0].node.xf.mat, &part->node.work,
+            var_4 = &slot_obj->unk_2C[19 + var_5];
+            var_4->node.work.t[0] =
+                (var_4->node.work.t[0] * slot_obj->unk_12) >> 12;
+            var_4->node.work.t[1] =
+                (var_4->node.work.t[1] * slot_obj->unk_12) >> 12;
+            var_4->node.work.t[2] =
+                (var_4->node.work.t[2] * slot_obj->unk_12) >> 12;
+            MulMatrix0(&slot_obj->unk_2C[0].node.xf.mat, &var_4->node.work,
                        &obj->node.xf.mat);
-            ofs.vx = part->node.work.t[0];
-            ofs.vy = part->node.work.t[1];
-            ofs.vz = part->node.work.t[2];
+            ofs.vx = var_4->node.work.t[0];
+            ofs.vy = var_4->node.work.t[1];
+            ofs.vz = var_4->node.work.t[2];
             ApplyMatrix(
-                &part->node.unkC->xf.mat, &ofs, (VECTOR *)obj->node.xf.mat.t);
+                &var_4->node.unkC->xf.mat, &ofs, (VECTOR *)obj->node.xf.mat.t);
             obj->node.xf.mat.t[0] =
-                obj->node.xf.mat.t[0] + part->node.unkC->xf.mat.t[0];
+                obj->node.xf.mat.t[0] + var_4->node.unkC->xf.mat.t[0];
             obj->node.xf.mat.t[1] =
-                obj->node.xf.mat.t[1] + part->node.unkC->xf.mat.t[1];
+                obj->node.xf.mat.t[1] + var_4->node.unkC->xf.mat.t[1];
             obj->node.xf.mat.t[2] =
-                obj->node.xf.mat.t[2] + part->node.unkC->xf.mat.t[2];
+                obj->node.xf.mat.t[2] + var_4->node.unkC->xf.mat.t[2];
             /* SOTN: src/st/lib/e_shop.c:4625 @aa53500 */
             flags |= 0x8000;
-            part->node.xf.mat = obj->node.xf.mat;
+            var_4->node.xf.mat = obj->node.xf.mat;
             val58 = slot_obj->unk_1A84;
         }
         {
@@ -2099,7 +2098,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     u8 *new_var6;
     u8 temp_v1;
     s16 *new_var8;
-    s16 *p_anim;
+    s16 *var_4;
     s16 new_var2;
     s16 *src;
     Unk80045878Node *obj;
@@ -2117,17 +2116,17 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     /* FAKE: the table base in its own holder; &D_800EF980[temp_v1] emits the
        shift ahead of the base load and swaps the addu operands (score 4). */
     new_var8 = D_800EF980;
-    p_anim = new_var8 + temp_v1;
-    if ((*p_anim) < 0) {
+    var_4 = new_var8 + temp_v1;
+    if ((*var_4) < 0) {
         func_80052C10();
     }
     slot_obj = func_8004153C(arg1 >> 1);
     obj = (Unk80045878Node *)g_prim_buf_cursor;
     obj->node.unk0 = 0;
     obj->node.unk1 = 0;
-    /* FAKE: a1_val reads *p_anim ahead of each node's stores; read at the unk2
+    /* FAKE: a1_val reads *var_4 ahead of each node's stores; read at the unk2
        stores the lh moves down to them (score: first 29, second 6, both 35). */
-    a1_val = (*p_anim) * 2;
+    a1_val = (*var_4) * 2;
     obj->node.unk4 = 6;
     obj->node.unk8 = 0;
     obj->node.unkA = 4;
@@ -2153,7 +2152,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     g_draw_queue_cursor = list + 1;
     *list = obj;
     obj++;
-    a1_val = (*p_anim) * 2;
+    a1_val = (*var_4) * 2;
     obj->node.unk0 = 3;
     obj->node.unkC = &obj[-1].node;
     obj->node.unk1 = 0;
@@ -2189,7 +2188,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
     s32 var_s1;
     s32 var_s3;
     s32 v1;
-    s32 hdr;
+    s32 var_14;
     s32 a0_arg;
     s32 *tbl = (s32 *)arg0;
 
@@ -2242,18 +2241,18 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
         func_80052C10();
     }
 
-    /* FAKE: hdr built in two steps (one expression emits the nor after the
+    /* FAKE: var_14 built in two steps (one expression emits the nor after the
      * slot copy, score 2); v1 holds var_s3's old value so var_s3 steps
      * before the store (stored through var_s3, the step follows the store,
      * score 4). */
-    hdr = ~var_s0;
+    var_14 = ~var_s0;
     v1 = var_s3;
     var_s3 += 4;
-    hdr = (u32)hdr >> 31;
+    var_14 = (u32)var_14 >> 31;
     if (var_s2 >= 0) {
-        hdr += 1;
+        var_14 += 1;
     }
-    *(s32 *)v1 = hdr;
+    *(s32 *)v1 = var_14;
 
     if (var_s0 >= 0) {
         *(s32 *)var_s3 = 2;
