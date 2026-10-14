@@ -1,0 +1,24 @@
+addr,current_names,proposed_name,kind,evidence,verdict,verifier_note
+local,func_80042504:hsv,arg0,param,"RESET-BULK (Q119). param hsv (s32 *) of func_80042504, src/main/32D04.c:11; claim word(s): hsv. Destination: arg<position 0>.",CONFIRM,Q119 scope test
+local,func_80042504:rgb,arg1,param,"RESET-BULK (Q119). param rgb (s32 *) of func_80042504, src/main/32D04.c:11; claim word(s): rgb. Destination: arg<position 1>.",CONFIRM,Q119 scope test
+local,math_RgbToHsv:chroma,var_5,local,"RESET-BULK (Q119). local chroma (s32) of math_RgbToHsv, src/main/32D04.c:87; claim word(s): chroma. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,math_RgbToHsv:sat,var_6,local,"RESET-BULK (Q119). local sat (s32) of math_RgbToHsv, src/main/32D04.c:88; claim word(s): sat. Destination: var_<declaration order 6>.",CONFIRM,Q119 scope test
+local,math_RgbToHsv:hue,var_7,local,"RESET-BULK (Q119). local hue (s32) of math_RgbToHsv, src/main/32D04.c:89; claim word(s): hue. Destination: var_<declaration order 7>.",CONFIRM,Q119 scope test
+local,math_RotMatrixYXZ:scb_sinC,var_19,local,"RESET-BULK (Q119). local scb_sinC (s32) of math_RotMatrixYXZ, src/main/32D04.c:279; claim word(s): scb. Destination: var_<declaration order 19>.",CONFIRM,Q119 scope test
+local,math_RotMatrixYXZ:scb_cosC,var_21,local,"RESET-BULK (Q119). local scb_cosC (s32) of math_RotMatrixYXZ, src/main/32D04.c:280; claim word(s): scb. Destination: var_<declaration order 21>.",CONFIRM,Q119 scope test
+local,math_RotMatrixXYZ:sab,var_11,local,"RESET-BULK (Q119). local sab (s32) of math_RotMatrixXYZ, src/main/32D04.c:344; claim word(s): sab. Destination: var_<declaration order 11>.",CONFIRM,Q119 scope test
+local,math_RotMatrixXYZ:sab12_cosC,var_13,local,"RESET-BULK (Q119). local sab12_cosC (s32) of math_RotMatrixXYZ, src/main/32D04.c:345; claim word(s): sab. Destination: var_<declaration order 13>.",CONFIRM,Q119 scope test
+local,math_RotMatrixXYZ:cab12,var_19,local,"RESET-BULK (Q119). local cab12 (s32) of math_RotMatrixXYZ, src/main/32D04.c:349; claim word(s): cab. Destination: var_<declaration order 19>.",CONFIRM,Q119 scope test
+local,math_RotMatrixXYZ:csb12_sinC,var_23,local,"RESET-BULK (Q119). local csb12_sinC (s32) of math_RotMatrixXYZ, src/main/32D04.c:352; claim word(s): csb. Destination: var_<declaration order 23>.",CONFIRM,Q119 scope test
+local,math_MatrixToAnglesYXZ:combined,var_7,local,"RESET-BULK (Q119). local combined (s32) of math_MatrixToAnglesYXZ, src/main/32D04.c:450; claim word(s): combined. Destination: var_<declaration order 7>.",CONFIRM,Q119 scope test
+local,func_80043454:packed,var_4,local,"RESET-BULK (Q119). local packed (s32) of func_80043454, src/main/32D04.c:618; claim word(s): packed. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_80043454:blocks,var_5,local,"RESET-BULK (Q119). local blocks (s32) of func_80043454, src/main/32D04.c:619; claim word(s): blocks. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_80044010:slot,arg1,param,"RESET-BULK (Q119). param slot (s16) of func_80044010, src/main/32D04.c:926; claim word(s): slot. Destination: arg<position 1>.",CONFIRM,Q119 scope test
+local,func_80044010:hdr,var_1,local,"RESET-BULK (Q119). local hdr (s32) of func_80044010, src/main/32D04.c:928; claim word(s): hdr. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80044170:slots,var_3,local,"RESET-BULK (Q119). local slots (s32 *) of func_80044170, src/main/32D04.c:994; claim word(s): slots. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_8004428C:slots,var_1,local,"RESET-BULK (Q119). local slots (s32 *) of func_8004428C, src/main/32D04.c:1040; claim word(s): slots. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_8004428C:walker,var_5,local,"RESET-BULK (Q119). local walker (s32 *) of func_8004428C, src/main/32D04.c:1044; claim word(s): walker. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_80044378:frame_offsets,arg2,param,"RESET-BULK (Q119). param frame_offsets (s16 *) of func_80044378, src/main/32D04.c:1088; claim word(s): frame. Destination: arg<position 2>.",CONFIRM,Q119 scope test
+local,func_80044378:fp,var_0,local,"RESET-BULK (Q119). local fp (s16 *) of func_80044378, src/main/32D04.c:1089; claim word(s): fp. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_80044378:scan,var_1,local,"RESET-BULK (Q119). local scan (s16 *) of func_80044378, src/main/32D04.c:1090; claim word(s): scan. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80044378:sentinel,var_6,local,"RESET-BULK (Q119). local sentinel (s32) of func_80044378, src/main/32D04.c:1095; claim word(s): sentinel. Destination: var_<declaration order 6>.",CONFIRM,Q119 scope test

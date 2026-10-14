@@ -8,10 +8,10 @@
 #include "include_asm.h"
 #include "gte.h"
 
-void func_80042504(s32 *hsv, s32 *rgb) {
-    s32 h = hsv[0];
-    s32 s = hsv[1];
-    s32 v = hsv[2];
+void func_80042504(s32 *arg0, s32 *arg1) {
+    s32 h = arg0[0];
+    s32 s = arg0[1];
+    s32 v = arg0[2];
     s32 i, f, p, q, t;
     s32 r, g, b;
 
@@ -72,9 +72,9 @@ void func_80042504(s32 *hsv, s32 *rgb) {
         goto out;
     }
 out:
-    rgb[0] = r;
-    rgb[1] = g;
-    rgb[2] = b;
+    arg1[0] = r;
+    arg1[1] = g;
+    arg1[2] = b;
 }
 
 /* RGB -> HSV (4.12 fixed point). Inverse of func_80042504 above.
@@ -84,9 +84,9 @@ out:
 void math_RgbToHsv(s32 *a0, s32 *a1) {
     s32 r, g, b;
     s32 max_val, min_val;
-    s32 chroma;
-    s32 sat;
-    s32 hue;
+    s32 var_5;
+    s32 var_6;
+    s32 var_7;
     s32 dR, dG, dB;
     s32 val;
 
@@ -124,42 +124,42 @@ void math_RgbToHsv(s32 *a0, s32 *a1) {
         }
     }
 
-    chroma = max_val - min_val;
+    var_5 = max_val - min_val;
     /* V = max(r,g,b): the value channel, third HSV output */
     val = max_val;
 
     if (val != 0) {
-        sat = (chroma << 12) / val;
+        var_6 = (var_5 << 12) / val;
     } else {
-        sat = 0;
+        var_6 = 0;
     }
 
-    if (sat != 0) {
-        dR = ((max_val - r) << 12) / chroma;
-        dG = ((max_val - g) << 12) / chroma;
-        dB = ((max_val - b) << 12) / chroma;
+    if (var_6 != 0) {
+        dR = ((max_val - r) << 12) / var_5;
+        dG = ((max_val - g) << 12) / var_5;
+        dB = ((max_val - b) << 12) / var_5;
 
         if (r == max_val) {
-            hue = dB - dG;
+            var_7 = dB - dG;
         } else if (g == max_val) {
             s32 tmp = dB - 0x2000;
-            hue = dR - tmp;
+            var_7 = dR - tmp;
         } else if (b == max_val) {
             s32 tmp = dR - 0x4000;
-            hue = dG - tmp;
+            var_7 = dG - tmp;
         }
 
-        hue /= 6;
+        var_7 /= 6;
 
-        if (hue < 0) {
-            hue += 0x1000;
+        if (var_7 < 0) {
+            var_7 += 0x1000;
         }
     } else {
-        hue = 0;
+        var_7 = 0;
     }
 
-    a1[0] = hue;
-    a1[1] = sat;
+    a1[0] = var_7;
+    a1[1] = var_6;
     a1[2] = val;
 }
 
@@ -276,8 +276,8 @@ void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
     s32 cosA_sinB, cosA_sinC, cosA_cosC, cosA_cosB;
     s32 sinAxcosB;
     s32 sinAxcosB_12;
-    s32 scb_sinC, neg_sinB_cosC;
-    s32 scb_cosC;
+    s32 var_19, neg_sinB_cosC;
+    s32 var_21;
     s32 sinB_sinC;
     s32 cosA;
     u16 rawA;
@@ -317,10 +317,10 @@ void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
 
     sinAxcosB_12 = sinAxcosB >> 12;
 
-    scb_sinC = sinAxcosB_12 * sinC;
+    var_19 = sinAxcosB_12 * sinC;
     neg_sinB_cosC = -sinB * cosC;
 
-    scb_cosC = sinAxcosB_12 * cosC;
+    var_21 = sinAxcosB_12 * cosC;
 
     cosA_cosB = cosA * cosB;
 
@@ -330,10 +330,10 @@ void math_RotMatrixYXZ(u16 *a0, MATRIX *a1) {
     a1->m[2][2] = cosA_cosB >> 12;
     a1->m[0][0] = (prod_sinC + cosB_cosC) >> 12;
     a1->m[0][1] = (prod_cosC + cosB_negsinC) >> 12;
-    a1->m[2][0] = (scb_sinC + neg_sinB_cosC) >> 12;
+    a1->m[2][0] = (var_19 + neg_sinB_cosC) >> 12;
 
     sinB_sinC = sinB * sinC;
-    a1->m[2][1] = (scb_cosC + sinB_sinC) >> 12;
+    a1->m[2][1] = (var_21 + sinB_sinC) >> 12;
 }
 
 void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
@@ -341,15 +341,15 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     s16 sinA, sinB, sinC, cosA;
     s32 cosB, cosC;
     s32 cosB_cosC, cosB_negsinC;
-    s32 sab, sab12;
-    s32 sab12_cosC, sab12_negsinC;
+    s32 var_11, sab12;
+    s32 var_13, sab12_negsinC;
     s32 cosA_sinC, cosA_cosC;
     s32 cosA_negsinB;
     s32 negsinA_cosB;
-    s32 cab12, cab12_cosC;
+    s32 var_19, cab12_cosC;
     s32 cosA_sinB;
     s32 sinA_sinC;
-    s32 csb12_sinC;
+    s32 var_23;
     s32 cosA_cosB;
     s32 sinA_cosC;
 
@@ -366,20 +366,20 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
 
     cosB_cosC = cosB * cosC;
     a1->m[0][2] = sinB;
-    sab = sinA * sinB;
+    var_11 = sinA * sinB;
     cosB_negsinC = cosB * -sinC;
-    sab12 = sab >> 12;
-    sab12_cosC = sab12 * cosC;
+    sab12 = var_11 >> 12;
+    var_13 = sab12 * cosC;
     cosA_sinC = cosA * sinC;
     sab12_negsinC = sab12 * -sinC;
     cosA_cosC = cosA * cosC;
     cosA_negsinB = cosA * -sinB;
     negsinA_cosB = -sinA * cosB;
-    cab12 = cosA_negsinB >> 12;
-    cab12_cosC = cab12 * cosC;
+    var_19 = cosA_negsinB >> 12;
+    cab12_cosC = var_19 * cosC;
     cosA_sinB = cosA * sinB;
     sinA_sinC = sinA * sinC;
-    csb12_sinC = (cosA_sinB >> 12) * sinC;
+    var_23 = (cosA_sinB >> 12) * sinC;
     cosA_cosB = cosA * cosB;
 
     a1->m[0][0] = cosB_cosC >> 12;
@@ -387,10 +387,10 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     a1->m[1][2] = negsinA_cosB >> 12;
     sinA_cosC = sinA * cosC;
     a1->m[2][2] = cosA_cosB >> 12;
-    a1->m[1][0] = (sab12_cosC + cosA_sinC) >> 12;
+    a1->m[1][0] = (var_13 + cosA_sinC) >> 12;
     a1->m[1][1] = (sab12_negsinC + cosA_cosC) >> 12;
     a1->m[2][0] = (cab12_cosC + sinA_sinC) >> 12;
-    a1->m[2][1] = (csb12_sinC + sinA_cosC) >> 12;
+    a1->m[2][1] = (var_23 + sinA_cosC) >> 12;
 }
 
 extern void math_RotMatrixXYZ();
@@ -447,7 +447,7 @@ void math_MatrixToAnglesYXZ(MATRIX *a0, SVECTOR *a1) {
     s16 angle1;
     s32 cos_val, sin_val;
     s16 neg_angle2;
-    s32 combined;
+    s32 var_7;
 
     rot.vx = 0;
     rot.vy = 0;
@@ -459,8 +459,8 @@ void math_MatrixToAnglesYXZ(MATRIX *a0, SVECTOR *a1) {
     cos_val = rcos((s16)angle1);
     sin_val = rsin((s16)angle1);
 
-    combined = (cos_val * result.vz + sin_val * result.vx) >> 12;
-    neg_angle2 = -ratan2(result.vy, combined);
+    var_7 = (cos_val * result.vz + sin_val * result.vx) >> 12;
+    neg_angle2 = -ratan2(result.vy, var_7);
 
     rot.vx = -neg_angle2;
     rot.vy = -angle1;
@@ -615,18 +615,18 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
     s32 mode;
     s32 type;
     s32 kind;
-    s32 packed;
-    s32 blocks;
+    s32 var_4;
+    s32 var_5;
     u16 *p;
     u8 *b;
 
-    blocks = 0;
+    var_5 = 0;
     do {
         p = SCRATCH_PTR;
         SCRATCH_PTR = p + 1;
         count = *p;
         if (count & 0x8000) {
-            packed = 1;
+            var_4 = 1;
             mode = 2;
             SCRATCH_PTR = SCRATCH_PTR + (count & 0x7FFF) + 1;
             if ((u32)SCRATCH_PTR & 3) {
@@ -636,7 +636,7 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
         } else {
             SCRATCH_PTR = p + 2;
             mode = p[1];
-            packed = 0;
+            var_4 = 0;
             if (mode == 0) {
                 SCRATCH_PTR += count * 12;
             } else {
@@ -770,7 +770,7 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                     }
                     break;
                 }
-            } else if (!packed) {
+            } else if (!var_4) {
                 SCRATCH_PTR += (s16)(count * D_80095588[type]);
             } else {
                 switch (type) {
@@ -786,11 +786,11 @@ void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                 }
             }
         }
-        if (packed) {
-            if (blocks == 12) {
+        if (var_4) {
+            if (var_5 == 12) {
                 return;
             }
-            blocks++;
+            var_5++;
             while (*SCRATCH_PTR != 0xFFFF) {
                 SCRATCH_PTR += 3;
             }
@@ -920,22 +920,22 @@ s16 gpu_OffsetClut(s16 a0, s16 a1, s32 a2) {
 /* Relocates a block of pointer words in place. p[0] holds the word count in
  * its low 15 bits, bit 15 set once the block is relocated. Marks the block
  * relocated (keeping the low halfword), records its first word (p + 1) and
- * count in D_80103608 / D_80103658 [slot], and, if it was not relocated yet,
+ * count in D_80103608 / D_80103658 [arg1], and, if it was not relocated yet,
  * turns each word's block-relative offset into an address by adding the
  * block's base. func_80044098 is the inverse. */
-void func_80044010(s32 *p, s16 slot) {
+void func_80044010(s32 *p, s16 arg1) {
     s32 *base = p;
-    s32 hdr;
+    s32 var_1;
     s32 i;
     u16 n;
 
-    hdr = *p;
-    *p = (hdr | 0x8000) & 0xFFFF;
+    var_1 = *p;
+    *p = (var_1 | 0x8000) & 0xFFFF;
     p++;
-    D_80103608[slot] = p;
-    D_80103658[slot] = hdr & 0x7FFF;
-    if (!(hdr & 0x8000)) {
-        n = hdr;
+    D_80103608[arg1] = p;
+    D_80103658[arg1] = var_1 & 0x7FFF;
+    if (!(var_1 & 0x8000)) {
+        n = var_1;
         for (i = 0; i < n; i++) {
             *p++ += (s32)base;
         }
@@ -991,7 +991,7 @@ s32 func_80044170(s32 *a0, ...) {
     s32 *base;
     s32 old_first;
     s32 count;
-    s32 *slots;
+    s32 *var_3;
     s32 dest;
     s32 entry;
     s32 size;
@@ -1004,8 +1004,8 @@ s32 func_80044170(s32 *a0, ...) {
     /* FAKE: a0 reused for base + 1; its own local: score 38 */
     a0 = base + 1;
     *base = count;
-    slots = a0;
-    dest = (s32)base + *slots;
+    var_3 = a0;
+    dest = (s32)base + *var_3;
     count--;
     if (count != -1) {
         do {
@@ -1021,15 +1021,15 @@ s32 func_80044170(s32 *a0, ...) {
             tbl = (s32 *)((entry * 4) + (s32)a0);
             cur_off = *tbl;
             size = *(tbl + 1);
-            *slots = dest - (s32)base;
-            slots++;
+            *var_3 = dest - (s32)base;
+            var_3++;
             size = size - cur_off;
             func_800520B8((s32)base + cur_off, dest, size);
             size = (s32)(((u32)size >> 2) * 4);
             dest += size;
         } while (count != -1);
     }
-    *slots = dest - (s32)base;
+    *var_3 = dest - (s32)base;
     return dest;
 }
 
@@ -1037,11 +1037,11 @@ s32 func_8004428C(s32 *base, s16 *offsets) {
     /* FAKE: param alias gives the target's prologue save order
        (pointer-alias-fake-exception); base used directly: score 4 */
     s32 *b = base;
-    s32 *slots = b + 1;
+    s32 *var_1 = b + 1;
     s32 count = 0;
     s32 *dest = (s32 *)((s32)b + b[1]);
     s32 v1;
-    s32 *walker;
+    s32 *var_5;
     s32 size;
     s32 cur_off;
     s32 ret;
@@ -1057,13 +1057,13 @@ s32 func_8004428C(s32 *base, s16 *offsets) {
         /* FAKE: constant-holder (named-local-fake-exception); the literal:
          * score 2 */
         s32 stop = -2;
-        walker = slots;
+        var_5 = var_1;
         do {
             if (v1 >= 0) {
-                size = walker[1];
-                cur_off = walker[0];
-                *slots = (s32)dest - (s32)b;
-                slots++;
+                size = var_5[1];
+                cur_off = var_5[0];
+                *var_1 = (s32)dest - (s32)b;
+                var_1++;
                 count++;
                 size = size - cur_off;
                 func_800520B8((s32)b + cur_off, (s32)dest, size);
@@ -1071,7 +1071,7 @@ s32 func_8004428C(s32 *base, s16 *offsets) {
                 size = size << 2;
                 dest = (s32 *)((s32)dest + size);
             }
-            walker++;
+            var_5++;
             v1 = *offsets;
             offsets++;
         } while (v1 != stop);
@@ -1081,37 +1081,37 @@ s32 func_8004428C(s32 *base, s16 *offsets) {
 done:
     v1 = ret - (s32)b;
     *b = count;
-    *slots = v1;
+    *var_1 = v1;
     return ret;
 }
 
-s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
-    s16 *fp;
-    s16 *scan;
+s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *arg2) {
+    s16 *var_0;
+    s16 *var_1;
     s32 *orig_dest;
     s32 val;
     s32 data_ptr;
     s32 src_orig;
-    s32 sentinel;
+    s32 var_6;
     s32 count;
     s32 *src_ptr;
     s32 start;
     s32 size;
 
-    fp = frame_offsets;
+    var_0 = arg2;
     count = 0;
-    scan = fp + 1;
+    var_1 = var_0 + 1;
     src_orig = src_base;
     orig_dest = dest_arr;
 
-    val = *fp;
+    val = *var_0;
     if (val != -2) {
         do {
             if (val >= 0) {
                 count++;
             }
-            val = *scan;
-            scan++;
+            val = *var_1;
+            var_1++;
         } while (val != -2);
     }
 
@@ -1120,10 +1120,10 @@ s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
     src_base += 4;
     data_ptr = (s32)orig_dest + (count + 2) * 4;
 
-    val = *fp;
-    fp++;
+    val = *var_0;
+    var_0++;
     if (val != -2) {
-        sentinel = -2;
+        var_6 = -2;
         src_ptr = (s32 *)src_base;
         do {
             if (val >= 0) {
@@ -1138,9 +1138,9 @@ s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *frame_offsets) {
                 data_ptr += size;
             }
             src_ptr++;
-            val = *fp;
-            fp++;
-        } while (val != sentinel);
+            val = *var_0;
+            var_0++;
+        } while (val != var_6);
     }
 
     *dest_arr = data_ptr - (s32)orig_dest;
