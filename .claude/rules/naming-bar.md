@@ -31,7 +31,7 @@ One contradicting use fails the name.
 
 Without enough evidence, keep the neutral name (`func_8XXXXXXX`, `D_8XXXXXXX`, `Unk<addr>Rec`,
 `unk_XX`). A neutral name makes no claim. A false name sends the next reader down a false trail,
-so it costs more than a neutral one (owner directive 2026-08-07).
+so it costs more than a neutral one.
 
 ## N3 — evidence: conflict order, not a gate
 
@@ -78,7 +78,8 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
    `member_manifest.csv`, `local_manifest.csv` (data_manifest's columns); their CONFIRMed pairs
    (`Old=New`, `T.m=n`, `f:l=n`) are the wave's `pairs.txt`.
 2. **Review:** a fresh `naming-reviewer` checks each manifest. It may set `verdict` CONFIRM only
-   on rows it PASSes. Rows it FAILs are dropped or re-mined, never patched by hand.
+   on rows it PASSes. Rows it FAILs are dropped or re-mined, never patched by hand. Bulk
+   local resets: [[naming-bulk-reset]] (Q119).
 3. **Census:** `python3 docs/naming/build_census.py`.
 4. **Apply:** with a clean tree and the Grinder stopped, run `tools/naming_wave.py --from-census
    --only <addrs>` (dry run, then `--apply`), commit that as a temporary commit (data_wave refuses
@@ -95,7 +96,7 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
    `tools/check_completion_integrity.py`; `engine test`; then stage the whole wave (`git add -A`)
    and run `python3 tools/naming_keycheck.py --from-manifests <naming_wave.json>,<data_wave.json>
    --pairs-file <pairs.txt>`. It checks what a commit would store (an unstaged or intent-to-add
-   path fails) and fails closed. Every changed, added, deleted or renamed path must be the base
+   path fails), failing closed. Every changed, added, deleted or renamed path must be the base
    with the pairs substituted, using the wave
    tools' own substitutions:
    - C and header tokens, and each comment in its place, change only by the pairs, as is or as
