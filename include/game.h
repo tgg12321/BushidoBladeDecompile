@@ -187,8 +187,9 @@ typedef struct {
  * size (func_8007352C: x0 = x + env x, u0 = u + ubase, w / h copied). A sheet's
  * cells follow its header(s) (Unk8009B0E0Record.cells). The 0x8009B400 tables
  * hold such cells: 0x8009B400..0x8009B44F is 10 records, one per digit
- * (func_8005D814 / func_8005E098 index it by digit), and 0x8009B458..0x8009B487
- * 6 more (func_8005E098); D_8009B450 and D_8009B488 follow. */
+ * (func_8005D814 / func_8005E098 index it with a 0..9 value), and
+ * 0x8009B458..0x8009B487 6 more (func_8005E098); D_8009B450 and D_8009B488
+ * follow. */
 typedef struct {
     s16 x;
     s16 y;
@@ -619,8 +620,8 @@ typedef struct {
 } Unk800469C4Hdr;
 
 /* Stage/match control block at 0x800EFAE8 (0x4C bytes): func_80054604 sets it
- * up, the per-frame handler func_8005490C runs it (walking the per-player
- * arrays in its player loop), and func_80054FDC relocates the 0x2C..0x40 words.
+ * up, the per-frame handler func_8005490C runs it (walking the per-object
+ * arrays in its object loop), and func_80054FDC relocates the 0x2C..0x40 words.
  */
 typedef struct {
     /* 0x00 */ s16 unk0; /* phase (func_8005490C: -1 = done, 0 = init) */
@@ -1710,9 +1711,9 @@ typedef struct Unk80099D88Rec {
     u8 unk5;
     u8 unk6;
     u8 unk7;
-    /* +0x8: func_80058580's 7-entry random pick, indexed by pick */
+    /* +0x8: func_80058580's 7 weights, each scaling a random 12-bit draw */
     u8 pick_weight[7];
-    /* +0xF: func_80058580's script-entry types 0..7 (et), indexed by type */
+    /* +0xF: func_80058580's 8 weights, each scaling a random 12-bit draw */
     u8 script_weight[8];
     u8 unk17;
 } Unk80099D88Rec; /* size 0x18 */

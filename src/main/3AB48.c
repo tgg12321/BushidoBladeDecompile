@@ -125,7 +125,8 @@ extern s32 func_80053694(s32 *, s16 *);
 /* Walks the 32x32 grid of 2000-unit cells (origin -32000) along the XZ
  * segment from the start point (+0x8/+0x10) to the end point (+0x18/+0x20),
  * DDA style: +0x88/+0x8C are the current and end cells, +0x70/+0x74 the
- * major/minor extents (swapped when Z dominates), +0x7C the 4.12 slope and
+ * major/minor extents (exchanged, with +0x60/+0x64 and +0x68/+0x6C, when
+ * +0x74 > +0x70), +0x7C the 4.12 slope and
  * +0x90 the major-axis steps left. Each cell crossed goes to the per-cell
  * test at +0x5C (func_80053E9C or func_80053754) until one reports a hit;
  * func_80053694 then reads the result back out. */
@@ -747,13 +748,13 @@ extern s32 D_800A3250[2];
 
 /* Per-frame playback of the ctrl block D_800EFAE8 that func_80054604 fills.
  * On the first frame (unk0 == 0) it resolves the loaded data's offset table
- * (unk2C) into the camera stream (unk30), the per-player motion streams
+ * (unk2C) into the camera stream (unk30), the per-object motion streams
  * (unk34[], dropped when they start with the "NULL" tag D_800A3250) and the
- * per-player nibble tables (unk3C[]). Every frame it places the camera (rotated
+ * per-object nibble tables (unk3C[]). Every frame it places the camera (rotated
  * about y by unk1E, plus the offset unkC..unk14 func_80054604 picks), then
- * decodes and places each player's motion frame. The block holds those
- * addresses as integers: typed as pointers, the relocation sums in
- * func_80054FDC and func_80054604 swap their addu operands.
+ * decodes (func_800198D0) and places each func_8004153C object's data. The
+ * block holds those addresses as integers: typed as pointers, the relocation
+ * sums in func_80054FDC and func_80054604 swap their addu operands.
  */
 s32 func_8005490C(void) {
     /* FAKE: second handle to the ctrl block (pointer alias), as in
@@ -771,7 +772,7 @@ s32 func_8005490C(void) {
      * for all three; one local per value: score 9 */
     Unk80045878Obj *player;
     /* FAKE: one variable for the camera-rotated z of the camera and of object
-     * i's root offset: read in two blocks it is not tied to the subtraction and
+     * i's offset: read in two blocks it is not tied to the subtraction and
      * takes $t0; one local per block: score 41 */
     s32 rot_z;
 
@@ -1801,9 +1802,9 @@ s32 func_800571C0(Unk80101EC8Record *obj) {
     s16 work[4];
     s32 ret;
     s8 nl;
-    /* temp holds two values: the count of clear steps on the right-hand
-     * side, then which side was chosen (0 right, 1 left; per-branch constants,
-     * Q20) (Ruling 11, ordinary-c-judge-decidable). */
+    /* temp holds two values: the count of clear steps in the goR loop, then
+     * which branch was chosen (0 or 1; per-branch constants, Q20) (Ruling 11,
+     * ordinary-c-judge-decidable). */
     s8 temp;
     u8 goL;
     u8 goR;
@@ -2329,7 +2330,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
      * unk_444[5] == 0 flag of the state-0x15 script choice; the stage distance
      * base (100000, or D_8009A838[stage] * 8) of the D_8009A850 scan;
      * unk_444[6] for the lim chain; unk_444[6] again for the waypoint script;
-     * the x of waypoint 1; the unk_444[1] == 0 flag of the 0x394 action pick;
+     * the x of waypoint 1; the unk_444[1] == 0 flag of the 0x394 choice;
      * case 2's D_8009A9F0 pattern word, shifted in place; a script entry's low
      * distance bound (e[1] * 40, then adjusted); the state-0x15 script's near
      * bound (the opponent's unk_3F8 entry, or its unk_404 entry + 300)
@@ -2338,7 +2339,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
     /* work2 holds seven values in turn, each read before the next write: the
      * unk_444[1] == 0 flag of the state-0x15 script choice; a D_8009A850
      * entry's distance; the pace byte unk_444[0]; the z of waypoint 1; the
-     * unk_444[5] == 0 flag of the 0x394 action pick; the best random pick score
+     * unk_444[5] == 0 flag of the 0x394 choice; the best weighted random value
      * so far (Q75 constant start + copy; compared as an s16, `sll; sra 16`,
      * Q82); case 2's nibble count, counted down (Ruling 11,
      * reused-local-necessity). */
@@ -2348,7 +2349,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
      * 0; the unk_43A angle, wrapped to +-0x800; the state-0x11 threshold
      * (0x1000 - (stance sum << 8)), scaled by unk_438 >> 12; the forced-scan
      * flag of the D_8009A850 scan; the "longer than lim" flag; the bearing to
-     * the next waypoint, wrapped; the 0x394 action pick's coin bit, stepped per
+     * the next waypoint, wrapped; the 0x394 choice's coin bit, stepped per
      * try; the 0x394 slot (unk_394, or a D_800A325C / D_800A3260 entry); case
      * 3's column in D_8009A928; the entry-type mask; a script entry's character
      * mask; the entry's accept flag. Read-before-write kept from the original
@@ -3842,11 +3843,12 @@ s32 func_8005C074(s16 vabid, s32 base) {
 
 /* func_8005C2A8 - load a VAB: close whatever occupies slot `vabid`, recompute
  * the sticky SPU address from the resident banks (compacting them with
- * func_8005C074 for vabid != 0), relocate the header's three offsets, open it
- * with snd_VabOpen and record its slot and SPU address. Returns the third
- * header offset (unrelocated), or 0 on failure. snd_VabOpen returns s32, as
- * this call site's bytes say (the sll/sra in its body comes from an explicit
- * cast). */
+ * func_8005C074 for vabid != 0), turn the pack's first three offsets
+ * (Unk8005C2A8Pack unk_00..unk_08) into addresses, open it with snd_VabOpen
+ * and record its slot and SPU address. Returns unk_08 less the pack's
+ * address (the third offset, unrelocated), or 0 on failure. snd_VabOpen returns
+ * s32, as this call site's bytes say (the sll/sra in its body comes from an
+ * explicit cast). */
 
 extern s32 snd_VabOpen(Unk8005C2A8Pack *, s16);
 
@@ -4776,7 +4778,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s16 wins[2];
     Unk8007352CEnv s;
     /* FAKE: frame layout: unused; keeps the 8 untouched bytes at sp+0x58 where
-     * the siblings func_8005D814 and func_8005F1C8 keep a real s16[3] digit
+     * the siblings func_8005D814 and func_8005F1C8 keep a real s16[3]
      * array (Q35, no-new-park-categories phantom-frame-slot pad family).
      * Removed: score 47 */
     volatile s16 digit[3];
@@ -5076,7 +5078,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* FAKE: the returned size is the record's end minus its start;
      * sizeof(Unk8005D814Rec): score 97. */
     s32 end_off;
-    /* FAKE: i/row count the win-mark pips' players and rows; k and j are reused
+    /* FAKE: i/row count the first phase's two loops; k and j are reused
      * as plain loop indices by the later phases (tile strip k/j, timer j/k),
      * the same counter reuse as func_8005E098 and the func_8003800C
      * single-counter shape. Separate counters for the later phases: score 11.
