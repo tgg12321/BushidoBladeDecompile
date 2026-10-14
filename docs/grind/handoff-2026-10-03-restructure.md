@@ -132,16 +132,19 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      owner-ruled). Held: 0x00000000 g_ings2_addr_0 (data_wave's ADDR regex refuses address 0; owner call:
      extend the tool or hand-edit the registry).
      KEEP decisions: docs/naming/phase3/waveNN/data_keep.csv (never fed to data_wave).
-   - **Next:** apply wave21 (tmp/p3w21/: 14 pairs from the c6-type-names rows and the playerData /
-     player locals; pre-apply naming-reviewer 14/14 PASS, tmp/p3w21/verdict_pre.json; comment fixes it
-     lists ride in the wave). Deferred: Unk8003F824Rec.quad (no fresh neutral spelling for +0x04; member
-     destinations must be unique tree-wide). Older leads:
+   - Wave21 (2026-10-14) bf769cb45 (+ prose bec701e4d): the first member / local wave; Vec2s16 ->
+     Size2s16, 8 member resets, 5 local resets (playerData / player). Pre-apply 14/14 PASS, R6 PASS.
+   - **Next:** leads for a wave22: func_8006BEC4's local `pos` (holds a size: RESET);
+     Unk8003F824Rec.quad (no fresh neutral spelling for +0x04; member destinations must be unique
+     tree-wide, so it needs a spelling choice); the never-accessed `pad` members (lead ruled: "pad"
+     on untouched bytes is no false claim, KEEP); other `player` locals holding D_800A9A10 objects
+     (31D3C.c, 3AB48.c). Older leads:
      CD_ReadCallbackFunc (SOTN and psyz disagree); info 0x8009BE74 (collides with existing uses);
      cdrom_IrqHandler -> Sony local `callback`.
    - Wave mechanics learned: verify-oracle --rebuild needs --allow-dirty on the applied tree; a FAILed row is dropped
      or re-mined (a fresh reviewer per round); PASS-row evidence fixes from a reviewer are applied before commit.
    - Prose debt (follow-up commits): docs/engine/*.md cite retired names (list in wave03's R6, commit 741468925 body);
-     locals named after reset claims (17AFC.c playerData, 368E4.c player); ledger stubs memory/grind/_completed/*.json
+     ledger stubs memory/grind/_completed/*.json
      keep old func names (naming_wave moves only layer2.jsonl: tool-scope question).
    - Codex lane (`tmp/codex/backlog.md`): C1 3353d059f, C3 212fb353c, C7 43f758f31 (naming_wave own-file P4)
      landed; C2 / C4 / C6 / C10-C12 research done (tmp/codex/c*-result.md); C5 (keycheck per-scope pairs,
