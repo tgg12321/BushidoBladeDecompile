@@ -78,8 +78,8 @@ out:
 }
 
 /* RGB -> HSV (4.12 fixed point). Inverse of func_80042504 above.
- * Outputs a1[] = { hue, sat, val }; val (V) = max(r,g,b) is the third
- * output channel, held separately from the max used for the chroma
+ * Outputs a1[] = { H, S, val }; val (V) = max(r,g,b) is the third
+ * output channel, held separately from the max used for the (max - min)
  * deltas / max-channel compares. */
 void math_RgbToHsv(s32 *a0, s32 *a1) {
     s32 r, g, b;
@@ -917,12 +917,12 @@ s16 gpu_OffsetClut(s16 a0, s16 a1, s32 a2) {
     return (s16)(low | ((a0 & (s16)0x8000) | (mid << 6)));
 }
 
-/* Relocates a block of pointer slots in place. p[0] is the header word: the
- * slot count in its low 15 bits, bit 15 set once the block is relocated. Marks
- * the block relocated (keeping the low halfword), records its first slot and
+/* Relocates a block of pointer words in place. p[0] holds the word count in
+ * its low 15 bits, bit 15 set once the block is relocated. Marks the block
+ * relocated (keeping the low halfword), records its first word (p + 1) and
  * count in D_80103608 / D_80103658 [slot], and, if it was not relocated yet,
- * turns each slot's block-relative offset into an address by adding the block's
- * base. func_80044098 is the inverse. */
+ * turns each word's block-relative offset into an address by adding the
+ * block's base. func_80044098 is the inverse. */
 void func_80044010(s32 *p, s16 slot) {
     s32 *base = p;
     s32 hdr;
@@ -1001,7 +1001,7 @@ s32 func_80044170(s32 *a0, ...) {
     old_first = *base;
     va_start(ap, a0);
     count = va_arg(ap, s32);
-    /* FAKE: a0 reused for the slot table; its own local: score 38 */
+    /* FAKE: a0 reused for base + 1; its own local: score 38 */
     a0 = base + 1;
     *base = count;
     slots = a0;
@@ -1017,7 +1017,7 @@ s32 func_80044170(s32 *a0, ...) {
                 func_80052C10();
             }
             count--;
-            /* FAKE: the slot address as an integer sum; &a0[entry]: score 3. */
+            /* FAKE: the word address as an integer sum; &a0[entry]: score 3. */
             tbl = (s32 *)((entry * 4) + (s32)a0);
             cur_off = *tbl;
             size = *(tbl + 1);
