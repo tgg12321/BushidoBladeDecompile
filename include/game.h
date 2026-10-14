@@ -260,7 +260,8 @@ typedef struct {
 
 /* SEL.BIN's unk_54 block, func_8006ECF4's: two cell tables (unk_00[i], one per
  * player), a 0 word, then the 12-byte sheet headers the cells are drawn with
- * (unk_0C[sel], plus five special cases). */
+ * (unk_0C[v] for the D_8009BC40 entry value v it reads; after its first
+ * iteration the values 12, 13, 14, 0 and 3 take unk_0C[22..26]). */
 typedef struct {
     Unk8009B400Record *unk_00[2];
     s32 unk_08;
