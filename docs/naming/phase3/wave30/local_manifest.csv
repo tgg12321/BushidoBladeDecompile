@@ -1,0 +1,26 @@
+addr,current_names,proposed_name,kind,evidence,verdict,verifier_note
+local,func_8006ECF4:sel,var_3,local,"RESET-BULK (Q119). local sel (s32) of func_8006ECF4, src/main/5ED34.c:304; claim word(s): sel. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_8006F100:sel,var_4,local,"RESET-BULK (Q119). local sel (s32) of func_8006F100, src/main/5ED34.c:439; claim word(s): sel. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_8006F528:ctx,var_2,local,"RESET-BULK (Q119). local ctx (Unk8009B0E0Record **) of func_8006F528, src/main/5ED34.c:539; claim word(s): ctx. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,func_8006F97C:rect,var_2,local,"RESET-BULK (Q119). local rect (u16 [4]) of func_8006F97C, src/main/5ED34.c:694; claim word(s): rect. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,func_8006F97C:ctx,var_3,local,"RESET-BULK (Q119). local ctx (Unk8009B0E0Record **) of func_8006F97C, src/main/5ED34.c:695; claim word(s): ctx. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_8006F97C:cells,var_4,local,"RESET-BULK (Q119). local cells (Unk8009B400Record *) of func_8006F97C, src/main/5ED34.c:701; claim word(s): cells. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_80070188:sheets,var_1,local,"RESET-BULK (Q119). local sheets (Unk8009B0E0Record **) of func_80070188, src/main/5ED34.c:861; claim word(s): sheets. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80070188:port,var_6,local,"RESET-BULK (Q119). local port (s16) of func_80070188, src/main/5ED34.c:866; claim word(s): port. Destination: var_<declaration order 6>.",CONFIRM,Q119 scope test
+local,func_80070188:port_ofs,var_7,local,"RESET-BULK (Q119). local port_ofs (s16) of func_80070188, src/main/5ED34.c:867; claim word(s): port. Destination: var_<declaration order 7>.",CONFIRM,Q119 scope test
+local,func_80070C70:prim,var_1,local,"RESET-BULK (Q119). local prim (Unk8007352CEnv) of func_80070C70, src/main/5ED34.c:1057; claim word(s): prim. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80070C70:rect,var_2,local,"RESET-BULK (Q119). local rect (u16 [4]) of func_80070C70, src/main/5ED34.c:1058; claim word(s): rect. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,func_80070C70:ctx,var_3,local,"RESET-BULK (Q119). local ctx (Unk8009B0E0Record **) of func_80070C70, src/main/5ED34.c:1059; claim word(s): ctx. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_80070F78:sheets,var_0,local,"RESET-BULK (Q119). local sheets (Unk8009B0E0Record **) of func_80070F78, src/main/5ED34.c:1141; claim word(s): sheets. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_80070F78:cells,var_2,local,"RESET-BULK (Q119). local cells (Unk8009B400Record *) of func_80070F78, src/main/5ED34.c:1148; claim word(s): cells. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,func_80070F78:port,var_4,local,"RESET-BULK (Q119). local port (s16) of func_80070F78, src/main/5ED34.c:1150; claim word(s): port. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_80070F78:port_ofs,var_5,local,"RESET-BULK (Q119). local port_ofs (s16) of func_80070F78, src/main/5ED34.c:1151; claim word(s): port. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_80071C4C:sel,var_4,local,"RESET-BULK (Q119). local sel (s32) of func_80071C4C, src/main/5ED34.c:1435; claim word(s): sel. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_800720FC:rect2,var_1,local,"RESET-BULK (Q119). local rect2 (u16 [4]) of func_800720FC, src/main/5ED34.c:1526; claim word(s): rect. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_800720FC:menu,var_3,local,"RESET-BULK (Q119). local menu (u8 *) of func_800720FC, src/main/5ED34.c:1528; claim word(s): menu. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_800720FC:sheets,var_4,local,"RESET-BULK (Q119). local sheets (Unk8009B0E0Record **) of func_800720FC, src/main/5ED34.c:1529; claim word(s): sheets. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_800720FC:cells,var_5,local,"RESET-BULK (Q119). local cells (Unk8009B400Record *) of func_800720FC, src/main/5ED34.c:1535; claim word(s): cells. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_800720FC:action,var_10,local,"RESET-BULK (Q119). local action (u8) of func_800720FC, src/main/5ED34.c:1540; claim word(s): action. Destination: var_<declaration order 10>.",CONFIRM,Q119 scope test
+local,func_80072BC4:fc_const,var_1,local,"RESET-BULK (Q119). local fc_const (int) of func_80072BC4, src/main/5ED34.c:1767; claim word(s): fc const. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80072FCC:ignored,arg0,param,"RESET-BULK (Q119). param ignored (s32) of func_80072FCC, src/main/5ED34.c:1916; claim word(s): ignored. Destination: arg<position 0>.",CONFIRM,Q119 scope test
+local,func_80073200:ctx,var_1,local,"RESET-BULK (Q119). local ctx (Unk8009B0E0Record **) of func_80073200, src/main/5ED34.c:1983; claim word(s): ctx. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
