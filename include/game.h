@@ -1711,9 +1711,11 @@ typedef struct Unk80099D88Rec {
     u8 unk5;
     u8 unk6;
     u8 unk7;
-    /* +0x8: func_80058580's 7 weights, each scaling a random 12-bit draw */
+    /* +0x8: func_80058580 scales a random 12-bit draw by an element, and
+       compares [4] with a random 8-bit draw */
     u8 pick_weight[7];
-    /* +0xF: func_80058580's 8 weights, each scaling a random 12-bit draw */
+    /* +0xF: func_80058580 scales a random 12-bit draw by an element, and
+       compares [5] >> 2 and [6] >> 2 with a random 8-bit draw */
     u8 script_weight[8];
     u8 unk17;
 } Unk80099D88Rec; /* size 0x18 */

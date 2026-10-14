@@ -1802,9 +1802,10 @@ s32 func_800571C0(Unk80101EC8Record *obj) {
     s16 work[4];
     s32 ret;
     s8 nl;
-    /* temp holds two values: the count of clear steps in the goR loop, then
-     * which branch was chosen (0 or 1; per-branch constants, Q20) (Ruling 11,
-     * ordinary-c-judge-decidable). */
+    /* temp holds two values: the count of probes accepted at angle
+     * unk_1D8 - ang (nl counts those at unk_1D8 + ang), then which count the
+     * waypoint loop takes (0: temp's, stepping by -ang; 1: nl's, by +ang;
+     * per-branch constants, Q20) (Ruling 11, ordinary-c-judge-decidable). */
     s8 temp;
     u8 goL;
     u8 goR;
@@ -2098,11 +2099,14 @@ void func_80057CC8(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     *arg3 = cy + ((scale * (s32)Judge[((s16)ang_mid + 0x400) & 0xFFF]) >> 12);
 }
 
-/* Route arg0 around the edges of its current polygon toward (goal_x, goal_z):
- * walk the vertex ring both ways from the vertex arg0 stands at, stepping to
- * the next corner while the segment to that point is blocked by an edge, and
- * append the cheaper of the two corner chains (up to 8 corners) to arg0's
- * route. */
+/* Walks the vertex ring of arg0's polygon arg1->polys[arg0->cpu_route.poly]
+ * both ways from vertex cpu_route.vtx, each way starting at arg0->unk_F4.
+ * While func_8005763C reports that the segment from the way's current point
+ * to (goal_x, goal_z) crosses a polygon edge, the way steps to the next
+ * vertex's func_80057CC8 point, appends it (up to 8) to its CpuRoute and adds
+ * the step's SquareRoot0 length to its sum; a clear segment adds that
+ * segment's length and ends the way. The way with the smaller sum is appended,
+ * last point first, to arg0->cpu_route. */
 void func_80057E84(
     Unk80101EC8Record *arg0, NavPolySet *arg1, s32 goal_x, s32 goal_z) {
     CpuRoute path[2];
