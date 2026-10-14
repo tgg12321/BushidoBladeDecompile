@@ -694,10 +694,10 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
     u16 rect[4];
     Unk8009B0E0Record **ctx;
     /* the sprite sheet's cell array (8-byte Unk8009B400Record cells), which
-       starts just past the sheet's 12-byte Unk8009B0E0Record headers: three on
-       ctx[0] (normal, then one highlight per player, +0x24), one on every other
-       sheet (+0xC). FAKE: the holder between the header's cells and s.table;
-       stored directly: score 98. */
+       starts just past the sheet's 12-byte Unk8009B0E0Record headers: three
+       on ctx[0] (normal, then one highlight per player, +0x24), one on every
+       other sheet (+0xC). FAKE: the holder between the header's cells and
+       s.table; stored directly: score 98. */
     Unk8009B400Record *cells;
     s16 i;
     s16 row;
@@ -841,9 +841,9 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
     rect[0] = 0xC6;
     rect[1] = 0x25;
     rect[3] = 1;
-    /* The original passes its own context base here, unadjusted:
-     * func_80069898 reads +0x18 as its TILE cursor, and in this context +0x18
-     * is the DR_MODE cursor. */
+    /* The original passes arg0 (the Unk8006EACCRec) here, unadjusted:
+     * func_80069898 reads +0x18 as its TILE cursor, and arg0's +0x18 is the
+     * DR_MODE cursor unk_04.unk_14. */
     func_80069898((s32 *)arg0, rect, 1);
     func_80070188(arg0);
     func_8006ECF4(arg0);
@@ -1071,7 +1071,7 @@ void func_80070C70(Unk8006EACCRec *arg0) {
     prim.has_color = 0;
     ctx = D_800A35A8->unk_64;
     /* Not a coercion: the target stores zero to both fields twice, before
-     * and again after the context fetch. */
+     * and again after the ctx load. */
     prim.y = 0;
     prim.x = 0;
     prim.header = ctx[1];
@@ -1087,9 +1087,9 @@ void func_80070C70(Unk8006EACCRec *arg0) {
     rect[0] = 0xCC;
     rect[1] = 0x25;
     rect[3] = 1;
-    /* The original passes its own context base here, unadjusted:
-     * func_80069898 reads +0x18 as its TILE cursor, and in this context +0x18
-     * is the DR_MODE cursor. */
+    /* The original passes arg0 (the Unk8006EACCRec) here, unadjusted:
+     * func_80069898 reads +0x18 as its TILE cursor, and arg0's +0x18 is the
+     * DR_MODE cursor unk_04.unk_14. */
     func_80069898((s32 *)arg0, rect, 1);
     prim.header = ctx[0];
     t = prim.header[5].cells;
@@ -1689,9 +1689,9 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
     rect2[0] = 0xB7;
     rect2[1] = 0x25;
     rect2[3] = 1;
-    /* The original passes its own context base here, unadjusted:
-     * func_80069898 reads +0x18 as its TILE cursor, and in this context +0x18
-     * is the DR_MODE cursor. */
+    /* The original passes arg0 (the Unk8006EACCRec) here, unadjusted:
+     * func_80069898 reads +0x18 as its TILE cursor, and arg0's +0x18 is the
+     * DR_MODE cursor unk_04.unk_14. */
     func_80069898((s32 *)arg0, rect2, 1);
     s.ot_idx = 0xA;
     for (i = 0; i < 4; i++) {
@@ -1974,9 +1974,9 @@ void func_80073060(Unk8006EACCRec *arg0) {
 }
 
 /* func_80073200 - draws three sprite-sheet layers: in modes D_800A3580 < 4,
- * four cells of ctx[4]'s sheet through func_80073728; then ctx[5]'s sheet and,
- * for D_800A3580 < 2, the ctx[10..13] sheet picked by the frame counter at
- * D_800A35C4->unk_08 (incremented in func_8006EACC), each
+ * four cells of ctx[4]'s sheet through func_80073728; then ctx[5]'s sheet
+ * and, for D_800A3580 < 2, the ctx[10..13] sheet picked by the frame counter
+ * at D_800A35C4->unk_08 (incremented in func_8006EACC), each
  * through func_8007352C, with a draw-mode primitive per layer. */
 void func_80073200(Unk8006EACCRec *arg0) {
     Unk8007352CEnv s;
