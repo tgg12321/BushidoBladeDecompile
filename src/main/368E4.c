@@ -127,8 +127,8 @@ void func_800460E4(s32 stage_id, s32 arg1) {
     s1 = (s32 *)((s32)s1 + (s32)s0);
     switch (stage_id) {
     case 3: {
-        /* FAKE: once-written pointer naming the stage header's last word; it
-         * fixes the sched1 load/store order; s0[s3 - 1] inline: score 9 */
+        /* FAKE: once-written pointer to s0[s3 - 1]; it fixes the sched1
+         * load/store order; s0[s3 - 1] inline: score 9 */
         s32 *hp = (s32 *)((s3 << 2) + (s32)s0) - 1;
         s1 = s2;
         s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
@@ -905,8 +905,8 @@ void func_80047A90(void) {
     void **temp;
 
     i = 0;
-    /* FAKE: jb holds the Judge base ahead of the loop; indexing Judge directly
-     * re-forms it in the loop (score 5). */
+    /* FAKE: jb holds the Judge base ahead of the loop; indexing Judge
+     * directly re-forms it in the loop (score 5). */
     jb = Judge;
     p558 = D_800EF558;
     p59C = D_800EF59C;
@@ -2242,9 +2242,10 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
         func_80052C10();
     }
 
-    /* FAKE: hdr built in two steps (one expression emits the nor after the slot
-     * copy, score 2); v1 holds the header slot so var_s3 steps before the store
-     * (stored through var_s3, the step follows the store, score 4). */
+    /* FAKE: hdr built in two steps (one expression emits the nor after the
+     * slot copy, score 2); v1 holds var_s3's old value so var_s3 steps
+     * before the store (stored through var_s3, the step follows the store,
+     * score 4). */
     hdr = ~var_s0;
     v1 = var_s3;
     var_s3 += 4;
