@@ -1174,8 +1174,8 @@ typedef union {
  * 0xEC bytes) at the address of their last argument (D_800A33F4); callers pass
  * 0x1F8002B8 (the area spans record +0x00..+0xEB) or 0x1F8002F0 (+0x38..+0x123,
  * over unk60 up into unk118).
- * - 9F9C func_800207C8 keeps a whole probe record at 0x1F8002B8: from, to, hit,
- * normal, then that work area.
+ * - 9F9C func_800207C8 keeps func_80053614's whole argument record at
+ * 0x1F8002B8: from, to, hit, normal, then that work area.
  * - 32D04 func_800430E4 keeps a MATRIX at 0x1F8003A0.
  * - 3AB48 func_8004DA74 fills, and the renderers func_8004C994 ..
  * func_80051ED4 read, an s16 per-vertex table at 0x1F8002B4 + 2 * i, which runs
@@ -1304,15 +1304,15 @@ typedef struct NavPolySet {
     u8 unk8[4];
 } NavPolySet;
 
-/* One decoded motion frame (0x84 bytes, 33 words): func_800198D0 decodes
- * frame `frame` of a character's motion into one, and func_80023F08 keeps the
- * current and next frames of its record (Unk80101EC8Record.unk_290 holds the
- * frame it last used).  Only 16-bit channels, so a whole-frame assignment is
- * the halfword-aligned block copy func_80023F08 shows.  unk_00 is the root
- * offset it negates, unk_02 / unk_04 the root heading and distance, unk_06..
- * unk_0A the three rotation angles it hands math_RotMatrixZYXAngles.  unk_0C[]
- * holds signed channels: func_8002F770 reads the triplet at +0x36 with lh, and
- * func_800198D0 sign-extends the 12-bit values at +0x6C..+0x70 / +0x78..+0x7C.
+/* One decoded motion frame (0x84 bytes, 33 words): func_800198D0 decodes one
+ * stream entry into one, and func_80023F08 fills two per call
+ * (Unk80101EC8Record.unk_290 holds the one it last used).  Only 16-bit
+ * channels, so a whole-frame assignment is the halfword-aligned block copy
+ * func_80023F08 shows.  unk_00 is the root offset it negates, unk_02 / unk_04
+ * the root heading and distance, unk_06.. unk_0A the three rotation angles it
+ * hands math_RotMatrixZYXAngles.  unk_0C[] holds signed channels: func_8002F770
+ * reads the triplet at +0x36 with lh, and func_800198D0 sign-extends the 12-bit
+ * values at +0x6C..+0x70 / +0x78..+0x7C.
  */
 typedef struct MotionFrame {
     s16 unk_00;
@@ -1499,7 +1499,7 @@ typedef struct Unk80101EC8Record {
     Vec3i32 unk_18C;
     /* func_800207C8: bone 17 / 14 translations, y + ((unk_1A * 71) >> 11) */
     Vec3i32 unk_198[2];
-    /* func_800207C8: floor y under unk_198[i] (func_80053614 probe) */
+    /* func_800207C8: floor y under unk_198[i] (func_80053614 segment test) */
     s32 unk_1B0[2];
     u8 unk_1B8[0x1BA - 0x1B8];
     /* func_800207C8: ratan2 heading of bone 17's matrix column 2, + 0x800 */

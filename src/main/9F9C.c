@@ -35,9 +35,9 @@ void func_8001979C(s32 arg0, u32 *arg1) {
     i = 0;
     do {
         if (bits_left < 0xC) {
-            /* FAKE: nd names the width subtraction so the constant's load site
-             * separates from its use site (cse re-materialisation); without
-             * it: score 2. */
+            /* FAKE: nd names the width subtraction so the constant's load
+             * site separates from its use site (cse re-materialisation);
+             * without it: score 2. */
             nd = 0xC - bits_left;
             /* FAKE: hi carries its own shift amount before the value, raising
              * its allocation priority so it keeps $v1; without: score 16. */
@@ -154,13 +154,14 @@ extern s32 D_800A30EC;
         }                                                                      \
     }
 
-/* Decode motion frame `frame` of object `obj` into `out` (33 words). Frames are
-   keyframes every 8 plus up to 7 delta sub-frames; the record at
-   D_800F1B18[obj] caches the last four decoded frames with the reader
-   state after each, so a frame is either copied from the cache, continued from
-   the cached previous frame, or decoded from its keyframe. `work` holds the
-   current pose (+0x00), the per-channel rates (+0x84) and the channel codes
-   (+0x108). */
+/* Decode entry `frame` of D_800F1B18[obj]'s stream into `out` (33 words). The
+   table at stream + 0x70 holds a 24-bit bit offset per group of 8 entries
+   (index frame >> 3); an entry is its group's start plus frame & 7 delta
+   steps. The four slots of D_800F1B18[obj] keep the last decoded entries
+   (->frame, ->pose, ->rate) with the reader state after each, so an entry is
+   copied from a slot, continued from a slot holding frame - 1, or decoded from
+   its group's start. `work` holds the pose (+0x00), the rates (+0x84) and the
+   codes (+0x108). */
 void func_800198D0(s32 obj, s32 frame, MotionFrame *out, u16 *work) {
     Unk800F1B18Rec *rec;
     u8 *tbl;
@@ -173,19 +174,20 @@ void func_800198D0(s32 obj, s32 frame, MotionFrame *out, u16 *work) {
     s32 key;
     s32 ctr;
     /* Ruling 11 (ordinary-c-judge-decidable): two values, both loop indices --
-     * the keyframe channel loop's and the post-pass column loop's. */
+     * the group-start loop's over the 63 values and the post-pass column
+     * loop's. */
     s32 idx;
     s32 ch;
-    /* Ruling 11: two values, both loop indices -- the sub-frame loop's and the
-     * post-pass row loop's. */
+    /* Ruling 11: two values, both loop indices -- the delta-step loop's and
+     * the post-pass row loop's. */
     s32 idx2;
     s32 off;
     s32 shift;
     u16 *p;
     u16 code;
-    /* Ruling 11: eight values, each a bit field read by GETBITS -- the three
-     * keyframe header words, the per-channel keyframe flag, the three
-     * sub-frame header words and case 3's 4-bit low code. */
+    /* Ruling 11: eight values, each read by GETBITS -- the three group-start
+     * header words, the group start's per-value flag, the three delta-step
+     * header words and case 3's 4-bit low value. */
     u32 field;
     s16 x;
 
@@ -273,7 +275,7 @@ decode:
         }
         work[2] = field;
         for (ch = 0; ch < 63; ch++) {
-            /* Ruling 11: four values -- the channel's decoded delta, case 1's
+            /* Ruling 11: four values -- the value's decoded delta, case 1's
              * magnitude, case 2's zero flag and case 3's magnitude. */
             s16 temp;
 
@@ -514,14 +516,14 @@ typedef struct {
 /* Two-fighter camera for D_800F6608 (arg0/arg1 = the fighters' positions,
  * arg2/arg3 = the fighter records; caller func_8001E878). Eases the focus
  * toward the fighters' midpoint (or arg0's position when D_800A3690 is set);
- * turns their separation into an eased, clamped zoom target (byte-LUT square
- * root, GTE leading-zero count for large inputs) and a hysteresis flag for
- * func_8003F1E4; eases unk_10.vy / vz toward the facing yaw and zero roll;
- * then per fighter bisects unk_10.vx (rot_x) so the segment from its unk_B8
- * less 0xC8 in vy to the eye passes func_80053614's camera-collision test
- * (step in D_800A30F4[], blocked flag in D_800A30F0[]), and eases unk_10.vx
- * toward the larger result, clamped to 0x80..0x1C0. GTE: gte_Lzc (gte_ldlzc,
- * gte_nop x2, gte_stlzc). */
+ * turns their separation (byte-LUT square root, GTE leading-zero count for
+ * large inputs) into the value D_800F6608.w18 eases 1/12 toward, clamps w18,
+ * and sets a hysteresis flag for func_8003F1E4; eases unk_10.vy / vz toward
+ * the facing yaw and zero roll; then per fighter bisects unk_10.vx (rot_x) so
+ * the segment from its unk_B8 less 0xC8 in vy to the eye passes func_80053614's
+ * camera-collision test (step in D_800A30F4[], blocked flag in D_800A30F0[]),
+ * and eases unk_10.vx toward the larger result, clamped to 0x80..0x1C0. GTE:
+ * gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc). */
 void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
                    Unk80101EC8Record *arg3) {
     s32 lzc_out;
@@ -2907,8 +2909,8 @@ void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
                 a0 = ((a2 + disc) * dist) / dy2 / 32;
 
                 if (a0 < 0) {
-                    /* FAKE: dead dy reused as the arm-2 (a2-disc) temp: disc's
-                     * register preference flows through dy to the /32
+                    /* FAKE: dead dy reused as the arm-2 (a2-disc) temp:
+                     * disc's register preference flows through dy to the /32
                      * quotient, which takes $v1 as in the target. The
                      * natural spelling or a fresh temp: score 6; reusing
                      * disc: 8. */
@@ -2994,10 +2996,10 @@ void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
  * where (counter & 7) == 2, the vector func_800203B4 stored at rec->unk_354
  * is rotated by matrix rec->unk_352 of func_80046DEC(pid) (GTE MVMVA),
  * scaled by (150 - counter) / 150, negated when its y exceeds 0x800, and
- * handed to func_80032854 with scratchpad point SPAD->unkA8[pid][rec->unk_352].
- * The counter is cleared on every call that finds it running (the original
- * stores 0 under `>= 150` and then again unconditionally). GTE: PsyQ 4.3
- * inline_o.h statements. */
+ * handed to func_80032854 with scratchpad point
+ * SPAD->unkA8[pid][rec->unk_352]. The counter is cleared on every call that
+ * finds it running (the original stores 0 under `>= 150` and then again
+ * unconditionally). GTE: PsyQ 4.3 inline_o.h statements. */
 void func_800204C0(Unk80101EC8Record *rec) {
     s32 mac[3];
     s16 out[3];
@@ -3078,21 +3080,21 @@ void func_800206B0(s32 arg0, s32 arg1) {
 
 /* Places character rec->index's points in world space with its bone
  * matrices (func_80046DEC()): each of the 22 hit records' offsets
- * through its bone into bone_out (SPAD->unkA8[ch]); the attachment point set
+ * through its bone into bone_out (SPAD->unkA8[ch]); the point set
  * D_8008D86C[unk_0E] (D_8008D774 when unk_12 == 50) through bone 18 into
  * att_out; when unk_8C != 0, the pair D_8008D88C[unk_14] through bone 19 into
  * extra_out. A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
  * matrix translation. Then: bone 11's y axis into rec->unk_1EC, bone_out[0]
  * into rec->unk_180, the translations of bones 17 and 14 (y raised by (unk_1A *
  * 71) >> 11) into rec->unk_198[], the floor height under each (func_80053614
- * down a probe from y - 100 to y + 2000; the probe's lower end when it finds
- * nothing) into rec->unk_1B0[], and the two bones' headings into unk_1BA /
- * unk_1C2. GTE: PsyQ 4.3 inline_o.h statements; each gte_rtv0's DMPSX
+ * down a segment from y - 100 to y + 2000; the segment's lower end when it
+ * finds nothing) into rec->unk_1B0[], and the two bones' headings into
+ * unk_1BA / unk_1C2. GTE: PsyQ 4.3 inline_o.h statements; each gte_rtv0's DMPSX
  * placeholder .word 0x0000013f is the post-DMPSX .word 0x4A486012 (Q93). */
 void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *bone_out,
                    Unk80107850Rec *att_out, Unk80107850Rec *extra_out) {
-    /* the func_80053614 probe in scratchpad: from (words 0..2), to (4..6), hit
-     * (8..10), normal (12..13), work area (14..) */
+    /* func_80053614's arguments in scratchpad: from (words 0..2), to (4..6),
+     * hit (8..10), normal (12..13), work area (14..) */
     s32 *probe = (s32 *)0x1F8002B8;
     MATRIX **bones;
     MATRIX *m;
@@ -3322,15 +3324,22 @@ void func_80020DDC(void) {
     D_80102760.unk_10 = (u32 *)(v1 + v2);
 }
 
-/* Loads the motion sets and models for the two characters about to fight:
- * slot i gets character chr0 / chr1 in costume costume0 / costume1. */
+/* For i = 0, 1 with v = chr0, then chr1 (when D_800A38DC is 1, 4 or 6): when
+ * D_800A38C0[i] differs from v, stores v there and calls
+ * cdrom_StartReadAt(func_80036EA8(1, 0), D_800A3888[i], v * 7, 7). Then sets
+ * D_80101EC8[0].unk_48 to D_8008DB1C[chr0][costume0] | costume0 << 12 and
+ * D_80101EC8[1].unk_48 to the same of chr1 and costume1 (a copy of the first
+ * when D_800A38DC is 3), and puts each id not already in D_800A38C4[] in a
+ * load slot i, for which it calls cdrom_StartRead(func_80036EA8(1, j + 2),
+ * D_800A3860[i]), j the id's D_8008DCCC index, points D_801027B0[i] into
+ * D_800A3860[i] and stores the id in D_800A38C4[i]. */
 void func_80020E74(s32 chr0, s32 costume0, s32 chr1, s32 costume1) {
     /* FAKE: frame layout: only loads[0..1] are used; the target frame (0x140)
      * reserves 0x100 untouched bytes after them (N = 129..132; loads[2] gives
      * the wrong frame); without it: score 20. */
     u16 loads[130];
     s32 i;
-    /* FAKE: one local for loop 1's character and loop 2's D_8008DCCC index;
+    /* FAKE: one local for loop 1's chr0 / chr1 and loop 2's D_8008DCCC index;
      * separate locals seat the index in $a1, the target keeps both in $s0
      * (score 3). */
     s32 j;
@@ -3754,13 +3763,14 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
     s16 *stage;
     s32 ofs;
     s32 phase;
-    /* the counter of both the probe loop and the start-record search, as SOTN
+    /* the counter of both the 8-direction loop and the record search, as SOTN
      * reuses one counter across consecutive loops (Q51):
      * SOTN: src/dra/menu.c:138 @aa53500 */
     s32 i;
     /* Ruling 11 (ordinary-c-judge-decidable): holds three values -- the
-     * ray-walk step (1..40), the floor-climb step (1..40), then the index
-     * of the record chosen from func_80046F14's block. */
+     * horizontal step (1..40, dx / dz scaled by temp / 40), the vertical
+     * step (1..40, temp * 100 in y), then the index of the record chosen
+     * from func_80046F14's block. */
     s32 temp;
     s32 angle;
     s32 dx;
@@ -4709,11 +4719,13 @@ extern void func_800204C0(Unk80101EC8Record *);
 
 /* Per-frame update of character `arg0`'s record from this frame's pad input:
  * converts the pad bits, advances the move frame, runs the move script's
- * command list (unk_50 / unk_7C, func_80021424 / func_80021A98), decodes the
- * current and next motion frames and blends their root offsets into unk_E8,
+ * command list (unk_50 / unk_7C, func_80021424 / func_80021A98), decodes two
+ * MotionFrames with func_800198D0 (at unk_40 and at unk_40 + 1, capped at
+ * unk_58[1] - 1, each offset by *unk_54, and by unk_58[1] in some states) and
+ * mixes offsets from them into unk_E8 by a 4.12 weight (unk_42 or unk_318),
  * integrates the velocities (unk_104 / unk_134) into the position, resolves
- * it (func_8002304C), then refreshes the bone points, hit flags (unk_62,
- * unk_AE, unk_288) and damping and the per-frame side effects. */
+ * it (func_8002304C), then refreshes the bone points, the flags unk_62,
+ * unk_AE and unk_288, the damping and the per-frame side effects. */
 void func_80023F08(s32 arg0, PadState *pad) {
     MotionFrame pose[2];
     Vec3i32 v[2];
