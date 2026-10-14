@@ -1,0 +1,14 @@
+Vec2s16=Size2s16
+Scr1F800000.vel=scr18
+Scr1F800000.nsph=scr60
+Scr1F800000.sph=scr64
+Scr1F800000.rad=scrAC
+CamScratch.head=scr28
+Func80017A44Record.index=field_18
+Func8003F6D8Inner.quads=f84
+Unk8003F62CRec.quads=unk418
+func_8002FF20:playerData=mat_tbl
+func_800300B4:playerData=mat_tbl
+func_80048BA4:player=mat_tbl
+func_80049718:player=slot_obj
+func_80049A2C:player=slot_obj

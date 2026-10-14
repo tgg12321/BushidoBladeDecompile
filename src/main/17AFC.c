@@ -4415,16 +4415,16 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
  * materialized once. */
 void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     s32 mat_local[8];
-    s32 *playerData;
+    s32 *mat_tbl;
     s32 *s2_ptr;
     MATRIX *rot_mat;
     Vec3i32 *vec;
 
     arg0->unk_08 = 1;
     arg0->unk_09 = arg1;
-    playerData = func_80046DEC(arg0->owner < 1);
+    mat_tbl = func_80046DEC(arg0->owner < 1);
     rot_mat = &arg0->mtx;
-    s2_ptr = (s32 *)playerData[arg0->unk_09];
+    s2_ptr = (s32 *)mat_tbl[arg0->unk_09];
 
     /* 3x3 identity rotation in the record's matrix. */
     arg0->mtx.m[0][0] = 0x1000;
@@ -4508,12 +4508,12 @@ void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
     s16 dir[4];
     MATRIX mtx;
-    s32 *playerData;
+    s32 *mat_tbl;
     MATRIX *mat;
     s32 lookup;
 
-    playerData = func_80046DEC(arg0->owner < 1);
-    mat = (MATRIX *)playerData[arg0->unk_09];
+    mat_tbl = func_80046DEC(arg0->owner < 1);
+    mat = (MATRIX *)mat_tbl[arg0->unk_09];
 
     /* PsyQ 4.5 inline_c.h macro gte_SetRotMatrix(r): the 5 packed
      * rotation-matrix words into cop2 control R11R12..R33. */

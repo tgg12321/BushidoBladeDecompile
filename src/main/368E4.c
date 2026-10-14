@@ -1642,11 +1642,11 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     s32 old;
     s16 *indices;
     void **list;
-    MATRIX **player;
+    MATRIX **mat_tbl;
     Unk80045878Node *node;
 
-    player = func_80046DEC(D_800A33E0);
-    if (player == 0) {
+    mat_tbl = func_80046DEC(D_800A33E0);
+    if (mat_tbl == 0) {
         return;
     }
     if (arg1 >= 6) {
@@ -1661,17 +1661,17 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     rot.vz = ((s32)Judge[arg0 & 0xFFF] * scale) >> 12;
     rot.vx = ((s32)Judge[(arg0 + 0x400) & 0xFFF] * scale) >> 12;
     node = (Unk80045878Node *)D_800A33E4;
-    ApplyMatrix(player[0], &rot, (VECTOR *)D_800FF558.t);
-    D_800FF558.t[0] += player[0]->t[0];
-    D_800FF558.t[1] += player[1]->t[1];
-    D_800FF558.t[2] += player[2]->t[2];
+    ApplyMatrix(mat_tbl[0], &rot, (VECTOR *)D_800FF558.t);
+    D_800FF558.t[0] += mat_tbl[0]->t[0];
+    D_800FF558.t[1] += mat_tbl[1]->t[1];
+    D_800FF558.t[2] += mat_tbl[2]->t[2];
 
     rot.vx = 0;
     rot.vy = 0xC00 - arg0;
     rot.vz = 0;
     indices = D_80099C14;
     math_RotMatrixZYX(&rot, &mtx);
-    gte_MulMatrix0ClearTrans(player[0], &mtx, &mtx);
+    gte_MulMatrix0ClearTrans(mat_tbl[0], &mtx, &mtx);
     D_800FF558.m[0][0] = mtx.m[0][0];
     D_800FF558.m[0][1] = mtx.m[1][0];
     D_800FF558.m[0][2] = mtx.m[2][0];
@@ -1684,7 +1684,7 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
 
     goto test_index;
 copy_index:
-    node->node.xf.mat = *player[index];
+    node->node.xf.mat = *mat_tbl[index];
     list = g_draw_queue_cursor;
     g_draw_queue_cursor = list + 1;
     *list = node;
@@ -1696,7 +1696,7 @@ test_index:
         goto copy_index;
     }
     if (arg1 >= 0) {
-        node->node.xf.mat = *player[18];
+        node->node.xf.mat = *mat_tbl[18];
         list = g_draw_queue_cursor;
         node->node.unk2 = arg1 + 0xF;
         g_draw_queue_cursor = list + 1;
@@ -1704,7 +1704,7 @@ test_index:
         node++;
     }
     if (arg2 != 0) {
-        node->node.xf.mat = *player[19];
+        node->node.xf.mat = *mat_tbl[19];
         list = g_draw_queue_cursor;
         node->node.unk2 = 0x15;
         g_draw_queue_cursor = list + 1;
@@ -1984,7 +1984,7 @@ void func_80049710(void) {}
 void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     SVECTOR ofs;
     s32 val58;
-    Unk80045878Obj *player;
+    Unk80045878Obj *slot_obj;
     Unk80045878Node *obj;
     Unk80045878Node *part;
     /* FAKE: named intermediate (no-new-park-categories entry 6) set before
@@ -2022,15 +2022,15 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             /* SOTN: src/st/lib/e_shop.c:4621 @aa53500 */
             flags &= 0x7FFF;
             side = flags & 1;
-            player = func_8004153C(flags >> 1);
-            part = &player->unk_2C[19 + side];
+            slot_obj = func_8004153C(flags >> 1);
+            part = &slot_obj->unk_2C[19 + side];
             part->node.work.t[0] =
-                (part->node.work.t[0] * player->unk_12) >> 12;
+                (part->node.work.t[0] * slot_obj->unk_12) >> 12;
             part->node.work.t[1] =
-                (part->node.work.t[1] * player->unk_12) >> 12;
+                (part->node.work.t[1] * slot_obj->unk_12) >> 12;
             part->node.work.t[2] =
-                (part->node.work.t[2] * player->unk_12) >> 12;
-            MulMatrix0(&player->unk_2C[0].node.xf.mat, &part->node.work,
+                (part->node.work.t[2] * slot_obj->unk_12) >> 12;
+            MulMatrix0(&slot_obj->unk_2C[0].node.xf.mat, &part->node.work,
                        &obj->node.xf.mat);
             ofs.vx = part->node.work.t[0];
             ofs.vy = part->node.work.t[1];
@@ -2046,7 +2046,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             /* SOTN: src/st/lib/e_shop.c:4625 @aa53500 */
             flags |= 0x8000;
             part->node.xf.mat = obj->node.xf.mat;
-            val58 = player->unk_1A84;
+            val58 = slot_obj->unk_1A84;
         }
         {
             void **list = g_draw_queue_cursor;
@@ -2103,7 +2103,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     s16 new_var2;
     s16 *src;
     Unk80045878Node *obj;
-    Unk80045878Obj *player;
+    Unk80045878Obj *slot_obj;
     s16 a1_val;
     void **list;
 
@@ -2121,7 +2121,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     if ((*p_anim) < 0) {
         func_80052C10();
     }
-    player = func_8004153C(arg1 >> 1);
+    slot_obj = func_8004153C(arg1 >> 1);
     obj = (Unk80045878Node *)g_prim_buf_cursor;
     obj->node.unk0 = 0;
     obj->node.unk1 = 0;
@@ -2133,11 +2133,11 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     obj->node.unkA = 4;
     obj->node.unk2 = a1_val;
     src = &D_80099D3C[(arg1 & 1) * 6];
-    obj->node.work.t[0] = ((*src) * player->unk_12) >> 12;
+    obj->node.work.t[0] = ((*src) * slot_obj->unk_12) >> 12;
     src++;
-    obj->node.work.t[1] = ((*src) * player->unk_12) >> 12;
+    obj->node.work.t[1] = ((*src) * slot_obj->unk_12) >> 12;
     src++;
-    obj->node.work.t[2] = ((*src) * player->unk_12) >> 12;
+    obj->node.work.t[2] = ((*src) * slot_obj->unk_12) >> 12;
     src++;
     obj->node.xf.rot.vx = *src;
     src++;
@@ -2145,7 +2145,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     /* FAKE: rot.vz's value read into a local ahead of the parent store; read at
        its own store it scores 8. */
     new_var2 = src[1];
-    obj->node.unkC = &player->unk_2C[12].node;
+    obj->node.unkC = &slot_obj->unk_2C[12].node;
     obj->node.unk6 = 0;
     obj->node.xf.rot.vz = new_var2;
     func_800417D0(&obj->node);
@@ -2166,7 +2166,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
        the g_draw_queue_cursor reload above the node's stores (score 17). */
     {
         s32 *p58 = &obj->unk58;
-        *p58 = player->unk_1A84;
+        *p58 = slot_obj->unk_1A84;
     }
     list = g_draw_queue_cursor;
     g_draw_queue_cursor = list + 1;

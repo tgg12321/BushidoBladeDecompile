@@ -2083,7 +2083,7 @@ typedef struct {
     s32 field_C;
     s32 field_10;
     s32 field_14;
-    s32 index;
+    s32 field_18;
     s32 field_1C;   /* entries used in field_24 */
     s32 field_20;   /* entries used in field_2C */
     u8 field_24[8]; /* edges whose node a is this record */
@@ -2126,7 +2126,7 @@ typedef struct {
 } Func80017A44Output;
 
 /* The 16-byte object descriptor (2B344 func_8003FA24 fills it in each
- * Unk8003F824Rec, func_8003F824 copies it into Unk8003F62CRec.quads; 87A0
+ * Unk8003F824Rec, func_8003F824 copies it into Unk8003F62CRec.unk418; 87A0
  * func_8001924C steps one object per descriptor): the object's D_800F6740
  * index (unk0), its flags (unk2; bit 0 picks func_80019310 over func_800187F4),
  * the object's matrix, its point table end and its collision-volume block. */
@@ -2163,10 +2163,10 @@ typedef struct {
     u8 *buf;
 } Func80017A44Input;
 
-typedef struct Vec2s16 {
+typedef struct Size2s16 {
     s16 x;
     s16 y;
-} Vec2s16;
+} Size2s16;
 
 /* func_8006D808's sheet set: three frame sheets (unk_00), the name sheet and
  * the per-character name cells (unk_0C / unk_10, three cells per character
@@ -2215,7 +2215,7 @@ typedef struct {
     Unk8006DD94List *unk_3C;
     Unk8009B0E0Record **unk_40;
     Rec_8006C21C *unk_44;
-    Vec2s16 *unk_48;
+    Size2s16 *unk_48;
 } Unk8006919CRec;
 
 /* The bit stream bitstream_ReadBits reads, most significant bit first: the next

@@ -505,7 +505,7 @@ typedef struct {
     s16 unk6;     /* 0x06 */
     CamVec focus; /* 0x08 */
     CamVec eye;   /* 0x18 */
-    CamVec head;  /* 0x28 */
+    CamVec scr28; /* 0x28 */
     s32 hit[8];   /* 0x38 */
     s16 nrm[4];   /* 0x58 */
     s32 unk60;    /* 0x60 */
@@ -646,12 +646,12 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
         cam->unk_10.vx = work;
         camera_CalcEye(cam, &scr->eye.vx);
         if (p != 0) {
-            scr->head = arg3->unk_B8;
+            scr->scr28 = arg3->unk_B8;
         } else {
-            scr->head = arg2->unk_B8;
+            scr->scr28 = arg2->unk_B8;
         }
-        scr->head.vy -= 0xC8;
-        if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit,
+        scr->scr28.vy -= 0xC8;
+        if (func_80053614((s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
                           scr->nrm, (s32)&scr->unk60) &&
             scr->nrm[1] < -0x320) {
             func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
@@ -680,8 +680,8 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
                 }
                 cam->unk_10.vx = hi + d / 2;
                 camera_CalcEye(cam, &scr->eye.vx);
-                if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit,
-                                  scr->nrm, (s32)&scr->unk60) &&
+                if (func_80053614((s32 *)&scr->scr28, (s32 *)&scr->eye,
+                                  scr->hit, scr->nrm, (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
                     work = cam->unk_10.vx;
                 } else {
@@ -710,8 +710,8 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
                 }
                 cam->unk_10.vx = lo + d / 2;
                 camera_CalcEye(cam, &scr->eye.vx);
-                if (func_80053614((s32 *)&scr->head, (s32 *)&scr->eye, scr->hit,
-                                  scr->nrm, (s32)&scr->unk60) &&
+                if (func_80053614((s32 *)&scr->scr28, (s32 *)&scr->eye,
+                                  scr->hit, scr->nrm, (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
                     func_8001A67C(cam->h30[p], (s32 *)&scr->eye, scr->hit);
                     lo = cam->unk_10.vx;

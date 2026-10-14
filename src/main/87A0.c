@@ -12,18 +12,19 @@ extern s32 func_80054434(void);
 extern void func_80018300(Func80017A44Output *);
 
 typedef struct {
-    s32 d0[3];     /* 0x00 delta to focus 0 (GTE input) */
-    s32 d1[3];     /* 0x0C delta to focus 1 (GTE input) */
-    s32 vel[3];    /* 0x18 velocity / GTE vector */
-    s32 dpos[3];   /* 0x24 displacement added to every node */
-    s32 sq[3];     /* 0x30 GTE squares */
-    s32 pos[3];    /* 0x3C node position */
-    s32 cpos[3];   /* 0x48 node position >> 5 */
-    s32 unk54[3];  /* 0x54 */
-    s32 nsph;      /* 0x60 ellipsoid count */
-    s32 sph[3][6]; /* 0x64 ellipsoid foci 0 and 1 */
-    s32 rad[3];    /* 0xAC ellipsoid bounds (sum of the two focus distances) */
-    s32 ground;    /* 0xB8 ground height */
+    s32 d0[3];       /* 0x00 delta to focus 0 (GTE input) */
+    s32 d1[3];       /* 0x0C delta to focus 1 (GTE input) */
+    s32 scr18[3];    /* 0x18 velocity / GTE vector */
+    s32 dpos[3];     /* 0x24 displacement added to every node */
+    s32 sq[3];       /* 0x30 GTE squares */
+    s32 pos[3];      /* 0x3C node position */
+    s32 cpos[3];     /* 0x48 node position >> 5 */
+    s32 unk54[3];    /* 0x54 */
+    s32 scr60;       /* 0x60 ellipsoid count */
+    s32 scr64[3][6]; /* 0x64 ellipsoid foci 0 and 1 */
+    /* 0xAC ellipsoid bounds (sum of the two focus distances) */
+    s32 scrAC[3];
+    s32 ground;      /* 0xB8 ground height */
     s32 force[0][3]; /* 0xBC force table, indexed by the node's packed bytes */
 } Scr1F800000;
 
@@ -85,7 +86,7 @@ void func_80017FA0(Unk80017FA0Rec *a0) {
         }
     }
 
-    SCR->nsph = a0->unkC->count;
+    SCR->scr60 = a0->unkC->count;
 end:;
 }
 
@@ -281,7 +282,7 @@ void func_80018300(Func80017A44Output *arg0) {
             dx = (p2->pos[0] + p1->pos[0]) / 2;
             dy = (p2->pos[1] + p1->pos[1]) / 2;
             dz = (p2->pos[2] + p1->pos[2]) / 2;
-            if (p2->index < 0) {
+            if (p2->field_18 < 0) {
                 p2->pos[0] = dx;
                 p2->pos[1] = dy;
                 p2->pos[2] = dz;
@@ -507,7 +508,7 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
         SCR->pos[0] = node->pos[0];
         SCR->pos[1] = node->pos[1];
         SCR->pos[2] = node->pos[2];
-        if (node->index >= 0) {
+        if (node->field_18 >= 0) {
             /* gte_ldv0(r1) -- inline_o.h 4.3 :16-20 */
             __asm__ volatile ("move  $12,%0": :"r"(&arg1->points[i]):"$12","$13","$14","$15","memory");
             __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
@@ -517,36 +518,38 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
             __asm__ volatile (".word 0x4A480012": : :"$12","$13","$14","$15","memory");
             /* gte_stlvnl(r1) -- inline_o.h 4.3 :904-909 */
-            __asm__ volatile ("move  $12,%0": :"r"(SCR->vel):"$12","$13","$14","$15","memory");
+            __asm__ volatile ("move  $12,%0": :"r"(SCR->scr18):"$12","$13","$14","$15","memory");
             __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
-            if (node->index > 0) {
+            if (node->field_18 > 0) {
                 SCR->pos[0] += SCR->dpos[0];
                 node->field_C =
                     node->field_C / 2 +
-                    ((((SCR->vel[0] << 7) - SCR->pos[0]) * node->index) >> 8);
+                    ((((SCR->scr18[0] << 7) - SCR->pos[0]) * node->field_18) >>
+                     8);
                 node->pos[0] = SCR->pos[0] + node->field_C;
                 SCR->pos[1] += SCR->dpos[1];
                 node->field_10 =
                     node->field_10 / 2 +
-                    ((((SCR->vel[1] << 7) - SCR->pos[1]) * node->index +
-                      (0x100 - node->index) * 25) >>
+                    ((((SCR->scr18[1] << 7) - SCR->pos[1]) * node->field_18 +
+                      (0x100 - node->field_18) * 25) >>
                      8);
                 node->pos[1] = SCR->pos[1] + node->field_10;
                 SCR->pos[2] += SCR->dpos[2];
                 node->field_14 =
                     node->field_14 / 2 +
-                    ((((SCR->vel[2] << 7) - SCR->pos[2]) * node->index) >> 8);
+                    ((((SCR->scr18[2] << 7) - SCR->pos[2]) * node->field_18) >>
+                     8);
                 node->pos[2] = SCR->pos[2] + node->field_14;
             } else {
-                node->pos[0] = SCR->vel[0] << 7;
-                node->pos[1] = SCR->vel[1] << 7;
-                node->pos[2] = SCR->vel[2] << 7;
+                node->pos[0] = SCR->scr18[0] << 7;
+                node->pos[1] = SCR->scr18[1] << 7;
+                node->pos[2] = SCR->scr18[2] << 7;
             }
             continue;
         }
-        if (node->index >= -0xFF) {
+        if (node->field_18 >= -0xFF) {
             /* gte_ldv0(r1) -- inline_o.h 4.3 :16-20 */
             __asm__ volatile ("move  $12,%0": :"r"(&arg1->points[i]):"$12","$13","$14","$15","memory");
             __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
@@ -556,16 +559,16 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
             __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
             __asm__ volatile (".word 0x4A480012": : :"$12","$13","$14","$15","memory");
             /* gte_stlvnl(r1) -- inline_o.h 4.3 :904-909 */
-            __asm__ volatile ("move  $12,%0": :"r"(SCR->vel):"$12","$13","$14","$15","memory");
+            __asm__ volatile ("move  $12,%0": :"r"(SCR->scr18):"$12","$13","$14","$15","memory");
             __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
             __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
             SCR->pos[0] -=
-                (((SCR->vel[0] << 7) - SCR->pos[0]) * node->index) >> 8;
+                (((SCR->scr18[0] << 7) - SCR->pos[0]) * node->field_18) >> 8;
             SCR->pos[1] -=
-                (((SCR->vel[1] << 7) - SCR->pos[1]) * node->index) >> 8;
+                (((SCR->scr18[1] << 7) - SCR->pos[1]) * node->field_18) >> 8;
             SCR->pos[2] -=
-                (((SCR->vel[2] << 7) - SCR->pos[2]) * node->index) >> 8;
+                (((SCR->scr18[2] << 7) - SCR->pos[2]) * node->field_18) >> 8;
         }
         vx = node->field_C;
         vy = node->field_10;
@@ -600,9 +603,9 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
                 bits2 >>= 8;
             }
         }
-        SCR->vel[0] = vx;
-        SCR->vel[1] = vy;
-        SCR->vel[2] = vz;
+        SCR->scr18[0] = vx;
+        SCR->scr18[1] = vy;
+        SCR->scr18[2] = vz;
         if (arg0->unkC != 0) {
             /* Ruling 11 (reused local): Y delta, depth below the ground then
              * the delta to focus 0 */
@@ -615,12 +618,12 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
                 } else {
                     vy_new = vy - delta / 8;
                 }
-                SCR->vel[1] = vy_new;
+                SCR->scr18[1] = vy_new;
             }
             SCR->cpos[0] = SCR->pos[0] >> 5;
             SCR->cpos[1] = SCR->pos[1] >> 5;
             SCR->cpos[2] = SCR->pos[2] >> 5;
-            for (idx = 0; idx < SCR->nsph; idx++) {
+            for (idx = 0; idx < SCR->scr60; idx++) {
                 s32 dx0, dz0, dy1, dx1, dz1;
                 s32 sq2, dist2;
                 /* Ruling 11 (reused local): the squared length copied for
@@ -630,18 +633,18 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
                  * distance (scaled to its push factor below) */
                 s32 work;
 
-                r = SCR->rad[idx];
-                delta = SCR->cpos[1] - SCR->sph[idx][1];
+                r = SCR->scrAC[idx];
+                delta = SCR->cpos[1] - SCR->scr64[idx][1];
                 if (delta < -r || r < delta) {
                     continue;
                 }
                 SCR->d0[1] = delta;
-                dx0 = SCR->cpos[0] - SCR->sph[idx][0];
+                dx0 = SCR->cpos[0] - SCR->scr64[idx][0];
                 if (dx0 < -r || r < dx0) {
                     continue;
                 }
                 SCR->d0[0] = dx0;
-                dz0 = SCR->cpos[2] - SCR->sph[idx][2];
+                dz0 = SCR->cpos[2] - SCR->scr64[idx][2];
                 if (dz0 < -r || r < dz0) {
                     continue;
                 }
@@ -685,17 +688,17 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
                 if (work >= r) {
                     continue;
                 }
-                dy1 = SCR->cpos[1] - SCR->sph[idx][4];
+                dy1 = SCR->cpos[1] - SCR->scr64[idx][4];
                 if (dy1 < -r || r < dy1) {
                     continue;
                 }
                 SCR->d1[1] = dy1;
-                dx1 = SCR->cpos[0] - SCR->sph[idx][3];
+                dx1 = SCR->cpos[0] - SCR->scr64[idx][3];
                 if (dx1 < -r || r < dx1) {
                     continue;
                 }
                 SCR->d1[0] = dx1;
-                dz1 = SCR->cpos[2] - SCR->sph[idx][5];
+                dz1 = SCR->cpos[2] - SCR->scr64[idx][5];
                 if (dz1 < -r || r < dz1) {
                     continue;
                 }
@@ -743,7 +746,7 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
                 __asm__ volatile ("move  $12,%0": :"r"(1):"$12","$13","$14","$15","memory");
                 __asm__ volatile ("mtc2  $12,$8": : :"$12","$13","$14","$15","memory");
                 /* gte_ldlvl(r1) -- inline_o.h 4.3 :104-109 */
-                __asm__ volatile ("move  $12,%0": :"r"(SCR->vel):"$12","$13","$14","$15","memory");
+                __asm__ volatile ("move  $12,%0": :"r"(SCR->scr18):"$12","$13","$14","$15","memory");
                 __asm__ volatile ("lwc2  $9,($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("lwc2  $10,4($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("lwc2  $11,8($12)": : :"$12","$13","$14","$15","memory");
@@ -786,17 +789,17 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile (".word 0x4BA8003E": : :"$12","$13","$14","$15","memory");
                 /* gte_stlvl(r1) -- inline_o.h 4.3 :898-903 */
-                __asm__ volatile ("move  $12,%0": :"r"(SCR->vel):"$12","$13","$14","$15","memory");
+                __asm__ volatile ("move  $12,%0": :"r"(SCR->scr18):"$12","$13","$14","$15","memory");
                 __asm__ volatile ("swc2  $9,($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("swc2  $10,4($12)": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("swc2  $11,8($12)": : :"$12","$13","$14","$15","memory");
             }
         }
-        node->field_C = (SCR->vel[0] * 7) >> 3;
+        node->field_C = (SCR->scr18[0] * 7) >> 3;
         node->pos[0] = SCR->pos[0] + SCR->dpos[0] + node->field_C;
-        node->field_10 = ((SCR->vel[1] * 7) >> 3) + 0x190;
+        node->field_10 = ((SCR->scr18[1] * 7) >> 3) + 0x190;
         node->pos[1] = SCR->pos[1] + SCR->dpos[1] + node->field_10;
-        node->field_14 = (SCR->vel[2] * 7) >> 3;
+        node->field_14 = (SCR->scr18[2] * 7) >> 3;
         node->pos[2] = SCR->pos[2] + SCR->dpos[2] + node->field_14;
     }
 }

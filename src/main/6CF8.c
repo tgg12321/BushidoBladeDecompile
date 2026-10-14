@@ -631,7 +631,7 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
 }
 
 /* Adds an edge between records a and b unless a == b, both records have a
- * non-negative index, or an edge a->b or b->a already exists. Returns 1 when
+ * non-negative field_18, or an edge a->b or b->a already exists. Returns 1 when
  * an edge was added. */
 s32 func_80017848(Func80017A44Output *out, s32 group_id, s32 a, s32 b) {
     s32 i;
@@ -641,7 +641,7 @@ s32 func_80017848(Func80017A44Output *out, s32 group_id, s32 a, s32 b) {
     if (a == b) {
         return 0;
     }
-    if (out->records[a].index >= 0 && out->records[b].index >= 0) {
+    if (out->records[a].field_18 >= 0 && out->records[b].field_18 >= 0) {
         return 0;
     }
     for (i = 0; i < out->records[a].field_1C; i++) {
@@ -689,12 +689,12 @@ void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
 
     record_base = a1->records;
     for (i = 0; i < a0->count; i++) {
-        record_base[i].index = a0->points[i].pad;
+        record_base[i].field_18 = a0->points[i].pad;
         RotTrans(&a0->points[i], &pos, &flag);
         pos.vx <<= 7;
         pos.vy <<= 7;
         pos.vz <<= 7;
-        if (record_base[i].index >= 0) {
+        if (record_base[i].field_18 >= 0) {
             valid_count++;
             center.vx += pos.vx;
             center.vy += pos.vy;

@@ -2492,7 +2492,7 @@ typedef struct {
     /* 0x00 */ s32 count;
     /* 0x04 */ Unk80045878Node *objs[3];
     /* 0x10 */ Unk8003F6D8Coll coll;
-    /* 0x84 */ SVECTOR quads[3][2];
+    /* 0x84 */ SVECTOR f84[3][2];
 } Func8003F6D8Inner; /* size 0xB4; sits at +0x1C of each 0xD0-byte record,
                         records start at arg0+8 */
 
@@ -2511,7 +2511,7 @@ typedef struct {
     /* 0x004 */ s16 unk4;
     /* 0x006 */ s16 unk6;
     /* 0x008 */ Unk8003F824Rec recs[5];
-    /* 0x418 */ Unk80017FA0Rec quads[5];
+    /* 0x418 */ Unk80017FA0Rec unk418[5];
     /* 0x468 */ u8 data[1];
 } Unk8003F62CRec;
 
@@ -2528,7 +2528,7 @@ void func_8003F62C(Unk80045878Obj *a0) {
         func_8004001C(s0);
     }
     func_8003F6D8(s0);
-    func_8001924C(s0->quads, s0->count);
+    func_8001924C(s0->unk418, s0->count);
     if (s0->unk2) {
         func_80040068(s0);
         s0->unk2 = 0;
@@ -2543,10 +2543,8 @@ void func_8003F6D8(Unk8003F62CRec *arg0) {
         Func8003F6D8Inner *in = &arg0->recs[i].inner;
         for (j = 0; j < in->count; j++) {
             MATRIX *mat = &in->objs[j]->node.xf.mat;
-            gte_SetMatrixRotTransIR(
-                mat, &in->quads[j][0], &in->coll.foci[j][0]);
-            gte_SetMatrixRotTransIR(
-                mat, &in->quads[j][1], &in->coll.foci[j][1]);
+            gte_SetMatrixRotTransIR(mat, &in->f84[j][0], &in->coll.foci[j][0]);
+            gte_SetMatrixRotTransIR(mat, &in->f84[j][1], &in->coll.foci[j][1]);
         }
     }
 }
@@ -2595,7 +2593,7 @@ void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
             rec->cur = cur;
             rec->obj = obj;
             cur = func_8003FA24(rec, cmds, cur);
-            sc->quads[sc->count] = rec->quad;
+            sc->unk418[sc->count] = rec->quad;
             obj->node.unk0 = 0xD;
             sc->count++;
             if (*cmds >= 0) {
@@ -2792,12 +2790,12 @@ void func_8003FECC(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2) {
         do {
             a2++;
             in->objs[n] = &a0->unk_2C[id + 1];
-            in->quads[n][0].vx = *a2++;
-            in->quads[n][0].vy = *a2++;
-            in->quads[n][0].vz = *a2++;
-            in->quads[n][1].vx = *a2++;
-            in->quads[n][1].vy = *a2++;
-            in->quads[n][1].vz = *a2++;
+            in->f84[n][0].vx = *a2++;
+            in->f84[n][0].vy = *a2++;
+            in->f84[n][0].vz = *a2++;
+            in->f84[n][1].vx = *a2++;
+            in->f84[n][1].vy = *a2++;
+            in->f84[n][1].vz = *a2++;
             in->coll.unk68[n] = *a2++;
             n++;
             id = *a2;
@@ -2834,7 +2832,7 @@ void func_8003FFE0(s32 a0) {
 void func_8004001C(Unk8003F62CRec *a0) {
     s32 i;
     for (i = 0; i < a0->count; i++) {
-        a0->quads[i].unk2 = 1;
+        a0->unk418[i].unk2 = 1;
         a0->recs[i].quad.unk2 = 1;
     }
 }
@@ -2842,7 +2840,7 @@ void func_8004001C(Unk8003F62CRec *a0) {
 void func_80040068(Unk8003F62CRec *a0) {
     s32 i;
     for (i = 0; i < a0->count; i++) {
-        a0->quads[i].unk2 = 0;
+        a0->unk418[i].unk2 = 0;
         a0->recs[i].quad.unk2 = 0;
     }
 }

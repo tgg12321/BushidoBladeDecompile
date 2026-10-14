@@ -5219,7 +5219,7 @@ extern TILE D_800F1498[];
 void func_8006BEC4(s32 arg0, s32 arg1) {
     Unk8007352CEnv sp10;
     s32 par;
-    Vec2s16 *pos;
+    Size2s16 *pos;
     s16 i;
     s32 r;
     s32 w;
