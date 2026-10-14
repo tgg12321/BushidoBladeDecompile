@@ -2197,9 +2197,9 @@ typedef struct {
  * (unk_20 pairs each sheet with a -1), except unk_3C, func_8006DD94's list
  * (Unk8006DD94List); func_8006919C walks the twelve slots as one run of list
  * pointers.
- * - unk_44: the Rec_8006C21C rows func_8006C21C draws; unk_48: the points
- * func_8006BEC4 reads. The -1 ending func_8006E440's offset list follows at
- * +0x4C; no reader touches it. */
+ * - unk_44: the Rec_8006C21C rows func_8006C21C draws; unk_48: the Size2s16
+ * box sizes (x = width, y = height) func_8006BEC4 reads. The -1 ending
+ * func_8006E440's offset list follows at +0x4C; no reader touches it. */
 typedef struct {
     Unk8006E950Head unk_00;
     Unk8009B0E0Record **unk_14;

@@ -14,7 +14,7 @@ extern void func_80018300(Func80017A44Output *);
 typedef struct {
     s32 d0[3];       /* 0x00 delta to focus 0 (GTE input) */
     s32 d1[3];       /* 0x0C delta to focus 1 (GTE input) */
-    s32 scr18[3];    /* 0x18 velocity / GTE vector */
+    s32 scr18[3];    /* 0x18 transformed anchor, then the velocity */
     s32 dpos[3];     /* 0x24 displacement added to every node */
     s32 sq[3];       /* 0x30 GTE squares */
     s32 pos[3];      /* 0x3C node position */
@@ -90,7 +90,7 @@ void func_80017FA0(Unk80017FA0Rec *a0) {
 end:;
 }
 
-/* func_80018094 -- loads the GTE rotation/translation from the quad's MATRIX
+/* func_80018094 -- loads the GTE rotation/translation from arg0's MATRIX
  * (arg0->unk4), runs func_80017FA0, writes that MATRIX's translation minus the
  * object's (arg1->matrix.t) to scratchpad, scales it by a factor derived from
  * its length (byte-LUT integer sqrt, GTE LZC above 0x400; 0x100 beyond 250000),

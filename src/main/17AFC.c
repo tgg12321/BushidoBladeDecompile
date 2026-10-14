@@ -4442,7 +4442,7 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     func_8002EECC(s2_ptr, mat_local);
     MulMatrix0((MATRIX *)mat_local, rot_mat, rot_mat);
 
-    /* Subtract opponent reference position from self position. */
+    /* Subtract mat_tbl[arg0->unk_09]'s translation from the position. */
     arg0->pos.x -= s2_ptr[5];
     arg0->pos.y -= s2_ptr[6];
     arg0->pos.z -= s2_ptr[7];

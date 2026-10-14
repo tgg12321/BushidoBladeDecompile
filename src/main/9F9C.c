@@ -494,10 +494,10 @@ typedef VECTOR CamVec;
 
 /* Scratchpad work area (0x1F800000) used by func_8001A820: the target yaw/roll
  * that D_800F6608's unk_10.vy / vz ease toward, the camera focus, the eye
- * position camera_CalcEye computes, a fighter's head position, and the hit
- * position, surface normal and work area func_80053614 is given (its
- * 3rd/4th/5th arguments; its other callers pass a VECTOR hit and an s16[4]
- * normal). */
+ * position camera_CalcEye computes, a fighter record's unk_B8 less 0xC8 in vy
+ * (the collision segment's start), and the hit position, surface normal and
+ * work area func_80053614 is given (its 3rd/4th/5th arguments; its other
+ * callers pass a VECTOR hit and an s16[4] normal). */
 typedef struct {
     s16 unk0;     /* 0x00 */
     s16 yaw;      /* 0x02 */
@@ -517,10 +517,11 @@ typedef struct {
  * turns their separation into an eased, clamped zoom target (byte-LUT square
  * root, GTE leading-zero count for large inputs) and a hysteresis flag for
  * func_8003F1E4; eases unk_10.vy / vz toward the facing yaw and zero roll;
- * then per fighter bisects unk_10.vx (rot_x) so the head stays visible past
- * func_80053614's camera-collision test (step in D_800A30F4[], blocked flag in
- * D_800A30F0[]), and eases unk_10.vx toward the larger result, clamped to
- * 0x80..0x1C0. GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc). */
+ * then per fighter bisects unk_10.vx (rot_x) so the segment from its unk_B8
+ * less 0xC8 in vy to the eye passes func_80053614's camera-collision test
+ * (step in D_800A30F4[], blocked flag in D_800A30F0[]), and eases unk_10.vx
+ * toward the larger result, clamped to 0x80..0x1C0. GTE: gte_Lzc (gte_ldlzc,
+ * gte_nop x2, gte_stlzc). */
 void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
                    Unk80101EC8Record *arg3) {
     s32 lzc_out;
