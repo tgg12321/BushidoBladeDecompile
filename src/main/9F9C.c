@@ -155,12 +155,13 @@ extern s32 D_800A30EC;
     }
 
 /* Decode entry `frame` of D_800F1B18[obj]'s stream into `out` (33 words). The
-   table at stream + 0x70 holds a 24-bit bit offset per group of 8 entries
-   (index frame >> 3); an entry is its group's start plus frame & 7 delta
-   steps. rec->ctr steps through the four slots; of the slot it steps to and
-   the one before, one whose ->frame is frame is copied out (and the step is
-   undone), one holding frame - 1 is continued from, and otherwise the entry is
-   decoded from its group's start. When frame & 7 is below 7, the entry
+   table at stream + 0x70 holds a 24-bit offset per group of 8 entries (index
+   frame >> 3), in bits from the table's start (0x380 bits past the stream's);
+   an entry is its group's start plus frame & 7 delta steps. rec->ctr steps
+   through the four slots; of the slot it steps to and the one before, one
+   whose ->frame is frame is copied out (and the step is undone), one holding
+   frame - 1 is continued from, and otherwise the entry is decoded from its
+   group's start. When frame & 7 is below 7, the entry
    (->frame, ->pose, ->rate) and the reader state after it are kept in that
    slot. `work` holds the pose (+0x00), the rates (+0x84) and the codes
    (+0x108, copied from rec->code when D_800A30EC is 0). */
@@ -189,7 +190,7 @@ void func_800198D0(s32 obj, s32 frame, MotionFrame *out, u16 *work) {
     u16 code;
     /* Ruling 11: eight values, each read by GETBITS -- the three group-start
      * header words, the group start's per-value flag, the three delta-step
-     * header words and case 3's 4-bit low value. */
+     * header words and case 3's 4-bit value (3 low bits and a sign bit). */
     u32 field;
     s16 x;
 
@@ -3082,8 +3083,8 @@ void func_800206B0(s32 arg0, s32 arg1) {
 }
 
 /* Places character rec->index's points in world space with its bone
- * matrices (func_80046DEC()): each of the 22 hit records' offsets
- * through its bone into bone_out (SPAD->unkA8[ch]); the point set
+ * matrices (func_80046DEC()): each of the 22 hit records' offsets through
+ * its bone into bone_out (the callers pass SPAD->unkA8[i]); the point set
  * D_8008D86C[unk_0E] (D_8008D774 when unk_12 == 50) through bone 18 into
  * att_out; when unk_8C != 0, the pair D_8008D88C[unk_14] through bone 19 into
  * extra_out. A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
@@ -4730,8 +4731,10 @@ extern void func_800204C0(Unk80101EC8Record *);
  * command list (unk_50 / unk_7C, func_80021424 / func_80021A98), decodes two
  * MotionFrames with func_800198D0 (at unk_40 and at unk_40 + 1, capped at
  * unk_58[1] - 1, each offset by *unk_54, and by unk_58[1] in some states;
- * state unk_6A 0x33 instead copies D_800A3888[arg0][unk_40] into both) and
- * mixes offsets from them into unk_E8 by a 4.12 weight (unk_42 or unk_318),
+ * state unk_6A 0x33 instead copies D_800A3888[arg0][unk_40] into both); when
+ * unk_31A is 0 it mixes their root offsets into unk_E8 by the 4.12 weight
+ * unk_42, otherwise the first one's (by the weight unk_318) with unk_290's
+ * less unk_320 (by 0x1000 - unk_318),
  * integrates the velocities (unk_104 / unk_134) into the position, resolves
  * it (func_8002304C), then refreshes the bone points, the flags unk_62,
  * unk_AE and unk_288, the damping and the per-frame side effects. */
