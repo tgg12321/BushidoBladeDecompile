@@ -113,22 +113,22 @@ void func_80060A68(void) {
 
 void func_80060B70(void) {
 
-    Unk1F800000Unk00 *outer;
+    Unk1F800000Unk00 *var_0;
     s16 *dst16;
     s32 *dst_s32;
     u16 idx;
     s32 result;
 
-    outer = D_800A3468;
+    var_0 = D_800A3468;
     dst16 = D_800A346C;
-    dst16[0] = outer->unk04[0];
-    dst16[1] = outer->unk04[1];
-    dst16[2] = outer->unk04[2];
+    dst16[0] = var_0->unk04[0];
+    dst16[1] = var_0->unk04[1];
+    dst16[2] = var_0->unk04[2];
 
     dst_s32 = D_800A3470;
-    dst_s32[0] = outer->unk08[0];
-    dst_s32[1] = outer->unk08[1];
-    dst_s32[2] = outer->unk08[2];
+    dst_s32[0] = var_0->unk08[0];
+    dst_s32[1] = var_0->unk08[1];
+    dst_s32[2] = var_0->unk08[2];
     func_80061FAC(dst16, dst_s32, D_800A3474);
 
     idx = D_800A3468->unk00.h;
@@ -365,15 +365,15 @@ s32 func_8006133C(s32 *a0) {
 extern u8 D_800F115B;
 
 s32 func_800613C8(s32 *a0) {
-    s32 *ap = a0;
+    s32 *var_0 = a0;
     D_800A3468 = &D_800F116C;
     D_800F1178 = (s32)a0;
     D_800F1180 = (s32)&D_800F115B;
     D_800F116C.unk00.w = 0x21000B;
     func_80060A68();
-    D_800F1140.vx = *ap++;
-    D_800F1140.vy = *ap++;
-    D_800F1140.vz = *ap++;
+    D_800F1140.vx = *var_0++;
+    D_800F1140.vy = *var_0++;
+    D_800F1140.vz = *var_0++;
     D_800A3464 = 0x8080FF;
     return 16;
 }
@@ -817,7 +817,7 @@ end:
    the terminator, pick a sprite size and an animation frame from the record's
    type, rotate/translate its position, project it, and when it lands in range
    emit one textured POLY_FT4 billboard and link it into the OT at its depth. */
-void func_800620B8(s16 *arg0, s32 *trans) {
+void func_800620B8(s16 *arg0, s32 *arg1) {
     extern s32 D_800A32B8;
     extern TexRec D_8009BA00[6];
     extern TexRec D_8009BA30[4];
@@ -829,64 +829,64 @@ void func_800620B8(s16 *arg0, s32 *trans) {
     Unk1F8000B8_800620B8 *base;
     s16 *w;
     s16 *h;
-    VECTOR *tv;
+    VECTOR *var_3;
     VECTOR *v;
-    SVECTOR *sv;
-    s32 *interp;
+    SVECTOR *var_5;
+    s32 *var_6;
     u32 *z;
     POLY_FT4 *prim;
-    Unk1F800000Unk00 *outer;
+    Unk1F800000Unk00 *var_9;
     s16 *dst16;
     s32 *dst32;
     MATRIX *rot;
     s16 i;
-    s32 proj_w;
-    s32 proj_h;
+    s32 var_14;
+    s32 var_15;
     s16 width;
     s16 height;
     /* FAKE: pointer aliases of the four sprite tables
-     * (pointer-alias-fake-exception): strip32 is set at the loop top so it is
+     * (pointer-alias-fake-exception): var_18 is set at the loop top so it is
      * hoisted where the target sets $fp; the other three are rebuilt in $t0 at
      * each use. Tables used directly: score 47; any one of the three: 3-7. */
-    TexRec *strip32; /* FAKE: alias of D_8009BA00; direct: score 35 */
-    TexRec *alt32;   /* FAKE: alias of D_8009BA50; direct: score 3 */
-    TexRec *strip16; /* FAKE: alias of D_8009BA30; direct: score 3 */
-    TexRec *alt16;   /* FAKE: alias of D_8009BA58; direct: score 7 */
+    TexRec *var_18; /* FAKE: alias of D_8009BA00; direct: score 35 */
+    TexRec *var_19; /* FAKE: alias of D_8009BA50; direct: score 3 */
+    TexRec *var_20; /* FAKE: alias of D_8009BA30; direct: score 3 */
+    TexRec *var_21; /* FAKE: alias of D_8009BA58; direct: score 7 */
 
-    func_80060E38(arg0, trans);
-    outer = D_800A3468;
+    func_80060E38(arg0, arg1);
+    var_9 = D_800A3468;
     dst16 = D_800A346C;
-    dst16[0] = outer->unk04[0];
+    dst16[0] = var_9->unk04[0];
     prim = D_800A37D4;
-    dst16[1] = outer->unk04[1];
-    dst16[2] = outer->unk04[2];
+    dst16[1] = var_9->unk04[1];
+    dst16[2] = var_9->unk04[2];
     dst32 = D_800A3470;
     /* the matrix func_80061FAC builds from the angles at arg0 */
     rot = D_800A3474;
-    dst32[0] = outer->unk08[0];
+    dst32[0] = var_9->unk08[0];
     base = &D_800A34EC->v800620B8;
-    dst32[1] = outer->unk08[1];
-    dst32[2] = outer->unk08[2];
+    dst32[1] = var_9->unk08[1];
+    dst32[2] = var_9->unk08[2];
     D_800A32B8++;
     func_80061FAC(dst16, dst32, rot);
     SetRotMatrix(D_800A3474);
     w = &base->unk10;
     h = &base->unk12;
-    tv = &base->unk14;
+    var_3 = &base->unk14;
     v = &base->unk24;
-    sv = &base->unk34;
-    interp = &base->unk3C;
+    var_5 = &base->unk34;
+    var_6 = &base->unk3C;
     z = &base->unk44;
-    sv->vz = 0;
-    sv->vy = 0;
-    sv->vx = 0;
+    var_5->vz = 0;
+    var_5->vy = 0;
+    var_5->vx = 0;
     *D_800A34B0 = ReadGeomScreen() << 8;
     *D_800A3490 = 0x2F;
-    alt32 = D_8009BA50;   /* FAKE: alias; direct use scores 3 */
-    strip16 = D_8009BA30; /* FAKE: alias; direct use scores 3 */
-    alt16 = D_8009BA58;   /* FAKE: alias; direct use scores 7 */
+    var_19 = D_8009BA50; /* FAKE: alias; direct use scores 3 */
+    var_20 = D_8009BA30; /* FAKE: alias; direct use scores 3 */
+    var_21 = D_8009BA58; /* FAKE: alias; direct use scores 7 */
     for (i = 0; D_800F1198[i].unk0 & 1; i++) {
-        strip32 = D_8009BA00; /* FAKE: hoisted alias; set pre-loop: score 6 */
+        var_18 = D_8009BA00; /* FAKE: hoisted alias; set pre-loop: score 6 */
         switch (D_800F1198[i].unk4 & 7) {
         case 3:
             *D_800A34A8 = 0x151;
@@ -896,16 +896,16 @@ void func_800620B8(s16 *arg0, s32 *trans) {
             *D_800A34A8 = 0x1C2;
             *D_800A34AC = 0xE1;
         sel_a:
-            /* FAKE: `- strip32 + strip32` round trip: combine folds it away,
-             * but the two extra uses rank strip32 high enough to get $fp;
+            /* FAKE: `- var_18 + var_18` round trip: combine folds it away,
+             * but the two extra uses rank var_18 high enough to get $fp;
              * without it: score 35. As pointer arithmetic the addu operands
-             * swap: 4; plain `&strip32[n]`: 38. (combine-foldable
+             * swap: 4; plain `&var_18[n]`: 38. (combine-foldable
              * chain-extender, dead-store-fake-exception) */
             D_800A348C = D_800A3488 =
-                (TexRec *)(((u32)D_800A32B8 % 6) * sizeof(*strip32) +
-                           (s32)strip32 - (s32)strip32 + (s32)strip32);
+                (TexRec *)(((u32)D_800A32B8 % 6) * sizeof(*var_18) +
+                           (s32)var_18 - (s32)var_18 + (s32)var_18);
             if (D_8009BD24.unk20_0) {
-                D_800A348C = alt32;
+                D_800A348C = var_19;
             }
             *D_800A349C = D_800A3488->u + 0x1F;
             *D_800A34A4 = D_800A3488->v + 0x1F;
@@ -919,12 +919,12 @@ void func_800620B8(s16 *arg0, s32 *trans) {
             *D_800A34AC = 0x78;
         sel_b:
             /* FAKE: the record address is an integer sum converted to TexRec *:
-               as `strip16 + n` or `&strip16[n]` strip16 comes first in the addu
+               as `var_20 + n` or `&var_20[n]` var_20 comes first in the addu
                (`addu v0,t0,v0` for the target's `addu v0,v0,t0`): score 1. */
             D_800A348C = D_800A3488 =
-                (TexRec *)((D_800A32B8 & 3) * sizeof(*strip16) + (s32)strip16);
+                (TexRec *)((D_800A32B8 & 3) * sizeof(*var_20) + (s32)var_20);
             if (D_8009BD24.unk20_0) {
-                D_800A348C = alt16;
+                D_800A348C = var_21;
             }
             *D_800A349C = D_800A3488->u + 0xF;
             *D_800A34A4 = D_800A3488->v + 0x13;
@@ -933,12 +933,12 @@ void func_800620B8(s16 *arg0, s32 *trans) {
         v->vx = D_800F1198[i].unk0 / 2 - D_800A3470[0];
         v->vy = D_800F1198[i].unk4 / 8 - D_800A3470[1];
         v->vz = D_800F1198[i].unk8 - D_800A3470[2];
-        ApplyRotMatrixLV(v, tv);
+        ApplyRotMatrixLV(v, var_3);
         /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the address 0x14
-         * below tv, it loads tv as the translation (there is no whole
+         * below var_3, it loads var_3 as the translation (there is no whole
          * MATRIX here). Spelled (MATRIX *)base: score 65. */
-        SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));
-        RotTransPers(sv, D_800A34B8, interp, D_800A34CC);
+        SetTransMatrix((MATRIX *)((u8 *)var_3 - 0x14));
+        RotTransPers(var_5, D_800A34B8, var_6, D_800A34CC);
         /* gte_stsz(r0) --- inline_c.h :1042-1046 */
         __asm__ volatile(
             "swc2   $19, 0(%0)\n"
@@ -951,11 +951,11 @@ void func_800620B8(s16 *arg0, s32 *trans) {
             *D_800A34A0 = D_800A3488->v;
             *D_800A34D0 = *D_800A34D0 ? *D_800A34D0 : 1;
             *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
-            proj_w = *D_800A34A8 * *D_800A34B4;
-            width = proj_w > 0x200 ? proj_w >> 8 : 2;
+            var_14 = *D_800A34A8 * *D_800A34B4;
+            width = var_14 > 0x200 ? var_14 >> 8 : 2;
             *w = width / 2;
-            proj_h = *D_800A34AC * *D_800A34B4;
-            height = proj_h > 0x200 ? proj_h >> 8 : 2;
+            var_15 = *D_800A34AC * *D_800A34B4;
+            height = var_15 > 0x200 ? var_15 >> 8 : 2;
             *h = height;
             *h += (*h * rand() / 10) >> 14;
             SetPolyFT4(prim);
@@ -1034,11 +1034,11 @@ s32 func_8006295C(void) {
     extern TexRec D_8009B970[];
     extern s16 D_8009BB84[];
     s32 count;
-    MATRIX *cm;
-    s32 *interp;
-    u16 *zbuf;
+    MATRIX *var_1;
+    s32 *var_2;
+    u16 *var_3;
     s32 *scale;
-    s32 *shade;
+    s32 *var_5;
     MATRIX *mats;
     MATRIX *m;
     s32 *sxy;
@@ -1049,7 +1049,7 @@ s32 func_8006295C(void) {
     s32 v;
     s32 c;
     s32 bit;
-    s16 *sv;
+    s16 *var_16;
     POLY_FT4 *end;
 
     /* FAKE: the work-area base (D_800A34EC) is staged through `prim` before
@@ -1059,12 +1059,12 @@ s32 func_8006295C(void) {
     prim = (POLY_FT4 *)D_800A34EC;
     count = 0;
     mats = (MATRIX *)((u8 *)prim + 0x78);
-    cm = (MATRIX *)((u8 *)prim + 0x138);
+    var_1 = (MATRIX *)((u8 *)prim + 0x138);
     sxy = (s32 *)((u8 *)prim + 0x158);
-    interp = (s32 *)((u8 *)prim + 0x168);
-    zbuf = (u16 *)((u8 *)prim + 0x16C);
+    var_2 = (s32 *)((u8 *)prim + 0x168);
+    var_3 = (u16 *)((u8 *)prim + 0x16C);
     scale = (s32 *)((u8 *)prim + 0x178);
-    shade = (s32 *)((u8 *)prim + 0x188);
+    var_5 = (s32 *)((u8 *)prim + 0x188);
     prim = D_800A37D4;
     for (i = 0; i < 6; i++) {
         bit = 1 << i;
@@ -1079,15 +1079,15 @@ s32 func_8006295C(void) {
         m->t[0] = D_800F0FB8[i].x - D_800A3470[0];
         m->t[1] = D_800F0FB8[i].y - D_800A3470[1];
         m->t[2] = D_800F0FB8[i].z - D_800A3470[2];
-        CompMatrix(D_800A3474, m, cm);
-        SetRotMatrix(cm);
-        SetTransMatrix(cm);
+        CompMatrix(D_800A3474, m, var_1);
+        SetRotMatrix(var_1);
+        SetTransMatrix(var_1);
         for (j = 0; j < 3; j++) {
             if (D_800F0C04[i] < 3) {
                 *(s32 *)&prim->r0 = 0x808080;
             } else {
                 c = ((6 - D_800F0C04[i]) << 7) / 3;
-                *shade = c;
+                *var_5 = c;
                 *(s32 *)&prim->r0 = c + (c << 8) + (c << 16);
             }
             if (D_800F0C04[i] < 3) {
@@ -1121,9 +1121,9 @@ s32 func_8006295C(void) {
             SetPolyFT4(prim);
             SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
-            sv = &D_8009BB84[j * 16];
-            RotTransPers4(sv, sv + 4, sv + 8, sv + 12, sxy, sxy + 1, sxy + 2,
-                          sxy + 3, interp, D_800A34CC);
+            var_16 = &D_8009BB84[j * 16];
+            RotTransPers4(var_16, var_16 + 4, var_16 + 8, var_16 + 12, sxy,
+                          sxy + 1, sxy + 2, sxy + 3, var_2, D_800A34CC);
             /* gte_stsz(r0) --- inline_c.h :1042-1046 */
             __asm__ volatile(
                 "swc2   $19, 0(%0)\n"
@@ -1133,7 +1133,7 @@ s32 func_8006295C(void) {
                 *D_800A34D0 = 1;
             }
             if (*D_800A34D0 < 0x1005) {
-                zbuf[count] = *D_800A34D0;
+                var_3[count] = *D_800A34D0;
                 *(s32 *)&prim->x0 = sxy[0];
                 *(s32 *)&prim->x1 = sxy[1];
                 *(s32 *)&prim->x2 = sxy[2];
@@ -1155,7 +1155,7 @@ s32 func_8006295C(void) {
          * rotate: score 37. */
         end = prim;
         for (prim = D_800A37D4, k = 0; prim < end; prim++, k++) {
-            AddPrim(g_gpu_ot_ptr + zbuf[k], prim);
+            AddPrim(g_gpu_ot_ptr + var_3[k], prim);
         }
         D_800A37D4 = end;
         return 1;
@@ -1207,25 +1207,25 @@ s32 func_80063084(void) {
     extern s32 ReadGeomScreen(void);
     Unk1F8000B8_80063084 *base;
     POLY_FT4 *prim;
-    VECTOR *tv;
-    SVECTOR *sv;
+    VECTOR *var_2;
+    SVECTOR *var_3;
     SVECTOR *v;
-    s32 *interp;
-    s32 *fade;
+    s32 *var_5;
+    s32 *var_6;
     s32 *z;
     s16 i;
     s16 j;
     s32 bit;
     s32 scale;
-    s32 level;
+    s32 var_12;
 
     base = &D_800A34EC->v80063084;
     prim = D_800A37D4;
-    tv = &base->unk14;
-    sv = &base->unk24;
+    var_2 = &base->unk14;
+    var_3 = &base->unk24;
     v = &base->unk2C;
-    interp = &base->unk34;
-    fade = &base->unk38;
+    var_5 = &base->unk34;
+    var_6 = &base->unk38;
     z = &base->unk3C;
     /* gte_SetRotMatrix(r0) --- PsyQ 4.3 inline_c.h :297-310 */
     __asm__ volatile(
@@ -1255,23 +1255,23 @@ s32 func_80063084(void) {
         }
         for (j = 0; j < 2; j++) {
             if (D_800F0BEC[i] < 16) {
-                sv->vx = D_800F0E38[i].unk0 - D_800A3470[0];
-                sv->vz = D_800F0E38[i].unk8 - D_800A3470[2];
+                var_3->vx = D_800F0E38[i].unk0 - D_800A3470[0];
+                var_3->vz = D_800F0E38[i].unk8 - D_800A3470[2];
                 if (j != 0 && D_800F0BEC[i] >= 3) {
-                    sv->vy =
+                    var_3->vy =
                         D_800F0E38[i].unk4 -
                         (rsin((D_800F0BEC[i] - 3) << 8) * 329 / 4096 - 69) /
                             10 -
                         D_800A3470[1];
                 } else {
-                    sv->vy = D_800F0E38[i].unk4 - D_800A3470[1];
+                    var_3->vy = D_800F0E38[i].unk4 - D_800A3470[1];
                 }
-                ApplyRotMatrix(sv, tv);
+                ApplyRotMatrix(var_3, var_2);
                 /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the
-                 * address 0x14 below tv, it loads tv as the translation.
+                 * address 0x14 below var_2, it loads var_2 as the translation.
                  * Spelled (MATRIX *)base: score 55. */
-                SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));
-                RotTransPers(v, D_800A34B8, interp, D_800A34CC);
+                SetTransMatrix((MATRIX *)((u8 *)var_2 - 0x14));
+                RotTransPers(v, D_800A34B8, var_5, D_800A34CC);
                 /* gte_stsz(r0) --- PsyQ 4.3 inline_c.h :1042-1046 */
                 __asm__ volatile(
                     "swc2   $19, 0(%0)\n"
@@ -1341,13 +1341,13 @@ s32 func_80063084(void) {
                         *D_800A34C0 = *D_800A34C0 * scale / 10;
                         *D_800A34C8 = *D_800A34C8 * scale / 10;
                         if (D_800F0BEC[i] >= 9) {
-                            /* *fade = age - 15: the colour word below is built
-                             * from -*fade * 128 / 5 and -*fade * 255 / 5. */
-                            *fade = D_800F0BEC[i] - 15;
-                            level = (*fade * -128 / 5) & 0xFF;
+                            /* *var_6 = age - 15: the colour word below is built
+                             * from -*var_6 * 128 / 5 and -*var_6 * 255 / 5. */
+                            *var_6 = D_800F0BEC[i] - 15;
+                            var_12 = (*var_6 * -128 / 5) & 0xFF;
                             *(s32 *)&prim->r0 =
-                                level + (level << 8) +
-                                ((*fade * -255 / 5 & 0xFF) << 16);
+                                var_12 + (var_12 << 8) +
+                                ((*var_6 * -255 / 5 & 0xFF) << 16);
                         } else {
                             *(s32 *)&prim->r0 = 0;
                         }
@@ -1465,8 +1465,8 @@ u8 func_80063BD0(s32 idx) {
     return 1;
 }
 
-/* Draw the live slots (up to 10, see func_80063BD0) of `lane`: per slot whose
- * bit is set in D_800A3454[lane], emit one textured POLY_FT4 billboard at the
+/* Draw the live slots (up to 10, see func_80063BD0) of `arg0`: per slot whose
+ * bit is set in D_800A3454[arg0], emit one textured POLY_FT4 billboard at the
  * slot's position (relative to *D_800A3470) through the composite of
  * D_800A3474 and the slot's matrix, keep it when its depth is in range, then
  * link every new quad into the OT at its depth. Returns 1.
@@ -1479,7 +1479,7 @@ u8 func_80063BD0(s32 idx) {
  * gtemac.h gte_CompMatrix (= gte_MulMatrix0 +
  * gte_SetTransMatrix/gte_ldlv0/gte_rt/gte_stlvnl), written out macro by macro.
  */
-s32 func_80063E10(s32 lane) {
+s32 func_80063E10(s32 arg0) {
     extern TexRec D_8009B920[];
     extern SVECTOR D_8009BBE4;
     extern SVECTOR D_8009BBEC;
@@ -1487,10 +1487,10 @@ s32 func_80063E10(s32 lane) {
     extern SVECTOR D_8009BBFC;
     s32 count;
     MATRIX *mats;
-    MATRIX *cm;
+    MATRIX *var_2;
     s32 *sxy;
-    u16 *zbuf;
-    u16 *zn;
+    u16 *var_4;
+    u16 *var_5;
     POLY_FT4 *prim;
     POLY_FT4 *end;
     s32 i;
@@ -1503,16 +1503,16 @@ s32 func_80063E10(s32 lane) {
      * score 12; direct global: 12). */
     prim = (POLY_FT4 *)D_800A34EC;
     mats = (MATRIX *)((u8 *)prim + 0x28);
-    cm = (MATRIX *)((u8 *)prim + 0x168);
+    var_2 = (MATRIX *)((u8 *)prim + 0x168);
     sxy = (s32 *)((u8 *)prim + 0x188);
-    zbuf = (u16 *)((u8 *)prim + 0x19C);
-    zn = (u16 *)((u8 *)prim + 0x1B0);
-    if (D_800A344C[lane] < 10) {
-        count = D_800A344C[lane];
+    var_4 = (u16 *)((u8 *)prim + 0x19C);
+    var_5 = (u16 *)((u8 *)prim + 0x1B0);
+    if (D_800A344C[arg0] < 10) {
+        count = D_800A344C[arg0];
     } else {
         count = 10;
     }
-    func_800644FC(&count, mats, lane);
+    func_800644FC(&count, mats, arg0);
     D_800A3488 = &D_8009B920[*D_800A3480];
     prim = D_800A37D4;
     *D_800A3490 = 0xE;
@@ -1527,14 +1527,14 @@ s32 func_80063E10(s32 lane) {
     *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
     *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
     *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
-    *zn = 0;
+    *var_5 = 0;
     *D_800A34B0 = ReadGeomScreen();
     for (i = 0; i < count; i++) {
         /* FAKE: the slot's mask is named `bit` inside the test and not read
-         * again; it stretches the D_800A3454[lane] address's life so loop.c
+         * again; it stretches the D_800A3454[arg0] address's life so loop.c
          * hoists it (target spills it to 32(sp)), and keeps combine from making
          * the test srav/andi. Without `bit`: score 43. */
-        if (!(D_800A3454[lane] & (bit = 1 << i))) {
+        if (!(D_800A3454[arg0] & (bit = 1 << i))) {
             continue;
         }
         setlen(prim, 9);
@@ -1543,9 +1543,9 @@ s32 func_80063E10(s32 lane) {
         *(s32 *)&prim->u1 = *D_800A34D8 + *D_800A3490;
         *(u16 *)&prim->u2 = *D_800A34DC;
         *(u16 *)&prim->u3 = *D_800A34E0;
-        mats[i].t[0] = D_800F0EC8[lane][i].unk0 - D_800A3470[0];
-        mats[i].t[1] = D_800F0EC8[lane][i].unk4 - D_800A3470[1];
-        mats[i].t[2] = D_800F0EC8[lane][i].unk8 - D_800A3470[2];
+        mats[i].t[0] = D_800F0EC8[arg0][i].unk0 - D_800A3470[0];
+        mats[i].t[1] = D_800F0EC8[arg0][i].unk4 - D_800A3470[1];
+        mats[i].t[2] = D_800F0EC8[arg0][i].unk8 - D_800A3470[2];
         /* gte_SetRotMatrix(r0) --- inline_c.h :297-310 */
         __asm__ volatile(
             "lw     $12, 0(%0)\n"
@@ -1582,7 +1582,7 @@ s32 func_80063E10(s32 lane) {
             "sh     $12, 0(%0)\n"
             "sh     $13, 6(%0)\n"
             "sh     $14, 12(%0)\n"
-            :: "r"(cm) : "$12", "$13", "$14", "memory");
+            :: "r"(var_2) : "$12", "$13", "$14", "memory");
         /* gte_ldclmv(r0) --- inline_c.h :150-159 */
         __asm__ volatile(
             "lhu    $12, 0(%0)\n"
@@ -1606,7 +1606,7 @@ s32 func_80063E10(s32 lane) {
             "sh     $12, 0(%0)\n"
             "sh     $13, 6(%0)\n"
             "sh     $14, 12(%0)\n"
-            :: "r"((u8 *)cm + 2) : "$12", "$13", "$14", "memory");
+            :: "r"((u8 *)var_2 + 2) : "$12", "$13", "$14", "memory");
         /* gte_ldclmv(r0) --- inline_c.h :150-159 */
         __asm__ volatile(
             "lhu    $12, 0(%0)\n"
@@ -1630,7 +1630,7 @@ s32 func_80063E10(s32 lane) {
             "sh     $12, 0(%0)\n"
             "sh     $13, 6(%0)\n"
             "sh     $14, 12(%0)\n"
-            :: "r"((u8 *)cm + 4) : "$12", "$13", "$14", "memory");
+            :: "r"((u8 *)var_2 + 4) : "$12", "$13", "$14", "memory");
         /* gte_SetTransMatrix(r0) --- inline_c.h :360-369 */
         __asm__ volatile(
             "lw     $12, 20(%0)\n"
@@ -1660,7 +1660,7 @@ s32 func_80063E10(s32 lane) {
             "swc2   $25, 0(%0)\n"
             "swc2   $26, 4(%0)\n"
             "swc2   $27, 8(%0)\n"
-            :: "r"(cm->t) : "memory");
+            :: "r"(var_2->t) : "memory");
         /* gte_SetRotMatrix(r0) --- inline_c.h :297-310 */
         __asm__ volatile(
             "lw     $12, 0(%0)\n"
@@ -1673,7 +1673,7 @@ s32 func_80063E10(s32 lane) {
             "ctc2   $12, $2\n"
             "ctc2   $13, $3\n"
             "ctc2   $14, $4\n"
-            :: "r"(cm) : "$12", "$13", "$14");
+            :: "r"(var_2) : "$12", "$13", "$14");
         /* gte_SetTransMatrix(r0) --- inline_c.h :360-369 */
         __asm__ volatile(
             "lw     $12, 20(%0)\n"
@@ -1682,7 +1682,7 @@ s32 func_80063E10(s32 lane) {
             "lw     $14, 28(%0)\n"
             "ctc2   $13, $6\n"
             "ctc2   $14, $7\n"
-            :: "r"(cm) : "$12", "$13", "$14");
+            :: "r"(var_2) : "$12", "$13", "$14");
         /* gte_ldv3(r0, r1, r2) --- inline_c.h :34-42 */
         __asm__ volatile(
             "lwc2   $0, 0(%0)\n"
@@ -1718,7 +1718,7 @@ s32 func_80063E10(s32 lane) {
         if ((*D_800A34B0 >> 4) >= *D_800A34D0) {
             continue;
         }
-        zbuf[(*zn)++] = *D_800A34D0;
+        var_4[(*var_5)++] = *D_800A34D0;
         /* gte_ldv0(r0) --- inline_c.h :16-20 (no clobber list) */
         __asm__ volatile(
             "lwc2   $0, 0(%0)\n"
@@ -1748,7 +1748,7 @@ s32 func_80063E10(s32 lane) {
     end = prim;
     for (prim = D_800A37D4, k = 0; prim < end; prim++, k++) {
         D_800A34E8 = &prim->tag;
-        D_800A34E4 = g_gpu_ot_ptr + zbuf[k];
+        D_800A34E4 = g_gpu_ot_ptr + var_4[k];
         *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
         *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
     }
@@ -1812,28 +1812,28 @@ s32 func_800645B0(void) {
 s32 func_800646E8(void) {
     extern TexRec D_8009B8E8[];
     Unk1F8000B8_800646E8 *base;
-    u32 *zbuf;
+    u32 *var_1;
     s16 *w;
     s16 *h;
-    s32 *frame;
-    VECTOR *trans;
+    s32 *var_4;
+    VECTOR *var_5;
     VECTOR *pos;
-    SVECTOR *sv;
+    SVECTOR *var_7;
     s32 *p;
     POLY_FT4 **end;
     POLY_FT4 *prim;
-    u32 *zp;
+    u32 *var_11;
     s16 i;
     s32 bit;
 
     base = &D_800A34EC->v800646E8;
-    zbuf = base->unk48;
+    var_1 = base->unk48;
     w = &base->unk10;
     h = &base->unk12;
-    frame = &base->unk14;
-    trans = &base->unk18;
+    var_4 = &base->unk14;
+    var_5 = &base->unk18;
     pos = &base->unk28;
-    sv = &base->unk38;
+    var_7 = &base->unk38;
     p = &base->unk40;
     end = &base->unk44;
     prim = D_800A37D4;
@@ -1850,44 +1850,44 @@ s32 func_800646E8(void) {
         "ctc2   $13, $3\n"
         "ctc2   $14, $4\n"
         :: "r"(D_800A3474) : "$12", "$13", "$14");
-    sv->vx = sv->vy = sv->vz = 0;
+    var_7->vx = var_7->vy = var_7->vz = 0;
     *D_800A34B0 = ReadGeomScreen() * 1000;
     *D_800A34A8 = 0x40;
     *D_800A34AC = 0x20;
     *D_800A3490 = 0xE;
-    for (i = 0, zp = zbuf; i < 16; i++) {
+    for (i = 0, var_11 = var_1; i < 16; i++) {
         bit = 1 << i;
         if (!(D_800A3444 & bit)) {
             continue;
         }
         D_800F0BCC[i]++;
-        *frame = D_800F0BCC[i] / 4;
-        if (*frame < 7) {
+        *var_4 = D_800F0BCC[i] / 4;
+        if (*var_4 < 7) {
             pos->vx = D_800F0D78[i].x - D_800A3470[0];
             pos->vy = D_800F0D78[i].y - D_800A3470[1];
             pos->vz = D_800F0D78[i].z - D_800A3470[2];
-            ApplyRotMatrixLV(pos, trans);
-            /* FAKE: the MATRIX whose t[] is *trans: SetTransMatrix reads only
+            ApplyRotMatrixLV(pos, var_5);
+            /* FAKE: the MATRIX whose t[] is *var_5: SetTransMatrix reads only
              * m->t (there is no whole MATRIX here). Spelled
              * (MATRIX *)((u8 *)base + 4): score 68. */
-            SetTransMatrix((MATRIX *)((u8 *)trans - 0x14));
-            RotTransPers(sv, D_800A34B8, p, D_800A34CC);
+            SetTransMatrix((MATRIX *)((u8 *)var_5 - 0x14));
+            RotTransPers(var_7, D_800A34B8, p, D_800A34CC);
             /* gte_stsz(r0) --- inline_c.h :1042-1046 */
             __asm__ volatile(
                 "swc2   $19, 0(%0)\n"
                 :: "r"(D_800A34D0) : "memory");
-            D_800A3488 = &D_8009B8E8[*frame];
+            D_800A3488 = &D_8009B8E8[*var_4];
             *D_800A3494 = (u16)(((D_800A3488->clut_x >> 4) & 0x3F) +
                                 (D_800A3488->clut_y << 6));
             *D_800A3498 = D_800A3488->u;
             *D_800A34A0 = D_800A3488->v;
             *D_800A349C = D_800A3488->u + 0x3F;
             *D_800A34A4 = D_800A3488->v + 0x1F;
-            *zp = func_80052C28(*D_800A34D0, 0);
-            if (*zp >= 0x1005) {
+            *var_11 = func_80052C28(*D_800A34D0, 0);
+            if (*var_11 >= 0x1005) {
                 continue;
             }
-            if ((*D_800A34B0 / 1000 >> 4) >= *zp) {
+            if ((*D_800A34B0 / 1000 >> 4) >= *var_11) {
                 continue;
             }
             *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
@@ -1931,7 +1931,7 @@ s32 func_800646E8(void) {
             SetSemiTrans(prim, 1);
             if (prim - D_800A3720 < 0x1C1) {
                 prim++;
-                zp++;
+                var_11++;
             }
             D_800F0BCC[i]++;
         } else {
@@ -1942,8 +1942,8 @@ s32 func_800646E8(void) {
         return 0;
     }
     *end = prim;
-    for (prim = D_800A37D4; prim < *end; prim++, zbuf++) {
-        D_800A34E4 = g_gpu_ot_ptr + *zbuf;
+    for (prim = D_800A37D4; prim < *end; prim++, var_1++) {
+        D_800A34E4 = g_gpu_ot_ptr + *var_1;
         D_800A34E8 = &prim->tag;
         *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
         *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
@@ -2394,17 +2394,17 @@ u8 func_80065800(s32 arg0) {
     extern TexRec D_8009B9E8[];
     extern TexRec D_8009B9F0[];
     extern s32 ReadGeomScreen(void);
-    Unk1F8000B8_80065800 *outer;
+    Unk1F8000B8_80065800 *var_0;
     POLY_FT4 *prim;
-    s32 *p_dp;
+    s32 *var_2;
     VECTOR *p_t;
     VECTOR *p_in;
     SVECTOR *p_v;
     s16 *p_w;
     s16 *p_h;
     MATRIX *p_mat;
-    s16 *p_tw;
-    s16 *p_th;
+    s16 *var_9;
+    s16 *var_10;
     VECTOR *dst;
     s32 n;
     /* FAKE: named intermediate - *p_w read once before the corner sign test
@@ -2412,10 +2412,10 @@ u8 func_80065800(s32 arg0) {
     s32 w;
     /* FAKE: named intermediate - the factor multiplied into *p_w whole
      * (inline: score 10) */
-    s32 sw;
+    s32 var_14;
     /* FAKE: named intermediate - the factor multiplied into *p_h whole
      * (inline: score 9) */
-    s32 sh;
+    s32 var_15;
     /* FAKE: named intermediate - *p_h read once before the corner sign test
      * (inline: score 88) */
     s32 h;
@@ -2425,17 +2425,17 @@ u8 func_80065800(s32 arg0) {
     s16 *tbl;
     s32 i;
 
-    outer = &D_800A34EC->v80065800;
+    var_0 = &D_800A34EC->v80065800;
     prim = D_800A37D4;
-    p_dp = &outer->unk10;
-    p_t = outer->unk14;
-    p_in = &outer->unk54;
-    p_v = &outer->unk64;
-    p_w = &outer->unk6C;
-    p_h = &outer->unk70;
-    p_mat = &outer->unk74;
-    p_tw = &outer->unk94;
-    p_th = &outer->unk96;
+    var_2 = &var_0->unk10;
+    p_t = var_0->unk14;
+    p_in = &var_0->unk54;
+    p_v = &var_0->unk64;
+    p_w = &var_0->unk6C;
+    p_h = &var_0->unk70;
+    p_mat = &var_0->unk74;
+    var_9 = &var_0->unk94;
+    var_10 = &var_0->unk96;
 
     /* gte_SetRotMatrix(r0) --- inline_c.h :297-310 */
     __asm__ volatile(
@@ -2462,7 +2462,7 @@ u8 func_80065800(s32 arg0) {
         "lw     $14, 28(%0)\n"
         "ctc2   $13, $6\n"
         "ctc2   $14, $7\n"
-        :: "r"((MATRIX *)outer) : "$12", "$13", "$14");
+        :: "r"((MATRIX *)var_0) : "$12", "$13", "$14");
     p_v->vz = 0;
     p_v->vy = 0;
     p_v->vx = 0;
@@ -2484,7 +2484,7 @@ u8 func_80065800(s32 arg0) {
     /* gte_stdp(r0) --- inline_c.h :1018-1022 */
     __asm__ volatile(
         "swc2   $8, 0(%0)\n"
-        :: "r"(p_dp) : "memory");
+        :: "r"(var_2) : "memory");
     /* gte_stflg(r0) --- inline_c.h :1024-1030 */
     __asm__ volatile(
         "cfc2   $12, $31\n"
@@ -2503,8 +2503,8 @@ u8 func_80065800(s32 arg0) {
 again:
     *D_800A34A8 = 0x20;
     *D_800A34AC = 0x20;
-    *p_tw = 0x40;
-    *p_th = 0x40;
+    *var_9 = 0x40;
+    *var_10 = 0x40;
     *D_800A3490 = 0x2E;
     switch (arg0) {
     case 1:
@@ -2589,8 +2589,8 @@ again:
         } else {
             *D_800A34A8 = 0x20;
             *D_800A34AC = 0x80;
-            *p_tw = 0x40;
-            *p_th = 0x10;
+            *var_9 = 0x40;
+            *var_10 = 0x10;
         }
         break;
     case 8:
@@ -2643,8 +2643,8 @@ again:
         (u16)(((D_800A3488->clut_x >> 4) & 0x3F) + (D_800A3488->clut_y << 6));
     *D_800A3498 = D_800A3488->u;
     *D_800A34A0 = D_800A3488->v;
-    *D_800A349C = *p_tw + D_800A3488->u - 1;
-    *D_800A34A4 = *p_th + D_800A3488->v - 1;
+    *D_800A349C = *var_9 + D_800A3488->u - 1;
+    *D_800A34A4 = *var_10 + D_800A3488->v - 1;
     *D_800A34B0 = ReadGeomScreen() * 1000;
     *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
     *p_w =
@@ -2682,10 +2682,10 @@ again:
     case 2:
     case 16:
     case 17:
-        sw = (rsin((D_800F0BA8[arg0] << 11) / 4551 - 0x400) + 0x1000) * 25;
-        *p_w = (*p_w * sw >> 13) / 2;
-        sh = rsin((D_800F0BA8[arg0] << 11) / 4551) * 15;
-        *p_h = (*p_h * sh >> 12) / 2;
+        var_14 = (rsin((D_800F0BA8[arg0] << 11) / 4551 - 0x400) + 0x1000) * 25;
+        *p_w = (*p_w * var_14 >> 13) / 2;
+        var_15 = rsin((D_800F0BA8[arg0] << 11) / 4551) * 15;
+        *p_h = (*p_h * var_15 >> 12) / 2;
         i = 0;
         p_v->vy = 0;
         p_v->vx = 0;
@@ -2948,7 +2948,7 @@ u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
     MATRIX m;
     SVECTOR ang;
     VECTOR out;
-    SVECTOR sc;
+    SVECTOR var_5;
     s16 base;
     s16 mask;
     s16 amask;
@@ -3001,9 +3001,9 @@ u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
         amask = 0x7F;
         aoff = 0x3F;
     }
-    sc.vx = D_800F0B78[arg1].vx;
-    sc.vy = D_800F0B78[arg1].vy;
-    sc.vz = D_800F0B78[arg1].vz;
+    var_5.vx = D_800F0B78[arg1].vx;
+    var_5.vy = D_800F0B78[arg1].vy;
+    var_5.vz = D_800F0B78[arg1].vz;
     for (i = (count >> 1) * arg2; i < (count >> 1) * (arg2 + 1); i++) {
         r[0] = r[5] ^ rand();
         r[1] = r[0] ^ rand();
@@ -3017,9 +3017,9 @@ u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
         r[3] &= mask;
         r[4] &= mask;
         r[5] &= mask;
-        v.vx = sc.vx * (base + r[3]) / mask;
-        v.vy = sc.vy * (base + r[4]) / mask;
-        v.vz = sc.vz * (base + r[5]) / mask;
+        v.vx = var_5.vx * (base + r[3]) / mask;
+        v.vy = var_5.vy * (base + r[4]) / mask;
+        v.vz = var_5.vz * (base + r[5]) / mask;
         p = &D_800EFC78[arg1][i];
         p->unk6 = i / 16;
         p->unk12 = 0;
@@ -3125,18 +3125,18 @@ extern TexRec D_8009B9B8[];
 
 u8 func_800678A8(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
-    Unk1F8000B8_800678A8 *outer = &D_800A34EC->v800678A8;
+    Unk1F8000B8_800678A8 *var_0 = &D_800A34EC->v800678A8;
     /* FAKE: unk00 / unk02 / unk04 / unk6C / unk80 are reached through the
      * plain pointers p0 / p2 / p4 / p6C / p80: member stores are
      * MEM_IN_STRUCT_P and let scalar accesses move across them (as members, p0:
      * scores 6, p4 2, p80 2, p2 24, p6C 38; all five 49). */
-    u16 *p0 = &outer->unk00;
-    u16 *p2 = &outer->unk02;
-    u32 *p4 = &outer->unk04;
-    s16 *p6C = &outer->unk6C;
-    POLY_FT4 **p80 = &outer->unk80;
+    u16 *p0 = &var_0->unk00;
+    u16 *p2 = &var_0->unk02;
+    u32 *p4 = &var_0->unk04;
+    s16 *p6C = &var_0->unk6C;
+    POLY_FT4 **p80 = &var_0->unk80;
 
-    D_800A3724 = &outer->unk1AC;
+    D_800A3724 = &var_0->unk1AC;
     *p80 = D_800A37D4;
     *p4 = 0x895440;
     *D_800A3490 = 0x2E;
@@ -3157,14 +3157,14 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
         D_800F0B98[arg0] = 3;
     } else if (arg0 < 6) {
         s16 lv = D_800EFC8A[arg1 * 0x1E0] >> 3;
-        outer->unk70 = lv;
+        var_0->unk70 = lv;
         if (lv >= 4) {
-            outer->unk70 = 3;
+            var_0->unk70 = 3;
         }
         if (D_800A34F0[arg0 - 4] != 0) {
-            D_800A3488 = &D_8009B9B8[outer->unk70];
+            D_800A3488 = &D_8009B9B8[var_0->unk70];
         } else {
-            D_800A3488 = &D_8009B998[outer->unk70];
+            D_800A3488 = &D_8009B998[var_0->unk70];
         }
         *p0 = 0x1F;
         *p2 = 0x20;
@@ -3232,53 +3232,53 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
  * of D_800EFC78[arg1] (state 1): step its unk12 and derive r/g/b from it, take
  * its D_800F0C10[arg1] entry less D_800A3470 through gte_rtv0, set state 3
  * (and skip it) once r and g are both low or once the gte_sqr0 sum p_out[0..2]
- * passes *p_rad plus a rand() term, project three vertices, size the
+ * passes *var_1 plus a rand() term, project three vertices, size the
  * sprite by type (arg0), then emit up to three POLY_FT4 quads, storing
- * *D_800A34D0 for each in zbuf[].
+ * *D_800A34D0 for each in var_9[].
  * GTE: eleven PsyQ 4.3 inline_c.h macros; gte_rtv0, gte_sqr0 and gte_rtpt
  * carry the post-DMPSX command word (noted at each island). */
 void func_80067D14(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
-    Unk1F8000B8_800678A8 *outer = &D_800A34EC->v800678A8;
-    u32 *p_rad;
-    VECTOR *p_tv;
+    Unk1F8000B8_800678A8 *var_0 = &D_800A34EC->v800678A8;
+    u32 *var_1;
+    VECTOR *var_2;
     s16 *p_count;
     s16 *p_idx;
     u8 *p_r;
     u8 *p_g;
     u8 *p_b;
-    Unk800F0C10Record **p_tgt;
-    u16 *zbuf;
-    s32 *p_seed;
+    Unk800F0C10Record **var_8;
+    u16 *var_9;
+    s32 *var_10;
     s32 *p_out;
     VECTOR *p_work;
-    SVECTOR *p_vert;
-    s16 *p_life;
+    SVECTOR *var_13;
+    s16 *var_14;
     s16 *p_n;
     POLY_FT4 **p_prim;
     Unk800EFC78Record **p_ent;
     u32 sum;
     s16 *sxy;
 
-    D_800A3724 = &outer->unk1AC;
-    p_seed = &outer->unk1AC;
-    *p_seed = rand();
-    p_rad = &outer->unk04;
-    p_out = outer->unk10.t;
-    p_work = &outer->unk34;
-    p_vert = outer->unk44;
-    p_tv = &outer->unk5C;
-    p_count = &outer->unk6C;
-    p_idx = &outer->unk6E;
-    p_life = &outer->unk70;
-    p_r = &outer->unk72;
-    p_g = &outer->unk73;
-    p_b = &outer->unk74;
-    p_n = &outer->unk78;
-    p_prim = &outer->unk80;
-    p_ent = &outer->unk84;
-    p_tgt = &outer->unk88;
-    zbuf = outer->unk8C;
+    D_800A3724 = &var_0->unk1AC;
+    var_10 = &var_0->unk1AC;
+    *var_10 = rand();
+    var_1 = &var_0->unk04;
+    p_out = var_0->unk10.t;
+    p_work = &var_0->unk34;
+    var_13 = var_0->unk44;
+    var_2 = &var_0->unk5C;
+    p_count = &var_0->unk6C;
+    p_idx = &var_0->unk6E;
+    var_14 = &var_0->unk70;
+    p_r = &var_0->unk72;
+    p_g = &var_0->unk73;
+    p_b = &var_0->unk74;
+    p_n = &var_0->unk78;
+    p_prim = &var_0->unk80;
+    p_ent = &var_0->unk84;
+    var_8 = &var_0->unk88;
+    var_9 = var_0->unk8C;
 
     for (*p_idx = 0; *p_idx < *p_count; (*p_idx)++) {
         *p_ent = &D_800EFC78[arg1][*p_idx];
@@ -3286,28 +3286,28 @@ void func_80067D14(s32 arg0, s32 arg1) {
             continue;
         }
         (*p_ent)->unk12++;
-        *p_life = (*p_ent)->unk12;
-        *p_r = (*p_life << 2) < 0xFF ? ~(*p_life << 2) : 0;
-        *p_g = (*p_life << 5) < 200 ? 200 - (*p_life << 5) : 0;
+        *var_14 = (*p_ent)->unk12;
+        *p_r = (*var_14 << 2) < 0xFF ? ~(*var_14 << 2) : 0;
+        *p_g = (*var_14 << 5) < 200 ? 200 - (*var_14 << 5) : 0;
         if (*p_r <= 0x50 && *p_g <= 0x20) {
             (*p_ent)->unk10 = 3;
             continue;
         }
-        *p_b = (*p_life << 5) < 100 ? 100 - (*p_life << 5) : 0;
+        *p_b = (*var_14 << 5) < 100 ? 100 - (*var_14 << 5) : 0;
 
-        *p_tgt = &D_800F0C10[arg1][(*p_ent)->unk6];
-        p_tv->vx = (*p_tgt)->unk0;
-        p_vert[0].vx = p_tv->vx - D_800A3470[0];
-        p_tv->vy = (*p_tgt)->unk4;
-        p_vert[0].vy = p_tv->vy - D_800A3470[1];
-        p_tv->vz = (*p_tgt)->unk8;
-        p_vert[0].vz = p_tv->vz - D_800A3470[2];
+        *var_8 = &D_800F0C10[arg1][(*p_ent)->unk6];
+        var_2->vx = (*var_8)->unk0;
+        var_13[0].vx = var_2->vx - D_800A3470[0];
+        var_2->vy = (*var_8)->unk4;
+        var_13[0].vy = var_2->vy - D_800A3470[1];
+        var_2->vz = (*var_8)->unk8;
+        var_13[0].vz = var_2->vz - D_800A3470[2];
 
         /* gte_ldv0(r0) --- inline_c.h :16-20 (no clobber list) */
         __asm__ volatile(
             "lwc2   $0, 0(%0)\n"
             "lwc2   $1, 4(%0)\n"
-            :: "r"(p_vert));
+            :: "r"(var_13));
         /* gte_rtv0() --- inline_c.h :499-502; post-DMPSX command word
            0x4A486012 (MVMVA sf=1 mx=rot v=V0 cv=none lm=0) for the header's
            placeholder .word 0x0000013f */
@@ -3333,21 +3333,21 @@ void func_80067D14(s32 arg0, s32 arg1) {
             "ctc2   $14, $7\n"
             :: "r"((u8 *)p_out - 0x14) : "$12", "$13", "$14");
 
-        p_vert[1].vx = (*p_ent)->unk0;
-        p_vert[1].vz = (*p_ent)->unk4;
-        p_vert[1].vy = (*p_ent)->unk2;
+        var_13[1].vx = (*p_ent)->unk0;
+        var_13[1].vz = (*p_ent)->unk4;
+        var_13[1].vy = (*p_ent)->unk2;
         p_work->vx = (*p_ent)->unk8 / 30;
         (*p_ent)->unk0 += p_work->vx;
-        p_vert[0].vx = (*p_ent)->unk0;
+        var_13[0].vx = (*p_ent)->unk0;
         p_work->vz = (*p_ent)->unkC / 30;
         (*p_ent)->unk4 += p_work->vz;
-        p_vert[0].vz = (*p_ent)->unk4;
-        p_work->vy = (*p_ent)->unkA / 30 + *p_life * 9800 / 900;
+        var_13[0].vz = (*p_ent)->unk4;
+        p_work->vy = (*p_ent)->unkA / 30 + *var_14 * 9800 / 900;
         (*p_ent)->unk2 += p_work->vy;
-        p_vert[0].vy = (*p_ent)->unk2;
-        p_vert[2].vx = p_vert[1].vx + (p_work->vx >> 1);
-        p_vert[2].vz = p_vert[1].vz + (p_work->vz >> 1);
-        p_vert[2].vy = p_vert[1].vy + (p_work->vy >> 1);
+        var_13[0].vy = (*p_ent)->unk2;
+        var_13[2].vx = var_13[1].vx + (p_work->vx >> 1);
+        var_13[2].vz = var_13[1].vz + (p_work->vz >> 1);
+        var_13[2].vy = var_13[1].vy + (p_work->vy >> 1);
 
         /* gte_ldv3(r0, r1, r2) --- inline_c.h :34-42 (no clobber list) */
         __asm__ volatile(
@@ -3357,10 +3357,10 @@ void func_80067D14(s32 arg0, s32 arg1) {
             "lwc2   $3, 4(%1)\n"
             "lwc2   $4, 0(%2)\n"
             "lwc2   $5, 4(%2)\n"
-            :: "r"(&p_vert[0]), "r"(&p_vert[1]), "r"(&p_vert[2]));
-        p_work->vx = p_vert[0].vx;
-        p_work->vz = p_vert[0].vz;
-        p_work->vy = p_vert[0].vy;
+            :: "r"(&var_13[0]), "r"(&var_13[1]), "r"(&var_13[2]));
+        p_work->vx = var_13[0].vx;
+        p_work->vz = var_13[0].vz;
+        p_work->vy = var_13[0].vy;
         /* gte_ldlvl(r0) --- inline_c.h :112-117 (no clobber list) */
         __asm__ volatile(
             "lwc2   $9, 0(%0)\n"
@@ -3381,9 +3381,9 @@ void func_80067D14(s32 arg0, s32 arg1) {
             "swc2   $27, 8(%0)\n"
             :: "r"(p_out) : "memory");
 
-        *p_seed ^= rand();
+        *var_10 ^= rand();
         if ((u32)(p_out[0] + p_out[1] + p_out[2]) >
-            *p_rad + *p_seed * 3000 / 32768 * 3000) {
+            *var_1 + *var_10 * 3000 / 32768 * 3000) {
             (*p_ent)->unk10 = 3;
             continue;
         }
@@ -3436,8 +3436,8 @@ void func_80067D14(s32 arg0, s32 arg1) {
             *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x200
                               ? *D_800A34AC * *D_800A34B4 >> 9
                               : 1;
-            *D_800A34C0 += *D_800A34C0 * 20 / (*p_life * 6 + 1);
-            *D_800A34C8 += *D_800A34C8 * 20 / (*p_life * 6 + 1);
+            *D_800A34C0 += *D_800A34C0 * 20 / (*var_14 * 6 + 1);
+            *D_800A34C8 += *D_800A34C8 * 20 / (*var_14 * 6 + 1);
         } else if (arg0 < 6) {
             *D_800A34B4 = *D_800A34B0 * 200 / D_800A34D0[1];
             *D_800A34C0 = *D_800A34A8 * *D_800A34B4 > 0x200
@@ -3446,8 +3446,8 @@ void func_80067D14(s32 arg0, s32 arg1) {
             *D_800A34C8 = *D_800A34AC * *D_800A34B4 > 0x200
                               ? *D_800A34AC * *D_800A34B4 >> 9
                               : 1;
-            *D_800A34C0 += *D_800A34C0 * *p_life / 2;
-            *D_800A34C8 += *D_800A34C8 * *p_life / 2;
+            *D_800A34C0 += *D_800A34C0 * *var_14 / 2;
+            *D_800A34C8 += *D_800A34C8 * *var_14 / 2;
         } else if (arg0 < 8) {
             *D_800A34B4 = *D_800A34B0 * 200 / D_800A34D0[1];
             *D_800A34C0 = *D_800A34A8 * *D_800A34B4 > 0x200
@@ -3470,9 +3470,9 @@ void func_80067D14(s32 arg0, s32 arg1) {
         *D_800A34C4 <<= 16;
 
         sum = p_out[0] + p_out[1] + p_out[2];
-        if (*p_rad / 3 < sum) {
+        if (*var_1 / 3 < sum) {
             *p_n = 1;
-        } else if (*p_rad / 2 < sum) {
+        } else if (*var_1 / 2 < sum) {
             *p_n = 0;
         } else {
             *p_n = 2;
@@ -3483,7 +3483,7 @@ void func_80067D14(s32 arg0, s32 arg1) {
            SOTN: src/dra/8BEF8.c:185 @aa53500
            SOTN: src/st/cat/e_bone_ark.c:436 @aa53500 */
         for (; *p_n >= 0; (*p_n)--) {
-            zbuf[*p_prim - D_800A37D4] = *D_800A34D0;
+            var_9[*p_prim - D_800A37D4] = *D_800A34D0;
             *(s32 *)&(*p_prim)->x0 =
                 D_800A34B8[*p_n] + *D_800A34BC + *D_800A34C4;
             *(s32 *)&(*p_prim)->x1 =
@@ -3533,31 +3533,31 @@ void func_80067D14(s32 arg0, s32 arg1) {
 
 u8 func_80068D88(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
-    Unk1F8000B8_800678A8 *outer = &D_800A34EC->v800678A8;
-    s16 *p_idx = &outer->unk6E;
-    POLY_FT4 **p_end = &outer->unk7C;
-    POLY_FT4 **p_cur = &outer->unk80;
-    u16 *zbuf = outer->unk8C;
-    POLY_FT4 *cur_init;
-    POLY_FT4 *prev_init;
+    Unk1F8000B8_800678A8 *var_0 = &D_800A34EC->v800678A8;
+    s16 *p_idx = &var_0->unk6E;
+    POLY_FT4 **p_end = &var_0->unk7C;
+    POLY_FT4 **p_cur = &var_0->unk80;
+    u16 *var_4 = var_0->unk8C;
+    POLY_FT4 *var_5;
+    POLY_FT4 *var_6;
     s32 count;
     s32 ret;
 
-    D_800A3724 = &outer->unk1AC;
-    prev_init = D_800A37D4;
-    cur_init = *p_cur;
-    count = cur_init - prev_init;
+    D_800A3724 = &var_0->unk1AC;
+    var_6 = D_800A37D4;
+    var_5 = *p_cur;
+    count = var_5 - var_6;
 
     if (count != 0) {
-        *p_cur = prev_init;
-        *p_end = cur_init;
+        *p_cur = var_6;
+        *p_end = var_5;
         ret = 1;
         *p_idx = 0;
 
         if (*p_cur < *p_end) {
             u32 *p_b;
             do {
-                D_800A34E4 = g_gpu_ot_ptr + zbuf[*p_idx];
+                D_800A34E4 = g_gpu_ot_ptr + var_4[*p_idx];
                 p_b = &(*p_cur)->tag;
                 D_800A34E8 = p_b;
                 *p_b = (*p_b & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
@@ -3605,7 +3605,7 @@ extern u8 D_800A32C0[8];
 s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
     RECT buf;
     s32 temp_s0;
-    s32 v0_efc;
+    s32 var_2;
     Unk800A34FCRec *v0_e49c;
 
     D_800A3500 = arg0;
@@ -3615,9 +3615,9 @@ s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
     func_80046AA0();
     func_8006E950(2, (Unk8006E950Head *)D_800A3500);
     D_800A372C = D_800A3500;
-    v0_efc = func_8006919C(D_800A3500);
-    D_800A3500 = v0_efc;
-    v0_e49c = (Unk800A34FCRec *)func_8006E49C(v0_efc, D_800A351C);
+    var_2 = func_8006919C(D_800A3500);
+    D_800A3500 = var_2;
+    v0_e49c = (Unk800A34FCRec *)func_8006E49C(var_2, D_800A351C);
     v0_e49c->unk_24 = (Unk8006919CRec *)temp_s0;
     D_800A3500 = (s32)v0_e49c;
     D_800A34FC = v0_e49c;
@@ -3833,24 +3833,24 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     } while (0);
 }
 
-s32 func_800693CC(s32 held, s32 pressed) {
+s32 func_800693CC(s32 arg0, s32 arg1) {
     extern s32 D_8009BC08;
     extern void func_80069AE4(s32 *, s32, GpuDb *);
     extern void func_8006A880(u8 *, u16 *, s32);
     extern void func_80069F80(s32 *, s32);
     extern void func_8006A1A0(s32 *, s32);
     /* FAKE: frame layout. func_8006E390 fills words 1..9 (siblings: s32
-     * sp10[10]); the folded `pressed` word sits at word 12 and the
+     * sp10[10]); the folded `arg1` word sits at word 12 and the
      * saved row mask at word 14 only to reproduce the target's 0x60 frame
      * (sp+0x40 / sp+0x48); separate locals give the wrong frame: score 11. */
-    s32 context[15];
+    s32 var_0[15];
     s32 result;
-    GpuDb *render_base;
-    render_base = &g_gpu_db[D_800A36AC & 1];
-    func_8006E390(context, &D_800A3518);
-    context[12] = (pressed & 0xFFFF) | ((u32)pressed >> 16);
+    GpuDb *var_2;
+    var_2 = &g_gpu_db[D_800A36AC & 1];
+    func_8006E390(var_0, &D_800A3518);
+    var_0[12] = (arg1 & 0xFFFF) | ((u32)arg1 >> 16);
     result =
-        func_800692C0((u32 *)&context[12], 0, D_800A34FC->unk_0C, D_800A350C);
+        func_800692C0((u32 *)&var_0[12], 0, D_800A34FC->unk_0C, D_800A350C);
     if ((result >> 16) == 1)
         goto increment;
     if ((result >> 16) == 2)
@@ -3908,18 +3908,17 @@ after_move:
             /* FAKE: one handle for the mask read-modify-write; the direct
              * global form re-addresses D_8009BC08: score 9. */
             s32 *mask_ptr = &D_8009BC08;
-            context[14] = *mask_ptr & 0x80;
-            *mask_ptr = context[14] | (0x1F << ((D_800A34F8 & 0xF) - 5));
+            var_0[14] = *mask_ptr & 0x80;
+            *mask_ptr = var_0[14] | (0x1F << ((D_800A34F8 & 0xF) - 5));
         } else {
             D_8009BC08 = 0x9F;
         }
     }
-    func_80069AE4(context, 0, render_base);
-    func_8006A880(
-        (u8 *)context, (u16 *)render_base, D_8009BC0C[D_800A34F8 & 0xF].mode);
-    func_80069F80(context, D_8009BC0C[D_800A34F8 & 0xF].mode);
-    func_8006A1A0(context, D_8009BC0C[D_800A34F8 & 0xF].mode);
-    if (pressed & 0x40) {
+    func_80069AE4(var_0, 0, var_2);
+    func_8006A880((u8 *)var_0, (u16 *)var_2, D_8009BC0C[D_800A34F8 & 0xF].mode);
+    func_80069F80(var_0, D_8009BC0C[D_800A34F8 & 0xF].mode);
+    func_8006A1A0(var_0, D_8009BC0C[D_800A34F8 & 0xF].mode);
+    if (arg1 & 0x40) {
         switch (D_8009BC0C[D_800A34F8 & 0xF].state) {
         case 4:
         case 5:
@@ -3931,7 +3930,7 @@ after_move:
         }
         goto accept;
     }
-    if (pressed & 0x400000) {
+    if (arg1 & 0x400000) {
         switch (D_8009BC0C[D_800A34F8 & 0xF].state) {
         case 0:
         case 1:
@@ -3952,12 +3951,12 @@ after_move:
         }
         return D_8009BC0C[D_800A34F8 & 0xF].state;
     }
-    if (pressed & 0x100010) {
+    if (arg1 & 0x100010) {
         func_8005C650(2, 0x7F, 0x7F);
         return -2;
     }
 cancel:
-    if (pressed & 0x50005000) {
+    if (arg1 & 0x50005000) {
         func_8005C650(0, 0x7F, 0x7F);
     }
     return -1;
@@ -4008,8 +4007,8 @@ void func_80069898(s32 *arg0, u16 *arg1, s32 arg2) {
     arg0[6] = (s32)p;
 }
 
-void func_80069A30(void *prim) {
-    TILE *a0 = prim;
+void func_80069A30(void *arg0) {
+    TILE *a0 = arg0;
     Unk8009BD24Block *p = func_80077D00();
     s32 v0;
     if (p->unk20_0) {
@@ -4025,8 +4024,8 @@ void func_80069A30(void *prim) {
     a0->b0 = v0;
 }
 
-void func_80069A8C(void *prim) {
-    POLY_F4 *a0 = prim;
+void func_80069A8C(void *arg0) {
+    POLY_F4 *a0 = arg0;
     Unk8009BD24Block *p = func_80077D00();
     s32 v0;
     if (p->unk20_0) {
@@ -4041,7 +4040,7 @@ void func_80069A8C(void *prim) {
     a0->b0 = v0;
 }
 
-void func_80069AE4(s32 *arg0, s32 mode, GpuDb *unused_arg) {
+void func_80069AE4(s32 *arg0, s32 mode, GpuDb *arg2) {
     TILE *p;
     POLY_F4 *poly;
     Unk8009B0E0Record **qbase;
@@ -4557,7 +4556,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
      * root: unk_18 (option rows; first sheet, the row loop and row 7), unk_40
      * (counter frames), unk_24 twice (icon frames at [8 + frame], then FT4
      * frames at [frame]). */
-    Unk8009B0E0Record **sheets;
+    Unk8009B0E0Record **var_3;
     /* Ruling 11: holds two values, each a mask with one bit per option row:
        D_8009BC08 (scanned for the first row drawn) and D_8009BC04 (rows
        switched on). */
@@ -4566,15 +4565,15 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
      * header, so the cells start at +0xC. FAKE: single-use holder of the cell
      * table ahead of the descriptor's table store; stored directly: score 15.
      */
-    Unk8009B400Record *cells;
+    Unk8009B400Record *var_5;
     s32 yofs;
     s32 bit;
     s32 i;
 
-    sheets = (*(Unk8006919CRec **)(arg0 + 4))->unk_18;
+    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_18;
     row_mask = D_8009BC08;
     bit = 0;
-    s.header = sheets[0];
+    s.header = var_3[0];
     SetDrawMode(
         (DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0, func_8006E480(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0xC, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
@@ -4628,9 +4627,9 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
             s.semi = 1;
             s.y = y;
         }
-        s.header = sheets[i];
-        cells = s.header->cells;
-        s.table = cells;
+        s.header = var_3[i];
+        var_5 = s.header->cells;
+        s.table = var_5;
         s.sprt_out = *(s32 *)(arg0 + 0x14);
         *(s32 *)(arg0 + 0x14) = func_8007352C(&s);
         SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
@@ -4641,15 +4640,15 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
         func_8006A564(arg0, &s, i);
     }
 
-    sheets = (*(Unk8006919CRec **)(arg0 + 4))->unk_40;
+    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_40;
     s.ot_idx = 0xA;
     s.has_color = 0;
     s.semi = 0;
     s.x = 0;
     s.y = 0x41;
-    s.header = sheets[D_800A34F8 & 0xF];
-    cells = s.header->cells;
-    s.table = cells;
+    s.header = var_3[D_800A34F8 & 0xF];
+    var_5 = s.header->cells;
+    s.table = var_5;
     s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C(&s);
     SetDrawMode(
@@ -4657,7 +4656,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     AddPrim(g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
 
-    sheets = (*(Unk8006919CRec **)(arg0 + 4))->unk_18;
+    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_18;
     rect.x = arg1[0];
     rect.y = arg1[1];
     rect.w = arg1[2];
@@ -4699,9 +4698,9 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
         s.y = 0xCF;
     }
     s.ot_idx = 9;
-    s.header = sheets[7];
-    cells = s.header->cells;
-    s.table = cells;
+    s.header = var_3[7];
+    var_5 = s.header->cells;
+    s.table = var_5;
     s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C(&s);
     SetDrawMode(
@@ -4722,15 +4721,15 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     AddPrim(g_gpu_ot_ptr + 1, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
 
-    sheets = (*(Unk8006919CRec **)(arg0 + 4))->unk_24;
-    s.header = sheets[(D_800A34F8 & 0xF) + 8];
+    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_24;
+    s.header = var_3[(D_800A34F8 & 0xF) + 8];
     s.x = 0;
     s.y = 0x19;
     s.has_color = 0;
     s.semi = 0;
     s.ot_idx = 0;
-    cells = s.header->cells;
-    s.table = cells;
+    var_5 = s.header->cells;
+    s.table = var_5;
     s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = func_8007352C(&s);
     SetDrawMode(
@@ -4738,8 +4737,8 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     AddPrim(g_gpu_ot_ptr, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
 
-    sheets = (*(Unk8006919CRec **)(arg0 + 4))->unk_24;
-    s.header = sheets[D_800A34F8 & 0xF];
+    var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_24;
+    s.header = var_3[D_800A34F8 & 0xF];
     s.scale_x = 0x200;
     s.x = 0;
     s.y = 0;
@@ -4747,8 +4746,8 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     s.has_color = 0;
     s.semi = 0;
     s.ot_idx = 0;
-    cells = s.header->cells;
-    s.table = cells;
+    var_5 = s.header->cells;
+    s.table = var_5;
     s.ft4_out = *(s32 *)(arg0 + 8);
     *(s32 *)(arg0 + 8) = func_80073728(&s, 0);
 
@@ -5037,7 +5036,7 @@ s32 func_8006B898(s32 arg0, u32 arg1) {
     return func_8006B578(&arg0, &arg1);
 }
 
-s32 func_8006B92C(s32 *unused, u32 *arg1) {
+s32 func_8006B92C(s32 *arg0, u32 *arg1) {
     s32 sp10;
     s32 ret;
     s32 idx;
@@ -5108,7 +5107,7 @@ s32 func_8006B92C(s32 *unused, u32 *arg1) {
 
 void func_8006BB68(s32 *arg0) {
     Unk8007352CEnv s;
-    u16 rect[4];
+    u16 var_1[4];
     s32 i;
     Unk8009B0E0Record **q;
     /* FAKE: single-use holder of the cell table ahead of the descriptor's table
@@ -5154,11 +5153,11 @@ void func_8006BB68(s32 *arg0) {
     AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
-    rect[2] = 0xAF;
-    rect[0] = 0xE8;
-    rect[1] = 0x25;
-    rect[3] = 1;
-    func_80069898(arg0, rect, 0x11);
+    var_1[2] = 0xAF;
+    var_1[0] = 0xE8;
+    var_1[1] = 0x25;
+    var_1[3] = 1;
+    func_80069898(arg0, var_1, 0x11);
 }
 
 extern DR_MODE *D_800A36E0;
@@ -5167,14 +5166,14 @@ extern u8 *D_800A36E4;
 void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CEnv *arg2, s32 arg3) {
     /* sprite-sheet header pointers, two per arg0: the unk_20 list of the
        MOD.BIN root (D_800A34FC->unk_24) */
-    Unk8009B0E0Record **sheets;
+    Unk8009B0E0Record **var_0;
     /* FAKE: named intermediate (no-new-park-categories entry 6): the sheet's
      * 8-byte cells start at header + 0xC; inline, fold reassociates the sum and
      * loop.c strength-reduces it into its own register. Inline: score 31. */
-    Unk8009B400Record *cells;
+    Unk8009B400Record *var_1;
     s32 i, j, n;
 
-    sheets = D_800A34FC->unk_24->unk_20;
+    var_0 = D_800A34FC->unk_24->unk_20;
 
     arg2->col_b = 0x30;
     arg2->col_g = 0x30;
@@ -5182,9 +5181,9 @@ void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CEnv *arg2, s32 arg3) {
 
     for (i = 0; i < 2; i++) {
         /* FAKE: operand grouping (or-tree-shape-shift carve-out): with
-         * (sheets + i) + arg0 * 2, arg0 * 8 is hoisted alone as in the target;
-         * sheets[arg0 * 2 + i]: score 33. */
-        arg2->header = *(sheets + i + arg0 * 2);
+         * (var_0 + i) + arg0 * 2, arg0 * 8 is hoisted alone as in the target;
+         * var_0[arg0 * 2 + i]: score 33. */
+        arg2->header = *(var_0 + i + arg0 * 2);
         if (arg2->header == (Unk8009B0E0Record *)-1)
             return;
 
@@ -5201,8 +5200,8 @@ void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CEnv *arg2, s32 arg3) {
             }
             arg2->semi = 0;
             arg2->sprt_out = (s32)D_800A36E4;
-            cells = arg2->header->cells;
-            arg2->table = cells + j;
+            var_1 = arg2->header->cells;
+            arg2->table = var_1 + j;
             D_800A36E4 = (u8 *)func_8007352C(arg2);
         }
 
@@ -5220,7 +5219,7 @@ extern TILE D_800F1498[];
 
 void func_8006BEC4(s32 arg0, s32 arg1) {
     Unk8007352CEnv sp10;
-    s32 par;
+    s32 var_1;
     Size2s16 *pos;
     s16 i;
     s32 r;
@@ -5229,10 +5228,10 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
     s32 x0;
 
     D_800A3900 = 0;
-    par = D_800A36AC & 1;
-    D_800A36E4 = D_800F11E0 + par * 0x12C;
-    D_800A36E0 = D_800F1438 + par * 4;
-    D_800A36DC = D_800F1498 + par * 4;
+    var_1 = D_800A36AC & 1;
+    D_800A36E4 = D_800F11E0 + var_1 * 0x12C;
+    D_800A36E0 = D_800F1438 + var_1 * 4;
+    D_800A36DC = D_800F1498 + var_1 * 4;
     func_8006BD28(arg0, 0, &sp10, 0);
     h = 0;
     pos = D_800A34FC->unk_24->unk_48;
@@ -5302,7 +5301,7 @@ void func_8006C21C(s32 *arg0) {
     Unk8009B0E0Record **table;
     Rec_8006C21C *recs;
     Rec_8006C21C *rec;
-    Rec_8006C21C *tile_rec;
+    Rec_8006C21C *var_5;
     TILE *tile;
     POLY_G4 *poly;
     /* FAKE: constant-holder (named-local-fake-exception) for the 0 passed as
@@ -5322,28 +5321,28 @@ void func_8006C21C(s32 *arg0) {
     /* FAKE: always-zero narrow locals (named-local-fake-exception, Q27 (A)) --
      * SetDrawMode's dither and texture-window arguments and the descriptor
      * position, read up to the phase-4 head; their dead extension temps take
-     * the target's four untouched frame slots (0x60-0x78). `tw` reaches
+     * the target's four untouched frame slots (0x60-0x78). `var_14` reaches
      * SetDrawMode's RECT *tw through a
-     * `(RECT *)tw` conversion (Q113). Literals at every read: score 37. */
-    s16 dtd;
+     * `(RECT *)var_14` conversion (Q113). Literals at every read: score 37. */
+    s16 var_11;
     s16 xpos;
     s16 ypos;
-    s16 tw;
-    s32 pl;
+    s16 var_14;
+    s32 var_15;
     s32 x;
     s32 row;
-    s32 pulse;
+    s32 var_18;
     /* the sprite sheet's 8-byte cells, just past its 12-byte header. Ruling 9:
      * one meaning, header + 0xC at every write. FAKE: single-use holder of the
      * cell table ahead of the descriptor's table store; stored directly:
      * score 12. */
-    Unk8009B400Record *cells;
+    Unk8009B400Record *var_19;
 
     mode = 0;
-    dtd = 0;
+    var_11 = 0;
     xpos = 0;
     ypos = 0;
-    tw = 0;
+    var_14 = 0;
     s.ot_idx = 10;
     s.has_color = 0;
     table = ((Unk8006919CRec *)arg0[1])->unk_30;
@@ -5351,12 +5350,12 @@ void func_8006C21C(s32 *arg0) {
     s.x = xpos;
     s.header = table[0];
     s.semi = 0;
-    cells = s.header->cells;
-    s.table = cells;
+    var_19 = s.header->cells;
+    s.table = var_19;
     s.sprt_out = arg0[5];
     arg0[5] = func_8007352C(&s);
-    SetDrawMode(
-        (DR_MODE *)arg0[7], 1, dtd, func_8006E480(s.header, mode), (RECT *)tw);
+    SetDrawMode((DR_MODE *)arg0[7], 1, var_11, func_8006E480(s.header, mode),
+                (RECT *)var_14);
     AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
@@ -5364,16 +5363,16 @@ void func_8006C21C(s32 *arg0) {
     s.has_color = 0;
     table = ((Unk8006919CRec *)arg0[1])->unk_30;
     s.y = ypos;
-    for (pl = 0; pl < 2; pl++) {
-        s.x = pl * 280;
-        if (D_800A34FC->unk_28.half[pl] < 3) {
+    for (var_15 = 0; var_15 < 2; var_15++) {
+        s.x = var_15 * 280;
+        if (D_800A34FC->unk_28.half[var_15] < 3) {
             for (work = 0; work < 4; work++) {
-                if (D_800A3524->unk17[D_800A34FC->unk_28.half[pl]] &
-                    ((1 << work) << (pl * 4))) {
+                if (D_800A3524->unk17[D_800A34FC->unk_28.half[var_15]] &
+                    ((1 << work) << (var_15 * 4))) {
                     s.header = table[work + 13];
                     s.semi = 0;
-                    cells = s.header->cells;
-                    s.table = cells;
+                    var_19 = s.header->cells;
+                    s.table = var_19;
                     s.sprt_out = arg0[5];
                     arg0[5] = func_8007352C(&s);
                 }
@@ -5381,8 +5380,8 @@ void func_8006C21C(s32 *arg0) {
         }
     }
     s.header = table[13];
-    SetDrawMode(
-        (DR_MODE *)arg0[7], 1, dtd, func_8006E480(s.header, mode), (RECT *)tw);
+    SetDrawMode((DR_MODE *)arg0[7], 1, var_11, func_8006E480(s.header, mode),
+                (RECT *)var_14);
     AddPrim(g_gpu_ot_ptr + 9, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
@@ -5393,8 +5392,8 @@ void func_8006C21C(s32 *arg0) {
     table = ((Unk8006919CRec *)arg0[1])->unk_30;
     s.header = table[1];
     s.semi = 0;
-    cells = s.header->cells;
-    s.table = cells;
+    var_19 = s.header->cells;
+    s.table = var_19;
     s.sprt_out = arg0[5];
     arg0[5] = func_8007352C(&s);
     for (work = 0; work < 6; work++) {
@@ -5403,8 +5402,8 @@ void func_8006C21C(s32 *arg0) {
         s.has_color = 0;
         s.semi = 0;
         s.y = 0;
-        cells = s.header->cells;
-        s.table = cells;
+        var_19 = s.header->cells;
+        s.table = var_19;
         for (j = 0; j < 2; j++) {
             s.x = j ? 280 : 0;
             s.sprt_out = arg0[5];
@@ -5420,16 +5419,16 @@ void func_8006C21C(s32 *arg0) {
     recs = D_800A34FC->unk_24->unk_44;
     tile = (TILE *)arg0[6];
     for (work = 0; work < 11; work++) {
-        tile_rec = &recs[work];
+        var_5 = &recs[work];
         for (j = 0; j < 2; j++) {
             SetTile(tile);
-            tile->r0 = tile_rec->r;
-            tile->g0 = tile_rec->g;
-            tile->b0 = tile_rec->b;
-            tile->x0 = tile_rec->x + j * 280;
-            tile->y0 = tile_rec->y;
-            tile->w = tile_rec->w;
-            tile->h = tile_rec->h;
+            tile->r0 = var_5->r;
+            tile->g0 = var_5->g;
+            tile->b0 = var_5->b;
+            tile->x0 = var_5->x + j * 280;
+            tile->y0 = var_5->y;
+            tile->w = var_5->w;
+            tile->h = var_5->h;
             SetSemiTrans(tile, 0);
             AddPrim(g_gpu_ot_ptr + 0xC, tile);
             tile++;
@@ -5437,7 +5436,7 @@ void func_8006C21C(s32 *arg0) {
     }
     arg0[6] = (s32)tile;
 
-    pulse = ((rcos((D_800A3518 << 7) & 0xF80) * 32) >> 12) + 0xD0;
+    var_18 = ((rcos((D_800A3518 << 7) & 0xF80) * 32) >> 12) + 0xD0;
     poly = (POLY_G4 *)arg0[4];
     x = 0;
     for (j = 0; j < 2; j++) {
@@ -5448,12 +5447,12 @@ void func_8006C21C(s32 *arg0) {
             if (work == 5) {
                 SetSemiTrans(poly, 1);
                 col = 0;
-                poly->r0 = pulse;
-                poly->g0 = pulse;
-                poly->b0 = pulse;
-                poly->r1 = pulse;
-                poly->g1 = pulse;
-                poly->b1 = pulse;
+                poly->r0 = var_18;
+                poly->g0 = var_18;
+                poly->b0 = var_18;
+                poly->r1 = var_18;
+                poly->g1 = var_18;
+                poly->b1 = var_18;
                 poly->r2 = col;
                 poly->g2 = 0;
                 poly->b2 = 0;
@@ -5465,10 +5464,10 @@ void func_8006C21C(s32 *arg0) {
             } else {
                 SetSemiTrans(poly, 0);
                 col = 0x80;
-                poly->r0 = pulse;
+                poly->r0 = var_18;
                 poly->g0 = 0;
                 poly->b0 = 0;
-                poly->r1 = pulse;
+                poly->r1 = var_18;
                 poly->g1 = 0;
                 poly->b1 = 0;
                 poly->r2 = col;
@@ -5486,12 +5485,12 @@ void func_8006C21C(s32 *arg0) {
             if (work == 5) {
                 SetSemiTrans(poly, 1);
                 col = 0;
-                poly->r0 = pulse;
-                poly->g0 = pulse;
-                poly->b0 = pulse;
-                poly->r2 = pulse;
-                poly->g2 = pulse;
-                poly->b2 = pulse;
+                poly->r0 = var_18;
+                poly->g0 = var_18;
+                poly->b0 = var_18;
+                poly->r2 = var_18;
+                poly->g2 = var_18;
+                poly->b2 = var_18;
                 poly->r1 = col;
                 poly->g1 = 0;
                 poly->b1 = 0;
@@ -5509,10 +5508,10 @@ void func_8006C21C(s32 *arg0) {
             } else {
                 SetSemiTrans(poly, 0);
                 col = 0x80;
-                poly->r0 = pulse;
+                poly->r0 = var_18;
                 poly->g0 = 0;
                 poly->b0 = 0;
-                poly->r2 = pulse;
+                poly->r2 = var_18;
                 poly->g2 = 0;
                 poly->b2 = 0;
                 poly->r1 = col;
@@ -5572,12 +5571,12 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
     s16 lim;
     s32 shift;
     s32 nib;
-    s32 fade;
+    s32 var_4;
     s32 j;
     u8 *rec;
     s32 ret;
-    s32 masked;
-    s16 field;
+    s32 var_8;
+    s16 var_9;
 
     ret = 0;
     if ((D_800A34FC->unk_28.word == 0x50005) && (*arg1 & 0x400040)) {
@@ -5587,7 +5586,7 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
 
     i = 0;
     nib = 0xF;
-    fade = 0;
+    var_4 = 0;
     shift = 0;
     for (; i < 2; shift += 0x10, i++) {
         lim = ((arg2 >> i) & 1) ? 4 : 5;
@@ -5608,8 +5607,8 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
             }
         }
 
-        field = D_800A34FC->unk_28.half[i];
-        switch (field) {
+        var_9 = D_800A34FC->unk_28.half[i];
+        switch (var_9) {
         case 0:
         case 1:
         case 2:
@@ -5623,10 +5622,9 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
                 func_8005C650(1, 0x7F, 0x7F);
                 for (j = 0; j < 3; j++) {
                     rec = (u8 *)D_800A3524 + j;
-                    masked = *(rec + 0x1A) & (nib << fade);
+                    var_8 = *(rec + 0x1A) & (nib << var_4);
                     *(rec + 0x17) =
-                        (u8)((*(rec + 0x17) & ((i == 0) ? 0xF0 : 0xF)) +
-                             masked);
+                        (u8)((*(rec + 0x17) & ((i == 0) ? 0xF0 : 0xF)) + var_8);
                 }
             }
             break;
@@ -5635,15 +5633,14 @@ s32 func_8006CCC8(s32 *arg0, s32 *arg1, s16 arg2) {
                 func_8005C650(1, 0x7F, 0x7F);
                 for (j = 0; j < 3; j++) {
                     rec = (u8 *)D_800A3524 + j;
-                    masked = *(rec + 0x1D) & (nib << fade);
+                    var_8 = *(rec + 0x1D) & (nib << var_4);
                     *(rec + 0x17) =
-                        (u8)((*(rec + 0x17) & ((i == 0) ? 0xF0 : 0xF)) +
-                             masked);
+                        (u8)((*(rec + 0x17) & ((i == 0) ? 0xF0 : 0xF)) + var_8);
                 }
             }
             break;
         }
-        fade += 4;
+        var_4 += 4;
     }
     return ret;
 }
@@ -5660,7 +5657,7 @@ s32 func_8006CFBC(s32 *arg0) {
     Unk8007352CEnv s;
     Counts_8006CFBC counts;
     Unk8009B0E0Record **table;
-    s16 outer;
+    s16 var_3;
     s16 column;
     s16 row;
     s16 result;
@@ -5677,17 +5674,17 @@ s32 func_8006CFBC(s32 *arg0) {
     s.has_color = 0;
     s.semi = 0;
 
-    outer = 0;
+    var_3 = 0;
     do {
         counts.word = 0;
-        s.y = outer * 16;
+        s.y = var_3 * 16;
         column = 0;
         do {
             s.header = table[column + 8];
             temp = s.header->cells;
             s.table = temp;
             for (row = 0; row < 2; row++) {
-                if (D_800A3524->unk17[outer] & ((1 << (row * 4)) << column)) {
+                if (D_800A3524->unk17[var_3] & ((1 << (row * 4)) << column)) {
                     s.x = row * 280 + counts.count[row] * 23;
                     s.sprt_out = arg0[5];
                     arg0[5] = func_8007352C(&s);
@@ -5710,8 +5707,8 @@ s32 func_8006CFBC(s32 *arg0) {
             }
             row++;
         } while (row < 2);
-        outer++;
-    } while (outer < 3);
+        var_3++;
+    } while (var_3 < 3);
 
     row = 0;
     do {
@@ -5770,13 +5767,13 @@ s32 func_8006D338(s32 arg0, s32 arg1) {
 
 void func_8006D3DC(s32 *arg0) {
     Unk8007352CEnv s;
-    u16 rect[4];
+    u16 var_1[4];
     Unk8009B0E0Record **q;
     /* FAKE: constant holder for func_8006E480's 0; the literal: score 8. */
-    s32 semi = 0;
+    s32 var_3 = 0;
     s16 i = 0;
     /* FAKE: constant holder for s.col_r / g / b; the literal: score 25. */
-    u8 dim = 0x40;
+    u8 var_5 = 0x40;
 
     s.ot_idx = 0xA;
     q = ((Unk8006919CRec *)arg0[1])->unk_38;
@@ -5799,7 +5796,7 @@ void func_8006D3DC(s32 *arg0) {
             s.y = 0;
             s.semi = 0;
         } else {
-            s.col_r = s.col_g = s.col_b = dim;
+            s.col_r = s.col_g = s.col_b = var_5;
             s.y = 0;
             s.semi = 1;
         }
@@ -5807,16 +5804,17 @@ void func_8006D3DC(s32 *arg0) {
         s.table = s.header->cells;
         s.sprt_out = arg0[5];
         arg0[5] = func_8007352C(&s);
-        SetDrawMode((DR_MODE *)arg0[7], 1, 0, func_8006E480(s.header, semi), 0);
+        SetDrawMode(
+            (DR_MODE *)arg0[7], 1, 0, func_8006E480(s.header, var_3), 0);
         AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
     }
 
-    rect[0] = 0xDA;
-    rect[1] = 0x25;
-    rect[2] = 0xCB;
-    rect[3] = 1;
-    func_80069898(arg0, rect, 0x11);
+    var_1[0] = 0xDA;
+    var_1[1] = 0x25;
+    var_1[2] = 0xCB;
+    var_1[3] = 1;
+    func_80069898(arg0, var_1, 0x11);
 }
 
 s32 func_8006D5D4(s32 arg0, u32 arg1) {
@@ -5994,21 +5992,21 @@ typedef struct {
 void func_8006DD94(s32 *arg0) {
     /* FAKE: frame layout - `s` is the live descriptor (its address goes to
      * func_8007352C); tail[0..1] is unwritten padding that brings the locals to
-     * the target's 0x78 frame with rect at sp+0x50 (an 8-aligned slot,
+     * the target's 0x78 frame with var_1 at sp+0x50 (an 8-aligned slot,
      * BIGGEST_ALIGNMENT -- mips.h:1082) (dead-vars-local-array
      * OVERSIZED-LOCALS). The plain descriptor: score 21. */
     Unk8006DD94Rec s;
-    u16 rect[4];
+    u16 var_1[4];
     s16 i;
     Unk8006DD94List *q;
     /* FAKE: constant holder for s.env.semi and func_8006E480's 0; the
      * literal: score 8. */
-    s32 semi = 0;
+    s32 var_4 = 0;
 
     s.env.ot_idx = 0xA;
     q = ((Unk8006919CRec *)arg0[1])->unk_3C;
     s.env.x = 0;
-    s.env.semi = semi;
+    s.env.semi = var_4;
 
     for (i = 0; i < 3; i++) {
         s.env.has_color = 1;
@@ -6029,18 +6027,18 @@ void func_8006DD94(s32 *arg0) {
         s.env.sprt_out = arg0[5];
         arg0[5] = func_8007352C(&s.env);
         SetDrawMode(
-            (DR_MODE *)arg0[7], 1, 0, func_8006E480(s.env.header, semi), 0);
+            (DR_MODE *)arg0[7], 1, 0, func_8006E480(s.env.header, var_4), 0);
         AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
     }
 
     func_8006D808(&arg0[5], &arg0[7], &q->unk_00, s.env.ot_idx, -1);
 
-    rect[2] = 0x96;
-    rect[0] = 0xF5;
-    rect[1] = 0x25;
-    rect[3] = 1;
-    func_80069898(arg0, rect, 0x11);
+    var_1[2] = 0x96;
+    var_1[0] = 0xF5;
+    var_1[1] = 0x25;
+    var_1[3] = 1;
+    func_80069898(arg0, var_1, 0x11);
 }
 
 s32 func_8006DF68(s32 arg0, u32 arg1) {
@@ -6086,7 +6084,7 @@ s32 func_8006E068(s32 arg0, s32 arg1) {
 extern RECT D_800A32D8;
 
 s32 func_8006E10C(void) {
-    s32 ff0;
+    s32 var_0;
     /* FAKE: read at entry and held in $s3 across the calls; read at the
      * LoadImage call: score 9 (frame 48 for 56) */
     s32 temp_s3 = D_800A3500;
@@ -6106,19 +6104,19 @@ s32 func_8006E10C(void) {
         a1v = 7;
     }
     /* FAKE: loop notes fence sched1's constant-sink so the li stays at the jal;
-     * plain `ff0 = 0xF0;`: score 13 */
+     * plain `var_0 = 0xF0;`: score 13 */
     do {
-        ff0 = 0xF0;
+        var_0 = 0xF0;
     } while (0);
     v0 = func_80036EA8(a0v, a1v);
     cdrom_StartRead(v0, D_800A3500);
     func_80036F40();
     cdrom_GetFileSize(v0);
     SetDispMask(0);
-    SetDefDrawEnv(&g_gpu_db[0].draw, 0, 0, 0x280, ff0);
-    SetDefDrawEnv(&g_gpu_db[1].draw, 0, ff0, 0x280, ff0);
-    SetDefDispEnv(&g_gpu_db[0].disp, 0, ff0, 0x280, ff0);
-    SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x280, ff0);
+    SetDefDrawEnv(&g_gpu_db[0].draw, 0, 0, 0x280, var_0);
+    SetDefDrawEnv(&g_gpu_db[1].draw, 0, var_0, 0x280, var_0);
+    SetDefDispEnv(&g_gpu_db[0].disp, 0, var_0, 0x280, var_0);
+    SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x280, var_0);
     g_gpu_db[0].disp.isinter = 0;
     g_gpu_db[1].disp.isinter = 0;
     g_gpu_db[0].disp.isrgb24 = 0;
@@ -6179,14 +6177,14 @@ void func_8006E440(s32 *a0) {
     }
 }
 
-s32 func_8006E480(Unk8009B0E0Record *hdr, s32 a1) {
-    return (hdr->tp0 & 0xFE1F) + (hdr->tp1 << 7) + a1;
+s32 func_8006E480(Unk8009B0E0Record *arg0, s32 a1) {
+    return (arg0->tp0 & 0xFE1F) + (arg0->tp1 << 7) + a1;
 }
 
 s32 func_8006E49C(s32 arg0, Unk8006E49CRec *arg1) {
     u8 *base1;
     u8 *base2;
-    int tail;
+    int var_2;
     u8 *base3;
     u8 *base4;
     arg1[0].unk_00 = arg0;
@@ -6201,11 +6199,11 @@ s32 func_8006E49C(s32 arg0, Unk8006E49CRec *arg1) {
     arg1[0].unk_20 = base2 + 0x1EA0;
     arg1[0].unk_10 = (s32)base2;
     arg1[1].unk_00 = (s32)(base2 + 0x1FB0);
-    tail = 0x1FB0;
-    /* FAKE: tail must stay a variable: as a literal, (base2 + 0x1FB0) + 0x9C40
+    var_2 = 0x1FB0;
+    /* FAKE: var_2 must stay a variable: as a literal, (base2 + 0x1FB0) + 0x9C40
      * folds to li 0xBBF0 + addu (0xBBF0 > 0x7FFF, out of addiu's signed range);
      * score 8. */
-    base3 = (base2 + tail) + 0x9C40;
+    base3 = (base2 + var_2) + 0x9C40;
     arg1[1].unk_08 = base3 + 0x5DC0;
     arg1[1].unk_04 = base3;
     base4 = base3 + 0x6838;
@@ -6215,7 +6213,7 @@ s32 func_8006E49C(s32 arg0, Unk8006E49CRec *arg1) {
     arg1[1].unk_1C = base4 + 0x1E28;
     arg1[1].unk_20 = base4 + 0x1EA0;
     arg1[1].unk_10 = (s32)base4;
-    return (s32)(base4 + tail);
+    return (s32)(base4 + var_2);
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order; values
