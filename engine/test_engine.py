@@ -3559,6 +3559,3290 @@ def test_layer2_gate() -> None:
              Q.O.verify) = saved
 
 
+def test_naming_keycheck_scoped_pairs() -> None:
+    """Pure-logic scoped proof regressions; no build/toolchain or git writes."""
+    import sys
+    import contextlib
+    import io
+    import re
+    from unittest.mock import call, patch
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+    import naming_keycheck as nk
+
+    def cpp_preamble(tu):
+        # GCC 12.4 mipsel cpp's real implicit system-header preamble.
+        return ('# 0 ' + json.dumps(tu) + '\n# 0 "<built-in>"\n# 0 "<command-line>"\n'
+                '# 1 "/usr/mipsel-linux-gnu/include/stdc-predef.h" 1 3 4\n'
+                '# 0 "<command-line>" 2\n# 1 ' + json.dumps(tu) + '\n')
+
+    def fake_cpp(tree, tu):
+        # Fixture-only marker output; real compilation eligibility is tested
+        # separately with explicit emitted/omitted header markers below.
+        active, output = set(), []
+        def emit(path):
+            path = nk.normpath(path)
+            if path in active or path not in tree:
+                return
+            active.add(path)
+            text = tree[path]
+            for line, content in enumerate(text.splitlines(), 1):
+                include = re.match(r'^\s*#\s*include\s*([<"])([^>"\n]+)[>"]', content)
+                output.append((content if re.match(r'^\s*#\s*(?:define|undef)\b', content) else
+                               '' if re.match(r'^\s*(?:#|%:)', content) else content) + '\n')
+                if include:
+                    quote, target = include.groups()
+                    choices = ([Path(path).parent / target] if quote == '"' else []) + [Path("include") / target]
+                    candidate = next((nk.normpath(p.as_posix()) for p in choices if nk.normpath(p.as_posix()) in tree), None)
+                    if candidate and candidate not in active:
+                        output.append('# 1 ' + json.dumps(candidate) + ' 1\n')
+                        emit(candidate)
+                        output.append('# ' + str(line + 1) + ' ' + json.dumps(path) + ' 2\n')
+            active.remove(path)
+        preamble = cpp_preamble(tu)
+        definitions = nk.command_line_macros(tree.get("Makefile"))
+        preamble = preamble.replace('# 0 "<command-line>"\n',
+                                    '# 0 "<command-line>"\n' + (definitions + "\n" if definitions else ""), 1)
+        output.append(preamble)
+        emit(tu)
+        return "".join(output)
+
+    dependency_calls = []
+    def fake_dependencies(tree, tu):
+        dependency_calls.append((tree.label, tu))
+        # This is an injected compiler fixture, not production include discovery.
+        return nk.emitted_lines(fake_cpp(tree, tu), tree, tu).sources | {tu}
+
+    def fake_cc1(tree, tu):
+        return nk.subprocess.CompletedProcess([], 0, "\taddiu $2,$0,1\n", "")
+
+    def proof(spec, base, new, compile_headers=True, cpp=fake_cpp, cc1=fake_cc1, deps=fake_dependencies):
+        if compile_headers:
+            base = dict(base)
+            headers = [p for p in base if p.endswith(".h")]
+            if headers:
+                base["src/keycheck_header_probe.c"] = "".join('#include "../' + p + '"\n' for p in headers)
+        pairs = nk.parse_pairs(spec)
+        scoped = {o: n for o, n in pairs.items() if "." in o or ":" in o}
+        globals = {o: n for o, n in pairs.items() if o not in scoped}
+        try:
+            edits = nk.scoped_plan(base, scoped, globals)
+            nk.scoped_applied(base, edits, lambda p: new.get(p, base.get(p)))
+            with patch.object(nk, "preprocess", cpp), patch.object(nk, "compile_cc1", cc1), patch.object(nk, "cpp_dependencies", deps):
+                nk.verify_compiled_edits(base, {**base, **new}, edits, scoped=scoped, global_pairs=globals)
+        except ValueError as e:
+            return False, str(e)
+        for path, text in new.items():
+            if any("." in o for o in scoped) and not nk.aggregate_unchanged(
+                    base[path], text, edits.get(path, {}), globals):
+                return False, "aggregate definition changed"
+            want = nk.scoped_text(base[path], edits.get(path, {}), text)
+            if globals:
+                pat = re.compile(r"\b(?:" + "|".join(map(re.escape, globals)) + r")\b")
+                want = nk.nw.sub_c(pat, lambda m: globals[m[0]], want)[0]
+            if not nk.scoped_comments(want, text, scoped)[0]:
+                return False, "unexplained token change"
+        return True, ""
+
+    member = ("struct T { int m; }; struct U { int m; };\n"
+              "int f(struct T *t, struct U *u) { return t->m + u->m; }\n"
+              "struct T a = { .m = 1 }; /* m */\n")
+    renamed = member.replace("struct T { int m;", "struct T { int fresh;")
+    renamed = renamed.replace("t->m", "t->fresh").replace(".m =", ".fresh =")
+    renamed = renamed.replace("/* m */", "/* fresh */")
+    check("keycheck: member shared by another aggregate, optional accesses and comments",
+          proof("T.m=fresh", {"src/a.c": member}, {"src/a.c": renamed})[0])
+    check("keycheck: member access after dot", proof("T.m=fresh",
+          {"src/a.c": member + "int h(struct T t) { return t.m; }"},
+          {"src/a.c": renamed + "int h(struct T t) { return t.fresh; }"})[0])
+    for label, extra in [("C identifier", "int fresh;"),
+                         ("header identifier", "int fresh;"),
+                         ("asm identifier", "glabel fresh")]:
+        path = {"C identifier": "src/b.c", "header identifier": "include/b.h",
+                "asm identifier": "asm/b.s"}[label]
+        ok, why = proof("T.m=fresh", {"src/a.c": member, path: extra},
+                        {"src/a.c": renamed})
+        check("keycheck: unrelated member destination token allowed in " + label, ok)
+    check("keycheck: member bare-name change rejected", not proof("T.m=fresh",
+          {"src/a.c": member + "int m;"}, {"src/a.c": renamed + "int fresh;"})[0])
+    for text in ["struct T { int x; };", "struct T { int m; int m; };",
+                 "struct T { int m; }; struct T { int m; };",
+                 "struct T { struct { int m; } x; };",
+                 "typedef struct { int m; } *T;"]:
+        check("keycheck: ambiguous/missing aggregate fails " + text, not proof("T.m=fresh",
+              {"src/a.c": text}, {"src/a.c": text.replace("int m;", "int fresh;")})[0])
+    for decl in ["typedef struct { int m; } T;", "union T { int m; };",
+                 "typedef struct Tag { int m; } T;",
+                 "typedef struct Tag T; struct Tag { int m; };"]:
+        check("keycheck: supported aggregate spelling " + decl, proof("T.m=fresh",
+              {"include/t.h": decl}, {"include/t.h": decl.replace("int m;", "int fresh;")})[0])
+    for label, extra in [("macro body", "#define GET(x) x->m\n"),
+                         ("macro splice", "#define GET(x) x->\\\nm\n"),
+                         ("token paste", "#define GET(x) x ## m\n")]:
+        check("keycheck: rejects member " + label, not proof("T.m=fresh",
+              {"src/a.c": member + extra}, {"src/a.c": renamed + extra})[0])
+    local = "int f(int l) { return l + 1; } int g(int l) { return l; } /* l */"
+    local_new = "int f(int fresh) { return fresh + 1; } int g(int l) { return l; } /* fresh */"
+    check("keycheck: local parameter bounded to function", proof("f:l=fresh",
+          {"src/a.c": local}, {"src/a.c": local_new})[0])
+    check("keycheck: local outside function fails", not proof("f:l=fresh",
+          {"src/a.c": local}, {"src/a.c": local_new.replace("g(int l)", "g(int fresh)")})[0])
+    for label, text in [
+            ("shadowing", "int f(int l) { { int l; l = 1; } return l; }"),
+            ("parenthesized shadowing", "int f(int l) { { int (l); } return l; }"),
+            ("parenthesized array shadowing", "int f(int l) { { int (l[2]); } return l; }"),
+            ("function pointer shadowing", "int f(int l) { { int (*l)(void); } return l; }"),
+            ("comma shadowing after initializer", "int f(int l) { { int x = 0, l; } return l; }"),
+            ("enum shadowing", "int f(int l) { { enum E { l }; } return l; }"),
+            ("duplicate definitions", "int f(int l) { return l; } int f(int l) { return l; }"),
+            ("macro", "#define X l\nint f(int l) { return l; }"),
+            ("macro parameter", "#define X(l) 1\nint f(int l) { return l; }"),
+            ("nonfresh destination", "int f(int l) { int fresh; return l; }"),
+            ("nested local", "int f(void) { { int l; l = 1; } return 0; }"),
+            ("use before declaration", "int f(void) { use(l); int l; return l; }")]:
+        ok, why = proof("f:l=fresh", {"src/a.c": text}, {"src/a.c": text.replace("l", "fresh")})
+        check("keycheck: local rejects " + label, not ok and bool(why))
+    text = "int f(void) { int l; l = 1; return l; }"
+    check("keycheck: simple outer local", proof("f:l=fresh", {"src/a.c": text},
+          {"src/a.c": text.replace("l", "fresh")})[0])
+    for expression in ["call(l)", "(l + 1)", "x = (s32)l", "int x = call(l)",
+                       "int x = call(1, l)", "call(1, l)", "*l", "l ? l : 0"]:
+        text = "int f(int l) { " + expression + "; return l; }"
+        check("keycheck: local expression " + expression, proof("f:l=fresh",
+              {"src/a.c": text}, {"src/a.c": text.replace("int l", "int fresh")
+               .replace(expression, re.sub(r"\bl\b", "fresh", expression))
+               .replace("return l", "return fresh")})[0])
+    for text, after in [
+            ("int f(int l) { return p->l + l; }", "int f(int fresh) { return p->l + fresh; }"),
+            ("int f(int l) { return p.l + l; }", "int f(int fresh) { return p.l + fresh; }"),
+            ("int f(int l) { l: l++; goto l; return l; }",
+             "int f(int fresh) { l: fresh++; goto l; return fresh; }"),
+            ("int f(int l) { struct l *p; union l *q; enum l x; return l; }",
+             "int f(int fresh) { struct l *p; union l *q; enum l x; return fresh; }")]:
+        check("keycheck: local preserves other namespaces " + text,
+              proof("f:l=fresh", {"src/a.c": text}, {"src/a.c": after})[0])
+        check("keycheck: local forbids changing other namespaces " + text,
+              not proof("f:l=fresh", {"src/a.c": text},
+                        {"src/a.c": after.replace("->l", "->fresh").replace(".l", ".fresh")
+                         .replace("l:", "fresh:").replace("goto l", "goto fresh")
+                         .replace("struct l", "struct fresh").replace("union l", "union fresh")
+                         .replace("enum l", "enum fresh")})[0])
+    for macro_path in ["include/macros.h", "src/macros.h", "src/macros.c"]:
+        ok, why = proof("f:l=fresh", {"src/a.c": local,
+                        macro_path: "#define GET(p) ((p)->l)\n"}, {"src/a.c": local_new})
+        check("keycheck: local rejects visible macro " + macro_path,
+              not ok and macro_path in why and "#define body" in why)
+    text = 'int f(int l) { __asm__("add %[l], %[l]" : [l] "+r"(l)); return l; }'
+    check("keycheck: asm string substitution forbidden", not proof("f:l=fresh", {"src/a.c": text},
+          {"src/a.c": text.replace("[l]", "[fresh]").replace("int l", "int fresh")
+           .replace("(l)", "(fresh)").replace("return l", "return fresh")})[0])
+    check("keycheck: asm literal text remains exact", proof("f:l=fresh", {"src/a.c": text},
+          {"src/a.c": text.replace("int l", "int fresh").replace("[l] \"+r\"", "[fresh] \"+r\"")
+           .replace("(l)", "(fresh)").replace("return l", "return fresh")})[0])
+    shared_base = ("struct T { int m; }; union U { int k; int m; }; "
+                   "int f(union U *u) { return u->m; }")
+    shared_new = ("struct T { int n; }; union U { int n; int m; }; "
+                  "int f(union U *u) { return u->n; }")
+    ok, why = proof("T.m=n,U.k=n", {"src/a.c": shared_base}, {"src/a.c": shared_new})
+    check("keycheck: shared scoped destination union rebinding fails", not ok and "shared" in why)
+    ok, why = proof("T.m=n,k=n", {"src/a.c": shared_base}, {"src/a.c": shared_new})
+    check("keycheck: scoped/global destination collision fails", not ok and "global pair" in why)
+    # An unrelated nested declarator contains a member-selection token. It must
+    # not receive the optional access substitution allowed in executable code.
+    text = "struct T { int m; }; struct U { int k[sizeof(((struct T *)0)->m)]; };"
+    after = text.replace("int m;", "int n;").replace("->m", "->n")
+    check("keycheck: aggregate interior is protected", not proof("T.m=n",
+          {"src/a.c": text}, {"src/a.c": after})[0])
+    text = "int n;\n#define GET() n\nint f(int l) { return l + GET(); }"
+    ok, why = proof("f:l=n", {"src/a.c": text},
+                    {"src/a.c": text.replace("int l", "int n").replace("return l", "return n")})
+    check("keycheck: destination macro capture fails", not ok and "#define body" in why)
+    for path in ["src/b.c", "include/b.h", "asm/b.s"]:
+        ok, why = proof("f:l=n", {"src/a.c": "int f(int l) { return l; }", path: "int n;"},
+                        {"src/a.c": "int f(int n) { return n; }"})
+        check("keycheck: local destination visible declarations only " + path,
+              ok if path.startswith("asm/") else not ok and "not fresh" in why)
+    text = "int func_8001979C(int bits_left) { return bits_left; }"
+    after = "int func_8001979C(int nbits) { return nbits; }"
+    for other in ["int g(void) { int nbits; return nbits; }",
+                  "int g(int nbits) { return nbits; }"]:
+        check("keycheck: another function's local destination is safe " + other,
+              proof("func_8001979C:bits_left=nbits", {"src/a.c": text, "src/b.c": other},
+                    {"src/a.c": after})[0])
+        check("keycheck: same-file other-function local destination is safe " + other,
+              proof("func_8001979C:bits_left=nbits", {"src/a.c": text + "\n" + other},
+                    {"src/a.c": after + "\n" + other})[0])
+    for label, other in [
+            ("global", "int nbits;"), ("function", "int nbits(void) { return 0; }"),
+            ("typedef", "typedef int nbits;"),
+            ("enum", "enum E { nbits };"),
+            ("nested enum", "struct S { enum E { nbits } value; };"),
+            ("function-local enum", "int g(void) { enum E { nbits }; return 0; }"),
+            ("macro name", "#define nbits 1\n"),
+            ("macro parameter", "#define X(nbits) 1\n"),
+            ("macro body", "#define X nbits\n"),
+            ("prototype parameter", "int g(int nbits);"),
+            ("token paste", "#define X(x) x ## nbits\n")]:
+        ok, why = proof("func_8001979C:bits_left=nbits",
+                        {"src/a.c": text, "include/b.h": other}, {"src/a.c": after})
+        check("keycheck: local destination visible via " + label,
+              ok if label in ("macro parameter", "prototype parameter") else not ok and "nbits" in why)
+    for symbol in ["glabel nbits", "dlabel nbits", ".global nbits", "jal nbits"]:
+        check("keycheck: unreferenced asm identifier permits local destination " + symbol, proof(
+              "func_8001979C:bits_left=nbits", {"src/a.c": text, "asm/b.s": symbol},
+              {"src/a.c": after})[0])
+    text = "int l; int f(int c, int l) { return c ? (int) l : 0; }"
+    after = "int l; int f(int c, int n) { return c ? (int) n : 0; }"
+    check("keycheck: ternary cast operand renames", proof("f:l=n",
+          {"src/a.c": text.removeprefix("int l; ")}, {"src/a.c": after.removeprefix("int l; ")})[0])
+    check("keycheck: round-11 ordinary old name outside f fails", not proof("f:l=n",
+          {"src/a.c": text}, {"src/a.c": after})[0])
+    check("keycheck: ternary cast global rebinding fails", not proof("f:l=n",
+          {"src/a.c": text}, {"src/a.c": after.replace("(int) n", "(int) l")})[0])
+    for expression in ["c ? (int) l : 0", "c ? 1 : l ? l : 0", "a[(l)]"]:
+        text = "int f(int l) { return " + expression + "; }"
+        check("keycheck: nested expression operand renames " + expression, proof("f:l=n",
+              {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "n", text)})[0])
+    for spec, text, after in [
+            ("f:l=b,a=b", "int f(int l){return l+a;}", "int f(int b){return b+b;}"),
+            ("f:l=a,a=b", "int f(int l){return l;}", "int f(int a){return a;}"),
+            ("f:l=g", "int l[4]; int g[4]; int f(void){return h(sizeof l);}",
+             "int l[4]; int g[4]; int f(void){return h(sizeof g);}"),
+            ("f:a=x,f:b=x", "int f(int a, int b){return a+b;}",
+             "int f(int x, int x){return x+x;}")]:
+        check("keycheck: follow-up capture probe " + spec, not proof(spec,
+              {"src/a.c": text}, {"src/a.c": after})[0])
+    for use in ["return h(sizeof l);", "if(c) return 0; else return l;",
+                "if(c) return 0; else l = 1;", "if(c) return 0; else *l = 1;",
+                "do l++; while(c);"]:
+        text = "int l; int f(void){" + use + "}"
+        after = text.replace(use, re.sub(r"\bl\b", "fresh", use))
+        ok, why = proof("f:l=fresh", {"src/a.c": text}, {"src/a.c": after})
+        check("keycheck: non-declaration never supplies binding " + use,
+              not ok and "simple binding" in why)
+    text = "#define GET(p,f) ((p)->f)\nint f(int l){return GET(s, l) + l;}"
+    ok, why = proof("f:l=n", {"src/a.c": text},
+                    {"src/a.c": text.replace("int l", "int n").replace("s, l", "s, n")
+                     .replace("+ l", "+ n")})
+    check("keycheck: macro argument is not a local use", not ok and "macro GET" in why)
+    for conditional in ["#if 0", "#if FEATURE", "#ifdef FEATURE", "#ifndef FEATURE"]:
+        text = "struct T { int m; };\n" + conditional + "\nint f(struct T *p){return p->m;}\n#endif\n"
+        ok, why = proof("T.m=n", {"src/a.c": text},
+                        {"src/a.c": text.replace("int m", "int n").replace("->m", "->n")})
+        check("keycheck: rejects conditional member access " + conditional,
+              not ok and "preprocessor-conditional" in why)
+    text = "#if FEATURE\nint f(int l){return l;}\n#endif\n"
+    check("keycheck: rejects conditional local definition", not proof("f:l=n",
+          {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "n", text)})[0])
+    text = "int f(int l){ int a[2] = { 0, l: 5 }; return l; }"
+    after = "int f(int n){ int a[2] = { 0, l: 5 }; return n; }"
+    check("keycheck: GNU designator remains exact", proof("f:l=n",
+          {"src/a.c": text}, {"src/a.c": after})[0])
+    check("keycheck: GNU designator rename fails", not proof("f:l=n",
+          {"src/a.c": text}, {"src/a.c": after.replace("l:", "n:")})[0])
+    for branch in ["case 1:", "default:", "case (1 ? 2 : 3):"]:
+        text = "int f(int l){ switch(x){ " + branch + " l: x++; } return l; }"
+        after = text.replace("int l", "int n").replace("return l", "return n")
+        check("keycheck: preserves label after " + branch,
+              proof("f:l=n", {"src/a.c": text}, {"src/a.c": after})[0])
+        check("keycheck: rejects label change after " + branch,
+              not proof("f:l=n", {"src/a.c": text}, {"src/a.c": after.replace("l:", "n:")})[0])
+    for macro in ["#define l 1\n", "#define l(x) (x)\n"]:
+        check("keycheck: rejects cross-file old macro name " + macro.strip(), not proof("f:l=n",
+              {"src/a.c": "int f(int l){return l;}", "include/b.h": macro},
+              {"src/a.c": "int f(int n){return n;}"})[0])
+    for qualifier in ["__volatile__", "__const__", "__signed__", "__inline__", "auto",
+                      "__attribute__((unused))", "__extension__"]:
+        text = "int f(int l){ { " + qualifier + " extern int l; use(l); } return l; }"
+        check("keycheck: GNU shadow declaration " + qualifier, not proof("f:l=n",
+              {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "n", text)})[0])
+    text = "int l; int f(void){extern int l; return l;}"
+    check("keycheck: extern is not local", not proof("f:l=n", {"src/a.c": text},
+          {"src/a.c": text.replace("extern int l", "extern int n").replace("return l", "return n")})[0])
+    for keyword in ["int", "auto", "__volatile__", "__extension__", "__attribute__"]:
+        check("keycheck: refuses keyword destination " + keyword, not proof("f:l=" + keyword,
+              {"src/a.c": "int f(int l){return l;}"}, {})[0])
+    for path in ["bb2.ld", *nk.REGISTRIES]:
+        check("keycheck: undeclared linker symbol permits local destination " + path, proof("f:l=n",
+              {"src/a.c": "int f(int l){return l;}", path: "n = 0x80010000;"},
+              {"src/a.c": "int f(int n){return n;}"})[0])
+    for decl in ["int m[0x10];", "int m[0x1E6 - 0x1DE];", "u_char u3, m;", "u_char m, v3;"]:
+        text = "/* game.h */\n#ifndef GAME_H\n#define GAME_H\nstruct T { " + decl + " };\n#endif\n"
+        check("keycheck: guarded aggregate declaration " + decl, proof("T.m=n",
+              {"include/game.h": text}, {"include/game.h": re.sub(r"\bm\b", "n", text)})[0])
+    text = "#ifndef GAME_H\n#define GAME_H\n#if FEATURE\nstruct T { int m; };\n#endif\n#endif\n"
+    check("keycheck: guard exemption keeps nested conditionals", not proof("T.m=n",
+          {"include/game.h": text}, {"include/game.h": text.replace("int m", "int n")})[0])
+    text = "#ifndef GAME_H\n#define GAME_H\n#ifndef FEATURE\n#define FEATURE\nstruct T { int m; };\n#endif\n#endif\n"
+    check("keycheck: nested guard-shaped condition is still conditional", not proof("T.m=n",
+          {"include/game.h": text}, {"include/game.h": text.replace("int m", "int n")})[0])
+    text = "int f(int l){ return c ? 0, l : 1; }"
+    check("keycheck: comma ternary use is not a GNU designator", proof("f:l=n",
+          {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "n", text)})[0])
+    text = "struct T { int h; };\n#include <foo.h>\n"
+    after = text.replace("int h", "int q")
+    check("keycheck: member directive unchanged", proof("T.h=q",
+          {"src/a.c": text}, {"src/a.c": after})[0])
+    check("keycheck: member cannot rename directive token", not proof("T.h=q",
+          {"src/a.c": text}, {"src/a.c": after.replace("foo.h", "foo.q")})[0])
+    typedefs = ("typedef struct { int x; } S; typedef enum { E } Enum; "
+                "typedef int (*Callback)(int p); typedef int A, B; "
+                "typedef int __attribute__((aligned(4))) Aligned;")
+    types = nk.declaration_types({"include/t.h": typedefs})
+    check("keycheck: typedef names exclude members/constants/parameters",
+          {"S", "Enum", "Callback", "A", "B", "Aligned"} <= types
+          and not {"x", "E", "p", "aligned"} & types)
+    text = "int f(int l){ int x; x * l; return l; }"
+    check("keycheck: anonymous-struct member is not a type", proof("f:l=n",
+          {"src/a.c": text, "include/t.h": typedefs},
+          {"src/a.c": re.sub(r"\bl\b", "n", text)})[0])
+    text = "int f(int l){ { ExternalType *l; } return l; }"
+    check("keycheck: unknown pointer declaration fails closed", not proof("f:l=n",
+          {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "n", text)})[0])
+    for local_name in ["p", "v", "s", "dst", "out", "val"]:
+        text = f"int f(int {local_name}){{return {local_name};}}"
+        macro = f"#define M({local_name}) ({local_name})\n"
+        check("keycheck: other-file macro parameter does not block " + local_name,
+              proof("f:" + local_name + "=n", {"src/a.c": text, "include/m.h": macro},
+                    {"src/a.c": re.sub(r"\b" + local_name + r"\b", "n", text)})[0])
+    text = "struct T { int m; }; int f(struct T *p){return p->m;}"
+    check("keycheck: unchanged member declaration is not applied", not proof("T.m=n",
+          {"src/a.c": text}, {"src/a.c": text.replace("->m", "->n")})[0])
+    check("keycheck: untouched local definition is not applied", not proof("f:l=n",
+          {"src/a.c": local}, {})[0])
+    for label, text, after, reason in [
+            ("type destination", "typedef int n; struct T { int m; };", "typedef int n; struct T { int n; };", "typedef/type"),
+            ("qualifier-only", "struct T { int x; const m; };", "struct T { int x; const n; };", "qualifier-only"),
+            ("missing trailing semicolon", "struct T{int m;}; union U{int m;int n};",
+             "struct T{int n;}; union U{int m;int n};", "final semicolon"),
+            ("existing member clash", "struct T{int m;}; struct U{int m;int n;}; int f(struct U*u){return u->m;}",
+             "struct T{int n;}; struct U{int m;int n;}; int f(struct U*u){return u->m;}", "aggregate declarations")]:
+        ok, why = proof("T.m=n", {"src/a.c": text}, {"src/a.c": after})
+        check("keycheck: isolated member guard " + label, not ok and reason in why)
+    for text in ["int l; int f(void){int l[sizeof l]; return 0;}",
+                 "int l; int f(int a[sizeof l], int l){return l;}"]:
+        after = text.replace("int l[", "int n[").replace("sizeof l", "sizeof n")
+        after = after.replace(", int l", ", int n").replace("return l", "return n")
+        ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": after})
+        check("keycheck: outer reference before binding/declarator " + text,
+              not ok and ("own declarator" in why or "before" in why))
+    for other in ["#define DECL(x) int x\nDECL(n);", "typedef int s32; s32 (n);"]:
+        ok, why = proof("f:l=n", {"src/a.c": "int f(int l){return l;}", "src/b.c": other},
+                        {"src/a.c": "int f(int n){return n;}"})
+        check("keycheck: file-scope call-like declaration is visible " + other,
+              not ok and "file scope" in why)
+    header = "#ifndef T_H\n#define T_H\nstruct T{int m;};\n#endif\n"
+    ok, why = proof("T.m=n", {"include/unused.h": header, "src/a.c": "int f(void){return 0;}"},
+                    {"include/unused.h": header.replace("int m", "int n")}, compile_headers=False)
+    check("keycheck: uncompiled header cannot certify rename", not ok and "never compiles" in why)
+    ok, why = proof("T.m=n", {"include/t.h": header, "include/bridge.h": '#include "t.h"\n',
+                    "src/a.c": '#include "bridge.h"\n'},
+                    {"include/t.h": header.replace("int m", "int n")}, compile_headers=False)
+    check("keycheck: include graph follows transitive headers", ok)
+    ok, why = proof("T.m=n", {"include/t.h": header, "src/a.c": '#include "t.h"\n',
+                    "src/b.c": "#define T_H\n"},
+                    {"include/t.h": header.replace("int m", "int n")}, compile_headers=False)
+    check("keycheck: unrelated TU guard definition does not replace cpp eligibility", ok)
+    for label, base, target in [
+            ("inactive include", {"src/a.c": '#if 0\n#include "evil.h"\n#endif\n',
+                                  "include/evil.h": "struct T {int m;};\n"}, "include/evil.h"),
+            ("command-line guard", {"src/a.c": '#include "evil.h"\n',
+                                    "include/evil.h": "#ifndef mips\n#define mips\nstruct T {int m;};\n#endif\n"}, "include/evil.h"),
+            ("angle-include decoy", {"src/dir/a.c": '#include <ev.h>\n',
+                                     "src/dir/ev.h": "struct T {int m;};\n",
+                                     "include/ev.h": "struct Actual {int x;};\n"}, "src/dir/ev.h")]:
+        def omitted(tree, tu):
+            out = '# 1 ' + json.dumps(tu) + '\nint fixture;\n'
+            if label == "angle-include decoy":
+                out += '# 1 "include/ev.h" 1\nstruct Actual {int x;};\n# 2 ' + json.dumps(tu) + ' 2\n'
+            return out
+        ok, why = proof("T.m=n", base, {target: base[target].replace("int m", "int n")},
+                        compile_headers=False, cpp=omitted)
+        check("keycheck: cpp rejects round-5 " + label, not ok and "never compiles" in why)
+    header = "/* fixture */\n\nstruct T {int m;};\n"
+    base = {"src/a.c": '#include "h.h"\n', "include/h.h": header}
+    def emitted(tree, tu):
+        return ('# 1 ' + json.dumps(tu) + '\n# 3 "include/h.h" 1\n'
+                + tree["include/h.h"].splitlines()[2] + '\n# 2 ' + json.dumps(tu) + ' 2\n')
+    check("keycheck: emitted header line is authoritative", proof("T.m=n", base,
+          {"include/h.h": header.replace("int m", "int n")}, compile_headers=False, cpp=emitted)[0])
+    for omitted_tree in ("base", "new"):
+        def one_tree(tree, tu):
+            return '' if tree.label == omitted_tree else emitted(tree, tu)
+        ok, why = proof("T.m=n", base, {"include/h.h": header.replace("int m", "int n")},
+                        compile_headers=False, cpp=one_tree)
+        check("keycheck: cpp must emit both trees " + omitted_tree, not ok and "never compiles" in why)
+    # Round 6: a surviving line is not evidence that its edited token survived.
+    for label, definitions, expression, cpp_defs in [
+            ("ID(DROP)", "#define ID(x) x\n#define DROP(x) 0\n", "ID(DROP)(s->m)", ""),
+            ("digraph DROP", "%:define DROP(x) 0\n", "DROP(s->m)", ""),
+            ("command-line DROP", "", "DROP(s->m)", " -DDROP(x)=0")]:
+        text = ("struct T{int m;};\nstruct S{int m;};\n" + definitions
+                + "int f(struct S*s){return " + expression + ";}\n")
+        fixture_make = ("CPP := missing-keycheck-cpp\nCPP_FLAGS := -Iinclude\n"
+                        "CPP_DEFS := -Dmips" + cpp_defs + "\n"
+                        "\t$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | cc1\n")
+        base = {"src/a.c": text, "Makefile": fixture_make}
+        after = text.replace("struct T{int m", "struct T{int n").replace("s->m", "s->n")
+        def dropped(tree, tu):
+            output = ['# 1 ' + json.dumps(tu) + '\n']
+            for content in tree[tu].splitlines():
+                if content.startswith(("#", "%:")):
+                    output.append('\n')
+                elif content.startswith("int f"):
+                    output.append("int f(struct S*s){return 0;}\n")
+                else:
+                    output.append(content + '\n')
+            return "".join(output)
+        ok, why = proof("T.m=n", base, {"src/a.c": after}, cpp=dropped)
+        check("keycheck: cpp rejects discarded round-6 " + label,
+              not ok and any(reason in why for reason in ("sentinel discarded", "macro DROP", "digraph", "chained function-like macro")))
+        # Even an identical spelling supplied by expansion is not this edit.
+        def produced(tree, tu):
+            spelling = "m" if tree.label == "base" else "n"
+            return dropped(tree, tu).replace("return 0", "return s->" + spelling)
+        ok, why = proof("T.m=n", base, {"src/a.c": after}, cpp=produced)
+        check("keycheck: cpp rejects expansion-origin spelling " + label,
+              not ok and any(reason in why for reason in ("sentinel discarded", "macro DROP", "digraph", "chained function-like macro")))
+
+    unused = "/* not included */\nstruct T{int m;};\n"
+    for label, directive, reason in [
+            ("line", '#line 2 "include/evil.h"\n', "line-control"),
+            ("GNU line", '# 2 "include/evil.h"\n', "line-control"),
+            ("macro marker", '#define HASH #\nHASH 2 "include/evil.h"\n', "include-stack")]:
+        base = {"src/a.c": directive + "int x;\n", "include/evil.h": unused}
+        def spoof(tree, tu):
+            return ('# 1 ' + json.dumps(tu) + '\n# 2 "include/evil.h"\n'
+                    + tree["include/evil.h"].splitlines()[1] + '\n')
+        ok, why = proof("T.m=n", base, {"include/evil.h": unused.replace("int m", "int n")},
+                        compile_headers=False, cpp=spoof)
+        check("keycheck: cpp rejects round-6 spoof " + label, not ok and reason in why)
+    for label, output in [
+            ("first marker", '# 1 "include/evil.h"\n'),
+            ("wrong pop", '# 1 "src/a.c"\n# 1 "include/h.h" 1\n# 2 "src/wrong.c" 2\n'),
+            ("unflagged switch", '# 1 "src/a.c"\n# 1 "include/h.h"\n'),
+            ("unfinished include", '# 1 "src/a.c"\n# 1 "include/h.h" 1\n'),
+            ("malformed marker", '# 1 "src/a.c"\n# 1 "include/h.h" 9\n')]:
+        try:
+            nk.emitted_lines(output, nk.CppTree({"src/a.c": "", "include/h.h": ""}, "test"), "src/a.c")
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: strict marker " + label, bool(why))
+    tree = nk.CppTree({"src/a.c": "int x;\n"}, "test")
+    startup = '# 0 "src/a.c"\n# 0 "<built-in>"\n# 0 "<command-line>"\n# 1 "src/a.c"\nint x;\n'
+    eq("keycheck: legitimate cpp startup prelude", nk.emitted_lines(startup, tree, "src/a.c"),
+       {("src/a.c", 1): ["int", "x", ";"]})
+    eq("keycheck: exact real mipsel cpp 12.4 system preamble", nk.emitted_lines(
+       cpp_preamble("src/a.c") + "int x;\n", tree, "src/a.c"), {("src/a.c", 1): ["int", "x", ";"]})
+    system = cpp_preamble("src/a.c").replace('# 0 "<command-line>" 2', 'int system_decl;\n# 0 "<command-line>" 2')
+    eq("keycheck: flagged system push may emit text", nk.emitted_lines(system + "int x;\n", tree, "src/a.c"),
+       {("src/a.c", 1): ["int", "x", ";"],
+        ("/usr/mipsel-linux-gnu/include/stdc-predef.h", 1): ["int", "system_decl", ";"]})
+    empty_external = cpp_preamble("src/a.c").replace(' 1 3 4', ' 1')
+    eq("keycheck: empty external push accepted", nk.emitted_lines(empty_external + "int x;\n", tree, "src/a.c"),
+       {("src/a.c", 1): ["int", "x", ";"]})
+    try:
+        nk.emitted_lines(empty_external.replace('# 0 "<command-line>" 2', 'int unexpected;\n# 0 "<command-line>" 2'), tree, "src/a.c")
+        why = ""
+    except ValueError as e:
+        why = str(e)
+    check("keycheck: unflagged external push must emit no text", "outside a source file" in why)
+    for header in ("/usr/mipsel-linux-gnu/include/other.h", "include/fake-system.h"):
+        try:
+            nk.emitted_lines(cpp_preamble("src/a.c").replace("/usr/mipsel-linux-gnu/include/stdc-predef.h", header), tree, "src/a.c")
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: flag-3 push only accepts compiler predef " + header, "unsupported cpp system header" in why)
+    for hazard in ("__has_include(x)", "a ## b", "%:define X 1"):
+        output = cpp_preamble("src/a.c").replace('# 0 "<command-line>" 2', hazard + '\n# 0 "<command-line>" 2')
+        try:
+            nk.emitted_lines(output, tree, "src/a.c")
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: system output hazard scan " + hazard, bool(why))
+
+    simple = {"src/a.c": "struct T{int m;};\nint f(struct T*p){return p->m;}\n"}
+    changed_simple = {"src/a.c": simple["src/a.c"].replace("int m", "int n").replace("->m", "->n")}
+    for condition, reason in [("discarded", "sentinel discarded"), ("string", "stringified or pasted"),
+                              ("char", "stringified or pasted"), ("paste", "stringified or pasted"),
+                              ("wrong-line", "wrong source line")]:
+        def sentinel_bad(tree, tu):
+            out = fake_cpp(tree, tu)
+            if tree.label.endswith("-sentinel"):
+                name = re.findall(r'__kc_s\w+__', tree[tu])[-1]
+                if condition == "discarded":
+                    out = out.replace(name, "unrelated")
+                elif condition in ("string", "char", "paste"):
+                    extra = {'string': '"' + name + '"', 'char': "'" + name + "'", 'paste': name + "suffix"}[condition]
+                    out += '# 2 ' + json.dumps(tu) + '\n' + extra + ';\n'
+                else:
+                    out += '# 3 ' + json.dumps(tu) + '\n' + name + ';\n'
+            return out
+        ok, why = proof("T.m=n", simple, changed_simple, cpp=sentinel_bad)
+        check("keycheck: sentinel condition " + condition, not ok and reason in why)
+    # An included header must prove its sentinel in every TU that emits its line.
+    header_base = {"src/a.c": '#include "h.h"\n', "src/b.c": '#include "h.h"\n',
+                   "include/h.h": "struct T{int m;};\n"}
+    def one_header_tu_drops(tree, tu):
+        out = fake_cpp(tree, tu)
+        if tree.label.endswith("-sentinel") and tu.endswith("b.c"):
+            for name in re.findall(r'__kc_s\w+__', tree["include/h.h"]):
+                out = out.replace(name, "discarded")
+        return out
+    ok, why = proof("T.m=n", header_base, {"include/h.h": "struct T{int n;};\n"},
+                    compile_headers=False, cpp=one_header_tu_drops)
+    check("keycheck: sentinel must survive every header TU", not ok and "sentinel discarded" in why)
+
+    for side in ("base", "new"):
+        local_text = "int f(int l){\nreturn l;\nSYSTEM_CALL(p->l);\n}\n"
+        local_after = local_text.replace("int l", "int fresh").replace("return l", "return fresh")
+        def local_survival_drop(tree, tu):
+            out = fake_cpp(tree, tu)
+            if tree.label.startswith(side):
+                out = re.sub(r'SYSTEM_CALL\(p->\w+\)', '0', out)
+            return out
+        ok, why = proof("f:l=fresh", {"src/a.c": local_text}, {"src/a.c": local_after}, cpp=local_survival_drop)
+        check("keycheck: function-wide local survival " + side,
+              not ok and "local survival, " + side in why)
+        # A separate untouched line produces a name, without source-name removal.
+        producing = "int f(int l){\nreturn l;\nSYSTEM_NAME;\n}\n"
+        def produced_on_side(tree, tu):
+            return fake_cpp(tree, tu).replace("SYSTEM_NAME", "fresh") if tree.label.startswith(side) else fake_cpp(tree, tu)
+        ok, why = proof("f:l=fresh", {"src/a.c": producing},
+                        {"src/a.c": producing.replace("int l", "int fresh").replace("return l", "return fresh")}, cpp=produced_on_side)
+        check("keycheck: function-wide local capture " + side,
+              not ok and "macro expansion produces or captures" in why and "(" + side + ")" in why)
+
+    for label, macro, struct_type in [("cheat r4", "DROP", "T"), ("code P1", "STR", "T"),
+                                      ("code P3", "DROP", "T"), ("code P5", "DROP", "S")]:
+        text = ("struct T{int m;int q;}; struct S{int m;};\n#define DROP(x) 0\n"
+                "#define ID(f) f\n#define STR(x) #x\n#define KEEP(x) (s->q + x)\n"
+                "int m,n;\nint f(struct " + struct_type + "*s){return ID(" + macro + ")\n"
+                "(s->m) + ID(KEEP)(0\n+ m + n); }\n")
+        after = text.replace("struct T{int m", "struct T{int n").replace("(s->m)", "(s->n)")
+        def multiline_cpp(tree, tu):
+            # Real shape: dropped/stringified call starts on the preceding line;
+            # KEEP's argument expansion supplies same-spelling twins on line 8.
+            lines = tree[tu].splitlines()
+            argument = lines[7].split(" + ID(KEEP)")[0]
+            value = json.dumps(argument) if macro == "STR" else "0"
+            return (cpp_preamble(tu) + lines[0] + '\n# 6 ' + json.dumps(tu) + '\nint m,n;\n'
+                    '# 7 ' + json.dumps(tu) + '\nint f(struct ' + struct_type + '*s){return ' + value + '\n'
+                    '# 8 ' + json.dumps(tu) + '\n+(s->q + 0 + m + n); }\n')
+        ok, why = proof("T.m=n", {"src/a.c": text}, {"src/a.c": after}, cpp=multiline_cpp)
+        check("keycheck: round-8 chained macro guard " + label, not ok and "chained function-like macro" in why)
+        with patch.object(nk, "reject_macro_arguments", lambda *args, **kwargs: None):
+            ok, why = proof("T.m=n", {"src/a.c": text}, {"src/a.c": after}, cpp=multiline_cpp)
+        check("keycheck: round-8 sentinel proof independent of guard " + label,
+              not ok and ("stringified or pasted" in why if macro == "STR" else "sentinel discarded" in why))
+    for aggregate, callee in [("union", "MEMBER"), ("struct", "MEMBER"), ("union", "DROP")]:
+        text = ("#define MEMBER(p,x) ((p)->x)\n#define DROP(x) 0\n#define OPEN " + callee + " (\n"
+                "#define RP )\n" + aggregate + " S{int l;int n;};\n"
+                "int f(int l," + aggregate + " S*s){return (0 RP + OPEN s,l+0)+l;}\n")
+        after = text.replace("f(int l", "f(int n").replace("OPEN s,l+0", "OPEN s,n+0").replace(")+l;", ")+n;")
+        def opener_cpp(tree, tu):
+            lines = tree[tu].splitlines()
+            body = lines[-1]
+            binding = re.search(r'f\(int (\w+)', body)[1]
+            argument = re.search(r'OPEN s,(\w+)\+0', body)[1]
+            final = re.search(r'\)\+(\w+);', body)[1]
+            expansion = '((s)->' + argument + '+0)' if callee == "MEMBER" else '0'
+            return (cpp_preamble(tu) + '\n'.join(lines[:4]) + '\n# 5 ' + json.dumps(tu) + '\n' + lines[4] + '\n'
+                    + 'int f(int ' + binding + ',' + aggregate + ' S*s){return (0)+' + expansion + '+' + final + ';}\n')
+        ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": after}, cpp=opener_cpp)
+        check("keycheck: round-9 object-like opener " + aggregate + " " + callee,
+              not ok and "object-like macro call opener" in why)
+    for body in ("MEMBER", "ALIAS", "MEMBER ("):
+        records = nk.macro_analysis('#define MEMBER(p,x) ((p)->x)\n#define ALIAS MEMBER\n#define OPEN ' + body)[0]
+        try:
+            nk.closure_macro_checks(records, {"f:l": "n"})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: object-like opener chains " + body, "call opener" in why)
+    b2 = "union T{int m;int k;};\n#define m k\nint f(union T*t){return t->m;}\n"
+    for label, base in [("f2", {"src/a.c": b2}),
+                        ("f2h", {"src/a.c": b2.replace('#define m k', '#include "m.h"'), "include/m.h": "#define m k\n"}),
+                        ("f2f", {"src/a.c": b2.replace('#define m k', '#define m(x) (x)')})]:
+        after = base["src/a.c"].replace("int m;", "int n;").replace("->m", "->n")
+        def rewritten_cpp(tree, tu):
+            return fake_cpp(tree, tu).replace("->m", "->k") if label != "f2f" else fake_cpp(tree, tu)
+        ok, why = proof("T.m=n", base, {"src/a.c": after}, cpp=rewritten_cpp)
+        check("keycheck: round-9 old member macro name " + label, not ok and "#define name" in why)
+        if label != "f2f":
+            actual_macro_uses = nk.macro_uses
+            with patch.object(nk, "macro_uses", lambda text, name, body_only=False, name_only=False:
+                              False if name_only else actual_macro_uses(text, name, body_only, name_only)), \
+                    patch.object(nk, "closure_macro_checks", lambda *args: None):
+                ok, why = proof("T.m=n", base, {"src/a.c": after}, cpp=rewritten_cpp)
+            check("keycheck: original spelling check independently rejects " + label,
+                  not ok and "original spelling/count" in why)
+    # Round 10: fixtures retain real -dD definitions and the code cpp emits.
+    round10 = []
+    for probe, spelling, punctuation in [("j14", "ARROW", "->"), ("j14d", "DOT", ".")]:
+        text = ("union S { int l; int n; };\n#define " + spelling + "() " + punctuation +
+                "\nint f(int l, union S *s) { return s " + spelling + "() l + l; }\n")
+        round10.append((probe, {"src/a.c": text}, "s " + spelling + "() l", "s " + spelling + "() n"))
+    for probe, aggregate, callee in [("j1", "union", "MEMBER"), ("j1b", "struct", "MEMBER"),
+                                     ("OPENF-DROP", "union", "DROP"), ("k2", "union", "MEMBER")]:
+        text = (aggregate + " S { int l; int n; };\n#define MEMBER(p,x) ((p)->x)\n"
+                "#define DROP(x) 0\n#define RP )\n")
+        if probe != "k2":
+            text += "#define OPENF() " + callee + "(\n"
+        text += "int f(int l, " + aggregate + " S *s) { return (0 RP + OPENF() s, l + 0) + l; }\n"
+        files = {"src/a.c": text}
+        if probe == "k2":
+            files["Makefile"] = ("CPP := fake-cpp\nCPP_FLAGS := -E -Iinclude\n"
+                                 "CPP_DEFS := '-DOPENF()=MEMBER('\n"
+                                 "\t$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | cc1\n")
+        round10.append((probe, files, "s, l + 0", "s, n + 0"))
+    for probe, directory, macro in [("j2", "include", "MEMBER"), ("j2b", "src", "MEMBER"),
+                                     ("j13", "include", "ARROW")]:
+        macro_use = "MEMBER(s, l + 0)" if macro == "MEMBER" else "s ARROW l"
+        text = ('#include "m.inc"\nunion S { int l; int n; };\n'
+                'int f(int l, union S *s) { return ' + macro_use + ' + l; }\n')
+        files = {"src/a.c": text, directory + "/m.inc":
+                 "#define MEMBER(p,x) ((p)->x)\n" if macro == "MEMBER" else "#define ARROW ->\n"}
+        round10.append((probe, files, macro_use, macro_use.replace(" l", " n")))
+
+    def namespace_cpp(tree, tu):
+        out = fake_cpp(tree, tu)
+        expanded = []
+        for line in out.splitlines():
+            if not line.lstrip().startswith("#"):
+                line = re.sub(r'\bARROW\(\)', '->', line)
+                line = re.sub(r'\bDOT\(\)', '.', line)
+                line = re.sub(r'\bARROW\b', '->', line)
+                line = re.sub(r'\bRP\b', ')', line)
+                definitions = nk.command_line_macros(tree.get("Makefile")) + "\n" + tree[tu]
+                callee = "DROP" if "#define OPENF() DROP(" in definitions else "MEMBER"
+                line = re.sub(r'\bOPENF\(\)', callee + '(', line)
+                line = re.sub(r'\bMEMBER\(\s*s,\s*(\w+)\s*\+\s*0\)', r'((s)->\1 + 0)', line)
+                line = re.sub(r'\bDROP\([^)]*\)', '0', line)
+            expanded.append(line)
+        return "\n".join(expanded) + "\n"
+
+    for probe, files, old_use, new_use in round10:
+        after = files["src/a.c"].replace("f(int l,", "f(int n,").replace(old_use, new_use).replace(" + l;", " + n;")
+        ok, why = proof("f:l=n", files, {"src/a.c": after}, cpp=namespace_cpp)
+        reason = ("call opener" if probe in ("j1", "j1b", "OPENF-DROP", "k2") else
+                  "argument of function-like macro" if probe in ("j2", "j2b") else "adjacent to cpp macro")
+        check("keycheck: round-10 macro namespace " + probe, not ok and reason in why)
+        # Namespace proof independently kills keeping macros; discarders are
+        # rejected by the sentinel proof even with all static guards disabled.
+        with patch.object(nk, "closure_macro_checks", lambda *a: None), \
+                patch.object(nk, "cpp_source_guards", lambda *a: None), \
+                patch.object(nk, "reject_macro_arguments", lambda *a, **kw: None):
+            ok, why = proof("f:l=n", files, {"src/a.c": after}, cpp=namespace_cpp)
+        check("keycheck: round-10 primary cpp namespace " + probe,
+              not ok and ("namespace" in why if probe != "OPENF-DROP" else "sentinel discarded" in why))
+
+    for side in ("base", "new"):
+        files = round10[0][1]
+        text = files["src/a.c"]
+        after = text.replace("f(int l,", "f(int n,").replace("ARROW() l", "ARROW() n").replace(" + l;", " + n;")
+        def one_side_namespace(tree, tu):
+            return namespace_cpp(tree, tu) if tree.label.startswith(side) else fake_cpp(tree, tu)
+        with patch.object(nk, "closure_macro_checks", lambda *a: None), \
+                patch.object(nk, "cpp_source_guards", lambda *a: None):
+            ok, why = proof("f:l=n", files, {"src/a.c": after}, cpp=one_side_namespace)
+        check("keycheck: cpp namespace proof independently checks " + side, not ok and "namespace" in why)
+
+    # Namespace checks follow the ordered output stream across source lines.
+    for kind, prefix, suffix, scope in [
+            ("local", "s->", ";", "f"), ("local", "s.", ";", "f"),
+            ("local", "struct ", " *p;", "f"), ("local", "union ", " *p;", "f"),
+            ("local", "enum ", " *p;", "f"), ("local", "", ": ;", "f"),
+            ("member", "return ", ";", "T"), ("member", "struct U {int ", ";};", "T")]:
+        text = prefix + "\n__kc_test__" + suffix + "\n"
+        if kind == "local":
+            text = "int f(void){" + text + "}"
+        output = nk.emitted_lines(cpp_preamble("src/a.c") + text, nk.CppTree({"src/a.c": text}, "fixture"), "src/a.c")
+        try:
+            nk.sentinel_namespaces(output, {"__kc_test__": (kind, scope)})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: namespace guard independently rejects " + kind + " " + prefix,
+              "namespace" in why)
+    for prefix, suffix, kind, scope in [("s->", ";", "member", "T"),
+            ("struct T {int ", ";};", "member", "T"),
+            ("typedef struct {int ", ";} T;", "member", "T"),
+            ("c ? (int) ", " : 0;", "local", "f")]:
+        text = prefix + "\n__kc_test__" + suffix + "\n"
+        if kind == "local":
+            text = "int f(void){" + text + "}"
+        output = nk.emitted_lines(cpp_preamble("src/a.c") + text, nk.CppTree({"src/a.c": text}, "fixture"), "src/a.c")
+        nk.sentinel_namespaces(output, {"__kc_test__": (kind, scope)})
+        check("keycheck: namespace positive " + prefix, True)
+    # Macro records must come from emitted -dD records, not extensions or
+    # inactive raw definitions. Both trees' names and bodies are guarded.
+    output = nk.emitted_lines(cpp_preamble("src/a.c") + "int f(void){return 0;}\n",
+                             {"src/a.c": "#define HIDDEN l\nint f(void){return 0;}\n"}, "src/a.c")
+    check("keycheck: macro authority excludes un-emitted raw definitions", not output.macros)
+    for params in ("", "()"):
+        records = nk.macro_analysis("#define MEMBER(p,x) ((p)->x)\n#define OPEN" + params + " MEMBER(\n")[0]
+        try:
+            nk.closure_macro_checks(records, {"f:l": "n"})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: cpp call-opener guard " + (params or "object"), "call opener" in why)
+
+    # Old/new name and body checks use emitted records from arbitrary suffixes,
+    # including system predefinitions, rather than a .c/.h file inventory.
+    for side in ("base", "new"):
+        for definition, reason in [("#define m k", "#define name"),
+                ("#define m(x) (x)", "#define name"), ("#define n k", "#define name"),
+                ("#define OTHER m", "macro body"), ("#define OTHER n", "macro body")]:
+            text = '#include "m.inc"\nunion T {int m;int k;};\nint f(union T*t){return t->m;}\n'
+            files = {"src/a.c": text, "include/m.inc": "/* definitions supplied by cpp */\n"}
+            after = text.replace("int m;", "int n;").replace("->m", "->n")
+            def records_cpp(tree, tu):
+                out = fake_cpp(tree, tu)
+                if tree.label == side:
+                    out = out.replace('# 1 "include/m.inc" 1\n', '# 1 "include/m.inc" 1\n' + definition + "\n")
+                return out
+            ok, why = proof("T.m=n", files, {"src/a.c": after}, cpp=records_cpp)
+            check("keycheck: dD-only closure records " + side + " " + definition, not ok and reason in why)
+    for side in ("base", "new"):
+        def system_macro_cpp(tree, tu):
+            out = fake_cpp(tree, tu)
+            if tree.label == side:
+                out = out.replace('# 0 "<command-line>" 2', '#define m k\n# 0 "<command-line>" 2')
+            return out
+        text = 'union T{int m;int k;};\nint f(union T*t){return t->m;}\n'
+        ok, why = proof("T.m=n", {"src/a.c": text},
+                        {"src/a.c": text.replace("int m;", "int n;").replace("->m", "->n")}, cpp=system_macro_cpp)
+        check("keycheck: dD system macro old name " + side, not ok and "#define name" in why)
+
+    # Round 11: all analyses must see the token stream actually compiled.
+    for declaration in ["struct Unk80101EC8Record {int unk_4;};",
+                        "typedef struct {int unk_4;} Unk80101EC8Record;",
+                        "typedef struct Tag {int unk_4;} Unk80101EC8Record;",
+                        "typedef struct Tag Unk80101EC8Record; struct Tag {int unk_4;};"]:
+        for scope in ("Unk80101EC8Record", "GoodRec"):
+            after = declaration.replace("Unk80101EC8Record", "GoodRec").replace("unk_4", "hp")
+            ok, why = proof("Unk80101EC8Record=GoodRec," + scope + ".unk_4=hp",
+                            {"src/a.c": declaration}, {"src/a.c": after})
+            check("keycheck: K1 global type/member " + scope + " " + declaration, ok)
+
+    def scope_cpp(tree, tu):
+        # Emitted -dD definitions are retained; only compiled code is expanded.
+        expanded_tree = dict(tree)
+        expanded_tree[tu] = tree[tu].replace('#include UH', '#include "u.inc"')
+        out = fake_cpp(expanded_tree, tu)
+        replacements = {"UNION": "union", "AGG": "struct {", "EOPEN": "enum {",
+                        "END": "}", "CLOSE": "}", "OPEN": "{"}
+        return "\n".join(line if line.lstrip().startswith("#") else
+                         re.sub(r'\b(?:UNION|AGG|EOPEN|END|CLOSE|OPEN)\b',
+                                lambda m: replacements[m[0]], line)
+                         for line in out.splitlines()) + "\n"
+
+    for probe in ("m1", "m1b", "m1c", "d5", "d6"):
+        other = "union U2 {int m;int n;};\n"
+        prefix = ""
+        if probe in ("m1", "m1c"):
+            prefix = "#define UNION union\n"
+            other = "UNION U2 {int m;int n;};\n" if probe == "m1" else "typedef UNION {int m;int n;} U2;\n"
+        files = {}
+        if probe in ("m1b", "d5"):
+            prefix = '#include "u.inc"\n' if probe == "m1b" else '#define UH "u.inc"\n#include UH\n'
+            files["include/u.inc"] = other
+            other = ""
+        if probe == "d6":
+            other = "UNION U2 {int m;int n;};\n"
+            files["Makefile"] = ("CPP := fake-cpp\nCPP_FLAGS := -E -Iinclude\nCPP_DEFS := -DUNION=union\n"
+                                 "\t$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | cc1\n")
+        text = prefix + "struct T {int m;};\n" + other + "int f(struct T*t,union U2*u){return t->m + u->m;}\n"
+        files["src/a.c"] = text
+        after = text.replace("struct T {int m;}", "struct T {int n;}").replace("->m", "->n")
+        ok, why = proof("T.m=n", files, {"src/a.c": after}, cpp=scope_cpp)
+        check("keycheck: round-11 competing aggregate " + probe, not ok)
+        with patch.object(nk, "closure_macro_checks", lambda *a: None), \
+                patch.object(nk, "cpp_source_guards", lambda *a: None):
+            ok, why = proof("T.m=n", files, {"src/a.c": after}, cpp=scope_cpp)
+        check("keycheck: cpp member freshness independently rejects " + probe,
+              not ok and "fresh in cpp aggregates" in why)
+    text = "struct T{int m;}; union U2{int m;int q;}; int f(struct T*t,union U2*u){return t->m+u->m;}"
+    check("keycheck: m1z other aggregate without destination control", proof("T.m=n",
+          {"src/a.c": text}, {"src/a.c": text.replace("T{int m", "T{int n").replace("t->m", "t->n")})[0])
+    # Census every TU, even when the edit is only in one .c file.
+    text = "struct T{int m;}; int f(struct T*t){return t->m;}"
+    ok, why = proof("T.m=n", {"src/a.c": text, "src/b.c": '#include "u.inc"\n',
+                   "include/u.inc": "union U2{int m;int n;};"},
+                   {"src/a.c": text.replace("int m", "int n").replace("->m", "->n")}, cpp=scope_cpp)
+    check("keycheck: member cpp freshness includes untouched TU", not ok and "cpp aggregates" in why)
+
+    for probe, macro, code in [
+            ("a1", "#define AGG struct {\n#define END }\n", "AGG struct T *l; END x;"),
+            ("a1c", "#define AGG struct {\n#define END }\n", "AGG struct T *l; END x;"),
+            ("a2", "#define EOPEN enum {\n#define END }\n", "EOPEN l END x;")]:
+        text = macro + "struct T{int x;};\nint f(void){" + code + "return 0;}\n"
+        after = text if probe == "a1c" else text.replace("*l;", "*n;").replace("EOPEN l", "EOPEN n")
+        ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": after}, cpp=scope_cpp)
+        check("keycheck: brace-macro aggregate/enum " + probe, not ok)
+    for keyword in ("struct", "union", "enum"):
+        text = "int f(void){" + keyword + " {int __kc_test__; } x;}" if keyword != "enum" else "int f(void){enum {__kc_test__} x;}"
+        output = nk.emitted_lines(cpp_preamble("src/a.c") + text, nk.CppTree({"src/a.c": text}, "fixture"), "src/a.c")
+        try:
+            nk.sentinel_namespaces(output, {"__kc_test__": ("local", "f")})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: local namespace independently excludes " + keyword + " body", "namespace" in why)
+    for word in ("{", "}", "struct", "union", "enum"):
+        try:
+            nk.closure_macro_checks(nk.macro_analysis("#define SCOPE " + word)[0], {"f:l": "n"})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: closure macro scope syntax " + word, "brace/aggregate scope" in why)
+
+    for probe, text, extra in [
+            ("m2", "typedef int T; int l; int g(int a), n; int f(int T){T * l; return sizeof l;}", {}),
+            ("m2b", 'typedef int T; int l; #include "u.inc"\nint f(int T){T * l; return sizeof l;}',
+             {"include/u.inc": "enum {n=5};\n"}),
+            ("m2c", "#define CLOSE }\n#define OPEN {\nint l; int g(int a), n; int f(int l){int x=0; CLOSE int h(void) OPEN return l;}", {}),
+            ("m2e", "typedef int T; int l; int f(int T){T * l; return sizeof l;}", {}),
+            ("m2f", "int g(int a), n; int f(int l){return l;}", {}),
+            ("m5b", "int g(int a), n; int h(void){return 0;} int f(int l){return l;}", {})]:
+        after = text.replace("int f(int l)", "int f(int n)").replace("T * l", "T * n").replace("sizeof l", "sizeof n").replace("return l", "return n")
+        check("keycheck: cpp local binding/freshness " + probe, not proof("f:l=n",
+              {"src/a.c": text, **extra}, {"src/a.c": after}, cpp=scope_cpp)[0])
+    # Isolate shadowed typedefs from the outside-global check (invalid code is
+    # deliberately sufficient here: it must not become a false binding proof).
+    text = "typedef int T; int f(int T){T * l; return sizeof l;}"
+    output = nk.emitted_lines(cpp_preamble("src/a.c") + text, nk.CppTree({"src/a.c": text}, "fixture"), "src/a.c")
+    try:
+        nk.cpp_scope_checks(output, {"f:l": "n"}, {}, "base")
+        why = ""
+    except ValueError as e:
+        why = str(e)
+    check("keycheck: shadowed typedef cpp guard independently rejects", "shadowed typedef" in why)
+    text = '#include "u.inc"\nint f(int l){return l;}\n'
+    with patch.object(nk, "local_freshness", lambda *a: None):
+        ok, why = proof("f:l=n", {"src/a.c": text, "include/u.inc": "enum {n=5};\n"},
+                        {"src/a.c": text.replace("int l", "int n").replace("return l", "return n")}, cpp=scope_cpp)
+    check("keycheck: local freshness sees inc enum independently", not ok and "outside f in cpp" in why)
+    for text in ("int g(int a), n; int f(int l){return l;}",
+                 "int g(int a), n; int h(void){return 0;} int f(int l){return l;}"):
+        visible, _ = nk.file_scope_tokens(text)
+        check("keycheck: comma prototype cannot hide later global", "n" in visible)
+    text = "int legacy(n) int n; {return n;} int f(int l){return l;}"
+    visible, _ = nk.file_scope_tokens(text)
+    check("keycheck: genuine K&R parameter still excluded", "n" not in visible)
+    # Mid-file -dD lines consume their original line, even without a new marker.
+    text = "int x;\n#define MID 1\nint y;\n"
+    output = nk.emitted_lines(cpp_preamble("src/a.c") + text, nk.CppTree({"src/a.c": text}, "fixture"), "src/a.c")
+    check("keycheck: mid-file dD define advances source line",
+          output.get(("src/a.c", 3)) == ["int", "y", ";"] and ("src/a.c", 2) not in output)
+    for definition in ("#define OPEN MEMBER x", "#define OPEN ("):
+        records = nk.macro_analysis("#define MEMBER(p,x) ((p)->x)\n" + definition)[0]
+        try:
+            nk.closure_macro_checks(records, {"f:l": "n"})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: separate macro opener " + definition, "call opener" in why)
+    for definition in ("#define m k", "#define m(x) (x)"):
+        try:
+            nk._scoped_plan({"src/a.c": "struct T{int m;};\n" + definition}, {"T.m": "n"})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: static macro-name check independent " + definition, "#define name" in why)
+    try:
+        nk.scoped_plan({"Makefile": "CPP := fake\nCPP_FLAGS := -E\nCPP_DEFS :=\n\t$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | cc1\n",
+                        "include/.keycheck-cpp-defs.h": "", "src/a.c": "int f(int l){return l;}"}, {"f:l": "n"})
+        why = ""
+    except ValueError as e:
+        why = str(e)
+    check("keycheck: reserved macro proof path independently fails", "reserved cpp macro proof path" in why)
+    for side in ("base", "new"):
+        text = "int f(int l){\nreturn l; LAST_MACRO;}\n"
+        after = text.replace("int l", "int n").replace("return l", "return n")
+        def last_line_cpp(tree, tu):
+            out = fake_cpp(tree, tu)
+            return out.replace("LAST_MACRO", "n" if side == "base" else "l") if tree.label.startswith(side) else out.replace("LAST_MACRO", "0")
+        ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": after}, cpp=last_line_cpp)
+        check("keycheck: function-wide last-line capture " + side,
+              not ok and "macro expansion produces or captures" in why)
+
+    text = "int f(int l){return l;}\n#define l 1\n"
+    ok, why = proof("f:l=n", {"src/a.c": text},
+                    {"src/a.c": text.replace("int l", "int n").replace("return l", "return n")})
+    check("keycheck: d1 macro after f deliberately fails closed", not ok and "#define name" in why)
+
+    # File-scope freshness cannot depend on the old K&R exclusion heuristic.
+    for side in ("base", "new"):
+        text = "int g(int a), n; int f(int " + ("l" if side == "base" else "n") + "){return " + ("l" if side == "base" else "n") + ";}"
+        output = nk.emitted_lines(cpp_preamble("src/a.c") + text, nk.CppTree({"src/a.c": text}, "fixture"), "src/a.c")
+        with patch.object(nk, "file_scope_tokens", lambda *a: (set(), set())):
+            try:
+                nk.cpp_scope_checks(output, {"f:l": "n"}, {}, side)
+                why = ""
+            except ValueError as e:
+                why = str(e)
+        check("keycheck: cpp ordinary outside f independently checks " + side, "outside f in cpp" in why)
+    text = "struct l; int f(int l){return l;}"
+    output = nk.emitted_lines(cpp_preamble("src/a.c") + text, nk.CppTree({"src/a.c": text}, "fixture"), "src/a.c")
+    nk.cpp_scope_checks(output, {"f:l": "n"}, {}, "base")
+    check("keycheck: tag outside f is not an ordinary binding", True)
+
+    text = '#include "u.inc"\nstruct T{int m;}; int f(struct T*t){return t->m;}'
+    check("keycheck: cpp competing freshness requires both member spellings", proof("T.m=n",
+          {"src/a.c": text, "include/u.inc": "union U2{int n;int q;};"},
+          {"src/a.c": text.replace("int m", "int n").replace("->m", "->n")})[0])
+
+    text = "struct S{int l;}; struct S s={l:1}; int f(int l){return l;}"
+    check("keycheck: outside-f member designator is not an ordinary name", proof("f:l=n",
+          {"src/a.c": text}, {"src/a.c": text.replace("f(int l)", "f(int n)").replace("return l", "return n")})[0])
+
+    # Follow-up 16: harmless balanced blocks and unrelated local names pass.
+    for body in ("{ x++; }", "do { x++; } while (0)", "({ x; })"):
+        nk.closure_macro_checks(nk.macro_analysis("#define BLOCK(x) " + body)[0], {"f:l": "n"})
+        check("keycheck: balanced macro blocks allowed " + body, True)
+    text = "int f(int l){return l;} int g(int n){return n;}"
+    check("keycheck: another function's local destination is harmless", proof("f:l=n",
+          {"src/a.c": text}, {"src/a.c": text.replace("f(int l)", "f(int n)").replace("return l", "return n")})[0])
+    # Declaration census ignores tags, members, prototype parameters and uses.
+    for text, names in [
+            ("int obj; int g(int n); int f(int l){return l;}", {"obj", "g", "f"}),
+            ("struct n{int l;}; struct n obj;", {"obj"}),
+            ("int (*n)(int l);", {"n"}), ("int g(int a),n;", {"g", "n"}),
+            ("typedef int n;", {"n"}), ("enum E{n=5,q=7};", {"n", "q"}),
+            ("int a=helper(n);", {"a"}), ("int g(void){int n; return n;}", {"g"})]:
+        ts = [m[0] for m in nk.code_spans(text)]
+        types = nk.declaration_types({"src/a.c": text})
+        actual = nk.cpp_file_declarations(ts, types, nk.cpp_functions(ts, types), {"l", "n"})
+        check("keycheck: file ordinary declaration census " + text, actual == names)
+
+    # K3: exercise the absolute-path branch even on Windows with a dict fixture.
+    text = "int f(void){return 0;}"
+    tree = nk.CppTree({"src/a.c": text}, "fixture")
+    output = nk.emitted_lines(cpp_preamble("src/a.c") + text, tree, "src/a.c")
+    check("keycheck: CppTree real preamble fixture", ("src/a.c", 1) in output)
+    with patch.object(nk.Path, "is_absolute", return_value=True):
+        output = nk.emitted_lines(cpp_preamble("src/a.c") + text, {"src/a.c": text}, "src/a.c")
+    check("keycheck: plain dict absolute marker path cannot crash", ("src/a.c", 1) in output)
+
+    for body, reason in [
+            ("goto __kc_test__; l: return l;", "goto"),
+            ("(c ? x); (__kc_test__: 0);", "closed sibling frame"),
+            ("c ? (__kc_test__: 0) : 1;", "nesting blind colon"),
+            ('_Pragma("kc ?") __kc_test__: return l;', "pragma operator"),
+            ("\n#pragma kc ?\n__kc_test__: return l;", "pragma directive")]:
+        text = "int f(int l){" + body + "}"
+        output = nk.emitted_lines(cpp_preamble("src/a.c") + text, nk.CppTree({"src/a.c": text}, "fixture"), "src/a.c")
+        try:
+            nk.sentinel_namespaces(output, {"__kc_test__": ("local", "f")})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: local namespace independent " + reason, "namespace" in why)
+        if "pragma" in reason:
+            check("keycheck: pragma metadata absent " + reason, "?" not in [tok for _, tok in output.stream])
+    # Fake output shape for DROP(?) _Pragma: cpp emits a pragma directive,
+    # then resumes the same source line at the label.
+    text = '#define DROP(x)\nint f(int l){DROP(?) _Pragma("kc ?") l: return l;}\n'
+    after = text.replace("int l", "int n").replace("l:", "n:").replace("return l", "return n")
+    def pragma_cpp(tree, tu):
+        line = tree[tu].splitlines()[1]
+        line = line.replace('DROP(?) _Pragma("kc ?")', '\n#pragma kc ?\n# 2 "' + tu + '"\n')
+        return cpp_preamble(tu) + '#define DROP(x)\n# 2 ' + json.dumps(tu) + '\n' + line + '\n'
+    ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": after}, cpp=pragma_cpp)
+    check("keycheck: DROP pragma label rename fails", not ok and "namespace" in why)
+
+    text = "struct T{int __kc_t__;}; struct U{int __kc_u__;};"
+    output = nk.emitted_lines(cpp_preamble("src/a.c") + text, nk.CppTree({"src/a.c": text}, "fixture"), "src/a.c")
+    nk.sentinel_namespaces(output, {"__kc_t__": ("member", "T"), "__kc_u__": ("member", "U")})
+    check("keycheck: multi-pair member owners positive", True)
+    try:
+        nk.sentinel_namespaces(output, {"__kc_t__": ("member", "U"), "__kc_u__": ("member", "T")})
+        why = ""
+    except ValueError as e:
+        why = str(e)
+    check("keycheck: multi-pair ownership cannot pool aggregate names", "namespace" in why)
+    for body in ("return l NEXT;", "return n NEXT;", "return FN l;"):
+        text = "#define NEXT +0\n#define FN(x) (x)\nint f(int " + ("n" if "n NEXT" in body else "l") + "){" + body + "}"
+        tree = nk.CppTree({"src/a.c": text}, "fixture")
+        output = nk.emitted_lines(cpp_preamble("src/a.c") + text, tree, "src/a.c")
+        try:
+            nk.cpp_source_guards(output, tree, {"f:l": "n"})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: independent macro adjacency " + body, "adjacent to cpp macro" in why)
+    text = "#define FN(x) (x)\nstruct T{int m;}; int f(struct T*t){return FN(t->m);}"
+    tree = nk.CppTree({"src/a.c": text}, "fixture")
+    output = nk.emitted_lines(cpp_preamble("src/a.c") + text, tree, "src/a.c")
+    try:
+        nk.cpp_source_guards(output, tree, {"T.m": "n"})
+        why = ""
+    except ValueError as e:
+        why = str(e)
+    check("keycheck: cpp member argument scan independently fails", "argument of function-like macro" in why)
+    for param in ("l", "n"):
+        text = '#include "params.h"\nint f(int l){return l;}\n'
+        check("keycheck: cpp guards exclude macro own parameter " + param, proof("f:l=n",
+              {"src/a.c": text, "include/params.h": "#define COPY(" + param + ") (" + param + ")\n"},
+              {"src/a.c": text.replace("int l", "int n").replace("return l", "return n")})[0])
+    records = nk.macro_analysis("#define FN(x) (x)\n#define COPY(FN) FN\n")[0]
+    nk.closure_macro_checks(records, {"f:l": "n"})
+    check("keycheck: opener guard excludes macro own function-name parameter", True)
+    text = "int f(int l){return l;}\n"
+    files = {"src/a.c": '#include "inline.h"\n', "include/inline.h": text}
+    check("keycheck: local function source in header", proof("f:l=n", files,
+          {"include/inline.h": text.replace("int l", "int n").replace("return l", "return n")}, compile_headers=False)[0])
+    def shifted_header_end(tree, tu):
+        out = fake_cpp(tree, tu)
+        return re.sub(r'(return \w+;)\}', r'\1\n# 2 "include/inline.h"\n}', out)
+    ok, why = proof("f:l=n", files, {"include/inline.h": text.replace("int l", "int n").replace("return l", "return n")},
+                    compile_headers=False, cpp=shifted_header_end)
+    check("keycheck: header function span agreement independently enforced", not ok and "span disagrees" in why)
+    # j1b's actual RPF() closer, not the earlier object-like RP approximation.
+    text = ("struct S{int l;int n;};\n#define MEMBER(p,x) ((p)->x)\n"
+            "#define OPENF() MEMBER(\n#define RPF() )\n"
+            "int f(int l,struct S*s){return (0 RPF() + OPENF() s,l+0)+l;}\n")
+    after = text.replace("f(int l", "f(int n").replace("s,l+0", "s,n+0").replace(")+l;", ")+n;")
+    def rpf_cpp(tree, tu):
+        out = fake_cpp(tree, tu)
+        return "\n".join(line if line.lstrip().startswith("#") else
+            re.sub(r'MEMBER\( s,(\w+)\+0\)', r'((s)->\1+0)',
+                   line.replace("RPF()", ")").replace("OPENF()", "MEMBER(")) for line in out.splitlines()) + "\n"
+    ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": after}, cpp=rpf_cpp)
+    check("keycheck: real j1b RPF shape rejects opener", not ok and "call opener" in why)
+    with patch.object(nk, "closure_macro_checks", lambda *a: None), \
+            patch.object(nk, "cpp_source_guards", lambda *a: None):
+        ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": after}, cpp=rpf_cpp)
+    check("keycheck: real j1b RPF shape namespace proof independently rejects", not ok and "namespace" in why)
+
+    # Round 12 attacks: hider definitions must end their declaration rows.
+    hide_l = "int (*hide_l(void))(void){return 0;}\nint l;\n"
+    hide_n = "int (*hide_n(void))(void){return 0;}\nint n;\n"
+    inactive_n = "#if 0\n{\n#endif\n" + hide_n + "#if 0\n}\n#endif\n"
+    for probe, prefix, body, globals_l, globals_n, header in [
+            ("n1", "typedef int T;\n", "int a,T; T*l; return sizeof l;", hide_l, hide_n, ".inc"),
+            ("n2", "typedef int T;\n", "int (T); T*l; return sizeof l;", hide_l, hide_n, ".inc"),
+            ("n3", "int T; int g(void){typedef int T; T x=1; return x;}\n", "T*l; return sizeof l;", hide_l, hide_n, ".inc"),
+            ("n4", "int T; int g(void){typedef int T; T x=1; return x;}\n", "T*l; return sizeof l;",
+             "struct Y{int y;}; struct Y hide_l(void){struct Y r;r.y=0;return r;}\nint l;\n",
+             "struct Y hide_n(void){struct Y r;r.y=0;return r;}\nint n;\n", ".inc"),
+            ("n6", "typedef int T;\n", "int a,T; T*l; return sizeof l;", hide_l, inactive_n, None),
+            ("n7", "typedef int T;\n", "int a,T; T*l; return sizeof l;", hide_l, inactive_n, ".h")]:
+        if header is None:
+            text = prefix + globals_l + globals_n + "int f(void){" + body + "}\n"
+            files = {"src/a.c": text}
+        else:
+            path = "include/x" + header
+            text = prefix + ('#include "x' + header + '"\n') + (globals_l if probe != "n7" else "") + "int f(void){" + body + "}\n"
+            files = {"src/a.c": text, path: (globals_l if probe == "n7" else "") + globals_n}
+        after = text.replace("T*l", "T*n").replace("sizeof l", "sizeof n")
+        def inactive_cpp(tree, tu):
+            clean = dict(tree)
+            for path, value in clean.items():
+                clean[path] = re.sub(r'#if 0\n[{}]\n#endif\n', lambda m: '\n' * m[0].count('\n'), value)
+            return fake_cpp(clean, tu)
+        ok, why = proof("f:l=n", files, {"src/a.c": after}, cpp=inactive_cpp)
+        check("keycheck: round-12 attack " + probe, not ok)
+        # Isolate cpp proof from source preflight and its conditional filter.
+        clean = {p: re.sub(r'#if 0\n[{}]\n#endif\n', lambda m: '\n' * m[0].count('\n'), value) for p, value in files.items()}
+        output = nk.emitted_lines(inactive_cpp(nk.CppTree(clean, "fixture"), "src/a.c"),
+                                  nk.CppTree(clean, "fixture"), "src/a.c")
+        try:
+            nk.cpp_scope_checks(output, {"f:l": "n"}, {}, "base")
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: independent compiled attack " + probe, bool(why))
+    for declaration in ("int a,T;", "int (T);", "int (*T)(void);", "int T;"):
+        text = "typedef int T; int f(void){" + declaration + "T*l; return sizeof l;}"
+        output = nk.emitted_lines(cpp_preamble("src/a.c") + text, nk.CppTree({"src/a.c": text}, "fixture"), "src/a.c")
+        try:
+            nk.cpp_scope_checks(output, {"f:l": "n"}, {}, "base")
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: every typedef-shadow declarator " + declaration, "shadowed typedef" in why)
+    text = "int g(void){typedef int T; T x=1;return x;} int f(void){T*l;return sizeof l;}"
+    output = nk.emitted_lines(cpp_preamble("src/a.c") + text, nk.CppTree({"src/a.c": text}, "fixture"), "src/a.c")
+    try:
+        nk.cpp_scope_checks(output, {"f:l": "n"}, {}, "base")
+        why = ""
+    except ValueError as e:
+        why = str(e)
+    check("keycheck: typedef inside other function is never visible", bool(why))
+    for hider in (hide_l, "struct Y{int y;}; struct Y hide_l(void){struct Y r;return r;} int l;",
+                  '__attribute__((unused)) int hide_l(void){return 0;} int l;'):
+        ts = [m[0] for m in nk.code_spans(hider)]
+        types = nk.declaration_types({"src/a.c": hider})
+        functions = nk.cpp_functions(ts, types)
+        names = nk.cpp_file_declarations(ts, types, functions, {"l"})
+        check("keycheck: returning/attributed hider recognized " + hider, "l" in names and any(f[0] == "hide_l" for f in functions))
+    text = "UNKNOWN_RET hide(void){return 0;} int l;"
+    ts = [m[0] for m in nk.code_spans(text)]
+    try:
+        nk.cpp_file_declarations(ts, set(nk.DECL_WORDS), [], {"l"})
+        why = ""
+    except ValueError as e:
+        why = str(e)
+    check("keycheck: unknown body cannot merge away following global", "unrecognized cpp file-scope body" in why)
+    for spelling in (".inc", ".h"):
+        try:
+            nk.local_freshness({"include/x" + spelling: hide_n}, "n")
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: source freshness includes hider file " + spelling, bool(why))
+    try:
+        nk.local_freshness({"src/a.c": inactive_n}, "n")
+        why = ""
+    except ValueError as e:
+        why = str(e)
+    check("keycheck: source inactive braces fail closed", "conditional" in why)
+
+    # L1: all K&R parameter declarations belong to that function's span.
+    for knr in ("int legacy(arg1,arg5) s16 arg1; s16 arg5; {return arg1+arg5;}",
+                "int legacy(a,n) int a,n; {return a+n;}",
+                "int legacy(mode,y) Env *mode; s16 y; {return y;}"):
+        header = "typedef short s16; typedef struct {int x;} Env;\n"
+        text = '#include "types.h"\n' + knr + "\nint f(int arg1){return arg1;}"
+        for dest in ("arg5", "n", "y"):
+            after = text.replace("f(int arg1)", "f(int " + dest + ")").replace("return arg1;", "return " + dest + ";")
+            check("keycheck: header-typedef K&R old/destination " + dest + " " + knr,
+                  proof("f:arg1=" + dest, {"src/a.c": text, "include/types.h": header}, {"src/a.c": after})[0])
+    for old, dest, knr in [("mode", "rvq_mode", "int legacy(mode) Env *mode; {return 0;}"),
+                           ("y", "rvq_y", "int legacy(y) s16 y; {return y;}")]:
+        text = '#include "types.h"\n' + knr + " int f(int " + old + "){return " + old + ";}"
+        after = text.replace("f(int " + old + ")", "f(int " + dest + ")").replace("return " + old + ";}", "return " + dest + ";}", 1 if old == "mode" else 0)
+        if old == "y":
+            after = text.replace("f(int y){return y;}", "f(int rvq_y){return rvq_y;}")
+        check("keycheck: K&R shared old name " + old, proof("f:" + old + "=" + dest,
+              {"src/a.c": text, "include/types.h": "typedef short s16; typedef struct {int x;} Env;"}, {"src/a.c": after})[0])
+    for scope in ("func_80010000", "good_fn"):
+        text = "int func_80010000(int arg0){return arg0;}"
+        after = "int good_fn(int count){return count;}"
+        check("keycheck: globally renamed local function " + scope, proof("func_80010000=good_fn," + scope + ":arg0=count",
+              {"src/a.c": text}, {"src/a.c": after})[0])
+    for expr in ("(const T) l", "sizeof(volatile T) + l"):
+        text = "typedef int T; int f(int l){return " + expr + ";}"
+        after = text.replace("int l", "int n").replace(") l", ") n").replace("+ l", "+ n")
+        check("keycheck: qualified type context is not a shadow " + expr, proof("f:l=n",
+              {"src/a.c": text}, {"src/a.c": after})[0])
+    text = "#define ARROW() ->\nunion S{int l;int n;}; int f(int l,union S*s){return l+s ARROW() l+l;}"
+    tree = nk.CppTree({"src/a.c": text}, "fixture")
+    output = nk.emitted_lines(cpp_preamble("src/a.c") + text, tree, "src/a.c")
+    try:
+        nk.cpp_source_guards(output, tree, {"f:l": "n"})
+        why = ""
+    except ValueError as e:
+        why = str(e)
+    check("keycheck: k5 repeated local around macro member", "local l adjacent to cpp macro invocation" in why)
+
+    for label, globals_l, globals_n, header in [
+            ("n1 plain n", hide_l, "int n;", ".inc"),
+            ("n1 plain l", "int l;", hide_n, ".inc"),
+            ("n7 no conditional braces", hide_l, hide_n, ".h")]:
+        text = 'typedef int T;\n#include "x' + header + '"\n' + globals_l + "int f(void){int a,T; T*l; return sizeof l;}"
+        after = text.replace("T*l", "T*n").replace("sizeof l", "sizeof n")
+        check("keycheck: round-12 retained control " + label, not proof("f:l=n",
+              {"src/a.c": text, "include/x" + header: globals_n}, {"src/a.c": after})[0])
+    for text in ("int f(int l){\n#pragma kc\nreturn l;}\n", "int f(l) int l; {return l;}"):
+        check("keycheck: pragma/target K&R remains fail-closed", not proof("f:l=n",
+              {"src/a.c": text}, {"src/a.c": text.replace("int l", "int n").replace("return l", "return n")})[0])
+
+    text = "struct T{int m;}; int f(int l){return l;}"
+    check("keycheck: mixed member/local census excludes unrelated TU function proofs",
+          proof("T.m=fresh,f:l=n", {"src/a.c": text, "src/b.c": "int g(int x){return x;}"},
+                {"src/a.c": text.replace("int m", "int fresh").replace("int l", "int n").replace("return l", "return n")})[0])
+
+    try:
+        nk.scoped_plan({"src/a.c": "int f(int a,int b){return a+b;}"}, {"f:a": "n", "good_fn:b": "n"}, {"f": "good_fn"})
+        why = ""
+    except ValueError as e:
+        why = str(e)
+    check("keycheck: function aliases cannot share a scoped destination", "shared by another pair" in why)
+
+    # A count mismatch fails even when the correct spelling appears once.
+    def duplicate_normal(tree, tu):
+        out = fake_cpp(tree, tu)
+        if not tree.label.endswith("-sentinel"):
+            field = "m" if tree.label == "base" else "n"
+            out = out.replace("return p->" + field, "return p->" + field + "+p->" + field)
+        return out
+    ok, why = proof("T.m=n", simple, changed_simple, cpp=duplicate_normal)
+    check("keycheck: original spelling counts must equal sentinel counts", not ok and "original spelling/count" in why)
+    # Definitions absent from source files must still be obtained from real cpp.
+    for defined in ("m", "n"):
+        fake_make = 'CPP := cpp\nCPP_FLAGS := -Iinclude\nCPP_DEFS := -undef\n\t$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | cc1\n'
+        def cpp_definitions(args, **kwargs):
+            out = cpp_preamble("src/a.c") + "int x;\n"
+            if "-dD" in args:
+                out = out.replace('# 0 "<command-line>" 2', '#define ' + defined + '(x) (x)\n# 0 "<command-line>" 2')
+            return nk.subprocess.CompletedProcess(args, 0, out, "")
+        with patch.object(nk.shutil, "which", return_value=sys.executable), \
+                patch.object(nk.CppTree, "materialize", return_value=nk.ROOT), \
+                patch.object(nk.subprocess, "run", side_effect=cpp_definitions):
+            cpp_tree = nk.CppTree({"Makefile": fake_make, "src/a.c": "int x;"}, "test")
+            output = nk.emitted_lines(nk.preprocess(cpp_tree, "src/a.c"), cpp_tree, "src/a.c")
+        try:
+            nk.closure_macro_checks(output.macros, {"T.m": "n"})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: system-defined scoped macro name requires -dD " + defined, "#define name" in why)
+    for side, name in (("base", "m"), ("new", "n")):
+        def defined_on_side(tree, tu):
+            out = fake_cpp(tree, tu)
+            if tree.label.startswith(side):
+                out = out.replace('# 0 "<command-line>" 2', '#define ' + name + '(x) (x)\n# 0 "<command-line>" 2')
+            return out
+        ok, why = proof("T.m=n", simple, changed_simple, cpp=defined_on_side)
+        check("keycheck: scoped macro-name proof checks " + side + " tree", not ok and "#define name" in why)
+    for probe in ("__has_include", "__has_include_next"):
+        text = 'struct T{int m;};\n#if ' + probe + '("not-in-snapshot.txt")\n#define VALUE 1\n#endif\n'
+        ok, why = proof("T.m=n", {"src/a.c": text, "notes/not-in-snapshot.txt": "exists"},
+                        {"src/a.c": text.replace("int m", "int n")})
+        check("keycheck: round-7 snapshot presence probe " + probe, not ok and "__has_include" in why)
+    for label, text, spec in [
+            ("hidden member", '#define JOIN(a,b) a ## b\nstruct T{int m;}; struct U{int JOIN(fr,esh);};\n', "T.m=fresh"),
+            ("local paste capture", '#define JOIN(a,b) a ## b\nextern int JOIN(fr,esh);\nint f(int l){return l+JOIN(fr,esh);}\n', "f:l=fresh"),
+            ("digraph define", '%:define UNUSED 0\nstruct T{int m;};\n', "T.m=fresh"),
+            ("digraph paste", '%:define JOIN(a,b) a %:%: b\nstruct T{int m;};\n', "T.m=fresh")]:
+        after = text.replace("int m;", "int fresh;").replace("int l", "int fresh").replace("return l", "return fresh")
+        ok, why = proof(spec, {"src/a.c": text}, {"src/a.c": after})
+        check("keycheck: round-7 closure paste/digraph " + label, not ok and "token paste or digraph" in why)
+    fixture_make = ('CPP := missing-keycheck-cpp\nCPP_FLAGS := -Iinclude\nCPP_DEFS := -Dmips\n'
+                    '\t$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | cc1\n')
+    eq("keycheck: separated -D form exposes macro body", nk.command_line_macros(
+       fixture_make.replace("-Dmips", "-D GET()=fresh")), "#define GET() fresh")
+    for spec, text, definition in [("T.m=fresh", "struct T{int m;};", "-D MEMBER=fresh"),
+                                   ("f:l=fresh", "int f(int l){return l;}", "-D GET()=l")]:
+        ok, why = proof(spec, {"src/a.c": text, "Makefile": fixture_make.replace("-Dmips", definition)},
+                        {"src/a.c": text.replace("int m;", "int fresh;").replace("int l", "int fresh").replace("return l", "return fresh")})
+        check("keycheck: separated -D macro freshness " + spec, not ok and ("macros" in why or "#define" in why))
+    for label, define, spec, text, reason in [
+            ("member destination body", '-DMEMBER=fresh', 'T.m=fresh', 'struct T{int m;}; struct U{int MEMBER;};', 'macros'),
+            ("member destination name", '-Dfresh=1', 'T.m=fresh', 'struct T{int m;};', 'macros'),
+            ("local destination body", '-DGET()=fresh', 'f:l=fresh', 'int f(int l){return l;}', '#define'),
+            ("local old body", '-DGET()=l', 'f:l=fresh', 'int f(int l){return l;}', '#define'),
+            ("local old name", '-Dl=outer', 'f:l=fresh', 'int f(int l){return l;}', '#define'),
+            ("command-line hidden member", '-DMEMBER=fr\\#\\#esh', 'T.m=fresh', 'struct T{int m;}; struct U{int MEMBER;};', 'token paste')]:
+        make = fixture_make.replace('-Dmips', '-Dmips ' + define)
+        after = text.replace("int m;", "int fresh;").replace("int l", "int fresh").replace("return l", "return fresh")
+        ok, why = proof(spec, {"src/a.c": text, "Makefile": make}, {"src/a.c": after})
+        check("keycheck: round-7 command-line macro " + label, not ok and reason in why)
+    for name in ("l", "fresh"):
+        text = "int f(int l){\nreturn l;\nSYSTEM_NAME;\n}\n"
+        after = text.replace("int l", "int fresh").replace("return l", "return fresh")
+        def captured(tree, tu):
+            return fake_cpp(tree, tu).replace("SYSTEM_NAME", name)
+        ok, why = proof("f:l=fresh", {"src/a.c": text}, {"src/a.c": after}, cpp=captured)
+        check("keycheck: round-7 expansion on untouched function line produces " + name,
+              not ok and "macro expansion produces or captures" in why)
+    # Real-tree failures were unrelated macro expansion on the edited line.
+    for func, body, macro, expanded in [
+            ("func_8007636C", "s.y = SELWORK->f3C[arg3] * 34;", "SELWORK", "((SelWork *)D_800A36A0)"),
+            ("func_8002F2D0", "m = &SPAD->unk2B8.rec.unkD8;", "SPAD", "((ScrPad *)0x1F800000)"),
+            ("func_80077724", "s.unk_00.v80076FF8 = SELWORK->f04;", "SELWORK", "((SelWork *)D_800A36A0)")]:
+        old = "m" if func == "func_8002F2D0" else "s"
+        text = f"typedef int Matrix;\n#define {macro} {expanded}\nint {func}(int arg3){{\nMatrix {old};\n{body}\nreturn 0;\n}}\n"
+        after = re.sub(r"\b" + old + r"\b", "renamed", text)
+        def real_shape(tree, tu):
+            return fake_cpp(tree, tu).replace(macro, expanded)
+        check("keycheck: real macro-line token survives " + func,
+              proof(func + ":" + old + "=renamed", {"src/a.c": text}, {"src/a.c": after}, cpp=real_shape)[0])
+    member_line = "func_80032854(pid, 4, &SPAD->unkA8[pid][rec->unk_352].x, out);"
+    text = ("#define SPAD ((ScrPad *)0x1F800000)\nstruct Unk80101EC8Record{int unk_352;};\n"
+            "int f(struct Unk80101EC8Record *rec){\n" + member_line + "\nreturn 0;\n}\n")
+    after = text.replace("unk_352", "renamed")
+    check("keycheck: real member macro-line token survives", proof("Unk80101EC8Record.unk_352=renamed",
+          {"src/a.c": text}, {"src/a.c": after}, cpp=lambda tree, tu: fake_cpp(tree, tu).replace("SPAD", "((ScrPad *)0x1F800000)"))[0])
+    # Source inspection follows the entered closure, including unchanged files.
+    for control in ['/**/ #line 2 "other.h"', '%:line 2 "other.h"', '# 2 "other.h"']:
+        tree = nk.CppTree({"src/a.c": "", "include/h.h": control}, "test")
+        try:
+            nk.emitted_lines('# 1 "src/a.c"\n# 1 "include/h.h" 1\n# 2 "src/a.c" 2\n', tree, "src/a.c")
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: included source line control fails " + control, "line-control" in why)
+    stale, recent = Path(nk.ROOT) / "tmp/keycheck-cpp-old", Path(nk.ROOT) / "tmp/keycheck-cpp-new"
+    with patch.object(Path, "glob", return_value=[stale, recent]), \
+            patch.object(Path, "is_dir", return_value=True), \
+            patch.object(Path, "is_symlink", return_value=False), \
+            patch.object(Path, "stat", side_effect=[type("Stat", (), {"st_mtime": 0})(), type("Stat", (), {"st_mtime": 7200})()]), \
+            patch.object(Path, "resolve", autospec=True, side_effect=lambda p: p), \
+            patch.object(nk.time, "time", return_value=7200), \
+            patch.object(nk.shutil, "rmtree") as remove:
+        nk.cleanup_cpp_snapshots(Path(nk.ROOT) / "tmp")
+        eq("keycheck: only abandoned hour-old snapshots removed", remove.call_args_list, [call(stale)])
+    for text, after in [
+            ("int l; int f(int (*cb)(int l)){return 0;}", "int l; int f(int (*cb)(int n)){return 0;}"),
+            ("int l; int f(void){use((int (*)(int l))cb);return 0;}",
+             "int l; int f(void){use((int (*)(int n))cb);return 0;}")]:
+        ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": after})
+        check("keycheck: isolated nesting guard preserves global", not ok and "prototype/cast binding" in why)
+    for other in ["#define DECL(x) int x\nDECL(n);", "typedef int s32; s32 (n);"]:
+        ok, why = proof("f:l=n", {"src/a.c": "int f(int l){return l;}", "src/b.c": other},
+                        {"src/a.c": "int f(int n){return n;}"})
+        check("keycheck: isolated real-prototype skip guard", not ok and "file scope" in why)
+    for label, other in [("macro declarator", "#define DECL(x) x\nint DECL(n);"),
+                         ("macro type prefix", "#define TYPE int\nTYPE proto(n);")]:
+        ok, why = proof("f:l=n", {"src/a.c": "int f(int l){return l;}", "src/b.c": other},
+                        {"src/a.c": "int f(int n){return n;}"})
+        check("keycheck: isolated prototype macro gate " + label, not ok and "file scope" in why)
+    for text, reason in [("int f(int l){return l;} int f(int l){return l;}", "exactly one"),
+                         ("struct T{struct {int m;} a;};", "nested")]:
+        spec = "f:l=n" if text.startswith("int") else "T.m=n"
+        ok, why = proof(spec, {"src/a.c": text}, {"src/a.c": re.sub(r"\b[ml]\b", "n", text)})
+        check("keycheck: specific definition/aggregate failure reason " + reason, not ok and reason in why)
+    makefile = ("CPP := missing-keycheck-cpp\nCPP_FLAGS := -Iinclude -undef\n"
+                "CPP_DEFS := -Dmips \\\n -DLANGUAGE_C\n"
+                "\t$(CPP) $(CPP_FLAGS) $(CPP_DEFS) $< | other\n")
+    eq("keycheck: Makefile cpp command preserves flags/defines", nk.cpp_command(makefile),
+       ["missing-keycheck-cpp", "-Iinclude", "-undef", "-Dmips", "-DLANGUAGE_C"])
+    appended = makefile + "CPP_FLAGS += -I extra # fixture\nCPP_DEFS += -DADDED=1\nCPP_FLAGS += -Ivendor\n"
+    eq("keycheck: Makefile append flags and definitions honoured", nk.cpp_command(appended),
+       ["missing-keycheck-cpp", "-Iinclude", "-undef", "-I", "extra", "-Ivendor",
+        "-Dmips", "-DLANGUAGE_C", "-DADDED=1"])
+    eq("keycheck: snapshot configured include roots", nk.cpp_snapshot_roots(appended),
+       ("extra", "include", "src", "vendor"))
+    snapshot = nk.CppTree({"Makefile": appended, "src/a.c": "a", "include/h.h": "h",
+                           "extra/h.inc": "extra", "vendor/v.h": "vendor", "asm/s.s": "asm",
+                           "unrelated/u.h": "unused"}, "test")
+    with patch.object(nk, "cleanup_cpp_snapshots"), patch.object(Path, "mkdir"), \
+            patch.object(Path, "write_bytes", autospec=True) as write:
+        snapshot.materialize()
+        copied = sorted(args[0][0].relative_to(snapshot.directory).as_posix() for args in write.call_args_list)
+    eq("keycheck: snapshot excludes asm and unrelated roots", copied,
+       ["Makefile", "extra/h.inc", "include/h.h", "src/a.c", "vendor/v.h"])
+    with patch.object(nk.shutil, "which", return_value=sys.executable), \
+            patch.object(nk.CppTree, "materialize", return_value=nk.ROOT), \
+            patch.object(nk.subprocess, "run", return_value=nk.subprocess.CompletedProcess([], 1, "", "fixture cpp error")):
+        try:
+            nk.preprocess(nk.CppTree({"Makefile": makefile}, "test"), "src/a.c")
+            why = ""
+        except ValueError as e:
+            why = str(e)
+    check("keycheck: cpp nonzero status fails clearly", "cpp failed for src/a.c: fixture cpp error" in why)
+    shifted_base = {"src/a.c": "int f(int l){\nreturn l;\n}\n"}
+    shifted_new = {"src/a.c": "\nint f(int n){\n\nreturn n;\n}\n"}
+    check("keycheck: new-tree shifted source line mapping passes", proof("f:l=n", shifted_base, shifted_new)[0])
+    runs = []
+    def counted_cpp(tree, tu):
+        runs.append((tree.label, tu))
+        return fake_cpp(tree, tu)
+    pair_text = "int f(int l){return l;}\nint g(int k){return k;}\n"
+    check("keycheck: multiple pairs reuse one cpp run per tree/TU", proof("f:l=n,g:k=q",
+          {"src/a.c": pair_text}, {"src/a.c": pair_text.replace("l", "n").replace("k", "q")}, cpp=counted_cpp)[0]
+          and runs == [(label, "src/a.c") for label in ("base", "new", "base-sentinel", "new-sentinel")])
+    with patch.object(nk.shutil, "which", return_value=None):
+        try:
+            nk.preprocess(nk.CppTree({"Makefile": makefile}, "test"), "src/a.c")
+            missing = ""
+        except ValueError as e:
+            missing = str(e)
+    check("keycheck: missing cpp toolchain fails clearly", "toolchain missing" in missing)
+    for bad in [makefile.replace("-Iinclude", "$(INCLUDE_FLAGS)"), makefile.replace("$< |", "-Dextra $< |")]:
+        try:
+            nk.cpp_command(bad)
+            rejected = False
+        except ValueError:
+            rejected = True
+        check("keycheck: ambiguous Makefile cpp setup fails closed", rejected)
+    # Real-toolchain coverage is optional on hosts without the exact cross cpp.
+    real_command = nk.cpp_command((Path(nk.CODE) / "Makefile").read_text(encoding="utf-8"))
+    if not nk.shutil.which(real_command[0]):
+        global _skipped
+        _skipped += 1
+        print("  SKIP: real cpp/real CLI timing: project cross preprocessor unavailable")
+    else:
+        files = {"Makefile": (Path(nk.CODE) / "Makefile").read_text(encoding="utf-8"),
+                 "src/cpp_probe.c": '#include "h.h"\n', "include/h.h": "struct T {int m;};\n"}
+        edits = nk.scoped_plan(files, {"T.m": "n"})
+        nk.verify_compiled_edits(files, {**files, "include/h.h": "struct T {int n;};\n"}, edits, scoped={"T.m": "n"})
+        check("keycheck: real project cpp emits edited header", True)
+    text = "int f(int arg0){return arg0;} int g(int arg0){return arg0;}"
+    check("keycheck: distinct functions share local destination", proof("f:arg0=player,g:arg0=player",
+          {"src/a.c": text}, {"src/a.c": text.replace("arg0", "player")})[0])
+    text = "struct T{int m;}; struct U{int m;}; int f(struct T*t,struct U*u){return t->m+u->m;}"
+    after = "struct T{int x;}; struct U{int y;}; int f(struct T*t,struct U*u){return t->x+u->y;}"
+    check("keycheck: same member spelling in distinct aggregates", proof("T.m=x,U.m=y",
+          {"src/a.c": text}, {"src/a.c": after})[0])
+    text = "int f(int l){ return &&l; l: return l; }"
+    check("keycheck: GNU label address is never a local use", not proof("f:l=n",
+          {"src/a.c": text}, {"src/a.c": text.replace("int l", "int n").replace("return l", "return n")})[0])
+    # Each of these must fail specifically in freshness, with all unrelated
+    # declarations preserved in the proposed output.
+    for other in ["struct U {int n;};", "#define n 1\n", "#define X n\n"]:
+        text = "struct T {int m;};\n" + other
+        ok, why = proof("T.m=n", {"src/a.c": text}, {"src/a.c": text.replace("int m", "int n")})
+        check("keycheck: non-vacuous member freshness " + other, not ok and "fresh" in why)
+    text = "typedef int Unk1F800000Unk00; struct Rec1C { Unk1F800000Unk00 b18; };"
+    after = "typedef int X; struct Rec1C { X field; };"
+    check("keycheck: member/global aggregate interior", proof("Rec1C.b18=field,Unk1F800000Unk00=X",
+          {"src/a.c": text}, {"src/a.c": after})[0])
+    import time
+    many = "\n".join(f"int fn{i}(int arg0){{return arg0 + {i};}}" for i in range(600))
+    pairs = {f"fn{i}:arg0": "player" for i in range(30)}
+    start = time.perf_counter()
+    edits = nk.scoped_plan({"src/many.c": many}, pairs)
+    elapsed = time.perf_counter() - start
+    check("keycheck: many-function 30-pair proof is bounded", elapsed < 10
+          and sum(len(e) for e in edits.values()) == 60)
+    print(f"  scoped timing: 600 functions, 30 pairs: {elapsed:.3f}s")
+    for changed in [False, True]:
+        text = "#define TRAP_IF(c) (0)\nstruct T { int m; }; int f(struct T *u){return TRAP_IF(u->m);}"
+        after = text.replace("int m", "int n")
+        if changed:
+            after = after.replace("->m", "->n")
+        ok, why = proof("T.m=n", {"src/a.c": text}, {"src/a.c": after})
+        check("keycheck: member macro argument rejects stale/changed " + str(changed),
+              not ok and "macro TRAP_IF" in why)
+    text = "struct T { int m; };\n/**/ #if 0\nint f(struct T *u){return u->m;}\n/**/ #endif\n"
+    check("keycheck: comments cannot hide conditionals", not proof("T.m=n",
+          {"src/a.c": text}, {"src/a.c": text.replace("int m", "int n").replace("->m", "->n")})[0])
+    for macro, use in [("#define S struct\n", "S l *p;"),
+                       ("#define GP gp->\n", "return GP l;"),
+                       ("#define TAIL + 1\n", "return l TAIL;")]:
+        text = macro + "int f(int l){ " + use + " return l; }"
+        check("keycheck: object macro adjacency " + use, not proof("f:l=n",
+              {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "n", text)})[0])
+    text = "#define GET(p,f) ((p)->f)\n#define ALIAS GET\nint f(int l){return ALIAS(s,l)+l;}"
+    ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "n", text)})
+    check("keycheck: object alias cannot hide macro argument", not ok and "macro ALIAS" in why)
+    for label in ["if(c) l:", "else l:", "do l:"]:
+        text = "int f(int l){ " + label + " x++; return l; }"
+        check("keycheck: ambiguous non-start label " + label, not proof("f:l=n",
+              {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "n", text)})[0])
+    for text in ["int l; int f(void){int (*cb)(int l); return 0;}",
+                 "int l; int f(int (*cb)(int l)){return 0;}",
+                 "int l; int f(void){ use((int (*)(int l))p); return 0;}",
+                 "int f(int l){ __label__ l; return l; }"]:
+        check("keycheck: hygiene nested binding/label " + text, not proof("f:l=n",
+              {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "n", text)})[0])
+    text = "typedef int SPU_VOICE_REG; int SpuGetKeyStatus(void){volatile SPU_VOICE_REG *voices; return 0;}"
+    check("keycheck: a type occurrence cannot be the local", not proof("SpuGetKeyStatus:SPU_VOICE_REG=n",
+          {"src/a.c": text}, {"src/a.c": text.replace("volatile SPU_VOICE_REG", "volatile n")})[0])
+    for dest in ["color", "count", "flags", "next", "state", "mode", "timer"]:
+        text = "int " + dest + "; struct Unk8007352CEnv { int col_b; }; int f(struct Unk8007352CEnv *p){return p->col_b;}"
+        after = text.replace("int col_b", "int " + dest).replace("->col_b", "->" + dest)
+        check("keycheck: meaningful member destination " + dest, proof("Unk8007352CEnv.col_b=" + dest,
+              {"src/a.c": text, "asm/s.s": "glabel " + dest}, {"src/a.c": after})[0])
+        other = " struct Other { int " + dest + "; };"
+        ok, why = proof("Unk8007352CEnv.col_b=" + dest,
+                        {"src/a.c": text + other}, {"src/a.c": after + other})
+        check("keycheck: existing member destination still forbidden " + dest,
+              not ok and "fresh" in why)
+    for literal in ['"l"', '"%[l]"']:
+        text = f'int f(int l) {{ use({literal}); return l; }}'
+        check("keycheck: ordinary string unchanged " + literal, not proof("f:l=fresh",
+              {"src/a.c": text}, {"src/a.c": text.replace("l", "fresh")})[0])
+    eq("keycheck: global grammar unchanged", nk.parse_pairs("old=new"), {"old": "new"})
+    eq("keycheck: mixed grammar and pairs-file lines",
+       nk.parse_pairs("# heading\nT.m=fresh\nf:l=other,old=new\n"),
+       {"T.m": "fresh", "f:l": "other", "old": "new"})
+    check("keycheck: scoped comment words have boundaries", not nk.scoped_comments(
+          "/* 1m */", "/* 1fresh */", {"T.m": "fresh"})[0])
+
+    # Follow-up 18: cc1 is the authoritative local proof. Reject-only parsers
+    # are deliberately bypassed here so each compiler guard is independently live.
+    cc_source = "int f(int l) { return l + 1; }\n"
+    def cc_check(runner, source=cc_source, spec=None):
+        output = nk.emitted_lines(fake_cpp({"src/a.c": source}, "src/a.c"), {"src/a.c": source}, "src/a.c")
+        try:
+            with patch.object(nk, "compile_cc1", runner):
+                nk.verify_local_cc1({"src/a.c": source}, {"src/a.c": output}, spec or {"f:l": "n"}, {})
+            return True, ""
+        except ValueError as e:
+            return False, str(e)
+    for side in ("fresh", "destination"):
+        for mode in ("rc", "undeclared", "symbol", "instruction", "error"):
+            def bad_cc1(tree, tu, side=side, mode=mode):
+                if tree.label != "cc1-" + side:
+                    return fake_cc1(tree, tu)
+                return nk.subprocess.CompletedProcess([], 1 if mode == "rc" else 0,
+                    "lw $2,__kc_fresh_0\n" if mode == "symbol" else
+                    "\taddiu $2,$0,2\n" if mode == "instruction" else fake_cc1(tree, tu).stdout,
+                    "undeclared identifier" if mode == "undeclared" else "error: failed" if mode == "error" else "")
+            ok, why = cc_check(bad_cc1)
+            check(f"keycheck cc1: {side} {mode} rejects", not ok and "cc1" in why)
+    check("keycheck cc1: genuine local accepts", cc_check(fake_cc1)[0])
+    def static_cc1(tree, tu):
+        name = {"cc1-base": "l", "cc1-fresh": "__kc_fresh_0", "cc1-destination": "n"}[tree.label]
+        return nk.subprocess.CompletedProcess([], 0, f"{name}.17:\n.word {name}.17\n", "")
+    check("keycheck cc1: only static-local numeric labels normalize", cc_check(static_cc1)[0])
+    def plain_symbol(tree, tu):
+        name = {"cc1-base": "l", "cc1-fresh": "__kc_fresh_0", "cc1-destination": "n"}[tree.label]
+        return nk.subprocess.CompletedProcess([], 0, f"lw $2,{name}\n", "")
+    check("keycheck cc1: plain globals never normalize", not cc_check(plain_symbol)[0])
+    calls = []
+    def batch_cc1(tree, tu):
+        calls.append((tree.label, tu, tree[tu]))
+        return fake_cc1(tree, tu)
+    cc_check(batch_cc1, "int f(int l,int a){return l+a;}\n", {"f:l": "n", "f:a": "z"})
+    check("keycheck cc1: pairs batch in three compiles", len(calls) == 3 and
+          "__kc_fresh_0" in calls[1][2] and "__kc_fresh_1" in calls[1][2])
+    def preserved_cc1(tree, tu):
+        if tree.label == "cc1-fresh":
+            text = tree[tu]
+            check("keycheck cc1: namespaces literals comments retained",
+                  "p->l" in text and '"l"' in text and "/* l */" in text and
+                  "goto l; l:" in text and "int __kc_fresh_0" in text)
+        return fake_cc1(tree, tu)
+    cc_check(preserved_cc1, 'int f(int l){goto l; l: return p->l + l; /* l */ "l";}\n')
+
+    # Every round-13 source shape reaches either a rejecting prefilter or cc1.
+    enum_hide = "enum EL { AL=1 } hide_l(void){return AL;}\nint l;\n"
+    hidden_n = "#if 0\n{\n#elif 1\nint n;\n#else\n}\n#endif\n"
+    cc_probes = {
+        "s1": ("int T;\n"+enum_hide+hidden_n+"int f(void){T*l;return sizeof l;}\n", "n"),
+        "s1c": ("int T; struct Y {int y;} g(void){typedef int T;return r;}\n"+enum_hide+
+                "int n; int f(void){T*l;return sizeof l;}\n", "n"),
+        "s2": (enum_hide+hidden_n+"int f(void){return l;}\n", "n"),
+        "s3a": ("int l; int n\\\nn; int f(void){return l;}\n", "nn"),
+        "s3b": (enum_hide+"#if 0\n{\n#error }\n#endif\nint n;int f(void){return l;}\n", "n"),
+        "s4a": ("typedef int U; int l;static U (n); int f(void){return l;}\n", "n"),
+        "M1-w1": ("typedef int T; int x; __typeof__(x) l; extern __typeof__(x) n __asm__(\"l\"); "
+                   "int f(void){__typeof__(x) T;T*l;return l;}\n", "n"),
+        "M1-u1": ("typedef int T; int x; __typeof__(x) l; extern __typeof__(x) n __asm__(\"l\"); "
+                   "int f(__typeof__(x) T){T*l;return l;}\n", "n"),
+        "M1-u5": ("typedef int T; int x; __typeof__(x) l; extern __typeof__(x) n __asm__(\"l\"); "
+                   "int f(void){__typeof__(x) T;T*l;return sizeof l;}\n", "n"),
+        "M2": ("int T;enum E{A=1}g(void){typedef int T;return A;}int l;int n;"
+               "int f(void){T*l;return l;}\n", "n"),
+    }
+    def reject_rebinding(tree, tu):
+        return plain_symbol(tree, tu)
+    for label, (source, dest) in cc_probes.items():
+        # Isolate the authoritative proof: a permissive/removed prefilter cannot accept.
+        ok, why = cc_check(reject_rebinding, source, {"f:l": dest})
+        check("keycheck cc1 round13 " + label, not ok)
+    for label in ("M1-w1", "M1-u1", "M1-u5"):
+        source, dest = cc_probes[label]
+        source = source.replace('__typeof__(x) l; extern __typeof__(x) n __asm__("l"); ', '\n#include "types.def"\n')
+        output = nk.emitted_lines(fake_cpp({"src/a.c": source,
+            "include/types.def": '__typeof__(x) l; extern __typeof__(x) n __asm__("l");\n'}, "src/a.c"), {"src/a.c": source, "include/types.def": '__typeof__(x) l; extern __typeof__(x) n __asm__("l");\n'}, "src/a.c")
+        check("keycheck round13 .def closure " + label, "include/types.def" in output.sources)
+        with patch.object(nk, "compile_cc1", reject_rebinding):
+            try:
+                nk.verify_local_cc1({"src/a.c": source, "include/types.def": '__typeof__(x) l; extern __typeof__(x) n __asm__("l");\n'},
+                                    {"src/a.c": output}, {"f:l": dest}, {})
+                rejected = False
+            except ValueError:
+                rejected = True
+        check("keycheck cc1 round13 .def " + label, rejected)
+    try:
+        nk.file_scope_tokens("int n\\\nn;\n")
+        splice_ok = "nn" in nk.file_scope_tokens("int n\\\nn;\n")[0]
+    except ValueError:
+        splice_ok = False
+    check("keycheck: freshness joins line splices", splice_ok)
+    check("keycheck: directive brace ignored", "n" in nk.file_scope_tokens("#define OPEN {\nint n;\n")[0])
+    try:
+        nk.file_scope_tokens(hidden_n)
+        branches_fail = False
+    except ValueError:
+        branches_fail = True
+    check("keycheck: conditional branches balance separately", branches_fail)
+    ok, why = proof("f:l=n", {"src/a.c": "int (*g(void))(int){return 0;}\n"+cc_source},
+                    {"src/a.c": "int (*g(void))(int){return 0;}\n"+cc_source.replace(" l", " n")})
+    check("keycheck: function-pointer-returning neighbor no delimiter false reject", ok)
+    # Real runner's literal Makefile flags, no silent debug or per-TU flag drift.
+    make_text = (nk.ROOT / "Makefile").read_text(encoding="utf-8")
+    check("keycheck cc1: exact project flags", "-G8" in nk.cc1_command(make_text, "src/main/368E4.c") and
+          "-G0" in nk.cc1_command(make_text, "src/main/32D04.c"))
+    try:
+        nk.cc1_command(make_text.replace("-O2 -G0", "-g -O2 -G0"), "src/a.c")
+        debug_failed = False
+    except ValueError:
+        debug_failed = True
+    check("keycheck cc1: debug flags forbidden", debug_failed)
+
+    with patch.object(nk.shutil, "which", return_value=None):
+        try:
+            nk.compile_cc1(nk.CppTree({"Makefile": make_text}, "missing"), "src/a.c")
+            missing_cc1 = False
+        except ValueError as e:
+            missing_cc1 = "toolchain missing" in str(e)
+    check("keycheck cc1: missing real toolchain fails closed", missing_cc1)
+    check("keycheck cc1: Makefile flag appends honored", "-fno-common" in
+          nk.cc1_command(make_text + "\nCC_FLAGS += -fno-common\n", "src/a.c"))
+    with patch.object(nk.shutil, "which", return_value=str(nk.ROOT / "Makefile")), \
+            patch.object(nk.CppTree, "materialize", return_value=nk.ROOT), \
+            patch.object(nk.subprocess, "run", side_effect=[
+                nk.subprocess.CompletedProcess([], 0, "int f(void){return 0;}\n", ""),
+                nk.subprocess.CompletedProcess([], 1, "", "undeclared l")]) as mocked:
+        result = nk.compile_cc1(nk.CppTree({"Makefile": make_text.replace(
+            "tools/gcc-2.7.2/build/cc1", "Makefile")}, "test"), "src/a.c")
+    check("keycheck cc1: runner preserves nonzero status and errors", result.returncode == 1 and
+          "undeclared" in result.stderr and "-dD" not in mocked.call_args_list[0].args[0])
+    with patch.object(nk.shutil, "which", return_value=str(nk.ROOT / "Makefile")), \
+            patch.object(nk.CppTree, "materialize", return_value=nk.ROOT), \
+            patch.object(nk.subprocess, "run", return_value=nk.subprocess.CompletedProcess([], 1, "", "bad include")):
+        try:
+            nk.compile_cc1(nk.CppTree({"Makefile": make_text.replace(
+                "tools/gcc-2.7.2/build/cc1", "Makefile")}, "test"), "src/a.c")
+            cpp_compile_failed = False
+        except ValueError as e:
+            cpp_compile_failed = "cpp failed" in str(e)
+    check("keycheck cc1: plain cpp nonzero fails", cpp_compile_failed)
+    seen_fresh = []
+    def unique_cc1(tree, tu):
+        if tree.label == "cc1-fresh":
+            seen_fresh.append(tree[tu])
+        return fake_cc1(tree, tu)
+    cc_check(unique_cc1, "int __kc_fresh_0;int f(int l){return l;}\n")
+    check("keycheck cc1: fresh name cannot already occur", seen_fresh and
+          "int __kc_fresh_0_;" in seen_fresh[0].replace("(", " ").replace(")", ";"))
+
+    try:
+        nk.verify_compiled_edits({"src/a.c": cc_source}, {"src/a.c": cc_source}, {}, scoped={"f:l": "n"})
+        no_edit_failed = False
+    except ValueError as e:
+        no_edit_failed = "applied local edit" in str(e)
+    check("keycheck cc1: unchanged local cannot bypass proof", no_edit_failed)
+
+    initializer_trap = "enum E {A=1} h(void){return A;} int l;"
+    tokens = [m[0] for m in nk.code_spans(initializer_trap)]
+    try:
+        nk.cpp_file_declarations(tokens, nk.DECL_WORDS, [], {"l"})
+        initializer_failed = False
+    except ValueError as e:
+        initializer_failed = "unrecognized" in str(e)
+    check("keycheck: aggregate enum equals cannot disguise following function body initializer", initializer_failed)
+
+    # Follow-up 19: every include context must reach cc1, including edited .c files.
+    included = "int f(int l){return l;}\n"
+    for label, caller, extra in (
+            ("a1", '#include "b.c"\n', {}),
+            ("a1b", '#include "b.c"\n', {}),
+            ("a2", '#include "b.c"\n', {}),
+            ("a3", '#include "x.h"\n', {"include/x.h": '#include "../src/b.c"\n'}),
+            ("a4", '#include "x.h"\n', {"include/x.h": included})):
+        owner = "include/x.h" if label == "a4" else "src/b.c"
+        files = {"src/a.c": caller, owner: included, **extra}
+        compiled = []
+        def context_cc1(tree, tu, label=label):
+            compiled.append((tree.label, tu))
+            if tu == "src/a.c" and tree.label != "cc1-base":
+                if label == "a2":
+                    return nk.subprocess.CompletedProcess([], 1, "", "undeclared n")
+                return nk.subprocess.CompletedProcess([], 0, "sw $0,n\n", "")
+            return fake_cc1(tree, tu)
+        ok, why = proof("f:l=n", files, {owner: included.replace(" l", " n")}, cc1=context_cc1)
+        check("keycheck cc1 include context " + label, not ok and "cc1" in why and
+              any(tu == "src/a.c" for _, tu in compiled))
+    # Supplied global/asm-alias shapes, with independent prefilter rejection allowed.
+    for label, prefix in (("a1-global", 'int l; extern int n __asm__("l");\n'),
+                          ("a1b-global", 'extern int n;\n')):
+        files = {"src/a.c": prefix + '#include "b.c"\n', "src/b.c": included}
+        check("keycheck included globals " + label, not proof("f:l=n", files,
+              {"src/b.c": included.replace(" l", " n")})[0])
+    cc_calls = []
+    def shared_cc1(tree, tu):
+        cc_calls.append((tree.label, tu, id(tree), tree["src/b.c"]))
+        return fake_cc1(tree, tu)
+    files = {"src/a.c": '#include "b.c"\n', "src/b.c": included,
+             "src/c.c": '#include "../include/x.h"\n', "include/x.h": '#include "../src/b.c"\n'}
+    ok, why = proof("f:l=n", files, {"src/b.c": included.replace(" l", " n")}, compile_headers=False, cc1=shared_cc1)
+    check("keycheck cc1: all three include contexts pass", ok and len(cc_calls) == 9)
+    check("keycheck cc1: exactly three variant objects across TUs", len({row[2] for row in cc_calls}) == 3)
+    check("keycheck cc1: fresh identifier shared across TUs", len({row[3] for row in cc_calls if row[0] == "cc1-fresh"}) == 1)
+    # Snapshot materialization itself, not just variant object identity, is reused.
+    outputs = {tu: nk.emitted_lines(fake_cpp(files, tu), files, tu) for tu in files if tu.endswith(".c")}
+    materialized = []
+    def snapshot_cc1(tree, tu):
+        tree.materialize()
+        return fake_cc1(tree, tu)
+    def fake_materialize(tree):
+        if tree.directory is None:
+            materialized.append(tree.label)
+            tree.directory = nk.ROOT / "tmp" / ("fake-" + tree.label)
+        return tree.directory
+    with patch.object(nk.CppTree, "materialize", fake_materialize), \
+            patch.object(nk.CppTree, "close", lambda tree: None), \
+            patch.object(nk, "compile_cc1", snapshot_cc1):
+        nk.verify_local_cc1(files, outputs, {"f:l": "n"}, {})
+    check("keycheck cc1: snapshot builds once per variant", sorted(materialized) ==
+          ["cc1-base", "cc1-destination", "cc1-fresh"])
+    borrowed_tree = nk.CppTree(files, "base")
+    borrowed_tree.directory = nk.ROOT / "tmp" / "fake-borrowed"
+    materialized.clear()
+    closed = []
+    with patch.object(nk.CppTree, "materialize", fake_materialize), \
+            patch.object(nk.CppTree, "close", lambda tree: closed.append(tree.label)), \
+            patch.object(nk, "compile_cc1", snapshot_cc1):
+        nk.verify_local_cc1(files, outputs, {"f:l": "n"}, {}, borrowed_tree)
+    check("keycheck cc1: borrows existing base snapshot without closing it",
+          sorted(materialized) == ["cc1-destination", "cc1-fresh"] and "cc1-base" not in closed)
+
+    function_cases = {
+        "b1": "int l(void);return sizeof(l());",
+        "b2": "FN l;return sizeof(l());",
+        "b3": "int l(void);return 0;",
+        "b4": "int l(void);return l();",
+        "b5": "extern int l(void);return 0;",
+        "b6": "int l(void);if(0)l();return 0;",
+        "b7": "int *l();return 0;",
+    }
+    for label, body in function_cases.items():
+        source = "typedef int FN(void);\nint f(void){" + body + "}\n"
+        ok, why = proof("f:l=n", {"src/a.c": source}, {"src/a.c": source.replace(" l", " n").replace("(l", "(n")})
+        check("keycheck block function binding " + label, not ok and
+              ("function declarator/type" in why or "extern" in why))
+    check("keycheck: function typedef aliases rejected", not proof("f:l=n",
+          {"src/a.c": "typedef int FN(void);typedef FN FN2;int f(void){FN2 l;return 0;}\n"},
+          {"src/a.c": "typedef int FN(void);typedef FN FN2;int f(void){FN2 n;return 0;}\n"})[0])
+    macro_extern = '#define EXT extern\nint f(void){EXT int l;return 0;}\n'
+    check("keycheck: macro extern cannot certify object binding", not proof("f:l=n",
+          {"src/a.c": macro_extern}, {"src/a.c": macro_extern.replace("int l", "int n")},
+          cpp=lambda tree, tu: fake_cpp(tree, tu).replace("EXT int", "extern int"))[0])
+    # Fresh symbols reject even when identical BASE assembly would mask the comparison.
+    def hidden_fresh(tree, tu):
+        return nk.subprocess.CompletedProcess([], 0, "__kc_fresh_0:\n", "")
+    ok, why = cc_check(hidden_fresh)
+    check("keycheck cc1: fresh symbol guard independent of asm equality", not ok and "fresh symbol" in why)
+    duplicate_static = "static int f(int l){return l;}\n"
+    check("keycheck: duplicate static function scope unsupported", not proof("f:l=n",
+          {"src/a.c": duplicate_static, "src/b.c": duplicate_static},
+          {"src/a.c": duplicate_static.replace(" l", " n")})[0])
+    with patch.object(nk.shutil, "which", return_value=str(nk.ROOT / "Makefile")), \
+            patch.object(nk.CppTree, "materialize", side_effect=OSError(12, "ENOMEM snapshot write")):
+        try:
+            nk.compile_cc1(nk.CppTree({"Makefile": make_text.replace(
+                "tools/gcc-2.7.2/build/cc1", "Makefile")}, "test"), "src/a.c")
+            snapshot_failed = False
+        except ValueError as e:
+            snapshot_failed = "snapshot materialization failed" in str(e) and "ENOMEM" in str(e) and "cannot run toolchain" not in str(e)
+    check("keycheck cc1: snapshot failure message accurate", snapshot_failed)
+    # Real runner coverage is explicitly skipped if either exact compiler is absent.
+    real_cc1 = nk.ROOT / nk.cc1_command(make_text, "src/a.c")[0]
+    if not nk.shutil.which(nk.cpp_command(make_text)[0]) or not real_cc1.is_file():
+        _skipped += 1
+        print("  SKIP: real compile_cc1: project cpp/cc1 toolchain unavailable")
+    else:
+        tree = nk.CppTree({"Makefile": make_text, "src/a.c": "int f(int l){return l;}\n"}, "real-cc1")
+        try:
+            result = nk.compile_cc1(tree, "src/a.c")
+            check("keycheck: real compile_cc1 emits assembly", result.returncode == 0 and
+                  bool(result.stdout.strip()) and "undeclared" not in result.stderr)
+        finally:
+            tree.close()
+
+    prefix_text = "".join(f"int pf_{i}(int arg0){{return arg0;}}\n" for i in range(100))
+    prefix_output = nk.emitted_lines(fake_cpp({"src/a.c": prefix_text}, "src/a.c"),
+                                     {"src/a.c": prefix_text}, "src/a.c")
+    with patch.object(nk, "cpp_definition_ranges", wraps=nk.cpp_definition_ranges) as offsets:
+        nk.cpp_scope_checks(prefix_output, {f"pf_{i}:arg0": f"fresh_{i}" for i in range(30)}, {}, "base")
+    check("keycheck: definition starts computed once per TU across pairs", offsets.call_count == 1)
+    with patch.object(nk.shutil, "which", return_value=str(nk.ROOT / "Makefile")), \
+            patch.object(nk.CppTree, "materialize", side_effect=OSError(12, "ENOMEM source snapshot")):
+        try:
+            nk.preprocess(nk.CppTree({"Makefile": make_text}, "test"), "src/a.c")
+            cpp_snapshot_failed = False
+        except ValueError as e:
+            cpp_snapshot_failed = "snapshot materialization failed" in str(e) and "cannot run" not in str(e)
+    check("keycheck cpp: snapshot error identifies write failure", cpp_snapshot_failed)
+    # Type-of declarations may hide a global from the reject-only prefilter;
+    # genuine locals still accept when cc1 proves their binding independently.
+    typeof_global = '#include "globals.def"\nint f(int l){return l;}\n'
+    files = {"src/a.c": typeof_global, "include/globals.def": "extern __typeof__(0) n;\n"}
+    # Inspect the proof directly: this control does not promise the parser accepts
+    # every GNU source form, only that file-scope n alone is not an authority.
+    output = nk.emitted_lines(fake_cpp(files, "src/a.c"), files, "src/a.c")
+    with patch.object(nk, "compile_cc1", fake_cc1):
+        try:
+            nk.verify_local_cc1(files, {"src/a.c": output}, {"f:l": "n"}, {})
+            typeof_ok = True
+        except ValueError:
+            typeof_ok = False
+    check("keycheck cc1: genuine local may shadow typeof global destination", typeof_ok)
+
+    failed_tree = nk.CppTree({}, "failed-create")
+    failed_tree.directory = nk.ROOT / "tmp" / ("keycheck-cpp-uncreated-" + nk.uuid.uuid4().hex)
+    try:
+        failed_tree.close()
+        cleanup_ok = True
+    except OSError:
+        cleanup_ok = False
+    check("keycheck: failed snapshot creation cleanup cannot mask original error", cleanup_ok)
+
+    # Follow-up 20: name-outward declarator classification, not adjacent-star guesses.
+    function_shapes = {
+        "f1": ("typedef int *FN(void);", "FN l;return sizeof(l());"),
+        "f1b": ("typedef int *FN(void);", "FN l;return 0;"),
+        "f1c": ("typedef int *FN(void);", "FN l;if(0)return *l();return 0;"),
+        "f2": ("int g(void);typedef __typeof__(g) FN;", "FN l;return 0;"),
+        "f3": ("typedef __typeof__(int(void)) FN;", "FN l;return 0;"),
+        "f4": ("typedef int X,*FN(void);", "FN l;return 0;"),
+        "f7": ("typedef int *FN(void);", "static FN l;return 0;"),
+    }
+    for label, (prefix, body) in function_shapes.items():
+        source = prefix + "\nint f(void){" + body + "}\n"
+        check("keycheck function typedef " + label, not proof("f:l=n",
+              {"src/a.c": source, "src/other.c": "int *l(void){return 0;}\n"},
+              {"src/a.c": re.sub(r"\bl\b", "n", source)})[0])
+    for decl in ("typedef int *FN(void);", "typedef int (FN)(void);", "typedef int **FN(int);"):
+        classes = nk._typedef_classes((decl,))
+        check("keycheck: function typedef structurally classified " + decl, classes.get("FN") == "function")
+    for decl in ("typedef int (*FN)(void);", "typedef int *(*FN)(void);", "typedef int FN[4];"):
+        check("keycheck: object typedef structurally classified " + decl,
+              nk._typedef_classes((decl,)).get("FN") == "object")
+    for decl in ("typedef int X,*FN(void);", "typedef __typeof__(int(void)) FN;",
+                 "#define DECL typedef int FN(void);\n"):
+        check("keycheck: uncertain typedef fails closed " + decl,
+              nk._typedef_classes((decl,)).get("FN") == "unknown")
+    for source in ("typedef int FN(void);int f(void){FN *l=0;return l==0;}\n",
+                   "typedef int *FN(void);int f(void){FN *l=0;return l==0;}\n",
+                   "typedef int (*FN)(void);int f(void){FN l=0;return l==0;}\n"):
+        check("keycheck: known function pointer objects accepted", proof("f:l=n",
+              {"src/a.c": source}, {"src/a.c": re.sub(r"\bl\b", "n", source)})[0])
+    macro_type = '#define TYPE int\ntypedef TYPE FN;int f(void){FN l=0;return l;}\n'
+    check("keycheck: macro-produced typedef object not guessed", not proof("f:l=n",
+          {"src/a.c": macro_type}, {"src/a.c": re.sub(r"\bl\b", "n", macro_type)},
+          cpp=lambda tree, tu: fake_cpp(tree, tu).replace("typedef TYPE", "typedef int"))[0])
+    # Compiled typedef whose raw declaration came from a macro remains uncertain.
+    macro_source = '#define DECL typedef int FN;\nDECL\nint f(void){FN l=0;return l;}\n'
+    macro_output = nk.emitted_lines(fake_cpp({"src/a.c": macro_source}, "src/a.c").replace("\nDECL\n", "\ntypedef int FN;\n"),
+                                   {"src/a.c": macro_source}, "src/a.c")
+    try:
+        nk.cpp_scope_checks(macro_output, {"f:l": "n"}, {}, "base", {"src/a.c": macro_source})
+        macro_unknown = False
+    except ValueError as e:
+        macro_unknown = "uncertain typedef" in str(e)
+    check("keycheck: cpp macro-produced typedef provenance rejects", macro_unknown)
+
+    graph_make = make_text
+    graph_files = {"Makefile": graph_make, "src/a.c": '#include "b.c"\n',
+                   "src/b.c": included, "src/unrelated.c": "int z;\n",
+                   "src/c.c": '#include "x.h"\n', "include/x.h": '#include "../src/b.c"\n'}
+    dependency_calls.clear()
+    selected_runs = []
+    def selection_cpp(tree, tu):
+        selected_runs.append((tree.label, tu))
+        return fake_cpp(tree, tu)
+    ok, why = proof("f:l=n", graph_files, {"src/b.c": included.replace(" l", " n")},
+                    compile_headers=False, cpp=selection_cpp)
+    check("keycheck: real dependency seam queries every TU in both trees", ok and
+          len(dependency_calls) == 2 * len({p for p in graph_files if p.startswith("src/") and p.endswith(".c")}) and
+          set(dependency_calls) == {(label, tu) for label in ("base", "new")
+              for tu in graph_files if tu.startswith("src/") and tu.endswith(".c")})
+    check("keycheck: full preprocessing excludes cpp-unreachable TU", ok and
+          not any(tu == "src/unrelated.c" for _, tu in selected_runs))
+    with patch.object(nk, "cpp_dependencies", lambda tree, tu: {tu, "src/b.c"}):
+        candidates = nk.dependency_census(nk.CppTree(graph_files, "base"), {"src/b.c"})
+    check("keycheck: cpp dependency result is sole selection authority",
+          candidates == {p for p in graph_files if p.startswith("src/") and p.endswith(".c")})
+
+    # Literal Makefile parsing must reject hidden configuration overrides.
+    for line in ("src/a.o: CPP_FLAGS += -Dhidden", "override CC_FLAGS += -g", "export CPP_DEFS := -Dhidden",
+                 "override GP_FILES := main/a", "export NO_SR_FILES := main/a", "include extra.mk", "-include extra.mk",
+                 "export override CPP_FLAGS += -Dhidden", "override define CC_FLAGS\n-g\nendef"):
+        for command in (lambda text: nk.cpp_command(text), lambda text: nk.cc1_command(text, "src/a.c")):
+            try:
+                command(make_text + "\n" + line + "\n")
+                hidden_make = False
+            except ValueError as e:
+                hidden_make = "unsupported Makefile" in str(e)
+            check("keycheck: hidden Make toolchain override " + line, hidden_make)
+
+    # A transient ENOMEM cleanup retries; persistent cleanup never hides proof errors.
+    cleanup_tree = nk.CppTree({}, "cleanup")
+    cleanup_tree.directory = nk.ROOT / "tmp" / "keycheck-cpp-fake-cleanup"
+    with patch.object(Path, "exists", return_value=True), patch.object(nk.shutil, "rmtree",
+            side_effect=[OSError(12, "ENOMEM"), None]) as removed, contextlib.redirect_stderr(io.StringIO()):
+        cleanup_tree.close()
+    check("keycheck: cleanup ENOMEM retries and removes snapshot", removed.call_count == 2)
+    closed = []
+    def broken_close(tree):
+        closed.append(tree.label)
+        if tree.label == "first":
+            raise OSError(12, "ENOMEM cleanup")
+    try:
+        try:
+            raise ValueError("primary compiler failure")
+        finally:
+            with patch.object(nk.CppTree, "close", broken_close), contextlib.redirect_stderr(io.StringIO()) as cleanup_notes:
+                nk.close_cpp_trees([nk.CppTree({}, "first"), nk.CppTree({}, "second")])
+    except ValueError as e:
+        kept_primary = str(e) == "primary compiler failure"
+    check("keycheck: cleanup visits every tree and preserves proof outcome", kept_primary and closed == ["first", "second"]
+          and "snapshot cleanup failed" in cleanup_notes.getvalue())
+    with patch.object(nk.CppTree, "close", side_effect=OSError(12, "ENOMEM cleanup")):
+        try:
+            nk.close_cpp_trees([nk.CppTree({}, "first")])
+            cleanup_reject = False
+        except ValueError as e:
+            cleanup_reject = "snapshot cleanup failed" in str(e)
+    check("keycheck: cleanup failure cannot silently accept successful proof", cleanup_reject)
+    with patch.object(Path, "glob", return_value=[cleanup_tree.directory]), \
+            patch.object(Path, "is_dir", return_value=True), \
+            patch.object(Path, "stat", side_effect=FileNotFoundError("concurrent removal")):
+        nk.cleanup_cpp_snapshots(nk.ROOT / "tmp")
+    check("keycheck: stale cleanup tolerates concurrent disappearance", True)
+    # Real differential pair coverage, beyond merely invoking compile_cc1.
+    if not nk.shutil.which(nk.cpp_command(make_text)[0]) or not real_cc1.is_file():
+        _skipped += 1
+        print("  SKIP: real cc1 local/global differential pairs: project toolchain unavailable")
+    else:
+        for source, expected in (("int f(int l){return l+1;}\n", True),
+                                 ("int l;int f(void){return l;}\n", False)):
+            files = {"Makefile": make_text, "src/a.c": source}
+            tree = nk.CppTree(files, "real-pair")
+            try:
+                output = nk.emitted_lines(nk.preprocess(tree, "src/a.c"), tree, "src/a.c")
+                try:
+                    nk.verify_local_cc1(files, {"src/a.c": output}, {"f:l": "n"}, {}, tree)
+                    actual = True
+                except ValueError:
+                    actual = False
+                check("keycheck: real cc1 differential local/global pair", actual == expected)
+            finally:
+                tree.close()
+
+    nested = "int CdIntToPos(void){int ENCODE_BCD(int l){return l;}return ENCODE_BCD(0);}\n"
+    ok, why = proof("ENCODE_BCD:l=n", {"src/a.c": nested},
+                    {"src/a.c": re.sub(r"\bl\b", "n", nested)})
+    check("keycheck: GNU nested function target explicitly unsupported", not ok and "function definition" in why)
+
+    # Follow-up 21: real dependency records defeat the textual-lexer/path vectors.
+    include_vectors = {
+        "h_apos": '#if 0\nit\'s /*\n#endif\n#include "b.c"\n#if 0\n*/\n#endif\n',
+        "h_dquote": '#if 0\n" /*\n#endif\n#include "b.c"\n#if 0\n*/\n#endif\n',
+        "h_bsspace": '/* x *\\   \n/\n#include "b.c"\n',
+        "h_bom": '\ufeff#include "b2.h"\n',
+        "h_nul": '\x00#include "b.c"\n',
+        "h_dotdot": '#include "q/../b.h"\n',
+        "h_case": '#include "B.c"\n',
+        "h_ctl_plain": '#include "b.c"\n',
+    }
+    for label, directive in include_vectors.items():
+        owner = "include/b.h" if label == "h_dotdot" else "src/b.c"
+        fn = '#ifndef IN_A\ntypedef int T;\n#endif\nstatic int f(void){T *l;l=0;return 1;}\n'
+        files = {"src/a.c": 'int T;int l;\n#include "n.def"\n#define IN_A\n' + directive,
+                 owner: fn, "include/n.def": 'extern __typeof__(l) n __asm__("l");\n',
+                 "include/b2.h": '#include "../src/b.c"\n'}
+        if label == "h_dotdot":
+            files["src/b.c"] = '#include "../include/b.h"\n'
+            files["src/b.h"] = "int decoy;\n"
+        if label == "h_case":
+            files["include/B.c"] = "int decoy;\n"
+        queries = []
+        def vector_deps(tree, tu, owner=owner):
+            queries.append((tree.label, tu))
+            return {tu, owner}
+        def vector_cpp(tree, tu, owner=owner):
+            view = dict(tree)
+            if tu == "src/a.c":
+                # Real cpp has entered the actual owner, despite each lexical/path
+                # trap; markers here reproduce that compiler-selected closure.
+                view[tu] = 'int T;int l;\n#include "n.def"\n#define IN_A\n#include "../' + owner + '"\n'
+            return fake_cpp(view, tu)
+        ok, why = proof("f:l=n", files, {owner: re.sub(r"\bl\b", "n", fn)},
+                        compile_headers=False, cpp=vector_cpp, deps=vector_deps)
+        check("keycheck cpp dependency vector " + label, not ok and
+              (("base", "src/a.c") in queries or label == "h_case" and "case-alias" in why))
+    # Physical identity handles case-insensitive aliases even on a sensitive host.
+    tree = nk.CppTree({"src/b.c": ""}, "identity")
+    from types import SimpleNamespace
+    with patch.object(nk.os, "stat", return_value=SimpleNamespace(st_dev=7, st_ino=42)):
+        same_case = nk.dependency_identity(tree, "src/b.c") == nk.dependency_identity(tree, "src/B.c")
+    check("keycheck: dependency identity uses real inode for case alias", same_case)
+    for failing in ("src/a.c", "src/unrelated.c"):
+        def failed_deps(tree, tu, failing=failing):
+            if tu == failing:
+                raise ValueError("dependency cpp failed: " + tu)
+            return {tu, "src/b.c"}
+        try:
+            with patch.object(nk, "cpp_dependencies", failed_deps):
+                nk.dependency_census(nk.CppTree(graph_files, "base"), {"src/b.c"})
+            census_failed = False
+        except ValueError as e:
+            census_failed = "dependency cpp failed" in str(e)
+        check("keycheck: any dependency TU failure rejects " + failing, census_failed)
+    with patch.object(nk, "cpp_dependencies", lambda tree, tu: {"src/b.c"}):
+        try:
+            nk.dependency_census(nk.CppTree(graph_files, "base"), {"src/b.c"})
+            omitted_tu = False
+        except ValueError as e:
+            omitted_tu = "omitted its TU" in str(e)
+    check("keycheck: dependency records cannot omit their TU", omitted_tu)
+    counts = {"active": 0, "peak": 0}
+    lock = nk.threading.Lock()
+    def parallel_deps(tree, tu):
+        with lock:
+            counts["active"] += 1
+            counts["peak"] = max(counts["peak"], counts["active"])
+        time.sleep(0.002)
+        with lock:
+            counts["active"] -= 1
+        return {tu}
+    with patch.object(nk, "cpp_dependencies", parallel_deps), patch.object(nk.os, "cpu_count", return_value=3):
+        nk.dependency_census(nk.CppTree({f"src/dep_{i}.c": "" for i in range(12)}, "base"), {"src/dep_0.c"})
+    check("keycheck: dependency census bounded parallel pool", 1 < counts["peak"] <= 3)
+    # The actual subprocess boundary uses -M and parses escaped dependency paths.
+    with patch.object(nk, "validate_cpp_dependencies", side_effect=lambda tree, paths, *args: paths), patch.object(nk.shutil, "which", return_value=str(nk.ROOT / "Makefile")), \
+            patch.object(nk.CppTree, "materialize", return_value=nk.ROOT), \
+            patch.object(nk.subprocess, "run", return_value=nk.subprocess.CompletedProcess(
+                [], 0, '__kc__: src/a.c include/with\\ space.h \\\n include/h.h\n', '')) as dep_run:
+        paths = nk.cpp_dependencies(nk.CppTree({"Makefile": make_text}, "base"), "src/a.c")
+    check("keycheck: real dependency runner uses flags and escaped Make paths",
+          paths == {"src/a.c", "include/with space.h", "include/h.h"} and
+          "-M" in dep_run.call_args.args[0] and "-Iinclude" in dep_run.call_args.args[0])
+    with patch.object(nk.shutil, "which", return_value=str(nk.ROOT / "Makefile")), \
+            patch.object(nk.CppTree, "materialize", return_value=nk.ROOT), \
+            patch.object(nk.subprocess, "run", return_value=nk.subprocess.CompletedProcess([], 1, '', 'bad include')):
+        try:
+            nk.cpp_dependencies(nk.CppTree({"Makefile": make_text}, "base"), "src/a.c")
+            dependency_nonzero = False
+        except ValueError as e:
+            dependency_nonzero = "dependency cpp failed" in str(e)
+    check("keycheck: dependency cpp nonzero fails closed", dependency_nonzero)
+
+    # Follow-up 23: one reject-only shape gate surrounds both census paths.
+    from types import SimpleNamespace
+    def shape_fails(files, reason):
+        try:
+            nk.plain_tree(files)
+            return False
+        except ValueError as e:
+            return "scoped tree shape" in str(e) and reason in str(e)
+    for label in ("t_bslash", "c_bslash"):
+        check("keycheck plain shape " + label,
+              shape_fails({"src/q\\": "", "src/b.c": ""}, "non-plain path"))
+    for label, text in (
+            ("t_hasinc_splice", '#if __has_incl\\\nude("b.c")\n#endif\n'),
+            ("c_hasinc_splice", '#if __has_incl\\\nude_next("b.c")\n#endif\n'),
+            ("t_hasinc_paste", '#define JOIN(a,b) a ## b\n#if JOIN(__has_,include)("b.c")\n#endif\n'),
+            ("c_hasinc_paste", '#define JOIN(a,b) a ## b\n#if JOIN(__has_,include_next)("b.c")\n#endif\n')):
+        check("keycheck plain shape " + label,
+              shape_fails({"src/a.c": text.replace("\\n", "\n")}, "hazard"))
+    for mode, path in (("120000", "include"), ("120000", "docs/link"),
+                       ("160000", "tools/submodule")):
+        with patch.object(nk, "git", return_value=mode + " blob " + "1"*40 + "\t" + path + "\0"):
+            try:
+                nk.read_base_tree("HEAD")
+                rootlink = False
+            except ValueError as e:
+                rootlink = "scoped tree shape" in str(e) and "symlink/submodule" in str(e)
+        check("keycheck c_rootlink/all-tree modes " + mode + " " + path, rootlink)
+    for path in ("src/a b.c", "include/a#b.h", "asm/a$b.s", "q'.h", "src/./b.c", "src/../b.c"):
+        check("keycheck plain path catalog " + path, shape_fails({path: ""}, "non-plain"))
+    for text, reason in (('#include HEADER\n', "non-literal"),
+                         ('#include_next "b.c"\n', "unsupported directive"),
+                         ('#include "../b.c"\n', "non-plain"),
+                         ('#define MAKE include #x\n', "stringizing"),
+                         ('#in\\\nclude HEADER\n', "non-literal"),
+                         ('#include "b.c"\\  \n', "line splice")):
+        check("keycheck plain include gate " + text,
+              shape_fails({"include/any.h": text}, reason))
+    check("keycheck plain spliced literal include allowed", not shape_fails(
+          {"src/a.c": '#in\\\nclude "b.c"\n', "src/b.c": ""}, ""))
+    for flags in ("-isystem include", "-isysteminclude", "-idirafter include",
+                  "-include include/a.h", "-imacros include/a.h", "--sysroot=/x",
+                  "-B/x", "-iprefix include", "-IInclude", "-iquoteinclude",
+                  "-Iother", "-I include/../include"):
+        check("keycheck m_isystem_alias/flag shapes " + flags, shape_fails(
+              {"Makefile": make_text + "\nCPP_FLAGS += " + flags + "\n", "src/a.c": "",
+               "include/a.h": ""}, "scoped tree shape"))
+    for flags in ("-I include", "-iquote include"):
+        check("keycheck plain tracked include flag allowed " + flags, not shape_fails(
+              {"Makefile": make_text + "\nCPP_FLAGS += " + flags + "\n",
+               "include/a.h": ""}, ""))
+    for path in nk.ROOT_METADATA:
+        check("keycheck root metadata catalog exemption " + path,
+              not shape_fails({path: ""}, ""))
+        check("keycheck metadata still not include target " + path,
+              shape_fails({"src/a.c": '#include "' + path + '"\n'}, "non-plain"))
+    gas = "## GTE instruction macros\n## Instructions which take an argument\n"
+    check("keycheck exact GAS comments excluded", not shape_fails(
+          {"include/gte_macros.inc": gas}, ""))
+    check("keycheck unused assembler directives not cpp-checked", not shape_fails(
+          {"include/gte_macros.inc": gas + "#include HEADER\n"}, ""))
+    check("keycheck tracked assembler bytes remain LF-only", shape_fails(
+          {"include/macro.inc": "\r\n"}, "control byte"))
+    check("keycheck configured cpp roots also gated", shape_fails(
+          {"Makefile": make_text + "\nCPP_FLAGS += -I headers\n",
+           "include/a.h": "", "headers/a.h": "#include HEADER\n"}, "non-literal"))
+    # No disk links/directories needed: emulate lstat/working-tree inventory.
+    normal = SimpleNamespace(st_mode=nk.stat_mode.S_IFDIR, st_file_attributes=0)
+    root = nk.ROOT
+    for dirs, names, suffix in (([], [], ""), ([], ["scratch.h"], "/zz")):
+        with patch.object(nk.os, "walk", return_value=iter([(str(root / ("src" + suffix)), dirs, names)])), \
+                patch.object(nk.os, "lstat", return_value=normal):
+            try:
+                nk.working_shape([("100644", "src/b.c")], [])
+                empty_failed = False
+            except ValueError as e:
+                empty_failed = "empty/untracked directory" in str(e)
+        check("keycheck t_emptydir/untracked directory " + suffix, empty_failed)
+    for mode, attrs in ((nk.stat_mode.S_IFLNK, 0), (nk.stat_mode.S_IFDIR, 0x400)):
+        with patch.object(nk.os, "walk", return_value=iter([(str(root / "src"), [], ["b.c"])])), \
+                patch.object(nk.os, "lstat", return_value=SimpleNamespace(st_mode=mode, st_file_attributes=attrs)):
+            try:
+                nk.working_shape([("100644", "src/b.c")], [])
+                link_failed = False
+            except ValueError as e:
+                link_failed = "symlink/junction" in str(e)
+        check("keycheck working link/junction shape " + str(attrs), link_failed)
+    try:
+        nk.working_shape([], ["include/not plain.h"])
+        untracked_failed = False
+    except ValueError as e:
+        untracked_failed = "non-plain path" in str(e)
+    check("keycheck nonignored untracked path shape", untracked_failed)
+    # Read-only real-tree gate (not cpp or cc1): all contents, modes and dirs.
+    try:
+        actual_plain = nk.read_base_tree("HEAD")
+        nk.plain_tree(actual_plain)
+        nk.read_working_tree()
+        real_shape_passed = True
+    except (ValueError, OSError, nk.subprocess.CalledProcessError) as e:
+        print("  real-tree shape gate: " + str(e))
+        real_shape_passed = False
+    check("keycheck real base/working trees pass shape gate", real_shape_passed)
+
+    @contextlib.contextmanager
+    def real_shape_fixture():
+        fixture_parent = nk.ROOT / "tmp" / "codex"
+        directory = fixture_parent / ("fu25-fixture-" + nk.uuid.uuid4().hex)
+        directory.mkdir(parents=True)
+        try:
+            (directory / "src").mkdir()
+            (directory / "include").mkdir()
+            (directory / "src/a.c").write_bytes(b"int x;\n")
+            (directory / "include/a.h").write_bytes(b"int y;\n")
+            def inventory(*args, **kwargs):
+                if "--stage" in args:
+                    return "100644 " + "1"*40 + " 0\tsrc/a.c\0" + "100644 " + "2"*40 + " 0\tinclude/a.h\0"
+                if "--others" in args:
+                    return ".venv\0include/new.h\0" if (directory / "include/new.h").exists() else ".venv\0"
+                return ""
+            with patch.object(nk, "ROOT", directory), patch.object(nk, "git", inventory):
+                yield directory
+        finally:
+            # Confined UUID fixture, no links are followed by rmtree.
+            assert directory.parent == fixture_parent
+            assert directory.resolve().is_relative_to(fixture_parent.resolve())
+            nk.shutil.rmtree(directory)
+
+    # Follow-up 24: byte/directive allowlists precede all comment interpretation.
+    with real_shape_fixture() as directory:
+        for control in ("\x00", "\x0c", "\x0b", "\r", "\x1b", "\x7f"):
+            for mode in ("commit", "working"):
+                text = '#in\\' + control + '\nclude "b.c"\n'
+                try:
+                    if mode == "working":
+                        (directory / "src/a.c").write_bytes(text.encode("utf-8"))
+                        nk.read_working_tree()
+                    else:
+                        raw = text.encode("utf-8")
+                        oid = "1"*40
+                        result = f"{oid} blob {len(raw)}\n".encode() + raw + b"\n"
+                        with patch.object(nk, "git", return_value=f"100644 blob {oid}\tsrc/a.c\0"), \
+                                patch.object(nk.subprocess, "run", return_value=SimpleNamespace(stdout=result)):
+                            nk.read_base_tree("HEAD")
+                    refused = False
+                except ValueError as e:
+                    refused = "control byte" in str(e)
+                check("keycheck S byte splice " + mode + " " + repr(control), refused)
+    check("keycheck S lone CR comment", shape_fails(
+          {"src/a.c": '// x\r#include "b.c"\n'}, "control byte"))
+    check("keycheck S NUL directive", shape_fails(
+          {"src/a.c": '#\x00include "b.c"\n'}, "control byte"))
+    check("keycheck S UTF-8 comments accepted", not shape_fails(
+          {"src/a.c": "/* café — valid UTF-8 */\nint x;\n"}, ""))
+    check("keycheck S invalid UTF-8 offset", shape_fails(
+          {"src/a.c": "int x;" + chr(0xdc80)}, "invalid UTF-8"))
+    for directive in ("import", "include_next", "ident", "sccs", "assert", "unassert", "unknown"):
+        check("keycheck S directive name " + directive, shape_fails(
+              {"src/a.c": '#' + directive + ' "b.c"\n'}, "unsupported directive"))
+    check("keycheck S spliced import", shape_fails(
+          {"src/a.c": '#im\\\nport "b.c"\n'}, "unsupported directive"))
+    for text in ("#define Q '/*\n#include HEADER\n*/\n", "#warning it's /*\n#include HEADER\n*/\n",
+                 '#error "oops\n', "#define Q \\\n'/*\n",
+                 "/* prefix\n*/ #warning it's /*\n#include HEADER\n*/\n"):
+        check("keycheck S unterminated directive quote " + repr(text),
+              shape_fails({"src/a.c": text}, "unterminated directive quote"))
+    check("keycheck S valid directive strings", not shape_fails(
+          {"src/a.c": '#define Q "/* and ## are literal"\n#\n'}, ""))
+    check("keycheck nonblocking README directives ignored", not shape_fails(
+          {"include/README.md": "# arbitrary heading\n## subheading\n", "src/a.c": "int x;"}, ""))
+    check("keycheck nonblocking literal header text scanned", shape_fails(
+          {"src/a.c": '/*prefix*/ #include "settings.h"\n',
+           "include/settings.h": '#import "b.c"\n'}, "unsupported directive"))
+    check("keycheck nonblocking non-cpp README bytes excluded", not shape_fails(
+          {"include/README.md": "# header\x00"}, ""))
+    cached_shape = nk.ShapeTree({"src/a.c": "int x;\n"})
+    with patch.object(nk, "plain_bytes", wraps=nk.plain_bytes) as checked:
+        nk.plain_tree(cached_shape)
+        nk.plain_tree(cached_shape)
+    check("keycheck shape success cache", checked.call_count == 1)
+    cached_shape["src/a.c"] = "int x;\r\n"
+    check("keycheck shape cache invalidates on mutation", shape_fails(cached_shape, "control byte"))
+    with patch.object(Path, "open", return_value=io.StringIO("int x;\r\n")) as raw_open:
+        raw_working = nk.shape_read(Path("src/a.c"))
+    check("keycheck S working reader preserves raw CR", raw_working == "int x;\r\n"
+          and raw_open.call_args.kwargs.get("newline") == ""
+          and shape_fails({"src/a.c": raw_working}, "control byte"))
+    check("keycheck Make parser does not claim complete export refusal",
+          nk.cpp_command(make_text + "\nexport UNRELATED := value\n") == nk.cpp_command(make_text))
+    # Real root entries, not labels over identical mock inventories.
+    for venv_kind in ("file", "symlink"):
+        with real_shape_fixture() as directory:
+            if venv_kind == "file":
+                (directory / ".venv").write_bytes(b"root fixture")
+            else:
+                (directory / "venv-target").mkdir()
+                try:
+                    (directory / ".venv").symlink_to(directory / "venv-target", target_is_directory=True)
+                except OSError as e:
+                    skip("keycheck real .venv symlink", str(e))
+                    continue
+            nk.read_working_tree()
+            check("keycheck V real root venv ignored " + venv_kind,
+                  (directory / ".venv").is_symlink() if venv_kind == "symlink" else (directory / ".venv").is_file())
+    for phase in ("shape", "read"):
+        def unreadable_walk(*args, **kwargs):
+            kwargs["onerror"](PermissionError("fixture unreadable"))
+            return iter([])
+        with patch.object(nk.os, "walk", unreadable_walk):
+            try:
+                if phase == "shape":
+                    nk.working_shape([], [])
+                else:
+                    nk.read_working_tree()
+                unreadable_failed = False
+            except ValueError as e:
+                unreadable_failed = "unreadable directory" in str(e)
+        check("keycheck unreadable directory rejects " + phase, unreadable_failed)
+    for path in ("../plugin/../include/iso646.h", "include/../include/iso646.h"):
+        dep_tree = nk.CppTree({}, "dotdot-fixture")
+        dep_tree.directory = nk.ROOT / "tmp" / "cpp-dependency-fixture"
+        with patch.object(nk.os, "stat", side_effect=AssertionError("dotdot must reject before stat")):
+            try:
+                nk.validate_cpp_dependencies(dep_tree, {path}, "cpp", [])
+                dotdot_failed = False
+            except ValueError as e:
+                dotdot_failed = "dotdot component" in str(e)
+        check("keycheck S dependency dotdot " + path, dotdot_failed)
+
+    # Follow-up 25 othern shapes: refusal replaces modelling once/header metadata.
+    for label, text in (
+            ("t_once_mtime_othern", "#pragma once\n"),
+            ("t_pragmaop_once_othern", '_Pragma("once")\n'),
+            ("t_skiphide_hasinc_othern", "#if 0\nit's /*\n#endif\n#if __has_incl\\\nude(\"b.c\")\n#endif\n*/\n"),
+            ("t_sep_u2028_hasinc_othern", "// hidden\u2028#if __has_include(\"b.c\")\n"),
+            ("t_sep_u2029_hasinc_othern", "// hidden\u2029#if __has_include(\"b.c\")\n"),
+            ("t_sep_nel_hasinc_othern", "// hidden\u0085#if __has_include(\"b.c\")\n"),
+            ("t_bom_define_hasinc_othern", "\ufeff#define Q __has_include(\"b.c\")\n"),
+            ("t_bomimport_dedup_othern", "\ufeff#import \"b.c\"\n")):
+        check("keycheck C othern " + label, shape_fails({"src/a.c": text}, "scoped tree shape"))
+    for separator in ("\ufeff", "\u2028", "\u2029", "\u0085"):
+        check("keycheck C Makefile separator rejected " + repr(separator), shape_fails(
+              {"Makefile": make_text + separator, "include/a.h": ""}, "BOM/Unicode"))
+    _, ordinary_code = nk.source_quotes("src/a.c", "#if 0\nit's /*\n#endif\n__has_include(x)\n")
+    check("keycheck ordinary quotes end at LF", "__has_include" in ordinary_code and "#endif" in ordinary_code)
+    with patch.object(nk, "cpp_dependencies", side_effect=AssertionError("scan must precede cpp")):
+        try:
+            nk.dependency_census(nk.CppTree({"src/a.c": '__has_incl\\\nude("x")\n'}, "splice"), {"src/a.c"})
+            joined_scan = False
+        except ValueError as e:
+            joined_scan = "__has_include" in str(e)
+    check("keycheck census joins probe splices", joined_scan)
+    check("keycheck M asm bytes not checked", not shape_fails(
+          {"src/a.c": "int x;", "asm/header.s": "\r" + chr(0xdc80)}, ""))
+    check("keycheck M case-alias target refused", shape_fails(
+          {"src/a.c": '#include "SETTINGS.h"\n', "include/settings.h": '#import "x"\n'}, "case-alias"))
+    check("keycheck M exact target checked", shape_fails(
+          {"src/a.c": '#include "settings.h"\n', "include/settings.h": '#import "x"\n'}, "unsupported directive"))
+    with real_shape_fixture() as directory:
+        # Ignored cache exists on disk but Git's non-ignored inventory omits it.
+        (directory / "include/m2c_context.h.m2c").write_bytes(b"\x80\x00binary cache")
+        result = nk.read_working_tree()
+        check("keycheck I unused ignored binary mirrored unchecked",
+              result["include/m2c_context.h.m2c"].encode("utf-8", "surrogateescape")
+              == b"\x80\x00binary cache")
+        snapshot = nk.CppTree(result, "ignored-binary")
+        try:
+            check("keycheck I snapshot preserves binary bytes",
+                  (snapshot.materialize() / "include/m2c_context.h.m2c").read_bytes()
+                  == b"\x80\x00binary cache")
+        finally:
+            snapshot.close()
+        (directory / "include/m2c_context.h").write_bytes(b"#pragma once\n")
+        check("keycheck I unused ignored text header unchecked",
+              "include/m2c_context.h" in nk.read_working_tree())
+        (directory / "include/new.h").write_bytes(b"\x80bad nonignored file")
+        try:
+            nk.read_working_tree()
+            bad_new = False
+        except ValueError as e:
+            bad_new = "invalid UTF-8" in str(e) and "include/new.h" in str(e)
+        check("keycheck M nonignored untracked bad header rejects", bad_new)
+
+    # Follow-up 26: actual readers and dependency census, not inventory labels.
+    with real_shape_fixture() as directory:
+        (directory / "src/a.c").write_bytes(b'#include "a.h"\nint x;\n')
+        (directory / "src/a.h").write_bytes(b'#include "../include/a.h"\n')
+        working = nk.read_working_tree()
+        check("keycheck I ignored same-directory header mirrored", "src/a.h" in working)
+        tree = nk.CppTree(working, "ignored-shadow")
+        with patch.object(nk, "cpp_dependencies", fake_dependencies):
+            try:
+                nk.dependency_census(tree, {"include/a.h"})
+                shadow_ok = False
+            except ValueError as e:
+                shadow_ok = "src/a.h" in str(e) and "ignored" in str(e)
+        check("keycheck I ignored shadow dependency rejected", shadow_ok)
+        for text, reason in ((b"\x80bad", "invalid UTF-8"),
+                             (b"#pragma once\n", "unsupported directive"),
+                             (b'R"(a"/*)"\n', "raw string")):
+            (directory / "src/a.h").write_bytes(text)
+            tree = nk.CppTree(nk.read_working_tree(), "ignored-opened")
+            tree._working_nonignored = None  # Commit-like fixture isolates dependency text gate.
+            with patch.object(nk, "cpp_dependencies", fake_dependencies):
+                try:
+                    nk.dependency_census(tree, {"src/a.c"})
+                    opened_failed = False
+                except ValueError as e:
+                    opened_failed = reason in str(e)
+            check("keycheck I ignored opened header text-checked " + reason, opened_failed)
+        (directory / "src/a.h").write_bytes(b"int y;\n")
+        tree = nk.CppTree(nk.read_working_tree(), "ignored-shadow-positive")
+        with patch.object(nk, "cpp_dependencies", fake_dependencies):
+            try:
+                nk.dependency_census(tree, {"src/a.h"})
+                shadow_rejected = False
+            except ValueError as e:
+                shadow_rejected = "ignored: src/a.h" in str(e)
+        check("keycheck B1 included ignored header rejects", shadow_rejected)
+        # A dependency of an unrelated TU is checked before census filtering.
+        tree._working_nonignored = None
+        tree["src/b.c"] = "int z;\n"
+        tree["include/unused.inc"] = "#import \"x\"\n"
+        with patch.object(nk, "cpp_dependencies", lambda _, tu:
+                          {tu, "include/unused.inc"} if tu == "src/b.c" else {tu}):
+            try:
+                nk.dependency_census(tree, {"src/a.c"})
+                unrelated_failed = False
+            except ValueError as e:
+                unrelated_failed = "unsupported directive" in str(e)
+        check("keycheck I all TU dependencies checked before selection", unrelated_failed)
+
+    for prefix in ("R", "LR", "uR", "UR", "u8R"):
+        check("keycheck R raw prefix " + prefix, shape_fails(
+              {"src/a.c": prefix + '\"(a\"/*)\"\n#pragma once\n'}, "raw string"))
+    check("keycheck R longer identifier is not raw prefix", not shape_fails(
+          {"src/a.c": '#define Q FOOR"x"\n'}, ""))
+    with real_shape_fixture() as directory:
+        for hazard in ('#pragma once', '#import "b.c"', '#include MACRO', '#define X a ## b'):
+            text = 'R"(a"/*)"\n' + hazard + "\n"
+            for mode in ("working", "commit"):
+                try:
+                    if mode == "working":
+                        (directory / "src/a.c").write_bytes(text.encode("utf-8"))
+                        nk.read_working_tree()
+                    else:
+                        raw, oid = text.encode("utf-8"), "1"*40
+                        batch = f"{oid} blob {len(raw)}\n".encode() + raw + b"\n"
+                        with patch.object(nk, "git", return_value=f"100644 blob {oid}\tsrc/a.c\0"), \
+                                patch.object(nk.subprocess, "run", return_value=SimpleNamespace(stdout=batch)):
+                            nk.read_base_tree("HEAD")
+                    raw_failed = False
+                except ValueError as e:
+                    raw_failed = "raw string" in str(e)
+                check("keycheck R real reader " + mode + " " + hazard, raw_failed)
+
+    def create_fifo_fixture(path):
+        try:
+            nk.os.mkfifo(path)
+        except OSError as e:
+            skip("keycheck actual FIFO rejected", f"mkfifo failed on fixture filesystem: {e}")
+            return False
+        return True
+
+    with patch.object(nk.os, "mkfifo", create=True,
+                      side_effect=OSError(95, "Operation not supported")), \
+            patch.object(sys.modules[__name__], "skip") as skipped_fifo:
+        check("keycheck FIFO filesystem refusal skips without crashing",
+              not create_fifo_fixture(nk.ROOT / "tmp" / "codex" / "unused-fifo")
+              and skipped_fifo.call_count == 1 and "95" in skipped_fifo.call_args.args[1])
+
+    # Follow-up 27: ignored contexts are forbidden; unused caches still pass.
+    with real_shape_fixture() as directory:
+        for name in (".368E4.c.swp", "game.h~", ".DS_Store"):
+            (directory / "include" / name).write_bytes(b"\x80\x00ignored junk")
+        with patch.object(nk, "shape_read", wraps=nk.shape_read) as reads:
+            working = nk.read_working_tree()
+        check("keycheck ignored nonplain editor junk skipped",
+              all("include/" + name not in working for name in
+                  (".368E4.c.swp", "game.h~", ".DS_Store"))
+              and all(call.args[0].name not in (".368E4.c.swp", "game.h~", ".DS_Store")
+                      for call in reads.call_args_list))
+        tree = nk.CppTree(working, "unused-ignored")
+        with patch.object(nk, "cpp_dependencies", fake_dependencies):
+            check("keycheck unused ignored inputs do not reject census",
+                  nk.dependency_census(tree, {"src/a.c"}) == {"src/a.c"})
+        for kind in (nk.stat_mode.S_IFIFO, nk.stat_mode.S_IFCHR,
+                     nk.stat_mode.S_IFBLK, nk.stat_mode.S_IFSOCK):
+            with patch.object(nk.os, "lstat", return_value=SimpleNamespace(st_mode=kind)), \
+                    patch.object(nk, "shape_read", side_effect=AssertionError("must not open")):
+                try:
+                    nk.read_working_tree()
+                    special_failed = False
+                except ValueError as e:
+                    special_failed = "non-regular working input" in str(e)
+            check("keycheck nonregular input rejected before read " + str(kind), special_failed)
+        with patch.object(nk, "working_shape", return_value=None), \
+                patch.object(nk.os, "lstat",
+                             return_value=SimpleNamespace(st_mode=nk.stat_mode.S_IFIFO)), \
+                patch.object(nk, "shape_read",
+                             side_effect=AssertionError("file loop must not open")):
+            try:
+                nk.read_working_tree()
+                loop_failed = False
+            except ValueError as e:
+                loop_failed = "non-regular working input" in str(e)
+        check("keycheck file-read loop directly rejects FIFO before read", loop_failed)
+        if not hasattr(nk.os, "mkfifo"):
+            skip("keycheck actual FIFO rejected", "os.mkfifo unavailable on this platform")
+        else:
+            fifo = directory / "include" / "pipe"
+            if create_fifo_fixture(fifo):
+                try:
+                    with patch.object(nk, "shape_read",
+                                      side_effect=AssertionError("must not open FIFO")):
+                        try:
+                            nk.read_working_tree()
+                            fifo_failed = False
+                        except ValueError as e:
+                            fifo_failed = "non-regular working input" in str(e)
+                    check("keycheck actual FIFO rejected before read", fifo_failed)
+                finally:
+                    fifo.unlink()
+    for flag in ("h", "S", "s"):
+        with real_shape_fixture() as directory:
+            original_git = nk.git
+            def flagged_inventory(*args, **kwargs):
+                return flag + " src/a.c\0" if "-v" in args else original_git(*args, **kwargs)
+            with patch.object(nk, "git", flagged_inventory):
+                try:
+                    nk.read_working_tree()
+                    flag_failed = False
+                except ValueError as e:
+                    flag_failed = "hidden working index flag" in str(e) and "src/a.c" in str(e)
+            check("keycheck working hidden index flag " + flag, flag_failed)
+    hidden = nk.ShapeTree({"src/a.c": "int n;\n", "Makefile": make_text})
+    hidden._tracked = set(hidden)
+    for path in hidden:
+        head = dict(hidden)
+        head[path] = "different HEAD bytes\n"
+        try:
+            nk.verify_working_changes(hidden, head, [])
+            hidden_failed = False
+        except ValueError as e:
+            hidden_failed = "outside change set: " + path in str(e)
+        check("keycheck raw hidden working change names " + path, hidden_failed)
+        nk.verify_working_changes(hidden, head, [("M", path)])
+        check("keycheck reported working change allowed " + path, True)
+
+    for comment in ('/* see "gte_macros.inc" */', '/* see <macro.inc> */'):
+        check("keycheck assembler mention not cpp input " + comment, not shape_fails(
+              {"src/a.c": comment, "include/gte_macros.inc": "## GAS comment\n",
+               "include/macro.inc": "# arbitrary GAS comment\n"}, ""))
+    # System-only extra dependencies must not trigger a full-tree secondary gate.
+    system_only = nk.CppTree({"src/a.c": "int x;"}, "system-only")
+    with patch.object(nk, "cpp_dependencies", lambda *_:
+                      {"src/a.c", "/usr/mipsel-linux-gnu/include/stdc-predef.h"}), \
+            patch.object(nk, "plain_tree", side_effect=AssertionError("no extra local input")):
+        check("keycheck external predef skips secondary tree gate",
+              nk.dependency_census(system_only, {"src/a.c"}) == {"src/a.c"})
+    for spelling in ("typeof", "__typeof", "__typeof__"):
+        tokens = nk.layer2.tokens(spelling + "(int) l; " + spelling + "(int) n;")
+        declared = nk.cpp_file_declarations(tokens, set(nk.DECL_WORDS), [], {"l", "n"})
+        check("keycheck typeof globals recorded " + spelling, {"l", "n"} <= declared)
+    parenthesised = "int (g)(void){ typedef int T; return 0; } int f(int l){return l;}"
+    tokens = nk.layer2.tokens(parenthesised)
+    functions = nk.cpp_functions(tokens, nk.declaration_types({"src/a.c": parenthesised}))
+    check("keycheck parenthesised function recognized in cpp",
+          {name for name, *_ in functions} == {"g", "f"})
+    check("keycheck parenthesised function typedef stays local",
+          "T" not in nk.file_typedef_types(tokens, functions))
+    check("keycheck parenthesised source function recognized",
+          nk.function_names(parenthesised) == {"g", "f"})
+
+    # Follow-up 22: Make filenames are not shell words. Both apostrophe routes
+    # must preserve b.c as a distinct dependency, so its includer is selected.
+    for label in ("d_apos", "c_apos"):
+        deps = nk.parse_cpp_dependencies("__kc__: src/a.c src/q'.h src/b.c src/r'.h\n", "src/a.c")
+        with patch.object(nk, "cpp_dependencies", lambda tree, tu: deps if tu == "src/a.c" else {tu}):
+            selected = nk.dependency_census(nk.CppTree({"src/a.c": "", "src/b.c": ""}, "base"), {"src/b.c"})
+        check("keycheck Make apostrophe census " + label, selected == {"src/a.c", "src/b.c"})
+    escaped = nk.parse_cpp_dependencies(r"__kc__: src/a.c include/with\ space\#$$.h", "src/a.c")
+    check("keycheck d_ctl_space Make escaping", escaped == {"src/a.c", "include/with space#$.h"})
+    for bad in (r"__kc__: src/a.c include/a\q.h", "__kc__: src/a.c $x.h", "__kc__: src/a.c #x.h"):
+        try:
+            nk.parse_cpp_dependencies(bad, "src/a.c")
+            bad_make = False
+        except ValueError:
+            bad_make = True
+        check("keycheck ambiguous Make dependency rejects " + bad, bad_make)
+    root = nk.ROOT / "tmp" / "cpp-dependency-fixture"
+    fixture_stat = SimpleNamespace(st_dev=3, st_ino=77, st_mode=nk.stat_mode.S_IFREG)
+    with patch.object(nk.os, "stat", return_value=fixture_stat), patch.object(nk.os.path, "isfile", return_value=True):
+        tree = nk.CppTree({}, "path-fixture")
+        tree.directory = root
+        good = nk.validate_cpp_dependencies(tree, escaped, "cpp", [])
+        check("keycheck d_ctl_space dependencies exist at cpp cwd", good == escaped)
+        for label, path in (("d_proc", "/proc/self/cwd/src/b.c"),
+                                                        ("d_abs", str(nk.ROOT / "src/b.c")),
+                            ("e_esc", "../../../../outside/src/b.c"),
+                            ("missing", "src/missing.c")):
+            with patch.object(nk, "cpp_system_directories", return_value=()), patch.object(nk.os, "stat", side_effect=FileNotFoundError if label == "missing" else None, return_value=fixture_stat):
+                try:
+                    nk.validate_cpp_dependencies(tree, {path}, "cpp", [])
+                    refused = False
+                except ValueError:
+                    refused = True
+            check("keycheck dependency confinement " + label, refused)
+        # Identity follows stat without any per-dependency resolve traversal.
+        with patch.object(Path, "resolve", side_effect=AssertionError("resolve must not run")):
+            identity = nk.dependency_identity(tree, "src/b.c")
+        check("keycheck dependency identity cheap stat", identity == (3, 77))
+        stderr = '#include <...> search starts here:\n ' + str(root / "include") + '\nEnd of search list.\n'
+        with patch.object(nk.subprocess, "run", return_value=nk.subprocess.CompletedProcess([],0,'',stderr)) as verbose:
+            first = nk.cpp_system_directories(tree, "cpp", ["-Iinclude"])
+            second = nk.cpp_system_directories(tree, "cpp", ["-Iinclude"])
+        check("keycheck cpp -v include discovery cached", first == second == (str(root / "include"),) and verbose.call_count == 1)
+    system_tree = nk.CppTree({}, "system-dependency-fixture")
+    system_tree.directory = root
+    system_root = nk.ROOT.parent / "compiler-owned"
+    with patch.object(nk.os, "stat", return_value=fixture_stat), patch.object(nk, "cpp_system_directories", return_value=(str(system_root),)):
+        system_path = str(system_root / "stdc-predef.h")
+        allowed_system = nk.validate_cpp_dependencies(system_tree, {system_path}, "cpp", [])
+    check("keycheck dependency compiler include root allowed", allowed_system == {system_path})
+    for result in (nk.subprocess.CompletedProcess([],1,'','bad'), nk.subprocess.CompletedProcess([],0,'','no search list')):
+        unknown_system = nk.CppTree({}, "unknown-system")
+        unknown_system.directory = root
+        with patch.object(nk.subprocess, "run", return_value=result):
+            try:
+                nk.cpp_system_directories(unknown_system, "cpp", [])
+                system_failed = False
+            except ValueError:
+                system_failed = True
+        check("keycheck dependency system roots cannot be guessed", system_failed)
+    checked_tree = nk.CppTree({}, "cache-fixture")
+    checked_tree.directory = root
+    with patch.object(nk.os, "stat", return_value=fixture_stat) as cached_stat:
+        nk.validate_cpp_dependencies(checked_tree, {"src/b.c"}, "cpp", [])
+        nk.validate_cpp_dependencies(checked_tree, {"src/b.c"}, "cpp", [])
+    check("keycheck dependency existence cached across TUs", cached_stat.call_count == 1)
+    with patch.object(nk, "cpp_dependencies", side_effect=AssertionError("existence probes must fail before selection")):
+        try:
+            nk.dependency_census(nk.CppTree({"src/a.c": '#if __has_include("../asm/x.s")\n#include "b.c"\n#endif\n', "src/b.c": "int f(int l){return l;}"}, "base"), {"src/b.c"})
+            hasinc_failed = False
+        except ValueError as e:
+            hasinc_failed = "__has_include" in str(e)
+    check("keycheck c_hasinc census preflight", hasinc_failed)
+    for mode in ("120000",):
+        with patch.object(nk, "git", return_value=mode + " blob " + "1"*40 + "\tsrc/lnk.h\0"):
+            try:
+                nk.read_base_tree("HEAD")
+                linked = False
+            except ValueError as e:
+                linked = "symlink" in str(e)
+        check("keycheck e_linkc git symlink rejects", linked)
+    with patch.object(nk, "working_shape", return_value=None), \
+            patch.object(nk.os, "lstat", return_value=SimpleNamespace(st_mode=nk.stat_mode.S_IFLNK)):
+        try:
+            nk.read_working_tree()
+            linked_working = False
+        except ValueError as e:
+            linked_working = "symlink" in str(e)
+    check("keycheck e_linkc working symlink rejects", linked_working)
+    for line in ('build/src/a.o: src/a.c\n\tcpp src/a.c | cc1', 'export PATH := /x', 'SHELL := /x',
+                 '.RECIPEPREFIX := >', 'export CPATH := /x', 'export GCC_EXEC_PREFIX := /x',
+                 'export DEPENDENCIES_OUTPUT := /x', 'vpath %.h /x', 'VPATH := /x', 'export PATH', '$(BUILD_DIR)/$(SRC_DIR)/a.o: src/a.c', 'X := $(shell cat config)'):
+        for command in (lambda text: nk.cpp_command(text), lambda text: nk.cc1_command(text, "src/a.c")):
+            try:
+                command(make_text + "\n" + line + "\n")
+                rejected = False
+            except ValueError as e:
+                rejected = "unsupported Makefile" in str(e)
+            check("keycheck N4doubleprime strict Make guard " + line, rejected)
+
+    # Provenance is irrelevant for members and indexed once for each local file.
+    member_files = {"src/a.c": "typedef int I;struct T{int m;};int f(struct T*t){return t->m;}\n"}
+    member_output = nk.emitted_lines(fake_cpp(member_files, "src/a.c"), member_files, "src/a.c")
+    with patch.object(nk, "typedef_source_index", side_effect=AssertionError("member provenance must not run")):
+        nk.cpp_scope_checks(member_output, {"T.m": "n"}, {}, "base", member_files)
+    check("keycheck: member census skips typedef provenance entirely", True)
+    indexed = "typedef int I;\ntypedef I J;\ntypedef J K;\nint f(int l){return l;}\n"
+    index_files = {"src/a.c": indexed}
+    index_output = nk.emitted_lines(fake_cpp(index_files, "src/a.c"), index_files, "src/a.c")
+    with nk.analysis_cache(), patch.object(nk, "typedef_rows", wraps=nk.typedef_rows) as rows_seen:
+        nk.cpp_scope_checks(index_output, {"f:l": "n"}, {}, "base", index_files)
+    source_scans = sum(call.args[0] == indexed for call in rows_seen.call_args_list)
+    check("keycheck: local typedef provenance indexes source once", source_scans == 1)
+    check("keycheck: provenance line index uses actual source starts",
+          sorted(nk.typedef_source_index(indexed)) == [1,2,3])
+    for name, prefix in (("k2", '#define SIZE 4\ntypedef struct {int a[SIZE];} T;\n'),
+                         ("k3", '#define TYPE int\ntypedef struct {TYPE a;} T;\n'),
+                         ("k5", 'typedef int __attribute__((aligned(4))) T;\n')):
+        source = prefix + "int f(void){T *l=0;return l==0;}\n"
+        def expanded_cpp(tree, tu):
+            return fake_cpp(tree, tu).replace("[SIZE]", "[4]").replace("{TYPE a;}", "{int a;}")
+        check("keycheck conservative typedef limit " + name, not proof("f:l=n",
+              {"src/a.c": source}, {"src/a.c": re.sub(r"\bl\b", "n", source)}, cpp=expanded_cpp)[0])
+    for line in (' CPP_DEFS += -DIN_A', '$(eval CPP_DEFS += -DIN_A)',
+                 'KCP := CPP\n$(KCP)_DEFS += -DIN_A', '$(eval CC_FLAGS += -g)',
+                 'MAKEFLAGS += -e', 'X := $(call mystery)', '$(KCP)_DEFS += -DIN_A'):
+        for get_command in (lambda text: nk.cpp_command(text), lambda text: nk.cc1_command(text, "src/a.c")):
+            try:
+                get_command(make_text + "\n" + line + "\n")
+                refused = False
+            except ValueError as e:
+                refused = "unsupported Makefile" in str(e)
+            check("keycheck N4prime literal Make guard " + line, refused)
+
+    for malformed in ('not a dependency record\n', '__kc__:\n'):
+        with patch.object(nk.shutil, "which", return_value=str(nk.ROOT / "Makefile")), \
+                patch.object(nk.CppTree, "materialize", return_value=nk.ROOT), \
+                patch.object(nk.subprocess, "run", return_value=nk.subprocess.CompletedProcess([], 0, malformed, '')):
+            try:
+                nk.cpp_dependencies(nk.CppTree({"Makefile": make_text}, "base"), "src/a.c")
+                bad_records = False
+            except ValueError:
+                bad_records = True
+        check("keycheck: malformed/empty dependency records reject", bad_records)
+    locked_tree = nk.CppTree({}, "lock-fixture")
+    lock_state = {"active": 0, "peak": 0, "writes": 0}
+    def materialization_fixture():
+        lock_state["active"] += 1
+        lock_state["peak"] = max(lock_state["peak"], lock_state["active"])
+        if locked_tree.directory is None:
+            time.sleep(0.002)
+            lock_state["writes"] += 1
+            locked_tree.directory = nk.ROOT / "tmp" / "lock-fixture-unused"
+        lock_state["active"] -= 1
+        return locked_tree.directory
+    with patch.object(locked_tree, "_materialize", materialization_fixture):
+        with nk.ThreadPoolExecutor(max_workers=8) as pool:
+            list(pool.map(lambda _: locked_tree.materialize(), range(8)))
+    check("keycheck: parallel census materializes snapshot safely once", lock_state["writes"] == 1 and lock_state["peak"] == 1)
+
+    with patch.object(nk, "cpp_dependencies", lambda tree, tu: {tu, "include/shared.h", "src/b.c"}), \
+            patch.object(nk, "dependency_identity", wraps=nk.dependency_identity) as identities:
+        nk.dependency_census(nk.CppTree(graph_files, "base"), {"src/b.c"})
+    check("keycheck: dependency filesystem identity cached across TUs",
+          sum(call.args[1] == "include/shared.h" for call in identities.call_args_list) == 1)
+
+    # Exercise main's separation of global and scoped pairs, survival scan and
+    # complete layer-2 report with a read-only synthetic tree adapter.
+    def run_main(spec, before, after, extra=None, cpp=fake_cpp, deps=fake_dependencies,
+                 rows=None, storage=lambda *_: None, head_oids=None, base_revision="HEAD",
+                 base_oids=None, status_output=""):
+        base = before if isinstance(before, dict) else {"src/a.c": before}
+        new = after if isinstance(after, dict) else {"src/a.c": after, **(extra or {})}
+        if not isinstance(new, nk.ShapeTree):
+            new = nk.ShapeTree(new)
+        if not hasattr(new, "_tracked"):
+            new._tracked = set()
+        def git(*args, **kwargs):
+            if args[:2] == ("--no-optional-locks", "status"):
+                return status_output
+            if args[0] == "ls-files" and "--stage" in args:
+                return "".join(getattr(new, "_index_modes", {}).get(p, "100644")
+                               + " " + oid + " 0\t" + p + "\0"
+                               for p, oid in getattr(new, "_index", {}).items())
+            if args[0] == "ls-tree":
+                if "-z" in args:
+                    return "".join("100644 blob " + oid + "\t" + p + "\0"
+                                   for p, oid in ((head_oids if args[-1] == "HEAD" else base_oids)
+                                                 or {}).items())
+                return "src/a.c\n"
+            return ""  # no global freshness/survival hits
+        out = io.StringIO()
+        with patch.object(nk, "git", git), patch.object(nk, "show",
+                lambda rev, path: (base if rev else new).get(path)), \
+                patch.object(nk, "read_base_tree", lambda *_: base), \
+                patch.object(nk, "read_working_tree", lambda: new), \
+                patch.object(nk, "preprocess", cpp), \
+                patch.object(nk, "cpp_dependencies", deps), \
+                patch.object(nk, "compile_cc1", fake_cc1), \
+                patch.object(nk, "verify_working_storage", storage), \
+                patch.object(nk, "changed_files", lambda *_: rows if rows is not None else
+                             [("M", p) for p in new if base.get(p) != new[p]]), \
+                patch.object(sys, "argv", ["naming_keycheck", "--pairs", spec,
+                                          "--base", base_revision]), \
+                contextlib.redirect_stdout(out):
+            result = nk.main()
+        return result, out.getvalue()
+    for label in ("t_f1_ignored_shadow_typeof", "t_f1x_exclude_shadow_typeof",
+                  "t_g3_ignored_hidden_includer"):
+        before = {"src/a.c": '#include "s.h"\nint f(int l){return l;}\n',
+                  "include/s.h": "typedef int T;\n"}
+        after = nk.ShapeTree({**before, "src/a.c": before["src/a.c"].replace("int l", "int n").replace("return l", "return n"),
+                             "src/s.h": "__typeof__(int) l; __typeof__(int) n;\n"})
+        if label == "t_g3_ignored_hidden_includer":
+            after["src/s.h"] += '#include "../include/s.h"\n'
+        after._nonignored = set(before)
+        after._working_nonignored = set(before)
+        rc, message = run_main("f:l=n", before, after)
+        check("keycheck B1 CLI ignored context " + label,
+              rc != 0 and "working-tree cpp dependency is ignored: src/s.h" in message)
+    before = {"src/a.c": "int f(int l){return l;}\n", "include/s.h": "int harmless;\n"}
+    after = nk.ShapeTree({"src/a.c": "int f(int n){return n;}\n",
+                          "include/s.h": "int hidden;\n"})
+    after._tracked = set(before)
+    rc, message = run_main("f:l=n", before, after, rows=[("M", "src/a.c")])
+    check("keycheck CLI hidden clean-filter raw change rejects",
+          rc != 0 and "outside change set: include/s.h" in message)
+    original_storage = nk.verify_working_storage
+    real_run = nk.subprocess.run
+    original_is_file = Path.is_file
+    def storage_proof(rows, files=None, base="HEAD"):
+        def fixture_file(path):
+            return (path == nk.ROOT / "src/a.c" or path == nk.ROOT / "src/s.h"
+                    or path == nk.ROOT / "asm/probe.s" or path == nk.ROOT / "bb2.ld"
+                    or path == nk.ROOT / "named_syms.txt"
+                    or path == nk.ROOT / "asm/funcs/gg.s"
+                    or original_is_file(path))
+        with patch.object(Path, "is_file", fixture_file):
+            return original_storage(rows, files, base)
+    def attr_response(cmd, kwargs, active=None):
+        names = kwargs["input"].decode().rstrip("\0").split("\0")
+        data = "".join(p + "\0filter\0" + ((active or {}).get(p, "unspecified")) + "\0"
+                       for p in names).encode()
+        return nk.subprocess.CompletedProcess(cmd, 0, data, b"")
+    for mode, spec in (("scoped", "f:l=n"), ("global", "l=n")):
+        before = {"src/a.c": "int f(int l){return l;}\n", "src/s.h": "int K;\n"}
+        for label, path, converted in (
+                ("cs_ident_hdr", "src/s.h", True),
+                ("cs_filter_hdr", "src/s.h", True),
+                ("cs_filter_wavefile", "src/a.c", True),
+                ("cs_utf7_hdr", "src/s.h", True),
+                ("idx_staged_hdr", "src/s.h", False)):
+            after = nk.ShapeTree({**before, "src/a.c": "int f(int n){return n;}\n"})
+            after._tracked = set(before)
+            after._index = {p: "1"*40 for p in before}
+            raw = {p: "1"*40 for p in before}
+            raw["src/a.c"] = "2"*40
+            after._index = dict(raw)
+            clean = dict(raw)
+            if converted:
+                clean[path] = "3"*40
+            else:
+                after._index[path] = "4"*40
+            def hash_response(cmd, **kwargs):
+                if cmd[:2] not in (["git", "hash-object"], ["git", "check-attr"]):
+                    return real_run(cmd, **kwargs)
+                if "check-attr" in cmd:
+                    return attr_response(cmd, kwargs)
+                names = [json.loads(p) for p in kwargs["input"].decode().splitlines()]
+                values = raw if "--no-filters" in cmd else clean
+                return nk.subprocess.CompletedProcess(cmd, 0,
+                       "".join(values[p] + "\n" for p in names).encode(), b"")
+            with patch.object(nk.subprocess, "run", hash_response) as hashes:
+                rc, message = run_main(spec, before, after, storage=storage_proof,
+                                       rows=[("M", "src/a.c"), ("M", "src/s.h")],
+                                       head_oids={p: "1"*40 for p in before})
+            reason = "clean conversion" if converted else "index blob differs"
+            check("keycheck storage rejects " + mode + " " + label,
+                  rc != 0 and reason in message and path in message)
+        for label in ("staged", "staged-format", "staged-plus-unstaged", "unstaged"):
+            before = {"src/a.c": "int f(int l){return l;} /* l */\n",
+                      "src/s.h": "int K;\n"}
+            wave = "int f(int n){return n;} /* l */\n"
+            working = wave.replace("/* l */", "/* n */")
+            after = nk.ShapeTree({**before, "src/a.c": working})
+            if label in ("staged-format", "staged-plus-unstaged"):
+                after["src/a.c"] = after["src/a.c"].replace("return n", "return  n")
+            after._tracked = set(before)
+            raw = {"src/a.c": "2"*40, "src/s.h": "1"*40}
+            heads = {p: "1"*40 for p in before}
+            after._index = dict(heads)
+            if label in ("staged", "staged-format"):
+                after._index["src/a.c"] = raw["src/a.c"]
+            elif label == "staged-plus-unstaged":
+                # Exact reset --soft state: HEAD=base, index=wave, working=wave+comments.
+                after._index["src/a.c"] = "3"*40
+            def identity_hash(cmd, **kwargs):
+                if cmd[:2] not in (["git", "hash-object"], ["git", "check-attr"]):
+                    return real_run(cmd, **kwargs)
+                if "check-attr" in cmd:
+                    return attr_response(cmd, kwargs)
+                names = [json.loads(p) for p in kwargs["input"].decode().splitlines()]
+                return nk.subprocess.CompletedProcess(cmd, 0,
+                       "".join(raw[p] + "\n" for p in names).encode(), b"")
+            with patch.object(nk.subprocess, "run", side_effect=identity_hash) as hashes:
+                rc, message = run_main(spec, before, after, storage=storage_proof,
+                                       rows=[("M", "src/a.c")], head_oids=heads)
+            if label in ("staged", "staged-format"):
+                check("keycheck storage accepts " + mode + " " + label, rc == 0)
+            else:
+                check("keycheck storage refuses partial staging " + mode + " " + label,
+                      rc != 0 and "src/a.c" in message
+                      and "stage the wave (git add -A) before the keycheck" in message)
+            check("keycheck storage exactly two hash batches " + mode + " " + label,
+                  sum("hash-object" in call.args[0] for call in hashes.call_args_list) == 2)
+    for label, spec, target, failure in (
+            ("a_sneaky_filter_hdr_scoped", "f:l=n", "src/s.h", "filter"),
+            ("a_sneaky_filter_hdr_global", "l=n", "src/s.h", "filter"),
+            ("a_sneaky_filter_wavefile_scoped", "f:l=n", "src/a.c", "filter"),
+            ("a_partial_global_ifdef", "l=n", "src/s.h", "staging"),
+            ("a_partial_mixed_scoped", "f:l=n", "src/s.h", "staging"),
+            ("a_asm_filter_global", "l=n", "asm/probe.s", "filter"),
+            ("a_asm_staged_global", "l=n", "asm/probe.s", "staging")):
+        before = {"src/a.c": "int f(int l){return l;}\n", "src/s.h": "#define K 1\n"}
+        if target.startswith("asm/"):
+            before[target] = ".word l\n"
+        after = nk.ShapeTree({**before, "src/a.c": "int f(int n){return n;}\n"})
+        after[target] = ".word n\n" if target.startswith("asm/") else after[target]
+        after._tracked = set(before)
+        raw = {p: "1"*40 for p in before}
+        raw["src/a.c"] = "2"*40
+        raw[target] = "3"*40
+        after._index = dict(raw)
+        if failure == "staging":
+            after._index[target] = "1"*40
+        calls = []
+        def storage_response(cmd, **kwargs):
+            if cmd[:2] not in (["git", "hash-object"], ["git", "check-attr"]):
+                return real_run(cmd, **kwargs)
+            calls.append(cmd)
+            if "check-attr" in cmd:
+                return attr_response(cmd, kwargs, {target: "caller-aware"} if failure == "filter" else {})
+            names = [json.loads(p) for p in kwargs["input"].decode().splitlines()]
+            # Caller-aware filters return identity under both hash invocations.
+            return nk.subprocess.CompletedProcess(cmd, 0,
+                   "".join(raw[p] + "\n" for p in names).encode(), b"")
+        with patch.object(nk.subprocess, "run", storage_response):
+            rc, message = run_main(spec, before, after, storage=storage_proof,
+                                   rows=[("M", p) for p in after],
+                                   head_oids={p: "1"*40 for p in before})
+        reason = "filter attribute" if failure == "filter" else "stage the wave (git add -A)"
+        check("keycheck fully-staged invariant " + label,
+              rc != 0 and target in message and reason in message)
+        if failure == "filter":
+            check("keycheck filter refusal precedes any filter invocation " + label,
+                  len([cmd for cmd in calls if cmd[:2] in
+                       (["git", "hash-object"], ["git", "check-attr"])]) == 1
+                  and any(cmd[:2] == ["git", "check-attr"] for cmd in calls))
+    for label, spec, target, new_file in (
+            ("s_stale_asm_global", "l=n", "asm/probe.s", False),
+            ("s_stale_asm_scoped", "f:l=n", "asm/probe.s", False),
+            ("s_stale_ld_global", "l=n", "bb2.ld", False),
+            ("s_stale_newfile_asm_global", "l=n", "asm/funcs/extra.s", True),
+            ("s_stale_registry_scoped", "f:l=n", "named_syms.txt", False)):
+        before = {"src/a.c": "int f(int l){return l;}\n"}
+        if not new_file:
+            before[target] = "unchanged working bytes\n"
+        after = nk.ShapeTree({**before, "src/a.c": "int f(int n){return n;}\n"})
+        after._tracked = set(after)
+        after._index = {"src/a.c": "2"*40, target: "3"*40}
+        heads = {p: "1"*40 for p in before}
+        raw = {p: "1"*40 for p in before}
+        raw["src/a.c"] = "2"*40
+        def stale_response(cmd, **kwargs):
+            if cmd[:2] == ["git", "check-attr"]:
+                return attr_response(cmd, kwargs)
+            if cmd[:2] == ["git", "hash-object"]:
+                names = [json.loads(p) for p in kwargs["input"].decode().splitlines()]
+                return nk.subprocess.CompletedProcess(cmd, 0,
+                       "".join(raw[p] + "\n" for p in names).encode(), b"")
+            return real_run(cmd, **kwargs)
+        with patch.object(nk.subprocess, "run", stale_response):
+            rc, message = run_main(spec, before, after, storage=storage_proof,
+                                   rows=[("M", "src/a.c")], head_oids=heads)
+        check("keycheck index-only stale edit rejected " + label,
+              rc != 0 and target in message and "stage the wave (git add -A)" in message)
+    # Mode changes and staged removals also belong to the checked set, even when
+    # no working-tree row reports them. A filter refusal isolates that census.
+    for kind in ("mode", "removed"):
+        files = nk.ShapeTree({"src/a.c": "int x;"})
+        files._index = {"src/a.c": "1"*40}
+        files._index_modes = {"src/a.c": "100644"}
+        if kind == "mode":
+            files._index["asm/probe.s"] = "1"*40
+            files._index_modes["asm/probe.s"] = "100755"
+        def index_inventory(*args, **kwargs):
+            if args[0] == "ls-tree":
+                return "100644 blob " + "1"*40 + "\tasm/probe.s\0"
+            return ""
+        with patch.object(nk, "git", index_inventory), \
+                patch.object(nk.subprocess, "run", side_effect=lambda cmd, **kwargs:
+                             attr_response(cmd, kwargs, {"asm/probe.s": "guard-probe"})):
+            try:
+                original_storage([], files)
+                index_census_failed = False
+            except ValueError as e:
+                index_census_failed = "filter attribute" in str(e) and "asm/probe.s" in str(e)
+        check("keycheck index-vs-HEAD census includes " + kind, index_census_failed)
+    for label, spec, target, new_file in (
+            ("b_reverted_asm_unstaged_global", "l=n", "asm/probe.s", False),
+            ("b_reverted_asm_unstaged_scoped", "f:l=n", "asm/probe.s", False),
+            ("b_reverted_ld_unstaged_global", "l=n", "bb2.ld", False),
+            ("b_reverted_newasm_unstaged_global", "l=n", "asm/funcs/extra.s", True)):
+        before = {"src/a.c": "int f(int l){return l;}\n"}
+        if not new_file:
+            before[target] = "base bytes\n"
+        for staged_revert in (False, True):
+            after = nk.ShapeTree({**before, "src/a.c": "int f(int n){return n;}\n"})
+            after._tracked = set(before)
+            bases = {p: "1"*40 for p in before}
+            heads = {**bases, target: "3"*40}
+            raw = {**bases, "src/a.c": "2"*40}
+            after._index = {**heads, "src/a.c": "2"*40}
+            if staged_revert:
+                if new_file:
+                    del after._index[target]
+                else:
+                    after._index[target] = raw[target]
+            def history_response(cmd, **kwargs):
+                if cmd[:2] == ["git", "check-attr"]:
+                    return attr_response(cmd, kwargs)
+                if cmd[:2] == ["git", "hash-object"]:
+                    names = [json.loads(p) for p in kwargs["input"].decode().splitlines()]
+                    return nk.subprocess.CompletedProcess(cmd, 0,
+                           "".join(raw[p] + "\n" for p in names).encode(), b"")
+                return real_run(cmd, **kwargs)
+            with patch.object(nk.subprocess, "run", history_response):
+                rc, message = run_main(spec, before, after, storage=storage_proof,
+                                       rows=[("M", "src/a.c")], head_oids=heads,
+                                       base_revision="HEAD~1", base_oids=bases)
+            check("keycheck non-HEAD reverted path " + label + " staged=" + str(staged_revert),
+                  rc == 0 if staged_revert else rc != 0 and target in message
+                  and "stage the wave (git add -A)" in message)
+    for spec in ("f:l=n", "l=n"):
+        before = {"src/a.c": "int f(int l){return l;}\n", "src/s.h": "/* l */\n"}
+        after = nk.ShapeTree({"src/a.c": "int f(int n){return n;}\n", "src/s.h": "/* n */\n"})
+        after._tracked = set(before)
+        after._index = {"src/a.c": "2"*40, "src/s.h": "3"*40}
+        def committed_response(cmd, **kwargs):
+            if cmd[:2] == ["git", "check-attr"]:
+                return attr_response(cmd, kwargs)
+            if cmd[:2] == ["git", "hash-object"]:
+                names = [json.loads(p) for p in kwargs["input"].decode().splitlines()]
+                return nk.subprocess.CompletedProcess(cmd, 0,
+                       "".join(after._index[p] + "\n" for p in names).encode(), b"")
+            return real_run(cmd, **kwargs)
+        with patch.object(nk.subprocess, "run", committed_response):
+            rc, message = run_main(spec, before, after, storage=storage_proof,
+                                   rows=[("M", p) for p in before], head_oids=dict(after._index),
+                                   base_revision="HEAD~2", base_oids={p: "1"*40 for p in before})
+        check("keycheck committed two-part wave with older base " + spec, rc == 0)
+    for mode_spec in ("f:l=n", "l=n"):
+        before = {"src/a.c": "int f(int l){return l;}\n", "asm/probe.s": "unchanged bytes\n"}
+        after = nk.ShapeTree({**before, "src/a.c": "int f(int n){return n;}\n"})
+        after._tracked = set(before)
+        after._index = {"src/a.c": "2"*40, "asm/probe.s": "1"*40}
+        after._index_modes = {"src/a.c": "100644", "asm/probe.s": "100755"}
+        with patch.object(nk.subprocess, "run", side_effect=lambda cmd, **kwargs:
+                         attr_response(cmd, kwargs) if cmd[:2] == ["git", "check-attr"]
+                         else real_run(cmd, **kwargs)):
+            rc, message = run_main(mode_spec, before, after, storage=storage_proof,
+                                   rows=[("M", "src/a.c")], head_oids={p: "1"*40 for p in before})
+        check("keycheck staged mode change rejected " + mode_spec,
+              rc != 0 and "index mode differs from base mode: asm/probe.s" in message)
+    empty_oid = "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    for content, intent in (("", True), ("nonempty\n", True), ("", False)):
+        before = {"asm/funcs/g.s": content}
+        after = nk.ShapeTree({"asm/funcs/gg.s": content})
+        after._tracked = set(after)
+        oid = empty_oid if not content else "1"*40
+        after._index = {"asm/funcs/gg.s": empty_oid if intent else oid}
+        status = ("1 .A N... 000000 000000 100644 " + "0"*40 + " " + "0"*40
+                  + " asm/funcs/gg.s\0") if intent else ""
+        def ita_response(cmd, **kwargs):
+            if cmd[:2] == ["git", "check-attr"]:
+                return attr_response(cmd, kwargs)
+            if cmd[:2] == ["git", "hash-object"]:
+                return nk.subprocess.CompletedProcess(cmd, 0, (oid + "\n").encode(), b"")
+            return real_run(cmd, **kwargs)
+        with patch.object(nk.subprocess, "run", ita_response):
+            rc, message = run_main("g=gg", before, after, storage=storage_proof,
+                                   rows=[("D", "asm/funcs/g.s"), ("A", "asm/funcs/gg.s")],
+                                   head_oids={"asm/funcs/g.s": oid}, status_output=status)
+        check("keycheck empty-file rename intent=" + str(intent) + " content=" + repr(content),
+              rc != 0 and "intent-to-add" in message and "asm/funcs/gg.s" in message
+              and "stage the wave (git add -A)" in message if intent else rc == 0)
+    # A rename source record that resembles status syntax is a filename, not an ITA row.
+    with patch.object(nk, "git", side_effect=lambda *args, **kwargs:
+                      ("2 R. N... 100644 100644 100644 " + "1"*40 + " " + "1"*40
+                       + " R100 ordinary\0" + "1 .A fake filename\0")
+                      if args[:2] == ("--no-optional-locks", "status") else ""):
+        files = nk.ShapeTree({})
+        files._index = {}
+        try:
+            original_storage([], files)
+            rename_record_ok = True
+        except ValueError as e:
+            rename_record_ok = False
+    check("keycheck porcelain rename source is not status", rename_record_ok)
+    # Round 30 B1: `git rm --cached P; git add -N P` on a HEAD-tracked empty file is DA.
+    # Every unstaged status letter (Y) fails; unmerged rows fail; status takes no lock.
+    hexes = " ".join(("1"*40, "0"*40))
+    for label, status_row, expect in (
+            ("DA intent-to-add", "1 DA N... 100644 000000 100644 " + hexes + " include/e.h",
+             "intent-to-add file is not staged: include/e.h"),
+            (".A intent-to-add", "1 .A N... 000000 000000 100644 " + hexes + " asm/new.s",
+             "intent-to-add file is not staged: asm/new.s"),
+            ("unstaged modify", "1 .M N... 100644 100644 100644 " + hexes + " asm/probe.s",
+             "unstaged change is not staged: asm/probe.s"),
+            ("unstaged delete", "1 .D N... 100644 100644 000000 " + hexes + " bb2.ld",
+             "unstaged change is not staged: bb2.ld"),
+            ("staged plus unstaged", "1 MM N... 100644 100644 100644 " + hexes + " src/a.c",
+             "unstaged change is not staged: src/a.c"),
+            ("worktree rename", "2 .R N... 100644 100644 100644 " + hexes + " R100 new.s\0old.s",
+             "unstaged change is not staged: new.s"),
+            ("worktree copy", "2 .C N... 100644 100644 100644 " + hexes + " C100 cp.s\0old.s",
+             "unstaged change is not staged: cp.s"),
+            ("unmerged", "u UU N... 100644 100644 100644 100644 " + "1"*40 + " " + hexes
+             + " src/a.c", "unmerged working index: src/a.c")):
+        calls = []
+        def status_git(*args, row=status_row, **kwargs):
+            calls.append(args)
+            return row + "\0" if args[:2] == ("--no-optional-locks", "status") else ""
+        with patch.object(nk, "git", side_effect=status_git):
+            files = nk.ShapeTree({})
+            files._index = {}
+            try:
+                original_storage([], files)
+                status_message = ""
+            except ValueError as e:
+                status_message = str(e)
+        check("keycheck status row rejects " + label, expect in status_message
+              and ("stage the wave (git add -A)" in status_message or label == "unmerged"))
+        check("keycheck status is read-only " + label,
+              calls[:1] == [("--no-optional-locks", "status", "--porcelain=v2", "-z",
+                             "--no-renames", "--untracked-files=no")])
+    for label, status_row in (
+            ("staged add", "1 A. N... 000000 100644 100644 " + hexes + " asm/new.s"),
+            ("staged delete", "1 D. N... 100644 000000 000000 " + hexes + " asm/old.s"),
+            ("staged modify", "1 M. N... 100644 100644 100644 " + hexes + " src/a.c")):
+        with patch.object(nk, "git", side_effect=lambda *args, row=status_row, **kwargs:
+                          row + "\0" if args[:2] == ("--no-optional-locks", "status") else ""):
+            files = nk.ShapeTree({})
+            files._index = {}
+            try:
+                original_storage([], files)
+                staged_ok = True
+            except ValueError:
+                staged_ok = False
+        check("keycheck fully staged status row passes " + label, staged_ok)
+    for path in ("asm/funcs/caf\u00e9.s", "docs/with\ttab.txt", "docs/with\nnewline.txt"):
+        def nul_diff(*args, **kwargs):
+            return "M\0" + path + "\0" if args[0] == "diff" else "new/\u00e9\ttab\nname\0"
+        with patch.object(nk, "git", side_effect=nul_diff) as diff_git:
+            records = nk.changed_files("HEAD", None)
+        check("keycheck NUL diff preserves path " + repr(path),
+              records == [("M", path), ("A", "new/\u00e9\ttab\nname")])
+        check("keycheck NUL diff/untracked commands " + repr(path),
+              all("-z" in call.args for call in diff_git.call_args_list))
+    # Hidden flags on changed non-cpp inputs must be included too.
+    with patch.object(nk, "git", side_effect=lambda *args, **kwargs:
+                      "h asm/probe.s\0" if "-v" in args else ""):
+        files = nk.ShapeTree({"src/a.c": "int x;"})
+        files._index = {"src/a.c": "1"*40}
+        try:
+            original_storage([("M", "asm/probe.s")], files)
+            asm_flag_failed = False
+        except ValueError as e:
+            asm_flag_failed = "hidden working index flag: asm/probe.s" in str(e)
+    check("keycheck changed asm hidden flag refused", asm_flag_failed)
+    for staged in (False, True):
+        files = nk.ShapeTree({})
+        files._index = {} if staged else {"asm/probe.s": "1"*40}
+        def deletion_git(*args, **kwargs):
+            return ""
+        with patch.object(nk, "git", deletion_git), \
+                patch.object(nk.subprocess, "run", side_effect=lambda cmd, **kwargs:
+                             attr_response(cmd, kwargs)):
+            try:
+                original_storage([("D", "asm/probe.s")], files)
+                deleted_ok = True
+            except ValueError as e:
+                deleted_ok = False
+                deletion_hint = "asm/probe.s" in str(e) and "stage the wave (git add -A)" in str(e)
+        check("keycheck deletion staging " + str(staged),
+              deleted_ok if staged else not deleted_ok and deletion_hint)
+    files = nk.ShapeTree({"src/a.c": "int x;"})
+    files._index = {}
+    with patch.object(nk, "git", return_value=""), \
+            patch.object(nk.subprocess, "run", side_effect=lambda cmd, **kwargs:
+                         attr_response(cmd, kwargs)):
+        try:
+            original_storage([("A", "src/a.c")], files)
+            unstaged_added = False
+        except ValueError as e:
+            unstaged_added = "src/a.c" in str(e) and "stage the wave (git add -A)" in str(e)
+    check("keycheck added working file must be staged", unstaged_added)
+    try:
+        nk.verify_working_changes({}, {}, [])
+        missing_tracked = False
+    except AttributeError:
+        missing_tracked = True
+    check("keycheck missing tracked metadata cannot silently bypass guard", missing_tracked)
+    # run_main injects its own diff function; count the query inside main directly.
+    diff_count = []
+    original_main = nk.main
+    def counted_main():
+        original_diff = nk.changed_files
+        def count_diff(*args):
+            diff_count.append(args)
+            return original_diff(*args)
+        with patch.object(nk, "changed_files", count_diff):
+            return original_main()
+    with patch.object(nk, "main", counted_main):
+        run_main("f:l=n", local, local_new)
+    check("keycheck scoped main reuses first diff", len(diff_count) == 1)
+    # The policy must propagate to the base-side census too.
+    before = {"src/a.c": '#include "s.h"\nint f(int l){return l;}\n',
+              "src/s.h": "int hidden;\n"}
+    after = nk.ShapeTree({"src/a.c": '#include "s.h"\nint f(int n){return n;}\n',
+                          "src/s.h": "int hidden;\n"})
+    after._nonignored = {"src/a.c"}
+    after._working_nonignored = {"src/a.c"}
+    rc, message = run_main("f:l=n", before, after, deps=lambda tree, tu:
+                           {tu, "src/s.h"} if tree.label == "base" else {tu})
+    check("keycheck B1 CLI base-only ignored dependency rejects",
+          rc != 0 and "working-tree cpp dependency is ignored: src/s.h" in message)
+    with patch.object(nk, "plain_tree", side_effect=ValueError("scoped tree shape: fixture")):
+        result, output = run_main("f:l=fresh", local, local_new)
+    check("keycheck main cannot bypass plain-tree gate", result == 1 and "tree shape" in output)
+    result, output = run_main("f:l=fresh", local, local_new, extra={"include/new.h": '#include HEADER\n'})
+    check("keycheck main gates new-tree includes", result == 1 and "non-literal include" in output)
+    with patch.object(nk, "verify_local_cc1", side_effect=ValueError("local cc1 differential asm differs")):
+        rc, message = run_main("f:l=fresh", local, local_new)
+    check("keycheck cc1: main cannot bypass mandatory proof", rc != 0 and "cc1 differential" in message)
+    result, output = run_main("f:l=fresh", local, local_new)
+    check("keycheck: scoped main has no globals and reports moved key",
+          result == 0 and "pairs: 0 " in output and "moved layer-2 keys: 1" in output)
+    result, output = run_main("f:l=fresh", local, local_new,
+                              cpp=lambda tree, tu: '# 1 ' + json.dumps(tu) + '\n\n')
+    check("keycheck: main must invoke cpp verification on negative case",
+          result == 1 and "never compiles" in output)
+    source = "int f(int l){\nreturn l;\nSYSTEM_NAME;\n}\n"
+    result, output = run_main("f:l=fresh", source, source.replace("int l", "int fresh").replace("return l", "return fresh"),
+                              cpp=lambda tree, tu: fake_cpp(tree, tu).replace("SYSTEM_NAME", "fresh"))
+    check("keycheck: main must pass scoped pairs for function-wide proof",
+          result == 1 and "macro expansion produces or captures" in output)
+    cli_before = "".join(f"int timed_{i}(int arg0){{return arg0;}}\n" for i in range(30))
+    cli_after = "".join(f"int timed_{i}(int value_{i}){{return value_{i};}}\n" for i in range(30))
+    cli_pairs = ",".join(f"timed_{i}:arg0=value_{i}" for i in range(30))
+    runs.clear()
+    start = time.perf_counter()
+    result, output = run_main(cli_pairs, cli_before, cli_after, cpp=counted_cpp)
+    elapsed = time.perf_counter() - start
+    check("keycheck: 30-pair fake-cpp main reuses TU outputs", result == 0
+          and runs == [(label, "src/a.c") for label in ("base", "new", "base-sentinel", "new-sentinel")])
+    print(f"  fake-cpp main timing: 30 functions, 30 pairs: {elapsed:.3f}s")
+    result, output = run_main("f:l=fresh", local.replace("int f", "int\nf"),
+                             local_new.replace("int f", "int\nf"))
+    check("keycheck: unkeyable multiline function fails closed",
+          result == 1 and "layer-2 cannot key" in output)
+    result, output = run_main("old=new", "int old(void) { return 1; }",
+                              "int new(void) { return 1; }")
+    check("keycheck: global substitution path unchanged", result == 0 and "pairs: 1 " in output)
+    result, output = run_main("f:l=fresh,old=new",
+                              'int f(int l) { return old(l + 1); }',
+                              'int f(int fresh) { return new(fresh + 1); }')
+    check("keycheck: mixed scoped/global substitutions", result == 0)
+    result, output = run_main("f:l=fresh,old=new",
+                              'int f(int l) { return l + old; }',
+                              'int f(int fresh) { return fresh + new; }')
+    check("keycheck: mixed scoped/global simple substitutions", result == 0 and "pairs: 1 " in output)
+    for declaration in ("struct Unk80101EC8Record {int unk_4;};",
+                        "typedef struct {int unk_4;} Unk80101EC8Record;"):
+        for scope in ("Unk80101EC8Record", "GoodRec"):
+            result, output = run_main("Unk80101EC8Record=GoodRec," + scope + ".unk_4=hp",
+                                     declaration, declaration.replace("Unk80101EC8Record", "GoodRec").replace("unk_4", "hp"))
+            check("keycheck: main passes global type resolution to cpp " + scope + " " + declaration, result == 0)
+    for scope in ("func_80010000", "good_fn"):
+        result, output = run_main("func_80010000=good_fn," + scope + ":arg0=count",
+                                 "int func_80010000(int arg0){return arg0;}", "int good_fn(int count){return count;}")
+        check("keycheck: CLI globally renamed local function " + scope, result == 0)
+    result, output = run_main("T.m=n,U.k=n", shared_base, shared_new)
+    check("keycheck: CLI rejects shared scoped destination", result == 1 and "shared" in output)
+    result, output = run_main("T.m=n,k=x", shared_base,
+                              shared_base.replace("int m; }; union", "int n; }; union")
+                              .replace("int k;", "int x;"))
+    check("keycheck: explicit global pair can rename another member declaration",
+          result == 0)
+    macro = "#define GETBITS(x) if (x) { x--; }\n"
+    text = macro + "int f(int l) { if (l) { return l; } return 0; }"
+    result, output = run_main("f:l=n", text, text.replace("int l", "int n")
+                             .replace("if (l)", "if (n)").replace("return l", "return n"))
+    check("keycheck: macro if is not a phantom function", result == 0
+          and nk.function_names(text) == {"f"} and nk.function_tokens(text, "if") == [])
+    knr = "int legacy(x)\nint x;\n{ return x; }\n"
+    text = "struct T { int m; };\n" + knr.replace("return x", "return p->m + x")
+    after = text.replace("int m", "int n").replace("->m", "->n")
+    result, output = run_main("T.m=n", text, after)
+    check("keycheck: K&R moved key remains reported", result == 0 and "legacy" in output
+          and "moved layer-2 keys: 1" in output)
+    with patch.object(nk.layer2, "body_key", return_value=None):
+        result, output = run_main("T.m=n", text, after)
+    check("keycheck: unkeyable changed K&R fails", result == 1 and "layer-2 cannot key" in output)
+    result, output = run_main("f:l=n", local, local)
+    check("keycheck: no changes cannot certify scoped pairs", result == 1 and "not applied" in output)
+    result, output = run_main("f:l=n", "int f(int l){return l;}", "int f(int n){return n;")
+    check("keycheck: unbalanced changed file fails cleanly", result == 1 and "unbalanced" in output)
+    result, output = run_main("f:l=b,a=b", "int f(int l){return l+a;}", "int f(int b){return b+b;}")
+    check("keycheck: CLI mixed capture fails", result == 1 and "global pair" in output)
+    result, output = run_main("Rec1C.b18=field,Unk1F800000Unk00=X",
+                              "typedef int Unk1F800000Unk00; struct Rec1C { Unk1F800000Unk00 b18; };",
+                              "typedef int X; struct Rec1C { X field; };")
+    check("keycheck: mixed aggregate CLI succeeds", result == 0)
+    for fn, old_name, dest in [("func_8003E0E0", "buf", "dst"),
+                                ("func_800167EC", "rec", "obj"),
+                                ("func_80049C24", "temp_v0", "next"),
+                                ("func_8006ECF4", "i", "j"),
+                                ("func_80040CB8", "kind", "mode")]:
+        text = (f"#define M({dest}) ({dest})\nextern int proto(int {dest});\n"
+                f"int other({dest})\nint {dest};\n{{return {dest};}}\n"
+                f"int {fn}(int {old_name}){{return call({old_name});}}\n")
+        after = re.sub(r"\b" + old_name + r"\b", dest, text)
+        result, output = run_main(fn + ":" + old_name + "=" + dest, text, after)
+        check("keycheck: usable local pair end-to-end " + fn, result == 0)
+    # Binary batch framing (including embedded newlines/UTF-8) and one process.
+    from types import SimpleNamespace
+    oid1, oid2 = "1" * 40, "2" * 40
+    data1, data2 = b"int x;\n", "/* café */\n".encode("utf-8")
+    response = (f"{oid1} blob {len(data1)}\n".encode() + data1 + b"\n"
+                + f"{oid2} blob {len(data2)}\n".encode() + data2 + b"\n")
+    cr_bytes = b"int x;\r\n"
+    cr_response = f"{oid1} blob {len(cr_bytes)}\n".encode() + cr_bytes + b"\n"
+    with patch.object(nk, "git", return_value=f"100644 blob {oid1}\tsrc/a.c\0"), \
+            patch.object(nk.subprocess, "run", return_value=SimpleNamespace(stdout=cr_response)):
+        try:
+            nk.read_base_tree("HEAD")
+            raw_cr_failed = False
+        except ValueError as e:
+            raw_cr_failed = "control byte" in str(e) and "offset 6" in str(e)
+    check("keycheck S commit reader preserves raw CR", raw_cr_failed)
+    listing = f"100644 blob {oid1}\tsrc/a.c\0" + f"100644 blob {oid2}\tinclude/b.h\0"
+    listing += f"100644 blob {oid2}\tbb2.ld\0"
+    response += f"{oid2} blob {len(data2)}\n".encode() + data2 + b"\n"
+    with patch.object(nk, "git", return_value=listing), patch.object(nk.subprocess, "run",
+            return_value=SimpleNamespace(stdout=response)) as batch:
+        eq("keycheck: batch reads base bytes like show", nk.read_base_tree("HEAD"),
+           {"src/a.c": "int x;\n", "include/b.h": "/* café */\n", "bb2.ld": "/* café */\n"})
+        check("keycheck: base read uses one cat-file process", batch.call_count == 1
+              and batch.call_args.args[0] == ["git", "cat-file", "--batch"]
+              and batch.call_args.kwargs["input"] == (oid1 + "\n" + oid2 + "\n" + oid2 + "\n").encode())
+    for path in ["named_syms.txt", "asm/a.s", "notes.txt", "memory/grind/f/layer2.jsonl"]:
+        result, output = run_main("f:l=fresh", local, local_new, {path: "fresh"})
+        check("keycheck: scoped pairs cannot explain " + path, result == 1)
+
+
 def test_departures() -> None:
     """Q39 departures audit (engine/departures.py), keyed by function ADDRESS,
     on throwaway git repos: every departure shape the name-keyed rounds had to
@@ -5919,6 +9203,7 @@ def _data_wave_fixture_keycheck(files, rows):
                 patch.object(nk, "show", lambda rev, p: (files if rev else after).get(p)), \
                 patch.object(nk, "load_tree_texts", lambda rev, names=(): files if rev else after), \
                 patch.object(nk, "git", git_read), patch.object(nk, "_is_macro", return_value=False), \
+                patch.object(nk, "verify_working_storage", lambda *a: None), \
                 patch.object(nk, "changed_files", return_value=[("M", p) for p in files
                              if files[p] != after[p] and not p.startswith("build/")]), \
                 patch.object(sys, "argv", ["keycheck", "--from-manifests", str(manifest)]), \
@@ -6422,6 +9707,7 @@ def test_keycheck_real_git_round4() -> None:
                 eq("real-git " + ("revision" if rev else "working") + " wave result", result, int(leave_old))
                 if leave_old:
                     check("untouched build spelling detected", "old name survives" in output.getvalue())
+            run_git("add", "-u")  # Stage the completed wave before working keycheck.
             check_tree(None)
             run_git("add", "-u")
             run_git("commit", "--quiet", "-m", "fixture wave")
@@ -6551,6 +9837,7 @@ def main() -> int:
     test_layer2_asm_addr_after_glabel()
     test_naming_wave_own_target()
     test_naming_wave_renames()
+    test_naming_keycheck_scoped_pairs()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
     test_empty_do_while_zero()
