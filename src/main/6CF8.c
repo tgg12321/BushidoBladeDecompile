@@ -75,7 +75,7 @@ s32 pcdrv_LoadFile(s32 a0, u8 *dest) {
     return total;
 }
 
-s32 pcdrv_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
+s32 pcdrv_LoadSectors(s32 a0, u8 *dest, s32 arg2, s32 count) {
     s32 fd;
     s32 i;
 
@@ -83,7 +83,7 @@ s32 pcdrv_LoadSectors(s32 a0, u8 *dest, s32 sector, s32 count) {
     if (fd == -1) {
         return -2;
     }
-    PClseek(fd, sector << 11, 0);
+    PClseek(fd, arg2 << 11, 0);
     for (i = 0; i < count; i++) {
         if (PCread(fd, dest, 0x800) != 0x800) {
             close(fd);
@@ -312,65 +312,65 @@ void func_80016D78(void) {
 void gpu_WaitDrawSync(void) { DrawSync(0); }
 
 void func_80016E60(GpuDb *arg0, s32 arg1) {
-    u32 ot[2];
-    GpuDb *env;
-    s32 select;
-    s32 special;
+    u32 var_0[2];
+    GpuDb *var_1;
+    s32 var_2;
+    s32 var_3;
     s32 limit;
-    u32 prim_base;
+    u32 var_5;
     s32 idx;
-    GpuDb *ot_base;
+    GpuDb *var_7;
 
-    select = 0;
-    special = 0;
+    var_2 = 0;
+    var_3 = 0;
     /* FAKE: pass-through handle on the parameter, used once at DrawOTag;
        moves the prologue's $s5 save/init group from first to third. Removed:
        score 4 (pointer-alias-fake-exception) */
-    ot_base = arg0;
+    var_7 = arg0;
     if (D_800A38DC == 2) {
-        special = D_800A389A < 1;
+        var_3 = D_800A389A < 1;
     }
     limit = 3;
-    if (special != 0) {
+    if (var_3 != 0) {
         limit = 6;
     }
 
     D_800A36B0 = 1;
     func_8005C650(3, 0x7F, 0x7F);
-    prim_base = D_800A3770[D_800A36AC & 1];
+    var_5 = D_800A3770[D_800A36AC & 1];
 
     while (1) {
         idx = D_800A36AC & 1;
-        g_prim_buf_cursor = (u32 *)(prim_base + (idx * 0x9A00));
-        g_gpu_ot_ptr = &ot[idx];
-        env = &g_gpu_db[idx];
+        g_prim_buf_cursor = (u32 *)(var_5 + (idx * 0x9A00));
+        g_gpu_ot_ptr = &var_0[idx];
+        var_1 = &g_gpu_db[idx];
 
         ClearOTagR(g_gpu_ot_ptr, 1);
         func_80019568();
-        if (special != 0) {
+        if (var_3 != 0) {
             func_8005C8A8(
-                2, select | (D_800A3788 << 16), (s32)g_prim_buf_cursor, 0);
+                2, var_2 | (D_800A3788 << 16), (s32)g_prim_buf_cursor, 0);
         } else {
-            func_8005C8A8(0, select, (s32)g_prim_buf_cursor, 0);
+            func_8005C8A8(0, var_2, (s32)g_prim_buf_cursor, 0);
         }
         func_80036940();
         func_8005C6D0();
         DrawSync(0);
         VSync(2);
-        /* FAKE: do-while(0) raises env's loop-depth weight above select's,
-           seating env in $s0 and select in $s1; unwrapped: score 21
+        /* FAKE: do-while(0) raises var_1's loop-depth weight above var_2's,
+           seating var_1 in $s0 and var_2 in $s1; unwrapped: score 21
            (do-while-zero-exception) */
         do {
-            PutDispEnv(&env->disp);
-            PutDrawEnv(&env->draw);
+            PutDispEnv(&var_1->disp);
+            PutDrawEnv(&var_1->draw);
         } while (0);
-        DrawOTag(&ot_base->ot[0x1007]);
+        DrawOTag(&var_7->ot[0x1007]);
         DrawOTag(g_gpu_ot_ptr);
         D_800A36AC++;
 
         if (g_pad_state.pressed & 0x100010) {
             func_8005C650(1, 0x7F, 0x7F);
-            select = 0;
+            var_2 = 0;
             break;
         }
         if (g_pad_state.pressed & 0x400040) {
@@ -379,29 +379,29 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
         }
         if (g_pad_state.pressed & 0x10001000) {
             func_8005C650(0, 0x7F, 0x7F);
-            select = (select == 0) ? limit - 1 : select - 1;
+            var_2 = (var_2 == 0) ? limit - 1 : var_2 - 1;
         } else if (g_pad_state.pressed & 0x40004000) {
             func_8005C650(0, 0x7F, 0x7F);
-            select = (select == limit - 1) ? 0 : select + 1;
+            var_2 = (var_2 == limit - 1) ? 0 : var_2 + 1;
         }
 
-        if ((special != 0) && (select >= 3)) {
+        if ((var_3 != 0) && (var_2 >= 3)) {
             if (g_pad_state.pressed & 0x80008000) {
                 func_8005C650(0, 0x7F, 0x7F);
-                D_800A3788 |= 1 << (select - 3);
+                D_800A3788 |= 1 << (var_2 - 3);
             } else if (g_pad_state.pressed & 0x20002000) {
                 func_8005C650(0, 0x7F, 0x7F);
-                D_800A3788 &= ~(1 << (select - 3));
+                D_800A3788 &= ~(1 << (var_2 - 3));
             }
         }
     }
 
-    if (select != 0) {
-        if (select == 1) {
+    if (var_2 != 0) {
+        if (var_2 == 1) {
             D_800A31DA = 1;
             D_800A3834 = 8;
             func_800372C0();
-        } else if (select == 2) {
+        } else if (var_2 == 2) {
             D_800A3834 = 8;
             func_800372C0();
         }
@@ -415,20 +415,20 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
 void rng_SetSeed(s32 a0) { g_rng_state = a0; }
 
 s32 rng_Next(void) {
-    s32 seed = g_rng_state;
-    s32 result = seed * 5497 + 0x7FA9;
-    seed = (seed >> 16) ^ result;
-    g_rng_state = seed;
-    return seed & 0x7FFF;
+    s32 var_0 = g_rng_state;
+    s32 result = var_0 * 5497 + 0x7FA9;
+    var_0 = (var_0 >> 16) ^ result;
+    g_rng_state = var_0;
+    return var_0 & 0x7FFF;
 }
 
 void main(void) {
     s32 idx;
-    GpuDb *env;
-    u32 *ot;
+    GpuDb *var_1;
+    u32 *var_2;
     /* D_800A390D (frames left to skip presenting) as read this frame; the next
      * frame passes it to func_80019568. */
-    s32 skip;
+    s32 var_3;
     /* FAKE: second handle on D_800A3770 keeps its address in $s4 for the
      * whole loop; D_800A3770[idx] at both uses: score 14 */
     u32 *tbl;
@@ -439,7 +439,7 @@ void main(void) {
     sys_Init();
     func_80016D78();
     SetDispMask(1);
-    func_80016A8C((u8 *)0x80118800, env, idx);
+    func_80016A8C((u8 *)0x80118800, var_1, idx);
 
     tbl = D_800A3770;
     D_800A3834 = 0xF;
@@ -448,14 +448,14 @@ void main(void) {
 
 loop:
     idx = D_800A36AC & 1;
-    env = &g_gpu_db[idx];
-    ot = env->ot;
-    ClearOTagR(ot, 0x1008);
-    g_gpu_ot_ptr = ot;
+    var_1 = &g_gpu_db[idx];
+    var_2 = var_1->ot;
+    ClearOTagR(var_2, 0x1008);
+    g_gpu_ot_ptr = var_2;
     g_prim_buf_cursor = (u32 *)tbl[idx];
     func_80060E04(idx);
     func_8003D2F4();
-    func_80019568(skip);
+    func_80019568(var_3);
     func_80036940();
     func_8005C6D0();
 
@@ -481,10 +481,10 @@ loop:
     VSync(0);
     ResetRCnt(0xF2000001u);
 
-    skip = D_800A390D;
-    if (skip == 0) {
-        PutDispEnv(&env->disp);
-        PutDrawEnv(&env->draw);
+    var_3 = D_800A390D;
+    if (var_3 == 0) {
+        PutDispEnv(&var_1->disp);
+        PutDrawEnv(&var_1->draw);
     }
 
     {
@@ -503,13 +503,13 @@ loop:
     if (D_800A390D != 0) {
         D_800A390D--;
     } else {
-        DrawOTag(&env->ot[0x1007]);
+        DrawOTag(&var_1->ot[0x1007]);
         D_800A36AC++;
     }
 
     if (D_800A3834 != 1)
         goto loop;
-    if (skip != 0)
+    if (var_3 != 0)
         goto loop;
     if (g_pad_state.pressed & 0x08000800u)
         goto call_func;
@@ -521,47 +521,47 @@ loop:
     if (D_800A3713 != 0)
         goto loop;
 call_func:
-    func_80016E60(env, idx);
+    func_80016E60(var_1, idx);
     goto loop;
 }
 
 void func_800174F4(void) {
-    u32 ot[2];
+    u32 var_0[2];
     DRAWENV env;
     /* holds two values: the case-1/2 fade loop's iteration count, then the
      * case-20 D_800A37A8[] code passed to func_80060414 (owner ruling 11) */
     s32 temp;
-    s32 prim;
+    s32 var_3;
     /* holds two values: the D_800A3768 switch selector, then the case-20
      * D_800A37A0 limit (owner ruling 11) */
     s32 temp2;
 
-    prim = (s32)D_800F33D8;
+    var_3 = (s32)D_800F33D8;
     if (D_800A3768 == DISP_DISABLED) {
         return;
     }
     SetDefDrawEnv(&env, 0, (D_800A36AC & 1) ? 0xF0 : 0, 0x280, 0xF0);
     env.isbg = 0;
     PutDrawEnv(&env);
-    g_gpu_ot_ptr = ot;
-    ClearOTagR(ot, 2);
+    g_gpu_ot_ptr = var_0;
+    ClearOTagR(var_0, 2);
     temp2 = D_800A3768;
     switch (temp2) {
     case 1:
     case 2:
-        prim = func_8005D46C(prim, temp2);
+        var_3 = func_8005D46C(var_3, temp2);
         if (D_800A36A8 != 0) {
             s32 i;
             temp = (rand() & 3) + 4;
             for (i = 0; i < temp; i++) {
-                prim = func_8005D554(prim, D_800A3768);
+                var_3 = func_8005D554(var_3, D_800A3768);
             }
         } else if ((rand() & 7) == 0) {
-            func_8005D554(prim, D_800A3768);
+            func_8005D554(var_3, D_800A3768);
         }
         break;
     case 10:
-        func_8005E54C(D_800A3784, prim, 0);
+        func_8005E54C(D_800A3784, var_3, 0);
         break;
     case 20: {
         u8 cur;
@@ -587,7 +587,7 @@ void func_800174F4(void) {
             if (next == temp2) {
                 temp |= 0x8000;
             }
-            func_80060414(temp, prim, 0);
+            func_80060414(temp, var_3, 0);
         }
         break;
     }
@@ -633,7 +633,7 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
 /* Adds an edge between records a and b unless a == b, both records have a
  * non-negative field_18, or an edge a->b or b->a already exists. Returns 1
  * when an edge was added. */
-s32 func_80017848(Func80017A44Output *out, s32 group_id, s32 a, s32 b) {
+s32 func_80017848(Func80017A44Output *out, s32 arg1, s32 a, s32 b) {
     s32 i;
     s32 dist;
     Func80017848Edge *edge;
@@ -658,7 +658,7 @@ s32 func_80017848(Func80017A44Output *out, s32 group_id, s32 a, s32 b) {
     edge = &out->edges[out->edge_count];
     edge->dist = dist;
     edge->field_8 = dist * 3;
-    edge->group_id = group_id;
+    edge->group_id = arg1;
     edge->ends.pair = (a << 16) | b;
     out->records[a].field_24[out->records[a].field_1C++] = out->edge_count;
     out->records[b].field_2C[out->records[b].field_20++] = out->edge_count;
@@ -668,22 +668,22 @@ s32 func_80017848(Func80017A44Output *out, s32 group_id, s32 a, s32 b) {
 
 void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
     VECTOR pos;
-    VECTOR center;
+    VECTOR var_1;
     s32 flag;
     Func80017A44Record *record_base;
-    s16 *groups;
-    s32 valid_count;
+    s16 *var_4;
+    s32 var_5;
     s32 i;
     s32 j;
-    s32 group_count;
-    s32 group_id;
+    s32 var_8;
+    s32 var_9;
     s32 dist;
     s32 value;
 
-    center.vx = 0;
-    center.vy = 0;
-    center.vz = 0;
-    valid_count = 0;
+    var_1.vx = 0;
+    var_1.vy = 0;
+    var_1.vz = 0;
+    var_5 = 0;
     SetRotMatrix(a0->matrix);
     SetTransMatrix(a0->matrix);
 
@@ -695,10 +695,10 @@ void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
         pos.vy <<= 7;
         pos.vz <<= 7;
         if (record_base[i].field_18 >= 0) {
-            valid_count++;
-            center.vx += pos.vx;
-            center.vy += pos.vy;
-            center.vz += pos.vz;
+            var_5++;
+            var_1.vx += pos.vx;
+            var_1.vy += pos.vy;
+            var_1.vz += pos.vz;
         }
         record_base[i].pos[0] = pos.vx;
         record_base[i].pos[1] = pos.vy;
@@ -710,34 +710,33 @@ void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
         record_base[i].field_20 = 0;
     }
 
-    center.vx /= valid_count;
-    center.vy /= valid_count;
-    center.vz /= valid_count;
+    var_1.vx /= var_5;
+    var_1.vy /= var_5;
+    var_1.vz /= var_5;
 
     for (i = 0; i < a0->count; i++) {
-        value = math_Distance3D_16((s32 *)&center, record_base[i].pos) >> 8;
+        value = math_Distance3D_16((s32 *)&var_1, record_base[i].pos) >> 8;
         if (value > 0x100) {
             value = 0x100;
         }
         record_base[i].distance = value;
     }
 
-    groups = a0->groups;
-    while ((group_count = *groups++) != 0) {
-        group_id = *groups++;
-        for (i = 0; i < group_count - 1; i++) {
-            dist =
-                math_Distance3D_16((s32 *)&center, record_base[groups[i]].pos);
-            for (j = i + 1; j < group_count; j++) {
+    var_4 = a0->groups;
+    while ((var_8 = *var_4++) != 0) {
+        var_9 = *var_4++;
+        for (i = 0; i < var_8 - 1; i++) {
+            dist = math_Distance3D_16((s32 *)&var_1, record_base[var_4[i]].pos);
+            for (j = i + 1; j < var_8; j++) {
                 if (dist < math_Distance3D_16(
-                               (s32 *)&center, record_base[groups[j]].pos)) {
-                    func_80017848(a1, group_id, groups[i], groups[j]);
+                               (s32 *)&var_1, record_base[var_4[j]].pos)) {
+                    func_80017848(a1, var_9, var_4[i], var_4[j]);
                 } else {
-                    func_80017848(a1, group_id, groups[j], groups[i]);
+                    func_80017848(a1, var_9, var_4[j], var_4[i]);
                 }
             }
         }
-        groups += group_count;
+        var_4 += var_8;
     }
 }
 

@@ -1,0 +1,20 @@
+addr,current_names,proposed_name,kind,evidence,verdict,verifier_note
+local,pcdrv_LoadSectors:sector,arg2,param,"RESET-BULK (Q119). param sector (s32) of pcdrv_LoadSectors, src/main/6CF8.c:78; claim word(s): sector. Destination: arg<position 2>.",CONFIRM,Q119 scope test
+local,func_80016E60:ot,var_0,local,"RESET-BULK (Q119). local ot (u32 [2]) of func_80016E60, src/main/6CF8.c:315; claim word(s): ot. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_80016E60:env,var_1,local,"RESET-BULK (Q119). local env (GpuDb *) of func_80016E60, src/main/6CF8.c:316; claim word(s): env. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80016E60:select,var_2,local,"RESET-BULK (Q119). local select (s32) of func_80016E60, src/main/6CF8.c:317; claim word(s): select. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,func_80016E60:special,var_3,local,"RESET-BULK (Q119). local special (s32) of func_80016E60, src/main/6CF8.c:318; claim word(s): special. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_80016E60:prim_base,var_5,local,"RESET-BULK (Q119). local prim_base (u32) of func_80016E60, src/main/6CF8.c:320; claim word(s): prim. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_80016E60:ot_base,var_7,local,"RESET-BULK (Q119). local ot_base (GpuDb *) of func_80016E60, src/main/6CF8.c:322; claim word(s): ot. Destination: var_<declaration order 7>.",CONFIRM,Q119 scope test
+local,rng_Next:seed,var_0,local,"RESET-BULK (Q119). local seed (s32) of rng_Next, src/main/6CF8.c:418; claim word(s): seed. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,main:env,var_1,local,"RESET-BULK (Q119). local env (GpuDb *) of main, src/main/6CF8.c:427; claim word(s): env. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,main:ot,var_2,local,"RESET-BULK (Q119). local ot (u32 *) of main, src/main/6CF8.c:428; claim word(s): ot. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,main:skip,var_3,local,"RESET-BULK (Q119). local skip (s32) of main, src/main/6CF8.c:431; claim word(s): skip. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_800174F4:ot,var_0,local,"RESET-BULK (Q119). local ot (u32 [2]) of func_800174F4, src/main/6CF8.c:529; claim word(s): ot. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_800174F4:prim,var_3,local,"RESET-BULK (Q119). local prim (s32) of func_800174F4, src/main/6CF8.c:534; claim word(s): prim. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_80017848:group_id,arg1,param,"RESET-BULK (Q119). param group_id (s32) of func_80017848, src/main/6CF8.c:636; claim word(s): group. Destination: arg<position 1>.",CONFIRM,Q119 scope test
+local,func_80017A44:center,var_1,local,"RESET-BULK (Q119). local center (VECTOR) of func_80017A44, src/main/6CF8.c:671; claim word(s): center. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80017A44:groups,var_4,local,"RESET-BULK (Q119). local groups (s16 *) of func_80017A44, src/main/6CF8.c:674; claim word(s): groups. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_80017A44:valid_count,var_5,local,"RESET-BULK (Q119). local valid_count (s32) of func_80017A44, src/main/6CF8.c:675; claim word(s): valid. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_80017A44:group_count,var_8,local,"RESET-BULK (Q119). local group_count (s32) of func_80017A44, src/main/6CF8.c:678; claim word(s): group. Destination: var_<declaration order 8>.",CONFIRM,Q119 scope test
+local,func_80017A44:group_id,var_9,local,"RESET-BULK (Q119). local group_id (s32) of func_80017A44, src/main/6CF8.c:679; claim word(s): group. Destination: var_<declaration order 9>.",CONFIRM,Q119 scope test
