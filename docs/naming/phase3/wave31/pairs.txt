@@ -1,0 +1,4 @@
+func_8007352C:hdr=var_0
+func_80073728:hdr=var_1
+func_80073728:ub=var_10
+func_80074488:rect=var_4

@@ -12,7 +12,7 @@ extern s32 func_80073C78();
 extern const u8 D_800159A0[];
 
 s32 func_8007352C(Unk8007352CEnv *env) {
-    Unk8009B0E0Record *hdr = env->header;
+    Unk8009B0E0Record *var_0 = env->header;
     SPRT *sp = (SPRT *)env->sprt_out;
     Unk8009B400Record *e;
     s32 clut;
@@ -21,8 +21,8 @@ s32 func_8007352C(Unk8007352CEnv *env) {
      * use: score 2. */
     s32 x0, y0, x1, y1;
 
-    clut = GetClut(hdr->cx, hdr->cy);
-    for (i = hdr->count - 1; i >= 0; i--) {
+    clut = GetClut(var_0->cx, var_0->cy);
+    for (i = var_0->count - 1; i >= 0; i--) {
         e = env->table + i;
         x0 = e->x + env->x;
         y0 = e->y + env->y;
@@ -33,8 +33,8 @@ s32 func_8007352C(Unk8007352CEnv *env) {
             sp->clut = clut;
             sp->x0 = x0;
             sp->y0 = y0;
-            sp->u0 = e->u + hdr->ubase;
-            sp->v0 = e->v + hdr->vbase;
+            sp->u0 = e->u + var_0->ubase;
+            sp->v0 = e->v + var_0->vbase;
             sp->w = e->w;
             sp->h = e->h;
             if (env->has_color) {
@@ -59,29 +59,29 @@ s32 func_8007352C(Unk8007352CEnv *env) {
 
 s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
     Unk8009B400Record *e = env->table;
-    Unk8009B0E0Record *hdr = env->header;
+    Unk8009B0E0Record *var_1 = env->header;
     POLY_FT4 *p;
     s16 i;
     u32 tpage;
     u32 clut;
     s16 du0, du1, dv0, dv1;
-    u16 ub, vb;
+    u16 var_10, vb;
     s16 ox = e->x, oy = e->y;
     s32 sx, sy;
     s32 u, v;
 
     if (mode == 4) {
-        tpage = (hdr->tp0 & 0xFE1F) + (hdr->tp1 << 7) + 0x20;
+        tpage = (var_1->tp0 & 0xFE1F) + (var_1->tp1 << 7) + 0x20;
     } else if (mode == 5) {
-        tpage = (hdr->tp0 & 0xFE1F) + (hdr->tp1 << 7) + 0x40;
+        tpage = (var_1->tp0 & 0xFE1F) + (var_1->tp1 << 7) + 0x40;
     } else if (mode == 6) {
-        tpage = (hdr->tp0 & 0xFE1F) + (hdr->tp1 << 7) + 0x60;
+        tpage = (var_1->tp0 & 0xFE1F) + (var_1->tp1 << 7) + 0x60;
     } else {
-        tpage = (hdr->tp0 & 0xFE1F) + (hdr->tp1 << 7);
+        tpage = (var_1->tp0 & 0xFE1F) + (var_1->tp1 << 7);
     }
-    clut = GetClut(hdr->cx, hdr->cy);
-    ub = hdr->ubase;
-    vb = hdr->vbase;
+    clut = GetClut(var_1->cx, var_1->cy);
+    var_10 = var_1->ubase;
+    vb = var_1->vbase;
     if (mode == 1) {
         du1 = 1;
         dv0 = 0;
@@ -96,7 +96,7 @@ s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
         dv0 = 0;
     }
     p = (POLY_FT4 *)env->ft4_out;
-    for (i = 0; i < hdr->count; i++) {
+    for (i = 0; i < var_1->count; i++) {
         if (mode == 1) {
             du0 = e->w - 1;
             dv1 = e->h;
@@ -126,7 +126,7 @@ s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
         p->y2 = oy + env->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
         p->x3 = ox + env->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
         p->y3 = oy + env->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
-        u = ub + e->u;
+        u = var_10 + e->u;
         v = vb + e->v;
         p->u0 = u + du0;
         p->v0 = v + dv0;
@@ -372,7 +372,7 @@ void func_80074488(Unk8006EACCRec *arg0) {
     s16 mask;
     s16 i;
     Unk8009B0E0Record **table;
-    s16 rect[4];
+    s16 var_4[4];
 
     i = 0;
     mask = (1 << SELWORK->f3C[0]) + (1 << (SELWORK->f65 + 5)) +
@@ -453,14 +453,14 @@ void func_80074488(Unk8006EACCRec *arg0) {
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 2, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
-    rect[2] = 0x108;
-    rect[0] = 0xBC;
-    rect[1] = 0x25;
-    rect[3] = 1;
+    var_4[2] = 0x108;
+    var_4[0] = 0xBC;
+    var_4[1] = 0x25;
+    var_4[3] = 1;
     /* The original passes its own context base here, unadjusted:
      * func_80069898 reads +0x18 as its TILE cursor, which in this context is
      * the DR_MODE cursor. */
-    func_80069898((s32 *)arg0, (u16 *)rect, 2);
+    func_80069898((s32 *)arg0, (u16 *)var_4, 2);
 }
 
 /* Tentative definitions (COMMON) of the small data this file reaches

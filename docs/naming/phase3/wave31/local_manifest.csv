@@ -1,0 +1,5 @@
+addr,current_names,proposed_name,kind,evidence,verdict,verifier_note
+local,func_8007352C:hdr,var_0,local,"RESET-BULK (Q119). local hdr (Unk8009B0E0Record *) of func_8007352C, src/main/63D2C.c:15; claim word(s): hdr. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_80073728:hdr,var_1,local,"RESET-BULK (Q119). local hdr (Unk8009B0E0Record *) of func_80073728, src/main/63D2C.c:62; claim word(s): hdr. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80073728:ub,var_10,local,"RESET-BULK (Q119). local ub (u16) of func_80073728, src/main/63D2C.c:68; claim word(s): ub. Destination: var_<declaration order 10>.",CONFIRM,Q119 scope test
+local,func_80074488:rect,var_4,local,"RESET-BULK (Q119). local rect (s16 [4]) of func_80074488, src/main/63D2C.c:375; claim word(s): rect. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
