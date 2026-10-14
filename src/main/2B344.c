@@ -125,7 +125,7 @@ void func_8003AE5C(u8 *arg0) {
     /* FAKE: the load address in a local; at the call: score 11 */
     s32 *addr = (s32 *)0x80190800;
     s32 result = -1;
-    s32 done = 0;
+    s32 var_2 = 0;
 
     do {
         s32 cmd = *arg0++;
@@ -134,7 +134,7 @@ void func_8003AE5C(u8 *arg0) {
             result = *arg0;
         case 0:
         case 20:
-            done = 1;
+            var_2 = 1;
             break;
         case 16:
             arg0 += 5;
@@ -152,7 +152,7 @@ void func_8003AE5C(u8 *arg0) {
             arg0 += 0x1D;
             break;
         }
-    } while (!done);
+    } while (!var_2);
 
     if (result >= 0) {
         D_800A37A8[D_800A37A0] = D_800A36A4;
@@ -331,12 +331,12 @@ void func_8003B56C(s32 arg0) {
 }
 
 void func_8003B5A4(void) {
-    s32 done;
-    u8 *chardata;
+    s32 var_0;
+    u8 *var_1;
 
     func_8005B5AC();
-    done = 0;
-    chardata = &D_80102778.unk_4[1];
+    var_0 = 0;
+    var_1 = &D_80102778.unk_4[1];
 
     do {
         u8 *ptr = D_800A3844;
@@ -363,8 +363,8 @@ void func_8003B5A4(void) {
             D_800A3844 = p + 1;
             byte0 = p[0];
             D_800A3844 = p + 2;
-            chardata[0] = byte0;
-            chardata[2] = p[1];
+            var_1[0] = byte0;
+            var_1[2] = p[1];
             if ((s8)byte0 == D_800A3915) {
                 func_80041604(1, D_800A36F4);
             }
@@ -383,7 +383,7 @@ void func_8003B5A4(void) {
             D_800A36A4 = byte;
             D_800A37A8[counter] = byte;
             D_800A3834 = 22;
-            done = 1;
+            var_0 = 1;
             func_80022568(D_80101EC8);
             D_800A3907 = 0;
             break;
@@ -396,14 +396,14 @@ void func_8003B5A4(void) {
             } else {
                 D_800A3834 = 10;
             }
-            done = 1;
+            var_0 = 1;
             break;
 
         case 19:
             D_800A3834 = 6;
             D_800A3878 = D_800A3844;
             D_800A3844 += 4;
-            done = 1;
+            var_0 = 1;
             break;
 
         case 2:
@@ -415,19 +415,19 @@ void func_8003B5A4(void) {
         case 18:
             D_800A3834 = 0;
             D_800A3907++;
-            done = 1;
+            var_0 = 1;
             break;
 
         case 20:
             D_800A385C = D_800A3844;
             D_800A3844 += 12;
-            done = 1;
+            var_0 = 1;
             func_8003B4DC();
             func_8003B56C(1);
             D_800A38BA = 0;
             break;
         }
-    } while (!done);
+    } while (!var_0);
 }
 
 void func_8003B870(void) {
@@ -492,11 +492,11 @@ void func_8003B9D0(void) {
     s32 saved_44c;
     s32 a3_arg;
     s32 a0_arg;
-    s32 magic;
+    s32 var_4;
     s32 v0;
     u8 flags;
 
-    magic = 0x80190800;
+    var_4 = 0x80190800;
     func_8001DA2C();
     func_80061178();
     if (D_800A3768 != DISP_ACTIVE)
@@ -509,7 +509,7 @@ void func_8003B9D0(void) {
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     if (D_800A3878[3] & 0x80) {
         func_80020CDC();
-        magic = 0x80118800;
+        var_4 = 0x80118800;
     }
     {
         u8 qf = D_800A3878[3];
@@ -539,7 +539,7 @@ void func_8003B9D0(void) {
     if (flags & 0x20)
         a0_arg = 0x32;
     D_800A390F = 0;
-    func_80054884(D_800A376C, D_800A3878[0], 0, a3_arg, a0_arg, -1, -1, magic);
+    func_80054884(D_800A376C, D_800A3878[0], 0, a3_arg, a0_arg, -1, -1, var_4);
     func_80041688(0, 0);
     func_80041688(1, 0);
     if (D_800A3878[3] & 0x40)
@@ -717,7 +717,7 @@ void func_8003C040(void) {
     /* FAKE: func_8003AF40's 0 held in a local set on each dispatch path (move
      * a0,zero in each branch's delay slot); the literal at the call scores 5 */
     s32 a0;
-    s32 sel;
+    s32 var_1;
     s8 *p;
     func_80016888();
     gpu_ResetGraphMode1();
@@ -756,11 +756,11 @@ void func_8003C040(void) {
         }
     }
     if (D_800A38A4 != 9) {
-        sel = D_800A38A4;
+        var_1 = D_800A38A4;
     } else {
-        sel = 8;
+        var_1 = 8;
     }
-    func_8005FBC8(sel, (u8 *)0x80118800);
+    func_8005FBC8(var_1, (u8 *)0x80118800);
     {
         if (D_800A38A4 == 4) {
             if (D_8008D9EC[D_80101EC8[0].unk_0A] != 0) {
@@ -832,17 +832,17 @@ void func_8003C42C(void) {
     s32 counts[8];
     s32 i;
 
-    s32 rounds;
-    rounds = D_800A389B;
+    s32 var_2;
+    var_2 = D_800A389B;
     i = 0;
     counts[2] = 0;
     counts[1] = 0;
     counts[0] = 0;
-    if (rounds > 0) {
-        /* FAKE: base / n are second handles of counts / rounds for the loop;
+    if (var_2 > 0) {
+        /* FAKE: base / n are second handles of counts / var_2 for the loop;
          * using them directly scores 4. */
         s32 *base = counts;
-        s32 n = rounds;
+        s32 n = var_2;
         do {
             s32 idx = D_800A377C[i];
             base[idx]++;
@@ -1095,7 +1095,7 @@ extern s32 D_800A3818;
 
 void func_8003CE18(void) {
     s32 s0;
-    s8 player;
+    s8 var_1;
 
     func_8001DA2C();
     func_800372C0();
@@ -1105,16 +1105,16 @@ void func_8003CE18(void) {
     func_8003E22C();
     func_8003F218(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
-    player = D_800A3748;
+    var_1 = D_800A3748;
     {
-        if ((u16)(D_80101EC8[player].unk_0E - 6) < 2) {
+        if ((u16)(D_80101EC8[var_1].unk_0E - 6) < 2) {
             s0 = 8;
-            if (player != 0) {
+            if (var_1 != 0) {
                 s0 = 9;
             }
         } else {
             s0 = 6;
-            if (player != 0) {
+            if (var_1 != 0) {
                 s0 = 7;
             }
         }
@@ -1158,12 +1158,12 @@ void func_8003CF84(void) {
     s32 *b;
     s32 flag = 0;
     s8 p;
-    s16 stage;
+    s16 var_7;
 
     func_800335D8();
     p = D_800A3748;
-    stage = D_80101EC8[p].unk_0A;
-    if (D_800A37B8 == D_8008EAC0[stage]) {
+    var_7 = D_80101EC8[p].unk_0A;
+    if (D_800A37B8 == D_8008EAC0[var_7]) {
         func_8005C650(40 * p + 0x2D, 0x7F, 0x7F);
     }
     if (D_800A37B8 == D_8008EB04) {
@@ -1261,7 +1261,7 @@ void func_8003D330(void) {
 
 extern SPRT_8 D_800A3930[2][32];
 
-void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
+void func_8003D39C(s32 x, s32 y, s32 arg2, s32 arg3) {
     s32 n = D_800A3358;
     SPRT_8 *p;
     OTag *ot;
@@ -1274,91 +1274,91 @@ void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
     p->code = 0x74;
     p->x0 = x;
     p->y0 = y;
-    p->u0 = (ch & 7) * 8 - 0x40;
-    p->v0 = (ch >> 5) * 8 - 0x20;
-    p->clut = ((ch >> 3) & 3) << 6 | 0x773F;
-    *(u32 *)&p->r0 = (color >> 1) | 0x74000000;
+    p->u0 = (arg2 & 7) * 8 - 0x40;
+    p->v0 = (arg2 >> 5) * 8 - 0x20;
+    p->clut = ((arg2 >> 3) & 3) << 6 | 0x773F;
+    *(u32 *)&p->r0 = (arg3 >> 1) | 0x74000000;
     ot = (OTag *)g_gpu_ot_ptr;
     setaddr(p, ot->addr);
     ot->addr = (u32)p;
 }
 
-void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
-    s32 ch;
+void func_8003D478(s32 x, s32 y, u8 *str, s32 arg3) {
+    s32 var_0;
     s32 start_x = x;
 
-    ch = *str++;
-    if (ch == 0)
+    var_0 = *str++;
+    if (var_0 == 0)
         return;
 
     do {
-        if (ch == 0x20) {
+        if (var_0 == 0x20) {
             /* 0x20: only x advances */
-        } else if (ch == 0x0A) {
+        } else if (var_0 == 0x0A) {
             x = start_x;
             y += 8;
             goto next_char;
         } else {
-            func_8003D39C(x, y, ch, color);
+            func_8003D39C(x, y, var_0, arg3);
         }
         x += 8;
     next_char:
-        ch = *str++;
-    } while (ch != 0);
+        var_0 = *str++;
+    } while (var_0 != 0);
 }
 
 typedef char *va_list;
 #define va_start(ap, last) ((ap) = (va_list)(&(last) + 1))
 #define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
 
-void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
+void func_8003D52C(u8 *arg0, s32 first_arg, ...) {
     char buf[0x400];
-    char seg[0x100];
+    char var_1[0x100];
     va_list ap;
     s32 cur_arg;
-    s32 seen_pct;
+    s32 var_4;
     char *p;
-    s32 ch;
+    s32 var_6;
 
     cur_arg = first_arg;
-    seen_pct = 0;
-    p = seg;
+    var_4 = 0;
+    p = var_1;
     va_start(ap, first_arg);
     buf[0] = 0;
 
-    while ((ch = *fmt++) != 0) {
-        if (ch == '%') {
-            if (seen_pct == 0) {
-                seen_pct = 1;
+    while ((var_6 = *arg0++) != 0) {
+        if (var_6 == '%') {
+            if (var_4 == 0) {
+                var_4 = 1;
             } else {
                 *p = 0;
-                sprintf(buf + strlen(buf), seg, cur_arg);
-                p = seg;
+                sprintf(buf + strlen(buf), var_1, cur_arg);
+                p = var_1;
                 cur_arg = va_arg(ap, s32);
             }
         }
-        *p++ = ch;
+        *p++ = var_6;
     }
 
     *p = 0;
-    sprintf(buf + strlen(buf), seg, cur_arg);
+    sprintf(buf + strlen(buf), var_1, cur_arg);
 
     p = buf;
-    while ((ch = *p++) != 0) {
+    while ((var_6 = *p++) != 0) {
         s32 row = D_800A3360;
         if (row >= 0x1A)
             break;
 
-        if (ch == ' ') {
+        if (var_6 == ' ') {
             D_800A335C++;
-        } else if (ch == '\n') {
+        } else if (var_6 == '\n') {
             D_800A335C = 0;
             D_800A3360 = row + 1;
-        } else if (ch == '~') {
-            ch = *p++;
-            if (ch == 0)
+        } else if (var_6 == '~') {
+            var_6 = *p++;
+            if (var_6 == 0)
                 break;
-            if (ch == 'c' || ch == 'C') {
+            if (var_6 == 'c' || var_6 == 'C') {
                 s32 d1, d2, d3;
                 d1 = *p++;
                 if (d1 == 0)
@@ -1374,7 +1374,7 @@ void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
             }
         } else {
             func_8003D39C(
-                D_800A335C * 8 + 0x10, row * 8 + 0x10, ch, D_800A3364);
+                D_800A335C * 8 + 0x10, row * 8 + 0x10, var_6, D_800A3364);
             D_800A335C++;
         }
         if (D_800A335C >= 0x4C) {
@@ -1427,13 +1427,13 @@ s16 *func_8003D7B4(s32 arg0) {
 
 /* Bitstream reader: returns the next `n` bits of the BitStream `s`, loading
    the next word when the current one has fewer than `n` unread bits.
-   `m1 = 1 << avail; m1 -= 1;` folds into one `addiu v0,v0,-1` (split-init
+   `m1 = 1 << var_0; m1 -= 1;` folds into one `addiu v0,v0,-1` (split-init
    accumulation, owner ruling 2026-06-13). */
 s32 bitstream_ReadBits(BitStream *s, s32 n) {
-    s32 avail = s->avail;
+    s32 var_0 = s->avail;
     u32 r;
 
-    if (avail < n) {
+    if (var_0 < n) {
         u32 m1, m2;
         s32 shift;
         u32 *wp;
@@ -1442,8 +1442,8 @@ s32 bitstream_ReadBits(BitStream *s, s32 n) {
            written into the or: score 17 (s and n swap argument registers) */
         u32 hi;
 
-        n -= avail;
-        m1 = 1 << avail;
+        n -= var_0;
+        m1 = 1 << var_0;
         m1 -= 1;
         m2 = (1 << n) - 1;
         r = s->word & m1;
@@ -1456,8 +1456,8 @@ s32 bitstream_ReadBits(BitStream *s, s32 n) {
         hi = (w >> shift) & m2;
         r = (r << n) | hi;
     } else {
-        s->avail = avail - n;
-        r = (s->word >> (avail - n)) & ((1 << n) - 1);
+        s->avail = var_0 - n;
+        r = (s->word >> (var_0 - n)) & ((1 << n) - 1);
     }
     return r;
 }
@@ -1632,13 +1632,13 @@ void func_8003DDF8(u32 arg0) {
 void func_8003DE14(RECT *rect, s32 count) {
     u16 src_buf[0x200];
     u16 dst_buf[0x200];
-    u8 color_info[0x20];
+    u8 var_2[0x20];
     s32 i;
     s32 saved_y;
     s32 r;
     s32 g;
     s32 b;
-    s32 target_color;
+    s32 var_8;
 
     DrawSync(0);
     count--;
@@ -1648,12 +1648,12 @@ void func_8003DE14(RECT *rect, s32 count) {
     LoadImage(rect, (u32 *)src_buf);
     saved_y = rect->y;
     rect->y = rect->h + saved_y;
-    gte_ReadFarColor(color_info);
+    gte_ReadFarColor(var_2);
 
-    r = color_info[0];
-    g = color_info[1];
-    b = color_info[2];
-    target_color =
+    r = var_2[0];
+    g = var_2[1];
+    b = var_2[2];
+    var_8 =
         (((u32)r >> 3) | (s32)-0x8000) | ((g & 0xF8) << 2) | ((b & 0xF8) << 7);
 
     i = 0;
@@ -1676,7 +1676,7 @@ void func_8003DE14(RECT *rect, s32 count) {
                             dst++;
                             goto loop_check;
                         }
-                        *dst++ = target_color;
+                        *dst++ = var_8;
                         src++;
                         goto loop_check;
                     }
@@ -2256,15 +2256,15 @@ void func_8003EDC0(u16 *p, s32 arg1) {
     s16 w; /* the stream word just read */
     s16 x;
     s16 z;
-    u16 tok;
+    u16 var_8;
 
     n = 0;
     while ((w = *p++) != -1) {
         r = &D_800A4750[n++];
-        tok = *p++;
-        r->unk4 = tok;
-        if (tok & 0x8000) {
-            r->unk4 = tok & 0x7FFF;
+        var_8 = *p++;
+        r->unk4 = var_8;
+        if (var_8 & 0x8000) {
+            r->unk4 = var_8 & 0x7FFF;
             r->unk7 = 8;
         } else {
             r->unk7 = 0;
@@ -2379,10 +2379,10 @@ s32 func_8003F268(void) { return D_800A322C; }
 
 void func_8003F274(void) {
     s32 i, j;
-    s32 col_center, row_center;
+    s32 var_2, row_center;
     s32 data;
-    s32 adj_i;
-    s32 adj_j;
+    s32 var_5;
+    s32 var_6;
     s32 *ptr = (s32 *)D_800A8FB0;
 
     i = 0xFF;
@@ -2394,19 +2394,19 @@ void func_8003F274(void) {
 
     func_8003F268();
 
-    col_center = (D_800A3708->work.t[0] + 0x7D00) / 2000;
+    var_2 = (D_800A3708->work.t[0] + 0x7D00) / 2000;
     row_center = (D_800A3708->work.t[2] + 0x7D00) / 2000;
 
     for (i = 0; i < 16; i++) {
-        adj_i = i - 8;
+        var_5 = i - 8;
         {
-            u32 y = (u32)(row_center + adj_i);
+            u32 y = (u32)(row_center + var_5);
             if (y < 0x20) {
                 data = D_80094A6C[i];
                 for (j = 0; j < 16; j++) {
-                    adj_j = j - 8;
+                    var_6 = j - 8;
                     {
-                        u32 x = (u32)(col_center + adj_j);
+                        u32 x = (u32)(var_2 + var_6);
                         if (x < 0x20) {
                             s32 bits = (data >> ((15 - j) * 2)) & 3;
                             D_800A8FB0[(y << 5) + x] |= bits;
@@ -2560,54 +2560,54 @@ extern u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur);
 void func_8003FECC(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2);
 
 void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
-    Unk8003F62CRec *sc;
-    s16 *cmds;
+    Unk8003F62CRec *var_0;
+    s16 *var_1;
     u8 *cur;
     Unk8003F824Rec *rec;
     Unk80045878Node *obj;
     s32 i;
 
-    sc = arg0->unk_24;
-    if (sc == 0)
+    var_0 = arg0->unk_24;
+    if (var_0 == 0)
         return;
-    cmds = (s16 *)arg0->unk_28;
-    cur = sc->data;
-    if (*cmds == -3) {
+    var_1 = (s16 *)arg0->unk_28;
+    cur = var_0->data;
+    if (*var_1 == -3) {
         arg0->unk_24 = 0;
         return;
     }
-    sc->count = 0;
-    sc->unk2 = 0;
-    sc->unk4 = 0;
-    sc->unk6 = 0;
-    for (i = 0; *cmds != -3; i++) {
-        if (*cmds != -2) {
-            if (sc->count >= 5) {
+    var_0->count = 0;
+    var_0->unk2 = 0;
+    var_0->unk4 = 0;
+    var_0->unk6 = 0;
+    for (i = 0; *var_1 != -3; i++) {
+        if (*var_1 != -2) {
+            if (var_0->count >= 5) {
                 func_80052C10();
             }
-            rec = &sc->recs[sc->count];
+            rec = &var_0->recs[var_0->count];
             /* FAKE: obj read from unk_1A34[i] ahead of the rec stores and kept
              * across the func_8003FA24 call; re-read at each use the
              * s-registers re-seat (score 53). */
             obj = arg0->unk_1A34[i];
             rec->cur = cur;
             rec->obj = obj;
-            cur = func_8003FA24(rec, cmds, cur);
-            sc->unk418[sc->count] = rec->quad;
+            cur = func_8003FA24(rec, var_1, cur);
+            var_0->unk418[var_0->count] = rec->quad;
             obj->node.unk0 = 0xD;
-            sc->count++;
-            if (*cmds >= 0) {
-                cmds++;
-                while (*cmds >= 0) {
-                    cmds++;
+            var_0->count++;
+            if (*var_1 >= 0) {
+                var_1++;
+                while (*var_1 >= 0) {
+                    var_1++;
                 }
             }
-            if (*cmds == -1) {
-                cmds++;
-                func_8003FECC(arg0, rec, cmds);
+            if (*var_1 == -1) {
+                var_1++;
+                func_8003FECC(arg0, rec, var_1);
             }
         }
-        while (*cmds++ != -2) {
+        while (*var_1++ != -2) {
         }
     }
     if (arg1) {

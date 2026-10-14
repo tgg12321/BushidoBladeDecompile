@@ -1,0 +1,26 @@
+addr,current_names,proposed_name,kind,evidence,verdict,verifier_note
+local,func_8003AE5C:done,var_2,local,"RESET-BULK (Q119). local done (s32) of func_8003AE5C, src/main/2B344.c:128; claim word(s): done. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,func_8003B5A4:done,var_0,local,"RESET-BULK (Q119). local done (s32) of func_8003B5A4, src/main/2B344.c:334; claim word(s): done. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_8003B5A4:chardata,var_1,local,"RESET-BULK (Q119). local chardata (u8 *) of func_8003B5A4, src/main/2B344.c:335; claim word(s): chardata. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_8003B9D0:magic,var_4,local,"RESET-BULK (Q119). local magic (s32) of func_8003B9D0, src/main/2B344.c:495; claim word(s): magic. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_8003C040:sel,var_1,local,"RESET-BULK (Q119). local sel (s32) of func_8003C040, src/main/2B344.c:720; claim word(s): sel. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_8003C42C:rounds,var_2,local,"RESET-BULK (Q119). local rounds (s32) of func_8003C42C, src/main/2B344.c:835; claim word(s): rounds. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,func_8003CE18:player,var_1,local,"RESET-BULK (Q119). local player (s8) of func_8003CE18, src/main/2B344.c:1098; claim word(s): player. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_8003CF84:stage,var_7,local,"RESET-BULK (Q119). local stage (s16) of func_8003CF84, src/main/2B344.c:1161; claim word(s): stage. Destination: var_<declaration order 7>.",CONFIRM,Q119 scope test
+local,func_8003D39C:ch,arg2,param,"RESET-BULK (Q119). param ch (s32) of func_8003D39C, src/main/2B344.c:1264; claim word(s): ch. Destination: arg<position 2>.",CONFIRM,Q119 scope test
+local,func_8003D39C:color,arg3,param,"RESET-BULK (Q119). param color (s32) of func_8003D39C, src/main/2B344.c:1264; claim word(s): color. Destination: arg<position 3>.",CONFIRM,Q119 scope test
+local,func_8003D478:color,arg3,param,"RESET-BULK (Q119). param color (s32) of func_8003D478, src/main/2B344.c:1286; claim word(s): color. Destination: arg<position 3>.",CONFIRM,Q119 scope test
+local,func_8003D478:ch,var_0,local,"RESET-BULK (Q119). local ch (s32) of func_8003D478, src/main/2B344.c:1287; claim word(s): ch. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_8003D52C:fmt,arg0,param,"RESET-BULK (Q119). param fmt (u8 *) of func_8003D52C, src/main/2B344.c:1314; claim word(s): fmt. Destination: arg<position 0>.",CONFIRM,Q119 scope test
+local,func_8003D52C:seg,var_1,local,"RESET-BULK (Q119). local seg (char [0x100]) of func_8003D52C, src/main/2B344.c:1316; claim word(s): seg. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_8003D52C:seen_pct,var_4,local,"RESET-BULK (Q119). local seen_pct (s32) of func_8003D52C, src/main/2B344.c:1319; claim word(s): pct. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_8003D52C:ch,var_6,local,"RESET-BULK (Q119). local ch (s32) of func_8003D52C, src/main/2B344.c:1321; claim word(s): ch. Destination: var_<declaration order 6>.",CONFIRM,Q119 scope test
+local,bitstream_ReadBits:avail,var_0,local,"RESET-BULK (Q119). local avail (s32) of bitstream_ReadBits, src/main/2B344.c:1433; claim word(s): avail. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_8003DE14:color_info,var_2,local,"RESET-BULK (Q119). local color_info (u8 [0x20]) of func_8003DE14, src/main/2B344.c:1635; claim word(s): color info. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,func_8003DE14:target_color,var_8,local,"RESET-BULK (Q119). local target_color (s32) of func_8003DE14, src/main/2B344.c:1641; claim word(s): target color. Destination: var_<declaration order 8>.",CONFIRM,Q119 scope test
+local,func_8003EDC0:tok,var_8,local,"RESET-BULK (Q119). local tok (u16) of func_8003EDC0, src/main/2B344.c:2259; claim word(s): tok. Destination: var_<declaration order 8>.",CONFIRM,Q119 scope test
+local,func_8003F274:col_center,var_2,local,"RESET-BULK (Q119). local col_center (s32) of func_8003F274, src/main/2B344.c:2382; claim word(s): center. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,func_8003F274:adj_i,var_5,local,"RESET-BULK (Q119). local adj_i (s32) of func_8003F274, src/main/2B344.c:2384; claim word(s): adj. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_8003F274:adj_j,var_6,local,"RESET-BULK (Q119). local adj_j (s32) of func_8003F274, src/main/2B344.c:2385; claim word(s): adj. Destination: var_<declaration order 6>.",CONFIRM,Q119 scope test
+local,func_8003F824:sc,var_0,local,"RESET-BULK (Q119). local sc (Unk8003F62CRec *) of func_8003F824, src/main/2B344.c:2563; claim word(s): sc. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_8003F824:cmds,var_1,local,"RESET-BULK (Q119). local cmds (s16 *) of func_8003F824, src/main/2B344.c:2564; claim word(s): cmds. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
