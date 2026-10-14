@@ -425,8 +425,8 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *ch, s32 limb, s32 thresh,
             diff = opp->unk_20 - ch->unk_20;
             cat = func_800272FC(diff);
             /* FAKE: diff's sign bit taken before the same / unk_B4 stores and
-             * the call; read at its use, ch and limb swap $s0 / $s1: score 102
-             */
+             * the call; read at its use, ch and limb swap $s0 / $s1:
+             * score 102 */
             sign = (u32)diff >> 31;
             same = ch->unk_AF == opp->unk_AF;
             ch->unk_B4 = opp->unk_B4 = same;
@@ -876,9 +876,9 @@ extern s32 D_800A3144[2];
  * skipped while either's unk_6A is 0x28. Each character's two points (joint 1,
  * and the midpoint of joints 15 and 19) are tested pairwise with the radii
  * D_800A3144[0..1]; an overlap (at most 0x80) pushes the characters apart along
- * x/z, scaled by the distance. After a hit, the unk_6A states and the facing
- * difference pick the reaction (unk_286, D_800A38A8 / D_800A3876). The push is
- * added to unk_134.vx / .vz.
+ * x/z, scaled by the distance. After an overlap, the unk_6A states and the
+ * unk_1C8.vy difference (folded to 0..0x800) pick the reaction (unk_286,
+ * D_800A38A8 / D_800A3876). The push is added to unk_134.vx / .vz.
  * GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc), inline_o.h class
  * (inline-asm-policy, owner ruling 2026-09-26). Everything else is ordinary C
  * except the three FAKE-annotated locals below (dist, tbl, shift). */
@@ -1516,15 +1516,16 @@ s32 func_80029454(void) {
 /* Sweeps a character's weapon segment (base -> tip, in the scratch record at
  * 0x1F8002B8) against its limb spheres. Takes the segment's pitch and yaw (a
  * negative square prints "ILLEGAL GUN MOTION" and returns) and unit direction
- * q, and pushes the tip out by q*4. If the yaw difference to the partner is
- * under 0x400, each of character `id`'s 22 hit records (D_800F5F68; records
- * 6..9 only when obj+0x26C is set) is tested: a hit sets bit i in *hit and,
- * only when the record's first halfword is nonzero, a second (deep) test sets
- * bit i in *deep. Then func_80053614 casts the segment against the stage; on
- * a stage hit (func_80054434() != 7), unless *hit is set and the stage point
- * is no nearer the base than obj+0xF4, the limb masks are cleared (when *hit
- * was set) and, unless `quiet`, effect 0xA plays at the hit point.
- * D_800A37E8.. receive -q.
+ * q, and pushes the tip out by q*4. If the yaw difference to obj->other's
+ * unk_1D8 is under 0x400, each of character `id`'s 22 records (D_800F5F68;
+ * records 6..9 only when obj+0x26C is set) is tested: a func_8002EA24 test
+ * with unk_0C / unk_0E sets bit i in *hit and, only when the record's first
+ * halfword is nonzero, a second test with unk_10 / unk_12 sets bit i in
+ * *deep. Then func_80053614 casts the segment against the stage; when it
+ * returns nonzero and func_80054434() != 7: if *hit is nonzero, the function
+ * skips to the end when the cast point is no nearer the base than obj+0xF4
+ * and otherwise clears *hit and *deep; then, unless `quiet`, effect 0xA
+ * plays at the cast point. D_800A37E8.. receive -q.
  * GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc) per square root, inline_o.h
  * class (inline-asm-policy, owner ruling 2026-09-26). Everything else is
  * ordinary C, except the five Ruling 11 locals (dx, dy, dz, temp, temp2) and
@@ -1544,7 +1545,7 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *hit, u32 *deep, s32 quiet) {
     s32 sp_tmp;
     s32 sp_tmp2;
     /* dx/dy/dz: a point's offset from the segment base -- the segment itself,
-     * then the stage hit point and obj+0xF4 (Ruling 11) */
+     * then the cast point (unk100[0]) and obj+0xF4 (Ruling 11) */
     s32 dx;
     s32 dy;
     s32 dz;
@@ -5327,9 +5328,9 @@ void func_80032040(void) {
 }
 
 Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
-    /* FAKE: constant holders for the speed (0x50) and the initial y velocity
-     * (-0xC8); as literals the li pair reorders (speed: score 12; vel_y: score
-     * 7). */
+    /* FAKE: constant holders for 0x50 (the factor of the two Judge[] products
+     * stored to unk_1C.x / .z) and -0xC8 (stored to unk_1C.y); as literals the
+     * li pair reorders (speed: score 12; vel_y: score 7). */
     s32 speed = 0x50;
     s32 vel_y = -0xC8;
     s32 i = 0;
