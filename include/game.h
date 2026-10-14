@@ -95,8 +95,8 @@ typedef struct {
 
 /* Per-lane slot record table at 0x800F0EC8: 2 lanes x 10 slots x one 3-word
  * record (12 bytes; lane stride 120). func_80063BD0 writes it, func_80063E10
- * reads it. The slot bitmask D_800A3454[lane] and the sibling SVECTOR table
- * D_800F1000[lane][10] index the same lane/slot pair. */
+ * reads it. The slot bitmask D_800A3454[n] and the sibling SVECTOR table
+ * D_800F1000[n][10] index the same pair (n, slot). */
 typedef struct {
     s32 unk0;
     s32 unk4;
@@ -205,10 +205,10 @@ typedef struct {
  * ubase / vbase, the texel origin the cells' u / v add to; cells, the cell
  * table that follows. A resource sheet may carry two or three headers (the
  * plain one, then one highlight per player: func_8006F97C, func_800759D0) ahead
- * of one shared cell table, which then starts at the last header's cells
- * (hdr[2].cells). 0x8009B0E0 is a table of 9 such headers (0x8009B0E0..
- * 0x8009B14B) that func_8005C8A8 reaches off one base; D_8009B14C and
- * D_8009B158 are two more of the same shape. */
+ * of one shared cell table, which then starts at the last header's cells.
+ * 0x8009B0E0 is a table of 9 such headers (0x8009B0E0..0x8009B14B) that
+ * func_8005C8A8 reaches off one base; D_8009B14C and D_8009B158 are two more
+ * of the same shape. */
 typedef struct {
     u8 tp0;
     u8 tp1;

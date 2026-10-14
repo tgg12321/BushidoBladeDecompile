@@ -935,8 +935,8 @@ void func_800620B8(s16 *arg0, s32 *trans) {
         v->vz = D_800F1198[i].unk8 - D_800A3470[2];
         ApplyRotMatrixLV(v, tv);
         /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the address 0x14
-         * below tv, it loads tv as the translation (there is no whole MATRIX
-         * here). Spelled (MATRIX *)base: score 65. */
+         * below tv, it loads tv as the translation (there is no whole
+         * MATRIX here). Spelled (MATRIX *)base: score 65. */
         SetTransMatrix((MATRIX *)((u8 *)tv - 0x14));
         RotTransPers(sv, D_800A34B8, interp, D_800A34CC);
         /* gte_stsz(r0) --- inline_c.h :1042-1046 */
@@ -1341,8 +1341,8 @@ s32 func_80063084(void) {
                         *D_800A34C0 = *D_800A34C0 * scale / 10;
                         *D_800A34C8 = *D_800A34C8 * scale / 10;
                         if (D_800F0BEC[i] >= 9) {
-                            /* fade = age - 15 <= 0: the halo fades out over
-                             * ages 9..15. */
+                            /* fade = age - 15: the colour word below is built
+                             * from -fade * 128 / 5 and -fade * 255 / 5. */
                             *fade = D_800F0BEC[i] - 15;
                             level = (*fade * -128 / 5) & 0xFF;
                             *(s32 *)&prim->r0 =
@@ -1465,7 +1465,7 @@ u8 func_80063BD0(s32 idx) {
     return 1;
 }
 
-/* Draw lane `lane`'s live slots (up to 10, see func_80063BD0): per slot whose
+/* Draw the live slots (up to 10, see func_80063BD0) of `lane`: per slot whose
  * bit is set in D_800A3454[lane], emit one textured POLY_FT4 billboard at the
  * slot's position (relative to *D_800A3470) through the composite of
  * D_800A3474 and the slot's matrix, keep it when its depth is in range, then
@@ -1803,10 +1803,10 @@ s32 func_800645B0(void) {
 }
 
 /* Draw the up-to-16 effect slots func_800645B0 spawns: per live slot (bit i
-   of D_800A3444) advance its counter, and while the counter's frame (/4) is
+   of D_800A3444) advance its counter D_800F0BCC[i], and while counter / 4 is
    below 7 project the slot's world position through D_800A3474 and emit one
    textured, semi-transparent POLY_FT4 billboard sized by the screen depth;
-   once the frame reaches 7 the slot is retired. Finally link every new quad
+   once counter / 4 reaches 7 the slot is retired. Finally link every new quad
    into the OT at its depth. Returns 1 when any slot is still live, else 0. */
 s32 func_800646E8(void) {
     extern TexRec D_8009B8E8[];
@@ -2409,10 +2409,10 @@ u8 func_80065800(s32 arg0) {
     /* FAKE: named intermediate - *p_w read once before the corner sign test
      * (inline: score 7) */
     s32 w;
-    /* FAKE: named intermediate - the width scale multiplied into *p_w whole
+    /* FAKE: named intermediate - the factor multiplied into *p_w whole
      * (inline: score 10) */
     s32 sw;
-    /* FAKE: named intermediate - the height scale multiplied into *p_h whole
+    /* FAKE: named intermediate - the factor multiplied into *p_h whole
      * (inline: score 9) */
     s32 sh;
     /* FAKE: named intermediate - *p_h read once before the corner sign test
@@ -3228,9 +3228,10 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
 
 /* Per-frame update + draw of one lane's (arg1) effect particles, the middle of
  * the func_800678A8 / func_80067D14 / func_80068D88 trio. For each live record
- * of D_800EFC78[arg1] (state 1): age it and derive the fade colour, move it
- * toward its D_800F0C10 target under a rotation, drop it (state 3) once it is
- * faded or outside the lane radius, project the three trail vertices, size the
+ * of D_800EFC78[arg1] (state 1): step its unk12 and derive r/g/b from it, take
+ * its D_800F0C10[arg1] entry less D_800A3470 through gte_rtv0, set state 3
+ * (and skip it) once r and g are both low or once the gte_sqr0 sum p_out[0..2]
+ * passes *p_rad plus a rand() term, project three vertices, size the
  * sprite by type (arg0), then emit one to three POLY_FT4 quads and link them
  * into the context's OT index table.
  * GTE: eleven PsyQ 4.3 inline_c.h macros; gte_rtv0, gte_sqr0 and gte_rtpt
@@ -3837,8 +3838,8 @@ s32 func_800693CC(s32 held, s32 pressed) {
     extern void func_8006A880(u8 *, u16 *, s32);
     extern void func_80069F80(s32 *, s32);
     extern void func_8006A1A0(s32 *, s32);
-    /* FAKE: frame layout. The draw context func_8006E390 fills is ten words
-     * (siblings: s32 sp10[10]); the decoded input sits at word 12 and the
+    /* FAKE: frame layout. func_8006E390 fills ten words (siblings: s32
+     * sp10[10]); the folded `pressed` word sits at word 12 and the
      * saved row mask at word 14 only to reproduce the target's 0x60 frame
      * (sp+0x40 / sp+0x48); separate locals give the wrong frame: score 11. */
     s32 context[15];
@@ -5313,7 +5314,7 @@ void func_8006C21C(s32 *arg0) {
      * level; one counter per phase: score 90. */
     s32 work;
     /* FAKE: per-branch constant holder (named-local-fake-exception, Q27 (B)) --
-     * the bar's far-corner red, 0 on the pulsing bar and 0x80 otherwise; set in
+     * the bar's far-corner red, 0 in two arms and 0x80 in the other two; set in
      * each arm, it is not hoisted out of the row loop. The literals: score 8.
      */
     s32 col;
@@ -5773,7 +5774,7 @@ void func_8006D3DC(s32 *arg0) {
     /* FAKE: constant holder for func_8006E480's 0; the literal: score 8. */
     s32 semi = 0;
     s16 i = 0;
-    /* FAKE: constant holder for the dimmed colour; the literal: score 25. */
+    /* FAKE: constant holder for s.col_r / g / b; the literal: score 25. */
     u8 dim = 0x40;
 
     s.ot_idx = 0xA;
@@ -5999,7 +6000,7 @@ void func_8006DD94(s32 *arg0) {
     u16 rect[4];
     s16 i;
     Unk8006DD94List *q;
-    /* FAKE: constant holder for the semi flag and func_8006E480's 0; the
+    /* FAKE: constant holder for s.env.semi and func_8006E480's 0; the
      * literal: score 8. */
     s32 semi = 0;
 
