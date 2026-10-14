@@ -1293,7 +1293,7 @@ void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
 
     do {
         if (ch == 0x20) {
-            /* space - advance */
+            /* 0x20: only x advances */
         } else if (ch == 0x0A) {
             x = start_x;
             y += 8;
