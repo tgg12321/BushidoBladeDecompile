@@ -404,8 +404,8 @@ void func_80040B44(Unk80045878Obj *arg0) {
             t3++;
             a3 = *t3;
             t3++;
-            /* FAKE: the slot address as integer arithmetic; &seen[a3] swaps the
-             * addu operands (score 1) */
+            /* FAKE: the slot address as integer arithmetic; &seen[a3] swaps
+             * the addu operands (score 1) */
             a1 = (s32 *)(a3 * 4 + (s32)&seen[0]);
             /* FAKE: t2 copies a0_val ahead of the seen[] test; with a0_val
              * itself the load and the cursor step re-seat (score 9). */
