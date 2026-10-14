@@ -1341,8 +1341,8 @@ s32 func_80063084(void) {
                         *D_800A34C0 = *D_800A34C0 * scale / 10;
                         *D_800A34C8 = *D_800A34C8 * scale / 10;
                         if (D_800F0BEC[i] >= 9) {
-                            /* fade = age - 15: the colour word below is built
-                             * from -fade * 128 / 5 and -fade * 255 / 5. */
+                            /* *fade = age - 15: the colour word below is built
+                             * from -*fade * 128 / 5 and -*fade * 255 / 5. */
                             *fade = D_800F0BEC[i] - 15;
                             level = (*fade * -128 / 5) & 0xFF;
                             *(s32 *)&prim->r0 =
@@ -1803,11 +1803,12 @@ s32 func_800645B0(void) {
 }
 
 /* Draw the up-to-16 effect slots func_800645B0 spawns: per live slot (bit i
-   of D_800A3444) advance its counter D_800F0BCC[i], and while counter / 4 is
-   below 7 project the slot's world position through D_800A3474 and emit one
-   textured, semi-transparent POLY_FT4 billboard sized by the screen depth;
-   once counter / 4 reaches 7 the slot is retired. Finally link every new quad
-   into the OT at its depth. Returns 1 when any slot is still live, else 0. */
+   of D_800A3444) step its counter D_800F0BCC[i]; while counter / 4 is below
+   7, project the slot's world position through D_800A3474 and, when its depth
+   is in range, emit one textured, semi-transparent POLY_FT4 billboard sized by
+   the screen depth and step the counter again; once counter / 4 reaches 7 the
+   slot is retired. Finally link every new quad into the OT at its depth.
+   Returns 1 when any slot is still live, else 0. */
 s32 func_800646E8(void) {
     extern TexRec D_8009B8E8[];
     Unk1F8000B8_800646E8 *base;
@@ -3838,7 +3839,7 @@ s32 func_800693CC(s32 held, s32 pressed) {
     extern void func_8006A880(u8 *, u16 *, s32);
     extern void func_80069F80(s32 *, s32);
     extern void func_8006A1A0(s32 *, s32);
-    /* FAKE: frame layout. func_8006E390 fills ten words (siblings: s32
+    /* FAKE: frame layout. func_8006E390 fills words 1..9 (siblings: s32
      * sp10[10]); the folded `pressed` word sits at word 12 and the
      * saved row mask at word 14 only to reproduce the target's 0x60 frame
      * (sp+0x40 / sp+0x48); separate locals give the wrong frame: score 11. */
