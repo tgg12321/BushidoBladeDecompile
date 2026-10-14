@@ -10,7 +10,8 @@ metadata:
 # The naming bar (owner ruling Q111)
 
 Applies to every name a naming wave lands or keeps: functions, globals, types, struct members,
-file names. It never decides a function's completion state ([[completion-bar]] does).
+locals and parameters, file names. It never decides a function's completion state
+([[completion-bar]] does).
 
 ## N1 — the SOTN bar
 
@@ -21,6 +22,8 @@ agrees. Every read, write and call of the named thing bears the name out:
 - **global / member:** every access, in every TU and in the asm of `INCLUDE_ASM` / canonical
   bodies, agrees in role, width and lifetime.
 - **type:** one layout; every named field is named by its accesses.
+- **local / parameter:** every use in its function bears it out; a `/* FAKE */` or no-purpose
+  local keeps a neutral name ([[completion-bar]] item 3).
 
 One contradicting use fails the name.
 
@@ -71,7 +74,9 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
    origin `sotn-review`, tier CORROBORATED), `RESET` rows `reset-contradicted`, and an N5 KEEP
    (an existing name that passes) as a `sotn-review` row with `proposed_name` = the current name.
    It upgrades the census tier and is not a pair. Data rows go in `data_manifest.csv` for
-   `tools/data_wave.py`.
+   `tools/data_wave.py`. Type, member and local rows go in `type_manifest.csv`,
+   `member_manifest.csv`, `local_manifest.csv` (data_manifest's columns); their CONFIRMed pairs
+   (`Old=New`, `T.m=n`, `f:l=n`) are the wave's `pairs.txt`.
 2. **Review:** a fresh `naming-reviewer` checks each manifest. It may set `verdict` CONFIRM only
    on rows it PASSes. Rows it FAILs are dropped or re-mined, never patched by hand.
 3. **Census:** `python3 docs/naming/build_census.py`.
@@ -81,15 +86,17 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
    `git reset --soft HEAD~1` so the wave lands as one commit. The pairs are every `old_names` /
    `olds` entry of the two tools' `--manifest` JSON (an auto name and its alias may share a new
    name).
-   Members and types are edited in C; the keycheck takes global pairs, so a member rename needs a
-   name unique in the tree (or waits for per-scope pairs). Then run the comment pass,
-   `python3 tools/naming_keycheck.py --pairs <...> --sub-comments`. A comment naming a renamed
+   Types, members and locals are edited in C (`T.m=n`: the declaration of `m` in `T` and its
+   `.`/`->` accesses; `f:l=n`: one binding in the unique definition of `f`). Then the comment pass,
+   `python3 tools/naming_keycheck.py --pairs <global pairs> --sub-comments`, and edit
+   by hand, in the wave, each comment naming an old member or local. A comment naming a renamed
    identifier follows it, so no comment keeps a retired name.
 5. **Gates:** `verify-oracle --rebuild` (SHA1 == oracle); `tus-check`;
-   `tools/check_completion_integrity.py`; `engine test`; then
-   `python3 tools/naming_keycheck.py --from-manifests <naming_wave.json>,<data_wave.json>` (the
-   pairs come from the tools' own manifests; the report lists them). It fails closed. Every changed,
-   added, deleted or renamed path must be the base with the pairs substituted, using the wave
+   `tools/check_completion_integrity.py`; `engine test`; then stage the whole wave (`git add -A`)
+   and run `python3 tools/naming_keycheck.py --from-manifests <naming_wave.json>,<data_wave.json>
+   --pairs-file <pairs.txt>`. It checks what a commit would store (an unstaged or intent-to-add
+   path fails) and fails closed. Every changed, added, deleted or renamed path must be the base
+   with the pairs substituted, using the wave
    tools' own substitutions:
    - C and header tokens, and each comment in its place, change only by the pairs, as is or as
      `tools/format.py` lands them (a longer name can re-wrap or hoist a comment). Any other moved
@@ -102,10 +109,13 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
      emit for that line. Other text files (gate lists, tools) change only by the pairs.
    - `.claude/**`, `movovl/**` (the overlay; the oracle does not cover it) and the tool itself
      never change.
-   - A new non-auto name must not already exist in a build or tool file. An auto name must
-     carry the old name's address. Old names may share a new name only when they name one
-     address.
-   - No old name may survive in a build file (C comments included).
+   - Global pairs: a new non-auto name must not already exist in a build or tool file; an auto
+     name must carry the old name's address; old names may share a new name only when they name
+     one address; no old name survives in a build file (C comments included).
+   - `T.m=n`: `n` is no member, type, macro, paste or keyword name in `src/` / `include/` C
+     (base and post-global trees); accesses resolve to `T` only by the oracle build.
+   - `f:l=n`: `n` is fresh in `f`, at file scope and in enums (post-global tree), in no macro,
+     no keyword; the cc1 differential proves the binding. Scoped comment edits are notes (R6).
 
    These are **the wave's surfaces**.
 6. **Moved layer-2 keys:** a completed body whose key moved only by the wave's pairs (the
@@ -114,5 +124,3 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
 7. **Commit:** one commit per wave, subject `naming: <wave>`. The body gives the manifest path,
    both review verdicts, the oracle line, the keycheck line and moved-key count, and the census
    regenerated in the same commit.
-
-Locals and parameters are out of scope until the keycheck takes per-function pairs.
