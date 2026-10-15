@@ -374,3 +374,56 @@ floor 163 at s17; 17 sessions; live frontier (state.json is authoritative):
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: whole-body INCLUDE_ASM chassis at HEAD d0cc26461, zero FAKE constructs
+
+## [s20] (forensics) Kill re-audit (mandated, floor flat): a banked instance kill was measured on a different chassis or under a FAKE carrier no longer present.
+- probe: fresh `sandbox --disable all --diff` + tools/fake_ablate.py on candidate.c at HEAD 7aaefe365 (tmp/grind/func_8004A4E0/s20/sandbox.txt, s20/fake_ablate.txt).
+- result: score 163, no_c_body true, "no diff: whole-body INCLUDE_ASM"; fake_ablate: no FAKE constructs, nothing to ablate. No banked kill is voided.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 7aaefe365, zero FAKE constructs
+
+## [s20] (forensics) An unbounded jtbl dispatch (lbu index -> sll -> lw table -> jr, no sltu bound check) is evidence that the code is not compiled C. This is the s18 audit signal (a), "58/58 compiled-C jtbls carry a range check".
+- mechanism: switch lowering always emits the bound check. stmt.c:4991 expand_end_case calls do_tablejump, and expr.c:9963 always emits `emit_cmp_insn(index, range, GTU)` plus bgtu to default. The open question was whether any source shape avoids it.
+- probe: instrumented cc1 (-da) on tmp/grind/func_8004A4E0/s20/probe.c (run.sh), five input shapes: A switch(u8) 16 cases; B switch(u8 & 15) 16 cases; C switch(u8) 256 cases, covering the whole u8 range; D switch(u32 >> 16) 16 cases; E GNU computed goto `static void *const tbl[16] = {&&l0..}; goto *tbl[*p];`.
+- result: A-D all keep the bound check through final (`sltu $2,$3,16|256; beq $2,$0,default`). Even C keeps it: the sltu_si `(ltu:SI (reg 74) (const_int 256))` on a zero_extend:QI index survives .combine, .jump2 and .sched2 unfolded (probe.i.combine/jump2/sched2), so nonzero_bits does not elide it in 2.7.2. E (computed goto) emits exactly the target's dispatch shape, `lbu; sll $2,$2,2; lw $2,tbl($2); j $2`, with no bound check, and the table goes in .rodata (probe.s:648). So signal (a) is reachable from GNU C. It shows only that the original was not a `switch`, NOT that it was hand-written. Downgrade (a) from a not-compiled-C signal to a not-a-switch signal. The other signals are unaffected, in particular s8: computed-goto labels are function-local (expand_computed_goto, stmt.c:593, operates per function), so they cannot address func_8004A940's body, and the s18b trapping-addi kill stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: standalone probe TU s20/probe.c compiled by tools/gcc-2.7.2/build/cc1 with the project CC flags; function chassis unchanged (whole-body INCLUDE_ASM, zero FAKE constructs)
+
+## [s20] (forensics) The switch-lowered bound check is unconditional for every `switch` statement under GCC 2.7.2 tablejump lowering (no casesi on MIPS)
+- mechanism: expr.c:9963 do_tablejump emits the GTU compare unconditionally; measured across 4 switch shapes (A-D) including full-u8-range coverage, none folded by cse/combine/jump.
+- probe: s20/probe.c A-D, dumps probe.i.{rtl,cse,combine,jump2,sched2}
+- result: the bound check is present in all 4 switch shapes at final. Any C reconstruction must dispatch via computed goto (or a fnptr table, which emits jalr, not jr), not via switch.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: s20/probe.c switch shapes A-D, project CC flags, instrumented cc1; no FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/expr.c:9963
+
+## [s20] FRONTIER (updated)
+1. Operator/engine: trapping-add signal in scan_hand_coded (mips.md:381) and/or the s10 cross-function-jtbl signal. Do NOT propose "unbounded jtbl index" as a scanner signal: s20 shows computed goto produces it.
+2. Otherwise: escalation-modality LADDER EXHAUSTED (floor 163) record + rotation, per the Judge constraint.
+
+## [s20] Kill re-audit (mandated): a banked instance kill was measured on a different chassis or under a FAKE carrier no longer present
+- mechanism: n/a - re-audit of measurement conditions
+- probe: sandbox --disable all --diff + tools/fake_ablate.py on candidate.c at HEAD 7aaefe365
+- result: score 163, no_c_body true, no diff; fake_ablate found nothing to ablate; no kill voided
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 7aaefe365, zero FAKE constructs
+
+## [s20] The unbounded jtbl dispatch (lbu index, sll, lw table, jr with no sltu bound check) in func_8004A4E0 is evidence that the code is not compiled C (s18 audit signal a)
+- mechanism: stmt.c:4991 expand_end_case -> expr.c:9963 do_tablejump emits the GTU bound check for switch; question was whether another source shape avoids it
+- probe: instrumented cc1 -da on s20/probe.c with 5 shapes: switch u8/16 cases, u8&15, u8/256 cases, u32>>16, GNU computed goto
+- result: All 4 switch shapes keep sltu+beq default through .combine/.jump2/.sched2 (even the full-u8 256-case form; nonzero_bits does not fold it). Computed goto emits exactly lbu; sll; lw tbl($r); j $r with the table in .rodata (probe.s:648). So signal (a) shows only that the original was not a switch. Computed-goto labels are function-local (stmt.c:593), so the s8 cross-function-target kill and the s18b trapping-addi kill stand.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: standalone probe TU tmp/grind/func_8004A4E0/s20/probe.c under tools/gcc-2.7.2/build/cc1 with project CC flags; function chassis whole-body INCLUDE_ASM, zero FAKE constructs
+
+## [s20] The bound check from GCC 2.7.2 switch lowering through do_tablejump is unconditional for every switch statement, and cse/combine/jump do not fold it
+- mechanism: expr.c:9963 emit_cmp_insn(index, range, GTU) + bgtu default, unconditional; MIPS has no casesi
+- probe: s20/probe.c switch shapes A-D, dumps probe.i.rtl/cse/combine/jump2/sched2
+- result: sltu_si (ltu reg const) survives to final in all 4 shapes, including a zero_extend:QI index against 256. A C reconstruction would need computed goto for the dispatch, not switch.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: s20/probe.c switch shapes A-D, project CC flags, instrumented cc1, no FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/expr.c:9963

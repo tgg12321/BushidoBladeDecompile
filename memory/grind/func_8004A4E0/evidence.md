@@ -266,3 +266,13 @@ it would only become live if a future session carved a C island out of the body 
 - [s19] inverse_compose classify (object path): func_8004A4E0 not found in the sandbox object (tmp/grind/func_8004A4E0/s19/classify_obj.txt)
 
 - [s19] fake_ablate: no FAKE-annotated constructs in candidate.c (tmp/grind/func_8004A4E0/s19/fake_ablate.txt)
+- [s20] Kill re-audit: sandbox 163 / no_c_body / no diff; fake_ablate nothing to ablate (s20/sandbox.txt, s20/fake_ablate.txt). No kill voided.
+- [s20] CORRECTION to the s18 audit signal (a): the unbounded jtbl index (no sltu range check) is NOT a not-compiled-C signal. GNU computed goto (`goto *tbl[*p]`, label-address table in .rodata) compiles under the project cc1 to exactly `lbu; sll; lw tbl($r); j $r` with no bound check (tmp/grind/func_8004A4E0/s20/probe.s, function E_cgoto). Every `switch` shape tested (u8 with 16 cases, u8&15, u8 with all 256 cases, u32>>16) keeps `sltu/beq default` through final. expr.c:9963 do_tablejump emits it unconditionally, and combine/jump do not fold it even when nonzero_bits proves it is always true (probe.i.combine, probe.i.jump2). So (a) shows only that the original was not a C `switch`. The s8 cross-function targets and the s18b trapping addi remain the non-C signals: computed-goto labels are per-function (stmt.c:593), so they cannot address func_8004A940.
+
+- [s20] sandbox --disable all = 163, no_c_body true (s20/sandbox.txt)
+
+- [s20] GNU computed goto under the project cc1 reproduces the target's bound-check-free jtbl dispatch shape (s20/probe.s E_cgoto)
+
+- [s20] switch(u8) with all 256 cases still emits sltu $2,$3,256 (s20/probe.s C_u8_256; probe.i.combine)
+
+- [s20] the s8 cross-function jtbl targets and the s18b trapping addi remain the non-C signals; 'unbounded jtbl index' should not become a scanner signal

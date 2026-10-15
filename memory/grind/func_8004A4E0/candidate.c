@@ -36,6 +36,10 @@
  * stmt.c:4704) can put a jump-table entry inside a DIFFERENT function's body.
  * Class kill — see hypotheses.md [s8], tmp/grind/func_8004A4E0/s8/.
  *
+ * s20 (forensics): unbounded jtbl index is reachable via GNU computed goto (no bound check;
+ * tmp/grind/func_8004A4E0/s20/probe.s E_cgoto); every switch keeps it (expr.c:9963). Signal (a)
+ * downgraded to "not a switch"; s8 cross-function targets + s18b addi stand.
+ *
  * s19 (solver): classify has no residual - sandbox object lacks the symbol (no C body); same as s6.
  *
  * sandbox --disable all (s1..s19): {"score": 163, "no_c_body": true, "build_insns": 0}.
