@@ -247,3 +247,43 @@ floor 37 at s12; 12 sessions; live frontier (state.json is authoritative):
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s10's six-variant sweep (s10/v1_s16..v6_szs32.c) re-read this session, no FAKE construct, same $a3 chassis
+
+## [s14] Mandated kill re-audit (floor flat 3+ sessions): re-ablate the closest rejected
+form and re-confirm the structural-axis exhaustion finding of s13 holds unchanged.
+- mechanism: same as s13 — engine/gtemacro.py strips any gte_rtpt/gte_ldv3c/gte_stsxy3c
+  (or raw c2 .word) block not in its PINNED-units table, so the entire scored residual is
+  an unpinned-GTE-macro-strip artifact, not a GPR-skeleton allocation question any
+  structural technique (var split, decl order, narrowing, re-association) can move.
+- probe: python3 tools/fake_ablate.py --func func_8004A76C --file main/3AB48 --candidate
+  memory/grind/func_8004A76C/rejected/psyq-rtpt-pair-reorg-slot-residual.c; sandbox
+  func_8004A76C --disable all --candidate memory/grind/func_8004A76C/candidate.c --diff
+  (current chassis: the INCLUDE_ASM stub is the live candidate.c).
+- result: fake_ablate confirms zero FAKE-annotated constructs in the closest rejected
+  form (same as s13's reading — nothing to ablate, so the re-audit cannot change the
+  verdict). sandbox --diff on the current candidate.c (the stub) errors
+  "func_8004A76C not found in tmp/sandbox/.../3AB48.o" — the cheat-disabled build drops
+  the symbol entirely once the GTE asm block is stripped, confirming the function cannot
+  even be SCORED past the unpinned-macro gap on the current stub, let alone moved by a
+  structural C lever. No new structural probe exists beyond s10's six-variant sweep
+  (already re-confirmed construct-identical and exhausted at s13).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c at current HEAD (fake_ablate
+  re-run, zero FAKE constructs) + candidate.c stub (sandbox --diff error), $a3
+  vertex-pointer chassis, no FAKE construct present in either file
+
+## [s14] The mandated kill re-audit (floor flat 3+ sessions) on the closest rejected form (rejected/psyq-rtpt-pair-reorg-slot-residual.c), re-run this session with fake_ablate and a fresh sandbox --diff attempt on the current candidate.c, produces no change from s13's reading: zero FAKE constructs to ablate, and the current candidate.c (INCLUDE_ASM stub) cannot even be diffed because the cheat-disabled build drops func_8004A76C entirely once the unpinned GTE macro block is stripped.
+- mechanism: engine/gtemacro.py strips any gte_rtpt/gte_ldv3c/gte_stsxy3c (or raw c2 .word) block not in its PINNED-units table; on the stub this removes the whole scorable body, so the sandbox's cheat-disabled .o never contains the symbol.
+- probe: python3 tools/fake_ablate.py --func func_8004A76C --file main/3AB48 --candidate memory/grind/func_8004A76C/rejected/psyq-rtpt-pair-reorg-slot-residual.c; then tools/wteng.ps1 main sandbox func_8004A76C --disable all --candidate memory/grind/func_8004A76C/candidate.c --diff
+- result: fake_ablate: 'no FAKE-annotated constructs found ... nothing to ablate'. sandbox --diff: error 'func_8004A76C not found in tmp/sandbox/func_8004A76C/main/3AB48.o' (pipeline truncated after cheat-asm strip). Both results are identical in substance to s13's banked conclusion; the re-audit changes nothing.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c at current HEAD (fake_ablate re-run) + memory/grind/func_8004A76C/candidate.c stub (sandbox --diff this session), $a3 vertex-pointer chassis, no FAKE construct present in either file
+
+## [s14] No untried structural lever (block-local var split, declaration order, type narrowing, statement re-association) exists this session beyond s10's six-variant mfc2-seat sweep, which s13 already re-confirmed is construct-identical and exhausted.
+- mechanism: The only place a structural lever could move the scored residual -- the z1/z2/z3 mfc2-result temporaries feeding $t0-$t2 allocno seats via global.c first-fit -- was already exhaustively swept across six independent C-side shapes at s10, with no match; the rest of the scored diff is the unpinned-GTE-macro strip, which is an engine pin gap, not a C-shape question.
+- probe: Re-read s10's six-variant sweep entries and s13's structural-exhaustion entry in hypotheses.md; cross-checked against this session's fake_ablate + sandbox --diff re-measurement (hypothesis above) to confirm the chassis has not moved.
+- result: No new structural variant distinguishable from s10's set; the scored gap remains entirely attributable to the unpinned GTE macro strip, confirmed again this session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s10's six-variant sweep (s10/v1_s16..v6_szs32.c) and s13's exhaustion entry, re-read this session; same $a3 chassis; no FAKE construct

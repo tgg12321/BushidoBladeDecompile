@@ -1,7 +1,7 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -81,16 +81,22 @@
    "floor": 37,
    "modality": "structural",
    "headline": "s13 structural: mandated kill re-audit confirms the GTE-macro-strip engine-pin gap still holds; s10's six-variant z-temp sweep already exhausts the only structural lever available, so no new C-shape p"
+  },
+  {
+   "session": 14,
+   "floor": 37,
+   "modality": "structural",
+   "headline": "s14 structural: mandated kill re-audit re-confirms s13's exhaustion finding \u2014 residual is wholly the unpinned-GTE-macro-strip gap, no structural lever has anything live to attack."
   }
  ],
  "frontier": [
   {
    "hypothesis": "The ASM-WHOLE canonical GTE grant is the correct, final disposition for this function.",
-   "mechanism": "s1 ABI class kill (custom $s0 callee-saved register, not GCC-producible); global.c:1057 first-fit explains the $t0-$t2 vs v0/v1/a1 seat divergence; reorg.c:2969 backward-scan stop_search_p (reorg.c:732) explains the delay-slot residuals; cc1psx agreement (s10) rules out port divergence.",
-   "next_probe": "Escalation modality (not mandated this session): file the decisions.md disposition citing s1/s6/s7/s9/s10/s11/s12/s13."
+   "mechanism": "s1 ABI class kill (custom $s0 callee-saved register, not GCC-producible); global.c:1057 first-fit explains the $t0-$t2 vs v0/v1/a1 seat divergence; reorg.c:2969 backward-scan stop_search_p explains the delay-slot residuals; cc1psx agreement (s10) rules out port divergence.",
+   "next_probe": "Escalation modality (not mandated this session): file the decisions.md disposition citing s1/s6/s7/s9/s10/s11/s12/s13/s14."
   },
   {
-   "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c as PINNED units in engine/gtemacro.py would let the sandbox score the GTE body for real, turning the closest rejected form's residual from a stripped-block artifact into an actual measurable gap.",
+   "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c as PINNED units in engine/gtemacro.py would let the sandbox score the GTE body for real.",
    "mechanism": "engine/gtemacro.py PINNED-units table (owner ruling 2026-09-25 scorer pin process).",
    "next_probe": "Operator engine commit adding the four units, then re-measure rejected/psyq-rtpt-pair-reorg-slot-residual.c with --diff."
   }
@@ -321,6 +327,22 @@
    "measured_on": "s10's six-variant sweep (s10/v1_s16..v6_szs32.c) re-read this session, no FAKE construct, same $a3 chassis",
    "predicate_cite": "",
    "result": "s13's planned type-narrowing variant is construct-identical to s10's already-killed v1; no other structural lever (decl "
+  },
+  {
+   "session": 14,
+   "statement": "The mandated kill re-audit (floor flat 3+ sessions) on the closest rejected form (rejected/psyq-rtpt-pair-reorg-slot-residual.c), re-run this session with fake_ablate and a fresh sandbox --diff attemp",
+   "kill_scope": "instance",
+   "measured_on": "rejected/psyq-rtpt-pair-reorg-slot-residual.c at current HEAD (fake_ablate re-run) + memory/grind/func_8004A76C/candidate.c stub (sandbox --diff this session), $a3 vertex-pointer chassis, no FAKE cons",
+   "predicate_cite": "",
+   "result": "fake_ablate: 'no FAKE-annotated constructs found ... nothing to ablate'. sandbox --diff: error 'func_8004A76C not found "
+  },
+  {
+   "session": 14,
+   "statement": "No untried structural lever (block-local var split, declaration order, type narrowing, statement re-association) exists this session beyond s10's six-variant mfc2-seat sweep, which s13 already re-conf",
+   "kill_scope": "instance",
+   "measured_on": "s10's six-variant sweep (s10/v1_s16..v6_szs32.c) and s13's exhaustion entry, re-read this session; same $a3 chassis; no FAKE construct",
+   "predicate_cite": "",
+   "result": "No new structural variant distinguishable from s10's set; the scored gap remains entirely attributable to the unpinned G"
   }
  ],
  "ladder_skip": 0,

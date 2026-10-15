@@ -289,3 +289,22 @@
 - [s13] This is the 9th modality pass (recon/structural/permuter/enumerate/synthesis/solver/forensics x2/rederive x3, now structural x2) to independently land on the same conclusion: a custom non-GCC $s0-callee-saved ABI shared with func_8004A4E0/func_8004A808/func_8004A940, plus an unpinned GTE macro block the sandbox cannot score until engine/gtemacro.py gains PINNED units for gte_rtpt/gte_rtpt_b/gte_ldv3c/gte_stsxy3c.
 
 - [s13] Sibling func_8004A4E0's candidate.c (23 sessions, floor 163) remains pure INCLUDE_ASM comments -- no C to transplant for this function's GTE body either.
+
+- [s14] structural modality (mandated): mandated kill re-audit re-run on the closest
+  rejected form (rejected/psyq-rtpt-pair-reorg-slot-residual.c) — fake_ablate finds zero
+  FAKE constructs (nothing to ablate), confirming s13's reading stands unchanged.
+  sandbox --diff on the current candidate.c (INCLUDE_ASM stub) cannot even produce a diff:
+  the cheat-disabled build drops func_8004A76C entirely once the unpinned GTE macro block
+  is stripped ("func_8004A76C not found in tmp/sandbox/func_8004A76C/main/3AB48.o"). This
+  reconfirms the scored residual is wholly the engine/gtemacro.py PINNED-units gap, not a
+  C-shape question, so no structural lever (var split, decl order, narrowing,
+  re-association) has anything live to attack on this chassis — same conclusion as s13,
+  now re-measured this session per the mandated re-audit.
+
+- [s14] fake_ablate on rejected/psyq-rtpt-pair-reorg-slot-residual.c reports zero FAKE-annotated constructs (nothing to ablate) — same as s13.
+
+- [s14] sandbox --disable all --candidate memory/grind/func_8004A76C/candidate.c --diff fails with 'func_8004A76C not found in tmp/sandbox/func_8004A76C/main/3AB48.o' — the GTE-macro-stripped stub cannot be scored at all on the current chassis, confirming the engine/gtemacro.py PINNED-units gap (frontier item 2) is still the live blocker, not a C-form question.
+
+- [s14] The stub (no_c_body) alone scores 37 (target_insns=37, build_insns=0) via tools/wteng.ps1 main sandbox func_8004A76C --disable all this session.
+
+- [s14] Function is an ASM-WHOLE canonical GTE grant per .claude/rules/inline-asm-policy.md and completion-bar.md item 2 (GTE/cop2 has no C form) — 13+ prior sessions across solver/forensics/rederive/structural modalities all independently reconfirm this; candidate.c header (s1/s5/s7/s8) and the ledger's live frontier already state this is the correct final disposition, with escalation modality (not mandated this session) as the next step to file the decisions.md entry.
