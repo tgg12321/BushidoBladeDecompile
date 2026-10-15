@@ -129,3 +129,4 @@
 - 2026-10-15 17:57 func_8004A76C s9 [forensics] floor=37: Forensics: kill re-audit holds (closest form 32, no FAKE); jr-slot predicate re-attributed to reorg.c:2969 scan with pass inputs enumerated; in-loop return empties the slot but breaks layout
 - 2026-10-15 18:45 func_8004A76C s10 [forensics] floor=37: Forensics: original PsyQ cc1psx reproduces the port's output on the closest forms and six new mfc2-seat input variants; residuals are real-compiler, not port divergence
 - 2026-10-15 18:49 func_8004A76C s11 [rederive] floor=37: Rederive s11: fresh m2c run and mandated kill re-audit both re-confirm s8/s5 — no new C or transplant path; sandbox still can't score GTE body until gte_rtpt is pinned.
+- 2026-10-15 18:51 func_8004A76C s12 [rederive] floor=37: s12 rederive: third independent m2c run and sibling re-check both re-confirm null -- no new C/transplant path; ASM-WHOLE GTE grant stands across 8 modalities.

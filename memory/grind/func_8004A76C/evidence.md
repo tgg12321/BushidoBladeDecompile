@@ -261,3 +261,18 @@
 - [s11] fake_ablate.py confirms the closest rejected form carries zero FAKE constructs, so its prior kill was never FAKE-propped.
 
 - [s11] Re-measuring that form on the current chassis still shows 5/5 hunks source-level because engine/gtemacro.py still strips the unpinned gte_rtpt/lwc2/swc2/mfc2 block wholesale — the sandbox cannot score any GTE-bearing C body for this function until that engine-side pin lands, which is outside this session's surface.
+- [s12] rederive re-confirmation: fresh m2c invocation on asm/funcs/func_8004A76C.s produces
+  the same shape as s8/s11 (void func_8004A76C(s32 arg0, void *arg2), no $s0 param, all GTE ops
+  M2C_ERROR). Sibling func_8004A4E0 candidate.c re-checked at its current HEAD (floor 163, 23
+  sessions since its s1) -- confirmed still zero-C INCLUDE_ASM, no transplant material. chassis
+  measurement this session: sandbox --disable all on the unedited stub = 37 (matches ledger
+  floor); --candidate memory/grind/func_8004A76C/candidate.c is unscorable (engine strips the
+  whole unpinned GTE block before linking, same gap banked s5/s7/s10).
+
+- [s12] chassis measurement this session: sandbox func_8004A76C --disable all on the unedited INCLUDE_ASM stub scores 37 (matches ledger floor, cheat_asm_stripped=71).
+
+- [s12] sandbox --disable all --candidate memory/grind/func_8004A76C/candidate.c is unscorable this session ('func_8004A76C not found' after cheat-asm strip) -- consistent with s5/s6/s7/s10's banked finding that engine/gtemacro.py strips the whole unpinned gte_rtpt/lwc2/swc2/mfc2 block before the GTE body can be scored.
+
+- [s12] Third independent m2c invocation (fresh process, not s8/s11's cache) reproduces the identical lowering failure: 10 M2C_ERROR sites for the 6 lwc2 + rtpt + 3 mfc2 + 3 swc2 GTE instructions, and emits no $s0 parameter -- m2c's generic ABI model cannot represent the custom callee-saved $s0 handle shared with func_8004A4E0/func_8004A808/func_8004A940.
+
+- [s12] Sibling func_8004A4E0 (func_8004A76C's own caller/cluster-mate) carries zero C across 23 of its own grind sessions and an owner-ruling (Q40) ASM-WHOLE grant -- there is no sibling C to inherit, confirming s8's null transplant finding is still current.

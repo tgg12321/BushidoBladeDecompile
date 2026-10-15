@@ -58,3 +58,9 @@
  * (rejected/return-in-loop-label-empty-jr-slot-extra-jump.c) leaves the slot empty but adds a jump and
  * inverts the exit layout. No PsyQ inline header writes mfc2 into $8-$10 or clobbers $2/$3. The stub stays.
  */
+/*
+ * s12 (rederive): third independent m2c run, byte-identical in structure to s8/s11 (no $s0
+ * formal param, every cop2 op M2C_ERROR). Sibling func_8004A4E0's candidate.c re-read at its
+ * current state (floor 163, 23 sessions) -- still pure INCLUDE_ASM, zero C, nothing to
+ * transplant. No new rederive axis opened. The stub stays.
+ */

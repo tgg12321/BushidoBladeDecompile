@@ -614,3 +614,27 @@ C-level match of the diverging region.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c at current HEAD, $a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, no FAKE construct (confirmed via fake_ablate)
+
+## [s12] (rederive) A third fresh m2c run, plus a freshness re-check of sibling func_8004A4E0's candidate.c (moved to floor 163/23 sessions since s8 last read it at floor ~unspecified), opens a new C/transplant path.
+- mechanism: m2c's MIPS-I model vs the GTE-interpreter custom $s0-live-in ABI; sibling transplant per SIBLING LEDGERS protocol
+- probe: python tools/m2c/m2c.py asm/funcs/func_8004A76C.s (this session, independent of s8/s11 cached runs); read memory/grind/func_8004A4E0/candidate.c head (s1..s20 entries)
+- result: m2c output byte-identical in structure to s8/s11 — `void func_8004A76C(s32 arg0, void *arg2)`, no $s0 formal param, every cop2 op (lwc2 x6, rtpt, mfc2 $17-19, swc2 x3) still M2C_ERROR, same duplicated-loop-prologue/in-loop-conditional-return shape already rejected (return-in-loop-label-empty-jr-slot-extra-jump.c). func_8004A4E0's candidate.c confirms (s8 of that ledger, still current at its s20) it has NO C body at all — pure INCLUDE_ASM comment banner, nothing to transplant; its own jtbl cross-function-target class kill is unrelated to this function's body shape. No new path opened by either axis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/m2c/m2c.py fresh invocation this session (no FAKE construct, no C chassis produced); func_8004A4E0/candidate.c read at its current HEAD state (floor 163, 23 sessions, still zero C)
+
+## [s12] A third fresh m2c run on asm/funcs/func_8004A76C.s (distinct process from s8/s11) emits a different two-parameter signature or gives $s0 a formal-parameter slot, opening a new ABI-honest C path.
+- mechanism: m2c's MIPS-I decompiler model vs the GTE-interpreter custom $s0-live-in ABI
+- probe: python tools/m2c/m2c.py asm/funcs/func_8004A76C.s
+- result: Byte-identical in structure to s8/s11: void func_8004A76C(s32 arg0, void *arg2), no $s0 formal param, every cop2/GTE opcode (lwc2 x6, rtpt, mfc2 $17-19, swc2 x3) lowered to M2C_ERROR, same duplicated-loop-prologue/in-loop-conditional-return shape as the already-rejected return-in-loop-label-empty-jr-slot-extra-jump.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/m2c/m2c.py fresh invocation this session, no FAKE construct, no C chassis produced (m2c output only)
+
+## [s12] Sibling func_8004A4E0's candidate.c, re-read at its current state (23 sessions and a floor move to 163 since s8 last checked it), now contains a C body or block worth transplanting onto func_8004A76C's chassis.
+- mechanism: sibling-transplant protocol (SIBLING LEDGERS section of brief)
+- probe: Read memory/grind/func_8004A4E0/candidate.c head and s1/s8/s20 entries
+- result: func_8004A4E0/candidate.c is still a pure INCLUDE_ASM comment banner (ASM-WHOLE canonical GTE grant, owner ruling Q40) -- zero C bytes, nothing structurally present to transplant. Its own class kill (jtbl entries living inside func_8004A940's body, s8 of that ledger) is about cross-function jump-table targets, unrelated to this function's GTE-op body shape.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: memory/grind/func_8004A4E0/candidate.c at its current HEAD (floor 163, 23 sessions since its s1), no FAKE construct, no C chassis

@@ -1,7 +1,7 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -69,16 +69,22 @@
    "floor": 37,
    "modality": "rederive",
    "headline": "Rederive s11: fresh m2c run and mandated kill re-audit both re-confirm s8/s5 \u2014 no new C or transplant path; sandbox still can't score GTE body until gte_rtpt is pinned."
+  },
+  {
+   "session": 12,
+   "floor": 37,
+   "modality": "rederive",
+   "headline": "s12 rederive: third independent m2c run and sibling re-check both re-confirm null -- no new C/transplant path; ASM-WHOLE GTE grant stands across 8 modalities."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ASM-WHOLE canonical GTE grant (already recorded in inline_asm_canonical.txt) is the correct, final disposition; seven modalities (recon/structural/permuter/enumerate/synthesis/solver/forensics x2/rederive x2) plus cc1psx calibration all independently confirm the non-GCC $s0 ABI, $t0-$t2 seats and hand-pipelined delay-slot shape.",
+   "hypothesis": "The ASM-WHOLE canonical GTE grant (already recorded in inline_asm_canonical.txt) is the correct, final disposition; eight modalities now (recon/structural/permuter/enumerate/synthesis/solver/forensics x2/rederive x3) plus cc1psx calibration all independently confirm the non-GCC $s0 ABI, $t0-$t2 seats, and hand-pipelined delay-slot shape.",
    "mechanism": "s1 ABI class kill; global.c:1057 first-fit; reorg.c:2969 scan + stop_search_p reorg.c:732; cc1psx agreement (s10)",
-   "next_probe": "Escalation modality (not mandated this session): file the decisions.md disposition citing s1, s6, s7, s9, s10, s11."
+   "next_probe": "Escalation modality (not mandated this session): file the decisions.md disposition citing s1, s6, s7, s9, s10, s11, s12."
   },
   {
-   "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c units lets the sandbox score GTE bodies, which would let the closest rejected form (now re-confirmed clean of FAKE constructs) be re-measured as a real residual instead of a stripped block.",
+   "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c units lets the sandbox score GTE bodies, which would let the closest rejected form (re-confirmed clean of FAKE constructs at s11) be re-measured as a real residual instead of a stripped block.",
    "mechanism": "engine/gtemacro.py PINNED units (owner ruling 2026-09-25 scorer pin process)",
    "next_probe": "Operator engine commit, then re-measure rejected/psyq-rtpt-pair-reorg-slot-residual.c."
   }
@@ -277,6 +283,22 @@
    "measured_on": "rejected/psyq-rtpt-pair-reorg-slot-residual.c at current HEAD, $a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, no FAKE construct (confirmed via fake_ablate)",
    "predicate_cite": "",
    "result": "fake_ablate reports zero FAKE constructs to ablate. --diff on current chassis: 5/5 hunks source-level \u2014 the sandbox stri"
+  },
+  {
+   "session": 12,
+   "statement": "A third fresh m2c run on asm/funcs/func_8004A76C.s (distinct process from s8/s11) emits a different two-parameter signature or gives $s0 a formal-parameter slot, opening a new ABI-honest C path.",
+   "kill_scope": "instance",
+   "measured_on": "tools/m2c/m2c.py fresh invocation this session, no FAKE construct, no C chassis produced (m2c output only)",
+   "predicate_cite": "",
+   "result": "Byte-identical in structure to s8/s11: void func_8004A76C(s32 arg0, void *arg2), no $s0 formal param, every cop2/GTE opc"
+  },
+  {
+   "session": 12,
+   "statement": "Sibling func_8004A4E0's candidate.c, re-read at its current state (23 sessions and a floor move to 163 since s8 last checked it), now contains a C body or block worth transplanting onto func_8004A76C'",
+   "kill_scope": "instance",
+   "measured_on": "memory/grind/func_8004A4E0/candidate.c at its current HEAD (floor 163, 23 sessions since its s1), no FAKE construct, no C chassis",
+   "predicate_cite": "",
+   "result": "func_8004A4E0/candidate.c is still a pure INCLUDE_ASM comment banner (ASM-WHOLE canonical GTE grant, owner ruling Q40) -"
   }
  ],
  "ladder_skip": 0,
