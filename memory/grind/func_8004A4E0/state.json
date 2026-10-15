@@ -1,8 +1,8 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 17,
- "current_modality": "enumerate",
+ "session_count": 18,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -105,13 +105,24 @@
    "floor": 163,
    "modality": "enumerate",
    "headline": "s17 enumerate (3rd re-run): sweep precondition still unmet, no_c_body:true identical to s2/s13-s16; same class kill re-confirmed, no new axis."
+  },
+  {
+   "session": 18,
+   "floor": 163,
+   "modality": "synthesis",
+   "headline": "synthesis s18: new compiler-predicate class kill - the 2 trapping addi are unemittable by GCC 2.7.2 (mips.md:381 addsi3 emits addu only; compiled C 0/1299), and the trapping-add signal is missing from"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No live pure-C or rederive-axis hypothesis remains for func_8004A4E0; the cross-function jtbl dispatch + custom callee-saved ABI class kill (s8/s10/s12/s13) is independently re-confirmed by every modality tried across 17 sessions now, including enumerate three times running (s15, s16, s17).",
-   "mechanism": "n/a \u2014 whole-body canonical-asm grant (inline_asm_canonical.txt:199, owner ruling Q40), not a reg-alloc/scheduling/spelling residual.",
-   "next_probe": "When the driver assigns escalation modality: file the s8-s17 evidence chain as a landing-path confirmation (ASM-WHOLE canonical grant) in docs/grind/decisions.md and check whether queue done's authorize-bucket path needs to run for this function."
+   "hypothesis": "Adding a trapping-add (maspsx 'handwritten instruction') signal to tools/scan_hand_coded.py makes func_8004A4E0 STRONG and satisfies the 2026-10-08 reopen bar.",
+   "mechanism": "mips.md:381 - GCC 2.7.2 never emits add/addi; corpus 0/1299 compiled C.",
+   "next_probe": "Operator/engine commit (outside grind surface) with layer-2, then re-run scan_hand_coded --single func_8004A4E0 and the hand-written re-audit."
+  },
+  {
+   "hypothesis": "Absent the scanner change, the ladder is exhausted for this function (floor 163 > 5).",
+   "mechanism": "n/a - disposition",
+   "next_probe": "In escalation modality: file the LADDER EXHAUSTED (non-endgame residual, floor 163): ROTATED record citing s8/s9/s18b class kills and rotate."
   }
  ],
  "judge_constraints": [
@@ -278,6 +289,22 @@
    "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 0dbd72780, zero FAKE constructs (no src edits made this session)",
    "predicate_cite": "docs/audits/func_8004A4E0-canonical-2026-09-29.md:31",
    "result": "canonical returned verdict ASM-WHOLE, reason 'whole-function canonical-asm grant in inline_asm_canonical.txt', identical"
+  },
+  {
+   "session": 18,
+   "statement": "A C body compiled by the build cc1 can emit func_8004A4E0's two trapping addi instructions (0x8004A5A0, 0x8004A67C).",
+   "kill_scope": "class",
+   "measured_on": "whole-body INCLUDE_ASM chassis at HEAD 9d185896b, zero FAKE constructs; probe tmp/grind/func_8004A4E0/s18b/addi_probe.c",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.md:381",
+   "result": "Every probe emits addu. Compiled C carries trapping addi 0/1299 (only hit _patch_gte, which is inline-asm-canonical); fu"
+  },
+  {
+   "session": 18,
+   "statement": "Kill re-audit: an instance kill in state.json was measured on a different chassis or under a FAKE carrier that is no longer present.",
+   "kill_scope": "instance",
+   "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 9d185896b, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "score 163, no_c_body true, no diff (whole-body INCLUDE_ASM); fake_ablate: nothing to ablate. Every instance kill shares "
   }
  ],
  "ladder_skip": 0,

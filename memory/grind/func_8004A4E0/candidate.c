@@ -7,10 +7,14 @@
  * asm at every call site) plus 2 trapping addi and 4 ctc2 with no C form. See
  * memory/grind/func_8004A4E0/hypotheses.md H1 (KILLED, class) for the full chain.
  *
- * REPRESENTATION BANNER (s18, measured at HEAD 7bdc5a300): func_8004A4E0 is
+ * REPRESENTATION BANNER (s18b, measured at HEAD 9d185896b): func_8004A4E0 is
  * committed on main as INCLUDE_ASM (whole-body, canonical grant inline_asm_canonical.txt:199);
  * this file carries NO C candidate - it is a comments-only record. Re-check the
  * representation in src/main/3AB48.c before trusting any state claim here.
+ *
+ * s18b (synthesis): the 2 trapping addi have a compiler predicate - GCC 2.7.2 addsi3_internal
+ * emits only addu (tools/gcc-2.7.2/config/mips/mips.md:381); compiled C 0/1299 carry a trapping
+ * addi (tmp/grind/func_8004A4E0/s18b/addi_census.txt). scan_hand_coded has no such signal.
  *
  * s5 (synthesis): new corpus signal — 69 insns of case bodies sit AFTER the single
  * `jr $ra`; 0/1225 pure-C functions do that (tmp/grind/func_8004A4E0/s5/midret.txt).

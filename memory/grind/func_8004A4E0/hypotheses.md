@@ -290,3 +290,52 @@ floor 163 at s17; 17 sessions; live frontier (state.json is authoritative):
 1. Judge ruling: does the non-scanner evidence chain (evidence.md s18 items a-i, each with a corpus census) satisfy the 2026-10-08 reopen's "hand-written" bar, given scanner tier LOW? (filed as the s18 ruling-request)
 2. If the ruling says no: escalation-modality proof-of-foreclosure record in docs/grind/decisions.md (floor 163 > 5 → LADDER EXHAUSTED title), rotation.
 3. Only if a ruling rejects the hand-written verdict: start a pure-C chassis attempt starting from the jtbl_8001545C arm bodies (5 short call arms) — none exists today.
+
+## [s18b] A C body compiled by the build cc1 can emit func_8004A4E0's two trapping `addi` instructions (0x8004A5A0, 0x8004A67C).
+- mechanism: GCC 2.7.2 MIPS add emission — addsi3_internal template (mips.md:381) is `addu`; the backend's only `add` templates (mips.c:1140-1145) are HALF_PIC-gated (mips.c:1111).
+- probe: read mips.md/mips.c templates; compiled 4 add spellings with tools/gcc-2.7.2/build/cc1 + Makefile CC_FLAGS (s18b/addi_probe.*); corpus census of trapping addi across 1300 non-INCLUDE_ASM vs 137 INCLUDE_ASM functions (s18b/addi_census.*).
+- result: every probe emits `addu`; compiled C 0/1299 (only hit _patch_gte, inline-asm-canonical); func_8004A4E0 has 2. Any pure-C chassis for this function leaves at least these 2 words different.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.md:381
+- measured_on: whole-body INCLUDE_ASM chassis at HEAD 9d185896b, zero FAKE constructs; probe file tmp/grind/func_8004A4E0/s18b/addi_probe.c
+
+## [s18b] Kill re-audit: an instance kill was measured on a different chassis or under a FAKE carrier no longer present.
+- probe: fresh sandbox --disable all --diff + fake_ablate at HEAD 9d185896b (s18b/sandbox.txt, s18b/fake_ablate.txt).
+- result: 163 / no_c_body; nothing to ablate. Same chassis and zero-FAKE state as every banked instance kill; none voided.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 9d185896b, zero FAKE constructs
+
+## [s18b] A trapping-add signal absent from scan_hand_coded's S1-S8 catalog is corpus-clean and would rate func_8004A4E0 STRONG (Judge ruling door 1).
+- probe: scanner header S1-S8 review; addi census (s18b/addi_census.txt).
+- result: no S-signal covers trapping add; compiled C 0/1299; func_8004A4E0 2 hits, helper func_8004A940 28.
+- verdict: CONFIRMED
+
+## [s18b] FRONTIER RESET (synthesis)
+1. Operator/engine lever (outside grind surface): add a trapping-add (maspsx "handwritten instruction") signal to tools/scan_hand_coded.py — predicate mips.md:381, census s18b/addi_census.txt — then re-run the 2026-10-08 hand-written re-audit; func_8004A4E0 would score STRONG.
+2. Absent that: escalation-modality LADDER EXHAUSTED record (floor 163 > 5) and rotation, per the Judge constraint.
+3. A pure-C chassis is foreclosed by the s18b addi class kill plus s8 (cross-function jtbl, toplev.c:2647) and s9 ($ra via scratchpad, mips.c:4632); do not spend a session on one.
+
+## [s18] A C body compiled by the build cc1 can emit func_8004A4E0's two trapping addi instructions (0x8004A5A0, 0x8004A67C).
+- mechanism: GCC 2.7.2 MIPS add emission: addsi3_internal template is addu (mips.md:381); the backend's only add templates (mips.c:1140-1145) are HALF_PIC-gated (mips.c:1111), never enabled under -mno-abicalls -G0.
+- probe: Read mips.md/mips.c templates; compiled p+1, a+0xB0, a+b and a char*-cast global bump with tools/gcc-2.7.2/build/cc1 and Makefile CC_FLAGS; corpus census of trapping addi over 1300 non-INCLUDE_ASM vs 137 INCLUDE_ASM functions.
+- result: Every probe emits addu. Compiled C carries trapping addi 0/1299 (only hit _patch_gte, which is inline-asm-canonical); func_8004A4E0 has 2, helper func_8004A940 28. Any pure-C chassis leaves these words different.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis at HEAD 9d185896b, zero FAKE constructs; probe tmp/grind/func_8004A4E0/s18b/addi_probe.c
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.md:381
+
+## [s18] Kill re-audit: an instance kill in state.json was measured on a different chassis or under a FAKE carrier that is no longer present.
+- mechanism: n/a - re-audit of measurement conditions
+- probe: Fresh sandbox --disable all --diff and tools/fake_ablate.py on candidate.c at HEAD 9d185896b.
+- result: score 163, no_c_body true, no diff (whole-body INCLUDE_ASM); fake_ablate: nothing to ablate. Every instance kill shares this chassis and zero-FAKE state; none voided.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 9d185896b, zero FAKE constructs
+
+## [s18] A trapping-add signal absent from scan_hand_coded's S1-S8 catalog is corpus-clean in compiled C and would rate func_8004A4E0 STRONG, matching door 1 of the 2026-10-15 16:50 Judge ruling.
+- mechanism: maspsx tags trapping add/addi as 'handwritten instruction'; GCC never emits them (mips.md:381).
+- probe: Reviewed scan_hand_coded.py header S1-S8 (lines 7-53); census tmp/grind/func_8004A4E0/s18b/addi_census.txt.
+- result: No S-signal covers trapping add. Compiled C 0/1299, INCLUDE_ASM 58/137, func_8004A4E0 2 hits.
+- verdict: CONFIRMED
