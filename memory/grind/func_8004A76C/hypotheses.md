@@ -179,3 +179,19 @@ C-level match of the diverging region.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: current src/main/3AB48.c INCLUDE_ASM stub for func_8004A76C (unchanged this session); no C body exists; no FAKE carrier possible (no C to carry one)
+
+## [s4] enumerate — a systematic spelling sweep (`spelling_enum.py` / `sweep_variants.py`) over an `/* ENUM-BEGIN */.../* ENUM-END */` region can search the diverging block's C spelling space for func_8004A76C.
+- mechanism: `spelling_enum.py` requires an existing C candidate body with the differing block written out in fully-named statement-per-line form between ENUM-BEGIN/ENUM-END markers; it mutates/permutes THAT region's statements and operand order.
+- probe: re-confirmed this session (not re-derived from ledger text alone): `canonical func_8004A76C` → `{"verdict": "ASM-WHOLE", ...}` (whole-function canonical-asm grant in inline_asm_canonical.txt); `sandbox func_8004A76C --disable all` → `{"score": 37, "no_c_body": true, "build_insns": 0}`, scoring the bare `INCLUDE_ASM("asm/funcs", func_8004A76C);` stub at src/main/3AB48.c:30. There is no C statement anywhere in this function to wrap in ENUM-BEGIN/END markers — the entire 37-insn target is GTE (cop2) + hand-software-pipelined asm (s1 H1, class kill) with zero C bytes. `spelling_enum.py` has no region to operate on; running it would require first inventing a synthetic C body, which is not a spelling of this function's actual code and would misrepresent what the function does (completion-bar item 3, honest code).
+- result: enumerate modality is mechanically inapplicable to this function for the same reason structural (s2) and permuter (s3) modalities were — there is no C body. This is the third independent modality to hit the identical gate (canonical ASM-WHOLE grant, no_c_body=true), reinforcing s1's class kill rather than adding a new one.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current src/main/3AB48.c INCLUDE_ASM stub for func_8004A76C (unchanged this session); no C body exists; no FAKE carrier possible (no C to carry one)
+
+## [s4] A systematic spelling sweep (spelling_enum.py / sweep_variants.py over an /* ENUM-BEGIN */.../* ENUM-END */ region) can search func_8004A76C's diverging C spelling space for an exact-match form.
+- mechanism: spelling_enum.py requires an existing C candidate body with the differing block written out in fully-named statement-per-line form between ENUM-BEGIN/ENUM-END markers; it permutes that region's statement order and operands.
+- probe: Re-measured this session: `canonical func_8004A76C` -> verdict ASM-WHOLE, reason 'whole-function canonical-asm grant in inline_asm_canonical.txt'. `sandbox func_8004A76C --disable all` -> {"score": 37, "no_c_body": true, "build_insns": 0}, scoring the bare INCLUDE_ASM("asm/funcs", func_8004A76C); stub at src/main/3AB48.c:30. There is no C statement anywhere in this function to mark with ENUM-BEGIN/END; the entire 37-insn target is GTE cop2 + hand software-pipelined asm (s1 H1 class kill, docs/audits/INLINE-ASM-AUDIT-2026-10-01.md item A6). Inventing a synthetic C body to feed the enumerator would misrepresent the function under completion-bar item 3 (honest code).
+- result: enumerate modality is mechanically inapplicable to this function for the identical reason structural (s2) and permuter (s3) modalities were inapplicable: there is no C body to operate on. Fourth independent modality (recon/structural/permuter/enumerate) to hit the same ASM-WHOLE + no_c_body=true gate.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current src/main/3AB48.c INCLUDE_ASM stub for func_8004A76C (unchanged this session); no C body exists; no FAKE carrier possible (no C to carry one)

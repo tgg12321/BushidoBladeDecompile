@@ -101,3 +101,31 @@
 - [s3] tools/decomp-permuter/import.py src/main/3AB48.c func_8004A76C run directly (WSL venv) this session: 'Failed to find GLOBAL_ASM for function func_8004A76C' — confirms by direct tool attempt (not citation) that no permuter workspace can be built while this function has zero C bytes.
 
 - [s3] This matches and reinforces s1 (recon, GTE loop / A6 audit closed) and s2 (structural modality inapplicable, no C body) — three independent modalities (recon, structural, permuter) have now each independently hit the same root fact: there is no C source for func_8004A76C to work on.
+
+## s4 (enumerate) — fourth independent modality confirms same root fact; no new finding
+
+- [s4] Re-measured this session (not cited from ledger text): `canonical func_8004A76C` →
+  verdict ASM-WHOLE, reason "whole-function canonical-asm grant in inline_asm_canonical.txt".
+  `sandbox func_8004A76C --disable all` → `{"score": 37, "no_c_body": true, "build_insns": 0}`.
+  Floor unchanged at 37.
+- [s4] The mandated SYSTEMATIC SPELLING SWEEP procedure (`spelling_enum.py` +
+  `sweep_variants.py`) requires an existing C candidate with the diverging region written out
+  between `/* ENUM-BEGIN */`/`/* ENUM-END */` markers inside a real function body. func_8004A76C
+  has zero C statements anywhere (src/main/3AB48.c:30 is the bare `INCLUDE_ASM` stub) — there is
+  no region to mark, no statement to enumerate, and inventing a synthetic C body to feed the
+  tool would misrepresent the function (completion-bar item 3: honest code — the body is
+  GTE cop2 + hand software-pipelined asm, not GCC-emittable C by any spelling, per s1 H1's
+  class kill against docs/audits/INLINE-ASM-AUDIT-2026-10-01.md item A6).
+- [s4] This is the FOURTH independent modality (recon s1, structural s2, permuter s3, enumerate
+  s4) to hit the identical gate: ASM-WHOLE canonical grant + no_c_body=true. No modality that
+  requires an existing C body can make progress here; the only remaining axis is the
+  escalation-modality disposition filing (already queued as this ledger's live frontier since
+  s1/s2).
+
+- [s4] canonical func_8004A76C re-measured this session: verdict ASM-WHOLE, 'whole-function canonical-asm grant in inline_asm_canonical.txt' (unchanged from s1/s2).
+
+- [s4] sandbox func_8004A76C --disable all re-measured this session: {"score": 37, "no_c_body": true, "build_insns": 0}; floor unchanged at 37.
+
+- [s4] spelling_enum.py's required precondition (a C candidate body with an ENUM-BEGIN/END marked region) cannot be met: src/main/3AB48.c:30 is a bare INCLUDE_ASM stub with zero C statements.
+
+- [s4] This is the fourth independent modality (recon s1, structural s2, permuter s3, enumerate s4) to hit the identical gate: ASM-WHOLE canonical grant + no_c_body=true. Each used a different tool/approach and each confirmed the same root fact rather than finding a new angle.
