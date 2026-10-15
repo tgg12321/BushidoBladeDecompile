@@ -44,6 +44,44 @@ def region_hashes(text: str, func: str) -> list[str]:
             for s, e in blocks(text, func)]
 
 
+def grant_issues(stems: set[str]) -> list[str]:
+    """Every region grant, whatever its function's queue state, still names a
+    C TU and a canonical function and matches that body's islands now. A
+    queued function never reaches source_issues, so a rename inside one of its
+    islands would otherwise leave the grant stale until `queue done`."""
+    try:
+        grants = json.loads(REGIONS.read_text(encoding='utf-8'))
+    except (OSError, ValueError) as exc:
+        return [f'{REGIONS}: unreadable ({exc})']
+    if not isinstance(grants, dict) or grants.get('schema') != REGIONS_SCHEMA \
+            or not isinstance(grants.get('functions'), dict):
+        return [f'{REGIONS}: not a schema {REGIONS_SCHEMA} grant registry']
+    canon = cheats.canonical_asm_funcs()
+    issues = []
+    for func, entry in sorted(grants['functions'].items()):
+        where = f'{REGIONS}: {func}'
+        if not isinstance(entry, dict) or set(entry) != {'file', 'sha256'} \
+                or not isinstance(entry['file'], str) \
+                or not isinstance(entry['sha256'], list) or not entry['sha256']:
+            issues.append(f'{where}: malformed grant')
+            continue
+        if func not in canon:
+            issues.append(f'{where}: granted but not listed in inline_asm_canonical.txt')
+        stem = entry['file']
+        if stem not in stems:
+            issues.append(f'{where}: grant file {stem!r} is not a C TU')
+            continue
+        text = inlineasm._read_src_cached(stem)
+        try:
+            got = region_hashes(text, func) if text is not None else None
+        except ValueError as exc:
+            got = str(exc)
+        if got != entry['sha256']:
+            issues.append(f'{where} ({stem}.c): assembly islands or operand '
+                          f'constraints changed since review (stale grant)')
+    return issues
+
+
 def source_issues(stem: str, func: str, canonical: bool | None = None) -> list[str]:
     text = inlineasm._read_src_cached(stem)
     if text is None:

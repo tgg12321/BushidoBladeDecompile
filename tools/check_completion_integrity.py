@@ -225,6 +225,11 @@ def main() -> int:
     # queue.json). Git or history read failures are violations too.
     violations.extend(departures.unreviewed_departures())
 
+    # Canonical-asm region grants (tools/canonical_asm_regions.json) match the
+    # islands they reviewed, queued functions included: the loop above skips
+    # those, and naming waves rename operands inside their islands.
+    violations.extend(completion.grant_issues(set(P.c_stems())))
+
     # Naming waves (.claude/rules/naming-bar.md): no C comment keeps a name a
     # wave retired (completion-bar item 3: comments assert nothing false).
     violations.extend(f"{path}:{line}: comment keeps retired name {name}"

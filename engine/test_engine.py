@@ -2710,8 +2710,72 @@ s32 func_MIX(s32 value) {
             issues = completion.source_issues("fake", "func_MIX", canonical=True)
             check("region grants: an operand change invalidates completion",
                   any("changed since review" in i for i in issues))
+
+            # grant_issues: the whole registry, queue state aside
+            old_canon = cheats.canonical_asm_funcs
+            try:
+                cheats.canonical_asm_funcs = lambda: {"func_MIX"}
+                inlineasm._read_src_cached = lambda stem: text
+                eq("grant audit: a matching grant is clean",
+                   completion.grant_issues({"fake"}), [])
+                inlineasm._read_src_cached = lambda stem: relaid
+                eq("grant audit: a layout-only change stays clean",
+                   completion.grant_issues({"fake"}), [])
+                renamed = text.replace("value", "var_0")
+                inlineasm._read_src_cached = lambda stem: renamed
+                issues = completion.grant_issues({"fake"})
+                check("grant audit: an operand rename makes the grant stale",
+                      len(issues) == 1 and "stale grant" in issues[0])
+                inlineasm._read_src_cached = lambda stem: "s32 other(void) { return 0; }\n"
+                check("grant audit: a vanished body makes the grant stale",
+                      any("stale grant" in i for i in completion.grant_issues({"fake"})))
+                inlineasm._read_src_cached = lambda stem: None
+                check("grant audit: an unreadable source makes the grant stale",
+                      any("stale grant" in i for i in completion.grant_issues({"fake"})))
+                eq("grant audit: a grant file that is not a C TU, and nothing more",
+                   completion.grant_issues({"other"}),
+                   [f"{grants}: func_MIX: grant file 'fake' is not a C TU"])
+                inlineasm._read_src_cached = lambda stem: text
+                cheats.canonical_asm_funcs = lambda: set()
+                check("grant audit: a grant for a non-canonical function",
+                      any("not listed in inline_asm_canonical" in i
+                          for i in completion.grant_issues({"fake"})))
+                cheats.canonical_asm_funcs = lambda: {"func_MIX"}
+                for bad in ({"file": "fake"}, {"file": "fake", "sha256": []},
+                            {"file": "fake", "sha256": "x"},
+                            dict(entry, extra=1), dict(entry, file=["fake"]),
+                            dict(entry, file=None), "fake"):
+                    grants.write_text(json.dumps({"schema": 2, "functions": {"func_MIX": bad}}))
+                    check(f"grant audit: malformed grant {bad!r}",
+                          any("malformed" in i for i in completion.grant_issues({"fake"})))
+                for reg in ('{"schema": 1, "functions": {}}', '{"schema": 2}', "[]", "{"):
+                    grants.write_text(reg)
+                    check(f"grant audit: bad registry {reg!r}",
+                          len(completion.grant_issues({"fake"})) == 1)
+                grants.unlink()
+                check("grant audit: a missing registry",
+                      any("unreadable" in i for i in completion.grant_issues({"fake"})))
+            finally:
+                cheats.canonical_asm_funcs = old_canon
         finally:
             inlineasm._read_src_cached, completion.REGIONS = old_read, old_regions
+
+    # the integrity wiring: check_completion_integrity.main() extends its
+    # violations with the grant audit before it decides the exit code
+    import ast
+    repo_root = Path(__file__).resolve().parent.parent
+    src = (repo_root / "tools/check_completion_integrity.py").read_text(encoding="utf-8")
+    main_fn = next(n for n in ast.parse(src).body
+                   if isinstance(n, ast.FunctionDef) and n.name == "main")
+    wired = verdict_at = None
+    for i, st in enumerate(main_fn.body):
+        seg = ast.get_source_segment(src, st) or ""
+        if seg.strip() == "violations.extend(completion.grant_issues(set(P.c_stems())))":
+            wired = i
+        if isinstance(st, ast.If) and (ast.get_source_segment(src, st.test) or "") == "violations":
+            verdict_at = i if verdict_at is None else verdict_at
+    check("grant audit: check_completion_integrity.main() runs it before its verdict",
+          wired is not None and verdict_at is not None and wired < verdict_at)
 
 
 def test_buildstamp() -> None:
