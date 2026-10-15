@@ -476,3 +476,65 @@ C-level match of the diverging region.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: memory/grind/func_8004A4E0/candidate.c at HEAD (written 2026-10-15 17:03) + src/main/psxsdk/libc2/puts.c, no FAKE construct
+
+## s9 (forensics)
+
+### H-s9a — KILL RE-AUDIT: the closest banked form (rejected/psyq-rtpt-pair-reorg-slot-residual.c) still measures as banked on the current stub chassis, with no FAKE construct present.
+- mechanism: mandatory re-audit (floor flat 3+ sessions); a kill measured on a stale chassis or under a FAKE carrier would be void.
+- probe: `sandbox func_8004A76C --disable all --diff --candidate memory/grind/func_8004A76C/rejected/psyq-rtpt-pair-reorg-slot-residual.c` (tmp/grind/func_8004A76C/s9/sandbox_psyq_pair.txt); `python3 tools/fake_ablate.py --func func_8004A76C --file main/3AB48 --candidate <same>` (s9/fake_ablate_psyq_pair.txt).
+- result: score 32, 5 hunks, all source-level (lwc2/swc2/rtpt asm stripped as unpinned gtemacro units; mfc2 temps v0/v1/a1 vs target t0-t2; `bnez` vs target `beqz`; jr slot holds `sh` vs target nop). fake_ablate: "no FAKE-annotated constructs found; nothing to ablate". The s7 rejection stands on the current chassis. Stub chassis itself re-measured: score 37, no C body (s9/sandbox_stub.txt).
+- verdict: CONFIRMED
+
+### H-s9b — some PsyQ inline GTE header macro (a header-exact unit, not a pin) writes the mfc2 results into $8-$10 or clobbers $2/$3 across the z live range, which would give the target's $t0-$t2 seats without a register pin.
+- mechanism: global.c first-fit (s6) takes v0/v1 first; only a hard-register clobber/output in a header-exact macro could exclude them honestly.
+- probe: grep of all 8 cached header copies (tmp/gteplan/ext_{dmpsx,nugget,psn00b,sh,xg}/inline_{c,o,n}.h, 23 mfc2 lines each) for mfc2 into $8/$9/$10 and for gte_rtpt/gte_rtpt_b/gte_ldv3c/gte_stsxy3c clobber lists.
+- result: the only $9/$10 hits are `mfc2 $12, $9` / `mfc2 $13, $10` (GTE IR1/IR2 into $t4/$t5 -- operands reversed from the needed shape); no macro reads GTE 17-19 into a GPR at all (gte_stsz3/gte_stsz3c use swc2 $17-$19). inline_o.h clobbers are "$12","$13","$14","$15","memory" only; no macro clobbers $2/$3.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 8 cached PsyQ/psn00b/nugget inline header copies under tmp/gteplan/, no C body, no FAKE construct
+
+### H-s9c — an explicit trailing `return;` after the final sz stores keeps a return label in front of return_internal and so leaves the jr $ra slot empty.
+- mechanism: reorg.c:2969 backward scan stops at a CODE_LABEL (stop_search_p, reorg.c:732-733).
+- probe: s9/q_a.c = s7 p_f + trailing `return;`, raw instrumented cc1 via s9/cc.sh.
+- result: q_a.s is identical to p_f.s at the tail (`sh $2,0($6); sh $3,2($6); j $31; sh $8,4($6)`): the jump to return_label is a jump-to-next, deleted by jump opt together with the label, so nothing stops the scan.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s9/q_a.c raw cc1 (tools/gcc-2.7.2/build/cc1 -O2 -G0, $a3 vertex-pointer chassis), no FAKE construct
+
+### H-s9d — a `return` inside the loop (exit arm `if (n == 0) { stores; return; }` inside `for (;;)`) leaves a live CODE_LABEL before return_internal, empties the jr slot, and keeps the rest of the target shape.
+- mechanism: the in-loop return emits a jump to return_label that is not a jump-to-next, so the label survives jump2 and stop_search_p (reorg.c:732-733) halts the reorg.c:2969 scan before any sh.
+- probe: s9/q_c.c, raw instrumented cc1; read q_c.i.jump2 / q_c.i.dbr (code_label 107 sits directly before return_internal insn at dbr lines 243-252).
+- result: mechanism CONFIRMED: `.L1: j $31` printed under `.set reorder` with no filled slot (the assembler supplies the nop, as in the target). Target shape LOST: the exit arm is laid out inline after `bne $4,$0,.L5` (target: `beqz` to a trailing store block), it ends `j .L1; sh $2,6($3)` (2 extra insns), sz uses a second pointer `$3 = sz-2`, and mfc2 temps are $9/$8/$2 each copied by an extra `move` to $12/$11/$10. Net further from the target than p_f. Banked rejected/return-in-loop-label-empty-jr-slot-extra-jump.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s9/q_c.c raw cc1 ($a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm), no FAKE construct
+
+## [s9] KILL RE-AUDIT: rejected/psyq-rtpt-pair-reorg-slot-residual.c still measures as banked on the current stub chassis with no FAKE construct present
+- mechanism: mandatory re-audit after 3 flat sessions
+- probe: sandbox --disable all --diff --candidate on the rejected form; tools/fake_ablate.py on the same file
+- result: score 32, 5 source-level hunks (GTE asm stripped as unpinned units, v0/v1/a1 mfc2 temps, bnez vs beqz, jr slot holds sh); fake_ablate found nothing to ablate; stub chassis 37
+- verdict: CONFIRMED
+
+## [s9] A header-exact PsyQ inline GTE macro writes GTE regs 17-19 into $8-$10 or clobbers $2/$3, giving the target's $t0-$t2 mfc2 seats without a pin
+- mechanism: global.c first-fit takes v0/v1 unless a hard-register output/clobber excludes them
+- probe: grep of 8 cached inline_c/inline_o/inline_n header copies under tmp/gteplan/ for mfc2 into $8-$10 and gte_rtpt/ldv3c/stsxy3c clobber lists
+- result: only mfc2 $12,$9 / $13,$10 (GTE IR regs into $t4/$t5); no macro moves GTE 17-19 into GPRs; inline_o clobbers are $12-$15 + memory only
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 8 cached PsyQ/psn00b/nugget inline header copies in tmp/gteplan/, no C body, no FAKE construct
+
+## [s9] An explicit trailing return after the final sz stores keeps a return label before return_internal and leaves the jr ra slot empty
+- mechanism: reorg.c:2969 backward scan stops at a CODE_LABEL (stop_search_p reorg.c:732)
+- probe: s9/q_a.c = s7 p_f + trailing return, raw instrumented cc1
+- result: tail identical to p_f (j $31 with sh in slot): the jump to return_label is jump-to-next, deleted with its label
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s9/q_a.c raw cc1, $a3 vertex-pointer chassis, no FAKE construct
+
+## [s9] An in-loop return (if (n == 0) { stores; return; } inside for(;;)) empties the jr slot while keeping the target layout
+- mechanism: live return_label before return_internal halts the reorg.c:2969 scan via stop_search_p reorg.c:732
+- probe: s9/q_c.c raw instrumented cc1; read q_c.i.jump2 and q_c.i.dbr
+- result: slot empty (mechanism confirmed, code_label 107 directly before return_internal) but the exit arm is inline after bne with an extra j .L1 + slot, a second sz pointer and three extra moves; further from target than p_f. Banked rejected/return-in-loop-label-empty-jr-slot-extra-jump.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s9/q_c.c raw cc1, $a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, no FAKE construct

@@ -1,8 +1,8 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 8,
- "current_modality": "rederive",
+ "session_count": 9,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -51,18 +51,24 @@
    "floor": 37,
    "modality": "rederive",
    "headline": "Rederive modality: fresh m2c decompile and decomp.me corpus search both independently null, confirming no C/transplant path exists; sibling has nothing to transplant either."
+  },
+  {
+   "session": 9,
+   "floor": 37,
+   "modality": "forensics",
+   "headline": "Forensics: kill re-audit holds (closest form 32, no FAKE); jr-slot predicate re-attributed to reorg.c:2969 scan with pass inputs enumerated; in-loop return empties the slot but breaks layout"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ASM-WHOLE canonical GTE grant is correct and the rederive ladder rung is now exhausted: four independent modalities (recon/s1, solver/s6, forensics/s7, rederive/s8) each independently confirm the same non-GCC-representable ABI/scheduling shape with no transplant or corpus alternative available.",
-   "mechanism": "s1 ABI class kill; global.c:1057 first-fit; reorg.c:2990 backward-scan delay fill; m2c's own parameter-inference heuristic (s8).",
-   "next_probe": "Escalation modality: file the decisions.md disposition citing s1, s6, s7 and this session's s8 rederive-null confirmation."
+   "hypothesis": "The ASM-WHOLE canonical GTE grant is the correct disposition; five modalities now confirm the non-GCC $s0 ABI, $t0-$t2 seats and delay-slot shape.",
+   "mechanism": "s1 ABI class kill; global.c:1057 first-fit; reorg.c:2969 scan + stop_search_p reorg.c:732",
+   "next_probe": "Escalation modality: file the decisions.md disposition citing s1, s6, s7, s8, s9."
   },
   {
-   "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c units lets the sandbox score GTE bodies, so a C form can be measured by the scorer.",
-   "mechanism": "Owner ruling 2026-09-25 scorer pin process (engine/gtemacro.py).",
-   "next_probe": "Operator engine commit, then re-measure rejected/psyq-rtpt-pair-reorg-slot-residual.c in the sandbox."
+   "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c units lets the sandbox score GTE bodies.",
+   "mechanism": "engine/gtemacro.py PINNED units (owner ruling 2026-09-25 scorer pin process)",
+   "next_probe": "Operator engine commit, then re-measure rejected/psyq-rtpt-pair-reorg-slot-residual.c."
   }
  ],
  "judge_constraints": [],
@@ -203,6 +209,30 @@
    "measured_on": "memory/grind/func_8004A4E0/candidate.c at HEAD (written 2026-10-15 17:03) + src/main/psxsdk/libc2/puts.c, no FAKE construct",
    "predicate_cite": "",
    "result": "func_8004A4E0's candidate.c is comments-only over its own unmodified INCLUDE_ASM stub (zero C statements). puts.c is an "
+  },
+  {
+   "session": 9,
+   "statement": "A header-exact PsyQ inline GTE macro writes GTE regs 17-19 into $8-$10 or clobbers $2/$3, giving the target's $t0-$t2 mfc2 seats without a pin",
+   "kill_scope": "instance",
+   "measured_on": "8 cached PsyQ/psn00b/nugget inline header copies in tmp/gteplan/, no C body, no FAKE construct",
+   "predicate_cite": "",
+   "result": "only mfc2 $12,$9 / $13,$10 (GTE IR regs into $t4/$t5); no macro moves GTE 17-19 into GPRs; inline_o clobbers are $12-$15"
+  },
+  {
+   "session": 9,
+   "statement": "An explicit trailing return after the final sz stores keeps a return label before return_internal and leaves the jr ra slot empty",
+   "kill_scope": "instance",
+   "measured_on": "s9/q_a.c raw cc1, $a3 vertex-pointer chassis, no FAKE construct",
+   "predicate_cite": "",
+   "result": "tail identical to p_f (j $31 with sh in slot): the jump to return_label is jump-to-next, deleted with its label"
+  },
+  {
+   "session": 9,
+   "statement": "An in-loop return (if (n == 0) { stores; return; } inside for(;;)) empties the jr slot while keeping the target layout",
+   "kill_scope": "instance",
+   "measured_on": "s9/q_c.c raw cc1, $a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, no FAKE construct",
+   "predicate_cite": "",
+   "result": "slot empty (mechanism confirmed, code_label 107 directly before return_internal) but the exit arm is inline after bne wi"
   }
  ],
  "ladder_skip": 0,

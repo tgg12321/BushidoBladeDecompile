@@ -198,3 +198,18 @@
 - [s8] Kengo corpus (the rederive modality's named transplant source) was permanently deleted 2026-10-07 (owner: 'a rabbit hole') per memory/reference/external-references.md; not reintroducible.
 
 - [s8] All four independent not-GCC signals from prior sessions stand unchanged: $s0 caller-owned ABI (s1), $t0-$t2 non-first-fit mfc2 seats (s6, global.c:1057), reorg.c-contradicting delay-slot content (s7, reorg.c:2990), and handwritten mfc2 markers in the asm itself.
+
+## s9 (forensics)
+- [s9] Re-audit: rejected/psyq-rtpt-pair-reorg-slot-residual.c = sandbox 32 on the current stub chassis (tmp/grind/func_8004A76C/s9/sandbox_psyq_pair.txt), 5 source-level hunks; fake_ablate finds no FAKE construct. Stub = 37 (s9/sandbox_stub.txt).
+- [s9] Correction to s7's attribution of the jr slot: in this cc1 the epilogue is RTL (mips_expand_epilogue, tools/gcc-2.7.2/config/mips/mips.c:5336 emits return_internal at :5369), so the jr $ra slot is filled by the ordinary fill_simple_delay_slots backward scan (reorg.c:2969), NOT the DELAY_SLOTS_FOR_EPILOGUE block (reorg.c:3257) and not the textual function_epilogue `j $31` path. s7 p_f.i.dbr confirms: `(sequence [(jump_insn 105 ... return_internal) (insn 95 sh ...)])`.
+- [s9] PASS-INPUT ENUMERATION for the jr slot (reorg.c:2969 scan + stop_search_p reorg.c:719-745): the scan stops on CODE_LABEL (labels_p=1), JUMP_INSN, BARRIER, SEQUENCE, or any asm insn; it skips NOTEs. Plain sh to a reg+offset address is always eligible (dslot attr mips.md:79-82: only branch/jump/call/load/xfer/hilo/fcmp are dslot=yes). So the empty slot needs one of: (1) a live label between the last store and return_internal, (2) an asm insn last (adds bytes or is an empty-asm barrier -- wall), (3) a volatile/conflicting last store (s7 p_d -- volatile on an ordinary RAM buffer, outside the catalog). (1) measured this session: a trailing `return;` (q_a) is a jump-to-next and is deleted with its label; an in-loop return (q_c) keeps the label and empties the slot but costs a bne-inline exit arm + `j .L1` + slot.
+- [s9] PsyQ inline headers (8 cached copies, tmp/gteplan/) contain no macro that moves GTE regs 17-19 into GPRs and none that clobbers $2/$3; the $t0-$t2 mfc2 seats have no header-exact source (complements s6's global.c first-fit class kill).
+- [s9] Artifacts: s9/q_a.{c,s,i.*}, s9/q_c.{c,s,i.*} (full -da dumps incl. .jump2/.dbr), s9/cc.sh.
+
+- [s9] The jr ra slot in this cc1 is filled by fill_simple_delay_slots' backward scan from the RTL return_internal (mips.c:5336/5369 -> reorg.c:2969), not by the DELAY_SLOTS_FOR_EPILOGUE block (reorg.c:3257); s7 p_f.i.dbr shows (sequence [return_internal, sh]).
+
+- [s9] Pass inputs that leave that slot empty: a live CODE_LABEL, jump, barrier or asm insn as the last insn before return_internal (stop_search_p reorg.c:719-745), or a volatile/conflicting final store; plain reg+offset sh is always eligible (mips.md:79-82). In-loop return realizes the label input at the cost of an extra jump and inverted exit layout; asm-last is wall; volatile sz is outside the volatile catalog (s7).
+
+- [s9] No PsyQ inline header copy moves GTE 17-19 into GPRs or clobbers $2/$3.
+
+- [s9] Closest banked form re-measured: sandbox 32 (s9/sandbox_psyq_pair.txt); stub 37 (s9/sandbox_stub.txt).

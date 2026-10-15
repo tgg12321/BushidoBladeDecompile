@@ -39,3 +39,11 @@
  * comments-only (nothing to transplant); Kengo is permanently deleted. No rederive-axis
  * frontier remains; the stub stays.
  */
+/*
+ * s9 (forensics): kill re-audit -- rejected/psyq-rtpt-pair-reorg-slot-residual.c scores 32 on the current
+ * stub chassis (5 source-level hunks, no FAKE construct to ablate). The jr $ra slot predicate is now
+ * enumerated: reorg.c:2969 backward scan from return_internal stops only at a CODE_LABEL/jump/asm
+ * (stop_search_p, reorg.c:719-745) or a volatile/conflicting store. An in-loop return
+ * (rejected/return-in-loop-label-empty-jr-slot-extra-jump.c) leaves the slot empty but adds a jump and
+ * inverts the exit layout. No PsyQ inline header writes mfc2 into $8-$10 or clobbers $2/$3. The stub stays.
+ */
