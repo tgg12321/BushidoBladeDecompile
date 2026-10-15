@@ -63,7 +63,7 @@ typedef struct {
     u32 ot[0x1008]; /* +0x70 ordering table */
 } GpuDb;            /* 0x4090 */
 
-/* One VRAM-scroll channel at D_800EF848 (0x134 bytes each). */
+/* The record at D_800EF848 (0x134 bytes). */
 typedef struct {
     s32 phase; /* +0x000 */
     /* +0x004: one bank per frame parity, two packets per level */
@@ -79,7 +79,7 @@ typedef struct {
     s32 unk8;
 } Unk800F1198Record;
 
-/* 0x800A9CF8 header block (0x18 bytes); func_8004473C reaches its fields off
+/* 0x800A9CF8 record (0x18 bytes); func_8004473C reaches its fields off
  * one base register, and func_80044C70 bumps the unk8 / unkC pointers together.
  */
 typedef struct {
@@ -620,7 +620,7 @@ typedef struct {
     s32 unk18[2];
 } Unk800469C4Hdr;
 
-/* Stage/match control block at 0x800EFAE8 (0x4C bytes): func_80054604 sets it
+/* Record at 0x800EFAE8 (0x4C bytes): func_80054604 sets it
  * up, the per-frame handler func_8005490C runs it (walking the per-object
  * arrays in its object loop), and func_80054FDC relocates the 0x2C..0x40 words.
  */
@@ -724,10 +724,10 @@ typedef struct {
     u16 f66[11][3];
 } Tbl800A3860Entry;
 
-/* A loaded motion pack's five section pointers. D_801027B0[i] for the pack
+/* Five section pointers into a loaded file. D_801027B0[i] for the file
  * loaded into D_800A3860[i] (func_80020E74:
  * unk_00 = record + 0x6C + (unk_03 - 1) * 6, unk_04..unk_10 = record +
- * unk_04[0..3]); D_80102760 for the common pack (func_80020DDC: unk_00 = file +
+ * unk_04[0..3]); D_80102760 for the common file (func_80020DDC: unk_00 = file +
  * 0x14, the others file + its header words 1 / 2 / 4; unk_0C unset). unk_00:
  * halfword streams func_80021424 indexes (the f4E / f54 / f66 / f16 / f18
  * entries); unk_04: 4-byte entries whose second halfword offsets unk_08
@@ -2172,8 +2172,8 @@ typedef struct Size2s16 {
     s16 y;
 } Size2s16;
 
-/* func_8006D808's sheet set: three frame sheets (unk_00), the name sheet and
- * the per-character name cells (unk_0C / unk_10, three cells per character
+/* The record func_8006D808 reads: three frame sheets (unk_00), the name sheet
+ * and the per-character name cells (unk_0C / unk_10, three cells per character
  * after a first group), the digit sheet and its cells (unk_14 / unk_18; the
  * walker shifts the sheet's ubase per digit), and per-character x offsets
  * (unk_1C). 3AB48 hands it D_8009B0C0, func_8006DD94 MOD.BIN's unk_3C. */

@@ -658,9 +658,9 @@ INCLUDE_ASM("asm/funcs", func_800545F4);
 extern const char D_80015840[];
 
 s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
-    /* FAKE: second handle to the ctrl block (pointer alias): keeps &D_800EFAE8
-     * in one base register ($s1) for the whole body; direct field access
-     * rematerializes it: score 63 */
+    /* FAKE: second handle to the D_800EFAE8 record (pointer alias): keeps
+     * &D_800EFAE8 in one base register ($s1) for the whole body; direct field
+     * access rematerializes it: score 63 */
     Unk800EFAE8Ctrl *s = &D_800EFAE8;
     /* FAKE: id (a0 + 0x131) computed at entry; at its uses the addiu moves
      * below the prologue stores (score 6). */
@@ -746,7 +746,7 @@ void func_800548DC(void) {
 
 extern s32 D_800A3250[2];
 
-/* Per-frame playback of the ctrl block D_800EFAE8 that func_80054604 fills.
+/* Per-frame playback of the record D_800EFAE8 that func_80054604 fills.
  * On the first frame (unk0 == 0) it resolves the loaded data's offset table
  * (unk2C) into the camera stream (unk30), the per-object motion streams
  * (unk34[], dropped when they start with the "NULL" tag D_800A3250) and the
@@ -757,7 +757,7 @@ extern s32 D_800A3250[2];
  * sums in func_80054FDC and func_80054604 swap their addu operands.
  */
 s32 func_8005490C(void) {
-    /* FAKE: second handle to the ctrl block (pointer alias), as in
+    /* FAKE: second handle to the D_800EFAE8 record (pointer alias), as in
      * func_80054604: keeps &D_800EFAE8 in $s3 for the whole body; direct field
      * access: score 157 */
     Unk800EFAE8Ctrl *s = &D_800EFAE8;
