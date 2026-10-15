@@ -209,3 +209,11 @@ it would only become live if a future session carved a C island out of the body 
 - [s14] canonical func_8004A4E0 re-confirmed ASM-WHOLE this session (verdict unchanged, asm_insns=7, total=163).
 
 - [s14] state.json shows 13 prior sessions across 6 distinct modalities (recon, structural x2 now, permuter, enumerate, synthesis, solver, forensics x3, rederive x2) all converging on the same s8 cross-function-jtbl-dispatch + custom callee-saved ABI class kill; no new rule scoping change found that would re-open any prior ban (judge-sole-gate is the only rule this ledger cites, and it does not bear on this function's grant).
+
+- [s15] Fresh sandbox --disable all --diff this session (HEAD b9601d742) reproduces s2/s13/s14's exact score fields: {"score":163,"no_c_body":true,"build_insns":0,"cheat_asm_stripped":71}.
+
+- [s15] Fresh canonical this session reproduces the same ASM-WHOLE verdict and reason string, citing inline_asm_canonical.txt's whole-function canonical-asm grant.
+
+- [s15] 7 of the ladder's modalities (recon/structural/permuter/enumerate/synthesis/solver/forensics/rederive — now including this enumerate pass a second time) all independently land on the same class kill: no C body exists to apply the modality's technique to.
+
+- [s15] The underlying class kill (func_8004A4E0's own jump table dispatches into the middle of func_8004A940's body, bypassing its prologue; no switch/goto/fnptr lowering under GCC 2.7.2's per-function compilation model can do this) is unchanged since s8 and re-cited at docs/audits/func_8004A4E0-canonical-2026-09-29.md:31.

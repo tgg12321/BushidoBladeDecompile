@@ -438,3 +438,37 @@ statement re-association) have an applicable surface on func_8004A4E0 this sessi
 - kill_scope: class
 - measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 8a35d2704, zero FAKE constructs (candidate.c is comments-only; no src edits made this session)
 - predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## s15 (enumerate)
+H15: The SYSTEMATIC SPELLING SWEEP procedure (identify a differing block in a candidate C
+file, mark it /* ENUM-BEGIN */.../* ENUM-END */, run tools/spelling_enum.py +
+tools/sweep_variants.py over it) has an applicable surface on func_8004A4E0 this session, now
+that a further session (s14 structural) has run since the chassis was last checked.
+- Mechanism: n/a — spelling enumeration operates on an existing candidate C file's region of
+  named sub-expressions; the chassis has no C body at all to carve a region out of
+  (src/main/3AB48.c is still the whole-body `INCLUDE_ASM("asm/funcs", func_8004A4E0);` stub;
+  memory/grind/func_8004A4E0/candidate.c is comments-only, no statements).
+- Probe: `sandbox func_8004A4E0 --disable all --diff` (fresh this session, HEAD b9601d742) +
+  `canonical func_8004A4E0` (fresh this session).
+- Result: sandbox returned `{"score":163,"no_c_body":true,"build_insns":0}` and printed "no
+  diff: function is still whole-body INCLUDE_ASM — there is no C to compare"; canonical
+  re-confirmed verdict ASM-WHOLE, reason "whole-function canonical-asm grant in
+  inline_asm_canonical.txt". Identical score fields to s2, s13, s14. There is no "ONE block
+  (or at most two) where the differing instructions live" to mark ENUM-BEGIN/END around,
+  because there are zero C statements in the function body — the sweep's own precondition
+  (an existing candidate with a differing region) is unmet, same as it was for the s13/s14
+  structural-lever precondition (existing C statements/declarations).
+- Verdict: KILLED.
+  kill_scope: class
+  measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD b9601d742,
+    zero FAKE constructs (candidate.c is comments-only; no src edits made this session).
+  predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## [s15] The SYSTEMATIC SPELLING SWEEP procedure (mark a differing block ENUM-BEGIN/END in a candidate C file, run tools/spelling_enum.py + tools/sweep_variants.py over it) has an applicable surface on func_8004A4E0 this session.
+- mechanism: n/a — spelling enumeration operates on an existing candidate C file's region of named sub-expressions; the chassis has no C statements at all to carve a region out of.
+- probe: sandbox func_8004A4E0 --disable all --diff (fresh, HEAD b9601d742) + canonical func_8004A4E0 (fresh, HEAD b9601d742)
+- result: sandbox returned {"score":163,"no_c_body":true,"build_insns":0} and printed 'no diff: function is still whole-body INCLUDE_ASM — there is no C to compare'; canonical re-confirmed verdict ASM-WHOLE, reason 'whole-function canonical-asm grant in inline_asm_canonical.txt'. Identical to s2/s13/s14's measured output char-for-char. There is no block of differing instructions to mark ENUM-BEGIN/END around because src/main/3AB48.c has zero C statements (whole-body INCLUDE_ASM stub) and memory/grind/func_8004A4E0/candidate.c is comments-only.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD b9601d742, zero FAKE constructs (candidate.c comments-only; no src edits made this session)
+- predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31

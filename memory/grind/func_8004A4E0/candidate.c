@@ -78,4 +78,17 @@ INCLUDE_ASM("asm/funcs", func_8004A4E0);
  * table) -- none can be the mechanism that relocates a case arm into a DIFFERENT function's
  * body, which is what s8/s12's jtbl_8001541C finding requires. Structural modality has no
  * applicable surface here until the s8 class kill is overturned. tmp/grind/func_8004A4E0/s13/.
+ *
+ * s14 (structural, mandated kill re-audit repeat): identical re-measurement at HEAD
+ * 8a35d2704 -- same {"score": 163, "no_c_body": true} and same "no diff" message. Confirms
+ * s13 char-for-char two sessions later.
+ *
+ * s15 (enumerate): the systematic spelling sweep (mark a differing region ENUM-BEGIN/END,
+ * tools/spelling_enum.py + tools/sweep_variants.py) presupposes an existing candidate C file
+ * with a block of named sub-expressions to carve a region out of. This file has zero C
+ * statements -- it is comments-only over the unmodified whole-body INCLUDE_ASM stub. Fresh
+ * sandbox --diff and canonical re-measured at HEAD b9601d742: identical {"score": 163,
+ * "no_c_body": true}, identical ASM-WHOLE reason string. No region exists to enumerate
+ * spellings of; the sweep's precondition is unmet for the same structural reason s13/s14
+ * found (no existing C statements/declarations), now confirmed for the enumerate axis too.
  */
