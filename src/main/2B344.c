@@ -1626,7 +1626,7 @@ void func_8003DDF8(u32 arg0) {
  * pass writes the far colour itself) and uploads the result one rect height
  * below the previous one, wrapping to the next column at y 0x200.
  *
- * FAKE constructs (each labelled at its site): the `gm` green mask and the
+ * FAKE constructs (each labelled at its site): the `gm` mask and the
  * two combine-foldable chain-extender detours (zero emitted bytes;
  * dead-store-fake-exception). */
 void func_8003DE14(RECT *rect, s32 count) {

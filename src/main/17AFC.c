@@ -1715,12 +1715,13 @@ void func_8002AB08(s32 mode) {
         u32 mask_c;
         s32 npass;
         s32 pass;
-        /* alt: the pass's blade (0: the unk00 / unk_210 points, 1: the
-         * unk48 / unk_234 points; the knockback reads the last pass's), then
-         * whether the nearest hit came from that blade. The 4/5 arm's `alt =
-         * 0;` re-stores the held 0 (Q85; Ruling 11, reused-local-necessity) */
+        /* alt: the iteration's blade (0: the unk00 / unk_210 points, 1: the
+         * unk48 / unk_234 points; the knockback reads the last iteration's),
+         * then whether the nearest hit came from that blade. The 4/5 arm's `alt
+         * = 0;` re-stores the held 0 (Q85; Ruling 11, reused-local-necessity)
+         */
         s32 alt;
-        /* temp1 / temp2: the indices of the pass's two points (per-branch
+        /* temp1 / temp2: the indices of the iteration's two points (per-branch
          * constants, Q20), then the opponent's squared distance to the blade's
          * first / second point. The unk_8C arm re-stores the held values (Q85,
          * Ruling 11) */
@@ -1810,9 +1811,9 @@ void func_8002AB08(s32 mode) {
             mask_a |= hit;
         }
         for (pass = 0; pass < npass; pass++) {
-            /* deep_on: func_8002CA8C's third argument (enables the deep-hit
-             * test), per-branch constants 1 / 1 / 0 (Q20); the unk_8C arm's
-             * store is shared with pass 0 (Q85, Ruling 11) */
+            /* deep_on: func_8002CA8C's third argument, per-branch constants
+             * 1 / 1 / 0 (Q20); the unk_8C arm's store is shared with the first
+             * iteration (Q85, Ruling 11) */
             s32 deep_on;
 
             if (pass == 0) {
@@ -2958,10 +2959,10 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
  * outside the +-threshold band in x or in z; otherwise solves the quadratic for
  * where p1 -> p2 meets the circle of squared radius r_sq about the origin
  * (terms >> 9; square root by g_sqrt_table_u8, GTE LZCS island for
- * discriminants >= 0x400) and returns whether both Q8 intersection parameters
+ * values >= 0x400) and returns whether both Q8 intersection parameters
  * are in range. Load-bearing: `ud = disc; lzcr = 0;` in that order, `disc`
- * holding the discriminant, the square root and the <<9 result, `num1` before
- * `denom`, and `result` kept apart from the comparison flag. The `ud`
+ * holding the value under the root, the square root and the <<9 result, `num1`
+ * before `denom`, and `result` kept apart from the comparison flag. The `ud`
  * re-store is a FAKE, explained at its site. */
 s32 func_8002D518(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
     s32 x1, z1, x2, z2;
@@ -3119,10 +3120,10 @@ s32 func_8002D780(
         s32 cz = (z0 + z2) / 3;
         s32 px = obj->unk100[0].x;
         s32 pz = obj->unk100[0].y;
-        /* FAKE: cross_center / cross_point hold one value per side test: the
-         * cross product of a triangle edge with the centroid's / query point's
-         * offset, for the edges (0,0)-(x0,z0), (0,0)-(x2,z2), (x0,z0)-(x2,z2);
-         * a pair per test: score 36 (Ruling 11) */
+        /* FAKE: cross_center / cross_point hold one value per side test,
+         * against cx / cz and px / pz, for the edges (0,0)-(x0,z0),
+         * (0,0)-(x2,z2), (x0,z0)-(x2,z2); a pair per test: score 36 (Ruling 11)
+         */
         s32 cross_center = z0 * cx - x0 * cz;
         s32 cross_point = z0 * px - x0 * pz;
 

@@ -2169,7 +2169,7 @@ void func_80057E84(
         var_15--;
     }
     for (iter = 0; iter < var_15; iter++) {
-        /* vtx holds four values, each the address of one vertex's x/z pair: the
+        /* vtx holds four values, each the address of an x/z pair: the
          * edge's start (i) and end (next) in the edge scan, then the corners
          * at var_12 and var_13 (Ruling 11,
          * reused-local-necessity). */
@@ -2366,8 +2366,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
      * reused-local-necessity). */
     s32 work3;
     /* work4 holds three values in turn, each read before the next write: the
-     * D_8009A850 scan index; the waypoint walk index (a copy of wi taken in the
-     * walk branch, Q34, counted down); the script-list entry index (Ruling 11,
+     * D_8009A850 scan index; a copy of wi taken in the walk branch
+     * (Q34), counted down; the script-list entry index (Ruling 11,
      * reused-local-necessity). */
     s32 work4;
     s32 var_16;

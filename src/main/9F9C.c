@@ -2608,7 +2608,7 @@ s32 func_8001F888(void) {
  * Otherwise arg0+0x1C is scaled (Q12) by the table at arg0+0x27E indexed by
  * min(arg0+0x26E + arg0+0x272, 3); the range-checked kinds first also scale
  * by arg0+0x274 (when arg0+0x26C is 0) and by the table at arg0+0x276 indexed
- * by the damage count at arg0+0x270 clamped to 3.
+ * by arg0+0x270 clamped to 3.
  *
  * `short dmg` is a plain signed short local: GCC's lowering of it gives the
  * second `lhu`, the `sll 16 ; sra 15` and the 8-byte stack frame. `var_0`
