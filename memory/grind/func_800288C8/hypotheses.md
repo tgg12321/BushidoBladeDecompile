@@ -66,3 +66,19 @@ the meantime since the body is already byte-exact and policy-conformant to the w
 F6 (should not be needed): if neither F4 nor F5 — i.e. the ruling instead narrows the GTE
 island requirements to some third spelling — re-derive only the island per the new text; the
 surrounding ordinary C (dist/tbl/shift, all other locals) is unaffected either way.
+
+## [s1] The identical body currently in src/ (== candidate.c == rejected/judge-fail-1015-1452.c) can pass by resubmission without any change.
+- mechanism: n/a - review-loop body-hash-keyed closure, not codegen
+- probe: state.json review_ledger lookup for this body's hash
+- result: review_ledger shows this exact body (hash 19de43ee8845301d) already received a Judge FAIL at final-call scope, 2026-10-15 19:52 (docs/grind/decisions.md:1304-1310, including the follow-up ruling at 14:57 answering 'option (a)'). Per review-discipline-before-commit.md's body-hash-keyed loop rule, a Judge FAIL at final call is terminal on resubmission with no re-review.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: exact body in src/main/17AFC.c this session (candidate.c == rejected/judge-fail-1015-1452.c), no FAKE change from the Judge-FAILed body; review_ledger entry in state.json
+
+## [s1] The Judge's demanded macro-call form (gte_Lzc(tbl,&lzc_out); via #include of a verbatim inline_o.h/gtemac.h under include/) is buildable this session without touching rules/engine/.
+- mechanism: n/a - infra-availability question, not a codegen lever
+- probe: find include -iname "*inline*" -o -iname "*gtemac*"; read engine/gtemacro.py PINNED table's role
+- result: No such header exists anywhere under include/. engine/gtemacro.py's PINNED table is a Python string match-target used by the detector to recognize written-OUT __asm__ statement runs (match_unit/unit_spans), not a C preprocessor macro definition; there is no #define gte_Lzc(...) reachable from src/**/*.c today. Building the header + teaching gtemacro.py to recognize a macro-call island shape is an engine:/infra change, outside a grind session's writable surface per CLAUDE.md.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: this session's toolchain/tree state (2026-10-15); a future session after an engine: infra commit lands could retest

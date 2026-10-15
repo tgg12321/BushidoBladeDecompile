@@ -107,3 +107,15 @@ disposition: `ruling-request`, not `candidate-ready` (resubmitting the identical
 would be rejected with no review per the body-hash-keyed review-loop rule) and not further
 probing (there is no third C spelling to try — the two forms the policy texts disagree about
 are the written-out form already on `src/` and the macro-call form that doesn't exist yet).
+
+- [s1] sandbox func_800288C8 --disable all (this session) -> score 0, target_insns 465, build_insns 465, cheat_asm_stripped 0 -- confirms the already-banked s1 finding still holds.
+
+- [s1] canonical func_800288C8 -> ASM-PARTIAL with an existing inline_asm_canonical.txt row (line ~406) citing the 2026-09-26 verbatim-macro-island ruling; the mixed C/asm grant is already written.
+
+- [s1] inline-asm-policy.md:51 (2026-09-23 route condition 3, re-incorporated by the 2026-09-26 class grant condition D) states written-out-only, no #include/macro-by-name -- the literal opposite of what the 2026-10-08 reopen_reason / Judge final-call constraint demands for this function.
+
+- [s1] docs/grind/decisions.md:1304-1310 records the Judge FAIL and a follow-up ruling entry (14:57) that already answered the policy question in favor of the later-dated 2026-10-08 direction (option a) -- i.e. the owner-facing question this ledger previously flagged as open has already been answered; there is no new ruling_question to ask this session.
+
+- [s1] The three FAKE-annotated locals (dist, tbl, shift) are not the blocker: each cites a specific ordinary-c-judge-decidable family (Ruling 11 real-computation for dist, Ruling 11 (C)(3) Q28 GTE-input-copy for tbl, Ruling 4 compound-assignment-split for shift) and were not the ground of the Judge's FAIL per decisions.md:1310.
+
+- [s1] The rule-conflict and infra gap are already fully documented in this ledger (evidence.md s1/s1 cont., hypotheses.md H2/H3); this session re-verified both are still accurate as of 2026-10-15 rather than re-deriving them.

@@ -1,10 +1,33 @@
 {
  "func": "func_800288C8",
  "file": "main/17AFC",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "Byte-exact (sandbox 0/465, SHA1==oracle) but blocked by a rule-text conflict the Judge already adjudicated: inline-asm-policy.md cond.3 (written-out gte_Lzc only) vs the 2026-10-08 reopen directive (m"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "F5: inline-asm-policy.md's written-out-only text is the one that should stand (the 2026-10-08 reopen_reason/Judge constraint was itself the error) once an owner ruling says so explicitly in rule text (not just a decisions.md narrative answer).",
+   "mechanism": "No src/ change needed -- the body is already byte-exact and conformant to the WRITTEN rule text as it stands; only the rule text or an explicit owner edit would need to change.",
+   "next_probe": "Re-check inline-asm-policy.md condition 3 for an edit; if changed to permit written-out form for this function's class, resubmit the exact current body unchanged, fresh layer-2."
+  },
+  {
+   "hypothesis": "F4: operator lands the macro-call infra (verbatim PsyQ header under include/, gtemacro.py call-site support) as a separate engine:/rules: commit sequence.",
+   "mechanism": "#include + gte_Lzc(tbl, &lzc_out) call-site macro expansion, detector taught to recognize the call form instead of (or in addition to) written-out statement runs.",
+   "next_probe": "After such a commit lands: rewrite the island as a macro call, sandbox 0, confirm gtemacro.py recognizes it, fresh layer-2."
+  },
+  {
+   "hypothesis": "Driver eventually assigns escalation modality after enough flat-floor sessions across distinct modalities; at that point file the OWNER-ESCALATION entry (floor 0 -> 'RESOLVED BY STANDING RULING: ROTATED' per the 2026-07-27 standing ruling) since the ladder on the C side is exhausted and the sole blocker is operator/engine infra.",
+   "mechanism": "n/a - disposition bookkeeping, not a codegen lever; explicitly not mine to invoke in recon modality.",
+   "next_probe": "Check queue.json modality assignment in a later session before filing; do not self-assign escalation."
+  }
+ ],
  "judge_constraints": [
   "Land gte_Lzc as a macro call from a verbatim PsyQ header (gtemac.h/inline_o.h in include/), not as written-out __asm__ statements; re-derive the surrounding C; fresh layer-2.",
   "Do not resubmit the written-out gte_Lzc body. The island must be a gte_Lzc macro call from a verbatim PsyQ header under include/. Until the owner/operator lands that header, gtemacro.py call-form support and the inline-asm-policy.md condition-3 edit, rotate this item rather than respelling the island. A BB2-local macro or header is not admissible."
@@ -12,7 +35,24 @@
  "banned_constructs": [
   "gte_Lzc written out as inline __asm__ volatile statements (move $12,%0 / mtc2 $12,$30 / nop / nop / move $12,%0 / swc2 $31,($12)) in the C body"
  ],
- "kills": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "The identical body currently in src/ (== candidate.c == rejected/judge-fail-1015-1452.c) can pass by resubmission without any change.",
+   "kill_scope": "instance",
+   "measured_on": "exact body in src/main/17AFC.c this session (candidate.c == rejected/judge-fail-1015-1452.c), no FAKE change from the Judge-FAILed body; review_ledger entry in state.json",
+   "predicate_cite": "",
+   "result": "review_ledger shows this exact body (hash 19de43ee8845301d) already received a Judge FAIL at final-call scope, 2026-10-1"
+  },
+  {
+   "session": 1,
+   "statement": "The Judge's demanded macro-call form (gte_Lzc(tbl,&lzc_out); via #include of a verbatim inline_o.h/gtemac.h under include/) is buildable this session without touching rules/engine/.",
+   "kill_scope": "instance",
+   "measured_on": "this session's toolchain/tree state (2026-10-15); a future session after an engine: infra commit lands could retest",
+   "predicate_cite": "",
+   "result": "No such header exists anywhere under include/. engine/gtemacro.py's PINNED table is a Python string match-target used by"
+  }
+ ],
  "ladder_skip": 11,
  "pending_fixup": null,
  "origin": "regression",
