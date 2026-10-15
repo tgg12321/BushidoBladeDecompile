@@ -1,8 +1,8 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 6,
- "current_modality": "solver",
+ "session_count": 7,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -39,18 +39,24 @@
    "floor": 37,
    "modality": "solver",
    "headline": "Solver: sandbox residual is PRE-RA (GTE stripped); raw cc1 with GTE retained matches except $s0 base, $t0-$t2 mfc2 seats (class-killed via global.c first-fit), hazard nops, jr delay slot, n-- placemen"
+  },
+  {
+   "session": 7,
+   "floor": 37,
+   "modality": "forensics",
+   "headline": "Forensics: residuals attributed to reorg.c dbr (beqz and jr delay slots, class kill reorg.c:2990); nop pad closed via PsyQ gte_rtpt/gte_rtpt_b; closest form now 4 residuals, 3 class-killed"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ASM-WHOLE grant is correct on (a) the caller-owned unsaved $s0 ABI, (c) the global-register pin, and (d) the $t0-$t2 seats not being a first-fit outcome",
-   "mechanism": "The hand-asm caller func_8004A4E0 owns $s0, and global.c:1057 ascending first-fit is the predicate",
-   "next_probe": "Escalation modality: file the decisions.md disposition citing s5 and s6"
+   "hypothesis": "The ASM-WHOLE canonical GTE grant is correct: four independent not-GCC signals ($s0 caller-owned ABI, $t0-$t2 non-first-fit seats, reorg-contradicting delay slots, handwritten mfc2 markers).",
+   "mechanism": "s1 ABI class kill; global.c:1057 first-fit; reorg.c:2990 backward-scan delay fill.",
+   "next_probe": "Escalation modality: file the decisions.md disposition citing s1, s6 and s7."
   },
   {
-   "hypothesis": "Pinning the gte_rtpt/gte_ldv3c/gte_stsxy3c units lets the sandbox score GTE bodies, so the solver can run past PRE-RA",
-   "mechanism": "Owner ruling 2026-09-25 scorer pin process",
-   "next_probe": "Operator engine commit, then re-run classify on probe_pipe.c"
+   "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c units lets the sandbox score GTE bodies, so a C form can be measured by the scorer.",
+   "mechanism": "Owner ruling 2026-09-25 scorer pin process (engine/gtemacro.py).",
+   "next_probe": "Operator engine commit, then re-measure rejected/psyq-rtpt-pair-reorg-slot-residual.c in the sandbox."
   }
  ],
  "judge_constraints": [],
@@ -143,6 +149,30 @@
    "measured_on": "raw cc1 compiles of probe_pipe.c and probe_tail.c (no scorer stripping), no FAKE construct",
    "predicate_cite": "tools/gcc-2.7.2/global.c:1057",
    "result": "t0-t2 with $2/$3/$7 free is not a first-fit outcome. The only byte-invisible occupant would be an asm clobber list on th"
+  },
+  {
+   "session": 7,
+   "statement": "KILL RE-AUDIT: rejected/pipelined-goto-wrong-abi-stripped-gte.c scores differently on the current stub chassis than its s5/s6 kill recorded.",
+   "kill_scope": "instance",
+   "measured_on": "current src/main/3AB48.c INCLUDE_ASM stub chassis + rejected/pipelined-goto-wrong-abi-stripped-gte.c, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Score 30, 5 source-level / 0 operand-only / 0 not-scored hunks, identical to s5/s6. Kill stands."
+  },
+  {
+   "session": 7,
+   "statement": "GCC 2.7.2 dbr emits the target's 'mfc2 x3; addiu a1,a1,12; beqz a0; [addiu a0,a0,-1]' sequence (an eligible conflict-free ALU insn directly before a conditional branch while the slot holds a decrement",
+   "kill_scope": "class",
+   "measured_on": "raw tools/gcc-2.7.2/build/cc1 -O2 compiles of s7 p_base/p_b/p_c/p_e/p_f (no scorer stripping), no FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/reorg.c:2990",
+   "result": "Every measured ordering yields one of the two GCC shapes (slot = preceding addu a1, or addu a1 elsewhere with slot = a0 "
+  },
+  {
+   "session": 7,
+   "statement": "A plain (non-volatile) store tail leaves the jr ra delay slot as nop, as in the target's 'sh; sh; sh; jr ra; nop'.",
+   "kill_scope": "instance",
+   "measured_on": "raw cc1 compiles of s7 p_base/p_b/p_c/p_e/p_f (plain stores) and p_d (volatile sz diagnostic), no FAKE construct",
+   "predicate_cite": "",
+   "result": "Every plain-store form ends 'sh; sh; j $31; [sh]'. Only volatile-qualified sz left the slot empty -- volatile coercion o"
   }
  ],
  "ladder_skip": 0,

@@ -164,3 +164,21 @@
 - [s6] raw cc1 with GTE kept: residual is $s0 base, $t0-$t2 seats, first-rtpt hazard nops, unfilled jr delay slot, beqz delay-slot decrement
 
 - [s6] mips GCC 2.7.2 has no REG_ALLOC_ORDER; global.c:1057 first-fit cannot give $t0-$t2 while $v0/$v1/$a3 are free
+
+## s7 (forensics): raw instrumented-cc1 pass attribution
+- [s7] Re-audit: rejected/pipelined-goto-wrong-abi-stripped-gte.c still sandboxes 30 (5 source-level hunks) on the stub chassis (tmp/grind/func_8004A76C/s7/sandbox_reaudit_pipelined.txt); no FAKE to ablate.
+- [s7] Closest raw-cc1 form is now rejected/psyq-rtpt-pair-reorg-slot-residual.c (tmp/grind/func_8004A76C/s7/p_f.s, 38 insns vs target 39): CFG, all GTE ops, entry nop pad, j-into-middle, sh offsets and the beqz slot content all match. Remaining: (1) base $a3 vs unsaved $s0 [s1 class kill]; (2) mfc2 temps $2/$3/$8 vs $t0-$t2 [s6 class kill global.c:1057]; (3) `addu a1,12` before the mfc2s instead of after; (4) the jr slot holds the last sh instead of nop.
+- [s7] Pass attribution: (3) with the beqz slot, and (4), are reorg.c fill_simple_delay_slots decisions (backward scan reorg.c:2978-3022; stop_search_p reorg.c:719-744; mips.md:125 define_delay). Source order relative to the GTE macros is fixed by sched.c:1979 (volatile asm = full barrier), so the C input only chooses which insn precedes the branch, and whatever eligible ALU insn precedes it is moved into the slot. The target's `addiu a1; beqz a0; addiu a0,-1` and `sh; jr ra; nop` both contradict that scan: a fourth independent not-GCC signal (with the $s0 ABI, the $t0-$t2 seats and the `/* handwritten instruction */` mfc2 markers).
+- [s7] Nop pad: PsyQ 4.0 INLINE_C.H:489 gte_rtpt (nop,nop) + :814 gte_rtpt_b (no nop) reproduce it; this residual is source-level and closed.
+- [s7] PASS-INPUT ENUMERATION (dbr inputs): sxy-increment position {after the mfc2s (p_base), before them (p_b/p_f), in the loop arm (p_c)}; counter test {`n != 0` then `n--` (p_base), `n-- != 0` (p_e: extra move copy)}; store qualifier {plain, volatile sz (p_d: leaves the jr slot empty; forbidden volatile coercion)}. label_census on p_b: CFG and predecessor multiset identical to the target ([1,1,2]); only $s0 refs (16 vs 0) and insn count differ (tmp/grind/func_8004A76C/s7/label_census_p_b.txt). nrefs_census/loop_movables do not apply to the stub TU (no C body for func_8004A76C in src; nrefs_census died in cpp on the Windows side, tmp/grind/func_8004A76C/s7/nrefs_census_stub.txt).
+- [s7] BB2_DBR_DEBUG produced no DBRDBG lines from tools/gcc-2.7.2/build/cc1 (empty *.dbrdbg files); future dbr forensics should use tools/gcc-2.7.2/cc1 if it carries the instrumentation.
+
+- [s7] Closest raw-cc1 form (rejected/psyq-rtpt-pair-reorg-slot-residual.c, tmp/grind/func_8004A76C/s7/p_f.s, 38 vs 39 insns) matches the target's CFG, every GTE op, entry nop pad, j-into-middle, sh offsets and beqz slot content; four residuals remain: $a3 vs unsaved $s0 base (s1 class kill), mfc2 temps $2/$3/$8 vs $t0-$t2 (s6 class kill global.c:1057), addu a1 before vs after the mfc2s with the slot constraint (s7 class kill reorg.c:2990), jr slot filled vs nop (reachable only with forbidden volatile).
+
+- [s7] sched.c:1979: volatile asm (all gte.h macros) is a full scheduling barrier, so the C source order of non-asm insns relative to GTE ops is preserved to dbr.
+
+- [s7] label_census on p_b: CFG and predecessor multiset identical to the target ([1,1,2]); only $s0 refs (16 vs 0) and insn count differ.
+
+- [s7] BB2_DBR_DEBUG gives no DBRDBG output from tools/gcc-2.7.2/build/cc1; .dbr dumps were used instead.
+
+- [s7] nrefs_census / loop_movables do not apply: no C body for func_8004A76C exists in the stub TU.

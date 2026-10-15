@@ -345,3 +345,83 @@ C-level match of the diverging region.
 - kill_scope: class
 - measured_on: raw cc1 compiles of probe_pipe.c and probe_tail.c (no scorer stripping), no FAKE construct
 - predicate_cite: tools/gcc-2.7.2/global.c:1057
+
+## s7 (forensics)
+
+## [s7] KILL RE-AUDIT: rejected/pipelined-goto-wrong-abi-stripped-gte.c on the current stub chassis.
+- mechanism: instance kills are chassis-relative; re-measure the closest banked form before new probes.
+- probe: sandbox func_8004A76C --disable all --diff --candidate memory/grind/func_8004A76C/rejected/pipelined-goto-wrong-abi-stripped-gte.c -> tmp/grind/func_8004A76C/s7/sandbox_reaudit_pipelined.txt. The form has no FAKE construct, so tools/fake_ablate.py has nothing to ablate.
+- result: score 30, 5 source-level / 0 operand-only / 0 not-scored hunks, identical to s5/s6. The kill stands (the sandbox still strips every lwc2/swc2/rtpt unit, so the score measures only the GPR skeleton).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current src/main/3AB48.c INCLUDE_ASM stub chassis + rejected/pipelined-goto-wrong-abi-stripped-gte.c, no FAKE construct
+
+## [s7] The nop-nop pad before the first rtpt only (the loop rtpt has none) is reachable from verbatim PsyQ macros.
+- mechanism: PsyQ 4.0 INLINE_C.H defines gte_rtpt() with two leading nops (tmp/gteplan/psyq400/x/INCLUDE/INLINE_C.H:489) and gte_rtpt_b() as the bare command word under "Type 2 functions without nop" (same file :814; post-DMPSX 0x4A280030 form at tmp/gteplan/ext_dmpsx/inline_c.h:825). gte_rtpt() at the entry plus gte_rtpt_b() in the loop is the natural PsyQ spelling of "the first transform needs the lwc2->cop2 hazard pad, the pipelined one does not".
+- probe: tmp/grind/func_8004A76C/s7/p_f.c (raw cc1 -da, Makefile flags) -> p_f.s / p_f.body.txt.
+- result: entry `lwc2 x6; nop; nop; rtpt; j .L2; addu v,24` and the loop `rtpt` without nops match the target skeleton exactly. s6 residual (3) is closed as a source-spelling question, not a compiler one.
+- verdict: CONFIRMED
+
+## [s7] Moving `sxy += 3` above the three mfc2 reads lets reorg put the n decrement in the beqz delay slot (the target's slot content).
+- mechanism: sched.c:1979 makes every volatile asm (the gte.h mfc2/lwc2/swc2 macros) a full dependence barrier, so the source order of `sxy += 3` relative to the mfc2s survives into dbr. With an asm immediately before the branch, stop_search_p (reorg.c:744) ends the backward scan and the thread fill steals `n--` (a0 is dead at the exit label).
+- probe: p_b.c (sxy += 3 before the mfc2s) vs p_base.c (s6 order), raw cc1 -da; .dbr dumps and *.body.txt in tmp/grind/func_8004A76C/s7/.
+- result: p_b gives `swc2 x3; addu a1,12; mfc2 x3; beq a0,.L4; addu a0,-1`: the slot matches the target, but addu a1 now sits BEFORE the mfc2s (target: after). p_base gives `mfc2 x3; beq; addu a1,12` with `addu a0,-1` on the fall-through. p_c (sxy += 3 moved into the loop arm) gives slot `addu a0,-1` with addu a1 after the branch. p_e (`if (n-- != 0)`) adds a `move $2,$4` copy before the branch. None gives the target's `mfc2 x3; addiu a1,12; beqz a0; addiu a0,-1`.
+- verdict: CONFIRMED
+
+## [s7] GCC 2.7.2 dbr emits the target's `mfc2 x3; addiu a1,a1,12; beqz a0,exit; addiu a0,a0,-1` (an eligible ALU insn directly before a conditional branch while the slot holds a decrement of the branch's own operand).
+- mechanism: reorg.c fill_simple_delay_slots runs first for every branch and scans BACKWARD from it (loop at reorg.c:2978); stop_search_p (reorg.c:719-744) halts only on a label, jump, SEQUENCE or asm. The immediately preceding `addiu a1,a1,12` neither references nor sets anything the branch sets or needs (it touches only a1; the beqz reads a0), so it passes the conflict test at reorg.c:2990, and mips.md:125 define_delay accepts it (dslot=no, length=1): it is moved into the slot. The a0 decrement cannot come from before the branch (it sets a resource the branch needs); it can only enter the slot by thread stealing, which runs only when the backward scan filled nothing. Both cannot hold in one dbr output, and no pass after dbr reorders insns. Source ordering only chooses WHICH insn precedes the branch; the predicate is about that insn.
+- probe: p_base/p_b/p_c/p_e/p_f raw cc1 + reading reorg.c:2861-3030, reorg.c:719-749 and mips.md:125-133. BB2_DBR_DEBUG produced no DBRDBG lines from tools/gcc-2.7.2/build/cc1 (that binary lacks the instrumentation), so dispositions were read from the .dbr dumps.
+- result: every measured ordering gives one of the two GCC shapes (slot = preceding addu a1, or addu a1 elsewhere + slot = a0 decrement); the target's combination never appears. Independent corroboration of hand-scheduled `.set noreorder` asm, joining s1 ($s0 ABI) and s6 ($t0-$t2 first-fit).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: raw tools/gcc-2.7.2/build/cc1 -O2 compiles of s7 p_base/p_b/p_c/p_e/p_f (no scorer stripping), no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/reorg.c:2990
+
+## [s7] A plain (non-volatile) store tail leaves the `jr ra` delay slot as nop, as in the target (sh; sh; sh; jr ra; nop).
+- mechanism: the mips (return) jump_insn (p_f.i.dbr insn 105, parallel[(return) ...]) goes through the same backward scan; the final `sh z3,4(sz)` is eligible and conflict-free, so it moves into the slot.
+- probe: p_base, p_b, p_c, p_e, p_f (plain stores) and p_d.c = p_base with `volatile s16 *sz` (diagnostic only).
+- result: every plain-store form ends `sh; sh; j $31; sh`. With a volatile-qualified sz the store stays out (`sh; sh; sh; j $31` + nop) and the loop is otherwise unchanged, so the only measured way to leave the slot empty is volatile on an ordinary RAM output buffer, which is volatile coercion outside the volatile catalog (completion-bar wall).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: raw cc1 compiles of s7 p_base/p_b/p_c/p_e/p_f (plain stores) and p_d (volatile sz diagnostic), no FAKE construct
+
+## Frontier (s7)
+1. Residual set of the closest form (rejected/psyq-rtpt-pair-reorg-slot-residual.c) is now four items, three of them class-killed (s1 $s0 ABI, s6 global.c:1057 seats, s7 reorg.c:2990 slot) and the fourth (jr slot) reachable only through forbidden volatile. next: escalation-modality disposition entry citing s1/s6/s7, keeping the ASM-WHOLE canonical GTE grant.
+2. Scorer gap (operator engine): pin gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c units so the sandbox can score GTE bodies.
+
+## [s7] KILL RE-AUDIT: rejected/pipelined-goto-wrong-abi-stripped-gte.c scores differently on the current stub chassis than its s5/s6 kill recorded.
+- mechanism: Instance kills are chassis-relative and must be re-measured before new probes.
+- probe: sandbox func_8004A76C --disable all --diff --candidate on that form (tmp/grind/func_8004A76C/s7/sandbox_reaudit_pipelined.txt); no FAKE in the form, so fake_ablate has nothing to ablate.
+- result: Score 30, 5 source-level / 0 operand-only / 0 not-scored hunks, identical to s5/s6. Kill stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current src/main/3AB48.c INCLUDE_ASM stub chassis + rejected/pipelined-goto-wrong-abi-stripped-gte.c, no FAKE construct
+
+## [s7] The nop-nop pad before the first rtpt only (loop rtpt has none) is reachable from verbatim PsyQ macros: gte_rtpt() at entry, gte_rtpt_b() in the loop.
+- mechanism: PsyQ 4.0 INLINE_C.H:489 gte_rtpt emits nop,nop,cop2; INLINE_C.H:814 gte_rtpt_b ('Type 2 functions without nop') emits the bare command word.
+- probe: tmp/grind/func_8004A76C/s7/p_f.c compiled with raw tools/gcc-2.7.2/build/cc1 -da (Makefile flags) -> p_f.s / p_f.body.txt.
+- result: Entry 'lwc2 x6; nop; nop; rtpt; j .L2; addu v,24' and the nop-less loop rtpt match the target skeleton exactly; s6 residual (3) is closed as a source spelling.
+- verdict: CONFIRMED
+
+## [s7] Placing sxy += 3 above the three mfc2 reads makes reorg fill the beqz delay slot with the n decrement (the target's slot content).
+- mechanism: sched.c:1979 makes each volatile asm a full dependence barrier, so source order survives to dbr; an asm right before the branch stops the backward scan (reorg.c:744) and the thread fill steals n-- (a0 dead at the exit label).
+- probe: p_b.c vs p_base.c (plus p_c: increment in loop arm; p_e: if (n-- != 0)), raw cc1 -da, dumps in tmp/grind/func_8004A76C/s7/.
+- result: p_b: 'swc2 x3; addu a1,12; mfc2 x3; beq a0; [addu a0,-1]' -- slot matches but addu a1 moved before the mfc2s. p_base: slot = addu a1. p_c: slot = a0 decrement, addu a1 after the branch. p_e: extra move $2,$4 copy.
+- verdict: CONFIRMED
+
+## [s7] GCC 2.7.2 dbr emits the target's 'mfc2 x3; addiu a1,a1,12; beqz a0; [addiu a0,a0,-1]' sequence (an eligible conflict-free ALU insn directly before a conditional branch while the slot holds a decrement of the branch operand).
+- mechanism: reorg.c fill_simple_delay_slots runs first and scans backward from each branch; stop_search_p (reorg.c:719-744) stops only at a label, jump, SEQUENCE or asm. The preceding addiu a1 neither references nor sets the branch's resources (reorg.c:2990 test) and mips.md:125 define_delay accepts it, so it is moved into the slot. The a0 decrement can only reach the slot by thread stealing, which runs only when the backward scan filled nothing. No pass after dbr reorders insns.
+- probe: raw cc1 -da compiles p_base/p_b/p_c/p_e/p_f and the .dbr dumps, read against reorg.c:2861-3030 and mips.md:125-133.
+- result: Every measured ordering yields one of the two GCC shapes (slot = preceding addu a1, or addu a1 elsewhere with slot = a0 decrement); the target's combination never appears. A fourth independent hand-scheduled-asm signal alongside the $s0 ABI (s1) and the $t0-$t2 seats (s6).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: raw tools/gcc-2.7.2/build/cc1 -O2 compiles of s7 p_base/p_b/p_c/p_e/p_f (no scorer stripping), no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/reorg.c:2990
+
+## [s7] A plain (non-volatile) store tail leaves the jr ra delay slot as nop, as in the target's 'sh; sh; sh; jr ra; nop'.
+- mechanism: The mips (return) jump_insn (p_f.i.dbr insn 105) goes through the same backward scan; the final sh is eligible and conflict-free.
+- probe: p_base/p_b/p_c/p_e/p_f (plain stores) and diagnostic p_d.c (volatile s16 *sz).
+- result: Every plain-store form ends 'sh; sh; j $31; [sh]'. Only volatile-qualified sz left the slot empty -- volatile coercion of an ordinary RAM buffer, outside the volatile catalog.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: raw cc1 compiles of s7 p_base/p_b/p_c/p_e/p_f (plain stores) and p_d (volatile sz diagnostic), no FAKE construct

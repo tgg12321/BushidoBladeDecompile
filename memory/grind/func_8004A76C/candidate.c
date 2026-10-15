@@ -21,3 +21,12 @@
  * ldv3c/stsxy3c) as unpinned engine/gtemacro.py units, so neither score is a
  * shippable floor. The stub above stays the candidate.
  */
+/*
+ * s7 (forensics): raw instrumented cc1 -da probes (tmp/grind/func_8004A76C/s7/)
+ * narrowed the residual of the closest form
+ * (rejected/psyq-rtpt-pair-reorg-slot-residual.c) to four classes: $s0 base,
+ * $t0-$t2 mfc2 seats, and two reorg.c delay-slot facts (beqz slot holds the
+ * a0 decrement while the eligible `addiu a1` sits right before the branch;
+ * `jr ra` slot left as nop after an eligible sh). The nop pad before the first
+ * rtpt alone is reachable (PsyQ gte_rtpt + gte_rtpt_b). The stub stays.
+ */
