@@ -1,0 +1,43 @@
+{
+ "func": "func_8004A76C",
+ "file": "main/3AB48",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 37,
+   "modality": "recon",
+   "headline": "GTE perspective-transform loop, hand software-pipelined; scan_hand_coded STRONG 1/8 (S7); A6 audit already closed the one open C-form question (global register var) \u2014 ready for escalation disposition,"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The ASM-WHOLE canonical grant is correct and the 2026-10-08 reopen question is already answered for this function specifically (unlike func_8004A4E0's unresolved LOW-tier case).",
+   "mechanism": "scan_hand_coded STRONG 1/8 (S7) measured directly on func_8004A76C, plus the closed A6 audit naming this exact function and ruling out the one live alternative-C-form theory.",
+   "next_probe": "In escalation modality (only), file the docs/grind/decisions.md disposition entry citing A6 + the STRONG scan tier as gate evidence, with re-activation triggers (engine signal change, or sibling func_8004A808/func_8004A940/func_8004A4E0 movement), then return owner-gated."
+  },
+  {
+   "hypothesis": "func_8004A808 and func_8004A940 (same TU, same reopened ABI cluster) will scan STRONG the same way, strengthening a cluster-wide record before any one of the three is escalated.",
+   "mechanism": "Shared custom callee-saved-register ABI across the func_8004A4E0/func_8004A76C/func_8004A808/func_8004A940 cluster per the func_8004A4E0 canonical audit.",
+   "next_probe": "scan_hand_coded.py --single func_8004A808 and --single func_8004A940 (cheap, no build needed)."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "A GCC file-scope global-register-variable (register T x asm(\"$16\")) could reproduce the unsaved-$s0 S7 shape from ordinary C, making this function decompilable rather than whole-body hand asm.",
+   "kill_scope": "class",
+   "measured_on": "asm/funcs/func_8004A76C.s (39 insns); no C body exists so no FAKE carrier is present",
+   "predicate_cite": "docs/audits/INLINE-ASM-AUDIT-2026-10-01.md:93",
+   "result": "A6 already closed this with three independent reasons: (1) the sole caller func_8004A4E0 is itself whole-body hand asm h"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "regression",
+ "created": "2026-10-15T22:14:07.798589+00:00",
+ "object_model_audited": 1
+}
