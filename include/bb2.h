@@ -480,7 +480,7 @@ extern RotMatrixFunc D_800F66A0[6];
 extern CdFileEntry g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
 
 extern CdState D_80101E58;
-extern Unk801027B0Rec D_80102760; /* the common motion pack */
+extern Unk801027B0Rec D_80102760; /* the common file's section pointers */
 extern Unk80102778Rec D_80102778;
 extern PadState g_pad_state;
 extern Unk801027B0Rec D_801027B0[]; /* per load slot */
