@@ -13,6 +13,9 @@
  * s5 (synthesis): new corpus signal â€” 69 insns of case bodies sit AFTER the single
  * `jr $ra`; 0/1225 pure-C functions do that (tmp/grind/func_8004A4E0/s5/midret.txt).
  *
- * sandbox --disable all (s1..s5): {"score": 163, "no_c_body": true, "build_insns": 0}.
+ * s6 (solver): no solver residual (INCLUDE_ASM guard); cc1 sketches confirm the epilogue is
+ * always emitted last (final.c:1066) — tmp/grind/func_8004A4E0/s6/sketch.s.
+ *
+ * sandbox --disable all (s1..s6): {"score": 163, "no_c_body": true, "build_insns": 0}.
  */
 INCLUDE_ASM("asm/funcs", func_8004A4E0);

@@ -85,3 +85,13 @@ it would only become live if a future session carved a C island out of the body 
 - [s5] fact: $s5 is written once (0x8004A524, =0) and read 5x as 3-$s5 (0x8004A618/648/698/6F4/734); a compiled body would fold to li 3.
 
 - [s5] fact: sandbox --disable all this session = 163, no_c_body true; fake_ablate finds no FAKE constructs in candidate.c.
+
+## s6 (solver)
+- inverse_compose classify refuses an INCLUDE_ASM target by design (s6/classify.txt); no solver residual exists without a C body.
+- Dump-level confirmation of the epilogue-placement signal: our cc1 at project flags puts the single epilogue last, after all switch case blocks, in two switch-in-loop sketches (tmp/grind/func_8004A4E0/s6/sketch.s:153, :251); mechanism final.c:1066 FUNCTION_EPILOGUE is text-emitted after the insn stream (config/mips/mips.c:5073). This supplies the predicate citation the s5 frontier asked for.
+
+- [s6] inverse_compose classify refuses INCLUDE_ASM targets by design; no solver axis exists for this function without a C body
+
+- [s6] cc1 dump-level: epilogue always last after all switch case blocks (tmp/grind/func_8004A4E0/s6/sketch.s); predicate final.c:1066
+
+- [s6] sandbox --disable all this session: score 163, no_c_body true

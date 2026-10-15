@@ -128,3 +128,31 @@ instance form.
 - probe: Corpus scan tmp/grind/func_8004A4E0/s5/midret.py over all asm/funcs/*.s, split by pure-C-in-src vs still-asm; plus direct re-read of $s4/$s5 operands in asm/funcs/func_8004A4E0.s.
 - result: Compiled-C side: 0/1225 functions have code after a single jr $ra. Asm side: 2/160 — func_8004A4E0 (69 insns) and _patch_gte (PsyQ hand-written, 9). $s4 is never read locally except its own addi (pure callee input before each jal func_8004A940); $s5 written once to 0 then read 5x as 3-$s5. A bare hazard-free nop sits at 0x8004A718. Independent corroboration of the 2026-09-29 audit's hand-written verdict.
 - verdict: CONFIRMED
+
+## [s6] SOLVER: the ra_solver/sched_solver triage has a residual to classify for func_8004A4E0.
+- mechanism: inverse_compose.py classify compares a target text/object stream against our compiled object; with the function committed as INCLUDE_ASM there is no compiled body on our side, so no PRE-RA/RA/SCHED residual exists to type.
+- probe: `python3 tools/ra_solver/inverse_compose.py classify main/3AB48 func_8004A4E0` (tmp/grind/func_8004A4E0/s6/classify.txt) — refused with its INCLUDE_ASM guard ("would report a FICTITIOUS PRE-RA verdict"); the suggested `goal_from_tgt.py classify` fallback could not run from the Windows interpreter (s6/goal_classify.txt, FileNotFoundError spawning the toolchain) and in any case has no ours-side body to compare.
+- result: No solver axis exists on this chassis. Same no-C-body fact as s1-s5 (sandbox 163, no_c_body true).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/main/3AB48.c INCLUDE_ASM stub, no C chassis, zero FAKE constructs.
+
+## [s6] DUMP-LEVEL PREDICATE for the s5 layout signal: GCC 2.7.2 (our cc1, project CC_FLAGS) emits the epilogue exactly once, as the last code of the function, after every switch case block — so case bodies after `jr $ra` are not compiler layout.
+- mechanism: final.c:1066 — final_end_function calls FUNCTION_EPILOGUE (config/mips/mips.c:5073 function_epilogue) after the whole insn stream is output; the epilogue never exists as RTL, so no pass (jump2/dbr/block reorder) can move a case block past it.
+- probe: tmp/grind/func_8004A4E0/s6/sketch.c — two switch-in-loop sketches of func_8004A4E0's control shape (5-case jump table inside a loop; variant 1 break+loop-tail, variant 2 `continue` arms + `default: return`) — compiled with tools/gcc-2.7.2/build/cc1 at the Makefile CC_FLAGS plus -da (run.sh; dumps sketch.i.*; output sketch.s).
+- result: Both functions: jump-table dispatch (`j $2`), all case bodies jump back (`j .L14`/`j .L16`), and the single `j $31` is the final instruction before `.end` (sketch.s lines 153/251), restores immediately preceding it. Even the `default: return` arm in variant 2 is routed to the trailing epilogue rather than an in-body return. Compiler layout matches the 1225/1225 compiled-C corpus finding of s5 and contradicts func_8004A4E0's 69 case-body insns after `jr $ra` at 0x8004A60C.
+- verdict: CONFIRMED
+
+## [s6] inverse_compose.py classify can type a PRE-RA/RA/SCHED residual for func_8004A4E0 on the current INCLUDE_ASM chassis
+- mechanism: classify needs a compiled ours-side body; INCLUDE_ASM has none, and the tool's guard refuses rather than emit a fictitious PRE-RA verdict
+- probe: python3 tools/ra_solver/inverse_compose.py classify main/3AB48 func_8004A4E0; goal_from_tgt.py classify fallback
+- result: classify refused with its INCLUDE_ASM guard (s6/classify.txt); goal_from_tgt fallback failed to spawn the toolchain from Windows Python (s6/goal_classify.txt) and has no ours-side body regardless. sandbox 163, no_c_body true (s6/sandbox.txt).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/main/3AB48.c INCLUDE_ASM stub, no C chassis, zero FAKE constructs
+
+## [s6] Our GCC 2.7.2 cc1 at project CC_FLAGS emits the epilogue once as the final code of a switch-in-loop function, after every case block, so func_8004A4E0's 69 case-body insns after jr $ra are not compiler layout
+- mechanism: final.c:1066 final_end_function emits FUNCTION_EPILOGUE (config/mips/mips.c:5073) as text after the whole insn stream; the epilogue is never RTL, so no pass can place a case block after it
+- probe: compiled tmp/grind/func_8004A4E0/s6/sketch.c (two 5-case jump-table switch-in-loop sketches: break+loop-tail, and continue arms with default: return) with tools/gcc-2.7.2/build/cc1 -O2 -G0 ... -da
+- result: Both: j $reg dispatch, every case jumps back to the loop head, single j $31 is the last insn before .end (sketch.s:153, :251); the default: return arm is routed to the trailing epilogue. Matches s5's 0/1225 corpus count; contradicts the target layout.
+- verdict: CONFIRMED

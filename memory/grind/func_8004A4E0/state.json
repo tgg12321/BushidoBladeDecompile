@@ -1,8 +1,8 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 5,
- "current_modality": "synthesis",
+ "session_count": 6,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -33,18 +33,19 @@
    "floor": 163,
    "modality": "synthesis",
    "headline": "synthesis: kill re-audit clean (no chassis drift, no FAKE carrier); new corpus signal \u2014 69 case-body insns after the single jr $ra, a layout 0/1225 compiled-C functions show \u2014 backs the hand-written v"
+  },
+  {
+   "session": 6,
+   "floor": 163,
+   "modality": "solver",
+   "headline": "solver: no solver residual on the INCLUDE_ASM chassis (classify guard); cc1 -da sketches give the s5 code-after-epilogue signal its dump-level predicate (final.c:1066)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 2026-10-08 re-audit question for this function is decided by hand-written evidence, not a C spelling: the code-after-epilogue signal (0/1225 compiled-C) plus the caller-side custom-ABI table make it hand-written, and it belongs on the Judge-gated canonical-grant path.",
-   "mechanism": "scan_hand_coded.py tests callee-side signals only (S7) and has no layout signal; a scanner signal for code after a single jr $ra (operator/tools change, outside the grind surface) would lift this function, and only it plus _patch_gte in the corpus, without false positives on the 1225 compiled-C functions.",
-   "next_probe": "escalation modality: file the proof-of-foreclosure / canonical-grant record in docs/grind/decisions.md citing the s5 midret.txt measurement and docs/audits/func_8004A4E0-canonical-2026-09-29.md:31; recommend to the operator an S9 'code after single epilogue' scanner signal."
-  },
-  {
-   "hypothesis": "Any pure-C reading would have to reproduce case bodies laid out after the epilogue, a $s4 written-never-read handoff to func_8004A940, and a non-folding 3-$s5.",
-   "mechanism": "GCC 2.7.2 epilogue placement + dead-store deletion + constant folding; none has a sanctioned C lever.",
-   "next_probe": "rederive/forensics modality, if the ladder demands it: compile a minimal switch-in-loop C sketch with tools/gcc-2.7.2/cc1 and confirm in its -da output where the epilogue lands, so the layout signal carries a dump-level predicate citation."
+   "hypothesis": "func_8004A4E0 is hand-written and belongs on the Judge-gated canonical-grant path; evidence is the 2026-09-29 custom-ABI audit plus the code-after-epilogue layout (s5 corpus 0/1225, s6 dump predicate final.c:1066)",
+   "mechanism": "scan_hand_coded.py tests callee-side signals only and has no layout signal, so the STRONG-tier gate cannot see it",
+   "next_probe": "escalation modality: file the proof-of-foreclosure/canonical-grant record in docs/grind/decisions.md citing s5/midret.txt, s6/sketch.s and docs/audits/func_8004A4E0-canonical-2026-09-29.md:31; recommend an operator-side S9 'code after single epilogue' scanner signal"
   }
  ],
  "judge_constraints": [],
@@ -81,6 +82,14 @@
    "measured_on": "whole-body INCLUDE_ASM chassis, zero FAKE constructs (no C body exists at all); identical to s1-s3's measured_on",
    "predicate_cite": "docs/audits/func_8004A4E0-canonical-2026-09-29.md:31",
    "result": "Re-confirmed the standing s1 class kill for a fourth consecutive modality (recon, structural, permuter, enumerate all la"
+  },
+  {
+   "session": 6,
+   "statement": "inverse_compose.py classify can type a PRE-RA/RA/SCHED residual for func_8004A4E0 on the current INCLUDE_ASM chassis",
+   "kill_scope": "instance",
+   "measured_on": "src/main/3AB48.c INCLUDE_ASM stub, no C chassis, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "classify refused with its INCLUDE_ASM guard (s6/classify.txt); goal_from_tgt fallback failed to spawn the toolchain from"
   }
  ],
  "ladder_skip": 0,
