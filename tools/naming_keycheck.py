@@ -102,8 +102,25 @@ The destination must be fresh in f and C file-scope/enum text, and absent from m
 (excluding a macro's own parameters). Real prototype and other functions' parameter lists/bodies
 are excluded from freshness; K&R exclusions include the parameter declarations between ) and the
 body, using the tree's typedef names. A K&R function as the local-pair target stays unsupported.
-Undeclared asm/linker names are allowed. Uses before the binding or inside its own declarator,
-nested/prototype/cast bindings, externs, shadowing and type-name pairs fail. Statement-start
+Undeclared asm/linker names are allowed. A binding in an inner block needs every use inside that
+block, after the declaration. A later declarator of a list binds only as `*`s, the name and array
+bounds (`T a, *l`, `T a, l[2]`), after a first declarator naming a plain identifier after
+non-aggregate type words (it may carry `*`s, qualifiers, bounds and an initializer); in a list
+initializer the name is a use. Statements come from a forward scan of the body that classifies each
+`{` as a block, a brace expression (an initializer, a compound literal after a cast) or a GNU
+statement expression; an unclassifiable brace, a use inside a statement expression or a statement
+that would start at `,` `.` `->` `[` `]` `=` `)` `?` `:` `}` fails. A body statement holding the
+name that is not led by a known type word must prove it is no declaration: it opens with a
+statement keyword, `(` or a unary operator, or with a name used as a value (not followed by a name,
+a keyword or, unless f declares that name after a type word anywhere, `*`); otherwise it fails. A
+name before `(` or `*` must also appear in no typedef declaration and not start with `__` (an
+unlisted keyword; `__builtin_` functions aside), so `T (l)` or `T *l` fails even if the type
+census misses T. The same parser reruns on cpp output, where macro types are expanded and every
+typedef is visible; the cc1 differential renames every spelling alike, so it cannot tell one
+binding from two. Uses before the binding, inside its own declarator or after its inner block,
+a repeat later in the parameter list (`int (*cb)(l)`), a `(` in a declaration with no top-level
+`=` before the name, a spelling inside a type name (a cast, sizeof or prototype list) outside an
+array bound, other comma declarators, prototype/cast bindings, externs, shadowing and type-name pairs fail. Statement-start
 labels, case/default labels, GNU designators, member tokens and aggregate tags stay unchanged.
 Ambiguous labels and GNU label addresses fail. All literals, including asm strings, stay exact
 under scoped substitution. Local acceptance requires a cc1 differential compile for every affected
@@ -216,9 +233,14 @@ import naming_wave as nw  # noqa: E402
 
 IDENT = re.compile(r"[A-Za-z_]\w*")
 C_KEYWORDS = set("auto break case char const continue default do double else enum extern float for goto if int long register return short signed sizeof static struct switch typedef union unsigned void volatile while".split())
-GNU_SPECIFIERS = set("__volatile __volatile__ __const __const__ __signed __signed__ __inline __inline__ inline __attribute __attribute__ __extension__ __restrict __restrict__ restrict __typeof __typeof__ typeof".split())
-C_KEYWORDS |= GNU_SPECIFIERS | {"_Bool", "_Complex", "_Imaginary", "__asm", "__asm__", "asm", "__label__"}
-DECL_WORDS = set("void char short int long float double signed unsigned _Bool _Complex _Imaginary const volatile static extern register auto struct union enum".split()) | GNU_SPECIFIERS
+GNU_SPECIFIERS = set("__volatile __volatile__ __const __const__ __signed __signed__ __inline __inline__ inline __attribute __attribute__ __extension__ __typeof __typeof__ typeof __complex __complex__".split())
+# cc1 2.7.2 predates C99: _Bool, _Complex, _Imaginary and the restrict spellings
+# are ordinary identifiers to it (a typedef may take those names).
+C_KEYWORDS |= GNU_SPECIFIERS | {"__asm", "__asm__", "asm", "__label__"}
+# The rest of cc1 2.7.2's reserved words (c-parse.gperf).
+C_KEYWORDS |= set("__alignof __alignof__ __imag __imag__ __real __real__ __iterator __iterator__".split())
+DECL_WORDS = set("void char short int long float double signed unsigned const volatile static extern register auto struct union enum".split()) | GNU_SPECIFIERS
+STATEMENT_KEYWORDS = set("return if while for switch do else case default goto sizeof asm __asm __asm__".split())
 AUTO = re.compile(r"^(?:func|D)_[0-9A-Fa-f]{8}$")
 SELF = "tools/naming_keycheck.py"
 METADATA = ("docs/naming/function-names.csv",)
@@ -2299,6 +2321,80 @@ def aggregate_members(text):
     return names, ambiguous
 
 
+def statement_starts(ts, body, end, types):
+    """Forward scan of a function body `ts[body..end]` (body is its `{`): the
+    statement start of each token, and the tokens inside GNU statement
+    expressions. Each `{` is a block, a brace expression (an initializer list,
+    a compound literal after a cast) or a statement expression `({`; a brace
+    that fits none fails, so no declaration can hide inside a misread brace."""
+    starts, in_stmt_expr, stack, start = {}, set(), [], body + 1
+
+    def cast_before(close):
+        depth, opening = 0, close
+        while opening > body:
+            depth += (ts[opening] == ")") - (ts[opening] == "(")
+            if depth == 0:
+                break
+            opening -= 1
+        # A cast's `(` never follows a name or a closer: `g(void) {` and
+        # `(g)(void) {` are function declarators, not compound literals.
+        callee = ts[opening - 1]
+        return opening, (opening + 1 < close and ts[opening + 1] in types
+                         and not (IDENT.fullmatch(callee) and callee not in C_KEYWORDS)
+                         and callee not in (")", "]"))
+
+    for k in range(body, end + 1):
+        t = ts[k]
+        starts[k] = start
+        if any(kind == "stmtexpr" for kind, _ in stack):
+            in_stmt_expr.add(k)
+        if t == "{":
+            prev = ts[k - 1]
+            inner = stack[-1][0] if stack else None
+            if k == body:
+                kind = "block"
+            elif prev == "(":
+                kind = "stmtexpr"
+            elif inner in ("block", "stmtexpr") and prev in (";", "{", "}", "else", "do", ":"):
+                kind = "block"
+            elif inner in ("block", "stmtexpr") and prev == ")":
+                opening, cast = cast_before(k - 1)
+                if ts[opening - 1] in ("if", "while", "for", "switch"):
+                    kind = "block"
+                elif (IDENT.fullmatch(ts[opening - 1]) and ts[opening - 1] not in C_KEYWORDS
+                      and (ts[opening - 2] in types or ts[opening - 2] == "*")):
+                    kind = "block"   # a GNU nested function's body
+                elif cast:
+                    kind = "brace"
+                else:
+                    raise ValueError(f"cannot classify the brace after `{ts[opening - 1]} (...)`")
+            elif inner in ("block", "stmtexpr") and prev == "=":
+                kind = "brace"
+            elif inner not in ("block", "stmtexpr") and prev in ("{", ",", "=", ":"):
+                kind = "brace"
+            elif inner not in ("block", "stmtexpr") and prev == ")" and cast_before(k - 1)[1]:
+                kind = "brace"
+            else:
+                raise ValueError(f"cannot classify the brace after `{prev}`")
+            stack.append((kind, start))
+            if kind in ("block", "stmtexpr"):
+                start = k + 1
+        elif t in ("(", "["):
+            stack.append((t, start))
+        elif t in (")", "]", "}"):
+            opener = {")": "(", "]": "["}.get(t)
+            if not stack or (stack[-1][0] != opener if opener else stack[-1][0] in ("(", "[")):
+                raise ValueError("unbalanced function body")
+            kind, saved = stack.pop()
+            if kind == "block":
+                start = k + 1
+            elif kind == "stmtexpr":
+                start = saved
+        elif t == ";" and (not stack or stack[-1][0] in ("block", "stmtexpr")):
+            start = k + 1
+    return starts, in_stmt_expr
+
+
 def local_exception(ts, k):
     """Tokens in namespaces other than the local's ordinary identifier binding."""
     prev = ts[k - 1] if k else None
@@ -2419,13 +2515,21 @@ def declaration_types(cfiles):
                     elif ts[j] in types:
                         j += 1
                     else:
-                        if j == i + 1:  # underlying typedef from an external header
+                        if j == i + 1 and IDENT.fullmatch(ts[j]):  # underlying typedef from an external header
                             j += 1
                         break
+                # Specifiers may precede `typedef` (`int typedef T;`): a name right
+                # after it is then the declared type, else the underlying one --
+                # a type name either way.
+                if i + 1 < len(ts) and IDENT.fullmatch(ts[i + 1]) and ts[i + 1] not in C_KEYWORDS:
+                    types.add(ts[i + 1])
                 depth = 0
                 candidate = None
                 while j < len(ts):
                     tok = ts[j]
+                    if tok in ("__attribute", "__attribute__") and ts[j + 1:j + 2] == ["("]:
+                        j = balanced(ts, j + 1, "(", ")") + 1
+                        continue
                     if depth == 0 and tok == ";":
                         if candidate:
                             types.add(candidate)
@@ -2439,6 +2543,28 @@ def declaration_types(cfiles):
                     depth += (tok in ("(", "[")) - (tok in (")", "]"))
                     j += 1
     return types
+
+
+def typedef_words(cfiles):
+    """Every identifier of every typedef declaration, aggregate bodies aside: a
+    superset of the typedef names that no declarator spelling (an attribute
+    inside the declarator, say) can slip past."""
+    words = set()
+    for text in cfiles.values():
+        ts = [m[0] for m in code_spans(text)]
+        for i, tok in enumerate(ts):
+            if tok != "typedef":
+                continue
+            depth, j = 0, i + 1
+            while j < len(ts) and not (depth <= 0 and ts[j] == ";"):
+                if ts[j] == "{":
+                    j = balanced(ts, j, "{", "}") + 1
+                    continue
+                depth += (ts[j] in ("(", "[")) - (ts[j] in (")", "]"))
+                if IDENT.fullmatch(ts[j]) and ts[j] not in C_KEYWORDS:
+                    words.add(ts[j])
+                j += 1
+    return words
 
 
 def typedef_rows(text):
@@ -2649,6 +2775,7 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
     macro_sources = {p: t for p, t in base.items() if p.startswith(("src/", "include/"))}
     macros, object_macros = macro_table(cfiles)
     types = declaration_types(cfiles)
+    typedef_names = typedef_words(cfiles)
     global_pat = re.compile(r"\b(?:" + ("|".join(map(re.escape, globals or {})) or "(?!)") + r")\b")
     transformed_base = {p: global_pat.sub(lambda m: globals[m[0]], t) for p, t in base.items()}
     transformed_types = declaration_types({p: t for p, t in transformed_base.items() if p in cfiles or p.startswith(("src/", "include/")) and p.endswith(".inc")})
@@ -2773,6 +2900,11 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                     continue
                 if end < len(ts) and IDENT.fullmatch(ts[end]) and ts[end] not in C_KEYWORDS:
                     values.add(ts[end])
+            body_open = next(k for k in indices if ts[k] == "{")
+            try:
+                starts, in_stmt_expr = statement_starts(ts, body_open, indices[-1], types)
+            except ValueError as e:
+                raise ValueError(f"{spec}: {e}") from None
             for k in indices:
                 if ts[k] != old or local_exception(ts, k):
                     continue
@@ -2785,10 +2917,54 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                     prefix_tokens = ts[boundary:k]
                     if prefix_tokens.count("?") <= prefix_tokens.count(":"):
                         raise ValueError(f"{spec}: cannot prove statement-start label or use")
-                start = k - 1
-                while start >= indices[0] and ts[start] not in (";", "{", "}"):
-                    start -= 1
+                # In the body the statement comes from the forward brace scan
+                # (an initializer's or compound literal's braces belong to it);
+                # in the parameter list it starts after `;`, `{` or `}`.
+                if k > body_open:
+                    if k in in_stmt_expr:
+                        raise ValueError(f"{spec}: use inside a GNU statement expression is unsupported")
+                    start = starts[k] - 1
+                else:
+                    start = k - 1
+                    while start >= indices[0] and ts[start] not in (";", "{", "}"):
+                        start -= 1
                 statement = ts[start + 1:k]
+                # Inside a type name (a `(` whose contents open with a type
+                # word: a cast, sizeof or prototype list) a name declares,
+                # unless an array bound nearer the name holds it.
+                nesting, bound = 0, False
+                for j in range(k - 1, start if k > body_open else k - 1, -1):
+                    nesting += (ts[j] in (")", "]")) - (ts[j] in ("(", "["))
+                    if nesting < 0:
+                        nesting = 0
+                        if ts[j] == "[":
+                            bound = True
+                        elif not bound and (ts[j + 1] in types or ts[j + 1] in typedef_names):
+                            raise ValueError(f"{spec}: name inside a type name is unsupported")
+                if statement and statement[0] in (",", ".", "->", "[", "]", "=", ")", "?", ":", "}"):
+                    raise ValueError(f"{spec}: cannot place the statement start")
+                # A body statement not led by a known type word must prove it is
+                # no declaration: it opens with a statement keyword, `(` or a
+                # unary operator, or a name used as a value (not followed by a
+                # name, a keyword or, unless f declares the name after a type
+                # word, `*`). Anything else fails. `T (l)` and `T *l` declare
+                # when T is a type the census missed, so a name before `(` or
+                # `*` must also be in no typedef declaration and not start with
+                # `__` (an unlisted keyword), bar cc1 2.7.2's `__builtin_`
+                # functions (it has no builtin type).
+                if k > body_open and statement and statement[0] not in types:
+                    first = statement[0]
+                    second = statement[1] if len(statement) > 1 else None
+                    if first in STATEMENT_KEYWORDS or first in ("(", "*", "++", "--", "&", "-", "+", "!", "~"):
+                        pass
+                    elif IDENT.fullmatch(first) and first not in C_KEYWORDS:
+                        if (second is None or IDENT.fullmatch(second)
+                                or second == "*" and first not in values
+                                or second in ("(", "*") and (first in typedef_names or first.startswith("__")
+                                                             and not first.startswith("__builtin_"))):
+                            raise ValueError(f"{spec}: statement may be a declaration with an unrecognised type")
+                    else:
+                        raise ValueError(f"{spec}: cannot prove the statement `{first} ...` is no declaration")
                 if any(t in ("__attribute", "__attribute__", "__extension__", "typeof", "__typeof", "__typeof__")
                        for t in statement):
                     raise ValueError(f"{spec}: complex GNU declaration/use is unsupported")
@@ -2797,52 +2973,93 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                 while before >= indices[0] and ts[before] in ("(", "*", "const", "volatile"):
                     parens |= ts[before] == "("
                     before -= 1
-                if parens and before >= 0 and ts[before] in types:
+                # A struct/union/enum tag is a type too (`struct S (*l)`).
+                if parens and before >= 0 and (ts[before] in types or before >= 1
+                                               and ts[before - 1] in ("struct", "union", "enum")):
                     raise ValueError(f"{spec}: parenthesized declarator is unsupported")
                 # A declaration beginning with a known type may hide a second
                 # binding behind parentheses or a comma. Calls and expressions
                 # do not acquire declaration status merely by containing `(`.
+                # A later declarator of the list is a binding only in the plain
+                # `T a, *old` shape; inside an initializer it is a use.
+                comma_type = None
                 if statement and statement[0] in types:
-                    if "(" in statement and "=" not in statement:
-                        raise ValueError(f"{spec}: parenthesized declarator is unsupported")
-                    nesting = 0
+                    # Before a top-level `=`, a `(` belongs to a declarator
+                    # (`int (*g[sizeof(x = 1)])(l)` declares, and l is no use).
+                    nesting, assigned = 0, False
                     for token in statement:
-                        nesting += (token in ("(", "[")) - (token in (")", "]"))
+                        nesting += (token in ("(", "[", "{")) - (token in (")", "]", "}"))
+                        assigned |= token == "=" and nesting == 0
+                    if "(" in statement and not assigned:
+                        raise ValueError(f"{spec}: parenthesized declarator is unsupported")
+                    nesting, last_comma, first_comma = 0, None, None
+                    for j, token in enumerate(statement):
+                        nesting += (token in ("(", "[", "{")) - (token in (")", "]", "}"))
                         if token == "," and nesting == 0:
-                            raise ValueError(f"{spec}: comma declarator is unsupported")
+                            last_comma = j
+                            first_comma = j if first_comma is None else first_comma
+                    if last_comma is not None:
+                        segment = statement[last_comma + 1:]
+                        head = statement[:first_comma]
+                        lead = next((j for j, token in enumerate(head) if token not in types and token != "*"), None)
+                        if all(token == "*" for token in segment):
+                            # The type is the first declarator's prefix: the type
+                            # words before its name (and before any `*`, whose
+                            # qualifiers are that declarator's own), which must be
+                            # a plain name.
+                            if (lead is None or not IDENT.fullmatch(head[lead]) or head[lead] in C_KEYWORDS
+                                    or lead + 1 < len(head) and IDENT.fullmatch(head[lead + 1])
+                                    or any(t in ("struct", "union", "enum") for t in head[:lead])):
+                                raise ValueError(f"{spec}: comma declarator is unsupported")
+                            star = head.index("*") if "*" in head[:lead] else lead
+                            comma_type = head[:star] + segment
+                        else:
+                            # A use needs the declarator's own top-level `=`
+                            # (`a = 0, (*g[sizeof(x = 1)])(l)` declares l).
+                            nesting, assigned = 0, False
+                            for token in segment:
+                                nesting += (token in ("(", "[", "{")) - (token in (")", "]", "}"))
+                                assigned |= token == "=" and nesting == 0
+                            if not assigned:
+                                raise ValueError(f"{spec}: comma declarator is unsupported")
                 a = k - 1
                 while a >= indices[0] and ts[a] not in ("(", ",", ";", "{", "}"):
                     a -= 1
                 prefix = " ".join(ts[a + 1:k])
-                if (re.fullmatch(r"[A-Za-z_]\w* (?:\* )+", prefix + " ")
+                if comma_type is not None:
+                    prefix, declared = " ".join(comma_type), comma_type
+                else:
+                    declared = ts[a + 1:k]
+                if (comma_type is None and re.fullmatch(r"[A-Za-z_]\w* (?:\* )+", prefix + " ")
                         and ts[a + 1] not in C_KEYWORDS and ts[a + 1] not in types and ts[a + 1] not in values):
                     raise ValueError(f"{spec}: ambiguous unknown type/value in pointer declaration or multiplication")
-                if (ts[a + 1:k] and ts[a + 1] in types
+                if (declared and declared[0] in types
                         and re.fullmatch(r"(?:[A-Za-z_]\w* )(?:[A-Za-z_]\w* |\* )*", prefix + " ")):
-                    if "extern" in ts[a + 1:k]:
+                    if "extern" in declared:
                         raise ValueError(f"{spec}: block-scope extern is not a local binding")
                     nest = 0
                     for token in ts[indices[0]:k]:
                         nest += (token == "(") - (token == ")")
-                    body_start = next(j for j in indices if ts[j] == "{")
-                    if nest != (1 if k < body_start else 0):
+                    if nest != (1 if k < body_open else 0):
                         raise ValueError(f"{spec}: prototype/cast binding inside nested parentheses")
                     declarator = k + 1
                     while ts[declarator:declarator + 1] == [")"]:
                         declarator += 1
                     classes = _typedef_classes(tuple(cfiles.values()))
-                    used = set(ts[a + 1:k]) & (classes.keys() | uncertain_types)
+                    used = set(declared) & (classes.keys() | uncertain_types)
                     if (ts[declarator:declarator + 1] == ["("]
                             or any(name in uncertain_types or classes[name] == "unknown" for name in used)
-                            or "*" not in ts[a + 1:k] and any(classes[name] == "function" for name in used)):
+                            or "*" not in declared and any(classes[name] == "function" for name in used)):
                         raise ValueError(f"{spec}: function declarator/type or uncertain typedef is not a local object binding")
                     declarations.append(k)
                 elif ts[k - 1] in types or ts[k - 1] in ("__attribute", "__attribute__"):
                     raise ValueError(f"{spec}: cannot prove a simple local use/binding")
             if len(declarations) != 1:
                 raise ValueError(f"{spec}: expected one simple binding, found {len(declarations)} (shadowing/unsupported declaration)")
-            # Non-parameter locals must be declared in the outermost body block.
-            body = next(k for k in indices if ts[k] == "{")
+            # A local declared in an inner block binds only to that block's end:
+            # every use must lie inside it, so the function-wide substitution
+            # renames exactly the uses of this one binding.
+            body = body_open
             binding = declarations[0]
             declarator_end = binding + 1
             while declarator_end < len(ts) and ts[declarator_end] == "[":
@@ -2852,15 +3069,24 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                 declarator_end = end + 1
             if any(ts[k] == old and not local_exception(ts, k) for k in range(indices[0], binding)):
                 raise ValueError(f"{spec}: use before the local declaration is unsupported")
-            if declarations[0] > body:
+            # A later spelling in the parameter list may be a prototype-scope
+            # name (`int (*cb)(l)`) rather than a use; refuse it.
+            if any(ts[k] == old and not local_exception(ts, k) for k in range(binding + 1, body)):
+                raise ValueError(f"{spec}: name repeated in the parameter list")
+            if binding > body:
+                # statement_starts proved the body balanced, so depth >= 1 here.
                 depth = 0
-                for k in range(body, declarations[0]):
+                for k in range(body, binding):
                     depth += (ts[k] == "{") - (ts[k] == "}")
-                if depth != 1:
-                    raise ValueError(f"{spec}: nested local binding is unsupported")
-                if any(ts[k] == old and not local_exception(ts, k)
-                       for k in range(indices[0], declarations[0])):
-                    raise ValueError(f"{spec}: use before the local declaration is unsupported")
+                if depth > 1:
+                    block, open_depth = binding - 1, 0
+                    while open_depth < 1:   # the innermost `{` still open at the binding
+                        open_depth += (ts[block] == "{") - (ts[block] == "}")
+                        block -= 1
+                    block_end = balanced(ts, block + 1, "{", "}")
+                    if any(ts[k] == old and not local_exception(ts, k)
+                           for k in range(block_end, indices[-1] + 1)):
+                        raise ValueError(f"{spec}: use after the nested local binding's block")
         for p, t in cfiles.items():
             spans = code_spans(t)
             toks = [m[0] for m in spans]

@@ -3697,13 +3697,292 @@ def test_naming_keycheck_scoped_pairs() -> None:
             ("macro", "#define X l\nint f(int l) { return l; }"),
             ("macro parameter", "#define X(l) 1\nint f(int l) { return l; }"),
             ("nonfresh destination", "int f(int l) { int fresh; return l; }"),
-            ("nested local", "int f(void) { { int l; l = 1; } return 0; }"),
             ("use before declaration", "int f(void) { use(l); int l; return l; }")]:
         ok, why = proof("f:l=fresh", {"src/a.c": text}, {"src/a.c": text.replace("l", "fresh")})
         check("keycheck: local rejects " + label, not ok and bool(why))
     text = "int f(void) { int l; l = 1; return l; }"
     check("keycheck: simple outer local", proof("f:l=fresh", {"src/a.c": text},
           {"src/a.c": text.replace("l", "fresh")})[0])
+    for label, text in [
+            ("nested local", "int f(void) { { int l; l = 1; } return 0; }"),
+            ("doubly nested local", "int f(int x) { if (x) { while (x) { int l = x; x -= l; } } return x; }"),
+            ("comma declarator", "int f(void) { int a, l; l = 1; a = l; return a; }"),
+            ("comma pointer declarator", "int f(int *p) { int a, *l; l = p; a = *l; return a; }"),
+            ("comma declarator after initializer", "int f(void) { int a = 1, l; l = a; return l; }"),
+            ("comma array declarator", "int f(void) { int a, l[2]; l[0] = 1; a = l[0]; return a; }"),
+            ("nested comma declarator", "int f(int x) { if (x) { short a, l; l = x; a = l; x = a; } return x; }"),
+            ("comma declarator after initializer braces", "int f(void) { int b[1] = {0}, l; l = b[0]; return l; }"),
+            ("comma declarator after a compound literal", "int f(void) { int a = (int){1}, l; l = a; return l; }"),
+            ("comma expression statement after a block", "int f(int x) { int l; { x++; } x = 1, l = x; return l; }"),
+            # Block openers the brace scan must keep recognising.
+            ("use in an else block", "int f(int x) { int l = x; if (x) { x++; } else { x += l; } return l; }"),
+            ("use in a do block", "int f(int x) { int l = x; do { x += l; } while (x < 10); return l; }"),
+            ("use in a case block", "int f(int x) { int l = x; switch (x) { case 1: { x += l; } break; } return l; }"),
+            ("use in a labelled block", "int f(int x) { int l = x; again: { x += l; } if (x < 9) goto again; return l; }"),
+            ("use after a statement expression", "int f(int x) { int l = x; x = ({ x + 1; }) + l; return x; }"),
+            ("use beside a pointer-returning nested function",
+             "int f(int x) { int l = x; int *h(int *p) { return p; } return *h(&l); }"),
+            ("use in an old-style designator brace",
+             "typedef struct { int m[1]; } S;\nint f(void) { int l = 1; S s = { m: { l } }; return s.m[0]; }"),
+            ("uses led by unary operators", "int f(void) { int l = 1; -l; !l; ~l; ++l; --l; +l; &l; *&l; return l; }"),
+            ("use beside a GNU nested function","int f(int x) { int l = x; int h(int y) { return y + 1; } return h(l); }"),
+            ("use after a nested initializer","int f(void) { { int l = 1; int a[2][2] = {{0, 1}, {l, 2}}; return a[1][0]; } }"),
+            ("comma declarator after const pointer", "int f(int *p) { int * const a = p, l; l = *a; return l; }"),
+            ("third comma declarator", "int f(void) { int a, b, l; l = 1; a = l; b = a; return b; }"),
+            ("pointer comma declarator after a function typedef",
+             "typedef int FN(void);\nint g(void);\nint f(void) { FN b, *l; l = g; return l == g; }"),
+            ("parameter in a switch and case", "int f(int l) { switch (l) { case 1: l = 2; } return l; }"),
+            ("local assigned under a case", "int f(int x) { int l = x; switch (x) { case 1: l = 2; } return l; }"),
+            ("sizeof statement", "int f(int l) { sizeof l; return l; }"),
+            ("use in a later declarator's parenthesized initializer",
+             "int f(int x) { int l = x; int a = 0, b = (l + 1); return a + b; }"),
+            ("uses beside casts and an array-bound type name",
+             "int f(int x) { int l = x; x = (int)l + (short)(l) + sizeof(int[l]); return ((int)(l + 1)) + x; }"),
+            ("use under a default label", "int f(int x) { int l = x; switch (x) { default: l = 1; } return l; }"),
+            ("while statement", "int f(int l) { while (l) l--; return l; }"),
+            ("builtin call statement", "int f(int *p) { int l = 1; __builtin_memcpy(p, &l, 4); return l; }"),
+            ("computed goto", "int f(void) { void *l = &&out; goto *l; out: return 0; }"),
+            ("nested local after initializer braces",
+             "int f(int x) { { int a[1] = {0}; int l = x; x += l + a[0]; } return x; }"),
+            # A `;` inside a for header does not start a statement.
+            ("use in a for header after a number", "int f(int x) { int l = x; for (x = 0; 9 > l; l++) ; return l; }")]:
+        ok, why = proof("f:l=fresh", {"src/a.c": text}, {"src/a.c": re.sub(r"\bl\b", "fresh", text)})
+        check("keycheck: local accepts " + label, ok)
+    text = "struct l { int m; };\nint f(int l, struct l *p) { return l + p->m; }"
+    check("keycheck: local accepts parameter beside a struct tag of its name",
+          proof("f:l=fresh", {"src/a.c": text},
+                {"src/a.c": text.replace("int l,", "int fresh,").replace("return l", "return fresh")})[0])
+    for label, tokens in [("closer mismatch", ["{", "(", "]", "}"]), ("stray closer", ["{", ")", "}"])]:
+        try:
+            nk.statement_starts(tokens, 0, len(tokens) - 1, set())
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: statement scan rejects " + label, "unbalanced" in why)
+    for text, names in [("int typedef T;", {"T"}), ("struct S typedef T, *P;", {"T", "P"}),
+                        ("unsigned typedef int T;", {"T"}), ("int typedef *T;", {"T"}),
+                        ("typedef Ext Y;", {"Ext", "Y"}),
+                        ("typedef int (__attribute__((aligned(8))) T);", {"T"}),
+                        ("typedef int A, __attribute ((mode(SI))) B;", {"A", "B"}),
+                        ("int typedef (*T)(void);", {"T"}), ("int typedef (T);", {"T"})]:
+        check("keycheck: type census reads " + text,
+              nk.declaration_types({"src/a.c": text}) - set(nk.DECL_WORDS) == names)
+    # Even with a census that misses every typedef, a typedef's name before `(`
+    # or `*` is no proven value.
+    with patch.object(nk, "declaration_types", lambda cfiles: set(nk.DECL_WORDS)):
+        for label, text in [
+                ("paren", "typedef int T;\nint f(int x) { int l = x; { T (l); l = 3; x += l; } return l + x; }"),
+                ("star", "typedef int T;\nint f(int x) { int l = x; { int T = 2; l += T; } { T *l = &x; *l = 5; } "
+                 "return l + x; }"),
+                ("type-name", "typedef int T;\nint f(int x) { int l = x; x = (T)(T (*)(T (*l)))0; return l + x; }")]:
+            try:
+                nk.scoped_plan({"src/a.c": text}, {"f:l": "nm"}, {})
+                why = ""
+            except ValueError as e:
+                why = str(e)
+            check("keycheck: typedef words refuse a missed type's " + label + " shadow",
+                  ("inside a type name" if label == "type-name" else "unrecognised type") in why)
+    text = "int f(int l) { int a = l, b = l + 1; return a + b + l; }"
+    check("keycheck: local use in comma initializers", proof("f:l=fresh", {"src/a.c": text},
+          {"src/a.c": re.sub(r"\bl\b", "fresh", text)})[0])
+    for label, text, why_part in [
+            ("use after nested block", "int l; int f(void) { { int l; l = 1; } return l; }", "after the nested"),
+            ("use after inner of two blocks", "int l; int f(int x) { { { int l; l = x; } x = l; } return x; }", "after the nested"),
+            ("sibling block rebinding", "int f(void) { { int l; l = 1; } { int l; l = 2; } return 0; }", "found 2"),
+            ("comma parenthesized declarator", "int f(void) { int a = 0, (l); l = a; return l; }", "comma declarator"),
+            ("comma struct declarator", "struct S { int m; }; int f(void) { struct S a, l; l = a; return l.m; }", "comma declarator"),
+            ("comma array-bound use", "int f(int l) { int a, b[l]; a = l; return a; }", "comma declarator"),
+            # A second binding after an initializer's braces is a binding, not a use.
+            ("comma shadow after initializer braces",
+             "int g(int);\nint f(void) { int a, l; l = 1; a = 0; { int b[1] = {0}, l; l = 2; g(l); } return l + a; }", "found 2"),
+            ("nested shadow after initializer braces",
+             "int f(int x) { { int l = x; { int b[1] = {0}, l = 3; x += l; } x += l; } return x; }", "found 2"),
+            ("outer local shadowed after initializer braces",
+             "int f(int x) { int l = 1; { int b[1] = {0}, l = 2; x += l; } return x + l; }", "found 2"),
+            ("parameter shadowed after initializer braces",
+             "int f(int l) { { int b[1] = {0}, l = 2; l++; } return l; }", "found 2"),
+            # A compound literal's braces belong to the declaration: the later
+            # declarator is a second binding.
+            ("shadow after a compound literal",
+             "int f(int x) { int l = x; { int a = (int){1}, l; l = a; x += l; } return x + l; }", "found 2"),
+            ("shadow after a compound literal in a subscript",
+             "int c[2];\nint f(int x) { { int l = x; { int a = c[(int){0}], l; l = 3; x += l + a; } x += l; } return x; }",
+             "found 2"),
+            ("shadow after a compound literal at depth 1",
+             "int c[2];\nint f(int x) { int l = x; { int a = c[(int){0}], l; l = 3; x += l + a; } return x + l; }", "found 2"),
+            ("comma-bound shadow after a compound literal",
+             "int c[2];\nint f(int x) { int b = x, l = x; { int a = c[(int){0}], l; l = 3; x += l + a + b; } return x + l; }",
+             "found 2"),
+            ("pointer shadow after an array compound literal",
+             "int c[2];\nint f(int x) { { int l = x; { int a = c[*(int[1]){0}], *l = &a; x += *l; } x += l; } return x; }",
+             "found 2"),
+            ("shadow after a sizeof compound literal",
+             "int f(int x) { { int l = x; { int a[sizeof (int){0}], l; l = 3; a[0] = l; x += a[0]; } x += l; } return x; }",
+             "parenthesized declarator"),
+            ("shadow after a compound literal sum",
+             "int c[2];\nint f(int x) { { int l = x; { int a = c[(int){0} + 0], l; l = 4; x += l + a; } x += l; } return x; }",
+             "found 2"),
+            # A nested function the scan cannot recognise is never a compound literal.
+            ("shadow in a struct-returning nested function",
+             "struct S { int m; };\nint f(int x) { int l = x; struct S g(void) { struct S s; int z = 0, l = 2; "
+             "s.m = z + l; return s; } return g().m + l; }", "classify the brace"),
+            ("shadow in a parenthesized nested function",
+             "int f(int x) { int l = x; int (g)(void) { int z = 0, l = 2; return z + l; } return g() + l; }",
+             "classify the brace"),
+            ("shadow in an enum-returning nested function",
+             "enum E { EA, EB };\nint f(int x) { int l = x; enum E g(void) { int z = 0, l = 2; return z + l; } "
+             "return g() + l; }", "classify the brace"),
+            ("shadow in a recognised nested function",
+             "int f(int x) { int l = x; int g(void) { int z = 0, l = 2; return z + l; } return g() + l; }", "found 2"),
+            # A statement led by a word the parser does not know as a type must
+            # prove it is an expression; an unlisted keyword type cannot.
+            ("GNU complex pointer shadow", "int f(int x) { int l = x; { __complex__ int *l = 0; x += l != 0; } return x + l; }",
+             "found 2"),
+            ("GNU complex pointer shadow, deeper",
+             "int f(int x) { { int l = x; { __complex__ int *l = 0; x += l != 0; } x += l; } return x; }", "found 2"),
+            ("GNU __complex pointer shadow", "int f(int x) { int l = x; { __complex int *l = 0; x += l != 0; } return x + l; }",
+             "found 2"),
+            ("GNU complex comma shadow", "int f(int x) { int l = x; { __complex__ int a, *l = 0; x += l != 0; } return x + l; }",
+             "found 2"),
+            ("unknown GNU keyword shadow", "int f(int x) { int l = x; { __bogus__ int *l; x += 1; } return x + l; }",
+             "unrecognised type"),
+            ("unknown word before a qualifier", "int f(int x) { int l = x; { __foo__ const *l; x += 1; } return x + l; }",
+             "unrecognised type"),
+            ("unknown word alone before the name", "int f(int x) { int l = x; { __bogus__ l = 3; x += l; } return x + l; }",
+             "unrecognised type"),
+            ("unknown word before a pointer", "int f(int x) { int l = x; { unknown_t *l; x += 1; } return x + l; }",
+             "unrecognised type"),
+            ("statement led by neither a name nor a keyword", "int f(int x) { int l = x; 0, l = 2; return l; }",
+             "no declaration"),
+            ("statement start after a stray comma", "int f(int x) { int l = x; { x++; } , l = 1; return l; }",
+             "statement start"),
+            ("unbalanced body", "int f(int x) { int l = x; x = (l]; return l; }", "unbalanced"),
+            ("brace after a name in a block", "int f(int x) { int l = x; x { l++; } return l; }", "classify the brace"),
+            ("brace after a name in an initializer", "int f(void) { int l = 1; int a[2] = { l {0} }; return a[0]; }",
+             "classify the brace"),
+            ("shadow in a pointer-returning nested function",
+             "int f(int x) { int l = x; int *h(void) { int z = 0, l = 2; return 0; } return l; }", "found 2"),
+            ("brace after a non-cast parenthesis", "int f(int x) { int l = x; g(x) { l++; } return l; }", "classify the brace"),
+            # Specifiers before `typedef` still declare a type name.
+            ("paren shadow of a typedef after its type", "int typedef T;\nint f(int x) { int l = x; { T (l); l = 3; x += l; } "
+             "return l + x; }", "parenthesized declarator"),
+            ("pointer paren shadow of a typedef after its type",
+             "int typedef T;\nint f(int x) { int l = x; { T (*l); l = &x; *l = 4; } return l + x; }", "parenthesized declarator"),
+            ("paren shadow of a typedef after its struct type",
+             "struct S { int a; };\nstruct S typedef T;\nint f(int x) { int l = x; { T (l); l.a = 3; x += l.a; } "
+             "return l + x; }", "parenthesized declarator"),
+            ("star shadow of a typedef after its type, beside a value T",
+             "int typedef T;\nint f(int x) { int l = x; { int T = 2; l += T; } { T *l = &x; *l = 5; } return l + x; }",
+             "uncertain typedef"),
+            # An attribute inside a typedef's declarator; cc1's own keywords.
+            ("paren shadow of an attributed pointer typedef",
+             "typedef int * __attribute__((aligned(8))) T;\nint f(int x) { int l = x; { T (l); l = &x; *l = 3; } "
+             "return l + x; }", "parenthesized declarator"),
+            ("paren shadow of a typedef attributed in its declarator",
+             "typedef int (__attribute__((aligned(8))) T);\nint f(int x) { int l = x; { T (l); l = 3; x += l; } "
+             "return l + x; }", "parenthesized declarator"),
+            ("star shadow of an attributed typedef beside a value T",
+             "typedef int (__attribute__((aligned(8))) T);\nint f(int x) { int l = x; { int T = 2; l += T; } "
+             "{ T *l = &x; *l = 5; } return l + x; }", "uncertain typedef"),
+            ("paren shadow of a parameter by an attributed typedef",
+             "typedef int * __attribute__((aligned(8))) T;\nint f(int l) { { T (l) = &l; *l = 3; } return l; }",
+             "parenthesized declarator"),
+            ("paren shadow of a function-pointer typedef after its type",
+             "int typedef (*T)(void);\nint g(void) { return 0; }\nint f(int x) { int l = x; { T (l); l = g; "
+             "x += l != 0; } return x + l; }", "parenthesized declarator"),
+            ("name repeated in a parameter's identifier list", "int f(int l, int (*cb)(l)) { return cb(l); }",
+             "parameter list"),
+            ("identifier list after an assignment inside the declarator",
+             "int f(int x) { int l = x; int (*fp[sizeof(x = 1)])(l); return l; }", "parenthesized declarator"),
+            ("identifier list in a later declarator",
+             "int f(int x) { int l = x; int a = 0, (*fp[sizeof(x = 1)])(l); return l + a; }", "comma declarator"),
+            ("second identifier-list name in a nested later declarator",
+             "int f(int x) { int l = x; { int a = 0, (*fp[sizeof(a = 1)])(x, l); return l + a; } }", "comma declarator"),
+            ("prototype name after a struct tag in sizeof",
+             "struct S;\nint f(void) { int l = 0; return l + sizeof(int (*)(struct S (*l))); }", "inside a type name"),
+            ("prototype name after a union tag in a cast initializer",
+             "union U;\nint f(void) { int l = 0; int *x = (int *)(int (*)(union U (*l)))0; return l + (x != 0); }",
+             "inside a type name"),
+            ("qualifier-only prototype parameter in sizeof",
+             "int f(void) { int l = 0; return l + sizeof(int (*)(const (*l))); }", "inside a type name"),
+            ("bare qualifier prototype parameter in a cast",
+             "int f(int x) { int l = 0; x = (int)(int (*)(volatile (l)))0; return l + x; }", "inside a type name"),
+            ("C99 restrict as a typedef name", "typedef int restrict;\nint f(int x) { int l = x; { restrict *l = &x; "
+             "x += *l; } return l + x; }", "found 2"),
+            ("GNU __real__ statement", "int f(int x) { int l = x; __real__ l = 1; return l; }", "cannot prove the statement"),
+            ("GNU __alignof__ statement", "int f(int x) { int l = x; __alignof__(l); return l; }", "cannot prove the statement"),
+            ("struct-tag parenthesized parameter", "struct S;\nint f(struct S (*l)) { return l != 0; }",
+             "parenthesized declarator"),
+            ("C99 word as a function typedef", "typedef int _Bool(int);\nint f(void) { _Bool l; return 0; }",
+             "not a local object binding"),
+            ("GNU iterator shadow", "int f(int x) { int l = x; { __iterator__ (l) = 3; } return l + x; }",
+             "cannot prove the statement"),
+            ("GNU iterator shadow of a parameter",
+             "int f(char *l, int x) { { __iterator__ (l) = 3; x += l * 2; } return *l + x; }", "cannot prove the statement"),
+            ("unknown double-underscore word before a parenthesis",
+             "int f(int x) { int l = x; { __foo__ (l) = 3; } return l + x; }", "unrecognised type"),
+            ("brace after a call in an initializer",
+             "int f(void) { int l = 1; int a[2] = { g(l) {0} }; return a[0]; }", "classify the brace"),
+            ("use inside a statement expression", "int f(int x) { int l = x; x = ({ int t = l; t; }); return x; }",
+             "statement expression"),
+            # The shared declaration checks must see a comma declarator's own type.
+            ("comma block-scope extern", "int f(void) { extern int a, l; l = 1; return l; }", "extern"),
+            ("comma function-typedef declarator", "typedef int FN(void); int f(void) { FN a, l; return 0; }",
+             "function declarator"),
+            ("comma function after a pointer declarator", "typedef int FN(void); int f(void) { FN *a, l; return 0; }",
+             "function declarator"),
+            # A type the parser does not know (a macro, an unparsed typedef) can hide a shadow.
+            ("macro-type comma shadow, nested",
+             "#define MT int\nint f(int x) { { int l = x; { MT a, l; l = 3; x += l; } x += l; } return x; }",
+             "unrecognised type"),
+            ("macro-type comma shadow, outer local",
+             "#define MT int\nint f(int x) { int l = x; { MT a, l; l = 3; x += l; } x += l; return x; }",
+             "unrecognised type"),
+            ("macro-type comma pointer shadow",
+             "#define MT int\nint f(int x) { { int l = x; { MT a, *l; l = &a; x += *l; } x += l; } return x; }",
+             "unrecognised type"),
+            ("macro-type plain shadow",
+             "#define MT int\nint f(int x) { int l = x; { MT l; l = 3; x += l; } return x + l; }",
+             "object-like macro"),
+            ("macro-type initialized comma shadow",
+             "#define MT int\nint f(int x) { { int l = x; { MT a = 0, l = 2; x += l; } x += l; } return x; }",
+             "unrecognised type"),
+            ("macro-made typedef comma shadow",
+             "#define DT(n) typedef int n\nDT(U);\nint f(int x) { { int l = x; { U a, *l = &x; x += *l; } x += l; } return x; }",
+             "unrecognised type"),
+            ("unknown-type comma shadow",
+             "int f(int x) { { int l = x; { unknown_t a, *l; x += *l; } x += l; } return x; }",
+             "unrecognised type"),
+            ("qualified macro-type comma shadow",
+             "#define MT int\nint f(int x) { { int l = x; { const MT a, *l = &x; x += *l; } x += l; } return x; }",
+             "comma declarator"),
+            # Shadows the source plan refuses before the cpp rerun.
+            ("plan: qualified macro-type comma",
+             "#define MT int\nint f(int x) { { int l = x; { MT const a = 1, *l; l = &a; x += *l; } x += l; } return x; }",
+             "unrecognised type"),
+            ("plan: macro-type volatile pointer comma",
+             "#define MT int\nint f(int x) { { int l = x; { MT volatile *a = 0, *l; l = 0; x += a == l; } x += l; } "
+             "return x; }", "unrecognised type"),
+            ("plan: macro-type const comma",
+             "#define MT int\nint f(int x) { { int l = x; { MT const a, l; l = 3; x += l; } x += l; } return x; }",
+             "unrecognised type"),
+            ("plan: macro type after a local of it", "#define MT int\nint f(int x) { unsigned MT u = 0; { int l = x; "
+             "{ MT a, l; l = 3; x += l; } x += l; } return x + u; }", "unrecognised type"),
+            ("plan: macro typedef const pointer comma", "#define DT(n) typedef int n\nDT(U);\nint f(int x) { { int l = x; "
+             "{ U const *a, l; l = 3; x += l; } x += l; } return x; }", "unrecognised type"),
+            ("plan: macro typedef shadowed by a sibling local",
+             "#define TD(n) typedef int n;\nTD(X)\nint f(int x) { { int l = x; { int X = 1; x += X; } "
+             "{ X a, *l; a = 1; l = &a; x += *l; } x += l; } return x; }", "unrecognised type"),
+            # Each guard of the comma head.
+            ("comma after a macro type and a qualifier", "#define MT int\nint f(void) { const MT a, l; l = 1; return l; }",
+             "comma declarator"),
+            ("comma after a struct pointer",
+             "struct S { int m; };\nint f(void) { struct S *a, l; l.m = 0; a = &l; return a->m; }", "comma declarator"),
+            ("comma after a parenthesized first declarator", "int f(int *p) { int (*a) = p, l; l = *a; return l; }",
+             "comma declarator")]:
+        new_text = re.sub(r"\bl\b", "fresh", text)
+        ok, why = proof("f:l=fresh", {"src/a.c": text}, {"src/a.c": new_text})
+        check("keycheck: local rejects " + label, not ok and why_part in why)
     for expression in ["call(l)", "(l + 1)", "x = (s32)l", "int x = call(l)",
                        "int x = call(1, l)", "call(1, l)", "*l", "l ? l : 0"]:
         text = "int f(int l) { " + expression + "; return l; }"
@@ -4885,7 +5164,8 @@ def test_naming_keycheck_scoped_pairs() -> None:
             ("int l; int f(void){use((int (*)(int l))cb);return 0;}",
              "int l; int f(void){use((int (*)(int n))cb);return 0;}")]:
         ok, why = proof("f:l=n", {"src/a.c": text}, {"src/a.c": after})
-        check("keycheck: isolated nesting guard preserves global", not ok and "prototype/cast binding" in why)
+        check("keycheck: isolated nesting guard preserves global",
+              not ok and ("prototype/cast binding" in why or "inside a type name" in why))
     for other in ["#define DECL(x) int x\nDECL(n);", "typedef int s32; s32 (n);"]:
         ok, why = proof("f:l=n", {"src/a.c": "int f(int l){return l;}", "src/b.c": other},
                         {"src/a.c": "int f(int n){return n;}"})
@@ -5333,6 +5613,37 @@ def test_naming_keycheck_scoped_pairs() -> None:
                   bool(result.stdout.strip()) and "undeclared" not in result.stderr)
         finally:
             tree.close()
+        # A shadow whose type a macro spells passes the source-text plan; the
+        # binding parser's rerun on real cpp output must refuse it (cc1 cannot:
+        # merging two bindings keeps the asm).
+        real = {"cpp": nk.preprocess, "cc1": nk.compile_cc1, "deps": nk.cpp_dependencies}
+        mt = "#define MT int\nint f(int x) { { int l = x; { "
+        for label, text, why_part in [
+                ("macro-type parenthesized", mt + "MT (l); l = 3; x += l; } x += l; } return x; }\n",
+                 "parenthesized declarator"),
+                ("macro-type parenthesized first declarator",
+                 mt + "MT (a), *l; a = 1; l = &a; x += *l; } x += l; } return x; }\n", "parenthesized declarator"),
+                ("macro-type parenthesized pointer", mt + "MT (*l) = 0; x += l == 0; } x += l; } return x; }\n",
+                 "parenthesized declarator"),
+                ("function-like macro type", "#define PT(t) t\nint f(int x) { { int l = x; { PT(int) a, l; "
+                 "l = 3; x += l; } x += l; } return x; }\n", "found 2"),
+                ("macro-type pointer beside a value of it", "#define MT int\nint f(int x) { unsigned MT u = 0; "
+                 "{ int l = x; { MT *l = &x; x += *l; } x += l; } return x + u; }\n", "found 2"),
+                ("macro typedef pointer after a sibling shadow", "#define TD(n) typedef int n;\nTD(X)\nint f(int x) "
+                 "{ { int l = x; { int X = 1; x += X; } { X *l = &x; x += *l; } x += l; } return x; }\n",
+                 "shadowed typedef")]:
+            # Each case must pass the source plan, so the rerun is what refuses it.
+            try:
+                planned = bool(nk.scoped_plan({"src/a.c": text}, {"f:l": "nm"}, {}))
+            except ValueError:
+                planned = False
+            ok, why = proof("f:l=nm", {"Makefile": make_text, "src/a.c": text},
+                            {"src/a.c": re.sub(r"\bl\b", "nm", text)}, compile_headers=False, **real)
+            check("keycheck real gate: rejects " + label, planned and not ok and why_part in why)
+        text = "#define MT int\nint f(int x) { { MT a = x; { int b = 0, *l; l = &b; x += *l + a; } } return x; }\n"
+        check("keycheck real gate: accepts a nested comma local beside a macro type",
+              proof("f:l=nm", {"Makefile": make_text, "src/a.c": text},
+                    {"src/a.c": re.sub(r"\bl\b", "nm", text)}, compile_headers=False, **real)[0])
 
     prefix_text = "".join(f"int pf_{i}(int arg0){{return arg0;}}\n" for i in range(100))
     prefix_output = nk.emitted_lines(fake_cpp({"src/a.c": prefix_text}, "src/a.c"),
