@@ -104,3 +104,27 @@ instance form.
 - kill_scope: class
 - measured_on: whole-body INCLUDE_ASM chassis, zero FAKE constructs (no C body exists at all); identical to s1-s3's measured_on
 - predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## [s5] KILL RE-AUDIT: the s3 instance kill (permuter has no chassis) still holds on the current chassis with every FAKE construct ablated.
+- mechanism: an instance kill is void if measured on a drifted chassis or under a FAKE carrier; s3 was measured on the INCLUDE_ASM stub with zero FAKE constructs.
+- probe: `sandbox func_8004A4E0 --disable all` + `python3 tools/fake_ablate.py --func func_8004A4E0 --file main/3AB48 --candidate memory/grind/func_8004A4E0/candidate.c` this session.
+- result: sandbox 163 / no_c_body true / build_insns 0 (s5/sandbox.txt); fake_ablate "No FAKE-annotated constructs found ... nothing to ablate" (s5/fake_ablate.txt). Chassis unchanged, no carrier — kill conditions intact.
+- verdict: CONFIRMED
+
+## [s5] SYNTHESIS: the function's layout carries a GCC-2.7.2-absent signal (code after the single epilogue) that the scanner does not test, so the 2026-10-08 re-audit gate (scan_hand_coded STRONG + Judge) is blind on this function for the same reason S7 is (caller-side, not callee-side, evidence).
+- mechanism: GCC 2.7.2 emits the function epilogue once, after the body's last insn; jump-table case blocks that loop back with `j` precede it. A body whose case blocks sit after `jr $ra` is not the shape the compiler lays out.
+- probe: corpus scan tmp/grind/func_8004A4E0/s5/midret.py over asm/funcs/*.s, split by whether the function is pure C in src/ today.
+- result: compiled-C side 0 / 1225 functions have code after a single `jr $ra`; asm side 2 / 160 — func_8004A4E0 (69 insns: all five case bodies) and _patch_gte (PsyQ hand-written). Plus re-verified $s4 (callee-input only, never read locally) and $s5 (`3-$s5`, written once to 0) in the asm itself. Combined with the 2026-09-29 audit's cross-call ABI table, the hand-written verdict is supported by a second, independent, corpus-measured signal.
+- verdict: CONFIRMED
+
+## [s5] KILL RE-AUDIT: the s3 instance kill (permuter has no chassis to mutate) still holds on the current chassis with every FAKE construct ablated.
+- mechanism: An instance kill is void if measured on a drifted chassis or under a FAKE carrier; s3 was measured on the INCLUDE_ASM stub with zero FAKE constructs.
+- probe: sandbox func_8004A4E0 --disable all; python3 tools/fake_ablate.py --func func_8004A4E0 --file main/3AB48 --candidate memory/grind/func_8004A4E0/candidate.c
+- result: sandbox score 163, no_c_body true, build_insns 0; fake_ablate: no FAKE-annotated constructs, nothing to ablate. Chassis unchanged, kill conditions intact.
+- verdict: CONFIRMED
+
+## [s5] The function's layout carries a signal absent from GCC 2.7.2 output (case-block code after the single epilogue) that scan_hand_coded.py does not test, so the owner 2026-10-08 re-audit gate (STRONG tier + Judge) is blind here for the same caller-side reason S7 is.
+- mechanism: GCC 2.7.2 emits the epilogue once after the body's last insn; switch case blocks that loop back via j precede it. func_8004A4E0's five jump-table case bodies (.L8004A614/644/694/6F0/730) sit after jr $ra at 0x8004A60C.
+- probe: Corpus scan tmp/grind/func_8004A4E0/s5/midret.py over all asm/funcs/*.s, split by pure-C-in-src vs still-asm; plus direct re-read of $s4/$s5 operands in asm/funcs/func_8004A4E0.s.
+- result: Compiled-C side: 0/1225 functions have code after a single jr $ra. Asm side: 2/160 — func_8004A4E0 (69 insns) and _patch_gte (PsyQ hand-written, 9). $s4 is never read locally except its own addi (pure callee input before each jal func_8004A940); $s5 written once to 0 then read 5x as 3-$s5. A bare hazard-free nop sits at 0x8004A718. Independent corroboration of the 2026-09-29 audit's hand-written verdict.
+- verdict: CONFIRMED

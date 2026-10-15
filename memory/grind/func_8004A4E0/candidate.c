@@ -10,6 +10,9 @@
  * Current src/main/3AB48.c body (unchanged this session):
  *   INCLUDE_ASM("asm/funcs", func_8004A4E0);
  *
- * sandbox --disable all this session: {"score": 163, "no_c_body": true, "build_insns": 0}.
+ * s5 (synthesis): new corpus signal — 69 insns of case bodies sit AFTER the single
+ * `jr $ra`; 0/1225 pure-C functions do that (tmp/grind/func_8004A4E0/s5/midret.txt).
+ *
+ * sandbox --disable all (s1..s5): {"score": 163, "no_c_body": true, "build_insns": 0}.
  */
 INCLUDE_ASM("asm/funcs", func_8004A4E0);
