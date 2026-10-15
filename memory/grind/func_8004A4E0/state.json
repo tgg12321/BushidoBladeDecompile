@@ -1,8 +1,8 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 21,
- "current_modality": "forensics",
+ "session_count": 22,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -129,18 +129,24 @@
    "floor": 163,
    "modality": "forensics",
    "headline": "s21 forensics: new corpus-clean not-C signal. The hazard-free nop at 0x8004A718 (addiu -> nop -> jal) appears in 0/1297 GCC-emitted functions; the pipeline probe emits no nop there; kill re-audit void"
+  },
+  {
+   "session": 22,
+   "floor": 163,
+   "modality": "rederive",
+   "headline": "s22 rederive: m2c independently confirms the cross-function jtbl (8/16 jtbl_8001541C entries resolve inside func_8004A940, not func_8004A4E0); ladder stays exhausted at floor 163, no new C-admissible "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A scan_hand_coded signal for a trapping add (s18b), a cross-function jtbl target (s10) or a hazard-free nop (s21) rates func_8004A4E0 STRONG and opens Judge door 1 (docs/grind/decisions.md:1320)",
-   "mechanism": "mips.md:381 addsi3 emits only addu; mips.c:3618 emits nop only in delay slots; jtbl labels are per-function",
-   "next_probe": "Operator/engine commit with layer-2 review, then scan_hand_coded --single func_8004A4E0"
+   "hypothesis": "scan_hand_coded needs one of the three corpus-clean not-C signals already measured (trapping add, cross-function jtbl target, hazard-free nop) to report this function STRONG instead of LOW.",
+   "mechanism": "tools/scan_hand_coded.py currently scores 0/8 for func_8004A4E0 with no signal for any of: mips.md:381 addsi3-only-emits-addu, c-decl.c:1182 per-function label scoping violated by a jtbl, or mips.c:3618 delay-slot-only nop placement.",
+   "next_probe": "Operator/engine commit (with layer-2 review) teaching scan_hand_coded.py the cross-function-jtbl-target signal (0/58 corpus-clean per s10/s22), then re-run scan_hand_coded --single func_8004A4E0."
   },
   {
-   "hypothesis": "Without the scanner change, the modality ladder is exhausted at floor 163",
-   "mechanism": "n/a - disposition",
-   "next_probe": "Escalation modality: file the LADDER EXHAUSTED (floor 163): ROTATED record and rotate"
+   "hypothesis": "Without a scanner change, the modality ladder (structural, enumerate x3, synthesis, solver, forensics x2, rederive) is now exhausted at floor 163 with no pure-C axis left to try.",
+   "mechanism": "n/a - disposition, not a codegen mechanism",
+   "next_probe": "Escalation modality: file a LADDER EXHAUSTED (floor 163) record in docs/grind/decisions.md and rotate per rotation-not-foreclosure."
   }
  ],
  "judge_constraints": [
@@ -379,6 +385,22 @@
    "measured_on": "whole asm/funcs corpus + standalone probe tmp/grind/func_8004A4E0/s21/probe.c via build cc1/maspsx/as with project flags; function chassis whole-body INCLUDE_ASM, zero FAKE constructs",
    "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:3618",
    "result": "C-representation functions: 3 hits, all inline asm (DelDrv and _96_remove BIOS pad nops, the gte_rtpt macro in func_8006"
+  },
+  {
+   "session": 22,
+   "statement": "m2c cannot decompile func_8004A4E0 even with jtbl_8001541C's real values supplied, because 8 of its 16 non-default entries resolve to labels interior to func_8004A940's body \u2014 a single C function can ",
+   "kill_scope": "class",
+   "measured_on": "m2c (tools/m2c/m2c.py) against asm/funcs/func_8004A4E0.s + synthetic rodata holding jtbl_8001541C's real values, cross-checked against asm/funcs/func_8004A940.s; whole-body INCLUDE_ASM chassis (src/ma",
+   "predicate_cite": "tools/gcc-2.7.2/c-decl.c:1182",
+   "result": "m2c gets past the missing-jtbl refusal and fails with a more specific error: 'Cannot find jtbl target .L8004A990'. Grepp"
+  },
+  {
+   "session": 22,
+   "statement": "Kill re-audit (mandated by floor-flat rule): re-measured this session's sandbox floor and no_c_body state on the current chassis before any new probe.",
+   "kill_scope": "instance",
+   "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at current HEAD, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "score 163, no_c_body true, cheat_asm_stripped 71, no diff available (whole-body INCLUDE_ASM); no prior kill voided by th"
   }
  ],
  "ladder_skip": 0,

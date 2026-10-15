@@ -291,3 +291,15 @@ it would only become live if a future session carved a C island out of the body 
 - [s21] The pipeline probe emits lui/addiu/jal with no nop; every nop in the probe object is a delay slot (s21/probe.objdump.txt)
 
 - [s21] candidate.c banner renamed to MIGRATION NOTE (clears the dossier STALE HEAD CLAIMS warning, engine/dossier.py:134)
+
+- [s22] m2c, given the real jtbl_8001541C values via a synthetic rodata file, fails with "Cannot find jtbl target .L8004A990" — independent confirmation that 8/16 of this table's entries are labels inside func_8004A940.s, not func_8004A4E0.s (tmp/grind/func_8004A4E0/s22/jtbl_data.s, m2c_err2.txt). No single-C-function translation can produce this: GCC's label namespace is per-function (c-decl.c:1182 push_label_level/pop_label_level).
+
+- [s22] asm/funcs/func_8004A4E0.s dispatch at .L8004A534 (lbu $t0,0($s2); sll $t0,$t0,2; jr via jtbl_8001541C) uses a table whose non-default values (src/main/d_5BF0.c:22-24) are 0x8004A990, 0x8004ABD8, 0x8004A5D0, 0x8004AE0C, 0x8004A5D0 x4, 0x8004AF84, 0x8004A5D0, 0x8004B0C8, 0x8004B0E4, 0x8004B4D8, 0x8004B27C.
+
+- [s22] All 8 non-self-referential values land on jlabel lines inside asm/funcs/func_8004A940.s (lines 24, 171, 313, 408, 490, 498, 601, 753), confirmed both by direct grep and by m2c's own 'Cannot find jtbl target' resolution failure (tmp/grind/func_8004A4E0/s22/m2c_err2.txt).
+
+- [s22] GCC 2.7.2's C front end scopes goto labels per function (tools/gcc-2.7.2/c-decl.c:1182 push_label_level, :1210 pop_label_level, bracketing start_function/finish_function) — the language provides no mechanism for a single compiled function's control-transfer to target a label belonging to a different function, so this table cannot be the lowering of any one function's C switch/goto.
+
+- [s22] Combined with already-banked class kills (s18b: trapping addi 0/1299 compiled functions; s21: hazard-free nop 0/1297 GCC-emitted functions) and s20's finding that the unbounded-index dispatch is explained by GNU computed goto rather than ruling out hand-coding, the evidence for hand-written asm spanning func_8004A4E0/func_8004A940/func_8004A76C/func_8004A808 remains internally consistent and has grown, but scan_hand_coded still reports LOW 0/8 (not STRONG) per the 2026-10-15 16:50 ruling in docs/grind/decisions.md:1320, so no grant door is open yet.
+
+- [s22] Re-measured sandbox floor this session: 163, no_c_body:true, unchanged from s2 through s21.

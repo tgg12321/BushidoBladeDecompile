@@ -465,3 +465,33 @@ floor 163 at s17; 17 sessions; live frontier (state.json is authoritative):
 - kill_scope: class
 - measured_on: whole asm/funcs corpus + standalone probe tmp/grind/func_8004A4E0/s21/probe.c via build cc1/maspsx/as with project flags; function chassis whole-body INCLUDE_ASM, zero FAKE constructs
 - predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:3618
+
+## [s22] (rederive) m2c cannot decompile func_8004A4E0 even with jtbl_8001541C supplied, because 8 of its 16 non-default entries resolve to labels interior to func_8004A940's body — a single C function can never emit a jump table whose targets are labels scoped to a different function
+- mechanism: C label identifiers are scoped per-function in GCC 2.7.2's front end: push_label_level()/pop_label_level() (tools/gcc-2.7.2/c-decl.c:1182,1210) bracket each function's label namespace, so no `goto`/switch-lowered computed-jump inside one function body can ever resolve to a label belonging to a sibling function — the C language has no cross-function label reference. A jump table whose entries are such labels therefore cannot be the output of compiling any single C function under this (or any standard C) front end.
+- probe: built tmp/grind/func_8004A4E0/s22/jtbl_data.s (a synthetic `.rodata` block spelling out jtbl_8001541C's 16 words as label references, using the actual values from src/main/d_5BF0.c: 0x8004A990, 0x8004ABD8, 0x8004A5D0, 0x8004AE0C x5, 0x8004AF84, 0x8004A5D0, 0x8004B0C8, 0x8004B0E4, 0x8004B4D8, 0x8004B27C), then ran `python3 tools/m2c/m2c.py asm/funcs/func_8004A4E0.s tmp/grind/func_8004A4E0/s22/jtbl_data.s -f func_8004A4E0` (prior s8/s12 runs never supplied the jump table at all, so m2c refused earlier at the `jr` instruction itself; this session supplies the real rodata to see what m2c does once that blocker is lifted).
+- result: m2c now gets past the missing-jtbl refusal and fails on a different, more specific error: `Cannot find jtbl target .L8004A990` (tmp/grind/func_8004A4E0/s22/m2c_err2.txt). Grepping asm/funcs/*.s confirms `.L8004A990` and 7 of the other 8 non-default jtbl_8001541C targets (.L8004ABD8, .L8004AE0C, .L8004AF84, .L8004B0C8, .L8004B0E4, .L8004B27C, .L8004B4D8) are `jlabel` lines inside asm/funcs/func_8004A940.s (lines 24,171,313,408,490,498,601,753), not inside func_8004A4E0.s at all — confirming s10's cross-function-jtbl finding independently via m2c's own symbol resolver, and pinning down that it is specifically func_8004A4E0's own primary per-record-type dispatch table (indexed at .L8004A534 by `lbu $t0,0($s2); sll $t0,$t0,2`) that reaches into func_8004A940, not a side table.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: m2c (tools/m2c/m2c.py) run against asm/funcs/func_8004A4E0.s + a synthetic rodata file holding jtbl_8001541C's real values; cross-checked against asm/funcs/func_8004A940.s; whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged), zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/c-decl.c:1182
+
+## [s22] FRONTIER (updated)
+1. Operator/engine (Judge door 1, docs/grind/decisions.md:1320): teach tools/scan_hand_coded.py one of the three corpus-clean not-C signals already banked (trapping add s18b 0/1299; cross-function jtbl target s10/s22 0/58; hazard-free nop s21 0/1297) so func_8004A4E0 scores STRONG and the canonical-asm grant door opens.
+2. Otherwise: the modality ladder is exhausted at floor 163 (structural/enumerate/synthesis/solver/forensics/rederive all re-confirm no_c_body / class kills; no pure-C axis remains). Escalation modality should file LADDER EXHAUSTED and rotate.
+
+## [s22] m2c cannot decompile func_8004A4E0 even with jtbl_8001541C's real values supplied, because 8 of its 16 non-default entries resolve to labels interior to func_8004A940's body — a single C function can never emit a jump table whose targets are labels scoped to a different function.
+- mechanism: C label identifiers are scoped per-function in GCC 2.7.2's front end: push_label_level()/pop_label_level() (tools/gcc-2.7.2/c-decl.c:1182,1210) bracket each function's label namespace, so no goto/switch-lowered computed-jump inside one function body can ever resolve to a label belonging to a sibling function.
+- probe: Built tmp/grind/func_8004A4E0/s22/jtbl_data.s, a synthetic .rodata block spelling jtbl_8001541C's 16 words (from src/main/d_5BF0.c) as label references, then ran python3 tools/m2c/m2c.py asm/funcs/func_8004A4E0.s tmp/grind/func_8004A4E0/s22/jtbl_data.s -f func_8004A4E0 (prior s8/s12 m2c runs never supplied the jump table at all and refused earlier, at the jr instruction itself).
+- result: m2c gets past the missing-jtbl refusal and fails with a more specific error: 'Cannot find jtbl target .L8004A990'. Grepping asm/funcs/*.s confirms .L8004A990 and 7 of the other 8 non-default jtbl_8001541C targets are jlabel lines inside asm/funcs/func_8004A940.s (lines 24,171,313,408,490,498,601,753), not func_8004A4E0.s — independently confirming s10's cross-function-jtbl finding via m2c's own symbol resolver, and pinning it to func_8004A4E0's own primary per-record-type dispatch table.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: m2c (tools/m2c/m2c.py) against asm/funcs/func_8004A4E0.s + synthetic rodata holding jtbl_8001541C's real values, cross-checked against asm/funcs/func_8004A940.s; whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged), zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/c-decl.c:1182
+
+## [s22] Kill re-audit (mandated by floor-flat rule): re-measured this session's sandbox floor and no_c_body state on the current chassis before any new probe.
+- mechanism: n/a - re-audit of measurement conditions
+- probe: sandbox func_8004A4E0 --disable all at current HEAD
+- result: score 163, no_c_body true, cheat_asm_stripped 71, no diff available (whole-body INCLUDE_ASM); no prior kill voided by this re-measurement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at current HEAD, zero FAKE constructs
