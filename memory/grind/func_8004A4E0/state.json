@@ -1,7 +1,7 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 15,
+ "session_count": 16,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -93,13 +93,19 @@
    "floor": 163,
    "modality": "enumerate",
    "headline": "s15 enumerate: spelling-sweep precondition (existing C region to carve) unmet on whole-body INCLUDE_ASM chassis; identical class kill re-confirmed via fresh sandbox+canonical measurement"
+  },
+  {
+   "session": 16,
+   "floor": 163,
+   "modality": "enumerate",
+   "headline": "s16 enumerate (2nd re-run): sweep precondition still unmet, no_c_body:true byte-identical to s13-s15; class kill re-confirmed, no new axis found"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No live pure-C or rederive-axis hypothesis remains for func_8004A4E0; the cross-function jtbl dispatch + custom callee-saved ABI class kill is independently re-confirmed by every modality tried across 15 sessions now including enumerate twice.",
+   "hypothesis": "No live pure-C or rederive-axis hypothesis remains for func_8004A4E0; the cross-function jtbl dispatch + custom callee-saved ABI class kill is independently re-confirmed by every modality tried across 16 sessions now, including enumerate three times.",
    "mechanism": "n/a \u2014 whole-body canonical-asm grant, not a reg-alloc/scheduling/spelling residual",
-   "next_probe": "operator/escalation-side only: when the driver assigns escalation modality, file the accumulated s8-s15 evidence as a landing-path confirmation (owner-ruled ASM-WHOLE canonical grant per inline_asm_canonical.txt:199 / Q40) and check whether queue done's authorize-bucket path needs to run for this function."
+   "next_probe": "operator/escalation-side only: when the driver assigns escalation modality, file the accumulated s8-s16 evidence as a landing-path confirmation (owner-ruled ASM-WHOLE canonical grant per inline_asm_canonical.txt:199 / Q40) and check whether queue done's authorize-bucket path needs to run for this function."
   }
  ],
  "judge_constraints": [],
@@ -246,6 +252,14 @@
    "statement": "The SYSTEMATIC SPELLING SWEEP procedure (mark a differing block ENUM-BEGIN/END in a candidate C file, run tools/spelling_enum.py + tools/sweep_variants.py over it) has an applicable surface on func_80",
    "kill_scope": "class",
    "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD b9601d742, zero FAKE constructs (candidate.c comments-only; no src edits made this session)",
+   "predicate_cite": "docs/audits/func_8004A4E0-canonical-2026-09-29.md:31",
+   "result": "sandbox returned {\"score\":163,\"no_c_body\":true,\"build_insns\":0} and printed 'no diff: function is still whole-body INCLU"
+  },
+  {
+   "session": 16,
+   "statement": "The SYSTEMATIC SPELLING SWEEP procedure (mark a differing block ENUM-BEGIN/END in a candidate C file, run tools/spelling_enum.py + tools/sweep_variants.py over it) has an applicable surface on func_80",
+   "kill_scope": "class",
+   "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD e0b805366, zero FAKE constructs (candidate.c comments-only; no src edits made this session)",
    "predicate_cite": "docs/audits/func_8004A4E0-canonical-2026-09-29.md:31",
    "result": "sandbox returned {\"score\":163,\"no_c_body\":true,\"build_insns\":0} and printed 'no diff: function is still whole-body INCLU"
   }

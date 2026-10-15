@@ -217,3 +217,11 @@ it would only become live if a future session carved a C island out of the body 
 - [s15] 7 of the ladder's modalities (recon/structural/permuter/enumerate/synthesis/solver/forensics/rederive — now including this enumerate pass a second time) all independently land on the same class kill: no C body exists to apply the modality's technique to.
 
 - [s15] The underlying class kill (func_8004A4E0's own jump table dispatches into the middle of func_8004A940's body, bypassing its prologue; no switch/goto/fnptr lowering under GCC 2.7.2's per-function compilation model can do this) is unchanged since s8 and re-cited at docs/audits/func_8004A4E0-canonical-2026-09-29.md:31.
+
+- [s16] sandbox func_8004A4E0 --disable all --diff at HEAD e0b805366 returns {"score":163,"no_c_body":true,"build_insns":0,"cheat_asm_stripped":71} and prints 'no diff: function is still whole-body INCLUDE_ASM — there is no C to compare', identical to every prior session's fields since s2.
+
+- [s16] src/main/3AB48.c is unchanged: INCLUDE_ASM("asm/funcs", func_8004A4E0); — no C statements exist anywhere in the body, so the enumerate modality's precondition (an existing candidate region to mark ENUM-BEGIN/END and feed to tools/spelling_enum.py) cannot be met.
+
+- [s16] This is the third time the enumerate modality has been dispatched for this function (s6-ish earlier, s15, now s16) and all three measurements agree character-for-character with the s2 canonical/sandbox baseline.
+
+- [s16] The underlying ASM-WHOLE canonical grant (docs/audits/func_8004A4E0-canonical-2026-09-29.md, inline_asm_canonical.txt:199, owner ruling Q40) remains the standing disposition; 6+ distinct modalities (recon, forensics x2, rederive x2, structural, enumerate x2 now x3) have all independently re-confirmed it with zero FAKE constructs and zero src edits.

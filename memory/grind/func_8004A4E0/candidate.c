@@ -91,4 +91,8 @@ INCLUDE_ASM("asm/funcs", func_8004A4E0);
  * "no_c_body": true}, identical ASM-WHOLE reason string. No region exists to enumerate
  * spellings of; the sweep's precondition is unmet for the same structural reason s13/s14
  * found (no existing C statements/declarations), now confirmed for the enumerate axis too.
+ *
+ * s16 (enumerate, 2nd re-run): sandbox --diff re-measured again at HEAD e0b805366, byte-for-
+ * byte identical fields to s15 ({"score":163,"no_c_body":true,"build_insns":0}). No frontier
+ * change. See hypotheses.md [s16] for the full record.
  */

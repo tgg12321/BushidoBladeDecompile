@@ -472,3 +472,21 @@ that a further session (s14 structural) has run since the chassis was last check
 - kill_scope: class
 - measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD b9601d742, zero FAKE constructs (candidate.c comments-only; no src edits made this session)
 - predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## [s16] The SYSTEMATIC SPELLING SWEEP procedure has an applicable surface on func_8004A4E0 this session (enumerate modality, second re-run).
+- mechanism: n/a — spelling enumeration operates on an existing candidate C file's region of named sub-expressions; the chassis has no C statements at all to carve a region out of.
+- probe: sandbox func_8004A4E0 --disable all --diff (fresh, HEAD e0b805366)
+- result: sandbox returned {"score":163,"no_c_body":true,"build_insns":0} and printed 'no diff: function is still whole-body INCLUDE_ASM — there is no C to compare'. Identical to s2/s13/s14/s15's measured output char-for-char. Zero C statements exist in src/main/3AB48.c to mark ENUM-BEGIN/END around; sweep precondition unmet for the third consecutive enumerate-axis measurement.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD e0b805366, zero FAKE constructs (candidate.c comments-only; no src edits made this session)
+- predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## [s16] The SYSTEMATIC SPELLING SWEEP procedure (mark a differing block ENUM-BEGIN/END in a candidate C file, run tools/spelling_enum.py + tools/sweep_variants.py over it) has an applicable surface on func_8004A4E0 this session.
+- mechanism: n/a — spelling enumeration operates on an existing candidate C file's region of named sub-expressions; the chassis has no C statements at all to carve a region out of.
+- probe: sandbox func_8004A4E0 --disable all --diff (fresh, HEAD e0b805366)
+- result: sandbox returned {"score":163,"no_c_body":true,"build_insns":0} and printed 'no diff: function is still whole-body INCLUDE_ASM — there is no C to compare'. Byte-for-byte identical to s2/s13/s14/s15's measured output. Zero C statements exist in src/main/3AB48.c to mark ENUM-BEGIN/END around; sweep precondition remains unmet for the third consecutive enumerate-axis measurement.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD e0b805366, zero FAKE constructs (candidate.c comments-only; no src edits made this session)
+- predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
