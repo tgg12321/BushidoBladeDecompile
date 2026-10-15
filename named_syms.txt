@@ -1224,7 +1224,7 @@ D_801077B0                                   = 0x801077B0;  /* order list built 
 /* From text1a.c around lines 55, 1093, 1201, 1235 etc.  D_80094E08 */
 /* (the index into D_80094DF0's VRAM rect lists) */
 /* plus the DR_MOVE packet cursor D_800A3378 and color conversion. */
-D_800A3378                                     = 0x800A3378;  /* cursor over the DR_MOVE packets of the parity bank D_800A9830[parity] (gpu_AddDrawMove: SetDrawMove, linked into the OT, ++) */  /* data-wave 2026-10-08: was g_text1a_record_ptr */
+D_800A3378                                     = 0x800A3378;  /* cursor over the DR_MOVE packets of the parity bank D_800A9830[var_0] (gpu_AddDrawMove: SetDrawMove, linked into the OT, ++) */  /* data-wave 2026-10-08: was g_text1a_record_ptr */
 D_800A3234                                     = 0x800A3234;  /* frame-parity bank last selected (D_800A36AC & 1), index into D_800A9830; init -1 (gpu_AddDrawMove) */  /* data-wave 2026-10-08: was g_text1a_record_idx */
 D_80094E08                              = 0x80094E08;  /* u8 lookup by obj->unk_08 (0xFF = none); values index D_80094DF0 */  /* data-wave 2026-10-08: was g_stage_lighting_idx_table */
 D_800F6340                                       = 0x800F6340;  /* D_800F62E0[1], a lighting record (light angles, lmat, cmat, back) passed to calc_LightMatrix */  /* data-wave 2026-10-08: was g_text1a_buffer_a */
@@ -1451,7 +1451,7 @@ D_800A30E8                                           = 0x800A30E8;  /* high-wate
 D_800A390D                                      = 0x800A390D;  /* frame-skip count: frames main draws without presenting; decrements before frame submit */  /* data-wave 2026-10-08: was g_voice_skip_count */
 D_800A3713                                = 0x800A3713;  /* countdown gating the START-pause menu (func_80016E60) entry; main_loop.md step 13 */  /* data-wave 2026-10-08: was g_select_pause_countdown */
 D_800A37C0                                  = 0x800A37C0;  /* per-step timer of func_800174F4's case 20 (6CF8.c:566-590), preset to 500; reset at 6CF8.c:585 and 2B344.c:452 */  /* data-wave 2026-10-08: was g_global_frame_counter */
-D_800A3788                             = 0x800A3788;  /* 3-bit set toggled per menu line (select 3..5) by func_80016E60, passed as select | D << 16 to func_8005C8A8; column index of D_8009A9F0 in func_80058580 */  /* data-wave 2026-10-08: was g_intro_select_packed_state */
+D_800A3788                             = 0x800A3788;  /* 3-bit set toggled per menu line (var_2 3..5) by func_80016E60, passed as var_2 | D << 16 to func_8005C8A8; column index of D_8009A9F0 in func_80058580 */  /* data-wave 2026-10-08: was g_intro_select_packed_state */
 
 /* === Cross-cutting unnamed state used in 3+ named functions (2026-05-17) -- 4 highs === */
 D_800A3244                                       = 0x800A3244;  /* set 1 by func_800450BC, cleared by func_80045188 / func_800450F4, returned by func_80045194; gates func_800450F4's block copy */  /* data-wave 2026-10-08: was g_seq_active_flag */
@@ -1792,7 +1792,7 @@ D_80094B98                                        = 0x80094B98;  /* D_80094B96[0
 D_80094B9A                                        = 0x80094B9A;  /* D_80094B96[0].unk_02[1]: s16, times a0->unk_12 >> 12 it becomes node work.t[1] */  /* data-wave 2026-10-08: was g_attack_scale_z */
 D_800A3388                                      = 0x800A3388;  /* holds the node translation address func_80040D48 passes for player 1; func_8004211C hands it to func_80041EB0 as the second position (31D3C.c:478-487) */  /* data-wave 2026-10-08: was g_attack_state_ptr */
 D_800A9B28                                     = 0x800A9B28;  /* VECTOR copied from *a0 by func_80041E10; func_80041EB0 subtracts it from tracked positions to aim light[1] */  /* data-wave 2026-10-08: was g_cam_saved_a0_data */
-D_800A9A20                                = 0x800A9A20;  /* = arg0[4] cached; compared against (s16*)fp_ptr[4] for change detection */  /* data-wave 2026-10-08: was g_anim_event_arg4_cached */
+D_800A9A20                                = 0x800A9A20;  /* = arg0[4] cached; compared against (s16*)var_0[4] for change detection */  /* data-wave 2026-10-08: was g_anim_event_arg4_cached */
 
 /* === func_80077940 packed value, D_8009BD58 byte, D_800A324C cache (2026-05-17) -- 3 highs === */
 D_800A35E8                                     = 0x800A35E8;  /* bit-packed from func_80077940's arg0: bits0-9 + (bits12-21 >> 2) + (bit24 >> 4) + (bit26 >> 5); read as an argument of func_8006E534 / func_800770B8 */  /* data-wave 2026-10-08: was g_text1b_packed_arg */
