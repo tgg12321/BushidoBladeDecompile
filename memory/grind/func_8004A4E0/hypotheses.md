@@ -358,3 +358,22 @@ instance form.
 - probe: canonical func_8004A4E0; sandbox func_8004A4E0 --disable all (tmp/grind/func_8004A4E0/s11/sandbox.txt)
 - result: canonical verdict ASM-WHOLE (inline_asm_canonical.txt whole-function grant), sandbox score 163, no_c_body true, build_insns 0 -- identical to s10. All prior instance and class kills (s3, s6, s7, s8, s9, s10) stand unweakened.
 - verdict: CONFIRMED
+
+## [s12] decomp.me corpus search (gcc2.7.2-psx) finds a transplantable close-match body for func_8004A4E0's whole-body asm, now that curl_cffi is installed.
+- mechanism: n/a — corpus similarity search against the function's own instruction bag; no GCC-pass mechanism, pure lookup.
+- probe: `pip install curl_cffi` into `.venv` (previously missing, blocking s11's attempted due-diligence pass); `python3 tools/decomp_me_scrape.py download --compiler gcc2.7.2-psx --limit 500` (316 scratches fetched to tmp/decomp_me_corpus/); `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8004A4E0.s` (ties broken by hash order across runs, output saved tmp/grind/func_8004A4E0/s12/decomp_me_search.txt).
+- result: best similarity 0.057 (func_80044240, unrelated function, score 0/8900 on ITS OWN target — not a func_8004A4E0 candidate at all), rest of top-5 at 0.044-0.051. No match anywhere near transplant-viable range. This is the measured confirmation of s11's predicted null result: the structural class kill (cross-function jtbl dispatch, H1's custom callee-saved ABI) means no ordinary compiled-C function in the corpus resembles this body, because no ordinary compiled-C function does what this body does.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged), zero FAKE constructs (no C body exists); corpus snapshot of 316 gcc2.7.2-psx decomp.me scratches fetched this session (tmp/decomp_me_corpus/, 2026-10-15) — a future corpus snapshot could in principle differ, hence instance not class.
+
+## Frontier update (s12)
+- Live frontier item "decomp.me corpus search, if curl_cffi installed" (s11) is RESOLVED: installed, run, null result banked above. No live frontier items remain on the rederive axis for this function. The only remaining open item is the operator-side scanner-gap filing noted since s10 (tools/ is outside grind surface).
+
+## [s12] A decomp.me corpus search (gcc2.7.2-psx compiler tag) finds a transplantable close-match body for func_8004A4E0's whole-body asm, now that curl_cffi is installed in .venv.
+- mechanism: n/a -- corpus similarity lookup, no GCC-pass mechanism
+- probe: pip install curl_cffi; python3 tools/decomp_me_scrape.py download --compiler gcc2.7.2-psx --limit 500 (316 scratches fetched to tmp/decomp_me_corpus/); python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8004A4E0.s
+- result: Best similarity 0.057, against an unrelated function (func_80044240, not a func_8004A4E0 candidate); rest of top-5 at 0.044-0.051. No transplant-viable match anywhere in the 316-scratch corpus. This is the measured confirmation of s11's predicted null result.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged), zero FAKE constructs (no C body exists); corpus snapshot of 316 gcc2.7.2-psx decomp.me scratches fetched this session (tmp/decomp_me_corpus/, 2026-10-15) -- a future, larger corpus snapshot could in principle differ, hence instance not class

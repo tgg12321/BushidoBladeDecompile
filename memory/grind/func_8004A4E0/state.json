@@ -1,7 +1,7 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 11,
+ "session_count": 12,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -69,18 +69,19 @@
    "floor": 163,
    "modality": "rederive",
    "headline": "rederive s11: sibling transplant has no applicable surface (data-only overlap); decomp.me corpus mining infeasible (missing curl_cffi dep, no cache) and would not bear on the s8/s10 cross-function-jtb"
+  },
+  {
+   "session": 12,
+   "floor": 163,
+   "modality": "rederive",
+   "headline": "s12 rederive: unblocked decomp.me corpus search (installed curl_cffi, 316 scratches fetched) -> null result (best similarity 0.057, unrelated function); confirms s11's prediction, no rederive-axis fro"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "scan_hand_coded should carry a decisive signal for jtbl targets outside the referencing function (0/58 compiled C) so func_8004A4E0 gets direct STRONG backing instead of resting transitively on its helpers",
-   "mechanism": "scanner coverage gap (tools/ is outside the grinder surface: operator follow-up)",
-   "next_probe": "escalation/recon session: file the s8+s9+s10+s11 evidence into docs/audits/func_8004A4E0-canonical-2026-09-29.md and record the scanner gap as an operator follow-up in docs/grind/decisions.md"
-  },
-  {
-   "hypothesis": "If an operator installs curl_cffi into .venv, decomp.me corpus search could still be run as a due-diligence pass, though the structural class-kill argument predicts a null result",
-   "mechanism": "tooling dependency gap, not a search-space gap",
-   "next_probe": "operator: pip install curl_cffi into .venv, then python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8004A4E0.s"
+   "hypothesis": "No live pure-C or rederive-axis hypothesis remains for func_8004A4E0 -- s1-s11's class kill (cross-function jtbl dispatch + custom callee-saved ABI, docs/audits/func_8004A4E0-canonical-2026-09-29.md) is independently re-confirmed by every modality tried so far (recon, structural, permuter, enumerate, synthesis, solver, forensics x3, rederive x2), and this session's corpus search closes the one open due-diligence item (s11's curl_cffi gap).",
+   "mechanism": "n/a -- no GCC-pass lever is live; this is a whole-body canonical-asm grant, not a reg-alloc/scheduling residual",
+   "next_probe": "operator/escalation-side only: file the accumulated s8-s12 evidence as a landing-path confirmation (the function already carries an owner-ruled ASM-WHOLE canonical grant per inline_asm_canonical.txt:199 / Q40) and check whether queue done's authorize-bucket path needs to run for this function rather than continuing to grind it as if a C body were still being searched for."
   }
  ],
  "judge_constraints": [],
@@ -189,6 +190,14 @@
    "measured_on": "tools/decomp_me_scrape.py at HEAD 63ba4892b, this sandbox's .venv; func_8004A4E0 chassis INCLUDE_ASM stub, zero FAKE constructs",
    "predicate_cite": "",
    "result": "curl_cffi dependency is not installed in .venv and no local corpus cache exists under tmp/decomp_me_corpus/; the probe i"
+  },
+  {
+   "session": 12,
+   "statement": "A decomp.me corpus search (gcc2.7.2-psx compiler tag) finds a transplantable close-match body for func_8004A4E0's whole-body asm, now that curl_cffi is installed in .venv.",
+   "kill_scope": "instance",
+   "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged), zero FAKE constructs (no C body exists); corpus snapshot of 316 gcc2.7.2-psx decomp.me scratches fetched this session (tmp/decomp_me_corpus",
+   "predicate_cite": "",
+   "result": "Best similarity 0.057, against an unrelated function (func_80044240, not a func_8004A4E0 candidate); rest of top-5 at 0."
   }
  ],
  "ladder_skip": 0,

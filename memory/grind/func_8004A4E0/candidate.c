@@ -53,3 +53,16 @@ INCLUDE_ASM("asm/funcs", func_8004A4E0);
  * the same GCC per-function model the s8/s10 class kill already covers, so they cannot
  * contain this function's cross-function-register-sharing jtbl dispatch shape.
  * Floor re-confirmed 163, no_c_body, INCLUDE_ASM stays (tmp/grind/func_8004A4E0/s11/sandbox.txt). */
+
+/* s12 (rederive): unblocked s11's decomp.me probe — `pip install curl_cffi` into .venv
+ * succeeded, downloaded 316 gcc2.7.2-psx scratches to tmp/decomp_me_corpus/, ran the
+ * similarity search against this function's asm. Best match similarity 0.057, against an
+ * UNRELATED function (func_80044240), not a func_8004A4E0 candidate at all — null result,
+ * confirming s11's prediction that no ordinary compiled-C corpus entry can resemble a body
+ * whose jtbl dispatches into a different function's interior (s8 class kill). Independently
+ * re-derived the jtbl_8001541C cross-function-target list from src/main/d_5BF0.c (matches
+ * s8 exactly) and re-ran m2c (same missing-jump-table refusal as s8). canonical() still
+ * ASM-WHOLE, sandbox still {"score": 163, "no_c_body": true}.
+ * tmp/grind/func_8004A4E0/s12/decomp_me_search.txt. No live rederive-axis frontier remains;
+ * every item on the s1-s11 ladder (recon/structural/permuter/enumerate/synthesis/solver/
+ * forensics x3/rederive x2) has independently landed on the same ASM-WHOLE class kill. */

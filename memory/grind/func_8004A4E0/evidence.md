@@ -165,3 +165,29 @@ it would only become live if a future session carved a C island out of the body 
 - [s11] tools/decomp_me_scrape.py requires curl_cffi, which is not installed in .venv and has no locally cached corpus; infeasible this session without a package install (tmp/grind/func_8004A4E0/s11/decompme_probe.txt)
 
 - [s11] The s8 class kill (jtbl_8001541C dispatches 8/16 entries into the MIDDLE of func_8004A940's compiled body, sharing live register state across a function boundary -- unreachable from any C switch/goto/fnptr lowering under GCC 2.7.2's per-function RTL/assembly model, toplev.c:2647 + stmt.c:4704) generalizes to rule out decomp.me's corpus as a rederive source even if it were reachable, since every decomp.me scratch is itself a single-function compiled-C target under the same model
+
+## s12 (rederive) — decomp.me corpus search, now unblocked
+- [s12] `pip install curl_cffi` succeeded in `.venv` (previously missing, per s11). `python3
+  tools/decomp_me_scrape.py download --compiler gcc2.7.2-psx --limit 500` fetched 316 scratches
+  to `tmp/decomp_me_corpus/`. `search --asm-file asm/funcs/func_8004A4E0.s` returned best
+  similarity 0.057 (unrelated func_80044240), no transplant-viable candidate anywhere in the
+  corpus. Saved: `tmp/grind/func_8004A4E0/s12/decomp_me_search.txt`.
+- [s12] Re-derived the jtbl_8001541C cross-function-target finding independently (grep on
+  `src/main/d_5BF0.c`): entries `0x8004A990, 0x8004ABD8, 0x8004A5D0, 0x8004AE0C, 0x8004AF84,
+  0x8004B0C8, 0x8004B0E4, 0x8004B4D8, 0x8004B27C` are all outside func_8004A4E0's own span
+  (`0x8004A4E0`-`0x8004A60C`); matches candidate.c's s8 note verbatim. `m2c.py` still refuses
+  outright on the missing-jump-table error (identical to s8).
+- [s12] `canonical func_8004A4E0` re-confirmed ASM-WHOLE this session (same reason string,
+  asm_insns=7, total=163).
+
+- [s12] pip install curl_cffi succeeded in .venv, resolving s11's tooling-dependency gap.
+
+- [s12] tools/decomp_me_scrape.py download --compiler gcc2.7.2-psx --limit 500 fetched 316 scratches to tmp/decomp_me_corpus/.
+
+- [s12] tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8004A4E0.s returned best similarity 0.057 against an unrelated function; no candidate near transplant-viable range.
+
+- [s12] Independently re-derived jtbl_8001541C's cross-function-target list from src/main/d_5BF0.c (0x8004A990, 0x8004ABD8, 0x8004A5D0, 0x8004AE0C, 0x8004AF84, 0x8004B0C8, 0x8004B0E4, 0x8004B4D8, 0x8004B27C), all outside func_8004A4E0's own span (0x8004A4E0-0x8004A60C) -- matches s8's banked finding exactly.
+
+- [s12] m2c.py still refuses the body outright on the missing-jump-table error, identical to s8.
+
+- [s12] canonical func_8004A4E0 re-confirmed ASM-WHOLE this session (same reason string, asm_insns=7, total=163); sandbox --disable all re-confirmed {"score": 163, "no_c_body": true, "build_insns": 0}.
