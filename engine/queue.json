@@ -4,17 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "math_NegNormalize3D",
-      "file": "main/17AFC",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "owner 2026-10-08: inline-asm re-review. Body carries PsyQ GTE macro bodies written out as __asm__ volatile statements instead of macro calls (tmp/asm_inventory.tsv). Rework: macro calls from a verbatim PsyQ header, re-derive the C around them, fresh layer-2 + cheat-reviewer.",
-      "addr": "800274BC"
-    },
-    {
       "func": "func_800288C8",
       "file": "main/17AFC",
       "distance": 0,
@@ -255,6 +244,17 @@
       "origin": "regression",
       "reopen_reason": "owner 2026-10-08: inline-asm re-review. Body carries PsyQ GTE macro bodies written out as __asm__ volatile statements instead of macro calls (tmp/asm_inventory.tsv). Rework: macro calls from a verbatim PsyQ header, re-derive the C around them, fresh layer-2 + cheat-reviewer.",
       "addr": "800325E0"
+    },
+    {
+      "func": "math_NegNormalize3D",
+      "file": "main/17AFC",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": "owner 2026-10-08: inline-asm re-review. Body carries PsyQ GTE macro bodies written out as __asm__ volatile statements instead of macro calls (tmp/asm_inventory.tsv). Rework: macro calls from a verbatim PsyQ header, re-derive the C around them, fresh layer-2 + cheat-reviewer.",
+      "addr": "800274BC"
     },
     {
       "func": "func_8003E6D8",
@@ -2027,5 +2027,5 @@
       "C": 183
     }
   },
-  "toolchain_fingerprint": "85cd2a73ee7a8972"
+  "toolchain_fingerprint": "cf03a18b9b2d4e1d"
 }
