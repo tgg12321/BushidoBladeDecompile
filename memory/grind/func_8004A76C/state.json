@@ -1,26 +1,27 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 37,
    "modality": "recon",
    "headline": "GTE perspective-transform loop, hand software-pipelined; scan_hand_coded STRONG 1/8 (S7); A6 audit already closed the one open C-form question (global register var) \u2014 ready for escalation disposition,"
+  },
+  {
+   "session": 2,
+   "floor": 37,
+   "modality": "structural",
+   "headline": "structural modality inapplicable (no C body, ASM-WHOLE canonical GTE grant); cluster scan now shows all three func_8004A4E0 callees STRONG"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ASM-WHOLE canonical grant is correct and the 2026-10-08 reopen question is already answered for this function specifically (unlike func_8004A4E0's unresolved LOW-tier case).",
-   "mechanism": "scan_hand_coded STRONG 1/8 (S7) measured directly on func_8004A76C, plus the closed A6 audit naming this exact function and ruling out the one live alternative-C-form theory.",
-   "next_probe": "In escalation modality (only), file the docs/grind/decisions.md disposition entry citing A6 + the STRONG scan tier as gate evidence, with re-activation triggers (engine signal change, or sibling func_8004A808/func_8004A940/func_8004A4E0 movement), then return owner-gated."
-  },
-  {
-   "hypothesis": "func_8004A808 and func_8004A940 (same TU, same reopened ABI cluster) will scan STRONG the same way, strengthening a cluster-wide record before any one of the three is escalated.",
-   "mechanism": "Shared custom callee-saved-register ABI across the func_8004A4E0/func_8004A76C/func_8004A808/func_8004A940 cluster per the func_8004A4E0 canonical audit.",
-   "next_probe": "scan_hand_coded.py --single func_8004A808 and --single func_8004A940 (cheap, no build needed)."
+   "hypothesis": "The ASM-WHOLE canonical grant is correct and the 2026-10-08 reopen's question is already answered for this function, now reinforced by both sibling callees independently scanning STRONG on the same S7 signal.",
+   "mechanism": "scan_hand_coded STRONG 1/8 (S7) measured directly on func_8004A76C, the closed A6 audit naming it specifically, and (new this session) func_8004A808/func_8004A940 both confirming STRONG 3/8 on the shared ABI-violation signal.",
+   "next_probe": "In escalation modality (not before -- mandated-modality rule forbids disposing here), file the docs/grind/decisions.md disposition entry citing A6 plus the cluster-wide STRONG scan results as gate evidence, with re-activation triggers (engine signal change, or further sibling movement), then return owner-gated."
   }
  ],
  "judge_constraints": [],
@@ -33,6 +34,14 @@
    "measured_on": "asm/funcs/func_8004A76C.s (39 insns); no C body exists so no FAKE carrier is present",
    "predicate_cite": "docs/audits/INLINE-ASM-AUDIT-2026-10-01.md:93",
    "result": "A6 already closed this with three independent reasons: (1) the sole caller func_8004A4E0 is itself whole-body hand asm h"
+  },
+  {
+   "session": 2,
+   "statement": "Structural-modality levers (block-local var splits, declaration order, type narrowing, statement re-association) require an existing C body with a sandbox-measured non-zero distance to operate on; thi",
+   "kill_scope": "instance",
+   "measured_on": "current src/main/3AB48.c (INCLUDE_ASM stub, unchanged this session), no FAKE carrier (no C body exists)",
+   "predicate_cite": "",
+   "result": "canonical still ASM-WHOLE ('whole-function canonical-asm grant in inline_asm_canonical.txt'); sandbox still {\"score\":37,"
   }
  ],
  "ladder_skip": 0,

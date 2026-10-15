@@ -57,3 +57,39 @@
 - [s1] OBJECT MODEL: no DATA MODEL section was dispatched for this function; independently confirmed by reading the 39-insn body that it touches only register-convention parameters and GTE coprocessor registers, no global symbol — MATCHES n/a, no global object model applies
 
 - [s1] sibling func_8004A4E0 (the sole caller, 23 sessions, floor flat 163, rotated) scans LOW 0/8 and was Judge-FAILed on exactly the scan_hand_coded-STRONG bar (docs/grind/decisions.md:1320); func_8004A76C does not share that problem because it scans STRONG 1/8 directly and has its own closed A6 audit
+
+## s2 (structural) — no C body to apply structural levers to; cluster scan completed
+
+- Re-measured this session: `canonical func_8004A76C` still returns **ASM-WHOLE** (same
+  reason, "whole-function canonical-asm grant in inline_asm_canonical.txt"); `sandbox
+  func_8004A76C --disable all` still `{"score":37,"no_c_body":true,"build_insns":0}` —
+  src/main/3AB48.c:30 is unchanged, still a bare `INCLUDE_ASM` stub. Nothing moved since s1.
+- Structural-modality levers (block-local var splits, declaration order, type narrowing,
+  statement re-association) operate on a C body under a sandbox-measured distance. This
+  function has none — the canonical gate classifies the whole function as hand asm, so there
+  is no `--diff` to classify into source-level/operand-only/not-scored hunks (confirmed again
+  this session: `--diff` still prints "no diff: function is still whole-body INCLUDE_ASM").
+  Every structural technique is inapplicable by construction, not merely unproductive.
+- Completed the s1 frontier's cheap cluster-scan probe (item 2): ran
+  `scan_hand_coded.py --single` on both remaining cluster siblings.
+  - `func_8004A808`: **tier=STRONG, score=3/8** (S3 no-spills, S4 front-loads, S7 unsaved
+    `$s0`) — "GCC-impossible, decisive" on S7 alone, same as func_8004A76C's own S7 hit.
+  - `func_8004A940`: **tier=STRONG, score=3/8** (same S3/S4/S7 triplet; S7 fires on EIGHT
+    unsaved callee-saves: `$s0`-`$s7`, the maximal shape).
+  - All three jal-cluster siblings named in func_8004A4E0's custom-ABI evidence
+    (func_8004A76C, func_8004A808, func_8004A940) now have an independently-measured
+    scan_hand_coded STRONG verdict on file. Only the cluster's caller, func_8004A4E0 itself,
+    scans LOW (0/8) — which is exactly the asymmetry its own s18/s18b Judge FAIL already
+    turned on (docs/grind/decisions.md:1320): the caller saves everything it uses, the three
+    callees don't, because the callees are the ones directly leaking unsaved `$sN` state back
+    across the `jal` boundary.
+
+- [s2] canonical func_8004A76C = ASM-WHOLE, unchanged since s1 (whole-function canonical-asm grant in inline_asm_canonical.txt)
+
+- [s2] sandbox func_8004A76C --disable all this session = {"score":37,"no_c_body":true,"build_insns":0}; --diff reports no C body exists to diff
+
+- [s2] scan_hand_coded.py --single func_8004A808 = tier=STRONG score=3/8 (S3+S4+S7, unsaved $s0)
+
+- [s2] scan_hand_coded.py --single func_8004A940 = tier=STRONG score=3/8 (S3+S4+S7, unsaved $s0-$s7, all eight)
+
+- [s2] All three func_8004A4E0-called cluster siblings (func_8004A76C, func_8004A808, func_8004A940) now carry independently-measured scan_hand_coded STRONG verdicts; only the caller func_8004A4E0 scans LOW
