@@ -113,3 +113,4 @@
 - 2026-10-15 16:43 func_8004A4E0 s16 [enumerate] floor=163: s16 enumerate (2nd re-run): sweep precondition still unmet, no_c_body:true byte-identical to s13-s15; class kill re-confirmed, no new axis found
 - 2026-10-15 16:45 func_8004A4E0 s17 [enumerate] floor=163: s17 enumerate (3rd re-run): sweep precondition still unmet, no_c_body:true identical to s2/s13-s16; same class kill re-confirmed, no new axis.
 - 2026-10-15 16:53 func_8004A4E0 s18 [synthesis] floor=163: synthesis s18: new compiler-predicate class kill - the 2 trapping addi are unemittable by GCC 2.7.2 (mips.md:381 addsi3 emits addu only; compiled C 0/1299), and the trapping-add signal is missing from scan_hand_coded, giving the Judge's re-activation door 1 a concrete mechanizable lever
+- 2026-10-15 16:55 func_8004A4E0 s19 [solver] floor=163: s19 solver: no residual to classify - sandbox object has no func_8004A4E0 symbol (whole-body INCLUDE_ASM, no C body); same as s6; kill re-audit voids nothing

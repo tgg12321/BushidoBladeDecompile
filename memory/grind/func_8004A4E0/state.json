@@ -1,8 +1,8 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 18,
- "current_modality": "synthesis",
+ "session_count": 19,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -111,18 +111,24 @@
    "floor": 163,
    "modality": "synthesis",
    "headline": "synthesis s18: new compiler-predicate class kill - the 2 trapping addi are unemittable by GCC 2.7.2 (mips.md:381 addsi3 emits addu only; compiled C 0/1299), and the trapping-add signal is missing from"
+  },
+  {
+   "session": 19,
+   "floor": 163,
+   "modality": "solver",
+   "headline": "s19 solver: no residual to classify - sandbox object has no func_8004A4E0 symbol (whole-body INCLUDE_ASM, no C body); same as s6; kill re-audit voids nothing"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Adding a trapping-add (maspsx 'handwritten instruction') signal to tools/scan_hand_coded.py makes func_8004A4E0 STRONG and satisfies the 2026-10-08 reopen bar.",
-   "mechanism": "mips.md:381 - GCC 2.7.2 never emits add/addi; corpus 0/1299 compiled C.",
-   "next_probe": "Operator/engine commit (outside grind surface) with layer-2, then re-run scan_hand_coded --single func_8004A4E0 and the hand-written re-audit."
+   "hypothesis": "Adding a trapping-add signal to tools/scan_hand_coded.py makes func_8004A4E0 STRONG and satisfies the 2026-10-08 reopen bar",
+   "mechanism": "mips.md:381 - GCC 2.7.2 addsi3 emits addu only; compiled C 0/1299 carry trapping addi",
+   "next_probe": "Operator/engine commit with layer-2, then scan_hand_coded --single func_8004A4E0 and the hand-written re-audit"
   },
   {
-   "hypothesis": "Absent the scanner change, the ladder is exhausted for this function (floor 163 > 5).",
+   "hypothesis": "Absent the scanner change, the modality ladder is exhausted (floor 163 > 5)",
    "mechanism": "n/a - disposition",
-   "next_probe": "In escalation modality: file the LADDER EXHAUSTED (non-endgame residual, floor 163): ROTATED record citing s8/s9/s18b class kills and rotate."
+   "next_probe": "Escalation modality: file the LADDER EXHAUSTED (floor 163): ROTATED record citing the s8/s9/s18b class kills, then rotate"
   }
  ],
  "judge_constraints": [
@@ -305,6 +311,22 @@
    "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 9d185896b, zero FAKE constructs",
    "predicate_cite": "",
    "result": "score 163, no_c_body true, no diff (whole-body INCLUDE_ASM); fake_ablate: nothing to ablate. Every instance kill shares "
+  },
+  {
+   "session": 19,
+   "statement": "inverse_compose.py classify can triage a PRE-RA/RA/SCHED residual for func_8004A4E0 on the current whole-body INCLUDE_ASM chassis",
+   "kill_scope": "instance",
+   "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c:29 unchanged) at HEAD d0cc26461, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "'func_8004A4E0 not found' in the sandbox object; sandbox score 163, build_insns 0, no_c_body true. Nothing to model, sam"
+  },
+  {
+   "session": 19,
+   "statement": "Kill re-audit: a banked instance kill was measured on a different chassis or under a FAKE carrier no longer present",
+   "kill_scope": "instance",
+   "measured_on": "whole-body INCLUDE_ASM chassis at HEAD d0cc26461, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "163 / no_c_body / no diff; fake_ablate found nothing to ablate. None of the banked kills is voided."
   }
  ],
  "ladder_skip": 0,

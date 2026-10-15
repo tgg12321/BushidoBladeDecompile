@@ -36,7 +36,9 @@
  * stmt.c:4704) can put a jump-table entry inside a DIFFERENT function's body.
  * Class kill — see hypotheses.md [s8], tmp/grind/func_8004A4E0/s8/.
  *
- * sandbox --disable all (s1..s18): {"score": 163, "no_c_body": true, "build_insns": 0}.
+ * s19 (solver): classify has no residual - sandbox object lacks the symbol (no C body); same as s6.
+ *
+ * sandbox --disable all (s1..s19): {"score": 163, "no_c_body": true, "build_insns": 0}.
  */
 INCLUDE_ASM("asm/funcs", func_8004A4E0);
 

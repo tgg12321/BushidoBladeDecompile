@@ -260,3 +260,9 @@ it would only become live if a future session carved a C island out of the body 
 - [s18] fact: trapping addi appears in 0/1299 compiled-C functions and 58/137 INCLUDE_ASM functions; func_8004A4E0 has 2 (s18b/addi_census.txt)
 
 - [s18] fact: scan_hand_coded.py S1-S8 contain no trapping-add signal; the Judge FAIL at docs/grind/decisions.md:1320 names a scanner commit as re-activation door 1
+
+- [s19] sandbox --disable all at HEAD d0cc26461: score 163, no_c_body true, build_insns 0 (tmp/grind/func_8004A4E0/s19/sandbox.txt)
+
+- [s19] inverse_compose classify (object path): func_8004A4E0 not found in the sandbox object (tmp/grind/func_8004A4E0/s19/classify_obj.txt)
+
+- [s19] fake_ablate: no FAKE-annotated constructs in candidate.c (tmp/grind/func_8004A4E0/s19/fake_ablate.txt)

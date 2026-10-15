@@ -339,3 +339,38 @@ floor 163 at s17; 17 sessions; live frontier (state.json is authoritative):
 - probe: Reviewed scan_hand_coded.py header S1-S8 (lines 7-53); census tmp/grind/func_8004A4E0/s18b/addi_census.txt.
 - result: No S-signal covers trapping add. Compiled C 0/1299, INCLUDE_ASM 58/137, func_8004A4E0 2 hits.
 - verdict: CONFIRMED
+
+## [s19] (solver) inverse_compose.py classify can triage a PRE-RA / RA / SCHED residual for func_8004A4E0 on the current chassis.
+- mechanism: the solver models compare a compiled C body's RTL/asm against the target; they need a function symbol in the sandbox object.
+- probe: text classify `inverse_compose.py classify main/3AB48 func_8004A4E0` (guard refuses: INCLUDE_ASM target, would report a fictitious PRE-RA verdict); object classify with `--target-object build/src/main/3AB48.o --ours-object tmp/sandbox/func_8004A4E0/main/3AB48.o` -> "func_8004A4E0 not found in tmp/sandbox/.../3AB48.o". Artifacts tmp/grind/func_8004A4E0/s19/{classify.txt,classify_obj.txt}.
+- result: no residual to classify. The sandbox --disable all object has no func_8004A4E0 symbol (score 163, build_insns 0, no_c_body true; tmp/grind/func_8004A4E0/s19/sandbox.txt). This is the same as s6. The RA and scheduler solvers have nothing to model until a C chassis exists, and s8 (toplev.c:2647), s9 and s18b (mips.md:381) class kills foreclose building one.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c:29 unchanged) at HEAD d0cc26461, zero FAKE constructs
+
+## [s19] Kill re-audit (mandated, floor flat): an instance kill was measured on a different chassis or under a FAKE carrier no longer present.
+- probe: fresh sandbox --disable all --diff + tools/fake_ablate.py on candidate.c at HEAD d0cc26461 (s19/sandbox.txt, s19/fake_ablate.txt).
+- result: 163 / no_c_body / "no diff: whole-body INCLUDE_ASM"; fake_ablate "no FAKE-annotated constructs ... nothing to ablate". Every banked instance kill shares this chassis and zero-FAKE state; none voided.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis at HEAD d0cc26461, zero FAKE constructs
+
+## [s19] FRONTIER (unchanged from s18b)
+1. Operator/engine: trapping-add signal in tools/scan_hand_coded.py (mips.md:381, s18b/addi_census.txt), then the hand-written re-audit.
+2. Otherwise: escalation-modality LADDER EXHAUSTED (floor 163) record + rotation, per the Judge constraint.
+
+## [s19] inverse_compose.py classify can triage a PRE-RA/RA/SCHED residual for func_8004A4E0 on the current whole-body INCLUDE_ASM chassis
+- mechanism: the solver models compare a compiled C body against the target and need a function symbol in the sandbox object
+- probe: text classify (guard refuses on INCLUDE_ASM target); object classify --target-object build/src/main/3AB48.o --ours-object tmp/sandbox/func_8004A4E0/main/3AB48.o
+- result: 'func_8004A4E0 not found' in the sandbox object; sandbox score 163, build_insns 0, no_c_body true. Nothing to model, same as s6. Building a chassis is foreclosed by the s8/s9/s18b class kills.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c:29 unchanged) at HEAD d0cc26461, zero FAKE constructs
+
+## [s19] Kill re-audit: a banked instance kill was measured on a different chassis or under a FAKE carrier no longer present
+- mechanism: n/a - re-audit of measurement conditions
+- probe: fresh sandbox --disable all --diff and tools/fake_ablate.py on candidate.c
+- result: 163 / no_c_body / no diff; fake_ablate found nothing to ablate. None of the banked kills is voided.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis at HEAD d0cc26461, zero FAKE constructs
