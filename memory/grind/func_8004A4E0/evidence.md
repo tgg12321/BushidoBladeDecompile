@@ -191,3 +191,9 @@ it would only become live if a future session carved a C island out of the body 
 - [s12] m2c.py still refuses the body outright on the missing-jump-table error, identical to s8.
 
 - [s12] canonical func_8004A4E0 re-confirmed ASM-WHOLE this session (same reason string, asm_insns=7, total=163); sandbox --disable all re-confirmed {"score": 163, "no_c_body": true, "build_insns": 0}.
+
+- [s13] sandbox func_8004A4E0 --disable all --diff this session: {"score": 163, "no_c_body": true, "build_insns": 0}, identical to every prior session; diff prints "no diff: function is still whole-body INCLUDE_ASM".
+
+- [s13] fake_ablate.py on memory/grind/func_8004A4E0/candidate.c: "no FAKE-annotated constructs found ... nothing to ablate" — the mandated re-audit has nothing to overturn.
+
+- [s13] Mandated modality this session is structural, not escalation — per the standing auto-ruling the function is NOT disposed of here even though the frontier (s8-s12) already independently converged on an ASM-WHOLE class kill across 4+ prior modalities; this session adds the structural-axis-specific confirmation that structural levers have no applicable surface absent a C body.

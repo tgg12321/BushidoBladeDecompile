@@ -377,3 +377,37 @@ instance form.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged), zero FAKE constructs (no C body exists); corpus snapshot of 316 gcc2.7.2-psx decomp.me scratches fetched this session (tmp/decomp_me_corpus/, 2026-10-15) -- a future, larger corpus snapshot could in principle differ, hence instance not class
+
+## [s13] Mandated kill re-audit (floor flat since s5): re-measure the closest banked instance kill on the current chassis with every FAKE construct ablated.
+- mechanism: n/a -- mechanical re-audit per session contract, not a new lever.
+- probe: `python3 tools/fake_ablate.py --func func_8004A4E0 --file main/3AB48 --candidate memory/grind/func_8004A4E0/candidate.c` on HEAD 9349e46f3.
+- result: tool reports "no FAKE-annotated constructs found in memory/grind/func_8004A4E0/candidate.c; nothing to ablate" -- confirms there is no FAKE carrier anywhere in the banked candidate to begin with (candidate.c is comments-only over the unmodified `INCLUDE_ASM("asm/funcs", func_8004A4E0);` stub), so none of the s1-s12 kills were measured on a chassis a FAKE construct could have been propping up. `sandbox func_8004A4E0 --disable all --diff` this session reconfirms `{"score": 163, "no_c_body": true, "build_insns": 0}` and prints "no diff: function is still whole-body INCLUDE_ASM -- there is no C to compare" -- the chassis is byte-identical to every prior session's measurement.
+- verdict: KILLED (re-confirms s1-s12's standing class kill; not a new class, a clean re-audit of the existing one)
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 9349e46f3, zero FAKE constructs (verified zero via fake_ablate.py, not just asserted)
+
+## [s13] structural-modality levers (block-local var splits, declaration order, type narrowing, statement re-association) can make progress on func_8004A4E0 despite the s8 class kill.
+- mechanism: every structural lever in `docs/MATCHING.md`'s technique catalog transforms SOURCE TEXT that GCC 2.7.2 then lowers within the compilation unit of a SINGLE function (`toplev.c:2647` compiles one function at a time; `stmt.c:4704` lowers one function's `switch` into one function's jump table). None of them emit code, or a jump-table entry, into a sibling function's body.
+- probe: re-read `docs/audits/func_8004A4E0-canonical-2026-09-29.md`'s jtbl-target list (independently re-derived at s12) against the definition of each structural technique in `docs/MATCHING.md`; confirmed each presupposes an existing C function body to restructure.
+- result: `no_c_body: true` (this session's sandbox run above) means there is no C source text for a structural lever to act on in the first place -- the gating failure is upstream of codegen entirely (s8: 8/16 of `jtbl_8001541C`'s entries are jlabels inside `func_8004A940`'s own body, a different function). Structural levers only ever reshape how an EXISTING single-function C body lowers; they cannot be the mechanism that relocates a case arm into another function's prologue-protected interior, so this modality has no applicable surface on this function until/unless the s8 class kill itself is overturned (it hasn't been: re-independently-confirmed at s12, re-confirmed again this session via unchanged sandbox output).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 9349e46f3, zero FAKE constructs
+- predicate_cite: `docs/audits/func_8004A4E0-canonical-2026-09-29.md:31` (same predicate as H1 -- cross-function jtbl/ABI handoffs have no C form), applied here specifically to the structural-technique family in `docs/MATCHING.md`
+
+## [s13] The mandated kill re-audit (floor flat since s5) finds a FAKE construct propping up a prior instance kill, invalidating it.
+- mechanism: n/a — mechanical re-audit, not a lever
+- probe: python3 tools/fake_ablate.py --func func_8004A4E0 --file main/3AB48 --candidate memory/grind/func_8004A4E0/candidate.c
+- result: Tool reports zero FAKE-annotated constructs in candidate.c (it is comments-only over the unmodified INCLUDE_ASM stub) — there was never a FAKE carrier to begin with, so no prior kill's validity is undermined. sandbox --disable all --diff re-confirms {score:163, no_c_body:true} identical to every prior session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 9349e46f3, zero FAKE constructs (verified via fake_ablate.py)
+
+## [s13] Structural-modality levers (block-local var splits, declaration order, type narrowing, statement re-association) can make progress on func_8004A4E0 despite the standing s8 class kill.
+- mechanism: Every structural lever in docs/MATCHING.md's catalog transforms source text GCC 2.7.2 lowers within ONE function's compilation (toplev.c:2647 compiles one function at a time; stmt.c:4704 lowers one function's switch into that same function's own jump table). None can emit a jump-table entry, or any code, into a sibling function's body.
+- probe: sandbox func_8004A4E0 --disable all --diff (confirms no_c_body:true, no diff possible); re-read of docs/audits/func_8004A4E0-canonical-2026-09-29.md's jtbl-target list against docs/MATCHING.md's structural-technique definitions.
+- result: No C source text exists for a structural lever to act on (no_c_body:true) — the gate is upstream of codegen entirely. s8/s12 independently established 8/16 of jtbl_8001541C's entries are jlabels living inside func_8004A940's own body (a different function); no structural rewrite of a hypothetical C switch can place a case arm inside another function's prologue-protected interior. Structural modality has no applicable surface on this function unless the s8 class kill is itself overturned (it was re-independently-confirmed at s12 and again this session via unchanged sandbox output).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 9349e46f3, zero FAKE constructs
+- predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31

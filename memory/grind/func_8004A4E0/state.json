@@ -1,8 +1,8 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 12,
- "current_modality": "rederive",
+ "session_count": 13,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -75,13 +75,19 @@
    "floor": 163,
    "modality": "rederive",
    "headline": "s12 rederive: unblocked decomp.me corpus search (installed curl_cffi, 316 scratches fetched) -> null result (best similarity 0.057, unrelated function); confirms s11's prediction, no rederive-axis fro"
+  },
+  {
+   "session": 13,
+   "floor": 163,
+   "modality": "structural",
+   "headline": "Mandated kill re-audit: zero FAKE carrier found (nothing to ablate), chassis unchanged; new class kill \u2014 structural levers presuppose an existing single-function C body, which this function categorica"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No live pure-C or rederive-axis hypothesis remains for func_8004A4E0 -- s1-s11's class kill (cross-function jtbl dispatch + custom callee-saved ABI, docs/audits/func_8004A4E0-canonical-2026-09-29.md) is independently re-confirmed by every modality tried so far (recon, structural, permuter, enumerate, synthesis, solver, forensics x3, rederive x2), and this session's corpus search closes the one open due-diligence item (s11's curl_cffi gap).",
-   "mechanism": "n/a -- no GCC-pass lever is live; this is a whole-body canonical-asm grant, not a reg-alloc/scheduling residual",
-   "next_probe": "operator/escalation-side only: file the accumulated s8-s12 evidence as a landing-path confirmation (the function already carries an owner-ruled ASM-WHOLE canonical grant per inline_asm_canonical.txt:199 / Q40) and check whether queue done's authorize-bucket path needs to run for this function rather than continuing to grind it as if a C body were still being searched for."
+   "hypothesis": "No live pure-C or rederive-axis hypothesis remains for func_8004A4E0; the cross-function jtbl dispatch + custom callee-saved ABI class kill (docs/audits/func_8004A4E0-canonical-2026-09-29.md) is now independently re-confirmed by every modality tried (recon, structural x2, permuter, enumerate, synthesis, solver, forensics x3, rederive x2).",
+   "mechanism": "n/a \u2014 whole-body canonical-asm grant, not a reg-alloc/scheduling residual",
+   "next_probe": "operator/escalation-side only: when the driver assigns escalation modality, file the accumulated s8-s13 evidence as a landing-path confirmation (the function already carries an owner-ruled ASM-WHOLE canonical grant per inline_asm_canonical.txt:199 / Q40) and check whether queue done's authorize-bucket path needs to run for this function."
   }
  ],
  "judge_constraints": [],
@@ -198,6 +204,22 @@
    "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged), zero FAKE constructs (no C body exists); corpus snapshot of 316 gcc2.7.2-psx decomp.me scratches fetched this session (tmp/decomp_me_corpus",
    "predicate_cite": "",
    "result": "Best similarity 0.057, against an unrelated function (func_80044240, not a func_8004A4E0 candidate); rest of top-5 at 0."
+  },
+  {
+   "session": 13,
+   "statement": "The mandated kill re-audit (floor flat since s5) finds a FAKE construct propping up a prior instance kill, invalidating it.",
+   "kill_scope": "instance",
+   "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 9349e46f3, zero FAKE constructs (verified via fake_ablate.py)",
+   "predicate_cite": "",
+   "result": "Tool reports zero FAKE-annotated constructs in candidate.c (it is comments-only over the unmodified INCLUDE_ASM stub) \u2014 "
+  },
+  {
+   "session": 13,
+   "statement": "Structural-modality levers (block-local var splits, declaration order, type narrowing, statement re-association) can make progress on func_8004A4E0 despite the standing s8 class kill.",
+   "kill_scope": "class",
+   "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 9349e46f3, zero FAKE constructs",
+   "predicate_cite": "docs/audits/func_8004A4E0-canonical-2026-09-29.md:31",
+   "result": "No C source text exists for a structural lever to act on (no_c_body:true) \u2014 the gate is upstream of codegen entirely. s8"
   }
  ],
  "ladder_skip": 0,

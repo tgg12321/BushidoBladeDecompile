@@ -65,4 +65,17 @@ INCLUDE_ASM("asm/funcs", func_8004A4E0);
  * ASM-WHOLE, sandbox still {"score": 163, "no_c_body": true}.
  * tmp/grind/func_8004A4E0/s12/decomp_me_search.txt. No live rederive-axis frontier remains;
  * every item on the s1-s11 ladder (recon/structural/permuter/enumerate/synthesis/solver/
- * forensics x3/rederive x2) has independently landed on the same ASM-WHOLE class kill. */
+ * forensics x3/rederive x2) has independently landed on the same ASM-WHOLE class kill.
+ *
+ * s13 (structural, mandated kill re-audit): fake_ablate.py on this exact candidate.c reports
+ * zero FAKE constructs to ablate (file is comments-only over the unmodified INCLUDE_ASM stub),
+ * confirming no prior kill was measured against a FAKE-propped chassis. sandbox --disable all
+ * --diff re-confirms {"score": 163, "no_c_body": true} with "no diff: still whole-body
+ * INCLUDE_ASM". New class kill specific to this session's structural modality: every lever in
+ * docs/MATCHING.md's structural family (var splits, decl order, type narrowing, statement
+ * re-association) transforms an EXISTING single-function C body (toplev.c:2647 compiles one
+ * function at a time; stmt.c:4704 lowers one function's switch into that function's own jump
+ * table) -- none can be the mechanism that relocates a case arm into a DIFFERENT function's
+ * body, which is what s8/s12's jtbl_8001541C finding requires. Structural modality has no
+ * applicable surface here until the s8 class kill is overturned. tmp/grind/func_8004A4E0/s13/.
+ */
