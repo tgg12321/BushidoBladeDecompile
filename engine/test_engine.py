@@ -832,8 +832,8 @@ def test_gte_macro_units() -> None:
     # post-pass word equals the header placeholder (DMPSX_WORDS only).
     eq("gtemacro: gte_ApplyRotMatrix expands to ten statements",
        len(macros["gte_ApplyRotMatrix"][1]), 10)
-    eq("gtemacro: DMPSX_WORDS is exactly the evidenced pairs (Q11 rtv0; Q29 rtv0tr/sqr0/gpf0/gpl12)",
-       gtemacro.DMPSX_WORDS, {0x0000013F: 0x4A486012, 0x0000027F: 0x4A480012,
+    eq("gtemacro: UNIT_DMPSX_WORDS is exactly the evidenced pairs (Q11 rtv0; Q29 rtv0tr/sqr0/gpf0/gpl12)",
+       gtemacro.UNIT_DMPSX_WORDS, {0x0000013F: 0x4A486012, 0x0000027F: 0x4A480012,
                               0x00000F3F: 0x4AA00428, 0x000012FF: 0x4B90003D,
                               0x0000133F: 0x4BA8003E})
 
@@ -979,6 +979,266 @@ def test_gte_macro_units() -> None:
     as_today("SetRotMatrix with 4($12) for the header's ($12)",
              vsrc(srm[0], stmt("lw    $13,4($12)"), *srm[2:]))
     as_today("SetRotMatrix with an extra nop appended", vsrc(*srm, stmt("nop   ")))
+
+
+# --------------------------------------------------------------------------
+# gtemacro — vendored PsyQ headers (owner decisions 2026-10-15, R1-R3)
+# --------------------------------------------------------------------------
+
+_VCLOB = '"$12","$13","$14","$15","memory"'
+# Fixture headers in the three vendored shapes: inline_o.h (brace blocks of
+# asm statements), inline_c.h (one brace-less asm statement) and gtemac.h
+# (composites calling the inline header's macros).
+_FIX_O = (
+    "/*\n * $PSLibId: fixture$\n */\n"
+    "#define gte_ldv0(r1) { \\\n"
+    f'  __asm__ volatile ("move  $12,%0": :"r"(r1):{_VCLOB}); \\\n'
+    f'  __asm__ volatile ("lwc2  $0,($12)": : :{_VCLOB}); \\\n'
+    f'  __asm__ volatile ("lwc2  $1,4($12)": : :{_VCLOB}); \\\n'
+    "}\n"
+    "#define gte_rt() { \\\n"
+    f'  __asm__ volatile ("nop   ": : :{_VCLOB}); \\\n'
+    f'  __asm__ volatile (".word 0x000000ff": : :{_VCLOB}); \\\n'
+    "}\n"
+    "#define gte_rtv0tr() { \\\n"
+    f'  __asm__ volatile ("nop   ": : :{_VCLOB}); \\\n'
+    f'  __asm__ volatile (".word 0x0000027f": : :{_VCLOB}); \\\n'
+    "}\n"
+    "#define gte_gpl0() { \\\n"
+    f'  __asm__ volatile (".word 0x0000137f": : :{_VCLOB}); \\\n'
+    "}\n"
+    "#define gte_nop() { \\\n"
+    f'  __asm__ volatile ("nop   ": : :{_VCLOB}); \\\n'
+    "}\n")
+_FIX_C = (
+    "#define gte_ldv0( r0 ) __asm__ volatile (\t\t\t\\\n"
+    '\t"lwc2\t$0, 0( %0 );"\t\t\t\t\t\\\n'
+    '\t"lwc2\t$1, 4( %0 )"\t\t\t\t\t\\\n'
+    "\t:\t\t\t\t\t\t\t\\\n"
+    '\t: "r"( r0 ) )\n\n'
+    "#define gte_rt() __asm__ volatile (\t\t\t\t\\\n"
+    '\t"nop;"\t\t\t\t\t\t\t\\\n'
+    '\t".word 0x000000ff" )\n'
+    "#define gte_rt_b() __asm__ volatile ( \".word 0x000000ff\" )\n")
+_FIX_MAC = ("#define gte_RotTrans0(r1)\t\t\t\t\t\\\n"
+            "\t\t\t\t{\tgte_ldv0(r1);\t\t\\\n"
+            "\t\t\t\t\tgte_rt();\t}\n"
+            "#define gte_OnlyInC(r1)\t\t\t\t\t\\\n"
+            "\t\t\t\t{\tgte_ldv0(r1);\t\t\\\n"
+            "\t\t\t\t\tgte_rt_b();\t}\n")
+
+
+def _vendored_fixture_root(o: str = _FIX_O, c: str = _FIX_C, mac: str = _FIX_MAC) -> str:
+    from engine import gtemacro
+    root = tempfile.mkdtemp(prefix="bb2_vendored_")
+    (Path(root) / "include/psxsdk").mkdir(parents=True)
+    for base, text in (("inline_o.h", o), ("inline_c.h", c), ("gtemac.h", mac)):
+        if text is not None:
+            if base != "gtemac.h":
+                text = gtemacro.dmpsx(text)
+            (Path(root) / "include/psxsdk" / base).write_bytes(text.encode("ascii"))
+    return root
+
+
+def test_gte_vendored_model() -> None:
+    from engine import gtemacro as G
+
+    # --- VENDORED pins: the three files, each with a Sony sha256 and sources.
+    eq("vendored: exactly the three PsyQ files",
+       sorted(G.VENDORED), ["include/psxsdk/gtemac.h", "include/psxsdk/inline_c.h",
+                            "include/psxsdk/inline_o.h"])
+    for rel, meta in G.VENDORED.items():
+        check(f"vendored: {rel} pins a sha256", len(meta["sony_sha256"]) == 64
+              and int(meta["sony_sha256"], 16) >= 0)
+        check(f"vendored: {rel} names its source and a second copy",
+              "psyq400.tar.gz" in meta["source"] and meta["second_copy"])
+        eq(f"vendored: {rel} is Release 4.0", meta["pslibid"],
+           "$PSLibId: Run-time Library Release 4.0$")
+    eq("vendored: only the inline headers carry DMPSX words",
+       sorted(r for r, m in G.VENDORED.items() if m["dmpsx"]),
+       ["include/psxsdk/inline_c.h", "include/psxsdk/inline_o.h"])
+
+    # --- DMPSX_WORDS: every pair is a GTE command, both sources cited.
+    eq("dmpsx table: 64 agreed placeholders (0x137f gte_gpl0 disagrees, left out)",
+       len(G.DMPSX_WORDS), 64)
+    check("dmpsx table: gte_gpl0 (sources disagree) stays a placeholder",
+          0x0000137F not in G.DMPSX_WORDS)
+    for ph, (word, macro, nug, psn) in G.DMPSX_WORDS.items():
+        check(f"dmpsx table: 0x{ph:08x} is a DMPSX placeholder (n<<6 | 0x3f)",
+              ph & 0x3F == 0x3F and ph < 0x2000)
+        check(f"dmpsx table: {macro} word 0x{word:08X} is a GTE command (cop2 imm25)",
+              word >> 25 == 0x25)
+        check(f"dmpsx table: {macro} cites two lines in each source",
+              len(nug) == 2 and len(psn) == 2 and all(isinstance(n, int) for n in nug + psn))
+    eq("dmpsx table: one macro per placeholder",
+       len({m for _w, m, _n, _p in G.DMPSX_WORDS.values()}), 64)
+    for ph, word in G.UNIT_DMPSX_WORDS.items():
+        eq(f"dmpsx table agrees with the owner-ruled unit word 0x{ph:08x}",
+           G.DMPSX_WORDS[ph][0], word)
+    eq("dmpsx table: the design's eleven words",
+       {G.DMPSX_WORDS[p][0] for p in (0x7F, 0xBF, 0xFF, 0x13F, 0x1FF, 0x27F, 0xF3F,
+                                       0x127F, 0x12BF, 0x12FF, 0x133F)},
+       {0x4A180001, 0x4A280030, 0x4A480012, 0x4A486012, 0x4A49E012, 0x4AA00428,
+        0x4B70000C, 0x4B98003D, 0x4B90003D, 0x4BA8003E})
+
+    # --- dmpsx / undmpsx: per macro, so the shared word reverses uniquely.
+    ven = G.dmpsx(_FIX_O)
+    check("dmpsx: gte_rt placeholder -> 0x4A480012", ".word 0x4A480012\"" in ven.split("gte_rtv0tr")[0])
+    eq("dmpsx: both rt and rtv0tr carry 0x4A480012", ven.count(".word 0x4A480012"), 2)
+    check("dmpsx: gte_gpl0 keeps its placeholder", ".word 0x0000137f" in ven)
+    eq("undmpsx: reverses to the Sony text", G.undmpsx(ven), _FIX_O)
+    eq("undmpsx: inline_c brace-less + _b variant reverse", G.undmpsx(G.dmpsx(_FIX_C)), _FIX_C)
+    eq("dmpsx: _b variant substituted", G.dmpsx(_FIX_C).count(".word 0x4A480012"), 2)
+    eq("dmpsx: a word outside a covered macro is untouched",
+       G.undmpsx('#define gte_nop() { __asm__ volatile (".word 0x4A480012"); }\n'),
+       '#define gte_nop() { __asm__ volatile (".word 0x4A480012"); }\n')
+
+    # --- check_vendored on fixture roots (Sony sha cannot match a fixture).
+    root = _vendored_fixture_root()
+    issues = G.check_vendored(root)
+    eq("check_vendored: a fixture is not Sony's text (three sha issues)",
+       sum("not Sony's" in i for i in issues), 3)
+    root = _vendored_fixture_root(c=None)
+    check("check_vendored: missing file reported",
+          any("inline_c.h: vendored PsyQ header missing" in i for i in G.check_vendored(root)))
+    root = _vendored_fixture_root(o=_FIX_O.replace("\n", "\r\n"))
+    check("check_vendored: CR reported",
+          any("inline_o.h: carriage return" in i for i in G.check_vendored(root)))
+
+    # --- header_macros: both forms, composites resolved per inline header.
+    root = _vendored_fixture_root()
+    mo, mc = G.header_macros("inline_o.h", root), G.header_macros("inline_c.h", root)
+    eq("header_macros(inline_o): fixture names",
+       sorted(mo), ["gte_RotTrans0", "gte_gpl0", "gte_ldv0", "gte_nop", "gte_rt", "gte_rtv0tr"])
+    eq("header_macros: gte_OnlyInC resolves against inline_c only",
+       ("gte_OnlyInC" in mo, "gte_OnlyInC" in mc), (False, True))
+    eq("header_macros: inline_o gte_ldv0 has three statements", len(mo["gte_ldv0"].stmts), 3)
+    eq("header_macros: inline_c gte_ldv0 is one statement, two instructions",
+       [len(s.instrs) for s in mc["gte_ldv0"].stmts], [2])
+    eq("header_macros: brace-less param binds", mc["gte_ldv0"].stmts[0].inputs,
+       (("r", ("param", "r0")),))
+    eq("header_macros: composite statements = ldv0 + rt (inline_o)",
+       len(mo["gte_RotTrans0"].stmts), 5)
+    eq("header_macros: composite header tag", mo["gte_RotTrans0"].header, "gtemac.h")
+    eq("header_macros: cop2 flags", (mo["gte_ldv0"].has_cop2, mo["gte_rt"].has_cop2,
+                                     mo["gte_nop"].has_cop2, mo["gte_gpl0"].has_cop2),
+       (True, True, False, False))
+    eq("header_macros: placeholder flag", (mo["gte_gpl0"].placeholder, mo["gte_rt"].placeholder),
+       (True, False))
+    check("header_macros: a placeholder is not a GTE command", not mo["gte_gpl0"].has_cop2)
+    eq("vendored_names: union of the three files",
+       sorted(G.vendored_names(root)),
+       ["gte_OnlyInC", "gte_RotTrans0", "gte_gpl0", "gte_ldv0", "gte_nop", "gte_rt",
+        "gte_rt_b", "gte_rtv0tr"])
+    try:
+        G.header_macros("gtemac.h", root)
+        check("header_macros: refuses a non-inline header", False)
+    except ValueError:
+        check("header_macros: refuses a non-inline header", True)
+
+    # --- tu_includes / tu_header.
+    eq("tu_includes: angle and quoted spellings, comments ignored",
+       sorted(G.tu_includes('#include <psxsdk/inline_o.h>\n#include "psxsdk/gtemac.h"\n'
+                            '/* #include <psxsdk/inline_c.h> */\n')), ["gtemac.h", "inline_o.h"])
+    eq("tu_header: inline_o", G.tu_header("#include <psxsdk/inline_o.h>\n"), "inline_o.h")
+    eq("tu_header: none", G.tu_header("#include <psxsdk/libgte.h>\n"), None)
+    try:
+        G.tu_header("#include <psxsdk/inline_o.h>\n#include <psxsdk/inline_c.h>\n")
+        check("tu_header: both inline headers refused", False)
+    except ValueError:
+        check("tu_header: both inline headers refused", True)
+    eq("tu_macros: no gtemac.h include -> no composites",
+       "gte_RotTrans0" in G.tu_macros("#include <psxsdk/inline_o.h>\n", root), False)
+    eq("tu_macros: gtemac.h included -> composites",
+       "gte_RotTrans0" in G.tu_macros("#include <psxsdk/inline_o.h>\n"
+                                      "#include <psxsdk/gtemac.h>\n", root), True)
+
+    # --- call_sites: statement-position calls, compiler view only.
+    inc = "#include <psxsdk/inline_o.h>\n#include <psxsdk/gtemac.h>\n"
+
+    def calls(body: str, text_inc: str = inc):
+        src = text_inc + "void f(s32 *v) {\n" + body + "\n}\n"
+        return [(src[s:e], n) for s, e, n in G.call_sites(src, "f", root)]
+
+    def refused(desc: str, body: str) -> None:
+        try:
+            calls(body)
+            check(f"call_sites refuses {desc}", False)
+        except ValueError:
+            check(f"call_sites refuses {desc}", True)
+
+    eq("call_sites: two calls", calls("    gte_ldv0(v);\n    gte_rt();"),
+       [("gte_ldv0(v);", "gte_ldv0"), ("gte_rt();", "gte_rt")])
+    eq("call_sites: span runs through the `;`", calls("    gte_ldv0( v ) ;"),
+       [("gte_ldv0( v ) ;", "gte_ldv0")])
+    eq("call_sites: comment and string mentions ignored",
+       calls('    /* gte_rt(); */ // gte_rt();\n    func_x("gte_rt();");'), [])
+    eq("call_sites: a #define body in the function is not a call",
+       calls("#define X gte_rt();\n    func_x(1);"), [])
+    eq("call_sites: after if / else / label",
+       [n for _t, n in calls("    if (v) gte_rt(); else gte_nop();\n    l: gte_ldv0(v);")],
+       ["gte_rt", "gte_nop", "gte_ldv0"])
+    eq("call_sites: composite", calls("    gte_RotTrans0(v);"), [("gte_RotTrans0(v);", "gte_RotTrans0")])
+    eq("call_sites: no vendored include -> no calls (the name is not a macro there)",
+       calls("    gte_rt();", "#include <psxsdk/libgte.h>\n"), [])
+    eq("call_sites: other functions' names ignored", calls("    func_x(v);\n    gte_rt();"),
+       [("gte_rt();", "gte_rt")])
+    refused("expression position", "    s32 a = 1 + gte_rt();")
+    refused("a call without `;`", "    gte_rt() , func_x(1);")
+    refused("a call nested in another's arguments", "    func_x(gte_rt());")
+    refused("a call as a for-loop clause", "    for (gte_rt(); ; ) ;")
+    eq("call_sites: other function", G.call_sites(inc + "void g(void) {\n    gte_rt();\n}\n",
+                                                  "f", root), [])
+
+    # --- the real vendored files (from commit 2 on).
+    if not all(Path(r).exists() for r in G.VENDORED):
+        skip("vendored: real header pins", "include/psxsdk vendored headers absent")
+        return
+    eq("vendored: check_vendored() clean on the tree", G.check_vendored(), [])
+    eq("vendored: define counts inline_o / inline_c / gtemac",
+       tuple(len(G._macro_defines(G._read_vendored(".", b)))
+             for b in ("inline_o.h", "inline_c.h", "gtemac.h")), (174, 241, 47))
+    for b in G.INLINE_HEADERS:
+        _m, failed = G.parse_header(G._read_vendored(".", b), b)
+        eq(f"vendored: every {b} #define parses", failed, [])
+    own, _f = G.parse_header(G._read_vendored(".", "inline_o.h"), "inline_o.h")
+    _m, failed = G.parse_header(G._read_vendored(".", "gtemac.h"), "gtemac.h", own)
+    eq("vendored: gtemac.h composites inline_o.h lacks (inline_c.h-only callees)",
+       sorted(n for n, _r in failed), ["gte_OuterProduct0SV", "gte_OuterProduct0SVL",
+                                       "gte_OuterProduct12SV", "gte_OuterProduct12SVL"])
+    own, _f = G.parse_header(G._read_vendored(".", "inline_c.h"), "inline_c.h")
+    _m, failed = G.parse_header(G._read_vendored(".", "gtemac.h"), "gtemac.h", own)
+    eq("vendored: every gtemac.h composite parses against inline_c.h", failed, [])
+    for b in G.INLINE_HEADERS:
+        ms = G.header_macros(b)
+        eq(f"vendored: {b} macros without a GTE command are gte_nop and gte_gpl0",
+           sorted(n for n, m in ms.items() if not m.has_cop2 and not n.endswith("_b")),
+           ["gte_gpl0", "gte_nop"])
+        eq(f"vendored: {b} rtv0 carries the command word",
+           ms["gte_rtv0"].stmts[-1].instrs[-1], ".word 0x4A486012")
+    real = G._read_vendored(".", "inline_o.h")
+    for word in {w for w, _m, _n, _p in G.DMPSX_WORDS.values()}:
+        check(f"vendored: command word 0x{word:08X} is not in Sony's text",
+              f"0x{word:08X}".lower() not in G.undmpsx(real).lower())
+    for rel in G.VENDORED:
+        text = Path(rel).read_text(encoding="ascii")
+        tmp = tempfile.mkdtemp(prefix="bb2_vendored_edit_")
+        for r2 in G.VENDORED:
+            (Path(tmp) / r2).parent.mkdir(parents=True, exist_ok=True)
+            (Path(tmp) / r2).write_bytes(Path(r2).read_bytes())
+        (Path(tmp) / rel).write_bytes(text.replace('"$15","memory"', '"$15"', 1)
+                                      .replace("gte_", "gtE_", 1).encode("ascii"))
+        check(f"check_vendored: an edit to {rel} is caught",
+              any(rel in i and "not Sony's" in i for i in G.check_vendored(tmp)))
+    for rel in ("include/psxsdk/inline_o.h", "include/psxsdk/inline_c.h"):
+        tmp = tempfile.mkdtemp(prefix="bb2_vendored_ph_")
+        for r2 in G.VENDORED:
+            (Path(tmp) / r2).parent.mkdir(parents=True, exist_ok=True)
+            (Path(tmp) / r2).write_bytes(Path(r2).read_bytes())
+        (Path(tmp) / rel).write_bytes(G.undmpsx(Path(rel).read_text(encoding="ascii"))
+                                      .encode("ascii"))
+        check(f"check_vendored: {rel} with placeholders left is caught",
+              any("not substituted" in i for i in G.check_vendored(tmp)))
 
 
 # --------------------------------------------------------------------------
@@ -10188,6 +10448,7 @@ def main() -> int:
     test_symtab_data_dlabels()
     test_inlineasm()
     test_gte_macro_units()
+    test_gte_vendored_model()
     test_cheats()
     test_prologue_cheat()
     test_addr_coerced_locals()

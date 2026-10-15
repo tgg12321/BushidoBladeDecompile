@@ -23,10 +23,10 @@ A QUALIFYING UNIT, and nothing else, is kept by the sandbox strip:
       second is equal by owner ruling 2026-09-26 (func_8002DE20, Q11; four
       more words by owner ruling 2026-09-28, func_800187F4, Q29): a header
       DMPSX placeholder `.word` and the post-DMPSX command word DMPSX emits for
-      it, for the placeholders in DMPSX_WORDS only (each with an independent
-      source);
+      it, for the placeholders in UNIT_DMPSX_WORDS only (each with an
+      independent source);
   (B) the expansion contains at least one cop2 instruction (a DMPSX
-      placeholder in DMPSX_WORDS counts: DMPSX turns it into one), so a
+      placeholder in UNIT_DMPSX_WORDS counts: DMPSX turns it into one), so a
       standalone `gte_nop()` is never a unit;
   (C) recognition is against the pinned header text, never a grant hash.
 A contiguous run of statements is kept when it splits, in order and with
@@ -58,12 +58,25 @@ func_8002EBDC / func_8002F2D0 / func_8002F770 cluster, pinned as the 2026-09-26
 class grant's (A) allows: an engine: commit with layer-2). Each excerpt is the header's
 own lines, byte for byte; `engine test` re-hashes them. Adding a macro means
 adding its verbatim lines with the same provenance fields.
+
+VENDORED HEADERS (owner decisions 2026-10-15: R1 vendor whole, R2 DMPSX option
+B, R3 class grant): Sony's inline_o.h, inline_c.h and gtemac.h live whole in
+include/psxsdk/. A C body CALLS their macros; cpp is the only expander and the
+header the only source of asm text. VENDORED pins each file, DMPSX_WORDS holds
+the placeholder -> command word pairs two independent sources agree on,
+check_vendored() proves each file is Sony's text with only those words
+substituted, header_macros() parses every function-like #define, and
+call_sites() finds the calls in a body (engine.completion treats each as an
+island). The written-out unit recognition above stays until the last
+written-out island is gone.
 """
 from __future__ import annotations
 
 import functools
 import hashlib
 import re
+from pathlib import Path
+from typing import NamedTuple
 
 from . import inlineasm
 from .inlineasm import cia
@@ -270,7 +283,9 @@ PINNED = (
 #     (:876-880 / :1521-1524, "cop2 0x01A8003E")
 # Scoring only: admission of an island carrying a post-DMPSX word still needs its
 # own per-function owner grant (class prong (C) is unchanged).
-DMPSX_WORDS = {
+# These five are the written-out-unit equalities only; the vendored headers use
+# DMPSX_WORDS below. Retires with the written-out machinery.
+UNIT_DMPSX_WORDS = {
     0x0000013F: 0x4A486012,
     0x0000027F: 0x4A480012,
     0x00000F3F: 0x4AA00428,
@@ -349,14 +364,14 @@ _ZERO_OFFSET_RE = re.compile(r"0(\(\$[A-Za-z0-9_]+\))")
 
 
 _DOTWORD_RE = re.compile(r"\.word 0x([0-9A-Fa-f]{8})")
-_POST_DMPSX = {post: ph for ph, post in DMPSX_WORDS.items()}
+_POST_DMPSX = {post: ph for ph, post in UNIT_DMPSX_WORDS.items()}
 
 
 def _instr_key(instr: str) -> str:
     """Comparison key for a normalized instruction: `0($REG)` -> `($REG)` in a
     load/store's memory operand, and a post-DMPSX command word (`.word
     0x4A486012`, exactly eight hex digits) -> the header's placeholder
-    spelling (`.word 0x0000013f`) for the pairs in DMPSX_WORDS; every other
+    spelling (`.word 0x0000013f`) for the pairs in UNIT_DMPSX_WORDS; every other
     character compares as written."""
     m = _DOTWORD_RE.fullmatch(instr)
     if m and int(m.group(1), 16) in _POST_DMPSX:
@@ -480,11 +495,11 @@ def pinned_macros() -> dict[str, tuple[list[str], list[Stmt]]]:
 
 def _is_cop2(instr: str) -> bool:
     """A cop2 instruction, a GTE command word, or a header DMPSX placeholder in
-    DMPSX_WORDS (DMPSX turns it into a GTE command word)."""
+    UNIT_DMPSX_WORDS (DMPSX turns it into a GTE command word)."""
     m = _DOTWORD_RE.fullmatch(instr)
     return (instr.split(" ", 1)[0].lower() in _COP2_OPS
             or bool(cia.CANONICAL_DOTWORD_RE.search(instr))
-            or bool(m and int(m.group(1), 16) in DMPSX_WORDS))
+            or bool(m and int(m.group(1), 16) in UNIT_DMPSX_WORDS))
 
 
 # --- recognition in a source file ------------------------------------------
@@ -628,3 +643,430 @@ def split_units(run: list[Stmt]) -> list[tuple[tuple[int, int], str]]:
         out.append(((i, j), name))
         j = i
     return out[::-1]
+
+
+# --- vendored PsyQ headers --------------------------------------------------
+# Owner decision 2026-10-15 (R1): Sony's PsyQ 4.0 text (the BB2 libraries are
+# 4.0, AGENTS.md), whole, Sony's copyright header kept, from psyz's pinned SDK
+# archive. Two mechanical differences from the shipped bytes, both reversed by
+# check_vendored(): DOS line ends become LF (build files are LF), and DMPSX's
+# command word stands where DMPSX_WORDS has a placeholder (R2, option B).
+_PSYQ400 = ("github.com/psyqz/psyz/releases/download/requirements/psyq400.tar.gz"
+            " (sha256 532320403f0da881e15d537c74e2adb3a3ad9c0153bbd8d27f435b4ae9731b4b,"
+            " pinned by github.com/Xeeynamo/psyz@a438bda3 decomp/sdk/psyq400.tar.gz.sha256)")
+_PSLIBID_40 = "$PSLibId: Run-time Library Release 4.0$"
+
+VENDORED = {
+    "include/psxsdk/inline_o.h": {
+        "pslibid": _PSLIBID_40,
+        "source": f"{_PSYQ400} INCLUDE/INLINE_O.H",
+        "sony_sha256": "715a9f5b1e411116f279a3f33060416b1cc1e29efd195759d2537dc3281caafc",
+        "second_copy": f"{_SH} and {_XG} include/psyq/inline_o.h (Release 4.3,"
+                       " sha256 76f28032...c6e47d): equal but for the $PSLibId line",
+        "dmpsx": True,
+    },
+    "include/psxsdk/inline_c.h": {
+        "pslibid": _PSLIBID_40,
+        "source": f"{_PSYQ400} INCLUDE/INLINE_C.H",
+        "sony_sha256": "2910a9972feac80b817d02b4d3a93a761d9ca47f0de16070b5bd7674fab9a71c",
+        "second_copy": f"{_SH} include/psyq/inline_c.h (Release 4.3, sha256"
+                       " de1a70ef...aa02f8): equal but for the $PSLibId line,"
+                       " gte_ldsvrtrow0's input list (4.0 also names an undeclared"
+                       " r1) and 4.3's added gte_mvmva_core / gte_mvmva",
+        "dmpsx": True,
+    },
+    "include/psxsdk/gtemac.h": {
+        "pslibid": _PSLIBID_40,
+        "source": f"{_PSYQ400} INCLUDE/GTEMAC.H",
+        "sony_sha256": "15b007e98f3b004ebaf396aa11f87f4c03728e244754feb0ed33e624c2b80fde",
+        "second_copy": f"{_SH} and {_XG} include/psyq/gtemac.h (Release 4.3,"
+                       " sha256 9fe028fd...3357d5): equal but for the $PSLibId line",
+        "dmpsx": False,
+    },
+}
+INLINE_HEADERS = ("inline_o.h", "inline_c.h")
+COMPOSITE_HEADER = "gtemac.h"
+
+# DMPSX placeholder -> (command word, macro, nugget lines, PSn00bSDK lines).
+# Owner decision 2026-10-15 (R2): a placeholder gets its word only when two
+# independent no-DMPSX headers give the same word for EVERY Sony macro that
+# carries it — pcsx-redux/nugget@22037bd3 psyq/include/inline_n.h and
+# Lameguy64/PSn00bSDK@5d9aa2d3 libpsn00b/include/inline_c.h, both writing
+# `cop2 IMM` (word = 0x4A000000 | IMM). The carriers are `macro` (inline_o.h
+# and inline_c.h) and `macro_b` (inline_c.h); each line pair is (macro,
+# macro_b) in that source. Left a placeholder (fail closed: a call carries no
+# GTE command and the gates refuse it): 0x0000137F gte_gpl0, where nugget gives
+# 0x5A0003E0 for gte_gpl0 but 0x4BA0003E for gte_gpl0_b (PSn00bSDK 0x4BA0003E).
+DMPSX_WORDS = {
+    0x0000007F: (0x4A180001, "gte_rtps", (498, 903), (1159, 1543)),
+    0x000000BF: (0x4A280030, "gte_rtpt", (504, 904), (1173, 1544)),
+    0x000000FF: (0x4A480012, "gte_rt", (510, 905), (1178, 1545)),
+    0x0000013F: (0x4A486012, "gte_rtv0", (516, 906), (1183, 1546)),
+    0x0000017F: (0x4A48E012, "gte_rtv1", (522, 907), (1188, 1547)),
+    0x000001BF: (0x4A496012, "gte_rtv2", (528, 908), (1193, 1548)),
+    0x000001FF: (0x4A49E012, "gte_rtir", (534, 909), (1198, 1549)),
+    0x0000023F: (0x4A41E012, "gte_rtir_sf0", (540, 910), (1203, 1550)),
+    0x0000027F: (0x4A480012, "gte_rtv0tr", (546, 911), (1208, 1551)),
+    0x000002BF: (0x4A488012, "gte_rtv1tr", (552, 912), (1213, 1552)),
+    0x000002FF: (0x4A490012, "gte_rtv2tr", (558, 913), (1218, 1553)),
+    0x0000033F: (0x4A498012, "gte_rtirtr", (564, 914), (1223, 1554)),
+    0x0000037F: (0x4A482012, "gte_rtv0bk", (570, 915), (1228, 1555)),
+    0x000003BF: (0x4A48A012, "gte_rtv1bk", (576, 916), (1233, 1556)),
+    0x000003FF: (0x4A492012, "gte_rtv2bk", (582, 917), (1238, 1557)),
+    0x0000043F: (0x4A49A012, "gte_rtirbk", (588, 918), (1243, 1558)),
+    0x0000057F: (0x4A4A6412, "gte_ll", (594, 919), (1248, 1559)),
+    0x000005BF: (0x4A4A6012, "gte_llv0", (600, 920), (1253, 1560)),
+    0x000005FF: (0x4A4AE012, "gte_llv1", (606, 921), (1258, 1561)),
+    0x0000063F: (0x4A4B6012, "gte_llv2", (612, 922), (1263, 1562)),
+    0x0000067F: (0x4A4BE012, "gte_llir", (618, 923), (1268, 1563)),
+    0x000006BF: (0x4A4A0012, "gte_llv0tr", (624, 924), (1273, 1564)),
+    0x000006FF: (0x4A4A8012, "gte_llv1tr", (630, 925), (1278, 1565)),
+    0x0000073F: (0x4A4B0012, "gte_llv2tr", (636, 926), (1283, 1566)),
+    0x0000077F: (0x4A4B8012, "gte_llirtr", (642, 927), (1288, 1567)),
+    0x000007BF: (0x4A4A2012, "gte_llv0bk", (648, 928), (1293, 1568)),
+    0x000007FF: (0x4A4AA012, "gte_llv1bk", (654, 929), (1298, 1569)),
+    0x0000083F: (0x4A4B2012, "gte_llv2bk", (660, 930), (1303, 1570)),
+    0x0000087F: (0x4A4BA012, "gte_llirbk", (666, 931), (1308, 1571)),
+    0x000009BF: (0x4A4DA412, "gte_lc", (672, 932), (1314, 1572)),
+    0x000009FF: (0x4A4C6012, "gte_lcv0", (678, 933), (1319, 1573)),
+    0x00000A3F: (0x4A4CE012, "gte_lcv1", (684, 934), (1324, 1574)),
+    0x00000A7F: (0x4A4D6012, "gte_lcv2", (690, 935), (1329, 1575)),
+    0x00000ABF: (0x4A4DE012, "gte_lcir", (696, 936), (1334, 1576)),
+    0x00000AFF: (0x4A4C0012, "gte_lcv0tr", (702, 937), (1339, 1577)),
+    0x00000B3F: (0x4A4C8012, "gte_lcv1tr", (708, 938), (1344, 1578)),
+    0x00000B7F: (0x4A4D0012, "gte_lcv2tr", (714, 939), (1349, 1579)),
+    0x00000BBF: (0x4A4D8012, "gte_lcirtr", (720, 940), (1354, 1580)),
+    0x00000BFF: (0x4A4C2012, "gte_lcv0bk", (726, 941), (1359, 1581)),
+    0x00000C3F: (0x4A4CA012, "gte_lcv1bk", (732, 942), (1364, 1582)),
+    0x00000C7F: (0x4A4D2012, "gte_lcv2bk", (738, 943), (1369, 1583)),
+    0x00000CBF: (0x4A4DA012, "gte_lcirbk", (744, 944), (1374, 1584)),
+    0x00000DFF: (0x4A680029, "gte_dpcl", (750, 945), (1379, 1585)),
+    0x00000E3F: (0x4A780010, "gte_dpcs", (756, 946), (1384, 1586)),
+    0x00000E7F: (0x4AF8002A, "gte_dpct", (762, 947), (1389, 1587)),
+    0x00000EBF: (0x4A980011, "gte_intpl", (768, 948), (1394, 1588)),
+    0x00000EFF: (0x4AA80428, "gte_sqr12", (774, 949), (1399, 1589)),
+    0x00000F3F: (0x4AA00428, "gte_sqr0", (780, 950), (1404, 1590)),
+    0x00000F7F: (0x4AC8041E, "gte_ncs", (786, 951), (1409, 1591)),
+    0x00000FBF: (0x4AD80420, "gte_nct", (792, 952), (1414, 1592)),
+    0x00000FFF: (0x4AE80413, "gte_ncds", (798, 953), (1419, 1593)),
+    0x0000103F: (0x4AF80416, "gte_ncdt", (804, 954), (1424, 1594)),
+    0x0000107F: (0x4B08041B, "gte_nccs", (810, 955), (1429, 1595)),
+    0x000010BF: (0x4B18043F, "gte_ncct", (816, 956), (1434, 1596)),
+    0x000010FF: (0x4B280414, "gte_cdp", (822, 957), (1439, 1597)),
+    0x0000113F: (0x4B38041C, "gte_cc", (828, 958), (1444, 1598)),
+    0x0000117F: (0x4B400006, "gte_nclip", (834, 959), (1460, 1599)),
+    0x000011BF: (0x4B58002D, "gte_avsz3", (840, 960), (1478, 1600)),
+    0x000011FF: (0x4B68002E, "gte_avsz4", (846, 961), (1496, 1601)),
+    0x0000123F: (0x4B78000C, "gte_op12", (852, 962), (1501, 1602)),
+    0x0000127F: (0x4B70000C, "gte_op0", (858, 963), (1506, 1603)),
+    0x000012BF: (0x4B98003D, "gte_gpf12", (864, 964), (1511, 1604)),
+    0x000012FF: (0x4B90003D, "gte_gpf0", (870, 965), (1516, 1605)),
+    0x0000133F: (0x4BA8003E, "gte_gpl12", (876, 966), (1521, 1606)),
+}
+_PLACEHOLDER = ".word 0x{:08x}"  # Sony's spelling
+_COMMAND_WORD = ".word 0x{:08X}"  # the vendored word, as SOTN and psyz spell it
+
+
+def _dmpsx_carriers() -> dict[str, tuple[int, int]]:
+    """macro -> (placeholder, word) for every Sony macro DMPSX_WORDS covers."""
+    out = {}
+    for ph, (word, macro, _nugget, _psn00b) in DMPSX_WORDS.items():
+        out[macro] = out[macro + "_b"] = (ph, word)
+    return out
+
+
+_DEFINE_RE = re.compile(r"[ \t]*#[ \t]*define[ \t]+([A-Za-z_]\w*)")
+
+
+def _define_spans(text: str) -> list[tuple[int, int, str, int]]:
+    """(start, end, name, line) of every `#define` logical line (backslash
+    continuations joined); line is 1-based."""
+    out, pos, i = [], 0, 0
+    lines = text.split("\n")
+    while i < len(lines):
+        start, first = pos, i
+        while lines[i].endswith("\\") and i + 1 < len(lines):
+            pos += len(lines[i]) + 1
+            i += 1
+        m = _DEFINE_RE.match(lines[first])
+        if m:
+            out.append((start, pos + len(lines[i]), m.group(1), first + 1))
+        pos += len(lines[i]) + 1
+        i += 1
+    return out
+
+
+def _swap_words(text: str, to_word: bool) -> str:
+    """Inside the #define of each macro DMPSX_WORDS covers, swap its
+    placeholder for its command word (to_word) or back. Keyed by macro, so the
+    reverse is unique although two placeholders share 0x4A480012 (gte_rt and
+    gte_rtv0tr are the same GTE command)."""
+    carriers = _dmpsx_carriers()
+    out, last = [], 0
+    for s, e, name, _line in _define_spans(text):
+        if name not in carriers:
+            continue
+        ph, word = carriers[name]
+        old, new = _PLACEHOLDER.format(ph), _COMMAND_WORD.format(word)
+        if not to_word:
+            old, new = new, old
+        out += [text[last:s], text[s:e].replace(old, new)]
+        last = e
+    out.append(text[last:])
+    return "".join(out)
+
+
+def dmpsx(text: str) -> str:
+    """Sony's LF text -> the vendored text: each DMPSX_WORDS placeholder becomes
+    its command word, as DMPSX would have rewritten the object."""
+    return _swap_words(text, True)
+
+
+def undmpsx(text: str) -> str:
+    """The vendored text -> Sony's LF text (inverse of dmpsx)."""
+    return _swap_words(text, False)
+
+
+def check_vendored(root: str | Path = ".") -> list[str]:
+    """Issues with the vendored headers: missing, a CR, non-ASCII, not Sony's
+    text once LF and DMPSX are reversed, or an agreed placeholder left
+    unsubstituted. [] when all three are exactly the pinned files."""
+    root = Path(root)
+    stamps = []
+    for rel in VENDORED:
+        try:
+            st = (root / rel).stat()
+            stamps.append((st.st_mtime_ns, st.st_size))
+        except OSError:
+            stamps.append(None)
+    return list(_check_vendored_cached(str(root), tuple(stamps)))
+
+
+@functools.lru_cache(maxsize=4)
+def _check_vendored_cached(root: str, _stamps: tuple) -> tuple[str, ...]:
+    issues = []
+    for rel, meta in VENDORED.items():
+        try:
+            data = (Path(root) / rel).read_bytes()
+        except OSError:
+            issues.append(f"{rel}: vendored PsyQ header missing")
+            continue
+        if b"\r" in data:
+            issues.append(f"{rel}: carriage return in a vendored header (build files are LF)")
+            continue
+        try:
+            text = data.decode("ascii")
+        except UnicodeDecodeError:
+            issues.append(f"{rel}: non-ASCII byte in a vendored header")
+            continue
+        sony = (undmpsx(text) if meta["dmpsx"] else text).replace("\n", "\r\n")
+        if hashlib.sha256(sony.encode("ascii")).hexdigest() != meta["sony_sha256"]:
+            issues.append(f"{rel}: not Sony's {meta['pslibid']} text (sha256 after"
+                          f" reversing LF and DMPSX is not {meta['sony_sha256']})")
+        elif meta["dmpsx"] and dmpsx(undmpsx(text)) != text:
+            issues.append(f"{rel}: a DMPSX_WORDS placeholder is not substituted")
+    return tuple(issues)
+
+
+class Macro(NamedTuple):
+    """One function-like #define of a vendored header, expanded."""
+    header: str                  # basename of the file defining it
+    line: int                    # 1-based line of its #define
+    params: tuple[str, ...]
+    stmts: tuple[Stmt, ...]      # asm statements, gtemac.h calls expanded
+    has_cop2: bool               # a cop2 instruction or a GTE command word
+    placeholder: bool            # an unsubstituted DMPSX placeholder remains
+
+
+def _macro_defines(text: str):
+    """(name, line, params, body) of every function-like #define; body is the
+    replacement list with continuations joined."""
+    out = []
+    for s, e, name, line in _define_spans(text):
+        logical = text[s:e].replace("\\\n", " ")
+        m = re.match(r"\s*#\s*define\s+([A-Za-z_]\w*)\(([^)]*)\)(.*)$", logical, re.S)
+        if m:
+            params = tuple(p.strip() for p in m.group(2).split(",") if p.strip())
+            out.append((name, line, params, m.group(3).strip()))
+    return out
+
+
+def _instr_flags(stmts) -> tuple[bool, bool]:
+    cop2 = placeholder = False
+    for st in stmts:
+        for x in st.instrs:
+            dw = _DOTWORD_RE.fullmatch(x)
+            if dw and int(dw.group(1), 16) < 0x01000000:
+                placeholder = True
+            elif x.split(" ", 1)[0].lower() in _COP2_OPS or cia.CANONICAL_DOTWORD_RE.search(x):
+                cop2 = True
+    return cop2, placeholder
+
+
+def _read_vendored(root: str, basename: str) -> str | None:
+    try:
+        return (Path(root) / "include/psxsdk" / basename).read_text(encoding="ascii")
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
+def parse_header(text: str, header: str, known: dict | None = None):
+    """Expand every function-like #define of one vendored file. `known` holds
+    the macros calls may resolve to (gtemac.h composites call inline_o.h /
+    inline_c.h macros). Returns ({name: Macro}, [(name, reason), ...]) — the
+    second list is every #define that did not parse."""
+    known = dict(known or {})
+    macros, failed = {}, []
+    for name, line, params, body in _macro_defines(text):
+        excerpt = (f"#define {name}({', '.join(params)}) "
+                   + (body if body.startswith("{") else "{ " + body + "; }"))
+        try:
+            _n, _p, stmts = _parse_macro(excerpt, {k: (list(m.params), list(m.stmts))
+                                                   for k, m in known.items()})
+        except ValueError as exc:
+            failed.append((name, str(exc)))
+            continue
+        cop2, ph = _instr_flags(stmts)
+        macros[name] = known[name] = Macro(header, line, params, tuple(stmts), cop2, ph)
+    return macros, failed
+
+
+def header_macros(inline: str, root: str | Path = ".") -> dict[str, Macro]:
+    """Every macro a TU including `inline` (inline_o.h or inline_c.h) and
+    gtemac.h can call: the inline header's own, then gtemac.h's composites
+    resolved against it. A composite calling a macro the inline header lacks
+    is left out (gtemac.h names a few inline_c.h-only macros)."""
+    if inline not in INLINE_HEADERS:
+        raise ValueError(f"not a vendored inline header: {inline}")
+    root = str(root)
+    texts = (_read_vendored(root, inline), _read_vendored(root, COMPOSITE_HEADER))
+    return dict(_header_macros_cached(inline, *texts))
+
+
+@functools.lru_cache(maxsize=4)
+def _header_macros_cached(inline: str, inline_text, composite_text):
+    if inline_text is None:
+        return ()
+    own, _failed = parse_header(inline_text, inline)
+    out = dict(own)
+    if composite_text is not None:
+        comp, _failed = parse_header(composite_text, COMPOSITE_HEADER, own)
+        out.update(comp)
+    return tuple(out.items())
+
+
+def vendored_names(root: str | Path = ".") -> frozenset[str]:
+    """Every function-like macro name the three vendored files define."""
+    names = set()
+    for base in (*INLINE_HEADERS, COMPOSITE_HEADER):
+        text = _read_vendored(str(root), base)
+        if text is not None:
+            names.update(n for n, _l, _p, _b in _macro_defines(text))
+    return frozenset(names)
+
+
+# `#include <psxsdk/inline_o.h>`, `"psxsdk/inline_o.h"` or any path ending in a
+# vendored basename (a directive's spelling never hides an inclusion).
+_VENDORED_INCLUDE_RE = re.compile(
+    r'^[ \t]*(?:#|%:)[ \t]*include[ \t]*[<"](?:[^>"\n]*/)?'
+    r'(inline_o\.h|inline_c\.h|gtemac\.h)[>"]', re.M)
+
+
+def tu_includes(text: str) -> frozenset[str]:
+    """Basenames of the vendored headers `text` #includes (comments ignored)."""
+    return frozenset(_VENDORED_INCLUDE_RE.findall(cia.compiler_view(text).code))
+
+
+def tu_header(text: str) -> str | None:
+    """The vendored inline header the TU includes, or None. Including both is
+    an error: they define the same names with different bodies."""
+    inc = tu_includes(text) & set(INLINE_HEADERS)
+    if len(inc) > 1:
+        raise ValueError("the TU includes both inline_o.h and inline_c.h")
+    return next(iter(inc), None)
+
+
+def tu_macros(text: str, root: str | Path = ".") -> dict[str, Macro]:
+    """The vendored macros a call in this TU expands to: its inline header's,
+    plus gtemac.h's composites when it includes gtemac.h too."""
+    inline = tu_header(text)
+    if inline is None:
+        return {}
+    composites = COMPOSITE_HEADER in tu_includes(text)
+    return {n: m for n, m in header_macros(inline, root).items()
+            if composites or m.header != COMPOSITE_HEADER}
+
+
+_NAME_CALL_RE = re.compile(r"\b([A-Za-z_]\w*)\s*\(")
+_CONTROL_HEADS = frozenset({"if", "while", "for", "switch"})
+
+
+def _statement_position(masked: str, i: int) -> bool:
+    """True when the token at `i` starts a statement: after `;`, `{`, `}`, a
+    label's `:`, `else`, `do`, or the `)` closing an if/while/for head."""
+    k = i - 1
+    while k >= 0 and masked[k] in " \t\n":
+        k -= 1
+    if k < 0:
+        return False
+    if masked[k] in ";{}:":
+        return True
+    heads = ("else", "do")
+    if masked[k] == ")":
+        depth = 0
+        while k >= 0:
+            if masked[k] == ")":
+                depth += 1
+            elif masked[k] == "(":
+                depth -= 1
+                if depth == 0:
+                    break
+            k -= 1
+        k -= 1
+        while k >= 0 and masked[k] in " \t\n":
+            k -= 1
+        heads = _CONTROL_HEADS
+    m = re.search(r"(?<![\w])([A-Za-z_]\w*)$", masked[max(0, k - 16):k + 1])
+    return bool(m) and m.group(1) in heads
+
+
+def _body_open(text: str, span: tuple[int, int]) -> int:
+    """Index of the `{` opening the body `span` ends with."""
+    i = text.find("{", span[0])
+    while i != -1 and i < span[1]:
+        if inlineasm._match_brace(text, i) == span[1]:
+            return i
+        i = text.find("{", i + 1)
+    return span[0]
+
+
+def call_sites(text: str, func: str, root: str | Path = ".") -> list[tuple[int, int, str]]:
+    """(start, end, macro) for every call of a vendored macro in `func`'s body,
+    end just past its `;`. Only a TU that includes a vendored header has calls
+    (elsewhere the name is not a macro). Found in the compiler view: comments,
+    strings and preprocessor lines never count. A call must be a whole
+    statement — raises ValueError otherwise (fail closed), as for a call not
+    followed by `;` or one nested in another's arguments."""
+    span = inlineasm._func_body_span(text, func)
+    if span is None or not tu_includes(text):
+        return []
+    names = vendored_names(root)
+    masked = inlineasm._code_without_comments_and_strings(text)
+    pp = _preprocessor_ranges(masked)
+    out = []
+    for m in _NAME_CALL_RE.finditer(masked, _body_open(text, span), span[1]):
+        name = m.group(1)
+        if name not in names or any(s <= m.start() < e for s, e in pp):
+            continue
+        close = inlineasm._match_paren(masked, m.end() - 1)
+        if close < 0 or close > span[1]:
+            raise ValueError(f"{func}: unclosed call of {name}")
+        j = close
+        while j < span[1] and masked[j] in " \t\n":
+            j += 1
+        if j >= span[1] or masked[j] != ";":
+            raise ValueError(f"{func}: {name}(...) is not a statement (no `;` follows the call)")
+        if not _statement_position(masked, m.start()):
+            raise ValueError(f"{func}: {name}(...) is not at statement position")
+        out.append((m.start(), j + 1, name))
+    return out
