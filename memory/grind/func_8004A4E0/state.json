@@ -1,26 +1,32 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 163,
    "modality": "recon",
    "headline": "ASM-WHOLE canonical gate verdict (owner-ruled Q40, 2026-09-29 audit) confirmed; class-killed the pure-C/island hypothesis; no C body exists to grind this session."
+  },
+  {
+   "session": 2,
+   "floor": 163,
+   "modality": "structural",
+   "headline": "structural modality has no applicable surface \u2014 ASM-WHOLE canonical verdict re-confirmed, no C body exists, s1 class kill stands unchanged"
   }
  ],
  "frontier": [
   {
    "hypothesis": "No live pure-C axis remains on this function absent new evidence.",
-   "mechanism": "n/a \u2014 H1 class-killed the only codegen-lever route (C islands around the cross-call register handoffs).",
+   "mechanism": "n/a \u2014 H1 class-killed the only codegen-lever route (C islands around the cross-call register handoffs with func_8004A940/func_8004A76C/func_8004A808).",
    "next_probe": "None from the grind lane unless a toolchain finding changes what the $s4/$s5/$s0 handoffs require in C."
   },
   {
    "hypothesis": "The open item for this function is operator/landing-side, not a grind hypothesis.",
-   "mechanism": "n/a \u2014 CLAUDE.md's authorize-bucket / Judge-gated canonical-grant path (judge-sole-gate.md) is the correct lane for an ASM-WHOLE-verdict function, not further pure-C sandbox iteration.",
-   "next_probe": "None from this lane; operator decides whether/when to run the canonical-grant landing steps."
+   "mechanism": "n/a \u2014 CLAUDE.md's authorize-bucket / Judge-gated canonical-grant path (judge-sole-gate.md) is the correct lane for an ASM-WHOLE-verdict function.",
+   "next_probe": "None from this lane; operator decides whether/when to run the canonical-grant landing steps, or the driver assigns escalation modality to formally dispose of the item via owner-gated."
   }
  ],
  "judge_constraints": [],
@@ -33,6 +39,14 @@
    "measured_on": "whole-body INCLUDE_ASM chassis, zero FAKE constructs (no C body exists at all); inherited from the 2026-09-29 owner-ruled audit, re-confirmed this session by canonical + sandbox runs.",
    "predicate_cite": "docs/audits/func_8004A4E0-canonical-2026-09-29.md:31",
    "result": "No C body exists; the audit's cross-call ABI argument accounts for every operand this session re-confirmed in asm/funcs/"
+  },
+  {
+   "session": 2,
+   "statement": "A pure-C (or partial C-island) form can replace the whole-body asm for func_8004A4E0, re-tested under structural modality.",
+   "kill_scope": "class",
+   "measured_on": "whole-body INCLUDE_ASM chassis, zero FAKE constructs (no C body exists at all); identical to s1's measured_on.",
+   "predicate_cite": "docs/audits/func_8004A4E0-canonical-2026-09-29.md:31",
+   "result": "Re-confirmed the standing s1 class kill; no new ground covered, no regression."
   }
  ],
  "ladder_skip": 0,

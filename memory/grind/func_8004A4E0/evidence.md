@@ -43,3 +43,9 @@ it would only become live if a future session carved a C island out of the body 
 - [s1] All 7 flagged DATA MODEL symbols (D_80095328, D_80095488, D_80095508, D_800FF610, g_draw_queue, D_80103608, jtbl_8001541C, jtbl_8001545C) are grep-confirmed as real lui/addiu/lw operands inside asm/funcs/func_8004A4E0.s; none is reachable from a C statement in this function since the whole body is INCLUDE_ASM, so no header-declaration fix can change this function's score. OBJECT MODEL bank entry written in full to evidence.md with per-symbol line citations.
 
 - [s1] The inline_asm_canonical.txt:199 entry text was corrected 2026-09-29 under owner ruling Q40 (commit 803d0fea1), post-dating the 2026-08-18 judge-sole-gate ruling, so the grant has already been owner-reviewed under current policy.
+
+- [s2] canonical func_8004A4E0 this session returns verdict ASM-WHOLE, reason 'whole-function canonical-asm grant in inline_asm_canonical.txt', asm_insns=7, total=163 — unchanged from the ledger's prior recorded state.
+
+- [s2] No docs/grind/decisions.md entry exists yet for func_8004A4E0 (checked via grep); not filed this session because my mandated modality is structural, not escalation, and the owner's standing auto-ruling (A) reserves the exhaustion determination to the driver's modality assignment.
+
+- [s2] candidate.c and evidence.md already accurately describe the no-C-body state from s1 recon; no edits needed there this session beyond the hypotheses.md s2 re-confirmation entry.

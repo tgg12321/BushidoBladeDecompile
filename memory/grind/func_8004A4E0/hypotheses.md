@@ -50,3 +50,31 @@ instance form.
 - kill_scope: class
 - measured_on: whole-body INCLUDE_ASM chassis, zero FAKE constructs (no C body exists at all); inherited from the 2026-09-29 owner-ruled audit, re-confirmed this session by canonical + sandbox runs.
 - predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## [s2] structural-modality dispatch — re-confirm, do not re-derive, the standing class kill.
+- mechanism: n/a — no new hypothesis; structural levers (block-local var splits, decl order,
+  type narrowing, statement re-association) all require an existing C body to apply to, and
+  none exists on this function (whole-body INCLUDE_ASM, ASM-WHOLE canonical verdict).
+- probe: `canonical func_8004A4E0` re-run this session — verdict ASM-WHOLE, same reason string
+  ("whole-function canonical-asm grant in inline_asm_canonical.txt"), same 7 asm_insns/163
+  total/regions as prior sessions. No `sandbox --diff` possible (no_c_body).
+- result: standing H1 class kill holds unchanged; structural modality has no applicable
+  surface on this function this session. candidate.c, evidence.md unchanged. My mandated
+  modality is `structural`, not `escalation`, so per the owner's standing auto-ruling (A) I do
+  not file an owner-gated disposition this session — that determination belongs to the driver
+  once it assigns escalation modality. Outcome: progress (re-confirmation only, no new ground
+  covered, no regression).
+- verdict: KILLED (re-confirmation of s1's class kill, not a new kill)
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis, zero FAKE constructs (no C body exists);
+  identical to s1's measured_on, re-confirmed by this session's `canonical` run.
+- predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## [s2] A pure-C (or partial C-island) form can replace the whole-body asm for func_8004A4E0, re-tested under structural modality.
+- mechanism: n/a — structural levers (block-local var splits, decl order, type narrowing, statement re-association) require an existing C body to apply to; none exists on this function.
+- probe: canonical func_8004A4E0 (verdict ASM-WHOLE, 7 asm_insns, 163 total, same regions and reason string as prior sessions).
+- result: Re-confirmed the standing s1 class kill; no new ground covered, no regression.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis, zero FAKE constructs (no C body exists at all); identical to s1's measured_on.
+- predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
