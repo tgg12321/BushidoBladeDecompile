@@ -303,3 +303,5 @@ it would only become live if a future session carved a C island out of the body 
 - [s22] Combined with already-banked class kills (s18b: trapping addi 0/1299 compiled functions; s21: hazard-free nop 0/1297 GCC-emitted functions) and s20's finding that the unbounded-index dispatch is explained by GNU computed goto rather than ruling out hand-coding, the evidence for hand-written asm spanning func_8004A4E0/func_8004A940/func_8004A76C/func_8004A808 remains internally consistent and has grown, but scan_hand_coded still reports LOW 0/8 (not STRONG) per the 2026-10-15 16:50 ruling in docs/grind/decisions.md:1320, so no grant door is open yet.
 
 - [s22] Re-measured sandbox floor this session: 163, no_c_body:true, unchanged from s2 through s21.
+
+- [s22] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate 0b6ab636f508 scores 0 under our cc1 and 0 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
