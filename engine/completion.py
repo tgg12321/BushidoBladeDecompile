@@ -3,6 +3,8 @@
 A whole original-assembly body may use the canonical function grant. A C body
 must instead match the reviewed assembly islands, and all remaining C is still
 checked. Region hashes include operands/constraints, not just opcode strings.
+An island is an asm statement or a call of a vendored PsyQ GTE macro
+(engine.gtemacro.call_sites); a call must also pass gtemacro.call_issues.
 """
 from __future__ import annotations
 
@@ -10,7 +12,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from . import cheats, inlineasm, layer2
+from . import cheats, gtemacro, inlineasm, layer2
 
 REGIONS = Path('tools/canonical_asm_regions.json')
 # Schema 2 (owner 2026-10-06): a region hash covers the island's C tokens, so a
@@ -18,7 +20,16 @@ REGIONS = Path('tools/canonical_asm_regions.json')
 REGIONS_SCHEMA = 2
 
 
-def blocks(text: str, func: str) -> list[tuple[int, int]]:
+# Owner decisions 2026-10-15 (design section 2, flag until the written-out
+# islands are gone): refuse a written-out PsyQ macro (gtemacro.unit_spans) in a
+# canonical body — "write the macro call" — so the old form cannot come back.
+REFUSE_WRITTEN_OUT_UNITS = False
+
+
+def _islands(text: str, func: str) -> list[tuple[int, int, str | None]]:
+    """(start, end, header): every assembly island of func's body — asm
+    keyword statements (header None) and calls of vendored PsyQ GTE macros
+    (header = the TU's inline header; engine.gtemacro.call_sites) — sorted."""
     span = inlineasm._func_body_span(text, func)
     if span is None:
         return []
@@ -32,16 +43,29 @@ def blocks(text: str, func: str) -> list[tuple[int, int]]:
             raise ValueError(f'{func}: assembly keyword without an operand list')
         if kw.end < 0:
             raise ValueError(f'{func}: unclosed assembly block')
-        result.append((kw.start, kw.end + 1))
-    return result
+        result.append((kw.start, kw.end + 1, None))
+    calls = gtemacro.call_sites(text, func)
+    if calls:
+        header = gtemacro.tu_header(text) or '-'
+        result += [(s, e, header) for s, e, _name in calls]
+    return sorted(result)
+
+
+def blocks(text: str, func: str) -> list[tuple[int, int]]:
+    """Spans of func's assembly islands: asm statements and vendored macro calls."""
+    return [(s, e) for s, e, _h in _islands(text, func)]
 
 
 def region_hashes(text: str, func: str) -> list[str]:
     """One sha256 per island over its C tokens (layer2.tokens: string literals
     verbatim, whitespace and comments dropped). Any template, operand,
-    constraint or clobber change moves the hash; re-indenting does not."""
-    return [hashlib.sha256(' '.join(layer2.tokens(text[s:e])).encode('utf-8')).hexdigest()
-            for s, e in blocks(text, func)]
+    constraint or clobber change moves the hash; re-indenting does not. A
+    macro call hashes as `<inline header>:` + its tokens, so a call's
+    arguments, its macro, or the TU's switch between inline_o.h and
+    inline_c.h (same names, different bodies) voids the grant."""
+    return [hashlib.sha256(((f'{h}:' if h else '') + ' '.join(layer2.tokens(text[s:e])))
+                           .encode('utf-8')).hexdigest()
+            for s, e, h in _islands(text, func)]
 
 
 def grant_issues(stems: set[str]) -> list[str]:
@@ -95,10 +119,17 @@ def source_issues(stem: str, func: str, canonical: bool | None = None) -> list[s
         return ['no C body or authorized whole assembly body']
     try:
         islands = blocks(text, func)
+        call_problems = gtemacro.call_issues(text, func)
     except ValueError as exc:
         return [str(exc)]
     if islands and not canonical:
-        return ['inline assembly requires canonical/mixed classification']
+        return call_problems + ['inline assembly requires canonical/mixed classification']
+    if call_problems:
+        return call_problems
+    if canonical and REFUSE_WRITTEN_OUT_UNITS:
+        units = sorted({m for s, _e, m in gtemacro.unit_spans(text) if span[0] <= s < span[1]})
+        if units:
+            return [f'written-out PsyQ macro {m}: write the macro call' for m in units]
     if canonical:
         if not islands:
             return ['canonical C body has no assembly island to authorize']

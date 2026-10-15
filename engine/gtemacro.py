@@ -904,8 +904,18 @@ def _instr_flags(stmts) -> tuple[bool, bool]:
 
 
 def _read_vendored(root: str, basename: str) -> str | None:
+    p = Path(root) / "include/psxsdk" / basename
     try:
-        return (Path(root) / "include/psxsdk" / basename).read_text(encoding="ascii")
+        st = p.stat()
+    except OSError:
+        return None
+    return _read_cached(str(p), st.st_mtime_ns, st.st_size)
+
+
+@functools.lru_cache(maxsize=16)
+def _read_cached(path: str, _mtime: int, _size: int) -> str | None:
+    try:
+        return Path(path).read_text(encoding="ascii")
     except (OSError, UnicodeDecodeError):
         return None
 
@@ -957,12 +967,13 @@ def _header_macros_cached(inline: str, inline_text, composite_text):
 
 def vendored_names(root: str | Path = ".") -> frozenset[str]:
     """Every function-like macro name the three vendored files define."""
-    names = set()
-    for base in (*INLINE_HEADERS, COMPOSITE_HEADER):
-        text = _read_vendored(str(root), base)
-        if text is not None:
-            names.update(n for n, _l, _p, _b in _macro_defines(text))
-    return frozenset(names)
+    return _names_cached(tuple(_read_vendored(str(root), b)
+                               for b in (*INLINE_HEADERS, COMPOSITE_HEADER)))
+
+
+@functools.lru_cache(maxsize=4)
+def _names_cached(texts: tuple) -> frozenset[str]:
+    return frozenset(n for t in texts if t is not None for n, _l, _p, _b in _macro_defines(t))
 
 
 # `#include <psxsdk/inline_o.h>`, `"psxsdk/inline_o.h"` or any path ending in a
@@ -972,8 +983,11 @@ _VENDORED_INCLUDE_RE = re.compile(
     r'(inline_o\.h|inline_c\.h|gtemac\.h)[>"]', re.M)
 
 
+@functools.lru_cache(maxsize=16)
 def tu_includes(text: str) -> frozenset[str]:
     """Basenames of the vendored headers `text` #includes (comments ignored)."""
+    if not any(b in text for b in (*INLINE_HEADERS, COMPOSITE_HEADER)):
+        return frozenset()
     return frozenset(_VENDORED_INCLUDE_RE.findall(cia.compiler_view(text).code))
 
 
@@ -1070,3 +1084,188 @@ def call_sites(text: str, func: str, root: str | Path = ".") -> list[tuple[int, 
             raise ValueError(f"{func}: {name}(...) is not at statement position")
         out.append((m.start(), j + 1, name))
     return out
+
+
+def call_issues(text: str, func: str, root: str | Path = ".") -> list[str]:
+    """Why `func`'s vendored macro calls cannot be admitted, [] when they can:
+    a header that is not Sony's text, a macro the TU's header does not define
+    (wrong header, or gtemac.h without an inline header), a macro without a
+    GTE command (`gte_nop()` is a scheduling barrier by name) or with a DMPSX
+    placeholder left, and a source-file #define / #undef of a vendored name.
+    call_sites / tu_header errors propagate as ValueError."""
+    calls = call_sites(text, func, root)
+    if not calls:
+        return []
+    issues = [f"vendored header: {i}" for i in check_vendored(root)]
+    macros = tu_macros(text, root)
+    where = tu_header(text) or "no inline header"
+    for _s, _e, name in calls:
+        m = macros.get(name)
+        if m is None:
+            issues.append(f"call of {name}: not defined by the TU's vendored headers ({where})")
+        elif m.placeholder:
+            issues.append(f"call of {name}: its expansion keeps a DMPSX placeholder "
+                          f"(no agreed command word)")
+        elif not m.has_cop2:
+            issues.append(f"call of {name}: its expansion has no GTE (cop2) instruction "
+                          f"(a scheduling barrier by name)")
+    for _s, _e, name in shadow_spans(text, root):
+        issues.append(f"the TU redefines vendored macro {name} (#define/#undef)")
+    return issues
+
+
+# --- macros outside a gate's sight ------------------------------------------
+# Every gate scans unexpanded source, so a macro is seen only through its
+# name. The vendored calls are islands (above); anything else that expands to
+# asm is counted and stripped by name (engine.inlineasm._strip_spans).
+
+# The headers that may define a macro expanding to inline asm (design section
+# 2, header registry): the vendored three, bios.h (the BIOS trampolines,
+# inlineasm.bios_macro_spans) and include_asm.h (INCLUDE_ASM).
+ASM_MACRO_HEADERS = frozenset(VENDORED) | {"include/bios.h", "include/include_asm.h"}
+_HEADER_DIRS = ("include", "src")
+
+
+def _header_paths(root: str) -> list[Path]:
+    return sorted(p for d in _HEADER_DIRS for p in (Path(root) / d).rglob("*.h"))
+
+
+def _defines_with_kind(text: str) -> list[tuple[str, bool, frozenset, frozenset]]:
+    """(name, function_like, params, idents) per #define logical line."""
+    from . import volatile_cheats  # local import: volatile_cheats imports inlineasm
+    out = []
+    for line in cia.compiler_view(text).masked_eol.split("\n"):
+        m = volatile_cheats._MACRO_DEFINE_RE.match(line)
+        if m:
+            out.append((m.group("name"), m.group("params") is not None,
+                        frozenset(volatile_cheats._C_IDENT_RE.findall(m.group("params") or "")),
+                        frozenset(volatile_cheats._C_IDENT_RE.findall(line[m.end():]))))
+    return out
+
+
+def asm_macro_registry(root: str | Path = ".") -> tuple[tuple[str, str, bool], ...]:
+    """(name, header, function_like) for every #define in include/**/*.h and
+    src/**/*.h whose replacement reaches an asm keyword, transitively across
+    headers (a macro naming another header's asm macro is one too). header is
+    the path relative to root."""
+    paths = _header_paths(str(root))
+    stamps = []
+    for p in paths:
+        try:
+            st = p.stat()
+            stamps.append((p.as_posix(), st.st_mtime_ns, st.st_size))
+        except OSError:
+            pass
+    return _asm_macro_registry_cached(str(root), tuple(stamps))
+
+
+@functools.lru_cache(maxsize=4)
+def _asm_macro_registry_cached(root: str, stamps: tuple) -> tuple[tuple[str, str, bool], ...]:
+    from . import volatile_cheats
+    defs = []
+    for path, _mt, _sz in stamps:
+        p = Path(path)
+        rel = p.relative_to(Path(root)).as_posix()
+        text = p.read_text(encoding="utf-8", errors="replace")
+        defs += [(rel, *d) for d in _defines_with_kind(text)]
+    seeds = set(cia.ASM_SPELLINGS) | volatile_cheats._BIOS_MACROS
+    asm = {name for _r, name, _f, _p, idents in defs if name in seeds or idents & seeds}
+    grew = True
+    while grew:
+        grew = False
+        for _r, name, _f, params, idents in defs:
+            if name not in asm and (idents - params) & asm:
+                asm.add(name)
+                grew = True
+    return tuple((name, rel, fl) for rel, name, fl, _p, _i in defs if name in asm)
+
+
+def header_registry_issues(root: str | Path = ".") -> list[str]:
+    """Every asm macro defined outside ASM_MACRO_HEADERS, and every header that
+    includes a vendored header (only a .c TU may: tu_includes reads the TU)."""
+    issues = [f"{rel}: #define {name} expands to inline asm outside the vendored "
+              f"PsyQ headers, bios.h and include_asm.h"
+              for name, rel, _fl in asm_macro_registry(root) if rel not in ASM_MACRO_HEADERS]
+    for p in _header_paths(str(root)):
+        rel = p.relative_to(Path(root)).as_posix()
+        if rel not in VENDORED and tu_includes(p.read_text(encoding="utf-8", errors="replace")):
+            issues.append(f"{rel}: includes a vendored PsyQ header (only a .c TU may)")
+    return issues
+
+
+def foreign_asm_macros(root: str | Path = ".") -> dict[str, bool]:
+    """name -> function_like for every asm macro a header outside
+    ASM_MACRO_HEADERS defines. A vendored name is left out: its calls are
+    islands, and the header redefining it is a registry violation."""
+    allowed = {name for name, rel, _fl in asm_macro_registry(root) if rel in ASM_MACRO_HEADERS}
+    vend = vendored_names(root)
+    return {name: fl for name, rel, fl in asm_macro_registry(root)
+            if rel not in ASM_MACRO_HEADERS and name not in allowed and name not in vend}
+
+
+def _invocation_spans(text: str, names: dict[str, bool]) -> list[tuple[int, int, str]]:
+    """(start, end, name) of every invocation of `names` (name -> function_like)
+    in code — comments, strings and preprocessor lines ignored — through the
+    balanced `)` of a function-like macro and an optional `;`. An unbalanced
+    invocation spans to the end of the text (fail closed)."""
+    if not names:
+        return []
+    masked = inlineasm._code_without_comments_and_strings(text)
+    pp = _preprocessor_ranges(masked)
+    rx = re.compile(r"\b(" + "|".join(map(re.escape, sorted(names))) + r")\b")
+    out, last = [], -1
+    for m in rx.finditer(masked):
+        if m.start() < last or any(s <= m.start() < e for s, e in pp):
+            continue
+        end = m.end()
+        if names[m.group(1)]:
+            j = end
+            while j < len(masked) and masked[j] in " \t\n":
+                j += 1
+            if j >= len(masked) or masked[j] != "(":
+                continue  # a function-like macro's name alone is not expanded
+            close = inlineasm._match_paren(masked, j)
+            end = close if close > 0 else len(text)
+        k = end
+        while k < len(masked) and masked[k] in " \t":
+            k += 1
+        if k < len(masked) and masked[k] == ";":
+            end = k + 1
+        out.append((m.start(), end, m.group(1)))
+        last = end
+    return out
+
+
+_SHADOW_RE = re.compile(r"[ \t]*(?:#|%:)[ \t]*(?:define|undef)[ \t]+([A-Za-z_]\w*)")
+
+
+def shadow_spans(text: str, root: str | Path = ".") -> list[tuple[int, int, str]]:
+    """(start, end, name) of every `#define` / `#undef` of a vendored macro name
+    in a source file: a redefinition would replace Sony's text."""
+    names = vendored_names(root)
+    if not names:
+        return []
+    masked = inlineasm._code_without_comments_and_strings(text)
+    out = []
+    for s, e in _preprocessor_ranges(masked):
+        m = _SHADOW_RE.match(masked, s)
+        if m and m.end() <= e and m.group(1) in names:
+            out.append((s, e, m.group(1)))
+    return out
+
+
+def macro_strip_spans(text: str, root: str | Path = ".") -> list[tuple[int, int]]:
+    """Spans of a source file the cheat strip removes (sandbox) and counts
+    (gate) by name: invocations of a foreign header's asm macro, #define /
+    #undef of a vendored name, and calls of a vendored macro without a GTE
+    command (gte_nop(); scored as stripped since the gate refuses it)."""
+    spans = [(s, e) for s, e, _n in _invocation_spans(text, foreign_asm_macros(root))]
+    spans += [(s, e) for s, e, _n in shadow_spans(text, root)]
+    if tu_includes(text):
+        try:
+            macros = tu_macros(text, root)
+        except ValueError:  # both inline headers: either one's barrier counts
+            macros = {**header_macros("inline_c.h", root), **header_macros("inline_o.h", root)}
+        free = {n: True for n, m in macros.items() if not m.has_cop2}
+        spans += [(s, e) for s, e, _n in _invocation_spans(text, free)]
+    return spans

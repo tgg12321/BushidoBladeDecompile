@@ -1251,6 +1251,177 @@ def test_gte_vendored_model() -> None:
               any("not substituted" in i for i in G.check_vendored(tmp)))
 
 
+def test_gte_call_gates() -> None:
+    """The completion gates see vendored macro calls (design section 2)."""
+    from engine import gtemacro as G
+    if not all(Path(r).exists() for r in G.VENDORED):
+        skip("gte call gates", "include/psxsdk vendored headers absent")
+        return
+    inc_o = "#include <psxsdk/inline_o.h>\n#include <psxsdk/gtemac.h>\n"
+    inc_c = "#include <psxsdk/inline_c.h>\n#include <psxsdk/gtemac.h>\n"
+
+    def tu(body: str, inc: str = inc_o, pre: str = "") -> str:
+        return (inc + pre + "s32 func_GTE(s32 *v, s32 *out) {\n" + body
+                + "\n    return out[0] + 1;\n}\n")
+
+    calls3 = "    gte_ldv0(v);\n    gte_rtv0();\n    gte_stlvnl(out);"
+    text = tu(calls3)
+    eq("call gate: each call is an island",
+       [text[s:e] for s, e in completion.blocks(text, "func_GTE")],
+       ["gte_ldv0(v);", "gte_rtv0();", "gte_stlvnl(out);"])
+    eq("call gate: asm statements and calls sorted together",
+       len(completion.blocks(tu(calls3 + '\n    __asm__ volatile ("ctc2 %0,$13" :: "r"(v));'),
+                             "func_GTE")), 4)
+
+    with tempfile.TemporaryDirectory() as td:
+        grants = Path(td) / "regions.json"
+        old_read, old_regions = inlineasm._read_src_cached, completion.REGIONS
+        old_foreign, old_flag = G.foreign_asm_macros, completion.REFUSE_WRITTEN_OUT_UNITS
+
+        def issues(src: str, canonical: bool = True) -> list[str]:
+            inlineasm._read_src_cached = lambda stem: src
+            return completion.source_issues("fake", "func_GTE", canonical=canonical)
+
+        def grant(src: str) -> None:
+            grants.write_text(json.dumps({"schema": 2, "functions": {"func_GTE": {
+                "file": "fake", "sha256": completion.region_hashes(src, "func_GTE")}}}))
+        try:
+            completion.REGIONS = grants
+            check("call gate: a non-canonical body with a call is refused",
+                  any("requires canonical" in i for i in issues(text, canonical=False)))
+            check("call gate: a canonical body without a grant is refused",
+                  any("no reviewed region grant" in i for i in issues(text)))
+            grant(text)
+            eq("call gate: a canonical body of calls passes with its grant", issues(text), [])
+            check("call gate: an argument edit voids the grant", any(
+                "changed since review" in i for i in issues(text.replace("gte_ldv0(v)",
+                                                                         "gte_ldv0(v + 1)"))))
+            check("call gate: a macro change voids the grant", any(
+                "changed since review" in i for i in issues(text.replace("gte_rtv0()",
+                                                                         "gte_rtv0tr()"))))
+            switched = tu(calls3, inc_c)
+            eq("call gate: inline_c.h defines the same calls", G.call_issues(switched, "func_GTE"), [])
+            check("call gate: switching inline_o.h -> inline_c.h voids the grant",
+                  any("changed since review" in i for i in issues(switched)))
+            check("call gate: region hash differs by header only",
+                  completion.region_hashes(text, "func_GTE")
+                  != completion.region_hashes(switched, "func_GTE"))
+            relaid = text.replace("gte_ldv0(v);", "gte_ldv0( v ); /* load */")
+            eq("call gate: a layout/comment change keeps the grant", issues(relaid), [])
+
+            nop = tu(calls3 + "\n    gte_nop();")
+            grant(nop)
+            check("call gate: standalone gte_nop() refused (no cop2)",
+                  any("gte_nop: its expansion has no GTE" in i for i in issues(nop)))
+            src_nop = tu("    out[0] = 1;\n    gte_nop();")
+            eq("call gate: gte_nop() counted as cheat asm",
+               inlineasm.func_cheat_asm_count(src_nop, "func_GTE"), 1)
+            stripped, n = inlineasm.strip_cheat_asm_file(src_nop)
+            eq("call gate: gte_nop() stripped for the sandbox", ("gte_nop" in stripped, n), (False, 1))
+            kept, n = inlineasm.strip_cheat_asm_file(text)
+            eq("call gate: calls with a GTE command are kept and not counted", (kept, n), (text, 0))
+            eq("call gate: calls with a GTE command are not cheat asm",
+               inlineasm.func_cheat_asm_count(text, "func_GTE"), 0)
+
+            gpl0 = tu(calls3 + "\n    gte_gpl0();")
+            check("call gate: a DMPSX placeholder macro refused",
+                  any("gte_gpl0: its expansion keeps a DMPSX placeholder" in i for i in issues(gpl0)))
+
+            wrong = tu(calls3 + "\n    gte_rtps_b();")
+            check("call gate: a macro the TU's header lacks is refused (inline_c.h-only name)",
+                  any("gte_rtps_b: not defined" in i for i in issues(wrong)))
+            nocomp = tu("    gte_ApplyRotMatrix(v, out);", "#include <psxsdk/inline_o.h>\n")
+            check("call gate: a gtemac.h composite without gtemac.h is refused",
+                  any("gte_ApplyRotMatrix: not defined" in i for i in issues(nocomp)))
+            onlymac = tu("    gte_ApplyRotMatrix(v, out);", "#include <psxsdk/gtemac.h>\n")
+            check("call gate: gtemac.h without an inline header is refused",
+                  any("no inline header" in i for i in issues(onlymac)))
+            both = tu(calls3, inc_o + "#include <psxsdk/inline_c.h>\n")
+            check("call gate: both inline headers in a TU refused",
+                  any("both inline_o.h and inline_c.h" in i for i in issues(both)))
+            check("call gate: a call in expression position refused",
+                  any("not at statement position" in i
+                      for i in issues(tu("    out[0] = 1 + gte_rtv0();"))))
+
+            shadow = tu(calls3, pre="#define gte_rtv0() func_x()\n")
+            grant(shadow)
+            check("call gate: a same-file #define of a vendored name refused",
+                  any("redefines vendored macro gte_rtv0" in i for i in issues(shadow)))
+            undef = tu(calls3, pre="#undef gte_rtv0\n")
+            check("call gate: a same-file #undef of a vendored name refused",
+                  any("redefines vendored macro gte_rtv0" in i for i in issues(undef)))
+            in_body = tu("#undef gte_rtv0\n    out[0] = 1;", inc="#include <psxsdk/inline_o.h>\n")
+            eq("call gate: a shadowing directive in a body counted",
+               inlineasm.func_cheat_asm_count(in_body, "func_GTE"), 1)
+            stripped, _n = inlineasm.strip_cheat_asm_file(shadow)
+            check("call gate: a shadowing #define stripped for the sandbox",
+                  "#define gte_rtv0" not in stripped)
+
+            G.foreign_asm_macros = lambda root=".": {"MY_LDV": True, "MY_BARRIER": False}
+            foreign = tu("    MY_LDV(v);\n    out[0] = 2;\n    MY_BARRIER;", inc="")
+            eq("call gate: foreign header asm macros counted",
+               inlineasm.func_cheat_asm_count(foreign, "func_GTE"), 2)
+            stripped, n = inlineasm.strip_cheat_asm_file(foreign)
+            eq("call gate: foreign header asm macros stripped",
+               ("MY_LDV" in stripped, "MY_BARRIER" in stripped, n), (False, False, 2))
+            G.foreign_asm_macros = old_foreign
+
+            lzc = ('__asm__ volatile("move  $12,%0" : : "r"(v) : ' + _CLOB + ');\n    '
+                   '__asm__ volatile("mtc2  $12,$30" : : : ' + _CLOB + ');')
+            written = tu("    " + lzc)
+            grant(written)
+            completion.REFUSE_WRITTEN_OUT_UNITS = False
+            eq("call gate: written-out unit allowed while the flag is off", issues(written), [])
+            completion.REFUSE_WRITTEN_OUT_UNITS = True
+            check("call gate: written-out unit refused with the flag on",
+                  any("written-out PsyQ macro gte_ldlzc" in i for i in issues(written)))
+        finally:
+            inlineasm._read_src_cached, completion.REGIONS = old_read, old_regions
+            G.foreign_asm_macros, completion.REFUSE_WRITTEN_OUT_UNITS = old_foreign, old_flag
+
+
+def test_gte_header_registry() -> None:
+    """Only the vendored headers, bios.h and include_asm.h define asm macros."""
+    from engine import gtemacro as G
+    root = tempfile.mkdtemp(prefix="bb2_registry_")
+    files = {
+        "include/bios.h": "#define BIOS_A_FUNCTION(n, id) __asm__(\".text\")\n",
+        "include/include_asm.h": "#define INCLUDE_ASM(f, n) __asm__(\".include\")\n",
+        "include/psxsdk/inline_o.h": _FIX_O,
+        "include/psxsdk/gtemac.h": _FIX_MAC,
+        "include/foo.h": "#define BAR() __asm__ volatile (\"nop\")\n#define PLAIN(x) (x + 1)\n",
+        "include/baz.h": "#define QUX(x) BAR()\n#define VIA_GTE(x) gte_ldv0(x)\n",
+        "include/obj.h": "#define FENCE \\\n    __asm__(\"\" ::: \"memory\")\n",
+        "src/main/local.h": "#define VIA_BIOS BIOS_A_FUNCTION(a, 1)\n",
+        "include/incl.h": "#include <psxsdk/inline_o.h>\n",
+    }
+    for rel, text in files.items():
+        (Path(root) / rel).parent.mkdir(parents=True, exist_ok=True)
+        (Path(root) / rel).write_text(text, newline="\n")
+    reg = {(n, r) for n, r, _f in G.asm_macro_registry(root)}
+    check("registry: the vendored and allowed macros are asm macros",
+          {("gte_ldv0", "include/psxsdk/inline_o.h"), ("BIOS_A_FUNCTION", "include/bios.h"),
+           ("INCLUDE_ASM", "include/include_asm.h")} <= reg)
+    issues = G.header_registry_issues(root)
+    for rel, name in (("include/foo.h", "BAR"), ("include/baz.h", "QUX"),
+                      ("include/baz.h", "VIA_GTE"), ("include/obj.h", "FENCE"),
+                      ("src/main/local.h", "VIA_BIOS")):
+        check(f"registry: {rel} {name} flagged", any(i.startswith(f"{rel}: #define {name} ")
+                                                     for i in issues))
+    check("registry: a plain macro is not flagged", not any("PLAIN" in i for i in issues))
+    check("registry: the allowed headers are not flagged", not any(
+        i.startswith(("include/bios.h", "include/include_asm.h", "include/psxsdk/"))
+        for i in issues))
+    check("registry: a header including a vendored header is flagged",
+          any(i.startswith("include/incl.h: includes a vendored") for i in issues))
+    eq("registry: foreign asm macros (function-like flag)",
+       G.foreign_asm_macros(root),
+       {"BAR": True, "QUX": True, "VIA_GTE": True, "FENCE": False, "VIA_BIOS": False})
+    real = G.header_registry_issues()
+    check("registry: the tree's only violations are include/gte.h (retired next)",
+          all(i.startswith("include/gte.h: ") for i in real))
+
+
 # --------------------------------------------------------------------------
 # cheats — regfix masking (other half of cheat-invisibility)
 # --------------------------------------------------------------------------
@@ -10459,6 +10630,8 @@ def main() -> int:
     test_inlineasm()
     test_gte_macro_units()
     test_gte_vendored_model()
+    test_gte_call_gates()
+    test_gte_header_registry()
     test_cheats()
     test_prologue_cheat()
     test_addr_coerced_locals()

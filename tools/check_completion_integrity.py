@@ -55,7 +55,7 @@ sys.path.insert(0, str(REPO))
 # resolve correctly regardless of where this tool was invoked from.
 os.chdir(REPO)
 from engine import cheats, inlineasm, pipeline as P, score  # noqa: E402
-from engine import buildstamp, completion, buildconfig  # noqa: E402
+from engine import buildstamp, completion, buildconfig, gtemacro  # noqa: E402
 from engine import queue as Q  # noqa: E402
 from engine import departures  # noqa: E402
 sys.path.insert(0, str(REPO / "tools"))
@@ -229,6 +229,12 @@ def main() -> int:
     # islands they reviewed, queued functions included: the loop above skips
     # those, and naming waves rename operands inside their islands.
     violations.extend(completion.grant_issues(set(P.c_stems())))
+
+    # Vendored PsyQ GTE headers (engine/gtemacro.py): each is Sony's pinned
+    # text, and no other header defines a macro expanding to inline asm (the
+    # gates read unexpanded source, so such a macro would be invisible).
+    violations.extend(f"vendored header: {i}" for i in gtemacro.check_vendored())
+    violations.extend(gtemacro.header_registry_issues())
 
     # Naming waves (.claude/rules/naming-bar.md): no C comment keeps a name a
     # wave retired (completion-bar item 3: comments assert nothing false).

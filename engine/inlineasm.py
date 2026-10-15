@@ -361,8 +361,9 @@ def _block_category(asm_body: str) -> str:
 
 def _strip_spans(text: str) -> list[tuple[int, int]]:
     """Char spans to delete: cheat-asm __asm__ statements, INCLUDE_ASM whole-body
-    invocations, + the asm("$N") qualifier of register pins (the variable
-    declaration itself is kept).
+    invocations, asm reached through a macro name (gtemacro.macro_strip_spans),
+    + the asm("$N") qualifier of register pins (the variable declaration itself
+    is kept).
 
     INCLUDE_ASM is stripped because it is not compiled C: leaving it in would let
     the sandbox assemble the target bytes straight from asm/funcs/<name>.s and
@@ -390,6 +391,15 @@ def _strip_spans_cached(text: str) -> tuple[tuple[int, int], ...]:
     for bs, be in bios_macro_spans(text):
         if not any(bs < e and s < be for s, e in spans):
             spans.append((bs, be))
+    # Asm reached through a macro name (engine.gtemacro): an invocation of a
+    # foreign header's asm macro, a #define/#undef shadowing a vendored PsyQ
+    # macro, a call of a vendored macro without a GTE command (gte_nop()).
+    # Vendored calls WITH a GTE command are kept: cpp expands them in the
+    # sandbox as in the build, and the completion gate treats them as islands.
+    from . import gtemacro  # local import: gtemacro imports this module
+    for ms, me in gtemacro.macro_strip_spans(text):
+        if not any(ms < e and s < me for s, e in spans):
+            spans.append((ms, me))
     # find_asm_keywords sees the keyword the way cc1 does: comments and
     # backslash-newlines between `__asm__`, its qualifiers and `(` are
     # whitespace, and a comment/string that merely mentions `__asm__` is not
