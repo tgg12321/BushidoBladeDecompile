@@ -227,3 +227,37 @@
 - [s10] label_census on p_f.psx.s: CFG/predecessor multiset [1,1,2] matches target; residual is $s0 refs 16 vs 0 and assembler-filled nops.
 
 - [s10] candidate.c unchanged (INCLUDE_ASM stub on the ASM-WHOLE canonical GTE grant path); floor 37.
+
+## s11 (rederive) — second independent m2c run + mandated kill re-audit, both re-confirm s8
+
+- Fresh `python3 tools/m2c/m2c.py asm/funcs/func_8004A76C.s` (tmp/grind/func_8004A76C/s11/m2c_out.c,
+  m2c_err.txt): identical shape to s8's cached run — `void func_8004A76C(s32 arg0, void *arg2)`,
+  TWO formal parameters, zero slot for `$s0` (the vertex-pointer base the asm actually loops on).
+  m2c treats every `lwc2`/`rtpt`/`mfc2 $17-19`/`swc2` as `M2C_ERROR(/* unknown instruction */)` —
+  cop2/GTE opcodes are outside m2c's MIPS-I model, so the loop body cannot be lowered to C by this
+  tool at all, independent of the ABI question. Re-confirms s8's finding with a fresh run (no
+  m2c/toolchain version change since s8).
+- Sibling re-check (ledger-mandated, func_8004A4E0's candidate.c re-read in full this session):
+  unchanged since s8 — still comments-only over its own INCLUDE_ASM stub (ASM-WHOLE class kill,
+  jtbl cross-function-target finding), its own s11/s12 rederive entries record the SAME null
+  decomp.me/m2c result for ITS body. No transplantable C block exists in either direction; the two
+  functions share only the custom callee-saved ABI fact, already banked at this ledger's s1.
+- Mandated kill re-audit (floor flat since s5): `fake_ablate.py --candidate
+  rejected/psyq-rtpt-pair-reorg-slot-residual.c` reports **zero FAKE constructs** — the kill was
+  never propped by a FAKE carrier. Re-measured `sandbox --disable all --candidate
+  rejected/psyq-rtpt-pair-reorg-slot-residual.c --diff` on the current chassis: 5/5 hunks now
+  classed **source-level** (engine/gtemacro.py strips the unpinned `gte_rtpt`/`lwc2`/`swc2`/`mfc2`
+  block entirely since it isn't a PINNED unit, so the diff shows the whole GTE core missing, not a
+  register-seat residual) — confirms the s5/s7/s10 frontier note verbatim: the sandbox cannot score
+  a GTE body until engine/gtemacro.py pins `gte_rtpt`/`gte_rtpt_b`/`gte_ldv3c`/`gte_stsxy3c`, which
+  is an operator-only engine change outside this session's surface.
+
+- [s11] canonical func_8004A76C returns ASM-WHOLE citing an existing whole-function grant already recorded in inline_asm_canonical.txt (not pending).
+
+- [s11] Fresh m2c run reconfirms s8's two-parameter signature with no $s0 slot and M2C_ERROR on every cop2/GTE opcode — m2c cannot lower this body at all, independent of the ABI question.
+
+- [s11] Sibling func_8004A4E0's candidate.c re-read in full this session: unchanged since s8, comments-only, its own s11/s12 independently hit the same null rederive result for its own body — no transplantable block in either direction.
+
+- [s11] fake_ablate.py confirms the closest rejected form carries zero FAKE constructs, so its prior kill was never FAKE-propped.
+
+- [s11] Re-measuring that form on the current chassis still shows 5/5 hunks source-level because engine/gtemacro.py still strips the unpinned gte_rtpt/lwc2/swc2/mfc2 block wholesale — the sandbox cannot score any GTE-bearing C body for this function until that engine-side pin lands, which is outside this session's surface.

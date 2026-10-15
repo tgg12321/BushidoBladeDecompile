@@ -572,3 +572,45 @@ C-level match of the diverging region.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: six p_f-derived variants s10/v1_s16..v6_szs32.c, $a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, port cc1 and cc1psx, no FAKE construct
+
+## s11 (rederive)
+
+- statement: A fresh, independent m2c run on asm/funcs/func_8004A76C.s (distinct process from s8's
+  cached invocation) emits a different two-parameter signature or gives $s0 a formal-parameter
+  slot, opening a new ABI-honest C path.
+- probe: `python3 tools/m2c/m2c.py asm/funcs/func_8004A76C.s` (tmp/grind/func_8004A76C/s11/m2c_out.c).
+- result: identical to s8 — `void func_8004A76C(s32 arg0, void *arg2)`, no $s0 parameter, every
+  cop2/GTE opcode (`lwc2`,`rtpt`,`mfc2 $17-19`,`swc2`) lowered to `M2C_ERROR`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/m2c/m2c.py fresh invocation this session, no FAKE construct, no C chassis (m2c output only)
+
+- statement: The closest banked rejected form (rejected/psyq-rtpt-pair-reorg-slot-residual.c) was
+  killed by a FAKE-propped chassis, so re-measuring it clean would change its verdict.
+- probe: `python3 tools/fake_ablate.py --func func_8004A76C --file main/3AB48 --candidate
+  memory/grind/func_8004A76C/rejected/psyq-rtpt-pair-reorg-slot-residual.c`, then `sandbox
+  func_8004A76C --disable all --candidate <same file> --diff` on the current chassis.
+- result: fake_ablate reports zero FAKE constructs to ablate (file carries none). Diff re-measure:
+  5/5 hunks source-level — the sandbox strips the entire unpinned gte_rtpt/lwc2/swc2/mfc2 block as
+  cheat-asm, so "ours" is missing the whole GTE core, not showing a register-seat residual. This
+  is the s5/s10 engine/gtemacro.py-pin gap re-confirmed on the current chassis, not a new form.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c at current HEAD, $a3 vertex-pointer
+  chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, no FAKE construct (confirmed via fake_ablate)
+
+## [s11] A fresh, independent m2c run on asm/funcs/func_8004A76C.s (distinct process from s8's cached invocation) emits a different two-parameter signature or gives $s0 a formal-parameter slot, opening a new ABI-honest C path.
+- mechanism: m2c's MIPS-I decompiler model vs the GTE-interpreter custom $s0-live-in ABI
+- probe: python3 tools/m2c/m2c.py asm/funcs/func_8004A76C.s (tmp/grind/func_8004A76C/s11/m2c_out.c)
+- result: Identical to s8: void func_8004A76C(s32 arg0, void *arg2), no $s0 parameter, every cop2/GTE opcode (lwc2, rtpt, mfc2 $17-19, swc2) lowered to M2C_ERROR.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/m2c/m2c.py fresh invocation this session, no FAKE construct, no C chassis (m2c output only)
+
+## [s11] The closest banked rejected form (rejected/psyq-rtpt-pair-reorg-slot-residual.c) was killed by a FAKE-propped chassis, so re-measuring it clean on the current chassis would change its verdict.
+- mechanism: engine/gtemacro.py unpinned-unit cheat-asm stripping of gte_rtpt/lwc2/swc2/mfc2
+- probe: fake_ablate.py --func func_8004A76C --candidate rejected/psyq-rtpt-pair-reorg-slot-residual.c, then sandbox --disable all --candidate <same> --diff
+- result: fake_ablate reports zero FAKE constructs to ablate. --diff on current chassis: 5/5 hunks source-level — the sandbox strips the whole unpinned GTE block, same engine-pin gap already banked at s5/s7/s10, not a new residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c at current HEAD, $a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, no FAKE construct (confirmed via fake_ablate)

@@ -1,8 +1,8 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 10,
- "current_modality": "forensics",
+ "session_count": 11,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -63,16 +63,22 @@
    "floor": 37,
    "modality": "forensics",
    "headline": "Forensics: original PsyQ cc1psx reproduces the port's output on the closest forms and six new mfc2-seat input variants; residuals are real-compiler, not port divergence"
+  },
+  {
+   "session": 11,
+   "floor": 37,
+   "modality": "rederive",
+   "headline": "Rederive s11: fresh m2c run and mandated kill re-audit both re-confirm s8/s5 \u2014 no new C or transplant path; sandbox still can't score GTE body until gte_rtpt is pinned."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ASM-WHOLE canonical GTE grant is the correct disposition; six modalities plus cc1psx calibration confirm the non-GCC $s0 ABI, $t0-$t2 seats and delay-slot shape.",
+   "hypothesis": "The ASM-WHOLE canonical GTE grant (already recorded in inline_asm_canonical.txt) is the correct, final disposition; seven modalities (recon/structural/permuter/enumerate/synthesis/solver/forensics x2/rederive x2) plus cc1psx calibration all independently confirm the non-GCC $s0 ABI, $t0-$t2 seats and hand-pipelined delay-slot shape.",
    "mechanism": "s1 ABI class kill; global.c:1057 first-fit; reorg.c:2969 scan + stop_search_p reorg.c:732; cc1psx agreement (s10)",
-   "next_probe": "Escalation modality: file the decisions.md disposition citing s1, s6, s7, s9, s10."
+   "next_probe": "Escalation modality (not mandated this session): file the decisions.md disposition citing s1, s6, s7, s9, s10, s11."
   },
   {
-   "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c units lets the sandbox score GTE bodies.",
+   "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c units lets the sandbox score GTE bodies, which would let the closest rejected form (now re-confirmed clean of FAKE constructs) be re-measured as a real residual instead of a stripped block.",
    "mechanism": "engine/gtemacro.py PINNED units (owner ruling 2026-09-25 scorer pin process)",
    "next_probe": "Operator engine commit, then re-measure rejected/psyq-rtpt-pair-reorg-slot-residual.c."
   }
@@ -255,6 +261,22 @@
    "measured_on": "six p_f-derived variants s10/v1_s16..v6_szs32.c, $a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, port cc1 and cc1psx, no FAKE construct",
    "predicate_cite": "",
    "result": "s16/u16 -> $2,$2,$2; z[3] -> $3,$2,$2; reversed/fused/s32-sz -> $2,$3,$8; none $8,$9,$10; port == cc1psx on all six."
+  },
+  {
+   "session": 11,
+   "statement": "A fresh, independent m2c run on asm/funcs/func_8004A76C.s (distinct process from s8's cached invocation) emits a different two-parameter signature or gives $s0 a formal-parameter slot, opening a new A",
+   "kill_scope": "instance",
+   "measured_on": "tools/m2c/m2c.py fresh invocation this session, no FAKE construct, no C chassis (m2c output only)",
+   "predicate_cite": "",
+   "result": "Identical to s8: void func_8004A76C(s32 arg0, void *arg2), no $s0 parameter, every cop2/GTE opcode (lwc2, rtpt, mfc2 $17"
+  },
+  {
+   "session": 11,
+   "statement": "The closest banked rejected form (rejected/psyq-rtpt-pair-reorg-slot-residual.c) was killed by a FAKE-propped chassis, so re-measuring it clean on the current chassis would change its verdict.",
+   "kill_scope": "instance",
+   "measured_on": "rejected/psyq-rtpt-pair-reorg-slot-residual.c at current HEAD, $a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, no FAKE construct (confirmed via fake_ablate)",
+   "predicate_cite": "",
+   "result": "fake_ablate reports zero FAKE constructs to ablate. --diff on current chassis: 5/5 hunks source-level \u2014 the sandbox stri"
   }
  ],
  "ladder_skip": 0,

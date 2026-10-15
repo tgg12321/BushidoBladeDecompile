@@ -40,6 +40,17 @@
  * frontier remains; the stub stays.
  */
 /*
+ * s11 (rederive): fresh independent m2c run (tmp/grind/func_8004A76C/s11/m2c_out.c) reconfirms
+ * s8 exactly -- two-parameter signature, no $s0 slot, every cop2/GTE opcode M2C_ERROR'd. Sibling
+ * func_8004A4E0's candidate.c re-read in full: unchanged, still comments-only, its own s11/s12
+ * independently hit the same null rederive result for its own body. Mandated kill re-audit on the
+ * closest rejected form (rejected/psyq-rtpt-pair-reorg-slot-residual.c): fake_ablate.py confirms
+ * zero FAKE constructs (kill was never FAKE-propped); re-measured --diff on current chassis, 5/5
+ * hunks source-level because engine/gtemacro.py still strips the unpinned gte_rtpt/lwc2/swc2/mfc2
+ * block wholesale -- same operator-only engine-pin gap as s5/s7/s10, not a new residual. No
+ * rederive-axis or kill-re-audit frontier remains; the stub stays.
+ */
+/*
  * s9 (forensics): kill re-audit -- rejected/psyq-rtpt-pair-reorg-slot-residual.c scores 32 on the current
  * stub chassis (5 source-level hunks, no FAKE construct to ablate). The jr $ra slot predicate is now
  * enumerated: reorg.c:2969 backward scan from return_internal stops only at a CODE_LABEL/jump/asm
