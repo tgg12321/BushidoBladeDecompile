@@ -261,3 +261,87 @@ C-level match of the diverging region.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: engine/gtemacro.py pinned set 2026-10-15, both s5 candidate files, no FAKE construct
+
+## s6 (solver)
+
+## [s6] KILL RE-AUDIT — the closest banked form (rejected/pipelined-goto-wrong-abi-stripped-gte.c) scores differently on the current chassis.
+- mechanism: instance kills are chassis-relative; re-measure before new probes.
+- probe: sandbox func_8004A76C --disable all --diff --candidate memory/grind/func_8004A76C/rejected/pipelined-goto-wrong-abi-stripped-gte.c (tmp/grind/func_8004A76C/s6/sandbox_reaudit_pipelined.txt). No FAKE construct in the form, so fake_ablate.py has nothing to ablate.
+- result: score 30, 5 source-level / 0 operand-only / 0 not-scored hunks — identical to s5. Kill stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current src/main/3AB48.c stub chassis + rejected/pipelined-goto-wrong-abi-stripped-gte.c, no FAKE construct
+
+## [s6] The sandbox residual of the pipelined form is an RA/SCHED residual the solver models can search.
+- mechanism: inverse_compose.py classify triages PRE-RA / RA / SCHED.
+- probe: inverse_compose.py classify main/3AB48 func_8004A76C --target-object build/src/main/3AB48.o --ours-object tmp/sandbox/func_8004A76C/main/3AB48.o (run inside WSL; the Windows-side run dies on missing objdump). Output tmp/grind/func_8004A76C/s6/classify_pipelined.txt.
+- result: FIRST DIVERGENCE: PRE-RA, "no backend" — the instruction multiset differs because the scorer strips every lwc2/swc2/rtpt asm unit. The RA/sched solvers cannot be applied to the sandbox stream.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: sandbox .o of rejected/pipelined-goto-wrong-abi-stripped-gte.c over the stub chassis, no FAKE construct
+
+## [s6] With the GTE asm retained (raw instrumented cc1, no scorer stripping), the pipelined goto form reproduces the target except for the $s0 base.
+- mechanism: compile the s5 form directly with tools/gcc-2.7.2/build/cc1 -da (Makefile CC_FLAGS) so nothing is stripped; read .greg dispositions.
+- probe: tmp/grind/func_8004A76C/s6/probe_pipe.c -> probe_pipe.s + probe_pipe.i.{greg,lreg,dbr,...} (cc.sh).
+- result: PARTIAL. The full CFG, lwc2/swc2/rtpt/mfc2 placement, j-into-middle with `addu v,24` in the delay slot, sh -6/-4/-2 and tail sh 0/2/4 all match. Five residual classes remain: (1) vertex base $a3 vs unsaved $s0 (ABI, s1 class kill); (2) mfc2 temps get $2,$3,$8 (greg: 76 in 2, 77 in 3, 78 in 8) vs target $t0,$t1,$t2; (3) no `nop; nop` before the first rtpt (gte.h:60 gte_rtpt has none; target has the 2-insn lwc2->cop2 hazard pad only on the first rtpt); (4) GCC's dbr fills the `j $31` delay slot with the last sh, target has `sh; jr ra; nop`; (5) target puts `addiu a1,12` before `beqz a0` and `addiu a0,-1` in its delay slot (decrement on both paths); GCC puts the sxy increment in the delay slot and the decrement on the fall-through.
+- verdict: CONFIRMED
+
+## [s6] Freeing $a3 (vertex pointer off the arg registers) lets GCC place the mfc2 temps in $t0-$t2.
+- mechanism: global.c first-fit scan (no REG_ALLOC_ORDER for mips) takes the lowest free regno.
+- probe: tmp/grind/func_8004A76C/s6/probe_tail.c (diagnostic only: vertex ptr through a file-scope pointer, `if (n-- != 0)`), raw cc1 -da; banked rejected/diag-global-vtx-z-temps-a3-t0-t1.c.
+- result: z temps got $7,$8,$9 (greg "76 in 8 77 in 9 78 in 3 82 in 2" with $2 taken by a `move $2,$4` copy the post-decrement test created and $3 by the vertex pointer). Every placement follows ascending first fit over whatever is free.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tmp/grind/func_8004A76C/s6/probe_tail.c raw cc1 (no scorer), diagnostic global-pointer chassis, no FAKE construct
+
+## [s6] When nothing occupies $v0, $v1 or $a3 across the mfc2 temps' live ranges (the target bytes reference none of them), GCC 2.7.2 global allocation places those temps in $t0/$t1/$t2.
+- mechanism: tools/gcc-2.7.2/global.c:1057 find_reg scans hard regs 0..FIRST_PSEUDO_REGISTER in ascending order (`int regno = i;` — mips defines no REG_ALLOC_ORDER) and takes the first one that is free and mode-OK; the temps cross the loop back edge so local-alloc does not take them, and they have no copy to a hard reg so no preference reorders the scan.
+- probe: the two raw-cc1 dispositions above (probe_pipe: 2,3,8; probe_tail: 7,8,9) plus the predicate read at global.c:1050-1075.
+- result: the target's t0/t1/t2 with $2,$3,$7 untouched is not a first-fit outcome. The only byte-invisible occupants would be asm clobber lists naming $2/$3/$7 on the cop2 statements, which assert a GPR effect rtpt/lwc2 do not have (completion-bar honesty). Independent corroboration of the hand-written-asm reading (with the `/* handwritten instruction */` mfc2 markers and the unfilled jr delay slot).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: raw cc1 compiles of probe_pipe.c and probe_tail.c (no scorer stripping), no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/global.c:1057
+
+## Frontier (s6)
+1. ASM-WHOLE grant stands on (a) the caller-owned unsaved $s0 ABI and (c) the global-register-var pin, now joined by (d): the mfc2 temps' $t0-$t2 seats are not a first-fit outcome (global.c:1057). next: escalation-modality disposition entry citing s5 + s6.
+2. Scorer gap (operator engine): pin the gte_rtpt / gte_ldv3c / gte_stsxy3c units so the sandbox can score GTE bodies; s6 raw-cc1 shows the remaining residual is classes (1)-(5) above.
+
+## [s6] The closest banked form (rejected/pipelined-goto-wrong-abi-stripped-gte.c) scores differently on the current chassis than its s5 kill recorded.
+- mechanism: Instance kills are chassis-relative and must be re-measured.
+- probe: sandbox --disable all --diff --candidate on that form; no FAKE present so fake_ablate has nothing to ablate
+- result: score 30, 5 source-level hunks, same as s5; kill stands
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current src/main/3AB48.c stub chassis + rejected/pipelined-goto-wrong-abi-stripped-gte.c, no FAKE construct
+
+## [s6] The sandbox residual of the pipelined goto form is an RA or scheduler residual the ra_solver/sched_solver models can search.
+- mechanism: inverse_compose.py classify triages PRE-RA/RA/SCHED.
+- probe: inverse_compose.py classify main/3AB48 func_8004A76C --target-object build/src/main/3AB48.o --ours-object tmp/sandbox/func_8004A76C/main/3AB48.o (in WSL)
+- result: FIRST DIVERGENCE: PRE-RA, no backend; the scorer strips the lwc2/swc2/rtpt asm, so the instruction multiset differs
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: sandbox .o of rejected/pipelined-goto-wrong-abi-stripped-gte.c over the stub chassis, no FAKE construct
+
+## [s6] With the GTE asm retained (raw instrumented cc1, no scorer stripping), the s5 pipelined goto form reproduces the target apart from the $s0 base.
+- mechanism: A direct cc1 -da compile avoids the scorer's stripping and exposes the true GPR skeleton and allocation.
+- probe: tmp/grind/func_8004A76C/s6/probe_pipe.c compiled with cc.sh; read probe_pipe.s and .greg
+- result: Partial: CFG, GTE op placement, j-into-middle with the delay-slot increment, and sh offsets all match. Five residuals: $a3 vs $s0 base; mfc2 temps $2,$3,$8 vs $t0-$t2; no nop-nop before the first rtpt; dbr fills the jr delay slot with the last sh; n-- / sxy+=3 delay-slot placement
+- verdict: CONFIRMED
+
+## [s6] Moving the vertex pointer off $a3 (file-scope pointer diagnostic) puts the mfc2 temps in $t0-$t2.
+- mechanism: global.c first-fit takes the lowest free regno.
+- probe: tmp/grind/func_8004A76C/s6/probe_tail.c raw cc1 -da
+- result: temps got $7,$8,$9; $2 was taken by a move copy from the post-decrement test and $3 by the vertex pointer
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tmp/grind/func_8004A76C/s6/probe_tail.c raw cc1, diagnostic global-pointer chassis, no FAKE construct
+
+## [s6] When nothing occupies $v0, $v1 or $a3 across their live ranges (the target bytes reference none of them), GCC 2.7.2 global allocation places the three mfc2 temps in $t0/$t1/$t2.
+- mechanism: global.c find_reg scans hard regs in ascending regno (mips defines no REG_ALLOC_ORDER) and takes the first free, mode-OK one. The temps cross the loop back edge, so global allocation owns them, and with no hard-reg copy no preference reorders the scan.
+- probe: Two raw-cc1 dispositions (probe_pipe gave 2,3,8; probe_tail gave 7,8,9) plus a read of global.c:1050-1075
+- result: t0-t2 with $2/$3/$7 free is not a first-fit outcome. The only byte-invisible occupant would be an asm clobber list on the cop2 ops, which claims a GPR effect those ops do not have. This corroborates the hand-written-asm reading
+- verdict: KILLED
+- kill_scope: class
+- measured_on: raw cc1 compiles of probe_pipe.c and probe_tail.c (no scorer stripping), no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/global.c:1057

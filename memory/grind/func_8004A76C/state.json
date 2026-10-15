@@ -1,8 +1,8 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 5,
- "current_modality": "synthesis",
+ "session_count": 6,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -33,18 +33,24 @@
    "floor": 37,
    "modality": "synthesis",
    "headline": "Synthesis: first C bodies measured (33 natural loop, 30 hand-pipelined goto form) \u2014 both need a false $a3 ABI and the sandbox strips unpinned rtpt; A6 reason (b) refuted, grant rests on $s0-ABI pin wa"
+  },
+  {
+   "session": 6,
+   "floor": 37,
+   "modality": "solver",
+   "headline": "Solver: sandbox residual is PRE-RA (GTE stripped); raw cc1 with GTE retained matches except $s0 base, $t0-$t2 mfc2 seats (class-killed via global.c first-fit), hazard nops, jr delay slot, n-- placemen"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "ASM-WHOLE grant is correct on A6 reasons (a) caller-owned unsaved $s0 ABI and (c) the only C route is a global register variable = pin.",
-   "mechanism": "func_8004A4E0 sets $s0 before the jal and reads the advanced value after return; GCC saves any callee-saved reg it writes.",
-   "next_probe": "In escalation modality, file the decisions.md disposition citing s5's corrected reason set (b refuted) and the cluster STRONG scans."
+   "hypothesis": "The ASM-WHOLE grant is correct on (a) the caller-owned unsaved $s0 ABI, (c) the global-register pin, and (d) the $t0-$t2 seats not being a first-fit outcome",
+   "mechanism": "The hand-asm caller func_8004A4E0 owns $s0, and global.c:1057 ascending first-fit is the predicate",
+   "next_probe": "Escalation modality: file the decisions.md disposition citing s5 and s6"
   },
   {
-   "hypothesis": "Pinning header-exact gte_rtpt / gte_ldv3c / gte_stsxy3c units in engine/gtemacro.py lets probe B be scored fully, reducing its residual to the $s0 base alone.",
-   "mechanism": "Owner ruling 2026-09-25 scorer process: pinned units survive --disable all.",
-   "next_probe": "Operator engine: commit pinning those macros, then re-measure memory/grind/func_8004A76C/rejected/pipelined-goto-wrong-abi-stripped-gte.c."
+   "hypothesis": "Pinning the gte_rtpt/gte_ldv3c/gte_stsxy3c units lets the sandbox score GTE bodies, so the solver can run past PRE-RA",
+   "mechanism": "Owner ruling 2026-09-25 scorer pin process",
+   "next_probe": "Operator engine commit, then re-run classify on probe_pipe.c"
   }
  ],
  "judge_constraints": [],
@@ -105,6 +111,38 @@
    "measured_on": "engine/gtemacro.py pinned set 2026-10-15, both s5 candidate files, no FAKE construct",
    "predicate_cite": "",
    "result": "Absent in both outputs; rtpt stripped, and probe B's local multi-insn ldv3c/stsxy3c stripped too."
+  },
+  {
+   "session": 6,
+   "statement": "The closest banked form (rejected/pipelined-goto-wrong-abi-stripped-gte.c) scores differently on the current chassis than its s5 kill recorded.",
+   "kill_scope": "instance",
+   "measured_on": "current src/main/3AB48.c stub chassis + rejected/pipelined-goto-wrong-abi-stripped-gte.c, no FAKE construct",
+   "predicate_cite": "",
+   "result": "score 30, 5 source-level hunks, same as s5; kill stands"
+  },
+  {
+   "session": 6,
+   "statement": "The sandbox residual of the pipelined goto form is an RA or scheduler residual the ra_solver/sched_solver models can search.",
+   "kill_scope": "instance",
+   "measured_on": "sandbox .o of rejected/pipelined-goto-wrong-abi-stripped-gte.c over the stub chassis, no FAKE construct",
+   "predicate_cite": "",
+   "result": "FIRST DIVERGENCE: PRE-RA, no backend; the scorer strips the lwc2/swc2/rtpt asm, so the instruction multiset differs"
+  },
+  {
+   "session": 6,
+   "statement": "Moving the vertex pointer off $a3 (file-scope pointer diagnostic) puts the mfc2 temps in $t0-$t2.",
+   "kill_scope": "instance",
+   "measured_on": "tmp/grind/func_8004A76C/s6/probe_tail.c raw cc1, diagnostic global-pointer chassis, no FAKE construct",
+   "predicate_cite": "",
+   "result": "temps got $7,$8,$9; $2 was taken by a move copy from the post-decrement test and $3 by the vertex pointer"
+  },
+  {
+   "session": 6,
+   "statement": "When nothing occupies $v0, $v1 or $a3 across their live ranges (the target bytes reference none of them), GCC 2.7.2 global allocation places the three mfc2 temps in $t0/$t1/$t2.",
+   "kill_scope": "class",
+   "measured_on": "raw cc1 compiles of probe_pipe.c and probe_tail.c (no scorer stripping), no FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/global.c:1057",
+   "result": "t0-t2 with $2/$3/$7 free is not a first-fit outcome. The only byte-invisible occupant would be an asm clobber list on th"
   }
  ],
  "ladder_skip": 0,

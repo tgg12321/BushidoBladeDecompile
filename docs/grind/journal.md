@@ -123,3 +123,4 @@
 - 2026-10-15 17:25 func_8004A76C s3 [permuter] floor=37: Permuter modality mechanically inapplicable: no C body exists for func_8004A76C to construct a workspace from (import.py fails immediately, verbatim captured)
 - 2026-10-15 17:27 func_8004A76C s4 [enumerate] floor=37: enumerate modality mechanically inapplicable: func_8004A76C has zero C bytes (ASM-WHOLE canonical GTE grant), fourth independent modality to confirm the same root fact
 - 2026-10-15 17:30 func_8004A76C s5 [synthesis] floor=37: Synthesis: first C bodies measured (33 natural loop, 30 hand-pipelined goto form) — both need a false $a3 ABI and the sandbox strips unpinned rtpt; A6 reason (b) refuted, grant rests on $s0-ABI pin wall
+- 2026-10-15 17:35 func_8004A76C s6 [solver] floor=37: Solver: sandbox residual is PRE-RA (GTE stripped); raw cc1 with GTE retained matches except $s0 base, $t0-$t2 mfc2 seats (class-killed via global.c first-fit), hazard nops, jr delay slot, n-- placement

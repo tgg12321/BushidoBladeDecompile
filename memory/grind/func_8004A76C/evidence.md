@@ -148,3 +148,19 @@
 - [s5] Sandbox strips gte.h gte_rtpt() (.word 0x4A280030 not in engine/gtemacro.py:273 DMPSX_WORDS) — no C body of this function can be scored with its rtpt under the current pinned set
 
 - [s5] A6 reason (b) (pipelining has no C form) refuted; grant rests on reasons (a)+(c)
+
+- [s6] Re-audit: rejected/pipelined-goto-wrong-abi-stripped-gte.c still sandboxes 30 (5 source-level hunks), tmp/grind/func_8004A76C/s6/sandbox_reaudit_pipelined.txt.
+- [s6] inverse_compose classify (must run in WSL; the Windows-side run fails because objdump isn't found) = PRE-RA / no backend: the scorer strips the GTE asm, so the multiset differs (tmp/grind/func_8004A76C/s6/classify_pipelined.txt). The solver backends do not apply to the sandbox stream for this function.
+- [s6] tools/grinder/dump.ps1 -Candidate fails for nested TU ids (looks for tmp/grind/<func>/dumps/main/3AB48.c); workaround: tmp/grind/func_8004A76C/s6/cc.sh runs cpp + instrumented cc1 -da directly.
+- [s6] Raw cc1 of the s5 pipelined goto form (GTE kept): everything matches except (1) $a3 vs $s0 base, (2) mfc2 temps $2,$3,$8 vs $t0-$t2, (3) no nop-nop before the first rtpt, (4) dbr fills the jr delay slot with the last sh (target leaves a nop), (5) n-- / sxy+=3 delay-slot placement around beqz. tmp/grind/func_8004A76C/s6/probe_pipe.s, probe_pipe.i.greg.
+- [s6] Class kill: when $v0/$v1/$a3 are free, $t0-$t2 is not what global.c:1057 first-fit picks (mips has no REG_ALLOC_ORDER). Target never touches $v0/$v1/$a3 → the seats corroborate hand-written asm. Floor stays 37 (stub).
+
+- [s6] sandbox re-audit of the pipelined form = 30 (s6/sandbox_reaudit_pipelined.txt)
+
+- [s6] classify = PRE-RA/no backend because the scorer strips GTE asm; it must run in WSL (objdump)
+
+- [s6] tools/grinder/dump.ps1 -Candidate fails for nested TU ids; s6/cc.sh is the workaround
+
+- [s6] raw cc1 with GTE kept: residual is $s0 base, $t0-$t2 seats, first-rtpt hazard nops, unfilled jr delay slot, beqz delay-slot decrement
+
+- [s6] mips GCC 2.7.2 has no REG_ALLOC_ORDER; global.c:1057 first-fit cannot give $t0-$t2 while $v0/$v1/$a3 are free
