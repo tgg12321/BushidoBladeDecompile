@@ -2284,8 +2284,4 @@ typedef struct {
     u8 pad31[3];
 } Unk800A34FCRec;
 
-typedef struct {
-    s32 f0, f1, f2, f3;
-} Copy16;
-
 #endif /* GAME_H */

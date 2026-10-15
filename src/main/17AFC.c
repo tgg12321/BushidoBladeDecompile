@@ -4763,10 +4763,6 @@ s32 func_800307D0(Unk80101EC8Record *a0) {
     return id;
 }
 
-typedef struct {
-    s32 x, y, z;
-} Vec3_copy;
-
 extern Obj80106A78 *func_80030580(Unk80101EC8Record *, s32);
 
 void func_80030900(Unk80101EC8Record *a0, Vec3i32 *a1) {
