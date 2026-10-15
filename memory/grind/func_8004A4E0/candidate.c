@@ -14,8 +14,12 @@
  * `jr $ra`; 0/1225 pure-C functions do that (tmp/grind/func_8004A4E0/s5/midret.txt).
  *
  * s6 (solver): no solver residual (INCLUDE_ASM guard); cc1 sketches confirm the epilogue is
- * always emitted last (final.c:1066) — tmp/grind/func_8004A4E0/s6/sketch.s.
+ * always emitted last (final.c:1066) ï¿½ tmp/grind/func_8004A4E0/s6/sketch.s.
  *
- * sandbox --disable all (s1..s6): {"score": 163, "no_c_body": true, "build_insns": 0}.
+ * s7 (forensics): $s6 written-never-read callee-saved reg - compiled C 0/506 (flow.c:1758,
+ * only global register vars survive); $s3 saved-unreferenced is NOT a signal (5/506 C do it).
+ * tmp/grind/func_8004A4E0/s7/savescan4.txt.
+ *
+ * sandbox --disable all (s1..s7): {"score": 163, "no_c_body": true, "build_insns": 0}.
  */
 INCLUDE_ASM("asm/funcs", func_8004A4E0);

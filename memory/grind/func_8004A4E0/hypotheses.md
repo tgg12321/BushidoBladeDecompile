@@ -156,3 +156,43 @@ instance form.
 - probe: compiled tmp/grind/func_8004A4E0/s6/sketch.c (two 5-case jump-table switch-in-loop sketches: break+loop-tail, and continue arms with default: return) with tools/gcc-2.7.2/build/cc1 -O2 -G0 ... -da
 - result: Both: j $reg dispatch, every case jumps back to the loop head, single j $31 is the last insn before .end (sketch.s:153, :251); the default: return arm is routed to the trailing epilogue. Matches s5's 0/1225 corpus count; contradicts the target layout.
 - verdict: CONFIRMED
+
+## [s7] FORENSICS: re-audit of the standing instance kills on the current chassis.
+- mechanism: instance kills s3/s6 rest on "no C body on the INCLUDE_ASM chassis"; re-check chassis + FAKE state.
+- probe: sandbox --disable all --diff; canonical; fake_ablate on candidate.c; dump.ps1.
+- result: chassis unchanged — score 163, no_c_body true, ASM-WHOLE grant, zero FAKE constructs, dump.ps1 has no C to dump (s7/sandbox_diff.txt, canonical.txt, fake_ablate.txt, dump_ps1.txt). Kills stand as recorded.
+- verdict: CONFIRMED
+
+## [s7] FORENSICS: $s6 is a callee-saved register written but never read locally — a shape absent from compiled C.
+- mechanism: flow.c:1719 insn_dead_p deletes sets of dead registers; flow.c:1758 exempts hard regs only when global_regs[] (register-asm global = forbidden pin) or the frame pointer. A C-visible value copied into $s6 and never read would be deleted before final.
+- probe: tmp/grind/func_8004A4E0/s7/savescan4.py corpus census over asm/funcs/*.s, sw/lw pairing for save/restore, C split = C definition in src minus INCLUDE_ASM minus inline_asm_canonical.txt.
+- result: compiled-C 0/506; asm 1/91 (func_8004A4E0 $s6 only). Third independent corroboration (after the 2026-09-29 custom-ABI audit and the s5/s6 code-after-epilogue signal) that the body is hand-written.
+- verdict: CONFIRMED
+
+## [s7] FORENSICS: func_8004A4E0's saved-but-unreferenced $s3 is a hand-written discriminator.
+- mechanism: MUST_SAVE_REGISTER (config/mips/mips.h:2056) saves only regs_ever_live callee-saved regs; hypothesis was that compiled C never leaves one unreferenced.
+- probe: same census, signal A.
+- result: compiled-C 5/506 do save a never-referenced callee-saved reg (func_8002E6B0, func_8005763C, math_RotMatrixXYZ/YXZ/ZXY) — regs_ever_live can be set by allocation and the referencing insns later disappear. Not a discriminator.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: corpus census s7/savescan4.txt against the INCLUDE_ASM chassis (no C body, zero FAKE constructs)
+
+## [s7] Re-audit: the s3/s6 instance kills (no C body on the INCLUDE_ASM chassis) still hold on the current chassis with FAKE constructs ablated
+- mechanism: instance kills are chassis-relative; KILL RE-AUDIT required by the brief
+- probe: sandbox func_8004A4E0 --disable all --diff; canonical func_8004A4E0; tools/fake_ablate.py on candidate.c; tools/grinder/dump.ps1
+- result: score 163, no_c_body true; canonical ASM-WHOLE (whole-function grant in inline_asm_canonical.txt); fake_ablate finds no FAKE constructs; dump.ps1 has no C to dump. Kills stand.
+- verdict: CONFIRMED
+
+## [s7] func_8004A4E0 writes callee-saved $s6 (addu $s6,$fp,$zero at 0x8004A538) and never reads it locally, a shape the compiled-C corpus never shows
+- mechanism: flow.c:1719 insn_dead_p deletes sets of dead registers; flow.c:1758 exempts a hard reg only if global_regs[] (file-scope register-asm variable = forbidden pin) or the frame pointer
+- probe: tmp/grind/func_8004A4E0/s7/savescan4.py census over asm/funcs/*.s; save/restore found by sw/lw R,off($sp) pairing; compiled-C = C definition in src/, not INCLUDE_ASM, not in inline_asm_canonical.txt
+- result: compiled-C 0/506; asm side 1/91, func_8004A4E0 $s6 only. Third independent signal for the hand-written verdict, after the 2026-09-29 custom-ABI audit and the s5/s6 code-after-epilogue signal
+- verdict: CONFIRMED
+
+## [s7] The saved-but-never-referenced $s3 in func_8004A4E0 discriminates hand-written from compiled code in this corpus
+- mechanism: MUST_SAVE_REGISTER (config/mips/mips.h:2056) saves only regs_ever_live callee-saved registers
+- probe: same census (savescan4), signal A
+- result: compiled-C 5/506 also save a never-referenced callee-saved reg (func_8002E6B0 $s4, func_8005763C $s0, math_RotMatrixXYZ $s1, math_RotMatrixYXZ $s2, math_RotMatrixZXY $s1), so it does not discriminate
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: corpus census tmp/grind/func_8004A4E0/s7/savescan4.txt; function chassis is the INCLUDE_ASM stub, no C body, zero FAKE constructs

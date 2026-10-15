@@ -95,3 +95,20 @@ it would only become live if a future session carved a C island out of the body 
 - [s6] cc1 dump-level: epilogue always last after all switch case blocks (tmp/grind/func_8004A4E0/s6/sketch.s); predicate final.c:1066
 
 - [s6] sandbox --disable all this session: score 163, no_c_body true
+
+## s7 (forensics)
+- [s7] fact: sandbox --disable all = 163, no_c_body true (tmp/grind/func_8004A4E0/s7/sandbox_diff.txt); canonical gate = ASM-WHOLE, whole-function grant in inline_asm_canonical.txt (s7/canonical.txt); fake_ablate: no FAKE constructs in candidate.c (s7/fake_ablate.txt). dump.ps1 cannot produce RTL dumps (no C body: "3AB48.rtl: No such file", s7/dump_ps1.txt).
+- [s7] fact: CALLEE-SAVED USE CENSUS (tmp/grind/func_8004A4E0/s7/savescan4.py -> savescan4.txt; save/restore identified by pairing sw/lw R,off($sp), robust to scheduled prologues). Compiled-C corpus = 506 functions with a C definition in src/, not INCLUDE_ASM, not in inline_asm_canonical.txt.
+  * Signal B "callee-saved reg WRITTEN in the body but NEVER READ in the body": compiled-C 0/506; asm side 1/91 = func_8004A4E0 $s6 (`addu $s6,$fp,$zero` at 0x8004A538 each outer iteration, no local read; consumed only by callees func_8004A76C/808/938/940 -> the audit's custom-ABI handoff). Predicate: flow.c:1719 insn_dead_p deletes a set of a dead register; the only hard-reg exemption is flow.c:1758 `global_regs[regno]` (file-scope `register T x asm("$22")` — the register-asm pin family, on the wall) or the frame pointer. So no admissible C input produces this insn.
+  * Signal A "saved+restored but never otherwise referenced" (func_8004A4E0 $s3): NOT discriminating — compiled-C 5/506 do it (func_8002E6B0 $s4, func_8005763C $s0, math_RotMatrixXYZ $s1, math_RotMatrixYXZ $s2, math_RotMatrixZXY $s1; all inline-asm-free C bodies). Do not cite $s3 as hand-written evidence.
+  * Earlier scanner versions (s7/savescan.py, savescan3a/3b) over/under-counted (outgoing-arg `sw $sN,0x10($sp)` mistaken for a save; scheduled prologues missed); savescan4 is the definitive count.
+
+- [s7] sandbox --disable all = 163, no_c_body true (tmp/grind/func_8004A4E0/s7/sandbox_diff.txt)
+
+- [s7] canonical gate ASM-WHOLE via whole-function grant (tmp/grind/func_8004A4E0/s7/canonical.txt)
+
+- [s7] callee-saved written-never-read: compiled C 0/506, only func_8004A4E0 $s6 among 91 asm functions (s7/savescan4.txt); predicate flow.c:1758
+
+- [s7] callee-saved saved-never-referenced: compiled C 5/506, so not a hand-written signal (s7/savescan4.txt)
+
+- [s7] earlier scanner versions savescan.py / savescan3a / savescan3b miscounted (outgoing-arg sw mistaken for a save; scheduled prologues missed); savescan4 is the definitive count
