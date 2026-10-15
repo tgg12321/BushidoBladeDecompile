@@ -11,7 +11,7 @@
 s32 cdrom_IsIdle(void) { return D_80101E58.rec.unk02 == 0; }
 
 s32 cdrom_StartRead(s32 a0, s32 a1) {
-    s32 reloaded;
+    s32 var_0;
 
     if (D_80101E58.rec.unk02 != 0) {
         return 0;
@@ -22,9 +22,9 @@ s32 cdrom_StartRead(s32 a0, s32 a1) {
     D_80101E58.rec.unk1C = a1;
     D_80101E58.rec.unk08 = 0;
     D_80101E58.rec.unk02 = 2;
-    reloaded = D_80101E58.rec.pair.size;
+    var_0 = D_80101E58.rec.pair.size;
     D_80101E58.rec.unk3E = 0;
-    D_80101E58.rec.unk18 = (u32)(reloaded + 0x7FF) >> 11;
+    D_80101E58.rec.unk18 = (u32)(var_0 + 0x7FF) >> 11;
     return 1;
 }
 

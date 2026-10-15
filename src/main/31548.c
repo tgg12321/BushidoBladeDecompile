@@ -208,7 +208,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
     MATRIX *out3;
     s32 offset;
     u16 *p;
-    Unk80045878Node *stptr2;
+    Unk80045878Node *var_9;
     ents = &base->unk_2C[1];
     out2 = a4 + 1;
     do {
@@ -234,12 +234,12 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
     a1 += 0x6C;
     a2 += 0x6C;
     i = 0x12;
-    stptr2 = &ents[18];
+    var_9 = &ents[18];
     /* FAKE: a second copy of a4 + 1 for the second loop (s3); reusing out2
      * drops the copy and moves lw t0,24(sp) up (score 4) */
     out3 = a4 + 1;
 loop2:
-    func_80044DE4((s16 *)a1, (s16 *)a2, a3, (s32)stptr2->node.work.t);
+    func_80044DE4((s16 *)a1, (s16 *)a2, a3, (s32)var_9->node.work.t);
     a1 += 6;
     a2 += 6;
     buf.vx = *((u16 *)a1);
@@ -256,9 +256,9 @@ loop2:
     buf.vz = -(*((u16 *)a2));
     a2 += 2;
     math_RotMatrixZYX(&buf, out3);
-    func_800523E0(a4, out3, a3, &stptr2->node.work);
-    stptr2->node.unk6 = 1;
-    stptr2++;
+    func_800523E0(a4, out3, a3, &var_9->node.work);
+    var_9->node.unk6 = 1;
+    var_9++;
     i++;
     if (i < 0x14) {
         goto loop2;

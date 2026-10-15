@@ -66,17 +66,17 @@ void func_80041688(s32 arg0, s32 arg1) {
     /* !FAKE: frame layout: the 0x38 frame keeps 0x20 leading bytes
        untouched (phantom-frame pad); without it: score 6 */
     volatile u32 pre_pad[8];
-    Unk80045878Obj *player;
+    Unk80045878Obj *var_1;
     s32 i;
     Unk80045878Node *p;
     u8 *q;
     s32 b, r, g, v;
 
-    player = D_800A9A10[arg0];
-    if (player == NULL)
+    var_1 = D_800A9A10[arg0];
+    if (var_1 == NULL)
         return;
 
-    p = &player->unk_2C[1];
+    p = &var_1->unk_2C[1];
     if (arg1) {
         p->node.unk1 |= 1;
     } else {
@@ -101,7 +101,7 @@ loop1:
     if (i < 18)
         goto loop1;
 
-    q = (u8 *)player + 0x10D5;
+    q = (u8 *)var_1 + 0x10D5;
 loop2:
     if (*(s32 *)(q + 0x57) == 0)
         goto after2;
@@ -114,15 +114,15 @@ loop2:
 after2:
 
     if (func_800486FC()) {
-        v = math_Grayscale3(player->unk_18.byte[2], player->unk_18.byte[1],
-                            player->unk_18.byte[0]);
+        v = math_Grayscale3(var_1->unk_18.byte[2], var_1->unk_18.byte[1],
+                            var_1->unk_18.byte[0]);
         func_80041398((v << 16) | (v << 8) | v);
     } else {
         /* FAKE: r / g / b read into locals ahead of the call; read in the
          * argument expression the frame grows 0x38 -> 0x40 (score 8). */
-        r = player->unk_18.byte[0];
-        g = player->unk_18.byte[1];
-        b = player->unk_18.byte[2];
+        r = var_1->unk_18.byte[0];
+        g = var_1->unk_18.byte[1];
+        b = var_1->unk_18.byte[2];
         func_80041398(b | ((r << 16) | (g << 8)));
     }
 }
@@ -275,11 +275,11 @@ after_if:
 }
 
 void func_80041BF4(s32 a0, s32 a1, s32 a2) {
-    Unk80045878Obj *fp_ptr;
+    Unk80045878Obj *var_0;
     s32 r;
     s32 g;
     s32 b;
-    s32 outer;
+    s32 var_4;
     s32 xoff;
     s32 yoff;
     s16 *tbl;
@@ -294,14 +294,14 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2) {
        byte size matches); without it: score 22 (dead-vars-local-array
        oversized-locals carve-out) */
     RECT rect[2];
-    fp_ptr = func_8004153C(1);
-    if (fp_ptr == 0) {
+    var_0 = func_8004153C(1);
+    if (var_0 == 0) {
         return;
     }
-    if ((fp_ptr->unk_08) != D_800A9A20) {
+    if ((var_0->unk_08) != D_800A9A20) {
         return;
     }
-    if (D_80094E08[fp_ptr->unk_08] == 0xFF) {
+    if (D_80094E08[var_0->unk_08] == 0xFF) {
         return;
     }
     r = (a0 << 12) / 255;
@@ -313,9 +313,9 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2) {
         g = b;
         r = b;
     }
-    outer = 0;
+    var_4 = 0;
 oloop: {
-    if (outer == 0) {
+    if (var_4 == 0) {
         xoff = -0x140;
         yoff = 0xF0;
     } else {
@@ -327,7 +327,7 @@ oloop: {
             yoff = 0;
         } while (0);
     }
-    tbl = D_80094DF0[D_80094E08[fp_ptr->unk_08]];
+    tbl = D_80094DF0[D_80094E08[var_0->unk_08]];
     idx = 0;
     goto test;
 again: {
@@ -346,9 +346,9 @@ test:
     x = (u16)tbl[0];
     if ((s16)x >= 0)
         goto again;
-    outer++;
+    var_4++;
 }
-    if (outer < 2)
+    if (var_4 < 2)
         goto oloop;
     if (func_8003E2A0() == one) {
         func_8003E120();
@@ -366,8 +366,8 @@ void func_80041E10(VECTOR *a0, s32 a1) {
 }
 
 void func_80041EB0(s32 a0, s32 a1) {
-    Unk800F62E0Rec *fp_ptr;
-    s32 outer;
+    Unk800F62E0Rec *var_0;
+    s32 var_1;
     Unk800F62E0Rec *tbl;
     s32 dx;
     s32 dy;
@@ -375,15 +375,15 @@ void func_80041EB0(s32 a0, s32 a1) {
     s32 angle;
     s32 *ptr;
 
-    /* FAKE: fp_ptr holds D_800F62E0 for the loop and the first calc_LightMatrix
+    /* FAKE: var_0 holds D_800F62E0 for the loop and the first calc_LightMatrix
      * call; naming D_800F62E0 directly re-forms the address and the registers
      * rotate (score 45). */
-    fp_ptr = D_800F62E0;
-    outer = 0;
+    var_0 = D_800F62E0;
+    var_1 = 0;
 
     do {
-        tbl = fp_ptr;
-        if (outer == 0) {
+        tbl = var_0;
+        if (var_1 == 0) {
             ptr = (s32 *)a0;
         } else {
             ptr = (s32 *)a1;
@@ -448,10 +448,10 @@ void func_80041EB0(s32 a0, s32 a1) {
         tbl->light[1].on = 0;
 
     end_loop:
-        outer++;
-    } while (outer < 2);
+        var_1++;
+    } while (var_1 < 2);
 
-    calc_LightMatrix(fp_ptr);
+    calc_LightMatrix(var_0);
     calc_LightMatrix(&D_800F62E0[1]);
 }
 
@@ -501,27 +501,27 @@ extern s32 D_80094E48[][6];
 
 void func_800421C8(s32 a0) {
     s32 *p = D_80094E48[a0];
-    s32 yaw;
-    s32 pitch;
+    s32 var_1;
+    s32 var_2;
     func_800422BC(a0, *p++, 0, 0);
     func_800422BC(a0, *p++, 0, 1);
     func_800422BC(a0, *p++, 1, 0);
     func_800422BC(a0, *p++, 1, 1);
-    yaw = *p;
-    D_800F62E0[4].light[0].yaw = yaw & 0xFFF;
-    D_800F62E0[1].light[0].yaw = yaw & 0xFFF;
-    D_800F62E0[0].light[0].yaw = yaw & 0xFFF;
-    pitch = *p >> 16;
-    D_800F62E0[4].light[0].pitch = pitch & 0xFFF;
-    D_800F62E0[1].light[0].pitch = pitch & 0xFFF;
-    D_800F62E0[0].light[0].pitch = pitch & 0xFFF;
+    var_1 = *p;
+    D_800F62E0[4].light[0].yaw = var_1 & 0xFFF;
+    D_800F62E0[1].light[0].yaw = var_1 & 0xFFF;
+    D_800F62E0[0].light[0].yaw = var_1 & 0xFFF;
+    var_2 = *p >> 16;
+    D_800F62E0[4].light[0].pitch = var_2 & 0xFFF;
+    D_800F62E0[1].light[0].pitch = var_2 & 0xFFF;
+    D_800F62E0[0].light[0].pitch = var_2 & 0xFFF;
     func_80042478(p[1]);
 }
 
-void func_800422BC(s32 a0, s32 packed, s32 a2, s32 a3) {
-    s32 r = (packed >> 16) & 0xFF;
-    s32 g = (packed >> 8) & 0xFF;
-    s32 b = packed & 0xFF;
+void func_800422BC(s32 a0, s32 arg1, s32 a2, s32 a3) {
+    s32 r = (arg1 >> 16) & 0xFF;
+    s32 g = (arg1 >> 8) & 0xFF;
+    s32 b = arg1 & 0xFF;
     s16 r2;
     s16 g2;
     s16 b2;

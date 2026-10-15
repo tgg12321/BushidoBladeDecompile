@@ -248,7 +248,7 @@ void func_80018300(Func80017A44Output *arg0) {
     Func80017A44Record *base;
     s32 count;
     s32 thresh;
-    s32 radius;
+    s32 var_5;
     s32 nthresh;
     Func80017A44Record *p1, *p2;
     s32 dx, dy, dz;
@@ -268,10 +268,10 @@ void func_80018300(Func80017A44Output *arg0) {
      * `thresh` so it shares thresh's register ($t1); its own local takes $a1:
      * score 5 (staged-value-reused-variable) */
     thresh = data->ends.pair;
-    radius = data->dist;
+    var_5 = data->dist;
     p1 = &base[thresh >> 16];
     p2 = &base[thresh & 0xFFFF];
-    thresh = radius * 3;
+    thresh = var_5 * 3;
     nthresh = -thresh;
     dx = p2->pos[0] - p1->pos[0];
     dy = p2->pos[1] - p1->pos[1];
@@ -362,9 +362,9 @@ void func_80018300(Func80017A44Output *arg0) {
             "lwc2   $10, 4($12)\n"
             "lwc2   $11, 8($12)\n"
             : : "r"((s32 *)0x1F800000) : "$12", "$13", "$14", "$15", "memory");
-        f = (s32)((len - radius) << 14) / (s32)len;
-        radius = data->dist;
-        thresh = radius * 3;
+        f = (s32)((len - var_5) << 14) / (s32)len;
+        var_5 = data->dist;
+        thresh = var_5 * 3;
         nthresh = -thresh;
         /* gte_lddp(r1) -- inline_o.h:443 */
         __asm__ volatile(
@@ -443,7 +443,7 @@ void func_80018300(Func80017A44Output *arg0) {
         "lwc2   $10, 4($12)\n"
         "lwc2   $11, 8($12)\n"
         : : "r"((s32 *)0x1F800000) : "$12", "$13", "$14", "$15", "memory");
-    f = (s32)((len - radius) << 14) / (s32)len;
+    f = (s32)((len - var_5) << 14) / (s32)len;
     /* gte_lddp(r1) -- inline_o.h:443 */
     __asm__ volatile(
         "move   $12, %0\n"
@@ -946,21 +946,21 @@ void pad_ResetStateMarkValid(void) {
 
 void func_80019568(s32 arg0) {
     PadState pad;
-    s32 pkts[4];
+    s32 var_1[4];
     s32 i;
-    s32 held;
-    s32 old_held;
+    s32 var_3;
+    s32 var_4;
 
-    held = 0;
+    var_3 = 0;
     i = 0;
-    pkts[0] = g_pad_buf[0][0];
-    pkts[1] = g_pad_buf[0][1];
-    pkts[2] = g_pad_buf[1][0];
-    pkts[3] = g_pad_buf[1][1];
+    var_1[0] = g_pad_buf[0][0];
+    var_1[1] = g_pad_buf[0][1];
+    var_1[2] = g_pad_buf[1][0];
+    var_1[3] = g_pad_buf[1][1];
     do {
-        /* FAKE: rec holds (u8 *)pkts + i * 8 for the loop body; indexing
-         * from pkts at each read adds a second induction (score 18). */
-        u8 *rec = (u8 *)pkts + i * 8;
+        /* FAKE: rec holds (u8 *)var_1 + i * 8 for the loop body; indexing
+         * from var_1 at each read adds a second induction (score 18). */
+        u8 *rec = (u8 *)var_1 + i * 8;
         s32 valid = 0;
         s32 bits;
 
@@ -999,11 +999,11 @@ void func_80019568(s32 arg0) {
             bits = 0;
         }
 
-        held = ((u32)held >> 16) | (bits << 16);
+        var_3 = ((u32)var_3 >> 16) | (bits << 16);
         i++;
     } while (i < 2);
 
-    pad.held = held;
+    pad.held = var_3;
     func_8001B138(&pad.held);
 
     if (D_800A3834 == 1 && arg0 == 0) {
@@ -1035,9 +1035,9 @@ void func_80019568(s32 arg0) {
         i++;
     } while (i < 2);
 
-    old_held = g_pad_state.held;
+    var_4 = g_pad_state.held;
     g_pad_state.held = pad.held;
-    g_pad_state.pressed = pad.held & ~old_held;
+    g_pad_state.pressed = pad.held & ~var_4;
     g_pad_state.unheld = ~pad.held;
-    g_pad_state.released = ~pad.held & old_held;
+    g_pad_state.released = ~pad.held & var_4;
 }

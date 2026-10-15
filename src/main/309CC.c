@@ -15,17 +15,17 @@ extern u8 D_80094B48[];
 static DR_MOVE *D_800A3378;
 
 void gpu_AddDrawMove(s32 a0, s32 a1) {
-    s32 parity;
+    s32 var_0;
     RECT buf;
     u16 *tbl;
     s16 u, v;
-    OTag *pkt;
+    OTag *var_5;
     OTag *ot;
 
-    parity = D_800A36AC & 1;
-    if (parity != D_800A3234) {
-        D_800A3378 = D_800A9830[parity];
-        D_800A3234 = parity;
+    var_0 = D_800A36AC & 1;
+    if (var_0 != D_800A3234) {
+        D_800A3378 = D_800A9830[var_0];
+        D_800A3234 = var_0;
     }
     if (D_800A3378 != D_800A9830[D_800A3234] + 10) {
         tbl = D_80094AF4 + a1 * 6;
@@ -40,14 +40,14 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
             u = u + 0x80;
         }
         SetDrawMove(D_800A3378, &buf, u, v);
-        pkt = (OTag *)D_800A3378;
+        var_5 = (OTag *)D_800A3378;
         /* FAKE: SDK bitfield view of an OT word retains tag length
          * (masked u32 copies, same behaviour: score 18; whole-word copies: 19);
          * SOTN PS1 use: src/main/psxsdk/libgpu/sys.c:288 */
         /* SOTN: include/psxsdk/libgpu.h:88 @db41b28eee52969244a52cc269c8163d1ed8826a */
         ot = (OTag *)D_800A378C;
-        pkt->addr = ot[0x3FFC / 4].addr;
-        ot[0x3FFC / 4].addr = (u32)pkt;
+        var_5->addr = ot[0x3FFC / 4].addr;
+        ot[0x3FFC / 4].addr = (u32)var_5;
         D_800A3378++;
     }
 }
@@ -157,8 +157,8 @@ Unk80045878Obj *func_80040510(s32 a0, s32 a1, s32 a2) {
 }
 
 void func_80040594(Unk80045878Obj *a0) {
-    s32 *rmd;
-    s32 *sec;
+    s32 *var_0;
+    s32 *var_1;
     s32 count;
     s32 *ptr;
     s32 off;
@@ -170,13 +170,13 @@ void func_80040594(Unk80045878Obj *a0) {
     a0->unk_06 = 0;
 
     if (a0->unk_20 != 0) {
-        rmd = (s32 *)a0->unk_20;
+        var_0 = (s32 *)a0->unk_20;
     } else {
-        rmd = (s32 *)a0->unk_1C;
+        var_0 = (s32 *)a0->unk_1C;
     }
 
-    count = rmd[0];
-    sec = (s32 *)((s32)rmd + (((u32)rmd[count] >> 2) << 2));
+    count = var_0[0];
+    var_1 = (s32 *)((s32)var_0 + (((u32)var_0[count] >> 2) << 2));
 
     if (func_80045194() == 0)
         goto call_b644;
@@ -191,12 +191,12 @@ after_b644:
         goto simple;
 
     {
-        ptr = (s32 *)((s32)rmd + (((u32)rmd[count - 1] >> 2) << 2));
-        ptr =
-            (s32 *)((s32)ptr +
-                    func_8005C2A8(
-                        ptr, a0->unk_04 * 3 + 1,
-                        (s32 *)((s32)rmd + (((u32)rmd[count + 1] >> 2) << 2))));
+        ptr = (s32 *)((s32)var_0 + (((u32)var_0[count - 1] >> 2) << 2));
+        ptr = (s32 *)((s32)ptr +
+                      func_8005C2A8(
+                          ptr, a0->unk_04 * 3 + 1,
+                          (s32 *)((s32)var_0 +
+                                  (((u32)var_0[count + 1] >> 2) << 2))));
 
         if (ptr == 0) {
             func_80052C10();
@@ -207,26 +207,26 @@ after_b644:
     }
 
 simple:
-    ptr = sec;
+    ptr = var_1;
 
 after_select:
-    off = (s32)ptr - (s32)rmd;
+    off = (s32)ptr - (s32)var_0;
 
     if (a0->unk_20 != 0) {
         func_800520B8(a0->unk_20, a0->unk_1C, off);
-        rmd = (s32 *)a0->unk_1C;
+        var_0 = (s32 *)a0->unk_1C;
         if ((a0->unk_00.word >> 1) & 1) {
-            snd_VabFakeOpen((s32)rmd - a0->unk_20, a0->unk_04 * 3 + 1);
+            snd_VabFakeOpen((s32)var_0 - a0->unk_20, a0->unk_04 * 3 + 1);
         }
     }
 
     {
         /* FAKE: texA / texB computed ahead of the unk_28 store; computed in
          * the calls they move below it and the s-registers re-seat: score 72 */
-        s32 *texA = (s32 *)((s32)rmd + (((u32)rmd[1] >> 2) << 2));
+        s32 *texA = (s32 *)((s32)var_0 + (((u32)var_0[1] >> 2) << 2));
         s32 *texB;
-        texB = (s32 *)((s32)rmd + (((u32)rmd[4] >> 2) << 2));
-        a0->unk_28 = (s32)rmd + (((u32)rmd[3] >> 2) << 2);
+        texB = (s32 *)((s32)var_0 + (((u32)var_0[4] >> 2) << 2));
+        a0->unk_28 = (s32)var_0 + (((u32)var_0[3] >> 2) << 2);
         func_80044010(texA, a0->unk_14);
         func_80044010(texB, a0->unk_16);
     }
@@ -239,19 +239,19 @@ after_select:
         if (a0->unk_04 != 0)
             goto done_cases;
 
-        func_80047EE8(sec, 0);
+        func_80047EE8(var_1, 0);
         if (func_8003E2A0() != 0)
             goto done_cases;
         func_800432A0(a0->unk_14, 0, 0, -0x140, 0xE8);
-        func_800480C0((s32)sec, 0, 0, 0, -0x140, 0xF0);
+        func_800480C0((s32)var_1, 0, 0, 0, -0x140, 0xF0);
         goto done_cases;
 
     case_1:
-        func_80047FBC(sec, 0, 0x80, 0);
+        func_80047FBC(var_1, 0, 0x80, 0);
         if (func_8003E2A0() != 1)
             goto case_1_else;
         func_800432A0(a0->unk_14, 0x80, 0, -0x140, 0xE8);
-        func_800480C0((s32)sec, 0, 0x80, 0, -0x140, 0xF0);
+        func_800480C0((s32)var_1, 0, 0x80, 0, -0x140, 0xF0);
         goto case_1_done;
 
     case_1_else:
@@ -263,7 +263,7 @@ after_select:
 
 done_cases:
     DrawSync(0);
-    func_80041988(a0->unk_04, a0->unk_08, D_80094B88[a0->unk_04], (s32)sec);
+    func_80041988(a0->unk_04, a0->unk_08, D_80094B88[a0->unk_04], (s32)var_1);
 
     {
         a0->unk_00.word = (a0->unk_00.word & 0xFFE0FFFF) |
@@ -367,7 +367,7 @@ void func_80040A78(Unk80045878Obj *arg0) {
 }
 
 void func_80040B44(Unk80045878Obj *arg0) {
-    s32 seen[18];
+    s32 var_0[18];
     Unk80045878Node *t5;
     Unk80045878Node *t7;
     s32 *v1;
@@ -382,7 +382,7 @@ void func_80040B44(Unk80045878Obj *arg0) {
 
     i = 0x11;
     do {
-        seen[i] = 0;
+        var_0[i] = 0;
         i--;
     } while (i >= 0);
     i = 0x13;
@@ -404,10 +404,10 @@ void func_80040B44(Unk80045878Obj *arg0) {
             t3++;
             a3 = *t3;
             t3++;
-            /* FAKE: the slot address as integer arithmetic; &seen[a3] swaps
+            /* FAKE: the slot address as integer arithmetic; &var_0[a3] swaps
              * the addu operands (score 1) */
-            a1 = (s32 *)(a3 * 4 + (s32)&seen[0]);
-            /* FAKE: t2 copies a0_val ahead of the seen[] test; with a0_val
+            a1 = (s32 *)(a3 * 4 + (s32)&var_0[0]);
+            /* FAKE: t2 copies a0_val ahead of the var_0[] test; with a0_val
              * itself the load and the cursor step re-seat (score 9). */
             t2 = a0_val;
 
@@ -432,25 +432,25 @@ done:
 
 void func_80040CB8(Unk80045878Obj *arg0) {
     s16 id;
-    Unk80045878Node *slot = arg0->unk_8B4;
+    Unk80045878Node *var_1 = arg0->unk_8B4;
     s32 i = 0;
-    // FAKE (none/kind/one): constant-holders keep -1/3/1 in $t4/$t3/$t2 across
+    // FAKE (var_3/kind/one): constant-holders keep -1/3/1 in $t4/$t3/$t2 across
     // the goto-loop, which gets no LICM; literals: score 23
-    s32 none;
+    s32 var_3;
     s32 kind;
     s32 one;
-    s32 link;
+    s32 var_6;
     s16 *tbl;
     s32 ent;
 
-    // FAKE: do-while(0) keeps the three constant loads ahead of the link/tbl
+    // FAKE: do-while(0) keeps the three constant loads ahead of the var_6/tbl
     // initialisers; without it the scheduler sinks them: score 6
     do {
-        none = -1;
+        var_3 = -1;
         kind = 3;
         one = 1;
     } while (0);
-    link = (s32)&arg0->unk_2C[1];
+    var_6 = (s32)&arg0->unk_2C[1];
     /* FAKE: tbl walks the records' unk_08 members, stepped by a record; a
        record pointer: score 2, D_80094B96[i].unk_08: score 21 */
     tbl = &D_80094B96[0].unk_08;
@@ -461,31 +461,31 @@ void func_80040CB8(Unk80045878Obj *arg0) {
         ent = (s32)&arg0->unk_8B4[0].unk58;
     loop:
         id = *tbl;
-        if (id != none) {
+        if (id != var_3) {
             *(s16 *)(ent - 0x56) = id;
-            slot->node.unk0 = kind;
+            var_1->node.unk0 = kind;
             *(s8 *)(ent - 0x57) = 0;
             *(s16 *)(ent - 0x50) = 0;
-            *(s32 *)(ent - 0x4C) = link;
+            *(s32 *)(ent - 0x4C) = var_6;
             *(s16 *)(ent - 0x52) = one;
             *(s16 *)(ent - 0x4E) = 0;
             {
-                /* FAKE: w reads unk_16 ahead of the slot step and the *ent
+                /* FAKE: w reads unk_16 ahead of the var_1 step and the *ent
                  * store; read at its store, sw zero moves above it: score 2 */
                 u16 w = arg0->unk_16;
-                slot++;
+                var_1++;
                 *(s32 *)ent = 0;
                 *(s16 *)(ent - 0x54) = w;
                 ent += 0x68;
             }
         }
-        link += 0x68;
+        var_6 += 0x68;
         i++;
         tbl = (s16 *)((u8 *)tbl + sizeof(Unk80094B96Rec));
         if (i < 0x12)
             goto loop;
     } while (0);
-    slot->node.unk2 = -1;
+    var_1->node.unk2 = -1;
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order; values

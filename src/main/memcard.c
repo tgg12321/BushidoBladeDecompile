@@ -156,7 +156,7 @@ s32 func_80037AA4(void) {
     s32 var_a1;
     s32 var_a2;
     /* FAKE: reused -- the byte total, then the block count; returning
-     * 0xF - (var_v0 >> sh) directly: score 15 */
+     * 0xF - (var_v0 >> var_5) directly: score 15 */
     s32 var_a0;
     /* FAKE: reused -- each entry's size, then the rounded total; its own
      * local for either: score 2 */
@@ -164,9 +164,9 @@ s32 func_80037AA4(void) {
     /* FAKE: constant holder for the 13 (SOTN new_var2 shape) raises var_a0's
        allocation priority; reload folds the 13 back in; literal 0xD: score 11
      */
-    s32 sh;
+    s32 var_5;
 
-    sh = 0xD;
+    var_5 = 0xD;
     var_a1 = 0;
     var_a0 = 0;
     var_a2 = g_memcard_file_count;
@@ -183,7 +183,7 @@ s32 func_80037AA4(void) {
     if (var_a0 < 0) {
         var_v0 = var_a0 + 0x1FFF;
     }
-    var_a0 = var_v0 >> sh;
+    var_a0 = var_v0 >> var_5;
     return 0xF - var_a0;
 }
 

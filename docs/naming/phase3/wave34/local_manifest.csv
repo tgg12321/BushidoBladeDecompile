@@ -1,0 +1,29 @@
+addr,current_names,proposed_name,kind,evidence,verdict,verifier_note
+local,func_80018300:radius,var_5,local,"RESET-BULK (Q119). local radius (s32) of func_80018300, src/main/87A0.c:251; claim word(s): radius. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_80019568:pkts,var_1,local,"RESET-BULK (Q119). local pkts (s32 [4]) of func_80019568, src/main/87A0.c:949; claim word(s): pkts. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80019568:held,var_3,local,"RESET-BULK (Q119). local held (s32) of func_80019568, src/main/87A0.c:951; claim word(s): held. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_80019568:old_held,var_4,local,"RESET-BULK (Q119). local old_held (s32) of func_80019568, src/main/87A0.c:952; claim word(s): held. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_80026DA4:partner,var_1,local,"RESET-BULK (Q119). local partner (Unk80101EC8Record *) of func_80026DA4, src/main/175A4.c:22; claim word(s): partner. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80026DA4:timer,var_3,local,"RESET-BULK (Q119). local timer (s32) of func_80026DA4, src/main/175A4.c:24; claim word(s): timer. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_80026DA4:dir,var_6,local,"RESET-BULK (Q119). local dir (s32) of func_80026DA4, src/main/175A4.c:27; claim word(s): dir. Destination: var_<declaration order 6>.",CONFIRM,Q119 scope test
+local,func_80034708:off,var_1,local,"RESET-BULK (Q119). local off (u8 *) of func_80034708, src/main/24F08.c:30; claim word(s): (the on/off state word: the unselected-row string beside the reset on). Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80034708:on,var_2,local,"RESET-BULK (Q119). local on (u8 *) of func_80034708, src/main/24F08.c:31; claim word(s): on. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,gpu_AddDrawMove:parity,var_0,local,"RESET-BULK (Q119). local parity (s32) of gpu_AddDrawMove, src/main/309CC.c:18; claim word(s): parity. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,gpu_AddDrawMove:pkt,var_5,local,"RESET-BULK (Q119). local pkt (OTag *) of gpu_AddDrawMove, src/main/309CC.c:22; claim word(s): pkt. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
+local,func_80040594:rmd,var_0,local,"RESET-BULK (Q119). local rmd (s32 *) of func_80040594, src/main/309CC.c:160; claim word(s): rmd. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_80040594:sec,var_1,local,"RESET-BULK (Q119). local sec (s32 *) of func_80040594, src/main/309CC.c:161; claim word(s): sec. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80040B44:seen,var_0,local,"RESET-BULK (Q119). local seen (s32 [18]) of func_80040B44, src/main/309CC.c:370; claim word(s): (a 1/0 flag array: cleared to 0, tested == 0, set = 1). Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_80040CB8:slot,var_1,local,"RESET-BULK (Q119). local slot (Unk80045878Node *) of func_80040CB8, src/main/309CC.c:435; claim word(s): slot. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80040CB8:none,var_3,local,"RESET-BULK (Q119). local none (s32) of func_80040CB8, src/main/309CC.c:439; claim word(s): none. Destination: var_<declaration order 3>.",CONFIRM,Q119 scope test
+local,func_80040CB8:link,var_6,local,"RESET-BULK (Q119). local link (s32) of func_80040CB8, src/main/309CC.c:442; claim word(s): link. Destination: var_<declaration order 6>.",CONFIRM,Q119 scope test
+local,func_80041188:stptr2,var_9,local,"RESET-BULK (Q119). local stptr2 (Unk80045878Node *) of func_80041188, src/main/31548.c:211; claim word(s): stptr. Destination: var_<declaration order 9>.",CONFIRM,Q119 scope test
+local,func_80041688:player,var_1,local,"RESET-BULK (Q119). local player (Unk80045878Obj *) of func_80041688, src/main/31D3C.c:69; claim word(s): player. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_80041BF4:fp_ptr,var_0,local,"RESET-BULK (Q119). local fp_ptr (Unk80045878Obj *) of func_80041BF4, src/main/31D3C.c:278; claim word(s): fp. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_80041BF4:outer,var_4,local,"RESET-BULK (Q119). local outer (s32) of func_80041BF4, src/main/31D3C.c:282; claim word(s): outer. Destination: var_<declaration order 4>.",CONFIRM,Q119 scope test
+local,func_80041EB0:fp_ptr,var_0,local,"RESET-BULK (Q119). local fp_ptr (Unk800F62E0Rec *) of func_80041EB0, src/main/31D3C.c:369; claim word(s): fp. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_80041EB0:outer,var_1,local,"RESET-BULK (Q119). local outer (s32) of func_80041EB0, src/main/31D3C.c:370; claim word(s): outer. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_800421C8:yaw,var_1,local,"RESET-BULK (Q119). local yaw (s32) of func_800421C8, src/main/31D3C.c:504; claim word(s): yaw. Destination: var_<declaration order 1>.",CONFIRM,Q119 scope test
+local,func_800421C8:pitch,var_2,local,"RESET-BULK (Q119). local pitch (s32) of func_800421C8, src/main/31D3C.c:505; claim word(s): pitch. Destination: var_<declaration order 2>.",CONFIRM,Q119 scope test
+local,func_800422BC:packed,arg1,param,"RESET-BULK (Q119). param packed (s32) of func_800422BC, src/main/31D3C.c:521; claim word(s): packed. Destination: arg<position 1>.",CONFIRM,Q119 scope test
+local,cdrom_StartRead:reloaded,var_0,local,"RESET-BULK (Q119). local reloaded (s32) of cdrom_StartRead, src/main/cdrom.c:14; claim word(s): reloaded. Destination: var_<declaration order 0>.",CONFIRM,Q119 scope test
+local,func_80037AA4:sh,var_5,local,"RESET-BULK (Q119). local sh (s32) of func_80037AA4, src/main/memcard.c:167; claim word(s): sh. Destination: var_<declaration order 5>.",CONFIRM,Q119 scope test
