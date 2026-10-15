@@ -506,7 +506,7 @@ typedef VECTOR CamVec;
 typedef struct {
     s16 unk0;     /* 0x00 */
     s16 yaw;      /* 0x02 */
-    s16 roll;     /* 0x04 */
+    s16 scr04;    /* 0x04 */
     s16 unk6;     /* 0x06 */
     CamVec focus; /* 0x08 */
     CamVec eye;   /* 0x18 */
@@ -641,9 +641,9 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
     } else {
         scr->yaw = (0x400 - ratan2(dx, dz)) & 0xFFF;
     }
-    scr->roll = 0;
+    scr->scr04 = 0;
     var_2->unk_10.vy += math_SignExt12Div(scr->yaw - var_2->unk_10.vy, 8);
-    var_2->unk_10.vz += math_SignExt12Div(scr->roll - var_2->unk_10.vz, 8);
+    var_2->unk_10.vz += math_SignExt12Div(scr->scr04 - var_2->unk_10.vz, 8);
     var_16 = var_2->unk_10.vx;
 
     for (p = 0; p < 2; p++) {
@@ -1186,21 +1186,21 @@ void func_8001BE20(s32 arg0, PadState *arg1) {
         } else {
             out = buf[i] & ~0xF0;
             {
-                u8 r = D_80106A50.color[0] >> temp;
+                u8 r = D_80106A50.frec20[0] >> temp;
                 if ((r & 1) && (buf[i] & 0x20) || (r & 2) && (buf[i] & 0x10) ||
                     (r & 4) && (buf[i] & 0x40) || (r & 8) && (buf[i] & 0x80)) {
                     out |= 0x20;
                 }
             }
             {
-                u8 g = D_80106A50.color[1] >> temp;
+                u8 g = D_80106A50.frec20[1] >> temp;
                 if ((g & 1) && (buf[i] & 0x20) || (g & 2) && (buf[i] & 0x10) ||
                     (g & 4) && (buf[i] & 0x40) || (g & 8) && (buf[i] & 0x80)) {
                     out |= 0x40;
                 }
             }
             {
-                u8 b = D_80106A50.color[2] >> temp;
+                u8 b = D_80106A50.frec20[2] >> temp;
                 if ((b & 1) && (buf[i] & 0x20) || (b & 2) && (buf[i] & 0x10) ||
                     (b & 4) && (buf[i] & 0x40) || (b & 8) && (buf[i] & 0x80)) {
                     out |= 0x80;

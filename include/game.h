@@ -33,7 +33,7 @@ typedef struct {
     u8 unk_04;  /* 0x80106A54 */
     u8 unk_05[3];
     TimeRec times[3]; /* 0x80106A58 */
-    u8 color[3];      /* 0x80106A70 */
+    u8 frec20[3];     /* 0x80106A70 */
     /* 0x80106A73: bits 0/1/2: func_800167AC, func_800167BC, func_800167D4 */
     u8 flags;
 } FileRecord;
@@ -323,7 +323,7 @@ typedef struct {
 /* NAR.BIN (resource file 0x32), the root 64FD8's func_800784E4 loads at its
  * work area + 0x58 (D_800A35F8). After the head: table, the cell table
  * func_80077D94 draws the hdr18..hdr24 sheets with; hdr18..hdr28, the five
- * sheet lists func_80077D10 relocates; win2C, in30 / out34 and the five
+ * sheet lists func_80077D10 relocates; nar2C, in30 / out34 and the five
  * portrait TIMs img38 func_80077D94 uploads. */
 typedef struct {
     Unk8006E950Head unk_00;
@@ -333,7 +333,7 @@ typedef struct {
     Unk8009B0E0Record **hdr20;
     Unk8009B0E0Record **hdr24;
     Unk8009B0E0Record **hdr28;
-    Unk80077D94Entry *win2C;
+    Unk80077D94Entry *nar2C;
     s16 *in30;
     s16 *out34;
     s32 img38[5];
@@ -446,7 +446,7 @@ typedef struct {
    j * 10 + i * 2 and picks D_8009ADD8 / D_8009B58C by it; func_80060414 reads
    player 0 round 0). Unk8009BD24Block.unk00. */
 typedef struct {
-    u8 chr;
+    u8 bd0;
     u8 unk1;
 } Unk8009BD24Record;
 
@@ -1717,7 +1717,7 @@ typedef struct Unk80099D88Rec {
     u8 pick_weight[7];
     /* +0xF: func_80058580 scales a random 12-bit draw by an element, and
        compares [5] >> 2 and [6] >> 2 with a random 8-bit draw */
-    u8 script_weight[8];
+    u8 unkF[8];
     u8 unk17;
 } Unk80099D88Rec; /* size 0x18 */
 
@@ -2030,28 +2030,28 @@ typedef struct {
  * element (a CdFileEntry), copied whole by cdrom_StartRead /
  * cdrom_StartAudio. */
 typedef struct {
-    s16 unk00;             /* 0x80101E60 */
-    s16 unk02;             /* 0x80101E62 */
-    s16 unk04;             /* 0x80101E64 */
-    s16 unk06;             /* 0x80101E66 */
-    s16 unk08;             /* 0x80101E68 */
-    s16 unk0A;             /* 0x80101E6A */
-    CdFileEntry pair;      /* 0x80101E6C .. 0x80101E73 */
-    s32 unk14;             /* 0x80101E74 */
-    s32 unk18;             /* 0x80101E78 */
-    s32 unk1C;             /* 0x80101E7C */
-    s32 sectors_remaining; /* 0x80101E80 */
-    s32 dest_buffer;       /* 0x80101E84 */
-    s32 unk28;             /* 0x80101E88 */
-    s32 unk2C;             /* 0x80101E8C */
-    u8 unk30;              /* 0x80101E90 */
-    s32 unk34;             /* 0x80101E94 */
-    s16 unk38;             /* 0x80101E98 */
-    s16 unk3A;             /* 0x80101E9A */
-    s16 unk3C;             /* 0x80101E9C */
-    u16 unk3E;             /* 0x80101E9E */
-    s32 expected_pos;      /* 0x80101EA0 */
-    s32 unk44;             /* 0x80101EA4 */
+    s16 unk00;        /* 0x80101E60 */
+    s16 unk02;        /* 0x80101E62 */
+    s16 unk04;        /* 0x80101E64 */
+    s16 unk06;        /* 0x80101E66 */
+    s16 unk08;        /* 0x80101E68 */
+    s16 unk0A;        /* 0x80101E6A */
+    CdFileEntry pair; /* 0x80101E6C .. 0x80101E73 */
+    s32 unk14;        /* 0x80101E74 */
+    s32 unk18;        /* 0x80101E78 */
+    s32 unk1C;        /* 0x80101E7C */
+    s32 cd20;         /* 0x80101E80 */
+    s32 dest_buffer;  /* 0x80101E84 */
+    s32 unk28;        /* 0x80101E88 */
+    s32 unk2C;        /* 0x80101E8C */
+    u8 unk30;         /* 0x80101E90 */
+    s32 unk34;        /* 0x80101E94 */
+    s16 unk38;        /* 0x80101E98 */
+    s16 unk3A;        /* 0x80101E9A */
+    s16 unk3C;        /* 0x80101E9C */
+    u16 unk3E;        /* 0x80101E9E */
+    s32 expected_pos; /* 0x80101EA0 */
+    s32 unk44;        /* 0x80101EA4 */
 } Unk80101E60Rec;
 
 /* The CD module's state block, one 0x50-byte object at 0x80101E58 (span
@@ -2092,7 +2092,7 @@ typedef struct {
     s32 field_20;   /* entries used in field_2C */
     u8 field_24[8]; /* edges whose node a is this record */
     u8 field_2C[8]; /* edges whose node b is this record */
-    s32 distance;
+    s32 field_34;
     s32 field_38[2];
 } Func80017A44Record;
 

@@ -1013,7 +1013,7 @@ s32 func_80076D74(Unk8006EACCRec *arg0) {
             for (j = 0; j < SELWORK->f65 + 3; j++) {
                 /* flat index into both pages, through row 0. */
                 /* SOTN: src/st/e_grave_keeper.h:534 @aa53500 */
-                var_1->unk00[i][j].chr = D_8009BCF8[0][SELWORK->f6A[i][j]].unk1;
+                var_1->unk00[i][j].bd0 = D_8009BCF8[0][SELWORK->f6A[i][j]].unk1;
                 var_1->unk00[i][j].unk1 = SELWORK->f7E[i][j];
             }
         }
@@ -1576,8 +1576,8 @@ void func_80077D94(Unk8006EACCRec *arg0) {
     var_6 = D_800A35F8->hdr28;
     for (i = 0; i < 21; i++) {
         /* FAKE: integer-sum address gives the target's addu operand order;
-           `&D_800A35F8->win2C[i]`: score 1; `w = win2C; w += i`: 2 */
-        w = (Unk80077D94Entry *)(i * 4 + (s32)D_800A35F8->win2C);
+           `&D_800A35F8->nar2C[i]`: score 1; `w = nar2C; w += i`: 2 */
+        w = (Unk80077D94Entry *)(i * 4 + (s32)D_800A35F8->nar2C);
         if (D_800A35F0 < w->off + 60 && D_800A35F0 >= w->on) {
             /* FAKE (duplicated-statement-into-arms): each arm stores its own
                r/g/b chain; cross-jump merges them. Shared tail: score 54. */

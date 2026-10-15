@@ -8,7 +8,7 @@
 
 /* Copies the record at func_80077D00() into the FileRecord D_80106A50:
  * flags bits 0-2 are cleared and re-set from p->unk20_0..2, then the three
- * bytes at p->unk17 are copied to D_80106A50.color. */
+ * bytes at p->unk17 are copied to D_80106A50.frec20. */
 void func_80034F88(void) {
     Unk8009BD24Block *p;
     s32 v;
@@ -71,7 +71,7 @@ void func_80034F88(void) {
          * instruction is added; a separate s32 counter: score 15. */
         for (q = 0; (s32)q < 3; q++) {
             c = p->unk17[(s32)q];
-            D_80106A50.color[(s32)q] = c;
+            D_80106A50.frec20[(s32)q] = c;
         }
     }
 }
@@ -175,7 +175,7 @@ void func_80035280(void) {
     p->unk20_0 = D_80106A50.flags & 1;
     p->unk20_1 = (D_80106A50.flags >> 1) & 1;
     p->unk20_2 = (D_80106A50.flags >> 2) & 1;
-    src = D_80106A50.color;
+    src = D_80106A50.frec20;
     for (; i < 3; i++) {
         p->unk17[i] = *src;
         p->unk1D[i] = *src;

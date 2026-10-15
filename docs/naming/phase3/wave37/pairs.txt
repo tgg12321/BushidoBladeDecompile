@@ -1,0 +1,10 @@
+FileRecord.color=frec20
+Unk80099D88Rec.script_weight=unkF
+Unk8009BD24Record.chr=bd0
+CamScratch.roll=scr04
+Unk8003F824Rec.quad=f824_04
+Unk80101E60Rec.sectors_remaining=cd20
+Unk80069F80Rec.env=fr00
+Unk8006DD94Rec.env=dd94_00
+Func80017A44Record.distance=field_34
+Ctx77D94.win2C=nar2C

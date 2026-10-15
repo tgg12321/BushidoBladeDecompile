@@ -719,7 +719,7 @@ void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
         if (value > 0x100) {
             value = 0x100;
         }
-        record_base[i].distance = value;
+        record_base[i].field_34 = value;
     }
 
     var_4 = a0->groups;

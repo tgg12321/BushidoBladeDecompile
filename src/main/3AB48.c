@@ -3294,8 +3294,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                         }
                         if (work3) {
                             var_24 = ((rand() & 0xFFF) *
-                                      D_80099D88[p->unk_443]
-                                          .script_weight[var_18]) >>
+                                      D_80099D88[p->unk_443].unkF[var_18]) >>
                                      12;
                             if (var_24 != 0 && var_35 < var_24) {
                                 var_35 = var_24;
@@ -3325,8 +3324,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                        p->unk_43C < 0x200 - ((p->unk_438 * 0x100) >> 12) &&
                        !(D_800A38DC == 2 || D_800A38DC == 3)) {
                 var_10 = 0;
-                if ((rand() & 0xFF) <
-                        (D_80099D88[p->unk_443].script_weight[5] >> 2) &&
+                if ((rand() & 0xFF) < (D_80099D88[p->unk_443].unkF[5] >> 2) &&
                     ((0x78 >> p->unk_B1) & 1) && p->unk_442 == 0 &&
                     p->other->unk_404[p->other->unk_86] < D_800A387C &&
                     D_800A387C < 4500) {
@@ -3350,7 +3348,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                     }
                     var_40 = 0;
                     if ((rand() & 0xFF) <
-                            (D_80099D88[p->unk_443].script_weight[6] >> 2) &&
+                            (D_80099D88[p->unk_443].unkF[6] >> 2) &&
                         var_60 != 0 && work1 < D_800A387C &&
                         p->unk_434 == 100000 && p->unk_442 == 0 &&
                         (p->unk_430 & 0xA002) &&
@@ -4965,7 +4963,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
                 }
                 s.has_color = 0;
             }
-            c = D_8009BD24.unk00[j][i].chr;
+            c = D_8009BD24.unk00[j][i].bd0;
             if (c >= 12) {
                 c -= 2;
             }
@@ -4980,7 +4978,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             }
             s.sprt_out = cur;
             cur = func_8007352C(&s);
-            if (D_8009BD24.unk00[j][i].chr == 8) {
+            if (D_8009BD24.unk00[j][i].bd0 == 8) {
                 s.table = D_8009ADC0;
                 s.sprt_out = cur;
                 cur = func_8007352C(&s);
@@ -5535,7 +5533,7 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     s.y = (D_8009B850[arg0 & 0x7FFF] & 0x7F) + 0x2A;
     if (arg0 & 0x8000) {
         s.header = &D_8009B7AC[0];
-    } else if (D_8009BD24.unk00[0][0].chr < 0xC) {
+    } else if (D_8009BD24.unk00[0][0].bd0 < 0xC) {
         s.header = &D_8009B7AC[1];
     } else {
         s.header = &D_8009B7AC[2];

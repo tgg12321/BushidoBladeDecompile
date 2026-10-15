@@ -1498,7 +1498,7 @@ void func_80071C4C(Unk8006EACCRec *arg0) {
             D_800A35A0 = 1;
         }
         for (i = 0; i < 1 + D_800A35B0 + D_800A3554; i++) {
-            D_800A3568->unk00[i][0].chr = D_800A3560.rec[i].unk0;
+            D_800A3568->unk00[i][0].bd0 = D_800A3560.rec[i].unk0;
         }
         for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
             D_800A3568->unk00[i][0].unk1 = D_800A3560.rec[i].unk2;

@@ -255,7 +255,7 @@ void func_80036940(void) {
     case 4:
         if (++D_80101E58.rec.unk2C >= 3) {
             D_80101E58.rec.dest_buffer = D_80101E58.rec.unk1C;
-            D_80101E58.rec.sectors_remaining = D_80101E58.rec.unk18;
+            D_80101E58.rec.cd20 = D_80101E58.rec.unk18;
             D_80101E58.rec.expected_pos = CdPosToInt(&D_80101E58.rec.pair.loc);
             CdControl(2, (u8 *)&D_80101E58.rec.pair.loc, 0);
             D_80101E58.rec.unk38 = 0;
@@ -279,9 +279,9 @@ void func_80036940(void) {
     case 6: {
         s32 ret = CdSync(1, g_cd_result);
         if (ret == 2) {
-            if (D_80101E58.rec.sectors_remaining == 0) {
+            if (D_80101E58.rec.cd20 == 0) {
                 D_80101E58.rec.unk02 = 8;
-            } else if (D_80101E58.rec.sectors_remaining < 0) {
+            } else if (D_80101E58.rec.cd20 < 0) {
                 D_80101E58.rec.unk02 = 9;
             } else if (++D_80101E58.rec.unk38 > 0x3C) {
                 CdReadyCallback(0);

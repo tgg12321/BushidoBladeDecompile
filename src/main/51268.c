@@ -4217,7 +4217,7 @@ void func_80069E18(s32 arg0) {
  * unwritten tail, so the locals region reaches the target's frame. The plain
  * descriptor scores 12 (func_80069F80) / 14 (func_8006A1A0). */
 typedef struct {
-    Unk8007352CEnv env;
+    Unk8007352CEnv fr00;
     s32 tail[4];
 } Unk80069F80Rec;
 
@@ -4237,61 +4237,61 @@ void func_80069F80(s32 *arg0, s32 arg1) {
 
     if (arg1 & 2) {
         ptr = ((Unk8006919CRec *)arg0[1])->unk_1C;
-        s.env.header = ptr[0];
+        s.fr00.header = ptr[0];
         if (arg1 & 1) {
-            s.env.x = 0x9C;
-            s.env.has_color = 1;
+            s.fr00.x = 0x9C;
+            s.fr00.has_color = 1;
         } else {
-            s.env.x = 0x4E;
-            s.env.has_color = 0;
+            s.fr00.x = 0x4E;
+            s.fr00.has_color = 0;
         }
-        x0 = s.env.x;
+        x0 = s.fr00.x;
         if (D_800A3524->unk20_3) {
             if (arg1 & 1) {
-                s.env.x = x0 + D_800A34FC->unk_0C[0];
+                s.fr00.x = x0 + D_800A34FC->unk_0C[0];
                 c = ((rsin((D_800A3514 & 0x1F) << 7) * 47) >> 12) - 0x80;
-                s.env.col_b = c;
-                s.env.col_g = c;
-                s.env.col_r = c;
+                s.fr00.col_b = c;
+                s.fr00.col_g = c;
+                s.fr00.col_r = c;
             }
-            s.env.y = 0;
-            s.env.scale_y = 0x100;
-            s.env.scale_x = 0x100;
+            s.fr00.y = 0;
+            s.fr00.scale_y = 0x100;
+            s.fr00.scale_x = 0x100;
         } else {
-            s.env.col_b = 0x70;
-            s.env.col_g = 0x70;
-            s.env.col_r = 0x70;
-            s.env.scale_y = 0x80;
-            s.env.scale_x = 0x80;
-            s.env.y = 0xA;
+            s.fr00.col_b = 0x70;
+            s.fr00.col_g = 0x70;
+            s.fr00.col_r = 0x70;
+            s.fr00.scale_y = 0x80;
+            s.fr00.scale_x = 0x80;
+            s.fr00.y = 0xA;
         }
-        s.env.semi = 0;
-        s.env.ot_idx = 3;
-        tbl = s.env.header->cells;
-        s.env.table = tbl;
-        s.env.ft4_out = arg0[2];
-        arg0[2] = func_80073728(&s.env, 0);
-        s.env.y = 0;
-        s.env.x = x0;
-        s.env.has_color = 0;
-        s.env.header = ptr[1];
-        tbl = s.env.header->cells;
-        s.env.table = tbl;
-        s.env.sprt_out = arg0[5];
-        arg0[5] = func_8007352C(&s.env);
+        s.fr00.semi = 0;
+        s.fr00.ot_idx = 3;
+        tbl = s.fr00.header->cells;
+        s.fr00.table = tbl;
+        s.fr00.ft4_out = arg0[2];
+        arg0[2] = func_80073728(&s.fr00, 0);
+        s.fr00.y = 0;
+        s.fr00.x = x0;
+        s.fr00.has_color = 0;
+        s.fr00.header = ptr[1];
+        tbl = s.fr00.header->cells;
+        s.fr00.table = tbl;
+        s.fr00.sprt_out = arg0[5];
+        arg0[5] = func_8007352C(&s.fr00);
         if (arg1 & 1) {
-            s.env.ot_idx = 2;
-            s.env.semi = 0;
-            s.env.header = ptr[6];
-            s.env.x = 0;
-            s.env.y = 0;
-            s.env.has_color = 1;
-            s.env.table = &s.env.header->cells[1];
-            s.env.sprt_out = arg0[5];
-            arg0[5] = func_8007352C(&s.env);
+            s.fr00.ot_idx = 2;
+            s.fr00.semi = 0;
+            s.fr00.header = ptr[6];
+            s.fr00.x = 0;
+            s.fr00.y = 0;
+            s.fr00.has_color = 1;
+            s.fr00.table = &s.fr00.header->cells[1];
+            s.fr00.sprt_out = arg0[5];
+            arg0[5] = func_8007352C(&s.fr00);
         }
         SetDrawMode(
-            (DR_MODE *)arg0[7], 1, 0, func_8006E480(s.env.header, 0), 0);
+            (DR_MODE *)arg0[7], 1, 0, func_8006E480(s.fr00.header, 0), 0);
         AddPrim(g_gpu_ot_ptr + 3, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
     }
@@ -4313,63 +4313,63 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
 
     if (arg1 & 1) {
         ptr = ((Unk8006919CRec *)arg0[1])->unk_1C;
-        s.env.header = ptr[2];
+        s.fr00.header = ptr[2];
         if (arg1 & 2) {
-            s.env.x = -1;
-            s.env.has_color = 1;
+            s.fr00.x = -1;
+            s.fr00.has_color = 1;
         } else {
-            s.env.x = 0x4E;
-            s.env.has_color = 0;
+            s.fr00.x = 0x4E;
+            s.fr00.has_color = 0;
         }
-        x0 = s.env.x;
+        x0 = s.fr00.x;
         if (!(D_800A3524->unk20_3)) {
             if (arg1 & 2) {
-                s.env.x = x0 + D_800A34FC->unk_0C[0];
+                s.fr00.x = x0 + D_800A34FC->unk_0C[0];
                 c = ((rsin((D_800A3514 & 0x1F) << 7) * 47) >> 12) - 0x80;
-                s.env.col_b = c;
-                s.env.col_g = c;
-                s.env.col_r = c;
+                s.fr00.col_b = c;
+                s.fr00.col_g = c;
+                s.fr00.col_r = c;
             }
-            s.env.y = 0;
-            s.env.scale_y = 0x100;
-            s.env.scale_x = 0x100;
+            s.fr00.y = 0;
+            s.fr00.scale_y = 0x100;
+            s.fr00.scale_x = 0x100;
         } else {
-            s.env.x = x0 + 0x32;
-            s.env.col_b = 0x70;
-            s.env.col_g = 0x70;
-            s.env.col_r = 0x70;
-            s.env.scale_y = 0x80;
-            s.env.scale_x = 0x80;
-            s.env.y = 0xA;
+            s.fr00.x = x0 + 0x32;
+            s.fr00.col_b = 0x70;
+            s.fr00.col_g = 0x70;
+            s.fr00.col_r = 0x70;
+            s.fr00.scale_y = 0x80;
+            s.fr00.scale_x = 0x80;
+            s.fr00.y = 0xA;
         }
-        s.env.semi = 0;
-        s.env.ot_idx = 2;
-        tbl = s.env.header->cells;
-        s.env.table = tbl;
-        s.env.ft4_out = arg0[2];
-        arg0[2] = func_80073728(&s.env, 0);
-        s.env.y = 0;
-        s.env.x = x0;
-        s.env.has_color = 0;
-        s.env.header = ptr[3];
-        tbl = s.env.header->cells;
-        s.env.table = tbl;
-        s.env.sprt_out = arg0[5];
-        arg0[5] = func_8007352C(&s.env);
+        s.fr00.semi = 0;
+        s.fr00.ot_idx = 2;
+        tbl = s.fr00.header->cells;
+        s.fr00.table = tbl;
+        s.fr00.ft4_out = arg0[2];
+        arg0[2] = func_80073728(&s.fr00, 0);
+        s.fr00.y = 0;
+        s.fr00.x = x0;
+        s.fr00.has_color = 0;
+        s.fr00.header = ptr[3];
+        tbl = s.fr00.header->cells;
+        s.fr00.table = tbl;
+        s.fr00.sprt_out = arg0[5];
+        arg0[5] = func_8007352C(&s.fr00);
         if (arg1 & 2) {
-            s.env.ot_idx = 2;
-            s.env.semi = 0;
-            s.env.header = ptr[6];
-            s.env.x = 0;
-            s.env.y = 0;
-            s.env.has_color = 1;
-            tbl = s.env.header->cells;
-            s.env.table = tbl;
-            s.env.sprt_out = arg0[5];
-            arg0[5] = func_8007352C(&s.env);
+            s.fr00.ot_idx = 2;
+            s.fr00.semi = 0;
+            s.fr00.header = ptr[6];
+            s.fr00.x = 0;
+            s.fr00.y = 0;
+            s.fr00.has_color = 1;
+            tbl = s.fr00.header->cells;
+            s.fr00.table = tbl;
+            s.fr00.sprt_out = arg0[5];
+            arg0[5] = func_8007352C(&s.fr00);
         }
         SetDrawMode(
-            (DR_MODE *)arg0[7], 1, 0, func_8006E480(s.env.header, 0), 0);
+            (DR_MODE *)arg0[7], 1, 0, func_8006E480(s.fr00.header, 0), 0);
         AddPrim(g_gpu_ot_ptr + 2, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
     }
@@ -5985,7 +5985,7 @@ void func_8006D808(
 /* FAKE: frame layout (oversized live object), as Unk80069F80Rec; the plain
  * descriptor: score 21. */
 typedef struct {
-    Unk8007352CEnv env;
+    Unk8007352CEnv dd94_00;
     s32 tail[2];
 } Unk8006DD94Rec;
 
@@ -5999,40 +5999,40 @@ void func_8006DD94(s32 *arg0) {
     u16 var_1[4];
     s16 i;
     Unk8006DD94List *q;
-    /* FAKE: constant holder for s.env.semi and func_8006E480's 0; the
+    /* FAKE: constant holder for s.dd94_00.semi and func_8006E480's 0; the
      * literal: score 8. */
     s32 var_4 = 0;
 
-    s.env.ot_idx = 0xA;
+    s.dd94_00.ot_idx = 0xA;
     q = ((Unk8006919CRec *)arg0[1])->unk_3C;
-    s.env.x = 0;
-    s.env.semi = var_4;
+    s.dd94_00.x = 0;
+    s.dd94_00.semi = var_4;
 
     for (i = 0; i < 3; i++) {
-        s.env.has_color = 1;
+        s.dd94_00.has_color = 1;
         if (i == D_800A352C + 1) {
-            s.env.y = D_800A34FC->unk_0C[1];
-            s.env.col_r = s.env.col_g = s.env.col_b =
+            s.dd94_00.y = D_800A34FC->unk_0C[1];
+            s.dd94_00.col_r = s.dd94_00.col_g = s.dd94_00.col_b =
                 ((rsin(((D_800A3514 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
         } else {
             if (i == 0) {
-                s.env.col_r = s.env.col_g = s.env.col_b = 0x80;
+                s.dd94_00.col_r = s.dd94_00.col_g = s.dd94_00.col_b = 0x80;
             } else {
-                s.env.col_r = s.env.col_g = s.env.col_b = 0x40;
+                s.dd94_00.col_r = s.dd94_00.col_g = s.dd94_00.col_b = 0x40;
             }
-            s.env.y = 0;
+            s.dd94_00.y = 0;
         }
-        s.env.header = q->unk_20[i];
-        s.env.table = s.env.header->cells;
-        s.env.sprt_out = arg0[5];
-        arg0[5] = func_8007352C(&s.env);
-        SetDrawMode(
-            (DR_MODE *)arg0[7], 1, 0, func_8006E480(s.env.header, var_4), 0);
+        s.dd94_00.header = q->unk_20[i];
+        s.dd94_00.table = s.dd94_00.header->cells;
+        s.dd94_00.sprt_out = arg0[5];
+        arg0[5] = func_8007352C(&s.dd94_00);
+        SetDrawMode((DR_MODE *)arg0[7], 1, 0,
+                    func_8006E480(s.dd94_00.header, var_4), 0);
         AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
         arg0[7] += 0xC;
     }
 
-    func_8006D808(&arg0[5], &arg0[7], &q->unk_00, s.env.ot_idx, -1);
+    func_8006D808(&arg0[5], &arg0[7], &q->unk_00, s.dd94_00.ot_idx, -1);
 
     var_1[2] = 0x96;
     var_1[0] = 0xF5;

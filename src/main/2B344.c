@@ -2500,7 +2500,7 @@ typedef struct {
 typedef struct {
     /* 0x00 */ s16 unk0;
     /* 0x02 */ u8 unk2[2];
-    /* 0x04 */ Unk80017FA0Rec quad;
+    /* 0x04 */ Unk80017FA0Rec f824_04;
     /* 0x14 */ Unk80045878Node *obj;
     /* 0x18 */ u8 *cur;
     /* 0x1C */ Func8003F6D8Inner inner;
@@ -2594,7 +2594,7 @@ void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
             rec->cur = cur;
             rec->obj = obj;
             cur = func_8003FA24(rec, var_1, cur);
-            var_0->unk418[var_0->count] = rec->quad;
+            var_0->unk418[var_0->count] = rec->f824_04;
             obj->node.unk0 = 0xD;
             var_0->count++;
             if (*var_1 >= 0) {
@@ -2741,12 +2741,12 @@ u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     rec->inner.count = 0;
     rec->inner.coll.count = 0;
     cur = ((u32)cur & 3) ? cur + 2 : cur;
-    rec->quad.unk0 = rec->unk0;
-    rec->quad.unk4 = &obj->node.xf.mat;
-    rec->quad.unk8 = obj->unk60;
-    rec->quad.unkC = &rec->inner.coll;
-    rec->quad.unk2 = 0;
-    rec->quad.unk3 = 0;
+    rec->f824_04.unk0 = rec->unk0;
+    rec->f824_04.unk4 = &obj->node.xf.mat;
+    rec->f824_04.unk8 = obj->unk60;
+    rec->f824_04.unkC = &rec->inner.coll;
+    rec->f824_04.unk2 = 0;
+    rec->f824_04.unk3 = 0;
     return cur;
 }
 
@@ -2834,7 +2834,7 @@ void func_8004001C(Unk8003F62CRec *a0) {
     s32 i;
     for (i = 0; i < a0->count; i++) {
         a0->unk418[i].unk2 = 1;
-        a0->recs[i].quad.unk2 = 1;
+        a0->recs[i].f824_04.unk2 = 1;
     }
 }
 
@@ -2842,7 +2842,7 @@ void func_80040068(Unk8003F62CRec *a0) {
     s32 i;
     for (i = 0; i < a0->count; i++) {
         a0->unk418[i].unk2 = 0;
-        a0->recs[i].quad.unk2 = 0;
+        a0->recs[i].f824_04.unk2 = 0;
     }
 }
 
