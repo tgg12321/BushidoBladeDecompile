@@ -27,10 +27,17 @@ executes them.
    ([[integration-handoff-self-serve]]) and rule 3. The manual path keeps the layer-2
    `cheat-reviewer` ([[review-discipline-before-commit]]).
 3. **Canonical-asm authorization is pipeline-executed.** With STRONG
-   `tools/scan_hand_coded.py` evidence (S1/S2/S6 class) and a Judge PASS, the DRIVER (never
-   the Judge) writes the `inline_asm_canonical.txt` entry citing this ruling + the scanner
-   evidence and appends a borderline entry for later audit. Without STRONG evidence asm stays
-   refused, except the GTE macro classes in [[inline-asm-policy]].
+   `tools/scan_hand_coded.py` evidence and a Judge PASS, the DRIVER (never the Judge) writes
+   the `inline_asm_canonical.txt` entry citing this ruling + the scanner evidence and appends
+   a borderline entry for later audit. STRONG rests on the gate class (`GATE_CLASS`, owner
+   approval 2026-10-15): S6 BIOS-jumptable delay slot, S7 unsaved callee-saved use, S8
+   redundant mask before shift, S9 trapping `add`/`addi`/`sub`, S10 jump-table entry inside
+   another function, S11 callee-saved register as parameter/result — each decisive on one
+   hit, each measured at 0 hits over every compiled-C function (top-level `asm()` in a C file
+   is not compiled C) — and
+   S1/S2 with tightness corroboration. Hand-written originals stay asm; compiled originals are
+   decompiled. Without STRONG evidence asm stays refused, except the GTE macro classes in
+   [[inline-asm-policy]].
 4. **No extension requests exist (owner ruling Q91).** A construct outside the pre-cleared
    shapes in [[no-new-park-categories]] is decided directly on [[completion-bar]] item 3:
    labelled, honest, not on item 3's refused list, existing types used and the simplest
@@ -45,9 +52,9 @@ executes them.
 For a function a few instructions short in honest C with its sanctioned levers exhausted
 (usually an RA/scheduling tiebreak), the only non-C exits are two AND-gates, default refuse:
 
-- **Gate 1 — canonical asm** only with STRONG `scan_hand_coded --single <fn>` signals. A LOW
-  tier is dispositive: a compiler-scheduling/RA artifact is ordinary GCC output, never a
-  hand-coded signature. Passing ⇒ rule 3's grant path.
+- **Gate 1 — canonical asm** only with a STRONG `scan_hand_coded --single <fn>` tier (a
+  rule-3 gate-class signal). A LOW tier is dispositive: a compiler-scheduling/RA artifact is
+  ordinary GCC output, never a hand-coded signature. Passing ⇒ rule 3's grant path.
 - **Gate 2 — a labelled FAKE spelling** under [[completion-bar]] item 3 (Q91): honest,
   annotated with its measured reason, simplest known form. Coercions that breach items 2-4
   (pins, volatile outside its catalog, invented object models) stay refused.

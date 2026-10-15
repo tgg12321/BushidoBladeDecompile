@@ -1,7 +1,7 @@
 ---
 name: canonical-gate-distance-not-evidence
 paths: ["engine/canonical.py", "inline_asm_canonical.txt"]
-description: "Large pure-C distance is NOT hand-asm evidence. ASM-SUSPECT/ASM-STRUCTURAL is the gate's best guess; keep pushing pure C unless scan_hand_coded shows real S1/S2/S6/S7/S8 signals."
+description: "Large pure-C distance is NOT hand-asm evidence. ASM-SUSPECT/ASM-STRUCTURAL is the gate's best guess; keep pushing pure C unless scan_hand_coded shows real gate-class (S1/S2/S6-S11) signals."
 metadata:
   type: rule
 ---
@@ -17,7 +17,7 @@ ASM-STRUCTURAL; otherwise large distance is ASM-SUSPECT.
   [[cross-jump-store-tail-merge]], [[defeat-licm-hoist-var-reuse]], [[split-read-defeats-hoist]], …).
 - **ASM-STRUCTURAL**: two converging signals, still not proof. Route to the canonical-asm grant path
   ([[judge-sole-gate]]: STRONG evidence + Judge verdict, driver-written grant, logged to
-  docs/grind/borderline.md). Lay out which of S1/S2/S6/S7/S8 actually fired; the verdict + driver tier
+  docs/grind/borderline.md). Lay out which gate-class signals (S1/S2/S6-S11) actually fired; the verdict + driver tier
   re-verification decide, never agent inference.
 
 Before reaching for canonical asm:

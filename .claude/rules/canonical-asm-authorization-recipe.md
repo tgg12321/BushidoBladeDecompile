@@ -54,7 +54,7 @@ __asm__(
 
 ## `inline_asm_canonical.txt` entry
 
-Match existing entries. 1-2 line rationale citing the hand-coded signal(s) (S1/S2/S6/S7/S8) and provenance:
+Match existing entries. 1-2 line rationale citing the hand-coded signal(s) (gate class S1/S2/S6-S11) and provenance:
 pipeline grants cite "pipeline grant YYYY-MM-DD: scan_hand_coded tier=STRONG, judge ESCALATE
 canonical-asm-grant — owner ruling 2026-08-18" and have a matching docs/grind/borderline.md entry.
 
