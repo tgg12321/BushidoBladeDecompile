@@ -292,7 +292,7 @@ def _verdict(func: str, hits: list, total: int, structural: int = 0,
                              f"hand-asm (auto-escalate, no pure-C grind)")
         elif tier == "LOW":
             # Affirmative counter-evidence: the scanner ran and found NO
-            # hand-coded indicator (0-2/8, none of the decisive S1/S2/S6).
+            # hand-coded indicator (no gate-class signal: S1/S2/S6-S11).
             # A high distance then measures function SIZE / un-attempted body,
             # not asm-ness — the 2026-08-18 triage of all 47 ASM-SUSPECT queue
             # items found 0 hand-coded candidates, most with no C body written
@@ -301,7 +301,7 @@ def _verdict(func: str, hits: list, total: int, structural: int = 0,
             # evidence. UNAVAILABLE/TIGHT_C are NOT this case — unknown is not
             # counter-evidence, so those keep the conservative SUSPECT label.
             out["reason"] = (f"pure-C distance {distance} > {SUSPECT_DISTANCE} but "
-                             f"scan_hand_coded tier=LOW (no S1/S2/S6 signal) — "
+                             f"scan_hand_coded tier=LOW (no gate-class signal) — "
                              f"distance is size, not hand-asm evidence. Ordinary "
                              f"pure-C target. See canonical-gate-distance-not-evidence.md.")
         else:

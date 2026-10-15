@@ -16,7 +16,7 @@
 #
 # To add a function (owner ruling 2026-08-18, .claude/rules/judge-sole-gate.md,
 # commit b9d91163): the pipeline grant path — scan_hand_coded STRONG
-# (S1/S2/S6-class) evidence + the default-FAIL Judge's verdict; the DRIVER
+# (gate-class S1/S2/S6-S11) evidence + the default-FAIL Judge's verdict; the DRIVER
 # writes the entry (never the Judge, never a grind session) and logs the grant
 # to docs/grind/borderline.md for later owner audit. Add the one-line
 # `# justification` after the name citing tier, verdict date, and the ruling.

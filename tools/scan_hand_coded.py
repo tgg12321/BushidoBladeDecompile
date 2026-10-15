@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Detect candidate hand-coded-asm functions by static signature.
 
-The 7 strong signals from memory/feedback_hand_coded_asm_recognition.md
-that are tractable to detect from target.s alone:
+Signals detectable from asm/funcs/<func>.s alone:
 
   S1. Uniform `multu`/`mflo` pacing. Every multu/mflo pair separated
       by exactly 2 instructions, across ≥2 pairs. GCC's scheduler
@@ -66,6 +65,32 @@ that are tractable to detect from target.s alone:
       pure-C forms + cc1psx + combine.c:1458 analysis confirmed no C source
       reproduces it. Future agents: STRONG here = stop trying pure C.
 
+  S9-S12 (added 2026-10-15; S9-S11 owner-approved as gate-class evidence,
+  S12 informational) read the
+  original instruction WORD from each line's `/* OFF ADDR WORD */` comment.
+  Each was measured at 0 hits over the 1129 compiled-C functions in
+  asm/funcs (C body in src/, not INCLUDE_ASM, not in
+  inline_asm_canonical.txt). Hold-out, the 991 functions of the PsyQ 4.0
+  library modules built from .C files: S9 0/991, S12 0/991, S11 1/991
+  (libgcc2's __builtin_saveregs, a top-level asm() block).
+
+  S9.  Overflow-trapping `add` / `addi` / `sub`. GCC 2.7.2 emits only
+       addu/addiu/subu (mips.md addsi3/subsi3/negsi2/abssi2).
+  S10. A jump table whose entries land inside a different function
+       (labels are per-function: stmt.c case_stack, c-decl.c label levels).
+       Table words come from the oracle EXE (disc/SLUS_006.63).
+  S11. A callee-saved register used as a parameter or result: read in the
+       entry block before any write (save excluded), or written but never
+       read (restore excluded). Covers what S7 misses: a dispatcher that
+       saves every callee-saved register yet hands values through them.
+  S12. A `nop` no delay slot, load delay, HI/LO, mult/div or coprocessor
+       interlock requires (e.g. `addiu; nop; jal`). Informational only:
+       not gate-class, never decides a tier.
+
+Gate class (GATE_CLASS): S1, S2, S6-S11. S6-S11 are DECISIVE (one hit =
+STRONG); S1/S2 need tightness corroboration. The tier — not the signal
+list — is what judge-sole-gate rule 3 and the Grinder driver read.
+
 Output modes:
   --single <func>  : JSON for one function (consumed by memory_check.py)
   --all            : human-readable sorted list of candidates
@@ -96,6 +121,12 @@ INSN_RE = re.compile(
 LABEL_RE = re.compile(r"^\s*(\.L[A-Za-z0-9_]+|[A-Za-z_][A-Za-z0-9_]*)\s*:\s*$")
 GLABEL_RE = re.compile(r"^\s*glabel\s+(\w+)")
 ENDLABEL_RE = re.compile(r"^\s*endlabel\s+\w+")
+# splat marks every jump-table target with `jlabel .L<ADDR>` (no colon).
+JLABEL_RE = re.compile(r"^\s*jlabel\s+(\.L[A-Za-z0-9_]+)\s*$")
+DLABEL_RE = re.compile(r"^\s*[ad]label\s+\w+")  # data / alias labels: not insns
+# `/* 3ACE0 8004A4E0 C8FFBD27 */` = ROM offset, vram address, the word's bytes
+# in file (little-endian) order.
+ADDR_WORD_RE = re.compile(r"^\s*/\*\s*[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\s+([0-9A-Fa-f]{8})\s*\*/")
 
 # Loads from a non-$sp base register (arg/saved/temp, not stack-frame ops).
 LOAD_OPS = {"lb", "lbu", "lh", "lhu", "lw", "lwl", "lwr"}
@@ -115,6 +146,9 @@ class Insn:
     mnemonic: str
     operands: str
     label: str | None = None  # label attached to this insn (if any)
+    addr: int | None = None   # vram address from the `/* OFF ADDR WORD */` comment
+    word: int | None = None   # the original 32-bit instruction word
+    jtarget: bool = False     # a splat `jlabel` (jump-table target) sits here
 
 
 @dataclass
@@ -139,43 +173,57 @@ class FuncSignals:
     s7_detail: str
     s8_redundant_mask_shift: bool
     s8_detail: str
-    score: int      # total signals hit (0-8)
+    s9_trapping_arith: bool
+    s9_detail: str
+    s10_cross_func_jtbl: bool
+    s10_detail: str
+    s11_custom_cs_abi: bool
+    s11_detail: str
+    s12_hazard_free_nop: bool
+    s12_detail: str
+    gate_signals: list  # which gate-class (GCC-impossible) signals fired
+    score: int      # total signals hit (0-12)
     tier: str       # STRONG / POSSIBLE / TIGHT_C / LOW
     tier_reason: str
     opcode_sig: str  # hash key for cluster detection
 
 
-def classify_tier(s1: bool, s2: bool, s6: bool, s7: bool, s8: bool, score: int) -> tuple[str, str]:
-    """Tier the function by which signals fire.
+# The gate class: GCC-impossible signals, the evidence judge-sole-gate rule 3
+# accepts. DECISIVE ones make a function STRONG on a single hit; S1/S2 need
+# tightness corroboration (classify_tier).
+GATE_CLASS = ("S1", "S2", "S6", "S7", "S8", "S9", "S10", "S11")
+DECISIVE = {
+    "S6": "BIOS jumptable with delay-slot register setup",
+    "S7": "callee-saved register used without save",
+    "S8": "redundant mask before discarding left-shift",
+    "S9": "overflow-trapping add/addi/sub",
+    "S10": "jump table entry inside another function",
+    "S11": "callee-saved register used as a parameter/result",
+}
+# S12 (hazard-free nop) is measured and reported but is NOT gate-class: the
+# owner approved trapping arithmetic, cross-function jump tables and
+# register conventions GCC cannot produce (2026-10-15); S12 needs its own
+# ruling before it may decide a tier.
 
-    S1 (uniform multu pacing), S2 (empty-body branch), S6 (BIOS
-    jumptable with delay-slot register setup), S7 (callee-saved
-    register read with no corresponding save), and S8 (redundant
-    low-bits mask before a discarding left-shift) are the
-    "GCC-impossible" signals — patterns the compiler has no way to emit.
-    S3/S4/S5 are tightness/cluster signals — also common in tight pure-C
-    functions (e.g. the calc_fc_frame_8007EC5C GTE family).
+
+def classify_tier(hits: dict[str, bool], score: int) -> tuple[str, str]:
+    """Tier the function by which signals fire (`hits`: "S1".."S12" -> bool).
+
+    The GATE_CLASS signals are "GCC-impossible" — patterns the compiler
+    has no way to emit; each DECISIVE one was measured at zero hits across
+    every compiled-C function in the corpus. S3/S4/S5 are tightness/cluster
+    signals — also common in tight pure-C functions (e.g. the
+    calc_fc_frame_8007EC5C GTE family).
 
     A 3+ score WITHOUT any GCC-impossible signal is most likely a
-    tight-C cluster, not hand-coded asm. Conversely, S6/S7/S8 alone is
-    decisive (each pattern is too specific to occur by accident); S1
-    or S2 alone is enough to warrant investigation."""
-    impossible_hits = [name for name, hit in (("S1", s1), ("S2", s2), ("S6", s6), ("S7", s7), ("S8", s8)) if hit]
-    if s6:
-        # S6 is the most specific GCC-impossible pattern: a single match
-        # is essentially proof of hand-coded asm. Skip the tightness gate.
-        return "STRONG", f"S6 (BIOS jumptable with delay-slot register setup) — GCC-impossible, decisive"
-    if s7:
-        # S7 is similarly decisive: there is no C-level mechanism to use
-        # $sN without forcing GCC to emit the prologue save. Even one
-        # unsaved callee-save use proves custom ABI.
-        return "STRONG", f"S7 (callee-saved register used without save) — GCC-impossible, decisive"
-    if s8:
-        # S8 is decisive: GCC's combine always elides a single-use
-        # redundant mask before a discarding left shift (verified against
-        # cc1psx on func_8007EDBC). A target that keeps the mask was
-        # hand-written. Even one occurrence is proof.
-        return "STRONG", f"S8 (redundant mask before discarding left-shift) — GCC-impossible, decisive"
+    tight-C cluster, not hand-coded asm. Conversely, one DECISIVE signal
+    is proof; S1 or S2 alone is enough to warrant investigation."""
+    s1, s2 = hits.get("S1", False), hits.get("S2", False)
+    impossible_hits = [name for name in GATE_CLASS if hits.get(name)]
+    decisive = [name for name in DECISIVE if hits.get(name)]
+    if decisive:
+        return "STRONG", (" + ".join(f"{k} ({DECISIVE[k]})" for k in decisive)
+                          + " — GCC-impossible, decisive")
     if s1 and s2 and score >= 4:
         return "STRONG", "S1+S2 (both GCC-impossible) plus tightness — almost certainly hand-coded"
     if impossible_hits and score >= 3:
@@ -192,7 +240,9 @@ def parse_func(path: Path) -> tuple[str, list[Insn]] | None:
     name = None
     insns: list[Insn] = []
     pending_label: str | None = None
+    pending_jtarget = False
     for raw in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+        aw = ADDR_WORD_RE.match(raw)
         # Strip out the address/byte-comment prefix `/* ADDR HEX */`
         line = re.sub(r"^\s*/\*\s+\w+\s+\w+\s+\w+\s+\*/\s*", "    ", raw)
         line = line.rstrip()
@@ -206,9 +256,12 @@ def parse_func(path: Path) -> tuple[str, list[Insn]] | None:
         if ENDLABEL_RE.match(line):
             break
 
-        m = LABEL_RE.match(line)
+        m = LABEL_RE.match(line) or JLABEL_RE.match(line)
         if m:
             pending_label = m.group(1)
+            pending_jtarget = pending_jtarget or line.lstrip().startswith("jlabel")
+            continue
+        if DLABEL_RE.match(line):
             continue
 
         # Try instruction match. Skip directives starting with `.`
@@ -222,8 +275,14 @@ def parse_func(path: Path) -> tuple[str, list[Insn]] | None:
         ops = m.group(2).strip()
         if not mnem or mnem in ("glabel", "endlabel"):
             continue
-        insns.append(Insn(mnemonic=mnem, operands=ops, label=pending_label))
+        addr = word = None
+        if aw:
+            addr = int(aw.group(1), 16)
+            word = int.from_bytes(bytes.fromhex(aw.group(2)), "little")
+        insns.append(Insn(mnemonic=mnem, operands=ops, label=pending_label,
+                          addr=addr, word=word, jtarget=pending_jtarget))
         pending_label = None
+        pending_jtarget = False
     if not name:
         return None
     return name, insns
@@ -521,6 +580,386 @@ def signal_redundant_mask_shift(insns: list[Insn]) -> tuple[bool, str]:
     return False, "no redundant mask-before-shift"
 
 
+# ---------------------------------------------------------------------------
+# Word-level decoding for S9-S12. These signals read the ORIGINAL instruction
+# word from the `/* OFF ADDR WORD */` comment, not splat's mnemonic spelling
+# (`beqz`, `move`, `negu` ... are pseudo-op renderings of the same words).
+
+CS_REGS = frozenset(range(16, 24)) | {30}          # $s0-$s7, $fp
+REG_NAMES = ("zero at v0 v1 a0 a1 a2 a3 t0 t1 t2 t3 t4 t5 t6 t7 "
+             "s0 s1 s2 s3 s4 s5 s6 s7 t8 t9 k0 k1 gp sp fp ra").split()
+_LOAD_OPS = {0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26}
+_STORE_OPS = {0x28, 0x29, 0x2A, 0x2B, 0x2E}
+_SP = 29
+
+
+def _op(w: int) -> int:
+    return w >> 26
+
+
+def _rs(w: int) -> int:
+    return (w >> 21) & 31
+
+
+def _rt(w: int) -> int:
+    return (w >> 16) & 31
+
+
+def _rd(w: int) -> int:
+    return (w >> 11) & 31
+
+
+def _funct(w: int) -> int:
+    return w & 63
+
+
+def is_trapping_arith(w: int) -> str | None:
+    """`add` / `addi` / `sub` (the overflow-trapping forms), else None."""
+    if _op(w) == 0x08:
+        return "addi"
+    if _op(w) == 0 and _funct(w) in (0x20, 0x22):
+        return "add" if _funct(w) == 0x20 else "sub"
+    return None
+
+
+def is_branch_or_jump(w: int) -> bool:
+    op = _op(w)
+    if op == 0:
+        return _funct(w) in (0x08, 0x09)          # jr, jalr
+    if op in (0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07):
+        return True
+    return op in (0x10, 0x11, 0x12, 0x13) and _rs(w) == 0x08  # bcNf/bcNt
+
+
+def regs_read_written(w: int) -> tuple[set[int], set[int]]:
+    """GPRs an instruction word reads / writes (R3000 ISA, $zero dropped)."""
+    op, rs, rt, rd, fn = _op(w), _rs(w), _rt(w), _rd(w), _funct(w)
+    r: set[int] = set()
+    d: set[int] = set()
+    if op == 0:
+        if fn in (0x00, 0x02, 0x03):                    # sll/srl/sra
+            r, d = {rt}, {rd}
+        elif fn in (0x04, 0x06, 0x07):                  # sllv/srlv/srav
+            r, d = {rs, rt}, {rd}
+        elif fn == 0x08:                                 # jr
+            r = {rs}
+        elif fn == 0x09:                                 # jalr
+            r, d = {rs}, {rd}
+        elif fn in (0x10, 0x12):                         # mfhi/mflo
+            d = {rd}
+        elif fn in (0x11, 0x13):                         # mthi/mtlo
+            r = {rs}
+        elif 0x18 <= fn <= 0x1B:                         # mult/multu/div/divu
+            r = {rs, rt}
+        elif 0x20 <= fn <= 0x27 or fn in (0x2A, 0x2B):  # add..nor, slt/sltu
+            r, d = {rs, rt}, {rd}
+    elif op == 0x01:                                     # bltz/bgez(al)
+        r = {rs}
+        if rt in (0x10, 0x11):
+            d = {31}
+    elif op == 0x03:                                     # jal
+        d = {31}
+    elif op in (0x04, 0x05):                             # beq/bne
+        r = {rs, rt}
+    elif op in (0x06, 0x07):                             # blez/bgtz
+        r = {rs}
+    elif 0x08 <= op <= 0x0E:                             # addi..xori
+        r, d = {rs}, {rt}
+    elif op == 0x0F:                                     # lui
+        d = {rt}
+    elif op in (0x10, 0x12):                             # cop0 / cop2 moves
+        if rs in (0x00, 0x02):                           # mfcN/cfcN
+            d = {rt}
+        elif rs in (0x04, 0x06):                         # mtcN/ctcN
+            r = {rt}
+    elif op in _LOAD_OPS:
+        r, d = {rs}, {rt}
+        if op in (0x22, 0x26):                           # lwl/lwr merge into rt
+            r = {rs, rt}
+    elif op in _STORE_OPS:
+        r = {rs, rt}
+    elif op in (0x32, 0x3A):                             # lwc2/swc2
+        r = {rs}
+    r.discard(0)
+    d.discard(0)
+    return r, d
+
+
+def signal_trapping_arith(insns: list[Insn]) -> tuple[bool, str]:
+    """S9: an overflow-trapping `add` / `addi` / `sub`.
+
+    GCC 2.7.2's MIPS backend emits integer addition and subtraction only as
+    the non-trapping `addu` / `addiu` / `subu` (mips.md addsi3_internal /
+    subsi3_internal / negsi2 / abssi2); its `add` templates are
+    mips.c:1140-1145, behind HALF_PIC_P(), which the PsyQ `-mno-abicalls
+    -G0` build never enables, and mips.c:1171 (mips_move_1word PLUS),
+    unreachable because movsi's general_operand rejects a raw PLUS. Decoded from the instruction
+    WORD (opcode 0x08, or SPECIAL funct 0x20 / 0x22), so splat's spelling
+    cannot hide or fake a hit. GCC-impossible: one occurrence is decisive."""
+    hits = []
+    for i, ins in enumerate(insns):
+        if ins.word is None:
+            continue
+        kind = is_trapping_arith(ins.word)
+        if kind:
+            where = f"{ins.addr:08X}" if ins.addr is not None else f"insn {i}"
+            hits.append(f"{kind} @ {where}")
+    if hits:
+        return True, f"{len(hits)} trapping op(s): " + ", ".join(hits[:4]) + (
+            " ..." if len(hits) > 4 else "")
+    return False, "no add/addi/sub"
+
+
+_GTE_CMD = lambda w: _op(w) == 0x12 and _rs(w) >= 0x10  # noqa: E731
+
+
+def _nop_explained(insns: list[Insn], i: int) -> str | None:
+    """Why the nop at insns[i] may be compiler/assembler output, or None.
+
+    Deliberately generous (every exemption widens what counts as "could be
+    compiled"); with P the previous instruction, P2 the one before it and
+    N the next non-nop instruction:
+      - P is a nop                -> part of a run; the run's head decides
+      - P is a branch/jump        -> delay slot (GCC `%#` fill, mips.c:3618)
+      - P is a load, lwc2, mfc0/mfc2/cfc2 -> load-delay slot (maspsx,
+        GCC epilogue mips.c:5200)
+      - P or P2 is mfhi/mflo      -> HI/LO hazard (maspsx)
+      - P is mult/div, break, syscall, rfe, a cop0/cop2 move or command,
+        swc2; or N is a GTE command -> hazard/interlock padding (div
+        expansion; PsyQ inline_c.h GTE macros)
+      - first instruction, or no N -> entry / alignment padding."""
+    if i == 0:
+        return "entry"
+    k = i + 1
+    while k < len(insns) and insns[k].word == 0:
+        k += 1
+    if k == len(insns):
+        return "tail padding"
+    p, n = insns[i - 1].word, insns[k].word
+    p2 = insns[i - 2].word if i >= 2 else None
+    if p is None or n is None:
+        return "undecodable"
+    if p == 0:
+        return "nop run"
+    if is_branch_or_jump(p):
+        return "delay slot"
+    if _op(p) in _LOAD_OPS or _op(p) == 0x32 or (
+            _op(p) in (0x10, 0x12) and _rs(p) in (0x00, 0x02)):
+        return "load delay"
+    for q in (p, p2):
+        if q is not None and _op(q) == 0 and _funct(q) in (0x10, 0x12):
+            return "HI/LO hazard"
+    if _op(p) == 0 and (0x18 <= _funct(p) <= 0x1B or _funct(p) in (0x0C, 0x0D)):
+        return "mult/div/trap"
+    if _op(p) in (0x10, 0x12) or _op(p) == 0x3A or _GTE_CMD(n):
+        return "coprocessor interlock"
+    return None
+
+
+def signal_hazard_free_nop(insns: list[Insn]) -> tuple[bool, str]:
+    """S12: an explicit `nop` that no delay slot or hazard requires.
+
+    Optimised GCC 2.7.2 emits a nop only to fill an empty delay slot (`%#`,
+    mips.c:3618) or after the epilogue load (mips.c:5200); maspsx adds them
+    only for load-delay and HI/LO hazards and the `div` expansion
+    (maspsx/__init__.py:1070-1083); PsyQ's inline GTE macros pad around
+    cop2 commands. Unoptimised GCC also emits a bare nop at a label or loop
+    head (emit_nop, stmt.c:547), so a nop carrying a label, and any nop in a
+    function that sets $fp from $sp (the -O0 frame shape), is exempt. A nop
+    outside all of those (e.g. `addiu; nop; jal`) was typed by a human. See
+    _nop_explained for the exact exemptions."""
+    if any(w is not None and _op(w) == 0 and _funct(w) in (0x21, 0x25)
+           and _rd(w) == 30 and _SP in (_rs(w), _rt(w))
+           for w in (ins.word for ins in insns)):
+        return False, "sets $fp from $sp (possible -O0 frame): not evaluated"
+    hits = []
+    for i, ins in enumerate(insns):
+        if ins.word != 0 or ins.label:
+            continue
+        if _nop_explained(insns, i) is None:
+            where = f"{ins.addr:08X}" if ins.addr is not None else f"insn {i}"
+            hits.append(where)
+    if hits:
+        return True, f"{len(hits)} hazard-free nop(s) @ " + ", ".join(hits[:4]) + (
+            " ..." if len(hits) > 4 else "")
+    return False, "every nop fills a delay slot or covers a hazard"
+
+
+def _s16(w: int) -> int:
+    v = w & 0xFFFF
+    return v - 0x10000 if v & 0x8000 else v
+
+
+def _cs_reads_writes(w: int) -> tuple[set[int], set[int]]:
+    """regs_read_written for S11: an lwl/lwr destination counts as a pure
+    write (GCC emits them as a pair that defines the whole register)."""
+    r, d = regs_read_written(w)
+    if _op(w) in (0x22, 0x26):
+        r = r - {_rt(w)}
+    return r, d
+
+
+def _cs_save_slots(insns: list[Insn]) -> dict[int, tuple[int, int, int]]:
+    """{reg: (insn index, base reg, offset)} of each callee-saved
+    register's prologue save: the first `sw $sN/$fp, K(base)` that comes
+    before any write of that register, with base $sp or a register
+    computed from $sp (GCC's MIPS_TEMP2 base for frames over 32 KB,
+    mips.c save_restore_insns). Later stores of the same register are
+    ordinary uses (outgoing args, spills)."""
+    saves: dict[int, tuple[int, int, int]] = {}
+    written: set[int] = set()
+    sp_derived = {_SP}
+    for i, ins in enumerate(insns):
+        w = ins.word
+        r, d = regs_read_written(w)
+        if (_op(w) == 0x2B and _rs(w) in sp_derived and _rt(w) in CS_REGS
+                and _rt(w) not in written and _rt(w) not in saves):
+            saves[_rt(w)] = (i, _rs(w), _s16(w))
+        if r & sp_derived and _op(w) not in _LOAD_OPS:
+            sp_derived |= d
+        written |= d
+    return saves
+
+
+def signal_custom_cs_abi(insns: list[Insn]) -> tuple[bool, str]:
+    """S11: a callee-saved register ($s0-$s7, $fp) used as a register
+    PARAMETER or RESULT rather than a preserved register.
+
+      (a) live-in: in the entry block (up to and including the first
+          branch/jump/call and its delay slot) the register is READ before
+          any write, its prologue save excluded — the caller handed a
+          value in through $sN;
+      (b) dead-write: the register is WRITTEN in the body (the epilogue
+          restore from its save slot excluded) but never READ anywhere in
+          the function (the save excluded) — the value exists only for a
+          callee or the caller.
+
+    Under the standard ABI only $a0-$a3/$sp/$gp/$ra are live on entry to
+    compiled code, and flow.c's insn_dead_p deletes a set of a dead
+    register (the only hard-register exemptions are global register
+    variables and the frame pointer, flow.c:1758). (a) is limited to the
+    entry block because an uninitialised C local can legitimately be read
+    on a later path. S7 catches a callee that never saves the register;
+    S11 also catches a dispatcher that saves every callee-saved register
+    yet hands values to its callees through them. Compiled-C escape paths,
+    none present in the corpus: a global register variable, an
+    uninitialised local read in the entry block. Assumes splat's function
+    boundaries: a mis-split compiled function would read live-in $sN in its
+    second half, so re-run the corpus measurement after any re-split."""
+    if not insns or any(ins.word is None for ins in insns):
+        return False, "undecodable (instruction without its word comment)"
+    saves = _cs_save_slots(insns)
+    save_idx = {v[0] for v in saves.values()}
+    slots = {(v[1], v[2]) for v in saves.values()}
+    live_in: set[int] = set()
+    written: set[int] = set()
+    for i, ins in enumerate(insns):
+        r, d = _cs_reads_writes(ins.word)
+        if i not in save_idx:
+            live_in |= (r & CS_REGS) - written
+        written |= d
+        if i > 0 and is_branch_or_jump(insns[i - 1].word):
+            break           # delay slot of the entry block's branch done
+    ever_read: set[int] = set()
+    first_write: dict[int, int] = {}
+    for i, ins in enumerate(insns):
+        w = ins.word
+        r, d = _cs_reads_writes(w)
+        if i in save_idx:
+            r = r - {_rt(w)}
+        if _op(w) == 0x23 and _rt(w) in saves and (
+                (_rs(w), _s16(w)) in slots or (_rs(w) == _SP and _s16(w) == saves[_rt(w)][2])):
+            d = d - {_rt(w)}  # restore from a save slot
+        ever_read |= r & CS_REGS
+        for reg in d & CS_REGS:
+            first_write.setdefault(reg, ins.addr)
+    parts = []
+    if live_in:
+        parts.append("live-in " + ", ".join("$" + REG_NAMES[r] for r in sorted(live_in)))
+    dead = sorted(r for r in first_write if r not in ever_read)
+    if dead:
+        parts.append("written-never-read " + ", ".join(
+            f"${REG_NAMES[r]} (first @ {first_write[r]:08X})" for r in dead))
+    if parts:
+        return True, "; ".join(parts)
+    return False, "callee-saved registers follow the standard ABI"
+
+
+def signal_cross_function_jtbl(func: str, insns: list[Insn],
+                               jtbl_targets: dict[int, list[int]],
+                               owner_of: dict[int, str]) -> tuple[bool, str]:
+    """S10: a jump table referenced by this function has an entry that lands
+    inside a DIFFERENT function's body.
+
+    GCC 2.7.2 compiles one FUNCTION_DECL to completion before the next
+    (toplev.c rest_of_compilation); switch case labels and computed-goto
+    labels are scoped to that function (stmt.c case_stack, c-decl.c
+    push_label_level/pop_label_level). No C source can emit a table entry
+    that resolves into another function. `jtbl_targets` maps a table
+    address to its entries (read from the oracle EXE, see
+    load_jtbl_targets); `owner_of` maps a jlabel address to its function.
+    Assumes splat's function boundaries (see S11)."""
+    tables = sorted({int(m, 16) for ins in insns
+                     for m in re.findall(r"%lo\(jtbl_([0-9A-Fa-f]{8})\)", ins.operands)})
+    hits = []
+    for t in tables:
+        foreign = [(e, owner_of.get(e)) for e in jtbl_targets.get(t, [])
+                   if owner_of.get(e) not in (None, func)]
+        if foreign:
+            others = sorted({o for _, o in foreign})
+            hits.append(f"jtbl_{t:08X}: {len(foreign)}/{len(jtbl_targets[t])} "
+                        f"entries inside {', '.join(others)}")
+    if hits:
+        return True, "; ".join(hits)
+    if tables and not jtbl_targets:
+        return False, "oracle EXE unavailable — not evaluated"
+    return False, f"{len(tables)} jump table(s), all targets local"
+
+
+EXE_PATH = ROOT / "disc" / "SLUS_006.63"
+EXE_HEADER = 0x800
+EXE_LOAD = 0x80010000
+
+
+def load_jtbl_targets(parsed: list[tuple[Path, str, list[Insn]]],
+                      exe_path: Path = EXE_PATH
+                      ) -> tuple[dict[int, list[int]], dict[int, str]]:
+    """({table addr: [entry addrs]}, {jlabel addr: owning function}).
+
+    Entries are read from the oracle EXE: consecutive words from the table
+    address, each of which must be a splat `jlabel` address somewhere in
+    asm/funcs (splat labels every real table target), stopping at the next
+    jtbl_ symbol. Returns ({}, owner_of) if the EXE is absent."""
+    owner_of: dict[int, str] = {}
+    tables: set[int] = set()
+    for _p, name, insns in parsed:
+        for ins in insns:
+            if ins.jtarget and ins.addr is not None:
+                owner_of[ins.addr] = name
+            for m in re.findall(r"%lo\(jtbl_([0-9A-Fa-f]{8})\)", ins.operands):
+                tables.add(int(m, 16))
+    if not exe_path.exists():
+        return {}, owner_of
+    data = exe_path.read_bytes()
+    order = sorted(tables)
+    out: dict[int, list[int]] = {}
+    for idx, t in enumerate(order):
+        limit = order[idx + 1] if idx + 1 < len(order) else t + 4 * 1024
+        entries = []
+        a = t
+        while a < limit:
+            off = a - EXE_LOAD + EXE_HEADER
+            if off < EXE_HEADER or off + 4 > len(data):
+                break
+            v = int.from_bytes(data[off:off + 4], "little")
+            if v not in owner_of:
+                break
+            entries.append(v)
+            a += 4
+        out[t] = entries
+    return out, owner_of
+
+
 def compute_opcode_sig(insns: list[Insn]) -> str:
     """Build a loose opcode-only signature for cluster detection.
     Strips registers, immediates, and operands entirely — keeps the
@@ -600,6 +1039,8 @@ def analyze_all(asm_dir: Path) -> list[FuncSignals]:
                     cluster_members[name].append((cand, jacc))
         cluster_members[name].sort(key=lambda x: -x[1])
 
+    jtbl_targets, owner_of = load_jtbl_targets(parsed)
+
     # Second pass: per-function signals
     for p, name, insns in parsed:
         s1, s1d, multu_count = signal_multu_pacing(insns)
@@ -617,9 +1058,15 @@ def analyze_all(asm_dir: Path) -> list[FuncSignals]:
         s6, s6d = signal_bios_jumptable(insns)
         s7, s7d = signal_no_save_callee_use(insns)
         s8, s8d = signal_redundant_mask_shift(insns)
+        s9, s9d = signal_trapping_arith(insns)
+        s10, s10d = signal_cross_function_jtbl(name, insns, jtbl_targets, owner_of)
+        s11, s11d = signal_custom_cs_abi(insns)
+        s12, s12d = signal_hazard_free_nop(insns)
 
-        score = sum([s1, s2, s3, s4, s5, s6, s7, s8])
-        tier, tier_reason = classify_tier(s1, s2, s6, s7, s8, score)
+        hits = {"S1": s1, "S2": s2, "S6": s6, "S7": s7, "S8": s8,
+                "S9": s9, "S10": s10, "S11": s11, "S12": s12}
+        score = sum([s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12])
+        tier, tier_reason = classify_tier(hits, score)
         out.append(FuncSignals(
             func=name,
             src_file=str(p.relative_to(ROOT)),
@@ -633,6 +1080,11 @@ def analyze_all(asm_dir: Path) -> list[FuncSignals]:
             s6_bios_jumptable=s6, s6_detail=s6d,
             s7_no_save_callee_use=s7, s7_detail=s7d,
             s8_redundant_mask_shift=s8, s8_detail=s8d,
+            s9_trapping_arith=s9, s9_detail=s9d,
+            s10_cross_func_jtbl=s10, s10_detail=s10d,
+            s11_custom_cs_abi=s11, s11_detail=s11d,
+            s12_hazard_free_nop=s12, s12_detail=s12d,
+            gate_signals=[k for k in GATE_CLASS if hits.get(k)],
             score=score,
             tier=tier,
             tier_reason=tier_reason,
@@ -664,10 +1116,15 @@ def fmt_signals_human(s: FuncSignals) -> str:
         ("S6 BIOS jumptable ", s.s6_bios_jumptable, s.s6_detail),
         ("S7 unsaved $sN use", s.s7_no_save_callee_use, s.s7_detail),
         ("S8 redundant mask", s.s8_redundant_mask_shift, s.s8_detail),
+        ("S9 trapping arith ", s.s9_trapping_arith, s.s9_detail),
+        ("S10 foreign jtbl  ", s.s10_cross_func_jtbl, s.s10_detail),
+        ("S11 $sN as param  ", s.s11_custom_cs_abi, s.s11_detail),
+        ("S12 hazard-free nop ", s.s12_hazard_free_nop, s.s12_detail),
     ]
     lines = [
-        f"  HAND_CODED: tier={s.tier}  score={s.score}/8  ({s.func}, {s.insn_count} insns)",
+        f"  HAND_CODED: tier={s.tier}  score={s.score}/12  ({s.func}, {s.insn_count} insns)",
         f"    Reason: {s.tier_reason}",
+        f"    Gate-class signals: {', '.join(s.gate_signals) or 'none'}",
     ]
     for label, hit, detail in rows:
         mark = "[X]" if hit else "[ ]"
@@ -691,7 +1148,11 @@ def main() -> int:
     if args.single:
         s = analyze_one(ASM_DIR, args.single)
         if not s:
-            print(f"asm/funcs/{args.single}.s not found", file=sys.stderr)
+            if (ASM_DIR / f"{args.single}.s").exists():
+                print(f"asm/funcs/{args.single}.s has fewer than 5 instructions "
+                      f"— not scanned", file=sys.stderr)
+            else:
+                print(f"asm/funcs/{args.single}.s not found", file=sys.stderr)
             return 1
         if args.json:
             print(json.dumps(asdict(s)))
@@ -735,6 +1196,10 @@ def main() -> int:
                 "6" if s.s6_bios_jumptable else ".",
                 "7" if s.s7_no_save_callee_use else ".",
                 "8" if s.s8_redundant_mask_shift else ".",
+                "9" if s.s9_trapping_arith else ".",
+                "A" if s.s10_cross_func_jtbl else ".",
+                "B" if s.s11_custom_cs_abi else ".",
+                "C" if s.s12_hazard_free_nop else ".",
             ])
             note_bits = []
             if s.s5_cluster:
@@ -745,8 +1210,12 @@ def main() -> int:
                 note_bits.append(f"unsaved: {s.s7_detail.split(': ', 1)[-1]}")
             if s.s8_redundant_mask_shift:
                 note_bits.append(f"mask: {s.s8_detail.split(' @ ', 1)[0]}")
+            if s.s10_cross_func_jtbl:
+                note_bits.append(f"jtbl: {s.s10_detail}")
+            if s.s11_custom_cs_abi:
+                note_bits.append(f"abi: {s.s11_detail}")
             extra_note = ("  " + "  ".join(note_bits)) if note_bits else ""
-            print(f"   {s.score}/8    {s.insn_count:5}  {s.multu_count:6}  {s.func:40}  [{sig_letters}]{extra_note}")
+            print(f"   {s.score:2}/12  {s.insn_count:5}  {s.multu_count:6}  {s.func:40}  [{sig_letters}]{extra_note}")
         print()
 
     print(f"# scan_hand_coded: {len(sigs)} functions scanned in asm/funcs/")
@@ -755,17 +1224,16 @@ def main() -> int:
     print_block(
         "STRONG candidates — almost certainly hand-coded asm",
         strong,
-        "S1 (uniform multu pacing), S2 (empty-body branch), S6 (BIOS "
-        "jumptable with delay-slot register setup), S7 (unsaved "
-        "callee-save use), and/or S8 (redundant mask before a discarding "
-        "left-shift) fire — all effectively impossible in GCC output. "
-        "Treat as canonically-asm absent strong counter-evidence; if not "
-        "in inline_asm_canonical.txt, investigate per skill §2.5.b.",
+        "A decisive gate-class signal (S6-S11) fires, or S1+S2 with "
+        "tightness — all effectively impossible in GCC output. Signal "
+        "letters: 1-9 = S1-S9, A = S10, B = S11, C = S12. Treat as "
+        "canonically-asm absent strong counter-evidence; the grant path "
+        "is .claude/rules/judge-sole-gate.md rule 3.",
     )
     print_block(
         "POSSIBLE candidates — investigate",
         possible,
-        "Exactly one GCC-impossible signal (S1, S2, or S6) fires without "
+        "S1 or S2 (the non-decisive gate-class signals) fires without "
         "supporting tightness signals. Could be hand-coded, could be an "
         "edge case (e.g. small GTE wrapper). Read the target.s.",
     )

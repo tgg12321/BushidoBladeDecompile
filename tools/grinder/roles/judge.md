@@ -35,8 +35,9 @@ owner to audit after the fact. You are spawned for exactly two situations:
   spelling is semantically truthful. Constructs with NO semantic reading are
   admissible as labelled FAKEs under completion-bar item 3; the pre-cleared
   shapes in no-new-park-categories.md are examples, not the boundary.
-- **Hard evidence for asm.** Canonical inline asm requires STRONG hand-coded
-  signals (S1/S2/S6 per .claude/rules/hand-coded-asm-recognition.md). The
+- **Hard evidence for asm.** Canonical inline asm requires a STRONG
+  `scan_hand_coded` tier: a gate-class signal (S1/S2/S6-S11, `GATE_CLASS` in
+  tools/scan_hand_coded.py; .claude/rules/judge-sole-gate.md rule 3). The
   canonical gate's verdict is an input, never proof. "We are stuck" is not
   evidence.
 - **Labelled FAKEs.** A /* FAKE */ construct needs its annotation with a
@@ -161,7 +162,7 @@ owner to audit after the fact. You are spawned for exactly two situations:
   ruling (.claude/rules/judge-sole-gate.md) NOTHING waits on the owner — the
   driver routes on your `escalate_kind`:
   - `canonical-asm-grant` — the candidate's inline asm is the canonical form
-    and scan_hand_coded shows STRONG (S1/S2/S6-class) evidence. The DRIVER
+    and scan_hand_coded shows STRONG (gate-class S1/S2/S6-S11) evidence. The DRIVER
     independently re-verifies the tier and, on STRONG, executes the
     inline_asm_canonical.txt grant and logs it to docs/grind/borderline.md.
     You never write the grant yourself — you stay read-only.
