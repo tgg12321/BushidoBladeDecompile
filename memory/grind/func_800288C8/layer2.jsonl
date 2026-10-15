@@ -1,0 +1,1 @@
+{"func": "func_800288C8", "addr": "800288C8", "verdict": "FAIL", "body_hash": "1dbdf44f0a61f1e1", "body_kind": "c", "file": "main/17AFC", "reviewer": "judge", "scope": "grinder-final-call", "date": "2026-10-15T19:53:56Z", "head": "83403f02c", "notes": "Judge FINAL CALL FAIL - see docs/grind/decisions.md"}

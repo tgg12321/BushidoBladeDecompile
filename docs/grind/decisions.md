@@ -1300,3 +1300,7 @@ prototype costs 192 -> 193 insns; the TU's `extern int AddPrim();`, an int-retur
 c0c5da22f); either int declaration conflicts in C with a void prototype from libgpu.h, and a per-TU header switch or
 a function-pointer cast would be a workaround. The five
 game TUs' identical local `extern void AddPrim(void *, void *);` (25C38, 51268, 5ED34, 63D2C, 64FD8) stay as debt.
+
+## 2026-10-15 14:54 — func_800288C8 — final call — **FAIL**
+
+Regression-origin item: engine/queue.json reopen_reason (owner 2026-10-08, commit 41a986d5f) flags exactly this body's construct: the gte_Lzc macro written out as six __asm__ volatile statements instead of a macro call ('the bytes are right; the source form is not'). The candidate diff is EMPTY: the body is the one landed at 0e17abbe8 and reopened, so the flagged construct is not gone. Under completion-bar items 2-5 / Q91 clause D, a regression item cannot close on the body the audit flagged. The three FAKE locals (dist, tbl, shift) are labelled with measured reasons (evidence.md s2) and are not the ground. Verified: git log, queue.json entry, inline_asm_canonical.txt:406, state.json (no prior verdicts or bans). Note for audit: inline-asm-policy.md:51 (2026-09-23 route, item 3) still says 'no #include ... macro-by-name', which conflicts with the later-dated 2026-10-08 direction. The rework needs a verbatim PsyQ header under include/ and gtemacro.py support for the macro-call form. That is owner/operator infrastructure, so the rule text must be reconciled before this can close.
