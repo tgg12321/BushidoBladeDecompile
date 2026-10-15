@@ -2078,11 +2078,11 @@ void func_8002AB08(s32 mode) {
         if (mask_b & (1 << idx) & ~mask_c) {
             strong = 0;
         }
-        /* func_80027AD8's sixth argument is a record pointer on its pass-1
-         * calls (func_80031B24) and, on this pass-0 call, the 0/1
-         * alternate-blade flag the target passes in that slot: its `tbl == NULL
-         * ? 0xB : 0x19` picks the same reaction func_80029454 picks from +0x8C.
-         */
+        /* func_80027AD8's sixth argument is a record pointer on the calls
+         * from func_80031B24 (first argument 1) and, on this call (first
+         * argument 0), the 0/1 alternate-blade flag the target passes in that
+         * slot: its `tbl == NULL ? 0xB : 0x19` picks the same reaction
+         * func_80029454 picks from +0x8C. */
         func_80027AD8(0, self, idx, ang, strong, (Tbl8008E194 *)alt, flag, 0);
         other->unk_AD = 0;
     }
