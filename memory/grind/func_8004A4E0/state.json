@@ -1,8 +1,8 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 10,
- "current_modality": "forensics",
+ "session_count": 11,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -63,13 +63,24 @@
    "floor": 163,
    "modality": "forensics",
    "headline": "forensics: cross-function jtbl targets are 0/58 in compiled C and unique to func_8004A4E0 (1/8 asm); scan_hand_coded rates func_8004A4E0 itself LOW 0/8, so its grant's scanner backing is only transiti"
+  },
+  {
+   "session": 11,
+   "floor": 163,
+   "modality": "rederive",
+   "headline": "rederive s11: sibling transplant has no applicable surface (data-only overlap); decomp.me corpus mining infeasible (missing curl_cffi dep, no cache) and would not bear on the s8/s10 cross-function-jtb"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "scan_hand_coded should carry a decisive signal for jtbl targets outside the referencing function (0/58 compiled C) so func_8004A4E0 gets direct STRONG backing",
+   "hypothesis": "scan_hand_coded should carry a decisive signal for jtbl targets outside the referencing function (0/58 compiled C) so func_8004A4E0 gets direct STRONG backing instead of resting transitively on its helpers",
    "mechanism": "scanner coverage gap (tools/ is outside the grinder surface: operator follow-up)",
-   "next_probe": "escalation/recon session: file the s8+s9+s10 evidence into docs/audits/func_8004A4E0-canonical-2026-09-29.md and record the scanner gap as an operator follow-up in docs/grind/decisions.md"
+   "next_probe": "escalation/recon session: file the s8+s9+s10+s11 evidence into docs/audits/func_8004A4E0-canonical-2026-09-29.md and record the scanner gap as an operator follow-up in docs/grind/decisions.md"
+  },
+  {
+   "hypothesis": "If an operator installs curl_cffi into .venv, decomp.me corpus search could still be run as a due-diligence pass, though the structural class-kill argument predicts a null result",
+   "mechanism": "tooling dependency gap, not a search-space gap",
+   "next_probe": "operator: pip install curl_cffi into .venv, then python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8004A4E0.s"
   }
  ],
  "judge_constraints": [],
@@ -162,6 +173,22 @@
    "measured_on": "58 compiled-C + 8 asm (referencer, jtbl) pairs at HEAD 45f59e10a; func_8004A4E0 chassis INCLUDE_ASM stub, zero FAKE constructs (tmp/grind/func_8004A4E0/s10/jtblscan.txt)",
    "predicate_cite": "",
    "result": "compiled C 0/58 pairs cross a function boundary; asm 1/8 crosses, only func_8004A4E0/jtbl_8001541C (8/16 targets in func"
+  },
+  {
+   "session": 11,
+   "statement": "A sibling ledger (math_RotMatrixXYZ/YXZ/ZXY, puts, InitGeom, _patch_gte, _remove_ChgclrPAD, func_800790A4) carries a transplantable C form or block for func_8004A4E0's chassis.",
+   "kill_scope": "instance",
+   "measured_on": "sibling ledger digest + include/bb2.h decls at HEAD 63ba4892b; func_8004A4E0 chassis INCLUDE_ASM stub, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "All 7 siblings are unrelated completed utility/library functions; the only overlap with func_8004A4E0 is shared GLOBAL D"
+  },
+  {
+   "session": 11,
+   "statement": "tools/decomp_me_scrape.py can mine the decomp.me GCC-2.7.2/PsyQ corpus this session for a rederive candidate for func_8004A4E0.",
+   "kill_scope": "instance",
+   "measured_on": "tools/decomp_me_scrape.py at HEAD 63ba4892b, this sandbox's .venv; func_8004A4E0 chassis INCLUDE_ASM stub, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "curl_cffi dependency is not installed in .venv and no local corpus cache exists under tmp/decomp_me_corpus/; the probe i"
   }
  ],
  "ladder_skip": 0,

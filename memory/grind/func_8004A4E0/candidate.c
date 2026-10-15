@@ -42,3 +42,14 @@ INCLUDE_ASM("asm/funcs", func_8004A4E0);
 /* s10 (forensics): scan_hand_coded rates func_8004A4E0 itself LOW 0/8 (helpers STRONG via S7);
  * jtbl targets outside the referencing function: compiled C 0/58, asm 1/8 (only this function).
  * tmp/grind/func_8004A4E0/s10/jtblscan.txt. INCLUDE_ASM stays. */
+
+/* s11 (rederive): sibling ledgers checked (math_RotMatrix*, puts, InitGeom, patchgte,
+ * chclrpad, func_800790A4) — all closed/COMPLETED, 0 grind sessions, and share only
+ * global DATA references (g_draw_queue, D_80103608) with this function, not code
+ * blocks; no transplantable form exists. decomp.me corpus mining (tools/decomp_me_scrape.py)
+ * is infeasible in this sandbox: curl_cffi is not installed in .venv and no corpus is
+ * cached under tmp/decomp_me_corpus/ (tmp/grind/func_8004A4E0/s11/decompme_probe.txt).
+ * Even if reachable, decomp.me scratches are single-function compiled-C targets under
+ * the same GCC per-function model the s8/s10 class kill already covers, so they cannot
+ * contain this function's cross-function-register-sharing jtbl dispatch shape.
+ * Floor re-confirmed 163, no_c_body, INCLUDE_ASM stays (tmp/grind/func_8004A4E0/s11/sandbox.txt). */

@@ -314,3 +314,47 @@ instance form.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: 58 compiled-C + 8 asm (referencer, jtbl) pairs at HEAD 45f59e10a; func_8004A4E0 chassis INCLUDE_ASM stub, zero FAKE constructs (tmp/grind/func_8004A4E0/s10/jtblscan.txt)
+
+## [s11] REDERIVE: sibling-ledger transplant check (math_RotMatrixXYZ/YXZ/ZXY, puts, InitGeom, _patch_gte, _remove_ChgclrPAD, func_800790A4)
+- mechanism: inheritance check mandated before any new probe this session
+- probe: read each sibling's status/candidate in the auto-attached ledger digest; checked data-model block for shared globals (g_draw_queue, D_80103608, g_draw_queue_cursor)
+- result: all 7 siblings are closed/COMPLETED (0 grind sessions each), and the only overlap with func_8004A4E0 is shared GLOBAL DATA (g_draw_queue, D_80103608), not shared code blocks or chassis shape — none has a switch/jtbl/cross-function-dispatch body to transplant. No applicable transplant surface.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: sibling ledger digest + include/bb2.h decls at HEAD 63ba4892b; func_8004A4E0 chassis INCLUDE_ASM stub, zero FAKE constructs
+
+## [s11] REDERIVE: decomp.me corpus mining (tools/decomp_me_scrape.py) as a new rederive source
+- mechanism: tool requires curl_cffi (Cloudflare-evading TLS fingerprint) to hit the decomp.me API; no local corpus is cached under tmp/decomp_me_corpus/
+- probe: `python3 tools/decomp_me_scrape.py probe` via both native Windows python3 and WSL .venv python3 (tmp/grind/func_8004A4E0/s11/decompme_probe.txt)
+- result: ModuleNotFoundError: curl_cffi not installed in .venv; no cached corpus exists locally. Tool is infeasible in this sandbox session without a package install. Separately: even if reachable, decomp.me scratches are single-function compiled-C targets under the same GCC 2.7.2 per-function compilation model the s8/s10 class kill already covers (toplev.c:2647, stmt.c:4704) — they structurally cannot contain a jump-table entry whose target lives inside a DIFFERENT function's compiled body sharing live register state, so a reachable corpus would not have produced a different rederive outcome here.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/decomp_me_scrape.py at HEAD 63ba4892b, this sandbox's .venv; func_8004A4E0 chassis INCLUDE_ASM stub, zero FAKE constructs
+
+## [s11] KILL RE-AUDIT: chassis + canonical verdict unchanged since s10
+- mechanism: driver-mandated re-audit after a flat floor
+- probe: canonical func_8004A4E0 (tmp/grind/func_8004A4E0/s11 inline above); sandbox func_8004A4E0 --disable all (tmp/grind/func_8004A4E0/s11/sandbox.txt)
+- result: canonical ASM-WHOLE (inline_asm_canonical.txt whole-function grant); sandbox score 163, no_c_body true, build_insns 0 — identical to s10. Prior instance/class kills stand.
+- verdict: CONFIRMED
+
+## [s11] A sibling ledger (math_RotMatrixXYZ/YXZ/ZXY, puts, InitGeom, _patch_gte, _remove_ChgclrPAD, func_800790A4) carries a transplantable C form or block for func_8004A4E0's chassis.
+- mechanism: sibling-inheritance check mandated before any new probe this session
+- probe: read the sibling ledger digest (all 7 closed, 0 grind sessions) and the data-model block for shared globals (g_draw_queue, D_80103608, g_draw_queue_cursor)
+- result: All 7 siblings are unrelated completed utility/library functions; the only overlap with func_8004A4E0 is shared GLOBAL DATA references, not shared code shape. None has a switch/jtbl/cross-function-dispatch body. No transplant performed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: sibling ledger digest + include/bb2.h decls at HEAD 63ba4892b; func_8004A4E0 chassis INCLUDE_ASM stub, zero FAKE constructs
+
+## [s11] tools/decomp_me_scrape.py can mine the decomp.me GCC-2.7.2/PsyQ corpus this session for a rederive candidate for func_8004A4E0.
+- mechanism: decomp.me scratch corpus under matching compilers as a known-good-codegen source
+- probe: python3 tools/decomp_me_scrape.py probe, run both via native Windows python3 and via WSL .venv python3 (tmp/grind/func_8004A4E0/s11/decompme_probe.txt)
+- result: curl_cffi dependency is not installed in .venv and no local corpus cache exists under tmp/decomp_me_corpus/; the probe is infeasible in this sandbox session. Separately, even a reachable corpus consists of single-function compiled-C scratches under the same GCC 2.7.2 per-function compilation model the s8/s10 class kill already covers (toplev.c:2647, stmt.c:4704), so it structurally could not contain func_8004A4E0's shape (a jump-table entry whose target lives inside a DIFFERENT function's compiled body, sharing live register state across the function boundary).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/decomp_me_scrape.py at HEAD 63ba4892b, this sandbox's .venv; func_8004A4E0 chassis INCLUDE_ASM stub, zero FAKE constructs
+
+## [s11] The ASM-WHOLE canonical-grant verdict and INCLUDE_ASM chassis for func_8004A4E0 are unchanged since s10, with zero FAKE constructs present.
+- mechanism: driver-mandated kill re-audit after 3+ flat sessions with instance kills
+- probe: canonical func_8004A4E0; sandbox func_8004A4E0 --disable all (tmp/grind/func_8004A4E0/s11/sandbox.txt)
+- result: canonical verdict ASM-WHOLE (inline_asm_canonical.txt whole-function grant), sandbox score 163, no_c_body true, build_insns 0 -- identical to s10. All prior instance and class kills (s3, s6, s7, s8, s9, s10) stand unweakened.
+- verdict: CONFIRMED

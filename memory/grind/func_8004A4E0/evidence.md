@@ -157,3 +157,11 @@ it would only become live if a future session carved a C island out of the body 
 - [s10] jtbl targets outside the referencing function: compiled C 0/58 pairs, asm 1/8 (only func_8004A4E0/jtbl_8001541C)
 
 - [s10] cc1 dump tools (dump.ps1, loop_movables, nrefs_census, label_census) have no input: no C body exists, only the INCLUDE_ASM stub
+
+- [s11] func_8004A4E0 remains ASM-WHOLE (whole-function canonical-asm grant, inline_asm_canonical.txt:199); sandbox --disable all scores the INCLUDE_ASM stub at 163 insns, no_c_body=true, build_insns=0 (tmp/grind/func_8004A4E0/s11/sandbox.txt)
+
+- [s11] No sibling ledger in this session's auto-attached list shares a code block (only global-data references) with func_8004A4E0's switch/jtbl chassis
+
+- [s11] tools/decomp_me_scrape.py requires curl_cffi, which is not installed in .venv and has no locally cached corpus; infeasible this session without a package install (tmp/grind/func_8004A4E0/s11/decompme_probe.txt)
+
+- [s11] The s8 class kill (jtbl_8001541C dispatches 8/16 entries into the MIDDLE of func_8004A940's compiled body, sharing live register state across a function boundary -- unreachable from any C switch/goto/fnptr lowering under GCC 2.7.2's per-function RTL/assembly model, toplev.c:2647 + stmt.c:4704) generalizes to rule out decomp.me's corpus as a rederive source even if it were reachable, since every decomp.me scratch is itself a single-function compiled-C target under the same model
