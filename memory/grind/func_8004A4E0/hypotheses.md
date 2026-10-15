@@ -495,3 +495,36 @@ floor 163 at s17; 17 sessions; live frontier (state.json is authoritative):
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at current HEAD, zero FAKE constructs
+
+## s23 [escalation] Kill re-audit + disposition
+- statement: Re-measuring the banked candidate on the current chassis changes the floor.
+- probe: sandbox --disable all (stub) and --candidate memory/grind/func_8004A4E0/candidate.c at HEAD c05458c8c.
+- result: stub 163; candidate errors (func_8004A4E0 not in object — comments-only candidate). No FAKE constructs exist to ablate. Floor unchanged.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD c05458c8c, zero FAKE constructs
+- disposition: both endgame gates FAIL (scan LOW 0/8; SOTN census 0) -> LADDER EXHAUSTED rotation entry in docs/grind/decisions.md.
+
+## [s23] Re-measuring the banked candidate and the stub on the current chassis at HEAD c05458c8c lowers the floor below 163.
+- mechanism: Mandated kill re-audit: instance kills are chassis-relative; a chassis or FAKE-state change could move the floor.
+- probe: sandbox func_8004A4E0 --disable all (stub) and --candidate memory/grind/func_8004A4E0/candidate.c
+- result: Stub scores 163; candidate measurement errors because func_8004A4E0 is absent from the object (candidate.c is comments-only). No FAKE constructs exist to ablate. Floor unchanged.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD c05458c8c, zero FAKE constructs
+
+## [s23] scan_hand_coded reports func_8004A4E0 at STRONG tier, opening the canonical-asm grant path.
+- mechanism: judge-sole-gate endgame AND-gate (a): canonical-asm needs STRONG scanner signals.
+- probe: python3 tools/scan_hand_coded.py --single func_8004A4E0
+- result: tier=LOW score 0/8; S1-S8 all unset.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current scanner at HEAD c05458c8c, whole-body INCLUDE_ASM chassis, zero FAKE constructs
+
+## [s23] An in-hand SOTN-master precedent exists for the closing constructs (ctc2, trapping add, callee-saved-register handoff, computed goto).
+- mechanism: judge-sole-gate endgame AND-gate (b): a family needs a citable SOTN precedent.
+- probe: grep of docs/reference/sotn-construct-index.md for ctc2|trapping|callee-saved|computed goto|&&label
+- result: 0 matches.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: sotn-construct-index.md at HEAD c05458c8c; no C body, zero FAKE constructs

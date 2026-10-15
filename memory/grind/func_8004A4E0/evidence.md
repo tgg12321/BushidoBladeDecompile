@@ -305,3 +305,15 @@ it would only become live if a future session carved a C island out of the body 
 - [s22] Re-measured sandbox floor this session: 163, no_c_body:true, unchanged from s2 through s21.
 
 - [s22] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate 0b6ab636f508 scores 0 under our cc1 and 0 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
+
+- [s23] Escalation: sandbox floor 163 re-measured (stub scored, no_c_body); scan_hand_coded tier LOW 0/8; SOTN construct-index census for ctc2/trapping/callee-saved/computed-goto = 0 matches; canonical gate still reports the inline_asm_canonical.txt:199 whole-function row. Rotation record filed: docs/grind/decisions.md `2026-10-15 — func_8004A4E0 — OWNER-ESCALATION — LADDER EXHAUSTED (non-endgame residual, floor 163): ROTATED`.
+
+- [s23] sandbox --disable all scores the INCLUDE_ASM stub at 163 (tmp/grind/func_8004A4E0/s23/sandbox.txt)
+
+- [s23] scan_hand_coded --single func_8004A4E0: LOW 0/8 (tmp/grind/func_8004A4E0/s23/scan.txt)
+
+- [s23] canonical gate still reports the whole-function grant row inline_asm_canonical.txt:199; the 2026-10-15 16:50 Judge ruling (decisions.md:1320) FAILed reliance on non-scanner signals
+
+- [s23] cc1psx_check (state.json:411): ours=0 psx=0 closer=false on comments-only candidate 0b6ab636f508
+
+- [s23] SOTN construct-index census: 0 matches for the closing constructs (tmp/grind/func_8004A4E0/s23/sotn_census.txt)

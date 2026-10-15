@@ -1,8 +1,8 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 22,
- "current_modality": "rederive",
+ "session_count": 23,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -135,18 +135,24 @@
    "floor": 163,
    "modality": "rederive",
    "headline": "s22 rederive: m2c independently confirms the cross-function jtbl (8/16 jtbl_8001541C entries resolve inside func_8004A940, not func_8004A4E0); ladder stays exhausted at floor 163, no new C-admissible "
+  },
+  {
+   "session": 23,
+   "floor": 163,
+   "modality": "escalation",
+   "headline": "s23 escalation: both endgame gates fail (scan LOW 0/8, SOTN census 0); LADDER EXHAUSTED (floor 163) rotation record filed"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "scan_hand_coded needs one of the three corpus-clean not-C signals already measured (trapping add, cross-function jtbl target, hazard-free nop) to report this function STRONG instead of LOW.",
-   "mechanism": "tools/scan_hand_coded.py currently scores 0/8 for func_8004A4E0 with no signal for any of: mips.md:381 addsi3-only-emits-addu, c-decl.c:1182 per-function label scoping violated by a jtbl, or mips.c:3618 delay-slot-only nop placement.",
-   "next_probe": "Operator/engine commit (with layer-2 review) teaching scan_hand_coded.py the cross-function-jtbl-target signal (0/58 corpus-clean per s10/s22), then re-run scan_hand_coded --single func_8004A4E0."
+   "hypothesis": "Teaching scan_hand_coded.py the cross-function-jtbl-target or caller-side custom callee-saved ABI signal makes this function STRONG.",
+   "mechanism": "judge-sole-gate gate (a); signals measured corpus-clean in s10/s18/s21/s22.",
+   "next_probe": "Operator engine:/tools commit with layer-2, then re-run scan_hand_coded --single func_8004A4E0."
   },
   {
-   "hypothesis": "Without a scanner change, the modality ladder (structural, enumerate x3, synthesis, solver, forensics x2, rederive) is now exhausted at floor 163 with no pure-C axis left to try.",
-   "mechanism": "n/a - disposition, not a codegen mechanism",
-   "next_probe": "Escalation modality: file a LADDER EXHAUSTED (floor 163) record in docs/grind/decisions.md and rotate per rotation-not-foreclosure."
+   "hypothesis": "An operator owner_cluster_grants.txt row citing Q40 admits the existing inline_asm_canonical.txt:199 grant.",
+   "mechanism": "Q40 cluster authorization (func_8004A76C/func_8004A808/func_8004A940).",
+   "next_probe": "Operator ruling on whether Q40 survives the 2026-10-08 reopen."
   }
  ],
  "judge_constraints": [
@@ -401,6 +407,30 @@
    "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at current HEAD, zero FAKE constructs",
    "predicate_cite": "",
    "result": "score 163, no_c_body true, cheat_asm_stripped 71, no diff available (whole-body INCLUDE_ASM); no prior kill voided by th"
+  },
+  {
+   "session": 23,
+   "statement": "Re-measuring the banked candidate and the stub on the current chassis at HEAD c05458c8c lowers the floor below 163.",
+   "kill_scope": "instance",
+   "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD c05458c8c, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "Stub scores 163; candidate measurement errors because func_8004A4E0 is absent from the object (candidate.c is comments-o"
+  },
+  {
+   "session": 23,
+   "statement": "scan_hand_coded reports func_8004A4E0 at STRONG tier, opening the canonical-asm grant path.",
+   "kill_scope": "instance",
+   "measured_on": "current scanner at HEAD c05458c8c, whole-body INCLUDE_ASM chassis, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "tier=LOW score 0/8; S1-S8 all unset."
+  },
+  {
+   "session": 23,
+   "statement": "An in-hand SOTN-master precedent exists for the closing constructs (ctc2, trapping add, callee-saved-register handoff, computed goto).",
+   "kill_scope": "instance",
+   "measured_on": "sotn-construct-index.md at HEAD c05458c8c; no C body, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "0 matches."
   }
  ],
  "ladder_skip": 0,

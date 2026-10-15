@@ -1320,3 +1320,23 @@ Text appended above by session s2 of func_800288C8, which the driver DISCARDED a
 ## 2026-10-15 16:50 — func_8004A4E0 — ruling: func_8004A4E0 was reopened 2026-10-08 to decide afresh whether it is hand-writte — **FAIL**
 
 No. Non-scanner signals cannot stand in for the canonical-asm evidence bar. The 2026-10-08 reopen (engine/queue.json reopen_reason) names 'scan_hand_coded STRONG evidence + Judge'. judge-sole-gate.md rules 1 and 3 say asm without STRONG evidence stays refused, and a ruling that waives the bar is a plain FAIL. I re-ran the scanner: func_8004A4E0 is LOW 0/8, func_8004A940 is STRONG (S7). I also checked that 8 of the 16 jtbl_8001541C entries (d_5BF0.c:21-25) land inside func_8004A940.s, so the hand-written case is technically strong (hypotheses.md, evidence.md s5-s10, docs/audits/func_8004A4E0-canonical-2026-09-29.md). But neither grant door admits it: the tier is LOW and there is no owner_cluster_grants.txt row. The inline_asm_canonical.txt:199 row is left unchanged, the function stays INCOMPLETE, and no candidate.c body exists to clear. Open question, recorded here and not filed: does Q40 (2026-09-29, 'the authorization itself stays') survive the blanket 2026-10-08 reopen? That is for the operator to settle with a registry row; the Judge has no authority to settle it.
+
+## 2026-10-15 — func_8004A4E0 — OWNER-ESCALATION — **LADDER EXHAUSTED (non-endgame residual, floor 163): ROTATED**
+
+Rotation record (escalation modality, grind session s23). Not a question to the owner and not a claim that policy blocks the function: a pure-C preimage exists by construction; the residual is a spelling not yet found. Floor 163 > 5, so the 2026-07-27 standing ruling is not this entry's subject (owner ruling 2026-09-02); this is a ladder-exhaustion rotation per .claude/rules/rotation-not-foreclosure.md.
+
+(i) Gate evidence.
+- Gate (a) canonical-asm scanner: `python3 tools/scan_hand_coded.py --single func_8004A4E0` -> tier=LOW, score 0/8 (S1-S8 all unset; 169 insns, 10 spills, 17 regs). Output banked at tmp/grind/func_8004A4E0/s23/scan.txt. FAILED.
+- Gate (b) SOTN precedent: census of docs/reference/sotn-construct-index.md for the closing constructs (ctc2 / trapping add / callee-saved-register handoff / computed goto) -> 0 matches (tmp/grind/func_8004A4E0/s23/sotn_census.txt). No in-hand SOTN-master precedent. FAILED.
+- cc1psx self-disproof (driver, memory/grind/func_8004A4E0/state.json:411 `cc1psx_check`): candidate 0b6ab636f508 scores ours=0 / psx=0, closer=false — source-side; the original compiler is no closer from this source. Note: candidate.c is a comments-only record (no C body), so this check is vacuous on the body question.
+- What currently holds the bytes: whole-body INCLUDE_ASM in src/main/3AB48.c (canonical gate reports `whole-function canonical-asm grant in inline_asm_canonical.txt`, row inline_asm_canonical.txt:199). The 2026-10-15 16:50 Judge ruling above (FAIL) left that row unchanged and the function INCOMPLETE because the scanner tier is LOW and there is no owner_cluster_grants.txt row.
+
+(ii) Exhaustion and evidence pointers.
+- Floor flat at 163 (sandbox --disable all scores the INCLUDE_ASM stub; tmp/grind/func_8004A4E0/s23/sandbox.txt) across s1-s23; candidate measurement errors with func_8004A4E0 absent from the object (no C body; tmp/grind/func_8004A4E0/s23/sandbox_candidate.txt).
+- Modalities run: structural, enumerate x4 (s13-s17), synthesis (s18), solver (s6, s19), forensics x2 (s20, s21), rederive (s22), escalation (s23). No permuter iterations: there is no C body to permute.
+- Not-C signals measured (memory/grind/func_8004A4E0/evidence.md, hypotheses.md): custom callee-saved-register ABI across jal with func_8004A940/func_8004A76C/func_8004A808 ($s4 in, $s5 back, $s0 both ways, $s6/$fp in, ghost $s3 save); 2 trapping addi (mips.md:381 addsi3 emits addu only; 0/1299 compiled-C functions, s18); cross-function jtbl (8 of 16 jtbl_8001541C entries land inside func_8004A940, s10/s22 via m2c); unbounded jtbl dispatch matches GNU computed goto, not switch (s20); hazard-free nop before jal at 0x8004A718, 0/1297 GCC functions (s21); 4 ctc2.
+
+(iii) Re-activation triggers.
+- An engine:/tools commit (with layer-2 review) teaching tools/scan_hand_coded.py one of the measured corpus-clean signals (cross-function jtbl target, caller-side custom callee-saved ABI, trapping addi, delay-slot-only nop) so it reports STRONG -> CANONICAL-ASM GRANT PATH.
+- An operator-added owner_cluster_grants.txt row citing Q40 (the func_8004A76C/func_8004A808/func_8004A940 cluster), or an operator ruling on whether Q40 survives the 2026-10-08 reopen.
+- Sibling movement in func_8004A940 / func_8004A76C / func_8004A808, or a toolchain change.
