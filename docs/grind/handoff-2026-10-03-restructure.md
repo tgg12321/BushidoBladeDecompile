@@ -139,7 +139,25 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      (17AFC, 32D04, 3AB48, 9F9C, 51268, 368E4, 2B344, 5ED34, 63D2C, ...); the 98 member claims and
      ~50 unjudged types take normal waves; then the file-name pass. Wave23 (17AFC.c) 00d695d44 (+ prep
      30e3e4a81): 56 resets, 31 dropped (25 nested-block locals the keycheck cannot rename yet).
-   - **Next:** further leads: func_8006BEC4's local `pos` (holds a size: RESET);
+   - Q119 file waves DONE (2026-10-14), each with comment-only preps and a fresh R6 PASS:
+     wave24 32D04 7b4a7d9bb (23), wave25 3AB48 ebb024724 (120), wave26 9F9C f1ddf7ce6 (60), wave27
+     51268 7e447d007 (85), wave28 368E4 36406b5b8 (37), wave29 2B344 ef93b00e5 (25), wave30 5ED34
+     6bcdd4e0a (25), wave31 63D2C 8df7312b2 (4), wave32 6CF8 00a4acde4 (19), wave33 64FD8/28708/35000
+     64018fd7a (42), wave34 87A0 + the remaining TUs 7c9216ee0 (28), wave35 consistency sweep under the
+     final scope test ae3c20c45 (4). Final test (tmp/p3w35/build.py + boolscan*.py, outscan.py): scope by
+     words only; m2c register names neutral; a kept word that holds a 1/0 (comparison, out-param, array
+     or pointer store) or names a bit / on-off state is a claim; GPU terms only on GPU types. 167 rows
+     stay dropped by keycheck limits (tmp/p3w35/dropped.txt: 112 nested-block locals, 13 macro, 12
+     allowlist pads, 9 comma declarators, 6 multi-binding, 6 K&R, 5 local aggregates, 4 other).
+     Follow-ups: dd4d544e3 re-keyed 6 canonical-asm region grants the waves moved (a renamed operand
+     inside a GTE island moves its grant hash; no gate caught it; `python tmp/p3regions/check.py :`
+     is now a wave gate, re-key via tmp/p3regions/rekey.py + cheat-reviewer); named_syms.txt comments
+     follow three reset locals (waves 32/34 follow-up).
+   - **Next:** (1) the keycheck renames nested-block locals (and comma declarators), then a Q119 wave
+     lands tmp/p3w35/dropped.txt's rows; (2) check_completion_integrity should compare region-grant
+     hashes (tools/ change, two reviewers); (3) normal waves: the 98 member claims, ~50 types, R6 leads
+     in tmp/p3w2*/verdict_r6*.json (e.g. FAKE named intermediates still named `last`, `cx`/`cy`;
+     member docs "fade level", "command cursor"); (4) the file-name pass. Further leads: func_8006BEC4's local `pos` (holds a size: RESET);
      Unk8003F824Rec.quad (no fresh neutral spelling for +0x04; member destinations must be unique
      tree-wide, so it needs a spelling choice); the never-accessed `pad` members (lead ruled: "pad"
      on untouched bytes is no false claim, KEEP); other `player` locals holding D_800A9A10 objects
