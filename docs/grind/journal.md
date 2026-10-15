@@ -120,3 +120,4 @@
 - 2026-10-15 17:13 func_8004A4E0 s23 [escalation] LADDER EXHAUSTED (non-endgame residual) — ROTATED (returns automatically): s23 escalation: both endgame gates fail (scan LOW 0/8, SOTN census 0); LADDER EXHAUSTED (floor 163) rotation record filed
 - 2026-10-15 17:19 func_8004A76C s1 [recon] floor=37: GTE perspective-transform loop, hand software-pipelined; scan_hand_coded STRONG 1/8 (S7); A6 audit already closed the one open C-form question (global register var) — ready for escalation disposition, not mine to dispose in recon modality
 - 2026-10-15 17:22 func_8004A76C s2 [structural] floor=37: structural modality inapplicable (no C body, ASM-WHOLE canonical GTE grant); cluster scan now shows all three func_8004A4E0 callees STRONG
+- 2026-10-15 17:25 func_8004A76C s3 [permuter] floor=37: Permuter modality mechanically inapplicable: no C body exists for func_8004A76C to construct a workspace from (import.py fails immediately, verbatim captured)

@@ -93,3 +93,11 @@
 - [s2] scan_hand_coded.py --single func_8004A940 = tier=STRONG score=3/8 (S3+S4+S7, unsaved $s0-$s7, all eight)
 
 - [s2] All three func_8004A4E0-called cluster siblings (func_8004A76C, func_8004A808, func_8004A940) now carry independently-measured scan_hand_coded STRONG verdicts; only the caller func_8004A4E0 scans LOW
+
+- [s3] sandbox func_8004A76C --disable all --diff this session: floor unchanged at 37, no_c_body=true, build_insns=0 (tmp/grind/func_8004A76C/s3/sandbox_diff.txt).
+
+- [s3] asm/funcs/func_8004A76C.s (44 lines) is a 39-insn hand software-pipelined GTE perspective-transform loop using rtpt (cop2) with lwc2/swc2 vertex I/O and a pipelined jump-into-loop-body entry (.L8004A7B0) — consistent with s1's prior read of this file.
+
+- [s3] tools/decomp-permuter/import.py src/main/3AB48.c func_8004A76C run directly (WSL venv) this session: 'Failed to find GLOBAL_ASM for function func_8004A76C' — confirms by direct tool attempt (not citation) that no permuter workspace can be built while this function has zero C bytes.
+
+- [s3] This matches and reinforces s1 (recon, GTE loop / A6 audit closed) and s2 (structural modality inapplicable, no C body) — three independent modalities (recon, structural, permuter) have now each independently hit the same root fact: there is no C source for func_8004A76C to work on.

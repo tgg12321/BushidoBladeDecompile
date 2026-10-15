@@ -113,3 +113,69 @@ member's escalation session (s1 frontier item 2).
 - probe: scan_hand_coded.py --single func_8004A808 and --single func_8004A940 (no build needed).
 - result: func_8004A808: tier=STRONG score=3/8 (S3 no-spills, S4 front-loads, S7 unsaved $s0 -- 'GCC-impossible, decisive'). func_8004A940: tier=STRONG score=3/8 (same S3/S4/S7 triplet, S7 firing on all eight callee-saves $s0-$s7, the maximal shape). Both independently confirm the S7 signal already measured on func_8004A76C itself; only the cluster's caller func_8004A4E0 scans LOW (0/8), the asymmetry already on record from its own s18/s18b Judge FAIL.
 - verdict: CONFIRMED
+
+## s3 (permuter)
+
+### H4 — the permuter requires an existing C candidate (base + variations) to mutate against
+the target asm; with no C body for func_8004A76C (ASM-WHOLE canonical, s1/s2 already
+established), there is nothing for `tools/permuter_annotate.py` / `permuter_campaign.py` to
+operate on, same inapplicability s2 found for structural modality.
+
+- mechanism: the permuter's mutation loop needs a compiling C source file as its base
+  candidate to perturb; `memory/grind/func_8004A76C/candidate.c` is a 15-line comment-only
+  stub documenting why no C body exists, not compilable C, so there is no base for a
+  campaign to seed from, and `--diff` has no hunks to direct a `--hint` at.
+- probe: re-ran `canonical func_8004A76C` (still ASM-WHOLE, same `inline_asm_canonical.txt`
+  grant) and `sandbox func_8004A76C --disable all` (still `{"score":37,"no_c_body":true,
+  "build_insns":0}`) this session before concluding the permuter has no object either.
+- result: KILLED
+- kill_scope: instance
+- measured_on: current src/main/3AB48.c (INCLUDE_ASM stub, unchanged this session) and
+  memory/grind/func_8004A76C/candidate.c (comment-only stub, unchanged), no FAKE carrier (no
+  C body exists)
+
+## Frontier (unchanged from s2 — permuter modality adds no new angle)
+
+1. hypothesis: the ASM-WHOLE canonical grant is correct and the reopen's question is already
+   answered for this function specifically.
+   mechanism: scan_hand_coded STRONG 1/8 (S7) measured directly on func_8004A76C, the closed
+   A6 audit, and both sibling callees (func_8004A808, func_8004A940) independently confirming
+   STRONG on the same S7 signal (s2/H3).
+   next_probe: in `escalation` modality (not before), file the docs/grind/decisions.md
+   disposition entry citing A6 + the cluster-wide STRONG scan results, then return
+   owner-gated.
+
+## s3 (permuter)
+
+### H2 — a decomp-permuter campaign can be constructed for func_8004A76C to search for a
+C-level match of the diverging region.
+
+- mechanism: `tools/decomp-permuter/import.py` builds a permuter workspace from a C file by
+  locating either (a) a `GLOBAL_ASM`-embedded function body in the given `c_file`, or (b) a
+  standalone function definition compiled by `make`. Both require an actual C function body
+  for `func_8004A76C` to exist somewhere in the tree.
+- probe: ran `sandbox func_8004A76C --disable all --diff` this session
+  (`tmp/grind/func_8004A76C/s3/sandbox_diff.txt`) — confirms `"no_c_body": true`, `build_insns: 0`,
+  and "no diff: function is still whole-body INCLUDE_ASM — there is no C to compare" (floor 37,
+  unchanged). Then ran `tools/decomp-permuter/import.py src/main/3AB48.c func_8004A76C` directly
+  (WSL venv, `tmp/grind/func_8004A76C/s3/import_attempt.txt`): it fails immediately with
+  "Failed to find GLOBAL_ASM for function func_8004A76C" — `src/main/3AB48.c:30` is a bare
+  `INCLUDE_ASM("asm/funcs", func_8004A76C);` statement with no C body and no GLOBAL_ASM wrapper
+  for this function, so there is nothing for `import.py` to extract a base.c from.
+- result: a permuter workspace cannot be constructed for this function in its current state —
+  not a judgment call, a mechanical tool failure captured verbatim. This is independent
+  confirmation (by direct tool attempt, not just ledger citation) of the same fact s1/s2
+  already established from the canonical-gate and GTE-asm angle: this chassis has zero bytes of
+  C to permute.
+- verdict: KILLED
+  - kill_scope: instance
+  - measured_on: current `src/main/3AB48.c` INCLUDE_ASM stub for func_8004A76C (unchanged this
+    session), no C body exists, no FAKE carrier (no C exists to carry one)
+
+## [s3] A decomp-permuter campaign can be constructed for func_8004A76C to search for a C-level match of the diverging region.
+- mechanism: tools/decomp-permuter/import.py requires either a GLOBAL_ASM-embedded C function body or a standalone C function definition for the target symbol in the given c_file to build a permuter workspace (base.c/compile.sh/target.o).
+- probe: Ran `sandbox func_8004A76C --disable all --diff` (tmp/grind/func_8004A76C/s3/sandbox_diff.txt): no_c_body=true, build_insns=0, 'no diff: function is still whole-body INCLUDE_ASM'. Then ran `python3 tools/decomp-permuter/import.py src/main/3AB48.c func_8004A76C` directly in the WSL venv (tmp/grind/func_8004A76C/s3/import_attempt.txt).
+- result: import.py fails immediately: 'Failed to find GLOBAL_ASM for function func_8004A76C'. src/main/3AB48.c:30 is a bare INCLUDE_ASM("asm/funcs", func_8004A76C); statement with no C body and no GLOBAL_ASM wrapper, so there is no base.c the permuter tooling can extract. This is a direct mechanical tool-failure confirmation, not a re-derivation of the ledger's prior canonical-gate reasoning.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current src/main/3AB48.c INCLUDE_ASM stub for func_8004A76C (unchanged this session); no C body exists; no FAKE carrier possible (no C to carry one)

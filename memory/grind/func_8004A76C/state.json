@@ -1,8 +1,8 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 2,
- "current_modality": "structural",
+ "session_count": 3,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -15,13 +15,19 @@
    "floor": 37,
    "modality": "structural",
    "headline": "structural modality inapplicable (no C body, ASM-WHOLE canonical GTE grant); cluster scan now shows all three func_8004A4E0 callees STRONG"
+  },
+  {
+   "session": 3,
+   "floor": 37,
+   "modality": "permuter",
+   "headline": "Permuter modality mechanically inapplicable: no C body exists for func_8004A76C to construct a workspace from (import.py fails immediately, verbatim captured)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ASM-WHOLE canonical grant is correct and the 2026-10-08 reopen's question is already answered for this function, now reinforced by both sibling callees independently scanning STRONG on the same S7 signal.",
-   "mechanism": "scan_hand_coded STRONG 1/8 (S7) measured directly on func_8004A76C, the closed A6 audit naming it specifically, and (new this session) func_8004A808/func_8004A940 both confirming STRONG 3/8 on the shared ABI-violation signal.",
-   "next_probe": "In escalation modality (not before -- mandated-modality rule forbids disposing here), file the docs/grind/decisions.md disposition entry citing A6 plus the cluster-wide STRONG scan results as gate evidence, with re-activation triggers (engine signal change, or further sibling movement), then return owner-gated."
+   "hypothesis": "The ASM-WHOLE canonical grant is correct and this function's remaining axis is the escalation-modality disposition filing, not further C-side search.",
+   "mechanism": "scan_hand_coded STRONG 1/8 (S7, unsaved $s0) measured directly on func_8004A76C, the closed A6 audit naming it specifically, both sibling callees (func_8004A808/func_8004A940) independently scanning STRONG on the shared ABI-violation signal, and now three modalities (recon/structural/permuter) independently confirming zero C bytes exist for this function.",
+   "next_probe": "In escalation modality (not before \u2014 mandated-modality rule forbids disposing here), file the docs/grind/decisions.md disposition entry citing A6 plus the cluster-wide STRONG scan results and this session's mechanical import.py failure as gate evidence, then return owner-gated."
   }
  ],
  "judge_constraints": [],
@@ -42,6 +48,14 @@
    "measured_on": "current src/main/3AB48.c (INCLUDE_ASM stub, unchanged this session), no FAKE carrier (no C body exists)",
    "predicate_cite": "",
    "result": "canonical still ASM-WHOLE ('whole-function canonical-asm grant in inline_asm_canonical.txt'); sandbox still {\"score\":37,"
+  },
+  {
+   "session": 3,
+   "statement": "A decomp-permuter campaign can be constructed for func_8004A76C to search for a C-level match of the diverging region.",
+   "kill_scope": "instance",
+   "measured_on": "current src/main/3AB48.c INCLUDE_ASM stub for func_8004A76C (unchanged this session); no C body exists; no FAKE carrier possible (no C to carry one)",
+   "predicate_cite": "",
+   "result": "import.py fails immediately: 'Failed to find GLOBAL_ASM for function func_8004A76C'. src/main/3AB48.c:30 is a bare INCLU"
   }
  ],
  "ladder_skip": 0,
