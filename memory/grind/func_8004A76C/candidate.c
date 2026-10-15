@@ -13,3 +13,11 @@
  * (class kill). src/main/3AB48.c:30 stays
  * INCLUDE_ASM("asm/funcs", func_8004A76C);
  */
+/*
+ * s5 (synthesis): two honest-C syntheses measured and banked under
+ * rejected/ (33 natural loop, 30 hand-pipelined goto form) -- both move the
+ * vertex pointer from the target's unsaved $s0 to $a3, a false ABI claim
+ * against the hand-asm caller, and the sandbox strips gte_rtpt() (and local
+ * ldv3c/stsxy3c) as unpinned engine/gtemacro.py units, so neither score is a
+ * shippable floor. The stub above stays the candidate.
+ */

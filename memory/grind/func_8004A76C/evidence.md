@@ -129,3 +129,22 @@
 - [s4] spelling_enum.py's required precondition (a C candidate body with an ENUM-BEGIN/END marked region) cannot be met: src/main/3AB48.c:30 is a bare INCLUDE_ASM stub with zero C statements.
 
 - [s4] This is the fourth independent modality (recon s1, structural s2, permuter s3, enumerate s4) to hit the identical gate: ASM-WHOLE canonical grant + no_c_body=true. Each used a different tool/approach and each confirmed the same root fact rather than finding a new angle.
+
+## s5 (synthesis) — first C bodies ever measured for this function; merged verdict
+
+- [s5] KILL RE-AUDIT: all three instance kills (s2 structural, s3 permuter, s4 enumerate) were measured on the bare INCLUDE_ASM stub with NO FAKE carrier; no banked C form exists, so `tools/fake_ablate.py` has nothing to ablate (no FAKE construct ever present). Their measured_on still equals the current chassis (src/main/3AB48.c:30 stub, unchanged). None is void. The s1 class kill (docs/audits/INLINE-ASM-AUDIT-2026-10-01.md:93) remains the only foreclosure and rests on the wall (global register var = pin), not on a stale chassis.
+- [s5] Synthesis probe A (tmp/grind/func_8004A76C/s5/honest_gte_loop.c): natural do/while loop, gte.h gte_ldv3/gte_rtpt/gte_stsxy3/gte_mfc2(17..19), sz stored as s16, vertex pointer as ordinary 4th arg. `sandbox --disable all --diff --candidate` = **33** (tmp/grind/func_8004A76C/s5/sandbox_honest.txt): 30 vs 37 insns, 3 hunks ALL source-level, 0 operand-only. Divergences: ldv3 via three pointers (addiu per vector) vs single-base offsets 0..20; not pipelined; $a3 vs $s0 base.
+- [s5] Synthesis probe B (tmp/grind/func_8004A76C/s5/pipelined_goto.c): the target CFG written as C — `n--; load; rtpt; v+=3; goto mid; loop: rtpt; sz+=3; sz[-3..-1]=z; mid: stsxy3; z=mfc2 17..19; sxy+=3; if(n){n--; load; v+=3; goto loop;} sz[0..2]=z;` with PsyQ-style single-base gte_ldv3c/gte_stsxy3c defined locally. sandbox = **30** (tmp/grind/func_8004A76C/s5/sandbox_pipelined.txt), 18 vs 37 insns, 5 hunks all source-level. The GPR skeleton (sh -6/-4/-2(a2), mfc2 x3, tail sh 0/2/4(a2), branch-into-middle `j`) lines up with the target's; the gap is entirely the stripped GTE statements and the $s0 base.
+- [s5] SCORER FINDING: in BOTH probes the sandbox output contains no `c2 0x280030` on the ours side — gte.h's `gte_rtpt()` (`.word 0x4A280030`) is stripped by --disable all, because engine/gtemacro.py keeps only PINNED header-exact units and DMPSX_WORDS (engine/gtemacro.py:273) does not list rtpt; probe B's multi-insn local ldv3c/stsxy3c were stripped too (0 lwc2/swc2 on ours side). So under the current pinned set the sandbox cannot score ANY C body of this function as containing its rtpt; distance 0 is unattainable by the scorer for every C spelling until rtpt/ldv3c/stsxy3c units are pinned (operator engine surface, owner ruling 2026-09-25 process).
+- [s5] Neither 33 nor 30 is reported as a floor: both forms move the vertex pointer from the target's unsaved $s0 (written by hand-asm caller func_8004A4E0 at 0x8004A584/5A0/5C4 and read back after return at 0x8004A5C0, inline_asm_canonical.txt:199) to $a3. That signature is a false ABI claim (completion-bar honest code) and would not run against the real caller; the only C spelling that reads $s0 unsaved is a global register variable = pin (the wall). Honest floor stays 37 (stub).
+- [s5] MERGED VERDICT: three independent blockers stack — (1) $s0 custom ABI, wall-bound (pin), s1 class kill; (2) sandbox strips unpinned GTE units (rtpt), scorer-bound; (3) the pipelining shape itself IS expressible as C (probe B skeleton aligns), so it is NOT a blocker — this corrects the A6 audit's reason (b), which is the weakest of its three reasons. Reason (a)+(c) alone carry the canonical grant.
+
+- [s5] s5 honest natural GTE loop: sandbox 33, all hunks source-level (tmp/grind/func_8004A76C/s5/sandbox_honest.txt)
+
+- [s5] s5 hand-pipelined goto form: sandbox 30, GPR skeleton aligns, gap = stripped GTE + $s0 base (tmp/grind/func_8004A76C/s5/sandbox_pipelined.txt)
+
+- [s5] Neither score is a floor: both move the vertex pointer from unsaved $s0 (set/read by hand-asm caller func_8004A4E0, inline_asm_canonical.txt:199) to $a3, a false ABI; honest floor stays 37
+
+- [s5] Sandbox strips gte.h gte_rtpt() (.word 0x4A280030 not in engine/gtemacro.py:273 DMPSX_WORDS) — no C body of this function can be scored with its rtpt under the current pinned set
+
+- [s5] A6 reason (b) (pipelining has no C form) refuted; grant rests on reasons (a)+(c)

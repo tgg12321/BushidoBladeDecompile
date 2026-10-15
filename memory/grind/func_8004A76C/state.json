@@ -1,8 +1,8 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 4,
- "current_modality": "enumerate",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,13 +27,24 @@
    "floor": 37,
    "modality": "enumerate",
    "headline": "enumerate modality mechanically inapplicable: func_8004A76C has zero C bytes (ASM-WHOLE canonical GTE grant), fourth independent modality to confirm the same root fact"
+  },
+  {
+   "session": 5,
+   "floor": 37,
+   "modality": "synthesis",
+   "headline": "Synthesis: first C bodies measured (33 natural loop, 30 hand-pipelined goto form) \u2014 both need a false $a3 ABI and the sandbox strips unpinned rtpt; A6 reason (b) refuted, grant rests on $s0-ABI pin wa"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ASM-WHOLE canonical grant is correct and this function's remaining axis is the escalation-modality disposition filing, not further C-side search.",
-   "mechanism": "scan_hand_coded STRONG 1/8 (S7, unsaved $s0) measured directly on func_8004A76C, the closed A6 audit naming it specifically, both sibling callees (func_8004A808/func_8004A940) independently scanning STRONG on the shared ABI-violation signal, and now FOUR modalities (recon/structural/permuter/enumerate) independently confirming zero C bytes exist for this function.",
-   "next_probe": "In escalation modality (not before -- mandated-modality rule forbids disposing here), file the docs/grind/decisions.md disposition entry citing A6 plus the cluster-wide STRONG scan results and this session's mechanical enumerate-modality inapplicability, then return owner-gated."
+   "hypothesis": "ASM-WHOLE grant is correct on A6 reasons (a) caller-owned unsaved $s0 ABI and (c) the only C route is a global register variable = pin.",
+   "mechanism": "func_8004A4E0 sets $s0 before the jal and reads the advanced value after return; GCC saves any callee-saved reg it writes.",
+   "next_probe": "In escalation modality, file the decisions.md disposition citing s5's corrected reason set (b refuted) and the cluster STRONG scans."
+  },
+  {
+   "hypothesis": "Pinning header-exact gte_rtpt / gte_ldv3c / gte_stsxy3c units in engine/gtemacro.py lets probe B be scored fully, reducing its residual to the $s0 base alone.",
+   "mechanism": "Owner ruling 2026-09-25 scorer process: pinned units survive --disable all.",
+   "next_probe": "Operator engine: commit pinning those macros, then re-measure memory/grind/func_8004A76C/rejected/pipelined-goto-wrong-abi-stripped-gte.c."
   }
  ],
  "judge_constraints": [],
@@ -70,6 +81,30 @@
    "measured_on": "current src/main/3AB48.c INCLUDE_ASM stub for func_8004A76C (unchanged this session); no C body exists; no FAKE carrier possible (no C to carry one)",
    "predicate_cite": "",
    "result": "enumerate modality is mechanically inapplicable to this function for the identical reason structural (s2) and permuter ("
+  },
+  {
+   "session": 5,
+   "statement": "The s2/s3/s4 instance kills are void because their chassis or FAKE state changed since they were measured.",
+   "kill_scope": "instance",
+   "measured_on": "current src/main/3AB48.c INCLUDE_ASM stub, no FAKE construct in any banked form",
+   "predicate_cite": "",
+   "result": "All three were measured on the identical stub with no FAKE; none is void."
+  },
+  {
+   "session": 5,
+   "statement": "A natural do/while GTE loop using gte.h macros with the vertex pointer as a 4th argument approaches the target bytes.",
+   "kill_scope": "instance",
+   "measured_on": "tmp/grind/func_8004A76C/s5/honest_gte_loop.c over the 3AB48 stub chassis, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Score 33, 3 source-level hunks, 0 operand-only: per-vector addiu bases, no pipelining, $a3 base vs unsaved $s0, rtpt str"
+  },
+  {
+   "session": 5,
+   "statement": "The sandbox scores a C body of func_8004A76C with its gte_rtpt() retained under the 2026-10-15 pinned gtemacro set.",
+   "kill_scope": "instance",
+   "measured_on": "engine/gtemacro.py pinned set 2026-10-15, both s5 candidate files, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Absent in both outputs; rtpt stripped, and probe B's local multi-insn ldv3c/stsxy3c stripped too."
   }
  ],
  "ladder_skip": 0,

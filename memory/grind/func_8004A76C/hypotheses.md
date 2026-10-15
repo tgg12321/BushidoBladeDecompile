@@ -195,3 +195,69 @@ C-level match of the diverging region.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: current src/main/3AB48.c INCLUDE_ASM stub for func_8004A76C (unchanged this session); no C body exists; no FAKE carrier possible (no C to carry one)
+
+## s5 (synthesis)
+
+## [s5] KILL RE-AUDIT — the s2/s3/s4 instance kills could be void because their chassis or FAKE state changed.
+- mechanism: an instance kill measured under a FAKE carrier or older chassis is re-testable.
+- probe: compared each kill's measured_on with the current src/main/3AB48.c:30 (still the bare INCLUDE_ASM stub); checked for any FAKE construct in any banked form (none: no C form was ever banked before s5), so tools/fake_ablate.py has no FAKE to ablate.
+- result: all three kills were measured on the identical stub with no FAKE; none is void. The weakest foreclosure is A6 reason (b) (pipelining), re-audited below.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current src/main/3AB48.c INCLUDE_ASM stub, no FAKE construct present in any banked form
+
+## [s5] A natural honest GTE loop (gte.h macros, vertex pointer as 4th arg) approaches the target.
+- mechanism: GTE ops as canonical gte.h islands, GCC emits the GPR skeleton.
+- probe: sandbox --disable all --diff --candidate tmp/grind/func_8004A76C/s5/honest_gte_loop.c
+- result: 33, 3 source-level hunks, 0 operand-only; per-vector addiu bases, unpipelined, $a3 base; rtpt stripped by the scorer. Wrong ABI ($a3 vs unsaved $s0). Banked rejected/honest-loop-wrong-abi-a3.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate file tmp/grind/func_8004A76C/s5/honest_gte_loop.c over the 3AB48 stub chassis, no FAKE construct
+
+## [s5] A6 reason (b) — the hand software-pipelining (jump into loop second half, rtpt N+1 before N's stores) has no C form.
+- mechanism: goto-into-middle C reproduces the rotated CFG; GCC keeps label order.
+- probe: sandbox --disable all --diff --candidate tmp/grind/func_8004A76C/s5/pipelined_goto.c
+- result: 30; GPR skeleton (sh -6/-4/-2(a2), mfc2 $17/$18/$19, branch-into-middle j, tail sh 0/2/4) aligns with the target; residual is only stripped GTE statements + $s0 base. Reason (b) is REFUTED as a standalone blocker — pipelining is expressible in C. Grant still stands on (a) caller ABI + (c) pin. Banked rejected/pipelined-goto-wrong-abi-stripped-gte.c.
+- verdict: CONFIRMED
+
+## [s5] The sandbox can score a C body of func_8004A76C that contains its rtpt.
+- mechanism: --disable all keeps only header-exact PINNED gtemacro units; rtpt (.word 0x4A280030) is not among DMPSX_WORDS.
+- probe: grep `c2 0x280030` on the ours side of both s5 sandbox outputs.
+- result: absent in both; rtpt stripped (and local multi-insn ldv3c/stsxy3c stripped in probe B). Scorer cannot measure this function's GTE body as written with the current pinned set.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: engine/gtemacro.py pinned set as of 2026-10-15, both s5 candidate files, no FAKE construct
+
+## Frontier (reset, s5)
+1. ASM-WHOLE grant correct on A6 reasons (a)+(c) (caller-owned unsaved $s0 ABI; reaching it from C needs a global register var = pin). next: escalation-modality disposition entry citing s5's corrected reason set.
+2. Scorer gap: pin gte_rtpt / gte_ldv3c / gte_stsxy3c header-exact units (operator engine: commit) — would let probe B be measured fully; still capped by the $s0 wall.
+
+## [s5] The s2/s3/s4 instance kills are void because their chassis or FAKE state changed since they were measured.
+- mechanism: Instance kills measured under a FAKE carrier or older chassis are re-testable.
+- probe: Compared each measured_on with current src/main/3AB48.c:30 (bare INCLUDE_ASM stub); searched banked forms for FAKE constructs (none ever banked), so fake_ablate.py had nothing to ablate.
+- result: All three were measured on the identical stub with no FAKE; none is void.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current src/main/3AB48.c INCLUDE_ASM stub, no FAKE construct in any banked form
+
+## [s5] A natural do/while GTE loop using gte.h macros with the vertex pointer as a 4th argument approaches the target bytes.
+- mechanism: GTE ops as gte.h islands; GCC emits the GPR skeleton.
+- probe: sandbox func_8004A76C --disable all --diff --candidate tmp/grind/func_8004A76C/s5/honest_gte_loop.c
+- result: Score 33, 3 source-level hunks, 0 operand-only: per-vector addiu bases, no pipelining, $a3 base vs unsaved $s0, rtpt stripped. Signature asserts a false ABI against the hand-asm caller.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tmp/grind/func_8004A76C/s5/honest_gte_loop.c over the 3AB48 stub chassis, no FAKE construct
+
+## [s5] A6 audit reason (b): the hand software-pipelined loop shape (j into second half, rtpt N+1 before N's sh stores) has no C spelling.
+- mechanism: goto-into-middle C reproduces the rotated CFG and GCC preserves label order.
+- probe: sandbox func_8004A76C --disable all --diff --candidate tmp/grind/func_8004A76C/s5/pipelined_goto.c
+- result: Score 30; the GPR skeleton (sh -6/-4/-2(a2), mfc2 $17-$19, branch-into-middle, tail sh 0/2/4) aligns with target; residual is only stripped GTE statements plus the $s0 base. Reason (b) is refuted; the canonical grant still stands on reasons (a) caller-owned $s0 ABI and (c) global-register-var pin.
+- verdict: CONFIRMED
+
+## [s5] The sandbox scores a C body of func_8004A76C with its gte_rtpt() retained under the 2026-10-15 pinned gtemacro set.
+- mechanism: --disable all keeps only header-exact PINNED gtemacro units; rtpt's .word 0x4A280030 is not in DMPSX_WORDS.
+- probe: grep for c2 0x280030 on the ours side of both s5 sandbox outputs.
+- result: Absent in both outputs; rtpt stripped, and probe B's local multi-insn ldv3c/stsxy3c stripped too.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: engine/gtemacro.py pinned set 2026-10-15, both s5 candidate files, no FAKE construct
