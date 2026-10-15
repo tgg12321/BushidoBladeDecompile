@@ -197,3 +197,15 @@ it would only become live if a future session carved a C island out of the body 
 - [s13] fake_ablate.py on memory/grind/func_8004A4E0/candidate.c: "no FAKE-annotated constructs found ... nothing to ablate" — the mandated re-audit has nothing to overturn.
 
 - [s13] Mandated modality this session is structural, not escalation — per the standing auto-ruling the function is NOT disposed of here even though the frontier (s8-s12) already independently converged on an ASM-WHOLE class kill across 4+ prior modalities; this session adds the structural-axis-specific confirmation that structural levers have no applicable surface absent a C body.
+
+- [s14] sandbox func_8004A4E0 --disable all --diff this session: {"score": 163, "no_c_body": true, "build_insns": 0}, identical to s1-s13; diff output: "no diff: function is still whole-body INCLUDE_ASM — there is no C to compare".
+
+- [s14] canonical func_8004A4E0 re-confirmed ASM-WHOLE (verdict unchanged, asm_insns=7, total=163, reason "whole-function canonical-asm grant in inline_asm_canonical.txt"); state.json session_count was 13 entering this session, now 14.
+
+- [s14] Mandated modality is structural (not escalation) for the 2nd time (s2, s14); per the standing auto-ruling (A) the driver's exhaustion call governs, not the agent's — this session re-measures rather than disposes. No new structural surface appeared: the chassis is still the unmodified INCLUDE_ASM stub (no_c_body:true), so block-local var splits / declaration order / type narrowing / statement re-association have literally nothing to act on, matching s2 and s13's identical finding across 2 intervening sessions (s12 rederive, no structural work in between).
+
+- [s14] sandbox func_8004A4E0 --disable all --diff this session: {"score": 163, "no_c_body": true, "build_insns": 0}, identical to s1-s13; diff output: no diff, function is still whole-body INCLUDE_ASM.
+
+- [s14] canonical func_8004A4E0 re-confirmed ASM-WHOLE this session (verdict unchanged, asm_insns=7, total=163).
+
+- [s14] state.json shows 13 prior sessions across 6 distinct modalities (recon, structural x2 now, permuter, enumerate, synthesis, solver, forensics x3, rederive x2) all converging on the same s8 cross-function-jtbl-dispatch + custom callee-saved ABI class kill; no new rule scoping change found that would re-open any prior ban (judge-sole-gate is the only rule this ledger cites, and it does not bear on this function's grant).

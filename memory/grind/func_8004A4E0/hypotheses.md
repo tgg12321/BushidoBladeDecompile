@@ -411,3 +411,30 @@ instance form.
 - kill_scope: class
 - measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 9349e46f3, zero FAKE constructs
 - predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## s14 (structural)
+H14: Structural-modality levers (block-local var splits, declaration order, type narrowing,
+statement re-association) have an applicable surface on func_8004A4E0 this session, now that
+2 further sessions (s12 rederive, s13 structural) have run since the lever was last checked.
+- Mechanism: n/a — structural levers operate on existing C statements/declarations; the
+  chassis has none.
+- Probe: `sandbox func_8004A4E0 --disable all --diff` (fresh this session) + `canonical
+  func_8004A4E0` (fresh this session).
+- Result: sandbox returned `{"score":163,"no_c_body":true,"build_insns":0}` and printed "no
+  diff: function is still whole-body INCLUDE_ASM — there is no C to compare"; canonical
+  re-confirmed verdict ASM-WHOLE, same reason string, same asm_insns/total. Identical to s2
+  and s13's measured output char-for-char on the JSON score fields.
+- Verdict: KILLED.
+  kill_scope: class
+  measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 8a35d2704,
+    zero FAKE constructs (candidate.c is comments-only; no src edits made this session).
+  predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## [s14] Structural-modality levers (block-local var splits, declaration order, type narrowing, statement re-association) have an applicable surface on func_8004A4E0 this session.
+- mechanism: n/a — structural levers operate on existing C statements/declarations; the chassis has none (whole-body INCLUDE_ASM stub)
+- probe: sandbox func_8004A4E0 --disable all --diff (fresh this session) + canonical func_8004A4E0 (fresh this session)
+- result: sandbox returned {"score":163,"no_c_body":true,"build_insns":0} and printed "no diff: function is still whole-body INCLUDE_ASM — there is no C to compare"; canonical re-confirmed verdict ASM-WHOLE (asm_insns=7, total=163, reason: whole-function canonical-asm grant in inline_asm_canonical.txt). Identical score fields to s2 and s13.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 8a35d2704, zero FAKE constructs (candidate.c is comments-only; no src edits made this session)
+- predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
