@@ -114,7 +114,9 @@
    "next_probe": "When the driver assigns escalation modality: file the s8-s17 evidence chain as a landing-path confirmation (ASM-WHOLE canonical grant) in docs/grind/decisions.md and check whether queue done's authorize-bucket path needs to run for this function."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "No more no-C-body modality re-runs and no canonical-asm ESCALATE on a LOW tier. Bank the s5-s10 signals as the re-activation record and rotate (queue rotate). The function re-activates only when a door opens: an engine:/tools commit (with layer-2) that teaches scan_hand_coded the cross-function-jtbl or caller-side custom-ABI signal so it reports STRONG, or an operator-added owner_cluster_grants.txt row citing Q40."
+ ],
  "banned_constructs": [],
  "kills": [
   {

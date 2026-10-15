@@ -7,8 +7,10 @@
  * asm at every call site) plus 2 trapping addi and 4 ctc2 with no C form. See
  * memory/grind/func_8004A4E0/hypotheses.md H1 (KILLED, class) for the full chain.
  *
- * Current src/main/3AB48.c body (unchanged this session):
- *   INCLUDE_ASM("asm/funcs", func_8004A4E0);
+ * REPRESENTATION BANNER (s18, measured at HEAD 7bdc5a300): func_8004A4E0 is
+ * committed on main as INCLUDE_ASM (whole-body, canonical grant inline_asm_canonical.txt:199);
+ * this file carries NO C candidate - it is a comments-only record. Re-check the
+ * representation in src/main/3AB48.c before trusting any state claim here.
  *
  * s5 (synthesis): new corpus signal — 69 insns of case bodies sit AFTER the single
  * `jr $ra`; 0/1225 pure-C functions do that (tmp/grind/func_8004A4E0/s5/midret.txt).
@@ -30,7 +32,7 @@
  * stmt.c:4704) can put a jump-table entry inside a DIFFERENT function's body.
  * Class kill — see hypotheses.md [s8], tmp/grind/func_8004A4E0/s8/.
  *
- * sandbox --disable all (s1..s7): {"score": 163, "no_c_body": true, "build_insns": 0}.
+ * sandbox --disable all (s1..s18): {"score": 163, "no_c_body": true, "build_insns": 0}.
  */
 INCLUDE_ASM("asm/funcs", func_8004A4E0);
 
