@@ -6,7 +6,8 @@
  "floor_history": [],
  "frontier": [],
  "judge_constraints": [
-  "Land gte_Lzc as a macro call from a verbatim PsyQ header (gtemac.h/inline_o.h in include/), not as written-out __asm__ statements; re-derive the surrounding C; fresh layer-2."
+  "Land gte_Lzc as a macro call from a verbatim PsyQ header (gtemac.h/inline_o.h in include/), not as written-out __asm__ statements; re-derive the surrounding C; fresh layer-2.",
+  "Do not resubmit the written-out gte_Lzc body. The island must be a gte_Lzc macro call from a verbatim PsyQ header under include/. Until the owner/operator lands that header, gtemacro.py call-form support and the inline-asm-policy.md condition-3 edit, rotate this item rather than respelling the island. A BB2-local macro or header is not admissible."
  ],
  "banned_constructs": [
   "gte_Lzc written out as inline __asm__ volatile statements (move $12,%0 / mtc2 $12,$30 / nop / nop / move $12,%0 / swc2 $31,($12)) in the C body"

@@ -63,3 +63,47 @@ CONCLUSION: this function is NOT a gap needing a codegen lever. It is sitting at
 full-build-SHA1-match, with its canonical-asm row already written, waiting only on a fresh
 layer-2 (or Judge) PASS. Recommended next action: submit for review (candidate-ready), not
 further codegen search.
+
+## s1 cont. — the above was already Judge-FAILed before this turn; the real finding is a rule conflict
+
+`state.json` review_ledger shows the body described above (the one currently in `src/`,
+identical to `candidate.c` and to `rejected/judge-fail-1015-1452.c`) already went to the Judge
+this session cycle and got a **FAIL** at 2026-10-15 19:52 (docs/grind/decisions.md:1304-1306,
+"final call"). The FAIL is NOT on items 1/4/5 (byte match, existing types, simplest form) or on
+the three FAKE locals (`dist`/`tbl`/`shift` — self_vet.md T1-T6 above, unchanged) — it is
+specifically on the GTE island's SPELLING: `queue.json`'s `reopen_reason` (owner 2026-10-08,
+commit 41a986d5f) flags "the bytes are right; the source form is not" and the recorded
+`judge_constraints` in state.json demands: *"Land gte_Lzc as a macro call from a verbatim PsyQ
+header (gtemac.h/inline_o.h in include/), not as written-out __asm__ statements."*
+
+Checked whether that target form is actually reachable with current infrastructure:
+- `find include -iname "*inline*" -o -iname "*gtemac*"` -> **no matches**. No verbatim PsyQ
+  header (`inline_o.h`/`gtemac.h`) exists anywhere under `include/`.
+- `engine/gtemacro.py` `PINNED` (line ~82-231) holds the `gte_Lzc` macro text only as a Python
+  string table used to RECOGNIZE/match written-out `__asm__` statement runs against the pinned
+  text (`match_unit`, `unit_spans`) — it is a detector, not a C header; `#include`-ing it is not
+  a thing, and there is no C preprocessor macro definition anywhere in the tree that a call-site
+  `gte_Lzc(tbl, &lzc_out);` could expand through.
+- `.claude/rules/inline-asm-policy.md` line 51 (2026-09-23 ruling, condition 3, which the
+  2026-09-26 class-grant route's condition D explicitly re-incorporates) states the OPPOSITE of
+  the Judge's constraint, verbatim: *"Inline and the only asm: written out in `src/**/*.c` (no
+  `#include`, BB2-local header or macro-by-name); everything else is ordinary C passing normal
+  review."* This is the CURRENT text (confirmed by direct Read this session, not a stale
+  memory) — not a narrower/older scoping that the brief's "CURRENT SCOPE" block would override
+  (inline-asm-policy's own `description:` line, extracted at dispatch, repeats the "verbatim
+  PsyQ GTE macro islands under the 2026-09-23/26 rulings" framing with no macro-call carve-out).
+
+So the Judge's final-call constraint and the written, currently-in-force inline-asm-policy.md
+text directly contradict each other on the one axis the FAIL turns on (written-out-statements
+vs. `#include`+macro-call), and the macro-call form the Judge wants has zero supporting
+infrastructure (no header file, no gtemacro.py recognition path for a call-site form) for a
+grind session to build — creating a new verbatim PsyQ header under `include/` and teaching the
+detector/scorer to recognize a macro-call island is an `engine:`/infra change, which a grind
+session may not make (CLAUDE.md: never edit `engine/`, `.claude/rules/`; `docs/grind/decisions.md:1306`
+reaches the identical conclusion independently: "the rule text must be reconciled before this
+can close... That is owner/operator infrastructure"). This is not a codegen-lever question;
+no amount of C-side search in this function reaches a form outside that contradiction. Session
+disposition: `ruling-request`, not `candidate-ready` (resubmitting the identical FAILed body
+would be rejected with no review per the body-hash-keyed review-loop rule) and not further
+probing (there is no third C spelling to try — the two forms the policy texts disagree about
+are the written-out form already on `src/` and the macro-call form that doesn't exist yet).
