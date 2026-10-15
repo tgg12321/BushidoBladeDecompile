@@ -1,0 +1,4 @@
+func_80027AD8:pass=arg0
+func_80027AD8:dot_lo=var_7
+func_80027AD8:same=var_12
+func_80031B24:other=var_6

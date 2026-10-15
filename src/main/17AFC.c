@@ -353,7 +353,7 @@ void func_80027A58(Unk80101EC8Record *a0) {
 
 extern u8 D_8008EB74[3][2][2];
 
-s32 func_80027AD8(s32 pass, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
+s32 func_80027AD8(s32 arg0, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
                   s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
     /* FAKE: tbl, tbl_arg: copies of the stack-passed parameter `rec` (an
      * unmodified stack parameter gets half the register priority); rec used
@@ -365,12 +365,12 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
     s32 var_4;
     Unk80101EC8Record *var_5;
     s32 dot;
-    s32 dot_lo;
+    s32 var_7;
     u16 var_8;
     s32 diff;
     s32 var_10;
     u32 sign;
-    s32 same;
+    s32 var_12;
     s32 code;
 
     /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached by the
@@ -391,12 +391,12 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
         if (dot >= 0x1000) {
             dot -= 0x2000;
         }
-        dot_lo = dot < 0x400;
-        if (!((0xE >> arg2) & 1) || dot_lo) {
+        var_7 = dot < 0x400;
+        if (!((0xE >> arg2) & 1) || var_7) {
             if (arg1->unk_96 == 0) {
                 arg1->unk_286 = 0x1E;
             }
-            if (pass == 0 && var_5->unk_286 == -1) {
+            if (arg0 == 0 && var_5->unk_286 == -1) {
                 var_5->unk_286 = tbl == NULL ? 0xB : 0x19;
             }
             func_80032854(var_4, 0x12, scr, 0);
@@ -410,28 +410,28 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
     var_8 = arg1->unk_6A;
     if (var_8 == 4 || var_8 == 0x14) {
         func_800203B4(arg1, arg2, vec);
-        func_800278C0(pass, arg1, arg2, tbl_arg, scr, arg6);
+        func_800278C0(arg0, arg1, arg2, tbl_arg, scr, arg6);
         return 1;
     }
     if (arg1->unk_0C == 0x1F) {
         func_800203B4(arg1, arg2, vec);
-        func_800278C0(pass, arg1, arg2, tbl_arg, scr, arg6);
+        func_800278C0(arg0, arg1, arg2, tbl_arg, scr, arg6);
         arg1->unk_286 = 7;
         return 1;
     }
     if ((var_8 == 2 || var_8 == 0x1B || var_8 == 0x28 || var_8 == 0x26) &&
         arg1->unk_40 < arg1->unk_A0) {
-        if (pass == 0) {
+        if (arg0 == 0) {
             diff = var_5->unk_20 - arg1->unk_20;
             var_10 = func_800272FC(diff);
-            /* FAKE: diff's sign bit taken before the same / unk_B4 stores and
+            /* FAKE: diff's sign bit taken before the var_12 / unk_B4 stores and
              * the call; read at its use, arg1 and arg2 swap $s0 / $s1:
              * score 102 */
             sign = (u32)diff >> 31;
-            same = arg1->unk_AF == var_5->unk_AF;
-            arg1->unk_B4 = var_5->unk_B4 = same;
-            func_80032854(var_4, same ? 0xF : 2, scr, 0);
-            code = arg1->unk_286 = D_8008EB74[var_10][sign][same];
+            var_12 = arg1->unk_AF == var_5->unk_AF;
+            arg1->unk_B4 = var_5->unk_B4 = var_12;
+            func_80032854(var_4, var_12 ? 0xF : 2, scr, 0);
+            code = arg1->unk_286 = D_8008EB74[var_10][sign][var_12];
             if (code == 0) {
                 func_80032854(var_4 == 0, 0x25, scr, 0);
                 func_80032854(var_4, 0x25, scr, 0);
@@ -457,12 +457,12 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
             }
             return 0;
         }
-        if (pass == 1) {
+        if (arg0 == 1) {
             if (tbl->unkC == 0) {
                 func_80032854(var_4, 2, scr, 0);
                 func_80032854(var_4, 0x25, scr, 0);
                 arg1->unk_286 = 0;
-                *out = pass;
+                *out = arg0;
                 return 0;
             }
             if (tbl->unkC == 1) {
@@ -472,7 +472,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
                 func_8001F860(arg1, ratan2(vec[0], vec[2]));
                 arg1->unk_134.vx -= vec[0] / 16;
                 arg1->unk_134.vz -= vec[2] / 16;
-                *out = pass;
+                *out = arg0;
                 return 0;
             }
         }
@@ -480,7 +480,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
     if (D_800A38DC == 0 && var_4 == 0) {
         func_8002738C(0, arg2);
     }
-    func_800278C0(pass, arg1, arg2, tbl_arg, scr, arg6);
+    func_800278C0(arg0, arg1, arg2, tbl_arg, scr, arg6);
     var_8 = arg1->unk_6A;
     if (var_8 == 6 || var_8 == 9) {
         if (flag) {
@@ -493,7 +493,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
         func_80027438(arg1, arg2, 1);
         return 0;
     }
-    if (pass == 1 && tbl->unk0 == 4) {
+    if (arg0 == 1 && tbl->unk0 == 4) {
         s16 kind = arg1->unk_0A;
         if (kind == 2 || kind == 4 || kind == 0xE || kind == 0xF) {
             func_80027438(arg1, arg2, tbl->unkD == 2 ? 2 : 1);
@@ -514,7 +514,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
          * raise tbl's reference count (allocation priority) before
          * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
          * 4-5 copy: score 31 */
-        if (pass == 1 && tbl->unkD == 2) {
+        if (arg0 == 1 && tbl->unkD == 2) {
             arg1->unk_272++;
         }
         if (D_800A38DC != 5) {
@@ -537,7 +537,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
          * raise tbl's reference count (allocation priority) before
          * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
          * 4-5 copy: score 31 */
-        if (pass == 1 && tbl->unkD == 2) {
+        if (arg0 == 1 && tbl->unkD == 2) {
             arg1->unk_272++;
         }
         if (D_800A38DC != 5) {
@@ -554,7 +554,7 @@ s32 func_80027AD8(s32 pass, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
              * copies raise tbl's reference count (allocation priority) before
              * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
              * 4-5 copy: score 31 */
-            if (pass == 1 && tbl->unkD == 2) {
+            if (arg0 == 1 && tbl->unkD == 2) {
                 arg1->unk_272++;
             }
             if (D_800A38DC != 5) {
@@ -5216,7 +5216,7 @@ void func_80031B24(void) {
     Obj80106A78 *obj;
     Vec3i32 *var_4 = scr->unk00.unk00;
     Unk80101EC8Record *var_5;
-    s32 other;
+    s32 var_6;
     u16 var_7;
     BoneHitRec *rec;
     s32 j;
@@ -5234,8 +5234,8 @@ void func_80031B24(void) {
             continue;
         if (obj->unk_50 == 0)
             continue;
-        other = obj->owner == 0;
-        var_5 = &D_80101EC8[other];
+        var_6 = obj->owner == 0;
+        var_5 = &D_80101EC8[var_6];
         var_7 = var_5->unk_6A;
         if (var_7 == 4 || var_7 == 0x14 || var_7 == 0xF || var_7 == 0x1C ||
             var_7 == 0x1D || var_7 == 0x1E || var_7 == 0x1F || var_7 == 0x20 ||
@@ -5250,12 +5250,12 @@ void func_80031B24(void) {
         func_8002E838(scr);
 
         var_10 = 0;
-        rec = D_800F5F68[other];
+        rec = D_800F5F68[var_6];
         for (j = 0; j < 22; j++, rec++) {
             Unk80107850Rec *pos;
             if (var_5->unk_26C == 0 && j >= 6 && j <= 9)
                 continue;
-            pos = &SPAD->unkA8[other][j];
+            pos = &SPAD->unkA8[var_6][j];
             var_10 = func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E);
             if (var_10 != 0) {
                 var_2 = 0;
@@ -5287,7 +5287,7 @@ void func_80031B24(void) {
             continue;
         if (r != 0) {
             func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2B,
-                          &SPAD->unkA8[other][j].x, 0);
+                          &SPAD->unkA8[var_6][j].x, 0);
             func_8002FF20(obj, rec->bone);
             obj->unk_04 = 0;
             var_7 = var_5->unk_6A;
@@ -5299,7 +5299,7 @@ void func_80031B24(void) {
         kind = obj->kind;
         if (kind == 0xF) {
             func_80032854(
-                other ^ 1, 0xE, &SPAD->unkA8[other][j].x,
+                var_6 ^ 1, 0xE, &SPAD->unkA8[var_6][j].x,
                 /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached
                  * by the first's address, passed to func_80032854 (Q96 / Q117;
                  * as s16[3] or {x,y,z}, func_80027AD8 scores 2) */
@@ -5311,7 +5311,7 @@ void func_80031B24(void) {
             func_80032854((D_800A36F2[0] ^ 0xE) != 0, 0x2F, &obj->pos.x, 0);
         } else if (flag == 0) {
             func_80032854(
-                (kind ^ D_800A36F2[0]) != 0, 0x2B, &SPAD->unkA8[other][j].x, 0);
+                (kind ^ D_800A36F2[0]) != 0, 0x2B, &SPAD->unkA8[var_6][j].x, 0);
         }
         func_80031890(scr, obj, j);
         obj->unk_04 = 0;
