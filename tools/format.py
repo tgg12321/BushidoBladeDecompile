@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """format.py [--check] [PATH ...]: format the C sources with the repo's .clang-format.
 
-Scope: tracked `src/**/*.c`, `src/**/*.h` and `include/**/*.h` (or the PATHs given).
+Scope: tracked `src/**/*.c`, `src/**/*.h` and `include/**/*.h` (or the PATHs given),
+except the vendored PsyQ headers (engine/gtemacro.py VENDORED), kept as Sony shipped them.
 Style: `.clang-format` at the repo root (SOTN's, with `s32 *p` pointers and the
 token-changing options off). clang-format is pinned in requirements.txt; another
 version formats differently, so a mismatch refuses.
@@ -235,10 +236,19 @@ def format_text(exe: str, path: str, text: str) -> str:
     raise ValueError("formatting did not reach a fixed point")
 
 
+def is_vendored(path: str) -> bool:
+    """Sony's PsyQ headers, vendored as shipped (engine/gtemacro.py VENDORED):
+    never formatted — clang-format would rewrite them and break the pin."""
+    _import_paths()
+    from engine.gtemacro import VENDORED
+    return path.replace("\\", "/") in VENDORED
+
+
 def tracked_sources() -> list[str]:
     out = subprocess.run(["git", "ls-files", "--", "src", "include"], cwd=ROOT,
                          capture_output=True, text=True, check=True).stdout.split()
-    return [p for p in out if p.endswith(SUFFIXES) and (p.startswith("src/") or p.endswith(".h"))]
+    return [p for p in out if p.endswith(SUFFIXES) and (p.startswith("src/") or p.endswith(".h"))
+            and not is_vendored(p)]
 
 
 _SPLICE = re.compile(r"\\\r?\n")
@@ -253,7 +263,10 @@ def same_tokens(a: str, b: str) -> bool:
 
 
 def _format_checked(exe: str, path: str, text: str) -> tuple[str, str]:
-    """(status, text): ("ok", formatted) / ("tokens", "") / ("error", message)."""
+    """(status, text): ("ok", formatted) / ("tokens", "") / ("error", message).
+    A vendored header is returned as it is."""
+    if is_vendored(path):
+        return "ok", text
     try:
         new = format_text(exe, path, text)
     except (ValueError, subprocess.CalledProcessError) as exc:
@@ -275,7 +288,8 @@ def main(argv: list[str]) -> int:
             res = dict(zip(batch, pool.map(lambda p: _format_checked(exe, p, batch[p]), batch)))
         sys.stdout.buffer.write(json.dumps(res).encode("utf-8"))
         return 0
-    paths = [p for p in a.paths if p.endswith(SUFFIXES)] if a.paths else tracked_sources()
+    paths = ([p for p in a.paths if p.endswith(SUFFIXES) and not is_vendored(p)]
+             if a.paths else tracked_sources())
 
     def one(p: str):
         try:
@@ -333,7 +347,8 @@ def check_staged() -> int:
     staged = subprocess.run(["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z"],
                             cwd=ROOT, capture_output=True, check=True).stdout.decode("utf-8").split("\0")
     texts, bad = {}, []
-    for p in (p for p in staged if p.endswith(SUFFIXES) and p.startswith(("src/", "include/"))):
+    for p in (p for p in staged if p.endswith(SUFFIXES) and p.startswith(("src/", "include/"))
+              and not is_vendored(p)):
         try:
             texts[p] = subprocess.run(["git", "show", f":{p}"], cwd=ROOT, capture_output=True,
                                       check=True).stdout.decode("utf-8")

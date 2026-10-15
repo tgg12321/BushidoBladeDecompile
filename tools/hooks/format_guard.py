@@ -24,7 +24,10 @@ def main() -> int:
         return 0
     staged = subprocess.run(["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z"],
                             cwd=ROOT, capture_output=True).stdout.decode("utf-8", "replace").split("\0")
-    if not any(p.endswith((".c", ".h")) and p.startswith(("src/", "include/")) for p in staged):
+    sys.path.insert(0, str(ROOT / "tools"))
+    from format import is_vendored  # the vendored PsyQ headers are never formatted
+    if not any(p.endswith((".c", ".h")) and p.startswith(("src/", "include/"))
+               and not is_vendored(p) for p in staged):
         return 0
     r = subprocess.run([sys.executable, str(ROOT / "tools" / "format.py"), "--check-staged"],
                        cwd=ROOT, capture_output=True, text=True)

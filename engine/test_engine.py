@@ -1195,6 +1195,16 @@ def test_gte_vendored_model() -> None:
         skip("vendored: real header pins", "include/psxsdk vendored headers absent")
         return
     eq("vendored: check_vendored() clean on the tree", G.check_vendored(), [])
+    import importlib
+    import sys
+    sys.path.insert(0, str(Path("tools").resolve()))
+    fmt = importlib.import_module("format")
+    for rel in G.VENDORED:
+        check(f"format: {rel} is vendored (never formatted)", fmt.is_vendored(rel))
+        text = Path(rel).read_text(encoding="ascii")
+        eq(f"format: {rel} returned as it is (clang-format never runs)",
+           fmt._format_checked("/nonexistent/clang-format", rel, text), ("ok", text))
+    check("format: libgte.h is not vendored", not fmt.is_vendored("include/psxsdk/libgte.h"))
     eq("vendored: define counts inline_o / inline_c / gtemac",
        tuple(len(G._macro_defines(G._read_vendored(".", b)))
              for b in ("inline_o.h", "inline_c.h", "gtemac.h")), (174, 241, 47))
