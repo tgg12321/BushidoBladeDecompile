@@ -1717,8 +1717,9 @@ void func_8002AB08(s32 mode) {
         s32 pass;
         /* alt: the iteration's blade (0: the unk00 / unk_210 points, 1: the
          * unk48 / unk_234 points; the knockback reads the last iteration's),
-         * then whether the nearest hit came from that blade. The 4/5 arm's `alt
-         * = 0;` re-stores the held 0 (Q85; Ruling 11, reused-local-necessity)
+         * then whether the nearest hit came from that blade. The 4/5 arm's
+         * `alt = 0;` re-stores the held 0 (Q85; Ruling 11,
+         * reused-local-necessity)
          */
         s32 alt;
         /* temp1 / temp2: the indices of the iteration's two points (per-branch
@@ -2960,10 +2961,10 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
  * where p1 -> p2 meets the circle of squared radius r_sq about the origin
  * (terms >> 9; square root by g_sqrt_table_u8, GTE LZCS island for
  * values >= 0x400) and returns whether both Q8 intersection parameters
- * are in range. Load-bearing: `ud = disc; lzcr = 0;` in that order, `disc`
- * holding the value under the root, the square root and the <<9 result, `num1`
- * before `denom`, and `result` kept apart from the comparison flag. The `ud`
- * re-store is a FAKE, explained at its site. */
+ * are in range. Load-bearing: `ud = disc; lzcr = 0;` in that order,
+ * `disc` holding the value under the root, the square root and the <<9
+ * result, `num1` before `denom`, and `result` kept apart from the comparison
+ * flag. The `ud` re-store is a FAKE, explained at its site. */
 s32 func_8002D518(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
     s32 x1, z1, x2, z2;
 
@@ -3033,10 +3034,10 @@ dist_calc: {
             ud = disc;
             lzcr = 0;
             if (disc >= 0) {
-                /* FAKE: same-value re-store of `ud` (it already holds disc):
-                 * with a single def cse merges ud into disc and deletes the
-                 * copy the target keeps in $a0; the store emits nothing;
-                 * without it score 3 */
+                /* FAKE: same-value re-store of `ud` (it already holds
+                 * disc): with a single def cse merges ud into disc and
+                 * deletes the copy the target keeps in $a0; the store emits
+                 * nothing; without it score 3 */
                 ud = disc;
                 __asm__ volatile(
                     "addu   $t4, %1, $zero\n"
@@ -5366,8 +5367,8 @@ Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
     s0->unk_28 = src->unk_B8.vy;
     var_5[1] = src->unk_1C8.vy;
     {
-        /* FAKE: unk_B2 read into a0_arg before cmd is chosen; read at the call
-         * the argument registers rotate (score 20). */
+        /* FAKE: unk_B2 read into a0_arg before cmd is chosen; read at the
+         * call the argument registers rotate (score 20). */
         s32 a0_arg = src->unk_B2;
         s32 cmd = 0xD;
         if (type == 1)

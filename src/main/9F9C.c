@@ -5197,8 +5197,8 @@ void func_80023F08(s32 arg0, PadState *pad) {
             rec->unk_320.x += rec->unk_1F8.x - v[0].x;
             rec->unk_320.z += rec->unk_1F8.z - v[0].z;
         }
-        /* FAKE: var_23 staged ahead of the vc stores; in the Judge indices the
-         * addiu moves (score 3). */
+        /* FAKE: var_23 staged ahead of the vc stores; in the Judge indices
+         * the addiu moves (score 3). */
         var_23 = ang[0] + 0x400;
         vc.x = (var_0[0].unk_04 *
                 Judge[(var_0[0].unk_02 - var_23 + 0x400) & 0xFFF]) >>

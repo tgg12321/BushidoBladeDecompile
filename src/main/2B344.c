@@ -1695,10 +1695,11 @@ void func_8003DE14(RECT *rect, s32 count) {
                             s32 sum;
                             s32 rp;
                             s32 gp;
-                            /* FAKE: naming gm makes g_src die at the mask, not
-                             * the store; the allocno priorities then give px
-                             * $a0, red $a1, green $v1 as in the target; without
-                             * it red outranks px and takes $a0: score 17 */
+                            /* FAKE: naming gm makes g_src die at the mask,
+                             * not the store; the allocno priorities then give
+                             * px $a0, red $a1, green $v1 as in the target;
+                             * without it red outranks px and takes $a0: score
+                             * 17 */
                             s32 gm;
                             src++;
                             rp = r_src * complement;
