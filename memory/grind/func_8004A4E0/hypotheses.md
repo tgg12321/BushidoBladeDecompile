@@ -86,3 +86,21 @@ instance form.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/main/3AB48.c INCLUDE_ASM stub (no C chassis, no FAKE constructs present); canonical+sandbox outputs this session identical to s1/s2 banked verdict
+
+## [s4] The enumerate modality's systematic spelling sweep (owner ruling 2026-09-08) has an applicable region to sweep for func_8004A4E0.
+- mechanism: n/a — the enumerate sweep (tools/spelling_enum.py + tools/sweep_variants.py) requires a C chassis with an identifiable differing block to rewrite in fully-named form between ENUM-BEGIN/ENUM-END markers; src/main/3AB48.c has no C body at all (INCLUDE_ASM stub), so there is no block to enumerate.
+- probe: Re-ran `canonical func_8004A4E0` (verdict ASM-WHOLE again, same reason string "whole-function canonical-asm grant in inline_asm_canonical.txt", same regions/asm_insns=7/total=163 as s1/s2/s3) and `sandbox func_8004A4E0 --disable all` (score 163, no_c_body: true, build_insns 0, identical to s1-s3). Saved to tmp/grind/func_8004A4E0/s4/sandbox.txt.
+- result: Re-confirmed the standing s1 class kill for a fourth consecutive modality (recon, structural, permuter, enumerate all land on the same no-C-body fact). No regression, no new ground.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis, zero FAKE constructs (no C body exists at all); identical to s1-s3's measured_on.
+- predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## [s4] The enumerate modality's systematic spelling sweep (owner ruling 2026-09-08) has an applicable region to sweep for func_8004A4E0.
+- mechanism: n/a — the enumerate sweep (tools/spelling_enum.py + tools/sweep_variants.py) requires a C chassis with an identifiable differing block to rewrite in fully-named form between ENUM-BEGIN/ENUM-END markers; src/main/3AB48.c has no C body at all (INCLUDE_ASM stub), so there is no block to enumerate.
+- probe: Re-ran canonical func_8004A4E0 (verdict ASM-WHOLE, reason 'whole-function canonical-asm grant in inline_asm_canonical.txt', asm_insns=7, total=163, same regions as s1-s3) and sandbox func_8004A4E0 --disable all (score 163, no_c_body: true, build_insns 0, identical to s1-s3). Output saved to tmp/grind/func_8004A4E0/s4/sandbox.txt.
+- result: Re-confirmed the standing s1 class kill for a fourth consecutive modality (recon, structural, permuter, enumerate all land on the same no-C-body fact). No regression, no new ground covered.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis, zero FAKE constructs (no C body exists at all); identical to s1-s3's measured_on
+- predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31

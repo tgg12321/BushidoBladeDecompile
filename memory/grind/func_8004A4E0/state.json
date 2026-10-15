@@ -1,8 +1,8 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 3,
- "current_modality": "permuter",
+ "session_count": 4,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -21,13 +21,19 @@
    "floor": 163,
    "modality": "permuter",
    "headline": "permuter modality has no applicable surface: function is ASM-WHOLE canonical-grant verdict, no C body exists to mutate; re-confirmed this session with fresh canonical+sandbox artifacts"
+  },
+  {
+   "session": 4,
+   "floor": 163,
+   "modality": "enumerate",
+   "headline": "enumerate modality has no applicable surface: ASM-WHOLE canonical-grant verdict re-confirmed for the 4th consecutive modality, no C body exists to spelling-sweep"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No live pure-C or permuter-mutable axis remains on this function.",
-   "mechanism": "n/a \u2014 ASM-WHOLE canonical verdict stands; no C body exists in src/main/3AB48.c for any grind-lane tool (permuter included) to operate on.",
-   "next_probe": "None from the grind lane. The operator-side authorize-bucket / canonical-grant landing path is the only remaining action; a toolchain finding that changed the $s4/$s5/$s0 handoff requirements would reopen this."
+   "hypothesis": "No live pure-C, permuter-mutable, or spelling-enumerable axis remains on this function under the grind lane's current toolset.",
+   "mechanism": "n/a \u2014 ASM-WHOLE canonical verdict stands on a whole-function grant in inline_asm_canonical.txt; no C body exists in src/main/3AB48.c for any grind-lane tool to operate on.",
+   "next_probe": "None from recon/structural/permuter/enumerate. A toolchain finding that changed the $s4/$s5/$s6/$fp/$s0 custom-ABI handoff requirements across func_8004A940/func_8004A76C/func_8004A808 would reopen this; absent that, the driver's escalation modality (4+ distinct modalities on a flat floor, which this session completes) is the next rung on the ladder, not a further grind-lane probe."
   }
  ],
  "judge_constraints": [],
@@ -56,6 +62,14 @@
    "measured_on": "src/main/3AB48.c INCLUDE_ASM stub (no C chassis, no FAKE constructs present); canonical+sandbox outputs this session identical to s1/s2 banked verdict",
    "predicate_cite": "",
    "result": "canonical() returned verdict ASM-WHOLE again (reason: whole-function canonical-asm grant in inline_asm_canonical.txt), i"
+  },
+  {
+   "session": 4,
+   "statement": "The enumerate modality's systematic spelling sweep (owner ruling 2026-09-08) has an applicable region to sweep for func_8004A4E0.",
+   "kill_scope": "class",
+   "measured_on": "whole-body INCLUDE_ASM chassis, zero FAKE constructs (no C body exists at all); identical to s1-s3's measured_on",
+   "predicate_cite": "docs/audits/func_8004A4E0-canonical-2026-09-29.md:31",
+   "result": "Re-confirmed the standing s1 class kill for a fourth consecutive modality (recon, structural, permuter, enumerate all la"
   }
  ],
  "ladder_skip": 0,

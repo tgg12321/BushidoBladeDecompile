@@ -57,3 +57,11 @@ it would only become live if a future session carved a C island out of the body 
 - [s3] This matches the s1 recon class kill (H1, memory/grind/func_8004A4E0/hypotheses.md) and the s2 structural-modality re-confirmation: the custom callee-saved-register ABI across jal with func_8004A940/func_8004A76C/func_8004A808 plus trapping addi/ctc2 have no C form, per docs/audits/func_8004A4E0-canonical-2026-09-29.md.
 
 - [s3] This function's open item is operator/landing-side (authorize-bucket, Judge-gated canonical-grant path per judge-sole-gate.md), not a grind-lane hypothesis — permuter, like structural, has no surface to act on.
+
+- [s4] canonical func_8004A4E0 verdict this session: ASM-WHOLE, asm_insns=7, total=163, reason 'whole-function canonical-asm grant in inline_asm_canonical.txt', regions [[48,48],[48,48],[103,103],[117,118],[123,124]] — byte-identical to s1/s2/s3's recorded verdict.
+
+- [s4] sandbox func_8004A4E0 --disable all this session: score=163, no_c_body=true, build_insns=0, cheat_asm_stripped=71 — identical to s1-s3; src/main/3AB48.c:29 is still INCLUDE_ASM("asm/funcs", func_8004A4E0) unchanged.
+
+- [s4] candidate.c (unchanged this session) is itself the INCLUDE_ASM stub annotated with the s1 recon finding: a custom callee-saved-register ABI ($s4/$s5/$s6/$fp/$s0 handoffs) shared across jal to func_8004A940/func_8004A76C/func_8004A808 plus 2 trapping addi and 4 ctc2 with no C form.
+
+- [s4] This is the 4th consecutive modality (recon, structural, permuter, enumerate) to independently re-derive the same ASM-WHOLE/no-C-body fact with zero new ground — the mandated-modality ladder is producing repeat confirmations, not new information, on this function.
