@@ -490,3 +490,21 @@ that a further session (s14 structural) has run since the chassis was last check
 - kill_scope: class
 - measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD e0b805366, zero FAKE constructs (candidate.c comments-only; no src edits made this session)
 - predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## [s17] The SYSTEMATIC SPELLING SWEEP procedure has an applicable surface on func_8004A4E0 this session (enumerate modality, third consecutive re-run).
+- mechanism: n/a — spelling enumeration operates on an existing candidate C file's region of named sub-expressions; the chassis has no C statements at all to carve a region out of.
+- probe: canonical func_8004A4E0 (fresh, HEAD 0dbd72780) + sandbox func_8004A4E0 --disable all (fresh, HEAD 0dbd72780)
+- result: canonical returned verdict ASM-WHOLE, reason "whole-function canonical-asm grant in inline_asm_canonical.txt", identical to s1-s16. sandbox returned {"score":163,"scorable":true,"target_insns":163,"build_insns":0,"no_c_body":true}, byte-for-byte identical fields to s2/s13/s14/s15/s16. src/main/3AB48.c is still `INCLUDE_ASM("asm/funcs", func_8004A4E0);` with zero C statements; no region exists to mark ENUM-BEGIN/END around. Sweep precondition remains unmet for the third consecutive enumerate-axis measurement across s15/s16/s17, all three landing on the identical class kill. docs/grind/decisions.md has no existing entry for func_8004A4E0 (checked this session); not filing one — this session's mandated modality is `enumerate`, not `escalation`, so per the role contract the exhaustion call belongs to the driver, not to this session.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 0dbd72780, zero FAKE constructs (no src edits made this session)
+- predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## [s17] The SYSTEMATIC SPELLING SWEEP procedure has an applicable surface on func_8004A4E0 this session (enumerate modality, third consecutive re-run).
+- mechanism: n/a — spelling enumeration operates on an existing candidate C file's region of named sub-expressions; the chassis has no C statements at all to carve a region out of.
+- probe: canonical func_8004A4E0 (fresh, HEAD 0dbd72780) + sandbox func_8004A4E0 --disable all (fresh, HEAD 0dbd72780)
+- result: canonical returned verdict ASM-WHOLE, reason 'whole-function canonical-asm grant in inline_asm_canonical.txt', identical to s1-s16. sandbox returned {"score":163,"scorable":true,"target_insns":163,"build_insns":0,"no_c_body":true}, byte-for-byte identical fields to s2/s13/s14/s15/s16. src/main/3AB48.c is still INCLUDE_ASM with zero C statements; no region exists to mark ENUM-BEGIN/END around. Checked docs/grind/decisions.md: no existing entry for func_8004A4E0.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 0dbd72780, zero FAKE constructs (no src edits made this session)
+- predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31

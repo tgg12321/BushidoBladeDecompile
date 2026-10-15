@@ -95,4 +95,9 @@ INCLUDE_ASM("asm/funcs", func_8004A4E0);
  * s16 (enumerate, 2nd re-run): sandbox --diff re-measured again at HEAD e0b805366, byte-for-
  * byte identical fields to s15 ({"score":163,"no_c_body":true,"build_insns":0}). No frontier
  * change. See hypotheses.md [s16] for the full record.
+ *
+ * s17 (enumerate, 3rd re-run): canonical + sandbox re-measured at HEAD 0dbd72780 — identical
+ * ASM-WHOLE verdict and {"score":163,"no_c_body":true,"build_insns":0}. Sweep precondition
+ * (an existing C region to carve) still unmet; zero C statements in src/main/3AB48.c. Checked
+ * docs/grind/decisions.md: no existing entry for this function. See hypotheses.md [s17].
  */

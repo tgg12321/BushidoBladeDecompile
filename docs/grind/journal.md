@@ -111,3 +111,4 @@
 - 2026-10-15 16:39 func_8004A4E0 s14 [structural] floor=163: s14 structural: no applicable surface (no_c_body:true) — re-confirms s2/s13 identically; ASM-WHOLE canonical grant stands across 6 modalities now
 - 2026-10-15 16:41 func_8004A4E0 s15 [enumerate] floor=163: s15 enumerate: spelling-sweep precondition (existing C region to carve) unmet on whole-body INCLUDE_ASM chassis; identical class kill re-confirmed via fresh sandbox+canonical measurement
 - 2026-10-15 16:43 func_8004A4E0 s16 [enumerate] floor=163: s16 enumerate (2nd re-run): sweep precondition still unmet, no_c_body:true byte-identical to s13-s15; class kill re-confirmed, no new axis found
+- 2026-10-15 16:45 func_8004A4E0 s17 [enumerate] floor=163: s17 enumerate (3rd re-run): sweep precondition still unmet, no_c_body:true identical to s2/s13-s16; same class kill re-confirmed, no new axis.

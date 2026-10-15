@@ -1,7 +1,7 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 16,
+ "session_count": 17,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -99,13 +99,19 @@
    "floor": 163,
    "modality": "enumerate",
    "headline": "s16 enumerate (2nd re-run): sweep precondition still unmet, no_c_body:true byte-identical to s13-s15; class kill re-confirmed, no new axis found"
+  },
+  {
+   "session": 17,
+   "floor": 163,
+   "modality": "enumerate",
+   "headline": "s17 enumerate (3rd re-run): sweep precondition still unmet, no_c_body:true identical to s2/s13-s16; same class kill re-confirmed, no new axis."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No live pure-C or rederive-axis hypothesis remains for func_8004A4E0; the cross-function jtbl dispatch + custom callee-saved ABI class kill is independently re-confirmed by every modality tried across 16 sessions now, including enumerate three times.",
-   "mechanism": "n/a \u2014 whole-body canonical-asm grant, not a reg-alloc/scheduling/spelling residual",
-   "next_probe": "operator/escalation-side only: when the driver assigns escalation modality, file the accumulated s8-s16 evidence as a landing-path confirmation (owner-ruled ASM-WHOLE canonical grant per inline_asm_canonical.txt:199 / Q40) and check whether queue done's authorize-bucket path needs to run for this function."
+   "hypothesis": "No live pure-C or rederive-axis hypothesis remains for func_8004A4E0; the cross-function jtbl dispatch + custom callee-saved ABI class kill (s8/s10/s12/s13) is independently re-confirmed by every modality tried across 17 sessions now, including enumerate three times running (s15, s16, s17).",
+   "mechanism": "n/a \u2014 whole-body canonical-asm grant (inline_asm_canonical.txt:199, owner ruling Q40), not a reg-alloc/scheduling/spelling residual.",
+   "next_probe": "When the driver assigns escalation modality: file the s8-s17 evidence chain as a landing-path confirmation (ASM-WHOLE canonical grant) in docs/grind/decisions.md and check whether queue done's authorize-bucket path needs to run for this function."
   }
  ],
  "judge_constraints": [],
@@ -262,6 +268,14 @@
    "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD e0b805366, zero FAKE constructs (candidate.c comments-only; no src edits made this session)",
    "predicate_cite": "docs/audits/func_8004A4E0-canonical-2026-09-29.md:31",
    "result": "sandbox returned {\"score\":163,\"no_c_body\":true,\"build_insns\":0} and printed 'no diff: function is still whole-body INCLU"
+  },
+  {
+   "session": 17,
+   "statement": "The SYSTEMATIC SPELLING SWEEP procedure has an applicable surface on func_8004A4E0 this session (enumerate modality, third consecutive re-run).",
+   "kill_scope": "class",
+   "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD 0dbd72780, zero FAKE constructs (no src edits made this session)",
+   "predicate_cite": "docs/audits/func_8004A4E0-canonical-2026-09-29.md:31",
+   "result": "canonical returned verdict ASM-WHOLE, reason 'whole-function canonical-asm grant in inline_asm_canonical.txt', identical"
   }
  ],
  "ladder_skip": 0,

@@ -225,3 +225,13 @@ it would only become live if a future session carved a C island out of the body 
 - [s16] This is the third time the enumerate modality has been dispatched for this function (s6-ish earlier, s15, now s16) and all three measurements agree character-for-character with the s2 canonical/sandbox baseline.
 
 - [s16] The underlying ASM-WHOLE canonical grant (docs/audits/func_8004A4E0-canonical-2026-09-29.md, inline_asm_canonical.txt:199, owner ruling Q40) remains the standing disposition; 6+ distinct modalities (recon, forensics x2, rederive x2, structural, enumerate x2 now x3) have all independently re-confirmed it with zero FAKE constructs and zero src edits.
+
+- [s17] canonical func_8004A4E0 at HEAD 0dbd72780 returns verdict ASM-WHOLE citing inline_asm_canonical.txt whole-function grant, unchanged since s1.
+
+- [s17] sandbox --disable all at HEAD 0dbd72780 returns {"score":163,"no_c_body":true,"build_insns":0}, identical to every prior session's measurement.
+
+- [s17] src/main/3AB48.c remains a single-line INCLUDE_ASM("asm/funcs", func_8004A4E0); stub; memory/grind/func_8004A4E0/candidate.c is comments-only.
+
+- [s17] No sibling ledger has a transplantable surface (confirmed again s11, re-verified unchanged this session — all 7 siblings closed/COMPLETED, 0 further sessions, data-only overlap).
+
+- [s17] docs/grind/decisions.md has no entry naming func_8004A4E0 — not yet driver-declared exhausted; this session's mandated modality was enumerate, not escalation, so no owner-gated filing was made.
