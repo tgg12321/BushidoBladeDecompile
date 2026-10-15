@@ -182,3 +182,19 @@
 - [s7] BB2_DBR_DEBUG gives no DBRDBG output from tools/gcc-2.7.2/build/cc1; .dbr dumps were used instead.
 
 - [s7] nrefs_census / loop_movables do not apply: no C body for func_8004A76C exists in the stub TU.
+
+## s8 (rederive)
+- [s8] Sibling check (mandatory before own probes): func_8004A4E0's candidate.c (written 2026-10-15 17:03, unspent per dispatch) is comments-only over its own INCLUDE_ASM stub — zero C statements, nothing to transplant. puts (libc2, COMPLETED-C) shares no code shape with a GTE loop. No transplant source exists for either named sibling.
+- [s8] Fresh m2c decompile this session (`python3 tools/m2c/m2c.py -t mips-ido-c -f func_8004A76C asm/funcs/func_8004A76C.s`, tmp/grind/func_8004A76C/s8/m2c_out.c/err.txt): m2c emits `void func_8004A76C(s32 arg0, void *arg2)` — only TWO formal parameters (mapped from $a0, $a1). It never assigns $s0 (the vertex-pointer base the asm actually reads/increments 16x) a parameter slot at all; every `lwc2 $N, ($s0)` / `rtpt` / `mfc2` comes back `M2C_ERROR(/* unknown instruction */)` and $s0 appears only inside those opaque error stubs, never as a declared variable. This is an INDEPENDENT tool (m2c's own register-to-parameter heuristic, not our hand analysis) landing on the same fact as the s1 ABI class kill: the function's real third input lives in a register C function signatures cannot place there (only $a0-$a3 bind to formal params under the standard MIPS o32-derived convention GCC emits). GTE unsupported in m2c as expected (consistent with AGENTS.md inline-asm policy — GTE has no C form).
+- [s8] Fresh decomp.me corpus similarity search this session over the existing 461-scratch cache (`python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8004A76C.s --corpus tmp/decomp_me_corpus --top 10`, tmp/grind/func_8004A76C/s8/decomp_me_search.txt): best hit similarity 0.011 (RecordButtonsToDevkit, an unrelated devkit I/O function) — no GTE-shingled scratch in the corpus resembles this function's asm at all, a null result on the SAME corpus the sibling's s12 already found null against its own target. Confirms (independently, against a different target asm) that this 461-entry gcc2.7.2-psx corpus contains nothing GTE-pipelined to mine.
+- [s8] docs/reference/sotn-construct-index.md has zero hits for `rtpt` or `gte_rtpt` — no SOTN-master precedent exists for representing a hand-pipelined GTE rtpt loop as a C-visible construct (checked per the family-selection table's mandate to grep the index before any precedent claim).
+- [s8] Kengo corpus (candidate transplant source named in the rederive modality description) was permanently deleted 2026-10-07 (owner: "a rabbit hole") per memory/reference/external-references.md; not reintroducible, not checked further.
+- [s8] sandbox --disable all re-measured this session: {"score": 37, "no_c_body": true} — floor unchanged, stub chassis confirmed current.
+
+- [s8] sandbox --disable all re-measured this session: {"score": 37, "no_c_body": true} -- floor unchanged, stub chassis confirmed current.
+
+- [s8] docs/reference/sotn-construct-index.md has zero hits for 'rtpt' or 'gte_rtpt' -- no SOTN-master precedent exists for representing a hand-pipelined GTE rtpt loop as a C-visible construct.
+
+- [s8] Kengo corpus (the rederive modality's named transplant source) was permanently deleted 2026-10-07 (owner: 'a rabbit hole') per memory/reference/external-references.md; not reintroducible.
+
+- [s8] All four independent not-GCC signals from prior sessions stand unchanged: $s0 caller-owned ABI (s1), $t0-$t2 non-first-fit mfc2 seats (s6, global.c:1057), reorg.c-contradicting delay-slot content (s7, reorg.c:2990), and handwritten mfc2 markers in the asm itself.

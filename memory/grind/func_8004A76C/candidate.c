@@ -30,3 +30,12 @@
  * `jr ra` slot left as nop after an eligible sh). The nop pad before the first
  * rtpt alone is reachable (PsyQ gte_rtpt + gte_rtpt_b). The stub stays.
  */
+/*
+ * s8 (rederive): fresh m2c decompile (tmp/grind/func_8004A76C/s8/m2c_out.c) independently
+ * lands on the s1 ABI fact -- it emits a two-parameter signature and never gives $s0 a
+ * variable, confirming no formal-parameter slot exists for the real third input. A fresh
+ * decomp.me corpus similarity search (461 cached scratches) returns a null result (best
+ * similarity 0.011, no GTE-shaped match). The sibling func_8004A4E0's candidate.c is
+ * comments-only (nothing to transplant); Kengo is permanently deleted. No rederive-axis
+ * frontier remains; the stub stays.
+ */

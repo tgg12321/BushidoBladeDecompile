@@ -1,8 +1,8 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,13 +45,19 @@
    "floor": 37,
    "modality": "forensics",
    "headline": "Forensics: residuals attributed to reorg.c dbr (beqz and jr delay slots, class kill reorg.c:2990); nop pad closed via PsyQ gte_rtpt/gte_rtpt_b; closest form now 4 residuals, 3 class-killed"
+  },
+  {
+   "session": 8,
+   "floor": 37,
+   "modality": "rederive",
+   "headline": "Rederive modality: fresh m2c decompile and decomp.me corpus search both independently null, confirming no C/transplant path exists; sibling has nothing to transplant either."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ASM-WHOLE canonical GTE grant is correct: four independent not-GCC signals ($s0 caller-owned ABI, $t0-$t2 non-first-fit seats, reorg-contradicting delay slots, handwritten mfc2 markers).",
-   "mechanism": "s1 ABI class kill; global.c:1057 first-fit; reorg.c:2990 backward-scan delay fill.",
-   "next_probe": "Escalation modality: file the decisions.md disposition citing s1, s6 and s7."
+   "hypothesis": "The ASM-WHOLE canonical GTE grant is correct and the rederive ladder rung is now exhausted: four independent modalities (recon/s1, solver/s6, forensics/s7, rederive/s8) each independently confirm the same non-GCC-representable ABI/scheduling shape with no transplant or corpus alternative available.",
+   "mechanism": "s1 ABI class kill; global.c:1057 first-fit; reorg.c:2990 backward-scan delay fill; m2c's own parameter-inference heuristic (s8).",
+   "next_probe": "Escalation modality: file the decisions.md disposition citing s1, s6, s7 and this session's s8 rederive-null confirmation."
   },
   {
    "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c units lets the sandbox score GTE bodies, so a C form can be measured by the scorer.",
@@ -173,6 +179,30 @@
    "measured_on": "raw cc1 compiles of s7 p_base/p_b/p_c/p_e/p_f (plain stores) and p_d (volatile sz diagnostic), no FAKE construct",
    "predicate_cite": "",
    "result": "Every plain-store form ends 'sh; sh; j $31; [sh]'. Only volatile-qualified sz left the slot empty -- volatile coercion o"
+  },
+  {
+   "session": 8,
+   "statement": "An independent tool (m2c) run fresh on this function's asm produces a C signature that cannot place the asm's real third input ($s0) as a formal parameter, reproducing the s1 ABI finding via a differe",
+   "kill_scope": "instance",
+   "measured_on": "m2c (mips-ido-c target) fresh decompile of asm/funcs/func_8004A76C.s this session, no FAKE construct, no C body on either side",
+   "predicate_cite": "",
+   "result": "m2c emits 'void func_8004A76C(s32 arg0, void *arg2)' -- two params only; $s0 never appears as a declared variable, only "
+  },
+  {
+   "session": 8,
+   "statement": "The 461-entry gcc2.7.2-psx decomp.me corpus cached under tmp/decomp_me_corpus/ contains a GTE-pipelined scratch close enough to transplant a structurally different C shape from.",
+   "kill_scope": "instance",
+   "measured_on": "tmp/decomp_me_corpus (461 scratches, cached 2026-10-15 by func_8004A4E0 s12) against asm/funcs/func_8004A76C.s, no FAKE construct",
+   "predicate_cite": "",
+   "result": "best similarity 0.011 against RecordButtonsToDevkit (unrelated devkit I/O), no GTE-shaped scratch anywhere in top 10 -- "
+  },
+  {
+   "session": 8,
+   "statement": "func_8004A4E0's candidate.c or the completed puts module contains a transplantable code block for this function (mandatory sibling-ledger check).",
+   "kill_scope": "instance",
+   "measured_on": "memory/grind/func_8004A4E0/candidate.c at HEAD (written 2026-10-15 17:03) + src/main/psxsdk/libc2/puts.c, no FAKE construct",
+   "predicate_cite": "",
+   "result": "func_8004A4E0's candidate.c is comments-only over its own unmodified INCLUDE_ASM stub (zero C statements). puts.c is an "
   }
  ],
  "ladder_skip": 0,

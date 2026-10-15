@@ -425,3 +425,54 @@ C-level match of the diverging region.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: raw cc1 compiles of s7 p_base/p_b/p_c/p_e/p_f (plain stores) and p_d (volatile sz diagnostic), no FAKE construct
+
+## s8 (rederive)
+
+### H-s8a — an independent tool (m2c) run fresh on this function's asm produces a C signature that cannot place the asm's real third input ($s0) as a formal parameter, reproducing the s1 ABI finding via a different method.
+- mechanism: m2c infers C parameters from $a0-$a3 usage per MIPS o32-derived convention; it has no representation for a value live-in via a non-argument register ($s0), same constraint GCC's own call-ABI expects on the C side (s1 class kill).
+- probe: `python3 tools/m2c/m2c.py -t mips-ido-c -f func_8004A76C asm/funcs/func_8004A76C.s` (tmp/grind/func_8004A76C/s8/m2c_out.c).
+- result: m2c emits `void func_8004A76C(s32 arg0, void *arg2)` — two params only; $s0 never appears as a declared variable, only inside opaque `M2C_ERROR` GTE stubs. GTE ops (lwc2/swc2/mfc2/rtpt) are all unknown-instruction stubs, as expected (no C form).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: m2c (mips-ido-c target) fresh decompile of asm/funcs/func_8004A76C.s this session, no FAKE construct, no C body on either side
+- (not a class kill: this is one tool's heuristic on one asm file, re-confirming the already-standing s1 class kill rather than establishing a new predicate.)
+
+### H-s8b — the 461-entry gcc2.7.2-psx decomp.me corpus cached under tmp/decomp_me_corpus/ (downloaded by the func_8004A4E0 s12 session) contains a GTE-pipelined scratch close enough to transplant a structurally different C shape from.
+- mechanism: shingle-similarity search over cached decomp.me scratches, same tool/corpus the sibling used.
+- probe: `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8004A76C.s --corpus tmp/decomp_me_corpus --top 10` (tmp/grind/func_8004A76C/s8/decomp_me_search.txt).
+- result: best similarity 0.011 against RecordButtonsToDevkit (unrelated devkit I/O), no GTE-shaped scratch anywhere in top 10. Null result.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tmp/decomp_me_corpus (461 scratches, cached 2026-10-15 by func_8004A4E0 s12) against asm/funcs/func_8004A76C.s, no FAKE construct
+
+### H-s8c — func_8004A4E0's candidate.c or the completed `puts` module contains a transplantable code block for this function (mandatory sibling-ledger check).
+- mechanism: sibling-transplant rule (dispatch SIBLING LEDGERS section) requires reading and attempting transplant before any own probe.
+- probe: read memory/grind/func_8004A4E0/candidate.c in full this session; read src/main/psxsdk/libc2/puts.c's relationship to this function (shares nothing but being in the same binary).
+- result: func_8004A4E0's candidate.c is comments-only over its own unmodified INCLUDE_ASM stub (zero C statements — same "nothing to transplant" state s11/s13-17 of that ledger already found for itself). puts.c is an unrelated libc routine with zero shared code shape (string output vs GTE transform). No block exists on either side to transplant.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: memory/grind/func_8004A4E0/candidate.c at HEAD (written 2026-10-15 17:03) + src/main/psxsdk/libc2/puts.c, no FAKE construct
+
+## [s8] An independent tool (m2c) run fresh on this function's asm produces a C signature that cannot place the asm's real third input ($s0) as a formal parameter, reproducing the s1 ABI finding via a different method.
+- mechanism: m2c infers C parameters from $a0-$a3 usage per MIPS o32-derived convention; it has no representation for a value live-in via a non-argument register ($s0), the same constraint GCC's own call ABI expects on the C side (s1 class kill).
+- probe: python3 tools/m2c/m2c.py -t mips-ido-c -f func_8004A76C asm/funcs/func_8004A76C.s
+- result: m2c emits 'void func_8004A76C(s32 arg0, void *arg2)' -- two params only; $s0 never appears as a declared variable, only inside opaque M2C_ERROR GTE stubs. All GTE ops (lwc2/swc2/mfc2/rtpt) are unknown-instruction stubs as expected.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: m2c (mips-ido-c target) fresh decompile of asm/funcs/func_8004A76C.s this session, no FAKE construct, no C body on either side
+
+## [s8] The 461-entry gcc2.7.2-psx decomp.me corpus cached under tmp/decomp_me_corpus/ contains a GTE-pipelined scratch close enough to transplant a structurally different C shape from.
+- mechanism: shingle-similarity search over cached decomp.me scratches, same tool/corpus the func_8004A4E0 sibling used.
+- probe: python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8004A76C.s --corpus tmp/decomp_me_corpus --top 10
+- result: best similarity 0.011 against RecordButtonsToDevkit (unrelated devkit I/O), no GTE-shaped scratch anywhere in top 10 -- null result.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tmp/decomp_me_corpus (461 scratches, cached 2026-10-15 by func_8004A4E0 s12) against asm/funcs/func_8004A76C.s, no FAKE construct
+
+## [s8] func_8004A4E0's candidate.c or the completed puts module contains a transplantable code block for this function (mandatory sibling-ledger check).
+- mechanism: sibling-transplant rule requires reading and attempting transplant before any own probe.
+- probe: read memory/grind/func_8004A4E0/candidate.c in full this session; compared src/main/psxsdk/libc2/puts.c's relationship to this function.
+- result: func_8004A4E0's candidate.c is comments-only over its own unmodified INCLUDE_ASM stub (zero C statements). puts.c is an unrelated libc routine sharing no code shape. No block exists on either side to transplant.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: memory/grind/func_8004A4E0/candidate.c at HEAD (written 2026-10-15 17:03) + src/main/psxsdk/libc2/puts.c, no FAKE construct
