@@ -143,3 +143,17 @@ it would only become live if a future session carved a C island out of the body 
 - [s9] callee-saved live-in at entry: compiled C 0/1164, asm 6/273 including all three func_8004A4E0 helpers
 
 - [s9] canonical gate still ASM-WHOLE; sandbox no diff on INCLUDE_ASM stub (s9 re-audit)
+
+## s10 (forensics) — 2026-10-15
+- Kill re-audit: canonical still ASM-WHOLE (whole-function grant, inline_asm_canonical.txt:199); sandbox --disable all --diff scores the INCLUDE_ASM stub, no diff, zero FAKE constructs (tmp/grind/func_8004A4E0/s10/canonical.txt, sandbox_diff.txt). fake_ablate n/a (candidate.c has no C body). Prior instance kills stand.
+- Scanner gap measured (frontier item from s9): `scan_hand_coded.py --single func_8004A4E0` rates the function itself tier=LOW, 0/8 signals (tmp/grind/func_8004A4E0/s10/scan_func_8004A4E0.txt). None of the ledger's decisive signals (s5 code after the single jr $ra, s7 $s6 written-never-read, s8 cross-function jtbl, s9 $ra-off-$sp in the helper, the 2 trapping addi / 4 ctc2 annotated "handwritten instruction" in the .s) is a scanner signal. Its STRONG evidence is only transitive: helpers func_8004A940 (S3+S4+S7: $s0..$s7 unsaved), func_8004A76C (S7 $s0), func_8004A808 (S3+S4+S7 $s0) are STRONG (scan_func_8004A940.txt / _8004A76C / _8004A808). func_8004A4E0's grant therefore rests on the owner-ruled Q40 audit + this ledger, not on its own scanner tier. tools/ is outside the grinder surface, so adding an S9 "jtbl target outside referencing function" signal is an operator follow-up.
+- New corpus census (tmp/grind/func_8004A4E0/s10/jtblscan.py -> jtblscan.txt): for every (referencing function, jtbl_ symbol) pair, table words read from the oracle EXE (bounded by declared C array size, else next jtbl symbol / first non-.text word), each target mapped to its containing function by asm/funcs glabel ranges. Compiled C: 58 pairs, 0 with any target outside the referencing function. Asm: 8 pairs, exactly 1 crosses — func_8004A4E0/jtbl_8001541C, 8/16 targets inside func_8004A940. This is the statistical complement of the s8 class kill (toplev.c:2647 / stmt.c:4704): the signal is absent from every compiled-C switch in the corpus and unique to this function. Side note: words after jtbl_8001545C[5] in the EXE are function-entry addresses (func_8004A940+0x11A4, func_8004BCC0, func_8004C994, ...) — consistent with the $s4/0x1F80001C handler table of the bytecode interpreter.
+- cc1 dump tools (dump.ps1, loop_movables, nrefs_census, label_census) have no input: there is no C body to compile, only the INCLUDE_ASM stub.
+
+- [s10] canonical gate still ASM-WHOLE; sandbox no diff on the INCLUDE_ASM stub (s10 re-audit)
+
+- [s10] scan_hand_coded --single func_8004A4E0: tier LOW 0/8; helpers func_8004A940/A76C/A808 STRONG via S7
+
+- [s10] jtbl targets outside the referencing function: compiled C 0/58 pairs, asm 1/8 (only func_8004A4E0/jtbl_8001541C)
+
+- [s10] cc1 dump tools (dump.ps1, loop_movables, nrefs_census, label_census) have no input: no C body exists, only the INCLUDE_ASM stub

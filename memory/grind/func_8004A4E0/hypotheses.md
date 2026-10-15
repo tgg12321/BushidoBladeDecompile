@@ -270,3 +270,47 @@ instance form.
 - probe: rascan.py signal L (linear scan to first branch)
 - result: compiled C 0/1164; asm 6/273: setjmp, func_8004BCC0, func_800790A4 and all three func_8004A4E0 helpers func_8004A76C ($s0), func_8004A808 ($s0), func_8004A940 ($s0,$s1)
 - verdict: CONFIRMED
+
+## [s10] KILL RE-AUDIT: INCLUDE_ASM chassis unchanged, zero FAKE constructs
+- mechanism: driver-mandated re-audit (flat floor, instance kills exist)
+- probe: canonical + sandbox --disable all --diff (tmp/grind/func_8004A4E0/s10/canonical.txt, sandbox_diff.txt)
+- result: ASM-WHOLE grant; sandbox no diff on stub; s3/s6/s7/s8 instance kills stand as measured
+- verdict: CONFIRMED
+
+## [s10] scan_hand_coded.py's own tier for func_8004A4E0 is STRONG (so the grant has direct scanner backing)
+- mechanism: S1/S2/S6/S7/S8 GCC-impossible signals (tools/scan_hand_coded.py:163-182)
+- probe: python3 tools/scan_hand_coded.py --single func_8004A4E0 (+ the 3 helpers)
+- result: func_8004A4E0 tier=LOW 0/8; helpers A940/A76C/A808 STRONG via S7. The scanner has no signal for code-after-epilogue, written-never-read $sN, trapping add/addi, ctc2, or cross-function jtbl targets; backing is transitive + owner-ruled audit
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: asm/funcs/func_8004A4E0.s with tools/scan_hand_coded.py at HEAD 45f59e10a; INCLUDE_ASM stub chassis, zero FAKE constructs (tmp/grind/func_8004A4E0/s10/scan_*.txt)
+
+## [s10] Jump-table targets outside the referencing function occur in compiled C in this corpus
+- mechanism: GCC 2.7.2 expand_end_case builds table labels from the current function's case_stack (stmt.c:4704); compiled C should show 0
+- probe: tmp/grind/func_8004A4E0/s10/jtblscan.py over all asm/funcs jtbl references, table words from disc/SLUS_006.63
+- result: compiled C 0/58 pairs cross a function boundary; asm 1/8 — only func_8004A4E0/jtbl_8001541C (8/16 targets in func_8004A940)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 58 compiled-C + 8 asm (referencer, jtbl) pairs at HEAD 45f59e10a; func_8004A4E0 chassis INCLUDE_ASM stub, zero FAKE constructs (tmp/grind/func_8004A4E0/s10/jtblscan.txt)
+
+## [s10] KILL RE-AUDIT: the INCLUDE_ASM chassis the s3/s6/s7/s8 instance kills were measured on is unchanged and carries zero FAKE constructs
+- mechanism: driver-mandated re-audit after a flat floor with instance kills
+- probe: canonical func_8004A4E0 + sandbox func_8004A4E0 --disable all --diff (tmp/grind/func_8004A4E0/s10/canonical.txt, sandbox_diff.txt); fake_ablate n/a, candidate.c has no C body
+- result: canonical ASM-WHOLE (whole-function grant inline_asm_canonical.txt:199); sandbox scores the INCLUDE_ASM stub with no diff; prior instance kills stand
+- verdict: CONFIRMED
+
+## [s10] scan_hand_coded.py's own tier for func_8004A4E0 is STRONG, giving the ASM-WHOLE grant direct scanner backing
+- mechanism: GCC-impossible signals S1/S2/S6/S7/S8 in tools/scan_hand_coded.py:163-182
+- probe: python3 tools/scan_hand_coded.py --single on func_8004A4E0, func_8004A940, func_8004A76C, func_8004A808
+- result: func_8004A4E0 tier=LOW 0/8. Helpers func_8004A940 (S3+S4+S7, $s0..$s7 unsaved), func_8004A76C (S7 $s0), func_8004A808 (S3+S4+S7 $s0) are STRONG. The scanner has no signal for code after the epilogue jr $ra, written-never-read $sN, trapping add/addi, ctc2, or cross-function jtbl targets; the grant rests on the owner-ruled Q40 audit plus this ledger, and on the helpers' STRONG tier transitively.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: asm/funcs/func_8004A4E0.s with tools/scan_hand_coded.py at HEAD 45f59e10a; INCLUDE_ASM stub chassis, zero FAKE constructs (tmp/grind/func_8004A4E0/s10/scan_*.txt)
+
+## [s10] Jump-table entries targeting code outside the referencing function occur among this corpus's compiled-C switch tables
+- mechanism: GCC 2.7.2 expand_end_case generates table labels from the current function's case_stack only (stmt.c:4704), so compiled C should show none
+- probe: tmp/grind/func_8004A4E0/s10/jtblscan.py: every (referencing function, jtbl_ symbol) pair in asm/funcs, table words read from disc/SLUS_006.63 (bounded by declared C array size, else next jtbl symbol or first non-.text word), each target mapped to its containing function by glabel ranges
+- result: compiled C 0/58 pairs cross a function boundary; asm 1/8 crosses, only func_8004A4E0/jtbl_8001541C (8/16 targets in func_8004A940). This is the statistical complement of the s8 class kill. Side note: the words after jtbl_8001545C[5] are function-entry addresses (func_8004BCC0, func_8004C994, ...), consistent with the interpreter's handler table.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 58 compiled-C + 8 asm (referencer, jtbl) pairs at HEAD 45f59e10a; func_8004A4E0 chassis INCLUDE_ASM stub, zero FAKE constructs (tmp/grind/func_8004A4E0/s10/jtblscan.txt)

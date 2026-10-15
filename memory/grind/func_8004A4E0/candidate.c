@@ -38,3 +38,7 @@ INCLUDE_ASM("asm/funcs", func_8004A4E0);
  * compiled C 0/1164 do that (mips.c:4632 save_restore_insns bases only off $sp).
  * Callee-saved live-in at entry: 0/1164 C, but all 3 helpers A76C/A808/A940.
  * tmp/grind/func_8004A4E0/s9/rascan.txt. INCLUDE_ASM stays. */
+
+/* s10 (forensics): scan_hand_coded rates func_8004A4E0 itself LOW 0/8 (helpers STRONG via S7);
+ * jtbl targets outside the referencing function: compiled C 0/58, asm 1/8 (only this function).
+ * tmp/grind/func_8004A4E0/s10/jtblscan.txt. INCLUDE_ASM stays. */
