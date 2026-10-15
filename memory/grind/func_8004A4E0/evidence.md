@@ -129,3 +129,17 @@ it would only become live if a future session carved a C island out of the body 
 - [s8] This closes the loop on the 2026-09-29 custom-ABI audit's observation of register handoffs across jal boundaries ($s4/$s5/$s6/$fp/$s0): the handoff isn't merely 'unusual ABI', it's the SAME mechanism — func_8004A4E0 literally jumps into func_8004A940's interior carrying live GPRs, which is exactly what a hand-written dispatcher can do and a compiled switch+call sequence cannot.
 
 - [s8] candidate.c and hypotheses.md/evidence.md updated with full citations; no C body exists to grind (src/main/3AB48.c body unchanged: INCLUDE_ASM("asm/funcs", func_8004A4E0);).
+
+## s9 (forensics) — 2026-10-15
+- Kill re-audit: canonical still ASM-WHOLE, sandbox scores the INCLUDE_ASM stub with no diff, zero FAKE constructs (tmp/grind/func_8004A4E0/s9/canonical.txt, sandbox_diff.txt). All prior instance kills stand.
+- New census (tmp/grind/func_8004A4E0/s9/rascan.py → rascan.txt): `sw $ra, off(base≠$sp)` is 0/1164 in compiled C, 12/273 in asm, the asm hits being Sony/SN hand-asm (setjmp, _patch_gte, __SN_ENTRY_POINT, pad/card stubs) plus func_8004A940 (func_8004A4E0's jtbl/jal target, saves/restores $ra at 4($s1) = scratchpad 0x1F800004) and func_8004BB68/BCC0/C1F4. Predicate: mips.c:4632 save_restore_insns bases only off $sp; no RETURN_ADDR_RTX on MIPS 2.7.2 (expr.c:7196).
+- Callee-saved live-in before first branch: 0/1164 compiled C; asm hits include all three func_8004A4E0 helpers (func_8004A76C $s0, func_8004A808 $s0, func_8004A940 $s0/$s1) → mechanical confirmation of the custom register ABI.
+- Interpretation: func_8004A4E0 + func_8004A76C/A808/A940 is a hand-written u16-opcode bytecode interpreter ($s0 IP, $s4 handler table from 0x1F80001C, $s1 scratchpad context). This, with the s8 cross-function jtbl finding, is the strongest evidence set for the existing ASM-WHOLE grant; next session (recon/escalation) should fold s8+s9 into docs/audits/func_8004A4E0-canonical-2026-09-29.md.
+
+- [s9] func_8004A4E0 + func_8004A76C/A808/A940 form a hand-written u16-opcode bytecode interpreter: $s0 = instruction pointer, $s4 = handler table loaded from scratchpad 0x1F80001C, $s1 = scratchpad context base, jalr dispatch at func_8004A940.s:11-12
+
+- [s9] $ra saved off-$sp: compiled C 0/1164, asm 12/273 (tmp/grind/func_8004A4E0/s9/rascan.txt)
+
+- [s9] callee-saved live-in at entry: compiled C 0/1164, asm 6/273 including all three func_8004A4E0 helpers
+
+- [s9] canonical gate still ASM-WHOLE; sandbox no diff on INCLUDE_ASM stub (s9 re-audit)

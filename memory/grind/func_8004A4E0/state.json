@@ -1,8 +1,8 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 8,
- "current_modality": "rederive",
+ "session_count": 9,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -51,13 +51,19 @@
    "floor": 163,
    "modality": "rederive",
    "headline": "rederive: m2c refuses the body; found a decisive NEW class kill \u2014 func_8004A4E0's own jump table dispatches into the MIDDLE of a different function (func_8004A940), which no C switch/goto/fnptr loweri"
+  },
+  {
+   "session": 9,
+   "floor": 163,
+   "modality": "forensics",
+   "headline": "forensics: func_8004A4E0's jtbl/jal helper func_8004A940 saves+restores $ra via scratchpad 4($s1) - 0/1164 compiled C (mips.c:4632); callee-saved live-in 0/1164 C but in all 3 helpers"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 2026-09-29 canonical-asm audit and docs/audits/func_8004A4E0-canonical-2026-09-29.md should be amended/strengthened with this s8 cross-function-jump finding, since it is a stronger (architectural, not statistical) proof than any signal currently cited in that audit",
-   "mechanism": "n/a \u2014 documentation/evidence consolidation, not a code lever",
-   "next_probe": "a future session (recon or escalation modality) should fold the s8 finding into the audit doc and confirm whether the driver's STRONG scanner tier (S1/S2/S6 signals) already covers 'jump table crosses function boundary' or needs an explicit new signal name"
+   "hypothesis": "The 2026-09-29 canonical audit (docs/audits/func_8004A4E0-canonical-2026-09-29.md) should absorb the s8 cross-function jtbl finding and the s9 $ra-via-scratchpad / callee-saved live-in censuses as the strongest evidence set",
+   "mechanism": "documentation/evidence consolidation, not a code lever",
+   "next_probe": "recon/escalation session folds s8+s9 into the audit and checks whether scan_hand_coded's STRONG tier names 'ra saved off-sp' and 'jtbl crosses function boundary' signals"
   }
  ],
  "judge_constraints": [],
@@ -126,6 +132,14 @@
    "measured_on": "asm/funcs/func_8004A4E0.s + asm/funcs/func_8004A940.s + src/main/d_5BF0.c ground truth (no C chassis exists for func_8004A4E0; zero FAKE constructs; this kill does not rest on chassis or FAKE state)",
    "predicate_cite": "tools/gcc-2.7.2/toplev.c:2647",
    "result": "confirmed by direct grep: those 8 labels are private to func_8004A940's own body. func_8004A4E0's dispatch therefore fre"
+  },
+  {
+   "session": 9,
+   "statement": "func_8004A940 (reached from func_8004A4E0's jump table and 5 jal sites) stores $ra to 4($s1) and reloads it from there before jr $ra; GCC 2.7.2 MIPS addresses the $ra save slot only off $sp (or a temp",
+   "kill_scope": "class",
+   "measured_on": "asm/funcs/func_8004A940.s:2,20 ground truth + 1164-function compiled-C census; func_8004A4E0 chassis is the INCLUDE_ASM stub, zero FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:4632",
+   "result": "compiled C 0/1164 store $ra off-$sp; asm 12/273 do (setjmp, _patch_gte, __SN_ENTRY_POINT, InitGeom, pad/card stubs, func"
   }
  ],
  "ladder_skip": 0,

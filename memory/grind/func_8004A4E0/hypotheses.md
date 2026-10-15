@@ -228,3 +228,45 @@ instance form.
 - kill_scope: class
 - measured_on: asm/funcs/func_8004A4E0.s + asm/funcs/func_8004A940.s + src/main/d_5BF0.c ground truth (no C chassis exists for func_8004A4E0; zero FAKE constructs; this kill does not rest on chassis or FAKE state)
 - predicate_cite: tools/gcc-2.7.2/toplev.c:2647
+
+## [s9] KILL RE-AUDIT: the INCLUDE_ASM chassis all prior instance kills (s3/s6/s7/s8) were measured on is unchanged and carries zero FAKE constructs
+- mechanism: driver-mandated re-audit (floor flat 3+ sessions with instance kills)
+- probe: `canonical func_8004A4E0` + `sandbox func_8004A4E0 --disable all --diff` re-run this session (tmp/grind/func_8004A4E0/s9/canonical.txt, sandbox_diff.txt). fake_ablate is not applicable: candidate.c is a comment-only record (no C body, no FAKE construct to ablate).
+- result: canonical = ASM-WHOLE ("whole-function canonical-asm grant in inline_asm_canonical.txt"); sandbox scores the INCLUDE_ASM stub, "no diff: function is still whole-body INCLUDE_ASM". No chassis drift, no FAKE carrier occupying any pseudo → every prior instance kill stands as measured.
+- verdict: CONFIRMED
+
+## [s9] The jtbl/jal-reached helper func_8004A940 saves AND restores $ra through the scratchpad ($s1 = 0x1F800000: `sw $ra,4($s1)` … `lw $ra,4($s1); jr $ra`), a $ra spill base no GCC 2.7.2 MIPS lowering emits
+- mechanism: mips.c save_restore_insns (config/mips/mips.c:4588, base chosen at :4632/:4640/:4659) only ever addresses the $ra slot off stack_pointer_rtx or MIPS_TEMP2 computed from $sp; MIPS 2.7.2 defines no RETURN_ADDR_RTX (expr.c:7196 is #ifdef'd), so C cannot even name $ra to store it elsewhere, let alone reload $ra from memory and return through it.
+- probe: corpus census tmp/grind/func_8004A4E0/s9/rascan.py over all 1437 asm/funcs/*.s, split as in s7 (C = has a C definition, not INCLUDE_ASM, not canonical).
+- result: compiled C 0/1164 store $ra off-$sp; ASM 12/273 do: InitGeom, _ExitCard, __SN_ENTRY_POINT, _patch_gte, _patch_pad, _remove_ChgclrPAD, _send_pad, setjmp (all known Sony/SN hand-asm) + func_8004A940, func_8004BB68, func_8004BCC0, func_8004C1F4. func_8004A4E0's dispatch table and 5 jal sites (asm/funcs/func_8004A4E0.s:93,114,138,155,171) enter this helper; together they form a hand-written bytecode interpreter ($s0 = instruction pointer over u16 opcodes, $s4 = handler table loaded from 0x1F80001C, $s1 = scratchpad context, jalr dispatch at func_8004A940.s:11-12).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: asm/funcs/func_8004A940.s:2,20 ground truth + 1164-function compiled-C corpus census; no C chassis exists for func_8004A4E0 (INCLUDE_ASM stub), zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:4632
+
+## [s9] Callee-saved registers live-in at entry (read before any write) in func_8004A4E0's helpers is a hand-written-ABI signal
+- mechanism: compiled C reads an $s-reg only after RA assigns a pseudo to it; a pseudo live at function start (flow.c:1199-1203) arises only from an uninitialized local, which no matched function exhibits — so this is a statistical, not architectural, signal.
+- probe: same rascan.py, signal L (linear scan to first branch).
+- result: compiled C 0/1164; ASM 6/273: setjmp, func_8004BCC0 (all 9 callee-saved), func_800790A4 ($s5), and the three func_8004A4E0 helpers func_8004A76C ($s0), func_8004A808 ($s0), func_8004A940 ($s0,$s1) — i.e. the custom callee-saved register ABI cited in the 2026-09-29 canonical audit is independently visible in a mechanical census.
+- verdict: CONFIRMED
+
+## [s9] KILL RE-AUDIT: the INCLUDE_ASM chassis the s3/s6/s7/s8 instance kills were measured on is unchanged and carries zero FAKE constructs
+- mechanism: driver-mandated re-audit after 3+ flat sessions with instance kills
+- probe: canonical + sandbox --disable all --diff re-run (tmp/grind/func_8004A4E0/s9/canonical.txt, sandbox_diff.txt); fake_ablate n/a since candidate.c has no C body
+- result: canonical ASM-WHOLE (whole-function grant in inline_asm_canonical.txt); sandbox scores the INCLUDE_ASM stub, no diff; no chassis drift, no FAKE carrier, so prior instance kills stand
+- verdict: CONFIRMED
+
+## [s9] func_8004A940 (reached from func_8004A4E0's jump table and 5 jal sites) stores $ra to 4($s1) and reloads it from there before jr $ra; GCC 2.7.2 MIPS addresses the $ra save slot only off $sp (or a temp derived from $sp), and has no RETURN_ADDR_RTX to name $ra from C
+- mechanism: config/mips/mips.c save_restore_insns:4588, base_reg_rtx = stack_pointer_rtx (:4632) or MIPS_TEMP2 = offset+$sp (:4640/:4659); expr.c:7196 RETURN_ADDR_RTX undefined for MIPS
+- probe: corpus census tmp/grind/func_8004A4E0/s9/rascan.py over 1437 asm/funcs/*.s split compiled-C vs asm as in s7
+- result: compiled C 0/1164 store $ra off-$sp; asm 12/273 do (setjmp, _patch_gte, __SN_ENTRY_POINT, InitGeom, pad/card stubs, func_8004A940, func_8004BB68, func_8004BCC0, func_8004C1F4) - only hand-written code
+- verdict: KILLED
+- kill_scope: class
+- measured_on: asm/funcs/func_8004A940.s:2,20 ground truth + 1164-function compiled-C census; func_8004A4E0 chassis is the INCLUDE_ASM stub, zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:4632
+
+## [s9] Callee-saved registers read before any write at entry (live-in) in func_8004A4E0's helpers mark the custom register ABI cited by the canonical audit
+- mechanism: compiled C only reads an $s-reg after RA assigns it a pseudo; entry-live pseudos (flow.c:1199-1203) arise only from uninitialized locals - statistical, not architectural
+- probe: rascan.py signal L (linear scan to first branch)
+- result: compiled C 0/1164; asm 6/273: setjmp, func_8004BCC0, func_800790A4 and all three func_8004A4E0 helpers func_8004A76C ($s0), func_8004A808 ($s0), func_8004A940 ($s0,$s1)
+- verdict: CONFIRMED

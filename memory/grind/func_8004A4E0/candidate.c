@@ -33,3 +33,8 @@
  * sandbox --disable all (s1..s7): {"score": 163, "no_c_body": true, "build_insns": 0}.
  */
 INCLUDE_ASM("asm/funcs", func_8004A4E0);
+
+/* s9 (forensics): helper func_8004A940 saves/restores $ra via scratchpad 4($s1);
+ * compiled C 0/1164 do that (mips.c:4632 save_restore_insns bases only off $sp).
+ * Callee-saved live-in at entry: 0/1164 C, but all 3 helpers A76C/A808/A940.
+ * tmp/grind/func_8004A4E0/s9/rascan.txt. INCLUDE_ASM stays. */
