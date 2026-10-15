@@ -153,11 +153,11 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      uncompiled, 5 local aggregates, 4 other). A scoped comment edit that format.py re-wraps fails the
      keycheck: pre-wrap it in a comment-only prep (tmp/p3w36/prep2_gen.py).
      Follow-ups: dd4d544e3 re-keyed 6 canonical-asm region grants the waves moved (a renamed operand
-     inside a GTE island moves its grant hash; no gate caught it; `python tmp/p3regions/check.py :`
-     is now a wave gate, re-key via tmp/p3regions/rekey.py + cheat-reviewer); named_syms.txt comments
+     inside a GTE island moves its grant hash; check_completion_integrity now fails on it; re-key via tmp/p3regions/rekey.py + cheat-reviewer); named_syms.txt comments
      follow three reset locals (waves 32/34 follow-up).
-   - **Next:** (1) done (wave36); (2) check_completion_integrity should compare region-grant
-     hashes (tools/ change, two reviewers); (3) normal waves: the 98 member claims, ~50 types, R6 leads
+   - **Next:** (1) done (wave36); (2) done: check_completion_integrity audits every region grant,
+     queued functions included (0acb573f0; it found wave36's stale func_8002D518 grant, re-keyed in
+     19e79eba0); (3) normal waves: the 98 member claims, ~50 types, R6 leads
      in tmp/p3w2*/verdict_r6*.json (e.g. FAKE named intermediates still named `last`, `cx`/`cy`;
      member docs "fade level", "command cursor"); (4) the file-name pass. Further leads: func_8006BEC4's local `pos` (holds a size: RESET);
      Unk8003F824Rec.quad (no fresh neutral spelling for +0x04; member destinations must be unique
