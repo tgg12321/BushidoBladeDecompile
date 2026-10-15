@@ -1,7 +1,7 @@
 ---
 name: naming-bulk-reset
 paths: [".claude/rules/naming-bulk-reset.md"]
-description: "Owner ruling Q119 (2026-10-14): unreviewed claim-making local and parameter names in game code are reset to neutral in bulk waves, certified by the mechanical gates and a sampling R6, without per-row evidence. Generic, type-confirmed, GPU and geometry names stay. Members, types, globals, functions and files keep normal waves."
+description: "Owner ruling Q119 (2026-10-14): unreviewed claim-making local and parameter names in game code are reset to neutral in bulk waves, certified by the mechanical gates and a sampling R6, without per-row evidence. Generic, type-confirmed, GPU and geometry names stay. Q120 (2026-10-15) extends it to struct-member resets to neutral. Types, globals, functions, files and every non-neutral rename keep normal waves."
 metadata:
   type: rule
   tier: hygiene
@@ -35,8 +35,15 @@ renamed by `f:l=n` pairs. A name is in scope unless it is:
 Parameter names in prototypes (headers, forward declarations) are not renamed by `f:l=n`; a
 claim there is left for a normal wave.
 
-Out-of-scope names stay; a normal wave resets one only on a contradicting use. Members, types,
-globals, functions and file names are never bulk-reset.
+Out-of-scope names stay; a normal wave resets one only on a contradicting use. Types, globals,
+functions and file names are never bulk-reset.
+
+**Members (owner ruling Q120, 2026-10-15).** A struct member of a game type (`include/game.h`,
+`include/bb2.h`, `src/main/*.c`) whose name is in scope by the tests above is reset the same way
+by a `T.m=n` pair: rows in `member_manifest.csv`, evidence `RESET-BULK (Q120)`, destination a
+fresh neutral spelling by byte offset in the struct's own convention (`unk_XX` / `unkXX` / `fXX`;
+if taken, a short type tag + offset). Never-accessed `pad` bytes stay. A member KEEP or rename
+with evidence is a normal-wave row.
 
 ## The wave
 

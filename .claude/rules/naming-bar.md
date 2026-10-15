@@ -78,8 +78,8 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
    `member_manifest.csv`, `local_manifest.csv` (data_manifest's columns); their CONFIRMed pairs
    (`Old=New`, `T.m=n`, `f:l=n`) are the wave's `pairs.txt`.
 2. **Review:** a fresh `naming-reviewer` checks each manifest. It may set `verdict` CONFIRM only
-   on rows it PASSes. Rows it FAILs are dropped or re-mined, never patched by hand. Bulk
-   local resets: [[naming-bulk-reset]] (Q119).
+   on rows it PASSes. Rows it FAILs are dropped or re-mined, never patched by hand.
+   Neutral resets: [[naming-bulk-reset]] (Q119, Q120).
 3. **Census:** `python3 docs/naming/build_census.py`.
 4. **Apply:** with a clean tree and the Grinder stopped, run `tools/naming_wave.py --from-census
    --only <addrs>` (dry run, then `--apply`), commit that as a temporary commit (data_wave refuses

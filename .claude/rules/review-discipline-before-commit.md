@@ -1,7 +1,7 @@
 ---
 name: review-discipline-before-commit
 paths: [".claude/rules/*.md", "CLAUDE.md", "AGENTS.md", "engine/queue.py", "engine/cheats.py"]
-description: "Every COMPLETED-C / cheat-cleanup / canonical-asm-authorization commit (and every rule doc that sanctions a technique) MUST pass a fresh default-FAIL cheat-reviewer (layer-2), recorded with `layer2 record`, BEFORE it lands. Mechanical gates are necessary, not sufficient."
+description: "Every COMPLETED-C / cheat-cleanup / canonical-asm-authorization commit (and every rule doc that sanctions a technique) MUST pass a fresh default-FAIL cheat-reviewer (layer-2), recorded with `layer2 record`, BEFORE it lands. Mechanical gates are necessary, not sufficient. Tools/engine/naming commits take one code reviewer instead; every review stops at two rounds (Q120)."
 metadata:
   type: rules
   tier: blocking
@@ -25,9 +25,17 @@ one of its items; hygiene gaps are reported as `hygiene_debt`, never as a FAIL.
 
 MUST, before: `Match:` (COMPLETED-C), `cheat-cleanup:`, `auth:` (canonical-asm row) commits; any
 addition to `.claude/rules/` that sanctions a technique; any reclassification of a function's
-completion state. SHOULD, before: detector/engine changes that could weaken enforcement, and
-rule edits that relax a FORBIDDEN classification. MAY, any time (spot checks, retro-audits,
-vetting permuter output).
+completion state; rule edits that relax a FORBIDDEN classification. MAY, any time (spot
+checks, retro-audits, vetting permuter output).
+
+**Tools, engine, registry and naming commits (owner ruling Q120, 2026-10-15):** no
+cheat-reviewer. One fresh code reviewer; fix what it finds, then one re-check of the exact final
+diff before commit. (Naming waves keep their `naming-reviewer` passes, [[naming-bar]].)
+
+**Round cap (Q120), every reviewer kind:** at most two rounds. After round 2 a finding blocks
+only if it can occur in the real tree (a shape present in `src/` / `include/` or that the
+current workflow produces); hypothetical or invalid-C cases go in the commit body as hygiene
+debt.
 
 Brief it with: the function; the current and proposed bodies (or paths/refs); the technique
 and how it was derived; every rule/precedent cited; the mechanical detector output.
