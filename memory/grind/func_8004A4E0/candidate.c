@@ -20,6 +20,16 @@
  * only global register vars survive); $s3 saved-unreferenced is NOT a signal (5/506 C do it).
  * tmp/grind/func_8004A4E0/s7/savescan4.txt.
  *
+ * s8 (rederive): m2c refuses this body outright (jump table not inline-providable).
+ * Decisive NEW finding: jtbl_8001541C (func_8004A4E0's own case-dispatch table,
+ * src/main/d_5BF0.c) has 8/16 entries that are jlabels living only inside
+ * func_8004A940's body (asm/funcs/func_8004A940.s) — a different function's
+ * own prologue-protected code. func_8004A4E0's switch jumps directly into the
+ * middle of func_8004A940, bypassing its prologue. No switch/goto/fnptr
+ * lowering under GCC 2.7.2's per-function compilation model (toplev.c:2647,
+ * stmt.c:4704) can put a jump-table entry inside a DIFFERENT function's body.
+ * Class kill — see hypotheses.md [s8], tmp/grind/func_8004A4E0/s8/.
+ *
  * sandbox --disable all (s1..s7): {"score": 163, "no_c_body": true, "build_insns": 0}.
  */
 INCLUDE_ASM("asm/funcs", func_8004A4E0);

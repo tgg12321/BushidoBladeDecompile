@@ -112,3 +112,20 @@ it would only become live if a future session carved a C island out of the body 
 - [s7] callee-saved saved-never-referenced: compiled C 5/506, so not a hand-written signal (s7/savescan4.txt)
 
 - [s7] earlier scanner versions savescan.py / savescan3a / savescan3b miscounted (outgoing-arg sw mistaken for a save; scheduled prologues missed); savescan4 is the definitive count
+
+## s8 (rederive)
+- m2c refuses func_8004A4E0's asm outright: "Found jr instruction ... jump table is not provided" — jtbl_8001541C/jtbl_8001545C are C arrays in src/main/d_5BF0.c, not .s data m2c can consume inline (tmp/grind/func_8004A4E0/s8/m2c_out.c, m2c_err.txt).
+- NEW decisive fact: 8 of jtbl_8001541C's 16 entries (0x8004A990, 0x8004ABD8, 0x8004AE0C, 0x8004AF84, 0x8004B0C8, 0x8004B0E4, 0x8004B27C, 0x8004B4D8) are jlabels that exist only inside func_8004A940's own body (asm/funcs/func_8004A940.s), a different function entirely with its own glabel/endlabel and its own prologue. func_8004A4E0's own switch dispatch jumps directly into the middle of func_8004A940, skipping its prologue, carrying over func_8004A4E0's live register state. See tmp/grind/func_8004A4E0/s8/jtbl_cross_function_evidence.txt.
+- GCC 2.7.2 compiles one FUNCTION_DECL to completion before the next (toplev.c:2647 rest_of_compilation) and switch jump-table labels are generated/scoped per-function (stmt.c:4704, case_stack). No C source can make the compiler emit a jump-table entry resolving into a different function's compiled body. This is an architectural (not merely statistical/corpus) class kill of the pure-C hypothesis for this control-flow shape — the strongest single fact this ledger has produced across 8 sessions.
+
+- [s8] canonical() verdict remains ASM-WHOLE citing the existing inline_asm_canonical.txt grant (unchanged this session, re-confirmed).
+
+- [s8] m2c (tools/m2c/m2c.py -t mips-gcc) cannot even attempt a decompile of func_8004A4E0's asm without its jump tables supplied as raw .s data; they exist only as C arrays (src/main/d_5BF0.c), confirming this body was never treated as switch-lowered output by any decompiler tooling either.
+
+- [s8] jtbl_8001541C (func_8004A4E0's own outer-dispatch jump table, 16 entries, src/main/d_5BF0.c:21-25): 8 of its 16 entries are jlabels that exist exclusively inside func_8004A940's own compiled body (asm/funcs/func_8004A940.s), not inside func_8004A4E0 and not exported/shared anywhere.
+
+- [s8] GCC 2.7.2 compiles one FUNCTION_DECL to completion (RTL gen through final assembly) before starting the next (toplev.c:2647 rest_of_compilation); a switch statement's jump-table labels are generated and scoped entirely within that single function's compilation pass (stmt.c:4704, case_stack/struct nesting). No C construct lowered by this compiler can therefore produce a jump-table entry resolving into a different function's own body — this is a compiler-architecture impossibility, not a statistical corpus absence.
+
+- [s8] This closes the loop on the 2026-09-29 custom-ABI audit's observation of register handoffs across jal boundaries ($s4/$s5/$s6/$fp/$s0): the handoff isn't merely 'unusual ABI', it's the SAME mechanism — func_8004A4E0 literally jumps into func_8004A940's interior carrying live GPRs, which is exactly what a hand-written dispatcher can do and a compiled switch+call sequence cannot.
+
+- [s8] candidate.c and hypotheses.md/evidence.md updated with full citations; no C body exists to grind (src/main/3AB48.c body unchanged: INCLUDE_ASM("asm/funcs", func_8004A4E0);).

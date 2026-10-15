@@ -1,8 +1,8 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,13 +45,19 @@
    "floor": 163,
    "modality": "forensics",
    "headline": "forensics: callee-saved census - $s6 written-never-read is 0/506 in compiled C (flow.c:1758 only exempts global register vars); $s3 saved-unreferenced killed as a signal (5/506 C do it)"
+  },
+  {
+   "session": 8,
+   "floor": 163,
+   "modality": "rederive",
+   "headline": "rederive: m2c refuses the body; found a decisive NEW class kill \u2014 func_8004A4E0's own jump table dispatches into the MIDDLE of a different function (func_8004A940), which no C switch/goto/fnptr loweri"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8004A4E0 is hand-written and belongs on the Judge-gated canonical-grant path; there are now three independent signals: the custom-ABI audit, code after the epilogue (final.c:1066), and $s6 written-never-read (flow.c:1758)",
-   "mechanism": "scan_hand_coded.py tests callee-side signals only, so the STRONG-tier gate cannot see the layout or dead-hard-reg-set signals",
-   "next_probe": "escalation modality: file the canonical-grant record in docs/grind/decisions.md citing s5/midret.txt, s6/sketch.s, s7/savescan4.txt and docs/audits/func_8004A4E0-canonical-2026-09-29.md; recommend operator-side scanner signals S9 'code after single epilogue' and S10 'callee-saved written, never read'"
+   "hypothesis": "The 2026-09-29 canonical-asm audit and docs/audits/func_8004A4E0-canonical-2026-09-29.md should be amended/strengthened with this s8 cross-function-jump finding, since it is a stronger (architectural, not statistical) proof than any signal currently cited in that audit",
+   "mechanism": "n/a \u2014 documentation/evidence consolidation, not a code lever",
+   "next_probe": "a future session (recon or escalation modality) should fold the s8 finding into the audit doc and confirm whether the driver's STRONG scanner tier (S1/S2/S6 signals) already covers 'jump table crosses function boundary' or needs an explicit new signal name"
   }
  ],
  "judge_constraints": [],
@@ -104,6 +110,22 @@
    "measured_on": "corpus census tmp/grind/func_8004A4E0/s7/savescan4.txt; function chassis is the INCLUDE_ASM stub, no C body, zero FAKE constructs",
    "predicate_cite": "",
    "result": "compiled-C 5/506 also save a never-referenced callee-saved reg (func_8002E6B0 $s4, func_8005763C $s0, math_RotMatrixXYZ "
+  },
+  {
+   "session": 8,
+   "statement": "m2c can produce a fresh pure-C decompile of func_8004A4E0's asm that the prior 7 sessions' manual analysis missed",
+   "kill_scope": "instance",
+   "measured_on": "asm/funcs/func_8004A4E0.s via tools/m2c/m2c.py, no C chassis, zero FAKE constructs (tmp/grind/func_8004A4E0/s8/m2c_out.c, m2c_err.txt)",
+   "predicate_cite": "",
+   "result": "m2c refuses outright: 'Found jr instruction at func_8004A4E0.s line 33, but the corresponding jump table is not provided"
+  },
+  {
+   "session": 8,
+   "statement": "func_8004A4E0's own switch-style computed jump (via jtbl_8001541C) transfers control directly into the middle of a DIFFERENT function's (func_8004A940) compiled body, bypassing func_8004A940's own pro",
+   "kill_scope": "class",
+   "measured_on": "asm/funcs/func_8004A4E0.s + asm/funcs/func_8004A940.s + src/main/d_5BF0.c ground truth (no C chassis exists for func_8004A4E0; zero FAKE constructs; this kill does not rest on chassis or FAKE state)",
+   "predicate_cite": "tools/gcc-2.7.2/toplev.c:2647",
+   "result": "confirmed by direct grep: those 8 labels are private to func_8004A940's own body. func_8004A4E0's dispatch therefore fre"
   }
  ],
  "ladder_skip": 0,
