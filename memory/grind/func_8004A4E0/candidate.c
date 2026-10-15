@@ -7,7 +7,7 @@
  * asm at every call site) plus 2 trapping addi and 4 ctc2 with no C form. See
  * memory/grind/func_8004A4E0/hypotheses.md H1 (KILLED, class) for the full chain.
  *
- * REPRESENTATION BANNER (s18b, measured at HEAD 9d185896b): func_8004A4E0 is
+ * MIGRATION NOTE (representation banner; s18b, measured at HEAD 9d185896b): func_8004A4E0 is
  * committed on main as INCLUDE_ASM (whole-body, canonical grant inline_asm_canonical.txt:199);
  * this file carries NO C candidate - it is a comments-only record. Re-check the
  * representation in src/main/3AB48.c before trusting any state claim here.
@@ -112,4 +112,8 @@ INCLUDE_ASM("asm/funcs", func_8004A4E0);
  * ASM-WHOLE verdict and {"score":163,"no_c_body":true,"build_insns":0}. Sweep precondition
  * (an existing C region to carve) still unmet; zero C statements in src/main/3AB48.c. Checked
  * docs/grind/decisions.md: no existing entry for this function. See hypotheses.md [s17].
+ *
+ * s21 (forensics): hazard-free explicit nop at 0x8004A718 (addiu $s4 -> nop -> jal); GCC/maspsx
+ * emit nop only in delay slots/load/HI-LO hazards (mips.c:3618, mips.c:5200); compiled C 0/1297
+ * (tmp/grind/func_8004A4E0/s21/nop_census.txt, probe.objdump.txt).
  */

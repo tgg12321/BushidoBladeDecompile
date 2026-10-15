@@ -276,3 +276,18 @@ it would only become live if a future session carved a C island out of the body 
 - [s20] switch(u8) with all 256 cases still emits sltu $2,$3,256 (s20/probe.s C_u8_256; probe.i.combine)
 
 - [s20] the s8 cross-function jtbl targets and the s18b trapping addi remain the non-C signals; 'unbounded jtbl index' should not become a scanner signal
+- [s21] Kill re-audit: sandbox --disable all = 163, no_c_body true, no diff; fake_ablate nothing to ablate (s21/sandbox.txt, s21/fake_ablate.txt). No kill voided.
+- [s21] NEW NOT-C SIGNAL: hazard-free explicit nop. 0x8004A718 `nop` sits between `addiu $s4,$s4,%lo(D_80095328)` and `jal func_8004A940` (case .L8004A6F0). This is not a delay slot, follows no load, HI/LO or cop2 op, and is not end padding. GCC 2.7.2 emits nop only through `%#` delay-slot fill (tools/gcc-2.7.2/config/mips/mips.c:3618) and the epilogue load nop (mips.c:5200). maspsx adds nops only for load/HI-LO hazards and div expansion (tools/maspsx/maspsx/__init__.py:1070-1083).
+- [s21] Census (tmp/grind/func_8004A4E0/s21/nop_census.txt): GCC-emitted C 0/1297. The 3 C-representation hits are inline asm: the BIOS trampolines DelDrv and _96_remove, and the gte_rtpt macro in func_80067D14. INCLUDE_ASM: 39/137, including the libgte hand-written bodies (RotMatrix*, ScaleMatrix*, SquareRoot0/12), func_8004A940 (7 hits; its prev insn is a trapping `sub`), and 22 polygon-cluster functions (0x8004C994-0x80051D08, nop after `sw $t0,0x8($s6)`).
+- [s21] Build-pipeline probe (s21/probe.c -> probe.objdump.txt): the C rendering of the case block compiles to `lui; addiu; jal` with no nop, and every nop in the object is a jal/jr delay slot.
+- [s21] This signal is a third mechanizable candidate for the Judge's door 1 (scan_hand_coded STRONG), alongside the s18b trapping add and the s10 cross-function jtbl target. Editing tools/ is outside the grind surface, so it is handed to the operator.
+
+- [s21] sandbox --disable all at HEAD baf1aac95: score 163, no_c_body true (tmp/grind/func_8004A4E0/s21/sandbox.txt)
+
+- [s21] The hazard-free nop appears in 0/1297 GCC-emitted functions; the only C-representation hits are inline asm (inline_asm_canonical.txt:129, :130, :403)
+
+- [s21] The hazard-free nop fires on the hand-written libgte bodies (RotMatrix*, ScaleMatrix*, SquareRoot0/12) and on func_8004A940 (7 hits), so it discriminates in the right direction
+
+- [s21] The pipeline probe emits lui/addiu/jal with no nop; every nop in the probe object is a delay slot (s21/probe.objdump.txt)
+
+- [s21] candidate.c banner renamed to MIGRATION NOTE (clears the dossier STALE HEAD CLAIMS warning, engine/dossier.py:134)

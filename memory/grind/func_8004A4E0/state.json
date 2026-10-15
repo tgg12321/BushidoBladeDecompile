@@ -1,7 +1,7 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 20,
+ "session_count": 21,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -123,16 +123,22 @@
    "floor": 163,
    "modality": "forensics",
    "headline": "s20 forensics: cc1 dumps show the unbounded jtbl dispatch comes from GNU computed goto (no bound check) while every switch keeps sltu (expr.c:9963); s18 signal (a) downgraded to not-a-switch; s8/s18b "
+  },
+  {
+   "session": 21,
+   "floor": 163,
+   "modality": "forensics",
+   "headline": "s21 forensics: new corpus-clean not-C signal. The hazard-free nop at 0x8004A718 (addiu -> nop -> jal) appears in 0/1297 GCC-emitted functions; the pipeline probe emits no nop there; kill re-audit void"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Adding a trapping-add signal (and/or the s10 cross-function-jtbl signal) to tools/scan_hand_coded.py makes func_8004A4E0 STRONG and satisfies the 2026-10-08 reopen bar",
-   "mechanism": "mips.md:381 addsi3 emits addu only; s10 jtblscan compiled C 0/58 cross-function",
-   "next_probe": "Operator/engine commit with layer-2, then scan_hand_coded --single func_8004A4E0"
+   "hypothesis": "A scan_hand_coded signal for a trapping add (s18b), a cross-function jtbl target (s10) or a hazard-free nop (s21) rates func_8004A4E0 STRONG and opens Judge door 1 (docs/grind/decisions.md:1320)",
+   "mechanism": "mips.md:381 addsi3 emits only addu; mips.c:3618 emits nop only in delay slots; jtbl labels are per-function",
+   "next_probe": "Operator/engine commit with layer-2 review, then scan_hand_coded --single func_8004A4E0"
   },
   {
-   "hypothesis": "Absent the scanner change, the modality ladder is exhausted (floor 163 > 5)",
+   "hypothesis": "Without the scanner change, the modality ladder is exhausted at floor 163",
    "mechanism": "n/a - disposition",
    "next_probe": "Escalation modality: file the LADDER EXHAUSTED (floor 163): ROTATED record and rotate"
   }
@@ -357,6 +363,22 @@
    "measured_on": "s20/probe.c switch shapes A-D, project CC flags, instrumented cc1, no FAKE constructs",
    "predicate_cite": "tools/gcc-2.7.2/expr.c:9963",
    "result": "sltu_si (ltu reg const) survives to final in all 4 shapes, including a zero_extend:QI index against 256. A C reconstruct"
+  },
+  {
+   "session": 21,
+   "statement": "Kill re-audit (mandated, floor flat): a banked instance kill was measured on a different chassis or under a FAKE carrier no longer present",
+   "kill_scope": "instance",
+   "measured_on": "whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD baf1aac95, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "score 163, no_c_body true, no diff (whole-body INCLUDE_ASM); fake_ablate found no FAKE construct; no kill voided"
+  },
+  {
+   "session": 21,
+   "statement": "The explicit nop at 0x8004A718 (lui/addiu $s4 = &D_80095328; nop; jal func_8004A940) is producible by the project pipeline cc1 | maspsx | as from a C body",
+   "kill_scope": "class",
+   "measured_on": "whole asm/funcs corpus + standalone probe tmp/grind/func_8004A4E0/s21/probe.c via build cc1/maspsx/as with project flags; function chassis whole-body INCLUDE_ASM, zero FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:3618",
+   "result": "C-representation functions: 3 hits, all inline asm (DelDrv and _96_remove BIOS pad nops, the gte_rtpt macro in func_8006"
   }
  ],
  "ladder_skip": 0,

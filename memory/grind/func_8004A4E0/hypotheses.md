@@ -427,3 +427,41 @@ floor 163 at s17; 17 sessions; live frontier (state.json is authoritative):
 - kill_scope: class
 - measured_on: s20/probe.c switch shapes A-D, project CC flags, instrumented cc1, no FAKE constructs
 - predicate_cite: tools/gcc-2.7.2/expr.c:9963
+
+## [s21] (forensics) Kill re-audit (mandated, floor flat): a banked instance kill was measured on a different chassis or under a FAKE carrier no longer present.
+- mechanism: n/a - re-audit of measurement conditions
+- probe: `sandbox func_8004A4E0 --disable all --diff` + tools/fake_ablate.py on candidate.c at HEAD baf1aac95 (tmp/grind/func_8004A4E0/s21/sandbox.txt, s21/fake_ablate.txt)
+- result: score 163, no_c_body true, "no diff: function is still whole-body INCLUDE_ASM"; fake_ablate found no FAKE construct. No banked kill is voided.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD baf1aac95, zero FAKE constructs
+
+## [s21] (forensics) The explicit nop at 0x8004A718 (`lui $s4; addiu $s4,%lo(D_80095328); nop; jal func_8004A940` in the .L8004A6F0 case) is producible by the project pipeline (cc1 | maspsx | as) from a C body
+- mechanism: GCC 2.7.2 MIPS emits a nop only (1) in a branch/jump delay slot via the `%#` operand code (tools/gcc-2.7.2/config/mips/mips.c:3618) or (2) as the epilogue load-delay nop after `lw $ra` (mips.c:5200); maspsx adds nops only for load-delay hazards, HI/LO hazards before mult/div (tools/maspsx/maspsx/__init__.py:1070-1083) and inside div expansion. None of them puts a nop after an ALU `addiu` that is followed by `jal`.
+- probe: (a) corpus census tmp/grind/func_8004A4E0/s21/nop_census.py: in every asm/funcs function, flag a `nop` whose predecessor is not a branch/jump, a load (lw/lh/lhu/lb/lbu/lwl/lwr/lwc2/mfc0/mfc2/cfc2), mfhi/mflo (within 2 insns), a cop0/cop2/mult/div op, or another nop, and is not the last instruction (alignment pad). (b) build-pipeline probe tmp/grind/func_8004A4E0/s21/probe.c (run.sh): the case block written as C three ways (pointer argument, global store, inside a loop with a second reload-and-call), through tools/gcc-2.7.2/build/cc1 (project flags) | maspsx --aspsx-version=2.34 | mipsel-linux-gnu-as, then objdump.
+- result: (a) of 1300 functions that have a C representation, 3 hits, and all 3 are inline asm: DelDrv and _96_remove are BIOS trampolines with trailing pad nops (inline_asm_canonical.txt:129-130), and func_80067D14's double nop is the PsyQ gte_rtpt inline_c.h macro text (inline_asm_canonical.txt:403). GCC-emitted code: 0/1297. Of 137 INCLUDE_ASM functions, 39 hit, among them the known hand-written libgte bodies (RotMatrix/X/Y/Z/ZYX, ScaleMatrix(L), SquareRoot0/12, ApplyRotMatrixLV), func_8004A4E0 (1, at 0x8004A718), func_8004A940 (7), and 22 of the 0x8004C994-0x80051D08 polygon cluster. (b) every nop in the probe object is a jal or jr delay slot (s21/probe.objdump.txt, s21/probe_nops.txt). The address materialization is `lui a0; addiu a0,a0,%lo(D_80095328); jal` with no nop between them.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole corpus asm/funcs (1437 functions) + standalone probe s21/probe.c through the build cc1/maspsx/as with project flags; function chassis whole-body INCLUDE_ASM, zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:3618
+
+## [s21] FRONTIER (updated)
+1. Operator/engine (Judge door 1, docs/grind/decisions.md:1320): add one or more mechanized not-C signals to tools/scan_hand_coded.py. Corpus-clean candidates are the trapping add (s18b, 0/1299), the s10 cross-function jtbl target (0/58), and now the hazard-free nop (s21, 0/1297 GCC-emitted; it also fires on the known hand-written libgte bodies, so it discriminates in the right direction). Do NOT use "unbounded jtbl index" (s20: computed goto produces it).
+2. Otherwise: escalation-modality LADDER EXHAUSTED (floor 163) record + rotation, per the Judge constraint.
+
+## [s21] Kill re-audit (mandated, floor flat): a banked instance kill was measured on a different chassis or under a FAKE carrier no longer present
+- mechanism: n/a - re-audit of measurement conditions
+- probe: sandbox func_8004A4E0 --disable all --diff + tools/fake_ablate.py on candidate.c at HEAD baf1aac95
+- result: score 163, no_c_body true, no diff (whole-body INCLUDE_ASM); fake_ablate found no FAKE construct; no kill voided
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: whole-body INCLUDE_ASM chassis (src/main/3AB48.c unchanged) at HEAD baf1aac95, zero FAKE constructs
+
+## [s21] The explicit nop at 0x8004A718 (lui/addiu $s4 = &D_80095328; nop; jal func_8004A940) is producible by the project pipeline cc1 | maspsx | as from a C body
+- mechanism: GCC 2.7.2 MIPS emits nop only via the %# delay-slot operand code (mips.c:3618) and the epilogue load nop (mips.c:5200); maspsx adds nops only for load and HI/LO hazards and in div expansion (maspsx/__init__.py:1070-1083). None of these follows an ALU addiu that precedes a jal.
+- probe: corpus census s21/nop_census.py (a nop whose predecessor is not a branch, load, mfhi/mflo, cop or mult/div op and that is not end padding) over all 1437 asm/funcs; plus s21/probe.c, the case block as C in 3 variants, through the build cc1, maspsx and as, then objdump
+- result: C-representation functions: 3 hits, all inline asm (DelDrv and _96_remove BIOS pad nops, the gte_rtpt macro in func_80067D14), so GCC-emitted code has 0/1297. INCLUDE_ASM: 39/137 hit, including func_8004A4E0 (1), func_8004A940 (7), the known hand-written libgte bodies and 22 polygon-cluster functions. In the probe object every nop is a jal/jr delay slot; the address materialization goes straight lui; addiu; jal.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: whole asm/funcs corpus + standalone probe tmp/grind/func_8004A4E0/s21/probe.c via build cc1/maspsx/as with project flags; function chassis whole-body INCLUDE_ASM, zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:3618
