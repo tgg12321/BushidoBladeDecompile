@@ -11,7 +11,7 @@ extern s32 func_80073C78();
 
 extern const u8 D_800159A0[];
 
-s32 func_8007352C(Unk8007352CEnv *env) {
+s32 func_8007352C(Unk8007352CRec *env) {
     Unk8009B0E0Record *var_0 = env->header;
     SPRT *sp = (SPRT *)env->sprt_out;
     Unk8009B400Record *e;
@@ -57,7 +57,7 @@ s32 func_8007352C(Unk8007352CEnv *env) {
     return (s32)sp;
 }
 
-s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
+s32 func_80073728(Unk8007352CRec *env, s32 mode) {
     Unk8009B400Record *e = env->table;
     Unk8009B0E0Record *var_1 = env->header;
     POLY_FT4 *p;
@@ -159,7 +159,7 @@ s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
 extern VECTOR D_8009BCD4;
 
 s32 func_80073C78(env, angle, mode)
-Unk8007352CEnv *env;
+Unk8007352CRec *env;
 s16 angle;
 s32 mode;
 {
@@ -282,7 +282,7 @@ s32 mode;
 }
 
 void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s32 i;
     Unk8009B0E0Record **temp_s2;
     TILE *t;
@@ -368,7 +368,7 @@ skip_init:
 }
 
 void func_80074488(Unk8006EACCRec *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s16 mask;
     s16 i;
     Unk8009B0E0Record **table;

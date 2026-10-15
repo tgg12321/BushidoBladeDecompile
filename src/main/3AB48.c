@@ -661,7 +661,7 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     /* FAKE: second handle to the D_800EFAE8 record (pointer alias): keeps
      * &D_800EFAE8 in one base register ($s1) for the whole body; direct field
      * access rematerializes it: score 63 */
-    Unk800EFAE8Ctrl *s = &D_800EFAE8;
+    Unk800EFAE8Rec *s = &D_800EFAE8;
     /* FAKE: id (a0 + 0x131) computed at entry; at its uses the addiu moves
      * below the prologue stores (score 6). */
     s32 id = a0 + 0x131;
@@ -760,7 +760,7 @@ s32 func_8005490C(void) {
     /* FAKE: second handle to the D_800EFAE8 record (pointer alias), as in
      * func_80054604: keeps &D_800EFAE8 in $s3 for the whole body; direct field
      * access: score 157 */
-    Unk800EFAE8Ctrl *s = &D_800EFAE8;
+    Unk800EFAE8Rec *s = &D_800EFAE8;
     VECTOR vec;
     /* The 0x84 bytes func_800198D0 decodes, as s16: three of its fields load
      * signed (lh), and the array goes to func_80040D48's s16 * parameter. */
@@ -4027,7 +4027,7 @@ extern int AddPrim();
 
 s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
     Unk8005C8A8Rec *var_0 = (Unk8005C8A8Rec *)arg2;
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     TILE *tile;
     s32 cur;
     s16 var_4;
@@ -4321,7 +4321,7 @@ extern Unk8009B400Record D_8009B340[3];
 extern Unk8009B400Record D_8009B358[6];
 
 s32 func_8005D46C(s32 arg0, s32 arg1) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     /* FAKE: holder of the first walk's cursor until the second descriptor is
        set; stored directly: score 6. */
     s32 ret;
@@ -4355,7 +4355,7 @@ s32 func_8005D46C(s32 arg0, s32 arg1) {
 }
 
 s32 func_8005D554(s32 arg0, s32 arg1) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s32 i;
     u32 base_x;
     u32 base_y;
@@ -4456,7 +4456,7 @@ extern Unk8009B400Record D_8009B3F8;
 
 s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Unk8005D814Rec *var_0 = (Unk8005D814Rec *)arg2;
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s16 var_2[3];
     TILE *tile;
     s32 cur;
@@ -4640,7 +4640,7 @@ extern Unk8009B400Record D_8009B488;
 
 s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     Unk8005D814Rec *var_0 = (Unk8005D814Rec *)arg2;
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s16 d[2];
     TILE *tile;
     s32 cur;
@@ -4785,7 +4785,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
        totals array does not match). */
     s16 var_1[2];
     s16 var_2[2];
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     /* FAKE: frame layout: unused; keeps the 8 untouched bytes at sp+0x58 where
      * the siblings func_8005D814 and func_8005F1C8 keep a real s16[3]
      * array (Q35, no-new-park-categories phantom-frame-slot pad family).
@@ -5079,7 +5079,7 @@ extern Unk8009B400Record D_8009B5E8;
 
 s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Unk8005D814Rec *var_0 = (Unk8005D814Rec *)arg2;
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s16 d[3];
     TILE *tile;
     s32 cur;
@@ -5260,7 +5260,7 @@ extern Unk8009B0E0Record D_8009B63C[3];
 extern Unk8009B400Record D_8009B660[7];
 
 s32 func_8005FA98(s32 arg0, s32 arg1, s32 arg2) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     /* FAKE: holder of the first walk's cursor until the second descriptor is
        set; stored directly: score 11. */
     s32 ret;
@@ -5322,7 +5322,7 @@ extern Unk8009B400Record D_8009B6B0[8];
 
 s32 func_8005FC9C(s32 arg0, s32 arg1) {
     Unk8005FC9CRec *var_0 = (Unk8005FC9CRec *)arg0;
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     RECT r;
     RECT *var_3;
     GpuDb *var_4;
@@ -5436,7 +5436,7 @@ extern Unk8009B400Record D_8009B708[10];
 extern Unk8009B400Record D_8009B758[3];
 
 s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s16 d[2];
     Unk800600C8Rec *var_2 = (Unk800600C8Rec *)arg1;
     DR_MODE *mode_off = &var_2->unk_B4;
@@ -5518,7 +5518,7 @@ extern Unk8009B0E0Record D_8009B7AC[3];
 extern u16 D_8009B850[];
 
 s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     Unk80060414Rec *var_1 = (Unk80060414Rec *)arg1;
     DR_MODE *mode_off;
     /* FAKE: the returned size is the record's end minus its start;
@@ -5556,7 +5556,7 @@ extern Unk8009B400Record D_8009B840[2];
 
 s32 func_80060544(s32 arg0, s32 arg1) {
     Unk80060544Rec *var_0 = (Unk80060544Rec *)arg0;
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     /* FAKE: the returned size is the record's end minus its start;
      * sizeof(Unk80060544Rec): score 25. */
     s32 end_off;
@@ -5634,7 +5634,7 @@ void func_80060758(void) {
     D_800A32B4 = 0;
 }
 
-extern Unk8006D808Set D_8009B0C0;
+extern Unk8006D808Rec D_8009B0C0;
 
 s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     s32 sp18;

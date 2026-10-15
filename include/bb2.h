@@ -14,7 +14,7 @@ extern u32 *g_gpu_ot_ptr;
 extern void gpu_SetDispMaskOn(void);
 extern void gpu_ResetGraphMode1(void);
 extern void func_80016888(void);
-extern MoveChannel D_800EF848[];
+extern Unk800EF848Rec D_800EF848[];
 extern u16 D_80099C34[][7];
 
 /* SDK OT_TYPE: one DMA tag word per table entry. */
@@ -36,7 +36,7 @@ extern s32 D_800A3790;
 extern s16 D_80099478;
 extern s16 D_8009947A;
 extern Unk800F1198Record D_800F1198[];
-extern Unk800A9CF8Header D_800A9CF8;
+extern Unk800A9CF8Rec D_800A9CF8;
 extern Unk800F0EC8Record D_800F0EC8[][10];
 extern Unk800F0E38Record D_800F0E38[12];
 extern MenuOption D_8009BC0C[8];
@@ -97,7 +97,7 @@ extern Unk8009B400Record D_8009B184[2];
 extern Unk8009B400Record D_800A328C;
 
 extern Unk8009B2BCRecord D_8009B2BC[3];
-extern Unk800EFAE8Ctrl D_800EFAE8;
+extern Unk800EFAE8Rec D_800EFAE8;
 extern Unk800F0C10Record D_800F0C10[4][3];
 
 /* Per-effect-mode state, modes 0..0x11 (func_80065800): the timers here and
@@ -480,10 +480,10 @@ extern RotMatrixFunc D_800F66A0[6];
 extern CdFileEntry g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
 
 extern CdState D_80101E58;
-extern Unk801027B0Pack D_80102760; /* the common motion pack */
+extern Unk801027B0Rec D_80102760; /* the common motion pack */
 extern Unk80102778Rec D_80102778;
 extern PadState g_pad_state;
-extern Unk801027B0Pack D_801027B0[]; /* per load slot */
+extern Unk801027B0Rec D_801027B0[]; /* per load slot */
 /* [i] points to block i's slots, the words after its header word (func_80044010
  * records it and D_80103658[i] holds the slot count).  Each slot is a
  * word holding a block-relative offset that func_80044010 turns into an address
@@ -854,7 +854,7 @@ extern void func_8006D324(void);
 extern s32 func_8006D338(s32, s32);
 extern s32 func_8006D74C(s32, s32);
 extern s32 func_8006D7FC(void);
-extern void func_8006D808(s32 *, s32 *, Unk8006D808Set *, s32, s32);
+extern void func_8006D808(s32 *, s32 *, Unk8006D808Rec *, s32, s32);
 extern s32 func_8006E068(s32, s32);
 extern s32 func_8006E10C(void);
 extern s32 func_8006E2A8(void);
@@ -864,8 +864,8 @@ extern s32 func_8006E49C(s32, Unk8006E49CRec *);
 extern s32 func_8006E534(s32, s32, Unk8009BD24Block *, u32);
 extern void func_8006E950(s32, Unk8006E950Head *);
 extern s32 func_8006EACC(s32, s32);
-extern s32 func_8007352C(Unk8007352CEnv *);
-extern s32 func_80073728(Unk8007352CEnv *, s32);
+extern s32 func_8007352C(Unk8007352CRec *);
+extern s32 func_80073728(Unk8007352CRec *, s32);
 extern void func_80074220(Unk8006EACCRec *, s32);
 extern void func_80074488(Unk8006EACCRec *);
 extern s32 func_80077820(s32);

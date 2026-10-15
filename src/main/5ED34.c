@@ -298,7 +298,7 @@ extern u8 D_800A32E9;
 extern RECT D_800A32F4;
 
 void func_8006ECF4(Unk8006EACCRec *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     Unk8006ECF4Rec *s3;
     Unk8009B0E0Record *s0;
     s32 var_3;
@@ -432,7 +432,7 @@ extern void func_80073200(Unk8006EACCRec *);
 extern s32 func_80073C78();
 
 void func_8006F100(Unk8006EACCRec *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s32 i;
     Unk8009B0E0Record **base;
     Unk8009B0E0Record *obj;
@@ -534,7 +534,7 @@ void func_8006F100(Unk8006EACCRec *arg0) {
 }
 
 void func_8006F528(Unk8006EACCRec *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     RECT rect;
     Unk8009B0E0Record **var_2;
     TILE *prim;
@@ -689,7 +689,7 @@ extern void func_80070188(Unk8006EACCRec *);
 extern void func_80073200(Unk8006EACCRec *);
 
 void func_8006F97C(Unk8006EACCRec *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s16 shift[2];
     u16 var_2[4];
     Unk8009B0E0Record **var_3;
@@ -857,7 +857,7 @@ extern s16 D_800A3530[];
 extern s16 D_800A3534[];
 
 void func_80070188(Unk8006EACCRec *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     Unk8009B0E0Record **var_1;
     s16 *col;
     s16 *row;
@@ -1037,7 +1037,7 @@ void func_80070188(Unk8006EACCRec *arg0) {
     func_8005C6D0();
 }
 
-extern void func_80070F78(Unk8006EACCRec *a0, Unk8007352CEnv *s);
+extern void func_80070F78(Unk8006EACCRec *a0, Unk8007352CRec *s);
 extern void func_8006ECF4(Unk8006EACCRec *);
 extern void func_80072E10(Unk8006EACCRec *);
 extern void func_80073200(Unk8006EACCRec *);
@@ -1054,7 +1054,7 @@ void func_80070C70(Unk8006EACCRec *arg0) {
      * the calls (the target's `li s4,96`, then `move a1,s4`); the inline
      * literal re-materializes `li a1,0x60` at each call site: score 7 */
     s32 c60 = 0x60;
-    Unk8007352CEnv var_1;
+    Unk8007352CRec var_1;
     u16 var_2[4];
     Unk8009B0E0Record **var_3;
     s32 var_s0;
@@ -1133,7 +1133,7 @@ void func_80070C70(Unk8006EACCRec *arg0) {
 
 extern u8 D_8009BC38[];
 
-void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
+void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
     /* several values of one kind, a sprite-sheet header table:
      * D_800A35A8->unk_74 (loaded at entry and again in the selected-slot arm)
      * and D_800A35A8->unk_60 (the table the last loop draws from) (Ruling 11,
@@ -1428,7 +1428,7 @@ s32 func_80071C20(void) {
 }
 
 void func_80071C4C(Unk8006EACCRec *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s32 i;
     Unk8009B0E0Record **base;
     Unk8009B0E0Record *obj;
@@ -1522,7 +1522,7 @@ void func_800720D4(Unk8006EACCRec *a0) {
 }
 
 void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     u16 var_1[4];
     RECT rect;
     u8 *var_3;
@@ -1979,7 +1979,7 @@ void func_80073060(Unk8006EACCRec *arg0) {
  * at D_800A35C4->unk_08 (incremented in func_8006EACC), each
  * through func_8007352C, with a draw-mode primitive per layer. */
 void func_80073200(Unk8006EACCRec *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     Unk8009B0E0Record **var_1;
     /* FAKE: the holder between the header's cells and s.table; stored directly:
      * score 15. */

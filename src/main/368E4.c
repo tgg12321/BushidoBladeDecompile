@@ -1721,7 +1721,7 @@ void func_80048F58(s32 a0, s32 a1) {
     s32 i;
     u16 *src;
     s16 *dst;
-    MoveChannel *base;
+    Unk800EF848Rec *base;
     if (a1 > 0) {
         func_80052C10();
     }
@@ -1752,7 +1752,7 @@ void func_80048FFC(s32 arg0) {
     s32 w;
     s32 var_11;
     s32 i;
-    MoveChannel *var_13;
+    Unk800EF848Rec *var_13;
     DR_MOVE *p;
     s32 var_15;
 

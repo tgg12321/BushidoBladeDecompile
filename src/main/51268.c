@@ -4046,7 +4046,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *arg2) {
     Unk8009B0E0Record **qbase;
     Unk8009B0E0Record **q;
     s32 i;
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
 
     p = (TILE *)arg0[6];
 
@@ -4164,7 +4164,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *arg2) {
 void func_80069E18(s32 arg0) {
     TILE *tile;
     Unk8009B0E0Record **ptr;
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     /* FAKE: single-use holder of the cell table ahead of the descriptor's table
      * store; stored directly: score 8. */
     Unk8009B400Record *p1;
@@ -4217,7 +4217,7 @@ void func_80069E18(s32 arg0) {
  * unwritten tail, so the locals region reaches the target's frame. The plain
  * descriptor scores 12 (func_80069F80) / 14 (func_8006A1A0). */
 typedef struct {
-    Unk8007352CEnv fr00;
+    Unk8007352CRec fr00;
     s32 tail[4];
 } Unk80069F80Rec;
 
@@ -4375,7 +4375,7 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
     }
 }
 
-void func_8006A3CC(s32 *arg0, Unk8007352CEnv *arg1) {
+void func_8006A3CC(s32 *arg0, Unk8007352CRec *arg1) {
     arg1->header = ((Unk8006919CRec *)arg0[1])->unk_1C[4];
     arg1->x = 0;
     arg1->y = 0;
@@ -4390,7 +4390,7 @@ void func_8006A3CC(s32 *arg0, Unk8007352CEnv *arg1) {
     arg0[7] += 0xC;
 }
 
-void func_8006A494(s32 *arg0, Unk8007352CEnv *arg1) {
+void func_8006A494(s32 *arg0, Unk8007352CRec *arg1) {
     arg1->header = ((Unk8006919CRec *)arg0[1])->unk_1C[9];
     arg1->x = 0;
     arg1->y = 0;
@@ -4407,7 +4407,7 @@ void func_8006A494(s32 *arg0, Unk8007352CEnv *arg1) {
     arg0[7] += 0xC;
 }
 
-void func_8006A564(u8 *arg0, Unk8007352CEnv *arg1, s32 arg2) {
+void func_8006A564(u8 *arg0, Unk8007352CRec *arg1, s32 arg2) {
     TILE *tile;
     Unk8009B0E0Record **tbl;
     s32 s4;
@@ -4548,7 +4548,7 @@ extern s32 D_8009BC08;
  * arg1 = the display environment's clip RECT and ofs[2]; arg2 (passed by
  * func_800693CC) is unused. */
 void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     RECT rect;
     s16 ofs[2];
     /* Ruling 11 (ordinary-c-judge-decidable): holds five values, each a
@@ -4773,7 +4773,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
 void func_8006B120(s32 *arg0);
 
 void func_8006B120(s32 *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     u16 r[4];
     Unk8009B0E0Record **tbl;
     s32 i;
@@ -5106,7 +5106,7 @@ s32 func_8006B92C(s32 *arg0, u32 *arg1) {
 }
 
 void func_8006BB68(s32 *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     u16 var_1[4];
     s32 i;
     Unk8009B0E0Record **q;
@@ -5163,7 +5163,7 @@ void func_8006BB68(s32 *arg0) {
 extern DR_MODE *D_800A36E0;
 extern u8 *D_800A36E4;
 
-void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CEnv *arg2, s32 arg3) {
+void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CRec *arg2, s32 arg3) {
     /* sprite-sheet header pointers, two per arg0: the unk_20 list of the
        MOD.BIN root (D_800A34FC->unk_24) */
     Unk8009B0E0Record **var_0;
@@ -5218,7 +5218,7 @@ extern DR_MODE D_800F1438[];
 extern TILE D_800F1498[];
 
 void func_8006BEC4(s32 arg0, s32 arg1) {
-    Unk8007352CEnv sp10;
+    Unk8007352CRec sp10;
     s32 var_1;
     Size2s16 *pos;
     s16 i;
@@ -5296,7 +5296,7 @@ s32 func_8006C1FC(s32 a0, s32 a1) { return func_8006C168(a0, a1); }
     (p)->y3 = (_y0) + (_h)
 
 void func_8006C21C(s32 *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s32 j;
     Unk8009B0E0Record **table;
     Rec_8006C21C *recs;
@@ -5654,7 +5654,7 @@ typedef union {
 } Counts_8006CFBC;
 
 s32 func_8006CFBC(s32 *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     Counts_8006CFBC counts;
     Unk8009B0E0Record **table;
     s16 var_3;
@@ -5766,7 +5766,7 @@ s32 func_8006D338(s32 arg0, s32 arg1) {
 }
 
 void func_8006D3DC(s32 *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     u16 var_1[4];
     Unk8009B0E0Record **q;
     /* FAKE: constant holder for func_8006E480's 0; the literal: score 8. */
@@ -5874,8 +5874,8 @@ s32 func_8006D7FC(void) {
 }
 
 void func_8006D808(
-    s32 *arg0, s32 *arg1, Unk8006D808Set *arg2, s32 arg3, s32 arg4) {
-    Unk8007352CEnv s;
+    s32 *arg0, s32 *arg1, Unk8006D808Rec *arg2, s32 arg3, s32 arg4) {
+    Unk8007352CRec s;
     /* FAKE: oversized digit array (dead-vars-local-array OVERSIZED-LOCALS):
      * only d[0]/d[1] are used; the unwritten tail brings the locals to the
      * target's 0x88 frame (s16 d[2] gives 0x80): score 26. */
@@ -5985,7 +5985,7 @@ void func_8006D808(
 /* FAKE: frame layout (oversized live object), as Unk80069F80Rec; the plain
  * descriptor: score 21. */
 typedef struct {
-    Unk8007352CEnv dd94_00;
+    Unk8007352CRec dd94_00;
     s32 tail[2];
 } Unk8006DD94Rec;
 

@@ -189,7 +189,7 @@ void func_80074B18(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
 }
 
 void func_80074D2C(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s32 var_1;
 
     var_1 = 0xC;
@@ -211,7 +211,7 @@ void func_80074D2C(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
 }
 
 void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     RECT rect;
     u16 offset[2];
     Unk8009B0E0Record **records;
@@ -388,7 +388,7 @@ void func_8007526C(void) {
    each group. Player 1 sits one screen-half right; the frame colour breathes
    with rsin of the 5-bit timer at 0x34. */
 void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     Unk8009B0E0Record **tbl;
     s16 i;
     /* FAKE: the holder between the header's cells and s.table; stored directly:
@@ -499,7 +499,7 @@ void func_80075670(s32 arg0, s32 arg1) {
 }
 
 void func_80075830(Unk8006EACCRec *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s16 var_a1;
     s16 var_a2;
     s.semi = arg3;
@@ -540,7 +540,7 @@ extern u8 D_8009BCE4[20];
  * cleared), arg3 = player. Draws the page frame, the page's 10 character
  * cells, the picks so far and the f65+3 slot sprites. */
 void func_800759D0(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     /* the current sprite-sheet pointer table: the page table, then the slot
      * table in loop 3, then the page table again (Ruling 11) */
     Unk8009B0E0Record **table;
@@ -791,7 +791,7 @@ void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 }
 
 void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     s32 var_1;
     Unk8009B0E0Record **table;
     /* the sheet's cell array, after one header or three (normal, then one
@@ -1439,7 +1439,7 @@ Unk8006E49CRec *func_80077D74(s32 a0) { return &D_800A35F4[a0]; }
 extern RECT D_800A32FC;
 
 void func_80077D94(Unk8006EACCRec *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     RECT rect;
     s16 *in;
     s16 *out;
@@ -1662,7 +1662,7 @@ s32 func_80078628(Unk80078824Rec *a0) { return a0->unk_00.unk_04; }
 Unk8006E49CRec *func_80078634(s32 a0) { return &D_800A360C[a0]; }
 
 void func_80078654(Unk800788B0Rec *arg0) {
-    Unk8007352CEnv s;
+    Unk8007352CRec s;
     Unk8009B0E0Record **var_s0;
     /* FAKE: constant-holder keeps the 0 argument in a register across the
        calls; the literal: score 7 */

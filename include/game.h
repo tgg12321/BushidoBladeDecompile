@@ -69,7 +69,7 @@ typedef struct {
     /* +0x004: one bank per frame parity, two packets per level */
     DR_MOVE move[2][6];
     s16 ctl[7]; /* +0x124: filled from D_80099C34 by func_80048F58 */
-} MoveChannel;
+} Unk800EF848Rec;
 
 /* 3-word record table at 0x800F1198, terminated by an all-zero record
  * (func_80062020 walks it with a 12-byte stride). */
@@ -91,7 +91,7 @@ typedef struct {
     s32 unkC;  /* entry table (stride 0x68) */
     s32 unk10; /* func_8003F1D4() table (stride 0x68) */
     s32 unk14;
-} Unk800A9CF8Header;
+} Unk800A9CF8Rec;
 
 /* Per-lane slot record table at 0x800F0EC8: 2 lanes x 10 slots x one 3-word
  * record (12 bytes; lane stride 120). func_80063BD0 writes it, func_80063E10
@@ -199,7 +199,7 @@ typedef struct {
     u8 h;
 } Unk8009B400Record;
 
-/* The 12-byte sprite-sheet header the walkers read (Unk8007352CEnv.header): tp0
+/* The 12-byte sprite-sheet header the walkers read (Unk8007352CRec.header): tp0
  * / tp1, the texture-page bits (func_80073728: (tp0 & 0xFE1F) + (tp1 << 7),
  * func_8006E480); count, the cell count; cx / cy, the CLUT position (GetClut);
  * ubase / vbase, the texel origin the cells' u / v add to; cells, the cell
@@ -598,7 +598,7 @@ typedef struct {
     u8 col_r;
     u8 col_g;
     u8 col_b;
-} Unk8007352CEnv;
+} Unk8007352CRec;
 
 /* 0x8009B2BC: three {w, h} menu-frame sizes, one per mode (0x8009B2BC..
  * 0x8009B2C7; D_8009B2C8 follows, different data), indexed by mode in
@@ -609,7 +609,7 @@ typedef struct {
 } Unk8009B2BCRecord;
 
 /* The stage data a stage loads (func_800469C4, or the buffer func_80054604 is
-   handed; Unk800EFAE8Ctrl .unk2C): its header holds file-relative offsets of
+   handed; Unk800EFAE8Rec .unk2C): its header holds file-relative offsets of
    the parts func_80054604 / func_8005490C use. */
 typedef struct {
     s32 unk0;
@@ -650,7 +650,7 @@ typedef struct {
     /* 0x3C */ s32 unk3C[2];
     /* 0x44 */ s16 unk44[2]; /* per player */
     /* 0x48 */ s16 unk48[2]; /* per player */
-} Unk800EFAE8Ctrl;
+} Unk800EFAE8Rec;
 
 /* 0x800A3560: two 3-byte records, one per selection slot i (slot i at
  * 0x800A3560 + i * 3; 0x800A3566/7 pad before D_800A3568). Object-model
@@ -733,13 +733,13 @@ typedef struct {
  * entries); unk_04: 4-byte entries whose second halfword offsets unk_08
  * (func_80021A98, func_8003993C); unk_0C: func_80055138's table; unk_10:
  * func_8001979C's motion bitstream. */
-typedef struct Unk801027B0Pack {
+typedef struct Unk801027B0Rec {
     u16 *unk_00;
     u16 *unk_04;
     u8 *unk_08;
     u16 *unk_0C;
     u32 *unk_10;
-} Unk801027B0Pack; /* sizeof == 0x14 */
+} Unk801027B0Rec; /* sizeof == 0x14 */
 
 /* s32 x/y/z triple.  Unk80101EC8Record's position-like triples are copied as
  * whole 12-byte objects (func_80022580), and func_80021DB0 writes one through
@@ -2184,12 +2184,12 @@ typedef struct {
     Unk8009B0E0Record *unk_14;
     Unk8009B400Record *unk_18;
     s16 *unk_1C;
-} Unk8006D808Set;
+} Unk8006D808Rec;
 
 /* MOD.BIN's unk_3C list: func_8006D808's set, then the three sheets
  * func_8006DD94 draws. */
 typedef struct {
-    Unk8006D808Set unk_00;
+    Unk8006D808Rec unk_00;
     Unk8009B0E0Record *unk_20[3];
 } Unk8006DD94List;
 
