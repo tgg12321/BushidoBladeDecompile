@@ -328,7 +328,7 @@ data more directly:
   x = (v >> 7) + 0x37 and y = (v & 0x7F) + 0x2A, the walker's env x / y,
   added to every cell's x / y (63D2C.c:27-28). arg0 bit 15 selects the
   sprite-sheet header `D_8009B7AC[0]`; otherwise `[1]` or `[2]` by
-  `D_8009BD24.unk00[0][0].chr < 0xC` (3AB48.c:5525-5531).
+  `D_8009BD24.unk00[0][0].bd0 < 0xC` (3AB48.c:5525-5531).
 - §21 Sprite-sheet headers and cells
   — tables at `0x8009B2C8..0x8009B850`: 12-byte `Unk8009B0E0Record`
   headers (cx/cy, count, ubase/vbase) and 8-byte `Unk8009B400Record`
