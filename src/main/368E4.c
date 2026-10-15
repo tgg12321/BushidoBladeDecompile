@@ -5,7 +5,7 @@
 #include "common.h"
 #include "bb2.h"
 #include "include_asm.h"
-#include "gte.h"
+#include <psxsdk/libgte.h>
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void func_800477DC(s32);

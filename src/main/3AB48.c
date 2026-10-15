@@ -6,7 +6,7 @@
 #include "common.h"
 #include "bb2.h"
 #include "include_asm.h"
-#include "gte.h"
+#include <psxsdk/libgte.h>
 
 extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
 extern void func_80052C10(void);

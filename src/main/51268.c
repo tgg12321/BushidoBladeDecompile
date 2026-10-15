@@ -4,7 +4,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
-#include "gte.h"
+#include <psxsdk/libgte.h>
 
 /* func_80060A68 .. func_80060E38 belong here by the per-file gp evidence
  * (Q65). */

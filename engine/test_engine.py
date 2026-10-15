@@ -1417,9 +1417,7 @@ def test_gte_header_registry() -> None:
     eq("registry: foreign asm macros (function-like flag)",
        G.foreign_asm_macros(root),
        {"BAR": True, "QUX": True, "VIA_GTE": True, "FENCE": False, "VIA_BIOS": False})
-    real = G.header_registry_issues()
-    check("registry: the tree's only violations are include/gte.h (retired next)",
-          all(i.startswith("include/gte.h: ") for i in real))
+    eq("registry: the tree is clean", G.header_registry_issues(), [])
 
 
 # --------------------------------------------------------------------------

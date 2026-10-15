@@ -4,7 +4,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
-#include "gte.h"
+#include <psxsdk/libgte.h>
 #include "bb2_const.h"
 
 /* This menu's two cursors ([0] = P1 row 0..11, [1] = P2 row 0..3) and its

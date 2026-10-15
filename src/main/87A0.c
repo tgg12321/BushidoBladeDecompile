@@ -886,8 +886,8 @@ void func_80019310(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
             "nop\n"
             "nop\n"
             :: "r"(&arg1->points[i]) : "$12", "memory");
-        /* gte_mvmva(sf,mx,v,cv,lm) -- inline_c.h:816-817 (body
-         * gte_mvmva_core, inline_c.h:809-814), here gte_mvmva(1,0,0,0,0):
+        /* PsyQ 4.3's MVMVA macro (sf,mx,v,cv,lm) -- 4.3 inline_c.h:816-817
+         * (body gte_mvmva_core, :809-814), here (1,0,0,0,0):
          * sf=1, mx=rotation, v=V0, cv=TR, lm=0, written as its encoded cop2
          * word (this assembler rejects the macro's literal encoding); the
          * macro's two nops are the tail of the gte_ldv0 island. */

@@ -6,7 +6,7 @@
 #include "bb2.h"
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
-#include "gte.h"
+#include <psxsdk/libgte.h>
 
 void func_80042504(s32 *arg0, s32 *arg1) {
     s32 h = arg0[0];

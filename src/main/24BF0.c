@@ -5,7 +5,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
-#include "gte.h"
+#include <psxsdk/libgte.h>
 #include "bb2_const.h"
 
 /* func_800343F0 lives in this file because the file boundary follows the

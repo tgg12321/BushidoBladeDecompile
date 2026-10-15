@@ -4,8 +4,9 @@
 /* PsyQ LIBGTE types and entry points (Sony's libgte.h; SOTN
  * include/psxsdk/libgte.h). Each prototype agrees with its C / asm definition
  * in src/main/psxsdk/libgte/ (long is spelled s32); where that differs from
- * PsyQ's LIBGTE.H spelling the entry carries a PsyQ: note. The cop2 instruction
- * macros are in include/gte.h. */
+ * PsyQ's LIBGTE.H spelling the entry carries a PsyQ: note. The GTE instruction
+ * macros are Sony's own, vendored in include/psxsdk/ (inline_o.h, inline_c.h,
+ * gtemac.h). */
 
 #include "common.h"
 

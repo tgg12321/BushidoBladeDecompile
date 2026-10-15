@@ -7,7 +7,7 @@
 #include "include_asm.h"
 #include "bb2.h"
 #include "bb2_const.h"
-#include "gte.h"
+#include <psxsdk/libgte.h>
 
 extern u8 D_800A3716;
 extern s32 g_rng_state;

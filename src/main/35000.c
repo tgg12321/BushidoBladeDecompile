@@ -4,7 +4,7 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 #include "bb2.h"
-#include "gte.h"
+#include <psxsdk/libgte.h>
 
 void func_800433E4();
 

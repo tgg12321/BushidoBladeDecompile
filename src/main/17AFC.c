@@ -4,7 +4,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
-#include "gte.h"
+#include <psxsdk/libgte.h>
 #include "bb2_const.h"
 
 /* P1/P2 round scores and tiebreakers, declared here as single u8s (per-file
@@ -3250,8 +3250,8 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     /* gte_ldopv2(vecB) -- inline_o.h:201-206, equivalent expansion
      * (`addu $12,%0,$zero` for its `move`): IR1-IR3; then gte_op0()
      * (inline_o.h:711-715 / inline_c.h:784-787, outer product) with the real
-     * cop2 word 0x4B70000C for the DMPSX placeholder 0x0000127f, as
-     * include/gte.h's gte_mvmva does for MVMVA. */
+     * cop2 word 0x4B70000C for the DMPSX placeholder 0x0000127f
+     * (engine/gtemacro.py DMPSX_WORDS). */
     __asm__ volatile(
         "addu   $12, %0, $zero\n"
         "lwc2   $11, 8($12)\n"
@@ -3355,8 +3355,8 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     /* gte_ldlv0(vecA) -- inline_o.h:95-103, equivalent expansion (the
      * trailing nop pair is gte_rtv0's, not gte_ldlv0's), then gte_rtv0
      * (inline_o.h:426-430;
-     * MVMVA `.word 0x4A486012` = gte_mvmva(1,0,0,3,0) under
-     * include/gte.h) and gte_stlvnl (inline_o.h:904-909): vecA rotated
+     * MVMVA `.word 0x4A486012`, engine/gtemacro.py DMPSX_WORDS) and
+     * gte_stlvnl (inline_o.h:904-909): vecA rotated
      * in place. */
     __asm__ volatile(
         "move   $12, %0\n"

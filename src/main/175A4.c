@@ -4,7 +4,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
-#include "gte.h"
+#include <psxsdk/libgte.h>
 #include "bb2_const.h"
 
 /* Updates the two active player records in practice modes. The contest

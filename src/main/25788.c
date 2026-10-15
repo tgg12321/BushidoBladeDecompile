@@ -3,7 +3,7 @@
 #include "common.h"
 #include "include_asm.h"
 #include "bb2.h"
-#include "gte.h"
+#include <psxsdk/libgte.h>
 #include "bb2_const.h"
 
 /* Copies the record at func_80077D00() into the FileRecord D_80106A50:

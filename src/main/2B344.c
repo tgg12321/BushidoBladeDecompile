@@ -1985,9 +1985,9 @@ extern Unk800A6690Rec **func_8003EB84(s32, s32, Unk800A6690Rec **);
  * GTE: the sequence gte_ApplyMatrix expands to, spelled as in func_80019310
  * and func_800203B4: gte_SetRotMatrix (clobbers as published + $15);
  * gte_ldv0 (publishes no clobbers; "$12" and "memory" added: it reads vec[]
- * through $12); gte_mvmva(1,0,0,3,0), the gte_rtv0 step as its identical
- * word (gte_mvmva's body gte_mvmva_core has its two leading nops at the end
- * of the gte_ldv0 island); gte_stlvnl ("memory" is its own clobber). */
+ * through $12); PsyQ 4.3's MVMVA macro with (1,0,0,3,0), the gte_rtv0 step
+ * as its identical word (its body gte_mvmva_core has its two leading nops at
+ * the end of the gte_ldv0 island); gte_stlvnl ("memory" is its own clobber). */
 void func_8003E6D8(s32 arg0) {
     s32 mat[8];
     s16 vec[4];
@@ -2045,8 +2045,8 @@ void func_8003E6D8(s32 arg0) {
         "nop\n"
         "nop\n"
         :: "r"(vec) : "$12", "memory");
-    /* gte_mvmva(sf,mx,v,cv,lm) --- inline_c.h:816-817, body gte_mvmva_core
-     * (inline_c.h:809-814); this instance is gte_mvmva(1,0,0,3,0): sf=1,
+    /* PsyQ 4.3's MVMVA macro (sf,mx,v,cv,lm) --- 4.3 inline_c.h:816-817, body
+     * gte_mvmva_core (:809-814); this instance is (1,0,0,3,0): sf=1,
      * mx=rotation, v=V0, cv=none, lm=0. Spelled as its final cop2 word (the
      * core's two nops end the gte_ldv0 island): the macro's literal is a
      * DMPSX placeholder and this build has no dmpsx pass. */
