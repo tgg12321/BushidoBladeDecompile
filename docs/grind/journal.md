@@ -130,3 +130,4 @@
 - 2026-10-15 18:45 func_8004A76C s10 [forensics] floor=37: Forensics: original PsyQ cc1psx reproduces the port's output on the closest forms and six new mfc2-seat input variants; residuals are real-compiler, not port divergence
 - 2026-10-15 18:49 func_8004A76C s11 [rederive] floor=37: Rederive s11: fresh m2c run and mandated kill re-audit both re-confirm s8/s5 — no new C or transplant path; sandbox still can't score GTE body until gte_rtpt is pinned.
 - 2026-10-15 18:51 func_8004A76C s12 [rederive] floor=37: s12 rederive: third independent m2c run and sibling re-check both re-confirm null -- no new C/transplant path; ASM-WHOLE GTE grant stands across 8 modalities.
+- 2026-10-15 18:55 func_8004A76C s13 [structural] floor=37: s13 structural: mandated kill re-audit confirms the GTE-macro-strip engine-pin gap still holds; s10's six-variant z-temp sweep already exhausts the only structural lever available, so no new C-shape probe exists on this chassis.

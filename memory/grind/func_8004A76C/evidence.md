@@ -276,3 +276,16 @@
 - [s12] Third independent m2c invocation (fresh process, not s8/s11's cache) reproduces the identical lowering failure: 10 M2C_ERROR sites for the 6 lwc2 + rtpt + 3 mfc2 + 3 swc2 GTE instructions, and emits no $s0 parameter -- m2c's generic ABI model cannot represent the custom callee-saved $s0 handle shared with func_8004A4E0/func_8004A808/func_8004A940.
 
 - [s12] Sibling func_8004A4E0 (func_8004A76C's own caller/cluster-mate) carries zero C across 23 of its own grind sessions and an owner-ruling (Q40) ASM-WHOLE grant -- there is no sibling C to inherit, confirming s8's null transplant finding is still current.
+
+- [s13] Structural-modality re-audit: the closest rejected form (rejected/psyq-rtpt-pair-reorg-slot-residual.c) re-measured on the current chassis holds -- fake_ablate finds zero FAKE constructs, and --diff shows the same 5/5 source-level hunks (all the stripped lwc2/c2-rtpt/swc2/mfc2 GTE opcodes) as s9/s11. The nine prior modalities (recon/structural x1/permuter/enumerate/synthesis/solver/forensics x2/rederive x3) plus this session's structural re-pass now agree: the only scored residual is the unpinned engine/gtemacro.py macro strip, an operator-only engine gap, not a C-shape question.
+- [s13] s10's six-variant z-temp sweep (s16/u16/reversed-decl/array/fused-asm/narrow-sz) already exhausts the one place a structural var-split/decl-order/narrowing lever could move this chassis's register seats; none reached the target's $t0-$t2. No new structural probe was found worth measuring separately this session.
+
+- [s13] sandbox func_8004A76C --disable all on the INCLUDE_ASM stub still scores 37 (no_c_body=true) this session.
+
+- [s13] fake_ablate.py on rejected/psyq-rtpt-pair-reorg-slot-residual.c reports zero FAKE-annotated constructs, confirming the kill was never FAKE-propped (re-confirms s9/s11).
+
+- [s13] sandbox --diff on that rejected form: target 37 insns / ours 16 insns / 5 hunks, 5 source-level / 0 operand-only / 0 not-scored -- all five hunks are the stripped lwc2/c2-rtpt/swc2/mfc2 GTE opcode block.
+
+- [s13] This is the 9th modality pass (recon/structural/permuter/enumerate/synthesis/solver/forensics x2/rederive x3, now structural x2) to independently land on the same conclusion: a custom non-GCC $s0-callee-saved ABI shared with func_8004A4E0/func_8004A808/func_8004A940, plus an unpinned GTE macro block the sandbox cannot score until engine/gtemacro.py gains PINNED units for gte_rtpt/gte_rtpt_b/gte_ldv3c/gte_stsxy3c.
+
+- [s13] Sibling func_8004A4E0's candidate.c (23 sessions, floor 163) remains pure INCLUDE_ASM comments -- no C to transplant for this function's GTE body either.

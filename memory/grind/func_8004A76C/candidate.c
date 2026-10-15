@@ -64,3 +64,13 @@
  * current state (floor 163, 23 sessions) -- still pure INCLUDE_ASM, zero C, nothing to
  * transplant. No new rederive axis opened. The stub stays.
  */
+/*
+ * s13 (structural): mandated kill re-audit on rejected/psyq-rtpt-pair-reorg-slot-residual.c --
+ * fake_ablate confirms zero FAKE constructs (again); --diff on the current chassis still shows
+ * 5/5 source-level hunks, all the stripped lwc2/c2-rtpt/swc2/mfc2 GTE opcodes (engine/gtemacro.py
+ * unpinned-unit strip, same operator-only gap as s5/s7/s9/s10/s11). s10's six-variant z-temp
+ * sweep (s16/u16/reversed-decl/array/fused-asm/narrow-sz) already exhausts the one place a
+ * structural var-split/decl-order/type-narrowing lever could move this chassis's register seats;
+ * none reach the target's $t0-$t2, so no new structural probe was worth separately measuring.
+ * No structural-axis frontier remains. The stub stays.
+ */
