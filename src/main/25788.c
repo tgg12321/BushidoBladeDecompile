@@ -95,10 +95,10 @@ void func_8003504C(void) {
     s = (u8 *)p;
 
     do {
-        s32 lv = (&D_8008D55C)[s[0]];
-        D_80102778.unk_4[i] = lv;
-        if ((u32)(lv - 3) < 2 || (s8)lv == new_var || (u32)(lv - 18) < 2 ||
-            (s8)lv == new_var2) {
+        s32 var_7 = (&D_8008D55C)[s[0]];
+        D_80102778.unk_4[i] = var_7;
+        if ((u32)(var_7 - 3) < 2 || (s8)var_7 == new_var ||
+            (u32)(var_7 - 18) < 2 || (s8)var_7 == new_var2) {
             if ((s8)D_80102778.unk_D == 0) {
                 D_80102778.unk_4[i] = D_80102778.unk_4[i] - 3;
             }
@@ -119,15 +119,15 @@ void func_8003504C(void) {
         D_800A389A = p->unk14_17;
         D_800A3788 = p->unk14_18;
     } else if (val == 5) {
-        s32 sel;
+        s32 var_8;
 
         D_800A389B = p->unk14_10 + 3;
         D_800A36CC = D_8008EC30[p->unk14_12];
-        sel = 1;
+        var_8 = 1;
         if (p->unk14_14) {
-            sel = 2;
+            var_8 = 2;
         }
-        D_800A37F8 = sel;
+        D_800A37F8 = var_8;
         s = &D_801027D8;
         D_800A38E1 = p->unk14_15;
         {
@@ -136,17 +136,17 @@ void func_8003504C(void) {
             u8 *dst_a = &D_801027A0;
             do {
                 s32 k = 0;
-                u8 *da = dst_d;
-                u8 *db = dst_a;
+                u8 *var_13 = dst_d;
+                u8 *var_14 = dst_a;
                 s32 off = j << 1;
             loop_inner: {
-                u8 *pp = (u8 *)p + off;
-                *db = (&D_8008D55C)[pp[0]];
+                u8 *var_16 = (u8 *)p + off;
+                *var_14 = (&D_8008D55C)[var_16[0]];
                 off += 10;
                 k++;
-                *da = pp[1];
-                db++;
-                da++;
+                *var_13 = var_16[1];
+                var_14++;
+                var_13++;
             }
                 if (k < 2)
                     goto loop_inner;
@@ -188,17 +188,17 @@ void func_80035280(void) {
          * to 59, past loop.c's hoist threshold (58), so the /1800 magic
          * constant's lui/ori stays in the loop as in the target. combine folds
          * the copies away; direct stores: score 15. */
-        u8 mn;
-        u8 sc;
-        u8 hs;
+        u8 var_4;
+        u8 var_5;
+        u8 var_6;
         s32 t;
 
-        mn = base[i].unk_4 / 1800;
-        p->unk21[i].unk0 = mn;
-        sc = (base[i].unk_4 / 30) % 60;
-        p->unk21[i].unk1 = sc;
-        hs = (base[i].unk_4 % 30) * 100 / 30;
-        p->unk21[i].unk2 = hs;
+        var_4 = base[i].unk_4 / 1800;
+        p->unk21[i].unk0 = var_4;
+        var_5 = (base[i].unk_4 / 30) % 60;
+        p->unk21[i].unk1 = var_5;
+        var_6 = (base[i].unk_4 % 30) * 100 / 30;
+        p->unk21[i].unk2 = var_6;
         t = base[i].unk_0;
         p->unk21[i].unk3 = t;
     }

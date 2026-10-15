@@ -976,7 +976,7 @@ extern SVECTOR D_800EF0D8[17];
 extern SVECTOR D_800EF168[17];
 
 void func_80047BE0(void) {
-    s32 sxy0, sxy1, sxy2, pflag, flag;
+    s32 sxy0, sxy1, sxy2, var_3, flag;
     s32 sz0, sz1, sz2;
     s16 *s7val;
     s32 i, j;
@@ -1015,7 +1015,7 @@ void func_80047BE0(void) {
         j = 0;
         while (j < 6) {
             RotTransPers3(
-                &v[0], &v[1], &v[2], &sxy0, &sxy1, &sxy2, &pflag, &flag);
+                &v[0], &v[1], &v[2], &sxy0, &sxy1, &sxy2, &var_3, &flag);
             v += 3;
             ReadSZfifo3(&sz0, &sz1, &sz2);
             *dst32++ = sxy0;
@@ -1500,13 +1500,13 @@ void math_GrayscaleRgb555(u16 *arg0, s32 arg1, u16 *arg2) {
             {
                 s32 b;
                 s32 g;
-                s32 bt;
+                s32 var_7;
                 temp_a3 = temp_a1 & 0x1F;
                 temp_a3 = temp_a3 * 0x547;
                 b = (temp_v1 >> 0x1A) & 0x1F;
                 g = (temp_v1 >> 0xA) & 0xF800;
-                bt = b * 0x2B8;
-                temp_a3 = ((temp_a3 + g + bt) >> 0xC) & 0x1F;
+                var_7 = b * 0x2B8;
+                temp_a3 = ((temp_a3 + g + var_7) >> 0xC) & 0x1F;
             }
             *arg2 = (u16)((((temp_a1 & (~0x7FFF)) + (temp_a3 << 0xA)) +
                            (temp_a3 << 5)) +
@@ -1771,8 +1771,8 @@ void func_80048FFC(s32 arg0) {
     var_8 = var_1[4] % 64;
     var_9 = var_1[5] % 256;
     for (i = 0; i < 3; i++) {
-        s32 nx = dx + var_8;
-        s32 ny = dy + var_9;
+        s32 var_16 = dx + var_8;
+        s32 var_17 = dy + var_9;
         s32 sy = y + var_5;
         s32 h1 = var_11 - var_15;
         /* FAKE: strip two's height taken as an s16 at the top of the level;
@@ -1783,12 +1783,12 @@ void func_80048FFC(s32 arg0) {
         rect.y = sy;
         rect.w = w;
         rect.h = h1;
-        SetDrawMove(p, &rect, nx, ny + var_15);
+        SetDrawMove(p, &rect, var_16, var_17 + var_15);
         addPrim(&D_800A378C[0xFFF], p);
         p++;
         rect.y = sy + h1;
         rect.h = h2;
-        SetDrawMove(p, &rect, nx, ny);
+        SetDrawMove(p, &rect, var_16, var_17);
         addPrim(&D_800A378C[0xFFF], p);
         p++;
         var_4 >>= 1;
@@ -2057,7 +2057,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             /* FAKE: named intermediate (no-new-park-categories entry 6) reads
              * the table before the node's fields are written, as in the target;
              * storing it directly reads it last: score 22 */
-            s32 frame = D_800EF980[arg0];
+            s32 var_7 = D_800EF980[arg0];
             void **list;
             obj->node.unk0 = 3;
             obj->node.unk1 = 0;
@@ -2073,7 +2073,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             obj->node.unk8 = 0;
             obj->node.unkA = 0;
             obj->node.unk4 = 6;
-            obj->node.unk2 = frame * 2 + 1;
+            obj->node.unk2 = var_7 * 2 + 1;
             g_draw_queue_cursor = list + 1;
             *list = obj;
             obj++;

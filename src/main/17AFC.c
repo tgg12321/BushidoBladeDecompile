@@ -726,8 +726,8 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
                         /* FAKE: named intermediate for the selected constant
                          * keeps the two constants in the target's order (a
                          * plain ternary reorders them: score 2) */
-                        s32 sel = (var_s1 == 0) ? 0xB : 0x19;
-                        var_v0_2 = sel;
+                        s32 var_14 = (var_s1 == 0) ? 0xB : 0x19;
+                        var_v0_2 = var_14;
                     }
                     goto block_48;
                 }
@@ -1706,29 +1706,29 @@ void func_8002AB08(s32 mode) {
     s32 i;
 
     for (i = 0; i < 2; i++) {
-        Unk80101EC8Record *other;
-        Unk80101EC8Record *self;
-        u32 hit;
-        u32 deep;
+        Unk80101EC8Record *var_3;
+        Unk80101EC8Record *var_4;
+        u32 var_5;
+        u32 var_6;
         u32 mask_a;
         u32 mask_b;
         u32 mask_c;
-        s32 npass;
-        s32 pass;
-        /* alt: the iteration's blade (0: the unk00 / unk_210 points, 1: the
+        s32 var_10;
+        s32 var_11;
+        /* var_12: the iteration's blade (0: the unk00 / unk_210 points, 1: the
          * unk48 / unk_234 points; the knockback reads the last iteration's),
          * then whether the nearest hit came from that blade. The 4/5 arm's
-         * `alt = 0;` re-stores the held 0 (Q85; Ruling 11,
+         * `var_12 = 0;` re-stores the held 0 (Q85; Ruling 11,
          * reused-local-necessity)
          */
-        s32 alt;
+        s32 var_12;
         /* temp1 / temp2: the indices of the iteration's two points (per-branch
          * constants, Q20), then the opponent's squared distance to the blade's
          * first / second point. The unk_8C arm re-stores the held values (Q85,
          * Ruling 11) */
         s32 temp1;
         s32 temp2;
-        s32 nseg;
+        s32 var_15;
         /* idx: the triangle index of the segment loop, then the nearest
          * hit's index, the Q34 plain copy `idx = temp3;` (Ruling 11) */
         s32 idx;
@@ -1745,8 +1745,8 @@ void func_8002AB08(s32 mode) {
         s32 temp3;
         s32 j;
         BoneHitRec *rec;
-        s32 near;
-        s32 guard;
+        s32 var_24;
+        s32 var_25;
         s32 bit;
         s32 diff;
         s32 ang;
@@ -1755,94 +1755,94 @@ void func_8002AB08(s32 mode) {
          * push weight (Ruling 11) */
         s32 work;
         s32 flag;
-        s32 strong;
+        s32 var_31;
 
         if (mode == 1 && D_800A38AE == i) {
             continue;
         }
-        self = &D_80101EC8[i];
-        other = D_80101EC8;
+        var_4 = &D_80101EC8[i];
+        var_3 = D_80101EC8;
         if (i == 0) {
-            other++;
+            var_3++;
         }
         mask_a = 0;
         mask_b = 0;
         mask_c = 0;
-        npass = 0;
-        hit = 0;
-        deep = 0;
-        if (other->unk_96 == 0 && other->unk_92 != 0 && other->unk_3C != 0) {
-            npass = other->unk_0C != 0x1F;
+        var_10 = 0;
+        var_5 = 0;
+        var_6 = 0;
+        if (var_3->unk_96 == 0 && var_3->unk_92 != 0 && var_3->unk_3C != 0) {
+            var_10 = var_3->unk_0C != 0x1F;
         }
-        if (other->unk_8C != 0) {
-            npass++;
+        if (var_3->unk_8C != 0) {
+            var_10++;
         }
-        if (npass != 0 && (other->unk_0E == 4 || other->unk_0E == 5)) {
-            npass++;
+        if (var_10 != 0 && (var_3->unk_0E == 4 || var_3->unk_0E == 5)) {
+            var_10++;
         }
-        if ((other->unk_0E == 6 || other->unk_0E == 7) &&
-            (other->unk_6A == 2 || other->unk_6A == 0x1B ||
-             other->unk_6A == 0x28 || other->unk_6A == 0x26) &&
-            other->unk_40 == other->unk_A1[0]) {
-            if (other->unk_34A != 0) {
-                other->unk_34A -= 1;
+        if ((var_3->unk_0E == 6 || var_3->unk_0E == 7) &&
+            (var_3->unk_6A == 2 || var_3->unk_6A == 0x1B ||
+             var_3->unk_6A == 0x28 || var_3->unk_6A == 0x26) &&
+            var_3->unk_40 == var_3->unk_A1[0]) {
+            if (var_3->unk_34A != 0) {
+                var_3->unk_34A -= 1;
                 scr->unk00.unk00[0] = SPAD->unk00[i == 0][1];
                 scr->unk00.unk00[1] = SPAD->unk00[i == 0][0];
-                func_8002A458(self, &hit, &deep, 0);
-                mask_a |= hit;
+                func_8002A458(var_4, &var_5, &var_6, 0);
+                mask_a |= var_5;
             } else {
                 func_80032854(
                     i == 0, 0x32,
                     i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
-                npass = 0;
+                var_10 = 0;
             }
         }
-        if ((other->unk_0C == 0x1D || other->unk_0C == 0xE) &&
-            other->unk_26C != 0 &&
-            (other->unk_6A == 2 || other->unk_6A == 0x1B ||
-             other->unk_6A == 0x28 || other->unk_6A == 0x26) &&
-            other->unk_40 == other->unk_A1[1] && other->unk_34A != 0) {
-            other->unk_34A -= 1;
+        if ((var_3->unk_0C == 0x1D || var_3->unk_0C == 0xE) &&
+            var_3->unk_26C != 0 &&
+            (var_3->unk_6A == 2 || var_3->unk_6A == 0x1B ||
+             var_3->unk_6A == 0x28 || var_3->unk_6A == 0x26) &&
+            var_3->unk_40 == var_3->unk_A1[1] && var_3->unk_34A != 0) {
+            var_3->unk_34A -= 1;
             scr->unk00.unk00[0] = SPAD->unk48[i == 0][1];
             scr->unk00.unk00[1] = SPAD->unk48[i == 0][0];
-            func_8002A458(self, &hit, &deep, other->unk_0C == 0xE);
+            func_8002A458(var_4, &var_5, &var_6, var_3->unk_0C == 0xE);
             func_80032854(
                 i == 0, 0x2A,
                 i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
-            mask_a |= hit;
+            mask_a |= var_5;
         }
-        for (pass = 0; pass < npass; pass++) {
-            /* deep_on: func_8002CA8C's third argument, per-branch constants
+        for (var_11 = 0; var_11 < var_10; var_11++) {
+            /* var_32: func_8002CA8C's third argument, per-branch constants
              * 1 / 1 / 0 (Q20); the unk_8C arm's store is shared with the first
              * iteration (Q85, Ruling 11) */
-            s32 deep_on;
+            s32 var_32;
 
-            if (pass == 0) {
-                alt = 0;
+            if (var_11 == 0) {
+                var_12 = 0;
                 temp1 = 0;
                 temp2 = 1;
-                deep_on = 1;
-            } else if (other->unk_8C != 0) {
-                alt = 1;
+                var_32 = 1;
+            } else if (var_3->unk_8C != 0) {
+                var_12 = 1;
                 temp1 = 0;
                 temp2 = 1;
-                deep_on = 1;
-            } else if (other->unk_0E == 4 || other->unk_0E == 5) {
-                alt = 0;
+                var_32 = 1;
+            } else if (var_3->unk_0E == 4 || var_3->unk_0E == 5) {
+                var_12 = 0;
                 temp1 = 1;
                 temp2 = 2;
-                deep_on = 0;
+                var_32 = 0;
             }
-            if (alt == 0) {
+            if (var_12 == 0) {
                 scr->unk00.unk00[0] = SPAD->unk00[i == 0][temp1];
                 scr->unk00.unk00[1] = SPAD->unk00[i == 0][temp2];
-                scr->unk00.unk00[2] = other->unk_210[temp1];
-                scr->unk00.unk00[3] = other->unk_210[temp2];
+                scr->unk00.unk00[2] = var_3->unk_210[temp1];
+                scr->unk00.unk00[3] = var_3->unk_210[temp2];
             } else {
                 scr->unk00.unk00[0] = SPAD->unk48[i == 0][temp1];
                 scr->unk00.unk00[1] = SPAD->unk48[i == 0][temp2];
-                scr->unk00.unk00[2] = other->unk_234[temp1];
-                scr->unk00.unk00[3] = other->unk_234[temp2];
+                scr->unk00.unk00[2] = var_3->unk_234[temp1];
+                scr->unk00.unk00[3] = var_3->unk_234[temp2];
             }
             scr->unk00.unk00[4].x =
                 (scr->unk00.unk00[0].x + scr->unk00.unk00[2].x) / 2;
@@ -1860,12 +1860,12 @@ void func_8002AB08(s32 mode) {
             dy = scr->unk00.unk00[1].y - scr->unk00.unk00[3].y;
             dz = scr->unk00.unk00[1].z - scr->unk00.unk00[3].z;
             work = dx * dx + dy * dy + dz * dz;
-            nseg = 2;
+            var_15 = 2;
             if (work > 6249999) {
-                nseg = 4;
+                var_15 = 4;
             }
-            for (idx = 0; idx < nseg; idx++) {
-                if (nseg == 2) {
+            for (idx = 0; idx < var_15; idx++) {
+                if (var_15 == 2) {
                     if (idx == 0) {
                         scr->unk60[0] = &scr->unk00.unk00[2];
                         scr->unk60[1] = &scr->unk00.unk00[3];
@@ -1918,29 +1918,29 @@ void func_8002AB08(s32 mode) {
                         scr->unk84.z = scr->unk60[j]->z;
                     }
                 }
-                func_8002CA8C(self, func_8002CD58(scr), deep_on);
-                hit |= scr->unkB4;
-                deep |= scr->unkC4;
-                if (alt != 0) {
+                func_8002CA8C(var_4, func_8002CD58(scr), var_32);
+                var_5 |= scr->unkB4;
+                var_6 |= scr->unkC4;
+                if (var_12 != 0) {
                     mask_a |= scr->unkB4;
                 }
-                if (pass == 1 && alt == 0) {
+                if (var_11 == 1 && var_12 == 0) {
                     mask_b |= scr->unkB4;
                 } else {
                     mask_c |= scr->unkB4;
                 }
             }
         }
-        if (hit == 0) {
+        if (var_5 == 0) {
             continue;
         }
         rec = D_800F5F68[i];
         best = 0x7FFFFFFF;
-        scr->unkC8.x = other->unk_210[1].x;
-        scr->unkC8.y = other->unk_210[1].y;
-        scr->unkC8.z = other->unk_210[1].z;
+        scr->unkC8.x = var_3->unk_210[1].x;
+        scr->unkC8.y = var_3->unk_210[1].y;
+        scr->unkC8.z = var_3->unk_210[1].z;
         for (temp3 = 0; temp3 < 22; temp3++, rec++) {
-            if (hit & (1 << temp3)) {
+            if (var_5 & (1 << temp3)) {
                 dx = SPAD->unkA8[i][temp3].x - scr->unkC8.x;
                 dy = SPAD->unkA8[i][temp3].y - scr->unkC8.y;
                 dz = SPAD->unkA8[i][temp3].z - scr->unkC8.z;
@@ -1952,52 +1952,52 @@ void func_8002AB08(s32 mode) {
             }
         }
         if (mode == 1) {
-            math_NegNormalize3D(&other->unk_114[0].vx, vec);
+            math_NegNormalize3D(&var_3->unk_114[0].vx, vec);
             func_80032854(i, 4, &SPAD->unkA8[i][idx].x, vec);
             return;
         }
-        near = 0;
-        if ((other->unk_40 >= other->unk_A1[0] - 3 &&
-             other->unk_40 < other->unk_A1[0]) ||
-            (other->unk_40 >= other->unk_A1[1] - 3 &&
-             other->unk_40 < other->unk_A1[1])) {
-            near = 1;
+        var_24 = 0;
+        if ((var_3->unk_40 >= var_3->unk_A1[0] - 3 &&
+             var_3->unk_40 < var_3->unk_A1[0]) ||
+            (var_3->unk_40 >= var_3->unk_A1[1] - 3 &&
+             var_3->unk_40 < var_3->unk_A1[1])) {
+            var_24 = 1;
         }
-        guard = 0;
-        if ((other->unk_0E == 6 || other->unk_0E == 7 ||
-             other->unk_0C == 0x1D || other->unk_0C == 0xE) &&
+        var_25 = 0;
+        if ((var_3->unk_0E == 6 || var_3->unk_0E == 7 ||
+             var_3->unk_0C == 0x1D || var_3->unk_0C == 0xE) &&
             (mask_a & (1 << idx))) {
-            guard = 1;
+            var_25 = 1;
         }
-        if (guard == 0 && (!(other->unk_6A == 2 || other->unk_6A == 0x1B ||
-                             other->unk_6A == 0x28 || other->unk_6A == 0x26) ||
-                           near == 0)) {
+        if (var_25 == 0 && (!(var_3->unk_6A == 2 || var_3->unk_6A == 0x1B ||
+                              var_3->unk_6A == 0x28 || var_3->unk_6A == 0x26) ||
+                            var_24 == 0)) {
             bit = 1 << idx;
             temp3 = (mask_a & bit) != 0;
             if (temp3) {
-                dx = SPAD->unk48[i == 0][0].x - other->unk_F4.x;
-                dz = SPAD->unk48[i == 0][0].z - other->unk_F4.z;
+                dx = SPAD->unk48[i == 0][0].x - var_3->unk_F4.x;
+                dz = SPAD->unk48[i == 0][0].z - var_3->unk_F4.z;
                 temp1 = dx * dx + dz * dz;
-                dx = SPAD->unk48[i == 0][1].x - other->unk_F4.x;
-                dz = SPAD->unk48[i == 0][1].z - other->unk_F4.z;
+                dx = SPAD->unk48[i == 0][1].x - var_3->unk_F4.x;
+                dz = SPAD->unk48[i == 0][1].z - var_3->unk_F4.z;
                 temp2 = dx * dx + dz * dz;
                 dx = SPAD->unk48[i == 0][1].x - SPAD->unk48[i == 0][0].x;
                 dz = SPAD->unk48[i == 0][1].z - SPAD->unk48[i == 0][0].z;
             } else if (mask_b & bit) {
-                dx = SPAD->unk00[i == 0][2].x - other->unk_F4.x;
-                dz = SPAD->unk00[i == 0][2].z - other->unk_F4.z;
+                dx = SPAD->unk00[i == 0][2].x - var_3->unk_F4.x;
+                dz = SPAD->unk00[i == 0][2].z - var_3->unk_F4.z;
                 temp1 = dx * dx + dz * dz;
-                dx = SPAD->unk00[i == 0][1].x - other->unk_F4.x;
-                dz = SPAD->unk00[i == 0][1].z - other->unk_F4.z;
+                dx = SPAD->unk00[i == 0][1].x - var_3->unk_F4.x;
+                dz = SPAD->unk00[i == 0][1].z - var_3->unk_F4.z;
                 temp2 = dx * dx + dz * dz;
                 dx = (SPAD->unk00[i == 0][1].x - SPAD->unk00[i == 0][2].x) / 4;
                 dz = (SPAD->unk00[i == 0][1].z - SPAD->unk00[i == 0][2].z) / 4;
             } else {
-                dx = SPAD->unk00[i == 0][0].x - other->unk_F4.x;
-                dz = SPAD->unk00[i == 0][0].z - other->unk_F4.z;
+                dx = SPAD->unk00[i == 0][0].x - var_3->unk_F4.x;
+                dz = SPAD->unk00[i == 0][0].z - var_3->unk_F4.z;
                 temp1 = dx * dx + dz * dz;
-                dx = SPAD->unk00[i == 0][1].x - other->unk_F4.x;
-                dz = SPAD->unk00[i == 0][1].z - other->unk_F4.z;
+                dx = SPAD->unk00[i == 0][1].x - var_3->unk_F4.x;
+                dz = SPAD->unk00[i == 0][1].z - var_3->unk_F4.z;
                 temp2 = dx * dx + dz * dz;
                 dx = SPAD->unk00[i == 0][1].x - SPAD->unk00[i == 0][0].x;
                 dz = SPAD->unk00[i == 0][1].z - SPAD->unk00[i == 0][0].z;
@@ -2006,13 +2006,14 @@ void func_8002AB08(s32 mode) {
                 dx = -dx;
                 dz = -dz;
             }
-            diff = (other->unk_1D8 - ratan2(dx, dz)) & 0xFFF;
+            diff = (var_3->unk_1D8 - ratan2(dx, dz)) & 0xFFF;
             if (diff >= 0x800) {
                 diff = 0x1000 - diff;
             }
             if (diff < 0x400) {
-                work = (ratan2(other->unk_114[alt].vx, other->unk_114[alt].vz) +
-                        0x800 - self->unk_1D8) &
+                work = (ratan2(var_3->unk_114[var_12].vx,
+                               var_3->unk_114[var_12].vz) +
+                        0x800 - var_4->unk_1D8) &
                        0xFFF;
                 if (work >= 0x800) {
                     work = 0x1000 - work;
@@ -2021,22 +2022,22 @@ void func_8002AB08(s32 mode) {
                 if (work < 0) {
                     work = 0;
                 }
-                dx = dx / 4 + (other->unk_114[temp3].vx * work / 2 >> 11);
-                dz = dz / 4 + (other->unk_114[temp3].vz * work / 2 >> 11);
-                if (other->unk_6A == 3 || other->unk_6A == 7 ||
-                    other->unk_6A == 0xD || other->unk_6A == 0x2C) {
-                    self->unk_134.vx += dx / 2;
-                    self->unk_134.vz += dz / 2;
+                dx = dx / 4 + (var_3->unk_114[temp3].vx * work / 2 >> 11);
+                dz = dz / 4 + (var_3->unk_114[temp3].vz * work / 2 >> 11);
+                if (var_3->unk_6A == 3 || var_3->unk_6A == 7 ||
+                    var_3->unk_6A == 0xD || var_3->unk_6A == 0x2C) {
+                    var_4->unk_134.vx += dx / 2;
+                    var_4->unk_134.vz += dz / 2;
                 } else {
-                    self->unk_134.vx += dx;
-                    self->unk_134.vz += dz;
+                    var_4->unk_134.vx += dx;
+                    var_4->unk_134.vz += dz;
                 }
-                if ((self->unk_6A == 0x13 || self->unk_6A == 0x1B ||
-                     self->unk_6A == 0x30) &&
-                    other->unk_6A == 0x15) {
-                    if (self->unk_0E == 6 || self->unk_0E == 7 ||
-                        other->unk_0E == 6 || other->unk_0E == 7) {
-                        other->unk_286 = 5;
+                if ((var_4->unk_6A == 0x13 || var_4->unk_6A == 0x1B ||
+                     var_4->unk_6A == 0x30) &&
+                    var_3->unk_6A == 0x15) {
+                    if (var_4->unk_0E == 6 || var_4->unk_0E == 7 ||
+                        var_3->unk_0E == 6 || var_3->unk_0E == 7) {
+                        var_3->unk_286 = 5;
                         func_80032854(i == 0, 0x21,
                                       i == 0 ? &D_80101EC8[1].unk_F4.x
                                              : &D_80101EC8[0].unk_F4.x,
@@ -2052,41 +2053,43 @@ void func_8002AB08(s32 mode) {
                 }
             }
         }
-        ang = (self->unk_1C8.vy - other->unk_1C8.vy) & 0xFFF;
+        ang = (var_4->unk_1C8.vy - var_3->unk_1C8.vy) & 0xFFF;
         if (ang >= 0x800) {
             ang = 0x1000 - ang;
         }
-        alt = (mask_a & (1 << idx)) != 0;
-        if (other->unk_AE == 0) {
+        var_12 = (mask_a & (1 << idx)) != 0;
+        if (var_3->unk_AE == 0) {
             continue;
         }
-        if (other->unk_8C != 0 && (other->unk_40 < other->unk_A1[alt] ||
-                                   other->unk_40 > other->unk_A3[alt])) {
+        if (var_3->unk_8C != 0 && (var_3->unk_40 < var_3->unk_A1[var_12] ||
+                                   var_3->unk_40 > var_3->unk_A3[var_12])) {
             continue;
         }
         flag = 0;
-        if (!(other->unk_0E == 6 || other->unk_0E == 7)) {
-            if ((other->unk_0C == 0x1D || other->unk_0C == 0xE) && alt != 0) {
+        if (!(var_3->unk_0E == 6 || var_3->unk_0E == 7)) {
+            if ((var_3->unk_0C == 0x1D || var_3->unk_0C == 0xE) &&
+                var_12 != 0) {
                 flag = 1;
             } else {
-                math_NegNormalize3D(&other->unk_114[alt].vx, vec);
+                math_NegNormalize3D(&var_3->unk_114[var_12].vx, vec);
             }
         }
         if (D_800A3140 == 0) {
-            strong = deep & (1 << idx);
+            var_31 = var_6 & (1 << idx);
         } else {
-            strong = 1;
+            var_31 = 1;
         }
         if (mask_b & (1 << idx) & ~mask_c) {
-            strong = 0;
+            var_31 = 0;
         }
         /* func_80027AD8's sixth argument is a record pointer on the calls
          * from func_80031B24 (first argument 1) and, on this call (first
          * argument 0), the 0/1 alternate-blade flag the target passes in that
          * slot: its `tbl == NULL ? 0xB : 0x19` picks the same reaction
          * func_80029454 picks from +0x8C. */
-        func_80027AD8(0, self, idx, ang, strong, (Tbl8008E194 *)alt, flag, 0);
-        other->unk_AD = 0;
+        func_80027AD8(
+            0, var_4, idx, ang, var_31, (Tbl8008E194 *)var_12, flag, 0);
+        var_3->unk_AD = 0;
     }
 }
 
@@ -2476,39 +2479,39 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
         s32 y;
         s32 z;
         s32 r;
-        s32 hit;
+        s32 var_11;
 
         if (a0->unk_26C == 0 && i >= 6 && i <= 9) {
             continue;
         }
 
         r = rec->unk_0C;
-        /* FAKE: the AABB reject flag is staged through `hit` (set on
+        /* FAKE: the AABB reject flag is staged through `var_11` (set on
          * reject, read by the `continue` test, then overwritten by the call); a
          * separate flag takes $a1 instead of the target's $s0 (score 3) */
-        hit = 0;
+        var_11 = 0;
         x = SPAD->unkA8[id][i].x;
         if (scr->unk84.x < x - r || x + r < scr->unk78.x) {
-            hit = 1;
+            var_11 = 1;
         } else {
             y = SPAD->unkA8[id][i].y;
             if (scr->unk84.y < y - r || y + r < scr->unk78.y) {
-                hit = 1;
+                var_11 = 1;
             } else {
                 z = SPAD->unkA8[id][i].z;
                 if (scr->unk84.z < z - r || z + r < scr->unk78.z) {
-                    hit = 1;
+                    var_11 = 1;
                 }
             }
         }
-        if (hit != 0) {
+        if (var_11 != 0) {
             continue;
         }
 
         if (a1 != 0) {
-            hit = func_8002D780(
+            var_11 = func_8002D780(
                 0, scr, (s32 *)&SPAD->unkA8[id][i], r, rec->unk_0E);
-            if (hit != 0) {
+            if (var_11 != 0) {
                 if (rec->unk_00 != 0 && a2 != 0) {
                     if (func_8002D780(
                             1, scr, (s32 *)0, rec->unk_10, rec->unk_12) != 0) {
@@ -2517,8 +2520,8 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
                 }
             }
         } else {
-            hit = func_8002D320(0, scr, &SPAD->unkA8[id][i], r, rec->unk_0E);
-            if (hit != 0) {
+            var_11 = func_8002D320(0, scr, &SPAD->unkA8[id][i], r, rec->unk_0E);
+            if (var_11 != 0) {
                 if (rec->unk_00 != 0 && a2 != 0) {
                     if (func_8002D320(1, scr, NULL, rec->unk_10, rec->unk_12) !=
                         0) {
@@ -2527,7 +2530,7 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
                 }
             }
         }
-        if (hit != 0) {
+        if (var_11 != 0) {
             seenMask |= 1 << i;
         }
     }
@@ -2961,10 +2964,10 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
  * where p1 -> p2 meets the circle of squared radius r_sq about the origin
  * (terms >> 9; square root by g_sqrt_table_u8, GTE LZCS island for
  * values >= 0x400) and returns whether both Q8 intersection parameters
- * are in range. Load-bearing: `ud = disc; lzcr = 0;` in that order,
- * `disc` holding the value under the root, the square root and the <<9
+ * are in range. Load-bearing: `var_22 = var_18; lzcr = 0;` in that order,
+ * `var_18` holding the value under the root, the square root and the <<9
  * result, `num1` before `denom`, and `result` kept apart from the comparison
- * flag. The `ud` re-store is a FAKE, explained at its site. */
+ * flag. The `var_22` re-store is a FAKE, explained at its site. */
 s32 func_8002D518(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
     s32 x1, z1, x2, z2;
 
@@ -3019,26 +3022,26 @@ dist_calc: {
     s32 c_val = ((x1_sq + z1_sq) - r_sq) >> 9;
     s32 dist_sq = ax_sq + az_sq;
 
-    s32 disc = (dot2_9 * dot2_9) - ((dist_sq >> 9) * (c_val << 2));
+    s32 var_18 = (dot2_9 * dot2_9) - ((dist_sq >> 9) * (c_val << 2));
     s32 result;
 
-    if (disc < 0) {
+    if (var_18 < 0) {
         result = 0;
     } else {
-        if ((u32)disc < 0x400u) {
-            disc = g_sqrt_table_u8[disc] >> 3;
+        if ((u32)var_18 < 0x400u) {
+            var_18 = g_sqrt_table_u8[var_18] >> 3;
         } else {
             s32 sp_tmp;
             s32 lzcr;
-            u32 ud;
-            ud = disc;
+            u32 var_22;
+            var_22 = var_18;
             lzcr = 0;
-            if (disc >= 0) {
-                /* FAKE: same-value re-store of `ud` (it already holds
-                 * disc): with a single def cse merges ud into disc and
+            if (var_18 >= 0) {
+                /* FAKE: same-value re-store of `var_22` (it already holds
+                 * var_18): with a single def cse merges var_22 into var_18 and
                  * deletes the copy the target keeps in $a0; the store emits
                  * nothing; without it score 3 */
-                ud = disc;
+                var_22 = var_18;
                 __asm__ volatile(
                     "addu   $t4, %1, $zero\n"
                     "mtc2   $t4, $30\n"
@@ -3047,15 +3050,15 @@ dist_calc: {
                     "addu   $t4, $sp, $zero\n"
                     "swc2   $31, 0($t4)\n"
                     : "=m"(sp_tmp)
-                    : "r"(ud)
+                    : "r"(var_22)
                     : "$12");
                 lzcr = sp_tmp;
             }
             {
                 s32 shift = 0x16 - (lzcr & ~1);
-                s32 tval = g_sqrt_table_u8[ud >> shift];
+                s32 tval = g_sqrt_table_u8[var_22 >> shift];
                 s32 half = (u32)shift >> 1;
-                disc = (u32)(tval << 16) >> (0x13 - half);
+                var_18 = (u32)(tval << 16) >> (0x13 - half);
             }
         }
         {
@@ -3064,11 +3067,11 @@ dist_calc: {
             s32 denom;
             s32 t1_val;
             s32 t2_val;
-            disc <<= 9;
-            num1 = (neg_b + disc) << 8;
+            var_18 <<= 9;
+            num1 = (neg_b + var_18) << 8;
             denom = dist_sq * 2;
             t1_val = num1 / denom;
-            t2_val = ((neg_b - disc) << 8) / denom;
+            t2_val = ((neg_b - var_18) << 8) / denom;
 
             {
                 s32 flag = 0;
@@ -3121,17 +3124,17 @@ s32 func_8002D780(
         s32 cz = (z0 + z2) / 3;
         s32 px = obj->unk100[0].x;
         s32 pz = obj->unk100[0].y;
-        /* FAKE: cross_center / cross_point hold one value per side test,
+        /* FAKE: var_9 / var_10 hold one value per side test,
          * against cx / cz and px / pz, for the edges (0,0)-(x0,z0),
          * (0,0)-(x2,z2), (x0,z0)-(x2,z2); a pair per test: score 36 (Ruling 11)
          */
-        s32 cross_center = z0 * cx - x0 * cz;
-        s32 cross_point = z0 * px - x0 * pz;
+        s32 var_9 = z0 * cx - x0 * cz;
+        s32 var_10 = z0 * px - x0 * pz;
 
-        if ((cross_center ^ cross_point) >= 0) {
-            cross_center = z2 * cx - x2 * cz;
-            cross_point = z2 * px - x2 * pz;
-            if ((cross_center ^ cross_point) >= 0) {
+        if ((var_9 ^ var_10) >= 0) {
+            var_9 = z2 * cx - x2 * cz;
+            var_10 = z2 * px - x2 * pz;
+            if ((var_9 ^ var_10) >= 0) {
                 /* FAKE: ax holds cx - x0 ahead of the dx set-up; in the product
                  * the subtraction moves (score 2). */
                 s32 ax = cx - x0;
@@ -3141,9 +3144,9 @@ s32 func_8002D780(
                  * dz takes dx's $v1: score 9 */
                 flag = z2 - z0;
                 dx = x2 - x0;
-                cross_center = (flag * ax) - (dx * (cz - z0));
-                cross_point = (flag * (px - x0)) - (dx * (pz - z0));
-                if ((cross_center ^ cross_point) >= 0)
+                var_9 = (flag * ax) - (dx * (cz - z0));
+                var_10 = (flag * (px - x0)) - (dx * (pz - z0));
+                if ((var_9 ^ var_10) >= 0)
                     return 1;
             }
         }
@@ -4834,9 +4837,9 @@ s32 func_80030B10(Unk80101EC8Record *arg0, s32 arg1) {
         } while (i > 0);
     }
     {
-        s16 cc = arg0->unk_330;
+        s16 var_3 = arg0->unk_330;
         arg0->unk_332[0] = arg1;
-        arg0->unk_330 = cc + 1;
+        arg0->unk_330 = var_3 + 1;
         goto done;
     }
 skip_shift:
@@ -4864,12 +4867,12 @@ s32 func_80030BA8(Unk80101EC8Record *arg0) {
             continue;
         }
         {
-            s32 bc = arg0->unk_B8.vy;
+            s32 var_4 = arg0->unk_B8.vy;
             s32 py = p->pos.y;
-            if (bc - 0x64 >= py) {
+            if (var_4 - 0x64 >= py) {
                 continue;
             }
-            if (py >= bc + 0x64) {
+            if (py >= var_4 + 0x64) {
                 continue;
             }
         }
@@ -5126,14 +5129,14 @@ void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
     if (ent->kind != 0xE) {
         s32 vx = ent->vel.x;
         s32 vz = ent->vel.z;
-        s32 av = ent->rot_vel[1];
+        s32 var_8 = ent->rot_vel[1];
         sum_sq = vx * vx + vz * vz;
         if (rng_Next() & 1) {
             var_5 = sum_sq / 64;
         } else {
             var_5 = -sum_sq / 64;
         }
-        ent->rot_vel[1] = av + var_5;
+        ent->rot_vel[1] = var_8 + var_5;
     }
 
     mat = &scr->unkD8;
@@ -5367,13 +5370,13 @@ Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
     s0->unk_28 = src->unk_B8.vy;
     var_5[1] = src->unk_1C8.vy;
     {
-        /* FAKE: unk_B2 read into a0_arg before cmd is chosen; read at the
+        /* FAKE: unk_B2 read into a0_arg before var_8 is chosen; read at the
          * call the argument registers rotate (score 20). */
         s32 a0_arg = src->unk_B2;
-        s32 cmd = 0xD;
+        s32 var_8 = 0xD;
         if (type == 1)
-            cmd = 0xC;
-        func_80032854(a0_arg, cmd, &s0->unk_04.x, var_5);
+            var_8 = 0xC;
+        func_80032854(a0_arg, var_8, &s0->unk_04.x, var_5);
     }
     return s0;
 }
@@ -5450,10 +5453,10 @@ loop:
             s32 dy = ent->unk_F4.y - *(s32 *)(a3 + 6);
             s32 dz = ent->unk_F4.z - *(s32 *)(a3 + 0xA);
             u32 dist_sq;
-            u32 log2_val;
+            u32 var_10;
             dist_sq = (u32)(dx * dx + dy * dy + dz * dz);
             if (dist_sq < 0x400) {
-                log2_val = (u32)(g_sqrt_table_u8[dist_sq]) >> 3;
+                var_10 = (u32)(g_sqrt_table_u8[dist_sq]) >> 3;
             } else {
                 s32 clz = 0;
                 s32 sp_tmp;
@@ -5480,11 +5483,11 @@ loop:
                     idx = dist_sq >> v1_m;
                     v1_m = v1_m >> 1;
                     hi = (u32)((u8)(g_sqrt_table_u8[idx]));
-                    log2_val = (hi << 16) >> (0x13 - v1_m);
+                    var_10 = (hi << 16) >> (0x13 - v1_m);
                 }
             }
             {
-                if (log2_val < (u32)(*a3 * 30 + 0x1F4)) {
+                if (var_10 < (u32)(*a3 * 30 + 0x1F4)) {
                     ent->unk_286 = 5;
                     t0->unk_00 = 0;
                 }
@@ -6160,14 +6163,14 @@ loop:
         u8 b1 = s0[1];
         u8 b2 = s0[2];
         u8 b3 = s0[3];
-        s32 packed;
+        s32 var_7;
         s16 shift;
         s32 mask;
 
-        packed = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+        var_7 = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
         shift = base->unk_0A;
         mask = 1 << shift;
-        if ((packed & mask) != 0) {
+        if ((var_7 & mask) != 0) {
             s0 += 4;
         } else {
             s0 += 6;
@@ -6181,13 +6184,13 @@ loop:
     do {
         if ((u32)a1val < 0x80) {
             u8 val = s0[0];
-            s16 dir = base->unk_40;
+            s16 var_11 = base->unk_40;
             s0 += 1;
-            if ((val & 0xFF) == dir) {
+            if ((val & 0xFF) == var_11) {
                 func_80032C50(base, a1val - 1);
                 goto next;
             }
-            if (dir < val) {
+            if (var_11 < val) {
                 goto done;
             }
             goto next;
@@ -6269,21 +6272,21 @@ void func_800335D8(void) {
 
     for (i = 0; i < 6; i++) {
         if (D_800A3918[i] != 0) {
-            s32 cat = func_80033498();
+            s32 var_2 = func_80033498();
             u8 cur = D_800A3918[i];
 
             if (cur == 1) {
-                func_800325E0(D_8008EBF4[cat], &D_80107850[i].x);
-            } else if (cur == D_8008EBFC[cat].a) {
-                func_800325E0(D_8008EBF4[cat] + 1, &D_80107850[i].x);
-            } else if (cur == D_8008EBFC[cat].b) {
-                func_800325E0(D_8008EBF4[cat] + 2, &D_80107850[i].x);
+                func_800325E0(D_8008EBF4[var_2], &D_80107850[i].x);
+            } else if (cur == D_8008EBFC[var_2].a) {
+                func_800325E0(D_8008EBF4[var_2] + 1, &D_80107850[i].x);
+            } else if (cur == D_8008EBFC[var_2].b) {
+                func_800325E0(D_8008EBF4[var_2] + 2, &D_80107850[i].x);
             }
 
             {
                 s32 val = D_800A3918[i] + 1;
                 D_800A3918[i] = val;
-                if ((u32)D_8008EBFC[cat].b < (u32)(val & 0xFF)) {
+                if ((u32)D_8008EBFC[var_2].b < (u32)(val & 0xFF)) {
                     D_800A3918[i] = 0;
                 }
             }
@@ -6295,12 +6298,12 @@ void func_800335D8(void) {
 
         for (i = 0; i < 4; i++, tbl += 2) {
             u8 *data = tbl + 1;
-            s32 rng;
+            s32 var_7;
             s32 type;
-            s32 rnd;
+            s32 var_9;
 
-            rng = rng_Next();
-            rnd = rng & 0x3FF;
+            var_7 = rng_Next();
+            var_9 = var_7 & 0x3FF;
             type = *tbl;
 
             if (type == 1)
@@ -6318,7 +6321,7 @@ void func_800335D8(void) {
             goto call_default;
 
         handle_type_2_6: {
-            s32 adj = type - 2;
+            s32 var_10 = type - 2;
             s32 count;
             s32 scount;
             s32 thresh;
@@ -6327,13 +6330,14 @@ void func_800335D8(void) {
             count = (u16)buf[i] + 1;
             buf[i] = count;
             scount = (s16)count;
-            thresh = D_8008EA44[adj].a;
+            thresh = D_8008EA44[var_10].a;
             limit = thresh * 30;
 
             if (limit < scount) {
-                s32 ratio = ((scount - limit) << 10) / (D_8008EA44[adj].b * 30);
+                s32 ratio =
+                    ((scount - limit) << 10) / (D_8008EA44[var_10].b * 30);
 
-                if (rnd < ratio) {
+                if (var_9 < ratio) {
                     buf[i] = 0;
                     type = *tbl;
                     if ((u32)(type - 5) < 2) {
@@ -6652,35 +6656,35 @@ void func_80033FE4(void) {
 }
 
 void func_800340A0(void) {
-    u8 p1, p2, round;
+    u8 p1, p2, var_2;
 
     p1 = D_800A3898;
     if ((u8)p1 == D_800A37F8) {
-        round = D_800A3874;
-        D_800A377C[round] = 0;
+        var_2 = D_800A3874;
+        D_800A377C[var_2] = 0;
     } else {
         p2 = D_800A3899;
         if ((u8)p2 == D_800A37F8) {
-            round = D_800A3874;
-            D_800A377C[round] = 1;
+            var_2 = D_800A3874;
+            D_800A377C[var_2] = 1;
         } else if ((u8)p2 < (u8)p1) {
-            round = D_800A3874;
-            D_800A377C[round] = 0;
+            var_2 = D_800A3874;
+            D_800A377C[var_2] = 0;
         } else if ((u8)p1 < (u8)p2) {
-            round = D_800A3874;
-            D_800A377C[round] = 1;
+            var_2 = D_800A3874;
+            D_800A377C[var_2] = 1;
         } else {
             if ((u8)D_800A38AA < (u8)D_800A38AB) {
                 D_800A3898 = p1 + 1;
-                round = D_800A3874;
-                D_800A377C[round] = 0;
+                var_2 = D_800A3874;
+                D_800A377C[var_2] = 0;
             } else if ((u8)D_800A38AB < (u8)D_800A38AA) {
                 D_800A3899 = p2 + 1;
-                round = D_800A3874;
-                D_800A377C[round] = 1;
+                var_2 = D_800A3874;
+                D_800A377C[var_2] = 1;
             } else {
-                round = D_800A3874;
-                D_800A377C[round] = 2;
+                var_2 = D_800A3874;
+                D_800A377C[var_2] = 2;
             }
         }
     }
@@ -6702,13 +6706,13 @@ void func_80034200(void) {
     if (i < n) {
         var_4 = D_800A3874;
         do {
-            s32 useReal;
+            s32 var_6;
             s32 j;
             base = D_800F65F8[i];
-            useReal = (i < var_4);
+            var_6 = (i < var_4);
             j = 0;
             do {
-                if (useReal) {
+                if (var_6) {
                     acc |= base[j] << shift;
                 } else {
                     acc |= 3 << shift;

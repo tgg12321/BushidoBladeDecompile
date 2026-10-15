@@ -90,14 +90,14 @@ s32 func_8003800C(Unk800F34D8Save *arg0) {
     i = 0;
     do {
         s32 sum;
-        u8 *bp;
+        u8 *var_3;
 
         sum = 0;
-        bp = (u8 *)&arg0->rec[i];
+        var_3 = (u8 *)&arg0->rec[i];
         j = 0;
         do {
-            sum += *bp;
-            bp++;
+            sum += *var_3;
+            var_3++;
             j++;
         } while (j < 0x24U);
         if (sum == arg0->sum[i]) {
@@ -247,21 +247,21 @@ void func_80038170(u8 *out) {
 
     i = 0;
     {
-        u8 *outer_src = (u8 *)&D_80010A2C;
-        u8 *outer_dst = out;
+        u8 *var_11 = (u8 *)&D_80010A2C;
+        u8 *var_12 = out;
         do {
             s32 j = 0;
-            u16 *dst = (u16 *)(outer_dst + 0x80);
-            u16 *src = (u16 *)outer_src;
+            u16 *dst = (u16 *)(var_12 + 0x80);
+            u16 *src = (u16 *)var_11;
             do {
                 *dst = *src;
                 src++;
                 j++;
                 dst++;
             } while (j < 0x40);
-            outer_src += 0x80;
+            var_11 += 0x80;
             i++;
-            outer_dst += 0x80;
+            var_12 += 0x80;
         } while (i <= 0);
     }
 }
@@ -1495,23 +1495,23 @@ void func_8003993C(void) {
         switch (D_800A38DC) {
         case 0:
             if (D_80101EC8[0].unk_96 == 0) {
-                s32 valid = D_800A3836 != 0xFF;
+                s32 var_19 = D_800A3836 != 0xFF;
                 if (D_800A3712 != 0) {
                     D_800A38D4 = 2;
                     if (D_800A3836 != 0xFF) {
                         D_800A37A4 |= 1 << D_8008D538[(s8)D_80102778.unk_4[0]];
                     }
-                    if (valid) {
+                    if (var_19) {
                         func_8003B328();
                     }
                 }
                 func_8001DA2C();
                 if (D_800A3894 != 0) {
                     if (D_800A3712 != 0) {
-                        func_8003B534(valid ? 3 : 6);
+                        func_8003B534(var_19 ? 3 : 6);
                     } else {
                         func_8003B484(D_800A3894 + 6);
-                        func_8003B534(valid ? 2 : 5);
+                        func_8003B534(var_19 ? 2 : 5);
                     }
                 } else {
                     func_8003B5A4();
@@ -1830,19 +1830,19 @@ void func_8003A728(PadState *a0) {
             /* FAKE: the record's held / type stores go through pointers; stored
                as members (in-struct memory) sched moves the D_800A36C2 /
                D_800A36D2 loads above them (score 22). */
-            u32 *held = &a0->held;
+            u32 *var_8 = &a0->held;
             s16 *type = a0->type;
 
             D_800A38FC += math_Popcount32((u16)D_800A36C0);
             c0lo = (u16)D_800A36C0;
             if (D_800A38A0 == 0) {
                 buf8 = (u16)g_comb_send_buf;
-                *held = (c0lo << 16) | buf8;
+                *var_8 = (c0lo << 16) | buf8;
                 t = D_800A36C2;
                 type[1] = t & 0xF;
             } else {
                 buf8 = (u16)D_800A36D0;
-                *held = (buf8 << 16) | c0lo;
+                *var_8 = (buf8 << 16) | c0lo;
                 t = D_800A36C2;
                 type[0] = t & 0xF;
                 t = D_800A36D2;

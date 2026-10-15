@@ -341,12 +341,12 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     s16 sinA, sinB, sinC, cosA;
     s32 cosB, cosC;
     s32 cosB_cosC, cosB_negsinC;
-    s32 var_11, sab12;
-    s32 var_13, sab12_negsinC;
+    s32 var_11, var_12;
+    s32 var_13, var_14;
     s32 cosA_sinC, cosA_cosC;
     s32 cosA_negsinB;
     s32 negsinA_cosB;
-    s32 var_19, cab12_cosC;
+    s32 var_19, var_20;
     s32 cosA_sinB;
     s32 sinA_sinC;
     s32 var_23;
@@ -368,15 +368,15 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     a1->m[0][2] = sinB;
     var_11 = sinA * sinB;
     cosB_negsinC = cosB * -sinC;
-    sab12 = var_11 >> 12;
-    var_13 = sab12 * cosC;
+    var_12 = var_11 >> 12;
+    var_13 = var_12 * cosC;
     cosA_sinC = cosA * sinC;
-    sab12_negsinC = sab12 * -sinC;
+    var_14 = var_12 * -sinC;
     cosA_cosC = cosA * cosC;
     cosA_negsinB = cosA * -sinB;
     negsinA_cosB = -sinA * cosB;
     var_19 = cosA_negsinB >> 12;
-    cab12_cosC = var_19 * cosC;
+    var_20 = var_19 * cosC;
     cosA_sinB = cosA * sinB;
     sinA_sinC = sinA * sinC;
     var_23 = (cosA_sinB >> 12) * sinC;
@@ -388,8 +388,8 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
     sinA_cosC = sinA * cosC;
     a1->m[2][2] = cosA_cosB >> 12;
     a1->m[1][0] = (var_13 + cosA_sinC) >> 12;
-    a1->m[1][1] = (sab12_negsinC + cosA_cosC) >> 12;
-    a1->m[2][0] = (cab12_cosC + sinA_sinC) >> 12;
+    a1->m[1][1] = (var_14 + cosA_cosC) >> 12;
+    a1->m[2][0] = (var_20 + sinA_sinC) >> 12;
     a1->m[2][1] = (var_23 + sinA_cosC) >> 12;
 }
 

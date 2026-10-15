@@ -56,32 +56,32 @@ void func_80017FA0(Unk80017FA0Rec *a0) {
         s32 i = 0;
         if (i < ptr->count) {
             s32 *p68 = (s32 *)ptr;
-            s32 *ac_base = (s32 *)0x1F800000;
+            s32 *var_4 = (s32 *)0x1F800000;
             s32 sp_off = 0;
             do {
                 s32 j = 0;
                 s32 data_off = i << 5;
-                s32 sp_inner = sp_off;
+                s32 var_8 = sp_off;
             /* FAKE: goto loop instead of do-while keeps loop.c from
              * strength-reducing the three scratchpad store addresses into one
              * biased base; as do-while: score 12 */
             inner: {
-                s32 *dp = (s32 *)((u8 *)ptr + data_off);
-                *(s32 *)(0x1F800064 + sp_inner) = dp[2] << 2;
+                s32 *var_9 = (s32 *)((u8 *)ptr + data_off);
+                *(s32 *)(0x1F800064 + var_8) = var_9[2] << 2;
                 data_off += 0x10;
-                *(s32 *)(0x1F800068 + sp_inner) = dp[3] << 2;
+                *(s32 *)(0x1F800068 + var_8) = var_9[3] << 2;
                 j++;
-                *(s32 *)(0x1F80006C + sp_inner) = dp[4] << 2;
-                sp_inner += 0xC;
+                *(s32 *)(0x1F80006C + var_8) = var_9[4] << 2;
+                var_8 += 0xC;
             }
                 if (j < 2) {
                     goto inner;
                 }
-                ac_base[0x2B] = *(s32 *)((u8 *)p68 + 0x68) << 2;
+                var_4[0x2B] = *(s32 *)((u8 *)p68 + 0x68) << 2;
                 p68 = (s32 *)((u8 *)p68 + 4);
                 sp_off += 0x18;
                 i++;
-                ac_base++;
+                var_4++;
             } while (i < ptr->count);
         }
     }
@@ -486,7 +486,7 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     s32 bits, bits2;
     s32 r;
     s32 vy_new;
-    s32 tot, pen;
+    s32 tot, var_11;
     /* FAKE: frame layout -- lz[0] (first gte_stlzc) and lz[1] (second
      * gte_stlzc) are the live LZC outputs; the unwritten 16-byte tail gives the
      * 0x78 frame (as s32 lz[2]: frame 0x68, score 24) (dead-vars-local-array,
@@ -503,7 +503,7 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
         s32 idx;
         /* Ruling 11 (reused local): force count, field_1C (added) then
          * field_20 (subtracted) */
-        s32 nforce;
+        s32 var_14;
 
         SCR->pos[0] = node->pos[0];
         SCR->pos[1] = node->pos[1];
@@ -573,9 +573,9 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
         vx = node->field_C;
         vy = node->field_10;
         vz = node->field_14;
-        nforce = node->field_1C;
+        var_14 = node->field_1C;
         bits = *(s32 *)&node->field_24[0];
-        for (idx = 0; idx < nforce; idx++) {
+        for (idx = 0; idx < var_14; idx++) {
             s32 *f_add;
 
             f_add = SCR->force[bits & 0xFF];
@@ -588,9 +588,9 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
                 bits >>= 8;
             }
         }
-        nforce = node->field_20;
+        var_14 = node->field_20;
         bits2 = *(s32 *)&node->field_2C[0];
-        for (idx = 0; idx < nforce; idx++) {
+        for (idx = 0; idx < var_14; idx++) {
             s32 *f_sub;
 
             f_sub = SCR->force[bits2 & 0xFF];
@@ -754,12 +754,12 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile (".word 0x4B90003D": : :"$12","$13","$14","$15","memory");
-                pen = (r - tot) << 17;
-                if (pen > 0x400000) {
-                    pen = 0x400000;
+                var_11 = (r - tot) << 17;
+                if (var_11 > 0x400000) {
+                    var_11 = 0x400000;
                 }
                 if (work != 0) {
-                    work = pen / work;
+                    work = var_11 / work;
                 }
                 /* gte_ldlvl(r1) -- inline_o.h 4.3 :104-109 */
                 __asm__ volatile ("move  $12,%0": :"r"(SCR->d0):"$12","$13","$14","$15","memory");
@@ -774,7 +774,7 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
                 __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
                 __asm__ volatile (".word 0x4BA8003E": : :"$12","$13","$14","$15","memory");
                 if (dist2 != 0) {
-                    dist2 = pen / dist2;
+                    dist2 = var_11 / dist2;
                 }
                 /* gte_ldlvl(r1) -- inline_o.h 4.3 :104-109 */
                 __asm__ volatile ("move  $12,%0": :"r"(SCR->d1):"$12","$13","$14","$15","memory");
@@ -961,20 +961,20 @@ void func_80019568(s32 arg0) {
         /* FAKE: rec holds (u8 *)var_1 + i * 8 for the loop body; indexing
          * from var_1 at each read adds a second induction (score 18). */
         u8 *rec = (u8 *)var_1 + i * 8;
-        s32 valid = 0;
+        s32 var_6 = 0;
         s32 bits;
 
         if (rec[0] == 0) {
             s32 type_m1;
 
             pad.type[i] = rec[1] >> 4;
-            valid = 1;
-            /* FAKE: `pad.valid[i] = valid;` duplicated into both arms keeps
+            var_6 = 1;
+            /* FAKE: `pad.valid[i] = var_6;` duplicated into both arms keeps
              * loop.c from hoisting the `1`, which fills the lhu delay slot; a
              * single store after the join: score 21 (family:
              * duplicated-statement-into-arms, rule
              * duplicated-statement-into-arms) */
-            pad.valid[i] = valid;
+            pad.valid[i] = var_6;
             type_m1 = (s16)((u16)pad.type[i] - 1);
 
             switch (type_m1) {
@@ -995,7 +995,7 @@ void func_80019568(s32 arg0) {
             }
         } else {
             pad.type[i] = 4;
-            pad.valid[i] = valid;
+            pad.valid[i] = var_6;
             bits = 0;
         }
 

@@ -3156,9 +3156,9 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
         *D_800A34AC = 0x10;
         D_800F0B98[arg0] = 3;
     } else if (arg0 < 6) {
-        s16 lv = D_800EFC8A[arg1 * 0x1E0] >> 3;
-        var_0->unk70 = lv;
-        if (lv >= 4) {
+        s16 var_6 = D_800EFC8A[arg1 * 0x1E0] >> 3;
+        var_0->unk70 = var_6;
+        if (var_6 >= 4) {
             var_0->unk70 = 3;
         }
         if (D_800A34F0[arg0 - 4] != 0) {
@@ -3623,18 +3623,18 @@ s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
     D_800A34FC = v0_e49c;
     D_800A3500 = (s32)(v0_e49c + 1);
     {
-        s32 init_mask = -0x10;
-        s32 outer_cache;
+        s32 var_4 = -0x10;
+        s32 var_5;
         s32 flags = D_800A34F8;
-        outer_cache = D_8009BC04;
+        var_5 = D_8009BC04;
 
-        flags &= init_mask;
+        flags &= var_4;
         D_800A34F8 = flags;
-        if (!((u32)outer_cache & 1)) {
+        if (!((u32)var_5 & 1)) {
             u32 mask;
-            s32 cache;
+            s32 var_8;
             mask = (u32)-0x10;
-            cache = D_8009BC04;
+            var_8 = D_8009BC04;
             do {
                 s32 next;
                 s32 lo;
@@ -3649,7 +3649,7 @@ s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
                 flags = (flags & mask) | (next & 0xF);
                 D_800A34F8 = flags;
                 flags &= 0xF;
-                flags = (u32)cache >> flags;
+                flags = (u32)var_8 >> flags;
                 flags &= 1;
             } while (!flags);
         }
@@ -3859,7 +3859,7 @@ s32 func_800693CC(s32 arg0, s32 arg1) {
 increment: {
     /* FAKE: the index-field clear mask, named so its load sits ahead of
      * the alias (the literal moves `li -16` two slots: score 2). */
-    s32 clear_mask = ~0xF;
+    s32 var_3 = ~0xF;
     /* FAKE: keep the availability address across the loop so GCC reloads
      * its word each iteration; direct global reads hoist the word: score 5
      * (both loops: 10). */
@@ -3867,9 +3867,9 @@ increment: {
     do {
         s32 flags = D_800A34F8;
         s32 index;
-        D_800A34F8 = (flags & clear_mask) | (index = ((flags & 0xF) + 1) & 0xF);
+        D_800A34F8 = (flags & var_3) | (index = ((flags & 0xF) + 1) & 0xF);
         if (index >= 8) {
-            D_800A34F8 &= clear_mask;
+            D_800A34F8 &= var_3;
         }
     } while (!(((u32)*available >> (D_800A34F8 & 0xF)) & 1));
 }
@@ -4503,9 +4503,9 @@ void func_8006A564(u8 *arg0, Unk8007352CEnv *arg1, s32 arg2) {
         /* FAKE: the header store through a pointer to the member: stored as
            arg1->header the member store is scheduled past the D_800A34F8 load
            (MEM_IN_STRUCT_P); score 7. */
-        Unk8009B0E0Record **hp = &arg1->header;
+        Unk8009B0E0Record **var_7 = &arg1->header;
 
-        *hp = tbl[10];
+        *var_7 = tbl[10];
         if ((D_800A34F8 & 0xF) == arg2) {
             arg1->col_g = 0;
             arg1->col_r = arg1->col_r >> 1;
@@ -5734,12 +5734,12 @@ s32 func_8006CFBC(s32 *arg0) {
     arg0[7] += 0xC;
 
     {
-        u16 rect[4];
-        rect[2] = 0xE1;
-        rect[0] = 0xCF;
-        rect[1] = 0x25;
-        rect[3] = 1;
-        func_80069898(arg0, rect, 0x11);
+        u16 var_8[4];
+        var_8[2] = 0xE1;
+        var_8[0] = 0xCF;
+        var_8[1] = 0x25;
+        var_8[3] = 1;
+        func_80069898(arg0, var_8, 0x11);
     }
     return (s16)result;
 }

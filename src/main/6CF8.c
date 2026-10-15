@@ -205,26 +205,26 @@ void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
 
     for (i = 0; i < 0x96; i++) {
         if (i >= 0x79) {
-            u16 *pixels = (u16 *)(arg0 + 0x28);
+            u16 *var_2 = (u16 *)(arg0 + 0x28);
             s32 j;
 
-            for (j = 0; j < rect.w * rect.h; j++, pixels++) {
-                u32 pixel = *pixels;
+            for (j = 0; j < rect.w * rect.h; j++, var_2++) {
+                u32 var_4 = *var_2;
                 /* FAKE: (s32) makes the shift signed; unsigned: score 1 (srl
                  * for the target's sra) */
-                s32 value = (s32)(pixel & 0x1F) >> 1;
+                s32 value = (s32)(var_4 & 0x1F) >> 1;
                 u32 temp;
 
                 /* FAKE: no-op mask of the u16 read; removed: score 1 (the andi
                  * goes) */
-                pixel &= 0xFFFF;
-                temp = pixel >> 1;
+                var_4 &= 0xFFFF;
+                temp = var_4 >> 1;
                 temp &= 0x1E0;
                 value += temp;
-                pixel >>= 1;
-                pixel &= 0x3C00;
-                value += pixel;
-                *pixels = value;
+                var_4 >>= 1;
+                var_4 &= 0x3C00;
+                value += var_4;
+                *var_2 = value;
             }
             LoadImage(&rect, (u32 *)(arg0 + 0x14));
         }

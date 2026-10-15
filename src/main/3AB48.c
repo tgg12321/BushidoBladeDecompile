@@ -1193,13 +1193,13 @@ s32 func_80055948(Unk80101EC8Record *arg0) {
         if ((D_80099D88[idx].flags & 0xBF00) != 0)
             goto check_loop;
         {
-            s32 limit;
+            s32 var_8;
             if (arg0->unk_430 & 0x200) {
-                limit = (arg0->unk_43C < 0x801);
+                var_8 = (arg0->unk_43C < 0x801);
             } else {
-                limit = (arg0->unk_43C < 0x401);
+                var_8 = (arg0->unk_43C < 0x401);
             }
-            if (limit == 0)
+            if (var_8 == 0)
                 goto reset_ret_neg1;
         }
         if (arg0->unk_430 & 0x800)
@@ -1209,11 +1209,11 @@ s32 func_80055948(Unk80101EC8Record *arg0) {
         if (arg0->unk_442 != 0)
             goto reset_ret_neg1;
         {
-            Unk80101EC8Record *other = arg0->other;
-            if (other->unk_6A == 0x2D)
+            Unk80101EC8Record *var_9 = arg0->other;
+            if (var_9->unk_6A == 0x2D)
                 goto reset_ret_neg1;
-            dx = other->unk_F4.x - arg0->unk_40E;
-            dy = other->unk_F4.z - arg0->unk_410;
+            dx = var_9->unk_F4.x - arg0->unk_40E;
+            dy = var_9->unk_F4.z - arg0->unk_410;
             dz = arg0->unk_412;
             if ((dz * dz) >= ((dx * dx) + (dy * dy)))
                 goto loop;
@@ -1420,21 +1420,21 @@ void func_80055B60(s32 arg0, PadState *arg1) {
         if (rec->unk_428 != -1) {
             if (rec->unk_424 != 0 &&
                 (func_800167BC() == 0 || D_800A38DC == 3)) {
-                s32 slot;
-                s32 found;
+                s32 var_12;
+                s32 var_13;
 
                 temp3 = 0x100;
                 i = 0;
-                slot = -1;
-                found = -1;
+                var_12 = -1;
+                var_13 = -1;
 
                 for (; i < 8; i++) {
                     if (rec->unk_414[i][0] == rec->unk_428) {
-                        found = i;
+                        var_13 = i;
                     } else {
                         temp = rec->unk_414[i][1] - 1;
                         if (rec->unk_414[i][1] < temp3) {
-                            slot = i;
+                            var_12 = i;
                             temp3 = rec->unk_414[i][1];
                         }
                         if (temp < 0) {
@@ -1444,15 +1444,15 @@ void func_80055B60(s32 arg0, PadState *arg1) {
                     }
                 }
                 temp = rec->unk_6A == 0x11 ? 8 : 4;
-                if (found == -1) {
-                    rec->unk_414[slot][0] = rec->unk_428;
-                    rec->unk_414[slot][1] = temp;
+                if (var_13 == -1) {
+                    rec->unk_414[var_12][0] = rec->unk_428;
+                    rec->unk_414[var_12][1] = temp;
                 } else {
-                    temp += rec->unk_414[found][1];
+                    temp += rec->unk_414[var_13][1];
                     if (temp > 0xFF) {
                         temp = 0xFF;
                     }
-                    rec->unk_414[found][1] = temp;
+                    rec->unk_414[var_13][1] = temp;
                 }
             }
             rec->unk_428 = -1;
@@ -2169,11 +2169,11 @@ void func_80057E84(
         var_15--;
     }
     for (iter = 0; iter < var_15; iter++) {
-        /* vtx holds four values, each the address of an x/z pair: the
+        /* var_29 holds four values, each the address of an x/z pair: the
          * edge's start (i) and end (next) in the edge scan, then the corners
          * at var_12 and var_13 (Ruling 11,
          * reused-local-necessity). */
-        s16 *vtx;
+        s16 *var_29;
         /* node holds two values: the waypoint appended to &var_0[0], then
          * the one appended to &var_0[1] (Ruling 11, reused-local-necessity).
          */
@@ -2186,13 +2186,13 @@ void func_80057E84(
             if (!(next < poly->nvtx)) {
                 next = 0;
             }
-            vtx = poly->vtx[i];
-            ax = vtx[0];
-            az = vtx[1];
+            var_29 = poly->vtx[i];
+            ax = var_29[0];
+            az = var_29[1];
             func_80057CC8(poly, i, &ofs0_x, &ofs0_z);
-            vtx = poly->vtx[next];
-            bx = vtx[0];
-            bz = vtx[1];
+            var_29 = poly->vtx[next];
+            bx = var_29[0];
+            bz = var_29[1];
             func_80057CC8(poly, next, &ofs1_x, &ofs1_z);
             if (var_11 && !var_19) {
                 if ((var_7 != ofs0_x || var_8 != ofs0_z) &&
@@ -2220,9 +2220,10 @@ void func_80057E84(
             if (var_19) {
                 s32 c;
 
-                vtx = poly->vtx[var_12];
-                var_16 += SquareRoot0((vtx[0] - var_7) * (vtx[0] - var_7) +
-                                      (vtx[1] - var_8) * (vtx[1] - var_8));
+                var_29 = poly->vtx[var_12];
+                var_16 +=
+                    SquareRoot0((var_29[0] - var_7) * (var_29[0] - var_7) +
+                                (var_29[1] - var_8) * (var_29[1] - var_8));
                 func_80057CC8(poly, var_12, &var_7, &var_8);
                 route = &var_0[0];
                 c = route->count;
@@ -2252,9 +2253,10 @@ void func_80057E84(
             if (var_20) {
                 s32 c;
 
-                vtx = poly->vtx[var_13];
-                var_17 += SquareRoot0((vtx[0] - var_9) * (vtx[0] - var_9) +
-                                      (vtx[1] - var_10) * (vtx[1] - var_10));
+                var_29 = poly->vtx[var_13];
+                var_17 +=
+                    SquareRoot0((var_29[0] - var_9) * (var_29[0] - var_9) +
+                                (var_29[1] - var_10) * (var_29[1] - var_10));
                 func_80057CC8(poly, var_13, &var_9, &var_10);
                 route = &var_0[1];
                 c = route->count;
@@ -2366,7 +2368,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
      * reused-local-necessity). */
     s32 work3;
     /* work4 holds three values in turn, each read before the next write: the
-     * D_8009A850 scan index; a copy of wi taken in the walk branch
+     * D_8009A850 scan index; a copy of var_53 taken in the walk branch
      * (Q34), counted down; the script-list entry index (Ruling 11,
      * reused-local-necessity). */
     s32 work4;
@@ -2731,15 +2733,15 @@ s32 func_80058580(Unk80101EC8Record *p) {
                 }
                 {
                     s32 dist;
-                    s32 wi;
+                    s32 var_53;
                     work1 = p->unk_444[6];
-                    wi = p->cpu_route.count - 1;
+                    var_53 = p->cpu_route.count - 1;
                     work2 = p->unk_444[0];
-                    wx = p->cpu_route.node[wi].x;
-                    wz = p->cpu_route.node[wi].z;
+                    wx = p->cpu_route.node[var_53].x;
+                    wz = p->cpu_route.node[var_53].z;
                     if (!(work1 == 1 || work1 == 2)) {
                         var_8 = 0;
-                        if (p->cpu_route.node[wi].kind == 1) {
+                        if (p->cpu_route.node[var_53].kind == 1) {
                             if (work2 == 3 &&
                                 D_800A387C <
                                     p->other->unk_404[p->other->unk_86]) {
@@ -2772,7 +2774,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                     if (p->unk_3CC != 0) {
                         return p->unk_3CC;
                     }
-                    if (wi == 0) {
+                    if (var_53 == 0) {
                         if (p->cpu_route.node[0].kind == 1) {
                             dist = SquareRoot0(CPU_SQ(p->unk_F4.x - tx) +
                                                CPU_SQ(p->unk_F4.z - tz));
@@ -2781,7 +2783,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                                                CPU_SQ(p->unk_F4.z - wz));
                         }
                     } else {
-                        work4 = wi;
+                        work4 = var_53;
                         dist = SquareRoot0(CPU_SQ(wx - p->unk_F4.x) +
                                            CPU_SQ(wz - p->unk_F4.z));
                         while (work4 >= 2) {
@@ -2906,13 +2908,13 @@ s32 func_80058580(Unk80101EC8Record *p) {
             if (p->unk_39C != 1) {
                 work3 = p->unk_394;
             } else if (p->other->unk_6A == 0x19) {
-                u8 slots0[4];
-                __builtin_memcpy(slots0, D_800A325C, 4);
-                work3 = slots0[p->other->unk_441];
+                u8 var_54[4];
+                __builtin_memcpy(var_54, D_800A325C, 4);
+                work3 = var_54[p->other->unk_441];
             } else if (p->other->unk_6A == 0x1A) {
-                u8 slots1[4];
-                __builtin_memcpy(slots1, D_800A3260, 4);
-                work3 = slots1[p->other->unk_441];
+                u8 var_55[4];
+                __builtin_memcpy(var_55, D_800A3260, 4);
+                work3 = var_55[p->other->unk_441];
             }
             switch (work3) {
             case 0:
@@ -2985,9 +2987,9 @@ s32 func_80058580(Unk80101EC8Record *p) {
                 }
             }
         } else if (p->unk_398 == 0) {
-            s32 tired = D_80099D88[p->unk_443].unk6;
+            s32 var_56 = D_80099D88[p->unk_443].unk6;
             r = rand() & 0xFF;
-            if (p->unk_440 == 4 ? r < (tired >> 2) : r < tired) {
+            if (p->unk_440 == 4 ? r < (var_56 >> 2) : r < var_56) {
                 work2 = -1;
                 var_43 = -1;
                 var_16 = 0;
@@ -3330,35 +3332,35 @@ s32 func_80058580(Unk80101EC8Record *p) {
                     D_800A387C < 4500) {
                     var_10 = D_8009A8C0;
                 } else {
-                    s32 level;
+                    s32 var_60;
 
                     if (p->unk_443 == 0x15) {
-                        level = p->unk_34D;
+                        var_60 = p->unk_34D;
                         work1 = p->other->unk_3F8[p->other->unk_86];
                     } else {
                         work1 = p->other->unk_404[p->other->unk_86] + 300;
                         if (D_80099D88[p->unk_443].flags & 0x300) {
-                            level = 0;
+                            var_60 = 0;
                             if (D_800A37A0 >= 6) {
-                                level = p->unk_34A;
+                                var_60 = p->unk_34A;
                             }
                         } else {
-                            level = p->unk_330;
+                            var_60 = p->unk_330;
                         }
                     }
                     var_40 = 0;
                     if ((rand() & 0xFF) <
                             (D_80099D88[p->unk_443].script_weight[6] >> 2) &&
-                        level != 0 && work1 < D_800A387C &&
+                        var_60 != 0 && work1 < D_800A387C &&
                         p->unk_434 == 100000 && p->unk_442 == 0 &&
                         (p->unk_430 & 0xA002) &&
                         (p->unk_443 != 0x15 || D_800A387C < 3000) &&
-                        (p->unk_8A == 0 || level >= 2)) {
+                        (p->unk_8A == 0 || var_60 >= 2)) {
                         var_40 = 1;
                     }
                     if (var_40) {
                         if ((D_80099D88[p->unk_443].flags & 0x10) &&
-                            level >= 2 && (rand() & 1)) {
+                            var_60 >= 2 && (rand() & 1)) {
                             var_10 = D_8009A8B4;
                         } else {
                             var_10 = D_8009A8AC;

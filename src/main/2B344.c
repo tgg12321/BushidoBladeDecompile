@@ -128,8 +128,8 @@ void func_8003AE5C(u8 *arg0) {
     s32 var_2 = 0;
 
     do {
-        s32 cmd = *arg0++;
-        switch (cmd) {
+        s32 var_3 = *arg0++;
+        switch (var_3) {
         case 1:
             result = *arg0;
         case 0:
@@ -340,11 +340,11 @@ void func_8003B5A4(void) {
 
     do {
         u8 *ptr = D_800A3844;
-        s32 cmd;
+        s32 var_3;
         D_800A3844 = ptr + 1;
-        cmd = *ptr;
+        var_3 = *ptr;
 
-        switch (cmd) {
+        switch (var_3) {
         case 16: {
             s32 ret = func_8003B3A4(D_800A3844);
             D_800A3844 += ret;
@@ -512,11 +512,11 @@ void func_8003B9D0(void) {
         var_4 = 0x80118800;
     }
     {
-        u8 qf = D_800A3878[3];
-        if (qf & 0x30) {
+        u8 var_7 = D_800A3878[3];
+        if (var_7 & 0x30) {
             saved_first = D_80101EC8[0].unk_12;
             saved_44c = D_80101EC8[1].unk_12;
-            if (qf & 0x10)
+            if (var_7 & 0x10)
                 D_80101EC8[0].unk_12 = 0x32;
             if (D_800A3878[3] & 0x20)
                 D_80101EC8[1].unk_12 = 0x32;
@@ -657,19 +657,19 @@ void func_8003BEA8(void) {
             }
         }
         {
-            s32 stage_u = (s32)(u16)D_80101EC8[0].unk_0A;
-            s16 stage;
-            if ((u32)stage_u < 2u) {
+            s32 var_6 = (s32)(u16)D_80101EC8[0].unk_0A;
+            s16 var_7;
+            if ((u32)var_6 < 2u) {
                 goto check_bit;
             }
-            stage = (s16)stage_u;
-            if (stage == 2) {
+            var_7 = (s16)var_6;
+            if (var_7 == 2) {
                 goto check_bit;
             }
-            if ((u32)(stage_u - 0xC) < 2u) {
+            if ((u32)(var_6 - 0xC) < 2u) {
                 goto check_bit;
             }
-            if (stage == 0xE) {
+            if (var_7 == 0xE) {
                 goto check_bit;
             }
             goto skip_bit;
@@ -855,15 +855,15 @@ void func_8003C42C(void) {
     if (counts[0] != counts[1]) {
         D_800A382D = counts[0] < counts[1];
     } else {
-        s32 rounds2 = D_800A389B;
+        s32 var_6 = D_800A389B;
         i = 0;
         counts[1] = 0;
         counts[0] = 0;
-        if (rounds2 > 0) {
+        if (var_6 > 0) {
             /* FAKE: base2 / n2, the same handles for the second tally; direct
              * use scores 6. */
             s32 *base2 = counts;
-            s32 n2 = rounds2;
+            s32 n2 = var_6;
             u8(*tbl)[2] = D_800F65F8;
             do {
                 s32 j = 0;
@@ -1436,7 +1436,7 @@ s32 bitstream_ReadBits(BitStream *s, s32 n) {
     if (var_0 < n) {
         u32 m1, m2;
         s32 shift;
-        u32 *wp;
+        u32 *var_5;
         u32 w;
         /* FAKE: `hi` names the masked high-bit slice of the loaded word;
            written into the or: score 17 (s and n swap argument registers) */
@@ -1447,10 +1447,10 @@ s32 bitstream_ReadBits(BitStream *s, s32 n) {
         m1 -= 1;
         m2 = (1 << n) - 1;
         r = s->word & m1;
-        wp = s->next;
-        s->next = wp + 1;
+        var_5 = s->next;
+        s->next = var_5 + 1;
         shift = 32 - n;
-        w = *wp;
+        w = *var_5;
         s->avail = shift;
         s->word = w;
         hi = (w >> shift) & m2;
@@ -1626,7 +1626,7 @@ void func_8003DDF8(u32 arg0) {
  * pass writes the far colour itself) and uploads the result one rect height
  * below the previous one, wrapping to the next column at y 0x200.
  *
- * FAKE constructs (each labelled at its site): the `gm` mask and the
+ * FAKE constructs (each labelled at its site): the `var_24` mask and the
  * two combine-foldable chain-extender detours (zero emitted bytes;
  * dead-store-fake-exception). */
 void func_8003DE14(RECT *rect, s32 count) {
@@ -1658,7 +1658,7 @@ void func_8003DE14(RECT *rect, s32 count) {
 
     i = 0;
     if (count > 0) {
-        s32 blend_base = 0x1000;
+        s32 var_9 = 0x1000;
         do {
             s32 total = rect->w * rect->h;
             u16 *src = src_buf;
@@ -1666,7 +1666,7 @@ void func_8003DE14(RECT *rect, s32 count) {
             s32 factor = ((i + 1) << 12) / count;
             s32 j = 0;
             if (total > 0) {
-                s32 complement = blend_base - factor;
+                s32 complement = var_9 - factor;
                 do {
                     if (i == count - 1) {
                         u16 pixel = *src;
@@ -1693,31 +1693,31 @@ void func_8003DE14(RECT *rect, s32 count) {
                             s32 r_src = (pixel & 0x1F) << 3;
                             s32 g_src = ((u32)px >> 2) & 0xF8;
                             s32 sum;
-                            s32 rp;
-                            s32 gp;
-                            /* FAKE: naming gm makes g_src die at the mask,
+                            s32 var_22;
+                            s32 var_23;
+                            /* FAKE: naming var_24 makes g_src die at the mask,
                              * not the store; the allocno priorities then give
                              * px $a0, red $a1, green $v1 as in the target;
                              * without it red outranks px and takes $a0: score
                              * 17 */
-                            s32 gm;
+                            s32 var_24;
                             src++;
-                            rp = r_src * complement;
+                            var_22 = r_src * complement;
                             r_src = r * factor;
-                            sum = rp + r_src;
+                            sum = var_22 + r_src;
                             r_src = sum >> 15;
                             r_src = r_src & 0x1F;
-                            gp = g_src * complement;
+                            var_23 = g_src * complement;
                             g_src = g * factor;
-                            sum = gp + g_src;
+                            sum = var_23 + g_src;
                             g_src = sum >> 10;
                             px = ((u32)px >> 7) & 0xF8;
                             px = px * complement;
                             sum = px + b * factor;
                             px = sum >> 5;
-                            gm = g_src & 0x3E0;
-                            *dst =
-                                (pixel & 0x8000) | r_src | gm | (px & 0x7C00);
+                            var_24 = g_src & 0x3E0;
+                            *dst = (pixel & 0x8000) | r_src | var_24 |
+                                   (px & 0x7C00);
                         }
                     }
                     dst++;
@@ -2380,7 +2380,7 @@ s32 func_8003F268(void) { return D_800A322C; }
 
 void func_8003F274(void) {
     s32 i, j;
-    s32 var_2, row_center;
+    s32 var_2, var_3;
     s32 data;
     s32 var_5;
     s32 var_6;
@@ -2396,12 +2396,12 @@ void func_8003F274(void) {
     func_8003F268();
 
     var_2 = (D_800A3708->work.t[0] + 0x7D00) / 2000;
-    row_center = (D_800A3708->work.t[2] + 0x7D00) / 2000;
+    var_3 = (D_800A3708->work.t[2] + 0x7D00) / 2000;
 
     for (i = 0; i < 16; i++) {
         var_5 = i - 8;
         {
-            u32 y = (u32)(row_center + var_5);
+            u32 y = (u32)(var_3 + var_5);
             if (y < 0x20) {
                 data = D_80094A6C[i];
                 for (j = 0; j < 16; j++) {

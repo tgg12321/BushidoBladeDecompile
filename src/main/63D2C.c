@@ -65,7 +65,7 @@ s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
     u32 tpage;
     u32 clut;
     s16 du0, du1, dv0, dv1;
-    u16 var_10, vb;
+    u16 var_10, var_11;
     s16 ox = e->x, oy = e->y;
     s32 sx, sy;
     s32 u, v;
@@ -81,7 +81,7 @@ s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
     }
     clut = GetClut(var_1->cx, var_1->cy);
     var_10 = var_1->ubase;
-    vb = var_1->vbase;
+    var_11 = var_1->vbase;
     if (mode == 1) {
         du1 = 1;
         dv0 = 0;
@@ -127,7 +127,7 @@ s32 func_80073728(Unk8007352CEnv *env, s32 mode) {
         p->x3 = ox + env->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
         p->y3 = oy + env->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
         u = var_10 + e->u;
-        v = vb + e->v;
+        v = var_11 + e->v;
         p->u0 = u + du0;
         p->v0 = v + dv0;
         p->u1 = u + du1;

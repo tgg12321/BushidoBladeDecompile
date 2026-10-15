@@ -1679,13 +1679,13 @@ void func_80078654(Unk800788B0Rec *arg0) {
     var_s0 = D_800A3610->unk_14;
     if (D_800A3608 >= 0xAAA) {
         if (D_800A3608 >= 0xB04) {
-            s16 sv;
+            s16 var_3;
             s.has_color = 1;
-            sv = 0x80 - (((D_800A3608 - 0xB04) << 7) / 15);
-            if (sv < 0) {
-                sv = 0;
+            var_3 = 0x80 - (((D_800A3608 - 0xB04) << 7) / 15);
+            if (var_3 < 0) {
+                var_3 = 0;
             }
-            s.col_r = s.col_g = s.col_b = sv;
+            s.col_r = s.col_g = s.col_b = var_3;
         }
         s.sprt_out = arg0->unk_0C;
         arg0->unk_0C = func_8007352C(&s);

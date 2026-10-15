@@ -625,18 +625,18 @@ void func_8006F528(Unk8006EACCRec *arg0) {
            `D_800A35C4->unk_10[0] = offset_x`, the D_800A35C4 load (`lw a1`)
            sinks from the state test to the store, the test's 2 moves from $a2
            to $a1 and offset_x from $v0 to $v1 (score 8). */
-        Unk800A35C4Rec *blk;
+        Unk800A35C4Rec *var_6;
         s32 x;
         s32 offset_x;
 
-        blk = D_800A35C4;
+        var_6 = D_800A35C4;
         x = D_800A35C0->draw.ofs[0];
         if (state == 2) {
             offset_x = x - D_800A3570;
         } else {
             offset_x = x + D_800A3570;
         }
-        blk->unk_10[0] = offset_x;
+        var_6->unk_10[0] = offset_x;
         D_800A35C4->unk_10[1] = D_800A35C0->draw.ofs[1];
         SetDrawOffset(arg0->unk_04.unk_1C, D_800A35C4->unk_10);
         AddPrim(g_gpu_ot_ptr + 0xF, arg0->unk_04.unk_1C);
@@ -1177,12 +1177,12 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
          * D_800A35A8->unk_7C + i * 8, computed at the top of the loop and
          * again in the locked-slot arm (Ruling 11, proof at tag
          * pre-slim-2026-10-01). */
-        RECT *vram;
+        RECT *var_6;
 
         /* FAKE: base and step as two statements, here and in the locked-slot
-         * arm; `vram = D_800A35A8->unk_7C + i * 8` scores 28 */
-        vram = D_800A35A8->unk_7C;
-        vram += i * 8;
+         * arm; `var_6 = D_800A35A8->unk_7C + i * 8` scores 28 */
+        var_6 = D_800A35A8->unk_7C;
+        var_6 += i * 8;
         var_4 = i - var_5;
         if (D_800A3560.rec[i].unk0 != 5 && D_800A3560.rec[i].unk0 != 0x10) {
             s32 max;
@@ -1239,7 +1239,7 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                     }
                     id = D_800A3560.rec[i].unk2;
                     tim = &D_800A35A8->unk_14[id][sel];
-                    LoadImage(&vram[id], (u32 *)*tim);
+                    LoadImage(&var_6[id], (u32 *)*tim);
                     DrawSync(0);
                 } else if (D_800A354C & (0x40 << (var_4 * 16))) {
                     s32 sel;
@@ -1260,7 +1260,7 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                     }
                     id = D_800A3560.rec[i].unk2;
                     tim = &D_800A35A8->unk_14[id][sel];
-                    LoadImage(&vram[id], (u32 *)*tim);
+                    LoadImage(&var_6[id], (u32 *)*tim);
                     DrawSync(0);
                 } else if (D_800A354C & (0x10 << (var_4 * 16))) {
                     func_8005C650(2, 0x7F, 0x7F);
@@ -1347,8 +1347,8 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
 
                     func_8005C650(1, 0x7F, 0x7F);
                     flag = 2;
-                    vram = D_800A35A8->unk_7C;
-                    vram += i * 8;
+                    var_6 = D_800A35A8->unk_7C;
+                    var_6 += i * 8;
                     if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) {
                         sel = 0;
                     } else {
@@ -1356,7 +1356,7 @@ void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CEnv *s) {
                     }
                     id = D_800A3560.rec[i].unk2;
                     tim = &D_800A35A8->unk_14[id][sel];
-                    LoadImage(&vram[id], (u32 *)*tim);
+                    LoadImage(&var_6[id], (u32 *)*tim);
                     DrawSync(0);
                 }
             }
@@ -1723,12 +1723,12 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
     if (D_800A3578 == 0) {
         for (i = 0; i < D_800A35B0 + 1; i++) {
             if (D_800A354C & (0x10 << (i * 16))) {
-                s32 slot;
+                s32 var_11;
 
                 func_8005C650(2, 0x7F, 0x7F);
-                slot = D_800A3560.rec[i].unk0;
+                var_11 = D_800A3560.rec[i].unk0;
                 D_800A3560.rec[i].unk2 = 0xFF;
-                if (slot == 5 || slot == 16) {
+                if (var_11 == 5 || var_11 == 16) {
                     D_800A3580 = 0;
                     D_800A3560.rec[i == 0 ? 1 : 0].unk2 = 0xFF;
                     D_800A3560.rec[i].unk0 = 0xFF;
