@@ -1,7 +1,7 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 9,
+ "session_count": 10,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -57,13 +57,19 @@
    "floor": 37,
    "modality": "forensics",
    "headline": "Forensics: kill re-audit holds (closest form 32, no FAKE); jr-slot predicate re-attributed to reorg.c:2969 scan with pass inputs enumerated; in-loop return empties the slot but breaks layout"
+  },
+  {
+   "session": 10,
+   "floor": 37,
+   "modality": "forensics",
+   "headline": "Forensics: original PsyQ cc1psx reproduces the port's output on the closest forms and six new mfc2-seat input variants; residuals are real-compiler, not port divergence"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ASM-WHOLE canonical GTE grant is the correct disposition; five modalities now confirm the non-GCC $s0 ABI, $t0-$t2 seats and delay-slot shape.",
-   "mechanism": "s1 ABI class kill; global.c:1057 first-fit; reorg.c:2969 scan + stop_search_p reorg.c:732",
-   "next_probe": "Escalation modality: file the decisions.md disposition citing s1, s6, s7, s8, s9."
+   "hypothesis": "The ASM-WHOLE canonical GTE grant is the correct disposition; six modalities plus cc1psx calibration confirm the non-GCC $s0 ABI, $t0-$t2 seats and delay-slot shape.",
+   "mechanism": "s1 ABI class kill; global.c:1057 first-fit; reorg.c:2969 scan + stop_search_p reorg.c:732; cc1psx agreement (s10)",
+   "next_probe": "Escalation modality: file the decisions.md disposition citing s1, s6, s7, s9, s10."
   },
   {
    "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c units lets the sandbox score GTE bodies.",
@@ -233,6 +239,22 @@
    "measured_on": "s9/q_c.c raw cc1, $a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, no FAKE construct",
    "predicate_cite": "",
    "result": "slot empty (mechanism confirmed, code_label 107 directly before return_internal) but the exit arm is inline after bne wi"
+  },
+  {
+   "session": 10,
+   "statement": "The residuals of the closest banked forms (s7 p_f, s9 q_c) are a divergence of the decompals port cc1 from original cc1psx, so cc1psx would emit the target $t0-$t2 seats or empty jr slot from the same",
+   "kill_scope": "instance",
+   "measured_on": "s7/p_f.i + s9/q_c.i, tools/cc1psx.exe via cc1psx_wrapper.sh vs tools/gcc-2.7.2/build/cc1, $a3 vertex-pointer chassis, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Byte-identical apart from $L/.L label spelling: mfc2 $2/$3/$8, beq slot holds n--, jr slot holds sh $8 (p_f); q_c identi"
+  },
+  {
+   "session": 10,
+   "statement": "One of six C-side input shapes of the z temporaries (s16, u16, reversed declaration, z[3] array, fused three-output mfc2 asm, s32 sz) makes global.c seat the mfc2 results in $8/$9/$10.",
+   "kill_scope": "instance",
+   "measured_on": "six p_f-derived variants s10/v1_s16..v6_szs32.c, $a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, port cc1 and cc1psx, no FAKE construct",
+   "predicate_cite": "",
+   "result": "s16/u16 -> $2,$2,$2; z[3] -> $3,$2,$2; reversed/fused/s32-sz -> $2,$3,$8; none $8,$9,$10; port == cc1psx on all six."
   }
  ],
  "ladder_skip": 0,

@@ -127,3 +127,4 @@
 - 2026-10-15 17:43 func_8004A76C s7 [forensics] floor=37: Forensics: residuals attributed to reorg.c dbr (beqz and jr delay slots, class kill reorg.c:2990); nop pad closed via PsyQ gte_rtpt/gte_rtpt_b; closest form now 4 residuals, 3 class-killed
 - 2026-10-15 17:49 func_8004A76C s8 [rederive] floor=37: Rederive modality: fresh m2c decompile and decomp.me corpus search both independently null, confirming no C/transplant path exists; sibling has nothing to transplant either.
 - 2026-10-15 17:57 func_8004A76C s9 [forensics] floor=37: Forensics: kill re-audit holds (closest form 32, no FAKE); jr-slot predicate re-attributed to reorg.c:2969 scan with pass inputs enumerated; in-loop return empties the slot but breaks layout
+- 2026-10-15 18:45 func_8004A76C s10 [forensics] floor=37: Forensics: original PsyQ cc1psx reproduces the port's output on the closest forms and six new mfc2-seat input variants; residuals are real-compiler, not port divergence

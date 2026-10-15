@@ -213,3 +213,17 @@
 - [s9] No PsyQ inline header copy moves GTE 17-19 into GPRs or clobbers $2/$3.
 
 - [s9] Closest banked form re-measured: sandbox 32 (s9/sandbox_psyq_pair.txt); stub 37 (s9/sandbox_stub.txt).
+
+## s10 (forensics)
+- [s10] Original PsyQ cc1psx (tools/cc1psx.exe via tools/cc1psx_wrapper.sh) reproduces the port cc1 output byte-for-byte (label spelling aside) on the two closest banked forms, s7 p_f and s9 q_c, and on six new seat-input variants (tmp/grind/func_8004A76C/s10/port_vs_psx.txt). The s6 seat kill (global.c:1057) and s7/s9 delay-slot kills (reorg.c:2969/732) therefore hold for the real compiler, not only for the decompals port.
+- [s10] mfc2 seat input census (s10/gen.py, v1..v6): s16/u16 temps -> $2,$2,$2; z[3] -> $3,$2,$2; reversed decl / fused 3-output asm / s32 sz -> $2,$3,$8. No measured input yields the target $8,$9,$10.
+- [s10] label_census on p_f.psx.s (s10/label_census_p_f_psx.txt): CFG and predecessor multiset [1,1,2] identical to target; residual is $s0 refs 16 vs 0 and 36 vs 39 insns (the 2 nops + jr nop are assembler-filled in the build under .set reorder).
+- [s10] candidate.c unchanged (INCLUDE_ASM stub, ASM-WHOLE canonical GTE grant path); floor 37.
+
+- [s10] Original cc1psx output equals port cc1 output (label spelling aside) on p_f, q_c and v1..v6 (tmp/grind/func_8004A76C/s10/port_vs_psx.txt): the s6 seat and s7/s9 delay-slot kills hold for the real PsyQ compiler.
+
+- [s10] mfc2 seat census: narrow temps collapse to $2; array gives $3,$2,$2; other shapes $2,$3,$8; target $8,$9,$10 unreached by any measured input.
+
+- [s10] label_census on p_f.psx.s: CFG/predecessor multiset [1,1,2] matches target; residual is $s0 refs 16 vs 0 and assembler-filled nops.
+
+- [s10] candidate.c unchanged (INCLUDE_ASM stub on the ASM-WHOLE canonical GTE grant path); floor 37.
