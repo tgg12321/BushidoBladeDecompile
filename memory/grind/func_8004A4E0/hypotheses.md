@@ -78,3 +78,11 @@ instance form.
 - kill_scope: class
 - measured_on: whole-body INCLUDE_ASM chassis, zero FAKE constructs (no C body exists at all); identical to s1's measured_on.
 - predicate_cite: docs/audits/func_8004A4E0-canonical-2026-09-29.md:31
+
+## [s3] The permuter can mutate a pure-C chassis for func_8004A4E0 on this body (comments/whitespace aside) to search for a lower-distance form.
+- mechanism: n/a — permuter requires an existing C candidate as its seed chassis; this function's src/main/3AB48.c body is INCLUDE_ASM("asm/funcs", func_8004A4E0) with no C form, per the s1 canonical gate ASM-WHOLE verdict (inline_asm_canonical.txt whole-function grant) re-confirmed this session.
+- probe: Re-ran `& tools/wteng.ps1 main canonical func_8004A4E0` and `& tools/wteng.ps1 main sandbox func_8004A4E0 --disable all` this session; saved raw output to tmp/grind/func_8004A4E0/s3/canonical.txt and tmp/grind/func_8004A4E0/s3/sandbox.txt.
+- result: canonical() returned verdict ASM-WHOLE again (reason: whole-function canonical-asm grant in inline_asm_canonical.txt), identical to s1/s2; sandbox --disable all scored the INCLUDE_ASM stub itself (no_c_body: true, score 163, build_insns 0) — there is no C body for the permuter to perturb.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/main/3AB48.c INCLUDE_ASM stub (no C chassis, no FAKE constructs present); canonical+sandbox outputs this session identical to s1/s2 banked verdict

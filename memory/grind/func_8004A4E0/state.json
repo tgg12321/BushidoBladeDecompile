@@ -1,8 +1,8 @@
 {
  "func": "func_8004A4E0",
  "file": "main/3AB48",
- "session_count": 2,
- "current_modality": "structural",
+ "session_count": 3,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -15,18 +15,19 @@
    "floor": 163,
    "modality": "structural",
    "headline": "structural modality has no applicable surface \u2014 ASM-WHOLE canonical verdict re-confirmed, no C body exists, s1 class kill stands unchanged"
+  },
+  {
+   "session": 3,
+   "floor": 163,
+   "modality": "permuter",
+   "headline": "permuter modality has no applicable surface: function is ASM-WHOLE canonical-grant verdict, no C body exists to mutate; re-confirmed this session with fresh canonical+sandbox artifacts"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "No live pure-C axis remains on this function absent new evidence.",
-   "mechanism": "n/a \u2014 H1 class-killed the only codegen-lever route (C islands around the cross-call register handoffs with func_8004A940/func_8004A76C/func_8004A808).",
-   "next_probe": "None from the grind lane unless a toolchain finding changes what the $s4/$s5/$s0 handoffs require in C."
-  },
-  {
-   "hypothesis": "The open item for this function is operator/landing-side, not a grind hypothesis.",
-   "mechanism": "n/a \u2014 CLAUDE.md's authorize-bucket / Judge-gated canonical-grant path (judge-sole-gate.md) is the correct lane for an ASM-WHOLE-verdict function.",
-   "next_probe": "None from this lane; operator decides whether/when to run the canonical-grant landing steps, or the driver assigns escalation modality to formally dispose of the item via owner-gated."
+   "hypothesis": "No live pure-C or permuter-mutable axis remains on this function.",
+   "mechanism": "n/a \u2014 ASM-WHOLE canonical verdict stands; no C body exists in src/main/3AB48.c for any grind-lane tool (permuter included) to operate on.",
+   "next_probe": "None from the grind lane. The operator-side authorize-bucket / canonical-grant landing path is the only remaining action; a toolchain finding that changed the $s4/$s5/$s0 handoff requirements would reopen this."
   }
  ],
  "judge_constraints": [],
@@ -47,6 +48,14 @@
    "measured_on": "whole-body INCLUDE_ASM chassis, zero FAKE constructs (no C body exists at all); identical to s1's measured_on.",
    "predicate_cite": "docs/audits/func_8004A4E0-canonical-2026-09-29.md:31",
    "result": "Re-confirmed the standing s1 class kill; no new ground covered, no regression."
+  },
+  {
+   "session": 3,
+   "statement": "The permuter can mutate a pure-C chassis for func_8004A4E0 on this body (comments/whitespace aside) to search for a lower-distance form.",
+   "kill_scope": "instance",
+   "measured_on": "src/main/3AB48.c INCLUDE_ASM stub (no C chassis, no FAKE constructs present); canonical+sandbox outputs this session identical to s1/s2 banked verdict",
+   "predicate_cite": "",
+   "result": "canonical() returned verdict ASM-WHOLE again (reason: whole-function canonical-asm grant in inline_asm_canonical.txt), i"
   }
  ],
  "ladder_skip": 0,

@@ -49,3 +49,11 @@ it would only become live if a future session carved a C island out of the body 
 - [s2] No docs/grind/decisions.md entry exists yet for func_8004A4E0 (checked via grep); not filed this session because my mandated modality is structural, not escalation, and the owner's standing auto-ruling (A) reserves the exhaustion determination to the driver's modality assignment.
 
 - [s2] candidate.c and evidence.md already accurately describe the no-C-body state from s1 recon; no edits needed there this session beyond the hypotheses.md s2 re-confirmation entry.
+
+- [s3] canonical func_8004A4E0 this session: verdict ASM-WHOLE, reason 'whole-function canonical-asm grant in inline_asm_canonical.txt', asm_insns 7, total 163 (tmp/grind/func_8004A4E0/s3/canonical.txt).
+
+- [s3] sandbox --disable all this session: score 163, no_c_body: true, build_insns 0 — confirms no C body exists to score or permute (tmp/grind/func_8004A4E0/s3/sandbox.txt).
+
+- [s3] This matches the s1 recon class kill (H1, memory/grind/func_8004A4E0/hypotheses.md) and the s2 structural-modality re-confirmation: the custom callee-saved-register ABI across jal with func_8004A940/func_8004A76C/func_8004A808 plus trapping addi/ctc2 have no C form, per docs/audits/func_8004A4E0-canonical-2026-09-29.md.
+
+- [s3] This function's open item is operator/landing-side (authorize-bucket, Judge-gated canonical-grant path per judge-sole-gate.md), not a grind-lane hypothesis — permuter, like structural, has no surface to act on.
