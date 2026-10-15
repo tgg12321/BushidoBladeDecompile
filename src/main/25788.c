@@ -8,7 +8,7 @@
 
 /* Copies the record at func_80077D00() into the FileRecord D_80106A50:
  * flags bits 0-2 are cleared and re-set from p->unk20_0..2, then the three
- * colour bytes at p->unk17 are copied to D_80106A50.color. */
+ * bytes at p->unk17 are copied to D_80106A50.color. */
 void func_80034F88(void) {
     Unk8009BD24Block *p;
     s32 v;

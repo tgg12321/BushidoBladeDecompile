@@ -441,8 +441,8 @@ typedef struct {
     u8 unk_5E8[0xC];
 } Unk80060544Rec;
 
-/* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is the
-   character the round was fought with (func_8005E54C reads it at
+/* 0x8009BD24: two players x five rounds of 2-byte records; byte 0 is an
+   index (func_8005E54C reads it at
    j * 10 + i * 2 and picks D_8009ADD8 / D_8009B58C by it; func_80060414 reads
    player 0 round 0). Unk8009BD24Block.unk00. */
 typedef struct {

@@ -1011,7 +1011,7 @@ s32 func_80076D74(Unk8006EACCRec *arg0) {
         var_1->unk14_15 = SELWORK->f68[0] + SELWORK->f68[1] * 2;
         for (i = 0; i < 2; i++) {
             for (j = 0; j < SELWORK->f65 + 3; j++) {
-                /* flat character index into both pages, through row 0. */
+                /* flat index into both pages, through row 0. */
                 /* SOTN: src/st/e_grave_keeper.h:534 @aa53500 */
                 var_1->unk00[i][j].chr = D_8009BCF8[0][SELWORK->f6A[i][j]].unk1;
                 var_1->unk00[i][j].unk1 = SELWORK->f7E[i][j];

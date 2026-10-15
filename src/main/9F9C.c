@@ -497,10 +497,10 @@ extern u8 D_800A30F0[];
 extern s32 D_800A30F4[];
 typedef VECTOR CamVec;
 
-/* Scratchpad work area (0x1F800000) used by func_8001A820: the target yaw/roll
- * that D_800F6608's unk_10.vy / vz ease toward, the camera focus, the eye
- * position camera_CalcEye computes, a fighter record's unk_B8 less 0xC8 in vy
- * (the collision segment's start), and the hit position, surface normal and
+/* Scratchpad work area (0x1F800000) used by func_8001A820: the target yaw and
+ * vz angle that D_800F6608's unk_10.vy / vz ease toward, the camera focus, the
+ * eye position camera_CalcEye computes, a fighter record's unk_B8 less 0xC8 in
+ * vy (the collision segment's start), and the hit position, surface normal and
  * work area func_80053614 is given (its 3rd/4th/5th arguments; its other
  * callers pass a VECTOR hit and an s16[4] normal). */
 typedef struct {
@@ -523,7 +523,7 @@ typedef struct {
  * large inputs) into the value D_800F6608.w18 eases 1/12 toward (0xBB8 in
  * some arg2->unk_6A states), clamps w18,
  * and sets a hysteresis flag for func_8003F1E4; eases unk_10.vy / vz toward
- * the facing yaw and zero roll; then per fighter bisects unk_10.vx (rot_x) so
+ * the facing yaw and zero; then per fighter bisects unk_10.vx (rot_x) so
  * the segment from its unk_B8 less 0xC8 in vy to the eye passes func_80053614's
  * camera-collision test (step in D_800A30F4[], blocked flag in D_800A30F0[]),
  * and eases unk_10.vx toward the larger result, clamped to 0x80..0x1C0. GTE:
@@ -1136,7 +1136,7 @@ void func_8001BE20(s32 arg0, PadState *arg1) {
     s32 i;
     /* One local holds two values (Ruling 11, ordinary-c-judge-decidable):
      * (1) arg0 * 16, the bit offset of this player's half of the pad words;
-     * (2) 0 or arg0 * 4, the bit offset of this player's colour-config nibble.
+     * (2) 0 or arg0 * 4, the bit offset of this player's config nibble.
      */
     s32 temp;
     s32 out;
