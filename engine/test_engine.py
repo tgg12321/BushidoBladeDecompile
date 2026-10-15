@@ -1380,6 +1380,89 @@ def test_gte_call_gates() -> None:
             G.foreign_asm_macros, completion.REFUSE_WRITTEN_OUT_UNITS = old_foreign, old_flag
 
 
+def test_gte_macro_rewrite_tool() -> None:
+    """tools/gte_macro_rewrite.py on fixture TUs (no scoring)."""
+    from engine import gtemacro as G
+    if not all(Path(r).exists() for r in G.VENDORED):
+        skip("gte_macro_rewrite", "include/psxsdk vendored headers absent")
+        return
+    import importlib
+    import sys
+    sys.path.insert(0, str(Path("tools").resolve()))
+    R = importlib.import_module("gte_macro_rewrite")
+    clob = '"$12","$13","$14","$15","memory"'
+
+    def st(t, op=None):
+        ins = f'"r"({op})' if op else ""
+        return f'    __asm__ volatile ("{t}": :{ins}:{clob});\n'
+
+    ldv0 = st("move  $12,%0", "v") + st("lwc2  $0,($12)") + st("lwc2  $1,4($12)")
+    rtv0tr = st("nop   ") + st("nop   ") + st(".word 0x0000027f")
+
+    def fn(name, body, pre=""):
+        return pre + f"void {name}(s32 *v, s32 n) {{\n    s32 sp_tmp;\n{body}    func_x(sp_tmp);\n}}\n"
+
+    # statement-exact, ambiguous rt / rtv0tr, stale comment dropped
+    t1 = fn("func_T1", "    /* gte_ldv0(v): inline_o.h :16-20, clobbers as the header */\n"
+            + ldv0 + rtv0tr)
+    r = R.rewrite_function(t1, "func_T1")
+    eq("rewrite: statement-exact header", (r.error, r.header), (None, "inline_o.h"))
+    eq("rewrite: statement-exact calls",
+       [(u.macro, u.args) for _l, t, us in r.units for u in us], [("gte_ldv0", ["v"]), ("gte_rt", [])])
+    eq("rewrite: statement-exact tier", [t for _l, t, _u in r.units], ["statement-exact"])
+    eq("rewrite: identical expansions listed (rt / rtv0tr)",
+       [u.alternatives for _l, _t, us in r.units for u in us], [[], ["gte_rtv0tr"]])
+    check("rewrite: the island's stale comment is dropped and reported",
+          len(r.dropped_comments) == 1 and "/* gte_ldv0(v)" not in r.body)
+    check("rewrite: no asm left in the body", "__asm__" not in r.body)
+    eq("rewrite: includes the TU needs", r.includes, ["#include <psxsdk/inline_o.h>"])
+    check("rewrite: candidate = includes + body",
+          R.candidate_text(r).startswith("#include <psxsdk/inline_o.h>\nvoid func_T1("))
+    t1b = t1.replace("clobbers as the header */", "then gte_rtv0tr */")
+    r = R.rewrite_function(t1b, "func_T1")
+    eq("rewrite: a macro the comments name wins the tie",
+       [u.macro for _l, _t, us in r.units for u in us], ["gte_ldv0", "gte_rtv0tr"])
+
+    # instruction-exact: the hand LZC with a stack "=m" output
+    lzc = ('    __asm__ volatile(\n        "addu   $t4, %1, $zero\\n"\n        "mtc2   $t4, $30\\n"\n'
+           '        "nop\\n"\n        "nop\\n"\n        "addu   $t4, $sp, $zero\\n"\n'
+           '        "swc2   $31, 0($t4)\\n"\n'
+           '        : "=m"(sp_tmp) : "r"(n) : "$12", "$13", "$14", "$15");\n')
+    r = R.rewrite_function(fn("func_T2", lzc), "func_T2")
+    eq("rewrite: instruction-exact LZC -> gte_Lzc",
+       (r.error, [(u.macro, u.args) for _l, _t, us in r.units for u in us],
+        [t for _l, t, _u in r.units]),
+       (None, [("gte_Lzc", ["n", "&sp_tmp"])], ["instruction-exact"]))
+    eq("rewrite: a composite needs gtemac.h too", r.includes,
+       ["#include <psxsdk/inline_o.h>", "#include <psxsdk/gtemac.h>"])
+    check("rewrite: composite lists its parts as the alternative",
+          any("parts" in a for _l, _t, us in r.units for u in us for a in u.alternatives))
+    r = R.rewrite_function(fn("func_T2", lzc.replace("$sp, $zero", "$sp, $zero\\n\"\n"
+                                                    '        "nop')), "func_T2")
+    check("rewrite: an extra instruction is not a macro sequence",
+          r.error is not None and "not a sequence" in r.error)
+
+    # inline_c form, header choice
+    cform = '    __asm__ volatile ("lwc2\\t$0, 0( %0 );" "lwc2\\t$1, 4( %0 )" : : "r"( v ) );\n'
+    r = R.rewrite_function(fn("func_T3", cform), "func_T3")
+    eq("rewrite: inline_c.h form -> inline_c.h", (r.error, r.header), (None, "inline_c.h"))
+    r = R.rewrite_function(fn("func_T3", cform), "func_T3", header="inline_o.h")
+    check("rewrite: forced inline_o.h refuses the inline_c.h form", r.error is not None)
+    r = R.rewrite_function(fn("func_T3", cform, "#include <psxsdk/inline_c.h>\n"), "func_T3")
+    eq("rewrite: the TU's own header is used and not re-included",
+       (r.error, r.header, r.includes), (None, "inline_c.h", []))
+
+    # refusals
+    r = R.rewrite_function(fn("func_T4", '    __asm__ volatile ("addiu $2,$0,1");\n'), "func_T4")
+    check("rewrite: refuses a non-GTE island", r.error is not None and r.error.startswith("not GTE"))
+    r = R.rewrite_function(fn("func_T5", '    __asm__ volatile ("mtc2 %0, $29" :: "r"(n));\n'),
+                           "func_T5")
+    check("rewrite: refuses a cop2 island that is no macro", r.error is not None
+          and "not a sequence" in r.error)
+    r = R.rewrite_function(fn("func_T6", "    n = 1;\n"), "func_T6")
+    eq("rewrite: nothing to do without islands", r.error, "no assembly islands")
+
+
 def test_gte_header_registry() -> None:
     """Only the vendored headers, bios.h and include_asm.h define asm macros."""
     from engine import gtemacro as G
@@ -10630,6 +10713,7 @@ def main() -> int:
     test_gte_vendored_model()
     test_gte_call_gates()
     test_gte_header_registry()
+    test_gte_macro_rewrite_tool()
     test_cheats()
     test_prologue_cheat()
     test_addr_coerced_locals()
