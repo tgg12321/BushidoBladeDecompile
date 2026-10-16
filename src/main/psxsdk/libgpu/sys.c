@@ -696,37 +696,15 @@ s32 get_tw(RECT *tw) {
 }
 
 s32 get_dx(DISPENV *env) {
-    s32 v1, a, t;
     switch (g_gpu_ctx.type) {
     case 1:
-        if (g_gpu_ctx.reverse != 0) {
-            t = 0x400;
-            v1 = env->disp.w;
-            a = env->disp.x;
-        sub:
-            t = t - v1;
-            return t - a;
-        }
-        t = env->disp.x;
-        goto ret;
+        return g_gpu_ctx.reverse ? 0x400 - env->disp.x - env->disp.w
+                                 : env->disp.x;
     case 2:
-        if (0 != g_gpu_ctx.reverse) {
-            v1 = env->disp.w / 2;
-            a = env->disp.x;
-            /* FAKE: wrap keeps the 0x400 load below the div chain so it
-               fills the jump delay slot instead of hoisting to block top
-               (score 10) */
-            do {
-                t = 0x400;
-            } while (0);
-            goto sub;
-        }
-        t = env->disp.x / 2;
-        goto ret;
+        return g_gpu_ctx.reverse ? 0x400 - env->disp.x - env->disp.w / 2
+                                 : env->disp.x / 2;
     default:
-        t = env->disp.x;
-    ret:
-        return t;
+        return env->disp.x;
     }
 }
 
