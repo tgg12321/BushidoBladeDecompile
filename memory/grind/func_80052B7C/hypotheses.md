@@ -427,3 +427,49 @@ Result: KILLED (class, re-confirmation). kill_scope: class. measured_on: s6/s9/s
 - kill_scope: class
 - measured_on: legal 5-statement macro-call body with inline_o.h overriding inline_c.h, no FAKE construct, src/main/3AB48.c, reverted
 - predicate_cite: include/psxsdk/inline_o.h:273
+
+## [s21] KILL RE-AUDIT (forensics): the banked legal macro-call chassis re-measures 19 on the current tree with zero FAKE carriers.
+- mechanism: dispatcher-mandated re-audit; instance kills are voided only by chassis drift or FAKE carriers.
+- probe: tmp/grind/func_80052B7C/s21/apply.py apply base; sandbox --disable all --diff (s21/v_base.txt); tools/fake_ablate.py (s21/ablate.txt); revert.
+- result: score 19, 24/24, 4 source-level / 0 operand-only; fake_ablate "no FAKE-annotated constructs found ... nothing to ablate".
+- verdict: CONFIRMED
+
+## [s21] Inserting the vendored gte_nop() (include/psxsdk/inline_c.h:1329) between gte_rt() and gte_stlvl(out) reproduces the target's hazard nop between mvmva and the first swc2 (hunk 2) and lowers the score.
+- mechanism: target tail is `mvmva; nop; swc2 $9; swc2 $10; jr; swc2 $11`; ours has no nop after the RT word. A vendored nop macro would supply it in pure macro-call C.
+- probe: s21/run.ps1 variant `nop` (sandbox --disable all --diff -> s21/v_nop.txt) and s21/run2.ps1 (objdump of the sandbox .o -> s21/obj_nop.txt); reverted.
+- result: score 19, identical diff to base; "cheat_asm_stripped" rises 70 -> 71 and the objdump shows no nop after `c2 0x480012`. The sandbox strips a standalone gte_nop() as a scheduling barrier by name (engine/gtemacro.py:30, :1095: "gte_nop() is a scheduling barrier by name" and "standalone gte_nop() is never a unit"). So the construct is scored as absent; it is also in the forbidden scheduling-barrier family. Even kept, it would leave hunks 3-4 (swc2 $11 in the jr slot, s7 reorg.c:740 class kill) open.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal 5-statement macro-call chassis + gte_nop() between gte_rt and gte_stlvl, inline_c.h, no FAKE construct, src/main/3AB48.c, reverted
+- predicate_cite: engine/gtemacro.py:1095
+
+## [s21] Replacing gte_rt() with the DMPSX bare-word variant gte_rt_b() (inline_c.h:815, no leading nops) changes the scored distance.
+- mechanism: the _b variants omit the two leading nops; the target keeps them (lwc2;lwc2;nop;nop;mvmva). Tests whether the nop slots feed the score.
+- probe: s21/run.ps1 variant `rtb` (s21/v_rtb.txt), s21/run2.ps1 objdump (s21/obj_rtb.txt); reverted.
+- result: score 19 with a byte-identical diff report to base, but the objdump shows the two pre-RT nops gone (24 lines vs base 26). The scorer is nop-insensitive at that position, so the variant is score-neutral and moves the bytes AWAY from the target (target has the nops). Not a lever; gte_rt() stays.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal 5-statement macro-call chassis with gte_rt_b() replacing gte_rt(), inline_c.h, no FAKE construct, src/main/3AB48.c, reverted
+
+## [s21] KILL RE-AUDIT: the banked legal macro-call chassis re-measures 19 on the current tree with zero FAKE carriers.
+- mechanism: Instance kills are voided only by chassis drift or FAKE carriers.
+- probe: s21/apply.py base; sandbox --disable all --diff; tools/fake_ablate.py; revert.
+- result: score 19, 24/24, 4 source-level / 0 operand-only; fake_ablate: nothing to ablate.
+- verdict: CONFIRMED
+
+## [s21] Inserting vendored gte_nop() between gte_rt() and gte_stlvl(out) supplies the target's mvmva->swc2 hazard nop (hunk 2) and lowers the score.
+- mechanism: Target tail is mvmva; nop; swc2; swc2; jr; swc2 and ours lacks the nop after the RT word.
+- probe: s21/run.ps1 variant nop (sandbox --disable all --diff) + s21/run2.ps1 objdump of the sandbox .o; reverted.
+- result: Score 19 with an identical diff; cheat_asm_stripped rises 70->71 and the objdump has no nop after c2 0x480012. The sandbox strips a standalone gte_nop() as a scheduling barrier by name (engine/gtemacro.py:30, :1095), which is a forbidden family anyway, and hunks 3-4 (reorg.c:740, s7) would stay open.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal 5-statement macro-call chassis + gte_nop(), inline_c.h, no FAKE construct, src/main/3AB48.c, reverted
+- predicate_cite: engine/gtemacro.py:1095
+
+## [s21] Replacing gte_rt() with the DMPSX bare-word gte_rt_b() (inline_c.h:815) changes the scored distance on the legal chassis.
+- mechanism: The _b variant omits the two leading nops that the target keeps.
+- probe: s21/run.ps1 variant rtb + s21/run2.ps1 objdump; reverted.
+- result: Score 19 with an identical diff report, but the objdump shows both pre-RT nops removed. The score ignores them, and the bytes move away from the target, so this is not a lever.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal 5-statement macro-call chassis with gte_rt_b() for gte_rt(), inline_c.h, no FAKE construct, src/main/3AB48.c, reverted

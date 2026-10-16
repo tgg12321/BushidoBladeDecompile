@@ -430,3 +430,17 @@ question rather than resolved here.
 - [s20] func.lreg:26-28 local-alloc gives ldtr operands a0,v1,v0
 
 - [s20] inline_o.h variant = 31 (s20/inline_o_variant.txt)
+
+## s21 (forensics)
+- [s21] Legal chassis re-measured 19, 4/4 source-level; fake_ablate nothing to ablate (s21/v_base.txt, s21/ablate.txt).
+- [s21] gte_nop() between gte_rt and gte_stlvl is stripped by the sandbox (cheat_asm_stripped 70 -> 71; s21/v_nop.txt, s21/obj_nop.txt) per engine/gtemacro.py:30/:1095 (standalone gte_nop = scheduling barrier). Score 19.
+- [s21] gte_rt_b() removes the two pre-RT nops (s21/obj_rtb.txt) yet scores 19 identically: the score does not see those nops; the variant moves bytes away from target.
+- [s21] Vendored headers have value-operand ctc2 only for CR5-7 (gte_ldtr inline_c.h:372), CR13-15, CR21-23, CR26; none for CR0-4 (re-confirms s6).
+
+- [s21] Legal chassis = 19, 4/4 source-level, 0 operand-only (tmp/grind/func_80052B7C/s21/v_base.txt); fake_ablate nothing to ablate (s21/ablate.txt).
+
+- [s21] Standalone gte_nop() is stripped by the sandbox as a scheduling barrier (cheat_asm_stripped 70->71; s21/v_nop.txt, s21/obj_nop.txt; engine/gtemacro.py:1095).
+
+- [s21] gte_rt_b() removes the two pre-RT nops (s21/obj_rtb.txt) and the score stays 19: the scorer does not count those nop slots.
+
+- [s21] Vendored value-operand ctc2 macros exist only for CR5-7 (inline_c.h:372), CR13-15, CR21-23 and CR26, none for CR0-4 (re-confirms s6).

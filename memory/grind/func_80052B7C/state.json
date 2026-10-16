@@ -1,7 +1,7 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 20,
+ "session_count": 21,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -123,22 +123,28 @@
    "floor": 19,
    "modality": "forensics",
    "headline": "s20 forensics: chassis re-audited at 19 with no FAKE; dumps attribute hunk 1 to the RTL-expand asm template plus local-alloc lowest-free, and hunks 2-4 to one asm_operands before an unfilled return; t"
+  },
+  {
+   "session": 21,
+   "floor": 19,
+   "modality": "forensics",
+   "headline": "s21 forensics: chassis re-audited at 19 with no FAKE; the tail-nop axis is closed (gte_nop is stripped as a scheduling barrier, gte_rt_b is score-neutral and drops target nops); residual unchanged."
   }
  ],
  "frontier": [
   {
    "hypothesis": "A scan_hand_coded gate-class signal for the batched lw/lh $tN -> ctc2 idiom (s18) and/or the cop2-in-jr-slot signal (s11) lifts func_80052B7C to STRONG tier for the whole-body INCLUDE_ASM branch.",
-   "mechanism": "Both idioms occur in this EXE only in hand-written code; s20 dumps confirm the residual is fixed in vendored templates and reorg.",
+   "mechanism": "Both idioms occur in this EXE only in hand-written code; s20/s21 confirm the residual is fixed in vendored templates, reorg, and the engine's barrier policy.",
    "next_probe": "Engine/tools-side scanner signal addition citing s18/batch_census.txt and s11/jr_census.txt (escalation or owner-cluster modality)."
   },
   {
    "hypothesis": "The inline_asm_canonical.txt:340 whole-body grant audit resolves in favor of func_80052B7C on cluster plus Sony-idiom evidence.",
    "mechanism": "The 2026-10-15 20:38 ruling rejected written islands only.",
-   "next_probe": "Operator/Judge review of row :340 with s11, s18, s19, s20 artifacts."
+   "next_probe": "Operator/Judge review of row :340 with the s11, s18-s21 artifacts."
   },
   {
    "hypothesis": "A vendored macro whose template batches the rotation+TR loads in $8..$15 would close hunk 1 in pure macro-call C.",
-   "mechanism": "s19/s20: hunk-1 registers are template literals fixed at RTL expand.",
+   "mechanism": "s19/s20: the hunk-1 registers are template literals fixed at RTL expand.",
    "next_probe": "Owner ruling plus an engine: commit adding the macro; not a grind action."
   }
  ],
@@ -378,6 +384,22 @@
    "measured_on": "legal 5-statement macro-call body with inline_o.h overriding inline_c.h, no FAKE construct, src/main/3AB48.c, reverted",
    "predicate_cite": "include/psxsdk/inline_o.h:273",
    "result": "score 31, 3 source-level hunks (extra moves, different ldtr shape)."
+  },
+  {
+   "session": 21,
+   "statement": "Inserting vendored gte_nop() between gte_rt() and gte_stlvl(out) supplies the target's mvmva->swc2 hazard nop (hunk 2) and lowers the score.",
+   "kill_scope": "class",
+   "measured_on": "legal 5-statement macro-call chassis + gte_nop(), inline_c.h, no FAKE construct, src/main/3AB48.c, reverted",
+   "predicate_cite": "engine/gtemacro.py:1095",
+   "result": "Score 19 with an identical diff; cheat_asm_stripped rises 70->71 and the objdump has no nop after c2 0x480012. The sandb"
+  },
+  {
+   "session": 21,
+   "statement": "Replacing gte_rt() with the DMPSX bare-word gte_rt_b() (inline_c.h:815) changes the scored distance on the legal chassis.",
+   "kill_scope": "instance",
+   "measured_on": "legal 5-statement macro-call chassis with gte_rt_b() for gte_rt(), inline_c.h, no FAKE construct, src/main/3AB48.c, reverted",
+   "predicate_cite": "",
+   "result": "Score 19 with an identical diff report, but the objdump shows both pre-RT nops removed. The score ignores them, and the "
   }
  ],
  "ladder_skip": 0,

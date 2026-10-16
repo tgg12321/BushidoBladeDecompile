@@ -214,3 +214,6 @@ void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
  * expand (insn 15 template literal) plus local-alloc lowest-free for the ldtr operands, and
  * hunks 2-4 come from insn 35 (one asm_operands) before an unfilled return. The inline_o.h
  * macro set measures 31 (it adds move $12,%0). See hypotheses.md s20. */
+/* s21 (forensics): chassis re-audited at 19, no FAKE. gte_nop() before gte_stlvl is stripped
+ * as a scheduling barrier (engine/gtemacro.py:1095; rejected/gte-nop-hazard-barrier.c);
+ * gte_rt_b() drops the target's pre-RT nops and scores 19. See hypotheses.md s21. */
