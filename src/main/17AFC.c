@@ -740,88 +740,31 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
 }
 
 void func_8002872C(void) {
-    s32 i = 0;
+    s32 i;
     Unk80101EC8Record *base;
+    u16 state;
 
-    do {
-        s32 cmp_a1;
-        s32 cmp_a2;
-        Unk80101EC8Record *ptr;
-        s32 a0_raw;
-        s32 v1;
-
+    for (i = 0; i < 2; i++) {
         base = &D_80101EC8[i];
-
-        cmp_a1 = base->unk_0C;
-        if (cmp_a1 != 0x1B)
-            goto next;
-
-        if (base->unk_46 != 0)
-            goto next;
-
-        cmp_a2 = base->unk_6A;
-        if (cmp_a2 != 0xB)
-            goto next;
-
-        if (base->unk_40 != base->unk_A7)
-            goto next;
-
-        ptr = base->other;
-        a0_raw = ptr->unk_6A;
-        v1 = a0_raw & 0xFFFF;
-
-        if (v1 == 0x26)
-            goto match;
-        if (v1 == cmp_a1)
-            goto match;
-        if (v1 == 2)
-            goto match;
-        if (v1 == 0x15)
-            goto match;
-        if ((u32)(a0_raw - 0x24) < 2)
-            goto match;
-        if (v1 == 8)
-            goto match;
-        if ((u32)(a0_raw - 0x22) < 2)
-            goto match;
-        if (v1 == 0)
-            goto match;
-        if (v1 == 0x10)
-            goto match;
-        if (v1 == 0x13)
-            goto match;
-        if ((u32)(a0_raw - 0x30) < 2)
-            goto match;
-        if (v1 == 0x1A)
-            goto match;
-        if (v1 == cmp_a2)
-            goto match;
-        if (v1 == 0x12)
-            goto match;
-        if (v1 == 0x2A)
-            goto match;
-        if (v1 == 0xC)
-            goto match;
-        if (v1 != 0x19)
-            goto next;
-
-    match:
-        if (!(D_800A387C < D_800A3134))
-            goto next;
-
-        base->other->unk_286 = 0x1C;
-        func_80027A58(base->other);
-
-        {
-            Unk80101EC8Record *p2 = base->other;
-            if (p2->unk_6A == 0x25) {
-                p2->unk_86 = p2->unk_84;
+        if (base->unk_0C != 0x1B || base->unk_46 != 0 || base->unk_6A != 0xB ||
+            base->unk_40 != base->unk_A7) {
+            continue;
+        }
+        state = base->other->unk_6A;
+        if (state == 0x26 || state == 0x1B || state == 2 || state == 0x15 ||
+            state == 0x24 || state == 0x25 || state == 8 || state == 0x22 ||
+            state == 0x23 || state == 0 || state == 0x10 || state == 0x13 ||
+            state == 0x30 || state == 0x31 || state == 0x1A || state == 0xB ||
+            state == 0x12 || state == 0x2A || state == 0xC || state == 0x19) {
+            if (D_800A387C < D_800A3134) {
+                base->other->unk_286 = 0x1C;
+                func_80027A58(base->other);
+                if (base->other->unk_6A == 0x25) {
+                    base->other->unk_86 = base->other->unk_84;
+                }
             }
         }
-
-    next:
-        i++;
-    } while (i < 2);
+    }
 }
 
 extern s32 D_800A3144[2];
@@ -2288,22 +2231,17 @@ void func_8002C61C(void) {
         func_8002872C();
         func_800288C8();
         D_800A3824 = func_80029454();
-        if (D_800A3824 < 0)
-            goto do_calc;
-        func_8002C22C();
-        if (D_800A3824 < 0)
-            goto do_calc;
-        if (s1->unk_AD != 0 || s0->unk_AD != 0) {
+        if (D_800A3824 >= 0) {
+            func_8002C22C();
+        }
+        if (D_800A3824 >= 0 && (s1->unk_AD != 0 || s0->unk_AD != 0)) {
             func_800283D0(s1, &SPAD->unk2B8.rec.unk13C.x);
             func_800283D0(s0, &SPAD->unk2B8.rec.unk13C.x);
             s0->unk_AD = 0;
             s1->unk_AD = 0;
-            goto after_calc;
+        } else {
+            func_8002AB08(0);
         }
-    do_calc:
-        func_8002AB08(0);
-    after_calc:
-
         if (s1->unk_3C >= 3 && s0->unk_3C >= 3 && D_800A38A8 != 0 &&
             s1->unk_286 == -1 && s0->unk_286 == -1 && s1->unk_0C != 0x1F &&
             s0->unk_0C != 0x1F) {
