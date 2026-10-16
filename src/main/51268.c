@@ -3904,82 +3904,45 @@ void func_8006A564(u8 *arg0, Unk8007352CRec *arg1, s32 arg2) {
 
     tile = (TILE *)*(s32 *)(arg0 + 0x18);
     SetTile(tile);
-    {
-        /* FAKE: colour staged ahead of the g0 store (held across the arms for
-         * b0); col_r read at its use: score 2. */
-        s32 v0;
-        if ((D_800A34F8 & 0xF) == arg2) {
-            v0 = arg1->col_r;
-            tile->g0 = 0;
-            tile->r0 = v0;
-            v0 = arg1->col_b;
-            s4 = 0;
-        } else {
-            s4 = 0x20;
-            v0 = 0x50;
-            tile->r0 = v0;
-            tile->g0 = v0;
-        }
-        tile->b0 = v0;
-        tile->x0 = (0x5F);
-        tile->y0 = (arg1->y + 0xF);
-        tile->w = (arg1->x + 0x19);
-        tile->h = 1;
+    if ((D_800A34F8 & 0xF) == arg2) {
+        setRGB0(tile, arg1->col_r, 0, arg1->col_b);
+        s4 = 0;
+    } else {
+        setRGB0(tile, 0x50, 0x50, 0x50);
+        s4 = 0x20;
     }
+    tile->x0 = 0x5F;
+    tile->y0 = arg1->y + 0xF;
+    tile->w = arg1->x + 0x19;
+    tile->h = 1;
     SetSemiTrans(tile, arg1->semi);
     AddPrim(g_gpu_ot_ptr + arg1->ot_idx, tile);
     tile++;
 
     SetTile(tile);
-    {
-        /* FAKE: colour staged ahead of the g0 store (held across the arms for
-         * b0); col_r read at its use: score 2. */
-        s32 v0;
-        if ((D_800A34F8 & 0xF) == arg2) {
-            v0 = arg1->col_r;
-            tile->g0 = 0;
-            tile->r0 = v0;
-            v0 = arg1->col_b;
-            tile->b0 = v0;
-        } else {
-            v0 = 0x20;
-            tile->r0 = v0;
-            tile->g0 = v0;
-            tile->b0 = v0;
-        }
-        tile->x0 = arg1->x;
-        tile->y0 = (arg1->y + 0xE);
-        tile->w = 0x78;
-        tile->h = 1;
+    if ((D_800A34F8 & 0xF) == arg2) {
+        setRGB0(tile, arg1->col_r, 0, arg1->col_b);
+    } else {
+        setRGB0(tile, 0x20, 0x20, 0x20);
     }
+    tile->x0 = arg1->x;
+    tile->y0 = arg1->y + 0xE;
+    tile->w = 0x78;
+    tile->h = 1;
     SetSemiTrans(tile, 1);
     AddPrim(g_gpu_ot_ptr + arg1->ot_idx, tile);
     tile++;
 
     SetTile(tile);
-    {
-        /* FAKE: colour staged ahead of the g0 store (held across the arms for
-         * b0); col_r read at its use: score 2. */
-        s32 v0;
-        if ((D_800A34F8 & 0xF) == arg2) {
-            v0 = arg1->col_r;
-            tile->g0 = 0;
-            v0 = (u32)v0 >> 1;
-            tile->r0 = v0;
-            v0 = arg1->col_b;
-            v0 = (u32)v0 >> 1;
-            tile->b0 = v0;
-        } else {
-            v0 = 0x10;
-            tile->r0 = v0;
-            tile->g0 = v0;
-            tile->b0 = v0;
-        }
-        tile->x0 = (arg1->x + 0x40);
-        tile->y0 = (arg1->y + 0xD);
-        tile->w = 0x38;
-        tile->h = 1;
+    if ((D_800A34F8 & 0xF) == arg2) {
+        setRGB0(tile, arg1->col_r >> 1, 0, arg1->col_b >> 1);
+    } else {
+        setRGB0(tile, 0x10, 0x10, 0x10);
     }
+    tile->x0 = arg1->x + 0x40;
+    tile->y0 = arg1->y + 0xD;
+    tile->w = 0x38;
+    tile->h = 1;
     SetSemiTrans(tile, 1);
     AddPrim(g_gpu_ot_ptr + arg1->ot_idx, tile);
 
