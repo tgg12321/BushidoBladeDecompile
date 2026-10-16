@@ -207,63 +207,38 @@ extern u16 g_gpu_store_buf[][16];
 
 void func_80041AC8(Unk80045878Obj *arg0) {
     RECT rect;
-    s16 *var_s0;
-    u16(*var_s1)[16];
-    s32 var_s2;
-    s32 var_s3;
-    u16 v1_val;
+    s16 *tbl;
+    s32 i;
+    s32 xoff;
+    s32 yoff;
     s16 *id_ptr;
+
     if (arg0->unk_04 != 1) {
         return;
     }
     if (D_80094E08[arg0->unk_08] == 0xFF) {
         return;
     }
-    /* FAKE: id_ptr spelling: the store to D_800A9A20 stays ahead of the
-     * reload of arg0->unk_08 only when the reload is not plain struct
-     * indexing; without it: score 2
+    /* FAKE: id_ptr spelling: the reload of arg0->unk_08 for the table
+     * index stays after the D_800A9A20 store only when it is not plain
+     * struct indexing; D_80094E08[arg0->unk_08]: score 2
      * (proven-spelling-class-reconstruction) */
     id_ptr = &arg0->unk_08;
     D_800A9A20 = arg0->unk_08;
-    var_s0 = D_80094DF0[D_80094E08[*id_ptr]];
-    if (func_8003E2A0() != 1) {
-        goto else_lbl;
+    tbl = D_80094DF0[D_80094E08[*id_ptr]];
+    if (func_8003E2A0() == 1) {
+        xoff = -0x140;
+        yoff = 0xF0;
+    } else {
+        xoff = 0x80;
+        yoff = 0;
     }
-    var_s3 = -0x140;
-    var_s2 = 0xF0;
-    goto after_if;
-else_lbl:
-    var_s3 = 0x80;
-
-    var_s2 = 0;
-after_if:
-    /* FAKE: v1_val is the loop-rotated read of *var_s0 (here and at the loop's
-     * end); read at the rect.x store the frame shrinks 0x50 -> 0x40 and the
-     * head's lh / lhu pair changes (score 26). */
-    v1_val = (u16)(*var_s0);
-
-    if ((*var_s0) >= 0) {
-        /* FAKE: constant holders for the 16 x 1 rect size; as literals the
-         * g_gpu_store_buf address (lui/addiu s1) is scheduled ahead of li s5,16
-         * / li s4,1 (score 4) */
-        s32 w = 0x10;
-        s32 h = 1;
-        var_s1 = g_gpu_store_buf;
-        do {
-            /* FAKE: v0_val reads var_s0[1] ahead of the rect.w / rect.h stores;
-             * read at the rect.y store, sh s5 / sh s4 move above the load
-             * (score 4) */
-            u16 v0_val;
-            rect.x = v1_val + var_s3;
-            v0_val = (u16)var_s0[1];
-            rect.w = w;
-            rect.h = h;
-            rect.y = v0_val + var_s2;
-            StoreImage(&rect, (u32 *)var_s1);
-            var_s0 += 2;
-            var_s1++;
-            v1_val = (u16)(*var_s0);
-        } while ((*var_s0) >= 0);
+    for (i = 0; tbl[0] >= 0; tbl += 2, i++) {
+        rect.x = tbl[0] + xoff;
+        rect.y = tbl[1] + yoff;
+        rect.w = 0x10;
+        rect.h = 1;
+        StoreImage(&rect, (u32 *)g_gpu_store_buf[i]);
     }
     DrawSync(0);
 }
