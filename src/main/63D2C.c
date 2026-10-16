@@ -285,34 +285,31 @@ void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
     TILE *t;
     POLY_F4 *q;
 
-    if (arg1 != 0)
-        goto skip_init;
-    t = arg0->unk_04.unk_10;
-    SetTile(t);
-    func_80069A30(t);
-    t->x0 = 0x3F;
-    t->y0 = 0x30;
-    t->w = 0x202;
-    t->h = 0xB0;
-    SetSemiTrans(t, 1);
-    AddPrim(g_gpu_ot_ptr + 0x1E, t);
-    t++;
-    arg0->unk_04.unk_10 = t;
-skip_init:
+    if (arg1 == 0) {
+        t = arg0->unk_04.unk_10;
+        SetTile(t);
+        func_80069A30(t);
+        t->x0 = 0x3F;
+        t->y0 = 0x30;
+        t->w = 0x202;
+        t->h = 0xB0;
+        SetSemiTrans(t, 1);
+        AddPrim(g_gpu_ot_ptr + 0x1E, t);
+        t++;
+        arg0->unk_04.unk_10 = t;
+    }
     s.ot_idx = 0x1F;
     s.has_color = 0;
     s.semi = 0;
     temp_s2 = arg0->unk_00.v80076FF8->unk_38;
     s.x = 0;
     s.y = 0;
-    i = 0;
-    do {
+    for (i = 0; i < 3; i++) {
         s.header = temp_s2[i];
         s.table = s.header->cells;
         s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C(&s);
-        i++;
-    } while (i < 3);
+    }
 
     s.header = *temp_s2;
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
