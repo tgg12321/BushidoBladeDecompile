@@ -5,6 +5,12 @@ This is design-level engine documentation for Bushido Blade 2 (SLUS-00663), a
 purpose of these docs is to describe **what the engine does** so future
 modders, decompilers, and contributors can understand and modify the game.
 
+**Status (2026-10-16): unverified, pre-naming-pass.** These docs predate the phase-3
+naming waves. They cite about 300 names those waves retired, and many of those addresses
+now carry an unrelated name (e.g. `motion_Open` is SN's `__main`), so the prose around a
+retired name can describe a Kengo name collision rather than the code. A rename pass cannot
+fix that; each claim needs re-deriving from `src/`.
+
 The engine is internally referred to as **Marionation** (or "Marionation
 Engine"), a proprietary engine written by Lightweight. The same engine —
 modified and expanded — was later reused for Lightweight's PS2 game

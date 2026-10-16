@@ -1,6 +1,6 @@
 /* 10 game functions, among them bits_ExtractMask3F83F8 and
  * bits_DepositMask3F83F8. .text 0x80035438 (ROM 0x25C38). Start boundary:
- * LEGACY (no evidence either way; the extra --expand-lb flag these files once
+ * LEGACY (no evidence either way; the extra --expand-lb flag this file once
  * got changed no bytes, since every file gets --expand-lb). One object by the
  * per-file gp model (Q65 merge group). */
 #define INCLUDE_ASM_USE_MACRO_INC 1

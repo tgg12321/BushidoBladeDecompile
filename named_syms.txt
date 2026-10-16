@@ -778,10 +778,10 @@ VBLANK_MINUS                                      = 0x80104E80;  /* ref: md_game
 /* RESET 0x80044498: retired name 'clear_array_8010367E_80044498' — preserved note: clears D_80103658[0..19] (20-halfword zero loop down from D_8010367E, 32D04.c:1152-1158) */
 /* RESET 0x80046048: retired name 'audio_chain_fade_load_80046048' — preserved note: func_80044100(6, a1), then snd_VabFakeOpen(a1, ...) per entry of the func_800457A0(6) list (35000.c:787-811) */
 
-/* === rodata constant-table pass (2026-05-17) -- 21 entries === */
-/* Pattern-classified D_* labels in rodata + .data sections.  Each */
-/* comment lists the table shape; see pre-slim-2026-10-01:docs/naming/RODATA_CATALOG.md */
-/* for the full classification report (incl. 504 unclassified). */
+/* === rodata constant-table pass (2026-05-17) -- 19 entries, 2 retired === */
+/* D_* labels in rodata + .data sections, first classified by pattern; each */
+/* comment gives the table's shape and its readers. The original pass report: */
+/* pre-slim-2026-10-01:docs/naming/RODATA_CATALOG.md (incl. 504 unclassified). */
 /* Function-pointer / callback tables (5) */
 D_80015470                       = 0x80015470;  /* 4 ptrs: saTan2LineDraw, InitFadePanel x2, func_8004B6E4 */  /* data-wave 2026-10-08: was g_text1a_seq_start_callback_table */
 D_80015480                        = 0x80015480;  /* 8 ptrs: func_8004C994 .. func_80051754 */  /* data-wave 2026-10-08: was g_text1a_seq_step_callback_table */
@@ -792,13 +792,14 @@ D_80095280                      = 0x80095280;  /* 42 entries, sibling of D_80095
 D_8008D86C                         = 0x8008D86C;  /* 8 ptrs into D_8008D754-base (16-byte stride records) */  /* data-wave 2026-10-08: was g_per_record_ptr_table_8008D86C */
 D_800900EC                          = 0x800900EC;  /* 32 ptrs to the byte-coded command streams func_8003AE5C / func_8003B5A4 run through D_800A3844 */  /* data-wave 2026-10-08: was g_per_char_descriptor_table_32 */
 D_80094DF0                            = 0x80094DF0;  /* 6 ptrs to (x, y) s16 lists, picked via D_80094E08; func_80041AC8 / func_80041BF4 save / reload those VRAM rects */  /* data-wave 2026-10-08: was g_stage_lighting_ptr_array_6 */
-/* Lookup / step tables (5) */
+/* Lookup / step tables (4, 2 retired) */
 /* data-wave 2026-09-29: g_pitch_lookup_table_128 = 0x80015620 retired; g_sqrt_table is now object-defined */
 D_8008EB28                               = 0x8008EB28;  /* u8[8][2] (include/bb2.h:216): {0..9, 8, 9, 0x2E, 0x2F, 0x2E, 0x2F} */  /* data-wave 2026-10-09: was g_byte_index_map_8008EB28 */
 D_8008EBCC                                = 0x8008EBCC;  /* 5 entries: {0, 0x33, 0x3A, 0x41, 0x48}, indexed by D_800A384C; each read is an offset added to a slot base */  /* data-wave 2026-10-08: was g_step_lookup_5_8008EBCC */
 D_8008EB80                             = 0x8008EB80;  /* byte lookup {0x0A..0x17}; index 14 (0x18, via D_8008EB8E) is also read */  /* data-wave 2026-10-08: was g_lookup_14entries_8008EB80 */
 D_80099C14                              = 0x80099C14;  /* -1-terminated list of 15 s16 player-matrix indices (16 halfwords), read by func_80048BA4 */  /* data-wave 2026-10-08: was g_lookup_8entries_80099C14 */
 /* RESET 0x800A3074: retired name 'g_lookup_4entries_800A3074' — preserved note: 4-entry monotonic lookup */
+/* D_800A3074 is s16 {1, 2, 4, 8}: SIO_CTRL bits 8-9 -> packet size (comb.c:85, :142, :352) */
 /* libcd per-command flag tables (3) -- s32[32] each, +0x80 stride */
 D_800A127C                                   = 0x800A127C;  /* 0/1 flags indexed by CD_com in getintr (bios.c:71, :140) */  /* data-wave 2026-10-09: was g_palette_32_800A127C */
 D_800A12FC                                   = 0x800A12FC;  /* per-command flags read by CD_cw (bios.c:319-320, :347, :356) */  /* data-wave 2026-10-09: was g_palette_32_800A12FC */
