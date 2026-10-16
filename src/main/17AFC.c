@@ -4564,7 +4564,7 @@ void func_80032314(void) {
     u8 *a3 = &D_80104E88[0].unk_02;
     Unk80104E88Rec *rec;
     Unk80101EC8Record *ent;
-    s32 state;
+    u16 state;
 
 loop:
     rec = (Unk80104E88Rec *)(a3 - 2);
@@ -4578,25 +4578,15 @@ loop:
         s32 v1_v = (rec->unk_03 == 0);
         ent = &D_80101EC8[v1_v];
     }
-    state = (u16)ent->unk_6A;
-    if ((state & 0xFFFF) == 4)
+    state = ent->unk_6A;
+    if (state == 4 || state == 0x14 || state == 0xF || state == 0x1C ||
+        state == 0x1D || state == 0x1E || state == 0x1F || state == 0x20 ||
+        state == 0x21 || state == 0x11)
         goto next;
     /* FAKE: do-while(0) loop depth re-ranks register allocation into
      * the target's $a1/$a2/$a3 seating; without it: score 15
      * (do-while-zero-exception) */
     do {
-        if ((state & 0xFFFF) == 0x14)
-            goto next;
-        if ((state & 0xFFFF) == 0xF)
-            goto next;
-        if ((u32)(state - 0x1C) < 2)
-            goto next;
-        if ((u32)(state - 0x1E) < 2)
-            goto next;
-        if ((u32)(state - 0x20) < 2)
-            goto next;
-        if ((state & 0xFFFF) == 0x11)
-            goto next;
         {
             s32 dx = ent->unk_F4.x - rec->unk_04.x;
             s32 dy = ent->unk_F4.y - rec->unk_04.y;
