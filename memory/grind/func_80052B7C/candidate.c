@@ -139,6 +139,21 @@
  * volatile strings (include/psxsdk/inline_c.h:297, :1086, re-read this session, unchanged).
  * No src/ edit banked; src/main/3AB48.c reverted to INCLUDE_ASM.
  */
+/* s14 (structural, kill re-audit mandated by the dispatcher): re-applied this exact
+ * chassis fresh and re-measured -- still 19, 4/4 hunks source-level, 0/4 operand-only
+ * (tmp/grind/func_80052B7C/s14/sandbox_diff.txt). tools/fake_ablate.py --func func_80052B7C
+ * --file main/3AB48 --candidate memory/grind/func_80052B7C/candidate.c reports "no
+ * FAKE-annotated constructs found ... nothing to ablate" (tmp/grind/func_80052B7C/s14/ablate.txt)
+ * -- there is no FAKE carrier on this chassis to have invalidated s8/s9/s13's class kills, so
+ * those re-audits stand as clean. Hunk 1 (batched lw/ctc2 order) and hunks 2-4 (gte_stlvl's
+ * delay-slot placement) are unchanged from s6: both residuals sit inside gte_SetRotMatrix's and
+ * gte_stlvl's own fixed __asm__ volatile strings (include/psxsdk/inline_c.h:297, :1086), with
+ * zero C-level declarations, assignments or operators in the 5-statement region for any
+ * structural lever (block-local split / declaration order / type narrowing / statement
+ * re-association) to act on. Fourth consecutive structural-or-equivalent re-measurement
+ * (s8, s9, s13, s14) at the identical floor with the identical hunk classification; no new
+ * lever found. src/main/3AB48.c reverted to INCLUDE_ASM.
+ */
 #include <psxsdk/inline_c.h>
 void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
     gte_SetRotMatrix(rot);

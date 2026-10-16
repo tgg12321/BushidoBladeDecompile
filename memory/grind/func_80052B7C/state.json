@@ -1,7 +1,7 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 13,
+ "session_count": 14,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -81,6 +81,12 @@
    "floor": 19,
    "modality": "structural",
    "headline": "s13 structural: fresh re-measure confirms 0/4 operand-only hunks on the s6/s8 legal chassis -- class-reconfirms no structural lever exists; residual stays locked inside gte_SetRotMatrix/gte_stlvl's fi"
+  },
+  {
+   "session": 14,
+   "floor": 19,
+   "modality": "structural",
+   "headline": "s14 structural kill-re-audit: legal macro-call chassis re-measures 19 (4/4 source-level, 0 operand-only), fake_ablate confirms zero FAKE carriers on this chassis -- s8/s9/s13 class kills stand clean."
   }
  ],
  "frontier": [
@@ -93,6 +99,11 @@
    "hypothesis": "The whole-body inline_asm_canonical.txt:340 grant audit (aeea8ed44) resolving in favor of func_80052B7C would settle the function without further grind work.",
    "mechanism": "The 2026-10-15 20:38 ruling rejected written islands but left the whole-body grant itself open pending the scan_hand_coded STRONG-tier gate.",
    "next_probe": "Operator check of inline_asm_canonical.txt:340's audit status; no action available to this session."
+  },
+  {
+   "hypothesis": "A new vendored macro or gtemac.h composite covering chunk 2's TR-from-halfwords, or re-expressing gte_SetRotMatrix's batched lw/ctc2 order, would close hunk 1's residual if it existed.",
+   "mechanism": "Chunk 2 has no vendored macro at all (s1); gtemac.h's composites (read in full s12) are calls-to-calls, never alternate leaf orderings of SetRotMatrix's own fixed asm string.",
+   "next_probe": "Needs an owner ruling plus an engine: commit adding the macro/word (inline-asm-policy.md item 1) -- not a grind-session action."
   }
  ],
  "judge_constraints": [
@@ -267,6 +278,22 @@
    "measured_on": "s6/s8 legal macro-call chassis via include/psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted to INCLUDE_ASM afterward",
    "predicate_cite": "include/psxsdk/inline_c.h:297",
    "result": "score=19, 4 hunks all source-level: hunk1 batched-lw/ctc2 order inside gte_SetRotMatrix, hunks2-4 the swc2-in-jr-delay-s"
+  },
+  {
+   "session": 14,
+   "statement": "The s6 legal chassis contains zero FAKE-annotated constructs, so the KILL RE-AUDIT dispatcher condition (re-measure the closest instance kill with every FAKE construct ablated) is vacuously satisfied ",
+   "kill_scope": "instance",
+   "measured_on": "s6 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct present, src/main/3AB48.c this session, reverted to INCLUDE_ASM afterward",
+   "predicate_cite": "",
+   "result": "\"no FAKE-annotated constructs found in memory/grind/func_80052B7C/candidate.c; nothing to ablate\" (tmp/grind/func_80052B"
+  },
+  {
+   "session": 14,
+   "statement": "On this chassis, no block-local variable split / declaration-order change / type-narrowing / statement-reassociation (the structural-modality lever set) can touch either source-level residual, because",
+   "kill_scope": "class",
+   "measured_on": "s6 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted",
+   "predicate_cite": "include/psxsdk/inline_c.h:297",
+   "result": "Residual confirmed to sit entirely inside each macro's own fixed __asm__ volatile body, outside the reach of any structu"
   }
  ],
  "ladder_skip": 0,

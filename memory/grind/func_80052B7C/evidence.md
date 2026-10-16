@@ -357,3 +357,13 @@ question rather than resolved here.
 - [s13] No new structural lever surfaced: block-local var splits, declaration order, type narrowing and statement re-association all require an operand-only hunk to act on, and none exists on this chassis.
 
 - [s13] src/main/3AB48.c left as INCLUDE_ASM("asm/funcs", func_80052B7C); -- no landing form banked this session.
+
+- [s14] sandbox func_80052B7C --disable all --diff: score 19, target 24 insns, ours 24 insns, 4 hunks, 4 source-level, 0 operand-only, 0 not-scored (tmp/grind/func_80052B7C/s14/sandbox_diff.txt).
+
+- [s14] Hunk 1: target batches 5 lw then 5 ctc2 into t0-t7 (rotation matrix) then CR5-7 via halfword loads; our body (gte_SetRotMatrix + gte_ldtr) interleaves 2-lw+2-ctc2 then 3-lw+3-ctc2 then the halfword loads into a0/v1/v0 -- a fixed instruction-sequence divergence inside the vendored macros, not a register-seat or scheduling difference.
+
+- [s14] Hunk 2-4: target's final swc2 $11,8(a3) sits in the jr $ra delay slot; our build emits it before jr with an explicit nop -- gte_stlvl's swc2 body is a single opaque __asm__ volatile asm_operands node reorg.c's delay-slot filler cannot split or select into (confirmed s3/H3 via .dbr dump, unchanged this session).
+
+- [s14] tools/fake_ablate.py confirms the candidate.c s6 body carries zero /* FAKE */ constructs -- the kill-re-audit's own precondition (a FAKE carrier occupying the target pseudo) does not apply here, so s8/s9/s13's structural-modality class kills were never at risk of the func_8002EA24-s8-style invalidation and stand as measured.
+
+- [s14] docs/grind/decisions.md 2026-10-15 20:38 ruling stands: no written __asm__ island inside the C body is admitted for this function (inline-asm-policy.md items 3/item-1), so the only remaining non-C path is the whole-body inline_asm_canonical.txt:340 grant, gated on scan_hand_coded reaching STRONG tier -- unchanged, out of this session's reach (no engine/tools edits permitted).

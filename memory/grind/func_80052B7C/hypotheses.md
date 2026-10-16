@@ -233,3 +233,26 @@ floor 19 at s11; 11 sessions; live frontier (state.json is authoritative):
 - kill_scope: class
 - measured_on: s6/s8 legal macro-call chassis via include/psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted to INCLUDE_ASM afterward
 - predicate_cite: include/psxsdk/inline_c.h:297
+
+## [s14] The s6 legal macro-call chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, no __asm__ in the body) re-measures floor 19 this session with 4/4 hunks source-level and 0/4 operand-only.
+- mechanism: sandbox func_80052B7C --disable all --diff scores insn-level hunks; a hunk is operand-only only when the target and our instruction sequence match modulo register/scheduling choice. Here target batches 5 lw then 5 ctc2 (chunk 1) and places the final swc2 in the jr delay slot (chunk 5) -- both are instruction-sequence differences the C never expresses, so every hunk classes source-level.
+- probe: Applied candidate.c's s6 body to src/main/3AB48.c, ran `tools/wteng.ps1 main sandbox func_80052B7C --disable all --diff`, reverted to INCLUDE_ASM.
+- result: 19/19, identical to s6/s8/s9/s11/s12/s13. Confirms no drift in the chassis or scorer since s13.
+- verdict: CONFIRMED
+
+## [s14] The s6 legal chassis contains zero FAKE-annotated constructs, so the KILL RE-AUDIT dispatcher condition (re-measure the closest instance kill with every FAKE construct ablated) is vacuously satisfied -- there is no FAKE carrier that could have been occupying the target pseudo and invalidating s8's/s9's/s13's structural class kills.
+- mechanism: tools/fake_ablate.py mechanically scans a candidate.c body for /* FAKE: ... */ sites and strips each one, re-measuring; with none present it reports nothing to ablate rather than a score.
+- probe: python3 tools/fake_ablate.py --func func_80052B7C --file main/3AB48 --candidate memory/grind/func_80052B7C/candidate.c
+- result: "no FAKE-annotated constructs found in memory/grind/func_80052B7C/candidate.c; nothing to ablate" (tmp/grind/func_80052B7C/s14/ablate.txt).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s6 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct present, src/main/3AB48.c this session, reverted to INCLUDE_ASM afterward
+
+## [s14] On this chassis, no block-local variable split / declaration-order change / type-narrowing / statement-reassociation (the structural-modality lever set) can touch either source-level residual, because the 5-statement region contains zero C-level declarations, assignments, or binary operators for any such lever to act on -- re-confirms s8/s9/s13's class kill with a fresh measurement this session.
+- mechanism: gte_SetRotMatrix and gte_stlvl (include/psxsdk/inline_c.h:297, :1086) are each a single __asm__ volatile statement with a literal fixed instruction string, not computed from any C-level expression; spelling_enum.py's region scanner (s9) independently found 0 named locals, 0 assignments, 5 anchors -> 1 distinct spelling in this exact region.
+- probe: Re-read inline_c.h:297/:1086 this session (unchanged since s8); cross-checked against the fresh --diff output's hunk classification (0/4 operand-only).
+- result: Residual confirmed to sit entirely inside each macro's own fixed __asm__ volatile body, outside the reach of any structural C-level lever.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: s6 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted
+- predicate_cite: include/psxsdk/inline_c.h:297
