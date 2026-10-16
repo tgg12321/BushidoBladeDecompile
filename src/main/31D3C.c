@@ -455,51 +455,41 @@ void func_800422BC(s32 a0, s32 arg1, s32 a2, s32 a3) {
     s16 r2;
     s16 g2;
     s16 b2;
+
     if (func_800486FC()) {
-        b = math_Grayscale3(r, g, b);
-        g = b;
-        r = b;
+        r = g = b = math_Grayscale3(r, g, b);
     }
-    if (a3 != 0) {
-        goto raw;
+    if (a3 == 0) {
+        r2 = (r << 12) / 255;
+        g2 = (g << 12) / 255;
+        b2 = (b << 12) / 255;
+        if (a2 == 0) {
+            D_800F62E0[0].cmat.m[0][0] = r2;
+            D_800F62E0[0].cmat.m[1][0] = g2;
+            D_800F62E0[0].cmat.m[2][0] = b2;
+            calc_LightMatrix(&D_800F62E0[0]);
+            D_800F62E0[1].cmat.m[0][0] = r2;
+            D_800F62E0[1].cmat.m[1][0] = g2;
+            D_800F62E0[1].cmat.m[2][0] = b2;
+            calc_LightMatrix(&D_800F62E0[1]);
+        } else {
+            D_800F62E0[4].cmat.m[0][0] = r2;
+            D_800F62E0[4].cmat.m[1][0] = g2;
+            D_800F62E0[4].cmat.m[2][0] = b2;
+            calc_LightMatrix(&D_800F62E0[4]);
+        }
+    } else if (a2 == 0) {
+        D_800F62E0[0].back[0] = r;
+        D_800F62E0[0].back[1] = g;
+        D_800F62E0[0].back[2] = b;
+        D_800F62E0[1].back[0] = r;
+        D_800F62E0[1].back[1] = g;
+        D_800F62E0[1].back[2] = b;
+    } else {
+        D_800F62E0[4].back[0] = r;
+        D_800F62E0[4].back[1] = g;
+        D_800F62E0[4].back[2] = b;
     }
-    r2 = (r << 12) / 255;
-    g2 = (g << 12) / 255;
-    b2 = (b << 12) / 255;
-    if (a2 != 0) {
-        goto alt_scale;
-    }
-    D_800F62E0[0].cmat.m[0][0] = r2;
-    D_800F62E0[0].cmat.m[1][0] = g2;
-    D_800F62E0[0].cmat.m[2][0] = b2;
-    calc_LightMatrix(&D_800F62E0[0]);
-    D_800F62E0[1].cmat.m[0][0] = r2;
-    D_800F62E0[1].cmat.m[1][0] = g2;
-    D_800F62E0[1].cmat.m[2][0] = b2;
-    calc_LightMatrix(&D_800F62E0[1]);
-    goto out;
-alt_scale:
-    D_800F62E0[4].cmat.m[0][0] = r2;
-    D_800F62E0[4].cmat.m[1][0] = g2;
-    D_800F62E0[4].cmat.m[2][0] = b2;
-    calc_LightMatrix(&D_800F62E0[4]);
-    goto out;
-raw:
-    if (a2 != 0) {
-        goto alt_raw;
-    }
-    D_800F62E0[0].back[0] = r;
-    D_800F62E0[0].back[1] = g;
-    D_800F62E0[0].back[2] = b;
-    D_800F62E0[1].back[0] = r;
-    D_800F62E0[1].back[1] = g;
-    D_800F62E0[1].back[2] = b;
-    goto out;
-alt_raw:
-    D_800F62E0[4].back[0] = r;
-    D_800F62E0[4].back[1] = g;
-    D_800F62E0[4].back[2] = b;
-out:;
 }
 
 void func_80042478(s32 a0) {
