@@ -374,3 +374,9 @@ module pad" because 0x80052C28 is not 16-aligned. Both grounds were measured thi
 - [s7] func_80060E38, the only compiled-C lui/ori $t9 seat, is framed (-0x70, $fp)
 
 - [s7] func_80052C10 is surrounded by 13 canonical hand-asm routines
+
+- [s8] sandbox func_80052C10 --disable all --diff on the banked candidate.c reconfirms score 4/6: 1 operand-only hunk ($t9 vs our $v0 scratchpad-address register) and 1 source-level hunk (missing trailing nop after jr $ra).
+
+- [s8] m2c, decomp.me corpus search, and two additional sibling-asm transplant checks (func_800520B8, func_80060E38) beyond the already-read func_80052B7C all independently reproduce or corroborate findings already banked in s1-s7 (recon/structural/solver/forensics) -- no novel C-level mutation axis surfaced this session.
+
+- [s8] docs/grind/decisions.md 2026-10-16 00:36 ruling (cross-knowledge hit) already FAILed the canonical-asm re-audit for this exact function: scan_hand_coded has no S1-S12 gate-class hit; this session did not re-attempt that gate.

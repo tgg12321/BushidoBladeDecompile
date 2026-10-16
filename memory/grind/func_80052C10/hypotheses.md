@@ -402,3 +402,79 @@ Forensics found a single, simple producer for the exact target bytes: a reorder-
 - probe: s7/run_census.py
 - result: Every neighbour is in inline_asm_canonical.txt with handwritten markers. The first compiled C (func_80052D00) is framed with $s regs. The module-head question is moot under the reorder-nop mechanism.
 - verdict: CONFIRMED
+
+## [s8, rederive] Fresh m2c (mips_to_c) decompile of asm/funcs/func_80052C10.s suggests no new chassis
+- mechanism: independent structural re-derivation from the raw asm, bypassing the engine's own candidate history
+- probe: `python3 tools/m2c/m2c.py -t mips-ido-c asm/funcs/func_80052C10.s` (freshly invoked this session; tmp/grind/func_80052C10/s8/m2c_out.c)
+- result: m2c emits `void func_80052C10(void) { *(s32 *)0x1F800400 = 0; }` -- structurally IDENTICAL to the already-banked candidate.c (single volatile-style store, no second statement, no trailing-nop suggestion, no register-seat hint of any kind). m2c's MIPS model has no awareness of register-seat preference or trailing nop/delay-slot semantics beyond basic disasm, so it cannot propose anything the engine hasn't already measured.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: m2c mips-ido-c target against the unmodified target asm; no FAKE construct (pure re-derivation, no chassis applied to src/)
+
+## [s8, rederive] decomp.me corpus (gcc2.7.2-psx bucket, 461 scratches, tmp/decomp_me_corpus) has no citable near-match for this function's asm shingles
+- mechanism: cross-corpus similarity search for a human-submitted decompilation of the identical or near-identical instruction sequence
+- probe: `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_80052C10.s --corpus tmp/decomp_me_corpus --top 10` (tmp/grind/func_80052C10/s8/decomp_me_search.txt)
+- result: single hit, similarity 0.011 (SpuSetKey, decomp.me/scratch/Bbxp2) -- an order of magnitude below any citable threshold (c.f. func_80052B7C s12's 0.022-0.026 non-citable range). No corpus precedent for a 6-insn lui/ori/sw/jr/nop/nop MMIO-zero-store body with a $t9 seat.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: decomp_me_scrape.py search against tmp/decomp_me_corpus/gcc2.7.2-psx bucket; no chassis change, no FAKE construct
+
+## [s8, rederive] Sibling transplant check: func_80052B7C (unspent sibling, floor 19, 28 sessions) shares the TU but not the mechanism -- nothing to transplant
+- mechanism: cross-ledger inheritance check mandated by the sibling-ledgers block
+- probe: read memory/grind/func_80052B7C/candidate.c (s1-s28) in full
+- result: func_80052B7C's residual is GTE (cop2) macro-internal instruction batching and delay-slot placement inside fixed __asm__ volatile strings (gte_SetRotMatrix / gte_stlvl) -- a completely different class of problem (macro-opaque asm_operands RTL, no free C-level variables) from func_80052C10's register-seat + trailing-nop residual on a single scalar store. func_80052B7C's own candidate.c explicitly confirms (s22) it already checked siblings and found nothing transplantable in the other direction. Re-confirms s3's prior finding that no shared construct exists between these two functions.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: read-only comparison of memory/grind/func_80052B7C/candidate.c against func_80052C10's residual; no transplant attempted (no shared construct), no FAKE construct
+
+## [s8, rederive] Sibling transplant check: func_80060E38 (COMPLETED-C, matched) reaches a lui/ori-$t9 seat for a scratchpad address, but only inside a large framed function, corroborating s6's solver class kill from the actual matched binary (not just simulation)
+- mechanism: real matched-C evidence for the pressure-ladder-needs-a-frame finding
+- probe: grep "t9" asm/funcs/func_80060E38.s (tmp/grind/func_80052C10/s8/sibling_t9_check.txt) -> src/main/51268.c:228 `D_800A34A8 = &SPAD51268->unk68;` inside func_80060E38 (addiu $sp,$sp,-0x70, uses $s0-$s7/$fp per s7's prior census)
+- result: the $t9 seat there computes the ADDRESS of a scratchpad struct member and stores that POINTER into a global (`sw $t9, %gp_rel(D_800A34A8)($gp)`), not a direct zero-store to the scratchpad -- a different statement shape from func_80052C10's `*(vu32*)ADDR = 0`. It only reaches $t9 because func_80060E38 is a ~360-insn function with dozens of live pseudos and a full $s0-$s7+$fp save/restore frame at that point in the instruction stream -- exactly the "N>=22 live scratch pseudos, needs a frame" condition s6's solver predicted (local-alloc.c:2249 ascending free-reg scan). No frame-free analogue exists in the matched binary to transplant onto func_80052C10's 1-statement, 0-frame body.
+- verdict: CONFIRMED
+
+## [s8, rederive] Sibling transplant check: func_800520B8 uses $t9 for `jr $t9` jump-table dispatch (explicit "handwritten instruction" comment at both sites), not for a data store -- reconfirms s7's abicalls/PIC-register-convention reading, no new store-address lever
+- mechanism: $t9/$25 is the MIPS o32/n32 convention register for an indirect call/jump target, independent of any lui/ori-into-store-address idiom
+- probe: grep "t9" asm/funcs/func_800520B8.s (tmp/grind/func_80052C10/s8/sibling_t9_check.txt)
+- result: both lui/addiu/add/jr-$t9 sequences in func_800520B8 are hand-asm-marked ("/* handwritten instruction */") jump-table computed-gotos, structurally unrelated to a store-address computation. Nothing to transplant; this is the same $t9-as-branch-target idiom already covered by s7's zero-jalr-$t9 census, not a new store-seat mechanism.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: read-only asm census of asm/funcs/func_800520B8.s; no chassis change, no FAKE construct
+
+## [s8] A fresh m2c (mips_to_c) decompile of asm/funcs/func_80052C10.s produces a structurally identical body to the banked candidate (single volatile-style store, no second statement, no register-seat or trailing-nop hint).
+- mechanism: independent re-derivation from raw asm, bypassing engine candidate history
+- probe: python3 tools/m2c/m2c.py -t mips-ido-c asm/funcs/func_80052C10.s
+- result: Output: void func_80052C10(void) { *(s32 *)0x1F800400 = 0; } -- byte-for-byte the same shape as candidate.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: m2c mips-ido-c target vs unmodified target asm; no chassis applied, no FAKE construct
+
+## [s8] The decomp.me corpus (gcc2.7.2-psx bucket, 461 scratches) has no citable near-match for this function's instruction shingles.
+- mechanism: cross-corpus similarity search for a human decompilation of the same or near-identical asm
+- probe: python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_80052C10.s --corpus tmp/decomp_me_corpus --top 10
+- result: Single hit, similarity 0.011 (SpuSetKey) -- an order of magnitude below citable (c.f. func_80052B7C s12's 0.022-0.026 non-citable range).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: decomp_me_scrape.py search against tmp/decomp_me_corpus/gcc2.7.2-psx; no chassis change, no FAKE construct
+
+## [s8] Sibling func_80052B7C (unspent, 28 sessions, floor 19) shares the 3AB48 TU but shares no transplantable construct with func_80052C10.
+- mechanism: cross-ledger inheritance check (sibling-ledgers block)
+- probe: read memory/grind/func_80052B7C/candidate.c s1-s28 in full
+- result: func_80052B7C's residual is GTE macro-internal instruction batching/delay-slot placement inside fixed __asm__ volatile strings -- a different problem class (macro-opaque asm_operands RTL, zero free C-level variables) from func_80052C10's register-seat + trailing-nop residual on a plain scalar store.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: read-only comparison, no transplant attempted (no shared construct), no FAKE construct
+
+## [s8] func_80060E38 (COMPLETED-C, matched) reaches a lui/ori-$t9 seat for a scratchpad address, corroborating s6's solver class kill (t9 reachable only under heavy register pressure with a frame) from real matched-C evidence rather than simulation alone.
+- mechanism: local-alloc.c:2249 ascending free-register scan reaches $25/$t9 only after $s0-$s7 are occupied, which requires a save/restore frame
+- probe: grep t9 asm/funcs/func_80060E38.s -> src/main/51268.c:228 D_800A34A8 = &SPAD51268->unk68; inside a ~360-insn, addiu $sp,-0x70 framed function
+- result: The t9 seat there stores a computed POINTER into a global, not a direct zero-store, and only arises inside a function with dozens of live pseudos and a full $s0-$s7+$fp frame. No frame-free analogue exists in the matched binary.
+- verdict: CONFIRMED
+
+## [s8] func_800520B8's lui/addiu/add/jr-$t9 sequences are hand-asm-marked jump-table dispatch (the ABI call-target convention for $t9/$25), not a store-address computation -- no new store-seat lever, reconfirms s7's abicalls census.
+- mechanism: $t9/$25 is the MIPS indirect call/jump target convention register, independent of any store-address lui/ori idiom
+- probe: grep t9 asm/funcs/func_800520B8.s
+- result: Both t9 sequences carry explicit "/* handwritten instruction */" markers and feed jr $t9 computed-goto dispatch; structurally unrelated to func_80052C10's residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: read-only asm census, no chassis change, no FAKE construct

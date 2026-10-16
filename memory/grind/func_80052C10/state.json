@@ -1,8 +1,8 @@
 {
  "func": "func_80052C10",
  "file": "main/3AB48",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,18 +45,24 @@
    "floor": 4,
    "modality": "forensics",
    "headline": "Forensics: a reorder-mode hand-asm body (li $25; sw; j $31; nop) reproduces all 6 target words byte-exact through maspsx+as, giving one mechanism for both residual hunks; abicalls reading killed"
+  },
+  {
+   "session": 8,
+   "floor": 4,
+   "modality": "rederive",
+   "headline": "Rederive modality (m2c, decomp.me corpus, sibling transplant) found nothing new; floor stays 4, residual still the $t9 seat + trailing nop confirmed by --diff as operand-only/source-level."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_80052C10 is a reorder-mode hand-asm routine: an explicit nop after an assembler-filled jr delay slot, with li $t9",
-   "mechanism": "s7 byte-exact reproduction. scan_hand_coded has no gate-class signal for the 'explicit nop after assembler-filled jr delay slot' shape (S12 exempts tail nops and is informational).",
-   "next_probe": "Escalation modality: file the proof-of-foreclosure record citing s5/s6/s7. A new scan signal class needs owner approval, so it is not a grind lever."
+   "hypothesis": "func_80052C10 is a reorder-mode hand-asm routine (explicit nop after an assembler-filled jr delay slot) with a $t9 seat from its original hand-written form, not reachable by any frame-free pure-C chassis",
+   "mechanism": "s7 byte-exact hand-asm reproduction; s6 solver class kill (no $25 RTL producer under -mno-abicalls, frame-free)",
+   "next_probe": "Escalation modality: file the proof-of-foreclosure record per the ladder (>=4 distinct modalities already run: recon, structural, permuter, enumerate, synthesis, solver, forensics, rederive = 8); a new scan_hand_coded signal class needs owner approval and is not a grind lever."
   },
   {
    "hypothesis": "Other jr;nop;nop functions (the s5 list of 11) share the reorder-explicit-nop producer",
-   "mechanism": "Same author/assembler habit",
-   "next_probe": "Reassemble each as a reorder-mode source with its tail nop explicit and confirm byte equality, to support a future owner-approved signal"
+   "mechanism": "same author/assembler habit",
+   "next_probe": "Reassemble each as a reorder-mode source with its tail nop explicit and confirm byte equality, to support a future owner-approved signal class"
   }
  ],
  "judge_constraints": [
@@ -143,6 +149,38 @@
    "measured_on": "original-binary asm/funcs/*.s census; no C chassis, no FAKE construct",
    "predicate_cite": "",
    "result": "Zero jalr $t9 in the binary. Only __SN_ENTRY_POINT writes $gp. No PIC fingerprint anywhere."
+  },
+  {
+   "session": 8,
+   "statement": "A fresh m2c (mips_to_c) decompile of asm/funcs/func_80052C10.s produces a structurally identical body to the banked candidate (single volatile-style store, no second statement, no register-seat or tra",
+   "kill_scope": "instance",
+   "measured_on": "m2c mips-ido-c target vs unmodified target asm; no chassis applied, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Output: void func_80052C10(void) { *(s32 *)0x1F800400 = 0; } -- byte-for-byte the same shape as candidate.c."
+  },
+  {
+   "session": 8,
+   "statement": "The decomp.me corpus (gcc2.7.2-psx bucket, 461 scratches) has no citable near-match for this function's instruction shingles.",
+   "kill_scope": "instance",
+   "measured_on": "decomp_me_scrape.py search against tmp/decomp_me_corpus/gcc2.7.2-psx; no chassis change, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Single hit, similarity 0.011 (SpuSetKey) -- an order of magnitude below citable (c.f. func_80052B7C s12's 0.022-0.026 no"
+  },
+  {
+   "session": 8,
+   "statement": "Sibling func_80052B7C (unspent, 28 sessions, floor 19) shares the 3AB48 TU but shares no transplantable construct with func_80052C10.",
+   "kill_scope": "instance",
+   "measured_on": "read-only comparison, no transplant attempted (no shared construct), no FAKE construct",
+   "predicate_cite": "",
+   "result": "func_80052B7C's residual is GTE macro-internal instruction batching/delay-slot placement inside fixed __asm__ volatile s"
+  },
+  {
+   "session": 8,
+   "statement": "func_800520B8's lui/addiu/add/jr-$t9 sequences are hand-asm-marked jump-table dispatch (the ABI call-target convention for $t9/$25), not a store-address computation -- no new store-seat lever, reconfi",
+   "kill_scope": "instance",
+   "measured_on": "read-only asm census, no chassis change, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Both t9 sequences carry explicit \"/* handwritten instruction */\" markers and feed jr $t9 computed-goto dispatch; structu"
   }
  ],
  "ladder_skip": 0,
