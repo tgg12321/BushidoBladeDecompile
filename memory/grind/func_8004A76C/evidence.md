@@ -408,3 +408,16 @@
 - [s20] canonical gate reports whole-function canonical-asm grant (inline_asm_canonical.txt:25).
 
 - [s20] tools/grinder/dump.ps1 fails for subdirectory TUs (FileNotFoundError tmp/grind/func_8004A76C/dumps/main/3AB48.c); dumps produced via s20/cc.sh instead.
+- [s21] Re-audit holds: closest form 32, 5/5 source-level, zero FAKE (s21/sandbox_reaudit.txt, ablate_reaudit.txt); canonical gate = whole-function grant inline_asm_canonical.txt:25 (s21/canonical.txt).
+- [s21] nrefs_census on the spliced closest form (s21/nrefs_census.txt): allocno order 74,75,72,73,76,77,78; dispositions z1->$2 z2->$3 z3->$8. Allocation order cannot reach $8-$10: z conflicts are pseudos+$sp only, so first-fit takes $2 at any rank. Target leaves $2,$3,$7 all free yet uses $8-$10 — not a first-fit disposition (fifth restatement of the s6 seat signal, now with order eliminated).
+- [s21] loop_movables over s20 dumps: no non-phony loops (goto-built loop has no LOOP_BEG), loop.c inert (s21/loop_movables.txt). tools/grinder/dump.ps1 on the spliced TU failed ("dumps/main/3AB48.rtl: No such file or directory", s21/dump_log.txt) — s20's standalone -da dumps of the same form were used instead.
+
+- [s21] canonical func_8004A76C reports the whole-function canonical-asm grant (inline_asm_canonical.txt:25).
+
+- [s21] Closest form re-measures 32 with 5/5 source-level hunks (GTE macro strip) and zero FAKE constructs.
+
+- [s21] nrefs_census allocno order 74(a2) 75(a3) 72(a0) 73(a1) 76($2) 77($3) 78($8); priority order cannot change z1-z3's first-fit seats because they conflict with no hard reg but $sp.
+
+- [s21] loop_movables: no non-phony loops in the goto-built form; loop.c makes no decision.
+
+- [s21] tools/grinder/dump.ps1 on the spliced TU failed with 'dumps/main/3AB48.rtl: No such file or directory'; s20's standalone -da dumps of the same form were used instead.

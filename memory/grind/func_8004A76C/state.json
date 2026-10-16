@@ -1,7 +1,7 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 20,
+ "session_count": 21,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -123,22 +123,28 @@
    "floor": 37,
    "modality": "forensics",
    "headline": "s20 forensics: re-audit holds (32, zero FAKE); -da dumps show z1-z3 are global pseudos with only $sp conflict, closing the local-alloc frontier; CFG identical to target per label_census"
+  },
+  {
+   "session": 21,
+   "floor": 37,
+   "modality": "forensics",
+   "headline": "s21 forensics: re-audit holds (32, zero FAKE); nrefs_census shows allocno order is inert for the mfc2 seats and loop.c sees no loop; canonical grant inline_asm_canonical.txt:25 stands"
   }
  ],
  "frontier": [
   {
    "hypothesis": "The whole-body canonical-asm grant at inline_asm_canonical.txt:25 is the correct disposition.",
-   "mechanism": "Four measured not-GCC signals (s1 ABI, s6/s18/s19/s20 seats, s7 reorg.c:2990, s9 reorg.c:2969).",
-   "next_probe": "Escalation modality: file the docs/grind/decisions.md disposition citing s1/s6/s7/s9/s18/s19/s20."
+   "mechanism": "Not-GCC signals: s1 $s0 ABI, s6/s18-s21 $t0-$t2 seats with $2/$3/$7 free (order eliminated s21), s7 reorg.c:2990 slot, s9 reorg.c:2969 jr slot.",
+   "next_probe": "Escalation modality: file the docs/grind/decisions.md disposition citing s1/s6/s7/s9/s18-s21."
   },
   {
    "hypothesis": "A deeper inverse search (depth 4+) finds a global.c input vector giving z1-z3 $t0-$t2.",
-   "mechanism": "s19 inverse.py negative bounded at depth 3; s20 shows conflicts are $sp only, so depth 4 would need two new hard-reg conflicts.",
+   "mechanism": "s19 negative at depth 3; would need hard-reg conflicts on $2,$3 (and $7 under the $s0 ABI) with no source value occupying them.",
    "next_probe": "inverse.py global s19/a3.model.json --depth 4 with the ABI-granted goal."
   },
   {
    "hypothesis": "Pinning gte_rtpt/ldv3c/stsxy3c in engine/gtemacro.py lets the sandbox score the GTE body.",
-   "mechanism": "engine/gtemacro.py:82 PINNED table + :472 strip loop.",
+   "mechanism": "engine/gtemacro.py PINNED table + strip loop.",
    "next_probe": "Operator engine commit, then re-measure with --diff."
   }
  ],
@@ -472,6 +478,30 @@
    "measured_on": "s20/p.s raw cc1 output of rejected/psyq-rtpt-pair-reorg-slot-residual.c, no FAKE construct",
    "predicate_cite": "",
    "result": "3 vs 3 labels, predecessor multiset [1,1,2] vs [1,1,2] in identical program order. Only diffs: $s0 refs 16 vs 0 (ABI) an"
+  },
+  {
+   "session": 21,
+   "statement": "Kill re-audit: rejected/psyq-rtpt-pair-reorg-slot-residual.c has drifted on the current chassis or carried a FAKE carrier that voids its kill.",
+   "kill_scope": "instance",
+   "measured_on": "rejected/psyq-rtpt-pair-reorg-slot-residual.c at HEAD 1188fb1ef, $a3 vertex-pointer chassis, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Zero FAKE constructs; score 32, target 37 vs ours 16 insns, 5/5 hunks source-level, 0 operand-only, 0 not-scored. canoni"
+  },
+  {
+   "session": 21,
+   "statement": "Raising the mfc2 temps' allocno priority (reg_n_refs lift so z1-z3 rank ahead of the param pseudos) moves their seats off $v0/$v1 toward the target's $t0-$t2 on the closest form.",
+   "kill_scope": "instance",
+   "measured_on": "rejected/psyq-rtpt-pair-reorg-slot-residual.c spliced into src/main/3AB48.c, instrumented cc1 via nrefs_census, $a3 chassis, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Census validates (pri hook == calc). Order 74,75,72,73,76,77,78; z1->$2 z2->$3 z3->$8. z1 needs only +1 ref to outrank p"
+  },
+  {
+   "session": 21,
+   "statement": "loop.c (LICM / strength reduction) makes a decision in the closest form that could move the a1 increment relative to the mfc2s.",
+   "kill_scope": "instance",
+   "measured_on": "s20 -da dumps of rejected/psyq-rtpt-pair-reorg-slot-residual.c, $a3 chassis, no FAKE construct",
+   "predicate_cite": "",
+   "result": "No non-phony loops in this function; loop.c is inert. The a1-increment position is decided by source order + sched/reorg"
   }
  ],
  "ladder_skip": 0,

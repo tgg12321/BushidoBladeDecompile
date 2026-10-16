@@ -129,3 +129,9 @@
  * CFG identical to target. Residual stays ABI + seats + reorg slots; canonical grant
  * inline_asm_canonical.txt:25 stands. The stub stays.
  */
+/*
+ * s21 (forensics): re-audit holds (32, 5/5 source-level, zero FAKE). nrefs_census: allocno
+ * order is inert for the mfc2 seats (conflicts pseudos+$sp only, first-fit $2 at any rank);
+ * loop.c sees no loop in the goto form. Canonical grant inline_asm_canonical.txt:25 stands.
+ * The stub stays.
+ */
