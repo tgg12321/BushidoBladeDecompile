@@ -2455,7 +2455,8 @@ extern s16 D_80094AEC[];
  * bit 0 set is a quad (6 points per face in the size pass, 3 for a triangle),
  * bit 1 picks the longer record. The sizes are the D_80094AEC[mode] strides
  * in halfwords (12, 12, 18, 22); col is the colour word the packet takes,
- * read as two halfwords (the quad records place it off word alignment). */
+ * read as two halfwords (the mode-1 quad record places it off word alignment).
+ */
 typedef struct {
     u16 unk0[6];
     u16 col[2];

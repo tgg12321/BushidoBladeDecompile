@@ -167,6 +167,7 @@ void SetDrawLoad(DR_LOAD *p, RECT *rect) {
      * same words). */
     /* SOTN: src/main/psxsdk/libgpu/sys.c:275 @db41b28eee52969244a52cc269c8163d1ed8826a */
     p->code[1] = *(u32 *)&rect->x;
+    /* SOTN: src/main/psxsdk/libgpu/sys.c:277 @db41b28eee52969244a52cc269c8163d1ed8826a */
     p->code[2] = *(u32 *)&rect->w;
     p->p[size - 4] = OT_TERMINATOR;
 }
