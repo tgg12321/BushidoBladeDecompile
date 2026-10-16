@@ -1974,17 +1974,13 @@ s32 func_8002BC68(s32 arg0) {
     s32 var_a0;
     u32 temp_a0;
     u32 var_t0;
-    /* FAKE: pointer alias to D_80101EC8[0] / [1]: holds the table base in a
-     * register as the target does; without it every access is an absolute
-     * symbol+offset address (mips.h:2300 GO_IF_LEGITIMATE_ADDRESS accepts it
-     * as is), one instruction more: score 14 (pointer-alias-fake-exception) */
-    Unk80101EC8Record *t2_base;
-    Unk80101EC8Record *t3_base;
+    Unk80101EC8Record *rec0;
+    Unk80101EC8Record *rec1;
 
-    t2_base = D_80101EC8;
-    t3_base = t2_base + 1;
-    temp_a3 = t2_base->unk_D8.x - t3_base->unk_D8.x;
-    temp_t1 = t2_base->unk_D8.z - t3_base->unk_D8.z;
+    rec0 = &D_80101EC8[0];
+    rec1 = &D_80101EC8[1];
+    temp_a3 = rec0->unk_D8.x - rec1->unk_D8.x;
+    temp_t1 = rec0->unk_D8.z - rec1->unk_D8.z;
     temp_a0 = (temp_a3 * temp_a3) + (temp_t1 * temp_t1);
     if (temp_a0 < 0x400U) {
         var_t0 = ((u32)(g_sqrt_table_u8[temp_a0])) >> 3;
@@ -2012,10 +2008,10 @@ s32 func_8002BC68(s32 arg0) {
     {
         s32 temp_v0 = arg0 - 0x64;
         s32 temp_v1_3 = -var_a0;
-        t2_base->unk_134.vx = (temp_a3 * var_a0) / temp_v0;
-        t2_base->unk_134.vz = (temp_t1 * var_a0) / temp_v0;
-        t3_base->unk_134.vx = (temp_a3 * temp_v1_3) / temp_v0;
-        t3_base->unk_134.vz = (temp_t1 * temp_v1_3) / temp_v0;
+        rec0->unk_134.vx = (temp_a3 * var_a0) / temp_v0;
+        rec0->unk_134.vz = (temp_t1 * var_a0) / temp_v0;
+        rec1->unk_134.vx = (temp_a3 * temp_v1_3) / temp_v0;
+        rec1->unk_134.vz = (temp_t1 * temp_v1_3) / temp_v0;
     }
     return (s32)var_t0;
 }
@@ -2026,17 +2022,13 @@ s32 func_8002BEA0(void) {
     s32 var_a0;
     u32 temp_a0;
     u32 var_t0;
-    /* FAKE: pointer alias to D_80101EC8[0] / [1]: holds the table base in a
-     * register as the target does; without it every access is an absolute
-     * symbol+offset address (mips.h:2300 GO_IF_LEGITIMATE_ADDRESS accepts it
-     * as is), one instruction more: score 14 (pointer-alias-fake-exception) */
-    Unk80101EC8Record *t2_base;
-    Unk80101EC8Record *t3_base;
+    Unk80101EC8Record *rec0;
+    Unk80101EC8Record *rec1;
 
-    t2_base = D_80101EC8;
-    t3_base = t2_base + 1;
-    temp_a3 = t2_base->unk_F4.x - t3_base->unk_F4.x;
-    temp_t1 = t2_base->unk_F4.z - t3_base->unk_F4.z;
+    rec0 = &D_80101EC8[0];
+    rec1 = &D_80101EC8[1];
+    temp_a3 = rec0->unk_F4.x - rec1->unk_F4.x;
+    temp_t1 = rec0->unk_F4.z - rec1->unk_F4.z;
     temp_a0 = (temp_a3 * temp_a3) + (temp_t1 * temp_t1);
     if (temp_a0 < 0x400U) {
         var_t0 = ((u32)(g_sqrt_table_u8[temp_a0])) >> 3;
@@ -2064,10 +2056,10 @@ s32 func_8002BEA0(void) {
     {
         s32 temp_v0 = 0x3E8;
         s32 temp_v1_3 = -var_a0;
-        t2_base->unk_134.vx = (temp_a3 * var_a0) / temp_v0;
-        t2_base->unk_134.vz = (temp_t1 * var_a0) / temp_v0;
-        t3_base->unk_134.vx = (temp_a3 * temp_v1_3) / temp_v0;
-        t3_base->unk_134.vz = (temp_t1 * temp_v1_3) / temp_v0;
+        rec0->unk_134.vx = (temp_a3 * var_a0) / temp_v0;
+        rec0->unk_134.vz = (temp_t1 * var_a0) / temp_v0;
+        rec1->unk_134.vx = (temp_a3 * temp_v1_3) / temp_v0;
+        rec1->unk_134.vz = (temp_t1 * temp_v1_3) / temp_v0;
     }
     return (s32)var_t0 - 0x44C;
 }
@@ -2131,11 +2123,7 @@ void func_8002C0DC(void) {
  * to unk13C. */
 void func_8002C22C(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
-    /* FAKE: pointer alias to D_80101EC8[1]: the target holds record 1's base in
-     * a register; without it every access is an absolute address
-     * (GO_IF_LEGITIMATE_ADDRESS, gcc-2.7.2/config/mips/mips.h:2286) and the
-     * direct D_80101EC8[1] form costs ten instructions (score 26)
-     * (pointer-alias-fake-exception) */
+    Unk80101EC8Record *rec0 = &D_80101EC8[0];
     Unk80101EC8Record *rec1 = &D_80101EC8[1];
 
     scr->unkA8.x = 0;
@@ -2152,12 +2140,12 @@ void func_8002C22C(void) {
         scr->unkA8.x += SPAD->unk48[0][1].x;
         scr->unkA8.y += SPAD->unk48[0][1].y;
         scr->unkA8.z += SPAD->unk48[0][1].z;
-        scr->unkB8.x = D_80101EC8[0].unk_234[0].x;
-        scr->unkB8.y = D_80101EC8[0].unk_234[0].y;
-        scr->unkB8.z = D_80101EC8[0].unk_234[0].z;
-        scr->unkB8.x += D_80101EC8[0].unk_234[1].x;
-        scr->unkB8.y += D_80101EC8[0].unk_234[1].y;
-        scr->unkB8.z += D_80101EC8[0].unk_234[1].z;
+        scr->unkB8.x = rec0->unk_234[0].x;
+        scr->unkB8.y = rec0->unk_234[0].y;
+        scr->unkB8.z = rec0->unk_234[0].z;
+        scr->unkB8.x += rec0->unk_234[1].x;
+        scr->unkB8.y += rec0->unk_234[1].y;
+        scr->unkB8.z += rec0->unk_234[1].z;
     } else {
         scr->unkA8.x = SPAD->unk00[0][0].x;
         scr->unkA8.y = SPAD->unk00[0][0].y;
@@ -2165,12 +2153,12 @@ void func_8002C22C(void) {
         scr->unkA8.x += SPAD->unk00[0][1].x;
         scr->unkA8.y += SPAD->unk00[0][1].y;
         scr->unkA8.z += SPAD->unk00[0][1].z;
-        scr->unkB8.x = D_80101EC8[0].unk_210[0].x;
-        scr->unkB8.y = D_80101EC8[0].unk_210[0].y;
-        scr->unkB8.z = D_80101EC8[0].unk_210[0].z;
-        scr->unkB8.x += D_80101EC8[0].unk_210[1].x;
-        scr->unkB8.y += D_80101EC8[0].unk_210[1].y;
-        scr->unkB8.z += D_80101EC8[0].unk_210[1].z;
+        scr->unkB8.x = rec0->unk_210[0].x;
+        scr->unkB8.y = rec0->unk_210[0].y;
+        scr->unkB8.z = rec0->unk_210[0].z;
+        scr->unkB8.x += rec0->unk_210[1].x;
+        scr->unkB8.y += rec0->unk_210[1].y;
+        scr->unkB8.z += rec0->unk_210[1].z;
     }
     if (D_800A3824 & 2) {
         scr->unkA8.x += SPAD->unk48[1][0].x;
