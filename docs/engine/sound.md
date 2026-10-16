@@ -32,28 +32,22 @@ array of state blocks. The "currently active count" is tracked at
 (`0x80102A68`). Per-channel SPU memory addresses at `g_snd_ch_addr`
 (`0x80107810`).
 
-## High-level API — `snd_*` in `text1b.c` (formerly `sound.c`)
+## High-level API — `snd_*`
 
-The main user-facing sound API:
+The named `snd_*` functions (libsnd wrappers; `src/main/3AB48.c` unless noted):
 
-| Function | Purpose |
+| Function | What the body does |
 | --- | --- |
-| `snd_LoadBgm(id)` | Load a BGM track from sound bank (allocates channel 8) |
-| `snd_PlayBgm(id)` | Start playback on the loaded BGM (`saSeMain_80045510`) |
-| `snd_StopBgm` | Halt BGM playback |
-| `snd_AllocSe` | Reserve channel 9 for sound effects |
-| `snd_LoadSe(id)` | Load an SE sample into channel 9 |
-| `snd_PlaySe(id)` | Play loaded SE |
-| `snd_LoadSelection(id)` | Load a UI/selection sound into channel 0xA |
-| `snd_StopSelection` | Halt UI sound |
-| `snd_PlaySystemSe` | Boot/init sound (`func_80078A68(0xF2000001, ...)`) |
-| `snd_StopAll` | Stop everything |
-| `snd_SetVolume(v)` | Set master `g_snd_volume` |
-
-The BGM callbacks (`snd_BgmCallback`, `snd_SeNullCallback`,
-`snd_SelectionCallback`) are invoked by the channel manager when the
-underlying sample finishes — letting the engine queue the next entry in
-a sequence.
+| `snd_Init` | Clears the 16 VAB slots (`g_vab_rec_ptr`, `g_vab_vb_sbaddr`), `SsInit`, reverb off, `SsSetTickMode(1)`, sets the 24-voice volume table `D_800EFB78` to 0x7F, `SsStart` |
+| `snd_Quit` | Reverb off, `SsEnd`, `SsQuit`, clears the 16 VAB slots |
+| `snd_InitAndLoadCommonVab` (`6CF8.c`) | `snd_Init`; `snd_LoadCommonVab(0x801D8800)` (panics above 0xD00 bytes); copies it to 0x8010DB00 and rebases slot 0 there with `snd_VabFakeOpen` |
+| `snd_LoadCommonVab(dst)` | Reads disc file `cdrom_GetFileIndex(2, 1)` into `dst` (waiting with `cdrom_WaitIdle`) then hands it to `func_8005C2A8` |
+| `snd_VabOpen(pack, id)` | `SsVabOpenHeadSticky` + `SsVabTransBody` for VAB slot `id` |
+| `snd_VabFakeOpen(delta, id)` | Rebases slot `id`'s record by `delta`, then `SsVabFakeHead` / `SsVabFakeBody` |
+| `snd_VabFakeOpen8And4`, `snd_VabFakeOpen9` | `snd_VabFakeOpen` on slots 8 and 4, or 9 |
+| `snd_MoveVabBody(buf, id, dst, src)` | Moves slot `id`'s VAB body in SPU RAM from `src` to `dst` through `buf`, then re-fakes its head |
+| `snd_CloseVab1`, `snd_CloseListedVabs` | `SsVabClose` on slot 1, or on the three slots in `g_vab_id_list`, clearing their slot records |
+| `snd_SerialMixOn` (`267A8.c`) | `SsSetSerialAttr` (CD input mix on) and `SsSetSerialVol` 0x7F / 0x7F |
 
 ## BGM streaming — XA-ADPCM
 
