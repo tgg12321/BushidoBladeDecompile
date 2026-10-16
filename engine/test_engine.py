@@ -1499,6 +1499,42 @@ def test_gte_macro_rewrite_tool() -> None:
     r = R.rewrite_function(fn("func_T6", "    n = 1;\n"), "func_T6")
     eq("rewrite: nothing to do without islands", r.error, "no assembly islands")
 
+    # the doc comment above the function is listed for review
+    doc = "/* Loads v. GTE: gte_ldv0 with the clobbers spelled out ($12). */\n"
+    r = R.rewrite_function(doc + fn("func_T7", ldv0 + rtv0tr), "func_T7")
+    check("rewrite: a stale doc comment is listed for review",
+          any(ln == 1 and "clobbers spelled out" in c for ln, c in r.review_comments))
+    r = R.rewrite_function("/* Loads v. */\n" + fn("func_T7", ldv0 + rtv0tr), "func_T7")
+    eq("rewrite: a plain doc comment is not listed", r.review_comments, [])
+
+    # --write guards: the Grinder lock
+    with tempfile.TemporaryDirectory() as td:
+        lock = Path(td) / "grind.lock"
+        eq("rewrite: no Grinder lock -> not running", R.grinder_running(lock), None)
+        lock.write_text("not a pid\n")
+        eq("rewrite: an unreadable Grinder lock counts as live", R.grinder_running(lock), -1)
+        lock.write_text("4000000000\r\n")
+        old = R._windows_pid_alive
+        try:
+            R._windows_pid_alive = lambda pid: False
+            eq("rewrite: a stale Grinder lock -> not running", R.grinder_running(lock), None)
+            R._windows_pid_alive = lambda pid: True
+            eq("rewrite: a live Grinder lock -> its pid", R.grinder_running(lock), 4000000000)
+        finally:
+            R._windows_pid_alive = old
+        r = R.rewrite_function(fn("func_T1", ldv0 + rtv0tr), "func_T1")
+        R.write_candidate(r, grind=Path(td))
+        dest = Path(td) / "func_T1" / "candidate.c"
+        check("rewrite: --write writes a new candidate", r.candidate and dest.exists())
+        dest.write_text("keep\n")
+        r = R.rewrite_function(fn("func_T1", ldv0 + rtv0tr), "func_T1")
+        R.write_candidate(r, grind=Path(td))
+        check("rewrite: --write keeps an existing candidate.c",
+              dest.read_text() == "keep\n" and r.candidate is None and "--force" in r.error)
+        r = R.rewrite_function(fn("func_T1", ldv0 + rtv0tr), "func_T1")
+        R.write_candidate(r, force=True, grind=Path(td))
+        check("rewrite: --write --force overwrites it", dest.read_text() != "keep\n")
+
 
 def test_gte_header_registry() -> None:
     """Only the vendored headers, bios.h and include_asm.h define asm macros."""

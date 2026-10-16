@@ -20,8 +20,9 @@ The header is the TU's vendored inline header when it includes one, else the
 one that converts every run (inline_o.h first; a TU takes one header for all
 its functions). Each function is scored with the honest sandbox (`engine
 sandbox <func> --disable all --candidate`, the candidate under tmp/); with
---write a score-0 candidate is written to memory/grind/<func>/candidate.c.
-Nothing in src/ is ever written.
+--write a score-0 candidate is written to memory/grind/<func>/candidate.c
+(an existing one only with --force; refused outright while the Grinder's
+tmp/grind/grind.lock names a live pid). Nothing in src/ is ever written.
 
 Reported for the reviewer (decisions the bytes cannot make):
   * macro choice: every other macro (or composite / parts split) with the same
@@ -31,8 +32,8 @@ Reported for the reviewer (decisions the bytes cannot make):
     the C performs".
   * comments: a comment directly above a replaced run that explains the
     written-out form (it names a header, DMPSX, a clobber, an expansion or a
-    hard register) is dropped and printed; other such comments in the body are
-    listed for review.
+    hard register) is dropped and printed; other such comments in the body, and
+    the function's doc comment, are listed for review.
 A function whose islands have no GTE instruction is refused (not GTE).
 Runs in WSL (the repo .venv); started on Windows it re-runs itself there.
 """
@@ -458,6 +459,13 @@ def rewrite_function(text: str, func: str, stem: str = "", header: str | None = 
         new = new[:s] + r + new[e:]
     nspan = inlineasm._func_body_span(new, func)
     res.body = new[nspan[0]:nspan[1]]
+    # The function's doc comment too: it may describe the written-out form.
+    doc = _attached_comment(new, new.rfind("\n", 0, nspan[0]) + 1)
+    if doc is not None:
+        c = new[doc:new.find("*/", doc) + 2]
+        if _STALE.search(c):
+            res.review_comments.append((new.count("\n", 0, doc) + 1,
+                                        " ".join(c.split())[:100]))
     for m in re.finditer(r"/\*.*?\*/|//[^\n]*", res.body, re.S):
         if _STALE.search(m.group(0)):
             res.review_comments.append((new.count("\n", 0, nspan[0] + m.start()) + 1,
@@ -512,9 +520,44 @@ def score(res: Result) -> int | None:
     return r.get("score")
 
 
+GRIND_LOCK = Path("tmp/grind/grind.lock")
+
+
+def _windows_pid_alive(pid: int) -> bool:
+    """grind.ps1 writes a WINDOWS pid; from WSL it is checked through
+    tasklist.exe (interop). Anything but a clean "no such pid" is live."""
+    try:
+        out = subprocess.run(["tasklist.exe", "/FI", f"PID eq {pid}", "/NH", "/FO", "CSV"],
+                             capture_output=True, text=True, timeout=30).stdout
+    except (OSError, subprocess.SubprocessError):
+        return True
+    return f'"{pid}"' in out or "INFO:" not in out
+
+
+def grinder_running(lock: Path = GRIND_LOCK) -> int | None:
+    """The live pid the Grinder's lock names (relative to the repo the tool
+    runs in), or None. A lock that cannot be read or checked counts as live
+    (fail closed; -1 when it names no pid)."""
+    try:
+        raw = lock.read_text(encoding="utf-8", errors="replace").strip().lstrip("﻿")
+    except FileNotFoundError:
+        return None
+    except OSError:
+        return -1
+    if not raw.isdigit():
+        return -1
+    pid = int(raw)
+    return pid if _windows_pid_alive(pid) else None
+
+
 def run(target: str, write: bool = False, do_score: bool = True,
-        header: str | None = None) -> list[Result]:
+        header: str | None = None, force: bool = False) -> list[Result]:
     _c, G, _i = _engine()
+    if write:
+        pid = grinder_running()
+        if pid is not None:
+            raise SystemExit(f"gte_macro_rewrite: --write refused: the Grinder lock "
+                             f"{GRIND_LOCK} names a live pid ({pid})")
     funcs = _functions(target)
     texts = {stem: Path(f"src/{stem}.c").read_text(encoding="utf-8") for _f, stem in funcs}
     if header is None and len(funcs) > 1:
@@ -528,12 +571,21 @@ def run(target: str, write: bool = False, do_score: bool = True,
         if res.error is None and do_score:
             res.score = score(res)
             if write and res.score == 0:
-                dest = Path("memory/grind") / f / "candidate.c"
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                dest.write_bytes(candidate_text(res).encode("utf-8"))
-                res.candidate = dest.as_posix()
+                write_candidate(res, force)
         results.append(res)
     return results
+
+
+def write_candidate(res: Result, force: bool = False, grind: Path = Path("memory/grind")) -> None:
+    """Write res's candidate to <grind>/<func>/candidate.c; an existing file
+    is kept (res.error says so) unless `force`."""
+    dest = grind / res.func / "candidate.c"
+    if dest.exists() and not force:
+        res.error = f"{dest.as_posix()} exists (--force to overwrite)"
+        return
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(candidate_text(res).encode("utf-8"))
+    res.candidate = dest.as_posix()
 
 
 def _report(res: Result) -> str:
@@ -562,13 +614,17 @@ def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("target", nargs="+", help="function name(s) or TU id(s) (main/17AFC)")
     ap.add_argument("--write", action="store_true",
-                    help="write score-0 candidates to memory/grind/<func>/candidate.c")
+                    help="write score-0 candidates to memory/grind/<func>/candidate.c "
+                         "(refused while the Grinder runs)")
+    ap.add_argument("--force", action="store_true",
+                    help="with --write: overwrite an existing candidate.c")
     ap.add_argument("--no-score", action="store_true", help="rewrite only, no sandbox")
     ap.add_argument("--header", choices=["inline_o.h", "inline_c.h"])
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
     os.chdir(ROOT)
-    results = [r for t in a.target for r in run(t, a.write, not a.no_score, a.header)]
+    results = [r for t in a.target
+               for r in run(t, a.write, not a.no_score, a.header, a.force)]
     if a.json:
         print(json.dumps([{"func": r.func, "file": r.stem, "header": r.header, "error": r.error,
                            "score": r.score, "candidate": r.candidate,
