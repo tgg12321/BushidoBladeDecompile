@@ -1232,7 +1232,7 @@ void func_8001C4C0(void) {
     if (v == 0x32 || v == 0x11) {
         func_800218C8(0);
         {
-            s32 v0 = func_80021974(0);
+            MoveScript *v0 = func_80021974(0);
             D_80101EC8[0].unk_5E = 0;
             func_80021A98(0, v0, 0);
         }
@@ -1240,7 +1240,7 @@ void func_8001C4C0(void) {
 }
 
 void func_8001C51C(void) {
-    s32 v0;
+    MoveScript *v0;
     func_8001C4C0();
     if (D_800A38DC == 3 && D_800A3728 != 0) {
         func_80022580(1, (s8)D_80102778.unk_4[5], (s8)D_80102778.unk_4[1],
@@ -1341,7 +1341,7 @@ void func_8001C8DC(void);
 
 void func_8001C8DC(void) {
     u8 prev;
-    s32 var_1;
+    MoveScript *var_1;
 
     if (D_80101EC8[0].unk_96 != 0 || D_80101EC8[1].unk_96 != 0) {
         D_800A382E++;
@@ -1410,7 +1410,7 @@ void func_8001C8DC(void) {
             func_8001C624();
             var_1 = func_80021904(0);
             D_80101EC8[0].unk_5E = 0;
-            func_80021A98(0, (MoveScript *)var_1, 0);
+            func_80021A98(0, var_1, 0);
         }
         func_8001C51C();
         if (D_800A384C < 4) {
@@ -1834,9 +1834,6 @@ extern void func_80021210(void);
 extern void func_80021280(s32);
 extern void func_80022F34(void);
 extern void func_800218C8(s32);
-extern s32 func_80021974(s32);
-extern s32 func_80021904(s32);
-extern s32 func_800219E4(s32);
 extern void func_8001B294(Unk80101EC8Record *, Unk80101EC8Record *);
 extern void func_8001B3C0(Unk80101EC8Record *, Unk80101EC8Record *);
 
@@ -1935,47 +1932,47 @@ void func_8001DCB0(void) {
         if (D_800A3670 != 0) {
             func_800218C8(0);
             {
-                s32 v = func_80021974(0);
+                MoveScript *v = func_80021974(0);
                 D_80101EC8[0].unk_5E = 0;
-                func_80021A98(0, (MoveScript *)v, 0);
+                func_80021A98(0, v, 0);
             }
             if (D_800A38DC == 2 && D_800A389A == 0) {
-                s32 v = func_80021904(1);
+                MoveScript *v = func_80021904(1);
                 D_80101EC8[1].unk_5E = 0;
-                func_80021A98(1, (MoveScript *)v, 0);
+                func_80021A98(1, v, 0);
             } else {
                 s32 v;
                 func_800218C8(1);
                 v = func_80021974(1);
                 D_80101EC8[1].unk_5E = 0;
-                func_80021A98(1, (MoveScript *)v, 0);
+                func_80021A98(1, v, 0);
             }
         } else {
             func_800218C8(0);
             func_800218C8(1);
             {
-                s32 v = func_800219E4(0);
+                MoveScript *v = func_800219E4(0);
                 D_80101EC8[0].unk_5E = 1;
-                func_80021A98(0, (MoveScript *)v, 1);
+                func_80021A98(0, v, 1);
             }
             {
-                s32 v = func_800219E4(1);
+                MoveScript *v = func_800219E4(1);
                 D_80101EC8[1].unk_5E = 1;
-                func_80021A98(1, (MoveScript *)v, 1);
+                func_80021A98(1, v, 1);
             }
         }
     } else {
         func_800218C8(0);
         func_800218C8(1);
         {
-            s32 v = func_80021974(0);
+            MoveScript *v = func_80021974(0);
             D_80101EC8[0].unk_5E = 0;
-            func_80021A98(0, (MoveScript *)v, 0);
+            func_80021A98(0, v, 0);
         }
         {
-            s32 v = func_80021974(1);
+            MoveScript *v = func_80021974(1);
             D_80101EC8[1].unk_5E = 0;
-            func_80021A98(1, (MoveScript *)v, 0);
+            func_80021A98(1, v, 0);
         }
     }
     D_800A382E = 0;
@@ -2265,7 +2262,7 @@ void func_8001EEB4(void) {
         entry->unk_96 == 0) {
         func_800218C8(D_800A3748);
         {
-            s32 ret = func_80021A3C(D_800A3748, entry->unk_0A);
+            MoveScript *ret = func_80021A3C(D_800A3748, entry->unk_0A);
             s32 idx2 = D_800A3748;
             entry->unk_5E = 1;
             func_80021A98(idx2, ret, 1);
@@ -3387,24 +3384,26 @@ void *func_80021424(Unk80101EC8Record *rec, s32 id, s16 *out) {
 
 void func_800218C8(s32 a0) { D_80101EC8[a0].unk_86 = D_80101EC8[a0].unk_84; }
 
-s32 func_80021904(s32 a0) {
+MoveScript *func_80021904(s32 a0) {
     s16 v1 = D_80101EC8[a0].unk_4A;
     s16 v0 = D_80101EC8[a0].unk_86;
-    return (s32)&D_801027B0[v1].unk_00[D_800A3860[v1]->f4E[v0]];
+    return (MoveScript *)&D_801027B0[v1].unk_00[D_800A3860[v1]->f4E[v0]];
 }
 
-s32 func_80021974(s32 a0) {
+MoveScript *func_80021974(s32 a0) {
     s16 v1 = D_80101EC8[a0].unk_4A;
     s16 v0 = D_80101EC8[a0].unk_84;
-    return (s32)&D_801027B0[v1].unk_00[D_800A3860[v1]->f4E[v0]];
+    return (MoveScript *)&D_801027B0[v1].unk_00[D_800A3860[v1]->f4E[v0]];
 }
 
-s32 func_800219E4(s32 a0) {
-    return (s32)&D_80102760.unk_00[D_800A3860[D_80101EC8[a0].unk_4A]->f16];
+MoveScript *func_800219E4(s32 a0) {
+    return (MoveScript *)&D_80102760
+        .unk_00[D_800A3860[D_80101EC8[a0].unk_4A]->f16];
 }
 
-s32 func_80021A3C(s32 a0, s32 a1) {
-    return (s32)&D_80102760.unk_00[D_800A3860[D_80101EC8[a0].unk_4A]->f18[a1]];
+MoveScript *func_80021A3C(s32 a0, s32 a1) {
+    return (MoveScript *)&D_80102760
+        .unk_00[D_800A3860[D_80101EC8[a0].unk_4A]->f18[a1]];
 }
 
 void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
