@@ -4,8 +4,8 @@ glabel StoreImage
     /* 6BE6C 8007B66C 21808000 */  addu       $s0, $a0, $zero
     /* 6BE70 8007B670 1400B1AF */  sw         $s1, 0x14($sp)
     /* 6BE74 8007B674 2188A000 */  addu       $s1, $a1, $zero
-    /* 6BE78 8007B678 0180043C */  lui        $a0, %hi(D_80015F68)
-    /* 6BE7C 8007B67C 685F8424 */  addiu      $a0, $a0, %lo(D_80015F68)
+    /* 6BE78 8007B678 0180043C */  lui        $a0, %hi(g_str_storeimage)
+    /* 6BE7C 8007B67C 685F8424 */  addiu      $a0, $a0, %lo(g_str_storeimage)
     /* 6BE80 8007B680 1800BFAF */  sw         $ra, 0x18($sp)
     /* 6BE84 8007B684 EAEC010C */  jal        checkRECT
     /* 6BE88 8007B688 21280002 */   addu      $a1, $s0, $zero

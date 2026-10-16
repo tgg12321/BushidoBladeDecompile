@@ -392,13 +392,13 @@ glabel sprintf
     /* 6A7A0 80079FA0 50006334 */  ori        $v1, $v1, 0x50
     /* 6A7A4 80079FA4 1002A3AF */  sw         $v1, 0x210($sp)
   jlabel .L80079FA8
-    /* 6A7A8 80079FA8 0180073C */  lui        $a3, %hi(D_80015C7C)
-    /* 6A7AC 80079FAC 7C5CE724 */  addiu      $a3, $a3, %lo(D_80015C7C)
+    /* 6A7A8 80079FA8 0180073C */  lui        $a3, %hi(g_str_hex_upper_80015C7C)
+    /* 6A7AC 80079FAC 7C5CE724 */  addiu      $a3, $a3, %lo(g_str_hex_upper_80015C7C)
     /* 6A7B0 80079FB0 F0E70108 */  j          .L80079FC0
     /* 6A7B4 80079FB4 00000000 */   nop
   jlabel .L80079FB8
-    /* 6A7B8 80079FB8 0180073C */  lui        $a3, %hi(D_80015C90)
-    /* 6A7BC 80079FBC 905CE724 */  addiu      $a3, $a3, %lo(D_80015C90)
+    /* 6A7B8 80079FB8 0180073C */  lui        $a3, %hi(g_str_hex_lower_80015C90)
+    /* 6A7BC 80079FBC 905CE724 */  addiu      $a3, $a3, %lo(g_str_hex_lower_80015C90)
   .L80079FC0:
     /* 6A7C0 80079FC0 2002A38F */  lw         $v1, 0x220($sp)
     /* 6A7C4 80079FC4 00000000 */  nop

@@ -2,8 +2,8 @@ glabel ClearImage
     /* 6BCD0 8007B4D0 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 6BCD4 8007B4D4 1C00B3AF */  sw         $s3, 0x1C($sp)
     /* 6BCD8 8007B4D8 21988000 */  addu       $s3, $a0, $zero
-    /* 6BCDC 8007B4DC 0180043C */  lui        $a0, %hi(D_80015F50)
-    /* 6BCE0 8007B4E0 505F8424 */  addiu      $a0, $a0, %lo(D_80015F50)
+    /* 6BCDC 8007B4DC 0180043C */  lui        $a0, %hi(g_str_clearimage)
+    /* 6BCE0 8007B4E0 505F8424 */  addiu      $a0, $a0, %lo(g_str_clearimage)
     /* 6BCE4 8007B4E4 1800B2AF */  sw         $s2, 0x18($sp)
     /* 6BCE8 8007B4E8 2190A000 */  addu       $s2, $a1, $zero
     /* 6BCEC 8007B4EC 21286002 */  addu       $a1, $s3, $zero

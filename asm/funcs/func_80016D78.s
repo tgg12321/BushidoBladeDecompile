@@ -1,8 +1,8 @@
 glabel func_80016D78
     /* 7578 80016D78 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 757C 80016D7C 1080053C */  lui        $a1, (0x8010DB00 >> 16)
-    /* 7580 80016D80 0180043C */  lui        $a0, %hi(D_80010028)
-    /* 7584 80016D84 28008424 */  addiu      $a0, $a0, %lo(D_80010028)
+    /* 7580 80016D80 0180043C */  lui        $a0, %hi(g_str_limit)
+    /* 7584 80016D84 28008424 */  addiu      $a0, $a0, %lo(g_str_limit)
     /* 7588 80016D88 1000BFAF */  sw         $ra, 0x10($sp)
     /* 758C 80016D8C 82E4010C */  jal        printf
     /* 7590 80016D90 00DBA534 */   ori       $a1, $a1, (0x8010DB00 & 0xFFFF)

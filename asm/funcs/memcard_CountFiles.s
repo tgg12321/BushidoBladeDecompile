@@ -6,8 +6,8 @@ glabel memcard_CountFiles
     /* 28230 80037A30 1080103C */  lui        $s0, %hi(g_memcard_file_list)
     /* 28234 80037A34 10281026 */  addiu      $s0, $s0, %lo(g_memcard_file_list)
     /* 28238 80037A38 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 2823C 80037A3C 0180053C */  lui        $a1, %hi(D_800109B0)
-    /* 28240 80037A40 B009A524 */  addiu      $a1, $a1, %lo(D_800109B0)
+    /* 2823C 80037A3C 0180053C */  lui        $a1, %hi(g_str_memcard_fmt)
+    /* 28240 80037A40 B009A524 */  addiu      $a1, $a1, %lo(g_str_memcard_fmt)
     /* 28244 80037A44 3800BFAF */  sw         $ra, 0x38($sp)
     /* 28248 80037A48 8CE6010C */  jal        sprintf
     /* 2824C 80037A4C 3400B1AF */   sw        $s1, 0x34($sp)

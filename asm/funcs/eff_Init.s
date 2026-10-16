@@ -9,8 +9,8 @@ glabel eff_Init
     /* 749C 80016C9C 1080053C */  lui        $a1, (0x8010E800 >> 16)
     /* 74A0 80016CA0 2E83010C */  jal        func_80060CB8
     /* 74A4 80016CA4 00E8A534 */   ori       $a1, $a1, (0x8010E800 & 0xFFFF)
-    /* 74A8 80016CA8 0180043C */  lui        $a0, %hi(D_8001000C)
-    /* 74AC 80016CAC 0C008424 */  addiu      $a0, $a0, %lo(D_8001000C)
+    /* 74A8 80016CA8 0180043C */  lui        $a0, %hi(g_str_eff_init)
+    /* 74AC 80016CAC 0C008424 */  addiu      $a0, $a0, %lo(g_str_eff_init)
     /* 74B0 80016CB0 1080053C */  lui        $a1, (0x8010E800 >> 16)
     /* 74B4 80016CB4 00E8A534 */  ori        $a1, $a1, (0x8010E800 & 0xFFFF)
     /* 74B8 80016CB8 21804000 */  addu       $s0, $v0, $zero

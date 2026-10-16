@@ -4,8 +4,8 @@ glabel LoadImage
     /* 6BE08 8007B608 21808000 */  addu       $s0, $a0, $zero
     /* 6BE0C 8007B60C 1400B1AF */  sw         $s1, 0x14($sp)
     /* 6BE10 8007B610 2188A000 */  addu       $s1, $a1, $zero
-    /* 6BE14 8007B614 0180043C */  lui        $a0, %hi(D_80015F5C)
-    /* 6BE18 8007B618 5C5F8424 */  addiu      $a0, $a0, %lo(D_80015F5C)
+    /* 6BE14 8007B614 0180043C */  lui        $a0, %hi(g_str_loadimage)
+    /* 6BE18 8007B618 5C5F8424 */  addiu      $a0, $a0, %lo(g_str_loadimage)
     /* 6BE1C 8007B61C 1800BFAF */  sw         $ra, 0x18($sp)
     /* 6BE20 8007B620 EAEC010C */  jal        checkRECT
     /* 6BE24 8007B624 21280002 */   addu      $a1, $s0, $zero

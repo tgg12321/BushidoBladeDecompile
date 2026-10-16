@@ -22,8 +22,8 @@ glabel get_alarm
   .L8007DCEC:
     /* 6E4EC 8007DCEC 0A80033C */  lui        $v1, %hi(GPU_STATUS)
     /* 6E4F0 8007DCF0 48BF638C */  lw         $v1, %lo(GPU_STATUS)($v1)
-    /* 6E4F4 8007DCF4 0180043C */  lui        $a0, %hi(D_80016010)
-    /* 6E4F8 8007DCF8 10608424 */  addiu      $a0, $a0, %lo(D_80016010)
+    /* 6E4F4 8007DCF4 0180043C */  lui        $a0, %hi(g_str_gpu_timeout)
+    /* 6E4F8 8007DCF8 10608424 */  addiu      $a0, $a0, %lo(g_str_gpu_timeout)
     /* 6E4FC 8007DCFC 0000628C */  lw         $v0, 0x0($v1)
     /* 6E500 8007DD00 0A80053C */  lui        $a1, %hi(_qin)
     /* 6E504 8007DD04 78BFA58C */  lw         $a1, %lo(_qin)($a1)

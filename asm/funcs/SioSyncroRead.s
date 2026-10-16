@@ -65,17 +65,17 @@ glabel SioSyncroRead
     /* 7C7F4 8008BFF4 0A80013C */  lui        $at, %hi(D_800A3074)
     /* 7C7F8 8008BFF8 21082200 */  addu       $at, $at, $v0
     /* 7C7FC 8008BFFC 74303484 */  lh         $s4, %lo(D_800A3074)($at)
-    /* 7C800 8008C000 0F80013C */  lui        $at, %hi(D_800F1B04)
-    /* 7C804 8008C004 041B33AC */  sw         $s3, %lo(D_800F1B04)($at)
-    /* 7C808 8008C008 0F80013C */  lui        $at, %hi(D_800F1B00)
-    /* 7C80C 8008C00C 001B24AC */  sw         $a0, %lo(D_800F1B00)($at)
+    /* 7C800 8008C000 0F80013C */  lui        $at, %hi(D_800F1AFC + 0x8)
+    /* 7C804 8008C004 041B33AC */  sw         $s3, %lo(D_800F1AFC + 0x8)($at)
+    /* 7C808 8008C008 0F80013C */  lui        $at, %hi(D_800F1AFC + 0x4)
+    /* 7C80C 8008C00C 001B24AC */  sw         $a0, %lo(D_800F1AFC + 0x4)($at)
     /* 7C810 8008C010 0000A0AC */  sw         $zero, 0x0($a1)
     /* 7C814 8008C014 0A006294 */  lhu        $v0, 0xA($v1)
     /* 7C818 8008C018 00000000 */  nop
     /* 7C81C 8008C01C 20004234 */  ori        $v0, $v0, 0x20
     /* 7C820 8008C020 0A0062A4 */  sh         $v0, 0xA($v1)
-    /* 7C824 8008C024 0F80023C */  lui        $v0, %hi(D_800F1B04)
-    /* 7C828 8008C028 041B428C */  lw         $v0, %lo(D_800F1B04)($v0)
+    /* 7C824 8008C024 0F80023C */  lui        $v0, %hi(D_800F1AFC + 0x8)
+    /* 7C828 8008C028 041B428C */  lw         $v0, %lo(D_800F1AFC + 0x8)($v0)
     /* 7C82C 8008C02C 00000000 */  nop
     /* 7C830 8008C030 3F004010 */  beqz       $v0, .L8008C130
     /* 7C834 8008C034 21800000 */   addu      $s0, $zero, $zero
@@ -117,8 +117,8 @@ glabel SioSyncroRead
   .L8008C0B8:
     /* 7C8B8 8008C0B8 0A80023C */  lui        $v0, %hi(D_800A3044)
     /* 7C8BC 8008C0BC 4430428C */  lw         $v0, %lo(D_800A3044)($v0)
-    /* 7C8C0 8008C0C0 0F80033C */  lui        $v1, %hi(D_800F1B00)
-    /* 7C8C4 8008C0C4 001B638C */  lw         $v1, %lo(D_800F1B00)($v1)
+    /* 7C8C0 8008C0C0 0F80033C */  lui        $v1, %hi(D_800F1AFC + 0x4)
+    /* 7C8C4 8008C0C4 001B638C */  lw         $v1, %lo(D_800F1AFC + 0x4)($v1)
     /* 7C8C8 8008C0C8 00004290 */  lbu        $v0, 0x0($v0)
     /* 7C8CC 8008C0CC 00000000 */  nop
     /* 7C8D0 8008C0D0 000062A0 */  sb         $v0, 0x0($v1)
@@ -155,8 +155,8 @@ glabel SioSyncroRead
     /* 7C944 8008C144 DFFF4230 */  andi       $v0, $v0, 0xFFDF
     /* 7C948 8008C148 0A0062A4 */  sh         $v0, 0xA($v1)
   .L8008C14C:
-    /* 7C94C 8008C14C 0F80023C */  lui        $v0, %hi(D_800F1B04)
-    /* 7C950 8008C150 041B4224 */  addiu      $v0, $v0, %lo(D_800F1B04)
+    /* 7C94C 8008C14C 0F80023C */  lui        $v0, %hi(D_800F1AFC + 0x8)
+    /* 7C950 8008C150 041B4224 */  addiu      $v0, $v0, %lo(D_800F1AFC + 0x8)
     /* 7C954 8008C154 0000428C */  lw         $v0, 0x0($v0)
     /* 7C958 8008C158 00000000 */  nop
     /* 7C95C 8008C15C 23106202 */  subu       $v0, $s3, $v0

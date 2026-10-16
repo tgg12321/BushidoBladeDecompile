@@ -18,8 +18,8 @@ glabel CD_sync
     /* 715F0 80080DF0 94145226 */  addiu      $s2, $s2, %lo(D_800A1494)
     /* 715F4 80080DF4 01005426 */  addiu      $s4, $s2, 0x1
     /* 715F8 80080DF8 C0034224 */  addiu      $v0, $v0, 0x3C0
-    /* 715FC 80080DFC 0F80013C */  lui        $at, %hi(D_800F19B8)
-    /* 71600 80080E00 B81922AC */  sw         $v0, %lo(D_800F19B8)($at)
+    /* 715FC 80080DFC 0F80013C */  lui        $at, %hi(Alarm)
+    /* 71600 80080E00 B81922AC */  sw         $v0, %lo(Alarm)($at)
     /* 71604 80080E04 0180023C */  lui        $v0, %hi(D_80016240)
     /* 71608 80080E08 40624224 */  addiu      $v0, $v0, %lo(D_80016240)
     /* 7160C 80080E0C 0F80013C */  lui        $at, %hi(Alarm_plus_0x4)
@@ -29,8 +29,8 @@ glabel CD_sync
   .L80080E1C:
     /* 7161C 80080E1C 330A020C */  jal        VSync
     /* 71620 80080E20 FFFF0424 */   addiu     $a0, $zero, -0x1
-    /* 71624 80080E24 0F80033C */  lui        $v1, %hi(D_800F19B8)
-    /* 71628 80080E28 B819638C */  lw         $v1, %lo(D_800F19B8)($v1)
+    /* 71624 80080E24 0F80033C */  lui        $v1, %hi(Alarm)
+    /* 71628 80080E28 B819638C */  lw         $v1, %lo(Alarm)($v1)
     /* 7162C 80080E2C 00000000 */  nop
     /* 71630 80080E30 2A186200 */  slt        $v1, $v1, $v0
     /* 71634 80080E34 0B006014 */  bnez       $v1, .L80080E64

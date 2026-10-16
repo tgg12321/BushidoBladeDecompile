@@ -5,10 +5,10 @@ glabel SioAnsyncRead
     /* 7C6B0 8008BEB0 00000000 */  nop
     /* 7C6B4 8008BEB4 11004014 */  bnez       $v0, .L8008BEFC
     /* 7C6B8 8008BEB8 FFFF0224 */   addiu     $v0, $zero, -0x1
-    /* 7C6BC 8008BEBC 0F80013C */  lui        $at, %hi(D_800F1B04)
-    /* 7C6C0 8008BEC0 041B25AC */  sw         $a1, %lo(D_800F1B04)($at)
-    /* 7C6C4 8008BEC4 0F80013C */  lui        $at, %hi(D_800F1B00)
-    /* 7C6C8 8008BEC8 001B24AC */  sw         $a0, %lo(D_800F1B00)($at)
+    /* 7C6BC 8008BEBC 0F80013C */  lui        $at, %hi(D_800F1AFC + 0x8)
+    /* 7C6C0 8008BEC0 041B25AC */  sw         $a1, %lo(D_800F1AFC + 0x8)($at)
+    /* 7C6C4 8008BEC4 0F80013C */  lui        $at, %hi(D_800F1AFC + 0x4)
+    /* 7C6C8 8008BEC8 001B24AC */  sw         $a0, %lo(D_800F1AFC + 0x4)($at)
     /* 7C6CC 8008BECC 0A80043C */  lui        $a0, %hi(D_800A3044)
     /* 7C6D0 8008BED0 4430848C */  lw         $a0, %lo(D_800A3044)($a0)
     /* 7C6D4 8008BED4 01000224 */  addiu      $v0, $zero, 0x1

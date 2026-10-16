@@ -7,8 +7,8 @@ glabel DrawOTag
     /* 6C150 8007B950 0200422C */  sltiu      $v0, $v0, 0x2
     /* 6C154 8007B954 08004014 */  bnez       $v0, .L8007B978
     /* 6C158 8007B958 1400BFAF */   sw        $ra, 0x14($sp)
-    /* 6C15C 8007B95C 0180043C */  lui        $a0, %hi(D_80015FB0)
-    /* 6C160 8007B960 B05F8424 */  addiu      $a0, $a0, %lo(D_80015FB0)
+    /* 6C15C 8007B95C 0180043C */  lui        $a0, %hi(g_str_drawotag)
+    /* 6C160 8007B960 B05F8424 */  addiu      $a0, $a0, %lo(g_str_drawotag)
     /* 6C164 8007B964 0A80023C */  lui        $v0, %hi(GPU_printf)
     /* 6C168 8007B968 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6C16C 8007B96C 00000000 */  nop

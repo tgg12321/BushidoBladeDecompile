@@ -29,8 +29,8 @@ glabel CdInit
     /* 707E0 8007FFE0 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 707E4 8007FFE4 E9FF0216 */  bne        $s0, $v0, .L8007FF8C
     /* 707E8 8007FFE8 00000000 */   nop
-    /* 707EC 8007FFEC 0180043C */  lui        $a0, %hi(D_8001605C)
-    /* 707F0 8007FFF0 5C608424 */  addiu      $a0, $a0, %lo(D_8001605C)
+    /* 707EC 8007FFEC 0180043C */  lui        $a0, %hi(g_str_cdinit_fail)
+    /* 707F0 8007FFF0 5C608424 */  addiu      $a0, $a0, %lo(g_str_cdinit_fail)
     /* 707F4 8007FFF4 82E4010C */  jal        printf
     /* 707F8 8007FFF8 00000000 */   nop
     /* 707FC 8007FFFC 21100000 */  addu       $v0, $zero, $zero
