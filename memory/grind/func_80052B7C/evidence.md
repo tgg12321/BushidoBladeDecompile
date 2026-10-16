@@ -496,3 +496,5 @@ question rather than resolved here.
 - [s27] Prior sessions (s18-s21, s24-s26) already established the residual (hunk 1: gte_SetRotMatrix/gte_ldtr batching order; hunks 2-4: gte_stlvl's delay-slot swc2 placement) is fixed entirely inside each vendored macro's own literal __asm__ volatile template string at RTL expand (include/psxsdk/inline_c.h:297, :1086), outside any C-level spelling space by construction -- this session's sweep is consistent with and re-confirms that finding, not a new discovery.
 
 - [s27] A docs/grind/decisions.md ruling (2026-10-15 20:38) already rejects written-island forms for this function's macro-less chunks; the only live non-grind-session paths are the scan_hand_coded gate-class signal addition and the inline_asm_canonical.txt:340 whole-body grant audit, both named in the ledger's live frontier and both outside grind-session scope.
+
+- [s27] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate 2d0d81a51e56 scores 19 under our cc1 and 19 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).

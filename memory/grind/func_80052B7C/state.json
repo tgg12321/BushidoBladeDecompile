@@ -515,5 +515,14 @@
  "origin": "regression",
  "created": "2026-10-16T01:16:38.257728+00:00",
  "object_model_audited": 1,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "cc1psx_check": {
+  "at": "2026-10-16T04:18:13.224009+00:00",
+  "candidate_sha": "2d0d81a51e56",
+  "ours": 19,
+  "psx": 19,
+  "closer": false,
+  "ok": true,
+  "error": null
+ }
 }
