@@ -89,3 +89,19 @@
  * engine/gtemacro.py's PINNED table regardless of surrounding C. The stub
  * stays; see hypotheses.md s15 for the full histogram.
  */
+/*
+ * s16 (enumerate): widened spelling_enum beyond s15's mid: block to the
+ * prologue/loop/epilogue blocks -- all three are degenerate (1-member,
+ * nothing to permute). The spelling space is now fully mapped across all
+ * four blocks; mid: is the only one with real freedom and it was already
+ * swept zero-hit at s15. The stub stays.
+ */
+/*
+ * s17 (enumerate, repeat dispatch; mandated kill re-audit): fake_ablate.py
+ * on rejected/psyq-rtpt-pair-reorg-slot-residual.c again reports zero FAKE
+ * constructs; a fresh --diff re-measurement reproduces score 32/37, 5/5
+ * hunks source-level (unpinned GTE macro strip), 0 operand-only, 0
+ * not-scored -- identical in shape to every prior re-audit (s9/s13/s14).
+ * No new enumerate-axis frontier exists beyond s15/s16's fully-mapped
+ * search space. The stub stays; see hypotheses.md/evidence.md s17.
+ */

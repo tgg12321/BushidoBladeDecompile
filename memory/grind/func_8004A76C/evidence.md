@@ -345,3 +345,25 @@
 - [s16] The spelling-enumeration search space for this function's surviving (non-macro) skeleton is now fully mapped across all four blocks: three are degenerate (size 1, nothing to permute) and one (mid:, the three gte_mfc2 scalar reads) has a real size-6 space already swept at s15 with zero hit.
 
 - [s16] No change to the function's disposition: ASM-WHOLE canonical GTE grant (custom callee-saved $s0 ABI not GCC-producible, scan_hand_coded tier STRONG 1/8 S7, cc1psx-confirmed real-compiler residual via s10, engine/gtemacro.py PINNED-units gap blocking any score on hunks 1/2/4) stands, reconfirmed across 10+ sessions and 5 independent methods (hand-authored s10, structural re-audit s13/s14, mechanical enumerator s15/s16).
+
+## s17 (enumerate, repeat dispatch) — mandated kill re-audit; no new spelling-enum frontier exists to sweep
+
+- [s17] `sandbox func_8004A76C --disable all` this session on the plain INCLUDE_ASM stub: `{"score": 37, "target_insns": 37, "build_insns": 0, "no_c_body": true}` -- floor unchanged.
+
+- [s17] Mandated kill re-audit (floor flat 9 sessions: s9-s17) on the closest banked form, rejected/psyq-rtpt-pair-reorg-slot-residual.c: `tools/fake_ablate.py --func func_8004A76C --file main/3AB48 --candidate <that file>` reports "no FAKE-annotated constructs found; nothing to ablate" (the kill was never FAKE-propped -- 5th consecutive confirmation of this, after s7/s9/s11/s13/s14).
+
+- [s17] `sandbox func_8004A76C --disable all --diff --candidate rejected/psyq-rtpt-pair-reorg-slot-residual.c` fresh this session (tmp/grind/func_8004A76C/s17/diff_reaudit.txt): score 32, target_insns 37, build_insns 16, 5/5 hunks source-level, 0 operand-only, 0 not-scored. Hunks 1/2/4 are the unpinned gte_rtpt/gte_ldv3c/gte_stsxy3c macro-strip (engine/gtemacro.py:82/:472), unchanged from every prior re-audit. Hunk 3's mfc2 seats land at $2(v0)/$3(v1)/$a1 in this cc1 invocation (vs the $t0-$t2 wording quoted in the older s6/s10 entries) -- same global.c:1057 first-fit mechanism producing a different concrete allocno name; the score masks seat identity either way, so this is not a new residual, just a restated instance of the already-banked seat-mismatch class.
+
+- [s17] Re-read s15/s16 in full: the spelling_enum search space over the surviving (non-macro) skeleton is still fully mapped -- one real region (`mid:`, size 6, swept zero-hit at s15, class-killed predicate_cite engine/gtemacro.py:82+472) and three degenerate size-1 regions (prologue/loop/epilogue, s16). No widening of the ENUM markup beyond s16's four-block coverage is available: every remaining statement in the rejected form is either a macro call, a pointer/array store, a decrement, or a goto/label -- all fixed-position anchors in spelling_enum.py's model, not candidates for a fifth region.
+
+- [s17] No change to the function's disposition: ASM-WHOLE canonical GTE grant stands, now reconfirmed across 11 sessions (s1/s5-s17) and 5 independent methods; this session's contribution is the mandated re-audit holding clean (zero FAKE, zero drift) rather than a new search axis, since none exists under `enumerate` beyond what s15/s16 already closed.
+
+- [s17] sandbox func_8004A76C --disable all on the plain INCLUDE_ASM stub this session: score 37, target_insns 37, build_insns 0, no_c_body true -- floor unchanged.
+
+- [s17] fake_ablate.py on the closest rejected form reports 'no FAKE-annotated constructs found; nothing to ablate' -- 5th consecutive confirmation (after s7/s9/s11/s13/s14).
+
+- [s17] sandbox --diff --candidate on that form this session: score 32, 5/5 hunks source-level, 0 operand-only, 0 not-scored; hunks 1/2/4 the unpinned GTE macro strip, hunk 3 the mfc2-seat mismatch ($2/$3/$a1 this invocation).
+
+- [s17] spelling_enum search space (s15 mid: block size 6 zero-hit, s16 prologue/loop/epilogue degenerate size-1) remains fully mapped; no fifth region or wider ENUM markup is available on this chassis.
+
+- [s17] canonical func_8004A76C gate already returns ASM-WHOLE (inline_asm_canonical.txt grant, confirmed s1); disposition is operator-side completion, not a C-search question.
