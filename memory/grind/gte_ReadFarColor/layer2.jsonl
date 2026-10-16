@@ -1,0 +1,1 @@
+{"func": "gte_ReadFarColor", "addr": "80052BE4", "verdict": "PASS", "body_hash": "00b0d250860e1b27", "body_kind": "asm", "file": "main/3AB48", "reviewer": "cheat-reviewer-3a-batch2-2026-10-16", "scope": "auth", "date": "2026-10-16T07:21:17Z", "head": "827a9defc", "notes": ""}

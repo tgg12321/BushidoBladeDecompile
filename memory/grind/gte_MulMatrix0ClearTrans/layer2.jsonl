@@ -1,0 +1,1 @@
+{"func": "gte_MulMatrix0ClearTrans", "addr": "80052930", "verdict": "PASS", "body_hash": "f7f058bab233a886", "body_kind": "asm", "file": "main/3AB48", "reviewer": "cheat-reviewer-3a-batch2-2026-10-16", "scope": "auth", "date": "2026-10-16T07:19:41Z", "head": "827a9defc", "notes": ""}

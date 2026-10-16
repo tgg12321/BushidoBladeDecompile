@@ -1,0 +1,1 @@
+{"func": "gte_SetMatrixRotTransIR", "addr": "80052A20", "verdict": "PASS", "body_hash": "ea537c9763d6338f", "body_kind": "asm", "file": "main/3AB48", "reviewer": "cheat-reviewer-3a-batch2-2026-10-16", "scope": "auth", "date": "2026-10-16T07:19:58Z", "head": "827a9defc", "notes": ""}
