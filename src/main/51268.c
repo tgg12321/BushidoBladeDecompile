@@ -251,7 +251,6 @@ void func_80060E38(s16 *arg0, s32 *arg1) {
 }
 
 extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
-extern s32 D_800F1180;
 s32 printf(s32 *, s32);
 extern void AddPrim(void *, void *);
 void func_80060A68(void);
@@ -305,9 +304,9 @@ void func_800611A4(s32 *arg0, u16 *arg1) {
     svec[1] = *q++;
     D_800A3468 = &D_800F116C;
     svec[2] = *q;
-    D_800F117C = (s32)(&svec[0]);
-    D_800F1178 = (s32)arg0;
-    D_800F1180 = (s32)(&D_800F116A);
+    D_800F116C.unk10 = (s16 *)svec;
+    D_800F116C.unk0C = arg0;
+    D_800F116C.unk14 = &D_800F116A;
     D_800F116C.unk00.w = 0x21001A;
     func_80060A68();
     p = arg0;
@@ -321,7 +320,7 @@ void func_80061250(s32 *arg0) {
     extern u8 D_800F1154[];
     s32 *p;
     D_800A3468 = &D_800F116C;
-    D_800F1178 = (s32)arg0;
+    D_800F116C.unk0C = arg0;
     if (D_800F1154[5] != 0) {
         if (D_800F1154[6] != 0) {
             D_800F1154[6] = 0;
@@ -335,7 +334,7 @@ void func_80061250(s32 *arg0) {
     goto end;
 check_one_zero:
     if (D_800F1154[6] == 0) {
-        D_800F1180 = (s32)&D_800F1154[6];
+        D_800F116C.unk14 = &D_800F1154[6];
         D_800F116C.unk00.w = 0x21000A;
     }
 end:
@@ -352,8 +351,8 @@ extern u8 D_800F1154[];
 s32 func_8006133C(s32 *a0) {
     s32 *p = a0;
     D_800A3468 = &D_800F116C;
-    D_800F1178 = (s32)a0;
-    D_800F1180 = (s32)D_800F1154;
+    D_800F116C.unk0C = a0;
+    D_800F116C.unk14 = D_800F1154;
     D_800F116C.unk00.w = 0x210004;
     func_80060A68();
     D_800F1140.vx = *p++;
@@ -368,8 +367,8 @@ extern u8 D_800F115B;
 s32 func_800613C8(s32 *a0) {
     s32 *var_0 = a0;
     D_800A3468 = &D_800F116C;
-    D_800F1178 = (s32)a0;
-    D_800F1180 = (s32)&D_800F115B;
+    D_800F116C.unk0C = a0;
+    D_800F116C.unk14 = &D_800F115B;
     D_800F116C.unk00.w = 0x21000B;
     func_80060A68();
     D_800F1140.vx = *var_0++;
@@ -382,8 +381,8 @@ s32 func_800613C8(s32 *a0) {
 s32 func_80061454(s32 *a0) {
     s32 *p = a0;
     D_800A3468 = &D_800F116C;
-    D_800F1178 = (s32)a0;
-    D_800F1180 = (s32)&D_800F115B;
+    D_800F116C.unk0C = a0;
+    D_800F116C.unk14 = &D_800F115B;
     D_800F116C.unk00.w = 0x29000B;
     func_80060A68();
     D_800F1140.vx = *p++;
@@ -396,8 +395,8 @@ s32 func_80061454(s32 *a0) {
 s32 func_800614E0(s32 *a0) {
     s32 *p = a0;
     D_800A3468 = &D_800F116C;
-    D_800F1178 = (s32)a0;
-    D_800F1180 = (s32)&D_800F115B;
+    D_800F116C.unk0C = a0;
+    D_800F116C.unk14 = &D_800F115B;
     D_800F116C.unk00.w = 0x31000B;
     func_80060A68();
     D_800F1140.vx = *p++;
@@ -410,7 +409,7 @@ s32 func_800614E0(s32 *a0) {
 void func_8006156C(s32 *arg0) {
     s32 *p;
     D_800A3468 = &D_800F116C;
-    D_800F1178 = (s32)arg0;
+    D_800F116C.unk0C = arg0;
     if (D_800F1154[1] != 0) {
         if (D_800F1154[2] != 0) {
             D_800F1154[2] = 0;
@@ -424,7 +423,7 @@ void func_8006156C(s32 *arg0) {
     goto end;
 check_one_zero:
     if (D_800F1154[2] == 0) {
-        D_800F1180 = (s32)&D_800F1154[2];
+        D_800F116C.unk14 = &D_800F1154[2];
         D_800F116C.unk00.w = 0x210006;
     }
 end:
@@ -446,7 +445,7 @@ void func_80061658(s32 *arg0, s32 arg1) {
     u8 *q;
     s32 val;
     D_800A3468 = v1;
-    D_800F1178 = (s32)arg0;
+    D_800F116C.unk0C = arg0;
     switch (arg1) {
     case 0:
         val = 0x21000C;
@@ -460,7 +459,7 @@ void func_80061658(s32 *arg0, s32 arg1) {
         goto done;
     }
     *q = 0;
-    D_800F1180 = (s32)q;
+    D_800F116C.unk14 = q;
     v1->unk00.w = val;
 done:
     func_80060A68();
@@ -479,7 +478,7 @@ void func_80061710(s32 *arg0, s32 arg1) {
     u8 *q;
     s32 val;
     D_800A3468 = v1;
-    D_800F1178 = (s32)arg0;
+    D_800F116C.unk0C = arg0;
     switch (arg1) {
     case 0:
         val = 0x21000E;
@@ -493,7 +492,7 @@ void func_80061710(s32 *arg0, s32 arg1) {
         goto done;
     }
     *q = 0;
-    D_800F1180 = (s32)q;
+    D_800F116C.unk14 = q;
     v1->unk00.w = val;
 done:
     func_80060A68();
@@ -509,7 +508,7 @@ extern u8 D_800F1160[];
 void func_800617C8(s32 *arg0) {
     s32 *p;
     D_800A3468 = &D_800F116C;
-    D_800F1178 = (s32)arg0;
+    D_800F116C.unk0C = arg0;
     if (D_800F1160[0] != 0) {
         if (D_800F1160[1] != 0) {
             D_800F1160[1] = 0;
@@ -523,7 +522,7 @@ void func_800617C8(s32 *arg0) {
     goto end;
 check_one_zero:
     if (D_800F1160[1] == 0) {
-        D_800F1180 = (s32)(D_800F1160 + 1);
+        D_800F116C.unk14 = D_800F1160 + 1;
         D_800F116C.unk00.w = 0x210011;
     }
 end:
@@ -540,8 +539,8 @@ extern u8 D_800F1152[];
 void func_800618B4(s32 *arg0, s16 *arg1) {
     s32 *p;
     D_800A3468 = &D_800F116C;
-    D_800F1178 = (s32)arg0;
-    D_800F117C = (s32)arg1;
+    D_800F116C.unk0C = arg0;
+    D_800F116C.unk10 = arg1;
     if (D_800F1152[0] != 0) {
         if (D_800F1152[1] != 0) {
             D_800F1152[1] = 0;
@@ -555,7 +554,7 @@ void func_800618B4(s32 *arg0, s16 *arg1) {
     goto end;
 check_one_zero:
     if (D_800F1152[1] == 0) {
-        D_800F1180 = (s32)(D_800F1152 + 1);
+        D_800F116C.unk14 = D_800F1152 + 1;
         D_800F116C.unk00.w = 0x210003;
     }
 end:
@@ -571,16 +570,16 @@ extern s32 D_800F1158;
 
 void func_800619A4(s32 *a0) {
     D_800A3468 = &D_800F116C;
-    D_800F1178 = (s32)a0;
-    D_800F1180 = (s32)&D_800F1158;
+    D_800F116C.unk0C = a0;
+    D_800F116C.unk14 = &D_800F1158;
     D_800F116C.unk00.w = 0x10008;
     func_80060A68();
 }
 
 void func_800619F0(s32 *a0) {
     D_800A3468 = &D_800F116C;
-    D_800F1178 = (s32)a0;
-    D_800F1180 = (s32)(D_800F1154 + 3);
+    D_800F116C.unk0C = a0;
+    D_800F116C.unk14 = D_800F1154 + 3;
     D_800F116C.unk00.w = 0x10007;
     func_80060A68();
 }
@@ -594,13 +593,13 @@ void func_80061A3C(s32 *a0, s16 a1, s32 a2, s32 a3) {
     sp[2] = 0;
     sp[0] = 0;
     sp[1] = a1;
-    D_800F1178 = (s32)a0;
-    D_800F117C = (s32)sp;
+    D_800F116C.unk0C = a0;
+    D_800F116C.unk10 = sp;
     if (a3 == 0) {
-        D_800F1180 = (s32)&D_800F1150;
+        D_800F116C.unk14 = &D_800F1150;
         D_800F116C.unk00.w = a2 + 0x10000;
     } else {
-        D_800F1180 = (s32)&D_800F1151;
+        D_800F116C.unk14 = &D_800F1151;
         D_800F116C.unk00.w = a2 + 0x10001;
     }
     func_80060A68();
@@ -611,8 +610,8 @@ extern u8 D_800F1164[];
 void func_80061ACC(s32 *arg0, s32 arg1) {
     s32 *p;
     D_800A3468 = &D_800F116C;
-    D_800F1178 = (s32)arg0;
-    D_800F117C = arg1;
+    D_800F116C.unk0C = arg0;
+    D_800F116C.unk10 = (s16 *)arg1;
     if (D_800F1164[0] != 0) {
         if (D_800F1164[1] != 0) {
             D_800F1164[1] = 0;
@@ -629,7 +628,7 @@ void func_80061ACC(s32 *arg0, s32 arg1) {
     goto end;
 check_one_zero:
     if (D_800F1164[1] == 0) {
-        D_800F1180 = (s32)(D_800F1164 + 1);
+        D_800F116C.unk14 = D_800F1164 + 1;
         D_800A3468->unk00.w = 0x210015;
         func_80060A68();
         D_800A3468->unk14 = D_800F1164 - 0xD;
@@ -752,7 +751,7 @@ end:
 void func_80061EC0(s32 *arg0) {
     s32 *p;
     D_800A3468 = &D_800F116C;
-    D_800F1178 = (s32)arg0;
+    D_800F116C.unk0C = arg0;
     if (D_800F1160[2] != 0) {
         if (D_800F1160[3] != 0) {
             D_800F1160[3] = 0;
@@ -766,7 +765,7 @@ void func_80061EC0(s32 *arg0) {
     goto end;
 check_one_zero:
     if (D_800F1160[3] == 0) {
-        D_800F1180 = (s32)(D_800F1160 + 3);
+        D_800F116C.unk14 = D_800F1160 + 3;
         D_800F116C.unk00.w = 0x210013;
     }
 end:

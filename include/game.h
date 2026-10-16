@@ -872,10 +872,10 @@ typedef struct {
  * D_800A346C / D_800A3470). Only the scratchpad block's are set: func_80060E38
  * stores its two arguments there.
  * - unk0C / unk10: the three words / three halfwords func_80060A68 copies into
- * unk20 / unk18. Set only in the D_800F116C block (through D_800A3468, or
- * D_800F1178 / D_800F117C, separate symbols at its +0x0C / +0x10).
+ * unk20 / unk18. Set only in the D_800F116C block (through D_800A3468 or
+ * D_800F116C directly).
  * - unk14: the byte func_80060A68 / func_80060B70 store the called function's
- * result to (`sb`); D_800F1180 is the D_800F116C block's +0x14.
+ * result to (`sb`).
  * - unk18 / unk20: the copies. D_800A346C / D_800A3470 point at the scratchpad
  * block's, D_800A3478 / D_800A347C at the D_800F116C block's (func_80060A68).
  * unk18 is s16 like its sources (unk04 / unk10) and every consumer (SVECTOR /

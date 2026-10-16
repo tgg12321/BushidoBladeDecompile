@@ -558,8 +558,6 @@ extern s32 D_800F10D0[];
 /* A 16-byte vector: thirteen functions store x / y / z; func_80061064 passes
  * it to func_80041E10, which copies all 16 bytes to D_800A9B28. */
 extern VECTOR D_800F1140;
-extern s32 D_800F1178;
-extern s32 D_800F117C;
 extern Unk800F1B18Rec D_800F1B18[];
 extern u8 D_800F33D8[];
 extern s16 D_800F6650;
