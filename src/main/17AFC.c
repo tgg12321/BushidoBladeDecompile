@@ -3800,14 +3800,10 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
     return 0 < SPAD->unk2B8.rec.unkC8.y;
 }
 
-/* GTE islands: the PsyQ 4.5 inline_c.h macro bodies gte_SetRotMatrix,
- * gte_ldlv0, gte_rtv0 (MVMVA `.word 0x4A486012`), gte_stlvnl (owner Ruling A
- * 2026-09-02, cop2-addressing-preamble-cluster); the three operand islands
- * (gte_SetRotMatrix, gte_ldlv0, gte_stlvnl) carry the materialize-then-copy
- * preamble the widened cop2 owner grant of 2026-09-01 covers
- * (cop2-addressing-preamble-cluster). `vec` is one local for the gte_ldlv0
- * (long-VECTOR gte_ldv0) and gte_stlvnl operands, so its address is
- * materialized once. */
+/* Starts the record (unk_08 = 1, bone unk_09 = arg1): its matrix is the
+ * rot[] rotation (X, Y, Z) composed with bone unk_09's matrix of
+ * func_80046DEC(), and pos is taken into the bone's frame: less the bone
+ * translation, rotated by the bone matrix, then halved. */
 void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     s32 mat_local[8];
     s32 *mat_tbl;
@@ -3842,46 +3838,11 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     arg0->pos.y -= s2_ptr[6];
     arg0->pos.z -= s2_ptr[7];
 
-    /* gte_SetRotMatrix(r0) -- PsyQ 4.5 inline_c.h: the 5 packed
-     * rotation-matrix words into cop2 control $0..$4. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lw     $13, 0($12)\n"
-        "lw     $14, 4($12)\n"
-        "ctc2   $13, $0\n"
-        "ctc2   $14, $1\n"
-        "lw     $13, 8($12)\n"
-        "lw     $14, 12($12)\n"
-        "lw     $15, 16($12)\n"
-        "ctc2   $13, $2\n"
-        "ctc2   $14, $3\n"
-        "ctc2   $15, $4\n"
-        :: "r"(mat_local) : "$12", "$13", "$14", "$15");
+    gte_SetRotMatrix(mat_local);
     vec = &arg0->pos;
-    /* gte_ldlv0(r0) -- PsyQ 4.5 inline_c.h:101-110: VX0/VY0 packed into
-     * one word, VZ0 into $1; the 2-cycle GTE load delay as explicit nops. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lhu    $14, 4($12)\n"
-        "lhu    $13, 0($12)\n"
-        "sll    $14, $14, 16\n"
-        "or     $13, $13, $14\n"
-        "mtc2   $13, $0\n"
-        "lwc2   $1, 8($12)\n"
-        "nop\n"
-        "nop\n"
-        :: "r"(vec) : "$12", "$13", "$14");
-    /* PsyQ 4.5 inline_c.h macro gte_rtv0(): MVMVA sf=1, mx=rotation,
-     * v=V0, cv=none (`.word 0x4A486012`). */
-    __asm__ volatile(".word 0x4A486012");
-    /* PsyQ 4.5 inline_c.h macro gte_stlvnl(r0) in the `move $12,%0`
-     * spelling: MAC1/MAC2/MAC3 ($25/$26/$27) to r0. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "swc2   $25, 0($12)\n"
-        "swc2   $26, 4($12)\n"
-        "swc2   $27, 8($12)\n"
-        :: "r"(vec) : "$12");
+    gte_ldlv0(vec);
+    gte_rtv0();
+    gte_stlvnl(vec);
 
     /* Halve x, y, z (signed arithmetic shift). */
     arg0->pos.x >>= 1;
@@ -3889,16 +3850,10 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     arg0->pos.z >>= 1;
 }
 
-/* GTE rotate+translate of the object's local vector, then dispatch.
- * GTE islands: the PsyQ 4.5 inline_c.h macros gte_SetRotMatrix, gte_ldlv0,
- * gte_rtv0 (MVMVA `.word 0x4A486012`), gte_stlvnl; the three operand islands
- * use the older-SDK `move $12,%0` materialize-then-copy spelling (owner cop2
- * cluster grant,
- * cop2-addressing-preamble-cluster); gte_ldlv0's lhu/lhu/sll/or pack is the
- * macro's own text (inline_c.h:101-110; owner Ruling A 2026-09-02,
- * cop2-addressing-preamble-cluster). One
- * FAKE: the do-while(0) wrap around gte_stlvnl (see its annotation;
- * without it score 13). */
+/* Rotates the object's local vector (pos) by bone unk_09's matrix of
+ * func_80046DEC() and adds that matrix's translation, composes the bone
+ * matrix with the object's, and hands the point and the angles
+ * func_8002F2D0 reads from that matrix to func_80049718 / func_800393C8. */
 void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
     s16 var_1[4];
@@ -3910,51 +3865,10 @@ void func_800300B4(Obj80106A78 *arg0) {
     mat_tbl = func_80046DEC(arg0->owner < 1);
     mat = (MATRIX *)mat_tbl[arg0->unk_09];
 
-    /* PsyQ 4.5 inline_c.h macro gte_SetRotMatrix(r): the 5 packed
-     * rotation-matrix words into cop2 control R11R12..R33. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lw     $13, 0($12)\n"
-        "lw     $14, 4($12)\n"
-        "ctc2   $13, $0\n"
-        "ctc2   $14, $1\n"
-        "lw     $13, 8($12)\n"
-        "lw     $14, 12($12)\n"
-        "lw     $15, 16($12)\n"
-        "ctc2   $13, $2\n"
-        "ctc2   $14, $3\n"
-        "ctc2   $15, $4\n"
-        :: "r"(mat) : "$12", "$13", "$14", "$15");
-    /* gte_ldlv0(r) -- PsyQ 4.5 inline_c.h:101-110: the VECTOR at r into V0
-     * (vx/vy packed into VXY0, vz into VZ0); then the 2-cycle GTE load delay
-     * and gte_rtv0() (MVMVA sf=1, rotation x V0, no translation). */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lhu    $14, 4($12)\n"
-        "lhu    $13, 0($12)\n"
-        "sll    $14, $14, 16\n"
-        "or     $13, $13, $14\n"
-        "mtc2   $13, $0\n"
-        "lwc2   $1, 8($12)\n"
-        "nop\n"
-        "nop\n"
-        :: "r"(&arg0->pos) : "$12", "$13", "$14");
-    /* PsyQ 4.5 inline_c.h macro gte_rtv0(): MVMVA sf=1, mx=rotation,
-     * v=V0, cv=none (cop2 command 0x0486012). */
-    __asm__ volatile(".word 0x4A486012");
-    /* PsyQ 4.5 inline_c.h macro gte_stlvnl(r): MAC1/MAC2/MAC3
-     * ($25/$26/$27) to r. */
-    /* FAKE: do-while(0) around gte_stlvnl weights &mac's refs so it
-     * takes $s2 ahead of arg0; without it score 13
-     * (do-while-zero-exception) */
-    do {
-        __asm__ volatile(
-            "move   $12, %0\n"
-            "swc2   $25, 0($12)\n"
-            "swc2   $26, 4($12)\n"
-            "swc2   $27, 8($12)\n"
-            :: "r"(mac) : "$12", "memory");
-    } while (0);
+    gte_SetRotMatrix(mat);
+    gte_ldlv0(&arg0->pos);
+    gte_rtv0();
+    gte_stlvnl(mac);
 
     /* Add the matrix translation to the rotated vector. */
     mac[0] += mat->t[0];
@@ -4544,46 +4458,11 @@ void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
     RotMatrixY(angle1, mat);
     RotMatrixX(angle2, mat);
 
-    /* gte_SetRotMatrix(r): the 5 packed rotation-matrix words into cop2
-     * control $0..$4 (as in func_800203B4 / func_8002E838). */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lw     $13, 0($12)\n"
-        "lw     $14, 4($12)\n"
-        "ctc2   $13, $0\n"
-        "ctc2   $14, $1\n"
-        "lw     $13, 8($12)\n"
-        "lw     $14, 12($12)\n"
-        "lw     $15, 16($12)\n"
-        "ctc2   $13, $2\n"
-        "ctc2   $14, $3\n"
-        "ctc2   $15, $4\n"
-        :: "r"(mat) : "$12", "$13", "$14", "$15");
+    gte_SetRotMatrix(mat);
     vec = &ent->vel;
-    /* PsyQ libgte inline macro gte_ldlv0(r) (the long-vector gte_ldv0) ---
-     * pack VX0/VY0 into one word, mtc2 to $0, lwc2 VZ0 into $1, then the
-     * 2-cycle GTE load delay. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lhu    $14, 4($12)\n"
-        "lhu    $13, 0($12)\n"
-        "sll    $14, $14, 16\n"
-        "or     $13, $13, $14\n"
-        "mtc2   $13, $0\n"
-        "lwc2   $1, 8($12)\n"
-        "nop\n"
-        "nop\n"
-        :: "r"(vec) : "$12", "$13", "$14");
-    /* GTE MVMVA sf=1, mx=rotation, v=V0, cv=none --- cop2 command 0x0486012. */
-    __asm__ volatile(".word 0x4A486012");
-    /* PsyQ libgte inline macro gte_stlvnl(r) --- store MAC1/MAC2/MAC3
-     * ($25/$26/$27) to r (rotated vector written back in place). */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "swc2   $25, 0($12)\n"
-        "swc2   $26, 4($12)\n"
-        "swc2   $27, 8($12)\n"
-        :: "r"(vec) : "$12", "memory");
+    gte_ldlv0(vec);
+    gte_rtv0();
+    gte_stlvnl(vec);
 
     if ((u32)(angle1 - 0x401) < 0x7FFU) {
         ent->vel.x /= 8;
