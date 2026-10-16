@@ -281,3 +281,60 @@ address never takes $t9, and every N that adds pressure also adds a frame.
 with a FAKE carrier, and all were measured on the same single-store chassis or on diagnostic
 pressure chassis. Nothing is void. The baseline re-measured at score 4 (operand-only $t9/$v0 seat +
 source-level trailing nop): `tmp/grind/func_80052C10/s5/baseline_diff.txt`.
+
+## s5b (synthesis, after the 2026-10-16 00:36 Judge ruling) — the Judge's TU-boundary shape, measured
+
+The Judge (docs/grind/decisions.md:1380) FAILed the canonical grant and named one C shape to test: the
+trailing nop as a TU boundary, with func_80052C10 ending its own object at 0x80052C24 and an
+"8-aligned next object" starting at 0x80052C28. It also argued the pad "does not fit the asmpsx 16-byte
+module pad" because 0x80052C28 is not 16-aligned. Both grounds were measured this session.
+
+- **No link mechanism 8-aligns an object start (original binary).** `tmp/grind/func_80052C10/s5/tu_boundary_census.py`
+  over build/bb2.map (link order mirrors the original): of 225 non-empty .text objects, 102 start at
+  4 mod 8 with no pad before them. 60+ of those are LIBSCAN-verbatim PsyQ modules whose boundaries are
+  the original's own (libc2 rand/strcpy/prnt, libgte msc*/mtx_*/reg*/smp_*/fgo_*, libsnd ssend/scsmvol/...,
+  libspu s_i/s_ini/..., libapi a07/a10/a13/c57). PSYLINK concatenated objects at 4-byte granularity
+  (docs/grind/rodata-align-2026-09-30.md, "PSYLINK concatenated modules at 4-byte granularity").
+  An object boundary at 0x80052C24 would therefore have put func_80052C28 at 0x80052C24, not 0x80052C28.
+  Output: `tmp/grind/func_80052C10/s5/tu_boundary_census.txt`.
+- **Scratch link (tmp/grind/func_80052C10/s5/link.sh, link_out.txt).** a.o = func_80052C10 compiled from
+  `*(vu32 *)0x1F800400 = 0;` (cc1 -O2 -G0 -mel -msoft-float, maspsx, as), b.o = a stub func_80052C28.
+  With the repo's link model (bb2.ld `.main ... SUBALIGN(2)`, bb2.ld:36): b lands at 0x80052C24, no pad.
+  With GNU ld's default (as emits .text 2**4 for every object; 250/250 build objects carry 2**4): b lands
+  at 0x80052C30, a three-word pad, not one. With an explicit `. = ALIGN(8)`: still 0x80052C30 (b's own
+  2**4 dominates). No link model the repo has, or the original evidently had, yields one word at 0x80052C24.
+  Reaching it needs a hand-chosen per-object 8-byte alignment that no other object in the binary shows,
+  which is the speculative-boundary case .claude/rules/rodata-object-alignment.md:48-49 bans.
+- **The asmpsx 16-byte pad is module-relative, so 0x80052C28 not being 16-aligned does not exclude it.**
+  The other ten jr;nop;nop functions (all Sony asmpsx modules) end at ABSOLUTE addresses that are not
+  16-aligned: LoadAverageCol 0x8007E43C, Lzc 0x8007F21C, MulMatrix 0x8007EC5C, MulMatrix0 0x8007E5EC,
+  MulMatrix2 0x8007ED6C, ReadGeomScreen 0x8007EF9C, RotMatrix 0x8007F5EC, RotMatrixZYX 0x8007F87C,
+  SetGeomScreen 0x8007F00C (all 12 mod 16); _remove_ChgclrPAD 0x80079120 (0 mod 16). E.g. mtx_03.o
+  (MulMatrix) runs 0x8007EB4C..0x8007EC5C = 0x110 = 17x16 bytes: padded relative to its own start. For
+  func_80052C10's word the module start must be 8 mod 16. Two function starts in the 3AB48 run qualify:
+  gte_SetMatrixRotTransIRVec 0x80052A88 (module of 0x1A0 = 26x16 bytes through 0x80052C28) and
+  math_LerpSVector 0x80052788 (0x4A0 = 74x16). Every function from 0x80052A88 to 0x80052C4C is already
+  INCLUDE_ASM/hand-asm in src/main/3AB48.c:107-121. So the asmpsx-module reading fits the bytes exactly,
+  contrary to the ruling's (a) objection.
+- Baseline unchanged: score 4, hunk1 operand-only ($t9 vs $v0), hunk2 source-level (missing nop):
+  `tmp/grind/func_80052C10/s5/baseline_diff_postruling.txt`. No FAKE construct in the candidate (fake_ablate: nothing to ablate).
+- **scan_hand_coded over the run (tmp/grind/func_80052C10/s5/run_scan.txt).** math_LerpSVector STRONG
+  (S9), math_LerpMatrix3x3 STRONG (S9), func_80052C28 STRONG (S9); gte_MulMatrix0ClearTrans,
+  gte_SetMatrixRotTransIR, gte_SetMatrixRotTransIRVec, gte_SetRotTransMatrix,
+  gte_SetRotMatrixClearTrans, func_80052B7C all LOW. math_LerpSVector (0x80052788) is one of the two
+  module starts the module-relative pad allows, and it carries a gate-class signal of its own: a
+  hand-asm module 0x80052788..0x80052C28 (74x16 bytes, pad word = func_80052C10's last word) fits
+  the bytes, with func_80052C28 (STRONG) starting the next object. Per the ruling, neighbours'
+  signals do not transfer to func_80052C10's own tier, so this is evidence, not a grant.
+
+- [s5] sandbox --disable all --diff on candidate.c: score 4, 6 vs 5 insns, hunk1 operand-only ($t9/$v0), hunk2 source-level (trailing nop): tmp/grind/func_80052C10/s5/baseline_diff_postruling.txt
+
+- [s5] 102/225 linked .text objects start at 4 mod 8, including 60+ verbatim PsyQ modules: the original link concatenated at 4-byte granularity (tmp/grind/func_80052C10/s5/tu_boundary_census.txt)
+
+- [s5] The repo link model (bb2.ld:36 SUBALIGN(2)) inserts no pad at an object boundary; GNU default gives 3 words, ALIGN(8) gives 3 words; none gives 1 (tmp/grind/func_80052C10/s5/link_out.txt)
+
+- [s5] Sony asmpsx 16-byte pads are module-relative: 9 of 10 jr;nop;nop Sony modules end at 12 mod 16
+
+- [s5] A hand-asm module 0x80052788 (math_LerpSVector, STRONG S9) .. 0x80052C28 is 74x16 bytes, so func_80052C10's last word is that module's pad; func_80052C28 (STRONG S9) starts the next object (tmp/grind/func_80052C10/s5/run_scan.txt)
+
+- [s5] func_80052C10's own scan_hand_coded tier is still LOW; per the ruling, neighbours' signals do not transfer, so the canonical grant stays unavailable without a new signal class

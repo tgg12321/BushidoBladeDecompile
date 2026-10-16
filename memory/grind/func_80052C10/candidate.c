@@ -8,6 +8,9 @@
  * scan_hand_coded LOW/0 finding that argues against this being hand asm.
  * s5: the trailing nop is the asmpsx-module signature (only 11 functions in the
  * binary end jr;nop;nop, and the other 10 are Sony asm modules); see evidence.md s5.
+ * s5b: the Judge's TU-boundary shape (8-aligned next object) is falsified: 102
+ * objects start at 4 mod 8 in the original link; the module-relative 16-pad fits
+ * a module starting at 0x80052A88. Still score 4; do not land.
  */
 void func_80052C10(void)
 {

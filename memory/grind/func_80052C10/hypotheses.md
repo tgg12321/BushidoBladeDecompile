@@ -236,3 +236,46 @@ Frontier for s6:
    a caller?) explains both the $t9 seat and the extra word. No caller evidence supports it (s1).
 3. Teach scan_hand_coded a "jr;nop;nop tail" signal. That is tools work, outside the Grinder surface,
    and is noted for the operator.
+
+## [s5b] The trailing nop is an inter-object pad from an object boundary at 0x80052C24 with the next object 8-aligned at 0x80052C28 (Judge-directed shape, decisions.md:1380).
+- mechanism: link-time alignment of func_80052C28's object would insert one nop word after func_80052C10's 5-insn C body.
+- probe: (1) census of object .text start phases in build/bb2.map (tu_boundary_census.py); (2) scratch link of a C-compiled func_80052C10 object + stub next object under the repo SUBALIGN(2) model, GNU default, and explicit ALIGN(8) (link.sh).
+- result: 102/225 objects (60+ verbatim PsyQ modules) start at 4 mod 8 with no pad, so the original link did not 8-align object starts. Scratch link: SUBALIGN(2) -> next object at 0x80052C24 (no pad); default -> 0x80052C30 (3 words); ALIGN(8) -> 0x80052C30. No model gives the single word.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c single-store body `*(vu32 *)0x1F800400 = 0;` as its own object, no FAKE construct, scratch link in tmp/grind/func_80052C10/s5/ (sub2.ld / natural.ld / align8.ld), plus bb2.map object-start census
+
+## [s5b] The asmpsx module 16-byte pad excludes func_80052C10 because 0x80052C28 is not 16-aligned (the ruling's objection to evidence (a)).
+- mechanism: the ruling read the pad as absolute 16-byte alignment.
+- probe: absolute end addresses of the ten Sony asmpsx jr;nop;nop functions (tu_boundary_census.txt).
+- result: nine end at 12 mod 16 and one at 0 mod 16; the pad is relative to each module's start. A module starting at gte_SetMatrixRotTransIRVec 0x80052A88 (or math_LerpSVector 0x80052788) ends exactly at 0x80052C28 after padding. The objection does not hold.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: build/bb2.map symbol addresses + asm/funcs/*.s insn counts for the 11 jr;nop;nop functions; no C candidate involved
+
+## s5b frontier reset
+1. The C side is unchanged: the $t9 seat still needs a frame-free chassis no session has found (s2 global pressure and s5 block-local pressure both add frames). Untried: a body with many values live across the store that GCC keeps in call-clobbered regs only, e.g. args a0-a3 + returned v0/v1 live through, which the s1 caller evidence argues against (void(void) sink).
+2. Tools (operator, outside the Grinder surface): a scan_hand_coded signal for "module-relative 16-pad word after jr's delay slot" would turn the s5/s5b evidence into a gate-class signal; the ruling says a new signal class needs owner approval.
+3. Pin the module start: test which of 0x80052788 / 0x80052A88 begins the hand-asm module (e.g. whether math_LerpSVector/math_LerpMatrix3x3 carry compiled-C signatures); a boundary there is real TU-boundary evidence under rodata-object-alignment.md "New TU boundaries".
+
+## [s5] The trailing nop is an inter-object pad from an object boundary at 0x80052C24 with func_80052C28's object 8-aligned at 0x80052C28 (the Judge's named shape, decisions.md:1380).
+- mechanism: link-time alignment of the next object would put one nop word after func_80052C10's 5-insn compiled body.
+- probe: Census of object .text start phases in build/bb2.map (tu_boundary_census.py), and a scratch link of a C-compiled func_80052C10 object plus a stub next object under the repo SUBALIGN(2) model, GNU ld default, and an explicit ALIGN(8) (link.sh).
+- result: 102 of 225 objects (60+ LIBSCAN-verbatim PsyQ modules: libc2, libgte, libsnd, libspu, libapi) start at 4 mod 8 with no pad, so the original PSYLINK did not 8-align object starts. Scratch link: SUBALIGN(2) puts the next object at 0x80052C24 (no pad); GNU default at 0x80052C30 (3 words, from as's 2**4 .text alignment); ALIGN(8) also 0x80052C30. None gives the one word. Getting it needs a per-object 8-alignment no other object shows, which is the speculative-boundary case rodata-object-alignment.md:48-49 bans.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c single-store body `*(vu32 *)0x1F800400 = 0;` compiled as its own object, no FAKE construct, scratch links tmp/grind/func_80052C10/s5/{sub2,natural,align8}.ld, plus bb2.map object-start census
+
+## [s5] The asmpsx module 16-byte pad cannot explain func_80052C10's trailing word because 0x80052C28 is not 16-aligned (the ruling's objection to the tail-census evidence).
+- mechanism: the ruling read Sony's module pad as absolute 16-byte alignment.
+- probe: Absolute end addresses of the ten Sony asmpsx jr;nop;nop functions, and the module sizes from candidate starts in the 3AB48 run.
+- result: Nine of the ten Sony modules end at 12 mod 16 (e.g. mtx_03.o 0x8007EB4C..0x8007EC5C = 17x16), so the pad is module-relative. A module starting at math_LerpSVector 0x80052788 (74x16 bytes) or gte_SetMatrixRotTransIRVec 0x80052A88 (26x16) ends exactly at 0x80052C28. math_LerpSVector carries its own STRONG S9 scan signal, and func_80052C28 (STRONG S9) would start the next object. The objection does not hold.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: build/bb2.map symbol addresses and asm/funcs/*.s instruction counts for the 11 jr;nop;nop functions plus scan_hand_coded --single over the 3AB48 run; no C candidate involved
+
+## [s5] Kill re-audit: no banked instance kill of func_80052C10 was measured with a FAKE carrier, so none is void on the current chassis.
+- mechanism: fake_ablate on the banked candidate plus a fresh baseline diff.
+- probe: tools/fake_ablate.py on candidate.c (nothing to ablate) and sandbox --disable all --diff on candidate.c this session.
+- result: Score 4, the same two hunks as s1-s4: operand-only $t9 vs $v0, source-level missing trailing nop. Every banked kill stands as measured.
+- verdict: CONFIRMED

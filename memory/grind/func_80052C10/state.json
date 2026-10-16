@@ -1,8 +1,8 @@
 {
  "func": "func_80052C10",
  "file": "main/3AB48",
- "session_count": 4,
- "current_modality": "enumerate",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 4,
    "modality": "enumerate",
    "headline": "Enumerate modality: 16-spelling systematic sweep of the single-store body (decl order/inline, address/value/cast forms, volatile spelling, trailing return) all score 4/5-insns identically -- zero-hit,"
+  },
+  {
+   "session": 5,
+   "floor": 4,
+   "modality": "synthesis",
+   "headline": "Judge-directed TU-boundary shape measured and falsified (original links objects at 4-byte granularity; scratch link gives 0 or 3 pad words, never 1); ruling's 16-align objection refuted (asmpsx pad is"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Trailing double-nop after jr $ra is source-level, unexplained by any lever tried so far (recon, structural, unguided permuter search across two chassis, and now an exhaustive spelling sweep all fail to reach it).",
-   "mechanism": "unknown; not inter-object padding, not GTE/cop2 latency, not reachable by any spelling of this chassis or single-step AST mutation from either byte-equivalent chassis",
-   "next_probe": "Grep other matched leaf functions in this codebase for a jr $ra; nop; nop (double-nop) 6+-insn shape and read their matched C to see what source construct, if any, produces a second nop after the return in a leaf void function -- a targeted grep/read task, not something either the permuter's mutation set or this session's spelling enumeration (both exhausted on the current one-statement chassis) can express."
+   "hypothesis": "A frame-free C chassis puts the 0x1F800400 address in $t9 (the remaining operand-only hunk).",
+   "mechanism": "global.c's ascending order puts $s0-$s7 before $t8/$t9; s2 (global) and s5 (block-local) pressure both added frames or spills.",
+   "next_probe": "Hand-write a chassis where only call-clobbered values (a0-a3 params, v0/v1) are live across the store, measured with dump.ps1 .greg; caller evidence (void(void) sink) argues against it, so treat it as the last C axis."
   },
   {
-   "hypothesis": "A differently-shaped pressure chassis (e.g. 22+ live call-clobbered temporaries with no $s0-$s7 involvement) might reach $t9 without the save/restore overhead s2's chassis incurred.",
-   "mechanism": "global.c allocation order is fixed (ascending, no REG_ALLOC_ORDER), but which hard regs get claimed depends on which pseudos conflict; s2 only tried one liveness-shaping idiom and this session's spelling sweep stayed within the single-statement chassis's declaration/order/value variants, none of which change live-range count or shape.",
-   "next_probe": "Hand-write (not permute/enumerate) a chassis using genuinely call-clobbered-only values with no calls, forcing the compiler toward $t0-$t9 before $s0-$s7 if any such ordering exists; needs tools/sweep_variants.py over hand-written variants of a structurally different (not just differently-spelled) chassis."
+   "hypothesis": "A scan_hand_coded signal for a module-relative pad word after the final jr's delay slot would give func_80052C10 a gate-class STRONG tier of its own.",
+   "mechanism": "the 11-function jr;nop;nop census: the other 10 are Sony asmpsx modules, and the module-relative pad fits a module 0x80052788..0x80052C28.",
+   "next_probe": "Operator/owner work outside the Grinder surface (tools/scan_hand_coded.py; a new signal class needs owner approval per the ruling)."
   },
   {
-   "hypothesis": "Re-weigh the canonical-asm grant -- two permuter campaigns (85k+ iterations) plus a 16-way exhaustive spelling sweep finding nothing is additional evidence against a small natural-C body reaching the target bytes.",
-   "mechanism": "n/a -- policy/evidence question",
-   "next_probe": "If the next session's hand-written alternate-pressure-chassis sweep (frontier item 2) also fails, that is four independent methodologies (hand analysis, two permuter chassis, exhaustive spelling enumeration) agreeing -- stronger basis for a ruling-request, though still not conclusive since frontier item 2's specific shape remains untested."
+   "hypothesis": "The hand-asm module containing func_80052C10 starts at math_LerpSVector 0x80052788 (the alternative start is 0x80052A88).",
+   "mechanism": "module-relative 16-pad: both starts are 8 mod 16; LerpSVector and LerpMatrix3x3 are STRONG S9, the gte_* functions between are LOW.",
+   "next_probe": "Check whether gte_SumSquares3 (0x80052754, ends at 0x80052788) closes a compiled or asm object (pad or trap signatures), to pin the boundary as evidence under rodata-object-alignment.md New TU boundaries."
   }
  ],
  "judge_constraints": [
@@ -98,6 +104,22 @@
    "measured_on": "16 syntactic spellings of the single-statement MMIO-store body (declaration/order/address/cast/value/trailing-statement axes), no FAKE construct, no register pin, tools/sweep_variants.py this session",
    "predicate_cite": "",
    "result": "Every one of the 16 variants scored identically: score 4, build_insns 5, same two-hunk diff (operand-only $t9/$v0 regist"
+  },
+  {
+   "session": 5,
+   "statement": "The trailing nop is an inter-object pad from an object boundary at 0x80052C24 with func_80052C28's object 8-aligned at 0x80052C28 (the Judge's named shape, decisions.md:1380).",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c single-store body `*(vu32 *)0x1F800400 = 0;` compiled as its own object, no FAKE construct, scratch links tmp/grind/func_80052C10/s5/{sub2,natural,align8}.ld, plus bb2.map object-start cen",
+   "predicate_cite": "",
+   "result": "102 of 225 objects (60+ LIBSCAN-verbatim PsyQ modules: libc2, libgte, libsnd, libspu, libapi) start at 4 mod 8 with no p"
+  },
+  {
+   "session": 5,
+   "statement": "The asmpsx module 16-byte pad cannot explain func_80052C10's trailing word because 0x80052C28 is not 16-aligned (the ruling's objection to the tail-census evidence).",
+   "kill_scope": "instance",
+   "measured_on": "build/bb2.map symbol addresses and asm/funcs/*.s instruction counts for the 11 jr;nop;nop functions plus scan_hand_coded --single over the 3AB48 run; no C candidate involved",
+   "predicate_cite": "",
+   "result": "Nine of the ten Sony modules end at 12 mod 16 (e.g. mtx_03.o 0x8007EB4C..0x8007EC5C = 17x16), so the pad is module-relat"
   }
  ],
  "ladder_skip": 0,
