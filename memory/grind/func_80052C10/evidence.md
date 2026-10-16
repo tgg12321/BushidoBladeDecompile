@@ -380,3 +380,57 @@ module pad" because 0x80052C28 is not 16-aligned. Both grounds were measured thi
 - [s8] m2c, decomp.me corpus search, and two additional sibling-asm transplant checks (func_800520B8, func_80060E38) beyond the already-read func_80052B7C all independently reproduce or corroborate findings already banked in s1-s7 (recon/structural/solver/forensics) -- no novel C-level mutation axis surfaced this session.
 
 - [s8] docs/grind/decisions.md 2026-10-16 00:36 ruling (cross-knowledge hit) already FAILed the canonical-asm re-audit for this exact function: scan_hand_coded has no S1-S12 gate-class hit; this session did not re-attempt that gate.
+
+- [s9] OBJECT MODEL: func_80052C10's full body touches exactly one memory operand
+  (`*(vu32 *)0x1F800400 = 0;`) and references ZERO named globals -- no `D_*`/`g_*`
+  symbol, no struct field, no array index. Per-symbol verdict table (the only row
+  possible, since the body has no other operand):
+    - literal address 0x1F800400: MATCHES (no mismatch). Checked whether this
+      address falls inside any declared scratchpad model: include/game.h:1017-1077
+      defines `Unk1F800000Rec` (51268's view of the scratchpad from 0x1F800000),
+      whose last member `unkB8` is `Unk1F8000B8Union` (game.h:1017-1025), a union
+      with `u8 raw[0x400 - 0xB8]`. sizeof(Unk1F800000Rec) = 0xB8 + (0x400-0xB8) =
+      0x400 bytes exactly, spanning 0x1F800000..0x1F8003FF. 0x1F800400 is the first
+      byte PAST that struct's end, not a field inside it -- confirmed by address
+      arithmetic (0x1F800000 + 0x400 = 0x1F800400), not inference. 17AFC's
+      `ScrPad`/sibling view (game.h:1169-1170, 0x1F8002B8..0x1F8003FF) ends at the
+      same boundary. grep across named_syms.txt / symbol_addrs.txt /
+      undefined_syms_auto.txt for "1F800400": zero hits -- no census entry claims
+      this address as a struct member or array element anywhere in the project.
+      grep across src/main/*.c for "0x1F8004": zero other hits -- func_80052C10 is
+      the only code in the whole project that touches this address, so there is no
+      sibling-use evidence of a different intended shape either.
+  CONCLUSION: there is no aggregate to declare here and no split-scalar/offset-cast
+  to correct (the split-scalars-hide-aggregate / header-type-correction levers do
+  not apply -- there is nothing to merge or retype). The existing bare-literal
+  `*(vu32 *)0x1F800400 = 0;` form is already the correct, simplest declaration;
+  object-model audit surfaces no new lever.
+  PREMISES the flat floor=4 argument rests on, stated explicitly for future
+  attack: (1) the residual's only two hunks are the $t9 register seat for this
+  store's address computation (operand-only, s1/s6/s8) and the missing trailing
+  `nop` after `jr $ra` (source-level/not-scored boundary question, s5); (2) no
+  global/struct is involved in either hunk -- (1)'s register seat is a pure
+  codegen question over a literal constant, and (2)'s trailing nop is a
+  TU/linker-boundary question (s5), so object-model correction cannot touch
+  either hunk; (3) per s6's solver class-kill, the $t9 seat requires >=23 live
+  scratch pseudos under ascending register allocation with a save/restore frame,
+  which a 1-statement function cannot organically generate without a FAKE
+  pressure-inflation construct (not attempted: no sanctioned family covers
+  inventing >=18 new live locals in a function that uses none).
+  measured_on: include/game.h:1017-1077 struct definitions (static read); grep
+  census over named_syms.txt/symbol_addrs.txt/undefined_syms_auto.txt/src/main/*.c
+  for "1F800400"/"0x1F8004" (zero hits beyond func_80052C10 itself); no chassis
+  change, no FAKE construct, sandbox re-confirms floor 4 unchanged
+  (tmp/grind/func_80052C10/s9/sandbox_candidate.json).
+
+- [s9] OBJECT MODEL audit (mandated this session): func_80052C10's body has exactly one memory operand and ZERO named-global references -- no D_*/g_* symbol, struct field, or array index anywhere in the function.
+
+- [s9] 0x1F800400 = 0x1F800000 + sizeof(Unk1F800000Rec) exactly (0xB8 + (0x400-0xB8) = 0x400); the write targets the word immediately past the declared scratchpad struct's end, not any field within it.
+
+- [s9] grep for '1F800400' across named_syms.txt, symbol_addrs.txt, undefined_syms_auto.txt: zero hits. grep for '0x1F8004' across src/main/*.c: zero hits outside this function's own asm/permuter artifacts. No other code in the project touches this address, so there is no transplantable sibling shape.
+
+- [s9] Per the OBJECT-MODEL AUDIT directive's own precedent case (func_80033550, three per-word scalars that were really one 12-byte record): that pattern requires >=2 adjacent/related scalar accesses to merge into an aggregate. func_80052C10 has only ONE access to ONE address with no sibling access anywhere -- the precedent's structural precondition (multiple splat accesses implying a hidden record) is absent here, so the aggregate-merge family does not apply by its own terms, not merely by an unexamined default.
+
+- [s9] Sandbox re-measurement of the banked candidate.c this session: score 4/6 (target_insns=6, build_insns=5), identical to s1-s8 -- confirms no regression and no improvement from the audit.
+
+- [s9] The flat floor's residual (register seat $t9 for the store address + the missing trailing nop) involves no global/struct at all: the $t9 seat is a codegen question over a literal constant (not a global), and the trailing nop is a TU/linker-boundary question (s5) -- object-model correction has no surface to act on for either hunk.

@@ -478,3 +478,11 @@ Forensics found a single, simple producer for the exact target bytes: a reorder-
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: read-only asm census, no chassis change, no FAKE construct
+
+## [s9] The literal address 0x1F800400 in func_80052C10's store corresponds to a field inside an existing declared struct (Unk1F800000Rec / its Unk1F8000B8Union tail) that should be accessed via that struct instead of a raw cast, per the split-scalars-hide-aggregate / header-type-correction levers.
+- mechanism: aggregate-merge-family / header-type-correction-from-use-sites: a mistyped or under-modeled global accessed through a raw offset cast instead of its real declared type
+- probe: Read include/game.h:1017-1077 (Unk1F8000B8Union, Unk1F800000Rec) and compute sizeof(Unk1F800000Rec) = 0xB8 + sizeof(Unk1F8000B8Union.raw[0x400-0xB8]) = 0x400; compare against 0x1F800400 - 0x1F800000 = 0x400. Cross-check with grep over named_syms.txt/symbol_addrs.txt/undefined_syms_auto.txt/src/main/*.c for '1F800400' and '0x1F8004'.
+- result: sizeof(Unk1F800000Rec) is exactly 0x400, so the struct spans 0x1F800000..0x1F8003FF and 0x1F800400 is the first byte PAST its end, not a member inside it. Zero census hits and zero other source references to 0x1F800400 anywhere in the project -- func_80052C10 is the only code that touches this address, so no sibling evidence suggests a different intended shape either. The bare-literal `*(vu32 *)0x1F800400 = 0;` is already the correct, simplest declaration; no struct exists to redeclare through.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: include/game.h:1017-1077 struct definitions (static read) + grep census over named_syms.txt/symbol_addrs.txt/undefined_syms_auto.txt/src/main/*.c for '1F800400'/'0x1F8004' (zero hits beyond this function); candidate.c unchanged; sandbox re-confirms floor 4, no chassis change, no FAKE construct

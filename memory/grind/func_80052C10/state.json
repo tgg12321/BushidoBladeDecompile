@@ -1,8 +1,8 @@
 {
  "func": "func_80052C10",
  "file": "main/3AB48",
- "session_count": 8,
- "current_modality": "rederive",
+ "session_count": 9,
+ "current_modality": "object-model",
  "floor_history": [
   {
    "session": 1,
@@ -51,18 +51,24 @@
    "floor": 4,
    "modality": "rederive",
    "headline": "Rederive modality (m2c, decomp.me corpus, sibling transplant) found nothing new; floor stays 4, residual still the $t9 seat + trailing nop confirmed by --diff as operand-only/source-level."
+  },
+  {
+   "session": 9,
+   "floor": 4,
+   "modality": "object-model",
+   "headline": "Object-model audit: func_80052C10 touches zero named globals; its only operand (0x1F800400) is one byte past Unk1F800000Rec's declared end, confirmed by address arithmetic -- no aggregate/split-scalar"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_80052C10 is a reorder-mode hand-asm routine (explicit nop after an assembler-filled jr delay slot) with a $t9 seat from its original hand-written form, not reachable by any frame-free pure-C chassis",
+   "hypothesis": "func_80052C10 is a reorder-mode hand-asm routine (explicit nop after an assembler-filled jr delay slot) with a $t9 seat from its original hand-written form, not reachable by any frame-free pure-C chassis.",
    "mechanism": "s7 byte-exact hand-asm reproduction; s6 solver class kill (no $25 RTL producer under -mno-abicalls, frame-free)",
-   "next_probe": "Escalation modality: file the proof-of-foreclosure record per the ladder (>=4 distinct modalities already run: recon, structural, permuter, enumerate, synthesis, solver, forensics, rederive = 8); a new scan_hand_coded signal class needs owner approval and is not a grind lever."
+   "next_probe": "Escalation modality: file the proof-of-foreclosure record per the ladder (>=4 distinct modalities already run: recon, structural, permuter, enumerate, synthesis, solver, forensics, rederive, object-model = 9); a new scan_hand_coded signal class needs owner approval and is not a grind lever."
   },
   {
-   "hypothesis": "Other jr;nop;nop functions (the s5 list of 11) share the reorder-explicit-nop producer",
+   "hypothesis": "Other jr;nop;nop functions (the s5 list of 11) share the reorder-explicit-nop producer.",
    "mechanism": "same author/assembler habit",
-   "next_probe": "Reassemble each as a reorder-mode source with its tail nop explicit and confirm byte equality, to support a future owner-approved signal class"
+   "next_probe": "Reassemble each as a reorder-mode source with its tail nop explicit and confirm byte equality, to support a future owner-approved signal class."
   }
  ],
  "judge_constraints": [
@@ -181,10 +187,19 @@
    "measured_on": "read-only asm census, no chassis change, no FAKE construct",
    "predicate_cite": "",
    "result": "Both t9 sequences carry explicit \"/* handwritten instruction */\" markers and feed jr $t9 computed-goto dispatch; structu"
+  },
+  {
+   "session": 9,
+   "statement": "The literal address 0x1F800400 in func_80052C10's store corresponds to a field inside an existing declared struct (Unk1F800000Rec / its Unk1F8000B8Union tail) that should be accessed via that struct i",
+   "kill_scope": "instance",
+   "measured_on": "include/game.h:1017-1077 struct definitions (static read) + grep census over named_syms.txt/symbol_addrs.txt/undefined_syms_auto.txt/src/main/*.c for '1F800400'/'0x1F8004' (zero hits beyond this funct",
+   "predicate_cite": "",
+   "result": "sizeof(Unk1F800000Rec) is exactly 0x400, so the struct spans 0x1F800000..0x1F8003FF and 0x1F800400 is the first byte PAS"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "regression",
- "created": "2026-10-16T04:20:03.624698+00:00"
+ "created": "2026-10-16T04:20:03.624698+00:00",
+ "object_model_audited": 9
 }
