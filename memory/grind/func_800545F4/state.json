@@ -1,8 +1,8 @@
 {
  "func": "func_800545F4",
  "file": "main/3AB48",
- "session_count": 3,
- "current_modality": "permuter",
+ "session_count": 4,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -21,13 +21,19 @@
    "floor": 4,
    "modality": "permuter",
    "headline": "No C chassis exists for permuter modality (no_c_body); measured H1's plain-C-global form directly instead, confirming s2's class kill with a build artifact (score null/scorable false, symbol lands as "
+  },
+  {
+   "session": 4,
+   "floor": 4,
+   "modality": "enumerate",
+   "headline": "Enumerate modality inapplicable: no_c_body:true, no C chassis exists to contain an enumerable region; kill re-audit on s3's instance kill via fake_ablate found zero FAKE constructs, reconfirming it un"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H2: reaffirm the existing ASM-WHOLE grant as the owner-mandated re-audit's answer, filing the DECISIVE-evidence block with the s1 cross-reference finding and this session's s2/s3 linker+build confirmation of H1's impossibility.",
+   "hypothesis": "H2: reaffirm the existing ASM-WHOLE grant as the owner-mandated re-audit's answer, filing the DECISIVE-evidence block with s1's cross-reference finding (func_800545F4 and its alabels are only ever lw-loaded as GTE opcode templates by already-decompiled func_80041398, never jal/jr'd) plus s2/s3's class-and-instance-confirmed linker impossibility of any plain-C-global alternative.",
    "mechanism": "Documentation/disposition only, no codegen change -- confirms rather than changes the existing grant.",
-   "next_probe": "Only file in escalation modality (per the standing auto-ruling, this session's modality is permuter, not escalation): write the docs/grind/decisions.md entry and return owner-gated once the driver assigns escalation modality for this function."
+   "next_probe": "File only in escalation modality (per the standing auto-ruling): write the docs/grind/decisions.md entry and return owner-gated once the driver assigns escalation modality for this function."
   }
  ],
  "judge_constraints": [],
@@ -40,6 +46,14 @@
    "measured_on": "this exact u32-globals spelling, on the src/main/3AB48.c chassis as of this session, no FAKE construct present; sandbox output saved to tmp/grind/func_800545F4/s3/sandbox_H1_plainC.log",
    "predicate_cite": "bb2.ld:116",
    "result": "sandbox returned {\"score\": null, \"scorable\": false, \"error\": \"...func_800545F4 not found in tmp/sandbox/func_800545F4/ma"
+  },
+  {
+   "session": 4,
+   "statement": "Enumerate modality's spelling-sweep procedure (identify ONE/TWO blocks of differing instructions inside an existing near-match C candidate, fully-name them, run spelling_enum.py/sweep_variants.py) req",
+   "kill_scope": "instance",
+   "measured_on": "modality-applicability finding on the unedited src/main/3AB48.c chassis as of this session, no FAKE construct present; sandbox output saved to tmp/grind/func_800545F4/s4/sandbox_baseline_s4.log",
+   "predicate_cite": "",
+   "result": "sandbox returned {\"score\": 4, \"scorable\": true, \"no_c_body\": true, \"target_insns\": 4, \"build_insns\": 0} -- identical to "
   }
  ],
  "ladder_skip": 0,

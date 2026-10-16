@@ -129,3 +129,33 @@
 - [s3] Reverted the edit; sandbox func_800545F4 --disable all baseline re-measured at score 4, no_c_body true, matching the dispatch-time chassis check.
 
 - [s3] Rejected form banked at memory/grind/func_800545F4/rejected/plain_c_data_global.c; candidate.c written documenting the function has no improved C form and the body stays INCLUDE_ASM.
+
+## s4 (enumerate)
+
+- Mandated modality `enumerate` requires an existing near-match C candidate with ONE/TWO
+  differing blocks to fully-name and sweep (`spelling_enum.py` + `sweep_variants.py`). This
+  function has `no_c_body: true` (bare `INCLUDE_ASM`, confirmed again this session via
+  `sandbox func_800545F4 --disable all` -> `{"score": 4, "scorable": true, "no_c_body": true,
+  "target_insns": 4, "build_insns": 0}`) — there is no block, differing or otherwise, to name
+  and sweep. No enum/sweep run; nothing to measure.
+- Kill re-audit (required: floor flat 3 sessions, instance kill exists): ran
+  `python3 tools/fake_ablate.py --func func_800545F4 --file main/3AB48 --candidate
+  memory/grind/func_800545F4/rejected/plain_c_data_global.c` -> "no FAKE-annotated constructs
+  found ... nothing to ablate". The s3 instance kill (plain-C-global form -> scorable:false,
+  symbols land as .data type D) was measured with zero FAKE constructs present, so there was
+  no FAKE carrier that could have masked the result — the kill is not weakened by this
+  re-audit, it is reconfirmed clean.
+- [s4] sandbox func_800545F4 --disable all baseline re-measured this session: score 4,
+  no_c_body true, target_insns 4, build_insns 0 -- unchanged from s1/s3
+  (tmp/grind/func_800545F4/s4/sandbox_baseline_s4.log).
+- [s4] fake_ablate.py on the s3 rejected form reports zero FAKE constructs present --
+  confirms the s3 instance kill was not measured through a FAKE carrier that could mask a
+  different result.
+
+- [s4] sandbox func_800545F4 --disable all (unedited chassis, s4): {"score": 4, "scorable": true, "no_c_body": true, "target_insns": 4, "build_insns": 0} -- unchanged from s1/s3, saved to tmp/grind/func_800545F4/s4/sandbox_baseline_s4.log.
+
+- [s4] fake_ablate.py on memory/grind/func_800545F4/rejected/plain_c_data_global.c: no FAKE-annotated constructs found, nothing to ablate -- confirms the s3 instance kill was never masked by a FAKE carrier.
+
+- [s4] candidate.c (unchanged this session) documents the function has no improved C form; body stays INCLUDE_ASM("asm/funcs", func_800545F4); at src/main/3AB48.c:657.
+
+- [s4] The function's only live disposition path is H2 (reaffirm the ASM-WHOLE grant per inline_asm_canonical.txt:112), which requires escalation modality to file per the standing auto-ruling -- this session's modality was enumerate, not escalation.

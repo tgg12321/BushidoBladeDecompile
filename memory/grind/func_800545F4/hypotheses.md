@@ -115,3 +115,51 @@ func_800545F4's disposition.
 - kill_scope: instance
 - measured_on: this exact u32-globals spelling, on the src/main/3AB48.c chassis as of this session, no FAKE construct present; sandbox output saved to tmp/grind/func_800545F4/s3/sandbox_H1_plainC.log
 - predicate_cite: bb2.ld:116
+
+## s4 (enumerate) — modality inapplicable; kill re-audit confirms
+
+**Re-audit of s3's instance kill (required: floor flat 3 sessions).** Re-measured
+`sandbox func_800545F4 --disable all` on the current chassis (no edits): `{"score": 4,
+"scorable": true, "no_c_body": true, ...}` — unchanged from s1/s3. Ran
+`python3 tools/fake_ablate.py --func func_800545F4 --file main/3AB48 --candidate
+memory/grind/func_800545F4/rejected/plain_c_data_global.c`: "no FAKE-annotated constructs
+found ... nothing to ablate" — correct, the rejected form is plain `u32` globals with zero
+FAKE constructs, so there is nothing a FAKE carrier could have masked. The s3 instance kill
+stands un-weakened: it was not measured through a FAKE carrier.
+
+**Enumerate modality's precondition does not hold for this function.** The modality's
+procedure (role prompt SYSTEMATIC SPELLING SWEEP) requires identifying "the ONE block (or at
+most two) where the differing instructions live" inside an EXISTING near-match C candidate,
+then fully-naming that region and sweeping spellings with `spelling_enum.py`/
+`sweep_variants.py`. This function has no C body of any kind to contain such a region —
+`candidate.c` documents (and this session's chassis check confirms, `no_c_body: true`) that
+the entry is still bare `INCLUDE_ASM("asm/funcs", func_800545F4);` with zero lines of C.
+There is no "block where the differing instructions live" to spell, because there is no C at
+all, differing or otherwise — s2's class kill (bb2.ld text/data section grouping forecloses
+any same-TU plain-C-global placement at this mid-.text address) already closed the only
+candidate chassis a spelling sweep could run against. This is the same blocker s3 hit for
+`permuter` modality, now confirmed for `enumerate` modality too: both require a C chassis
+this entry does not have and cannot acquire without overturning s2's class kill (not
+attempted or warranted this session — no new evidence against it surfaced).
+kill_scope: instance (modality-applicability finding, not a codegen measurement — chassis
+unchanged at floor 4, re-confirmed this session). measured_on: no FAKE construct; baseline
+sandbox re-run this session, `tmp/grind/func_800545F4/s4/sandbox_baseline_s4.log`.
+
+No new probe was run against the asm itself (nothing to enumerate). H2 (reaffirm the
+ASM-WHOLE grant) remains the only live disposition path and still requires `escalation`
+modality to file, per the standing auto-ruling — this session's modality is `enumerate`, not
+`escalation`.
+
+## [s4] Enumerate modality's spelling-sweep procedure (identify ONE/TWO blocks of differing instructions inside an existing near-match C candidate, fully-name them, run spelling_enum.py/sweep_variants.py) requires a C chassis with at least one such region.
+- mechanism: The function is still bare INCLUDE_ASM("asm/funcs", func_800545F4); with zero lines of C (no_c_body: true, 4 raw lui/ori instructions, re-confirmed this session via sandbox func_800545F4 --disable all). There is no block, differing or otherwise, for the sweep tooling to operate on.
+- probe: Re-ran sandbox func_800545F4 --disable all on the unedited chassis this session; read candidate.c and s2's class kill (bb2.ld:116 vs bb2.ld:343) which forecloses the only candidate C chassis (plain-C-global) a sweep could run against.
+- result: sandbox returned {"score": 4, "scorable": true, "no_c_body": true, "target_insns": 4, "build_insns": 0} -- identical to s1/s3, confirming no C chassis exists for this function. No enum/sweep tooling was runnable; same blocker s3 hit for permuter modality now confirmed for enumerate modality.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: modality-applicability finding on the unedited src/main/3AB48.c chassis as of this session, no FAKE construct present; sandbox output saved to tmp/grind/func_800545F4/s4/sandbox_baseline_s4.log
+
+## [s4] Kill re-audit of s3's instance kill (plain-C-global form -> scorable:false, symbols land as .data type D at offsets 0x0/0x4/0x8/0xc): is the kill weakened by a FAKE carrier occupying the target pseudo?
+- mechanism: fake_ablate.py strips any FAKE-annotated construct from a candidate and re-measures to check whether the original measurement's result depended on that construct rather than the lever under test.
+- probe: python3 tools/fake_ablate.py --func func_800545F4 --file main/3AB48 --candidate memory/grind/func_800545F4/rejected/plain_c_data_global.c
+- result: Tool reported: "no FAKE-annotated constructs found in memory/grind/func_800545F4/rejected/plain_c_data_global.c; nothing to ablate". The rejected form is plain u32 globals with zero FAKE annotations, so there was no FAKE carrier to strip -- the s3 instance kill is reconfirmed clean, not weakened.
+- verdict: CONFIRMED
