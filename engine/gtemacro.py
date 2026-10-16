@@ -666,6 +666,11 @@ _PSYQ400 = ("github.com/psyqz/psyz/releases/download/requirements/psyq400.tar.gz
             " pinned by github.com/Xeeynamo/psyz@a438bda3 decomp/sdk/psyq400.tar.gz.sha256)")
 _PSLIBID_40 = "$PSLibId: Run-time Library Release 4.0$"
 
+# Admission is automatic for any header listed here: every macro whose
+# expansion holds a cop2 or a trap instruction becomes callable
+# (Macro.admitted). Adding a header is therefore an engine: commit with
+# layer-2, plus an owner ruling when its macros carry a trap (break /
+# syscall), as for a new DMPSX word (.claude/rules/inline-asm-policy.md rule 1).
 VENDORED = {
     "include/psxsdk/inline_o.h": {
         "pslibid": _PSLIBID_40,
@@ -806,7 +811,8 @@ def undmpsx(text: str) -> str:
 def check_vendored(root: str | Path = REPO_ROOT) -> list[str]:
     """Issues with the vendored headers: missing, a CR, non-ASCII, not Sony's
     text once LF and DMPSX are reversed, or an agreed placeholder left
-    unsubstituted. [] when all three are exactly the pinned files."""
+    unsubstituted. [] when all four VENDORED headers are exactly the pinned
+    files."""
     root = Path(root)
     stamps = []
     for rel in VENDORED:
@@ -1193,7 +1199,7 @@ def call_issues(text: str, func: str, root: str | Path = REPO_ROOT) -> list[str]
 # asm is counted and stripped by name (engine.inlineasm._strip_spans).
 
 # The headers that may define a macro expanding to inline asm (design section
-# 2, header registry): the vendored three, bios.h (the BIOS trampolines,
+# 2, header registry): the VENDORED headers, bios.h (the BIOS trampolines,
 # inlineasm.bios_macro_spans) and include_asm.h (INCLUDE_ASM).
 ASM_MACRO_HEADERS = frozenset(VENDORED) | {"include/bios.h", "include/include_asm.h"}
 _HEADER_DIRS = ("include", "src")
@@ -1255,15 +1261,20 @@ def _asm_macro_registry_cached(root: str, stamps: tuple) -> tuple[tuple[str, str
 
 
 def header_registry_issues(root: str | Path = REPO_ROOT) -> list[str]:
-    """Every asm macro defined outside ASM_MACRO_HEADERS, and every header that
-    includes a vendored header (only a .c TU may: tu_includes reads the TU)."""
+    """Every asm macro defined outside ASM_MACRO_HEADERS, every header that
+    includes a vendored header (only a .c TU may: tu_includes reads the TU),
+    and every header using the `##` / `%:%:` token paste (paste_spans: a header
+    macro could assemble a name for a TU that never spells the paste)."""
     issues = [f"{rel}: #define {name} expands to inline asm outside the vendored "
               f"PsyQ headers, bios.h and include_asm.h"
               for name, rel, _fl in asm_macro_registry(root) if rel not in ASM_MACRO_HEADERS]
     for p in _header_paths(str(root)):
         rel = p.relative_to(Path(root)).as_posix()
-        if rel not in VENDORED and tu_includes(p.read_text(encoding="utf-8", errors="replace")):
+        text = p.read_text(encoding="utf-8", errors="replace")
+        if rel not in VENDORED and tu_includes(text):
             issues.append(f"{rel}: includes a vendored PsyQ header (only a .c TU may)")
+        if paste_spans(text):
+            issues.append(f"{rel}: uses the `##` token-paste operator (a cheat construct)")
     return issues
 
 
@@ -1337,7 +1348,8 @@ def paste_spans(text: str) -> list[tuple[int, int]]:
     keyword or a vendored macro name no gate sees by name, so it is a cheat
     construct. Comments and literals never count; a paste either masked view
     sees is reported (erring toward detection)."""
-    if "##" not in text and "%:%:" not in text:
+    spliced = cia._splice(text)[0]  # `#\<newline>#` is a paste too
+    if "##" not in spliced and "%:%:" not in spliced:
         return []
     view = cia.compiler_view(text)
     pp = _preprocessor_ranges(view.masked_eol)

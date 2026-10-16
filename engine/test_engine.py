@@ -1479,6 +1479,9 @@ def test_gte_call_gates() -> None:
             eq("paste gate: a paste in a body counted",
                inlineasm.func_cheat_asm_count(
                    tu("#define J(a, b) a##b\n    out[0] = J(1, 2);"), "func_GTE"), 1)
+            splice = tu("    out[0] = J(gte_, nop)();", pre="#define J(a, b) a #\\\n# b\n")
+            check("paste gate: a paste split by a line splice refused",
+                  G.paste_spans(splice) != [] and any("token-paste" in i for i in issues(splice)))
             quiet = tu('    /* a ## b */\n    func_x("##", \'#\');\n    // c ## d')
             eq("paste gate: `##` in comments and literals ignored",
                (G.paste_spans(quiet), inlineasm.func_cheat_asm_count(quiet, "func_GTE")), ([], 0))
@@ -1649,6 +1652,8 @@ def test_gte_header_registry() -> None:
         "src/main/local.h": "#define VIA_BIOS BIOS_A_FUNCTION(a, 1)\n",
         "include/incl.h": "#include <psxsdk/inline_o.h>\n",
         "include/incl_sn.h": "#include <psxsdk/libsn.h>\n",
+        "include/paste.h": "#define J(a, b) a ## b\n",
+        "src/main/paste.h": "%:define K(a, b) a #\\\n# b\n",
     }
     for rel, text in files.items():
         (Path(root) / rel).parent.mkdir(parents=True, exist_ok=True)
@@ -1671,6 +1676,9 @@ def test_gte_header_registry() -> None:
           any(i.startswith("include/incl.h: includes a vendored") for i in issues))
     check("registry: a header including libsn.h is flagged",
           any(i.startswith("include/incl_sn.h: includes a vendored") for i in issues))
+    for rel in ("include/paste.h", "src/main/paste.h"):
+        check(f"registry: a token paste in {rel} is flagged",
+              any(i.startswith(f"{rel}: uses the `##` token-paste") for i in issues))
     eq("registry: foreign asm macros (function-like flag)",
        G.foreign_asm_macros(root),
        {"BAR": True, "QUX": True, "VIA_GTE": True, "FENCE": False, "VIA_BIOS": False})
