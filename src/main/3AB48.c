@@ -1713,32 +1713,17 @@ extern u8 D_8009A830[];
 extern s8 D_8009A838[];
 extern u8 D_8009A840[];
 
-/* func_80056FE8: per-record table lookup. FAKE family:
- * duplicated-statement-into-arms
- * (.claude/rules/duplicated-statement-into-arms.md, a SOTN-accepted shape): one
- * real statement, the arm's table term (D_8009A830 / D_8009A838 / D_8009A840)
- * added into `base`, is written in
- * each dispatch arm. */
+/* func_80056FE8: per-record table lookup on arg0->other: its row
+ * (unk_58[3] * 40), plus a D_8009A830 / D_8009A838 (by arg0->unk_5E) or
+ * D_8009A840 (when unk_A3[0] is 0xFF) term, plus its unk_40A and 300. */
 s32 func_80056FE8(Unk80101EC8Record *arg0) {
     Unk80101EC8Record *a2 = arg0->other;
-    s32 a3 = a2->unk_58[3];
-    s32 base = a3 * 40;
-    /* FAKE: `base += <arm value>` duplicated into all three dispatch arms
-     * (cross-jumping re-merges them byte-neutrally); the extra references put
-     * base ahead of the struct pointer in register allocation; one post-join
-     * add: score 13 (duplicated-statement) */
-    if (a2->unk_A3[0] != 0xFF) {
-        if (arg0->unk_5E == 0) {
-            /* FAKE: duplicated copy (see above; one post-join add scores 13) */
-            base += D_8009A830[a2->unk_0E] * 2;
-        } else {
-            /* FAKE: duplicated copy (see above; one post-join add scores 13) */
-            base += D_8009A838[a2->unk_0E] * 8;
-        }
-    } else {
-        /* FAKE: duplicated copy (see above; one post-join add scores 13) */
-        base += D_8009A840[a2->unk_14] * 2;
-    }
+    s32 base = a2->unk_58[3] * 40;
+
+    base += a2->unk_A3[0] != 0xFF
+                ? (arg0->unk_5E == 0 ? D_8009A830[a2->unk_0E] * 2
+                                     : D_8009A838[a2->unk_0E] * 8)
+                : D_8009A840[a2->unk_14] * 2;
     return base + arg0->other->unk_40A + 0x12C;
 }
 
