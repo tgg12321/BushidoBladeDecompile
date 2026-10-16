@@ -414,3 +414,22 @@ floor 19 at s26; 26 sessions; live frontier (state.json is authoritative):
 - kill_scope: class
 - measured_on: legal macro-call chassis (candidate.c body, #include <psxsdk/inline_c.h>), no FAKE construct, exact 5-statement region scoping identical to s9/s15/s16/s17/s26, this session
 - predicate_cite: tools/spelling_enum.py:89
+
+## [s28] KILL RE-AUDIT + disposition: banked legal macro-call chassis re-measures 19 on current tree, no FAKE; both endgame gates fail.
+- probe: sandbox --disable all --diff --candidate candidate.c (tmp/grind/func_80052B7C/s28/sandbox_diff.txt); fake_ablate.py (s28/fake_ablate.txt); scan_hand_coded.py --single (s28/scan.txt).
+- result: score 19, 4 source-level / 0 operand-only / 0 not-scored hunks, diff shape identical to s6-s27; nothing to ablate; scan LOW 0/12 no gate-class signal; cc1psx_check ours 19 = psx 19. Rotation record filed: docs/grind/decisions.md "2026-10-15 — func_80052B7C — OWNER-ESCALATION — LADDER EXHAUSTED (non-endgame residual, floor 19): ROTATED".
+- verdict: CONFIRMED
+
+## [s28] KILL RE-AUDIT: the banked legal macro-call chassis (inline_c.h gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl) re-measures at floor 19 on the current tree with zero FAKE carriers, so no instance kill is voided by chassis or FAKE drift.
+- mechanism: Dispatcher-mandated re-audit; an instance kill is only valid under its chassis/FAKE state.
+- probe: sandbox func_80052B7C --disable all --diff --candidate memory/grind/func_80052B7C/candidate.c; tools/fake_ablate.py on the same candidate.
+- result: score 19, 24/24 insns, 4 source-level / 0 operand-only / 0 not-scored hunks, identical shape to s6-s27; fake_ablate: no FAKE constructs, nothing to ablate.
+- verdict: CONFIRMED
+
+## [s28] The scan_hand_coded gate (a) reaches STRONG tier for func_80052B7C on the current scanner signal set.
+- mechanism: Endgame-lock AND-gate (a): canonical-asm grant path requires a gate-class signal S1/S2/S6-S11.
+- probe: python3 tools/scan_hand_coded.py --single func_80052B7C > tmp/grind/func_80052B7C/s28/scan.txt
+- result: tier LOW, score 0/12, gate-class signals none (26 insns; S3/S4 inapplicable as too short).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: asm/funcs/func_80052B7C.s target, scanner as of this session, no C chassis involved

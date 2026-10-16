@@ -498,3 +498,13 @@ question rather than resolved here.
 - [s27] A docs/grind/decisions.md ruling (2026-10-15 20:38) already rejects written-island forms for this function's macro-less chunks; the only live non-grind-session paths are the scan_hand_coded gate-class signal addition and the inline_asm_canonical.txt:340 whole-body grant audit, both named in the ledger's live frontier and both outside grind-session scope.
 
 - [s27] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate 2d0d81a51e56 scores 19 under our cc1 and 19 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
+
+- [s28] sandbox --disable all on candidate.c = 19 this session (tmp/grind/func_80052B7C/s28/sandbox_diff.txt), all 4 hunks source-level
+
+- [s28] state.json cc1psx_check: ours 19, psx 19, closer=false -- the original compiler reproduces the residual from this C
+
+- [s28] scan_hand_coded LOW 0/12, no gate-class signal (s28/scan.txt)
+
+- [s28] SOTN construct index census for the batched GTE load construct = 0/1365 (s22); psyz has no cop2 precedent (s23)
+
+- [s28] 28 sessions across structural, enumerate, synthesis, forensics, rederive, solver, recon, permuter, escalation modalities
