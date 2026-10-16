@@ -37,9 +37,9 @@ Out-of-band carriers are NOT covered. Sub-families: LZCS/LZCR leading-zero-count
 
 A member's island inherits the canonical-asm disposition ONLY when all hold:
 
-1. `sandbox <func> --disable all` == **0** (scored per inline-asm-policy's scorer ruling of 2026-09-25 once its
-   engine fix lands; `0(reg)` == `(reg)` in a memory operand when units are recognized; nothing else
-   normalized). The ruling admits no island by itself.
+1. `sandbox <func> --disable all` == **0** (until the conversion to macro calls completes, the sandbox scores
+   a qualifying written-out unit via `gtemacro.unit_spans`; `0(reg)` == `(reg)` in a memory operand when
+   units are recognized; nothing else normalized). Scoring admits no island by itself.
 2. **Zero** register pins, `move %0,%1` aliasing blocks or scheduling barriers anywhere in the body.
 3. In-island GPR instructions limited to the cop2 addressing preamble. **The template is the named Sony PsyQ
    GTE macro body** the island reproduces (2026-09-02): GPR instructions that are the macro's own published

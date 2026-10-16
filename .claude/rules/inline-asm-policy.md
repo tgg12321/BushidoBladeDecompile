@@ -44,9 +44,10 @@ GTE code in a C body is CALLS to the macros of Sony's PsyQ 4.0 headers, vendored
 `engine/gtemacro.py` `VENDORED`). The function is COMPLETED-INLINE-ASM-CANONICAL (row tag
 `gcc-cannot-emit:gte_psyq_macro_call`) when ALL hold:
 1. **Vendored, never edited.** Each file is Sony's text; the only differences are LF line
-   ends and DMPSX's command word for a placeholder `.word`, from `DMPSX_WORDS` (two sources
-   per word; a placeholder they disagree on stays, and calls to its macros are refused).
-   `check_vendored()` re-hashes to Sony's SHA-256; a new word or header is an `engine:` commit.
+   ends and DMPSX's command word for the 11 owner-approved placeholders in `DMPSX_WORDS`.
+   Every other placeholder stays Sony's, and calls to its macros are refused.
+   `check_vendored()` re-hashes to Sony's SHA-256. A new word or header is an `engine:` commit
+   with layer-2, and a new DMPSX word also needs an owner ruling.
 2. **One inline header per TU** (`inline_o.h` or `inline_c.h`; `gtemac.h` with either),
    included by the `.c` file. No other header may define asm macros (`bios.h`,
    `include_asm.h` excepted); a same-file asm `#define` or a redefinition of a vendored name
@@ -58,7 +59,8 @@ GTE code in a C body is CALLS to the macros of Sony's PsyQ 4.0 headers, vendored
 5. **Bytes and record.** Sandbox 0, full-build SHA1 == oracle; call-site hashes in
    `tools/canonical_asm_regions.json` (`engine/completion.py region_hashes`; an argument or
    header switch voids them); layer-2 checks every call against the TU's header; the usual
-   cheat-reviewer PASS. A class grant: no per-function owner row, and the Grinder may apply it.
+   cheat-reviewer PASS. A class grant: no per-function owner row. Grinder-applicable once the
+   driver's grant door and scope learn the class; until then the manual or batch lane applies it.
 
 **Macro choice** where two expand identically: the macro named for the operation the code
 performs (a `gtemac.h` composite when the code does that whole operation, e.g. `gte_Lzc`);
@@ -66,8 +68,10 @@ a ruling that names a macro wins (Q29: `gte_rtv0tr` in func_800187F4). `tools/gt
 lists the alternatives; the reviewer decides.
 
 The written-out island routes (rulings 2026-09-23/24/26, the Q11/Q29/Q61/Q92/Q93 rows) admit
-nothing new: their functions are converted to calls. Until the last is converted the sandbox
-still scores a qualifying written-out unit (scorer ruling 2026-09-25, `gtemacro.unit_spans`).
+nothing new: their functions are converted to calls. "Admit nothing new" is reviewer-enforced
+until `completion.REFUSE_WRITTEN_OUT_UNITS` is turned on. Until the last is converted the
+sandbox still scores a qualifying written-out unit (scorer ruling 2026-09-25,
+`gtemacro.unit_spans`).
 
 ## Owner ruling Q115 (2026-10-06) — typed operand expressions in authorized islands
 
