@@ -1,4 +1,4 @@
-/* The CD-mix setters cdrom_SetMix and func_80035F78. .text 0x80035F30 (ROM
+/* The CD-mix setters cdrom_SetMix and cdrom_StartMixFade. .text 0x80035F30 (ROM
  * 0x26730). Start boundary: G8: compiled -G8, as their stores straight off $gp
  * show. g_cd_atv and D_800A36B8 are file-scope tentative definitions (COMMON),
  * which Sony's assembler addressed gp-relative at their base only (owner
@@ -21,7 +21,7 @@ void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 
 CdlATV D_800A36B8;
 
-void func_80035F78(s16 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+void cdrom_StartMixFade(s16 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     D_800A36B8.val0 = (u8)arg1;
     D_800A36B8.val1 = (u8)arg2;
     D_800A36B8.val2 = (u8)arg3;

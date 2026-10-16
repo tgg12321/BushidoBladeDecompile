@@ -10,7 +10,7 @@ glabel func_80044ED8
     /* 356F8 80044EF8 E5FF1026 */  addiu      $s0, $s0, -0x1B
   .L80044EFC:
     /* 356FC 80044EFC 21200002 */  addu       $a0, $s0, $zero
-    /* 35700 80044F00 3D14010C */  jal        func_800450F4
+    /* 35700 80044F00 3D14010C */  jal        ndata_ReadFromPack
     /* 35704 80044F04 21282002 */   addu      $a1, $s1, $zero
     /* 35708 80044F08 03004014 */  bnez       $v0, .L80044F18
     /* 3570C 80044F0C 21200002 */   addu      $a0, $s0, $zero

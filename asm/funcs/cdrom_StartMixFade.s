@@ -1,4 +1,4 @@
-glabel func_80035F78
+glabel cdrom_StartMixFade
     /* 26778 80035F78 1000A28F */  lw         $v0, 0x10($sp)
     /* 2677C 80035F7C EC0585A3 */  sb         $a1, %gp_rel(D_800A36B8)($gp)
     /* 26780 80035F80 0A80013C */  lui        $at, %hi(D_800A36B9)
@@ -11,4 +11,4 @@ glabel func_80035F78
     /* 2679C 80035F9C BB3622A0 */  sb         $v0, %lo(D_800A36BB)($at)
     /* 267A0 80035FA0 0800E003 */  jr         $ra
     /* 267A4 80035FA4 00000000 */   nop
-endlabel func_80035F78
+endlabel cdrom_StartMixFade

@@ -1799,7 +1799,7 @@ s32 func_8001DB58(void) {
 }
 
 void func_8001DB9C(void) {
-    func_800450BC(D_8008D9EC[D_80101EC8[0].unk_0A] < 1, (s32)0x80190800);
+    ndata_LoadPack(D_8008D9EC[D_80101EC8[0].unk_0A] < 1, (s32)0x80190800);
     D_800A38C4[1] = 0xFFFF;
 }
 
@@ -3053,11 +3053,11 @@ void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
 
 void func_80020CDC(void) {
     /* FAKE: direct D_800A38C4[1] puts the constant address in a pseudo that CSE
-     * keeps live across func_80045188 (+3 insns) */
+     * keeps live across ndata_InvalidatePack (+3 insns) */
     u16 *p = D_800A38C4;
 
     if (p[1] == 0xFFFF) {
-        func_80045188();
+        ndata_InvalidatePack();
     }
     D_800A3880 = 0;
     p[1] = 0;
@@ -3068,11 +3068,11 @@ void func_80020CDC(void) {
 
 void func_80020D38(void) {
     /* FAKE: direct D_800A38C4[1] puts the constant address in a pseudo that CSE
-     * keeps live across func_80045188 (+3 insns) */
+     * keeps live across ndata_InvalidatePack (+3 insns) */
     u16 *p = D_800A38C4;
 
     if (p[1] == 0xFFFF) {
-        func_80045188();
+        ndata_InvalidatePack();
     }
     p[1] = 0;
 }

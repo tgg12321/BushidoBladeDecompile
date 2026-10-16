@@ -252,10 +252,10 @@ void func_80035828(void) {
             break;
         }
         if (ret == 1) {
-            func_80035F78(0x1E, 0, 0, 0, 0);
+            cdrom_StartMixFade(0x1E, 0, 0, 0, 0);
             D_800A3740 = 0xB;
         } else if (ret == -1) {
-            func_80035F78(0x1E, 0, 0, 0, 0);
+            cdrom_StartMixFade(0x1E, 0, 0, 0, 0);
             D_800A3740 = 0xC;
         } else {
             break;

@@ -397,8 +397,8 @@ extern s16 D_800A38BA;
 /* per player: character of the D_800A3888 motion set (0xFF = none) */
 extern u8 D_800A38C0[2];
 /* per slot: model id in the D_800A3860[i] buffer (func_80020E74); [1] = 0xFFFF:
- * func_8001DB9C passed 0x80190800 (D_800A3860[1]'s buffer) to func_800450BC;
- * func_80020D38 calls func_80045188 for it */
+ * func_8001DB9C passed 0x80190800 (D_800A3860[1]'s buffer) to ndata_LoadPack;
+ * func_80020D38 calls ndata_InvalidatePack for it */
 extern u16 D_800A38C4[2];
 extern u8 D_800A38D4;
 extern s16 D_800A38DC;
@@ -656,7 +656,7 @@ extern void func_800344B4(void);
 extern void func_80034F88(void);
 extern void func_8003504C(void);
 extern void func_80035280(void);
-extern void func_80035F78(s16, s32, s32, s32, s32);
+extern void cdrom_StartMixFade(s16, s32, s32, s32, s32);
 extern s32 cdrom_StartAudioEntry(s32);
 extern void cdrom_SetAudioRepeat(s16);
 extern void cdrom_WaitAudioStarted(void);
@@ -920,8 +920,8 @@ extern s32 rng_Next(void);
 extern void rng_SetSeed(s32);
 extern void scratchpad_Restore(void);
 extern void scratchpad_Save(void);
-extern void func_80045188(void);
-extern void func_800450BC(s32, s32);
+extern void ndata_InvalidatePack(void);
+extern void ndata_LoadPack(s32, s32);
 extern void snd_CloseVab1(void);
 extern void snd_Init(void);
 extern s32 snd_LoadCommonVab(s32);

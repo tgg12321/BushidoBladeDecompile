@@ -219,7 +219,7 @@ void func_80044ED8(s32 a0, s32 a1) {
     if (a0 >= 0x1F) {
         a0 -= 0x1B;
     }
-    if (!func_800450F4(a0, a1)) {
+    if (!ndata_ReadFromPack(a0, a1)) {
         ndata_Read(a0, a1);
     }
 }
@@ -285,7 +285,7 @@ static s32 g_arena_free_size;
 static s32 g_arena_peak;
 static s32 g_arena_block_count;
 
-void func_800450BC(s32 a0, s32 a1) {
+void ndata_LoadPack(s32 a0, s32 a1) {
     ndata_Read(a0 + 0x25, a1);
     D_800A3398 = a1;
     D_800A3244 = 1;
@@ -293,7 +293,7 @@ void func_800450BC(s32 a0, s32 a1) {
 
 extern s16 D_800973EC[];
 
-s32 func_800450F4(s32 a0, s32 a1) {
+s32 ndata_ReadFromPack(s32 a0, s32 a1) {
     s32 *a2_ptr;
     s32 v1;
     s32 *v0_ptr;
@@ -323,9 +323,9 @@ s32 func_800450F4(s32 a0, s32 a1) {
     return 1;
 }
 
-void func_80045188(void) { D_800A3244 = 0; }
+void ndata_InvalidatePack(void) { D_800A3244 = 0; }
 
-s32 func_80045194(void) { return D_800A3244; }
+s32 ndata_IsPackLoaded(void) { return D_800A3244; }
 
 void ndata_StartReadInf(void) { cdrom_StartReadAt(1, (s32)g_ndata_inf, 0, 2); }
 

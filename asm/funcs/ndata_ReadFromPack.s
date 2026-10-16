@@ -1,4 +1,4 @@
-glabel func_800450F4
+glabel ndata_ReadFromPack
     /* 358F4 800450F4 7801828F */  lw         $v0, %gp_rel(D_800A3244)($gp)
     /* 358F8 800450F8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 358FC 800450FC 1D004010 */  beqz       $v0, .L80045174
@@ -39,4 +39,4 @@ glabel func_800450F4
     /* 3597C 8004517C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 35980 80045180 0800E003 */  jr         $ra
     /* 35984 80045184 00000000 */   nop
-endlabel func_800450F4
+endlabel ndata_ReadFromPack

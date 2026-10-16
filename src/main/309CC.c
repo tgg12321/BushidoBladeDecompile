@@ -169,7 +169,7 @@ void func_80040594(Unk80045878Obj *a0) {
     count = var_0[0];
     var_1 = (s32 *)((s32)var_0 + (((u32)var_0[count] >> 2) << 2));
 
-    if (func_80045194() == 0)
+    if (ndata_IsPackLoaded() == 0)
         goto call_b644;
     if (a0->unk_04 == 1)
         goto after_b644;

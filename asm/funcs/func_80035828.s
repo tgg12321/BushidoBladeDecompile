@@ -129,7 +129,7 @@ glabel func_80035828
     /* 261FC 800359FC 21280000 */  addu       $a1, $zero, $zero
     /* 26200 80035A00 21300000 */  addu       $a2, $zero, $zero
     /* 26204 80035A04 21380000 */  addu       $a3, $zero, $zero
-    /* 26208 80035A08 DED7000C */  jal        func_80035F78
+    /* 26208 80035A08 DED7000C */  jal        cdrom_StartMixFade
     /* 2620C 80035A0C 1000A0AF */   sw        $zero, 0x10($sp)
     /* 26210 80035A10 8ED60008 */  j          .L80035A38
     /* 26214 80035A14 0B000224 */   addiu     $v0, $zero, 0xB
@@ -139,7 +139,7 @@ glabel func_80035828
     /* 26220 80035A20 21280000 */  addu       $a1, $zero, $zero
     /* 26224 80035A24 21300000 */  addu       $a2, $zero, $zero
     /* 26228 80035A28 21380000 */  addu       $a3, $zero, $zero
-    /* 2622C 80035A2C DED7000C */  jal        func_80035F78
+    /* 2622C 80035A2C DED7000C */  jal        cdrom_StartMixFade
     /* 26230 80035A30 1000A0AF */   sw        $zero, 0x10($sp)
     /* 26234 80035A34 0C000224 */  addiu      $v0, $zero, 0xC
   .L80035A38:
