@@ -1,0 +1,39 @@
+{
+ "func": "func_80052B7C",
+ "file": "main/3AB48",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 24,
+   "modality": "recon",
+   "headline": "Recon: func_80052B7C already carries a whole-function canonical-asm grant (inline_asm_canonical.txt:340) but has zero C ever written; 4 of 5 instruction chunks match vendored PsyQ macros exactly (gte_"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "func_80052B7C = gte_SetRotMatrix(a0) + gte_ldv0(a2) + gte_rt() + gte_stlvl(a3), plus one small written __asm__ island for the macro-less TR-from-halfwords chunk (citing the existing inline_asm_canonical.txt:340 grant), lands at sandbox distance 0.",
+   "mechanism": "pure instruction-identity reproduction of an already owner-authorized whole-function asm leaf; no GCC-internals lever needed -- the only risk is whether GCC's volatile-asm statement ordering across the 5 chunks reproduces the original's exact instruction sequence.",
+   "next_probe": "Apply memory/grind/func_80052B7C/candidate.c to src/main/3AB48.c (add #include <psxsdk/inline_o.h>, remove the INCLUDE_ASM line), run sandbox func_80052B7C --disable all --diff; if nonzero, read tmp/grind/func_80052B7C/dumps/.sched via dump.ps1 to see which chunk's scheduling diverges."
+  },
+  {
+   "hypothesis": "If the macro-call draft does not reach 0, the divergence is instruction ORDER between chunks 1-2 (target batches all 5+3 loads before any ctc2; a naive macro-call sequence may interleave load/ctc2 differently per-macro).",
+   "mechanism": "GCC schedules across separate volatile __asm__ statements more freely than within one; cop2 latency nops may end up in different relative positions.",
+   "next_probe": "Compare the macro-call build's .s against asm/funcs/func_80052B7C.s chunk-by-chunk; if order differs, consider whether the macros themselves (not a restructuring of C) already force the right order, or whether this is evidence the chunk needs to stay a single written island like chunk 2."
+  },
+  {
+   "hypothesis": "Chunk 2 (TR load from 3 sign-extended halfwords) requires an owner ruling-request: is a written __asm__ island for a macro-less GTE op still admissible under the existing per-function inline_asm_canonical.txt:340 grant, given the 2026-10-15 policy's general preference for macro calls?",
+   "mechanism": "policy-interpretation question, not a codegen question -- only ask if frontier items 1-2 leave chunk 2 as the sole remaining blocker.",
+   "next_probe": "Only after measuring (1); if everything else lands clean and chunk 2's written form is the only sticking point, file a precise ruling-request rather than guessing."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "regression",
+ "created": "2026-10-16T01:16:38.257728+00:00",
+ "object_model_audited": 1
+}
