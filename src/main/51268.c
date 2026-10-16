@@ -1939,17 +1939,9 @@ u8 func_80065800(s32 arg0) {
     s16 *var_10;
     VECTOR *dst;
     s32 n;
-    /* FAKE: named intermediate - *p_w read once before the corner sign test
-     * (inline: score 7) */
     s32 w;
-    /* FAKE: named intermediate - the factor multiplied into *p_w whole
-     * (inline: score 10) */
     s32 var_14;
-    /* FAKE: named intermediate - the factor multiplied into *p_h whole
-     * (inline: score 9) */
     s32 var_15;
-    /* FAKE: named intermediate - *p_h read once before the corner sign test
-     * (inline: score 88) */
     s32 h;
     s16 *t;
     /* FAKE: pointer alias of D_800F0BA8 - case 10/11's base address in its own
@@ -5345,8 +5337,6 @@ s32 func_8006E068(s32 arg0, s32 arg1) {
 extern RECT D_800A32D8;
 
 s32 func_8006E10C(void) {
-    /* FAKE: read at entry and held in $s3 across the calls; read at the
-     * LoadImage call: score 22 */
     s32 temp_s3 = D_800A3500;
     RECT rect;
     s32 v0;
