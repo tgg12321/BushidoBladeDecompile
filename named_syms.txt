@@ -117,7 +117,7 @@ D_800EF800 = 0x800EF800;  /* data-wave 2026-09-25: was g_snd_fade_curve */
 D_800EF7BC = 0x800EF7BC;  /* data-wave 2026-09-25: was g_snd_config_tbl */
 g_color_mode = 0x800F6652;
 g_pad_buf = 0x800FF580;  /* data-wave 2026-09-24: was g_pad_data */
-g_gpu_db = 0x800F7438;  /* GpuDb[2] display double buffer (include/gpu.h); data-wave 2026-09-24: was g_disp_fb_base */
+g_gpu_db = 0x800F7438;  /* GpuDb[2] display double buffer (include/game.h); data-wave 2026-09-24: was g_disp_fb_base */
 /* data-wave 2026-09-24: g_disp_gp_base = 0x800A30CC retired; g_gpu_clear_rect is now object-defined */
 D_800A3768 = 0x800A3768;  /* data-wave 2026-10-08: was g_disp_enable */
 D_800A36A8 = 0x800A36A8;  /* data-wave 2026-10-08: was g_disp_fade */
@@ -283,7 +283,7 @@ D_800A378C           = 0x800A378C;  /* ordering-table pointer: every store is g_
 /* === Batch 5 data-symbol renames (2026-05-17) -- next 4 highs from rank 31-60 === */
 /* See docs/naming/data_evidence/D_{800A3044,80106F28,800A334C,800A3874}.md */
 D_800A3044           = 0x800A3044;  /* SioRegs *: holds 0x1F801050, the SIO port 1 (link cable) register block; libcomb only (comb.c:17, include/psxsdk/libapi.h:23-37) */  /* data-wave 2026-10-09: was g_spu_reg_base_ptr */
-_ss_score             = 0x80106F28;  /* struct SeqStruct *_ss_score[32] (include/sound.h; SOTN libsnd_i.h:176 @aa53500, BB2's own 0xB0 record) */  /* data-wave 2026-09-07: was g_seq_bank_table */
+_ss_score             = 0x80106F28;  /* struct SeqStruct *_ss_score[32] (src/main/psxsdk/libsnd/libsnd_i.h; SOTN libsnd_i.h:176 @aa53500, BB2's own 0xB0 record) */  /* data-wave 2026-09-07: was g_seq_bank_table */
 D_800A334C      = 0x800A334C;  /* u8 90-frame display countdown of a memory-card message: set to 0x5A, decremented, gated on `== 0 || (g_seq_active_voice_mask & 0x100010)` */  /* data-wave 2026-10-08: was g_motion_play_countdown */
 D_800A3874          = 0x800A3874;  /* entry index: func_800340A0 stores D_800A377C[it] and D_800F65F8[it][0..1], then increments it */  /* data-wave 2026-10-08: was g_match_round_index */
 
@@ -500,7 +500,7 @@ camera_CalcAngles_80047384      = 0x80047384;  /* 58-insn angle calc using repla
 /* === Data-symbol batch 6 (2026-05-17) -- ranks 61-90 === */
 /* 5 high-confidence + 22 medium proposals (full evidence in */
 /* docs/naming/data_evidence/). The 5 highs landed below. */
-/* 2026-09-23: g_replay_pos_x/y/z (3 of the 5) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
+/* 2026-09-23: g_replay_pos_x/y/z (3 of the 5) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 D_800A37C8           = 0x800A37C8;  /* halfword; memory-card operation selector for the D_800A31F4 machine (0 load, 1/2 write, 3 memcard_Format) */  /* data-wave 2026-10-08: was g_pad_analog_substate */
 D_800F65F8            = 0x800F65F8;  /* two-column byte table [D_800A3874][2]: func_800340A0 snapshots D_800A3898 / D_800A3899 into it */  /* data-wave 2026-10-08: was g_match_round_byte_a */
 
@@ -512,7 +512,7 @@ D_800F116C           = 0x800F116C;  /* 0x2C-byte command block (Unk1F800000Unk00
 D_800A3468       = 0x800A3468;  /* pointer to the current command block (D_800F116C, or the scratchpad block in func_80060E38); +0x0 command word (low halfword indexes the handler dispatch; bit 0x200000 sets D_800A32BC = 0xA), +0x14 the byte that receives the handler's return */  /* data-wave 2026-10-08: was g_text1b_render_state_ptr */
 D_800A347C         = 0x800A347C;  /* = D_800A3468->unk20 (func_80060A68), the command block's three-word copy of unk0C; every consumer reads words [0..2] through it */  /* data-wave 2026-10-08: was g_text1b_render_buf_ptr */
 D_800F1180           = 0x800F1180;  /* D_800F116C.unk14: address of the D_800F1150 status byte that receives the dispatched handler's return */  /* data-wave 2026-10-08: was g_text1b_glyph_cursor */
-/* 2026-09-23: g_replay_attack_pos_x (batch 7) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
+/* 2026-09-23: g_replay_attack_pos_x (batch 7) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 D_800F1178       = 0x800F1178;  /* D_800F116C.unk0C: the caller's s32 * argument; func_80060A68 copies [0..2] into unk20 (D_800A347C) */  /* data-wave 2026-10-08: was g_text1b_render_arg_cache */
 
 /* === Data-symbol batch 8 (2026-05-17) -- 8 highs + 18 mediums === */
@@ -557,7 +557,7 @@ _snd_seq_tick_env_plus_0x4              = 0x800A26D0;  /* alarm-armed boolean (d
 D_800A14E4              = 0x800A14E4;  /* D_800A14D0.cnt (cdread sectors left); named only by cb_read */  /* data-wave 2026-09-24: was g_irq_alarm_handle */
 
 /* === Data-symbol batches 12-14 (2026-05-17) -- 19 highs landed === */
-/* 2026-09-23: g_replay_attack_pos_y retired -- per-word piece of Unk80101DF0Record (include/code6cac.h). */
+/* 2026-09-23: g_replay_attack_pos_y retired -- per-word piece of Unk80101DF0Record (include/game.h). */
 /* Scratchpad pointer cache (extending the A4/AC/B8 set from batch 9-11) */
 g_scratchpad_ptr_18             = 0x800A346C;  /* -> 0x1F800018 */
 g_scratchpad_ptr_20             = 0x800A3470;  /* -> 0x1F800020 */
@@ -857,7 +857,7 @@ D_80102058                                   = 0x80102058;  /* D_80101EC8[0].unk
 D_8010205C                                   = 0x8010205C;  /* D_80101EC8[0].unk_18C.z (see D_80102054) */  /* data-wave 2026-10-09: was g_char_pos_centroid_z */
 
 /* === Per-char struct sub-fields part 2 (2026-05-17) === */
-/* +0x210 / +0x234 are Unk80101EC8Record.unk_210 / unk_234 (include/code6cac.h). */
+/* +0x210 / +0x234 are Unk80101EC8Record.unk_210 / unk_234 (include/game.h). */
 D_80102114                                = 0x80102114;  /* +0x24C of D_80101EC8[0]: vx of VECTOR unk_24C (copied as a whole vector) */  /* data-wave 2026-10-08: was g_char_vec3_b_w_or_alpha */
 
 /* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2104-2108) */
@@ -871,10 +871,10 @@ D_80101F12                                               = 0x80101F12;  /* +0x4A
 D_80101F4C                                = 0x80101F4C;  /* +0x84 of D_80101EC8[0] (s16): set at record setup; row of the loaded block's f4E table and the reset value of unk_86 */  /* data-wave 2026-10-08: was g_char_curr_keyframe_idx */
 D_80101F4E                                = 0x80101F4E;  /* +0x86 of D_80101EC8[0]: advances on its own modulo f14 (func_800213A0 / func_80021424) */  /* data-wave 2026-10-08: was g_char_prev_keyframe_idx */
 
-/* === Sony LIBSND _svm_voice per-voice records (struct SpuVoice, include/sound.h; */
+/* === Sony LIBSND _svm_voice per-voice records (struct SpuVoice, src/main/psxsdk/libsnd/libsnd_i.h; */
 /* base _svm_voice 0x800F4E18, 0x36-byte records, 24 voices). The per-word rows */
 /* below are aliases still named by INCLUDE_ASM _SsVmFlush. */
-_svm_voice_plus_0x6                          = 0x800F4E1E;  /* +0x04 -- counter (max 0x7FFF) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_4 */  /* alias of _svm_voice+0x6 (struct SpuVoice, include/sound.h); retire with _SsVmFlush */
+_svm_voice_plus_0x6                          = 0x800F4E1E;  /* +0x04 -- counter (max 0x7FFF) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_4 */  /* alias of _svm_voice+0x6 (struct SpuVoice, src/main/psxsdk/libsnd/libsnd_i.h); retire with _SsVmFlush */
 
 /* === More indexed struct tables discovered (2026-05-17) === */
 D_800A3D40                         = 0x800A3D40;  /* 24-byte stride per slot; 3 s32 + 6 s16 layout; delta-decoder state: func_8003D774 points it at a bit stream, func_8003D7B4 accumulates into it */  /* data-wave 2026-10-08: was g_sleep_menu_cursor_state_table */
@@ -1434,7 +1434,7 @@ D_800EEDC0                                         = 0x800EEDC0;  /* data-wave 2
 /* === D_800EEDD0 matrix halves (2026-05-17) -- 3 highs === */
 /* From func_80047210 (368E4.c): copies 32-byte */
 /* D_800EEDD0 from D_80101DF0.xf.mat (0x80101E08), then halves 3 specific s16 fields. */
-/* 2026-09-23: g_cam_bone_data_template (1 of the 3) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
+/* 2026-09-23: g_cam_bone_data_template (1 of the 3) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 D_800EEDD6                                      = 0x800EEDD6;  /* s16 field halved by func_80047210 (h >> 1) */  /* data-wave 2026-10-07: was g_cam_bone_data_h0 */
 D_800EEDD8                                      = 0x800EEDD8;  /* s16 field halved by func_80047210; new_var pointer base */  /* data-wave 2026-10-07: was g_cam_bone_data_h1 */
 
@@ -1547,7 +1547,7 @@ D_800A3915                                       = 0x800A3915;  /* u8: 0xFF at f
 /* From code6cac_b2.c around line 430-465: a 4-field BCD-tracked CD */
 /* playback state.  D_80101E6C is the current BCD frame position; */
 /* `cdrom_FramesToBcd(cdrom_BcdToFrames(D) + arg2, D)` advances it. */
-/* 0x80101E58..0x80101EA7 is ONE object, CdState D_80101E58 (include/code6cac.h, */
+/* 0x80101E58..0x80101EA7 is ONE object, CdState D_80101E58 (include/game.h, */
 /* owner ruling Q43, 2026-09-30); the per-word rows in that span are retired. */
 
 /* === Memcard file-list state (2026-05-17) -- 3 highs === */
@@ -1736,14 +1736,14 @@ D_800A33F8                                      = 0x800A33F8;  /* u16 = the cast
 D_800A33F0                                    = 0x800A33F0;  /* s32 set by func_80054410 / incremented by func_8005441C */  /* data-wave 2026-10-08: was g_effect_accumulator */
 
 /* === Replay target A/B struct bases (2026-05-17) -- 4 highs === */
-/* 2026-09-23: g_replay_target_a/b_init_val (2 of the 4) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
+/* 2026-09-23: g_replay_target_a/b_init_val (2 of the 4) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 /* From text1b.c func_80049E4C: 2 parallel transform records */
 /* initialized together.  D_80101DF0 is "target A" (type 0x64); */
 /* D_800FF638 is "target B" (type 0x65).  After init, pointers are */
 /* stored to D_800A3708 (A) and D_800A370C (B), and */
 /* g_replay_camera_state etc.  0x80101E3C/40/44 are */
 /* D_80101DF0.work.t[0..2] (+0x4C/50/54; Unk80101DF0Record, */
-/* include/code6cac.h, 0x58 bytes -- the "~0x60" below is the */
+/* include/game.h, 0x58 bytes -- the "~0x60" below is the */
 /* census estimate); per-word names retired 2026-09-23. */
 D_80101DF0                                  = 0x80101DF0;  /* transform record A (unk0 = 0x64; size ~0x60), pointed to by D_800A3708 */  /* data-wave 2026-10-08: was g_replay_target_a_base */
 D_800FF638                                  = 0x800FF638;  /* transform record B (unk0 = 0x65), pointed to by D_800A370C */  /* data-wave 2026-10-08: was g_replay_target_b_base */
@@ -1828,7 +1828,7 @@ D_8009BC7C                               = 0x8009BC7C;  /* per-entry byte flags 
 /* === Draw queue cluster (was the "3D sound data buffer" cluster, 2026-05-17) === */
 g_draw_queue                                  = 0x80102C00;  /* data-wave 2026-09-29: was g_sound_3d_data_buffer */
 /* RETIRED 0x800A3820 (naming sweep 2026-09-29): alias 'g_sound_3d_cursor' removed - the render-list cursor walked by the GTE renderer, no sound consumer (docs/naming/sweep-2026-09-29/verify/data.csv); its g_hira_packet_cursor alias retired by naming wave01 (2026-10-07; now g_draw_queue_cursor) */
-/* 2026-09-23: g_sound_3d_pos_x/y/z_src (3 of the 6) retired -- per-word pieces of Unk80101DF0Record (include/code6cac.h). */
+/* 2026-09-23: g_sound_3d_pos_x/y/z_src (3 of the 6) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 D_800A3808                                 = 0x800A3808;  /* data-wave 2026-09-29: was g_sound_3d_dma_snapshot */
 
 /* === Memcard operation globals (2026-05-17) -- 3 highs === */
@@ -2217,14 +2217,14 @@ patch0_plus_0x4                               = 0x800F183C;  /* +4 from g_sys_in
 patch0_plus_0x8                               = 0x800F1840;  /* +8 from g_sys_int_rp_table (0x800F1838) */  /* data-wave 2026-09-25: was g_sys_int_rp_table_plus_8 */
 Result_plus_0x10                           = 0x800F19B0;  /* +8 from g_cdrom_callback_buf_b (0x800F19A8) */  /* data-wave 2026-09-25: was g_cdrom_callback_buf_b_plus_8 */
 D_800F1AFC                       = 0x800F1AFC;  /* +4 from g_spu_xfer_status_snapshot (0x800F1AF8) */  /* data-wave 2026-09-25: was g_spu_xfer_status_snapshot_plus_4 */
-_svm_voice_plus_0x1D                  = 0x800F4E35;  /* +7 from g_satan1_slot_state_field_at_14 (0x800F4E2E) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_14_plus_7 */  /* alias of _svm_voice+0x1D (struct SpuVoice, include/sound.h); retire with _SsVmFlush */
+_svm_voice_plus_0x1D                  = 0x800F4E35;  /* +7 from g_satan1_slot_state_field_at_14 (0x800F4E2E) */  /* data-wave 2026-09-24: was g_satan1_slot_state_field_at_14_plus_7 */  /* alias of _svm_voice+0x1D (struct SpuVoice, src/main/psxsdk/libsnd/libsnd_i.h); retire with _SsVmFlush */
 D_800F6627                         = 0x800F6627;  /* +1 from D_800F6626 (0x800F6626) */  /* data-wave 2026-10-08: was g_gnd_init_complete_flag_plus_1 */
 D_800F665A                                   = 0x800F665A;  /* +2 from g_game_p2_ctrl (0x800F6658) */  /* data-wave 2026-09-25: was g_game_p2_ctrl_plus_2 */
 D_80101BD0                                   = 0x80101BD0;  /* +4 from g_memcard_slot (0x80101BCC) */  /* data-wave 2026-09-29: was g_memcard_slot_plus_4 */
 D_80101F88                        = 0x80101F88;  /* D_80101EC8[0].unk_B8.vz (D_80101F84 + 4) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_BC_plus_4 */
 D_80101FB0                               = 0x80101FB0;  /* +0xE8 of D_80101EC8[0]: x of VECTOR unk_E8, set to (0, -0x384, 0) */  /* data-wave 2026-10-08: was g_char_world_pos_z_plus_8 */
 D_80101FCC                        = 0x80101FCC;  /* D_80101EC8[0].unk_104.vx (D_80101FC4 + 8; VECTOR unk_104, include/game.h:1476) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_FC_plus_8 */
-g_pad_state                         = 0x80102788;  /* PadState (include/code6cac.h), built by func_80019568 from the InitPAD buffers g_pad_buf */  /* data-wave 2026-10-03: was D_80102788 (2026-09-29: g_practice_lesson_flag_b_plus_1) */
+g_pad_state                         = 0x80102788;  /* PadState (include/game.h), built by func_80019568 from the InitPAD buffers g_pad_buf */  /* data-wave 2026-10-03: was D_80102788 (2026-09-29: g_practice_lesson_flag_b_plus_1) */
 g_pad_state_plus_0x2                         = 0x8010278A;  /* g_pad_state.type[1] */  /* data-wave 2026-10-03: was D_8010278A (2026-09-29: g_practice_lesson_flag_b_plus_3) */
 g_pad_state_plus_0x6                      = 0x8010278E;  /* g_pad_state.valid[1] */  /* data-wave 2026-10-03: was g_practice_lesson_init_done_plus_2 */
 g_pad_state_plus_0x10                             = 0x80102798;  /* g_pad_state.released */  /* data-wave 2026-10-03: was g_pad_input_combined_plus_4 */
@@ -2233,7 +2233,7 @@ D_801027C0                             = 0x801027C0;  /* D_801027B0[i].unk_10: s
 _svm_sreg_buf_plus_0x6                            = 0x80102A7E;  /* +4 from g_voice_slot_24_arr_b (0x80102A7A) */  /* data-wave 2026-09-24: was g_voice_slot_24_arr_b_plus_4 */
 _svm_sreg_buf_plus_0x8                            = 0x80102A80;  /* +6 from g_voice_slot_24_arr_b (0x80102A7A) */  /* data-wave 2026-09-24: was g_voice_slot_24_arr_b_plus_6 */
 _svm_sreg_buf_plus_0xA                            = 0x80102A82;  /* +8 from g_voice_slot_24_arr_b (0x80102A7A) */  /* data-wave 2026-09-24: was g_voice_slot_24_arr_b_plus_8 */
-D_80106A78                                     = 0x80106A78;  /* Obj80106A78[12], the 0x64-byte object records (include/code6cac.h) */  /* data-wave 2026-09-29: was g_file_flags_plus_5 */
+D_80106A78                                     = 0x80106A78;  /* Obj80106A78[12], the 0x64-byte object records (include/game.h) */  /* data-wave 2026-09-29: was g_file_flags_plus_5 */
 
 /* === Tier 2 batch: words of D_80101EC8[1] and later records (2026-05-17) === */
 /* Addresses at a record [0] word + N * 0x44C (the record stride, */
