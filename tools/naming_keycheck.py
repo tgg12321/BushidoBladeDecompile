@@ -179,9 +179,10 @@ markers are validated and source line-control directives fail. Results are cache
 Missing cpp or an indeterminate Makefile command fails scoped proofs; global pairs do not need
 cpp. Snapshots contain src, include, Makefile and configured include directories; asm is excluded
 unless explicitly requested by an include-directory flag. Source freshness includes .inc files and
-refuses unbalanced braces inside preprocessor conditionals. A pragma inside a local-pair target
-stays unsupported. Only the toolchain's stdc-predef.h flag-3 push is supported; empty external
-pushes are tracked but cannot certify edits. Closure-wide include existence probes, token pastes
+refuses unbalanced braces inside preprocessor conditionals, except in the first branch of an
+#if / #ifdef that tests only C++ macros (inactive for cc1 unless one is defined). A pragma
+inside a local-pair target stays unsupported. Only the toolchain's stdc-predef.h flag-3 push is
+supported; empty external pushes are tracked but cannot certify edits. Closure-wide include existence probes, token pastes
 and digraph directives fail. Command-line -D names and bodies participate in macro checks
 alongside source definitions. Scoped old/new names cannot be macro names in either tree. The whole
 TU closure must contain no object-like macro call opener. -dD reports cpp definitions from all
@@ -2713,9 +2714,11 @@ def cplusplus_only_spans(text):
 
 def file_scope_tokens(text, all_macros=frozenset(), known_types=frozenset()):
     text = re.sub(r"\\\r?\n", "", text)
-    # C++-only branches (extern "C" { ... } guards) are not compiled: blank them in place.
-    for a, b in cplusplus_only_spans(text):
-        text = text[:a] + re.sub(r"[^\n]", " ", text[a:b]) + text[b:]
+    # C++-only branches (extern "C" { ... } guards) are not compiled: blank them in place,
+    # unless one of those macros is defined (c_plusplus is an ordinary identifier to cc1).
+    if not CPLUSPLUS_MACROS & (set(all_macros) | {name for name, _, _ in macro_analysis(text)[0]}):
+        for a, b in cplusplus_only_spans(text):
+            text = text[:a] + re.sub(r"[^\n]", " ", text[a:b]) + text[b:]
     ms = code_spans(text)
     ts = [m[0] for m in ms]
     directives, conditions = pp_regions(text)

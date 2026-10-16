@@ -6216,6 +6216,21 @@ def test_naming_keycheck_scoped_pairs() -> None:
         except ValueError:
             mixed_fail = True
         check("keycheck: non-C++-only conditional still balances", mixed_fail)
+    visible, _ = nk.file_scope_tokens("#define c_plusplus 1\n#if c_plusplus\nint g;\n#endif\n")
+    check("keycheck: defined C++ macro keeps its branch active", "g" in visible)
+    visible, _ = nk.file_scope_tokens("#ifdef __cplusplus\nint g;\n#endif\n", frozenset({"__cplusplus"}))
+    check("keycheck: C++ macro among all_macros keeps its branch active", "g" in visible)
+    for label, text in (("CRLF", guard.replace("\n", "\r\n") + 'extern "C" {\r\n#endif\r\nint n;\r\n'
+                                 + guard.replace("\n", "\r\n") + "}\r\n#endif\r\n"),
+                        ("continuation", "#if defined(__cplusplus) \\\n || defined(c_plusplus)\n"
+                                         'extern "C" {\n#endif\nint n;\n#ifdef __cplusplus\n}\n#endif\n'),
+                        ("nested #if", "#ifdef __cplusplus\n#if 1\n{\n#endif\nint a;\n#else\nint n;\n#endif\n")):
+        try:
+            visible, _ = nk.file_scope_tokens(text)
+            ok = "n" in visible and "a" not in visible
+        except ValueError:
+            ok = False
+        check("keycheck: C++-only guard, " + label, ok)
     libsn = (nk.ROOT / "include/psxsdk/libsn.h").read_text(encoding="utf-8")
     try:
         libsn_ok = "PCclose" in nk.file_scope_tokens(libsn)[0]
