@@ -2450,6 +2450,36 @@ void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
 }
 
 extern s16 D_80094AEC[];
+
+/* The face records func_8003FA24 walks, one layout per mode ((flags >> 3) & 3):
+ * bit 0 set is a quad (6 points per face in the size pass, 3 for a triangle),
+ * bit 1 picks the longer record. The sizes are the D_80094AEC[mode] strides
+ * in halfwords (12, 12, 18, 22); col is the colour word the packet takes,
+ * read as two halfwords (the quad records place it off word alignment). */
+typedef struct {
+    u16 unk0[6];
+    u16 col[2];
+    u16 unk8[4];
+} FaceTri; /* mode 0 */
+
+typedef struct {
+    u16 unk0[7];
+    u16 col[2];
+    u16 unk9[3];
+} FaceQuad; /* mode 1 */
+
+typedef struct {
+    u16 unk0[6];
+    u16 col[2];
+    u16 unk8[10];
+} FaceTriLong; /* mode 2 */
+
+typedef struct {
+    u16 unk0[8];
+    u16 col[2];
+    u16 unk10[12];
+} FaceQuadLong; /* mode 3 */
+
 s16 *func_8003FE40(SVECTOR *a0, s32 a1, s16 *a2);
 
 u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
@@ -2524,9 +2554,11 @@ u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
         if (((s16)flags >> 3) & 1) {
             while (--count != -1) {
                 if (((s16)flags >> 3) & 2) {
-                    value = ((u32)src[9] << 16) | src[8];
+                    FaceQuadLong *f = (FaceQuadLong *)src;
+                    value = ((u32)f->col[1] << 16) | f->col[0];
                 } else {
-                    value = ((u32)src[8] << 16) | src[7];
+                    FaceQuad *f = (FaceQuad *)src;
+                    value = ((u32)f->col[1] << 16) | f->col[0];
                 }
                 *packet++ = 4;
                 *packet++ = 2;
@@ -2538,13 +2570,12 @@ u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
             }
         } else {
             while (--count != -1) {
-                /* FAKE: identical arms (gouraud and flat triangle records keep
-                 * the colour at the same offset); cross-jumping merges them,
-                 * leaving loop.c's hoisted `& 2` test: score 99 */
                 if (((s16)flags >> 3) & 2) {
-                    value = ((u32)src[7] << 16) | src[6];
+                    FaceTriLong *f = (FaceTriLong *)src;
+                    value = ((u32)f->col[1] << 16) | f->col[0];
                 } else {
-                    value = ((u32)src[7] << 16) | src[6];
+                    FaceTri *f = (FaceTri *)src;
+                    value = ((u32)f->col[1] << 16) | f->col[0];
                 }
                 *packet++ = 3;
                 *packet++ = 2;
