@@ -724,7 +724,7 @@ D_800A38AC                                    = 0x800A38AC;  /* ref: func_800195
 g_prim_buf_cursor                               = 0x800A38B4;  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor */
 D_800A38C4                                       = 0x800A38C4;  /* model id loaded per fighter slot; refs: func_80020CDC, func_80020E74, func_80021210, func_80021280 */  /* data-wave 2026-10-08: was g_title_seq_state */
 D_800A38D6                               = 0x800A38D6;  /* data-wave 2026-10-08: was g_replay_pos_change_count */
-D_800A391D                                    = 0x800A391D;  /* D_800A3918[5]: the last per-slot counter of D_800A3918 */  /* data-wave 2026-10-08: was g_motion_select_byte */
+/* 2026-10-16: D_800A391D retired -- D_800A3918[5] (u8 D_800A3918[6], include/bb2.h). */
 D_800A3929                                      = 0x800A3929;  /* confirm delay of the D_800A3817 menu choice: 0 while choosing; on confirm 1 (counts to 0x3C) for choice 0, 0x3C for choices 1 / 2 (2B344.c:1004-1035) */  /* data-wave 2026-10-08: was g_cpu_pattern_tick */
 D_800EFB78                                           = 0x800EFB78;  /* ref: action_check_defense */  /* data-wave 2026-10-08: was g_sound_buf_b */
 D_800F1154                                    = 0x800F1154;  /* D_800F1150[4..7], per-command status bytes; func_8006133C stores &[0] in D_800F1180 */  /* data-wave 2026-10-08: was g_text1b_glyph_buf_b */
