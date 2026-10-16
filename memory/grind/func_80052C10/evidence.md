@@ -436,3 +436,11 @@ module pad" because 0x80052C28 is not 16-aligned. Both grounds were measured thi
 - [s9] The flat floor's residual (register seat $t9 for the store address + the missing trailing nop) involves no global/struct at all: the $t9 seat is a codegen question over a literal constant (not a global), and the trailing nop is a TU/linker-boundary question (s5) -- object-model correction has no surface to act on for either hunk.
 
 - [s9] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate b819a672de95 scores 4 under our cc1 and 4 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
+
+- [s10] candidate.c (*(vu32 *)0x1F800400 = 0;) re-measured floor 4: hunk 1 operand-only ($t9 vs $v0 seat), hunk 2 source-level (extra trailing nop)
+
+- [s10] scan_hand_coded --single func_80052C10 = LOW 0/12
+
+- [s10] cc1psx_check 2026-10-16T06:03Z: ours 4, psx 4, closer false
+
+- [s10] Rotation record appended to docs/grind/decisions.md: 2026-10-16 — func_80052C10 — OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): ROTATED

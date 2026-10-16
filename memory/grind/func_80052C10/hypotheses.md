@@ -486,3 +486,28 @@ Forensics found a single, simple producer for the exact target bytes: a reorder-
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: include/game.h:1017-1077 struct definitions (static read) + grep census over named_syms.txt/symbol_addrs.txt/undefined_syms_auto.txt/src/main/*.c for '1F800400'/'0x1F8004' (zero hits beyond this function); candidate.c unchanged; sandbox re-confirms floor 4, no chassis change, no FAKE construct
+
+## [s10] Kill re-audit: the framed pressure-22 instance kill re-measured on the current tree still scores far above floor, and contains no FAKE carrier.
+- mechanism: kill re-audit mandate (floor flat, instance kills exist)
+- probe: sandbox --disable all --candidate rejected/blocklocal-pressure-22-no-t9.c; fake_ablate.py on it and on candidate.c
+- result: 212 (214 build insns vs 6); fake_ablate: nothing to ablate on either form. candidate.c re-measures 4 (1 operand-only $t9 seat, 1 source-level trailing nop). Kill stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/blocklocal-pressure-22-no-t9.c on current main tree, no FAKE construct
+
+## [s10] Escalation gates: scan_hand_coded LOW 0/12 (gate a FAIL); SOTN-index census for $t9 seat / trailing nop = 0 (gate b FAIL); cc1psx self-disproof 4/4 closer=false. Rotation record filed in docs/grind/decisions.md (2026-10-16 OWNER-ESCALATION — RESOLVED BY STANDING RULING (2026-07-27): ROTATED).
+- verdict: CONFIRMED
+
+## [s10] The framed pressure-22 form (rejected/blocklocal-pressure-22-no-t9.c) might score at or below floor 4 when re-measured on the current tree with FAKE constructs ablated.
+- mechanism: kill re-audit mandate: instance kills are chassis-relative
+- probe: sandbox func_80052C10 --disable all --candidate rejected/blocklocal-pressure-22-no-t9.c; fake_ablate.py on that form and on candidate.c
+- result: 212 (214 build insns vs 6 target); no FAKE construct to ablate in either form; candidate.c re-measures 4. Kill stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/blocklocal-pressure-22-no-t9.c on current main tree, no FAKE construct
+
+## [s10] Endgame gates for func_80052C10: canonical-asm gate needs a STRONG scan tier; coercion gate needs a cited SOTN precedent.
+- mechanism: judge-sole-gate AND-gates
+- probe: scan_hand_coded.py --single func_80052C10; grep sotn-construct-index.md for t9/$25/trailing nop/scratchpad
+- result: scan LOW 0/12, no gate-class signal; precedent census 0 relevant hits (one unrelated scratchpad throwaway local). Both gates fail; cc1psx_check ours 4 / psx 4 closer=false.
+- verdict: CONFIRMED

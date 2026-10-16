@@ -4,17 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80052C10",
-      "file": "main/3AB48",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "owner 2026-10-08: re-audit of whole-body INCLUDE_ASM canonical entries. Decide afresh whether the original was hand-written asm (scan_hand_coded STRONG evidence + Judge) or compiled C that must be decompiled; many game entries were auto-added 2026-05-17 as handwritten_overflow_op.",
-      "addr": "80052C10"
-    },
-    {
       "func": "func_800545F4",
       "file": "main/3AB48",
       "distance": 0,
@@ -140,17 +129,31 @@
       "rotation": "ROTATED (ladder exhausted, non-endgame residual \u2014 owner ruling 2026-09-02 wording; 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md:1368 ## 2026-10-15 \u2014 func_80052B7C \u2014 OWNER-ESCALATION \u2014 **LADDER EXHAUSTED (non-endgame residual, floor 19): ROTATED**",
       "rotated_at": "2026-10-16T04:19:40+00:00",
       "rotation_count": 1
+    },
+    {
+      "func": "func_80052C10",
+      "file": "main/3AB48",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "rotated",
+      "origin": "regression",
+      "reopen_reason": "owner 2026-10-08: re-audit of whole-body INCLUDE_ASM canonical entries. Decide afresh whether the original was hand-written asm (scan_hand_coded STRONG evidence + Judge) or compiled C that must be decompiled; many game entries were auto-added 2026-05-17 as handwritten_overflow_op.",
+      "addr": "80052C10",
+      "rotation": "ROTATED (standing ruling 2026-07-27 wording; owner ruling 2026-09-08 rotation-not-foreclosure \u2014 returns automatically): docs/grind/decisions.md: ## 2026-10-16 \u2014 func_80052C10 \u2014 OWNER-ESCALATION \u2014 **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**",
+      "rotated_at": "2026-10-16T06:05:39+00:00",
+      "rotation_count": 1
     }
   ],
   "counts": {
     "total": 12,
-    "active": 10,
+    "active": 9,
     "by_status": {
-      "active": 10,
-      "rotated": 2
+      "active": 9,
+      "rotated": 3
     },
     "by_verdict": {
-      "C": 10
+      "C": 9
     }
   },
   "toolchain_fingerprint": "cf03a18b9b2d4e1d"

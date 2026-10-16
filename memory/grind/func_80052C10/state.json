@@ -1,8 +1,8 @@
 {
  "func": "func_80052C10",
  "file": "main/3AB48",
- "session_count": 9,
- "current_modality": "object-model",
+ "session_count": 10,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -57,18 +57,24 @@
    "floor": 4,
    "modality": "object-model",
    "headline": "Object-model audit: func_80052C10 touches zero named globals; its only operand (0x1F800400) is one byte past Unk1F800000Rec's declared end, confirmed by address arithmetic -- no aggregate/split-scalar"
+  },
+  {
+   "session": 10,
+   "floor": 4,
+   "modality": "escalation",
+   "headline": "Escalation: floor 4 re-measured; scan LOW 0/12, SOTN precedent census 0, cc1psx 4/4 not closer -> rotation record filed per standing ruling 2026-07-27."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_80052C10 is a reorder-mode hand-asm routine (explicit nop after an assembler-filled jr delay slot) with a $t9 seat from its original hand-written form, not reachable by any frame-free pure-C chassis.",
-   "mechanism": "s7 byte-exact hand-asm reproduction; s6 solver class kill (no $25 RTL producer under -mno-abicalls, frame-free)",
-   "next_probe": "Escalation modality: file the proof-of-foreclosure record per the ladder (>=4 distinct modalities already run: recon, structural, permuter, enumerate, synthesis, solver, forensics, rederive, object-model = 9); a new scan_hand_coded signal class needs owner approval and is not a grind lever."
+   "hypothesis": "The trailing nop + $t9 seat are a reorder-mode hand-asm signature shared with the 10 other jr;nop;nop functions (Sony asm modules).",
+   "mechanism": "same assembler habit (s5 census, s7 byte-exact reproduction)",
+   "next_probe": "An owner-approved scanner signal class for this shape would lift the tier to STRONG; not a grind lever."
   },
   {
-   "hypothesis": "Other jr;nop;nop functions (the s5 list of 11) share the reorder-explicit-nop producer.",
-   "mechanism": "same author/assembler habit",
-   "next_probe": "Reassemble each as a reorder-mode source with its tail nop explicit and confirm byte equality, to support a future owner-approved signal class."
+   "hypothesis": "An object boundary at 0x80052C24 consistent with the original link could explain the pad word.",
+   "mechanism": "link-time alignment padding",
+   "next_probe": "Only with new TU-split evidence; s5 scratch link gave 0 or 3 pad words, never 1."
   }
  ],
  "judge_constraints": [
@@ -195,6 +201,14 @@
    "measured_on": "include/game.h:1017-1077 struct definitions (static read) + grep census over named_syms.txt/symbol_addrs.txt/undefined_syms_auto.txt/src/main/*.c for '1F800400'/'0x1F8004' (zero hits beyond this funct",
    "predicate_cite": "",
    "result": "sizeof(Unk1F800000Rec) is exactly 0x400, so the struct spans 0x1F800000..0x1F8003FF and 0x1F800400 is the first byte PAS"
+  },
+  {
+   "session": 10,
+   "statement": "The framed pressure-22 form (rejected/blocklocal-pressure-22-no-t9.c) might score at or below floor 4 when re-measured on the current tree with FAKE constructs ablated.",
+   "kill_scope": "instance",
+   "measured_on": "rejected/blocklocal-pressure-22-no-t9.c on current main tree, no FAKE construct",
+   "predicate_cite": "",
+   "result": "212 (214 build insns vs 6 target); no FAKE construct to ablate in either form; candidate.c re-measures 4. Kill stands."
   }
  ],
  "ladder_skip": 0,
