@@ -987,8 +987,6 @@ void func_8001BC70(Unk80101EC8Record *arg0, s32 arg1) {
 }
 
 void func_8001BCF0(Unk80101EC8Record *arg0, s32 arg1) {
-    /* FAKE: diff computed at entry (li 4096; subu s1 before the func_8003F1E4
-     * call); at its use the saved registers swap (score 17). */
     s32 diff = 0x1000 - arg1;
 
     func_8003F1E4(0);
@@ -1003,19 +1001,13 @@ void func_8001BCF0(Unk80101EC8Record *arg0, s32 arg1) {
     D_800F6608.unk_10.vx = 0x100 - (arg1 * 288) / 4096;
 
     {
-        /* FAKE: div4 taken first; at its use the multiply chain is rebuilt
-         * after the shift (score 17). */
         s32 div4 = arg1 / 4;
-        /* FAKE: unk_1C8.vy read as u16 (lhu) ahead of the w18 store; at its use
-         * it sinks below the shift (score 10). */
-        u16 var_2 = arg0->unk_1C8.vy;
+        u16 rot_y = arg0->unk_1C8.vy;
         s32 val;
         D_800F6608.w18 = (arg1 * 3000 + diff * 8000) >> 12;
-        /* FAKE: val holds 0xB00 - div4 ahead of the unk_10.vz store; at the
-         * unk_10.vy store the subu moves below it (score 2). */
         val = 0xB00 - div4;
         D_800F6608.unk_10.vz = 0;
-        D_800F6608.unk_10.vy = val - var_2;
+        D_800F6608.unk_10.vy = val - rot_y;
     }
 }
 
@@ -3155,11 +3147,7 @@ done1_21280:
         s32 t3;
         /* FAKE: holds the constant 1 (a literal: score 20) */
         s32 t2;
-        /* FAKE: D_800A384C read once before the loop (reading in place: score
-         * 24) */
         u8 t0;
-        /* FAKE: D_800A38DC read once before the loop (reading in place: score
-         * 20) */
         s32 mode;
         s32 k;
 
@@ -4375,7 +4363,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
     s32 var_20;
     s16 frac;
     s32 var_22;
-    s32 var_23;
+    s32 ang_q;
 
     rec = &D_80101EC8[arg0];
     rec->unk_3C++;
@@ -4652,11 +4640,6 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_1F8.y += 0x898;
     }
     {
-        /* FAKE: named intermediate (no-new-park-categories entry 6): unk_6A is
-         * read into `state` before the
-         * unk_7A test, as the target loads it; with two direct reads the load
-         * follows the branch and jump threading adds 2 insns (score 3); a u16
-         * `state` also misses. */
         s32 state = rec->unk_6A;
 
         if (rec->unk_7A != 0 && state == 6) {
@@ -4793,15 +4776,13 @@ void func_80023F08(s32 arg0, PadState *pad) {
             rec->unk_320.x += rec->unk_1F8.x - v[0].x;
             rec->unk_320.z += rec->unk_1F8.z - v[0].z;
         }
-        /* FAKE: var_23 staged ahead of the var_35 stores; in the Judge indices
-         * the addiu moves (score 3). */
-        var_23 = ang[0] + 0x400;
+        ang_q = ang[0] + 0x400;
         var_35.x = (var_0[0].unk_04 *
-                    Judge[(var_0[0].unk_02 - var_23 + 0x400) & 0xFFF]) >>
+                    Judge[(var_0[0].unk_02 - ang_q + 0x400) & 0xFFF]) >>
                    12;
         var_35.y = -var_0[0].unk_00;
         var_35.z =
-            (var_0[0].unk_04 * Judge[(var_0[0].unk_02 - var_23) & 0xFFF]) >> 12;
+            (var_0[0].unk_04 * Judge[(var_0[0].unk_02 - ang_q) & 0xFFF]) >> 12;
         var_35.x = (var_35.x * rec->unk_1A) >> 12;
         var_35.y = (var_35.y * rec->unk_1A) >> 12;
         var_35.z = (var_35.z * rec->unk_1A) >> 12;
@@ -4828,11 +4809,6 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_104.vy += 0x15;
     }
     {
-        /* FAKE: named intermediate (no-new-park-categories entry 6): with
-         * `state`, cse keeps this test's own
-         * li 8 / li 0x22 (the target re-materialises them); with direct
-         * rec->unk_6A reads cse reuses the previous test's constants (score
-         * 11). */
         s32 state = rec->unk_6A;
 
         if (state == 8 || state == 0x22) {
