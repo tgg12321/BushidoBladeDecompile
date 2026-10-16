@@ -1606,8 +1606,8 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     *arg1 = rec->unk_3D0;
 }
 
-extern u8 D_8009A820[];
-extern u8 D_8009A821[];
+/* 8 {distance, direction} byte pairs (func_80056CB8) */
+extern u8 D_8009A820[8][2];
 
 void func_80056CB8(Unk80101EC8Record *arg0) {
     s32 var_0[4];
@@ -1627,13 +1627,9 @@ void func_80056CB8(Unk80101EC8Record *arg0) {
         s16 *cos_p;
         s32 x;
         s32 z;
-        s32 idx;
 
-        /* FAKE: idx names the byte-table index for the first lookup only, which
-         * steers loop strength reduction's giv choice; `[i * 2]`: score 53 */
-        idx = i * 2;
         obj = arg0;
-        flags = D_8009A821[idx] << 8;
+        flags = D_8009A820[i][1] << 8;
         if ((flags & 0x1000) != 0) {
             obj = arg0->other;
         }
@@ -1646,7 +1642,7 @@ void func_80056CB8(Unk80101EC8Record *arg0) {
         }
 
         sin_p = &Judge[flags & 0xFFF];
-        scale = D_8009A820[i * 2] << 8;
+        scale = D_8009A820[i][0] << 8;
         x = obj->unk_B8.vx + ((scale * *sin_p) >> 12);
         cos_p = &Judge[(flags + 0x400) & 0xFFF];
         z = obj->unk_B8.vz + ((scale * *cos_p) >> 12);
