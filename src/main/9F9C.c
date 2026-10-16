@@ -14,101 +14,6 @@ extern s32 func_80054434(void);
 
 INCLUDE_RODATA("asm/rodata", D_800100A4);
 
-void func_8001979C(s32 arg0, u32 *arg1) {
-    s32 var_0;
-    Unk800F1B18Rec *base;
-    s32 i;
-    u32 cur;
-    u32 hi;
-    s32 var_5;
-    s32 val;
-    s32 var_7;
-    s32 neg2;
-    u32 lo;
-    u32 lo2;
-
-    var_0 = 0x20;
-    base = &D_800F1B18[arg0];
-
-    base->stream = arg1;
-    cur = *arg1;
-    arg1++;
-
-    i = 0;
-    do {
-        if (var_0 < 0xC) {
-            /* FAKE: var_7 names the width subtraction so the constant's load
-             * site separates from its use site (cse re-materialisation);
-             * without it: score 2. */
-            var_7 = 0xC - var_0;
-            /* FAKE: hi carries its own shift amount before the value, raising
-             * its allocation priority so it keeps $v1; without: score 16. */
-            hi = 0x20 - var_0;
-            hi = cur >> hi;
-            cur = *arg1;
-            arg1++;
-            var_5 = var_7;
-            /* FAKE: new var_0 routed through val, blocking cse's
-             * cheapest-register rewrite; without: score 2. */
-            val = 0x20 - var_5;
-            var_0 = val;
-            hi = hi << var_5;
-            lo = cur >> var_0;
-            cur <<= var_5;
-            hi = hi | lo;
-            base->pose[i + 3] = hi;
-        } else {
-            base->pose[i + 3] = cur >> 20;
-            cur <<= 0xC;
-            var_0 -= 0xC;
-        }
-        i++;
-    } while (i < 0x3F);
-
-    i = 0;
-    do {
-        if (var_0 < 2) {
-            /* FAKE: var_7, as in loop 1; without: score 2. */
-            var_7 = 2 - var_0;
-            hi = 0x20 - var_0;
-            hi = cur >> hi;
-            cur = *arg1;
-            arg1++;
-            var_5 = var_7;
-            val = 0x20 - var_5;
-            var_0 = val;
-            hi = hi << var_5;
-            lo2 = cur >> var_0;
-            cur <<= var_5;
-            hi = hi | lo2;
-            base->code[i + 3] = hi;
-        } else {
-            base->code[i + 3] = cur >> 30;
-            cur <<= 2;
-            var_0 -= 2;
-        }
-        i++;
-    } while (i < 0x3F);
-
-    /* FAKE: named holder for the fill value; a separate allocno for -2 puts
-     * the fill pointer in $v0; without: score 2. */
-    neg2 = -2;
-    i = 3;
-    do {
-        base->slot[i].frame = neg2;
-        i--;
-    } while (i >= 0);
-    /* FAKE: tail reuse of val (named-local-fake-exception constant-holder):
-     * this later set blocks cse's rewrite of the in-loop `val = 0x20 - var_5;
-     * var_0 = val;`, keeping the target's subu + move copy pair in both
-     * loops; a direct literal store collapses both pairs (75 insns vs 77):
-     * score 4. */
-    val = 0;
-    base->ctr = val;
-}
-
-extern s32 D_800A30EC;
-
 /* Motion bitstream reader: `cur` holds the unread bits left-aligned, `bits`
    how many of them are valid, `ptr` the next stream word. GETBITS reads `nb`
    bits into `dst`; GETBITS_PRE ORs them onto `pre` (the implicit top bit of
@@ -155,6 +60,30 @@ extern s32 D_800A30EC;
             *to++ = *from++;                                                   \
         }                                                                      \
     }
+
+void func_8001979C(s32 arg0, u32 *ptr) {
+    Unk800F1B18Rec *base;
+    s32 i;
+    u32 cur;
+    s32 bits;
+
+    bits = 0x20;
+    base = &D_800F1B18[arg0];
+    base->stream = ptr;
+    cur = *ptr++;
+    for (i = 0; i < 0x3F; i++) {
+        GETBITS(base->pose[i + 3], 12);
+    }
+    for (i = 0; i < 0x3F; i++) {
+        GETBITS(base->code[i + 3], 2);
+    }
+    for (i = 0; i < 4; i++) {
+        base->slot[i].frame = -2;
+    }
+    base->ctr = 0;
+}
+
+extern s32 D_800A30EC;
 
 /* Decode entry `arg1` of D_800F1B18[obj]'s stream into `out` (33 words). The
    table at stream + 0x70 holds a 24-bit offset per group of 8 entries (index
