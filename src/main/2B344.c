@@ -1246,27 +1246,20 @@ void font_DrawChar(s32 x, s32 y, s32 arg2, s32 arg3) {
 }
 
 void font_DrawString(s32 x, s32 y, u8 *str, s32 arg3) {
-    s32 var_0;
+    s32 c;
     s32 start_x = x;
 
-    var_0 = *str++;
-    if (var_0 == 0)
-        return;
-
-    do {
-        if (var_0 == 0x20) {
-            /* 0x20: only x advances */
-        } else if (var_0 == 0x0A) {
+    for (c = *str++; c != 0; c = *str++) {
+        if (c == ' ') {
+            x += 8;
+        } else if (c == '\n') {
             x = start_x;
             y += 8;
-            goto next_char;
         } else {
-            font_DrawChar(x, y, var_0, arg3);
+            font_DrawChar(x, y, c, arg3);
+            x += 8;
         }
-        x += 8;
-    next_char:
-        var_0 = *str++;
-    } while (var_0 != 0);
+    }
 }
 
 typedef char *va_list;
