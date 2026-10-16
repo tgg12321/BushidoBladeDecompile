@@ -142,8 +142,8 @@ glabel func_8003B9D0
     /* 2C3D8 8003BBD8 6719010C */  jal        func_8004659C
     /* 2C3DC 8003BBDC FFFF0424 */   addiu     $a0, $zero, -0x1
   .L8003BBE0:
-    /* 2C3E0 8003BBE0 1080033C */  lui        $v1, %hi(D_8010277D)
-    /* 2C3E4 8003BBE4 7D276380 */  lb         $v1, %lo(D_8010277D)($v1)
+    /* 2C3E0 8003BBE0 1080033C */  lui        $v1, %hi(D_80102778 + 0x5)
+    /* 2C3E4 8003BBE4 7D276380 */  lb         $v1, %lo(D_80102778 + 0x5)($v1)
     /* 2C3E8 8003BBE8 0E000224 */  addiu      $v0, $zero, 0xE
     /* 2C3EC 8003BBEC 03006210 */  beq        $v1, $v0, .L8003BBFC
     /* 2C3F0 8003BBF0 1D000224 */   addiu     $v0, $zero, 0x1D

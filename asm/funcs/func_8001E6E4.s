@@ -19,38 +19,38 @@ glabel func_8001E6E4
     /* EF24 8001E724 21104300 */  addu       $v0, $v0, $v1
     /* EF28 8001E728 1800A2AF */  sw         $v0, 0x18($sp)
     /* EF2C 8001E72C 0400428E */  lw         $v0, 0x4($s2)
-    /* EF30 8001E730 1080033C */  lui        $v1, %hi(D_800FF5CC)
-    /* EF34 8001E734 CCF5638C */  lw         $v1, %lo(D_800FF5CC)($v1)
+    /* EF30 8001E730 1080033C */  lui        $v1, %hi(D_800FF5C8 + 0x4)
+    /* EF34 8001E734 CCF5638C */  lw         $v1, %lo(D_800FF5C8 + 0x4)($v1)
     /* EF38 8001E738 00000000 */  nop
     /* EF3C 8001E73C 21104300 */  addu       $v0, $v0, $v1
     /* EF40 8001E740 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* EF44 8001E744 0800428E */  lw         $v0, 0x8($s2)
-    /* EF48 8001E748 1080033C */  lui        $v1, %hi(D_800FF5D0)
-    /* EF4C 8001E74C D0F5638C */  lw         $v1, %lo(D_800FF5D0)($v1)
+    /* EF48 8001E748 1080033C */  lui        $v1, %hi(D_800FF5C8 + 0x8)
+    /* EF4C 8001E74C D0F5638C */  lw         $v1, %lo(D_800FF5C8 + 0x8)($v1)
     /* EF50 8001E750 00000000 */  nop
     /* EF54 8001E754 21104300 */  addu       $v0, $v0, $v1
     /* EF58 8001E758 2000A2AF */  sw         $v0, 0x20($sp)
     /* EF5C 8001E75C 10004296 */  lhu        $v0, 0x10($s2)
-    /* EF60 8001E760 1080033C */  lui        $v1, %hi(D_800FF5D8)
-    /* EF64 8001E764 D8F56394 */  lhu        $v1, %lo(D_800FF5D8)($v1)
+    /* EF60 8001E760 1080033C */  lui        $v1, %hi(D_800FF5C8 + 0x10)
+    /* EF64 8001E764 D8F56394 */  lhu        $v1, %lo(D_800FF5C8 + 0x10)($v1)
     /* EF68 8001E768 1800B027 */  addiu      $s0, $sp, 0x18
     /* EF6C 8001E76C 21104300 */  addu       $v0, $v0, $v1
     /* EF70 8001E770 2800A2A7 */  sh         $v0, 0x28($sp)
     /* EF74 8001E774 12004296 */  lhu        $v0, 0x12($s2)
-    /* EF78 8001E778 1080033C */  lui        $v1, %hi(D_800FF5DA)
-    /* EF7C 8001E77C DAF56394 */  lhu        $v1, %lo(D_800FF5DA)($v1)
+    /* EF78 8001E778 1080033C */  lui        $v1, %hi(D_800FF5C8 + 0x12)
+    /* EF7C 8001E77C DAF56394 */  lhu        $v1, %lo(D_800FF5C8 + 0x12)($v1)
     /* EF80 8001E780 21200002 */  addu       $a0, $s0, $zero
     /* EF84 8001E784 21104300 */  addu       $v0, $v0, $v1
     /* EF88 8001E788 2A00A2A7 */  sh         $v0, 0x2A($sp)
     /* EF8C 8001E78C 14004296 */  lhu        $v0, 0x14($s2)
-    /* EF90 8001E790 1080033C */  lui        $v1, %hi(D_800FF5DC)
-    /* EF94 8001E794 DCF56394 */  lhu        $v1, %lo(D_800FF5DC)($v1)
+    /* EF90 8001E790 1080033C */  lui        $v1, %hi(D_800FF5C8 + 0x14)
+    /* EF94 8001E794 DCF56394 */  lhu        $v1, %lo(D_800FF5C8 + 0x14)($v1)
     /* EF98 8001E798 2800B127 */  addiu      $s1, $sp, 0x28
     /* EF9C 8001E79C 21104300 */  addu       $v0, $v0, $v1
     /* EFA0 8001E7A0 2C00A2A7 */  sh         $v0, 0x2C($sp)
     /* EFA4 8001E7A4 1800468E */  lw         $a2, 0x18($s2)
-    /* EFA8 8001E7A8 1080023C */  lui        $v0, %hi(D_800FF5E0)
-    /* EFAC 8001E7AC E0F5428C */  lw         $v0, %lo(D_800FF5E0)($v0)
+    /* EFA8 8001E7A8 1080023C */  lui        $v0, %hi(D_800FF5C8 + 0x18)
+    /* EFAC 8001E7AC E0F5428C */  lw         $v0, %lo(D_800FF5C8 + 0x18)($v0)
     /* EFB0 8001E7B0 21282002 */  addu       $a1, $s1, $zero
     /* EFB4 8001E7B4 2130C200 */  addu       $a2, $a2, $v0
     /* EFB8 8001E7B8 FD1A010C */  jal        func_80046BF4

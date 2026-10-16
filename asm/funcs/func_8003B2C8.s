@@ -1,7 +1,7 @@
 glabel func_8003B2C8
     /* 2BAC8 8003B2C8 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 2BACC 8003B2CC 1080043C */  lui        $a0, %hi(D_8010277C)
-    /* 2BAD0 8003B2D0 7C278424 */  addiu      $a0, $a0, %lo(D_8010277C)
+    /* 2BACC 8003B2CC 1080043C */  lui        $a0, %hi(D_80102778 + 0x4)
+    /* 2BAD0 8003B2D0 7C278424 */  addiu      $a0, $a0, %lo(D_80102778 + 0x4)
     /* 2BAD4 8003B2D4 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2BAD8 8003B2D8 00008290 */  lbu        $v0, 0x0($a0)
     /* 2BADC 8003B2DC 0A80013C */  lui        $at, %hi(D_800A3836)

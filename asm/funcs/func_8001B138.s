@@ -3,18 +3,18 @@ glabel func_8001B138
     /* B93C 8001B13C BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)
     /* B940 8001B140 1080013C */  lui        $at, %hi(D_800FF5C8)
     /* B944 8001B144 C8F520AC */  sw         $zero, %lo(D_800FF5C8)($at)
-    /* B948 8001B148 1080013C */  lui        $at, %hi(D_800FF5CC)
-    /* B94C 8001B14C CCF520AC */  sw         $zero, %lo(D_800FF5CC)($at)
-    /* B950 8001B150 1080013C */  lui        $at, %hi(D_800FF5D0)
-    /* B954 8001B154 D0F520AC */  sw         $zero, %lo(D_800FF5D0)($at)
-    /* B958 8001B158 1080013C */  lui        $at, %hi(D_800FF5D8)
-    /* B95C 8001B15C D8F520A4 */  sh         $zero, %lo(D_800FF5D8)($at)
-    /* B960 8001B160 1080013C */  lui        $at, %hi(D_800FF5DA)
-    /* B964 8001B164 DAF520A4 */  sh         $zero, %lo(D_800FF5DA)($at)
-    /* B968 8001B168 1080013C */  lui        $at, %hi(D_800FF5DC)
-    /* B96C 8001B16C DCF520A4 */  sh         $zero, %lo(D_800FF5DC)($at)
-    /* B970 8001B170 1080013C */  lui        $at, %hi(D_800FF5E0)
-    /* B974 8001B174 E0F520AC */  sw         $zero, %lo(D_800FF5E0)($at)
+    /* B948 8001B148 1080013C */  lui        $at, %hi(D_800FF5C8 + 0x4)
+    /* B94C 8001B14C CCF520AC */  sw         $zero, %lo(D_800FF5C8 + 0x4)($at)
+    /* B950 8001B150 1080013C */  lui        $at, %hi(D_800FF5C8 + 0x8)
+    /* B954 8001B154 D0F520AC */  sw         $zero, %lo(D_800FF5C8 + 0x8)($at)
+    /* B958 8001B158 1080013C */  lui        $at, %hi(D_800FF5C8 + 0x10)
+    /* B95C 8001B15C D8F520A4 */  sh         $zero, %lo(D_800FF5C8 + 0x10)($at)
+    /* B960 8001B160 1080013C */  lui        $at, %hi(D_800FF5C8 + 0x12)
+    /* B964 8001B164 DAF520A4 */  sh         $zero, %lo(D_800FF5C8 + 0x12)($at)
+    /* B968 8001B168 1080013C */  lui        $at, %hi(D_800FF5C8 + 0x14)
+    /* B96C 8001B16C DCF520A4 */  sh         $zero, %lo(D_800FF5C8 + 0x14)($at)
+    /* B970 8001B170 1080013C */  lui        $at, %hi(D_800FF5C8 + 0x18)
+    /* B974 8001B174 E0F520AC */  sw         $zero, %lo(D_800FF5C8 + 0x18)($at)
     /* B978 8001B178 40004010 */  beqz       $v0, .L8001B27C
     /* B97C 8001B17C 01000224 */   addiu     $v0, $zero, 0x1
     /* B980 8001B180 0A80033C */  lui        $v1, %hi(D_800A3834)
@@ -84,8 +84,8 @@ glabel func_8001B138
     /* BA6C 8001B26C 0F004224 */  addiu      $v0, $v0, 0xF
   .L8001B270:
     /* BA70 8001B270 03110200 */  sra        $v0, $v0, 4
-    /* BA74 8001B274 1080013C */  lui        $at, %hi(D_800FF5E0)
-    /* BA78 8001B278 E0F522AC */  sw         $v0, %lo(D_800FF5E0)($at)
+    /* BA74 8001B274 1080013C */  lui        $at, %hi(D_800FF5C8 + 0x18)
+    /* BA78 8001B278 E0F522AC */  sw         $v0, %lo(D_800FF5C8 + 0x18)($at)
   .L8001B27C:
     /* BA7C 8001B27C FEFF033C */  lui        $v1, (0xFFFEFFFE >> 16)
     /* BA80 8001B280 0000828C */  lw         $v0, 0x0($a0)

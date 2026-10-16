@@ -28,8 +28,8 @@ glabel cdrom_UpdateAudio
     /* 269A4 800361A4 0D000600 */  break      6
   .L800361A8:
     /* 269A8 800361A8 12380000 */  mflo       $a3
-    /* 269AC 800361AC 0A80023C */  lui        $v0, %hi(D_800A36B9)
-    /* 269B0 800361B0 B9364290 */  lbu        $v0, %lo(D_800A36B9)($v0)
+    /* 269AC 800361AC 0A80023C */  lui        $v0, %hi(g_cd_atv_target + 0x1)
+    /* 269B0 800361B0 B9364290 */  lbu        $v0, %lo(g_cd_atv_target + 0x1)($v0)
     /* 269B4 800361B4 00000000 */  nop
     /* 269B8 800361B8 18004400 */  mult       $v0, $a0
     /* 269BC 800361BC 12180000 */  mflo       $v1
@@ -53,8 +53,8 @@ glabel cdrom_UpdateAudio
     /* 26A00 80036200 0D000600 */  break      6
   .L80036204:
     /* 26A04 80036204 12280000 */  mflo       $a1
-    /* 26A08 80036208 0A80023C */  lui        $v0, %hi(D_800A36BA)
-    /* 26A0C 8003620C BA364290 */  lbu        $v0, %lo(D_800A36BA)($v0)
+    /* 26A08 80036208 0A80023C */  lui        $v0, %hi(g_cd_atv_target + 0x2)
+    /* 26A0C 8003620C BA364290 */  lbu        $v0, %lo(g_cd_atv_target + 0x2)($v0)
     /* 26A10 80036210 00000000 */  nop
     /* 26A14 80036214 18004400 */  mult       $v0, $a0
     /* 26A18 80036218 12180000 */  mflo       $v1
@@ -78,8 +78,8 @@ glabel cdrom_UpdateAudio
     /* 26A5C 8003625C 0D000600 */  break      6
   .L80036260:
     /* 26A60 80036260 12180000 */  mflo       $v1
-    /* 26A64 80036264 0A80023C */  lui        $v0, %hi(D_800A36BB)
-    /* 26A68 80036268 BB364290 */  lbu        $v0, %lo(D_800A36BB)($v0)
+    /* 26A64 80036264 0A80023C */  lui        $v0, %hi(g_cd_atv_target + 0x3)
+    /* 26A68 80036268 BB364290 */  lbu        $v0, %lo(g_cd_atv_target + 0x3)($v0)
     /* 26A6C 8003626C 00000000 */  nop
     /* 26A70 80036270 18004400 */  mult       $v0, $a0
     /* 26A74 80036274 12200000 */  mflo       $a0

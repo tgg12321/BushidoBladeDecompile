@@ -11,9 +11,9 @@ glabel ndata_Read
     /* 35698 80044E98 0980013C */  lui        $at, %hi(g_ndata_inf)
     /* 3569C 80044E9C 21083000 */  addu       $at, $at, $s0
     /* 356A0 80044EA0 EC632684 */  lh         $a2, %lo(g_ndata_inf)($at)
-    /* 356A4 80044EA4 0980013C */  lui        $at, %hi(D_800963EE)
+    /* 356A4 80044EA4 0980013C */  lui        $at, %hi(g_ndata_inf + 0x2)
     /* 356A8 80044EA8 21083000 */  addu       $at, $at, $s0
-    /* 356AC 80044EAC EE632784 */  lh         $a3, %lo(D_800963EE)($at)
+    /* 356AC 80044EAC EE632784 */  lh         $a3, %lo(g_ndata_inf + 0x2)($at)
     /* 356B0 80044EB0 8DDB000C */  jal        cdrom_StartReadAt
     /* 356B4 80044EB4 21282002 */   addu      $a1, $s1, $zero
     /* 356B8 80044EB8 D0DB000C */  jal        cdrom_WaitIdle

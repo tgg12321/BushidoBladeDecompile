@@ -3,9 +3,9 @@ glabel ndata_GetArenaRoomAfter
     /* 35884 80045084 80200400 */  sll        $a0, $a0, 2
     /* 35888 80045088 1400BFAF */  sw         $ra, 0x14($sp)
     /* 3588C 8004508C 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 35890 80045090 0980013C */  lui        $at, %hi(D_800963EE)
+    /* 35890 80045090 0980013C */  lui        $at, %hi(g_ndata_inf + 0x2)
     /* 35894 80045094 21082400 */  addu       $at, $at, $a0
-    /* 35898 80045098 EE633084 */  lh         $s0, %lo(D_800963EE)($at)
+    /* 35898 80045098 EE633084 */  lh         $s0, %lo(g_ndata_inf + 0x2)($at)
     /* 3589C 8004509C F715010C */  jal        arena_GetFreeSize
     /* 358A0 800450A0 C0821000 */   sll       $s0, $s0, 11
     /* 358A4 800450A4 23105000 */  subu       $v0, $v0, $s0

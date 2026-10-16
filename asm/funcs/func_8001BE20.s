@@ -178,8 +178,8 @@ glabel func_8001BE20
   .L8001C0A0:
     /* C8A0 8001C0A0 0FFF0324 */  addiu      $v1, $zero, -0xF1
     /* C8A4 8001C0A4 0000C48C */  lw         $a0, 0x0($a2)
-    /* C8A8 8001C0A8 1080023C */  lui        $v0, %hi(D_80106A70)
-    /* C8AC 8001C0AC 706A4290 */  lbu        $v0, %lo(D_80106A70)($v0)
+    /* C8A8 8001C0A8 1080023C */  lui        $v0, %hi(D_80106A50 + 0x20)
+    /* C8AC 8001C0AC 706A4290 */  lbu        $v0, %lo(D_80106A50 + 0x20)($v0)
     /* C8B0 8001C0B0 24288300 */  and        $a1, $a0, $v1
     /* C8B4 8001C0B4 0718E200 */  srav       $v1, $v0, $a3
     /* C8B8 8001C0B8 01006230 */  andi       $v0, $v1, 0x1

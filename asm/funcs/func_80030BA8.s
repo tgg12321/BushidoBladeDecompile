@@ -6,8 +6,8 @@ glabel func_80030BA8
     /* 213B8 80030BB8 1C00B3AF */  sw         $s3, 0x1C($sp)
     /* 213BC 80030BBC FFFF1324 */  addiu      $s3, $zero, -0x1
     /* 213C0 80030BC0 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 213C4 80030BC4 1080103C */  lui        $s0, %hi(D_80106A7A)
-    /* 213C8 80030BC8 7A6A1026 */  addiu      $s0, $s0, %lo(D_80106A7A)
+    /* 213C4 80030BC4 1080103C */  lui        $s0, %hi(D_80106A78 + 0x2)
+    /* 213C8 80030BC8 7A6A1026 */  addiu      $s0, $s0, %lo(D_80106A78 + 0x2)
     /* 213CC 80030BCC 2000BFAF */  sw         $ra, 0x20($sp)
     /* 213D0 80030BD0 1800B2AF */  sw         $s2, 0x18($sp)
   .L80030BD4:
