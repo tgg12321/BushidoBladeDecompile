@@ -183,6 +183,17 @@ def gitdir_of(main, wt):
     refuse(f"{wt} has no registered git dir in {main / '.git' / 'worktrees'}")
 
 
+def relative_gitdir(main, wt):
+    """Point wt/.git at its registered git dir by a relative path. WSL git cannot read a Windows
+    `gitdir: C:/...` line, and `land` runs tests that read the trusted tree from WSL; Git for
+    Windows 2.33 has no `worktree add --relative-paths`."""
+    rel = os.path.relpath(gitdir_of(main, wt), wt).replace(os.sep, "/")
+    # r+ and truncate: Git for Windows marks .git hidden, and opening a hidden file with "w" fails.
+    with open(Path(wt) / ".git", "r+", encoding="utf-8", newline="\n") as f:
+        f.write(f"gitdir: {rel}\n")
+        f.truncate()
+
+
 def outside_main(main, wt):
     nm, nw = norm(main), norm(wt)
     if wt.name.startswith("bb2-work-"):
@@ -257,6 +268,7 @@ def prepare(item, quiet=False):
         if git("rev-parse", "--verify", "-q", f"refs/heads/{branch}", cwd=main, check=False):
             refuse(f"branch {branch} exists without its worktree; pick a new slug or clean it up")
         git("worktree", "add", str(trusted), "-b", branch, base, cwd=main)
+        relative_gitdir(main, trusted)
         setup_toolchain(trusted)
         save_state(main, item, base=base)
         print(f"codex_worker: created {trusted} on {branch} at main {base[:9]}")
