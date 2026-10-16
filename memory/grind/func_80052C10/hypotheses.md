@@ -338,3 +338,67 @@ The register hunk on the C side is now closed at class level. Under -mno-abicall
 - probe: Function tails and map addresses for gte_SumSquares3 through gte_ReadFarColor (0x80052754..0x80052C10).
 - result: Every function ends jr plus its delay slot, with the next symbol right after. There is no pad word in the range, so padding gives no boundary evidence and only the s5 start-relative 16-pad arithmetic bears on the module start.
 - verdict: CONFIRMED
+
+## [s7 forensics] Kill re-audit: the banked single-store candidate still scores 4 and has no FAKE construct.
+- mechanism: Required re-audit (floor flat, instance kills exist).
+- probe: sandbox --disable all --diff --candidate memory/grind/func_80052C10/candidate.c (tmp/grind/func_80052C10/s7/sandbox_candidate_diff.txt).
+- result: Score 4 with the same two hunks: operand-only (lui/ori/sw seat $t9 vs our $v0) and source-level (the trailing nop). The body has no FAKE construct to ablate.
+- verdict: CONFIRMED
+
+## [s7 forensics] A hand-written reorder-mode source reproduces the whole 6-word target byte for byte: `li $25,0x1f800400; sw $0,0($25); j $31; nop`.
+- mechanism: In reorder mode the assembler fills the `j $31` delay slot with its own nop; maspsx emulates ASPSX 2.34 and marks it `# DEBUG: branch/jump`. The author's explicit `nop` (a habit from noreorder style) then follows as a second word. `li` with a constant that has non-zero low bits expands to lui+ori on the author's chosen register $25. One mechanism explains BOTH residual hunks: the $t9 seat (author's choice) and the trailing nop (explicit nop after an assembler-filled slot). It needs no module-relative 16-pad, so it also clears the Judge's objection that 0x80052C28 is not 16-aligned (decisions.md:1382).
+- probe: tmp/grind/func_80052C10/s7/handasm_reorder.s through `maspsx.py --aspsx-version=2.34`, then `mipsel-linux-gnu-as` with the Makefile AS_FLAGS, then objdump (handasm_test.sh -> handasm_reorder.txt).
+- result: 3c191f80 37390400 af200000 03e00008 00000000 00000000, identical to the target words 801F193C 00043937 000020AF 0800E003 00000000 00000000 (LE).
+- verdict: CONFIRMED
+
+## [s7 forensics] The 3AB48 TU (or this function) was compiled with -mabicalls, giving $25 a copy preference.
+- probe: whole-binary census of asm/funcs/*.s (tmp/grind/func_80052C10/s7/t9_census.sh -> t9_census.txt).
+- result: No function anywhere has `jalr $t9`. The only function that writes $gp is __SN_ENTRY_POINT. With no .cpload or PIC call shape in the binary, the abicalls reading has no support.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: asm/funcs/*.s census of the original binary's split asm (no C chassis, no FAKE)
+
+## [s7 forensics] Frame-free $t9 constant seats occur only in hand-asm modules. The one compiled-C lui/ori $t9 seat (func_80060E38) is framed under heavy pressure, as the s6 class kill predicts.
+- probe: t9_census.txt (10 functions with `lui $t9`), plus each one's context and source status.
+- result: RotMatrix* are Sony libgte asm. gte_MulMatrix0ClearTrans (`lui $t9,0xFFFF`, in the 3AB48 run, canonical) and func_800520B8 (`lui/addiu $t9` + `jr $t9` with handwritten `add`/`sub`) are hand asm. func_8003E6D8 (299 insns) and func_80060E38 (src/main/51268.c:216, `addiu $sp,-0x70`, $fp in use, about 30 live scratchpad pointers) are compiled C, and both are framed under pressure.
+- verdict: CONFIRMED
+
+## [s7 forensics] Neighbourhood idiom census (s5b frontier item 3): func_80052C10 sits inside a contiguous run of 13 canonical hand-asm routines.
+- probe: tmp/grind/func_80052C10/s7/run_census.py -> run_census.txt (0x80052600..0x80052D80).
+- result: Every function from math_SquareRoot0 (0x800526A0) to func_80052C4C is in inline_asm_canonical.txt, frame-free, and uses $t registers. All but func_80052C10 carry handwritten-instruction (trapping add/sub) markers. The first compiled C after the run is func_80052D00 (framed, $s0-$s4). func_80052C10 is the only member with no trapping op, simply because it has no arithmetic. The module-head question (0x80052788 vs 0x80052A88) is moot now that the reorder-mode mechanism explains the pad word without module arithmetic.
+- verdict: CONFIRMED
+
+## s7 synthesis / frontier
+Forensics found a single, simple producer for the exact target bytes: a reorder-mode hand-asm body with an explicit trailing nop. scan_hand_coded still reports LOW: S12 deliberately exempts a nop with no following instruction as "tail padding" (tools/scan_hand_coded.py:735-737), and S12 is informational anyway. The C side keeps both residuals with no compiled producer (s5: no second nop after jr's delay slot; s6: no frame-free $t9). The remaining disposition is outside the grind surface: an owner-approved signal class "explicit nop after an assembler-filled jr delay slot (jr;nop;nop at a function end not explained by alignment)" would give it a gate-class hit. That needs owner approval per the 2026-10-16 ruling, so it is not a grind lever.
+
+## [s7] Kill re-audit: the banked single-store candidate.c still scores 4 with no FAKE construct present
+- mechanism: Required re-audit while the floor is flat
+- probe: sandbox --disable all --diff --candidate candidate.c
+- result: Score 4: one operand-only hunk ($t9 vs $v0 lui/ori/sw seat) and one source-level hunk (trailing nop). Nothing to ablate.
+- verdict: CONFIRMED
+
+## [s7] A reorder-mode hand-written source `li $25,0x1f800400; sw $0,0($25); j $31; nop` assembles to exactly the 6 target words
+- mechanism: In reorder mode the assembler (ASPSX, emulated by maspsx 2.34) fills the j $31 delay slot with a nop. The author's explicit nop becomes the 6th word, and li expands to lui+ori on the author's register $25. This explains both hunks without module padding.
+- probe: tmp/grind/func_80052C10/s7/handasm_test.sh: maspsx --aspsx-version=2.34, then mipsel-linux-gnu-as with Makefile AS_FLAGS, then objdump
+- result: 3c191f80 37390400 af200000 03e00008 00000000 00000000 == target words (LE 801F193C 00043937 000020AF 0800E003 0 0)
+- verdict: CONFIRMED
+
+## [s7] The 3AB48 TU was compiled with -mabicalls, giving the pseudo a hard-reg-25 copy preference
+- mechanism: abicalls call templates move call targets into $25
+- probe: census of asm/funcs/*.s for jalr $t9 and $gp writes (s7/t9_census.sh)
+- result: Zero jalr $t9 in the binary. Only __SN_ENTRY_POINT writes $gp. No PIC fingerprint anywhere.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: original-binary asm/funcs/*.s census; no C chassis, no FAKE construct
+
+## [s7] The only compiled-C lui/ori $t9 seat in the binary (func_80060E38) is framed under heavy pressure, consistent with the s6 class kill
+- mechanism: Ascending allocation reaches $25 only after $s0-$s7, which forces a frame
+- probe: t9_census.txt plus source status of the 10 lui-$t9 functions
+- result: func_80060E38 (src/main/51268.c:216) has addiu $sp,-0x70 and uses $fp. func_8003E6D8 is 299 insns and framed. The others are Sony libgte or canonical hand asm.
+- verdict: CONFIRMED
+
+## [s7] func_80052C10 sits inside a contiguous run of 13 canonical frame-free hand-asm routines (0x800526A0..0x80052C4C)
+- mechanism: Neighbourhood idiom census (s5b frontier item 3)
+- probe: s7/run_census.py
+- result: Every neighbour is in inline_asm_canonical.txt with handwritten markers. The first compiled C (func_80052D00) is framed with $s regs. The module-head question is moot under the reorder-nop mechanism.
+- verdict: CONFIRMED

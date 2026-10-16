@@ -357,3 +357,20 @@ module pad" because 0x80052C28 is not 16-aligned. Both grounds were measured thi
 - [s6] The pressure ladder (tmp/grind/func_80052C10/s6/ladder.txt) puts the address in $(N+2) and crosses into $s0 with a frame at N=14, before it can reach $t8/$t9.
 
 - [s6] No pad word sits between any functions from 0x80052754 to 0x80052C10.
+
+## s7 (forensics) facts
+- A 4-line reorder-mode hand-asm source (`li $25,0x1f800400; sw $0,0($25); j $31; nop`) assembled with maspsx --aspsx-version=2.34 and the Makefile AS_FLAGS gives exactly the 6 target words (tmp/grind/func_80052C10/s7/handasm_reorder.txt). The trailing nop is the author's explicit nop after the assembler-filled delay-slot nop. No module padding is needed.
+- scan_hand_coded --single: LOW 0/12 (s7/scan_single.txt). S12 exempts the trailing nop as "tail padding" (tools/scan_hand_coded.py:735-737).
+- The binary has no abicalls fingerprints: no `jalr $t9`, and only __SN_ENTRY_POINT writes $gp (s7/t9_census.txt).
+- The only compiled-C `lui/ori $t9` seat, func_80060E38 (src/main/51268.c:216), is framed (-0x70) with $fp in use.
+- 0x800526A0..0x80052C4C is a run of 13 canonical frame-free hand-asm routines; func_80052C10 sits in the middle of it (s7/run_census.txt).
+
+- [s7] Hand-asm reorder-mode body reproduces the target 6 words byte-exact (s7/handasm_reorder.txt)
+
+- [s7] scan_hand_coded --single func_80052C10: LOW 0/12. S12 exempts the trailing nop as 'tail padding' (tools/scan_hand_coded.py:735-737).
+
+- [s7] No abicalls fingerprint anywhere in the binary
+
+- [s7] func_80060E38, the only compiled-C lui/ori $t9 seat, is framed (-0x70, $fp)
+
+- [s7] func_80052C10 is surrounded by 13 canonical hand-asm routines

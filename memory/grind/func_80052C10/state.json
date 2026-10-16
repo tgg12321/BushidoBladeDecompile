@@ -1,8 +1,8 @@
 {
  "func": "func_80052C10",
  "file": "main/3AB48",
- "session_count": 6,
- "current_modality": "solver",
+ "session_count": 7,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,24 @@
    "floor": 4,
    "modality": "solver",
    "headline": "Solver: frame-free $t9 seat class-killed (ascending RA in all three allocators; no $25 RTL producer under -mno-abicalls; 18-step pressure ladder reaches $t9 only at N=23 with a frame); classify's SCHE"
+  },
+  {
+   "session": 7,
+   "floor": 4,
+   "modality": "forensics",
+   "headline": "Forensics: a reorder-mode hand-asm body (li $25; sw; j $31; nop) reproduces all 6 target words byte-exact through maspsx+as, giving one mechanism for both residual hunks; abicalls reading killed"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_80052C10 is hand-written asm (li $t9 macro plus the asmpsx module-relative pad word), and its canonical-asm disposition needs a gate-class scan_hand_coded signal.",
-   "mechanism": "Both residual hunks now lack a compiled-C producer under the build flags: the $t9 seat is class-killed in s6, and the trailing pad word has no compiled-C producer (s5).",
-   "next_probe": "Escalation/forensics modality: file the proof-of-foreclosure record citing s2/s5/s6, or have the operator add a 'module-relative pad after the final jr delay slot' or 'frame-free $t9 temp' signal to tools/scan_hand_coded.py, which needs owner approval per the ruling."
+   "hypothesis": "func_80052C10 is a reorder-mode hand-asm routine: an explicit nop after an assembler-filled jr delay slot, with li $t9",
+   "mechanism": "s7 byte-exact reproduction. scan_hand_coded has no gate-class signal for the 'explicit nop after assembler-filled jr delay slot' shape (S12 exempts tail nops and is informational).",
+   "next_probe": "Escalation modality: file the proof-of-foreclosure record citing s5/s6/s7. A new scan signal class needs owner approval, so it is not a grind lever."
   },
   {
-   "hypothesis": "This TU was compiled with different flags (e.g. -mabicalls) that make GCC prefer $25.",
-   "mechanism": "With abicalls, the call templates move call targets into $25, which could create a copy preference toward reg 25.",
-   "next_probe": "Forensics: look for abicalls fingerprints in the 3AB48 run (.cpload / $gp setup, jalr $25). None was seen in s1-s6, so expect a quick kill."
-  },
-  {
-   "hypothesis": "The module containing func_80052C10 starts at math_LerpSVector 0x80052788 or at gte_SetMatrixRotTransIRVec 0x80052A88.",
-   "mechanism": "Module-relative 16-pad arithmetic (s5); padding cannot decide it because there are no pads in the run (s6).",
-   "next_probe": "Compare the instruction idioms (li macro use, register conventions) of the two candidate module heads against the known asmpsx modules."
+   "hypothesis": "Other jr;nop;nop functions (the s5 list of 11) share the reorder-explicit-nop producer",
+   "mechanism": "Same author/assembler habit",
+   "next_probe": "Reassemble each as a reorder-mode source with its tail nop explicit and confirm byte equality, to support a future owner-approved signal"
   }
  ],
  "judge_constraints": [
@@ -134,6 +135,14 @@
    "measured_on": "ladder chassis tmp/grind/func_80052C10/s6/ladder.py (no FAKE construct), tools/gcc-2.7.2/build/cc1 with the Makefile:42 flags; baseline candidate.c single-store body (no FAKE)",
    "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:2248",
    "result": "In the one-block form the address seat is exactly $(N+2): $10-$15 with no frame for N=8..13, $16 with a frame at N=14, a"
+  },
+  {
+   "session": 7,
+   "statement": "The 3AB48 TU was compiled with -mabicalls, giving the pseudo a hard-reg-25 copy preference",
+   "kill_scope": "instance",
+   "measured_on": "original-binary asm/funcs/*.s census; no C chassis, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Zero jalr $t9 in the binary. Only __SN_ENTRY_POINT writes $gp. No PIC fingerprint anywhere."
   }
  ],
  "ladder_skip": 0,
