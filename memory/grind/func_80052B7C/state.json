@@ -1,39 +1,63 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 24,
    "modality": "recon",
    "headline": "Recon: func_80052B7C already carries a whole-function canonical-asm grant (inline_asm_canonical.txt:340) but has zero C ever written; 4 of 5 instruction chunks match vendored PsyQ macros exactly (gte_"
+  },
+  {
+   "session": 2,
+   "floor": 16,
+   "modality": "structural",
+   "headline": "s1's draft built for real: switching inline_o.h -> inline_c.h closes build_insns to 24==target and drops score 24->16, but s1's 'chunk 1 matches exactly' claim was wrong -- chunks 1 and 5 have no vend"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_80052B7C = gte_SetRotMatrix(a0) + gte_ldv0(a2) + gte_rt() + gte_stlvl(a3), plus one small written __asm__ island for the macro-less TR-from-halfwords chunk (citing the existing inline_asm_canonical.txt:340 grant), lands at sandbox distance 0.",
-   "mechanism": "pure instruction-identity reproduction of an already owner-authorized whole-function asm leaf; no GCC-internals lever needed -- the only risk is whether GCC's volatile-asm statement ordering across the 5 chunks reproduces the original's exact instruction sequence.",
-   "next_probe": "Apply memory/grind/func_80052B7C/candidate.c to src/main/3AB48.c (add #include <psxsdk/inline_o.h>, remove the INCLUDE_ASM line), run sandbox func_80052B7C --disable all --diff; if nonzero, read tmp/grind/func_80052B7C/dumps/.sched via dump.ps1 to see which chunk's scheduling diverges."
+   "hypothesis": "Chunks 1 and 5 (not just chunk 2) may need a written-out single-instruction-per-statement form of an existing vendored macro, under the inline_asm_canonical.txt:340 grant, because the macro's own bundled body cannot reproduce the target's measured instruction order (chunk 1) or delay-slot placement (chunk 5) -- this is a policy question, not a codegen one.",
+   "mechanism": "inline-asm-policy.md's 'Calls, not copies' (PsyQ GTE macro calls, item 3) disfavors written-out bodies when a macro already exists for the operation; chunks 1 and 5 have existing macros whose structure cannot reach the target bytes as a plain call.",
+   "next_probe": "File a ruling-request citing this session's two measured kills (chunk 1 order, chunk 5 delay-slot) alongside chunk 2's pre-existing no-macro-exists question, asking whether a written single-instruction island is admissible for all three under the existing grant."
   },
   {
-   "hypothesis": "If the macro-call draft does not reach 0, the divergence is instruction ORDER between chunks 1-2 (target batches all 5+3 loads before any ctc2; a naive macro-call sequence may interleave load/ctc2 differently per-macro).",
-   "mechanism": "GCC schedules across separate volatile __asm__ statements more freely than within one; cop2 latency nops may end up in different relative positions.",
-   "next_probe": "Compare the macro-call build's .s against asm/funcs/func_80052B7C.s chunk-by-chunk; if order differs, consider whether the macros themselves (not a restructuring of C) already force the right order, or whether this is evidence the chunk needs to stay a single written island like chunk 2."
+   "hypothesis": "The chunk-5 delay-slot mechanism (reorg.c cannot split a compound asm block) is currently inferred, not confirmed.",
+   "mechanism": "dump.ps1 func_80052B7C did not produce a .rtl/.sched dump this session; the invocation or tmp path may need adjustment.",
+   "next_probe": "Get dump.ps1 producing a real .sched dump for this function and read the reorg/delay-slot-fill decision around the gte_stlvl call site before citing the mechanism in a ruling-request."
   },
   {
-   "hypothesis": "Chunk 2 (TR load from 3 sign-extended halfwords) requires an owner ruling-request: is a written __asm__ island for a macro-less GTE op still admissible under the existing per-function inline_asm_canonical.txt:340 grant, given the 2026-10-15 policy's general preference for macro calls?",
-   "mechanism": "policy-interpretation question, not a codegen question -- only ask if frontier items 1-2 leave chunk 2 as the sole remaining blocker.",
-   "next_probe": "Only after measuring (1); if everything else lands clean and chunk 2's written form is the only sticking point, file a precise ruling-request rather than guessing."
+   "hypothesis": "gtemac.h's composite macros (not yet grepped for CR0-4-only or stlvl-only variants) might offer a finer-grained primitive for chunk 1's batched order.",
+   "mechanism": "s1 only enumerated CR5-7 sites in gtemac.h/inline_o.h for chunk 2's no-macro-match question; chunk 1's CR0-4 batched-order gap was not checked against gtemac.h composites at all.",
+   "next_probe": "grep gtemac.h for any macro touching only CR0-CR4 or only DR9-11 before concluding no finer primitive exists."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
- "kills": [],
+ "kills": [
+  {
+   "session": 2,
+   "statement": "gte_SetRotMatrix(rot), called as a vendored macro (either header), reproduces target chunk 1's exact instruction sequence.",
+   "kill_scope": "instance",
+   "measured_on": "src/main/3AB48.c, gte_SetRotMatrix(rot) called via psxsdk/inline_c.h, no FAKE construct present, sandbox func_80052B7C --disable all --diff this session",
+   "predicate_cite": "",
+   "result": "False with both headers: both macros interleave 2-lw+2-ctc2 then 3-lw+3-ctc2; target does all 5 lw first, then all 5 ctc"
+  },
+  {
+   "session": 2,
+   "statement": "gte_stlvl(out), called as a vendored macro, reproduces target chunk 5's delay-slot placement of the final swc2 in the jr $ra slot.",
+   "kill_scope": "instance",
+   "measured_on": "src/main/3AB48.c, gte_stlvl(out) called via psxsdk/inline_c.h, no FAKE construct present, sandbox func_80052B7C --disable all --diff this session",
+   "predicate_cite": "",
+   "result": "False: our build emits swc2 $11,8(a3) before jr $ra with an explicit nop filling the delay slot, instead of target's swc"
+  }
+ ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "regression",
  "created": "2026-10-16T01:16:38.257728+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "escalation_deferrals": 0
 }
