@@ -5300,9 +5300,6 @@ void func_8006D808(
     s16 k;
     s16 idx;
     s16 n;
-    /* FAKE: holder of the character's x offset for both x stores; read at each:
-     * score 27. */
-    s32 w;
 
     s.ot_idx = arg3;
     s.y = 0;
@@ -5333,11 +5330,10 @@ void func_8006D808(
         }
         s.header = arg2->unk_0C;
         s.table = arg2->unk_10 + 3 + idx * 3;
-        w = arg2->unk_1C[idx];
+        s.x = arg2->unk_1C[idx];
         s.y = i * 26;
-        s.x = w;
         if (i == 3) {
-            s.x = w - 50;
+            s.x -= 50;
             s.y = 98;
         }
         s.sprt_out = *arg0;
