@@ -5637,11 +5637,10 @@ s32 func_8006E480(Unk8009B0E0Record *arg0, s32 a1) {
 s32 func_8006E49C(s32 arg0, Unk8006E49CRec *arg1) {
     u8 *base1;
     u8 *base2;
-    int var_2;
     u8 *base3;
     u8 *base4;
     arg1[0].unk_00 = arg0;
-    base1 = (u8 *)arg0 + 0x9C40;
+    base1 = (u8 *)arg1[0].unk_00 + 0x9C40;
     arg1[0].unk_08 = base1 + 0x5DC0;
     arg1[0].unk_04 = base1;
     base2 = base1 + 0x6838;
@@ -5652,11 +5651,7 @@ s32 func_8006E49C(s32 arg0, Unk8006E49CRec *arg1) {
     arg1[0].unk_20 = base2 + 0x1EA0;
     arg1[0].unk_10 = (s32)base2;
     arg1[1].unk_00 = (s32)(base2 + 0x1FB0);
-    var_2 = 0x1FB0;
-    /* FAKE: var_2 must stay a variable: as a literal, (base2 + 0x1FB0) + 0x9C40
-     * folds to li 0xBBF0 + addu (0xBBF0 > 0x7FFF, out of addiu's signed range);
-     * score 8. */
-    base3 = (base2 + var_2) + 0x9C40;
+    base3 = (u8 *)arg1[1].unk_00 + 0x9C40;
     arg1[1].unk_08 = base3 + 0x5DC0;
     arg1[1].unk_04 = base3;
     base4 = base3 + 0x6838;
@@ -5666,7 +5661,7 @@ s32 func_8006E49C(s32 arg0, Unk8006E49CRec *arg1) {
     arg1[1].unk_1C = base4 + 0x1E28;
     arg1[1].unk_20 = base4 + 0x1EA0;
     arg1[1].unk_10 = (s32)base4;
-    return (s32)(base4 + var_2);
+    return (s32)(base4 + 0x1FB0);
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order; values
