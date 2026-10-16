@@ -3549,24 +3549,6 @@ void func_8005B72C(void) {
     func_8005B5AC();
 }
 
-#define NULL ((void *)0)
-
-typedef struct Vec3s16 {
-    s16 x;
-    s16 y;
-    s16 z;
-} Vec3s16;
-
-typedef struct Vec3s32 {
-    s32 x;
-    s32 y;
-    s32 z;
-} Vec3s32;
-
-typedef struct Vec3 {
-    s32 vx, vy, vz, pad;
-} Vec3;
-
 s32 printf(s32 *, s32); /* extern */
 
 const char D_800158B4[24] = "common_vab start:%08x\n";

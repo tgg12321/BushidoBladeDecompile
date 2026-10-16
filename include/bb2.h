@@ -865,6 +865,9 @@ extern void func_8006E950(s32, Unk8006E950Head *);
 extern s32 func_8006EACC(s32, s32);
 extern s32 func_8007352C(Unk8007352CRec *);
 extern s32 func_80073728(Unk8007352CRec *, s32);
+/* No prototype: defined old-style (63D2C.c) with an s16 parameter, which a
+ * prototype cannot match. */
+extern s32 func_80073C78();
 extern void func_80074220(Unk8006EACCRec *, s32);
 extern void func_80074488(Unk8006EACCRec *);
 extern s32 func_80077820(s32);

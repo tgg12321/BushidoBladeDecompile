@@ -7,9 +7,6 @@
 
 extern void AddPrim(void *, void *);
 extern const u8 D_800159A0[16];
-extern s32 func_80073C78();
-
-extern const u8 D_800159A0[];
 
 s32 func_8007352C(Unk8007352CRec *env) {
     Unk8009B0E0Record *var_0 = env->header;

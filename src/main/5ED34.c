@@ -429,7 +429,6 @@ void func_8006F038(Unk8006EACCRec *arg0) {
 
 extern void func_80072E10(Unk8006EACCRec *);
 extern void func_80073200(Unk8006EACCRec *);
-extern s32 func_80073C78();
 
 void func_8006F100(Unk8006EACCRec *arg0) {
     Unk8007352CRec s;

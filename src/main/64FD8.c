@@ -1332,24 +1332,6 @@ void func_80077B00(void) { func_8006E2A8(); }
 void func_80077B20(void) { D_800A35E4 = 1; }
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
-#define NULL ((void *)0)
-
-typedef struct Vec3s16 {
-    s16 x;
-    s16 y;
-    s16 z;
-} Vec3s16;
-
-typedef struct Vec3s32 {
-    s32 x;
-    s32 y;
-    s32 z;
-} Vec3s32;
-
-typedef struct Vec3 {
-    s32 vx, vy, vz, pad;
-} Vec3;
-
 extern s32 column;
 
 extern s32 rand(void);
