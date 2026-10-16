@@ -103,16 +103,10 @@ companion — looks up the attack number for the current replay.
 
 ## Special camera
 
-`special_camera_Exec()` (now `func_80036940`, `code6cac_b5.c`) is the per-frame special-cam
-ticker. Currently empty in C — bridged.
-
-`special_camera_set_win_cam()` (now `func_80036140`, `code6cac_b5.c`) — set up the win
-camera. Currently empty.
-
-`special_camera_check_pos_outside_ground_80036E34` (now `cdrom_StartReadAt`, `code6cac_b5_post.c`) —
-guard against the special cam going outside the stage bounds. Calls
-`replay_camera_Init` to set up a stage-bound cam, then `cdrom_FramesToBcd`
-to advance the read pointer by `arg2`.
+No camera code lives at the addresses once named `special_camera_*`: `cdrom_Update`
+(0x80036940, `src/main/26940.c`) steps the CD state machine once per call,
+`cdrom_UpdateAudio` (0x80036140) is its CD-audio half, and `cdrom_StartReadAt`
+(0x80036E34, `src/main/cdrom.c`) starts a CD read of a file at a sector offset.
 
 `marionation_camera_Init_80036064` (now `cdrom_ReadyCallback`, `code6cac_b4_post.c`) — XA stream
 controller for in-engine cinematics. See [sound.md](sound.md).
@@ -134,8 +128,8 @@ controller for in-engine cinematics. See [sound.md](sound.md).
 This is essentially "tear down gameplay, set up cinematic" — a full
 state reset.
 
-`marionation_camera_GetMaxFrame()` (now `func_80037260`, `code6cac_b5_post.c`) — returns the
-max frame count of the currently-loaded cinematic sequence.
+`cdrom_WaitAudioStarted` (0x80037260, `src/main/cdrom.c`) steps the CD state machine
+until CD-audio playback has started (state 0x16); it returns nothing.
 
 ## `marionation_camera_Exec` — the active-cam runner
 
@@ -173,7 +167,7 @@ in step 8.
 - `func_80080390(9, 0)` — stop SE channel XA
 - Set state values for "demo mode active"
 
-`func_80036F40` (`code6cac_b5_post.c`) is a wait its callers enter around
+`cdrom_WaitIdle` (`src/main/cdrom.c`) is a wait its callers enter around
 CD reads:
 
 ```c
@@ -181,7 +175,7 @@ func_8003AA78();
 while (1) {
     if (cdrom_IsIdle() != 0) break;
     func_8003AA48();
-    func_80036940();
+    cdrom_Update();
     if (D_800A3906 != 0) func_8005C6D0();
     func_800174F4();
     *p = *p + 2;                          // D_80101E58.rec.unk3E

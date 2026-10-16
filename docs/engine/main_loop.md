@@ -224,7 +224,7 @@ of `src/main/d_7D870.c`.
 | 7  (0x07) | 0x8003BCB4 | `mode_handler_07_SubModeTransition` | md_game_check_change_sub_mode + pad input check |
 | 8  (0x08) | 0x80035480 | `func_80035480` | Cleanup + set-up, selects mode 9, display on; also the **global-reset target** (D_800A3928 trigger) |
 | 9  (0x09) | 0x80035828 | `mode_handler_09_NoOp` | Empty |
-| 10 (0x0A) | 0x8003BE10 | `func_8003BE10` | gpu_ResetGraphMode1 + func_80016888 + func_80020CDC + func_800415C4(0/1) + eff_ClearInitFlag + func_8005B72C + func_80078824 + snd_SerialMixOn + cdrom_StartAudio + func_80037260, sets D_800A3834 = 0xB, display on (2B344.c:618-635) |
+| 10 (0x0A) | 0x8003BE10 | `func_8003BE10` | gpu_ResetGraphMode1 + func_80016888 + func_80020CDC + func_800415C4(0/1) + eff_ClearInitFlag + func_8005B72C + func_80078824 + snd_SerialMixOn + cdrom_StartAudio + cdrom_WaitAudioStarted, sets D_800A3834 = 0xB, display on (2B344.c:598-615) |
 | 11 (0x0B) | 0x8003BEA8 | `func_8003BEA8` | Checks pad input mask 0x40 (action button) |
 | 12 (0x0C) | 0x8001EA04 | `func_8001EA04` | func_80041688(0/1) + func_80061178; end-of-round |
 | 13 (0x0D) | 0x8001EA84 | `cpu_get_move_pattern_table_number` | CPU AI move-pattern lookup |

@@ -32,11 +32,12 @@ Byte offset into NDATA.DAT = `start_sector * 0x800`.
 Byte length on disc      = `length_sectors * 0x800`.
 
 Unused / reserved indices are filled with the sentinel pair `0xFFFF, 0xFFFF`.
-Of the 901 indices, **762** carry real (start, length) data; 139 are sentinels
+Of the 901 indices, **762** are non-sentinel entries, of which 760 pack the 28,376
+sectors; 139 are sentinels
 that break the ID space into named "buckets" (one bucket per `DATA<n>\` prefix
 in the source filename table — see below).
 
-The 762 active entries pack exactly 28,376 sectors = the entire DAT file. There
+Of the 762 non-sentinel entries, 760 pack the 28,376 sectors = the entire DAT file. There
 are no gaps in the actual on-disc layout; each active entry begins where the
 previous active entry ended.
 
@@ -54,95 +55,38 @@ the end of NDATA.DAT:
 These three slots appear to be footer-padding / abandoned indices left over from
 the build pipeline (DAT was finalised earlier in development than INF was
 trimmed). The runtime never indexes past 897 in the address-walking code paths
-observed in the source — `func_80044E74` / `func_80044FA0` clamp their input via
-the 1024-entry RAM mirror but the real callers always pass IDs that map into the
-762 valid entries.
+observed in the source. Neither `ndata_Read` nor `ndata_ReadChecked` range-checks
+the id (the mirror has 1024 slots). Most callers compute the id at run time from a
+base plus an offset (e.g. `a0 + 0x131` in func_80054604, `a0 + 0x4D` in
+func_80044F80); that every id lands on one of the 760 entries addressing NDATA.DAT
+is not established from the code.
 
 ## In-RAM mirror
 
-At game init the entire INF is loaded into RAM at `0x800963EC` (1024 4-byte
-slots, zero-padded past the on-disc 901 entries). Two interleaved s16 views of
-the same memory are used:
+`g_ndata_inf` (`NdataInfEntry[]`, 0x800963EC, one 0x1000-byte `.data` label in
+`asm/data/7D920.data.s`; `src/main/35000.c`) holds the INF: 1024 4-byte
+`{s16 start_sector; s16 length_sectors;}` slots. The EXE ships it pre-filled (its
+bytes equal NDATA.INF except entries 899-900, then zeros), and `ndata_StartReadInf`
+re-reads the file over it at init. Splat had cut it at +2 (`D_800963EE`, where the
+original reads each length halfword); the label was merged (wave43 prep), so only
+the function listings in `asm/funcs/` still spell `D_800963EE`.
 
-| Label       | RAM address | Stride | Field                                       |
-|-------------|------------|--------|---------------------------------------------|
-| `D_800963EC` | 0x800963EC | 4      | start_sector for entry N at offset N*4      |
-| `D_800963EE` | 0x800963EE | 4      | length_sector for entry N at offset N*4     |
+NDATA.INF first 8 bytes: `00 00 49 00 49 00 46 00`, i.e. entry 0 = (0x0000, 0x0049),
+entry 1 = (0x0049, 0x0046).
 
-This means the same INF bytes are pointed at by two labels offset by 2 — the C
-source can iterate "starts" via `D_800963EC[i]` (each as `s16 x; s16 _len;`) or
-"lengths" via `((s16*)&D_800963EE)[i*2]`. Decomp source currently misidentifies
-the array as `Coord {s16 x, s16 y;}` (see `src/text1a_c.c:1410`) because the
-geometric type-name was a placeholder applied by an early auto-import pass; the
-actual interpretation is (start_sector, length_sector).
+### Loader (`ndata_StartReadInf`)
 
-### Evidence (RAM mirror == INF byte image)
+`cdrom_StartReadAt(1, g_ndata_inf, 0, 2)`: file 1 of `g_cd_file_table` (3,604
+bytes, NDATA.INF), 2 sectors (the INF rounded up), into the mirror. It only starts
+the read; the next `cdrom_WaitIdle` (e.g. `ndata_Read`'s) waits for it.
 
-NDATA.INF first 8 bytes: `00 00 49 00 49 00 46 00`
-Means entries 0 and 1 are:
-  - entry 0: start=0x0000, length=0x0049
-  - entry 1: start=0x0049, length=0x0046
+### Reader (`ndata_Read`)
 
-`D_800963EC` and `D_800963EE` raw words (from `asm/data/7D920.data.s` lines
-12397–12420):
-
-```
-800963EC: 0x0000          ← start_sector[0]
-800963EE: 0x0049          ← length_sector[0]
-800963F0: 0x0049          ← start_sector[1]
-800963F2: 0x0046          ← length_sector[1]
-800963F4: 0x008F          ← start_sector[2]
-800963F6: 0x0049          ← length_sector[2]
-...
-```
-
-The two labels point at the same array, offset by exactly two bytes; reading at
-stride 4 from either yields the corresponding column.
-
-### Loader (`func_800451A0`)
-
-```
-glabel func_800451A0
-    addiu      $a0, $zero, 0x1
-    lui        $a1, %hi(D_800963EC)
-    addiu      $a1, $a1, %lo(D_800963EC)
-    addu       $a2, $zero, $zero
-    jal        special_camera_check_pos_outside_ground_80036E34
-     addiu     $a3, $zero, 0x2
-```
-
-This dispatches a CD read of 2 sectors (`a3=2` — the INF is 3,604 bytes = 1.76
-sectors → 2 sectors with zero padding) into `D_800963EC`. The function name
-`special_camera_check_pos_outside_ground_80036E34` is an auto-generated
-misnomer — the function is actually the disc-resource scheduler used for both
-"special camera" data and the NDATA.INF preload.
-
-### Reader (`func_80044E74`)
-
-```
-glabel func_80044E74
-    addiu      $sp, $sp, -0x20
-    sw         $s0, 0x10($sp)
-    addu       $s0, $a0, $zero        # s0 = file_id
-    sw         $s1, 0x14($sp)
-    sw         $ra, 0x18($sp)
-    jal        func_80036F40
-     addu      $s1, $a1, $zero        # s1 = arg1 (dest / completion target)
-    sll        $s0, $s0, 2            # byte_offset = file_id * 4
-    addu       $a0, $zero, $zero
-    lui        $at, %hi(D_800963EC)
-    addu       $at, $at, $s0
-    lh         $a2, %lo(D_800963EC)($at)   # a2 = start_sector[file_id]
-    lui        $at, %hi(D_800963EE)
-    addu       $at, $at, $s0
-    lh         $a3, %lo(D_800963EE)($at)   # a3 = length_sectors[file_id]
-    jal        special_camera_check_pos_outside_ground_80036E34
-     addu      $a1, $s1, $zero
-```
-
-`func_80044E74(file_id, completion_target)` is the canonical "queue NDATA file
-to be DMA'd in" call. It looks up the (start, length) pair and posts a CD read
-to the scheduler.
+`ndata_Read(id, dst)`: `cdrom_WaitIdle`; `cdrom_StartReadAt(0, dst,
+g_ndata_inf[id].start_sector, g_ndata_inf[id].length_sectors)` (file 0 =
+NDATA.DAT, 58,114,048 bytes); `cdrom_WaitIdle`. `ndata_ReadChecked` first checks
+that an arena destination has room ("Marionation over flow" otherwise);
+`ndata_GetArenaRoomAfter(id)` is the arena's free bytes minus the entry's size.
 
 ## File-ID → name mapping (source-side filename tables)
 
@@ -173,7 +117,7 @@ per-type size table). No code reads them.
 
 The mapping from filename to file-ID is NOT a pointer table at runtime — it
 is fixed at build time by the *order* in which the path-string pool appears
-in rodata. Code paths like `func_800450BC`'s `func_80044E74(a0 + 0x25, ...)` (`src/main/35000.c:295`)
+in rodata. Code paths like `func_800450BC`'s `ndata_Read(a0 + 0x25, ...)` (`src/main/35000.c`)
 pass hard-coded numeric IDs that correspond to specific slots in the on-disc
 directory. The string pool exists only for debug / build identification —
 the shipped game does not perform name-based lookup.
@@ -381,16 +325,13 @@ the mapping greppable, but it is reproducibly regenerable.
 
 * Hex-dump of `disc/NDATA/NDATA.INF` bytes 0x00..0x4F (901 little-endian (u16,
   u16) pairs).
-* Cross-reference with in-RAM mirror `D_800963EC` /  `D_800963EE` at
-  `asm/data/7D920.data.s:12397..14450` (same byte sequence, two interleaved
-  views).
-* Loader function `func_800451A0` (`asm/funcs/func_800451A0.s`) which CD-reads
-  2 sectors from disc into `D_800963EC`.
-* Reader function `func_80044E74` (`asm/funcs/func_80044E74.s`) which uses
-  `D_800963EC[id*4]` and `D_800963EE[id*4]` as (start_sector, length_sector)
-  and passes them to the disc scheduler.
+* Cross-reference with the in-RAM mirror `g_ndata_inf` (`asm/data/7D920.data.s`,
+  same byte sequence).
+* Loader `ndata_StartReadInf`, which CD-reads 2 sectors of NDATA.INF into it.
+* Reader `ndata_Read`, which passes `g_ndata_inf[id]` (start_sector,
+  length_sectors) to `cdrom_StartReadAt` on NDATA.DAT.
 * Filename pool `D_80010DEC..D_80015294` (label `D_80010DEC` in
-  `src/text1a_filepaths.c`) — 899 `DATA<n>\<NAME>.DAT`
+  `src/main/d_15EC.c`) — 899 `DATA<n>\<NAME>.DAT`
   strings whose order (after dropping the 137 `DATA8\*` placeholders)
   matches the 762 active INF entries 1:1. Independently verified by
   walking both lists with the alignment rule described above.

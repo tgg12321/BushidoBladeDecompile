@@ -159,7 +159,7 @@ D_80104F38 = 0x80104F38;  /* data-wave 2026-10-08: was MotDataBaseAddress */
 /* in the "Misnomer-replacement aliases" section further down. */
 gpu_ResetGraphMode1 = 0x80016868;  /* body = ResetGraph(1) only; retired names katinuki_* (Kengo) and gpu_EnableDisplay (false: never enables the display) - naming sweep 2026-09-24 */
 gpu_SetDispMaskOn = 0x800168D0;  /* body = SetDispMask(1) only (display ON); retired names katinuki_* (Kengo) and gpu_DisableDisplay (inverted) - naming sweep 2026-09-24 */
-func_80046934 = 0x80046934;  /* MISNAMED: 1-line wrapper func_800455AC(9); not katinuki-related */
+func_80046934 = 0x80046934;  /* body = arena_OpenBlock(9) only */
 
 /* === Misnomer-replacement aliases (2026-05-17 audit) === */
 /* Replacement names for the Kengo entries above, derived from asm body */
@@ -239,9 +239,9 @@ D_800A3860      = 0x800A3860;  /* data-wave 2026-10-08: was g_motion_data_base_p
 /* special_camera_check_pos_outside_ground_80035DC8 -- scene teardown: */
 /* gpu_ResetGraphMode1 + func_80016888 + func_80020CDC + func_800415C4(0,1) */
 /* + eff_ClearInitFlag ..., D_800A3834 = 0x1B. NOT a position check. */
-/* special_camera_check_pos_outside_ground_80036E34 -- NDATA disc-read */
-/* scheduler. Called by func_800451A0 to DMA NDATA files into RAM. */
-/* See docs/formats/NDATA.md "Reader (func_80044E74)". */
+/* special_camera_check_pos_outside_ground_80036E34 -- now cdrom_StartReadAt: */
+/* starts a CD read of a file at a sector offset (ndata_StartReadInf, */
+/* ndata_Read, and non-NDATA reads such as 9F9C.c's). */
 
 /* === Batch 6 high-confidence renames (2026-05-17, asm-only pool) === */
 /* Three pure-getter accessors of already-named globals + one literal */
@@ -935,8 +935,8 @@ D_80102092                                              = 0x80102092;  /* D_8010
 /* for that pass's multiplier analysis. */
 dma_spu_madr                                      = 0x800A2CE0;  /* holds 0x1F8010C0 (DMA channel 4 MADR); written through by _spu_Fr_ / _spu_t (spu.c:214, :299) */  /* data-wave 2026-10-09: was g_dma_chcr_ch4_ptr */
 spu_madr                               = 0x800A2D30;  /* the SPU transfer's RAM address: set by _spu_t, copied to *dma_spu_madr (spu.c:295, :299) */  /* data-wave 2026-10-09: was g_satan0_gauge_state_word */
-D_800A36B8                                = 0x800A36B8;  /* CdlATV fade target: set by func_80035F78 (26730.c:25-30); func_80036140 fades g_cd_atv toward it, then copies it in (26940.c:17-33) */  /* data-wave 2026-09-29: was g_special_cam_win_byte_a */
-g_cd_atv                                = 0x800A3718;  /* CdlATV applied with CdMix by cdrom_SetMix (26730.c:14-18); func_80036140 fades from it to D_800A36B8 (26940.c:17-33) */  /* data-wave 2026-09-24: was g_special_cam_win_byte_b */
+D_800A36B8                                = 0x800A36B8;  /* CdlATV fade target: set by func_80035F78 (26730.c:25-30); cdrom_UpdateAudio fades g_cd_atv toward it, then copies it in (26940.c:17-33) */  /* data-wave 2026-09-29: was g_special_cam_win_byte_a */
+g_cd_atv                                = 0x800A3718;  /* CdlATV applied with CdMix by cdrom_SetMix (26730.c:14-18); cdrom_UpdateAudio fades from it to D_800A36B8 (26940.c:17-33) */  /* data-wave 2026-09-24: was g_special_cam_win_byte_b */
 D_800A3578                          = 0x800A3578;  /* 5ED34.c selection-screen state; func_8006EC0C reads its low byte as the fade state */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_a */
 D_800A35A0                          = 0x800A35A0;  /* func_8006EACC's result (0 / -1 / 1) */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_b */
 D_800A35BC                          = 0x800A35BC;  /* mode = arg2->unk14_0 (func_8006E534), compared with 0..6 across 5ED34.c */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_c */
@@ -1114,7 +1114,7 @@ g_vsync_gpu_stat_reg                                 = 0x800A1510;  /* libetc VS
 D_800A3770                                            = 0x800A3770;  /* u32[2] primitive-buffer bases 0x801D8800 / 0x801EBC00 (func_80016D78); also a CD-read destination via func_80054604 */  /* data-wave 2026-10-08: was g_video_fb_a */
 D_800A3798                                         = 0x800A3798;  /* = 0x13400 (D_800A3770[1] - D_800A3770[0]), one store in func_80016D78; never read */  /* data-wave 2026-10-08: was g_video_fb_size */
 D_800A36B0                                   = 0x800A36B0;  /* store-only: 0 in func_80016D78, 1 in func_80016E60 before and after its menu loop */  /* data-wave 2026-10-08: was g_intro_render_active */
-D_800A3906                                     = 0x800A3906;  /* set 1 by snd_InitAndLoadCommonVab, 0 by func_80016D78; gates func_8005C6D0 in func_80036F40 */  /* data-wave 2026-10-07: was g_intro_render_busy */
+D_800A3906                                     = 0x800A3906;  /* set 1 by snd_InitAndLoadCommonVab, 0 by func_80016D78; gates func_8005C6D0 in cdrom_WaitIdle */  /* data-wave 2026-10-07: was g_intro_render_busy */
 g_pad_state_plus_0xC                                    = 0x80102794;  /* g_pad_state.pressed */  /* data-wave 2026-10-03: was g_pad_input_combined */
 
 /* === GPU packet queue + motion-save state (2026-05-17) -- 7 highs === */
@@ -1841,8 +1841,8 @@ D_800A38D0                                  = 0x800A38D0;  /* link check-failure
 /* === Init flags + CD-audio fade words (2026-05-17) -- 4 highs === */
 D_800A31D8                               = 0x800A31D8;  /* 0 = first init, != 0 = re-init (triggers obj_InitAll cleanup); always set to 1 after */  /* data-wave 2026-10-08: was g_scene_already_init_flag */
 D_800A31E4                               = 0x800A31E4;  /* paired init flag (= 0 / = 1 set) */  /* data-wave 2026-10-08: was g_scene_another_init_flag */
-D_800A3854                                       = 0x800A3854;  /* length of a CD-audio mix fade, set by func_80035F78 (26730.c:25-31); func_80036140 divides by it and zeroes it at the end (26940.c:17-35) */  /* data-wave 2026-10-08: was g_scene_arg_saved */
-D_800A3840                                   = 0x800A3840;  /* fade step counter: zeroed by func_80035F78, incremented by func_80036140 until it reaches D_800A3854 (26940.c:31) */  /* data-wave 2026-10-08: was g_scene_alt_arg_saved */
+D_800A3854                                       = 0x800A3854;  /* length of a CD-audio mix fade, set by func_80035F78 (26730.c:25-31); cdrom_UpdateAudio divides by it and zeroes it at the end (26940.c:17-35) */  /* data-wave 2026-10-08: was g_scene_arg_saved */
+D_800A3840                                   = 0x800A3840;  /* fade step counter: zeroed by func_80035F78, incremented by cdrom_UpdateAudio until it reaches D_800A3854 (26940.c:31) */  /* data-wave 2026-10-08: was g_scene_alt_arg_saved */
 
 /* === Memcard async operation state machine (2026-05-17) -- 4 highs === */
 /* From code6cac_c0.c func_80037D14: 5-state machine driving memcard */
@@ -2082,7 +2082,7 @@ def_cbready                         = 0x8008003C;  /* MISNAMED: not motion-pre-c
 def_cbread                         = 0x80080064;  /* MISNAMED: not motion-pre-calc; duplicate of 0x8008003C (bios_DeliverEvent(0xF0000003, 0x40)) */
 func_80077B20                                = 0x80077B20;  /* MISNAMED: not gauge init; 1-line D_800A35E4 = 1 */
 func_80077D00                                = 0x80077D00;  /* MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr) */
-func_80044F80                                 = 0x80044F80;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_80044E74(a0+0x4D, a1) */
+func_80044F80                                 = 0x80044F80;  /* MISNAMED: not Satan2 info init; 1-line wrapper of ndata_Read(a0+0x4D, a1) */
 func_8006C1FC                                 = 0x8006C1FC;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006C168(a0, a1) */
 func_80077A60                                 = 0x80077A60;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006E068() */
 func_80077AC0                                 = 0x80077AC0;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_80077724() */
@@ -2117,7 +2117,7 @@ D_800A3200                           = 0x800A3200;  /* +4 from D_800A31FC (0x800
 D_800A3201                           = 0x800A3201;  /* +5 from D_800A31FC (0x800A31FC) */  /* data-wave 2026-10-08: was g_damage_debug_enabled_plus_5 */
 D_800A3208                      = 0x800A3208;  /* +4 from D_800A3204 (0x800A3204) */  /* data-wave 2026-10-08: was g_input_pause_pending_clear_plus_4 */
 D_800A3209                      = 0x800A3209;  /* +5 from D_800A3204 (0x800A3204) */  /* data-wave 2026-10-08: was g_input_pause_pending_clear_plus_5 */
-D_800A3240                              = 0x800A3240;  /* flag gating the file-size term of func_80044FA0; init 1, never written */  /* data-wave 2026-10-08: was g_text1a_color_blue_plus_4 */
+D_800A3240                              = 0x800A3240;  /* flag gating the file-size term of ndata_ReadChecked; init 1, never written */  /* data-wave 2026-10-08: was g_text1a_color_blue_plus_4 */
 D_800A3270                         = 0x800A3270;  /* +4 from D_800A326C (0x800A326C) */  /* data-wave 2026-10-08: was g_eff_particle_remaining_plus_4 */
 D_800A3284                     = 0x800A3284;  /* RECT {0x3E0, 0x1FF, 0x10, 1}, LoadImage destination in func_8005FBC8 */  /* data-wave 2026-10-08: was g_text1b_byte_pair_table_8x7_plus_8 */
 D_800A32B8                           = 0x800A32B8;  /* +2 from D_800A32B6 */  /* data-wave 2026-10-08: was g_text_render_cursor_b_plus_2 */
