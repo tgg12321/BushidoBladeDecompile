@@ -901,7 +901,7 @@ D_8008D9EC                             = 0x8008D9EC;  /* 0/1 flag byte table (0x
 /* RETIRE ALIAS 0x800A2614: retired name 'g_sys_mem_clear_dst_800A2614' (survivor g_irq_vsync_callbacks: trapIntrVSync's 8 callback slots, intr_vb.c:23-38; sys_MemClear only zeroes them, :18) */
 _spu_zerobuf                      = 0x800A28D4;  /* passed to saTan0GaugeDraw; gauge data block */  /* data-wave 2026-09-07: was g_satan0_gauge_data_block_800A28D4 */
 g_comb_recv_buf                                 = 0x800A3688;  /* 8-byte link-cable receive buffer: read(g_comb_read_fd, here, 8) in comb_Read8; checksum-verified by comb_WaitRead8 */
-g_comb_send_buf                                = 0x800A3698;  /* 8-byte link-cable send buffer: write(g_comb_write_fd, here, 8) in comb_Write8; packed by func_8003A728 */
+g_comb_send_buf                                = 0x800A3698;  /* 8-byte link-cable send buffer: write(g_comb_write_fd, here, 8) in comb_Write8; packed by comb_ExchangePad */
 patch0                                      = 0x800F1838;  /* passed to bios_SysDeqIntRP; interrupt routine pointer table */  /* data-wave 2026-09-25: was g_sys_int_rp_table */
 /* g_pad_analog_state at 0x800F33D8 already named in batch 5; ALSO passed to camera_SetMatrix in code6cac_c_mid (shared state buffer) */
 D_800F34D8                                 = 0x800F34D8;  /* save block of the memory-card file image (three FileRecord copies with checksums) */  /* data-wave 2026-10-08: was g_damage_debug_disp_buf */
@@ -966,7 +966,7 @@ D_800A350C                                = 0x800A350C;  /* s16[2]: func_800692C
 D_800A3514                                 = 0x800A3514;  /* counter: += 1 per call of func_8006B898 / C168 / D338 / D74C / E068 and per cursor-row draw in func_8006A880; zeroed at init and on cursor moves; read as the rsin phase ((x & 0x1F) << 7) of a pulsing colour */  /* data-wave 2026-10-08: was g_menuctl_frame_counter */
 
 /* === Serial-link exchange words at 0x800A36C0-36D4 (2026-05-17) -- 7 highs === */
-/* Source: func_8003A728 (28708.c).  A packed input word and its check */
+/* Source: comb_ExchangePad (28708.c).  A packed input word and its check */
 /* word (D_800A37C4 << 16 | 16-bit XOR) go out through comb_Write8; */
 /* comb_WaitRead8 stores the partner's pair on a check match. */
 /* */
@@ -1531,7 +1531,7 @@ D_800A36F8                           = 0x800A36F8;  /* byte value compared again
 /* func_8003B2C8 saves D_80102778.unk_4[0] in D_800A3836 before overwriting */
 /* it; func_8003B328 writes it back and sets D_800A3836 = 0xFF (empty) */
 /* (2B344.c:238-262).  D_800A37D8 / D_800A3844: see their lines. */
-D_800A37D8                                  = 0x800A37D8;  /* retry counter of func_8003AB44's link-cable (COMB) handshake: zeroed in state 1, ++ per nonzero _comb_control(3, 1, 0), gives up at 4 */  /* data-wave 2026-10-08: was g_overlay_load_counter */
+D_800A37D8                                  = 0x800A37D8;  /* retry counter of comb_HandshakeStep's link-cable (COMB) handshake: zeroed in state 1, ++ per nonzero _comb_control(3, 1, 0), gives up at 4 */  /* data-wave 2026-10-08: was g_overlay_load_counter */
 D_800A3844                                = 0x800A3844;  /* byte cursor into the D_800900EC command streams: func_8003B20C sets it to D_800900EC[arg0] and passes it to func_8003AE5C, func_8003B5A4 advances it */  /* data-wave 2026-10-08: was g_file_overlay_arg_saved */
 D_800A3836                                       = 0x800A3836;  /* u8 save of D_80102778.unk_4[0] (func_8003B2C8, 2B344.c:239), written back by func_8003B328, which stores 0xFF (:254-259); readers test it against 0xFF (:1209, 28708.c:1497-1521, 9F9C.c:1393) */  /* data-wave 2026-10-09: was g_char_id_saved_a */
 D_800A3915                                       = 0x800A3915;  /* u8: 0xFF at func_8003B20C (2B344.c:227); func_8003B328 stores the D_80102778.unk_4[0] value it replaces (:257); func_8003B5A4 compares a D_800A3844 stream byte with it (:368) */  /* data-wave 2026-10-09: was g_char_id_saved_b */
@@ -1834,7 +1834,7 @@ D_800A382C                                   = 0x800A382C;  /* set to 1 by comb_
 
 /* === Link bit counters + check-failure counter (2026-05-17) -- 3 highs === */
 /* Companions to D_800A36C0 / D_800A3916. */
-D_800A3908                                   = 0x800A3908;  /* accumulated count of set bits (incremented in func_8003A728) */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_a */
+D_800A3908                                   = 0x800A3908;  /* accumulated count of set bits (incremented in comb_ExchangePad) */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_a */
 D_800A38FC                                   = 0x800A38FC;  /* accumulated count of set bits in D_800A36C0's lo word */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_b */
 D_800A38D0                                  = 0x800A38D0;  /* link check-failure counter, reset in func_8003B130 / func_80037804 */  /* data-wave 2026-10-08: was g_pad_rec_misc_counter */
 
@@ -2062,7 +2062,7 @@ CdDataSync                           = 0x80080684;  /* MISNAMED: VU0 is PS2-only
 func_80056FE8                                      = 0x80056FE8;  /* MISNAMED: not angle correction; character display-offset lookup via D_8009A830/38/40 */
 func_80044378                                           = 0x80044378;  /* MISNAMED: actually builds an offset table; counts -2 terminators (see build_offset_table_80044378 in pass-6 replacement section) */
 func_800203B4                                  = 0x800203B4;  /* MISNAMED: not frame calc; extracts motion matrix and applies GTE rotation to a vector */
-func_8001DBE4                               = 0x8001DBE4;  /* MISNAMED: not a camera fn; dispatches func_8003AA78/AA48 based on D_800A3768 (!= 0x14) */
+func_8001DBE4                               = 0x8001DBE4;  /* MISNAMED: not a camera fn; returns unless D_800A3768 == DISP_ACTIVE (0x14); then comb_BeginWait, comb_ExchangeEmptyPad wait loops, comb_EndWait (9F9C.c:1729-1747) */
 func_8003E164                               = 0x8003E164;  /* MISNAMED: not a camera fn; cache check + gnd_open() + load via func_8007B6C8 */
 func_8004939C                                      = 0x8004939C;  /* MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_800A3* cells */
 func_80041688                                       = 0x80041688;  /* MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+) */
@@ -2173,7 +2173,7 @@ D_800A3864                           = 0x800A3864;  /* D_800A3860[1] (= 0x801908
 D_800A3876                              = 0x800A3876;  /* fighter index 0 / 1 / -1, set with D_800A38A8 = 1; read by func_80026DA4 */  /* data-wave 2026-10-08: was g_match_round_index_plus_2 */
 D_800A3880                              = 0x800A3880;  /* loaded latch: func_80020DDC sets it after reading a CD file into D_800A3830; func_80020E74 calls func_80020DDC while it is 0; func_80020CDC clears it */  /* data-wave 2026-10-08: was g_round_total_score_plus_4 */
 D_800A389C                             = 0x800A389C;  /* halfword frame counter of func_80026DA4 (reset at >= 0x2B) */  /* data-wave 2026-10-08: was g_match_round_byte_b_plus_1 */
-D_800A38AE                             = 0x800A38AE;  /* +2 from D_800A38AC (0x800A38AC) */  /* data-wave 2026-10-08: was g_voice_dialog_state_plus_2 */
+D_800A38AE                             = 0x800A38AE;  /* +2 from g_comb_handshake_step (0x800A38AC) */  /* data-wave 2026-10-08: was g_voice_dialog_state_plus_2 */
 D_800A38B8                        = 0x800A38B8;  /* u8 counter: set to 1, incremented, cleared at 0x3C (9F9C.c func_8001CE60) */  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor_plus_4 */
 D_800A38C0                                 = 0x800A38C0;  /* +4 from g_file_heap_base (0x800A38BC) */  /* data-wave 2026-09-25: was g_file_heap_base_plus_4 */
 /* 2026-10-16: D_800A38C1 retired -- D_800A38C0[1] (u8 [2], include/bb2.h). */
@@ -2182,7 +2182,7 @@ g_gpu_ot256_ptr                        = 0x800A38D8;  /* = g_gpu_ot256_db[D_800A
 D_800A38DF                         = 0x800A38DF;  /* func_80022408(&D_80101EC8[D_800A3748].unk_F4); read by func_80022580 */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_1 */
 D_800A38E0                         = 0x800A38E0;  /* 0..3, set by func_8001C8DC at D_800A38E2 = 0x1F / 0x33 / 0x51; func_80021D10's third argument */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_2 */
 D_800A38E1                         = 0x800A38E1;  /* = p->unk14_15 (func_8003504C); bit 0 picks D_800A36A4 = 0x21 / 0x20 */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_3 */
-D_800A38E4                       = 0x800A38E4;  /* bits_DepositMask3F83F8(D_800A36C6) (func_8003ACB8); OR-ed into func_80077940's argument */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_2 */
+D_800A38E4                       = 0x800A38E4;  /* bits_DepositMask3F83F8(D_800A36C6) (comb_Connect); OR-ed into func_80077940's argument */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_2 */
 D_800A38E8                       = 0x800A38E8;  /* 0xFF or data[3] & 0x7F (func_8001FBE8); lower bound on unk_40 in func_8002C0DC */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_6 */
 D_800A38F0                         = 0x800A38F0;  /* store-only: func_8002006C stores the change of D_800A387C */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_2 */
 D_800A38F4                         = 0x800A38F4;  /* frame clock of func_8001CE60's mode-5 branch (vs D_800A36CC * 30) */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_6 */

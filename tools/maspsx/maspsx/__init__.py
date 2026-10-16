@@ -985,7 +985,7 @@ class MaspsxProcessor:
                 # unconditionally -- masked while it was per-function scoped
                 # (no opted-in function had an $at-expanding consumer), but a
                 # false positive the moment it applies generally: it put a
-                # spurious nop in func_8003ACB8 (oracle RED) until these
+                # spurious nop in comb_Connect (oracle RED) until these
                 # guards were added.
                 nop_required = False
                 if not uses_at(after_label):
