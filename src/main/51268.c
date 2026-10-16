@@ -4216,97 +4216,89 @@ s32 func_8006B578(s32 *arg0, u32 *arg1) {
     u32 v;
     s32 sp10;
     s32 ret;
-    s32 hi;
     s32 var_s2 = 0;
 
     v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
     ret = func_800692C0((u32 *)&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
-    hi = ret >> 16;
-    switch (hi) {
-    case 1: {
-        u32 a0 = D_800A34F8;
-        if ((a0 & 0x1C00) == 0x1400) {
-            D_800A34F8 = a0 & ~0x1C00;
+    switch (ret >> 16) {
+    case 1:
+        if ((D_800A34F8 & 0x1C00) == 0x1400) {
+            D_800A34F8 &= ~0x1C00;
         } else {
-            u32 m = a0 & ~0x1C00;
-            s32 c = ((a0 >> 10) & 7) + 1;
-            m |= (c & 7) << 10;
-            D_800A34F8 = m;
+            D_800A34F8 = (D_800A34F8 & ~0x1C00) |
+                         (((((u32)D_800A34F8 >> 10) & 7) + 1) & 7) << 10;
         }
         func_8005C650(0, 0x7F, 0x7F);
         D_800A3514 = 0;
         break;
-    }
-    case 2: {
-        u32 a0 = D_800A34F8;
-        if ((a0 & 0x1C00) == 0) {
-            D_800A34F8 = (a0 & ~0x1C00) | 0x1400;
+    case 2:
+        if ((D_800A34F8 & 0x1C00) == 0) {
+            D_800A34F8 = (D_800A34F8 & ~0x1C00) | 0x1400;
         } else {
-            u32 m = a0 & ~0x1C00;
-            s32 c = ((a0 >> 10) & 7) - 1;
-            m |= (c & 7) << 10;
-            D_800A34F8 = m;
+            D_800A34F8 = (D_800A34F8 & ~0x1C00) |
+                         (((((u32)D_800A34F8 >> 10) & 7) - 1) & 7) << 10;
         }
         func_8005C650(0, 0x7F, 0x7F);
         D_800A3514 = 0;
         break;
-    }
     }
 
-    if (((u32)D_800A34F8 >> 10 & 7) >= 6) {
-        goto tail;
-    }
     switch ((u32)D_800A34F8 >> 10 & 7) {
     case 0:
         if ((ret & 0xFF) != 0) {
             D_800A3524->unk20_0 ^= 1;
             func_8005C650(0, 0x7F, 0x7F);
         }
-        goto shared_400040;
+        if (*arg1 & 0x400040) {
+            func_8005C650(1, 0x7F, 0x7F);
+            D_800A34F8 = (D_800A34F8 & ~0x1C00) |
+                         (((((u32)D_800A34F8 >> 10) & 7) + 1) & 7) << 10;
+        }
+        break;
     case 1:
         if ((ret & 0xFF) != 0) {
             D_800A3524->unk20_1 ^= 1;
             func_8005C650(0, 0x7F, 0x7F);
         }
-        goto shared_400040;
+        if (*arg1 & 0x400040) {
+            func_8005C650(1, 0x7F, 0x7F);
+            D_800A34F8 = (D_800A34F8 & ~0x1C00) |
+                         (((((u32)D_800A34F8 >> 10) & 7) + 1) & 7) << 10;
+        }
+        break;
     case 2:
         if ((ret & 0xFF) != 0) {
             D_800A3524->unk20_2 ^= 1;
             func_8005C650(0, 0x7F, 0x7F);
         }
-    shared_400040:
         if (*arg1 & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
-            {
-                u32 f2 = D_800A34F8;
-                u32 m2 = f2 & ~0x1C00u;
-                s32 c2 = ((f2 >> 10) & 7) + 1;
-                D_800A34F8 = m2 | ((c2 & 7) << 10);
-            }
+            D_800A34F8 = (D_800A34F8 & ~0x1C00) |
+                         (((((u32)D_800A34F8 >> 10) & 7) + 1) & 7) << 10;
         }
-        goto tail;
+        break;
     case 3:
         if (*arg1 & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
             D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) | 0x4000;
             var_s2 = 2;
         }
-        goto tail;
+        break;
     case 4:
         if (*arg1 & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
             var_s2 = 3;
         }
-        goto tail;
+        break;
     case 5:
         if (*arg1 & 0x400040) {
             func_8005C650(1, 0x7F, 0x7F);
             var_s2 = 1;
         }
-        goto tail;
+        break;
     }
-tail:
+
     if (*arg1 & 0x100010) {
         func_8005C650(2, 0x7F, 0x7F);
         var_s2 = 1;
@@ -4330,39 +4322,32 @@ s32 func_8006B898(s32 arg0, u32 arg1) {
 }
 
 s32 func_8006B92C(s32 *arg0, u32 *arg1) {
+    u32 v;
     s32 sp10;
     s32 ret;
     s32 idx;
     s32 var_s0 = 0;
-    u32 v;
-    u32 a0;
+
     v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
     ret = func_800692C0(&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
-    ret >>= 16;
-    switch (ret) {
+    switch (ret >> 16) {
     case 1:
-        a0 = D_800A34F8;
-        if ((a0 & 0xE000) == 0x4000) {
-            D_800A34F8 = a0 & 0xFFFF1FFF;
+        if ((D_800A34F8 & 0xE000) == 0x4000) {
+            D_800A34F8 &= 0xFFFF1FFF;
         } else {
-            u32 m = a0 & 0xFFFF1FFF;
-            s32 c = ((a0 >> 13) & 7) + 1;
-            m |= (c & 7) << 13;
-            D_800A34F8 = m;
+            D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) |
+                         (((((u32)D_800A34F8 >> 13) & 7) + 1) & 7) << 13;
         }
-        goto do_call;
+        func_8005C650(0, 0x7F, 0x7F);
+        break;
     case 2:
-        a0 = D_800A34F8;
-        if ((a0 & 0xE000) == 0) {
-            D_800A34F8 = (a0 & 0xFFFF1FFF) | 0x4000;
+        if ((D_800A34F8 & 0xE000) == 0) {
+            D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) | 0x4000;
         } else {
-            u32 m = a0 & 0xFFFF1FFF;
-            s32 c = ((a0 >> 13) & 7) - 1;
-            m |= (c & 7) << 13;
-            D_800A34F8 = m;
+            D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) |
+                         (((((u32)D_800A34F8 >> 13) & 7) - 1) & 7) << 13;
         }
-    do_call:
         func_8005C650(0, 0x7F, 0x7F);
         break;
     }
