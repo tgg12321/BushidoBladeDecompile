@@ -26,6 +26,8 @@ metadata:
 - **Volatile coercion** on game-state globals, except [[legitimate-volatile-interrupt-touched]]
   and [[mmio-volatile-type-level]].
 - **Scheduling barriers** (`__asm__("" ::: "memory")`), macro-hidden asm, GPR opcodes in asm.
+- **Token pasting** (`##` / `%:%:`) in a src TU: it can build a macro or asm name the
+  checks never see; the engine refuses it.
 
 A verified SOTN citation ([[sotn-precedent-suffices]], Q55) can admit a construct this ban
 refuses, with Q53's prerequisites, on the manual path.
@@ -47,10 +49,11 @@ GTE code in a C body is CALLS to the macros of Sony's PsyQ 4.0 headers, vendored
    ends and DMPSX's command word for the 11 owner-approved placeholders in `DMPSX_WORDS`.
    Every other placeholder stays Sony's, and calls to its macros are refused.
    `check_vendored()` re-hashes to Sony's SHA-256. A new word or header is an `engine:` commit
-   with layer-2, and a new DMPSX word also needs an owner ruling.
+   with layer-2; a new DMPSX word, or a new vendored header whose macros carry a trap
+   (`break` / `syscall`), also needs an owner ruling.
 2. **One inline header per TU** (`inline_o.h` or `inline_c.h`; `gtemac.h` with either),
    included by the `.c` file. No other header may define asm macros (`bios.h`,
-   `include_asm.h` excepted); a same-file asm `#define` or a redefinition of a vendored name
+   `include_asm.h` and the vendored `libsn.h` excepted); a same-file asm `#define` or a redefinition of a vendored name
    is a cheat.
 3. **Calls, not copies.** Each GTE operation is a statement-level call by name. No `__asm__`
    spelling of a header macro (written-out bodies, joined statements, edited clobbers, hand
