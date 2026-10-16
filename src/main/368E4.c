@@ -692,8 +692,6 @@ void func_800475A4(void) {
             12;
     result.vz = var_5;
 
-    /* FAKE: second C handle to D_800EEDF0 (pointer-alias-fake-exception);
-     * the direct spelling scores 6. */
     base = &D_800EEDF0;
     {
         /* FAKE: s16 temporary for the negated pitch; storing -ratan2() straight
