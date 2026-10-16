@@ -19,8 +19,6 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
     RECT buf;
     u16 *tbl;
     s16 u, v;
-    OTag *var_5;
-    OTag *ot;
 
     var_0 = D_800A36AC & 1;
     if (var_0 != D_800A3234) {
@@ -40,14 +38,7 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
             u = u + 0x80;
         }
         SetDrawMove(D_800A3378, &buf, u, v);
-        var_5 = (OTag *)D_800A3378;
-        /* FAKE: SDK bitfield view of an OT word retains tag length
-         * (masked u32 copies, same behaviour: score 18; whole-word copies: 19);
-         * SOTN PS1 use: src/main/psxsdk/libgpu/sys.c:288 */
-        /* SOTN: include/psxsdk/libgpu.h:88 @db41b28eee52969244a52cc269c8163d1ed8826a */
-        ot = (OTag *)D_800A378C;
-        var_5->addr = ot[0x3FFC / 4].addr;
-        ot[0x3FFC / 4].addr = (u32)var_5;
+        addPrim(&D_800A378C[0x3FFC / 4], D_800A3378);
         D_800A3378++;
     }
 }

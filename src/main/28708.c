@@ -1105,25 +1105,14 @@ void func_80039320(void) {
     extern u8 D_800A379C;
     extern s16 D_800A3714;
     s32 i;
-    Unk80101BF0Rec *p;
     Unk800F68E0Rec *q;
     s16 val;
     s16 newval;
-    /* FAKE: constant holder for the 0xFF free marker; the literal moves li 255
-       below the table address (score 2) */
-    u8 var_5;
-
-    i = 0;
-    var_5 = 0xFF;
-    p = D_80101BF0;
-
-    do {
-        if (p->unk_0 == D_800A36F8) {
-            p->unk_0 = var_5;
+    for (i = 0; i < 0x20; i++) {
+        if (D_80101BF0[i].unk_0 == D_800A36F8) {
+            D_80101BF0[i].unk_0 = 0xFF;
         }
-        i++;
-        p++;
-    } while (i < 0x20);
+    }
 
     q = D_800F68E0;
     i = 0;
@@ -1213,24 +1202,14 @@ void func_800395B4(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
     extern u8 D_800A379C;
     Unk80101BF0Rec *var_0;
     u8 idx;
-    /* FAKE: constant holder for the 0xFF free marker; with the literal the li
-       is scheduled after the lbu and the load-delay nop is lost (score 4) */
-    u8 var_2;
-
     if (D_800A3208 == 0) {
         idx = D_800A379C;
         var_0 = &D_80101BF0[idx];
-        if (idx < 0x20) {
-            var_2 = 0xFF;
-        loop:
-            if (var_0->unk_0 != var_2) {
-                D_800A379C = idx + 1;
-                idx = idx + 1;
-                var_0++;
-                if (idx < 0x20) {
-                    goto loop;
-                }
+        for (; idx < 0x20; idx++, var_0++) {
+            if (var_0->unk_0 == 0xFF) {
+                break;
             }
+            D_800A379C = idx + 1;
         }
         if (D_800A379C != 0x20) {
             u8 tmp = D_800A36F8;

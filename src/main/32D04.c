@@ -404,24 +404,17 @@ void func_80042E90(void) {
 }
 
 void math_TransposeMatrixInPlace(MATRIX *a0) {
-    /* FAKE: statement staging — saving one
-       side of all three pairs up front seats x/y/z in $a1/$v1/$v0 for
-       the whole body with the scratch reloads sharing $a2, and keeps
-       the load-delay nop at +0x18 unfilled, as in the target; three plain
-       swaps: score 12. */
-    s16 t, x, y, z;
-    y = a0->m[0][1];
-    x = a0->m[0][2];
-    z = a0->m[1][2];
-    t = a0->m[2][0];
-    a0->m[0][2] = t;
-    a0->m[2][0] = x;
-    t = a0->m[1][0];
-    a0->m[0][1] = t;
-    a0->m[1][0] = y;
-    t = a0->m[2][1];
-    a0->m[1][2] = t;
-    a0->m[2][1] = z;
+    s16 temp;
+
+    temp = a0->m[2][0];
+    a0->m[2][0] = a0->m[0][2];
+    a0->m[0][2] = temp;
+    temp = a0->m[1][0];
+    a0->m[1][0] = a0->m[0][1];
+    a0->m[0][1] = temp;
+    temp = a0->m[2][1];
+    a0->m[2][1] = a0->m[1][2];
+    a0->m[1][2] = temp;
 }
 
 void math_Rotate2D(s32 *a0, s32 *a1, s32 a2) {
@@ -545,35 +538,12 @@ extern void func_80043454(s16, s16, s16, s16);
 
 void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     u16 arg4_lo = arg4;
-    /* FAKE: the index (an s32 copy of arg0) and the count table's base in
-       locals: arg0 / the table at the use, score 4 each. */
-    s32 idx = arg0;
-    u16 *cnt_base = D_80103658;
-    u16 *countPtr;
     s16 i;
 
-    countPtr = &cnt_base[idx];
-    i = 0;
-    if (*countPtr == 0)
-        goto done;
-    {
-        /* FAKE: the base table in a local; at the use: score 4 */
-        s32 **base_addr = D_80103608;
-        s32 **basePtr = &base_addr[idx];
-        /* FAKE (score 5 read through countPtr): countPtr's
-           caller-save home ($a1) must die before the loop's jal; this rebind
-           gives the loop reads their own callee-save home ($s1), reproducing
-           the target's addu $s1,$a1,$zero copy */
-        u16 *cntPtr = countPtr;
-    /* FAKE: the loop goto-formed; as a do-while: score 21. */
-    loop:
-        *(s32 *)0x1F800000 = (*basePtr)[i];
+    for (i = 0; i < D_80103658[arg0]; i++) {
+        *(s32 *)0x1F800000 = D_80103608[arg0][i];
         func_80043454(arg1, arg2, arg3, arg4_lo);
-        i++;
-        if (i < *cntPtr)
-            goto loop;
     }
-done:;
 }
 
 void func_80043398(s16 a0, s16 a1, s16 a2, s16 a3, s16 a4) {
