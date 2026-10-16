@@ -1161,8 +1161,6 @@ def main() -> int:
                    help="scan every asm/funcs/*.s and print ranked candidates")
     ap.add_argument("--json", action="store_true",
                     help="emit JSON instead of human-readable")
-    ap.add_argument("--min-score", type=int, default=3,
-                    help="--all: only print funcs with score ≥ N (default 3)")
     args = ap.parse_args()
 
     if args.single:
