@@ -1,1 +1,2 @@
 {"func": "func_800693CC", "addr": "800693CC", "verdict": "PASS", "body_hash": "19dbf7ca91147f9b", "body_kind": "c", "file": "main/51268", "reviewer": "cheat-reviewer-fakea-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T09:53:33Z", "head": "8ccce0b12", "notes": ""}
+{"func": "func_800693CC", "addr": "800693CC", "verdict": "PASS", "body_hash": "f7f760b239e36f54", "body_kind": "c", "file": "main/51268", "reviewer": "aabf97e728a81ad36", "scope": "cheat-cleanup", "date": "2026-10-16T17:51:51Z", "head": "f24433eb2", "notes": ""}
