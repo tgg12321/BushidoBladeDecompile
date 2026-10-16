@@ -3044,7 +3044,7 @@ u8 func_80068D88(s32 arg0, s32 arg1) {
 }
 
 void func_80068ECC(s32 arg0) {
-    s32 *p = &D_8009BC04;
+    s32 *p = &D_8009BC04.rows_on;
     s32 v = *p;
     v &= ~0x1;
     v |= arg0 & 0x1;
@@ -3092,7 +3092,7 @@ s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
         s32 var_4 = -0x10;
         s32 var_5;
         s32 flags = D_800A34F8;
-        var_5 = D_8009BC04;
+        var_5 = D_8009BC04.rows_on;
 
         flags &= var_4;
         D_800A34F8 = flags;
@@ -3100,7 +3100,7 @@ s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
             u32 mask;
             s32 var_8;
             mask = (u32)-0x10;
-            var_8 = D_8009BC04;
+            var_8 = D_8009BC04.rows_on;
             do {
                 s32 next;
                 s32 lo;
@@ -3300,7 +3300,6 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
 }
 
 s32 func_800693CC(s32 arg0, s32 arg1) {
-    extern s32 D_8009BC08;
     extern void func_80069AE4(s32 *, s32, GpuDb *);
     extern void func_8006A880(u8 *, u16 *, s32);
     extern void func_80069F80(s32 *, s32);
@@ -3326,10 +3325,6 @@ increment: {
     /* FAKE: the index-field clear mask, named so its load sits ahead of
      * the alias (the literal moves `li -16` two slots: score 2). */
     s32 var_3 = ~0xF;
-    /* FAKE: keep the availability address across the loop so GCC reloads
-     * its word each iteration; direct global reads hoist the word: score 5
-     * (both loops: 10). */
-    s32 *available = &D_8009BC04;
     do {
         s32 flags = D_800A34F8;
         s32 index;
@@ -3337,14 +3332,10 @@ increment: {
         if (index >= 8) {
             D_800A34F8 &= var_3;
         }
-    } while (!(((u32)*available >> (D_800A34F8 & 0xF)) & 1));
+    } while (!(((u32)D_8009BC04.rows_on >> (D_800A34F8 & 0xF)) & 1));
 }
     goto moved;
 decrement: {
-    /* FAKE: keep the availability address across the loop so GCC reloads
-     * its word each iteration; direct global reads hoist the word: score 5
-     * (both loops: 10). */
-    s32 *available = &D_8009BC04;
     do {
         s32 flags = D_800A34F8;
         s32 index = flags & 0xF;
@@ -3353,39 +3344,37 @@ decrement: {
         } else {
             D_800A34F8 = (flags & ~0xF) | ((index - 1) & 0xF);
         }
-    } while (!(((u32)*available >> (D_800A34F8 & 0xF)) & 1));
+    } while (!(((u32)D_8009BC04.rows_on >> (D_800A34F8 & 0xF)) & 1));
 }
 moved:
     D_800A3514 = 0;
     D_800A3524->unk20_3 = 0;
 after_move:
     if (((result & 0xFF) < 3) && ((result & 0xFF) != 0) &&
-        (D_8009BC0C[D_800A34F8 & 0xF].mode == 3)) {
+        (D_8009BC04.opt[D_800A34F8 & 0xF].mode == 3)) {
         D_800A3524->unk20_3 ^= 1;
         func_8005C650(0, 0x7F, 0x7F);
     }
-    if (D_8009BC0C[D_800A34F8 & 0xF].mode == 2) {
+    if (D_8009BC04.opt[D_800A34F8 & 0xF].mode == 2) {
         D_800A3524->unk20_3 = 1;
-    } else if (D_8009BC0C[D_800A34F8 & 0xF].mode == 1) {
+    } else if (D_8009BC04.opt[D_800A34F8 & 0xF].mode == 1) {
         D_800A3524->unk20_3 = 0;
     }
     if ((D_800A34F8 & 0xF) != 7) {
         if (((D_800A34F8 & 0xF) - 6) >= 0) {
-            /* FAKE: one handle for the mask read-modify-write; the direct
-             * global form re-addresses D_8009BC08: score 9. */
-            s32 *mask_ptr = &D_8009BC08;
-            var_0[14] = *mask_ptr & 0x80;
-            *mask_ptr = var_0[14] | (0x1F << ((D_800A34F8 & 0xF) - 5));
+            var_0[14] = D_8009BC04.unk4 & 0x80;
+            D_8009BC04.unk4 = var_0[14] | (0x1F << ((D_800A34F8 & 0xF) - 5));
         } else {
-            D_8009BC08 = 0x9F;
+            D_8009BC04.unk4 = 0x9F;
         }
     }
     func_80069AE4(var_0, 0, var_2);
-    func_8006A880((u8 *)var_0, (u16 *)var_2, D_8009BC0C[D_800A34F8 & 0xF].mode);
-    func_80069F80(var_0, D_8009BC0C[D_800A34F8 & 0xF].mode);
-    func_8006A1A0(var_0, D_8009BC0C[D_800A34F8 & 0xF].mode);
+    func_8006A880(
+        (u8 *)var_0, (u16 *)var_2, D_8009BC04.opt[D_800A34F8 & 0xF].mode);
+    func_80069F80(var_0, D_8009BC04.opt[D_800A34F8 & 0xF].mode);
+    func_8006A1A0(var_0, D_8009BC04.opt[D_800A34F8 & 0xF].mode);
     if (arg1 & 0x40) {
-        switch (D_8009BC0C[D_800A34F8 & 0xF].state) {
+        switch (D_8009BC04.opt[D_800A34F8 & 0xF].state) {
         case 4:
         case 5:
             if (g_pad_state.valid[1] == 0) {
@@ -3397,7 +3386,7 @@ after_move:
         goto accept;
     }
     if (arg1 & 0x400000) {
-        switch (D_8009BC0C[D_800A34F8 & 0xF].state) {
+        switch (D_8009BC04.opt[D_800A34F8 & 0xF].state) {
         case 0:
         case 1:
         case 2:
@@ -3412,10 +3401,10 @@ after_move:
         }
     accept:
         func_8005C650(1, 0x7F, 0x7F);
-        if (D_8009BC0C[D_800A34F8 & 0xF].state != 7) {
+        if (D_8009BC04.opt[D_800A34F8 & 0xF].state != 7) {
             snd_CloseVab1();
         }
-        return D_8009BC0C[D_800A34F8 & 0xF].state;
+        return D_8009BC04.opt[D_800A34F8 & 0xF].state;
     }
     if (arg1 & 0x100010) {
         func_8005C650(2, 0x7F, 0x7F);
@@ -3966,11 +3955,9 @@ void func_8006A564(u8 *arg0, Unk8007352CRec *arg1, s32 arg2) {
     *(s32 *)(arg0 + 0x1C) = *(s32 *)(arg0 + 0x1C) + 0xC;
 }
 
-extern s32 D_8009BC08;
-
 /* Draws the eight-row list screen from the MOD.BIN resource (ctx+4): the row
- * sheets (cursor row flashing, rows switched on in D_8009BC04 lit), a counter
- * frame, row 7, the frame icons and a TILE. arg0 = the words
+ * sheets (cursor row flashing, rows switched on in D_8009BC04.rows_on lit), a
+ * counter frame, row 7, the frame icons and a TILE. arg0 = the words
  * func_8006E390 fills (+0x8 POLY_FT4 cursor, +0x14 SPRT cursor,
  * +0x18 TILE cursor, +0x1C DR_MODE cursor, +0x20 DR_AREA cursor,
  * +0x24 DR_OFFSET cursor), accessed as byte offsets like func_8006A564;
@@ -3987,7 +3974,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
      * frames at [frame]). */
     Unk8009B0E0Record **var_3;
     /* Ruling 11: holds two values, each a mask with one bit per option row:
-       D_8009BC08 (scanned for the first row drawn) and D_8009BC04 (rows
+       D_8009BC04.unk4 (scanned for the first row drawn) and .rows_on (rows
        switched on). */
     u32 row_mask;
     /* Ruling 9: the sheet's cell array; every sheet drawn here has one 12-byte
@@ -4000,7 +3987,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     s32 i;
 
     var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_18;
-    row_mask = D_8009BC08;
+    row_mask = D_8009BC04.unk4;
     bit = 0;
     s.header = var_3[0];
     SetDrawMode(
@@ -4024,7 +4011,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     AddPrim(g_gpu_ot_ptr + 0xC, (DR_OFFSET *)*(s32 *)(arg0 + 0x24));
     *(s32 *)(arg0 + 0x24) += 0xC;
 
-    row_mask = D_8009BC04;
+    row_mask = D_8009BC04.rows_on;
     s.ot_idx = 0xB;
     for (i = 0; i < 7; i++) {
         s32 y = i * 0x18 + 0x3F;

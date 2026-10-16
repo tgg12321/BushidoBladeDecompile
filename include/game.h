@@ -121,6 +121,16 @@ typedef struct {
     u8 mode;
 } MenuOption;
 
+/* 0x8009BC04: the list menu's state -- the rows switched on (one bit per
+ * row; func_80068ECC sets them), a second row mask func_800693CC sets from
+ * the cursor row (func_8006A880 scans it for the first row drawn), then
+ * the eight option rows. */
+typedef struct {
+    s32 rows_on;
+    s32 unk4;
+    MenuOption opt[8];
+} MenuState;
+
 /* 0x8009BCF8: 2 pages x 10 two-byte records (0x8009BCF8..0x8009BD1F; D_8009BD20
  * follows), one page per character-select page, 2 rows x 5 columns of cells
  * (cell = row * 5 + col). func_80075F80 / func_800759D0 index it [page][cell];

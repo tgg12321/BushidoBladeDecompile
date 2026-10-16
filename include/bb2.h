@@ -39,7 +39,7 @@ extern Unk800F1198Record D_800F1198[];
 extern Unk800A9CF8Rec D_800A9CF8;
 extern Unk800F0EC8Record D_800F0EC8[][10];
 extern Unk800F0E38Record D_800F0E38[12];
-extern MenuOption D_8009BC0C[8];
+extern MenuState D_8009BC04;
 
 /* The three scroll pages' origins: s16 (x, y) pairs for pages 4..6
  * (func_800720FC). */
@@ -528,7 +528,6 @@ extern u8 D_8008E914[][8];
 extern s32 D_8008EA00[][4];
 extern u8 D_8008EC24[][5];
 extern u8 D_8009BA60[];
-extern s32 D_8009BC04;
 extern Unk8009BD24Block D_8009BD24;
 extern s32 D_800A3244;
 extern s32 D_800A326C;
