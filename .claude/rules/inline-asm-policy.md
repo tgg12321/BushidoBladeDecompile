@@ -54,13 +54,21 @@ GTE code in a C body is CALLS to the macros of Sony's PsyQ 4.0 headers, vendored
    is a cheat.
 3. **Calls, not copies.** Each GTE operation is a statement-level call by name. No `__asm__`
    spelling of a header macro (written-out bodies, joined statements, edited clobbers, hand
-   command words) and no standalone call of a macro without a cop2 instruction (`gte_nop()`).
+   command words) and no standalone call of a macro without a cop2 or trap instruction
+   (`gte_nop()`).
 4. **Arguments are C**, reviewed as such; Q115 governs respelling them.
 5. **Bytes and record.** Sandbox 0, full-build SHA1 == oracle; call-site hashes in
    `tools/canonical_asm_regions.json` (`engine/completion.py region_hashes`; an argument or
    header switch voids them); layer-2 checks every call against the TU's header; the usual
    cheat-reviewer PASS. A class grant: no per-function owner row. Grinder-applicable once the
    driver's grant door and scope learn the class; until then the manual or batch lane applies it.
+
+**Other vendored PsyQ macros.** SN's LIBSN.H is vendored whole as `include/psxsdk/libsn.h`
+under rule 1: `pollhost()` / `PSYQpause()` expand to `break 1024` / `break 1031`, a trap
+with a code field C cannot emit. Rules 1 and 3-5 apply; libsn.h needs no inline header but
+the `.c` file includes it directly, and its calls are keyed `libsn.h:` in the region hash.
+Admission is `gtemacro.Macro.admitted` (a cop2 or a trap instruction in the expansion).
+Row tag `gcc-cannot-emit:psyq_pollhost_break`.
 
 **Macro choice** where two expand identically: the macro named for the operation the code
 performs (a `gtemac.h` composite when the code does that whole operation, e.g. `gte_Lzc`);
