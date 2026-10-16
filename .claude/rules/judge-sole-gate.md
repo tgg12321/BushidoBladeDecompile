@@ -42,14 +42,21 @@ executes them.
    tier keeps an EXISTING `inline_asm_canonical.txt` grant (3a never creates one) when ALL
    hold: (a) in `.text` order, every function between it and its nearest STRONG function on
    EACH side is STRONG or meets (b)-(c) itself (judged in the same batch), never compiled C
-   or an INCLUDE_ASM function without that evidence;
+   or an INCLUDE_ASM function without that evidence. The last function of a module may meet
+   (a) on one side only when nop words follow its body (beyond its delay slot), its end with
+   those nops falls on a 16-byte boundary, and the next `.text` function belongs to a
+   different module (Sony's assembler padded each hand-written module's `.text` to 16;
+   [[rodata-object-alignment]]); the other side still meets (a);
    (b) its own body shows scheduling GCC 2.7.2 cannot emit, named per function: e.g. a cop2
-   op in the `jr $ra` delay slot, or a `lui`+`ori` absolute address used only as one
-   load/store base (GCC folds it into `%lo`). Hard `$t*` cop2 transfers alone do not count:
-   the vendored `inline_c.h` macros emit them from compiled C; (c) no genuine likelihood of
+   op in the `jr $ra` delay slot. Hard `$t*` cop2 transfers alone do not count (the
+   vendored `inline_c.h` macros emit them from compiled C), nor does `lui`+`ori` alone (this
+   build emits it for a volatile absolute store); (c) no genuine likelihood of
    C: the body is not C-shaped, and no C or C-plus-GTE-macro-call candidate reproduces it
    (none within endgame distance). One cheat-reviewer checks (a)-(c) per function; the row
-   gains `[re-audit <date>: hand-written module <lo>-<hi>]`.
+   gains `[re-audit <date>: hand-written module <lo>-<hi>]`. Owner per-function ruling
+   2026-10-16 (this function only, not a class): func_80052C10 meets (b)-(c); `$t9` is
+   reachable from C only under register pressure forcing a ~110-insn framed body
+   (memory/grind/func_80052C10/evidence.md s2). Its extra nop ends 8-aligned, not module pad.
 4. **No extension requests exist (owner ruling Q91).** A construct outside the pre-cleared
    shapes in [[no-new-park-categories]] is decided directly on [[completion-bar]] item 3:
    labelled, honest, not on item 3's refused list, existing types used and the simplest
