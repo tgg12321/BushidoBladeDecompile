@@ -279,7 +279,7 @@ tail indices at `g_gpu_packet_write_idx` (0x8009BF78) /
 ### Serial-link exchange words — `0x800A_36C0..36D4`
 
 Packed input words and check words (`D_800A37C4 << 16` | 16-bit XOR)
-exchanged over the serial link by `func_8003A728`: `comb_Write8` sends,
+exchanged over the serial link by `comb_ExchangePad`: `comb_Write8` sends,
 `comb_WaitRead8` stores the partner's pair on a check match. Nothing is
 recorded or played back.
 

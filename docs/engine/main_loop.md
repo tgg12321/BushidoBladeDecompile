@@ -94,10 +94,10 @@ loop:
     func_8005C6D0();                // ground/stage frame update
 
     /* handle global reset request */
-    if (D_800A3928 != 0) {
+    if (g_comb_abort_request != 0) {
         cdrom_PauseAndWait();
         D_800A3768 = 0xFF;         // hide display while resetting
-        D_800A3928 = 0;
+        g_comb_abort_request = 0;
         D_800A31DA = 0;
         D_800A3834 = 8;            // jump to title/menu mode
     }
@@ -163,7 +163,7 @@ This is the entire main loop. It's a single forever-loop that:
 1. Picks a double-buffer slot from `D_800A36AC & 1`.
 2. Updates per-frame "always on" subsystems: fog, voice control, special
    camera, ground/stage.
-3. Honors a global reset request (`D_800A3928`).
+3. Honors a global reset request (`g_comb_abort_request`).
 4. Dispatches to the current mode function via `D_8008D090[D_800A3834]`.
 5. Waits for vsync window.
 6. Submits the built OT to the GPU.
@@ -188,7 +188,7 @@ event (`func_80078A58`), the display (`disp_Init`), camera state
 - Clears `D_800A3716` and `D_800A3906`, then `snd_InitAndLoadCommonVab`,
   `pad_ResetStateMarkValid`, `func_8003D2C4`, `func_8001C444`
 - Zeroes `D_800A36F9`, `D_800A3690`, `D_800A3744..46`, runs `func_80046B44`,
-  sets `D_800A36F1 = 2`, and zeroes `D_800A38C4[1]`, `D_800A36B0`, `D_800A3928`.
+  sets `D_800A36F1 = 2`, and zeroes `D_800A38C4[1]`, `D_800A36B0`, `g_comb_abort_request`.
 
 ### `__main` (`psxsdk/libsn/73E98.c`)
 SN's C++ constructor walker (LIBSN module SNMAIN, a prebuilt PsyQ object), with
@@ -222,7 +222,7 @@ of `src/main/d_7D870.c`.
 | 5  (0x05) | 0x8003993C | `mode_handler_05_NoOp` | Empty |
 | 6  (0x06) | 0x8003B9D0 | `func_8003B9D0` | func_8001DA2C + func_80061178 + conditional GPU |
 | 7  (0x07) | 0x8003BCB4 | `mode_handler_07_SubModeTransition` | md_game_check_change_sub_mode + pad input check |
-| 8  (0x08) | 0x80035480 | `func_80035480` | Cleanup + set-up, selects mode 9, display on; also the **global-reset target** (D_800A3928 trigger) |
+| 8  (0x08) | 0x80035480 | `func_80035480` | Cleanup + set-up, selects mode 9, display on; also the **global-reset target** (g_comb_abort_request trigger) |
 | 9  (0x09) | 0x80035828 | `mode_handler_09_NoOp` | Empty |
 | 10 (0x0A) | 0x8003BE10 | `func_8003BE10` | gpu_ResetGraphMode1 + func_80016888 + func_80020CDC + func_800415C4(0/1) + eff_ClearInitFlag + func_8005B72C + func_80078824 + snd_SerialMixOn + cdrom_StartAudio + cdrom_WaitAudioStarted, sets D_800A3834 = 0xB, display on (2B344.c:598-615) |
 | 11 (0x0B) | 0x8003BEA8 | `func_8003BEA8` | Checks pad input mask 0x40 (action button) |
@@ -293,7 +293,7 @@ mode 22 (VsModeInit) --> mode 23 (FrameDelay3, wait 3 frames)
    reserved for state transitions where the dispatch mechanism is used but no
    per-frame work happens. The next frame's dispatch handles the actual logic.
 
-2. **Mode 8 is the "global reset target".** When `D_800A3928 != 0` triggers a
+2. **Mode 8 is the "global reset target".** When `g_comb_abort_request != 0` triggers a
    global reset, the main loop forces `D_800A3834 = 8` and
    thus jumps to `func_80035480`. Many other paths also
    end at mode 8 to reach the title.
@@ -321,7 +321,7 @@ mode 22 (VsModeInit) --> mode 23 (FrameDelay3, wait 3 frames)
    - `pad_Update()` — read both pads, update `g_pad_state`
    - `cdrom_Update()` — one step of the CD state machine
    - `func_8005C6D0()` — ground-state per-frame update
-4. **Global reset** — `D_800A3928 != 0` triggers fade-to-black and reroutes
+4. **Global reset** — `g_comb_abort_request != 0` triggers fade-to-black and reroutes
    to mode 8 (title).
 5. **Mode dispatch** — call `D_8008D090[D_800A3834]()`. This is where
    gameplay logic runs.

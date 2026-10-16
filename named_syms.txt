@@ -720,7 +720,7 @@ D_800A37A8                                 = 0x800A37A8;  /* command-1 operand b
 g_draw_queue_cursor                                    = 0x800A3820;  /* data-wave 2026-10-07: was g_hira_packet_cursor */
 D_800A384C                                = 0x800A384C;  /* data-wave 2026-10-08: was g_practice_select_cursor */
 D_800A385C                                     = 0x800A385C;  /* data-wave 2026-10-08: was g_seq_check_pending */
-g_comb_handshake_step = 0x800A38AC;  /* comb-link handshake step: switched and advanced by func_8003AB44 (2B344.c:18-62), reset to 0 by func_8003ACB8 (2B344.c:78) */  /* data-wave 2026-10-08: was g_voice_dialog_state */
+g_comb_handshake_step = 0x800A38AC;  /* comb-link handshake step: switched and advanced by comb_HandshakeStep (2B344.c:18-59), reset to 0 by comb_Connect (2B344.c:75) */  /* data-wave 2026-10-08: was g_voice_dialog_state */
 g_prim_buf_cursor                               = 0x800A38B4;  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor */
 D_800A38C4                                       = 0x800A38C4;  /* model id loaded per fighter slot; refs: func_80020CDC, func_80020E74, func_80021210, func_80021280 */  /* data-wave 2026-10-08: was g_title_seq_state */
 D_800A38D6                               = 0x800A38D6;  /* data-wave 2026-10-08: was g_replay_pos_change_count */
@@ -1439,7 +1439,7 @@ D_800A33CA                                      = 0x800A33CA;  /* vertical angle
 
 /* === ings.c main-loop state names (2026-05-17) -- 8 highs === */
 /* These were referenced in main_loop.md but not yet bound to names. */
-g_comb_abort_request                                  = 0x800A3928;  /* if != 0 the main loop forces mode=8 (title teardown) -- see main_loop.md step 3 */  /* data-wave 2026-10-08: was g_global_reset_request */
+g_comb_abort_request                                  = 0x800A3928;  /* set to 1 only by comb_Abort (a failed link transfer); main (6CF8.c:460-465) then calls cdrom_PauseAndWait, sets D_800A3768 = DISP_DISABLED, clears it and D_800A31DA, sets mode 8 */  /* data-wave 2026-10-08: was g_global_reset_request */
 D_800A30DC                                      = 0x800A30DC;  /* min observed bytes left in the frame's primitive buffer; tripping <0 triggers sys_Panic ("common prim over flow") */  /* data-wave 2026-10-08: was g_ot_remaining_min */
 D_800A30E8                                           = 0x800A30E8;  /* high-water mark of the D_800F6740 slot index func_80017D84 hands out (6CF8.c:757-758): `if D_800A30E8 < i then D_800A30E8 = i` */  /* data-wave 2026-10-08: was g_ot_used_max */
 D_800A390D                                      = 0x800A390D;  /* frame-skip count: frames main draws without presenting; decrements before frame submit */  /* data-wave 2026-10-08: was g_voice_skip_count */
@@ -2075,7 +2075,7 @@ func_8005BE84                        = 0x8005BE84;  /* MISNAMED: not voice data;
 memcard_Format                         = 0x80037F08;  /* MISNAMED: not motion-pre-calc; calls func_80079A30 then bios_FormatDevice_B() */
 snd_VabFakeOpen8And4                         = 0x8005B98C;  /* typed-restatement (Q103): snd_VabFakeOpen(a0, 8) then snd_VabFakeOpen(a0, 4); the old motion-pre-calc reading was wrong */
 set_alarm                         = 0x8007DC68;  /* libgpu alarm: D_8009BF8C = VSync(-1) + 0xF0 (deadline), D_8009BF90 = 0 (sys.c:1157-1160); not motion-pre-calc */
-comb_Abort                         = 0x8003A3F0;  /* MISNAMED: not motion-pre-calc; calls func_8003A39C then sets D_800A3928 = 1 */
+comb_Abort                         = 0x8003A3F0;  /* comb_ResetClose, then g_comb_abort_request = 1; called on a failed link transfer */
 comb_Read8                         = 0x8003A574;  /* MISNAMED: not motion-pre-calc; calls bios_FileRead_B with buffer */
 def_cbsync                         = 0x80080014;  /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x20) */
 def_cbready                         = 0x8008003C;  /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x40) */
