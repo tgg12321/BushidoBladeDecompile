@@ -1,0 +1,1 @@
+{"func": "_otc", "addr": "8007CAC8", "verdict": "PASS", "body_hash": "70e505036e0df3fe", "body_kind": "c", "file": "main/psxsdk/libgpu/sys", "reviewer": "a04878e9cad0d9a00", "scope": "cheat-cleanup", "date": "2026-10-16T18:00:50Z", "head": "82dd5fd88", "notes": ""}

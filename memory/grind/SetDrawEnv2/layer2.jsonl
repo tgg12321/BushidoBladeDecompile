@@ -1,0 +1,1 @@
+{"func": "SetDrawEnv2", "addr": "8007C4B8", "verdict": "PASS", "body_hash": "262ec88bc9e8932e", "body_kind": "c", "file": "main/psxsdk/libgpu/sys", "reviewer": "a04878e9cad0d9a00", "scope": "cheat-cleanup", "date": "2026-10-16T17:59:12Z", "head": "82dd5fd88", "notes": ""}
