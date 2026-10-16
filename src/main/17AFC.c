@@ -2488,25 +2488,8 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
  * If n's components are within +-0x3FFF and |n| < 0x4000, the yaw (unkF8.vy)
  * and pitch (.vx) come from a and it returns 0; otherwise n is scaled down by
  * 64 and the angles come from n (returns 1). A rotation matrix built in unkD8
- * (RotMatrixY, RotMatrixX) then rotates a and b in place.
- * GTE islands (owner cop2 cluster grant, cop2-addressing-preamble-cluster,
- * cluster ruling 2026-08-17): PsyQ inline_o.h / gtemac.h macro text
- * (Xeeynamo/croc@f30ff1ee): gte_OuterProduct0 (gtemac.h:190-196) =
- * gte_ldopv1 (inline_o.h:595) / gte_ldopv2 / gte_op0 / gte_stlvnl; gte_sqr0 +
- * gte_stlvnl; gte_Lzc (gtemac.h:230-236) = gte_ldlzc / 2x gte_nop /
- * gte_stlzc, three times; gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl.
- * Operands go through the macros' own `move $12,%0`; cc1 materializes
- * &sp_tmpN before each gte_stlzc island. Island boundaries and clobbers
- * follow this file's gte_ldopv1 / gte_ldopv2 / gte_op0 (func_8002FDB0)
- * and gte_stlvnl / gte_SetRotMatrix / gte_ldlv0 / gte_rtv0 (func_8002E838).
- * Departures: the gte_ldopv2, gte_ldlv0 and gte_ldlzc islands carry the two
- * nops of the macro that follows (gte_op0 / gte_rtv0 / the gte_Lzc pair of
- * gte_nop), so the gte_op0 and gte_rtv0 islands are just their command words;
- * each `.word` is the real cop2 command for the DMPSX placeholder: op0
- * 0x0000127f -> 0x4B70000C, sqr0 0x00000f3f -> 0x4AA00428, rtv0 0x0000013f ->
- * 0x4A486012. gte_sqr0 and the gte_ldlzc / gte_stlzc islands have no
- * in-file precedent in this form. `len` and `temp` each hold two values
- * (Ruling 11). */
+ * (RotMatrixY, RotMatrixX) then rotates a and b in place. `len` and `temp`
+ * each hold two values (Ruling 11). */
 s32 func_8002CD58(Unk1F8002B8Rec *obj) {
     s32 sp_tmp;
     s32 sp_tmp2;
@@ -2525,36 +2508,7 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
     obj->unkB8.y = obj->unk60[2]->y - obj->unk60[0]->y;
     obj->unkB8.z = obj->unk60[2]->z - obj->unk60[0]->z;
 
-    /* gte_ldopv1(a) -- inline_o.h:595: a into the rotation matrix
-     * diagonal (cop2 control $0/$2/$4). */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lw     $13, 0($12)\n"
-        "lw     $14, 4($12)\n"
-        "ctc2   $13, $0\n"
-        "lw     $15, 8($12)\n"
-        "ctc2   $14, $2\n"
-        "ctc2   $15, $4\n"
-        :: "r"(&obj->unkA8) : "$12", "$13", "$14", "$15");
-    /* gte_ldopv2(b) -- inline_o.h:626: b into IR1-IR3, then gte_op0's
-     * two nops (inline_o.h:1866). */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lwc2   $11, 8($12)\n"
-        "lwc2   $9, 0($12)\n"
-        "lwc2   $10, 4($12)\n"
-        "nop\n"
-        "nop\n"
-        :: "r"(&obj->unkB8) : "$12");
-    /* gte_op0() command word -- inline_o.h:1866, OP sf=0. */
-    __asm__ volatile(".word 0x4B70000C");
-    /* gte_stlvnl(n) -- inline_o.h:2422: MAC1-MAC3 to obj->unkC8. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "swc2   $25, 0($12)\n"
-        "swc2   $26, 4($12)\n"
-        "swc2   $27, 8($12)\n"
-        :: "r"(&obj->unkC8) : "$12", "memory");
+    gte_OuterProduct0(&obj->unkA8, &obj->unkB8, &obj->unkC8);
 
     if ((u32)(obj->unkC8.x + 0x3FFF) < 0x7FFF &&
         (u32)(obj->unkC8.y + 0x3FFF) < 0x7FFF &&
@@ -2563,36 +2517,15 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
          * |a.xz| for the pitch's ratan2; one local per value: score 3 (Ruling
          * 11) */
         s32 len;
-        /* gte_sqr0() -- inline_o.h:1749: square IR1-IR3 (still n). */
-        __asm__ volatile(
-            "nop\n"
-            "nop\n"
-            ".word 0x4AA00428\n");
-        /* gte_stlvnl -- inline_o.h:2422: the squares to obj->unk100[0]. */
-        __asm__ volatile(
-            "move   $12, %0\n"
-            "swc2   $25, 0($12)\n"
-            "swc2   $26, 4($12)\n"
-            "swc2   $27, 8($12)\n"
-            :: "r"(&obj->unk100[0]) : "$12", "memory");
+        gte_sqr0();
+        gte_stlvnl(&obj->unk100[0]);
         len_sq = obj->unk100[0].x + obj->unk100[0].y + obj->unk100[0].z;
         if ((u32)len_sq < 0x400) {
             len = (u32)g_sqrt_table_u8[len_sq] >> 3;
         } else {
             s32 lzcr = 0;
             if (len_sq >= 0) {
-                /* gte_Lzc(len_sq, &sp_tmp) -- gtemac.h:230-236: gte_ldlzc
-                 * (inline_o.h:645) + 2x gte_nop + gte_stlzc */
-                __asm__ volatile(
-                    "move   $12, %0\n"
-                    "mtc2   $12, $30\n"
-                    "nop\n"
-                    "nop\n"
-                    :: "r"(len_sq) : "$12");
-                __asm__ volatile(
-                    "move   $12, %0\n"
-                    "swc2   $31, 0($12)\n"
-                    :: "r"(&sp_tmp) : "$12", "memory");
+                gte_Lzc(len_sq, &sp_tmp);
                 lzcr = sp_tmp;
             }
             {
@@ -2609,18 +2542,7 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
             } else {
                 s32 lzcr = 0;
                 if (xz_sq >= 0) {
-                    /* gte_Lzc(xz_sq, &sp_tmp2) -- gte_ldlzc (inline_o.h:645) +
-                     * 2x gte_nop (:3068), gte_stlzc (:2999); slot sp+0x14. */
-                    __asm__ volatile(
-                        "move   $12, %0\n"
-                        "mtc2   $12, $30\n"
-                        "nop\n"
-                        "nop\n"
-                        :: "r"(xz_sq) : "$12");
-                    __asm__ volatile(
-                        "move   $12, %0\n"
-                        "swc2   $31, 0($12)\n"
-                        :: "r"(&sp_tmp2) : "$12", "memory");
+                    gte_Lzc(xz_sq, &sp_tmp2);
                     lzcr = sp_tmp2;
                 }
                 {
@@ -2641,64 +2563,13 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
             obj->unkD8.m[2][2] = 0x1000;
             RotMatrixY(obj->unkF8.vy, &obj->unkD8);
             RotMatrixX(obj->unkF8.vx, &obj->unkD8);
-            /* gte_SetRotMatrix(&obj->unkD8) -- inline_o.h:860: the five
-             * packed rotation-matrix words into cop2 control $0..$4. */
-            __asm__ volatile(
-                "move   $12, %0\n"
-                "lw     $13, 0($12)\n"
-                "lw     $14, 4($12)\n"
-                "ctc2   $13, $0\n"
-                "ctc2   $14, $1\n"
-                "lw     $13, 8($12)\n"
-                "lw     $14, 12($12)\n"
-                "lw     $15, 16($12)\n"
-                "ctc2   $13, $2\n"
-                "ctc2   $14, $3\n"
-                "ctc2   $15, $4\n"
-                :: "r"(&obj->unkD8) : "$12", "$13", "$14", "$15");
-            /* gte_ldlv0(a) -- inline_o.h:277: pack VX0/VY0, VZ0 via lwc2,
-             * then gte_rtv0's two nops (inline_o.h:1353). */
-            __asm__ volatile(
-                "move   $12, %0\n"
-                "lhu    $14, 4($12)\n"
-                "lhu    $13, 0($12)\n"
-                "sll    $14, $14, 16\n"
-                "or     $13, $13, $14\n"
-                "mtc2   $13, $0\n"
-                "lwc2   $1, 8($12)\n"
-                "nop\n"
-                "nop\n"
-                :: "r"(&obj->unkA8) : "$12", "$13", "$14");
-            /* gte_rtv0() command word -- inline_o.h:1353, MVMVA sf=1,
-             * rotation x V0. */
-            __asm__ volatile(".word 0x4A486012");
-            /* gte_stlvnl(a) -- inline_o.h:2422: rotated a written back. */
-            __asm__ volatile(
-                "move   $12, %0\n"
-                "swc2   $25, 0($12)\n"
-                "swc2   $26, 4($12)\n"
-                "swc2   $27, 8($12)\n"
-                :: "r"(&obj->unkA8) : "$12", "memory");
-            /* gte_ldlv0(b) (inline_o.h:277) / gte_rtv0() (:1353) /
-             * gte_stlvnl(b) (:2422): same for b. */
-            __asm__ volatile(
-                "move   $12, %0\n"
-                "lhu    $14, 4($12)\n"
-                "lhu    $13, 0($12)\n"
-                "sll    $14, $14, 16\n"
-                "or     $13, $13, $14\n"
-                "mtc2   $13, $0\n"
-                "lwc2   $1, 8($12)\n"
-                "nop\n"
-                "nop\n"
-                :: "r"(&obj->unkB8) : "$12", "$13", "$14");
-            __asm__ volatile(".word 0x4A486012");
-            __asm__ volatile(
-                "move   $12, %0\n"
-                "swc2   $25, 0($12)\n"
-                "swc2   $26, 4($12)\n"
-                "swc2   $27, 8($12)\n"
-                :: "r"(&obj->unkB8) : "$12", "memory");
+            gte_SetRotMatrix(&obj->unkD8);
+            gte_ldlv0(&obj->unkA8);
+            gte_rtv0();
+            gte_stlvnl(&obj->unkA8);
+            gte_ldlv0(&obj->unkB8);
+            gte_rtv0();
+            gte_stlvnl(&obj->unkB8);
             return 0;
         }
     }
@@ -2713,18 +2584,7 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
     } else {
         s32 lzcr = 0;
         if (temp >= 0) {
-            /* gte_Lzc(temp, &sp_tmp3) -- gte_ldlzc (inline_o.h:645) +
-             * 2x gte_nop (:3068), gte_stlzc (:2999); slot sp+0x18. */
-            __asm__ volatile(
-                "move   $12, %0\n"
-                "mtc2   $12, $30\n"
-                "nop\n"
-                "nop\n"
-                :: "r"(temp) : "$12");
-            __asm__ volatile(
-                "move   $12, %0\n"
-                "swc2   $31, 0($12)\n"
-                :: "r"(&sp_tmp3) : "$12", "memory");
+            gte_Lzc(temp, &sp_tmp3);
             lzcr = sp_tmp3;
         }
         {
@@ -2745,58 +2605,13 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
     obj->unkD8.m[2][2] = 0x1000;
     RotMatrixY(obj->unkF8.vy, &obj->unkD8);
     RotMatrixX(obj->unkF8.vx, &obj->unkD8);
-    /* gte_SetRotMatrix (inline_o.h:860), then gte_ldlv0 (:277) / gte_rtv0
-     * (:1353) / gte_stlvnl (:2422) for a and for b: the same islands as the
-     * first path. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lw     $13, 0($12)\n"
-        "lw     $14, 4($12)\n"
-        "ctc2   $13, $0\n"
-        "ctc2   $14, $1\n"
-        "lw     $13, 8($12)\n"
-        "lw     $14, 12($12)\n"
-        "lw     $15, 16($12)\n"
-        "ctc2   $13, $2\n"
-        "ctc2   $14, $3\n"
-        "ctc2   $15, $4\n"
-        :: "r"(&obj->unkD8) : "$12", "$13", "$14", "$15");
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lhu    $14, 4($12)\n"
-        "lhu    $13, 0($12)\n"
-        "sll    $14, $14, 16\n"
-        "or     $13, $13, $14\n"
-        "mtc2   $13, $0\n"
-        "lwc2   $1, 8($12)\n"
-        "nop\n"
-        "nop\n"
-        :: "r"(&obj->unkA8) : "$12", "$13", "$14");
-    __asm__ volatile(".word 0x4A486012");
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "swc2   $25, 0($12)\n"
-        "swc2   $26, 4($12)\n"
-        "swc2   $27, 8($12)\n"
-        :: "r"(&obj->unkA8) : "$12", "memory");
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lhu    $14, 4($12)\n"
-        "lhu    $13, 0($12)\n"
-        "sll    $14, $14, 16\n"
-        "or     $13, $13, $14\n"
-        "mtc2   $13, $0\n"
-        "lwc2   $1, 8($12)\n"
-        "nop\n"
-        "nop\n"
-        :: "r"(&obj->unkB8) : "$12", "$13", "$14");
-    __asm__ volatile(".word 0x4A486012");
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "swc2   $25, 0($12)\n"
-        "swc2   $26, 4($12)\n"
-        "swc2   $27, 8($12)\n"
-        :: "r"(&obj->unkB8) : "$12", "memory");
+    gte_SetRotMatrix(&obj->unkD8);
+    gte_ldlv0(&obj->unkA8);
+    gte_rtv0();
+    gte_stlvnl(&obj->unkA8);
+    gte_ldlv0(&obj->unkB8);
+    gte_rtv0();
+    gte_stlvnl(&obj->unkB8);
     return 1;
 }
 
@@ -3145,16 +2960,11 @@ s32 func_8002D780(
     }
 }
 
-/* GTE islands: equivalent expansions of the Sony PsyQ DMPSX inline_o.h
- * macros gte_ldopv1, gte_ldopv2 + gte_op0, gte_stlvnl, the gtemac.h gte_Lzc
- * (inline_o.h gte_ldlzc + gte_nop x2 + gte_stlzc), gte_SetRotMatrix,
- * gte_ldlv0 + gte_rtv0, a macro's statements joined into
- * one __asm__ (gte_op0 shares gte_ldopv2's; gte_rtv0's two nops ride with
- * gte_ldlv0 and its command word stands alone); admitted by the owner cop2
- * cluster grant (cop2-addressing-preamble-cluster, owner-instructed row
- * 2026-09-25), which covers the joined spellings. The LZC load and store are
- * separate macro statements: GCC supplies the &sp_tmp register and materializes
- * its stack address outside the island. */
+/* func_8002CD58's frame, built from the normal: edge vectors a = v1 - v0
+ * (unkA8), b = v2 - v0 (unkB8) and n = a x b (unkC8). It returns 0 while n's
+ * components are within +-0x3FFF; otherwise n is scaled down by 64, the yaw
+ * (unkF8.vy) and pitch (.vx) come from n, and the rotation built in unkD8
+ * (RotMatrixY, RotMatrixX) rotates a and b in place (returns 1). */
 s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     MATRIX *mat;
     s32 sp_tmp;
@@ -3169,42 +2979,7 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     obj->unkB8.y = obj->unk60[2]->y - obj->unk60[0]->y;
     obj->unkB8.z = obj->unk60[2]->z - obj->unk60[0]->z;
 
-    /* gte_ldopv1(vecA) -- inline_o.h:192-200, equivalent expansion: the OP
-     * diagonal (RT11/RT22/RT33) into cop2 control $0/$2/$4
-     * (cop2-addressing-preamble-cluster). */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lw     $13, 0($12)\n"
-        "lw     $14, 4($12)\n"
-        "ctc2   $13, $0\n"
-        "lw     $15, 8($12)\n"
-        "ctc2   $14, $2\n"
-        "ctc2   $15, $4\n"
-        :: "r"(&obj->unkA8) : "$12", "$13", "$14", "$15");
-
-    /* gte_ldopv2(vecB) -- inline_o.h:201-206, equivalent expansion
-     * (`addu $12,%0,$zero` for its `move`): IR1-IR3; then gte_op0()
-     * (inline_o.h:711-715 / inline_c.h:784-787, outer product) with the real
-     * cop2 word 0x4B70000C for the DMPSX placeholder 0x0000127f
-     * (engine/gtemacro.py DMPSX_WORDS). */
-    __asm__ volatile(
-        "addu   $12, %0, $zero\n"
-        "lwc2   $11, 8($12)\n"
-        "lwc2   $9, 0($12)\n"
-        "lwc2   $10, 4($12)\n"
-        "nop\n"
-        "nop\n"
-        ".word 0x4B70000C\n"
-        :: "r"(&obj->unkB8) : "$12");
-
-    /* gte_stlvnl -- inline_o.h:904-909, equivalent expansion: MAC1-MAC3
-     * (the cross product) to obj->unkC8. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "swc2   $25, 0($12)\n"
-        "swc2   $26, 4($12)\n"
-        "swc2   $27, 8($12)\n"
-        :: "r"(&obj->unkC8) : "$12", "memory");
+    gte_OuterProduct0(&obj->unkA8, &obj->unkB8, &obj->unkC8);
 
     if ((u32)(obj->unkC8.x + 0x3FFF) < 0x7FFF &&
         (u32)(obj->unkC8.y + 0x3FFF) < 0x7FFF &&
@@ -3228,23 +3003,7 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     } else {
         s32 lzcr = 0;
         if (dist_sq >= 0) {
-            /* gte_Lzc(r1,r2) -- gtemac.h:174-178: gte_ldlzc
-             * (inline_o.h:207-211) + 2x gte_nop (inline_o.h:1095) +
-             * gte_stlzc (inline_o.h:1074-1077), each an equivalent
-             * expansion (`addu $t4,%0,$zero` for `move $12,%0`); the store's
-             * operand is &sp_tmp. LZCS in, LZCR out. */
-            __asm__ volatile(
-                "addu   $t4, %0, $zero\n"
-                "mtc2   $t4, $30\n"
-                "nop\n"
-                "nop\n"
-                :: "r"(dist_sq)
-                : "$12", "$13", "$14", "$15", "memory");
-            __asm__ volatile(
-                "addu   $t4, %0, $zero\n"
-                "swc2   $31, 0($t4)\n"
-                :: "r"(&sp_tmp)
-                : "$12", "$13", "$14", "$15", "memory");
+            gte_Lzc(dist_sq, &sp_tmp);
             lzcr = sp_tmp;
         }
         {
@@ -3270,69 +3029,13 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     RotMatrixY(obj->unkF8.vy, mat);
     RotMatrixX(obj->unkF8.vx, mat);
 
-    /* gte_SetRotMatrix(r1) -- inline_o.h:272-284, expanded to equivalent
-     * instructions (all 11, incl. the $13/$14 re-use order): the 5 packed
-     * rotation-matrix words into cop2 control $0..$4. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lw     $13, 0($12)\n"
-        "lw     $14, 4($12)\n"
-        "ctc2   $13, $0\n"
-        "ctc2   $14, $1\n"
-        "lw     $13, 8($12)\n"
-        "lw     $14, 12($12)\n"
-        "lw     $15, 16($12)\n"
-        "ctc2   $13, $2\n"
-        "ctc2   $14, $3\n"
-        "ctc2   $15, $4\n"
-        :: "r"(mat) : "$12", "$13", "$14", "$15");
-
-    /* gte_ldlv0(vecA) -- inline_o.h:95-103, equivalent expansion (the
-     * trailing nop pair is gte_rtv0's, not gte_ldlv0's), then gte_rtv0
-     * (inline_o.h:426-430;
-     * MVMVA `.word 0x4A486012`, engine/gtemacro.py DMPSX_WORDS) and
-     * gte_stlvnl (inline_o.h:904-909): vecA rotated
-     * in place. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lhu    $14, 4($12)\n"
-        "lhu    $13, 0($12)\n"
-        "sll    $14, $14, 16\n"
-        "or     $13, $13, $14\n"
-        "mtc2   $13, $0\n"
-        "lwc2   $1, 8($12)\n"
-        "nop\n"
-        "nop\n"
-        :: "r"(&obj->unkA8) : "$12", "$13", "$14");
-    __asm__ volatile(".word 0x4A486012");
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "swc2   $25, 0($12)\n"
-        "swc2   $26, 4($12)\n"
-        "swc2   $27, 8($12)\n"
-        :: "r"(&obj->unkA8) : "$12", "memory");
-
-    /* The same gte_ldlv0 (inline_o.h:95-103) + gte_rtv0 (inline_o.h:426-430)
-     * + gte_stlvnl (inline_o.h:904-909) equivalent expansions, rotating vecB
-     * in place. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lhu    $14, 4($12)\n"
-        "lhu    $13, 0($12)\n"
-        "sll    $14, $14, 16\n"
-        "or     $13, $13, $14\n"
-        "mtc2   $13, $0\n"
-        "lwc2   $1, 8($12)\n"
-        "nop\n"
-        "nop\n"
-        :: "r"(&obj->unkB8) : "$12", "$13", "$14");
-    __asm__ volatile(".word 0x4A486012");
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "swc2   $25, 0($12)\n"
-        "swc2   $26, 4($12)\n"
-        "swc2   $27, 8($12)\n"
-        :: "r"(&obj->unkB8) : "$12", "memory");
+    gte_SetRotMatrix(mat);
+    gte_ldlv0(&obj->unkA8);
+    gte_rtv0();
+    gte_stlvnl(&obj->unkA8);
+    gte_ldlv0(&obj->unkB8);
+    gte_rtv0();
+    gte_stlvnl(&obj->unkB8);
 
     return 1;
 }
@@ -4235,55 +3938,12 @@ s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
     ((VECTOR *)0x1F800370)->vy = a2->vy - a0->vy;
     ((VECTOR *)0x1F800370)->vz = a2->vz - a0->vz;
 
-    /* gte_ldopv1(r) (the 3-word load, not gte_SetRotMatrix's 5): the packed
-     * words at r into cop2 control R11R12 / R22R23 / R33 ($0 / $2 / $4). */
-    __asm__ volatile(
-        "move   $12, %0
-"
-        "lw     $13, 0($12)
-"
-        "lw     $14, 4($12)
-"
-        "ctc2   $13, $0
-"
-        "lw     $15, 8($12)
-"
-        "ctc2   $14, $2
-"
-        "ctc2   $15, $4
-"
-        :: "r"((VECTOR *)0x1F800360) : "$12", "$13", "$14", "$15");
-    /* gte_ldopv2(r) (not gte_ldlvl, which loads IR1 first): r into IR1-IR3
-     * ($9/$10/$11), IR3 first; then gte_op0's two nops. */
-    __asm__ volatile(
-        "move   $12, %0
-"
-        "lwc2   $11, 8($12)
-"
-        "lwc2   $9, 0($12)
-"
-        "lwc2   $10, 4($12)
-"
-        "nop
-"
-        "nop
-"
-        :: "r"((VECTOR *)0x1F800370) : "$12");
-    /* GTE OP (cross product of the IR vector with the rotation matrix
-     * diagonal), sf=0: cop2 command 0x0170000C. */
-    __asm__ volatile(".word 0x4B70000C");
-    /* gte_stlvnl(r): MAC1/MAC2/MAC3 ($25/$26/$27) to r. */
+    /* Their cross product, into SCR[0x80..0x88]. */
+    gte_ldopv1((VECTOR *)0x1F800360);
+    gte_ldopv2((VECTOR *)0x1F800370);
+    gte_op0();
     p = (VECTOR *)0x1F800380;
-    __asm__ volatile(
-        "move   $12, %0
-"
-        "swc2   $25, 0($12)
-"
-        "swc2   $26, 4($12)
-"
-        "swc2   $27, 8($12)
-"
-        :: "r"(p) : "$12");
+    gte_stlvnl(p);
     /* Angle of the cross product in the XZ plane, +0x800 (180 deg) when its
      * Y component is positive. */
     ret = ratan2(p->vx, p->vz);
@@ -4307,38 +3967,7 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
     SPAD->unk2B8.rec.unkB8.y = var_0[3].y - var_0[1].y;
     SPAD->unk2B8.rec.unkB8.z = var_0[3].z - var_0[1].z;
 
-    /* gte_ldopv1(r) (the 3-word load, not gte_SetRotMatrix's 5): the packed
-     * words holding the diagonal into cop2 control R11R12 / R22R23 / R33
-     * ($0 / $2 / $4). */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lw     $13, 0($12)\n"
-        "lw     $14, 4($12)\n"
-        "ctc2   $13, $0\n"
-        "lw     $15, 8($12)\n"
-        "ctc2   $14, $2\n"
-        "ctc2   $15, $4\n"
-        :: "r"((s32 *)0x1F800360) : "$12", "$13", "$14", "$15");
-    /* gte_ldopv2(r) (not gte_ldlvl, which loads IR1 first): r into IR1-IR3
-     * ($9/$10/$11), IR3 first; then gte_op0's two nops. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lwc2   $11, 8($12)\n"
-        "lwc2   $9, 0($12)\n"
-        "lwc2   $10, 4($12)\n"
-        "nop\n"
-        "nop\n"
-        :: "r"((s32 *)0x1F800370) : "$12");
-    /* GTE OP (cross product of the IR vector with the rotation matrix
-     * diagonal), sf=0: cop2 command 0x0170000C. */
-    __asm__ volatile(".word 0x4B70000C");
-    /* gte_stlvnl(r): MAC1/MAC2/MAC3 ($25/$26/$27) to r. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "swc2   $25, 0($12)\n"
-        "swc2   $26, 4($12)\n"
-        "swc2   $27, 8($12)\n"
-        :: "r"((s32 *)0x1F800380) : "$12");
+    gte_OuterProduct0((s32 *)0x1F800360, (s32 *)0x1F800370, (s32 *)0x1F800380);
     /* unkC8.y (MAC2) > 0 */
     return 0 < SPAD->unk2B8.rec.unkC8.y;
 }
