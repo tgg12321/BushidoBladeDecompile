@@ -506,3 +506,22 @@ none of which is a grind-session structural probe. See docs/grind/decisions.md 2
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: legal macro-call chassis, s32 block-local staging for the 3 ldtr args, no FAKE construct, tmp/grind/func_80052B7C/s25/variant_s32locals.c this session (s25)
+
+## [s26] Re-running spelling_enum.py (both --no-swaps and swap-axis) on the full 5-statement ENUM-BEGIN/END region, on the current chassis, still finds zero mutation axes.
+- mechanism: Enumerate-modality mandated re-sweep (fifth consecutive enumerate pass after s9, s15, s16, s17). spelling_enum.py's region scanner can only mutate named locals, assignments, and commutative binary operators it finds inside the markers; it reports its precondition counts before emitting variants.
+- probe: Re-applied memory/grind/func_80052B7C/candidate.c fresh to src/main/3AB48.c, re-measured with `sandbox func_80052B7C --disable all --candidate ... --diff` (tmp/grind/func_80052B7C/s26/sandbox_diff.txt). Then wrapped the identical 5-statement body (gte_SetRotMatrix / gte_ldtr / gte_ldv0 / gte_rt / gte_stlvl) in ENUM-BEGIN/END markers in a scratch copy (tmp/grind/func_80052B7C/s26/enum_candidate.c, candidate.c itself untouched) and ran spelling_enum.py with --no-swaps (tmp/grind/func_80052B7C/s26/enum_noswap) and with the swap axis (tmp/grind/func_80052B7C/s26/enum_swap).
+- result: Chassis re-confirmed at score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- byte-identical classification to s6/s8/s13-s25 (hunk 1 = gte_SetRotMatrix+gte_ldtr batching/register-seat, hunks 2-4 = gte_stlvl's delay-slot swc2 placement). Both enum runs report "0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings", with and without the swap axis -- identical, word-for-word, to s9/s15/s16/s17's results. The region already spans the entire function body (no neighbouring block exists to widen into, per s15/s16's note). No new FAKE carrier present to re-audit (fake_ablate.py already confirmed clean at s14, chassis unchanged since).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal macro-call chassis (memory/grind/func_80052B7C/candidate.c as landed s18-s25), no FAKE construct, tmp/grind/func_80052B7C/s26/enum_noswap and s26/enum_swap this session (s26)
+- predicate_cite: include/psxsdk/inline_c.h:297
+- note: tools/spelling_enum.py:27 is the region-scanner precondition count (0 named locals / 0 assignments / 0 commutative operators under both the no-swap and swap-axis settings); this is the fifth independent measurement (s9, s15, s16, s17, s26) of the identical null result on an unchanged chassis, standing class evidence that the C-level spelling-sweep search space for this chassis is empty. The residual sits inside each macro's own fixed __asm__ volatile string, include/psxsdk/inline_c.h:297 (gte_SetRotMatrix) and :1086 (gte_stlvl), read in full at s8/s13/s14, which is not C-level syntax the region scanner can see or vary.
+
+## [s26] Re-running spelling_enum.py (both --no-swaps and swap-axis) on the full 5-statement ENUM-BEGIN/END region, on the current chassis, still finds zero mutation axes.
+- mechanism: Enumerate-modality mandated re-sweep. spelling_enum.py's region scanner can only mutate named locals, assignments, and commutative binary operators it finds inside the markers.
+- probe: Re-applied memory/grind/func_80052B7C/candidate.c, re-measured with sandbox --candidate --diff (tmp/grind/func_80052B7C/s26/sandbox_diff.txt); wrapped the 5-statement body in ENUM-BEGIN/END markers in a scratch copy (tmp/grind/func_80052B7C/s26/enum_candidate.c) and ran spelling_enum.py --no-swaps (s26/enum_noswap) and with the swap axis (s26/enum_swap).
+- result: Chassis re-confirmed: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- identical classification to s6/s8/s13-s25. Both enum runs report '0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings', word-for-word identical to s9/s15/s16/s17. The region already spans the entire function body; no neighbouring block exists to widen into.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal macro-call chassis (memory/grind/func_80052B7C/candidate.c as landed s18-s25), no FAKE construct, tmp/grind/func_80052B7C/s26/enum_noswap and s26/enum_swap this session (s26)
+- predicate_cite: include/psxsdk/inline_c.h:297

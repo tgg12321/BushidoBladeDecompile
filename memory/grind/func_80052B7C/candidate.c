@@ -192,6 +192,18 @@
  * tmp/grind/func_80052B7C/s17/enum_noswap, .../enum_swap): identical "0 named locals,
  * 0 assignments, 5 anchors -> 1 distinct spellings" to s9/s15/s16. See hypotheses.md s17/H14.
  */
+/* s26 (enumerate): fifth consecutive enumerate pass (after s9, s15, s16, s17), re-confirmed
+ * chassis at 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only (tmp/grind/func_80052B7C/
+ * s26/sandbox_diff.txt). spelling_enum.py re-run on the full 5-statement ENUM-BEGIN/END region
+ * (scratch copy tmp/grind/func_80052B7C/s26/enum_candidate.c, candidate.c itself untouched),
+ * both --no-swaps (s26/enum_noswap) and swap axis (s26/enum_swap): identical "0 named locals,
+ * 0 assignments, 5 anchors -> 1 distinct spellings" to all four prior enumerate passes. CLASS
+ * KILL (standing, 5th measurement): the C-level spelling-sweep search space on this chassis is
+ * provably empty; the residual (chunk 1 batching order inside gte_SetRotMatrix/gte_ldtr, chunk
+ * 5 delay-slot placement inside gte_stlvl) remains locked inside each macro's fixed __asm__
+ * volatile string (include/psxsdk/inline_c.h:297, :1086). No src/ edit banked; src/main/3AB48.c
+ * stays INCLUDE_ASM. See hypotheses.md s26.
+ */
 /* s18 (synthesis): kill re-audit -- body unchanged, re-measured 19 (4/4 source-level), no
  * FAKE to ablate (tmp/grind/func_80052B7C/s18/). New census (s18/batch_census.txt): the
  * target's batched lw/lh $t0..$t7 -> ctc2 run occurs in 16 EXE functions, all hand-written

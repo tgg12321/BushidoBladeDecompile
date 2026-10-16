@@ -478,3 +478,11 @@ question rather than resolved here.
 - [s25] Two additional structural sub-axes (redundant-cast removal on gte_ldtr's args; s32-typed block-local staging vs s24's s16-typed pre-SetRotMatrix staging) both measure 19, extending s8/s9/s13-s16/s19/s24's finding that this chassis has zero C-level mutation axes in the 5-statement macro-call body.
 
 - [s25] This is now the 5th structural-or-equivalent session (s8, s13, s14, s19, s24, s25) landing on the identical null result; the residual stays locked inside gte_SetRotMatrix's and gte_stlvl's own fixed __asm__ volatile template strings.
+
+- [s26] sandbox func_80052B7C --disable all --candidate memory/grind/func_80052B7C/candidate.c --diff = score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored (tmp/grind/func_80052B7C/s26/sandbox_diff.txt), matching the s6-s25 floor and hunk classification exactly.
+
+- [s26] spelling_enum.py's region scanner reports the identical zero-mutation-axis result on the full function body for the 5th time across independent enumerate-modality sessions (s9, s15, s16, s17, s26), with and without the commutative-operand-swap axis.
+
+- [s26] The function already carries a filed decisions.md ruling (2026-10-15 20:38) rejecting a written-island mix as a workaround for chunks 1/2/5; that ruling is unchanged and still binding.
+
+- [s26] src/main/3AB48.c was never touched this session (git status clean on that file); candidate.c and hypotheses.md were updated to append the s26 re-confirmation.
