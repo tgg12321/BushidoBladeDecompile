@@ -128,12 +128,12 @@ void func_8003504C(void) {
             var_8 = 2;
         }
         D_800A37F8 = var_8;
-        s = &D_801027D8;
+        s = D_801027D8[0];
         D_800A38E1 = p->unk14_15;
         {
             s32 j = 0;
             u8 *dst_d = s;
-            u8 *dst_a = &D_801027A0;
+            u8 *dst_a = D_801027A0[0];
             do {
                 s32 k = 0;
                 u8 *var_13 = dst_d;

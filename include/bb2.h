@@ -567,8 +567,8 @@ extern Unk800F1B18Rec D_800F1B18[];
 extern u8 D_800F33D8[];
 extern s16 D_800F6650;
 extern s16 D_800F6656;
-extern u8 D_801027A0;
-extern u8 D_801027D8;
+extern u8 D_801027A0[5][2];
+extern u8 D_801027D8[5][2];
 /* the draw queue: record pointers (0x80102C00..0x801035FF) */
 extern void *g_draw_queue[640];
 extern s32 D_8009BA7C[];
