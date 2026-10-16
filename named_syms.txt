@@ -511,7 +511,7 @@ D_800A3817                = 0x800A3817;  /* cursor of a three-item pad menu: up 
 D_800F116C           = 0x800F116C;  /* 0x2C-byte command block (Unk1F800000Unk00) that func_800611A4..func_80061EC0 fill before func_80060A68; D_800A3468 points at it */  /* data-wave 2026-10-08: was g_text1b_render_state */
 D_800A3468       = 0x800A3468;  /* pointer to the current command block (D_800F116C, or the scratchpad block in func_80060E38); +0x0 command word (low halfword indexes the handler dispatch; bit 0x200000 sets D_800A32BC = 0xA), +0x14 the byte that receives the handler's return */  /* data-wave 2026-10-08: was g_text1b_render_state_ptr */
 D_800A347C         = 0x800A347C;  /* = D_800A3468->unk20 (func_80060A68), the command block's three-word copy of unk0C; every consumer reads words [0..2] through it */  /* data-wave 2026-10-08: was g_text1b_render_buf_ptr */
-D_800F1180           = 0x800F1180;  /* D_800F116C.unk14: address of the D_800F1150 status byte that receives the dispatched handler's return */  /* data-wave 2026-10-08: was g_text1b_glyph_cursor */
+/* 2026-10-16: D_800F1180 retired -- D_800F116C.unk14 (include/bb2.h); the address of the D_800F1150 status byte that receives the dispatched handler's return. */
 /* 2026-09-23: g_replay_attack_pos_x (batch 7) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 D_800F1178       = 0x800F1178;  /* D_800F116C.unk0C: the caller's s32 * argument; func_80060A68 copies [0..2] into unk20 (D_800A347C) */  /* data-wave 2026-10-08: was g_text1b_render_arg_cache */
 
@@ -727,7 +727,7 @@ D_800A38D6                               = 0x800A38D6;  /* data-wave 2026-10-08:
 /* 2026-10-16: D_800A391D retired -- D_800A3918[5] (u8 D_800A3918[6], include/bb2.h). */
 D_800A3929                                      = 0x800A3929;  /* confirm delay of the D_800A3817 menu choice: 0 while choosing; on confirm 1 (counts to 0x3C) for choice 0, 0x3C for choices 1 / 2 (2B344.c:1004-1035) */  /* data-wave 2026-10-08: was g_cpu_pattern_tick */
 D_800EFB78                                           = 0x800EFB78;  /* ref: action_check_defense */  /* data-wave 2026-10-08: was g_sound_buf_b */
-D_800F1154                                    = 0x800F1154;  /* D_800F1150[4..7], per-command status bytes; func_8006133C stores &[0] in D_800F1180 */  /* data-wave 2026-10-08: was g_text1b_glyph_buf_b */
+D_800F1154                                    = 0x800F1154;  /* D_800F1150[4..7], per-command status bytes; func_8006133C stores &[0] in D_800F116C.unk14 */  /* data-wave 2026-10-08: was g_text1b_glyph_buf_b */
 D_800F62E0                                           = 0x800F62E0;  /* data-wave 2026-10-08: was g_mdec_fp_buf */
 D_800F6608                                         = 0x800F6608;  /* ref: suLeagueSystemInit */  /* data-wave 2026-10-08: was g_grid_pos_vec3 */
 D_80101F00                                            = 0x80101F00;  /* +0x38 of D_80101EC8[0] (two 0x44C-byte records): the unheld word of the record's pad input */  /* data-wave 2026-10-08: was g_char_state */
@@ -1168,7 +1168,7 @@ D_8009BC1C                                   = 0x8009BC1C;  /* 7-entry handler t
 /* === D_800F116C command-block cluster (2026-05-17) -- 4 highs === */
 /* From 51268.c func_800617C8 etc.  Complements the command block */
 /* D_800F116C (unk0C = D_800F1178, unk10 = D_800F117C, */
-/* unk14 = D_800F1180). D_800F1160 / D_800F1152 / D_800F1164 are status */
+/* unk14 at 0x800F1180). D_800F1160 / D_800F1152 / D_800F1164 are status */
 /* bytes of D_800F1150[], tested and cleared in pairs before a command; */
 /* func_80060A68 stores the handler's return to the byte unk14 names. */
 D_800F1160                                   = 0x800F1160;  /* D_800F1150[16..19], status bytes for commands 0x210010-0x210013 (func_800617C8, func_80061EC0) */  /* data-wave 2026-10-08: was g_text1b_slot_a_flags */
@@ -1935,7 +1935,7 @@ D_800A3618                                 = 0x800A3618;  /* _patch_pad's own $r
 D_800A3628                                 = 0x800A3628;  /* _send_pad's own $ra save slot (libapi/sendpad.c:10) */  /* data-wave 2026-10-09: was g_kernel_intr_ra_save_b */
 
 /* === D_800F1150 status bytes 11-15 (2026-05-17) === */
-D_800F115B                                  = 0x800F115B;  /* D_800F1150[11], status byte for commands 0x21000B / 0x29000B / 0x31000B; D_800F1180 = &D_800F115B */  /* data-wave 2026-10-08: was g_text1b_glyph_data_b1 */
+D_800F115B                                  = 0x800F115B;  /* D_800F1150[11], status byte for commands 0x21000B / 0x29000B / 0x31000B; D_800F116C.unk14 = &D_800F115B */  /* data-wave 2026-10-08: was g_text1b_glyph_data_b1 */
 D_800F115C                                  = 0x800F115C;  /* D_800F1150[12..15], status bytes for commands 0x21000C-0x21000F; accessed via &D + 0..3 (func_80061658, func_80061710) */  /* data-wave 2026-10-08: was g_text1b_glyph_data_b2 */
 
 /* === Effect particle generator state (2026-05-17) -- 2 highs === */
@@ -2199,7 +2199,7 @@ D_800EFB7D                       = 0x800EFB7D;  /* D_800EFB78[i].voll: left volu
 D_800F0BCC                         = 0x800F0BCC;  /* the halfword just past D_800F0BA8[18] */  /* data-wave 2026-10-08: was g_motion_ex_counter_id15_plus_6 */
 /* 2026-10-16: D_800F10D4, D_800F10D8, D_800F10F0, D_800F10F4 retired -- elements of s32 D_800F10D0[] (include/bb2.h); no C names them. */
 D_800F1151                   = 0x800F1151;  /* +1 from D_800F1150 */  /* data-wave 2026-10-08: was g_motion_state_secondary_flags_plus_1 */
-D_800F1158                             = 0x800F1158;  /* D_800F1150[8], one of the 28 per-command status bytes; func_800619A4 stores its address in D_800F1180 */  /* data-wave 2026-10-08: was g_text1b_glyph_buf_b_plus_4 */
+D_800F1158                             = 0x800F1158;  /* D_800F1150[8], one of the 28 per-command status bytes; func_800619A4 stores its address in D_800F116C.unk14 */  /* data-wave 2026-10-08: was g_text1b_glyph_buf_b_plus_4 */
 D_800F116A                             = 0x800F116A;  /* D_800F1150[26], status byte for command 0x21001A (func_800611A4) */  /* data-wave 2026-10-08: was g_text1b_glyph_buf_e_plus_2 */
 D_800F119C                              = 0x800F119C;  /* +4 from D_800F1198 (0x800F1198) */  /* data-wave 2026-10-08: was g_eff_vertex_buffer_plus_4 */
 D_800F11A0                              = 0x800F11A0;  /* +8 from D_800F1198 (0x800F1198) */  /* data-wave 2026-10-08: was g_eff_vertex_buffer_plus_8 */

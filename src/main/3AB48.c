@@ -3472,8 +3472,6 @@ void func_8005B5AC(void) {
     }
 }
 
-extern s32 D_800F1180;
-
 void func_8005B644(s32 a0) {
     s32 v;
     func_800858D0(0);
