@@ -7,6 +7,8 @@
 #include "include_asm.h"
 #include "bb2.h"
 #include "bb2_const.h"
+#include <psxsdk/inline_o.h>
+#include <psxsdk/gtemac.h>
 
 extern u8 D_800A38AC;
 extern s32 D_800A37D8;
@@ -1981,13 +1983,7 @@ extern Unk800A6690Rec **func_8003EB84(s32, s32, Unk800A6690Rec **);
 /* Grid pass: D_800A3708's xf.rot is turned into a matrix and applied to
  * {0,0,0x1000}; ratan2 of the result (D_800A336C) picks one of 64 tables of
  * 32-bit row masks. Each set cell of the 31x31 grid window centred on
- * D_800A3708's cell emits its records, as in func_8003EB84.
- * GTE: the sequence gte_ApplyMatrix expands to, spelled as in func_80019310
- * and func_800203B4: gte_SetRotMatrix (clobbers as published + $15);
- * gte_ldv0 (publishes no clobbers; "$12" and "memory" added: it reads vec[]
- * through $12); PsyQ 4.3's MVMVA macro with (1,0,0,3,0), the gte_rtv0 step
- * as its identical word (its body gte_mvmva_core has its two leading nops at
- * the end of the gte_ldv0 island); gte_stlvnl ("memory" is its own clobber). */
+ * D_800A3708's cell emits its records, as in func_8003EB84. */
 void func_8003E6D8(s32 arg0) {
     s32 mat[8];
     s16 vec[4];
@@ -2021,43 +2017,7 @@ void func_8003E6D8(s32 arg0) {
     vec[2] = 0x1000;
     vec[0] = 0;
     vec[1] = 0;
-    /* PsyQ libgte inline macro gte_SetRotMatrix(r0) --- inline_c.h:297-310. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lw     $13, 0($12)\n"
-        "lw     $14, 4($12)\n"
-        "ctc2   $13, $0\n"
-        "ctc2   $14, $1\n"
-        "lw     $13, 8($12)\n"
-        "lw     $14, 12($12)\n"
-        "lw     $15, 16($12)\n"
-        "ctc2   $13, $2\n"
-        "ctc2   $14, $3\n"
-        "ctc2   $15, $4\n"
-        :: "r"(mat) : "$12", "$13", "$14", "$15");
-    /* PsyQ libgte inline macro gte_ldv0(r0) --- inline_c.h:16-20. The two
-     * nops after it are not gte_ldv0 text: they are the leading `nop; nop`
-     * of gte_mvmva_core (inline_c.h:809-814), as in func_80019310. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "lwc2   $0, 0($12)\n"
-        "lwc2   $1, 4($12)\n"
-        "nop\n"
-        "nop\n"
-        :: "r"(vec) : "$12", "memory");
-    /* PsyQ 4.3's MVMVA macro (sf,mx,v,cv,lm) --- 4.3 inline_c.h:816-817, body
-     * gte_mvmva_core (:809-814); this instance is (1,0,0,3,0): sf=1,
-     * mx=rotation, v=V0, cv=none, lm=0. Spelled as its final cop2 word (the
-     * core's two nops end the gte_ldv0 island): the macro's literal is a
-     * DMPSX placeholder and this build has no dmpsx pass. */
-    __asm__ volatile(".word 0x4A486012");
-    /* PsyQ libgte inline macro gte_stlvnl(r0) --- inline_c.h:1111-1117. */
-    __asm__ volatile(
-        "move   $12, %0\n"
-        "swc2   $25, 0($12)\n"
-        "swc2   $26, 4($12)\n"
-        "swc2   $27, 8($12)\n"
-        :: "r"(res) : "$12", "memory");
+    gte_ApplyMatrix(mat, vec, res);
     ang = ratan2(res[0], res[2]);
     D_800A336C = ang;
     x = cx - 0xF;
