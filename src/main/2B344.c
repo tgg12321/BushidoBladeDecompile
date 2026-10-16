@@ -762,9 +762,6 @@ void func_8003C42C(void) {
     for (i = 0; i < D_800A389B; i++) {
         counts[D_800A377C[i]]++;
     }
-    /* FAKE: the counts[0] < counts[1] store is written in both decisive arms
-     * (here and in the tie-break below); one shared store after the if/else
-     * scores 12. */
     if (counts[0] != counts[1]) {
         D_800A382D = counts[0] < counts[1];
     } else {
