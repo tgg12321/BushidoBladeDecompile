@@ -431,12 +431,12 @@
 #define gte_rtv1() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A48E012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000017f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_rtv2() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A496012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000001bf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_rtir() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
@@ -446,7 +446,7 @@
 #define gte_rtir_sf0() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A41E012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000023f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_rtv0tr() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
@@ -456,192 +456,192 @@
 #define gte_rtv1tr() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A488012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000002bf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_rtv2tr() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A490012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000002ff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_rtirtr() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A498012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000033f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_rtv0bk() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A482012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000037f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_rtv1bk() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A48A012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000003bf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_rtv2bk() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A492012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000003ff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_rtirbk() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A49A012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000043f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_ll() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4A6412": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000057f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_llv0() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4A6012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000005bf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_llv1() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4AE012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000005ff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_llv2() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4B6012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000063f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_llir() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4BE012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000067f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_llv0tr() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4A0012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000006bf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_llv1tr() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4A8012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000006ff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_llv2tr() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4B0012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000073f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_llirtr() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4B8012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000077f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_llv0bk() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4A2012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000007bf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_llv1bk() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4AA012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000007ff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_llv2bk() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4B2012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000083f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_llirbk() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4BA012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000087f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lc() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4DA412": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000009bf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lcv0() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4C6012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000009ff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lcv1() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4CE012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000a3f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lcv2() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4D6012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000a7f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lcir() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4DE012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000abf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lcv0tr() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4C0012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000aff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lcv1tr() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4C8012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000b3f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lcv2tr() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4D0012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000b7f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lcirtr() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4D8012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000bbf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lcv0bk() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4C2012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000bff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lcv1bk() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4CA012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000c3f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lcv2bk() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4D2012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000c7f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_lcirbk() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A4DA012": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000cbf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_dpcl() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A680029": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000dff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_dpcs() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A780010": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000e3f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_dpct() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4AF8002A": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000e7f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_intpl() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4A980011": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000ebf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_sqr12() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4AA80428": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000eff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_sqr0() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
@@ -651,62 +651,62 @@
 #define gte_ncs() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4AC8041E": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000f7f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_nct() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4AD80420": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000fbf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_ncds() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4AE80413": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x00000fff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_ncdt() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4AF80416": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000103f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_nccs() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4B08041B": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000107f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_ncct() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4B18043F": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000010bf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_cdp() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4B280414": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000010ff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_cc() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4B38041C": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000113f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_nclip() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4B400006": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000117f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_avsz3() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4B58002D": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000011bf": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_avsz4() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4B68002E": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x000011ff": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_op12() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \
-  __asm__ volatile (".word 0x4B78000C": : :"$12","$13","$14","$15","memory"); \
+  __asm__ volatile (".word 0x0000123f": : :"$12","$13","$14","$15","memory"); \
 }
 #define gte_op0() { \
   __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory"); \

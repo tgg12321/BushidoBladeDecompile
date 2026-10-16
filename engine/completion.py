@@ -117,6 +117,9 @@ def source_issues(stem: str, func: str, canonical: bool | None = None) -> list[s
         if canonical and func in inlineasm.whole_body_asm_funcs(text):
             return []
         return ['no C body or authorized whole assembly body']
+    if gtemacro.paste_spans(text):
+        return ['the TU uses the `##` token-paste operator (a cheat construct: it can '
+                'assemble an asm keyword or a vendored macro name no gate sees)']
     try:
         islands = blocks(text, func)
         call_problems = gtemacro.call_issues(text, func)

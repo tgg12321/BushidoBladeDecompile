@@ -23,8 +23,8 @@ A QUALIFYING UNIT, and nothing else, is kept by the sandbox strip:
       second is equal by owner ruling 2026-09-26 (func_8002DE20, Q11; four
       more words by owner ruling 2026-09-28, func_800187F4, Q29): a header
       DMPSX placeholder `.word` and the post-DMPSX command word DMPSX emits for
-      it, for the placeholders in UNIT_DMPSX_WORDS only (each with an
-      independent source);
+      it, for the placeholders in UNIT_DMPSX_WORDS only (each word cited and
+      field-decoded; see DMPSX_WORDS);
   (B) the expansion contains at least one cop2 instruction (a DMPSX
       placeholder in UNIT_DMPSX_WORDS counts: DMPSX turns it into one), so a
       standalone `gte_nop()` is never a unit;
@@ -63,7 +63,7 @@ VENDORED HEADERS (owner decisions 2026-10-15: R1 vendor whole, R2 DMPSX option
 B, R3 class grant): Sony's inline_o.h, inline_c.h and gtemac.h live whole in
 include/psxsdk/. A C body CALLS their macros; cpp is the only expander and the
 header the only source of asm text. VENDORED pins each file, DMPSX_WORDS holds
-the placeholder -> command word pairs two independent sources agree on,
+the eleven owner-approved placeholder -> command word pairs,
 check_vendored() proves each file is Sony's text with only those words
 substituted, header_macros() parses every function-like #define, and
 call_sites() finds the calls in a body (engine.completion treats each as an
@@ -81,6 +81,9 @@ from typing import NamedTuple
 
 from . import inlineasm
 from .inlineasm import cia
+
+# Every repo-relative read resolves from the repo root, not the cwd.
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # --- the pinned header text ------------------------------------------------
 # PsyQ Run-time Library Release 4.3 (the release the existing inline_c.h
@@ -271,9 +274,10 @@ PINNED = (
 #   ("cop2 0x0486012" = 0x4A486012).
 # Owner ruling 2026-09-28 (func_800187F4, sixteenth batch, Q29; inline-asm-policy.md
 # § Per-function grant: func_800187F4). Each word is 0x4A000000 | the `cop2 IMM`
-# of both independent no-DMPSX sources, pcsx-redux/nugget@22037bd3
-# psyq/include/inline_n.h and Lameguy64/PSn00bSDK@5d9aa2d3
-# libpsn00b/include/inline_c.h (lines: nugget / PSn00bSDK):
+# of the no-DMPSX headers pcsx-redux/nugget@22037bd3 psyq/include/inline_n.h
+# and Lameguy64/PSn00bSDK@5d9aa2d3 libpsn00b/include/inline_c.h (derived from
+# nugget's; DMPSX_WORDS names the independent checks) (lines: nugget /
+# PSn00bSDK):
 #   0x0000027f (gte_rtv0tr) -> 0x4A480012 = MVMVA sf=1 mx=rotation v=V0 cv=TR lm=0
 #     (:546-550 / :1208-1211, "cop2 0x0480012")
 #   0x00000f3f (gte_sqr0)   -> 0x4AA00428 = SQR sf=0 lm=1
@@ -689,76 +693,27 @@ INLINE_HEADERS = ("inline_o.h", "inline_c.h")
 COMPOSITE_HEADER = "gtemac.h"
 
 # DMPSX placeholder -> (command word, macro, nugget lines, PSn00bSDK lines).
-# Owner decision 2026-10-15 (R2): a placeholder gets its word only when two
-# independent no-DMPSX headers give the same word for EVERY Sony macro that
-# carries it — pcsx-redux/nugget@22037bd3 psyq/include/inline_n.h and
-# Lameguy64/PSn00bSDK@5d9aa2d3 libpsn00b/include/inline_c.h, both writing
-# `cop2 IMM` (word = 0x4A000000 | IMM). The carriers are `macro` (inline_o.h
-# and inline_c.h) and `macro_b` (inline_c.h); each line pair is (macro,
-# macro_b) in that source. Left a placeholder (fail closed: a call carries no
-# GTE command and the gates refuse it): 0x0000137F gte_gpl0, where nugget gives
-# 0x5A0003E0 for gte_gpl0 but 0x4BA0003E for gte_gpl0_b (PSn00bSDK 0x4BA0003E).
+# Owner decision 2026-10-15 (R2, option B): the eleven placeholders the BB2 GTE
+# code needs get their command word; every other placeholder stays as Sony
+# shipped it, and a call of its macro is refused (Macro.placeholder: no GTE
+# command). A new word is an engine: commit with layer-2 and an owner ruling.
+# Each word is 0x4A000000 | the `cop2 IMM` of pcsx-redux/nugget@22037bd3
+# psyq/include/inline_n.h. Lameguy64/PSn00bSDK@5d9aa2d3
+# libpsn00b/include/inline_c.h writes the same IMM, but states its header
+# derives from nugget's: a second copy, not a second source. The independent
+# checks are each word's field decode against psx-spx (GTE Command Encoding:
+# sf, mx, v, cv, lm, command) and byte identity in the BB2 oracle (every call
+# site rebuilds SHA1 62efab4f...). The carriers are `macro` (inline_o.h and
+# inline_c.h) and `macro_b` (inline_c.h); each line pair is (macro, macro_b) in
+# that source.
 DMPSX_WORDS = {
     0x0000007F: (0x4A180001, "gte_rtps", (498, 903), (1159, 1543)),
     0x000000BF: (0x4A280030, "gte_rtpt", (504, 904), (1173, 1544)),
     0x000000FF: (0x4A480012, "gte_rt", (510, 905), (1178, 1545)),
     0x0000013F: (0x4A486012, "gte_rtv0", (516, 906), (1183, 1546)),
-    0x0000017F: (0x4A48E012, "gte_rtv1", (522, 907), (1188, 1547)),
-    0x000001BF: (0x4A496012, "gte_rtv2", (528, 908), (1193, 1548)),
     0x000001FF: (0x4A49E012, "gte_rtir", (534, 909), (1198, 1549)),
-    0x0000023F: (0x4A41E012, "gte_rtir_sf0", (540, 910), (1203, 1550)),
     0x0000027F: (0x4A480012, "gte_rtv0tr", (546, 911), (1208, 1551)),
-    0x000002BF: (0x4A488012, "gte_rtv1tr", (552, 912), (1213, 1552)),
-    0x000002FF: (0x4A490012, "gte_rtv2tr", (558, 913), (1218, 1553)),
-    0x0000033F: (0x4A498012, "gte_rtirtr", (564, 914), (1223, 1554)),
-    0x0000037F: (0x4A482012, "gte_rtv0bk", (570, 915), (1228, 1555)),
-    0x000003BF: (0x4A48A012, "gte_rtv1bk", (576, 916), (1233, 1556)),
-    0x000003FF: (0x4A492012, "gte_rtv2bk", (582, 917), (1238, 1557)),
-    0x0000043F: (0x4A49A012, "gte_rtirbk", (588, 918), (1243, 1558)),
-    0x0000057F: (0x4A4A6412, "gte_ll", (594, 919), (1248, 1559)),
-    0x000005BF: (0x4A4A6012, "gte_llv0", (600, 920), (1253, 1560)),
-    0x000005FF: (0x4A4AE012, "gte_llv1", (606, 921), (1258, 1561)),
-    0x0000063F: (0x4A4B6012, "gte_llv2", (612, 922), (1263, 1562)),
-    0x0000067F: (0x4A4BE012, "gte_llir", (618, 923), (1268, 1563)),
-    0x000006BF: (0x4A4A0012, "gte_llv0tr", (624, 924), (1273, 1564)),
-    0x000006FF: (0x4A4A8012, "gte_llv1tr", (630, 925), (1278, 1565)),
-    0x0000073F: (0x4A4B0012, "gte_llv2tr", (636, 926), (1283, 1566)),
-    0x0000077F: (0x4A4B8012, "gte_llirtr", (642, 927), (1288, 1567)),
-    0x000007BF: (0x4A4A2012, "gte_llv0bk", (648, 928), (1293, 1568)),
-    0x000007FF: (0x4A4AA012, "gte_llv1bk", (654, 929), (1298, 1569)),
-    0x0000083F: (0x4A4B2012, "gte_llv2bk", (660, 930), (1303, 1570)),
-    0x0000087F: (0x4A4BA012, "gte_llirbk", (666, 931), (1308, 1571)),
-    0x000009BF: (0x4A4DA412, "gte_lc", (672, 932), (1314, 1572)),
-    0x000009FF: (0x4A4C6012, "gte_lcv0", (678, 933), (1319, 1573)),
-    0x00000A3F: (0x4A4CE012, "gte_lcv1", (684, 934), (1324, 1574)),
-    0x00000A7F: (0x4A4D6012, "gte_lcv2", (690, 935), (1329, 1575)),
-    0x00000ABF: (0x4A4DE012, "gte_lcir", (696, 936), (1334, 1576)),
-    0x00000AFF: (0x4A4C0012, "gte_lcv0tr", (702, 937), (1339, 1577)),
-    0x00000B3F: (0x4A4C8012, "gte_lcv1tr", (708, 938), (1344, 1578)),
-    0x00000B7F: (0x4A4D0012, "gte_lcv2tr", (714, 939), (1349, 1579)),
-    0x00000BBF: (0x4A4D8012, "gte_lcirtr", (720, 940), (1354, 1580)),
-    0x00000BFF: (0x4A4C2012, "gte_lcv0bk", (726, 941), (1359, 1581)),
-    0x00000C3F: (0x4A4CA012, "gte_lcv1bk", (732, 942), (1364, 1582)),
-    0x00000C7F: (0x4A4D2012, "gte_lcv2bk", (738, 943), (1369, 1583)),
-    0x00000CBF: (0x4A4DA012, "gte_lcirbk", (744, 944), (1374, 1584)),
-    0x00000DFF: (0x4A680029, "gte_dpcl", (750, 945), (1379, 1585)),
-    0x00000E3F: (0x4A780010, "gte_dpcs", (756, 946), (1384, 1586)),
-    0x00000E7F: (0x4AF8002A, "gte_dpct", (762, 947), (1389, 1587)),
-    0x00000EBF: (0x4A980011, "gte_intpl", (768, 948), (1394, 1588)),
-    0x00000EFF: (0x4AA80428, "gte_sqr12", (774, 949), (1399, 1589)),
     0x00000F3F: (0x4AA00428, "gte_sqr0", (780, 950), (1404, 1590)),
-    0x00000F7F: (0x4AC8041E, "gte_ncs", (786, 951), (1409, 1591)),
-    0x00000FBF: (0x4AD80420, "gte_nct", (792, 952), (1414, 1592)),
-    0x00000FFF: (0x4AE80413, "gte_ncds", (798, 953), (1419, 1593)),
-    0x0000103F: (0x4AF80416, "gte_ncdt", (804, 954), (1424, 1594)),
-    0x0000107F: (0x4B08041B, "gte_nccs", (810, 955), (1429, 1595)),
-    0x000010BF: (0x4B18043F, "gte_ncct", (816, 956), (1434, 1596)),
-    0x000010FF: (0x4B280414, "gte_cdp", (822, 957), (1439, 1597)),
-    0x0000113F: (0x4B38041C, "gte_cc", (828, 958), (1444, 1598)),
-    0x0000117F: (0x4B400006, "gte_nclip", (834, 959), (1460, 1599)),
-    0x000011BF: (0x4B58002D, "gte_avsz3", (840, 960), (1478, 1600)),
-    0x000011FF: (0x4B68002E, "gte_avsz4", (846, 961), (1496, 1601)),
-    0x0000123F: (0x4B78000C, "gte_op12", (852, 962), (1501, 1602)),
     0x0000127F: (0x4B70000C, "gte_op0", (858, 963), (1506, 1603)),
     0x000012BF: (0x4B98003D, "gte_gpf12", (864, 964), (1511, 1604)),
     0x000012FF: (0x4B90003D, "gte_gpf0", (870, 965), (1516, 1605)),
@@ -828,7 +783,7 @@ def undmpsx(text: str) -> str:
     return _swap_words(text, False)
 
 
-def check_vendored(root: str | Path = ".") -> list[str]:
+def check_vendored(root: str | Path = REPO_ROOT) -> list[str]:
     """Issues with the vendored headers: missing, a CR, non-ASCII, not Sony's
     text once LF and DMPSX are reversed, or an agreed placeholder left
     unsubstituted. [] when all three are exactly the pinned files."""
@@ -942,7 +897,7 @@ def parse_header(text: str, header: str, known: dict | None = None):
     return macros, failed
 
 
-def header_macros(inline: str, root: str | Path = ".") -> dict[str, Macro]:
+def header_macros(inline: str, root: str | Path = REPO_ROOT) -> dict[str, Macro]:
     """Every macro a TU including `inline` (inline_o.h or inline_c.h) and
     gtemac.h can call: the inline header's own, then gtemac.h's composites
     resolved against it. A composite calling a macro the inline header lacks
@@ -966,7 +921,7 @@ def _header_macros_cached(inline: str, inline_text, composite_text):
     return tuple(out.items())
 
 
-def vendored_names(root: str | Path = ".") -> frozenset[str]:
+def vendored_names(root: str | Path = REPO_ROOT) -> frozenset[str]:
     """Every function-like macro name the three vendored files define."""
     return _names_cached(tuple(_read_vendored(str(root), b)
                                for b in (*INLINE_HEADERS, COMPOSITE_HEADER)))
@@ -1001,7 +956,7 @@ def tu_header(text: str) -> str | None:
     return next(iter(inc), None)
 
 
-def tu_macros(text: str, root: str | Path = ".") -> dict[str, Macro]:
+def tu_macros(text: str, root: str | Path = REPO_ROOT) -> dict[str, Macro]:
     """The vendored macros a call in this TU expands to: its inline header's,
     plus gtemac.h's composites when it includes gtemac.h too."""
     inline = tu_header(text)
@@ -1084,7 +1039,8 @@ def _body_open(text: str, span: tuple[int, int]) -> int:
     return span[0]
 
 
-def call_sites(text: str, func: str, root: str | Path = ".") -> list[tuple[int, int, str]]:
+def call_sites(text: str, func: str,
+               root: str | Path = REPO_ROOT) -> list[tuple[int, int, str]]:
     """(start, end, macro) for every call of a vendored macro in `func`'s body,
     end just past its `;`. Every TU is scanned, whether or not it includes a
     vendored header itself (a game header or a computed #include can bring
@@ -1132,7 +1088,7 @@ def call_sites(text: str, func: str, root: str | Path = ".") -> list[tuple[int, 
 _ARG_ASM_RE = re.compile(r"\b(?:__asm__|__asm|asm)\b|\(\s*\{")
 
 
-def call_issues(text: str, func: str, root: str | Path = ".") -> list[str]:
+def call_issues(text: str, func: str, root: str | Path = REPO_ROOT) -> list[str]:
     """Why `func`'s vendored macro calls cannot be admitted, [] when they can:
     a header that is not Sony's text, a macro the TU's header does not define
     (wrong header, or gtemac.h without an inline header), a macro without a
@@ -1199,7 +1155,7 @@ def _defines_with_kind(text: str) -> list[tuple[str, bool, frozenset, frozenset]
     return out
 
 
-def asm_macro_registry(root: str | Path = ".") -> tuple[tuple[str, str, bool], ...]:
+def asm_macro_registry(root: str | Path = REPO_ROOT) -> tuple[tuple[str, str, bool], ...]:
     """(name, header, function_like) for every #define in include/**/*.h and
     src/**/*.h whose replacement reaches an asm keyword, transitively across
     headers (a macro naming another header's asm macro is one too). header is
@@ -1237,7 +1193,7 @@ def _asm_macro_registry_cached(root: str, stamps: tuple) -> tuple[tuple[str, str
     return tuple((name, rel, fl) for rel, name, fl, _p, _i in defs if name in asm)
 
 
-def header_registry_issues(root: str | Path = ".") -> list[str]:
+def header_registry_issues(root: str | Path = REPO_ROOT) -> list[str]:
     """Every asm macro defined outside ASM_MACRO_HEADERS, and every header that
     includes a vendored header (only a .c TU may: tu_includes reads the TU)."""
     issues = [f"{rel}: #define {name} expands to inline asm outside the vendored "
@@ -1250,7 +1206,7 @@ def header_registry_issues(root: str | Path = ".") -> list[str]:
     return issues
 
 
-def foreign_asm_macros(root: str | Path = ".") -> dict[str, bool]:
+def foreign_asm_macros(root: str | Path = REPO_ROOT) -> dict[str, bool]:
     """name -> function_like for every asm macro a header outside
     ASM_MACRO_HEADERS defines. A vendored name is left out: its calls are
     islands, and the header redefining it is a registry violation."""
@@ -1296,7 +1252,7 @@ def _invocation_spans(text: str, names: dict[str, bool]) -> list[tuple[int, int,
 _SHADOW_RE = re.compile(r"[ \t]*(?:#|%:)[ \t]*(?:define|undef)[ \t]+([A-Za-z_]\w*)")
 
 
-def shadow_spans(text: str, root: str | Path = ".") -> list[tuple[int, int, str]]:
+def shadow_spans(text: str, root: str | Path = REPO_ROOT) -> list[tuple[int, int, str]]:
     """(start, end, name) of every `#define` / `#undef` of a vendored macro name
     in a source file: a redefinition would replace Sony's text."""
     names = vendored_names(root)
@@ -1311,13 +1267,41 @@ def shadow_spans(text: str, root: str | Path = ".") -> list[tuple[int, int, str]
     return out
 
 
-def macro_strip_spans(text: str, root: str | Path = ".") -> list[tuple[int, int]]:
+_PASTE_RE = re.compile(r"##|%:%:")
+
+
+def paste_spans(text: str) -> list[tuple[int, int]]:
+    """Spans of every `##` (or `%:%:`) token-paste operator in code: the whole
+    directive line holding it, else the token. A paste can assemble an asm
+    keyword or a vendored macro name no gate sees by name, so it is a cheat
+    construct. Comments and literals never count; a paste either masked view
+    sees is reported (erring toward detection)."""
+    if "##" not in text and "%:%:" not in text:
+        return []
+    view = cia.compiler_view(text)
+    pp = _preprocessor_ranges(view.masked_eol)
+    out = set()
+    for masked in (view.masked, view.masked_eol):
+        for m in _PASTE_RE.finditer(masked):
+            s = _in_ranges(m.start(), pp)
+            if s >= 0:
+                e = next(e for s2, e in pp if s2 == s)
+                out.add((view.pos[s], view.pos[e - 1] + 1))
+            else:
+                out.add((view.pos[m.start()], view.pos[m.end() - 1] + 1))
+    return sorted(out)
+
+
+def macro_strip_spans(text: str, root: str | Path = REPO_ROOT) -> list[tuple[int, int]]:
     """Spans of a source file the cheat strip removes (sandbox) and counts
     (gate) by name: invocations of a foreign header's asm macro, #define /
-    #undef of a vendored name, and calls of a vendored macro without a GTE
-    command (gte_nop(); scored as stripped since the gate refuses it)."""
+    #undef of a vendored name, calls of a vendored macro without a GTE
+    command (gte_nop(); scored as stripped since the gate refuses it), and
+    token pastes (paste_spans)."""
     spans = [(s, e) for s, e, _n in _invocation_spans(text, foreign_asm_macros(root))]
     spans += [(s, e) for s, e, _n in shadow_spans(text, root)]
+    spans += [sp for sp in paste_spans(text)
+              if not any(sp[0] < e and s < sp[1] for s, e in spans)]
     try:
         macros = tu_macros(text, root) if tu_header(text) else {}
     except ValueError:  # both inline headers
@@ -1333,7 +1317,7 @@ def macro_strip_spans(text: str, root: str | Path = ".") -> list[tuple[int, int]
 _NOT_INVOKERS = _CONTROL_HEADS | {"return", "sizeof"}
 
 
-def bare_spans(text: str, root: str | Path = ".") -> list[tuple[int, int, str]]:
+def bare_spans(text: str, root: str | Path = REPO_ROOT) -> list[tuple[int, int, str]]:
     """(start, end, name) of every code occurrence of a vendored name not
     directly followed by `(`: the macro is reached through another name
     (`#define CALL(m) m()` / `CALL(gte_nop);`, `(gte_nop)();`), which no gate

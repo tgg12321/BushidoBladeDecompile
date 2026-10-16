@@ -383,7 +383,7 @@ class Result:
 
 
 def rewrite_function(text: str, func: str, stem: str = "", header: str | None = None,
-                     root: str = ".") -> Result:
+                     root: str | Path = ROOT) -> Result:
     """The pure rewrite (no scoring): `text` is the TU, `header` forces the
     inline header (else the TU's, else the first that converts every run)."""
     _c, G, inlineasm = _engine()
@@ -488,8 +488,8 @@ def candidate_text(res: Result) -> str:
 def _functions(target: str) -> list[tuple[str, str]]:
     """(func, stem) for a function name or every island-carrying function of a TU."""
     completion, _G, inlineasm = _engine()
-    if Path(f"src/{target}.c").is_file():
-        text = Path(f"src/{target}.c").read_text(encoding="utf-8")
+    if (ROOT / "src" / f"{target}.c").is_file():
+        text = (ROOT / "src" / f"{target}.c").read_text(encoding="utf-8")
         names = re.findall(r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*?\b([A-Za-z_]\w*)\s*\(", text)
         out = []
         for f in dict.fromkeys(names):
@@ -499,14 +499,14 @@ def _functions(target: str) -> list[tuple[str, str]]:
             except ValueError:
                 continue
         return out
-    q = json.loads(Path("engine/queue.json").read_text(encoding="utf-8"))
+    q = json.loads((ROOT / "engine/queue.json").read_text(encoding="utf-8"))
     for it in q.get("items", []):
         if it["func"] == target:
             return [(target, it["file"])]
-    for p in sorted(Path("src").rglob("*.c")):
+    for p in sorted((ROOT / "src").rglob("*.c")):
         text = p.read_text(encoding="utf-8")
         if inlineasm._func_body_span(text, target):
-            return [(target, p.relative_to("src").with_suffix("").as_posix())]
+            return [(target, p.relative_to(ROOT / "src").with_suffix("").as_posix())]
     raise SystemExit(f"gte_macro_rewrite: {target}: no such function or TU")
 
 
@@ -520,7 +520,7 @@ def score(res: Result) -> int | None:
     return r.get("score")
 
 
-GRIND_LOCK = Path("tmp/grind/grind.lock")
+GRIND_LOCK = ROOT / "tmp/grind/grind.lock"
 
 
 def _windows_pid_alive(pid: int) -> bool:
@@ -559,7 +559,7 @@ def run(target: str, write: bool = False, do_score: bool = True,
             raise SystemExit(f"gte_macro_rewrite: --write refused: the Grinder lock "
                              f"{GRIND_LOCK} names a live pid ({pid})")
     funcs = _functions(target)
-    texts = {stem: Path(f"src/{stem}.c").read_text(encoding="utf-8") for _f, stem in funcs}
+    texts = {stem: (ROOT / "src" / f"{stem}.c").read_text(encoding="utf-8") for _f, stem in funcs}
     if header is None and len(funcs) > 1:
         # One header for the TU: the one that converts the most functions.
         tally = {h: sum(rewrite_function(texts[s], f, s, h).error is None for f, s in funcs)

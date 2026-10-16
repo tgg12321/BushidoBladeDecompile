@@ -1059,9 +1059,10 @@ def test_gte_vendored_model() -> None:
        ["include/psxsdk/inline_c.h", "include/psxsdk/inline_o.h"])
 
     # --- DMPSX_WORDS: every pair is a GTE command, both sources cited.
-    eq("dmpsx table: 64 agreed placeholders (0x137f gte_gpl0 disagrees, left out)",
-       len(G.DMPSX_WORDS), 64)
-    check("dmpsx table: gte_gpl0 (sources disagree) stays a placeholder",
+    eq("dmpsx table: exactly the eleven owner-approved placeholders",
+       sorted(G.DMPSX_WORDS), [0x7F, 0xBF, 0xFF, 0x13F, 0x1FF, 0x27F, 0xF3F,
+                               0x127F, 0x12BF, 0x12FF, 0x133F])
+    check("dmpsx table: gte_gpl0 stays a placeholder",
           0x0000137F not in G.DMPSX_WORDS)
     for ph, (word, macro, nug, psn) in G.DMPSX_WORDS.items():
         check(f"dmpsx table: 0x{ph:08x} is a DMPSX placeholder (n<<6 | 0x3f)",
@@ -1071,13 +1072,12 @@ def test_gte_vendored_model() -> None:
         check(f"dmpsx table: {macro} cites two lines in each source",
               len(nug) == 2 and len(psn) == 2 and all(isinstance(n, int) for n in nug + psn))
     eq("dmpsx table: one macro per placeholder",
-       len({m for _w, m, _n, _p in G.DMPSX_WORDS.values()}), 64)
+       len({m for _w, m, _n, _p in G.DMPSX_WORDS.values()}), 11)
     for ph, word in G.UNIT_DMPSX_WORDS.items():
         eq(f"dmpsx table agrees with the owner-ruled unit word 0x{ph:08x}",
            G.DMPSX_WORDS[ph][0], word)
     eq("dmpsx table: the design's eleven words",
-       {G.DMPSX_WORDS[p][0] for p in (0x7F, 0xBF, 0xFF, 0x13F, 0x1FF, 0x27F, 0xF3F,
-                                       0x127F, 0x12BF, 0x12FF, 0x133F)},
+       {w for w, _m, _n, _p in G.DMPSX_WORDS.values()},
        {0x4A180001, 0x4A280030, 0x4A480012, 0x4A486012, 0x4A49E012, 0x4AA00428,
         0x4B70000C, 0x4B98003D, 0x4B90003D, 0x4BA8003E})
 
@@ -1202,6 +1202,14 @@ def test_gte_vendored_model() -> None:
         skip("vendored: real header pins", "include/psxsdk vendored headers absent")
         return
     eq("vendored: check_vendored() clean on the tree", G.check_vendored(), [])
+    here = os.getcwd()
+    os.chdir(tempfile.mkdtemp(prefix="bb2_vendored_cwd_"))
+    try:
+        eq("vendored: reads resolve from the repo root, not the cwd",
+           (G.check_vendored(), "gte_rtv0" in G.vendored_names(),
+            "gte_rtv0" in G.header_macros("inline_o.h")), ([], True, True))
+    finally:
+        os.chdir(here)
     import importlib
     import sys
     sys.path.insert(0, str(Path("tools").resolve()))
@@ -1213,27 +1221,34 @@ def test_gte_vendored_model() -> None:
            fmt._format_checked("/nonexistent/clang-format", rel, text), ("ok", text))
     check("format: libgte.h is not vendored", not fmt.is_vendored("include/psxsdk/libgte.h"))
     eq("vendored: define counts inline_o / inline_c / gtemac",
-       tuple(len(G._macro_defines(G._read_vendored(".", b)))
+       tuple(len(G._macro_defines(G._read_vendored(str(G.REPO_ROOT), b)))
              for b in ("inline_o.h", "inline_c.h", "gtemac.h")), (174, 241, 47))
     for b in G.INLINE_HEADERS:
-        _m, failed = G.parse_header(G._read_vendored(".", b), b)
+        _m, failed = G.parse_header(G._read_vendored(str(G.REPO_ROOT), b), b)
         eq(f"vendored: every {b} #define parses", failed, [])
-    own, _f = G.parse_header(G._read_vendored(".", "inline_o.h"), "inline_o.h")
-    _m, failed = G.parse_header(G._read_vendored(".", "gtemac.h"), "gtemac.h", own)
+    own, _f = G.parse_header(G._read_vendored(str(G.REPO_ROOT), "inline_o.h"), "inline_o.h")
+    _m, failed = G.parse_header(G._read_vendored(str(G.REPO_ROOT), "gtemac.h"), "gtemac.h", own)
     eq("vendored: gtemac.h composites inline_o.h lacks (inline_c.h-only callees)",
        sorted(n for n, _r in failed), ["gte_OuterProduct0SV", "gte_OuterProduct0SVL",
                                        "gte_OuterProduct12SV", "gte_OuterProduct12SVL"])
-    own, _f = G.parse_header(G._read_vendored(".", "inline_c.h"), "inline_c.h")
-    _m, failed = G.parse_header(G._read_vendored(".", "gtemac.h"), "gtemac.h", own)
+    own, _f = G.parse_header(G._read_vendored(str(G.REPO_ROOT), "inline_c.h"), "inline_c.h")
+    _m, failed = G.parse_header(G._read_vendored(str(G.REPO_ROOT), "gtemac.h"), "gtemac.h", own)
     eq("vendored: every gtemac.h composite parses against inline_c.h", failed, [])
     for b in G.INLINE_HEADERS:
         ms = G.header_macros(b)
-        eq(f"vendored: {b} macros without a GTE command are gte_nop and gte_gpl0",
-           sorted(n for n, m in ms.items() if not m.has_cop2 and not n.endswith("_b")),
-           ["gte_gpl0", "gte_nop"])
+        own = {n: m for n, m in ms.items() if m.header == b and not n.endswith("_b")}
+        eq(f"vendored: {b} macros without a GTE command or a placeholder: gte_nop",
+           sorted(n for n, m in own.items() if not m.has_cop2 and not m.placeholder),
+           ["gte_nop"])
+        eq(f"vendored: {b} placeholder-free command macros are the eleven approved",
+           sorted(n for n, m in own.items() if not m.placeholder
+                  and any(G._DOTWORD_RE.fullmatch(x) for st in m.stmts for x in st.instrs)),
+           sorted(m for _w, m, _n, _p in G.DMPSX_WORDS.values()))
+        check(f"vendored: {b} unapproved placeholders stay (gte_gpl0, gte_rtv1, gte_ncs)",
+              all(own[n].placeholder for n in ("gte_gpl0", "gte_rtv1", "gte_ncs")))
         eq(f"vendored: {b} rtv0 carries the command word",
            ms["gte_rtv0"].stmts[-1].instrs[-1], ".word 0x4A486012")
-    real = G._read_vendored(".", "inline_o.h")
+    real = G._read_vendored(str(G.REPO_ROOT), "inline_o.h")
     for word in {w for w, _m, _n, _p in G.DMPSX_WORDS.values()}:
         check(f"vendored: command word 0x{word:08X} is not in Sony's text",
               f"0x{word:08X}".lower() not in G.undmpsx(real).lower())
@@ -1384,6 +1399,23 @@ def test_gte_call_gates() -> None:
                inlineasm.func_cheat_asm_count(spliced, "func_GTE"), 1)
             check("call gate: a spliced gte_nop() stripped",
                   "gte_n" not in inlineasm.strip_cheat_asm_file(spliced)[0])
+            # A token paste can build asm or a vendored name no gate sees.
+            for desc, pre, use in (
+                    ("an asm keyword", "#define J(a, b) a##b\n", 'J(__as, m__)("nop");'),
+                    ("a vendored name", "#define J(a, b) a ## b\n", "J(gte_, nop)();"),
+                    ("a digraph paste", "%:define J(a, b) a %:%: b\n", "J(gte_, nop)();")):
+                src = tu("    out[0] = 1;\n    " + use, pre=pre)
+                check(f"paste gate: a paste building {desc} refused",
+                      any("token-paste" in i for i in issues(src)))
+                full, _n = inlineasm.strip_cheat_asm_file(src)
+                check(f"paste gate: a paste building {desc} stripped for the sandbox",
+                      "##" not in full and "%:%:" not in full)
+            eq("paste gate: a paste in a body counted",
+               inlineasm.func_cheat_asm_count(
+                   tu("#define J(a, b) a##b\n    out[0] = J(1, 2);"), "func_GTE"), 1)
+            quiet = tu('    /* a ## b */\n    func_x("##", \'#\');\n    // c ## d')
+            eq("paste gate: `##` in comments and literals ignored",
+               (G.paste_spans(quiet), inlineasm.func_cheat_asm_count(quiet, "func_GTE")), ([], 0))
             hidden = tu(calls3, inc="#define H <psxsdk/inline_o.h>\n#include H\n")
             check("call gate: a call without a direct vendored #include refused",
                   any("does not include its header" in i for i in issues(hidden)))

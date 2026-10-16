@@ -235,6 +235,11 @@ def main() -> int:
     # gates read unexpanded source, so such a macro would be invisible).
     violations.extend(f"vendored header: {i}" for i in gtemacro.check_vendored())
     violations.extend(gtemacro.header_registry_issues())
+    # No TU uses `##`: a token paste can assemble asm or a vendored name that
+    # no gate sees by name (counted and stripped as a cheat construct).
+    violations.extend(f"src/{stem}.c: `##` token paste (cheat construct)"
+                      for stem in sorted(P.c_stems())
+                      if gtemacro.paste_spans(inlineasm._read_src_cached(stem) or ""))
 
     # Naming waves (.claude/rules/naming-bar.md): no C comment keeps a name a
     # wave retired (completion-bar item 3: comments assert nothing false).
