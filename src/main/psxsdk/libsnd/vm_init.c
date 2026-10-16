@@ -33,8 +33,6 @@ void _SsVmInit(s32 a0) {
     } while (i < 0x10);
 
     {
-        /* FAKE: masked holds (u8)a0 as a u16; read from a0 twice the andi lands
-         * in v0 and the byte store takes s1 (score 3). */
         u16 masked = (u8)a0;
         if (masked >= 0x18) {
             _SsVmMaxVoice = 0x18;
