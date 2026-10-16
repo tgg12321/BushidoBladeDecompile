@@ -340,39 +340,24 @@ void func_8006ECF4(Unk8006EACCRec *arg0) {
             break;
         default:
             s.header = s0 + var_3;
-            goto p1_dispatch;
+            goto draw;
         }
-        /* FAKE: the default `s.header = s0 + var_3;` is written twice (switch
-         * default and `default_p0:`) instead of shared behind the label,
-         * which flips the cross-jump merge direction; real on both paths.
-         * One shared copy: score 20 (duplicated-statement-into-arms) */
-        if (i == 0)
-            goto default_p0;
-        if (D_800A32E8 != var_3 || D_800A32E9 != D_800A3554) {
-            rectbuf = D_800A32F4;
-            LoadImage(&rectbuf, (u32 *)a2);
-            DrawSync(0);
+        if (i != 0) {
+            if (D_800A32E8 != var_3 || D_800A32E9 != D_800A3554) {
+                rectbuf = D_800A32F4;
+                LoadImage(&rectbuf, (u32 *)a2);
+                DrawSync(0);
+            }
+        } else {
+            s.header = s0 + var_3;
         }
-        goto p1_dispatch;
-    default_p0:
-        s.header = s0 + var_3;
-    p1_dispatch:;
-
-        if (D_800A35B0 != 0)
-            goto p1_idx;
-        if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2)
-            goto p1_idx;
-        if (D_800A35BC != 2)
-            goto p1_fallback;
-        if (D_800A3568->unk14_17)
-            goto p1_idx;
-    p1_fallback:
-        s.table = s3->unk_00[1];
-        goto p1_done;
-    p1_idx:
-        s.table = s3->unk_00[i];
-    p1_done:;
-
+    draw:
+        if (D_800A35B0 == 0 && !(D_8009BC7C[D_800A3560.rec[i].unk1] & 2) &&
+            (D_800A35BC != 2 || !D_800A3568->unk14_17)) {
+            s.table = s3->unk_00[1];
+        } else {
+            s.table = s3->unk_00[i];
+        }
         s.ft4_out = arg0->unk_04.unk_00;
         if (i != 0) {
             arg0->unk_04.unk_00 = func_80073728(&s, 1);
