@@ -165,6 +165,21 @@
  * gte_SetRotMatrix's / gte_stlvl's own fixed __asm__ volatile strings. src/main/3AB48.c
  * reverted to INCLUDE_ASM.
  */
+/* s16 (enumerate): third consecutive enumerate-modality re-confirmation (after s9, s15).
+ * Re-applied this exact chassis fresh, re-measured -- still 19, 4/4 hunks source-level,
+ * 0/4 operand-only (tmp/grind/func_80052B7C/s16/sandbox_diff.txt). Ran spelling_enum.py
+ * against the full 5-statement ENUM-BEGIN/END region both without (tmp/grind/func_80052B7C/
+ * s16/enum_noswap) and with (tmp/grind/func_80052B7C/s16/enum) the operand-swap axis: both
+ * report "0 named locals, 0 assignments, 5 anchors -> 1 distinct spellings" -- identical to
+ * s9's and s15's mechanical result, byte-for-byte. The sweep SOP's step 3 widen option (move
+ * to the neighbouring block) is inapplicable: the region already spans the entire function
+ * body, as s15 already noted. No new axis exists to try under the current sweep tooling; this
+ * is now the THIRD independent enumerate pass landing on the identical empty mutation space.
+ * The residual remains exactly chunks 1 and 5 (gte_SetRotMatrix's batched lw/ctc2 order,
+ * gte_stlvl's delay-slot swc2 placement), both inside each macro's own fixed __asm__ volatile
+ * string (include/psxsdk/inline_c.h:297, :1086) -- outside any C-level spelling space by
+ * construction. src/main/3AB48.c reverted to INCLUDE_ASM; no new src/ edit banked.
+ */
 #include <psxsdk/inline_c.h>
 void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
     gte_SetRotMatrix(rot);

@@ -1,7 +1,7 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 15,
+ "session_count": 16,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -93,6 +93,12 @@
    "floor": 19,
    "modality": "enumerate",
    "headline": "s15 enumerate: spelling_enum sweep (plain + swap axis) on the full-body ENUM region confirms an empty mutation space -- class kill re-citing the exact fallback line; residual stays locked inside the G"
+  },
+  {
+   "session": 16,
+   "floor": 19,
+   "modality": "enumerate",
+   "headline": "s16 (enumerate): third consecutive enumerate pass (after s9, s15) re-confirms zero mutation axes on the full-body chassis, both swap and no-swap; residual stays locked inside gte_SetRotMatrix/gte_stlv"
   }
  ],
  "frontier": [
@@ -308,6 +314,14 @@
    "measured_on": "s6/s8/s14 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct present, src/main/3AB48.c this session, reverted to INCLUDE_ASM after measurement",
    "predicate_cite": "tools/spelling_enum.py:89",
    "result": "Both runs report \"0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings\" verbatim -- the region has no dec"
+  },
+  {
+   "session": 16,
+   "statement": "A fresh spelling_enum.py sweep of the full 5-statement macro-call region (with and without the operand-swap axis) on the current floor-19 chassis finds a non-empty mutation space to exploit.",
+   "kill_scope": "class",
+   "measured_on": "s6/s9/s15/s16 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct present, src/main/3AB48.c this session, reverted after measurement",
+   "predicate_cite": "tools/spelling_enum.py:217",
+   "result": "Both runs report \"0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings\" -- byte-identical mechanical outp"
   }
  ],
  "ladder_skip": 0,

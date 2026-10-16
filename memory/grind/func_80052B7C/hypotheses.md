@@ -277,3 +277,12 @@ Result: KILLED (class). kill_scope: class. measured_on: legal macro-call chassis
 - kill_scope: class
 - measured_on: s6/s8/s14 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct present, src/main/3AB48.c this session, reverted to INCLUDE_ASM after measurement
 - predicate_cite: tools/spelling_enum.py:89
+
+## [s16] A fresh spelling_enum.py sweep of the full 5-statement macro-call region (with and without the operand-swap axis) on the current floor-19 chassis finds a non-empty mutation space to exploit.
+- mechanism: spelling_enum.py's region scanner (tools/spelling_enum.py:217) counts named locals, assignments and commutative-operator anchors inside the ENUM-BEGIN/END region; a GTE macro call (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl) is a single opaque statement with no C-level declaration, assignment or binary operator for the tool to vary.
+- probe: Re-applied the s6 legal macro-call chassis (memory/grind/func_80052B7C/candidate.c) fresh to src/main/3AB48.c, re-measured sandbox func_80052B7C --disable all --diff (score 19, 4/4 hunks source-level, 0/4 operand-only, tmp/grind/func_80052B7C/s16/sandbox_diff.txt), then ran spelling_enum.py both without (tmp/grind/func_80052B7C/s16/enum_noswap) and with (tmp/grind/func_80052B7C/s16/enum) the operand-swap axis.
+- result: Both runs report "0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings" -- byte-identical mechanical output to s9's and s15's runs. The region already spans the entire function body so the SOP's widen-to-neighbouring-block step is inapplicable (no neighbouring block exists). This is the third independent enumerate-modality pass landing on the identical empty mutation space.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: s6/s9/s15/s16 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct present, src/main/3AB48.c this session, reverted after measurement
+- predicate_cite: tools/spelling_enum.py:217

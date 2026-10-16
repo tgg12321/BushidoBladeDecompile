@@ -373,3 +373,11 @@ question rather than resolved here.
 - [s15] The legal macro-call chassis body is exactly 5 statements (4 gte_SetRotMatrix/gte_stlvl-style macro calls or their expansions plus an if/return pair) with zero local declarations and zero assignments -- there is no C-level sub-expression anywhere in the function for spelling_enum.py's decl/assign/swap axes to enumerate over.
 
 - [s15] The ENUM region in this session's probe file spans the function's ENTIRE body (there is no code outside it to widen into), so the sweep SOP's step-3 widen-to-neighbouring-block fallback is not available -- this is a terminal class kill for the spelling-sweep modality on this chassis, not a partial result awaiting a wider region.
+
+- [s16] sandbox func_80052B7C --disable all --diff this session: score 19, 4/4 hunks source-level, 0/4 operand-only -- identical classification to s8/s12/s13/s14's re-measurements.
+
+- [s16] Hunk 1 (chunk 1): target batches 5 lw then 5 ctc2 (t0..t7); ours interleaves 2+3 lw/ctc2 pairs via gte_SetRotMatrix -- confirms s6/s8's finding that no vendored leaf or gtemac.h composite expresses the batched order.
+
+- [s16] Hunks 2-4 (chunk 5): target's final swc2 $11,8(a3) sits in the jr $ra delay slot; ours emits it before an explicit nop via gte_stlvl -- confirms s7/s11's finding that this is decided at the maspsx/reorg.c stage, not reachable from C.
+
+- [s16] spelling_enum.py (plain and swap axis) both report zero named locals, zero assignments, 5 anchors -> 1 distinct spelling on the full-body region -- third confirmation of s9's and s15's class kill, now also re-run against this exact session's fresh chassis application rather than relying on the prior banked logs.
