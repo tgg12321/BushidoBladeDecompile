@@ -1,0 +1,1 @@
+{"func": "memcard_WaitHwEvent", "addr": "80037964", "verdict": "PASS", "body_hash": "f83710220673d758", "body_kind": "c", "file": "main/memcard", "reviewer": "aad60cfb299cc8f80", "scope": "cheat-cleanup", "date": "2026-10-16T13:19:17Z", "head": "0f62405c8", "notes": ""}
