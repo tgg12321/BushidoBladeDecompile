@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 7,
- "current_modality": "synthesis",
+ "session_count": 8,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -45,18 +45,24 @@
    "floor": 19,
    "modality": "synthesis",
    "headline": "s7 synthesis: cc1psx emits a byte-identical body from the legal chassis (no toolchain divergence); chunk 5 delay-slot store class-closed by reorg.c:740 stop_search_p; whole 3AB48 GTE cluster scans LOW"
+  },
+  {
+   "session": 8,
+   "floor": 19,
+   "modality": "structural",
+   "headline": "s8 structural: re-measured legal macro-call chassis fresh (score 19, 4/4 hunks source-level), class-killed every structural C-level lever against chunks 1/5 by reading gte_SetRotMatrix/gte_stlvl's fix"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A gate-class scanner signal for a cop2/GTE insn in a jr delay slot (compiler-impossible per reorg.c:740) lifts func_80052B7C and its four 3AB48 GTE siblings to STRONG, letting the whole-body grant inline_asm_canonical.txt:340 hold.",
-   "mechanism": "scan_hand_coded signal set lacks this signal; reorg.c:740 is the predicate",
-   "next_probe": "Engine-side signal addition (out of grind scope); escalation modality should file the CANONICAL-ASM GRANT PATH record citing reorg.c:740 and the cc1psx identity"
+   "hypothesis": "A gate-class scan_hand_coded signal for a cop2/GTE insn in a jr delay slot (reorg.c:740) would lift func_80052B7C and its 3AB48 GTE siblings to STRONG, letting the whole-body inline_asm_canonical.txt:340 grant hold as-is.",
+   "mechanism": "scan_hand_coded's current signal set (LOW 0/12, re-checked s3) lacks this signal; reorg.c:740 is the predicate.",
+   "next_probe": "engine-side signal addition (out of grind scope) \u2014 escalation/owner-cluster modality territory, not a C edit."
   },
   {
-   "hypothesis": "A vendored register-operand CR0-CR4 GTE macro would batch chunk 1's loads (all 5 lw then 5 ctc2).",
-   "mechanism": "vendored header census (s6 empty for include/psxsdk)",
-   "next_probe": "Census psyz/SOTN psxsdk headers; moot for landing since chunk 5 is class-closed"
+   "hypothesis": "A new vendored macro or DMPSX word batching chunk 1's 5 loads then 8 ctc2 (gte_SetRotMatrix + the 3 TR halfword loads together) would close hunk 1 alone.",
+   "mechanism": "No composite in gtemac.h expands to this batched order (s3 full-file read); would need a new owner-approved DMPSX placeholder plus an engine: commit, and would still leave chunk 5 (delay slot) unreached.",
+   "next_probe": "Not a grind-session action \u2014 needs an owner ruling + engine commit, and is moot for landing by itself since chunk 5 stays open."
   }
  ],
  "judge_constraints": [
@@ -143,6 +149,14 @@
    "measured_on": "tools/scan_hand_coded.py signal set at this commit on asm/funcs/*.s for the five functions",
    "predicate_cite": "",
    "result": "All five LOW 0/12, no gate-class signal; the signal set has no cop2-in-delay-slot signal."
+  },
+  {
+   "session": 8,
+   "statement": "No block-local var split / declaration-order / type-narrowing / statement-reassociation lever on the legal macro-call chassis can touch chunk 1 or chunk 5's residual, because both chunks' divergent by",
+   "kill_scope": "class",
+   "measured_on": "legal macro-call-only chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h), no FAKE construct, no written island, src/main/3AB48.c this session, reverted after measureme",
+   "predicate_cite": "include/psxsdk/inline_c.h:297",
+   "result": "score 19 (target/build both 24 insns), 4/4 hunks source-level, 0 operand-only, 0 not-scored \u2014 identical classification t"
   }
  ],
  "ladder_skip": 0,

@@ -509,3 +509,63 @@ Neither is actionable from a grind session restricted to src/main/3AB48.c.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: tools/scan_hand_coded.py signal set at this commit on asm/funcs/*.s for the five functions
+
+## s8 (structural)
+
+### H7 — No block-local var split / declaration-order / type-narrowing / statement-reassociation
+lever on the legal macro-call chassis can touch chunk 1 or chunk 5's residual, because both
+chunks' divergent bytes are emitted entirely from literal, hardcoded `__asm__ volatile` template
+strings baked into the vendored macro definitions, not computed from any C-level expression.
+
+Statement: Re-applied s6/s7's legal chassis (`gte_SetRotMatrix(rot); gte_ldtr((s32)tr->vx,
+(s32)tr->vy, (s32)tr->vz); gte_ldv0(v0); gte_rt(); gte_stlvl(out);`, `#include
+<psxsdk/inline_c.h>`) to src/main/3AB48.c this session and re-measured fresh (not just trusting
+the chassis-check number).
+
+Mechanism: Read `gte_SetRotMatrix` (include/psxsdk/inline_c.h:297-309) and `gte_stlvl`
+(include/psxsdk/inline_c.h:1086-1092) in full this session. Both macros are a SINGLE `__asm__
+volatile` statement whose instruction sequence is a literal, fixed string (not built from any
+operand-dependent control flow) — `%0` is substituted into fixed `lw`/`ctc2`/`swc2` text in a
+fixed order the preprocessor never varies. GCC treats the whole statement as one opaque
+`asm_operands` RTL insn (no sub-instruction scheduling freedom; confirmed s3/H3 and s7 for
+gte_stlvl's reorg.c:740 non-split). Nothing outside the macro invocation — no local variable
+declared before/after it, no type on an argument, no re-association of surrounding statements —
+can reach inside a fixed asm string to reorder the instructions textually baked into it. This
+is categorically different from the usual structural-lever targets (RA priority, CSE/combine
+folds, reorg.c scheduling of REAL insns), none of which apply to a single pre-formed asm block.
+
+Probe: `sandbox func_80052B7C --disable all --diff` (tmp/grind/func_80052B7C/s8/sandbox_diff.txt).
+Result: score 19 (target/build both 24 insns), 4/4 hunks source-level, 0 operand-only, 0
+not-scored — identical classification to s6/s7. Hunk 1 (chunk 1): target batches 5 lw then 8
+ctc2 (interleaved loads for the halfword chunk too — the 3 `lh` in the SAME batched ctc2 run);
+ours interleaves 2-lw+2-ctc2, 3-lw+3-ctc2 (gte_SetRotMatrix's fixed body) then the 3 lh/ctc2 of
+gte_ldtr separately — exactly s2's finding, re-confirmed byte-for-byte this session. Hunks 2-4
+(chunk 5): target's final `swc2 $11,8(a3)` sits in the `jr $ra` delay slot (hunk 3 shows it one
+slot earlier in target than ours; hunk 2/4 show target's delay-slot `nop` is consumed by the
+store while ours keeps an explicit `nop` after all 3 stores) — exactly s3/s7's finding.
+
+Verdict: KILLED. kill_scope: class. measured_on: legal macro-call-only chassis
+(gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h), no FAKE construct,
+no written island, src/main/3AB48.c this session, reverted to INCLUDE_ASM after measurement.
+predicate_cite: include/psxsdk/inline_c.h:297 (gte_SetRotMatrix's asm string, read in full this
+session, confirmed literal/fixed, no operand-dependent instruction reordering possible) and
+include/psxsdk/inline_c.h:1086 (gte_stlvl, same property) plus tools/gcc-2.7.2/reorg.c:740
+(delay-slot filler cannot split an asm_operands insn, already cited s3/s7, re-verified against
+hunk 2-4's measured placement this session).
+
+### Frontier for the next session
+Unchanged from s7: the only live lever is the engine-side `scan_hand_coded.py` gate-class
+signal addition (out of grind scope; escalation/owner-cluster territory) or a new vendored
+macro/DMPSX word for the batched order (needs its own owner ruling + engine: commit, and would
+still leave chunk 5 unreached). No further C-level structural probe exists on this chassis —
+confirmed independently in s3 and now s8 by two different sessions reading the same macro
+bodies in full.
+
+## [s8] No block-local var split / declaration-order / type-narrowing / statement-reassociation lever on the legal macro-call chassis can touch chunk 1 or chunk 5's residual, because both chunks' divergent bytes are emitted entirely from literal, hardcoded __asm__ volatile template strings baked into the vendored macro definitions, not computed from any C-level expression.
+- mechanism: gte_SetRotMatrix (include/psxsdk/inline_c.h:297) and gte_stlvl (include/psxsdk/inline_c.h:1086) are each a single __asm__ volatile statement whose instruction text is a fixed string substituted only at %0/%1 operand slots; GCC treats the whole statement as one opaque asm_operands RTL insn with no sub-instruction scheduling freedom (reorg.c:740 confirmed s3/s7/this session never splits it). No C construct outside the macro invocation can reach inside a fixed asm string to reorder instructions textually baked into it.
+- probe: Applied s6/s7's legal chassis (gte_SetRotMatrix(rot); gte_ldtr((s32)tr->vx,(s32)tr->vy,(s32)tr->vz); gte_ldv0(v0); gte_rt(); gte_stlvl(out); via psxsdk/inline_c.h) to src/main/3AB48.c this session, ran sandbox func_80052B7C --disable all --diff, reverted to INCLUDE_ASM afterward.
+- result: score 19 (target/build both 24 insns), 4/4 hunks source-level, 0 operand-only, 0 not-scored — identical classification to s6/s7. Hunk 1: target batches 5 lw then 8 ctc2 across the whole chunk 1+2 span; ours interleaves per the fixed macro bodies. Hunks 2-4: target's final swc2 sits in the jr delay slot; ours emits an explicit nop after all 3 stores.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal macro-call-only chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h), no FAKE construct, no written island, src/main/3AB48.c this session, reverted after measurement
+- predicate_cite: include/psxsdk/inline_c.h:297

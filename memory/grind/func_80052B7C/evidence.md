@@ -290,3 +290,11 @@ question rather than resolved here.
 - [s7] SOTN construct index has no ctc2/SetRotMatrix/stlvl precedent (only gte_stdp at sotn-construct-index.md:2042)
 
 - [s7] Legal chassis --diff unchanged: 4 source-level hunks, score 19
+
+- [s8] sandbox func_80052B7C --disable all --diff this session: score 19, target_insns=24, build_insns=24, 4 hunks all source-level, 0 operand-only, 0 not-scored (tmp/grind/func_80052B7C/s8/sandbox_diff.txt) — reconfirms s6/s7's floor with a fresh re-application rather than trusting the chassis-check number alone.
+
+- [s8] gte_SetRotMatrix (include/psxsdk/inline_c.h:297-309) and gte_stlvl (include/psxsdk/inline_c.h:1086-1092) read in full this session: both are single __asm__ volatile statements with a literal fixed instruction-text string, confirming s3's finding independently with the exact macro text cited.
+
+- [s8] The 2026-10-15 20:38 owner ruling (docs/grind/decisions.md) already forecloses the written-island landing route for chunks 1/2/5 under inline-asm-policy.md items 2-3 (the wall); this session did not re-litigate that ruling, only re-confirmed the legal (macro-calls-only) chassis's residual is structurally unreachable.
+
+- [s8] src/main/3AB48.c was restored to INCLUDE_ASM("asm/funcs", func_80052B7C); before this session ended; git status shows only memory/grind/func_80052B7C/{candidate.c,hypotheses.md} changed.

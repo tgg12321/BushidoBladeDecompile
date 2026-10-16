@@ -86,6 +86,14 @@
  * mips.md has no cop2 store pattern, so no C body puts swc2 $11 in the jr slot. Only the
  * whole-body hand-written grant branch can land this function.
  */
+/* s8 (structural): re-applied and re-measured fresh -- still 19, 4/4 hunks source-level,
+ * 0 operand-only (tmp/grind/func_80052B7C/s8/sandbox_diff.txt). CLASS KILL: no block-local
+ * var split / declaration-order / type-narrowing / statement-reassociation lever can touch
+ * chunk 1 or chunk 5, because gte_SetRotMatrix and gte_stlvl (include/psxsdk/inline_c.h:297,
+ * :1086, read in full this session) are each a single __asm__ volatile statement whose
+ * instruction sequence is a literal fixed string -- not computed from any C-level expression
+ * -- so nothing outside the macro invocation can reorder it. See hypotheses.md s8/H7.
+ */
 #include <psxsdk/inline_c.h>
 void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
     gte_SetRotMatrix(rot);
