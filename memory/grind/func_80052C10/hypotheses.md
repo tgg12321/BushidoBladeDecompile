@@ -67,6 +67,67 @@ Revised frontier for session 2:
    citable against [[register-alloc-pure-c]]'s ordering predicate), that is
    the point to ask.
 
+## s2 (structural) — frontier item 1 resolved: $t9 IS reachable, but only at prohibitive cost
+
+**CONFIRMED:** "$t9 is reachable by genuine (non-pinned, non-dead) C register
+pressure for the scratchpad-address pseudo in func_80052C10's chassis."
+- mechanism: global.c's register allocator has no `REG_ALLOC_ORDER` override
+  for MIPS (confirmed: `grep REG_ALLOC_ORDER tools/gcc-2.7.2/config/mips/*` —
+  no hits), so `global.c:1079`'s `#ifndef REG_ALLOC_ORDER` default path applies:
+  ascending hard-register-number preference, i.e. $v0(2),$v1(3),$a0-$a3(4-7),
+  $t0-$t7(8-15),$s0-$s7(16-23), THEN $t8(24),$t9(25). Reaching $t9 needs 22
+  other hard regs already claimed by simultaneously-live pseudos — not ~13 as
+  the s1 frontier estimated (that number omitted $s0-$s7, which sit BEFORE
+  $t8/$t9 in the default order despite being callee-saved).
+- probe: synthetic diagnostic chassis (never landed, tmp/grind/func_80052C10/s2/gen2.py):
+  `target` pointer declared first (so its live range spans the whole body),
+  N other `vu32 *pK = (vu32*)0x1F80....` pointers declared after it, all N
+  dereferenced-and-stored BEFORE `*target = 0;` (forces target's live range to
+  overlap all N). Swept N = 5,9,13,15,20,22,23 via
+  `tools/grinder/dump.ps1 func_80052C10 -Candidate <file>` + `.greg` dispositions.
+  Dumps saved: tmp/grind/func_80052C10/s2/{p5,p9,p13,q13,q15,q20,q22,q23}.greg.
+- result: reg72 (the `target` pseudo, pseudo-id of the first-declared, longest-lived
+  local) tracked across N: N=13→hard reg 16 ($s0); N=15→18 ($s2); N=20→23
+  ($s7, last of the s-bank); N=22→**25 ($t9)**, confirmed via `sandbox
+  --candidate tmp/grind/func_80052C10/s2/q22.c --diff`: score 106, 110 build
+  insns vs target's 6, with a `addiu $sp,$sp,-32` prologue (saved in
+  tmp/grind/func_80052C10/s2/q22_sandbox_diff.txt) — the s0-s7 saves this
+  pressure level requires. N=23→30 (an even higher reg, past t9, since by then
+  t9 itself is also claimed by an earlier-order competitor).
+- verdict: CONFIRMED (not a kill — this is the positive mechanism finding the
+  s1 frontier asked for).
+
+**Practical corollary (separate hypothesis, instance-scope):** "A body whose
+total instruction count stays close to the target's 6 insns can reach $t9 via
+this genuine-pressure mechanism."
+- measured_on: the gen2.py pointer-pressure chassis, N=5..23, no FAKE construct,
+  no register pin; swept exhaustively over the only mechanism that reaches $t9
+  (ascending default order forces $s0-$s7 saturation first).
+- result: KILLED on this chassis — every N that reaches $t9 (N>=22) necessarily
+  also claims all of $s0-$s7, which under MIPS/PsyQ calling convention forces a
+  non-trivial save/restore prologue+epilogue (measured: 110 insns at N=22,
+  `addiu $sp,$sp,-32` + corresponding restores, vs the target's 0-insn
+  prologue). No N in the swept range reaches $t9 without that overhead — the
+  mechanism that reaches $t9 and the mechanism that keeps the body near 6 insns
+  are mutually exclusive on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: gen2.py pointer-pressure chassis (declare-target-first,
+  dereference-others-before-target shape), N=5,9,13,15,20,22,23, no FAKE
+  construct, no register pin, measured via `.greg` dispositions +
+  `sandbox --candidate --diff`.
+
+This sharpens s1's open register-seat-anomaly gap: the target's $t9 choice is
+mechanically *possible* in GCC 2.7.2 but demands the kind of register pressure
+(22+ live scratch values, s0-s7 saved) this function's actual asm shows no
+sign of (no save/restore insns at all in the 6-insn target). That is evidence
+*against* a small natural-C original reaching $t9 here, and so *for* the
+canonical-asm (hand-written) reading already supported by the sibling
+func_80052C28 marker (s1 evidence) — not conclusive (only this one chassis
+shape was swept; a differently-shaped body might reach pressure without using
+$s0-$s7, e.g. one with 22 live values that are all call-clobbered temporaries
+with no calls — untested), but it meaningfully narrows the frontier.
+
 ## [s1] A single-statement body `*(T *)0x1F800400 = 0;` (volatile vu32 or plain s32 pointer form) reaches the target's $t9 register seat for the scratchpad address pseudo.
 - mechanism: global.c register allocation order: lowest-numbered free scratch register is preferred absent competing live pseudos.
 - probe: .greg dump for func_80052C10 (tmp/grind/func_80052C10/s1/3AB48.greg.txt) on the vu32 candidate body; confirmed only one pseudo (reg 72, zero conflicts) exists, allocated to $v0.
@@ -74,3 +135,17 @@ Revised frontier for session 2:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/main/3AB48.c func_80052C10, single-statement chassis `*(vu32 *)0x1F800400 = 0;` and `*(s32 *)0x1F800400 = 0;`, no FAKE construct present, no register pin used
+
+## [s2] $t9 is reachable by genuine (non-pinned, non-dead) C register pressure for the scratchpad-address pseudo in func_80052C10's chassis.
+- mechanism: global.c's register allocator has no REG_ALLOC_ORDER override for MIPS (grep confirmed), so the #ifndef REG_ALLOC_ORDER default path (tools/gcc-2.7.2/global.c:1079) applies: ascending hard-register preference $v0,$v1,$a0-$a3,$t0-$t7,$s0-$s7,$t8,$t9 -- 22 registers must be claimed by other simultaneously-live pseudos before $t9 is chosen.
+- probe: gen2.py pointer-pressure chassis (target pointer declared first so its live range spans the body, N other vu32* pointers declared after and dereferenced before target's own use to force overlap); swept N=5,9,13,15,20,22,23 via tools/grinder/dump.ps1 -Candidate + .greg dispositions.
+- result: CONFIRMED: at N=22 other live pointers, the target pseudo (reg72) is allocated hard reg 25 ($t9), matching the target asm's register choice. Verified via sandbox --candidate q22.c --diff (score 106, 110 build insns, addiu $sp,$sp,-32 prologue for the s0-s7 saves this pressure level requires).
+- verdict: CONFIRMED
+
+## [s2] A body whose total instruction count stays close to the target's 6 insns can reach $t9 via this genuine-pressure mechanism.
+- mechanism: n/a -- this is the practical corollary, not a new codegen mechanism: the same ascending-order allocator that reaches $t9 at N>=22 also forces $s0-$s7 into use, which the PsyQ/MIPS calling convention requires saving/restoring across the function body.
+- probe: Same gen2.py sweep, N=5..23, reading build-insn counts from sandbox --candidate --diff at each reachability threshold.
+- result: KILLED on this chassis: every N that reaches $t9 (N>=22) also claims all of $s0-$s7 and incurs a non-trivial save/restore prologue+epilogue (110 insns at N=22 vs the target's 6, with addiu $sp,$sp,-32 -- target has zero prologue insns). No swept N reaches $t9 without that overhead; the mechanism that reaches $t9 and the mechanism that keeps a body near 6 insns are mutually exclusive on this chassis shape.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: gen2.py pointer-pressure chassis (declare-target-first, dereference-others-before-target shape), N=5,9,13,15,20,22,23, no FAKE construct, no register pin, measured via .greg dispositions + sandbox --candidate --diff

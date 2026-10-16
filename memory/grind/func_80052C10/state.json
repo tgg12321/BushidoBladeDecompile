@@ -1,31 +1,37 @@
 {
  "func": "func_80052C10",
  "file": "main/3AB48",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 4,
    "modality": "recon",
    "headline": "Confirmed floor 4 (vu32 single-store); killed instance hypothesis that a minimal single-statement body reaches $t9; grant's fold claim only wrong for the volatile reading; sibling has independent hand"
+  },
+  {
+   "session": 2,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "Resolved s1 frontier item 1: $t9 IS reachable by genuine register pressure (N>=22 live scratch pseudos, no REG_ALLOC_ORDER override for MIPS), but only at the cost of a 110-insn body with $s0-$s7 save"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Register-seat recovery via genuine multi-value pressure: construct a synthetic (diagnostic-only, never landed) body with ~13 live scratch pseudos before the store to test whether global.c's allocator can ever reach $t9 at all, or whether $t9 is unreachable by any natural-C register pressure shape for this address (which would be a class-level finding against register-alloc-pure-c's ordering predicate, worth a ruling-request).",
-   "mechanism": "global.c allocno ordering / conflict-driven hard-register assignment",
-   "next_probe": "Write throwaway diagnostic bodies with N dead/live scratch locals (N=5,9,13) before the store, dump .greg each time, find the pressure threshold (if any) at which $v0..$t8 fill and $t9 gets chosen; strip before any candidate.c update."
+   "hypothesis": "Trailing double-nop after jr $ra is source-level, unexplained by any lever tried so far (unchanged from s1).",
+   "mechanism": "unknown; not inter-object padding, not GTE/cop2 latency",
+   "next_probe": "Grep other matched leaf functions in this codebase for a jr $ra; nop; nop (double-nop) 6+-insn shape and read their matched C to see what source construct, if any, produces a second nop after the return in a leaf void function."
   },
   {
-   "hypothesis": "Trailing double-nop after jr $ra is source-level, not a register/scheduling artifact -- unexplained by any lever tried so far.",
-   "mechanism": "unknown; not inter-object padding (next function abuts with no gap), not GTE/cop2 latency (no cop2 op in this function)",
-   "next_probe": "Grep other matched leaf functions in this codebase for a `jr $ra; nop; nop` (double-nop) 6+-insn shape and read their matched C to see what source construct, if any, produces a second nop after the return in a leaf void function."
+   "hypothesis": "A differently-shaped pressure chassis (e.g. 22+ live call-clobbered temporaries with no $s0-$s7 involvement, if such a shape exists under MIPS's calling convention) might reach $t9 without the save/restore overhead this session's chassis incurred.",
+   "mechanism": "global.c allocation order is fixed (ascending, no REG_ALLOC_ORDER), but which hard regs get claimed depends on which pseudos conflict; this session only tried one liveness-shaping idiom (declare-first, use-last pointers).",
+   "next_probe": "Try a chassis using genuinely call-clobbered-only values (e.g. values live only across straight-line code with no calls, forcing the compiler toward $t0-$t9 before $s0-$s7 if any such preference exists elsewhere, e.g. local-alloc.c's class preferences) to see if $t9 is reachable at lower N without s-register save overhead."
   },
   {
-   "hypothesis": "The canonical-asm grant (inline_asm_canonical.txt:331) should be re-weighed, but not yet escalated -- new evidence cuts both ways this session (fold claim right for non-volatile, wrong for volatile; but sibling func_80052C28 has an independent hand-written marker).",
-   "mechanism": "n/a -- policy/evidence question, not a codegen mechanism",
-   "next_probe": "Run frontier item 1 (the pressure-threshold probe) first; if it shows $t9 is reachable under some plausible real body, pursue that body's C shape before any ruling-request. If it shows $t9 unreachable under even heavy pressure, cite that measurement in a ruling-request instead of reopening the grant unilaterally."
+   "hypothesis": "Re-weigh the canonical-asm grant -- this session's pressure-threshold finding is now additional evidence AGAINST a small natural-C body reaching $t9, strengthening (not yet conclusively) the case for keeping the hand-written-asm reading alongside the sibling func_80052C28 marker.",
+   "mechanism": "n/a -- policy/evidence question",
+   "next_probe": "If frontier item 2 (alternate chassis shape) also fails to reach $t9 without prologue overhead, that is a stronger basis for a ruling-request than currently exists; otherwise keep gathering before escalating unilaterally."
   }
  ],
  "judge_constraints": [],
@@ -38,6 +44,14 @@
    "measured_on": "src/main/3AB48.c func_80052C10, single-statement chassis `*(vu32 *)0x1F800400 = 0;` and `*(s32 *)0x1F800400 = 0;`, no FAKE construct present, no register pin used",
    "predicate_cite": "",
    "result": "Both the vu32 and plain s32 single-statement forms allocate the address pseudo to $v0 (lowest free scratch reg), never $"
+  },
+  {
+   "session": 2,
+   "statement": "A body whose total instruction count stays close to the target's 6 insns can reach $t9 via this genuine-pressure mechanism.",
+   "kill_scope": "instance",
+   "measured_on": "gen2.py pointer-pressure chassis (declare-target-first, dereference-others-before-target shape), N=5,9,13,15,20,22,23, no FAKE construct, no register pin, measured via .greg dispositions + sandbox --c",
+   "predicate_cite": "",
+   "result": "KILLED on this chassis: every N that reaches $t9 (N>=22) also claims all of $s0-$s7 and incurs a non-trivial save/restor"
   }
  ],
  "ladder_skip": 0,

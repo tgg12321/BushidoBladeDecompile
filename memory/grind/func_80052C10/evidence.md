@@ -1,5 +1,45 @@
 # Evidence bank — func_80052C10
 
+## s2 (structural) — MIPS has no REG_ALLOC_ORDER; default order is ascending, puts $s0-$s7 BEFORE $t8/$t9
+
+`grep -r REG_ALLOC_ORDER tools/gcc-2.7.2/config/mips/` → no hits. Per
+`tools/gcc-2.7.2/global.c:1079` (`#ifndef REG_ALLOC_ORDER`), the allocator's
+default preference is ascending hard-register number: $v0(2),$v1(3),
+$a0-$a3(4-7),$t0-$t7(8-15),$s0-$s7(16-23),$t8(24),$t9(25). This means the s1
+frontier's "~13 other live pseudos" estimate for reaching $t9 was wrong — it
+did not count $s0-$s7 (8 registers) sitting ahead of $t8/$t9 in the default
+order. The correct threshold, swept empirically this session, is 22.
+
+## s2 — $t9 reachability swept empirically (gen2.py pointer-pressure chassis)
+
+Diagnostic-only (never landed) chassis: `target` pointer declared first (live
+range spans whole function), N other `vu32 *pK` pointers declared after,
+all N dereferenced+stored BEFORE `*target = 0;` to force overlap. Swept via
+`tools/grinder/dump.ps1 func_80052C10 -Candidate <file>`, reading `.greg`
+register dispositions for pseudo 72 (= `target`):
+
+| N (other pointers) | target's hard reg | reg name |
+|---|---|---|
+| 5  | 2  | $v0 |
+| 13 | 16 | $s0 |
+| 15 | 18 | $s2 |
+| 20 | 23 | $s7 |
+| 22 | 25 | $t9 |
+| 23 | 30 | (past t9; a competitor claims t9 first) |
+
+Confirmed at N=22 via `sandbox --disable all --candidate
+tmp/grind/func_80052C10/s2/q22.c --diff`: score 106, 110 build insns (target
+has 6), with an `addiu $sp,$sp,-32` prologue — the save overhead $s0-$s7 usage
+imposes. Saved to tmp/grind/func_80052C10/s2/ (gen2.py, q13/q15/q20/q22/q23.c
++ .greg dumps). This confirms the s1 frontier's hypothesis 1 (mechanism is
+real, $t9 is reachable) but also shows the practical corollary is false on
+this chassis: no N in the swept range reaches $t9 without also forcing a
+110-insn body with register-save overhead, categorically unlike the target's
+6-insn, no-prologue shape. Narrows (does not close) the register-seat
+anomaly: the mechanism exists, but this function's actual asm shows no trace
+of the register pressure it would require.
+
+
 ## s1 (recon) — baseline + grant re-audit
 
 - Target: `asm/funcs/func_80052C10.s` — 6 insns: `lui $t9,0x1f80; ori $t9,$t9,0x400;
@@ -148,3 +188,11 @@ content either.
 - [s1] asm/funcs/func_80052C28.s (the function immediately following func_80052C10 in this TU, confirmed via rodata-object-alignment's no-inter-object-padding check to abut it directly with no gap) carries an independent, already-landed `/* handwritten instruction */` comment on its second insn -- an affirmative hand-written-asm signal in the immediate neighborhood that argues against reopening the canonical-asm grant on func_80052C10's LOW/0 scan_hand_coded tier alone.
 
 - [s1] scan_hand_coded --single func_80052C10 --json: score 0, tier LOW, no strong indicators (re-confirmed from prior session, not re-run this session).
+
+- [s2] grep REG_ALLOC_ORDER tools/gcc-2.7.2/config/mips/* -- no hits; MIPS port uses global.c's #ifndef REG_ALLOC_ORDER default (ascending hard-reg-number preference), contradicting the s1 frontier's informal ~13-register pressure estimate (which omitted $s0-$s7).
+
+- [s2] Empirical sweep (tmp/grind/func_80052C10/s2/{p5,p9,p13,q13,q15,q20,q22,q23}.greg): target pseudo's hard-reg assignment climbs monotonically with N -- N=5->$v0(2), N=13->$s0(16), N=15->$s2(18), N=20->$s7(23), N=22->$t9(25), N=23->reg30 (a competitor claims t9 first once pressure exceeds the threshold).
+
+- [s2] sandbox --candidate q22.c --diff: score 106, 110 build insns vs target's 6, with an addiu $sp,$sp,-32 prologue -- confirms reaching $t9 via this chassis categorically changes the function's shape (prologue/epilogue overhead the real target asm does not have).
+
+- [s2] Baseline reconfirmed this session: candidate.c (*(vu32*)0x1F800400 = 0;) measures sandbox score 4, matches s1's recorded floor exactly (saved tmp/grind/func_80052C10/s2/baseline_diff.txt).
