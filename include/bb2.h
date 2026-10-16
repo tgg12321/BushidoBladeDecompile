@@ -524,6 +524,33 @@ extern u8 D_8008E908[][5];
 extern u8 D_8008E914[][8];
 extern s32 D_8008EA00[][4];
 extern u8 D_8008EC24[][5];
+/* 51268's sprite texture records (TexRec runs 0x8009B890..0x8009B9FF; sizes
+ * from the data labels) */
+extern TexRec D_8009B890[4];
+extern TexRec D_8009B8B0[3];
+extern TexRec D_8009B8C8[1];
+extern TexRec D_8009B8D0[1];
+extern TexRec D_8009B8D8[1];
+extern TexRec D_8009B8E0[1];
+extern TexRec D_8009B8E8[7];
+extern TexRec D_8009B920[4];
+extern TexRec D_8009B940[1];
+extern TexRec D_8009B948[1];
+extern TexRec D_8009B950[1];
+extern TexRec D_8009B958[1];
+extern TexRec D_8009B960[1];
+extern TexRec D_8009B968[1];
+extern TexRec D_8009B970[1];
+extern TexRec D_8009B978[1];
+extern TexRec D_8009B980[1];
+extern TexRec D_8009B988[1];
+extern TexRec D_8009B990[1];
+extern TexRec D_8009B998[4];
+extern TexRec D_8009B9B8[4];
+extern TexRec D_8009B9D8[1];
+extern TexRec D_8009B9E0[1];
+extern TexRec D_8009B9E8[1];
+extern TexRec D_8009B9F0[2];
 /* one table of 12 records: [0..5] / [6..9] the two sprite sets, [10] / [11]
  * their D_8009BD24.unk20_0 CLUT substitutes (func_800620B8) */
 extern TexRec D_8009BA00[12];

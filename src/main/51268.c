@@ -977,10 +977,6 @@ s32 func_8006288C(void) {
    link the new quads into the OT. Returns 1 when quads were added, else the
    live-slot mask (0 once every slot has expired). */
 s32 func_8006295C(void) {
-    extern TexRec D_8009B958[];
-    extern TexRec D_8009B960[];
-    extern TexRec D_8009B968[];
-    extern TexRec D_8009B970[];
     extern s16 D_8009BB84[];
     s32 count;
     MATRIX *var_1;
@@ -1146,9 +1142,6 @@ s32 func_80062FEC(void) {
    depth. A slot whose age reaches 16 clears its bit. Returns nonzero while any
    slot is still live. */
 s32 func_80063084(void) {
-    extern TexRec D_8009B940[];
-    extern TexRec D_8009B948[];
-    extern TexRec D_8009B950[];
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
     Unk1F8000B8_80063084 *base;
@@ -1397,7 +1390,6 @@ u8 func_80063BD0(s32 idx) {
  * D_800A3474 and the slot's matrix, keep it when its depth is in range, then
  * link every new quad into the OT at its depth. Returns 1. */
 s32 func_80063E10(s32 arg0) {
-    extern TexRec D_8009B920[];
     extern SVECTOR D_8009BBE4;
     extern SVECTOR D_8009BBEC;
     extern SVECTOR D_8009BBF4;
@@ -1560,7 +1552,6 @@ s32 func_800645B0(void) {
    slot is retired. Finally link every new quad into the OT at its depth.
    Returns 1 when any slot is still live, else 0. */
 s32 func_800646E8(void) {
-    extern TexRec D_8009B8E8[];
     Unk1F8000B8_800646E8 *base;
     u32 *var_1;
     s16 *w;
@@ -2011,18 +2002,6 @@ u8 func_800657B0(void) {
  * `arg0 < 9`, so modes 10/11 draw once. */
 u8 func_80065800(s32 arg0) {
     extern s16 D_800A3834;
-    extern TexRec D_8009B8C8[];
-    extern TexRec D_8009B8D0[];
-    extern TexRec D_8009B8D8[];
-    extern TexRec D_8009B8E0[];
-    extern TexRec D_8009B978[];
-    extern TexRec D_8009B980[];
-    extern TexRec D_8009B988[];
-    extern TexRec D_8009B990[];
-    extern TexRec D_8009B9D8[];
-    extern TexRec D_8009B9E0[];
-    extern TexRec D_8009B9E8[];
-    extern TexRec D_8009B9F0[];
     extern s32 ReadGeomScreen(void);
     Unk1F8000B8_80065800 *var_0;
     POLY_FT4 *prim;
@@ -2643,10 +2622,6 @@ u8 func_8006786C(void) {
 
 extern s16 D_800EFC8A[];
 extern s16 D_800F0B98[];
-extern TexRec D_8009B890[];
-extern TexRec D_8009B8B0[];
-extern TexRec D_8009B998[];
-extern TexRec D_8009B9B8[];
 
 u8 func_800678A8(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
