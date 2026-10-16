@@ -449,3 +449,63 @@ Neither is actionable from a grind session restricted to src/main/3AB48.c.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: include/psxsdk/*.h as vendored at this commit, grep census, no src/ edit, no FAKE construct
+
+## s7 (synthesis)
+
+## [s7] The 19-point residual of the legal chassis is a decompals-cc1 vs SN-cc1psx divergence (the original compiler would emit the target's order/delay slot from the same C).
+- mechanism: cc1psx calibration (tools/cc1psx.exe, calibration-only)
+- probe: compile tmp/grind/func_80052B7C/s7/t.c with both compilers, diff function bodies
+- result: byte-identical function bodies (cc1_vs_cc1psx.txt). Not a toolchain divergence.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s6 legal chassis (gte_SetRotMatrix/gte_ldtr((s32)..)/gte_ldv0/gte_rt/gte_stlvl via inline_c.h), no FAKE construct
+
+## [s7] Some C body compiled by GCC 2.7.2 places the final swc2 $11 (GTE store) in the jr $ra delay slot.
+- mechanism: reorg.c:740-744 stop_search_p rejects every asm insn as a delay-slot candidate; mips.md has no cop2 store pattern, so swc2 $11 exists only as an asm insn.
+- probe: read reorg.c:736-746; grep -c cop2/swc2 config/mips/mips.md (=0); confirmed both compilers emit bare `j $31`.
+- result: no C body can fill the slot with the GTE store; chunk 5's 2 hunks are closed for any C body. Only the hand-written (whole-body asm grant) branch reaches it.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: tools/gcc-2.7.2 reorg.c + config/mips/mips.md source; s6 legal chassis output from cc1 and cc1psx, no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/reorg.c:740
+
+## [s7] A sibling in the 3AB48 GTE cluster carries a STRONG scan_hand_coded tier that could anchor a cluster grant.
+- probe: scan_hand_coded.py --single on all five cluster functions
+- result: all LOW 0/12 (cluster_scan.txt); the scanner has no cop2-delay-slot signal.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/scan_hand_coded.py signal set at this commit, asm/funcs/*.s for the five functions
+
+### Frontier after s7
+1. Chunk 5 is now class-closed for C (reorg.c:740). Since a pure-macro C body can never reach 0, the only
+   landing is the whole-body hand-written branch of the Judge constraint: a gate-class scanner signal for
+   "cop2/GTE insn in a jr delay slot" (reorg.c:740 makes it a compiler-impossibility signal, same logic as
+   other S-class signals) would lift all five 3AB48 GTE leaves to STRONG. Engine-side; cite this predicate.
+2. Chunk 1 (batched 5 lw then 5 ctc2, t0..t7 sequential): no vendored register-operand CR0-4 macro (s6 census).
+   Moot for landing given item 1, but still open as a vendored-header question.
+3. Escalation modality should file the CANONICAL-ASM GRANT PATH record citing reorg.c:740 + cc1psx identity.
+
+## [s7] The 19-point residual of the s6 legal chassis is a decompals-cc1 vs SN cc1psx divergence: the original compiler would emit the target order and delay slot from the same C.
+- mechanism: cc1psx calibration (tools/cc1psx.exe via cc1psx_wrapper.sh, calibration only)
+- probe: compile tmp/grind/func_80052B7C/s7/t.c with tools/gcc-2.7.2/build/cc1 and cc1psx, diff function bodies
+- result: Function bodies byte-identical (interleaved SetRotMatrix lw/ctc2, lh x3, swc2 x3 then bare j $31). Residual is not a compiler-port divergence.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s6 legal chassis gte_SetRotMatrix/gte_ldtr((s32)..)/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, no FAKE construct
+
+## [s7] A C body compiled by GCC 2.7.2 can place the final GTE store swc2 $11 in the jr $ra delay slot.
+- mechanism: reorg.c stop_search_p (case INSN) returns 1 for every ASM_INPUT / asm_operands insn; mips.md has zero cop2/swc2 patterns so swc2 $11 only exists as an asm insn
+- probe: read tools/gcc-2.7.2/reorg.c:736-746, grep -c cop2|swc2 config/mips/mips.md (0), both compilers' output ends in bare j $31
+- result: The delay-slot GTE store is never produced by GCC 2.7.2 from C; chunk 5 (diff hunks 3-4) is only reachable by the whole-body hand-written branch.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: tools/gcc-2.7.2 reorg.c and config/mips/mips.md source; s6 legal chassis output from cc1 and cc1psx; no FAKE construct
+- predicate_cite: tools/gcc-2.7.2/reorg.c:740
+
+## [s7] A sibling in the 3AB48 GTE cluster carries a STRONG scan_hand_coded tier that could anchor a cluster grant for func_80052B7C.
+- mechanism: scan_hand_coded.py gate-class signals
+- probe: scan_hand_coded.py --single on func_80052B7C, gte_SetMatrixRotTransIR, gte_SetMatrixRotTransIRVec, gte_SetRotTransMatrix, gte_SetRotMatrixClearTrans
+- result: All five LOW 0/12, no gate-class signal; the signal set has no cop2-in-delay-slot signal.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/scan_hand_coded.py signal set at this commit on asm/funcs/*.s for the five functions

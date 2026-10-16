@@ -1,7 +1,7 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 6,
+ "session_count": 7,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -39,23 +39,24 @@
    "floor": 19,
    "modality": "synthesis",
    "headline": "s6 synthesis: first LEGAL body measured -- pure vendored-macro chassis with gte_ldtr((s32)tr->vx,..) for chunk 2 scores 19 (s1 wrongly dismissed gte_ldtr); residual is chunks 1 and 5 only, and no vend"
+  },
+  {
+   "session": 7,
+   "floor": 19,
+   "modality": "synthesis",
+   "headline": "s7 synthesis: cc1psx emits a byte-identical body from the legal chassis (no toolchain divergence); chunk 5 delay-slot store class-closed by reorg.c:740 stop_search_p; whole 3AB48 GTE cluster scans LOW"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A new vendored macro word with register operands into CR0-CR4 (chunk 1) and a split $11 store (chunk 5) would let the legal macro chassis reach 0.",
-   "mechanism": "inline-asm-policy.md item 1 -- needs owner ruling + engine: commit; vendored headers censused empty in s6",
-   "next_probe": "Not src-actionable; record as the remaining owner/engine-side gap"
+   "hypothesis": "A gate-class scanner signal for a cop2/GTE insn in a jr delay slot (compiler-impossible per reorg.c:740) lifts func_80052B7C and its four 3AB48 GTE siblings to STRONG, letting the whole-body grant inline_asm_canonical.txt:340 hold.",
+   "mechanism": "scan_hand_coded signal set lacks this signal; reorg.c:740 is the predicate",
+   "next_probe": "Engine-side signal addition (out of grind scope); escalation modality should file the CANONICAL-ASM GRANT PATH record citing reorg.c:740 and the cc1psx identity"
   },
   {
-   "hypothesis": "scan_hand_coded STRONG tier would let the whole-body grant inline_asm_canonical.txt:340 hold as-is.",
-   "mechanism": "LOW 0/12 (s3); scanner signal coverage gap",
-   "next_probe": "Engine-side scanner signal; out of grind scope"
-  },
-  {
-   "hypothesis": "SOTN/psyz vendored psxsdk headers may carry a CR0-4 register-operand GTE word absent from this repo's copy, which would be a citable vendored-macro source.",
-   "mechanism": "header census beyond include/psxsdk",
-   "next_probe": "Grep SOTN master include/psxsdk for ctc2 %N,$0..$4 and single swc2 $11 macros"
+   "hypothesis": "A vendored register-operand CR0-CR4 GTE macro would batch chunk 1's loads (all 5 lw then 5 ctc2).",
+   "mechanism": "vendored header census (s6 empty for include/psxsdk)",
+   "next_probe": "Census psyz/SOTN psxsdk headers; moot for landing since chunk 5 is class-closed"
   }
  ],
  "judge_constraints": [
@@ -118,6 +119,30 @@
    "measured_on": "include/psxsdk/*.h as vendored at this commit, grep census, no src/ edit, no FAKE construct",
    "predicate_cite": "",
    "result": "None found: only gte_stlvl's 3-store body (inline_c.h:1086-1089); no register-operand ctc2 into CR0-4."
+  },
+  {
+   "session": 7,
+   "statement": "The 19-point residual of the s6 legal chassis is a decompals-cc1 vs SN cc1psx divergence: the original compiler would emit the target order and delay slot from the same C.",
+   "kill_scope": "instance",
+   "measured_on": "s6 legal chassis gte_SetRotMatrix/gte_ldtr((s32)..)/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Function bodies byte-identical (interleaved SetRotMatrix lw/ctc2, lh x3, swc2 x3 then bare j $31). Residual is not a com"
+  },
+  {
+   "session": 7,
+   "statement": "A C body compiled by GCC 2.7.2 can place the final GTE store swc2 $11 in the jr $ra delay slot.",
+   "kill_scope": "class",
+   "measured_on": "tools/gcc-2.7.2 reorg.c and config/mips/mips.md source; s6 legal chassis output from cc1 and cc1psx; no FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/reorg.c:740",
+   "result": "The delay-slot GTE store is never produced by GCC 2.7.2 from C; chunk 5 (diff hunks 3-4) is only reachable by the whole-"
+  },
+  {
+   "session": 7,
+   "statement": "A sibling in the 3AB48 GTE cluster carries a STRONG scan_hand_coded tier that could anchor a cluster grant for func_80052B7C.",
+   "kill_scope": "instance",
+   "measured_on": "tools/scan_hand_coded.py signal set at this commit on asm/funcs/*.s for the five functions",
+   "predicate_cite": "",
+   "result": "All five LOW 0/12, no gate-class signal; the signal set has no cop2-in-delay-slot signal."
   }
  ],
  "ladder_skip": 0,

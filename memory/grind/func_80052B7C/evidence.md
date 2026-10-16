@@ -257,3 +257,36 @@ question rather than resolved here.
 - [s6] Frontier item 'new DMPSX word for chunk 2' is void: chunk 2 is reachable today
 
 - [s6] src/main/3AB48.c reverted to INCLUDE_ASM; best legal body banked in memory/grind/func_80052B7C/candidate.c
+
+## s7 (synthesis) -- calibration + delay-slot predicate; floor 19 unchanged
+
+- [s7] cc1psx calibration: the s6 legal chassis (tmp/grind/func_80052B7C/s7/t.c) compiled with the build cc1
+  (tools/gcc-2.7.2/build/cc1) and with the original tools/cc1psx.exe (GNU C 2.7.2.SN.1, via cc1psx_wrapper.sh)
+  gives a byte-identical function body (tmp/grind/func_80052B7C/s7/{ours.s,psx.s,cc1_vs_cc1psx.txt}; only
+  file-header directives differ). The residual is NOT a cc1 port divergence: SN's own compiler emits the
+  same interleaved SetRotMatrix order and the same `swc2 $11; j $31` (unfilled slot) from this C.
+- [s7] Both compilers emit `j $31` with NO delay-slot insn; the build's assembler stage then pads a nop. The
+  target's swc2 $11 in the jr slot would require reorg.c to pick the asm insn as a slot candidate, and
+  reorg.c:740-744 (stop_search_p, case INSN) returns 1 for ANY ASM_INPUT or asm_operands insn
+  (tmp/grind/func_80052B7C/s7/reorg_stop_search_p.txt). config/mips/mips.md has 0 cop2/swc2 patterns, so a
+  swc2 to GTE data reg $11 can only come from an asm insn -> GCC 2.7.2 (either build) never puts it in a
+  delay slot. Chunk 5 (hunks 3+4 of the diff, 2 of the 19 points' worth of hunks) is closed for any C body.
+- [s7] scan_hand_coded --single on the whole 3AB48 GTE cluster (func_80052B7C, gte_SetMatrixRotTransIR,
+  gte_SetMatrixRotTransIRVec, gte_SetRotTransMatrix, gte_SetRotMatrixClearTrans): all LOW 0/12, no gate-class
+  signal (tmp/grind/func_80052B7C/s7/cluster_scan.txt). The scanner's 12 signals have no GTE/cop2
+  delay-slot signal at all, which is exactly what all five bodies share (cop2 op in the jr slot,
+  t0..t7 sequential batched loads). No sibling supplies STRONG-tier cluster evidence today.
+- [s7] SOTN construct index (docs/reference/sotn-construct-index.md) has no ctc2 / SetRotMatrix / stlvl
+  hack entry (only one gte_stdp duplicated-statement hit at line 2042); no SOTN precedent for a GTE-
+  delay-slot construct.
+- [s7] --diff on candidate.c re-measured: 4 hunks, all source-level, unchanged from s6 (score 19).
+
+- [s7] cc1 and cc1psx produce byte-identical func_80052B7C bodies from the s6 legal chassis (tmp/grind/func_80052B7C/s7/cc1_vs_cc1psx.txt)
+
+- [s7] reorg.c:740-744 stop_search_p rejects all asm insns as delay-slot fillers; mips.md has no cop2 store pattern
+
+- [s7] All five 3AB48 GTE leaves scan LOW 0/12 (tmp/grind/func_80052B7C/s7/cluster_scan.txt)
+
+- [s7] SOTN construct index has no ctc2/SetRotMatrix/stlvl precedent (only gte_stdp at sotn-construct-index.md:2042)
+
+- [s7] Legal chassis --diff unchanged: 4 source-level hunks, score 19

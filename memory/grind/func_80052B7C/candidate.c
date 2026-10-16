@@ -80,6 +80,12 @@
  * delay slot), source-level per --diff.
  * Apply by replacing INCLUDE_ASM("asm/funcs", func_80052B7C); in src/main/3AB48.c.
  */
+/* s7 (synthesis): body unchanged, still 19. cc1psx calibration: SN cc1psx emits a
+ * byte-identical body from this C (tmp/grind/func_80052B7C/s7/cc1_vs_cc1psx.txt).
+ * Chunk 5 class-closed: reorg.c:740-744 never fills a delay slot with an asm insn and
+ * mips.md has no cop2 store pattern, so no C body puts swc2 $11 in the jr slot. Only the
+ * whole-body hand-written grant branch can land this function.
+ */
 #include <psxsdk/inline_c.h>
 void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
     gte_SetRotMatrix(rot);
