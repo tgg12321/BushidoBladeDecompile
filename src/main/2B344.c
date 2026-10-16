@@ -273,18 +273,7 @@ s32 func_8003B3A4(u8 *arg0) {
     if (a1 != 0 && D_800A37A0 == 1) {
         a1 = 0;
     }
-    {
-        /* FAKE: store-only pointer alias: direct stores expand via the sb macro
-           ($at), so the address never enters RA; the pointer puts it in $v1
-           pre-branch as in the target. Direct/ternary/diamond/offset forms
-           score 6/6/8/6 (owner ruling 2026-07-14, per-instance) */
-        u8 *p = &D_80102778.unk_4[1];
-        if (a1 != 0) {
-            *p = 0xE;
-        } else {
-            *p = 0x1D;
-        }
-    }
+    D_80102778.unk_4[1] = a1 != 0 ? 0xE : 0x1D;
     D_80102778.unk_4[3] = 0;
     {
         u8 v = arg0[0];
@@ -828,57 +817,28 @@ void func_8003C2C0(void) {
 }
 
 void func_8003C42C(void) {
-    /* FAKE: frame layout -- only counts[0..2] are used (D_800A377C holds
-     * 0/1/2); counts[3]..[6] score 4, [7] or [8] gives the target's -0x38
-     * frame. */
-    s32 counts[8];
+    s32 counts[3];
     s32 i;
+    s32 j;
 
-    s32 var_2;
-    var_2 = D_800A389B;
-    i = 0;
     counts[2] = 0;
     counts[1] = 0;
     counts[0] = 0;
-    if (var_2 > 0) {
-        /* FAKE: base / n are second handles of counts / var_2 for the loop;
-         * using them directly scores 4. */
-        s32 *base = counts;
-        s32 n = var_2;
-        do {
-            s32 idx = D_800A377C[i];
-            base[idx]++;
-            i++;
-        } while (i < n);
+    for (i = 0; i < D_800A389B; i++) {
+        counts[D_800A377C[i]]++;
     }
     /* FAKE: the counts[0] < counts[1] store is written in both decisive arms
      * (here and in the tie-break below); one shared store after the if/else
-     * scores 11. */
+     * scores 12. */
     if (counts[0] != counts[1]) {
         D_800A382D = counts[0] < counts[1];
     } else {
-        s32 var_6 = D_800A389B;
-        i = 0;
         counts[1] = 0;
         counts[0] = 0;
-        if (var_6 > 0) {
-            /* FAKE: base2 / n2, the same handles for the second tally; direct
-             * use scores 6. */
-            s32 *base2 = counts;
-            s32 n2 = var_6;
-            u8(*tbl)[2] = D_800F65F8;
-            do {
-                s32 j = 0;
-                s32 *p = base2;
-                u8 *q = *tbl;
-                do {
-                    *p += *q++;
-                    j++;
-                    p++;
-                } while (j < 2);
-                i++;
-                tbl++;
-            } while (i < n2);
+        for (i = 0; i < D_800A389B; i++) {
+            for (j = 0; j < 2; j++) {
+                counts[j] += D_800F65F8[i][j];
+            }
         }
         if (counts[0] != counts[1]) {
             D_800A382D = counts[0] < counts[1];
@@ -1407,19 +1367,13 @@ s16 *func_8003D7B4(s32 arg0) {
     do {
         s32 nbits;
         s16 val;
-        s32 sign_bit;
-        s32 sval;
         nbits = bitstream_ReadBits(&base->bits, 4);
         if (nbits == 0) {
             nbits = 16;
         }
         val = (s16)bitstream_ReadBits(&base->bits, nbits);
-        /* FAKE: the sign test reads an s32 copy of val; tested as val: score 2
-         * (addiu a1,s0,-1 moves two slots) */
-        sval = val;
-        sign_bit = nbits - 1;
-        if ((sval >> sign_bit) & 1) {
-            val = val | (0xFFFF << sign_bit);
+        if ((val >> (nbits - 1)) & 1) {
+            val |= 0xFFFF << (nbits - 1);
         }
         base->unkC[i] += val;
         i++;
@@ -2816,20 +2770,13 @@ void func_800400B0(Unk80045878Obj *a0, s32 a1) {
     }
 }
 
-/* FAKE: the variable compare `s2->count > s0` gives the target's 0x28
- * frame (phantom slot sp+20 left by the folded guard); a literal `> 0` gives
- * frame 0x20 and swaps registers: score 16 */
 void func_800400F8(Unk80045878Obj *a0) {
     Unk8003F62CRec *s2;
     s32 s0;
     s2 = a0->unk_24;
     if (s2 != 0) {
-        s0 = 0;
-        if (s2->count > s0) {
-            do {
-                func_80017E8C(s2->recs[s0].unk0);
-                s0++;
-            } while (s0 < s2->count);
+        for (s0 = 0; s0 < s2->count; s0++) {
+            func_80017E8C(s2->recs[s0].unk0);
         }
     }
 }
