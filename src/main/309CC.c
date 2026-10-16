@@ -459,8 +459,6 @@ void func_80040CB8(Unk80045878Obj *arg0) {
             *(s16 *)(ent - 0x52) = one;
             *(s16 *)(ent - 0x4E) = 0;
             {
-                /* FAKE: w reads unk_16 ahead of the var_1 step and the *ent
-                 * store; read at its store, sw zero moves above it: score 2 */
                 u16 w = arg0->unk_16;
                 var_1++;
                 *(s32 *)ent = 0;
