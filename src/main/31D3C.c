@@ -38,10 +38,7 @@ void func_800415C4(s32 a0) {
 void func_80041604(s32 a0, s32 a1) {
     Unk80045878Obj *ptr = D_800A9A10[a0];
     if (ptr) {
-        /* FAKE: the halfword read into an s32 local (lh); in the masked
-         * expression it loads lhu (score 1) */
-        s32 val = ptr->unk_00.half[1];
-        if ((val & 0x1F) != a1) {
+        if (((ptr->unk_00.word >> 16) & 0x1F) != a1) {
             ptr->unk_06 = -2;
         }
     }
@@ -51,10 +48,7 @@ void func_80041604(s32 a0, s32 a1) {
 s32 func_80041650(s32 a0) {
     Unk80045878Obj *ptr = D_800A9A10[a0];
     if (ptr) {
-        /* FAKE: the halfword read into an s32 local (lh); in the masked
-         * expression it loads lhu (score 1) */
-        s32 val = ptr->unk_00.half[1];
-        return val & 0x1F;
+        return (ptr->unk_00.word >> 16) & 0x1F;
     }
     return -1;
 }
