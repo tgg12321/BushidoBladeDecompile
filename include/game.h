@@ -980,12 +980,12 @@ typedef struct {
     /* func_800678A8 stores 0x895440; func_80067D14 compares against it */
     u32 unk04;
     u8 unk08[8]; /* no access */
-    /* func_80067D14: only its translation (+0x24) is used: the gte_stlvnl
-       output, which the SetTransMatrix island loads */
+    /* func_80067D14: only its translation (+0x24) is used: the
+       gte_ApplyRotMatrix / gte_Square0 output, loaded by gte_SetTransMatrix */
     MATRIX unk10;
     u8 unk30[4];      /* no access */
-    VECTOR unk34;     /* func_80067D14: gte_ldlvl in */
-    SVECTOR unk44[3]; /* func_80067D14: gte_ldv0 / gte_ldv3 in */
+    VECTOR unk34;     /* func_80067D14: gte_Square0 in */
+    SVECTOR unk44[3]; /* func_80067D14: gte_ApplyRotMatrix / gte_ldv3 in */
     VECTOR unk5C;     /* func_80067D14 */
     /* func_800678A8 stores it; func_80067D14's loop bound */
     s16 unk6C;

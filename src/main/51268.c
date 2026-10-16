@@ -2677,9 +2677,9 @@ extern Unk800EFC78Record D_800EFC78[][48];
 
 /* func_80067200 -- spawns half (arg2 selects which) of the 0x30
  * D_800EFC78[arg1] particle records: each gets the D_800F0B78[arg1] vector
- * scaled by a random factor and turned by a random rotation (spread chosen by
- * mode arg0). arg2 == 0 first latches D_800A347C / D_800A3478 into the
- * emitter. Returns 1. */
+ * scaled per axis by its own random factor and turned by a random rotation
+ * (spread chosen by mode arg0). arg2 == 0 first latches D_800A347C / D_800A3478
+ * into the emitter. Returns 1. */
 u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
     SVECTOR v;
     s32 r[6];
@@ -2983,8 +2983,10 @@ void func_80067D14(s32 arg0, s32 arg1) {
         var_13[0].vz = var_2->vz - D_800A3470[2];
 
         gte_ApplyRotMatrix(var_13, p_out);
-        /* p_out becomes the translation: SetTransMatrix reads only m->t, 0x14
-         * into the MATRIX */
+        /* FAKE: SetTransMatrix reads only m->t (+0x14): handed p_out - 0x14,
+         * i.e. &var_0->unk10 reached through p_out, it loads p_out as the
+         * translation. Spelled &var_0->unk10: score 82; through a MATRIX *
+         * local m = &var_0->unk10 (p_out = m->t): score 58. */
         gte_SetTransMatrix((u8 *)p_out - 0x14);
 
         var_13[1].vx = (*p_ent)->unk0;
