@@ -18,9 +18,9 @@ glabel func_80086130
     /* 7696C 8008616C 00240400 */  sll        $a0, $a0, 16
     /* 76970 80086170 03240400 */  sra        $a0, $a0, 16
     /* 76974 80086174 00290400 */  sll        $a1, $a0, 4
-    /* 76978 80086178 1080013C */  lui        $at, %hi(_svm_sreg_buf_plus_0x2)
+    /* 76978 80086178 1080013C */  lui        $at, %hi(_svm_sreg_buf + 0x2)
     /* 7697C 8008617C 21082500 */  addu       $at, $at, $a1
-    /* 76980 80086180 7A2A23A4 */  sh         $v1, %lo(_svm_sreg_buf_plus_0x2)($at)
+    /* 76980 80086180 7A2A23A4 */  sh         $v1, %lo(_svm_sreg_buf + 0x2)($at)
     /* 76984 80086184 0F80013C */  lui        $at, %hi(_svm_sreg_dirty)
     /* 76988 80086188 21082400 */  addu       $at, $at, $a0
     /* 7698C 8008618C E0652390 */  lbu        $v1, %lo(_svm_sreg_dirty)($at)

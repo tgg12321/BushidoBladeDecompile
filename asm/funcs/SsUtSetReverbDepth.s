@@ -22,15 +22,15 @@ glabel SsUtSetReverbDepth
     /* 7669C 80085E9C 83110200 */  sra        $v0, $v0, 6
     /* 766A0 80085EA0 C31F0300 */  sra        $v1, $v1, 31
     /* 766A4 80085EA4 23104300 */  subu       $v0, $v0, $v1
-    /* 766A8 80085EA8 0F80013C */  lui        $at, %hi(_svm_rattr_plus_0x8)
-    /* 766AC 80085EAC 585722A4 */  sh         $v0, %lo(_svm_rattr_plus_0x8)($at)
+    /* 766A8 80085EA8 0F80013C */  lui        $at, %hi(_svm_rattr + 0x8)
+    /* 766AC 80085EAC 585722A4 */  sh         $v0, %lo(_svm_rattr + 0x8)($at)
     /* 766B0 80085EB0 10280000 */  mfhi       $a1
     /* 766B4 80085EB4 2110A600 */  addu       $v0, $a1, $a2
     /* 766B8 80085EB8 83110200 */  sra        $v0, $v0, 6
     /* 766BC 80085EBC C3370600 */  sra        $a2, $a2, 31
     /* 766C0 80085EC0 23104600 */  subu       $v0, $v0, $a2
-    /* 766C4 80085EC4 0F80013C */  lui        $at, %hi(_svm_rattr_plus_0xA)
-    /* 766C8 80085EC8 5A5722A4 */  sh         $v0, %lo(_svm_rattr_plus_0xA)($at)
+    /* 766C4 80085EC4 0F80013C */  lui        $at, %hi(_svm_rattr + 0xA)
+    /* 766C8 80085EC8 5A5722A4 */  sh         $v0, %lo(_svm_rattr + 0xA)($at)
     /* 766CC 80085ECC CF27020C */  jal        SpuSetReverbModeParam
     /* 766D0 80085ED0 00000000 */   nop
     /* 766D4 80085ED4 1000BF8F */  lw         $ra, 0x10($sp)

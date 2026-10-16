@@ -23,8 +23,8 @@ glabel SsUtSetReverbType
     /* 76730 80085F30 00140300 */  sll        $v0, $v1, 16
   .L80085F34:
     /* 76734 80085F34 03140200 */  sra        $v0, $v0, 16
-    /* 76738 80085F38 0F80013C */  lui        $at, %hi(_svm_rattr_plus_0x4)
-    /* 7673C 80085F3C 545722AC */  sw         $v0, %lo(_svm_rattr_plus_0x4)($at)
+    /* 76738 80085F38 0F80013C */  lui        $at, %hi(_svm_rattr + 0x4)
+    /* 7673C 80085F3C 545722AC */  sw         $v0, %lo(_svm_rattr + 0x4)($at)
     /* 76740 80085F40 00140300 */  sll        $v0, $v1, 16
     /* 76744 80085F44 03840200 */  sra        $s0, $v0, 16
     /* 76748 80085F48 03000016 */  bnez       $s0, .L80085F58
@@ -46,8 +46,8 @@ glabel SsUtSetReverbType
     /* 7677C 80085F7C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 76780 80085F80 0800E003 */  jr         $ra
     /* 76784 80085F84 00000000 */   nop
-    /* 76788 80085F88 0F80023C */  lui        $v0, %hi(_svm_rattr_plus_0x4)
-    /* 7678C 80085F8C 54574284 */  lh         $v0, %lo(_svm_rattr_plus_0x4)($v0)
+    /* 76788 80085F88 0F80023C */  lui        $v0, %hi(_svm_rattr + 0x4)
+    /* 7678C 80085F8C 54574284 */  lh         $v0, %lo(_svm_rattr + 0x4)($v0)
     /* 76790 80085F90 0800E003 */  jr         $ra
     /* 76794 80085F94 00000000 */   nop
 endlabel SsUtSetReverbType

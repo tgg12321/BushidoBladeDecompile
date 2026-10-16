@@ -1,8 +1,8 @@
 glabel note2pitch2
-    /* 773FC 80086BFC 1080023C */  lui        $v0, %hi(_svm_cur_plus_0x7)
-    /* 77400 80086C00 F7274290 */  lbu        $v0, %lo(_svm_cur_plus_0x7)($v0)
-    /* 77404 80086C04 1080033C */  lui        $v1, %hi(_svm_cur_plus_0xC)
-    /* 77408 80086C08 FC276390 */  lbu        $v1, %lo(_svm_cur_plus_0xC)($v1)
+    /* 773FC 80086BFC 1080023C */  lui        $v0, %hi(_svm_cur + 0x7)
+    /* 77400 80086C00 F7274290 */  lbu        $v0, %lo(_svm_cur + 0x7)($v0)
+    /* 77404 80086C04 1080033C */  lui        $v1, %hi(_svm_cur + 0xC)
+    /* 77408 80086C08 FC276390 */  lbu        $v1, %lo(_svm_cur + 0xC)($v1)
     /* 7740C 80086C0C 00110200 */  sll        $v0, $v0, 4
     /* 77410 80086C10 21186200 */  addu       $v1, $v1, $v0
     /* 77414 80086C14 1080023C */  lui        $v0, %hi(_svm_tn)

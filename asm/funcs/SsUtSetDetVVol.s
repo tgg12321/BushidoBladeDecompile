@@ -10,9 +10,9 @@ glabel SsUtSetDetVVol
     /* 76830 80086030 001C0400 */  sll        $v1, $a0, 16
     /* 76834 80086034 031C0300 */  sra        $v1, $v1, 16
     /* 76838 80086038 00290300 */  sll        $a1, $v1, 4
-    /* 7683C 8008603C 1080013C */  lui        $at, %hi(_svm_sreg_buf_plus_0x2)
+    /* 7683C 8008603C 1080013C */  lui        $at, %hi(_svm_sreg_buf + 0x2)
     /* 76840 80086040 21082500 */  addu       $at, $at, $a1
-    /* 76844 80086044 7A2A26A4 */  sh         $a2, %lo(_svm_sreg_buf_plus_0x2)($at)
+    /* 76844 80086044 7A2A26A4 */  sh         $a2, %lo(_svm_sreg_buf + 0x2)($at)
     /* 76848 80086048 0F80013C */  lui        $at, %hi(_svm_sreg_dirty)
     /* 7684C 8008604C 21082300 */  addu       $at, $at, $v1
     /* 76850 80086050 E0652490 */  lbu        $a0, %lo(_svm_sreg_dirty)($at)

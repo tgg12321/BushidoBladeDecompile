@@ -8,16 +8,16 @@ glabel SsSetTickMode
     /* 75D5C 8008555C 00100232 */  andi       $v0, $s0, 0x1000
     /* 75D60 80085560 08004010 */  beqz       $v0, .L80085584
     /* 75D64 80085564 01000224 */   addiu     $v0, $zero, 0x1
-    /* 75D68 80085568 0A80013C */  lui        $at, %hi(_snd_seq_tick_env_plus_0x4)
-    /* 75D6C 8008556C D02622AC */  sw         $v0, %lo(_snd_seq_tick_env_plus_0x4)($at)
+    /* 75D68 80085568 0A80013C */  lui        $at, %hi(_snd_seq_tick_env + 0x4)
+    /* 75D6C 8008556C D02622AC */  sw         $v0, %lo(_snd_seq_tick_env + 0x4)($at)
     /* 75D70 80085570 FF0F0232 */  andi       $v0, $s0, 0xFFF
     /* 75D74 80085574 0A80013C */  lui        $at, %hi(_snd_seq_tick_env)
     /* 75D78 80085578 CC2622AC */  sw         $v0, %lo(_snd_seq_tick_env)($at)
     /* 75D7C 8008557C 65150208 */  j          .L80085594
     /* 75D80 80085580 00000000 */   nop
   .L80085584:
-    /* 75D84 80085584 0A80013C */  lui        $at, %hi(_snd_seq_tick_env_plus_0x4)
-    /* 75D88 80085588 D02620AC */  sw         $zero, %lo(_snd_seq_tick_env_plus_0x4)($at)
+    /* 75D84 80085584 0A80013C */  lui        $at, %hi(_snd_seq_tick_env + 0x4)
+    /* 75D88 80085588 D02620AC */  sw         $zero, %lo(_snd_seq_tick_env + 0x4)($at)
     /* 75D8C 8008558C 0A80013C */  lui        $at, %hi(_snd_seq_tick_env)
     /* 75D90 80085590 CC2630AC */  sw         $s0, %lo(_snd_seq_tick_env)($at)
   .L80085594:

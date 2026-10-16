@@ -272,8 +272,8 @@ glabel getintr
   .L80080C04:
     /* 71404 80080C04 0A80013C */  lui        $at, %hi(Intr + 0x1)
     /* 71408 80080C08 951422A0 */  sb         $v0, %lo(Intr + 0x1)($at)
-    /* 7140C 80080C0C 0F80033C */  lui        $v1, %hi(Result_plus_0x8)
-    /* 71410 80080C10 A8196324 */  addiu      $v1, $v1, %lo(Result_plus_0x8)
+    /* 7140C 80080C0C 0F80033C */  lui        $v1, %hi(Result + 0x8)
+    /* 71410 80080C10 A8196324 */  addiu      $v1, $v1, %lo(Result + 0x8)
     /* 71414 80080C14 09006010 */  beqz       $v1, .L80080C3C
     /* 71418 80080C18 1800A527 */   addiu     $a1, $sp, 0x18
     /* 7141C 80080C1C 07000424 */  addiu      $a0, $zero, 0x7
@@ -297,8 +297,8 @@ glabel getintr
     /* 7145C 80080C5C 66030208 */  j          .L80080D98
     /* 71460 80080C60 00000000 */   nop
   jlabel .L80080C64
-    /* 71464 80080C64 0F80043C */  lui        $a0, %hi(Result_plus_0x10)
-    /* 71468 80080C68 B0198424 */  addiu      $a0, $a0, %lo(Result_plus_0x10)
+    /* 71464 80080C64 0F80043C */  lui        $a0, %hi(Result + 0x10)
+    /* 71468 80080C68 B0198424 */  addiu      $a0, $a0, %lo(Result + 0x10)
     /* 7146C 80080C6C 04000224 */  addiu      $v0, $zero, 0x4
     /* 71470 80080C70 0A80013C */  lui        $at, %hi(Intr + 0x2)
     /* 71474 80080C74 961422A0 */  sb         $v0, %lo(Intr + 0x2)($at)
@@ -318,8 +318,8 @@ glabel getintr
     /* 714A8 80080CA8 FBFF6614 */  bne        $v1, $a2, .L80080C98
     /* 714AC 80080CAC 01008424 */   addiu     $a0, $a0, 0x1
   .L80080CB0:
-    /* 714B0 80080CB0 0F80033C */  lui        $v1, %hi(Result_plus_0x8)
-    /* 714B4 80080CB4 A8196324 */  addiu      $v1, $v1, %lo(Result_plus_0x8)
+    /* 714B0 80080CB0 0F80033C */  lui        $v1, %hi(Result + 0x8)
+    /* 714B4 80080CB4 A8196324 */  addiu      $v1, $v1, %lo(Result + 0x8)
     /* 714B8 80080CB8 09006010 */  beqz       $v1, .L80080CE0
     /* 714BC 80080CBC 1800A527 */   addiu     $a1, $sp, 0x18
     /* 714C0 80080CC0 07000424 */  addiu      $a0, $zero, 0x7
@@ -357,8 +357,8 @@ glabel getintr
     /* 71530 80080D30 FBFF6614 */  bne        $v1, $a2, .L80080D20
     /* 71534 80080D34 01008424 */   addiu     $a0, $a0, 0x1
   .L80080D38:
-    /* 71538 80080D38 0F80033C */  lui        $v1, %hi(Result_plus_0x8)
-    /* 7153C 80080D3C A8196324 */  addiu      $v1, $v1, %lo(Result_plus_0x8)
+    /* 71538 80080D38 0F80033C */  lui        $v1, %hi(Result + 0x8)
+    /* 7153C 80080D3C A8196324 */  addiu      $v1, $v1, %lo(Result + 0x8)
     /* 71540 80080D40 09006010 */  beqz       $v1, .L80080D68
     /* 71544 80080D44 1800A527 */   addiu     $a1, $sp, 0x18
     /* 71548 80080D48 07000424 */  addiu      $a0, $zero, 0x7

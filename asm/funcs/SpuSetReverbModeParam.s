@@ -51,10 +51,10 @@ glabel SpuSetReverbModeParam
   .L80089FF4:
     /* 7A7F4 80089FF4 1000A627 */  addiu      $a2, $sp, 0x10
     /* 7A7F8 80089FF8 43000524 */  addiu      $a1, $zero, 0x43
-    /* 7A7FC 80089FFC 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0x4)
-    /* 7A800 8008A000 8C2830AC */  sw         $s0, %lo(_spu_rev_attr_plus_0x4)($at)
-    /* 7A804 8008A004 0A80033C */  lui        $v1, %hi(_spu_rev_attr_plus_0x4)
-    /* 7A808 8008A008 8C28638C */  lw         $v1, %lo(_spu_rev_attr_plus_0x4)($v1)
+    /* 7A7FC 80089FFC 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0x4)
+    /* 7A800 8008A000 8C2830AC */  sw         $s0, %lo(_spu_rev_attr + 0x4)($at)
+    /* 7A804 8008A004 0A80033C */  lui        $v1, %hi(_spu_rev_attr + 0x4)
+    /* 7A808 8008A008 8C28638C */  lw         $v1, %lo(_spu_rev_attr + 0x4)($v1)
     /* 7A80C 8008A00C FFFF0724 */  addiu      $a3, $zero, -0x1
     /* 7A810 8008A010 80200300 */  sll        $a0, $v1, 2
     /* 7A814 8008A014 21209100 */  addu       $a0, $a0, $s1
@@ -74,8 +74,8 @@ glabel SpuSetReverbModeParam
     /* 7A848 8008A048 0000C2A0 */  sb         $v0, 0x0($a2)
     /* 7A84C 8008A04C FBFFA714 */  bne        $a1, $a3, .L8008A03C
     /* 7A850 8008A050 0100C624 */   addiu     $a2, $a2, 0x1
-    /* 7A854 8008A054 0A80033C */  lui        $v1, %hi(_spu_rev_attr_plus_0x4)
-    /* 7A858 8008A058 8C28638C */  lw         $v1, %lo(_spu_rev_attr_plus_0x4)($v1)
+    /* 7A854 8008A054 0A80033C */  lui        $v1, %hi(_spu_rev_attr + 0x4)
+    /* 7A858 8008A058 8C28638C */  lw         $v1, %lo(_spu_rev_attr + 0x4)($v1)
     /* 7A85C 8008A05C 07000224 */  addiu      $v0, $zero, 0x7
     /* 7A860 8008A060 05006210 */  beq        $v1, $v0, .L8008A078
     /* 7A864 8008A064 08000224 */   addiu     $v0, $zero, 0x8
@@ -85,32 +85,32 @@ glabel SpuSetReverbModeParam
     /* 7A874 8008A074 00000000 */   nop
   .L8008A078:
     /* 7A878 8008A078 7F000224 */  addiu      $v0, $zero, 0x7F
-    /* 7A87C 8008A07C 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0x10)
-    /* 7A880 8008A080 982822AC */  sw         $v0, %lo(_spu_rev_attr_plus_0x10)($at)
-    /* 7A884 8008A084 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0xC)
-    /* 7A888 8008A088 942822AC */  sw         $v0, %lo(_spu_rev_attr_plus_0xC)($at)
+    /* 7A87C 8008A07C 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0x10)
+    /* 7A880 8008A080 982822AC */  sw         $v0, %lo(_spu_rev_attr + 0x10)($at)
+    /* 7A884 8008A084 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0xC)
+    /* 7A888 8008A088 942822AC */  sw         $v0, %lo(_spu_rev_attr + 0xC)($at)
     /* 7A88C 8008A08C 2F280208 */  j          .L8008A0BC
     /* 7A890 8008A090 00000000 */   nop
   .L8008A094:
-    /* 7A894 8008A094 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0x10)
-    /* 7A898 8008A098 982820AC */  sw         $zero, %lo(_spu_rev_attr_plus_0x10)($at)
-    /* 7A89C 8008A09C 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0xC)
-    /* 7A8A0 8008A0A0 942822AC */  sw         $v0, %lo(_spu_rev_attr_plus_0xC)($at)
+    /* 7A894 8008A094 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0x10)
+    /* 7A898 8008A098 982820AC */  sw         $zero, %lo(_spu_rev_attr + 0x10)($at)
+    /* 7A89C 8008A09C 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0xC)
+    /* 7A8A0 8008A0A0 942822AC */  sw         $v0, %lo(_spu_rev_attr + 0xC)($at)
     /* 7A8A4 8008A0A4 2F280208 */  j          .L8008A0BC
     /* 7A8A8 8008A0A8 00000000 */   nop
   .L8008A0AC:
-    /* 7A8AC 8008A0AC 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0x10)
-    /* 7A8B0 8008A0B0 982820AC */  sw         $zero, %lo(_spu_rev_attr_plus_0x10)($at)
-    /* 7A8B4 8008A0B4 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0xC)
-    /* 7A8B8 8008A0B8 942820AC */  sw         $zero, %lo(_spu_rev_attr_plus_0xC)($at)
+    /* 7A8AC 8008A0AC 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0x10)
+    /* 7A8B0 8008A0B0 982820AC */  sw         $zero, %lo(_spu_rev_attr + 0x10)($at)
+    /* 7A8B4 8008A0B4 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0xC)
+    /* 7A8B8 8008A0B8 942820AC */  sw         $zero, %lo(_spu_rev_attr + 0xC)($at)
   .L8008A0BC:
     /* 7A8BC 8008A0BC 0300A016 */  bnez       $s5, .L8008A0CC
     /* 7A8C0 8008A0C0 08006232 */   andi      $v0, $s3, 0x8
     /* 7A8C4 8008A0C4 45004010 */  beqz       $v0, .L8008A1DC
     /* 7A8C8 8008A0C8 00000000 */   nop
   .L8008A0CC:
-    /* 7A8CC 8008A0CC 0A80033C */  lui        $v1, %hi(_spu_rev_attr_plus_0x4)
-    /* 7A8D0 8008A0D0 8C28638C */  lw         $v1, %lo(_spu_rev_attr_plus_0x4)($v1)
+    /* 7A8CC 8008A0CC 0A80033C */  lui        $v1, %hi(_spu_rev_attr + 0x4)
+    /* 7A8D0 8008A0D0 8C28638C */  lw         $v1, %lo(_spu_rev_attr + 0x4)($v1)
     /* 7A8D4 8008A0D4 00000000 */  nop
     /* 7A8D8 8008A0D8 09006228 */  slti       $v0, $v1, 0x9
     /* 7A8DC 8008A0DC 3F004010 */  beqz       $v0, .L8008A1DC
@@ -121,8 +121,8 @@ glabel SpuSetReverbModeParam
     /* 7A8F0 8008A0F0 01001624 */   addiu     $s6, $zero, 0x1
     /* 7A8F4 8008A0F4 1000A527 */  addiu      $a1, $sp, 0x10
     /* 7A8F8 8008A0F8 43000424 */  addiu      $a0, $zero, 0x43
-    /* 7A8FC 8008A0FC 0A80023C */  lui        $v0, %hi(_spu_rev_attr_plus_0x4)
-    /* 7A900 8008A100 8C28428C */  lw         $v0, %lo(_spu_rev_attr_plus_0x4)($v0)
+    /* 7A8FC 8008A0FC 0A80023C */  lui        $v0, %hi(_spu_rev_attr + 0x4)
+    /* 7A900 8008A100 8C28428C */  lw         $v0, %lo(_spu_rev_attr + 0x4)($v0)
     /* 7A904 8008A104 FFFF0624 */  addiu      $a2, $zero, -0x1
     /* 7A908 8008A108 00190200 */  sll        $v1, $v0, 4
     /* 7A90C 8008A10C 21186200 */  addu       $v1, $v1, $v0
@@ -150,8 +150,8 @@ glabel SpuSetReverbModeParam
     /* 7A95C 8008A15C 002B0200 */  sll        $a1, $v0, 12
     /* 7A960 8008A160 00000000 */  nop
     /* 7A964 8008A164 1800A400 */  mult       $a1, $a0
-    /* 7A968 8008A168 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0xC)
-    /* 7A96C 8008A16C 942822AC */  sw         $v0, %lo(_spu_rev_attr_plus_0xC)($at)
+    /* 7A968 8008A168 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0xC)
+    /* 7A96C 8008A16C 942822AC */  sw         $v0, %lo(_spu_rev_attr + 0xC)($at)
     /* 7A970 8008A170 2110E300 */  addu       $v0, $a3, $v1
     /* 7A974 8008A174 83110200 */  sra        $v0, $v0, 6
     /* 7A978 8008A178 C31F0300 */  sra        $v1, $v1, 31
@@ -185,8 +185,8 @@ glabel SpuSetReverbModeParam
     /* 7A9E4 8008A1E4 32004010 */  beqz       $v0, .L8008A2B0
     /* 7A9E8 8008A1E8 00000000 */   nop
   .L8008A1EC:
-    /* 7A9EC 8008A1EC 0A80033C */  lui        $v1, %hi(_spu_rev_attr_plus_0x4)
-    /* 7A9F0 8008A1F0 8C28638C */  lw         $v1, %lo(_spu_rev_attr_plus_0x4)($v1)
+    /* 7A9EC 8008A1EC 0A80033C */  lui        $v1, %hi(_spu_rev_attr + 0x4)
+    /* 7A9F0 8008A1F0 8C28638C */  lw         $v1, %lo(_spu_rev_attr + 0x4)($v1)
     /* 7A9F4 8008A1F4 00000000 */  nop
     /* 7A9F8 8008A1F8 09006228 */  slti       $v0, $v1, 0x9
     /* 7A9FC 8008A1FC 2C004010 */  beqz       $v0, .L8008A2B0
@@ -198,8 +198,8 @@ glabel SpuSetReverbModeParam
     /* 7AA14 8008A214 1300C016 */  bnez       $s6, .L8008A264
     /* 7AA18 8008A218 1000A527 */   addiu     $a1, $sp, 0x10
     /* 7AA1C 8008A21C 43000424 */  addiu      $a0, $zero, 0x43
-    /* 7AA20 8008A220 0A80023C */  lui        $v0, %hi(_spu_rev_attr_plus_0x4)
-    /* 7AA24 8008A224 8C28428C */  lw         $v0, %lo(_spu_rev_attr_plus_0x4)($v0)
+    /* 7AA20 8008A220 0A80023C */  lui        $v0, %hi(_spu_rev_attr + 0x4)
+    /* 7AA24 8008A224 8C28428C */  lw         $v0, %lo(_spu_rev_attr + 0x4)($v0)
     /* 7AA28 8008A228 FFFF0624 */  addiu      $a2, $zero, -0x1
     /* 7AA2C 8008A22C 00190200 */  sll        $v1, $v0, 4
     /* 7AA30 8008A230 21186200 */  addu       $v1, $v1, $v0
@@ -230,8 +230,8 @@ glabel SpuSetReverbModeParam
     /* 7AA84 8008A284 21104300 */  addu       $v0, $v0, $v1
     /* 7AA88 8008A288 00120200 */  sll        $v0, $v0, 8
     /* 7AA8C 8008A28C 18004400 */  mult       $v0, $a0
-    /* 7AA90 8008A290 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0x10)
-    /* 7AA94 8008A294 982823AC */  sw         $v1, %lo(_spu_rev_attr_plus_0x10)($at)
+    /* 7AA90 8008A290 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0x10)
+    /* 7AA94 8008A294 982823AC */  sw         $v1, %lo(_spu_rev_attr + 0x10)($at)
     /* 7AA98 8008A298 10400000 */  mfhi       $t0
     /* 7AA9C 8008A29C 21180201 */  addu       $v1, $t0, $v0
     /* 7AAA0 8008A2A0 83190300 */  sra        $v1, $v1, 6
@@ -268,8 +268,8 @@ glabel SpuSetReverbModeParam
     /* 7AB10 8008A310 00000000 */  nop
     /* 7AB14 8008A314 840143A4 */  sh         $v1, 0x184($v0)
     /* 7AB18 8008A318 08004296 */  lhu        $v0, 0x8($s2)
-    /* 7AB1C 8008A31C 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0x8)
-    /* 7AB20 8008A320 902822A4 */  sh         $v0, %lo(_spu_rev_attr_plus_0x8)($at)
+    /* 7AB1C 8008A31C 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0x8)
+    /* 7AB20 8008A320 902822A4 */  sh         $v0, %lo(_spu_rev_attr + 0x8)($at)
   .L8008A324:
     /* 7AB24 8008A324 0300A016 */  bnez       $s5, .L8008A334
     /* 7AB28 8008A328 04006232 */   andi      $v0, $s3, 0x4
@@ -282,8 +282,8 @@ glabel SpuSetReverbModeParam
     /* 7AB40 8008A340 00000000 */  nop
     /* 7AB44 8008A344 860143A4 */  sh         $v1, 0x186($v0)
     /* 7AB48 8008A348 0A004296 */  lhu        $v0, 0xA($s2)
-    /* 7AB4C 8008A34C 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0xA)
-    /* 7AB50 8008A350 922822A4 */  sh         $v0, %lo(_spu_rev_attr_plus_0xA)($at)
+    /* 7AB4C 8008A34C 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0xA)
+    /* 7AB50 8008A350 922822A4 */  sh         $v0, %lo(_spu_rev_attr + 0xA)($at)
     /* 7AB54 8008A354 E0280208 */  j          .L8008A380
     /* 7AB58 8008A358 00000000 */   nop
   .L8008A35C:
@@ -292,10 +292,10 @@ glabel SpuSetReverbModeParam
     /* 7AB64 8008A364 00000000 */  nop
     /* 7AB68 8008A368 840140A4 */  sh         $zero, 0x184($v0)
     /* 7AB6C 8008A36C 860140A4 */  sh         $zero, 0x186($v0)
-    /* 7AB70 8008A370 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0x8)
-    /* 7AB74 8008A374 902820A4 */  sh         $zero, %lo(_spu_rev_attr_plus_0x8)($at)
-    /* 7AB78 8008A378 0A80013C */  lui        $at, %hi(_spu_rev_attr_plus_0xA)
-    /* 7AB7C 8008A37C 922820A4 */  sh         $zero, %lo(_spu_rev_attr_plus_0xA)($at)
+    /* 7AB70 8008A370 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0x8)
+    /* 7AB74 8008A374 902820A4 */  sh         $zero, %lo(_spu_rev_attr + 0x8)($at)
+    /* 7AB78 8008A378 0A80013C */  lui        $at, %hi(_spu_rev_attr + 0xA)
+    /* 7AB7C 8008A37C 922820A4 */  sh         $zero, %lo(_spu_rev_attr + 0xA)($at)
   .L8008A380:
     /* 7AB80 8008A380 05008016 */  bnez       $s4, .L8008A398
     /* 7AB84 8008A384 00000000 */   nop
@@ -311,8 +311,8 @@ glabel SpuSetReverbModeParam
     /* 7ABA4 8008A3A4 00000000 */  nop
     /* 7ABA8 8008A3A8 05000011 */  beqz       $t0, .L8008A3C0
     /* 7ABAC 8008A3AC 00000000 */   nop
-    /* 7ABB0 8008A3B0 0A80043C */  lui        $a0, %hi(_spu_rev_attr_plus_0x4)
-    /* 7ABB4 8008A3B4 8C28848C */  lw         $a0, %lo(_spu_rev_attr_plus_0x4)($a0)
+    /* 7ABB0 8008A3B0 0A80043C */  lui        $a0, %hi(_spu_rev_attr + 0x4)
+    /* 7ABB4 8008A3B4 8C28848C */  lw         $a0, %lo(_spu_rev_attr + 0x4)($a0)
     /* 7ABB8 8008A3B8 4A2A020C */  jal        SpuClearReverbWorkArea
     /* 7ABBC 8008A3BC 00000000 */   nop
   .L8008A3C0:

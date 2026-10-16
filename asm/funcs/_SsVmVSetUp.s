@@ -33,10 +33,10 @@ glabel _SsVmVSetUp
     /* 786B0 80087EB0 21082200 */  addu       $at, $at, $v0
     /* 786B4 80087EB4 0067268C */  lw         $a2, %lo(_svm_vab_tn)($at)
     /* 786B8 80087EB8 00110300 */  sll        $v0, $v1, 4
-    /* 786BC 80087EBC 1080013C */  lui        $at, %hi(_svm_cur_plus_0x1)
-    /* 786C0 80087EC0 F12727A0 */  sb         $a3, %lo(_svm_cur_plus_0x1)($at)
-    /* 786C4 80087EC4 1080013C */  lui        $at, %hi(_svm_cur_plus_0x6)
-    /* 786C8 80087EC8 F62728A0 */  sb         $t0, %lo(_svm_cur_plus_0x6)($at)
+    /* 786BC 80087EBC 1080013C */  lui        $at, %hi(_svm_cur + 0x1)
+    /* 786C0 80087EC0 F12727A0 */  sb         $a3, %lo(_svm_cur + 0x1)($at)
+    /* 786C4 80087EC4 1080013C */  lui        $at, %hi(_svm_cur + 0x6)
+    /* 786C8 80087EC8 F62728A0 */  sb         $t0, %lo(_svm_cur + 0x6)($at)
     /* 786CC 80087ECC 21104400 */  addu       $v0, $v0, $a0
     /* 786D0 80087ED0 0800438C */  lw         $v1, 0x8($v0)
     /* 786D4 80087ED4 21100000 */  addu       $v0, $zero, $zero
@@ -46,8 +46,8 @@ glabel _SsVmVSetUp
     /* 786E4 80087EE4 A0F624AC */  sw         $a0, %lo(_svm_pg)($at)
     /* 786E8 80087EE8 1080013C */  lui        $at, %hi(_svm_tn)
     /* 786EC 80087EEC C81B26AC */  sw         $a2, %lo(_svm_tn)($at)
-    /* 786F0 80087EF0 1080013C */  lui        $at, %hi(_svm_cur_plus_0x7)
-    /* 786F4 80087EF4 F72723A0 */  sb         $v1, %lo(_svm_cur_plus_0x7)($at)
+    /* 786F0 80087EF0 1080013C */  lui        $at, %hi(_svm_cur + 0x7)
+    /* 786F4 80087EF4 F72723A0 */  sb         $v1, %lo(_svm_cur + 0x7)($at)
   .L80087EF8:
     /* 786F8 80087EF8 0800E003 */  jr         $ra
     /* 786FC 80087EFC 00000000 */   nop
