@@ -1340,8 +1340,6 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
     s32 s2;
     s32 result;
 
-    if ((u32)D_800A35E4 >= 6)
-        goto end;
     switch (D_800A35E4) {
     case 0:
         s2 = 0;
@@ -1349,42 +1347,38 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
         switch (result) {
         case 1:
             s2 = -1;
-            goto end;
+            break;
         case 2:
             D_800A35E4 = 1;
-            goto end;
+            break;
         case 3:
             D_8009BD24.unk17[0] = D_8009BD24.unk1D[0];
             D_8009BD24.unk17[1] = D_8009BD24.unk1D[1];
             D_8009BD24.unk17[2] = D_8009BD24.unk1D[2];
             D_800A35E4 = 4;
-            goto end;
+            break;
         }
-        goto end;
+        break;
     case 1:
         s2 = 0;
         result = func_8006C1FC(arg0, arg1);
         if (result == 1) {
             D_800A35E4 = 0;
-            goto end;
-        }
-        if (result == 2) {
+        } else if (result == 2) {
             D_800A35E4 = result;
-            goto end;
-        }
-        if (result == 3) {
+        } else if (result == 3) {
             D_800A35E4 = result;
         }
-        goto end;
+        break;
     case 2:
         s2 = 2;
-        goto end;
+        break;
     case 3:
         s2 = 3;
-        goto end;
+        break;
     case 4:
         func_8006D324();
-        D_800A35E4 = D_800A35E4 + 1;
+        D_800A35E4++;
         /* fall through */
     case 5:
         s2 = 0;
@@ -1394,14 +1388,11 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
             D_8009BD24.unk1D[0] = D_8009BD24.unk17[0];
             D_8009BD24.unk1D[1] = D_8009BD24.unk17[1];
             D_8009BD24.unk1D[2] = D_8009BD24.unk17[2];
-            goto end;
-        }
-        if (result == -1) {
+        } else if (result == -1) {
             D_800A35E4 = 0;
         }
-        goto end;
+        break;
     }
-end:
     return s2;
 }
 
