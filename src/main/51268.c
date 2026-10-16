@@ -1450,16 +1450,7 @@ u8 func_80063BD0(s32 idx) {
  * bit is set in D_800A3454[arg0], emit one textured POLY_FT4 billboard at the
  * slot's position (relative to *D_800A3470) through the composite of
  * D_800A3474 and the slot's matrix, keep it when its depth is in range, then
- * link every new quad into the OT at its depth. Returns 1.
- * GTE islands, one PsyQ 4.3 inline_c.h macro each: gte_SetRotMatrix,
- * gte_ldclmv, gte_rtir, gte_stclmv, gte_SetTransMatrix, gte_ldlv0, gte_rt,
- * gte_stlvnl, gte_ldv3, gte_rtpt, gte_stsxy3, gte_stsz, gte_ldv0, gte_rtps,
- * gte_stsxy -- the header's text except separators/whitespace and, in the four
- * command macros, the post-DMPSX command word for the header's DMPSX
- * placeholder. The run from the first gte_SetRotMatrix through gte_stlvnl is
- * gtemac.h gte_CompMatrix (= gte_MulMatrix0 +
- * gte_SetTransMatrix/gte_ldlv0/gte_rt/gte_stlvnl), written out macro by macro.
- */
+ * link every new quad into the OT at its depth. Returns 1. */
 s32 func_80063E10(s32 arg0) {
     extern TexRec D_8009B920[];
     extern SVECTOR D_8009BBE4;
@@ -1527,168 +1518,13 @@ s32 func_80063E10(s32 arg0) {
         mats[i].t[0] = D_800F0EC8[arg0][i].unk0 - D_800A3470[0];
         mats[i].t[1] = D_800F0EC8[arg0][i].unk4 - D_800A3470[1];
         mats[i].t[2] = D_800F0EC8[arg0][i].unk8 - D_800A3470[2];
-        /* gte_SetRotMatrix(r0) --- inline_c.h :297-310 */
-        __asm__ volatile(
-            "lw     $12, 0(%0)\n"
-            "lw     $13, 4(%0)\n"
-            "ctc2   $12, $0\n"
-            "ctc2   $13, $1\n"
-            "lw     $12, 8(%0)\n"
-            "lw     $13, 12(%0)\n"
-            "lw     $14, 16(%0)\n"
-            "ctc2   $12, $2\n"
-            "ctc2   $13, $3\n"
-            "ctc2   $14, $4\n"
-            :: "r"(D_800A3474) : "$12", "$13", "$14");
-        /* gte_ldclmv(r0) --- inline_c.h :150-159 */
-        __asm__ volatile(
-            "lhu    $12, 0(%0)\n"
-            "lhu    $13, 6(%0)\n"
-            "lhu    $14, 12(%0)\n"
-            "mtc2   $12, $9\n"
-            "mtc2   $13, $10\n"
-            "mtc2   $14, $11\n"
-            :: "r"(&mats[i]) : "$12", "$13", "$14");
-        /* gte_rtir() --- inline_c.h :514-517; post-DMPSX word 0x4A49E012
-           replaces the header's DMPSX placeholder .word 0x000001ff */
-        __asm__ volatile(
-            "nop\n"
-            "nop\n"
-            ".word 0x4A49E012\n");
-        /* gte_stclmv(r0) --- inline_c.h :1148-1157 */
-        __asm__ volatile(
-            "mfc2   $12, $9\n"
-            "mfc2   $13, $10\n"
-            "mfc2   $14, $11\n"
-            "sh     $12, 0(%0)\n"
-            "sh     $13, 6(%0)\n"
-            "sh     $14, 12(%0)\n"
-            :: "r"(var_2) : "$12", "$13", "$14", "memory");
-        /* gte_ldclmv(r0) --- inline_c.h :150-159 */
-        __asm__ volatile(
-            "lhu    $12, 0(%0)\n"
-            "lhu    $13, 6(%0)\n"
-            "lhu    $14, 12(%0)\n"
-            "mtc2   $12, $9\n"
-            "mtc2   $13, $10\n"
-            "mtc2   $14, $11\n"
-            :: "r"((u8 *)&mats[i] + 2) : "$12", "$13", "$14");
-        /* gte_rtir() --- inline_c.h :514-517; post-DMPSX word 0x4A49E012
-           replaces the header's DMPSX placeholder .word 0x000001ff */
-        __asm__ volatile(
-            "nop\n"
-            "nop\n"
-            ".word 0x4A49E012\n");
-        /* gte_stclmv(r0) --- inline_c.h :1148-1157 */
-        __asm__ volatile(
-            "mfc2   $12, $9\n"
-            "mfc2   $13, $10\n"
-            "mfc2   $14, $11\n"
-            "sh     $12, 0(%0)\n"
-            "sh     $13, 6(%0)\n"
-            "sh     $14, 12(%0)\n"
-            :: "r"((u8 *)var_2 + 2) : "$12", "$13", "$14", "memory");
-        /* gte_ldclmv(r0) --- inline_c.h :150-159 */
-        __asm__ volatile(
-            "lhu    $12, 0(%0)\n"
-            "lhu    $13, 6(%0)\n"
-            "lhu    $14, 12(%0)\n"
-            "mtc2   $12, $9\n"
-            "mtc2   $13, $10\n"
-            "mtc2   $14, $11\n"
-            :: "r"((u8 *)&mats[i] + 4) : "$12", "$13", "$14");
-        /* gte_rtir() --- inline_c.h :514-517; post-DMPSX word 0x4A49E012
-           replaces the header's DMPSX placeholder .word 0x000001ff */
-        __asm__ volatile(
-            "nop\n"
-            "nop\n"
-            ".word 0x4A49E012\n");
-        /* gte_stclmv(r0) --- inline_c.h :1148-1157 */
-        __asm__ volatile(
-            "mfc2   $12, $9\n"
-            "mfc2   $13, $10\n"
-            "mfc2   $14, $11\n"
-            "sh     $12, 0(%0)\n"
-            "sh     $13, 6(%0)\n"
-            "sh     $14, 12(%0)\n"
-            :: "r"((u8 *)var_2 + 4) : "$12", "$13", "$14", "memory");
-        /* gte_SetTransMatrix(r0) --- inline_c.h :360-369 */
-        __asm__ volatile(
-            "lw     $12, 20(%0)\n"
-            "lw     $13, 24(%0)\n"
-            "ctc2   $12, $5\n"
-            "lw     $14, 28(%0)\n"
-            "ctc2   $13, $6\n"
-            "ctc2   $14, $7\n"
-            :: "r"(D_800A3474) : "$12", "$13", "$14");
-        /* gte_ldlv0(r0) --- inline_c.h :101-110 */
-        __asm__ volatile(
-            "lhu    $13, 4(%0)\n"
-            "lhu    $12, 0(%0)\n"
-            "sll    $13, $13, 16\n"
-            "or     $12, $12, $13\n"
-            "mtc2   $12, $0\n"
-            "lwc2   $1, 8(%0)\n"
-            :: "r"(mats[i].t) : "$12", "$13");
-        /* gte_rt() --- inline_c.h :494-497; post-DMPSX word 0x4A480012
-           replaces the header's DMPSX placeholder .word 0x000000ff */
-        __asm__ volatile(
-            "nop\n"
-            "nop\n"
-            ".word 0x4A480012\n");
-        /* gte_stlvnl(r0) --- inline_c.h :1111-1117 */
-        __asm__ volatile(
-            "swc2   $25, 0(%0)\n"
-            "swc2   $26, 4(%0)\n"
-            "swc2   $27, 8(%0)\n"
-            :: "r"(var_2->t) : "memory");
-        /* gte_SetRotMatrix(r0) --- inline_c.h :297-310 */
-        __asm__ volatile(
-            "lw     $12, 0(%0)\n"
-            "lw     $13, 4(%0)\n"
-            "ctc2   $12, $0\n"
-            "ctc2   $13, $1\n"
-            "lw     $12, 8(%0)\n"
-            "lw     $13, 12(%0)\n"
-            "lw     $14, 16(%0)\n"
-            "ctc2   $12, $2\n"
-            "ctc2   $13, $3\n"
-            "ctc2   $14, $4\n"
-            :: "r"(var_2) : "$12", "$13", "$14");
-        /* gte_SetTransMatrix(r0) --- inline_c.h :360-369 */
-        __asm__ volatile(
-            "lw     $12, 20(%0)\n"
-            "lw     $13, 24(%0)\n"
-            "ctc2   $12, $5\n"
-            "lw     $14, 28(%0)\n"
-            "ctc2   $13, $6\n"
-            "ctc2   $14, $7\n"
-            :: "r"(var_2) : "$12", "$13", "$14");
-        /* gte_ldv3(r0, r1, r2) --- inline_c.h :34-42 */
-        __asm__ volatile(
-            "lwc2   $0, 0(%0)\n"
-            "lwc2   $1, 4(%0)\n"
-            "lwc2   $2, 0(%1)\n"
-            "lwc2   $3, 4(%1)\n"
-            "lwc2   $4, 0(%2)\n"
-            "lwc2   $5, 4(%2)\n"
-            :: "r"(&D_8009BBE4), "r"(&D_8009BBEC), "r"(&D_8009BBF4));
-        /* gte_rtpt() --- inline_c.h :489-492; post-DMPSX word 0x4A280030
-           replaces the header's DMPSX placeholder .word 0x000000bf */
-        __asm__ volatile(
-            "nop\n"
-            "nop\n"
-            ".word 0x4A280030\n");
-        /* gte_stsxy3(r0, r1, r2) --- inline_c.h :906-912 */
-        __asm__ volatile(
-            "swc2   $12, 0(%0)\n"
-            "swc2   $13, 0(%1)\n"
-            "swc2   $14, 0(%2)\n"
-            :: "r"(sxy), "r"(sxy + 1), "r"(sxy + 2) : "memory");
-        /* gte_stsz(r0) --- inline_c.h :1042-1046 */
-        __asm__ volatile(
-            "swc2   $19, 0(%0)\n"
-            :: "r"(D_800A34D0) : "memory");
+        gte_CompMatrix(D_800A3474, &mats[i], var_2);
+        gte_SetRotMatrix(var_2);
+        gte_SetTransMatrix(var_2);
+        gte_ldv3(&D_8009BBE4, &D_8009BBEC, &D_8009BBF4);
+        gte_rtpt();
+        gte_stsxy3(sxy, sxy + 1, sxy + 2);
+        gte_stsz(D_800A34D0);
         if (*D_800A34D0 <= 0) {
             continue;
         }
@@ -1700,21 +1536,9 @@ s32 func_80063E10(s32 arg0) {
             continue;
         }
         var_4[(*var_5)++] = *D_800A34D0;
-        /* gte_ldv0(r0) --- inline_c.h :16-20 (no clobber list) */
-        __asm__ volatile(
-            "lwc2   $0, 0(%0)\n"
-            "lwc2   $1, 4(%0)\n"
-            :: "r"(&D_8009BBFC));
-        /* gte_rtps() --- inline_c.h :484-487; post-DMPSX word 0x4A180001
-           replaces the header's DMPSX placeholder .word 0x0000007f */
-        __asm__ volatile(
-            "nop\n"
-            "nop\n"
-            ".word 0x4A180001\n");
-        /* gte_stsxy(r0) --- inline_c.h :900-904 */
-        __asm__ volatile(
-            "swc2   $14, 0(%0)\n"
-            :: "r"(sxy + 3) : "memory");
+        gte_ldv0(&D_8009BBFC);
+        gte_rtps();
+        gte_stsxy(sxy + 3);
         *(s32 *)&prim->x0 = sxy[0];
         *(s32 *)&prim->x1 = sxy[1];
         *(s32 *)&prim->x2 = sxy[2];
@@ -2342,9 +2166,7 @@ u8 func_800657B0(void) {
  * size from the mode and its D_800F0BA8 timer, shapes the four corners (switch
  * 2) and links one POLY_FT4 into the OT. Modes 6/7 re-run the body for the
  * paired mode (arg0 + 2, i.e. 8/9) via `goto again`; the re-run is guarded by
- * `arg0 < 9`, so modes 10/11 draw once.
- * GTE: eight PsyQ 4.3 inline_c.h macros; gte_rtps carries the post-DMPSX
- * command word. */
+ * `arg0 < 9`, so modes 10/11 draw once. */
 u8 func_80065800(s32 arg0) {
     extern s16 D_800A3834;
     extern TexRec D_8009B8C8[];
@@ -2403,67 +2225,16 @@ u8 func_80065800(s32 arg0) {
     var_9 = &var_0->unk94;
     var_10 = &var_0->unk96;
 
-    /* gte_SetRotMatrix(r0) --- inline_c.h :297-310 */
-    __asm__ volatile(
-        "lw     $12, 0(%0)\n"
-        "lw     $13, 4(%0)\n"
-        "ctc2   $12, $0\n"
-        "ctc2   $13, $1\n"
-        "lw     $12, 8(%0)\n"
-        "lw     $13, 12(%0)\n"
-        "lw     $14, 16(%0)\n"
-        "ctc2   $12, $2\n"
-        "ctc2   $13, $3\n"
-        "ctc2   $14, $4\n"
-        :: "r"(D_800A3474) : "$12", "$13", "$14");
+    gte_SetRotMatrix(D_800A3474);
     p_in->vx = D_800F0CA0[arg0].unk0 - D_800A3470[0];
     p_in->vy = D_800F0CA0[arg0].unk4 - D_800A3470[1];
     p_in->vz = D_800F0CA0[arg0].unk8 - D_800A3470[2];
     ApplyRotMatrixLV(p_in, p_t);
-    /* gte_SetTransMatrix(r0) --- inline_c.h :360-369 */
-    __asm__ volatile(
-        "lw     $12, 20(%0)\n"
-        "lw     $13, 24(%0)\n"
-        "ctc2   $12, $5\n"
-        "lw     $14, 28(%0)\n"
-        "ctc2   $13, $6\n"
-        "ctc2   $14, $7\n"
-        :: "r"((MATRIX *)var_0) : "$12", "$13", "$14");
+    gte_SetTransMatrix((MATRIX *)var_0);
     p_v->vz = 0;
     p_v->vy = 0;
     p_v->vx = 0;
-    /* gte_ldv0(r0) --- inline_c.h :16-20 (no clobber list) */
-    __asm__ volatile(
-        "lwc2   $0, 0(%0)\n"
-        "lwc2   $1, 4(%0)\n"
-        :: "r"(p_v));
-    /* gte_rtps() --- inline_c.h :484-487; post-DMPSX word 0x4A180001 (RTPS
-       sf=1) replaces the header's DMPSX placeholder .word 0x0000007f */
-    __asm__ volatile(
-        "nop\n"
-        "nop\n"
-        ".word 0x4A180001\n");
-    /* gte_stsxy(r0) --- inline_c.h :900-904 */
-    __asm__ volatile(
-        "swc2   $14, 0(%0)\n"
-        :: "r"(D_800A34B8) : "memory");
-    /* gte_stdp(r0) --- inline_c.h :1018-1022 */
-    __asm__ volatile(
-        "swc2   $8, 0(%0)\n"
-        :: "r"(var_2) : "memory");
-    /* gte_stflg(r0) --- inline_c.h :1024-1030 */
-    __asm__ volatile(
-        "cfc2   $12, $31\n"
-        "nop\n"
-        "sw     $12, 0(%0)\n"
-        :: "r"(D_800A34CC) : "$12", "memory");
-    /* gte_stszotz(r0) --- inline_c.h :1082-1089 */
-    __asm__ volatile(
-        "mfc2   $12, $19\n"
-        "nop\n"
-        "sra    $12, $12, 2\n"
-        "sw     $12, 0(%0)\n"
-        :: "r"(D_800A34D0) : "$12", "memory");
+    gte_RotTransPers(p_v, D_800A34B8, var_2, D_800A34CC, D_800A34D0);
     *D_800A34D0 = *D_800A34D0 ? *D_800A34D0 << 2 : 1;
 
 again:
@@ -2904,10 +2675,11 @@ u8 func_800671CC(void) {
 extern SVECTOR D_800F0B78[];
 extern Unk800EFC78Record D_800EFC78[][48];
 
-/* func_80067200 -- GTE: gte_SetRotMatrix (twice), gte_ldv0, gte_rtv0,
- * gte_stlvnl (PsyQ 4.3 inline_c.h). gte_rtv0 carries the post-DMPSX word
- * 0x4A486012 (MVMVA sf=1 mx=rot v=V0 cv=none lm=0) for the header's DMPSX
- * placeholder `.word 0x0000013f`. */
+/* func_80067200 -- spawns half (arg2 selects which) of the 0x30
+ * D_800EFC78[arg1] particle records: each gets the D_800F0B78[arg1] vector
+ * scaled by a random factor and turned by a random rotation (spread chosen by
+ * mode arg0). arg2 == 0 first latches D_800A347C / D_800A3478 into the
+ * emitter. Returns 1. */
 u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
     SVECTOR v;
     s32 r[6];
@@ -2931,19 +2703,7 @@ u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
         mask = 0x1F;
     }
     D_800A3438[arg1] = 0;
-    /* gte_SetRotMatrix(r0) --- inline_c.h :297-310 */
-    __asm__ volatile(
-        "lw     $12, 0(%0)\n"
-        "lw     $13, 4(%0)\n"
-        "ctc2   $12, $0\n"
-        "ctc2   $13, $1\n"
-        "lw     $12, 8(%0)\n"
-        "lw     $13, 12(%0)\n"
-        "lw     $14, 16(%0)\n"
-        "ctc2   $12, $2\n"
-        "ctc2   $13, $3\n"
-        "ctc2   $14, $4\n"
-        :: "r"(D_800A3474) : "$12", "$13", "$14");
+    gte_SetRotMatrix(D_800A3474);
     if (arg2 == 0) {
         D_800F0C10[arg1][0].unk0 = D_800A347C[0];
         D_800F0C10[arg1][0].unk4 = D_800A347C[1];
@@ -2994,35 +2754,7 @@ u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
         p->unk0 = 0;
         p->unk10 = 1;
         RotMatrix(&ang, &m);
-        /* gte_SetRotMatrix(r0) --- inline_c.h :297-310 */
-        __asm__ volatile(
-            "lw     $12, 0(%0)\n"
-            "lw     $13, 4(%0)\n"
-            "ctc2   $12, $0\n"
-            "ctc2   $13, $1\n"
-            "lw     $12, 8(%0)\n"
-            "lw     $13, 12(%0)\n"
-            "lw     $14, 16(%0)\n"
-            "ctc2   $12, $2\n"
-            "ctc2   $13, $3\n"
-            "ctc2   $14, $4\n"
-            :: "r"(&m) : "$12", "$13", "$14");
-        /* gte_ldv0(r0) --- inline_c.h :16-20 (no clobber list) */
-        __asm__ volatile(
-            "lwc2   $0, 0(%0)\n"
-            "lwc2   $1, 4(%0)\n"
-            :: "r"(&v));
-        /* gte_rtv0() --- inline_c.h :499-502, post-DMPSX command word */
-        __asm__ volatile(
-            "nop\n"
-            "nop\n"
-            ".word 0x4A486012\n");
-        /* gte_stlvnl(r0) --- inline_c.h :1111-1117 */
-        __asm__ volatile(
-            "swc2   $25, 0(%0)\n"
-            "swc2   $26, 4(%0)\n"
-            "swc2   $27, 8(%0)\n"
-            :: "r"(&out) : "memory");
+        gte_ApplyMatrix(&m, &v, &out);
         p->unk8 = out.vx;
         p->unkA = out.vy;
         p->unkC = out.vz;
@@ -3179,13 +2911,11 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
 /* Per-frame update + draw of the D_800EFC78[arg1] records, the middle of
  * the func_800678A8 / func_80067D14 / func_80068D88 trio. For each live record
  * of D_800EFC78[arg1] (state 1): step its unk12 and derive r/g/b from it, take
- * its D_800F0C10[arg1] entry less D_800A3470 through gte_rtv0, set state 3
- * (and skip it) once r and g are both low or once the gte_sqr0 sum p_out[0..2]
- * passes *var_1 plus a rand() term, project three vertices, size the
- * sprite by type (arg0), then emit up to three POLY_FT4 quads, storing
- * *D_800A34D0 for each in var_9[].
- * GTE: eleven PsyQ 4.3 inline_c.h macros; gte_rtv0, gte_sqr0 and gte_rtpt
- * carry the post-DMPSX command word (noted at each island). */
+ * its D_800F0C10[arg1] entry less D_800A3470 through the GTE rotation, set
+ * state 3 (and skip it) once r and g are both low or once the squared length
+ * p_out[0..2] passes *var_1 plus a rand() term, project three vertices, size
+ * the sprite by type (arg0), then emit up to three POLY_FT4 quads, storing
+ * *D_800A34D0 for each in var_9[]. */
 void func_80067D14(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *var_0 = &D_800A34EC->v800678A8;
@@ -3252,35 +2982,10 @@ void func_80067D14(s32 arg0, s32 arg1) {
         var_2->vz = (*var_8)->unk8;
         var_13[0].vz = var_2->vz - D_800A3470[2];
 
-        /* gte_ldv0(r0) --- inline_c.h :16-20 (no clobber list) */
-        __asm__ volatile(
-            "lwc2   $0, 0(%0)\n"
-            "lwc2   $1, 4(%0)\n"
-            :: "r"(var_13));
-        /* gte_rtv0() --- inline_c.h :499-502; post-DMPSX command word
-           0x4A486012 (MVMVA sf=1 mx=rot v=V0 cv=none lm=0) for the header's
-           placeholder .word 0x0000013f */
-        __asm__ volatile(
-            "nop\n"
-            "nop\n"
-            ".word 0x4A486012\n");
-        /* gte_stlvnl(r0) --- inline_c.h :1111-1117 */
-        __asm__ volatile(
-            "swc2   $25, 0(%0)\n"
-            "swc2   $26, 4(%0)\n"
-            "swc2   $27, 8(%0)\n"
-            :: "r"(p_out) : "memory");
-        /* gte_SetTransMatrix(r0) --- inline_c.h :360-369; it reads only the
-         * translation, so it is handed the address 0x14 below the rotated
-         * vector. */
-        __asm__ volatile(
-            "lw     $12, 20(%0)\n"
-            "lw     $13, 24(%0)\n"
-            "ctc2   $12, $5\n"
-            "lw     $14, 28(%0)\n"
-            "ctc2   $13, $6\n"
-            "ctc2   $14, $7\n"
-            :: "r"((u8 *)p_out - 0x14) : "$12", "$13", "$14");
+        gte_ApplyRotMatrix(var_13, p_out);
+        /* p_out becomes the translation: SetTransMatrix reads only m->t, 0x14
+         * into the MATRIX */
+        gte_SetTransMatrix((u8 *)p_out - 0x14);
 
         var_13[1].vx = (*p_ent)->unk0;
         var_13[1].vz = (*p_ent)->unk4;
@@ -3298,37 +3003,11 @@ void func_80067D14(s32 arg0, s32 arg1) {
         var_13[2].vz = var_13[1].vz + (p_work->vz >> 1);
         var_13[2].vy = var_13[1].vy + (p_work->vy >> 1);
 
-        /* gte_ldv3(r0, r1, r2) --- inline_c.h :34-42 (no clobber list) */
-        __asm__ volatile(
-            "lwc2   $0, 0(%0)\n"
-            "lwc2   $1, 4(%0)\n"
-            "lwc2   $2, 0(%1)\n"
-            "lwc2   $3, 4(%1)\n"
-            "lwc2   $4, 0(%2)\n"
-            "lwc2   $5, 4(%2)\n"
-            :: "r"(&var_13[0]), "r"(&var_13[1]), "r"(&var_13[2]));
+        gte_ldv3(&var_13[0], &var_13[1], &var_13[2]);
         p_work->vx = var_13[0].vx;
         p_work->vz = var_13[0].vz;
         p_work->vy = var_13[0].vy;
-        /* gte_ldlvl(r0) --- inline_c.h :112-117 (no clobber list) */
-        __asm__ volatile(
-            "lwc2   $9, 0(%0)\n"
-            "lwc2   $10, 4(%0)\n"
-            "lwc2   $11, 8(%0)\n"
-            :: "r"(p_work));
-        /* gte_sqr0() --- inline_c.h :719-722; post-DMPSX command word
-           0x4AA00428 (SQR sf=0 lm=1) for the header's placeholder .word
-           0x00000f3f */
-        __asm__ volatile(
-            "nop\n"
-            "nop\n"
-            ".word 0x4AA00428\n");
-        /* gte_stlvnl(r0) --- inline_c.h :1111-1117 */
-        __asm__ volatile(
-            "swc2   $25, 0(%0)\n"
-            "swc2   $26, 4(%0)\n"
-            "swc2   $27, 8(%0)\n"
-            :: "r"(p_out) : "memory");
+        gte_Square0(p_work, p_out);
 
         *var_10 ^= rand();
         if ((u32)(p_out[0] + p_out[1] + p_out[2]) >
@@ -3337,24 +3016,9 @@ void func_80067D14(s32 arg0, s32 arg1) {
             continue;
         }
 
-        /* gte_rtpt() --- inline_c.h :489-492; post-DMPSX command word
-           0x4A280030 (RTPT sf=1) for the header's placeholder .word 0x000000bf
-         */
-        __asm__ volatile(
-            "nop\n"
-            "nop\n"
-            ".word 0x4A280030\n");
-        /* gte_stsxy3(r0, r1, r2) --- inline_c.h :906-912 */
-        __asm__ volatile(
-            "swc2   $12, 0(%0)\n"
-            "swc2   $13, 0(%1)\n"
-            "swc2   $14, 0(%2)\n"
-            :: "r"(&D_800A34B8[0]), "r"(&D_800A34B8[1]),
-               "r"(&D_800A34B8[2]) : "memory");
-        /* gte_stsz(r0) --- inline_c.h :1042-1046 */
-        __asm__ volatile(
-            "swc2   $19, 0(%0)\n"
-            :: "r"(D_800A34D0) : "memory");
+        gte_rtpt();
+        gte_stsxy3(&D_800A34B8[0], &D_800A34B8[1], &D_800A34B8[2]);
+        gte_stsz(D_800A34D0);
 
         if (*D_800A34D0 < 0) {
             continue;
