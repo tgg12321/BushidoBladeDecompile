@@ -368,3 +368,49 @@ floor 19 at s21; 21 sessions; live frontier (state.json is authoritative):
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: docs/reference/sotn-construct-index.md as checked out this session (pinned sotn-decomp master-branch commit per the file's own header), no FAKE construct, read-only grep
+
+## s23 (rederive)
+
+### H15 — psyz (Xeeynamo/psyz, the PsyQ 4.0 cross-platform decomp named in [[external-references]] as the closest reference SDK version to BB2's verbatim libraries) carries a byte-level precedent for the target's batched lw/ctc2 rotation-matrix load order, or an alternate C spelling of gte_SetRotMatrix/gte_stlvl that reaches it.
+
+Statement: psyz/src/psyz/libgte.c's `SetRotMatrix(MATRIX* m)` (fetched fresh this session via
+`gh api repos/Xeeynamo/psyz/contents/psyz/src/psyz/libgte.c`, saved to
+tmp/grind/func_80052B7C/s23/psyz_libgte.c) is a pure software reimplementation: nine plain
+`M.m[i][j] = m->m[i][j];` field copies into a global `MATRIX M`, with zero cop2/GTE opcodes
+anywhere in the function. psyz targets non-PS1 platforms (its GTE is emulated in C, per its own
+README/PORTING_GUIDE), so it was never compiled through a MIPS cop2-aware backend and carries no
+instruction-order information for the real hardware `ctc2` sequence at all -- there is no asm to
+compare, batched or otherwise. The same file's `RotMatrix`/`RotMatrixX/Y/Z/YXZ/ZYX` and
+`ApplyRotMatrix` (line 2667, delegating to a software `ApplyMatrix`) are the same story: C-level
+trig/matrix math with no GTE register traffic. This closes the one genuinely new rederive-modality
+lead this session found (psyz was not checked by any prior session's ledger entries for this
+function) and reconfirms s12/s22's decomp.me and SOTN-index findings: no external corpus checked so
+far (decomp.me, sotn-decomp master, now psyz) contains a real hardware cop2 precedent for this
+residual.
+
+- mechanism: n/a (negative corpus search, not a GCC-pass claim).
+- probe: `gh api repos/Xeeynamo/psyz/contents/psyz/src/psyz/libgte.c` fetched to
+  tmp/grind/func_80052B7C/s23/psyz_libgte.c (3280 lines); grepped for
+  `rotmatrix|SetRotMatrix` (6 hits); read SetRotMatrix (line 1209) and ReadRotMatrix (1233) in
+  full.
+- result: Zero cop2 opcodes, zero GTE register traffic, zero instruction-order information in
+  psyz's GTE layer for this or any sibling rotation-matrix function -- it is a full software
+  reimplementation for porting, not a byte-matching PS1 decomp of libgte itself. Re-applied the
+  s6 chassis fresh this session and re-measured: still 19, 4/4 hunks source-level, 0 operand-only
+  (tmp/grind/func_80052B7C/s23/sandbox_diff.txt), identical hunk shape to every prior
+  re-audit (s8/s9/s13-s22). Residual remains locked inside gte_SetRotMatrix's and gte_stlvl's own
+  fixed `__asm__` volatile strings (include/psxsdk/inline_c.h:297, :1086), exactly as established
+  since s8.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tmp/grind/func_80052B7C/s23/psyz_libgte.c (Xeeynamo/psyz, fetched 2026-10-15 this
+  session); s6 legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session,
+  reverted to INCLUDE_ASM after measurement
+
+## [s23] psyz (Xeeynamo/psyz, the PsyQ 4.0 cross-platform decomp named in external-references memory as the closest reference SDK version to BB2's verbatim libraries) carries a byte-level precedent for the target's batched lw/ctc2 rotation-matrix load order, or an alternate C spelling of gte_SetRotMatrix/gte_stlvl that reaches it.
+- mechanism: n/a (negative corpus search, not a GCC-pass claim)
+- probe: gh api repos/Xeeynamo/psyz/contents/psyz/src/psyz/libgte.c fetched to tmp/grind/func_80052B7C/s23/psyz_libgte.c (3280 lines); grepped for rotmatrix|SetRotMatrix (6 hits); read SetRotMatrix (line 1209) and ReadRotMatrix (1233) in full; re-applied the s6 legal chassis and re-measured sandbox func_80052B7C --disable all --diff.
+- result: psyz's SetRotMatrix/RotMatrix*/ApplyRotMatrix are pure software reimplementations (plain MATRIX field copies and trig math for cross-platform porting) with zero cop2/GTE opcodes anywhere -- it was never compiled through a MIPS cop2-aware backend, so it carries no hardware instruction-order information for this residual at all. Re-measured the s6 chassis fresh: still score 19, 4/4 hunks source-level, 0 operand-only, 0 not-scored (tmp/grind/func_80052B7C/s23/sandbox_diff.txt), identical hunk shape to every re-audit since s8. This was the one genuinely new external corpus this session's rederive-modality search found not yet checked by any prior ledger entry for this function (decomp.me and the sotn-decomp construct index were already checked at s12/s22, both negative).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tmp/grind/func_80052B7C/s23/psyz_libgte.c (Xeeynamo/psyz, fetched 2026-10-15 this session); s6 legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session, reverted to INCLUDE_ASM after measurement

@@ -452,3 +452,11 @@ question rather than resolved here.
 - [s22] docs/reference/sotn-construct-index.md (1,365 PSX entries) has zero hits for the rotation-matrix/ctc2-batching construct, so the Q55 precedent-citation route to admit a respelling is not available.
 
 - [s22] m2c (s12) is categorically blind to this function's body (14/14 instructions are cop2/GTE opcodes absent from arch_mips.py's instruction table) and decomp.me's gcc2.7.2-psx corpus (s12) has no structural match (similarity 0.022-0.026, none touching cop2) -- both rederive avenues already exhausted prior to this session and reconfirmed structurally unchanged this session (no corpus/tool update since s12).
+
+- [s23] Chassis re-audit (s23): applying the s6 legal 5-statement macro-call body to src/main/3AB48.c and running sandbox func_80052B7C --disable all --diff again measures score 19, 4 hunks all source-level, 0 operand-only, 0 not-scored -- bit-identical hunk classification to s8/s9/s13-s22 (hunk 1: gte_SetRotMatrix's batched 5-lw/3-lh-then-8-ctc2 target order vs our paired/tripled order plus register seats; hunks 2-4: gte_stlvl's trailing nop/swc2 delay-slot placement).
+
+- [s23] psyz (Xeeynamo/psyz) libgte.c implements SetRotMatrix, ReadRotMatrix, RotMatrix/RotMatrixX/Y/Z/YXZ/ZYX and ApplyRotMatrix as pure C software (global MATRIX M struct, field copies, trig/matrix multiply) with zero cop2 instructions anywhere in the 3280-line file -- it is a cross-platform port, not a byte-matching PS1 hardware decomp of libgte, so it cannot inform the cop2-level residual regardless of which PsyQ SDK version it targets.
+
+- [s23] No external corpus checked across this function's grind history (decomp.me corpus search s12, sotn-decomp construct-index grep s22, psyz libgte.c s23) contains a real hardware cop2 precedent for the batched-lw-then-ctc2 rotation-matrix order or the cop2-store-in-jr-delay-slot shape this residual needs.
+
+- [s23] The residual is unchanged from s8 onward: both hunks sit entirely inside gte_SetRotMatrix's and gte_stlvl's own fixed __asm__ volatile template strings (include/psxsdk/inline_c.h:297, :1086), which are literal text at RTL expand, not computed from any C-level expression -- confirmed again this session with no new finding against that conclusion.

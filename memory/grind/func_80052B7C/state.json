@@ -1,7 +1,7 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 22,
+ "session_count": 23,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -135,6 +135,12 @@
    "floor": 19,
    "modality": "rederive",
    "headline": "s22 rederive: chassis re-confirms 19 clean; mandatory sibling transplant (func_8004A4E0/func_8004A76C) vacuous (no C body); SOTN-index census for the GTE batching construct is zero/1365 -- no new C le"
+  },
+  {
+   "session": 23,
+   "floor": 19,
+   "modality": "rederive",
+   "headline": "s23 rederive: psyz GTE layer is pure software (no cop2 precedent); floor re-confirmed 19, residual still locked inside vendored macro asm strings"
   }
  ],
  "frontier": [
@@ -422,6 +428,14 @@
    "measured_on": "docs/reference/sotn-construct-index.md as checked out this session (pinned sotn-decomp master-branch commit per the file's own header), no FAKE construct, read-only grep",
    "predicate_cite": "",
    "result": "Zero matches anywhere in the index. No SOTN-master precedent exists for this construct at the index's pinned commit."
+  },
+  {
+   "session": 23,
+   "statement": "psyz (Xeeynamo/psyz, the PsyQ 4.0 cross-platform decomp named in external-references memory as the closest reference SDK version to BB2's verbatim libraries) carries a byte-level precedent for the tar",
+   "kill_scope": "instance",
+   "measured_on": "tmp/grind/func_80052B7C/s23/psyz_libgte.c (Xeeynamo/psyz, fetched 2026-10-15 this session); s6 legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session, reverted to INCLUDE_ASM after",
+   "predicate_cite": "",
+   "result": "psyz's SetRotMatrix/RotMatrix*/ApplyRotMatrix are pure software reimplementations (plain MATRIX field copies and trig ma"
   }
  ],
  "ladder_skip": 0,

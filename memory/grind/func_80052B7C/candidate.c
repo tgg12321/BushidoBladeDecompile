@@ -225,3 +225,11 @@ void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
  * docs/reference/sotn-construct-index.md (1,365 PSX entries) for setrotmatrix/ctc2/ldtr/
  * RotMatrix found zero precedent -- the Q55 SOTN-citation route stays closed. No new C-level
  * mutation axis found. See hypotheses.md s22. */
+/* s23 (rederive): re-applied this exact chassis fresh, re-measured -- still 19, 4/4 hunks
+ * source-level, 0/4 operand-only (tmp/grind/func_80052B7C/s23/sandbox_diff.txt). New
+ * rederive-modality probe: fetched psyz's libgte.c (Xeeynamo/psyz, the PsyQ 4.0 cross-platform
+ * decomp) and read its SetRotMatrix/RotMatrix*/ApplyRotMatrix -- all pure software
+ * reimplementations (plain field-copy / trig math) with zero cop2 opcodes, so it carries no
+ * hardware instruction-order precedent for this residual. No new C-level mutation axis found.
+ * src/main/3AB48.c reverted to INCLUDE_ASM; no new src/ edit banked.
+ */
