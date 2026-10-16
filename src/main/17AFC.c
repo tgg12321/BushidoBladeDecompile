@@ -282,12 +282,12 @@ void func_800278C0(s32 a0, Unk80101EC8Record *ptr, s32 arg2, Tbl8008E194 *a3,
 
 s32 func_8002798C(Unk80101EC8Record *a0) {
     s32 ret = 0;
-    u16 state = a0->unk_6A;
 
-    if (state == 6 || state == 0x25 || state == 0x33 || state == 4 ||
-        state == 0x14 || a0->unk_40 < a0->unk_A5 || a0->unk_A6 < a0->unk_40) {
+    if (a0->unk_6A == 6 || a0->unk_6A == 0x25 || a0->unk_6A == 0x33 ||
+        a0->unk_6A == 4 || a0->unk_6A == 0x14 || a0->unk_40 < a0->unk_A5 ||
+        a0->unk_A6 < a0->unk_40) {
         if (a0->unk_88 != -1) {
-            state = a0->unk_6A;
+            u16 state = a0->unk_6A;
             if (state == 0xF || state == 0x1C || state == 0x1D ||
                 state == 0x1E || state == 0x1F || state == 0x20 ||
                 state == 0x21 || state == 0x2B) {
