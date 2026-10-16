@@ -81,17 +81,6 @@
       "addr": "80052B00"
     },
     {
-      "func": "gte_SumSquares3",
-      "file": "main/3AB48",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "owner 2026-10-08: re-audit of whole-body INCLUDE_ASM canonical entries. Decide afresh whether the original was hand-written asm (scan_hand_coded STRONG evidence + Judge) or compiled C that must be decompiled; many game entries were auto-added 2026-05-17 as handwritten_overflow_op.",
-      "addr": "80052754"
-    },
-    {
       "func": "func_80052B7C",
       "file": "main/3AB48",
       "distance": 0,
@@ -121,14 +110,14 @@
     }
   ],
   "counts": {
-    "total": 10,
-    "active": 8,
+    "total": 9,
+    "active": 7,
     "by_status": {
-      "active": 8,
+      "active": 7,
       "rotated": 2
     },
     "by_verdict": {
-      "C": 8
+      "C": 7
     }
   },
   "toolchain_fingerprint": "cf03a18b9b2d4e1d"
