@@ -1,0 +1,39 @@
+{
+ "func": "func_800545F4",
+ "file": "main/3AB48",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 4,
+   "modality": "recon",
+   "headline": "Recon: func_800545F4/alabels are pure data (only ever lw-loaded, never jal/jr'd) reused as self-modifying GTE opcode templates by already-decompiled func_80041398 (src/main/31548.c:268-284); existing "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "H1: since these 4 words are never executed in place (only lw-loaded), the honest decompile may be a plain C global-data declaration (exact hex-initialized u32s) replacing the whole-body INCLUDE_ASM, moving this entry from ASM-WHOLE to COMPLETED-C.",
+   "mechanism": "requires the linker/TU object layout to tolerate an ordinary C data symbol landing inside a contiguous .text run at this exact byte offset in src/main/3AB48.o -- untested whether bb2.ld or this repo's build has any existing precedent for that.",
+   "next_probe": "grep the tree for any existing plain C global (not __asm__) that the linker places inside .text; if a precedent mechanism exists, replicate it here and measure with sandbox func_800545F4 --disable all; if none exists, treat that absence as evidence against H1 and fall back to H2."
+  },
+  {
+   "hypothesis": "H2: if H1's linker precedent search comes back empty, reaffirm the existing ASM-WHOLE grant as the owner-mandated re-audit's answer, filing the DECISIVE-evidence block format from docs/COMMIT_CONVENTIONS.md with this session's cross-reference finding as a second signal alongside the original no_return_fragment one.",
+   "mechanism": "documentation/disposition only, no codegen -- confirms rather than changes the grant.",
+   "next_probe": "only file the decisions.md entry + owner-gated outcome once the driver has actually assigned escalation modality for this function; recon/progress modality may not dispose of it per the standing auto-ruling."
+  },
+  {
+   "hypothesis": "H3 (process note): tools/scan_hand_coded.py cannot score any asm/funcs/*.s under 5 instructions, so the owner's broader 2026-05-17 auto-added-entries re-audit sweep will hit the same floor on other small grants.",
+   "mechanism": "tool limitation, not function-specific.",
+   "next_probe": "flag to whichever session/owner runs the broader sweep; no action needed for func_800545F4 itself."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "regression",
+ "created": "2026-10-16T06:06:01.780032+00:00",
+ "object_model_audited": 1
+}
