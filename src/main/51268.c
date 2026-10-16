@@ -418,30 +418,22 @@ void func_8006156C(s32 *arg0) {
 }
 
 void func_80061658(s32 *arg0, s32 arg1) {
-    /* FAKE: local pointer alias to D_800F116C keeps the address live in $a0
-     * across the switch; direct global: score 5 (as in func_80061710) */
-    Unk1F800000Unk00 *v1 = &D_800F116C;
     s32 *p;
-    u8 *q;
-    s32 val;
-    D_800A3468 = v1;
+
+    D_800A3468 = &D_800F116C;
     D_800F116C.unk0C = arg0;
     switch (arg1) {
     case 0:
-        val = 0x21000C;
-        q = &D_800F1150[12];
+        D_800F1150[12] = 0;
+        D_800F116C.unk14 = &D_800F1150[12];
+        D_800F116C.unk00.w = 0x21000C;
         break;
     case 1:
-        val = 0x21000D;
-        q = &D_800F1150[13];
+        D_800F1150[13] = 0;
+        D_800F116C.unk14 = &D_800F1150[13];
+        D_800F116C.unk00.w = 0x21000D;
         break;
-    default:
-        goto done;
     }
-    *q = 0;
-    D_800F116C.unk14 = q;
-    v1->unk00.w = val;
-done:
     func_80060A68();
     p = arg0;
     D_800F1140.vx = *p++;
@@ -451,30 +443,22 @@ done:
 }
 
 void func_80061710(s32 *arg0, s32 arg1) {
-    /* FAKE: local pointer alias to D_800F116C keeps the address live in $a0
-     * across the switch; direct global: score 5 */
-    Unk1F800000Unk00 *v1 = &D_800F116C;
     s32 *p;
-    u8 *q;
-    s32 val;
-    D_800A3468 = v1;
+
+    D_800A3468 = &D_800F116C;
     D_800F116C.unk0C = arg0;
     switch (arg1) {
     case 0:
-        val = 0x21000E;
-        q = &D_800F1150[14];
+        D_800F1150[14] = 0;
+        D_800F116C.unk14 = &D_800F1150[14];
+        D_800F116C.unk00.w = 0x21000E;
         break;
     case 1:
-        val = 0x21000F;
-        q = &D_800F1150[15];
+        D_800F1150[15] = 0;
+        D_800F116C.unk14 = &D_800F1150[15];
+        D_800F116C.unk00.w = 0x21000F;
         break;
-    default:
-        goto done;
     }
-    *q = 0;
-    D_800F116C.unk14 = q;
-    v1->unk00.w = val;
-done:
     func_80060A68();
     p = arg0;
     D_800F1140.vx = *p++;
