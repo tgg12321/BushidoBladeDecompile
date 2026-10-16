@@ -1,35 +1,22 @@
-# Replay System and Special Camera
+# "Replay" and "Special Camera": what the code at those names does
 
-BB2's replay and "special camera" (the cinematic kill-cam that triggers on
-finishing blows) are interconnected: the replay system reuses the camera
-data infrastructure that drives the kill-cams. Both are implemented
-across `code6cac_b2_post.c`..`code6cac_b5_post.c` (camera plumbing,
-0x80035438..0x800375EC) and `text1b_tu1d.c` (replay-specific helpers).
-
-## What "replay" means in BB2
-
-BB2 does NOT have a generic match-replay feature. Instead, it has:
-
-1. **Special camera** — the cinematic camera that triggers on certain
-   game events (winning hits, finishing moves, draws). It plays back a
-   pre-authored camera animation from the disc.
-2. **Replay camera** — the per-attack "highlight cam" that zooms in on
-   important hits during slow-motion playback. Triggered by certain hit
-   types or game events.
-3. **Demo / title** — the title-screen non-interactive playback. Not
-   technically "replay" but uses similar camera machinery.
-
-The naming `replay_camera_*` and `special_camera_*` are Kengo-derived;
-in BB2's original source they were probably one unified "cinematic
-camera system".
+Earlier versions of this page described a replay system and a cinematic
+"special camera", using names recovered by Kengo name-matching
+(`replay_camera_*`, `special_camera_*`, `marionation_camera_*`). The naming
+waves retired those names: at nearly every one of those addresses the code is
+the CD reader, a menu, the save flow or geometry helpers, not a camera. This
+page describes what each one does today, read from `src/` (path:line cites the
+definition). The one view-transform routine among them is `func_80046BF4`
+(below).
 
 ## `g_cd_file_table` and `cdrom_LoadExec` (once `SpecialCam` / `special_camera_get_rot_dir`)
 
-`g_cd_file_table` (`0x8008EC34`, `CdFileEntry[159]`) holds the disc's file
-records: a `CdlLOC` start position and a byte size per file (not camera data).
-`cdrom_GetFileIndex(group, i)` forms the indices.
+`g_cd_file_table` (`0x8008EC34`, `CdFileEntry[159]`, include/bb2.h:476) holds
+the disc's file records: a `CdlLOC` start position and a byte size per file
+(not camera data). `cdrom_GetFileIndex(group, i)` (src/main/cdrom.c:41) forms
+the indices.
 
-`cdrom_LoadExec(dest)` (0x80037348, `src/main/cdrom.c`) loads a PS-X EXE, the file
+`cdrom_LoadExec(dest)` (src/main/cdrom.c:181) loads a PS-X EXE, the file
 `cdrom_GetFileIndex(6, 0)` = 156 = `STR\MOVOVL.EXE`:
 
 1. Seek to the file's position (`CdControl(2, ...)`) and read one sector
@@ -38,97 +25,98 @@ records: a `CdlLOC` start position and a byte size per file (not camera data).
 3. Seek to the next sector and read `dest->t_size` bytes to `dest->t_addr`;
    on failure start again from step 1.
 
-Its only caller is `sys_Exec`.
+Its only caller is `sys_Exec` (below).
 
-## Replay camera init — `replay_camera_Init`
+## `cdrom_StartRead` (once `replay_camera_Init`)
 
-`replay_camera_Init(a0, a1)` (0x80036D98, now `cdrom_StartRead`, `code6cac_b5_post.c`) starts a replay
-camera sequence:
+`cdrom_StartRead(a0, a1)` (src/main/cdrom.c:13) queues a read of file `a0`
+into the CD state block `D_80101E58` (`CdState`, include/game.h:2079; its `rec`
+member is `Unk80101E60Rec`):
 
-1. If a replay is already running (`D_80101E62 != 0`), bail.
-2. `D_80101E60 = a0` (sequence ID)
-3. `D_80101E6C = SpecialCam[a0]` (CD address of camera data)
-4. `D_80101E70 = D_8008EC38[a0]` (data length)
-5. `D_80101E7C = a1` (callback / target)
-6. `D_80101E62 = 2` (initial state — "loading")
-7. `D_80101E78 = ceil(length / 0x800)` (sector count to read)
+1. If a request is pending (`rec.unk02 != 0`), return 0.
+2. `rec.unk00 = a0`; `rec.pair = g_cd_file_table[a0]` (position and size);
+   `rec.unk1C = a1`; `rec.unk08 = 0`; `rec.unk3E = 0`.
+3. `rec.unk02 = 2`, and `rec.unk18 = (size + 0x7FF) >> 11`, the sector count.
+4. Return 1.
 
-State machine variables in the `D_80101E5C..D_80101EA0` range:
+`cdrom_Update` (src/main/26940.c:222) then steps the request once per call;
+`cdrom_IsIdle` (src/main/cdrom.c:11) is `rec.unk02 == 0`. The old table of
+"replay state" variables at `0x80101E60..0x80101EA4` is this record's members.
 
-| Variable | Use |
-| --- | --- |
-| `D_80101E60` | current replay sequence index |
-| `D_80101E62` | replay state (0=idle, 0x10=loaded, 2=loading, etc.) |
-| `D_80101E68` | "stopped" flag |
-| `D_80101E6C` | CD sector pointer |
-| `D_80101E70` | total bytes to read |
-| `g_replay_frame_offset` (D_80101E74) | frame counter |
-| `D_80101E78` | sectors remaining |
-| `D_80101E7C` | per-sequence callback |
-| `D_80101E80..D_80101EA4` | per-sector load state machine |
+## `func_80070188` and `func_8003E2D8` (once `replay_camera_attack` / `replay_camera_get_attack_number`)
 
-## Replay camera attack — `replay_camera_attack`
+`func_80070188(arg0)` (src/main/5ED34.c:826) is a grid-menu cursor: for each of
+its 1 + `D_800A35B0` + `D_800A3554` cursors it moves a (row, column) position
+over a 5-row table
+(`D_8009BC40`) on the pad bits in `D_800A354C`, skipping cells already taken
+(`D_8009BC7C` flag 4), plays `func_8005C650` sounds, confirms or cancels a
+choice, and draws the cells with `func_8007352C`.
 
-`replay_camera_attack(arg0..arg3)` (`text1b_tu1d.c:1040`) is the slow-motion
-attack camera handler. Currently asmfix-bridged.
+`func_8003E2D8(arg0, arg1, arg2, arg3)` (src/main/2B344.c:1739) walks the cells
+of a 32 x 32 grid of 2000-unit squares crossed by the line from (arg0, arg1)
+to (arg2, arg3) (both offset by 0x7D00), a DDA in 4.12 fixed point, and calls
+`func_8003F388` (src/main/2B344.c:2287) for each cell inside the grid.
 
-`replay_camera_get_attack_number(a0..a3)` (`code6cac_c2.c:1552`) is its
-companion — looks up the attack number for the current replay.
+## CD and system routines once named `special_camera_*` / `marionation_camera_*`
 
-## Special camera
+- `cdrom_Update` (src/main/26940.c:222, once `special_camera_Exec`) steps the
+  CD state machine once per call; `cdrom_UpdateAudio` (src/main/26940.c:14,
+  once `special_camera_set_win_cam`) is its CD-audio half; `cdrom_StartReadAt`
+  (src/main/cdrom.c:31) starts a CD read of a file at a sector offset.
+- `cdrom_ReadyCallback` (src/main/267A8.c:32, once
+  `marionation_camera_Init_80036064`) is the CdReadyCallback handler. See
+  [sound.md](sound.md) for the XA side.
+- `cdrom_WaitAudioStarted` (src/main/cdrom.c:146, once
+  `marionation_camera_GetMaxFrame`) steps the CD state machine until CD-audio
+  playback has started (state 0x16); it returns nothing.
+- `sys_Exec(a0, a1, a2)` (src/main/cdrom.c:209, once
+  `marionation_camera_Init_80037468`) runs `STR\MOVOVL.EXE` (the FMV overlay)
+  and comes back: `VSync(0)`, `SetDispMask(0)`, `gpu_ResetGraphMode1()`,
+  `snd_Quit()`, `memcard_Quit()`, `ResetCallback()`, `CdInit()`, then
+  `cdrom_LoadExec(&exec)`, `DrawSync(0)`, `ResetGraph(0)`, `StopPAD()`,
+  `StopCallback()`; it sets `exec.s_addr = a2`, `exec.s_size = 0` and calls
+  BIOS `Exec(&exec, a0, a1)` after `EnterCriticalSection()`; on return it runs
+  `sys_Init()`, `snd_InitAndLoadCommonVab()`, `VSync(0)`, `SetDispMask(1)`.
 
-No camera code lives at the addresses once named `special_camera_*`: `cdrom_Update`
-(0x80036940, `src/main/26940.c`) steps the CD state machine once per call,
-`cdrom_UpdateAudio` (0x80036140) is its CD-audio half, and `cdrom_StartReadAt`
-(0x80036E34, `src/main/cdrom.c`) starts a CD read of a file at a sector offset.
+## `func_80018094` (once `marionation_camera_Exec`)
 
-`marionation_camera_Init_80036064` (now `cdrom_ReadyCallback`, `code6cac_b4_post.c`) — XA stream
-controller for in-engine cinematics. See [sound.md](sound.md).
+`func_80018094(arg0, arg1)` (src/main/87A0.c:107):
 
-`marionation_camera_Init_80037468` (now `sys_Exec`, `code6cac_b5_post.c`) — the
-"enter cinematic mode" handler:
+1. Loads `arg0->unk4` (a MATRIX) as the GTE rotation and translation and calls
+   `func_80017FA0(arg0)` (src/main/87A0.c:42).
+2. Stores the translation delta `arg0->unk4->t - arg1->matrix.t` in the
+   scratchpad block `SCRV` (`0x1F800000`, src/main/87A0.c:105).
+3. Takes the squared length: above 250000 the scale is 0x100; otherwise it is
+   `(isqrt(len2) << 6) / 500 + 0xC0`, the integer square root read from
+   `g_sqrt_table_u8` (normalized with the GTE leading-zero count above 0x400).
+4. Scales the `SCRV` delta by `scale >> 1`, copies `*arg0->unk4` into
+   `arg1->matrix` and calls `func_80018300(arg1)` (src/main/87A0.c:174), the
+   distance-constraint pass over a chain of 64-byte nodes described above it.
 
-1. `sys_VSync(0)` — sync first
-2. `gpu_SetDispMask(0)` — hide display during transition
-3. `gpu_EnableDisplay()` + various setup
-4. `pad_Init()` — re-init pad for cinematic
-5. `irq_Reset()` — reset IRQ table
-6. `EnterCriticalSection`
-7. `func_80078948(sp, a0, a1)` — install cinematic handler
-8. `sys_Init()` — re-init systems for cinematic mode
-9. `file_LoadSoundData()` — reload sound data
-10. `gpu_SetDispMask(1)` — re-show display
+It is not a camera runner, and no `cpu_check_run_attack` exists: that name now
+sits on `func_80018300`.
 
-This is essentially "tear down gameplay, set up cinematic" — a full
-state reset.
+## `func_80046BF4`: the view transform (once `replay_camera_rob_back_win_near`)
 
-`cdrom_WaitAudioStarted` (0x80037260, `src/main/cdrom.c`) steps the CD state machine
-until CD-audio playback has started (state 0x16); it returns nothing.
+`func_80046BF4(a0, a1, a2)` (src/main/368E4.c:448) runs once per frame:
 
-## `marionation_camera_Exec` — the active-cam runner
+1. Resets the draw queue cursor and the OT pointers (`D_800A3808`,
+   `D_800A378C`) and increments `D_800A38D6`.
+2. If `a0` is given: stores `-a1` as the rotation of the view record
+   `D_80101DF0`, builds its matrix through `D_800F66A0[0]`, and sets the
+   record's translation to `a0 + M * (0, 0, -a2)`, a point `a2` units back
+   from `a0` along the view direction; then `func_800418D0(&D_80101DF0)`,
+   `func_80047210()`, `func_8003F274()`, and keeps `a2` in `D_800A33C0`.
+3. Recomputes the light matrices of `D_800F62E0[0]`, `[1]`, `[4]`
+   (`calc_LightMatrix`) and runs `func_800420D0`, `func_8003F568`,
+   `func_8003F5CC`.
 
-`marionation_camera_Exec(arg0, arg1)` (`code6cac.c:264`) is the per-frame
-camera update for the special/replay system. Currently has heavy use of
-scratchpad `0x1F800024..0x1F80002C` for distance vectors and inline GTE
-ops:
-
-1. Loads matrix data from `arg0[1]` into GTE registers via raw `ctc2`
-   ops (no PsyQ macro — uses `.word` form).
-2. Loads more matrix data via raw `mtc2` from `arg0[1] + 0x14`.
-3. Calls `getScreenPosition()`.
-4. Computes camera-to-target distance vector to scratchpad
-   `0x1F800024..0x1F80002C`.
-5. Uses the GTE-square-root idiom (`mtc2 $t4, $30; swc2 $31, 0($t4)`) to
-   compute `sqrt(distance_sq)`.
-6. Rescales the distance vector by a perceptual-loudness factor (the
-   `0xC0..0x100` range divided by distance — see `code6cac.c:307-309`).
-7. Copies result fields from `arg0[1]` to `arg1+0x14..0x24`.
-8. Calls `cpu_check_run_attack(arg1)` — sees if the fighter should
-   commit a charging attack based on the camera position.
-
-The scratchpad use is for inter-pass communication: the camera
-distance/scale computed in step 4-6 is consumed by `cpu_check_run_attack`
-in step 8.
+The two other "rob back" names sit on unrelated code: `func_80035618`
+(src/main/25C38.c:96, once `replay_camera_rob_back_loose2`) is a switch on its
+argument (0..7) that sets the state `D_800A3740` and calls `func_80077984`,
+`func_800784E4` or `func_80077A80` with the buffer address 0x80118800;
+`math_RotMatrixYXZ` (src/main/32D04.c:268, once
+`replay_camera_rob_back_loose3`) builds a rotation matrix from three angles.
 
 ## cdrom_Pause / cdrom_WaitIdle
 
@@ -159,34 +147,9 @@ func_8003AAB0();
 
 It returns as soon as the CD is idle; the game's frame loop is `main`.
 
-## Win-camera variants — `replay_camera_rob_back_*`
+## Status
 
-Multiple variants exist for the "rob falls back, win pose" cinematic:
-- `replay_camera_rob_back_loose2` (now `func_80035618`, `code6cac_b2_post.c`)
-- `replay_camera_rob_back_loose3` (`text1a_c.c:289`)
-- `replay_camera_rob_back_win_near` (asm-only at 0x80046BF4)
-
-Each is a parameterization for a different cinematic angle (loser's POV,
-winner's POV, near vs far, etc.).
-
-"rob" likely means "robot" — Kengo's internal term for the
-articulated-character renderer that runs both BB2's humans and Kengo's
-characters.
-
-## Mode interactions
-
-Replay/special-cam playback happens inside the "demo" mode dispatch
-(D_800A3834 = 1 in gameplay can transition to mode 8 when finish detected,
-which then sets up the cinematic). The Kengo-named functions
-`md_game_check_change_main_mode_default` and `_katinuki` handle these
-transitions.
-
-## Where unmatched replay/cam asm still hides
-
-- `special_camera_Exec` (currently empty stub) — the core per-frame
-  ticker.
-- `special_camera_set_win_cam` (empty stub) — win-pose camera setup.
-- `replay_camera_attack` (asmfix-bridged) — slow-motion attack cam.
-- Most `func_8003XXXX` helpers between `replay_camera_Init` and
-  `marionation_camera_Init_80037468` — uncategorized helpers for the
-  cinematic system.
+Every function named on this page is C (the decompilation queue is empty).
+The old "mode interactions" note credited the transitions to
+`md_game_check_change_main_mode_default` / `_katinuki`; those addresses are
+Sony's `_SsInit` and `SpuClearReverbWorkArea`, so that note is withdrawn.
