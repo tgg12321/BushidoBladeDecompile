@@ -1,0 +1,1 @@
+{"func": "func_800545F4", "addr": "800545F4", "verdict": "PASS", "body_hash": "b53e307a93ce4282", "body_kind": "asm", "file": "main/3AB48", "reviewer": "small-review", "scope": "auth", "date": "2026-10-16T06:22:37Z", "head": "ce61ce18b", "notes": "lane-small 2026-10-16; verdict tmp/cr_small/verdict.json + verdict2.json"}

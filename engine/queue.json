@@ -4,17 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800545F4",
-      "file": "main/3AB48",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": "owner 2026-10-08: re-audit of whole-body INCLUDE_ASM canonical entries. Decide afresh whether the original was hand-written asm (scan_hand_coded STRONG evidence + Judge) or compiled C that must be decompiled; many game entries were auto-added 2026-05-17 as handwritten_overflow_op.",
-      "addr": "800545F4"
-    },
-    {
       "func": "gte_MulMatrix0ClearTrans",
       "file": "main/3AB48",
       "distance": 0,
@@ -103,20 +92,6 @@
       "addr": "80052754"
     },
     {
-      "func": "func_800325E0",
-      "file": "main/17AFC",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "rotated",
-      "origin": "regression",
-      "reopen_reason": "owner 2026-10-08: inline-asm re-review. Body carries PsyQ GTE macro bodies written out as __asm__ volatile statements instead of macro calls (tmp/asm_inventory.tsv). Rework: macro calls from a verbatim PsyQ header, re-derive the C around them, fresh layer-2 + cheat-reviewer.",
-      "addr": "800325E0",
-      "rotation": "owner 2026-10-15 (Q121): blocked on GTE macro-call infrastructure (verbatim PsyQ header in include/, engine/gtemacro.py + region-grant support for the macro-call form, inline-asm-policy.md reconciled with the 2026-10-08 direction); return with queue unpark when it lands. Judge final call func_800288C8 2026-10-15 14:54 (docs/grind/decisions.md).",
-      "rotated_at": "2026-10-15T20:31:48+00:00",
-      "rotation_count": 1
-    },
-    {
       "func": "func_80052B7C",
       "file": "main/3AB48",
       "distance": 0,
@@ -146,14 +121,14 @@
     }
   ],
   "counts": {
-    "total": 12,
-    "active": 9,
+    "total": 10,
+    "active": 8,
     "by_status": {
-      "active": 9,
-      "rotated": 3
+      "active": 8,
+      "rotated": 2
     },
     "by_verdict": {
-      "C": 9
+      "C": 8
     }
   },
   "toolchain_fingerprint": "cf03a18b9b2d4e1d"
