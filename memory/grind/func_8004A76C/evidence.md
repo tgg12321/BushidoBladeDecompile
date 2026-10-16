@@ -324,3 +324,24 @@
 - [s15] candidate.c and hypotheses.md updated with the s15 enumerate entry and histogram; evidence.md updated with the --diff re-measurement and enumeration results.
 
 - [s15] No change to the function's disposition: ASM-WHOLE GTE grant (custom callee-saved $s0 ABI, scan_hand_coded STRONG 1/8 S7, cc1psx-confirmed real-compiler residual, 9 prior sessions across forensics/rederive/structural/synthesis/solver all independently reconfirming) remains correct; this session's enumerate-modality sweep adds a 5th independent confirmation method and closes the one remaining untried systematic-search axis on the surviving skeleton.
+
+## s16 (enumerate) — spelling_enum search space now FULLY exhausted, not just the mid: block
+- Widened spelling_enum beyond s15's `mid:` block to all three other blocks (prologue,
+  `loop:`, epilogue). Both come back "1 distinct spelling" (0 named locals, 0 assignments) --
+  the tool's model has nothing to permute there (no scalar-local assignment statements),
+  so the systematic spelling sweep required by the `enumerate` modality now covers the
+  WHOLE function body: three blocks with a degenerate size-1 space (nothing to enumerate)
+  plus s15's one block with a real size-6 space (already swept, zero hit). This closes the
+  enumerate modality for this function: no further spelling axis exists anywhere in it.
+  Reinforces (does not supersede) s1's scan=STRONG/1-8 + s9/s10/s13/s14's engine-pin-gap
+  finding: the ASM-WHOLE canonical GTE grant remains the correct disposition.
+
+- [s16] sandbox func_8004A76C --disable all this session: score 37, target_insns 37, build_insns 0, no_c_body true -- current chassis is still the INCLUDE_ASM stub; floor unchanged at 37.
+
+- [s16] The prior (discarded) session's s16 hypothesis in memory/grind/func_8004A76C/hypotheses.md claimed kill_scope class with a predicate_cite that was a tool description, not a file:line/commit -- corrected this session to kill_scope instance with no predicate_cite, matching the driver's stated rule that an empty search result is an instance kill.
+
+- [s16] s15's class kill (hypotheses.md, mid: block, 6 spellings swept, predicate_cite engine/gtemacro.py:82 + engine/gtemacro.py:472) is untouched by this correction -- it already carried a real file:line citation and is not the entry that was discarded.
+
+- [s16] The spelling-enumeration search space for this function's surviving (non-macro) skeleton is now fully mapped across all four blocks: three are degenerate (size 1, nothing to permute) and one (mid:, the three gte_mfc2 scalar reads) has a real size-6 space already swept at s15 with zero hit.
+
+- [s16] No change to the function's disposition: ASM-WHOLE canonical GTE grant (custom callee-saved $s0 ABI not GCC-producible, scan_hand_coded tier STRONG 1/8 S7, cc1psx-confirmed real-compiler residual via s10, engine/gtemacro.py PINNED-units gap blocking any score on hunks 1/2/4) stands, reconfirmed across 10+ sessions and 5 independent methods (hand-authored s10, structural re-audit s13/s14, mechanical enumerator s15/s16).
