@@ -5537,39 +5537,26 @@ s32 func_8006E068(s32 arg0, s32 arg1) {
 extern RECT D_800A32D8;
 
 s32 func_8006E10C(void) {
-    s32 var_0;
     /* FAKE: read at entry and held in $s3 across the calls; read at the
-     * LoadImage call: score 9 (frame 48 for 56) */
+     * LoadImage call: score 22 */
     s32 temp_s3 = D_800A3500;
     RECT rect;
     s32 v0;
-    /* FAKE: the per-branch 2 (li a0,2 in each arm's delay slot); the literal at
-     * the call: score 9 */
-    s32 a0v;
-    s32 a1v;
 
     rect = D_800A32D8;
     if (D_800A3524->unk20_0) {
-        a0v = 2;
-        a1v = 0x60;
+        v0 = func_80036EA8(2, 0x60);
     } else {
-        a0v = 2;
-        a1v = 7;
+        v0 = func_80036EA8(2, 7);
     }
-    /* FAKE: loop notes fence sched1's constant-sink so the li stays at the jal;
-     * plain `var_0 = 0xF0;`: score 13 */
-    do {
-        var_0 = 0xF0;
-    } while (0);
-    v0 = func_80036EA8(a0v, a1v);
     cdrom_StartRead(v0, D_800A3500);
     func_80036F40();
     cdrom_GetFileSize(v0);
     SetDispMask(0);
-    SetDefDrawEnv(&g_gpu_db[0].draw, 0, 0, 0x280, var_0);
-    SetDefDrawEnv(&g_gpu_db[1].draw, 0, var_0, 0x280, var_0);
-    SetDefDispEnv(&g_gpu_db[0].disp, 0, var_0, 0x280, var_0);
-    SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x280, var_0);
+    SetDefDrawEnv(&g_gpu_db[0].draw, 0, 0, 0x280, 0xF0);
+    SetDefDrawEnv(&g_gpu_db[1].draw, 0, 0xF0, 0x280, 0xF0);
+    SetDefDispEnv(&g_gpu_db[0].disp, 0, 0xF0, 0x280, 0xF0);
+    SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x280, 0xF0);
     g_gpu_db[0].disp.isinter = 0;
     g_gpu_db[1].disp.isinter = 0;
     g_gpu_db[0].disp.isrgb24 = 0;
