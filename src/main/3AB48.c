@@ -659,8 +659,6 @@ extern const char D_80015840[];
 
 s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     Unk800EFAE8Rec *s = &D_800EFAE8;
-    /* FAKE: id (a0 + 0x131) computed at entry; at its uses the addiu moves
-     * below the prologue stores (score 6). */
     s32 id = a0 + 0x131;
     s32 ret;
     s16 *t;
@@ -711,8 +709,6 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     func_8003F218(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
     if (s->unk4 & 0x3F) {
-        /* FAKE: n computed ahead of the a6 test; computed in each call the
-         * subtraction moves into the call setup (score 5). */
         n = (s->unk4 & 0x3F) - 1;
         if (a6 != 0) {
             a6 += ret;
@@ -2021,7 +2017,7 @@ void func_80057CC8(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     s32 ang_next;
     s32 ang_mid;
     s32 scale;
-    s32 base;
+    s32 antipode;
     s32 half;
     u16 cx;
     s16 *p;
@@ -2055,14 +2051,9 @@ void func_80057CC8(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     ang_next = ratan2(p[0] - (s16)cx, p[1] - (s16)cy) & 0xFFF;
 
     if (ang_next < ang_prev) {
-        /* FAKE: `base` and `half` name the antipode of ang_prev and half the
-         * angular gap (named intermediates, no-new-park-categories entry 6):
-         * block-local, they are allocated
-         * before global RA; as one expression the scratch is allocated
-         * globally: score 6 */
-        base = ang_prev + 0x800;
+        antipode = ang_prev + 0x800;
         half = (s32)(ang_prev - ang_next) / 2;
-        ang_mid = base - half;
+        ang_mid = antipode - half;
     } else {
         ang_mid = ((s32)(ang_next - ang_prev) / 2) + ang_prev;
     }
