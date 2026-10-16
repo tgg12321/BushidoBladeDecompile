@@ -194,3 +194,34 @@ question rather than resolved here.
 - [s4] The macro-call chassis itself (4 pointer params used once each, 4 sequential asm-statement calls, no loops/scalars/branches) has no free C-level variable for PERM_VAR/PERM_LINESWAP/PERM_GENERAL to act on without crossing into the already-killed written-island or a semantically invalid statement reorder (gte_rt depends on both prior loads).
 
 - [s4] src/main/3AB48.c was left exactly as found (INCLUDE_ASM("asm/funcs", func_80052B7C); at line 115) at the end of this session; git status is clean.
+
+## s5 (enumerate) -- enumerator precondition check
+
+- [s5] `sandbox func_80052B7C --disable all --diff` on unmodified src/ (session dispatch
+  re-check): score 24, `no_c_body: true` -- confirms src/main/3AB48.c is still
+  `INCLUDE_ASM("asm/funcs", func_80052B7C);`, unchanged since s1.
+
+- [s5] `sandbox func_80052B7C --disable all --diff --candidate memory/grind/func_80052B7C/candidate.c`:
+  `error: score unavailable: 'func_80052B7C not found in tmp/sandbox/func_80052B7C/main/3AB48.o'`.
+  Read `memory/grind/func_80052B7C/candidate.c` in full: it is a pure C comment block (72 lines,
+  no function definition at all) -- this is BY DESIGN, per its own header text ("No src/ edit is
+  banked here... src/main/3AB48.c keeps INCLUDE_ASM"), not a measurement bug. Confirms s3's
+  conclusion holds: no legal C body for this function exists to even attempt to measure.
+
+- [s5] Read `tools/spelling_enum.py` lines 1-40 (full module docstring): the tool's documented
+  input is a complete function body containing a marked `/* ENUM-BEGIN */ ... /* ENUM-END */`
+  region of `TYPE name = expr;` locals, `name = expr;` assignments, and/or commutative
+  `A*B`/`A+B` sub-expressions. func_80052B7C's only possible legal chassis (4 bare macro-call
+  statements, chunks 3/4 only -- chunks 1/2/5 have zero legal C spelling per s3/H4) contains
+  none of these: no scalar locals, no assignments, no arithmetic operators anywhere. The tool
+  has no applicable input for this function.
+
+- [s5] sandbox func_80052B7C --disable all --diff on unmodified src/ this session reproduces score 24, no_c_body: true -- chassis unchanged since s1, no C ever landed.
+
+- [s5] sandbox func_80052B7C --disable all --diff --candidate memory/grind/func_80052B7C/candidate.c errors 'func_80052B7C not found in tmp/sandbox/func_80052B7C/main/3AB48.o' because candidate.c is pure comment (72 lines, no function body) -- confirmed by direct read, matches the file's own stated reason (no legal C landing form exists per s3).
+
+- [s5] tools/spelling_enum.py's full module docstring (lines 1-40) documents its input precondition as a function body containing named-local declarations, assignments, or commutative arithmetic sub-expressions marked between ENUM-BEGIN/END; func_80052B7C's only legal chassis (gte_ldv0(v0); gte_rt(); as bare macro-call statements) has none of these.
+
+- [s5] This extends s4's permuter-modality finding (no scorable target.o buildable) to the enumerate modality via a different mechanism: s4 found a tooling/assembler incompatibility, this session finds a tooling/object-model incompatibility (the enumerator needs mutable C statement content, this chassis has none).
+
+- [s5] All prior structural kills (s2/s3 H2-H5) and the ruling (H4, docs/grind/decisions.md 2026-10-15 20:38) are unchanged and re-confirmed consistent this session; no new src/ edit was made, none was possible.

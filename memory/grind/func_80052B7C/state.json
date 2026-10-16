@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -27,18 +27,24 @@
    "floor": 16,
    "modality": "permuter",
    "headline": "Permuter modality has no scorable target for this function: import.py's generic assembler can't build target.o (cop2 mvmva unsupported), and even a working workspace would have no C-level mutation sur"
+  },
+  {
+   "session": 5,
+   "floor": 16,
+   "modality": "enumerate",
+   "headline": "s5 (enumerate): no C-level mutation surface exists for this function's residual -- spelling_enum.py's input precondition (named locals/assignments/commutative ops) is categorically absent; the chassis"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A hand-built permuter workspace that assembles target.s through this project's own maspsx/aspsx-2.34 pipeline (not import.py's default GNU as), analogous to tools/mar_perm_workspace.sh for marionation_Exec, could produce a real target.o and let a campaign run.",
-   "mechanism": "Infrastructure substitution only (compile.sh/settings.toml authoring), not a codegen question; even if built, the campaign's search space is the same statement set already structurally exhausted in s2/s3.",
-   "next_probe": "Only worth building if a future session has a genuinely open statement-level question for this chassis; given s3's H2/H4/H5 closures, the expected yield is 0 novel finds -- lower priority than the two non-C-source levers already on the s3 frontier (new DMPSX word for chunk 2; scan_hand_coded signal-set change for the canonical-asm grant path)."
+   "hypothesis": "A new vendored macro / DMPSX word for chunk 2's TR-from-halfwords load would let that chunk land as a macro call.",
+   "mechanism": "inline-asm-policy.md item 1 (owner ruling + engine commit needed); would still leave chunks 1 and 5 unreached since their existing macros already don't reproduce the target's instruction order / delay-slot placement.",
+   "next_probe": "Not actionable from a grind session restricted to src/main/3AB48.c; needs an owner-authorized engine: commit."
   },
   {
    "hypothesis": "Raising func_80052B7C's scan_hand_coded tier from LOW 0/12 to STRONG would let the existing whole-function inline_asm_canonical.txt:340 grant hold as-is.",
-   "mechanism": "scan_hand_coded.py's current signal set (S1-S12) does not fire on this function's actual shape; engine/tools signal-coverage gap, not a property changeable from C source.",
-   "next_probe": "An engine:-commit teaching the scanner a new corpus-clean signal this function exhibits (if one exists); out of scope for a src-only grind session (unchanged from s3)."
+   "mechanism": "scan_hand_coded.py's current signal set (S1-S12) does not fire on this function's actual shape; an engine/tools signal-coverage gap, not a property changeable from C source. Re-confirmed LOW 0/12 fresh in s3.",
+   "next_probe": "An engine:-commit teaching the scanner a new corpus-clean signal this function exhibits, if one exists; out of scope for a src-only grind session."
   }
  ],
  "judge_constraints": [
@@ -85,6 +91,14 @@
    "measured_on": "src/main/3AB48.c, temporary macro-call chassis (gte_SetRotMatrix/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, chunk-2 omitted), no FAKE construct present, reverted after measurement; tmp/grind/fun",
    "predicate_cite": "",
    "result": "FAIL: exit 1, no target.o produced. An earlier identical attempt (same chassis, output not saved) showed the proximate c"
+  },
+  {
+   "session": 5,
+   "statement": "func_80052B7C's legal C chassis contains a region of ordinary C (named locals, assignments, or commutative sub-expressions) that tools/spelling_enum.py/sweep_variants.py can exhaustively sweep to clos",
+   "kill_scope": "class",
+   "measured_on": "memory/grind/func_80052B7C/candidate.c (pure-comment, no body) re-measured via sandbox --disable all --diff --candidate this session; src/main/3AB48.c unmodified (still INCLUDE_ASM); no FAKE construct",
+   "predicate_cite": ".claude/rules/inline-asm-policy.md:55",
+   "result": "False. candidate.c is a pure 72-line comment block with no function definition (sandbox --candidate errors 'func_80052B7"
   }
  ],
  "ladder_skip": 0,

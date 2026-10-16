@@ -336,3 +336,74 @@ H6's infrastructure failure does not leave useful permuter work undone.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/main/3AB48.c, temporary macro-call chassis (gte_SetRotMatrix/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, chunk-2 omitted), no FAKE construct present, reverted after measurement; tmp/grind/func_80052B7C/s4/permuter_import_attempt.txt
+
+## s5 (enumerate)
+
+### H7 -- the enumerate modality's precondition (a region of ordinary C with named locals,
+assignments, or commutative sub-expressions) does not exist anywhere in this function's legal
+chassis
+
+Statement: `tools/spelling_enum.py`'s documented search space is: (axis 1) inline-vs-keep a
+`TYPE name = expr;` local, (axis 2) declaration-order permutation among independent locals/
+assignments, (axis 3, `--swaps`) commutative-operand swap on `A*B`/`A+B` sub-expressions. The
+only legal C chassis for func_80052B7C (chunks 3/4 as `gte_ldv0(v0); gte_rt();` via
+`inline_c.h`, already byte-identical per s2/CONFIRMED) plus chunks 1/2/5 (no legal landing
+form at all, per s3/H4 class kill on written islands) contains, in total: zero scalar locals,
+zero assignments to outer variables, zero commutative arithmetic operators. The entire body is
+four sequential bare `volatile asm` macro-call statements with no sub-expression of any kind;
+`memory/grind/func_80052B7C/candidate.c` itself is pure comment (no function body at all) for
+exactly this reason -- there is nothing syntactically present to feed the enumerator's three
+axes.
+Mechanism: not a codegen question -- a tooling/object-model mismatch between what
+`spelling_enum.py` operates on (statement-level C: locals, assignments, operators) and what
+this function's residual actually is: either (a) bytes fixed inside a vendored macro's own
+`asm_operands` RTL node (chunks 1, 5 -- confirmed opaque to GCC's own passes per s3/H3's `.dbr`
+dump, let alone to a C-level statement permuter) or (b) a chunk with no C statement of any kind
+admissible under the current ruling (chunk 2, s3/H4 class kill, predicate_cite
+`.claude/rules/inline-asm-policy.md:55`). Even a hypothetical winning spelling from the
+enumerator for the (banned) written-island form would still BE the written-island construct
+H4 already class-killed -- enumerating its spellings cannot change which construct it is.
+Probe: Read `tools/spelling_enum.py`'s docstring (full axis definitions, lines 1-40) against
+this session's re-measurement of `memory/grind/func_80052B7C/candidate.c` (confirmed via
+`sandbox func_80052B7C --disable all --diff --candidate memory/grind/func_80052B7C/candidate.c`
+that the file is pure comment with no `func_80052B7C` body to measure -- "not found in
+...3AB48.o" -- consistent with s3's documented conclusion that no legal C body exists for this
+function at all) and against the live chassis (`sandbox func_80052B7C --disable all` on
+unmodified src/, confirming floor is still the INCLUDE_ASM-stub 24, no C ever landed).
+Result: Confirmed. There is no block of ordinary C in this function's legal chassis for
+`spelling_enum.py`/`sweep_variants.py` to sweep -- the entire residual sits either inside an
+opaque vendored-macro RTL node (unreachable by any C-level statement rewrite, s3/H3) or in a
+chunk whose only candidate C spelling (a written `__asm__` island) is itself the already
+class-killed construct (s3/H4), not an open spelling question about a legal construct. This
+extends s4's finding (no scorable permuter target) to the enumerate modality: like the
+permuter, the enumerator needs a mutable C surface, and this chassis has none, for the same
+underlying reason (s3/H3's dump-confirmed opaque asm_operands nodes + s3/H4's class ban).
+Verdict: KILLED
+Kill_scope: class
+Measured_on: memory/grind/func_80052B7C/candidate.c (pure-comment, no body) re-measured via
+sandbox func_80052B7C --disable all --diff --candidate this session; src/main/3AB48.c
+unmodified (still INCLUDE_ASM); no FAKE construct present in either file.
+Predicate_cite: .claude/rules/inline-asm-policy.md:55 (chunk 2 / written-island ban, unchanged
+from s3/H4) and tools/spelling_enum.py:12-39 (the tool's own documented input precondition --
+named locals / assignments / commutative operators -- which this chassis categorically lacks)
+
+### Frontier for the next session
+
+Unchanged from s3/s4 -- confirmed again this session from a fourth angle (enumerate, after
+structural/permuter): every modality that operates on C-level statement content finds zero
+surface, because the residual is not a C-spelling question for this function. The only two
+live, non-C-source levers remain:
+1. a new vendored macro / DMPSX word for chunk 2 (inline-asm-policy.md item 1, needs owner
+   ruling + engine commit) -- would still leave chunks 1/5 unreached.
+2. raising scan_hand_coded from LOW 0/12 to STRONG (engine/tools signal-set change, not a C
+   edit) to let the existing whole-function inline_asm_canonical.txt:340 grant hold as-is.
+Neither is actionable from a grind session restricted to src/main/3AB48.c.
+
+## [s5] func_80052B7C's legal C chassis contains a region of ordinary C (named locals, assignments, or commutative sub-expressions) that tools/spelling_enum.py/sweep_variants.py can exhaustively sweep to close the residual.
+- mechanism: spelling_enum.py's documented search space (axis 1: inline-vs-keep a TYPE name = expr local; axis 2: declaration-order permutation; axis 3: commutative-operand swap on A*B/A+B) requires a complete function body containing at least one such construct.
+- probe: Read tools/spelling_enum.py lines 1-40 (full docstring) against memory/grind/func_80052B7C/candidate.c (read in full) and a fresh sandbox func_80052B7C --disable all --diff --candidate memory/grind/func_80052B7C/candidate.c run; also re-ran sandbox func_80052B7C --disable all --diff on unmodified src/ to confirm current chassis state.
+- result: False. candidate.c is a pure 72-line comment block with no function definition (sandbox --candidate errors 'func_80052B7C not found in ...3AB48.o'), by design -- its own header states no src/ edit is banked because chunks 1, 2 and 5 have zero legal C landing form under the current ruling (s3/H4 class kill on written islands) and chunks 3/4's legal form (gte_ldv0(v0); gte_rt(); via inline_c.h) is two bare volatile-asm macro-call statements with no locals, assignments, or operators. There is no statement content anywhere in this chassis for the enumerator's three axes to act on. The residual itself lives either inside a vendored macro's own opaque asm_operands RTL node (chunks 1, 5 -- dump-confirmed opaque to GCC's own reorg.c in s3/H3) or in a chunk with no legal C spelling at all (chunk 2, s3/H4) -- in neither case is it a question of WHICH SPELLING of a legal construct is correct, which is the only kind of question this modality's tooling answers.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: memory/grind/func_80052B7C/candidate.c (pure-comment, no body) re-measured via sandbox --disable all --diff --candidate this session; src/main/3AB48.c unmodified (still INCLUDE_ASM); no FAKE construct present in either file
+- predicate_cite: .claude/rules/inline-asm-policy.md:55
