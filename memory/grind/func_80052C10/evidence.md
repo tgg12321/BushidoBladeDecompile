@@ -434,3 +434,5 @@ module pad" because 0x80052C28 is not 16-aligned. Both grounds were measured thi
 - [s9] Sandbox re-measurement of the banked candidate.c this session: score 4/6 (target_insns=6, build_insns=5), identical to s1-s8 -- confirms no regression and no improvement from the audit.
 
 - [s9] The flat floor's residual (register seat $t9 for the store address + the missing trailing nop) involves no global/struct at all: the $t9 seat is a codegen question over a literal constant (not a global), and the trailing nop is a TU/linker-boundary question (s5) -- object-model correction has no surface to act on for either hunk.
+
+- [s9] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate b819a672de95 scores 4 under our cc1 and 4 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).

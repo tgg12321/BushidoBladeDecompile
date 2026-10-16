@@ -201,5 +201,14 @@
  "pending_fixup": null,
  "origin": "regression",
  "created": "2026-10-16T04:20:03.624698+00:00",
- "object_model_audited": 9
+ "object_model_audited": 9,
+ "cc1psx_check": {
+  "at": "2026-10-16T06:03:59.356278+00:00",
+  "candidate_sha": "b819a672de95",
+  "ours": 4,
+  "psx": 4,
+  "closer": false,
+  "ok": true,
+  "error": null
+ }
 }
