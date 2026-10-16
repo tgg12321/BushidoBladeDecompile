@@ -2423,9 +2423,6 @@ void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
                 func_80052C10();
             }
             rec = &var_0->recs[var_0->count];
-            /* FAKE: obj read from unk_1A34[i] ahead of the rec stores and kept
-             * across the func_8003FA24 call; re-read at each use the
-             * s-registers re-seat (score 53). */
             obj = arg0->unk_1A34[i];
             rec->cur = cur;
             rec->obj = obj;
@@ -2523,9 +2520,6 @@ u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
      * straight into count the load is lhu and the copy goes (score 8) */
     for (n = (s16)*src++, count = n; n != 0; n = (s16)*src++, count = n) {
         flags = *src++;
-        /* FAKE: mode computed once ahead of the record loop; indexing
-         * D_80094AEC with the expression moves the addiu s0 / andi pair (score
-         * 6). */
         mode = ((s16)flags >> 3) & 3;
         if (((s16)flags >> 3) & 1) {
             while (--count != -1) {
