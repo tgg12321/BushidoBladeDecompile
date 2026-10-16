@@ -43,6 +43,10 @@ Psyz and other decompilations are not evidence. Every SOTN-admitted construct ca
   review are blocking ([[completion-bar]] items 3, 6); exhaustion and byte-neutrality write-ups
   are hygiene. Simplest known form (item 5) still applies.
 
+- **Packed RECT words (owner, 2026-10-16):** reading a RECT's x/y or w/h pair as one word
+  (`*(u32 *)&rect->x`, SOTN's `LOW(rect->x)`) is Sony's own idiom, not a FAKE. Cite it in a
+  plain comment with the `/* SOTN: */` tag; no `FAKE` label.
+
 A Q50 admission is not a frozen-list extension. Records: docs/grind/decisions.md 2026-09-30
 OWNER RULING — SOTN precedent suffices, and the Q51-Q53, Q55 entries.
 

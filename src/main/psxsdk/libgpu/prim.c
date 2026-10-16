@@ -142,13 +142,12 @@ void SetDrawMove(DR_MOVE *a0, RECT *a1, u32 a2, u32 a3) {
     a0->code[0] = OT_TERMINATOR;
     a0->code[1] = OT_TAG_BASE;
     setlen(a0, size);
-    /* FAKE: packed RECT word read follows matched Sony-library precedent; (y <<
-     * 16) | (u16)x scores 16. */
+    /* x / y read as one packed word: Sony's own RECT idiom (owner ruling
+     * 2026-10-16; psyz prim.c reads the same words). */
     /* SOTN: src/main/psxsdk/libgpu/sys.c:275 @db41b28eee52969244a52cc269c8163d1ed8826a */
     a0->code[2] = *(s32 *)&a1->x;
     a0->code[3] = (a3 << 16) | (a2 & 0xFFFF);
-    /* FAKE: packed RECT word read follows matched Sony-library precedent; (h <<
-     * 16) | (u16)w scores 4. */
+    /* w / h read as one packed word, as x / y above. */
     /* SOTN: src/main/psxsdk/libgpu/sys.c:277 @db41b28eee52969244a52cc269c8163d1ed8826a */
     a0->code[4] = *(s32 *)&a1->w;
 }
@@ -163,11 +162,11 @@ void SetDrawLoad(DR_LOAD *p, RECT *rect) {
     }
     setlen(p, size);
     p->code[0] = GP0_COPY_RECT_C2V;
-    /* FAKE: packed RECT word read (as SetDrawMove; psyz prim.c SetDrawLoad
-       reads the same words); (y << 16) | (u16)x scores 12. */
+    /* x / y and w / h read as packed words, Sony's RECT idiom as in
+     * SetDrawMove (owner ruling 2026-10-16; psyz prim.c SetDrawLoad reads the
+     * same words). */
+    /* SOTN: src/main/psxsdk/libgpu/sys.c:275 @db41b28eee52969244a52cc269c8163d1ed8826a */
     p->code[1] = *(u32 *)&rect->x;
-    /* FAKE: packed RECT word read (as SetDrawMove; psyz prim.c SetDrawLoad
-       reads the same words); (h << 16) | (u16)w scores 10. */
     p->code[2] = *(u32 *)&rect->w;
     p->p[size - 4] = OT_TERMINATOR;
 }
