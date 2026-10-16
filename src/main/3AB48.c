@@ -858,10 +858,9 @@ s32 func_8005490C(void) {
             s32 ang;
             var_5 = func_8004153C(i);
             func_800198D0(i, s->unk0, (MotionFrame *)var_2, (u16 *)0x1F800000);
-            /* FAKE: vec.vy set twice; one expression drops the target's spill
-             * of var_2[0] (sw v1,28(sp)) (score 2) */
             vec.vy = var_2[0];
-            vec.vy = (vec.vy * var_5->unk_12) >> 12;
+            vec.vy *= var_5->unk_12;
+            vec.vy >>= 12;
             ang = var_2[1];
             vec.vx = (Judge[ang & 0xFFF] * var_2[2]) >> 12;
             vec.vz = (Judge[(ang + 0x400) & 0xFFF] * var_2[2]) >> 12;
@@ -4325,9 +4324,6 @@ extern Unk8009B400Record D_8009B358[6];
 
 s32 func_8005D46C(s32 arg0, s32 arg1) {
     Unk8007352CRec s;
-    /* FAKE: holder of the first walk's cursor until the second descriptor is
-       set; stored directly: score 6. */
-    s32 ret;
     s32 idx;
     idx = arg1;
     if (arg1 > 0) {
@@ -4343,7 +4339,7 @@ s32 func_8005D46C(s32 arg0, s32 arg1) {
     s.semi = 0;
     s.ot_idx = 1;
     s.ft4_out = arg0;
-    ret = func_80073728(&s, 0);
+    arg0 = func_80073728(&s, 0);
     s.has_color = 0;
     s.header = &D_8009B2C8[idx][1];
     s.table = D_8009B358;
@@ -4353,7 +4349,7 @@ s32 func_8005D46C(s32 arg0, s32 arg1) {
     s.x = 0;
     s.semi = 0;
     s.ot_idx = 1;
-    s.ft4_out = ret;
+    s.ft4_out = arg0;
     return func_80073728(&s, 0);
 }
 
@@ -5264,11 +5260,7 @@ extern Unk8009B400Record D_8009B660[7];
 
 s32 func_8005FA98(s32 arg0, s32 arg1, s32 arg2) {
     Unk8007352CRec s;
-    /* FAKE: holder of the first walk's cursor until the second descriptor is
-       set; stored directly: score 11. */
-    s32 ret;
-    /* FAKE: copy of arg1 for the first cursor; arg1 directly: score 2. */
-    s32 start = arg1;
+    s32 cursor = arg1;
     /* FAKE: the returned size as end minus start; 0x190: score 12. */
     s32 end = arg1 + 0x190;
 
@@ -5291,11 +5283,11 @@ s32 func_8005FA98(s32 arg0, s32 arg1, s32 arg2) {
         s.table = &D_8009B660[3];
         break;
     }
-    s.ft4_out = start;
-    ret = func_80073728(&s, 0);
+    s.ft4_out = cursor;
+    cursor = func_80073728(&s, 0);
     s.header = &D_8009B610[arg0];
     s.table = &D_8009B634;
-    s.ft4_out = ret;
+    s.ft4_out = cursor;
     func_80073728(&s, 0);
     return end - arg1;
 }
