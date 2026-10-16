@@ -1195,11 +1195,11 @@ void func_8001C51C(void) {
 /* Initialise record 0 of D_80101EC8 (Unk80101EC8Record). */
 void func_8001C624(void) {
     Unk80101EC8Record *e = D_80101EC8;
-    s32 local[3];
+    VECTOR local;
     s32 x, y, z;
 
     func_80021D10(0, &e->unk_D8.x, (s32)D_800A38E0);
-    func_80021D10(1, local, (s32)D_800A38E0);
+    func_80021D10(1, &local.vx, (s32)D_800A38E0);
     e->unk_E8.x = 0;
     x = e->unk_D8.x;
     y = e->unk_D8.y;
@@ -1218,11 +1218,10 @@ void func_8001C624(void) {
     e->unk_104.vy = 0;
     e->unk_104.vz = 0;
     e->unk_24C = e->unk_104;
-    /* FAKE: self-assigning round-trip through `local` (address-taken by the
-     * func_80021D10 call above): the target holds these self-copy stores; the
-     * libgte setVector comma-assign idiom, adjusting only the middle
-     * component; without it: score 22, `local[1] -= 0x384` alone: score 14. */
-    local[0] = local[0], local[1] = local[1] - 0x384, local[2] = local[2];
+    /* FAKE: player 1's start position is read into local and raised by 0x384
+     * as player 0's is, but never used (the target keeps these dead stores,
+     * written with libgpu's setVector); without it: score 22. */
+    setVector(&local, local.vx, local.vy - 0x384, local.vz);
     e->unk_114[0].vx = 0;
     e->unk_114[0].vy = 0;
     e->unk_114[0].vz = 0;

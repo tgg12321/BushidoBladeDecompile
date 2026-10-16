@@ -89,6 +89,9 @@ typedef struct {
 /* PsyQ LIBGPU.H primitive position macro (verbatim SDK definition). */
 #define setXY0(p, _x0, _y0) (p)->x0 = (_x0), (p)->y0 = (_y0)
 
+/* PsyQ: LIBGPU.H's vector setter. */
+#define setVector(v, _x, _y, _z) (v)->vx = _x, (v)->vy = _y, (v)->vz = _z
+
 typedef struct {
     RECT disp;   /* +0x00 */
     RECT screen; /* +0x08 */
