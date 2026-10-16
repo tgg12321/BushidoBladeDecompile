@@ -2280,7 +2280,7 @@ D_80099CC2                                       = 0x80099CC2;  /* data-wave 202
 D_80099D3C                                       = 0x80099D3C;  /* data-wave 2026-10-08: was g_text1b_pair_6byte_99D3C */
 D_8009A088                                       = 0x8009A088;  /* data-wave 2026-10-08: was g_text1b_addr_8009A088 */
 D_8009A820                                       = 0x8009A820;  /* data-wave 2026-10-08: was g_text1b_addr_8009A820 */
-D_8009A821                                       = 0x8009A821;  /* data-wave 2026-10-08: was g_text1b_addr_8009A821 */
+/* 2026-10-16: D_8009A821 retired -- D_8009A820[i][1] (u8 D_8009A820[8][2], src/main/3AB48.c:1610); its dlabel is folded into D_8009A820's. */
 D_8009A840                 = 0x8009A840;  /* u8[16] (dlabel D_8009A840); func_80056FE8 */  /* data-wave 2026-10-08: was g_text1b_motion_byte_table_8x3_plus_8_plus_8 */
 D_8009A850                                       = 0x8009A850;  /* data-wave 2026-10-08: was g_text1b_addr_8009A850 */
 D_8009AA50                                       = 0x8009AA50;  /* data-wave 2026-10-08: was g_text1b_lookup8_aa50 */

@@ -21192,11 +21192,6 @@ nonmatching D_8009A820
 
 dlabel D_8009A820
     /* 8B020 8009A820 */ .byte 0x0D
-enddlabel D_8009A820
-
-nonmatching D_8009A821
-
-dlabel D_8009A821
     /* 8B021 8009A821 */ .byte 0x00
     /* 8B022 8009A822 */ .byte 0x09
     /* 8B023 8009A823 */ .byte 0x04
@@ -21212,7 +21207,7 @@ dlabel D_8009A821
     /* 8B02D 8009A82D */ .byte 0x00
     /* 8B02E 8009A82E */ .byte 0x0D
     /* 8B02F 8009A82F */ .byte 0x18
-enddlabel D_8009A821
+enddlabel D_8009A820
 
 nonmatching D_8009A830
 
