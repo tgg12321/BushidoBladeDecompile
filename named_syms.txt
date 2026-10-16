@@ -911,7 +911,7 @@ D_801027BC                                    = 0x801027BC;  /* D_801027B0[i].un
 /* Init pattern (51268.c, func_80064ED8..func_80065000): 12-byte record + D_800F10D0 slot set to 1 + 2-byte counter per id. */
 /* The per-id 12-byte state records and 2-byte counters are the arrays D_800F0CA0[18] and D_800F0BA8[18]
  * (include/game.h; merged 2026-09-30 with func_80065800, which retired their per-word alias names). */
-D_800F10E0                                = 0x800F10E0;  /* D_800F10D0[4]: dispatch-offset slot */  /* data-wave 2026-10-08: was g_motion_ex_flag_table_4 */
+/* 2026-10-16: D_800F10E0 retired -- elements of s32 D_800F10D0[] (include/bb2.h); no C names them. */
 
 /* === Pulled from symbol_addrs.txt (2026-05-17) -- 14 names === */
 /* Pre-existing semantic names in symbol_addrs.txt that hadn't been */
@@ -1294,9 +1294,7 @@ D_800F6644                                       = 0x800F6644;  /* D_800F6608.h3
 /* === D_800F10D0 dispatch-offset slots (2026-05-17) -- 3 highs === */
 /* Slots [5] / [6] / [7] of the s32 table at 0x800F10D0; each is stored */
 /* 1 by one function and read only through the base. */
-D_800F10E4                                    = 0x800F10E4;  /* data-wave 2026-10-08: was g_motion_ex_flag_id1 */
-D_800F10E8                                    = 0x800F10E8;  /* data-wave 2026-10-08: was g_motion_ex_flag_id2 */
-D_800F10EC                                    = 0x800F10EC;  /* data-wave 2026-10-08: was g_motion_ex_flag_id3 */
+/* 2026-10-16: D_800F10E4, D_800F10E8, D_800F10EC retired -- elements of s32 D_800F10D0[] (include/bb2.h); no C names them. */
 
 /* === Motion-ex per-id init functions + counter cells (2026-05-17) -- 10 highs === */
 /* Each motion ID has its own init function in text1b.c:14220-14298 family. */
@@ -2204,10 +2202,7 @@ D_800EF082                          = 0x800EF082;  /* +6 from g_snd_voice_init_b
 D_800EF084                          = 0x800EF084;  /* +8 from g_snd_voice_init_byte_C (0x800EF07C) */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_C_plus_8 */
 D_800EFB7D                       = 0x800EFB7D;  /* D_800EFB78[i].voll: left volume of a queued key-on, passed to SsUtKeyOnV by func_8005C6D0 */  /* data-wave 2026-10-08: was g_effect_pool_b_24_field_4_plus_1 */
 D_800F0BCC                         = 0x800F0BCC;  /* the halfword just past D_800F0BA8[18] */  /* data-wave 2026-10-08: was g_motion_ex_counter_id15_plus_6 */
-D_800F10D4                        = 0x800F10D4;  /* D_800F10D0[1] */  /* data-wave 2026-10-08: was g_motion_state_flag_table_plus_4 */
-D_800F10D8                        = 0x800F10D8;  /* D_800F10D0[2] */  /* data-wave 2026-10-08: was g_motion_state_flag_table_plus_8 */
-D_800F10F0                             = 0x800F10F0;  /* D_800F10D0[8]: set to 1 by func_80062FEC */  /* data-wave 2026-10-08: was g_motion_ex_flag_id3_plus_4 */
-D_800F10F4                             = 0x800F10F4;  /* D_800F10D0[9]: set to 1 by func_80064F68 */  /* data-wave 2026-10-08: was g_motion_ex_flag_id3_plus_8 */
+/* 2026-10-16: D_800F10D4, D_800F10D8, D_800F10F0, D_800F10F4 retired -- elements of s32 D_800F10D0[] (include/bb2.h); no C names them. */
 D_800F1151                   = 0x800F1151;  /* +1 from D_800F1150 */  /* data-wave 2026-10-08: was g_motion_state_secondary_flags_plus_1 */
 D_800F1158                             = 0x800F1158;  /* D_800F1150[8], one of the 28 per-command status bytes; func_800619A4 stores its address in D_800F1180 */  /* data-wave 2026-10-08: was g_text1b_glyph_buf_b_plus_4 */
 D_800F116A                             = 0x800F116A;  /* D_800F1150[26], status byte for command 0x21001A (func_800611A4) */  /* data-wave 2026-10-08: was g_text1b_glyph_buf_e_plus_2 */
@@ -2261,21 +2256,7 @@ D_800F0FC0                                  = 0x800F0FC0;  /* 5 refs */  /* data
 D_800F10A0                                 = 0x800F10A0;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_aux_at_0 */
 D_800F10A2                                 = 0x800F10A2;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_aux_at_2 */
 D_800F10A4                                 = 0x800F10A4;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_aux_at_4 */
-D_800F10DC                                = 0x800F10DC;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_3 */
-D_800F10FC                               = 0x800F10FC;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_11 */
-D_800F1100                               = 0x800F1100;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_12 */
-D_800F1104                               = 0x800F1104;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_13 */
-D_800F1108                               = 0x800F1108;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_14 */
-D_800F110C                               = 0x800F110C;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_15 */
-D_800F1118                               = 0x800F1118;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_18 */
-D_800F111C                               = 0x800F111C;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_19 */
-D_800F1120                               = 0x800F1120;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_20 */
-D_800F1124                               = 0x800F1124;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_21 */
-D_800F1128                               = 0x800F1128;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_22 */
-D_800F112C                               = 0x800F112C;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_23 */
-D_800F1130                               = 0x800F1130;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_24 */
-D_800F1134                               = 0x800F1134;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_25 */
-D_800F1138                               = 0x800F1138;  /* 5 refs */  /* data-wave 2026-10-08: was g_motion_state_flag_at_26 */
+/* 2026-10-16: D_800F10DC, D_800F10FC, D_800F1100, D_800F1104, D_800F1108, D_800F110C, D_800F1118, D_800F111C, D_800F1120, D_800F1124, D_800F1128, D_800F112C, D_800F1130, D_800F1134, D_800F1138 retired -- elements of s32 D_800F10D0[] (include/bb2.h); no C names them. */
 D_800F2B70                                     = 0x800F2B70;  /* 10 refs */  /* data-wave 2026-10-08: was g_text1b_gte_rgb_lookup_1024 */
 D_800F33D8                                     = 0x800F33D8;  /* 16 refs */  /* data-wave 2026-10-08: was g_disp_state_buf */
 D_800FF558                                     = 0x800FF558;  /* 8 refs */  /* data-wave 2026-09-30: was g_camera_view_state */
@@ -2349,9 +2330,7 @@ D_8009B800                                       = 0x8009B800;  /* data-wave 202
 D_8009B820                                       = 0x8009B820;  /* data-wave 2026-10-08: was g_text1b_static_b820 */
 D_8009B840                                       = 0x8009B840;  /* data-wave 2026-10-08: was g_text1b_static_b840 */
 D_8009B850                                       = 0x8009B850;  /* data-wave 2026-10-08: was g_text1b_sprite_size_packed_lookup */
-D_8009BC08                               = 0x8009BC08;  /* data-wave 2026-09-29: was g_str_r_8009BBFC_plus_8_plus_4 */
-D_8009BC0C                               = 0x8009BC0C;  /* data-wave 2026-09-29: was g_str_r_8009BBFC_plus_8_plus_8 */
-D_8009BC0D                               = 0x8009BC0D;  /* data-wave 2026-09-29: was g_str_r_8009BBFC_plus_8_plus_9 */
+/* 2026-10-16: D_8009BC08, D_8009BC0C, D_8009BC0D retired -- MenuState D_8009BC04's unk4 / opt[0].state / opt[0].mode (include/game.h, 1f0af23f2); the asm/data dlabels remain. */
 D_8009BC38                                       = 0x8009BC38;  /* data-wave 2026-10-08: was g_text1b_addr_8009BC38 */
 D_8009BC40                                       = 0x8009BC40;  /* data-wave 2026-10-08: was g_text1b_addr_8009BC40 */
 D_8009BC41                                       = 0x8009BC41;  /* data-wave 2026-10-08: was g_text1b_addr_8009BC41 */
@@ -2410,9 +2389,7 @@ D_800F0ED0                                       = 0x800F0ED0;  /* data-wave 202
 D_800F1000                                       = 0x800F1000;  /* data-wave 2026-10-08: was g_text1b_addr_800F1000 */
 D_800F1002                                       = 0x800F1002;  /* data-wave 2026-10-08: was g_text1b_addr_800F1002 */
 D_800F1004                                       = 0x800F1004;  /* data-wave 2026-10-08: was g_text1b_addr_800F1004 */
-D_800F10F8                           = 0x800F10F8;  /* data-wave 2026-10-08: was g_motion_ex_flag_id3_plus_8_plus_4 */
-D_800F1110                             = 0x800F1110;  /* data-wave 2026-10-08: was g_motion_state_flag_at_15_plus_4 */
-D_800F1114                             = 0x800F1114;  /* data-wave 2026-10-08: was g_motion_state_flag_at_15_plus_8 */
+/* 2026-10-16: D_800F10F8, D_800F1110, D_800F1114 retired -- elements of s32 D_800F10D0[] (include/bb2.h); no C names them. */
 patch0_plus_0xC                             = 0x800F1844;  /* data-wave 2026-09-25: was g_sys_int_rp_table_plus_8_plus_4 */
 D_80103624                                          = 0x80103624;  /* data-wave 2026-10-08: was g_char_p6_field_1E0 */
 
