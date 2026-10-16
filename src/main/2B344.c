@@ -553,19 +553,14 @@ void func_8003B9D0(void) {
 void func_8003BCB4(void) {
     D_800A37B8++;
 
-    if (func_80054F68() != 0) {
-        if ((g_pad_state.pressed & 0x400040) == 0) {
-            return;
-        }
+    if (func_80054F68() != 0 && (g_pad_state.pressed & 0x400040) == 0) {
+        return;
     }
-
     cdrom_PauseAndWait();
     func_800548DC();
-
     if (D_800A38DC != 0) {
         return;
     }
-
     if (D_800A3894 != 0) {
         D_800A3834 = 0;
         switch (D_800A37B0) {
@@ -581,28 +576,22 @@ void func_8003BCB4(void) {
             /* fall through */
         case 6:
             D_800A3894 = 0;
-            goto call_bar;
+            break;
         default:
             return;
         }
-    }
-
-    if (D_800A385C != 0) {
+    } else if (D_800A385C != 0) {
         s32 val = D_800A390C;
+
         if (val == 1) {
             D_800A3834 = 0;
             return;
         }
-        if (val == 0) {
-            return;
-        }
-        if (val >= 4) {
+        if (val == 0 || val >= 4) {
             return;
         }
         D_800A385C = 0;
     }
-
-call_bar:
     func_8003B5A4();
 }
 
