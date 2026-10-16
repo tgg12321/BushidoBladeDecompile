@@ -25,34 +25,30 @@ s32 func_8003AB44(void) {
         if (D_800A38A0 == 0) {
             SetDispMask(1);
             D_800A38AC = 2;
-            break;
+        } else {
+            D_800A38AC = 3;
         }
-        D_800A38AC = 3;
         break;
     case 2:
         if (g_pad_state.pressed & 0x10) {
-            goto fail;
+            comb_ResetClose();
+            return -1;
         }
+        if (_comb_control(3, 1, 0) != 0) {
+            _comb_control(3, 0, 0);
+            D_800A38AC = 4;
+        }
+        break;
+    case 3:
         if (_comb_control(3, 1, 0) == 0) {
+            _comb_control(3, 0, 0);
+            D_800A38AC = 4;
             break;
         }
-        goto done;
-    case 3:
-        if (_comb_control(3, 1, 0) != 0) {
-            goto retry;
-        }
-        /* fall through */
-    done:
-        _comb_control(3, 0, 0);
-        D_800A38AC = 4;
-        break;
-    retry:
         D_800A37D8++;
         if (D_800A37D8 < 4) {
             break;
         }
-        /* fall through */
-    fail:
         comb_ResetClose();
         return -1;
     case 4:
@@ -694,46 +690,34 @@ void func_8003BFC4(void) {
 extern void func_8003B10C(s32);
 
 void func_8003C040(void) {
-    /* FAKE: func_8003AF40's 0 held in a local set on each dispatch path (move
-     * a0,zero in each branch's delay slot); the literal at the call scores 5 */
-    s32 a0;
     s32 var_1;
     s8 *p;
     func_80016888();
     gpu_ResetGraphMode1();
     func_80020CDC();
-    if (((u32)(D_800A38A4 - 4)) < 2u) {
+    if (D_800A38A4 == 4 || D_800A38A4 == 5) {
         eff_ClearInitFlag();
     }
-    {
-        if (D_800A38A4 == 6) {
-            D_80102778.unk_4[0] = 8;
-            D_80102778.unk_4[2] = 6;
-            a0 = 0;
-            goto after_dispatch;
-        }
-        if (D_800A38A4 == 7) {
-            D_80102778.unk_4[0] = 0x16;
-            D_80102778.unk_4[2] = 7;
-            a0 = 0;
-            goto after_dispatch;
-        }
-        if (D_800A38A4 == 8) {
-            a0 = 0;
-            D_80102778.unk_4[0] = 0x1E;
-            goto write_e_zero;
-        }
-        if (D_800A38A4 == 9) {
-            a0 = 0;
-            D_80102778.unk_4[0] = 0x20;
-        write_e_zero:
-            D_80102778.unk_4[2] = 0;
-
-        after_dispatch:
-            func_8003AF40(a0);
-
-            func_8003B10C(0);
-        }
+    if (D_800A38A4 == 6) {
+        D_80102778.unk_4[0] = 8;
+        D_80102778.unk_4[2] = 6;
+        func_8003AF40(0);
+        func_8003B10C(0);
+    } else if (D_800A38A4 == 7) {
+        D_80102778.unk_4[0] = 0x16;
+        D_80102778.unk_4[2] = 7;
+        func_8003AF40(0);
+        func_8003B10C(0);
+    } else if (D_800A38A4 == 8) {
+        D_80102778.unk_4[0] = 0x1E;
+        D_80102778.unk_4[2] = 0;
+        func_8003AF40(0);
+        func_8003B10C(0);
+    } else if (D_800A38A4 == 9) {
+        D_80102778.unk_4[0] = 0x20;
+        D_80102778.unk_4[2] = 0;
+        func_8003AF40(0);
+        func_8003B10C(0);
     }
     if (D_800A38A4 != 9) {
         var_1 = D_800A38A4;
@@ -741,24 +725,12 @@ void func_8003C040(void) {
         var_1 = 8;
     }
     func_8005FBC8(var_1, (u8 *)0x80118800);
-    {
-        if (D_800A38A4 == 4) {
-            if (D_8008D9EC[D_80101EC8[0].unk_0A] != 0) {
-                goto do_copy;
-            }
-        }
-        if (D_800A38A4 == 5) {
-            if (D_8008D9EC[D_80101EC8[0].unk_0A] != 0) {
-                goto skip_copy;
-            }
-        do_copy:
-            D_80102778.unk_4[0] = D_80102778.unk_4[1];
-
-            D_80102778.unk_4[2] = D_80102778.unk_4[3];
-            func_8003AF40(0);
-            func_8003B10C(0);
-        }
-    skip_copy:;
+    if ((D_800A38A4 == 4 && D_8008D9EC[D_80101EC8[0].unk_0A] != 0) ||
+        (D_800A38A4 == 5 && D_8008D9EC[D_80101EC8[0].unk_0A] == 0)) {
+        D_80102778.unk_4[0] = D_80102778.unk_4[1];
+        D_80102778.unk_4[2] = D_80102778.unk_4[3];
+        func_8003AF40(0);
+        func_8003B10C(0);
     }
     func_80054884(0x16, (&D_8009016C)[D_800A38A4], 0, D_80101EC8[0].unk_12, -1,
                   -1, -1, (s32)0x80118800);
