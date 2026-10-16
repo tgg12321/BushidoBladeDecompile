@@ -198,5 +198,30 @@ class TestTier(unittest.TestCase):
         self.assertEqual(s.classify_tier({"S7": True}, 1)[0], "STRONG")
 
 
+class TestScanFloor(unittest.TestCase):
+    def test_single_under_floor_is_low(self):
+        import contextlib
+        import io
+        import json
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as td:
+            d = Path(td) / "asm" / "funcs"
+            d.mkdir(parents=True)
+            (d / "tiny.s").write_text(asm_file("tiny", [ADDIU("v0", "zero", 1), JR_RA, NOP]),
+                                      encoding="utf-8")
+            out = io.StringIO()
+            with mock.patch.object(s, "ROOT", Path(td)), mock.patch.object(s, "ASM_DIR", d), \
+                    mock.patch.object(sys, "argv", ["x", "--single", "tiny", "--json"]), \
+                    contextlib.redirect_stdout(out):
+                rc = s.main()
+            self.assertEqual(rc, 0)
+            rec = json.loads(out.getvalue())
+            self.assertEqual((rec["tier"], rec["tier_reason"], rec["insn_count"]),
+                             ("LOW", "under the 5-instruction scan floor", 3))
+            self.assertEqual((rec["gate_signals"], rec["score"], rec["s7_no_save_callee_use"]),
+                             ([], 0, False))
+            self.assertEqual(rec["src_file"], "asm/funcs/tiny.s")
+
+
 if __name__ == "__main__":
     unittest.main()

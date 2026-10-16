@@ -192,6 +192,9 @@ class FuncSignals:
 # accepts. DECISIVE ones make a function STRONG on a single hit; S1/S2 need
 # tightness corroboration (classify_tier).
 GATE_CLASS = ("S1", "S2", "S6", "S7", "S8", "S9", "S10", "S11")
+# analyze_all skips functions shorter than this; --single reports them LOW.
+SCAN_FLOOR = 5
+FLOOR_REASON = f"under the {SCAN_FLOOR}-instruction scan floor"
 DECISIVE = {
     "S6": "BIOS jumptable with delay-slot register setup",
     "S7": "callee-saved register used without save",
@@ -996,7 +999,7 @@ def analyze_all(asm_dir: Path) -> list[FuncSignals]:
         if not r:
             continue
         name, insns = r
-        if len(insns) < 5:
+        if len(insns) < SCAN_FLOOR:
             continue
         parsed.append((p, name, insns))
 
@@ -1093,10 +1096,27 @@ def analyze_all(asm_dir: Path) -> list[FuncSignals]:
     return out
 
 
+def floor_record(p: Path, name: str, insns: list[Insn]) -> FuncSignals:
+    """The LOW record of a function under the scan floor: no signal ran, so
+    none fired (the --all bulk dump likewise leaves it LOW)."""
+    off = {f: False for f in FuncSignals.__dataclass_fields__
+           if f.startswith("s") and not f.endswith("_detail") and f[1].isdigit()}
+    det = {f: f"not scanned ({FLOOR_REASON})" for f in FuncSignals.__dataclass_fields__
+           if f.endswith("_detail")}
+    return FuncSignals(
+        func=name, src_file=str(p.relative_to(ROOT)), insn_count=len(insns),
+        multu_count=sum(1 for i in insns if i.mnemonic == "multu"),
+        **off, **det, gate_signals=[], score=0, tier="LOW",
+        tier_reason=FLOOR_REASON, opcode_sig="")
+
+
 def analyze_one(asm_dir: Path, func: str) -> FuncSignals | None:
     p = asm_dir / f"{func}.s"
     if not p.exists():
         return None
+    r = parse_func(p)
+    if r and len(r[1]) < SCAN_FLOOR:
+        return floor_record(p, r[0], r[1])
     # We still need cluster context — but limit to functions sharing a
     # rough length for speed. Simplest: re-run full scan.
     all_sigs = analyze_all(asm_dir)
@@ -1148,11 +1168,7 @@ def main() -> int:
     if args.single:
         s = analyze_one(ASM_DIR, args.single)
         if not s:
-            if (ASM_DIR / f"{args.single}.s").exists():
-                print(f"asm/funcs/{args.single}.s has fewer than 5 instructions "
-                      f"— not scanned", file=sys.stderr)
-            else:
-                print(f"asm/funcs/{args.single}.s not found", file=sys.stderr)
+            print(f"asm/funcs/{args.single}.s not found or unparseable", file=sys.stderr)
             return 1
         if args.json:
             print(json.dumps(asdict(s)))
