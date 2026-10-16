@@ -57,8 +57,8 @@ glabel func_8003B9D0
     /* 2C2A0 8003BAA0 30006230 */  andi       $v0, $v1, 0x30
     /* 2C2A4 8003BAA4 12004010 */  beqz       $v0, .L8003BAF0
     /* 2C2A8 8003BAA8 10006230 */   andi      $v0, $v1, 0x10
-    /* 2C2AC 8003BAAC 1080103C */  lui        $s0, %hi(D_80101EDA)
-    /* 2C2B0 8003BAB0 DA1E1026 */  addiu      $s0, $s0, %lo(D_80101EDA)
+    /* 2C2AC 8003BAAC 1080103C */  lui        $s0, %hi(D_80101EC8 + 0x12)
+    /* 2C2B0 8003BAB0 DA1E1026 */  addiu      $s0, $s0, %lo(D_80101EC8 + 0x12)
     /* 2C2B4 8003BAB4 00001186 */  lh         $s1, 0x0($s0)
     /* 2C2B8 8003BAB8 4C041286 */  lh         $s2, 0x44C($s0)
     /* 2C2BC 8003BABC 02004010 */  beqz       $v0, .L8003BAC8
@@ -85,8 +85,8 @@ glabel func_8003B9D0
     /* 2C304 8003BB04 01004230 */  andi       $v0, $v0, 0x1
     /* 2C308 8003BB08 03004010 */  beqz       $v0, .L8003BB18
     /* 2C30C 8003BB0C FFFF0724 */   addiu     $a3, $zero, -0x1
-    /* 2C310 8003BB10 1080073C */  lui        $a3, %hi(D_80101EDA)
-    /* 2C314 8003BB14 DA1EE784 */  lh         $a3, %lo(D_80101EDA)($a3)
+    /* 2C310 8003BB10 1080073C */  lui        $a3, %hi(D_80101EC8 + 0x12)
+    /* 2C314 8003BB14 DA1EE784 */  lh         $a3, %lo(D_80101EC8 + 0x12)($a3)
   .L8003BB18:
     /* 2C318 8003BB18 0A80023C */  lui        $v0, %hi(D_800A3878)
     /* 2C31C 8003BB1C 7838428C */  lw         $v0, %lo(D_800A3878)($v0)
@@ -96,8 +96,8 @@ glabel func_8003B9D0
     /* 2C32C 8003BB2C 02004230 */  andi       $v0, $v0, 0x2
     /* 2C330 8003BB30 03004010 */  beqz       $v0, .L8003BB40
     /* 2C334 8003BB34 FFFF0424 */   addiu     $a0, $zero, -0x1
-    /* 2C338 8003BB38 1080043C */  lui        $a0, %hi(D_80102326)
-    /* 2C33C 8003BB3C 26238484 */  lh         $a0, %lo(D_80102326)($a0)
+    /* 2C338 8003BB38 1080043C */  lui        $a0, %hi(D_80101EC8 + 0x45E)
+    /* 2C33C 8003BB3C 26238484 */  lh         $a0, %lo(D_80101EC8 + 0x45E)($a0)
   .L8003BB40:
     /* 2C340 8003BB40 0A80053C */  lui        $a1, %hi(D_800A3878)
     /* 2C344 8003BB44 7838A58C */  lw         $a1, %lo(D_800A3878)($a1)

@@ -42,8 +42,8 @@ glabel func_8001C51C
     /* CDB4 8001C5B4 01000424 */  addiu      $a0, $zero, 0x1
     /* CDB8 8001C5B8 21284000 */  addu       $a1, $v0, $zero
     /* CDBC 8001C5BC 21300000 */  addu       $a2, $zero, $zero
-    /* CDC0 8001C5C0 1080103C */  lui        $s0, %hi(D_80102372)
-    /* CDC4 8001C5C4 72231026 */  addiu      $s0, $s0, %lo(D_80102372)
+    /* CDC0 8001C5C0 1080103C */  lui        $s0, %hi(D_80101EC8 + 0x4AA)
+    /* CDC4 8001C5C4 72231026 */  addiu      $s0, $s0, %lo(D_80101EC8 + 0x4AA)
     /* CDC8 8001C5C8 A686000C */  jal        func_80021A98
     /* CDCC 8001C5CC 000000A6 */   sh        $zero, 0x0($s0)
     /* CDD0 8001C5D0 FFFF0224 */  addiu      $v0, $zero, -0x1

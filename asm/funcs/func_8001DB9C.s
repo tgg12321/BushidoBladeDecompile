@@ -1,7 +1,7 @@
 glabel func_8001DB9C
     /* E39C 8001DB9C E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* E3A0 8001DBA0 1080023C */  lui        $v0, %hi(D_80101ED2)
-    /* E3A4 8001DBA4 D21E4284 */  lh         $v0, %lo(D_80101ED2)($v0)
+    /* E3A0 8001DBA0 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
+    /* E3A4 8001DBA4 D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
     /* E3A8 8001DBA8 1980053C */  lui        $a1, (0x80190800 >> 16)
     /* E3AC 8001DBAC 1000BFAF */  sw         $ra, 0x10($sp)
     /* E3B0 8001DBB0 0980013C */  lui        $at, %hi(D_8008D9EC)

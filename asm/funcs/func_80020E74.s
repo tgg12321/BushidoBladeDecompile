@@ -89,10 +89,10 @@ glabel func_80020E74
   .L80020FB4:
     /* 117B4 80020FB4 FFFFC530 */  andi       $a1, $a2, 0xFFFF
     /* 117B8 80020FB8 FFFF6430 */  andi       $a0, $v1, 0xFFFF
-    /* 117BC 80020FBC 1080013C */  lui        $at, %hi(D_80101F10)
-    /* 117C0 80020FC0 101F26A4 */  sh         $a2, %lo(D_80101F10)($at)
-    /* 117C4 80020FC4 1080013C */  lui        $at, %hi(D_8010235C)
-    /* 117C8 80020FC8 5C2323A4 */  sh         $v1, %lo(D_8010235C)($at)
+    /* 117BC 80020FBC 1080013C */  lui        $at, %hi(D_80101EC8 + 0x48)
+    /* 117C0 80020FC0 101F26A4 */  sh         $a2, %lo(D_80101EC8 + 0x48)($at)
+    /* 117C4 80020FC4 1080013C */  lui        $at, %hi(D_80101EC8 + 0x494)
+    /* 117C8 80020FC8 5C2323A4 */  sh         $v1, %lo(D_80101EC8 + 0x494)($at)
     /* 117CC 80020FCC 0D00A414 */  bne        $a1, $a0, .L80021004
     /* 117D0 80020FD0 00000000 */   nop
     /* 117D4 80020FD4 0A80023C */  lui        $v0, %hi(D_800A38C4)

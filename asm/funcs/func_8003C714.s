@@ -87,8 +87,8 @@ glabel func_8003C714
     /* 2D064 8003C864 1300A293 */  lbu        $v0, 0x13($sp)
     /* 2D068 8003C868 21300000 */  addu       $a2, $zero, $zero
     /* 2D06C 8003C86C 2F0002A2 */  sb         $v0, 0x2F($s0)
-    /* 2D070 8003C870 1080023C */  lui        $v0, %hi(D_80101ED2)
-    /* 2D074 8003C874 D21E4294 */  lhu        $v0, %lo(D_80101ED2)($v0)
+    /* 2D070 8003C870 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
+    /* 2D074 8003C874 D21E4294 */  lhu        $v0, %lo(D_80101EC8 + 0xA)($v0)
     /* 2D078 8003C878 21380000 */  addu       $a3, $zero, $zero
     /* 2D07C 8003C87C DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2D080 8003C880 300002A2 */   sb        $v0, 0x30($s0)

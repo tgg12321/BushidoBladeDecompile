@@ -3,8 +3,8 @@ glabel cdrom_WaitIdle
     /* 27744 80036F44 1400BFAF */  sw         $ra, 0x14($sp)
     /* 27748 80036F48 9EEA000C */  jal        func_8003AA78
     /* 2774C 80036F4C 1000B0AF */   sw        $s0, 0x10($sp)
-    /* 27750 80036F50 1080103C */  lui        $s0, %hi(D_80101E9E)
-    /* 27754 80036F54 9E1E1026 */  addiu      $s0, $s0, %lo(D_80101E9E)
+    /* 27750 80036F50 1080103C */  lui        $s0, %hi(D_80101E58 + 0x46)
+    /* 27754 80036F54 9E1E1026 */  addiu      $s0, $s0, %lo(D_80101E58 + 0x46)
   .L80036F58:
     /* 27758 80036F58 62DB000C */  jal        cdrom_IsIdle
     /* 2775C 80036F5C 00000000 */   nop

@@ -1,10 +1,10 @@
 glabel func_8003E6A0
     /* 2EEA0 8003E6A0 2138A000 */  addu       $a3, $a1, $zero
     /* 2EEA4 8003E6A4 21308000 */  addu       $a2, $a0, $zero
-    /* 2EEA8 8003E6A8 1080043C */  lui        $a0, %hi(D_80101E3C)
-    /* 2EEAC 8003E6AC 3C1E848C */  lw         $a0, %lo(D_80101E3C)($a0)
-    /* 2EEB0 8003E6B0 1080053C */  lui        $a1, %hi(D_80101E44)
-    /* 2EEB4 8003E6B4 441EA58C */  lw         $a1, %lo(D_80101E44)($a1)
+    /* 2EEA8 8003E6A8 1080043C */  lui        $a0, %hi(D_80101DF0 + 0x4C)
+    /* 2EEAC 8003E6AC 3C1E848C */  lw         $a0, %lo(D_80101DF0 + 0x4C)($a0)
+    /* 2EEB0 8003E6B0 1080053C */  lui        $a1, %hi(D_80101DF0 + 0x54)
+    /* 2EEB4 8003E6B4 441EA58C */  lw         $a1, %lo(D_80101DF0 + 0x54)($a1)
     /* 2EEB8 8003E6B8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2EEBC 8003E6BC 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2EEC0 8003E6C0 B6F8000C */  jal        func_8003E2D8

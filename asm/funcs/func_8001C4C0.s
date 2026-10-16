@@ -13,8 +13,8 @@ glabel func_8001C4C0
     /* CCE8 8001C4E8 21200000 */   addu      $a0, $zero, $zero
     /* CCEC 8001C4EC 5D86000C */  jal        func_80021974
     /* CCF0 8001C4F0 21200000 */   addu      $a0, $zero, $zero
-    /* CCF4 8001C4F4 1080013C */  lui        $at, %hi(D_80101F26)
-    /* CCF8 8001C4F8 261F20A4 */  sh         $zero, %lo(D_80101F26)($at)
+    /* CCF4 8001C4F4 1080013C */  lui        $at, %hi(D_80101EC8 + 0x5E)
+    /* CCF8 8001C4F8 261F20A4 */  sh         $zero, %lo(D_80101EC8 + 0x5E)($at)
     /* CCFC 8001C4FC 21200000 */  addu       $a0, $zero, $zero
     /* CD00 8001C500 21284000 */  addu       $a1, $v0, $zero
     /* CD04 8001C504 A686000C */  jal        func_80021A98

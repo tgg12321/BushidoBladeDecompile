@@ -28,8 +28,8 @@ glabel func_8001DA8C
     /* E2F0 8001DAF0 CE760008 */  j          .L8001DB38
     /* E2F4 8001DAF4 00000000 */   nop
   jlabel .L8001DAF8
-    /* E2F8 8001DAF8 1080023C */  lui        $v0, %hi(D_80101ED2)
-    /* E2FC 8001DAFC D21E4284 */  lh         $v0, %lo(D_80101ED2)($v0)
+    /* E2F8 8001DAF8 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
+    /* E2FC 8001DAFC D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
     /* E300 8001DB00 0980013C */  lui        $at, %hi(D_8008D9EC)
     /* E304 8001DB04 21082200 */  addu       $at, $at, $v0
     /* E308 8001DB08 ECD92290 */  lbu        $v0, %lo(D_8008D9EC)($at)

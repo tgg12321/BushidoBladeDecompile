@@ -1,8 +1,8 @@
 glabel func_8001C820
     /* D020 8001C820 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* D024 8001C824 1000B0AF */  sw         $s0, 0x10($sp)
-    /* D028 8001C828 1080103C */  lui        $s0, %hi(D_80101ED2)
-    /* D02C 8001C82C D21E1026 */  addiu      $s0, $s0, %lo(D_80101ED2)
+    /* D028 8001C828 1080103C */  lui        $s0, %hi(D_80101EC8 + 0xA)
+    /* D02C 8001C82C D21E1026 */  addiu      $s0, $s0, %lo(D_80101EC8 + 0xA)
     /* D030 8001C830 1400BFAF */  sw         $ra, 0x14($sp)
     /* D034 8001C834 00000286 */  lh         $v0, 0x0($s0)
     /* D038 8001C838 0980013C */  lui        $at, %hi(D_8008D9EC)

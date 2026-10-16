@@ -6,8 +6,8 @@ glabel cdrom_ReadyCallback
     /* 26874 80036074 2000BFAF */   sw        $ra, 0x20($sp)
     /* 26878 80036078 1080023C */  lui        $v0, %hi(g_cdread_sectors_remaining)
     /* 2687C 8003607C 801E428C */  lw         $v0, %lo(g_cdread_sectors_remaining)($v0)
-    /* 26880 80036080 1080013C */  lui        $at, %hi(D_80101E98)
-    /* 26884 80036084 981E20A4 */  sh         $zero, %lo(D_80101E98)($at)
+    /* 26880 80036080 1080013C */  lui        $at, %hi(D_80101E58 + 0x40)
+    /* 26884 80036084 981E20A4 */  sh         $zero, %lo(D_80101E58 + 0x40)($at)
     /* 26888 80036088 29004018 */  blez       $v0, .L80036130
     /* 2688C 8003608C 1000A427 */   addiu     $a0, $sp, 0x10
     /* 26890 80036090 8801020C */  jal        CdGetSector

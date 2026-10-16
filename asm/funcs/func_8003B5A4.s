@@ -112,8 +112,8 @@ glabel func_8003B5A4
     /* 2BF3C 8003B73C 00000000 */  nop
     /* 2BF40 8003B740 0E004014 */  bnez       $v0, .L8003B77C
     /* 2BF44 8003B744 0A000224 */   addiu     $v0, $zero, 0xA
-    /* 2BF48 8003B748 1080023C */  lui        $v0, %hi(D_80101ED2)
-    /* 2BF4C 8003B74C D21E4284 */  lh         $v0, %lo(D_80101ED2)($v0)
+    /* 2BF48 8003B748 1080023C */  lui        $v0, %hi(D_80101EC8 + 0xA)
+    /* 2BF4C 8003B74C D21E4284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($v0)
     /* 2BF50 8003B750 0980013C */  lui        $at, %hi(D_8008D9EC)
     /* 2BF54 8003B754 21082200 */  addu       $at, $at, $v0
     /* 2BF58 8003B758 ECD92390 */  lbu        $v1, %lo(D_8008D9EC)($at)

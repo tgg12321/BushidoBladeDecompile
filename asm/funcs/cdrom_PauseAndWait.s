@@ -1,6 +1,6 @@
 glabel cdrom_PauseAndWait
-    /* 27AC0 800372C0 1080023C */  lui        $v0, %hi(D_80101E62)
-    /* 27AC4 800372C4 621E4284 */  lh         $v0, %lo(D_80101E62)($v0)
+    /* 27AC0 800372C0 1080023C */  lui        $v0, %hi(D_80101E58 + 0xA)
+    /* 27AC4 800372C4 621E4284 */  lh         $v0, %lo(D_80101E58 + 0xA)($v0)
     /* 27AC8 800372C8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 27ACC 800372CC 03004010 */  beqz       $v0, .L800372DC
     /* 27AD0 800372D0 1000BFAF */   sw        $ra, 0x10($sp)

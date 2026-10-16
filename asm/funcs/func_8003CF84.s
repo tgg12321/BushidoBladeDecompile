@@ -14,9 +14,9 @@ glabel func_8003CF84
     /* 2D7B4 8003CFB4 80100200 */  sll        $v0, $v0, 2
     /* 2D7B8 8003CFB8 23104500 */  subu       $v0, $v0, $a1
     /* 2D7BC 8003CFBC 80100200 */  sll        $v0, $v0, 2
-    /* 2D7C0 8003CFC0 1080013C */  lui        $at, %hi(D_80101ED2)
+    /* 2D7C0 8003CFC0 1080013C */  lui        $at, %hi(D_80101EC8 + 0xA)
     /* 2D7C4 8003CFC4 21082200 */  addu       $at, $at, $v0
-    /* 2D7C8 8003CFC8 D21E2284 */  lh         $v0, %lo(D_80101ED2)($at)
+    /* 2D7C8 8003CFC8 D21E2284 */  lh         $v0, %lo(D_80101EC8 + 0xA)($at)
     /* 2D7CC 8003CFCC 00000000 */  nop
     /* 2D7D0 8003CFD0 40100200 */  sll        $v0, $v0, 1
     /* 2D7D4 8003CFD4 0980013C */  lui        $at, %hi(D_8008EAC0)
