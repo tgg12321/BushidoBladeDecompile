@@ -538,58 +538,35 @@ void SetDrawEnv(DR_ENV *out, DRAWENV *r) {
        (pointer-alias-fake-exception; owner ruling for SetDrawEnv /
        SetDrawEnv2) */
     DR_ENV *o = out;
-    u16 buf[4];
-    s16 var_v0;
-    s16 var_v0_2;
-    s16 new_var;
-    s32 var_a3;
+    RECT clip;
+    s32 len;
     o->code[0] = get_cs(r->clip.x, r->clip.y);
     o->code[1] = get_ce(r->clip.w + r->clip.x - 1, r->clip.y + r->clip.h - 1);
     o->code[2] = get_ofs(r->ofs[0], r->ofs[1]);
     o->code[3] = get_mode(r->dfe, r->dtd, r->tpage);
     o->code[4] = get_tw(&r->tw);
     o->code[5] = 0xE6000000;
-    /* FAKE: var_a3 counts the tag word, and the pushes are pointer arithmetic
-       (*(o->code + var_a3++ - 1)); the subscript o->code[var_a3++ - 1] adds the
-       base first (addu aN,s1,aN for addu aN,aN,s1 at every push): score 3 in
-       SetDrawEnv, 6 in SetDrawEnv2. */
-    var_a3 = 7;
+    len = 7;
     if (r->isbg != 0) {
-        buf[0] = r->clip.x;
-        buf[1] = r->clip.y;
-        new_var = r->clip.w;
-        buf[2] = r->clip.w;
-        buf[3] = r->clip.h;
-        if (new_var >= 0) {
-            if ((g_gpu_ctx.width - 1) < new_var) {
-                var_v0 = g_gpu_ctx.width - 1;
-            } else {
-                var_v0 = new_var;
-            }
-        } else {
-            var_v0 = 0;
-        }
-        buf[2] = (u16)var_v0;
-        if (((s16)buf[3]) >= 0) {
-            if ((g_gpu_ctx.height - 1) < ((s16)buf[3])) {
-                var_v0_2 = g_gpu_ctx.height - 1;
-            } else {
-                var_v0_2 = (s16)buf[3];
-            }
-        } else {
-            var_v0_2 = 0;
-        }
-        buf[3] = (u16)var_v0_2;
-        buf[0] -= r->ofs[0];
-        buf[1] -= r->ofs[1];
-        *(o->code + var_a3++ - 1) =
-            (((r->b0 << 16) | 0x60000000) | (r->g0 << 8)) | r->r0;
-        *(o->code + var_a3++ - 1) = ((u32 *)buf)[0];
-        *(o->code + var_a3++ - 1) = ((u32 *)buf)[1];
-        buf[0] += r->ofs[0];
-        buf[1] += r->ofs[1];
+        clip.x = r->clip.x;
+        clip.y = r->clip.y;
+        clip.w = r->clip.w;
+        clip.h = r->clip.h;
+        clip.w = clip.w < 0                     ? 0
+                 : clip.w > g_gpu_ctx.width - 1 ? g_gpu_ctx.width - 1
+                                                : clip.w;
+        clip.h = clip.h < 0                      ? 0
+                 : clip.h > g_gpu_ctx.height - 1 ? g_gpu_ctx.height - 1
+                                                 : clip.h;
+        clip.x -= r->ofs[0];
+        clip.y -= r->ofs[1];
+        *((u32 *)o + len++) = 0x60000000 | r->b0 << 16 | r->g0 << 8 | r->r0;
+        *((u32 *)o + len++) = *(u32 *)&clip.x;
+        *((u32 *)o + len++) = *(u32 *)&clip.w;
+        clip.x += r->ofs[0];
+        clip.y += r->ofs[1];
     }
-    setlen(o, var_a3 - 1);
+    setlen(o, len - 1);
 }
 
 void SetDrawEnv2(DR_ENV *out, DRAWENV *r) {
@@ -597,65 +574,41 @@ void SetDrawEnv2(DR_ENV *out, DRAWENV *r) {
        SetDrawEnv; without it: score 4
        (pointer-alias-fake-exception) */
     DR_ENV *o = out;
-    u16 buf[4];
-    s16 var_v0;
-    s16 var_v0_2;
-    s16 new_var;
-    s32 var_a3;
+    RECT clip;
+    s32 len;
     o->code[0] = get_cs(r->clip.x, r->clip.y);
     o->code[1] = get_ce(r->clip.w + r->clip.x - 1, r->clip.y + r->clip.h - 1);
     o->code[2] = get_ofs(r->ofs[0], r->ofs[1]);
     o->code[3] = get_mode(r->dfe, r->dtd, r->tpage);
     o->code[4] = get_tw(&r->tw);
     o->code[5] = 0xE6000000;
-    /* FAKE: var_a3 counts the tag word, and the pushes are pointer arithmetic
-       (*(o->code + var_a3++ - 1)); the subscript o->code[var_a3++ - 1] adds the
-       base first (addu aN,s1,aN for addu aN,aN,s1 at every push): score 3 in
-       SetDrawEnv, 6 in SetDrawEnv2. */
-    var_a3 = 7;
+    len = 7;
     if (r->isbg != 0) {
-        buf[0] = r->clip.x;
-        buf[1] = r->clip.y;
-        new_var = r->clip.w;
-        buf[2] = r->clip.w;
-        buf[3] = r->clip.h;
-        if (new_var >= 0) {
-            if ((g_gpu_ctx.width - 1) < new_var) {
-                var_v0 = g_gpu_ctx.width - 1;
-            } else {
-                var_v0 = new_var;
-            }
+        clip.x = r->clip.x;
+        clip.y = r->clip.y;
+        clip.w = r->clip.w;
+        clip.h = r->clip.h;
+        clip.w = clip.w < 0                     ? 0
+                 : clip.w > g_gpu_ctx.width - 1 ? g_gpu_ctx.width - 1
+                                                : clip.w;
+        clip.h = clip.h < 0                      ? 0
+                 : clip.h > g_gpu_ctx.height - 1 ? g_gpu_ctx.height - 1
+                                                 : clip.h;
+        if ((clip.x & 0x3F) || (clip.w & 0x3F)) {
+            clip.x -= r->ofs[0];
+            clip.y -= r->ofs[1];
+            *((u32 *)o + len++) = 0x60000000 | r->b0 << 16 | r->g0 << 8 | r->r0;
+            *((u32 *)o + len++) = *(u32 *)&clip.x;
+            *((u32 *)o + len++) = *(u32 *)&clip.w;
+            clip.x += r->ofs[0];
+            clip.y += r->ofs[1];
         } else {
-            var_v0 = 0;
-        }
-        buf[2] = (u16)var_v0;
-        if (((s16)buf[3]) >= 0) {
-            if ((g_gpu_ctx.height - 1) < ((s16)buf[3])) {
-                var_v0_2 = g_gpu_ctx.height - 1;
-            } else {
-                var_v0_2 = (s16)buf[3];
-            }
-        } else {
-            var_v0_2 = 0;
-        }
-        buf[3] = (u16)var_v0_2;
-        if ((buf[0] & 0x3F) || (buf[2] & 0x3F)) {
-            buf[0] -= r->ofs[0];
-            buf[1] -= r->ofs[1];
-            *(o->code + var_a3++ - 1) =
-                (((r->b0 << 16) | 0x60000000) | (r->g0 << 8)) | r->r0;
-            *(o->code + var_a3++ - 1) = ((u32 *)buf)[0];
-            *(o->code + var_a3++ - 1) = ((u32 *)buf)[1];
-            buf[0] += r->ofs[0];
-            buf[1] += r->ofs[1];
-        } else {
-            *(o->code + var_a3++ - 1) =
-                (((r->b0 << 16) | 0x02000000) | (r->g0 << 8)) | r->r0;
-            *(o->code + var_a3++ - 1) = ((u32 *)buf)[0];
-            *(o->code + var_a3++ - 1) = ((u32 *)buf)[1];
+            *((u32 *)o + len++) = 0x02000000 | r->b0 << 16 | r->g0 << 8 | r->r0;
+            *((u32 *)o + len++) = *(u32 *)&clip.x;
+            *((u32 *)o + len++) = *(u32 *)&clip.w;
         }
     }
-    setlen(o, var_a3 - 1);
+    setlen(o, len - 1);
 }
 
 s32 get_mode(s32 arg0, s32 arg1, s32 arg2) {
