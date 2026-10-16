@@ -3232,7 +3232,7 @@ void func_80021210(void) {
 
 /* The record's model id (unk_48) -> its slot in D_800A38C4 (unk_4A); for
  * ids below 0x2000, the nibble positions of 4 and 5 (unk_88 / unk_8E),
- * copying unk_26C into unk_8A / unk_90 under mode-dependent conditions. The
+ * copying unk_26C into unk_8A / unk_90 under conditions on D_800A38DC. The
  * loop-tail duplication is accepted by an owner ruling on SOTN evidence; every
  * codegen-only local is FAKE-labelled with what its natural spelling breaks. */
 void func_80021280(s32 a0) {

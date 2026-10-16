@@ -933,9 +933,9 @@ void func_800288C8(void) {
                 gte_Lzc(tbl, &lzc_out);
                 {
                     /* FAKE: two values -- the leading-zero count, then the
-                     * table shift; as one expression `shift = 0x16 - (lzc_out &
-                     * ~1)` the count lands in $a0 (target: $v1 / $v0):
-                     * score 4 */
+                     * table shift; as one expression `shift = 0x16 - (lzc_out
+                     * & ~1)` the count lands in $a0 (target: $v1 / $v0): score
+                     * 4 */
                     s32 shift;
                     shift = lzc_out;
                     shift = 0x16 - (shift & ~1);
@@ -2850,8 +2850,8 @@ s32 func_8002D780(
             var_9 = z2 * cx - x2 * cz;
             var_10 = z2 * px - x2 * pz;
             if ((var_9 ^ var_10) >= 0) {
-                /* FAKE: ax holds cx - x0 ahead of the dx set-up; in the product
-                 * the subtraction moves (score 2). */
+                /* FAKE: ax holds cx - x0 ahead of the dx set-up; in the
+                 * product the subtraction moves (score 2). */
                 s32 ax = cx - x0;
                 s32 dx;
                 /* FAKE: the third edge's z2 - z0 is staged through the finished

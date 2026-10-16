@@ -434,8 +434,8 @@ void func_80040CB8(Unk80045878Obj *arg0) {
     s16 id;
     Unk80045878Node *var_1 = arg0->unk_8B4;
     s32 i = 0;
-    // FAKE (var_3/kind/one): constant-holders keep -1/3/1 in $t4/$t3/$t2 across
-    // the goto-loop, which gets no LICM; literals: score 23
+    // FAKE (var_3/kind/one): constant-holders keep -1/3/1 in $t4/$t3/$t2
+    // across the goto-loop, which gets no LICM; literals: score 23
     s32 var_3;
     s32 kind;
     s32 one;

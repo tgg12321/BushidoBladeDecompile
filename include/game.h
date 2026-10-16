@@ -183,10 +183,10 @@ typedef struct {
 
 /* The 8-byte sprite cell: x / y, its offset from the descriptor's screen
  * position; u / v, its texel offset from the sheet's ubase / vbase; w / h, its
- * size (func_8007352C: x0 = x + env x, u0 = u + ubase, w / h copied). A sheet's
- * cells follow its header(s) (Unk8009B0E0Record.cells). The 0x8009B400 tables
- * hold such cells: 0x8009B400..0x8009B44F is 10 records, one per digit
- * (func_8005D814 / func_8005E098 index it with a 0..9 value), and
+ * size (func_8007352C: x0 = x + the descriptor's x, u0 = u + ubase, w / h
+ * copied). A sheet's cells follow its header(s) (Unk8009B0E0Record.cells). The
+ * 0x8009B400 tables hold such cells: 0x8009B400..0x8009B44F is 10 records, one
+ * per digit (func_8005D814 / func_8005E098 index it with a 0..9 value), and
  * 0x8009B458..0x8009B487 6 more (func_8005E098); D_8009B450 and D_8009B488
  * follow. */
 typedef struct {
