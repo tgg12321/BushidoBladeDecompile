@@ -21,11 +21,10 @@ See [main_loop.md](main_loop.md) for the mode value table.
 
 ## Menu transition: a typical mode handler
 
-`md_game_check_change_sub_mode` (`code6cac_c2.c:234`) is a model
-sub-mode handler. Annotated:
+`func_8003BCB4` (`src/main/2B344.c:553`) is a model sub-mode handler. Annotated:
 
 ```c
-void md_game_check_change_sub_mode(void) {
+void func_8003BCB4(void) {
     D_800A37B8++;                           // frame counter
 
     if (func_80054F68() != 0) {              // some external block?
@@ -34,8 +33,8 @@ void md_game_check_change_sub_mode(void) {
         }
     }
 
-    func_800372C0();                         // cancel-and-cleanup
-    katinuki_game_setData_800548DC();        // commit menu choice
+    cdrom_PauseAndWait();                    // pause CD activity, wait for idle
+    func_800548DC();
 
     if (D_800A38DC != 0) return;             // sub-mode busy
 
@@ -159,16 +158,16 @@ none); `func_80046798` returns it, and `func_8003F168` / `func_8003E6D8` index
 6. `D_800A3834 = 0xB` (transition complete)
 7. Disable display (for next frame's fade-in)
 
-`func_8003BFC4` (`code6cac_c2.c:376`) — "go to mode 8" handler:
-1. Enable display
-2. Reset players, file DMA
-3. `func_80045814()` — get next-stage param
-4. `func_80037540(v, 0x80118000, 1, 0xCF8, 0xB01)` — submit setup command
-5. `game_Init()` — re-init game state (resets pause, mirror, P1/P2 ctrl)
-6. `D_800A3834 = 8`
+`func_8003BFC4` (`src/main/2B344.c:681`) runs the movie overlay, then sets mode 8:
+1. `gpu_ResetGraphMode1`, `func_80020CDC`, `func_800415C4(0)` / `(1)`,
+   `eff_ClearInitFlag`
+2. `sys_ExecMovieOverlay(arena_GetBase(), 0x80118000, 1, 0xCF8, 0xB01)` — runs
+   MOVOVL.EXE (the FMV overlay) through `sys_Exec`
+3. `func_80046B44()`
+4. `D_800A3834 = 8`
 
-This pattern (enable display + reset state + load assets + set mode value)
-is the standard mode-transition idiom.
+This pattern (reset state + load/run + set mode value) is the common
+mode-transition shape.
 
 ## Menu text rendering
 
@@ -194,7 +193,7 @@ the mode-select menu.
 `title_mv_exec` / `title_mv_exec2` (referenced) handle the title FMV
 (plays OPENING.STR via the MOVOVL.EXE overlay).
 
-`func_80036F40` (`code6cac_b5_post.c`) is a wait entered around CD reads:
+`cdrom_WaitIdle` (`src/main/cdrom.c`) is a wait entered around CD reads:
 it runs per-frame work and `VSync(2)` until `cdrom_IsIdle()` returns
 non-zero.
 

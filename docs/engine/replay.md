@@ -23,48 +23,22 @@ The naming `replay_camera_*` and `special_camera_*` are Kengo-derived;
 in BB2's original source they were probably one unified "cinematic
 camera system".
 
-## `SpecialCam` global — the camera data table
+## `g_cd_file_table` and `cdrom_LoadExec` (once `SpecialCam` / `special_camera_get_rot_dir`)
 
-`SpecialCam` (`0x8008EC34`) is a table of cinematic camera entries. Each
-entry is 8 bytes:
+`g_cd_file_table` (`0x8008EC34`, `CdFileEntry[159]`) holds the disc's file
+records: a `CdlLOC` start position and a byte size per file (not camera data).
+`cdrom_GetFileIndex(group, i)` forms the indices.
 
-| Offset | Field |
-| --- | --- |
-| 0 | BCD-encoded CD sector address (where the camera animation lives) |
-| 4 | length in bytes |
+`cdrom_LoadExec(dest)` (0x80037348, `src/main/cdrom.c`) loads a PS-X EXE, the file
+`cdrom_GetFileIndex(6, 0)` = 156 = `STR\MOVOVL.EXE`:
 
-There's a parallel table `D_8008EC38` (right after `SpecialCam` in
-memory). Each `(SpecialCam[i], D_8008EC38[i])` pair describes one
-canned camera sequence.
+1. Seek to the file's position (`CdControl(2, ...)`) and read one sector
+   (`cdrom_ReadWait(0x800, buf, 0x80)`); on failure start again.
+2. Copy the `EXEC` header at offset 0x10 of that sector to `*dest`.
+3. Seek to the next sector and read `dest->t_size` bytes to `dest->t_addr`;
+   on failure start again from step 1.
 
-The camera data is **stored on disc**, not in RAM — it's only loaded when
-needed (via CD seek to the BCD address, read for length bytes).
-
-## Camera-data load — `special_camera_get_rot_dir`
-
-`special_camera_get_rot_dir(dest)` (0x80037348, now `cdrom_LoadExec`, `code6cac_b5_post.c`) loads a camera
-animation entry from disc:
-
-1. Compute table index via `func_80036EA8(6, 0)`.
-2. `func_80080258(2, &SpecialCam[index], 0)` — issue CD read command for
-   that entry's sector address.
-3. `func_800372F4(0x800, sp_buf, 0x80)` — wait for the read to complete
-   (1 sector = 0x800 bytes).
-4. If read failed, retry from step 2.
-5. Copy 0x40 bytes from the buffer's offset 0x10 to `dest` (this is the
-   camera transform data — 8 16-byte Quads + 1 12-byte Triple).
-6. Issue a follow-up read for the next sector (`cdrom_FramesToBcd(... + 1, ...)`).
-7. `func_800372F4(dest[3], dest[2], 0x80)` — wait for the data read.
-
-`dest` becomes a struct of:
-- `[0..3]` — first Quad: header info
-- `[4..7]` — second Quad: more header  
-- `[2]` = data pointer
-- `[3]` = data length
-
-The function uses an unusual register-pinning pattern (`s2=index`,
-`s3=cam_base`, `s4=0x80`, `s5=copy_end`) — this is hand-tuned for the
-PsyQ asm output.
+Its only caller is `sys_Exec`.
 
 ## Replay camera init — `replay_camera_Init`
 
@@ -156,16 +130,15 @@ The scratchpad use is for inter-pass communication: the camera
 distance/scale computed in step 4-6 is consumed by `cpu_check_run_attack`
 in step 8.
 
-## func_80036F40 / game_FrameInit
+## cdrom_Pause / cdrom_WaitIdle
 
-`game_FrameInit` (0x80036EC0, now `cdrom_Pause`, `code6cac_b5_post.c`) sets up the "demo frame" mode
-(replay or title-screen demo):
+`cdrom_Pause` (0x80036EC0, once `game_FrameInit`; `src/main/cdrom.c`) stops CD
+activity, not a demo mode:
 
-- `cdrom_SetCallbackB(0)` — clear CD streaming callback
-- `func_80035F30(0,0,0,0)` — clear camera state
-- `func_80080148()` — `cdrom_ClearIrq()`
-- `func_80080390(9, 0)` — stop SE channel XA
-- Set state values for "demo mode active"
+- `CdReadyCallback(0)` — clear the CD ready callback
+- `cdrom_SetMix(0, 0, 0, 0)` — CD-audio mix off
+- `CdFlush()`, `CdControlF(9, 0)` (CdlPause)
+- the CD state's stop request set and state 0xB (the read error / reset path)
 
 `cdrom_WaitIdle` (`src/main/cdrom.c`) is a wait its callers enter around
 CD reads:

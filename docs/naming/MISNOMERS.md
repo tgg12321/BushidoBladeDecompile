@@ -132,17 +132,15 @@ void special_camera_check_pos_outside_ground_80035DC8(void) {
 * **Proposed canonical**: `scene_teardown`
 * **Alias added**: `scene_teardown_80035DC8 = 0x80035DC8`
 
-### `special_camera_check_pos_outside_ground_80036E34` -- actually NDATA disc-read scheduler
+### `special_camera_check_pos_outside_ground_80036E34` -- actually a generic CD read (now `cdrom_StartReadAt`)
 
-Body is the per-call NDATA file scheduler. Called by `func_800451A0`
-to DMA NDATA files into RAM via `cdrom_BcdToFrames` /
-`cdrom_FramesToBcd`.
+Now `cdrom_StartReadAt`: it starts a CD read of a file at a sector offset;
+`ndata_StartReadInf` and `ndata_Read` call it for NDATA, other code for other
+files.
 
-* **Current name in src/**: `special_camera_check_pos_outside_ground_80036E34`
-* **Proposed canonical**: `ndata_disc_read_scheduler`
-* **Alias added**: `ndata_disc_read_scheduler_80036E34 = 0x80036E34`
+* **Current name in src/**: `cdrom_StartReadAt` (src/main/cdrom.c:31)
 * **Discussed in**: [`docs/formats/NDATA.md`](../formats/NDATA.md)
-  "Reader (`func_80044E74`)" section.
+  "Reader (`ndata_Read`)" section.
 
 ---
 
@@ -656,7 +654,7 @@ All four are 1-line forwarding wrappers with no Satan-2 info init logic.
 
 | Addr | Body | Replacement |
 |---|---|---|
-| 0x80044F80 | `func_80044E74(a0+0x4D, a1)` | `dispatch_via_4D_offset_80044F80` |
+| 0x80044F80 | `ndata_Read(a0+0x4D, a1)` | `dispatch_via_4D_offset_80044F80` |
 | 0x8006C1FC | `func_8006C168(a0, a1)` | `func_8006C168_wrapper_8006C1FC` |
 | 0x80077A60 | `func_8006E068()` | `func_8006E068_wrapper_80077A60` |
 | 0x80077AC0 | `func_80077724()` | `func_80077724_wrapper_80077AC0` |

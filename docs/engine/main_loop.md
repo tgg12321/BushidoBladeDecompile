@@ -85,17 +85,17 @@ loop:
     ot  = env + 0x70;
     func_8007B844(ot, 0x1008);     // clear OT
     D_800A374C = ot;
-    D_800A38B4 = tbl[idx];
+    g_prim_buf_cursor = tbl[idx];
 
-    gnd_get_fog(idx);              // stage fog (per buffer)
-    change_shadow_tex_reg();        // shadow texture page swap
-    single_game_VoiceContorol(...);  // SPU voice update
-    special_camera_Exec();          // camera per-frame
+    func_80060E04(idx);
+    font_BeginFrame();              // per-frame font printer reset
+    func_80019568(...);
+    cdrom_Update();                 // one step of the CD state machine
     func_8005C6D0();                // ground/stage frame update
 
     /* handle global reset request */
     if (D_800A3928 != 0) {
-        func_800372C0();
+        cdrom_PauseAndWait();
         D_800A3768 = 0xFF;         // hide display while resetting
         D_800A3928 = 0;
         D_800A31DA = 0;
@@ -242,7 +242,7 @@ of `src/main/d_7D870.c`.
 | 25 (0x19) | 0x8003C9A4 | `func_8003C9A4` | func_8003F1E4(0), then writes D_800F6608 fields (2B344.c:993-1000) |
 | 26 (0x1A) | 0x80035DC8 | `func_80035DC8` | gpu_ResetGraphMode1 + func_80016888 + func_80020CDC + func_800415C4(0/1) + eff_ClearInitFlag + func_8005B72C + func_80077820, sets D_800A3834 = 0x1B, display on (25C38.c:394-405) |
 | 27 (0x1B) | 0x80035E38 | `saRobDraw` | Draws robot AI (saRob = "sa" team rob) |
-| 28 (0x1C) | 0x8003CE18 | `func_8003CE18` | func_8001DA2C + func_800372C0 |
+| 28 (0x1C) | 0x8003CE18 | `func_8003CE18` | func_8001DA2C + cdrom_PauseAndWait |
 | 29 (0x1D) | 0x8003CF84 | `func_8003CF84` | mk_leaf_newpos + reads char struct fields |
 | 30 (0x1E) | 0x8003C714 | `SetCurrentCursor` | Menu cursor positioning |
 | 31 (0x1F) | 0x8003C8B4 | `func_8003C8B4` | D_800A37B8++ and func_80060768 primitives; func_80033FE4 on pad 0x400040 or D_800A37B8 >= 0xF1 (241); no loop |

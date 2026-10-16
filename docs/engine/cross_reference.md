@@ -120,14 +120,18 @@ know which subsystem owns it, look here.
   (replay_camera_rob_back_loose3)
 - **Key functions:** `replay_camera_Init`, `replay_camera_attack`,
   `replay_camera_get_attack_number`, `replay_camera_rob_back_*`,
-  `special_camera_Exec` (mostly empty stub),
-  `special_camera_get_rot_dir` (disc loader),
-  `marionation_camera_Init_80036064` (XA),
-  `marionation_camera_Init_80037468` (cinematic-mode entry),
-  `marionation_camera_GetMaxFrame`, `game_FrameInit`, `func_80036F40`
-- **Key globals:** `SpecialCam` (`0x8008EC34` — disc table of
-  cinematic entries), `D_8008EC38` (length table),
-  `D_80101E5C..D_80101EA4` (replay state machine)
+  and these CD functions once given camera names: `special_camera_Exec` =
+  `cdrom_Update`, `special_camera_set_win_cam` = `cdrom_UpdateAudio`,
+  `special_camera_get_rot_dir` = `cdrom_LoadExec`,
+  `special_camera_check_pos_outside_ground_80036E34` = `cdrom_StartReadAt`,
+  `marionation_camera_Init_80036064` = `cdrom_ReadyCallback`,
+  `marionation_camera_Init_80037468` = `sys_Exec`,
+  `marionation_camera_GetMaxFrame` = `cdrom_WaitAudioStarted`,
+  `game_FrameInit` = `cdrom_Pause`; see replay.md
+- **Key globals:** `g_cd_file_table` (`0x8008EC34`, the disc's file records,
+  not a camera table),
+  `D_80101E58` (CdState, 0x80101E58..0x80101EA7: the CD read / CD-audio state
+  block, not replay state)
 - **Doc:** [replay.md](replay.md)
 
 ### Stage / World

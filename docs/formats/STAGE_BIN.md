@@ -171,12 +171,12 @@ The auto-generated function names (formerly in `src/code6cac_b2.c`, now
 `src/code6cac_b4_post.c`..`code6cac_b5_post.c`) that look like
 stage-loader entry points are misnomers from an early symbol pass:
 
-* `marionation_camera_Init_80036064` is actually a **CD streaming
-  callback** — it loads 0x200 sectors at a time via `func_80080620` and
-  manages `cdrom_BcdToFrames` / `cdrom_SetCallbackB`.
-* `special_camera_check_pos_outside_ground_80036E34` is the
-  **NDATA-archive disc-read scheduler** — see `docs/formats/NDATA.md`
-  "Reader (`func_80044E74`)" for the actual NDATA disc-I/O path.
+* `marionation_camera_Init_80036064` is now `cdrom_ReadyCallback`
+  (src/main/267A8.c:32), the CD ready callback that cdrom_Update installs with
+  CdReadyCallback.
+* `special_camera_check_pos_outside_ground_80036E34` is now `cdrom_StartReadAt`:
+  it starts a CD read of a file at a sector offset; NDATA reads go through it
+  (`docs/formats/NDATA.md` "Reader (`ndata_Read`)").
 
 Neither of these functions parses the `STAGE\*.BIN` payload — they are
 generic CD-load routines that happen to be invoked while a stage is
