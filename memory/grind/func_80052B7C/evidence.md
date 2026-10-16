@@ -367,3 +367,9 @@ question rather than resolved here.
 - [s14] tools/fake_ablate.py confirms the candidate.c s6 body carries zero /* FAKE */ constructs -- the kill-re-audit's own precondition (a FAKE carrier occupying the target pseudo) does not apply here, so s8/s9/s13's structural-modality class kills were never at risk of the func_8002EA24-s8-style invalidation and stand as measured.
 
 - [s14] docs/grind/decisions.md 2026-10-15 20:38 ruling stands: no written __asm__ island inside the C body is admitted for this function (inline-asm-policy.md items 3/item-1), so the only remaining non-C path is the whole-body inline_asm_canonical.txt:340 grant, gated on scan_hand_coded reaching STRONG tier -- unchanged, out of this session's reach (no engine/tools edits permitted).
+
+- [s15] sandbox func_80052B7C --disable all --diff this session: score 19, target 24 insns, build 24 insns, 4 hunks all classed source-level (0 operand-only, 0 not-scored) -- identical classification to s8/s9/s13/s14, confirming no reg-alloc/scheduling lever exists on this chassis and no regression since last measured.
+
+- [s15] The legal macro-call chassis body is exactly 5 statements (4 gte_SetRotMatrix/gte_stlvl-style macro calls or their expansions plus an if/return pair) with zero local declarations and zero assignments -- there is no C-level sub-expression anywhere in the function for spelling_enum.py's decl/assign/swap axes to enumerate over.
+
+- [s15] The ENUM region in this session's probe file spans the function's ENTIRE body (there is no code outside it to widen into), so the sweep SOP's step-3 widen-to-neighbouring-block fallback is not available -- this is a terminal class kill for the spelling-sweep modality on this chassis, not a partial result awaiting a wider region.

@@ -154,6 +154,17 @@
  * (s8, s9, s13, s14) at the identical floor with the identical hunk classification; no new
  * lever found. src/main/3AB48.c reverted to INCLUDE_ASM.
  */
+/* s15 (enumerate): re-applied this exact chassis fresh, re-measured -- still 19, 4/4 hunks
+ * source-level, 0/4 operand-only (tmp/grind/func_80052B7C/s15_sandbox_diff.txt). Ran
+ * spelling_enum.py against the full 5-statement body both without and with the operand-swap
+ * axis (tmp/grind/func_80052B7C/s15/enum, .../enum_swaps): both report "0 named locals, 0
+ * assignments, 5 anchors -> 1 distinct spellings" -- zero mutation axes at either setting
+ * (re-confirms s9, now covering the swap axis too). Region already spans the entire function
+ * body (no neighbouring block exists to widen into per the sweep SOP). CLASS KILL: the
+ * spelling-sweep search space on this chassis is provably empty; residual stays locked inside
+ * gte_SetRotMatrix's / gte_stlvl's own fixed __asm__ volatile strings. src/main/3AB48.c
+ * reverted to INCLUDE_ASM.
+ */
 #include <psxsdk/inline_c.h>
 void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
     gte_SetRotMatrix(rot);
