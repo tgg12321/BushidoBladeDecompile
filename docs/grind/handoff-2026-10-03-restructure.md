@@ -157,7 +157,9 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      follow three reset locals (waves 32/34 follow-up).
    - **Next:** (1) done (wave36); (2) done: check_completion_integrity audits every region grant,
      queued functions included (0acb573f0; it found wave36's stale func_8002D518 grant, re-keyed in
-     19e79eba0); (3) normal waves: the 98 member claims, ~50 types, R6 leads
+     19e79eba0); (3) normal waves — started under Q120 (f8d363fb6: lighter review for non-completion
+     work, Q119 bulk reset covers members): wave37 8f60223fb (ten members), wave38 94592ba69 (six
+     type names); still open: the rest of the 98 member claims, ~50 types, R6 leads
      in tmp/p3w2*/verdict_r6*.json (e.g. FAKE named intermediates still named `last`, `cx`/`cy`;
      member docs "fade level", "command cursor"); (4) the file-name pass. Further leads: func_8006BEC4's local `pos` (holds a size: RESET);
      Unk8003F824Rec.quad (no fresh neutral spelling for +0x04; member destinations must be unique
@@ -168,9 +170,10 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      cdrom_IrqHandler -> Sony local `callback`.
    - Wave mechanics learned: verify-oracle --rebuild needs --allow-dirty on the applied tree; a FAILed row is dropped
      or re-mined (a fresh reviewer per round); PASS-row evidence fixes from a reviewer are applied before commit.
-   - Prose debt (follow-up commits): docs/engine/*.md cite retired names (list in wave03's R6, commit 741468925 body);
-     ledger stubs memory/grind/_completed/*.json
-     keep old func names (naming_wave moves only layer2.jsonl: tool-scope question).
+   - Prose debt: docs/engine/*.md cite ~300 retired names (562 lines); many now sit on unrelated
+     functions, so a rename pass would mislead. Marked unverified in docs/engine/README.md (2985fbe90);
+     open: a content rewrite from src/. Ledger stubs memory/grind/_completed/*.json keep old func
+     names (naming_wave moves only layer2.jsonl: tool-scope question).
    - Codex lane (`tmp/codex/backlog.md`): C1 3353d059f, C3 212fb353c, C7 43f758f31 (naming_wave own-file P4)
      landed; C2 / C4 / C6 / C10-C12 research done (tmp/codex/c*-result.md); C5 (keycheck per-scope pairs,
      codex/keycheck-scoped-pairs) failed review rounds 4-13 on parser holes (verdicts in
@@ -193,13 +196,15 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
    - Codex scope (owner 2026-10-07): keep Codex out of the main working tree; containment against a rogue
      agent is not a goal. The isolated CODEX_HOME and the machine guard were withdrawn; read-only questions
      run in `codex_worker.py research` snapshots, write tasks in codex-worker worktrees.
-   - Debt: bank the keycheck probe suites (`tmp/p3s0/kc_test.sh`, `tmp/kcrev*/`, `tmp/rev-c5*/p2*.py`) as
-     engine tests; C5 notes (the docstring overclaims for hidden-flag paths outside the checked set;
-     the status field-count guard is untested; codex_worker trusted-worktree relative gitdir); keycheck hygiene (same_tokens belt, clang-format version check, report against the
-     formatted text); comment nits (25C38 "these files", the Makefile lb/lh section header); stale registry
-     comments; wave20 R6 optional prose (named_syms.txt block header counts near :781, the :801 note,
-     .claude/rules/store-before-jal.md:30 example). check_retired_names runs in the integrity audit
-     (729c7e9f6).
+   - Keycheck / C5 debt done (lane-debt 2026-10-16): kc_test.sh and the kcrev registry probes are the
+     engine test test_keycheck_probe_suite (567d2a707, follow-up 442d66956; the rev-c5 round probes were already in
+     test_naming_keycheck_scoped_pairs); the status field-count guard is tested; the hidden-flag
+     docstring states its scope; formatted() uses format.py's token belt and the pinned clang-format;
+     codex_worker creates the trusted worktree with a relative gitdir (f71a5a771); codexv-* worktrees
+     created before it keep absolute gitdirs (rewrite their `.git` by hand if WSL must read them). Prose nits done
+     (2985fbe90: Makefile lh header, 25C38, named_syms block counts and the D_800A3074 role; registry
+     header paths 144a4e745); store-before-jal example and Gate 1's dead rule-3a clause
+     (4ce272921, rule edit). check_retired_names runs in the integrity audit (729c7e9f6).
    - File split audit (2026-10-07, scripts `tmp/p3split/`, not kept): every byte-proven boundary is a cut; 9
      game-TU starts have no evidence either way (87A0, 175A4, 25C38, memcard, 28514, 28708, 2B344, 31CFC,
      31D3C) and no merge is provable; the large files hold several original TUs whose cuts the bytes cannot
@@ -215,10 +220,8 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      0x8004C1F4.., 0x8004C404..0x8004E564, one unplaceable start in 0x8004E564..0x80052720, and
      0x80052720..0x80052D00 (two starts land exactly on the previous padded end, ~1/16 by chance), plus the
      rodata-forced C|C cut before func_80058580. The bytes cannot decide between the two readings.
-   - Debt: `EXPAND_LB_FILES` (Makefile) is a byte no-op, since every file already gets `--expand-lb`.
-   - Debt: the retired-name comment scan (1035 names, 0 hits on 2026-10-07) and the 18-case naming_keycheck
-     probe suite were scratch (`tmp/p3s0/`); neither is an engine test. Each wave's keycheck covers only its
-     own pairs.
+   - `EXPAND_LB_FILES` retired (212fb353c). The retired-name comment scan is tools/check_retired_names.py
+     (729c7e9f6) and the 18-case keycheck probe suite an engine test (567d2a707).
 4. **Debt** —
    - Q96-Q99 retire as soon as a one-object spelling matches. Measured 2026-10-06 (Codex report, base
      71073622e; none retires): Q97 array / struct / union forms score func_8003B2C8 12, func_8003B328 16;
@@ -226,8 +229,21 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      17; Q99 direct members 2, typed state pointer 67, member pointers 6.
    - Comments in src/, inline_asm_canonical.txt row bodies and ledgers cite pre-restructure file names
      (D9: they stay; resolve via tu_renames.tsv).
-   - Game symbols still declared locally in several TUs (Phase 2 hoisted the identical ones, 84373e6f8).
-   - Hygiene rows in the 2026-10-03 commit bodies (`git log --grep="Hygiene debt" --since=2026-10-03`).
+   - Game symbols declared locally: Phase 2 hoisted the identical ones (84373e6f8); func_80073C78 followed
+     (c00bb6b7b). What remains is deliberate or blocked: tentative definitions (COMMON objects) that
+     repeat a bb2.h extern; AddPrim (3AB48's implicit-int `extern int AddPrim();`); snd_VabFakeOpen /
+     func_8005C2A8 / func_80054434 (original-call facts); block-scope externs of single-file symbols
+     (28708.c); memcard.c:68's redundant block extern (moves a layer-2 key); locals in 51268 / 17AFC /
+     368E4 / 9F9C.
+   - Hygiene rows in the commit bodies since 2026-10-03 (`git log --grep="Hygiene debt" --since=2026-10-03`,
+     about 120 rows): most are type/struct work inside function bodies (each needs a layer-2 review) or naming
+     waves. Closed since: scanner --min-score / --single (38d75f4cb, f5acc2732), Gate 1's rule-3a
+     clause (4ce272921), the libsn comments and patch.c extern (3eb169ae2), the gate-class wording (317d06e36).
+   - Landed 2026-10-15/16: GTE code as calls to the vendored PsyQ macros (rules 7c985b906 / c27c46d9a,
+     engine 5db6bb678..e81102135, 44 functions 197efb150; Q121 had rotated them until the infra landed,
+     0d903d116); vendored LIBSN.H pollhost() (ca393453a, 98b638a8a); re-audits (66 PsyQ library rows
+     45730ca3d, 59 game rows 451dcda57 on gate class S1/S2/S6-S11 e6764e5bd); rule 3a (7af45c6cd,
+     827a9defc), whose grants emptied the queue (c72c9d7e3, c9b8df219).
    - Resolved since: D_8007E08C fold + SpuGetVoiceVolume prototype (54e21bed1); data-as-code labels
      (d51106fd8, fdfb27257); self-vet nested citations (adb5c8ba8); internal-header scope grants
      (817e8d366); near_manifest SsUtGetDetVVol (0efaafd19); func_80031B24's &D_800A37E8 (Q117, 6151b1808).
