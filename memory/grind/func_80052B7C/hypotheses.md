@@ -642,3 +642,51 @@ bodies in full.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted
+
+## s11 (forensics)
+
+### H10 — [s11] Chunk 5's delay-slot divergence is decided at the assembler stage (maspsx's ASPSX model), not in cc1's reorg pass: cc1 leaves `j $31` unfilled in reorder mode after the asm insn, and maspsx unconditionally appends `nop` after every reorder-mode jump.
+- mechanism: s7 attributed the jr-slot miss to reorg.c:740 (stop_search_p). The emitted .s (dumps/main/3AB48.s:518-520, banked as tmp/grind/func_80052B7C/s11/3AB48_cc1.s) shows the attribution is incomplete: cc1 emits the whole tail as one `#APP` block followed by a bare `j $31` with NO `.set noreorder` and no slot fill — the slot decision is deferred to the assembler. tools/maspsx/maspsx/__init__.py:1484-1486 (`elif op in branch_mnemonics or op in jump_mnemonics: ... if self.is_reorder: res.append("nop  # DEBUG: branch/jump")`) always fills an unfilled reorder-mode jump with a nop; it has no path that swaps a preceding instruction into the slot. So in the build model the ONLY producer of a filled jr slot is cc1's reorg, which never selects an asm insn (s7), and mips.md has no cop2-store pattern for C to reach swc2 any other way.
+- probe: re-ran the assembler stage by hand on the cc1 output of the legal chassis (tmp/grind/func_80052B7C/s11/asm_stage.sh: maspsx --aspsx-version=2.34 -G8 then mipsel-linux-gnu-as with the Makefile AS_FLAGS; output maspsx_out.s / maspsx_out.s.o).
+- result: maspsx_out.s shows `j $31` then `nop  # DEBUG: branch/jump`; objdump of maspsx_out.s.o reproduces our sandbox body word-for-word (…swc2 $9; swc2 $10; swc2 $11; jr ra; nop). Also: mvmva is emitted as `.word 0x4A480012` (inline_c.h gte_rt), so maspsx cannot see it as a cop2 op and inserts no post-command hazard nop — target's `mvmva; nop; swc2` is a second assembler-level / hand-placed artifact, not a cc1 pass output. Sandbox (legal chassis, applied to src then reverted) re-measured 19, 4/4 hunks source-level (s11/sandbox_diff.txt).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal macro-call chassis gte_SetRotMatrix/gte_ldtr((s32)..)/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, no FAKE construct, applied to src/main/3AB48.c and reverted; assembler stage re-run by hand on its cc1 output
+- predicate_cite: tools/maspsx/maspsx/__init__.py:1484
+
+### H11 — [s11] The `cop2-class instruction in the jr $ra delay slot` signature does not occur in any compiled-C function of the oracle EXE; it occurs in exactly 5 functions, all contiguous in the 3AB48 GTE cluster, 4 of which already hold inline_asm_canonical.txt grants.
+- mechanism: if ASPSX/cc1psx could produce a cop2 store/ctc2 in a jr slot from C (e.g. by assembler-side slot filling after an asm statement), some compiled game function ending in a GTE macro would show it. Sony's own hand-written libgte (0x8007E000+) uses `jr; nop`, so the cluster is not Sony libgte assembled with the shipped style either — it is a distinct hand-assembled cluster.
+- probe: tmp/grind/func_80052B7C/s11/jr_census.py scans every `jr $ra` (0x03E00008) word in disc/SLUS_006.63, classifying the slot and the preceding word (cop2 op 0x12 / lwc2 0x32 / swc2 0x3A / nop / other), mapping addresses to asm/funcs names.
+- result (s11/jr_census.txt): slot holds a cop2-class insn at exactly 5 sites — gte_SetMatrixRotTransIR (0x80052A80), gte_SetMatrixRotTransIRVec (0x80052AF8), gte_SetRotTransMatrix (0x80052B3C), gte_SetRotMatrixClearTrans (0x80052B74), func_80052B7C (0x80052BDC). Totals: (prev,slot) swc2/swc2 3, cop2/cop2 2, cop2/nop 14, swc2/nop 7 (all 21 nop-slot cop2 sites are Sony libgte at 0x8007E1F4..0x8007F210 plus func_80052C4C), other/nop 1134. The 4 siblings are already granted at inline_asm_canonical.txt:335, :338, :339, :341 citing this exact signature; func_80052B7C's row :340 is the only one of the five under audit.
+- verdict: CONFIRMED
+- note: this is the measured data a `cop2 store in jr delay slot` gate-class scanner signal would need (frontier item 1). Adding it is an engine/tools change outside a grind session's surface.
+
+### H12 — [s11] Mandated census tools surface no C-level lever on this function.
+- probe: label_census.py, nrefs_census.py, loop_movables.py (outputs s11/label_census.txt, nrefs_census.txt, loop_movables.txt).
+- result: label_census — target 26 insns, 0 labels, 0 callee-saved refs (no branch structure to retarget); loop_movables — no loops; nrefs_census — no ALLOCDBG rows (the body has only 3 allocated pseudos, the TR halfwords, already shown in s10 .lreg as 77/80/83 -> a0/v1/v0). Nothing for LICM / cross-jump / allocno-order levers to act on.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted
+
+## [s11] Chunk 5's divergence (target swc2 $11 in the jr $ra slot, ours jr+nop) is produced by maspsx, which appends a nop to every unfilled reorder-mode jump and has no path that swaps a preceding instruction into the slot; cc1 only leaves the j $31 unfilled after the asm block.
+- mechanism: cc1 emits the tail as one #APP block followed by a bare reorder-mode `j $31` (no .set noreorder, no slot fill: reorg never selects an asm insn). maspsx __init__.py:1484-1486 then emits `nop  # DEBUG: branch/jump`. mips.md has no cop2 store pattern, so no C-level insn can be the reorg-filled swc2.
+- probe: Applied the legal chassis to src, ran dump.ps1, read the emitted .s; re-ran maspsx --aspsx-version=2.34 -G8 + mipsel-linux-gnu-as (Makefile AS_FLAGS) by hand on the cc1 output (tmp/grind/func_80052B7C/s11/asm_stage.sh).
+- result: maspsx_out.s shows `j $31` followed by `nop  # DEBUG: branch/jump`, and objdump of the result reproduces our sandbox body word for word. mvmva is a `.word 0x4A480012`, so maspsx adds no hazard nop after it, which accounts for the second hunk. Sandbox still measures 19 with 4/4 hunks source-level.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal macro-call chassis gte_SetRotMatrix/gte_ldtr((s32)..)/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, no FAKE construct, applied to src/main/3AB48.c then reverted; assembler stage re-run by hand
+- predicate_cite: tools/maspsx/maspsx/__init__.py:1484
+
+## [s11] The cop2-class-instruction-in-jr-$ra-delay-slot signature occurs in the oracle EXE only in the contiguous 3AB48 GTE cluster (5 functions including func_80052B7C), never in compiled C, and the other 4 cluster members already hold canonical-asm grants citing it.
+- mechanism: If the original toolchain could produce a cop2 op in a jr slot from C, some compiled game function ending in a GTE macro would show it. Sony's hand-written libgte uses jr;nop, so the cluster is a separate hand-assembled group.
+- probe: tmp/grind/func_80052B7C/s11/jr_census.py scans every jr $ra word in disc/SLUS_006.63, classifies the slot and the previous word, and maps them to asm/funcs names.
+- result: There are exactly 5 slot sites: 0x80052A80, 0x80052AF8, 0x80052B3C, 0x80052B74 and 0x80052BDC (func_80052B7C). The 21 cop2/swc2-then-nop sites are Sony libgte plus func_80052C4C, and 1134 other jr sites have a nop slot. The siblings are granted at inline_asm_canonical.txt:335/:338/:339/:341.
+- verdict: CONFIRMED
+
+## [s11] The mandated census tools (label_census, loop_movables, nrefs_census) expose a C-level lever on the legal chassis.
+- mechanism: Label, LICM and allocno-order levers need branch targets, loops or competing pseudos.
+- probe: I ran all three tools on the chassis applied to src. Outputs are in tmp/grind/func_80052B7C/s11/{label_census,loop_movables,nrefs_census}.txt.
+- result: The target has 26 insns, 0 labels and 0 callee-saved refs. There are no loops and no ALLOCDBG rows; the only 3 allocated pseudos are the TR halfwords, already mapped in s10. Nothing for these tools to act on.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted

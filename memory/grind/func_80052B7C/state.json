@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 10,
- "current_modality": "solver",
+ "session_count": 11,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -63,13 +63,19 @@
    "floor": 19,
    "modality": "solver",
    "headline": "s10 solver: classify = RA-first; target's t0..t7 data registers (v0/v1 untouched) are not an allocator output (lowest-free scan, local-alloc.c:2249; 8-operand probe gives v0,v1,t0..t5) and no vendored"
+  },
+  {
+   "session": 11,
+   "floor": 19,
+   "modality": "forensics",
+   "headline": "s11 forensics: chunk-5 jr-slot residual is decided at the maspsx assembler stage (always-nop, __init__.py:1484), not cc1; EXE census shows a cop2 insn in a jr $ra slot only in the 5-function 3AB48 GTE"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A gate-class scan_hand_coded signal (e.g. fixed $8-$15 data regs with v0/v1 free in a leaf, or a cop2 store in a jr delay slot) lifts func_80052B7C to STRONG so the inline_asm_canonical.txt:340 whole-body grant holds.",
-   "mechanism": "s10 shows target registers are not allocator output (local-alloc.c:2249) and s7 shows the jr-slot swc2 is not reorg output (reorg.c:740); both are hand-written signatures the scanner lacks.",
-   "next_probe": "Engine-side scanner signal addition (escalation/owner-cluster modality), not a C edit."
+   "hypothesis": "A scan_hand_coded gate-class signal for 'cop2-class insn in the jr $ra delay slot' lifts func_80052B7C to STRONG. The s11 census shows 5/5 hits are the GTE cluster, 4 of them already granted, with 0 compiled-C false positives, so the inline_asm_canonical.txt:340 whole-body grant holds.",
+   "mechanism": "cc1 never fills a slot with an asm insn (reorg.c:740), and the assembler model always appends a nop (maspsx __init__.py:1484), so that slot shape has no C producer in this toolchain.",
+   "next_probe": "Engine-side scanner signal addition backed by s11/jr_census.txt (escalation/owner-cluster modality), not a C edit."
   }
  ],
  "judge_constraints": [
@@ -188,6 +194,22 @@
    "measured_on": "legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted",
    "predicate_cite": "",
    "result": "fake_ablate: no FAKE-annotated constructs, nothing to ablate. Sandbox: 19, unchanged."
+  },
+  {
+   "session": 11,
+   "statement": "Chunk 5's divergence (target swc2 $11 in the jr $ra slot, ours jr+nop) is produced by maspsx, which appends a nop to every unfilled reorder-mode jump and has no path that swaps a preceding instruction",
+   "kill_scope": "class",
+   "measured_on": "legal macro-call chassis gte_SetRotMatrix/gte_ldtr((s32)..)/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, no FAKE construct, applied to src/main/3AB48.c then reverted; assembler stage re-run by han",
+   "predicate_cite": "tools/maspsx/maspsx/__init__.py:1484",
+   "result": "maspsx_out.s shows `j $31` followed by `nop  # DEBUG: branch/jump`, and objdump of the result reproduces our sandbox bod"
+  },
+  {
+   "session": 11,
+   "statement": "The mandated census tools (label_census, loop_movables, nrefs_census) expose a C-level lever on the legal chassis.",
+   "kill_scope": "instance",
+   "measured_on": "legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted",
+   "predicate_cite": "",
+   "result": "The target has 26 insns, 0 labels and 0 callee-saved refs. There are no loops and no ALLOCDBG rows; the only 3 allocated"
   }
  ],
  "ladder_skip": 0,

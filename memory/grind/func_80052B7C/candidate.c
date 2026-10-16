@@ -114,6 +114,12 @@
  * C-level syntax spelling_enum.py's region scanner can see or vary. CLASS KILL for the
  * spelling-sweep search space on this chassis. See hypotheses.md s9/H8.
  */
+/* s11 (forensics): body unchanged, re-measured 19. Chunk 5 is decided at the ASSEMBLER stage:
+ * cc1 emits a bare reorder-mode `j $31` after the #APP block and maspsx always appends a nop
+ * (tools/maspsx/maspsx/__init__.py:1484). EXE census (tmp/grind/func_80052B7C/s11/jr_census.txt):
+ * a cop2 insn in the jr $ra slot occurs only in the 5-function 3AB48 GTE cluster, 0 compiled-C
+ * sites; the 4 siblings are granted (inline_asm_canonical.txt:335/338/339/341). See hypotheses.md H10-H12.
+ */
 #include <psxsdk/inline_c.h>
 void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
     gte_SetRotMatrix(rot);

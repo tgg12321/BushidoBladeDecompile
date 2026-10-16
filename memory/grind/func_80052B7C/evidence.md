@@ -322,3 +322,20 @@ question rather than resolved here.
 - [s10] no vendored GTE header contains lw $8..$11
 
 - [s10] Combined with s7 (reorg.c:740 jr-slot) and s8 (fixed-string macro order), all three backend layers (pre-RA order, RA, delay slot) are now closed on vendored-macro chassis; target shape (t0..t7, nop after mvmva, swc2 in jr slot) fits a hand-written leaf
+
+## s11 (forensics)
+- [s11] Legal chassis re-measured 19, 4/4 source-level (tmp/grind/func_80052B7C/s11/sandbox_diff.txt). No FAKE constructs (re-audit: nothing to ablate).
+- [s11] cc1 emits the tail as one #APP block + bare `j $31` in reorder mode (s11/3AB48_cc1.s); the slot is filled by maspsx with `nop  # DEBUG: branch/jump` (tools/maspsx/maspsx/__init__.py:1484-1486), never by swapping. s7's reorg.c:740 attribution is correct but incomplete: the assembler stage is the actual deciding layer, and it has no fill path either. Hand re-run of maspsx+as (s11/asm_stage.sh -> maspsx_out.s.o) reproduces our body word-for-word.
+- [s11] gte_rt's mvmva is a `.word` (inline_c.h), so maspsx inserts no post-cop2 nop; target's nop after mvmva is not a cc1 output.
+- [s11] jr-slot census of the oracle EXE (s11/jr_census.py/.txt): cop2-class insn in the jr $ra slot at exactly 5 sites, all in the 3AB48 GTE cluster (gte_SetMatrixRotTransIR, gte_SetMatrixRotTransIRVec, gte_SetRotTransMatrix, gte_SetRotMatrixClearTrans, func_80052B7C); 0 compiled-C sites; Sony libgte uses jr;nop. The 4 siblings hold grants at inline_asm_canonical.txt:335/:338/:339/:341.
+- [s11] label_census / loop_movables / nrefs_census: no labels, no loops, no ALLOCDBG rows — no C-level lever surface.
+
+- [s11] fact: legal chassis re-measured 19, 4/4 hunks source-level, 0 operand-only (tmp/grind/func_80052B7C/s11/sandbox_diff.txt); no FAKE constructs to ablate
+
+- [s11] fact: cc1 output for the chassis ends with an #APP block followed by a bare `j $31` in reorder mode (tmp/grind/func_80052B7C/s11/3AB48_cc1.s)
+
+- [s11] fact: maspsx __init__.py:1484-1486 always appends a nop after reorder-mode jumps; a hand re-run of maspsx+as reproduces our body exactly (s11/maspsx_out.s.o)
+
+- [s11] fact: gte_rt's mvmva is a raw .word in inline_c.h, so no assembler hazard nop follows it; target's nop after mvmva is not a cc1 output
+
+- [s11] fact: EXE census finds a cop2 insn in the jr $ra slot at only 5 sites, all in the 3AB48 GTE cluster, with 0 compiled-C sites (s11/jr_census.txt)
