@@ -513,7 +513,7 @@ def generate(workdir: str = "tmp/queue", preserve: bool = True) -> dict:
                             and kept.get("status") == "active"):
                         kept["verdict"] = "C"
                         note = ("2026-08-18 re-gate: scan_hand_coded tier=LOW "
-                                "(no S1/S2/S6) - ASM-SUSPECT label was a "
+                                "(no gate-class S1/S2/S6-S11) - ASM-SUSPECT label was a "
                                 "distance artifact; ordinary pure-C target")
                         kept["regate"] = (kept["regate"] + " | " + note
                                           if kept.get("regate") else note)

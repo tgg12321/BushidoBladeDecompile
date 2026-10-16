@@ -56,8 +56,8 @@ from . import cheats, completion
 #
 # 2026-08-18 follow-up: a four-agent triage of all 47 ASM-SUSPECT queue items
 # found ZERO hand-coded candidates (every one tier LOW, none of the decisive
-# S1/S2/S6 signals) — the band is dominated by functions with NO C body written
-# yet, whose "distance" is just the full instruction count. A scanner-confirmed
+# gate-class S1/S2/S6-S11 signals) — the band is dominated by functions with
+# NO C body written yet, whose "distance" is just the full instruction count. A scanner-confirmed
 # LOW tier is therefore treated as affirmative counter-evidence and the item is
 # re-verdicted an ordinary C target; the tier is recorded on the verdict so the
 # evidence travels with the routing.
