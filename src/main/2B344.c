@@ -2378,6 +2378,10 @@ typedef struct {
     /* 0x468 */ u8 data[1];
 } Unk8003F62CRec;
 
+extern void func_8003F6D8(Unk8003F62CRec *);
+extern void func_8004001C(Unk8003F62CRec *);
+extern void func_80040068(Unk8003F62CRec *);
+
 void func_8003F62C(Unk80045878Obj *a0) {
     Unk8003F62CRec *s0;
     s0 = a0->unk_24;
