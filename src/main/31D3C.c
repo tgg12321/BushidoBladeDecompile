@@ -112,8 +112,6 @@ after2:
                             var_1->unk_18.byte[0]);
         func_80041398((v << 16) | (v << 8) | v);
     } else {
-        /* FAKE: r / g / b read into locals ahead of the call; read in the
-         * argument expression the frame grows 0x38 -> 0x40 (score 8). */
         r = var_1->unk_18.byte[0];
         g = var_1->unk_18.byte[1];
         b = var_1->unk_18.byte[2];
