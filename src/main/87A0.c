@@ -640,20 +640,13 @@ void pad_Update(s32 arg0) {
         /* FAKE: rec holds (u8 *)var_1 + i * 8 for the loop body; indexing
          * from var_1 at each read adds a second induction (score 18). */
         u8 *rec = (u8 *)var_1 + i * 8;
-        s32 var_6 = 0;
         s32 bits;
 
         if (rec[0] == 0) {
             s32 type_m1;
 
             pad.type[i] = rec[1] >> 4;
-            var_6 = 1;
-            /* FAKE: `pad.valid[i] = var_6;` duplicated into both arms keeps
-             * loop.c from hoisting the `1`, which fills the lhu delay slot; a
-             * single store after the join: score 21 (family:
-             * duplicated-statement-into-arms, rule
-             * duplicated-statement-into-arms) */
-            pad.valid[i] = var_6;
+            pad.valid[i] = 1;
             type_m1 = (s16)((u16)pad.type[i] - 1);
 
             switch (type_m1) {
@@ -674,7 +667,7 @@ void pad_Update(s32 arg0) {
             }
         } else {
             pad.type[i] = 4;
-            pad.valid[i] = var_6;
+            pad.valid[i] = 0;
             bits = 0;
         }
 
