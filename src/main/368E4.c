@@ -1637,7 +1637,6 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     MATRIX mtx;
     SVECTOR rot;
     s32 index;
-    s32 scale;
     s32 old;
     s16 *indices;
     void **list;
@@ -1655,10 +1654,8 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     rot.vx = 0x1770;
     rot.vy = 0;
     rot.vz = 0;
-    /* FAKE: constant holder for the 0x1770 radius; the literal scores 20 */
-    scale = 0x1770;
-    rot.vz = ((s32)Judge[arg0 & 0xFFF] * scale) >> 12;
-    rot.vx = ((s32)Judge[(arg0 + 0x400) & 0xFFF] * scale) >> 12;
+    rot.vz = ((s32)Judge[arg0 & 0xFFF] * rot.vx) >> 12;
+    rot.vx = ((s32)Judge[(arg0 + 0x400) & 0xFFF] * rot.vx) >> 12;
     node = (Unk80045878Node *)D_800A33E4;
     ApplyMatrix(mat_tbl[0], &rot, (VECTOR *)D_800FF558.t);
     D_800FF558.t[0] += mat_tbl[0]->t[0];
@@ -1681,18 +1678,10 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     D_800FF558.m[2][1] = mtx.m[1][2];
     D_800FF558.m[2][2] = mtx.m[2][2];
 
-    goto test_index;
-copy_index:
-    node->node.xf.mat = *mat_tbl[index];
-    list = g_draw_queue_cursor;
-    g_draw_queue_cursor = list + 1;
-    *list = node;
-    node++;
-test_index:
-    index = *indices;
-    indices++;
-    if (index >= 0) {
-        goto copy_index;
+    while ((index = *indices++) >= 0) {
+        node->node.xf.mat = *mat_tbl[index];
+        *g_draw_queue_cursor++ = node;
+        node++;
     }
     if (arg1 >= 0) {
         node->node.xf.mat = *mat_tbl[18];
