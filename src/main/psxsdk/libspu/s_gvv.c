@@ -20,8 +20,6 @@ static inline void assign(u16 val, s16 *out) {
 
 void SpuGetVoiceVolume(s32 arg0, s16 *arg1, s16 *arg2) {
     u16 left = _spu_RXX->raw[arg0 * 8];
-    /* FAKE: read ahead of the left channel's store (the two lhu together); read
-     * at its assign: score 14 */
     u16 right = _spu_RXX->raw[arg0 * 8 + 1];
 
     assign(left, arg1);
