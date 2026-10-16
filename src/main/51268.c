@@ -1745,43 +1745,31 @@ s32 func_800646E8(void) {
 extern s32 D_800F10E0;
 
 void func_80064E90(void) {
-    /* FAKE: named intermediate - with word 2 read inline, the D_800F0BA8 store
-       (`sh`) rises above the unk4 store and the word-2 read (score 4) */
-    s32 last;
     D_800F0CA0[0].unk0 = D_800A347C[0];
     D_800F0CA0[0].unk4 = D_800A347C[1];
-    last = D_800A347C[2];
+    D_800F0CA0[0].unk8 = D_800A347C[2];
     D_800F10E0 = 1;
     D_800F0BA8[0] = 0;
-    D_800F0CA0[0].unk8 = last;
 }
 
 extern s32 D_800F10E4;
 
 void func_80064ED8(void) {
-    /* FAKE: named intermediate - with word 2 read inline, the D_800F0BA8 store
-       (`sh`) rises above the unk4 store and the word-2 read (score 4) */
-    s32 last;
     D_800F0CA0[1].unk0 = D_800A347C[0];
     D_800F0CA0[1].unk4 = D_800A347C[1];
-    last = D_800A347C[2];
+    D_800F0CA0[1].unk8 = D_800A347C[2];
     D_800F10E4 = 1;
     D_800F0BA8[1] = 0;
-    D_800F0CA0[1].unk8 = last;
 }
 
 extern s32 D_800F10E8;
 
 void func_80064F20(void) {
-    /* FAKE: named intermediate - with word 2 read inline, the D_800F0BA8 store
-       (`sh`) rises above the unk4 store and the word-2 read (score 4) */
-    s32 last;
     D_800F0CA0[2].unk0 = D_800A347C[0];
     D_800F0CA0[2].unk4 = D_800A347C[1];
-    last = D_800A347C[2];
+    D_800F0CA0[2].unk8 = D_800A347C[2];
     D_800F10E8 = 1;
     D_800F0BA8[2] = 0;
-    D_800F0CA0[2].unk8 = last;
 }
 
 extern s32 D_800F10F4;
@@ -1830,15 +1818,11 @@ s32 func_80065000(void) {
     /* FAKE: the word is read through an s32 *, not as a member: a member read
      * rises above the D_800F10FC store and fills its load delay: score 9 / 8 */
     s32 *q = &D_800A3468->unk00.w;
-    /* FAKE: named intermediate - with word 2 read inline, the D_800F0BA8 store
-       (`sh`) rises above the unk4 store and the word-2 read (score 4) */
-    s32 last;
     D_800F0CA0[5].unk0 = D_800A347C[0];
     D_800F0CA0[5].unk4 = D_800A347C[1];
-    last = D_800A347C[2];
+    D_800F0CA0[5].unk8 = D_800A347C[2];
     D_800F10FC = 1;
     D_800F0BA8[5] = 0;
-    D_800F0CA0[5].unk8 = last;
     D_800A3440 = (*q >> 19) & 3;
     return 1;
 }
@@ -1846,127 +1830,89 @@ s32 func_80065000(void) {
 extern s32 D_800F1100;
 
 void func_8006505C(void) {
-    /* FAKE: named intermediate - with word 2 read inline, the D_800F0BA8 store
-       (`sh`) rises above the unk4 store and the word-2 read (score 4) */
-    s32 last;
     D_800F0CA0[6].unk0 = D_800A347C[0];
     D_800F0CA0[6].unk4 = D_800A347C[1];
-    last = D_800A347C[2];
+    D_800F0CA0[6].unk8 = D_800A347C[2];
     D_800F1100 = 1;
     D_800F0BA8[6] = 0;
-    D_800F0CA0[6].unk8 = last;
 }
 
 extern s32 D_800F1104;
 
 void func_800650A4(void) {
-    /* FAKE: named intermediate - with word 2 read inline, the D_800F0BA8 store
-       (`sh`) rises above the unk4 store and the word-2 read (score 4) */
-    s32 last;
     D_800F0CA0[7].unk0 = D_800A347C[0];
     D_800F0CA0[7].unk4 = D_800A347C[1];
-    last = D_800A347C[2];
+    D_800F0CA0[7].unk8 = D_800A347C[2];
     D_800F1104 = 1;
     D_800F0BA8[7] = 0;
-    D_800F0CA0[7].unk8 = last;
 }
 
 extern s32 D_800F1108;
 
 void func_800650EC(void) {
-    /* FAKE: named intermediate - with word 2 read inline, the D_800F0BA8 store
-       (`sh`) rises above the unk4 store and the word-2 read (score 4) */
-    s32 last;
     D_800F0CA0[10].unk0 = D_800A347C[0];
     D_800F0CA0[10].unk4 = D_800A347C[1];
-    last = D_800A347C[2];
+    D_800F0CA0[10].unk8 = D_800A347C[2];
     D_800F1108 = 1;
     D_800F0BA8[10] = 0;
-    D_800F0CA0[10].unk8 = last;
 }
 
 extern s32 D_800F110C;
 
 void func_80065134(void) {
-    /* FAKE: named intermediate - with word 2 read inline, the D_800F0BA8 store
-       (`sh`) rises above the unk4 store and the word-2 read (score 4) */
-    s32 last;
     D_800F0CA0[11].unk0 = D_800A347C[0];
     D_800F0CA0[11].unk4 = D_800A347C[1];
-    last = D_800A347C[2];
+    D_800F0CA0[11].unk8 = D_800A347C[2];
     D_800F110C = 1;
     D_800F0BA8[11] = 0;
-    D_800F0CA0[11].unk8 = last;
 }
 
 extern s32 D_800F1110;
 
 void func_8006517C(void) {
-    /* FAKE: named intermediates - with a copy's word 2 stored directly, that
-       copy's D_800F0BA8 store (`sh`) rises above its unk4 store and the word-2
-       read (score 4 each, 8 both) */
-    s32 t;
-    s32 t2;
     D_800F0CA0[12].unk0 = D_800A347C[0];
     D_800F0CA0[12].unk4 = D_800A347C[1];
-    t = D_800A347C[2];
+    D_800F0CA0[12].unk8 = D_800A347C[2];
     D_800F0BA8[12] = 0;
-    D_800F0CA0[12].unk8 = t;
     D_800F0CA0[14].unk0 = D_800A347C[0];
     D_800F0CA0[14].unk4 = D_800A347C[1];
-    t2 = D_800A347C[2];
+    D_800F0CA0[14].unk8 = D_800A347C[2];
     D_800F1110 = 1;
     D_800F0BA8[14] = 0;
-    D_800F0CA0[14].unk8 = t2;
 }
 
 extern s32 D_800F1114;
 
 void func_800651F0(void) {
-    /* FAKE: named intermediates - with a copy's word 2 stored directly, that
-       copy's D_800F0BA8 store (`sh`) rises above its unk4 store and the word-2
-       read (score 4 each, 8 both) */
-    s32 t;
-    s32 t2;
     D_800F0CA0[13].unk0 = D_800A347C[0];
     D_800F0CA0[13].unk4 = D_800A347C[1];
-    t = D_800A347C[2];
+    D_800F0CA0[13].unk8 = D_800A347C[2];
     D_800F0BA8[13] = 0;
-    D_800F0CA0[13].unk8 = t;
     D_800F0CA0[15].unk0 = D_800A347C[0];
     D_800F0CA0[15].unk4 = D_800A347C[1];
-    t2 = D_800A347C[2];
+    D_800F0CA0[15].unk8 = D_800A347C[2];
     D_800F1114 = 1;
     D_800F0BA8[15] = 0;
-    D_800F0CA0[15].unk8 = t2;
 }
 
 extern s32 D_800F1118;
 
 void func_80065264(void) {
-    /* FAKE: named intermediate - with word 2 read inline, the D_800F0BA8 store
-       (`sh`) rises above the unk4 store and the word-2 read (score 4) */
-    s32 last;
     D_800F0CA0[16].unk0 = D_800A347C[0];
     D_800F0CA0[16].unk4 = D_800A347C[1];
-    last = D_800A347C[2];
+    D_800F0CA0[16].unk8 = D_800A347C[2];
     D_800F1118 = 1;
     D_800F0BA8[16] = 0;
-    D_800F0CA0[16].unk8 = last;
 }
 
 extern s32 D_800F111C;
 
 void func_800652AC(void) {
-    /* FAKE: named intermediate - with word 2 read inline, the D_800F0BA8 store
-       (`sh`) rises above the unk4 store and the word-2 read (score 4) */
-    s32 last;
     D_800F0CA0[17].unk0 = D_800A347C[0];
     D_800F0CA0[17].unk4 = D_800A347C[1];
-    last = D_800A347C[2];
+    D_800F0CA0[17].unk8 = D_800A347C[2];
     D_800F111C = 1;
     D_800F0BA8[17] = 0;
-    D_800F0CA0[17].unk8 = last;
 }
 
 u8 func_80065800(s32);
