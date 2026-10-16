@@ -242,35 +242,28 @@ extern s32 D_800A3240;
 extern char D_8001528C[];
 
 s32 ndata_ReadChecked(s32 a0, s32 a1) {
-    s32 v0;
-    s32 s0;
+    s32 size;
+    s32 len;
 
-    s0 = a1 - (s32)arena_GetBase();
-    if (s0 < 0) {
-        goto set_from_table;
-    }
-    v0 = arena_GetSize();
-    if (s0 >= v0) {
-        goto set_from_table;
-    }
-    if (D_800A3240 != 0) {
-        s0 = D_800963EC[a0].length_sectors << 11;
-    } else {
-        s0 = 0;
-    }
-    v0 = arena_GetFreeSize();
-    if (v0 < s0) {
-        printf(D_8001528C, a0, s0 - v0);
-        while (1) {
-            func_800164F8();
+    size = a1 - (s32)arena_GetBase();
+    if (size >= 0 && size < arena_GetSize()) {
+        if (D_800A3240 != 0) {
+            size = D_800963EC[a0].length_sectors << 11;
+        } else {
+            size = 0;
         }
+        len = arena_GetFreeSize();
+        if (len < size) {
+            printf(D_8001528C, a0, size - len);
+            while (1) {
+                func_800164F8();
+            }
+        }
+    } else {
+        size = D_800963EC[a0].length_sectors << 11;
     }
-    goto do_return;
-set_from_table:
-    s0 = D_800963EC[a0].length_sectors << 11;
-do_return:
     ndata_Read(a0, a1);
-    return s0;
+    return size;
 }
 
 extern s32 arena_GetFreeSize(void);
