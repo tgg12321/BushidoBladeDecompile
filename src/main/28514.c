@@ -17,8 +17,7 @@ extern s32 D_800A37F4;
 
 s32 func_80037D14(s32 arg0, s32 arg1) {
     s32 p = (arg0 << 4) + arg1;
-    s32 v1;
-    s32 v0;
+    s32 ev;
 
     switch (D_800A31EC) {
     case 0:
@@ -27,94 +26,72 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
         g_memcard_poll_count = 0;
         D_800A3890 = 0;
         break;
-    case 1: {
-        v1 = memcard_PollSwEventsTimeout();
-        if (v1 == 0)
+    case 1:
+        ev = memcard_PollSwEventsTimeout();
+        if (ev == 0) {
             break;
-        if (v1 == 2)
-            goto c1_e20;
-        if (v1 < 3) {
-            if (v1 == 1)
-                goto c1_dc4;
-            v0 = -3;
-            goto c1_e24;
         }
-        if (v1 == 3)
-            goto c1_dec;
-        if (v1 == 4)
-            goto c1_df4;
-        v0 = -3;
-        goto c1_e24;
-    c1_dc4:
-        v0 = D_800A31E8;
-        D_800A37F4 = v1;
-        if (v0 == 0)
-            goto c1_de0;
-        D_800A31EC = 4;
+        switch (ev) {
+        case 1:
+            D_800A37F4 = ev;
+            if (D_800A31E8 != 0) {
+                D_800A31EC = 4;
+            } else {
+                D_800A31EC = 2;
+            }
+            break;
+        case 3:
+            D_800A37F4 = -1;
+            D_800A31EC = 4;
+            D_800A31E8 = 0;
+            break;
+        case 4:
+            D_800A37F4 = 2;
+            memcard_AckHwEvents();
+            _card_clear(p);
+            memcard_WaitHwEvent();
+            D_800A31EC = 2;
+            D_800A31E8 = 0;
+            break;
+        case 2:
+        default:
+            D_800A37F4 = -3;
+            D_800A31EC = 4;
+            D_800A31E8 = 0;
+            break;
+        }
         break;
-    c1_de0:
-        D_800A31EC = 2;
-        break;
-    c1_dec:
-        v0 = -1;
-        goto c1_e24;
-    c1_df4:
-        D_800A37F4 = 2;
-        memcard_AckHwEvents();
-        _card_clear(p);
-        memcard_WaitHwEvent();
-        D_800A31EC = 2;
-        D_800A31E8 = 0;
-        break;
-    c1_e20:
-        v0 = -3;
-    c1_e24:
-        D_800A37F4 = v0;
-        D_800A31EC = 4;
-        D_800A31E8 = 0;
-        break;
-    }
     case 2:
         memcard_AckSwEvents();
         _card_load(p);
         D_800A31EC = 3;
         g_memcard_poll_count = 0;
         break;
-    case 3: {
-        v1 = memcard_PollSwEventsTimeout();
-        if (v1 == 0)
+    case 3:
+        ev = memcard_PollSwEventsTimeout();
+        if (ev == 0) {
             break;
-        D_800A31EC = 4;
-        if (v1 == 2)
-            goto c3_ecc;
-        if (v1 < 3) {
-            if (v1 == 1)
-                goto c3_eb8;
-            v0 = -3;
-            goto c3_ed0;
         }
-        if (v1 == 3)
-            goto c3_ec4;
-        if (v1 == 4)
-            goto c3_ea8;
-        v0 = -3;
-        goto c3_ed0;
-    c3_eb8:
-        D_800A31E8 = v1;
+        D_800A31EC = 4;
+        switch (ev) {
+        case 1:
+            D_800A31E8 = ev;
+            break;
+        case 3:
+            D_800A37F4 = -1;
+            D_800A31E8 = 0;
+            break;
+        case 4:
+            D_800A37F4 = -2;
+            D_800A31E8 = 0;
+            break;
+        case 2:
+        default:
+            D_800A37F4 = -3;
+            D_800A31E8 = 0;
+            break;
+        }
         break;
-    c3_ec4:
-        v0 = -1;
-        goto c3_ed0;
-    c3_ea8:
-        v0 = -2;
-        goto c3_ed0;
-    c3_ecc:
-        v0 = -3;
-    c3_ed0:
-        D_800A37F4 = v0;
-        D_800A31E8 = 0;
-        break;
-    }
     case 4:
         D_800A3890 = D_800A37F4;
         D_800A31EC = 0;
