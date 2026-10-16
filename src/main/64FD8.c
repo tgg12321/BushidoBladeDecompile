@@ -1637,6 +1637,7 @@ Unk8006E49CRec *func_80078634(s32 a0) { return &D_800A360C[a0]; }
 void func_80078654(Unk800788B0Rec *arg0) {
     Unk8007352CRec s;
     Unk8009B0E0Record **var_s0;
+    s32 i;
     /* FAKE: constant-holder keeps the 0 argument in a register across the
        calls; the literal: score 7 */
     s32 zero;
@@ -1667,39 +1668,16 @@ void func_80078654(Unk800788B0Rec *arg0) {
         arg0->unk_14++;
     }
     s.has_color = 0;
-    goto check;
-loop:
-    /* FAKE: 8-deep do-while(0) raises var_s0's loop-weighted reference count
-       so it is allocated $s0 ahead of arg0 ($s1); depth 8 is the minimum.
-       Unwrapped: score 19 (do-while-zero-exception) */
-    do {
-        do {
-            do {
-                do {
-                    do {
-                        do {
-                            do {
-                                do {
-                                    s.header = var_s0[0];
-                                    s.table = s.header->cells;
-                                    s.y = -D_800A3608;
-                                } while (0);
-                            } while (0);
-                        } while (0);
-                    } while (0);
-                } while (0);
-            } while (0);
-        } while (0);
-    } while (0);
-    s.sprt_out = arg0->unk_0C;
-    arg0->unk_0C = func_8007352C(&s);
-    SetDrawMode(arg0->unk_14, 1, 0, func_8006E480(s.header, zero), 0);
-    AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_14);
-    var_s0++;
-    arg0->unk_14++;
-check:
-    if (var_s0[1] != (Unk8009B0E0Record *)-1)
-        goto loop;
+    for (i = 0; var_s0[i + 1] != (Unk8009B0E0Record *)-1; i++) {
+        s.header = var_s0[i];
+        s.table = s.header->cells;
+        s.y = -D_800A3608;
+        s.sprt_out = arg0->unk_0C;
+        arg0->unk_0C = func_8007352C(&s);
+        SetDrawMode(arg0->unk_14, 1, 0, func_8006E480(s.header, zero), 0);
+        AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_14);
+        arg0->unk_14++;
+    }
 }
 
 extern s32 D_800A3304;
