@@ -154,25 +154,12 @@ because the original implementation was for the "hit pause" effect where
 the engine slows the SPU voice rate during a blade strike (giving the
 recognizable BB2 "swoosh" on hits).
 
-## `func_800450BC` block family (`text1a_c.c`)
+## NDATA pack cache (not sound code)
 
-`func_800450BC`, `func_800450F4`, `func_80045188` and `func_80045194`
-(`text1a_c.c:1480-1521`) share one flag. Nothing here shows a sound
-sequence: there is no SEQ / libsnd call.
-
-State:
-- `D_800A3244` — set 1 by `func_800450BC`, cleared by `func_80045188` and
-  `func_800450F4`, returned by `func_80045194`
-- `D_800A3398` — address of the loaded block
-- `D_800973EC` — s16 entry table for ids 0x1E..0x24 (-1 = none)
-
-`func_800450BC(a0, dst)` reads NDATA file `a0 + 0x25` into `dst` through
-`func_80044E74`, stores `dst` in `D_800A3398` and sets `D_800A3244 = 1`.
-
-`func_800450F4(id, dst)` returns 0 unless the flag is set and `id` maps
-through `D_800973EC`; it clears the flag if the block's first word is not
-5, and otherwise copies the entry's sub-block to `dst` with
-`func_800520B8(src, dst, length)`.
+`ndata_LoadPack` / `ndata_ReadFromPack` / `ndata_InvalidatePack` /
+`ndata_IsPackLoaded` (`src/main/35000.c`) cache one NDATA entry and serve
+reads from it; none calls libsnd. See
+[NDATA.md](../formats/NDATA.md#pack-cache).
 
 ## Per-frame voice control
 
@@ -311,9 +298,7 @@ The encoding follows MIDI conventions:
 The function implements MIDI-style "running status" — if a byte's high
 bit is clear, it re-uses the last status byte stored at `state[0x16]`.
 
-This is the LOW-LEVEL event dispatcher.  The `func_800450BC` family
-(see [its section](#func_800450bc-block-family-text1a_cc)) only loads and
-copies blocks; no code shows it driving this dispatcher.
+This is the LOW-LEVEL event dispatcher.
 
 **Mystery: the 5 dispatch slots are NEVER WRITTEN by BB2 code.**  A
 byte-level scan of both main and overlay binaries found zero stores to

@@ -88,6 +88,19 @@ NDATA.DAT, 58,114,048 bytes); `cdrom_WaitIdle`. `ndata_ReadChecked` first checks
 that an arena destination has room ("Marionation over flow" otherwise);
 `ndata_GetArenaRoomAfter(id)` is the arena's free bytes minus the entry's size.
 
+### Pack cache
+
+`ndata_LoadPack(n, dst)` reads entry `0x25 + n` into `dst`, keeps `dst` in
+`g_ndata_pack` and sets `g_ndata_pack_loaded`. While it is set,
+`ndata_ReadFromPack(id, dst)` serves ids 0x1E..0x24 from that block:
+`g_ndata_pack_index[id - 0x1E]` (s16 {0, 1, 2, 3, 4, -1, 0}; -1 = not in the pack)
+picks sub-block k; the block must start with the count word 5 (otherwise the
+flag is cleared), and sub-block k lies at `block + (block[1 + k] & ~3)`, length
+`block[2 + k] - block[1 + k]`, copied with `func_800520B8`. It returns 1 when it
+served the read. `ndata_InvalidatePack` clears the flag (memory untouched) and
+`ndata_IsPackLoaded` returns it. `func_80044ED8` remaps ids >= 0x1F to `id - 0x1B`,
+tries the pack, and falls back to `ndata_Read`.
+
 ## File-ID → name mapping (source-side filename tables)
 
 Source `rodata` at `0x80010DEC..0x80015294` is a contiguous pool of 899
@@ -117,7 +130,7 @@ per-type size table). No code reads them.
 
 The mapping from filename to file-ID is NOT a pointer table at runtime — it
 is fixed at build time by the *order* in which the path-string pool appears
-in rodata. Code paths like `func_800450BC`'s `ndata_Read(a0 + 0x25, ...)` (`src/main/35000.c`)
+in rodata. Code paths like `ndata_LoadPack`'s `ndata_Read(a0 + 0x25, ...)` (`src/main/35000.c`)
 pass hard-coded numeric IDs that correspond to specific slots in the on-disc
 directory. The string pool exists only for debug / build identification —
 the shipped game does not perform name-based lookup.

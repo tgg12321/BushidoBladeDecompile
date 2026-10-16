@@ -936,7 +936,7 @@ D_80102092                                              = 0x80102092;  /* D_8010
 dma_spu_madr                                      = 0x800A2CE0;  /* holds 0x1F8010C0 (DMA channel 4 MADR); written through by _spu_Fr_ / _spu_t (spu.c:214, :299) */  /* data-wave 2026-10-09: was g_dma_chcr_ch4_ptr */
 spu_madr                               = 0x800A2D30;  /* the SPU transfer's RAM address: set by _spu_t, copied to *dma_spu_madr (spu.c:295, :299) */  /* data-wave 2026-10-09: was g_satan0_gauge_state_word */
 /* RENAME 0x800A36B8: retired name 'D_800A36B8' — preserved note: CdlATV fade target: set by func_80035F78 (26730.c:25-30); cdrom_UpdateAudio fades g_cd_atv toward it, then copies it in (26940.c:17-33) */  /* data-wave 2026-09-29: was g_special_cam_win_byte_a */
-g_cd_atv                                = 0x800A3718;  /* CdlATV applied with CdMix by cdrom_SetMix (26730.c:14-18); cdrom_UpdateAudio fades from it to D_800A36B8 (26940.c:17-33) */  /* data-wave 2026-09-24: was g_special_cam_win_byte_b */
+g_cd_atv                                = 0x800A3718;  /* CdlATV applied with CdMix by cdrom_SetMix (26730.c:14-18); cdrom_UpdateAudio fades from it to g_cd_atv_target (26940.c:17-33) */  /* data-wave 2026-09-24: was g_special_cam_win_byte_b */
 D_800A3578                          = 0x800A3578;  /* 5ED34.c selection-screen state; func_8006EC0C reads its low byte as the fade state */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_a */
 D_800A35A0                          = 0x800A35A0;  /* func_8006EACC's result (0 / -1 / 1) */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_b */
 D_800A35BC                          = 0x800A35BC;  /* mode = arg2->unk14_0 (func_8006E534), compared with 0..6 across 5ED34.c */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_c */
@@ -1841,8 +1841,8 @@ D_800A38D0                                  = 0x800A38D0;  /* link check-failure
 /* === Init flags + CD-audio fade words (2026-05-17) -- 4 highs === */
 D_800A31D8                               = 0x800A31D8;  /* 0 = first init, != 0 = re-init (triggers obj_InitAll cleanup); always set to 1 after */  /* data-wave 2026-10-08: was g_scene_already_init_flag */
 D_800A31E4                               = 0x800A31E4;  /* paired init flag (= 0 / = 1 set) */  /* data-wave 2026-10-08: was g_scene_another_init_flag */
-g_cd_fade_len                                       = 0x800A3854;  /* length of a CD-audio mix fade, set by func_80035F78 (26730.c:25-31); cdrom_UpdateAudio divides by it and zeroes it at the end (26940.c:17-35) */  /* data-wave 2026-10-08: was g_scene_arg_saved */
-g_cd_fade_step                                   = 0x800A3840;  /* fade step counter: zeroed by func_80035F78, incremented by cdrom_UpdateAudio until it reaches D_800A3854 (26940.c:31) */  /* data-wave 2026-10-08: was g_scene_alt_arg_saved */
+g_cd_fade_len                                       = 0x800A3854;  /* length of a CD-audio mix fade, set by cdrom_StartMixFade (26730.c:25-31); cdrom_UpdateAudio divides by it and zeroes it at the end (26940.c:17-35) */  /* data-wave 2026-10-08: was g_scene_arg_saved */
+g_cd_fade_step                                   = 0x800A3840;  /* fade step counter: zeroed by cdrom_StartMixFade, incremented by cdrom_UpdateAudio until it reaches g_cd_fade_len (26940.c:31) */  /* data-wave 2026-10-08: was g_scene_alt_arg_saved */
 
 /* === Memcard async operation state machine (2026-05-17) -- 4 highs === */
 /* From code6cac_c0.c func_80037D14: 5-state machine driving memcard */

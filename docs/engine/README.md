@@ -116,7 +116,7 @@ address is the stable key.
 | `text1a_svc.c` | 0x800414FC-0x8004153C | `save_vc_ctrl` alone |
 | `text1a_post.c` | 0x8004153C-0x80042504 | Slot management (`func_800415C4`, `func_80041604`), effect dispatch |
 | `text1a_c.c` | 0x80042504-0x80044800 | Matrix/colour math (`math_RotMatrix*`, `math_RgbToHsv`), primitive texture-offset helpers (`gpu_OffsetTexPoly*`), prim-buffer slots |
-| `text1a_c_tu2.c` | 0x80044800-0x800460E4 | `func_800450BC` block load / copy family and channel helpers |
+| `text1a_c_tu2.c` | 0x80044800-0x800460E4 | NDATA pack cache (`ndata_LoadPack` / `ndata_ReadFromPack`) and channel helpers |
 | `text1b.c` | 0x800460E4-0x8004A348 | Game glue (`func_800460E4`, `game_*Init`, `func_800467A8`), SE allocation/stop, camera bone setup |
 | `text1b_tu1b.c` | 0x8004A348-0x80060A68 | 3D render core: GTE transform/clip kernels, stage/ground drawing, collision tests, `func_80054604` / `func_8005490C` (fill and play back the `D_800EFAE8` camera / motion block) |
 | `text1b_tu1c.c` | 0x80060A68-0x8006E534 | Effects and ex-motion: the 16 `func_80067200` particle-bank wrappers (`func_80066EC0`..`func_800671CC`), `motion_ex_*`, animated sprite/object drawing |
