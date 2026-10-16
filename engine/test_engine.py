@@ -6197,6 +6197,31 @@ def test_naming_keycheck_scoped_pairs() -> None:
     except ValueError:
         branches_fail = True
     check("keycheck: conditional branches balance separately", branches_fail)
+    # C++-only branches (PsyQ's extern "C" guards, include/psxsdk/libsn.h) are inactive for cc1.
+    guard = "#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)\n"
+    try:
+        visible, _ = nk.file_scope_tokens(guard + 'extern "C" {\n#endif\nint n;\n' + guard + "}\n#endif\n")
+        cxx_ok = "n" in visible
+    except ValueError:
+        cxx_ok = False
+    check("keycheck: C++-only extern C guard is inactive", cxx_ok)
+    visible, _ = nk.file_scope_tokens("#ifdef __cplusplus\nint a;\n#else\nint b;\n#endif\n")
+    check("keycheck: C++-only branch inactive, #else active", "b" in visible and "a" not in visible)
+    for mixed in ("#if defined(__cplusplus) || FOO\n{\n#endif\nint n;\n",
+                  "#ifndef __cplusplus\n{\n#endif\nint n;\n",
+                  "#if defined(__cplusplus)\nint a;\n#elif FOO\n{\n#endif\nint n;\n"):
+        try:
+            nk.file_scope_tokens(mixed)
+            mixed_fail = False
+        except ValueError:
+            mixed_fail = True
+        check("keycheck: non-C++-only conditional still balances", mixed_fail)
+    libsn = (nk.ROOT / "include/psxsdk/libsn.h").read_text(encoding="utf-8")
+    try:
+        libsn_ok = "PCclose" in nk.file_scope_tokens(libsn)[0]
+    except ValueError:
+        libsn_ok = False
+    check("keycheck: vendored libsn.h establishes file scope", libsn_ok)
     ok, why = proof("f:l=n", {"src/a.c": "int (*g(void))(int){return 0;}\n"+cc_source},
                     {"src/a.c": "int (*g(void))(int){return 0;}\n"+cc_source.replace(" l", " n")})
     check("keycheck: function-pointer-returning neighbor no delimiter false reject", ok)

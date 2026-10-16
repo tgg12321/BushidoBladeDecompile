@@ -2671,8 +2671,51 @@ def _typedef_classes(texts):
 
 
 
+CPLUSPLUS_MACROS = frozenset({"__cplusplus", "c_plusplus", "_LANGUAGE_C_PLUS_PLUS"})
+_CPLUSPLUS_TERM = r"(?:defined\s*\(\s*(\w+)\s*\)|defined\s+(\w+)|(\w+))"
+
+
+def cplusplus_only_spans(text):
+    """Spans of the first branch of each #if / #ifdef whose condition tests only C++ macros
+    (CPLUSPLUS_MACROS, joined by ||). cc1 compiles C, so that branch is inactive; an #else
+    branch stays active. A conditional with an #elif is not handled."""
+    directives, _ = pp_regions(text)
+    clean = blank_comments(text, literals=True)
+    rows = []
+    for begin, end in directives:
+        m = re.match(r"\s*#\s*(\w+)(.*)", clean[begin:end], re.S)
+        rows.append((m[1], m[2].strip(), begin, end))
+    spans = []
+    for k, (word, cond, _, end) in enumerate(rows):
+        if word == "ifdef":
+            only = cond in CPLUSPLUS_MACROS
+        elif word == "if":
+            terms = re.split(r"\s*\|\|\s*", cond)
+            only = all((m := re.fullmatch(_CPLUSPLUS_TERM, t)) and
+                       next(g for g in m.groups() if g) in CPLUSPLUS_MACROS for t in terms)
+        else:
+            continue
+        if not only:
+            continue
+        depth = 0
+        for word2, _, begin2, _ in rows[k + 1:]:
+            if word2 in ("if", "ifdef", "ifndef"):
+                depth += 1
+            elif word2 == "endif" and depth:
+                depth -= 1
+            elif not depth and word2 in ("else", "endif"):
+                spans.append((end, begin2))
+                break
+            elif not depth and word2 == "elif":
+                break
+    return spans
+
+
 def file_scope_tokens(text, all_macros=frozenset(), known_types=frozenset()):
     text = re.sub(r"\\\r?\n", "", text)
+    # C++-only branches (extern "C" { ... } guards) are not compiled: blank them in place.
+    for a, b in cplusplus_only_spans(text):
+        text = text[:a] + re.sub(r"[^\n]", " ", text[a:b]) + text[b:]
     ms = code_spans(text)
     ts = [m[0] for m in ms]
     directives, conditions = pp_regions(text)
