@@ -286,8 +286,30 @@ def current_key(func: str, stem: str) -> tuple[str, str] | None:
     return None if text is None else body_key(text, func)
 
 
+class AmbiguousStem(ValueError):
+    """`func` has a body in more than one TU (duplicate `static` names) — the
+    caller must name the TU (`--file`) instead of taking the first scan hit."""
+
+    def __init__(self, func: str, stems: list[str]):
+        self.func, self.stems = func, stems
+        super().__init__(f"{func} has a body in {len(stems)} TUs ({', '.join(stems)}) — "
+                         f"name one with --file <stem>")
+
+
+def locate_stems(func: str) -> list[str]:
+    """Every TU id whose src/<stem>.c holds a single body for `func`."""
+    from . import tus
+    out = []
+    for tid in tus.src_tus():
+        text = _read_text(Path(tus.src_path(tid)))
+        if text and func in text and body_key(text, func) is not None:
+            out.append(tid)
+    return out
+
+
 def locate_stem(func: str) -> str | None:
-    """src/<stem>.c holding `func`'s body: the queue item's file, else a scan."""
+    """src/<stem>.c holding `func`'s body: the queue item's file, else a scan.
+    Raises AmbiguousStem when the scan finds the name in more than one TU."""
     try:
         q = json.loads(Path("engine/queue.json").read_text())
         for it in q.get("items", []):
@@ -295,12 +317,10 @@ def locate_stem(func: str) -> str | None:
                 return it["file"]
     except (OSError, ValueError):
         pass
-    from . import tus
-    for tid in tus.src_tus():
-        text = _read_text(Path(tus.src_path(tid)))
-        if text and func in text and body_key(text, func) is not None:
-            return tid
-    return None
+    stems = locate_stems(func)
+    if len(stems) > 1:
+        raise AmbiguousStem(func, stems)
+    return stems[0] if stems else None
 
 
 def read_records(func: str, path: Path | None = None) -> list[dict]:
@@ -426,7 +446,10 @@ def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
     if not _HASH_RE.fullmatch(expect_hash):
         return {"ok": False, "func": func,
                 "reason": f"--expect-hash {expect_hash!r} is not a 16-hex `layer2 hash`"}
-    stem = stem or locate_stem(func)
+    try:
+        stem = stem or locate_stem(func)
+    except AmbiguousStem as e:
+        return {"ok": False, "func": func, "reason": str(e), "candidates": e.stems}
     key = current_key(func, stem) if stem else None
     if verdict == "PASS":
         if key is None:

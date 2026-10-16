@@ -307,6 +307,13 @@ def main() -> int:
         return 0
 
     if a.cmd == "layer2":
+        if a.action != "record" and not a.file:
+            try:
+                a.file = L2.locate_stem(a.func) or ""
+            except L2.AmbiguousStem as e:
+                print(json.dumps({"ok": False, "func": a.func, "reason": str(e),
+                                  "candidates": e.stems}, indent=2))
+                return 1
         if a.action == "record":
             if not a.scope or not (a.verdict or a.verdict_file):
                 print("layer2 record: requires --scope and --verdict (or --verdict-file)")
@@ -320,7 +327,7 @@ def main() -> int:
                 r = L2.record(a.func, a.verdict, a.reviewer, a.scope, a.notes,
                               stem=a.file or None, expect_hash=a.expect_hash or None)
         elif a.action == "show":
-            stem = a.file or L2.locate_stem(a.func)
+            stem = a.file or None
             text = L2._read_text(Path(f"src/{stem}.c")) if stem else None
             src = L2.body_source(text, a.func) if text is not None else None
             if src is None:
@@ -329,7 +336,7 @@ def main() -> int:
             print(src[1])
             return 0
         else:
-            stem = a.file or L2.locate_stem(a.func)
+            stem = a.file or None
             key = L2.current_key(a.func, stem) if stem else None
             if a.action == "hash":
                 r = {"ok": key is not None, "func": a.func, "file": stem,

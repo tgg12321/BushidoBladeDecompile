@@ -4045,6 +4045,30 @@ def test_layer2_gate() -> None:
             rc, out = _cli_run("show", "func_L2", "--file", "l2tu")
             check("layer2 cli: show prints the keyed definition",
                   rc == 0 and "int func_L2(int a)" in out and "return a + 1;" in out)
+            # A duplicate `static` name in two TUs (get_alarm: libcd/bios.c and
+            # libgpu/sys.c) must not resolve to whichever file the scan meets first.
+            Path("src/l2dup_a.c").write_text("static int func_DUP(int a) { return a; }\n")
+            Path("src/l2dup_b.c").write_text("static int func_DUP(int a) { return a * 3; }\n")
+            try:
+                layer2.locate_stem("func_DUP")
+                amb = None
+            except layer2.AmbiguousStem as e:
+                amb = e.stems
+            eq("layer2: a name defined in two TUs -> AmbiguousStem with both stems",
+               amb, ["l2dup_a", "l2dup_b"])
+            rc, out = _cli_run("hash", "func_DUP")
+            check("layer2 cli: hash on an ambiguous name -> exit 1, candidates listed",
+                  rc == 1 and "l2dup_a" in out and "l2dup_b" in out and "body_hash" not in out)
+            rc, out = _cli_run("hash", "func_DUP", "--file", "l2dup_b")
+            check("layer2 cli: --file disambiguates",
+                  rc == 0 and json.loads(out)["file"] == "l2dup_b"
+                  and json.loads(out)["body_hash"] == layer2.current_key("func_DUP", "l2dup_b")[1])
+            r = layer2.record("func_DUP", "FAIL", "rev-dup", "match", expect_hash="0" * 16)
+            check("layer2: record on an ambiguous name without a stem -> refused",
+                  r["ok"] is False and r.get("candidates") == ["l2dup_a", "l2dup_b"]
+                  and not layer2.record_path("func_DUP").exists())
+            Path("src/l2dup_a.c").unlink()
+            Path("src/l2dup_b.c").unlink()
             rec_p.unlink()
             vf = Path("verdict.json")
             vf.write_text("reviewer chatter\n" + json.dumps(
