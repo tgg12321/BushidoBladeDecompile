@@ -4532,15 +4532,7 @@ Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
     s0->unk_10 = s0->unk_04;
     s0->unk_28 = src->unk_B8.vy;
     var_5[1] = src->unk_1C8.vy;
-    {
-        /* FAKE: unk_B2 read into a0_arg before var_8 is chosen; read at the
-         * call the argument registers rotate (score 20). */
-        s32 a0_arg = src->unk_B2;
-        s32 var_8 = 0xD;
-        if (type == 1)
-            var_8 = 0xC;
-        func_80032854(a0_arg, var_8, &s0->unk_04.x, var_5);
-    }
+    func_80032854(src->unk_B2, type == 1 ? 0xC : 0xD, &s0->unk_04.x, var_5);
     return s0;
 }
 
