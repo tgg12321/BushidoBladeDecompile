@@ -14,8 +14,6 @@ s32 func_8007352C(Unk8007352CRec *env) {
     Unk8009B400Record *e;
     s32 clut;
     s16 i;
-    /* FAKE: x1 computed ahead of y1 and read once in the bounds test; at its
-     * use: score 2. */
     s32 x0, y0, x1, y1;
 
     clut = GetClut(var_0->cx, var_0->cy);
