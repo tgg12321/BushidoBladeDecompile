@@ -54,7 +54,7 @@ glabel main
     /* 7AC8 800172C8 21202002 */   addu      $a0, $s1, $zero
     /* 7ACC 800172CC BDF4000C */  jal        font_BeginFrame
     /* 7AD0 800172D0 00000000 */   nop
-    /* 7AD4 800172D4 5A65000C */  jal        func_80019568
+    /* 7AD4 800172D4 5A65000C */  jal        pad_Update
     /* 7AD8 800172D8 21206002 */   addu      $a0, $s3, $zero
     /* 7ADC 800172DC 50DA000C */  jal        cdrom_Update
     /* 7AE0 800172E0 00000000 */   nop

@@ -346,7 +346,7 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
         var_1 = &g_gpu_db[idx];
 
         ClearOTagR(g_gpu_ot_ptr, 1);
-        func_80019568();
+        pad_Update();
         if (var_3 != 0) {
             func_8005C8A8(
                 2, var_2 | (D_800A3788 << 16), (s32)g_prim_buf_cursor, 0);
@@ -427,7 +427,7 @@ void main(void) {
     GpuDb *var_1;
     u32 *var_2;
     /* D_800A390D (frames left to skip presenting) as read this frame; the next
-     * frame passes it to func_80019568. */
+     * frame passes it to pad_Update. */
     s32 var_3;
     /* FAKE: second handle on D_800A3770 keeps its address in $s4 for the
      * whole loop; D_800A3770[idx] at both uses: score 14 */
@@ -455,7 +455,7 @@ loop:
     g_prim_buf_cursor = (u32 *)tbl[idx];
     func_80060E04(idx);
     font_BeginFrame();
-    func_80019568(var_3);
+    pad_Update(var_3);
     cdrom_Update();
     func_8005C6D0();
 

@@ -151,7 +151,7 @@ s32 memcard_CountFiles(s32 arg0, s32 arg1) {
     return var_s1;
 }
 
-s32 func_80037AA4(void) {
+s32 memcard_CountFreeBlocks(void) {
     struct DIRENTRY *var_v1;
     s32 var_a1;
     s32 var_a2;
@@ -187,7 +187,7 @@ s32 func_80037AA4(void) {
     return 0xF - var_a0;
 }
 
-s32 func_80037B00(u8 *arg0) {
+s32 memcard_HasFile(u8 *arg0) {
     s32 var_t1;
     s32 var_t2;
     struct DIRENTRY *var_a3;

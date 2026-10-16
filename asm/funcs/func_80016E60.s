@@ -59,7 +59,7 @@ glabel func_80016E60
     /* 7738 80016F38 800684AF */  sw         $a0, %gp_rel(g_gpu_ot_ptr)($gp)
     /* 773C 80016F3C 11EE010C */  jal        ClearOTagR
     /* 7740 80016F40 21804300 */   addu      $s0, $v0, $v1
-    /* 7744 80016F44 5A65000C */  jal        func_80019568
+    /* 7744 80016F44 5A65000C */  jal        pad_Update
     /* 7748 80016F48 00000000 */   nop
     /* 774C 80016F4C 07004012 */  beqz       $s2, .L80016F6C
     /* 7750 80016F50 21380000 */   addu      $a3, $zero, $zero

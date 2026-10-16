@@ -1,4 +1,4 @@
-glabel func_80037AA4
+glabel memcard_CountFreeBlocks
     /* 282A4 80037AA4 F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 282A8 80037AA8 21280000 */  addu       $a1, $zero, $zero
     /* 282AC 80037AAC FC07868F */  lw         $a2, %gp_rel(g_memcard_file_count)($gp)
@@ -25,4 +25,4 @@ glabel func_80037AA4
     /* 282F4 80037AF4 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 282F8 80037AF8 0800E003 */  jr         $ra
     /* 282FC 80037AFC 00000000 */   nop
-endlabel func_80037AA4
+endlabel memcard_CountFreeBlocks

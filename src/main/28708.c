@@ -346,8 +346,8 @@ state_other:
 state_3:
     D_800A379E = 1;
     memcard_CountFiles(0, 0);
-    temp_s0 = func_80037AA4();
-    if (func_80037B00((u8 *)D_800A31F0) != 0) {
+    temp_s0 = memcard_CountFreeBlocks();
+    if (memcard_HasFile((u8 *)D_800A31F0) != 0) {
         var_s1 = 0;
         if (D_800A37C8 == 1) {
             var_v0 = 0xD;
@@ -376,8 +376,8 @@ setup_load:
 
 state_5:
     memcard_CountFiles(0, 0);
-    func_80037AA4();
-    if (func_80037B00((u8 *)D_800A31F0) == 0) {
+    memcard_CountFreeBlocks();
+    if (memcard_HasFile((u8 *)D_800A31F0) == 0) {
         var_v0 = 0xE;
         goto finish;
     }

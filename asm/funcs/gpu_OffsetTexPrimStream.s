@@ -1,4 +1,4 @@
-glabel func_80043454
+glabel gpu_OffsetTexPrimStream
     /* 33C54 80043454 88FFBD27 */  addiu      $sp, $sp, -0x78
     /* 33C58 80043458 6000B4AF */  sw         $s4, 0x60($sp)
     /* 33C5C 8004345C 801F143C */  lui        $s4, (0x1F800000 >> 16)
@@ -526,4 +526,4 @@ glabel func_80043454
     /* 343C4 80043BC4 7800BD27 */  addiu      $sp, $sp, 0x78
     /* 343C8 80043BC8 0800E003 */  jr         $ra
     /* 343CC 80043BCC 00000000 */   nop
-endlabel func_80043454
+endlabel gpu_OffsetTexPrimStream

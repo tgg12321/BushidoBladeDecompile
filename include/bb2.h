@@ -457,7 +457,7 @@ extern Rec44 D_800F6608;
 extern u8 D_800F65F8[8][2];
 
 extern Unk800F68E0Rec D_800F68E0[0xB4];
-/* The two InitPAD receive buffers, 0x24 bytes each (sys_Init); func_80019568
+/* The two InitPAD receive buffers, 0x24 bytes each (sys_Init); pad_Update
  * copies the first two words of each. */
 extern s32 g_pad_buf[2][9];
 extern Unk800FF5C8Rec D_800FF5C8;
@@ -488,7 +488,8 @@ extern Unk801027B0Rec D_801027B0[]; /* per load slot */
  * func_80044098 subtracts the base again (and clears bit 15), and func_80044100
  * moves [i] by a1 / 4 words and adds a1 to each slot.  func_800432A0 /
  * func_800433E4 store a slot to scratchpad word 0, the u16 * cursor
- * func_80043454 reads, and func_8003FA24 reads u16 data through one. */
+ * gpu_OffsetTexPrimStream reads, and func_8003FA24 reads u16 data through one.
+ */
 extern s32 *D_80103608[];
 extern Unk80104E88Rec D_80104E88[];
 extern s32 D_80104F38;
@@ -600,7 +601,7 @@ extern s32 func_80019488(void);
 extern void func_800194C0(s32);
 /* No prototype: defined void (s32), but func_80016E60 calls it with no
  * argument. */
-extern void func_80019568();
+extern void pad_Update();
 extern void func_8001979C(s32, u32 *);
 extern void func_800198D0(s32, s32, MotionFrame *, u16 *);
 extern void func_8001B138(s32 *);
@@ -686,8 +687,8 @@ extern void cdrom_WaitAudioStarted(void);
 extern void cdrom_PauseAndWait(void);
 extern void sys_ExecMovieOverlay(s32, s32, s32, s32, s32);
 extern s32 memcard_PollSwEvents(void);
-extern s32 func_80037AA4(void);
-extern s32 func_80037B00(u8 *);
+extern s32 memcard_CountFreeBlocks(void);
+extern s32 memcard_HasFile(u8 *);
 extern s32 func_80037D14(s32, s32);
 extern s32 func_8003880C(void);
 extern s32 func_800388A8(void);

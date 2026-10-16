@@ -623,7 +623,7 @@ void pad_ResetStateMarkValid(void) {
     g_pad_state.valid[1] = 1;
 }
 
-void func_80019568(s32 arg0) {
+void pad_Update(s32 arg0) {
     PadState pad;
     s32 var_1[4];
     s32 i;

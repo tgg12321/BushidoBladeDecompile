@@ -534,7 +534,7 @@ s32 func_80043278(s32 a0) {
 }
 
 extern u16 D_80103658[];
-extern void func_80043454(s16, s16, s16, s16);
+extern void gpu_OffsetTexPrimStream(s16, s16, s16, s16);
 
 void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     u16 arg4_lo = arg4;
@@ -542,7 +542,7 @@ void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
 
     for (i = 0; i < D_80103658[arg0]; i++) {
         *(s32 *)0x1F800000 = D_80103608[arg0][i];
-        func_80043454(arg1, arg2, arg3, arg4_lo);
+        gpu_OffsetTexPrimStream(arg1, arg2, arg3, arg4_lo);
     }
 }
 
@@ -562,7 +562,7 @@ s16 arg4;
 s16 arg5;
 {
     *(s32 *)0x1F800000 = D_80103608[arg0][arg1];
-    func_80043454(arg2, arg3, arg4, arg5);
+    gpu_OffsetTexPrimStream(arg2, arg3, arg4, arg5);
 }
 extern s16 D_80095588[];
 extern void gpu_OffsetTexPolyFT3();
@@ -580,7 +580,7 @@ void gpu_OffsetTPageClutAt6And2(s16 *a0, s16 a1, s16 a2, s16 a3, s16 a4);
  * mode-0 groups, via gpu_OffsetTPageClutAt0And4 / gpu_OffsetTPageClutAt6And2
  * plus a per-vertex v shift for mode-1 / mode-2 groups.  Untextured groups are
  * skipped using the per-type halfword sizes in D_80095588. */
-void func_80043454(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
+void gpu_OffsetTexPrimStream(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
     s32 count;
     s32 mode;
     s32 type;

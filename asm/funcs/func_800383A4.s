@@ -85,10 +85,10 @@ glabel func_800383A4
     /* 28CCC 800384CC D20682A7 */  sh         $v0, %gp_rel(D_800A379E)($gp)
     /* 28CD0 800384D0 88DE000C */  jal        memcard_CountFiles
     /* 28CD4 800384D4 21280000 */   addu      $a1, $zero, $zero
-    /* 28CD8 800384D8 A9DE000C */  jal        func_80037AA4
+    /* 28CD8 800384D8 A9DE000C */  jal        memcard_CountFreeBlocks
     /* 28CDC 800384DC 00000000 */   nop
     /* 28CE0 800384E0 2401848F */  lw         $a0, %gp_rel(D_800A31F0)($gp)
-    /* 28CE4 800384E4 C0DE000C */  jal        func_80037B00
+    /* 28CE4 800384E4 C0DE000C */  jal        memcard_HasFile
     /* 28CE8 800384E8 21804000 */   addu      $s0, $v0, $zero
     /* 28CEC 800384EC 07004010 */  beqz       $v0, .L8003850C
     /* 28CF0 800384F0 00000000 */   nop
@@ -140,10 +140,10 @@ glabel func_800383A4
     /* 28D98 80038598 21200000 */  addu       $a0, $zero, $zero
     /* 28D9C 8003859C 88DE000C */  jal        memcard_CountFiles
     /* 28DA0 800385A0 21280000 */   addu      $a1, $zero, $zero
-    /* 28DA4 800385A4 A9DE000C */  jal        func_80037AA4
+    /* 28DA4 800385A4 A9DE000C */  jal        memcard_CountFreeBlocks
     /* 28DA8 800385A8 00000000 */   nop
     /* 28DAC 800385AC 2401848F */  lw         $a0, %gp_rel(D_800A31F0)($gp)
-    /* 28DB0 800385B0 C0DE000C */  jal        func_80037B00
+    /* 28DB0 800385B0 C0DE000C */  jal        memcard_HasFile
     /* 28DB4 800385B4 00000000 */   nop
     /* 28DB8 800385B8 03004014 */  bnez       $v0, .L800385C8
     /* 28DBC 800385BC 04000224 */   addiu     $v0, $zero, 0x4

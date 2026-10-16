@@ -1,4 +1,4 @@
-glabel func_80037B00
+glabel memcard_HasFile
     /* 28300 80037B00 F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 28304 80037B04 FC07828F */  lw         $v0, %gp_rel(g_memcard_file_count)($gp)
     /* 28308 80037B08 00000000 */  nop
@@ -42,4 +42,4 @@ glabel func_80037B00
     /* 28384 80037B84 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 28388 80037B88 0800E003 */  jr         $ra
     /* 2838C 80037B8C 00000000 */   nop
-endlabel func_80037B00
+endlabel memcard_HasFile

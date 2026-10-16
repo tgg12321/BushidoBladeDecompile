@@ -81,7 +81,7 @@ s32 func_8003ACB8(void) {
     D_800A38FC = 0;
     comb_Init();
     do {
-        func_80019568(1);
+        pad_Update(1);
         func_8005C6D0();
         temp_s0 = func_8003AB44();
         VSync(2);

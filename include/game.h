@@ -814,7 +814,7 @@ typedef struct BoneHitRec {
     u16 unk_12;
 } BoneHitRec; /* sizeof == 0x14 */
 
-/* Pad input record (0x18 bytes) at 0x80102788.  func_80019568 fills it each
+/* Pad input record (0x18 bytes) at 0x80102788.  pad_Update fills it each
  * frame from the two pads (one u16 half per player in each word):
  * held = current bits, pressed = held & ~previous, released = ~held & previous,
  * unheld = ~held; pad_ResetState sets type[] and the four bit words to
@@ -823,14 +823,14 @@ typedef struct BoneHitRec {
  * the four bit words of such a buffer. */
 typedef struct PadState {
     /* per pad: InitPAD buffer byte 1 >> 4, 5 and 7 folded
-       to 4, 4 when the status byte != 0 (func_80019568,
+       to 4, 4 when the status byte != 0 (pad_Update,
        where func_8003A728 can first replace them with
        nibbles from the link-cable exchange words);
        4 from pad_ResetState (both) and func_80055B60
        (entry arg0 of its own record) */
     s16 type[2];
     /* per pad: 1 iff the InitPAD buffer status byte == 0
-       (func_80019568); 1, 1 from pad_ResetStateMarkValid */
+       (pad_Update); 1, 1 from pad_ResetStateMarkValid */
     s16 valid[2];
     u32 held;     /* 0x08 */
     u32 pressed;  /* 0x0C */
