@@ -170,20 +170,20 @@ s32 func_80060CB8(s32 arg0, s32 arg1) {
     s32 v;
     s32 ret;
     new_var = arg0;
-    func_80036F40();
+    cdrom_WaitIdle();
     v = D_8009BD24.unk14_0;
     if (v == 0) {
-        cdrom_StartRead(func_80036EA8(2, 0x3C), arg0);
+        cdrom_StartRead(cdrom_GetFileIndex(2, 0x3C), arg0);
     } else if (v == 3) {
-        cdrom_StartRead(func_80036EA8(2, 0x2F), new_var);
+        cdrom_StartRead(cdrom_GetFileIndex(2, 0x2F), new_var);
     } else if (v == 2) {
-        cdrom_StartRead(func_80036EA8(2, 0x30), new_var);
+        cdrom_StartRead(cdrom_GetFileIndex(2, 0x30), new_var);
     } else if (v == 5) {
-        cdrom_StartRead(func_80036EA8(2, 0x31), new_var);
+        cdrom_StartRead(cdrom_GetFileIndex(2, 0x31), new_var);
     } else {
-        cdrom_StartRead(func_80036EA8(2, 0), new_var);
+        cdrom_StartRead(cdrom_GetFileIndex(2, 0), new_var);
     }
-    func_80036F40();
+    cdrom_WaitIdle();
     s.x = 0x380;
     s.y = 0;
     s.w = 0x80;
@@ -5501,12 +5501,12 @@ s32 func_8006E10C(void) {
 
     rect = D_800A32D8;
     if (D_800A3524->unk20_0) {
-        v0 = func_80036EA8(2, 0x60);
+        v0 = cdrom_GetFileIndex(2, 0x60);
     } else {
-        v0 = func_80036EA8(2, 7);
+        v0 = cdrom_GetFileIndex(2, 7);
     }
     cdrom_StartRead(v0, D_800A3500);
-    func_80036F40();
+    cdrom_WaitIdle();
     cdrom_GetFileSize(v0);
     SetDispMask(0);
     SetDefDrawEnv(&g_gpu_db[0].draw, 0, 0, 0x280, 0xF0);

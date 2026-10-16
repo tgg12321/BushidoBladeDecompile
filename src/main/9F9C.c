@@ -2244,14 +2244,14 @@ void func_8001EA84(void) {
         return;
     }
     if (D_800A3817 == 1) {
-        func_800372C0();
+        cdrom_PauseAndWait();
         func_8001DA2C();
         D_800A31DA = 1;
         D_800A3834 = 8;
         return;
     }
     if (D_800A3817 == 2) {
-        func_800372C0();
+        cdrom_PauseAndWait();
         func_8001DA2C();
         D_800A3834 = 8;
     }
@@ -3106,8 +3106,8 @@ void func_80020D70(void) {
 
 void func_80020DDC(void) {
     s32 v1;
-    cdrom_StartRead(func_80036EA8(1, 1), D_800A3830);
-    func_80036F40();
+    cdrom_StartRead(cdrom_GetFileIndex(1, 1), D_800A3830);
+    cdrom_WaitIdle();
     v1 = D_800A3830;
     D_80102760.unk_00 = (u16 *)(v1 + 0x14);
     D_80102760.unk_04 = (u16 *)(v1 + *(s32 *)(v1 + 4));
@@ -3118,15 +3118,15 @@ void func_80020DDC(void) {
 
 /* For i = 0, 1 with v = arg0, then arg2 (when D_800A38DC is 1, 4 or 6): when
  * D_800A38C0[i] differs from v, stores v there and calls
- * cdrom_StartReadAt(func_80036EA8(1, 0), D_800A3888[i], v * 7, 7). Then sets
- * D_80101EC8[0].unk_48 to D_8008DB1C[arg0][arg1] | arg1 << 12 and
+ * cdrom_StartReadAt(cdrom_GetFileIndex(1, 0), D_800A3888[i], v * 7, 7). Then
+ * sets D_80101EC8[0].unk_48 to D_8008DB1C[arg0][arg1] | arg1 << 12 and
  * D_80101EC8[1].unk_48 to the same of arg2 and arg3 (a copy of the first
  * when D_800A38DC is 3). It then fills var_0[0..1] from D_800A38C4[0..1]: it
  * returns when every id is already there; equal ids give var_0[0] = id0; an
  * id found in D_800A38C4[0] stays and the other id goes to var_0[1]; id1
  * found only in D_800A38C4[1] gives var_0[0] = id0; otherwise (also when id0
  * is only in D_800A38C4[1]) var_0[0] = id0 and var_0[1] = id1. For each
- * nonzero var_0[i] it calls cdrom_StartRead(func_80036EA8(1, j + 2),
+ * nonzero var_0[i] it calls cdrom_StartRead(cdrom_GetFileIndex(1, j + 2),
  * D_800A3860[i]), j the id's D_8008DCCC index, points D_801027B0[i] into
  * D_800A3860[i] and stores the id in D_800A38C4[i]. */
 void func_80020E74(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -3153,8 +3153,8 @@ void func_80020E74(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             if (D_800A38C0[i] != j) {
                 D_800A38C0[i] = j;
                 cdrom_StartReadAt(
-                    func_80036EA8(1, 0), (s32)D_800A3888[i], j * 7, 7);
-                func_80036F40();
+                    cdrom_GetFileIndex(1, 0), (s32)D_800A3888[i], j * 7, 7);
+                cdrom_WaitIdle();
             }
         }
     }
@@ -3203,8 +3203,8 @@ void func_80020E74(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                     break;
                 }
             }
-            cdrom_StartRead(func_80036EA8(1, j + 2), (s32)D_800A3860[i]);
-            func_80036F40();
+            cdrom_StartRead(cdrom_GetFileIndex(1, j + 2), (s32)D_800A3860[i]);
+            cdrom_WaitIdle();
             D_801027B0[i].unk_00 = (u16 *)((s32)D_800A3860[i] + 0x6C +
                                            (D_800A3860[i]->unk_03 - 1) * 6);
             D_801027B0[i].unk_04 =

@@ -206,7 +206,7 @@ glabel func_80016E60
     /* 7958 80017158 08000224 */   addiu     $v0, $zero, 0x8
   .L8001715C:
     /* 795C 8001715C 680782A7 */  sh         $v0, %gp_rel(D_800A3834)($gp)
-    /* 7960 80017160 B0DC000C */  jal        func_800372C0
+    /* 7960 80017160 B0DC000C */  jal        cdrom_PauseAndWait
     /* 7964 80017164 00000000 */   nop
   .L80017168:
     /* 7968 80017168 CFEC010C */  jal        DrawSync

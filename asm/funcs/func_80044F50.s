@@ -7,7 +7,7 @@ glabel func_80044F50
   .L80044F64:
     /* 35764 80044F64 0C01A424 */  addiu      $a0, $a1, 0x10C
   .L80044F68:
-    /* 35768 80044F68 9D13010C */  jal        func_80044E74
+    /* 35768 80044F68 9D13010C */  jal        ndata_Read
     /* 3576C 80044F6C 2128C000 */   addu      $a1, $a2, $zero
     /* 35770 80044F70 1000BF8F */  lw         $ra, 0x10($sp)
     /* 35774 80044F74 1800BD27 */  addiu      $sp, $sp, 0x18

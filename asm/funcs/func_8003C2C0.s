@@ -82,7 +82,7 @@ glabel func_8003C2C0
     /* 2CBEC 8003C3EC 13000224 */  addiu      $v0, $zero, 0x13
     /* 2CBF0 8003C3F0 0A006210 */  beq        $v1, $v0, .L8003C41C
     /* 2CBF4 8003C3F4 00000000 */   nop
-    /* 2CBF8 8003C3F8 B0DC000C */  jal        func_800372C0
+    /* 2CBF8 8003C3F8 B0DC000C */  jal        cdrom_PauseAndWait
     /* 2CBFC 8003C3FC 00000000 */   nop
     /* 2CC00 8003C400 0A80033C */  lui        $v1, %hi(D_800A3834)
     /* 2CC04 8003C404 34386384 */  lh         $v1, %lo(D_800A3834)($v1)

@@ -3,7 +3,7 @@ glabel func_8003C714
     /* 2CF18 8003C718 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 2CF1C 8003C71C 40DF010C */  jal        func_80077D00
     /* 2CF20 8003C720 1800B0AF */   sw        $s0, 0x18($sp)
-    /* 2CF24 8003C724 B0DC000C */  jal        func_800372C0
+    /* 2CF24 8003C724 B0DC000C */  jal        cdrom_PauseAndWait
     /* 2CF28 8003C728 21804000 */   addu      $s0, $v0, $zero
     /* 2CF2C 8003C72C 225A000C */  jal        func_80016888
     /* 2CF30 8003C730 00000000 */   nop

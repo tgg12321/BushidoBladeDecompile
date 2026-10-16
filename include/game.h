@@ -231,8 +231,8 @@ typedef struct {
 } Unk8009B0E0Record;
 
 /* The head of the resource files func_8006E950 loads. By g_cd_file_table's
- * sizes, file 2 of func_80036EA8's group 2 is MOD.BIN, 3 SEL.BIN, 4 / 5 SEL1 /
- * SEL2.BIN, 6 D_SEL.BIN, 0x32 NAR.BIN. Each file starts with a list of
+ * sizes, file 2 of cdrom_GetFileIndex's group 2 is MOD.BIN, 3 SEL.BIN, 4 / 5
+ * SEL1 / SEL2.BIN, 6 D_SEL.BIN, 0x32 NAR.BIN. Each file starts with a list of
  * file-relative offsets ending in -1, which func_8006E440 turns into addresses.
  * The first five mean the same in every file: func_8006919C / func_8006EA28
  * pass unk_00 and unk_04 to the VAB loader func_8005C2A8 (func_80076FF8 /

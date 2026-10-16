@@ -257,7 +257,7 @@ glabel func_8001EA84
   .L8001EE50:
     /* F650 8001EE50 0A006214 */  bne        $v1, $v0, .L8001EE7C
     /* F654 8001EE54 02000224 */   addiu     $v0, $zero, 0x2
-    /* F658 8001EE58 B0DC000C */  jal        func_800372C0
+    /* F658 8001EE58 B0DC000C */  jal        cdrom_PauseAndWait
     /* F65C 8001EE5C 00000000 */   nop
     /* F660 8001EE60 8B76000C */  jal        func_8001DA2C
     /* F664 8001EE64 00000000 */   nop
@@ -269,7 +269,7 @@ glabel func_8001EA84
   .L8001EE7C:
     /* F67C 8001EE7C 08006214 */  bne        $v1, $v0, .L8001EEA0
     /* F680 8001EE80 00000000 */   nop
-    /* F684 8001EE84 B0DC000C */  jal        func_800372C0
+    /* F684 8001EE84 B0DC000C */  jal        cdrom_PauseAndWait
     /* F688 8001EE88 00000000 */   nop
     /* F68C 8001EE8C 8B76000C */  jal        func_8001DA2C
     /* F690 8001EE90 00000000 */   nop

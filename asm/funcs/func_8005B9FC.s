@@ -6,16 +6,16 @@ glabel func_8005B9FC
     /* 4C20C 8005BA0C 716E010C */  jal        func_8005B9C4
     /* 4C210 8005BA10 1400B1AF */   sw        $s1, 0x14($sp)
     /* 4C214 8005BA14 02000424 */  addiu      $a0, $zero, 0x2
-    /* 4C218 8005BA18 AADB000C */  jal        func_80036EA8
+    /* 4C218 8005BA18 AADB000C */  jal        cdrom_GetFileIndex
     /* 4C21C 8005BA1C 08000524 */   addiu     $a1, $zero, 0x8
-    /* 4C220 8005BA20 D0DB000C */  jal        func_80036F40
+    /* 4C220 8005BA20 D0DB000C */  jal        cdrom_WaitIdle
     /* 4C224 8005BA24 21884000 */   addu      $s1, $v0, $zero
     /* 4C228 8005BA28 21202002 */  addu       $a0, $s1, $zero
     /* 4C22C 8005BA2C 66DB000C */  jal        cdrom_StartRead
     /* 4C230 8005BA30 21280002 */   addu      $a1, $s0, $zero
     /* 4C234 8005BA34 CADB000C */  jal        cdrom_GetFileSize
     /* 4C238 8005BA38 21202002 */   addu      $a0, $s1, $zero
-    /* 4C23C 8005BA3C D0DB000C */  jal        func_80036F40
+    /* 4C23C 8005BA3C D0DB000C */  jal        cdrom_WaitIdle
     /* 4C240 8005BA40 21884000 */   addu      $s1, $v0, $zero
     /* 4C244 8005BA44 21200002 */  addu       $a0, $s0, $zero
     /* 4C248 8005BA48 09000524 */  addiu      $a1, $zero, 0x9

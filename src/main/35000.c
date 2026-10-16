@@ -208,11 +208,11 @@ typedef struct {
 
 extern NdataInfEntry D_800963EC[];
 
-void func_80044E74(s32 a0, s32 a1) {
-    func_80036F40();
+void ndata_Read(s32 a0, s32 a1) {
+    cdrom_WaitIdle();
     cdrom_StartReadAt(
         0, a1, D_800963EC[a0].start_sector, D_800963EC[a0].length_sectors);
-    func_80036F40();
+    cdrom_WaitIdle();
 }
 
 void func_80044ED8(s32 a0, s32 a1) {
@@ -220,28 +220,28 @@ void func_80044ED8(s32 a0, s32 a1) {
         a0 -= 0x1B;
     }
     if (!func_800450F4(a0, a1)) {
-        func_80044E74(a0, a1);
+        ndata_Read(a0, a1);
     }
 }
 
-extern void func_80044E74(s32, s32);
+extern void ndata_Read(s32, s32);
 
-void func_80044F30(s32 a0, s32 a1) { func_80044E74(a0 + 0x27, a1); }
+void func_80044F30(s32 a0, s32 a1) { ndata_Read(a0 + 0x27, a1); }
 
 void func_80044F50(s32 a0, s32 a1, s32 a2) {
     if (!a0) {
-        func_80044E74(a1 + 0x83, a2);
+        ndata_Read(a1 + 0x83, a2);
     } else {
-        func_80044E74(a1 + 0x10C, a2);
+        ndata_Read(a1 + 0x10C, a2);
     }
 }
 
-void func_80044F80(s32 a0, s32 a1) { func_80044E74(a0 + 0x4D, a1); }
+void func_80044F80(s32 a0, s32 a1) { ndata_Read(a0 + 0x4D, a1); }
 
 extern s32 D_800A3240;
 extern char D_8001528C[];
 
-s32 func_80044FA0(s32 a0, s32 a1) {
+s32 ndata_ReadChecked(s32 a0, s32 a1) {
     s32 v0;
     s32 s0;
 
@@ -269,13 +269,13 @@ s32 func_80044FA0(s32 a0, s32 a1) {
 set_from_table:
     s0 = D_800963EC[a0].length_sectors << 11;
 do_return:
-    func_80044E74(a0, a1);
+    ndata_Read(a0, a1);
     return s0;
 }
 
 extern s32 arena_GetFreeSize(void);
 
-s32 func_80045080(s32 a0) {
+s32 ndata_GetArenaRoomAfter(s32 a0) {
     /* FAKE: val reads the length ahead of the arena_GetFreeSize call; at its
        use the lh moves after the call and a0 * 4 is kept in s0 instead (score
        9).
@@ -293,7 +293,7 @@ static s32 g_arena_peak;
 static s32 g_arena_block_count;
 
 void func_800450BC(s32 a0, s32 a1) {
-    func_80044E74(a0 + 0x25, a1);
+    ndata_Read(a0 + 0x25, a1);
     D_800A3398 = a1;
     D_800A3244 = 1;
 }
@@ -334,7 +334,7 @@ void func_80045188(void) { D_800A3244 = 0; }
 
 s32 func_80045194(void) { return D_800A3244; }
 
-void func_800451A0(void) { cdrom_StartReadAt(1, (s32)D_800963EC, 0, 2); }
+void ndata_StartReadInf(void) { cdrom_StartReadAt(1, (s32)D_800963EC, 0, 2); }
 
 void func_800451D0(void) {
     s32 i;

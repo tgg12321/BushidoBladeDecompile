@@ -7,7 +7,7 @@ glabel func_80037110
     /* 27924 80037124 21808200 */  addu       $s0, $a0, $v0
     /* 27928 80037128 1400BFAF */  sw         $ra, 0x14($sp)
     /* 2792C 8003712C 00000592 */  lbu        $a1, 0x0($s0)
-    /* 27930 80037130 AADB000C */  jal        func_80036EA8
+    /* 27930 80037130 AADB000C */  jal        cdrom_GetFileIndex
     /* 27934 80037134 05000424 */   addiu     $a0, $zero, 0x5
     /* 27938 80037138 01000592 */  lbu        $a1, 0x1($s0)
     /* 2793C 8003713C F5DB000C */  jal        cdrom_StartAudio

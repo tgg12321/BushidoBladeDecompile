@@ -361,7 +361,7 @@ void func_800468DC(s32 a0, s32 a1) {
 
 void func_80046914(void) { arena_Free(8); }
 
-void snd_AllocSe(void) { arena_OpenBlock(9); }
+void func_80046934(void) { arena_OpenBlock(9); }
 
 void func_80046954(void) {}
 
@@ -380,7 +380,7 @@ s32 *func_800469C4(s32 a0) {
     s32 offset;
 
     v0 = arena_OpenBlock(0xA);
-    func_80044FA0(a0, (s32)v0);
+    ndata_ReadChecked(a0, (s32)v0);
     offset = (u32)v0[v0[0] + 1] >> 2 << 2;
     {
         s32 *s0 = (s32 *)((u8 *)v0 + offset);
@@ -419,7 +419,7 @@ void func_80046B44(void) {
     s16 one;
     s16 two;
 
-    func_800451A0();
+    ndata_StartReadInf();
     func_800451D0();
     func_80042E90();
     func_80044498();

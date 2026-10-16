@@ -194,9 +194,9 @@ void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
 
     SetDispMask(0);
     SetDefDispEnv(&g_gpu_db[1].disp, 0, 0, 0x140, 0xF0);
-    func_80036F40();
-    cdrom_StartRead(func_80036EA8(2, 0x61), (s32)arg0);
-    func_80036F40();
+    cdrom_WaitIdle();
+    cdrom_StartRead(cdrom_GetFileIndex(2, 0x61), (s32)arg0);
+    cdrom_WaitIdle();
     PutDispEnv(&g_gpu_db[1].disp);
     DrawSync(0);
     LoadImage(&rect, (u32 *)(arg0 + 0x14));
@@ -400,10 +400,10 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
         if (var_2 == 1) {
             D_800A31DA = 1;
             D_800A3834 = 8;
-            func_800372C0();
+            cdrom_PauseAndWait();
         } else if (var_2 == 2) {
             D_800A3834 = 8;
-            func_800372C0();
+            cdrom_PauseAndWait();
         }
     }
 
@@ -460,7 +460,7 @@ loop:
     func_8005C6D0();
 
     if (D_800A3928 != 0) {
-        func_800372C0();
+        cdrom_PauseAndWait();
         D_800A3768 = DISP_DISABLED;
         D_800A3928 = 0;
         D_800A31DA = 0;

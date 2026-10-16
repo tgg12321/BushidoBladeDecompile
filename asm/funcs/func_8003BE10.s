@@ -21,7 +21,7 @@ glabel func_8003BE10
     /* 2C65C 8003BE5C EAD7000C */  jal        snd_SerialMixOn
     /* 2C660 8003BE60 00000000 */   nop
     /* 2C664 8003BE64 05000424 */  addiu      $a0, $zero, 0x5
-    /* 2C668 8003BE68 AADB000C */  jal        func_80036EA8
+    /* 2C668 8003BE68 AADB000C */  jal        cdrom_GetFileIndex
     /* 2C66C 8003BE6C 20000524 */   addiu     $a1, $zero, 0x20
     /* 2C670 8003BE70 21204000 */  addu       $a0, $v0, $zero
     /* 2C674 8003BE74 F5DB000C */  jal        cdrom_StartAudio

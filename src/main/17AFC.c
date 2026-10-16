@@ -5878,7 +5878,7 @@ void func_800342A0(void) {
         if (v1 < 2)
             goto loop;
         func_80016888();
-        func_800372C0();
+        cdrom_PauseAndWait();
         D_800A3834 = 0;
     }
 }

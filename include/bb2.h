@@ -228,8 +228,8 @@ extern u8 D_8008EC30[4];
 extern s16 D_8008F12C;
 
 /* Twelve rows func_80037110 reads by index: unk_0, the group-5 file
- * func_80036EA8 resolves; unk_1, cdrom_StartAudio's second argument; unk_4, an
- * offset added to the file's start sector (-1: none). */
+ * cdrom_GetFileIndex resolves; unk_1, cdrom_StartAudio's second argument;
+ * unk_4, an offset added to the file's start sector (-1: none). */
 typedef struct {
     u8 unk_0;
     u8 unk_1;
@@ -473,10 +473,10 @@ extern Unk800F62E0Rec D_800F62E0[8];
 extern RotMatrixFunc D_800F66A0[6];
 
 /* The CD file table at 0x8008EC34: one 8-byte record per disc file, indexed by
- * the file numbers func_80036EA8 forms. `loc` is sought (cdrom_StartRead copies
- * the record into D_80101E58.rec.pair, whose position is sought; cdrom_LoadExec
- * seeks to it directly); `size` is cdrom_StartRead's sector count,
- * cdrom_GetFileSize's result and cdrom_StartAudio's end position. */
+ * the file numbers cdrom_GetFileIndex forms. `loc` is sought (cdrom_StartRead
+ * copies the record into D_80101E58.rec.pair, whose position is sought;
+ * cdrom_LoadExec seeks to it directly); `size` is cdrom_StartRead's sector
+ * count, cdrom_GetFileSize's result and cdrom_StartAudio's end position. */
 extern CdFileEntry g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
 
 extern CdState D_80101E58;
@@ -506,7 +506,7 @@ extern void func_8001B748(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32);
 extern void font_Printf(u8 *, s32, ...);
 extern void func_80021A98(s32, MoveScript *, s32);
 extern void func_80022580(s32, s32, s32, s32, s32);
-extern s32 func_80036EA8(s32, s32);
+extern s32 cdrom_GetFileIndex(s32, s32);
 extern void func_8003A728(PadState *);
 extern void func_8003AE5C(u8 *);
 extern void func_8003DE14(RECT *, s32);
@@ -663,7 +663,7 @@ extern void func_80035F78(s16, s32, s32, s32, s32);
 extern s32 func_80037110(s32);
 extern void func_800371E8(s16);
 extern void func_80037260(void);
-extern void func_800372C0(void);
+extern void cdrom_PauseAndWait(void);
 extern s32 func_80037AA4(void);
 extern s32 func_80037B00(u8 *);
 extern s32 func_8003880C(void);
@@ -747,9 +747,9 @@ extern void func_80044C70(s32);
 extern void func_80044DE4(s16 *, s16 *, s32, s32);
 extern void func_80044F30(s32, s32);
 extern void func_80044F80(s32, s32);
-extern s32 func_80044FA0(s32, s32);
-extern s32 func_80045080(s32);
-extern void func_800451A0(void);
+extern s32 ndata_ReadChecked(s32, s32);
+extern s32 ndata_GetArenaRoomAfter(s32);
+extern void ndata_StartReadInf(void);
 extern void func_800451D0(void);
 extern void arena_UpdatePeak(s32);
 extern void arena_Free(s32);
@@ -888,7 +888,7 @@ extern s32 func_8007855C(s32);
 extern s32 func_80078824(s32);
 extern s32 func_800788B0(void);
 extern void func_80061178(void);
-extern void func_80036F40(void);
+extern void cdrom_WaitIdle(void);
 extern void *func_8003F1D4(void);
 extern void *func_80046DEC(s32);
 extern void func_80046B44(void);

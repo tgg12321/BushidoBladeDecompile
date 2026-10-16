@@ -17,7 +17,7 @@ glabel func_8003BCB4
     /* 2C4F0 8003BCF0 43004010 */  beqz       $v0, .L8003BE00
     /* 2C4F4 8003BCF4 00000000 */   nop
   .L8003BCF8:
-    /* 2C4F8 8003BCF8 B0DC000C */  jal        func_800372C0
+    /* 2C4F8 8003BCF8 B0DC000C */  jal        cdrom_PauseAndWait
     /* 2C4FC 8003BCFC 00000000 */   nop
     /* 2C500 8003BD00 3752010C */  jal        func_800548DC
     /* 2C504 8003BD04 00000000 */   nop

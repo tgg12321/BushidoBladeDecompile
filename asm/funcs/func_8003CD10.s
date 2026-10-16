@@ -55,7 +55,7 @@ glabel func_8003CD10
     /* 2D5E4 8003CDE4 08004010 */  beqz       $v0, .L8003CE08
     /* 2D5E8 8003CDE8 00000000 */   nop
   .L8003CDEC:
-    /* 2D5EC 8003CDEC B0DC000C */  jal        func_800372C0
+    /* 2D5EC 8003CDEC B0DC000C */  jal        cdrom_PauseAndWait
     /* 2D5F0 8003CDF0 00000000 */   nop
     /* 2D5F4 8003CDF4 8B76000C */  jal        func_8001DA2C
     /* 2D5F8 8003CDF8 00000000 */   nop

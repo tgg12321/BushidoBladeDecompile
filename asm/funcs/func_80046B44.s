@@ -1,7 +1,7 @@
 glabel func_80046B44
     /* 37344 80046B44 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 37348 80046B48 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 3734C 80046B4C 6814010C */  jal        func_800451A0
+    /* 3734C 80046B4C 6814010C */  jal        ndata_StartReadInf
     /* 37350 80046B50 00000000 */   nop
     /* 37354 80046B54 7414010C */  jal        func_800451D0
     /* 37358 80046B58 00000000 */   nop

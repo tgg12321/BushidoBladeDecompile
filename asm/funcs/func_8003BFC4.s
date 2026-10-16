@@ -19,7 +19,7 @@ glabel func_8003BFC4
     /* 2C808 8003C008 010B0224 */  addiu      $v0, $zero, 0xB01
     /* 2C80C 8003C00C 01000624 */  addiu      $a2, $zero, 0x1
     /* 2C810 8003C010 F80C0724 */  addiu      $a3, $zero, 0xCF8
-    /* 2C814 8003C014 50DD000C */  jal        func_80037540
+    /* 2C814 8003C014 50DD000C */  jal        sys_ExecMovieOverlay
     /* 2C818 8003C018 1000A2AF */   sw        $v0, 0x10($sp)
     /* 2C81C 8003C01C D11A010C */  jal        func_80046B44
     /* 2C820 8003C020 00000000 */   nop

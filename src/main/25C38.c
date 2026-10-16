@@ -264,14 +264,14 @@ void func_80035828(void) {
         break;
     case 11:
         if (--D_800A37B8 == 0) {
-            func_800372C0();
+            cdrom_PauseAndWait();
             D_80102778.unk_D = func_80077904();
             func_80035618((s8)D_80102778.unk_D);
         }
         break;
     case 12:
         if (--D_800A37B8 == 0) {
-            func_800372C0();
+            cdrom_PauseAndWait();
             D_800A3834 = 0xF;
         }
         break;
@@ -279,7 +279,7 @@ void func_80035828(void) {
         switch (func_80077B30(g_pad_state.held, g_pad_state.pressed)) {
         case -1:
         case 1:
-            func_800372C0();
+            cdrom_PauseAndWait();
             D_800A3740 = 1;
             func_80034F88();
             D_800A37B8 = 0;
@@ -352,7 +352,7 @@ void func_80035828(void) {
             goto check_cancel;
         }
     load:
-        func_800372C0();
+        cdrom_PauseAndWait();
         func_80077940(D_80106A50.unk_00 & 0x3EF3DF);
         func_80077984(0x80118800);
         D_800A3740 = 3;
@@ -360,7 +360,7 @@ void func_80035828(void) {
         break;
     check_cancel:
         if (ret == -1) {
-            func_800372C0();
+            cdrom_PauseAndWait();
             D_800A3740 = 1;
             D_800A37B8 = 0;
         }
@@ -374,13 +374,13 @@ void func_80035828(void) {
             goto check_quit;
         }
     reset_mode:
-        func_800372C0();
+        cdrom_PauseAndWait();
         D_800A3834 = 0;
         func_8003504C();
         break;
     check_quit:
         if (ret == -1) {
-            func_800372C0();
+            cdrom_PauseAndWait();
             D_800A3834 = 8;
             D_800A31D8 = 0;
         }

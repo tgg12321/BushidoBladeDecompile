@@ -158,7 +158,7 @@ glabel func_80035828
     /* 26264 80035A64 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
     /* 26268 80035A68 CC004014 */  bnez       $v0, .L80035D9C
     /* 2626C 80035A6C 00000000 */   nop
-    /* 26270 80035A70 B0DC000C */  jal        func_800372C0
+    /* 26270 80035A70 B0DC000C */  jal        cdrom_PauseAndWait
     /* 26274 80035A74 00000000 */   nop
     /* 26278 80035A78 41DE010C */  jal        func_80077904
     /* 2627C 80035A7C 00000000 */   nop
@@ -178,7 +178,7 @@ glabel func_80035828
     /* 262B0 80035AB0 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
     /* 262B4 80035AB4 B9004014 */  bnez       $v0, .L80035D9C
     /* 262B8 80035AB8 00000000 */   nop
-    /* 262BC 80035ABC B0DC000C */  jal        func_800372C0
+    /* 262BC 80035ABC B0DC000C */  jal        cdrom_PauseAndWait
     /* 262C0 80035AC0 00000000 */   nop
     /* 262C4 80035AC4 0F000224 */  addiu      $v0, $zero, 0xF
     /* 262C8 80035AC8 0A80013C */  lui        $at, %hi(D_800A3834)
@@ -203,7 +203,7 @@ glabel func_80035828
     /* 26310 80035B10 08004000 */  jr         $v0
     /* 26314 80035B14 00000000 */   nop
   jlabel .L80035B18
-    /* 26318 80035B18 B0DC000C */  jal        func_800372C0
+    /* 26318 80035B18 B0DC000C */  jal        cdrom_PauseAndWait
     /* 2631C 80035B1C 00000000 */   nop
     /* 26320 80035B20 01000224 */  addiu      $v0, $zero, 0x1
     /* 26324 80035B24 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
@@ -321,7 +321,7 @@ glabel func_80035828
     /* 264BC 80035CBC 12006214 */  bne        $v1, $v0, .L80035D08
     /* 264C0 80035CC0 FFFF0224 */   addiu     $v0, $zero, -0x1
   .L80035CC4:
-    /* 264C4 80035CC4 B0DC000C */  jal        func_800372C0
+    /* 264C4 80035CC4 B0DC000C */  jal        cdrom_PauseAndWait
     /* 264C8 80035CC8 00000000 */   nop
     /* 264CC 80035CCC 3E00023C */  lui        $v0, (0x3EF3DF >> 16)
     /* 264D0 80035CD0 1080043C */  lui        $a0, %hi(D_80106A50)
@@ -341,7 +341,7 @@ glabel func_80035828
   .L80035D08:
     /* 26508 80035D08 24006214 */  bne        $v1, $v0, .L80035D9C
     /* 2650C 80035D0C 00000000 */   nop
-    /* 26510 80035D10 B0DC000C */  jal        func_800372C0
+    /* 26510 80035D10 B0DC000C */  jal        cdrom_PauseAndWait
     /* 26514 80035D14 00000000 */   nop
     /* 26518 80035D18 01000224 */  addiu      $v0, $zero, 0x1
     /* 2651C 80035D1C 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
@@ -362,7 +362,7 @@ glabel func_80035828
     /* 26554 80035D54 09006214 */  bne        $v1, $v0, .L80035D7C
     /* 26558 80035D58 FFFF0224 */   addiu     $v0, $zero, -0x1
   .L80035D5C:
-    /* 2655C 80035D5C B0DC000C */  jal        func_800372C0
+    /* 2655C 80035D5C B0DC000C */  jal        cdrom_PauseAndWait
     /* 26560 80035D60 00000000 */   nop
     /* 26564 80035D64 0A80013C */  lui        $at, %hi(D_800A3834)
     /* 26568 80035D68 343820A4 */  sh         $zero, %lo(D_800A3834)($at)
@@ -373,7 +373,7 @@ glabel func_80035828
   .L80035D7C:
     /* 2657C 80035D7C 07006214 */  bne        $v1, $v0, .L80035D9C
     /* 26580 80035D80 00000000 */   nop
-    /* 26584 80035D84 B0DC000C */  jal        func_800372C0
+    /* 26584 80035D84 B0DC000C */  jal        cdrom_PauseAndWait
     /* 26588 80035D88 00000000 */   nop
     /* 2658C 80035D8C 08000224 */  addiu      $v0, $zero, 0x8
     /* 26590 80035D90 0A80013C */  lui        $at, %hi(D_800A3834)

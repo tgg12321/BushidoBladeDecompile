@@ -44,7 +44,7 @@ glabel func_80020E74
     /* 1170C 80020F0C 0C005010 */  beq        $v0, $s0, .L80020F40
     /* 11710 80020F10 01000424 */   addiu     $a0, $zero, 0x1
     /* 11714 80020F14 21280000 */  addu       $a1, $zero, $zero
-    /* 11718 80020F18 AADB000C */  jal        func_80036EA8
+    /* 11718 80020F18 AADB000C */  jal        cdrom_GetFileIndex
     /* 1171C 80020F1C 000030A2 */   sb        $s0, 0x0($s1)
     /* 11720 80020F20 21204000 */  addu       $a0, $v0, $zero
     /* 11724 80020F24 C0301000 */  sll        $a2, $s0, 3
@@ -52,7 +52,7 @@ glabel func_80020E74
     /* 1172C 80020F2C 0000658E */  lw         $a1, 0x0($s3)
     /* 11730 80020F30 8DDB000C */  jal        cdrom_StartReadAt
     /* 11734 80020F34 07000724 */   addiu     $a3, $zero, 0x7
-    /* 11738 80020F38 D0DB000C */  jal        func_80036F40
+    /* 11738 80020F38 D0DB000C */  jal        cdrom_WaitIdle
     /* 1173C 80020F3C 00000000 */   nop
   .L80020F40:
     /* 11740 80020F40 04007326 */  addiu      $s3, $s3, 0x4
@@ -168,7 +168,7 @@ glabel func_80020E74
     /* 118D0 800210D0 01001026 */   addiu     $s0, $s0, 0x1
   .L800210D4:
     /* 118D4 800210D4 01000424 */  addiu      $a0, $zero, 0x1
-    /* 118D8 800210D8 AADB000C */  jal        func_80036EA8
+    /* 118D8 800210D8 AADB000C */  jal        cdrom_GetFileIndex
     /* 118DC 800210DC 02000526 */   addiu     $a1, $s0, 0x2
     /* 118E0 800210E0 0A80033C */  lui        $v1, %hi(D_800A3860)
     /* 118E4 800210E4 60386324 */  addiu      $v1, $v1, %lo(D_800A3860)
@@ -177,7 +177,7 @@ glabel func_80020E74
     /* 118F0 800210F0 0000058E */  lw         $a1, 0x0($s0)
     /* 118F4 800210F4 66DB000C */  jal        cdrom_StartRead
     /* 118F8 800210F8 21204000 */   addu      $a0, $v0, $zero
-    /* 118FC 800210FC D0DB000C */  jal        func_80036F40
+    /* 118FC 800210FC D0DB000C */  jal        cdrom_WaitIdle
     /* 11900 80021100 00000000 */   nop
     /* 11904 80021104 0000048E */  lw         $a0, 0x0($s0)
     /* 11908 80021108 00000000 */  nop

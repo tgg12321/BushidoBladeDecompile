@@ -1,4 +1,4 @@
-glabel func_80045080
+glabel ndata_GetArenaRoomAfter
     /* 35880 80045080 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 35884 80045084 80200400 */  sll        $a0, $a0, 2
     /* 35888 80045088 1400BFAF */  sw         $ra, 0x14($sp)
@@ -14,4 +14,4 @@ glabel func_80045080
     /* 358B0 800450B0 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 358B4 800450B4 0800E003 */  jr         $ra
     /* 358B8 800450B8 00000000 */   nop
-endlabel func_80045080
+endlabel ndata_GetArenaRoomAfter

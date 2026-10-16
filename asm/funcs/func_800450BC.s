@@ -3,7 +3,7 @@ glabel func_800450BC
     /* 358C0 800450C0 1000B0AF */  sw         $s0, 0x10($sp)
     /* 358C4 800450C4 2180A000 */  addu       $s0, $a1, $zero
     /* 358C8 800450C8 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 358CC 800450CC 9D13010C */  jal        func_80044E74
+    /* 358CC 800450CC 9D13010C */  jal        ndata_Read
     /* 358D0 800450D0 25008424 */   addiu     $a0, $a0, 0x25
     /* 358D4 800450D4 01000224 */  addiu      $v0, $zero, 0x1
     /* 358D8 800450D8 CC0290AF */  sw         $s0, %gp_rel(D_800A3398)($gp)

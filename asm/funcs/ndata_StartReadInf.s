@@ -1,4 +1,4 @@
-glabel func_800451A0
+glabel ndata_StartReadInf
     /* 359A0 800451A0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 359A4 800451A4 1000BFAF */  sw         $ra, 0x10($sp)
     /* 359A8 800451A8 01000424 */  addiu      $a0, $zero, 0x1
@@ -11,4 +11,4 @@ glabel func_800451A0
     /* 359C4 800451C4 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 359C8 800451C8 0800E003 */  jr         $ra
     /* 359CC 800451CC 00000000 */   nop
-endlabel func_800451A0
+endlabel ndata_StartReadInf

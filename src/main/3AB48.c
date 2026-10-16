@@ -671,10 +671,10 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     s32 n;
 
     if (a6 != 0) {
-        ret = func_80044FA0(id, a6);
+        ret = ndata_ReadChecked(id, a6);
         D_800EFAE8.unk2C = a6;
     } else {
-        if (func_80045080(id) < 0) {
+        if (ndata_GetArenaRoomAfter(id) < 0) {
             func_80046914();
             printf(D_80015840);
         }
@@ -3560,11 +3560,11 @@ s32 snd_LoadCommonVab(s32 arg0) {
 
     func_800858D0(0);
     printf(&D_800158B4, arg0);
-    func_80036F40();
-    temp_v0 = func_80036EA8(2, 1);
+    cdrom_WaitIdle();
+    temp_v0 = cdrom_GetFileIndex(2, 1);
     cdrom_StartRead(temp_v0, arg0);
     temp_s0 = cdrom_GetFileSize(temp_v0);
-    func_80036F40();
+    cdrom_WaitIdle();
     D_800A3408 = 0;
     D_800A340C = 0x1010;
     g_vab_sticky_sbaddr = 0x1010;
@@ -3591,17 +3591,17 @@ s32 func_8005B8B8(s32 arg0) {
 
     func_8005B868();
     func_800858D0(0);
-    t0 = func_80036EA8(2, 0x5D);
-    func_80036F40();
+    t0 = cdrom_GetFileIndex(2, 0x5D);
+    cdrom_WaitIdle();
     cdrom_StartRead(t0, arg0);
     size = cdrom_GetFileSize(t0);
-    func_80036F40();
+    cdrom_WaitIdle();
     ret = func_8005C2A8((Unk8005C2A8Pack *)arg0, 8, arg0 + size);
-    t0_2 = func_80036EA8(2, 0x5E);
-    func_80036F40();
+    t0_2 = cdrom_GetFileIndex(2, 0x5E);
+    cdrom_WaitIdle();
     cdrom_StartRead(t0_2, arg0 + ret);
     size = cdrom_GetFileSize(t0_2) + ret;
-    func_80036F40();
+    cdrom_WaitIdle();
     return func_8005C2A8((Unk8005C2A8Pack *)(arg0 + ret), 4, arg0 + size) + ret;
 }
 
@@ -3623,11 +3623,11 @@ s32 func_8005B9FC(s32 a0) {
     s32 var_0;
     s32 size;
     func_8005B9C4();
-    var_0 = func_80036EA8(2, 8);
-    func_80036F40();
+    var_0 = cdrom_GetFileIndex(2, 8);
+    cdrom_WaitIdle();
     cdrom_StartRead(var_0, a0);
     size = cdrom_GetFileSize(var_0);
-    func_80036F40();
+    cdrom_WaitIdle();
     return func_8005C2A8((Unk8005C2A8Pack *)a0, 9, a0 + size);
 }
 
@@ -3662,11 +3662,11 @@ s32 func_8005BA8C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         g_vab_rec_ptr[g_vab_id_list[i]] = 0;
         g_vab_vb_sbaddr[g_vab_id_list[i]] = 0;
     }
-    var_3 = func_80036EA8(2, arg1 + 9);
-    func_80036F40();
+    var_3 = cdrom_GetFileIndex(2, arg1 + 9);
+    cdrom_WaitIdle();
     cdrom_StartRead(var_3, (s32)p);
     size = cdrom_GetFileSize(var_3);
-    func_80036F40();
+    cdrom_WaitIdle();
     ((s32 *)p)[12] += (s32)p;
     func_80062020(((s32 *)p)[12]);
     count = 3;
@@ -5281,9 +5281,9 @@ extern s32 D_800A3278;
 void func_8005FBC8(s32 arg0, u8 *arg1) {
     RECT r1, r2;
     s32 s0;
-    s0 = func_80036EA8(2, arg0 + 0x33);
+    s0 = cdrom_GetFileIndex(2, arg0 + 0x33);
     cdrom_StartRead(s0, (s32)arg1);
-    func_80036F40();
+    cdrom_WaitIdle();
     cdrom_GetFileSize(s0);
     r1 = D_800A327C;
     r2 = D_800A3284;
@@ -5468,9 +5468,9 @@ void func_800602AC(s32 arg0, s32 *arg1) {
     s32 s1;
     u8 *p;
     u8 *q;
-    s1 = func_80036EA8(2, arg0 + 0x3D);
+    s1 = cdrom_GetFileIndex(2, arg0 + 0x3D);
     cdrom_StartRead(s1, (s32)arg1);
-    func_80036F40();
+    cdrom_WaitIdle();
     cdrom_GetFileSize(s1);
     arg1[0] = arg1[0] + (s32)arg1;
     arg1[1] = arg1[1] + (s32)arg1;

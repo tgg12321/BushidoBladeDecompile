@@ -1,4 +1,4 @@
-glabel func_80044FA0
+glabel ndata_ReadChecked
     /* 357A0 80044FA0 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 357A4 80044FA4 1400B1AF */  sw         $s1, 0x14($sp)
     /* 357A8 80044FA8 21888000 */  addu       $s1, $a0, $zero
@@ -50,7 +50,7 @@ glabel func_80044FA0
     /* 35850 80045050 C0820200 */  sll        $s0, $v0, 11
   .L80045054:
     /* 35854 80045054 21202002 */  addu       $a0, $s1, $zero
-    /* 35858 80045058 9D13010C */  jal        func_80044E74
+    /* 35858 80045058 9D13010C */  jal        ndata_Read
     /* 3585C 8004505C 21284002 */   addu      $a1, $s2, $zero
     /* 35860 80045060 21100002 */  addu       $v0, $s0, $zero
     /* 35864 80045064 1C00BF8F */  lw         $ra, 0x1C($sp)
@@ -60,4 +60,4 @@ glabel func_80044FA0
     /* 35874 80045074 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 35878 80045078 0800E003 */  jr         $ra
     /* 3587C 8004507C 00000000 */   nop
-endlabel func_80044FA0
+endlabel ndata_ReadChecked

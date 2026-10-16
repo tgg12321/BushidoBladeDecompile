@@ -10,7 +10,7 @@ glabel cdrom_LoadExec
     /* 27B68 80037368 2C08B5AF */  sw         $s5, 0x82C($sp)
     /* 27B6C 8003736C 2408B3AF */  sw         $s3, 0x824($sp)
     /* 27B70 80037370 2008B2AF */  sw         $s2, 0x820($sp)
-    /* 27B74 80037374 AADB000C */  jal        func_80036EA8
+    /* 27B74 80037374 AADB000C */  jal        cdrom_GetFileIndex
     /* 27B78 80037378 1C08B1AF */   sw        $s1, 0x81C($sp)
     /* 27B7C 8003737C C0900200 */  sll        $s2, $v0, 3
     /* 27B80 80037380 0980133C */  lui        $s3, %hi(g_cd_file_table)

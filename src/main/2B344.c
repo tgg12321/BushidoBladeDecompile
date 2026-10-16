@@ -542,7 +542,7 @@ void func_8003B9D0(void) {
     D_800A3768 = DISP_DISABLED;
     D_800A36A8 = 0;
     snd_SerialMixOn();
-    v0 = func_80036EA8(5, D_800A3878[1]);
+    v0 = cdrom_GetFileIndex(5, D_800A3878[1]);
     cdrom_StartAudio(v0, D_800A3878[2]);
     func_80037260();
     D_800A37B8 = 0;
@@ -559,7 +559,7 @@ void func_8003BCB4(void) {
         }
     }
 
-    func_800372C0();
+    cdrom_PauseAndWait();
     func_800548DC();
 
     if (D_800A38DC != 0) {
@@ -617,7 +617,7 @@ void func_8003BE10(void) {
     func_80078824((s32)0x80118800);
     snd_SerialMixOn();
     {
-        s32 v0 = func_80036EA8(5, 0x20);
+        s32 v0 = cdrom_GetFileIndex(5, 0x20);
         cdrom_StartAudio(v0, 4);
     }
     func_80037260();
@@ -637,7 +637,7 @@ void func_8003BEA8(void) {
         v0 = 1;
     }
     if (v0 != 0) {
-        func_800372C0();
+        cdrom_PauseAndWait();
         {
             s32 *ptr = &D_80106A50.unk_00;
             s32 old_val = *ptr;
@@ -697,7 +697,7 @@ void func_8003BFC4(void) {
     func_800415C4(1);
     eff_ClearInitFlag();
     v = arena_GetBase();
-    func_80037540(v, (s32)0x80118000, 1, 0xCF8, 0xB01);
+    sys_ExecMovieOverlay(v, (s32)0x80118000, 1, 0xCF8, 0xB01);
     func_80046B44();
     D_800A3834 = 8;
 }
@@ -779,7 +779,7 @@ void func_8003C040(void) {
     p = D_8008EA70[D_800A38A4];
     if (p[0] >= 0) {
         snd_SerialMixOn();
-        cdrom_StartAudio(func_80036EA8(5, p[0]), (u8)p[1]);
+        cdrom_StartAudio(cdrom_GetFileIndex(5, p[0]), (u8)p[1]);
         func_80037260();
     }
     D_800A37B8 = 0;
@@ -809,7 +809,7 @@ void func_8003C2C0(void) {
         }
     }
     if (D_800A3834 != 0x13) {
-        func_800372C0();
+        cdrom_PauseAndWait();
         if (D_800A3834 != 0x12) {
             func_800548DC();
         }
@@ -874,7 +874,7 @@ void func_8003C560(void) {
         if (D_800A382D == 2) {
             D_800A3834 = 0x18;
         } else {
-            func_800372C0();
+            cdrom_PauseAndWait();
             D_800A38A4 = D_8008D9EC[D_80101EC8[D_800A382D].unk_0A] != 0 ? 5 : 4;
             D_800A3834 = 0x12;
         }
@@ -896,7 +896,7 @@ void func_8003C714(void) {
     TimeRec *src;
 
     s0 = func_80077D00();
-    func_800372C0();
+    cdrom_PauseAndWait();
     func_80016888();
     func_80060758();
     i = 0;
@@ -997,7 +997,7 @@ void func_8003C9A4(void) {
     if (D_800A3929 < 0x3C)
         return;
 
-    func_800372C0();
+    cdrom_PauseAndWait();
     if (D_800A3817 == 0) {
         if (D_800A38DC == 5) {
             gpu_ResetGraphMode1();
@@ -1047,7 +1047,7 @@ void func_8003CD10(void) {
     g_prim_buf_cursor += func_800600C8(D_800A391F, (s32)g_prim_buf_cursor, 1);
     D_800A37B8 = D_800A37B8 + 1;
     if (D_800A37B8 >= 0x97 || (g_pad_state.pressed & 0x400040) != 0) {
-        func_800372C0();
+        cdrom_PauseAndWait();
         func_8001DA2C();
         D_800A3834 = 8;
     }
@@ -1060,7 +1060,7 @@ void func_8003CE18(void) {
     s8 var_1;
 
     func_8001DA2C();
-    func_800372C0();
+    cdrom_PauseAndWait();
     func_80016888();
     gpu_ResetGraphMode1();
     gpu_SetDrawEnvBg(1, 0, 0, 0);

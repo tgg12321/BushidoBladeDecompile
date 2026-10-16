@@ -38,7 +38,9 @@ s32 cdrom_StartReadAt(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     return 1;
 }
 
-s32 func_80036EA8(s32 arg0, s32 arg1) { return (&D_8008F12C)[arg0] + arg1; }
+s32 cdrom_GetFileIndex(s32 arg0, s32 arg1) {
+    return (&D_8008F12C)[arg0] + arg1;
+}
 
 void cdrom_Pause(void) {
     CdReadyCallback(0);
@@ -52,7 +54,7 @@ void cdrom_Pause(void) {
 
 u32 cdrom_GetFileSize(s32 arg0) { return g_cd_file_table[arg0].size; }
 
-void func_80036F40(void) {
+void cdrom_WaitIdle(void) {
     u16 *p;
     func_8003AA78();
     p = &D_80101E58.rec.unk3E;
@@ -104,7 +106,7 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
 
 s32 func_80037110(s32 arg0) {
     Unk8008F13CRow *s0 = &D_8008F13C[arg0];
-    if (cdrom_StartAudio(func_80036EA8(5, s0->unk_0), s0->unk_1) != 0) {
+    if (cdrom_StartAudio(cdrom_GetFileIndex(5, s0->unk_0), s0->unk_1) != 0) {
         if (s0->unk_4 != -1) {
             D_80101E58.rec.unk14 =
                 CdPosToInt(&g_cd_file_table[D_80101E58.rec.unk00].loc) +
@@ -149,11 +151,11 @@ void func_80037260(void) {
     }
 }
 
-void func_800372C0(void) {
+void cdrom_PauseAndWait(void) {
     if (D_80101E58.rec.unk02 != 0) {
         cdrom_Pause();
     }
-    func_80036F40();
+    cdrom_WaitIdle();
 }
 
 s32 cdrom_ReadWait(s32 nbytes, s32 buf, s32 mode) {
@@ -185,7 +187,7 @@ void cdrom_LoadExec(EXEC *dest) {
     s32 mode;
 
     mode = 0x80; /* CdlModeSpeed - double-speed transfer */
-    index = func_80036EA8(6, 0);
+    index = cdrom_GetFileIndex(6, 0);
 
     for (;;) {
         CdControl(2, (u8 *)&g_cd_file_table[index].loc, 0);
@@ -228,7 +230,7 @@ void sys_Exec(s32 a0, s32 *a1, s32 a2) {
     SetDispMask(1);
 }
 
-void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
+void sys_ExecMovieOverlay(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     /* FAKE: frame layout. The target's 0x48 frame implies a larger argv
        buffer than the 24 bytes ever written (s32 [7] and [8] are
        byte-identical; sp[6], the bytes written: score 15); oversized-locals
@@ -236,12 +238,12 @@ void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     s32 sp[8];
     s32 v0;
 
-    v0 = func_80036EA8(6, a2);
+    v0 = cdrom_GetFileIndex(6, a2);
     sp[0] = (s32)&g_cd_file_table[v0];
     sp[1] = a3;
     sp[2] = a0;
     sp[3] = a1;
-    v0 = func_80036EA8(6, 2);
+    v0 = cdrom_GetFileIndex(6, 2);
     sp[4] = (s32)&g_cd_file_table[v0];
     sp[5] = a4;
     v0 = (s32)func_800392B8();

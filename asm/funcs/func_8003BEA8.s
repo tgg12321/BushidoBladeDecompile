@@ -14,7 +14,7 @@ glabel func_8003BEA8
   .L8003BED8:
     /* 2C6D8 8003BED8 35004010 */  beqz       $v0, .L8003BFB0
     /* 2C6DC 8003BEDC 00000000 */   nop
-    /* 2C6E0 8003BEE0 B0DC000C */  jal        func_800372C0
+    /* 2C6E0 8003BEE0 B0DC000C */  jal        cdrom_PauseAndWait
     /* 2C6E4 8003BEE4 00000000 */   nop
     /* 2C6E8 8003BEE8 1080043C */  lui        $a0, %hi(D_80106A50)
     /* 2C6EC 8003BEEC 506A8424 */  addiu      $a0, $a0, %lo(D_80106A50)

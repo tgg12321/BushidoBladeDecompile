@@ -172,7 +172,7 @@ glabel func_8003B9D0
     /* 2C444 8003BC44 7838428C */  lw         $v0, %lo(D_800A3878)($v0)
     /* 2C448 8003BC48 00000000 */  nop
     /* 2C44C 8003BC4C 01004590 */  lbu        $a1, 0x1($v0)
-    /* 2C450 8003BC50 AADB000C */  jal        func_80036EA8
+    /* 2C450 8003BC50 AADB000C */  jal        cdrom_GetFileIndex
     /* 2C454 8003BC54 05000424 */   addiu     $a0, $zero, 0x5
     /* 2C458 8003BC58 0A80033C */  lui        $v1, %hi(D_800A3878)
     /* 2C45C 8003BC5C 7838638C */  lw         $v1, %lo(D_800A3878)($v1)

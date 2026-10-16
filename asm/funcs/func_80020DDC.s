@@ -2,13 +2,13 @@ glabel func_80020DDC
     /* 115DC 80020DDC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 115E0 80020DE0 01000424 */  addiu      $a0, $zero, 0x1
     /* 115E4 80020DE4 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 115E8 80020DE8 AADB000C */  jal        func_80036EA8
+    /* 115E8 80020DE8 AADB000C */  jal        cdrom_GetFileIndex
     /* 115EC 80020DEC 01000524 */   addiu     $a1, $zero, 0x1
     /* 115F0 80020DF0 0A80053C */  lui        $a1, %hi(D_800A3830)
     /* 115F4 80020DF4 3038A58C */  lw         $a1, %lo(D_800A3830)($a1)
     /* 115F8 80020DF8 66DB000C */  jal        cdrom_StartRead
     /* 115FC 80020DFC 21204000 */   addu      $a0, $v0, $zero
-    /* 11600 80020E00 D0DB000C */  jal        func_80036F40
+    /* 11600 80020E00 D0DB000C */  jal        cdrom_WaitIdle
     /* 11604 80020E04 00000000 */   nop
     /* 11608 80020E08 0A80033C */  lui        $v1, %hi(D_800A3830)
     /* 1160C 80020E0C 3038638C */  lw         $v1, %lo(D_800A3830)($v1)

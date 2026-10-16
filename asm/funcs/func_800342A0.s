@@ -77,7 +77,7 @@ glabel func_800342A0
     /* 24BC4 800343C4 00000000 */   nop
     /* 24BC8 800343C8 225A000C */  jal        func_80016888
     /* 24BCC 800343CC 00000000 */   nop
-    /* 24BD0 800343D0 B0DC000C */  jal        func_800372C0
+    /* 24BD0 800343D0 B0DC000C */  jal        cdrom_PauseAndWait
     /* 24BD4 800343D4 00000000 */   nop
     /* 24BD8 800343D8 0A80013C */  lui        $at, %hi(D_800A3834)
     /* 24BDC 800343DC 343820A4 */  sh         $zero, %lo(D_800A3834)($at)

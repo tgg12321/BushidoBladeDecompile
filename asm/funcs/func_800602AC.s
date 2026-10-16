@@ -5,13 +5,13 @@ glabel func_800602AC
     /* 50AB8 800602B8 3D008524 */  addiu      $a1, $a0, 0x3D
     /* 50ABC 800602BC 02000424 */  addiu      $a0, $zero, 0x2
     /* 50AC0 800602C0 3800BFAF */  sw         $ra, 0x38($sp)
-    /* 50AC4 800602C4 AADB000C */  jal        func_80036EA8
+    /* 50AC4 800602C4 AADB000C */  jal        cdrom_GetFileIndex
     /* 50AC8 800602C8 3400B1AF */   sw        $s1, 0x34($sp)
     /* 50ACC 800602CC 21884000 */  addu       $s1, $v0, $zero
     /* 50AD0 800602D0 21202002 */  addu       $a0, $s1, $zero
     /* 50AD4 800602D4 66DB000C */  jal        cdrom_StartRead
     /* 50AD8 800602D8 21280002 */   addu      $a1, $s0, $zero
-    /* 50ADC 800602DC D0DB000C */  jal        func_80036F40
+    /* 50ADC 800602DC D0DB000C */  jal        cdrom_WaitIdle
     /* 50AE0 800602E0 00000000 */   nop
     /* 50AE4 800602E4 CADB000C */  jal        cdrom_GetFileSize
     /* 50AE8 800602E8 21202002 */   addu      $a0, $s1, $zero

@@ -64,7 +64,7 @@ glabel main
     /* 7AF0 800172F0 00000000 */  nop
     /* 7AF4 800172F4 0A004010 */  beqz       $v0, .L80017320
     /* 7AF8 800172F8 00000000 */   nop
-    /* 7AFC 800172FC B0DC000C */  jal        func_800372C0
+    /* 7AFC 800172FC B0DC000C */  jal        cdrom_PauseAndWait
     /* 7B00 80017300 00000000 */   nop
     /* 7B04 80017304 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 7B08 80017308 9C0682A3 */  sb         $v0, %gp_rel(D_800A3768)($gp)
