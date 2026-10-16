@@ -1,8 +1,8 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 17,
- "current_modality": "enumerate",
+ "session_count": 18,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -105,17 +105,23 @@
    "floor": 37,
    "modality": "enumerate",
    "headline": "s17 mandated kill re-audit holds clean (zero FAKE, zero drift, score 32/5-source-level) on the closest rejected form; enumerate axis stays fully exhausted since s15/s16, no new frontier opened."
+  },
+  {
+   "session": 18,
+   "floor": 37,
+   "modality": "synthesis",
+   "headline": "s18 synthesis: kill re-audit holds (32/30, zero FAKE); new $s0-granted diagnostic shows seats + both delay-slot residuals persist even with the wall-banned register pin (port == cc1psx), so the ABI is"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ASM-WHOLE canonical GTE grant is the correct, final disposition for this function.",
-   "mechanism": "s1 ABI class kill (custom $s0 callee-saved register, not GCC-producible); global.c:1057 first-fit explains the seat divergence; reorg.c:2969 backward-scan stop_search_p explains the delay-slot residuals; cc1psx agreement (s10) rules out port divergence; s15/s16's enumerate sweeps close the entire systematic-search axis on the surviving skeleton (one real region, zero hit; three degenerate regions, nothing to sweep); s17 re-confirms zero drift.",
-   "next_probe": "Escalation modality (not mandated this session): file the decisions.md disposition citing s1/s6/s7/s9/s10/s11/s12/s13/s14/s15/s16/s17."
+   "hypothesis": "The whole-body canonical-asm grant (inline_asm_canonical.txt:25) is the correct disposition for this function under the 2026-10-08 reopen.",
+   "mechanism": "Four independent measured not-GCC signals (s1 ABI, s6/s18 seat first-fit global.c:1057, s7 reorg.c:2990, s9 reorg.c:2969), each holding for original cc1psx (s10, s18) and the three non-ABI ones holding even with the ABI granted (s18).",
+   "next_probe": "Escalation modality: file the docs/grind/decisions.md disposition citing s1/s6/s7/s9/s10/s18 and inline_asm_canonical.txt:25; take the Judge-gated canonical-grant path with the cluster siblings func_8004A808/func_8004A940/func_8004A4E0."
   },
   {
-   "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c as PINNED units in engine/gtemacro.py would let the sandbox score the GTE body for real.",
-   "mechanism": "engine/gtemacro.py PINNED-units table (owner ruling 2026-09-25 scorer pin process); s15/s16/s17 confirm this gap, not C spelling, is the entire blocker for hunks 1/2/4.",
+   "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c as PINNED units in engine/gtemacro.py would let the sandbox score the GTE body and turn the 5 source-level hunks into a real residual.",
+   "mechanism": "engine/gtemacro.py:82 PINNED table + :472 strip loop remove the unpinned GTE blocks wholesale.",
    "next_probe": "Operator engine commit adding the four units, then re-measure rejected/psyq-rtpt-pair-reorg-slot-residual.c with --diff."
   }
  ],
@@ -385,6 +391,22 @@
    "measured_on": "rejected/psyq-rtpt-pair-reorg-slot-residual.c at current HEAD, $a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, no FAKE construct present (fake_ablate.py confirmed empty this ",
    "predicate_cite": "",
    "result": "No drift from s13/s14's banked re-audits. Re-read s15/s16 in full: the spelling_enum search space (mid: block size 6 swe"
+  },
+  {
+   "session": 18,
+   "statement": "The two closest banked forms (rejected/psyq-rtpt-pair-reorg-slot-residual.c, rejected/pipelined-goto-wrong-abi-stripped-gte.c) score differently on the current chassis or carried a FAKE carrier that v",
+   "kill_scope": "instance",
+   "measured_on": "both rejected forms at current HEAD, $a3 vertex-pointer chassis, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "Zero FAKE constructs in either form. Scores 32 and 30, each 5 source-level / 0 operand-only / 0 not-scored hunks; stub 3"
+  },
+  {
+   "session": 18,
+   "statement": "With the $s0 vertex-pointer ABI granted (diagnostic file-scope register variable in $16), GCC 2.7.2 emits the remaining target bytes from the closest banked body, making the ABI the only residual.",
+   "kill_scope": "instance",
+   "measured_on": "tmp/grind/func_8004A76C/s18/g_s0.c, global register variable $16 diagnostic (wall-banned pin, no FAKE construct), port cc1 and cc1psx",
+   "predicate_cite": "",
+   "result": "Port == cc1psx byte-for-byte. CFG, GTE ops, entry nop pad, $16 base and advance, j-into-middle, beqz slot all match. Thr"
   }
  ],
  "ladder_skip": 0,

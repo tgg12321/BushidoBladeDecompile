@@ -105,3 +105,13 @@
  * No new enumerate-axis frontier exists beyond s15/s16's fully-mapped
  * search space. The stub stays; see hypotheses.md/evidence.md s17.
  */
+/*
+ * s18 (synthesis): mandated kill re-audit -- fake_ablate finds zero FAKE
+ * constructs in both closest banked forms; sandbox --diff re-measures 32
+ * (psyq-rtpt-pair) and 30 (pipelined-goto), 5/5 source-level each; stub 37.
+ * New diagnostic: granting the $s0 ABI with a (wall-banned) file-scope
+ * register variable still leaves mfc2 seats $2/$3/$7, addu a1 before the
+ * mfc2s and a filled jr slot -- port cc1 == cc1psx
+ * (rejected/diag-global-register-s0-wall-seats-v0-v1-a3-jrslot.c). The
+ * three non-ABI residuals are independent of the ABI question. Stub stays.
+ */

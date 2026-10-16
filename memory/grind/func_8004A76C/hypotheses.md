@@ -337,3 +337,34 @@ form and re-confirm the structural-axis exhaustion finding of s13 holds unchange
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c at current HEAD, $a3 vertex-pointer chassis, PsyQ gte_rtpt pair + local ldv3c/stsxy3c asm, no FAKE construct present (fake_ablate.py confirmed empty this session)
+
+## [s18] (synthesis) KILL RE-AUDIT: the two closest banked forms (rejected/psyq-rtpt-pair-reorg-slot-residual.c, rejected/pipelined-goto-wrong-abi-stripped-gte.c) score differently on the current chassis or carried a FAKE carrier that voids their kills.
+- probe: python3 tools/fake_ablate.py --func func_8004A76C --file main/3AB48 --candidate <each>; sandbox func_8004A76C --disable all --diff --candidate <each>; sandbox stub.
+- result: zero FAKE constructs in either; scores 32 and 30, both 5 source-level / 0 operand-only / 0 not-scored; stub 37. Artifacts tmp/grind/func_8004A76C/s18/ablate_*.txt, sandbox_*.txt. Kills stand.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: both rejected forms at current HEAD, $a3 vertex-pointer chassis, no FAKE construct present
+
+## [s18] (synthesis) If the $s0 vertex-pointer ABI were granted, GCC 2.7.2 would emit the remaining target bytes from the closest banked body (the ABI is the sole unreachable feature).
+- mechanism: diagnostic only -- a file-scope `register SVECTOR *v asm("$16")` (a register pin, completion-bar wall; never shippable) removes the vertex pointer from the arg registers and gives it $16 without a prologue save, isolating the non-ABI residuals.
+- probe: tmp/grind/func_8004A76C/s18/g_s0.c (s7 p_f body + global register var, 3-arg signature) through tools/gcc-2.7.2/build/cc1 -O2 -da (cc.sh) and tools/cc1psx_wrapper.sh (psx.sh).
+- result: port == cc1psx byte-for-byte. Matches CFG, GTE ops, nop pad, $16 base/advance, beqz slot. Three residuals remain: mfc2 seats $2/$3/$7 (greg 75->2, 76->3, 77->7) vs $t0-$t2; addu a1,12 before the mfc2s vs after; jr slot filled with sh $7 vs nop. Banked rejected/diag-global-register-s0-wall-seats-v0-v1-a3-jrslot.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tmp/grind/func_8004A76C/s18/g_s0.c, global register variable $16 diagnostic (wall-banned pin, no FAKE construct), port cc1 and cc1psx
+
+## [s18] The two closest banked forms (rejected/psyq-rtpt-pair-reorg-slot-residual.c, rejected/pipelined-goto-wrong-abi-stripped-gte.c) score differently on the current chassis or carried a FAKE carrier that voids their kills.
+- mechanism: Mandated kill re-audit: a kill measured under a FAKE carrier or older chassis is re-testable.
+- probe: tools/fake_ablate.py --func func_8004A76C --file main/3AB48 --candidate <each>; sandbox func_8004A76C --disable all --diff --candidate <each>; sandbox stub.
+- result: Zero FAKE constructs in either form. Scores 32 and 30, each 5 source-level / 0 operand-only / 0 not-scored hunks; stub 37. Identical to s5/s7/s17.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: both rejected forms at current HEAD, $a3 vertex-pointer chassis, no FAKE construct present
+
+## [s18] With the $s0 vertex-pointer ABI granted (diagnostic file-scope register variable in $16), GCC 2.7.2 emits the remaining target bytes from the closest banked body, making the ABI the only residual.
+- mechanism: Diagnostic only: a global register variable (wall-banned pin, never shippable) removes the vertex pointer from the arg registers and seats it in $16 without a prologue save, isolating the non-ABI residuals.
+- probe: tmp/grind/func_8004A76C/s18/g_s0.c (s7 p_f body + register SVECTOR *v asm("$16"), 3-arg signature) via port cc1 -O2 -da and original cc1psx.
+- result: Port == cc1psx byte-for-byte. CFG, GTE ops, entry nop pad, $16 base and advance, j-into-middle, beqz slot all match. Three residuals remain: mfc2 seats $2/$3/$7 (greg 75->2 76->3 77->7) vs target $t0/$t1/$t2; addu a1,12 before the mfc2s vs after; jr slot holds sh $7 vs nop.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tmp/grind/func_8004A76C/s18/g_s0.c, global register variable $16 diagnostic (wall-banned pin, no FAKE construct), port cc1 and cc1psx
