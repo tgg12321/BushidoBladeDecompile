@@ -34,8 +34,6 @@ void func_80044800(void) {
             continue;
         if (var_5 < D_800A9CF8.unk2) {
             var_0.vx = 0;
-            /* FAKE: angle read ahead of the var_0.vz store; read at its uses
-             * the loads reorder (score 12). */
             angle = rec->unk5C;
             var_0.vz = 0;
             var_7 = (s16 *)(D_800A9CF8.unk8 + var_5 * 12);
@@ -51,8 +49,6 @@ void func_80044800(void) {
             func_800417D0(&rec->node);
             MulMatrix2(&mat, &rec->node.xf.mat);
             cos_val = Judge[(angle + 0x400) & 0xFFF];
-            /* FAKE: cz / sz / cx / sx: the four products staged ahead of the
-             * sums; computed in the sums the multiplies reorder (score 61). */
             cz = cos_val * var_0.vz;
             sin_val = Judge[angle & 0xFFF];
             sz = sin_val * var_0.vz;
@@ -74,8 +70,6 @@ void func_80044800(void) {
                 ent = rec;
                 rec = (Unk800A9CF8Entry *)((Unk800A6690Rec *)D_800A9CF8.unk10 +
                                            i);
-                /* FAKE: last staged ahead of the var_7 address; in the
-                 * expression the subtraction moves (score 8). */
                 last = D_800A9CF8.unk2 - 1;
                 var_7 = (s16 *)(D_800A9CF8.unk8 + (var_5 + last) * 12);
                 var_0.vx = *var_7++;
@@ -269,10 +263,6 @@ s32 ndata_ReadChecked(s32 a0, s32 a1) {
 extern s32 arena_GetFreeSize(void);
 
 s32 ndata_GetArenaRoomAfter(s32 a0) {
-    /* FAKE: val reads the length ahead of the arena_GetFreeSize call; at its
-       use the lh moves after the call and a0 * 4 is kept in s0 instead (score
-       9).
-     */
     s32 val = g_ndata_inf[a0].length_sectors << 11;
     return arena_GetFreeSize() - val;
 }
