@@ -21,8 +21,8 @@ glabel func_8003C8B4
     /* 2D0FC 8003C8FC 80180300 */  sll        $v1, $v1, 2
     /* 2D100 8003C900 0A80023C */  lui        $v0, %hi(g_prim_buf_cursor)
     /* 2D104 8003C904 B438428C */  lw         $v0, %lo(g_prim_buf_cursor)($v0)
-    /* 2D108 8003C908 1080043C */  lui        $a0, %hi(g_pad_state_plus_0xC)
-    /* 2D10C 8003C90C 9427848C */  lw         $a0, %lo(g_pad_state_plus_0xC)($a0)
+    /* 2D108 8003C908 1080043C */  lui        $a0, %hi(g_pad_state + 0xC)
+    /* 2D10C 8003C90C 9427848C */  lw         $a0, %lo(g_pad_state + 0xC)($a0)
     /* 2D110 8003C910 21104300 */  addu       $v0, $v0, $v1
     /* 2D114 8003C914 24208500 */  and        $a0, $a0, $a1
     /* 2D118 8003C918 0A80013C */  lui        $at, %hi(g_prim_buf_cursor)

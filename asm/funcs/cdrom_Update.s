@@ -88,16 +88,16 @@ glabel cdrom_Update
     /* 2727C 80036A7C 7C1E428C */  lw         $v0, %lo(D_80101E58 + 0x24)($v0)
     /* 27280 80036A80 1080033C */  lui        $v1, %hi(D_80101E58 + 0x20)
     /* 27284 80036A84 781E638C */  lw         $v1, %lo(D_80101E58 + 0x20)($v1)
-    /* 27288 80036A88 1080013C */  lui        $at, %hi(g_cdread_dest_buffer)
-    /* 2728C 80036A8C 841E22AC */  sw         $v0, %lo(g_cdread_dest_buffer)($at)
-    /* 27290 80036A90 1080013C */  lui        $at, %hi(g_cdread_sectors_remaining)
-    /* 27294 80036A94 801E23AC */  sw         $v1, %lo(g_cdread_sectors_remaining)($at)
+    /* 27288 80036A88 1080013C */  lui        $at, %hi(D_80101E58 + 0x2C)
+    /* 2728C 80036A8C 841E22AC */  sw         $v0, %lo(D_80101E58 + 0x2C)($at)
+    /* 27290 80036A90 1080013C */  lui        $at, %hi(D_80101E58 + 0x28)
+    /* 27294 80036A94 801E23AC */  sw         $v1, %lo(D_80101E58 + 0x28)($at)
     /* 27298 80036A98 EA01020C */  jal        CdPosToInt
     /* 2729C 80036A9C 21200002 */   addu      $a0, $s0, $zero
     /* 272A0 80036AA0 02000424 */  addiu      $a0, $zero, 0x2
     /* 272A4 80036AA4 21280002 */  addu       $a1, $s0, $zero
-    /* 272A8 80036AA8 1080013C */  lui        $at, %hi(g_cdread_expected_pos)
-    /* 272AC 80036AAC A01E22AC */  sw         $v0, %lo(g_cdread_expected_pos)($at)
+    /* 272A8 80036AA8 1080013C */  lui        $at, %hi(D_80101E58 + 0x48)
+    /* 272AC 80036AAC A01E22AC */  sw         $v0, %lo(D_80101E58 + 0x48)($at)
     /* 272B0 80036AB0 9600020C */  jal        CdControl
     /* 272B4 80036AB4 21300000 */   addu      $a2, $zero, $zero
     /* 272B8 80036AB8 1080013C */  lui        $at, %hi(D_80101E58 + 0x40)
@@ -149,8 +149,8 @@ glabel cdrom_Update
     /* 27364 80036B64 02000224 */  addiu      $v0, $zero, 0x2
     /* 27368 80036B68 19006214 */  bne        $v1, $v0, .L80036BD0
     /* 2736C 80036B6C 05000224 */   addiu     $v0, $zero, 0x5
-    /* 27370 80036B70 1080023C */  lui        $v0, %hi(g_cdread_sectors_remaining)
-    /* 27374 80036B74 801E428C */  lw         $v0, %lo(g_cdread_sectors_remaining)($v0)
+    /* 27370 80036B70 1080023C */  lui        $v0, %hi(D_80101E58 + 0x28)
+    /* 27374 80036B74 801E428C */  lw         $v0, %lo(D_80101E58 + 0x28)($v0)
     /* 27378 80036B78 00000000 */  nop
     /* 2737C 80036B7C 03004014 */  bnez       $v0, .L80036B8C
     /* 27380 80036B80 00000000 */   nop

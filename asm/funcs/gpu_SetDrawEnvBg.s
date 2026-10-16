@@ -4,9 +4,9 @@ glabel gpu_SetDrawEnvBg
     /* 6F70 80016770 38746324 */  addiu      $v1, $v1, %lo(g_gpu_db)
     /* 6F74 80016774 21400000 */  addu       $t0, $zero, $zero
   .L80016778:
-    /* 6F78 80016778 0F80013C */  lui        $at, %hi(g_gpu_db_plus_0x18)
+    /* 6F78 80016778 0F80013C */  lui        $at, %hi(g_gpu_db + 0x18)
     /* 6F7C 8001677C 21082800 */  addu       $at, $at, $t0
-    /* 6F80 80016780 507424A0 */  sb         $a0, %lo(g_gpu_db_plus_0x18)($at)
+    /* 6F80 80016780 507424A0 */  sb         $a0, %lo(g_gpu_db + 0x18)($at)
     /* 6F84 80016784 190065A0 */  sb         $a1, 0x19($v1)
     /* 6F88 80016788 1A0066A0 */  sb         $a2, 0x1A($v1)
     /* 6F8C 8001678C 1B0067A0 */  sb         $a3, 0x1B($v1)

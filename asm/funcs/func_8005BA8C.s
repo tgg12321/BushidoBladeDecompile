@@ -157,10 +157,10 @@ glabel func_8005BA8C
     /* 4C4D4 8005BCD4 02000224 */  addiu      $v0, $zero, 0x2
     /* 4C4D8 8005BCD8 05006214 */  bne        $v1, $v0, .L8005BCF0
     /* 4C4DC 8005BCDC 00000000 */   nop
-    /* 4C4E0 8005BCE0 0F80023C */  lui        $v0, %hi(g_vab_rec_ptr_plus_0xC)
-    /* 4C4E4 8005BCE4 44FC428C */  lw         $v0, %lo(g_vab_rec_ptr_plus_0xC)($v0)
-    /* 4C4E8 8005BCE8 0F80013C */  lui        $at, %hi(g_vab_rec_ptr_plus_0x18)
-    /* 4C4EC 8005BCEC 50FC22AC */  sw         $v0, %lo(g_vab_rec_ptr_plus_0x18)($at)
+    /* 4C4E0 8005BCE0 0F80023C */  lui        $v0, %hi(g_vab_rec_ptr + 0xC)
+    /* 4C4E4 8005BCE4 44FC428C */  lw         $v0, %lo(g_vab_rec_ptr + 0xC)($v0)
+    /* 4C4E8 8005BCE8 0F80013C */  lui        $at, %hi(g_vab_rec_ptr + 0x18)
+    /* 4C4EC 8005BCEC 50FC22AC */  sw         $v0, %lo(g_vab_rec_ptr + 0x18)($at)
   .L8005BCF0:
     /* 4C4F0 8005BCF0 3800A88F */  lw         $t0, 0x38($sp)
     /* 4C4F4 8005BCF4 00000000 */  nop

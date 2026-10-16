@@ -33,8 +33,8 @@ glabel cdrom_UpdateAudio
     /* 269B4 800361B4 00000000 */  nop
     /* 269B8 800361B8 18004400 */  mult       $v0, $a0
     /* 269BC 800361BC 12180000 */  mflo       $v1
-    /* 269C0 800361C0 0A80023C */  lui        $v0, %hi(g_cd_atv_plus_0x1)
-    /* 269C4 800361C4 19374290 */  lbu        $v0, %lo(g_cd_atv_plus_0x1)($v0)
+    /* 269C0 800361C0 0A80023C */  lui        $v0, %hi(g_cd_atv + 0x1)
+    /* 269C4 800361C4 19374290 */  lbu        $v0, %lo(g_cd_atv + 0x1)($v0)
     /* 269C8 800361C8 00000000 */  nop
     /* 269CC 800361CC 18004600 */  mult       $v0, $a2
     /* 269D0 800361D0 12500000 */  mflo       $t2
@@ -58,8 +58,8 @@ glabel cdrom_UpdateAudio
     /* 26A10 80036210 00000000 */  nop
     /* 26A14 80036214 18004400 */  mult       $v0, $a0
     /* 26A18 80036218 12180000 */  mflo       $v1
-    /* 26A1C 8003621C 0A80023C */  lui        $v0, %hi(g_cd_atv_plus_0x2)
-    /* 26A20 80036220 1A374290 */  lbu        $v0, %lo(g_cd_atv_plus_0x2)($v0)
+    /* 26A1C 8003621C 0A80023C */  lui        $v0, %hi(g_cd_atv + 0x2)
+    /* 26A20 80036220 1A374290 */  lbu        $v0, %lo(g_cd_atv + 0x2)($v0)
     /* 26A24 80036224 00000000 */  nop
     /* 26A28 80036228 18004600 */  mult       $v0, $a2
     /* 26A2C 8003622C 12500000 */  mflo       $t2
@@ -83,8 +83,8 @@ glabel cdrom_UpdateAudio
     /* 26A6C 8003626C 00000000 */  nop
     /* 26A70 80036270 18004400 */  mult       $v0, $a0
     /* 26A74 80036274 12200000 */  mflo       $a0
-    /* 26A78 80036278 0A80023C */  lui        $v0, %hi(g_cd_atv_plus_0x3)
-    /* 26A7C 8003627C 1B374290 */  lbu        $v0, %lo(g_cd_atv_plus_0x3)($v0)
+    /* 26A78 80036278 0A80023C */  lui        $v0, %hi(g_cd_atv + 0x3)
+    /* 26A7C 8003627C 1B374290 */  lbu        $v0, %lo(g_cd_atv + 0x3)($v0)
     /* 26A80 80036280 00000000 */  nop
     /* 26A84 80036284 18004600 */  mult       $v0, $a2
     /* 26A88 80036288 12500000 */  mflo       $t2
@@ -171,8 +171,8 @@ glabel cdrom_UpdateAudio
     /* 26BB8 800363B8 02000224 */  addiu      $v0, $zero, 0x2
     /* 26BBC 800363BC 57016214 */  bne        $v1, $v0, .L8003691C
     /* 26BC0 800363C0 05000224 */   addiu     $v0, $zero, 0x5
-    /* 26BC4 800363C4 1080053C */  lui        $a1, %hi(g_cd_loc)
-    /* 26BC8 800363C8 6C1EA524 */  addiu      $a1, $a1, %lo(g_cd_loc)
+    /* 26BC4 800363C4 1080053C */  lui        $a1, %hi(D_80101E58 + 0x14)
+    /* 26BC8 800363C8 6C1EA524 */  addiu      $a1, $a1, %lo(D_80101E58 + 0x14)
     /* 26BCC 800363CC E400020C */  jal        CdControlF
     /* 26BD0 800363D0 02000424 */   addiu     $a0, $zero, 0x2
     /* 26BD4 800363D4 49DA0008 */  j          .L80036924
@@ -290,14 +290,14 @@ glabel cdrom_UpdateAudio
     /* 26D74 80036574 01000224 */  addiu      $v0, $zero, 0x1
     /* 26D78 80036578 1F006214 */  bne        $v1, $v0, .L800365F8
     /* 26D7C 8003657C 05000224 */   addiu     $v0, $zero, 0x5
-    /* 26D80 80036580 0A80023C */  lui        $v0, %hi(g_cd_result_plus_0x4)
-    /* 26D84 80036584 64374290 */  lbu        $v0, %lo(g_cd_result_plus_0x4)($v0)
+    /* 26D80 80036580 0A80023C */  lui        $v0, %hi(g_cd_result + 0x4)
+    /* 26D84 80036584 64374290 */  lbu        $v0, %lo(g_cd_result + 0x4)($v0)
     /* 26D88 80036588 00000000 */  nop
     /* 26D8C 8003658C 80004230 */  andi       $v0, $v0, 0x80
     /* 26D90 80036590 1C004014 */  bnez       $v0, .L80036604
     /* 26D94 80036594 00000000 */   nop
-    /* 26D98 80036598 0A80043C */  lui        $a0, %hi(g_cd_result_plus_0x3)
-    /* 26D9C 8003659C 63378424 */  addiu      $a0, $a0, %lo(g_cd_result_plus_0x3)
+    /* 26D98 80036598 0A80043C */  lui        $a0, %hi(g_cd_result + 0x3)
+    /* 26D9C 8003659C 63378424 */  addiu      $a0, $a0, %lo(g_cd_result + 0x3)
     /* 26DA0 800365A0 1080013C */  lui        $at, %hi(D_80101E58 + 0x44)
     /* 26DA4 800365A4 9C1E20A4 */  sh         $zero, %lo(D_80101E58 + 0x44)($at)
     /* 26DA8 800365A8 EA01020C */  jal        CdPosToInt
@@ -379,8 +379,8 @@ glabel cdrom_UpdateAudio
     /* 26EC0 800366C0 15000224 */  addiu      $v0, $zero, 0x15
     /* 26EC4 800366C4 99006010 */  beqz       $v1, .L8003692C
     /* 26EC8 800366C8 000002A6 */   sh        $v0, 0x0($s0)
-    /* 26ECC 800366CC 0A80043C */  lui        $a0, %hi(g_cd_result_plus_0x5)
-    /* 26ED0 800366D0 65378424 */  addiu      $a0, $a0, %lo(g_cd_result_plus_0x5)
+    /* 26ECC 800366CC 0A80043C */  lui        $a0, %hi(g_cd_result + 0x5)
+    /* 26ED0 800366D0 65378424 */  addiu      $a0, $a0, %lo(g_cd_result + 0x5)
     /* 26ED4 800366D4 EA01020C */  jal        CdPosToInt
     /* 26ED8 800366D8 00000000 */   nop
     /* 26EDC 800366DC 1080043C */  lui        $a0, %hi(D_80101E58 + 0x1C)
