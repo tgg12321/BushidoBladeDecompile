@@ -481,7 +481,7 @@ extern MATRIX D_800FF610;
 extern s32 D_800951D8;
 extern s32 D_80095280;
 extern s32 D_80095328;
-extern s32 D_800A3828;
+extern Unk800F62E0Rec *D_800A3828;
 
 void func_800430E4(s32 arg0, s32 arg1, s16 arg2, u8 *arg3) {
     MATRIX *dst = (MATRIX *)0x1F8003A0;
@@ -492,7 +492,7 @@ void func_800430E4(s32 arg0, s32 arg1, s16 arg2, u8 *arg3) {
 
     *dst = D_800FF610;
 
-    D_800A3828 = (s32)&D_800F62E0[arg2];
+    D_800A3828 = &D_800F62E0[arg2];
 
     dst->m[1][0] >>= 1;
     dst->m[1][1] >>= 1;
@@ -1225,4 +1225,4 @@ Unk80101DF0Record *D_800A3708;
 u32 *D_800A378C;
 s32 D_800A3790;
 void **g_draw_queue_cursor;
-s32 D_800A3828;
+Unk800F62E0Rec *D_800A3828;
