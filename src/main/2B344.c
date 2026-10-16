@@ -612,62 +612,35 @@ void func_8003BE10(void) {
 }
 
 void func_8003BEA8(void) {
-    s32 s0 = 0;
-    s32 v0;
-    s32 v1;
+    s32 changed = 0;
+    s32 go;
+    s32 old;
+    s32 bit;
 
-    v0 = func_800788B0();
-    v1 = g_pad_state.pressed & 0x40;
-    v0 = (u32)v0 > 0u;
-    if (v1 != 0) {
-        v0 = 1;
+    go = func_800788B0() != 0;
+    if (g_pad_state.pressed & 0x40) {
+        go = 1;
     }
-    if (v0 != 0) {
+    if (go) {
         cdrom_PauseAndWait();
-        {
-            s32 *ptr = &D_80106A50.unk_00;
-            s32 old_val = *ptr;
-            s32 new_val = old_val | D_800A37A4;
-            if (new_val != old_val) {
-                *ptr = new_val;
-                s0 = 1;
+        old = D_80106A50.unk_00;
+        if ((old | D_800A37A4) != old) {
+            D_80106A50.unk_00 = old | D_800A37A4;
+            changed = 1;
+        }
+        if (D_80101EC8[0].unk_0A == 0 || D_80101EC8[0].unk_0A == 1 ||
+            D_80101EC8[0].unk_0A == 2 || D_80101EC8[0].unk_0A == 0xC ||
+            D_80101EC8[0].unk_0A == 0xD || D_80101EC8[0].unk_0A == 0xE) {
+            bit = D_80101EC8[0].unk_0A;
+            if (bit >= 0xC) {
+                bit -= 9;
+            }
+            if (!((D_80106A50.unk_04 >> bit) & 1)) {
+                D_80106A50.unk_04 |= 1 << bit;
+                changed = 1;
             }
         }
-        {
-            s32 var_6 = (s32)(u16)D_80101EC8[0].unk_0A;
-            s16 var_7;
-            if ((u32)var_6 < 2u) {
-                goto check_bit;
-            }
-            var_7 = (s16)var_6;
-            if (var_7 == 2) {
-                goto check_bit;
-            }
-            if ((u32)(var_6 - 0xC) < 2u) {
-                goto check_bit;
-            }
-            if (var_7 == 0xE) {
-                goto check_bit;
-            }
-            goto skip_bit;
-        }
-    check_bit: {
-        s32 bit = (s16)D_80101EC8[0].unk_0A;
-        u8 val;
-        if (bit >= 0xC) {
-            bit = bit - 9;
-        }
-        {
-            u8 *vptr = &D_80106A50.unk_04;
-            val = *vptr;
-            if (!((val >> bit) & 1)) {
-                *vptr = val | (1 << bit);
-                s0 = 1;
-            }
-        }
-    }
-    skip_bit:
-        if (s0 != 0) {
+        if (changed) {
             D_800A3834 = 0x1A;
         } else {
             D_800A3834 = 8;
