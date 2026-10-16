@@ -3598,7 +3598,8 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
 }
 
 void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
-    s32 dists[6];
+    s32 dists[4];
+    s32 picks[2];
     s16 *base;
     s32 dx;
     s32 dz;
@@ -3631,11 +3632,11 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
 
     for (i = 0, j = 0; i < 4; i++) {
         if (dists[i] != -1) {
-            dists[4 + j++] = i;
+            picks[j++] = i;
         }
     }
 
-    base += dists[4 + (rand() & 1)] * 6 + 3;
+    base += picks[rand() & 1] * 6 + 3;
     arg1[0] = base[0];
     arg1[1] = base[1];
     arg1[2] = base[2];
