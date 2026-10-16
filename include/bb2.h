@@ -816,7 +816,7 @@ extern s32 func_8005B9FC(s32);
 extern s32 func_8005BE84(s32);
 extern void func_8005BF3C(void);
 extern void func_8005C614(void);
-extern void func_8005C650(s32, s32, s32);
+extern s32 func_8005C650(s32, s32, s32);
 extern s32 func_8005C8A8(s32, s32, s32, s32);
 extern s32 func_8005D46C(s32, s32);
 extern s32 func_8005D554(s32, s32);

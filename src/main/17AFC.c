@@ -4752,12 +4752,9 @@ void func_800324D0(Unk80101EC8Record *rec) {
 }
 
 /* 3D positional sound pan/volume: listener-relative delta of *arg1,
- * distance attenuation via the g_sqrt_table_u8 byte-LUT square root (GTE
- * LZCS/LZCR island for
- * >= 0x400), then a sin/cos left/right pan scaled by distance, clamped to 0x7F,
- * sent to func_8005C650(arg0, L, R). The island is an enumerated carrier
- * under the owner cop2 cluster grant (cop2-addressing-preamble-cluster);
- * everything outside it is ordinary C with no FAKE constructs. */
+ * distance attenuation via the g_sqrt_table_u8 byte-LUT square root (gte_Lzc
+ * for >= 0x400), then a sin/cos left/right pan scaled by distance, clamped to
+ * 0x7F, sent to func_8005C650(arg0, L, R). */
 void func_800325E0(s32 arg0, s32 *arg1) {
     s32 sp_tmp;
     s32 dx, dy, dz;
@@ -4780,25 +4777,7 @@ void func_800325E0(s32 arg0, s32 *arg1) {
         if (dist_sq < 0x400U) {
             var_4 = (u32)(u8)(g_sqrt_table_u8[dist_sq]) >> 3;
         } else {
-            /* gte_Lzc(dist_sq, &sp_tmp) -- gtemac.h:174-178: gte_ldlzc
-             * (inline_c.h:228-231) + 2x gte_nop (inline_c.h:1346-1347) +
-             * gte_stlzc (inline_c.h:1318-1322). The `addu $t4,%1,$zero` and
-             * `addiu $v0,$sp,0x10` / `addu $t4,$v0,$zero` materialisations
-             * are the cop2 addressing preamble the owner cluster grant
-             * covers (cop2-addressing-preamble-cluster); nothing else outside
-             * the macro body is in the island. Same spelling as
-             * math_NegNormalize3D / func_80032314 / func_8002E838. */
-            __asm__ volatile(
-                "addu   $t4, %1, $zero\n"
-                "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
-                "nop\n"
-                "nop\n"
-                "addiu  $v0, $sp, 0x10\n"  /* &sp_tmp */
-                "addu   $t4, $v0, $zero\n"
-                "swc2   $31, 0($t4)\n"     /* sp_tmp <- LZCR */
-                : "=m"(sp_tmp)
-                : "r"(dist_sq)
-                : "$2", "$12");
+            gte_Lzc(dist_sq, &sp_tmp);
             {
                 /* FAKE: v0_m holds the -2 mask (li -2 into v0, and v0,v1,v0);
                    as a literal the mask lands in v1 and the clz in v0 (score

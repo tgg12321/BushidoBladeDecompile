@@ -365,7 +365,7 @@ func_8002E838  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the 
 func_80031890  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h: gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
 func_8002FF20  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h: gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
 func_800300B4  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h: gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
-func_800325E0  # pipeline grant 2026-09-02: OWNER-CLUSTER (cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)) — owner-enumerated cluster member (registry tools/grinder/owner_cluster_grants.txt; door per owner ruling 2026-08-30), judge-verified. Packet in docs/grind/decisions.md 2026-09-02 entry.
+func_800325E0  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_Lzc); the C remains audited.
 func_80019310  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h: gte_SetRotMatrix, gte_SetTransMatrix, gte_ldv0, gte_rtv0tr, gte_stlvnl); the C remains audited.
 
 # Completion audit 2026-09-18: single-op GTE islands also require mixed classification.
