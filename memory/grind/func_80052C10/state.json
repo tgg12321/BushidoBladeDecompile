@@ -1,0 +1,47 @@
+{
+ "func": "func_80052C10",
+ "file": "main/3AB48",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 4,
+   "modality": "recon",
+   "headline": "Confirmed floor 4 (vu32 single-store); killed instance hypothesis that a minimal single-statement body reaches $t9; grant's fold claim only wrong for the volatile reading; sibling has independent hand"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Register-seat recovery via genuine multi-value pressure: construct a synthetic (diagnostic-only, never landed) body with ~13 live scratch pseudos before the store to test whether global.c's allocator can ever reach $t9 at all, or whether $t9 is unreachable by any natural-C register pressure shape for this address (which would be a class-level finding against register-alloc-pure-c's ordering predicate, worth a ruling-request).",
+   "mechanism": "global.c allocno ordering / conflict-driven hard-register assignment",
+   "next_probe": "Write throwaway diagnostic bodies with N dead/live scratch locals (N=5,9,13) before the store, dump .greg each time, find the pressure threshold (if any) at which $v0..$t8 fill and $t9 gets chosen; strip before any candidate.c update."
+  },
+  {
+   "hypothesis": "Trailing double-nop after jr $ra is source-level, not a register/scheduling artifact -- unexplained by any lever tried so far.",
+   "mechanism": "unknown; not inter-object padding (next function abuts with no gap), not GTE/cop2 latency (no cop2 op in this function)",
+   "next_probe": "Grep other matched leaf functions in this codebase for a `jr $ra; nop; nop` (double-nop) 6+-insn shape and read their matched C to see what source construct, if any, produces a second nop after the return in a leaf void function."
+  },
+  {
+   "hypothesis": "The canonical-asm grant (inline_asm_canonical.txt:331) should be re-weighed, but not yet escalated -- new evidence cuts both ways this session (fold claim right for non-volatile, wrong for volatile; but sibling func_80052C28 has an independent hand-written marker).",
+   "mechanism": "n/a -- policy/evidence question, not a codegen mechanism",
+   "next_probe": "Run frontier item 1 (the pressure-threshold probe) first; if it shows $t9 is reachable under some plausible real body, pursue that body's C shape before any ruling-request. If it shows $t9 unreachable under even heavy pressure, cite that measurement in a ruling-request instead of reopening the grant unilaterally."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "A single-statement body `*(T *)0x1F800400 = 0;` (volatile vu32 or plain s32 pointer form) reaches the target's $t9 register seat for the scratchpad address pseudo.",
+   "kill_scope": "instance",
+   "measured_on": "src/main/3AB48.c func_80052C10, single-statement chassis `*(vu32 *)0x1F800400 = 0;` and `*(s32 *)0x1F800400 = 0;`, no FAKE construct present, no register pin used",
+   "predicate_cite": "",
+   "result": "Both the vu32 and plain s32 single-statement forms allocate the address pseudo to $v0 (lowest free scratch reg), never $"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "regression",
+ "created": "2026-10-16T04:20:03.624698+00:00"
+}
