@@ -842,8 +842,8 @@ D_800A32EC                       = 0x800A32EC;  /* RECT {0x90, 0x1FB, 0x30, 1}, 
 D_800A3638                   = 0x800A3638;  /* one word: _remove_ChgclrPAD's $ra save slot (libapi/chclrpad.c:7); 0x800A3648 / 0x800A3658 belong to other modules */  /* data-wave 2026-10-09: was g_text1b_misc_state_record_table_16x4 */
 D_8009B7A0                      = 0x8009B7A0;  /* one 12-byte sprite-sheet header (Unk8009B0E0Record), cells D_8009B820, in func_80060544 */  /* data-wave 2026-10-08: was g_text1b_state_record_table_12x5_a */
 D_800A3460                        = 0x800A3460;  /* s32 live-slot bit mask for the six slots func_8006288C spawns and func_8006295C draws */  /* data-wave 2026-10-08: was g_text1b_state_record_table_4x36 */
-D_8009B8C8                             = 0x8009B8C8;  /* TexRec table (5 x 8 bytes) selected for drawing (51268.c) */  /* data-wave 2026-10-08: was g_motion_ex_state_table_8x5 */
-D_8009B9D8                             = 0x8009B9D8;  /* TexRec table (4 x 8 bytes), sibling of D_8009B8C8 */  /* data-wave 2026-10-08: was g_motion_ex_state_table_8x4 */
+D_8009B8C8                             = 0x8009B8C8;  /* TexRec[1] selected for drawing (51268.c) */  /* data-wave 2026-10-08: was g_motion_ex_state_table_8x5 */
+D_8009B9D8                             = 0x8009B9D8;  /* TexRec[1], sibling of D_8009B8C8 */  /* data-wave 2026-10-08: was g_motion_ex_state_table_8x4 */
 
 /* === Interior words of D_80101EC8[0] (2026-05-17) === */
 /* Each is a member of record [0] (Unk80101EC8Record, include/game.h:1377); */

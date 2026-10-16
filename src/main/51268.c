@@ -139,7 +139,7 @@ void func_80060B70(void) {
     *D_800A3468->unk14 = result;
 }
 
-extern u8 D_800F1150[];
+extern u8 D_800F1150[0x1C];
 
 void func_80060C60(void) {
     s32 i = 0;
@@ -295,15 +295,15 @@ void func_80061178(void) {
 
 extern Unk1F800000Unk00 D_800F116C;
 
-void func_800611A4(s32 *arg0, u16 *arg1) {
-    u16 svec[3];
+void func_800611A4(s32 *arg0, s16 *arg1) {
+    s16 svec[3];
     s32 *p;
-    u16 *q = arg1;
+    s16 *q = arg1;
     svec[0] = *q++;
     svec[1] = *q++;
     D_800A3468 = &D_800F116C;
     svec[2] = *q;
-    D_800F116C.unk10 = (s16 *)svec;
+    D_800F116C.unk10 = svec;
     D_800F116C.unk0C = arg0;
     D_800F116C.unk14 = &D_800F1150[26];
     D_800F116C.unk00.w = 0x21001A;
@@ -580,7 +580,7 @@ void func_80061A3C(s32 *a0, s16 a1, s32 a2, s32 a3) {
     D_800F116C.unk0C = a0;
     D_800F116C.unk10 = sp;
     if (a3 == 0) {
-        D_800F116C.unk14 = &D_800F1150;
+        D_800F116C.unk14 = &D_800F1150[0];
         D_800F116C.unk00.w = a2 + 0x10000;
     } else {
         D_800F116C.unk14 = &D_800F1150[1];
@@ -589,11 +589,11 @@ void func_80061A3C(s32 *a0, s16 a1, s32 a2, s32 a3) {
     func_80060A68();
 }
 
-void func_80061ACC(s32 *arg0, s32 arg1) {
+void func_80061ACC(s32 *arg0, s16 *arg1) {
     s32 *p;
     D_800A3468 = &D_800F116C;
     D_800F116C.unk0C = arg0;
-    D_800F116C.unk10 = (s16 *)arg1;
+    D_800F116C.unk10 = arg1;
     if (D_800F1150[20] != 0) {
         if (D_800F1150[21] != 0) {
             D_800F1150[21] = 0;
