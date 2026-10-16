@@ -46,21 +46,16 @@ A member's island inherits the canonical-asm disposition ONLY when all hold:
    text (e.g. `gte_ldlv0`'s `lhu/lhu/sll/or` pack, PsyQ 4.5 `inline_c.h:101-110`) are admitted; nothing outside
    the named macro body. An island comment that names a macro names the one the island implements;
    macro name, header line and departures go in its row or the landing record
-   ([[site-comment-content]], Q118; same as inline-asm-policy's 2026-09-23 route).
+   ([[site-comment-content]], Q118).
 4. Before `queue done`: fresh layer-2 `cheat-reviewer` on the applied diff AND `verify-oracle --rebuild`.
 
 **The load-bearing negative.** Membership closes the TAIL ISLAND only, once the pure-C body independently
 reaches sandbox 0 under the normal gates. It is not a shortcut for a function hundreds of instructions off.
 
 **Bucket.** Every carrier is COMPLETED-INLINE-ASM-CANONICAL (allowlist line in `inline_asm_canonical.txt`
-required) — never COMPLETED-C; the driver enforces this on the Judge PASS path. Preferred future form: a
-BB2-local GTE macro header (`gte_ldlv0(vec)`), except for islands admitted under inline-asm-policy's
-2026-09-23 / 2026-09-26 rulings, which must be inline in `src/**/*.c`.
-
-**inline_o.h class (owner ruling 2026-09-26).** A member whose islands all meet the verbatim inline_o.h
-macro-unit ruling ([[inline-asm-policy]], checked against `engine/gtemacro.py`'s pinned copy) needs no
-`tools/grinder/owner_cluster_grants.txt` row; the 4-point check still applies. Other islands keep the
-per-function row route (manual path only until the driver's grant door learns the class).
+required) — never COMPLETED-C; the driver enforces this on the Judge PASS path. Preferred form: calls to
+the vendored PsyQ macros ([[inline-asm-policy]] § PsyQ GTE macro calls); an island that reproduces a macro's
+text is converted to that call.
 
 ## Related
 

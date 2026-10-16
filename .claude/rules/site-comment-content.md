@@ -49,7 +49,7 @@ dossier prose. These need not be at the site; the landing commit body, the ledge
 `inline_asm_canonical.txt` row carries them. This overrides those clauses in every rule
 (including aggregate-declaration-views Q21/Q33/Q36, reused-local-necessity Q34/Q74/Q75/Q85 and
 Rulings 11-12 (F), reused-local-meaning-source Rulings 7/10, phantom-frame-pad-family item 6,
-proven-spelling-class-reconstruction 3, inline-asm-policy 2026-09-23 (1) and Extension (C),
+proven-spelling-class-reconstruction 3,
 cop2-addressing-preamble-cluster check 3, ordinary-c-judge-decidable Q76/Q82/Q90). They may
 also stay at the site when short.
 
