@@ -5,6 +5,8 @@
 #include "include_asm.h"
 #include "bb2.h"
 #include <psxsdk/libgte.h>
+#include <psxsdk/inline_c.h>
+#include <psxsdk/gtemac.h>
 
 /* func_80060A68 .. func_80060E38 belong here by the per-file gp evidence
  * (Q65). */
@@ -939,10 +941,7 @@ void func_800620B8(s16 *arg0, s32 *arg1) {
          * MATRIX here). Spelled (MATRIX *)base: score 65. */
         SetTransMatrix((MATRIX *)((u8 *)var_3 - 0x14));
         RotTransPers(var_5, D_800A34B8, var_6, D_800A34CC);
-        /* gte_stsz(r0) --- inline_c.h :1042-1046 */
-        __asm__ volatile(
-            "swc2   $19, 0(%0)\n"
-            :: "r"(D_800A34D0) : "memory");
+        gte_stsz(D_800A34D0);
         *z = func_80052C28(*D_800A34D0, 0);
         if (*z < 0x1005 && (*D_800A34B0 / 256 >> 4) < *z) {
             *D_800A3494 = (u16)(((D_800A348C->clut_x >> 4) & 0x3F) +
@@ -1124,10 +1123,7 @@ s32 func_8006295C(void) {
             var_16 = &D_8009BB84[j * 16];
             RotTransPers4(var_16, var_16 + 4, var_16 + 8, var_16 + 12, sxy,
                           sxy + 1, sxy + 2, sxy + 3, var_2, D_800A34CC);
-            /* gte_stsz(r0) --- inline_c.h :1042-1046 */
-            __asm__ volatile(
-                "swc2   $19, 0(%0)\n"
-                :: "r"(D_800A34D0) : "memory");
+            gte_stsz(D_800A34D0);
             *D_800A34D0 = func_80052C28(*D_800A34D0, 0);
             if (*D_800A34D0 == 0) {
                 *D_800A34D0 = 1;
@@ -1227,19 +1223,7 @@ s32 func_80063084(void) {
     var_5 = &base->unk34;
     var_6 = &base->unk38;
     z = &base->unk3C;
-    /* gte_SetRotMatrix(r0) --- PsyQ 4.3 inline_c.h :297-310 */
-    __asm__ volatile(
-        "lw     $12, 0(%0)\n"
-        "lw     $13, 4(%0)\n"
-        "ctc2   $12, $0\n"
-        "ctc2   $13, $1\n"
-        "lw     $12, 8(%0)\n"
-        "lw     $13, 12(%0)\n"
-        "lw     $14, 16(%0)\n"
-        "ctc2   $12, $2\n"
-        "ctc2   $13, $3\n"
-        "ctc2   $14, $4\n"
-        :: "r"(D_800A3474) : "$12", "$13", "$14");
+    gte_SetRotMatrix(D_800A3474);
     v->vz = 0;
     v->vy = 0;
     v->vx = 0;
@@ -1272,10 +1256,7 @@ s32 func_80063084(void) {
                  * Spelled (MATRIX *)base: score 55. */
                 SetTransMatrix((MATRIX *)((u8 *)var_2 - 0x14));
                 RotTransPers(v, D_800A34B8, var_5, D_800A34CC);
-                /* gte_stsz(r0) --- PsyQ 4.3 inline_c.h :1042-1046 */
-                __asm__ volatile(
-                    "swc2   $19, 0(%0)\n"
-                    :: "r"(D_800A34D0) : "memory");
+                gte_stsz(D_800A34D0);
                 if (j == 0) {
                     D_800A3488 = D_8009B940;
                 } else if (D_800F0BEC[i] < 11) {
@@ -1837,19 +1818,7 @@ s32 func_800646E8(void) {
     p = &base->unk40;
     end = &base->unk44;
     prim = D_800A37D4;
-    /* gte_SetRotMatrix(r0) --- inline_c.h :297-310 */
-    __asm__ volatile(
-        "lw     $12, 0(%0)\n"
-        "lw     $13, 4(%0)\n"
-        "ctc2   $12, $0\n"
-        "ctc2   $13, $1\n"
-        "lw     $12, 8(%0)\n"
-        "lw     $13, 12(%0)\n"
-        "lw     $14, 16(%0)\n"
-        "ctc2   $12, $2\n"
-        "ctc2   $13, $3\n"
-        "ctc2   $14, $4\n"
-        :: "r"(D_800A3474) : "$12", "$13", "$14");
+    gte_SetRotMatrix(D_800A3474);
     var_7->vx = var_7->vy = var_7->vz = 0;
     *D_800A34B0 = ReadGeomScreen() * 1000;
     *D_800A34A8 = 0x40;
@@ -1872,10 +1841,7 @@ s32 func_800646E8(void) {
              * (MATRIX *)((u8 *)base + 4): score 68. */
             SetTransMatrix((MATRIX *)((u8 *)var_5 - 0x14));
             RotTransPers(var_7, D_800A34B8, p, D_800A34CC);
-            /* gte_stsz(r0) --- inline_c.h :1042-1046 */
-            __asm__ volatile(
-                "swc2   $19, 0(%0)\n"
-                :: "r"(D_800A34D0) : "memory");
+            gte_stsz(D_800A34D0);
             D_800A3488 = &D_8009B8E8[*var_4];
             *D_800A3494 = (u16)(((D_800A3488->clut_x >> 4) & 0x3F) +
                                 (D_800A3488->clut_y << 6));
@@ -3194,19 +3160,7 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
     *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
     *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
 
-    /* gte_SetRotMatrix(r0) --- PsyQ 4.3 inline_c.h :297-310 */
-    __asm__ volatile(
-        "lw     $12, 0(%0)\n"
-        "lw     $13, 4(%0)\n"
-        "ctc2   $12, $0\n"
-        "ctc2   $13, $1\n"
-        "lw     $12, 8(%0)\n"
-        "lw     $13, 12(%0)\n"
-        "lw     $14, 16(%0)\n"
-        "ctc2   $12, $2\n"
-        "ctc2   $13, $3\n"
-        "ctc2   $14, $4\n"
-        :: "r"(D_800A3474) : "$12", "$13", "$14");
+    gte_SetRotMatrix(D_800A3474);
 
     if (D_800A3438[arg1] < D_800F0B98[arg0]) {
         D_800F0C10[arg1][D_800A3438[arg1]].unk0 = D_800F0C10[arg1][0].unk0;
@@ -3214,12 +3168,7 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
         D_800F0C10[arg1][D_800A3438[arg1]].unk8 = D_800F0C10[arg1][0].unk8;
     }
 
-    /* gte_ReadGeomScreen(r0) --- PsyQ 4.3 inline_c.h :1236-1242 */
-    __asm__ volatile(
-        "cfc2   $12, $26\n"
-        "nop\n"
-        "sw     $12, 0(%0)\n"
-        :: "r"(D_800A34B0) : "$12", "memory");
+    gte_ReadGeomScreen(D_800A34B0);
 
     *p6C = (D_800A3438[arg1] + 1) * 16;
     if (D_800A3438[arg1] < D_800F0B98[arg0] - 1) {
