@@ -1426,7 +1426,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
     s32 x;
     s32 v;
     Unk80077D94Entry *w;
-    s32 *var_11;
+    s32 *slot;
 
     s.ot_idx = 2;
     s.y = 0x1E;
@@ -1515,10 +1515,8 @@ void func_80077D94(Unk8006EACCRec *arg0) {
         case 3:
             rect = D_800A32FC;
             for (i = 0; i < 5; i++) {
-                /* FAKE: named slot address lets loop.c strength-reduce it;
-                   inline `D_800A35F8->img38[i]`: score 9 */
-                var_11 = &D_800A35F8->img38[i];
-                LoadImage(&rect, (u32 *)(*var_11 + 0x220));
+                slot = &D_800A35F8->img38[i];
+                LoadImage(&rect, (u32 *)(*slot + 0x220));
                 DrawSync(0);
                 rect.x += 0x40;
             }
@@ -1560,11 +1558,9 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                 s.semi = 1;
                 s.col_r = s.col_g = s.col_b = v;
             } else if (D_800A35F0 >= w->off && D_800A35F0 < w->off + 60) {
-                /* FAKE: named intermediate keeps cnt - 60 computed first
-                   (fold reassociates it inline: score 16) */
-                s32 t = D_800A35F0 - 60;
+                s32 cnt_60ago = D_800A35F0 - 60;
                 s.has_color = 1;
-                v = ((w->off - t) * 112) / 60;
+                v = ((w->off - cnt_60ago) * 112) / 60;
                 s.semi = 1;
                 s.col_r = s.col_g = s.col_b = v;
             } else {
