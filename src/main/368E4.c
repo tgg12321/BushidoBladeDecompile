@@ -447,20 +447,14 @@ void func_80046B44(void) {
 
 void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
     s32 result[3];
-    u16 count1;
     s32 var_2[3];
     SVECTOR rot;
     MATRIX matrix_buf;
 
     g_draw_queue_cursor = g_draw_queue;
-    {
-        /* FAKE: count1 holds the count + 1 ahead of the D_800A3808 store; at
-         * the D_800A38D6 store the loads reorder (score 16). */
-        count1 = D_800A38D6 + 1;
-        D_800A3808 = g_gpu_ot_ptr;
-        D_800A38D6 = count1;
-        D_800A378C = g_gpu_ot_ptr + 4;
-    }
+    D_800A3808 = g_gpu_ot_ptr;
+    D_800A38D6++;
+    D_800A378C = g_gpu_ot_ptr + 4;
 
     if (a0 != 0) {
         D_80101DF0.xf.rot.vx = -a1->vx;
@@ -773,13 +767,9 @@ s32 func_800477E8(void) {
     do {
         t0 = 0x1200;
         a2 = 0x13;
-        /* FAKE: do-while(0) loop depth weights this body's refs, seating
-         * t1val in $t1 and 0x2C00 in $t2 as in the target; without it t1val
-         * (3 refs/76 insns) loses to t2 (5/150) */
+        a1 = 0;
+        v1 = 1;
         do {
-            a1 = 0;
-            v1 = 1;
-        inner:
             if (a3 >= 5) {
                 *s0 = s3val;
                 s0 += 1;
@@ -842,10 +832,8 @@ s32 func_800477E8(void) {
             a1 += 0x100;
             a0 += 1;
             v1 += 1;
-            if (a0 < 0x10)
-                goto inner;
-            a3 += 1;
-        } while (0);
+        } while (a0 < 0x10);
+        a3 += 1;
         a0 = 0;
     } while (a3 < 8);
 

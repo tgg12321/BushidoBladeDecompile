@@ -4530,7 +4530,7 @@ void func_800324D0(Unk80101EC8Record *rec) {
     u8 c;
     u8 val;
 
-    ptr = rec->unk_58;
+    ptr = rec->unk_58 + 4;
     rec->unk_A1[0] = 0xFF;
     rec->unk_A3[0] = 0xFF;
     rec->unk_A1[1] = 0xFF;
@@ -4543,79 +4543,52 @@ void func_800324D0(Unk80101EC8Record *rec) {
     rec->unk_AB = 0xFF;
     rec->unk_AC = 0xFF;
 
-    c = ptr[4];
-    /* FAKE: `ptr += 5` spelled as a four-step chain: combine folds it
-     * back to one addiu, but the extra refs seat the walker in $v1 */
-    ptr++;
-    ptr++;
-    ptr++;
-    ptr += 2;
-    while (c != 0) {
+    while ((c = *ptr++) != 0) {
         if (c == 0xFF) {
-            /* FAKE: the same foldable chain for the 0xFF command's
-             * `ptr += 6` */
-            ptr++;
-            ptr += 5;
+            ptr += 6;
         } else if (c < 0x80) {
             ptr++;
         } else {
-            val = *ptr;
-            ptr++;
-            /* FAKE: the loop tail `c = *ptr; ptr++;` duplicated into the
-             * first five arms; the extra walker refs steer register allocation
-             * and cross-jumping re-merges the tails; a plain `break` in each
-             * scores 27 */
-            switch (c - 0x80) {
-            case 0:
+            val = *ptr++;
+            switch (c) {
+            case 0x80:
                 rec->unk_A1[0] = val;
-                c = *ptr;
-                ptr++;
-                continue;
-            case 1:
+                break;
+            case 0x81:
                 rec->unk_A3[0] = val;
-                c = *ptr;
-                ptr++;
-                continue;
-            case 2:
+                break;
+            case 0x82:
                 rec->unk_A7 = val;
-                c = *ptr;
-                ptr++;
-                continue;
-            case 3:
+                break;
+            case 0x83:
                 rec->unk_A8 = val;
-                c = *ptr;
-                ptr++;
-                continue;
-            case 4:
+                break;
+            case 0x84:
                 rec->unk_A9 = val;
-                c = *ptr;
-                ptr++;
-                continue;
-            case 5:
+                break;
+            case 0x85:
                 rec->unk_A5 = val;
                 break;
-            case 6:
+            case 0x86:
                 rec->unk_A6 = val;
                 break;
-            case 7:
+            case 0x87:
                 rec->unk_A1[1] = val;
                 break;
-            case 8:
+            case 0x88:
                 rec->unk_A3[1] = val;
                 break;
-            case 9:
+            case 0x89:
                 rec->unk_AA = val;
                 break;
-            case 10:
+            case 0x8A:
                 rec->unk_AB = val;
                 break;
-            case 11:
+            case 0x8B:
                 rec->unk_AC = val;
                 break;
             }
         }
-        c = *ptr;
-        ptr++;
     }
 }
 
@@ -5148,68 +5121,29 @@ void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
 const u32 D_800107BC[1] = {0x00000000};
 
 void func_8003339C(Unk80101EC8Record *base) {
-    u8 *s0;
-    s32 a1val;
-    u8 *p;
-
-    p = base->unk_58;
-    a1val = p[4];
-    if (a1val == 0)
-        goto done;
-    s0 = p + 5;
-
-loop:
-    a1val = a1val & 0xFF;
-    if (a1val == 0xFF) {
-        u8 b0 = s0[0];
-        u8 b1 = s0[1];
-        u8 b2 = s0[2];
-        u8 b3 = s0[3];
-        s32 var_7;
-        s16 shift;
-        s32 mask;
-
-        var_7 = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
-        shift = base->unk_0A;
-        mask = 1 << shift;
-        if ((var_7 & mask) != 0) {
-            s0 += 4;
-        } else {
-            s0 += 6;
-        }
-        goto next;
-    }
-
-    /* FAKE: do-while(0) puts a loop note on `done:` so reorg keeps the
-     * target's branch sense for the `bnez done` below; without it score 1
-     * (do-while-zero-exception) */
-    do {
-        if ((u32)a1val < 0x80) {
-            u8 val = s0[0];
+    u8 *s0 = base->unk_58 + 5;
+    u8 command = s0[-1];
+    while (command != 0) {
+        if (command == 0xFF) {
+            u32 bits = s0[0] | (s0[1] << 8) | (s0[2] << 16) | (s0[3] << 24);
+            if (bits & (1 << base->unk_0A)) {
+                s0 += 4;
+            } else {
+                s0 += 6;
+            }
+        } else if (command < 0x80) {
+            u8 val = *s0++;
             s16 var_11 = base->unk_40;
-            s0 += 1;
-            if ((val & 0xFF) == var_11) {
-                func_80032C50(base, a1val - 1);
-                goto next;
+            if (val == var_11) {
+                func_80032C50(base, command - 1);
+            } else if (var_11 < val) {
+                return;
             }
-            if (var_11 < val) {
-                goto done;
-            }
-            goto next;
+        } else {
+            s0++;
         }
-
-        s0 += 1;
-
-    next:
-        a1val = *s0;
-        s0 += 1;
-    } while (0);
-
-    if (a1val != 0)
-        goto loop;
-
-done:
-    return;
+        command = *s0++;
+    }
 }
 
 s32 func_80033498(void) {
