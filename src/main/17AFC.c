@@ -3981,35 +3981,20 @@ void func_80030A2C(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
 }
 
 s32 func_80030B10(Unk80101EC8Record *arg0, s32 arg1) {
-    s32 count = arg0->unk_330;
-    s16 c;
-    if (count == 0xC) {
+    s32 i;
+
+    if (arg0->unk_330 == 0xC) {
         return 0;
     }
-    if (arg0->unk_88 == -1) {
-        goto skip_shift;
-    }
-    if (arg1 != arg0->unk_14) {
-        goto skip_shift;
-    }
-    if (count > 0) {
-        s32 i = count;
-        do {
+    if (arg0->unk_88 != -1 && arg1 == arg0->unk_14) {
+        for (i = arg0->unk_330; i > 0; i--) {
             arg0->unk_332[i] = arg0->unk_332[i - 1];
-            i--;
-        } while (i > 0);
-    }
-    {
-        s16 var_3 = arg0->unk_330;
+        }
         arg0->unk_332[0] = arg1;
-        arg0->unk_330 = var_3 + 1;
-        goto done;
+        arg0->unk_330++;
+    } else {
+        arg0->unk_332[arg0->unk_330++] = arg1;
     }
-skip_shift:
-    c = arg0->unk_330;
-    arg0->unk_330 = c + 1;
-    arg0->unk_332[c] = arg1;
-done:
     return 1;
 }
 
