@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 21,
- "current_modality": "forensics",
+ "session_count": 22,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -129,6 +129,12 @@
    "floor": 19,
    "modality": "forensics",
    "headline": "s21 forensics: chassis re-audited at 19 with no FAKE; the tail-nop axis is closed (gte_nop is stripped as a scheduling barrier, gte_rt_b is score-neutral and drops target nops); residual unchanged."
+  },
+  {
+   "session": 22,
+   "floor": 19,
+   "modality": "rederive",
+   "headline": "s22 rederive: chassis re-confirms 19 clean; mandatory sibling transplant (func_8004A4E0/func_8004A76C) vacuous (no C body); SOTN-index census for the GTE batching construct is zero/1365 -- no new C le"
   }
  ],
  "frontier": [
@@ -139,12 +145,12 @@
   },
   {
    "hypothesis": "The inline_asm_canonical.txt:340 whole-body grant audit resolves in favor of func_80052B7C on cluster plus Sony-idiom evidence.",
-   "mechanism": "The 2026-10-15 20:38 ruling rejected written islands only.",
-   "next_probe": "Operator/Judge review of row :340 with the s11, s18-s21 artifacts."
+   "mechanism": "The 2026-10-15 20:38 ruling rejected written islands only (mixed macro-call + written-out body); it did not rule on a clean whole-body INCLUDE_ASM submission under the grant row.",
+   "next_probe": "Operator/Judge review of inline_asm_canonical.txt:340 with the s11, s18-s21 artifacts; no further grind-session probe can move this."
   },
   {
    "hypothesis": "A vendored macro whose template batches the rotation+TR loads in $8..$15 would close hunk 1 in pure macro-call C.",
-   "mechanism": "s19/s20: the hunk-1 registers are template literals fixed at RTL expand.",
+   "mechanism": "s19/s20: the hunk-1 registers are template literals fixed at RTL expand (inline_c.h:298-307); no C-level statement order or variable choice reaches them.",
    "next_probe": "Owner ruling plus an engine: commit adding the macro; not a grind action."
   }
  ],
@@ -400,6 +406,22 @@
    "measured_on": "legal 5-statement macro-call chassis with gte_rt_b() for gte_rt(), inline_c.h, no FAKE construct, src/main/3AB48.c, reverted",
    "predicate_cite": "",
    "result": "Score 19 with an identical diff report, but the objdump shows both pre-RT nops removed. The score ignores them, and the "
+  },
+  {
+   "session": 22,
+   "statement": "func_8004A4E0 and func_8004A76C (named in this session's cross-knowledge sweep, candidates re-written 2026-10-15 at 17:03 and 19:31) hold a transplantable C body for this function's shared GTE-residua",
+   "kill_scope": "instance",
+   "measured_on": "memory/grind/func_8004A4E0/candidate.c and memory/grind/func_8004A76C/candidate.c as of this session (2026-10-15, after each sibling's own s23), no FAKE construct, no src/ edit",
+   "predicate_cite": "",
+   "result": "Zero transplantable C exists in either sibling file. Reconfirms s12's identical finding under the current (post-each-sib"
+  },
+  {
+   "session": 22,
+   "statement": "The sotn-decomp master-branch construct index carries a citable precedent for the GTE rotation-matrix/TR-vector register-batching shape hunk 1 needs, which would open the Q55 SOTN-precedent-suffices r",
+   "kill_scope": "instance",
+   "measured_on": "docs/reference/sotn-construct-index.md as checked out this session (pinned sotn-decomp master-branch commit per the file's own header), no FAKE construct, read-only grep",
+   "predicate_cite": "",
+   "result": "Zero matches anywhere in the index. No SOTN-master precedent exists for this construct at the index's pinned commit."
   }
  ],
  "ladder_skip": 0,

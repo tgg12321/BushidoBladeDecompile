@@ -444,3 +444,11 @@ question rather than resolved here.
 - [s21] gte_rt_b() removes the two pre-RT nops (s21/obj_rtb.txt) and the score stays 19: the scorer does not count those nop slots.
 
 - [s21] Vendored value-operand ctc2 macros exist only for CR5-7 (inline_c.h:372), CR13-15, CR21-23 and CR26, none for CR0-4 (re-confirms s6).
+
+- [s22] Chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl) re-measures 19 fresh this session, 4/4 source-level hunks, 0 operand-only -- 9th consecutive session (s6/s8/s9/s11-s21) confirming the residual is locked inside the vendored GTE macro templates and reorg's asm-insn handling, not a C-level choice.
+
+- [s22] Both named GTE-cluster siblings (func_8004A4E0, func_8004A76C) received fresh OWNER-ESCALATION/CANONICAL-ASM-GRANT-PATH dispositions on 2026-10-15 (docs/grind/decisions.md:1324, :1345) but neither holds a C body; the sibling-transplant inheritance mechanism is vacuous for this cluster.
+
+- [s22] docs/reference/sotn-construct-index.md (1,365 PSX entries) has zero hits for the rotation-matrix/ctc2-batching construct, so the Q55 precedent-citation route to admit a respelling is not available.
+
+- [s22] m2c (s12) is categorically blind to this function's body (14/14 instructions are cop2/GTE opcodes absent from arch_mips.py's instruction table) and decomp.me's gcc2.7.2-psx corpus (s12) has no structural match (similarity 0.022-0.026, none touching cop2) -- both rederive avenues already exhausted prior to this session and reconfirmed structurally unchanged this session (no corpus/tool update since s12).

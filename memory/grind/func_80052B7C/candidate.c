@@ -217,3 +217,11 @@ void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
 /* s21 (forensics): chassis re-audited at 19, no FAKE. gte_nop() before gte_stlvl is stripped
  * as a scheduling barrier (engine/gtemacro.py:1095; rejected/gte-nop-hazard-barrier.c);
  * gte_rt_b() drops the target's pre-RT nops and scores 19. See hypotheses.md s21. */
+/* s22 (rederive): chassis re-audited at 19, no FAKE. Mandatory sibling-transplant check on
+ * func_8004A4E0/func_8004A76C (both re-dispositioned 2026-10-15) reconfirmed s12's kill: both
+ * candidate.c files are comments-only (no C body), so there is nothing to transplant -- their
+ * residuals (custom callee-saved ABI, trapping addi, cross-function jtbl) are a different
+ * problem class from this function's RTL-template-literal residual anyway. A fresh grep of
+ * docs/reference/sotn-construct-index.md (1,365 PSX entries) for setrotmatrix/ctc2/ldtr/
+ * RotMatrix found zero precedent -- the Q55 SOTN-citation route stays closed. No new C-level
+ * mutation axis found. See hypotheses.md s22. */
