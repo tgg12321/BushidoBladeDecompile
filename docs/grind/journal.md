@@ -140,3 +140,4 @@
 - 2026-10-15 19:24 func_8004A76C s20 [forensics] floor=37: s20 forensics: re-audit holds (32, zero FAKE); -da dumps show z1-z3 are global pseudos with only $sp conflict, closing the local-alloc frontier; CFG identical to target per label_census
 - 2026-10-15 19:29 func_8004A76C s21 [forensics] floor=37: s21 forensics: re-audit holds (32, zero FAKE); nrefs_census shows allocno order is inert for the mfc2 seats and loop.c sees no loop; canonical grant inline_asm_canonical.txt:25 stands
 - 2026-10-15 19:31 func_8004A76C s22 [rederive] floor=37: s22 rederive: 4th independent pass (decomp.me 461-corpus re-search + m2c/sibling re-check) confirms identical null result; no new frontier, stub stays at floor 37.
+- 2026-10-15 19:33 func_8004A76C s23 [escalation] canonical-asm grant path — stays active: s23 escalation: scan_hand_coded STRONG (S7+S11 $s0) + existing whole-function grant inline_asm_canonical.txt:25 -> CANONICAL-ASM GRANT PATH entry filed

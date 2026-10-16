@@ -433,3 +433,17 @@
 - [s22] sandbox --disable all this session: {"score": 37, "scorable": true, "target_insns": 37, "build_insns": 0, "no_c_body": true, "cheat_asm_stripped": 71} -- floor unchanged from s14-s21.
 
 - [s22] CC1PSX SELF-DISPROOF (driver): check did not produce a scorable result (cc1psx produced no scorable object: 'func_8004A76C not found in tmp/cc1psx/func_8004A76C/psx.o'); rotation proceeds on the source-side assumption.
+
+- [s23] (escalation) scan_hand_coded --single: tier=STRONG 2/12 (S7 unsaved $s0, S11 live-in $s0) — gate (a) PASSES (s23/scan.txt). canonical gate: whole-function grant inline_asm_canonical.txt:25 (s23/canonical.txt). Stub sandbox 37 (s23/sandbox_stub.txt).
+- [s23] Kill re-audit: psyq-rtpt-pair-reorg-slot-residual.c = 32, 5/5 source-level, zero FAKE (s23/sandbox_reaudit.txt, s23/ablate_reaudit.txt) — unchanged on HEAD 07d619ccf.
+- [s23] Disposition filed: docs/grind/decisions.md "## 2026-10-15 — func_8004A76C — CANONICAL-ASM GRANT PATH". Remaining step is operator integration (layer-2 review + queue done as COMPLETED-INLINE-ASM-CANONICAL).
+
+- [s23] scan_hand_coded --single func_8004A76C: tier=STRONG 2/12 (S7, S11 on $s0) (tmp/grind/func_8004A76C/s23/scan.txt)
+
+- [s23] canonical func_8004A76C: whole-function canonical-asm grant in inline_asm_canonical.txt (row 25)
+
+- [s23] sandbox --disable all on INCLUDE_ASM stub: score 37 (s23/sandbox_stub.txt)
+
+- [s23] closest pure-C form re-measures 32, 5/5 source-level, zero FAKE (s23/sandbox_reaudit.txt, s23/ablate_reaudit.txt)
+
+- [s23] driver cc1psx_check: ok=false, function not in psx.o (stub candidate, vacuous)

@@ -1,8 +1,8 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 22,
- "current_modality": "rederive",
+ "session_count": 23,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -135,26 +135,29 @@
    "floor": 37,
    "modality": "rederive",
    "headline": "s22 rederive: 4th independent pass (decomp.me 461-corpus re-search + m2c/sibling re-check) confirms identical null result; no new frontier, stub stays at floor 37."
+  },
+  {
+   "session": 23,
+   "floor": 37,
+   "modality": "escalation",
+   "headline": "s23 escalation: scan_hand_coded STRONG (S7+S11 $s0) + existing whole-function grant inline_asm_canonical.txt:25 -> CANONICAL-ASM GRANT PATH entry filed"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole-body canonical-asm grant at inline_asm_canonical.txt:25 is the correct disposition.",
-   "mechanism": "Not-GCC signals: s1 $s0 ABI, s6/s18-s21 $t0-$t2 seats with $2/$3/$7 free (order eliminated s21), s7 reorg.c:2990 slot, s9 reorg.c:2969 jr slot, now reinforced by a 4th null rederive pass (s8/s11/s12/s22).",
-   "next_probe": "Escalation modality: file the docs/grind/decisions.md disposition citing s1/s6/s7/s9/s18-s22."
+   "hypothesis": "Operator integration lands func_8004A76C as COMPLETED-INLINE-ASM-CANONICAL under inline_asm_canonical.txt:25.",
+   "mechanism": "Grant row exists, STRONG scan tier; only layer-2 review + queue done remain, outside grind surface.",
+   "next_probe": "Operator: layer2 record on the INCLUDE_ASM body, then queue done func_8004A76C."
   },
   {
-   "hypothesis": "A deeper inverse search (depth 4+) finds a global.c input vector giving z1-z3 $t0-$t2.",
-   "mechanism": "s19 negative at depth 3; would need hard-reg conflicts on $2,$3 (and $7 under the $s0 ABI) with no source value occupying them.",
-   "next_probe": "inverse.py global s19/a3.model.json --depth 4 with the ABI-granted goal."
-  },
-  {
-   "hypothesis": "Pinning gte_rtpt/ldv3c/stsxy3c in engine/gtemacro.py lets the sandbox score the GTE body.",
-   "mechanism": "engine/gtemacro.py PINNED table + strip loop.",
-   "next_probe": "Operator engine commit, then re-measure with --diff."
+   "hypothesis": "If the grant is revoked, pure C restarts from the floor-32 form.",
+   "mechanism": "Residual = $s0 ABI + mfc2 $t0-$t2 seats + reorg delay slots.",
+   "next_probe": "inverse.py global depth 4 with ABI-granted goal on s19/a3.model.json."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "canonical-asm GRANT PATH (docs/grind/decisions.md:1344 \u2014 ## 2026-10-15 \u2014 func_8004A76C \u2014 CANONICAL-ASM GRANT PATH): author the whole-body form per canonical-asm-authorization-recipe and integrate; no owner wait."
+ ],
  "banned_constructs": [],
  "kills": [
   {
@@ -516,6 +519,14 @@
    "measured_on": "asm/funcs/func_8004A76C.s unchanged, decomp.me corpus at 461 scratches (unchanged from s8), no FAKE construct (comments-only stub, nothing to ablate)",
    "predicate_cite": "",
    "result": "Byte-identical top-10 decomp.me result (best similarity 0.011, RecordButtonsToDevkit, no GTE match) -- corpus held 461 s"
+  },
+  {
+   "session": 23,
+   "statement": "The closest pure-C form rejected/psyq-rtpt-pair-reorg-slot-residual.c closes the residual on the current chassis once FAKE constructs are ablated.",
+   "kill_scope": "instance",
+   "measured_on": "rejected/psyq-rtpt-pair-reorg-slot-residual.c at HEAD 07d619ccf, $a3 vertex-pointer chassis, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Score 32, 5/5 hunks source-level; fake_ablate reports no FAKE constructs. Unchanged from s20/s21."
   }
  ],
  "ladder_skip": 0,

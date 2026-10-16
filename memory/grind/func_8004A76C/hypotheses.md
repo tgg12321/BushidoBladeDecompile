@@ -375,3 +375,21 @@ floor 37 at s20; 20 sessions; live frontier (state.json is authoritative):
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: asm/funcs/func_8004A76C.s unchanged, decomp.me corpus at 461 scratches (unchanged from s8), no FAKE construct (comments-only stub, nothing to ablate)
+
+## s23 (escalation)
+- H-s23a: Closest pure-C form still sits at 32 with zero FAKE on current chassis. probe: sandbox --diff + fake_ablate. result: 32, 5/5 source-level, no FAKE. verdict: KILLED (instance) — residual not closed by that form.
+- H-s23b: Function qualifies for canonical-asm grant path. probe: scan_hand_coded --single. result: STRONG (S7+S11, $s0). verdict: CONFIRMED. Entry filed in docs/grind/decisions.md.
+
+## [s23] The closest pure-C form rejected/psyq-rtpt-pair-reorg-slot-residual.c closes the residual on the current chassis once FAKE constructs are ablated.
+- mechanism: Kill re-audit mandated by flat floor: drift or a FAKE carrier could hide a lever.
+- probe: sandbox --disable all --diff --candidate on the form; fake_ablate.py on it.
+- result: Score 32, 5/5 hunks source-level; fake_ablate reports no FAKE constructs. Unchanged from s20/s21.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c at HEAD 07d619ccf, $a3 vertex-pointer chassis, no FAKE construct
+
+## [s23] func_8004A76C meets gate (a) of the endgame-lock check (STRONG hand-coded scan tier).
+- mechanism: Caller-passed live-in $s0 mutated without prologue save (S7, S11) is a gate-class not-GCC signal.
+- probe: python3 tools/scan_hand_coded.py --single func_8004A76C
+- result: tier=STRONG score 2/12, S7 unsaved $s0 and S11 live-in $s0 set.
+- verdict: CONFIRMED

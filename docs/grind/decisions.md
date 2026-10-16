@@ -1340,3 +1340,23 @@ Rotation record (escalation modality, grind session s23). Not a question to the 
 - An engine:/tools commit (with layer-2 review) teaching tools/scan_hand_coded.py one of the measured corpus-clean signals (cross-function jtbl target, caller-side custom callee-saved ABI, trapping addi, delay-slot-only nop) so it reports STRONG -> CANONICAL-ASM GRANT PATH.
 - An operator-added owner_cluster_grants.txt row citing Q40 (the func_8004A76C/func_8004A808/func_8004A940 cluster), or an operator ruling on whether Q40 survives the 2026-10-08 reopen.
 - Sibling movement in func_8004A940 / func_8004A76C / func_8004A808, or a toolchain change.
+
+## 2026-10-15 — func_8004A76C — CANONICAL-ASM GRANT PATH
+
+Disposition record (escalation modality, grind session s23). Not a question to the owner and not a claim that policy blocks the function. Per the 2026-08-18 ruling (.claude/rules/judge-sole-gate.md) the function stays ACTIVE on the canonical-asm grant path.
+
+(i) Gate evidence.
+- Gate (a) canonical-asm scanner: `python3 tools/scan_hand_coded.py --single func_8004A76C` -> tier=STRONG, score 2/12, signals S7 (unsaved callee-save use: $s0) and S11 ($sN as param: live-in $s0), both gate-class (tmp/grind/func_8004A76C/s23/scan.txt). PASSED.
+- Gate (b) SOTN precedent: not needed for this path (no coercion/spelling family is proposed; the closing construct is whole-body canonical asm).
+- Registry: the function already holds a whole-function canonical-asm row, inline_asm_canonical.txt:25 ("custom $s0 ABI ... GCC 2.7.2 cannot express. See commit bc04b47."); `canonical func_8004A76C` reports "whole-function canonical-asm grant in inline_asm_canonical.txt" (tmp/grind/func_8004A76C/s23/canonical.txt).
+- What holds the bytes: `INCLUDE_ASM("asm/funcs", func_8004A76C);` at src/main/3AB48.c:30 (whole body, zero GPR cheat-asm in C).
+- cc1psx self-disproof (driver, memory/grind/func_8004A76C/state.json `cc1psx_check`): ok=false, "cc1psx produced no scorable object: 'func_8004A76C not found in tmp/cc1psx/func_8004A76C/psx.o'" — vacuous (candidate is the INCLUDE_ASM stub, no C body).
+
+(ii) Evidence pointers.
+- Floor flat at 37 (sandbox --disable all on the stub; tmp/grind/func_8004A76C/s23/sandbox_stub.txt) s1-s23. Closest pure-C form rejected/psyq-rtpt-pair-reorg-slot-residual.c re-measures 32 with 5/5 source-level hunks and zero FAKE constructs (s23/sandbox_reaudit.txt, s23/ablate_reaudit.txt).
+- Modalities: recon, structural, enumerate (s15-s17), synthesis (s18), solver (s19, inverse.py depth 3 negative), forensics (s20, s21), rederive (s8/s11/s12/s22), escalation (s23).
+- Not-GCC signals (memory/grind/func_8004A76C/evidence.md, hypotheses.md): s1 caller-passed $s0 vector pointer mutated without save; s6/s18-s21 mfc2 temps in $t0-$t2 while $2/$3/$7 are free (global first-fit and allocno order eliminated, s20/s21 dumps); s7/s9 reorg delay-slot fills (reorg.c:2990, reorg.c:2969) not produced by any measured form. Sibling cluster func_8004A4E0/A808/A940 shares the custom callee-saved ABI.
+
+(iii) Next step / re-activation.
+- Operator integration: run a layer-2 cheat-reviewer on the landed INCLUDE_ASM body under the existing inline_asm_canonical.txt:25 row and `queue done` it as COMPLETED-INLINE-ASM-CANONICAL; no grind session can touch the registry or queue state. A Grinder session can only re-confirm the stub.
+- If the row at inline_asm_canonical.txt:25 is ever revoked: the pure-C attack restarts from rejected/psyq-rtpt-pair-reorg-slot-residual.c (floor 32), residual = $s0 ABI + mfc2 seats + reorg slots.
