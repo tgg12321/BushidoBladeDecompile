@@ -286,3 +286,32 @@ Result: KILLED (class). kill_scope: class. measured_on: legal macro-call chassis
 - kill_scope: class
 - measured_on: s6/s9/s15/s16 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct present, src/main/3AB48.c this session, reverted after measurement
 - predicate_cite: tools/spelling_enum.py:217
+
+## s17 (enumerate)
+
+### H14 — Fourth consecutive enumerate-modality pass re-confirms zero mutation axes; no src/ include was needed to reproduce the chassis (fixed a transient repro gap: the macros must be visible via psxsdk/inline_c.h in THIS TU, since include/psxsdk/libgte.h only comments on the vendored headers and does not include one)
+
+Statement: Re-applied the s6 legal macro-call chassis (memory/grind/func_80052B7C/candidate.c) fresh to src/main/3AB48.c. First attempt (chassis body alone, relying on the TU's existing `#include <psxsdk/libgte.h>`) measured WORSE than the banked floor: sandbox --diff showed 27 ours vs 24 target insns, 3 hunks, with `jal 0` call instructions appearing for gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl -- i.e. the macros were NOT expanding to inline asm, they were calling real functions. Root cause: `include/psxsdk/libgte.h:8-9` only comments that the macros live in inline_o.h/inline_c.h/gtemac.h, it does not `#include` any of them, so without an explicit `#include <psxsdk/inline_c.h>` ahead of the call site, these names bind to whatever (if any) K&R-implicit-function-declaration default applies, compiling as calls. Added `#include <psxsdk/inline_c.h>` immediately before the function definition (matching candidate.c's own documented chassis, which already carries this include at line 183) and re-measured: score 19, 24 ours == 24 target insns, 4/4 hunks source-level, 0/4 operand-only (tmp/grind/func_80052B7C/s17/sandbox_diff.txt) -- exact match to the ledger's recorded floor-19 classification (s8/s13/s14/s15/s16). This is NOT a new finding about the residual; it is confirmation that the banked chassis measurement is reproducible exactly as recorded, and a note for future sessions: applying ONLY the function body from candidate.c without also carrying its `#include <psxsdk/inline_c.h>` line produces a silently-worse, wrong measurement (looks like a regression but is actually a missing include).
+
+Ran `tools/spelling_enum.py` against the full function body (ENUM-BEGIN/END wraps all 5 statements, the function's entire content) both `--no-swaps` (tmp/grind/func_80052B7C/s17/enum_noswap) and with the operand-swap axis (tmp/grind/func_80052B7C/s17/enum_swap): both report "0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings" -- byte-for-byte identical mechanical output to s9, s15 and s16. This is the FOURTH independent enumerate-modality pass landing on the identical empty mutation space, with the identical mechanism (gte_SetRotMatrix/gte_stlvl's fixed __asm__ volatile strings at include/psxsdk/inline_c.h:297/:1086 contain no C-level declaration, assignment or operator for the region scanner to vary).
+
+Mechanism: tools/spelling_enum.py's parse_region (line 89 fallback) assigns every region line that matches neither its decl-regex nor its assign-regex to a zero-axis `Stmt("anchor", s)`; a region of 5 bare macro-call statements has no decl/assign nodes, so swap/decl/assign axes are empty by construction, independent of flags.
+
+Probe: `python3 tools/spelling_enum.py --candidate src/main/3AB48.c --out tmp/grind/func_80052B7C/s17/enum_noswap --no-swaps`, then again without `--no-swaps` to `.../enum_swap`.
+
+Result: KILLED (class, re-confirmation). kill_scope: class. measured_on: s6/s9/s15/s16 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct present, src/main/3AB48.c this session (reverted to INCLUDE_ASM after measurement). predicate_cite: tools/spelling_enum.py:89.
+
+## [s17] Re-applying the s6 legal macro-call chassis body (candidate.c) to src/main/3AB48.c WITHOUT also carrying its `#include <psxsdk/inline_c.h>` line produces a silently-wrong, worse measurement (27 ours vs 24 target insns, 3 hunks, jal call instructions in place of inline asm), because src/main/3AB48.c's existing `#include <psxsdk/libgte.h>` only comments on the vendored macro headers (libgte.h:8-9) and does not include one.
+- mechanism: Without a macro definition for gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl visible at the call site, the names resolve to ordinary (undeclared) function calls instead of the __asm__ volatile macro expansions in include/psxsdk/inline_c.h, so cc1 emits jal + a save/restore prologue instead of inline cop2 asm.
+- probe: sandbox func_80052B7C --disable all --diff, first without then with #include <psxsdk/inline_c.h> added immediately before the function.
+- result: Adding the include restored the exact banked measurement: score 19, 24/24 insns, 4/4 hunks source-level, 0/4 operand-only -- identical to s8/s13/s14/s15/s16. Recorded as a repro-gotcha note in candidate.c and hypotheses.md s17/H14 so a future session does not mistake the missing-include state for a regression.
+- verdict: CONFIRMED
+
+## [s17] A fresh spelling_enum.py sweep (both --no-swaps and with the operand-swap axis) of the full 5-statement macro-call body on the current floor-19 chassis finds zero C-level mutation axes, identical to the s9/s15/s16 runs.
+- mechanism: tools/spelling_enum.py's parse_region fallback (spelling_enum.py:89) assigns any region line matching neither its decl-regex nor its assign-regex to a zero-axis anchor Stmt; a region of 5 bare GTE macro-call statements has no VarDecl or Assign node anywhere, so the decl/assign/swap axis set is empty by construction regardless of the swap flag.
+- probe: python3 tools/spelling_enum.py --candidate src/main/3AB48.c --out tmp/grind/func_80052B7C/s17/enum_noswap --no-swaps; and again without --no-swaps to .../enum_swap.
+- result: Both runs report "0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings" verbatim -- byte-for-byte identical to s9/s15/s16's outputs. This is the fourth independent enumerate-modality confirmation that the spelling-sweep search space on this chassis is empty.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: s6/s9/s15/s16 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct present, src/main/3AB48.c this session, reverted to INCLUDE_ASM after measurement
+- predicate_cite: tools/spelling_enum.py:89

@@ -381,3 +381,11 @@ question rather than resolved here.
 - [s16] Hunks 2-4 (chunk 5): target's final swc2 $11,8(a3) sits in the jr $ra delay slot; ours emits it before an explicit nop via gte_stlvl -- confirms s7/s11's finding that this is decided at the maspsx/reorg.c stage, not reachable from C.
 
 - [s16] spelling_enum.py (plain and swap axis) both report zero named locals, zero assignments, 5 anchors -> 1 distinct spelling on the full-body region -- third confirmation of s9's and s15's class kill, now also re-run against this exact session's fresh chassis application rather than relying on the prior banked logs.
+
+- [s17] sandbox func_80052B7C --disable all --diff on the legal macro-call chassis (with #include <psxsdk/inline_c.h> present) measures score 19, target 24 insns == build 24 insns, 4/4 hunks source-level, 0/4 operand-only, 0/4 not-scored (tmp/grind/func_80052B7C/s17/sandbox_diff.txt) -- exact match to the ledger's s8/s13/s14/s15/s16 recorded state.
+
+- [s17] Without that #include, the same body measures worse (27 vs 24 insns, jal calls in place of inline cop2 asm) -- a repro trap for any future session that copies only candidate.c's function body and not its include line.
+
+- [s17] spelling_enum.py's region scanner (tools/spelling_enum.py:89/:217) finds 0 named locals, 0 assignments, 5 anchors -> 1 distinct spelling on both the plain and operand-swap axis -- fourth consecutive enumerate pass (s9, s15, s16, s17) landing on the identical empty mutation space.
+
+- [s17] The residual (chunk 1: gte_SetRotMatrix's batched lw/ctc2 order; chunk 5: gte_stlvl's delay-slot swc2 placement) remains proven to sit entirely inside each macro's own fixed __asm__ volatile string (include/psxsdk/inline_c.h:297, :1086), which spelling_enum.py's C-level syntax scanner cannot see or vary -- no new lever surfaced this session.

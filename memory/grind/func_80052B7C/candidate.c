@@ -180,6 +180,17 @@
  * string (include/psxsdk/inline_c.h:297, :1086) -- outside any C-level spelling space by
  * construction. src/main/3AB48.c reverted to INCLUDE_ASM; no new src/ edit banked.
  */
+/* s17 (enumerate): fourth consecutive enumerate pass, re-confirmed 19 (24/24 insns,
+ * 4/4 hunks source-level). Note for future sessions: applying ONLY this body without
+ * also carrying the `#include <psxsdk/inline_c.h>` line below silently mis-measures --
+ * src/main/3AB48.c's own `#include <psxsdk/libgte.h>` only comments on the vendored
+ * headers (libgte.h:8-9), it does not include one, so without this line the gte_*
+ * names compile as real calls (jal), not inline asm, and the sandbox score is wrong
+ * (worse) with no diagnostic other than the diff showing jal/addiu sp prologue insns
+ * that should not exist. spelling_enum.py (both --no-swaps and swap axis,
+ * tmp/grind/func_80052B7C/s17/enum_noswap, .../enum_swap): identical "0 named locals,
+ * 0 assignments, 5 anchors -> 1 distinct spellings" to s9/s15/s16. See hypotheses.md s17/H14.
+ */
 #include <psxsdk/inline_c.h>
 void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
     gte_SetRotMatrix(rot);
