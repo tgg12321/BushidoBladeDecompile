@@ -368,3 +368,50 @@ form and re-confirm the structural-axis exhaustion finding of s13 holds unchange
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: tmp/grind/func_8004A76C/s18/g_s0.c, global register variable $16 diagnostic (wall-banned pin, no FAKE construct), port cc1 and cc1psx
+
+## [s19] (solver) KILL RE-AUDIT: rejected/psyq-rtpt-pair-reorg-slot-residual.c drifted on the current chassis or carried a FAKE carrier.
+- mechanism: mandated re-audit (floor flat 3+ sessions).
+- probe: fake_ablate.py on the form (nothing to ablate, zero FAKE); sandbox --disable all --diff --candidate (tmp/grind/func_8004A76C/s19/sandbox_reaudit.txt).
+- result: score 32, 16 vs 37 insns, 5 hunks all source-level, 0 operand-only, 0 not-scored. Identical to s9/s11/s13/s17/s18. Kill stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c at HEAD 4481a6dd6, $a3 vertex-pointer chassis, no FAKE construct
+
+## [s19] (solver) inverse_compose classify places the first divergence in the RA or SCHED layer.
+- probe: inverse_compose.py classify main/3AB48 func_8004A76C --target-object build/src/main/3AB48.o --ours-object tmp/sandbox/func_8004A76C/main/3AB48.o (tmp/grind/func_8004A76C/s19/classify.txt).
+- result: PRE-RA. Ours 16 insns vs target 37; target-only shapes are the lwc2/c2 rtpt/j/addiu 24 the sandbox strips as unpinned gtemacro units. On the stripped object the classifier only sees the engine-pin gap (engine/gtemacro.py:82/:472), so no RA/SCHED backend applies to the sandbox stream. Hand classification of the RAW cc1 stream (tmp/grind/func_8004A76C/s19/a3_raw_cc1.s, unstripped): register-blanked multiset equals target except the jr-slot nop (a reorg.c product, after every modelled pass), so on the raw stream the residual is RA (the $a3 base + three mfc2 seats) plus reorg (beqz/jr slots, s7/s9 class kills).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: sandbox object of the stub chassis (GTE stripped) + raw instrumented cc1 output of rejected/psyq-rtpt-pair-reorg-slot-residual.c spliced into src/main/3AB48.c (reverted), no FAKE construct
+
+## [s19] (solver) Some perturbation of the global.c inputs (refs, live length, birth order, conflicts, preferences, calls-crossed) gives the mfc2 temps $t0/$t1/$t2 with the other four pseudos at the target disposition.
+- mechanism: extract.py on the $a3 chassis spliced into src (model tmp/grind/func_8004A76C/s19/a3.model.json; simulate.py 7/7 dispositions match the dump). Pseudos 72 n->$a0, 73 sxy->$a1, 74 sz->$a2, 75 v->$a3, 76/77/78 z1-z3 ->$v0/$v1/$t0. z1-z3 hard_conflicts only {$sp}; params occupy $a0-$a3 with conflicts, so find_reg first-fit (global.c:1050-1062, no REG_ALLOC_ORDER on MIPS) takes $2,$3, then $8.
+- probe: inverse.py global with FULL goal {72:4,73:5,74:6,75:16,76:8,77:9,78:10} (inverse_full.txt) and with the ABI granted as $a3 {..75:7,76:8,77:9,78:10} (inverse_a3.txt), depth 3, refs +12/-6, livelen +/-2/4/8.
+- result: NEGATIVE for both goals over 196 / 207 atoms at depth 3. 28 / 21 preference atoms FORECLOSED: $t0/$t1/$t2/$s0 never appear as hard regs in the pre-RA RTL, so no preference toward them can be recorded. Reaching $8 for z1 needs $2 and $3 in z1's conflict set, i.e. a hard reg live across the mfc2-to-sh span, and nothing in this RTL produces one. Full target disposition also needs v in unsaved $s0, which the solver marks as reachable only by a register pin. No top vector exists to spell.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: a3.model.json from the raw cc1 of rejected/psyq-rtpt-pair-reorg-slot-residual.c ($a3 chassis, no FAKE construct), global backend, depth 3
+
+## [s19] Kill re-audit: rejected/psyq-rtpt-pair-reorg-slot-residual.c has drifted on the current chassis or carried a FAKE carrier that voids its kill.
+- mechanism: Mandated re-audit (floor flat 3+ sessions).
+- probe: tools/fake_ablate.py on the form; sandbox func_8004A76C --disable all --diff --candidate <form>.
+- result: Zero FAKE constructs. Score 32, 16 vs 37 insns, 5 source-level / 0 operand-only / 0 not-scored hunks, identical to s9/s11/s13/s17/s18. Kill stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c at HEAD 4481a6dd6, $a3 vertex-pointer chassis, no FAKE construct
+
+## [s19] inverse_compose classify places the first divergence of the closest form in the RA or SCHED layer, so an RA/sched backend search applies to the sandbox stream.
+- mechanism: Object-level classifier comparing register-blanked multisets of the sandbox object and the build object.
+- probe: inverse_compose.py classify main/3AB48 func_8004A76C --target-object build/src/main/3AB48.o --ours-object tmp/sandbox/func_8004A76C/main/3AB48.o
+- result: PRE-RA: ours 16 insns vs target 37. The target-only shapes are the lwc2/rtpt/j/addiu 24 that the sandbox strips as unpinned gtemacro units, so the sandbox stream only shows the engine-pin gap. Classifying the raw cc1 stream by hand (a3_raw_cc1.s): the register-blanked multiset equals target except the jr-slot nop, so the raw residual is RA seats plus reorg delay slots.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: sandbox object of rejected/psyq-rtpt-pair-reorg-slot-residual.c (GTE stripped) and its raw instrumented-cc1 output spliced into src/main/3AB48.c (reverted), no FAKE construct
+
+## [s19] A depth-3 perturbation of the global.c inputs (refs, live length, birth order, conflicts, preferences, calls-crossed) on the $a3 chassis seats the three mfc2 temps in $t0/$t1/$t2 while the other pseudos keep the target disposition.
+- mechanism: extract.py model a3.model.json (simulate.py 7/7 dispositions match the dump): z1-z3 (pseudos 76-78) conflict with no hard reg except $sp, and params hold $a0-$a3, so find_reg first-fit (global.c:1050-1062, no REG_ALLOC_ORDER) gives $v0,$v1,$t0.
+- probe: inverse.py global a3.model.json --depth 3 with goal {72:4,73:5,74:6,75:16,76:8,77:9,78:10} (full target incl. $s0) and with 75:7 (ABI granted as $a3).
+- result: NEGATIVE for both goals over 196/207 atoms at depth 3. 28/21 preference atoms foreclosed because $t0-$t2/$s0 never appear as hard regs pre-RA. Reaching $t0 for z1 would need $v0/$v1 in its conflict set, and no hard reg is live across the mfc2-to-sh span in this RTL. No vector exists to spell.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: a3.model.json from the raw cc1 of rejected/psyq-rtpt-pair-reorg-slot-residual.c ($a3 chassis, no FAKE construct), global backend, depth 3, refs +12/-6, livelen +/-2/4/8

@@ -378,3 +378,19 @@
 - [s18] Even with the $s0 ABI granted via a wall-banned global register variable, the target's $t0-$t2 mfc2 seats, the addiu-a1-after-mfc2 beqz slot combination and the empty jr slot are not emitted by port cc1 or cc1psx; the three non-ABI not-GCC signals are independent of the ABI signal.
 
 - [s18] Synthesis of s1-s18: four independent measured not-GCC signals (s1 ABI, s6/s18 seats global.c:1057, s7 beqz slot reorg.c:2990, s9 jr slot reorg.c:2969) plus splat /* handwritten instruction */ mfc2 markers; every modality except escalation has run; the canonical entry inline_asm_canonical.txt:25 stands.
+
+- [s19] (solver) Kill re-audit holds: psyq-rtpt-pair-reorg-slot-residual.c scores 32, 5/5 source-level, zero FAKE (tmp/grind/func_8004A76C/s19/sandbox_reaudit.txt).
+- [s19] inverse_compose classify on the sandbox objects reports PRE-RA, but only because the sandbox strips the unpinned GTE units (16 vs 37 insns). On the raw cc1 stream (s19/a3_raw_cc1.s) the multiset matches target except the jr-slot nop: residual = RA seats + reorg slots.
+- [s19] RA model of the $a3 chassis (s19/a3.model.json) is exact (simulate 7/7). inverse.py global depth 3: NEGATIVE for the full target disposition (v->$s0, z->$t0-$t2) and for the ABI-granted goal (v->$a3, z->$t0-$t2). $t0-$t2/$s0 never appear as hard regs pre-RA, so their preference atoms are foreclosed; z1-z3 conflict with no hard reg except $sp, so first-fit lands on $v0/$v1/$t0. The sched solver does not apply: the addiu-a1 position and both delay slots are reorg.c products (s7/s9 class kills), downstream of sched_solver's model.
+
+- [s19] Re-audit: psyq-rtpt-pair-reorg-slot-residual.c = 32, 5/5 source-level, zero FAKE (s19/sandbox_reaudit.txt, s19/ablate_reaudit.txt).
+
+- [s19] ra_solver global model of the $a3 chassis is exact: simulate 7/7 dispositions (s19/simulate.txt).
+
+- [s19] inverse.py depth 3 NEGATIVE for the full target disposition and the ABI-granted subset (s19/inverse_full.txt, s19/inverse_a3.txt).
+
+- [s19] classify reports PRE-RA on the sandbox objects only because of the unpinned-GTE strip. The raw cc1 multiset matches target except the jr-slot nop, a reorg product.
+
+- [s19] The sched solver does not apply: the addiu-a1 placement and both delay slots come from reorg.c (s7/s9 class kills), downstream of the sched model.
+
+- [s19] The function is already listed at inline_asm_canonical.txt:25 (custom $s0 ABI).

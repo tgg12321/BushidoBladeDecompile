@@ -1,8 +1,8 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 18,
- "current_modality": "synthesis",
+ "session_count": 19,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -111,18 +111,29 @@
    "floor": 37,
    "modality": "synthesis",
    "headline": "s18 synthesis: kill re-audit holds (32/30, zero FAKE); new $s0-granted diagnostic shows seats + both delay-slot residuals persist even with the wall-banned register pin (port == cc1psx), so the ABI is"
+  },
+  {
+   "session": 19,
+   "floor": 37,
+   "modality": "solver",
+   "headline": "s19 solver: ra_solver model of the closest $a3 form is exact (7/7); inverse.py depth 3 NEGATIVE for both the full target disposition and the ABI-granted goal (mfc2 temps -> $t0-$t2); classify PRE-RA o"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole-body canonical-asm grant (inline_asm_canonical.txt:25) is the correct disposition for this function under the 2026-10-08 reopen.",
-   "mechanism": "Four independent measured not-GCC signals (s1 ABI, s6/s18 seat first-fit global.c:1057, s7 reorg.c:2990, s9 reorg.c:2969), each holding for original cc1psx (s10, s18) and the three non-ABI ones holding even with the ABI granted (s18).",
-   "next_probe": "Escalation modality: file the docs/grind/decisions.md disposition citing s1/s6/s7/s9/s10/s18 and inline_asm_canonical.txt:25; take the Judge-gated canonical-grant path with the cluster siblings func_8004A808/func_8004A940/func_8004A4E0."
+   "hypothesis": "The whole-body canonical-asm grant at inline_asm_canonical.txt:25 is the correct disposition.",
+   "mechanism": "Four measured not-GCC signals: s1 ABI; s6/s18/s19 mfc2 seat first-fit with no hard conflict, inverse NEGATIVE at depth 3; s7 reorg.c:2990; s9 reorg.c:2969.",
+   "next_probe": "Escalation modality: file the docs/grind/decisions.md disposition citing s1/s6/s7/s9/s18/s19 and inline_asm_canonical.txt:25."
   },
   {
-   "hypothesis": "Pinning gte_rtpt / gte_rtpt_b / gte_ldv3c / gte_stsxy3c as PINNED units in engine/gtemacro.py would let the sandbox score the GTE body and turn the 5 source-level hunks into a real residual.",
-   "mechanism": "engine/gtemacro.py:82 PINNED table + :472 strip loop remove the unpinned GTE blocks wholesale.",
-   "next_probe": "Operator engine commit adding the four units, then re-measure rejected/psyq-rtpt-pair-reorg-slot-residual.c with --diff."
+   "hypothesis": "A deeper inverse search (depth 4+, wider refs bounds) or a model outside global.c (local-alloc suggestion pass) reaches the z->$t0-$t2 seats.",
+   "mechanism": "inverse.py negative is bounded at depth 3. z1-z3 span blocks, so they are global-alloc pseudos and the local suggestion pass is not expected to apply.",
+   "next_probe": "inverse.py global s19/a3.model.json --depth 4 with the ABI-granted goal."
+  },
+  {
+   "hypothesis": "Pinning gte_rtpt/ldv3c/stsxy3c in engine/gtemacro.py would let the sandbox score the GTE body.",
+   "mechanism": "engine/gtemacro.py:82 PINNED table + :472 strip loop.",
+   "next_probe": "Operator engine commit, then re-measure with --diff and re-run classify."
   }
  ],
  "judge_constraints": [],
@@ -407,6 +418,30 @@
    "measured_on": "tmp/grind/func_8004A76C/s18/g_s0.c, global register variable $16 diagnostic (wall-banned pin, no FAKE construct), port cc1 and cc1psx",
    "predicate_cite": "",
    "result": "Port == cc1psx byte-for-byte. CFG, GTE ops, entry nop pad, $16 base and advance, j-into-middle, beqz slot all match. Thr"
+  },
+  {
+   "session": 19,
+   "statement": "Kill re-audit: rejected/psyq-rtpt-pair-reorg-slot-residual.c has drifted on the current chassis or carried a FAKE carrier that voids its kill.",
+   "kill_scope": "instance",
+   "measured_on": "rejected/psyq-rtpt-pair-reorg-slot-residual.c at HEAD 4481a6dd6, $a3 vertex-pointer chassis, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Zero FAKE constructs. Score 32, 16 vs 37 insns, 5 source-level / 0 operand-only / 0 not-scored hunks, identical to s9/s1"
+  },
+  {
+   "session": 19,
+   "statement": "inverse_compose classify places the first divergence of the closest form in the RA or SCHED layer, so an RA/sched backend search applies to the sandbox stream.",
+   "kill_scope": "instance",
+   "measured_on": "sandbox object of rejected/psyq-rtpt-pair-reorg-slot-residual.c (GTE stripped) and its raw instrumented-cc1 output spliced into src/main/3AB48.c (reverted), no FAKE construct",
+   "predicate_cite": "",
+   "result": "PRE-RA: ours 16 insns vs target 37. The target-only shapes are the lwc2/rtpt/j/addiu 24 that the sandbox strips as unpin"
+  },
+  {
+   "session": 19,
+   "statement": "A depth-3 perturbation of the global.c inputs (refs, live length, birth order, conflicts, preferences, calls-crossed) on the $a3 chassis seats the three mfc2 temps in $t0/$t1/$t2 while the other pseud",
+   "kill_scope": "instance",
+   "measured_on": "a3.model.json from the raw cc1 of rejected/psyq-rtpt-pair-reorg-slot-residual.c ($a3 chassis, no FAKE construct), global backend, depth 3, refs +12/-6, livelen +/-2/4/8",
+   "predicate_cite": "",
+   "result": "NEGATIVE for both goals over 196/207 atoms at depth 3. 28/21 preference atoms foreclosed because $t0-$t2/$s0 never appea"
   }
  ],
  "ladder_skip": 0,

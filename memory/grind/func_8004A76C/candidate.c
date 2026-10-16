@@ -115,3 +115,10 @@
  * (rejected/diag-global-register-s0-wall-seats-v0-v1-a3-jrslot.c). The
  * three non-ABI residuals are independent of the ABI question. Stub stays.
  */
+/*
+ * s19 (solver): ra_solver model of the closest $a3 form is exact (7/7). inverse.py depth 3 is
+ * NEGATIVE for the full target disposition and for the ABI-granted goal: the mfc2 temps
+ * conflict only with $sp, so first-fit gives $v0/$v1/$t0, and $t0-$t2 never appear pre-RA to
+ * be preferred. classify on the sandbox objects reports PRE-RA only because of the GTE strip.
+ * The stub stays.
+ */
