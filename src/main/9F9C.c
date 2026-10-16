@@ -4485,29 +4485,22 @@ s32 func_80023DB8(Unk80101EC8Record *arg0) {
 
 void func_80023E40(Unk80101EC8Record *arg0) {
     s32 *s1 = (s32 *)0x1F8001B0;
-    s32 a0;
-    s32 v1;
-    a0 = arg0->unk_6A;
-    v1 = a0 & 0xFFFF;
-    if (v1 == 8)
-        goto done;
-    if (v1 == 0x22)
-        goto done;
-    if ((u32)(a0 - 0x17) < 2 || v1 == 0x28 || v1 == 0xA) {
-        s32 v0;
-        s32 *v3 = (s32 *)0x1F8002B8;
+    u16 state = arg0->unk_6A;
+
+    if (state == 8 || state == 0x22) {
+        return;
+    }
+    if (state == 0x17 || state == 0x18 || state == 0x28 || state == 0xA) {
         s1[0xC] = arg0->unk_B8.vx;
         s1[0xD] = arg0->unk_B8.vy + 0x1F40;
         s1[0xE] = arg0->unk_B8.vz;
-        v0 = func_80053614(
-            &arg0->unk_B8.vx, &s1[0xC], s1, (s16 *)&s1[4], (s32)v3);
-        if (v0 == 0)
-            goto done;
-        arg0->unk_148 = s1[1];
-        goto done;
+        if (func_80053614(&arg0->unk_B8.vx, &s1[0xC], s1, (s16 *)&s1[4],
+                          0x1F8002B8) != 0) {
+            arg0->unk_148 = s1[1];
+        }
+    } else {
+        arg0->unk_148 = arg0->unk_B8.vy;
     }
-    arg0->unk_148 = arg0->unk_B8.vy;
-done:;
 }
 
 /* [unk_0A][min(unk_272, 3)]: 4.12 scale of unk_1E into unk_20 (func_80023F08).
