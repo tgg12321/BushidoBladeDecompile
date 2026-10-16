@@ -243,7 +243,7 @@ void func_80038170(u8 *out) {
 
     i = 0;
     {
-        u16 *src = D_800109EC;
+        const u16 *src = D_800109EC;
         u8 *dst = out;
         do {
             *(u16 *)(dst + 0x60) = *src;
@@ -255,12 +255,12 @@ void func_80038170(u8 *out) {
 
     i = 0;
     {
-        u8 *var_11 = D_80010A2C;
+        const u8 *var_11 = D_80010A2C;
         u8 *var_12 = out;
         do {
             s32 j = 0;
             u16 *dst = (u16 *)(var_12 + 0x80);
-            u16 *src = (u16 *)var_11;
+            const u16 *src = (const u16 *)var_11;
             do {
                 *dst = *src;
                 src++;

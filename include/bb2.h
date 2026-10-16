@@ -641,6 +641,9 @@ extern void func_80023F08(s32, PadState *);
 extern void func_80026DA4(void);
 extern void func_80027334(MotionFrame *);
 extern s32 func_8002798C(Unk80101EC8Record *);
+/* func_80027A58 (17AFC.c, void (Unk80101EC8Record *)) has no declaration:
+ * 175A4.c calls it implicitly, and any declaration (prototype or void f();)
+ * changes func_80026DA4's register-save order. */
 extern void func_800288C8(void);
 extern void func_8002906C(void);
 extern s32 func_80029454(void);
@@ -698,6 +701,8 @@ extern s32 *func_800392B8(void);
 extern void func_800392C8(void);
 extern void func_80039320(void);
 extern void func_800393C8(s32, s32, s32 *, s16 *);
+/* func_800395B4 (28708.c, u8 / u8 / s32 * / u16 *) has no declaration: 17AFC.c
+ * calls it implicitly, and its prototype changes 17AFC.c's bytes. */
 extern void func_80039680(Unk80101EC8Record *);
 extern void func_800397A0(void);
 extern void comb_Init(void);
@@ -831,6 +836,9 @@ extern void func_80046F24(void);
 extern void func_80047EE8(s32, s32);
 extern void func_80047FBC(s32, s32, s16, s16);
 extern void func_800480C0(s32, s32, s16, s16, s16, s16);
+/* func_800482C8 (u8 *, s16, s16, s16, u16) and gpu_LoadTimClut (u8 *, s16, s16)
+ * have no declaration: 368E4.c calls them above their definitions, implicitly,
+ * and their prototypes change its bytes. */
 extern s32 func_800486FC(void);
 extern void math_GrayscaleRgb555(u16 *, s32, u16 *);
 extern void func_80048A7C(s32, s32, s32, s32, s32, s32);

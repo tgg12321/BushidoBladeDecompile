@@ -1831,9 +1831,6 @@ void func_8001DBE4(void) {
 
 extern void func_80020E74(s32, s32, s32, s32);
 extern void func_80021210(void);
-extern void func_80021280(s32);
-extern void func_80022F34(void);
-extern void func_800218C8(s32);
 extern void func_8001B294(Unk80101EC8Record *, Unk80101EC8Record *);
 extern void func_8001B3C0(Unk80101EC8Record *, Unk80101EC8Record *);
 
@@ -1941,7 +1938,7 @@ void func_8001DCB0(void) {
                 D_80101EC8[1].unk_5E = 0;
                 func_80021A98(1, v, 0);
             } else {
-                s32 v;
+                MoveScript *v;
                 func_800218C8(1);
                 v = func_80021974(1);
                 D_80101EC8[1].unk_5E = 0;
