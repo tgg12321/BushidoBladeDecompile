@@ -1,36 +1,47 @@
 {
  "func": "func_800545F4",
  "file": "main/3AB48",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 3,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
    "floor": 4,
    "modality": "recon",
    "headline": "Recon: func_800545F4/alabels are pure data (only ever lw-loaded, never jal/jr'd) reused as self-modifying GTE opcode templates by already-decompiled func_80041398 (src/main/31548.c:268-284); existing "
+  },
+  {
+   "session": 2,
+   "floor": 4,
+   "modality": "structural",
+   "headline": "H1 (plain-C-global-in-.text) KILLED class-scope: bb2.ld groups all .text blocks then all .data blocks separately per TU (bb2.ld:116 vs bb2.ld:343) -- no mechanism lets a same-TU C global land mid-.text; H2 (reaffirm ASM-WHOLE grant) is the only live path, filed by an escalation-modality session."
+  },
+  {
+   "session": 3,
+   "floor": 4,
+   "modality": "permuter",
+   "headline": "No C chassis exists for permuter modality (no_c_body); measured H1's plain-C-global form directly instead, confirming s2's class kill with a build artifact (score null/scorable false, symbol lands as "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "H1: since these 4 words are never executed in place (only lw-loaded), the honest decompile may be a plain C global-data declaration (exact hex-initialized u32s) replacing the whole-body INCLUDE_ASM, moving this entry from ASM-WHOLE to COMPLETED-C.",
-   "mechanism": "requires the linker/TU object layout to tolerate an ordinary C data symbol landing inside a contiguous .text run at this exact byte offset in src/main/3AB48.o -- untested whether bb2.ld or this repo's build has any existing precedent for that.",
-   "next_probe": "grep the tree for any existing plain C global (not __asm__) that the linker places inside .text; if a precedent mechanism exists, replicate it here and measure with sandbox func_800545F4 --disable all; if none exists, treat that absence as evidence against H1 and fall back to H2."
-  },
-  {
-   "hypothesis": "H2: if H1's linker precedent search comes back empty, reaffirm the existing ASM-WHOLE grant as the owner-mandated re-audit's answer, filing the DECISIVE-evidence block format from docs/COMMIT_CONVENTIONS.md with this session's cross-reference finding as a second signal alongside the original no_return_fragment one.",
-   "mechanism": "documentation/disposition only, no codegen -- confirms rather than changes the grant.",
-   "next_probe": "only file the decisions.md entry + owner-gated outcome once the driver has actually assigned escalation modality for this function; recon/progress modality may not dispose of it per the standing auto-ruling."
-  },
-  {
-   "hypothesis": "H3 (process note): tools/scan_hand_coded.py cannot score any asm/funcs/*.s under 5 instructions, so the owner's broader 2026-05-17 auto-added-entries re-audit sweep will hit the same floor on other small grants.",
-   "mechanism": "tool limitation, not function-specific.",
-   "next_probe": "flag to whichever session/owner runs the broader sweep; no action needed for func_800545F4 itself."
+   "hypothesis": "H2: reaffirm the existing ASM-WHOLE grant as the owner-mandated re-audit's answer, filing the DECISIVE-evidence block with the s1 cross-reference finding and this session's s2/s3 linker+build confirmation of H1's impossibility.",
+   "mechanism": "Documentation/disposition only, no codegen change -- confirms rather than changes the existing grant.",
+   "next_probe": "Only file in escalation modality (per the standing auto-ruling, this session's modality is permuter, not escalation): write the docs/grind/decisions.md entry and return owner-gated once the driver assigns escalation modality for this function."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
- "kills": [],
+ "kills": [
+  {
+   "session": 3,
+   "statement": "Replacing INCLUDE_ASM(\"asm/funcs\", func_800545F4); in src/main/3AB48.c with four plain u32 globals (func_800545F4=0x3C084C80, D_800545F8=0x35088080, D_800545FC=0x3C084880, D_80054600=0x35088080) produ",
+   "kill_scope": "instance",
+   "measured_on": "this exact u32-globals spelling, on the src/main/3AB48.c chassis as of this session, no FAKE construct present; sandbox output saved to tmp/grind/func_800545F4/s3/sandbox_H1_plainC.log",
+   "predicate_cite": "bb2.ld:116",
+   "result": "sandbox returned {\"score\": null, \"scorable\": false, \"error\": \"...func_800545F4 not found in tmp/sandbox/func_800545F4/ma"
+  }
+ ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "regression",
