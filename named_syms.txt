@@ -2587,7 +2587,7 @@ D_800A35C8                                = 0x800A35C8;  /* 13 refs; two countdo
 D_800A36CA                            = 0x800A36CA;  /* 15 refs; copy of the buffered move's command word */  /* data-wave 2026-10-08: was g_char_id_saved_d_plus_2_800A36CA */
 D_800A36D8                          = 0x800A36D8;  /* 19 refs; +4 from D_800A36D4 */  /* data-wave 2026-10-08: was g_pad_rec_prev_hash_plus_4_800A36D8 */
 g_cd_result                          = 0x800A3760;  /* u8[8] result buffer of CdSync(1, .) / CdReady(1, .) in 26940.c (e.g. :47, :105) */  /* data-wave 2026-09-24: was g_cpu_side_move_dir_4_arg1_800A3760 */
-D_800A377B                               = 0x800A377B;  /* data-wave 2026-10-08: was g_frame_state_counter_800A377B */
+/* 2026-10-16: D_800A377B retired -- not an object: func_8001CE60 reads D_800A377C[D_800A3874 - 1], whose folded base is 0x800A377B (the last byte of D_800A3778). */
 D_800A37E8                                = 0x800A37E8;  /* 35 refs; s16 paired with g_round_timer; reload value */  /* data-wave 2026-09-25: was g_round_timer_reload_800A37E8 */
 D_800A37EA                                = 0x800A37EA;  /* 11 refs; paired secondary timer near g_game_timer (0x800A3790) */  /* data-wave 2026-09-25: was g_round_timer_plus_2_800A37EA */
 D_800A37EC                                = 0x800A37EC;  /* 11 refs; +4 from timer base */  /* data-wave 2026-09-29: was g_round_timer_plus_4_800A37EC */

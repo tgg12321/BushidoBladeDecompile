@@ -609,13 +609,8 @@ dlabel D_800A3778
     /* 93F78 800A3778 */ .byte 0x00
     /* 93F79 800A3779 */ .byte 0x00
     /* 93F7A 800A377A */ .byte 0x00
-enddlabel D_800A3778
-
-nonmatching D_800A377B
-
-dlabel D_800A377B
     /* 93F7B 800A377B */ .byte 0x00
-enddlabel D_800A377B
+enddlabel D_800A3778
 
 nonmatching D_800A377C
 

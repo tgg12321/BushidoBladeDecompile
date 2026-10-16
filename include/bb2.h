@@ -328,7 +328,6 @@ extern u8 D_800A376B;
 extern u8 D_800A376C;
 extern s16 D_800A376E;
 extern MATRIX *D_800A3778;
-extern u8 D_800A377B;
 /* round-result table: 0/1/2 per round, indexed by round */
 extern u8 D_800A377C[];
 
