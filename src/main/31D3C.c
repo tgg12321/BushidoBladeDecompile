@@ -158,46 +158,32 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
     s32 mask_table;
     s32 bit;
     s32 i;
-    s32 one;
 
     if ((u32)a0 >= 2) {
         return;
     }
     mask_table = D_80094D40[a1];
-    bit = 0x10;
-    i = 0;
-    do {
+    for (bit = 0x10, i = 0; i < 5; bit >>= 1, i++) {
         if (!(mask_table & bit) || !(a2 & bit)) {
-            goto shift;
+            continue;
         }
-        /* FAKE: constant holder (SOTN `s16 three = 3;`): a literal 1 is
-         * hoisted out of the loop and rematerialized in $v1; the named local
-         * stays in-loop in $v0 as in the target (named-local-fake-exception) */
-        one = 1;
-        if (a0 == 0) {
-            goto case0;
+        switch (a0) {
+        case 0:
+            if (func_8003E2A0() == 0) {
+                func_800480C0(a3, i + 1, 0, 0, -0x140, 0xE8);
+            } else {
+                func_80047EE8(a3, i + 1);
+            }
+            break;
+        case 1:
+            if (func_8003E2A0() == a0) {
+                func_800480C0(a3, i + 1, 0x80, 0, -0x140, 0xE8);
+            } else {
+                func_80047FBC(a3, i + 1, 0x80, 0);
+            }
+            break;
         }
-        if (a0 == one) {
-            goto case1;
-        }
-        goto shift;
-    case0:
-        if (func_8003E2A0() == 0) {
-            func_800480C0(a3, i + 1, 0, 0, -0x140, 0xE8);
-        } else {
-            func_80047EE8(a3, i + 1);
-        }
-        goto shift;
-    case1:
-        if (func_8003E2A0() == a0) {
-            func_800480C0(a3, i + 1, 0x80, 0, -0x140, 0xE8);
-        } else {
-            func_80047FBC(a3, i + 1, 0x80, 0);
-        }
-    shift:
-        bit >>= 1;
-        i++;
-    } while (i < 5);
+    }
 }
 
 extern s16 *D_80094DF0[6];
