@@ -1726,33 +1726,30 @@ extern s32 D_800A3228;
 
 void func_8003E164(s32 arg0) {
     RECT buf;
-    Unk80045878Obj *s0;
+    Unk80045878Obj *obj;
 
-    if (D_800A3228 == arg0) {
-        goto end;
+    if (D_800A3228 != arg0) {
+        func_8003E22C();
+        obj = func_8004153C(arg0);
+        if (obj != 0) {
+            if (arg0 != 0) {
+                buf.x = 0x300;
+            } else {
+                buf.x = 0x280;
+            }
+            buf.y = 0xF8;
+            buf.w = 0x40;
+            buf.h = 6;
+            MoveImage(&buf, 0x140, 0x1E8);
+            if (arg0 == 0) {
+                func_800432A0(obj->unk_14, 0, 0, -0x140, 0xE8);
+            } else {
+                func_800432A0(obj->unk_14, 0, 0, -0x1C0, 0xE8);
+            }
+            DrawSync(0);
+            func_8003E120();
+        }
     }
-    func_8003E22C();
-    s0 = func_8004153C(arg0);
-    if (s0 == 0) {
-        goto end;
-    }
-    if (arg0 != 0) {
-        buf.x = 0x300;
-    } else {
-        buf.x = 0x280;
-    }
-    buf.y = 0xF8;
-    buf.w = 0x40;
-    buf.h = 6;
-    MoveImage(&buf, 0x140, 0x1E8);
-    if (arg0 == 0) {
-        func_800432A0(s0->unk_14, 0, 0, -0x140, 0xE8);
-    } else {
-        func_800432A0(s0->unk_14, 0, 0, -0x1C0, 0xE8);
-    }
-    DrawSync(0);
-    func_8003E120();
-end:
     D_800A3228 = arg0;
 }
 
