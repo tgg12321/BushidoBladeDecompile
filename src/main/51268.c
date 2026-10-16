@@ -995,13 +995,12 @@ void func_800620B8(s16 *arg0, s32 *arg1) {
 }
 
 s32 func_8006288C(void) {
-    extern s32 D_800F1138;
     s32 *pos;
     s16 *rot;
     s32 i;
     s32 mask;
 
-    D_800F1138 = 1;
+    D_800F10D0[26] = 1;
     pos = D_800A347C;
     rot = D_800A3478;
     for (i = 0; i < 6; i++) {
@@ -1156,7 +1155,7 @@ s32 func_8006295C(void) {
         return 1;
     }
     if (D_800A3460 == 0) {
-        D_800F1138 = 0;
+        D_800F10D0[26] = 0;
         return 0;
     }
     return D_800A3460;
@@ -1171,7 +1170,7 @@ s32 func_80062FEC(void) {
     s32 bit;
     s32 *src;
 
-    D_800F10F0 = 1;
+    D_800F10D0[8] = 1;
     for (i = 0; i < 12; i++) {
         bit = 1 << i;
         if (!(D_800A3448 & bit)) {
@@ -1378,14 +1377,9 @@ u8 func_80063AF0(void) {
     return func_80063BD0(0);
 }
 
-extern s32 D_800F10D4;
-
 u8 func_80063B34(void) {
-    /* FAKE: the word is read through an s32 *: a member read rises above
-     * the D_800F10D4 store and fills its load delay: score 6 */
-    s32 *v1 = &D_800A3468->unk00.w;
-    D_800F10D4 = 1;
-    D_800A345C[1] = (*v1 >> 17) & 3;
+    D_800F10D0[1] = 1;
+    D_800A345C[1] = (D_800A3468->unk00.w >> 17) & 3;
     return func_80063BD0(1);
 }
 
@@ -1588,7 +1582,7 @@ s32 func_800645B0(void) {
     s32 idx;
     s32 mask;
 
-    D_800F10EC = 1;
+    D_800F10D0[7] = 1;
     for (i = 0; i < 0xF; i += 4) {
         for (j = 0; j < 4; j++) {
             idx = i + j;
@@ -1741,132 +1735,89 @@ s32 func_800646E8(void) {
     return 1;
 }
 
-extern s32 D_800F10E0;
-
 void func_80064E90(void) {
     D_800F0CA0[0].unk0 = D_800A347C[0];
     D_800F0CA0[0].unk4 = D_800A347C[1];
     D_800F0CA0[0].unk8 = D_800A347C[2];
-    D_800F10E0 = 1;
+    D_800F10D0[4] = 1;
     D_800F0BA8[0] = 0;
 }
-
-extern s32 D_800F10E4;
 
 void func_80064ED8(void) {
     D_800F0CA0[1].unk0 = D_800A347C[0];
     D_800F0CA0[1].unk4 = D_800A347C[1];
     D_800F0CA0[1].unk8 = D_800A347C[2];
-    D_800F10E4 = 1;
+    D_800F10D0[5] = 1;
     D_800F0BA8[1] = 0;
 }
-
-extern s32 D_800F10E8;
 
 void func_80064F20(void) {
     D_800F0CA0[2].unk0 = D_800A347C[0];
     D_800F0CA0[2].unk4 = D_800A347C[1];
     D_800F0CA0[2].unk8 = D_800A347C[2];
-    D_800F10E8 = 1;
+    D_800F10D0[6] = 1;
     D_800F0BA8[2] = 0;
 }
 
-extern s32 D_800F10F4;
-
 s32 func_80064F68(void) {
-    /* FAKE: the third word is read through a pointer: as D_800A347C[2] the
-     * D_800F10F4 store moves above it and the unk4 store: score 7 */
-    s32 *q = &D_800A347C[2];
-    /* FAKE: named intermediate - with word 2 read inline, the D_800F10F4 store
-       rises above the unk0 / unk4 stores and the word-2 read, and the
-       D_800F0BA8 store above the unk4 store and the word-2 read (score 12; with
-       q as well, 8) */
-    s32 last;
     D_800F0CA0[3].unk0 = D_800A347C[0];
     D_800F0CA0[3].unk4 = D_800A347C[1];
-    last = *q;
-    D_800F10F4 = 1;
+    D_800F0CA0[3].unk8 = D_800A347C[2];
+    D_800F10D0[9] = 1;
     D_800F0BA8[3] = 0x40;
-    D_800F0CA0[3].unk8 = last;
     return 1;
 }
-
-extern s32 D_800F10F8;
 
 s32 func_80064FB4(void) {
-    /* FAKE: the third word is read through a pointer: as D_800A347C[2] the
-     * D_800F10F8 store moves above it and the unk4 store: score 7 */
-    s32 *q = &D_800A347C[2];
-    /* FAKE: named intermediate - with word 2 read inline, the D_800F10F8 store
-       rises above the unk0 / unk4 stores and the word-2 read, and the
-       D_800F0BA8 store above the unk4 store and the word-2 read (score 12; with
-       q as well, 8) */
-    s32 last;
     D_800F0CA0[4].unk0 = D_800A347C[0];
     D_800F0CA0[4].unk4 = D_800A347C[1];
-    last = *q;
-    D_800F10F8 = 1;
+    D_800F0CA0[4].unk8 = D_800A347C[2];
+    D_800F10D0[10] = 1;
     D_800F0BA8[4] = 0x40;
-    D_800F0CA0[4].unk8 = last;
     return 1;
 }
 
-extern s32 D_800F10FC;
-
 s32 func_80065000(void) {
-    /* FAKE: the word is read through an s32 *, not as a member: a member read
-     * rises above the D_800F10FC store and fills its load delay: score 9 / 8 */
-    s32 *q = &D_800A3468->unk00.w;
     D_800F0CA0[5].unk0 = D_800A347C[0];
     D_800F0CA0[5].unk4 = D_800A347C[1];
     D_800F0CA0[5].unk8 = D_800A347C[2];
-    D_800F10FC = 1;
+    D_800F10D0[11] = 1;
     D_800F0BA8[5] = 0;
-    D_800A3440 = (*q >> 19) & 3;
+    D_800A3440 = (D_800A3468->unk00.w >> 19) & 3;
     return 1;
 }
-
-extern s32 D_800F1100;
 
 void func_8006505C(void) {
     D_800F0CA0[6].unk0 = D_800A347C[0];
     D_800F0CA0[6].unk4 = D_800A347C[1];
     D_800F0CA0[6].unk8 = D_800A347C[2];
-    D_800F1100 = 1;
+    D_800F10D0[12] = 1;
     D_800F0BA8[6] = 0;
 }
-
-extern s32 D_800F1104;
 
 void func_800650A4(void) {
     D_800F0CA0[7].unk0 = D_800A347C[0];
     D_800F0CA0[7].unk4 = D_800A347C[1];
     D_800F0CA0[7].unk8 = D_800A347C[2];
-    D_800F1104 = 1;
+    D_800F10D0[13] = 1;
     D_800F0BA8[7] = 0;
 }
-
-extern s32 D_800F1108;
 
 void func_800650EC(void) {
     D_800F0CA0[10].unk0 = D_800A347C[0];
     D_800F0CA0[10].unk4 = D_800A347C[1];
     D_800F0CA0[10].unk8 = D_800A347C[2];
-    D_800F1108 = 1;
+    D_800F10D0[14] = 1;
     D_800F0BA8[10] = 0;
 }
-
-extern s32 D_800F110C;
 
 void func_80065134(void) {
     D_800F0CA0[11].unk0 = D_800A347C[0];
     D_800F0CA0[11].unk4 = D_800A347C[1];
     D_800F0CA0[11].unk8 = D_800A347C[2];
-    D_800F110C = 1;
+    D_800F10D0[15] = 1;
     D_800F0BA8[11] = 0;
 }
-
-extern s32 D_800F1110;
 
 void func_8006517C(void) {
     D_800F0CA0[12].unk0 = D_800A347C[0];
@@ -1876,11 +1827,9 @@ void func_8006517C(void) {
     D_800F0CA0[14].unk0 = D_800A347C[0];
     D_800F0CA0[14].unk4 = D_800A347C[1];
     D_800F0CA0[14].unk8 = D_800A347C[2];
-    D_800F1110 = 1;
+    D_800F10D0[16] = 1;
     D_800F0BA8[14] = 0;
 }
-
-extern s32 D_800F1114;
 
 void func_800651F0(void) {
     D_800F0CA0[13].unk0 = D_800A347C[0];
@@ -1890,27 +1839,23 @@ void func_800651F0(void) {
     D_800F0CA0[15].unk0 = D_800A347C[0];
     D_800F0CA0[15].unk4 = D_800A347C[1];
     D_800F0CA0[15].unk8 = D_800A347C[2];
-    D_800F1114 = 1;
+    D_800F10D0[17] = 1;
     D_800F0BA8[15] = 0;
 }
-
-extern s32 D_800F1118;
 
 void func_80065264(void) {
     D_800F0CA0[16].unk0 = D_800A347C[0];
     D_800F0CA0[16].unk4 = D_800A347C[1];
     D_800F0CA0[16].unk8 = D_800A347C[2];
-    D_800F1118 = 1;
+    D_800F10D0[18] = 1;
     D_800F0BA8[16] = 0;
 }
-
-extern s32 D_800F111C;
 
 void func_800652AC(void) {
     D_800F0CA0[17].unk0 = D_800A347C[0];
     D_800F0CA0[17].unk4 = D_800A347C[1];
     D_800F0CA0[17].unk8 = D_800A347C[2];
-    D_800F111C = 1;
+    D_800F10D0[19] = 1;
     D_800F0BA8[17] = 0;
 }
 
@@ -2504,116 +2449,101 @@ again:
     return 1;
 }
 
-extern s32 D_800F10D8;
 u8 func_80067200(s32, s32, s32);
 
 u8 func_80066EC0(void) {
     u8 ret = func_80067200(0, 0, 0);
-    D_800F10D8 = 1;
+    D_800F10D0[2] = 1;
     return ret;
 }
 
 u8 func_80066EF4(void) {
     u8 ret = func_80067200(0, 0, 1);
-    D_800F10D8 = 2;
+    D_800F10D0[2] = 2;
     return ret;
 }
 
-extern s32 D_800F10DC;
-
 u8 func_80066F28(void) {
     u8 ret = func_80067200(1, 1, 0);
-    D_800F10DC = 1;
+    D_800F10D0[3] = 1;
     return ret;
 }
 
 u8 func_80066F5C(void) {
     u8 ret = func_80067200(1, 1, 1);
-    D_800F10DC = 2;
+    D_800F10D0[3] = 2;
     return ret;
 }
 
-extern s32 D_800F1120;
-
 u8 func_80066F90(void) {
     u8 ret = func_80067200(2, 1, 0);
-    D_800F1120 = 1;
+    D_800F10D0[20] = 1;
     return ret;
 }
 
 u8 func_80066FC4(void) {
     u8 ret = func_80067200(2, 1, 1);
-    D_800F1120 = 2;
+    D_800F10D0[20] = 2;
     return ret;
 }
 
-extern s32 D_800F1124;
-
 u8 func_80066FF8(void) {
     u8 ret = func_80067200(3, 0, 0);
-    D_800F1124 = 1;
+    D_800F10D0[21] = 1;
     return ret;
 }
 
 u8 func_8006702C(void) {
     u8 ret = func_80067200(3, 0, 1);
-    D_800F1124 = 2;
+    D_800F10D0[21] = 2;
     return ret;
 }
 
-extern s32 D_800F1128;
-
 u8 func_80067060(void) {
     u8 ret = func_80067200(4, 2, 0);
-    D_800F1128 = 1;
+    D_800F10D0[22] = 1;
     return ret;
 }
 
 u8 func_80067094(void) {
     u8 ret = func_80067200(4, 2, 1);
-    D_800F1128 = 2;
+    D_800F10D0[22] = 2;
     return ret;
 }
 
-extern s32 D_800F112C;
-
 u8 func_800670C8(void) {
     u8 ret = func_80067200(5, 3, 0);
-    D_800F112C = 1;
+    D_800F10D0[23] = 1;
     return ret;
 }
 
 u8 func_800670FC(void) {
     u8 ret = func_80067200(5, 3, 1);
-    D_800F112C = 2;
+    D_800F10D0[23] = 2;
     return ret;
 }
 
-extern s32 D_800F1130;
-
 u8 func_80067130(void) {
     u8 ret = func_80067200(6, 3, 0);
-    D_800F1130 = 1;
+    D_800F10D0[24] = 1;
     return ret;
 }
 
 u8 func_80067164(void) {
     u8 ret = func_80067200(6, 3, 1);
-    D_800F1130 = 2;
+    D_800F10D0[24] = 2;
     return ret;
 }
 
-extern s32 D_800F1134;
-
 u8 func_80067198(void) {
     u8 ret = func_80067200(7, 2, 0);
-    D_800F1134 = 1;
+    D_800F10D0[25] = 1;
     return ret;
 }
 
 u8 func_800671CC(void) {
     u8 ret = func_80067200(7, 2, 1);
-    D_800F1134 = 2;
+    D_800F10D0[25] = 2;
     return ret;
 }
 
