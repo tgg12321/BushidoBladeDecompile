@@ -2010,30 +2010,20 @@ void func_8001E404(void) {
                 D_800A36FA = 2;
             }
         }
-        if (D_800A36FA == 2)
-            goto s2_default;
-        if ((u16)D_80101EC8[0].unk_6A == 0x11 ||
-            (u16)D_80101EC8[1].unk_6A == 0x11) {
-            s2 = &D_800F6608;
-            D_800A36FA = 1;
+        if (D_800A36FA != 2) {
+            if (D_80101EC8[0].unk_6A == 0x11 || D_80101EC8[1].unk_6A == 0x11) {
+                s2 = &D_800F6608;
+                D_800A36FA = 1;
+            } else {
+                s2 = &D_800F5328;
+                D_800A36FA = 0;
+            }
         } else {
-            s2 = &D_800F5328;
-            D_800A36FA = 0;
+            s2 = &D_800F6608;
         }
-        goto done_s2;
-    s2_default:
-        s2 = &D_800F6608;
-    done_s2:
-
         func_8003F218(D_800A36FA < 1);
 
-        {
-            s32 var_3 = 0x2D;
-            if (D_800A36FA == 0) {
-                var_3 = 0x50;
-            }
-            SetGeomScreen(math_FovToScreenDist(var_3));
-        }
+        SetGeomScreen(math_FovToScreenDist(D_800A36FA == 0 ? 0x50 : 0x2D));
 
         if (D_800A36FA == 0) {
             func_80041688(D_800A36F6, 1);
@@ -2042,10 +2032,9 @@ void func_8001E404(void) {
             func_80041688(0, 0);
             func_80041688(1, 0);
         }
-        goto common_tail;
+    } else {
+        s2 = &D_800F6608;
     }
-    s2 = &D_800F6608;
-common_tail:
 
     if (D_800A3834 == 1) {
         local.unk_00.x = s2->unk_00.x + D_800FF5C8.unk_00.x;
@@ -4288,26 +4277,14 @@ void func_800238C4(Unk80101EC8Record *arg0) {
     s32 dz_delta;
     s32 scratchpad;
     s32 var_9;
+    u16 kind;
     if (arg0->unk_104.vy <= 0) {
         return;
     }
-    {
-        s32 kind = arg0->unk_6A;
-        if (((u32)(kind - 0x17)) < 2u) {
-            return;
-        }
-        if ((kind & 0xFFFF) == 0xA) {
-            return;
-        }
-        if (arg0->unk_72 != 0) {
-            return;
-        }
-        if ((kind & 0xFFFF) == 1) {
-            return;
-        }
-        if ((kind & 0xFFFF) == 0x28) {
-            return;
-        }
+    kind = arg0->unk_6A;
+    if (kind == 0x17 || kind == 0x18 || kind == 0xA || arg0->unk_72 != 0 ||
+        kind == 1 || kind == 0x28) {
+        return;
     }
     scratchpad = 0x1F8002B8;
     src[0] = arg0->unk_B8.vx;
@@ -4319,22 +4296,16 @@ void func_800238C4(Unk80101EC8Record *arg0) {
     s1 = func_80053614(src, dst, out, offsets, scratchpad);
     var_9 = 1;
     if (s1 != 0) {
-        if ((out[1] - src[1]) >= 0x191) {
+        if (out[1] - src[1] > 0x190) {
             var_9 = arg0->unk_6A != 0x22;
-            goto ok_check;
+        } else if (offsets[1] >= -0x7FF) {
+            dst[0] += offsets[0] / 8;
+            dst[2] += offsets[2] / 8;
+            var_9 = func_80053614(src, dst, out, offsets2, scratchpad) == 0;
+        } else {
+            var_9 = 0;
         }
-        if (offsets[1] < (-0x7FF)) {
-            goto ok_zero;
-        }
-        dst[0] += offsets[0] / 8;
-        dst[2] += offsets[2] / 8;
-        var_9 = func_80053614(src, dst, out, offsets2, scratchpad) == 0;
-        goto ok_check;
     }
-    goto ok_check;
-ok_zero:
-    var_9 = 0;
-ok_check:
     if (!var_9) {
         return;
     }
@@ -4357,36 +4328,27 @@ ok_check:
         dx_delta = offsets[0] / 64;
         dz_delta = offsets[2] / 64;
     }
-    {
-        s32 kind;
-        s1 = (arg0->unk_1C8.vy - ratan2(offsets[0], offsets[2])) & 0xFFF;
-        if (s1 >= 0x800) {
-            s1 = 0x1000 - s1;
+    s1 = (arg0->unk_1C8.vy - ratan2(offsets[0], offsets[2])) & 0xFFF;
+    if (s1 >= 0x800) {
+        s1 = 0x1000 - s1;
+    }
+    kind = arg0->unk_6A;
+    if (kind == 0xF || kind == 0x1C || kind == 0x1D || kind == 0x1E ||
+        kind == 0x1F || kind == 0x20 || kind == 0x21) {
+        if (s1 < 0x400) {
+            arg0->unk_286 = 0;
+            arg0->unk_94 = 0;
+        } else {
+            arg0->unk_286 = 1;
+            arg0->unk_94 = 1;
         }
-        kind = arg0->unk_6A;
-        if (((((kind & 0xFFFF) == 0xF) || (((u32)(kind - 0x1C)) < 2u)) ||
-             (((u32)(kind - 0x1E)) < 2u)) ||
-            (((u32)(kind - 0x20)) < 2u)) {
-            if (s1 < 0x400) {
-                arg0->unk_286 = 0;
-                arg0->unk_94 = 0;
-            } else {
-                arg0->unk_286 = 1;
-                arg0->unk_94 = 1;
-            }
-            arg0->other->unk_286 = 2;
-            /* FAKE: the common tail `0x74 = 0xBC` and its jump duplicated into
-             * this arm: the extra quantity makes local-alloc rank the parent
-             * pointer first, so it takes $v0 and the constant $v1, as in the
-             * target. Cross-jump re-merges the copies (219 insns either way).
-             */
-            arg0->unk_74 = arg0->unk_B8.vy;
-            goto skip_74;
-        } else if ((kind & 0xFFFF) == 0x11) {
-            D_800A3769 = s1 < 0x400;
-            D_800A3758 = arg0->index;
-            goto skip_74;
-        } else if (s1 < 0x400) {
+        arg0->other->unk_286 = 2;
+        arg0->unk_74 = arg0->unk_B8.vy;
+    } else if (kind == 0x11) {
+        D_800A3769 = s1 < 0x400;
+        D_800A3758 = arg0->index;
+    } else {
+        if (s1 < 0x400) {
             arg0->unk_286 = 0x12;
             arg0->unk_94 = 0;
         } else {
@@ -4395,7 +4357,6 @@ ok_check:
         }
         arg0->unk_74 = arg0->unk_B8.vy;
     }
-skip_74:
     arg0->unk_104.vx += dx_delta;
     arg0->unk_104.vz += dz_delta;
 }
