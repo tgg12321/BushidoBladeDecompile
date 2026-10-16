@@ -460,13 +460,7 @@ extern Unk800F68E0Rec D_800F68E0[0xB4];
 /* The two InitPAD receive buffers, 0x24 bytes each (sys_Init); func_80019568
  * copies the first two words of each. */
 extern s32 g_pad_buf[2][9];
-extern s32 D_800FF5C8;
-extern s32 D_800FF5CC;
-extern s32 D_800FF5D0;
-extern s16 D_800FF5D8;
-extern s16 D_800FF5DA;
-extern s16 D_800FF5DC;
-extern s32 D_800FF5E0;
+extern Unk800FF5C8Rec D_800FF5C8;
 extern Unk80101BF0Rec D_80101BF0[0x20];
 extern Unk80101DF0Record D_80101DF0;
 extern Unk80101DF0Record D_800FF638;

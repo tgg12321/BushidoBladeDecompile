@@ -1307,13 +1307,8 @@ D_800F6644                                       = 0x800F6644;  /* D_800F6608.h3
 /* RESET 0x80065000: retired name 'motion_ex_Init_id5' — preserved note: init id5 (state @ D_800F0CA0[5], flag @ D_800F10FC, counter @ D_800F0BA8[5]) */
 
 /* === State words cleared by func_8001B138 === */
-D_800FF5C8                                    = 0x800FF5C8;  /* state cluster cleared by func_8001B138 (single_game_VoiceContorol helper) */  /* data-wave 2026-09-25: was g_voice_state_word_a */
-D_800FF5CC                                    = 0x800FF5CC;  /* data-wave 2026-09-25: was g_voice_state_word_b */
-D_800FF5D0                                    = 0x800FF5D0;  /* data-wave 2026-09-25: was g_voice_state_word_c */
-D_800FF5D8                                    = 0x800FF5D8;  /* s16 */  /* data-wave 2026-09-25: was g_voice_state_half_a */
-D_800FF5DA                                    = 0x800FF5DA;  /* s16 */  /* data-wave 2026-09-25: was g_voice_state_half_b */
-D_800FF5DC                                    = 0x800FF5DC;  /* data-wave 2026-09-25: was g_voice_state_word_d */
-D_800FF5E0                                    = 0x800FF5E0;  /* data-wave 2026-09-25: was g_voice_state_word_e */
+D_800FF5C8                                    = 0x800FF5C8;  /* Unk800FF5C8Rec: camera-target offset added to a Rec44 (func_8001E404 / func_8001E6E4), zeroed by func_8001B138 */  /* data-wave 2026-09-25: was g_voice_state_word_a */
+/* 2026-10-16: D_800FF5CC, D_800FF5D0, D_800FF5D8, D_800FF5DA, D_800FF5DC, D_800FF5E0 retired -- fields of Unk800FF5C8Rec D_800FF5C8 (include/game.h). */
 
 /* === SPU voice volume table (2026-05-17) -- 1 high === */
 /* From main.c spu_InitEx (line 1306): when arg0==0, fills 24 u16 */

@@ -731,13 +731,13 @@ void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
 }
 
 void func_8001B138(s32 *arg0) {
-    D_800FF5C8 = 0;
-    D_800FF5CC = 0;
-    D_800FF5D0 = 0;
-    D_800FF5D8 = 0;
-    D_800FF5DA = 0;
-    D_800FF5DC = 0;
-    D_800FF5E0 = 0;
+    D_800FF5C8.unk_00.x = 0;
+    D_800FF5C8.unk_00.y = 0;
+    D_800FF5C8.unk_00.z = 0;
+    D_800FF5C8.unk_10.vx = 0;
+    D_800FF5C8.unk_10.vy = 0;
+    D_800FF5C8.unk_10.vz = 0;
+    D_800FF5C8.w18 = 0;
     if (D_800A38BA != 0 && D_800A3834 == 1) {
         if (*arg0 & 1) {
             D_800A37E0 = 1;
@@ -761,7 +761,7 @@ void func_8001B138(s32 *arg0) {
             if (v < 0) {
                 v = v + 0xF;
             }
-            D_800FF5E0 = v >> 4;
+            D_800FF5C8.w18 = v >> 4;
         }
     }
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
@@ -2054,13 +2054,13 @@ void func_8001E404(void) {
 common_tail:
 
     if (D_800A3834 == 1) {
-        local.unk_00.x = s2->unk_00.x + D_800FF5C8;
-        local.unk_00.y = s2->unk_00.y + D_800FF5CC;
-        local.unk_00.z = s2->unk_00.z + D_800FF5D0;
-        local.unk_10.vx = s2->unk_10.vx + D_800FF5D8;
-        local.unk_10.vy = s2->unk_10.vy + D_800FF5DA;
-        local.unk_10.vz = s2->unk_10.vz + D_800FF5DC;
-        local.w18 = s2->w18 + D_800FF5E0;
+        local.unk_00.x = s2->unk_00.x + D_800FF5C8.unk_00.x;
+        local.unk_00.y = s2->unk_00.y + D_800FF5C8.unk_00.y;
+        local.unk_00.z = s2->unk_00.z + D_800FF5C8.unk_00.z;
+        local.unk_10.vx = s2->unk_10.vx + D_800FF5C8.unk_10.vx;
+        local.unk_10.vy = s2->unk_10.vy + D_800FF5C8.unk_10.vy;
+        local.unk_10.vz = s2->unk_10.vz + D_800FF5C8.unk_10.vz;
+        local.w18 = s2->w18 + D_800FF5C8.w18;
     } else {
         local = *s2;
     }
@@ -2089,14 +2089,14 @@ void func_8001E6E4(s32 arg0) {
         s2 = &D_800F6608;
     }
 
-    local.unk_00.x = s2->unk_00.x + D_800FF5C8;
-    local.unk_00.y = s2->unk_00.y + D_800FF5CC;
-    local.unk_00.z = s2->unk_00.z + D_800FF5D0;
-    local.unk_10.vx = s2->unk_10.vx + D_800FF5D8;
-    local.unk_10.vy = s2->unk_10.vy + D_800FF5DA;
-    local.unk_10.vz = s2->unk_10.vz + D_800FF5DC;
+    local.unk_00.x = s2->unk_00.x + D_800FF5C8.unk_00.x;
+    local.unk_00.y = s2->unk_00.y + D_800FF5C8.unk_00.y;
+    local.unk_00.z = s2->unk_00.z + D_800FF5C8.unk_00.z;
+    local.unk_10.vx = s2->unk_10.vx + D_800FF5C8.unk_10.vx;
+    local.unk_10.vy = s2->unk_10.vy + D_800FF5C8.unk_10.vy;
+    local.unk_10.vz = s2->unk_10.vz + D_800FF5C8.unk_10.vz;
 
-    local.w18 = s2->w18 + D_800FF5E0;
+    local.w18 = s2->w18 + D_800FF5C8.w18;
     func_80046BF4(&local.unk_00, &local.unk_10, local.w18);
 
     {

@@ -1765,6 +1765,17 @@ typedef struct Rec44 {
     u8 b43;
 } Rec44;
 
+/* The camera-target offset at 0x800FF5C8: func_8001E404 / func_8001E6E4 add
+ * its fields to a Rec44's unk_00, unk_10 and w18, and func_8001B138 zeroes
+ * them. The fields sit at Rec44's offsets; +0x0C and the SVECTOR pad are never
+ * accessed. */
+typedef struct Unk800FF5C8Rec {
+    Vec3i32 unk_00;
+    u8 unk_0C[4];
+    SVECTOR unk_10;
+    s32 w18;
+} Unk800FF5C8Rec;
+
 /* 0x1C-byte record: one player's state in one frame of the replay buffer
  * D_800A36EC (frames of two, Rec1C[2] = 0x38 bytes; func_80039680 writes player
  * a0->index's record of frame D_800A36F8 from the character record,
