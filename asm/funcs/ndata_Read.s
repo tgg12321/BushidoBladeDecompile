@@ -8,9 +8,9 @@ glabel ndata_Read
     /* 3568C 80044E8C 2188A000 */   addu      $s1, $a1, $zero
     /* 35690 80044E90 80801000 */  sll        $s0, $s0, 2
     /* 35694 80044E94 21200000 */  addu       $a0, $zero, $zero
-    /* 35698 80044E98 0980013C */  lui        $at, %hi(D_800963EC)
+    /* 35698 80044E98 0980013C */  lui        $at, %hi(g_ndata_inf)
     /* 3569C 80044E9C 21083000 */  addu       $at, $at, $s0
-    /* 356A0 80044EA0 EC632684 */  lh         $a2, %lo(D_800963EC)($at)
+    /* 356A0 80044EA0 EC632684 */  lh         $a2, %lo(g_ndata_inf)($at)
     /* 356A4 80044EA4 0980013C */  lui        $at, %hi(D_800963EE)
     /* 356A8 80044EA8 21083000 */  addu       $at, $at, $s0
     /* 356AC 80044EAC EE632784 */  lh         $a3, %lo(D_800963EE)($at)

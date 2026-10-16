@@ -1996,7 +1996,7 @@ D_800EF07C                                 = 0x800EF07C;  /* +C */  /* data-wave
 D_80095328                            = 0x80095328;  /* 88-word table of function addresses; func_800430E4 / func_80044504 store its address to scratchpad 0x1F80001C */  /* data-wave 2026-10-08: was g_scratchpad_cached_data_ptr */
 D_800A9CFC                                      = 0x800A9CFC;  /* D_800A9CF8.unk4: func_80046798()'s result, written once; selects per-case behaviour in func_80044800 / func_80044B30 */  /* data-wave 2026-10-08: was g_snd_stream_stage */
 D_800A9D08                             = 0x800A9D08;  /* D_800A9CF8.unk10: func_8003F1D4()'s table, read as Unk800A6690Rec[] by func_80044800 / func_80044B30 */  /* data-wave 2026-10-08: was g_snd_stream_header_field_8 */
-D_800963EC                              = 0x800963EC;  /* (start sector, sector count) per file id, loaded from NDATA.INF; starts and sizes CD reads */  /* data-wave 2026-10-08: was g_camera_sector_data_table */
+/* RENAME 0x800963EC: retired name 'D_800963EC' — preserved note: (start sector, sector count) per file id, loaded from NDATA.INF; starts and sizes CD reads */  /* data-wave 2026-10-08: was g_camera_sector_data_table */
 D_800EED14                               = 0x800EED14;  /* +4 of each g_arena_blocks block entry: the block's address */  /* data-wave 2026-10-08: was g_snd_stream_slot_field_4 */
 
 /* === SPU DMA control registers + transfer state (2026-05-17) -- 5 highs === */

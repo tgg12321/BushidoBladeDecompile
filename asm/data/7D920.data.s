@@ -12377,9 +12377,9 @@ dlabel D_80095588
     /* 86BEA 800963EA */ .short 0x8001
 enddlabel D_80095588
 
-nonmatching D_800963EC
+nonmatching g_ndata_inf
 
-dlabel D_800963EC
+dlabel g_ndata_inf
     /* 86BEC 800963EC */ .short 0x0000
     /* 86BEE 800963EE */ .short 0x0049
     /* 86BF0 800963F0 */ .short 0x0049
@@ -14428,7 +14428,7 @@ dlabel D_800963EC
     /* 87BE6 800973E6 */ .short 0x0000
     /* 87BE8 800973E8 */ .short 0x0000
     /* 87BEA 800973EA */ .short 0x0000
-enddlabel D_800963EC
+enddlabel g_ndata_inf
 
 nonmatching D_800973EC
 

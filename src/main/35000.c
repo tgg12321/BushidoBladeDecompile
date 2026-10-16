@@ -206,12 +206,12 @@ typedef struct {
     s16 length_sectors;
 } NdataInfEntry;
 
-extern NdataInfEntry D_800963EC[];
+extern NdataInfEntry g_ndata_inf[];
 
 void ndata_Read(s32 a0, s32 a1) {
     cdrom_WaitIdle();
     cdrom_StartReadAt(
-        0, a1, D_800963EC[a0].start_sector, D_800963EC[a0].length_sectors);
+        0, a1, g_ndata_inf[a0].start_sector, g_ndata_inf[a0].length_sectors);
     cdrom_WaitIdle();
 }
 
@@ -248,7 +248,7 @@ s32 ndata_ReadChecked(s32 a0, s32 a1) {
     size = a1 - (s32)arena_GetBase();
     if (size >= 0 && size < arena_GetSize()) {
         if (D_800A3240 != 0) {
-            size = D_800963EC[a0].length_sectors << 11;
+            size = g_ndata_inf[a0].length_sectors << 11;
         } else {
             size = 0;
         }
@@ -260,7 +260,7 @@ s32 ndata_ReadChecked(s32 a0, s32 a1) {
             }
         }
     } else {
-        size = D_800963EC[a0].length_sectors << 11;
+        size = g_ndata_inf[a0].length_sectors << 11;
     }
     ndata_Read(a0, a1);
     return size;
@@ -273,7 +273,7 @@ s32 ndata_GetArenaRoomAfter(s32 a0) {
        use the lh moves after the call and a0 * 4 is kept in s0 instead (score
        9).
      */
-    s32 val = D_800963EC[a0].length_sectors << 11;
+    s32 val = g_ndata_inf[a0].length_sectors << 11;
     return arena_GetFreeSize() - val;
 }
 
@@ -327,7 +327,7 @@ void func_80045188(void) { D_800A3244 = 0; }
 
 s32 func_80045194(void) { return D_800A3244; }
 
-void ndata_StartReadInf(void) { cdrom_StartReadAt(1, (s32)D_800963EC, 0, 2); }
+void ndata_StartReadInf(void) { cdrom_StartReadAt(1, (s32)g_ndata_inf, 0, 2); }
 
 void func_800451D0(void) {
     s32 i;
