@@ -4,17 +4,13 @@
     "SetBackColor": {
       "file": "main/psxsdk/libgte/reg10",
       "sha256": [
-        "0b757561b8d3c6d02e58df5aa83c0eee6af387fef35c98788cb526e608d95695",
-        "93d0393d67e10791fac54ffb4c94a12d3a5edd327e1b7c8592872dd4346f66a1",
-        "c7ab6e42d71fb661429ca94f2ac157ec657b910efd2664ea0d205918d62597db"
+        "5fd6845a0f08df3a7235d9a0f4b3f622891b68f2e4e6064cb70838be9bdceab8"
       ]
     },
     "SetFarColor": {
       "file": "main/psxsdk/libgte/reg11",
       "sha256": [
-        "c472f38251e0992c0c8bf1d73bc0c6e0b924a66faaf20e8296a9921f540720f8",
-        "5325d6528f0571d48ff0b5aacbf5b8d7249a3dfb1cee7c3bfdbc333fa0617a85",
-        "c9e0bdc4e78314b566b06ea5c2e16febb167ea854755eb1bcbcc9d5147aefafa"
+        "4b60c819184a5325ec85a30d665d4d16a93607f7d4d0bf032c2e99854b05c6fe"
       ]
     },
     "func_80018094": {
