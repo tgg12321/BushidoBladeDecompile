@@ -467,9 +467,10 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
         u32 shift_b;
         gte_Lzc(dist_sq, &sp_tmp);
         {
-            s32 var_7 = sp_tmp;
+            /* FAKE: the -2 mask held in a local that then takes the masked
+             * count; as `0x16 - (sp_tmp & -2)`: score 3 */
             s32 var_8 = -2;
-            var_8 = var_7 & var_8;
+            var_8 = sp_tmp & var_8;
             shift_a = 0x16 - var_8;
         }
         shift_b = shift_a >> 1;
