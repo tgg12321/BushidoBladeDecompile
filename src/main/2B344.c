@@ -53,6 +53,7 @@ s32 func_8003AB44(void) {
         return -1;
     case 4:
         SetDispMask(0);
+        /* fall through */
     case 5:
     case 6:
         D_800A38AC++;
