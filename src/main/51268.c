@@ -3195,40 +3195,33 @@ s32 func_800693CC(s32 arg0, s32 arg1) {
     var_0[12] = (arg1 & 0xFFFF) | ((u32)arg1 >> 16);
     result =
         func_800692C0((u32 *)&var_0[12], 0, D_800A34FC->unk_0C, D_800A350C);
-    if ((result >> 16) == 1)
-        goto increment;
-    if ((result >> 16) == 2)
-        goto decrement;
-    goto after_move;
-increment: {
-    /* FAKE: the index-field clear mask, named so its load sits ahead of
-     * the alias (the literal moves `li -16` two slots: score 2). */
-    s32 var_3 = ~0xF;
-    do {
-        s32 flags = D_800A34F8;
-        s32 index;
-        D_800A34F8 = (flags & var_3) | (index = ((flags & 0xF) + 1) & 0xF);
-        if (index >= 8) {
-            D_800A34F8 &= var_3;
-        }
-    } while (!(((u32)D_8009BC04.rows_on >> (D_800A34F8 & 0xF)) & 1));
-}
-    goto moved;
-decrement: {
-    do {
-        s32 flags = D_800A34F8;
-        s32 index = flags & 0xF;
-        if (index == 0) {
-            D_800A34F8 = (flags & ~0xF) | 7;
-        } else {
-            D_800A34F8 = (flags & ~0xF) | ((index - 1) & 0xF);
-        }
-    } while (!(((u32)D_8009BC04.rows_on >> (D_800A34F8 & 0xF)) & 1));
-}
-moved:
-    D_800A3514 = 0;
-    D_800A3524->unk20_3 = 0;
-after_move:
+    switch (result >> 16) {
+    case 1:
+        do {
+            s32 flags = D_800A34F8;
+            s32 index;
+            D_800A34F8 = (flags & ~0xF) | (index = ((flags & 0xF) + 1) & 0xF);
+            if (index >= 8) {
+                D_800A34F8 &= ~0xF;
+            }
+        } while (!(((u32)D_8009BC04.rows_on >> (D_800A34F8 & 0xF)) & 1));
+        D_800A3514 = 0;
+        D_800A3524->unk20_3 = 0;
+        break;
+    case 2:
+        do {
+            s32 flags = D_800A34F8;
+            s32 index = flags & 0xF;
+            if (index == 0) {
+                D_800A34F8 = (flags & ~0xF) | 7;
+            } else {
+                D_800A34F8 = (flags & ~0xF) | ((index - 1) & 0xF);
+            }
+        } while (!(((u32)D_8009BC04.rows_on >> (D_800A34F8 & 0xF)) & 1));
+        D_800A3514 = 0;
+        D_800A3524->unk20_3 = 0;
+        break;
+    }
     if (((result & 0xFF) < 3) && ((result & 0xFF) != 0) &&
         (D_8009BC04.opt[D_800A34F8 & 0xF].mode == 3)) {
         D_800A3524->unk20_3 ^= 1;
