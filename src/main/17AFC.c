@@ -282,49 +282,21 @@ void func_800278C0(s32 a0, Unk80101EC8Record *ptr, s32 arg2, Tbl8008E194 *a3,
 
 s32 func_8002798C(Unk80101EC8Record *a0) {
     s32 ret = 0;
-    u16 v1 = a0->unk_6A;
+    u16 state = a0->unk_6A;
 
-    if (v1 == 6 || v1 == 0x25 || v1 == 0x33 || v1 == 4 || v1 == 0x14) {
-        goto check_88;
-    }
-    {
-        s16 v40 = a0->unk_40;
-        if (v40 < a0->unk_A5) {
-            goto check_88;
+    if (state == 6 || state == 0x25 || state == 0x33 || state == 4 ||
+        state == 0x14 || a0->unk_40 < a0->unk_A5 || a0->unk_A6 < a0->unk_40) {
+        if (a0->unk_88 != -1) {
+            state = a0->unk_6A;
+            if (state == 0xF || state == 0x1C || state == 0x1D ||
+                state == 0x1E || state == 0x1F || state == 0x20 ||
+                state == 0x21 || state == 0x2B) {
+                ret = 1;
+            }
         }
-        if (!(a0->unk_A6 < v40)) {
-            goto final_1;
-        }
+    } else {
+        ret = 1;
     }
-
-check_88: {
-    s16 v88 = a0->unk_88;
-    s32 a0_6a;
-    if (v88 == -1) {
-        goto done;
-    }
-    a0_6a = a0->unk_6A;
-    if ((u16)a0_6a == 0xF) {
-        goto final_1;
-    }
-    if ((u32)(a0_6a - 0x1C) < 2) {
-        goto final_1;
-    }
-    if ((u32)(a0_6a - 0x1E) < 2) {
-        goto final_1;
-    }
-    if ((u32)(a0_6a - 0x20) < 2) {
-        goto final_1;
-    }
-    if ((u16)a0_6a == 0x2B) {
-        goto final_1;
-    }
-    goto done;
-}
-
-final_1:
-    ret = 1;
-done:
     return ret;
 }
 
