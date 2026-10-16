@@ -10910,7 +10910,8 @@ def test_keycheck_probe_suite() -> None:
         root = Path(td)
         def run_git(*args):
             return subprocess.run(["git", "-c", "user.name=Fixture", "-c",
-                    "user.email=fixture@example.invalid", "-c", "core.hooksPath=" + str(root / "no-hooks"), *args], cwd=root,
+                    "user.email=fixture@example.invalid", "-c", "core.hooksPath=" + str(root / "no-hooks"),
+                    "-c", "commit.gpgsign=false", "-c", "core.autocrlf=false", *args], cwd=root,
                     check=True, capture_output=True, text=True).stdout.strip()
         def write(path, text):
             p = root / path
@@ -11025,6 +11026,15 @@ def test_keycheck_formatted_belt() -> None:
         eq("keycheck formatted refuses another clang-format version",
            nk.formatted("src/a.c", "int  a;\n"), None)
         eq("keycheck formatted caches the refusal", nk._FMT, False)
+    # The real pinned clang-format is accepted and formats (skipped when not installed).
+    exe = nk.CODE / ".venv/bin/clang-format"
+    if not exe.exists():
+        skip("keycheck formatted accepts the pinned clang-format", "no .venv/bin/clang-format")
+        return
+    with patch.object(nk, "_FMT", None):
+        out = nk.formatted("src/main/a.c", "int  fixture_a ;\n")
+        check("keycheck formatted accepts the pinned clang-format",
+              nk._FMT is not False and out == "int fixture_a;\n")
 
 
 def test_data_wave_round4_edge_cases() -> None:
