@@ -1724,8 +1724,8 @@ D_800A32B6                                  = 0x800A32B6;  /* u16 frame counter 
 /* From text1b.c func_800493E4: when a panel/slot is activated, also */
 /* activate its sibling pair from these tables.  Indexed by arg0 * 2 */
 /* (so each arg0 entry is 2 bytes: sibling_a, sibling_b; 0xFF = none). */
-D_80099CC8                                = 0x80099CC8;  /* first byte of each 2-byte pair (D_80099CC9 at +1); each byte indexes D_800EF980 */  /* data-wave 2026-10-08: was g_panel_sibling_lookup_a */
-D_80099CC9                                = 0x80099CC9;  /* second byte = &D_80099CC8 + 1 */  /* data-wave 2026-10-08: was g_panel_sibling_lookup_b */
+D_80099CC8                                = 0x80099CC8;  /* u8 [58][2] byte pairs; each byte indexes D_800EF980, 0xFF = none */  /* data-wave 2026-10-08: was g_panel_sibling_lookup_a */
+/* 2026-10-16: D_80099CC9 retired -- D_80099CC8[i][1] (u8 D_80099CC8[58][2], include/bb2.h); the asm/data dlabel remains. */
 
 /* === Line-cast cached values (2026-05-17) -- 2 highs === */
 /* 3AB48.c statics beside D_800A33F4, the pointer to the cast work */

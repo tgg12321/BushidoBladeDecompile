@@ -16,6 +16,9 @@ extern void gpu_ResetGraphMode1(void);
 extern void func_80016888(void);
 extern Unk800EF848Rec D_800EF848[];
 extern u16 D_80099C34[][7];
+/* 58 byte pairs (0x80099CC8..0x80099D3B), each byte an index into D_800EF980 or
+ * 0xFF for none. */
+extern u8 D_80099CC8[58][2];
 
 /* SDK OT_TYPE: one DMA tag word per table entry. */
 extern u32 *D_800A378C;

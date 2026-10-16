@@ -1813,13 +1813,10 @@ void func_8004939C(void) {
     D_800A33EC = -1;
 }
 
-extern u8 D_80099CC8[];
-extern u8 D_80099CC9[];
 extern s16 D_800EF980[];
 
 void func_800493E4(s32 arg0) {
     u8 temp_v1;
-    s32 idx;
 
     D_800EF980[arg0] = 1;
     if (D_800A33EC == -1) {
@@ -1836,16 +1833,10 @@ void func_800493E4(s32 arg0) {
             func_80052C10();
         }
     }
-    idx = arg0 * 2;
-    temp_v1 = D_80099CC8[idx];
+    temp_v1 = D_80099CC8[arg0][0];
     if (temp_v1 != 0xFF) {
         D_800EF980[temp_v1] = 1;
-        /* FAKE: loop notes keep the D_80099CC9 lbu below the first sh (target
-           has the unfilled load-delay nop) and keep the shared 1 cached in $v1;
-           without it: score 11 */
-        do {
-        } while (0);
-        D_800EF980[D_80099CC9[idx]] = 1;
+        D_800EF980[D_80099CC8[arg0][1]] = 1;
     }
 }
 
@@ -2085,7 +2076,6 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     // (no-new-park-categories): target reserves 8 locals bytes at
     // sp+0x10..sp+0x17 that no instruction touches
     volatile u32 pre_pad[2];
-    u8 *new_var6;
     u8 temp_v1;
     s16 *new_var8;
     s16 *var_4;
@@ -2096,10 +2086,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     s16 a1_val;
     void **list;
 
-    /* FAKE: the table base in its own holder; indexing D_80099CC8 directly
-       emits the row shift ahead of the base load (score 2). */
-    new_var6 = D_80099CC8;
-    { temp_v1 = (new_var6 + (arg0 * 2))[arg2]; }
+    temp_v1 = D_80099CC8[arg0][arg2];
     if (temp_v1 == 0xFF) {
         return;
     }
