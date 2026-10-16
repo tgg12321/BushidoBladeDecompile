@@ -720,7 +720,7 @@ D_800A37A8                                 = 0x800A37A8;  /* command-1 operand b
 g_draw_queue_cursor                                    = 0x800A3820;  /* data-wave 2026-10-07: was g_hira_packet_cursor */
 D_800A384C                                = 0x800A384C;  /* data-wave 2026-10-08: was g_practice_select_cursor */
 D_800A385C                                     = 0x800A385C;  /* data-wave 2026-10-08: was g_seq_check_pending */
-D_800A38AC                                    = 0x800A38AC;  /* ref: func_80019568 */  /* data-wave 2026-10-08: was g_voice_dialog_state */
+D_800A38AC = 0x800A38AC;  /* comb-link handshake step: switched and advanced by func_8003AB44 (2B344.c:18-62), reset to 0 by func_8003ACB8 (2B344.c:78) */  /* data-wave 2026-10-08: was g_voice_dialog_state */
 g_prim_buf_cursor                               = 0x800A38B4;  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor */
 D_800A38C4                                       = 0x800A38C4;  /* model id loaded per fighter slot; refs: func_80020CDC, func_80020E74, func_80021210, func_80021280 */  /* data-wave 2026-10-08: was g_title_seq_state */
 D_800A38D6                               = 0x800A38D6;  /* data-wave 2026-10-08: was g_replay_pos_change_count */
@@ -1828,7 +1828,7 @@ D_800A3808                                 = 0x800A3808;  /* data-wave 2026-09-2
 /* From 28708.c func_800383A4 (:342-378): memcard file find/read/write */
 /* operations.  D_800F33D8 (draw-state struct) is reused as the 0x200-byte */
 /* memcard save data buffer in this context. */
-D_800A31F0                                  = 0x800A31F0;  /* pointer to the const save-file name D_80010AAC (28708.c:1902; never written); passed to func_80037B00, a card-directory name compare (memcard.c:190-240), and to memcard_WriteFile / memcard_ReadFile (28708.c:342-378) */  /* data-wave 2026-10-09: was g_memcard_filename_buf */
+D_800A31F0                                  = 0x800A31F0;  /* pointer to the const save-file name D_80010AAC (28708.c:1902; never written); passed to memcard_HasFile, a card-directory name compare (memcard.c:190-240), and to memcard_WriteFile / memcard_ReadFile (28708.c:342-378) */  /* data-wave 2026-10-09: was g_memcard_filename_buf */
 D_800A320C                                = 0x800A320C;  /* set to 1 / 0 by the serial-link (_comb_control) routines (28708.c:1606 / :1611) */  /* data-wave 2026-10-08: was g_memcard_op_active_flag */
 D_800A382C                                   = 0x800A382C;  /* set to 1 by comb_Write8 before write(), cleared by its wait callback func_8003A42C; comb_Write8 returns it */  /* data-wave 2026-10-09: was g_comb_write_wait_flag */
 
@@ -2214,7 +2214,7 @@ D_80101BD0                                   = 0x80101BD0;  /* +4 from g_memcard
 D_80101F88                        = 0x80101F88;  /* D_80101EC8[0].unk_B8.vz (D_80101F84 + 4) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_BC_plus_4 */
 D_80101FB0                               = 0x80101FB0;  /* +0xE8 of D_80101EC8[0]: x of VECTOR unk_E8, set to (0, -0x384, 0) */  /* data-wave 2026-10-08: was g_char_world_pos_z_plus_8 */
 D_80101FCC                        = 0x80101FCC;  /* D_80101EC8[0].unk_104.vx (D_80101FC4 + 8; VECTOR unk_104, include/game.h:1476) */  /* data-wave 2026-10-09: was g_char_struct_p1_field_FC_plus_8 */
-g_pad_state                         = 0x80102788;  /* PadState (include/game.h), built by func_80019568 from the InitPAD buffers g_pad_buf */  /* data-wave 2026-10-03: was D_80102788 (2026-09-29: g_practice_lesson_flag_b_plus_1) */
+g_pad_state                         = 0x80102788;  /* PadState (include/game.h), built by pad_Update from the InitPAD buffers g_pad_buf */  /* data-wave 2026-10-03: was D_80102788 (2026-09-29: g_practice_lesson_flag_b_plus_1) */
 g_pad_state_plus_0x2                         = 0x8010278A;  /* g_pad_state.type[1] */  /* data-wave 2026-10-03: was D_8010278A (2026-09-29: g_practice_lesson_flag_b_plus_3) */
 g_pad_state_plus_0x6                      = 0x8010278E;  /* g_pad_state.valid[1] */  /* data-wave 2026-10-03: was g_practice_lesson_init_done_plus_2 */
 g_pad_state_plus_0x10                             = 0x80102798;  /* g_pad_state.released */  /* data-wave 2026-10-03: was g_pad_input_combined_plus_4 */

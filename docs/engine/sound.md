@@ -161,16 +161,10 @@ recognizable BB2 "swoosh" on hits).
 reads from it; none calls libsnd. See
 [NDATA.md](../formats/NDATA.md#pack-cache).
 
-## Per-frame voice control
+## Per-frame call once named `single_game_VoiceContorol`
 
-`single_game_VoiceContorol()` is called every frame from the main loop
-(`ings.c:613`). It's the per-frame heartbeat for the sound system:
-- Advance the BGM sequencer state
-- Tick the SE channels
-- Apply fade effects (`g_snd_fade_pos`, `g_snd_fade_amt`)
-- Update master volume from `g_snd_volume`
-
-The function itself is still asm-only.
+The main-loop call at 0x80019568 is `pad_Update` (`src/main/87A0.c`): it reads both
+pads and updates `g_pad_state`. It is not sound code.
 
 ## Fade curve
 
@@ -190,7 +184,6 @@ non-training modes — only the naming convention is sound-engine specific.
 ## Where unmatched sound asm still hides
 
 - `spu_Init`, `spu_TransferData`, `spu_TransferDirect` — PsyQ libspu wrappers
-- `single_game_VoiceContorol` — per-frame voice ticker
 - `func_8005B43C`, `func_8005B7C4`, `func_8005C614`, `func_8005C650` — the
   SE bank loaders
 - Most of the `text1a_c*.c` 0x42504-0x460E4 range (effect-channel mgmt)
@@ -236,21 +229,6 @@ sin/cos table with per-channel phase counters.
 The output is 9 audio channels × 17 samples = 153 entries (stride 0x44).
 Each channel runs its own phase counter through `Judge[]`. See `func_80047A90`
 (`text1b.c`).
-
-## Voice-control state cluster (2026-05-17)
-
-From `code6cac.c:775-790` and `1031-1038` (the `single_game_VoiceContorol`
-init/reset path via `func_8001B138`):
-
-| Symbol | Address | Role |
-|--------|---------|------|
-| `g_voice_packet_base_0` | `0x800FF580` | `sp.packets[0]` base (VoicePacket struct) |
-| `g_voice_packet_base_1` | `0x800FF584` | `sp.packets[1]` base |
-| `g_voice_packet_base_2` | `0x800FF5A4` | `sp.packets[2]` base |
-| `g_voice_packet_base_3` | `0x800FF5A8` | `sp.packets[3]` base |
-| `g_voice_state_word_a-c` | `0x800FF5C8-D0` | State cells cleared by `func_8001B138` |
-| `g_voice_state_half_a-b` | `0x800FF5D8/DA` | s16 state cells |
-| `g_voice_state_word_d-e` | `0x800FF5DC/E0` | More state cells |
 
 ## Sound-channel texture metadata (2026-05-17)
 

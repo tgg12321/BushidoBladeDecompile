@@ -89,7 +89,7 @@ loop:
 
     func_80060E04(idx);
     font_BeginFrame();              // per-frame font printer reset
-    func_80019568(...);
+    pad_Update(...);
     cdrom_Update();                 // one step of the CD state machine
     func_8005C6D0();                // ground/stage frame update
 
@@ -317,9 +317,9 @@ mode 22 (VsModeInit) --> mode 23 (FrameDelay3, wait 3 frames)
    end-terminators.
 3. **Per-frame "always on" subsystems** (regardless of mode):
    - `gnd_get_fog(idx)` — set fog color/distance based on stage
-   - `change_shadow_tex_reg()` — update shadow texture page
-   - `single_game_VoiceContorol()` — feed SPU voices
-   - `special_camera_Exec()` — special-camera position update
+   - `font_BeginFrame()` — reset the font printer for the frame
+   - `pad_Update()` — read both pads, update `g_pad_state`
+   - `cdrom_Update()` — one step of the CD state machine
    - `func_8005C6D0()` — ground-state per-frame update
 4. **Global reset** — `D_800A3928 != 0` triggers fade-to-black and reroutes
    to mode 8 (title).

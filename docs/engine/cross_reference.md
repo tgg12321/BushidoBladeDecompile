@@ -79,7 +79,7 @@ know which subsystem owns it, look here.
   `snd_PlaySe`, `snd_LoadSelection`, `snd_StopAll`, `snd_SetVolume`,
   `spu_NotifyChannel`, `coli_HitPauseKatana` + `coli_HitPauseKatana_2`
   + `exec_game` (voice-key allocator — misnamed),
-  `marionation_camera_Init_80036064` (XA stream), `single_game_VoiceContorol`
+  `marionation_camera_Init_80036064` (XA stream)
 - **Key globals:** `g_snd_bgm_id`, `g_snd_se_id`, `g_snd_volume`,
   `g_spu_voice_key_a/b/c` (voice-key array), `g_snd_ch_data`
   (per-channel data), `g_snd_fade_curve`, `SND_CHANNEL_BGM=8`,
