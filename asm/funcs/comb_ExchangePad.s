@@ -1,4 +1,4 @@
-glabel func_8003A728
+glabel comb_ExchangePad
     /* 2AF28 8003A728 40018293 */  lbu        $v0, %gp_rel(D_800A320C)($gp)
     /* 2AF2C 8003A72C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2AF30 8003A730 1400B1AF */  sw         $s1, 0x14($sp)
@@ -88,7 +88,7 @@ glabel func_8003A728
     /* 2B074 8003A874 05004014 */  bnez       $v0, .L8003A88C
     /* 2B078 8003A878 00000000 */   nop
   .L8003A87C:
-    /* 2B07C 8003A87C FCE8000C */  jal        func_8003A3F0
+    /* 2B07C 8003A87C FCE8000C */  jal        comb_Abort
     /* 2B080 8003A880 00000000 */   nop
     /* 2B084 8003A884 8BEA0008 */  j          .L8003AA2C
     /* 2B088 8003A888 00000000 */   nop
@@ -213,4 +213,4 @@ glabel func_8003A728
     /* 2B23C 8003AA3C 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 2B240 8003AA40 0800E003 */  jr         $ra
     /* 2B244 8003AA44 00000000 */   nop
-endlabel func_8003A728
+endlabel comb_ExchangePad

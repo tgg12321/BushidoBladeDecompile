@@ -1,0 +1,1 @@
+{"func": "comb_HandshakeStep", "addr": "8003AB44", "verdict": "PASS", "body_hash": "661a5cf4f6260912", "body_kind": "c", "file": "main/2B344", "reviewer": "aad60cfb299cc8f80", "scope": "cheat-cleanup", "date": "2026-10-16T13:20:18Z", "head": "0f62405c8", "notes": "", "renamed_from": ["func_8003AB44"]}

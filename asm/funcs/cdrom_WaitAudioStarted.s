@@ -8,7 +8,7 @@ glabel cdrom_WaitAudioStarted
     /* 27A78 80037278 1000B0AF */   sw        $s0, 0x10($sp)
     /* 27A7C 8003727C 16001024 */  addiu      $s0, $zero, 0x16
   .L80037280:
-    /* 27A80 80037280 92EA000C */  jal        func_8003AA48
+    /* 27A80 80037280 92EA000C */  jal        comb_ExchangeEmptyPad
     /* 27A84 80037284 00000000 */   nop
     /* 27A88 80037288 50DA000C */  jal        cdrom_Update
     /* 27A8C 8003728C 00000000 */   nop

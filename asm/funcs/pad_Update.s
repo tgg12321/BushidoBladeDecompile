@@ -111,7 +111,7 @@ glabel pad_Update
     /* 9EFC 800196FC 25104300 */  or         $v0, $v0, $v1
     /* 9F00 80019700 1800A2AF */  sw         $v0, 0x18($sp)
   .L80019704:
-    /* 9F04 80019704 CAE9000C */  jal        func_8003A728
+    /* 9F04 80019704 CAE9000C */  jal        comb_ExchangePad
     /* 9F08 80019708 1000A427 */   addiu     $a0, $sp, 0x10
     /* 9F0C 8001970C 21400000 */  addu       $t0, $zero, $zero
     /* 9F10 80019710 1080023C */  lui        $v0, %hi(g_pad_state)

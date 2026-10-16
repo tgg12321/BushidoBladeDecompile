@@ -61,7 +61,7 @@ glabel func_80035618
     /* 25EEC 800356EC 03D60008 */  j          .L8003580C
     /* 25EF0 800356F0 03000224 */   addiu     $v0, $zero, 0x3
   .L800356F4:
-    /* 25EF4 800356F4 2EEB000C */  jal        func_8003ACB8
+    /* 25EF4 800356F4 2EEB000C */  jal        comb_Connect
     /* 25EF8 800356F8 00000000 */   nop
     /* 25EFC 800356FC 21184000 */  addu       $v1, $v0, $zero
     /* 25F00 80035700 01000224 */  addiu      $v0, $zero, 0x1

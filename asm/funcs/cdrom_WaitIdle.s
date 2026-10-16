@@ -1,7 +1,7 @@
 glabel cdrom_WaitIdle
     /* 27740 80036F40 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 27744 80036F44 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 27748 80036F48 9EEA000C */  jal        func_8003AA78
+    /* 27748 80036F48 9EEA000C */  jal        comb_BeginWait
     /* 2774C 80036F4C 1000B0AF */   sw        $s0, 0x10($sp)
     /* 27750 80036F50 1080103C */  lui        $s0, %hi(D_80101E58 + 0x46)
     /* 27754 80036F54 9E1E1026 */  addiu      $s0, $s0, %lo(D_80101E58 + 0x46)
@@ -10,7 +10,7 @@ glabel cdrom_WaitIdle
     /* 2775C 80036F5C 00000000 */   nop
     /* 27760 80036F60 15004014 */  bnez       $v0, .L80036FB8
     /* 27764 80036F64 00000000 */   nop
-    /* 27768 80036F68 92EA000C */  jal        func_8003AA48
+    /* 27768 80036F68 92EA000C */  jal        comb_ExchangeEmptyPad
     /* 2776C 80036F6C 00000000 */   nop
     /* 27770 80036F70 50DA000C */  jal        cdrom_Update
     /* 27774 80036F74 00000000 */   nop
@@ -32,7 +32,7 @@ glabel cdrom_WaitIdle
     /* 277B0 80036FB0 D6DB0008 */  j          .L80036F58
     /* 277B4 80036FB4 00000000 */   nop
   .L80036FB8:
-    /* 277B8 80036FB8 ACEA000C */  jal        func_8003AAB0
+    /* 277B8 80036FB8 ACEA000C */  jal        comb_EndWait
     /* 277BC 80036FBC 00000000 */   nop
     /* 277C0 80036FC0 1400BF8F */  lw         $ra, 0x14($sp)
     /* 277C4 80036FC4 1000B08F */  lw         $s0, 0x10($sp)

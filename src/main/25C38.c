@@ -35,7 +35,7 @@ void func_80035480(void) {
     gpu_ResetGraphMode1();
     func_80016888();
     if (D_800A31DA == 0) {
-        func_8003A41C();
+        comb_RequestClose();
     }
     func_80020CDC();
     func_800415C4(0);
@@ -139,7 +139,7 @@ void func_80035618(s32 arg0) {
             return;
         }
 
-        temp = func_8003ACB8();
+        temp = comb_Connect();
         if (temp == 1) {
             func_80077940(
                 (D_80106A50.unk_00 | D_800A38E4 | 0x7007) & 0x003FF3FF);

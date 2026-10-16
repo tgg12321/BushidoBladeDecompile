@@ -698,7 +698,7 @@ void pad_Update(s32 arg0) {
         }
     }
 
-    func_8003A728(&pad);
+    comb_ExchangePad(&pad);
 
     i = 0;
     do {

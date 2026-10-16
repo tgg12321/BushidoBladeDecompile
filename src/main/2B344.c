@@ -13,7 +13,7 @@
 extern u8 D_800A38AC;
 extern s32 D_800A37D8;
 
-s32 func_8003AB44(void) {
+s32 comb_HandshakeStep(void) {
     D_800A37B8++;
     switch (D_800A38AC) {
     case 0:
@@ -66,7 +66,7 @@ s32 func_8003AB44(void) {
     return 0;
 }
 
-s32 func_8003ACB8(void) {
+s32 comb_Connect(void) {
     s32 temp_s0;
 
     func_80077AE0();
@@ -80,31 +80,31 @@ s32 func_8003ACB8(void) {
     do {
         pad_Update(1);
         func_8005C6D0();
-        temp_s0 = func_8003AB44();
+        temp_s0 = comb_HandshakeStep();
         VSync(2);
     } while (temp_s0 == 0);
     func_80077B00();
     pad_ResetState();
     D_800A37C4 = bits_ExtractMask3F83F8(D_80106A50.unk_00);
-    func_8003AA48();
+    comb_ExchangeEmptyPad();
     VSync(1);
-    func_8003AA48();
+    comb_ExchangeEmptyPad();
     D_800A38E4 = bits_DepositMask3F83F8(D_800A36C6);
     D_800A37C4 = func_80019488();
     VSync(1);
-    func_8003AA48();
+    comb_ExchangeEmptyPad();
     VSync(1);
-    func_8003AA48();
+    comb_ExchangeEmptyPad();
     VSync(1);
-    func_8003AA48();
+    comb_ExchangeEmptyPad();
     func_800194C0(D_800A36C6);
     D_800A37C4 = rand();
     VSync(1);
-    func_8003AA48();
+    comb_ExchangeEmptyPad();
     VSync(1);
-    func_8003AA48();
+    comb_ExchangeEmptyPad();
     VSync(1);
-    func_8003AA48();
+    comb_ExchangeEmptyPad();
     {
         s32 var_v0;
         if (D_800A38A0 == 0) {

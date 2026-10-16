@@ -2075,7 +2075,7 @@ func_8005BE84                        = 0x8005BE84;  /* MISNAMED: not voice data;
 memcard_Format                         = 0x80037F08;  /* MISNAMED: not motion-pre-calc; calls func_80079A30 then bios_FormatDevice_B() */
 snd_VabFakeOpen8And4                         = 0x8005B98C;  /* typed-restatement (Q103): snd_VabFakeOpen(a0, 8) then snd_VabFakeOpen(a0, 4); the old motion-pre-calc reading was wrong */
 set_alarm                         = 0x8007DC68;  /* libgpu alarm: D_8009BF8C = VSync(-1) + 0xF0 (deadline), D_8009BF90 = 0 (sys.c:1157-1160); not motion-pre-calc */
-func_8003A3F0                         = 0x8003A3F0;  /* MISNAMED: not motion-pre-calc; calls func_8003A39C then sets D_800A3928 = 1 */
+comb_Abort                         = 0x8003A3F0;  /* MISNAMED: not motion-pre-calc; calls func_8003A39C then sets D_800A3928 = 1 */
 comb_Read8                         = 0x8003A574;  /* MISNAMED: not motion-pre-calc; calls bios_FileRead_B with buffer */
 def_cbsync                         = 0x80080014;  /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x20) */
 def_cbready                         = 0x8008003C;  /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x40) */

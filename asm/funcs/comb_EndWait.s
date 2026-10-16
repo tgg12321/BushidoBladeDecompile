@@ -1,4 +1,4 @@
-glabel func_8003AAB0
+glabel comb_EndWait
     /* 2B2B0 8003AAB0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2B2B4 8003AAB4 02000224 */  addiu      $v0, $zero, 0x2
     /* 2B2B8 8003AAB8 1400BFAF */  sw         $ra, 0x14($sp)
@@ -8,7 +8,7 @@ glabel func_8003AAB0
     /* 2B2C8 8003AAC8 02000424 */   addiu     $a0, $zero, 0x2
     /* 2B2CC 8003AACC 02001024 */  addiu      $s0, $zero, 0x2
   .L8003AAD0:
-    /* 2B2D0 8003AAD0 92EA000C */  jal        func_8003AA48
+    /* 2B2D0 8003AAD0 92EA000C */  jal        comb_ExchangeEmptyPad
     /* 2B2D4 8003AAD4 00000000 */   nop
     /* 2B2D8 8003AAD8 40018293 */  lbu        $v0, %gp_rel(D_800A320C)($gp)
     /* 2B2DC 8003AADC 00000000 */  nop
@@ -30,7 +30,7 @@ glabel func_8003AAB0
   .L8003AB18:
     /* 2B318 8003AB18 330A020C */  jal        VSync
     /* 2B31C 8003AB1C 02000424 */   addiu     $a0, $zero, 0x2
-    /* 2B320 8003AB20 92EA000C */  jal        func_8003AA48
+    /* 2B320 8003AB20 92EA000C */  jal        comb_ExchangeEmptyPad
     /* 2B324 8003AB24 00000000 */   nop
     /* 2B328 8003AB28 330A020C */  jal        VSync
     /* 2B32C 8003AB2C 02000424 */   addiu     $a0, $zero, 0x2
@@ -39,4 +39,4 @@ glabel func_8003AAB0
     /* 2B338 8003AB38 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2B33C 8003AB3C 0800E003 */  jr         $ra
     /* 2B340 8003AB40 00000000 */   nop
-endlabel func_8003AAB0
+endlabel comb_EndWait

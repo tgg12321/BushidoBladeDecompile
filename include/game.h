@@ -824,7 +824,7 @@ typedef struct BoneHitRec {
 typedef struct PadState {
     /* per pad: InitPAD buffer byte 1 >> 4, 5 and 7 folded
        to 4, 4 when the status byte != 0 (pad_Update,
-       where func_8003A728 can first replace them with
+       where comb_ExchangePad can first replace them with
        nibbles from the link-cable exchange words);
        4 from pad_ResetState (both) and func_80055B60
        (entry arg0 of its own record) */

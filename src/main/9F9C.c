@@ -1729,22 +1729,22 @@ void func_8001DBE4(void) {
     if (D_800A3768 != DISP_ACTIVE) {
         return;
     }
-    func_8003AA78();
+    comb_BeginWait();
     if (!(D_800A38F8 > D_800A37A0)) {
         do {
-            func_8003AA48();
+            comb_ExchangeEmptyPad();
             func_800174F4();
             VSync(2);
         } while (!(D_800A38F8 > D_800A37A0));
         i = 0;
         do {
-            func_8003AA48();
+            comb_ExchangeEmptyPad();
             i += 1;
             func_800174F4();
             VSync(2);
         } while (i < 15);
     }
-    func_8003AAB0();
+    comb_EndWait();
     func_80016888();
     gpu_SetDispMaskOn();
 }

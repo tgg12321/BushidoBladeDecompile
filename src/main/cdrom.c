@@ -56,13 +56,13 @@ u32 cdrom_GetFileSize(s32 arg0) { return g_cd_file_table[arg0].size; }
 
 void cdrom_WaitIdle(void) {
     u16 *p;
-    func_8003AA78();
+    comb_BeginWait();
     p = &D_80101E58.rec.unk3E;
     while (1) {
         if (cdrom_IsIdle() != 0) {
             break;
         }
-        func_8003AA48();
+        comb_ExchangeEmptyPad();
         cdrom_Update();
         if (D_800A3906 != 0) {
             func_8005C6D0();
@@ -71,7 +71,7 @@ void cdrom_WaitIdle(void) {
         *p = *p + 2;
         VSync(2);
     }
-    func_8003AAB0();
+    comb_EndWait();
 }
 
 s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
@@ -145,7 +145,7 @@ void cdrom_ReleaseAudio(void) { D_80101E58.rec.unk04 = 0; }
 
 void cdrom_WaitAudioStarted(void) {
     while (D_80101E58.rec.unk02 != 0x16) {
-        func_8003AA48();
+        comb_ExchangeEmptyPad();
         cdrom_Update();
         VSync(2);
     }

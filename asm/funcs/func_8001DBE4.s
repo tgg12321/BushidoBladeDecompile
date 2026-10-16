@@ -6,7 +6,7 @@ glabel func_8001DBE4
     /* E3F4 8001DBF4 1400BFAF */  sw         $ra, 0x14($sp)
     /* E3F8 8001DBF8 28006214 */  bne        $v1, $v0, .L8001DC9C
     /* E3FC 8001DBFC 1000B0AF */   sw        $s0, 0x10($sp)
-    /* E400 8001DC00 9EEA000C */  jal        func_8003AA78
+    /* E400 8001DC00 9EEA000C */  jal        comb_BeginWait
     /* E404 8001DC04 00000000 */   nop
     /* E408 8001DC08 0A80033C */  lui        $v1, %hi(D_800A38F8)
     /* E40C 8001DC0C F8386390 */  lbu        $v1, %lo(D_800A38F8)($v1)
@@ -17,7 +17,7 @@ glabel func_8001DBE4
     /* E420 8001DC20 18004014 */  bnez       $v0, .L8001DC84
     /* E424 8001DC24 00000000 */   nop
   .L8001DC28:
-    /* E428 8001DC28 92EA000C */  jal        func_8003AA48
+    /* E428 8001DC28 92EA000C */  jal        comb_ExchangeEmptyPad
     /* E42C 8001DC2C 00000000 */   nop
     /* E430 8001DC30 3D5D000C */  jal        func_800174F4
     /* E434 8001DC34 00000000 */   nop
@@ -32,7 +32,7 @@ glabel func_8001DBE4
     /* E458 8001DC58 F3FF4010 */  beqz       $v0, .L8001DC28
     /* E45C 8001DC5C 21800000 */   addu      $s0, $zero, $zero
   .L8001DC60:
-    /* E460 8001DC60 92EA000C */  jal        func_8003AA48
+    /* E460 8001DC60 92EA000C */  jal        comb_ExchangeEmptyPad
     /* E464 8001DC64 01001026 */   addiu     $s0, $s0, 0x1
     /* E468 8001DC68 3D5D000C */  jal        func_800174F4
     /* E46C 8001DC6C 00000000 */   nop
@@ -42,7 +42,7 @@ glabel func_8001DBE4
     /* E47C 8001DC7C F8FF4014 */  bnez       $v0, .L8001DC60
     /* E480 8001DC80 00000000 */   nop
   .L8001DC84:
-    /* E484 8001DC84 ACEA000C */  jal        func_8003AAB0
+    /* E484 8001DC84 ACEA000C */  jal        comb_EndWait
     /* E488 8001DC88 00000000 */   nop
     /* E48C 8001DC8C 225A000C */  jal        func_80016888
     /* E490 8001DC90 00000000 */   nop

@@ -1,4 +1,4 @@
-glabel func_8003AB44
+glabel comb_HandshakeStep
     /* 2B344 8003AB44 0A80023C */  lui        $v0, %hi(D_800A37B8)
     /* 2B348 8003AB48 B837428C */  lw         $v0, %lo(D_800A37B8)($v0)
     /* 2B34C 8003AB4C E0078393 */  lbu        $v1, %gp_rel(D_800A38AC)($gp)
@@ -105,4 +105,4 @@ glabel func_8003AB44
     /* 2B4AC 8003ACAC 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2B4B0 8003ACB0 0800E003 */  jr         $ra
     /* 2B4B4 8003ACB4 00000000 */   nop
-endlabel func_8003AB44
+endlabel comb_HandshakeStep

@@ -1602,12 +1602,12 @@ void comb_ResetClose(void) {
     D_800A3834 = 8;
 }
 
-void func_8003A3F0(void) {
+void comb_Abort(void) {
     comb_ResetClose();
     D_800A3928 = 1;
 }
 
-void func_8003A41C(void) { D_800A3730 = 1; }
+void comb_RequestClose(void) { D_800A3730 = 1; }
 
 s32 comb_WriteWaitCallback(s32 a0, u32 a1) {
     if (a1 > 0x10000) {
@@ -1744,7 +1744,7 @@ typedef s32 (*FuncBufType)(void *);
  * a transfer fails or after comb_ResetClose. If D_800A3916 is then 0, it
  * stores new values to a0->held and a0->type. FAKE: the tail's u16 loads
  * reuse the buf8 local; own locals: score 33. */
-void func_8003A728(PadState *a0) {
+void comb_ExchangePad(PadState *a0) {
     s32 buf8;
     s32 var_1;
     s32 hi16;
@@ -1776,7 +1776,7 @@ void func_8003A728(PadState *a0) {
                 comb_Read8();
             } else {
                 if (((FuncBufType)comb_Write8)(&g_comb_send_buf) == 0) {
-                    func_8003A3F0();
+                    comb_Abort();
                     return;
                 }
                 D_800A3908 += math_Popcount32(buf8 & 0xFFFF);
@@ -1784,7 +1784,7 @@ void func_8003A728(PadState *a0) {
             }
         } else {
             if (comb_WaitRead8() == 0) {
-                func_8003A3F0();
+                comb_Abort();
                 return;
             }
             if (D_800A38A0 == 1) {
@@ -1798,7 +1798,7 @@ void func_8003A728(PadState *a0) {
                 }
             }
             if (((FuncBufType)comb_Write8)(&g_comb_send_buf) == 0) {
-                func_8003A3F0();
+                comb_Abort();
                 return;
             }
             D_800A3908 += math_Popcount32(buf8 & 0xFFFF);
@@ -1852,28 +1852,28 @@ void func_8003A728(PadState *a0) {
     }
 }
 
-void func_8003AA48(void) {
+void comb_ExchangeEmptyPad(void) {
     PadState pad;
     pad.held = 0;
     pad.type[1] = 4;
     pad.type[0] = 4;
-    func_8003A728(&pad);
+    comb_ExchangePad(&pad);
 }
 
-void func_8003AA78(void) {
+void comb_BeginWait(void) {
     D_800A3870 = 1;
     VSync(2);
-    func_8003AA48();
+    comb_ExchangeEmptyPad();
     VSync(2);
 }
 
-void func_8003AAB0(void) {
+void comb_EndWait(void) {
     s32 val;
     D_800A3870 = 2;
     VSync(2);
     val = 2;
     do {
-        func_8003AA48();
+        comb_ExchangeEmptyPad();
         if (D_800A320C == 0) {
             goto end;
         }
@@ -1883,7 +1883,7 @@ void func_8003AAB0(void) {
     } while (D_800A3870 == val);
 end:
     VSync(2);
-    func_8003AA48();
+    comb_ExchangeEmptyPad();
     VSync(2);
 }
 
