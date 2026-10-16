@@ -94,6 +94,18 @@
  * instruction sequence is a literal fixed string -- not computed from any C-level expression
  * -- so nothing outside the macro invocation can reorder it. See hypotheses.md s8/H7.
  */
+/* s9 (enumerate): re-ran spelling_enum.py fresh against this exact chassis (ENUM-BEGIN/END
+ * around all 5 macro-call statements, tmp/grind/func_80052B7C/s9/enum_test.c). Mechanical
+ * result BOTH with and without --no-swaps: "0 named locals (), 0 assignments, 5 anchors ->
+ * 1 distinct spellings" -- the tool's own precondition scan finds zero declarations,
+ * assignments or commutative binary operators anywhere in the region, so it can only emit
+ * the identity spelling. This re-confirms s5's floor-16-era finding still holds on the
+ * current floor-19 chassis: the residual (chunk 1 batching order inside gte_SetRotMatrix,
+ * chunk 5 delay-slot placement inside gte_stlvl) lives entirely inside each macro's own
+ * fixed-string __asm__ volatile body (s8, inline_c.h:297/:1086 read in full), which is not
+ * C-level syntax spelling_enum.py's region scanner can see or vary. CLASS KILL for the
+ * spelling-sweep search space on this chassis. See hypotheses.md s9/H8.
+ */
 #include <psxsdk/inline_c.h>
 void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
     gte_SetRotMatrix(rot);

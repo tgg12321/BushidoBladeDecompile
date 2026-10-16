@@ -298,3 +298,9 @@ question rather than resolved here.
 - [s8] The 2026-10-15 20:38 owner ruling (docs/grind/decisions.md) already forecloses the written-island landing route for chunks 1/2/5 under inline-asm-policy.md items 2-3 (the wall); this session did not re-litigate that ruling, only re-confirmed the legal (macro-calls-only) chassis's residual is structurally unreachable.
 
 - [s8] src/main/3AB48.c was restored to INCLUDE_ASM("asm/funcs", func_80052B7C); before this session ended; git status shows only memory/grind/func_80052B7C/{candidate.c,hypotheses.md} changed.
+
+- [s9] sandbox func_80052B7C --disable all --diff --candidate memory/grind/func_80052B7C/candidate.c re-measured this session: score 19, target/build both 24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- identical classification to s6/s7/s8.
+
+- [s9] Sibling func_8004A76C (same TU, src/main/3AB48.c) reviewed per the inheritance rule: its 2026-10-15 CANONICAL-ASM GRANT PATH entry rests on a custom $s0 callee-saved-register ABI cluster (func_8004A4E0/func_8004A808/func_8004A940) unrelated in shape to func_80052B7C's GTE macro-ordering residual -- no spelling to transplant; co-located in the same source file only, not a content sibling.
+
+- [s9] No src/ edit made this session; src/main/3AB48.c is unchanged (still INCLUDE_ASM stub per the standing ruling).

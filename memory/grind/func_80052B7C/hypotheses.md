@@ -569,3 +569,48 @@ bodies in full.
 - kill_scope: class
 - measured_on: legal macro-call-only chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h), no FAKE construct, no written island, src/main/3AB48.c this session, reverted after measurement
 - predicate_cite: include/psxsdk/inline_c.h:297
+
+## s9 (enumerate)
+
+### H8 — spelling_enum.py's region scan finds zero mutation axes on the legal macro-call chassis, re-confirming s5's finding on the current (floor-19) chassis
+
+- mechanism: spelling_enum.py's SYSTEMATIC SPELLING SWEEP operates on three axes only —
+  named-local declaration order, assignment reordering, and commutative-operand swaps —
+  found inside an `/* ENUM-BEGIN */ ... /* ENUM-END */` region. The s6/s7/s8 legal chassis
+  body is five bare macro-call statements (`gte_SetRotMatrix(rot); gte_ldtr(...);
+  gte_ldv0(v0); gte_rt(); gte_stlvl(out);`) with no local declarations, no assignments and
+  no binary operators of any kind in the enumerable region — s8 already established (full
+  read of inline_c.h:297 gte_SetRotMatrix and :1086 gte_stlvl) that each macro's instruction
+  sequence is a single fixed-string `__asm__ volatile` block, not computed from any
+  C-level sub-expression, so there is nothing inside the macro bodies for a source-level
+  tool to see either.
+- probe: wrote the exact s6-s8 chassis to tmp/grind/func_80052B7C/s9/enum_test.c wrapping
+  all 5 statements in ENUM-BEGIN/END, ran `python3 tools/spelling_enum.py --candidate
+  tmp/grind/func_80052B7C/s9/enum_test.c --out tmp/grind/func_80052B7C/s9/enum --no-swaps`
+  and again without `--no-swaps` (tmp/grind/func_80052B7C/s9/enum_swaps).
+- result: both runs report "region: 0 named locals (), 0 assignments, 5 anchors -> 1
+  distinct spellings" (the swap run: "... -> 1 distinct spellings (with commutative
+  swaps)") — the tool emits only the identity spelling because its own region scanner
+  finds zero instances of any axis it knows how to vary. No sweep was run against the
+  sandbox score since there is nothing to sweep (a single-variant output has no
+  alternatives to score).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal macro-call-only chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/
+  gte_stlvl via psxsdk/inline_c.h, identical body to s6/s7/s8's 19-floor candidate), no
+  FAKE construct, no written island, tool run against a standalone test file
+  (tmp/grind/func_80052B7C/s9/enum_test.c), no src/ edit made this session
+- predicate_cite: tools/spelling_enum.py:27 (named-local axis), :32 (assignment axis) —
+  the region-scan precondition spelling_enum.py itself enforces; corroborated by
+  include/psxsdk/inline_c.h:297 and :1086 (each macro's body is one fixed __asm__ string,
+  already read in full at s8, so there is no sub-expression surface inside the macros
+  either)
+
+## [s9] spelling_enum.py's region scan finds zero mutation axes (named locals, assignments, commutative swaps) on the s6-s8 legal macro-call chassis, re-confirming s5's finding at the current floor-19 body.
+- mechanism: spelling_enum.py enumerates only named-local declaration order, assignment reordering, and commutative-operand swaps inside an ENUM-BEGIN/END region; the chassis body is five bare macro-call statements with no declarations, assignments, or binary operators, and each macro (gte_SetRotMatrix, gte_stlvl) is a single fixed-string __asm__ volatile block per s8's full read of inline_c.h:297/:1086, so there is no sub-expression surface inside the macros either.
+- probe: wrote the exact s6/s7/s8 chassis to tmp/grind/func_80052B7C/s9/enum_test.c with all 5 statements wrapped in ENUM-BEGIN/END; ran spelling_enum.py --no-swaps and again with the swap axis enabled.
+- result: Both runs: 'region: 0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings' (identity output only). No sweep was run against the sandbox score since a single-variant output has no alternatives.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal macro-call-only chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, identical body to s6/s7/s8's 19-floor candidate), no FAKE construct, no written island, tool run against a standalone test file, no src/ edit made this session
+- predicate_cite: tools/spelling_enum.py:27

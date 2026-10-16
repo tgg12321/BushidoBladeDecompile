@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 8,
- "current_modality": "structural",
+ "session_count": 9,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -51,18 +51,24 @@
    "floor": 19,
    "modality": "structural",
    "headline": "s8 structural: re-measured legal macro-call chassis fresh (score 19, 4/4 hunks source-level), class-killed every structural C-level lever against chunks 1/5 by reading gte_SetRotMatrix/gte_stlvl's fix"
+  },
+  {
+   "session": 9,
+   "floor": 19,
+   "modality": "enumerate",
+   "headline": "s9 (enumerate): spelling_enum.py mechanically confirms zero mutation axes on the legal macro-call chassis -- re-confirms s5's class kill on the current floor-19 body; residual stays locked inside gte_"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A gate-class scan_hand_coded signal for a cop2/GTE insn in a jr delay slot (reorg.c:740) would lift func_80052B7C and its 3AB48 GTE siblings to STRONG, letting the whole-body inline_asm_canonical.txt:340 grant hold as-is.",
-   "mechanism": "scan_hand_coded's current signal set (LOW 0/12, re-checked s3) lacks this signal; reorg.c:740 is the predicate.",
-   "next_probe": "engine-side signal addition (out of grind scope) \u2014 escalation/owner-cluster modality territory, not a C edit."
+   "hypothesis": "A gate-class scan_hand_coded signal for a cop2/GTE insn sitting in a jr delay slot (reorg.c:740) would lift func_80052B7C to STRONG and let the existing whole-body inline_asm_canonical.txt:340 grant hold as-is.",
+   "mechanism": "scan_hand_coded's current signal set (LOW 0/12, re-checked s3/s8) lacks a signal for this pattern; reorg.c:740 is the predicate chunk 5's delay-slot placement violates.",
+   "next_probe": "Engine-side signal addition to tools/scan_hand_coded.py -- out of grind scope; escalation/owner-cluster modality territory, not a C edit."
   },
   {
    "hypothesis": "A new vendored macro or DMPSX word batching chunk 1's 5 loads then 8 ctc2 (gte_SetRotMatrix + the 3 TR halfword loads together) would close hunk 1 alone.",
-   "mechanism": "No composite in gtemac.h expands to this batched order (s3 full-file read); would need a new owner-approved DMPSX placeholder plus an engine: commit, and would still leave chunk 5 (delay slot) unreached.",
-   "next_probe": "Not a grind-session action \u2014 needs an owner ruling + engine commit, and is moot for landing by itself since chunk 5 stays open."
+   "mechanism": "No composite in gtemac.h expands to this batched order (s3 full-file read, re-confirmed s8); would need a new owner-approved placeholder plus an engine: commit, and would still leave chunk 5 (delay slot) unreached.",
+   "next_probe": "Not a grind-session action -- needs an owner ruling + engine commit; moot for landing alone since chunk 5 stays open."
   }
  ],
  "judge_constraints": [
@@ -157,6 +163,14 @@
    "measured_on": "legal macro-call-only chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h), no FAKE construct, no written island, src/main/3AB48.c this session, reverted after measureme",
    "predicate_cite": "include/psxsdk/inline_c.h:297",
    "result": "score 19 (target/build both 24 insns), 4/4 hunks source-level, 0 operand-only, 0 not-scored \u2014 identical classification t"
+  },
+  {
+   "session": 9,
+   "statement": "spelling_enum.py's region scan finds zero mutation axes (named locals, assignments, commutative swaps) on the s6-s8 legal macro-call chassis, re-confirming s5's finding at the current floor-19 body.",
+   "kill_scope": "class",
+   "measured_on": "legal macro-call-only chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, identical body to s6/s7/s8's 19-floor candidate), no FAKE construct, no written island, tool r",
+   "predicate_cite": "tools/spelling_enum.py:27",
+   "result": "Both runs: 'region: 0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings' (identity output only). No swee"
   }
  ],
  "ladder_skip": 0,
