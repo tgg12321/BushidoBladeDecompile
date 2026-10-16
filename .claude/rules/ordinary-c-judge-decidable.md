@@ -84,7 +84,7 @@ expired.
 
 ## Owner rulings on narrow spellings (2026-10-01)
 
-Q76, Q82 and Q90 are instances of [[completion-bar]] item 3 (labelled FAKEs); Q77 is
+Q76 and Q82 are instances of [[completion-bar]] item 3 (labelled FAKEs); Q77 is
 re-opened by Q91 clause D.
 
 - **Q76 — fixed-point rescale, func_80058580 only.** At its two `lh; sra 4` sites (target 0x8005AB34 and 0x8005ACCC),
@@ -99,11 +99,6 @@ re-opened by Q91 clause D.
   `sll; sra 16; slt` (0x8005A338), work2 holding the Q75 best-score value, is admitted despite the
   redundant-width-cast refusal, with a comment citing the sign-extend pair, the Q75 value and the measured
   alternatives. No other cast or site.
-- **Q90 — one u32 class bit-set, func_80023F08 only.** At its move-class test
-  `(mask = ent[2] | (ent[3] << 16)) & (1 << rec->unk_0A)`, `mask` may be a `u32` local although its only
-  effect is the int->u32 conversion that keeps fold-const.c:4437 from rewriting the bit test (int form 3
-  off). The comment names that rewrite and the measurements (`c8a67edaf:memory/grind/func_80023F08/casts/receipts.txt`,
-  `c8a67edaf:memory/grind/func_80023F08/fake/mask_jump.txt`); fresh layer-2. No other unsigned-widening device, local or site.
 
 Related: [[no-new-park-categories]] · [[dead-store-fake-exception]] · [[judge-sole-gate]] ·
 [[review-discipline-before-commit]] · [[staged-value-reused-variable]]
