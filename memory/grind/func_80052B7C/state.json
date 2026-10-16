@@ -1,7 +1,7 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,24 @@
    "floor": 16,
    "modality": "structural",
    "headline": "s1's draft built for real: switching inline_o.h -> inline_c.h closes build_insns to 24==target and drops score 24->16, but s1's 'chunk 1 matches exactly' claim was wrong -- chunks 1 and 5 have no vend"
+  },
+  {
+   "session": 3,
+   "floor": 16,
+   "modality": "structural",
+   "headline": "Ruling (2026-10-15 20:38) closes the s2/s3 written-island frontier as a class refusal; full gtemac.h read confirms no composite macro reaches chunks 1/5; structural C levers for this function are now "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Chunks 1 and 5 (not just chunk 2) may need a written-out single-instruction-per-statement form of an existing vendored macro, under the inline_asm_canonical.txt:340 grant, because the macro's own bundled body cannot reproduce the target's measured instruction order (chunk 1) or delay-slot placement (chunk 5) -- this is a policy question, not a codegen one.",
-   "mechanism": "inline-asm-policy.md's 'Calls, not copies' (PsyQ GTE macro calls, item 3) disfavors written-out bodies when a macro already exists for the operation; chunks 1 and 5 have existing macros whose structure cannot reach the target bytes as a plain call.",
-   "next_probe": "File a ruling-request citing this session's two measured kills (chunk 1 order, chunk 5 delay-slot) alongside chunk 2's pre-existing no-macro-exists question, asking whether a written single-instruction island is admissible for all three under the existing grant."
+   "hypothesis": "A new vendored macro or DMPSX word covering chunk 2's TR-from-halfwords-into-CR5-7 load could let that chunk land as a call.",
+   "mechanism": "Requires an engine:-commit addition to the vendored macro set (inline-asm-policy.md item 1) plus its own owner ruling for a new DMPSX word -- not a C-source lever and not actionable inside a grind session.",
+   "next_probe": "Owner/operator decision outside the grind lane; even if granted, chunks 1 and 5 would still need separate resolution since their macros already exist and still don't reach the target bytes."
   },
   {
-   "hypothesis": "The chunk-5 delay-slot mechanism (reorg.c cannot split a compound asm block) is currently inferred, not confirmed.",
-   "mechanism": "dump.ps1 func_80052B7C did not produce a .rtl/.sched dump this session; the invocation or tmp path may need adjustment.",
-   "next_probe": "Get dump.ps1 producing a real .sched dump for this function and read the reorg/delay-slot-fill decision around the gte_stlvl call site before citing the mechanism in a ruling-request."
-  },
-  {
-   "hypothesis": "gtemac.h's composite macros (not yet grepped for CR0-4-only or stlvl-only variants) might offer a finer-grained primitive for chunk 1's batched order.",
-   "mechanism": "s1 only enumerated CR5-7 sites in gtemac.h/inline_o.h for chunk 2's no-macro-match question; chunk 1's CR0-4 batched-order gap was not checked against gtemac.h composites at all.",
-   "next_probe": "grep gtemac.h for any macro touching only CR0-CR4 or only DR9-11 before concluding no finer primitive exists."
+   "hypothesis": "Raising func_80052B7C's scan_hand_coded tier from LOW 0/12 to STRONG would let the existing whole-function inline_asm_canonical.txt:340 grant hold as-is (precedent: func_8004A76C's 2026-10-15 CANONICAL-ASM GRANT PATH entry).",
+   "mechanism": "scan_hand_coded.py's current signal set (S1-S12) does not fire on this function's actual shape; this is an engine/tools signal-coverage gap, not a property changeable from C source.",
+   "next_probe": "An engine:-commit teaching the scanner a new corpus-clean signal this function exhibits (if one exists) -- requires its own layer-2 review per the func_8004A76C precedent record; out of scope for a src-only grind session."
   }
  ],
  "judge_constraints": [
@@ -54,6 +55,22 @@
    "measured_on": "src/main/3AB48.c, gte_stlvl(out) called via psxsdk/inline_c.h, no FAKE construct present, sandbox func_80052B7C --disable all --diff this session",
    "predicate_cite": "",
    "result": "False: our build emits swc2 $11,8(a3) before jr $ra with an explicit nop filling the delay slot, instead of target's swc"
+  },
+  {
+   "session": 3,
+   "statement": "A written __asm__ island reproducing or splitting an existing (or nonexistent) vendored GTE macro's body is admissible under the inline_asm_canonical.txt:340 grant when the macro itself cannot reach t",
+   "kill_scope": "class",
+   "measured_on": "src/main/3AB48.c (the ruling itself is the measurement; no src/ re-application needed -- the construct is a forbidden spelling, not an unlabelled FAKE, so chassis state does not bear on it)",
+   "predicate_cite": ".claude/rules/inline-asm-policy.md:55",
+   "result": "FAIL: 'the macro can't reach the bytes' is not an exception anywhere in the rule; the written chunk-2 island is itself a"
+  },
+  {
+   "session": 3,
+   "statement": "A gtemac.h composite macro (not yet read in full, only grepped by name in s1/s3) offers a batched-order expansion for chunk 1 (gte_SetRotMatrix) or a lone-trailing-store expansion for chunk 5 (gte_stl",
+   "kill_scope": "instance",
+   "measured_on": "include/psxsdk/gtemac.h as vendored at this commit, full-file read this session, no src/ edit involved",
+   "predicate_cite": "",
+   "result": "No composite names or expands to gte_SetRotMatrix/gte_SetRotMatrixClearTrans or gte_stlvl; the closest shape (gte_RotTra"
   }
  ],
  "ladder_skip": 0,

@@ -1,91 +1,57 @@
-/* func_80052B7C — MEASURED s2 (structural), RE-VERIFIED s3 (structural, byte
- * for byte reproduction of this exact body: score 16, build_insns ==
- * target_insns == 24, same 5 source-level hunks). Applied to src/main/3AB48.c
- * each session and re-reverted to INCLUDE_ASM before finishing (asm-until-
- * matched rule 1: no draft C on main for an INCOMPLETE function). sandbox
- * func_80052B7C --disable all --diff on this exact body: score 16 (down from
- * the s1 floor of 24), build_insns == target_insns == 24, all 5 remaining
- * hunks classed source-level (no reg-alloc/scheduling lever can close them).
- * s3 additionally: (a) re-enumerated gtemac.h + inline_c.h in full (not just
- * the CR5-7 subset) -- no finer-grained vendored macro exists for chunk 1's
- * batched order or chunk 5's lone final store; (b) got dump.ps1 producing a
- * real .dbr dump (fixed a missing subdirectory) and confirmed chunk 5's
- * delay-slot gap directly from the RTL: gte_stlvl's 3-swc2 body is one opaque
- * `asm_operands` insn that reorg.c's delay-slot filler cannot split or select
- * for the jr $ra slot. Both chunks 1 and 5 remain blocked on the same policy
- * question flagged by s2 (written single-instruction island vs. a macro call,
- * under inline-asm-policy.md's "Calls, not copies") -- no further codegen
- * lever is known; next step is the ruling-request, not more structural work.
+/* func_80052B7C -- STRUCTURAL LEVERS EXHAUSTED as of s3 (this session). No
+ * pure-C landing form exists under the current rules; every prior frontier
+ * item is now measured dead. Read hypotheses.md s2/s3/H4/H5 for the full
+ * derivation; summary below.
  *
- * Needs: #include <psxsdk/inline_c.h> added to src/main/3AB48.c (NOT
- * inline_o.h — see finding below, inline_c.h's macros use the pointer
- * argument directly as the asm base register with no staging "move",
- * which is what drops build_insns from 27 (inline_o.h) to 24 (inline_c.h)).
+ * What's PROVEN (s2, re-verified s3, sandbox func_80052B7C --disable all
+ * --diff, honest floor 16 against the INCLUDE_ASM-stub floor of 24):
+ *   #include <psxsdk/inline_c.h>   (NOT inline_o.h -- see s2 finding 1a)
+ *   void func_80052B7C(MATRIX *rot, SVECTOR *tr, VECTOR *v0, VECTOR *out) {
+ *       gte_SetRotMatrix(rot);   // chunk 1 -- WRONG instruction order (see below)
+ *       <chunk 2: no vendored macro exists for TR-from-halfwords -> CR5-7>
+ *       gte_ldv0(v0);            // chunk 3 -- CONFIRMED byte-identical
+ *       gte_rt();                // chunk 4 -- CONFIRMED byte-identical
+ *       gte_stlvl(out);          // chunk 5 -- WRONG delay-slot placement (see below)
+ *   }
  *
- * Signature (from asm/funcs/func_80052B7C.s, unchanged from s1 recon):
- *   a0 -> MATRIX*  (5 lw -> ctc2 CR0-CR4, matches MATRIX.m[3][3]+pad)
- *   a1 -> SVECTOR* (3 lh -> ctc2 CR5-CR7, sign-extended halfwords; no
- *                   vendored macro loads TR from halfwords -- written
- *                   island, cites inline_asm_canonical.txt:340)
- *   a2 -> VECTOR*  (2 lwc2 -> DR0/DR1, matches gte_ldv0 exactly)
- *   a3 -> VECTOR*  (3 swc2 <- DR9/DR10/DR11, matches gte_stlvl's STORES
- *                   exactly, but NOT the trailing jr-delay-slot placement
- *                   -- see finding 2 below)
- */
-void func_80052B7C(MATRIX *rot, SVECTOR *tr, VECTOR *v0, VECTOR *out) {
-    gte_SetRotMatrix(rot);
-    __asm__ volatile(
-        "lh     $13, 0(%0)\n"
-        "lh     $14, 2(%0)\n"
-        "lh     $15, 4(%0)\n"
-        "ctc2   $13, $5\n"
-        "ctc2   $14, $6\n"
-        "ctc2   $15, $7\n"
-        :: "r"(tr) : "$13", "$14", "$15");
-    gte_ldv0(v0);
-    gte_rt();
-    gte_stlvl(out);
-}
-
-/* ---- s2 findings (both are NEW evidence beyond s1's manual macro-text read) ----
+ * What's DEAD, and why each is now a closed question rather than an open
+ * frontier item:
+ *   - Chunk 1 (gte_SetRotMatrix): both vendored headers interleave 2-lw+2-ctc2
+ *     then 3-lw+3-ctc2; target batches all 5 lw then all 5 ctc2. No finer
+ *     vendored leaf or gtemac.h composite exists to compose the batched order
+ *     (s3 H2: full leaf enumeration; this session's H5: full gtemac.h visual
+ *     read -- no composite names or expands to gte_SetRotMatrix at all).
+ *   - Chunk 2 (TR from halfwords into CR5-7): no vendored macro of any kind
+ *     performs this op (s1).
+ *   - Chunk 5 (gte_stlvl): target's last swc2 sits in the jr $ra delay slot;
+ *     our build emits it before jr with an explicit nop. Confirmed via .dbr
+ *     RTL dump (s3 H3): gte_stlvl's 3-swc2 body is one opaque asm_operands
+ *     insn reorg.c's delay-slot filler cannot split or select into.
+ *   - A written __asm__ island closing any of the three (chunks 1, 2 or 5)
+ *     is RULED OUT: docs/grind/decisions.md 2026-10-15 20:38 func_80052B7C
+ *     ruling, citing inline-asm-policy.md:55-57/70-72 -- "the macro can't
+ *     reach the bytes" is not an exception anywhere in the rule. This
+ *     session's H4 confirms the ruling matches the live rule text. The
+ *     previously-banked written-island candidate is now in
+ *     rejected/written-island-chunks-1-2-5.c; do not resubmit it or any
+ *     respelling of the same construct.
  *
- * Finding 1 (chunk 1, gte_SetRotMatrix): s1's evidence.md claimed this macro's
- * asm body is "byte-identical" to the target's chunk 1. That claim is WRONG at
- * the instruction-ORDER level (it was a manual text comparison, never built).
- * BOTH vendored headers' gte_SetRotMatrix interleave 2-lw+2-ctc2, then
- * 3-lw+3-ctc2 (inline_o.h additionally stages the pointer into $12 first,
- * costing 3 extra `move`/register-reuse insns -- that is finding-1a, already
- * fully explained by inline_o.h vs inline_c.h header choice and closed by
- * switching headers). But NEITHER header's gte_SetRotMatrix reproduces the
- * target's actual order: target does all 5 `lw` first, THEN all 5 `ctc2`
- * (asm/funcs/func_80052B7C.s lines 1-5 then 9-13). No finer-grained vendored
- * macro exists to compose that batched order from smaller pieces (grepped
- * inline_c.h for any standalone CR0-4 ctc2-only macro: none). So chunk 1, like
- * chunk 2, has NO vendored-macro-call spelling that reproduces the target's
- * exact instruction order -- this is new evidence for the existing frontier
- * item 3 ruling-request, not just chunk 2's problem.
+ * What's LEFT, and why it is NOT a grind-session action:
+ *   - A new vendored macro / DMPSX word covering chunk 2 needs its own owner
+ *     ruling plus an `engine:` commit (inline-asm-policy.md item 1) -- and
+ *     would still leave chunks 1 and 5 unreached (their macros already exist
+ *     and still don't reach the bytes).
+ *   - The whole-function inline_asm_canonical.txt:340 grant (reopened for
+ *     audit by aeea8ed44, owner 2026-10-08) would hold AS-IS if
+ *     scan_hand_coded reached STRONG tier (precedent: the func_8004A76C
+ *     2026-10-15 CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md).
+ *     Re-checked fresh this session: `scan_hand_coded.py --single
+ *     func_80052B7C` = LOW 0/12, no gate-class signal
+ *     (tmp/grind/func_80052B7C/s3/scan.txt). Raising this needs a scanner
+ *     signal-set change (engine/tools), not a C edit.
  *
- * Finding 2 (chunk 5, gte_stlvl): target's last `swc2 $11,8(a3)` sits in the
- * `jr $ra` delay slot (asm/funcs/func_80052B7C.s line 24). Our build (both
- * header choices) emits `swc2 $11,8(a3)` BEFORE `jr $ra`, with an explicit
- * `nop` in the delay slot instead. Mechanism (not yet dump-confirmed --
- * `tools/grinder/dump.ps1 func_80052B7C` produced no `.rtl`/`.sched` file this
- * session, see artifacts): gte_stlvl's asm template bundles 3 `swc2`
- * instructions into ONE volatile asm statement; GCC's delay-slot filler
- * (reorg.c) can steal a single trailing ordinary insn for a jr's delay slot,
- * but a multi-instruction inline-asm block is scheduled as one opaque unit it
- * does not reach inside of. No vendored macro exists that stores only
- * DR9-11's last word alone (to let it be the trailing statement by itself),
- * so this is structurally unreachable via a gte_stlvl macro CALL as currently
- * defined in either header -- splitting it into 3 separate single-swc2 asm
- * statements would fix it but is a WRITTEN-OUT COPY of an existing macro's
- * body, which the current GTE-macro-calls policy (inline-asm-policy.md
- * "Calls, not copies") disfavors when a macro already exists for the op.
- *
- * Both findings sharpen (don't replace) the existing frontier item 3
- * ruling-request: it is not just chunk 2 (no macro at all) that may need a
- * written-island carve-out -- chunks 1 and 5 need one too, for a DIFFERENT
- * reason (a macro exists, but its bundled body can't reproduce the target's
- * instruction order/delay-slot placement). The ruling-request question should
- * cover both reasons.
+ * No src/ edit is banked here: the honest floor (16, with the now-rejected
+ * written island) cannot be re-landed, and no replacement reaches a lower
+ * honest floor without the banned construct. src/main/3AB48.c keeps
+ * INCLUDE_ASM("asm/funcs", func_80052B7C); per asm-until-matched rule 1.
  */

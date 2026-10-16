@@ -176,3 +176,11 @@ question rather than resolved here.
   reorg.c / `dbr_schedule` treating `asm_operands` as opaque to delay-slot filling, not merely
   "a multi-instruction block it doesn't reach inside of" (same conclusion, now with the exact
   RTL insns and pass-stage cited).
+
+- [s3] docs/grind/decisions.md 2026-10-15 20:38 func_80052B7C ruling FAILs the written-island landing route for all three affected chunks (1, 2, 5), citing inline-asm-policy.md:55-57 and :70-72; this session verified the citation matches the live rule text.
+
+- [s3] scan_hand_coded.py --single func_80052B7C re-run fresh this session: still tier=LOW score=0/12, no gate-class signal (tmp/grind/func_80052B7C/s3/scan.txt) -- the whole-body grant-path precedent (func_8004A76C, 2026-10-15 decisions.md entry) does not currently apply here.
+
+- [s3] Chunks 3 (gte_ldv0) and 4 (gte_rt) remain the only two chunks with a fully confirmed byte-identical macro-call landing (s2); chunks 1, 2 and 5 have no legal pure-C spelling under current rules.
+
+- [s3] The s2/s3 written-island candidate is moved to memory/grind/func_80052B7C/rejected/written-island-chunks-1-2-5.c; do not resubmit it or a respelling of the same construct -- the ruling is final per review-discipline-before-commit's body-keyed verdict rule.
