@@ -937,7 +937,7 @@ typedef struct {
     SVECTOR unk24;  /* ApplyRotMatrix in */
     SVECTOR unk2C;  /* RotTransPers in */
     s32 unk34;      /* RotTransPers' p */
-    s32 unk38;      /* fade */
+    s32 unk38;      /* D_800F0BEC[i] - 15, the colour scale */
     s32 unk3C;      /* func_80052C28's depth, the OT index */
 } Unk1F8000B8_80063084;
 
@@ -1918,8 +1918,10 @@ typedef struct {
  * the D_800A9CF8.unk8 key frames and queue it on g_draw_queue.
  * unk58 is a word frame counter (lw/sw: -1 idle, 0 started by
  * func_80044B30, -2 done), unk5C the word Y angle func_80044B30 stores,
- * unk60 an s16 fade level (func_80044800); +0x62..0x67 are not accessed. Not
- * the Unk800A6690Rec layout: that table's +0x58 is a byte. */
+ * unk60 an s16 func_80044800 sets to 0x1000 at the last key frame and then
+ * lowers by 0x40 per call to 0 (at 0, unk58 = -2 unless D_800A9CF8.unk4 is
+ * 4); +0x62..0x67 are not accessed. Not the Unk800A6690Rec layout: that
+ * table's +0x58 is a byte. */
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
     s32 unk58;              /* +0x58 */
@@ -1955,8 +1957,8 @@ typedef struct {
  * - unk_18: written as the word 0x8000 by func_80045878, read as three colour
  * bytes by func_80041688.
  * - unk_1C / unk_20: the resource blocks func_80045878 stores; unk_24 / unk_28:
- * the attached Unk8003F62CRec block and command cursor (func_8003F824,
- * func_8004019C).
+ * the attached Unk8003F62CRec block and the s16 list func_8003F824 walks up
+ * to its -3 end (func_8004019C moves both by its a1).
  * - unk_2C[]: node 0 is the root (func_80049718 reads its xf.mat);
  * func_800408F8 builds 0..20, func_80040CB8 fills unk_8B4[] (unk2 = -1 ends
  * it), func_80040B44 copies duplicates into unk_10D4[] (unk58 = the source
