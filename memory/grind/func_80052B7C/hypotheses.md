@@ -614,3 +614,31 @@ bodies in full.
 - kill_scope: class
 - measured_on: legal macro-call-only chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, identical body to s6/s7/s8's 19-floor candidate), no FAKE construct, no written island, tool run against a standalone test file, no src/ edit made this session
 - predicate_cite: tools/spelling_enum.py:27
+
+## s10 (solver)
+
+### H9 — [s10] The residual's first divergence is RA (classify, object mode), and the target register disposition (8 data GPRs = t0..t7 / $8-$15, v0/v1 untouched) is not produced by GCC 2.7.2's allocator for any pseudo set on this function; it can only come from a fixed asm string naming $8-$15, which no vendored macro contains.
+- mechanism: classify (inverse_compose.py, --target-object build/src/main/3AB48.o --ours-object tmp/sandbox/func_80052B7C/main/3AB48.o) reports "FIRST DIVERGENCE: RA" — register-blanked multisets are equal (24 insns each; target's extra nop after mvmva balances our jr-slot nop). mips.h (tools/gcc-2.7.2/config/mips/mips.h) defines no REG_ALLOC_ORDER, so local-alloc.c:2249 find_free_reg scans hard regs 0..N and takes the lowest free one; v0 ($2) and v1 ($3) are free across the whole body (void return, no calls), so any allocated GR_REGS pseudo lands on $2 first. The .lreg dump confirms this on the legal chassis: TR pseudos 77/80/83 -> regs 4/3/2 (a0/v1/v0). The rotation loads' $12-$14 are hardcoded inside gte_SetRotMatrix's fixed string (inline_c.h:297); target's $8-$11 appear in no vendored lw (grep `lw\s+\$(8|9|10|11),` across inline_c.h/inline_o.h/gtemac.h/libgte.h = 0 hits).
+- probe: (1) classify in WSL (tmp/grind/func_80052B7C/s10/classify.txt). (2) dump.ps1 .lreg read. (3) Scratch RA-reachability probe (tmp/grind/func_80052B7C/s10/ra_probe.c, banked as rejected/ra-probe-8-operand-written-island.c — a written island, NEVER a candidate): all 8 values as C pseudos fed to ONE asm via 8 "r" operands, the most allocator-free spelling possible; compiled with tools/gcc-2.7.2/cc1 and the Makefile CC_FLAGS.
+- result: probe assigns {lh $8,$3,$2 ; lw $9..$13} -> v0,v1,t0..t5, scheduled lh-first; target is lw t0..t4 then lh t5..t7. Even with every register left to the allocator, v0/v1 are taken first, so t0..t7 is not an allocator output. Sandbox on the legal chassis re-measured 19 (4/4 hunks source-level, tmp/grind/func_80052B7C/s10/sandbox_diff.txt). fake_ablate: no FAKE constructs in candidate.c (KILL RE-AUDIT: nothing to ablate; the current chassis IS the closest instance-kill form and re-measures 19).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal macro-call chassis (gte_SetRotMatrix/gte_ldtr((s32)..)/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h), no FAKE construct, applied to src then reverted; plus standalone scratch probe with an 8-"r"-operand asm (not a candidate)
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:2249
+
+## [s10] The residual's first divergence is RA, and GCC 2.7.2's allocator does not assign target's register disposition (8 data GPRs in $8-$15 with v0/v1 unused) to allocated pseudos in this function; those registers come only from a fixed asm string, and no vendored macro names lw $8-$11.
+- mechanism: mips.h defines no REG_ALLOC_ORDER, so local-alloc.c:2249 find_free_reg takes the lowest free hard reg; v0/v1 are free across the body (void, no calls). .lreg on the legal chassis: TR pseudos 77/80/83 -> 4/3/2. Vendored headers hardcode only $12-$15.
+- probe: inverse_compose.py classify in object mode (WSL); dump.ps1 .lreg read; scratch probe feeding all 8 values as C pseudos to one asm via 8 "r" operands, compiled with tools/gcc-2.7.2/cc1 + Makefile CC_FLAGS; grep census of lw $8..$11 in inline_c.h/inline_o.h/gtemac.h/libgte.h.
+- result: classify: FIRST DIVERGENCE RA (blanked multisets equal). Probe: lh $8,$3,$2 + lw $9..$13 (v0,v1,t0..t5, lh-first) vs target lw t0..t4 then lh t5..t7. Census 0 hits. Legal chassis re-measured 19, 4/4 hunks source-level.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal macro-call chassis gte_SetRotMatrix/gte_ldtr((s32)..)/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, no FAKE construct, applied to src and reverted; plus standalone scratch 8-operand probe (not a candidate)
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:2249
+
+## [s10] KILL RE-AUDIT: the closest banked instance form (the legal macro-call chassis) re-measures below 19 once its FAKE constructs are ablated.
+- mechanism: Brief-mandated re-audit of instance kills after a 3-session flat floor.
+- probe: fake_ablate.py on memory/grind/func_80052B7C/candidate.c; sandbox --disable all --diff on the chassis applied to src.
+- result: fake_ablate: no FAKE-annotated constructs, nothing to ablate. Sandbox: 19, unchanged.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted

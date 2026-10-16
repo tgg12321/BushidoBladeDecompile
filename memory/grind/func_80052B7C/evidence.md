@@ -304,3 +304,21 @@ question rather than resolved here.
 - [s9] Sibling func_8004A76C (same TU, src/main/3AB48.c) reviewed per the inheritance rule: its 2026-10-15 CANONICAL-ASM GRANT PATH entry rests on a custom $s0 callee-saved-register ABI cluster (func_8004A4E0/func_8004A808/func_8004A940) unrelated in shape to func_80052B7C's GTE macro-ordering residual -- no spelling to transplant; co-located in the same source file only, not a content sibling.
 
 - [s9] No src/ edit made this session; src/main/3AB48.c is unchanged (still INCLUDE_ASM stub per the standing ruling).
+
+## s10 (solver)
+- classify (object mode, WSL): FIRST DIVERGENCE RA; register-blanked multisets match (tmp/grind/func_80052B7C/s10/classify.txt). Note inverse_compose.py must run inside WSL (objdump path); Windows python fails with FileNotFoundError.
+- .lreg (legal chassis): TR pseudos 77,80,83 -> hard regs 4,3,2. mips.h: no REG_ALLOC_ORDER -> local-alloc.c:2249 lowest-free scan.
+- Scratch 8-"r"-operand probe (tmp/grind/func_80052B7C/s10/ra_probe.s): allocator gives v0,v1,t0..t5 with lh hoisted first; target uses t0..t7 with lw first. Target registers are fixed-string, not allocated.
+- Census: no vendored GTE header contains `lw $8..$11` (0 hits) — only $12-$15 are hardcoded in vendored macros.
+- Sandbox re-measure: 19 (tmp/grind/func_80052B7C/s10/sandbox_diff.txt). fake_ablate: no FAKE constructs (tmp/grind/func_80052B7C/s10/fake_ablate.txt).
+- Interpretation (not a kill): target = t0..t7 data regs + nop after mvmva + swc2 in jr slot is the shape of a hand-written leaf; only the whole-body grant branch of the Judge constraint fits, which needs a scan_hand_coded gate-class signal (engine-side).
+
+- [s10] classify object mode must run under WSL; Windows python fails on objdump path
+
+- [s10] sandbox legal chassis = 19, 4/4 hunks source-level (tmp/grind/func_80052B7C/s10/sandbox_diff.txt)
+
+- [s10] .lreg: TR pseudos -> a0/v1/v0; scratch 8-operand probe -> v0,v1,t0..t5; target t0..t7
+
+- [s10] no vendored GTE header contains lw $8..$11
+
+- [s10] Combined with s7 (reorg.c:740 jr-slot) and s8 (fixed-string macro order), all three backend layers (pre-RA order, RA, delay slot) are now closed on vendored-macro chassis; target shape (t0..t7, nop after mvmva, swc2 in jr slot) fits a hand-written leaf

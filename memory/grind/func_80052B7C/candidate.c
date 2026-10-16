@@ -5,7 +5,15 @@
  *
  * What's PROVEN (s2, re-verified s3, sandbox func_80052B7C --disable all
  * --diff, honest floor 16 against the INCLUDE_ASM-stub floor of 24):
- *   #include <psxsdk/inline_c.h>   (NOT inline_o.h -- see s2 finding 1a)
+ *   /* s10 (solver): classify (object mode) = FIRST DIVERGENCE RA (register-blanked multisets match).
+ * RA verdict FORECLOSED: target's 8 data GPRs are t0..t7 ($8-$15) with v0/v1 never touched; GCC
+ * 2.7.2 mips.h has no REG_ALLOC_ORDER, so local-alloc.c:2249 find_free_reg takes the lowest free
+ * hard reg -- v0 is always free here (void, no calls). Scratch probe (8 C pseudos fed to one asm via
+ * "r", rejected/ra-probe-8-operand-written-island.c) measured {v0,v1,t0..t5}, not t0..t7. No vendored
+ * macro hardcodes lw $8..$11 (census 0). So the target registers come only from a fixed asm string
+ * the vendored headers do not contain. See hypotheses.md s10/H9.
+ */
+#include <psxsdk/inline_c.h>   (NOT inline_o.h -- see s2 finding 1a)
  *   void func_80052B7C(MATRIX *rot, SVECTOR *tr, VECTOR *v0, VECTOR *out) {
  *       gte_SetRotMatrix(rot);   // chunk 1 -- WRONG instruction order (see below)
  *       <chunk 2: no vendored macro exists for TR-from-halfwords -> CR5-7>
