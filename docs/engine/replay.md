@@ -1,11 +1,9 @@
 # "Replay" and "Special Camera": what the code at those names does
 
-Earlier versions of this page described a replay system and a cinematic
-"special camera", using names recovered by Kengo name-matching
-(`replay_camera_*`, `special_camera_*`, `marionation_camera_*`). The naming
-waves retired those names: at nearly every one of those addresses the code is
-the CD reader, a menu, the save flow or geometry helpers, not a camera. This
-page describes what each one does today, read from `src/` (path:line cites the
+At nearly every address once named `replay_camera_*`, `special_camera_*` or
+`marionation_camera_*` (Kengo name-matching; the naming waves retired those
+names) the code is the CD reader, a menu, the save flow or geometry helpers, not
+a camera. This page describes what each one does today, read from `src/` (path:line cites the
 definition). The one view-transform routine among them is `func_80046BF4`
 (below).
 
@@ -34,9 +32,10 @@ into the CD state block `D_80101E58` (`CdState`, include/game.h:2079; its `rec`
 member is `Unk80101E60Rec`):
 
 1. If a request is pending (`rec.unk02 != 0`), return 0.
-2. `rec.unk00 = a0`; `rec.pair = g_cd_file_table[a0]` (position and size);
-   `rec.unk1C = a1`; `rec.unk08 = 0`; `rec.unk3E = 0`.
-3. `rec.unk02 = 2`, and `rec.unk18 = (size + 0x7FF) >> 11`, the sector count.
+2. `rec.unk00 = a0`; `rec.pair = g_cd_file_table[(s16)a0]` (position and
+   size); `rec.unk1C = a1`; `rec.unk08 = 0`.
+3. `rec.unk02 = 2`; `rec.unk3E = 0`; `rec.unk18 = (size + 0x7FF) >> 11`, the
+   sector count.
 4. Return 1.
 
 `cdrom_Update` (src/main/26940.c:222) then steps the request once per call;
@@ -85,20 +84,22 @@ to (arg2, arg3) (both offset by 0x7D00), a DDA in 4.12 fixed point, and calls
 1. Loads `arg0->unk4` (a MATRIX) as the GTE rotation and translation and calls
    `func_80017FA0(arg0)` (src/main/87A0.c:42).
 2. Stores the translation delta `arg0->unk4->t - arg1->matrix.t` in the
-   scratchpad block `SCRV` (`0x1F800000`, src/main/87A0.c:105).
-3. Takes the squared length: above 250000 the scale is 0x100; otherwise it is
+   scratchpad words 0x1F800024..0x1F80002C (`SCRV`'s x, y, z,
+   src/main/87A0.c:105).
+3. Takes the squared length `len2`: above 250000 the scale is 0x100; if the
+   sum is negative (overflow) it is 0; otherwise it is
    `(isqrt(len2) << 6) / 500 + 0xC0`, the integer square root read from
    `g_sqrt_table_u8` (normalized with the GTE leading-zero count above 0x400).
-4. Scales the `SCRV` delta by `scale >> 1`, copies `*arg0->unk4` into
-   `arg1->matrix` and calls `func_80018300(arg1)` (src/main/87A0.c:174), the
-   distance-constraint pass over a chain of 64-byte nodes described above it.
+4. Sets each `SCRV` component to `(delta * scale) >> 1`, copies `*arg0->unk4`
+   into `arg1->matrix` and calls `func_80018300(arg1)` (src/main/87A0.c:174),
+   the distance-constraint pass over a chain of 64-byte nodes described above it.
 
-It is not a camera runner, and no `cpu_check_run_attack` exists: that name now
-sits on `func_80018300`.
+It is not a camera runner. The function once named `cpu_check_run_attack`
+is `func_80018300` (step 4); the reset wave retired that name.
 
 ## `func_80046BF4`: the view transform (once `replay_camera_rob_back_win_near`)
 
-`func_80046BF4(a0, a1, a2)` (src/main/368E4.c:448) runs once per frame:
+`func_80046BF4(a0, a1, a2)` (src/main/368E4.c:448) sets up the frame's view and draw state:
 
 1. Resets the draw queue cursor and the OT pointers (`D_800A3808`,
    `D_800A378C`) and increments `D_800A38D6`.
@@ -113,8 +114,11 @@ sits on `func_80018300`.
 
 The two other "rob back" names sit on unrelated code: `func_80035618`
 (src/main/25C38.c:96, once `replay_camera_rob_back_loose2`) is a switch on its
-argument (0..7) that sets the state `D_800A3740` and calls `func_80077984`,
-`func_800784E4` or `func_80077A80` with the buffer address 0x80118800;
+argument (0..7) that sets the state `D_800A3740` and, by case, calls
+`func_800784E4`, `func_80077984` and `func_80077A80` (each with the buffer
+address 0x80118800), `snd_SerialMixOn`, `cdrom_StartAudioEntry`,
+`func_80077A28`, `func_8003ACB8`, `func_80077940`, `func_8005C650` and
+`func_800355E8`;
 `math_RotMatrixYXZ` (src/main/32D04.c:268, once
 `replay_camera_rob_back_loose3`) builds a rotation matrix from three angles.
 
@@ -149,7 +153,7 @@ It returns as soon as the CD is idle; the game's frame loop is `main`.
 
 ## Status
 
-Every function named on this page is C (the decompilation queue is empty).
-The old "mode interactions" note credited the transitions to
-`md_game_check_change_main_mode_default` / `_katinuki`; those addresses are
-Sony's `_SsInit` and `SpuClearReverbWorkArea`, so that note is withdrawn.
+Every function named on this page is C. `_SsInit` (0x80083A48, once
+`md_game_check_change_main_mode_default`) and `SpuClearReverbWorkArea`
+(0x8008A928, once `md_game_check_change_main_mode_katinuki`) are Sony library
+code, not mode-transition logic.
