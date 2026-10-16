@@ -3459,50 +3459,35 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
             }
             func_800324D0(s0);
             {
-                s32 kind2 = s0->unk_6A;
-                /* FAKE: redundant mask of the u16 state code, reproduces the
-                 * target's andi; without it score 6 */
-                s32 v1k = kind2 & 0xFFFF;
-                if (v1k == 9) {
+                u16 state = s0->unk_6A;
+
+                if (state == 9) {
                     s0->unk_152 = 1;
                     s0->unk_154 = s0->unk_1C8.vy;
-                    goto end;
+                } else if (state == 2) {
+                    if (s0->unk_152 == 0 && s0->unk_6C != 0x13) {
+                        s0->unk_154 = s0->unk_1D8;
+                    }
+                    s0->unk_152 = 0;
+                } else if (state == 0x19 || state == 0x1A) {
+                    if (s0->unk_152 == 0 ||
+                        (state == 0x19 && s0->unk_6C == state)) {
+                        s0->unk_154 = s0->unk_1D8;
+                    }
+                    s0->unk_152 = 1;
+                } else if (state == 0x11) {
+                    s0->unk_152 = 1;
+                } else {
+                    s0->unk_152 = 0;
                 }
-                if (v1k == 2) {
-                    if ((s0->unk_152) != 0)
-                        goto clear_152;
-                    if ((s0->unk_6C) == 0x13)
-                        goto clear_152;
-                    s0->unk_154 = s0->unk_1D8;
-                    goto clear_152;
+            }
+            {
+                u16 v1f = s0->unk_6A;
+                if ((((v1f == 2) || (v1f == 0x1B)) || (v1f == 0x28)) ||
+                    (v1f == 0x26)) {
+                    s0->unk_AF = ((s0->unk_B0) & 0xF) != 5;
                 }
-                if (((u32)(kind2 - 0x19)) >= 2U)
-                    goto not_in_range;
-                if ((s0->unk_152) == 0)
-                    goto set_154;
-                if (v1k != 0x19)
-                    goto set_152;
-                if ((s0->unk_6C) != v1k)
-                    goto set_152;
-            set_154:
-                s0->unk_154 = s0->unk_1D8;
-                goto set_152;
-            not_in_range:
-                if (v1k != 0x11)
-                    goto clear_152;
-            set_152:
-                s0->unk_152 = 1;
-                goto end;
-            clear_152:
-                s0->unk_152 = 0;
             }
-        end: {
-            u16 v1f = s0->unk_6A;
-            if ((((v1f == 2) || (v1f == 0x1B)) || (v1f == 0x28)) ||
-                (v1f == 0x26)) {
-                s0->unk_AF = ((s0->unk_B0) & 0xF) != 5;
-            }
-        }
         }
     }
 }
