@@ -18,7 +18,7 @@ glabel func_8004659C
     /* 36DD8 800465D8 00000000 */  nop
     /* 36DDC 800465DC 22004010 */  beqz       $v0, .L80046668
     /* 36DE0 800465E0 00000000 */   nop
-    /* 36DE4 800465E4 E815010C */  jal        func_800457A0
+    /* 36DE4 800465E4 E815010C */  jal        arena_GetBlockAddr
     /* 36DE8 800465E8 07000424 */   addiu     $a0, $zero, 0x7
     /* 36DEC 800465EC 21804000 */  addu       $s0, $v0, $zero
     /* 36DF0 800465F0 04004224 */  addiu      $v0, $v0, 0x4

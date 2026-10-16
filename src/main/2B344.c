@@ -696,7 +696,7 @@ void func_8003BFC4(void) {
     func_800415C4(0);
     func_800415C4(1);
     eff_ClearInitFlag();
-    v = func_80045814();
+    v = arena_GetBase();
     func_80037540(v, (s32)0x80118000, 1, 0xCF8, 0xB01);
     func_80046B44();
     D_800A3834 = 8;
@@ -1181,7 +1181,7 @@ void func_8003CF84(void) {
     D_800A37B8 = D_800A37B8 + 1;
 }
 
-void func_8003D2C4(void) { LoadImage(&D_800A3220, &D_80090178); }
+void font_LoadImage(void) { LoadImage(&D_800A3220, &D_80090178); }
 
 extern s32 D_800A3218;
 extern s32 D_800A321C;
@@ -1196,7 +1196,7 @@ static s32 D_800A336C;
 static s32 D_800A3370;
 static s32 D_800A3374;
 
-void func_8003D2F4(void) {
+void font_BeginFrame(void) {
     s32 v0;
     s32 v1;
     D_800A3364 = 0xF0F0F0;
@@ -1211,7 +1211,7 @@ void func_8003D2F4(void) {
     }
 }
 
-void func_8003D330(void) {
+void font_AddTpage(void) {
     DR_TPAGE *p = &D_800A3D30[D_800A3218];
     OTag *ot;
     setlen(p, 1);
@@ -1223,7 +1223,7 @@ void func_8003D330(void) {
 
 extern SPRT_8 D_800A3930[2][32];
 
-void func_8003D39C(s32 x, s32 y, s32 arg2, s32 arg3) {
+void font_DrawChar(s32 x, s32 y, s32 arg2, s32 arg3) {
     s32 n = D_800A3358;
     SPRT_8 *p;
     OTag *ot;
@@ -1245,7 +1245,7 @@ void func_8003D39C(s32 x, s32 y, s32 arg2, s32 arg3) {
     ot->addr = (u32)p;
 }
 
-void func_8003D478(s32 x, s32 y, u8 *str, s32 arg3) {
+void font_DrawString(s32 x, s32 y, u8 *str, s32 arg3) {
     s32 var_0;
     s32 start_x = x;
 
@@ -1261,7 +1261,7 @@ void func_8003D478(s32 x, s32 y, u8 *str, s32 arg3) {
             y += 8;
             goto next_char;
         } else {
-            func_8003D39C(x, y, var_0, arg3);
+            font_DrawChar(x, y, var_0, arg3);
         }
         x += 8;
     next_char:
@@ -1273,7 +1273,7 @@ typedef char *va_list;
 #define va_start(ap, last) ((ap) = (va_list)(&(last) + 1))
 #define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
 
-void func_8003D52C(u8 *arg0, s32 first_arg, ...) {
+void font_Printf(u8 *arg0, s32 first_arg, ...) {
     char buf[0x400];
     char var_1[0x100];
     va_list ap;
@@ -1335,7 +1335,7 @@ void func_8003D52C(u8 *arg0, s32 first_arg, ...) {
                     ((d1 - '0') << 5) | ((d2 - '0') << 13) | ((d3 - '0') << 21);
             }
         } else {
-            func_8003D39C(
+            font_DrawChar(
                 D_800A335C * 8 + 0x10, row * 8 + 0x10, var_6, D_800A3364);
             D_800A335C++;
         }
@@ -2642,7 +2642,7 @@ u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     }
 
     cur = ((u32)cur & 3) ? cur + 2 : cur;
-    func_80045230((s32)cur);
+    arena_UpdatePeak((s32)cur);
     if (*src != 0) {
         func_80052C10(D_80010D8C);
     }

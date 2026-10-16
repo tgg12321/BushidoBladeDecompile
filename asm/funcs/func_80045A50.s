@@ -6,13 +6,13 @@ glabel func_80045A50
     /* 36260 80045A60 916D010C */  jal        func_8005B644
     /* 36264 80045A64 1400B1AF */   sw        $s1, 0x14($sp)
     /* 36268 80045A68 03001126 */  addiu      $s1, $s0, 0x3
-    /* 3626C 80045A6C BC15010C */  jal        func_800456F0
+    /* 3626C 80045A6C BC15010C */  jal        arena_ClearMoveCallback
     /* 36270 80045A70 21202002 */   addu      $a0, $s1, $zero
-    /* 36274 80045A74 BC15010C */  jal        func_800456F0
+    /* 36274 80045A74 BC15010C */  jal        arena_ClearMoveCallback
     /* 36278 80045A78 21200002 */   addu      $a0, $s0, $zero
-    /* 3627C 80045A7C F814010C */  jal        func_800453E0
+    /* 3627C 80045A7C F814010C */  jal        arena_Free
     /* 36280 80045A80 21202002 */   addu      $a0, $s1, $zero
-    /* 36284 80045A84 F814010C */  jal        func_800453E0
+    /* 36284 80045A84 F814010C */  jal        arena_Free
     /* 36288 80045A88 21200002 */   addu      $a0, $s0, $zero
     /* 3628C 80045A8C 1800BF8F */  lw         $ra, 0x18($sp)
     /* 36290 80045A90 1400B18F */  lw         $s1, 0x14($sp)

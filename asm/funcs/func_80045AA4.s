@@ -20,7 +20,7 @@ glabel func_80045AA4
     /* 362E8 80045AE8 21200002 */  addu       $a0, $s0, $zero
     /* 362EC 80045AEC 4010010C */  jal        func_80044100
     /* 362F0 80045AF0 21284002 */   addu      $a1, $s2, $zero
-    /* 362F4 80045AF4 E815010C */  jal        func_800457A0
+    /* 362F4 80045AF4 E815010C */  jal        arena_GetBlockAddr
     /* 362F8 80045AF8 21202002 */   addu      $a0, $s1, $zero
     /* 362FC 80045AFC 21804000 */  addu       $s0, $v0, $zero
     /* 36300 80045B00 12000012 */  beqz       $s0, .L80045B4C

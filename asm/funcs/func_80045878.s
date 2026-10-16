@@ -9,7 +9,7 @@ glabel func_80045878
     /* 36094 80045894 2800BFAF */  sw         $ra, 0x28($sp)
     /* 36098 80045898 1C00B3AF */  sw         $s3, 0x1C($sp)
     /* 3609C 8004589C 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 360A0 800458A0 D315010C */  jal        func_8004574C
+    /* 360A0 800458A0 D315010C */  jal        arena_FindBlock
     /* 360A4 800458A4 1000B0AF */   sw        $s0, 0x10($sp)
     /* 360A8 800458A8 04004010 */  beqz       $v0, .L800458BC
     /* 360AC 800458AC 03005326 */   addiu     $s3, $s2, 0x3
@@ -17,31 +17,31 @@ glabel func_80045878
     /* 360B4 800458B4 3F160108 */  j          .L800458FC
     /* 360B8 800458B8 00000000 */   nop
   .L800458BC:
-    /* 360BC 800458BC 6B15010C */  jal        func_800455AC
+    /* 360BC 800458BC 6B15010C */  jal        arena_OpenBlock
     /* 360C0 800458C0 21204002 */   addu      $a0, $s2, $zero
     /* 360C4 800458C4 21884000 */  addu       $s1, $v0, $zero
     /* 360C8 800458C8 21204002 */  addu       $a0, $s2, $zero
-    /* 360CC 800458CC 8015010C */  jal        func_80045600
+    /* 360CC 800458CC 8015010C */  jal        arena_SetBlockEnd
     /* 360D0 800458D0 881A2526 */   addiu     $a1, $s1, 0x1A88
-    /* 360D4 800458D4 8C14010C */  jal        func_80045230
+    /* 360D4 800458D4 8C14010C */  jal        arena_UpdatePeak
     /* 360D8 800458D8 21200000 */   addu      $a0, $zero, $zero
     /* 360DC 800458DC 0480053C */  lui        $a1, %hi(func_80045AA4)
     /* 360E0 800458E0 A45AA524 */  addiu      $a1, $a1, %lo(func_80045AA4)
-    /* 360E4 800458E4 A515010C */  jal        func_80045694
+    /* 360E4 800458E4 A515010C */  jal        arena_SetMoveCallback
     /* 360E8 800458E8 21204002 */   addu      $a0, $s2, $zero
     /* 360EC 800458EC FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 360F0 800458F0 080022A6 */  sh         $v0, 0x8($s1)
     /* 360F4 800458F4 060020A6 */  sh         $zero, 0x6($s1)
     /* 360F8 800458F8 03005326 */  addiu      $s3, $s2, 0x3
   .L800458FC:
-    /* 360FC 800458FC D315010C */  jal        func_8004574C
+    /* 360FC 800458FC D315010C */  jal        arena_FindBlock
     /* 36100 80045900 21206002 */   addu      $a0, $s3, $zero
     /* 36104 80045904 03004010 */  beqz       $v0, .L80045914
     /* 36108 80045908 00000000 */   nop
     /* 3610C 8004590C 3E00010C */  jal        func_800400F8
     /* 36110 80045910 21202002 */   addu      $a0, $s1, $zero
   .L80045914:
-    /* 36114 80045914 D315010C */  jal        func_8004574C
+    /* 36114 80045914 D315010C */  jal        arena_FindBlock
     /* 36118 80045918 21206002 */   addu      $a0, $s3, $zero
     /* 3611C 8004591C 0B004010 */  beqz       $v0, .L8004594C
     /* 36120 80045920 00000000 */   nop
@@ -57,7 +57,7 @@ glabel func_80045878
     /* 36148 80045948 060020A6 */   sh        $zero, 0x6($s1)
   .L8004594C:
     /* 3614C 8004594C 21206002 */  addu       $a0, $s3, $zero
-    /* 36150 80045950 6B15010C */  jal        func_800455AC
+    /* 36150 80045950 6B15010C */  jal        arena_OpenBlock
     /* 36154 80045954 200034AE */   sw        $s4, 0x20($s1)
     /* 36158 80045958 21804000 */  addu       $s0, $v0, $zero
     /* 3615C 8004595C 06008012 */  beqz       $s4, .L80045978
@@ -80,15 +80,15 @@ glabel func_80045878
     /* 3619C 8004599C 82100200 */  srl        $v0, $v0, 2
     /* 361A0 800459A0 80100200 */  sll        $v0, $v0, 2
     /* 361A4 800459A4 21800202 */  addu       $s0, $s0, $v0
-    /* 361A8 800459A8 8C14010C */  jal        func_80045230
+    /* 361A8 800459A8 8C14010C */  jal        arena_UpdatePeak
     /* 361AC 800459AC 21200002 */   addu      $a0, $s0, $zero
     /* 361B0 800459B0 21206002 */  addu       $a0, $s3, $zero
   .L800459B4:
-    /* 361B4 800459B4 8015010C */  jal        func_80045600
+    /* 361B4 800459B4 8015010C */  jal        arena_SetBlockEnd
     /* 361B8 800459B8 21280002 */   addu      $a1, $s0, $zero
     /* 361BC 800459BC 0480053C */  lui        $a1, %hi(func_80045AA4)
     /* 361C0 800459C0 A45AA524 */  addiu      $a1, $a1, %lo(func_80045AA4)
-    /* 361C4 800459C4 A515010C */  jal        func_80045694
+    /* 361C4 800459C4 A515010C */  jal        arena_SetMoveCallback
     /* 361C8 800459C8 21206002 */   addu      $a0, $s3, $zero
     /* 361CC 800459CC 01000224 */  addiu      $v0, $zero, 0x1
     /* 361D0 800459D0 060022A6 */  sh         $v0, 0x6($s1)

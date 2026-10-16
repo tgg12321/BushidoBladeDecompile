@@ -406,7 +406,7 @@ void func_8001A484(u16 *arg0) {
     p = arg0 + 2;
     do {
         i++;
-        func_8003D52C((s32)&D_800100A4, arg0[0], p[-1], p[0]);
+        font_Printf((s32)&D_800100A4, arg0[0], p[-1], p[0]);
         p += 3;
         arg0 += 3;
     } while (i < 0x16);

@@ -245,11 +245,11 @@ s32 func_80044FA0(s32 a0, s32 a1) {
     s32 v0;
     s32 s0;
 
-    s0 = a1 - (s32)func_80045814();
+    s0 = a1 - (s32)arena_GetBase();
     if (s0 < 0) {
         goto set_from_table;
     }
-    v0 = func_80045808();
+    v0 = arena_GetSize();
     if (s0 >= v0) {
         goto set_from_table;
     }
@@ -258,7 +258,7 @@ s32 func_80044FA0(s32 a0, s32 a1) {
     } else {
         s0 = 0;
     }
-    v0 = func_800457DC();
+    v0 = arena_GetFreeSize();
     if (v0 < s0) {
         printf(D_8001528C, a0, s0 - v0);
         while (1) {
@@ -273,14 +273,15 @@ do_return:
     return s0;
 }
 
-extern s32 func_800457DC(void);
+extern s32 arena_GetFreeSize(void);
 
 s32 func_80045080(s32 a0) {
-    /* FAKE: val reads the length ahead of the func_800457DC call; at its use
-       the lh moves after the call and a0 * 4 is kept in s0 instead (score 9).
+    /* FAKE: val reads the length ahead of the arena_GetFreeSize call; at its
+       use the lh moves after the call and a0 * 4 is kept in s0 instead (score
+       9).
      */
     s32 val = D_800963EC[a0].length_sectors << 11;
-    return func_800457DC() - val;
+    return arena_GetFreeSize() - val;
 }
 
 /* Q65: this file's statics (.sbss), in address order. */
@@ -347,7 +348,7 @@ void func_800451D0(void) {
     func_80049E1C();
 }
 
-void func_80045230(s32 a0) {
+void arena_UpdatePeak(s32 a0) {
     s32 v1;
     if (!a0) {
         a0 = D_800A33A0;
@@ -363,7 +364,7 @@ void func_80045230(s32 a0) {
     }
 }
 
-void func_80045294(s32 a0, s32 a1) {
+void arena_ShiftBlocks(s32 a0, s32 a1) {
     s32 sum;
     s32 i;
     s32 src;
@@ -392,16 +393,16 @@ void func_80045294(s32 a0, s32 a1) {
 }
 
 /* Remove the table entry whose id == a0: undo its contribution via
-   func_80045294(index + 1, -amt), shift the following records down one slot,
-   clear the freed tail slot, decrement the count. */
-void func_800453E0(s32 a0) {
+   arena_ShiftBlocks(index + 1, -amt), shift the following records down one
+   slot, clear the freed tail slot, decrement the count. */
+void arena_Free(s32 a0) {
     s32 i;
     s32 j;
     s32 last;
 
     for (i = 0; i < D_800A33AC; i++) {
         if (D_800EED10[i].id == a0) {
-            func_80045294(i + 1, -D_800EED10[i].amt);
+            arena_ShiftBlocks(i + 1, -D_800EED10[i].amt);
             if (i < D_800A33AC - 1) {
                 for (j = i + 1; j < D_800A33AC; j++) {
                     D_800EED10[j - 1] = D_800EED10[j];
@@ -416,7 +417,7 @@ void func_800453E0(s32 a0) {
     }
 }
 
-void func_80045510(s32 a0, s32 a1) {
+void arena_Resize(s32 a0, s32 a1) {
     s32 i;
     s32 diff;
 
@@ -425,19 +426,19 @@ void func_80045510(s32 a0, s32 a1) {
             diff = a1 - D_800EED10[i].amt;
             if (diff == 0)
                 return;
-            func_80045294(i + 1, diff);
+            arena_ShiftBlocks(i + 1, diff);
             D_800EED10[i].amt = a1;
             return;
         }
     }
 }
 
-s32 *func_800455AC(s32 a0) {
+s32 *arena_OpenBlock(s32 a0) {
     Unk800EED10Entry *e;
     s32 idx;
     s32 ret;
 
-    func_800453E0(a0);
+    arena_Free(a0);
     idx = D_800A33AC;
     e = &D_800EED10[idx];
     D_800A33AC = idx + 1;
@@ -448,7 +449,7 @@ s32 *func_800455AC(s32 a0) {
     return (s32 *)ret;
 }
 
-void func_80045600(s32 a0, s32 a1) {
+void arena_SetBlockEnd(s32 a0, s32 a1) {
     s32 i = 0;
     s32 count = D_800A33AC;
     Unk800EED10Entry *e;
@@ -484,7 +485,7 @@ not_found:
     func_80052C10();
 }
 
-void func_80045694(s32 a0, s32 a1) {
+void arena_SetMoveCallback(s32 a0, s32 a1) {
     s32 i;
     s32 count = D_800A33AC;
     for (i = 0; i < count; i++) {
@@ -495,7 +496,7 @@ void func_80045694(s32 a0, s32 a1) {
     }
 }
 
-void func_800456F0(s32 a0) {
+void arena_ClearMoveCallback(s32 a0) {
     s32 i;
     s32 count = D_800A33AC;
     for (i = 0; i < count; i++) {
@@ -506,7 +507,7 @@ void func_800456F0(s32 a0) {
     }
 }
 
-s32 *func_8004574C(s32 arg0) {
+s32 *arena_FindBlock(s32 arg0) {
     s32 i;
     s32 count = D_800A33AC;
     for (i = 0; i < count; i++) {
@@ -517,8 +518,8 @@ s32 *func_8004574C(s32 arg0) {
     return NULL;
 }
 
-s32 func_800457A0(s32 a0) {
-    s32 *v0 = func_8004574C(a0);
+s32 arena_GetBlockAddr(s32 a0) {
+    s32 *v0 = arena_FindBlock(a0);
     if (v0) {
         return v0[1];
     }
@@ -527,18 +528,18 @@ s32 func_800457A0(s32 a0) {
 
 void func_800457D4(void) {}
 
-s32 func_800457DC(void) { return D_800A33A4; }
+s32 arena_GetFreeSize(void) { return D_800A33A4; }
 
-s32 func_800457E8(void) { return 0x45000 - D_800A33A8; }
+s32 arena_GetMinFree(void) { return 0x45000 - D_800A33A8; }
 
-s32 func_800457FC(void) { return D_800A33A0; }
+s32 arena_GetFreePtr(void) { return D_800A33A0; }
 
-s32 func_80045808(void) { return 0x45000; }
+s32 arena_GetSize(void) { return 0x45000; }
 
-void *func_80045814(void) { return &D_800A9D10; }
+void *arena_GetBase(void) { return &D_800A9D10; }
 
-void func_80045824(s32 a0, s32 a1, s32 a2) {
-    func_80045230(a1 + a2);
+void arena_Copy(s32 a0, s32 a1, s32 a2) {
+    arena_UpdatePeak(a1 + a2);
     func_800520B8(a0, a1, a2);
 }
 
@@ -550,37 +551,37 @@ Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
     s32 *v0;
     Unk80045878Obj *s1;
     s32 s0;
-    v0 = func_8004574C(a0);
+    v0 = arena_FindBlock(a0);
     if (v0 != 0) {
         s1 = (Unk80045878Obj *)v0[1];
     } else {
-        s1 = (Unk80045878Obj *)func_800455AC(a0);
-        func_80045600(a0, sizeof(Unk80045878Obj) + ((s32)s1));
-        func_80045230(0);
-        func_80045694(a0, (s32)(&func_80045AA4));
+        s1 = (Unk80045878Obj *)arena_OpenBlock(a0);
+        arena_SetBlockEnd(a0, sizeof(Unk80045878Obj) + ((s32)s1));
+        arena_UpdatePeak(0);
+        arena_SetMoveCallback(a0, (s32)(&func_80045AA4));
         s1->unk_08 = -1;
         s1->unk_06 = 0;
     }
     s3 = a0 + 3;
-    if (func_8004574C(s3) != 0) {
+    if (arena_FindBlock(s3) != 0) {
         func_800400F8(s1);
     }
-    if (((func_8004574C(s3) != 0) && (s1->unk_08 == a1)) &&
+    if (((arena_FindBlock(s3) != 0) && (s1->unk_08 == a1)) &&
         (s1->unk_06 != (-2))) {
         s1->unk_06 = 0;
     } else {
         s1->unk_20 = a2;
-        s0 = (s32)func_800455AC(s3);
+        s0 = (s32)arena_OpenBlock(s3);
         s1->unk_1C = s0;
         if (a2 != 0) {
             func_80044ED8(a1, a2);
         } else {
             func_80044ED8(a1, s0);
             s0 = s0 + ((((u32)((s32 *)s0)[*((s32 *)s0)]) >> 2) << 2);
-            func_80045230(s0);
+            arena_UpdatePeak(s0);
         }
-        func_80045600(s3, s0);
-        func_80045694(s3, (s32)(&func_80045AA4));
+        arena_SetBlockEnd(s3, s0);
+        arena_SetMoveCallback(s3, (s32)(&func_80045AA4));
         s1->unk_06 = 1;
         s1->unk_24 = 0;
         s1->unk_00.word = 0;
@@ -595,19 +596,19 @@ Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
 }
 
 void func_80045A28(s32 a0, s32 a1) {
-    func_80045510(a0 + 3, a1);
-    func_80045230(0);
+    arena_Resize(a0 + 3, a1);
+    arena_UpdatePeak(0);
 }
 
-extern void func_800456F0(s32);
+extern void arena_ClearMoveCallback(s32);
 
 void func_80045A50(s32 a0) {
     s32 a0p3 = a0 + 3;
     func_8005B644(a0);
-    func_800456F0(a0p3);
-    func_800456F0(a0);
-    func_800453E0(a0p3);
-    func_800453E0(a0);
+    arena_ClearMoveCallback(a0p3);
+    arena_ClearMoveCallback(a0);
+    arena_Free(a0p3);
+    arena_Free(a0);
 }
 
 /* Not the definition's spelling: snd_VabFakeOpen takes an s16 second
@@ -625,7 +626,7 @@ void func_80045AA4(s32 a0, s32 a1) {
     idx = a0 - 3;
     func_80044100(idx, a1);
     func_80044100(a0, a1);
-    ptr = (Unk80045878Obj *)func_800457A0(idx);
+    ptr = (Unk80045878Obj *)arena_GetBlockAddr(idx);
     if (ptr == 0)
         return;
     ptr->unk_1C = ptr->unk_1C + a1;
@@ -659,7 +660,7 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     u16 t;
     s32 *dst;
 
-    p = func_800455AC(6);
+    p = arena_OpenBlock(6);
     if (arg3 != 0) {
         var_3 = (s32 *)arg3;
     } else {
@@ -741,7 +742,7 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         var_6 = func_8004428C((s32 *)last, sp18);
         func_80044010((s32 *)last, 6);
     }
-    func_80045230(var_6);
+    arena_UpdatePeak(var_6);
 
     q = sp18;
     y = 0;
@@ -771,16 +772,16 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     if (prev != 0) {
         *p = var_6 - (s32)p;
         var_6 = func_80049C24(prev, var_6);
-        func_80045230(var_6);
+        arena_UpdatePeak(var_6);
     } else {
         *p = 0;
     }
-    func_80045600(6, var_6);
-    func_80045694(6, (s32)&func_80046048);
+    arena_SetBlockEnd(6, var_6);
+    arena_SetMoveCallback(6, (s32)&func_80046048);
 }
 
 void func_80046020(void) {
-    func_800453E0(6);
+    arena_Free(6);
     func_8005B6AC();
 }
 
@@ -788,7 +789,7 @@ void func_80046048(s32 a0, s32 a1) {
     s32 *s0;
     s32 count;
     func_80044100(6, a1);
-    s0 = (s32 *)func_800457A0(6);
+    s0 = (s32 *)arena_GetBlockAddr(6);
     if (s0 == NULL) {
         return;
     }

@@ -333,7 +333,7 @@ def print_invocation_hint(func: str, src_path: Path | None) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--func", help="function name, e.g. func_80045294")
+    ap.add_argument("--func", help="function name, e.g. arena_ShiftBlocks")
     ap.add_argument("--hint", help="hint slug; --list-hints to see catalog")
     ap.add_argument(
         "--list-hints",

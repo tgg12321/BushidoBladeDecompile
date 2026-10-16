@@ -1,7 +1,7 @@
 glabel func_80046914
     /* 37114 80046914 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 37118 80046918 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 3711C 8004691C F814010C */  jal        func_800453E0
+    /* 3711C 8004691C F814010C */  jal        arena_Free
     /* 37120 80046920 08000424 */   addiu     $a0, $zero, 0x8
     /* 37124 80046924 1000BF8F */  lw         $ra, 0x10($sp)
     /* 37128 80046928 1800BD27 */  addiu      $sp, $sp, 0x18

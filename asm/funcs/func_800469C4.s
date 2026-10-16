@@ -5,7 +5,7 @@ glabel func_800469C4
     /* 371D0 800469D0 0A000424 */  addiu      $a0, $zero, 0xA
     /* 371D4 800469D4 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 371D8 800469D8 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 371DC 800469DC 6B15010C */  jal        func_800455AC
+    /* 371DC 800469DC 6B15010C */  jal        arena_OpenBlock
     /* 371E0 800469E0 1000B0AF */   sw        $s0, 0x10($sp)
     /* 371E4 800469E4 21204002 */  addu       $a0, $s2, $zero
     /* 371E8 800469E8 21884000 */  addu       $s1, $v0, $zero
@@ -20,15 +20,15 @@ glabel func_800469C4
     /* 3720C 80046A0C 82801000 */  srl        $s0, $s0, 2
     /* 37210 80046A10 80801000 */  sll        $s0, $s0, 2
     /* 37214 80046A14 21803002 */  addu       $s0, $s1, $s0
-    /* 37218 80046A18 8C14010C */  jal        func_80045230
+    /* 37218 80046A18 8C14010C */  jal        arena_UpdatePeak
     /* 3721C 80046A1C 21200002 */   addu      $a0, $s0, $zero
     /* 37220 80046A20 0A000424 */  addiu      $a0, $zero, 0xA
-    /* 37224 80046A24 8015010C */  jal        func_80045600
+    /* 37224 80046A24 8015010C */  jal        arena_SetBlockEnd
     /* 37228 80046A28 21280002 */   addu      $a1, $s0, $zero
     /* 3722C 80046A2C 0480053C */  lui        $a1, %hi(func_80046A80)
     /* 37230 80046A30 806AA524 */  addiu      $a1, $a1, %lo(func_80046A80)
     /* 37234 80046A34 7E0192A7 */  sh         $s2, %gp_rel(D_800A324A)($gp)
-    /* 37238 80046A38 A515010C */  jal        func_80045694
+    /* 37238 80046A38 A515010C */  jal        arena_SetMoveCallback
     /* 3723C 80046A3C 0A000424 */   addiu     $a0, $zero, 0xA
     /* 37240 80046A40 21102002 */  addu       $v0, $s1, $zero
     /* 37244 80046A44 1C00BF8F */  lw         $ra, 0x1C($sp)

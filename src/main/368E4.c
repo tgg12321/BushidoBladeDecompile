@@ -44,7 +44,7 @@ void func_800460E4(s32 arg0, s32 arg1) {
     s32 *var_7;
     s32 *sp10, *sp18, *sp20;
 
-    s0 = (s32 *)func_800457A0(7);
+    s0 = (s32 *)arena_GetBlockAddr(7);
     if (s0 != NULL) {
         if (D_80099478 == arg0) {
             s7 = 1;
@@ -73,10 +73,11 @@ void func_800460E4(s32 arg0, s32 arg1) {
 
     D_80099478 = (s16)arg0;
     /* FAKE: s7 (the early-return flag above) reused as slot id 7 for
-     * func_80045600 / func_80045694; the literal or a separate local scores 37.
+     * arena_SetBlockEnd / arena_SetMoveCallback; the literal or a separate
+     * local scores 37.
      */
     s7 = 7;
-    s0 = func_800455AC(7);
+    s0 = arena_OpenBlock(7);
 
     if (arg1 != 0) {
         func_80044F30(arg0, arg1);
@@ -88,7 +89,7 @@ void func_800460E4(s32 arg0, s32 arg1) {
         /* FAKE: s3 (the slot buffer's word count) reused for arg1's word count;
          * a separate local or the inline read scores 2. */
         s3 = *(s32 *)arg1;
-        func_80045824(arg1, (s32)s0, ((s32 *)arg1)[s3]);
+        arena_Copy(arg1, (s32)s0, ((s32 *)arg1)[s3]);
     }
 
     {
@@ -113,7 +114,7 @@ void func_800460E4(s32 arg0, s32 arg1) {
                 var_7 = s2;
                 {
                     s32 off3 = ALIGN4(a0_ptr[1]);
-                    func_80045230(PTR_OFF(s0, off3));
+                    arena_UpdatePeak(PTR_OFF(s0, off3));
                 }
             }
         }
@@ -169,8 +170,8 @@ void func_800460E4(s32 arg0, s32 arg1) {
     D_800A33B0 = (s32)sp18;
     D_800A33B4 = (s32)sp20;
     DrawSync(0);
-    func_80045600(s7, (s32)s1);
-    func_80045694(s7, (s32)func_800466C0);
+    arena_SetBlockEnd(s7, (s32)s1);
+    arena_SetMoveCallback(s7, (s32)func_800466C0);
     func_8003F168();
     if (D_800A38DC != 0) {
         if (arg0 != 0x22) {
@@ -188,7 +189,7 @@ void func_800464C4(void) {
     if (D_8009947A == 0) {
         return;
     }
-    s0 = (s32 *)func_800457A0(7);
+    s0 = (s32 *)arena_GetBlockAddr(7);
     v0 = ((u32)s0[1] >> 2) << 2;
     a0 = (s32 *)((u8 *)s0 + v0);
     switch (D_80099478) {
@@ -204,7 +205,7 @@ void func_800464C4(void) {
     }
     func_80044010(a0, 7);
     func_8003EDC0((u16 *)s1, 7);
-    func_80045510(7, (s32)((u8 *)s1 - (u8 *)s0));
+    arena_Resize(7, (s32)((u8 *)s1 - (u8 *)s0));
     D_8009947A = 0;
 }
 
@@ -223,7 +224,7 @@ void func_8004659C(s32 a0) {
     if (D_8009947A == 0) {
         return;
     }
-    v0 = func_800457A0(7);
+    v0 = arena_GetBlockAddr(7);
     s0 = (s32 *)v0;
     v0 += 4;
     v0 = v0 + a0 * 20;
@@ -244,7 +245,7 @@ void func_8004659C(s32 a0) {
 }
 
 void func_8004668C(void) {
-    func_800453E0(7);
+    arena_Free(7);
     D_80099478 = -1;
     D_8009947A = 0;
 }
@@ -324,13 +325,13 @@ s32 *func_800467B8(s32 a0) {
         arg = arg + 0x1B;
     }
     {
-        s32 *a1 = func_8004574C(8);
+        s32 *a1 = arena_FindBlock(8);
         if (a1 && D_800A3248 == arg) {
             s2 = (s32 *)a1[1];
         } else {
             s32 *s1;
             s32 *s0;
-            s2 = func_800455AC(var_1);
+            s2 = arena_OpenBlock(var_1);
             func_80044F80(arg, (s32)s2);
             {
                 s32 off1 = (u32)s2[2] >> 2 << 2;
@@ -338,19 +339,19 @@ s32 *func_800467B8(s32 a0) {
                 s1 = (s32 *)((u8 *)s2 + off1);
                 s0 = (s32 *)((u8 *)s2 + off0);
             }
-            func_80045230((s32)s1);
+            arena_UpdatePeak((s32)s1);
             func_80044010(s0, 9);
-            func_80045600(var_1, (s32)s1);
+            arena_SetBlockEnd(var_1, (s32)s1);
             D_800A3248 = arg;
         }
     }
-    func_80045694(var_1, (s32)func_800468DC);
+    arena_SetMoveCallback(var_1, (s32)func_800468DC);
     return s2;
 }
 
 void func_800468B0(s32 a0) {
-    func_80045510(8, a0);
-    func_80045230(0);
+    arena_Resize(8, a0);
+    arena_UpdatePeak(0);
 }
 
 void func_800468DC(s32 a0, s32 a1) {
@@ -358,19 +359,19 @@ void func_800468DC(s32 a0, s32 a1) {
     func_80044100(9, a1);
 }
 
-void func_80046914(void) { func_800453E0(8); }
+void func_80046914(void) { arena_Free(8); }
 
-void snd_AllocSe(void) { func_800455AC(9); }
+void snd_AllocSe(void) { arena_OpenBlock(9); }
 
 void func_80046954(void) {}
 
 void func_8004695C(s32 a0) {
-    func_80045230(a0);
-    func_80045600(9, a0);
-    func_80045694(9, (s32)func_80046954);
+    arena_UpdatePeak(a0);
+    arena_SetBlockEnd(9, a0);
+    arena_SetMoveCallback(9, (s32)func_80046954);
 }
 
-void func_800469A0(s32 a0) { func_80045510(9, a0); }
+void func_800469A0(s32 a0) { arena_Resize(9, a0); }
 
 void func_80046A80(s32, s32);
 
@@ -378,20 +379,20 @@ s32 *func_800469C4(s32 a0) {
     s32 *v0;
     s32 offset;
 
-    v0 = func_800455AC(0xA);
+    v0 = arena_OpenBlock(0xA);
     func_80044FA0(a0, (s32)v0);
     offset = (u32)v0[v0[0] + 1] >> 2 << 2;
     {
         s32 *s0 = (s32 *)((u8 *)v0 + offset);
-        func_80045230((s32)s0);
-        func_80045600(0xA, (s32)s0);
+        arena_UpdatePeak((s32)s0);
+        arena_SetBlockEnd(0xA, (s32)s0);
     }
     D_800A324A = (s16)a0;
-    func_80045694(0xA, (s32)func_80046A80);
+    arena_SetMoveCallback(0xA, (s32)func_80046A80);
     return v0;
 }
 
-void func_80046A60(void) { func_800453E0(0xA); }
+void func_80046A60(void) { arena_Free(0xA); }
 
 void func_80046A80(s32 a0, s32 a1) { func_80054FDC(a1); }
 
@@ -2253,7 +2254,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
             func_800520B8(var_s6, var_s1, var_s4);
             a0_arg = var_s1 + var_s4;
         }
-        func_80045230(a0_arg);
+        arena_UpdatePeak(a0_arg);
         var_s1 += func_8005C2A8((Unk8005C2A8Pack *)var_s1, 2, var_s7);
     }
 
@@ -2266,7 +2267,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
             func_800520B8(var_s6, var_s1, var_s4);
             a0_arg = var_s1 + var_s4;
         }
-        func_80045230(a0_arg);
+        arena_UpdatePeak(a0_arg);
         var_s1 += func_8005C2A8((Unk8005C2A8Pack *)var_s1, 5, var_s7);
     }
     return var_s1;

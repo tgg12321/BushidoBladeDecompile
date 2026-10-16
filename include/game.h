@@ -787,8 +787,8 @@ typedef struct Unk80104E88Rec {
 } Unk80104E88Rec; /* sizeof == 0x2C */
 
 /* The 10-entry block table over the 0x45000-byte buffer at D_800A9D10
- * (func_800451D0 .. func_8004574C; D_800A33AC live entries). func_800451D0
- * clears id in all 10. func_80045294(a0, a1) hands func_800520B8 entry a0's
+ * (func_800451D0 .. arena_FindBlock; D_800A33AC live entries). func_800451D0
+ * clears id in all 10. arena_ShiftBlocks(a0, a1) hands func_800520B8 entry a0's
  * unk4, unk4 + a1 and the summed amt of entries a0.., then adds a1 to their
  * unk4 and calls each fn(id, a1). */
 typedef struct {
@@ -1941,8 +1941,8 @@ typedef struct {
 } Unk80094B96Rec;
 
 /* The per-player model object func_80045878 builds (0x1A88 bytes, its
- * func_80045600 block) and D_800A9A10[] / func_8004153C hand out. The header
- * (0x00..0x2B) is followed by three arrays of 0x68-byte transform nodes
+ * arena_SetBlockEnd block) and D_800A9A10[] / func_8004153C hand out. The
+ * header (0x00..0x2B) is followed by three arrays of 0x68-byte transform nodes
  * (func_80041430 rebases them as 0x15, 0x14 and 0x14 records), then three
  * 20-entry pointer tables.
  * - unk_00: flag word; func_80040594 sets bit 1 and keeps the character id in

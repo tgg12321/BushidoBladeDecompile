@@ -1,7 +1,7 @@
 glabel func_8004668C
     /* 36E8C 8004668C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 36E90 80046690 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 36E94 80046694 F814010C */  jal        func_800453E0
+    /* 36E94 80046694 F814010C */  jal        arena_Free
     /* 36E98 80046698 07000424 */   addiu     $a0, $zero, 0x7
     /* 36E9C 8004669C FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 36EA0 800466A0 0A80013C */  lui        $at, %hi(D_80099478)

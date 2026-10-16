@@ -1,0 +1,5 @@
+glabel arena_GetSize
+    /* 36008 80045808 0400023C */  lui        $v0, (0x45000 >> 16)
+    /* 3600C 8004580C 0800E003 */  jr         $ra
+    /* 36010 80045810 00504234 */   ori       $v0, $v0, (0x45000 & 0xFFFF)
+endlabel arena_GetSize

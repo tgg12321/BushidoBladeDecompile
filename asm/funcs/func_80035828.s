@@ -40,7 +40,7 @@ glabel func_80035828
     /* 260B8 800358B8 08004000 */  jr         $v0
     /* 260BC 800358BC 00000000 */   nop
   jlabel .L800358C0
-    /* 260C0 800358C0 4FD5000C */  jal        func_8003553C
+    /* 260C0 800358C0 4FD5000C */  jal        gpu_AddScreenGradient
     /* 260C4 800358C4 00000000 */   nop
     /* 260C8 800358C8 03E2000C */  jal        func_8003880C
     /* 260CC 800358CC 00000000 */   nop
@@ -53,7 +53,7 @@ glabel func_80035828
     /* 260E8 800358E8 67D70008 */  j          .L80035D9C
     /* 260EC 800358EC 00000000 */   nop
   jlabel .L800358F0
-    /* 260F0 800358F0 4FD5000C */  jal        func_8003553C
+    /* 260F0 800358F0 4FD5000C */  jal        gpu_AddScreenGradient
     /* 260F4 800358F4 00000000 */   nop
     /* 260F8 800358F8 2AE2000C */  jal        func_800388A8
     /* 260FC 800358FC 00000000 */   nop
@@ -72,7 +72,7 @@ glabel func_80035828
     /* 2612C 8003592C 67D70008 */  j          .L80035D9C
     /* 26130 80035930 00000000 */   nop
   jlabel .L80035934
-    /* 26134 80035934 4FD5000C */  jal        func_8003553C
+    /* 26134 80035934 4FD5000C */  jal        gpu_AddScreenGradient
     /* 26138 80035938 00000000 */   nop
     /* 2613C 8003593C 62E2000C */  jal        func_80038988
     /* 26140 80035940 00000000 */   nop

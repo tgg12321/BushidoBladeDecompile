@@ -45,7 +45,7 @@ s32 func_8007352C(Unk8007352CRec *env) {
             SetSemiTrans((s32)sp, env->semi);
             if (env->ot_idx >= 0x1006) {
                 env->ot_idx = 1;
-                ((void (*)())func_8003D52C)(D_800159A0);
+                ((void (*)())font_Printf)(D_800159A0);
             }
             AddPrim(g_gpu_ot_ptr + env->ot_idx, sp);
             sp++;

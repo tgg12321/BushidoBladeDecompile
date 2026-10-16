@@ -53,7 +53,7 @@ void func_80035480(void) {
     gpu_SetDispMaskOn();
 }
 
-void func_8003553C(void) {
+void gpu_AddScreenGradient(void) {
     POLY_G4 *g;
 
     g = (POLY_G4 *)g_prim_buf_cursor;
@@ -188,7 +188,7 @@ void func_80035618(s32 arg0) {
 /* Merged section (Q65: one original file). */
 extern u8 D_800A31D9;
 extern void func_80035618(s32);
-extern void func_8003553C(void);
+extern void gpu_AddScreenGradient(void);
 extern void func_80035438(void);
 extern void func_800355E8(void);
 
@@ -207,7 +207,7 @@ void func_80035828(void) {
     }
     switch (D_800A3740) {
     case 7:
-        func_8003553C();
+        gpu_AddScreenGradient();
         ret = func_8003880C();
         if (ret == 1) {
             D_800A3740 = 8;
@@ -218,7 +218,7 @@ void func_80035828(void) {
         }
         break;
     case 8:
-        func_8003553C();
+        gpu_AddScreenGradient();
         ret = func_800388A8();
         if (ret == 1) {
             D_800A3740 = 9;
@@ -229,7 +229,7 @@ void func_80035828(void) {
         }
         break;
     case 9:
-        func_8003553C();
+        gpu_AddScreenGradient();
         if (func_80038988() != 0) {
             func_80035438();
         }
@@ -406,7 +406,7 @@ void func_80035DC8(void) {
 
 void func_80035E38(void) {
     D_800A36F1 = 1;
-    func_8003553C();
+    gpu_AddScreenGradient();
     if (func_80038C70() != 0) {
         D_800A3834 = 8;
         D_800A36F1 = 2;

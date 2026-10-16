@@ -295,7 +295,7 @@ void func_80016D78(void) {
     D_800A3906 = 0;
     snd_InitAndLoadCommonVab();
     pad_ResetStateMarkValid();
-    func_8003D2C4();
+    font_LoadImage();
     func_8001C444();
     D_800A36F9 = 0;
     D_800A3690 = 0;
@@ -454,7 +454,7 @@ loop:
     g_gpu_ot_ptr = var_2;
     g_prim_buf_cursor = (u32 *)tbl[idx];
     func_80060E04(idx);
-    func_8003D2F4();
+    font_BeginFrame();
     func_80019568(var_3);
     func_80036940();
     func_8005C6D0();
@@ -468,7 +468,7 @@ loop:
     }
 
     D_8008D090[D_800A3834]();
-    func_8003D330();
+    font_AddTpage();
 
     do {
         if (GetRCnt(0xF2000001u) >= ((D_800A36F1 - 1) << 8) + 0x80)

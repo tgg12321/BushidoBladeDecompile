@@ -6,7 +6,7 @@ glabel func_800464C4
     /* 36CD4 800464D4 1400B1AF */  sw         $s1, 0x14($sp)
     /* 36CD8 800464D8 2A004010 */  beqz       $v0, .L80046584
     /* 36CDC 800464DC 1000B0AF */   sw        $s0, 0x10($sp)
-    /* 36CE0 800464E0 E815010C */  jal        func_800457A0
+    /* 36CE0 800464E0 E815010C */  jal        arena_GetBlockAddr
     /* 36CE4 800464E4 07000424 */   addiu     $a0, $zero, 0x7
     /* 36CE8 800464E8 21804000 */  addu       $s0, $v0, $zero
     /* 36CEC 800464EC 0400028E */  lw         $v0, 0x4($s0)
@@ -48,7 +48,7 @@ glabel func_800464C4
     /* 36D68 80046568 70FB000C */  jal        func_8003EDC0
     /* 36D6C 8004656C 07000524 */   addiu     $a1, $zero, 0x7
     /* 36D70 80046570 07000424 */  addiu      $a0, $zero, 0x7
-    /* 36D74 80046574 4415010C */  jal        func_80045510
+    /* 36D74 80046574 4415010C */  jal        arena_Resize
     /* 36D78 80046578 23283002 */   subu      $a1, $s1, $s0
     /* 36D7C 8004657C 0A80013C */  lui        $at, %hi(D_8009947A)
     /* 36D80 80046580 7A9420A4 */  sh         $zero, %lo(D_8009947A)($at)

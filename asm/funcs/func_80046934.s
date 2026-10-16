@@ -1,7 +1,7 @@
 glabel func_80046934
     /* 37134 80046934 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 37138 80046938 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 3713C 8004693C 6B15010C */  jal        func_800455AC
+    /* 3713C 8004693C 6B15010C */  jal        arena_OpenBlock
     /* 37140 80046940 09000424 */   addiu     $a0, $zero, 0x9
     /* 37144 80046944 1000BF8F */  lw         $ra, 0x10($sp)
     /* 37148 80046948 1800BD27 */  addiu      $sp, $sp, 0x18

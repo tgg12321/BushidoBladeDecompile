@@ -24,7 +24,7 @@ extern DR_MOVE D_800A3D70[31][2];
 extern DR_MOVE D_800A4340[19][2];
 extern DR_MOVE D_800A9830[2][10];
 
-/* The VRAM rectangle func_8003D2C4 loads the image at D_80090178 into
+/* The VRAM rectangle font_LoadImage loads the image at D_80090178 into
  * (x 0x3F0, y 0x1DC, 16 x 36). */
 extern RECT D_800A3220;
 
@@ -503,7 +503,7 @@ extern u8 D_801077B0[24];
 
 extern Unk80107850Rec D_80107850[6];
 extern void func_8001B748(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32);
-extern void func_8003D52C(u8 *, s32, ...);
+extern void font_Printf(u8 *, s32, ...);
 extern void func_80021A98(s32, MoveScript *, s32);
 extern void func_80022580(s32, s32, s32, s32, s32);
 extern s32 func_80036EA8(s32, s32);
@@ -679,9 +679,9 @@ extern void func_8003AA78(void);
 extern void func_8003AAB0(void);
 extern void func_8003B20C(s32);
 extern void func_8003B5A4(void);
-extern void func_8003D2C4(void);
-extern void func_8003D2F4(void);
-extern void func_8003D330(void);
+extern void font_LoadImage(void);
+extern void font_BeginFrame(void);
+extern void font_AddTpage(void);
 extern void func_8003D774(s32, s32);
 extern s16 *func_8003D7B4(s32);
 extern void func_8003D91C(void);
@@ -751,15 +751,15 @@ extern s32 func_80044FA0(s32, s32);
 extern s32 func_80045080(s32);
 extern void func_800451A0(void);
 extern void func_800451D0(void);
-extern void func_80045230(s32);
-extern void func_800453E0(s32);
-extern void func_80045510(s32, s32);
-extern s32 *func_800455AC(s32);
-extern void func_80045600(s32, s32);
-extern void func_80045694(s32, s32);
-extern s32 *func_8004574C(s32);
-extern s32 func_800457A0(s32);
-extern void func_80045824(s32, s32, s32);
+extern void arena_UpdatePeak(s32);
+extern void arena_Free(s32);
+extern void arena_Resize(s32, s32);
+extern s32 *arena_OpenBlock(s32);
+extern void arena_SetBlockEnd(s32, s32);
+extern void arena_SetMoveCallback(s32, s32);
+extern s32 *arena_FindBlock(s32);
+extern s32 arena_GetBlockAddr(s32);
+extern void arena_Copy(s32, s32, s32);
 extern Unk80045878Obj *func_80045878(s32, s32, s32);
 extern void func_80045A28(s32, s32);
 extern void func_80045A50(s32);

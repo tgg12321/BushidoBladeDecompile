@@ -2073,7 +2073,7 @@ func_8001DBE4                               = 0x8001DBE4;  /* MISNAMED: not a ca
 func_8003E164                               = 0x8003E164;  /* MISNAMED: not a camera fn; cache check + gnd_open() + load via func_8007B6C8 */
 func_8004939C                                      = 0x8004939C;  /* MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_800A3* cells */
 func_80041688                                       = 0x80041688;  /* MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+) */
-func_8003D2C4                          = 0x8003D2C4;  /* MISNAMED: not katinuki data; 1-line gpu_LoadImage(&D_800A3220, &D_80090178) */
+font_LoadImage                          = 0x8003D2C4;  /* MISNAMED: not katinuki data; 1-line gpu_LoadImage(&D_800A3220, &D_80090178) */
 func_800548DC                          = 0x800548DC;  /* MISNAMED: not katinuki data; gpu_DrawSync(0)+func_8004659C(-1)+snd_StopSelection() */
 func_8001B3C0                        = 0x8001B3C0;  /* MISNAMED: not voice data; reads obj pos fields 0x180/184/188 into D_800F5328/532C/5330 */
 func_8001C820                        = 0x8001C820;  /* MISNAMED: not voice data; conditional func_800325E0 with sound IDs 0x56..0x58 */
@@ -2598,7 +2598,7 @@ const_return_0x26_80044E6C                         = 0x80044E6C;  /* stub: retur
 empty_stub_800457D4                                = 0x800457D4;  /* stub: jr $ra; nop (empty body) */
 /* RESET 0x800457DC: retired name 'load_D_800A33A4_800457DC' — preserved note: 1-insn getter: returns D_800A33A4 */
 /* RESET 0x800457FC: retired name 'load_D_800A33A0_800457FC' — preserved note: 1-insn getter: returns D_800A33A0 */
-const_return_0x45000_80045808                      = 0x80045808;  /* 1-insn: returns constant 0x45000 (lui+ori) */
+/* RENAME 0x80045808: retired name 'const_return_0x45000_80045808' — preserved note: 1-insn: returns constant 0x45000 (lui+ori) */
 
 /* === Medium-tier HELPER cleanup (2 entries missed earlier) === */
 /* RESET 0x8002A458: retired name 'calc_loc_mat_fw_helper_8002A458' — preserved note: stub: return 0 (pass-3 UNCLEAR; only caller is calc_loc_mat_fw) */
