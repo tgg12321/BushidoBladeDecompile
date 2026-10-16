@@ -120,15 +120,14 @@ u32 func_800167D4(void) { return (D_80106A50.flags >> 2) & 1; }
 
 void func_800167EC(void) {
     s32 i;
-    /* FAKE: pointer to the record beside direct global writes (Q50, Q53):
-     * the header stores go off rec's register and the loop walks a pointer
-     * copied from it by 8; D_80106A50 directly in the loop: score 19. */
+    /* FAKE: second handle to D_80106A50; using the global directly
+     * everywhere: score 19; final times[0].unk_4 store through rec: score 10 */
     FileRecord *rec = &D_80106A50; /* SOTN: src/st/st0/2A218.c:48 @db41b28 */
 
     D_800A3710 = 0;
-    D_80106A50.flags = 0;
-    D_80106A50.unk_00 = 0x7007;
-    D_80106A50.unk_04 = 0;
+    rec->flags = 0;
+    rec->unk_00 = 0x7007;
+    rec->unk_04 = 0;
     for (i = 0; i < 3; i++) {
         rec->times[i].unk_0 = 0;
         rec->times[i].unk_1 = 0;
@@ -210,11 +209,10 @@ void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
 
             for (j = 0; j < rect.w * rect.h; j++, var_2++) {
                 u32 var_4 = *var_2;
-                /* FAKE: (s32) makes the shift signed; unsigned: score 1 (srl
-                 * for the target's sra) */
-                s32 value = (s32)(var_4 & 0x1F) >> 1;
+                s32 value = var_4 & 0x1F;
                 u32 temp;
 
+                value >>= 1;
                 /* FAKE: no-op mask of the u16 read; removed: score 1 (the andi
                  * goes) */
                 var_4 &= 0xFFFF;
