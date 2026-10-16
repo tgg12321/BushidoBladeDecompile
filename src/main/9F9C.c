@@ -3683,29 +3683,25 @@ s32 func_80022408(Vec3i32 *arg0) {
     s32 i;
     s32 best_dist;
     s32 best;
-    s32 t1;
-    s32 t2;
+    s32 x;
+    s32 z;
     s32 dx;
     s32 dz;
     s32 dist;
+
     p = func_80046F14();
     best_dist = 0x7FFFFFFF;
-    i = 0;
-    t1 = arg0->x;
-    t2 = arg0->z;
-    p = p + ((D_800A36A4 * 3) * 8);
-loop:
-    dx = ((p[0] + p[3]) / 2) - t1;
-    dz = ((p[2] + p[5]) / 2) - t2;
-    dist = dx * dx + dz * dz;
-    if (dist < best_dist) {
-        best_dist = dist;
-        best = i;
-    }
-    i++;
-    if (i < 4) {
-        p += 6;
-        goto loop;
+    x = arg0->x;
+    z = arg0->z;
+    p += D_800A36A4 * 24;
+    for (i = 0; i < 4; i++) {
+        dx = (p[i * 6 + 0] + p[i * 6 + 3]) / 2 - x;
+        dz = (p[i * 6 + 2] + p[i * 6 + 5]) / 2 - z;
+        dist = dx * dx + dz * dz;
+        if (dist < best_dist) {
+            best_dist = dist;
+            best = i;
+        }
     }
     return best;
 }
