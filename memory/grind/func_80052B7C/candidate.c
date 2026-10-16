@@ -132,6 +132,13 @@
  * body with a different instruction order; composites are calls-to-calls, not alternate
  * leaves. See hypotheses.md s12 for all four entries (re-audit + 3 kills).
  */
+/* s13 (structural): re-applied this exact chassis fresh, measured 19 again, 4/4 hunks
+ * source-level, 0/4 operand-only (tmp/grind/func_80052B7C/s13/sandbox_diff.txt). Re-confirms
+ * s8's class kill: no structural lever exists because there is no operand-only bucket to act
+ * on -- the whole residual sits inside gte_SetRotMatrix's and gte_stlvl's own fixed __asm__
+ * volatile strings (include/psxsdk/inline_c.h:297, :1086, re-read this session, unchanged).
+ * No src/ edit banked; src/main/3AB48.c reverted to INCLUDE_ASM.
+ */
 #include <psxsdk/inline_c.h>
 void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
     gte_SetRotMatrix(rot);

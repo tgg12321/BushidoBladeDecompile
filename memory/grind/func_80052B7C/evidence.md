@@ -349,3 +349,11 @@ question rather than resolved here.
 - [s12] Sibling candidates func_8004A4E0 and func_8004A76C are both still INCLUDE_ASM stubs -- no transplantable C body exists in the cluster.
 
 - [s12] The legal macro-call chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl) re-measures 19, 4/4 hunks source-level, unchanged from s6-s11.
+
+- [s13] sandbox func_80052B7C --disable all --diff on the s6/s8 chassis: score 19, 4/4 hunks source-level, 0 operand-only, 0 not-scored (tmp/grind/func_80052B7C/s13/sandbox_diff.txt).
+
+- [s13] gte_SetRotMatrix (include/psxsdk/inline_c.h:297) and gte_stlvl (:1086) are each one fixed-string __asm__ volatile macro, re-read this session byte for byte -- unchanged since s8's citation.
+
+- [s13] No new structural lever surfaced: block-local var splits, declaration order, type narrowing and statement re-association all require an operand-only hunk to act on, and none exists on this chassis.
+
+- [s13] src/main/3AB48.c left as INCLUDE_ASM("asm/funcs", func_80052B7C); -- no landing form banked this session.

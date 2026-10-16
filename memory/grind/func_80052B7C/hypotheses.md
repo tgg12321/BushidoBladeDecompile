@@ -215,3 +215,21 @@ floor 19 at s11; 11 sessions; live frontier (state.json is authoritative):
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: memory/grind/func_8004A4E0/candidate.c and memory/grind/func_8004A76C/candidate.c as of this session, no FAKE construct, no src/ edit
+
+## [s13] Fresh structural re-measurement of the legal macro-call chassis (s6/s8 form) exposes zero operand-only hunks, re-confirming s8's class kill of every block-local-var-split / declaration-order / type-narrowing / statement-reassociation lever under the CURRENT build.
+- mechanism: `sandbox func_80052B7C --disable all --diff` buckets every scored hunk source-level / operand-only / not-scored; a structural (reg-alloc/scheduling) lever can only move bytes inside an operand-only hunk. This session's fresh run shows 4/4 hunks source-level, 0/4 operand-only -- there is no bucket a structural lever could act on.
+- probe: Applied candidate.c (s6/s8 form, unchanged) to src/main/3AB48.c, ran `& tools/wteng.ps1 main sandbox func_80052B7C --disable all --diff`, saved output to tmp/grind/func_80052B7C/s13/sandbox_diff.txt, reverted src/main/3AB48.c to INCLUDE_ASM. Also re-read include/psxsdk/inline_c.h:297-301 (gte_SetRotMatrix) and :1086-1091 (gte_stlvl) to re-confirm both are still single fixed-string __asm__ volatile macros (unchanged since s8).
+- result: score=19 (unchanged), 4 hunks all source-level: hunk1 = gte_SetRotMatrix's batched-lw-then-batched-ctc2 order (target) vs our macro's interleaved 2-lw+2-ctc2/3-lw+3-ctc2 order; hunk2/3/4 = gte_stlvl's swc2 landing in the jr $ra delay slot (target) vs explicit nop+swc2 (ours). Both residuals sit entirely inside each macro's own opaque __asm__ volatile string (confirmed again by direct read), exactly as s8 found -- no new structural lever surfaced.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: s6/s8 legal macro-call chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl via include/psxsdk/inline_c.h), no FAKE construct, src/main/3AB48.c this session, reverted to INCLUDE_ASM afterward
+- predicate_cite: include/psxsdk/inline_c.h:297
+
+## [s13] Fresh structural re-measurement of the legal macro-call chassis (s6/s8 form) exposes zero operand-only hunks, re-confirming s8's class kill of every block-local-var-split / declaration-order / type-narrowing / statement-reassociation lever under the CURRENT build.
+- mechanism: sandbox --diff buckets every scored hunk source-level / operand-only / not-scored; a structural reg-alloc/scheduling lever can only act inside an operand-only hunk, and this run shows 4/4 hunks source-level, 0/4 operand-only.
+- probe: Applied candidate.c (unchanged s6/s8 form) to src/main/3AB48.c, ran sandbox func_80052B7C --disable all --diff, saved tmp/grind/func_80052B7C/s13/sandbox_diff.txt, reverted src to INCLUDE_ASM. Re-read include/psxsdk/inline_c.h:297-301 and :1086-1091.
+- result: score=19, 4 hunks all source-level: hunk1 batched-lw/ctc2 order inside gte_SetRotMatrix, hunks2-4 the swc2-in-jr-delay-slot shape inside gte_stlvl. Both macros confirmed still single fixed-string __asm__ volatile bodies, unchanged since s8.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: s6/s8 legal macro-call chassis via include/psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted to INCLUDE_ASM afterward
+- predicate_cite: include/psxsdk/inline_c.h:297

@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 12,
- "current_modality": "rederive",
+ "session_count": 13,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -75,17 +75,23 @@
    "floor": 19,
    "modality": "rederive",
    "headline": "s12 rederive: m2c has no cop2 opcode model (class-killed), decomp.me corpus has no citable match (instance-killed), gtemac.h composites are calls-to-calls with no alternate SetRotMatrix/ldtr ordering "
+  },
+  {
+   "session": 13,
+   "floor": 19,
+   "modality": "structural",
+   "headline": "s13 structural: fresh re-measure confirms 0/4 operand-only hunks on the s6/s8 legal chassis -- class-reconfirms no structural lever exists; residual stays locked inside gte_SetRotMatrix/gte_stlvl's fi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A scan_hand_coded gate-class signal for 'cop2-class insn in the jr $ra delay slot' lifts func_80052B7C to STRONG tier, matching the precedent set by func_8004A76C's 2026-10-15 CANONICAL-ASM GRANT PATH entry.",
-   "mechanism": "cc1 never fills a delay slot with an asm insn (reorg.c:740) and maspsx always appends a nop after reorder-mode jumps (maspsx/__init__.py:1484), so that slot shape has no C producer in this toolchain; the s11 jr-slot census shows 5/5 hits are the GTE cluster with 0 compiled-C false positives.",
-   "next_probe": "Engine-side scanner signal addition backed by s11/jr_census.txt (escalation/owner-cluster modality), not a C edit -- out of this session's reach (never edit tools/engine)."
+   "hypothesis": "A scan_hand_coded gate-class signal for 'cop2-class insn in the jr $ra delay slot' lifts func_80052B7C to STRONG tier, matching func_8004A76C's 2026-10-15 CANONICAL-ASM GRANT PATH precedent.",
+   "mechanism": "cc1 never fills a delay slot with an asm insn (reorg.c:740) and maspsx always appends a nop after reorder-mode jumps (maspsx/__init__.py:1484); s11's jr-slot census shows 5/5 hits are the GTE cluster with 0 compiled-C false positives.",
+   "next_probe": "Engine-side scanner signal addition (escalation/owner-cluster modality), out of this session's reach -- never edit tools/engine."
   },
   {
-   "hypothesis": "Checking whether the whole-body inline_asm_canonical.txt:340 grant audit (aeea8ed44, owner 2026-10-08) has resolved since the 2026-10-15 20:38 ruling would settle the function without further grind-session work.",
-   "mechanism": "That ruling rejected written islands but left the whole-body grant itself open pending the scan_hand_coded STRONG-tier gate; an operator/owner resolution of the audit is outside grind-session scope.",
+   "hypothesis": "The whole-body inline_asm_canonical.txt:340 grant audit (aeea8ed44) resolving in favor of func_80052B7C would settle the function without further grind work.",
+   "mechanism": "The 2026-10-15 20:38 ruling rejected written islands but left the whole-body grant itself open pending the scan_hand_coded STRONG-tier gate.",
    "next_probe": "Operator check of inline_asm_canonical.txt:340's audit status; no action available to this session."
   }
  ],
@@ -253,6 +259,14 @@
    "measured_on": "memory/grind/func_8004A4E0/candidate.c and memory/grind/func_8004A76C/candidate.c as of this session, no FAKE construct, no src/ edit",
    "predicate_cite": "",
    "result": "func_8004A4E0's candidate.c mentions '4 ctc2 with no C form' only in its own exhaustion summary prose, no concrete trans"
+  },
+  {
+   "session": 13,
+   "statement": "Fresh structural re-measurement of the legal macro-call chassis (s6/s8 form) exposes zero operand-only hunks, re-confirming s8's class kill of every block-local-var-split / declaration-order / type-na",
+   "kill_scope": "class",
+   "measured_on": "s6/s8 legal macro-call chassis via include/psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted to INCLUDE_ASM afterward",
+   "predicate_cite": "include/psxsdk/inline_c.h:297",
+   "result": "score=19, 4 hunks all source-level: hunk1 batched-lw/ctc2 order inside gte_SetRotMatrix, hunks2-4 the swc2-in-jr-delay-s"
   }
  ],
  "ladder_skip": 0,
