@@ -634,7 +634,7 @@ extern void func_800288C8(void);
 extern s32 func_80029454(void);
 extern void func_8002AB08(s32);
 extern void func_8002C61C(void);
-extern void func_8002EBDC(s16 *, s16 *, s32 *, s32, s32);
+extern void func_8002EBDC(s32 *, s16 *, s32 *, s32, s32);
 extern void func_8002EECC(void *, void *);
 extern void func_8002F770(s16 *, s32, s32, s32);
 extern s32 func_8002FDB0(Unk80101EC8Record *);

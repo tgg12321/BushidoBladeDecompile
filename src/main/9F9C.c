@@ -4068,7 +4068,7 @@ loop:
         }
         obj->unk_B1 = func_80054434();
         *pos1 = *(VECTOR *)scratch;
-        func_8002EBDC((s16 *)arg3, scratch_c, arg3, -0x40, 0xE6);
+        func_8002EBDC(arg3, scratch_c, arg3, -0x40, 0xE6);
         scratch[12] = pos1->vx + (*((s16 *)(((u8 *)scratch) + 0x10)) / 1024);
         scratch[13] = pos1->vy + (*((s16 *)(((u8 *)scratch) + 0x12)) / 1024);
         scratch[14] = pos1->vz + (*((s16 *)(((u8 *)scratch) + 0x14)) / 1024);
@@ -4081,7 +4081,7 @@ loop:
             scratch[8] = pos2->vx - pos1->vx;
             scratch[9] = pos2->vy - pos1->vy;
             scratch[10] = pos2->vz - pos1->vz;
-            func_8002EBDC(scratch_d, scratch_c, (s32 *)scratch_d, 0,
+            func_8002EBDC((s32 *)scratch_d, scratch_c, (s32 *)scratch_d, 0,
                           (obj->unk_6A == 0x15) ? 0x80 : 0x100);
             if (*((s16 *)(((u8 *)scratch) + 0x12)) >= (-0x7FF)) {
                 s32 mode = obj->unk_6A;

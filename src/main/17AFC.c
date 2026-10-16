@@ -1537,8 +1537,9 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *arg1, u32 *arg2, s32 arg3) {
      * (Ruling 11) */
     s32 temp;
     s32 hlen;
-    /* temp2: the first gte_Lzc input copy of `temp`, then the
-     * g_sqrt_table_u8 byte (Ruling 11, Q28) */
+    /* FAKE: two values -- the first gte_Lzc input copy of `temp`, then the
+     * g_sqrt_table_u8 byte; calling gte_Lzc(temp, ...) directly: score 2
+     * (Ruling 11, Q28) */
     s32 temp2;
     s32 len_sq;
     s32 var_14;
@@ -2618,20 +2619,12 @@ s32 func_8002CD58(Unk1F8002B8Rec *obj) {
 s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
                   s32 threshold, s32 r_sq) {
     if (flag == 0) {
-        SVECTOR *vin;
-        Vec3i32 *vout;
         obj->unkF8.vx = pos->x - obj->unk60[0]->x;
         obj->unkF8.vy = pos->y - obj->unk60[0]->y;
         obj->unkF8.vz = pos->z - obj->unk60[0]->z;
-        vin = &obj->unkF8;
-        gte_ldv0(vin);
-        gte_rtv0();
-        vout = &obj->unk100[0];
-        gte_stlvnl(vout);
+        gte_ApplyRotMatrix(&obj->unkF8, &obj->unk100[0]);
     }
     {
-        /* x: unk100[0].x, then x * x + y * y, then r_sq minus that, then its
-         * square root (the sphere's half-chord along z) (Ruling 11) */
         s32 x;
         s32 y;
         s32 sp_var;
@@ -2642,6 +2635,10 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
         s32 z;
         s32 ret;
         s32 neg_threshold = -threshold;
+        s32 sq;
+        /* FAKE: two values -- r_sq - sq, then its square root (the sphere's
+         * half-chord along z); a separate root local: score 3 (Ruling 11) */
+        s32 rad;
 
         x = obj->unk100[0].x;
         if (x < neg_threshold || threshold < x)
@@ -2650,23 +2647,23 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
         if (y < neg_threshold || threshold < y)
             return 0;
 
-        x = x * x + y * y;
-        if (r_sq < x)
+        sq = x * x + y * y;
+        if (r_sq < sq)
             return 0;
-        x = r_sq - x;
+        rad = r_sq - sq;
 
-        if ((u32)x < 0x400) {
-            x = (u32)g_sqrt_table_u8[x] >> 3;
+        if ((u32)rad < 0x400) {
+            rad = (u32)g_sqrt_table_u8[rad] >> 3;
         } else {
             s32 lzcr = 0;
-            if (x >= 0) {
-                gte_Lzc(x, &sp_var);
+            if (rad >= 0) {
+                gte_Lzc(rad, &sp_var);
                 lzcr = sp_var;
             }
             {
                 s32 shift = 0x16 - (lzcr & ~1);
-                s32 tbl = g_sqrt_table_u8[(u32)x >> shift];
-                x = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
+                s32 tbl = g_sqrt_table_u8[(u32)rad >> shift];
+                rad = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
             }
         }
 
@@ -2685,9 +2682,9 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
             max_z = bz;
         }
         z = obj->unk100[0].z;
-        if (max_z < z - x)
+        if (max_z < z - rad)
             return 0;
-        if (z + x < min_z) {
+        if (z + rad < min_z) {
             /* FAKE: dead store, overwritten by `ret = 0;`: the two-set arm
              * keeps the target's branch diamond instead of slt + xori
              * (dead-store-fake-exception) */
@@ -3001,11 +2998,6 @@ s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
     return 1;
 }
 
-/* func_8002DE20 GTE islands: PsyQ 4.3 inline_o.h gte_ldv0, gte_rtv0,
- * gte_stlvnl and gtemac.h gte_ApplyRotMatrix, statement for statement. One
- * departure: gte_rtv0's DMPSX placeholder 0x0000013f is carried as the
- * post-DMPSX word 0x4A486012 (owner Q11 grant). cross_a / cross_b: Ruling 11
- * (see their declaration). */
 extern s32 D_800A314C;
 
 /* Rotates the three points p0/p1/p2 (relative to the origin) by the current GTE
@@ -3243,7 +3235,6 @@ s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
 void func_8002E838(Unk1F8002B8Rec *scr) {
     s32 sp_tmp;
     MATRIX *mat;
-    Vec3i32 *vec;
     s32 dist_sq;
     s32 angle;
     s32 dist;
@@ -3288,30 +3279,23 @@ void func_8002E838(Unk1F8002B8Rec *scr) {
     RotMatrixX(scr->unkF8.vx, mat);
 
     gte_SetRotMatrix(mat);
-    vec = &scr->unkA8;
-    gte_ldlv0(vec);
+    gte_ldlv0(&scr->unkA8);
     gte_rtv0();
-    gte_stlvnl(vec);
+    gte_stlvnl(&scr->unkA8);
 }
 
 s32 func_8002EA24(
     Unk1F8002B8Rec *scr, Unk80107850Rec *pos, s32 threshold, s32 r_sq) {
-    SVECTOR *vin;
-    Vec3i32 *vout;
     scr->unkF8.vx = pos->x - scr->unk60[0]->x;
     scr->unkF8.vy = pos->y - scr->unk60[0]->y;
     scr->unkF8.vz = pos->z - scr->unk60[0]->z;
-    vin = &scr->unkF8;
-    gte_ldv0(vin);
-    gte_rtv0();
-    vout = &scr->unk100[0];
-    gte_stlvnl(vout);
+    gte_ApplyRotMatrix(&scr->unkF8, &scr->unk100[0]);
 
     {
         s32 y;
-        /* a0_var: r_sq - (x * x + y * y), then its square root (the
-         * sphere's half-chord along z) (Ruling 11) */
-        s32 a0_var;
+        /* FAKE: two values -- r_sq - sq, then its square root (the sphere's
+         * half-chord along z); a separate root local: score 21 (Ruling 11) */
+        s32 rad;
         s32 sp_var;
         s32 min_z;
         s32 max_z;
@@ -3331,22 +3315,22 @@ s32 func_8002EA24(
         sq = x * x + y * y;
         if (r_sq < sq)
             return 0;
-        a0_var = r_sq - sq;
+        rad = r_sq - sq;
 
-        if ((u32)a0_var < 0x400) {
-            a0_var = (u32)g_sqrt_table_u8[a0_var] >> 3;
+        if ((u32)rad < 0x400) {
+            rad = (u32)g_sqrt_table_u8[rad] >> 3;
         } else {
             s32 lzcr;
-            if (a0_var < 0) {
+            if (rad < 0) {
                 lzcr = 0;
             } else {
-                gte_Lzc(a0_var, &sp_var);
+                gte_Lzc(rad, &sp_var);
                 lzcr = sp_var;
             }
             {
                 s32 shift = 0x16 - (lzcr & ~1);
-                s32 tbl = g_sqrt_table_u8[(u32)a0_var >> shift];
-                a0_var = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
+                s32 tbl = g_sqrt_table_u8[(u32)rad >> shift];
+                rad = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
             }
         }
 
@@ -3359,14 +3343,14 @@ s32 func_8002EA24(
             max_z = az;
         }
         z = scr->unk100[0].z;
-        if (max_z < z - a0_var || z + a0_var < min_z)
+        if (max_z < z - rad || z + rad < min_z)
             return 0;
         return 1;
     }
 }
 
 void func_8002EBDC(
-    s16 *vec_in, s16 *arg1, s32 *out, s32 scale_z, s32 scale_xy) {
+    s32 *vec_in, s16 *arg1, s32 *out, s32 scale_z, s32 scale_xy) {
     s32 sp_tmp;
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     MATRIX *mat;
@@ -3499,14 +3483,16 @@ void func_8002F2D0(MATRIX *a0, s16 *a1) {
     MATRIX *mat;
     Vec3i32 *vec;
     s32 c0, c1, c2;
-    /* work: the 3x3 determinant (divisor of the six cofactors), then the
-     * square root of i0*i0 + i1*i1 (Ruling 11) */
+    /* FAKE: two values -- the 3x3 determinant (divisor of the six
+     * cofactors), then the square root of i0*i0 + i1*i1; a separate root
+     * local: score 35 (Ruling 11) */
     s32 work;
     s32 d0;
     s32 i0, i1, i2;
     s32 r0, r1, r2;
     s32 ang_z, ang_y;
-    /* temp: i0*i0 + i1*i1, then the square-root table byte (Ruling 11) */
+    /* FAKE: two values -- i0*i0 + i1*i1, then the square-root table byte;
+     * a separate table-byte local: score 6 (Ruling 11) */
     s32 temp;
     s32 sp_tmp;
 
@@ -3577,14 +3563,16 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     MATRIX *mat;
     Vec3i32 *vec;
     s32 c0, c1, c2;
-    /* work: the 3x3 determinant (divisor of the six cofactors), then the
-     * square root of i0*i0 + i1*i1 (Ruling 11) */
+    /* FAKE: two values -- the 3x3 determinant (divisor of the six
+     * cofactors), then the square root of i0*i0 + i1*i1; a separate root
+     * local: score 35 (Ruling 11) */
     s32 work;
     s32 d0;
     s32 i0, i1, i2;
     s32 r0, r1, r2;
     s32 ang_z, ang_y;
-    /* temp: i0*i0 + i1*i1, then the square-root table byte (Ruling 11) */
+    /* FAKE: two values -- i0*i0 + i1*i1, then the square-root table byte;
+     * a separate table-byte local: score 6 (Ruling 11) */
     s32 temp;
     s32 sp_tmp;
 
@@ -3664,28 +3652,28 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
 }
 
 s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2) {
-    VECTOR *p;
+    Vec3i32 *p;
     s32 ret;
 
-    /* Difference vectors (a1 - a0) and (a2 - a0) into the scratchpad VECTORs
-     * at SCR[0x60..0x68] / SCR[0x70..0x78], the GTE operands below. */
-    ((VECTOR *)0x1F800360)->vx = a1->vx - a0->vx;
-    ((VECTOR *)0x1F800360)->vy = a1->vy - a0->vy;
-    ((VECTOR *)0x1F800360)->vz = a1->vz - a0->vz;
-    ((VECTOR *)0x1F800370)->vx = a2->vx - a0->vx;
-    ((VECTOR *)0x1F800370)->vy = a2->vy - a0->vy;
-    ((VECTOR *)0x1F800370)->vz = a2->vz - a0->vz;
+    /* Difference vectors (a1 - a0) and (a2 - a0) into the scratchpad
+     * collision record's unkA8 / unkB8, the GTE operands below. */
+    SPAD->unk2B8.rec.unkA8.x = a1->vx - a0->vx;
+    SPAD->unk2B8.rec.unkA8.y = a1->vy - a0->vy;
+    SPAD->unk2B8.rec.unkA8.z = a1->vz - a0->vz;
+    SPAD->unk2B8.rec.unkB8.x = a2->vx - a0->vx;
+    SPAD->unk2B8.rec.unkB8.y = a2->vy - a0->vy;
+    SPAD->unk2B8.rec.unkB8.z = a2->vz - a0->vz;
 
-    /* Their cross product, into SCR[0x80..0x88]. */
-    gte_ldopv1((VECTOR *)0x1F800360);
-    gte_ldopv2((VECTOR *)0x1F800370);
+    /* Their cross product, into unkC8. */
+    gte_ldopv1(&SPAD->unk2B8.rec.unkA8);
+    gte_ldopv2(&SPAD->unk2B8.rec.unkB8);
     gte_op0();
-    p = (VECTOR *)0x1F800380;
+    p = &SPAD->unk2B8.rec.unkC8;
     gte_stlvnl(p);
     /* Angle of the cross product in the XZ plane, +0x800 (180 deg) when its
      * Y component is positive. */
-    ret = ratan2(p->vx, p->vz);
-    if (p->vy > 0) {
+    ret = ratan2(p->x, p->z);
+    if (p->y > 0) {
         ret += 0x800;
     }
     return ret;
@@ -3695,8 +3683,8 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
     Unk80107850Rec *var_0;
 
     /* The character's points 2 and 3 relative to its point 1, into the
-     * collision record's unkA8 and unkB8 (0x1F800360 / 0x1F800370, the GTE
-     * operands below); the GTE's product lands in unkC8. */
+     * collision record's unkA8 and unkB8, the GTE operands below; their
+     * cross product lands in unkC8. */
     var_0 = SPAD->unkA8[arg0->index];
     SPAD->unk2B8.rec.unkA8.x = var_0[2].x - var_0[1].x;
     SPAD->unk2B8.rec.unkA8.y = var_0[2].y - var_0[1].y;
@@ -3705,27 +3693,28 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
     SPAD->unk2B8.rec.unkB8.y = var_0[3].y - var_0[1].y;
     SPAD->unk2B8.rec.unkB8.z = var_0[3].z - var_0[1].z;
 
-    gte_OuterProduct0((s32 *)0x1F800360, (s32 *)0x1F800370, (s32 *)0x1F800380);
+    gte_OuterProduct0(&SPAD->unk2B8.rec.unkA8, &SPAD->unk2B8.rec.unkB8,
+                      &SPAD->unk2B8.rec.unkC8);
     /* unkC8.y (MAC2) > 0 */
     return 0 < SPAD->unk2B8.rec.unkC8.y;
 }
 
-/* Starts the record (unk_08 = 1, bone unk_09 = arg1): its matrix is the
- * rot[] rotation (X, Y, Z) composed with bone unk_09's matrix of
- * func_80046DEC(), and pos is taken into the bone's frame: less the bone
- * translation, rotated by the bone matrix, then halved. */
+/* Starts the record (unk_08 = 1, bone unk_09 = arg1): its matrix becomes the
+ * inverse of bone unk_09's rotation (func_80046DEC()'s table, inverted by
+ * func_8002EECC) times the rot[] rotation (X, Y, Z), and pos is taken into
+ * the bone's frame: less the bone translation, rotated by that inverse, then
+ * halved. */
 void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
-    s32 mat_local[8];
-    s32 *mat_tbl;
-    s32 *s2_ptr;
+    MATRIX mat_local;
+    MATRIX **mat_tbl;
+    MATRIX *s2_ptr;
     MATRIX *rot_mat;
-    Vec3i32 *vec;
 
     arg0->unk_08 = 1;
     arg0->unk_09 = arg1;
     mat_tbl = func_80046DEC(arg0->owner < 1);
     rot_mat = &arg0->mtx;
-    s2_ptr = (s32 *)mat_tbl[arg0->unk_09];
+    s2_ptr = mat_tbl[arg0->unk_09];
 
     /* 3x3 identity rotation in the record's matrix. */
     arg0->mtx.m[0][0] = 0x1000;
@@ -3740,19 +3729,18 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     RotMatrixX(arg0->rot[0], rot_mat);
     RotMatrixY(arg0->rot[1], rot_mat);
     RotMatrixZ(arg0->rot[2], rot_mat);
-    func_8002EECC(s2_ptr, mat_local);
-    MulMatrix0((MATRIX *)mat_local, rot_mat, rot_mat);
+    func_8002EECC(s2_ptr, &mat_local);
+    MulMatrix0(&mat_local, rot_mat, rot_mat);
 
     /* Subtract mat_tbl[arg0->unk_09]'s translation from the position. */
-    arg0->pos.x -= s2_ptr[5];
-    arg0->pos.y -= s2_ptr[6];
-    arg0->pos.z -= s2_ptr[7];
+    arg0->pos.x -= s2_ptr->t[0];
+    arg0->pos.y -= s2_ptr->t[1];
+    arg0->pos.z -= s2_ptr->t[2];
 
-    gte_SetRotMatrix(mat_local);
-    vec = &arg0->pos;
-    gte_ldlv0(vec);
+    gte_SetRotMatrix(&mat_local);
+    gte_ldlv0(&arg0->pos);
     gte_rtv0();
-    gte_stlvnl(vec);
+    gte_stlvnl(&arg0->pos);
 
     /* Halve x, y, z (signed arithmetic shift). */
     arg0->pos.x >>= 1;
@@ -3768,12 +3756,12 @@ void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
     s16 var_1[4];
     MATRIX mtx;
-    s32 *mat_tbl;
+    MATRIX **mat_tbl;
     MATRIX *mat;
     s32 lookup;
 
     mat_tbl = func_80046DEC(arg0->owner < 1);
-    mat = (MATRIX *)mat_tbl[arg0->unk_09];
+    mat = mat_tbl[arg0->unk_09];
 
     gte_SetRotMatrix(mat);
     gte_ldlv0(&arg0->pos);
@@ -4332,7 +4320,6 @@ void func_80030D7C(void) {
 /* GTE rotate-velocity-by-table-angle (sibling of func_8002E838) */
 void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
     MATRIX *mat;
-    Vec3i32 *vec;
     s32 angle1;
     s32 angle2;
     s32 sum_sq;
@@ -4369,10 +4356,9 @@ void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
     RotMatrixX(angle2, mat);
 
     gte_SetRotMatrix(mat);
-    vec = &ent->vel;
-    gte_ldlv0(vec);
+    gte_ldlv0(&ent->vel);
     gte_rtv0();
-    gte_stlvnl(vec);
+    gte_stlvnl(&ent->vel);
 
     if ((u32)(angle1 - 0x401) < 0x7FFU) {
         ent->vel.x /= 8;
@@ -4589,13 +4575,16 @@ void func_80032314(void) {
     Unk80104E88Rec *t0 = D_80104E88;
     s32 t1 = 0;
     /* FAKE: a second, byte cursor a3 at each record's unk_02, read for unk_02
-       (*a3), unk_03 (a3 + 1) and unk_04 (a3 + 2..); reading them through t0
-       drops the second induction register (score 21). */
+       (*a3) and, through rec (the record a3 sits in), unk_03 and unk_04;
+       reading all three through t0 drops the second induction register
+       (score 21); *a3 as rec->unk_02: score 2. */
     u8 *a3 = &D_80104E88[0].unk_02;
+    Unk80104E88Rec *rec;
     Unk80101EC8Record *ent;
     s32 state;
 
 loop:
+    rec = (Unk80104E88Rec *)(a3 - 2);
     if (t0->unk_00 == 0)
         goto next;
     {
@@ -4603,7 +4592,7 @@ loop:
          * written directly (&D_80101EC8[cmp]) the multiply by a comparison
          * becomes a branch: score 13 (no-new-park-categories
          * named-intermediate) */
-        s32 v1_v = (*(u8 *)(a3 + 1) == 0);
+        s32 v1_v = (rec->unk_03 == 0);
         ent = &D_80101EC8[v1_v];
     }
     state = (u16)ent->unk_6A;
@@ -4626,9 +4615,9 @@ loop:
         if ((state & 0xFFFF) == 0x11)
             goto next;
         {
-            s32 dx = ent->unk_F4.x - *(s32 *)(a3 + 2);
-            s32 dy = ent->unk_F4.y - *(s32 *)(a3 + 6);
-            s32 dz = ent->unk_F4.z - *(s32 *)(a3 + 0xA);
+            s32 dx = ent->unk_F4.x - rec->unk_04.x;
+            s32 dy = ent->unk_F4.y - rec->unk_04.y;
+            s32 dz = ent->unk_F4.z - rec->unk_04.z;
             u32 dist_sq;
             u32 var_10;
             dist_sq = (u32)(dx * dx + dy * dy + dz * dz);
