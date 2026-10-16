@@ -12,8 +12,9 @@
  * "r", rejected/ra-probe-8-operand-written-island.c) measured {v0,v1,t0..t5}, not t0..t7. No vendored
  * macro hardcodes lw $8..$11 (census 0). So the target registers come only from a fixed asm string
  * the vendored headers do not contain. See hypotheses.md s10/H9.
- */
-#include <psxsdk/inline_c.h>   (NOT inline_o.h -- see s2 finding 1a)
+ *
+ *   (illustrative only -- NOT the landed chassis; the include line below is
+ *   NOT inline_o.h, see s2 finding 1a)
  *   void func_80052B7C(MATRIX *rot, SVECTOR *tr, VECTOR *v0, VECTOR *out) {
  *       gte_SetRotMatrix(rot);   // chunk 1 -- WRONG instruction order (see below)
  *       <chunk 2: no vendored macro exists for TR-from-halfwords -> CR5-7>
@@ -228,7 +229,7 @@ void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
 /* s23 (rederive): re-applied this exact chassis fresh, re-measured -- still 19, 4/4 hunks
  * source-level, 0/4 operand-only (tmp/grind/func_80052B7C/s23/sandbox_diff.txt). New
  * rederive-modality probe: fetched psyz's libgte.c (Xeeynamo/psyz, the PsyQ 4.0 cross-platform
- * decomp) and read its SetRotMatrix/RotMatrix*/ApplyRotMatrix -- all pure software
+ * decomp) and read its SetRotMatrix/RotMatrix/ApplyRotMatrix -- all pure software
  * reimplementations (plain field-copy / trig math) with zero cop2 opcodes, so it carries no
  * hardware instruction-order precedent for this residual. No new C-level mutation axis found.
  * src/main/3AB48.c reverted to INCLUDE_ASM; no new src/ edit banked.
@@ -241,4 +242,21 @@ void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
  * result. The structural lever set (var split / decl order / type narrowing / statement
  * reassociation) is now re-confirmed exhausted on this chassis for the 4th+ time (s8, s13,
  * s14, s19, s24). See hypotheses.md s24 and tmp/grind/func_80052B7C/s24/chassis_sandbox_diff.txt.
+ */
+/* s25 (structural): FOUND AND FIXED a ledger-hygiene bug in this file itself: a stray mid-word
+ * comment-close token at old-line 231 ("RotMatrix" + close-comment + "ApplyRotMatrix") and a
+ * bare #include stranding 7 lines of an illustrative written-island sketch outside its
+ * comment (old-line 16) together broke this
+ * candidate's C comment nesting, so `sandbox --candidate` on this file failed to build at all
+ * (cascading cpp parse errors) -- this is why prior dispatches reported "chassis check:
+ * measurement unavailable". Fixed both breaks (see hypotheses.md s25); re-measured clean at
+ * 19, 24/24 insns, 4/4 hunks source-level, identical hunk classification to s6/s8/s13-s24.
+ * Two new structural sub-axes tried and killed: (1) removing the redundant (s32) casts on
+ * gte_ldtr's three args (tmp/grind/func_80052B7C/s25/variant_nocast.c) -- score unchanged, 19;
+ * the cast is a no-op for the "r" asm operand. (2) block-scoped s32-typed locals (vs s24's s16
+ * locals declared before SetRotMatrix) assigned from tr->vx/vy/vz right at the gte_ldtr call
+ * (tmp/grind/func_80052B7C/s25/variant_s32locals.c) -- score unchanged, 19. Together with s24
+ * this exhausts both the declared-width and declared-position sub-axes of local-staging; the
+ * structural lever set is now re-confirmed exhausted for the 5th time (s8, s13, s14, s19, s24,
+ * s25). No src/ edit banked; src/main/3AB48.c stays INCLUDE_ASM. See hypotheses.md s25.
  */

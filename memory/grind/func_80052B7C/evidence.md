@@ -470,3 +470,11 @@ question rather than resolved here.
 - [s24] The structural-modality lever set (block-local var split, declaration order, type narrowing, statement reassociation) was already class-killed on this chassis at s8/s13/s14 (predicate include/psxsdk/inline_c.h:297) and re-confirmed by statement-level reordering at s19; this session's finer-grained sub-word-load-staging variant is a new instance of the same null result, not a new class kill (only the 'r'-constraint, no-modifier spelling of gte_ldtr was tried).
 
 - [s24] Hunks 2-4 (final swc2 in the jr $ra delay slot) remain covered by the standing class kills at s7 (predicate tools/gcc-2.7.2/reorg.c:740) and s11 (maspsx cannot fill a cop2 store into an unfilled jump's delay slot); this session did not re-touch that axis.
+
+- [s25] candidate.c's ledger-header comment was corrupted in two spots (stray mid-word */, and a bare #include splitting a comment block); this is the root cause of the s25 dispatch's 'chassis check: measurement unavailable' and was likely affecting every prior session's dispatch-time auto-measurement since whenever the corruption was introduced.
+
+- [s25] After the fix, sandbox --candidate on candidate.c measures cleanly at 19, 4/4 hunks source-level, 0 operand-only, 0 not-scored, matching the ledger's recorded floor exactly -- no regression, no improvement, just restored measurability.
+
+- [s25] Two additional structural sub-axes (redundant-cast removal on gte_ldtr's args; s32-typed block-local staging vs s24's s16-typed pre-SetRotMatrix staging) both measure 19, extending s8/s9/s13-s16/s19/s24's finding that this chassis has zero C-level mutation axes in the 5-statement macro-call body.
+
+- [s25] This is now the 5th structural-or-equivalent session (s8, s13, s14, s19, s24, s25) landing on the identical null result; the residual stays locked inside gte_SetRotMatrix's and gte_stlvl's own fixed __asm__ volatile template strings.

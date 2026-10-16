@@ -1,7 +1,7 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 24,
+ "session_count": 25,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -147,22 +147,28 @@
    "floor": 19,
    "modality": "structural",
    "headline": "s24 structural: re-confirmed the legal macro-call chassis holds at 19 (4/4 hunks source-level, 0 operand-only); sub-word-load declaration-order/local-staging variant for gte_ldtr's args killed as a ne"
+  },
+  {
+   "session": 25,
+   "floor": 19,
+   "modality": "structural",
+   "headline": "Fixed a comment-nesting corruption in candidate.c that was breaking sandbox --candidate builds entirely (explaining the dispatch chassis-check 'measurement unavailable'); re-confirmed floor 19 clean, "
   }
  ],
  "frontier": [
   {
    "hypothesis": "A scan_hand_coded gate-class signal for the batched lw/lh $tN -> ctc2 idiom (s18) and/or the cop2-in-jr-slot signal (s11) lifts func_80052B7C to STRONG tier for the whole-body INCLUDE_ASM branch.",
-   "mechanism": "Both idioms occur in this EXE only in hand-written code; s20/s21/s24 confirm the residual is fixed in vendored templates, reorg, and the engine's barrier policy -- no further structural-modality probe can touch it.",
+   "mechanism": "Both idioms occur in this EXE only in hand-written code; s20/s21/s24/s25 confirm the residual is fixed in vendored templates, reorg, and the engine's barrier policy -- no further structural-modality probe can touch it.",
    "next_probe": "Engine/tools-side scanner signal addition citing s18/batch_census.txt and s11/jr_census.txt (escalation or owner-cluster modality)."
   },
   {
    "hypothesis": "The inline_asm_canonical.txt:340 whole-body grant audit resolves in favor of func_80052B7C on cluster plus Sony-idiom evidence.",
    "mechanism": "The 2026-10-15 20:38 ruling rejected written islands only (mixed macro-call + written-out body); it did not rule on a clean whole-body INCLUDE_ASM submission under the grant row.",
-   "next_probe": "Operator/Judge review of inline_asm_canonical.txt:340 with the s11, s18-s21, s24 artifacts; no further grind-session probe can move this."
+   "next_probe": "Operator/Judge review of inline_asm_canonical.txt:340 with the s11, s18-s21, s24-s25 artifacts; no further grind-session probe can move this."
   },
   {
    "hypothesis": "A vendored macro whose template batches the rotation+TR loads in $8..$15 would close hunk 1 in pure macro-call C.",
-   "mechanism": "s19/s20/s24: the hunk-1 registers for the SetRotMatrix portion are template literals fixed at RTL expand (inline_c.h:298-307); the ldtr portion's loads are RA-owned but always emit lhu and always batch separately from SetRotMatrix's loads regardless of C-level staging.",
+   "mechanism": "s19/s20/s24: the hunk-1 registers for the SetRotMatrix portion are template literals fixed at RTL expand (inline_c.h:298-307); the ldtr portion's loads are RA-owned but always emit lh (confirmed this session, both direct-arg and all local-staging variants) and always batch separately from SetRotMatrix's loads regardless of C-level staging.",
    "next_probe": "Owner ruling plus an engine: commit adding the macro; not a grind action."
   }
  ],
@@ -458,6 +464,22 @@
    "measured_on": "variants A and B above, legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session (s24)",
    "predicate_cite": "",
    "result": "Both variants emit lhu for all 3 loads; target is lh. No declaration-order or local-staging respelling tried (in s19 or "
+  },
+  {
+   "session": 25,
+   "statement": "Removing the redundant (s32) casts on gte_ldtr's three arguments (passing tr->vx/vy/vz directly instead of (s32)tr->vx etc.) changes the scored distance.",
+   "kill_scope": "instance",
+   "measured_on": "legal macro-call chassis, gte_ldtr args with casts removed, no FAKE construct, tmp/grind/func_80052B7C/s25/variant_nocast.c this session (s25)",
+   "predicate_cite": "",
+   "result": "Score 19, 24/24 insns -- byte-identical score to the cast form. The explicit (s32) cast is a no-op for gte_ldtr's 'r' as"
+  },
+  {
+   "session": 25,
+   "statement": "Block-scoping three freshly declared s32 locals (widened from the s16 members, assigned from tr->vx/vy/vz) around the gte_ldtr call, instead of the direct member-expression args, changes the scored di",
+   "kill_scope": "instance",
+   "measured_on": "legal macro-call chassis, s32 block-local staging for the 3 ldtr args, no FAKE construct, tmp/grind/func_80052B7C/s25/variant_s32locals.c this session (s25)",
+   "predicate_cite": "",
+   "result": "Score 19, 24/24 insns -- identical to the direct-arg chassis and to s24's variant B. Confirms s24's null finding general"
   }
  ],
  "ladder_skip": 0,

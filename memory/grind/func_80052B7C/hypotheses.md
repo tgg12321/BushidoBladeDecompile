@@ -462,3 +462,47 @@ none of which is a grind-session structural probe. See docs/grind/decisions.md 2
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: variants A and B above, legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session (s24)
+
+## [s25] memory/grind/func_80052B7C/candidate.c had a comment-nesting corruption that broke `sandbox --candidate` entirely, independent of any codegen question.
+- mechanism: Two spots in the ledger's header comment accidentally closed the C comment early: (1) old-line 231 had literal text "RotMatrix*/ApplyRotMatrix" where the mid-word `*/` closed the s23 comment prematurely; (2) old-line 16 had a bare `#include <psxsdk/inline_c.h>   (NOT inline_o.h -- see s2 finding 1a)` sitting between two comment blocks, which left 7 lines of an illustrative written-island C sketch (lines 17-23) stranded outside any comment as raw, unparseable tokens. Both bugs cascaded into dozens of cpp "missing terminating ' character" / "nondigits in number" / parse errors across the whole 5700-line 3AB48.c TU once the candidate's header was substituted into it, which is exactly the "measurement unavailable" the s25 dispatch chassis-check reported.
+- probe: Balanced a `/* ... */` depth-scan (tmp Python one-liner) over candidate.c to find both breaks; fixed (1) by removing the mid-word `*/` (now reads ".../RotMatrix/ApplyRotMatrix -- ..."); fixed (2) by removing the bare #include and re-wording it as plain comment prose, keeping the one real `/* ... */` block intact from line 1 to line 80. Re-ran `sandbox func_80052B7C --disable all --candidate memory/grind/func_80052B7C/candidate.c --diff`.
+- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- exactly matches the ledger's recorded floor and the s6/s8/s13-s24 hunk classification (hunk 1 = SetRotMatrix+ldtr batching/register-seat, hunks 2-4 = gte_stlvl delay-slot swc2 placement). No codegen change; this is a pure ledger-hygiene fix. candidate.c is now buildable again for future sessions' dispatch-time chassis check.
+- verdict: CONFIRMED
+
+## [s25] Removing the redundant `(s32)` casts on gte_ldtr's three arguments (passing `tr->vx/vy/vz` directly instead of `(s32)tr->vx` etc.) changes the scored distance.
+- mechanism: Structural-modality lever (type narrowing / redundant-cast removal) on the one RA-owned region of the chassis (s19's finding).
+- probe: tmp/grind/func_80052B7C/s25/variant_nocast.c -- `gte_ldtr(tr->vx, tr->vy, tr->vz);` with no explicit cast. Measured with sandbox --candidate (no --diff needed, score alone suffices to compare).
+- result: score 19, 24/24 insns -- byte-identical score to the cast form. The explicit `(s32)` cast is a no-op for this macro's `"r"` operand (GCC already promotes the s16 lvalue to the register width when binding it to an asm input operand); no instruction-selection or RA difference.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal macro-call chassis, `gte_ldtr` args with casts removed, no FAKE construct, tmp/grind/func_80052B7C/s25/variant_nocast.c this session (s25)
+
+## [s25] Block-scoping three freshly declared `s32` locals (trX/trY/trZ, widened from the s16 members, assigned from tr->vx/vy/vz) around the gte_ldtr call, instead of the direct member-expression args, changes the scored distance.
+- mechanism: Structural-modality lever (block-local variable split + type narrowing combined), distinct from s24's variant B: s24 used *s16*-typed locals declared *before* gte_SetRotMatrix; this probe uses *s32*-typed locals declared in a nested block *at* the gte_ldtr call site, to separate the type axis from the declaration-position axis s24 already killed.
+- probe: tmp/grind/func_80052B7C/s25/variant_s32locals.c -- `{ s32 trX = tr->vx; s32 trY = tr->vy; s32 trZ = tr->vz; gte_ldtr(trX, trY, trZ); }` in place of the direct-arg call, SetRotMatrix call left untouched before the block. Measured with sandbox --candidate.
+- result: score 19, 24/24 insns -- identical to the direct-arg chassis and to s24's variant B. Confirms s24's finding generalizes across the type axis too: no combination of local-staging (declared where, declared what width) reaches a different score. This exhausts the last two structural sub-axes (redundant-cast removal, type-widened block-local) not explicitly covered by s8/s9/s13-s16's `spelling_enum.py` sweeps (which only detect *named* locals/assignments already in the body, not ones a session adds and measures by hand).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal macro-call chassis, s32 block-local staging for the 3 ldtr args, no FAKE construct, tmp/grind/func_80052B7C/s25/variant_s32locals.c this session (s25)
+
+## [s25] memory/grind/func_80052B7C/candidate.c had a comment-nesting corruption that broke `sandbox --candidate` entirely, independent of any codegen question.
+- mechanism: A stray mid-word comment-close sequence at old-line 231 ('RotMatrix' + close-comment + 'ApplyRotMatrix') and a bare #include stranding 7 lines of an illustrative written-island sketch outside its enclosing comment (old-line 16) both broke the file's C comment nesting, cascading into dozens of cpp parse errors once the candidate's header was substituted into the 5700-line 3AB48.c TU.
+- probe: Depth-scanned /* */ nesting with a Python one-liner to locate both breaks; fixed both; re-ran sandbox func_80052B7C --disable all --candidate memory/grind/func_80052B7C/candidate.c --diff.
+- result: Score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- exactly matches the ledger's recorded floor and prior hunk classification (hunk 1 = SetRotMatrix+ldtr batching/register-seat, hunks 2-4 = gte_stlvl delay-slot swc2 placement). Pure ledger-hygiene fix, no codegen change. candidate.c is buildable again for future dispatch-time chassis checks.
+- verdict: CONFIRMED
+
+## [s25] Removing the redundant (s32) casts on gte_ldtr's three arguments (passing tr->vx/vy/vz directly instead of (s32)tr->vx etc.) changes the scored distance.
+- mechanism: Structural-modality lever (type narrowing / redundant-cast removal) on the one RA-owned region of the chassis (s19's finding).
+- probe: tmp/grind/func_80052B7C/s25/variant_nocast.c measured with sandbox --candidate.
+- result: Score 19, 24/24 insns -- byte-identical score to the cast form. The explicit (s32) cast is a no-op for gte_ldtr's 'r' asm operand.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal macro-call chassis, gte_ldtr args with casts removed, no FAKE construct, tmp/grind/func_80052B7C/s25/variant_nocast.c this session (s25)
+
+## [s25] Block-scoping three freshly declared s32 locals (widened from the s16 members, assigned from tr->vx/vy/vz) around the gte_ldtr call, instead of the direct member-expression args, changes the scored distance.
+- mechanism: Structural-modality lever (block-local variable split + type narrowing combined), distinct from s24's variant B which used s16-typed locals declared before gte_SetRotMatrix; this probe isolates the type-width axis from the declaration-position axis.
+- probe: tmp/grind/func_80052B7C/s25/variant_s32locals.c measured with sandbox --candidate.
+- result: Score 19, 24/24 insns -- identical to the direct-arg chassis and to s24's variant B. Confirms s24's null finding generalizes across the declared-width axis too; exhausts the last two structural sub-axes (redundant-cast removal, type-widened block-local) not covered by the spelling_enum.py sweeps.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal macro-call chassis, s32 block-local staging for the 3 ldtr args, no FAKE construct, tmp/grind/func_80052B7C/s25/variant_s32locals.c this session (s25)
