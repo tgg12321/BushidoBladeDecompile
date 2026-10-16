@@ -90,9 +90,9 @@ glabel func_80035828
     /* 2616C 8003596C 00000000 */   nop
     /* 26170 80035970 EAD7000C */  jal        snd_SerialMixOn
     /* 26174 80035974 00000000 */   nop
-    /* 26178 80035978 44DC000C */  jal        func_80037110
+    /* 26178 80035978 44DC000C */  jal        cdrom_StartAudioEntry
     /* 2617C 8003597C 07000424 */   addiu     $a0, $zero, 0x7
-    /* 26180 80035980 7ADC000C */  jal        func_800371E8
+    /* 26180 80035980 7ADC000C */  jal        cdrom_SetAudioRepeat
     /* 26184 80035984 01000424 */   addiu     $a0, $zero, 0x1
     /* 26188 80035988 0A80023C */  lui        $v0, %hi(D_800A37B8)
     /* 2618C 8003598C B837428C */  lw         $v0, %lo(D_800A37B8)($v0)

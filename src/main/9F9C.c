@@ -1765,26 +1765,26 @@ void func_8001DA8C(void) {
     default:
         break;
     case 4:
-        func_80037110((&D_8008D518)[D_800A36A4]);
+        cdrom_StartAudioEntry((&D_8008D518)[D_800A36A4]);
         break;
     case 3:
         if (D_8008D9EC[D_80101EC8[0].unk_0A] != 0) {
-            func_80037110(9);
+            cdrom_StartAudioEntry(9);
         } else {
-            func_80037110(8);
+            cdrom_StartAudioEntry(8);
         }
         break;
     case 2:
         if (D_800A389A != 0) {
-            func_80037110(0xA);
+            cdrom_StartAudioEntry(0xA);
         } else {
-            func_80037110(0xB);
+            cdrom_StartAudioEntry(0xB);
         }
         break;
     case 5:
         break;
     }
-    func_800371E8(1);
+    cdrom_SetAudioRepeat(1);
 }
 
 s32 func_8001DB58(void) {

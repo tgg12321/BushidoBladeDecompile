@@ -1,7 +1,7 @@
-glabel func_800371AC
+glabel cdrom_StartAudioEntryHeld
     /* 279AC 800371AC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 279B0 800371B0 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 279B4 800371B4 44DC000C */  jal        func_80037110
+    /* 279B4 800371B4 44DC000C */  jal        cdrom_StartAudioEntry
     /* 279B8 800371B8 00000000 */   nop
     /* 279BC 800371BC 03004014 */  bnez       $v0, .L800371CC
     /* 279C0 800371C0 01000224 */   addiu     $v0, $zero, 0x1
@@ -16,4 +16,4 @@ glabel func_800371AC
     /* 279DC 800371DC 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 279E0 800371E0 0800E003 */  jr         $ra
     /* 279E4 800371E4 00000000 */   nop
-endlabel func_800371AC
+endlabel cdrom_StartAudioEntryHeld

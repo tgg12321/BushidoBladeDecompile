@@ -1,4 +1,4 @@
-glabel func_800371F8
+glabel cdrom_StartAudioHeld
     /* 279F8 800371F8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 279FC 800371FC 1000BFAF */  sw         $ra, 0x10($sp)
     /* 27A00 80037200 F5DB000C */  jal        cdrom_StartAudio
@@ -16,4 +16,4 @@ glabel func_800371F8
     /* 27A28 80037228 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 27A2C 8003722C 0800E003 */  jr         $ra
     /* 27A30 80037230 00000000 */   nop
-endlabel func_800371F8
+endlabel cdrom_StartAudioHeld

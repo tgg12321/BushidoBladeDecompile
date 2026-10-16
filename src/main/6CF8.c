@@ -353,7 +353,7 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
         } else {
             func_8005C8A8(0, var_2, (s32)g_prim_buf_cursor, 0);
         }
-        func_80036940();
+        cdrom_Update();
         func_8005C6D0();
         DrawSync(0);
         VSync(2);
@@ -456,7 +456,7 @@ loop:
     func_80060E04(idx);
     font_BeginFrame();
     func_80019568(var_3);
-    func_80036940();
+    cdrom_Update();
     func_8005C6D0();
 
     if (D_800A3928 != 0) {

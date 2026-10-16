@@ -1,4 +1,4 @@
-glabel func_80037110
+glabel cdrom_StartAudioEntry
     /* 27910 80037110 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 27914 80037114 C0200400 */  sll        $a0, $a0, 3
     /* 27918 80037118 0980023C */  lui        $v0, %hi(D_8008F13C)
@@ -41,4 +41,4 @@ glabel func_80037110
     /* 279A0 800371A0 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 279A4 800371A4 0800E003 */  jr         $ra
     /* 279A8 800371A8 00000000 */   nop
-endlabel func_80037110
+endlabel cdrom_StartAudioEntry

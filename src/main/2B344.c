@@ -544,7 +544,7 @@ void func_8003B9D0(void) {
     snd_SerialMixOn();
     v0 = cdrom_GetFileIndex(5, D_800A3878[1]);
     cdrom_StartAudio(v0, D_800A3878[2]);
-    func_80037260();
+    cdrom_WaitAudioStarted();
     D_800A37B8 = 0;
     D_800A3834 = 7;
     gpu_SetDispMaskOn();
@@ -609,7 +609,7 @@ void func_8003BE10(void) {
         s32 v0 = cdrom_GetFileIndex(5, 0x20);
         cdrom_StartAudio(v0, 4);
     }
-    func_80037260();
+    cdrom_WaitAudioStarted();
     D_800A3834 = 0xB;
     gpu_SetDispMaskOn();
 }
@@ -769,7 +769,7 @@ void func_8003C040(void) {
     if (p[0] >= 0) {
         snd_SerialMixOn();
         cdrom_StartAudio(cdrom_GetFileIndex(5, p[0]), (u8)p[1]);
-        func_80037260();
+        cdrom_WaitAudioStarted();
     }
     D_800A37B8 = 0;
     D_800A3834 = 0x13;

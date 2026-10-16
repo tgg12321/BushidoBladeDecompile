@@ -19,7 +19,7 @@ glabel func_80035618
     /* 25E58 80035658 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25E5C 8003565C EAD7000C */  jal        snd_SerialMixOn
     /* 25E60 80035660 00000000 */   nop
-    /* 25E64 80035664 44DC000C */  jal        func_80037110
+    /* 25E64 80035664 44DC000C */  jal        cdrom_StartAudioEntry
     /* 25E68 80035668 21200000 */   addu      $a0, $zero, $zero
     /* 25E6C 8003566C 04000224 */  addiu      $v0, $zero, 0x4
     /* 25E70 80035670 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)

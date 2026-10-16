@@ -63,7 +63,7 @@ void cdrom_WaitIdle(void) {
             break;
         }
         func_8003AA48();
-        func_80036940();
+        cdrom_Update();
         if (D_800A3906 != 0) {
             func_8005C6D0();
         }
@@ -104,7 +104,7 @@ s32 cdrom_StartAudio(s32 arg0, s32 arg1) {
     return 1;
 }
 
-s32 func_80037110(s32 arg0) {
+s32 cdrom_StartAudioEntry(s32 arg0) {
     Unk8008F13CRow *s0 = &D_8008F13C[arg0];
     if (cdrom_StartAudio(cdrom_GetFileIndex(5, s0->unk_0), s0->unk_1) != 0) {
         if (s0->unk_4 != -1) {
@@ -117,8 +117,8 @@ s32 func_80037110(s32 arg0) {
     return 0;
 }
 
-s32 func_800371AC(void) {
-    s32 ret = ((s32(*)())func_80037110)();
+s32 cdrom_StartAudioEntryHeld(void) {
+    s32 ret = ((s32(*)())cdrom_StartAudioEntry)();
     if (ret) {
         D_80101E58.rec.unk04 = 1;
         return 1;
@@ -126,9 +126,9 @@ s32 func_800371AC(void) {
     return 0;
 }
 
-void func_800371E8(s16 arg0) { D_80101E58.rec.unk0A = arg0; }
+void cdrom_SetAudioRepeat(s16 arg0) { D_80101E58.rec.unk0A = arg0; }
 
-s32 func_800371F8(void) {
+s32 cdrom_StartAudioHeld(void) {
     if (((s32(*)())cdrom_StartAudio)() != 0) {
         D_80101E58.rec.unk04 = 1;
         return 1;
@@ -136,17 +136,17 @@ s32 func_800371F8(void) {
     return 0;
 }
 
-void func_80037234(void) {
+void cdrom_RequestStop(void) {
     D_80101E58.rec.unk04 = 0;
     D_80101E58.rec.unk08 = 1;
 }
 
-void func_80037250(void) { D_80101E58.rec.unk04 = 0; }
+void cdrom_ReleaseAudio(void) { D_80101E58.rec.unk04 = 0; }
 
-void func_80037260(void) {
+void cdrom_WaitAudioStarted(void) {
     while (D_80101E58.rec.unk02 != 0x16) {
         func_8003AA48();
-        func_80036940();
+        cdrom_Update();
         VSync(2);
     }
 }

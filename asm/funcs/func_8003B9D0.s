@@ -180,7 +180,7 @@ glabel func_8003B9D0
     /* 2C464 8003BC64 02006590 */  lbu        $a1, 0x2($v1)
     /* 2C468 8003BC68 F5DB000C */  jal        cdrom_StartAudio
     /* 2C46C 8003BC6C 21204000 */   addu      $a0, $v0, $zero
-    /* 2C470 8003BC70 98DC000C */  jal        func_80037260
+    /* 2C470 8003BC70 98DC000C */  jal        cdrom_WaitAudioStarted
     /* 2C474 8003BC74 00000000 */   nop
     /* 2C478 8003BC78 07000224 */  addiu      $v0, $zero, 0x7
     /* 2C47C 8003BC7C 0A80013C */  lui        $at, %hi(D_800A37B8)

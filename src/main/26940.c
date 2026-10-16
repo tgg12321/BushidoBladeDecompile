@@ -1,9 +1,9 @@
-/* The CD module's two state-machine steppers, func_80036140 and func_80036940.
- * .text 0x80036140 (ROM 0x26940). Start boundary: G8. Compiled -G8 (owner
- * ruling 2026-09-26, Q10): both read g_cd_result (and func_80036140 the
- * ATV/fade state) off $gp. Those globals are tentative definitions (COMMON,
- * zero bytes), as in 26730.c; gp-relative at their base only (owner ruling
- * Q62, 2026-09-30, global COMMON model). */
+/* The CD module's two state-machine steppers, cdrom_UpdateAudio and
+ * cdrom_Update. .text 0x80036140 (ROM 0x26940). Start boundary: G8. Compiled
+ * -G8 (owner ruling 2026-09-26, Q10): both read g_cd_result (and
+ * cdrom_UpdateAudio the ATV/fade state) off $gp. Those globals are tentative
+ * definitions (COMMON, zero bytes), as in 26730.c; gp-relative at their base
+ * only (owner ruling Q62, 2026-09-30, global COMMON model). */
 #include "common.h"
 #include "bb2.h"
 
@@ -11,7 +11,7 @@ CdlATV g_cd_atv;
 CdlATV D_800A36B8;
 u8 g_cd_result[8];
 
-void func_80036140(void) {
+void cdrom_UpdateAudio(void) {
     CdlATV atv;
 
     if (D_800A3854 > 0) {
@@ -217,13 +217,13 @@ void func_80036140(void) {
     }
 }
 
-extern void func_80036140(void);
+extern void cdrom_UpdateAudio(void);
 
-void func_80036940(void) {
+void cdrom_Update(void) {
     u8 param[4];
 
     if (D_80101E58.rec.unk02 >= 0x10) {
-        func_80036140();
+        cdrom_UpdateAudio();
         return;
     }
     switch (D_80101E58.rec.unk02) {

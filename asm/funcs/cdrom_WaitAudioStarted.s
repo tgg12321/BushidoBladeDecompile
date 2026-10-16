@@ -1,4 +1,4 @@
-glabel func_80037260
+glabel cdrom_WaitAudioStarted
     /* 27A60 80037260 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 27A64 80037264 1080033C */  lui        $v1, %hi(D_80101E62)
     /* 27A68 80037268 621E6384 */  lh         $v1, %lo(D_80101E62)($v1)
@@ -10,7 +10,7 @@ glabel func_80037260
   .L80037280:
     /* 27A80 80037280 92EA000C */  jal        func_8003AA48
     /* 27A84 80037284 00000000 */   nop
-    /* 27A88 80037288 50DA000C */  jal        func_80036940
+    /* 27A88 80037288 50DA000C */  jal        cdrom_Update
     /* 27A8C 8003728C 00000000 */   nop
     /* 27A90 80037290 330A020C */  jal        VSync
     /* 27A94 80037294 02000424 */   addiu     $a0, $zero, 0x2
@@ -25,4 +25,4 @@ glabel func_80037260
     /* 27AB4 800372B4 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 27AB8 800372B8 0800E003 */  jr         $ra
     /* 27ABC 800372BC 00000000 */   nop
-endlabel func_80037260
+endlabel cdrom_WaitAudioStarted

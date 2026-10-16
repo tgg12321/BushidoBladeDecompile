@@ -56,7 +56,7 @@ glabel main
     /* 7AD0 800172D0 00000000 */   nop
     /* 7AD4 800172D4 5A65000C */  jal        func_80019568
     /* 7AD8 800172D8 21206002 */   addu      $a0, $s3, $zero
-    /* 7ADC 800172DC 50DA000C */  jal        func_80036940
+    /* 7ADC 800172DC 50DA000C */  jal        cdrom_Update
     /* 7AE0 800172E0 00000000 */   nop
     /* 7AE4 800172E4 B471010C */  jal        func_8005C6D0
     /* 7AE8 800172E8 00000000 */   nop

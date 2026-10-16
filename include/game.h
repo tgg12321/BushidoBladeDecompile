@@ -2044,12 +2044,12 @@ typedef struct {
 /* The CD read / CD audio words at 0x80101E60..0x80101EA7: the tail of the
  * CD state block D_80101E58 (CdState below). Member widths follow the original
  * accesses; 0x80101E91..93 is alignment padding. unk3C..unk44 belong to the
- * object because func_80036140 (compiled -G8) keeps the address of its accesses
- * to unk3C / unk44 in a register only for a variable larger than 8 bytes.
- * unk3E (u16) and expected_pos (s32; no access reveals its signedness) lie in
- * that span but func_80036140 never touches them; they are typed by their
- * other users' accesses (Q13/Q14). `pair` holds a copy of a g_cd_file_table
- * element (a CdFileEntry), copied whole by cdrom_StartRead /
+ * object because cdrom_UpdateAudio (compiled -G8) keeps the address of its
+ * accesses to unk3C / unk44 in a register only for a variable larger than 8
+ * bytes. unk3E (u16) and expected_pos (s32; no access reveals its signedness)
+ * lie in that span but cdrom_UpdateAudio never touches them; they are typed by
+ * their other users' accesses (Q13/Q14). `pair` holds a copy of a
+ * g_cd_file_table element (a CdFileEntry), copied whole by cdrom_StartRead /
  * cdrom_StartAudio. */
 typedef struct {
     s16 unk00;        /* 0x80101E60 */
@@ -2080,7 +2080,7 @@ typedef struct {
  * bounded by owner ruling Q43). cdrom_StartAudio forms the CdlSetfilter
  * parameter (file, chan) as &rec.unk02 - 0xA and reloads rec.unk00 only after
  * its CdFileEntry copy into rec.pair (one object for the scheduler);
- * func_80036940 forms &rec.pair off later members. */
+ * cdrom_Update forms &rec.pair off later members. */
 typedef struct {
     u8 file;            /* 0x80101E58 */
     u8 chan;            /* 0x80101E59 */

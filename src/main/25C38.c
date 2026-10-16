@@ -85,8 +85,8 @@ void gpu_AddScreenGradient(void) {
 
 void func_800355E8(void) {
     snd_SerialMixOn();
-    func_80037110(1);
-    func_800371E8(1);
+    cdrom_StartAudioEntry(1);
+    cdrom_SetAudioRepeat(1);
 }
 
 /* Merged section (Q65: one original file). */
@@ -105,7 +105,7 @@ void func_80035618(s32 arg0) {
         if (D_800A31DA == 0) {
             func_800784E4(0x80118800);
             snd_SerialMixOn();
-            func_80037110(0);
+            cdrom_StartAudioEntry(0);
             D_800A3740 = 4;
             return;
         }
@@ -237,8 +237,8 @@ void func_80035828(void) {
     case 1:
         if (D_800A37B8 == 0) {
             snd_SerialMixOn();
-            func_80037110(7);
-            func_800371E8(1);
+            cdrom_StartAudioEntry(7);
+            cdrom_SetAudioRepeat(1);
         }
         D_800A37B8++;
         if (g_pad_state.held != 0) {

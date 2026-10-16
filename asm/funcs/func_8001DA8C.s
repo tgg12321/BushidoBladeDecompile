@@ -46,10 +46,10 @@ glabel func_8001DA8C
     /* E330 8001DB30 0B000424 */   addiu     $a0, $zero, 0xB
     /* E334 8001DB34 0A000424 */  addiu      $a0, $zero, 0xA
   .L8001DB38:
-    /* E338 8001DB38 44DC000C */  jal        func_80037110
+    /* E338 8001DB38 44DC000C */  jal        cdrom_StartAudioEntry
     /* E33C 8001DB3C 00000000 */   nop
   jlabel .L8001DB40
-    /* E340 8001DB40 7ADC000C */  jal        func_800371E8
+    /* E340 8001DB40 7ADC000C */  jal        cdrom_SetAudioRepeat
     /* E344 8001DB44 01000424 */   addiu     $a0, $zero, 0x1
   .L8001DB48:
     /* E348 8001DB48 1000BF8F */  lw         $ra, 0x10($sp)

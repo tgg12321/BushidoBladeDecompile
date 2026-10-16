@@ -230,7 +230,7 @@ extern Unk8008EA44Entry D_8008EBFC[6];
 extern u8 D_8008EC30[4];
 extern s16 D_8008F12C;
 
-/* Twelve rows func_80037110 reads by index: unk_0, the group-5 file
+/* Twelve rows cdrom_StartAudioEntry reads by index: unk_0, the group-5 file
  * cdrom_GetFileIndex resolves; unk_1, cdrom_StartAudio's second argument;
  * unk_4, an offset added to the file's start sector (-1: none). */
 typedef struct {
@@ -317,7 +317,7 @@ extern s16 D_800A3750[4];
 extern u8 D_800A3758;
 
 /* The 8-byte CD status/result buffer CdSync / CdReady fill: result[0] is the
- * status byte; func_80036140 hands &result[3] / &result[5] (the reported
+ * status byte; cdrom_UpdateAudio hands &result[3] / &result[5] (the reported
  * position) to CdPosToInt. Tentative definition in src/main/26940.c (Q62
  * global COMMON model). */
 extern u8 g_cd_result[8];
@@ -517,7 +517,7 @@ extern s32 func_8005B8B8(s32);
 extern void func_8005C6D0(void);
 extern s32 func_80038C70(void);
 extern void func_8003E2D8(s32, s32, s32, s32);
-extern void func_80036940(void);
+extern void cdrom_Update(void);
 
 /* Declared by more than one translation unit: data, then functions, by name. */
 extern u8 D_8008E908[][5];
@@ -657,9 +657,9 @@ extern void func_80034F88(void);
 extern void func_8003504C(void);
 extern void func_80035280(void);
 extern void func_80035F78(s16, s32, s32, s32, s32);
-extern s32 func_80037110(s32);
-extern void func_800371E8(s16);
-extern void func_80037260(void);
+extern s32 cdrom_StartAudioEntry(s32);
+extern void cdrom_SetAudioRepeat(s16);
+extern void cdrom_WaitAudioStarted(void);
 extern void cdrom_PauseAndWait(void);
 extern s32 func_80037AA4(void);
 extern s32 func_80037B00(u8 *);
