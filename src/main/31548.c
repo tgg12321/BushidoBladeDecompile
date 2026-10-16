@@ -56,18 +56,11 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         s3->node.xf.rot.vz = 0;
 
         do {
-            s32 idx;
             Unk80045878Node *a4p;
             a4p = &s3[s0];
-            /* FAKE: idx re-read from *tbl before each component, as the target
-             * reloads it and recomputes idx * 6; one read computes it once
-             * (score 48) */
-            idx = *tbl;
-            a4p->node.xf.rot.vx = s1[idx * 3];
-            idx = *tbl;
-            a4p->node.xf.rot.vy = -s1[idx * 3 + 1];
-            idx = *tbl;
-            a4p->node.xf.rot.vz = -s1[idx * 3 + 2];
+            a4p->node.xf.rot.vx = s1[*tbl * 3];
+            a4p->node.xf.rot.vy = -s1[*tbl * 3 + 1];
+            a4p->node.xf.rot.vz = -s1[*tbl * 3 + 2];
             s0++;
             tbl++;
         } while (s0 < 0x12);

@@ -728,24 +728,15 @@ s32 get_ofs(s32 arg0, s32 arg1) {
 
 s32 get_tw(RECT *tw) {
     if (tw != 0) {
-        /* FAKE: written-never-read scratch (SOTN dra/62DEC.c sp70[4] family;
-           dead-vars-local-array carve-out); without it: score 23 (25/33
-           insns) */
-        u32 tmp[4];
-        u8 r, b1;
-        s32 g, b2;
+        u32 window[4];
         u32 b15, re2, ret;
-        r = (tw->x & 0xFF) >> 3;
-        tmp[0] = r;
-        g = ((-tw->w) & 0xFF) >> 3;
-        tmp[2] = g;
-        b1 = (tw->y & 0xFF) >> 3;
-        tmp[1] = b1;
-        b15 = (u32)b1 << 0xF;
-        b2 = ((-tw->h) & 0xFF) >> 3;
-        re2 = ((u32)r << 0xA) | 0xE2000000u;
-        ret = b15 | re2 | ((u32)b2 << 5) | (u32)g;
-        tmp[3] = b2;
+        window[0] = (tw->x & 0xFF) >> 3;
+        window[2] = ((-tw->w) & 0xFF) >> 3;
+        window[1] = (tw->y & 0xFF) >> 3;
+        b15 = window[1] << 0xF;
+        window[3] = ((-tw->h) & 0xFF) >> 3;
+        re2 = (window[0] << 0xA) | 0xE2000000u;
+        ret = b15 | re2 | (window[3] << 5) | window[2];
         return ret;
     }
     return 0;
