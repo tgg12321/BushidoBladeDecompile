@@ -109,21 +109,20 @@ void memcard_AckSwEvents(void) {
 }
 
 s32 memcard_WaitHwEvent(void) {
-    s32 one = 1;
-loop:
-    if (TestEvent(g_memcard_hw_event_ioe) == one) {
-        return 1;
+    while (1) {
+        if (TestEvent(g_memcard_hw_event_ioe) == 1) {
+            return 1;
+        }
+        if (TestEvent(g_memcard_hw_event_err) == 1) {
+            return 2;
+        }
+        if (TestEvent(g_memcard_hw_event_timeout) == 1) {
+            return 3;
+        }
+        if (TestEvent(g_memcard_hw_event_new) == 1) {
+            return 4;
+        }
     }
-    if (TestEvent(g_memcard_hw_event_err) == one) {
-        return 2;
-    }
-    if (TestEvent(g_memcard_hw_event_timeout) == one) {
-        return 3;
-    }
-    if (TestEvent(g_memcard_hw_event_new) != one) {
-        goto loop;
-    }
-    return 4;
 }
 
 void memcard_AckHwEvents(void) {
