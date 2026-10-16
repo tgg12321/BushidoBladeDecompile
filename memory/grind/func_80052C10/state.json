@@ -1,8 +1,8 @@
 {
  "func": "func_80052C10",
  "file": "main/3AB48",
- "session_count": 5,
- "current_modality": "synthesis",
+ "session_count": 6,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 4,
    "modality": "synthesis",
    "headline": "Judge-directed TU-boundary shape measured and falsified (original links objects at 4-byte granularity; scratch link gives 0 or 3 pad words, never 1); ruling's 16-align objection refuted (asmpsx pad is"
+  },
+  {
+   "session": 6,
+   "floor": 4,
+   "modality": "solver",
+   "headline": "Solver: frame-free $t9 seat class-killed (ascending RA in all three allocators; no $25 RTL producer under -mno-abicalls; 18-step pressure ladder reaches $t9 only at N=23 with a frame); classify's SCHE"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A frame-free C chassis puts the 0x1F800400 address in $t9 (the remaining operand-only hunk).",
-   "mechanism": "global.c's ascending order puts $s0-$s7 before $t8/$t9; s2 (global) and s5 (block-local) pressure both added frames or spills.",
-   "next_probe": "Hand-write a chassis where only call-clobbered values (a0-a3 params, v0/v1) are live across the store, measured with dump.ps1 .greg; caller evidence (void(void) sink) argues against it, so treat it as the last C axis."
+   "hypothesis": "func_80052C10 is hand-written asm (li $t9 macro plus the asmpsx module-relative pad word), and its canonical-asm disposition needs a gate-class scan_hand_coded signal.",
+   "mechanism": "Both residual hunks now lack a compiled-C producer under the build flags: the $t9 seat is class-killed in s6, and the trailing pad word has no compiled-C producer (s5).",
+   "next_probe": "Escalation/forensics modality: file the proof-of-foreclosure record citing s2/s5/s6, or have the operator add a 'module-relative pad after the final jr delay slot' or 'frame-free $t9 temp' signal to tools/scan_hand_coded.py, which needs owner approval per the ruling."
   },
   {
-   "hypothesis": "A scan_hand_coded signal for a module-relative pad word after the final jr's delay slot would give func_80052C10 a gate-class STRONG tier of its own.",
-   "mechanism": "the 11-function jr;nop;nop census: the other 10 are Sony asmpsx modules, and the module-relative pad fits a module 0x80052788..0x80052C28.",
-   "next_probe": "Operator/owner work outside the Grinder surface (tools/scan_hand_coded.py; a new signal class needs owner approval per the ruling)."
+   "hypothesis": "This TU was compiled with different flags (e.g. -mabicalls) that make GCC prefer $25.",
+   "mechanism": "With abicalls, the call templates move call targets into $25, which could create a copy preference toward reg 25.",
+   "next_probe": "Forensics: look for abicalls fingerprints in the 3AB48 run (.cpload / $gp setup, jalr $25). None was seen in s1-s6, so expect a quick kill."
   },
   {
-   "hypothesis": "The hand-asm module containing func_80052C10 starts at math_LerpSVector 0x80052788 (the alternative start is 0x80052A88).",
-   "mechanism": "module-relative 16-pad: both starts are 8 mod 16; LerpSVector and LerpMatrix3x3 are STRONG S9, the gte_* functions between are LOW.",
-   "next_probe": "Check whether gte_SumSquares3 (0x80052754, ends at 0x80052788) closes a compiled or asm object (pad or trap signatures), to pin the boundary as evidence under rodata-object-alignment.md New TU boundaries."
+   "hypothesis": "The module containing func_80052C10 starts at math_LerpSVector 0x80052788 or at gte_SetMatrixRotTransIRVec 0x80052A88.",
+   "mechanism": "Module-relative 16-pad arithmetic (s5); padding cannot decide it because there are no pads in the run (s6).",
+   "next_probe": "Compare the instruction idioms (li macro use, register conventions) of the two candidate module heads against the known asmpsx modules."
   }
  ],
  "judge_constraints": [
@@ -120,6 +126,14 @@
    "measured_on": "build/bb2.map symbol addresses and asm/funcs/*.s instruction counts for the 11 jr;nop;nop functions plus scan_hand_coded --single over the 3AB48 run; no C candidate involved",
    "predicate_cite": "",
    "result": "Nine of the ten Sony modules end at 12 mod 16 (e.g. mtx_03.o 0x8007EB4C..0x8007EC5C = 17x16), so the pad is module-relat"
+  },
+  {
+   "session": 6,
+   "statement": "A frame-free GCC 2.7.2 body compiled with the Makefile CC_FLAGS cannot seat the scratchpad-address pseudo in $t9 (hard reg 25).",
+   "kill_scope": "class",
+   "measured_on": "ladder chassis tmp/grind/func_80052C10/s6/ladder.py (no FAKE construct), tools/gcc-2.7.2/build/cc1 with the Makefile:42 flags; baseline candidate.c single-store body (no FAKE)",
+   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:2248",
+   "result": "In the one-block form the address seat is exactly $(N+2): $10-$15 with no frame for N=8..13, $16 with a frame at N=14, a"
   }
  ],
  "ladder_skip": 0,

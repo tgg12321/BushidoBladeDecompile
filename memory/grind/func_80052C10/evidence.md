@@ -338,3 +338,22 @@ module pad" because 0x80052C28 is not 16-aligned. Both grounds were measured thi
 - [s5] A hand-asm module 0x80052788 (math_LerpSVector, STRONG S9) .. 0x80052C28 is 74x16 bytes, so func_80052C10's last word is that module's pad; func_80052C28 (STRONG S9) starts the next object (tmp/grind/func_80052C10/s5/run_scan.txt)
 
 - [s5] func_80052C10's own scan_hand_coded tier is still LOW; per the ruling, neighbours' signals do not transfer, so the canonical grant stays unavailable without a new signal class
+
+## [s6] solver
+- classify (object path, run in WSL) says SCHED with a one-nop multiset difference. That is a mis-route: the function has no load, and the nop is after jr's delay slot (tmp/grind/func_80052C10/s6/classify.txt).
+- Allocation order is ascending in all three allocators: no REG_ALLOC_ORDER in config/mips/mips.h; local-alloc.c:2248, global.c:1058, reload1.c:3769.
+- $25 appears in the MIPS port only behind TARGET_ABICALLS/TARGET_LONG_CALLS (mips.md:6165 call_internal2 and related, mips.c:4874 .cpload). The build uses -mno-abicalls (Makefile:42).
+- Pressure ladder (s6/ladder.txt): the one-block seat is $(N+2). It reaches $16 at N=14, already with a frame, and $25 at N=23, framed.
+- No pad word sits between any functions from 0x80052754 to 0x80052C10.
+
+- [s6] sandbox --disable all --diff on candidate.c gives score 4: hunk 1 operand-only (lui/ori/sw in $t9 vs $v0), hunk 2 source-level (target has an extra nop after jr's delay slot).
+
+- [s6] inverse_compose classify needs WSL (Windows python cannot find objdump). Its SCHED verdict is a mis-route: there is no load-delay nop to schedule.
+
+- [s6] No REG_ALLOC_ORDER in config/mips/mips.h. local-alloc.c:2248, global.c:1058 and reload1.c:3769 all scan registers ascending.
+
+- [s6] Hard reg 25 is referenced in the MIPS port only by abicalls/long-calls call templates and .cpload (mips.md:6165 etc., mips.c:4874), and the build uses -mno-abicalls.
+
+- [s6] The pressure ladder (tmp/grind/func_80052C10/s6/ladder.txt) puts the address in $(N+2) and crosses into $s0 with a frame at N=14, before it can reach $t8/$t9.
+
+- [s6] No pad word sits between any functions from 0x80052754 to 0x80052C10.

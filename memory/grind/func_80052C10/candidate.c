@@ -11,6 +11,8 @@
  * s5b: the Judge's TU-boundary shape (8-aligned next object) is falsified: 102
  * objects start at 4 mod 8 in the original link; the module-relative 16-pad fits
  * a module starting at 0x80052A88. Still score 4; do not land.
+ * s6 (solver): $t9 seat class-killed for frame-free C (ascending RA, no $25 RTL
+ * producer under -mno-abicalls; ladder reaches $t9 only at N=23, framed).
  */
 void func_80052C10(void)
 {

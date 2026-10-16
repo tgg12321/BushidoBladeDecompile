@@ -279,3 +279,62 @@ Frontier for s6:
 - probe: tools/fake_ablate.py on candidate.c (nothing to ablate) and sandbox --disable all --diff on candidate.c this session.
 - result: Score 4, the same two hunks as s1-s4: operand-only $t9 vs $v0, source-level missing trailing nop. Every banked kill stands as measured.
 - verdict: CONFIRMED
+
+## [s6] Kill re-audit (solver): the banked candidate re-measures 4 with no FAKE carrier.
+- mechanism: mandated re-audit before new probes (flat floor, instance kills exist).
+- probe: sandbox --disable all --diff on candidate.c; tools/fake_ablate.py on candidate.c.
+- result: score 4, same two hunks (operand-only $t9 vs $v0; source-level trailing nop). fake_ablate: no FAKE constructs, nothing to ablate. No banked kill was measured under a FAKE carrier.
+- verdict: CONFIRMED
+- artifacts: tmp/grind/func_80052C10/s6/sandbox_baseline.txt, fake_ablate.txt
+
+## [s6] inverse_compose classify routes the residual to SCHED, but that routing does not fit this function.
+- mechanism: classify (object path, --target-object build/src/main/3AB48.o --ours-object tmp/sandbox/...) masks registers; the only multiset difference left is one `nop`, which it reads as a maspsx load-delay nop.
+- probe: classify run in WSL (Windows-side python cannot find objdump, so run it from WSL).
+- result: "FIRST DIVERGENCE: SCHED". The function has no load, so the nop cannot be a load-delay nop. It sits after the jr delay slot, which is the s5 module-pad word, not a scheduler output. inverse_sched has nothing to solve, so the SCHED axis is not a real lever here. The $t9 seat is hidden by the classifier's register mask.
+- verdict: CONFIRMED (classifier mis-route recorded; no scheduler search run)
+- artifacts: tmp/grind/func_80052C10/s6/classify.txt, classify.sh
+
+## [s6] CLASS KILL: a frame-free GCC 2.7.2 body under the build flags does not seat the address pseudo in $t9 (closes s5b frontier item 1).
+- mechanism: there are two ways to reach hard reg 25. (a) Ascending scan: mips.h defines no REG_ALLOC_ORDER, so local-alloc find_free_reg (local-alloc.c:2248-2254), global find_reg (global.c:1058-1064) and reload's order_regs_for_reload (reload1.c:3769-3777) all scan ascending. $16-$23 ($s0-$s7) come before $24/$25, and any of them in use makes compute_frame_size save it (mips.c:4479-4481 MUST_SAVE_REGISTER). (b) A copy preference toward hard reg 25: the only producers of $25 in the MIPS port are the `%^` call templates and .cpload, all gated on TARGET_ABICALLS or TARGET_LONG_CALLS (mips.md:6165, :6182, :6219, :6235; mips.c:4874). The Makefile:42 CC_FLAGS pass -mno-abicalls and no -mlong-calls, so the RTL never mentions reg 25.
+- probe: the analytic check above, plus an empirical ladder (ladder.py): N values from a volatile extern array kept live across the store, in a one-block form and in a branchy form, N=8..25, run through the build cc1 with the exact CC_FLAGS.
+- result: the one-block address seat is exactly $(N+2): $10..$15 with no frame for N=8..13, then $16 with a frame at N=14, climbing to $25 at N=23, still framed. The branchy form keeps the address in $2. Every seat from $16 up comes with a prologue, and the target has none. This generalises s2 (global pressure, 22 pseudos) and s5 (block-local pressure).
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:2248
+- measured_on: ladder chassis in tmp/grind/func_80052C10/s6/ladder.py (no FAKE), build cc1 tools/gcc-2.7.2/build/cc1 with Makefile:42 flags; candidate.c body for the baseline
+- artifacts: tmp/grind/func_80052C10/s6/ladder.py, ladder.txt, ladder_N{14,15,22}_{local,global}.s; rejected/ascending-pressure-ladder-t9-needs-frame.c
+
+## [s6] Padding cannot pin the module start in the 3AB48 hand-asm run (s5b frontier item 3, partial).
+- probe: tails of gte_SumSquares3, math_LerpSVector, gte_SetMatrixRotTransIR, gte_SetRotMatrixClearTrans, gte_ReadFarColor, and the map addresses 0x80052754..0x80052C10.
+- result: every function between them ends `jr; <delay>` and the next symbol follows at once. There is no pad word anywhere from 0x80052754 to 0x80052C10, so padding cannot place a boundary at 0x80052788 or 0x80052A88. Only the start-relative 16-pad arithmetic from s5 bears on it.
+- verdict: CONFIRMED
+
+## s6 synthesis / frontier
+The register hunk on the C side is now closed at class level. Under -mno-abicalls GCC 2.7.2 seats the address in $t9 only with $s0-$s7 in use, and that brings a prologue the 6-word target does not have. The trailing nop has no compiled-C producer either (s5). Both residual hunks point to hand-written asm with a `li $t9` macro expansion. The remaining work is outside C: a scan_hand_coded signal, which needs owner approval per the ruling, or an escalation-modality disposition. The C ladder still has rederive and forensics modalities. The only C reading left is a different flag set (e.g. abicalls) for this TU, and no evidence in the binary supports one: no .cpload, no gp setup.
+
+## [s6] Kill re-audit: the banked single-store candidate still scores 4 with no FAKE carrier, so no banked instance kill was measured under a FAKE construct.
+- mechanism: Mandated re-audit (flat floor, instance kills exist).
+- probe: sandbox --disable all --diff on candidate.c; tools/fake_ablate.py on candidate.c.
+- result: Score 4 with the same two hunks (operand-only $t9 vs $v0, source-level trailing nop). fake_ablate found nothing to ablate.
+- verdict: CONFIRMED
+
+## [s6] inverse_compose classify (object path) routes the residual to SCHED, but that verdict is a mis-route for this function.
+- mechanism: classify masks registers and reads the single surplus nop as a maspsx load-delay nop.
+- probe: classify main/3AB48 func_80052C10 --target-object build/src/main/3AB48.o --ours-object tmp/sandbox/func_80052C10/main/3AB48.o, run from WSL.
+- result: FIRST DIVERGENCE: SCHED. The function has no load. The surplus nop follows jr's delay slot, which is the s5 module-pad word, so no scheduler search applies. The $t9 seat is hidden by the register mask.
+- verdict: CONFIRMED
+
+## [s6] A frame-free GCC 2.7.2 body compiled with the Makefile CC_FLAGS cannot seat the scratchpad-address pseudo in $t9 (hard reg 25).
+- mechanism: mips.h defines no REG_ALLOC_ORDER, so local-alloc find_free_reg (local-alloc.c:2248), global find_reg (global.c:1058) and reload order_regs_for_reload (reload1.c:3769) all scan ascending. That puts $s0-$s7 ahead of $t8/$t9, and using any of them forces a prologue save (mips.c:4481 MUST_SAVE_REGISTER). The other route, a hard-reg-25 copy preference, needs RTL that mentions $25, and those templates are all gated on TARGET_ABICALLS or TARGET_LONG_CALLS (mips.md:6165, :6182, :6219, :6235; mips.c:4874). The build passes -mno-abicalls and no -mlong-calls (Makefile:42).
+- probe: The analytic predicate above, plus an empirical ladder (tmp/grind/func_80052C10/s6/ladder.py). N=8..25 values from a volatile extern array are kept live across the store, in one-block and branchy forms, and compiled with the build cc1 and the exact CC_FLAGS.
+- result: In the one-block form the address seat is exactly $(N+2): $10-$15 with no frame for N=8..13, $16 with a frame at N=14, and $25 at N=23, still framed. In the branchy form the address stays in $2. No measured form reaches $t9 without a prologue, and the target has none.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: ladder chassis tmp/grind/func_80052C10/s6/ladder.py (no FAKE construct), tools/gcc-2.7.2/build/cc1 with the Makefile:42 flags; baseline candidate.c single-store body (no FAKE)
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:2248
+
+## [s6] Inter-function padding in the 3AB48 hand-asm run does not pin the module start at 0x80052788 or 0x80052A88.
+- mechanism: s5b frontier item 3: look for a pad word that closes an object before either candidate start.
+- probe: Function tails and map addresses for gte_SumSquares3 through gte_ReadFarColor (0x80052754..0x80052C10).
+- result: Every function ends jr plus its delay slot, with the next symbol right after. There is no pad word in the range, so padding gives no boundary evidence and only the s5 start-relative 16-pad arithmetic bears on the module start.
+- verdict: CONFIRMED
