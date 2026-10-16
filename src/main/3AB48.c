@@ -658,9 +658,6 @@ INCLUDE_ASM("asm/funcs", func_800545F4);
 extern const char D_80015840[];
 
 s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
-    /* FAKE: second handle to the D_800EFAE8 record (pointer alias): keeps
-     * &D_800EFAE8 in one base register ($s1) for the whole body; direct field
-     * access rematerializes it: score 63 */
     Unk800EFAE8Rec *s = &D_800EFAE8;
     /* FAKE: id (a0 + 0x131) computed at entry; at its uses the addiu moves
      * below the prologue stores (score 6). */
@@ -672,13 +669,13 @@ s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
 
     if (a6 != 0) {
         ret = ndata_ReadChecked(id, a6);
-        D_800EFAE8.unk2C = a6;
+        s->unk2C = a6;
     } else {
         if (ndata_GetArenaRoomAfter(id) < 0) {
             func_80046914();
             printf(D_80015840);
         }
-        D_800EFAE8.unk2C = (s32)func_800469C4(id);
+        s->unk2C = (s32)func_800469C4(id);
         ret = 0;
     }
     s->unk4 = *(s32 *)(((Unk800469C4Hdr *)s->unk2C)->unk4 + s->unk2C);
@@ -757,9 +754,6 @@ extern s32 D_800A3250[2];
  * sums in func_80054FDC and func_80054604 swap their addu operands.
  */
 s32 func_8005490C(void) {
-    /* FAKE: second handle to the D_800EFAE8 record (pointer alias), as in
-     * func_80054604: keeps &D_800EFAE8 in $s3 for the whole body; direct field
-     * access: score 157 */
     Unk800EFAE8Rec *s = &D_800EFAE8;
     VECTOR vec;
     /* The 0x84 bytes func_800198D0 decodes, as s16: three of its fields load
