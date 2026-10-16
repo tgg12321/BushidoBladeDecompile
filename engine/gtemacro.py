@@ -61,8 +61,9 @@ adding its verbatim lines with the same provenance fields.
 
 VENDORED HEADERS (owner decisions 2026-10-15: R1 vendor whole, R2 DMPSX option
 B, R3 class grant): Sony's inline_o.h, inline_c.h and gtemac.h live whole in
-include/psxsdk/. A C body CALLS their macros; cpp is the only expander and the
-header the only source of asm text. VENDORED pins each file, DMPSX_WORDS holds
+include/psxsdk/, and SN's libsn.h (pollhost()) beside them. A C body CALLS
+their macros; cpp is the only expander and the header the only source of asm
+text. VENDORED pins each file, DMPSX_WORDS holds
 the eleven owner-approved placeholder -> command word pairs,
 check_vendored() proves each file is Sony's text with only those words
 substituted, header_macros() parses every function-like #define, and
@@ -310,6 +311,10 @@ _OPERAND_RE = re.compile(r'\s*"([^"\\]*)"\s*\((.*)\)\s*$', re.S)
 _CALL_RE = re.compile(r'([A-Za-z_]\w*)\s*\(')
 _IDENT_RE = re.compile(r'[A-Za-z_]\w*$')
 _VOLATILE_RE = re.compile(r'\b(?:volatile|__volatile__)\b')
+# cia.ASM_KEYWORD_RE plus bare `asm` (LIBSN.H writes `asm("break 1024")`). Only
+# for pinned / vendored header text, where `asm` cannot be a register pin.
+_HEADER_ASM_RE = re.compile(
+    r'\b(__asm__|__asm|asm)\s*(?:volatile|__volatile__|__volatile|const|__const__|__const)?\s*\(')
 
 
 class Stmt:
@@ -455,7 +460,7 @@ def _parse_macro(excerpt: str, known: dict) -> tuple[str, list[str], list[Stmt]]
             i += 1
         if i >= len(body):
             break
-        am = cia.ASM_KEYWORD_RE.match(body, i)
+        am = _HEADER_ASM_RE.match(body, i)
         if am:
             close = inlineasm._match_paren(body, am.end() - 1)
             st = parse_asm(body[am.start():am.end() - 1], body[am.end():close - 1])
@@ -688,9 +693,24 @@ VENDORED = {
                        " sha256 9fe028fd...3357d5): equal but for the $PSLibId line",
         "dmpsx": False,
     },
+    # SN Systems' LIBSN.H: pollhost() / PSYQpause() (`break 1024` / `break
+    # 1031`) and the PCdrv prototypes. It replaced a BB2-written libsn.h.
+    "include/psxsdk/libsn.h": {
+        "pslibid": _PSLIBID_40,
+        "source": f"{_PSYQ400} INCLUDE/LIBSN.H",
+        "sony_sha256": "713aa3dcf5bcb5fb75ac76fb731fcf4f07c2f54e89bcfeead1ca13fafc00ced9",
+        "second_copy": f"{_SH} and {_XG} include/psyq/libsn.h (Release 4.3,"
+                       " sha256 f1c0f803...c36817) and ser-pounce/rood-reverse@11349608"
+                       " include/psx/libsn.h (Release 4.5, sha256 1bc50ed4...4b923c0f):"
+                       " LF, equal but for the $PSLibId line",
+        "dmpsx": False,
+    },
 }
 INLINE_HEADERS = ("inline_o.h", "inline_c.h")
 COMPOSITE_HEADER = "gtemac.h"
+# A vendored header whose macros a TU calls with or without an inline header.
+STANDALONE_HEADERS = ("libsn.h",)
+VENDORED_BASENAMES = (*INLINE_HEADERS, COMPOSITE_HEADER, *STANDALONE_HEADERS)
 
 # DMPSX placeholder -> (command word, macro, nugget lines, PSn00bSDK lines).
 # Owner decision 2026-10-15 (R2, option B): the eleven placeholders the BB2 GTE
@@ -832,14 +852,28 @@ class Macro(NamedTuple):
     stmts: tuple[Stmt, ...]      # asm statements, gtemac.h calls expanded
     has_cop2: bool               # a cop2 instruction or a GTE command word
     placeholder: bool            # an unsubstituted DMPSX placeholder remains
+    has_trap: bool = False       # a trap instruction (_TRAP_OPS)
+
+    @property
+    def admitted(self) -> bool:
+        """A call C cannot write: its expansion has a cop2 or a trap
+        instruction. gte_nop() (a lone `nop`) is a scheduling barrier."""
+        return self.has_cop2 or self.has_trap
+
+
+# Trap instructions with a code field, which GCC never emits but for its
+# divide guards (break 6/7): LIBSN.H's pollhost() / PSYQpause() are `break
+# 1024` / `break 1031`.
+_TRAP_OPS = frozenset({"break", "syscall"})
+_BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.S)
 
 
 def _macro_defines(text: str):
     """(name, line, params, body) of every function-like #define; body is the
-    replacement list with continuations joined."""
+    replacement list with continuations joined and comments blanked."""
     out = []
     for s, e, name, line in _define_spans(text):
-        logical = text[s:e].replace("\\\n", " ")
+        logical = _BLOCK_COMMENT_RE.sub(" ", text[s:e].replace("\\\n", " "))
         m = re.match(r"\s*#\s*define\s+([A-Za-z_]\w*)\(([^)]*)\)(.*)$", logical, re.S)
         if m:
             params = tuple(p.strip() for p in m.group(2).split(",") if p.strip())
@@ -847,8 +881,8 @@ def _macro_defines(text: str):
     return out
 
 
-def _instr_flags(stmts) -> tuple[bool, bool]:
-    cop2 = placeholder = False
+def _instr_flags(stmts) -> tuple[bool, bool, bool]:
+    cop2 = placeholder = trap = False
     for st in stmts:
         for x in st.instrs:
             dw = _DOTWORD_RE.fullmatch(x)
@@ -856,7 +890,9 @@ def _instr_flags(stmts) -> tuple[bool, bool]:
                 placeholder = True
             elif x.split(" ", 1)[0].lower() in _COP2_OPS or cia.CANONICAL_DOTWORD_RE.search(x):
                 cop2 = True
-    return cop2, placeholder
+            elif x.split(" ", 1)[0].lower() in _TRAP_OPS:
+                trap = True
+    return cop2, placeholder, trap
 
 
 def _read_vendored(root: str, basename: str) -> str | None:
@@ -892,8 +928,8 @@ def parse_header(text: str, header: str, known: dict | None = None):
         except ValueError as exc:
             failed.append((name, str(exc)))
             continue
-        cop2, ph = _instr_flags(stmts)
-        macros[name] = known[name] = Macro(header, line, params, tuple(stmts), cop2, ph)
+        cop2, ph, trap = _instr_flags(stmts)
+        macros[name] = known[name] = Macro(header, line, params, tuple(stmts), cop2, ph, trap)
     return macros, failed
 
 
@@ -921,10 +957,21 @@ def _header_macros_cached(inline: str, inline_text, composite_text):
     return tuple(out.items())
 
 
+def standalone_macros(header: str, root: str | Path = REPO_ROOT) -> dict[str, Macro]:
+    """Every macro of one STANDALONE_HEADERS file (libsn.h)."""
+    if header not in STANDALONE_HEADERS:
+        raise ValueError(f"not a standalone vendored header: {header}")
+    return dict(_standalone_cached(header, _read_vendored(str(root), header)))
+
+
+@functools.lru_cache(maxsize=4)
+def _standalone_cached(header: str, text):
+    return () if text is None else tuple(parse_header(text, header)[0].items())
+
+
 def vendored_names(root: str | Path = REPO_ROOT) -> frozenset[str]:
-    """Every function-like macro name the three vendored files define."""
-    return _names_cached(tuple(_read_vendored(str(root), b)
-                               for b in (*INLINE_HEADERS, COMPOSITE_HEADER)))
+    """Every function-like macro name the vendored files define."""
+    return _names_cached(tuple(_read_vendored(str(root), b) for b in VENDORED_BASENAMES))
 
 
 @functools.lru_cache(maxsize=4)
@@ -935,14 +982,14 @@ def _names_cached(texts: tuple) -> frozenset[str]:
 # `#include <psxsdk/inline_o.h>`, `"psxsdk/inline_o.h"` or any path ending in a
 # vendored basename (a directive's spelling never hides an inclusion).
 _VENDORED_INCLUDE_RE = re.compile(
-    r'^[ \t]*(?:#|%:)[ \t]*include[ \t]*[<"](?:[^>"\n]*/)?'
-    r'(inline_o\.h|inline_c\.h|gtemac\.h)[>"]', re.M)
+    r'^[ \t]*(?:#|%:)[ \t]*include[ \t]*[<"](?:[^>"\n]*/)?('
+    + "|".join(map(re.escape, VENDORED_BASENAMES)) + r')[>"]', re.M)
 
 
 @functools.lru_cache(maxsize=16)
 def tu_includes(text: str) -> frozenset[str]:
     """Basenames of the vendored headers `text` #includes (comments ignored)."""
-    if not any(b in text for b in (*INLINE_HEADERS, COMPOSITE_HEADER)):
+    if not any(b in text for b in VENDORED_BASENAMES):
         return frozenset()
     return frozenset(_VENDORED_INCLUDE_RE.findall(cia.compiler_view(text).code))
 
@@ -958,13 +1005,27 @@ def tu_header(text: str) -> str | None:
 
 def tu_macros(text: str, root: str | Path = REPO_ROOT) -> dict[str, Macro]:
     """The vendored macros a call in this TU expands to: its inline header's,
-    plus gtemac.h's composites when it includes gtemac.h too."""
+    plus gtemac.h's composites when it includes gtemac.h too, plus those of
+    each standalone header (libsn.h) it includes."""
     inline = tu_header(text)
-    if inline is None:
-        return {}
-    composites = COMPOSITE_HEADER in tu_includes(text)
-    return {n: m for n, m in header_macros(inline, root).items()
-            if composites or m.header != COMPOSITE_HEADER}
+    out = {}
+    if inline is not None:
+        composites = COMPOSITE_HEADER in tu_includes(text)
+        out = {n: m for n, m in header_macros(inline, root).items()
+               if composites or m.header != COMPOSITE_HEADER}
+    for h in STANDALONE_HEADERS:
+        if h in tu_includes(text):
+            out.update(standalone_macros(h, root))
+    return out
+
+
+def call_header(text: str, name: str, root: str | Path = REPO_ROOT) -> str:
+    """The header a call of `name` is keyed by in a region hash: a standalone
+    header's own name, else the TU's inline header ('-' without one)."""
+    m = tu_macros(text, root).get(name)
+    if m is not None and m.header in STANDALONE_HEADERS:
+        return m.header
+    return tu_header(text) or "-"
 
 
 _IDENT_RE = re.compile(r"\b[A-Za-z_]\w*")
@@ -1091,8 +1152,8 @@ _ARG_ASM_RE = re.compile(r"\b(?:__asm__|__asm|asm)\b|\(\s*\{")
 def call_issues(text: str, func: str, root: str | Path = REPO_ROOT) -> list[str]:
     """Why `func`'s vendored macro calls cannot be admitted, [] when they can:
     a header that is not Sony's text, a macro the TU's header does not define
-    (wrong header, or gtemac.h without an inline header), a macro without a
-    GTE command (`gte_nop()` is a scheduling barrier by name) or with a DMPSX
+    (wrong header, or gtemac.h without an inline header), a macro that is not
+    Macro.admitted (`gte_nop()` is a scheduling barrier by name) or with a DMPSX
     placeholder left, an asm keyword or a GNU statement-expression `({` in the
     arguments, a call in a TU that does not #include a vendored header itself,
     and a source-file #define / #undef of a vendored name.
@@ -1118,8 +1179,8 @@ def call_issues(text: str, func: str, root: str | Path = REPO_ROOT) -> list[str]
         elif m.placeholder:
             issues.append(f"call of {name}: its expansion keeps a DMPSX placeholder "
                           f"(no agreed command word)")
-        elif not m.has_cop2:
-            issues.append(f"call of {name}: its expansion has no GTE (cop2) instruction "
+        elif not m.admitted:
+            issues.append(f"call of {name}: its expansion has no cop2 or trap instruction "
                           f"(a scheduling barrier by name)")
     for _s, _e, name in shadow_spans(text, root):
         issues.append(f"the TU redefines vendored macro {name} (#define/#undef)")
@@ -1295,8 +1356,8 @@ def paste_spans(text: str) -> list[tuple[int, int]]:
 def macro_strip_spans(text: str, root: str | Path = REPO_ROOT) -> list[tuple[int, int]]:
     """Spans of a source file the cheat strip removes (sandbox) and counts
     (gate) by name: invocations of a foreign header's asm macro, #define /
-    #undef of a vendored name, calls of a vendored macro without a GTE
-    command (gte_nop(); scored as stripped since the gate refuses it), and
+    #undef of a vendored name, calls of a vendored macro that is not
+    Macro.admitted (gte_nop(); scored as stripped since the gate refuses it), and
     token pastes (paste_spans)."""
     spans = [(s, e) for s, e, _n in _invocation_spans(text, foreign_asm_macros(root))]
     spans += [(s, e) for s, e, _n in shadow_spans(text, root)]
@@ -1308,7 +1369,9 @@ def macro_strip_spans(text: str, root: str | Path = REPO_ROOT) -> list[tuple[int
         macros = {}
     if not macros:  # no (single) inline header: either one's barrier counts
         macros = {**header_macros("inline_c.h", root), **header_macros("inline_o.h", root)}
-    free = {n: True for n, m in macros.items() if not m.has_cop2}
+    for h in STANDALONE_HEADERS:
+        macros.update(standalone_macros(h, root))
+    free = {n: True for n, m in macros.items() if not m.admitted}
     spans += [(s, e) for s, e, _n in _invocation_spans(text, free)]
     spans += [(s, e) for s, e, _n in bare_spans(text, root)]
     return spans

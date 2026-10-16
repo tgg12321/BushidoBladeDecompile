@@ -393,8 +393,8 @@ def _strip_spans_cached(text: str) -> tuple[tuple[int, int], ...]:
             spans.append((bs, be))
     # Asm reached through a macro name (engine.gtemacro): an invocation of a
     # foreign header's asm macro, a #define/#undef shadowing a vendored PsyQ
-    # macro, a call of a vendored macro without a GTE command (gte_nop()).
-    # Vendored calls WITH a GTE command are kept: cpp expands them in the
+    # macro, a call of a vendored macro without a cop2 or trap instruction
+    # (gte_nop()). Admitted vendored calls are kept: cpp expands them in the
     # sandbox as in the build, and the completion gate treats them as islands.
     from . import gtemacro  # local import: gtemacro imports this module
     for ms, me in gtemacro.macro_strip_spans(text):

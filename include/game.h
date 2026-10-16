@@ -16,7 +16,6 @@
 #include <psxsdk/libetc.h>
 #include <psxsdk/libgpu.h>
 #include <psxsdk/libgte.h>
-#include <psxsdk/libsn.h>
 #include <psxsdk/libsnd.h>
 #include <psxsdk/libspu.h>
 

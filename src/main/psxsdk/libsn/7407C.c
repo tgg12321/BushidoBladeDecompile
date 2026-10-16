@@ -2,10 +2,10 @@
  * 0x8008387C..0x80083954: an unidentified region between verbatim LIBSCAN
  * modules (docs/naming/libscan/matches.json;
  * memory/closer/psyq-library-census.md), one file per gap (Q106 D3), named by
- * its ROM offset. */
+ * its ROM offset. LIBSN.H is not included: this PCread's parameter types are
+ * not Sony's (`int PCread(int fd, char *buff, int len)`). */
 #include "common.h"
 #include "include_asm.h"
-#include <psxsdk/libsn.h>
 
 extern s32 _SN_read(s32, s32, s32, s32);
 

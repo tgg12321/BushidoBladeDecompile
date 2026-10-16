@@ -3,7 +3,7 @@
 A whole original-assembly body may use the canonical function grant. A C body
 must instead match the reviewed assembly islands, and all remaining C is still
 checked. Region hashes include operands/constraints, not just opcode strings.
-An island is an asm statement or a call of a vendored PsyQ GTE macro
+An island is an asm statement or a call of a vendored PsyQ macro
 (engine.gtemacro.call_sites); a call must also pass gtemacro.call_issues.
 """
 from __future__ import annotations
@@ -28,8 +28,9 @@ REFUSE_WRITTEN_OUT_UNITS = False
 
 def _islands(text: str, func: str) -> list[tuple[int, int, str | None]]:
     """(start, end, header): every assembly island of func's body — asm
-    keyword statements (header None) and calls of vendored PsyQ GTE macros
-    (header = the TU's inline header; engine.gtemacro.call_sites) — sorted."""
+    keyword statements (header None) and calls of vendored PsyQ macros
+    (header = gtemacro.call_header: the TU's inline header, or libsn.h for
+    its own macros; engine.gtemacro.call_sites) — sorted."""
     span = inlineasm._func_body_span(text, func)
     if span is None:
         return []
@@ -44,10 +45,8 @@ def _islands(text: str, func: str) -> list[tuple[int, int, str | None]]:
         if kw.end < 0:
             raise ValueError(f'{func}: unclosed assembly block')
         result.append((kw.start, kw.end + 1, None))
-    calls = gtemacro.call_sites(text, func)
-    if calls:
-        header = gtemacro.tu_header(text) or '-'
-        result += [(s, e, header) for s, e, _name in calls]
+    result += [(s, e, gtemacro.call_header(text, name))
+               for s, e, name in gtemacro.call_sites(text, func)]
     return sorted(result)
 
 
@@ -60,7 +59,7 @@ def region_hashes(text: str, func: str) -> list[str]:
     """One sha256 per island over its C tokens (layer2.tokens: string literals
     verbatim, whitespace and comments dropped). Any template, operand,
     constraint or clobber change moves the hash; re-indenting does not. A
-    macro call hashes as `<inline header>:` + its tokens, so a call's
+    macro call hashes as `<call_header>:` + its tokens, so a call's
     arguments, its macro, or the TU's switch between inline_o.h and
     inline_c.h (same names, different bodies) voids the grant."""
     return [hashlib.sha256(((f'{h}:' if h else '') + ' '.join(layer2.tokens(text[s:e])))

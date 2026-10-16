@@ -1044,9 +1044,11 @@ def test_gte_vendored_model() -> None:
     from engine import gtemacro as G
 
     # --- VENDORED pins: the three files, each with a Sony sha256 and sources.
-    eq("vendored: exactly the three PsyQ files",
+    eq("vendored: exactly the four PsyQ files",
        sorted(G.VENDORED), ["include/psxsdk/gtemac.h", "include/psxsdk/inline_c.h",
-                            "include/psxsdk/inline_o.h"])
+                            "include/psxsdk/inline_o.h", "include/psxsdk/libsn.h"])
+    eq("vendored: every VENDORED file has a basename the gates know",
+       sorted(Path(r).name for r in G.VENDORED), sorted(G.VENDORED_BASENAMES))
     for rel, meta in G.VENDORED.items():
         check(f"vendored: {rel} pins a sha256", len(meta["sony_sha256"]) == 64
               and int(meta["sony_sha256"], 16) >= 0)
@@ -1153,6 +1155,37 @@ def test_gte_vendored_model() -> None:
        "gte_RotTrans0" in G.tu_macros("#include <psxsdk/inline_o.h>\n"
                                       "#include <psxsdk/gtemac.h>\n", root), True)
 
+    # --- a standalone header (libsn.h): bare `asm`, a trailing comment, a trap.
+    sn = ('#define\tpollhost()\tasm("break 1024")\t/* inline to keep variable scope */\n'
+          '#define\tgte_fake()\tasm("nop")\n')
+    sn_root = _vendored_fixture_root()
+    (Path(sn_root) / "include/psxsdk/libsn.h").write_text(sn, newline="\n")
+    ms = G.standalone_macros("libsn.h", sn_root)
+    eq("standalone: pollhost parses to one break, a trap, admitted",
+       ([s.instrs for s in ms["pollhost"].stmts], ms["pollhost"].has_cop2,
+        ms["pollhost"].has_trap, ms["pollhost"].admitted), ([("break 1024",)], False, True, True))
+    check("standalone: a cop2- and trap-free macro is not admitted", not ms["gte_fake"].admitted)
+    check("standalone: a lone nop is not admitted (gte_nop)",
+          not G.header_macros("inline_o.h", sn_root)["gte_nop"].admitted)
+    try:
+        G.standalone_macros("inline_o.h", sn_root)
+        check("standalone_macros: refuses a non-standalone header", False)
+    except ValueError:
+        check("standalone_macros: refuses a non-standalone header", True)
+    check("vendored_names: libsn.h names included", "pollhost" in G.vendored_names(sn_root))
+    sn_inc = "#include <psxsdk/libsn.h>\n"
+    eq("tu_includes: libsn.h", G.tu_includes(sn_inc), frozenset({"libsn.h"}))
+    eq("tu_macros: libsn.h alone", sorted(G.tu_macros(sn_inc, sn_root)), ["gte_fake", "pollhost"])
+    eq("tu_macros: libsn.h with inline_o.h -> both",
+       ("pollhost" in G.tu_macros(sn_inc + "#include <psxsdk/inline_o.h>\n", sn_root),
+        "gte_rt" in G.tu_macros(sn_inc + "#include <psxsdk/inline_o.h>\n", sn_root)),
+       (True, True))
+    eq("call_header: a libsn.h macro is keyed by libsn.h, whatever the inline header",
+       (G.call_header(sn_inc, "pollhost", sn_root),
+        G.call_header(sn_inc + "#include <psxsdk/inline_o.h>\n", "pollhost", sn_root),
+        G.call_header(sn_inc + "#include <psxsdk/inline_o.h>\n", "gte_rt", sn_root)),
+       ("libsn.h", "libsn.h", "inline_o.h"))
+
     # --- call_sites: statement-position calls, compiler view only.
     inc = "#include <psxsdk/inline_o.h>\n#include <psxsdk/gtemac.h>\n"
 
@@ -1248,6 +1281,10 @@ def test_gte_vendored_model() -> None:
               all(own[n].placeholder for n in ("gte_gpl0", "gte_rtv1", "gte_ncs")))
         eq(f"vendored: {b} rtv0 carries the command word",
            ms["gte_rtv0"].stmts[-1].instrs[-1], ".word 0x4A486012")
+    sn = G.standalone_macros("libsn.h")
+    eq("vendored: libsn.h macros are pollhost / PSYQpause, one admitted break each",
+       {n: ([s.instrs for s in m.stmts], m.admitted) for n, m in sn.items()},
+       {"pollhost": ([("break 1024",)], True), "PSYQpause": ([("break 1031",)], True)})
     real = G._read_vendored(str(G.REPO_ROOT), "inline_o.h")
     for word in {w for w, _m, _n, _p in G.DMPSX_WORDS.values()}:
         check(f"vendored: command word 0x{word:08X} is not in Sony's text",
@@ -1259,7 +1296,8 @@ def test_gte_vendored_model() -> None:
             (Path(tmp) / r2).parent.mkdir(parents=True, exist_ok=True)
             (Path(tmp) / r2).write_bytes(Path(r2).read_bytes())
         (Path(tmp) / rel).write_bytes(text.replace('"$15","memory"', '"$15"', 1)
-                                      .replace("gte_", "gtE_", 1).encode("ascii"))
+                                      .replace("gte_", "gtE_", 1)
+                                      .replace("break 1024", "break 1025").encode("ascii"))
         check(f"check_vendored: an edit to {rel} is caught",
               any(rel in i and "not Sony's" in i for i in G.check_vendored(tmp)))
     for rel in ("include/psxsdk/inline_o.h", "include/psxsdk/inline_c.h"):
@@ -1334,7 +1372,7 @@ def test_gte_call_gates() -> None:
             nop = tu(calls3 + "\n    gte_nop();")
             grant(nop)
             check("call gate: standalone gte_nop() refused (no cop2)",
-                  any("gte_nop: its expansion has no GTE" in i for i in issues(nop)))
+                  any("gte_nop: its expansion has no cop2 or trap" in i for i in issues(nop)))
             src_nop = tu("    out[0] = 1;\n    gte_nop();")
             eq("call gate: gte_nop() counted as cheat asm",
                inlineasm.func_cheat_asm_count(src_nop, "func_GTE"), 1)
@@ -1344,6 +1382,34 @@ def test_gte_call_gates() -> None:
             eq("call gate: calls with a GTE command are kept and not counted", (kept, n), (text, 0))
             eq("call gate: calls with a GTE command are not cheat asm",
                inlineasm.func_cheat_asm_count(text, "func_GTE"), 0)
+
+            # LIBSN.H pollhost(): a trap, admitted alone or beside an inline header.
+            inc_sn = "#include <psxsdk/libsn.h>\n"
+            poll = tu("    for (;;) {\n        pollhost();\n    }", inc_sn)
+            eq("call gate: pollhost() is an island", [poll[s:e] for s, e in
+                                                      completion.blocks(poll, "func_GTE")],
+               ["pollhost();"])
+            grants.write_text(json.dumps({"schema": 2, "functions": {}}))
+            check("call gate: pollhost() without a grant is refused",
+                  any("no reviewed region grant" in i for i in issues(poll)))
+            grant(poll)
+            eq("call gate: pollhost() passes with its grant", issues(poll), [])
+            eq("call gate: pollhost() kept for the sandbox, not counted",
+               (inlineasm.strip_cheat_asm_file(poll), inlineasm.func_cheat_asm_count(poll, "func_GTE")),
+               ((poll, 0), 0))
+            check("call gate: PSYQpause() for pollhost() voids the grant", any(
+                "changed since review" in i for i in issues(poll.replace("pollhost", "PSYQpause"))))
+            mixed = tu(calls3 + "\n    pollhost();", inc_o + inc_sn)
+            eq("call gate: pollhost() beside GTE calls", G.call_issues(mixed, "func_GTE"), [])
+            check("call gate: pollhost() keyed by libsn.h, GTE calls by the inline header",
+                  completion.region_hashes(mixed, "func_GTE")[-1]
+                  == completion.region_hashes(tu(calls3 + "\n    pollhost();", inc_c + inc_sn),
+                                              "func_GTE")[-1])
+            check("call gate: pollhost() without libsn.h is refused",
+                  any("pollhost: not defined" in i for i in issues(tu(calls3 + "\n    pollhost();"))))
+            check("call gate: pollhost() with no vendored include is refused",
+                  any("does not include its header" in i
+                      for i in issues(tu("    pollhost();", "#include <psxsdk/libgte.h>\n"))))
 
             gpl0 = tu(calls3 + "\n    gte_gpl0();")
             check("call gate: a DMPSX placeholder macro refused",
@@ -1582,6 +1648,7 @@ def test_gte_header_registry() -> None:
         "include/obj.h": "#define FENCE \\\n    __asm__(\"\" ::: \"memory\")\n",
         "src/main/local.h": "#define VIA_BIOS BIOS_A_FUNCTION(a, 1)\n",
         "include/incl.h": "#include <psxsdk/inline_o.h>\n",
+        "include/incl_sn.h": "#include <psxsdk/libsn.h>\n",
     }
     for rel, text in files.items():
         (Path(root) / rel).parent.mkdir(parents=True, exist_ok=True)
@@ -1602,6 +1669,8 @@ def test_gte_header_registry() -> None:
         for i in issues))
     check("registry: a header including a vendored header is flagged",
           any(i.startswith("include/incl.h: includes a vendored") for i in issues))
+    check("registry: a header including libsn.h is flagged",
+          any(i.startswith("include/incl_sn.h: includes a vendored") for i in issues))
     eq("registry: foreign asm macros (function-like flag)",
        G.foreign_asm_macros(root),
        {"BAR": True, "QUX": True, "VIA_GTE": True, "FENCE": False, "VIA_BIOS": False})

@@ -8,6 +8,7 @@
 #include "bb2.h"
 #include "bb2_const.h"
 #include <psxsdk/libgte.h>
+#include <psxsdk/libsn.h>
 
 extern u8 D_800A3716;
 extern s32 g_rng_state;
@@ -23,7 +24,6 @@ const char D_8001004C[28] = "Fri Aug  7 22:26:32 1998\n";
 
 extern void printf();
 extern void func_800164F8(void);
-extern s32 PCread(s32, u8 *, s32);
 
 extern u8 D_800A30E8;
 extern RECT D_800A30D4;
