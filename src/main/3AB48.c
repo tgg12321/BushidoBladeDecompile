@@ -3956,10 +3956,9 @@ void func_8005C614(void) {
 
 extern u16 D_8009AA70[][2];
 
-/* int with no return value (an implicit-int function), not void: measured in
- * func_800325E0 -- with void its call sets no $v0, so reload no longer treats
- * $v0 as explicitly used there and re-places the var_7 product in $v0
- * (score 2). */
+/* FAKE: declared int though no value is returned (plausibly an implicit-int
+ * function in the original): with void, its call in func_800325E0 sets no
+ * $v0, so reload re-places the var_7 product in $v0 there (score 2). */
 s32 func_8005C650(s32 a0, s32 a1, s32 a2) {
     s16 i = 0;
     u16 *var_1 = D_8009AA70[a0];
