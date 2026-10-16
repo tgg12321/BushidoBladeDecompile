@@ -74,3 +74,18 @@
  * none reach the target's $t0-$t2, so no new structural probe was worth separately measuring.
  * No structural-axis frontier remains. The stub stays.
  */
+/*
+ * s15 (enumerate): tools/spelling_enum.py on the mfc2/sh/branch skeleton
+ * that survives gte_rtpt/ldv3c/stsxy3c macro stripping (the `mid:` block of
+ * rejected/psyq-rtpt-pair-reorg-slot-residual.c) enumerates an exhaustive
+ * 6-member spelling space (8 anchors, 3 assignments, 0 named locals;
+ * identical with and without the commutative-swap axis -- no swappable
+ * pairs exist in this region). All 6 variants
+ * (tmp/grind/func_8004A76C/s15/enum/v0..v5.c) score 32 -- zero movement
+ * from the un-enumerated form. Class-killed for this region: no
+ * byte-preserving statement reorder of the surviving skeleton changes the
+ * score, because the dominant scored residual (hunks 1/2/4, the whole
+ * lwc2/c2-rtpt/swc2 macro expansions) is stripped by name-pattern match in
+ * engine/gtemacro.py's PINNED table regardless of surrounding C. The stub
+ * stays; see hypotheses.md s15 for the full histogram.
+ */
