@@ -216,3 +216,28 @@ content either.
 - [s3] No pre-existing permuter campaign was banked on this chassis before this session, so the CHASSIS RULE's 'do not re-seed' restriction did not apply at launch time; it now does for any future session targeting these same two chassis shapes.
 
 - [s3] Sibling puts.c read in full: no shared construct with func_80052C10, confirmed not a missed lead.
+
+- [s4] ENUMERATION: 16 spellings, best 4, 16 at the floor (all flat). Ran `tools/spelling_enum.py`
+  on a two-decl region (`vu32 *p = ...; u32 val = 0; *p = val;`) -- its decl-regex only recognized
+  `val` (the `vu32 *p` line fails the DECL_RE because there is no whitespace between the `*` and
+  `p`; it falls through to ANCHOR), so the tool itself only produced the named/inlined-`val` pair
+  (v0/v1, both score 4). Widened by hand to 14 more spellings covering every axis the single-store
+  statement admits: pointer named vs inlined (v14 vs v6/v7/v11/v12), decl order p-before-val vs
+  val-before-p (v2 vs v3), address as a named `u32 addr` local vs inline literal (v4), split
+  decl+assign for the pointer (v5), explicit `(u32)0` / `0u` value casts (v6/v9), extra parens
+  around the cast target (v7/v12), `volatile u32 *` vs `vu32 *` spelling (v8), lowercase hex
+  literal (v11), `vu32 *const p` (v10), and a trailing explicit `return;` (v13, tests whether an
+  explicit return statement changes trailing-nop emission). Swept with
+  `tools/sweep_variants.py --func func_80052C10 --file main/3AB48 --variants
+  tmp/grind/func_80052C10/s4/enum --json` (via WSL, `python3 -m venv` toolchain) -- every one of
+  the 16 variants (v0-v14 plus the tool's v0/v1) scored identically: score 4, build_insns 5, same
+  two hunks (operand-only $t9/$v0 seat + source-level missing trailing nop) as the banked
+  candidate. Full output: tmp/grind/func_80052C10/s4/sweep_output.json.
+
+- [s4] sandbox --diff confirms the same two hunks as prior sessions: hunk1 operand-only (target lui/ori/sw use $t9, ours use $v0), hunk2 source-level (target has one extra trailing nop after jr $ra that no C body here emits).
+
+- [s4] spelling_enum.py's DECL_RE does not match a pointer declaration written as 'TYPE *name = expr;' when there is no whitespace between '*' and the name (e.g. 'vu32 *p'), so it falls through to an ANCHOR statement instead of a DECL -- a tool parsing limitation worth noting for future sessions using the tool on pointer-typed regions.
+
+- [s4] ENUMERATION: 16 spellings, best 4, 16 at the floor -- full histogram and per-variant scores in tmp/grind/func_80052C10/s4/sweep_output.json.
+
+- [s4] The zero-hit sweep covers declaration axis (named/inlined pointer and value), ordering axis (p-before-val / val-before-p), address representation (literal vs named local), value representation (0 / (u32)0 / 0u), cast parenthesization, volatile-vs-vu32 typedef spelling, hex literal case, const-qualified pointer, and an explicit trailing return -- the full syntactic spelling space reachable from this one-statement chassis without changing its semantics.

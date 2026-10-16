@@ -1,8 +1,8 @@
 {
  "func": "func_80052C10",
  "file": "main/3AB48",
- "session_count": 3,
- "current_modality": "permuter",
+ "session_count": 4,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 4,
    "modality": "permuter",
    "headline": "Two decomp-permuter campaigns (85,461 total iterations, 2 byte-equivalent chassis) found zero novel forms; the $t9 seat and trailing-nop hunks remain unreached by unguided mutation, confirming s1/s2's"
+  },
+  {
+   "session": 4,
+   "floor": 4,
+   "modality": "enumerate",
+   "headline": "Enumerate modality: 16-spelling systematic sweep of the single-store body (decl order/inline, address/value/cast forms, volatile spelling, trailing return) all score 4/5-insns identically -- zero-hit,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Trailing double-nop after jr $ra is source-level, unexplained by any lever tried so far (recon, structural, and now unguided permuter search across two chassis all fail to reach it).",
-   "mechanism": "unknown; not inter-object padding, not GTE/cop2 latency, not reachable by any single-step AST mutation from either byte-equivalent chassis",
-   "next_probe": "Grep other matched leaf functions in this codebase for a jr $ra; nop; nop (double-nop) 6+-insn shape and read their matched C to see what source construct, if any, produces a second nop after the return in a leaf void function -- this is a targeted grep/read task, not something the permuter's mutation set can express (it has no 'duplicate a trailing statement' or 'insert dead statement after return' pass that this chassis's two campaigns exercised to any effect)."
+   "hypothesis": "Trailing double-nop after jr $ra is source-level, unexplained by any lever tried so far (recon, structural, unguided permuter search across two chassis, and now an exhaustive spelling sweep all fail to reach it).",
+   "mechanism": "unknown; not inter-object padding, not GTE/cop2 latency, not reachable by any spelling of this chassis or single-step AST mutation from either byte-equivalent chassis",
+   "next_probe": "Grep other matched leaf functions in this codebase for a jr $ra; nop; nop (double-nop) 6+-insn shape and read their matched C to see what source construct, if any, produces a second nop after the return in a leaf void function -- a targeted grep/read task, not something either the permuter's mutation set or this session's spelling enumeration (both exhausted on the current one-statement chassis) can express."
   },
   {
    "hypothesis": "A differently-shaped pressure chassis (e.g. 22+ live call-clobbered temporaries with no $s0-$s7 involvement) might reach $t9 without the save/restore overhead s2's chassis incurred.",
-   "mechanism": "global.c allocation order is fixed (ascending, no REG_ALLOC_ORDER), but which hard regs get claimed depends on which pseudos conflict; s2 only tried one liveness-shaping idiom (declare-first, use-last pointers), and this session's permuter campaigns could not synthesize a 22-pseudo pressure chassis from a 1-2 statement seed (decomp-permuter mutates existing AST, it does not invent new live ranges of that scale).",
-   "next_probe": "Hand-write (not permute) a chassis using genuinely call-clobbered-only values with no calls, forcing the compiler toward $t0-$t9 before $s0-$s7 if any such ordering exists; this needs tools/sweep_variants.py over hand-written variants per the CHASSIS RULE's guidance that the permuter cannot express this kind of structural chassis swap."
+   "mechanism": "global.c allocation order is fixed (ascending, no REG_ALLOC_ORDER), but which hard regs get claimed depends on which pseudos conflict; s2 only tried one liveness-shaping idiom and this session's spelling sweep stayed within the single-statement chassis's declaration/order/value variants, none of which change live-range count or shape.",
+   "next_probe": "Hand-write (not permute/enumerate) a chassis using genuinely call-clobbered-only values with no calls, forcing the compiler toward $t0-$t9 before $s0-$s7 if any such ordering exists; needs tools/sweep_variants.py over hand-written variants of a structurally different (not just differently-spelled) chassis."
   },
   {
-   "hypothesis": "Re-weigh the canonical-asm grant -- two independent unguided-search campaigns (85k+ iterations) finding nothing is additional evidence AGAINST a small natural-C body reaching the target bytes, on top of s1/s2's hand analysis.",
+   "hypothesis": "Re-weigh the canonical-asm grant -- two permuter campaigns (85k+ iterations) plus a 16-way exhaustive spelling sweep finding nothing is additional evidence against a small natural-C body reaching the target bytes.",
    "mechanism": "n/a -- policy/evidence question",
-   "next_probe": "If the next session's hand-written alternate-pressure-chassis sweep (frontier item 2) also fails, that is now three independent methodologies (hand analysis, two permuter chassis) agreeing -- a stronger basis for a ruling-request than existed at s2, though still not conclusive since frontier item 2's specific shape remains untested."
+   "next_probe": "If the next session's hand-written alternate-pressure-chassis sweep (frontier item 2) also fails, that is four independent methodologies (hand analysis, two permuter chassis, exhaustive spelling enumeration) agreeing -- stronger basis for a ruling-request, though still not conclusive since frontier item 2's specific shape remains untested."
   }
  ],
  "judge_constraints": [],
@@ -82,6 +88,14 @@
    "measured_on": "src/main/psxsdk/libc2/puts.c (read only, no transplant attempted -- no shared construct exists)",
    "predicate_cite": "",
    "result": "No shared structural element with func_80052C10 (single MMIO scratchpad store, no loop, no string handling); the sibling"
+  },
+  {
+   "session": 4,
+   "statement": "A systematic spelling sweep of the single-store statement's declaration/address/value/cast axes (no semantic change) finds a byte-closer form or a novel chassis for func_80052C10.",
+   "kill_scope": "instance",
+   "measured_on": "16 syntactic spellings of the single-statement MMIO-store body (declaration/order/address/cast/value/trailing-statement axes), no FAKE construct, no register pin, tools/sweep_variants.py this session",
+   "predicate_cite": "",
+   "result": "Every one of the 16 variants scored identically: score 4, build_insns 5, same two-hunk diff (operand-only $t9/$v0 regist"
   }
  ],
  "ladder_skip": 0,

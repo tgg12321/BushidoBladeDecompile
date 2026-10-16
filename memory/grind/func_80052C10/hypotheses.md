@@ -189,3 +189,19 @@ with no calls — untested), but it meaningfully narrows the frontier.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/main/psxsdk/libc2/puts.c (read only, no transplant attempted -- no shared construct exists)
+
+## [s4] A systematic spelling sweep of the single-store statement's declaration/address/value/cast axes (no semantic change) finds a byte-closer form or a novel chassis for func_80052C10.
+- mechanism: tools/spelling_enum.py's decl/inline/order axes plus hand-widened address-representation, cast-form, volatile-spelling, and trailing-statement axes -- exhaustive over the syntactic spelling space of a one-statement body, as distinct from decomp-permuter's random AST mutation (s3).
+- probe: spelling_enum.py on a 2-decl region produced 2 variants (its DECL_RE failed to parse `vu32 *p = ...;` as a decl because there is no whitespace between `*` and `p`, so `p` fell through to ANCHOR -- a tool limitation, not a search gap, since the pointer-named/inlined axis was independently covered by hand). Hand-wrote 14 more variants (v2-v14) covering: decl order (p-first vs val-first), pointer split decl+assign, address held in a named `u32 addr` local vs inline literal, `(u32)0` / `0u` value casts, extra parens around the `(vu32 *)` cast, `volatile u32 *` vs `vu32 *` spelling, lowercase hex literal, `vu32 *const p`, and an explicit trailing `return;`. Swept all 16 with tools/sweep_variants.py --json (tmp/grind/func_80052C10/s4/sweep_output.json).
+- result: Every variant: score 4, build_insns 5, identical two-hunk diff (operand-only $t9 vs $v0 register seat; source-level missing trailing `nop`) to the banked candidate. Zero-hit sweep.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 16 syntactic spellings of the single-statement MMIO-store body (declaration/order/address/cast/value/trailing-statement axes), no FAKE construct, no register pin, measured via tools/sweep_variants.py this session
+
+## [s4] A systematic spelling sweep of the single-store statement's declaration/address/value/cast axes (no semantic change) finds a byte-closer form or a novel chassis for func_80052C10.
+- mechanism: tools/spelling_enum.py's decl/inline/order axes plus hand-widened address-representation, cast-form, volatile-spelling, and trailing-statement axes -- exhaustive over the syntactic spelling space of a one-statement body, distinct from decomp-permuter's random AST mutation (s3).
+- probe: spelling_enum.py on a 2-decl region (vu32 *p = ...; u32 val = 0; *p = val;) produced 2 variants (its DECL_RE failed to parse the pointer decl due to a whitespace quirk, so only the val named/inlined axis came out of the tool). Hand-wrote 14 more variants covering decl order, split decl+assign, named vs inline address, value casts (u32)0/0u, extra parens, volatile vs vu32 spelling, lowercase hex, const pointer, and trailing explicit return. Swept all 16 with tools/sweep_variants.py --json.
+- result: Every one of the 16 variants scored identically: score 4, build_insns 5, same two-hunk diff (operand-only $t9/$v0 register seat, source-level missing trailing nop) as the banked candidate. Zero novel or byte-closer forms.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 16 syntactic spellings of the single-statement MMIO-store body (declaration/order/address/cast/value/trailing-statement axes), no FAKE construct, no register pin, tools/sweep_variants.py this session
