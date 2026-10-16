@@ -170,6 +170,7 @@ differing main/87A0.o seen in step 5 did not reproduce (scripts: `memory/grind/r
      cdrom_IrqHandler -> Sony local `callback`.
    - Wave mechanics learned: verify-oracle --rebuild needs --allow-dirty on the applied tree; a FAILed row is dropped
      or re-mined (a fresh reviewer per round); PASS-row evidence fixes from a reviewer are applied before commit.
+     Debt: naming_wave's RESET deletes the auto name's registry line, which the keycheck refuses; restore it by hand (wave42).
    - Prose debt: docs/engine/*.md cite ~300 retired names (562 lines); many now sit on unrelated
      functions, so a rename pass would mislead. Marked unverified in docs/engine/README.md (2985fbe90);
      open: a content rewrite from src/. Ledger stubs memory/grind/_completed/*.json keep old func
