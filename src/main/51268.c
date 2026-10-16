@@ -820,10 +820,9 @@ end:
    emit one textured POLY_FT4 billboard and link it into the OT at its depth. */
 void func_800620B8(s16 *arg0, s32 *arg1) {
     extern s32 D_800A32B8;
-    extern TexRec D_8009BA00[6];
-    extern TexRec D_8009BA30[4];
-    extern TexRec D_8009BA50[1];
-    extern TexRec D_8009BA58[1];
+    /* one table of 12 records: [0..5] / [6..9] the two sprite sets, [10] /
+     * [11] their D_8009BD24.unk20_0 CLUT substitutes */
+    extern TexRec D_8009BA00[12];
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
     extern s32 rand(void);
@@ -845,14 +844,6 @@ void func_800620B8(s16 *arg0, s32 *arg1) {
     s32 var_15;
     s16 width;
     s16 height;
-    /* FAKE: pointer aliases of the four sprite tables
-     * (pointer-alias-fake-exception): var_18 is set at the loop top so it is
-     * hoisted where the target sets $fp; the other three are rebuilt in $t0 at
-     * each use. Tables used directly: score 47; any one of the three: 3-7. */
-    TexRec *var_18; /* FAKE: alias of D_8009BA00; direct: score 35 */
-    TexRec *var_19; /* FAKE: alias of D_8009BA50; direct: score 3 */
-    TexRec *var_20; /* FAKE: alias of D_8009BA30; direct: score 3 */
-    TexRec *var_21; /* FAKE: alias of D_8009BA58; direct: score 7 */
 
     func_80060E38(arg0, arg1);
     var_9 = D_800A3468;
@@ -883,11 +874,7 @@ void func_800620B8(s16 *arg0, s32 *arg1) {
     var_5->vx = 0;
     *D_800A34B0 = ReadGeomScreen() << 8;
     *D_800A3490 = 0x2F;
-    var_19 = D_8009BA50; /* FAKE: alias; direct use scores 3 */
-    var_20 = D_8009BA30; /* FAKE: alias; direct use scores 3 */
-    var_21 = D_8009BA58; /* FAKE: alias; direct use scores 7 */
     for (i = 0; D_800F1198[i].unk0 & 1; i++) {
-        var_18 = D_8009BA00; /* FAKE: hoisted alias; set pre-loop: score 6 */
         switch (D_800F1198[i].unk4 & 7) {
         case 3:
             *D_800A34A8 = 0x151;
@@ -897,16 +884,9 @@ void func_800620B8(s16 *arg0, s32 *arg1) {
             *D_800A34A8 = 0x1C2;
             *D_800A34AC = 0xE1;
         sel_a:
-            /* FAKE: `- var_18 + var_18` round trip: combine folds it away,
-             * but the two extra uses rank var_18 high enough to get $fp;
-             * without it: score 35. As pointer arithmetic the addu operands
-             * swap: 4; plain `&var_18[n]`: 38. (combine-foldable
-             * chain-extender, dead-store-fake-exception) */
-            D_800A348C = D_800A3488 =
-                (TexRec *)(((u32)D_800A32B8 % 6) * sizeof(*var_18) +
-                           (s32)var_18 - (s32)var_18 + (s32)var_18);
+            D_800A348C = D_800A3488 = &D_8009BA00[(u32)D_800A32B8 % 6];
             if (D_8009BD24.unk20_0) {
-                D_800A348C = var_19;
+                D_800A348C = &D_8009BA00[10];
             }
             *D_800A349C = D_800A3488->u + 0x1F;
             *D_800A34A4 = D_800A3488->v + 0x1F;
@@ -919,13 +899,9 @@ void func_800620B8(s16 *arg0, s32 *arg1) {
             *D_800A34A8 = 0x64;
             *D_800A34AC = 0x78;
         sel_b:
-            /* FAKE: the record address is an integer sum converted to TexRec *:
-               as `var_20 + n` or `&var_20[n]` var_20 comes first in the addu
-               (`addu v0,t0,v0` for the target's `addu v0,v0,t0`): score 1. */
-            D_800A348C = D_800A3488 =
-                (TexRec *)((D_800A32B8 & 3) * sizeof(*var_20) + (s32)var_20);
+            D_800A348C = D_800A3488 = &D_8009BA00[6 + (D_800A32B8 & 3)];
             if (D_8009BD24.unk20_0) {
-                D_800A348C = var_21;
+                D_800A348C = &D_8009BA00[11];
             }
             *D_800A349C = D_800A3488->u + 0xF;
             *D_800A34A4 = D_800A3488->v + 0x13;
