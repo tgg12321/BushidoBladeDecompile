@@ -135,3 +135,16 @@
  * loop.c sees no loop in the goto form. Canonical grant inline_asm_canonical.txt:25 stands.
  * The stub stays.
  */
+/*
+ * s22 (rederive, mandated): re-ran decomp.me similarity search against the current
+ * 461-scratch corpus (tmp/grind/func_8004A76C/s22/decomp_me_search_461.txt) -- byte-identical
+ * to s8's result (best similarity 0.011, no GTE-shaped match); the corpus held 461 scratches
+ * already at s8, so no growth occurred to re-search. Re-read m2c_out.c (s12) in full and
+ * tools/m2c/m2c_macros.h: cop2 GTE opcodes have no C lowering under any m2c mode, a structural
+ * fact about the instruction set, not a search/tool choice to route around. Sibling
+ * func_8004A4E0's candidate.c re-read in full, unchanged since 2026-10-15 17:03, still
+ * comments-only -- nothing to transplant. sandbox --disable all re-measured 37
+ * ({"score":37,"no_c_body":true,"build_insns":0}). No new rederive-axis frontier opened;
+ * the fourth independent rederive pass (s8/s11/s12/s22) lands on the identical null. The
+ * stub stays.
+ */

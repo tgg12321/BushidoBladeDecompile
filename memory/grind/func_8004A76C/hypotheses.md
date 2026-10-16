@@ -56,6 +56,14 @@ floor 37 at s20; 20 sessions; live frontier (state.json is authoritative):
 - predicate_cite: tools/gcc-2.7.2/global.c:1057
 - result: t0-t2 with $2/$3/$7 free is not a first-fit outcome. The only byte-invisible occupant would be an asm clobber list on the cop2 ops, which claims a GPR effect those ops do not have. This corroborates the hand-written-asm reading
 
+## [s22] (rederive, mandated modality) A fresh decomp.me similarity search against the now-461-scratch corpus (grown from 316 at func_8004A4E0's s12) surfaces a closer match than s8/s11/s12's null result, or m2c emits a materially different skeleton on re-run.
+- mechanism: tools/decomp_me_scrape.py search re-shingles asm/funcs/func_8004A76C.s against every cached gcc2.7.2-psx scratch; a larger corpus could in principle contain a GTE-shaped scratch added since s8.
+- probe: re-ran `python3 tools/decomp_me_scrape.py search --asm-file asm/funcs/func_8004A76C.s --corpus tmp/decomp_me_corpus --top 10` (tmp/grind/func_8004A76C/s22/decomp_me_search_461.txt) and diffed against s8's cached output. Byte-identical top-10 list (best similarity 0.011, RecordButtonsToDevkit, no GTE-shaped match) — the corpus directory holds exactly 461 scratches in both checks, so no new scratches were added between s8 and now; the growth seen in func_8004A4E0's s12 (316->461) predates this function's own s8 (461 already). Re-read tmp/grind/func_8004A76C/s12/m2c_out.c in full: m2c's output is structurally forced by the instruction set, not a search choice — every lwc2/rtpt/swc2/mfc2 cop2 op becomes M2C_ERROR regardless of corpus or flags (confirmed against tools/m2c/m2c_macros.h: the "valid syntax" unknown-instruction macros exist for arbitrary unhandled instructions in general, but cop2 GTE opcodes have no C semantic to lower to under any m2c flag — this is the same AGENTS.md inline-asm-policy fact, not a tool limitation to route around). Also re-confirmed the sibling func_8004A4E0's candidate.c (re-read in full, unchanged since its 2026-10-15 17:03 write, still comments-only INCLUDE_ASM with nothing to transplant onto this chassis) and re-measured this function's own stub: sandbox --disable all still scores 37 ({"score":37,"no_c_body":true,"build_insns":0}).
+- result: no new rederive-axis signal. The decomp.me corpus did not grow between s8 and s22 (both 461), so the search result is not merely unchanged by luck — there was nothing new to find. m2c's cop2 M2C_ERROR output is a structural fact about GTE opcodes having no C lowering, independent of which m2c invocation or corpus state is used.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: asm/funcs/func_8004A76C.s unchanged, decomp.me corpus at 461 scratches (unchanged from s8), no FAKE construct (comments-only stub, nothing to ablate)
+
 ## [s7] GCC 2.7.2 dbr emits the target's `mfc2 x3; addiu a1,a1,12; beqz a0,exit; addiu a0,a0,-1` (an eligible ALU insn directly before a conditional branch while the slot holds a decrement of the branch's own operand).
 - verdict: KILLED
 - kill_scope: class
@@ -359,3 +367,11 @@ floor 37 at s20; 20 sessions; live frontier (state.json is authoritative):
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s20 -da dumps of rejected/psyq-rtpt-pair-reorg-slot-residual.c, $a3 chassis, no FAKE construct
+
+## [s22] A fresh decomp.me similarity search against the now-461-scratch corpus surfaces a closer match than s8/s11/s12's null result, or m2c emits a materially different skeleton on re-run.
+- mechanism: tools/decomp_me_scrape.py search re-shingles asm/funcs/func_8004A76C.s against every cached gcc2.7.2-psx scratch; a larger corpus could in principle contain a GTE-shaped scratch added since s8.
+- probe: Re-ran decomp_me_scrape.py search against tmp/decomp_me_corpus (461 scratches) and diffed against s8's cached output; re-read s12's m2c_out.c and tools/m2c/m2c_macros.h; re-read sibling func_8004A4E0/candidate.c in full; re-measured sandbox --disable all.
+- result: Byte-identical top-10 decomp.me result (best similarity 0.011, RecordButtonsToDevkit, no GTE match) -- corpus held 461 scratches already at s8, no growth occurred. m2c's cop2 M2C_ERROR output is a structural fact (GTE opcodes have no C lowering under any m2c mode), not a tool-flag or corpus-state artifact. Sibling func_8004A4E0's candidate.c unchanged since 2026-10-15 17:03, still comments-only, nothing to transplant. sandbox re-confirmed score 37, no_c_body true.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: asm/funcs/func_8004A76C.s unchanged, decomp.me corpus at 461 scratches (unchanged from s8), no FAKE construct (comments-only stub, nothing to ablate)

@@ -421,3 +421,13 @@
 - [s21] loop_movables: no non-phony loops in the goto-built form; loop.c makes no decision.
 
 - [s21] tools/grinder/dump.ps1 on the spliced TU failed with 'dumps/main/3AB48.rtl: No such file or directory'; s20's standalone -da dumps of the same form were used instead.
+
+- [s22] decomp.me corpus directory tmp/decomp_me_corpus held exactly 461 cached gcc2.7.2-psx scratches both at s8 and at s22 -- the 316->461 growth seen in sibling func_8004A4E0's s12 predates this function's own s8, so no new scratches existed to find this session.
+
+- [s22] tmp/grind/func_8004A76C/s22/decomp_me_search_461.txt is byte-identical to s8's decomp_me_search.txt: best similarity 0.011 against RecordButtonsToDevkit, no GTE-shaped candidate in the top 10.
+
+- [s22] m2c's output (s12/m2c_out.c) emits M2C_ERROR for every lwc2/rtpt/swc2/mfc2 cop2 instruction; tools/m2c/m2c_macros.h's 'valid syntax' unknown-instruction macros exist for arbitrary unhandled instructions in general but GTE opcodes have no C semantic to lower to under any m2c invocation -- this is the AGENTS.md inline-asm-policy fact (GTE has no C form), not a routable tool limitation.
+
+- [s22] Sibling func_8004A4E0/candidate.c re-read in full: unchanged since 2026-10-15 17:03 (comments-only, ASM-WHOLE, floor 163), nothing transplantable onto this chassis -- consistent with this ledger's own prior s18 read.
+
+- [s22] sandbox --disable all this session: {"score": 37, "scorable": true, "target_insns": 37, "build_insns": 0, "no_c_body": true, "cheat_asm_stripped": 71} -- floor unchanged from s14-s21.

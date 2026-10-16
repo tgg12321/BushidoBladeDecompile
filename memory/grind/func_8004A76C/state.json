@@ -1,8 +1,8 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 21,
- "current_modality": "forensics",
+ "session_count": 22,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -129,13 +129,19 @@
    "floor": 37,
    "modality": "forensics",
    "headline": "s21 forensics: re-audit holds (32, zero FAKE); nrefs_census shows allocno order is inert for the mfc2 seats and loop.c sees no loop; canonical grant inline_asm_canonical.txt:25 stands"
+  },
+  {
+   "session": 22,
+   "floor": 37,
+   "modality": "rederive",
+   "headline": "s22 rederive: 4th independent pass (decomp.me 461-corpus re-search + m2c/sibling re-check) confirms identical null result; no new frontier, stub stays at floor 37."
   }
  ],
  "frontier": [
   {
    "hypothesis": "The whole-body canonical-asm grant at inline_asm_canonical.txt:25 is the correct disposition.",
-   "mechanism": "Not-GCC signals: s1 $s0 ABI, s6/s18-s21 $t0-$t2 seats with $2/$3/$7 free (order eliminated s21), s7 reorg.c:2990 slot, s9 reorg.c:2969 jr slot.",
-   "next_probe": "Escalation modality: file the docs/grind/decisions.md disposition citing s1/s6/s7/s9/s18-s21."
+   "mechanism": "Not-GCC signals: s1 $s0 ABI, s6/s18-s21 $t0-$t2 seats with $2/$3/$7 free (order eliminated s21), s7 reorg.c:2990 slot, s9 reorg.c:2969 jr slot, now reinforced by a 4th null rederive pass (s8/s11/s12/s22).",
+   "next_probe": "Escalation modality: file the docs/grind/decisions.md disposition citing s1/s6/s7/s9/s18-s22."
   },
   {
    "hypothesis": "A deeper inverse search (depth 4+) finds a global.c input vector giving z1-z3 $t0-$t2.",
@@ -502,6 +508,14 @@
    "measured_on": "s20 -da dumps of rejected/psyq-rtpt-pair-reorg-slot-residual.c, $a3 chassis, no FAKE construct",
    "predicate_cite": "",
    "result": "No non-phony loops in this function; loop.c is inert. The a1-increment position is decided by source order + sched/reorg"
+  },
+  {
+   "session": 22,
+   "statement": "A fresh decomp.me similarity search against the now-461-scratch corpus surfaces a closer match than s8/s11/s12's null result, or m2c emits a materially different skeleton on re-run.",
+   "kill_scope": "instance",
+   "measured_on": "asm/funcs/func_8004A76C.s unchanged, decomp.me corpus at 461 scratches (unchanged from s8), no FAKE construct (comments-only stub, nothing to ablate)",
+   "predicate_cite": "",
+   "result": "Byte-identical top-10 decomp.me result (best similarity 0.011, RecordButtonsToDevkit, no GTE match) -- corpus held 461 s"
   }
  ],
  "ladder_skip": 0,
