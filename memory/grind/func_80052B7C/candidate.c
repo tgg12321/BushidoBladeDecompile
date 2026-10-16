@@ -206,3 +206,7 @@ void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
     gte_rt();
     gte_stlvl(out);
 }
+/* s19 (solver): chassis re-audited at 19 with no FAKE carriers. classify's RA label is an
+ * artifact: the rotation registers are literal $12-$14 in the inline_c.h:298-307 template.
+ * The allocated ldtr operands go to the lowest free regs ({t0,v1,v0} or {a0,v1,v0}).
+ * See hypotheses.md s19. */

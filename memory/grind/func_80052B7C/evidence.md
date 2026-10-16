@@ -408,3 +408,15 @@ question rather than resolved here.
 - [s18] Batched-load idiom census: 16/16 hits are hand-written (Sony asmpsx modules, STRONG-tier game funcs, the granted 3AB48 cluster); 0 compiled-C false positives across all 1437 functions (tmp/grind/func_80052B7C/s18/batch_census.txt). Complements s11's jr-slot cop2 census (5/5 cluster, 0 compiled C).
 
 - [s18] src/main/3AB48.c reverted to INCLUDE_ASM; git status clean outside the ledger.
+
+## s19 (solver)
+- Legal chassis re-measured 19 (4/4 source-level). fake_ablate: no FAKE constructs. Artifacts: tmp/grind/func_80052B7C/s19/sandbox_diff.txt, ablate.txt.
+- classify (object mode) prints RA. 5 of the 8 differing data registers are literal in the gte_SetRotMatrix template (include/psxsdk/inline_c.h:298-307), so the residual is template-level and pre-RA. Only gte_ldtr's three operands are allocated. s19/classify.txt.
+- Measured allocation of the ldtr operands: baseline {a0,v1,v0}; locals-before-SetRotMatrix and ldtr-first both give {t0,v1,v0}, which is the lowest free set (local-alloc.c:1512). Both score 19. s19/v1_locals_pre.txt, s19/v2_ldtr_first.txt.
+- [s19] src/main/3AB48.c reverted to INCLUDE_ASM.
+
+- [s19] Legal chassis = 19, 4/4 hunks source-level, 0 operand-only (s19/sandbox_diff.txt)
+
+- [s19] classify object mode prints RA, but 5/8 differing data regs are literal in the inline_c.h:298-307 template
+
+- [s19] ldtr operand allocation: baseline {a0,v1,v0}; locals-first and ldtr-first both {t0,v1,v0}, score 19

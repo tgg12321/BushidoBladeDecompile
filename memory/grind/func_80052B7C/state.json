@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 18,
- "current_modality": "synthesis",
+ "session_count": 19,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -111,23 +111,29 @@
    "floor": 19,
    "modality": "synthesis",
    "headline": "s18 synthesis: kill re-audit re-measures the legal chassis at 19 with no FAKE carriers; new EXE census shows the target's batched lw/lh $t0..$t7 -> ctc2 run occurs only in hand-written code (16 funcs:"
+  },
+  {
+   "session": 19,
+   "floor": 19,
+   "modality": "solver",
+   "headline": "s19 solver: chassis re-audit holds at 19 with no FAKE carriers. classify's RA label is a blanking artifact because 5/8 target regs are literal in the gte_SetRotMatrix template (pre-RA). The RA-owned l"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A scan_hand_coded gate-class signal for the asmpsx LIBGTE batched lw/lh $tN -> ctc2 idiom (s18 census: 16/16 hand-written, 0 compiled C) and/or s11's cop2-in-jr-slot signal lifts func_80052B7C to STRONG tier, satisfying the Judge constraint's whole-body INCLUDE_ASM branch.",
-   "mechanism": "Both idioms co-occur in this EXE only with code proven hand-written by existing gate-class signals or Sony library provenance; the vendored C macros cannot emit either.",
-   "next_probe": "Engine/tools-side scanner signal addition (escalation or owner-cluster modality) citing s18/batch_census.txt and s11/jr_census.txt; out of a grind session's surface."
+   "hypothesis": "A scan_hand_coded gate-class signal for the batched lw/lh $tN -> ctc2 idiom (s18 census 16/16 hand-written) and/or s11's cop2-in-jr-slot signal lifts func_80052B7C to STRONG tier for the whole-body INCLUDE_ASM branch.",
+   "mechanism": "Both idioms occur in this EXE only in hand-written code; the vendored macro templates fix different literal registers (inline_c.h:298).",
+   "next_probe": "Engine/tools-side scanner signal addition citing s18/batch_census.txt and s11/jr_census.txt (escalation or owner-cluster modality)."
   },
   {
-   "hypothesis": "The inline_asm_canonical.txt:340 whole-body grant audit (aeea8ed44) resolves in favor of func_80052B7C on the cluster + Sony-idiom evidence.",
-   "mechanism": "The 2026-10-15 20:38 ruling rejected written islands only; the whole-body grant row stays open pending gate-class evidence, now strengthened by s18's census.",
-   "next_probe": "Operator/Judge review of row :340 with s11 + s18 census artifacts."
+   "hypothesis": "The inline_asm_canonical.txt:340 whole-body grant audit resolves in favor of func_80052B7C on the cluster plus Sony-idiom evidence.",
+   "mechanism": "The 2026-10-15 20:38 ruling rejected written islands only; the whole-body row stays open pending gate-class evidence.",
+   "next_probe": "Operator/Judge review of row :340 with the s11, s18 and s19 artifacts."
   },
   {
-   "hypothesis": "A vendored macro whose fixed string batches the rotation+TR loads in $t0..$t7 (an asmpsx-style SetRotMatrix/SetTransVector composite) would close hunk 1 in pure macro-call C.",
-   "mechanism": "Chunk 1/2 bytes are a fixed hand-written string; only a header macro carrying that string can emit them by name.",
-   "next_probe": "Needs an owner ruling plus an engine: commit adding the macro (inline-asm-policy.md item 1); not a grind-session action."
+   "hypothesis": "A vendored macro whose template batches the rotation+TR loads in $8..$15 would close hunk 1 in pure macro-call C.",
+   "mechanism": "s19 shows the hunk-1 registers are template literals, so only a template change can reach them.",
+   "next_probe": "Owner ruling plus an engine: commit adding the macro (inline-asm-policy item 1); not a grind action."
   }
  ],
  "judge_constraints": [
@@ -342,6 +348,22 @@
    "measured_on": "s6/s9/s15/s16 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct present, src/main/3AB48.c this session, reverted to INCLUDE_ASM after measurement",
    "predicate_cite": "tools/spelling_enum.py:89",
    "result": "Both runs report \"0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings\" verbatim -- byte-for-byte identic"
+  },
+  {
+   "session": 19,
+   "statement": "The rotation-matrix lw/ctc2 registers in the residual are owned by a register-allocation model, as inverse_compose classify's FIRST DIVERGENCE: RA verdict suggests.",
+   "kill_scope": "class",
+   "measured_on": "s6 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c, reverted",
+   "predicate_cite": "include/psxsdk/inline_c.h:298",
+   "result": "Ours ctc2 {t4,t5,t4,t5,t6} for $0..$4 maps one-to-one onto the literal $12,$13,$12,$13,$14 at inline_c.h:298-307. The re"
+  },
+  {
+   "session": 19,
+   "statement": "Loading tr->vx/vy/vz into named locals before gte_SetRotMatrix, or issuing gte_ldtr first, moves the three ldtr operands to the target's t5..t7.",
+   "kill_scope": "instance",
+   "measured_on": "legal macro-call chassis via psxsdk/inline_c.h, two statement orders, no FAKE construct, src/main/3AB48.c, reverted",
+   "predicate_cite": "",
+   "result": "Both score 19, 4/4 source-level, operands lh t0,v1,v0 (baseline a0,v1,v0). No t5..t7."
   }
  ],
  "ladder_skip": 0,

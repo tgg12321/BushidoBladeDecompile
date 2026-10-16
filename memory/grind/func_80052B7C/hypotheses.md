@@ -339,3 +339,49 @@ Result: KILLED (class, re-confirmation). kill_scope: class. measured_on: s6/s9/s
 - probe: tmp/grind/func_80052B7C/s18/batch_census.py over all 1437 asm/funcs/*.s (the set includes every COMPLETED-C function's .s): run of >=5 consecutive lw/lh $tN followed by >=5 ctc2 of the same registers.
 - result: 16 hits: 8 Sony LIBGTE modules (SetRotMatrix, ApplyMatrix, ApplyMatrixLV, CompMatrix, MulMatrix, MulMatrix0, MulMatrix2, SetColorMatrix), func_8004A940/func_8004C404/func_8004DDB4 (scan_hand_coded STRONG, inline_asm_canonical.txt:198/:200/:210), func_80054440 (trapping addi, :162), granted gte_SetMatrixRotTransIR/gte_SetRotMatrixClearTrans/gte_SetRotTransMatrix, and func_80052B7C. 0 compiled-C sites; COMPLETED-C func_800203B4 (gte_SetRotMatrix by name) is a negative control that does not hit.
 - verdict: CONFIRMED
+
+## [s19] KILL RE-AUDIT (solver modality): the banked legal macro-call chassis (candidate.c body + #include <psxsdk/inline_c.h>) re-measures 19 on the current tree with zero FAKE carriers.
+- mechanism: Instance kills are voided only by chassis drift or an ablated FAKE carrier; candidate.c has none.
+- probe: tmp/grind/func_80052B7C/s19/apply.py apply; sandbox func_80052B7C --disable all --diff (s19/sandbox_diff.txt); tools/fake_ablate.py (s19/ablate.txt); reverted.
+- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only; ablate: nothing to ablate. Identical to s6/s8/s13-s18.
+- verdict: CONFIRMED
+
+## [s19] inverse_compose.py classify's "FIRST DIVERGENCE: RA" verdict for this function is a register-blanking artifact for 5 of the 8 target data registers: those registers are literal text in the gte_SetRotMatrix asm template, so no RA model owns them.
+- mechanism: classify compares register-blanked multisets (s19/classify.txt: same insns, different regs). But ours' rotation lw/ctc2 registers ($12,$13,$14 = t4,t5,t6) are hard-coded in the template at include/psxsdk/inline_c.h:298-307 (plus the clobbers at :310). They are not pseudos, so global.c/local-alloc never assign them. Only gte_ldtr's three "r" operands (inline_c.h:376) are RA-owned. The full target disposition (lw $8..$12 batched, lh $13..$15) therefore needs a different template string; it is not a register-allocation outcome. This sharpens s10/H9's FORECLOSED verdict: the residual is pre-RA (in the asm template), not RA.
+- probe: wsl bash tmp/grind/func_80052B7C/s19/classify.sh (object mode, sandbox .o vs build .o); then read the template.
+- result: classify lists ours ctc2 {t4,t5,t4,t5,t6} for $0..$4. The literal $12/$13/$12/$13/$14 at inline_c.h:298-307 is the one-to-one source of that. ours ctc2 {a0,v1,v0} for $5..$7 are the only allocated operands.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: s6 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted
+- predicate_cite: include/psxsdk/inline_c.h:298
+
+## [s19] For the RA-owned subset (gte_ldtr's 3 operands), moving the tr->vx/vy/vz loads into named locals before gte_SetRotMatrix, or issuing gte_ldtr before gte_SetRotMatrix, moves those operands toward the target's t5..t7.
+- mechanism: Hypothesis: a longer live range across the clobbering asm might shift local-alloc's choice. Prediction under local-alloc.c:1512 find_free_reg (lowest free hard reg, no REG_ALLOC_ORDER in mips.h): {v0,v1,t0} with a0 still live, never t5..t7.
+- probe: tmp/grind/func_80052B7C/s19/variants.py (v1_locals_pre: s32 x/y/z = tr->vx/vy/vz before the call; v2_ldtr_first: gte_ldtr statement first). Each measured with sandbox --disable all --diff, then reverted.
+- result: Both variants score 19, 4/4 hunks source-level. Both allocate lh t0,v1,v0 -> ctc2 $5/$6/$7, which is the lowest-free set as predicted (s19/v1_locals_pre.txt, s19/v2_ldtr_first.txt). Baseline is {a0,v1,v0}. No t5..t7. Even a hit would have been a subset goal (solver rule 3), so it could not have closed hunk 1.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal macro-call chassis via psxsdk/inline_c.h with the two statement orders above, no FAKE construct, src/main/3AB48.c this session, reverted
+
+## [s19] KILL RE-AUDIT: the banked legal macro-call chassis re-measures 19 on the current tree with zero FAKE carriers.
+- mechanism: Instance kills are voided only by chassis drift or FAKE carriers; candidate.c has none.
+- probe: s19/apply.py apply; sandbox --disable all --diff; fake_ablate.py; revert.
+- result: 19, 24/24 insns, 4/4 source-level, 0 operand-only; nothing to ablate.
+- verdict: CONFIRMED
+
+## [s19] The rotation-matrix lw/ctc2 registers in the residual are owned by a register-allocation model, as inverse_compose classify's FIRST DIVERGENCE: RA verdict suggests.
+- mechanism: classify compares register-blanked multisets. Ours' rotation registers $12/$13/$14 are literal text in the gte_SetRotMatrix template, not pseudos, so no RA pass assigns them. Only gte_ldtr's three "r" operands are allocated.
+- probe: wsl bash s19/classify.sh (object mode); cross-read ours' ctc2 $0..$4 registers against the template.
+- result: Ours ctc2 {t4,t5,t4,t5,t6} for $0..$4 maps one-to-one onto the literal $12,$13,$12,$13,$14 at inline_c.h:298-307. The residual for those registers sits in the template string (pre-RA), so it sharpens s10's RA FORECLOSED verdict.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: s6 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c, reverted
+- predicate_cite: include/psxsdk/inline_c.h:298
+
+## [s19] Loading tr->vx/vy/vz into named locals before gte_SetRotMatrix, or issuing gte_ldtr first, moves the three ldtr operands to the target's t5..t7.
+- mechanism: local-alloc find_free_reg takes the lowest free hard reg (mips.h has no REG_ALLOC_ORDER), so the prediction was {v0,v1,t0}.
+- probe: s19/variants.py: v1_locals_pre and v2_ldtr_first, each sandboxed with --diff, then reverted.
+- result: Both score 19, 4/4 source-level, operands lh t0,v1,v0 (baseline a0,v1,v0). No t5..t7.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal macro-call chassis via psxsdk/inline_c.h, two statement orders, no FAKE construct, src/main/3AB48.c, reverted
