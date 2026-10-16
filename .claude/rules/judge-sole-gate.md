@@ -72,8 +72,8 @@ For a function a few instructions short in honest C with its sanctioned levers e
 (usually an RA/scheduling tiebreak), the only non-C exits are two AND-gates, default refuse:
 
 - **Gate 1 — canonical asm** only with a STRONG `scan_hand_coded --single <fn>` tier (a
-  rule-3 gate-class signal), or rule 3a (never with an honest-C candidate within the
-  endgame distance). Otherwise a LOW tier is dispositive: a
+  rule-3 gate-class signal); rule 3a never opens it (3a only keeps an existing grant).
+  Otherwise a LOW tier is dispositive: a
   compiler-scheduling/RA artifact is ordinary GCC output, never a hand-coded signature.
   Passing ⇒ rule 3's grant path.
 - **Gate 2 — a labelled FAKE spelling** under [[completion-bar]] item 3 (Q91): honest,

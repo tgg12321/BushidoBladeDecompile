@@ -27,9 +27,8 @@ Ours keeps the lookup in a callee-save across the call: an extra `$sN` save/rest
 ## The C shape that produces it
 
 ```c
-*(s16 *)(arg0 + 0x352) = *(u16 *)((u8 *)&D_8008D59E + arg1 * 20);
-src = *(s32 *)((((s32) *(s16 *)(arg0 + 0x352)) << 2)
-               + func_80046DEC(*(s16 *)(arg0 + 4)));
+rec->unk_352 = D_8008D59C[arg1].bone;
+src = ((MATRIX **)func_80046DEC(rec->index))[rec->unk_352];
 ```
 
 1. Store the value in its own statement BEFORE the call statement.
@@ -39,7 +38,7 @@ src = *(s32 *)((((s32) *(s16 *)(arg0 + 0x352)) << 2)
 
 The same applies to any value computed pre-call, stored, and reloaded after (constants, pointers). m2c often
 shows the call nested inside the surrounding expression — strong evidence for this shape. Example:
-calc_fc_frame_800203B4.
+func_800203B4 (9F9C.c).
 
 ## Related
 
