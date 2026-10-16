@@ -460,3 +460,13 @@ question rather than resolved here.
 - [s23] No external corpus checked across this function's grind history (decomp.me corpus search s12, sotn-decomp construct-index grep s22, psyz libgte.c s23) contains a real hardware cop2 precedent for the batched-lw-then-ctc2 rotation-matrix order or the cop2-store-in-jr-delay-slot shape this residual needs.
 
 - [s23] The residual is unchanged from s8 onward: both hunks sit entirely inside gte_SetRotMatrix's and gte_stlvl's own fixed __asm__ volatile template strings (include/psxsdk/inline_c.h:297, :1086), which are literal text at RTL expand, not computed from any C-level expression -- confirmed again this session with no new finding against that conclusion.
+
+- [s24] src/main/3AB48.c is unchanged from session start (git diff --stat empty) -- both chassis variants were measured live and reverted to INCLUDE_ASM before this outcome was written.
+
+- [s24] sandbox --diff on the reverted stub confirms score 24/no_c_body (tmp/grind/func_80052B7C/s24/sandbox_reaudit.txt), i.e. the committed tree is back to its pre-session state.
+
+- [s24] Full per-variant diff output banked at tmp/grind/func_80052B7C/s24/chassis_sandbox_diff.txt.
+
+- [s24] The structural-modality lever set (block-local var split, declaration order, type narrowing, statement reassociation) was already class-killed on this chassis at s8/s13/s14 (predicate include/psxsdk/inline_c.h:297) and re-confirmed by statement-level reordering at s19; this session's finer-grained sub-word-load-staging variant is a new instance of the same null result, not a new class kill (only the 'r'-constraint, no-modifier spelling of gte_ldtr was tried).
+
+- [s24] Hunks 2-4 (final swc2 in the jr $ra delay slot) remain covered by the standing class kills at s7 (predicate tools/gcc-2.7.2/reorg.c:740) and s11 (maspsx cannot fill a cop2 store into an unfilled jump's delay slot); this session did not re-touch that axis.

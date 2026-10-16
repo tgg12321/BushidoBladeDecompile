@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 23,
- "current_modality": "rederive",
+ "session_count": 24,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -141,22 +141,28 @@
    "floor": 19,
    "modality": "rederive",
    "headline": "s23 rederive: psyz GTE layer is pure software (no cop2 precedent); floor re-confirmed 19, residual still locked inside vendored macro asm strings"
+  },
+  {
+   "session": 24,
+   "floor": 19,
+   "modality": "structural",
+   "headline": "s24 structural: re-confirmed the legal macro-call chassis holds at 19 (4/4 hunks source-level, 0 operand-only); sub-word-load declaration-order/local-staging variant for gte_ldtr's args killed as a ne"
   }
  ],
  "frontier": [
   {
    "hypothesis": "A scan_hand_coded gate-class signal for the batched lw/lh $tN -> ctc2 idiom (s18) and/or the cop2-in-jr-slot signal (s11) lifts func_80052B7C to STRONG tier for the whole-body INCLUDE_ASM branch.",
-   "mechanism": "Both idioms occur in this EXE only in hand-written code; s20/s21 confirm the residual is fixed in vendored templates, reorg, and the engine's barrier policy.",
+   "mechanism": "Both idioms occur in this EXE only in hand-written code; s20/s21/s24 confirm the residual is fixed in vendored templates, reorg, and the engine's barrier policy -- no further structural-modality probe can touch it.",
    "next_probe": "Engine/tools-side scanner signal addition citing s18/batch_census.txt and s11/jr_census.txt (escalation or owner-cluster modality)."
   },
   {
    "hypothesis": "The inline_asm_canonical.txt:340 whole-body grant audit resolves in favor of func_80052B7C on cluster plus Sony-idiom evidence.",
    "mechanism": "The 2026-10-15 20:38 ruling rejected written islands only (mixed macro-call + written-out body); it did not rule on a clean whole-body INCLUDE_ASM submission under the grant row.",
-   "next_probe": "Operator/Judge review of inline_asm_canonical.txt:340 with the s11, s18-s21 artifacts; no further grind-session probe can move this."
+   "next_probe": "Operator/Judge review of inline_asm_canonical.txt:340 with the s11, s18-s21, s24 artifacts; no further grind-session probe can move this."
   },
   {
    "hypothesis": "A vendored macro whose template batches the rotation+TR loads in $8..$15 would close hunk 1 in pure macro-call C.",
-   "mechanism": "s19/s20: the hunk-1 registers are template literals fixed at RTL expand (inline_c.h:298-307); no C-level statement order or variable choice reaches them.",
+   "mechanism": "s19/s20/s24: the hunk-1 registers for the SetRotMatrix portion are template literals fixed at RTL expand (inline_c.h:298-307); the ldtr portion's loads are RA-owned but always emit lhu and always batch separately from SetRotMatrix's loads regardless of C-level staging.",
    "next_probe": "Owner ruling plus an engine: commit adding the macro; not a grind action."
   }
  ],
@@ -436,6 +442,22 @@
    "measured_on": "tmp/grind/func_80052B7C/s23/psyz_libgte.c (Xeeynamo/psyz, fetched 2026-10-15 this session); s6 legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session, reverted to INCLUDE_ASM after",
    "predicate_cite": "",
    "result": "psyz's SetRotMatrix/RotMatrix*/ApplyRotMatrix are pure software reimplementations (plain MATRIX field copies and trig ma"
+  },
+  {
+   "session": 24,
+   "statement": "Declaring named s16 locals (trx/trY/trz) for tr->vx/vy/vz before gte_SetRotMatrix, instead of passing the struct-member reads directly as gte_ldtr's arguments, changes the scored distance.",
+   "kill_scope": "instance",
+   "measured_on": "legal macro-call chassis via psxsdk/inline_c.h, named s16 locals for the 3 ldtr args declared before gte_SetRotMatrix, no FAKE construct, src/main/3AB48.c this session (s24), reverted after measuremen",
+   "predicate_cite": "",
+   "result": "score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only. The 3 loads move earlier in the instruction stream (now s"
+  },
+  {
+   "session": 24,
+   "statement": "GCC 2.7.2's choice of lhu (not the target's lh) for the s16 struct-member loads feeding gte_ldtr's three 'r' asm operands is independent of the C-level declaration form tried (direct member expression",
+   "kill_scope": "instance",
+   "measured_on": "variants A and B above, legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session (s24)",
+   "predicate_cite": "",
+   "result": "Both variants emit lhu for all 3 loads; target is lh. No declaration-order or local-staging respelling tried (in s19 or "
   }
  ],
  "ladder_skip": 0,

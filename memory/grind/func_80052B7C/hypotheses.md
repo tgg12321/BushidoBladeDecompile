@@ -414,3 +414,51 @@ residual.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: tmp/grind/func_80052B7C/s23/psyz_libgte.c (Xeeynamo/psyz, fetched 2026-10-15 this session); s6 legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session, reverted to INCLUDE_ASM after measurement
+
+## [s24] KILL RE-AUDIT (structural): the banked legal macro-call chassis re-measures 19 on the current tree with zero FAKE carriers.
+- verdict: CONFIRMED
+- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored. Identical to s6/s8/s13-s23. See tmp/grind/func_80052B7C/s24/chassis_sandbox_diff.txt variant A.
+
+## [s24] Declaring named s16 locals (trx/trY/trz) for tr->vx/vy/vz before gte_SetRotMatrix, instead of passing the struct-member reads directly as gte_ldtr's arguments, moves where the 3 sub-word loads land in the instruction stream (front of the chunk vs after gte_SetRotMatrix's own loads) but changes nothing scored: still lhu not the target's lh, still batched per-macro-string not interleaved with gte_SetRotMatrix's loads, hunks 2-4 unchanged.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal macro-call chassis via psxsdk/inline_c.h (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl), named s16 locals for the ldtr args declared before gte_SetRotMatrix, no FAKE construct, src/main/3AB48.c this session (s24), reverted after measurement
+- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored. See tmp/grind/func_80052B7C/s24/chassis_sandbox_diff.txt variant B. Extends s19's declaration-order probe (which tested reordering gte_ldtr vs gte_SetRotMatrix as whole statements) to the finer-grained axis of naming the sub-word reads as locals vs leaving them as inline member expressions; same null result.
+
+## [s24] GCC 2.7.2 emits lhu (not lh) for the s16 struct-member reads (tr->vx/vy/vz) feeding gte_ldtr's "r" asm operands regardless of C-level declaration form (direct member expression vs named s16 local, load position before/after gte_SetRotMatrix), so no structural (block-local-var-split/declaration-order/type-narrowing/statement-reassociation) lever reaches the target's lh opcode for those 3 loads.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: both variants A and B above, legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session (s24)
+- result: both variants emit lhu t0/v1/v0 (or lhu v0/v1/t0) for the 3 loads; target is lh t5/t6/t7. Re-declaring the already-signed s16 type as a fresh local makes no difference -- GCC's choice of lhu over lh for a value only consumed by an asm "r" operand with no further arithmetic is independent of the C-level staging tried here. Narrower than a class kill: only declaration-order and local-staging were tried on THIS macro ("r" constraint, no asm modifier); a different constraint/modifier spelling of gte_ldtr is untested.
+
+## Current state (s24)
+floor 19, 24 sessions; structural modality's lever set (block-local var splits, declaration
+order, type narrowing via named locals, statement re-association) re-confirmed exhausted on
+this chassis for the 4th+ time (s8, s13 x2, s14, s19 x2, now s24's finer-grained sub-word-load
+staging variant). The residual's only remaining open frontier is the canonical-asm grant-path
+question (owner/Judge review of inline_asm_canonical.txt:340's whole-body grant, the
+scan_hand_coded gate-class signal work, a vendored macro for the batched lw/lh->ctc2 idiom) --
+none of which is a grind-session structural probe. See docs/grind/decisions.md 2026-10-15
+20:38 ruling and live frontier entries carried from s18-s23.
+
+## [s24] The banked legal macro-call chassis (#include <psxsdk/inline_c.h>; gte_SetRotMatrix(rot); gte_ldtr(tr->vx,tr->vy,tr->vz); gte_ldv0(v0); gte_rt(); gte_stlvl(out);) still measures 19 on the current tree with zero FAKE carriers.
+- mechanism: Re-audit of the kill ledger's mandated dispatcher condition before any new probe this session.
+- probe: Applied the chassis live to src/main/3AB48.c, ran sandbox func_80052B7C --disable all --diff, then reverted to INCLUDE_ASM.
+- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- identical to s6/s8/s13-s23.
+- verdict: CONFIRMED
+
+## [s24] Declaring named s16 locals (trx/trY/trz) for tr->vx/vy/vz before gte_SetRotMatrix, instead of passing the struct-member reads directly as gte_ldtr's arguments, changes the scored distance.
+- mechanism: Structural-modality lever: block-local variable split + declaration order, applied to the one region of the chassis (the 3 ldtr operand loads) that s19 confirmed is RA-owned rather than template-literal.
+- probe: Edited src/main/3AB48.c to declare the 3 locals before gte_SetRotMatrix and pass them to gte_ldtr instead of tr->vx/vy/vz directly; ran sandbox --diff; reverted.
+- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only. The 3 loads move earlier in the instruction stream (now scheduled before gte_SetRotMatrix's own lw's instead of after) but still emit lhu not the target's lh, and are still grouped as their own 3-load/3-ctc2 batch rather than interleaved with gte_SetRotMatrix's loads+ctc2's as the target requires.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: legal macro-call chassis via psxsdk/inline_c.h, named s16 locals for the 3 ldtr args declared before gte_SetRotMatrix, no FAKE construct, src/main/3AB48.c this session (s24), reverted after measurement
+
+## [s24] GCC 2.7.2's choice of lhu (not the target's lh) for the s16 struct-member loads feeding gte_ldtr's three 'r' asm operands is independent of the C-level declaration form tried (direct member expression vs named s16 local, load position before/after gte_SetRotMatrix).
+- mechanism: Both variant A (direct tr->vx/vy/vz args) and variant B (named locals) are already-signed s16 reads consumed only by an asm 'r' operand with no further arithmetic; GCC's load-widening choice for that pattern evidently does not depend on the source-level staging exercised here.
+- probe: Compared the hunk-1 diff of both variants measured this session.
+- result: Both variants emit lhu for all 3 loads; target is lh. No declaration-order or local-staging respelling tried (in s19 or s24) reaches lh.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: variants A and B above, legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session (s24)

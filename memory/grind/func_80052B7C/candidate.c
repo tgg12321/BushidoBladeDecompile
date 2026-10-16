@@ -233,3 +233,12 @@ void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
  * hardware instruction-order precedent for this residual. No new C-level mutation axis found.
  * src/main/3AB48.c reverted to INCLUDE_ASM; no new src/ edit banked.
  */
+/* s24 (structural): chassis re-audited at 19, no FAKE. New structural probe: declaring
+ * named s16 locals for tr->vx/vy/vz before gte_SetRotMatrix (vs direct member-expression
+ * args to gte_ldtr) moves the 3 sub-word loads earlier in the stream but changes nothing
+ * scored -- still lhu not the target's lh, still batched per-macro-string. This extends
+ * s19's statement-level reorder probe to the finer-grained local-staging axis; same null
+ * result. The structural lever set (var split / decl order / type narrowing / statement
+ * reassociation) is now re-confirmed exhausted on this chassis for the 4th+ time (s8, s13,
+ * s14, s19, s24). See hypotheses.md s24 and tmp/grind/func_80052B7C/s24/chassis_sandbox_diff.txt.
+ */
