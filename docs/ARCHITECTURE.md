@@ -205,7 +205,7 @@ Authorized categories:
 - **PSX BIOS A/B/C-vector trampolines** (3-instruction sequences with the function number in `$t1` in the `jr` delay slot — no C analog).
 - **Hand-coded math kernels** (sin/cos rotation, 3-axis Euler rotation — show evidence of hand-scheduled multu pacing and INT_MIN guard idioms).
 - **Custom calling conventions** (`$s0` passed in without prologue save).
-- **GTE primitives** that don't have a `gte_*()` macro in PsyQ's `include/gte.h`.
+- **GTE primitives** that don't have a `gte_*()` macro in the vendored PsyQ 4.0 headers (`include/psxsdk/inline_o.h`, `inline_c.h`, `gtemac.h`).
 
 Tools that scan for `inline_asm_debt` skip names listed here. Adding to the list requires per-function evidence (the engine's `canonical` gate routes each function ASM-region / ASM-STRUCTURAL / C and provides the diagnostic signal).
 

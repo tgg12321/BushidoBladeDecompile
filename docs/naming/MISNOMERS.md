@@ -495,7 +495,7 @@ data layout.
 #### `g_camera_view_state` (0x800FF558) — should be typed as `MATRIX`
 
 The name is fine but the type isn't formalized.  §18 trace confirmed
-it's a standard PsyQ `MATRIX` struct (per `include/gte.h`): `s16 m[3][3];
+it's a standard PsyQ `MATRIX` struct (per `include/psxsdk/libgte.h`): `s16 m[3][3];
 u16 pad; s32 t[3];` = 32 bytes.
 
 **Action: not renamed; trace documents the type.** A future cleanup

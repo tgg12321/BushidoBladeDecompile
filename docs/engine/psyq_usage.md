@@ -116,11 +116,10 @@ on top of libspu — see [sound.md](sound.md).
 
 ## libgte — Geometry Transformation Engine
 
-PsyQ's GTE wrappers. BB2 doesn't use the inline-asm macros from
-PsyQ's `inline_n.h` directly — instead, it uses raw `.word` encodings via
-the project's own `include/gte.h` macros (`gte_rtps()`, `gte_rtpt()`, etc.).
-This matches PsyQ's `LIBGTE.LIB` output bytes but lets the project build
-without PsyQ-specific headers.
+PsyQ's GTE wrappers. The inline GTE macros (`gte_rtps()`, `gte_rtpt()`,
+etc.) are PsyQ 4.0's own, vendored in `include/psxsdk/inline_o.h`,
+`inline_c.h` and `gtemac.h` with the DMPSX command words already substituted
+as raw `.word` encodings, so the project builds without running DMPSX.
 
 PsyQ entry points BB2 calls directly:
 - `func_8007E094` = `InitGeom` — initialize GTE registers at boot

@@ -132,7 +132,7 @@ BB2 uses the standard PS1 GTE (COP2) for matrix math:
 - **Translation vector**: `gte_SetTransVector(vec)` loads a 3-vec
   translation into GTE registers $5-$7.
 - **Single-vertex projection**: `gte_rtps()` (`.word 0x4A180001`, see
-  `gte.h:59`) projects one vertex from world → screen space using the
+  `include/psxsdk/inline_o.h:411`) projects one vertex from world → screen space using the
   currently-loaded matrix + translation. Result in screen X/Y/Z registers
   ($14, $19).
 - **Triangle projection**: `gte_rtpt()` (`.word 0x4A280030`) projects 3
@@ -152,8 +152,9 @@ The GTE has a tight pipeline; back-to-back ops can stall. Most BB2 GTE
 sequences interleave `mtc2/ctc2/lwc2` loads with CPU arithmetic between
 ops so the GTE is busy when the CPU isn't waiting.
 
-See `include/gte.h` for the full macro set the project uses to wrap GTE ops
-in inline asm.
+The GTE macro set is Sony's, vendored verbatim from PsyQ 4.0 with the DMPSX
+command words substituted: `include/psxsdk/inline_o.h` / `inline_c.h` (one
+per TU) and the `gtemac.h` composites; `engine/gtemacro.py` models them.
 
 ## Camera matrix — `g_cam_matrix` (`0x800EEDB0`)
 
