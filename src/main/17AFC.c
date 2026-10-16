@@ -387,9 +387,6 @@ s32 func_80027AD8(s32 arg0, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
         if (arg0 == 0) {
             diff = var_5->unk_20 - arg1->unk_20;
             var_10 = func_800272FC(diff);
-            /* FAKE: diff's sign bit taken before the var_12 / unk_B4 stores and
-             * the call; read at its use, arg1 and arg2 swap $s0 / $s1:
-             * score 102 */
             sign = (u32)diff >> 31;
             var_12 = arg1->unk_AF == var_5->unk_AF;
             arg1->unk_B4 = var_5->unk_B4 = var_12;
@@ -677,11 +674,8 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
                         goto block_49;
                     }
                     {
-                        /* FAKE: named intermediate for the selected constant
-                         * keeps the two constants in the target's order (a
-                         * plain ternary reorders them: score 2) */
-                        s32 var_14 = (var_s1 == 0) ? 0xB : 0x19;
-                        var_v0_2 = var_14;
+                        s32 next_286 = (var_s1 == 0) ? 0xB : 0x19;
+                        var_v0_2 = next_286;
                     }
                     goto block_48;
                 }
@@ -2739,8 +2733,6 @@ s32 func_8002D780(
             var_9 = z2 * cx - x2 * cz;
             var_10 = z2 * px - x2 * pz;
             if ((var_9 ^ var_10) >= 0) {
-                /* FAKE: ax holds cx - x0 ahead of the dx set-up; in the
-                 * product the subtraction moves (score 2). */
                 s32 ax = cx - x0;
                 s32 dx;
                 /* FAKE: the third edge's z2 - z0 is staged through the finished
@@ -4454,12 +4446,9 @@ loop:
     if (t0->unk_00 == 0)
         goto next;
     {
-        /* FAKE: named intermediate `v1_v` holds the 0/1 record index;
-         * written directly (&D_80101EC8[cmp]) the multiply by a comparison
-         * becomes a branch: score 13 (no-new-park-categories
-         * named-intermediate) */
-        s32 v1_v = (rec->unk_03 == 0);
-        ent = &D_80101EC8[v1_v];
+        /* the other player's index (unk_03 is the owner) */
+        s32 other = (rec->unk_03 == 0);
+        ent = &D_80101EC8[other];
     }
     state = ent->unk_6A;
     if (state == 4 || state == 0x14 || state == 0xF || state == 0x1C ||
