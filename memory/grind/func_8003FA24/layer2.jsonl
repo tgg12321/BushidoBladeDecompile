@@ -1,1 +1,2 @@
 {"func": "func_8003FA24", "addr": "8003FA24", "verdict": "PASS", "body_hash": "38c2b8d108a28dd2", "body_kind": "c", "file": "main/2B344", "reviewer": "ab78fc1f6c41975da", "scope": "cheat-cleanup", "date": "2026-10-16T17:37:13Z", "head": "2b5c87b97", "notes": ""}
+{"func": "func_8003FA24", "addr": "8003FA24", "verdict": "PASS", "body_hash": "207c08310539b97a", "body_kind": "c", "file": "main/2B344", "reviewer": "a6a72bf18e56339d7", "scope": "cheat-cleanup", "date": "2026-10-16T22:37:16Z", "head": "93f313255", "notes": ""}
