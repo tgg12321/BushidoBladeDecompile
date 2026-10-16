@@ -778,14 +778,8 @@ void func_8001B294(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
     func_8003F1E4(0);
     D_800F6608.unk_00.x = (a0->unk_F4.x + a1->unk_F4.x) / 2;
     D_800F6608.unk_00.y = (a0->unk_F4.y + a1->unk_F4.y) / 2;
-    {
-        /* FAKE: t1 / t2 read the two z's ahead of the unk_10.vx store; read in
-         * the sum, the store is scheduled ahead of the loads (score 4). */
-        s32 t1 = a0->unk_F4.z;
-        s32 t2 = a1->unk_F4.z;
-        D_800F6608.unk_10.vx = 0;
-        D_800F6608.unk_00.z = (t1 + t2) / 2;
-    }
+    D_800F6608.unk_00.z = (a0->unk_F4.z + a1->unk_F4.z) / 2;
+    D_800F6608.unk_10.vx = 0;
     D_800F6608.unk_10.vy =
         0x400 -
         ratan2(a1->unk_F4.x - a0->unk_F4.x, a1->unk_F4.z - a0->unk_F4.z);
@@ -892,11 +886,9 @@ void func_8001B478(Unk80101EC8Record *obj) {
                 diff += 3;
             }
             {
-                /* FAKE: cnt computed ahead of the unk_10.vy store; computed at
-                 * the D_800A36FC store the addiu moves below it (score 6). */
-                s16 cnt = counter - 1;
+                counter--;
                 s2->unk_10.vy = old12 + (diff >> 2);
-                D_800A36FC = cnt;
+                D_800A36FC = counter;
             }
 
             {
@@ -948,7 +940,6 @@ void func_8001B748(
     s32 inv_frac = 0x1000 - frac;
     s32 inv_s1 = 0x1000 - frac_s1;
     Unk80101EC8Record *base = &D_80101EC8[D_800A3748];
-    s32 zval;
     s32 dx;
     s32 dy;
     s32 dz;
@@ -957,7 +948,6 @@ void func_8001B748(
      * loads (score 23). */
     s32 cur;
     s32 var_8;
-    s32 v;
     s32 t;
     s32 var_11;
     if (dst->b1F == 0) {
@@ -966,14 +956,11 @@ void func_8001B748(
         dst->unk_00.y =
             (((frac * (a->h6)) + (inv_frac * (b->h6))) >> 12) - 0x12C;
         D_800A3310 = 0;
-        /* FAKE: zval's products formed ahead of the unk_10 stores; formed at
-         * the unk_00.z store the multiply chains reorder (score 35). */
-        zval = (frac * (a->h8)) + (inv_frac * (b->h8));
+        dst->unk_00.z = ((frac * a->h8) + (inv_frac * b->h8)) >> 12;
         dst->unk_10.vy = val;
         dst->unk_10.vx = 0x80;
         dst->unk_10.vz = 0;
         dst->w18 = ((frac_s1 * 0x9C4) + (inv_s1 * 0x2710)) >> 12;
-        dst->unk_00.z = zval >> 12;
         return;
     }
     if ((base->unk_198[0].y + base->unk_198[1].y) / 2 - base->unk_180.y <
@@ -1009,11 +996,8 @@ void func_8001B748(
     }
     dst->unk_10.vx =
         dst->unk_10.vx + math_SignExt12Div(t - dst->unk_10.vx, 0x10);
-    /* FAKE: v computed ahead of the unk_10.vz store; computed in the unk_10.vy
-     * store the vz store rises above the call (score 4). */
-    v = math_SignExt12Div(val - dst->unk_10.vy, 0x10);
+    dst->unk_10.vy += math_SignExt12Div(val - dst->unk_10.vy, 0x10);
     dst->unk_10.vz = 0;
-    dst->unk_10.vy = dst->unk_10.vy + v;
     if (var_8) {
         t = ((frac_s1 * 0x7D0) + (inv_s1 * 0x2EE0)) >> 12;
     } else {
@@ -3122,18 +3106,14 @@ void func_80020D70(void) {
 
 void func_80020DDC(void) {
     s32 v1;
-    s32 v2;
     cdrom_StartRead(func_80036EA8(1, 1), D_800A3830);
     func_80036F40();
     v1 = D_800A3830;
     D_80102760.unk_00 = (u16 *)(v1 + 0x14);
     D_80102760.unk_04 = (u16 *)(v1 + *(s32 *)(v1 + 4));
     D_80102760.unk_08 = (u8 *)(v1 + *(s32 *)(v1 + 8));
-    /* FAKE: v2 reads the +0x10 header word before the D_800A3880 store; inline
-     * it moves below (score 8). */
-    v2 = *(s32 *)(v1 + 0x10);
+    D_80102760.unk_10 = (u32 *)(v1 + *(s32 *)(v1 + 0x10));
     D_800A3880 = 1;
-    D_80102760.unk_10 = (u32 *)(v1 + v2);
 }
 
 /* For i = 0, 1 with v = arg0, then arg2 (when D_800A38DC is 1, 4 or 6): when
@@ -4699,16 +4679,8 @@ void func_80023F08(s32 arg0, PadState *pad) {
     } else if (rec->unk_50->unk_08 >= rec->unk_40) {
         ent = rec->unk_50->unk_0A;
         while ((var_7 = ent[0]) != 0) {
-            /* FAKE (Q90, ordinary-c-judge-decidable): the entry's class mask
-             * (one bit per character class unk_0A; bit set = the entry applies)
-             * is a u32 only for the int->u32 conversion. With an int mask,
-             * fold-const rewrites (mask & (1 << cls)) != 0 into ((mask >> cls)
-             * & 1) != 0 (srav / andi) in place of the target's li 1 / sllv /
-             * and. An s32 mask: score 3. */
-            u32 mask;
-
             if (!(var_7 & 0x8000) ||
-                ((mask = ent[2] | (ent[3] << 16)) & (1 << rec->unk_0A))) {
+                ((ent[2] | ((u32)ent[3] << 16)) & (1 << rec->unk_0A))) {
                 switch (var_7 & 0x30) {
                 case 0x00:
                     var_8 = rec->unk_24.held;
@@ -4937,17 +4909,17 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_6C == 6) {
         MATRIX m1;
         MATRIX m2;
+        s32 old_heading;
+        s32 new_heading;
         s32 var_34;
 
         math_RotMatrixZYXAngles(
             rec->unk_290.unk_06, rec->unk_290.unk_08, rec->unk_290.unk_0A, &m1);
         math_RotMatrixZYXAngles(
             var_0[0].unk_06, var_0[0].unk_08, var_0[0].unk_0A, &m2);
-        /* new frame's heading minus the previous frame's.  FAKE: spelled
-         * -old + new so the old heading is computed first, as the target
-         * does; new - old computes the new heading first (score 7). */
-        var_34 =
-            -ratan2(m1.m[0][0], m1.m[2][0]) + ratan2(m2.m[0][0], m2.m[2][0]);
+        old_heading = ratan2(m1.m[0][0], m1.m[2][0]);
+        new_heading = ratan2(m2.m[0][0], m2.m[2][0]);
+        var_34 = new_heading - old_heading;
 
         rec->unk_1C8.vy += var_34;
         func_8001B690(arg0, var_34);
