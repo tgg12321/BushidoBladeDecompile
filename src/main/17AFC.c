@@ -6,6 +6,8 @@
 #include "bb2.h"
 #include <psxsdk/libgte.h>
 #include "bb2_const.h"
+#include <psxsdk/inline_o.h>
+#include <psxsdk/gtemac.h>
 
 /* P1/P2 round scores and tiebreakers, declared here as single u8s (per-file
  * declarations: Q21-Q25, no-new-park-categories aggregate-merge exception):
@@ -154,18 +156,7 @@ void math_NegNormalize3D(s32 *arg0, s16 *arg1) {
         var_1 = ((u32)(g_sqrt_table_u8[dist_sq])) >> 3;
     } else {
         s32 sp_tmp;
-        /* Hand-written GTE leading-zero count (LZCS in, LZCR out), as in
-         * func_8001A67C. */
-        __asm__ volatile(
-            "addu   $t4, %1, $zero\n"
-            "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
-            "nop\n"
-            "nop\n"
-            "addu   $t4, $sp, $zero\n" /* &sp_tmp (at 0($sp)) */
-            "swc2   $31, 0($t4)\n"     /* sp_tmp <- LZCR */
-            : "=m"(sp_tmp)
-            : "r"(dist_sq)
-            : "$12");
+        gte_Lzc(dist_sq, &sp_tmp);
         {
             u32 v0_m = (u32)-2;
             u32 v1_m;
@@ -878,10 +869,7 @@ extern s32 D_800A3144[2];
  * D_800A3144[0..1]; an overlap (at most 0x80) pushes the characters apart along
  * x/z, scaled by the distance. After an overlap, the unk_6A states and the
  * unk_1C8.vy difference (folded to 0..0x800) pick the reaction (unk_286,
- * D_800A38A8 / D_800A3876). The push is added to unk_134.vx / .vz.
- * GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc), inline_o.h class
- * (inline-asm-policy, owner ruling 2026-09-26). Everything else is ordinary C
- * except the three FAKE-annotated locals below (dist, tbl, shift). */
+ * D_800A38A8 / D_800A3876). The push is added to unk_134.vx / .vz. */
 void func_800288C8(void) {
     s32 lzc_out;
     s32 var_1;
@@ -942,18 +930,12 @@ void func_800288C8(void) {
             if ((u32)dist < 0x400) {
                 dist = (u32)g_sqrt_table_u8[dist] >> 3;
             } else {
-                /* gte_Lzc(tbl, &lzc_out) -- gtemac.h :174-178: gte_ldlzc,
-                 * gte_nop x2, gte_stlzc */
-                __asm__ volatile ("move  $12,%0": :"r"(tbl):"$12","$13","$14","$15","memory");
-                __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
-                __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-                __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-                __asm__ volatile ("move  $12,%0": :"r"(&lzc_out):"$12","$13","$14","$15","memory");
-                __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
+                gte_Lzc(tbl, &lzc_out);
                 {
                     /* FAKE: two values -- the leading-zero count, then the
                      * table shift; as one expression `shift = 0x16 - (lzc_out &
-                     * ~1)` the count lands in $a0 (target: $v1 / $v0) */
+                     * ~1)` the count lands in $a0 (target: $v1 / $v0):
+                     * score 4 */
                     s32 shift;
                     shift = lzc_out;
                     shift = 0x16 - (shift & ~1);
@@ -1555,7 +1537,7 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *arg1, u32 *arg2, s32 arg3) {
      * (Ruling 11) */
     s32 temp;
     s32 hlen;
-    /* temp2: the site-1 gte_ldlzc input copy of `temp`, then the
+    /* temp2: the first gte_Lzc input copy of `temp`, then the
      * g_sqrt_table_u8 byte (Ruling 11, Q28) */
     s32 temp2;
     s32 len_sq;
@@ -1586,14 +1568,7 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *arg1, u32 *arg2, s32 arg3) {
     if ((u32)temp < 0x400) {
         hlen = (u32)g_sqrt_table_u8[temp] >> 3;
     } else {
-        /* gte_Lzc(temp2, &sp_tmp) -- gtemac.h :174-178: gte_ldlzc, gte_nop x2,
-         * gte_stlzc */
-        __asm__ volatile ("move  $12,%0": :"r"(temp2):"$12","$13","$14","$15","memory");
-        __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("move  $12,%0": :"r"(&sp_tmp):"$12","$13","$14","$15","memory");
-        __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
+        gte_Lzc(temp2, &sp_tmp);
         {
             s32 lz = ~1;
             s32 shift;
@@ -1613,14 +1588,7 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *arg1, u32 *arg2, s32 arg3) {
     if ((u32)len_sq < 0x400) {
         temp = (u32)g_sqrt_table_u8[len_sq] >> 3;
     } else {
-        /* gte_Lzc(len_sq, &sp_tmp2) -- gtemac.h :174-178: gte_ldlzc, gte_nop
-         * x2, gte_stlzc */
-        __asm__ volatile ("move  $12,%0": :"r"(len_sq):"$12","$13","$14","$15","memory");
-        __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("move  $12,%0": :"r"(&sp_tmp2):"$12","$13","$14","$15","memory");
-        __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
+        gte_Lzc(len_sq, &sp_tmp2);
         {
             s32 lz = ~1;
             s32 shift;
@@ -2115,19 +2083,7 @@ s32 func_8002BC68(s32 arg0) {
         var_t0 = ((u32)(g_sqrt_table_u8[temp_a0])) >> 3;
     } else {
         s32 sp_tmp;
-        /* GTE leading-zero-count island (no C form). The $13-$15 clobbers
-         * reproduce the original's register footprint (not a pin): only with
-         * them does reload pick the target's $24 for the mfhi. */
-        __asm__ volatile(
-            "addu   $t4, %1, $zero\n"
-            "mtc2   $t4, $30\n"
-            "nop\n"
-            "nop\n"
-            "addu   $t4, $sp, $zero\n"
-            "swc2   $31, 0($t4)\n"
-            : "=m"(sp_tmp)
-            : "r"(temp_a0)
-            : "$12", "$13", "$14", "$15");
+        gte_Lzc(temp_a0, &sp_tmp);
         {
             u32 v0_m = (u32)-2;
             u32 v1_m;
@@ -2179,19 +2135,7 @@ s32 func_8002BEA0(void) {
         var_t0 = ((u32)(g_sqrt_table_u8[temp_a0])) >> 3;
     } else {
         s32 sp_tmp;
-        /* GTE leading-zero-count island (no C form). The $13-$15 clobbers
-         * reproduce the original's register footprint (not a pin): only with
-         * them does reload pick the target's $24 for the mfhi. */
-        __asm__ volatile(
-            "addu   $t4, %1, $zero\n"
-            "mtc2   $t4, $30\n"
-            "nop\n"
-            "nop\n"
-            "addu   $t4, $sp, $zero\n"
-            "swc2   $31, 0($t4)\n"
-            : "=m"(sp_tmp)
-            : "r"(temp_a0)
-            : "$12", "$13", "$14", "$15");
+        gte_Lzc(temp_a0, &sp_tmp);
         {
             u32 v0_m = (u32)-2;
             u32 v1_m;
@@ -2962,7 +2906,7 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
 /* Segment/circle test in x/z. Returns 0 when p1 and p2 lie on the same side
  * outside the +-threshold band in x or in z; otherwise solves the quadratic for
  * where p1 -> p2 meets the circle of squared radius r_sq about the origin
- * (terms >> 9; square root by g_sqrt_table_u8, GTE LZCS island for
+ * (terms >> 9; square root by g_sqrt_table_u8, GTE leading-zero count for
  * values >= 0x400) and returns whether both Q8 intersection parameters
  * are in range. Load-bearing: `var_22 = var_18; lzcr = 0;` in that order,
  * `var_18` holding the value under the root, the square root and the <<9
@@ -3040,18 +2984,9 @@ dist_calc: {
                 /* FAKE: same-value re-store of `var_22` (it already holds
                  * var_18): with a single def cse merges var_22 into var_18 and
                  * deletes the copy the target keeps in $a0; the store emits
-                 * nothing; without it score 3 */
+                 * nothing; without it score 4 */
                 var_22 = var_18;
-                __asm__ volatile(
-                    "addu   $t4, %1, $zero\n"
-                    "mtc2   $t4, $30\n"
-                    "nop\n"
-                    "nop\n"
-                    "addu   $t4, $sp, $zero\n"
-                    "swc2   $31, 0($t4)\n"
-                    : "=m"(sp_tmp)
-                    : "r"(var_22)
-                    : "$12");
+                gte_Lzc(var_22, &sp_tmp);
                 lzcr = sp_tmp;
             }
             {
