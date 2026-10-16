@@ -4428,10 +4428,9 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
     return var_4;
 }
 
-extern Unk8009B400Record D_8009B3C8[3];
-extern Unk8009B400Record D_8009B3E0[2];
-extern Unk8009B400Record D_8009B3F0;
-extern Unk8009B400Record D_8009B3F8;
+/* func_8005D814's 7 sprite cells: [0..2] drawn with header D_8009B398[0],
+ * [3..4] with [1], [5] / [6] with [2] / [3] */
+extern Unk8009B400Record D_8009B3C8[7];
 
 s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Unk8005D814Rec *var_0 = (Unk8005D814Rec *)arg2;
@@ -4446,12 +4445,6 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s16 i;
     s16 j;
     s16 var_9;
-    /* FAKE: D_8009B398[2] alias; direct: score 16 */
-    Unk8009B0E0Record *var_10;
-    /* FAKE: D_8009B398[3] alias; direct: score 12 */
-    Unk8009B0E0Record *var_11;
-    Unk8009B400Record *var_12; /* FAKE: D_8009B3F0 alias; direct: score 18 */
-    Unk8009B400Record *var_13; /* FAKE: D_8009B3F8 alias; direct: score 6 */
 
     arg1--;
     tile = var_0->unk_00;
@@ -4472,7 +4465,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
 
     s.header = &D_8009B398[1];
     for (i = 0; i < 2; i++) {
-        s.table = &D_8009B3E0[i];
+        s.table = &D_8009B3C8[3 + i];
         if (i != 0) {
             if (arg1 == 1) {
                 s.table->w = 0x2D;
@@ -4550,14 +4543,6 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     var_2[0] = var_2[0] / 100;
     var_2[1] = var_2[1] % 100;
     s.y = 0x29;
-    /* FAKE: the tile loop's second sheet and cell, set ahead of the loop over
-     * var_2[] (pointer-alias-fake-exception): their live range spans both
-     * loops, so they are spilled and rematerialized inside the tile loop, and
-     * header[3] is not cse-related to header[2] (which would reverse the
-     * $s6/$s7 order); both direct: score 18 */
-    /* FAKE: pointer alias; direct use scores 12 (both direct: 18) */
-    var_11 = &D_8009B398[3];
-    var_13 = &D_8009B3F8; /* FAKE: pointer alias; direct use scores 6 */
     var_9 = 0;
     for (j = 0; j < 3; j++) {
         if (var_9 || var_2[j] != 0 || j == 2) {
@@ -4593,20 +4578,13 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         SetSemiTrans(tile, 0);
         AddPrim(g_gpu_ot_ptr + arg3, tile);
         tile++;
-        /* FAKE: the first sheet and cell (pointer-alias-fake-exception), named
-         * a few insns before their stores so loop.c hoists them, header then
-         * cell; the cell's shorter live range takes $s6, the header $s7; both
-         * direct: score 24 (all four direct: 17) */
-        /* FAKE: pointer alias; direct use scores 16 (both direct: 24) */
-        var_10 = &D_8009B398[2];
-        var_12 = &D_8009B3F0; /* FAKE: pointer alias; direct use scores 18 */
         s.y = D_8009B450[j].y;
-        s.header = var_10;
-        s.table = var_12;
+        s.header = &D_8009B398[2];
+        s.table = &D_8009B3C8[5];
         s.sprt_out = cur;
         cur = func_8007352C(&s);
-        s.header = var_11;
-        s.table = var_13;
+        s.header = &D_8009B398[3];
+        s.table = &D_8009B3C8[6];
         s.sprt_out = cur;
         cur = func_8007352C(&s);
     }
