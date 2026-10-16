@@ -72,6 +72,7 @@ written-out island is gone.
 """
 from __future__ import annotations
 
+import bisect
 import functools
 import hashlib
 import re
@@ -1011,16 +1012,47 @@ def tu_macros(text: str, root: str | Path = ".") -> dict[str, Macro]:
             if composites or m.header != COMPOSITE_HEADER}
 
 
-_NAME_CALL_RE = re.compile(r"\b([A-Za-z_]\w*)\s*\(")
+_IDENT_RE = re.compile(r"\b[A-Za-z_]\w*")
 _CONTROL_HEADS = frozenset({"if", "while", "for", "switch"})
 
 
-def _statement_position(masked: str, i: int) -> bool:
+def _code_view(text: str) -> tuple[str, tuple, list[tuple[int, int]]]:
+    """(masked, pos, preprocessor ranges) of the compiler view: comments and
+    literals blanked, backslash-newlines spliced out (`gte_n\\<NL>op` is one
+    token, as cc1 sees it); pos maps a view index back to `text`."""
+    view = cia.compiler_view(text)
+    return view.masked, view.pos, _preprocessor_ranges(view.masked)
+
+
+def _in_ranges(i: int, ranges: list[tuple[int, int]]) -> int:
+    """Start of the range holding `i`, or -1."""
+    k = bisect.bisect_right(ranges, (i, float("inf"))) - 1
+    return ranges[k][0] if k >= 0 and i < ranges[k][1] else -1
+
+
+def _skip_back(masked: str, k: int, pp: list[tuple[int, int]]) -> int:
+    """Index of the last code char at or before `k`, over whitespace and
+    preprocessor lines (`#ifdef X` before a call is not the previous token)."""
+    while k >= 0:
+        if masked[k] in " \t\n":
+            k -= 1
+            continue
+        s = _in_ranges(k, pp)
+        if s < 0:
+            return k
+        k = s - 1
+    return k
+
+
+def _vendored_prefixes(names: frozenset[str]) -> frozenset[str]:
+    return frozenset(n[:4] for n in names)
+
+
+def _statement_position(masked: str, i: int, pp: list[tuple[int, int]] = ()) -> bool:
     """True when the token at `i` starts a statement: after `;`, `{`, `}`, a
-    label's `:`, `else`, `do`, or the `)` closing an if/while/for head."""
-    k = i - 1
-    while k >= 0 and masked[k] in " \t\n":
-        k -= 1
+    label's `:`, `else`, `do`, or the `)` closing an if/while/for head.
+    Preprocessor lines in `pp` are skipped."""
+    k = _skip_back(masked, i - 1, pp)
     if k < 0:
         return False
     if masked[k] in ";{}:":
@@ -1036,9 +1068,7 @@ def _statement_position(masked: str, i: int) -> bool:
                 if depth == 0:
                     break
             k -= 1
-        k -= 1
-        while k >= 0 and masked[k] in " \t\n":
-            k -= 1
+        k = _skip_back(masked, k - 1, pp)
         heads = _CONTROL_HEADS
     m = re.search(r"(?<![\w])([A-Za-z_]\w*)$", masked[max(0, k - 16):k + 1])
     return bool(m) and m.group(1) in heads
@@ -1056,34 +1086,50 @@ def _body_open(text: str, span: tuple[int, int]) -> int:
 
 def call_sites(text: str, func: str, root: str | Path = ".") -> list[tuple[int, int, str]]:
     """(start, end, macro) for every call of a vendored macro in `func`'s body,
-    end just past its `;`. Only a TU that includes a vendored header has calls
-    (elsewhere the name is not a macro). Found in the compiler view: comments,
-    strings and preprocessor lines never count. A call must be a whole
+    end just past its `;`. Every TU is scanned, whether or not it includes a
+    vendored header itself (a game header or a computed #include can bring
+    one in; call_issues refuses the call then). Found in the compiler view:
+    comments, strings and preprocessor lines never count, and a
+    backslash-newline inside a name does not hide it. A call must be a whole
     statement — raises ValueError otherwise (fail closed), as for a call not
-    followed by `;` or one nested in another's arguments."""
+    followed by `;`, one nested in another's arguments, and a vendored name
+    not directly followed by `(` (`(gte_nop)()`, `CALL(gte_nop)`: a macro
+    reached through another name is no call the gates can see)."""
     span = inlineasm._func_body_span(text, func)
-    if span is None or not tu_includes(text):
-        return []
     names = vendored_names(root)
-    masked = inlineasm._code_without_comments_and_strings(text)
-    pp = _preprocessor_ranges(masked)
+    if span is None or not names:
+        return []
+    masked, pos, pp = _code_view(text)
+    if not any(p in masked for p in _vendored_prefixes(names)):
+        return []
+    lo = bisect.bisect_left(pos, _body_open(text, span))
+    hi = bisect.bisect_left(pos, span[1])
     out = []
-    for m in _NAME_CALL_RE.finditer(masked, _body_open(text, span), span[1]):
-        name = m.group(1)
-        if name not in names or any(s <= m.start() < e for s, e in pp):
+    for m in _IDENT_RE.finditer(masked, lo, hi):
+        name = m.group(0)
+        if name not in names or _in_ranges(m.start(), pp) >= 0:
             continue
-        close = inlineasm._match_paren(masked, m.end() - 1)
-        if close < 0 or close > span[1]:
+        j = m.end()
+        while j < hi and masked[j] in " \t\n":
+            j += 1
+        if j >= hi or masked[j] != "(":
+            raise ValueError(f"{func}: vendored macro {name} is named without a direct "
+                             f"call (`{name}(` expected)")
+        close = inlineasm._match_paren(masked, j)
+        if close < 0 or close > hi:
             raise ValueError(f"{func}: unclosed call of {name}")
         j = close
-        while j < span[1] and masked[j] in " \t\n":
+        while j < hi and masked[j] in " \t\n":
             j += 1
-        if j >= span[1] or masked[j] != ";":
+        if j >= hi or masked[j] != ";":
             raise ValueError(f"{func}: {name}(...) is not a statement (no `;` follows the call)")
-        if not _statement_position(masked, m.start()):
+        if not _statement_position(masked, m.start(), pp):
             raise ValueError(f"{func}: {name}(...) is not at statement position")
-        out.append((m.start(), j + 1, name))
+        out.append((pos[m.start()], pos[j] + 1, name))
     return out
+
+
+_ARG_ASM_RE = re.compile(r"\b(?:__asm__|__asm|asm)\b|\(\s*\{")
 
 
 def call_issues(text: str, func: str, root: str | Path = ".") -> list[str]:
@@ -1091,16 +1137,26 @@ def call_issues(text: str, func: str, root: str | Path = ".") -> list[str]:
     a header that is not Sony's text, a macro the TU's header does not define
     (wrong header, or gtemac.h without an inline header), a macro without a
     GTE command (`gte_nop()` is a scheduling barrier by name) or with a DMPSX
-    placeholder left, and a source-file #define / #undef of a vendored name.
+    placeholder left, an asm keyword or a GNU statement-expression `({` in the
+    arguments, a call in a TU that does not #include a vendored header itself,
+    and a source-file #define / #undef of a vendored name.
     call_sites / tu_header errors propagate as ValueError."""
     calls = call_sites(text, func, root)
     if not calls:
         return []
     issues = [f"vendored header: {i}" for i in check_vendored(root)]
+    if not tu_includes(text):
+        issues.append("vendored macro called but TU does not include its header ("
+                      + ", ".join(sorted({n for _s, _e, n in calls})) + ")")
     macros = tu_macros(text, root)
     where = tu_header(text) or "no inline header"
-    for _s, _e, name in calls:
+    for s, e, name in calls:
+        if _ARG_ASM_RE.search(cia.compiler_view(text[s:e]).masked):
+            issues.append(f"call of {name}: an asm keyword or a statement-expression "
+                          f"`({{` in its arguments")
         m = macros.get(name)
+        if not tu_includes(text):
+            continue
         if m is None:
             issues.append(f"call of {name}: not defined by the TU's vendored headers ({where})")
         elif m.placeholder:
@@ -1168,7 +1224,8 @@ def _asm_macro_registry_cached(root: str, stamps: tuple) -> tuple[tuple[str, str
         rel = p.relative_to(Path(root)).as_posix()
         text = p.read_text(encoding="utf-8", errors="replace")
         defs += [(rel, *d) for d in _defines_with_kind(text)]
-    seeds = set(cia.ASM_SPELLINGS) | volatile_cheats._BIOS_MACROS
+    # A vendored name seeds too: a header macro wrapping gte_nop() is asm.
+    seeds = set(cia.ASM_SPELLINGS) | volatile_cheats._BIOS_MACROS | vendored_names(root)
     asm = {name for _r, name, _f, _p, idents in defs if name in seeds or idents & seeds}
     grew = True
     while grew:
@@ -1205,17 +1262,17 @@ def foreign_asm_macros(root: str | Path = ".") -> dict[str, bool]:
 
 def _invocation_spans(text: str, names: dict[str, bool]) -> list[tuple[int, int, str]]:
     """(start, end, name) of every invocation of `names` (name -> function_like)
-    in code — comments, strings and preprocessor lines ignored — through the
-    balanced `)` of a function-like macro and an optional `;`. An unbalanced
-    invocation spans to the end of the text (fail closed)."""
+    in code — comments, strings and preprocessor lines ignored, backslash-
+    newlines spliced (the compiler view) — through the balanced `)` of a
+    function-like macro and an optional `;`. An unbalanced invocation spans to
+    the end of the text (fail closed)."""
     if not names:
         return []
-    masked = inlineasm._code_without_comments_and_strings(text)
-    pp = _preprocessor_ranges(masked)
+    masked, pos, pp = _code_view(text)
     rx = re.compile(r"\b(" + "|".join(map(re.escape, sorted(names))) + r")\b")
     out, last = [], -1
     for m in rx.finditer(masked):
-        if m.start() < last or any(s <= m.start() < e for s, e in pp):
+        if m.start() < last or _in_ranges(m.start(), pp) >= 0:
             continue
         end = m.end()
         if names[m.group(1)]:
@@ -1225,13 +1282,13 @@ def _invocation_spans(text: str, names: dict[str, bool]) -> list[tuple[int, int,
             if j >= len(masked) or masked[j] != "(":
                 continue  # a function-like macro's name alone is not expanded
             close = inlineasm._match_paren(masked, j)
-            end = close if close > 0 else len(text)
+            end = close if close > 0 else len(masked)
         k = end
         while k < len(masked) and masked[k] in " \t":
             k += 1
         if k < len(masked) and masked[k] == ";":
             end = k + 1
-        out.append((m.start(), end, m.group(1)))
+        out.append((pos[m.start()], pos[end - 1] + 1, m.group(1)))
         last = end
     return out
 
@@ -1245,12 +1302,12 @@ def shadow_spans(text: str, root: str | Path = ".") -> list[tuple[int, int, str]
     names = vendored_names(root)
     if not names:
         return []
-    masked = inlineasm._code_without_comments_and_strings(text)
+    masked, pos, pp = _code_view(text)
     out = []
-    for s, e in _preprocessor_ranges(masked):
+    for s, e in pp:
         m = _SHADOW_RE.match(masked, s)
         if m and m.end() <= e and m.group(1) in names:
-            out.append((s, e, m.group(1)))
+            out.append((pos[s], pos[e - 1] + 1 if e > s else pos[s], m.group(1)))
     return out
 
 
@@ -1261,11 +1318,67 @@ def macro_strip_spans(text: str, root: str | Path = ".") -> list[tuple[int, int]
     command (gte_nop(); scored as stripped since the gate refuses it)."""
     spans = [(s, e) for s, e, _n in _invocation_spans(text, foreign_asm_macros(root))]
     spans += [(s, e) for s, e, _n in shadow_spans(text, root)]
-    if tu_includes(text):
-        try:
-            macros = tu_macros(text, root)
-        except ValueError:  # both inline headers: either one's barrier counts
-            macros = {**header_macros("inline_c.h", root), **header_macros("inline_o.h", root)}
-        free = {n: True for n, m in macros.items() if not m.has_cop2}
-        spans += [(s, e) for s, e, _n in _invocation_spans(text, free)]
+    try:
+        macros = tu_macros(text, root) if tu_header(text) else {}
+    except ValueError:  # both inline headers
+        macros = {}
+    if not macros:  # no (single) inline header: either one's barrier counts
+        macros = {**header_macros("inline_c.h", root), **header_macros("inline_o.h", root)}
+    free = {n: True for n, m in macros.items() if not m.has_cop2}
+    spans += [(s, e) for s, e, _n in _invocation_spans(text, free)]
+    spans += [(s, e) for s, e, _n in bare_spans(text, root)]
     return spans
+
+
+_NOT_INVOKERS = _CONTROL_HEADS | {"return", "sizeof"}
+
+
+def bare_spans(text: str, root: str | Path = ".") -> list[tuple[int, int, str]]:
+    """(start, end, name) of every code occurrence of a vendored name not
+    directly followed by `(`: the macro is reached through another name
+    (`#define CALL(m) m()` / `CALL(gte_nop);`, `(gte_nop)();`), which no gate
+    sees as a call. The span is the enclosing macro or function invocation
+    (through its `)` and an optional `;`) when the name is an argument of one,
+    else the name alone; call_sites refuses the same occurrences."""
+    names = vendored_names(root)
+    if not names:
+        return []
+    masked, pos, pp = _code_view(text)
+    if not any(p in masked for p in _vendored_prefixes(names)):
+        return []
+    out, last = [], -1
+    for m in _IDENT_RE.finditer(masked):
+        name = m.group(0)
+        if name not in names or m.start() < last or _in_ranges(m.start(), pp) >= 0:
+            continue
+        j = m.end()
+        while j < len(masked) and masked[j] in " \t\n":
+            j += 1
+        if j < len(masked) and masked[j] == "(":
+            continue
+        s, e = m.start(), m.end()
+        depth, k = 0, s - 1
+        while k >= 0 and masked[k] not in ";{}":
+            if masked[k] == ")":
+                depth += 1
+            elif masked[k] == "(":
+                if depth == 0:
+                    break
+                depth -= 1
+            k -= 1
+        if k >= 0 and masked[k] == "(":
+            q = k - 1
+            while q >= 0 and masked[q] in " \t\n":
+                q -= 1
+            im = re.search(r"\b[A-Za-z_]\w*$", masked[max(0, q - 63):q + 1])
+            if im and im.group(0) not in _NOT_INVOKERS:
+                close = inlineasm._match_paren(masked, k)
+                s, e = q + 1 - len(im.group(0)), close if close > 0 else len(masked)
+        k = e
+        while k < len(masked) and masked[k] in " \t":
+            k += 1
+        if k < len(masked) and masked[k] == ";":
+            e = k + 1
+        out.append((pos[s], pos[e - 1] + 1, name))
+        last = e
+    return out

@@ -1435,8 +1435,11 @@ def find_macro_asm_defs(text: str) -> list[tuple[int, int, str]]:
     defs = _directive_defines(text)
     # A macro that invokes a BIOS trampoline macro (include/bios.h) expands to
     # __asm__ just the same, so it seeds the set too (inline-asm audit A3
-    # hardening, 2026-10-01).
-    seeds = set(cia.ASM_SPELLINGS) | _BIOS_MACROS
+    # hardening, 2026-10-01); so does one naming a vendored PsyQ GTE macro
+    # (`#define BAR() gte_nop()`, `#define R gte_rtv0`): only a direct call of
+    # the vendored name is an island the gates see (engine.gtemacro).
+    from . import gtemacro  # local import: gtemacro imports inlineasm
+    seeds = set(cia.ASM_SPELLINGS) | _BIOS_MACROS | gtemacro.vendored_names()
     asm_names = {name for _s, _e, name, _params, idents in defs
                  if name in seeds or idents & seeds}
     grew = True

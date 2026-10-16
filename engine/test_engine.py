@@ -1179,8 +1179,15 @@ def test_gte_vendored_model() -> None:
        [n for _t, n in calls("    if (v) gte_rt(); else gte_nop();\n    l: gte_ldv0(v);")],
        ["gte_rt", "gte_nop", "gte_ldv0"])
     eq("call_sites: composite", calls("    gte_RotTrans0(v);"), [("gte_RotTrans0(v);", "gte_RotTrans0")])
-    eq("call_sites: no vendored include -> no calls (the name is not a macro there)",
-       calls("    gte_rt();", "#include <psxsdk/libgte.h>\n"), [])
+    eq("call_sites: no direct vendored include -> still found (call_issues refuses)",
+       calls("    gte_rt();", "#include <psxsdk/libgte.h>\n"), [("gte_rt();", "gte_rt")])
+    eq("call_sites: a backslash-newline inside the name does not hide it",
+       calls("    gte_r\\\nt();"), [("gte_r\\\nt();", "gte_rt")])
+    eq("call_sites: a call after a directive line is at statement position",
+       calls("    func_x(v);\n#ifdef X\n    gte_rt();\n#endif"), [("gte_rt();", "gte_rt")])
+    refused("a parenthesized name", "    (gte_nop)();")
+    refused("a name passed to a macro", "    CALL(gte_nop);")
+    refused("a name taken as a value", "    func_x(gte_rt);")
     eq("call_sites: other functions' names ignored", calls("    func_x(v);\n    gte_rt();"),
        [("gte_rt();", "gte_rt")])
     refused("expression position", "    s32 a = 1 + gte_rt();")
@@ -1356,6 +1363,36 @@ def test_gte_call_gates() -> None:
             stripped, _n = inlineasm.strip_cheat_asm_file(shadow)
             check("call gate: a shadowing #define stripped for the sandbox",
                   "#define gte_rtv0" not in stripped)
+
+            # A vendored macro reached through another name: never an island.
+            for desc, pre, use in (
+                    ("a same-file wrapper of gte_nop", "#define BAR() gte_nop()\n", "BAR();"),
+                    ("a same-file wrapper of gte_rtv0", "#define R() gte_rtv0()\n", "R();"),
+                    ("an object-like alias", "#define BAR gte_nop\n", "BAR();"),
+                    ("a name passed to a macro", "#define CALL(m) m()\n", "CALL(gte_nop);")):
+                src = tu("    out[0] = 1;\n    " + use + "\n    out[1] = 2;", pre=pre)
+                eq(f"call gate: {desc} counted", inlineasm.func_cheat_asm_count(src, "func_GTE"), 1)
+                full, _n = inlineasm.strip_cheat_asm_file(src)
+                body = full[full.index("func_GTE"):]
+                check(f"call gate: {desc} stripped for the sandbox",
+                      use not in body and "out[1] = 2;" in body)
+                check(f"call gate: {desc} refused (non-canonical)",
+                      issues(src, canonical=False) != [])
+                check(f"call gate: {desc} refused (canonical)", issues(src) != [])
+            spliced = tu("    out[0] = 1;\n    gte_n\\\nop();")
+            eq("call gate: a spliced gte_nop() counted",
+               inlineasm.func_cheat_asm_count(spliced, "func_GTE"), 1)
+            check("call gate: a spliced gte_nop() stripped",
+                  "gte_n" not in inlineasm.strip_cheat_asm_file(spliced)[0])
+            hidden = tu(calls3, inc="#define H <psxsdk/inline_o.h>\n#include H\n")
+            check("call gate: a call without a direct vendored #include refused",
+                  any("does not include its header" in i for i in issues(hidden)))
+            for desc, arg in (("an asm keyword", '({ __asm__ volatile("nop"); v; })'),
+                              ("a statement-expression", "({ s32 *w = v; w; })")):
+                bad = tu(f"    gte_ldv0({arg});\n    gte_rtv0();")
+                grant(bad)
+                check(f"call gate: {desc} in a call's arguments refused",
+                      any("in its arguments" in i for i in issues(bad)))
 
             G.foreign_asm_macros = lambda root=".": {"MY_LDV": True, "MY_BARRIER": False}
             foreign = tu("    MY_LDV(v);\n    out[0] = 2;\n    MY_BARRIER;", inc="")
