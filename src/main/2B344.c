@@ -1816,8 +1816,7 @@ void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         temp_s2 += 0x3E8;
         temp_s2 -= (s32)(temp_t0 * temp_lo) >> 0xC;
         sp20 = (s32)(temp_lo * 0x7D0) >> 0xC;
-        if (var_s3 != -1) {
-        loop_16:
+        for (; var_s3 != -1; var_s3--) {
             if (var_s1 >= 0) {
                 if ((var_s0 >= 0) && (var_s1 < 0x20) && (var_s0 < 0x20)) {
                     sp10[0] = var_s1 - 0x10;
@@ -1827,41 +1826,38 @@ void func_8003E2D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             }
             temp_s2 %= 2000;
             temp_s2 += sp20;
-            if (var_s3 != 0) {
-                if (temp_s2 >= 0x7D1) {
-                    if (var_s4 != 0) {
-                        if (var_s6 < 0) {
-                            var_s1 -= 1;
-                        } else {
-                            var_s1 += 1;
-                        }
-                    } else if (var_s5 < 0) {
-                        var_s0 -= 1;
-                    } else {
-                        var_s0 += 1;
-                    }
-                    if ((var_s1 >= 0) && (var_s0 >= 0) && (var_s1 < 0x20) &&
-                        (var_s0 < 0x20)) {
-                        sp18[0] = var_s1 - 0x10;
-                        sp18[2] = var_s0 - 0x10;
-                        func_8003F388(sp18);
-                    }
-                }
+            if (var_s3 == 0) {
+                break;
+            }
+            if (temp_s2 >= 0x7D1) {
                 if (var_s4 != 0) {
-                    if (var_s5 < 0) {
-                        var_s0 -= 1;
+                    if (var_s6 < 0) {
+                        var_s1 -= 1;
                     } else {
-                        var_s0 += 1;
+                        var_s1 += 1;
                     }
-                } else if (var_s6 < 0) {
-                    var_s1 -= 1;
+                } else if (var_s5 < 0) {
+                    var_s0 -= 1;
                 } else {
-                    var_s1 += 1;
+                    var_s0 += 1;
                 }
-                var_s3 -= 1;
-                if (var_s3 != -1) {
-                    goto loop_16;
+                if ((var_s1 >= 0) && (var_s0 >= 0) && (var_s1 < 0x20) &&
+                    (var_s0 < 0x20)) {
+                    sp18[0] = var_s1 - 0x10;
+                    sp18[2] = var_s0 - 0x10;
+                    func_8003F388(sp18);
                 }
+            }
+            if (var_s4 != 0) {
+                if (var_s5 < 0) {
+                    var_s0 -= 1;
+                } else {
+                    var_s0 += 1;
+                }
+            } else if (var_s6 < 0) {
+                var_s1 -= 1;
+            } else {
+                var_s1 += 1;
             }
         }
         if ((temp_fp >= 0) && (temp_s7 >= 0) && (temp_fp < 0x20) &&
