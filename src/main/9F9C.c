@@ -3600,32 +3600,18 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
 void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
     s32 dists[6];
     s16 *base;
-    s16 *p;
-    s32 *d;
     s32 dx;
     s32 dz;
     s32 i;
     s32 best;
-    s32 *r;
-    s32 *w;
+    s32 j;
 
     base = (s16 *)func_80046F14() + (D_800A36A4 * 3) * 8;
-    i = 0;
-    p = base;
-    d = dists;
-    do {
-        dx = p[3] - arg2[0];
-        dz = p[5] - arg2[2];
-        *d = dx * dx + dz * dz;
-        i++;
-        d++;
-        /* FAKE: split increment (two s16 triplets per record, rot + pos): stops
-         * loop.c reducing the p+6/p+10 address givs; combine re-merges the
-         * adds to one addiu (proven-spelling-class-reconstruction); one
-         * `p += 6`: score 3. */
-        p += 3;
-        p += 3;
-    } while (i < 4);
+    for (i = 0; i < 4; i++) {
+        dx = base[i * 6 + 3] - arg2[0];
+        dz = base[i * 6 + 5] - arg2[2];
+        dists[i] = dx * dx + dz * dz;
+    }
 
     best = 0;
     for (i = 1; i < 4; i++) {
@@ -3643,17 +3629,9 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
     }
     dists[best] = -1;
 
-    r = dists;
-    i = 0;
-    {
-        s32 stop = -1;
-        w = r;
-        for (; i < 4; i++) {
-            if (*r != stop) {
-                w[4] = i;
-                w++;
-            }
-            r++;
+    for (i = 0, j = 0; i < 4; i++) {
+        if (dists[i] != -1) {
+            dists[4 + j++] = i;
         }
     }
 
@@ -3693,22 +3671,19 @@ s32 func_80022408(Vec3i32 *arg0) {
 
 s32 func_800224E0(Unk80101EC8Record *arg0) {
     u8 *p;
-    u8 *end;
     s32 val;
     s32 i;
+    s32 j;
 
     p = D_8008EB1C[D_800A384C];
-    end = p + 2;
     val = D_8008DB1C[arg0->other->unk_0A][arg0->other->unk_0E];
-    do {
+    for (j = 0; j < 2; j++) {
         for (i = 0; i < 3; i++) {
-            if (*p == ((val >> (i * 4)) & 0xF)) {
+            if (p[j] == ((val >> (i * 4)) & 0xF)) {
                 return i;
             }
         }
-        p++;
-    } while ((s32)p < (s32)end); /* FAKE: signed compare (slt); `p < end` gives
-                                    sltu (score 1) */
+    }
     return 0;
 }
 
