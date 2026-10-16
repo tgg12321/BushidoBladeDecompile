@@ -1,19 +1,19 @@
 glabel font_DrawChar
     /* 2DB9C 8003D39C 21408000 */  addu       $t0, $a0, $zero
     /* 2DBA0 8003D3A0 2148A000 */  addu       $t1, $a1, $zero
-    /* 2DBA4 8003D3A4 8C02838F */  lw         $v1, %gp_rel(D_800A3358)($gp)
+    /* 2DBA4 8003D3A4 8C02838F */  lw         $v1, %gp_rel(g_font_sprite_count)($gp)
     /* 2DBA8 8003D3A8 20000224 */  addiu      $v0, $zero, 0x20
     /* 2DBAC 8003D3AC 30006210 */  beq        $v1, $v0, .L8003D470
     /* 2DBB0 8003D3B0 2150E000 */   addu      $t2, $a3, $zero
     /* 2DBB4 8003D3B4 FF00073C */  lui        $a3, (0xFFFFFF >> 16)
     /* 2DBB8 8003D3B8 FFFFE734 */  ori        $a3, $a3, (0xFFFFFF & 0xFFFF)
     /* 2DBBC 8003D3BC 01006224 */  addiu      $v0, $v1, 0x1
-    /* 2DBC0 8003D3C0 8C0282AF */  sw         $v0, %gp_rel(D_800A3358)($gp)
+    /* 2DBC0 8003D3C0 8C0282AF */  sw         $v0, %gp_rel(g_font_sprite_count)($gp)
     /* 2DBC4 8003D3C4 00110300 */  sll        $v0, $v1, 4
-    /* 2DBC8 8003D3C8 0A80033C */  lui        $v1, %hi(D_800A3930)
-    /* 2DBCC 8003D3CC 30396324 */  addiu      $v1, $v1, %lo(D_800A3930)
+    /* 2DBC8 8003D3C8 0A80033C */  lui        $v1, %hi(g_font_sprites)
+    /* 2DBCC 8003D3CC 30396324 */  addiu      $v1, $v1, %lo(g_font_sprites)
     /* 2DBD0 8003D3D0 21104300 */  addu       $v0, $v0, $v1
-    /* 2DBD4 8003D3D4 4C01848F */  lw         $a0, %gp_rel(D_800A3218)($gp)
+    /* 2DBD4 8003D3D4 4C01848F */  lw         $a0, %gp_rel(g_font_buf_index)($gp)
     /* 2DBD8 8003D3D8 0074033C */  lui        $v1, (0x74000000 >> 16)
     /* 2DBDC 8003D3DC 40220400 */  sll        $a0, $a0, 9
     /* 2DBE0 8003D3E0 21208200 */  addu       $a0, $a0, $v0

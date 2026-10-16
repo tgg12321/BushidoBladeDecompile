@@ -4,13 +4,13 @@ glabel arena_OpenBlock
     /* 35DB4 800455B4 1400BFAF */  sw         $ra, 0x14($sp)
     /* 35DB8 800455B8 F814010C */  jal        arena_Free
     /* 35DBC 800455BC 21808000 */   addu      $s0, $a0, $zero
-    /* 35DC0 800455C0 E002838F */  lw         $v1, %gp_rel(D_800A33AC)($gp)
-    /* 35DC4 800455C4 0F80043C */  lui        $a0, %hi(D_800EED10)
-    /* 35DC8 800455C8 10ED8424 */  addiu      $a0, $a0, %lo(D_800EED10)
+    /* 35DC0 800455C0 E002838F */  lw         $v1, %gp_rel(g_arena_block_count)($gp)
+    /* 35DC4 800455C4 0F80043C */  lui        $a0, %hi(g_arena_blocks)
+    /* 35DC8 800455C8 10ED8424 */  addiu      $a0, $a0, %lo(g_arena_blocks)
     /* 35DCC 800455CC 01006224 */  addiu      $v0, $v1, 0x1
     /* 35DD0 800455D0 00190300 */  sll        $v1, $v1, 4
-    /* 35DD4 800455D4 E00282AF */  sw         $v0, %gp_rel(D_800A33AC)($gp)
-    /* 35DD8 800455D8 D402828F */  lw         $v0, %gp_rel(D_800A33A0)($gp)
+    /* 35DD4 800455D4 E00282AF */  sw         $v0, %gp_rel(g_arena_block_count)($gp)
+    /* 35DD8 800455D8 D402828F */  lw         $v0, %gp_rel(g_arena_free_ptr)($gp)
     /* 35DDC 800455DC 21186400 */  addu       $v1, $v1, $a0
     /* 35DE0 800455E0 000070A4 */  sh         $s0, 0x0($v1)
     /* 35DE4 800455E4 0C0060AC */  sw         $zero, 0xC($v1)

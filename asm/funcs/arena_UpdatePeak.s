@@ -2,19 +2,19 @@ glabel arena_UpdatePeak
     /* 35A30 80045230 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 35A34 80045234 02008014 */  bnez       $a0, .L80045240
     /* 35A38 80045238 1000BFAF */   sw        $ra, 0x10($sp)
-    /* 35A3C 8004523C D402848F */  lw         $a0, %gp_rel(D_800A33A0)($gp)
+    /* 35A3C 8004523C D402848F */  lw         $a0, %gp_rel(g_arena_free_ptr)($gp)
   .L80045240:
-    /* 35A40 80045240 0B80023C */  lui        $v0, %hi(D_800A9D10)
-    /* 35A44 80045244 109D4224 */  addiu      $v0, $v0, %lo(D_800A9D10)
+    /* 35A40 80045240 0B80023C */  lui        $v0, %hi(g_arena)
+    /* 35A44 80045244 109D4224 */  addiu      $v0, $v0, %lo(g_arena)
     /* 35A48 80045248 23208200 */  subu       $a0, $a0, $v0
-    /* 35A4C 8004524C DC02858F */  lw         $a1, %gp_rel(D_800A33A8)($gp)
+    /* 35A4C 8004524C DC02858F */  lw         $a1, %gp_rel(g_arena_peak)($gp)
     /* 35A50 80045250 00000000 */  nop
     /* 35A54 80045254 2A108500 */  slt        $v0, $a0, $a1
     /* 35A58 80045258 02004010 */  beqz       $v0, .L80045264
     /* 35A5C 8004525C 21188000 */   addu      $v1, $a0, $zero
     /* 35A60 80045260 2118A000 */  addu       $v1, $a1, $zero
   .L80045264:
-    /* 35A64 80045264 DC0283AF */  sw         $v1, %gp_rel(D_800A33A8)($gp)
+    /* 35A64 80045264 DC0283AF */  sw         $v1, %gp_rel(g_arena_peak)($gp)
     /* 35A68 80045268 0400023C */  lui        $v0, (0x44FFF >> 16)
     /* 35A6C 8004526C FF4F4234 */  ori        $v0, $v0, (0x44FFF & 0xFFFF)
     /* 35A70 80045270 2A104400 */  slt        $v0, $v0, $a0

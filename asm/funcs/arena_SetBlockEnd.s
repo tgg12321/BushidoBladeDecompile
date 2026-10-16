@@ -1,11 +1,11 @@
 glabel arena_SetBlockEnd
     /* 35E00 80045600 E0FFBD27 */  addiu      $sp, $sp, -0x20
-    /* 35E04 80045604 E002888F */  lw         $t0, %gp_rel(D_800A33AC)($gp)
+    /* 35E04 80045604 E002888F */  lw         $t0, %gp_rel(g_arena_block_count)($gp)
     /* 35E08 80045608 21180000 */  addu       $v1, $zero, $zero
     /* 35E0C 8004560C 1B000019 */  blez       $t0, .L8004567C
     /* 35E10 80045610 1800BFAF */   sw        $ra, 0x18($sp)
-    /* 35E14 80045614 0F80063C */  lui        $a2, %hi(D_800EED10)
-    /* 35E18 80045618 10EDC624 */  addiu      $a2, $a2, %lo(D_800EED10)
+    /* 35E14 80045614 0F80063C */  lui        $a2, %hi(g_arena_blocks)
+    /* 35E18 80045618 10EDC624 */  addiu      $a2, $a2, %lo(g_arena_blocks)
   .L8004561C:
     /* 35E1C 8004561C 2138C000 */  addu       $a3, $a2, $zero
     /* 35E20 80045620 0000E284 */  lh         $v0, 0x0($a3)
@@ -17,19 +17,19 @@ glabel arena_SetBlockEnd
     /* 35E38 80045638 F8FF4014 */  bnez       $v0, .L8004561C
     /* 35E3C 8004563C 1000E624 */   addiu     $a2, $a3, 0x10
   .L80045640:
-    /* 35E40 80045640 E002828F */  lw         $v0, %gp_rel(D_800A33AC)($gp)
+    /* 35E40 80045640 E002828F */  lw         $v0, %gp_rel(g_arena_block_count)($gp)
     /* 35E44 80045644 00000000 */  nop
     /* 35E48 80045648 2A106200 */  slt        $v0, $v1, $v0
     /* 35E4C 8004564C 0B004010 */  beqz       $v0, .L8004567C
     /* 35E50 80045650 00000000 */   nop
-    /* 35E54 80045654 D402828F */  lw         $v0, %gp_rel(D_800A33A0)($gp)
-    /* 35E58 80045658 D802838F */  lw         $v1, %gp_rel(D_800A33A4)($gp)
+    /* 35E54 80045654 D402828F */  lw         $v0, %gp_rel(g_arena_free_ptr)($gp)
+    /* 35E58 80045658 D802838F */  lw         $v1, %gp_rel(g_arena_free_size)($gp)
     /* 35E5C 8004565C 2320A200 */  subu       $a0, $a1, $v0
     /* 35E60 80045660 21104400 */  addu       $v0, $v0, $a0
     /* 35E64 80045664 23186400 */  subu       $v1, $v1, $a0
     /* 35E68 80045668 0800E4AC */  sw         $a0, 0x8($a3)
-    /* 35E6C 8004566C D40282AF */  sw         $v0, %gp_rel(D_800A33A0)($gp)
-    /* 35E70 80045670 D80283AF */  sw         $v1, %gp_rel(D_800A33A4)($gp)
+    /* 35E6C 8004566C D40282AF */  sw         $v0, %gp_rel(g_arena_free_ptr)($gp)
+    /* 35E70 80045670 D80283AF */  sw         $v1, %gp_rel(g_arena_free_size)($gp)
     /* 35E74 80045674 A1150108 */  j          .L80045684
     /* 35E78 80045678 00000000 */   nop
   .L8004567C:

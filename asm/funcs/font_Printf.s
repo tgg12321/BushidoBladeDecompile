@@ -65,7 +65,7 @@ glabel font_Printf
     /* 2DE18 8003D618 49000012 */  beqz       $s0, .L8003D740
     /* 2DE1C 8003D61C 1100B127 */   addiu     $s1, $sp, 0x11
   .L8003D620:
-    /* 2DE20 8003D620 9402858F */  lw         $a1, %gp_rel(D_800A3360)($gp)
+    /* 2DE20 8003D620 9402858F */  lw         $a1, %gp_rel(g_font_row)($gp)
     /* 2DE24 8003D624 00000000 */  nop
     /* 2DE28 8003D628 1A00A228 */  slti       $v0, $a1, 0x1A
     /* 2DE2C 8003D62C 44004010 */  beqz       $v0, .L8003D740
@@ -75,8 +75,8 @@ glabel font_Printf
     /* 2DE3C 8003D63C 06000216 */  bne        $s0, $v0, .L8003D658
     /* 2DE40 8003D640 7E000224 */   addiu     $v0, $zero, 0x7E
     /* 2DE44 8003D644 0100A224 */  addiu      $v0, $a1, 0x1
-    /* 2DE48 8003D648 900280AF */  sw         $zero, %gp_rel(D_800A335C)($gp)
-    /* 2DE4C 8003D64C 940282AF */  sw         $v0, %gp_rel(D_800A3360)($gp)
+    /* 2DE48 8003D648 900280AF */  sw         $zero, %gp_rel(g_font_col)($gp)
+    /* 2DE4C 8003D64C 940282AF */  sw         $v0, %gp_rel(g_font_row)($gp)
     /* 2DE50 8003D650 C3F50008 */  j          .L8003D70C
     /* 2DE54 8003D654 00000000 */   nop
   .L8003D658:
@@ -112,32 +112,32 @@ glabel font_Printf
     /* 2DEC8 8003D6C8 D0FF8324 */  addiu      $v1, $a0, -0x30
     /* 2DECC 8003D6CC 401D0300 */  sll        $v1, $v1, 21
     /* 2DED0 8003D6D0 25104300 */  or         $v0, $v0, $v1
-    /* 2DED4 8003D6D4 980282AF */  sw         $v0, %gp_rel(D_800A3364)($gp)
+    /* 2DED4 8003D6D4 980282AF */  sw         $v0, %gp_rel(g_font_color)($gp)
     /* 2DED8 8003D6D8 C3F50008 */  j          .L8003D70C
     /* 2DEDC 8003D6DC 00000000 */   nop
   .L8003D6E0:
     /* 2DEE0 8003D6E0 C0280500 */  sll        $a1, $a1, 3
     /* 2DEE4 8003D6E4 1000A524 */  addiu      $a1, $a1, 0x10
-    /* 2DEE8 8003D6E8 9002848F */  lw         $a0, %gp_rel(D_800A335C)($gp)
-    /* 2DEEC 8003D6EC 9802878F */  lw         $a3, %gp_rel(D_800A3364)($gp)
+    /* 2DEE8 8003D6E8 9002848F */  lw         $a0, %gp_rel(g_font_col)($gp)
+    /* 2DEEC 8003D6EC 9802878F */  lw         $a3, %gp_rel(g_font_color)($gp)
     /* 2DEF0 8003D6F0 C0200400 */  sll        $a0, $a0, 3
     /* 2DEF4 8003D6F4 E7F4000C */  jal        font_DrawChar
     /* 2DEF8 8003D6F8 10008424 */   addiu     $a0, $a0, 0x10
   .L8003D6FC:
-    /* 2DEFC 8003D6FC 9002828F */  lw         $v0, %gp_rel(D_800A335C)($gp)
+    /* 2DEFC 8003D6FC 9002828F */  lw         $v0, %gp_rel(g_font_col)($gp)
     /* 2DF00 8003D700 00000000 */  nop
     /* 2DF04 8003D704 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2DF08 8003D708 900282AF */  sw         $v0, %gp_rel(D_800A335C)($gp)
+    /* 2DF08 8003D708 900282AF */  sw         $v0, %gp_rel(g_font_col)($gp)
   .L8003D70C:
-    /* 2DF0C 8003D70C 9002828F */  lw         $v0, %gp_rel(D_800A335C)($gp)
+    /* 2DF0C 8003D70C 9002828F */  lw         $v0, %gp_rel(g_font_col)($gp)
     /* 2DF10 8003D710 00000000 */  nop
     /* 2DF14 8003D714 4C004228 */  slti       $v0, $v0, 0x4C
     /* 2DF18 8003D718 05004014 */  bnez       $v0, .L8003D730
     /* 2DF1C 8003D71C 00000000 */   nop
-    /* 2DF20 8003D720 9402828F */  lw         $v0, %gp_rel(D_800A3360)($gp)
-    /* 2DF24 8003D724 900280AF */  sw         $zero, %gp_rel(D_800A335C)($gp)
+    /* 2DF20 8003D720 9402828F */  lw         $v0, %gp_rel(g_font_row)($gp)
+    /* 2DF24 8003D724 900280AF */  sw         $zero, %gp_rel(g_font_col)($gp)
     /* 2DF28 8003D728 01004224 */  addiu      $v0, $v0, 0x1
-    /* 2DF2C 8003D72C 940282AF */  sw         $v0, %gp_rel(D_800A3360)($gp)
+    /* 2DF2C 8003D72C 940282AF */  sw         $v0, %gp_rel(g_font_row)($gp)
   .L8003D730:
     /* 2DF30 8003D730 00003092 */  lbu        $s0, 0x0($s1)
     /* 2DF34 8003D734 00000000 */  nop

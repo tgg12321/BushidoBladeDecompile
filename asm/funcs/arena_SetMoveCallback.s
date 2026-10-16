@@ -1,14 +1,14 @@
 glabel arena_SetMoveCallback
-    /* 35E94 80045694 E002828F */  lw         $v0, %gp_rel(D_800A33AC)($gp)
+    /* 35E94 80045694 E002828F */  lw         $v0, %gp_rel(g_arena_block_count)($gp)
     /* 35E98 80045698 00000000 */  nop
     /* 35E9C 8004569C 12004018 */  blez       $v0, .L800456E8
     /* 35EA0 800456A0 00000000 */   nop
     /* 35EA4 800456A4 21180000 */  addu       $v1, $zero, $zero
     /* 35EA8 800456A8 00310200 */  sll        $a2, $v0, 4
   .L800456AC:
-    /* 35EAC 800456AC 0F80013C */  lui        $at, %hi(D_800EED10)
+    /* 35EAC 800456AC 0F80013C */  lui        $at, %hi(g_arena_blocks)
     /* 35EB0 800456B0 21082300 */  addu       $at, $at, $v1
-    /* 35EB4 800456B4 10ED2284 */  lh         $v0, %lo(D_800EED10)($at)
+    /* 35EB4 800456B4 10ED2284 */  lh         $v0, %lo(g_arena_blocks)($at)
     /* 35EB8 800456B8 00000000 */  nop
     /* 35EBC 800456BC 06004414 */  bne        $v0, $a0, .L800456D8
     /* 35EC0 800456C0 00000000 */   nop

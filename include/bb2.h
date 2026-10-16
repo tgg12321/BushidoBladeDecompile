@@ -24,9 +24,9 @@ extern DR_MOVE D_800A3D70[31][2];
 extern DR_MOVE D_800A4340[19][2];
 extern DR_MOVE D_800A9830[2][10];
 
-/* The VRAM rectangle font_LoadImage loads the image at D_80090178 into
+/* The VRAM rectangle font_LoadImage loads the image at g_font_image into
  * (x 0x3F0, y 0x1DC, 16 x 36). */
-extern RECT D_800A3220;
+extern RECT g_font_rect;
 
 extern u8 D_800A3768;
 extern u8 D_800A36A8;
@@ -132,7 +132,7 @@ extern s16 Judge[0x1000];
  * D_800A3444 live): slot i's position. */
 extern Vec3i32 D_800F0D78[16];
 
-extern Unk800EED10Entry D_800EED10[10];
+extern Unk800EED10Entry g_arena_blocks[10];
 
 /* The two characters' hit records (0x800F5F68..0x800F62D7): func_800206B0 fills
  * D_800F5F68[ch] from the template D_8008D59C, offsets and limits scaled. */
@@ -243,7 +243,7 @@ extern u8 D_8008F1A8[];
 extern u8 D_8008F204[];
 extern u8 *D_800900EC[];
 extern u8 D_8009016C;
-extern u32 D_80090178;
+extern u32 g_font_image;
 extern u32 D_800905F8;
 extern s32 D_80090600;
 extern s32 D_80090604;
@@ -554,7 +554,7 @@ extern u16 D_800A38D6;
 extern s32 D_800A38FC;
 extern s32 D_800A3908;
 extern u8 D_800A3916;
-extern u8 D_800A9D10;
+extern u8 g_arena;
 extern s16 D_800F0BCC[];
 extern s16 D_800F0BEC[];
 extern s32 D_800F10D0[];

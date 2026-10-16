@@ -786,11 +786,11 @@ typedef struct Unk80104E88Rec {
     s32 unk_28;
 } Unk80104E88Rec; /* sizeof == 0x2C */
 
-/* The 10-entry block table over the 0x45000-byte buffer at D_800A9D10
- * (func_800451D0 .. arena_FindBlock; D_800A33AC live entries). func_800451D0
- * clears id in all 10. arena_ShiftBlocks(a0, a1) hands func_800520B8 entry a0's
- * unk4, unk4 + a1 and the summed amt of entries a0.., then adds a1 to their
- * unk4 and calls each fn(id, a1). */
+/* The 10-entry block table over the 0x45000-byte buffer at g_arena
+ * (func_800451D0 .. arena_FindBlock; g_arena_block_count live entries).
+ * func_800451D0 clears id in all 10. arena_ShiftBlocks(a0, a1) hands
+ * func_800520B8 entry a0's unk4, unk4 + a1 and the summed amt of entries a0..,
+ * then adds a1 to their unk4 and calls each fn(id, a1). */
 typedef struct {
     s16 id;
     s16 unk2;

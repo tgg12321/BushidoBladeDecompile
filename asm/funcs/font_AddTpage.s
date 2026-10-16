@@ -2,10 +2,10 @@ glabel font_AddTpage
     /* 2DB30 8003D330 00E1053C */  lui        $a1, (0xE100001F >> 16)
     /* 2DB34 8003D334 1F00A534 */  ori        $a1, $a1, (0xE100001F & 0xFFFF)
     /* 2DB38 8003D338 FF00063C */  lui        $a2, (0xFFFFFF >> 16)
-    /* 2DB3C 8003D33C 0A80023C */  lui        $v0, %hi(D_800A3D30)
-    /* 2DB40 8003D340 303D4224 */  addiu      $v0, $v0, %lo(D_800A3D30)
+    /* 2DB3C 8003D33C 0A80023C */  lui        $v0, %hi(g_font_tpage)
+    /* 2DB40 8003D340 303D4224 */  addiu      $v0, $v0, %lo(g_font_tpage)
     /* 2DB44 8003D344 FFFFC634 */  ori        $a2, $a2, (0xFFFFFF & 0xFFFF)
-    /* 2DB48 8003D348 4C01838F */  lw         $v1, %gp_rel(D_800A3218)($gp)
+    /* 2DB48 8003D348 4C01838F */  lw         $v1, %gp_rel(g_font_buf_index)($gp)
     /* 2DB4C 8003D34C 00FF073C */  lui        $a3, (0xFF000000 >> 16)
     /* 2DB50 8003D350 C0180300 */  sll        $v1, $v1, 3
     /* 2DB54 8003D354 21186200 */  addu       $v1, $v1, $v0

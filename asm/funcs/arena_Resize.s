@@ -3,7 +3,7 @@ glabel arena_Resize
     /* 35D14 80045514 21308000 */  addu       $a2, $a0, $zero
     /* 35D18 80045518 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 35D1C 8004551C 2188A000 */  addu       $s1, $a1, $zero
-    /* 35D20 80045520 E002828F */  lw         $v0, %gp_rel(D_800A33AC)($gp)
+    /* 35D20 80045520 E002828F */  lw         $v0, %gp_rel(g_arena_block_count)($gp)
     /* 35D24 80045524 21200000 */  addu       $a0, $zero, $zero
     /* 35D28 80045528 2000BFAF */  sw         $ra, 0x20($sp)
     /* 35D2C 8004552C 19004018 */  blez       $v0, .L80045594
@@ -12,9 +12,9 @@ glabel arena_Resize
     /* 35D38 80045538 18ED1026 */  addiu      $s0, $s0, %lo(D_800EED18)
     /* 35D3C 8004553C 21180000 */  addu       $v1, $zero, $zero
   .L80045540:
-    /* 35D40 80045540 0F80013C */  lui        $at, %hi(D_800EED10)
+    /* 35D40 80045540 0F80013C */  lui        $at, %hi(g_arena_blocks)
     /* 35D44 80045544 21082300 */  addu       $at, $at, $v1
-    /* 35D48 80045548 10ED2284 */  lh         $v0, %lo(D_800EED10)($at)
+    /* 35D48 80045548 10ED2284 */  lh         $v0, %lo(g_arena_blocks)($at)
     /* 35D4C 8004554C 00000000 */  nop
     /* 35D50 80045550 0A004614 */  bne        $v0, $a2, .L8004557C
     /* 35D54 80045554 00000000 */   nop
@@ -29,7 +29,7 @@ glabel arena_Resize
     /* 35D78 80045578 000011AE */   sw        $s1, 0x0($s0)
   .L8004557C:
     /* 35D7C 8004557C 10001026 */  addiu      $s0, $s0, 0x10
-    /* 35D80 80045580 E002828F */  lw         $v0, %gp_rel(D_800A33AC)($gp)
+    /* 35D80 80045580 E002828F */  lw         $v0, %gp_rel(g_arena_block_count)($gp)
     /* 35D84 80045584 01008424 */  addiu      $a0, $a0, 0x1
     /* 35D88 80045588 2A108200 */  slt        $v0, $a0, $v0
     /* 35D8C 8004558C ECFF4014 */  bnez       $v0, .L80045540

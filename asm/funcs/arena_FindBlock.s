@@ -1,16 +1,16 @@
 glabel arena_FindBlock
-    /* 35F4C 8004574C E002828F */  lw         $v0, %gp_rel(D_800A33AC)($gp)
+    /* 35F4C 8004574C E002828F */  lw         $v0, %gp_rel(g_arena_block_count)($gp)
     /* 35F50 80045750 00000000 */  nop
     /* 35F54 80045754 0F004018 */  blez       $v0, .L80045794
     /* 35F58 80045758 00000000 */   nop
-    /* 35F5C 8004575C 0F80053C */  lui        $a1, %hi(D_800EED10)
-    /* 35F60 80045760 10EDA524 */  addiu      $a1, $a1, %lo(D_800EED10)
+    /* 35F5C 8004575C 0F80053C */  lui        $a1, %hi(g_arena_blocks)
+    /* 35F60 80045760 10EDA524 */  addiu      $a1, $a1, %lo(g_arena_blocks)
     /* 35F64 80045764 21180000 */  addu       $v1, $zero, $zero
     /* 35F68 80045768 00310200 */  sll        $a2, $v0, 4
   .L8004576C:
-    /* 35F6C 8004576C 0F80013C */  lui        $at, %hi(D_800EED10)
+    /* 35F6C 8004576C 0F80013C */  lui        $at, %hi(g_arena_blocks)
     /* 35F70 80045770 21082300 */  addu       $at, $at, $v1
-    /* 35F74 80045774 10ED2284 */  lh         $v0, %lo(D_800EED10)($at)
+    /* 35F74 80045774 10ED2284 */  lh         $v0, %lo(g_arena_blocks)($at)
     /* 35F78 80045778 00000000 */  nop
     /* 35F7C 8004577C 06004410 */  beq        $v0, $a0, .L80045798
     /* 35F80 80045780 2110A000 */   addu      $v0, $a1, $zero

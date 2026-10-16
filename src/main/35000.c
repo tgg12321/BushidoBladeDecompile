@@ -287,10 +287,10 @@ s32 func_80045080(s32 a0) {
 /* Q65: this file's statics (.sbss), in address order. */
 static s32 D_800A3398;
 static s32 D_800A339C; /* not named by any code or data: size from the gap */
-static s32 D_800A33A0;
-static s32 D_800A33A4;
-static s32 D_800A33A8;
-static s32 D_800A33AC;
+static s32 g_arena_free_ptr;
+static s32 g_arena_free_size;
+static s32 g_arena_peak;
+static s32 g_arena_block_count;
 
 void func_800450BC(s32 a0, s32 a1) {
     func_80044E74(a0 + 0x25, a1);
@@ -339,26 +339,26 @@ void func_800451A0(void) { cdrom_StartReadAt(1, (s32)D_800963EC, 0, 2); }
 void func_800451D0(void) {
     s32 i;
     for (i = 9; i >= 0; i--) {
-        D_800EED10[i].id = -1;
+        g_arena_blocks[i].id = -1;
     }
-    D_800A33A0 = (s32)&D_800A9D10;
-    D_800A33A4 = 0x45000;
-    D_800A33AC = 0;
-    D_800A33A8 = 0;
+    g_arena_free_ptr = (s32)&g_arena;
+    g_arena_free_size = 0x45000;
+    g_arena_block_count = 0;
+    g_arena_peak = 0;
     func_80049E1C();
 }
 
 void arena_UpdatePeak(s32 a0) {
     s32 v1;
     if (!a0) {
-        a0 = D_800A33A0;
+        a0 = g_arena_free_ptr;
     }
-    a0 -= (s32)&D_800A9D10;
+    a0 -= (s32)&g_arena;
     v1 = a0;
-    if (a0 < D_800A33A8) {
-        v1 = D_800A33A8;
+    if (a0 < g_arena_peak) {
+        v1 = g_arena_peak;
     }
-    D_800A33A8 = v1;
+    g_arena_peak = v1;
     if (a0 > 0x44FFF) {
         func_80052C10();
     }
@@ -372,24 +372,24 @@ void arena_ShiftBlocks(s32 a0, s32 a1) {
     s32 count;
 
     sum = 0;
-    src = D_800EED10[a0].unk4;
-    count = D_800A33AC;
+    src = g_arena_blocks[a0].unk4;
+    count = g_arena_block_count;
     dst = src + a1;
     for (i = a0; i < count; i++) {
-        sum += D_800EED10[i].amt;
+        sum += g_arena_blocks[i].amt;
     }
     if (sum != 0) {
         DrawSync(0);
         func_800520B8(src, dst, sum);
-        for (i = a0; i < D_800A33AC; i++) {
-            D_800EED10[i].unk4 += a1;
-            if (D_800EED10[i].fn != 0) {
-                D_800EED10[i].fn(D_800EED10[i].id, a1);
+        for (i = a0; i < g_arena_block_count; i++) {
+            g_arena_blocks[i].unk4 += a1;
+            if (g_arena_blocks[i].fn != 0) {
+                g_arena_blocks[i].fn(g_arena_blocks[i].id, a1);
             }
         }
     }
-    D_800A33A0 += a1;
-    D_800A33A4 -= a1;
+    g_arena_free_ptr += a1;
+    g_arena_free_size -= a1;
 }
 
 /* Remove the table entry whose id == a0: undo its contribution via
@@ -400,18 +400,18 @@ void arena_Free(s32 a0) {
     s32 j;
     s32 last;
 
-    for (i = 0; i < D_800A33AC; i++) {
-        if (D_800EED10[i].id == a0) {
-            arena_ShiftBlocks(i + 1, -D_800EED10[i].amt);
-            if (i < D_800A33AC - 1) {
-                for (j = i + 1; j < D_800A33AC; j++) {
-                    D_800EED10[j - 1] = D_800EED10[j];
+    for (i = 0; i < g_arena_block_count; i++) {
+        if (g_arena_blocks[i].id == a0) {
+            arena_ShiftBlocks(i + 1, -g_arena_blocks[i].amt);
+            if (i < g_arena_block_count - 1) {
+                for (j = i + 1; j < g_arena_block_count; j++) {
+                    g_arena_blocks[j - 1] = g_arena_blocks[j];
                 }
             }
-            last = D_800A33AC - 1;
-            D_800EED10[last].id = -1;
-            D_800EED10[last].fn = 0;
-            D_800A33AC = last;
+            last = g_arena_block_count - 1;
+            g_arena_blocks[last].id = -1;
+            g_arena_blocks[last].fn = 0;
+            g_arena_block_count = last;
             return;
         }
     }
@@ -421,13 +421,13 @@ void arena_Resize(s32 a0, s32 a1) {
     s32 i;
     s32 diff;
 
-    for (i = 0; i < D_800A33AC; i++) {
-        if (D_800EED10[i].id == a0) {
-            diff = a1 - D_800EED10[i].amt;
+    for (i = 0; i < g_arena_block_count; i++) {
+        if (g_arena_blocks[i].id == a0) {
+            diff = a1 - g_arena_blocks[i].amt;
             if (diff == 0)
                 return;
             arena_ShiftBlocks(i + 1, diff);
-            D_800EED10[i].amt = a1;
+            g_arena_blocks[i].amt = a1;
             return;
         }
     }
@@ -439,10 +439,10 @@ s32 *arena_OpenBlock(s32 a0) {
     s32 ret;
 
     arena_Free(a0);
-    idx = D_800A33AC;
-    e = &D_800EED10[idx];
-    D_800A33AC = idx + 1;
-    ret = D_800A33A0;
+    idx = g_arena_block_count;
+    e = &g_arena_blocks[idx];
+    g_arena_block_count = idx + 1;
+    ret = g_arena_free_ptr;
     e->unk4 = ret;
     e->id = a0;
     e->fn = 0;
@@ -451,12 +451,12 @@ s32 *arena_OpenBlock(s32 a0) {
 
 void arena_SetBlockEnd(s32 a0, s32 a1) {
     s32 i = 0;
-    s32 count = D_800A33AC;
+    s32 count = g_arena_block_count;
     Unk800EED10Entry *e;
     if (i >= count)
         goto not_found;
     {
-        Unk800EED10Entry *p = D_800EED10;
+        Unk800EED10Entry *p = g_arena_blocks;
         do {
             /* FAKE: cursor `p` and tested entry `e` are two names for one
                walk, both live as in the target; one pointer `e++`: score 7 */
@@ -468,17 +468,17 @@ void arena_SetBlockEnd(s32 a0, s32 a1) {
         } while (i < count);
     }
 found:
-    if (i < D_800A33AC) {
-        s32 cur = D_800A33A0;
-        s32 rest = D_800A33A4;
+    if (i < g_arena_block_count) {
+        s32 cur = g_arena_free_ptr;
+        s32 rest = g_arena_free_size;
         /* FAKE: the dead parameter a0 reused for the new amt, computed into
            $a0 as in the target; a fresh local: score 17 */
         a0 = a1 - cur;
         cur += a0;
         rest -= a0;
         e->amt = a0;
-        D_800A33A0 = cur;
-        D_800A33A4 = rest;
+        g_arena_free_ptr = cur;
+        g_arena_free_size = rest;
         return;
     }
 not_found:
@@ -487,10 +487,10 @@ not_found:
 
 void arena_SetMoveCallback(s32 a0, s32 a1) {
     s32 i;
-    s32 count = D_800A33AC;
+    s32 count = g_arena_block_count;
     for (i = 0; i < count; i++) {
-        if (D_800EED10[i].id == a0) {
-            D_800EED10[i].fn = (void (*)(s16, s32))a1;
+        if (g_arena_blocks[i].id == a0) {
+            g_arena_blocks[i].fn = (void (*)(s16, s32))a1;
             return;
         }
     }
@@ -498,10 +498,10 @@ void arena_SetMoveCallback(s32 a0, s32 a1) {
 
 void arena_ClearMoveCallback(s32 a0) {
     s32 i;
-    s32 count = D_800A33AC;
+    s32 count = g_arena_block_count;
     for (i = 0; i < count; i++) {
-        if (D_800EED10[i].id == a0) {
-            D_800EED10[i].fn = 0;
+        if (g_arena_blocks[i].id == a0) {
+            g_arena_blocks[i].fn = 0;
             return;
         }
     }
@@ -509,10 +509,10 @@ void arena_ClearMoveCallback(s32 a0) {
 
 s32 *arena_FindBlock(s32 arg0) {
     s32 i;
-    s32 count = D_800A33AC;
+    s32 count = g_arena_block_count;
     for (i = 0; i < count; i++) {
-        if (D_800EED10[i].id == arg0) {
-            return (s32 *)&D_800EED10[i];
+        if (g_arena_blocks[i].id == arg0) {
+            return (s32 *)&g_arena_blocks[i];
         }
     }
     return NULL;
@@ -528,15 +528,15 @@ s32 arena_GetBlockAddr(s32 a0) {
 
 void func_800457D4(void) {}
 
-s32 arena_GetFreeSize(void) { return D_800A33A4; }
+s32 arena_GetFreeSize(void) { return g_arena_free_size; }
 
-s32 arena_GetMinFree(void) { return 0x45000 - D_800A33A8; }
+s32 arena_GetMinFree(void) { return 0x45000 - g_arena_peak; }
 
-s32 arena_GetFreePtr(void) { return D_800A33A0; }
+s32 arena_GetFreePtr(void) { return g_arena_free_ptr; }
 
 s32 arena_GetSize(void) { return 0x45000; }
 
-void *arena_GetBase(void) { return &D_800A9D10; }
+void *arena_GetBase(void) { return &g_arena; }
 
 void arena_Copy(s32 a0, s32 a1, s32 a2) {
     arena_UpdatePeak(a1 + a2);

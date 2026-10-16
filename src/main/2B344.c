@@ -460,7 +460,7 @@ s32 D_800A3908;
 u8 D_800A3916;
 
 /* Merged section (Q65: one original file). */
-extern DR_TPAGE D_800A3D30[2]; /* one per frame parity (D_800A3218) */
+extern DR_TPAGE g_font_tpage[2]; /* one per frame parity (g_font_buf_index) */
 
 extern Unk800A4750Rec D_800A4750[];
 extern Unk800A6690Rec D_800A6690[];
@@ -1181,16 +1181,16 @@ void func_8003CF84(void) {
     D_800A37B8 = D_800A37B8 + 1;
 }
 
-void font_LoadImage(void) { LoadImage(&D_800A3220, &D_80090178); }
+void font_LoadImage(void) { LoadImage(&g_font_rect, &g_font_image); }
 
-extern s32 D_800A3218;
-extern s32 D_800A321C;
+extern s32 g_font_buf_index;
+extern s32 g_font_enabled;
 /* Q65: this file's statics (.sbss, allocated per file by PSYLINK), in
  * address order. */
-static s32 D_800A3358;
-static s32 D_800A335C;
-static s32 D_800A3360;
-static s32 D_800A3364;
+static s32 g_font_sprite_count;
+static s32 g_font_col;
+static s32 g_font_row;
+static s32 g_font_color;
 static s32 D_800A3368;
 static s32 D_800A336C;
 static s32 D_800A3370;
@@ -1199,20 +1199,20 @@ static s32 D_800A3374;
 void font_BeginFrame(void) {
     s32 v0;
     s32 v1;
-    D_800A3364 = 0xF0F0F0;
-    v0 = D_800A3218;
-    v1 = D_800A321C;
-    D_800A3358 = 0;
-    D_800A3360 = 0;
-    D_800A335C = 0;
-    D_800A3218 = (u32)v0 < 1u;
+    g_font_color = 0xF0F0F0;
+    v0 = g_font_buf_index;
+    v1 = g_font_enabled;
+    g_font_sprite_count = 0;
+    g_font_row = 0;
+    g_font_col = 0;
+    g_font_buf_index = (u32)v0 < 1u;
     if (v1 == 0) {
-        D_800A3358 = 0x20;
+        g_font_sprite_count = 0x20;
     }
 }
 
 void font_AddTpage(void) {
-    DR_TPAGE *p = &D_800A3D30[D_800A3218];
+    DR_TPAGE *p = &g_font_tpage[g_font_buf_index];
     OTag *ot;
     setlen(p, 1);
     p->code[0] = 0xE100001F;
@@ -1221,17 +1221,17 @@ void font_AddTpage(void) {
     ot->addr = (u32)p;
 }
 
-extern SPRT_8 D_800A3930[2][32];
+extern SPRT_8 g_font_sprites[2][32];
 
 void font_DrawChar(s32 x, s32 y, s32 arg2, s32 arg3) {
-    s32 n = D_800A3358;
+    s32 n = g_font_sprite_count;
     SPRT_8 *p;
     OTag *ot;
 
     if (n == 0x20)
         return;
-    D_800A3358 = n + 1;
-    p = &D_800A3930[D_800A3218][n];
+    g_font_sprite_count = n + 1;
+    p = &g_font_sprites[g_font_buf_index][n];
     setlen(p, 3);
     p->code = 0x74;
     p->x0 = x;
@@ -1307,15 +1307,15 @@ void font_Printf(u8 *arg0, s32 first_arg, ...) {
 
     p = buf;
     while ((var_6 = *p++) != 0) {
-        s32 row = D_800A3360;
+        s32 row = g_font_row;
         if (row >= 0x1A)
             break;
 
         if (var_6 == ' ') {
-            D_800A335C++;
+            g_font_col++;
         } else if (var_6 == '\n') {
-            D_800A335C = 0;
-            D_800A3360 = row + 1;
+            g_font_col = 0;
+            g_font_row = row + 1;
         } else if (var_6 == '~') {
             var_6 = *p++;
             if (var_6 == 0)
@@ -1331,17 +1331,17 @@ void font_Printf(u8 *arg0, s32 first_arg, ...) {
                 d3 = *p++;
                 if (d3 == 0)
                     break;
-                D_800A3364 =
+                g_font_color =
                     ((d1 - '0') << 5) | ((d2 - '0') << 13) | ((d3 - '0') << 21);
             }
         } else {
             font_DrawChar(
-                D_800A335C * 8 + 0x10, row * 8 + 0x10, var_6, D_800A3364);
-            D_800A335C++;
+                g_font_col * 8 + 0x10, row * 8 + 0x10, var_6, g_font_color);
+            g_font_col++;
         }
-        if (D_800A335C >= 0x4C) {
-            D_800A335C = 0;
-            D_800A3360++;
+        if (g_font_col >= 0x4C) {
+            g_font_col = 0;
+            g_font_row++;
         }
     }
 }
@@ -2799,9 +2799,9 @@ void func_8004019C(Unk80045878Obj *a0, s32 a1) {
 }
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
-s32 D_800A3218 = 0;
-s32 D_800A321C = 1;
-RECT D_800A3220 = {0x3F0, 0x1DC, 0x10, 0x24};
+s32 g_font_buf_index = 0;
+s32 g_font_enabled = 1;
+RECT g_font_rect = {0x3F0, 0x1DC, 0x10, 0x24};
 s32 D_800A3228 = -1;
 s32 D_800A322C = 0;
 /* reached gp-relative by func_8003EDC0: size from the blob label */

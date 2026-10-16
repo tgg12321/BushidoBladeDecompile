@@ -4676,9 +4676,9 @@ dlabel D_8009016C
     /* 80977 80090177 */ .byte 0x00
 enddlabel D_8009016C
 
-nonmatching D_80090178
+nonmatching g_font_image
 
-dlabel D_80090178
+dlabel g_font_image
     /* 80978 80090178 0000FFFF */ .word 0xFFFF0000
     /* 8097C 8009017C 0000FFFF */ .word 0xFFFF0000
     /* 80980 80090180 0000FFFF */ .word 0xFFFF0000
@@ -4967,7 +4967,7 @@ dlabel D_80090178
     /* 80DEC 800905EC 00000000 */ .word 0x00000000
     /* 80DF0 800905F0 00000000 */ .word 0x00000000
     /* 80DF4 800905F4 10111100 */ .word 0x00111110
-enddlabel D_80090178
+enddlabel g_font_image
 
 nonmatching D_800905F8
 

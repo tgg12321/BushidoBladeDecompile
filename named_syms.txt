@@ -576,11 +576,11 @@ _spu_rev_flag         = 0x800A287C;  /* SPU transfer callback arg cache */  /* d
 D_800A2D2C              = 0x800A2D2C;  /* transfer direction: 1 SPU->RAM, 0 RAM->SPU (spu.c:216, :246, :263; read :188, :278-301) */  /* data-wave 2026-10-09: was g_spu_xfer_pending */
 /* LIBGPU SYS DPCR pointer + arena size cells */
 DPCR              = 0x8009BF64;  /* -> 0x1F8010F0 DMA control register (DPCR) */  /* data-wave 2026-10-08: was g_gpu_stat_reg_ptr */
-D_800A33A4         = 0x800A33A4;  /* remaining arena capacity (init 0x45000), reduced as blocks grow; func_800457DC returns it */  /* data-wave 2026-10-08: was g_text1a_size_remaining */
-D_800A33A8            = 0x800A33A8;  /* high-water mark of arena use, an offset from D_800A9D10 (func_80045230) */  /* data-wave 2026-10-08: was g_text1a_size_cursor */
+g_arena_free_size         = 0x800A33A4;  /* remaining arena capacity (init 0x45000), reduced as blocks grow; func_800457DC returns it */  /* data-wave 2026-10-08: was g_text1a_size_remaining */
+g_arena_peak            = 0x800A33A8;  /* high-water mark of arena use, an offset from D_800A9D10 (func_80045230) */  /* data-wave 2026-10-08: was g_text1a_size_cursor */
 /* Misc state */
 D_800A3330           = 0x800A3330;  /* 0x5A-tick countdown; ends on expiry or on a button press */  /* data-wave 2026-10-08: was g_pad_press_countdown */
-D_800A3360           = 0x800A3360;  /* row of func_8003D52C's text console (column at D_800A335C) */  /* data-wave 2026-10-08: was g_sleep_menu_cursor_y */
+g_font_row           = 0x800A3360;  /* row of func_8003D52C's text console (column at D_800A335C) */  /* data-wave 2026-10-08: was g_sleep_menu_cursor_y */
 g_memcard_poll_count        = 0x800A3924;  /* incremented once per memcard_PollSwEventsTimeout call (result forced to 2 at >= 0x78); zeroed by func_80037D14 after _card_info / _card_load */  /* data-wave 2026-10-08: was g_pad_press_tick_counter */
 
 /* === Data-symbol auto-classifier pass (2026-05-17) -- final scratchpad ptr === */
@@ -709,7 +709,7 @@ D_800A31DA                                  = 0x800A31DA;  /* ref: func_80035480
 D_800A31F4                                       = 0x800A31F4;  /* memory-card state machine state (1 start, 3/5/7 write/read/format, 4/6 wait on memcard_PollSwEvents, 0 idle) */  /* data-wave 2026-10-08: was g_pad_analog_mode */
 D_800A31FC                                  = 0x800A31FC;  /* 0/1 flag of the memory-card status flow (func_80038988 / func_80038C70) */  /* data-wave 2026-10-08: was g_damage_debug_enabled */
 D_800A3203                                  = 0x800A3203;  /* one-shot latch that re-arms the memory-card status poll through func_8003877C (28708.c:457-462) */  /* data-wave 2026-10-08: was g_damage_debug_pending */
-D_800A33AC                                   = 0x800A33AC;  /* live entry count of the block table D_800EED10 */  /* data-wave 2026-10-08: was g_text1a_active_count */
+g_arena_block_count                                   = 0x800A33AC;  /* live entry count of the block table D_800EED10 */  /* data-wave 2026-10-08: was g_text1a_active_count */
 D_800A3418                                 = 0x800A3418;  /* ref: bb2_rand */  /* data-wave 2026-10-08: was g_gnd_landing_rand_seed */
 D_800A3524                                = 0x800A3524;  /* pointer to the Unk8009BD24Block work block: = arg1 of func_80068F70, &D_8009BD24 at its one call site */  /* data-wave 2026-10-08: was g_text1b_arg1_struct_ptr */
 D_800A3678                                      = 0x800A3678;  /* ref: func_80042874 */  /* data-wave 2026-10-08: was g_leaf_muki_buffer */
@@ -1237,9 +1237,9 @@ D_800A323C                                     = 0x800A323C;  /* 12-bit fixed-po
 /* From code6cac_c2.c change_shadow_tex_reg (line 935): shadow rendering */
 /* color + state values.  Note: D_800A3358/3360/335C are already named */
 /* g_sleep_menu_cursor_* -- those addresses are reused across subsystems. */
-D_800A3364                                      = 0x800A3364;  /* current colour of func_8003D52C's 8x8-font text printer (func_8003D39C builds one SPRT_8 per character with it); 0xF0F0F0 default */  /* data-wave 2026-10-08: was g_shadow_tex_color */
-D_800A3218                                    = 0x800A3218;  /* double-buffer index of the text printer's packets (DR_TPAGE D_800A3D30[2], SPRT_8 D_800A3930[2][32]); converted to bool via `< 1u` */  /* data-wave 2026-10-08: was g_shadow_tex_state_a */
-D_800A321C                                    = 0x800A321C;  /* on / off switch of the text printer: 0 makes func_8003D39C return at once (2B344.c:1269-1270) */  /* data-wave 2026-10-08: was g_shadow_tex_state_b */
+g_font_color                                      = 0x800A3364;  /* current colour of func_8003D52C's 8x8-font text printer (func_8003D39C builds one SPRT_8 per character with it); 0xF0F0F0 default */  /* data-wave 2026-10-08: was g_shadow_tex_color */
+/* RENAME 0x800A3218: retired name 'D_800A3218' — preserved note: double-buffer index of the text printer's packets (DR_TPAGE D_800A3D30[2], SPRT_8 D_800A3930[2][32]); converted to bool via `< 1u` */  /* data-wave 2026-10-08: was g_shadow_tex_state_a */
+/* RENAME 0x800A321C: retired name 'D_800A321C' — preserved note: on / off switch of the text printer: 0 makes func_8003D39C return at once (2B344.c:1269-1270) */  /* data-wave 2026-10-08: was g_shadow_tex_state_b */
 
 /* === Kengo-HIGH function name promotions (2026-05-17) -- 18 highs === */
 /* Functions marked with `kengo:HIGH` comments in src/ -- Kengo (PS2 */
@@ -1484,8 +1484,8 @@ D_800A30FC                                       = 0x800A30FC;  /* caches D_8008
 /* func_8003D52C is a printf-style routine that draws each character */
 /* with func_8003D39C at (col*8+0x10, row*8+0x10); D_800A335C is the */
 /* column.  D_800A3358 counts the SPRT_8 glyph primitives used. */
-D_800A335C                                   = 0x800A335C;  /* text column of func_8003D52C's printf-style draw; x = col*8+0x10 */  /* data-wave 2026-10-08: was g_memcard_section_col */
-D_800A3358                                 = 0x800A3358;  /* count of SPRT_8 glyph primitives used this frame in D_800A3930 (capped at 0x20) */  /* data-wave 2026-10-08: was g_memcard_section_state */
+g_font_col                                   = 0x800A335C;  /* text column of func_8003D52C's printf-style draw; x = col*8+0x10 */  /* data-wave 2026-10-08: was g_memcard_section_col */
+g_font_sprite_count                                 = 0x800A3358;  /* count of SPRT_8 glyph primitives used this frame in D_800A3930 (capped at 0x20) */  /* data-wave 2026-10-08: was g_memcard_section_state */
 
 /* === Menu-control player select + char-struct field 0x12 (2026-05-17) -- 3 highs === */
 /* From code6cac_c2.c around line 200-232: a menu function reads */
@@ -1507,10 +1507,10 @@ D_800A3368                                    = 0x800A3368;  /* count of D_800A4
 /* D_800A9D10 with a cursor and high-water mark, plus the block table */
 /* D_800EED10 (id, address, byte amount, relocation callback). */
 /* D_800A9CFE / D_800A9D04 are fields of the D_800A9CF8 header. */
-D_800EED10                                 = 0x800EED10;  /* 10 entries x 0x10 bytes; +0 = state s16, +0xC = callback fn ptr */  /* data-wave 2026-10-08: was g_snd_stream_slot_table */
+g_arena_blocks                                 = 0x800EED10;  /* 10 entries x 0x10 bytes; +0 = state s16, +0xC = callback fn ptr */  /* data-wave 2026-10-08: was g_snd_stream_slot_table */
 D_800EED1C                             = 0x800EED1C;  /* callback function pointer at offset +0xC of each slot */  /* data-wave 2026-10-08: was g_snd_stream_slot_callbacks */
-D_800A9D10                                     = 0x800A9D10;  /* base of the fixed 0x45000-byte block arena (func_800451D0) */  /* data-wave 2026-10-08: was g_snd_stream_buffer */
-D_800A33A0                                  = 0x800A33A0;  /* arena cursor (init &D_800A9D10); func_800455AC hands it out as the new block's address */  /* data-wave 2026-10-08: was g_snd_stream_write_pos */
+g_arena                                     = 0x800A9D10;  /* base of the fixed 0x45000-byte block arena (func_800451D0) */  /* data-wave 2026-10-08: was g_snd_stream_buffer */
+g_arena_free_ptr                                  = 0x800A33A0;  /* arena cursor (init &D_800A9D10); func_800455AC hands it out as the new block's address */  /* data-wave 2026-10-08: was g_snd_stream_write_pos */
 D_800A9CFE                               = 0x800A9CFE;  /* header state at -0x12 from buffer base; values 0x11/2/0xA */  /* data-wave 2026-10-08: was g_snd_stream_header_state */
 D_800A9D04                                 = 0x800A9D04;  /* header pointer at -0xC from buffer base */  /* data-wave 2026-10-08: was g_snd_stream_header_ptr */
 
@@ -1803,7 +1803,7 @@ D_800A324C                                  = 0x800A324C;  /* last i seen by fun
 /* === GPU MoveImage packet buffer + ordering-table slot cache (2026-05-17) -- 3 highs === */
 D_800A4340                              = 0x800A4340;  /* 19-entry x 0x30 = 912-byte MoveImage (DR_MOVE) packet buffer for func_8003D9A0 */  /* data-wave 2026-10-08: was g_gpu_loadimage_packet_buf */
 D_800905F8                                  = 0x800905F8;  /* 0xFFFF (func_8003DA8C) or the ordering-table slot of the last DR_MOVE packet func_8003DBE4 inserted; read by func_8003E2C8 */  /* data-wave 2026-10-08: was g_status_up_cached_idx */
-D_800A3D30                                  = 0x800A3D30;  /* two draw-mode (texpage) packets, one per frame (func_8003D330) */  /* data-wave 2026-10-08: was g_gpu_shadow_prim_base */
+g_font_tpage                                  = 0x800A3D30;  /* two draw-mode (texpage) packets, one per frame (func_8003D330) */  /* data-wave 2026-10-08: was g_gpu_shadow_prim_base */
 
 /* === CD-ROM stream reader state (2026-05-17) -- 4 highs === */
 /* From code6cac_b2.c around line 388-408: CD-ROM streaming callback */
@@ -2197,7 +2197,7 @@ D_800A3904                            = 0x800A3904;  /* +8 from D_800A38FC */  /
 D_800A3907                              = 0x800A3907;  /* counter: 0 / ++ in func_8003B5A4, ++ in func_8003BCB4; < 2 tested by func_80022580 */  /* data-wave 2026-10-08: was g_intro_render_busy_plus_1 */
 D_800A390C                            = 0x800A390C;  /* +4 from D_800A3908 */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_a_plus_4 */
 D_800A3920                             = 0x800A3920;  /* +1 from D_800A391F (0x800A391F) */  /* data-wave 2026-10-08: was g_mottest_test_count_plus_1 */
-D_800A3930                               = 0x800A3930;  /* +7 from D_800A3929 (0x800A3929) */  /* data-wave 2026-10-08: was g_cpu_pattern_tick_plus_7 */
+g_font_sprites                               = 0x800A3930;  /* +7 from D_800A3929 (0x800A3929) */  /* data-wave 2026-10-08: was g_cpu_pattern_tick_plus_7 */
 D_800A9CFA                        = 0x800A9CFA;  /* D_800A9CF8.unk2 (+2) */  /* data-wave 2026-10-08: was g_motion_table_arg1_saved_plus_2 */
 D_800EF080                          = 0x800EF080;  /* +4 from g_snd_voice_init_byte_C (0x800EF07C) */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_C_plus_4 */
 D_800EF082                          = 0x800EF082;  /* +6 from g_snd_voice_init_byte_C (0x800EF07C) */  /* data-wave 2026-09-25: was g_snd_voice_init_byte_C_plus_6 */
@@ -2455,7 +2455,7 @@ D_8008F19D                               = 0x8008F19D;  /* data-wave 2026-10-08:
 D_8008F1A8                               = 0x8008F1A8;  /* data-wave 2026-10-09: was g_lookup_pair_tbl_8008F1A8 */
 D_8008F1C0                               = 0x8008F1C0;  /* data-wave 2026-10-08: was g_c_mid_init_template_F1C0 */
 D_8008F204                               = 0x8008F204;  /* data-wave 2026-10-08: was g_s32_arr_F204 */
-D_80090178                             = 0x80090178;  /* data-wave 2026-09-29: was g_unlock_anim_char_table_plus_12 */
+/* RENAME 0x80090178: retired name 'D_80090178' — preserved note: data-wave 2026-09-29: was g_unlock_anim_char_table_plus_12 */
 D_80090604                         = 0x80090604;  /* data-wave 2026-10-08: was g_status_up_cached_idx_plus_8_plus_4 */
 D_80090608                         = 0x80090608;  /* data-wave 2026-10-08: was g_status_up_cached_idx_plus_8_plus_8 */
 D_8009060C                        = 0x8009060C;  /* data-wave 2026-10-08: was g_status_up_cached_idx_plus_8_plus_12 */
