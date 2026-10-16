@@ -1,0 +1,1 @@
+{"func": "_SsVmInit", "addr": "80086818", "verdict": "PASS", "body_hash": "78292baa8a6fe8dc", "body_kind": "c", "file": "main/psxsdk/libsnd/vm_init", "reviewer": "ab78fc1f6c41975da", "scope": "cheat-cleanup", "date": "2026-10-16T17:38:39Z", "head": "2b5c87b97", "notes": ""}

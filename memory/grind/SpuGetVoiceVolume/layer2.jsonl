@@ -1,0 +1,1 @@
+{"func": "SpuGetVoiceVolume", "addr": "8008BD88", "verdict": "PASS", "body_hash": "6355102aa21eecd6", "body_kind": "c", "file": "main/psxsdk/libspu/s_gvv", "reviewer": "ab78fc1f6c41975da", "scope": "cheat-cleanup", "date": "2026-10-16T17:39:00Z", "head": "2b5c87b97", "notes": ""}
