@@ -696,8 +696,6 @@ void func_800475A4(void) {
 
     base = &D_800EEDF0;
     {
-        /* FAKE: s16 temporary for the negated pitch; storing -ratan2() straight
-         * into the field moves its negu and the addiu: score 3 */
         s16 neg = -ratan2(result.vy, var_5);
         base->xf.rot.vx = neg;
     }
@@ -1544,8 +1542,6 @@ s32 func_80048AD0(s32 arg0) {
         return 0;
     base = (u8 *)func_800467B8(var_1);
     p = base + ((*(u32 *)(base + 8) >> 2) << 2);
-    /* FAKE: delta taken before the loop (subu a2 ahead of it); computed at the
-     * call, p's registers shift (score 19) */
     delta = (s32)(p - base);
     D_800A33E4 = (s32)p;
     /* FAKE: q = p + 0xA, the target's second cursor (addiu a1,v1,10; stores at
@@ -1904,11 +1900,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     Unk80045878Obj *slot_obj;
     Unk80045878Node *obj;
     Unk80045878Node *var_4;
-    /* FAKE: named intermediate (no-new-park-categories entry 6) set before
-     * the call so the andi lands ahead of the copy of its result, as in the
-     * target; written in the expression or after the call it takes $v0: score
-     * 5 */
-    s32 var_5;
+    s32 node_bit;
     if (D_800EF980[arg0] < 0) {
         func_80052C10();
     }
@@ -1938,9 +1930,9 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
              * (Q51); a local copy flips the $s0 allocation order: score 63 */
             /* SOTN: src/st/lib/e_shop.c:4621 @aa53500 */
             flags &= 0x7FFF;
-            var_5 = flags & 1;
+            node_bit = flags & 1;
             slot_obj = func_8004153C(flags >> 1);
-            var_4 = &slot_obj->unk_2C[19 + var_5];
+            var_4 = &slot_obj->unk_2C[19 + node_bit];
             var_4->node.work.t[0] =
                 (var_4->node.work.t[0] * slot_obj->unk_12) >> 12;
             var_4->node.work.t[1] =
@@ -1972,10 +1964,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
         }
         obj++;
         if (flags != 1) {
-            /* FAKE: named intermediate (no-new-park-categories entry 6) reads
-             * the table before the node's fields are written, as in the target;
-             * storing it directly reads it last: score 22 */
-            s32 var_7 = D_800EF980[arg0];
+            s32 entry = D_800EF980[arg0];
             void **list;
             obj->node.unk0 = 3;
             obj->node.unk1 = 0;
@@ -1991,7 +1980,7 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             obj->node.unk8 = 0;
             obj->node.unkA = 0;
             obj->node.unk4 = 6;
-            obj->node.unk2 = var_7 * 2 + 1;
+            obj->node.unk2 = entry * 2 + 1;
             g_draw_queue_cursor = list + 1;
             *list = obj;
             obj++;
@@ -2016,7 +2005,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     u8 temp_v1;
     s16 *new_var8;
     s16 *var_4;
-    s16 new_var2;
+    s16 rot_z;
     s16 *src;
     Unk80045878Node *obj;
     Unk80045878Obj *slot_obj;
@@ -2055,12 +2044,10 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     obj->node.xf.rot.vx = *src;
     src++;
     obj->node.xf.rot.vy = *src;
-    /* FAKE: rot.vz's value read into a local ahead of the parent store; read at
-       its own store it scores 8. */
-    new_var2 = src[1];
+    rot_z = src[1];
     obj->node.unkC = &slot_obj->unk_2C[12].node;
     obj->node.unk6 = 0;
-    obj->node.xf.rot.vz = new_var2;
+    obj->node.xf.rot.vz = rot_z;
     func_800417D0(&obj->node);
     list = g_draw_queue_cursor;
     g_draw_queue_cursor = list + 1;
@@ -2089,7 +2076,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
 
 s32 func_80049C24(s32 arg0, s32 arg1) {
     s32 count;
-    s32 temp_v0;
+    s32 tail_off;
     s32 temp_a2;
     s32 var_s7;
     s32 v0;
@@ -2108,14 +2095,12 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
 
     count = tbl[0];
     var_s3 = arg1;
-    /* FAKE: temp_v0 reads the word here; read at its use, arg0 is copied to s6
-     * and the saved registers shift (score 11). */
-    temp_v0 = tbl[count + 1];
+    tail_off = tbl[count + 1];
     temp_a2 = tbl[2];
-    /* FAKE: var_s7 built in two steps; `var_s7 = arg0 + temp_v0` swaps s7 / s8
+    /* FAKE: var_s7 built in two steps; `var_s7 = arg0 + tail_off` swaps s7 / s8
      * (score 6). */
     var_s7 = arg0;
-    var_s7 += temp_v0;
+    var_s7 += tail_off;
     v0 = tbl[1];
     var_fp = arg0 + v0;
     var_s5 = temp_a2 - v0;
