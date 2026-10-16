@@ -34,13 +34,13 @@ extern void __main(void);
  * this call passes it unextended (an s16 prototype adds sll/sra here). */
 extern s32 func_80060414(s32, s32, s32);
 
-/* func_800164F8 -- spins 10000 times executing `break 1` (0x0001000D), spelled
- * as its word: maspsx cannot assemble `break` with a code operand. */
+/* func_800164F8 -- polls the PC host 10000 times: pollhost() is PsyQ LIBSN.H's
+ * `break 1024`, which ASPSX (and maspsx) encode as `break 1,0` (0x0001000D). */
 void func_800164F8(void) {
     s32 i;
 
     for (i = 9999; i >= 0; i--) {
-        __asm__ volatile(".word 0x0001000D"); /* break 1 */
+        pollhost();
     }
 }
 

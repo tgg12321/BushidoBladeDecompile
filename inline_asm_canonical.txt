@@ -134,7 +134,7 @@ InitGeom          # COP0 Status register manipulation: `mfc0 $v0, $12; mtc0 $v0,
 _patch_gte          # BIOS jumptable installer (jalr $t2 with $t1=0x56) + $k0 kernel-temp-register interrupt handler at D_8007FF44 (`addiu $k0, $zero, 0x100; lw $k0, 8($k0); lw $k0, 0($k0)`). Low-level kernel code not expressible in C.
 
 # break-instruction primitives
-func_800164F8          # break-trap spin loop: C `for (i = 9999; i >= 0; i--)` around a one-instruction `break 1` island (.word 0x0001000D; maspsx cannot assemble break with a code operand). Whole-body .word block until 2026-10-01; re-expressed as C + island by the inline-asm audit (A7, docs/audits/INLINE-ASM-AUDIT-2026-10-01.md) -- the C compiles to the target 7 words exactly. break with a non-GCC code has no C form (GCC emits only break 6/7).
+func_800164F8          # gcc-cannot-emit:psyq_pollhost_break. Break-trap spin loop: C `for (i = 9999; i >= 0; i--)` around a call of pollhost(), the vendored PsyQ 4.0 LIBSN.H macro `asm("break 1024")` (include/psxsdk/libsn.h; maspsx encodes it ASPSX's way, `break 1,0` = 0x0001000D). A trap with a code field has no C form (GCC emits only break 6/7); the C remains audited.
 PCopen          # break instruction `.word 0x000040CD` (break with code 0x103) plus return-value handling. Same pattern as authorized md_gview_init/bios_FileReadRaw; Marionation-engine custom kernel call. [re-audit 2026-10-15: PsyQ 4.0 LIBSN OPEN built by asmpsx]
 
 # BIOS jumptable installer (same pattern as authorized func_80078F88 / func_80079028)
