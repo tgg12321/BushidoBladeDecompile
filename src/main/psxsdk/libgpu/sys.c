@@ -661,36 +661,24 @@ s32 get_ce(s16 x, s16 y) {
     }
 }
 
-s32 get_ofs(s32 arg0, s32 arg1) {
-    s32 var_v0;
-    s32 var_v1;
-    int new_var2;
-    var_v1 = arg1 & 0xFFF;
-    new_var2 = arg0;
-    if ((u32)(g_gpu_ctx.type - 1) >= 2U) {
-        var_v1 = arg1 & 0x7FF;
-        var_v1 = var_v1 << 0xB;
-        var_v0 = new_var2 & 0x7FF;
+s32 get_ofs(s32 x, s32 y) {
+    if ((u32)(g_gpu_ctx.type - 1) < 2U) {
+        return 0xE5000000 | ((y & 0xFFF) << 12) | (x & 0xFFF);
     } else {
-        var_v1 = var_v1 << 0xC;
-        var_v0 = new_var2 & 0xFFF;
+        return 0xE5000000 | ((y & 0x7FF) << 11) | (x & 0x7FF);
     }
-    new_var2 = 0xE5000000;
-    return var_v1 | (var_v0 | new_var2);
 }
 
 s32 get_tw(RECT *tw) {
+    u32 pad[4];
+
     if (tw != 0) {
-        u32 window[4];
-        u32 b15, re2, ret;
-        window[0] = (tw->x & 0xFF) >> 3;
-        window[2] = ((-tw->w) & 0xFF) >> 3;
-        window[1] = (tw->y & 0xFF) >> 3;
-        b15 = window[1] << 0xF;
-        window[3] = ((-tw->h) & 0xFF) >> 3;
-        re2 = (window[0] << 0xA) | 0xE2000000u;
-        ret = b15 | re2 | (window[3] << 5) | window[2];
-        return ret;
+        pad[0] = (tw->x & 0xFF) >> 3;
+        pad[2] = (-tw->w & 0xFF) >> 3;
+        pad[1] = (tw->y & 0xFF) >> 3;
+        pad[3] = (-tw->h & 0xFF) >> 3;
+        return 0xE2000000 | (pad[1] << 0xF) | (pad[0] << 0xA) | (pad[3] << 5) |
+               pad[2];
     }
     return 0;
 }
@@ -724,12 +712,10 @@ s32 _otc(s32 arg0, s32 arg1) {
     *DMA6_BCR = arg1;
     *DMA6_CHCR = 0x11000002;
     set_alarm();
-    if (*DMA6_CHCR & 0x01000000) {
-        do {
-            if (get_alarm() != 0) {
-                return -1;
-            }
-        } while (*DMA6_CHCR & 0x01000000);
+    while (*DMA6_CHCR & 0x01000000) {
+        if (get_alarm() != 0) {
+            return -1;
+        }
     }
     return arg1;
 }
