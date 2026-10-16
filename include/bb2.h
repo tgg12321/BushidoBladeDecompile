@@ -666,8 +666,8 @@ extern void func_80026DA4(void);
 extern void func_80027334(MotionFrame *);
 extern s32 func_8002798C(Unk80101EC8Record *);
 /* func_80027A58 (17AFC.c, void (Unk80101EC8Record *)) has no declaration:
- * 175A4.c calls it implicitly, and any declaration (prototype or void f();)
- * changes func_80026DA4's register-save order. */
+ * 175A4.c calls it implicitly, and any truthful declaration changes
+ * func_80026DA4's register-save order. */
 extern void func_800288C8(void);
 extern void func_8002906C(void);
 extern s32 func_80029454(void);

@@ -11,9 +11,10 @@
  * chooses a winner, the distance/input checks choose follow-up states, and
  * the tail emits a mode-specific effect at the players' midpoint.
  *
- * FAKE: leave the two void callees undeclared, as in the matched SOTN callers
- * below; their implicit-int results keep the record-base load after the
- * func_8002BEA0 call. Correct void declarations miss 7 instructions.
+ * FAKE: leave the void callee func_80027A58 undeclared, as in the matched SOTN
+ * callers below. Declared truthfully (void, Unk80101EC8Record *) it scores 7:
+ * the prologue's register saves and the first record-base load reorder (8 words
+ * differ in the linked EXE).
  * SOTN: src/main/psxsdk/libsnd/ssclose.c:8 and
  * src/main/psxsdk/libsnd/vmanager.c:1107
  * @db41b28eee52969244a52cc269c8163d1ed8826a */
