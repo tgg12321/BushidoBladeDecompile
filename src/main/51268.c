@@ -300,12 +300,11 @@ extern Unk1F800000Unk00 D_800F116C;
 void func_800611A4(s32 *arg0, u16 *arg1) {
     u16 svec[3];
     s32 *p;
-    svec[0] = arg1[0];
-    /* FAKE: integer-address loads keep the arg1[1] load ahead of the D_800A3468
-     * / D_800F1178 stores; arg1[1] / arg1[2] score 15 */
-    svec[1] = *(u16 *)((s32)arg1 + 2);
+    u16 *q = arg1;
+    svec[0] = *q++;
+    svec[1] = *q++;
     D_800A3468 = &D_800F116C;
-    svec[2] = *(u16 *)((s32)arg1 + 4);
+    svec[2] = *q;
     D_800F117C = (s32)(&svec[0]);
     D_800F1178 = (s32)arg0;
     D_800F1180 = (s32)(&D_800F116A);
