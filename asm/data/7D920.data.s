@@ -14430,9 +14430,9 @@ dlabel g_ndata_inf
     /* 87BEA 800973EA */ .short 0x0000
 enddlabel g_ndata_inf
 
-nonmatching D_800973EC
+nonmatching g_ndata_pack_index
 
-dlabel D_800973EC
+dlabel g_ndata_pack_index
     /* 87BEC 800973EC */ .short 0x0000
     /* 87BEE 800973EE */ .short 0x0001
     /* 87BF0 800973F0 */ .short 0x0002
@@ -14441,7 +14441,7 @@ dlabel D_800973EC
     /* 87BF6 800973F6 */ .short 0xFFFF
     /* 87BF8 800973F8 */ .short 0x0000
     /* 87BFA 800973FA */ .short 0x0000
-enddlabel D_800973EC
+enddlabel g_ndata_pack_index
 
 nonmatching Judge
 

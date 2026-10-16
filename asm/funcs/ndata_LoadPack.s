@@ -6,8 +6,8 @@ glabel ndata_LoadPack
     /* 358CC 800450CC 9D13010C */  jal        ndata_Read
     /* 358D0 800450D0 25008424 */   addiu     $a0, $a0, 0x25
     /* 358D4 800450D4 01000224 */  addiu      $v0, $zero, 0x1
-    /* 358D8 800450D8 CC0290AF */  sw         $s0, %gp_rel(D_800A3398)($gp)
-    /* 358DC 800450DC 780182AF */  sw         $v0, %gp_rel(D_800A3244)($gp)
+    /* 358D8 800450D8 CC0290AF */  sw         $s0, %gp_rel(g_ndata_pack)($gp)
+    /* 358DC 800450DC 780182AF */  sw         $v0, %gp_rel(g_ndata_pack_loaded)($gp)
     /* 358E0 800450E0 1400BF8F */  lw         $ra, 0x14($sp)
     /* 358E4 800450E4 1000B08F */  lw         $s0, 0x10($sp)
     /* 358E8 800450E8 1800BD27 */  addiu      $sp, $sp, 0x18

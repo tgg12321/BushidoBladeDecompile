@@ -1,5 +1,5 @@
 glabel ndata_ReadFromPack
-    /* 358F4 800450F4 7801828F */  lw         $v0, %gp_rel(D_800A3244)($gp)
+    /* 358F4 800450F4 7801828F */  lw         $v0, %gp_rel(g_ndata_pack_loaded)($gp)
     /* 358F8 800450F8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 358FC 800450FC 1D004010 */  beqz       $v0, .L80045174
     /* 35900 80045100 1000BFAF */   sw        $ra, 0x10($sp)
@@ -7,13 +7,13 @@ glabel ndata_ReadFromPack
     /* 35908 80045108 0700822C */  sltiu      $v0, $a0, 0x7
     /* 3590C 8004510C 19004010 */  beqz       $v0, .L80045174
     /* 35910 80045110 40100400 */   sll       $v0, $a0, 1
-    /* 35914 80045114 0980013C */  lui        $at, %hi(D_800973EC)
+    /* 35914 80045114 0980013C */  lui        $at, %hi(g_ndata_pack_index)
     /* 35918 80045118 21082200 */  addu       $at, $at, $v0
-    /* 3591C 8004511C EC732484 */  lh         $a0, %lo(D_800973EC)($at)
+    /* 3591C 8004511C EC732484 */  lh         $a0, %lo(g_ndata_pack_index)($at)
     /* 35920 80045120 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 35924 80045124 13008210 */  beq        $a0, $v0, .L80045174
     /* 35928 80045128 05000224 */   addiu     $v0, $zero, 0x5
-    /* 3592C 8004512C CC02868F */  lw         $a2, %gp_rel(D_800A3398)($gp)
+    /* 3592C 8004512C CC02868F */  lw         $a2, %gp_rel(g_ndata_pack)($gp)
     /* 35930 80045130 00000000 */  nop
     /* 35934 80045134 0000C38C */  lw         $v1, 0x0($a2)
     /* 35938 80045138 00000000 */  nop
@@ -31,7 +31,7 @@ glabel ndata_ReadFromPack
     /* 35968 80045168 5E140108 */  j          .L80045178
     /* 3596C 8004516C 01000224 */   addiu     $v0, $zero, 0x1
   .L80045170:
-    /* 35970 80045170 780180AF */  sw         $zero, %gp_rel(D_800A3244)($gp)
+    /* 35970 80045170 780180AF */  sw         $zero, %gp_rel(g_ndata_pack_loaded)($gp)
   .L80045174:
     /* 35974 80045174 21100000 */  addu       $v0, $zero, $zero
   .L80045178:

@@ -10,7 +10,7 @@
 #include "common.h"
 
 /* libcd CdlATV, the attenuator block CdMix takes: the CD-audio mix currently
- * applied (g_cd_atv, cdrom_SetMix) and the fade target (D_800A36B8) that
+ * applied (g_cd_atv, cdrom_SetMix) and the fade target (g_cd_atv_target) that
  * cdrom_UpdateAudio steps toward and finally copies over it. Both are COMMON
  * symbols, gp-relative only at byte 0 (ASPSX 2.34, Q62). */
 typedef struct {

@@ -12,7 +12,7 @@ glabel cdrom_SetMix
     /* 26758 80035F58 1B3727A0 */  sb         $a3, %lo(g_cd_atv_plus_0x3)($at)
     /* 2675C 80035F5C 8001020C */  jal        CdMix
     /* 26760 80035F60 00000000 */   nop
-    /* 26764 80035F64 880780A7 */  sh         $zero, %gp_rel(D_800A3854)($gp)
+    /* 26764 80035F64 880780A7 */  sh         $zero, %gp_rel(g_cd_fade_len)($gp)
     /* 26768 80035F68 1000BF8F */  lw         $ra, 0x10($sp)
     /* 2676C 80035F6C 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 26770 80035F70 0800E003 */  jr         $ra

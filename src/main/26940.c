@@ -8,29 +8,29 @@
 #include "bb2.h"
 
 CdlATV g_cd_atv;
-CdlATV D_800A36B8;
+CdlATV g_cd_atv_target;
 u8 g_cd_result[8];
 
 void cdrom_UpdateAudio(void) {
     CdlATV atv;
 
-    if (D_800A3854 > 0) {
-        atv.val0 = (D_800A36B8.val0 * D_800A3840 +
-                    g_cd_atv.val0 * (D_800A3854 - D_800A3840)) /
-                   D_800A3854;
-        atv.val1 = (D_800A36B8.val1 * D_800A3840 +
-                    g_cd_atv.val1 * (D_800A3854 - D_800A3840)) /
-                   D_800A3854;
-        atv.val2 = (D_800A36B8.val2 * D_800A3840 +
-                    g_cd_atv.val2 * (D_800A3854 - D_800A3840)) /
-                   D_800A3854;
-        atv.val3 = (D_800A36B8.val3 * D_800A3840 +
-                    g_cd_atv.val3 * (D_800A3854 - D_800A3840)) /
-                   D_800A3854;
+    if (g_cd_fade_len > 0) {
+        atv.val0 = (g_cd_atv_target.val0 * g_cd_fade_step +
+                    g_cd_atv.val0 * (g_cd_fade_len - g_cd_fade_step)) /
+                   g_cd_fade_len;
+        atv.val1 = (g_cd_atv_target.val1 * g_cd_fade_step +
+                    g_cd_atv.val1 * (g_cd_fade_len - g_cd_fade_step)) /
+                   g_cd_fade_len;
+        atv.val2 = (g_cd_atv_target.val2 * g_cd_fade_step +
+                    g_cd_atv.val2 * (g_cd_fade_len - g_cd_fade_step)) /
+                   g_cd_fade_len;
+        atv.val3 = (g_cd_atv_target.val3 * g_cd_fade_step +
+                    g_cd_atv.val3 * (g_cd_fade_len - g_cd_fade_step)) /
+                   g_cd_fade_len;
         CdMix(&atv);
-        if (++D_800A3840 >= D_800A3854) {
-            D_800A3854 = 0;
-            g_cd_atv = D_800A36B8;
+        if (++g_cd_fade_step >= g_cd_fade_len) {
+            g_cd_fade_len = 0;
+            g_cd_atv = g_cd_atv_target;
         }
     }
 
@@ -353,8 +353,8 @@ void cdrom_Update(void) {
 
 /* Tentative definitions (COMMON) of the small data this file reaches
  * gp-relative (Q65). */
-CdlATV D_800A36B8;
+CdlATV g_cd_atv_target;
 CdlATV g_cd_atv;
 u8 g_cd_result[8];
-s16 D_800A3840;
-s16 D_800A3854;
+s16 g_cd_fade_step;
+s16 g_cd_fade_len;

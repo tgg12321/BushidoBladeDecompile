@@ -190,9 +190,9 @@ dlabel g_listener_cam
     /* 93EB4 800A36B4 00000000 */ .word 0x00000000
 enddlabel g_listener_cam
 
-nonmatching D_800A36B8
+nonmatching g_cd_atv_target
 
-dlabel D_800A36B8
+dlabel g_cd_atv_target
     /* 93EB8 800A36B8 */ .byte 0x00
     /* 93EB9 800A36B9 */ .byte 0x00
     /* 93EBA 800A36BA */ .byte 0x00
@@ -201,7 +201,7 @@ dlabel D_800A36B8
     /* 93EBD 800A36BD */ .byte 0x00
     /* 93EBE 800A36BE */ .byte 0x00
     /* 93EBF 800A36BF */ .byte 0x00
-enddlabel D_800A36B8
+enddlabel g_cd_atv_target
 
 nonmatching D_800A36C0
 

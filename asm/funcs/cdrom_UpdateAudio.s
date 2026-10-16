@@ -1,11 +1,11 @@
 glabel cdrom_UpdateAudio
-    /* 26940 80036140 88078887 */  lh         $t0, %gp_rel(D_800A3854)($gp)
+    /* 26940 80036140 88078887 */  lh         $t0, %gp_rel(g_cd_fade_len)($gp)
     /* 26944 80036144 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 26948 80036148 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 2694C 8003614C 75000019 */  blez       $t0, .L80036324
     /* 26950 80036150 1800B0AF */   sw        $s0, 0x18($sp)
-    /* 26954 80036154 EC058293 */  lbu        $v0, %gp_rel(D_800A36B8)($gp)
-    /* 26958 80036158 74078487 */  lh         $a0, %gp_rel(D_800A3840)($gp)
+    /* 26954 80036154 EC058293 */  lbu        $v0, %gp_rel(g_cd_atv_target)($gp)
+    /* 26958 80036158 74078487 */  lh         $a0, %gp_rel(g_cd_fade_step)($gp)
     /* 2695C 8003615C 00000000 */  nop
     /* 26960 80036160 18004400 */  mult       $v0, $a0
     /* 26964 80036164 12180000 */  mflo       $v1
@@ -109,18 +109,18 @@ glabel cdrom_UpdateAudio
     /* 26ACC 800362CC 1200A3A3 */  sb         $v1, 0x12($sp)
     /* 26AD0 800362D0 8001020C */  jal        CdMix
     /* 26AD4 800362D4 1300A2A3 */   sb        $v0, 0x13($sp)
-    /* 26AD8 800362D8 74078297 */  lhu        $v0, %gp_rel(D_800A3840)($gp)
-    /* 26ADC 800362DC 88078387 */  lh         $v1, %gp_rel(D_800A3854)($gp)
+    /* 26AD8 800362D8 74078297 */  lhu        $v0, %gp_rel(g_cd_fade_step)($gp)
+    /* 26ADC 800362DC 88078387 */  lh         $v1, %gp_rel(g_cd_fade_len)($gp)
     /* 26AE0 800362E0 01004224 */  addiu      $v0, $v0, 0x1
-    /* 26AE4 800362E4 740782A7 */  sh         $v0, %gp_rel(D_800A3840)($gp)
+    /* 26AE4 800362E4 740782A7 */  sh         $v0, %gp_rel(g_cd_fade_step)($gp)
     /* 26AE8 800362E8 00140200 */  sll        $v0, $v0, 16
     /* 26AEC 800362EC 03140200 */  sra        $v0, $v0, 16
     /* 26AF0 800362F0 2A104300 */  slt        $v0, $v0, $v1
     /* 26AF4 800362F4 0B004014 */  bnez       $v0, .L80036324
     /* 26AF8 800362F8 00000000 */   nop
-    /* 26AFC 800362FC 880780A7 */  sh         $zero, %gp_rel(D_800A3854)($gp)
-    /* 26B00 80036300 0A80053C */  lui        $a1, %hi(D_800A36B8)
-    /* 26B04 80036304 B836A524 */  addiu      $a1, $a1, %lo(D_800A36B8)
+    /* 26AFC 800362FC 880780A7 */  sh         $zero, %gp_rel(g_cd_fade_len)($gp)
+    /* 26B00 80036300 0A80053C */  lui        $a1, %hi(g_cd_atv_target)
+    /* 26B04 80036304 B836A524 */  addiu      $a1, $a1, %lo(g_cd_atv_target)
     /* 26B08 80036308 0A80043C */  lui        $a0, %hi(g_cd_atv)
     /* 26B0C 8003630C 18378424 */  addiu      $a0, $a0, %lo(g_cd_atv)
     /* 26B10 80036310 0300A288 */  lwl        $v0, 0x3($a1)

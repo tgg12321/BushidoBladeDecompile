@@ -278,7 +278,7 @@ s32 ndata_GetArenaRoomAfter(s32 a0) {
 }
 
 /* Q65: this file's statics (.sbss), in address order. */
-static s32 D_800A3398;
+static s32 g_ndata_pack;
 static s32 D_800A339C; /* not named by any code or data: size from the gap */
 static s32 g_arena_free_ptr;
 static s32 g_arena_free_size;
@@ -287,30 +287,30 @@ static s32 g_arena_block_count;
 
 void ndata_LoadPack(s32 a0, s32 a1) {
     ndata_Read(a0 + 0x25, a1);
-    D_800A3398 = a1;
-    D_800A3244 = 1;
+    g_ndata_pack = a1;
+    g_ndata_pack_loaded = 1;
 }
 
-extern s16 D_800973EC[];
+extern s16 g_ndata_pack_index[];
 
 s32 ndata_ReadFromPack(s32 a0, s32 a1) {
     s32 *a2_ptr;
     s32 v1;
     s32 *v0_ptr;
-    if (D_800A3244 == 0) {
+    if (g_ndata_pack_loaded == 0) {
         return 0;
     }
     a0 -= 0x1E;
     if ((u32)a0 >= 7) {
         return 0;
     }
-    a0 = D_800973EC[a0];
+    a0 = g_ndata_pack_index[a0];
     if (a0 == -1) {
         return 0;
     }
-    a2_ptr = (s32 *)D_800A3398;
+    a2_ptr = (s32 *)g_ndata_pack;
     if (*a2_ptr != 5) {
-        D_800A3244 = 0;
+        g_ndata_pack_loaded = 0;
         return 0;
     }
     v0_ptr = (s32 *)(a0 * 4 + (s32)a2_ptr + 4);
@@ -323,9 +323,9 @@ s32 ndata_ReadFromPack(s32 a0, s32 a1) {
     return 1;
 }
 
-void ndata_InvalidatePack(void) { D_800A3244 = 0; }
+void ndata_InvalidatePack(void) { g_ndata_pack_loaded = 0; }
 
-s32 ndata_IsPackLoaded(void) { return D_800A3244; }
+s32 ndata_IsPackLoaded(void) { return g_ndata_pack_loaded; }
 
 void ndata_StartReadInf(void) { cdrom_StartReadAt(1, (s32)g_ndata_inf, 0, 2); }
 
@@ -807,4 +807,4 @@ void func_80046048(s32 a0, s32 a1) {
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
 s32 D_800A3240 = 1;
-s32 D_800A3244 = 0;
+s32 g_ndata_pack_loaded = 0;

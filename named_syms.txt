@@ -935,7 +935,7 @@ D_80102092                                              = 0x80102092;  /* D_8010
 /* for that pass's multiplier analysis. */
 dma_spu_madr                                      = 0x800A2CE0;  /* holds 0x1F8010C0 (DMA channel 4 MADR); written through by _spu_Fr_ / _spu_t (spu.c:214, :299) */  /* data-wave 2026-10-09: was g_dma_chcr_ch4_ptr */
 spu_madr                               = 0x800A2D30;  /* the SPU transfer's RAM address: set by _spu_t, copied to *dma_spu_madr (spu.c:295, :299) */  /* data-wave 2026-10-09: was g_satan0_gauge_state_word */
-D_800A36B8                                = 0x800A36B8;  /* CdlATV fade target: set by func_80035F78 (26730.c:25-30); cdrom_UpdateAudio fades g_cd_atv toward it, then copies it in (26940.c:17-33) */  /* data-wave 2026-09-29: was g_special_cam_win_byte_a */
+/* RENAME 0x800A36B8: retired name 'D_800A36B8' — preserved note: CdlATV fade target: set by func_80035F78 (26730.c:25-30); cdrom_UpdateAudio fades g_cd_atv toward it, then copies it in (26940.c:17-33) */  /* data-wave 2026-09-29: was g_special_cam_win_byte_a */
 g_cd_atv                                = 0x800A3718;  /* CdlATV applied with CdMix by cdrom_SetMix (26730.c:14-18); cdrom_UpdateAudio fades from it to D_800A36B8 (26940.c:17-33) */  /* data-wave 2026-09-24: was g_special_cam_win_byte_b */
 D_800A3578                          = 0x800A3578;  /* 5ED34.c selection-screen state; func_8006EC0C reads its low byte as the fade state */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_a */
 D_800A35A0                          = 0x800A35A0;  /* func_8006EACC's result (0 / -1 / 1) */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_b */
@@ -1448,7 +1448,7 @@ D_800A37C0                                  = 0x800A37C0;  /* per-step timer of 
 D_800A3788                             = 0x800A3788;  /* 3-bit set toggled per menu line (var_2 3..5) by func_80016E60, passed as var_2 | D << 16 to func_8005C8A8; column index of D_8009A9F0 in func_80058580 */  /* data-wave 2026-10-08: was g_intro_select_packed_state */
 
 /* === Cross-cutting unnamed state used in 3+ named functions (2026-05-17) -- 4 highs === */
-D_800A3244                                       = 0x800A3244;  /* set 1 by func_800450BC, cleared by func_80045188 / func_800450F4, returned by func_80045194; gates func_800450F4's block copy */  /* data-wave 2026-10-08: was g_seq_active_flag */
+/* RENAME 0x800A3244: retired name 'D_800A3244' — preserved note: set 1 by func_800450BC, cleared by func_80045188 / func_800450F4, returned by func_80045194; gates func_800450F4's block copy */  /* data-wave 2026-10-08: was g_seq_active_flag */
 g_vsync_target_frames                                   = 0x800A36F1;  /* vsync target frame count (default 2 = 30 FPS); main loop uses `(D-1)<<8 + 0x80` for vsync window deadline */
 D_800A3228                                          = 0x800A3228;  /* 0 / 1 / -1: func_8003E164 stores its argument, func_8003E22C stores -1; read by them and returned by func_8003E2A0 */  /* data-wave 2026-10-08: was g_stage_id_arg */
 
@@ -1841,8 +1841,8 @@ D_800A38D0                                  = 0x800A38D0;  /* link check-failure
 /* === Init flags + CD-audio fade words (2026-05-17) -- 4 highs === */
 D_800A31D8                               = 0x800A31D8;  /* 0 = first init, != 0 = re-init (triggers obj_InitAll cleanup); always set to 1 after */  /* data-wave 2026-10-08: was g_scene_already_init_flag */
 D_800A31E4                               = 0x800A31E4;  /* paired init flag (= 0 / = 1 set) */  /* data-wave 2026-10-08: was g_scene_another_init_flag */
-D_800A3854                                       = 0x800A3854;  /* length of a CD-audio mix fade, set by func_80035F78 (26730.c:25-31); cdrom_UpdateAudio divides by it and zeroes it at the end (26940.c:17-35) */  /* data-wave 2026-10-08: was g_scene_arg_saved */
-D_800A3840                                   = 0x800A3840;  /* fade step counter: zeroed by func_80035F78, incremented by cdrom_UpdateAudio until it reaches D_800A3854 (26940.c:31) */  /* data-wave 2026-10-08: was g_scene_alt_arg_saved */
+g_cd_fade_len                                       = 0x800A3854;  /* length of a CD-audio mix fade, set by func_80035F78 (26730.c:25-31); cdrom_UpdateAudio divides by it and zeroes it at the end (26940.c:17-35) */  /* data-wave 2026-10-08: was g_scene_arg_saved */
+g_cd_fade_step                                   = 0x800A3840;  /* fade step counter: zeroed by func_80035F78, incremented by cdrom_UpdateAudio until it reaches D_800A3854 (26940.c:31) */  /* data-wave 2026-10-08: was g_scene_alt_arg_saved */
 
 /* === Memcard async operation state machine (2026-05-17) -- 4 highs === */
 /* From code6cac_c0.c func_80037D14: 5-state machine driving memcard */
@@ -2430,7 +2430,7 @@ D_80090608                         = 0x80090608;  /* data-wave 2026-10-08: was g
 D_8009060C                        = 0x8009060C;  /* data-wave 2026-10-08: was g_status_up_cached_idx_plus_8_plus_12 */
 D_800906A4                                  = 0x800906A4;  /* data-wave 2026-10-08: was g_arr_906A4_stride2 */
 D_80094CFC                                       = 0x80094CFC;  /* data-wave 2026-10-08: was g_text1a_state_tbl_ptr */
-D_800973EC                                     = 0x800973EC;  /* data-wave 2026-10-08: was g_text1a_c_addr_800973EC */
+/* RENAME 0x800973EC: retired name 'D_800973EC' — preserved note: data-wave 2026-10-08: was g_text1a_c_addr_800973EC */
 /* data-wave 2026-09-29: g_display_lookup_a0928 = 0x800A0928 retired; ratan_tbl is now object-defined */
 D_800A1460                                       = 0x800A1460;  /* data-wave 2026-10-09: was g_system_addr_800A1460 */
 /* RENAME 0x800A1578: retired name 'D_800A1578' — preserved note: data-wave 2026-10-09: was g_ings2_u16_buf_a1578 */
@@ -2448,7 +2448,7 @@ D_800A3134                          = 0x800A3134;  /* data-wave 2026-09-29: was 
 D_800A3140                                   = 0x800A3140;  /* data-wave 2026-10-08: was g_c6cb_val87_save_A3140 */
 D_800A332C                        = 0x800A332C;  /* data-wave 2026-10-08: was g_input_retry_counter_b_plus_8_plus_4 */
 D_800A3348                   = 0x800A3348;  /* data-wave 2026-10-08: was g_result_timer_complete_flag_plus_8_plus_4 */
-D_800A3398                                   = 0x800A3398;  /* data-wave 2026-10-08: was g_attack_state_ptr_plus_16 */
+g_ndata_pack                                   = 0x800A3398;  /* data-wave 2026-10-08: was g_attack_state_ptr_plus_16 */
 D_800A3648                = 0x800A3648;  /* data-wave 2026-10-09: was g_text1b_misc_state_record_table_16x4_plus_16 */
 D_800A3658                                      = 0x800A3658;  /* data-wave 2026-10-09: was g_display_addr_800A3658 */
 D_800A3670                                     = 0x800A3670;  /* data-wave 2026-10-08: was g_global_flag_A3670 */

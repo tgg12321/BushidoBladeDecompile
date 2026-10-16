@@ -282,7 +282,7 @@ extern s32 D_800A36AC;
 /* the Rec44 view record func_8001E404 / func_8001E6E4 last placed (read by
  * func_800325E0 as the listener) */
 extern Rec44 *g_listener_cam;
-extern CdlATV D_800A36B8;
+extern CdlATV g_cd_atv_target;
 extern s16 D_800A36C2;
 extern s32 D_800A36C4;
 extern s16 D_800A36C6;
@@ -529,7 +529,7 @@ extern u8 D_8008EC24[][5];
 extern TexRec D_8009BA00[12];
 extern u8 D_8009BA60[];
 extern Unk8009BD24Block D_8009BD24;
-extern s32 D_800A3244;
+extern s32 g_ndata_pack_loaded;
 extern s32 D_800A326C;
 extern s32 D_800A32BC;
 extern u32 D_800A32C8[2];
@@ -541,9 +541,9 @@ extern u8 D_800A37A8[];
 extern u16 D_800A37C4;
 extern POLY_FT4 *D_800A37D4;
 extern u32 *D_800A3808;
-extern s16 D_800A3840;
+extern s16 g_cd_fade_step;
 extern u8 D_800A384C;
-extern s16 D_800A3854;
+extern s16 g_cd_fade_len;
 extern u8 *D_800A3894;
 extern u32 *g_prim_buf_cursor; /* the draw-chunk builders' word cursor */
 extern s32 D_800A38D0;
