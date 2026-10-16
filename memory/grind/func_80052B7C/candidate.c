@@ -191,6 +191,13 @@
  * tmp/grind/func_80052B7C/s17/enum_noswap, .../enum_swap): identical "0 named locals,
  * 0 assignments, 5 anchors -> 1 distinct spellings" to s9/s15/s16. See hypotheses.md s17/H14.
  */
+/* s18 (synthesis): kill re-audit -- body unchanged, re-measured 19 (4/4 source-level), no
+ * FAKE to ablate (tmp/grind/func_80052B7C/s18/). New census (s18/batch_census.txt): the
+ * target's batched lw/lh $t0..$t7 -> ctc2 run occurs in 16 EXE functions, all hand-written
+ * (8 Sony LIBGTE asmpsx modules -- SetRotMatrix/MTX_09 is register-identical to chunk 1 --,
+ * 4 STRONG/handwritten game funcs, the 3AB48 cluster); 0 compiled-C sites. Evidence for the
+ * whole-body grant branch, not a C lever. See hypotheses.md s18.
+ */
 #include <psxsdk/inline_c.h>
 void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
     gte_SetRotMatrix(rot);

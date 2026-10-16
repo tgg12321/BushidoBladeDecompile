@@ -389,3 +389,22 @@ question rather than resolved here.
 - [s17] spelling_enum.py's region scanner (tools/spelling_enum.py:89/:217) finds 0 named locals, 0 assignments, 5 anchors -> 1 distinct spelling on both the plain and operand-swap axis -- fourth consecutive enumerate pass (s9, s15, s16, s17) landing on the identical empty mutation space.
 
 - [s17] The residual (chunk 1: gte_SetRotMatrix's batched lw/ctc2 order; chunk 5: gte_stlvl's delay-slot swc2 placement) remains proven to sit entirely inside each macro's own fixed __asm__ volatile string (include/psxsdk/inline_c.h:297, :1086), which spelling_enum.py's C-level syntax scanner cannot see or vary -- no new lever surfaced this session.
+
+## s18 (synthesis) evidence
+- KILL RE-AUDIT (dispatcher-mandated): s6 legal macro-call chassis (candidate.c body + `#include <psxsdk/inline_c.h>`) re-applied fresh at src/main/3AB48.c:115 and re-measured: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only (tmp/grind/func_80052B7C/s18/sandbox_diff.txt). fake_ablate on candidate.c: "no FAKE-annotated constructs found ... nothing to ablate" (tmp/grind/func_80052B7C/s18/ablate.txt). All instance kills were measured on this same chassis with no FAKE carrier, so none is voided by chassis drift.
+- NEW: batched-load idiom census over all 1437 asm/funcs/*.s (which includes every COMPLETED-C function's .s, e.g. puts.s, func_800203B4.s, func_8002EA24.s), script tmp/grind/func_80052B7C/s18/batch_census.py, output .../batch_census.txt. Pattern = a run of >=5 consecutive `lw/lh $tN` immediately followed by >=5 `ctc2` of the same t-registers in the same order (target chunk 1+2 shape). Hits: 16 functions, ALL independently hand-written:
+  * 8 verbatim Sony PsyQ 4.0 LIBGTE asmpsx modules: SetRotMatrix (MTX_09, 0x8007EEEC -- its 10-insn body is opcode- AND register-identical to the target's chunk 1: lw $t0..$t4 0..16($a0); ctc2 $t0..$t4,$0..$4), ApplyMatrix, ApplyMatrixLV, CompMatrix, MulMatrix, MulMatrix0, MulMatrix2, SetColorMatrix.
+  * 4 game functions with independent hand-written proof: func_8004A940 (scan_hand_coded STRONG S7/S9/S11, inline_asm_canonical.txt:198), func_8004C404 (STRONG S7/S9, :200), func_8004DDB4 (STRONG S9, :210), func_80054440 (trapping addi, :162).
+  * the 3AB48 GTE cluster: gte_SetMatrixRotTransIR, gte_SetRotMatrixClearTrans, gte_SetRotTransMatrix (all granted, inline_asm_canonical.txt:335-341) + func_80052B7C.
+  * 0 compiled-C sites. Negative control: func_800203B4 (COMPLETED-C, uses gte_SetRotMatrix by name) does not hit -- the vendored inline_c.h/inline_o.h SetRotMatrix interleave (2 lw/2 ctc2/3 lw/3 ctc2, $12-$15), so no C body in this EXE produces the batched t-register form.
+  Reading: target chunk 1 is the asmpsx LIBGTE house idiom (Sony's own SetRotMatrix body, inlined), which co-occurs in this EXE only with code proven hand-written by other gate-class signals. This is a candidate gate-class scanner signal (zero false positives on compiled C across the whole EXE), complementary to s11's jr-slot census (5/5 cluster, 0 compiled C). It is evidence for the whole-body grant branch, not a C lever; adding it to tools/scan_hand_coded.py is an engine/tools change outside grind scope.
+
+- [s18] s18 sandbox --disable all --diff on the legal chassis: score 19, 24/24 insns, 4/4 hunks source-level (tmp/grind/func_80052B7C/s18/sandbox_diff.txt).
+
+- [s18] fake_ablate on candidate.c: nothing to ablate (tmp/grind/func_80052B7C/s18/ablate.txt).
+
+- [s18] Sony LIBGTE SetRotMatrix (asm/funcs/SetRotMatrix.s, PsyQ 4.0 MTX_09, asmpsx-built per inline_asm_canonical.txt:328) is opcode- and register-identical to the target's chunk 1 (lw $t0..$t4, 0..16($a0); ctc2 $t0..$t4, $0..$4).
+
+- [s18] Batched-load idiom census: 16/16 hits are hand-written (Sony asmpsx modules, STRONG-tier game funcs, the granted 3AB48 cluster); 0 compiled-C false positives across all 1437 functions (tmp/grind/func_80052B7C/s18/batch_census.txt). Complements s11's jr-slot cop2 census (5/5 cluster, 0 compiled C).
+
+- [s18] src/main/3AB48.c reverted to INCLUDE_ASM; git status clean outside the ledger.

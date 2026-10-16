@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 17,
- "current_modality": "enumerate",
+ "session_count": 18,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -105,23 +105,29 @@
    "floor": 19,
    "modality": "enumerate",
    "headline": "s17 enumerate: 4th consecutive spelling_enum sweep (after s9/s15/s16) re-confirms zero C-level mutation axes on the legal macro-call chassis; residual stays locked inside gte_SetRotMatrix/gte_stlvl's "
+  },
+  {
+   "session": 18,
+   "floor": 19,
+   "modality": "synthesis",
+   "headline": "s18 synthesis: kill re-audit re-measures the legal chassis at 19 with no FAKE carriers; new EXE census shows the target's batched lw/lh $t0..$t7 -> ctc2 run occurs only in hand-written code (16 funcs:"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A scan_hand_coded gate-class signal for 'cop2-class insn in the jr $ra delay slot' lifts func_80052B7C to STRONG tier, matching func_8004A76C's 2026-10-15 CANONICAL-ASM GRANT PATH precedent.",
-   "mechanism": "cc1 never fills a delay slot with an asm insn (reorg.c:740) and maspsx always appends a nop after reorder-mode jumps (maspsx/__init__.py:1484); s11's jr-slot census shows 5/5 hits are the GTE cluster with 0 compiled-C false positives.",
-   "next_probe": "Engine-side scanner signal addition (escalation/owner-cluster modality), out of this session's reach -- never edit tools/engine."
+   "hypothesis": "A scan_hand_coded gate-class signal for the asmpsx LIBGTE batched lw/lh $tN -> ctc2 idiom (s18 census: 16/16 hand-written, 0 compiled C) and/or s11's cop2-in-jr-slot signal lifts func_80052B7C to STRONG tier, satisfying the Judge constraint's whole-body INCLUDE_ASM branch.",
+   "mechanism": "Both idioms co-occur in this EXE only with code proven hand-written by existing gate-class signals or Sony library provenance; the vendored C macros cannot emit either.",
+   "next_probe": "Engine/tools-side scanner signal addition (escalation or owner-cluster modality) citing s18/batch_census.txt and s11/jr_census.txt; out of a grind session's surface."
   },
   {
-   "hypothesis": "The whole-body inline_asm_canonical.txt:340 grant audit (aeea8ed44) resolving in favor of func_80052B7C would settle the function without further grind work.",
-   "mechanism": "The 2026-10-15 20:38 ruling rejected written islands but left the whole-body grant itself open pending the scan_hand_coded STRONG-tier gate.",
-   "next_probe": "Operator check of inline_asm_canonical.txt:340's audit status; no action available to this session."
+   "hypothesis": "The inline_asm_canonical.txt:340 whole-body grant audit (aeea8ed44) resolves in favor of func_80052B7C on the cluster + Sony-idiom evidence.",
+   "mechanism": "The 2026-10-15 20:38 ruling rejected written islands only; the whole-body grant row stays open pending gate-class evidence, now strengthened by s18's census.",
+   "next_probe": "Operator/Judge review of row :340 with s11 + s18 census artifacts."
   },
   {
-   "hypothesis": "A new vendored macro or gtemac.h composite covering chunk 2's TR-from-halfwords, or re-expressing gte_SetRotMatrix's batched lw/ctc2 order, would close hunk 1's residual if it existed.",
-   "mechanism": "Chunk 2 has no vendored macro at all (s1); gtemac.h's composites (read in full s12) are calls-to-calls, never alternate leaf orderings of SetRotMatrix's own fixed asm string.",
-   "next_probe": "Needs an owner ruling plus an engine: commit adding the macro/word (inline-asm-policy.md item 1) -- not a grind-session action."
+   "hypothesis": "A vendored macro whose fixed string batches the rotation+TR loads in $t0..$t7 (an asmpsx-style SetRotMatrix/SetTransVector composite) would close hunk 1 in pure macro-call C.",
+   "mechanism": "Chunk 1/2 bytes are a fixed hand-written string; only a header macro carrying that string can emit them by name.",
+   "next_probe": "Needs an owner ruling plus an engine: commit adding the macro (inline-asm-policy.md item 1); not a grind-session action."
   }
  ],
  "judge_constraints": [

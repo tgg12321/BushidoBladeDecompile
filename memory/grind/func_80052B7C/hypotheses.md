@@ -315,3 +315,27 @@ Result: KILLED (class, re-confirmation). kill_scope: class. measured_on: s6/s9/s
 - kill_scope: class
 - measured_on: s6/s9/s15/s16 legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct present, src/main/3AB48.c this session, reverted to INCLUDE_ASM after measurement
 - predicate_cite: tools/spelling_enum.py:89
+
+## [s18] KILL RE-AUDIT: the banked legal macro-call chassis re-measures 19 on the current tree with zero FAKE carriers, so no instance kill is voided by chassis or FAKE drift.
+- mechanism: Instance kills are only invalidated by a changed chassis or an ablated FAKE carrier; candidate.c carries none.
+- probe: tmp/grind/func_80052B7C/s18/apply.py apply; sandbox func_80052B7C --disable all --diff; tools/fake_ablate.py --func func_80052B7C --file main/3AB48 --candidate memory/grind/func_80052B7C/candidate.c; revert.
+- result: 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only (s18/sandbox_diff.txt); ablate: nothing to ablate (s18/ablate.txt). Identical to s6/s8/s13-s17.
+- verdict: CONFIRMED
+
+## [s18] The target's batched lw/lh $t0..$t7 -> ctc2 run (chunks 1+2) is produced in this EXE only by hand-written code: Sony LIBGTE asmpsx modules and game functions already proven hand-written; no compiled-C function produces it.
+- mechanism: The vendored C macros (inline_c.h:297, inline_o.h) hard-code an interleaved $12-$15 sequence; Sony's asmpsx SetRotMatrix (MTX_09) uses the batched $t0..$t4 form the target inlines verbatim.
+- probe: tmp/grind/func_80052B7C/s18/batch_census.py over all 1437 asm/funcs/*.s (compiled-C .s included).
+- result: 16 hits: 8 Sony LIBGTE modules (SetRotMatrix register-identical to chunk 1), func_8004A940/func_8004C404/func_8004DDB4 (scan STRONG) + func_80054440 (trapping addi), 3 granted 3AB48 cluster leaves + func_80052B7C. 0 compiled-C hits; COMPLETED-C func_800203B4 (gte_SetRotMatrix by name) is a negative control. s18/batch_census.txt.
+- verdict: CONFIRMED (evidence for the hand-written grant branch; candidate new scanner signal for the frontier, not a C lever)
+
+## [s18] KILL RE-AUDIT: the banked s6 legal macro-call chassis re-measures at the ledger floor on the current tree with zero FAKE carriers, so no instance kill measured on it is voided by chassis or FAKE drift.
+- mechanism: Instance kills are invalidated only by a changed chassis or by a FAKE carrier occupying the lever's target; candidate.c carries no FAKE construct.
+- probe: Applied candidate.c body + #include <psxsdk/inline_c.h> at src/main/3AB48.c:115 (tmp/grind/func_80052B7C/s18/apply.py); sandbox func_80052B7C --disable all --diff; tools/fake_ablate.py --func func_80052B7C --file main/3AB48 --candidate memory/grind/func_80052B7C/candidate.c; reverted.
+- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only; fake_ablate: no FAKE-annotated constructs, nothing to ablate. Identical to s6/s8/s13-s17.
+- verdict: CONFIRMED
+
+## [s18] The target's batched lw/lh $t0..$t7 -> ctc2 run (chunks 1+2) is produced in this EXE only by independently hand-written code, never by a compiled-C function.
+- mechanism: The vendored C macros (include/psxsdk/inline_c.h:297, inline_o.h) hard-code an interleaved $12-$15 load/ctc2 order; Sony's asmpsx LIBGTE SetRotMatrix (MTX_09, 0x8007EEEC) uses exactly the batched $t0..$t4 form that the target's chunk 1 reproduces register-for-register.
+- probe: tmp/grind/func_80052B7C/s18/batch_census.py over all 1437 asm/funcs/*.s (the set includes every COMPLETED-C function's .s): run of >=5 consecutive lw/lh $tN followed by >=5 ctc2 of the same registers.
+- result: 16 hits: 8 Sony LIBGTE modules (SetRotMatrix, ApplyMatrix, ApplyMatrixLV, CompMatrix, MulMatrix, MulMatrix0, MulMatrix2, SetColorMatrix), func_8004A940/func_8004C404/func_8004DDB4 (scan_hand_coded STRONG, inline_asm_canonical.txt:198/:200/:210), func_80054440 (trapping addi, :162), granted gte_SetMatrixRotTransIR/gte_SetRotMatrixClearTrans/gte_SetRotTransMatrix, and func_80052B7C. 0 compiled-C sites; COMPLETED-C func_800203B4 (gte_SetRotMatrix by name) is a negative control that does not hit.
+- verdict: CONFIRMED
