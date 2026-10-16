@@ -4797,11 +4797,9 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             cur = func_8007352C(&s);
             for (j = 0; j < 2; j++) {
                 s.x = j * 70;
-                /* FAKE: element j ^ 1 read through a selected
-                   address; var_1[j ^ 1] (both sites): score 110. */
-                if (var_1[j] > *(j ? &var_1[0] : &var_1[1])) {
+                if (var_1[j] > var_1[!j]) {
                     s.table = &D_8009B4FC;
-                } else if (var_1[j] < *(j ? &var_1[0] : &var_1[1])) {
+                } else if (var_1[j] < var_1[!j]) {
                     s.table = &D_8009B504;
                 } else {
                     s.table = &D_8009B50C;
@@ -4881,9 +4879,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         var_1[1] = (arg0 >> (i * 4 + 2)) & 3;
         s.col_r = s.col_g = s.col_b = 0x40;
         for (j = 0; j < 2; j++) {
-            /* FAKE: element j ^ 1, as above; var_1[j ^ 1] here:
-             * score 59. */
-            if (var_1[j] <= *(j ? &var_1[0] : &var_1[1])) {
+            if (var_1[j] <= var_1[!j]) {
                 if (var_1[j] != 3) {
                     s.has_color = 1;
                 } else {
