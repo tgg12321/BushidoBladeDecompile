@@ -51,10 +51,10 @@ over a 5-row table
 (`D_8009BC7C` flag 4), plays `func_8005C650` sounds, confirms or cancels a
 choice, and draws the cells with `func_8007352C`.
 
-`func_8003E2D8(arg0, arg1, arg2, arg3)` (src/main/2B344.c:1739) walks the cells
+`func_8003E2D8(arg0, arg1, arg2, arg3)` (src/main/2B344.c:1713) walks the cells
 of a 32 x 32 grid of 2000-unit squares crossed by the line from (arg0, arg1)
 to (arg2, arg3) (both offset by 0x7D00), a DDA in 4.12 fixed point, and calls
-`func_8003F388` (src/main/2B344.c:2287) for each cell inside the grid.
+`func_8003F388` (src/main/2B344.c:2257) for each cell inside the grid.
 
 ## CD and system routines once named `special_camera_*` / `marionation_camera_*`
 

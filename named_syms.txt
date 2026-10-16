@@ -511,7 +511,7 @@ D_800A3817                = 0x800A3817;  /* cursor of a three-item pad menu: up 
 D_800F116C           = 0x800F116C;  /* 0x2C-byte command block (Unk1F800000Unk00) that func_800611A4..func_80061EC0 fill before func_80060A68; D_800A3468 points at it */  /* data-wave 2026-10-08: was g_text1b_render_state */
 D_800A3468       = 0x800A3468;  /* pointer to the current command block (D_800F116C, or the scratchpad block in func_80060E38); +0x0 command word (low halfword indexes the handler dispatch; bit 0x200000 sets D_800A32BC = 0xA), +0x14 the byte that receives the handler's return */  /* data-wave 2026-10-08: was g_text1b_render_state_ptr */
 D_800A347C         = 0x800A347C;  /* = D_800A3468->unk20 (func_80060A68), the command block's three-word copy of unk0C; every consumer reads words [0..2] through it */  /* data-wave 2026-10-08: was g_text1b_render_buf_ptr */
-/* 2026-10-16: D_800F1180 retired -- D_800F116C.unk14 (include/bb2.h); the address of the D_800F1150 status byte that receives the dispatched handler's return. */
+/* 2026-10-16: D_800F1180 retired -- D_800F116C.unk14 (Unk1F800000Unk00, include/game.h); the address of the D_800F1150 status byte that receives the dispatched handler's return. */
 /* 2026-09-23: g_replay_attack_pos_x (batch 7) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 D_800F1178       = 0x800F1178;  /* D_800F116C.unk0C: the caller's s32 * argument; func_80060A68 copies [0..2] into unk20 (D_800A347C) */  /* data-wave 2026-10-08: was g_text1b_render_arg_cache */
 
