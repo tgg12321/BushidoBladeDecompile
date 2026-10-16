@@ -603,23 +603,19 @@ s32 func_80027AD8(s32 arg0, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
 }
 
 s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
-    s32 temp_a1;
     Unk80101EC8Record *temp_s4;
-    s32 temp_v1;
+    u16 state;
     s32 var_s1;
     s16 var_v0;
     s32 ret;
 
     temp_s4 = arg0->other;
     ret = 1;
-    temp_a1 = arg0->unk_6A;
-    /* FAKE: redundant mask of the u16 state code, reproduces the target's andi
-     * $v1,$a1,0xFFFF; without it score 9 */
-    temp_v1 = temp_a1 & 0xFFFF;
-    if (temp_v1 == 4) {
+    state = arg0->unk_6A;
+    if (state == 4) {
         goto ret_one;
     }
-    if (temp_v1 == 0x14) {
+    if (state == 0x14) {
         return ret;
     }
     {
@@ -635,11 +631,10 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
             s32 temp_a1_2;
             s32 temp_s5;
 
-            if (temp_v1 != 0x13) {
-                if (((u32)(temp_a1 - 0x19) >= 2U) && (temp_v1 != 2) &&
-                    (temp_v1 != 0x26) && (temp_v1 != 0x1B) &&
-                    (temp_v1 != 0x15) && (temp_v1 != 0x25) &&
-                    (temp_v1 != 0x2C) && (temp_v1 != 0xC)) {
+            if (state != 0x13) {
+                if (state != 0x19 && state != 0x1A && state != 2 &&
+                    state != 0x26 && state != 0x1B && state != 0x15 &&
+                    state != 0x25 && state != 0x2C && state != 0xC) {
                 ret_one:
                     return 1;
                 }
