@@ -36,8 +36,20 @@ executes them.
    hit, each measured at 0 hits over every compiled-C function (top-level `asm()` in a C file
    is not compiled C) — and
    S1/S2 with tightness corroboration. Hand-written originals stay asm; compiled originals are
-   decompiled. Without STRONG evidence asm stays refused, except the GTE macro classes in
-   [[inline-asm-policy]].
+   decompiled. Without STRONG evidence asm stays refused, except rule 3a and the GTE macro
+   classes in [[inline-asm-policy]].
+3a. **Hand-written-module neighbour (owner ruling 2026-10-16).** A function without a STRONG
+   tier keeps an EXISTING `inline_asm_canonical.txt` grant (3a never creates one) when ALL
+   hold: (a) in `.text` order, every function between it and its nearest STRONG function on
+   EACH side is STRONG or meets (b)-(c) itself (judged in the same batch), never compiled C
+   or an INCLUDE_ASM function without that evidence;
+   (b) its own body shows scheduling GCC 2.7.2 cannot emit, named per function: e.g. a cop2
+   op in the `jr $ra` delay slot, or a `lui`+`ori` absolute address used only as one
+   load/store base (GCC folds it into `%lo`). Hard `$t*` cop2 transfers alone do not count:
+   the vendored `inline_c.h` macros emit them from compiled C; (c) no genuine likelihood of
+   C: the body is not C-shaped, and no C or C-plus-GTE-macro-call candidate reproduces it
+   (none within endgame distance). One cheat-reviewer checks (a)-(c) per function; the row
+   gains `[re-audit <date>: hand-written module <lo>-<hi>]`.
 4. **No extension requests exist (owner ruling Q91).** A construct outside the pre-cleared
    shapes in [[no-new-park-categories]] is decided directly on [[completion-bar]] item 3:
    labelled, honest, not on item 3's refused list, existing types used and the simplest
@@ -53,8 +65,10 @@ For a function a few instructions short in honest C with its sanctioned levers e
 (usually an RA/scheduling tiebreak), the only non-C exits are two AND-gates, default refuse:
 
 - **Gate 1 — canonical asm** only with a STRONG `scan_hand_coded --single <fn>` tier (a
-  rule-3 gate-class signal). A LOW tier is dispositive: a compiler-scheduling/RA artifact is
-  ordinary GCC output, never a hand-coded signature. Passing ⇒ rule 3's grant path.
+  rule-3 gate-class signal), or rule 3a (never with an honest-C candidate within the
+  endgame distance). Otherwise a LOW tier is dispositive: a
+  compiler-scheduling/RA artifact is ordinary GCC output, never a hand-coded signature.
+  Passing ⇒ rule 3's grant path.
 - **Gate 2 — a labelled FAKE spelling** under [[completion-bar]] item 3 (Q91): honest,
   annotated with its measured reason, simplest known form. Coercions that breach items 2-4
   (pins, volatile outside its catalog, invented object models) stay refused.

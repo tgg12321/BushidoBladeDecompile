@@ -13,7 +13,7 @@ metadata:
   hand-written asm; **canonical**: islands of opcodes with no C form (GTE/cop2, BIOS vector
   jumps `j 0xA0/B0/C0`, hardware pokes). Both are COMPLETED-INLINE-ASM-CANONICAL only when the
   `canonical` gate and an authorization route allow it ([[canonical-asm-authorization-recipe]],
-  [[judge-sole-gate]] rule 3, the GTE macro calls below; listed in `inline_asm_canonical.txt`).
+  [[judge-sole-gate]] rules 3 and 3a, the GTE macro calls below; listed in `inline_asm_canonical.txt`).
 - **cheat**: anything steering GCC's allocator/scheduler or emitting GPR instructions C could
   express. INCOMPLETE: the sandbox strips it and `queue done` refuses.
 
