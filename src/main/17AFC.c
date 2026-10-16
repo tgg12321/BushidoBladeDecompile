@@ -2624,21 +2624,10 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
         obj->unkF8.vy = pos->y - obj->unk60[0]->y;
         obj->unkF8.vz = pos->z - obj->unk60[0]->z;
         vin = &obj->unkF8;
-        __asm__ volatile(
-            "addu $t4, %0, $zero\n"
-            "lwc2 $0, 0($t4)\n"
-            "lwc2 $1, 4($t4)\n"
-            "nop\n"
-            "nop\n"
-            ".word 0x4A486012"
-            : : "r"(vin) : "$12", "memory");
+        gte_ldv0(vin);
+        gte_rtv0();
         vout = &obj->unk100[0];
-        __asm__ volatile(
-            "addu $t4, %0, $zero\n"
-            "swc2 $25, 0($t4)\n"
-            "swc2 $26, 4($t4)\n"
-            "swc2 $27, 8($t4)"
-            : : "r"(vout) : "$12", "memory");
+        gte_stlvnl(vout);
     }
     {
         /* x: unk100[0].x, then x * x + y * y, then r_sq minus that, then its
@@ -2671,14 +2660,7 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
         } else {
             s32 lzcr = 0;
             if (x >= 0) {
-                __asm__ volatile(
-                    "addu $t4, %1, $zero\n"
-                    "mtc2 $t4, $30\n"
-                    "nop\n"
-                    "nop\n"
-                    "addu $t4, $sp, $zero\n"
-                    "swc2 $31, 0($t4)"
-                    : "=m"(sp_var) : "r"(x) : "$12");
+                gte_Lzc(x, &sp_var);
                 lzcr = sp_var;
             }
             {
@@ -2842,21 +2824,7 @@ s32 func_8002D780(
         obj->unkF8.vx = pos[0] - obj->unk60[0]->x;
         obj->unkF8.vy = pos[1] - obj->unk60[0]->y;
         obj->unkF8.vz = pos[2] - obj->unk60[0]->z;
-        /* gte_ApplyRotMatrix(&obj->unkF8, &obj->unk100[0]) -- gtemac.h 4.3 =
-         * inline_o.h gte_ldv0, gte_rtv0, gte_stlvnl, one statement per header
-         * line incl. its `move $12,%0` (inline_o.h class, inline-asm-policy);
-         * one departure: gte_rtv0's placeholder 0x0000013f is the post-DMPSX
-         * word 0x4A486012 (owner Q61 grant) */
-        __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
-        __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("move  $12,%0": :"r"(&obj->unk100[0]):"$12","$13","$14","$15","memory");
-        __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
-        __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
+        gte_ApplyRotMatrix(&obj->unkF8, &obj->unk100[0]);
     }
 
     {
@@ -2922,14 +2890,7 @@ s32 func_8002D780(
                  * the $a0 copy, not dist ($s1), as in func_8002D518; without
                  * it: score 4 */
                 m = dist;
-                /* gte_Lzc(m, &sp_var) -- gtemac.h :174-178: gte_ldlzc, gte_nop
-                 * x2, gte_stlzc */
-                __asm__ volatile ("move  $12,%0": :"r"(m):"$12","$13","$14","$15","memory");
-                __asm__ volatile ("mtc2  $12,$30": : :"$12","$13","$14","$15","memory");
-                __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-                __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-                __asm__ volatile ("move  $12,%0": :"r"(&sp_var):"$12","$13","$14","$15","memory");
-                __asm__ volatile ("swc2  $31,($12)": : :"$12","$13","$14","$15","memory");
+                gte_Lzc(m, &sp_var);
                 lzcr = sp_var;
             }
             {
@@ -3080,52 +3041,19 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
     obj->unkF8.vx = p0->x - obj->unk60[0]->x;
     obj->unkF8.vy = p0->y - obj->unk60[0]->y;
     obj->unkF8.vz = p0->z - obj->unk60[0]->z;
-    /* gte_ldv0(&obj->unkF8): inline_o.h 4.3 :16-20 */
-    __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
-    __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-    /* gte_rtv0(): inline_o.h 4.3 :426-430; word 0x4A486012 for the
-     * placeholder 0x0000013f */
-    __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
+    gte_ldv0(&obj->unkF8);
+    gte_rtv0();
     obj->unkF8.vx = p1->x - obj->unk60[0]->x;
     obj->unkF8.vy = p1->y - obj->unk60[0]->y;
     obj->unkF8.vz = p1->z - obj->unk60[0]->z;
-    /* gte_stlvnl(&obj->unk118[0]): inline_o.h 4.3 :904-909 */
-    __asm__ volatile ("move  $12,%0": :"r"(&obj->unk118[0]):"$12","$13","$14","$15","memory");
-    __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
-    /* gte_ldv0(&obj->unkF8): inline_o.h 4.3 :16-20 */
-    __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
-    __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-    /* gte_rtv0(): inline_o.h 4.3 :426-430; word 0x4A486012 for the
-     * placeholder 0x0000013f */
-    __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
+    gte_stlvnl(&obj->unk118[0]);
+    gte_ldv0(&obj->unkF8);
+    gte_rtv0();
     obj->unkF8.vx = p2->x - obj->unk60[0]->x;
     obj->unkF8.vy = p2->y - obj->unk60[0]->y;
     obj->unkF8.vz = p2->z - obj->unk60[0]->z;
-    /* gte_stlvnl(&obj->unk118[1]): inline_o.h 4.3 :904-909 */
-    __asm__ volatile ("move  $12,%0": :"r"(&obj->unk118[1]):"$12","$13","$14","$15","memory");
-    __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
-    /* gte_ApplyRotMatrix(&obj->unkF8, &obj->unk118[2]): gtemac.h 4.3 :354-357,
-     * i.e. gte_ldv0 / gte_rtv0 / gte_stlvnl as above */
-    __asm__ volatile ("move  $12,%0": :"r"(&obj->unkF8):"$12","$13","$14","$15","memory");
-    __asm__ volatile ("lwc2  $0,($12)": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("lwc2  $1,4($12)": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("nop   ": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile (".word 0x4A486012": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("move  $12,%0": :"r"(&obj->unk118[2]):"$12","$13","$14","$15","memory");
-    __asm__ volatile ("swc2  $25,($12)": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("swc2  $26,4($12)": : :"$12","$13","$14","$15","memory");
-    __asm__ volatile ("swc2  $27,8($12)": : :"$12","$13","$14","$15","memory");
+    gte_stlvnl(&obj->unk118[1]);
+    gte_ApplyRotMatrix(&obj->unkF8, &obj->unk118[2]);
 
     max_i = 0;
     min_i = 0;
@@ -3374,21 +3302,10 @@ s32 func_8002EA24(
     scr->unkF8.vy = pos->y - scr->unk60[0]->y;
     scr->unkF8.vz = pos->z - scr->unk60[0]->z;
     vin = &scr->unkF8;
-    __asm__ volatile(
-        "addu $t4, %0, $zero\n"
-        "lwc2 $0, 0($t4)\n"
-        "lwc2 $1, 4($t4)\n"
-        "nop\n"
-        "nop\n"
-        ".word 0x4A486012"
-        : : "r"(vin) : "$12", "memory");
+    gte_ldv0(vin);
+    gte_rtv0();
     vout = &scr->unk100[0];
-    __asm__ volatile(
-        "addu $t4, %0, $zero\n"
-        "swc2 $25, 0($t4)\n"
-        "swc2 $26, 4($t4)\n"
-        "swc2 $27, 8($t4)"
-        : : "r"(vout) : "$12", "memory");
+    gte_stlvnl(vout);
 
     {
         s32 y;
@@ -3423,14 +3340,7 @@ s32 func_8002EA24(
             if (a0_var < 0) {
                 lzcr = 0;
             } else {
-                __asm__ volatile(
-                    "addu $t4, %1, $zero\n"
-                    "mtc2 $t4, $30\n"
-                    "nop\n"
-                    "nop\n"
-                    "addu $t4, $sp, $zero\n"
-                    "swc2 $31, 0($t4)"
-                    : "=m"(sp_var) : "r"(a0_var) : "$12");
+                gte_Lzc(a0_var, &sp_var);
                 lzcr = sp_var;
             }
             {
@@ -4728,18 +4638,7 @@ loop:
                 s32 clz = 0;
                 s32 sp_tmp;
                 if ((s32)dist_sq >= 0) {
-                    /* Hand-written GTE leading-zero count (LZCS in, LZCR out),
-                     * as in math_NegNormalize3D. */
-                    __asm__ volatile(
-                        "addu   $t4, %1, $zero\n"
-                        "mtc2   $t4, $30\n"        /* LZCS <- dist_sq */
-                        "nop\n"
-                        "nop\n"
-                        "addu   $t4, $sp, $zero\n" /* &sp_tmp (at 0($sp)) */
-                        "swc2   $31, 0($t4)\n"     /* sp_tmp <- LZCR */
-                        : "=m"(sp_tmp)
-                        : "r"(dist_sq)
-                        : "$12");
+                    gte_Lzc(dist_sq, &sp_tmp);
                     clz = sp_tmp;
                 }
                 {
