@@ -7756,6 +7756,35 @@ def test_naming_keycheck_scoped_pairs() -> None:
             except ValueError:
                 staged_ok = False
         check("keycheck fully staged status row passes " + label, staged_ok)
+    # The field-count guard: a status row with too few fields, or an XY field that is not two
+    # letters, is refused rather than read.
+    for label, status_row in (
+            ("short ordinary row", "1 M. N... 100644 100644 100644 " + "1"*40 + " src/a.c"),
+            ("short rename row", "2 R. N... 100644 100644 100644 " + hexes + " src/a.c"),
+            ("three-letter XY", "1 M.. N... 100644 100644 100644 " + hexes + " src/a.c")):
+        with patch.object(nk, "git", side_effect=lambda *args, row=status_row, **kwargs:
+                          row + "\0" if args[:2] == ("--no-optional-locks", "status") else ""):
+            files = nk.ShapeTree({})
+            files._index = {}
+            try:
+                original_storage([], files)
+                field_message = ""
+            except ValueError as e:
+                field_message = str(e)
+        check("keycheck status field-count guard refuses " + label,
+              field_message == "invalid porcelain-v2 status entry")
+    # Hidden index flags are read only for checked paths and cpp inputs: a flag on an
+    # unchanged path outside both is not inspected (the docstring's scope).
+    with patch.object(nk, "git", side_effect=lambda *args, **kwargs:
+                      "h docs/unrelated.md\0" if "-v" in args else ""):
+        files = nk.ShapeTree({})
+        files._index = {}
+        try:
+            original_storage([], files)
+            unchecked_flag_ok = True
+        except ValueError:
+            unchecked_flag_ok = False
+    check("keycheck hidden flag outside the checked set is not inspected", unchecked_flag_ok)
     for path in ("asm/funcs/caf\u00e9.s", "docs/with\ttab.txt", "docs/with\nnewline.txt"):
         def nul_diff(*args, **kwargs):
             return "M\0" + path + "\0" if args[0] == "diff" else "new/\u00e9\ttab\nname\0"
@@ -10844,6 +10873,160 @@ def test_keycheck_real_git_round4() -> None:
                         check("real grep error must refuse", False)
 
 
+def test_keycheck_probe_suite() -> None:
+    """The phase-3 keycheck probes (scratch tmp/p3s0/kc_test.sh, 2026-10-07) on a fixture repo:
+    a complete global-pair wave passes; the raw wave and each single off-wave edit fail, each on
+    the edited path. Unmocked Git in an isolated temporary repository."""
+    import subprocess
+    import sys
+    import naming_keycheck as nk
+    import naming_wave as nw
+    from unittest.mock import patch
+    files = {
+        ".gitignore": "tmp/\nbuild/\n",
+        "Makefile": "CC_FLAGS := -O2 -G0\nMASPSX_FLAGS := --aspsx-version=2.34 --expand-lb\n",
+        "include/macro.inc": ".macro glabel label\n    .global \\label\n\\label:\n.endm\n",
+        "include/bios.h": "#define BIOS_A_FUNCTION(name, id) void name(void)\n",
+        "src/main/a.c": ('#include "bios.h"\n\n'
+                         "/* fixture_old: the probe target */\n"
+                         "void fixture_old(void) {\n"
+                         "    const char *s = \"probe string\";\n"
+                         "    /* FAKE: probe reason */\n"
+                         "    (void)s;\n"
+                         "}\n\n"
+                         "void caller(void) { fixture_old(); }\n"),
+        "src/main/d_1068.c": "int fixture_data;\n",
+        "tools/naming_wave.py": "# fixture tool\n",
+        ".claude/rules/completion-bar.md": "fixture rule\n",
+        "named_syms.txt": "fixture_old = 0x80011000;\nfixture_ctlbuf = 0x800F189C;\n",
+        "memory/grind/_completed/fixture_old/layer2.jsonl":
+            json.dumps({"func": "fixture_old", "verdict": "PASS"}) + "\n",
+        "memory/grind/_completed/fixture_old/notes.txt": "fixture notes\n",
+        "memory/grind/other/plan.txt": "other ledger\n",
+    }
+    scratch = Path(__file__).resolve().parent.parent / "tmp"
+    scratch.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=scratch) as td:
+        root = Path(td)
+        def run_git(*args):
+            return subprocess.run(["git", "-c", "user.name=Fixture", "-c",
+                    "user.email=fixture@example.invalid", "-c", "core.hooksPath=" + str(root / "no-hooks"), *args], cwd=root,
+                    check=True, capture_output=True, text=True).stdout.strip()
+        def write(path, text):
+            p = root / path
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(text, encoding="utf-8", newline="\n")
+        def read(path):
+            return (root / path).read_text(encoding="utf-8")
+        def commit(message):
+            run_git("add", "-A")
+            run_git("commit", "--quiet", "-m", message)
+            return run_git("rev-parse", "HEAD")
+        run_git("init", "--quiet")
+        for path, text in files.items():
+            write(path, text)
+        base = commit("fixture base")
+        # The raw wave renames code, registry and ledger but leaves the comment naming fixture_old.
+        write("src/main/a.c", read("src/main/a.c").replace("void fixture_old", "void fixture_new")
+              .replace("{ fixture_old()", "{ fixture_new()"))
+        write("named_syms.txt", read("named_syms.txt").replace("fixture_old =", "fixture_new ="))
+        ledger = "memory/grind/_completed/fixture_new"
+        run_git("mv", "memory/grind/_completed/fixture_old", ledger)
+        record, _ = nw.retarget_layer2_record(read(ledger + "/layer2.jsonl"), "fixture_old", "fixture_new")
+        write(ledger + "/layer2.jsonl", record)
+        raw = commit("fixture raw wave")
+        write("src/main/a.c", read("src/main/a.c").replace("/* fixture_old:", "/* fixture_new:"))
+        good = commit("fixture complete wave")
+        def keycheck(new, pairs="fixture_old=fixture_new"):
+            output = io.StringIO()
+            with patch.object(nk, "ROOT", root), patch.object(sys, "argv", [
+                    "naming_keycheck", "--base", base, "--new", new, "--pairs", pairs]), \
+                    contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
+                return nk.main(), output.getvalue()
+        rc, out = keycheck(good)
+        eq("keycheck probes: the complete wave passes", rc, 0)
+        rc, out = keycheck(raw)
+        check("keycheck probes: the raw wave (comment names the old name) fails",
+              rc == 1 and "FAIL src/main/a.c: an old name survives" in out)
+        rc, out = keycheck(good, "fixture_old=fixture_neX")
+        check("keycheck probes: a pair naming another new name fails", rc == 1)
+        swap = ("    /* FAKE: probe reason */\n    (void)s;\n", "    (void)s;\n    /* FAKE: probe reason */\n")
+        def edit(path, old, new):
+            return lambda: write(path, read(path).replace(old, new))
+        def append(path, text):
+            return lambda: write(path, read(path) + text)
+        probes = (
+            ("layer2 duplicate line", ledger + "/layer2.jsonl",
+             lambda: write(ledger + "/layer2.jsonl", read(ledger + "/layer2.jsonl") * 2)),
+            ("Makefile edit", "Makefile", edit("Makefile", " --expand-lb", "")),
+            ("macro.inc edit", "include/macro.inc", append("include/macro.inc", "# x\n")),
+            ("FAKE comment edit", "src/main/a.c", edit("src/main/a.c", "FAKE", "FAKX")),
+            ("FAKE comment moved", "src/main/a.c", edit("src/main/a.c", *swap)),
+            ("function-like macro made object-like", "include/bios.h",
+             edit("include/bios.h", "BIOS_A_FUNCTION(", "BIOS_A_FUNCTION (")),
+            ("file rename not in the pairs", "src/main/d_1068.c",
+             lambda: run_git("mv", "src/main/d_1068.c", "src/main/zz.c")),
+            ("string literal change", "src/main/a.c", edit("src/main/a.c", "probe string", "probe strinG")),
+            ("tool edit", "tools/naming_wave.py", append("tools/naming_wave.py", "# x\n")),
+            ("rule edit", ".claude/rules/completion-bar.md", append(".claude/rules/completion-bar.md", "x\n")),
+            ("moved ledger file edited", ledger + "/notes.txt", append(ledger + "/notes.txt", "x\n")),
+            ("other ledger names the new name", "memory/grind/other/plan.txt",
+             append("memory/grind/other/plan.txt", "fixture_new\n")),
+            ("stray new file", "src/main/new.c", lambda: write("src/main/new.c", "int x;\n")),
+            ("partial rename (old name left)", "src/main/a.c",
+             edit("src/main/a.c", "{ fixture_new()", "{ fixture_old()")),
+            ("registry line edited", "named_syms.txt", edit("named_syms.txt", "0x800F189C", "0x800F18A0")),
+            ("registry definition deleted", "named_syms.txt",
+             edit("named_syms.txt", "fixture_ctlbuf = 0x800F189C;\n", "")),
+            ("registry fake provenance suffix", "named_syms.txt",
+             edit("named_syms.txt", "fixture_ctlbuf = 0x800F189C;",
+                  "fixture_ctlbuf = 0x800F189C;  /* data-wave 2026-10-07: was fixture_ctlbuf */")),
+            # Registry shapes from the kcrev / kcrev2 attack rounds (tmp/kcrev*/attack*.sh).
+            ("registry lines reordered", "named_syms.txt",
+             lambda: write("named_syms.txt", "".join(reversed(read("named_syms.txt").splitlines(True))))),
+            ("registry line added", "named_syms.txt",
+             append("named_syms.txt", "fixture_extra = 0x800F18A0;\n")),
+            ("provenance suffix with a trailer", "named_syms.txt",
+             edit("named_syms.txt", "fixture_new = 0x80011000;",
+                  "fixture_new = 0x80011000;  /* data-wave 2026-10-07: was fixture_old */ x")),
+            ("provenance suffix naming another old name", "named_syms.txt",
+             edit("named_syms.txt", "fixture_new = 0x80011000;",
+                  "fixture_new = 0x80011000;  /* data-wave 2026-10-07: was fixture_other */")),
+        )
+        for label, path, probe in probes:
+            run_git("checkout", "--quiet", "-B", "probe", good)
+            probe()
+            rc, out = keycheck(commit("probe: " + label))
+            check("keycheck probes: " + label + " fails on " + path,
+                  rc == 1 and ("FAIL " + path + ":") in out)
+        # Control: data_wave's own provenance rewrite of the pair's line is a wave output.
+        run_git("checkout", "--quiet", "-B", "probe", good)
+        edit("named_syms.txt", "fixture_new = 0x80011000;",
+             "fixture_new = 0x80011000;  /* data-wave 2026-10-07: was fixture_old */")()
+        rc, out = keycheck(commit("probe: provenance control"))
+        eq("keycheck probes: data_wave's provenance rewrite passes", rc, 0)
+
+
+def test_keycheck_formatted_belt() -> None:
+    """naming_keycheck.formatted offers a formatter candidate only from the pinned clang-format
+    and only when format.py's token belt holds."""
+    import types
+    import naming_keycheck as nk
+    from unittest.mock import patch
+    for status, want in (("ok", "int a;\n"), ("tokens", None), ("error", None)):
+        fake = types.SimpleNamespace(_format_checked=lambda exe, path, text, s=status:
+                                     (s, "int a;\n" if s == "ok" else ""))
+        with patch.object(nk, "_FMT", (fake, "clang-format")):
+            eq("keycheck formatted candidate on format status " + status,
+               nk.formatted("src/a.c", "int  a;\n"), want)
+    with patch.object(nk, "_FMT", None), patch.object(nk.subprocess, "run",
+            return_value=nk.subprocess.CompletedProcess([], 0, "clang-format version 99.0.0\n", "")), \
+            patch.object(Path, "exists", return_value=True):
+        eq("keycheck formatted refuses another clang-format version",
+           nk.formatted("src/a.c", "int  a;\n"), None)
+        eq("keycheck formatted caches the refusal", nk._FMT, False)
+
+
 def test_data_wave_round4_edge_cases() -> None:
     files = {"named_syms.txt": "fixture_array_alias = 0x80011300;\nD_80011300 = 0x80011300; /* array detail */\n",
              "src/main/array.c": "int D_80011300[2][3] = {{0}};\n"}
@@ -10904,6 +11087,8 @@ def main() -> int:
     test_data_wave_round4_edge_cases()
     test_keycheck_pre_read_candidates()
     test_keycheck_real_git_round4()
+    test_keycheck_probe_suite()
+    test_keycheck_formatted_belt()
     test_data_wave_commented_dedupe()
     test_keycheck_lazy_candidates()
     test_data_wave_preflight_forms()

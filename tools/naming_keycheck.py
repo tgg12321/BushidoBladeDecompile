@@ -50,7 +50,8 @@ index and ignores rename config. Working diffs and untracked paths are parsed as
 records.
 Checks cover every changed row, every index-versus-HEAD difference, every base-
 versus-HEAD difference (OID/mode, additions/removals), and tracked cpp inputs.
-Hidden index flags fail, any explicit filter attribute fails, built-in clean
+Hidden index flags (assume-unchanged/skip-worktree) fail on checked paths and cpp
+inputs; flags elsewhere are not read. Any explicit filter attribute fails, built-in clean
 conversion must preserve raw bytes, and index blobs must equal raw working blobs.
 Index modes must match base modes (new regular files require 100644). Working
 executable bits are not compared; this is the portable conservative mode rule.
@@ -3244,20 +3245,25 @@ _FMT = None
 
 def formatted(path: str, text: str) -> str | None:
     """`text` as tools/format.py would land it (format guard: staged C is always formatted), or
-    None when the pinned clang-format is not installed. A rename can lengthen a line, and the
-    formatter then re-wraps or hoists a comment; the wave is checked against that output."""
+    None when the pinned clang-format is not installed (or another version is). A rename can
+    lengthen a line, and the formatter then re-wraps or hoists a comment; the wave is checked
+    against that output. The belt is format.py's own: an output whose C tokens differ from the
+    input is no candidate."""
     global _FMT
     if _FMT is None:
         import format as cfmt  # tools/format.py
         exe = CODE / ".venv/bin/clang-format"
-        _FMT = (cfmt, str(exe)) if exe.exists() else False
+        version = (subprocess.run([str(exe), "--version"], capture_output=True, text=True).stdout
+                   if exe.exists() else "")
+        _FMT = (cfmt, str(exe)) if cfmt.CLANG_FORMAT_VERSION in version else False
     if not _FMT:
         return None
     cfmt, exe = _FMT
     try:
-        return cfmt.format_text(exe, path, text)
+        status, out = cfmt._format_checked(exe, path, text)
     except Exception:
         return None
+    return out if status == "ok" else None
 
 
 def sub_comments(pat: re.Pattern, repl, text: str) -> tuple[str, int]:
@@ -3811,6 +3817,8 @@ def main() -> int:
                 fw = formatted(new_path, want)
                 if fw is not None and scoped_comments(fw, new, scoped)[0]:
                     t_want = t_new  # the wave's text, as the formatter lands it
+                elif fw is not None:
+                    t_want = ctokens(fw)  # report against the text the format guard would land
             if t_want == t_new and layer2.tokens(old) == layer2.tokens(new):
                 notes.append(f"{new_path}: comment substitutions only (read them)")
             if t_want != t_new:
