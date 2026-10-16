@@ -5039,27 +5039,26 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_62 |= 2;
     }
     if (rec->unk_86 == rec->unk_88 && rec->unk_8A != 0) {
-        if (func_8002798C(rec) == 0) {
-            goto clear_8c;
+        if (func_8002798C(rec) != 0) {
+            rec->unk_8C = rec->unk_8C != 0 ? 1 : 2;
+            rec->unk_62 |= 4;
+        } else {
+            rec->unk_8C = 0;
         }
-        goto set_8c;
-    }
-    /* FAKE (gotos): the goto-free spelling
-     * (cond ? func_8002798C(rec) != 0 : (A || B)) scores 2. FAKE: the second
-     * range test is written unk_A6 >= unk_40; spelled like the first,
-     * fold-const factors the two identical tests out of the || (score 11). */
-    if (((rec->unk_0C == 0x1D || rec->unk_0C == 0xE) &&
+    } else if (
+        ((rec->unk_0C == 0x1D || rec->unk_0C == 0xE) &&
          (rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 ||
           rec->unk_6A == 0x26) &&
          rec->unk_A1[1] < 0xFF && rec->unk_26C != 0 &&
          rec->unk_40 >= rec->unk_A5 && rec->unk_40 <= rec->unk_A6) ||
+        /* FAKE: this second range test is written unk_A6 >= unk_40;
+         * spelled like the first, fold-const factors the two identical
+         * tests out of the || (score 11). */
         (rec->unk_0A == 0xE && rec->unk_6A == 0x11 && D_800A38AE == arg0 &&
          rec->unk_40 >= rec->unk_A5 && rec->unk_A6 >= rec->unk_40)) {
-    set_8c:
         rec->unk_8C = rec->unk_8C != 0 ? 1 : 2;
         rec->unk_62 |= 4;
     } else {
-    clear_8c:
         rec->unk_8C = 0;
     }
     if (D_800A38DC != 3 || arg0 != 1 || D_800A384C == 4) {
