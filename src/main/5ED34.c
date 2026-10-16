@@ -1592,18 +1592,14 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
-    /* FAKE: dead store (overwritten by 0x180 below before any read); the
-     * shipped code stores 0x100 to both scales, then 0x180/0x120. Both
-     * removed: score 3 (dead-store-fake-exception) */
     s.scale_x = 0x100;
-    /* FAKE: same dead store as above; removed alone: score 1. */
     s.scale_y = 0x100;
     s.y = 0;
     s.x = 0;
     s.ot_idx = 0xB;
     s.header = arg1[1];
-    s.scale_x = 0x180;
-    s.scale_y = 0x120;
+    s.scale_x += 0x80;
+    s.scale_y += 0x20;
     var_5 = s.header->cells;
     s.table = var_5;
     s.ft4_out = arg0->unk_04.unk_00;
