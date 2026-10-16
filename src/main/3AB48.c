@@ -1079,12 +1079,12 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
             if (idx == 0) {
                 p->unk_3A8[var_5] = cursor;
             }
-            while (*cursor != 0) {
+            for (; *cursor != 0; cursor++) {
                 u8 *e = (u8 *)list + *cursor;
                 if (e[4] == 0x40) {
                     temp = (e[8] << 24) | (e[7] << 16) | (e[6] << 8) | e[5];
                     if (!(temp & bit)) {
-                        goto next;
+                        continue;
                     }
                 }
                 if (e[1] != 0 && e[1] != 0xFF) {
@@ -1104,8 +1104,6 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                         hi2 = temp;
                     }
                 }
-            next:
-                cursor++;
             }
             if (rec->unk_0E >= 6) {
                 lo_val = 0;
