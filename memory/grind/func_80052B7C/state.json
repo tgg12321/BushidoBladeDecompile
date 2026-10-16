@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 19,
- "current_modality": "solver",
+ "session_count": 20,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -117,23 +117,29 @@
    "floor": 19,
    "modality": "solver",
    "headline": "s19 solver: chassis re-audit holds at 19 with no FAKE carriers. classify's RA label is a blanking artifact because 5/8 target regs are literal in the gte_SetRotMatrix template (pre-RA). The RA-owned l"
+  },
+  {
+   "session": 20,
+   "floor": 19,
+   "modality": "forensics",
+   "headline": "s20 forensics: chassis re-audited at 19 with no FAKE; dumps attribute hunk 1 to the RTL-expand asm template plus local-alloc lowest-free, and hunks 2-4 to one asm_operands before an unfilled return; t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A scan_hand_coded gate-class signal for the batched lw/lh $tN -> ctc2 idiom (s18 census 16/16 hand-written) and/or s11's cop2-in-jr-slot signal lifts func_80052B7C to STRONG tier for the whole-body INCLUDE_ASM branch.",
-   "mechanism": "Both idioms occur in this EXE only in hand-written code; the vendored macro templates fix different literal registers (inline_c.h:298).",
+   "hypothesis": "A scan_hand_coded gate-class signal for the batched lw/lh $tN -> ctc2 idiom (s18) and/or the cop2-in-jr-slot signal (s11) lifts func_80052B7C to STRONG tier for the whole-body INCLUDE_ASM branch.",
+   "mechanism": "Both idioms occur in this EXE only in hand-written code; s20 dumps confirm the residual is fixed in vendored templates and reorg.",
    "next_probe": "Engine/tools-side scanner signal addition citing s18/batch_census.txt and s11/jr_census.txt (escalation or owner-cluster modality)."
   },
   {
-   "hypothesis": "The inline_asm_canonical.txt:340 whole-body grant audit resolves in favor of func_80052B7C on the cluster plus Sony-idiom evidence.",
-   "mechanism": "The 2026-10-15 20:38 ruling rejected written islands only; the whole-body row stays open pending gate-class evidence.",
-   "next_probe": "Operator/Judge review of row :340 with the s11, s18 and s19 artifacts."
+   "hypothesis": "The inline_asm_canonical.txt:340 whole-body grant audit resolves in favor of func_80052B7C on cluster plus Sony-idiom evidence.",
+   "mechanism": "The 2026-10-15 20:38 ruling rejected written islands only.",
+   "next_probe": "Operator/Judge review of row :340 with s11, s18, s19, s20 artifacts."
   },
   {
    "hypothesis": "A vendored macro whose template batches the rotation+TR loads in $8..$15 would close hunk 1 in pure macro-call C.",
-   "mechanism": "s19 shows the hunk-1 registers are template literals, so only a template change can reach them.",
-   "next_probe": "Owner ruling plus an engine: commit adding the macro (inline-asm-policy item 1); not a grind action."
+   "mechanism": "s19/s20: hunk-1 registers are template literals fixed at RTL expand.",
+   "next_probe": "Owner ruling plus an engine: commit adding the macro; not a grind action."
   }
  ],
  "judge_constraints": [
@@ -364,6 +370,14 @@
    "measured_on": "legal macro-call chassis via psxsdk/inline_c.h, two statement orders, no FAKE construct, src/main/3AB48.c, reverted",
    "predicate_cite": "",
    "result": "Both score 19, 4/4 source-level, operands lh t0,v1,v0 (baseline a0,v1,v0). No t5..t7."
+  },
+  {
+   "session": 20,
+   "statement": "Replacing inline_c.h with the inline_o.h per-instruction macro set in the same 5-statement body brings the function closer to the target than 19.",
+   "kill_scope": "class",
+   "measured_on": "legal 5-statement macro-call body with inline_o.h overriding inline_c.h, no FAKE construct, src/main/3AB48.c, reverted",
+   "predicate_cite": "include/psxsdk/inline_o.h:273",
+   "result": "score 31, 3 source-level hunks (extra moves, different ldtr shape)."
   }
  ],
  "ladder_skip": 0,

@@ -385,3 +385,45 @@ Result: KILLED (class, re-confirmation). kill_scope: class. measured_on: s6/s9/s
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: legal macro-call chassis via psxsdk/inline_c.h, two statement orders, no FAKE construct, src/main/3AB48.c, reverted
+
+## [s20] KILL RE-AUDIT (forensics): the banked legal macro-call chassis re-measures 19 on the current tree with zero FAKE carriers.
+- mechanism: dispatcher-mandated re-audit; instance kills are voided only by chassis drift or FAKE carriers.
+- probe: tmp/grind/func_80052B7C/s20/apply.py apply; sandbox --disable all --diff (s20/sandbox_diff.txt); tools/fake_ablate.py (s20/ablate.txt); revert.
+- result: score 19, 4 source-level / 0 operand-only / 0 not-scored; ablate: "no FAKE-annotated constructs found". Identical to s6/s8/s13-s19.
+- verdict: CONFIRMED
+
+## [s20] Pass attribution (dump-read) of every residual hunk on the legal chassis.
+- mechanism: instrumented cc1 -da dumps (pwsh tools/grinder/dump.ps1), function slices banked as s20/func.{lreg,greg,dbr,sched2}.
+- probe: read func.dbr / func.lreg; ran label_census, nrefs_census, loop_movables (s20/*.txt).
+- result: (a) Hunk 1 rotation registers: func.dbr:33-34, insn 15 is ONE asm_operands/v whose template text already contains literal "lw $12, 0(%0); lw $13, 4(%0); ctc2 $12,$0; ..." -- fixed at RTL expand from include/psxsdk/inline_c.h:298, no later pass touches it. (b) Hunk 1 TR operands: insns 20/24/28 are the only allocated sets; local-alloc assigns them (func.lreg:26-28 ";; Register 77 in 4 / 80 in 3 / 83 in 2" = a0,v1,v0, lowest-free order); global-alloc has no allocnos (nrefs_census: no ALLOCDBG rows for the function). (c) gte_rt is insn 33 asm_input "nop;nop;.word 0x4A480012" (matches target). (d) Hunks 2-4: insn 35 is ONE asm_operands/v with all three swc2, followed directly by jump_insn 44 return_internal with no filled slot -- reorg cannot split or take an asm insn (reorg.c:740 class kill, s7). label_census: 26 insns, 0 labels, 0 callee-saved refs; loop_movables: no loops.
+- verdict: CONFIRMED
+
+## [s20] The inline_o.h (one-asm-per-instruction) macro set, whose separate __asm__ statements might let the scheduler batch the rotation loads, reaches the target better than inline_c.h.
+- mechanism: inline_o.h splits each macro into per-instruction volatile asms, but every pointer-taking macro begins `move $12,%0` (include/psxsdk/inline_o.h:273 gte_SetRotMatrix, :335 gte_ldtr uses move $12..$14 from "r" operands), and volatile asms keep source order; target has zero move instructions.
+- probe: s20/apply_o.py (same 5-statement body, #include <psxsdk/inline_o.h>, which overrides the TU's inline_c.h definitions); sandbox --disable all --diff (s20/inline_o_variant.txt); reverted.
+- result: score 31 (worse than 19), 3 source-level hunks: extra move insns and the inline_o.h ldtr's move $12..$14 / ctc2 order.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal 5-statement macro-call body with inline_o.h replacing inline_c.h, no FAKE construct, src/main/3AB48.c, reverted
+- predicate_cite: include/psxsdk/inline_o.h:273
+
+## [s20] KILL RE-AUDIT: the banked legal macro-call chassis re-measures 19 on the current tree with zero FAKE carriers.
+- mechanism: Instance kills are voided only by chassis drift or FAKE carriers.
+- probe: s20/apply.py apply; sandbox --disable all --diff; tools/fake_ablate.py; revert.
+- result: score 19, 4 source-level / 0 operand-only / 0 not-scored; fake_ablate: nothing to ablate.
+- verdict: CONFIRMED
+
+## [s20] Dump read attributes every residual hunk to a named pass input: hunk 1 rotation regs come from the asm template at RTL expand, the TR operands from local-alloc, and hunks 2-4 from one asm_operands insn before an unfilled return.
+- mechanism: Instrumented cc1 -da dumps: func.dbr insn 15 template contains literal $12/$13/$14; func.lreg ';; Register 77 in 4 / 80 in 3 / 83 in 2'; insn 35 three-swc2 asm_operands precedes jump_insn 44 return_internal.
+- probe: pwsh tools/grinder/dump.ps1; sliced dumps into s20/func.*; label_census, nrefs_census (no ALLOCDBG rows = no global allocnos), loop_movables (no loops).
+- result: Confirmed as stated. No loop, label, callee-saved, or global-alloc input exists for a C lever to act on.
+- verdict: CONFIRMED
+
+## [s20] Replacing inline_c.h with the inline_o.h per-instruction macro set in the same 5-statement body brings the function closer to the target than 19.
+- mechanism: inline_o.h splits macros into per-instruction volatile asms, but every pointer-taking macro starts with move $12,%0 and volatile asms keep source order; the target has no move.
+- probe: s20/apply_o.py; sandbox --disable all --diff (s20/inline_o_variant.txt); reverted.
+- result: score 31, 3 source-level hunks (extra moves, different ldtr shape).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: legal 5-statement macro-call body with inline_o.h overriding inline_c.h, no FAKE construct, src/main/3AB48.c, reverted
+- predicate_cite: include/psxsdk/inline_o.h:273

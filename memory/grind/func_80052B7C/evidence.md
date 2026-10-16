@@ -420,3 +420,13 @@ question rather than resolved here.
 - [s19] classify object mode prints RA, but 5/8 differing data regs are literal in the inline_c.h:298-307 template
 
 - [s19] ldtr operand allocation: baseline {a0,v1,v0}; locals-first and ldtr-first both {t0,v1,v0}, score 19
+- [s20] Dump attribution (s20/func.dbr:33-34, func.lreg:26-28): hunk 1's rotation regs are literal in insn 15's asm template (RTL expand, inline_c.h:298); the TR operands are local-alloc lowest-free (a0,v1,v0), with no global allocnos; hunks 2-4 come from insn 35 (single asm_operands, three swc2) directly before an unfilled return_internal. No loops, no labels.
+- [s20] inline_o.h variant of the legal body measures 31 (s20/inline_o_variant.txt): every pointer-taking inline_o.h macro starts with `move $12,%0` (inline_o.h:273), and the target has no move instructions.
+
+- [s20] sandbox --disable all on legal chassis = 19 (s20/sandbox_diff.txt)
+
+- [s20] func.dbr:33-34 insn 15 asm template holds literal rotation regs
+
+- [s20] func.lreg:26-28 local-alloc gives ldtr operands a0,v1,v0
+
+- [s20] inline_o.h variant = 31 (s20/inline_o_variant.txt)

@@ -210,3 +210,7 @@ void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
  * artifact: the rotation registers are literal $12-$14 in the inline_c.h:298-307 template.
  * The allocated ldtr operands go to the lowest free regs ({t0,v1,v0} or {a0,v1,v0}).
  * See hypotheses.md s19. */
+/* s20 (forensics): chassis re-audited at 19, no FAKE. Dumps show hunk 1 is fixed at RTL
+ * expand (insn 15 template literal) plus local-alloc lowest-free for the ldtr operands, and
+ * hunks 2-4 come from insn 35 (one asm_operands) before an unfilled return. The inline_o.h
+ * macro set measures 31 (it adds move $12,%0). See hypotheses.md s20. */
