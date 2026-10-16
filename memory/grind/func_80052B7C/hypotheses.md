@@ -280,3 +280,59 @@ With H4 and H5, every structural/codegen lever for func_80052B7C is now measured
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: include/psxsdk/gtemac.h as vendored at this commit, full-file read this session, no src/ edit involved
+
+## s4 (permuter)
+
+### H6 -- decomp-permuter's standard import pipeline cannot build a target.o for this function at all
+
+Statement: `tools/decomp-permuter/import.py --keep src/main/3AB48.c asm/funcs/func_80052B7C.s`,
+run against a temporary (never committed) chassis `#include <psxsdk/inline_c.h>; void
+func_80052B7C(MATRIX *rot, SVECTOR *tr, VECTOR *v0, VECTOR *out) { gte_SetRotMatrix(rot);
+gte_ldv0(v0); gte_rt(); gte_stlvl(out); }`, exits 1 and produces no target.o. import.py's
+default `Assembler:` is plain `mips-linux-gnu-as -march=vr4300 -mabi=32` (not this project's
+aspsx-2.34-via-maspsx pipeline); an earlier identical attempt (same chassis, not saved to file)
+showed the concrete cause: `target.s:105: Error: unrecognized opcode 'mvmva 1,0,0,0,0'` -- GNU
+binutils as has no cop2 GTE opcodes, and `asm/funcs/func_80052B7C.s:22` is exactly that `mvmva`
+instruction. No `base.c`/`compile.sh` built this session routes around it: the permuter needs a
+byte-correct `target.o` to score against, and the only pipeline that assembles PsyQ GTE pseudo-
+ops is the project's own `maspsx`/`aspsx` chain (as used by `sandbox`/the real build), which
+import.py does not invoke.
+Mechanism: not a codegen question -- plain tooling incompatibility between decomp-permuter's
+generic MIPS assembler and this function's cop2 instruction content.
+Probe: `tmp/grind/func_80052B7C/s4/run_import.sh` (committed to artifacts), output in
+`tmp/grind/func_80052B7C/s4/permuter_import_attempt.txt`. Chassis applied to src/main/3AB48.c
+for the run only, reverted immediately after (asm-until-matched rule 1); no src/ change banked.
+Result: `IMPORT_EXIT=1`, `nonmatchings/func_80052B7C/` holds only `base.c`/`compile.sh`/
+`settings.toml`/`target.s` -- no `target.o`. No permuter campaign could be launched (no scorable
+workspace exists to launch one against).
+Verdict: KILLED
+Kill_scope: instance (this chassis + this import invocation; a hand-built workspace routing
+target.s through the project's own maspsx/aspsx pipeline, like `tools/mar_perm_workspace.sh`
+does for `marionation_Exec`, is UNTESTED and would be a different probe, not covered by this
+kill)
+Measured_on: src/main/3AB48.c, temporary macro-call chassis (gte_SetRotMatrix/gte_ldv0/gte_rt/
+gte_stlvl via inline_c.h, chunk-2 omitted), no FAKE construct present, reverted after measurement;
+tmp/grind/func_80052B7C/s4/permuter_import_attempt.txt
+
+### Why even a working permuter workspace would not help here (reasoned, ties to s2/s3's dump-confirmed kills)
+
+This chassis has zero free C-level variables for the permuter to mutate: four pointer params
+used exactly once each, four sequential statement-level macro calls, no loops, no scalars, no
+branches. The three unresolved chunks' divergence (chunk 1's load/store interleave order, chunk
+5's delay-slot placement, confirmed via `.dbr` RTL read in s3/H3) sits INSIDE each macro's own
+single `asm_operands` RTL node -- a C-level statement permutation around the call sites cannot
+reach into it, and splitting the macro's internal asm would itself be the already-class-killed
+written-island construct (s3/H4). PERM_LINESWAP/PERM_GENERAL reorder STATEMENTS; there is no
+statement-level reordering of `gte_SetRotMatrix(rot); gte_ldv0(v0); gte_rt(); gte_stlvl(out);`
+that is both semantically valid (gte_rt needs both loads to have happened) and capable of
+changing either macro's own internal instruction emission. This is not a new measurement (no
+tool run backs it beyond the dump already cited in s3) -- recorded as reasoning context for why
+H6's infrastructure failure does not leave useful permuter work undone.
+
+## [s4] decomp-permuter's standard import pipeline (tools/decomp-permuter/import.py) can build a scorable target.o for func_80052B7C from asm/funcs/func_80052B7C.s against a temporary macro-call chassis (gte_SetRotMatrix/gte_ldv0/gte_rt/gte_stlvl via inline_c.h, chunk 2 omitted).
+- mechanism: Plain tooling compatibility: import.py's default Assembler is mips-linux-gnu-as -march=vr4300 -mabi=32, a generic GNU MIPS assembler with no PsyQ/cop2 GTE opcode support, unlike this project's own aspsx-2.34-via-maspsx pipeline used by sandbox/build.
+- probe: Applied the temporary chassis to src/main/3AB48.c, ran tools/decomp-permuter/import.py --keep src/main/3AB48.c asm/funcs/func_80052B7C.s (tmp/grind/func_80052B7C/s4/run_import.sh), reverted src/main/3AB48.c immediately after.
+- result: FAIL: exit 1, no target.o produced. An earlier identical attempt (same chassis, output not saved) showed the proximate cause: target.s:105: Error: unrecognized opcode 'mvmva 1,0,0,0,0' -- asm/funcs/func_80052B7C.s:22 is exactly that mvmva cop2 instruction, which GNU binutils as cannot assemble. No campaign could be launched this session: there is no scorable workspace to launch one against.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/main/3AB48.c, temporary macro-call chassis (gte_SetRotMatrix/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, chunk-2 omitted), no FAKE construct present, reverted after measurement; tmp/grind/func_80052B7C/s4/permuter_import_attempt.txt

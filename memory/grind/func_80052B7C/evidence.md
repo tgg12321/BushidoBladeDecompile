@@ -184,3 +184,13 @@ question rather than resolved here.
 - [s3] Chunks 3 (gte_ldv0) and 4 (gte_rt) remain the only two chunks with a fully confirmed byte-identical macro-call landing (s2); chunks 1, 2 and 5 have no legal pure-C spelling under current rules.
 
 - [s3] The s2/s3 written-island candidate is moved to memory/grind/func_80052B7C/rejected/written-island-chunks-1-2-5.c; do not resubmit it or a respelling of the same construct -- the ruling is final per review-discipline-before-commit's body-keyed verdict rule.
+
+- [s4] import.py's logged 'Assembler:' line is 'mips-linux-gnu-as -march=vr4300 -mabi=32 "$INPUT" -o "$OUTPUT"', distinct from the project's own maspsx/aspsx-2.34 pipeline logged on the 'Compiler:' line of the same run.
+
+- [s4] nonmatchings/func_80052B7C/ after the --keep run contains base.c, compile.sh, settings.toml, target.s but no target.o; IMPORT_EXIT=1.
+
+- [s4] The ledger's s3 class kill (H4, predicate_cite .claude/rules/inline-asm-policy.md:55) already forecloses the written-island construct that would otherwise be the only way to express chunk 1/5's internal reordering in C -- so even a working permuter workspace (e.g. a hand-built one routing target.s through maspsx like tools/mar_perm_workspace.sh does for marionation_Exec) would have no legal closing form to search for beyond what s2/s3 already measured.
+
+- [s4] The macro-call chassis itself (4 pointer params used once each, 4 sequential asm-statement calls, no loops/scalars/branches) has no free C-level variable for PERM_VAR/PERM_LINESWAP/PERM_GENERAL to act on without crossing into the already-killed written-island or a semantically invalid statement reorder (gte_rt depends on both prior loads).
+
+- [s4] src/main/3AB48.c was left exactly as found (INCLUDE_ASM("asm/funcs", func_80052B7C); at line 115) at the end of this session; git status is clean.

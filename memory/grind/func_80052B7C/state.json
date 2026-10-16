@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,18 +21,24 @@
    "floor": 16,
    "modality": "structural",
    "headline": "Ruling (2026-10-15 20:38) closes the s2/s3 written-island frontier as a class refusal; full gtemac.h read confirms no composite macro reaches chunks 1/5; structural C levers for this function are now "
+  },
+  {
+   "session": 4,
+   "floor": 16,
+   "modality": "permuter",
+   "headline": "Permuter modality has no scorable target for this function: import.py's generic assembler can't build target.o (cop2 mvmva unsupported), and even a working workspace would have no C-level mutation sur"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A new vendored macro or DMPSX word covering chunk 2's TR-from-halfwords-into-CR5-7 load could let that chunk land as a call.",
-   "mechanism": "Requires an engine:-commit addition to the vendored macro set (inline-asm-policy.md item 1) plus its own owner ruling for a new DMPSX word -- not a C-source lever and not actionable inside a grind session.",
-   "next_probe": "Owner/operator decision outside the grind lane; even if granted, chunks 1 and 5 would still need separate resolution since their macros already exist and still don't reach the target bytes."
+   "hypothesis": "A hand-built permuter workspace that assembles target.s through this project's own maspsx/aspsx-2.34 pipeline (not import.py's default GNU as), analogous to tools/mar_perm_workspace.sh for marionation_Exec, could produce a real target.o and let a campaign run.",
+   "mechanism": "Infrastructure substitution only (compile.sh/settings.toml authoring), not a codegen question; even if built, the campaign's search space is the same statement set already structurally exhausted in s2/s3.",
+   "next_probe": "Only worth building if a future session has a genuinely open statement-level question for this chassis; given s3's H2/H4/H5 closures, the expected yield is 0 novel finds -- lower priority than the two non-C-source levers already on the s3 frontier (new DMPSX word for chunk 2; scan_hand_coded signal-set change for the canonical-asm grant path)."
   },
   {
-   "hypothesis": "Raising func_80052B7C's scan_hand_coded tier from LOW 0/12 to STRONG would let the existing whole-function inline_asm_canonical.txt:340 grant hold as-is (precedent: func_8004A76C's 2026-10-15 CANONICAL-ASM GRANT PATH entry).",
-   "mechanism": "scan_hand_coded.py's current signal set (S1-S12) does not fire on this function's actual shape; this is an engine/tools signal-coverage gap, not a property changeable from C source.",
-   "next_probe": "An engine:-commit teaching the scanner a new corpus-clean signal this function exhibits (if one exists) -- requires its own layer-2 review per the func_8004A76C precedent record; out of scope for a src-only grind session."
+   "hypothesis": "Raising func_80052B7C's scan_hand_coded tier from LOW 0/12 to STRONG would let the existing whole-function inline_asm_canonical.txt:340 grant hold as-is.",
+   "mechanism": "scan_hand_coded.py's current signal set (S1-S12) does not fire on this function's actual shape; engine/tools signal-coverage gap, not a property changeable from C source.",
+   "next_probe": "An engine:-commit teaching the scanner a new corpus-clean signal this function exhibits (if one exists); out of scope for a src-only grind session (unchanged from s3)."
   }
  ],
  "judge_constraints": [
@@ -71,6 +77,14 @@
    "measured_on": "include/psxsdk/gtemac.h as vendored at this commit, full-file read this session, no src/ edit involved",
    "predicate_cite": "",
    "result": "No composite names or expands to gte_SetRotMatrix/gte_SetRotMatrixClearTrans or gte_stlvl; the closest shape (gte_RotTra"
+  },
+  {
+   "session": 4,
+   "statement": "decomp-permuter's standard import pipeline (tools/decomp-permuter/import.py) can build a scorable target.o for func_80052B7C from asm/funcs/func_80052B7C.s against a temporary macro-call chassis (gte_",
+   "kill_scope": "instance",
+   "measured_on": "src/main/3AB48.c, temporary macro-call chassis (gte_SetRotMatrix/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h, chunk-2 omitted), no FAKE construct present, reverted after measurement; tmp/grind/fun",
+   "predicate_cite": "",
+   "result": "FAIL: exit 1, no target.o produced. An earlier identical attempt (same chassis, output not saved) showed the proximate c"
   }
  ],
  "ladder_skip": 0,

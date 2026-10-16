@@ -54,4 +54,18 @@
  * written island) cannot be re-landed, and no replacement reaches a lower
  * honest floor without the banned construct. src/main/3AB48.c keeps
  * INCLUDE_ASM("asm/funcs", func_80052B7C); per asm-until-matched rule 1.
+ *
+ * s4 (permuter, mandated modality): decomp-permuter's standard import path
+ * (tools/decomp-permuter/import.py) cannot even build a scorable workspace
+ * for this function -- its default assembler (plain mips-linux-gnu-as) has
+ * no cop2 GTE opcodes and fails on asm/funcs/func_80052B7C.s:22's `mvmva`.
+ * No campaign was launched (nothing to launch against). See
+ * hypotheses.md s4/H6 for the full measurement and tmp/grind/func_80052B7C/
+ * s4/ for the run log. Even a hand-built workspace (routing target.s through
+ * the project's own maspsx/aspsx pipeline, untested) would have nothing to
+ * mutate: the macro-call chassis has zero free C-level variables, and the
+ * unresolved chunks' divergence sits inside each macro's own opaque
+ * asm_operands RTL node (s3/H3, dump-confirmed), unreachable by statement
+ * reordering and not reachable without the already class-killed written-
+ * island construct (s3/H4).
  */
