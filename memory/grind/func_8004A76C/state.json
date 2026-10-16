@@ -1,8 +1,8 @@
 {
  "func": "func_8004A76C",
  "file": "main/3AB48",
- "session_count": 19,
- "current_modality": "solver",
+ "session_count": 20,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -117,23 +117,29 @@
    "floor": 37,
    "modality": "solver",
    "headline": "s19 solver: ra_solver model of the closest $a3 form is exact (7/7); inverse.py depth 3 NEGATIVE for both the full target disposition and the ABI-granted goal (mfc2 temps -> $t0-$t2); classify PRE-RA o"
+  },
+  {
+   "session": 20,
+   "floor": 37,
+   "modality": "forensics",
+   "headline": "s20 forensics: re-audit holds (32, zero FAKE); -da dumps show z1-z3 are global pseudos with only $sp conflict, closing the local-alloc frontier; CFG identical to target per label_census"
   }
  ],
  "frontier": [
   {
    "hypothesis": "The whole-body canonical-asm grant at inline_asm_canonical.txt:25 is the correct disposition.",
-   "mechanism": "Four measured not-GCC signals: s1 ABI; s6/s18/s19 mfc2 seat first-fit with no hard conflict, inverse NEGATIVE at depth 3; s7 reorg.c:2990; s9 reorg.c:2969.",
-   "next_probe": "Escalation modality: file the docs/grind/decisions.md disposition citing s1/s6/s7/s9/s18/s19 and inline_asm_canonical.txt:25."
+   "mechanism": "Four measured not-GCC signals (s1 ABI, s6/s18/s19/s20 seats, s7 reorg.c:2990, s9 reorg.c:2969).",
+   "next_probe": "Escalation modality: file the docs/grind/decisions.md disposition citing s1/s6/s7/s9/s18/s19/s20."
   },
   {
-   "hypothesis": "A deeper inverse search (depth 4+, wider refs bounds) or a model outside global.c (local-alloc suggestion pass) reaches the z->$t0-$t2 seats.",
-   "mechanism": "inverse.py negative is bounded at depth 3. z1-z3 span blocks, so they are global-alloc pseudos and the local suggestion pass is not expected to apply.",
+   "hypothesis": "A deeper inverse search (depth 4+) finds a global.c input vector giving z1-z3 $t0-$t2.",
+   "mechanism": "s19 inverse.py negative bounded at depth 3; s20 shows conflicts are $sp only, so depth 4 would need two new hard-reg conflicts.",
    "next_probe": "inverse.py global s19/a3.model.json --depth 4 with the ABI-granted goal."
   },
   {
-   "hypothesis": "Pinning gte_rtpt/ldv3c/stsxy3c in engine/gtemacro.py would let the sandbox score the GTE body.",
+   "hypothesis": "Pinning gte_rtpt/ldv3c/stsxy3c in engine/gtemacro.py lets the sandbox score the GTE body.",
    "mechanism": "engine/gtemacro.py:82 PINNED table + :472 strip loop.",
-   "next_probe": "Operator engine commit, then re-measure with --diff and re-run classify."
+   "next_probe": "Operator engine commit, then re-measure with --diff."
   }
  ],
  "judge_constraints": [],
@@ -442,6 +448,30 @@
    "measured_on": "a3.model.json from the raw cc1 of rejected/psyq-rtpt-pair-reorg-slot-residual.c ($a3 chassis, no FAKE construct), global backend, depth 3, refs +12/-6, livelen +/-2/4/8",
    "predicate_cite": "",
    "result": "NEGATIVE for both goals over 196/207 atoms at depth 3. 28/21 preference atoms foreclosed because $t0-$t2/$s0 never appea"
+  },
+  {
+   "session": 20,
+   "statement": "Kill re-audit: rejected/psyq-rtpt-pair-reorg-slot-residual.c has drifted on the current chassis or carried a FAKE carrier that voids its kill.",
+   "kill_scope": "instance",
+   "measured_on": "rejected/psyq-rtpt-pair-reorg-slot-residual.c at HEAD 200525367, $a3 vertex-pointer chassis, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Zero FAKE constructs; score 32, 37 vs 16 insns, 5/5 source-level hunks, identical to s9-s19. Kill stands."
+  },
+  {
+   "session": 20,
+   "statement": "The mfc2 temps z1-z3 of the closest form are block-local pseudos, so local-alloc rather than global.c first-fit decides their seats and a local-alloc input shape could reach $t0-$t2.",
+   "kill_scope": "instance",
+   "measured_on": "rejected/psyq-rtpt-pair-reorg-slot-residual.c compiled standalone with tools/gcc-2.7.2/build/cc1 -da, $a3 chassis, PsyQ gte_rtpt pair, no FAKE construct",
+   "predicate_cite": "",
+   "result": "Pseudos 76-78 are live at the start of basic blocks 1 and 3 (global pseudos); greg conflicts are the other pseudos plus "
+  },
+  {
+   "session": 20,
+   "statement": "The closest form's CFG differs from the target in label/predecessor structure.",
+   "kill_scope": "instance",
+   "measured_on": "s20/p.s raw cc1 output of rejected/psyq-rtpt-pair-reorg-slot-residual.c, no FAKE construct",
+   "predicate_cite": "",
+   "result": "3 vs 3 labels, predecessor multiset [1,1,2] vs [1,1,2] in identical program order. Only diffs: $s0 refs 16 vs 0 (ABI) an"
   }
  ],
  "ladder_skip": 0,

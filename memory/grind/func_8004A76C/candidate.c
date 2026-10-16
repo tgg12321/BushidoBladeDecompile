@@ -122,3 +122,10 @@
  * be preferred. classify on the sandbox objects reports PRE-RA only because of the GTE strip.
  * The stub stays.
  */
+/*
+ * s20 (forensics): re-audit holds (32, 5/5 source-level, zero FAKE). Raw -da dumps of the closest
+ * form show z1-z3 are global pseudos (live across blocks 1/3) with only $sp as hard conflict, so
+ * local-alloc is not the deciding pass and global.c first-fit seats them $v0/$v1/$t0. label_census:
+ * CFG identical to target. Residual stays ABI + seats + reorg slots; canonical grant
+ * inline_asm_canonical.txt:25 stands. The stub stays.
+ */

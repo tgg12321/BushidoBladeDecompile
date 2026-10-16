@@ -394,3 +394,17 @@
 - [s19] The sched solver does not apply: the addiu-a1 placement and both delay slots come from reorg.c (s7/s9 class kills), downstream of the sched model.
 
 - [s19] The function is already listed at inline_asm_canonical.txt:25 (custom $s0 ABI).
+
+- [s20] (forensics) Re-audit: psyq-rtpt-pair-reorg-slot-residual.c = 32, 5/5 source-level, zero FAKE (s20/sandbox_reaudit.txt, s20/ablate_reaudit.txt).
+- [s20] Dumps of the closest form (s20/p.i.lreg, p.i.greg): z1-z3 (pseudos 76-78) are live at the start of blocks 1 and 3 -> global pseudos; local-alloc does not decide them. greg conflicts for 76-78 = pseudos + $sp only, no preferences; dispositions 76->$2 77->$3 78->$8. The s19 frontier "local-alloc suggestion pass" is closed by dump read.
+- [s20] label_census (s20/label_census.txt): CFG identical to target (3 labels, preds [1,2,1] in order). Diffs are only $s0 refs 16 vs 0 (ABI) and the jr-slot fill. Residual = ABI + mfc2 seats + reorg slots, as s18/s19.
+
+- [s20] Re-audit: closest form scores 32, 5/5 source-level, zero FAKE (tmp/grind/func_8004A76C/s20/sandbox_reaudit.txt).
+
+- [s20] z1-z3 (pseudos 76-78) are global pseudos: live at start of BB1 and BB3; conflicts only pseudos + $sp; seats $2/$3/$8 by global first-fit (s20/p.i.lreg, s20/p.i.greg).
+
+- [s20] label_census: CFG identical to target; residual is $s0 ABI + mfc2 seats + reorg delay slots, consistent with s18/s19.
+
+- [s20] canonical gate reports whole-function canonical-asm grant (inline_asm_canonical.txt:25).
+
+- [s20] tools/grinder/dump.ps1 fails for subdirectory TUs (FileNotFoundError tmp/grind/func_8004A76C/dumps/main/3AB48.c); dumps produced via s20/cc.sh instead.

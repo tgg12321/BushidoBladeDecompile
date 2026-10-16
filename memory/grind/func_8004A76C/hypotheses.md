@@ -415,3 +415,50 @@ form and re-confirm the structural-axis exhaustion finding of s13 holds unchange
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: a3.model.json from the raw cc1 of rejected/psyq-rtpt-pair-reorg-slot-residual.c ($a3 chassis, no FAKE construct), global backend, depth 3, refs +12/-6, livelen +/-2/4/8
+
+## [s20] (forensics) Kill re-audit: rejected/psyq-rtpt-pair-reorg-slot-residual.c has drifted on the current chassis or carried a FAKE carrier that voids its kill.
+- mechanism: Mandated re-audit (floor flat 3+ sessions).
+- probe: tools/fake_ablate.py on the form (tmp/grind/func_8004A76C/s20/ablate_reaudit.txt); sandbox func_8004A76C --disable all --diff --candidate <form> (s20/sandbox_reaudit.txt).
+- result: Zero FAKE constructs. Score 32, target 37 vs ours 16 insns, 5 hunks all source-level, 0 operand-only, 0 not-scored. Identical to s9/s11/s13/s17/s18/s19. Kill stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c at HEAD 200525367, $a3 vertex-pointer chassis, no FAKE construct
+
+## [s20] (forensics) The mfc2 temps z1-z3 of the closest form are block-local pseudos, so local-alloc's qty/suggestion pass (not global.c first-fit) decides their seats and a local-alloc input shape could reach $t0-$t2.
+- mechanism: Frontier item 2 from s19 (local-alloc outside the global.c model).
+- probe: instrumented port cc1 -O2 -da on the form standalone (tmp/grind/func_8004A76C/s20/cc.sh p; dumps s20/p.i.lreg, p.i.greg, p.s).
+- result: p.i.lreg: pseudos 76/77/78 (z1-z3) are "Registers live at start" of basic blocks 1 and 3 (and 76-78 live into the exit block), each used 3 times across 12/13/14 insns, dying in 2 places -- they span blocks, so local-alloc leaves them to global-alloc. p.i.greg: 76/77/78 conflicts = {72..78, 29} only (no hard reg but $sp); dispositions 72->$4 73->$5 74->$6 75->$7 76->$2 77->$3 78->$8. No preference recorded for 76-78. First-fit therefore lands z1/z2 on $v0/$v1; reaching target $t0/$t1/$t2 needs hard regs 2 and 3 (and 8, 9 for z2/z3 offsets) live across the mfc2->sh span, and no source-level value in this function (no call, no return value, no other live temp) occupies them. local-alloc is not the deciding pass for these pseudos.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c compiled standalone by tools/gcc-2.7.2/build/cc1 -da ($a3 vertex-pointer chassis, PsyQ gte_rtpt pair, no FAKE construct)
+
+## [s20] (forensics) label_census: the closest form's CFG differs from the target in block/predecessor structure.
+- probe: tools/label_census.py --func func_8004A76C --build tmp/grind/func_8004A76C/s20/p.s (s20/label_census.txt).
+- result: Label count 3 vs 3, predecessor multiset [1,1,2] vs [1,1,2] in identical program order (loop head j-only, mid fallthrough+j, exit beqz-only). CFG matches. Remaining diffs: $s0 refs target 16 vs build 0 (the s1 ABI fact: v in $a3), insn count 39 vs 36 (2 rtpt emitted as .word not counted + jr-slot nop vs filled `sh $8,4($6)`, the s9 reorg.c:2969 fact). Structure is not the residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s20/p.s raw cc1 output of rejected/psyq-rtpt-pair-reorg-slot-residual.c, no FAKE construct
+
+## [s20] Kill re-audit: rejected/psyq-rtpt-pair-reorg-slot-residual.c has drifted on the current chassis or carried a FAKE carrier that voids its kill.
+- mechanism: Mandated re-audit, floor flat 3+ sessions.
+- probe: fake_ablate.py + sandbox --disable all --diff --candidate on the form.
+- result: Zero FAKE constructs; score 32, 37 vs 16 insns, 5/5 source-level hunks, identical to s9-s19. Kill stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c at HEAD 200525367, $a3 vertex-pointer chassis, no FAKE construct
+
+## [s20] The mfc2 temps z1-z3 of the closest form are block-local pseudos, so local-alloc rather than global.c first-fit decides their seats and a local-alloc input shape could reach $t0-$t2.
+- mechanism: s19 frontier item 2 (local-alloc suggestion pass outside the global.c model).
+- probe: Port cc1 -O2 -da on the form standalone; read p.i.lreg / p.i.greg.
+- result: Pseudos 76-78 are live at the start of basic blocks 1 and 3 (global pseudos); greg conflicts are the other pseudos plus $sp only, no preferences; dispositions z1->$2 z2->$3 z3->$8. local-alloc does not decide them; reaching $8-$10 needs $2/$3 live across the mfc2->sh span and nothing in the function occupies them.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/psyq-rtpt-pair-reorg-slot-residual.c compiled standalone with tools/gcc-2.7.2/build/cc1 -da, $a3 chassis, PsyQ gte_rtpt pair, no FAKE construct
+
+## [s20] The closest form's CFG differs from the target in label/predecessor structure.
+- mechanism: label_census branch-target / predecessor comparison.
+- probe: tools/label_census.py --func func_8004A76C --build tmp/grind/func_8004A76C/s20/p.s
+- result: 3 vs 3 labels, predecessor multiset [1,1,2] vs [1,1,2] in identical program order. Only diffs: $s0 refs 16 vs 0 (ABI) and insn count 39 vs 36 (rtpt .word not counted, jr slot filled by sh vs target nop).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s20/p.s raw cc1 output of rejected/psyq-rtpt-pair-reorg-slot-residual.c, no FAKE construct
