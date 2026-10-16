@@ -1279,19 +1279,13 @@ extern SVECTOR D_800F1000[][10];
  * full, the counter wraps through 10..19 and slots are overwritten in
  * rotation. */
 u8 func_80063BD0(s32 idx) {
-    /* FAKE: named intermediate - reading the D_800A3454[idx] word before
-     * `1 << i` hoists its address ahead of the constant 1; read in the test or
-     * after mask: score 6 */
-    s32 bits;
     s32 mask;
     s32 i;
 
     if (D_800A344C[idx] < 10) {
         D_800A344C[idx]++;
         for (i = 0; i < D_800A344C[idx]; i++) {
-            bits = D_800A3454[idx];
-            mask = 1 << i;
-            if (!(bits & mask)) {
+            if (!(D_800A3454[idx] & (mask = 1 << i))) {
                 D_800A3454[idx] |= mask;
                 D_800F1000[idx][i].vy = D_800A3478[1];
                 D_800F1000[idx][i].vx = D_800F1000[idx][i].vz = 0;
