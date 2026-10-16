@@ -212,14 +212,12 @@ after_select:
     }
 
     {
-        /* FAKE: var_5 / var_6 computed ahead of the unk_28 store; computed in
-         * the calls they move below it and the s-registers re-seat: score 72 */
-        s32 *var_5 = (s32 *)((s32)var_0 + (((u32)var_0[1] >> 2) << 2));
-        s32 *var_6;
-        var_6 = (s32 *)((s32)var_0 + (((u32)var_0[4] >> 2) << 2));
+        s32 *block_1 = (s32 *)((s32)var_0 + (((u32)var_0[1] >> 2) << 2));
+        s32 *block_4;
+        block_4 = (s32 *)((s32)var_0 + (((u32)var_0[4] >> 2) << 2));
         a0->unk_28 = (s32)var_0 + (((u32)var_0[3] >> 2) << 2);
-        func_80044010(var_5, a0->unk_14);
-        func_80044010(var_6, a0->unk_16);
+        func_80044010(block_1, a0->unk_14);
+        func_80044010(block_4, a0->unk_16);
     }
 
     {

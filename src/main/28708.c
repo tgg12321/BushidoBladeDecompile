@@ -1456,10 +1456,8 @@ void func_8003993C(void) {
     if (D_800A3782 != 0) {
         temp = 0x77 - D_800A37D0;
     } else {
-        /* FAKE: named intermediate keeps the counter + 1 computed first
-         * (fold reassociates it unnamed: score 2) (Ruling 1) */
-        s32 next = D_800A37D0 + 1;
-        temp = D_800A36F8 - next;
+        s32 next_count = D_800A37D0 + 1;
+        temp = D_800A36F8 - next_count;
     }
     s = D_800F68E0;
     for (i = 0; i < 0xB4; i++, s++) {
