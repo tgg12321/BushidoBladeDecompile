@@ -241,3 +241,43 @@ content either.
 - [s4] ENUMERATION: 16 spellings, best 4, 16 at the floor -- full histogram and per-variant scores in tmp/grind/func_80052C10/s4/sweep_output.json.
 
 - [s4] The zero-hit sweep covers declaration axis (named/inlined pointer and value), ordering axis (p-before-val / val-before-p), address representation (literal vs named local), value representation (0 / (u32)0 / 0u), cast parenthesization, volatile-vs-vu32 typedef spelling, hex literal case, const-qualified pointer, and an explicit trailing return -- the full syntactic spelling space reachable from this one-statement chassis without changing its semantics.
+
+## s5 (synthesis) — trailing double-nop census: the tail occurs only in Sony asmpsx modules
+
+`tmp/grind/func_80052C10/s5/dnop.py` scans all 1437 `asm/funcs/*.s` for a body whose last three insns
+are `jr $ra; nop; nop`. Output (`tmp/grind/func_80052C10/s5/double_nop_funcs.txt`): exactly 11
+functions — LoadAverageCol, Lzc, MulMatrix, MulMatrix0, MulMatrix2, ReadGeomScreen, RotMatrix,
+RotMatrixZYX, SetGeomScreen, _remove_ChgclrPAD, and func_80052C10. Every one of the other 10 has a
+canonical-asm row in `inline_asm_canonical.txt` tagged "[re-audit 2026-10-15: PsyQ 4.0 ... built by
+asmpsx]" (LIBGTE MSC06/SMP_00/MTX_03/REG09/REG13/FGO_01, LIBAPI CHCLRPAD). No compiled-C function
+in the binary ends with that tail. GCC 2.7.2 emits nothing after a function's final `jr $ra` delay
+slot and aligns functions with `.align 2`, and maspsx inserts nops only for load/mult hazards inside
+a body. So the second nop is not something GCC can emit inside this function's span. The rule's
+representation for a nop trailing a canonical asm function with no module evidence is that
+function's own `asm/funcs/*.s` (`.claude/rules/rodata-object-alignment.md:63`).
+
+## s5 — neighbourhood: func_80052C10 sits inside a contiguous hand-asm run
+
+In `src/main/3AB48.c:114-122` the run func_80052B7C (LIBGTE matrix-vector leaf, ctc2/mvmva),
+gte_ReadFarColor (cfc2), **func_80052C10**, func_80052C28 (trapping `sub` + `addi`, which GCC 2.7.2
+never emits for C int arithmetic), func_80052C4C (trapping `sub`) is all canonical asm. func_80052C10
+starts on a 16-byte boundary (0x80052C10) and abuts func_80052C28 with no gap.
+
+## s5 — block-local pressure chassis does not reach $t9 either (s4 frontier item 2)
+
+The s4 frontier asked whether pressure from short-lived temporaries in a single block (local-alloc
+rather than global.c) could reach $t9 without $s0-$s7 saves. Chassis: N `u32 aK = *(vu32
+*)0x1F800{4K}` loads, then `*(vu32 *)0x1F800400 = 0;`, then N stores of the aK. Measured with `sandbox
+--disable all --diff --candidate` (files `tmp/grind/func_80052C10/s5/blk{14,22,24}.c` +
+`_diff.txt`). N=14: score 116, 119 insns, the 0x400 address goes in $s0 with a stack frame. N=22:
+score 212, 214 insns, the address goes in $a1. N=24: score 238, 240 insns, the address goes in $v1.
+GCC spills the excess values to the stack instead of climbing to $t8/$t9. On this chassis the
+address never takes $t9, and every N that adds pressure also adds a frame.
+
+## s5 — kill re-audit
+
+`tools/fake_ablate.py` on candidate.c: "No FAKE-annotated constructs found ... nothing to ablate"
+(`tmp/grind/func_80052C10/s5/fake_ablate.txt`). None of the six banked instance kills was measured
+with a FAKE carrier, and all were measured on the same single-store chassis or on diagnostic
+pressure chassis. Nothing is void. The baseline re-measured at score 4 (operand-only $t9/$v0 seat +
+source-level trailing nop): `tmp/grind/func_80052C10/s5/baseline_diff.txt`.

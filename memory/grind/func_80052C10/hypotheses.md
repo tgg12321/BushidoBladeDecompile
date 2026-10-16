@@ -205,3 +205,34 @@ with no calls — untested), but it meaningfully narrows the frontier.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: 16 syntactic spellings of the single-statement MMIO-store body (declaration/order/address/cast/value/trailing-statement axes), no FAKE construct, no register pin, tools/sweep_variants.py this session
+
+## s5 (synthesis) — merged picture and frontier reset
+
+**CONFIRMED:** "The target's trailing `jr $ra; nop; nop` tail is a hand-assembled signature in this
+binary." In a census of all 1437 functions, 11 have the tail, and the other 10 are Sony
+asmpsx-built modules (evidence.md s5). That settles the s1-s4 frontier item "trailing double-nop
+unexplained": no C lever can produce the word inside the function span. Its representation is the
+function's own .s file (`.claude/rules/rodata-object-alignment.md:63`).
+
+**KILLED (instance):** "Block-local short-lived pressure (N volatile loads live across the store, a
+single basic block) puts the 0x1F800400 address pseudo in $t9 without a frame." Measured at N=14/22/24:
+the address went to $s0/$a1/$v1, with a stack frame and spills at each N (scores 116/212/238).
+Rejected form: rejected/blocklocal-pressure-22-no-t9.c.
+
+**Synthesis.** Four independent findings point the same way. (1) The $t9 seat needs about 22
+competing live values in global.c, which forces an $s0-$s7 frame (s2), and block-local pressure
+spills instead of reaching $t9 (s5). (2) The double-nop tail occurs only in asmpsx modules (s5).
+(3) The function sits inside a contiguous run of hand-asm neighbours, including trapping `sub`/`addi`
+in func_80052C28 (s1, s5). (4) 85k permuter iterations and a 16-spelling sweep found nothing (s3, s4).
+Against that, scan_hand_coded is LOW/0, but it has no trailing-nop or register-seat detector. The
+2026-06-07 grant's stated reason ("combine.c always folds") is wrong for the volatile reading (s1).
+The canonical-asm reading still stands, but on different grounds. The next step is a ruling on the
+re-audit, not another C probe.
+
+Frontier for s6:
+1. Ruling on the re-audit: keep the canonical-asm row and rewrite its reason to the s5 evidence, or
+   name a C shape still to try.
+2. If C work continues: the only untried idea is a body whose original surrounding C (inlined into
+   a caller?) explains both the $t9 seat and the extra word. No caller evidence supports it (s1).
+3. Teach scan_hand_coded a "jr;nop;nop tail" signal. That is tools work, outside the Grinder surface,
+   and is noted for the operator.

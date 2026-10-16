@@ -46,7 +46,9 @@
    "next_probe": "If the next session's hand-written alternate-pressure-chassis sweep (frontier item 2) also fails, that is four independent methodologies (hand analysis, two permuter chassis, exhaustive spelling enumeration) agreeing -- stronger basis for a ruling-request, though still not conclusive since frontier item 2's specific shape remains untested."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "No canonical-asm keep or grant for func_80052C10 without a gate-class STRONG scan_hand_coded hit (adding a new signal class needs owner approval, so it is not a grind lever). Next C shape: test the trailing nop as a TU boundary, with func_80052C10 ending its own object at 0x80052C24 and the 8-aligned next object starting at 0x80052C28. Measure it in a scratch build. Landing it needs bb2.ld/TU-split surface, so file an integration-handoff with the measurements. Separately, keep hunting the $t9 seat with a structurally different, frame-free chassis. Otherwise the function stays INCLUDE_ASM in the worklist."
+ ],
  "banned_constructs": [],
  "kills": [
   {

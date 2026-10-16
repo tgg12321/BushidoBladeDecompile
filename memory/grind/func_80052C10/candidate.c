@@ -6,6 +6,8 @@
  * the reg-seat anomaly (target picks the highest-numbered scratch reg $t9,
  * contrary to MIPS gcc-2.7.2's lowest-first allocation order) and the
  * scan_hand_coded LOW/0 finding that argues against this being hand asm.
+ * s5: the trailing nop is the asmpsx-module signature (only 11 functions in the
+ * binary end jr;nop;nop, and the other 10 are Sony asm modules); see evidence.md s5.
  */
 void func_80052C10(void)
 {

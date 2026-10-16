@@ -1,0 +1,49 @@
+/* REJECTED s5: block-local (local-alloc) pressure chassis, N=22 volatile loads held live across the 0x1F800400 store. Score 212 (214 insns, frame + spills); the 0x400 address lands in $a1 (N=22), $v1 (N=24), $s0 (N=14), never $t9. Diagnostic only. */
+void func_80052C10(void)
+{
+    u32 a0 = *(vu32 *)0x1F800000;
+    u32 a1 = *(vu32 *)0x1F800004;
+    u32 a2 = *(vu32 *)0x1F800008;
+    u32 a3 = *(vu32 *)0x1F80000C;
+    u32 a4 = *(vu32 *)0x1F800010;
+    u32 a5 = *(vu32 *)0x1F800014;
+    u32 a6 = *(vu32 *)0x1F800018;
+    u32 a7 = *(vu32 *)0x1F80001C;
+    u32 a8 = *(vu32 *)0x1F800020;
+    u32 a9 = *(vu32 *)0x1F800024;
+    u32 a10 = *(vu32 *)0x1F800028;
+    u32 a11 = *(vu32 *)0x1F80002C;
+    u32 a12 = *(vu32 *)0x1F800030;
+    u32 a13 = *(vu32 *)0x1F800034;
+    u32 a14 = *(vu32 *)0x1F800038;
+    u32 a15 = *(vu32 *)0x1F80003C;
+    u32 a16 = *(vu32 *)0x1F800040;
+    u32 a17 = *(vu32 *)0x1F800044;
+    u32 a18 = *(vu32 *)0x1F800048;
+    u32 a19 = *(vu32 *)0x1F80004C;
+    u32 a20 = *(vu32 *)0x1F800050;
+    u32 a21 = *(vu32 *)0x1F800054;
+    *(vu32 *)0x1F800400 = 0;
+    *(vu32 *)0x1F800200 = a0;
+    *(vu32 *)0x1F800204 = a1;
+    *(vu32 *)0x1F800208 = a2;
+    *(vu32 *)0x1F80020C = a3;
+    *(vu32 *)0x1F800210 = a4;
+    *(vu32 *)0x1F800214 = a5;
+    *(vu32 *)0x1F800218 = a6;
+    *(vu32 *)0x1F80021C = a7;
+    *(vu32 *)0x1F800220 = a8;
+    *(vu32 *)0x1F800224 = a9;
+    *(vu32 *)0x1F800228 = a10;
+    *(vu32 *)0x1F80022C = a11;
+    *(vu32 *)0x1F800230 = a12;
+    *(vu32 *)0x1F800234 = a13;
+    *(vu32 *)0x1F800238 = a14;
+    *(vu32 *)0x1F80023C = a15;
+    *(vu32 *)0x1F800240 = a16;
+    *(vu32 *)0x1F800244 = a17;
+    *(vu32 *)0x1F800248 = a18;
+    *(vu32 *)0x1F80024C = a19;
+    *(vu32 *)0x1F800250 = a20;
+    *(vu32 *)0x1F800254 = a21;
+}
