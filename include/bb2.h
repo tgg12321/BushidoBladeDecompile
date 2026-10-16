@@ -770,6 +770,9 @@ extern void func_800421A4(void);
 extern void func_800421C8(s32);
 extern void func_80042E90(void);
 extern void func_800432A0(s16, s16, s16, s16, s32);
+extern void func_80043398(s16, s16, s16, s16, s16);
+extern s16 gpu_OffsetTPage(s16, s16, s16);
+extern s16 gpu_OffsetClut(s16, s16, s32);
 extern void func_80044010(s32 *, s16);
 extern void func_80044098(s16);
 /* No prototype: defined void (s32, s32), but func_800466C0 calls it as
@@ -824,6 +827,7 @@ extern s32 func_80046E7C(void);
 extern void func_80046EA0(s32);
 extern void func_80046F24(void);
 extern void func_80047EE8(s32, s32);
+extern void func_80047FBC(s32, s32, s16, s16);
 extern void func_800480C0(s32, s32, s16, s16, s16, s16);
 extern s32 func_800486FC(void);
 extern void math_GrayscaleRgb555(u16 *, s32, u16 *);
