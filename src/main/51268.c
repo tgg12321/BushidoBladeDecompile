@@ -820,9 +820,6 @@ end:
    emit one textured POLY_FT4 billboard and link it into the OT at its depth. */
 void func_800620B8(s16 *arg0, s32 *arg1) {
     extern s32 D_800A32B8;
-    /* one table of 12 records: [0..5] / [6..9] the two sprite sets, [10] /
-     * [11] their D_8009BD24.unk20_0 CLUT substitutes */
-    extern TexRec D_8009BA00[12];
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
     extern s32 rand(void);

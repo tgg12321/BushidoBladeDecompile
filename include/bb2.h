@@ -527,6 +527,9 @@ extern u8 D_8008E908[][5];
 extern u8 D_8008E914[][8];
 extern s32 D_8008EA00[][4];
 extern u8 D_8008EC24[][5];
+/* one table of 12 records: [0..5] / [6..9] the two sprite sets, [10] / [11]
+ * their D_8009BD24.unk20_0 CLUT substitutes (func_800620B8) */
+extern TexRec D_8009BA00[12];
 extern u8 D_8009BA60[];
 extern Unk8009BD24Block D_8009BD24;
 extern s32 D_800A3244;
@@ -555,9 +558,6 @@ extern u8 D_800A9D10;
 extern s16 D_800F0BCC[];
 extern s16 D_800F0BEC[];
 extern s32 D_800F10D0[];
-extern s32 D_800F10EC;
-extern s32 D_800F10F0;
-extern s32 D_800F1138;
 /* A 16-byte vector: thirteen functions store x / y / z; func_80061064 passes
  * it to func_80041E10, which copies all 16 bytes to D_800A9B28. */
 extern VECTOR D_800F1140;
