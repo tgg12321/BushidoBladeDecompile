@@ -269,81 +269,56 @@ after_if:
 }
 
 void func_80041BF4(s32 a0, s32 a1, s32 a2) {
-    Unk80045878Obj *var_0;
+    Unk80045878Obj *obj;
     s32 r;
     s32 g;
     s32 b;
-    s32 var_4;
+    s32 k;
     s32 xoff;
     s32 yoff;
     s16 *tbl;
     s32 idx;
-    s32 x;
-    /* FAKE: constant holder for the trailing `== 1` test: a literal is
-       rematerialized in $v1, the live local gets $t0 as in the target;
-       without it: score 12 (named-local-fake-exception) */
-    int one;
-    /* FAKE: frame layout: rect[0] is the live LoadImage RECT, rect[1] an
-       unwritten tail for the 88-byte frame (one RECT gives 80; any 10-16
-       byte size matches); without it: score 22 (dead-vars-local-array
-       oversized-locals carve-out) */
-    RECT rect[2];
-    var_0 = func_8004153C(1);
-    if (var_0 == 0) {
+    /* FAKE: constant holder for the trailing `== 1` test; with the literal
+     * the 1 lands in $v1, not the target's $t0: score 2
+     * (named-local-fake-exception) */
+    s32 one = 1;
+    RECT rect;
+
+    obj = func_8004153C(1);
+    if (obj == 0) {
         return;
     }
-    if ((var_0->unk_08) != D_800A9A20) {
+    if (obj->unk_08 != D_800A9A20) {
         return;
     }
-    if (D_80094E08[var_0->unk_08] == 0xFF) {
+    if (D_80094E08[obj->unk_08] == 0xFF) {
         return;
     }
     r = (a0 << 12) / 255;
-    one = 1;
     g = (a1 << 12) / 255;
     b = (a2 << 12) / 255;
     if (func_800486FC()) {
-        b = math_Grayscale3(r, g, b);
-        g = b;
-        r = b;
+        r = g = b = math_Grayscale3(r, g, b);
     }
-    var_4 = 0;
-oloop: {
-    if (var_4 == 0) {
-        xoff = -0x140;
-        yoff = 0xF0;
-    } else {
-        /* FAKE: do-while(0) raises xoff/yoff's loop-depth-weighted reference
-           counts so they land in $s5/$s4; without it: score 18
-           (do-while-zero-exception) */
-        do {
+    for (k = 0; k < 2; k++) {
+        if (k == 0) {
+            xoff = -0x140;
+            yoff = 0xF0;
+        } else {
             xoff = 0x80;
             yoff = 0;
-        } while (0);
+        }
+        tbl = D_80094DF0[D_80094E08[obj->unk_08]];
+        for (idx = 0; tbl[0] >= 0; tbl += 2) {
+            rect.x = tbl[0] + xoff;
+            rect.y = tbl[1] + yoff;
+            rect.w = 0x10;
+            rect.h = 1;
+            LoadImage(&rect, (u32 *)g_gpu_store_buf[idx++]);
+            DrawSync(0);
+            func_80048A7C(rect.x, rect.y, 0x10, r, g, b);
+        }
     }
-    tbl = D_80094DF0[D_80094E08[var_0->unk_08]];
-    idx = 0;
-    goto test;
-again: {
-    rect[0].x = x + xoff;
-    rect[0].y = tbl[1] + yoff;
-    rect[0].w = 0x10;
-    rect[0].h = 1;
-    LoadImage(&rect[0], (u32 *)g_gpu_store_buf[idx++]);
-    DrawSync(0);
-    tbl += 2;
-    func_80048A7C(rect[0].x, rect[0].y, 0x10, r, g, b);
-}
-test:
-    /* FAKE: x is the row's x zero-extended (the lhu beside the test's lh); as
-     * tbl[0] the pair is one lh and the frame drops 88 -> 80: score 25 */
-    x = (u16)tbl[0];
-    if ((s16)x >= 0)
-        goto again;
-    var_4++;
-}
-    if (var_4 < 2)
-        goto oloop;
     if (func_8003E2A0() == one) {
         func_8003E120();
     }
