@@ -7,8 +7,8 @@ glabel func_800645B0
     /* 54DC4 800645C4 1800B2AF */  sw         $s2, 0x18($sp)
     /* 54DC8 800645C8 1400B1AF */  sw         $s1, 0x14($sp)
     /* 54DCC 800645CC 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 54DD0 800645D0 0F80013C */  lui        $at, %hi(D_800F10EC)
-    /* 54DD4 800645D4 EC1022AC */  sw         $v0, %lo(D_800F10EC)($at)
+    /* 54DD0 800645D0 0F80013C */  lui        $at, %hi(D_800F10D0 + 0x1C)
+    /* 54DD4 800645D4 EC1022AC */  sw         $v0, %lo(D_800F10D0 + 0x1C)($at)
   .L800645D8:
     /* 54DD8 800645D8 21200000 */  addu       $a0, $zero, $zero
     /* 54DDC 800645DC 21806402 */  addu       $s0, $s3, $a0

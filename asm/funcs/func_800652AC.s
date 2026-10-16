@@ -9,8 +9,8 @@ glabel func_800652AC
     /* 55AC8 800652C8 700D22AC */  sw         $v0, %lo(D_800F0D70)($at)
     /* 55ACC 800652CC 0800638C */  lw         $v1, 0x8($v1)
     /* 55AD0 800652D0 01000224 */  addiu      $v0, $zero, 0x1
-    /* 55AD4 800652D4 0F80013C */  lui        $at, %hi(D_800F111C)
-    /* 55AD8 800652D8 1C1122AC */  sw         $v0, %lo(D_800F111C)($at)
+    /* 55AD4 800652D4 0F80013C */  lui        $at, %hi(D_800F10D0 + 0x4C)
+    /* 55AD8 800652D8 1C1122AC */  sw         $v0, %lo(D_800F10D0 + 0x4C)($at)
     /* 55ADC 800652DC 0F80013C */  lui        $at, %hi(D_800F0BCA)
     /* 55AE0 800652E0 CA0B20A4 */  sh         $zero, %lo(D_800F0BCA)($at)
     /* 55AE4 800652E4 0F80013C */  lui        $at, %hi(D_800F0D74)

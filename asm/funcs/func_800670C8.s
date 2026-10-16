@@ -6,8 +6,8 @@ glabel func_800670C8
     /* 578D8 800670D8 809C010C */  jal        func_80067200
     /* 578DC 800670DC 21300000 */   addu      $a2, $zero, $zero
     /* 578E0 800670E0 01000324 */  addiu      $v1, $zero, 0x1
-    /* 578E4 800670E4 0F80013C */  lui        $at, %hi(D_800F112C)
-    /* 578E8 800670E8 2C1123AC */  sw         $v1, %lo(D_800F112C)($at)
+    /* 578E4 800670E4 0F80013C */  lui        $at, %hi(D_800F10D0 + 0x5C)
+    /* 578E8 800670E8 2C1123AC */  sw         $v1, %lo(D_800F10D0 + 0x5C)($at)
     /* 578EC 800670EC 1000BF8F */  lw         $ra, 0x10($sp)
     /* 578F0 800670F0 FF004230 */  andi       $v0, $v0, 0xFF
     /* 578F4 800670F4 0800E003 */  jr         $ra

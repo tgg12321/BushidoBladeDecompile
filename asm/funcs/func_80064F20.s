@@ -9,8 +9,8 @@ glabel func_80064F20
     /* 5573C 80064F3C BC0C22AC */  sw         $v0, %lo(D_800F0CBC)($at)
     /* 55740 80064F40 0800638C */  lw         $v1, 0x8($v1)
     /* 55744 80064F44 01000224 */  addiu      $v0, $zero, 0x1
-    /* 55748 80064F48 0F80013C */  lui        $at, %hi(D_800F10E8)
-    /* 5574C 80064F4C E81022AC */  sw         $v0, %lo(D_800F10E8)($at)
+    /* 55748 80064F48 0F80013C */  lui        $at, %hi(D_800F10D0 + 0x18)
+    /* 5574C 80064F4C E81022AC */  sw         $v0, %lo(D_800F10D0 + 0x18)($at)
     /* 55750 80064F50 0F80013C */  lui        $at, %hi(D_800F0BAC)
     /* 55754 80064F54 AC0B20A4 */  sh         $zero, %lo(D_800F0BAC)($at)
     /* 55758 80064F58 0F80013C */  lui        $at, %hi(D_800F0CC0)
