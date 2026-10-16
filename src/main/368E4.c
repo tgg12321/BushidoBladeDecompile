@@ -732,8 +732,10 @@ void func_800477D4(void) {}
 
 void func_800477DC(s32 a0) { D_800A33D0 = (s16 *)a0; }
 
-extern s32 D_800EF558[];
-extern s32 D_800EF59C[];
+/* 17 phases and the 9 x 17 table func_80047A90 steps from them
+ * (D_800EF800 takes the last row's deltas) */
+extern s32 D_800EF558[17];
+extern s32 D_800EF59C[9][17];
 
 s32 func_800477E8(void) {
     s16 *s0;
@@ -856,7 +858,7 @@ s32 func_800477E8(void) {
     w = 0;
     do {
         val = w;
-        p = &D_800EF59C[a3 * 0x11];
+        p = D_800EF59C[a3];
         for (a0 = 0x10; a0 >= 0; a0--) {
             p[a0] = val;
         }
@@ -878,82 +880,29 @@ loop3:
 
 void func_80047A90(void) {
     s32 i;
-    s32 a3;
-    s32 v1;
+    s32 j;
     s32 a0;
-    s16 *var_4;
-    s32 *p558;
-    s32 *p59C;
-    s32 *var_7;
-    s32 *var_8;
-    s32 *var_9;
-    s32 *var_10;
-    s32 *var_11;
+    s32 v1;
     void **temp;
 
-    i = 0;
-    /* FAKE: var_4 holds the Judge base ahead of the loop; indexing Judge
-     * directly re-forms it in the loop (score 5). */
-    var_4 = Judge;
-    p558 = D_800EF558;
-    p59C = D_800EF59C;
-loop1:
-    i++;
-    *p59C = ((s32)var_4[*p558 & 0xFFF] * 0x271) >> 10;
-    p59C++;
-    *p558 += 0x12;
-    p558++;
-    if (i < 0x11)
-        goto loop1;
-
-    i = 1;
-    var_7 = D_800EF59C;
-    var_8 = D_800EF59C + 0x11;
-outer_loop:
-    var_9 = var_8;
-    do {
-        /* FAKE: loop-note ref weighting seats a3 in $a3 and i in $t0;
-         * without it: score 10 */
-        a3 = 0;
-    } while (0);
-    do {
-        /* FAKE: loop-note ref weighting seats var_10 in $a2 (shared with the
-         * loop-1 Judge base); without it: score 13 */
-        var_10 = var_7;
-    } while (0);
-    do {
-        /* FAKE: loop-note ref weighting keeps var_8 ($t1) ahead of var_7 ($t2)
-         * in allocation order; without it: score 8 */
-        var_11 = var_8 + 0x11;
-    } while (0);
-inner_loop:
-    a0 = 0x7D0 - (*var_9 - *var_10);
-    if (a0 < 0) {
-        v1 = (a0 + 0xF) >> 4;
-    } else {
-        v1 = a0 / 10;
+    for (i = 0; i < 17; i++) {
+        D_800EF59C[0][i] = ((s32)Judge[D_800EF558[i] & 0xFFF] * 0x271) >> 10;
+        D_800EF558[i] += 0x12;
     }
-    *var_9 += v1;
-    if (i == 8) {
-        *(s32 *)((s8 *)D_800EF800 + a3) = v1;
-        var_9++;
-        a3 += 4;
-        var_10++;
-    } else {
-        /* FAKE: loop tail duplicated into both arms (cross-jump re-merges it);
-         * seats var_10 in $a2, a3 in $a3; without it: score 16 */
-        var_9++;
-        a3 += 4;
-        var_10++;
+    for (i = 1; i < 9; i++) {
+        for (j = 0; j < 17; j++) {
+            a0 = 0x7D0 - (D_800EF59C[i][j] - D_800EF59C[i - 1][j]);
+            if (a0 < 0) {
+                v1 = (a0 + 0xF) >> 4;
+            } else {
+                v1 = a0 / 10;
+            }
+            D_800EF59C[i][j] += v1;
+            if (i == 8) {
+                D_800EF800[j] = v1;
+            }
+        }
     }
-    if ((s32)var_9 < (s32)var_11)
-        goto inner_loop;
-    var_7 += 0x11;
-    i++;
-    var_8 += 0x11;
-    if (i < 9)
-        goto outer_loop;
-
     temp = g_draw_queue_cursor;
     g_draw_queue_cursor = temp + 1;
     *temp = &D_800EF070;
@@ -976,7 +925,7 @@ void func_80047BE0(void) {
 
     s7val = D_800A33D0;
     i = 0;
-    src = D_800EF59C;
+    src = D_800EF59C[0];
     while (i < 9) {
         if (i & 1) {
             base = D_800EF168;
