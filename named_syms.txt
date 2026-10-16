@@ -549,7 +549,7 @@ g_scratchpad_ptr_b8             = 0x800A34EC;  /* points to 0x1F8000B8; deref'd 
 g_scratchpad_ptr_ac             = 0x800A3484;  /* points to 0x1F8000AC */
 /* Counters / state */
 D_800A33E8           = 0x800A33E8;  /* s16 pair of small values, -1 = unset: stored by func_800494D4, taken as lo / hi by func_80049584, ranked by func_80049C24 (368E4.c:1822-2282) */  /* data-wave 2026-10-08: was g_gnd_target_id_array */
-D_800A38C6              = 0x800A38C6;  /* D_800A38C4[1]: model id loaded in slot 1; func_8001DB9C stores 0xFFFF when func_800450BC takes slot 1's buffer */  /* data-wave 2026-10-08: was g_seq_init_pending */
+/* 2026-10-16: D_800A38C6 retired -- D_800A38C4[1] (u16 [2], include/bb2.h). */
 D_800A38F8        = 0x800A38F8;  /* index of the next D_800A37A8 entry func_800174F4's case 20 shows; stepped from 0 to D_800A37A0 + 1 (6CF8.c:566-590) */  /* data-wave 2026-10-08: was g_mental_bar_max_packets */
 D_800A263C                  = 0x800A263C;  /* pointer to DMA register; (val >> 24) & 0x7F = status read */  /* data-wave 2026-10-09: was g_dma_madr_ptr */
 Alarm = 0x800F19B8;  /* libcd bios.c alarm {time, count, name} (SOTN name; pre-slim-2026-10-01:memory/closer/libcd-identity.md) */
@@ -2176,7 +2176,7 @@ D_800A389C                             = 0x800A389C;  /* halfword frame counter 
 D_800A38AE                             = 0x800A38AE;  /* +2 from D_800A38AC (0x800A38AC) */  /* data-wave 2026-10-08: was g_voice_dialog_state_plus_2 */
 D_800A38B8                        = 0x800A38B8;  /* u8 counter: set to 1, incremented, cleared at 0x3C (9F9C.c func_8001CE60) */  /* data-wave 2026-10-07: was g_cpu_move_pattern_cursor_plus_4 */
 D_800A38C0                                 = 0x800A38C0;  /* +4 from g_file_heap_base (0x800A38BC) */  /* data-wave 2026-09-25: was g_file_heap_base_plus_4 */
-D_800A38C1                                 = 0x800A38C1;  /* +5 from g_file_heap_base (0x800A38BC) */  /* data-wave 2026-09-25: was g_file_heap_base_plus_5 */
+/* 2026-10-16: D_800A38C1 retired -- D_800A38C0[1] (u8 [2], include/bb2.h). */
 D_800A38D4                           = 0x800A38D4;  /* +4 from D_800A38D0 */  /* data-wave 2026-10-08: was g_pad_rec_misc_counter_plus_4 */
 g_gpu_ot256_ptr                        = 0x800A38D8;  /* = g_gpu_ot256_db[D_800A36AC & 1], cleared with ClearOTagR(., 0x100) and linked into D_800A378C[0] (368E4.c:1714-1718) */  /* data-wave 2026-09-24: was g_replay_pos_change_count_plus_2 */
 D_800A38DF                         = 0x800A38DF;  /* func_80022408(&D_80101EC8[D_800A3748].unk_F4); read by func_80022580 */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_1 */
@@ -2335,13 +2335,10 @@ D_8009BC76                                       = 0x8009BC76;  /* data-wave 202
 D_8009BC94                                       = 0x8009BC94;  /* data-wave 2026-10-08: was g_text1b_addr_8009BC94 */
 D_8009BC96                                       = 0x8009BC96;  /* data-wave 2026-10-08: was g_text1b_addr_8009BC96 */
 D_8009BCC4                                       = 0x8009BCC4;  /* data-wave 2026-10-08: was g_text1b_addr_8009BCC4 */
-D_8009BCC6                                       = 0x8009BCC6;  /* data-wave 2026-10-08: was g_text1b_addr_8009BCC6 */
+/* 2026-10-16: D_8009BCC6, D_8009BCD2, D_8009BD21, D_8009BD59 retired -- elements of D_8009BCC4 (s16 [3][2]), D_8009BCD0 (s16 [2]), D_8009BD20 (u8 [2][2]), D_8009BD58 (u8 [8][2]) (include/bb2.h); the asm/data dlabels of the first three remain. */
 D_8009BCD0                                       = 0x8009BCD0;  /* data-wave 2026-10-08: was g_text1b_addr_8009BCD0 */
-D_8009BCD2                                       = 0x8009BCD2;  /* data-wave 2026-10-08: was g_text1b_addr_8009BCD2 */
 D_8009BD20                                       = 0x8009BD20;  /* data-wave 2026-10-08: was g_text1b_pair_lookup_BD20_lo */
-D_8009BD21                                       = 0x8009BD21;  /* data-wave 2026-10-08: was g_text1b_pair_lookup_BD20_hi */
 D_8009BD58                                       = 0x8009BD58;  /* data-wave 2026-10-08: was g_text1b_pair_lookup_BD58_lo */
-D_8009BD59                                       = 0x8009BD59;  /* data-wave 2026-10-08: was g_text1b_pair_lookup_BD58_hi */
 D_800A3278                       = 0x800A3278;  /* data-wave 2026-10-08: was g_eff_particle_remaining_plus_4_plus_8 */
 D_800A328C                   = 0x800A328C;  /* data-wave 2026-10-08: was g_text1b_byte_pair_table_8x7_plus_8_plus_8 */
 D_800A3294                  = 0x800A3294;  /* data-wave 2026-10-08: was g_text1b_byte_pair_table_8x7_plus_8_plus_16 */
