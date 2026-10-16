@@ -114,7 +114,7 @@ D_800A3790 = 0x800A3790;  /* data-wave 2026-09-25: was g_game_timer */
 D_80099C34 = 0x80099C34;  /* data-wave 2026-09-29: was g_snd_se_bank */
 D_800EF848 = 0x800EF848;  /* data-wave 2026-09-29: was g_snd_ch_data */
 D_800EF800 = 0x800EF800;  /* data-wave 2026-09-25: was g_snd_fade_curve */
-D_800EF7BC = 0x800EF7BC;  /* data-wave 2026-09-25: was g_snd_config_tbl */
+/* RETIRED 0x800EF7BC (lane-fake-a 2026-10-16): D_800EF59C[8][0], row 8 of the s32[9][17] table (368E4.c func_80047A90 / func_80047D94); C reads it as D_800EF59C[8][...]; was g_snd_config_tbl */
 g_color_mode = 0x800F6652;
 g_pad_buf = 0x800FF580;  /* data-wave 2026-09-24: was g_pad_data */
 g_gpu_db = 0x800F7438;  /* GpuDb[2] display double buffer (include/game.h); data-wave 2026-09-24: was g_disp_fb_base */

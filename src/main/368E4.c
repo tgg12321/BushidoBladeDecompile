@@ -295,7 +295,9 @@ extern s16 D_800A324A;
 
 extern MATRIX D_800EEDB0;
 
-extern s32 D_800EF800[];
+/* row 8's last pulls (func_80047A90 writes [0..16]); 18 words up to
+ * D_800EF848, which func_80047E5C's [v1 + 1] reaches at v1 == 17 */
+extern s32 D_800EF800[18];
 extern u8 D_8009947C;
 extern s16 D_800F6654;
 extern MATRIX D_800EEDD0;
@@ -970,8 +972,6 @@ void func_80047BE0(void) {
     }
 }
 
-extern s32 D_800EF7BC[];
-
 s32 func_80047D94(s32 a0) {
     s32 a1 = (a0 + 0x7D00) / 3200;
     s32 a0_div = a0 / 3200;
@@ -983,8 +983,10 @@ s32 func_80047D94(s32 a0) {
         return (s32)0xFFFE7960;
     }
     {
-        s32 val1 = D_800EF7BC[a1] * var_3;
-        s32 val2 = D_800EF7BC[a1 + 1] * (0x1000 - var_3);
+        /* row 8 of the table; a1 + 1 == 17 / 18 reads on into D_800EF800,
+         * which follows the table */
+        s32 val1 = D_800EF59C[8][a1] * var_3;
+        s32 val2 = D_800EF59C[8][a1 + 1] * (0x1000 - var_3);
         return ((val1 + val2) >> 12) - 0x3F48;
     }
 }
