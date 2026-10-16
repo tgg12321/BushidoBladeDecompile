@@ -1,8 +1,10 @@
 /* SN Systems runtime: PCopen, PCclose, PClseek (the PC file server),
  * __SN_ENTRY_POINT, __main and __do_global_dtors. .text 0x80083698..0x8008386C:
- * an unidentified gap between verbatim LIBSCAN modules
- * (docs/naming/libscan/matches.json), one file per gap (Q106 D3), named by its
- * ROM offset. */
+ * PsyQ 4.0 LIBSN modules OPEN, CLOSE, LSEEK and SNMAIN (LIBSN.LIB of
+ * sozud/psy-q@2266d676 4.0/PSX/LIB: each module's .text equals the EXE word
+ * for word outside relocations; all four are assembler-built, no FILENAME
+ * record). LIBSCAN missed them (docs/naming/libscan/matches.json); kept as one
+ * file for the region (Q106 D3), named by its ROM offset. */
 #include "common.h"
 #include "include_asm.h"
 #include <psxsdk/libsn.h>

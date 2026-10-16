@@ -4,7 +4,6 @@
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "include_asm.h"
 
-extern void (*jtbl_800A3624)(void);
 /* EnablePAD / DisablePAD: bare tail-jump trampolines through the
    jtbl_800A3620 / jtbl_800A3624 function pointers that _patch_pad installs.
    Hand-written asm: GCC 2.7.2 has no sibling calls, so C cannot emit the
