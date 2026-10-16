@@ -69,3 +69,22 @@
  * reordering and not reachable without the already class-killed written-
  * island construct (s3/H4).
  */
+
+/* s6 (synthesis): best LEGAL form measured -- pure vendored-macro calls only,
+ * no __asm__ in the body (satisfies the Judge constraint's first branch).
+ * sandbox func_80052B7C --disable all = 19 (stub 24; the rejected written-island
+ * form was 16). Chunk 2 lands via gte_ldtr (inline_c.h:371) with C-level lh loads;
+ * (s32) casts are semantically required (TRX/TRY/TRZ are 32-bit signed -- without
+ * them GCC emits lhu, a zero-extension, wrong for negative translations; score
+ * masks it, both 19). Residual = chunks 1 and 5 only (macro-internal order /
+ * delay slot), source-level per --diff.
+ * Apply by replacing INCLUDE_ASM("asm/funcs", func_80052B7C); in src/main/3AB48.c.
+ */
+#include <psxsdk/inline_c.h>
+void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
+    gte_SetRotMatrix(rot);
+    gte_ldtr((s32)tr->vx, (s32)tr->vy, (s32)tr->vz);
+    gte_ldv0(v0);
+    gte_rt();
+    gte_stlvl(out);
+}

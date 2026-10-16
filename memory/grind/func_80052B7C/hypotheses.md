@@ -407,3 +407,45 @@ Neither is actionable from a grind session restricted to src/main/3AB48.c.
 - kill_scope: class
 - measured_on: memory/grind/func_80052B7C/candidate.c (pure-comment, no body) re-measured via sandbox --disable all --diff --candidate this session; src/main/3AB48.c unmodified (still INCLUDE_ASM); no FAKE construct present in either file
 - predicate_cite: .claude/rules/inline-asm-policy.md:55
+
+## s6 (synthesis)
+
+- H-s6-1 CONFIRMED: gte_ldtr((s32)tr->vx,(s32)tr->vy,(s32)tr->vz) lands chunk 2 as a vendored-macro call with
+  ordinary-C halfword loads -- s1's "no macro for chunk 2" was a misread (operand-taking macro). Legal
+  pure-macro chassis measures 19 (s6 artifacts). Frontier item "new DMPSX word for chunk 2" is VOID.
+- H-s6-2 CONFIRMED (re-audit): s2 chunk-1/chunk-5 instance kills still hold on the s6 chassis, no FAKE present.
+- Frontier reset (strongest 3):
+  1. Chunk 1 batched order: the target's shape (all 8 loads, then 8 ctc2) is what a single asm statement
+     taking 8 register operands would produce. No vendored macro has register operands into CR0-CR4
+     (grep inline_c.h for `ctc2 %`: only $5-7,$15,$21-23,$26). Next: census libgte.h/gtemac.h/SOTN psxsdk
+     headers for any CR0-4 register-operand macro (e.g. a gte_ldR11R12-style word); if none, chunk 1 is
+     macro-unreachable and the residual is canonical-asm-grant territory.
+  2. Chunk 5 delay slot: next probe is any vendored store macro that emits the $11 store as a separate
+     asm statement (e.g. a stlvl split into gte_stlvnl-like pieces) -- s3 full gtemac.h read found none;
+     inline_c.h single-register store words (gte_stsz-like for $11?) not yet censused.
+  3. scan_hand_coded tier (LOW 0/12) remains the whole-body grant gate; unchanged, engine-side.
+- H-s6-3 KILLED (instance, s6 census tmp/grind/func_80052B7C/s6/census.txt): inline_c.h/inline_o.h/gtemac.h/libgte.h
+  as vendored contain no `ctc2 %N, $0..$4` register-operand macro (chunk 1) and no swc2 $9/$10/$11 store other
+  than gte_stlvl's 3-store body (chunk 5). Frontier items 1-2 above are therefore answered for the
+  vendored headers; what remains is a NEW vendored macro word (owner + engine: commit) or the
+  whole-body grant tier.
+
+## [s6] gte_ldtr (inline_c.h:371), a register-operand macro, lands chunk 2 (lh x3 + ctc2 $5-$7) with the halfword loads as ordinary C, giving a pure vendored-macro body with no __asm__.
+- mechanism: gte_ldtr's operands are "r" inputs, so GCC emits the tr->vx/vy/vz loads itself; (s32) casts make them sign-extending lh (TRX-Z are signed 32-bit).
+- probe: src/main/3AB48.c body gte_SetRotMatrix; gte_ldtr((s32)tr->vx,(s32)tr->vy,(s32)tr->vz); gte_ldv0; gte_rt; gte_stlvl; sandbox --disable all --diff
+- result: score 19 (24/24 insns); chunk 2 emits lh+ctc2 $5-7 (regs a0/v1/v0 inside hunk 1); without casts lhu, also 19. Legal floor 19 vs stub 24.
+- verdict: CONFIRMED
+
+## [s6] Kill re-audit: the s2 instance kills (gte_SetRotMatrix interleaved order; gte_stlvl final swc2 not in jr delay slot) were measured with no FAKE carrier and still hold on the s6 chassis.
+- mechanism: fake_ablate finds no FAKE construct; --diff hunks 1 and 4 unchanged.
+- probe: tools/fake_ablate.py on candidate.c; sandbox --diff on s6 chassis
+- result: No FAKE constructs to ablate; hunk 1 (lw/ctc2 interleave) and hunk 4 (nop in jr slot) persist.
+- verdict: CONFIRMED
+
+## [s6] A vendored header macro in include/psxsdk (inline_c.h, inline_o.h, gtemac.h, libgte.h) takes register operands into CR0-CR4 (would let chunk 1 batch its loads) or stores $9/$10/$11 individually (would free the last swc2 for the delay slot).
+- mechanism: grep census for ctc2 %N,$0-$4 and swc2 $9/$10/$11
+- probe: tmp/grind/func_80052B7C/s6/census.txt
+- result: None found: only gte_stlvl's 3-store body (inline_c.h:1086-1089); no register-operand ctc2 into CR0-4.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: include/psxsdk/*.h as vendored at this commit, grep census, no src/ edit, no FAKE construct

@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 5,
- "current_modality": "enumerate",
+ "session_count": 6,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -33,18 +33,29 @@
    "floor": 16,
    "modality": "enumerate",
    "headline": "s5 (enumerate): no C-level mutation surface exists for this function's residual -- spelling_enum.py's input precondition (named locals/assignments/commutative ops) is categorically absent; the chassis"
+  },
+  {
+   "session": 6,
+   "floor": 19,
+   "modality": "synthesis",
+   "headline": "s6 synthesis: first LEGAL body measured -- pure vendored-macro chassis with gte_ldtr((s32)tr->vx,..) for chunk 2 scores 19 (s1 wrongly dismissed gte_ldtr); residual is chunks 1 and 5 only, and no vend"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A new vendored macro / DMPSX word for chunk 2's TR-from-halfwords load would let that chunk land as a macro call.",
-   "mechanism": "inline-asm-policy.md item 1 (owner ruling + engine commit needed); would still leave chunks 1 and 5 unreached since their existing macros already don't reproduce the target's instruction order / delay-slot placement.",
-   "next_probe": "Not actionable from a grind session restricted to src/main/3AB48.c; needs an owner-authorized engine: commit."
+   "hypothesis": "A new vendored macro word with register operands into CR0-CR4 (chunk 1) and a split $11 store (chunk 5) would let the legal macro chassis reach 0.",
+   "mechanism": "inline-asm-policy.md item 1 -- needs owner ruling + engine: commit; vendored headers censused empty in s6",
+   "next_probe": "Not src-actionable; record as the remaining owner/engine-side gap"
   },
   {
-   "hypothesis": "Raising func_80052B7C's scan_hand_coded tier from LOW 0/12 to STRONG would let the existing whole-function inline_asm_canonical.txt:340 grant hold as-is.",
-   "mechanism": "scan_hand_coded.py's current signal set (S1-S12) does not fire on this function's actual shape; an engine/tools signal-coverage gap, not a property changeable from C source. Re-confirmed LOW 0/12 fresh in s3.",
-   "next_probe": "An engine:-commit teaching the scanner a new corpus-clean signal this function exhibits, if one exists; out of scope for a src-only grind session."
+   "hypothesis": "scan_hand_coded STRONG tier would let the whole-body grant inline_asm_canonical.txt:340 hold as-is.",
+   "mechanism": "LOW 0/12 (s3); scanner signal coverage gap",
+   "next_probe": "Engine-side scanner signal; out of grind scope"
+  },
+  {
+   "hypothesis": "SOTN/psyz vendored psxsdk headers may carry a CR0-4 register-operand GTE word absent from this repo's copy, which would be a citable vendored-macro source.",
+   "mechanism": "header census beyond include/psxsdk",
+   "next_probe": "Grep SOTN master include/psxsdk for ctc2 %N,$0..$4 and single swc2 $11 macros"
   }
  ],
  "judge_constraints": [
@@ -99,6 +110,14 @@
    "measured_on": "memory/grind/func_80052B7C/candidate.c (pure-comment, no body) re-measured via sandbox --disable all --diff --candidate this session; src/main/3AB48.c unmodified (still INCLUDE_ASM); no FAKE construct",
    "predicate_cite": ".claude/rules/inline-asm-policy.md:55",
    "result": "False. candidate.c is a pure 72-line comment block with no function definition (sandbox --candidate errors 'func_80052B7"
+  },
+  {
+   "session": 6,
+   "statement": "A vendored header macro in include/psxsdk (inline_c.h, inline_o.h, gtemac.h, libgte.h) takes register operands into CR0-CR4 (would let chunk 1 batch its loads) or stores $9/$10/$11 individually (would",
+   "kill_scope": "instance",
+   "measured_on": "include/psxsdk/*.h as vendored at this commit, grep census, no src/ edit, no FAKE construct",
+   "predicate_cite": "",
+   "result": "None found: only gte_stlvl's 3-store body (inline_c.h:1086-1089); no register-operand ctc2 into CR0-4."
   }
  ],
  "ladder_skip": 0,

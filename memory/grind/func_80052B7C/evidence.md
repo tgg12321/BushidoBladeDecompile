@@ -225,3 +225,35 @@ question rather than resolved here.
 - [s5] This extends s4's permuter-modality finding (no scorable target.o buildable) to the enumerate modality via a different mechanism: s4 found a tooling/assembler incompatibility, this session finds a tooling/object-model incompatibility (the enumerator needs mutable C statement content, this chassis has none).
 
 - [s5] All prior structural kills (s2/s3 H2-H5) and the ruling (H4, docs/grind/decisions.md 2026-10-15 20:38) are unchanged and re-confirmed consistent this session; no new src/ edit was made, none was possible.
+
+## s6 (synthesis) -- first measured LEGAL body; s1's chunk-2 dismissal was wrong
+
+- [s6] s1's chunk-2 enumeration dismissed gte_ldtr (inline_c.h:371-376) because "every ctc2-into-CR5-7
+  site sources from lw or register-to-register ops". That reasoning confused the macro with its
+  operands: gte_ldtr takes three REGISTER operands ("ctc2 %0,$5; ctc2 %1,$6; ctc2 %2,$7"), so the
+  halfword loads are ordinary C (`tr->vx` etc.) that GCC emits itself. It was never measured until s6.
+- [s6] Chassis `gte_SetRotMatrix(rot); gte_ldtr(tr->vx, tr->vy, tr->vz); gte_ldv0(v0); gte_rt();
+  gte_stlvl(out);` (inline_c.h, SVECTOR *tr, SVECTOR *v0): sandbox --disable all = **19**, 24/24 insns,
+  4 hunks all source-level (tmp/grind/func_80052B7C/s6/sandbox_ldtr.txt). Chunk 2 emits
+  `lhu v0/v1/t0` + `ctc2 $5-$7`.
+- [s6] Same with `(s32)` casts on the three operands: score 19, chunk 2 now emits `lh a0/v1/v0` (sign
+  extension, matching target opcode) (tmp/grind/func_80052B7C/s6/sandbox_ldtr_s32.txt). The cast is
+  semantic, not F2 padding: TRX/TRY/TRZ are 32-bit signed, lhu zero-extends negative translations.
+  Registers differ (a0/v1/v0 vs target t5/t6/t7) but are inside the same hunk-1 source-level reorder.
+- [s6] This is the first body ever measured that satisfies the Judge constraint's first branch (pure
+  vendored-macro calls, no __asm__ in the body). Legal floor = 19; the old 16 was the rejected island.
+- [s6] Kill re-audit: s2 instance kills (SetRotMatrix order, stlvl delay slot) re-measured on the s6
+  chassis -- hunks 1 (interleaved lw/ctc2) and 4 (swc2 before jr, nop in slot) persist unchanged;
+  fake_ablate on candidate.c: "No FAKE-annotated constructs found" (tmp/grind/func_80052B7C/s6/fake_ablate.txt),
+  so no kill was measured under a FAKE carrier. Remaining residual = chunks 1 and 5 only.
+- [s6] src/main/3AB48.c reverted to INCLUDE_ASM after measurement (asm-until-matched); body banked in candidate.c.
+
+- [s6] s1's chunk-2 'no vendored macro' claim was wrong: gte_ldtr takes register operands; measured legal body scores 19 (tmp/grind/func_80052B7C/s6/sandbox_ldtr_s32.txt)
+
+- [s6] Uncast tr->vx operands produce lhu (zero-extend), cast (s32) produces target's lh; both score 19
+
+- [s6] All 4 remaining hunks are source-level and sit inside gte_SetRotMatrix (order) and gte_stlvl (delay slot) asm bodies
+
+- [s6] Frontier item 'new DMPSX word for chunk 2' is void: chunk 2 is reachable today
+
+- [s6] src/main/3AB48.c reverted to INCLUDE_ASM; best legal body banked in memory/grind/func_80052B7C/candidate.c
