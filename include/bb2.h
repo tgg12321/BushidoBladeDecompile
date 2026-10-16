@@ -327,7 +327,7 @@ extern u8 D_800A376A;
 extern u8 D_800A376B;
 extern u8 D_800A376C;
 extern s16 D_800A376E;
-extern s32 D_800A3778;
+extern MATRIX *D_800A3778;
 extern u8 D_800A377B;
 /* round-result table: 0/1/2 per round, indexed by round */
 extern u8 D_800A377C[];
@@ -584,7 +584,7 @@ extern void cdrom_SetMix(s32, s32, s32, s32);
 extern s32 cdrom_StartAudio(s32, s32);
 extern s32 cdrom_StartRead(s32, s32);
 extern s32 cdrom_StartReadAt(s32, s32, s32, s32);
-extern void *func_800472B0(void);
+extern MATRIX *func_800472B0(void);
 extern void eff_Init(void);
 extern u32 func_800167AC(void);
 extern u32 func_800167BC(void);

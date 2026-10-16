@@ -612,7 +612,7 @@ void func_80047210(void) {
     D_800EEDD0.m[1][2] >>= 1;
 }
 
-void *func_800472B0(void) { return &D_800EEDD0; }
+MATRIX *func_800472B0(void) { return &D_800EEDD0; }
 
 void func_800472C0(Unk80101DF0Record *node) {
     node->unk4 = 8;
