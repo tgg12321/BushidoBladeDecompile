@@ -664,9 +664,7 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
         block_20: {
             s16 temp_v1_3 = temp_s4->unk_288[temp_s5];
             if (temp_v1_3 == 0) {
-                /* the target tests unk_288 signed here (lh + blez), against its
-                 * u16 declaration */
-                if ((s16)arg0->unk_288[temp_a1_2] > 0) {
+                if (arg0->unk_288[temp_a1_2] > 0) {
                     var_v0 = 0x19;
                     if (var_s1 == 0) {
                     set_0xB:
@@ -692,9 +690,7 @@ s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
                         func_80032854(arg0->index, 1, arg1, (s16 *)0);
                         func_80032854(arg0->index, 0x25, arg1, (s16 *)0);
                     } while (0);
-                    /* FAKE: (s16) view of the u16 unk_288: the target reloads
-                     * it with lh here; without the cast lhu, score 1 */
-                    if ((s16)arg0->unk_288[temp_a1_2] == 5) {
+                    if (arg0->unk_288[temp_a1_2] == 5) {
                         if (arg0->unk_0E == 6 || arg0->unk_0E == 7 ||
                             temp_s4->unk_0E == 6 || temp_s4->unk_0E == 7) {
                             if (var_s1 != 0) {

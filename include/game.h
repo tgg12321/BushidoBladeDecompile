@@ -1537,7 +1537,7 @@ typedef struct Unk80101EC8Record {
     s16 unk_27E[4];
     s16 unk_286;
     /* per blade (unk_A1 / unk_A3 bounds), func_80023F08 */
-    u16 unk_288[2];
+    s16 unk_288[2];
     s32 unk_28C;
     /* the motion frame func_80023F08 last used */
     MotionFrame unk_290;
