@@ -1072,7 +1072,7 @@ def analyze_all(asm_dir: Path) -> list[FuncSignals]:
         tier, tier_reason = classify_tier(hits, score)
         out.append(FuncSignals(
             func=name,
-            src_file=str(p.relative_to(ROOT)),
+            src_file=p.relative_to(ROOT).as_posix(),
             insn_count=len(insns),
             multu_count=multu_count,
             s1_uniform_multu=s1, s1_detail=s1d,
@@ -1104,7 +1104,7 @@ def floor_record(p: Path, name: str, insns: list[Insn]) -> FuncSignals:
     det = {f: f"not scanned ({FLOOR_REASON})" for f in FuncSignals.__dataclass_fields__
            if f.endswith("_detail")}
     return FuncSignals(
-        func=name, src_file=str(p.relative_to(ROOT)), insn_count=len(insns),
+        func=name, src_file=p.relative_to(ROOT).as_posix(), insn_count=len(insns),
         multu_count=sum(1 for i in insns if i.mnemonic == "multu"),
         **off, **det, gate_signals=[], score=0, tier="LOW",
         tier_reason=FLOOR_REASON, opcode_sig="")

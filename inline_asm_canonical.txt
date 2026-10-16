@@ -245,7 +245,7 @@ func_8004BCC0  # hand-written whole body (333 insns, INCLUDE_ASM): 44 overflow-t
 # --- break_instruction: break with custom (non-div-guard) code (1 funcs) ---
 
 # --- sp_manipulation: $sp swap / context save / restore (no C escape hatch) (1 funcs) ---
-setjmp  # (= func_80083220, Sony LIBC2 SETJMP) saves ////- into the jmp_buf and loads them back (longjmp); C cannot name those registers. [re-audit 2026-10-15: PsyQ 4.0 LIBC2 SETJMP built by asmpsx]
+setjmp  # (= func_80083220, Sony LIBC2 SETJMP) saves $ra/$gp/$sp/$fp/$s0-$s7 into the jmp_buf and loads them back (longjmp); C cannot name those registers. [re-audit 2026-10-15: PsyQ 4.0 LIBC2 SETJMP built by asmpsx]
 
 ScaleMatrix  # cluster-sibling:func_8007E8DC,jaccard=0.58 ; gcc-cannot-emit:redundant-andi-before-sll-sign-extend (combine.c:1458 elides single-use mask; cc1psx byte-identical, ~38 C forms). Hand-coded packed fixed-point multiply, 8007Exxx display.c hand-asm cluster. User-authorized 2026-05-21. [re-audit 2026-10-15: PsyQ 4.0 LIBGTE MTX_08 built by asmpsx]
 
