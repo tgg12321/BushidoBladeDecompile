@@ -1,0 +1,1 @@
+{"func": "func_800164F8", "addr": "800164F8", "verdict": "PASS", "body_hash": "6f73f76de23f5424", "body_kind": "c", "file": "main/6CF8", "reviewer": "pollhost-review", "scope": "cheat-cleanup", "date": "2026-10-16T04:32:20Z", "head": "98b638a8a", "notes": "pollhost() from vendored PsyQ 4.0 LIBSN.H; code review PASS (pollhost-code-review)"}
