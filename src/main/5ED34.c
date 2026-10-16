@@ -247,48 +247,30 @@ s32 func_8006EACC(s32 arg0, s32 arg1) {
 }
 
 void func_8006EC0C(void) {
-    s32 state = D_800A3578 & 0xFF;
-
-    if (state == 2)
-        goto fade_out;
-    if (state < 3) {
-        if (state == 1)
-            goto ramp_up;
-        goto done;
+    switch (D_800A3578 & 0xFF) {
+    case 1:
+    case 3:
+        D_800A3570 += 0x20;
+        if (D_800A3570 >= 0x1E8) {
+            D_800A3570 = 0x1E8;
+            D_800A3580 = D_800A3584;
+            if ((D_800A3578 >> 8) == 0) {
+                D_800A3578++;
+            }
+        }
+        break;
+    case 2:
+    case 4:
+        if (D_800A3570 == 0x1E8) {
+            func_8005C650(5, 0x7F, 0x7F);
+        }
+        D_800A3570 -= 0x20;
+        if (D_800A3570 <= 0) {
+            D_800A3570 = 0;
+            D_800A3578 = 0;
+        }
+        break;
     }
-    if (state == 3)
-        goto ramp_up;
-    if (state == 4)
-        goto fade_out;
-    goto done;
-
-ramp_up:
-    D_800A3570 = (s16)(D_800A3570 + 0x20);
-    if ((s32)(s16)D_800A3570 < 0x1E8)
-        goto done;
-    {
-        /* FAKE: read ahead of the D_800A3570 store; at its use: score 2 */
-        s16 v3584 = D_800A3584;
-        u16 word = D_800A3578;
-        D_800A3570 = 0x1E8;
-        D_800A3580 = v3584;
-        if ((word >> 8) != 0)
-            goto done;
-        D_800A3578 = word + 1;
-    }
-    goto done;
-
-fade_out:
-    if (D_800A3570 == 0x1E8) {
-        func_8005C650(5, 0x7F, 0x7F);
-    }
-    D_800A3570 = (s16)(D_800A3570 - 0x20);
-    if ((s32)(s16)D_800A3570 > 0)
-        goto done;
-    D_800A3570 = 0;
-    D_800A3578 = 0;
-
-done:;
 }
 
 extern u8 D_8009BC7C[];
