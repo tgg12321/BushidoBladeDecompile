@@ -112,3 +112,74 @@ asm template is one opaque block to reorg.c's delay-slot filler.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: src/main/3AB48.c, gte_stlvl(out) called via psxsdk/inline_c.h, no FAKE construct present, sandbox func_80052B7C --disable all --diff this session
+
+## s3 (structural)
+
+### H1 — chassis discontinuity is spurious; floor 16 reproduces exactly
+
+Statement: Re-applying s2's candidate.c body (gte_SetRotMatrix/gte_ldv0/gte_rt/gte_stlvl via
+inline_c.h + written chunk-2 island) to src/main/3AB48.c this session reproduces sandbox score
+16, build_insns 24 == target_insns 24, same 5 source-level hunks, byte-for-byte the same
+measurement s2 banked.
+Mechanism: not a codegen question -- the dispatch-time "measured 24" was simply the top-of-
+session INCLUDE_ASM floor (asm-until-matched rule 1 means src/ is never left with draft C
+between sessions), not evidence the s2 floor was wrong.
+Probe: sandbox func_80052B7C --disable all --diff with the candidate body in place; output
+saved to tmp/grind/func_80052B7C/s3/sandbox_recheck.txt.
+Result: Reproduced exactly. Floor 16 stands, no re-derivation needed.
+Verdict: CONFIRMED
+
+### H2 — no finer-grained vendored GTE primitive exists in gtemac.h or inline_c.h for chunk 1 or chunk 5
+
+Statement: Neither `include/psxsdk/gtemac.h` (composite macros) nor `include/psxsdk/inline_c.h`
+(leaf macros) defines anything touching only CR0-CR4 (chunk 1's batched-order target) or only
+DR9-11's last word alone (chunk 5's single-store target) as a strict subset of an existing
+macro's body.
+Mechanism: not a codegen question -- a full `grep -n "define gte_"` enumeration of both headers
+(48 gtemac.h composites, ~140 inline_c.h leaves) shows every CR0-4-touching macro is
+`gte_SetRotMatrix`/`gte_SetRotMatrixClearTrans`-shaped (same batching as the target's load-side,
+but still interleaved on the ctc2 side per s2's finding) and every DR9-11-touching store macro
+is `gte_stlvl`/`gte_stlvnl`-shaped (always 2-3 stores bundled in one asm_operands, never a lone
+final word).
+Probe: grep both headers for every `define gte_` site this session (s1 only enumerated the
+CR5-7-touching subset for chunk 2; this session covers the full file for both chunks 1 and 5).
+Result: No finer primitive found in either header.
+Verdict: KILLED
+Kill_scope: instance (this chassis: inline_c.h + gtemac.h as vendored at this commit, no FAKE
+construct present, measured by direct grep enumeration this session)
+Measured_on: include/psxsdk/gtemac.h and include/psxsdk/inline_c.h, full `define gte_`
+enumeration, no src/ edit involved in this specific check.
+
+### H3 — chunk 5's delay-slot gap is reorg.c/dbr treating the bundled asm_operands as opaque (dump-confirmed)
+
+Statement: `tmp/grind/func_80052B7C/dumps/main/3AB48.dbr` shows insn 23 (`gte_stlvl`'s full
+3-swc2 body) as a single RTL `asm_operands` node, followed (after only `NOTE_INSN_DELETED`
+notes) by `jump_insn 32 (return)`; no ordinary single-instruction RTL node sits between them for
+reorg.c's `fill_simple_delay_slots` to steal into the `jr $ra` delay slot.
+Mechanism: GCC's delay-slot filler cannot select or split a multi-instruction `asm_operands`
+RTL insn for delay-slot placement -- it is one opaque node regardless of how many MIPS
+instructions its text expands to; confirmed by reading the actual `.dbr` dump rather than
+inferred from instruction-count reasoning (s2's version of this kill).
+Probe: tools/grinder/dump.ps1 func_80052B7C (fixed this session -- see artifacts), read
+3AB48.dbr lines 112-148 for the func_80052B7C region.
+Result: Confirmed via direct RTL read. Supersedes s2's "reasoned, not dump-confirmed" caveat on
+the same kill; the kill itself (gte_stlvl as a plain macro call does not reach delay-slot
+placement) is unchanged, now dump-backed.
+Verdict: KILLED
+Kill_scope: instance
+Measured_on: src/main/3AB48.c, gte_stlvl(out) called via psxsdk/inline_c.h, no FAKE construct
+present, .dbr RTL dump this session (tmp/grind/func_80052B7C/dumps/main/3AB48.dbr)
+
+### Frontier for the next session
+
+1. hypothesis: a `ruling-request` is still needed (unchanged from s2) -- chunks 1 and 5 each
+   have a vendored macro whose bundled body structurally cannot reach the target's measured
+   instruction order (chunk 1) or delay-slot placement (chunk 5), and this session's gtemac.h
+   enumeration (H2) closes off "a finer macro exists" as an escape; the written-single-
+   instruction-island question is now the ONLY live lever for these two chunks and is a policy
+   question (inline-asm-policy.md item 3's "Calls, not copies"), not a codegen one -- mechanism:
+   policy interpretation; next probe: file the ruling-request citing s2's two kills + this
+   session's H2/H3 confirmations as the complete evidence set (no codegen work remains to do
+   before asking).
+2. hypothesis: (RETIRED by this session's H2) gtemac.h composites might offer a finer primitive
+   -- checked exhaustively this session, none found; do not re-check without a header update.

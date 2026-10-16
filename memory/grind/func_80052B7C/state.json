@@ -34,7 +34,9 @@
    "next_probe": "grep gtemac.h for any macro touching only CR0-CR4 or only DR9-11 before concluding no finer primitive exists."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Land func_80052B7C either as pure vendored-macro calls only (no __asm__ in the body), or via the aeea8ed44 audit's hand-written branch: the whole-body INCLUDE_ASM is kept only with STRONG gate-class scan_hand_coded evidence (currently LOW 0/12) or an owner-cluster grant door. No written-out islands."
+ ],
  "banned_constructs": [],
  "kills": [
   {

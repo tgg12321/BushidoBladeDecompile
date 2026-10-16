@@ -1,9 +1,21 @@
-/* func_80052B7C — MEASURED s2 (structural). Applied to src/main/3AB48.c this
- * session and re-reverted to INCLUDE_ASM before finishing (asm-until-matched
- * rule 1: no draft C on main for an INCOMPLETE function). sandbox
+/* func_80052B7C — MEASURED s2 (structural), RE-VERIFIED s3 (structural, byte
+ * for byte reproduction of this exact body: score 16, build_insns ==
+ * target_insns == 24, same 5 source-level hunks). Applied to src/main/3AB48.c
+ * each session and re-reverted to INCLUDE_ASM before finishing (asm-until-
+ * matched rule 1: no draft C on main for an INCOMPLETE function). sandbox
  * func_80052B7C --disable all --diff on this exact body: score 16 (down from
  * the s1 floor of 24), build_insns == target_insns == 24, all 5 remaining
  * hunks classed source-level (no reg-alloc/scheduling lever can close them).
+ * s3 additionally: (a) re-enumerated gtemac.h + inline_c.h in full (not just
+ * the CR5-7 subset) -- no finer-grained vendored macro exists for chunk 1's
+ * batched order or chunk 5's lone final store; (b) got dump.ps1 producing a
+ * real .dbr dump (fixed a missing subdirectory) and confirmed chunk 5's
+ * delay-slot gap directly from the RTL: gte_stlvl's 3-swc2 body is one opaque
+ * `asm_operands` insn that reorg.c's delay-slot filler cannot split or select
+ * for the jr $ra slot. Both chunks 1 and 5 remain blocked on the same policy
+ * question flagged by s2 (written single-instruction island vs. a macro call,
+ * under inline-asm-policy.md's "Calls, not copies") -- no further codegen
+ * lever is known; next step is the ruling-request, not more structural work.
  *
  * Needs: #include <psxsdk/inline_c.h> added to src/main/3AB48.c (NOT
  * inline_o.h — see finding below, inline_c.h's macros use the pointer

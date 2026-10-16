@@ -1360,3 +1360,7 @@ Disposition record (escalation modality, grind session s23). Not a question to t
 (iii) Next step / re-activation.
 - Operator integration: run a layer-2 cheat-reviewer on the landed INCLUDE_ASM body under the existing inline_asm_canonical.txt:25 row and `queue done` it as COMPLETED-INLINE-ASM-CANONICAL; no grind session can touch the registry or queue state. A Grinder session can only re-confirm the stub.
 - If the row at inline_asm_canonical.txt:25 is ever revoked: the pure-C attack restarts from rejected/psyq-rtpt-pair-reorg-slot-residual.c (floor 32), residual = $s0 ABI + mfc2 seats + reorg slots.
+
+## 2026-10-15 20:38 — func_80052B7C — ruling: func_80052B7C carries a whole-function canonical-asm grant (inline_asm_canonical — **FAIL**
+
+No, the written islands are not admitted. inline-asm-policy.md:55-57 (item 3) is absolute: there is no __asm__ spelling of a header macro. Lines 70-72 say the written-out island routes 'admit nothing new'. 'The macro can't reach the bytes' is not an exception anywhere in the rule. Chunk 2's written lh/ctc2 island is not precedent: it is itself a new written island, and the class grant (lines 42-45, 55) requires every GTE operation to be a call by name, so a mixed body never qualifies. The row at inline_asm_canonical.txt:340 is the whole-body grant reopened for audit by aeea8ed44 (owner 2026-10-08). It is not a licence for islands inside a C body. Verified: the rule text; candidate.c (written island at chunk 2); s2 kills in state.json; scan_hand_coded --single = LOW 0/12, no gate-class signal.

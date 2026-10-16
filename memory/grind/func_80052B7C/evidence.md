@@ -125,3 +125,54 @@ question rather than resolved here.
 - [s2] tools/grinder/dump.ps1 func_80052B7C produced no .rtl/.sched dump this session ('No such file or directory') -- the chunk-5 delay-slot mechanism is reasoned, not dump-confirmed; flagged rather than guessed past.
 
 - [s2] src/main/3AB48.c reverted to INCLUDE_ASM("asm/funcs", func_80052B7C); before finishing -- git status --short on src/ is clean; only the three ledger files under memory/grind/func_80052B7C/ changed.
+
+## s3 (structural) — chassis re-verify, gtemac.h re-check, .dbr dump confirmation
+
+- [s3] Dispatch's "chassis discontinuity" (measured 24 vs ledger floor 16) is NOT a real
+  regression: src/main/3AB48.c is INCLUDE_ASM between sessions per asm-until-matched rule 1,
+  so the top-of-session measurement is always the asm-only floor (24). Re-applying
+  candidate.c verbatim (gte_SetRotMatrix via inline_c.h + written chunk-2 island + gte_ldv0 +
+  gte_rt + gte_stlvl) and re-running `sandbox func_80052B7C --disable all --diff` reproduces
+  score 16, build_insns 24 == target_insns 24, same 5 source-level hunks s2 recorded
+  (tmp/grind/func_80052B7C/s3/sandbox_recheck.txt). Floor 16 stands; nothing to re-derive.
+
+- [s3] Frontier item 3 (re-check gtemac.h for a finer CR0-4-only or DR9-11-only primitive)
+  resolved: `grep -n "define gte_" include/psxsdk/gtemac.h` lists only composite multi-step
+  macros (`gte_RotTransPers`, `gte_RotTrans`, `gte_LocalLight`, `gte_MulMatrix0`,
+  `gte_ApplyMatrix`, etc. -- 48 entries, none touching only CR0-4 or only DR9-11 in isolation);
+  `grep -n "define gte_" include/psxsdk/inline_c.h` lists every leaf primitive (incl.
+  `gte_SetRotMatrix`, `gte_stlvl`, `gte_SetTransMatrix`, `gte_ldtr`, `gte_SetTransVector`,
+  `gte_mvlvtr` -- the same set s1/s2 already enumerated for chunk 2). No macro in either
+  vendored header stores/loads a strict subset of CR0-4 or DR9-11 alone. KILLED (instance):
+  no finer-grained vendored primitive exists for chunk 1's batched order or chunk 5's
+  single-word store, in EITHER header, confirmed by a full `define gte_` enumeration of both
+  files this session (not just the CR5-7-touching subset s1 checked).
+
+- [s3] Got `tools/grinder/dump.ps1 func_80052B7C` to produce real dumps this session: the
+  prior "No such file or directory" failure (s2) was `dump.ps1` not pre-creating the
+  `dumps/<stem-dir>/` subdirectory (only `dumps/` itself) before invoking cc1 with
+  `-dumpbase dumps/main/3AB48` -- creating `tmp/grind/func_80052B7C/dumps/main/` by hand
+  before the call let it succeed. Full dump set now at
+  `tmp/grind/func_80052B7C/dumps/main/3AB48.{rtl,combine,cse,cse2,dbr,flow,greg,jump,jump2,
+  loop,lreg,s,sched,sched2}`.
+
+- [s3] **Finding 2's mechanism (chunk 5 delay-slot) is now DUMP-CONFIRMED, not just reasoned**
+  (`tmp/grind/func_80052B7C/dumps/main/3AB48.dbr` lines 112-148, read with the candidate.c
+  body spliced in via dump.ps1's default TU dump -- the candidate body was live in src/ this
+  session so no `-Candidate` flag was needed). The RTL shows: insn 19 = `gte_ldv0` (asm_operands,
+  2 lwc2), insn 21 = `gte_rt` (2 nop + mvmva word), **insn 23 = `gte_stlvl`'s entire 3-swc2 body
+  as ONE `asm_operands` RTL node** (`"swc2 $9,0(%0);swc2 $10,4(%0);swc2 $11,8(%0)"`, a single
+  insn, not three), then **insn 32 = the `jump_insn` `(return)`** immediately after a chain of
+  `NOTE_INSN_DELETED` notes (30, 28, 29) between insn 23 and 32 -- no ordinary single-MIPS-op
+  insn sits between the asm block and the return for reorg.c's `fill_simple_delay_slots` to
+  select as the delay-slot filler; the only candidate is insn 23 itself, and reorg.c's delay-slot
+  filler does not split or partially duplicate a multi-instruction `asm_operands` node into a
+  delay slot (it treats inline asm as an opaque, non-relocatable unit by construction -- GCC's
+  `asm_noperands`/`volatile_insn_p` path marks `asm_operands` ineligible for the dbr scheduler's
+  insn-splitting). The aggregate pass-2 stats for this file region show the function's one
+  delay-slot-needing jump got 0 delays filled, consistent with observed output (`nop` in the
+  slot, `swc2 $11,8(a3)` placed before `jr $ra` instead of in it). This upgrades finding 2 from
+  "reasoned inference" to "confirmed by the actual .dbr RTL dump" -- the mechanism is GCC's
+  reorg.c / `dbr_schedule` treating `asm_operands` as opaque to delay-slot filling, not merely
+  "a multi-instruction block it doesn't reach inside of" (same conclusion, now with the exact
+  RTL insns and pass-stage cited).
