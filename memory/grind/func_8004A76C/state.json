@@ -522,5 +522,14 @@
  "pending_fixup": null,
  "origin": "regression",
  "created": "2026-10-15T22:14:07.798589+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "cc1psx_check": {
+  "at": "2026-10-16T00:32:23.343582+00:00",
+  "candidate_sha": "5fade2abbce5",
+  "ours": null,
+  "psx": null,
+  "closer": false,
+  "ok": false,
+  "error": "cc1psx produced no scorable object: 'func_8004A76C not found in tmp/cc1psx/func_8004A76C/psx.o'"
+ }
 }

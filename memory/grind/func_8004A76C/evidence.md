@@ -431,3 +431,5 @@
 - [s22] Sibling func_8004A4E0/candidate.c re-read in full: unchanged since 2026-10-15 17:03 (comments-only, ASM-WHOLE, floor 163), nothing transplantable onto this chassis -- consistent with this ledger's own prior s18 read.
 
 - [s22] sandbox --disable all this session: {"score": 37, "scorable": true, "target_insns": 37, "build_insns": 0, "no_c_body": true, "cheat_asm_stripped": 71} -- floor unchanged from s14-s21.
+
+- [s22] CC1PSX SELF-DISPROOF (driver): check did not produce a scorable result (cc1psx produced no scorable object: 'func_8004A76C not found in tmp/cc1psx/func_8004A76C/psx.o'); rotation proceeds on the source-side assumption.
