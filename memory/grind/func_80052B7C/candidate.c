@@ -204,6 +204,25 @@
  * volatile string (include/psxsdk/inline_c.h:297, :1086). No src/ edit banked; src/main/3AB48.c
  * stays INCLUDE_ASM. See hypotheses.md s26.
  */
+/* s27 (enumerate): sixth consecutive enumerate pass (after s9, s15, s16, s17, s26);
+ * mandatory kill re-audit first: chassis re-applied fresh to src/main/3AB48.c, re-measured
+ * 19 (24/24 insns, 4/4 hunks source-level, 0 operand-only, tmp/grind/func_80052B7C/s27/
+ * sandbox_diff.txt), fake_ablate.py confirms "no FAKE-annotated constructs found; nothing
+ * to ablate" (identical to s14/s18-s26 -- no instance kill voided by chassis/FAKE drift).
+ * spelling_enum.py re-run on the exact 5-statement region (scratch copy s27/
+ * enum_candidate2.c): both --no-swaps (s27/enum_noswap2) and swap axis (s27/enum_swap2)
+ * report "0 named locals, 0 assignments, 5 anchors -> 1 distinct spellings" -- byte-identical
+ * to all five prior passes. NOTE for future sessions: a first attempt this session widened
+ * the ENUM region to also cover the `#include` and function-signature lines (s27/
+ * enum_candidate.c); the swap axis then reported "16 distinct spellings" because the tool's
+ * commutative-swap pass treats a pointer declarator `T * name` as a binary `*` operator and
+ * swaps it into invalid syntax (`out * VECTOR`) -- this is a tool artifact of the malformed
+ * region, not a real mutation axis; discard it, do not re-propose it as a finding, and keep
+ * the region scoped to the 5 call statements only (matching s9/s15/s16/s17/s26). CLASS KILL
+ * (standing, 6th measurement): the C-level spelling-sweep search space on this chassis is
+ * provably empty. No src/ edit banked; src/main/3AB48.c stays INCLUDE_ASM. See hypotheses.md
+ * s27.
+ */
 /* s18 (synthesis): kill re-audit -- body unchanged, re-measured 19 (4/4 source-level), no
  * FAKE to ablate (tmp/grind/func_80052B7C/s18/). New census (s18/batch_census.txt): the
  * target's batched lw/lh $t0..$t7 -> ctc2 run occurs in 16 EXE functions, all hand-written

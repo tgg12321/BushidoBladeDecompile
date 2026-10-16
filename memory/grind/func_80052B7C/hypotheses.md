@@ -1,7 +1,7 @@
 # Hypothesis ledger — func_80052B7C
 
-> COMPACTED 2026-10-15 by `grindlib.py compact-ledger` (66,289 bytes, cap 64K). Older entries are one-line index items;
-> full text: `git show 79a1ea68e:memory/grind/func_80052B7C/hypotheses.md` (history before 2026-10-01: tag pre-slim-2026-10-01).
+> COMPACTED 2026-10-15 by `grindlib.py compact-ledger` (65,749 bytes, cap 64K). Older entries are one-line index items;
+> full text: `git show 15fbdbf1c:memory/grind/func_80052B7C/hypotheses.md` (history before 2026-10-01: tag pre-slim-2026-10-01).
 > Look one up only when its index line bears on your probe. Append below as usual.
 
 ## s1 (recon)
@@ -28,7 +28,7 @@ asm statements) in the exact original sequence (loads-then-ctc2-batched vs. the 
 … (preamble truncated — full text in git, above)
 
 ## Current state (at compaction)
-floor 19 at s21; 21 sessions; live frontier (state.json is authoritative):
+floor 19 at s26; 26 sessions; live frontier (state.json is authoritative):
   - A scan_hand_coded gate-class signal for the batched lw/lh $tN -> ctc2 idiom (s18) and/or the cop2-in-jr-slot signal (s11) lifts func_80052B7C to STRONG tier for the whole-body INCLUDE_ASM branch.
   - The inline_asm_canonical.txt:340 whole-body grant audit resolves in favor of func_80052B7C on cluster plus Sony-idiom evidence.
   - A vendored macro whose template batches the rotation+TR loads in $8..$15 would close hunk 1 in pure macro-call C.
@@ -179,6 +179,18 @@ floor 19 at s21; 21 sessions; live frontier (state.json is authoritative):
 - predicate_cite: engine/gtemacro.py:1095
 - result: Score 19 with an identical diff; cheat_asm_stripped rises 70->71 and the objdump has no nop after c2 0x480012. The sandbox strips a standalone gte_nop() as a scheduling barrier by name (engine/gtemacro.py:30, :1095), which is a forbidden family anyway, and hunks 3-4 (reorg.c:740, s7) would stay open.
 
+## [s26] Re-running spelling_enum.py (both --no-swaps and swap-axis) on the full 5-statement ENUM-BEGIN/END region, on the current chassis, still finds zero mutation axes.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: include/psxsdk/inline_c.h:297
+- result: Chassis re-confirmed at score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- byte-identical classification to s6/s8/s13-s25 (hunk 1 = gte_SetRotMatrix+gte_ldtr batching/register-seat, hunks 2-4 = gte_stlvl's delay-slot swc2 placement). Both enum runs report "0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings", with and without the swap axis -- identical,…
+
+## [s26] Re-running spelling_enum.py (both --no-swaps and swap-axis) on the full 5-statement ENUM-BEGIN/END region, on the current chassis, still finds zero mutation axes.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: include/psxsdk/inline_c.h:297
+- result: Chassis re-confirmed: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- identical classification to s6/s8/s13-s25. Both enum runs report '0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings', word-for-word identical to s9/s15/s16/s17. The region already spans the entire function body; no neighbouring block exists to widen into.
+
 ## Confirmed levers
 
 ## [s2] func_80052B7C(MATRIX *rot, SVECTOR *tr, VECTOR *v0, VECTOR *out) using gte_SetRotMatrix/gte_ldv0/gte_rt/gte_stlvl from psxsdk/inline_c.h plus a written __asm__ island for the macro-less TR-halfword chunk reaches sandbox distance 0.
@@ -261,6 +273,30 @@ floor 19 at s21; 21 sessions; live frontier (state.json is authoritative):
 - verdict: CONFIRMED
 - result: score 19, 24/24, 4 source-level / 0 operand-only; fake_ablate: nothing to ablate.
 
+## [s22] KILL RE-AUDIT (rederive): the banked legal macro-call chassis re-measures 19 on the current tree with zero FAKE carriers.
+- verdict: CONFIRMED
+- result: score 19, 4/4 source-level hunks, 0 operand-only, 0 not-scored -- byte-identical diff shape to s6/s8/s9/s11-s21. Hunk 1 is the rotation-matrix lw/ctc2 batch (ours: 2+3+3 lw/ctc2 grouped by register pair; target: 8 lw then 8 ctc2 fully batched) plus the TR loads landing in {a0,v1,v0} vs target's {t5,t6,t7}; hunks 2-4 are the trailing nop/swc2/nop ordering around gte_stlvl. No drift from s21.
+
+## [s22] The banked legal macro-call chassis (candidate.c:201-208, #include <psxsdk/inline_c.h>, 5 gte_* statements) re-measures 19 when applied fresh to src/main/3AB48.c this session, with zero FAKE constructs present.
+- verdict: CONFIRMED
+- result: score 19, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- identical diff shape to s6/s8/s9/s11-s21. Hunk 1 is the rotation-matrix batching (ours groups lw/ctc2 in pairs/triples; target batches 8 lw then 8 ctc2) plus TR-vector register seats; hunks 2-4 are the trailing nop/swc2 ordering.
+
+## [s24] KILL RE-AUDIT (structural): the banked legal macro-call chassis re-measures 19 on the current tree with zero FAKE carriers.
+- verdict: CONFIRMED
+- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored. Identical to s6/s8/s13-s23. See tmp/grind/func_80052B7C/s24/chassis_sandbox_diff.txt variant A.
+
+## [s24] The banked legal macro-call chassis (#include <psxsdk/inline_c.h>; gte_SetRotMatrix(rot); gte_ldtr(tr->vx,tr->vy,tr->vz); gte_ldv0(v0); gte_rt(); gte_stlvl(out);) still measures 19 on the current tree with zero FAKE carriers.
+- verdict: CONFIRMED
+- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- identical to s6/s8/s13-s23.
+
+## [s25] memory/grind/func_80052B7C/candidate.c had a comment-nesting corruption that broke `sandbox --candidate` entirely, independent of any codegen question.
+- verdict: CONFIRMED
+- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- exactly matches the ledger's recorded floor and the s6/s8/s13-s24 hunk classification (hunk 1 = SetRotMatrix+ldtr batching/register-seat, hunks 2-4 = gte_stlvl delay-slot swc2 placement). No codegen change; this is a pure ledger-hygiene fix. candidate.c is now buildable again for future sessions' dispatch-time chassis…
+
+## [s25] memory/grind/func_80052B7C/candidate.c had a comment-nesting corruption that broke `sandbox --candidate` entirely, independent of any codegen question.
+- verdict: CONFIRMED
+- result: Score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- exactly matches the ledger's recorded floor and prior hunk classification (hunk 1 = SetRotMatrix+ldtr batching/register-seat, hunks 2-4 = gte_stlvl delay-slot swc2 placement). Pure ledger-hygiene fix, no codegen change. candidate.c is buildable again for future dispatch-time chassis checks.
+
 ## Instance kills and other entries (index; chassis-relative, re-testable)
 
 ## [s2] gte_SetRotMatrix(rot), called as a vendored macro (either header), reproduces target chunk 1's exact instruction sequence.
@@ -297,231 +333,84 @@ floor 19 at s21; 21 sessions; live frontier (state.json is authoritative):
 - verdict: KILLED (instance)
 
 ## [s12] The decomp.me corpus (gcc2.7.2-psx compiler bucket) contains a scratch whose target asm is similar enough to func_80052B7C's batched-GTE-register-load pattern to transplant a different C shape.
-- verdict: KILLED (instance) — Top 5 hits all score similarity 0.022-0.026 (tmp/grind/func_80052B7C/s12/decomp_me_search.txt) -- an order of magnitude below anything citable as a structural…
+- verdict: KILLED (instance)
 
 ## [s12] The func_800203B4 island-grant precedent (inline_asm_canonical.txt:357: thin GTE islands authorized AS UNITS after pure-C respelling measured unable to close, owner-granted 2026-09-01) reopens the written-island questio…
-- verdict: KILLED (instance) — The func_80052B7C ruling already considered and rejected this exact argument by name ("Chunk 2's written lh/ctc2 island is not precedent: it is itself a new wr…
+- verdict: KILLED (instance)
 
 ## [s12] The decomp.me corpus (gcc2.7.2-psx compiler bucket) contains a scratch whose target asm is similar enough to func_80052B7C's batched-GTE-register-load pattern to transplant a different C shape.
-- verdict: KILLED (instance) — Top 5 hits all score similarity 0.022-0.026 (tmp/grind/func_80052B7C/s12/decomp_me_search.txt) -- an order of magnitude below anything citable as a structural…
+- verdict: KILLED (instance)
 
 ## [s12] No sibling in the 3AB48 GTE cluster (func_8004A4E0, func_8004A76C) has a banked candidate.c body containing a transplantable SetRotMatrix/ctc2-batching or delay-slot C shape for this function's residual.
-- verdict: KILLED (instance) — func_8004A4E0's candidate.c mentions '4 ctc2 with no C form' only in its own exhaustion summary prose, no concrete transplantable body; func_8004A76C's candida…
+- verdict: KILLED (instance)
 
 ## [s14] The s6 legal chassis contains zero FAKE-annotated constructs, so the KILL RE-AUDIT dispatcher condition (re-measure the closest instance kill with every FAKE construct ablated) is vacuously satisfied -- there is no FAKE…
-- verdict: KILLED (instance) — "no FAKE-annotated constructs found in memory/grind/func_80052B7C/candidate.c; nothing to ablate" (tmp/grind/func_80052B7C/s14/ablate.txt).
+- verdict: KILLED (instance)
 
 ## [s19] For the RA-owned subset (gte_ldtr's 3 operands), moving the tr->vx/vy/vz loads into named locals before gte_SetRotMatrix, or issuing gte_ldtr before gte_SetRotMatrix, moves those operands toward the target's t5..t7.
-- verdict: KILLED (instance) — Both variants score 19, 4/4 hunks source-level. Both allocate lh t0,v1,v0 -> ctc2 $5/$6/$7, which is the lowest-free set as predicted (s19/v1_locals_pre.txt, s…
+- verdict: KILLED (instance)
 
 ## [s19] Loading tr->vx/vy/vz into named locals before gte_SetRotMatrix, or issuing gte_ldtr first, moves the three ldtr operands to the target's t5..t7.
-- verdict: KILLED (instance) — Both score 19, 4/4 source-level, operands lh t0,v1,v0 (baseline a0,v1,v0). No t5..t7.
+- verdict: KILLED (instance)
 
 ## [s21] Replacing gte_rt() with the DMPSX bare-word variant gte_rt_b() (inline_c.h:815, no leading nops) changes the scored distance.
-- verdict: KILLED (instance) — score 19 with a byte-identical diff report to base, but the objdump shows the two pre-RT nops gone (24 lines vs base 26). The scorer is nop-insensitive at that…
+- verdict: KILLED (instance)
 
 ## [s21] Replacing gte_rt() with the DMPSX bare-word gte_rt_b() (inline_c.h:815) changes the scored distance on the legal chassis.
-- verdict: KILLED (instance) — Score 19 with an identical diff report, but the objdump shows both pre-RT nops removed. The score ignores them, and the bytes move away from the target, so thi…
+- verdict: KILLED (instance)
 
-## Latest session s22 (verbatim)
+## [s22] Mandatory sibling-transplant check: func_8004A4E0 and func_8004A76C (named in this session's cross-knowledge sweep, candidates re-written 2026-10-15 17:03 / 19:31) hold a transplantable C body for the shared GTE-cluster…
+- verdict: KILLED (instance) — zero transplantable C exists in either sibling file. This reconfirms s12's "No sibling in the 3AB48 GTE cluster has a banked candidate.c body containing a tran…
 
-## [s22] KILL RE-AUDIT (rederive): the banked legal macro-call chassis re-measures 19 on the current tree with zero FAKE carriers.
-- mechanism: dispatcher-mandated re-audit; instance kills are voided only by chassis drift or FAKE carriers. Applied fresh (candidate.c:201-208) over the current src/main/3AB48.c INCLUDE_ASM stub.
-- probe: sandbox func_80052B7C --disable all --diff (tmp/grind/func_80052B7C/s22/sandbox_reaudit.txt); grep for FAKE markers in the applied body (none found, matching s14/s18-s21's "fake_ablate has nothing to act on" finding -- fake_ablate.py is not directly reachable through tools/wteng.ps1's `engine` subcommand dispatcher from this session, the direct grep is equivalent evidence of zero `/* FAKE` sites); reverted to INCLUDE_ASM.
-- result: score 19, 4/4 source-level hunks, 0 operand-only, 0 not-scored -- byte-identical diff shape to s6/s8/s9/s11-s21. Hunk 1 is the rotation-matrix lw/ctc2 batch (ours: 2+3+3 lw/ctc2 grouped by register pair; target: 8 lw then 8 ctc2 fully batched) plus the TR loads landing in {a0,v1,v0} vs target's {t5,t6,t7}; hunks 2-4 are the trailing nop/swc2/nop ordering around gte_stlvl. No drift from s21.
-- verdict: CONFIRMED
-
-## [s22] Mandatory sibling-transplant check: func_8004A4E0 and func_8004A76C (named in this session's cross-knowledge sweep, candidates re-written 2026-10-15 17:03 / 19:31) hold a transplantable C body for the shared GTE-cluster residual.
-- mechanism: both files are comments-only dispositions, not C bodies -- func_8004A4E0/candidate.c:1-13 states explicitly "func_8004A4E0 -- no pure-C candidate exists" / "this file carries NO C candidate - it is a comments-only record" (whole-body canonical-asm grant, inline_asm_canonical.txt:199, custom $s0/$s4/$s5/$s6/$fp callee-saved ABI across jal with func_8004A940/func_8004A76C/func_8004A808, 2 trapping addi, 4 ctc2, docs/grind/decisions.md:1324 OWNER-ESCALATION ROTATED 2026-10-15). func_8004A76C/candidate.c is the matching comments-only record for its own whole-body canonical-asm grant (inline_asm_canonical.txt:25, custom $s0 ABI, docs/grind/decisions.md:1345 CANONICAL-ASM GRANT PATH 2026-10-15). Neither file contains a single emitted C statement to transplant; their residuals (custom-ABI callee-saved register handoffs, trapping addi, cross-function jtbl) are categorically different from this function's residual (a GTE register-batching template literal), so even if a C body existed there is no shared block to borrow.
-- probe: wc -l + grep -c for a function-body opener (`^[a-zA-Z].*(`) against both candidate.c files this session (both counts land only on comment-banner lines, confirmed by reading func_8004A4E0/candidate.c:1-30 directly); cross-checked against docs/grind/decisions.md's two 2026-10-15 disposition entries for both siblings.
-- result: zero transplantable C exists in either sibling file. This reconfirms s12's "No sibling in the 3AB48 GTE cluster has a banked candidate.c body containing a transplantable ... C shape" kill under the CURRENT (2026-10-15, post s23-of-each-sibling) state of both files -- the siblings moved (both got fresh OWNER-ESCALATION/GRANT-PATH dispositions since s12) but the "no C body" fact that makes transplant vacuous did not change.
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: memory/grind/func_8004A4E0/candidate.c and memory/grind/func_8004A76C/candidate.c as of this session (2026-10-15, after each sibling's s23), no FAKE construct, no src/ edit (read-only check)
-
-## [s22] The sotn-decomp master-branch construct index (docs/reference/sotn-construct-index.md, 1,365 PSX-tagged entries) carries a citable precedent for the GTE rotation-matrix/TR-vector register-batching shape this function's hunk 1 needs (a lw/lh $tN-run batched before a ctc2 $0..$7 run, or an equivalent SetRotMatrix+ldtr composite).
-- mechanism: Q55/sotn-precedent-suffices (owner ruling 2026-09-30) admits a construct item 2-3 would otherwise refuse ONLY on a verified SOTN citation; no citation means that route stays closed and the residual stays inside the vendored template (s18-s21 finding: hunk 1 is fixed at RTL expand from inline_c.h:298-307's literal asm template text, not a C-level spelling choice).
-- probe: `grep -ni "setrotmatrix\|ctc2\|gte_ldtr\|RotMatrix" docs/reference/sotn-construct-index.md` this session.
-- result: zero matches anywhere in the index. No SOTN-master precedent exists for this construct at the pinned commit the index was built from.
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: docs/reference/sotn-construct-index.md as checked out this session (pinned sotn-decomp master-branch commit per the file's own header), no FAKE construct, no src/ edit (read-only grep)
-
-## [s22] The banked legal macro-call chassis (candidate.c:201-208, #include <psxsdk/inline_c.h>, 5 gte_* statements) re-measures 19 when applied fresh to src/main/3AB48.c this session, with zero FAKE constructs present.
-- mechanism: dispatcher-mandated kill re-audit; an instance kill is only as good as its chassis/FAKE state at measurement time.
-- probe: Applied candidate.c body to src/main/3AB48.c; sandbox func_80052B7C --disable all --diff (tmp/grind/func_80052B7C/s22/sandbox_reaudit.txt); grepped the applied body for /* FAKE markers (none); reverted to INCLUDE_ASM.
-- result: score 19, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- identical diff shape to s6/s8/s9/s11-s21. Hunk 1 is the rotation-matrix batching (ours groups lw/ctc2 in pairs/triples; target batches 8 lw then 8 ctc2) plus TR-vector register seats; hunks 2-4 are the trailing nop/swc2 ordering.
-- verdict: CONFIRMED
+## [s22] The sotn-decomp master-branch construct index (docs/reference/sotn-construct-index.md, 1,365 PSX-tagged entries) carries a citable precedent for the GTE rotation-matrix/TR-vector register-batching shape this function's…
+- verdict: KILLED (instance) — zero matches anywhere in the index. No SOTN-master precedent exists for this construct at the pinned commit the index was built from.
 
 ## [s22] func_8004A4E0 and func_8004A76C (named in this session's cross-knowledge sweep, candidates re-written 2026-10-15 at 17:03 and 19:31) hold a transplantable C body for this function's shared GTE-residual.
-- mechanism: Both sibling candidate.c files are comments-only disposition records, not C bodies: func_8004A4E0/candidate.c:1-13 states explicitly it carries no C candidate (whole-body canonical-asm grant, custom $s0/$s4/$s5/$s6/$fp callee-saved ABI, inline_asm_canonical.txt:199, docs/grind/decisions.md:1324). func_8004A76C/candidate.c is the matching record for its own grant (inline_asm_canonical.txt:25, docs/grind/decisions.md:1345). Neither has a single emitted statement to borrow, and their residuals (custom-ABI register handoffs, trapping addi, cross-function jtbl) are a different problem class from this function's RTL-template-literal residual regardless.
-- probe: wc -l and grep -c for a function-body opener against both candidate.c files; read func_8004A4E0/candidate.c:1-30 directly to confirm comments-only; cross-checked both siblings' 2026-10-15 decisions.md entries.
-- result: Zero transplantable C exists in either sibling file. Reconfirms s12's identical finding under the current (post-each-sibling's-own-s23) state: both siblings moved to fresh dispositions since s12, but the underlying 'no C body' fact is unchanged.
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: memory/grind/func_8004A4E0/candidate.c and memory/grind/func_8004A76C/candidate.c as of this session (2026-10-15, after each sibling's own s23), no FAKE construct, no src/ edit
+- verdict: KILLED (instance) — Zero transplantable C exists in either sibling file. Reconfirms s12's identical finding under the current (post-each-sibling's-own-s23) state: both siblings mo…
 
 ## [s22] The sotn-decomp master-branch construct index carries a citable precedent for the GTE rotation-matrix/TR-vector register-batching shape hunk 1 needs, which would open the Q55 SOTN-precedent-suffices route.
-- mechanism: Q55/sotn-precedent-suffices (owner ruling 2026-09-30) admits an otherwise-refused construct only on a verified SOTN citation; s18-s21 already established hunk 1 is fixed at RTL expand from inline_c.h:298-307's literal asm template text, so only a cited precedent construct (not a C-level respelling) could move it.
-- probe: grep -ni 'setrotmatrix|ctc2|gte_ldtr|RotMatrix' docs/reference/sotn-construct-index.md (1,365 PSX-tagged entries) this session.
-- result: Zero matches anywhere in the index. No SOTN-master precedent exists for this construct at the index's pinned commit.
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: docs/reference/sotn-construct-index.md as checked out this session (pinned sotn-decomp master-branch commit per the file's own header), no FAKE construct, read-only grep
+- verdict: KILLED (instance) — Zero matches anywhere in the index. No SOTN-master precedent exists for this construct at the index's pinned commit.
 
-## s23 (rederive)
+## [s23] psyz (Xeeynamo/psyz, the PsyQ 4.0 cross-platform decomp named in external-references memory as the closest reference SDK version to BB2's verbatim libraries) carries a byte-level precedent for the target's batched lw/ct…
+- verdict: KILLED (instance) — psyz's SetRotMatrix/RotMatrix*/ApplyRotMatrix are pure software reimplementations (plain MATRIX field copies and trig math for cross-platform porting) with zer…
 
-### H15 — psyz (Xeeynamo/psyz, the PsyQ 4.0 cross-platform decomp named in [[external-references]] as the closest reference SDK version to BB2's verbatim libraries) carries a byte-level precedent for the target's batched lw/ctc2 rotation-matrix load order, or an alternate C spelling of gte_SetRotMatrix/gte_stlvl that reaches it.
+## [s24] Declaring named s16 locals (trx/trY/trz) for tr->vx/vy/vz before gte_SetRotMatrix, instead of passing the struct-member reads directly as gte_ldtr's arguments, moves where the 3 sub-word loads land in the instruction st…
+- verdict: KILLED (instance) — score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored. See tmp/grind/func_80052B7C/s24/chassis_sandbox_diff.txt variant B. Extends s19's…
 
-Statement: psyz/src/psyz/libgte.c's `SetRotMatrix(MATRIX* m)` (fetched fresh this session via
-`gh api repos/Xeeynamo/psyz/contents/psyz/src/psyz/libgte.c`, saved to
-tmp/grind/func_80052B7C/s23/psyz_libgte.c) is a pure software reimplementation: nine plain
-`M.m[i][j] = m->m[i][j];` field copies into a global `MATRIX M`, with zero cop2/GTE opcodes
-anywhere in the function. psyz targets non-PS1 platforms (its GTE is emulated in C, per its own
-README/PORTING_GUIDE), so it was never compiled through a MIPS cop2-aware backend and carries no
-instruction-order information for the real hardware `ctc2` sequence at all -- there is no asm to
-compare, batched or otherwise. The same file's `RotMatrix`/`RotMatrixX/Y/Z/YXZ/ZYX` and
-`ApplyRotMatrix` (line 2667, delegating to a software `ApplyMatrix`) are the same story: C-level
-trig/matrix math with no GTE register traffic. This closes the one genuinely new rederive-modality
-lead this session found (psyz was not checked by any prior session's ledger entries for this
-function) and reconfirms s12/s22's decomp.me and SOTN-index findings: no external corpus checked so
-far (decomp.me, sotn-decomp master, now psyz) contains a real hardware cop2 precedent for this
-residual.
-
-- mechanism: n/a (negative corpus search, not a GCC-pass claim).
-- probe: `gh api repos/Xeeynamo/psyz/contents/psyz/src/psyz/libgte.c` fetched to
-  tmp/grind/func_80052B7C/s23/psyz_libgte.c (3280 lines); grepped for
-  `rotmatrix|SetRotMatrix` (6 hits); read SetRotMatrix (line 1209) and ReadRotMatrix (1233) in
-  full.
-- result: Zero cop2 opcodes, zero GTE register traffic, zero instruction-order information in
-  psyz's GTE layer for this or any sibling rotation-matrix function -- it is a full software
-  reimplementation for porting, not a byte-matching PS1 decomp of libgte itself. Re-applied the
-  s6 chassis fresh this session and re-measured: still 19, 4/4 hunks source-level, 0 operand-only
-  (tmp/grind/func_80052B7C/s23/sandbox_diff.txt), identical hunk shape to every prior
-  re-audit (s8/s9/s13-s22). Residual remains locked inside gte_SetRotMatrix's and gte_stlvl's own
-  fixed `__asm__` volatile strings (include/psxsdk/inline_c.h:297, :1086), exactly as established
-  since s8.
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: tmp/grind/func_80052B7C/s23/psyz_libgte.c (Xeeynamo/psyz, fetched 2026-10-15 this
-  session); s6 legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session,
-  reverted to INCLUDE_ASM after measurement
-
-## [s23] psyz (Xeeynamo/psyz, the PsyQ 4.0 cross-platform decomp named in external-references memory as the closest reference SDK version to BB2's verbatim libraries) carries a byte-level precedent for the target's batched lw/ctc2 rotation-matrix load order, or an alternate C spelling of gte_SetRotMatrix/gte_stlvl that reaches it.
-- mechanism: n/a (negative corpus search, not a GCC-pass claim)
-- probe: gh api repos/Xeeynamo/psyz/contents/psyz/src/psyz/libgte.c fetched to tmp/grind/func_80052B7C/s23/psyz_libgte.c (3280 lines); grepped for rotmatrix|SetRotMatrix (6 hits); read SetRotMatrix (line 1209) and ReadRotMatrix (1233) in full; re-applied the s6 legal chassis and re-measured sandbox func_80052B7C --disable all --diff.
-- result: psyz's SetRotMatrix/RotMatrix*/ApplyRotMatrix are pure software reimplementations (plain MATRIX field copies and trig math for cross-platform porting) with zero cop2/GTE opcodes anywhere -- it was never compiled through a MIPS cop2-aware backend, so it carries no hardware instruction-order information for this residual at all. Re-measured the s6 chassis fresh: still score 19, 4/4 hunks source-level, 0 operand-only, 0 not-scored (tmp/grind/func_80052B7C/s23/sandbox_diff.txt), identical hunk shape to every re-audit since s8. This was the one genuinely new external corpus this session's rederive-modality search found not yet checked by any prior ledger entry for this function (decomp.me and the sotn-decomp construct index were already checked at s12/s22, both negative).
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: tmp/grind/func_80052B7C/s23/psyz_libgte.c (Xeeynamo/psyz, fetched 2026-10-15 this session); s6 legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session, reverted to INCLUDE_ASM after measurement
-
-## [s24] KILL RE-AUDIT (structural): the banked legal macro-call chassis re-measures 19 on the current tree with zero FAKE carriers.
-- verdict: CONFIRMED
-- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored. Identical to s6/s8/s13-s23. See tmp/grind/func_80052B7C/s24/chassis_sandbox_diff.txt variant A.
-
-## [s24] Declaring named s16 locals (trx/trY/trz) for tr->vx/vy/vz before gte_SetRotMatrix, instead of passing the struct-member reads directly as gte_ldtr's arguments, moves where the 3 sub-word loads land in the instruction stream (front of the chunk vs after gte_SetRotMatrix's own loads) but changes nothing scored: still lhu not the target's lh, still batched per-macro-string not interleaved with gte_SetRotMatrix's loads, hunks 2-4 unchanged.
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: legal macro-call chassis via psxsdk/inline_c.h (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl), named s16 locals for the ldtr args declared before gte_SetRotMatrix, no FAKE construct, src/main/3AB48.c this session (s24), reverted after measurement
-- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored. See tmp/grind/func_80052B7C/s24/chassis_sandbox_diff.txt variant B. Extends s19's declaration-order probe (which tested reordering gte_ldtr vs gte_SetRotMatrix as whole statements) to the finer-grained axis of naming the sub-word reads as locals vs leaving them as inline member expressions; same null result.
-
-## [s24] GCC 2.7.2 emits lhu (not lh) for the s16 struct-member reads (tr->vx/vy/vz) feeding gte_ldtr's "r" asm operands regardless of C-level declaration form (direct member expression vs named s16 local, load position before/after gte_SetRotMatrix), so no structural (block-local-var-split/declaration-order/type-narrowing/statement-reassociation) lever reaches the target's lh opcode for those 3 loads.
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: both variants A and B above, legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session (s24)
-- result: both variants emit lhu t0/v1/v0 (or lhu v0/v1/t0) for the 3 loads; target is lh t5/t6/t7. Re-declaring the already-signed s16 type as a fresh local makes no difference -- GCC's choice of lhu over lh for a value only consumed by an asm "r" operand with no further arithmetic is independent of the C-level staging tried here. Narrower than a class kill: only declaration-order and local-staging were tried on THIS macro ("r" constraint, no asm modifier); a different constraint/modifier spelling of gte_ldtr is untested.
-
-## Current state (s24)
-floor 19, 24 sessions; structural modality's lever set (block-local var splits, declaration
-order, type narrowing via named locals, statement re-association) re-confirmed exhausted on
-this chassis for the 4th+ time (s8, s13 x2, s14, s19 x2, now s24's finer-grained sub-word-load
-staging variant). The residual's only remaining open frontier is the canonical-asm grant-path
-question (owner/Judge review of inline_asm_canonical.txt:340's whole-body grant, the
-scan_hand_coded gate-class signal work, a vendored macro for the batched lw/lh->ctc2 idiom) --
-none of which is a grind-session structural probe. See docs/grind/decisions.md 2026-10-15
-20:38 ruling and live frontier entries carried from s18-s23.
-
-## [s24] The banked legal macro-call chassis (#include <psxsdk/inline_c.h>; gte_SetRotMatrix(rot); gte_ldtr(tr->vx,tr->vy,tr->vz); gte_ldv0(v0); gte_rt(); gte_stlvl(out);) still measures 19 on the current tree with zero FAKE carriers.
-- mechanism: Re-audit of the kill ledger's mandated dispatcher condition before any new probe this session.
-- probe: Applied the chassis live to src/main/3AB48.c, ran sandbox func_80052B7C --disable all --diff, then reverted to INCLUDE_ASM.
-- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- identical to s6/s8/s13-s23.
-- verdict: CONFIRMED
+## [s24] GCC 2.7.2 emits lhu (not lh) for the s16 struct-member reads (tr->vx/vy/vz) feeding gte_ldtr's "r" asm operands regardless of C-level declaration form (direct member expression vs named s16 local, load position before/a…
+- verdict: KILLED (instance) — both variants emit lhu t0/v1/v0 (or lhu v0/v1/t0) for the 3 loads; target is lh t5/t6/t7. Re-declaring the already-signed s16 type as a fresh local makes no di…
 
 ## [s24] Declaring named s16 locals (trx/trY/trz) for tr->vx/vy/vz before gte_SetRotMatrix, instead of passing the struct-member reads directly as gte_ldtr's arguments, changes the scored distance.
-- mechanism: Structural-modality lever: block-local variable split + declaration order, applied to the one region of the chassis (the 3 ldtr operand loads) that s19 confirmed is RA-owned rather than template-literal.
-- probe: Edited src/main/3AB48.c to declare the 3 locals before gte_SetRotMatrix and pass them to gte_ldtr instead of tr->vx/vy/vz directly; ran sandbox --diff; reverted.
-- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only. The 3 loads move earlier in the instruction stream (now scheduled before gte_SetRotMatrix's own lw's instead of after) but still emit lhu not the target's lh, and are still grouped as their own 3-load/3-ctc2 batch rather than interleaved with gte_SetRotMatrix's loads+ctc2's as the target requires.
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: legal macro-call chassis via psxsdk/inline_c.h, named s16 locals for the 3 ldtr args declared before gte_SetRotMatrix, no FAKE construct, src/main/3AB48.c this session (s24), reverted after measurement
+- verdict: KILLED (instance) — score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only. The 3 loads move earlier in the instruction stream (now scheduled before gte_SetRotMatrix's own…
 
-## [s24] GCC 2.7.2's choice of lhu (not the target's lh) for the s16 struct-member loads feeding gte_ldtr's three 'r' asm operands is independent of the C-level declaration form tried (direct member expression vs named s16 local, load position before/after gte_SetRotMatrix).
-- mechanism: Both variant A (direct tr->vx/vy/vz args) and variant B (named locals) are already-signed s16 reads consumed only by an asm 'r' operand with no further arithmetic; GCC's load-widening choice for that pattern evidently does not depend on the source-level staging exercised here.
-- probe: Compared the hunk-1 diff of both variants measured this session.
-- result: Both variants emit lhu for all 3 loads; target is lh. No declaration-order or local-staging respelling tried (in s19 or s24) reaches lh.
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: variants A and B above, legal macro-call chassis, no FAKE construct, src/main/3AB48.c this session (s24)
-
-## [s25] memory/grind/func_80052B7C/candidate.c had a comment-nesting corruption that broke `sandbox --candidate` entirely, independent of any codegen question.
-- mechanism: Two spots in the ledger's header comment accidentally closed the C comment early: (1) old-line 231 had literal text "RotMatrix*/ApplyRotMatrix" where the mid-word `*/` closed the s23 comment prematurely; (2) old-line 16 had a bare `#include <psxsdk/inline_c.h>   (NOT inline_o.h -- see s2 finding 1a)` sitting between two comment blocks, which left 7 lines of an illustrative written-island C sketch (lines 17-23) stranded outside any comment as raw, unparseable tokens. Both bugs cascaded into dozens of cpp "missing terminating ' character" / "nondigits in number" / parse errors across the whole 5700-line 3AB48.c TU once the candidate's header was substituted into it, which is exactly the "measurement unavailable" the s25 dispatch chassis-check reported.
-- probe: Balanced a `/* ... */` depth-scan (tmp Python one-liner) over candidate.c to find both breaks; fixed (1) by removing the mid-word `*/` (now reads ".../RotMatrix/ApplyRotMatrix -- ..."); fixed (2) by removing the bare #include and re-wording it as plain comment prose, keeping the one real `/* ... */` block intact from line 1 to line 80. Re-ran `sandbox func_80052B7C --disable all --candidate memory/grind/func_80052B7C/candidate.c --diff`.
-- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- exactly matches the ledger's recorded floor and the s6/s8/s13-s24 hunk classification (hunk 1 = SetRotMatrix+ldtr batching/register-seat, hunks 2-4 = gte_stlvl delay-slot swc2 placement). No codegen change; this is a pure ledger-hygiene fix. candidate.c is now buildable again for future sessions' dispatch-time chassis check.
-- verdict: CONFIRMED
+## [s24] GCC 2.7.2's choice of lhu (not the target's lh) for the s16 struct-member loads feeding gte_ldtr's three 'r' asm operands is independent of the C-level declaration form tried (direct member expression vs named s16 local…
+- verdict: KILLED (instance) — Both variants emit lhu for all 3 loads; target is lh. No declaration-order or local-staging respelling tried (in s19 or s24) reaches lh.
 
 ## [s25] Removing the redundant `(s32)` casts on gte_ldtr's three arguments (passing `tr->vx/vy/vz` directly instead of `(s32)tr->vx` etc.) changes the scored distance.
-- mechanism: Structural-modality lever (type narrowing / redundant-cast removal) on the one RA-owned region of the chassis (s19's finding).
-- probe: tmp/grind/func_80052B7C/s25/variant_nocast.c -- `gte_ldtr(tr->vx, tr->vy, tr->vz);` with no explicit cast. Measured with sandbox --candidate (no --diff needed, score alone suffices to compare).
-- result: score 19, 24/24 insns -- byte-identical score to the cast form. The explicit `(s32)` cast is a no-op for this macro's `"r"` operand (GCC already promotes the s16 lvalue to the register width when binding it to an asm input operand); no instruction-selection or RA difference.
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: legal macro-call chassis, `gte_ldtr` args with casts removed, no FAKE construct, tmp/grind/func_80052B7C/s25/variant_nocast.c this session (s25)
+- verdict: KILLED (instance) — score 19, 24/24 insns -- byte-identical score to the cast form. The explicit `(s32)` cast is a no-op for this macro's `"r"` operand (GCC already promotes the s…
 
-## [s25] Block-scoping three freshly declared `s32` locals (trX/trY/trZ, widened from the s16 members, assigned from tr->vx/vy/vz) around the gte_ldtr call, instead of the direct member-expression args, changes the scored distance.
-- mechanism: Structural-modality lever (block-local variable split + type narrowing combined), distinct from s24's variant B: s24 used *s16*-typed locals declared *before* gte_SetRotMatrix; this probe uses *s32*-typed locals declared in a nested block *at* the gte_ldtr call site, to separate the type axis from the declaration-position axis s24 already killed.
-- probe: tmp/grind/func_80052B7C/s25/variant_s32locals.c -- `{ s32 trX = tr->vx; s32 trY = tr->vy; s32 trZ = tr->vz; gte_ldtr(trX, trY, trZ); }` in place of the direct-arg call, SetRotMatrix call left untouched before the block. Measured with sandbox --candidate.
-- result: score 19, 24/24 insns -- identical to the direct-arg chassis and to s24's variant B. Confirms s24's finding generalizes across the type axis too: no combination of local-staging (declared where, declared what width) reaches a different score. This exhausts the last two structural sub-axes (redundant-cast removal, type-widened block-local) not explicitly covered by s8/s9/s13-s16's `spelling_enum.py` sweeps (which only detect *named* locals/assignments already in the body, not ones a session adds and measures by hand).
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: legal macro-call chassis, s32 block-local staging for the 3 ldtr args, no FAKE construct, tmp/grind/func_80052B7C/s25/variant_s32locals.c this session (s25)
-
-## [s25] memory/grind/func_80052B7C/candidate.c had a comment-nesting corruption that broke `sandbox --candidate` entirely, independent of any codegen question.
-- mechanism: A stray mid-word comment-close sequence at old-line 231 ('RotMatrix' + close-comment + 'ApplyRotMatrix') and a bare #include stranding 7 lines of an illustrative written-island sketch outside its enclosing comment (old-line 16) both broke the file's C comment nesting, cascading into dozens of cpp parse errors once the candidate's header was substituted into the 5700-line 3AB48.c TU.
-- probe: Depth-scanned /* */ nesting with a Python one-liner to locate both breaks; fixed both; re-ran sandbox func_80052B7C --disable all --candidate memory/grind/func_80052B7C/candidate.c --diff.
-- result: Score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- exactly matches the ledger's recorded floor and prior hunk classification (hunk 1 = SetRotMatrix+ldtr batching/register-seat, hunks 2-4 = gte_stlvl delay-slot swc2 placement). Pure ledger-hygiene fix, no codegen change. candidate.c is buildable again for future dispatch-time chassis checks.
-- verdict: CONFIRMED
+## [s25] Block-scoping three freshly declared `s32` locals (trX/trY/trZ, widened from the s16 members, assigned from tr->vx/vy/vz) around the gte_ldtr call, instead of the direct member-expression args, changes the scored distan…
+- verdict: KILLED (instance) — score 19, 24/24 insns -- identical to the direct-arg chassis and to s24's variant B. Confirms s24's finding generalizes across the type axis too: no combinatio…
 
 ## [s25] Removing the redundant (s32) casts on gte_ldtr's three arguments (passing tr->vx/vy/vz directly instead of (s32)tr->vx etc.) changes the scored distance.
-- mechanism: Structural-modality lever (type narrowing / redundant-cast removal) on the one RA-owned region of the chassis (s19's finding).
-- probe: tmp/grind/func_80052B7C/s25/variant_nocast.c measured with sandbox --candidate.
-- result: Score 19, 24/24 insns -- byte-identical score to the cast form. The explicit (s32) cast is a no-op for gte_ldtr's 'r' asm operand.
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: legal macro-call chassis, gte_ldtr args with casts removed, no FAKE construct, tmp/grind/func_80052B7C/s25/variant_nocast.c this session (s25)
+- verdict: KILLED (instance) — Score 19, 24/24 insns -- byte-identical score to the cast form. The explicit (s32) cast is a no-op for gte_ldtr's 'r' asm operand.
 
 ## [s25] Block-scoping three freshly declared s32 locals (widened from the s16 members, assigned from tr->vx/vy/vz) around the gte_ldtr call, instead of the direct member-expression args, changes the scored distance.
-- mechanism: Structural-modality lever (block-local variable split + type narrowing combined), distinct from s24's variant B which used s16-typed locals declared before gte_SetRotMatrix; this probe isolates the type-width axis from the declaration-position axis.
-- probe: tmp/grind/func_80052B7C/s25/variant_s32locals.c measured with sandbox --candidate.
-- result: Score 19, 24/24 insns -- identical to the direct-arg chassis and to s24's variant B. Confirms s24's null finding generalizes across the declared-width axis too; exhausts the last two structural sub-axes (redundant-cast removal, type-widened block-local) not covered by the spelling_enum.py sweeps.
-- verdict: KILLED
-- kill_scope: instance
-- measured_on: legal macro-call chassis, s32 block-local staging for the 3 ldtr args, no FAKE construct, tmp/grind/func_80052B7C/s25/variant_s32locals.c this session (s25)
+- verdict: KILLED (instance) — Score 19, 24/24 insns -- identical to the direct-arg chassis and to s24's variant B. Confirms s24's null finding generalizes across the declared-width axis too…
 
-## [s26] Re-running spelling_enum.py (both --no-swaps and swap-axis) on the full 5-statement ENUM-BEGIN/END region, on the current chassis, still finds zero mutation axes.
-- mechanism: Enumerate-modality mandated re-sweep (fifth consecutive enumerate pass after s9, s15, s16, s17). spelling_enum.py's region scanner can only mutate named locals, assignments, and commutative binary operators it finds inside the markers; it reports its precondition counts before emitting variants.
-- probe: Re-applied memory/grind/func_80052B7C/candidate.c fresh to src/main/3AB48.c, re-measured with `sandbox func_80052B7C --disable all --candidate ... --diff` (tmp/grind/func_80052B7C/s26/sandbox_diff.txt). Then wrapped the identical 5-statement body (gte_SetRotMatrix / gte_ldtr / gte_ldv0 / gte_rt / gte_stlvl) in ENUM-BEGIN/END markers in a scratch copy (tmp/grind/func_80052B7C/s26/enum_candidate.c, candidate.c itself untouched) and ran spelling_enum.py with --no-swaps (tmp/grind/func_80052B7C/s26/enum_noswap) and with the swap axis (tmp/grind/func_80052B7C/s26/enum_swap).
-- result: Chassis re-confirmed at score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- byte-identical classification to s6/s8/s13-s25 (hunk 1 = gte_SetRotMatrix+gte_ldtr batching/register-seat, hunks 2-4 = gte_stlvl's delay-slot swc2 placement). Both enum runs report "0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings", with and without the swap axis -- identical, word-for-word, to s9/s15/s16/s17's results. The region already spans the entire function body (no neighbouring block exists to widen into, per s15/s16's note). No new FAKE carrier present to re-audit (fake_ablate.py already confirmed clean at s14, chassis unchanged since).
+## Latest session s27 (verbatim)
+
+## [s27] KILL RE-AUDIT: the banked legal macro-call chassis (candidate.c: #include <psxsdk/inline_c.h>; gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl) re-measures 19 on the current tree with zero FAKE carriers.
+- mechanism: dispatcher-mandated re-audit (floor flat 3+ sessions, instance kills exist); an instance kill is only as good as its chassis/FAKE state at measurement time.
+- probe: sandbox func_80052B7C --disable all --diff (tmp/grind/func_80052B7C/s27/sandbox_diff.txt); python3 tools/fake_ablate.py --func func_80052B7C --file main/3AB48 --candidate memory/grind/func_80052B7C/candidate.c
+- result: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored, byte-identical diff shape to s6-s26; fake_ablate reports no FAKE-annotated constructs, nothing to ablate (identical to s14/s18-s26). No instance kill voided by chassis or FAKE drift.
+- verdict: CONFIRMED
+
+## [s27] A fresh spelling_enum.py sweep of the exact 5-statement macro-call region (gte_SetRotMatrix through gte_stlvl, no decl/signature lines, both --no-swaps and the operand-swap axis) on the current floor-19 chassis finds a non-empty C-level mutation space.
+- mechanism: n/a (mechanical sweep, not a GCC-pass claim).
+- probe: python3 tools/spelling_enum.py --candidate tmp/grind/func_80052B7C/s27/enum_candidate2.c --out tmp/grind/func_80052B7C/s27/enum_noswap2 --no-swaps; same without --no-swaps -> enum_swap2.
+- result: Both axes report '0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings' verbatim, byte-identical to s9/s15/s16/s17/s26. Sixth independent enumerate-modality confirmation the spelling-sweep search space on this exact chassis is empty. A separate wider-region attempt this session (also wrapping the #include and function-signature lines) produced a spurious '16 distinct spellings' result caused by spelling_enum.py's commutative-swap pass misreading a pointer declarator 'T * name' as a binary multiply and swapping it into invalid C ('out * VECTOR') -- none of those 16 variants is syntactically valid, so this is a tool artifact from mis-scoping the region, not a real finding; documented in candidate.c and hypotheses.md so no future session re-proposes it.
 - verdict: KILLED
 - kill_scope: class
-- measured_on: legal macro-call chassis (memory/grind/func_80052B7C/candidate.c as landed s18-s25), no FAKE construct, tmp/grind/func_80052B7C/s26/enum_noswap and s26/enum_swap this session (s26)
-- predicate_cite: include/psxsdk/inline_c.h:297
-- note: tools/spelling_enum.py:27 is the region-scanner precondition count (0 named locals / 0 assignments / 0 commutative operators under both the no-swap and swap-axis settings); this is the fifth independent measurement (s9, s15, s16, s17, s26) of the identical null result on an unchanged chassis, standing class evidence that the C-level spelling-sweep search space for this chassis is empty. The residual sits inside each macro's own fixed __asm__ volatile string, include/psxsdk/inline_c.h:297 (gte_SetRotMatrix) and :1086 (gte_stlvl), read in full at s8/s13/s14, which is not C-level syntax the region scanner can see or vary.
-
-## [s26] Re-running spelling_enum.py (both --no-swaps and swap-axis) on the full 5-statement ENUM-BEGIN/END region, on the current chassis, still finds zero mutation axes.
-- mechanism: Enumerate-modality mandated re-sweep. spelling_enum.py's region scanner can only mutate named locals, assignments, and commutative binary operators it finds inside the markers.
-- probe: Re-applied memory/grind/func_80052B7C/candidate.c, re-measured with sandbox --candidate --diff (tmp/grind/func_80052B7C/s26/sandbox_diff.txt); wrapped the 5-statement body in ENUM-BEGIN/END markers in a scratch copy (tmp/grind/func_80052B7C/s26/enum_candidate.c) and ran spelling_enum.py --no-swaps (s26/enum_noswap) and with the swap axis (s26/enum_swap).
-- result: Chassis re-confirmed: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- identical classification to s6/s8/s13-s25. Both enum runs report '0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings', word-for-word identical to s9/s15/s16/s17. The region already spans the entire function body; no neighbouring block exists to widen into.
-- verdict: KILLED
-- kill_scope: class
-- measured_on: legal macro-call chassis (memory/grind/func_80052B7C/candidate.c as landed s18-s25), no FAKE construct, tmp/grind/func_80052B7C/s26/enum_noswap and s26/enum_swap this session (s26)
-- predicate_cite: include/psxsdk/inline_c.h:297
+- measured_on: legal macro-call chassis (candidate.c body, #include <psxsdk/inline_c.h>), no FAKE construct, exact 5-statement region scoping identical to s9/s15/s16/s17/s26, this session
+- predicate_cite: tools/spelling_enum.py:89

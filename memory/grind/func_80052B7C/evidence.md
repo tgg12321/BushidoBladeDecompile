@@ -486,3 +486,13 @@ question rather than resolved here.
 - [s26] The function already carries a filed decisions.md ruling (2026-10-15 20:38) rejecting a written-island mix as a workaround for chunks 1/2/5; that ruling is unchanged and still binding.
 
 - [s26] src/main/3AB48.c was never touched this session (git status clean on that file); candidate.c and hypotheses.md were updated to append the s26 re-confirmation.
+
+- [s27] Chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl via psxsdk/inline_c.h) re-measures 19/24 insns, 4/4 hunks source-level, 0 operand-only this session -- unchanged since s6.
+
+- [s27] fake_ablate.py confirms zero FAKE-annotated constructs exist on this chassis to ablate, for the 7th consecutive session this has been checked (s14/s18-s22/s27).
+
+- [s27] spelling_enum.py's exhaustive sweep of the 5-statement region (both swap and no-swap axes) reports exactly 1 distinct spelling for the 6th consecutive enumerate-modality session (s9, s15, s16, s17, s26, s27) -- the region contains zero decl/assign nodes for the tool's mutation axes to act on, because every statement is a bare macro call.
+
+- [s27] Prior sessions (s18-s21, s24-s26) already established the residual (hunk 1: gte_SetRotMatrix/gte_ldtr batching order; hunks 2-4: gte_stlvl's delay-slot swc2 placement) is fixed entirely inside each vendored macro's own literal __asm__ volatile template string at RTL expand (include/psxsdk/inline_c.h:297, :1086), outside any C-level spelling space by construction -- this session's sweep is consistent with and re-confirms that finding, not a new discovery.
+
+- [s27] A docs/grind/decisions.md ruling (2026-10-15 20:38) already rejects written-island forms for this function's macro-less chunks; the only live non-grind-session paths are the scan_hand_coded gate-class signal addition and the inline_asm_canonical.txt:340 whole-body grant audit, both named in the ledger's live frontier and both outside grind-session scope.

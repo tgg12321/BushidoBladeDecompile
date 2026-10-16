@@ -1,7 +1,7 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 26,
+ "session_count": 27,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -159,23 +159,29 @@
    "floor": 19,
    "modality": "enumerate",
    "headline": "s26 enumerate: 5th consecutive spelling_enum.py sweep (s9/s15/s16/s17/s26) confirms zero mutation axes on the legal macro-call chassis; residual stays locked inside gte_SetRotMatrix/gte_stlvl's fixed "
+  },
+  {
+   "session": 27,
+   "floor": 19,
+   "modality": "enumerate",
+   "headline": "s27 enumerate: 6th consecutive spelling_enum.py sweep confirms zero mutation axes on the legal macro-call chassis; also caught and documented a region-scoping tool artifact (pointer-declarator swap) s"
   }
  ],
  "frontier": [
   {
+   "hypothesis": "The enumerate modality's spelling-sweep lever is now exhausted as a class for this function: 6 independent sessions (s9, s15, s16, s17, s26, s27), across both axes and the only viable region scoping, report an identical empty mutation space.",
+   "mechanism": "The 5-statement legal chassis has zero C-level declarations, assignments or binary operators (inline_c.h macros take struct-member reads directly as arguments); spelling_enum.py's three axes (named-local extraction, assignment reordering, commutative swap) all require nodes the region does not contain.",
+   "next_probe": "Driver/owner: recognize this function no longer benefits from re-dispatch into enumerate modality; the remaining live levers (scan_hand_coded gate-class signal, inline_asm_canonical.txt:340 grant audit) are operator/engine-side, not grind-session actions."
+  },
+  {
    "hypothesis": "A scan_hand_coded gate-class signal for the batched lw/lh $tN -> ctc2 idiom (s18) and/or the cop2-in-jr-slot signal (s11) lifts func_80052B7C to STRONG tier for the whole-body INCLUDE_ASM branch.",
-   "mechanism": "Both idioms occur in this EXE only in hand-written code; s20/s21/s24/s25/s26 confirm the residual is fixed in vendored templates, reorg, and the engine's barrier policy -- no further structural or enumerate-modality probe can touch it.",
+   "mechanism": "s20/s21/s24/s25/s26/s27 confirm the residual is fixed in vendored templates, reorg, and the engine's barrier policy -- no further structural or enumerate-modality probe can touch it.",
    "next_probe": "Engine/tools-side scanner signal addition citing s18/batch_census.txt and s11/jr_census.txt (escalation or owner-cluster modality)."
   },
   {
    "hypothesis": "The inline_asm_canonical.txt:340 whole-body grant audit resolves in favor of func_80052B7C on cluster plus Sony-idiom evidence.",
    "mechanism": "The 2026-10-15 20:38 ruling rejected written islands only (mixed macro-call + written-out body); it did not rule on a clean whole-body INCLUDE_ASM submission under the grant row.",
-   "next_probe": "Operator/Judge review of inline_asm_canonical.txt:340 with the s11, s18-s21, s24-s26 artifacts; no further grind-session probe can move this."
-  },
-  {
-   "hypothesis": "A vendored macro whose template batches the rotation+TR loads in $8..$15 would close hunk 1 in pure macro-call C.",
-   "mechanism": "s19/s20/s24: the hunk-1 registers for the SetRotMatrix portion are template literals fixed at RTL expand (inline_c.h:298-307); the ldtr portion's loads are RA-owned but always emit lh and always batch separately from SetRotMatrix's loads regardless of C-level staging (now re-confirmed through s26's exhaustive spelling sweep).",
-   "next_probe": "Owner ruling plus an engine: commit adding the macro; not a grind action."
+   "next_probe": "Operator/Judge review of inline_asm_canonical.txt:340 with the s11, s18-s21, s24-s27 artifacts; no further grind-session probe can move this."
   }
  ],
  "judge_constraints": [
@@ -494,6 +500,14 @@
    "measured_on": "legal macro-call chassis (memory/grind/func_80052B7C/candidate.c as landed s18-s25), no FAKE construct, tmp/grind/func_80052B7C/s26/enum_noswap and s26/enum_swap this session (s26)",
    "predicate_cite": "include/psxsdk/inline_c.h:297",
    "result": "Chassis re-confirmed: score 19, 24/24 insns, 4/4 hunks source-level, 0 operand-only, 0 not-scored -- identical classific"
+  },
+  {
+   "session": 27,
+   "statement": "A fresh spelling_enum.py sweep of the exact 5-statement macro-call region (gte_SetRotMatrix through gte_stlvl, no decl/signature lines, both --no-swaps and the operand-swap axis) on the current floor-",
+   "kill_scope": "class",
+   "measured_on": "legal macro-call chassis (candidate.c body, #include <psxsdk/inline_c.h>), no FAKE construct, exact 5-statement region scoping identical to s9/s15/s16/s17/s26, this session",
+   "predicate_cite": "tools/spelling_enum.py:89",
+   "result": "Both axes report '0 named locals (), 0 assignments, 5 anchors -> 1 distinct spellings' verbatim, byte-identical to s9/s1"
   }
  ],
  "ladder_skip": 0,
