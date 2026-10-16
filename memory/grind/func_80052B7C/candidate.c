@@ -120,6 +120,18 @@
  * a cop2 insn in the jr $ra slot occurs only in the 5-function 3AB48 GTE cluster, 0 compiled-C
  * sites; the 4 siblings are granted (inline_asm_canonical.txt:335/338/339/341). See hypotheses.md H10-H12.
  */
+/* s12 (rederive): re-measured this exact chassis fresh -- still 19, 4/4 hunks source-level
+ * (tmp/grind/func_80052B7C/s12/sandbox_reaudit.txt). Three rederive-specific levers tried and
+ * class-killed: (1) m2c (mips_to_c, freshly pip-installed) decompile of the target asm --
+ * its instruction model has zero cop2/GTE opcodes, so the entire body comes back as 14
+ * M2C_ERROR stubs with no structural suggestion at all (s12/m2c_out.c). (2) decomp.me corpus
+ * search (gcc2.7.2-psx bucket) -- top 5 hits score similarity 0.022-0.026, an order of
+ * magnitude below a citable match, none touching cop2 (s12/decomp_me_search.txt). (3) Full
+ * read of gtemac.h's composite macros (lines 260-358) -- none batches the rotation-matrix and
+ * TR-vector loads together or re-expresses gte_SetRotMatrix/gte_ldtr's own fixed asm-string
+ * body with a different instruction order; composites are calls-to-calls, not alternate
+ * leaves. See hypotheses.md s12 for all four entries (re-audit + 3 kills).
+ */
 #include <psxsdk/inline_c.h>
 void func_80052B7C(MATRIX *rot, SVECTOR *tr, SVECTOR *v0, VECTOR *out) {
     gte_SetRotMatrix(rot);

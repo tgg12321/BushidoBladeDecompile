@@ -1,8 +1,8 @@
 {
  "func": "func_80052B7C",
  "file": "main/3AB48",
- "session_count": 11,
- "current_modality": "forensics",
+ "session_count": 12,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -69,13 +69,24 @@
    "floor": 19,
    "modality": "forensics",
    "headline": "s11 forensics: chunk-5 jr-slot residual is decided at the maspsx assembler stage (always-nop, __init__.py:1484), not cc1; EXE census shows a cop2 insn in a jr $ra slot only in the 5-function 3AB48 GTE"
+  },
+  {
+   "session": 12,
+   "floor": 19,
+   "modality": "rederive",
+   "headline": "s12 rederive: m2c has no cop2 opcode model (class-killed), decomp.me corpus has no citable match (instance-killed), gtemac.h composites are calls-to-calls with no alternate SetRotMatrix/ldtr ordering "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A scan_hand_coded gate-class signal for 'cop2-class insn in the jr $ra delay slot' lifts func_80052B7C to STRONG. The s11 census shows 5/5 hits are the GTE cluster, 4 of them already granted, with 0 compiled-C false positives, so the inline_asm_canonical.txt:340 whole-body grant holds.",
-   "mechanism": "cc1 never fills a slot with an asm insn (reorg.c:740), and the assembler model always appends a nop (maspsx __init__.py:1484), so that slot shape has no C producer in this toolchain.",
-   "next_probe": "Engine-side scanner signal addition backed by s11/jr_census.txt (escalation/owner-cluster modality), not a C edit."
+   "hypothesis": "A scan_hand_coded gate-class signal for 'cop2-class insn in the jr $ra delay slot' lifts func_80052B7C to STRONG tier, matching the precedent set by func_8004A76C's 2026-10-15 CANONICAL-ASM GRANT PATH entry.",
+   "mechanism": "cc1 never fills a delay slot with an asm insn (reorg.c:740) and maspsx always appends a nop after reorder-mode jumps (maspsx/__init__.py:1484), so that slot shape has no C producer in this toolchain; the s11 jr-slot census shows 5/5 hits are the GTE cluster with 0 compiled-C false positives.",
+   "next_probe": "Engine-side scanner signal addition backed by s11/jr_census.txt (escalation/owner-cluster modality), not a C edit -- out of this session's reach (never edit tools/engine)."
+  },
+  {
+   "hypothesis": "Checking whether the whole-body inline_asm_canonical.txt:340 grant audit (aeea8ed44, owner 2026-10-08) has resolved since the 2026-10-15 20:38 ruling would settle the function without further grind-session work.",
+   "mechanism": "That ruling rejected written islands but left the whole-body grant itself open pending the scan_hand_coded STRONG-tier gate; an operator/owner resolution of the audit is outside grind-session scope.",
+   "next_probe": "Operator check of inline_asm_canonical.txt:340's audit status; no action available to this session."
   }
  ],
  "judge_constraints": [
@@ -210,6 +221,38 @@
    "measured_on": "legal macro-call chassis via psxsdk/inline_c.h, no FAKE construct, src/main/3AB48.c this session, reverted",
    "predicate_cite": "",
    "result": "The target has 26 insns, 0 labels and 0 callee-saved refs. There are no loops and no ALLOCDBG rows; the only 3 allocated"
+  },
+  {
+   "session": 12,
+   "statement": "A fresh m2c (mips_to_c) decompile of asm/funcs/func_80052B7C.s surfaces a different, structurally novel C shape for the GTE residual (chunk 1 batching, chunk 5 delay slot).",
+   "kill_scope": "class",
+   "measured_on": "m2c as vendored at tools/m2c/ this commit, against the oracle asm/funcs/func_80052B7C.s, no C context, no FAKE construct (tool run, no src/ edit)",
+   "predicate_cite": "tools/m2c/m2c/arch_mips.py:1298",
+   "result": "Output is 14 M2C_ERROR stubs, one per cop2/GTE instruction (all 8 ctc2, 2 lwc2, mvmva, 3 swc2), zero control-flow or var"
+  },
+  {
+   "session": 12,
+   "statement": "The decomp.me corpus (gcc2.7.2-psx compiler bucket) contains a scratch whose target asm is similar enough to func_80052B7C's batched-GTE-register-load pattern to transplant a different C shape.",
+   "kill_scope": "instance",
+   "measured_on": "decomp.me corpus as scraped this session (gcc2.7.2-psx compiler bucket, live site state 2026-10-15), no FAKE construct, no src/ edit",
+   "predicate_cite": "",
+   "result": "Top 5 hits all score similarity 0.022-0.026 (tmp/grind/func_80052B7C/s12/decomp_me_search.txt) -- an order of magnitude "
+  },
+  {
+   "session": 12,
+   "statement": "A composite GTE macro in gtemac.h exists that expands to a batched lw/lh-then-ctc2 sequence spanning both the rotation-matrix load and the TR-vector load, closing chunk 1's and chunk 5's residual as a",
+   "kill_scope": "class",
+   "measured_on": "include/psxsdk/gtemac.h as vendored at this commit, visual read, no src/ edit, no FAKE construct",
+   "predicate_cite": "include/psxsdk/gtemac.h:320",
+   "result": "No such composite exists; the 5 composites found just sequence existing leaves for whole-pipeline ops -- none targets th"
+  },
+  {
+   "session": 12,
+   "statement": "No sibling in the 3AB48 GTE cluster (func_8004A4E0, func_8004A76C) has a banked candidate.c body containing a transplantable SetRotMatrix/ctc2-batching or delay-slot C shape for this function's residu",
+   "kill_scope": "instance",
+   "measured_on": "memory/grind/func_8004A4E0/candidate.c and memory/grind/func_8004A76C/candidate.c as of this session, no FAKE construct, no src/ edit",
+   "predicate_cite": "",
+   "result": "func_8004A4E0's candidate.c mentions '4 ctc2 with no C form' only in its own exhaustion summary prose, no concrete trans"
   }
  ],
  "ladder_skip": 0,

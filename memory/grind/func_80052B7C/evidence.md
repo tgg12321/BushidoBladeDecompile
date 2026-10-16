@@ -339,3 +339,13 @@ question rather than resolved here.
 - [s11] fact: gte_rt's mvmva is a raw .word in inline_c.h, so no assembler hazard nop follows it; target's nop after mvmva is not a cc1 output
 
 - [s11] fact: EXE census finds a cop2 insn in the jr $ra slot at only 5 sites, all in the 3AB48 GTE cluster, with 0 compiled-C sites (s11/jr_census.txt)
+
+- [s12] m2c (tools/m2c/) has zero cop2/GTE mnemonics (ctc2/lwc2/swc2/mvmva) anywhere in arch_mips.py's instruction table; grep confirms 0 matches, so every GTE instruction in this function always becomes an M2C_ERROR stub regardless of input ordering.
+
+- [s12] decomp.me corpus search (gcc2.7.2-psx bucket) returns a max similarity of 0.026 for this target, with no hit touching cop2/GTE code at all.
+
+- [s12] gtemac.h's 5 composite macros (lines 260-358) are all calls-to-calls over existing leaves (gte_SetRotMatrix, gte_ldv0, gte_rtv0/gte_rtir, gte_stclmv/gte_stsv/gte_stlvnl) for whole-pipeline ops; none batches the rotation-matrix and TR-vector loads together, and none re-expresses a leaf's own fixed asm string.
+
+- [s12] Sibling candidates func_8004A4E0 and func_8004A76C are both still INCLUDE_ASM stubs -- no transplantable C body exists in the cluster.
+
+- [s12] The legal macro-call chassis (gte_SetRotMatrix/gte_ldtr/gte_ldv0/gte_rt/gte_stlvl) re-measures 19, 4/4 hunks source-level, unchanged from s6-s11.
