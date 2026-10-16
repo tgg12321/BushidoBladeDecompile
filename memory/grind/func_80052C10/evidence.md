@@ -196,3 +196,23 @@ content either.
 - [s2] sandbox --candidate q22.c --diff: score 106, 110 build insns vs target's 6, with an addiu $sp,$sp,-32 prologue -- confirms reaching $t9 via this chassis categorically changes the function's shape (prologue/epilogue overhead the real target asm does not have).
 
 - [s2] Baseline reconfirmed this session: candidate.c (*(vu32*)0x1F800400 = 0;) measures sandbox score 4, matches s1's recorded floor exactly (saved tmp/grind/func_80052C10/s2/baseline_diff.txt).
+
+- [s3] decomp-permuter campaign (chassis A, candidate.c): 38,674 iterations / 833.3s, 0 novel finds. Workspace tools/decomp-permuter/nonmatchings/func_80052C10/. Summary: tmp/grind/func_80052C10/s3/campaign_summary.txt.
+
+- [s3] decomp-permuter campaign (chassis B, pointer-local form, confirmed byte-identical sandbox score 4 to chassis A before permuting): 46,787 iterations / 1096.8s, 0 novel finds. Workspace tools/decomp-permuter/nonmatchings/func_80052C10_ptr/. Same summary file.
+
+- [s3] Both campaigns were seeded fresh this session (no prior permuter campaign existed in the ledger for this function) and both harvested+stopped within-session per fresh-seed discipline (>=20k iterations, 0 novel, before stopping). No campaign left running at session end.
+
+- [s3] Sibling puts.c (src/main/psxsdk/libc2/puts.c) read in full: shares no construct with func_80052C10's chassis (NULL-check + putchar loop vs single MMIO store) — nothing to transplant, not a missed lead.
+
+- [s3] sandbox --diff on candidate.c reconfirmed this session: score 4, 5 build insns vs 6 target insns, hunk1 operand-only ($v0 vs target $t9), hunk2 source-level (missing trailing nop) -- unchanged from s1/s2.
+
+- [s3] Built two hand-crafted decomp-permuter workspaces (no pre-existing nonmatchings entry for this function): tools/decomp-permuter/nonmatchings/func_80052C10/ (chassis A) and .../func_80052C10_ptr/ (chassis B), each with base.c/compile.sh/target.o/settings.toml, target.o assembled from asm/funcs/func_80052C10.s with the gp=64 prelude directive stripped (32-bit r3000 assembler rejects it, same fix as tools/mar_perm_workspace.sh uses) and compile.sh modelled on tools/decomp-permuter/nonmatchings/func_80020E74/compile.sh with the sdata-* maspsx flags dropped (sdata_syms.txt/sdata_funcs.txt/sdata_exclude.txt do not exist in this repo).
+
+- [s3] Chassis B (named pointer local) independently verified byte-identical (sandbox score 4, same hunk structure) to the banked candidate before permuting -- not a regression, a lateral chassis swap for more mutator surface.
+
+- [s3] Combined 85,461 permuter iterations across both chassis, 0 novel finds total -- both campaigns harvested+stopped within this session per fresh-seed discipline; no campaign left running (verified via pgrep after harvest).
+
+- [s3] No pre-existing permuter campaign was banked on this chassis before this session, so the CHASSIS RULE's 'do not re-seed' restriction did not apply at launch time; it now does for any future session targeting these same two chassis shapes.
+
+- [s3] Sibling puts.c read in full: no shared construct with func_80052C10, confirmed not a missed lead.

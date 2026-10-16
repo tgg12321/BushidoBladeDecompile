@@ -149,3 +149,43 @@ with no calls — untested), but it meaningfully narrows the frontier.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: gen2.py pointer-pressure chassis (declare-target-first, dereference-others-before-target shape), N=5,9,13,15,20,22,23, no FAKE construct, no register pin, measured via .greg dispositions + sandbox --candidate --diff
+
+## [s3] Unguided decomp-permuter random mutation, seeded from the banked floor-4 chassis, finds a byte-closer (or any novel) form for func_80052C10.
+- mechanism: decomp-permuter's default randomization-pass weight set (perm_var, perm_refer_to_var, perm_cast_simple, perm_reorder_stmts, perm_ins_block, perm_split_assignment, etc.) applied directly to the AST of the candidate body, scored against asm/funcs/func_80052C10.s via a hand-built workspace (tools/decomp-permuter/nonmatchings/func_80052C10{,_ptr}/).
+- probe: Two campaigns, -j4, default weights, no --hint (no existing hint slug fits this function's shape — register-asm-pins/shared-end-label/loop-rotation/opaque-one/loop-counter-fills-load-delay all assume richer bodies than a single store). Chassis A: `*(vu32*)0x1F800400 = 0;` (the banked candidate.c, 38,674 iterations, 833.3s). Chassis B: `vu32 *p = (vu32*)0x1F800400; *p = 0;` (confirmed byte-identical to chassis A via sandbox --candidate --diff before permuting; 46,787 iterations, 1096.8s).
+- result: Zero novel outputs on both chassis (finds_total=0 in both harvests). Many mutation attempts on chassis A raised internal AssertionErrors ("dereferencing non-pointer" in perm_split_assignment etc.) because a single-expression body gives the mutator almost no AST surface; chassis B (adding a named pointer local) ran cleanly but still found nothing novel. This independently confirms, via unguided search rather than hand analysis, that neither the $t9 register-seat hunk nor the trailing-nop source-level hunk is reachable by any of decomp-permuter's default single-step mutations from either byte-equivalent starting chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/decomp-permuter/nonmatchings/func_80052C10/ and .../func_80052C10_ptr/ workspaces, both chassis confirmed sandbox score 4 (no FAKE construct, no register pin), decomp-permuter default weights, -j4, combined 85,461 iterations, 0 novel finds
+
+## [s3] Sibling ledger `puts.c` (src/main/psxsdk/libc2/puts.c, COMPLETED-C, closed ledger) names a construct transplantable onto func_80052C10's chassis.
+- mechanism: n/a — inheritance check per SIBLING LEDGERS directive.
+- probe: Read src/main/psxsdk/libc2/puts.c in full (small, COMPLETED-C body: NULL-check + putchar loop).
+- result: puts() shares no structural element with func_80052C10 (no scratchpad MMIO access, no single-store body, no double-nop tail, no register-pressure pattern) — it is listed as a sibling only because an earlier session mentioned it in passing, not because it shares code shape. Nothing to transplant.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/main/psxsdk/libc2/puts.c (read in full, no code transplanted — chassis has no shared constructs to test)
+
+## [s3] Unguided decomp-permuter random mutation, seeded from the banked floor-4 single-statement chassis (`*(vu32*)0x1F800400 = 0;`), finds a byte-closer or any novel form for func_80052C10.
+- mechanism: decomp-permuter's default randomization-pass weight set applied to the body's AST, scored against asm/funcs/func_80052C10.s via a hand-built workspace (tools/decomp-permuter/nonmatchings/func_80052C10/).
+- probe: Campaign launched -j4, default weights, no --hint (no catalog hint slug matches this body's shape); waited in two ~9-min windows (833.3s total), harvested+stopped at 38,674 iterations.
+- result: finds_total=0, finds_new=0 across the whole campaign. Many mutation attempts raised internal AssertionErrors (single-expression body gives mutators almost no AST surface) but the campaign kept running and logged real iterations regardless.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/decomp-permuter/nonmatchings/func_80052C10/ workspace, chassis `*(vu32*)0x1F800400 = 0;` (sandbox score 4 confirmed), decomp-permuter default weights, -j4, 38,674 iterations, no FAKE construct, no register pin
+
+## [s3] A structurally richer but byte-equivalent chassis (named local pointer: `vu32 *p = (vu32*)0x1F800400; *p = 0;`) gives decomp-permuter enough AST surface to find a byte-closer or any novel form.
+- mechanism: Same mutation set as above, but with a named local variable added as a mutation target (perm_var, perm_refer_to_var, perm_reorder_decls, etc. all gain a foothold they lacked on the single-expression chassis).
+- probe: Confirmed via sandbox --candidate --diff that this chassis is byte-identical to the banked candidate (score 4, same hunks, same $v0 seat) before permuting it, so any novel find would still be an honest lead. Campaign launched -j4, default weights; waited in two ~9-min windows (1096.8s total), harvested+stopped at 46,787 iterations.
+- result: finds_total=0, finds_new=0. No AssertionError storm this time (richer AST tolerates the mutators), but still nothing novel.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: tools/decomp-permuter/nonmatchings/func_80052C10_ptr/ workspace, chassis `vu32 *p = (vu32*)0x1F800400; *p = 0;` (sandbox score 4 confirmed byte-identical to candidate.c), decomp-permuter default weights, -j4, 46,787 iterations, no FAKE construct, no register pin
+
+## [s3] Sibling ledger puts.c (src/main/psxsdk/libc2/puts.c, COMPLETED-C, closed) names a construct transplantable onto func_80052C10's chassis.
+- mechanism: n/a -- inheritance check per SIBLING LEDGERS directive.
+- probe: Read puts.c in full (NULL-check + putchar loop, ~20 lines).
+- result: No shared structural element with func_80052C10 (single MMIO scratchpad store, no loop, no string handling); the sibling mention in this ledger was incidental, not a missed transplant.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: src/main/psxsdk/libc2/puts.c (read only, no transplant attempted -- no shared construct exists)

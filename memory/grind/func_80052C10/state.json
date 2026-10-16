@@ -1,8 +1,8 @@
 {
  "func": "func_80052C10",
  "file": "main/3AB48",
- "session_count": 2,
- "current_modality": "structural",
+ "session_count": 3,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -15,23 +15,29 @@
    "floor": 4,
    "modality": "structural",
    "headline": "Resolved s1 frontier item 1: $t9 IS reachable by genuine register pressure (N>=22 live scratch pseudos, no REG_ALLOC_ORDER override for MIPS), but only at the cost of a 110-insn body with $s0-$s7 save"
+  },
+  {
+   "session": 3,
+   "floor": 4,
+   "modality": "permuter",
+   "headline": "Two decomp-permuter campaigns (85,461 total iterations, 2 byte-equivalent chassis) found zero novel forms; the $t9 seat and trailing-nop hunks remain unreached by unguided mutation, confirming s1/s2's"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Trailing double-nop after jr $ra is source-level, unexplained by any lever tried so far (unchanged from s1).",
-   "mechanism": "unknown; not inter-object padding, not GTE/cop2 latency",
-   "next_probe": "Grep other matched leaf functions in this codebase for a jr $ra; nop; nop (double-nop) 6+-insn shape and read their matched C to see what source construct, if any, produces a second nop after the return in a leaf void function."
+   "hypothesis": "Trailing double-nop after jr $ra is source-level, unexplained by any lever tried so far (recon, structural, and now unguided permuter search across two chassis all fail to reach it).",
+   "mechanism": "unknown; not inter-object padding, not GTE/cop2 latency, not reachable by any single-step AST mutation from either byte-equivalent chassis",
+   "next_probe": "Grep other matched leaf functions in this codebase for a jr $ra; nop; nop (double-nop) 6+-insn shape and read their matched C to see what source construct, if any, produces a second nop after the return in a leaf void function -- this is a targeted grep/read task, not something the permuter's mutation set can express (it has no 'duplicate a trailing statement' or 'insert dead statement after return' pass that this chassis's two campaigns exercised to any effect)."
   },
   {
-   "hypothesis": "A differently-shaped pressure chassis (e.g. 22+ live call-clobbered temporaries with no $s0-$s7 involvement, if such a shape exists under MIPS's calling convention) might reach $t9 without the save/restore overhead this session's chassis incurred.",
-   "mechanism": "global.c allocation order is fixed (ascending, no REG_ALLOC_ORDER), but which hard regs get claimed depends on which pseudos conflict; this session only tried one liveness-shaping idiom (declare-first, use-last pointers).",
-   "next_probe": "Try a chassis using genuinely call-clobbered-only values (e.g. values live only across straight-line code with no calls, forcing the compiler toward $t0-$t9 before $s0-$s7 if any such preference exists elsewhere, e.g. local-alloc.c's class preferences) to see if $t9 is reachable at lower N without s-register save overhead."
+   "hypothesis": "A differently-shaped pressure chassis (e.g. 22+ live call-clobbered temporaries with no $s0-$s7 involvement) might reach $t9 without the save/restore overhead s2's chassis incurred.",
+   "mechanism": "global.c allocation order is fixed (ascending, no REG_ALLOC_ORDER), but which hard regs get claimed depends on which pseudos conflict; s2 only tried one liveness-shaping idiom (declare-first, use-last pointers), and this session's permuter campaigns could not synthesize a 22-pseudo pressure chassis from a 1-2 statement seed (decomp-permuter mutates existing AST, it does not invent new live ranges of that scale).",
+   "next_probe": "Hand-write (not permute) a chassis using genuinely call-clobbered-only values with no calls, forcing the compiler toward $t0-$t9 before $s0-$s7 if any such ordering exists; this needs tools/sweep_variants.py over hand-written variants per the CHASSIS RULE's guidance that the permuter cannot express this kind of structural chassis swap."
   },
   {
-   "hypothesis": "Re-weigh the canonical-asm grant -- this session's pressure-threshold finding is now additional evidence AGAINST a small natural-C body reaching $t9, strengthening (not yet conclusively) the case for keeping the hand-written-asm reading alongside the sibling func_80052C28 marker.",
+   "hypothesis": "Re-weigh the canonical-asm grant -- two independent unguided-search campaigns (85k+ iterations) finding nothing is additional evidence AGAINST a small natural-C body reaching the target bytes, on top of s1/s2's hand analysis.",
    "mechanism": "n/a -- policy/evidence question",
-   "next_probe": "If frontier item 2 (alternate chassis shape) also fails to reach $t9 without prologue overhead, that is a stronger basis for a ruling-request than currently exists; otherwise keep gathering before escalating unilaterally."
+   "next_probe": "If the next session's hand-written alternate-pressure-chassis sweep (frontier item 2) also fails, that is now three independent methodologies (hand analysis, two permuter chassis) agreeing -- a stronger basis for a ruling-request than existed at s2, though still not conclusive since frontier item 2's specific shape remains untested."
   }
  ],
  "judge_constraints": [],
@@ -52,6 +58,30 @@
    "measured_on": "gen2.py pointer-pressure chassis (declare-target-first, dereference-others-before-target shape), N=5,9,13,15,20,22,23, no FAKE construct, no register pin, measured via .greg dispositions + sandbox --c",
    "predicate_cite": "",
    "result": "KILLED on this chassis: every N that reaches $t9 (N>=22) also claims all of $s0-$s7 and incurs a non-trivial save/restor"
+  },
+  {
+   "session": 3,
+   "statement": "Unguided decomp-permuter random mutation, seeded from the banked floor-4 single-statement chassis (`*(vu32*)0x1F800400 = 0;`), finds a byte-closer or any novel form for func_80052C10.",
+   "kill_scope": "instance",
+   "measured_on": "tools/decomp-permuter/nonmatchings/func_80052C10/ workspace, chassis `*(vu32*)0x1F800400 = 0;` (sandbox score 4 confirmed), decomp-permuter default weights, -j4, 38,674 iterations, no FAKE construct, ",
+   "predicate_cite": "",
+   "result": "finds_total=0, finds_new=0 across the whole campaign. Many mutation attempts raised internal AssertionErrors (single-exp"
+  },
+  {
+   "session": 3,
+   "statement": "A structurally richer but byte-equivalent chassis (named local pointer: `vu32 *p = (vu32*)0x1F800400; *p = 0;`) gives decomp-permuter enough AST surface to find a byte-closer or any novel form.",
+   "kill_scope": "instance",
+   "measured_on": "tools/decomp-permuter/nonmatchings/func_80052C10_ptr/ workspace, chassis `vu32 *p = (vu32*)0x1F800400; *p = 0;` (sandbox score 4 confirmed byte-identical to candidate.c), decomp-permuter default weigh",
+   "predicate_cite": "",
+   "result": "finds_total=0, finds_new=0. No AssertionError storm this time (richer AST tolerates the mutators), but still nothing nov"
+  },
+  {
+   "session": 3,
+   "statement": "Sibling ledger puts.c (src/main/psxsdk/libc2/puts.c, COMPLETED-C, closed) names a construct transplantable onto func_80052C10's chassis.",
+   "kill_scope": "instance",
+   "measured_on": "src/main/psxsdk/libc2/puts.c (read only, no transplant attempted -- no shared construct exists)",
+   "predicate_cite": "",
+   "result": "No shared structural element with func_80052C10 (single MMIO scratchpad store, no loop, no string handling); the sibling"
   }
  ],
  "ladder_skip": 0,
