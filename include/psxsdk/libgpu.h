@@ -86,6 +86,9 @@ typedef struct {
  */
 #define setRGB0(p, _r0, _g0, _b0) (p)->r0 = _r0, (p)->g0 = _g0, (p)->b0 = _b0
 
+/* PsyQ LIBGPU.H primitive position macro (verbatim SDK definition). */
+#define setXY0(p, _x0, _y0) (p)->x0 = (_x0), (p)->y0 = (_y0)
+
 typedef struct {
     RECT disp;   /* +0x00 */
     RECT screen; /* +0x08 */

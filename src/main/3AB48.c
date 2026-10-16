@@ -4978,18 +4978,12 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->r0 = 0xFF;
     tile->g0 = 0x10;
     tile->b0 = 0x10;
-    /* FAKE: each arm sets the whole (x0, y0) position: the target stores x0
-       once per arm (0x8005F0E0, 0x8005F0F8, 0x8005F104); one x0 store above the
-       if/else: score 10. */
     if (D_8009BD24.unk14_10 == 2) {
-        tile->x0 = 0x5E;
-        tile->y0 = 0xC1;
+        setXY0(tile, 0x5E, 0xC1);
     } else if (D_8009BD24.unk14_10 == 1) {
-        tile->x0 = 0x5E;
-        tile->y0 = 0xBD;
+        setXY0(tile, 0x5E, 0xBD);
     } else {
-        tile->x0 = 0x5E;
-        tile->y0 = 0xB9;
+        setXY0(tile, 0x5E, 0xB9);
     }
     tile->w = 0x1C5;
     tile->h = 1;
