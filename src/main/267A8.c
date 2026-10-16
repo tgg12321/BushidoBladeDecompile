@@ -31,31 +31,27 @@ void cdrom_FlushInit(void) {
 
 void cdrom_ReadyCallback(u8 arg0, u8 *result) {
     s32 sp[4];
+
     if (arg0 == 1) {
         D_80101E58.rec.unk38 = 0;
         if (D_80101E58.rec.cd20 <= 0) {
             return;
         }
         CdGetSector((s32)sp, 3);
-        {
-            s32 v0 = CdPosToInt((CdlLOC *)sp);
-            if (v0 != D_80101E58.rec.expected_pos) {
-                D_80101E58.rec.cd20 = -2;
-                goto do_stop;
+        if (CdPosToInt((CdlLOC *)sp) != D_80101E58.rec.expected_pos) {
+            D_80101E58.rec.cd20 = -2;
+        } else {
+            CdGetSector(D_80101E58.rec.dest_buffer, 0x200);
+            D_80101E58.rec.dest_buffer += 0x800;
+            D_80101E58.rec.cd20--;
+            D_80101E58.rec.expected_pos++;
+            if (D_80101E58.rec.cd20 != 0) {
+                return;
             }
         }
-        CdGetSector(D_80101E58.rec.dest_buffer, 0x200);
-        D_80101E58.rec.dest_buffer = D_80101E58.rec.dest_buffer + 0x800;
-        D_80101E58.rec.cd20 = D_80101E58.rec.cd20 - 1;
-        D_80101E58.rec.expected_pos = D_80101E58.rec.expected_pos + 1;
-        if (D_80101E58.rec.cd20 == 0) {
-            goto do_stop;
-        }
-        return;
     } else {
         D_80101E58.rec.cd20 = -1;
     }
-do_stop:
     CdReadyCallback(0);
     CdControlF(9, 0);
 }
