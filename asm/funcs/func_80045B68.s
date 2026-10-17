@@ -146,7 +146,7 @@ glabel func_80045B68
   .L80045D74:
     /* 36574 80045D74 1400B5AF */  sw         $s5, 0x14($sp)
   .L80045D78:
-    /* 36578 80045D78 3020010C */  jal        func_800480C0
+    /* 36578 80045D78 3020010C */  jal        gpu_LoadTimGroupSplitOffset
     /* 3657C 80045D7C 00000000 */   nop
     /* 36580 80045D80 F00050A6 */  sh         $s0, 0xF0($s2)
   .L80045D84:

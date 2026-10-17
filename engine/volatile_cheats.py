@@ -771,8 +771,8 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     # both text1b.c siblings carry target's allocated-but-untouched 32-byte
     # vars region (sp+0x18..0x37, zero sw/lw); 2026-08-18 general family,
     # bytes proven in the escalations before the grant.
-    "func_80047EE8": frozenset({("pre_pad", 8)}),
-    "func_80047FBC": frozenset({("pre_pad", 8)}),
+    "gpu_LoadTimGroup": frozenset({("pre_pad", 8)}),
+    "gpu_LoadTimGroupOffset": frozenset({("pre_pad", 8)}),
     # 2026-08-22 owner ruling (docs/grind/decisions.md, "parked-but-proven
     # audit"): three functions had been parked OWNER-ACCEPTED INCOMPLETE — the
     # both-gates-FAIL label — while byte-proven and blocked only on this row.
@@ -793,7 +793,7 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     # with the identical untouched sp+0x18..0x37 region; full build == oracle
     # proven 2026-09-05 (tmp/grind/func_800480C0/s24) before the grant; same
     # general phantom-frame-slot family, no family extension.
-    "func_800480C0": frozenset({("pre_pad", 8)}),
+    "gpu_LoadTimGroupSplitOffset": frozenset({("pre_pad", 8)}),
     # 2026-09-29 owner ruling Q35 (no-new-park-categories.md, phantom-frame-slot
     # pad family, trailing unused array with sibling evidence): func_8005E54C's
     # 8 untouched bytes at sp+0x58 = descriptor + 0x30, the s16[3] digit slot of

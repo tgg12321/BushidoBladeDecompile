@@ -8,8 +8,8 @@
 #include <psxsdk/libgte.h>
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
-extern void func_800477DC(s32);
-extern s32 func_80047EC8(void);
+extern void wave_SetCellBuffer(s32);
+extern s32 wave_GetCellBufferSize(void);
 extern void func_800481E8(s32, s32);
 extern void func_800466C0(s32, s32);
 
@@ -146,8 +146,8 @@ void func_800460E4(s32 arg0, s32 arg1) {
             (s32 *)func_80044670((s16 *)PTR_OFF(s0, ALIGN4(s0[6])), 8, (s32)s1);
         break;
     case 11:
-        func_800477DC((s32)s1);
-        s1 = (s32 *)((s32)s1 + func_80047EC8());
+        wave_SetCellBuffer((s32)s1);
+        s1 = (s32 *)((s32)s1 + wave_GetCellBufferSize());
         break;
     case 13:
         s1 = s2;
@@ -251,7 +251,7 @@ void func_8004668C(void) {
 }
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
-extern void func_80047ED0(s32);
+extern void wave_MoveCellBuffer(s32);
 
 void func_800466C0(s32 a0, s32 a1) {
     s32 var_0;
@@ -270,23 +270,23 @@ void func_800466C0(s32 a0, s32 a1) {
         func_80044100(8);
         break;
     case 11:
-        func_80047ED0(a1);
+        wave_MoveCellBuffer(a1);
         break;
     }
 }
 
-/* 0x800153F0: the 22-halfword record func_8004A09C unpacks (it walks it as
-   u16). func_80049F4C copies it whole by assignment: the copy's run-time
+/* 0x800153F0: the 22-halfword record light_Unpack unpacks (it walks it as
+   u16). light_InitDefaults copies it whole by assignment: the copy's run-time
    alignment test in the target bytes is the halfword type's alignment. */
 typedef struct {
     u16 v[22];
 } Unk800153F0Record;
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
-extern void func_80048F58(s32, s32);
-extern void func_80048FFC(s32);
-extern s32 func_800477E8(void);
-extern void func_80047A90(void);
+extern void gpu_InitVramScroll(s32, s32);
+extern void gpu_QueueVramScroll(s32);
+extern s32 wave_Init(void);
+extern void wave_Update(void);
 extern void func_80048B8C(s32);
 extern void func_800460E4(s32, s32);
 extern void func_8004668C(void);
@@ -295,7 +295,7 @@ extern s16 D_800A324A;
 
 extern MATRIX D_800EEDB0;
 
-/* row 8's last pulls (func_80047A90 writes [0..16]); 18 words up to
+/* row 8's last pulls (wave_Update writes [0..16]); 18 words up to
  * D_800EF848, which func_80047E5C's [v1 + 1] reaches at v1 == 17 */
 extern s32 D_800EF800[18];
 extern u8 D_8009947C;
@@ -303,7 +303,7 @@ extern s16 D_800F6654;
 extern MATRIX D_800EEDD0;
 
 extern void func_80049E4C(void);
-extern void func_80049F4C(void);
+extern void light_InitDefaults(void);
 extern s16 g_color_mode;
 extern s16 D_800F665A;
 extern s16 D_800A3248;
@@ -426,7 +426,7 @@ void func_80046B44(void) {
     func_80042E90();
     func_80044498();
     func_80049E4C();
-    func_80049F4C();
+    light_InitDefaults();
     func_8003D91C();
     func_800404D8();
     func_8003F7F4();
@@ -552,7 +552,7 @@ void func_80046EDC(s32 a0, s32 a1) {
 
 void *func_80046F14(void) { return &D_8009947C; }
 
-void func_80046F24(void) {
+void math_SetLightPlaneProjection(void) {
     s32 num = (s32)D_800F62E0[0].lmat.m[0][0] << 12;
     s32 div = D_800F62E0[0].lmat.m[0][1];
     s32 v0 = num / div;
@@ -570,14 +570,14 @@ void func_80046F24(void) {
     D_800EEDB0.m[2][1] = v1;
 }
 
-void func_8004700C(MATRIX *a0, MATRIX *a1, s32 a2) {
+void math_ApplyLightPlaneProjection(MATRIX *a0, MATRIX *a1, s32 a2) {
     gte_MulMatrix0ClearTrans(&D_800EEDB0, a0, a1);
     a1->t[0] = a0->t[0] + (((a0->t[1] - a2) * D_800EEDB0.m[0][1]) >> 12);
     a1->t[1] = a2;
     a1->t[2] = a0->t[2] + (((a0->t[1] - a2) * D_800EEDB0.m[2][1]) >> 12);
 }
 
-void func_800470B0(s32 arg0, MATRIX *arg1, MATRIX *arg2, s32 arg3) {
+void math_LightPlaneProject(s32 arg0, MATRIX *arg1, MATRIX *arg2, s32 arg3) {
     MATRIX sp10;
 
     sp10.m[0][0] = 0x1000;
@@ -652,17 +652,17 @@ void func_8004746C(void) { func_8004473C(); }
 
 void func_8004748C(void) { func_80044800(); }
 
-void func_800474AC(void) { func_80048F58(0, 0); }
+void func_800474AC(void) { gpu_InitVramScroll(0, 0); }
 
-void func_800474D0(void) { func_80048FFC(0); }
+void func_800474D0(void) { gpu_QueueVramScroll(0); }
 
 void func_800474F0(void) { func_8004473C(); }
 
 void func_80047510(void) { func_80044800(); }
 
-void func_80047530(void) { func_800477E8(); }
+void func_80047530(void) { wave_Init(); }
 
-void func_80047550(void) { func_80047A90(); }
+void func_80047550(void) { wave_Update(); }
 
 void func_80047570(void) {
     func_800472C0(&D_800EEDF0);
@@ -714,9 +714,9 @@ void func_800475A4(void) {
     }
 }
 
-void func_80047738(void) { func_80048F58(1, 0); }
+void func_80047738(void) { gpu_InitVramScroll(1, 0); }
 
-void func_8004775C(void) { func_80048FFC(0); }
+void func_8004775C(void) { gpu_QueueVramScroll(0); }
 
 void func_8004777C(void) { func_8004473C(); }
 
@@ -730,14 +730,14 @@ void func_800477CC(void) {}
 
 void func_800477D4(void) {}
 
-void func_800477DC(s32 a0) { D_800A33D0 = (s16 *)a0; }
+void wave_SetCellBuffer(s32 a0) { D_800A33D0 = (s16 *)a0; }
 
-/* 17 phases and the 9 x 17 table func_80047A90 steps from them
+/* 17 phases and the 9 x 17 table wave_Update steps from them
  * (D_800EF800 takes the last row's deltas) */
 extern s32 D_800EF558[17];
 extern s32 D_800EF59C[9][17];
 
-s32 func_800477E8(void) {
+s32 wave_Init(void) {
     s16 *s0;
     s32 s3val;
     s32 s2val;
@@ -878,7 +878,7 @@ loop3:
     return (s32)s0 - (s32)D_800A33D0;
 }
 
-void func_80047A90(void) {
+void wave_Update(void) {
     s32 i;
     s32 j;
     s32 a0;
@@ -911,7 +911,7 @@ void func_80047A90(void) {
 extern SVECTOR D_800EF0D8[17];
 extern SVECTOR D_800EF168[17];
 
-void func_80047BE0(void) {
+void wave_Draw(void) {
     s32 sxy0, sxy1, sxy2, var_3, flag;
     s32 sz0, sz1, sz2;
     s16 *s7val;
@@ -1004,14 +1004,16 @@ s32 func_80047E5C(void) {
     }
 }
 
-s32 func_80047EC8(void) { return 0xD00; }
+s32 wave_GetCellBufferSize(void) { return 0xD00; }
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
 
-void func_80047ED0(s32 a0) { D_800A33D0 = (s16 *)((u8 *)D_800A33D0 + a0); }
+void wave_MoveCellBuffer(s32 a0) {
+    D_800A33D0 = (s16 *)((u8 *)D_800A33D0 + a0);
+}
 
-void func_80047EE8(s32 arg0, s32 arg1) {
+void gpu_LoadTimGroup(s32 arg0, s32 arg1) {
     /* FAKE: unwritten volatile pad reproduces the target's untouched 32-byte
      * locals region (sp+0x18..0x37) (phantom-frame pad; without it: score
      * 10). SOTN precedent:
@@ -1056,12 +1058,12 @@ void func_80047EE8(s32 arg0, s32 arg1) {
             first = saved + (new_var2 << 2);
             v0v = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            func_800482C8(first, new_var, a2v, a3v, v0v);
+            gpu_LoadTim(first, new_var, a2v, a3v, v0v);
         } while ((count--) != 0);
     }
 }
 
-void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
+void gpu_LoadTimGroupOffset(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
     // !FAKE: phantom-frame-slot pad, without it: score 14
     // (no-new-park-categories): target reserves 32 locals bytes at
     // sp+0x18..sp+0x37 that no instruction touches
@@ -1101,13 +1103,14 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
             p = (u32 *)(((s32)p) + 2);
             v0v = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            func_800482C8(new_var, (s32)a1v + sx_arg2, (s32)a2v + sx_arg3,
-                          (s32)a3v + sx_arg2, (s32)v0v + sx_arg3);
+            gpu_LoadTim(new_var, (s32)a1v + sx_arg2, (s32)a2v + sx_arg3,
+                        (s32)a3v + sx_arg2, (s32)v0v + sx_arg3);
         } while ((count--) != 0);
     }
 }
 
-void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
+void gpu_LoadTimGroupSplitOffset(
+    s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
     // !FAKE: phantom-frame-slot pad (without it: score 20): target
     // reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction touches
     volatile u32 pre_pad[8];
@@ -1117,9 +1120,9 @@ void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
     s32 new_var;
     base_addr = arg0;
     p = (u32 *)arg0;
-    // !FAKE: dead store to a parameter, as in func_80047FBC (without it:
-    // score 16); defeats cse folding {arg0, p, base_addr}, which emits
-    // one base copy instead of two
+    // !FAKE: dead store to a parameter, as in gpu_LoadTimGroupOffset (without
+    // it: score 16); defeats cse folding {arg0, p, base_addr}, which emits one
+    // base copy instead of two
     arg0 = 0;
     p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
@@ -1151,8 +1154,8 @@ void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
             p = (u32 *)(((s32)p) + 2);
             v0v = (s16)(*((u16 *)p));
             p = (u32 *)(((s32)p) + 2);
-            func_800482C8(new_var, (s32)a1v + sx_arg2, (s32)a2v + sx_arg3,
-                          (s32)a3v + sx_arg4, (s32)v0v + sx_arg5);
+            gpu_LoadTim(new_var, (s32)a1v + sx_arg2, (s32)a2v + sx_arg3,
+                        (s32)a3v + sx_arg4, (s32)v0v + sx_arg5);
         } while ((count--) != 0);
     }
 }
@@ -1161,8 +1164,8 @@ void func_800481E8(s32 arg0, s32 arg1) {
     /* Base-copy staging with the `arg0 = 0;` FAKE below makes GCC stage arg0
      * through $s0 first ($s0=$a0; $s2=$s0), as in the target. */
     /* FAKE: unwritten volatile pad reproduces the target's untouched 32-byte
-     * locals region (sp+0x18..0x37), as the FAKE pads of func_80047EE8 /
-     * func_80047FBC (phantom-frame pad; without it: score 10). SOTN
+     * locals region (sp+0x18..0x37), as the FAKE pads of gpu_LoadTimGroup /
+     * gpu_LoadTimGroupOffset (phantom-frame pad; without it: score 10). SOTN
      * precedent: `volatile u32 pad;
      * // !FAKE:` (src/st/sel/2C048.c:564), `volatile u32 pad[4]; // FAKE`
      * (src/st/sel/stream.c:80). */
@@ -1206,12 +1209,12 @@ void func_800481E8(s32 arg0, s32 arg1) {
             if ((s32)a3v < 0x280) {
                 v0v += 1;
             }
-            func_800482C8(var_4, (s32)a1v, (s32)a2v, (s32)a3v, (s32)(s16)v0v);
+            gpu_LoadTim(var_4, (s32)a1v, (s32)a2v, (s32)a3v, (s32)(s16)v0v);
         } while ((count--) != 0);
     }
 }
 
-void func_800482C8(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
+void gpu_LoadTim(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
     RECT rect;
     u16 buf[512];
     u8 *var_2;
@@ -1254,7 +1257,7 @@ void func_800482C8(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
     LoadImage(&rect, (u32 *)var_2);
 }
 
-void func_800483DC(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
+void gpu_LoadTimGroupClutsOffset(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
     s32 base;
     s32 count;
     s32 off;
@@ -1316,9 +1319,9 @@ void gpu_LoadTimClut(u8 *arg0, s16 arg1, s16 arg2) {
     LoadImage(&rect, (u32 *)arg0);
 }
 
-extern void func_800485EC();
+extern void gpu_ReadTim();
 
-s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
+s32 gpu_ReadTimGroupEntry(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
     s32 base, count, entry, a, b, c, d, off;
     off = ((s32 *)arg0)[arg1];
     base = arg0;
@@ -1340,7 +1343,7 @@ s32 func_80048530(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
     arg0 += 2;
     d = (s32) * (u16 *)arg0;
     entry += base;
-    func_800485EC(entry, arg3, (s16)a, (s16)b, (s16)c, (s16)d);
+    gpu_ReadTim(entry, arg3, (s16)a, (s16)b, (s16)c, (s16)d);
     return count;
 }
 
@@ -1360,7 +1363,7 @@ typedef struct {
     /* 0x1C */ u32 *clutdata;
 } TimImageRec;
 
-void func_800485EC(tim, spr, x, y, cx, cy) u32 *tim;
+void gpu_ReadTim(tim, spr, x, y, cx, cy) u32 *tim;
 TimImageRec *spr;
 s16 x, y;
 u16 cx, cy;
@@ -1459,7 +1462,7 @@ s32 math_Grayscale3(s32 arg0, s32 arg1, s32 arg2) {
     return (arg0 + arg1 + arg2) >> 12;
 }
 
-void func_80048864(
+void gpu_TintVramRow(
     s32 mode, s32 sx, s32 sy, s32 w, s32 arg4, s32 mg, s32 mb, s32 dx, s32 dy) {
     u16 buf[256];
     u16 out[256];
@@ -1517,8 +1520,9 @@ void func_80048864(
     DrawSync(0);
 }
 
-void func_80048A7C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
-    func_80048864(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
+void gpu_TintVramRowInPlace(
+    s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
+    gpu_TintVramRow(0, arg0, arg1, arg2, arg3, arg4, arg5, arg0, arg1);
 }
 
 extern s32 *func_800467B8(s32); /* matches the definition above */
@@ -1640,7 +1644,7 @@ void func_80048BA4(s32 arg0, s32 arg1, s32 arg2) {
     *g_gpu_ot256_ptr = old;
 }
 
-void func_80048F58(s32 a0, s32 a1) {
+void gpu_InitVramScroll(s32 a0, s32 a1) {
     s32 i;
     u16 *src;
     s16 *dst;
@@ -1661,7 +1665,7 @@ void func_80048F58(s32 a0, s32 a1) {
     } while (i < 7);
 }
 
-void func_80048FFC(s32 arg0) {
+void gpu_QueueVramScroll(s32 arg0) {
     RECT rect;
     s16 *var_1;
     s32 x;
@@ -2225,23 +2229,23 @@ void func_80049E4C(void) {
     D_800A370C = p2;
 }
 
-/* 0x800153F0: the 22-halfword record func_8004A09C unpacks. */
+/* 0x800153F0: the 22-halfword record light_Unpack unpacks. */
 extern const Unk800153F0Record D_800153F0;
-extern void func_8004A09C(Unk800F62E0Rec *, u16 *);
+extern void light_Unpack(Unk800F62E0Rec *, u16 *);
 
-void func_80049F4C(void) {
+void light_InitDefaults(void) {
     Unk800153F0Record sp10;
     s32 i;
     sp10 = D_800153F0;
     for (i = 0; i < 8; i++) {
-        func_8004A09C(&D_800F62E0[i], sp10.v);
+        light_Unpack(&D_800F62E0[i], sp10.v);
     }
     SetColorMatrix(&D_800F62E0[0].cmat);
     SetBackColor(
         D_800F62E0[0].back[0], D_800F62E0[0].back[1], D_800F62E0[0].back[2]);
 }
 
-void func_8004A09C(Unk800F62E0Rec *arg0, u16 *arg1) {
+void light_Unpack(Unk800F62E0Rec *arg0, u16 *arg1) {
     arg0->cmat.m[0][0] = *arg1++;
     arg0->cmat.m[1][0] = *arg1++;
     arg0->cmat.m[2][0] = *arg1++;

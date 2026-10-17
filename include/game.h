@@ -67,7 +67,7 @@ typedef struct {
     s32 phase; /* +0x000 */
     /* +0x004: one bank per frame parity, two packets per level */
     DR_MOVE move[2][6];
-    s16 ctl[7]; /* +0x124: filled from D_80099C34 by func_80048F58 */
+    s16 ctl[7]; /* +0x124: filled from D_80099C34 by gpu_InitVramScroll */
 } Unk800EF848Rec;
 
 /* 3-word record table at 0x800F1198, terminated by an all-zero record
@@ -1856,7 +1856,7 @@ typedef struct Unk8001CD68Rec {
  * call. func_800475A4 passes &xf.rot to D_800F66A0[0] and &xf.mat to
  * ApplyMatrix. D_800EEDF0 and D_800EF070 are two more
  * records of this layout: func_800472C0 initialises the first,
- * func_800477E8 sets up the second and passes it to func_800417D0, which reads
+ * wave_Init sets up the second and passes it to func_800417D0, which reads
  * unk6 as a state. rot is the RotMatrix-style angle SVECTOR the rotation
  * handlers take; mat and work are libgte MATRIXes. */
 typedef struct {
@@ -1878,14 +1878,15 @@ typedef struct Unk80101DF0Record {
 } Unk80101DF0Record;                /* 0x58 */
 
 /* The 8 light-setup records at 0x800F62E0 (0x60 each; base + n*0x60 in
- * func_800470B0, func_80049F4C).  func_8004A09C fills one from a 22-halfword
- * template: the color matrix +0x38 (m[3][3]), the three lights' pitch / yaw /
- * on at +0x00 / +0x08 / +0x10, the u8 back color +0x58 and the s16 +0x5C;
- * calc_LightMatrix then turns light i's pitch / yaw into the light matrix row i
- * (+0x18 + i*6, zero when off), scaled by +0x5C.  func_80049F4C hands record
- * 0's color matrix and back color to SetColorMatrix / SetBackColor; the light
- * matrix goes to gte_MulMatrix0ClearTrans (func_8004A940); func_80046F24 /
- * func_800470B0 read its row 0. */
+ * math_LightPlaneProject, light_InitDefaults).  light_Unpack fills one from a
+ * 22-halfword template: the color matrix +0x38 (m[3][3]), the three lights'
+ * pitch / yaw / on at +0x00 / +0x08 / +0x10, the u8 back color +0x58 and the
+ * s16 +0x5C; calc_LightMatrix then turns light i's pitch / yaw into the light
+ * matrix row i
+ * (+0x18 + i*6, zero when off), scaled by +0x5C.  light_InitDefaults hands
+ * record 0's color matrix and back color to SetColorMatrix / SetBackColor; the
+ * light matrix goes to gte_MulMatrix0ClearTrans (func_8004A940);
+ * math_SetLightPlaneProjection / math_LightPlaneProject read its row 0. */
 typedef struct {
     s16 pitch;
     s16 yaw;

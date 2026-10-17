@@ -1145,7 +1145,7 @@ void func_80044504(u32 *a0) {
     } else {
         *(s32 *)0x1F800014 = 0;
     }
-    func_80046F24();
+    math_SetLightPlaneProjection();
     *(s32 *)0x1F80001C = (s32)&D_80095328;
     *(s32 *)0x1F80000C = (s32)a0;
     if (D_800A3790 & 8) {

@@ -168,16 +168,16 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
         switch (a0) {
         case 0:
             if (func_8003E2A0() == 0) {
-                func_800480C0(a3, i + 1, 0, 0, -0x140, 0xE8);
+                gpu_LoadTimGroupSplitOffset(a3, i + 1, 0, 0, -0x140, 0xE8);
             } else {
-                func_80047EE8(a3, i + 1);
+                gpu_LoadTimGroup(a3, i + 1);
             }
             break;
         case 1:
             if (func_8003E2A0() == a0) {
-                func_800480C0(a3, i + 1, 0x80, 0, -0x140, 0xE8);
+                gpu_LoadTimGroupSplitOffset(a3, i + 1, 0x80, 0, -0x140, 0xE8);
             } else {
-                func_80047FBC(a3, i + 1, 0x80, 0);
+                gpu_LoadTimGroupOffset(a3, i + 1, 0x80, 0);
             }
             break;
         }
@@ -275,7 +275,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2) {
             rect.h = 1;
             LoadImage(&rect, (u32 *)g_gpu_store_buf[idx++]);
             DrawSync(0);
-            func_80048A7C(rect.x, rect.y, 0x10, r, g, b);
+            gpu_TintVramRowInPlace(rect.x, rect.y, 0x10, r, g, b);
         }
     }
     if (func_8003E2A0() == one) {

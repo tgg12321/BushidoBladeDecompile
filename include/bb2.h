@@ -858,16 +858,16 @@ extern void func_80046DA8(s32);
 extern void func_80046E54(s32);
 extern s32 func_80046E7C(void);
 extern void func_80046EA0(s32);
-extern void func_80046F24(void);
-extern void func_80047EE8(s32, s32);
-extern void func_80047FBC(s32, s32, s16, s16);
-extern void func_800480C0(s32, s32, s16, s16, s16, s16);
-/* func_800482C8 (u8 *, s16, s16, s16, u16) and gpu_LoadTimClut (u8 *, s16, s16)
+extern void math_SetLightPlaneProjection(void);
+extern void gpu_LoadTimGroup(s32, s32);
+extern void gpu_LoadTimGroupOffset(s32, s32, s16, s16);
+extern void gpu_LoadTimGroupSplitOffset(s32, s32, s16, s16, s16, s16);
+/* gpu_LoadTim (u8 *, s16, s16, s16, u16) and gpu_LoadTimClut (u8 *, s16, s16)
  * have no declaration: 368E4.c calls them above their definitions, implicitly,
  * and their prototypes change its bytes. */
 extern s32 func_800486FC(void);
 extern void math_GrayscaleRgb555(u16 *, s32, u16 *);
-extern void func_80048A7C(s32, s32, s32, s32, s32, s32);
+extern void gpu_TintVramRowInPlace(s32, s32, s32, s32, s32, s32);
 extern s32 func_80048AD0(s32);
 extern void func_8004939C(void);
 extern void func_80049718(s32, s32, s32 *, s16 *);

@@ -109,7 +109,7 @@ glabel func_80041BF4
     /* 3258C 80041D8C 1A00A587 */  lh         $a1, 0x1A($sp)
     /* 32590 80041D90 2138E002 */  addu       $a3, $s7, $zero
     /* 32594 80041D94 1000B6AF */  sw         $s6, 0x10($sp)
-    /* 32598 80041D98 9F22010C */  jal        func_80048A7C
+    /* 32598 80041D98 9F22010C */  jal        gpu_TintVramRowInPlace
     /* 3259C 80041D9C 1400B3AF */   sw        $s3, 0x14($sp)
   .L80041DA0:
     /* 325A0 80041DA0 00000286 */  lh         $v0, 0x0($s0)

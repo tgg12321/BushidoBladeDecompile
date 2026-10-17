@@ -4,7 +4,7 @@
  * places first. */
 #include "common.h"
 
-/* 0x800153F0: the 22-halfword record func_8004A09C unpacks; func_80049F4C
+/* 0x800153F0: the 22-halfword record light_Unpack unpacks; light_InitDefaults
  * copies it whole. */
 typedef struct {
     u16 v[22];

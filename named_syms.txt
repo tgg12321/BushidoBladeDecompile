@@ -311,8 +311,8 @@ func_800472B0     = 0x800472B0;  /* returns &D_800EEDD0 (the matrix func_8004721
 /* RESET 0x800477C4: retired name 'game_Stub2_800477C4' — preserved note: literal `jr ra; nop` -- empty hook slot 2 */
 /* RESET 0x800477CC: retired name 'game_Stub3_800477CC' — preserved note: literal `jr ra; nop` -- empty hook slot 3 */
 /* RESET 0x800477D4: retired name 'game_Stub4_800477D4' — preserved note: literal `jr ra; nop` -- empty hook slot 4 */
-func_800477DC          = 0x800477DC;  /* stores $a0 to g_snd_volume (gp-rel sw) */
-func_80047EC8         = 0x80047EC8;  /* literal `return 0xD00;` (jr ra; v0 = 0xD00) */
+wave_SetCellBuffer          = 0x800477DC;  /* stores $a0 to g_snd_volume (gp-rel sw) */
+wave_GetCellBufferSize         = 0x80047EC8;  /* literal `return 0xD00;` (jr ra; v0 = 0xD00) */
 /* Lifecycle wrapper grid: each is an 8-9 insn wrapper around one named callee. */
 /* RESET 0x8004746C: retired name 'game_EffInit_8004746C' — preserved note: wrapper -> func_8004473C() */
 /* RESET 0x8004748C: retired name 'game_EffCleanup_8004748C' — preserved note: wrapper -> efc_rob_set_type_flash() */
@@ -482,7 +482,7 @@ func_80046DA8         = 0x80046DA8;  /* 15-insn stage init calling game_InitStag
 /* RESET 0x80046EA0: retired name 'game_InitStageSound_80046EA0' — preserved note: 15-insn calling DispHira + func_80046798 + tslLineG5Init */
 /* RESET 0x80046EDC: retired name 'game_StageCleanup_80046EDC' — note: 14 insns; calls func_800460E4(a0, a1), func_800421C8(a0), func_8003E0E0() */
 /* Camera (4) */
-func_80046F24      = 0x80046F24;  /* 58-insn writing to D_800EEDB[4-C] matrix fields */
+math_SetLightPlaneProjection      = 0x80046F24;  /* 58-insn writing to D_800EEDB[4-C] matrix fields */
 /* RESET 0x8004700C: retired name 'camera_Transform_8004700C' — preserved note: 41-insn transform using D_800EEDB[0246] */
 func_800472C0    = 0x800472C0;  /* resets an Unk80101DF0Record to identity (header fields, rot, t, mat) */
 camera_CalcAngles_80047384      = 0x80047384;  /* 58-insn angle calc using replay_camera_rob_back_loose3 + single_game_getEnemyCharId (previously proposed as camera_replay_compute_rot_80047384 in batch 6) */

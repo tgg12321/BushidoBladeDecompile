@@ -44,7 +44,7 @@ glabel func_800466C0
     /* 36F5C 8004675C DB190108 */  j          .L8004676C
     /* 36F60 80046760 00000000 */   nop
   jlabel .L80046764
-    /* 36F64 80046764 B41F010C */  jal        func_80047ED0
+    /* 36F64 80046764 B41F010C */  jal        wave_MoveCellBuffer
     /* 36F68 80046768 21200002 */   addu      $a0, $s0, $zero
   jlabel .L8004676C
     /* 36F6C 8004676C 1400BF8F */  lw         $ra, 0x14($sp)

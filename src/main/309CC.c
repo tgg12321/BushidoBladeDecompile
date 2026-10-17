@@ -228,19 +228,19 @@ after_select:
         if (a0->unk_04 != 0)
             goto done_cases;
 
-        func_80047EE8(var_1, 0);
+        gpu_LoadTimGroup(var_1, 0);
         if (func_8003E2A0() != 0)
             goto done_cases;
         func_800432A0(a0->unk_14, 0, 0, -0x140, 0xE8);
-        func_800480C0((s32)var_1, 0, 0, 0, -0x140, 0xF0);
+        gpu_LoadTimGroupSplitOffset((s32)var_1, 0, 0, 0, -0x140, 0xF0);
         goto done_cases;
 
     case_1:
-        func_80047FBC(var_1, 0, 0x80, 0);
+        gpu_LoadTimGroupOffset(var_1, 0, 0x80, 0);
         if (func_8003E2A0() != 1)
             goto case_1_else;
         func_800432A0(a0->unk_14, 0x80, 0, -0x140, 0xE8);
-        func_800480C0((s32)var_1, 0, 0x80, 0, -0x140, 0xF0);
+        gpu_LoadTimGroupSplitOffset((s32)var_1, 0, 0x80, 0, -0x140, 0xF0);
         goto case_1_done;
 
     case_1_else:
