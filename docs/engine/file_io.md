@@ -1,299 +1,270 @@
-# File I/O and CD-ROM
+# File I/O, CD-ROM and memory card
 
-BB2 reads files from the disc using PsyQ libcd, a thin wrapper over the
-PS1 BIOS CD-ROM filesystem. The BIOS provides POSIX-like `open / read /
-close / seek` on ISO9660 names; BB2 wraps these in higher-level helpers.
+The game reads the disc through its own CD state machine (`src/main/cdrom.c`,
+`src/main/26940.c`, `src/main/267A8.c`) on top of PsyQ libcd
+(`src/main/psxsdk/libcd/`). The memory card goes through BIOS file calls in
+`src/main/memcard.c`. The PCdrv host-file loaders in `src/main/6CF8.c` are a
+third, separate path. Disc contents and file formats are in
+[docs/formats/](../formats/README.md).
 
-Almost all file I/O code is in:
-- `ings.c` (`file_*`, ~0x80016ABC..0x80017FA0) — high-level loaders
-- `system.c` (`cdrom_*`, `0x8008008C..0x800807A8`) — libcd shim and CD
-  command dispatch
-- `ings2.c` (`bios_*`, `~0x80082xxx`) — BIOS syscall trampolines
+## The CD file table
 
-## Disc layout
+`g_cd_file_table` (`CdFileEntry[159]`, include/bb2.h:475) gives each disc
+file a `CdlLOC` start position and a byte size (include/game.h:2039-2042).
+Code names a file by group and index:
+`cdrom_GetFileIndex(group, i)` (src/main/cdrom.c:41) returns
+`(&D_8008F12C)[group] + i`, a group base from the s16 table `D_8008F12C`
+plus an offset. The groups that appear in calls:
 
-The disc is BIN/CUE Mode 2/2352. Extracted via `tools/extract_iso.py` to
-the `disc/` directory:
+- group 1: `func_80020DDC` reads `cdrom_GetFileIndex(1, 1)` into the buffer
+  at `D_800A3830` (src/main/9F9C.c:2991).
+- group 2: image and data files. Readers include `func_80060CB8`,
+  `func_80016A8C`, and functions in 3AB48.c, 51268.c and 5ED34.c.
+- group 5: CD-audio tracks, started through `cdrom_StartAudio`. Callers are
+  `cdrom_StartAudioEntry` and three functions in src/main/2B344.c:
+  `func_8003BCB4` (src/main/2B344.c:550), `func_8003BE10` (:595) and
+  `func_8003C040` (:666).
+- group 6: `cdrom_GetFileIndex(6, 0)` is the PS-X EXE that `cdrom_LoadExec`
+  reads (`STR\MOVOVL.EXE`, [replay.md](replay.md)).
+  `sys_ExecMovieOverlay` (src/main/cdrom.c:233) puts pointers to entries
+  `(6, a2)` and `(6, 2)` in the argument block it hands to that EXE through
+  `sys_Exec`.
 
-```
-disc/
-  SLUS_006.63          ; main EXE, 606 KB
-  LOADSE/              ; stage data + sound effect banks
-    STAGE00.BIN, STAGE01.BIN, ... STAGE37.BIN
-    *.SE                ; SPU sample banks (24 voices each)
-  LOADSE1/             ; alternate sound banks
-  MOTION/              ; character animation bundles
-    Y123.BBM, N123.BBM, K123.BBM, T123.BBM, S123.BBM (5 chars)
-    WIN.DAT             ; win-pose animation table
-  NDATA/
-    NDATA.DAT (~55 MB)  ; large packed archive
-    NDATA.INF           ; index into NDATA.DAT
-  TIM2D/               ; 2D textures, UI/menu data, sound banks
-    *.TIM, *.BNK
-  U_PIC/               ; stage backgrounds
-    STG00.BIN ... STG29.BIN
-  XA_0/, XA_1/         ; XA-ADPCM streaming audio (music, voice, endings)
-  STR/                 ; FMV opening, title, movie overlay
-    OPENING.STR, TITLE.TIM, MOVOVL.EXE
-```
+`cdrom_GetFileSize(i)` (src/main/cdrom.c:55) returns entry `i`'s size.
 
-## High-level file API — `file_*` in `ings.c`
+## The CD state block and its two steppers
 
-| Function | Purpose |
-| --- | --- |
-| `file_LoadAll(name, dest)` | Open, full-read, close. Returns size or -1/-2 on error. Internally uses `bios_FileRead` in 0x4000-byte chunks. |
-| `file_LoadSectors(name, dest, sector, count)` | Open, seek to `sector*0x800`, read `count` sectors of 0x800 bytes, close. |
-| `file_LoadOverlay()` | Load `MOVOVL.EXE` overlay into 0x801D8800 (calls `func_80060CB8`). Panics if larger than 0xA000. |
-| `file_LoadSoundData()` | Load SE bank to 0x801D8800 scratch, copy to 0x8010DB00 in main RAM, then DMA-upload to SPU via `saFidLoad`. |
-| `file_GetFlag0/1/2()` | Test `g_file_flags` bits — disc-config related |
-| `file_ResetDmaFlag` | Clear `g_file_dma_flag` to 0 |
+All game CD work runs through one object, `CdState D_80101E58`
+(include/game.h:2084-2089; its `rec` member is `Unk80101E60Rec`,
+include/game.h:2054-2077). `rec.unk02` is the state. 0 means idle.
+States 2..0xD are the data read. States 0x10..0x1E are CD audio.
 
-Globals:
-- `g_file_flags` (`0x80106A73`) — disc-config flags
-- `g_file_disc_type` (`0x80106A54`) — disc type byte
-- `g_file_disc_size` (`0x80106A50`) — disc data size
-- `g_file_vram_timer` (`0x800A3710`) — VRAM transfer cooldown
-- `g_file_dma_flag` (`0x800A3716`) — 1 if a DMA is in flight
-- `g_file_heap_base` (`0x800A38BC`) — heap pointer (also RNG state — see `rng_*`)
+Requests:
 
-The high-level `file_*` API hides the "open + read + close" trio: BB2's
-file load is always full-file or sector-range — there's no streaming
-random-access for game data (XA streaming is separate; see [sound.md](sound.md)).
+- `cdrom_StartRead(file, dest)` (src/main/cdrom.c:13) returns 0 if a request
+  is pending. Otherwise it copies the file's entry into `rec.pair` and stores
+  `dest` in `rec.unk1C`. It sets `rec.unk18` to the sector count
+  `(size + 0x7FF) >> 11`, enters state 2 and returns 1.
+- `cdrom_StartReadAt(file, dest, sector, count)` (src/main/cdrom.c:31) does
+  the same, then moves the start position `sector` sectors on
+  (`CdPosToInt` / `CdIntToPos`) and reads `count` sectors.
+- `cdrom_StartAudio(file, chan)` (src/main/cdrom.c:77) sets up CD audio.
+  `rec.unk14` is the stop position, 0x96 sectors before the file's end.
+  - `chan < 0` selects mode 5 (CdlModeDA | CdlModeRept).
+  - Otherwise it selects mode 0xC8 (CdlModeSpeed | CdlModeRT | CdlModeSF),
+    after `CdControlB(0xD /* CdlSetfilter */, &file)` with
+    `D_80101E58.file = 1` and `.chan = chan`.
+  - It enters state 0x10.
+- `cdrom_StartAudioEntry(n)` (src/main/cdrom.c:107) starts row `n` of
+  `D_8008F13C`: file `cdrom_GetFileIndex(5, row.unk_0)`, channel `row.unk_1`
+  and, when `row.unk_4 != -1`, a stop position of the file start plus
+  `row.unk_4`.
+- `cdrom_Pause` (src/main/cdrom.c:45) clears the ready callback, mutes the CD
+  mix, and issues `CdFlush` and `CdControlF(9 /* CdlPause */, 0)`. It then
+  sets the stop request `rec.unk08` and state 0xB.
+- `cdrom_RequestStop` (src/main/cdrom.c:139) sets `rec.unk08 = 1`.
+  `cdrom_SetAudioRepeat` (:129) sets `rec.unk0A`, which sends a finished
+  track back to state 0x10.
 
-## CD-ROM operation — `cdrom_*` in `system.c`
+Steppers:
 
-Lower-level CD-ROM control:
+- `cdrom_Update` (src/main/26940.c:222) handles states below 0x10 and passes
+  the rest to `cdrom_UpdateAudio`. The read path:
+  1. state 2: `CdControlF(0xE /* CdlSetmode */, {0xA0})` (double speed,
+     2340-byte sectors).
+  2. state 4: after 3 calls, `CdControl(2 /* CdlSetloc */, &rec.pair.loc)`.
+     It loads the destination, sector count and expected position into
+     `rec.dest_buffer`, `rec.cd20` and `rec.expected_pos`.
+  3. state 5: it installs `cdrom_ReadyCallback` and issues
+     `CdControlF(6 /* CdlReadN */)`.
+  4. state 6: it waits for `rec.cd20` to reach 0 (done, state 8 -> 0) or go
+     negative (error, state 9).
 
-| Function | Purpose |
-| --- | --- |
-| `cdrom_CheckReady(a0)` | Probe drive: a0=2 → shutdown; otherwise init + optionally config SPU |
-| `cdrom_GetMode` | Read `g_cd_mode` |
-| `cdrom_GetReadyFlag` | Read `g_cd_ready_flag` |
-| `cdrom_SetCallbackA/B(fn)` | Install async I/O callbacks. A is the per-sector "data ready" callback; B is the per-stream callback used by XA. |
-| `cdrom_SetDebugLevel(n)` | Verbose debug output level |
-| `cdrom_GetCmdName(id)` / `cdrom_GetResultName(id)` | Translate command/result IDs to strings (for debug) |
-| `cdrom_FramesToBcd(frames, out)` | Convert linear frame count to MSF/BCD `(mm:ss:ff)` for CD seek commands |
-| `cdrom_BcdToFrames(bcd)` | Inverse |
-| `cdrom_SendCmd` / `cdrom_DmaToRam` / `cdrom_DmaChain` | Thin wrappers over PsyQ libcd |
+  Each `CdSync` wait gives up after 0x3C calls (state 0xA). The error path
+  runs as follows. State 9 goes to 0xA when result byte 0 has bit 0x10 (shell
+  open), else to 0xC. State 0xA polls with `CdControlF(1 /* CdlNop */)`.
+  State 0xC issues `CdControlF(0x13 /* CdlGetTN */)`. State 0xD retries from
+  state 2 after four `VSync(4)`.
+- `cdrom_ReadyCallback(intr, result)` (src/main/267A8.c:32) is the
+  CdReadyCallback handler during a read. On `intr == 1` (CdlDataReady) it
+  reads the 3-word sector header with `CdGetSector(sp, 3)`. If the header's
+  position is not `rec.expected_pos`, it sets `rec.cd20 = -2`. Otherwise it
+  reads 0x200 words to `rec.dest_buffer`, advances the buffer by 0x800 and
+  counts the sector. On any other interrupt it sets `rec.cd20 = -1`. When
+  the count reaches 0, or on an error, it removes itself and pauses the drive.
+- `cdrom_UpdateAudio` (src/main/26940.c:14) first steps a CD-mix fade.
+  `g_cd_atv` moves toward `g_cd_atv_target` over `g_cd_fade_len` calls,
+  through `CdMix`. Then it runs the audio states:
+  1. 0x10: Setmode `rec.unk30`.
+  2. 0x12: Setloc.
+  3. 0x13: `CdControlF(0x16 /* CdlSeekP */)`, then `CdlReadS` (0x1B) for XA
+     or `CdlPlay` (3) for CD-DA.
+  4. 0x15 / 0x16: playing. It turns the mix on at the second call and stops
+     at `rec.unk14`. For XA it fades out over the last 0x96 sectors using
+     `rec.unk44`.
+  5. 0x1C..0x1E: pause and back to idle.
 
-Globals:
-- `libcd_CDRegister0..3` (-> 0x1F801800..3) — pointers to the
-  CD-ROM hardware registers (mapped at `0x1F801800..0x1F801803`);
-  `D_800A1490` (-> 0x1F801C00) is libcd's SPU register base, which
-  `CD_initvol` uses for the main and CD volumes (bios.c:414-425)
-- `g_cd_status_a/b/c` — register shadows updated by IRQ
-- `g_cd_mode` — current command mode
-- `g_cd_callback_a/b` — installed async callbacks
-- `g_cd_init_flag` — set once `cdrom_Initialize` succeeds
-- `g_com_delay_reg` (-> 0x1F801020 COM_DELAY), `g_cdrom_delay_reg` (-> 0x1F801018 CD-ROM delay) and `g_cd_dma_dest/size/ctrl` — pointers to the CD DMA channel registers
-- `g_cd_cmd_table` — command dispatch table (28 entries)
-- `g_cd_result_table` — result handler table (7 entries)
-- `g_cd_setloc_flags` — per-command "issue CdlSetloc first" flags
+  0x17..0x1B is its error and retry path.
 
-The CD timing is critical for XA streaming — the BGM has to land in the
-SPU's CD-audio input every 1/75 second (one CD sector at 2x speed = 12.6 ms
-per sector). The per-sector callback (`g_cd_callback_b`) fires every time
-a sector lands, and is what `marionation_camera_Init_80036064` uses to
-advance the XA pointer (see [sound.md](sound.md)).
+Waits:
 
-### The `tslTm2LoadImage` helper
+- `cdrom_WaitIdle` (src/main/cdrom.c:57) loops until state 0. Each pass calls
+  `comb_ExchangeEmptyPad`, `cdrom_Update`, `func_8005C6D0` (while
+  `D_800A3906` is set), `func_800174F4`, and `VSync(2)`. The loop sits
+  between `comb_BeginWait` and `comb_EndWait`.
+- `cdrom_WaitAudioStarted` (src/main/cdrom.c:146) loops until state 0x16.
+- `cdrom_PauseAndWait` (:154) pauses a busy drive, then waits.
 
-`tslTm2LoadImage(cmd, a1, a2, a3)` is a wrapper around the CD command
-dispatch. The first arg is a command code:
-- 1 = "stop / abort"
-- 2 = "issue read at sector a1 of length a2"
-- Other indices map to specific CD command IDs
+Set-up: `cdrom_Init` (src/main/267A8.c:16) runs `CdInit`, `CdSetDebug(0)`, a
+muted mix and state 0. `sys_Init` calls it (src/main/6CF8.c:183).
 
-Functions like `func_80080258`, `func_80080390`, `tslPolyF4Init` are all
-"submit the command, retry up to 3 times if it fails" wrappers (the inner
-do-while loops at `system.c:155-181, 247-281`). The retry pattern is the
-PsyQ standard "transient CD error" recovery.
+## Synchronous reads: `cdrom_ReadWait` and `cdrom_LoadExec`
 
-`func_80080390(9, 0)` (often seen) means "stop the SE channel's CD-audio
-playback" — i.e., halt XA stream into channel 9.
+`cdrom_ReadWait(nbytes, buf, mode)` (src/main/cdrom.c:161) is the one caller
+of libcd `CdRead`. It reads `ceil(nbytes / 0x800)` sectors and spins on
+`CdReadSync(1, 0)` with `VSync(0)`. `cdrom_LoadExec` (src/main/cdrom.c:181)
+uses it to load the overlay EXE for `sys_Exec` (src/main/cdrom.c:209). Both
+are described in [replay.md](replay.md).
 
-### Retry pattern (`pad_ClearAppliBuffer` cluster)
+## Callers that load data
 
-A common BB2 idiom is "issue command, retry on transient error, eventually
-panic". `pad_ClearAppliBuffer` and several other functions named after the
-SDK's pad-input helper actually do CD-retry work — yet another Kengo
-naming collision. The actual function bodies are 3-retry loops over
-`tslTm2LoadImage(2, ...)`.
+- `func_80060CB8(dest, prim_buf)` (51268.c) picks a group-2 file by
+  `D_8009BD24.unk14_0` (0x3C, 0x2F, 0x30, 0x31 or 0). It reads the file to
+  `dest` and uploads two VRAM rectangles from it: (0x380, 0, 0x80, 0x1DC),
+  then (0x380, 0x1DC, 0x70, 0x24) from `dest + 0x1DC00`. It then splits
+  `prim_buf` into two 0x4650-byte `POLY_FT4` buffers
+  (`D_800A3420` / `D_800A3424`) and returns the end of the second.
+- `eff_Init` (src/main/6CF8.c:248) calls
+  `func_80060CB8(0x801D8800, 0x8010E800)` once (flag `D_800A3716`, cleared by
+  `eff_ClearInitFlag`). It prints the size and calls `sys_Panic` above
+  0xA000.
+- `snd_InitAndLoadCommonVab` (src/main/6CF8.c:265) runs `snd_Init` and
+  `snd_LoadCommonVab(0x801D8800)`, and calls `sys_Panic` at 0xD01 bytes or
+  more. It copies the bank to 0x8010DB00, opens it with
+  `snd_VabFakeOpen(0xFFF35300, 0)` and sets `D_800A3906`. See
+  [sound.md](sound.md).
+- `func_80016A8C` (src/main/6CF8.c:188) reads group-2 file 0x61 to 0x80118800
+  (`main`, src/main/6CF8.c:440) and shows it as a 15-bit image. From frame
+  0x79 of 0x96 it halves each RGB channel of the image per frame.
 
-## Memory card I/O
+`sys_Panic` (src/main/6CF8.c:239) prints `"OVER FLOW\n"` and then calls
+`func_800164F8` forever. That function runs `pollhost()` (`break 1024`)
+10000 times (src/main/6CF8.c:39).
 
-The memory card is accessed via libapi (cards are pad-port devices). BB2
-wraps it in `LWCard_*` helpers (Kengo name suggests "LightWeight Card"):
+## libcd (Sony)
 
-- `LWCard_SetAccessData` (`code6cac_tu2.c:1114`) — set up an access struct
-  (4 fields, mostly zero/-1)
-- `_McAccessSection` (asm-only at 0x8003D39C) — perform a memory card
-  access section
-- `_CardCheckPulled` / `_CardCheckPulled2` (asm-only at 0x80027438,
-  0x80037A20) — check whether the card was removed mid-operation
+The modules are verbatim PsyQ 4.0 LIBCD; each file's top comment states its
+span:
 
-Memory card slots/data:
-- `g_memcard_busy` (`0x800FF578`) — set while a memcard op is in progress
-- `g_memcard_slot` (`0x80101BCC`) — which slot is active
-- `g_memcard_data` (`0x80103600`) — the loaded data block
+- `event.c`: `CdInit`.
+- `sys.c`: the command layer.
+  - `CdReset`, `CdFlush`, `CdSetDebug`, `CdComstr` / `CdIntstr` (debug
+    names from the string tables `CD_comstr` / `CD_intstr`), `CdSync`,
+    `CdReady`.
+  - `CdSyncCallback`, `CdReadyCallback`, `CdControl` / `CdControlF` /
+    `CdControlB`, `CdMix`.
+  - `CdGetSector` / `CdGetSector2`, `CdDataCallback` (DMA channel 3),
+    `CdIntToPos`, `CdPosToInt`.
+- `bios.c`: the controller driver.
+  - `CD_cw` (src/main/psxsdk/libcd/bios.c:323) writes a command and its
+    parameters to the CD registers. With `async == 0` it waits for the
+    acknowledge.
+  - `CD_sync` / `CD_ready` wait on the interrupt status `Intr`.
+  - `getintr` reads and acknowledges an interrupt. `cdrom_IrqHandler`
+    (:584) dispatches `CD_cbready` / `CD_cbsync` from IRQ 2.
+  - `CD_init`, `CD_initvol`, `CD_flush`, `CD_getsector*`.
+  - The four register pointers `libcd_CDRegister0..3` (0x800A147C..88)
+    point at 0x1F801800..3. `g_com_delay_reg` points at 0x1F801020 and is
+    set to 0x1325 by `CD_flush` (:409). `D_800A1490` is the SPU register
+    base `CD_initvol` writes the CD and main volumes through (:414-425).
+- `cdread.c`: `CdRead`, `CdReadSync`, `CdReadBreak`, `CdReadCallback`,
+  `CdReadMode` and the callbacks `cb_read` / `cb_data` / `cd_read_retry`.
 
-The save/load is async — `g_memcard_busy` is the polled flag.
+### `CdRead` state
 
-## BIOS file I/O — `bios_*` in `ings2.c`
-
-The BIOS file I/O syscalls (`bios_FileRead`, `bios_FileReadRaw`) are
-trampolines into PS1 BIOS calls A(34h) / A(35h):
-
-- `bios_FileReadRaw(fd, dest, len, ?)` — single-call raw read; hand-coded
-  asm in `ings2.c:601`. The opcode `.word 0x0000414D` is a `syscall`
-  variant for the A0 jump table at offset 0x34 / 0x4D / etc.
-- `bios_FileRead(fd, dest, len)` — chunked-read wrapper (`ings2.c:575`).
-  Calls `bios_FileReadRaw` in pieces of up to 0x8000 bytes. Used by
-  `file_LoadAll` and `file_LoadSectors`.
-
-Other BIOS-call trampolines:
-- `func_80083698` — file-open BIOS call (returns fd or -1)
-- `ang_hosei_800836C8` (now `PClseek`, `asm/funcs/PClseek.s`) — the BIOS file-lseek
-  trampoline. NB the Kengo name `ang_hosei` covers THREE unrelated
-  functions in-tree: this lseek trampoline (0x800836C8), the real
-  angle-correction orchestrator (`ang_hosei_8003F62C`, src/code6cac_c2.c),
-  and `char_disp_offset_80056FE8` (a character display-offset lookup —
-  neither rotation nor file-seek). See docs/naming/MISNOMERS.md.
-- `func_80078A18` — `BIOS_close` for file descriptors
-- `func_8008386C` — `BIOS B(39h) InitHeap` (called from boot)
-
-These BIOS calls are kept in hand-coded asm because the trampoline form is
-specific to PsyQ's syscall encoding (`.word 0x0000414D` = `syscall <imm>`
-with the BIOS table index in the upper bits).
-
-## Error / panic
-
-When file I/O catastrophically fails:
-
-1. `sys_Panic` (`ings.c:336`) — print "OVER FLOW" via debug_printf
-2. Infinite loop on `func_800164F8()` — `break` instruction to halt CPU
-
-`file_LoadSoundData` calls `sys_Panic` if the loaded SE bank exceeds
-0xD01 bytes. `file_LoadOverlay` calls it if MOVOVL.EXE exceeds 0xA000
-bytes. The main-loop OT overflow check also calls it (see [main_loop.md](main_loop.md)).
-
-These are "should never happen" asserts — the build system precalculates
-sizes and the disc layout is fixed.
-
-## Where unmatched file/CD asm still hides
-
-- The full `cpu_side_move_dir_4` (which is actually a CD command dispatcher
-  — Kengo name collision) at `system.c:386`
-- `tslTm2LoadImage` core implementation
-- `cdrom_Initialize`, `cdrom_Shutdown`, `cdrom_ConfigSPU`
-- `cdrom_SendCmd`, `cdrom_DmaToRam`, `cdrom_DmaChain` cores
-- Several `func_8008XXXX` helpers that look like CD-IRQ handlers
-
-## libcd cdread state (2026-05-17)
-
-`CdRead` (`0x800826CC`, `src/main/psxsdk/libcd/cdread.c:166`) reads N whole
-sectors into a buffer; nothing streams. Its state is one Sony struct,
-`CdlREAD D_800A14D0` (`include/psxsdk/libcd.h:41-54`), whose members the code
-spells by name:
+`CdRead` (src/main/psxsdk/libcd/cdread.c:166) keeps its state in one Sony
+struct, `CdlREAD D_800A14D0` (include/psxsdk/libcd.h:41-55):
 
 | Member | Address | Role |
 |--------|---------|------|
-| `sectors` | `0x800A14D0` | sector count requested (cdread.c:181) |
-| `buf` | `0x800A14D4` | CdRead's buffer argument (cdread.c:180) |
-| `p` | `0x800A14D8` | running write pointer: set from `buf` by `cd_read_retry` (:146), advanced one sector per transfer (:57, :89) |
-| `mode` | `0x800A14DC` | CdlSetmode byte: `mode & 0x30` picks `size`, `0x20` is ORed in (:167-179) |
+| `sectors` | `0x800A14D0` | sectors requested (cdread.c:181) |
+| `buf` | `0x800A14D4` | the buffer argument (cdread.c:180) |
+| `p` | `0x800A14D8` | write pointer: `buf` at each (re)start (:146), advanced per sector (:57, :89) |
+| `mode` | `0x800A14DC` | CdlSetmode byte; `mode & 0x30` picks `size`, 0x20 is ORed in (:167-179) |
 | `size` | `0x800A14E0` | sector size in words: 0x200 / 0x249 / 0x246 (:168-177) |
 | `cnt` | `0x800A14E4` | sectors left; -1 on error |
-| `t2` | `0x800A14E8` | `VSync(-1)` at the last sector or retry (:65, :149) |
-| `t1` | `0x800A14EC` | `VSync(-1)` when the read starts (:187), base of the 1200-frame timeout (:69, :199) |
-| `pos` | `0x800A14F0` | `CdPosToInt(CdLastPos())` (:141), advanced per sector |
-| `cbsync` / `cbready` / `cbdata` | `0x800A14F4` / `F8` / `FC` | callbacks saved by CdRead (:182-186), restored at the end (:75-78) |
-| `cb_read` | `0x80082050` | passed to `CdReadyCallback` by `cd_read_retry` (:142) |
-| `cb_data` | `0x80082320` | passed to `CdDataCallback` by `cd_read_retry` (:144) |
+| `t2` | `0x800A14E8` | `VSync(-1)` at each sector or retry (:65, :149); `CdReadSync` retries 60 vsyncs after it (:200) |
+| `t1` | `0x800A14EC` | `VSync(-1)` at the start (:187); 1200-vsync timeout (:69, :199) |
+| `pos` | `0x800A14F0` | `CdPosToInt(CdLastPos())` (:141), +1 per sector |
+| `cbsync` / `cbready` / `cbdata` | `0x800A14F4` / `F8` / `FC` | callbacks saved at the start (:182-186), restored at the end (:75-79) |
+| `tslmode` | `0x800A1500` | `CdReadMode`'s flag: bit 0 reads with `CdGetSector2` and advances in `cb_data` |
 
-## IRQ handlers (vsync + DMA)
+## Interrupt hooks (libetc)
 
-PsyQ libetc installs interrupt handlers for IRQ 0 (vsync,
-`src/main/psxsdk/libetc/intr_vb.c`) and IRQ 3 (DMA,
-`src/main/psxsdk/libetc/intr_dma.c`). Each handler has its own
-callback-slot array and registration function:
+`startIntrVSync` (src/main/psxsdk/libetc/intr_vb.c:15) does four things:
 
-### Vsync handler (IRQ 0)
+- writes 0x107 to root counter 1's mode register through `D_800A2638`;
+- clears `Vcount`;
+- clears the eight slots `D_800A2614[8]`;
+- hooks IRQ 0 to `trapIntrVSync`.
 
-`trapIntrVSync` (`0x800832F8`, intr_vb.c:23-38) fires on every vsync:
-```
-++Vcount;
-for (i = 0; i < 8; i++) {
-    if (D_800A2614[i] != 0)
-        ((void(*)(void))D_800A2614[i])();
-}
-```
+`trapIntrVSync` (:23) increments `Vcount` and calls each non-null slot.
+`setIntrVSync(slot, fn)` (:40) fills a slot.
 
-`setIntrVSync` (`0x80083370`) sets `D_800A2614[slot] = fn`.
-`startIntrVSync` (`0x800832A0`, intr_vb.c:15-21) writes `0x107` to root
-counter 1's mode register (via `D_800A2638`), clears `Vcount` and the slots,
-and hooks IRQ 0 to `trapIntrVSync`.
+`startIntrDMA` (src/main/psxsdk/libetc/intr_dma.c:22) clears the seven
+callback slots `D_800A2640` and DICR (`*D_800A263C`, 0x1F8010F4), then hooks
+IRQ 3 to `trapIntrDMA`. `trapIntrDMA` (:29) loops while DICR bits 24..30 are
+set: it acknowledges each bit and calls its slot. It prints a bus-error
+report when DICR shows one. `setIntrDMA(ch, fn)` (:52) fills a slot and sets
+or clears the channel's enable bit (16 + ch).
 
-### DMA handler (IRQ 3)
+## Memory card
 
-`trapIntrDMA` (`0x80083418`, intr_dma.c:29-50) dispatches the DICR flag bits
-of all seven DMA channels:
-```
-while ((mask = (*D_800A263C >> 24) & 0x7F) != 0)
-    // for each set bit i: acknowledge it, call D_800A2640[i]
-```
+`src/main/memcard.c` wraps the BIOS card calls:
 
-`setIntrDMA` (`0x8008359C`, intr_dma.c:52-66) — registrar companion; it also
-sets the channel's enable bit in DICR.
+- `memcard_Init` (:28) runs `InitCARD(1)`, `StartCARD()` and `_bu_init()`.
+  It then opens and enables eight events: four software-card events (class
+  0xF4000001) and four hardware-card events (class 0xF0000011). Each set
+  covers spec 4 (I/O end), 0x8000 (error), 0x100 (timeout) and 0x2000 (new
+  card). `memcard_Quit` (:53) closes them and runs `StopCARD`.
+- `memcard_PollSwEvents` (:91) returns 1..4 for whichever software event has
+  fired, else 0. `memcard_PollSwEventsTimeout` (:67) is the same, but returns
+  2 once `g_memcard_poll_count` passes 0x78. `memcard_WaitHwEvent` (:111)
+  spins on the hardware events. `memcard_AckSwEvents` (:104) and
+  `memcard_AckHwEvents` (:128) clear them.
+- `memcard_CountFiles(port, slot)` (:135) lists `"bu%1d%1d:*"` into
+  `g_memcard_file_list` with `firstfile` / `nextfile`.
+  `memcard_CountFreeBlocks` (:153) returns 15 minus the 8 KB blocks in use.
+  `memcard_HasFile(name)` (:189) searches the list.
+- `memcard_ReadFile` (:244) / `memcard_WriteFile` (:262) open
+  `"bu%1d%1d:%s"` and keep the descriptor in `g_memcard_fd`. They issue
+  `read` / `write` and return 0 when `memcard_WaitHwEvent` reports I/O end.
+  `memcard_WriteFile` first creates the file (`open(name, (blocks << 16) |
+  0x200)`) when its last argument is set.
 
-`startIntrDMA` (`0x800833C8`, intr_dma.c:22-27; once misnamed
-`conv_matrix_rotation`, see `docs/naming/MISNOMERS.md`) clears the callback
-slots and DICR and hooks IRQ 3 to `trapIntrDMA`.
+The save flow is `func_800383A4` (28708.c:277), stepped on `D_800A31F4`:
 
-### IRQ state cluster
+- **Save (state 3):** it checks for the save file `D_80010AAC`
+  (`"BASLUS-00663BUSHIDO2"`, through `D_800A31F0`) and for free blocks. It
+  clears the 0x200-byte buffer `D_800F33D8` (`func_80038148`) and writes the
+  card header into it (`func_80038170`: icon CLUT and image). It fills the
+  save block at `+0x100` (`func_80037F40`, an `Unk800F34D8Save`,
+  include/game.h:40-52), then writes 0x200 bytes.
+- **Load (state 5):** it reads the file into the same buffer.
+- **Completion:** `memcard_PollFileCompletion` (28708.c:413) reaps the
+  result through `memcard_PollSwEvents` and closes the file. After a load it
+  restores the save block with `func_8003800C(&D_800F34D8)`. It posts a
+  result code to `D_800A379E`.
 
-| Symbol | Address | Role |
-|--------|---------|------|
-| `g_irq_vsync_callbacks` (C: `D_800A2614`) | `0x800A2614` | 8 × s32 vsync callback slots |
-| `Vcount` | `0x800A2634` | volatile vsync tick counter (++ in handler) |
-| `D_800A2638` | `0x800A2638` | -> 0x1F801114, root counter 1's mode register (`0x107` written by `startIntrVSync`) |
-| `D_800A2640` | `0x800A2640` | DMA-channel callback slots (`[i]` for DICR flag bit 24 + i, i < 7) |
-| `D_800A263C` | `0x800A263C` | -> 0x1F8010F4, DICR (the DMA interrupt register) |
-| `D_800A2668` | `0x800A2668` | boolean init flag |
+## PCdrv host files
 
-## Memcard helpers (2026-05-17)
-
-`pad_press_control` (MISNAMED — actually `memcard_event_init_800375EC`)
-opens 8 BIOS events at boot via `bios_OpenEvent`:
-
-**4 memcard events** (class `0xF4000001`):
-- `g_memcard1_event_ioe` (`0x800A37DC`) — end of I/O
-- `g_memcard1_event_err` (`0x800A37F0`) — error
-- `g_memcard1_event_new` (`0x800A37FC`) — new card inserted
-- `g_memcard1_event_timeout` (`0x800A3800`) — timeout
-
-**4 root-counter 0 events** (class `0xF0000011`):
-- `g_rcnt0_event_ioe/err/new/timeout` (`0x800A3838/3C/48/50`)
-
-| Function | Address | Role |
-|----------|---------|------|
-| `memcard_PollEvents` | `0x800378A8` | Tests 4 memcard events, returns 1-4 (which fired) |
-| `memcard_AckEvents` | `0x8003791C` | Acks all 4 memcard events |
-| `rcnt0_AckEvents` | `0x800379D8` | Acks all 4 rcnt0 events |
-| `memcard_event_pool_close_80037774` | `0x80037774` | Closes all 8 events (existing) |
-| `memcard_event_wait_class0xF4000001_with_timeout_80037804` | `0x80037804` | Polled wait with timeout (existing) |
-
-`g_memcard_poll_count` (`0x800A3924`) is incremented per poll; forces
-result=2 after ≥0x78 (120) ticks.
-
-## Cross-references (naming pass 2026-05-17; full traces at `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`)
-
-The memcard save/load payload buffer was identified in the
-placeholder-refinement pass:
-
-- §17 `D_800F33D8` + `D_800A36EC`
-  — `D_800F33D8` is a 512-byte (0x200) scratch region with four users;
-  one is the memcard save/load payload.
-  See `code6cac_c_mid.c:507` (write 0x200 bytes via `func_80037C34`) and
-  `code6cac_c_mid.c:524` (read 0x200 bytes via `func_80037B90`). Cleared
-  by `func_80038148` (code6cac_c_mid.c:321-329).
+`pcdrv_LoadFile(name, dest)` and `pcdrv_LoadSectors(name, dest, sector,
+count)` (src/main/6CF8.c:47, :78) read files from a development PC through
+the SN Systems PC file server. They use `PCopen`, `PClseek` and `PCclose`
+(src/main/psxsdk/libsn/73E98.c:12-14), and `PCread`
+(src/main/psxsdk/libsn/7407C.c:14), which calls `_SN_read` in pieces of at
+most 0x8000 bytes. `pcdrv_LoadFile` reads in 0x4000-byte pieces and returns
+the size. `pcdrv_LoadSectors` reads `count` 0x800-byte sectors from
+`sector * 0x800`. Both return -2 when the open fails and -1 on a short read.
+Nothing in `src/` or `asm/` references either function. They are separate
+from the BIOS `open` / `read` / `close` that the memory-card code uses.
