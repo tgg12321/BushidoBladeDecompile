@@ -1,6 +1,6 @@
 ---
 name: rodata-object-alignment
-paths: ["Makefile", "bb2.ld", "engine/pipeline.py", "engine/buildconfig.py", "src/**/*rodata*.c", "src/main/psxsdk/libgpu/sys.c", "src/main/64FD8.c", "src/main/3AB48.c"]
+paths: ["Makefile", "bb2.ld", "engine/pipeline.py", "engine/buildconfig.py", "src/**/*rodata*.c", "src/main/psxsdk/libgpu/sys.c", "src/main/64FD8.c", "src/main/43500.c", "src/main/4510C.c", "src/main/4BC3C.c"]
 description: "Every C object's .rodata links 4-aligned with jump-table .align 3 relative to the object's start (as ASPSX+PSYLINK do). Per-file align sed retired. New TU boundaries only from evidence."
 metadata:
   type: rule
@@ -46,6 +46,13 @@ Boundaries proven by the per-file gp model ([[per-file-gp-model]]) take existenc
 of condition 1 and its cut convention instead of condition 3's placement; a boundary set here may move within
 its recorded window under that rule, updating its record in docs/grind/rodata-align-2026-09-30.md in the same
 commit.
+
+**Seam boundaries (owner ruling 2026-10-17).** Five game-code boundaries take existence from seam evidence
+instead of condition 1: 51268 | 596CC at func_80068ECC; 3AB48 | 43500 | 4510C | 4BC3C | 4D0A8 at func_80052D00,
+func_8005490C, snd_Init, func_8005C8A8. Each cut separates no static's or `.sdata` object's users, follows the
+`.sbss`/`.sdata`/`.rodata` address order and the call graph, and byte-matches with each part its own object (a
+control cut across shared statics does not). Conditions 2-4 apply; evidence in each file's top comment and
+§ 15 of the evidence doc. Any other seam needs its own ruling.
 
 Choosing a boundary, reorder or item grouping BECAUSE it makes bytes match, when evidence does not force it,
 is the banned speculative rodata reorder ([[no-new-park-categories]]).

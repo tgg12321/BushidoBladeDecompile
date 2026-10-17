@@ -3,7 +3,7 @@
 Sony's GPU code is PsyQ 4.0 LIBGPU in `src/main/psxsdk/libgpu/` (`sys.c`,
 `prim.c`, `ext.c`). The GTE library is in `src/main/psxsdk/libgte/`. The
 game's frame set-up is in `src/main/6CF8.c`. The game's primitive builders are
-spread over the game TUs (3AB48.c, 368E4.c, 51268.c, 63D2C.c, and others).
+spread over the game TUs (3AB48.c, 368E4.c, 4D0A8.c, 51268.c, 596CC.c, 63D2C.c, and others).
 The frame loop itself is described in [main_loop.md](main_loop.md).
 
 ## Double buffer and ordering table
@@ -154,7 +154,7 @@ The sprite sheets are 12-byte headers `Unk8009B0E0Record`
   with a printed warning.
 - `func_80073728(env, mode)` (:55) is the `POLY_FT4` form.
 
-`func_80060414` (3AB48.c) takes the screen position from the packed table
+`func_80060414` (4D0A8.c) takes the screen position from the packed table
 `D_8009B850`, picks one of the `D_8009B7AC` sheets, and draws it with
 `func_8007352C` plus a `DR_MODE`. `func_800174F4` calls
 it in overlay mode 20.

@@ -100,10 +100,7 @@ const u32 D_80015820[8] = {
     0x80051358, 0x800514FC, 0x800516FC, 0x80051894,
 };
 
-/* D_80015840: 1 string, 28B @ 0x80015840 */
-const char D_80015840[28] = "Destruction tiny model.\n";
-
-/* The cluster continues in 3AB48.c's rodata: func_80058580's three switch
- * tables at 0x8001585C (rodata-object-alignment ruling 2026-09-30), then the
- * sound-bank loader's two strings at
- * 0x800158B4. */
+/* The cluster continues in 43500.c's rodata: func_80054604's string
+ * D_80015840 at 0x80015840; then 4510C.c's: func_80058580's three switch
+ * tables at 0x8001585C (rodata-object-alignment ruling 2026-09-30); then
+ * 4BC3C.c's: the sound-bank loader's two strings at 0x800158B4. */

@@ -78,7 +78,7 @@ banked for camera_CalcAngles; the rest of (iii) (no file-scope `__asm__`, `INCLU
 the `-G8` part; the extern screening); (iv); (v); (vi) incl. manual path only. Only this cut, only this file.
 
 **Owner ruling Q94 (2026-10-02) — the pre_rodata block between Q89's parts.** The former
-`text1a_b_pre_rodata.c` block (now src/main/d_5BF0.c; D_800153F0..D_80015840, merged into text1b by Q67 under
+`text1a_b_pre_rodata.c` block (now src/main/d_5BF0.c; D_800153F0..D_80015820, its last item D_80015840 moved to 43500.c by the 2026-10-17 seam ruling; merged into text1b by Q67 under
 [[per-file-gp-model]] A7) is restored verbatim as its own `.rodata`-only `-G0` file linked between Q89's head
 and tail. Evidence: under `-G8` cc1 emits every file-scope data object before every function's jump tables, so
 inside the head the block lands ahead of `.L10/.L26/.L55`; at the tail's top the tail starts at phase 0, not

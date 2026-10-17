@@ -20,7 +20,7 @@ plus an offset. The groups that appear in calls:
   at `D_800A3830` (src/main/9F9C.c:2991), and the motion data `(1, 0)` /
   `(1, j + 2)` (9F9C.c:3040, :3090).
 - group 2: image and data files. Readers include `func_80060CB8`,
-  `func_80016A8C`, and functions in 3AB48.c, 51268.c and 5ED34.c.
+  `func_80016A8C`, and functions in 4BC3C.c, 4D0A8.c, 51268.c, 596CC.c and 5ED34.c.
 - group 5: CD-audio tracks, started through `cdrom_StartAudio`. Callers are
   `cdrom_StartAudioEntry` and three functions in src/main/2B344.c:
   `func_8003B9D0` (src/main/2B344.c:478), `func_8003BE10` (:595) and

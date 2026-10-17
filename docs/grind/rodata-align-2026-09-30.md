@@ -505,3 +505,22 @@ offset) plus the oracle link. Cuts sit at LIBSCAN module starts (docs/naming/lib
   identical (30/79/180/257), globals at the same offsets. Declarations: each part takes the old file's two
   includes; cc1 -Wimplicit reports the same implicit callees, plus func_8008B488 in _SsVmInit, which was
   implicit in the old file too (first called in _SsVmFlush).
+
+## 15. Seam boundaries (owner ruling 2026-10-17)
+
+Existence from seam evidence (static ownership, call graph, section order), not from table phase; rule
+conditions 2-4 hold. Positions, each the item that starts the part's rodata (none of these parts has a phase
+change, and every part byte-matches as its own object):
+- **51268 | 596CC.c at func_80068ECC.** `.rodata` 0x800158E0+0xA8 | 0x80015988+0x28 (func_8006B578's table,
+  then D_800159A0); `.sbss` 0x800A3420+0xD8 | 0x800A34F8+0x38. The § 8 phase boundary (51268's start) is unchanged.
+- **3AB48 | 43500 | 4510C | 4BC3C | 4D0A8.c at func_80052D00, func_8005490C, snd_Init, func_8005C8A8.**
+  `.rodata`: 3AB48 none; 43500 0x80015840+0x1C (D_80015840, func_80054604's printf string, moved from
+  d_5BF0.c, which now ends at 0x80015840); 4510C 0x8001585C+0x58 (func_80058580's three tables at its offset 0);
+  4BC3C 0x800158B4+0x2C (the sound loader's two strings); 4D0A8 none. `.sbss`: 43500 0x800A33F0+0x10, 4BC3C
+  0x800A3400+0x18, 4D0A8 0x800A3418+4 (the unreferenced gap fillers D_800A33FC and D_800A3410 stay with the
+  preceding owner). `.sdata`: 4510C 0x800A3250+0x14, 4D0A8 0x800A3264+0x54.
+- Seam #85's cut sits before func_8005490C, not Codex's func_80054604: with func_80054604 (and its wrappers
+  func_80054884 / func_800548DC, no statics) last in 43500.c, its string is its own object's rodata, ending
+  where 4510C.o's tables begin. Both cuts byte-match; this one also removes the foreign string from d_5BF0.c. As
+  a literal (`printf("...")`, 0x19 bytes) the link fails: bb2.ld's `SUBALIGN(2)` packs 4510C.o's rodata at
+  0x8001585A; the 28-byte array keeps the original's tail.

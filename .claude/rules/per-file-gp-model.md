@@ -87,8 +87,8 @@ logged (Q81).
 ## File boundaries come from evidence only
 
 - **Split** only when one symbol has two original accesses in F (one gp, one direct `lui`/`%lo` that every
-  possible definition kind would make gp). Source moves verbatim; parts inherit `GP_FILES`, `NO_SR_FILES`,
-  `EXPAND_LH_FILES`. All cut positions in the window are tested (no shared gp symbol across
+  possible definition kind would make gp), or at a ruled seam. Source moves verbatim; parts inherit `GP_FILES`,
+  `NO_SR_FILES`, `EXPAND_LH_FILES`. All cut positions in the window are tested (no shared gp symbol across
   the cut; [[rodata-object-alignment]] conditions 2-4); the conventional cut is immediately before the function
   holding the access the earlier part can't produce. A recorded rodata-rule boundary whose window contains it
   moves there instead of creating a file; legacy boundaries never move.

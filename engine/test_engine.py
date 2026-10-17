@@ -3512,7 +3512,8 @@ def test_queue_non_function_labels() -> None:
 
     labels = {
         "main/3AB48": ("D_800521AC", "D_800521FC", "D_80052344",
-                        "D_80052394", "D_800545F8", "D_800545FC", "D_80054600"),
+                        "D_80052394"),
+        "main/43500": ("D_800545F8", "D_800545FC", "D_80054600"),
         "main/d_7D870": ("g_data_start", "D_8008D090", "g_sqrt_table_u8"),
     }
     texts = {stem: Path(f"src/{stem}.c").read_text(encoding="utf-8")
@@ -3589,12 +3590,13 @@ def test_queue_non_function_labels() -> None:
             # working-tree reader to not_a_c_function_text; spotcheck's roster mode
             # a git-ref reader): the alabels of the included asm are data-as-code,
             # and without the asm evidence the same absent names stay outstanding.
-            src_3ab48 = texts["main/3AB48"]
-            for name in labels["main/3AB48"]:
-                check(f"integrity labels: {name} is data-as-code with its included asm",
-                      Q.not_a_c_function_text(src_3ab48, name, Q.read_asm_file))
-                check(f"integrity labels: {name} is outstanding without the asm",
-                      not Q.not_a_c_function_text(src_3ab48, name, lambda n: None))
+            alabel_stems = ("main/3AB48", "main/43500")
+            for stem in alabel_stems:
+                for name in labels[stem]:
+                    check(f"integrity labels: {name} is data-as-code with its included asm",
+                          Q.not_a_c_function_text(texts[stem], name, Q.read_asm_file))
+                    check(f"integrity labels: {name} is outstanding without the asm",
+                          not Q.not_a_c_function_text(texts[stem], name, lambda n: None))
             import importlib.util
             spec = importlib.util.spec_from_file_location(
                 "spot_check_completed_t", repo_root / "tools/spotcheck/spot_check_completed.py")
@@ -3602,12 +3604,15 @@ def test_queue_non_function_labels() -> None:
             here = os.getcwd()
             spec.loader.exec_module(spot)   # the script chdirs to the repo on import
             os.chdir(here)
-            pool_syms = {"main/3AB48": list(labels["main/3AB48"]) + ["real_c_fn"]}
-            pool_src = {"main/3AB48": src_3ab48 + "\nvoid real_c_fn(void) {}\n"}
+            pool_syms = {stem: list(labels[stem]) for stem in alabel_stems}
+            pool_syms["main/3AB48"].append("real_c_fn")
+            pool_src = {stem: texts[stem] for stem in alabel_stems}
+            pool_src["main/3AB48"] += "\nvoid real_c_fn(void) {}\n"
             done, _viol, no_body = spot.classify_pool(pool_syms, set(), set(), {}, set(),
                                                       pool_src, Q.read_asm_file)
             eq("spotcheck labels: the seven alabels are no-C-body, not completions",
-               sorted(f for f, _ in no_body), sorted(labels["main/3AB48"]))
+               sorted(f for f, _ in no_body),
+               sorted(n for stem in alabel_stems for n in labels[stem]))
             eq("spotcheck labels: a real C function stays in the pool",
                [f for f, _ in done], ["real_c_fn"])
 

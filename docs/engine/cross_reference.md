@@ -27,8 +27,13 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 | `32D04.c` | 0x80042504 | rotation-matrix and colour math (`math_RotMatrix*`, `math_RgbToHsv`) and the primitive texture-offset helpers `gpu_OffsetTex*` |
 | `35000.c` | 0x80044800 | 44 functions: the `arena_*` allocator and the `ndata_*` NDATA reader / pack cache ([NDATA.md](../formats/NDATA.md)) |
 | `368E4.c` | 0x800460E4 | 103 functions: `rcnt_StartCnt1`, `camera_CalcAngles`, `math_Grayscale*`, `gpu_LoadTimClut`, the view set-up `func_80046BF4` ([replay.md](replay.md)), `math_SetLightPlaneProjection` / `math_ApplyLightPlaneProjection` ([gpu_pipeline.md](gpu_pipeline.md)) |
-| `3AB48.c` | 0x8004A348 | 153 functions: GTE and math helpers, and the sound-bank layer `snd_*` / `func_8005C650` / `func_8005C6D0` ([sound.md](sound.md)). A TU split is pending; cite its functions by name |
-| `51268.c` | 0x80060A68 | 147 functions, among them `func_80060CB8` and `func_80060E04`. A TU split is pending; cite its functions by name |
+| `3AB48.c` | 0x8004A348 | 72 functions: GTE and math helpers (`gte_*`, `math_*`) and the renderers `func_8004C994` .. `func_80051ED4` |
+| `43500.c` | 0x80052D00 | 16 functions: the stage-collision grid walk `func_80052D00` and its tests and accessors (`func_80053614`), then the motion-sequence loader `func_80054604` ([motion.md](motion.md)) |
+| `4510C.c` | 0x8005490C | 20 functions: motion-stream playback (`func_8005490C`, `func_80058580`) ([motion.md](motion.md)) |
+| `4BC3C.c` | 0x8005B43C | 28 functions: the sound-bank layer `snd_*` / `func_8005C650` / `func_8005C6D0` ([sound.md](sound.md)) |
+| `4D0A8.c` | 0x8005C8A8 | 17 functions: UI draw chunks (`func_8005C8A8` .. `func_80060768`) |
+| `51268.c` | 0x80060A68 | 99 functions, among them `func_80060CB8` and `func_80060E04` |
+| `596CC.c` | 0x80068ECC | 48 functions: the row menu (`func_80068F70`, `func_8006B578`) and `func_8006E49C` ([menus.md](menus.md)) |
 | `5ED34.c` | 0x8006E534 | `func_8006E534` .. `func_80073200` (`func_80070188`, [replay.md](replay.md)) |
 | `63D2C.c` | 0x8007352C | 5 functions: the sprite walkers `func_8007352C` / `func_80073728` ([gpu_pipeline.md](gpu_pipeline.md)) |
 | `64FD8.c` | 0x800747D8 | `func_800747D8` .. `func_800788B0`, the character-select screen among them |
@@ -47,7 +52,7 @@ Unnamed functions keep `func_<addr>`.
 | `cdrom_` | cdrom.c, 26730.c, 267A8.c, 26940.c | [file_io.md](file_io.md) |
 | `memcard_` | memcard.c, 28708.c | [file_io.md](file_io.md) |
 | `comb_` | 28708.c, 2B344.c | the libcomb link-cable session; [psyq_usage.md](psyq_usage.md) |
-| `snd_` | 3AB48.c, 6CF8.c, 267A8.c | [sound.md](sound.md) |
+| `snd_` | 4BC3C.c, 6CF8.c, 267A8.c | [sound.md](sound.md) |
 | `gpu_` | 32D04.c, 25C38.c, 2B344.c, 309CC.c, 368E4.c, 6CF8.c | [gpu_pipeline.md](gpu_pipeline.md) |
 | `math_` | 32D04.c, 3AB48.c, 6CF8.c, 9F9C.c, 17AFC.c, 368E4.c, 2B344.c, 28708.c | |
 | `gte_` | 3AB48.c | [gpu_pipeline.md](gpu_pipeline.md) |

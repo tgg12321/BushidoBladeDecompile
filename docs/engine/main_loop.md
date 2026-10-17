@@ -36,7 +36,7 @@ start-up code, in order:
    - `func_80060E04(idx)` (src/main/51268.c), `font_BeginFrame()`
      (src/main/2B344.c:1131), `pad_Update(skip)` (last frame's `D_800A390D`),
      `cdrom_Update()`,
-     `func_8005C6D0()` (src/main/3AB48.c);
+     `func_8005C6D0()` (src/main/4BC3C.c);
    - if the link-abort request `g_comb_abort_request` is set (its one setter is
      `comb_Abort`, src/main/28708.c:1605): `cdrom_PauseAndWait()`, display off
      (`D_800A3768 = DISP_DISABLED`), clears the request and `D_800A31DA`, and

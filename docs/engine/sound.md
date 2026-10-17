@@ -2,7 +2,7 @@
 
 Game sound has three parts:
 
-- a small game layer in 3AB48.c, 6CF8.c, 267A8.c and 26730.c, which loads
+- a small game layer in 4BC3C.c, 6CF8.c, 267A8.c and 26730.c, which loads
   VAB banks into numbered slots and queues one-shot sounds;
 - Sony libsnd (`src/main/psxsdk/libsnd/`), which manages VABs, voices and
   sequences;
@@ -32,7 +32,7 @@ are described in [docs/formats/](../formats/README.md).
 `sys_Exec` (src/main/cdrom.c:209) runs it again after the FMV overlay
 returns. `func_80016D78` (src/main/6CF8.c:285) runs it at boot.
 
-## VAB slots (3AB48.c)
+## VAB slots (4BC3C.c)
 
 The game keeps 16 VAB slots in two arrays: `g_vab_rec_ptr[16]` (the loaded
 pack, `Unk8005C2A8Pack`, include/game.h:180-191) and `g_vab_vb_sbaddr[16]`
@@ -56,11 +56,11 @@ fourth is the body size in SPU RAM.
 
 ## One-shot sounds
 
-`func_8005C650(id, volr, voll)` (3AB48.c) queues sound `id`. It puts
+`func_8005C650(id, volr, voll)` (4BC3C.c) queues sound `id`. It puts
 `&D_8009AA70[id]`, a pair (slot, index), into the first free entry of the
 24-entry pool `D_800EFB78` (`Unk800EFB78Entry`, include/game.h:840-849).
 
-`func_8005C6D0` (3AB48.c) flushes the pool once per frame. For each
+`func_8005C6D0` (4BC3C.c) flushes the pool once per frame. For each
 queued entry whose slot is loaded, it takes the next voice from the running
 cursor that `SpuGetKeyStatus` reports free. It reads the slot's sound table
 word `w = table[index]` and calls:

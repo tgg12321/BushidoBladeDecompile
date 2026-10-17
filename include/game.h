@@ -141,13 +141,13 @@ typedef struct {
     u8 unk1;
 } Unk8009BCF8Record;
 
-/* The 0x2C-byte record func_8006E49C fills, two at a time (51268 / 5ED34 /
+/* The 0x2C-byte record func_8006E49C fills, two at a time (596CC / 5ED34 /
  * 64FD8 keep the pair at the start of their work area; getters `base + i *
  * 44`). Each word holds the start of a region func_8006E49C carves from its
  * buffer: +0x00 0x9C40 bytes, +0x04 0x5DC0, +0x08 0x438, +0x0C 0x640, +0x10
  * 0x1B58, +0x14 0x258, +0x18 0x78, +0x1C 0x78, +0x20 0x110; +0x24 / +0x28 it
  * leaves alone. The 5ED34 / 64FD8 draw contexts copy them into Unk800788B0Rec,
- * whose members name the primitive types; 51268's func_8006E390 copies them
+ * whose members name the primitive types; 596CC's func_8006E390 copies them
  * into the s32 words of its context array. */
 typedef struct {
     s32 unk_00;
@@ -362,7 +362,7 @@ typedef struct {
     void *unk_24;
 } Unk8006EACCRec;
 
-/* The draw chunk 3AB48 func_8005C8A8 builds at the address its caller passes:
+/* The draw chunk 4D0A8 func_8005C8A8 builds at the address its caller passes:
  * TILEs from +0 up to +0xF0 (15; it writes at most 13), SPRTs from +0xF0 up to
  * +0x4D8 (50; func_8007352C's cursor), then the DR_MODE at +0x4D8. It returns
  * the chunk size, 0x4F0; the last 0xC bytes are never written. */
@@ -373,7 +373,7 @@ typedef struct {
     u8 unk_4E4[0xC];
 } Unk8005C8A8Rec;
 
-/* The draw chunk 3AB48 func_8005D814, func_8005E098 and func_8005F1C8 each
+/* The draw chunk 4D0A8 func_8005D814, func_8005E098 and func_8005F1C8 each
  * build at the address their caller passes (one layout): TILEs from +0 up to
  * +0xA0 (10; they write at most 2, 2 and 4), SPRTs from +0xA0 up to +0x2F8 (30;
  * func_8007352C's cursor), then the DR_MODE at +0x2F8. Each returns the chunk
@@ -385,7 +385,7 @@ typedef struct {
     DR_MODE unk_2F8;
 } Unk8005D814Rec;
 
-/* The draw chunk 3AB48 func_8005E54C builds at the address its caller passes:
+/* The draw chunk 4D0A8 func_8005E54C builds at the address its caller passes:
  * TILEs from +0 up to +0xA0 (10; it writes 3), SPRTs from +0xA0 up to +0x898
  * (102; func_8007352C's cursor), POLY_FT4s from +0x898 up to +0xBB8 (20;
  * func_80073728's cursor), then the DR_MODE at +0xBB8. It returns the chunk
@@ -398,7 +398,7 @@ typedef struct {
     DR_MODE unk_BB8;
 } Unk8005E54CRec;
 
-/* The draw chunk 3AB48 func_8005FC9C builds at the address its caller passes:
+/* The draw chunk 4D0A8 func_8005FC9C builds at the address its caller passes:
  * SPRTs from +0 (func_8007352C's cursor), the DR_MODE at +0x280, two POLY_G4 at
  * +0x28C (at most one per pass) and three DR_AREA at +0x2D4 (the first, then at
  * most one per pass). func_8005FC9C returns the chunk size, 0x2F8. The 32 SPRTs
@@ -413,7 +413,7 @@ typedef struct {
     DR_AREA unk_2D4[3];
 } Unk8005FC9CRec;
 
-/* The draw chunk 3AB48 func_800600C8 builds at the address its caller passes:
+/* The draw chunk 4D0A8 func_800600C8 builds at the address its caller passes:
  * 0xB4 bytes of SPRTs from +0 (func_8007352C's cursor), then the DR_MODE at
  * +0xB4. func_800600C8 returns the chunk size, 0xC0. At most 5 SPRTs are
  * written: func_8007352C writes at most one per cell of the sheet header it is
@@ -424,7 +424,7 @@ typedef struct {
     DR_MODE unk_B4;
 } Unk800600C8Rec;
 
-/* The draw chunk 3AB48 func_80060414 builds at the address its caller passes:
+/* The draw chunk 4D0A8 func_80060414 builds at the address its caller passes:
  * one SPRT at +0 (func_8007352C's cursor; each of the three sheet headers it
  * may pass, D_8009B7AC / D_8009B7B8 / D_8009B7C4, has one cell: the count byte
  * at +2 is 1), then the DR_MODE at +0x14. It returns the chunk size, 0x2C; the
@@ -435,7 +435,7 @@ typedef struct {
     u8 unk_20[0xC];
 } Unk80060414Rec;
 
-/* The draw chunk 3AB48 func_80060544 builds at the address its caller passes:
+/* The draw chunk 4D0A8 func_80060544 builds at the address its caller passes:
  * SPRTs from +0 up to +0x4EC (63; func_8007352C's cursor), POLY_FT4s from
  * +0x4EC up to +0x5DC (6; func_80073728's cursor), then the DR_MODE at +0x5DC.
  * It returns the chunk size, 0x5F4; the last 0xC bytes are never written. The
@@ -470,7 +470,7 @@ typedef struct {
 
 /* 0x8009BD24..0x8009BD57: the settings record func_80077D00 returns and 64FD8
    hands to func_80068F70 / func_8006E534 / func_800770B8, whose callees reach
-   every field off that one base (51268 D_800A3524, 5ED34 D_800A3568,
+   every field off that one base (596CC D_800A3524, 5ED34 D_800A3568,
    SelWork.f00). Bit fields are named by bit offset.
    - unk14_*: the word at +0x14. unk14_0 (`& 0xF`; func_80077894 stores it),
    unk14_4 (6 bits), unk14_10 (the round count - 3; also picks the
@@ -591,7 +591,7 @@ typedef struct {
  * scale_x / scale_y: the 8.8 cell scales of the POLY_FT4 walkers; has_color /
  * col_r / col_g / col_b: the SetShadeTex switch and the primitive colour. The
  * cursors are s32 because every source of them is an s32 word: the draw
- * contexts' primitive cursors (Unk800788B0Rec, 51268's context words). */
+ * contexts' primitive cursors (Unk800788B0Rec, 596CC's context words). */
 typedef struct {
     Unk8009B0E0Record *header;
     Unk8009B400Record *table;
@@ -838,7 +838,7 @@ typedef struct PadState {
     u32 unheld;   /* 0x14 */
 } PadState;       /* sizeof == 0x18 */
 
-/* The 24-entry pending-sound pool (3AB48): func_8005C650 queues a request (an
+/* The 24-entry pending-sound pool (4BC3C): func_8005C650 queues a request (an
  * entry of D_8009AA70) with its volumes in the first free entry; func_8005C6D0
  * keys each queued note on via SsUtKeyOnV(.., voll, volr) and clears the entry;
  * snd_Init / func_8005B5AC reset all 24. */
@@ -1086,14 +1086,14 @@ typedef struct {
     Unk1F8000B8Union unkB8;
 } Unk1F800000Rec;
 
-/* A cell (x, z) of the 32x32 grid of 2000-unit cells that 3AB48's func_80052D00
+/* A cell (x, z) of the 32x32 grid of 2000-unit cells that 43500's func_80052D00
  * walks (Work_80053E9C.unk88 / unk8C). */
 typedef struct {
     s16 x;
     s16 z;
 } Cell_80052D00;
 
-/* The 0xEC-byte work area of 3AB48's stage-collision cast (func_80052D00 and
+/* The 0xEC-byte work area of 43500's stage-collision cast (func_80052D00 and
  * its helpers, through D_800A33F4). func_8005344C / func_80053614 place it at
  * their last argument; func_80053304 / func_80053584 at D_800EF9F8. 17AFC
  * func_80030D7C / func_800321E8 pass 0x1F8002F0, its place in their scratchpad
@@ -1180,7 +1180,7 @@ typedef union {
  * 0x1F8002B8..0x1F8003FF (ScrPad.unk2B8.rec). The scratchpad is shared scratch:
  * other code puts its own data in these bytes at other times, with its own
  * views. Among others:
- * - 3AB48 func_80053614 / func_8005344C keep their work area (Work_80053E9C,
+ * - 43500 func_80053614 / func_8005344C keep their work area (Work_80053E9C,
  * 0xEC bytes) at the address of their last argument (D_800A33F4); callers pass
  * 0x1F8002B8 (the area spans record +0x00..+0xEB) or 0x1F8002F0 (+0x38..+0x123,
  * over unk60 up into unk118).
@@ -2199,7 +2199,7 @@ typedef struct Size2s16 {
  * and the per-character name cells (unk_0C / unk_10, three cells per character
  * after a first group), the digit sheet and its cells (unk_14 / unk_18; the
  * walker shifts the sheet's ubase per digit), and per-character x offsets
- * (unk_1C). 3AB48 hands it D_8009B0C0, func_8006DD94 MOD.BIN's unk_3C. */
+ * (unk_1C). 4D0A8 hands it D_8009B0C0, func_8006DD94 MOD.BIN's unk_3C. */
 typedef struct {
     Unk8009B0E0Record *unk_00[3];
     Unk8009B0E0Record *unk_0C;
@@ -2216,7 +2216,7 @@ typedef struct {
     Unk8009B0E0Record *unk_20[3];
 } Unk8006DD94List;
 
-/* MOD.BIN (resource file 2), the root 51268's func_80068F70 loads at its work
+/* MOD.BIN (resource file 2), the root 596CC's func_80068F70 loads at its work
  * area + 0x58; it keeps it in D_800A34FC's word 9, and func_8006E390 copies
  * that into word 1 of the draw context. After the head:
  * - unk_14..unk_40: the twelve lists func_8006919C relocates (func_8006920C:
@@ -2256,7 +2256,7 @@ typedef struct {
 
 /* 0x800A3D40: 24-byte records func_8003D774 starts and func_8003D7B4 advances:
    the bit stream bitstream_ReadBits reads and six s16 values func_8003D7B4 adds
-   the decoded deltas to and returns (3AB48 func_8005490C reads them as an
+   the decoded deltas to and returns (4510C func_8005490C reads them as an
    offset and a rotation). */
 typedef struct {
     BitStream bits;
@@ -2265,7 +2265,7 @@ typedef struct {
 
 /* 5ED34's work block: the 0x14 bytes func_8006E534 keeps at the start of
  * func_8006E49C's returned space (D_800A35C4; the arena cursor D_800A356C moves
- * past it), as 51268's Unk800A34FCRec.
+ * past it), as 596CC's Unk800A34FCRec.
  * - unk_00 / unk_04: one s16 per player each (counted down from 0x1E by the
  * draw handlers).
  * - unk_08: the frame counter func_8006EACC advances; unk_0C: its buffer
@@ -2279,7 +2279,7 @@ typedef struct {
     u16 unk_10[2];
 } Unk800A35C4Rec;
 
-/* 51268's work block: the 0x34 bytes func_80068F70 keeps at the start of
+/* 596CC's work block: the 0x34 bytes func_80068F70 keeps at the start of
  * func_8006E49C's returned space (D_800A34FC; its arena cursor D_800A3500 moves
  * past the block). func_80068F70 zeroes unk_0C / unk_10 / unk_12, sets both
  * unk_28 halves to 5 and unk_30 to bit 0 of D_800A3524's word 8 (func_80069120

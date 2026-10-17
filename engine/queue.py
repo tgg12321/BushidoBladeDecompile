@@ -226,7 +226,7 @@ def _not_a_c_function(stem: str, func: str) -> bool:
 
     Three mechanical signals, all conservative:
       * the name never appears in the .c text, and an asm body the file includes
-        declares it with `alabel` or `.aent` (3AB48's D_8005xxxx set). Absence
+        declares it with `alabel` or `.aent` (the D_8005xxxx sets of 3AB48 / 43500). Absence
         alone is not evidence: a bare second `glabel` in an included body, or a
         body that cannot be read, leaves the symbol outstanding;
       * it is declared `.aent <name>` — an alternate ENTRY into another function,

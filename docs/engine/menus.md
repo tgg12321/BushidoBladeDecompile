@@ -4,7 +4,7 @@ The game's top level is the mode handler table `D_8008D090` (34 entries,
 src/main/d_7D870.c:24), called with the mode value `D_800A3834`; see
 [main_loop.md](main_loop.md) for the table and the loop. This page covers the
 pad masks the handlers test, the handlers in src/main/2B344.c that run the
-scene script, and the two menu modules (src/main/51268.c and
+scene script, and the two menu modules (src/main/596CC.c and
 src/main/5ED34.c).
 
 ## Pad masks
@@ -72,7 +72,7 @@ Handlers that the script's modes reach:
   records `D_80106A50.times` into the record `func_80077D00()` returns, as
   minutes, seconds and hundredths (its comment, src/main/2B344.c:817).
 
-## The row menu (src/main/51268.c)
+## The row menu (src/main/596CC.c)
 
 Cited by function name.
 
