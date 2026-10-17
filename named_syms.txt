@@ -311,7 +311,7 @@ func_800472B0     = 0x800472B0;  /* returns &D_800EEDD0 (the matrix func_8004721
 /* RESET 0x800477C4: retired name 'game_Stub2_800477C4' — preserved note: literal `jr ra; nop` -- empty hook slot 2 */
 /* RESET 0x800477CC: retired name 'game_Stub3_800477CC' — preserved note: literal `jr ra; nop` -- empty hook slot 3 */
 /* RESET 0x800477D4: retired name 'game_Stub4_800477D4' — preserved note: literal `jr ra; nop` -- empty hook slot 4 */
-wave_SetCellBuffer          = 0x800477DC;  /* stores $a0 to g_snd_volume (gp-rel sw) */
+wave_SetCellBuffer          = 0x800477DC;  /* sets D_800A33D0, the wave grid's cell buffer (368E4.c:733) */
 wave_GetCellBufferSize         = 0x80047EC8;  /* literal `return 0xD00;` (jr ra; v0 = 0xD00) */
 /* Lifecycle wrapper grid: each is an 8-9 insn wrapper around one named callee. */
 /* RESET 0x8004746C: retired name 'game_EffInit_8004746C' — preserved note: wrapper -> func_8004473C() */
@@ -1052,14 +1052,12 @@ D_800A38EE                                = 0x800A38EE;  /* table[3] of func_800
 /* RESET 0x800387E8: retired name 'motion_shift_set_mode3' — preserved note: sub-id=9, mode=3 */
 D_800A38CC                                    = 0x800A38CC;  /* memory-card write-path flag; zeroed by func_8003879C / func_800387C0 */  /* data-wave 2026-10-08: was g_motion_shift_flag2 */
 
-/* === Sound subsystem cluster (2026-05-17) -- 3 highs === */
-/* From sound.c around line 780-820 (init) and 829 (func_80047A90 */
-/* wave-gen): the engine maintains 9 audio channels x 17 samples each */
-/* for wave synthesis, indexed by per-channel phase counters that step */
-/* through the Judge[] sin/cos lookup table. */
-D_800EF070                                  = 0x800EF070;  /* SPU voice descriptor struct passed to func_800417D0 init; first byte = 0xE (cmd), +0x6 +0xC -0xFA0 etc. */  /* data-wave 2026-09-25: was g_snd_voice_init_block */
-D_800EF558                                  = 0x800EF558;  /* 17 s32 entries; phase indices stepped by 0x12 per call to func_80047A90; used as Judge[] index */  /* data-wave 2026-09-25: was g_snd_wave_phase_table */
-D_800EF59C                                 = 0x800EF59C;  /* 9 channels x 17 s32 samples (153 total, stride 0x44); audio wave-synthesis output via (Judge[idx] * 0x271) >> 10 */  /* data-wave 2026-09-25: was g_snd_wave_output_table */
+/* === Wave grid (wave_Init / wave_Update / wave_Draw, 368E4.c:740-971) === */
+/* A 9 x 17 grid: row 0 driven from the Judge[] sine table by 17 column phases, */
+/* rows 1..8 following the row before; drawn as a textured mesh. */
+D_800EF070                                  = 0x800EF070;  /* the wave grid's draw node: set up by wave_Init (368E4.c:841-854, func_800417D0), queued by wave_Update */  /* data-wave 2026-09-25: was g_snd_voice_init_block */
+D_800EF558                                  = 0x800EF558;  /* 17 column phases: (j << 7) & 0xFFF at wave_Init, + 0x12 per wave_Update; the Judge[] index of row 0 */  /* data-wave 2026-09-25: was g_snd_wave_phase_table */
+D_800EF59C                                 = 0x800EF59C;  /* the 9 x 17 wave grid (stride 0x44): row 0 = (Judge[phase] * 0x271) >> 10, rows 1..8 follow (wave_Update); wave_Draw's x offsets */  /* data-wave 2026-09-25: was g_snd_wave_output_table */
 
 /* === SPU init/config cluster (2026-05-17) -- 5 highs === */
 /* From libspu _spu_init (0x80088740) and the SPU init flow */
