@@ -17,8 +17,9 @@ by compiler feedback; naming_keycheck.py proves the result.
      type). Comments naming an old member are not edited (do them by hand).
 
 Pairs sharing an old member name run in separate passes. Exit status: 0 clean,
-1 unresolved lines reported, 2 hard failure (declaration not found, a compile
-error other than a member error, no convergence). Files are written LF.
+1 unresolved lines reported, 2 hard failure (declaration not found, a cpp failure,
+a compile error other than a member error, a Makefile variable using $(...), no
+convergence). Files are written LF.
 
 Run inside WSL from the repo root (it needs the mipsel cpp and the built cc1):
   python3 tools/naming_member_apply.py <pairs.txt>
@@ -39,6 +40,12 @@ NO_MEMBER = re.compile(r"^(\S+?):(\d+): .*has no member named `(\w+)'", re.M)
 MAX_ROUNDS = 8
 
 
+def die(msg):
+    """A hard failure: the message on stderr, exit status 2."""
+    print(msg, file=sys.stderr)
+    sys.exit(2)
+
+
 def rd(p):
     return open(os.path.join(ROOT, p), encoding="utf-8", newline="").read()
 
@@ -55,7 +62,10 @@ def make_vars():
     for name in ("CPP", "CPP_FLAGS", "CPP_DEFS", "CC1", "CC_FLAGS"):
         m = re.search(r"^%s\s*:=\s*(.*)$" % name, text, re.M)
         if not m:
-            sys.exit(f"naming_member_apply: Makefile has no {name} := line")
+            die(f"naming_member_apply: Makefile has no {name} := line")
+        if "$(" in m.group(1):
+            die(f"naming_member_apply: Makefile {name} uses a make expansion ($(...)); "
+                     "not supported")
         out[name] = shlex.split(m.group(1))
     return out
 
@@ -117,7 +127,7 @@ def rename_declaration(t, m, n, files):
             hits.append((f, i, ms))
     found = [(f, i, ms) for f, i, ms in hits if ms]
     if len(found) != 1 or len(found[0][2]) != 1:
-        sys.exit(f"naming_member_apply: {t}.{m}: expected one declarator in one `}} {t};` body, "
+        die(f"naming_member_apply: {t}.{m}: expected one declarator in one `}} {t};` body, "
                  f"found {[(f, len(ms)) for f, _, ms in hits]}")
     f, i, ms = found[0]
     s = rd(f)
@@ -132,6 +142,8 @@ def compile_errors(mv, srcs):
 
     def one(f):
         pp = subprocess.run(cpp + [f], cwd=ROOT, capture_output=True, text=True)
+        if pp.returncode != 0:
+            return f, [], "cpp failed:\n" + pp.stderr[:400]
         cc = subprocess.run(cc1, input=pp.stdout, cwd=ROOT, capture_output=True, text=True)
         errs = [(os.path.normpath(e[1]).replace("\\", "/"), int(e[2]), e[3])
                 for e in NO_MEMBER.finditer(cc.stderr)]
@@ -142,7 +154,7 @@ def compile_errors(mv, srcs):
     with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as ex:
         for f, es, other in ex.map(one, srcs):
             if other:
-                sys.exit(f"naming_member_apply: compile error in {f} (not a member error):\n{other}")
+                die(f"naming_member_apply: compile error in {f} (not a member error, or cpp failed):\n{other}")
             errs.update(es)
     return sorted(errs)
 
@@ -178,7 +190,7 @@ def run_pass(pairs, mv, srcs, decl_files, unresolved):
             L[ln - 1] = new
             wr(p, "\n".join(L))
             print(f"    {p}:{ln} {name} x{k}")
-    sys.exit("naming_member_apply: no convergence after %d rounds" % MAX_ROUNDS)
+    die("naming_member_apply: no convergence after %d rounds" % MAX_ROUNDS)
 
 
 def main():
@@ -187,7 +199,7 @@ def main():
     args = ap.parse_args()
     pairs = read_pairs(args.pairs)
     if not pairs:
-        sys.exit("naming_member_apply: no T.m=n pairs in " + args.pairs)
+        die("naming_member_apply: no T.m=n pairs in " + args.pairs)
     mv = make_vars()
     files = tracked("src", "include")
     decl_files = [f for f in files if f.endswith((".c", ".h"))]
