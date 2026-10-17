@@ -1,226 +1,106 @@
-# CPU / AI Behavior
+# CPU opponent: what the code establishes
 
-BB2's AI runs the same fighter pipeline as the player — it just provides the
-move-command input that a human would have entered via the pad. AI logic
-lives almost entirely in `code6cac_b.c` under the `cpu_*` function prefix.
+No routine in `src/` is identified as the CPU opponent's decision logic, i.e. code
+that picks moves for a computer-controlled fighter. Both fighters are
+`Unk80101EC8Record`s (0x44C bytes, include/game.h:1647) in `D_80101EC8[]`
+(include/bb2.h:153). This page describes the routines nearest that topic: the
+per-fighter kind queue and its object pool, the shuffled ID list built for a
+match sequence, and three standalone helpers. All are C.
 
-The naming "CPU" here means "the AI opponent" (as in "P1 vs CPU"), not the
-MIPS R3000 itself. The codebase is consistent: anything `cpu_*` is AI move
-decision code.
+## The per-fighter kind queue and the object pool `D_80106A78`
 
-## What "AI" means in BB2
+Each fighter record holds a queue of up to 12 kinds: a count `unk_330` and the
+entries `unk_332[12]` (include/game.h:1562-1564). `D_80106A78[12]`
+(include/bb2.h:191) is a pool of 0x64-byte `Obj80106A78` objects
+(include/game.h:1695); a free slot has `kind == -1` and `slot == 0xFF`.
 
-BB2 is a one-strike-kill fighting game. There are no combo trees in the
-modern sense — each "move" is a discrete attack with weapon hit-volume,
-direction, and timing. The AI's job is to:
+- `func_8003047C(rec)` (src/main/17AFC.c:3728) seeds the queue: it copies the five entries of
+  `D_8008E338[rec->unk_0A]` (`s8 [27][5]`, include/bb2.h:193), counts the ones
+  other than -1, and stores the first in `D_800A36F2[rec->index]`. Called from
+  src/main/9F9C.c:3783.
+- `func_80030B10(rec, kind)` (src/main/17AFC.c:3901) appends a kind, or puts it
+  first when `rec->unk_88 != -1` and `kind == rec->unk_14`; it returns 0 when
+  the queue already holds 12.
+- `func_80030580(rec, kind)` (src/main/17AFC.c:3756) allocates the first free
+  pool slot and places the object at the fighter (`unk_F4`, raised by
+  `unk_1A / 32`). Its velocity comes from `D_8008E194[kind]`
+  (`Tbl8008E194`, include/game.h:1661): the horizontal speed `unk4` along the
+  fighter's heading `unk_1C8.vy`, the vertical speed `unk6`, and a spin
+  `unk8` about Y or X by `unk0`.
+- `func_800307D0(rec)` (src/main/17AFC.c:3819) takes an entry off the queue
+  (index 1 instead of 0 when it holds two or more, the head equals
+  `rec->unk_14` and `rec->unk_88 != -1`), spawns it through `func_80030580`, and plays a cue
+  through `func_80032854`. `func_80030900(rec, pos)` (src/main/17AFC.c:3853)
+  spawns the head entry at `pos`, and `func_80030A2C(rec, kind, pos)`
+  (src/main/17AFC.c:3879) spawns `kind` at `pos`; both give the object a
+  random velocity and spin from `rng_Next`.
+- `func_80030BA8(rec)` (src/main/17AFC.c:3919) takes a pool object back into
+  the queue: the first object whose kind is not -1 or 0x12..0x1D, whose
+  `unk_50` is 0, which lies within 100 units of the fighter's `unk_B8.vy`
+  vertically and within a squared horizontal distance of 0xF423F of
+  `unk_F4`. It frees the slot and returns the kind (-1 if none, or if the
+  queue is full).
+- The fighter update calls these at src/main/9F9C.c:5101 (`func_80030A2C`),
+  :5122 (`func_800307D0`) and :5128 / :5133 (`func_80030BA8`), gated on the
+  record's `unk_6A` / `unk_40` values.
+- Pool cleanup: `func_8003043C` (src/main/17AFC.c:3719) frees all twelve
+  slots (called at src/main/9F9C.c:1769); `func_80030524`
+  (src/main/17AFC.c:3745) frees objects with `unk_08 != 0` and `func_80030D04`
+  (src/main/17AFC.c:3967) frees kinds 0x12..0x1D (both called at
+  src/main/9F9C.c:1180-1181).
 
-1. Decide what stance to be in (high, middle, low). (NB an earlier
-   revision credited `D_800A36A4` as the stance selector — that global is
-   a table selector copied from a setting or a per-mode constant; the stance
-   variable is not yet identified by name.)
-2. Decide what direction to face the opponent (4-way: forward / back /
-   side-left / side-right).
-3. Decide when to commit to an attack.
-4. Commit a move from the available waza pool given the current stance,
-   character, and tactical situation.
-5. While the move animates, react if the opponent attacks first
-   (block, sidestep, or eat the hit).
+## The shuffled ID list `D_801077B0`
 
-The same fighter struct and move-execution pipeline ([combat.md](combat.md))
-runs whether the input came from a pad or the AI. The AI feeds the move
-queue at offset `0x330..0x33B` of the fighter struct.
+`func_800344B4` case 1 (src/main/24BF0.c:54) calls `func_800338CC` and then
+`func_80033BC0`.
 
-## Key entry points
+`func_800338CC` (src/main/17AFC.c:5279):
 
-### `cpu_set_move_command_and_dir` (`code6cac_b_tu2.c:4863`)
-
-The "commit a chosen move" function — see [combat.md](combat.md). The AI
-calls this with `(fighter, move_id, vec3 velocity)` to:
-
-- Allocate a slot in `D_80106A78[12]` for the new move.
-- Set up initial velocity from `arg2`.
-- Randomize cosmetic parameters (blood spray angle, spark direction) from
-  `rng_Next()`.
-- Set the slot's direction byte (offset 0xB) from the fighter's facing.
-
-This is the boundary between "AI decision" and "engine execution". Once
-committed, the move runs to completion under the per-frame pipeline.
-
-### `cpu_set_move_command_and_dir_for_no_action` (`code6cac_b_tu2.c:6219`)
-
-"No action" = AI is between moves. Builds a shuffled list of which moves
-are currently legal, starting from the global waza-enable constant
-`0x3EF3DF` (~26 bits) minus one bit picked through the byte table
-`D_8008D538`:
-
-1. Walks bits 0..26 of `D_80106A50` (a per-frame move-enable bitmap)
-   masked against `0x3EF3DF & ~(1 << D_8008D538[(s8)D_80102778.unk_4[0]])`
-   (src/main/17AFC.c:6372; `D_80102778.unk_4[0]` is `D_8010277C`).
-   `D_8008D538` holds byte values 0..0x1A (NOT a bitmask); what its index
-   and values stand for is not established (wave15 reset its old name);
-   for each enabled bit, appends the move ID to a buffer at
+1. Collects the IDs `i` in 0..26 whose bit is set in
+   `D_80106A50.unk_00 & 0x3EF3DF`, minus the bit
+   `D_8008D538[D_80102778.unk_4[0]]` (src/main/17AFC.c:5288), into
    `D_801077B0`.
-2. Shuffles the buffer 108 times (`bb2_rand() % count` is the RNG —
-   `bb2_rand` (0x80079154) is the engine's LFSR pseudo-RNG).
-3. Applies special-case overrides — if both moves 5 and 0x10 (`0x20` and
-   `0x10000` bits) are enabled and the AI is in the right stance, prefer
-   one over the other based on another coin-flip.
-4. Stores the chosen tactical direction in `D_801077BA`.
-5. Sets `D_800A3834 = 4` (gameplay-execute mode).
+2. Swaps two `rand() % count` positions 108 times (src/main/17AFC.c:5309).
+3. If bit 0x20 or 0x10000 of `D_80106A50.unk_00` is set, adds ID 5 (bit 0x20)
+   and / or ID 0x10 (bit 0x10000), in random order when both are set: the first
+   goes to position 10, shifting the rest up (or at the end of a shorter list),
+   and the second is appended.
+4. Appends 0x1A or 0x18 when bit 0x04000000 or 0x01000000 is set (which one
+   is tested depends on `D_8008D9EC`), stores the count in `D_800A391F`, and
+   clears the cursor `D_800A3783`.
 
-This is the AI's "what should I do next" decision. It's intentionally
-randomized (no learning, no state machine — each "no-action" frame picks
-fresh from the legal moves).
+`func_80033BC0` (src/main/17AFC.c:5397) steps the cursor: it sets
+`D_80102778.unk_4[1] = D_8008D55C[D_801077B0[cursor]]`, or, once the cursor
+reaches the count, sets the mode `D_800A3834` to 0x12 (count 20) or 0x20.
+The 27 IDs match the row count of the per-character tables (`D_8008E338`,
+`D_8008DE34`, include/bb2.h:181-193), which is consistent with the list being
+an opponent order; the code does not name it.
 
-### `cpu_set_move_command_and_dir_for_no_action_2` (`ings.c:584`)
+## Random numbers
 
-DIFFERENT FUNCTION — same name due to Kengo collision. This is the main
-loop entry point, NOT AI code. See [main_loop.md](main_loop.md).
+- `rand` (src/main/psxsdk/libc2/rand.c:8) is PsyQ's linear congruential
+  generator: `x = x * 0x41C64E6D + 0x3039`, returning bits 16..30.
+- `rng_Next` (src/main/6CF8.c:415) is the game's own generator:
+  `r = x * 5497 + 0x7FA9`, `x = (x >> 16) ^ r`, returning the low 15 bits;
+  `rng_SetSeed` (src/main/6CF8.c:413) sets its state `g_rng_state`.
 
-### `cpu_get_dist` (`code6cac_b_tu2.c:4680`)
+## Standalone helpers
 
-Per-frame "look at the opponent" calculation. Given the AI fighter `a0` and
-the opponent's reference position `a1`, rotates `a0`'s velocity vector into
-the opponent-relative frame:
-
-1. Reads angle = `single_game_getEnemyCharId(a1[0], a1[2])` — this is the
-   atan2 helper that returns the 12-bit direction from `a0` to `a1`.
-2. Reads `sin_val = Judge[angle & 0xFFF]`, `cos_val = Judge[(angle+0x400) & 0xFFF]`
-   — sine/cosine LUT lookup.
-3. Multiplies the 3D velocity at fighter offset 0x44/0x48/0x4C by the rotation
-   matrix and stores back at the same offsets.
-
-Effect: the AI fighter's velocity is now expressed in "facing-the-opponent"
-local coordinates, where +X is "toward opponent" and +Z is "their right".
-This is what the AI's tactical comparisons against `D_8008E194` waza-tables
-are evaluated in.
-
-### `cpu_get_dist_2` (`code6cac_b_tu2.c:5519`)
-
-Per-frame bytecode interpreter that decodes the AI's command stream — see
-[combat.md](combat.md) for the opcode table.
-
-### `cpu_check_same_dir_timer` (`code6cac_b_tu2.c:6005`)
-
-Per-frame "should I change my mind about this move" check — see
-[combat.md](combat.md).
-
-### `cpu_check_tubazeri` / `cpu_check_tubazeri_2` (`code6cac_b.c:1907, 2461`)
-
-Sword-clash detection — see [combat.md](combat.md).
-
-### `cpu_check_run_attack` (`code6cac.c:460`)
-
-After `marionation_camera_Exec` updates the camera, this function tests
-whether the AI fighter should commit to a charging "run attack". It walks
-the data at fighter offset 0xC/0x10 (the move-set pointers) and reads a
-list of (radius, angle, threshold) triples from `0x1F8000BC` in the
-scratchpad to decide. Uses the GTE scratchpad set up by
-`marionation_camera_Exec`.
-
-### `cpu_side_move_dir` (`code6cac_b_tu2.c:202`)
-
-Handles the "side-move" tactical retreat or sidestep. Reads the fighter's
-side-move cooldown counter (offset 0x34C, capped at 0x40), computes a target
-position from the table `func_80046F14()` returns, then advances the
-fighter position toward it. Updates eight body/shadow position offsets
-(0xF4/0xFC + 0xD8/0xE0 + 0xB8/0xC0 + 0x104..0x13C).
-
-The side-move target depends on `D_800A36A4` (a table selector, not a
-stance):
-- `D_800A36A4 == 3`: hardcoded `(0x2EE0, 0x1770)` (or sign-flipped based on
-  current position) instead of the table.
-- Otherwise: read from `base + (D_800A36A4*0xC + temp_s2*3) * 2`
-  — a per-selector, per-fighter-index lookup, where
-  `base = func_80046F14()`.
-
-### `cpu_check_move_dir_pattern_enemy_attack` (`code6cac_tu2.c:1078`)
-
-"Set up a fixed camera shot of the enemy's attack" — called from the
-practice/replay modes. Copies fighter offset 0x174 (the head bone position)
-to `D_800F6608.unk_00` (the point `camera_CalcEye` places the eye behind) and sets the camera distance/rotation
-parameters at `D_800F661A..D_800F6620` to a fixed `(0x120, arg1, 0, 0x1162)`.
-
-This is the "watch the enemy do their move" replay-camera helper, not an
-attack decision.
-
-### `cpu_get_move_pattern_table_number` (`code6cac_tu2.c:2152`)
-
-The per-frame "practice mode" handler — runs the move-pattern table
-selection for the practice/tutorial mode. Increments `D_800A37B8` (a frame
-counter), calls `cpu_check_move_dir_pattern_enemy_attack` to set up the
-camera, then waits for pad input. `D_800A3817` is the cursor of a three-item pad
-menu: up / down step it through 0..2 with wrap, and the confirm button acts
-on it (2B344.c:1004-1062).
-
-This function is also where many of the `D_800A3834` transitions out of
-practice mode are decided — selections 0/1/2 each set a different next mode.
-
-## Move-selection logic — `func_8003047C` (`code6cac_b_tu2.c:4718`)
-
-Despite its `func_` name, this is "load the waza queue for the current
-stance". For fighter `a0`:
-
-1. Zeroes the move-queue header at `a0[0x330]`.
-2. Walks 5 entries from `D_8008E338 + a0[0xA] * 5` (5-byte waza lists per
-   character).
-3. For each entry, writes it into `a0[0x332 + i*2]` and increments the queue
-   count if the byte != -1.
-4. Sets the head waza ID (`*(&D_800A36F2 + a0[4])` = `D_8008E338[a0[0xA] * 5]`)
-   — this is the move that's about to be committed.
-
-`D_8008E338` is therefore a per-character, per-stance lookup table of 5
-waza IDs. The character's "personality" lives in this table — what attacks
-they tend to do in each stance.
-
-## AI difficulty
-
-The codebase does not (yet) expose an explicit "difficulty" knob. Several
-plausible mechanisms are visible:
-
-- `D_800A36F2 ^ 0xE` (`code6cac_b.c:2642`) is XORed against `0xE` for
-  difficulty-modifier behavior in `func_80030BA8` (the queue advancer).
-- The RNG seeded from `g_file_heap_base` (set by `rng_SetSeed`,
-  `ings.c:574`) is used everywhere — different RNG sequences produce
-  different AI behavior.
-- The `bb2_rand() % count` shuffling in
-  `cpu_set_move_command_and_dir_for_no_action` is the primary "AI randomness"
-  source.
-- `D_8008E338`-style tables and the byte table `D_8008D538` (indexed by
-  `D_80102778.unk_4[0]`; its value picks the one bit cleared from the
-  global waza-enable constant `0x3EF3DF`, src/main/17AFC.c:6372)
-  determine which moves are even legal at any time.
-- `D_8010277E..D_80102787` (initialized in `func_8001C444`, `code6cac.c:1337`)
-  are small tactical AI flags — probably "be aggressive", "be defensive",
-  etc.
-
-True difficulty scaling — if BB2 has it — would probably be expressed by
-varying these constants per game mode. Tracing the actual difficulty knob
-is a research item.
-
-## Trash AI fields (cleanup helpers)
-
-When an AI fighter is removed from play (e.g., dies, leaves screen), several
-functions blank fields:
-
-- `func_8003043C` (`code6cac_b_tu2.c:4709`) — clears the 12-slot `D_80106A78`
-  active-move array.
-- `func_80030524` (`code6cac_b_tu2.c:4736`) — selectively clears slots that have
-  their "consumed" flag set.
-- `func_80030D04` (`code6cac_b_tu2.c:4966`) — selectively retires move-IDs in
-  range 0x12..0x1D from the queue.
-
-These run during scene transitions to keep the AI from carrying stale state
-into a new round.
-
-## Remaining AI work
-
-The AI functions are all decompiled to C (the project is zero-stub since
-2026-04-27). What remains is byte-matching without cheats: any `cpu_*` /
-`func_8002XXXX` helper still carrying a regfix/asmfix rule or cheat-asm is in
-`engine/queue.json`. Run `python3 -m engine.cli queue next` to see the current
-top target; the Grinder (`tools/grinder/`) works the queue autonomously.
-
-Note that the `asm/funcs/*.s` files are splat-generated **reference**
-disassembly for every function — they are not a to-do list, and a `.s` file
-existing there does not mean the function is still asm-only.
+- `func_8003032C(a0, a1)` (src/main/17AFC.c:3694) takes the angle
+  `ratan2(a1[0], a1[2])`, rotates the X/Z pair at `a0[0x11]` / `a0[0x13]`
+  into that angle's frame (`>> 12`), negates the second component, rotates back
+  with `>> 15` (an eighth of the magnitude), and divides `a0[0x12]` by four. No direct caller appears in `src/`.
+- `func_80027640(rec)` (src/main/17AFC.c:178), called from `func_80027AD8`
+  (src/main/17AFC.c:370) when `rec->unk_0C == 0xD`, moves the fighter's
+  positions (`unk_F4`, `unk_D8`, `unk_B8`) to a target: with
+  `D_800A36A4 == 3` a percentage blend from the fighter's position toward the
+  point (0x2EE0 or -0x2710, 0x1770 or -0x1770), picked by the other fighter's
+  position, with a weight that shrinks from 60 to 10 as the counter `unk_34C`
+  (capped at 0x40) grows; otherwise the entry
+  `func_80046F14()[D_800A36A4 * 12 + index * 3]`. It then zeroes `unk_104` /
+  `unk_134`, re-poses the fighter (`func_80021424`, `func_80021A98`) and plays
+  cue 0x30.
+- `func_8001BC70(rec, a1)` (src/main/9F9C.c:980) sets the view target
+  `D_800F6608.unk_00` to `rec->unk_174`, its rotation to `(0x120, a1, 0)` and
+  its distance `w18` to 0x1162. Its caller is `func_8001EA84`
+  (src/main/9F9C.c:2081).
