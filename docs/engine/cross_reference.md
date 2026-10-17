@@ -26,7 +26,7 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 | `309CC.c`, `31548.c`, `31CFC.c`, `31D3C.c` | 0x800401CC.. | 12 + 4 + 1 + 21 functions (`gpu_AddDrawMove`) |
 | `32D04.c` | 0x80042504 | rotation-matrix and colour math (`math_RotMatrix*`, `math_RgbToHsv`) and the primitive texture-offset helpers `gpu_OffsetTex*` |
 | `35000.c` | 0x80044800 | 44 functions: the `arena_*` allocator and the `ndata_*` NDATA reader / pack cache ([NDATA.md](../formats/NDATA.md)) |
-| `368E4.c` | 0x800460E4 | 103 functions: `rcnt_StartCnt1`, `camera_CalcAngles`, `math_Grayscale*`, `gpu_LoadTimClut`, the view set-up `func_80046BF4` ([replay.md](replay.md)), `func_80046F24` / `func_8004700C` ([gpu_pipeline.md](gpu_pipeline.md)) |
+| `368E4.c` | 0x800460E4 | 103 functions: `rcnt_StartCnt1`, `camera_CalcAngles`, `math_Grayscale*`, `gpu_LoadTimClut`, the view set-up `func_80046BF4` ([replay.md](replay.md)), `math_SetLightPlaneProjection` / `math_ApplyLightPlaneProjection` ([gpu_pipeline.md](gpu_pipeline.md)) |
 | `3AB48.c` | 0x8004A348 | 153 functions: GTE and math helpers, and the sound-bank layer `snd_*` / `func_8005C650` / `func_8005C6D0` ([sound.md](sound.md)). A TU split is pending; cite its functions by name |
 | `51268.c` | 0x80060A68 | 147 functions, among them `func_80060CB8` and `func_80060E04`. A TU split is pending; cite its functions by name |
 | `5ED34.c` | 0x8006E534 | `func_8006E534` .. `func_80073200` (`func_80070188`, [replay.md](replay.md)) |

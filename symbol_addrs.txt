@@ -152,13 +152,13 @@ D_800A3790 = 0x800A3790; // game timer  // data-wave 2026-09-25: was g_game_time
 D_800A33B0 = 0x800A33B0; // current BGM track  // data-wave 2026-09-25: was g_snd_bgm_id
 D_800A33B4 = 0x800A33B4; // current SE id  // data-wave 2026-09-25: was g_snd_se_id
 D_800A33C0 = 0x800A33C0; // stage BGM id  // data-wave 2026-09-25: was g_snd_stage_bgm
-D_800A33D0 = 0x800A33D0; // master volume  // data-wave 2026-09-25: was g_snd_volume
+D_800A33D0 = 0x800A33D0; // the wave grid's cell buffer (wave_SetCellBuffer, 368E4.c:733)  // data-wave 2026-09-25: was g_snd_volume
 D_800A33D4 = 0x800A33D4; // fade position  // data-wave 2026-09-25: was g_snd_fade_pos
 D_800A33D8 = 0x800A33D8; // fade amount  // data-wave 2026-09-25: was g_snd_fade_amt
 D_800A33E4 = 0x800A33E4; // sound play counter  // data-wave 2026-09-25: was g_snd_play_count
 D_80099C34 = 0x80099C34;  // data-wave 2026-09-29: was g_snd_se_bank
 D_800EF848 = 0x800EF848;  // data-wave 2026-09-29: was g_snd_ch_data
-D_800EF800 = 0x800EF800; // volume fade curve  // data-wave 2026-09-25: was g_snd_fade_curve
+D_800EF800 = 0x800EF800; // row 8's last deltas (wave_Update, 368E4.c:901-903)  // data-wave 2026-09-25: was g_snd_fade_curve
 D_800EF7BC = 0x800EF7BC; // sound config table  // data-wave 2026-09-25: was g_snd_config_tbl
 
 // === Color Mode ===

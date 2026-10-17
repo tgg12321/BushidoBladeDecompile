@@ -133,12 +133,12 @@ to normalise a value above 0x400 before reading the square-root table
 example, see `func_80018300` (src/main/87A0.c:174, the `gte_Lzc` at :284).
 
 **`D_800EEDB0`** (`MATRIX`, declared at src/main/368E4.c:296) is built by
-`func_80046F24` (src/main/368E4.c:555) from row 0 `(l0, l1, l2)` of
+`math_SetLightPlaneProjection` (src/main/368E4.c:555) from row 0 `(l0, l1, l2)` of
 `D_800F62E0[0].lmat`. The matrix has `m[0][0] = m[2][2] = 0x1000`, `m[0][1] = -l0/l1`,
-`m[2][1] = -l2/l1` (4.12), and every other entry 0, including `m[1][1]`. `func_8004700C(in, out, y)` (src/main/368E4.c:573)
+`m[2][1] = -l2/l1` (4.12), and every other entry 0, including `m[1][1]`. `math_ApplyLightPlaneProjection(in, out, y)` (src/main/368E4.c:573)
 multiplies `in` by it and moves the translation to height `y` along the same
 direction. The result maps a point onto the plane at height `y` along the
-direction `(l0, l1, l2)`. `func_800470B0` (:580) does the same from row 0
+direction `(l0, l1, l2)`. `math_LightPlaneProject` (:580) does the same from row 0
 of `D_800F62E0[arg0].lmat`, without storing the matrix.
 
 ## 2D sprites
