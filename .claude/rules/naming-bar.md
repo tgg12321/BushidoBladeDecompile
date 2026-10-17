@@ -88,10 +88,10 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
    `olds` entry of the two tools' `--manifest` JSON (an auto name and its alias may share a new
    name).
    Types, members and locals are edited in C (`T.m=n`: the declaration of `m` in `T` and its
-   `.`/`->` accesses; `f:l=n`: one binding in the unique definition of `f`). Then the comment pass,
-   `python3 tools/naming_keycheck.py --pairs <global pairs> --sub-comments`, and edit
-   by hand, in the wave, each comment naming an old member or local. A comment naming a renamed
-   identifier follows it, so no comment keeps a retired name.
+   `.`/`->` accesses, via `tools/naming_member_apply.py <pairs.txt>`, which lists lines to
+   hand-edit; `f:l=n`: one binding in the unique definition of `f`). Then the comment pass,
+   `python3 tools/naming_keycheck.py --pairs <global pairs> --sub-comments`, and edit by hand,
+   in the wave, every comment still naming an old member or local.
 5. **Gates:** `verify-oracle --rebuild` (SHA1 == oracle); `tus-check`;
    `tools/check_completion_integrity.py`; `engine test`; then stage the whole wave (`git add -A`)
    and run `python3 tools/naming_keycheck.py --from-manifests <naming_wave.json>,<data_wave.json>
