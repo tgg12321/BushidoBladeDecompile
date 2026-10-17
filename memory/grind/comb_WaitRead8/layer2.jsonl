@@ -1,0 +1,1 @@
+{"func": "comb_WaitRead8", "addr": "8003A5A0", "verdict": "PASS", "body_hash": "94063a9f4a5024e3", "body_kind": "c", "file": "main/28708", "reviewer": "a992c552f5082796a", "scope": "cheat-cleanup", "date": "2026-10-17T03:30:03Z", "head": "bcfa614c4", "notes": ""}
