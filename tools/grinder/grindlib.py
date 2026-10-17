@@ -2901,6 +2901,10 @@ def ledger_close_refusal(root, func):
                 return f"{func} is still in engine/queue.json"
     except (OSError, ValueError) as e:
         return f"cannot read engine/queue.json: {e}"
+    hits = locate_stems(root, func)
+    if len(hits) > 1:
+        return (f"{func} is defined in {len(hits)} TUs ({', '.join(s for s, _ in hits)}); "
+                f"close it by hand")
     if not locate_stem(root, func):
         return f"{func} has no completed body in src/*.c (none, or a non-canonical INCLUDE_ASM)"
     return None
@@ -2933,19 +2937,33 @@ def _src_texts(root):
     return _SRC_CACHE[root]
 
 
+def locate_stems(root, func):
+    """[(stem, is_include_asm)] for every src/<stem>.c that defines `func` — a
+    C definition, a whole-body glabel, or an INCLUDE_ASM line. More than one
+    means a duplicate `static` name (get_alarm: libcd/bios.c, libgpu/sys.c)."""
+    defn = re.compile(r"(?m)^[A-Za-z_][^;\n(=]*?\b" + re.escape(func) +
+                      r"\s*\([^;{}]*\)[ \t]*(?:\{|/[*/]|$)|glabel\s+" + re.escape(func) + r"\b")
+    hits = []
+    for stem, t in _src_texts(root).items():
+        if func not in t:
+            continue
+        if func in _INCLUDE_ASM_RE.findall(t):
+            hits.append((stem, True))
+        elif defn.search(t):
+            hits.append((stem, False))
+    return hits
+
+
 def locate_stem(root, func):
     """The src/<stem>.c holding `func`'s completed body — a C definition, a
     whole-body glabel, or an INCLUDE_ASM authorized in inline_asm_canonical.txt
-    — or '' (no body, or a not-yet-decompiled INCLUDE_ASM)."""
-    defn = re.compile(r"(?m)^[A-Za-z_][^;\n(=]*?\b" + re.escape(func) +
-                      r"\s*\([^;{}]*\)[ \t]*(?:\{|/[*/]|$)|glabel\s+" + re.escape(func) + r"\b")
-    hit = ""
-    for stem, t in _src_texts(root).items():
-        if func in t and func in _INCLUDE_ASM_RE.findall(t):
-            return stem if func in _canonical_funcs(root) else ""
-        if not hit and func in t and defn.search(t):
-            hit = stem
-    return hit
+    — or '' (no body, a not-yet-decompiled INCLUDE_ASM, or a name defined in
+    more than one TU: ledger_close_refusal names those)."""
+    hits = locate_stems(root, func)
+    if len(hits) != 1:
+        return ""
+    stem, is_asm = hits[0]
+    return stem if not is_asm or func in _canonical_funcs(root) else ""
 
 
 def _cited_ledger_files(root, func):

@@ -2708,5 +2708,44 @@ class TestLedgerCompaction(unittest.TestCase):
                 self.assertLessEqual(os.path.getsize(p), G.LEDGER_MAX)
 
 
+class TestLocateStem(unittest.TestCase):
+    """A duplicate `static` name must not resolve to the first TU scanned."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        os.makedirs(os.path.join(self.root, "src", "lib"))
+        os.makedirs(os.path.join(self.root, "engine"))
+        with open(os.path.join(self.root, "engine", "queue.json"), "w") as fh:
+            json.dump({"items": []}, fh)
+        self.addCleanup(self.tmp.cleanup)
+        self.addCleanup(G._SRC_CACHE.clear)
+
+    def write(self, tid, text):
+        with open(os.path.join(self.root, "src", tid + ".c"), "w") as fh:
+            fh.write(text)
+        G._SRC_CACHE.clear()
+
+    def test_unique_c_body(self):
+        self.write("lib/a", "static int func_A(void) { return 1; }\n")
+        self.write("lib/b", "int func_B(void) { return func_A(); }\n")
+        self.assertEqual(G.locate_stem(self.root, "func_A"), "lib/a")
+
+    def test_unique_include_asm_needs_canonical(self):
+        self.write("lib/a", 'INCLUDE_ASM("asm/funcs", func_A);\n')
+        self.assertEqual(G.locate_stem(self.root, "func_A"), "")
+
+    def test_duplicate_static_is_ambiguous(self):
+        self.write("lib/a", "static int func_A(void) { return 1; }\n")
+        self.write("lib/b", "static int func_A(void) { return 2; }\n")
+        self.assertEqual(G.locate_stems(self.root, "func_A"),
+                         [("lib/a", False), ("lib/b", False)])
+        self.assertEqual(G.locate_stem(self.root, "func_A"), "")
+        why = G.ledger_close_refusal(self.root, "func_A") or ""
+        self.assertIn("defined in 2 TUs", why)
+        self.assertIn("lib/a", why)
+        self.assertIn("lib/b", why)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -297,12 +297,14 @@ class AmbiguousStem(ValueError):
 
 
 def locate_stems(func: str) -> list[str]:
-    """Every TU id whose src/<stem>.c holds a single body for `func`."""
+    """Every TU id whose src/<stem>.c defines `func` (C or asm) — a TU whose
+    second (`#if 0`) copy makes its own body ambiguous still counts."""
     from . import tus
     out = []
     for tid in tus.src_tus():
         text = _read_text(Path(tus.src_path(tid)))
-        if text and func in text and body_key(text, func) is not None:
+        if text and func in text and (inlineasm._func_body_span(text, func) is not None
+                                      or _asm_pieces(text, func)):
             out.append(tid)
     return out
 

@@ -98,7 +98,10 @@ for f in funcs:
     c3 = it is None  # dropped by regen == canonical completion
     state = dn.get("completion") or dn.get("completion_state")
     c4 = dn.get("ok") is True and state == "COMPLETED-INLINE-ASM-CANONICAL"
-    l2 = layer2.gate(f, (it or {}).get("file") or layer2.locate_stem(f) or "")
+    try:
+        l2 = layer2.gate(f, (it or {}).get("file") or layer2.locate_stem(f) or "")
+    except layer2.AmbiguousStem as e:
+        l2 = str(e)
     ok = c1 and c2 and c3 and c4
     fail += 0 if ok else 1
     print(f"{'PASS' if ok else 'FAIL'}  {f}")

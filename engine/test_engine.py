@@ -4067,6 +4067,13 @@ def test_layer2_gate() -> None:
             check("layer2: record on an ambiguous name without a stem -> refused",
                   r["ok"] is False and r.get("candidates") == ["l2dup_a", "l2dup_b"]
                   and not layer2.record_path("func_DUP").exists())
+            # A TU whose own body is ambiguous (a real definition plus an `#if 0`
+            # copy) is still a candidate, not silently dropped.
+            Path("src/l2dup_b.c").write_text(
+                "static int func_DUP(int a) { return a * 3; }\n"
+                "#if 0\nstatic int func_DUP(int a) { return a * 4; }\n#endif\n")
+            eq("layer2: a TU with an #if 0 second copy still counts as a candidate",
+               layer2.locate_stems("func_DUP"), ["l2dup_a", "l2dup_b"])
             Path("src/l2dup_a.c").unlink()
             Path("src/l2dup_b.c").unlink()
             rec_p.unlink()
