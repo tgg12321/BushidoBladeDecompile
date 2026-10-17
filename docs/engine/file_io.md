@@ -9,7 +9,7 @@ third, separate path. Disc contents and file formats are in
 
 ## The CD file table
 
-`g_cd_file_table` (`CdFileEntry[159]`, include/bb2.h:475) gives each disc
+`g_cd_file_table` (`CdFileEntry[159]`, include/bb2.h:474) gives each disc
 file a `CdlLOC` start position and a byte size (include/game.h:2039-2042).
 Code names a file by group and index:
 `cdrom_GetFileIndex(group, i)` (src/main/cdrom.c:41) returns
@@ -17,12 +17,13 @@ Code names a file by group and index:
 plus an offset. The groups that appear in calls:
 
 - group 1: `func_80020DDC` reads `cdrom_GetFileIndex(1, 1)` into the buffer
-  at `D_800A3830` (src/main/9F9C.c:2991).
+  at `D_800A3830` (src/main/9F9C.c:2991), and the motion data `(1, 0)` /
+  `(1, j + 2)` (9F9C.c:3040, :3090).
 - group 2: image and data files. Readers include `func_80060CB8`,
   `func_80016A8C`, and functions in 3AB48.c, 51268.c and 5ED34.c.
 - group 5: CD-audio tracks, started through `cdrom_StartAudio`. Callers are
   `cdrom_StartAudioEntry` and three functions in src/main/2B344.c:
-  `func_8003BCB4` (src/main/2B344.c:550), `func_8003BE10` (:595) and
+  `func_8003B9D0` (src/main/2B344.c:478), `func_8003BE10` (:595) and
   `func_8003C040` (:666).
 - group 6: `cdrom_GetFileIndex(6, 0)` is the PS-X EXE that `cdrom_LoadExec`
   reads (`STR\MOVOVL.EXE`, [replay.md](replay.md)).
@@ -95,14 +96,17 @@ Steppers:
 - `cdrom_UpdateAudio` (src/main/26940.c:14) first steps a CD-mix fade.
   `g_cd_atv` moves toward `g_cd_atv_target` over `g_cd_fade_len` calls,
   through `CdMix`. Then it runs the audio states:
-  1. 0x10: Setmode `rec.unk30`.
-  2. 0x12: Setloc.
-  3. 0x13: `CdControlF(0x16 /* CdlSeekP */)`, then `CdlReadS` (0x1B) for XA
-     or `CdlPlay` (3) for CD-DA.
-  4. 0x15 / 0x16: playing. It turns the mix on at the second call and stops
-     at `rec.unk14`. For XA it fades out over the last 0x96 sectors using
-     `rec.unk44`.
-  5. 0x1C..0x1E: pause and back to idle.
+  1. 0x10: mutes the mix and issues Setmode `rec.unk30`.
+  2. 0x11: on sync, Setloc.
+  3. 0x12: after 3 calls and a sync, `CdControlF(0x16 /* CdlSeekP */)`.
+  4. 0x13: on sync, once the hold flag `rec.unk04` is clear, `CdlReadS`
+     (0x1B) for XA or `CdlPlay` (3) for CD-DA.
+  5. 0x15 / 0x16: playing. It turns the mix on at the second call and stops
+     at `rec.unk14`. For XA, once the position is within 0x96 sectors of
+     `rec.unk14` it loads the remaining sector count into `rec.unk44` and
+     counts it down by 4 per call; at 0 it mutes the mix and stops (or
+     repeats). The volume is not ramped.
+  6. 0x1C..0x1E: pause and back to idle.
 
   0x17..0x1B is its error and retry path.
 
@@ -136,11 +140,14 @@ are described in [replay.md](replay.md).
   (`D_800A3420` / `D_800A3424`) and returns the end of the second.
 - `eff_Init` (src/main/6CF8.c:248) calls
   `func_80060CB8(0x801D8800, 0x8010E800)` once (flag `D_800A3716`, cleared by
-  `eff_ClearInitFlag`). It prints the size and calls `sys_Panic` above
-  0xA000.
+  `eff_ClearInitFlag`). It prints the base 0x8010E800 and `func_80060CB8`'s
+  return (the end of the second buffer, 0x801174A0) as `size`. The
+  `sys_Panic` check (`0xA000 < size`) is a signed compare against a KSEG0
+  address, so it never fires.
 - `snd_InitAndLoadCommonVab` (src/main/6CF8.c:265) runs `snd_Init` and
-  `snd_LoadCommonVab(0x801D8800)`, and calls `sys_Panic` at 0xD01 bytes or
-  more. It copies the bank to 0x8010DB00, opens it with
+  `snd_LoadCommonVab(0x801D8800)`, and calls `sys_Panic` when the bank's
+  main-RAM part (sound table + VabHdr, everything before the body) is 0xD01
+  bytes or more. It copies that part to 0x8010DB00, opens it with
   `snd_VabFakeOpen(0xFFF35300, 0)` and sets `D_800A3906`. See
   [sound.md](sound.md).
 - `func_80016A8C` (src/main/6CF8.c:188) reads group-2 file 0x61 to 0x80118800
@@ -211,8 +218,8 @@ struct, `CdlREAD D_800A14D0` (include/psxsdk/libcd.h:41-55):
 `trapIntrVSync` (:23) increments `Vcount` and calls each non-null slot.
 `setIntrVSync(slot, fn)` (:40) fills a slot.
 
-`startIntrDMA` (src/main/psxsdk/libetc/intr_dma.c:22) clears the seven
-callback slots `D_800A2640` and DICR (`*D_800A263C`, 0x1F8010F4), then hooks
+`startIntrDMA` (src/main/psxsdk/libetc/intr_dma.c:22) clears the eight
+callback slots `D_800A2640` (seven are used) and DICR (`*D_800A263C`, 0x1F8010F4), then hooks
 IRQ 3 to `trapIntrDMA`. `trapIntrDMA` (:29) loops while DICR bits 24..30 are
 set: it acknowledges each bit and calls its slot. It prints a bus-error
 report when DICR shows one. `setIntrDMA(ch, fn)` (:52) fills a slot and sets
@@ -228,8 +235,8 @@ or clears the channel's enable bit (16 + ch).
   covers spec 4 (I/O end), 0x8000 (error), 0x100 (timeout) and 0x2000 (new
   card). `memcard_Quit` (:53) closes them and runs `StopCARD`.
 - `memcard_PollSwEvents` (:91) returns 1..4 for whichever software event has
-  fired, else 0. `memcard_PollSwEventsTimeout` (:67) is the same, but returns
-  2 once `g_memcard_poll_count` passes 0x78. `memcard_WaitHwEvent` (:111)
+  fired, else 0. `memcard_PollSwEventsTimeout` (:67) tests all four, letting the
+  later events win, and returns 2 once `g_memcard_poll_count` passes 0x78. `memcard_WaitHwEvent` (:111)
   spins on the hardware events. `memcard_AckSwEvents` (:104) and
   `memcard_AckHwEvents` (:128) clear them.
 - `memcard_CountFiles(port, slot)` (:135) lists `"bu%1d%1d:*"` into
@@ -267,4 +274,5 @@ most 0x8000 bytes. `pcdrv_LoadFile` reads in 0x4000-byte pieces and returns
 the size. `pcdrv_LoadSectors` reads `count` 0x800-byte sectors from
 `sector * 0x800`. Both return -2 when the open fails and -1 on a short read.
 Nothing in `src/` or `asm/` references either function. They are separate
-from the BIOS `open` / `read` / `close` that the memory-card code uses.
+from the memory-card path, though their short-read error path closes with
+BIOS `close`.

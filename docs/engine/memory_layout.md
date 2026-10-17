@@ -36,9 +36,9 @@ canonical asm in `src/main/psxsdk/libsn/73E98.c`) runs these steps:
    from 0x800A3308 and all RAM up to `D_801078E0`.
 2. Sets `$sp = (_ramsize - 8) | 0x80000000`. `_ramsize` is 0x800000 in this
    build (the word at 0x800A2690).
-3. Computes the heap: `__heapbase = 0x801078E0 + 4` and
-   `__heapsize = _ramsize - 8 - _stacksize - 0x001078E0`, with `_stacksize`
-   0x8000.
+3. Computes the heap: `__heapbase = 0x801078E0` and
+   `__heapsize = _ramsize - 8 - _stacksize - 0x001078E0` (`_stacksize`
+   0x8000), and later calls `InitHeap(0x801078E4, __heapsize)`.
 4. Loads `$gp = _gp = 0x800A30CC` (bb2.ld:19), calls `InitHeap`, then calls
    `main`.
 
@@ -53,8 +53,8 @@ These addresses are set in code:
 | --- | --- | --- | --- |
 | 0x801D8800 | 0x13400 | primitive buffer 0 (`D_800A3770[0]`) | `func_80016D78` (src/main/6CF8.c:289) |
 | 0x801EBC00 | 0x13400 | primitive buffer 1 (`D_800A3770[1]`); ends at 0x801FF000 | src/main/6CF8.c:290 |
-| 0x801D8800 | | also load scratch before the frame loop: `eff_Init`'s `func_80060CB8(0x801D8800, ...)` and `snd_LoadCommonVab(0x801D8800)` | src/main/6CF8.c:254, :269 |
-| 0x8010DB00 | <= 0xD00 | the common VAB, copied from 0x801D8800 | src/main/6CF8.c:273 |
+| 0x801D8800 | | also load scratch: `eff_Init`'s `func_80060CB8(0x801D8800, ...)` (called from mode handlers) and `snd_LoadCommonVab(0x801D8800)` (at boot and again after `sys_Exec` returns) | src/main/6CF8.c:254, :269 |
+| 0x8010DB00 | <= 0xD00 | the common VAB's main-RAM part (sound table + VabHdr), copied from 0x801D8800 | src/main/6CF8.c:273 |
 | 0x8010E800 | 2 x 0x4650 | `POLY_FT4` buffers `D_800A3420` / `D_800A3424` set by `func_80060CB8` | 51268.c, `func_80060CB8` |
 | 0x80118800 | | `func_80016A8C`'s image buffer at boot | src/main/6CF8.c:440 |
 | 0x801FFF00 | | stack top after `SetSp` | src/main/6CF8.c:435 |
@@ -68,7 +68,7 @@ Large objects named elsewhere in these pages:
 - `GpuDb g_gpu_db[2]` at 0x800F7438: two 0x4090-byte records holding
   DRAWENV, DISPENV and OT (include/game.h:54-63).
 - `CdState D_80101E58`: the CD state block (include/game.h:2084).
-  `g_cd_file_table` (0x8008EC34, include/bb2.h:475) holds the disc file
+  `g_cd_file_table` (0x8008EC34, include/bb2.h:474) holds the disc file
   records. See [file_io.md](file_io.md).
 - `D_800F33D8`: the 0x200-byte memory-card image. Its second half is
   `Unk800F34D8Save D_800F34D8` (include/game.h:40-52).

@@ -20,7 +20,8 @@ are described in [docs/formats/](../formats/README.md).
 1. `snd_Init`.
 2. `snd_LoadCommonVab(0x801D8800)`. A size of 0xD01 or more calls
    `sys_Panic`.
-3. Copies the bank to 0x8010DB00 and rebases slot 0 there with
+3. Copies the bank's main-RAM part (sound table + VabHdr) to 0x8010DB00 and
+   rebases slot 0 there with
    `snd_VabFakeOpen(0xFFF35300, 0)` (0x8010DB00 - 0x801D8800).
 4. `func_8005C614`, which sets `SsSetMVol(0x7F, 0x7F)`, stereo and auto
    key-off mode 0.
@@ -50,8 +51,8 @@ fourth is the body size in SPU RAM.
 | `func_8005C074(slot, buf)` | sorts slots 1..15 by SPU address and moves every body after the first gap down to close it (`snd_MoveVabBody`) |
 | `snd_MoveVabBody(buf, slot, dst, src)` | copies a body inside SPU RAM through `buf` (`SpuRead`, then `SpuWrite`) and re-fakes its head |
 | `func_8005B8B8` / `func_8005B9FC` / `func_8005BA8C` | load group-2 files 0x5D + 0x5E into slots 8 and 4, file 8 into slot 9, and file `9 + arg1` into the three slots in `g_vab_id_list` |
-| `snd_CloseVab1`, `snd_CloseListedVabs`, `func_8005B644`, `func_8005B6AC`, `func_8005B868`, `func_8005B9C4`, `func_8005B72C` | `SsVabClose` on fixed slots, clearing their records |
-| `func_8005BE84(n)` / `func_8005BF3C` | set reverb type and depth from `D_8009AD1C[n]` (`SpuClearReverbWorkArea`, `SsUtReverbOn`) / reverb off |
+| `snd_CloseVab1`, `snd_CloseListedVabs`, `func_8005B644`, `func_8005B6AC`, `func_8005B868`, `func_8005B9C4`, `func_8005B72C` | `SsVabClose` on fixed slots (`func_8005B644(a0)`: slot `3*a0 + 1`; `func_8005B72C`: slots 1..15, plus reverb off and a pool reset), clearing their records |
+| `func_8005BE84(n)` / `func_8005BF3C` | set reverb type `D_8009AD1C[n][0]` (`SpuClearReverbWorkArea`, `SsUtReverbOn`) and depth `2n + 1` / reverb off |
 
 ## One-shot sounds
 
@@ -71,7 +72,7 @@ SsUtKeyOnV(voice, slot, w & 0x7F, (w >> 7) & 0xF,
 
 The arguments after `slot` are program, tone, note and fine pitch. A request
 for slot 6 plays slot 3 when the two are the same pack. Every entry is
-cleared as it is visited. `func_8005C650` has callers in most game TUs.
+cleared as it is visited. `func_8005C650` has callers in 11 game TUs.
 
 ## CD audio mix
 
@@ -82,8 +83,8 @@ cleared as it is visited. `func_8005C650` has callers in most game TUs.
 - `cdrom_StartMixFade(len, ...)` (src/main/26730.c:24) sets a target that
   `cdrom_UpdateAudio` reaches over `len` steps.
 
-[file_io.md](file_io.md) describes how CD-DA and XA tracks are started, how
-they stop, and how XA fades out over its last 0x96 sectors.
+[file_io.md](file_io.md) describes how CD-DA and XA tracks are started and
+how they stop, including XA's early stop inside its last 0x96 sectors.
 
 ## libsnd and libspu
 

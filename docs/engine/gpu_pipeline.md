@@ -134,12 +134,12 @@ example, see `func_80018300` (src/main/87A0.c:174, the `gte_Lzc` at :284).
 
 **`D_800EEDB0`** (`MATRIX`, declared at src/main/368E4.c:296) is built by
 `func_80046F24` (src/main/368E4.c:555) from row 0 `(l0, l1, l2)` of
-`D_800F62E0[0].lmat`. The matrix is the identity with `m[0][1] = -l0/l1` and
-`m[2][1] = -l2/l1` (4.12). `func_8004700C(in, out, y)` (src/main/368E4.c:573)
+`D_800F62E0[0].lmat`. The matrix has `m[0][0] = m[2][2] = 0x1000`, `m[0][1] = -l0/l1`,
+`m[2][1] = -l2/l1` (4.12), and every other entry 0, including `m[1][1]`. `func_8004700C(in, out, y)` (src/main/368E4.c:573)
 multiplies `in` by it and moves the translation to height `y` along the same
 direction. The result maps a point onto the plane at height `y` along the
-direction `(l0, l1, l2)`. `func_800470B0` (:580) does the same for row
-`arg0` without storing the matrix.
+direction `(l0, l1, l2)`. `func_800470B0` (:580) does the same from row 0
+of `D_800F62E0[arg0].lmat`, without storing the matrix.
 
 ## 2D sprites
 
@@ -154,6 +154,7 @@ The sprite sheets are 12-byte headers `Unk8009B0E0Record`
   with a printed warning.
 - `func_80073728(env, mode)` (:55) is the `POLY_FT4` form.
 
-`func_80060414` (3AB48.c) chooses a sheet and screen position from the
-packed table `D_8009B850` and draws it through them. `func_800174F4` calls
+`func_80060414` (3AB48.c) takes the screen position from the packed table
+`D_8009B850`, picks one of the `D_8009B7AC` sheets, and draws it with
+`func_8007352C` plus a `DR_MODE`. `func_800174F4` calls
 it in overlay mode 20.

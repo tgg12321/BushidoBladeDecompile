@@ -22,7 +22,7 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 | `26730.c`, `267A8.c`, `26940.c`, `cdrom.c` | 0x80035F30.. | the CD module: `cdrom_*`, `snd_SerialMixOn`, `sys_Exec`; [file_io.md](file_io.md) |
 | `memcard.c`, `28514.c` | 0x800375EC.. | memory card: `memcard_*`, `func_80037D14`; [file_io.md](file_io.md) |
 | `28708.c` | 0x80037F08 | `memcard_Format`, the save flow (`func_800383A4`, `memcard_PollFileCompletion`), the link-cable session layer `comb_*`, `math_Popcount32` |
-| `2B344.c` | 0x8003AB44 | 92 functions: `font_*`, `bitstream_ReadBits`, `gpu_SetDrawMoveArray`, `comb_HandshakeStep`, `comb_Connect`, the CD-audio starters `func_8003BCB4` / `func_8003BE10` / `func_8003C040` |
+| `2B344.c` | 0x8003AB44 | 92 functions: `font_*`, `bitstream_ReadBits`, `gpu_SetDrawMoveArray`, `comb_HandshakeStep`, `comb_Connect`, the CD-audio starters `func_8003B9D0` / `func_8003BE10` / `func_8003C040` |
 | `309CC.c`, `31548.c`, `31CFC.c`, `31D3C.c` | 0x800401CC.. | 12 + 4 + 1 + 21 functions (`gpu_AddDrawMove`) |
 | `32D04.c` | 0x80042504 | rotation-matrix and colour math (`math_RotMatrix*`, `math_RgbToHsv`) and the primitive texture-offset helpers `gpu_OffsetTex*` |
 | `35000.c` | 0x80044800 | 44 functions: the `arena_*` allocator and the `ndata_*` NDATA reader / pack cache ([NDATA.md](../formats/NDATA.md)) |
@@ -49,7 +49,8 @@ Unnamed functions keep `func_<addr>`.
 | `comb_` | 28708.c, 2B344.c | the libcomb link-cable session; [psyq_usage.md](psyq_usage.md) |
 | `snd_` | 3AB48.c, 6CF8.c, 267A8.c | [sound.md](sound.md) |
 | `gpu_` | 32D04.c, 25C38.c, 2B344.c, 309CC.c, 368E4.c, 6CF8.c | [gpu_pipeline.md](gpu_pipeline.md) |
-| `math_` | 32D04.c, 6CF8.c, 9F9C.c, 17AFC.c, 368E4.c, 2B344.c, 28708.c | |
+| `math_` | 32D04.c, 3AB48.c, 6CF8.c, 9F9C.c, 17AFC.c, 368E4.c, 2B344.c, 28708.c | |
+| `gte_` | 3AB48.c | [gpu_pipeline.md](gpu_pipeline.md) |
 | `arena_`, `ndata_` | 35000.c | [NDATA.md](../formats/NDATA.md) |
 | `font_` | 2B344.c | |
 | `pad_` | 87A0.c, 9F9C.c | |
@@ -64,7 +65,7 @@ Unnamed functions keep `func_<addr>`.
 | `D_8008D090` | the 34 mode handlers `main` calls through `D_800A3834` | [main_loop.md](main_loop.md) |
 | `g_gpu_db[2]` | `GpuDb`, include/game.h:54-63 | [gpu_pipeline.md](gpu_pipeline.md) |
 | `D_800A3770[2]` | the two 0x13400-byte primitive buffers | [memory_layout.md](memory_layout.md) |
-| `g_cd_file_table` | `CdFileEntry[159]`, include/bb2.h:475 | [file_io.md](file_io.md) |
+| `g_cd_file_table` | `CdFileEntry[159]`, include/bb2.h:474 | [file_io.md](file_io.md) |
 | `D_80101E58` | `CdState`, include/game.h:2084 | [file_io.md](file_io.md), [replay.md](replay.md) |
 | `D_800F33D8` / `D_800F34D8` | memory-card image / `Unk800F34D8Save` | [file_io.md](file_io.md) |
 | `g_vab_rec_ptr[16]`, `g_vab_vb_sbaddr[16]` | VAB slots, `Unk8005C2A8Pack` | [sound.md](sound.md) |
