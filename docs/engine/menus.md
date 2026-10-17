@@ -1,283 +1,109 @@
-# Menus, UI, Fades, and Mode Transitions
+# Menus, mode handlers and the scene script
 
-BB2's menu and mode-transition logic is a state machine driven by
-`D_800A3834` (the main game-mode value) and a set of per-mode sub-state
-variables. The transitions are scattered across `code6cac_c2.c` and
-`code6cac_c_mid.c` (the former `code6cac_c_ab.c` is now the head of
-`code6cac_c2.c`, the former `config.c` its tail).
+The game's top level is the mode handler table `D_8008D090` (34 entries,
+src/main/d_7D870.c:24), called with the mode value `D_800A3834`; see
+[main_loop.md](main_loop.md) for the table and the loop. This page covers the
+pad masks the handlers test, the handlers in src/main/2B344.c that run the
+scene script, and the two menu modules (src/main/51268.c and
+src/main/5ED34.c).
 
-## Mode dispatch recap
+## Pad masks
 
-Every frame, the main loop calls
-`D_8008D090[D_800A3834]()`. The functions in `D_8008D090`
-range from "title FMV" through "character select" to "fight" to "results
-screen" to "training mode". Each handler is responsible for:
+`pad_Update` (src/main/87A0.c:626) builds each player's 16 button bits as
+`~((byte2 << 8) | byte3)` of the controller packet (src/main/87A0.c:659) and
+packs the two players into one word, player 0 in the low half
+(src/main/87A0.c:674). `g_pad_state.pressed` is the newly pressed bits
+(`held & ~previous`, src/main/87A0.c:712; `PadState`, include/game.h:839).
+With the standard digital-pad bit order, the masks the handlers use are:
 
-1. Drawing its own UI (HUD, menu text, cursor)
-2. Reading the pad (`D_80102794`)
-3. Mutating `D_800A3834` to transition to the next mode
-
-See [main_loop.md](main_loop.md) for the mode value table.
-
-## Menu transition: a typical mode handler
-
-`func_8003BCB4` (`src/main/2B344.c:553`) is a model sub-mode handler. Annotated:
-
-```c
-void func_8003BCB4(void) {
-    D_800A37B8++;                           // frame counter
-
-    if (func_80054F68() != 0) {              // some external block?
-        if ((D_80102794 & 0x400040) == 0) {  // no CROSS button
-            return;                          // ... keep waiting
-        }
-    }
-
-    cdrom_PauseAndWait();                    // pause CD activity, wait for idle
-    func_800548DC();
-
-    if (D_800A38DC != 0) return;             // sub-mode busy
-
-    if (D_800A3894 != 0) {                   // some pending action
-        D_800A3834 = 0;                      // go to "no mode" (idle)
-        switch (D_800A37B0) {                // sub-state
-            case 1: case 2: case 4: case 5:
-                D_800A3907++;
-                return;
-            case 3:
-                func_8003AF40(0);
-                md_menu_logo_exec();
-                /* fall through */
-            case 6:
-                D_800A3894 = 0;
-                goto call_bar;
-            default:
-                return;
-        }
-    }
-
-    if (D_800A385C != 0) {                   // sub-mode finalize
-        s32 val = D_800A390C;
-        if (val == 1) { D_800A3834 = 0; return; }
-        if (val == 0 || val >= 4) return;
-        D_800A385C = 0;
-    }
-
-call_bar:
-    func_8003B5A4();                          // post-transition setup
-}
-```
-
-Note `0x400040` = CROSS button (both P1 and P2) — the magic pad-input
-masks are everywhere in the menu code:
-
-- `0x100010` = SELECT
-- `0x400040` = CROSS (confirm)
-- `0x200020` = SQUARE
-- `0x800080` = CIRCLE
-- `0x10001000` = UP
-- `0x20002000` = RIGHT (with hint about another button)
-- `0x40004000` = DOWN
-- `0x80008000` = LEFT
-
-(Each mask is `(P2 button) | (P1 button)` because `D_80102794` packs both
-players in one 32-bit word.)
-
-## Fade-in / fade-out
-
-`D_800A36A8` (`0x800A36A8`) is not a fade amount: it is a 0/1 switch that
-multiplies the `func_8005D554` sprite passes (3AB48.c:4307-4310, :4349).
-
-Helpers:
-- `FadeOut_8003FFA8` / `FadeOut_8003FFC4` (asm-only) — animate fade out
-- `CheckFadeEnd` (asm-only) — query fade complete flag
-- `InitFadePanel` (asm-only) — set up the fullscreen black quad in the OT
-
-## Configuration / options — tail of `code6cac_c2.c`
-
-The former `config.c` (`0x8003F168..0x800401CC`, now the tail of
-`code6cac_c2.c`) handles game options:
-
-- `game_GetMode` / `game_SetControllerPorts` / `game_SetPlayerCount` —
-  basic options.
-- `func_8003F168` — calls the `.init` hook of `D_800948BC[func_80046798()]`
-  when it is non-null.
-- `func_8003F274` — rebuilds the 32x32 grid `D_800A8FB0` around the view
-  node; the draw walks read it.
-- `md_option_reset_*` family (lines 518-535) — reset options to defaults.
-
-`D_800948BC` is an array of `{init, unk4}` function-pointer pairs indexed by
-`func_80046798()`: `func_8003F168` calls `.init`, the draw walk `func_8003E6D8`
-calls `.unk4`.
-
-## Cursor / menu state primitives
-
-| Function | Purpose |
+| Mask | Button (either player) |
 | --- | --- |
-| `SetCurrentCursor` (asm-only) | Update the menu cursor sprite position |
-| `Pad_Prs` (asm-only) | Press-event helper (debounced pad input) |
-| `pad_press_control` (asm-only) | Per-frame pad-press accumulator |
-| `pad_main_control` (asm-only) | Top-level pad input dispatch |
-| `pad_button_info_clear` | Clear per-frame pad state |
+| `0x00100010` | Triangle |
+| `0x00200020` | Circle |
+| `0x00400040` | Cross |
+| `0x00800080` | Square |
+| `0x08000800` | Start |
+| `0x10001000` / `0x40004000` | Up / Down |
+| `0x20002000` / `0x80008000` | Right / Left |
 
-These are called from the menu handlers to manage cursor movement and
-"confirm/cancel" responses.
+## Mode handlers and the scene script (src/main/2B344.c)
 
-## Mental bar HUD
+`func_8003B5A4` (src/main/2B344.c:321) steps a byte script at `D_800A3844`
+until an opcode ends the step. The opcodes and what they do:
 
-`saTan*GaugeInit` / `saTan*GaugeMain` family (see [combat.md](combat.md))
-renders the in-game mental gauge. The "mental" stat is BB2's spirit/focus
-meter that controls some advanced moves' availability.
+- 0: mode 18 (with `D_800A38A4` from `D_8008D9EC[fighter 0's unk_0A]`), or
+  mode 10 when `D_800A380C` is set.
+- 1: one operand byte into `D_800A36A4` and the history `D_800A37A8[]`;
+  mode 22.
+- 2: keeps a 0x1D-byte block in `D_800A3894`, sets up fighter 0
+  (`func_8003AF40(0)`), then as 18.
+- 3: two operand bytes into `D_80102778.unk_4[1]` / `[3]`; sets up fighter 1
+  (`func_8003AF40(1)`, `func_8003AFFC`).
+- 16 / 17: `func_8003B3A4` / `func_8003B484` on the operands, which return
+  how many bytes they used.
+- 18: mode 0.
+- 19: keeps a 4-byte block in `D_800A3878`; mode 6.
+- 20: keeps a 12-byte block in `D_800A385C` (`func_8003B4DC`,
+  `func_8003B56C(1)`).
 
-## Character select
+Handlers that the script's modes reach:
 
-No selected-character index is identified yet: `D_80102092` is player 0's
-facing-angle field `D_80101EC8[0].unk_1C8.vy` (src/main/17AFC.c:995), not a
-character id. Selection is driven by:
+- `func_8003B9D0` (src/main/2B344.c:478, mode 6) loads the scene the
+  `D_800A3878` block describes (`func_80054884` with its byte 0 and the
+  fighters its flag byte 3 selects), starts its CD audio track (`cdrom_GetFileIndex(5, D_800A3878[1])`) and sets mode 7.
+- `func_8003BCB4` (src/main/2B344.c:550, mode 7) counts `D_800A37B8`; while
+  `func_80054F68()` is nonzero it waits for Cross. It then pauses the CD and,
+  depending on the pending `D_800A3894` / `D_800A385C` blocks, sets mode 0
+  or calls `func_8003B5A4` for the next script step.
+- `func_8003BE10` (src/main/2B344.c:595, mode 10) resets the scene state
+  (`func_80020CDC`, `func_800415C4`, `eff_ClearInitFlag`, `func_8005B72C`,
+  `func_80078824(0x80118800)`), starts CD audio
+  (`cdrom_GetFileIndex(5, 0x20)`), waits for it, sets mode 0xB and turns the
+  display on.
+- `func_8003BEA8` (src/main/2B344.c:614, mode 11) waits for Cross (0x40,
+  player 0) or `func_800788B0()`, merges `D_800A37A4` into
+  `D_80106A50.unk_00` and a per-character bit into `unk_04`, and sets mode
+  0x1A when either changed, else 8.
+- `func_8003BFC4` (src/main/2B344.c:651, mode 15) runs the FMV overlay
+  through `sys_ExecMovieOverlay` and sets mode 8.
+- `func_8003C560` (src/main/2B344.c:786, mode 21) plays sounds at frames
+  0x1E / 0x43 and, on Cross or after frame 0xF1, sets mode 0x18 or 0x12.
+- `func_8003C714` (src/main/2B344.c:822, mode 30) copies the three clock
+  records `D_80106A50.times` into the record `func_80077D00()` returns, as
+  minutes, seconds and hundredths (its comment, src/main/2B344.c:817).
 
-- `D_8009BA7C` (`0x8009BA7C`) — 62 function pointers called through by
-  `func_80060A68` / `func_80060B70` (no character role shown)
-- `D_80094B88` (`0x80094B88`) — per-slot 5-bit codes stored by `func_80041604`
-  (callers pass `D_800A36C8` / `D_800A36F4` / `D_800A376A`); not shown to be
-  character ids
+## The row menu (src/main/51268.c)
 
-## `D_80099478`
+Cited by function name (the file is about to be split).
 
-`D_80099478` caches the id `func_800460E4` was last called with (-1 =
-none); `func_80046798` returns it, and `func_8003F168` / `func_8003E6D8` index
-`D_800948BC` with it.
+- `func_80068F70` sets up the menu block `D_800A34FC`, clears the row index,
+  steps it to the first enabled row, and sets the cursor field to 4 (its
+  caller is `func_80077820`, src/main/64FD8.c:1249).
+- `D_800A34F8` packs three cursors: bits 0-3 the row index 0..7, which skips
+  rows whose bit in `D_8009BC04.rows_on` is clear; bits 10-12 a cursor
+  0..5; bits 13-15 a cursor 0..2.
+- `func_800692C0` reads the pad word and returns, in its high half, 1 or 2
+  for a step one way or the other.
+- `func_800693CC` (called from `func_80077894`, src/main/64FD8.c:1268) moves
+  the row index with that result, applies the row's `opt[].mode` to
+  `D_800A3524->unk20_3`, and on Cross (with per-player conditions on the
+  row's `state`) returns that `state`; Triangle returns -2, otherwise -1.
+- `func_8006B578` steps the bits 10-12 cursor; in positions 0..2 the
+  low-half result toggles `D_800A3524->unk20_0..2`, and Cross advances the
+  cursor; positions 3, 4, 5 return 2, 3, 1 on Cross, and Triangle returns 1.
+- `func_8006B92C` steps the bits 13-15 cursor and returns 2, 3 or 1 on Cross
+  (position 2 also advances the bits 10-12 cursor); Triangle returns 1.
 
-## Mode entries (handlers that set up modes)
+## The selection screen (src/main/5ED34.c)
 
-`func_8003BE10` (`code6cac_c2.c:294`) — "enter mode 0xB" handler:
-1. Enable display, init display
-2. Reset players, file DMA, all objects
-3. Bring in setup table (`func_80078824(0x80118800)`)
-4. Set up camera matrix (`func_80035FA8`)
-5. Load mode-specific motion (`func_80036FD4`)
-6. `D_800A3834 = 0xB` (transition complete)
-7. Disable display (for next frame's fade-in)
-
-`func_8003BFC4` (`src/main/2B344.c:681`) runs the movie overlay, then sets mode 8:
-1. `gpu_ResetGraphMode1`, `func_80020CDC`, `func_800415C4(0)` / `(1)`,
-   `eff_ClearInitFlag`
-2. `sys_ExecMovieOverlay(arena_GetBase(), 0x80118000, 1, 0xCF8, 0xB01)` — runs
-   MOVOVL.EXE (the FMV overlay) through `sys_Exec`
-3. `func_80046B44()`
-4. `D_800A3834 = 8`
-
-This pattern (reset state + load/run + set mode value) is the common
-mode-transition shape.
-
-## Menu text rendering
-
-`DispPracticeMenuTex_A/B/C` (asm-only at `0x80017FA0` etc.) render the
-practice-mode text. They're 16x16 character tile renderers using TIM
-textures loaded into VRAM.
-
-`DispSleepMenuTex` (asm-only) — "press start" sleeping screen text.
-
-`DispUpdateStatusMessage` (asm-only) — overlay messages like "DRAW!" /
-"FINISH!" / "VICTORY!".
-
-`disp_mario_jimaku` / `disp_mario_jimaku2` (`main.c`, asm-only) —
-"super-cam dialogue" subtitles. "Jimaku" = subtitle. "Mario" is Kengo's
-naming for "Marionation" — i.e., the Marionation engine's subtitle system.
-
-## Mode select / title
-
-The title-screen logo handler is `md_menu_logo_exec` (`0x8003AFFC`,
-asm-only). It runs the boot-screen logo animation, then transitions to
-the mode-select menu.
-
-`title_mv_exec` / `title_mv_exec2` (referenced) handle the title FMV
-(plays OPENING.STR via the MOVOVL.EXE overlay).
-
-`cdrom_WaitIdle` (`src/main/cdrom.c`) is a wait entered around CD reads:
-it runs per-frame work and `VSync(2)` until `cdrom_IsIdle()` returns
-non-zero.
-
-## Replay / training overlap
-
-Many menu handlers also drive training/replay modes. The `cpu_*` AI
-functions (see [ai.md](ai.md)) handle the training-mode AI; the menu
-layer just chooses which CPU mode to enable.
-
-## Where unmatched menu asm still hides
-
-- Most `md_*` mode handlers in `main.c` (asm-only at 0x80083A48 family)
-- Most of the `DispXxx` text renderers (asm-only)
-- All `pad_*` controller helpers (asm-only)
-- `_DispCharacterName` (asm-only at 0x80080258)
-- `md_game_check_change_main_mode_default` (asm-only at 0x80083A48)
-
-## State cluster at 0x800A34F8-0x800A3514 (2026-05-17)
-
-Discovered via cluster-consumer analysis — 6+ consumer functions all
-reference these together (highest "naming multiplier" cluster).
-
-| Symbol | Address | Role |
-|--------|---------|------|
-| `D_800A34F8` | `0x800A34F8` | Three packed cursors (a static of src/main/51268.c:67) |
-| `D_800A34FC` | `0x800A34FC` | `Unk800A34FCRec *`: `func_8006E49C`'s result, stored by `func_80068F70` (src/main/51268.c:3618-3621) |
-| `D_800A350C` | `0x800A350C` | s16[2]: `func_800692C0`'s per-axis step (1 / -1 / -6 / 0), added to `D_800A34FC->unk_0C[i]` |
-| `D_800A3514` | `0x800A3514` | Counter: += 1 per handler call or cursor-row draw; the rsin phase of a pulsing colour |
-
-### Bitfield layout of `D_800A34F8`
-
-- **bits 0-3**: index 0..7 (8 wraps to 0 and 0 back to 7), stepping past
-  entries whose bit in `D_8009BC04` is clear (src/main/51268.c:3864-3888)
-- **bits 10-12**: cursor 0..5, stepped +/-1 with wrap by `func_8006B578`'s
-  direction decode (51268.c:4931-4954), +1 by `func_8006B92C`'s case 2
-  (:5094-5095), set to 4 by `func_80068F70` (:3689-3695)
-- **bits 13-15**: cursor 0..2, stepped +/-1 with wrap by `func_8006B92C`'s
-  direction decode (51268.c:5050-5070); `func_8006BB68` compares it with
-  i = 0..2 (:5137)
-
-No access shows a main/sub hierarchy between the two cursors.
-
-### Menu input handler — `func_8006B92C`
-
-Per-frame menu input handler:
-1. Reads pad input (combines P1/P2 controllers high/low halves)
-2. Calls `func_800692C0` to decode direction (code 1 = down, 2 = up)
-3. Direction code → navigate cursor (incr/decr bits 13-15)
-4. Each cursor position has its own action when cross/circle pressed
-   (mask `0x400040`)
-5. Plays menu sounds via `func_8005C650(N, 0x7F, 0x7F)`
-
-### Cross-reference with mode handlers
-
-Several menu-related mode handlers exist in `D_8008D090`
-(see [main_loop.md](main_loop.md) for full table):
-
-- Mode 30 (`SetCurrentCursor`, `0x8003C714`) — menu cursor positioning
-- Mode 11 (`func_8003BEA8`, `0x8003BEA8`) — pad input
-  check (mask `0x40` = action button)
-- Mode 7 (`mode_handler_07_SubModeTransition`, `0x8003BCB4`) —
-  sub-mode transition triggered by cross+circle (`0x400040`)
-- Mode 21 (`func_8003C560`, `0x8003C560`) — plays
-  SFX 0xA4/0xA7 at frame counter == 0x1E
-
-## Fade / transition state machine (2026-05-17)
-
-The fade-in/fade-out state machine at `func_8006EC0C` (`text1b_tu1d.c:362`)
-ramps a value (0..0x1E8 in 0x20 steps) under control of a dispatch
-table:
-
-| Symbol | Address | Role |
-|--------|---------|------|
-| `D_800A3570` | `0x800A3570` | s16 slide offset, 0..0x1E8 (488); an x displacement / width in `func_8006F528` |
-| `D_800A3580` | `0x800A3580` | The module's current mode; indexes D_8009BC1C, D_8009BCC4 and the menu table |
-| `D_800A3584` | `0x800A3584` | The next mode, copied into D_800A3580 when D_800A3570 reaches 0x1E8 |
-| `D_8009BC1C` | `0x8009BC1C` | 7 handler entries, called by `func_8006EACC` with `&sp10`; [1..3] drive the full-screen tile's grey level, [0] and [4..6] do not |
-
-State values (1-4):
-- 1 = ramp up
-- 2 = fade out
-- 3 = ramp up alt
-- 4 = fade out alt (plays sfx 5 at peak)
-
-Note: `D_800A3578` (fade state value) is a `5ED34.c` static: this fade
-reads its low byte, and the rest of the file stores and tests the whole
-halfword as its selection-screen state.
+- `func_8006EACC(arg0, pad)` (src/main/5ED34.c:216) keeps the pad word in
+  `D_800A354C`, runs `func_8006EC0C`, calls `func_8006F528`
+  (src/main/5ED34.c:503) unless the screen mode
+  `D_800A3580` is 2 or 3, and calls `D_8009BC1C[D_800A3580]`; it returns
+  `D_800A35A0`. Its caller is `func_800779C8` (src/main/64FD8.c:1297).
+- `func_8006EC0C` (src/main/5ED34.c:249) slides `D_800A3570` by 0x20 a frame:
+  states 1 / 3 (low byte of `D_800A3578`) slide in to 0x1E8 and then switch
+  `D_800A3580` to `D_800A3584`; states 2 / 4 slide back to 0, playing sound 5
+  as they start.
+- `func_80070188` (src/main/5ED34.c:826) is the grid cursor of that screen
+  (see [replay.md](replay.md)).
