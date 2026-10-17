@@ -34,7 +34,8 @@ start-up code, in order:
      (`ClearOTagR(ot, 0x1008)`), sets `g_gpu_ot_ptr` and the primitive cursor
      `g_prim_buf_cursor = D_800A3770[idx]`;
    - `func_80060E04(idx)` (src/main/51268.c), `font_BeginFrame()`
-     (src/main/2B344.c:1131), `pad_Update()`, `cdrom_Update()`,
+     (src/main/2B344.c:1131), `pad_Update(skip)` (last frame's `D_800A390D`),
+     `cdrom_Update()`,
      `func_8005C6D0()` (src/main/3AB48.c);
    - if the link-abort request `g_comb_abort_request` is set (its one setter is
      `comb_Abort`, src/main/28708.c:1605): `cdrom_PauseAndWait()`, display off
@@ -97,7 +98,7 @@ assigns to `D_800A3834` itself.
 | 5 | `func_8003993C` (src/main/28708.c:1338) | 0xC, 0x10, 0x1E | rebuilds the fighters from the per-frame records `D_800A36EC` ([motion.md](motion.md)) |
 | 6 | `func_8003B9D0` (src/main/2B344.c:478) | 7 | loads a script scene ([menus.md](menus.md)) |
 | 7 | `func_8003BCB4` (src/main/2B344.c:550) | 0 | waits, then the next script step |
-| 8 | `func_80035480` (src/main/25C38.c:34) | 9 | resets the scene, closes the link (`comb_RequestClose`), sets up the row menu (`func_80077820`) |
+| 8 | `func_80035480` (src/main/25C38.c:34) | 9 | resets the scene, requests the link close (`comb_RequestClose`, unless `D_800A31DA` is set), sets up the row menu (`func_80077820`) |
 | 9 | `func_80035828` (src/main/25C38.c:195) | 0, 0xF, 8 | the row-menu flow (`func_80077894`) with CD audio and memory-card calls |
 | 10 | `func_8003BE10` (src/main/2B344.c:595) | 0xB | resets the scene, starts CD audio track `(5, 0x20)` |
 | 11 | `func_8003BEA8` (src/main/2B344.c:614) | 0x1A, 8 | waits for Cross, merges unlock bits into `D_80106A50` |
@@ -106,7 +107,7 @@ assigns to `D_800A3834` itself.
 | 14 | `func_80035430` (src/main/25788.c:202) | | empty |
 | 15 | `func_8003BFC4` (src/main/2B344.c:651) | 8 | runs the FMV overlay (`sys_ExecMovieOverlay`) |
 | 16 | `func_8001EEB4` (src/main/9F9C.c:2162) | 0x11 | sets both fighters' moves (`func_80021A98`) |
-| 17 | `func_8001EFA0` (src/main/9F9C.c:2184) | | per-frame fight variant with the view `func_8001BCF0` |
+| 17 | `func_8001EFA0` (src/main/9F9C.c:2184) | 0xC, 2 | per-frame fight variant with the view `func_8001BCF0`; after frame 0x69 or on Cross it sets 0xC (`D_800A38DC` 4 / 6, or 1 with `D_800A3748 != 0`), calls `func_80033BC0` (`D_800A38DC` 1, `D_800A3748 == 0`), or sets 2 |
 | 18 | `func_8003C040` (src/main/2B344.c:666) | 0x13 | scene setup chosen by `D_800A38A4` |
 | 19 | `func_8003C2C0` (src/main/2B344.c:725) | 0x12, 0x18, 0x1A, 0xA, 8 | waits on `func_80054F68`, then picks the next mode |
 | 20 | `func_8003C42C` (src/main/2B344.c:754) | 0x15 | |

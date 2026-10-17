@@ -47,14 +47,16 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
 `func_8002AB08(mode)` (src/main/17AFC.c:1568) runs for each fighter `i` as the
 target, with the opponent as the attacker:
 
-1. It decides how many blade triangles to test (`var_10`): one when the
+1. It decides how many blade quads to test (`var_10`): one when the
    attacker's `unk_96 == 0`, `unk_92 != 0`, `unk_3C != 0` and `unk_0C != 0x1F`,
    one more with `unk_8C` set, and one more when `unk_0E` is 4 or 5 and any is
    tested. (With `mode == 1` the fighter `D_800A38AE` is skipped as a target.)
    Attackers with `unk_0E` 6 or 7, in states 2 / 0x1B / 0x28 / 0x26 at frame
-   `unk_40 == unk_A1[0]`, instead sweep a segment with `func_8002A458`
+   `unk_40 == unk_A1[0]`, also sweep a segment with `func_8002A458`
    (src/main/17AFC.c:1423, comment at :1399) while the counter `unk_34A`
-   lasts; `unk_0C` 0x1D / 0xE do the same with the second blade (`unk_A1[1]`).
+   lasts (once it is spent they play cue 0x32 and test no quads); `unk_0C`
+   0x1D / 0xE (with `unk_26C` set) do the same with the second blade
+   (`unk_A1[1]`).
 2. Each blade quad (this frame's points from the scratchpad and last frame's
    from `unk_210` / `unk_234`) is split into 2 or 4 triangles (4 when the tip
    moved more than 2500 units) and each triangle goes through `func_8002CD58`
@@ -64,7 +66,8 @@ target, with the opponent as the attacker:
    it picks the one nearest the attacker's point `unk_210[1]`
    (src/main/17AFC.c:1806-1822). With `mode == 1` it only plays cue 4 there
    and returns.
-4. Unless the contact came from the sweep path, or the attacker is in an attack
+4. Unless the struck limb is in the sweep / second-blade mask and the
+   attacker has `unk_0E` 6 or 7 or `unk_0C` 0x1D / 0xE, or the attacker is in an attack
    state (2, 0x1B, 0x28, 0x26) within three frames before a window start, it
    pushes the target along x/z through
    `unk_134` when the facing difference is under 0x400.
@@ -128,9 +131,10 @@ Both walk the byte stream at `rec->unk_58 + 4`; 0 ends it.
 - `func_8002E6B0` (src/main/17AFC.c:3082): point in triangle.
 - `func_8002FC80` (src/main/17AFC.c:3535): the GTE cross product of
   `(a1 - a0)` and `(a2 - a0)`, returning `ratan2` of its x/z (+0x800 when y is
-  positive). `func_8002FDB0` (src/main/17AFC.c:3563) does the same for a
-  fighter's scratchpad points 2 and 3 about point 1; its result is stored in
-  `unk_1DA` (src/main/9F9C.c:5038).
+  positive). `func_8002FDB0` (src/main/17AFC.c:3563) takes the same cross
+  product for a fighter's scratchpad points 2 and 3 about point 1 and returns
+  1 when its y is positive, else 0; the result is stored in `unk_1DA`
+  (src/main/9F9C.c:5038).
 
 ## Cues
 

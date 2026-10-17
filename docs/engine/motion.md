@@ -74,7 +74,8 @@ per-joint channels (the comment at include/game.h:1317).
 ## Per-frame update: `func_80023F08`
 
 The fighter loop calls `func_8001BE20(i, pad)` and then `func_80023F08(i, pad)`
-for each fighter (src/main/9F9C.c:2040-2043; also :2086 and :2195).
+for each fighter (src/main/9F9C.c:2040-2043); the variants at :2086 and :2195
+call only `func_80023F08`, with a pad cleared by `pad_ClearStateBits`.
 `func_80023F08` (src/main/9F9C.c:4337; its comment lists the whole sequence):
 
 1. converts the pad bits, advances the frame `unk_40` and runs the move

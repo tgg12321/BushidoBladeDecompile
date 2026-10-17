@@ -74,7 +74,7 @@ Handlers that the script's modes reach:
 
 ## The row menu (src/main/51268.c)
 
-Cited by function name (the file is about to be split).
+Cited by function name.
 
 - `func_80068F70` sets up the menu block `D_800A34FC`, clears the row index,
   steps it to the first enabled row, and sets the cursor field to 4 (its
