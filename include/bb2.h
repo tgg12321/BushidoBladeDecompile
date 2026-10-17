@@ -275,6 +275,9 @@ extern u8 D_800A3671;
 extern u16 D_800A3678[3];
 extern u8 D_800A3680;
 extern u8 D_800A3690;
+/* FAKE: word 1 of the 8-byte sio send buffer as its own symbol; declaring
+ * g_comb_send_buf s32[2] makes cc1 keep its address live through
+ * comb_ExchangePad (35 words differ) */
 extern s32 g_comb_send_buf_plus_0x4;
 extern s16 D_800A36A4;
 extern s32 D_800A36AC;
