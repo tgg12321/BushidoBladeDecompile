@@ -259,7 +259,7 @@ are visible:
 mode 4 (GameSetup) --> mode 1 (GameFrameUpdate, looped)
 mode 1 --> mode 18 (when lesson completes + P1/P2 unlock pending)
         --> mode 12 (round cleanup)
-        --> mode 8 (title -- via global reset)
+        --> mode 8 (via the link-abort request)
 ```
 
 **func_80033DF4 / func_80033FE4 flow:**
@@ -293,7 +293,7 @@ mode 22 (VsModeInit) --> mode 23 (FrameDelay3, wait 3 frames)
    reserved for state transitions where the dispatch mechanism is used but no
    per-frame work happens. The next frame's dispatch handles the actual logic.
 
-2. **Mode 8 is the "global reset target".** When `g_comb_abort_request != 0` (a failed link transfer), the main loop forces `D_800A3834 = 8` and
+2. **Mode 8 is the link-abort target.** When `g_comb_abort_request != 0` (a failed link transfer), the main loop forces `D_800A3834 = 8` and
    thus jumps to `func_80035480`. Many other paths also
    end at mode 8 to reach the title.
 
