@@ -1,343 +1,131 @@
-# Memory Layout
+# Memory layout
 
-This document describes how Bushido Blade 2 actually uses each region of
-PlayStation 1 memory. Constants here are confirmed against the binary, the
-PS-EXE header (`asm/header.s`), `bb2.ld`, and code references in `src/`.
+How the game uses PS1 memory, from the EXE header (`asm/header.s`), the linker
+script (`bb2.ld`), the entry point and the code in `src/`. Main-RAM addresses
+are KSEG0 (`0x80000000`+). The scratchpad (`0x1F800000`) and hardware
+registers (`0x1F801000`+) are listed in their own sections.
 
-PlayStation 1 has four address spaces; BB2 uses all four. All MIPS addresses
-in this doc are KSEG0 virtual addresses (`0x8000_0000`+, cached).
+## The EXE image
 
-## Main RAM (2 MB) — `0x8000_0000` to `0x801F_FFFF`
+`asm/header.s` gives:
 
-```
-+----------------------------------------------+ 0x8000_0000  (KSEG0 base)
-| BIOS A0/B0/C0 jump tables, kernel state      |
-| (~64 KB, BIOS-owned; do NOT clobber)         |
-+----------------------------------------------+ 0x8001_0000  <- EXE load address
-| .rodata: strings, jump tables, LUTs          |     (PS-EXE header,
-|   Date string "Fri Aug 7 22:26:32 1998"      |      .word 0x80010000)
-|     at 0x8001_004C (no reader)               |
-|   Sine table g_sin_table @ 0x8009_73FC       |
-|   libgte rsin_tbl @ 0x8009_BF94              |
-|   GTE sqrt table @ 0x8009_C7A8               |
-+----------------------------------------------+ 0x8001_6CAC  <- splat: .text
-| .text: 1,410 functions, ends ~0x8008_D070    |
-|   Entry @ 0x8008_36EC (__SN_ENTRY_POINT)     |
-+----------------------------------------------+ 0x8008_D070  <- g_data_start
-| .data: initialized globals                   |
-|   D_8008D090 @ 0x8008_D090 (handler          |
-|     table; main calls entry                  |
-|     D_800A_3834 each frame)                  |
-|   g_sqrt_table_u8 @ 0x8008_D118              |
-|   PsyQ libcd/libapi/libgpu data structs      |
-+----------------------------------------------+ 0x8009_4000  <- splat ends
-| .bss / engine globals zeroed at boot         |
-|   gp window center: g_disp_gp_base 0x800A30CC|
-|   GP-relative globals (+/- 32KB from gp):    |
-|     D_800A3768    0x800A3768 (gp + 0x69C)    |
-|     D_800A36A8    0x800A36A8 (gp + 0x5DC)    |
-|     g_game_timer  0x800A3790 (gp + 0x6C4)    |
-|     SpecialCam    0x8008EC34 (gp - 0x4498)   |
-|     g_cd_*        0x800A11xx..0x800A14xx     |
-|     g_spu_*       0x800A2Cxx..0x800A2Dxx     |
-|     g_snd_*       0x800A33xx                 |
-|   D_800A6690      0x800A6690 (node records)  |
-|   D_800A9A10      0x800A9A10 (model objects) |
-+----------------------------------------------+
-| Heap / scratch areas (not strictly .bss)     |
-|   D_800F5370 — scratchpad save buffer        |
-|     (0xF8 * 4 = 0x3E0 bytes; see             |
-|      scratchpad_Save/Restore in ings.c:941)  |
-|   D_800F6740       0x800F6740 (obj records)  |
-|   g_disp_fb_base   0x800F7438                |
-|     two adjacent 0x4090 buffers (draw+disp   |
-|     env + OT)                                |
-|   D_800F0D78[16]   0x800F0D78 (effect pos)   |
-|   D_80104F38       0x80104F38 (VAB packs)    |
-|   g_memcard_data    0x80103600               |
-+----------------------------------------------+ 0x801D_8800  <- overlay region
-| D_800A3770 = 0x801D8800 (overlay scratch     |
-| base, set in func_80016D78). Used as:        |
-|   - MOVOVL.EXE FMV overlay load target       |
-|     (file_LoadOverlay; ings.c:370)           |
-|   - sound-data scratch during                |
-|     file_LoadSoundData (ings.c:364)          |
-| D_800A3774 = 0x801EBC00 (second scratch)     |
-| D_800A3798 = 0x13400 (size of region)        |
-+----------------------------------------------+ 0x801F_F000
-| Stack (16 KB), grows down from 0x801F_FFF0   |
-|   PS-EXE header: initial $sp/$fp = 0x801F_FFF0|
-+----------------------------------------------+ 0x801F_FFFF
-```
+- `.text` start 0x80010000 and size 0x93800, so the image covers
+  0x80010000..0x800A37FF;
+- initial PC 0x800836EC (`__SN_ENTRY_POINT`);
+- initial `$sp` / `$fp` base 0x801FFFF0.
 
-### Notes on layout
+The header's `$gp` and `.bss` fields are 0. `bb2.ld` links one output section
+`.main` at 0x80010000, in this order:
 
-- The PS-EXE header at `asm/header.s` declares:
-  - `.text` start = `0x8001_0000`
-  - `.text` size  = `0x0009_3800` (604 KB)
-  - Initial PC   = `0x8008_36EC`
-  - Initial SP   = `0x801F_FFF0`
-- The first 64 KB (`0x8000_0000`-`0x8000_FFFF`) is BIOS scratch and the kernel
-  A0/B0/C0 jump tables. Code never touches it except via BIOS syscalls.
-- `_gp` is `0x800A30CC` (see `splat.yaml:20`). Every global within ±32 KB of
-  this address can be loaded with a single GP-relative instruction (`lw $X,
-  -1234($gp)`). This is why so many globals cluster in `0x80082xxx` to
-  `0x800B2xxx`.
-- The 0x801D8800-0x801F_F000 region is shared between (a) the MOVOVL.EXE FMV
-  overlay code/data and (b) transient sound-data loads during `game_Init`.
-  These do not coexist — the overlay is loaded for opening/ending movies, the
-  sound load happens at title/character-select boot.
-
-## Scratchpad SRAM (1 KB) — `0x1F80_0000` to `0x1F80_03FF`
-
-PS1 has a 1 KB on-die SRAM mapped at `0x1F80_0000`. Access is single-cycle
-(zero wait states), but it lives outside KSEG0/KSEG1 — you reach it via
-KUSEG/KSEG1 physical addresses. BB2 uses it as a per-frame **GTE scratch +
-collision detection workspace**.
-
-Observed usage (from `code6cac.c`, `code6cac_b.c`):
-
-| Offset | Use |
-| --- | --- |
-| `0x00..0x1F` | Vertex-pair workspace for collision proximity tests. `code6cac_b.c:953-967` stores delta vectors and bone positions for "is point A within radius of point B" checks. |
-| `0x24..0x2F` | `marionation_camera_Exec` distance scratch. `code6cac.c:264-272` stores `(dx, dy, dz)` = mat-pos minus camera target, then `0x317` writes them back rescaled. Inputs to a `mtc2/swc2` GTE square-root call. |
-| `0x4C..0x5F` | Source vectors for the proximity loop (`code6cac_b.c:935`). |
-| `0xBC..` | Output collision-result array base (`code6cac.c:346`, `out asm("s2") = (s32 *)0x1F8000BC`). |
-| `0x2B8..` | `code6cac_b.c:921` — `s32 *t0 = (s32 *)0x1F8002B8;` — uncertain, possibly per-fighter result struct. |
-| `0x360..0x37F` | Final result registers for that block: dst position, sum-of-displacements, accumulator. |
-
-The full 1 KB is saved/restored once per major mode transition by
-`scratchpad_Save` / `scratchpad_Restore` (`ings.c:941, 949`), copying `0xF8`
-words (0x3E0 = 992 bytes; the top 8 words are skipped) to `g_scratchpad_save` (D_800F5370) in main
-RAM. The two functions do nothing else; the only call sites use them as
-"checkpoint" markers around mode transitions.
-
-The GTE `mtc2/swc2` instructions encoded as `.word 0x488CF000 / 0xE99F0000`
-(see e.g. `code6cac.c:291-297`) use the scratchpad as the swc2 destination —
-this is the standard PSX idiom for `Sqrt(distance)` GTE results, because the
-scratchpad is the only RAM the GTE can write to without a CPU memory cycle.
-
-## Video RAM (1 MB) — managed via libgpu
-
-VRAM is a 1024x512 16bpp framebuffer space accessed only by GPU and DMA
-commands; it does NOT appear in the CPU address space. BB2 uses the standard
-PS1 double-buffered layout:
-
-```
-   0,0  +------------+------------+ 1023,0
-        | Frame  A   | Frame  B   |
-        | 640x240    | 640x240    |  (32bpp scanline, treated as
-        | drawn for  | displayed  |   2x16bpp; gpu_InitDrawEnv mode
-        | next vsync | this vsync |   bit a4 < 0x121 sets it
-        |            |            |   to "WIDE" - see gpu.c:320)
-   0,240+------------+------------+
-        | Frame  B   | Frame  A   |
-        | drawn next | displayed  |
-        |            |            |
-   0,479+------------+------------+
-   0,480| Texture region (CLUTs, TIMs, motion sprites)
-1023,511+-------------------------+
-```
-
-BB2 calls `gpu_InitDrawEnv` four times (`ings.c:286-288`) — twice for the two
-draw buffers, then twice for the two display buffers:
-
-- `(x=0,    y=0,   w=0x280=640, h=0xF0=240)`  — drawenv A
-- `(x=0,    y=0xF0=240, w=640, h=240)`        — drawenv B
-- `(x=0,    y=0xF0, w=640, h=240)`            — dispenv (paired with drawenv A)
-- `(x=0,    y=0,   w=640, h=240)`             — dispenv (paired with drawenv B)
-
-Per-buffer overhead is `0x4090` bytes (`g_disp_fb_base`-relative). This holds
-the libgpu DRAWENV (0x5C bytes) + DISPENV (0x14 bytes) + the OT (Ordering
-Table) chain + a sprite primitive pool. The frame-flip pointer
-`D_800A36AC & 1` toggles which slot the renderer fills (`ings.c:605`,
-`code6cac_b2_post.c` similar).
-
-The right half of VRAM (and the lower half below the buffers) holds packed
-textures, palettes (CLUTs), and motion-sprite (zanzou) tile pages. BB2 loads
-them via `gpu_LoadTexture`, `gpu_LoadClut256`, `gpu_LoadClut16` (`gpu.c:267,
-287, 296`).
-
-## SPU RAM (512 KB) — managed via libspu
-
-SPU RAM is reached only via DMA. BB2's layout:
-
-- Voice 0..23 used as standard sample voices.
-- Sound effect bank loaded by `snd_LoadSe` (now `func_8004695C`, `text1b.c`) — uses channel
-  index 9 (`SND_CHANNEL_SE`) — sample data DMA'd from the .SE files in
-  `disc/LOADSE/`.
-- BGM channel uses channel 8 (`SND_CHANNEL_BGM`); BGM is streamed from XA
-  sectors in `disc/XA_0/`, `disc/XA_1/` via CD-XA hardware — does NOT
-  consume SPU RAM beyond the small XA reception buffers.
-- UI/selection sounds on channel `0xA` (`SND_CHANNEL_UI`) — see
-  `snd_LoadSelection` (now `func_800469C4`, `text1b.c`).
-
-Globals tracking SPU state:
-
-- `g_spu_base_addr` (`0x800A2CDC`) — base of the libspu register shadow
-- `g_spu_init_flag` (`0x800A2D14`) — set once `spu_Init` succeeds
-- `g_spu_voice_key_a/b/c` (`0x800A2D38/3C/40`) — voice-key bitmaps used by
-  `coli_HitPauseKatana`/`exec_game` for the SPU voice-allocator
-- `g_spu_xfer_addr`, `g_spu_addr_shift` — DMA destination tracking
-
-The voice-key allocator in `exec_game` / `coli_HitPauseKatana` /
-`coli_HitPauseKatana_2` (`main.c:1798, 1693, 1983`) is interesting: it
-implements a fragmenting free-list with marker bits (`0x80000000` = allocated,
-`0x40000000` = sentinel, `0x2FFFFFFF` = freed-but-not-collected). This is
-PsyQ's standard SPU voice management adapted for the larger BB2 voice budget.
-
-## GP register window (±32 KB around `0x800A_30CC`)
-
-The PsyQ ABI puts almost-all global state within ±32 KB of `$gp` so that a
-single instruction `lw $reg, off($gp)` suffices. Splat configures
-`gp_value: 0x800A30CC` (see `splat.yaml:20`). Everything in
-`0x80082xxx..0x800B2xxx` is GP-rel, which is most of the engine's runtime
-state.
-
-Examples (from `named_syms.txt`):
-
-| Address | Symbol | $gp offset |
+| Range | Content | Linker symbols |
 | --- | --- | --- |
-| 0x800A3308 | (BSS clear start, see `__SN_ENTRY_POINT.s`) | +0x023C |
-| 0x800A336C | `g_game_mode` | +0x02A0 |
-| 0x800A3768 | `D_800A3768` | +0x069C |
-| 0x800A3790 | `g_game_timer` | +0x06C4 |
-| 0x800A3834 | game-mode dispatch register | +0x0768 |
-| 0x800A2CDC | `g_spu_base_addr` | -0x03F0 |
-| 0x8008EC34 | `SpecialCam` | -0x4498 |
+| 0x80010000..0x800164F8 | `.rodata` of every TU | `main_RODATA_START` / `_END` (bb2.ld:89) |
+| 0x800164F8..0x8008D120 | `.text`. The last 0xB0 bytes (0x8008D070..) are game data emitted from `src/main/d_7D870.c`: `g_data_start`, the 34-entry handler table `D_8008D090` that `main` calls through `D_800A3834` (src/main/6CF8.c:468), and the start of `g_sqrt_table_u8` | `main_TEXT_START` / `_END` (bb2.ld:91, :317) |
+| 0x8008D120..0x800A3800 | `.data`, with each -G8 TU's `.sdata` / `.sbss` in link order | `main_DATA_START` / `_END` (bb2.ld:319, :594) |
 
-If you find a `lw $v0, NNNN(gp)` in disassembly, the global it loads is at
-`0x800A30CC + sign_extend(NNNN)`.
+The linked objects' `.bss` is empty (`main_BSS_START == main_BSS_END ==
+0x800A3800`). Zero-initialised globals above the image are absolute symbols
+in `undefined_syms_auto.txt` / `named_syms.txt`, or C tentative definitions.
 
-## Globals organization (cross-reference by region)
+## Start-up (`__SN_ENTRY_POINT`)
 
-This is a coarse who-owns-what map within main RAM .bss. Detail in
-`symbol_addrs.txt`.
+`__SN_ENTRY_POINT` (`asm/funcs/__SN_ENTRY_POINT.s`, LIBSN SNMAIN, kept as
+canonical asm in `src/main/psxsdk/libsn/73E98.c`) runs these steps:
 
-| Region | Owner |
-| --- | --- |
-| `0x8008_DCxx..F2xx` | Kengo-derived static tables: menu data, training data, character setup |
-| `0x800A_11xx..14xx` | CD-ROM register shadows (`g_cd_*`) |
-| `0x800A_15xx..16xx` | System / IRQ (`g_sys_*`), libapi state |
-| `0x800A_2Cxx..2Dxx` | SPU register shadows (`g_spu_*`) |
-| `0x800A_30xx..33xx` | Misc engine state (gp anchor at `0x800A30CC`) |
-| `0x800A_33xx..38xx` | Display, fade, character, game-mode state |
-| `0x800A_6690..` | `D_800A6690` — transform-node records (0x68 bytes; read by the draw walks) |
-| `0x800A_8FB0..` | `D_800A8FB0` — 32x32 cell grid (read by the draw walks) |
-| `0x800A_9A10..` | `D_800A9A10` — model object pointers (3 slots) |
-| `0x800E_EDB0..` | `g_cam_matrix` and camera state |
-| `0x800E_F7BC..` | `g_snd_config_tbl` and sound playback state |
-| `0x800F_5370..` | scratchpad save area |
-| `0x800F_6740..` | `D_800F6740` — 8 object records (0x34 bytes each) |
-| `0x800F_7438..` | `g_disp_fb_base` — double drawenv+OT |
-| `0x80101_xxx..0x80107_xxx` | Late-allocated tables, motion data, character-anim runtime |
+1. Zeroes 0x800A3308..0x801078E0 word by word. This covers the image's tail
+   from 0x800A3308 and all RAM up to `D_801078E0`.
+2. Sets `$sp = (_ramsize - 8) | 0x80000000`. `_ramsize` is 0x800000 in this
+   build (the word at 0x800A2690).
+3. Computes the heap: `__heapbase = 0x801078E0 + 4` and
+   `__heapsize = _ramsize - 8 - _stacksize - 0x001078E0`, with `_stacksize`
+   0x8000.
+4. Loads `$gp = _gp = 0x800A30CC` (bb2.ld:19), calls `InitHeap`, then calls
+   `main`.
 
-## Subsystem state-cluster map (2026-05-17)
+`main` (src/main/6CF8.c:423) calls `__main`, then `SetSp(0x801FFF00)` and
+`SetMem(2)` (2 MB) before anything else.
 
-Detailed per-subsystem clusters discovered/decoded this session.
-Each links to the subsystem doc for full per-field tables.
+## Fixed buffers in main RAM
 
-### IRQ subsystem — `0x800A_2614..2668`
+These addresses are set in code:
 
-| Cluster | Address range | Purpose |
-|---------|---------------|---------|
-| Vsync IRQ state | `0x800A2614..2638` | 8 callback slots, tick counter, control reg ptr |
-| CD-ROM IRQ state | `0x800A2640..2668` | 8 callback slots, control reg ptr, init flag |
+| Address | Size | Use | Set / used at |
+| --- | --- | --- | --- |
+| 0x801D8800 | 0x13400 | primitive buffer 0 (`D_800A3770[0]`) | `func_80016D78` (src/main/6CF8.c:289) |
+| 0x801EBC00 | 0x13400 | primitive buffer 1 (`D_800A3770[1]`); ends at 0x801FF000 | src/main/6CF8.c:290 |
+| 0x801D8800 | | also load scratch before the frame loop: `eff_Init`'s `func_80060CB8(0x801D8800, ...)` and `snd_LoadCommonVab(0x801D8800)` | src/main/6CF8.c:254, :269 |
+| 0x8010DB00 | <= 0xD00 | the common VAB, copied from 0x801D8800 | src/main/6CF8.c:273 |
+| 0x8010E800 | 2 x 0x4650 | `POLY_FT4` buffers `D_800A3420` / `D_800A3424` set by `func_80060CB8` | 51268.c, `func_80060CB8` |
+| 0x80118800 | | `func_80016A8C`'s image buffer at boot | src/main/6CF8.c:440 |
+| 0x801FFF00 | | stack top after `SetSp` | src/main/6CF8.c:435 |
 
-See [file_io.md](file_io.md) for full table + `irq_vsync_handler` /
-`irq_cdrom_handler` decode.
+Each frame, `main` checks the cursor against the buffer's end, `tbl[idx] +
+0x13400` (src/main/6CF8.c:489). `func_80016D78` also stores 0x13400 in
+`D_800A3798` (src/main/6CF8.c:291). See [gpu_pipeline.md](gpu_pipeline.md).
 
-### CD-ROM streaming — `0x800A_14D4..14FC`
+Large objects named elsewhere in these pages:
 
-12-field per-stream state cluster maintained by `func_800826CC`
-(`= saEft00Add`).  Holds streaming args, mode flags, vsync deltas,
-saved BIOS callbacks across operation boundaries.  See
-[file_io.md](file_io.md).
+- `GpuDb g_gpu_db[2]` at 0x800F7438: two 0x4090-byte records holding
+  DRAWENV, DISPENV and OT (include/game.h:54-63).
+- `CdState D_80101E58`: the CD state block (include/game.h:2084).
+  `g_cd_file_table` (0x8008EC34, include/bb2.h:475) holds the disc file
+  records. See [file_io.md](file_io.md).
+- `D_800F33D8`: the 0x200-byte memory-card image. Its second half is
+  `Unk800F34D8Save D_800F34D8` (include/game.h:40-52).
+  `func_800174F4` also builds its overlay primitives there
+  (src/main/6CF8.c:537).
+- `g_scratchpad_save` (0x800F5370): `scratchpad_Save` /
+  `scratchpad_Restore` copy 0xF8 words (992 bytes) between it and
+  0x1F800000 (src/main/6CF8.c:782, :791). The one caller pair is in
+  `func_80023F08` (src/main/9F9C.c:4900, :4903), around `func_80040D48`.
+- `CdlREAD D_800A14D0`: libcd `CdRead` state (include/psxsdk/libcd.h:41-57).
 
-### Memcard events — `0x800A_37DC..3850`
+## The `$gp` window
 
-8 BIOS event handles opened by `pad_press_control` (MISNAMED, actually
-`memcard_event_init_800375EC`):
+With `_gp = 0x800A30CC`, a signed 16-bit offset reaches 0x8009B0CC through
+0x800AB0CB. cc1 runs at `-G8` only for the TUs in `GP_FILES`
+(Makefile:129). maspsx runs `-G8` for every file except Sony library code
+(`PSYQ_LIBRARY_FILES`, Makefile:137). A file uses `$gp` only for a small
+symbol it defines (Makefile:132). So an address inside the window does not
+prove that code reaches it through `$gp`. Check the listing.
 
-- 4 memcard slot-1 events (class `0xF4000001`): IOE/ERROR/NEW/TIMEOUT
-- 4 root-counter 0 events (class `0xF0000011`): same 4 event types
+## Scratchpad (`0x1F800000`..`0x1F8003FF`)
 
-See [file_io.md](file_io.md) for the full handle list.
+The 1 KB scratchpad is shared work space. Different code puts different
+records there at different times. `include/game.h` holds the per-file views:
 
-### SPU init constants — `0x800A_2CEC..2D44`
+- `Unk1F800000Rec`, the 51268.c view from 0x1F800000. `func_80060E38` caches
+  pointers into it in `D_800A3468..`.
+- the 17AFC.c collision record at 0x1F8002B8..0x1F8003FF.
 
-5 init constants used during SPU channel setup, plus the voice-volume
-table at `g_spu_voice_vol_table` (`0x800A28A4`, 24 entries × u16, default
-0xC000).  See [sound.md](sound.md).
+The comment above the 17AFC.c record (include/game.h:1180-1196) lists the
+other users of those bytes. GTE helpers also stage values there, for example
+`gte_ldlvl((s32 *)0x1F800000)` in `func_80018300` (src/main/87A0.c:291).
 
-### GPU packet queue — `0x80103_680..`
+## VRAM
 
-64-slot circular queue of GPU draw packets, 0x60 bytes per slot.  Head/
-tail indices at `g_gpu_packet_write_idx` (0x8009BF78) /
-`g_gpu_packet_read_idx` (0x8009BF7C).  See [gpu_pipeline.md](gpu_pipeline.md).
+The two display buffers are 640 x 240 at (0, 0) and (0, 240) (`disp_Init`,
+src/main/6CF8.c:164-167). `func_80060CB8` uploads its image to the column
+x = 0x380..0x3FF, as rectangles (0x380, 0, 0x80, 0x1DC) and
+(0x380, 0x1DC, 0x70, 0x24) (51268.c).
 
-### Serial-link exchange words — `0x800A_36C0..36D4`
+## SPU RAM
 
-Packed input words and check words (`D_800A37C4 << 16` | 16-bit XOR)
-exchanged over the serial link by `comb_ExchangePad`: `comb_Write8` sends,
-`comb_WaitRead8` stores the partner's pair on a check match. Nothing is
-recorded or played back.
+libsnd's `_SsVmInit` calls `SpuInitMalloc(0x20, D_800F19D0)`
+(src/main/psxsdk/libsnd/vm_init.c:16). `SsVabOpenHeadWithMode` allocates
+each VAB's sample area with `SpuMalloc` (src/main/psxsdk/libsnd/vs_vh.c:115). `SpuMalloc` and
+`_spu_gcSPU` (src/main/psxsdk/libspu/s_m_m.c, s_m_int.c) manage those
+blocks. They allocate SPU RAM, not voices. See [sound.md](sound.md).
 
-| Slot | Input word | Check word |
-|------|------------|------------|
-| Send buffer | `g_comb_send_buf` (`0x800A3698`) | `g_comb_send_buf_plus_0x4` (`0x800A369C`) |
-| Received | `D_800A36C0` | `D_800A36C4` |
-| Previously sent | `D_800A36D0` | `D_800A36D4` (store-only) |
+## Hardware register pointers
 
-Plus this console's link side at `D_800A38A0` (set by the
-`_comb_control(3, 1, 0)` handshake) and the skip flag `D_800A3916`.
+Sony library code reaches the hardware through pointer variables:
 
-### Ground / arena init — `0x800F_6608..6644`
+- libcd: `libcd_CDRegister0..3` -> 0x1F801800..3, `g_com_delay_reg` ->
+  0x1F801020, `D_800A1490` -> 0x1F801C00 (SPU).
+- libgpu: `GPU_DATA` / `GPU_STATUS`, `DMA2_*`, `DMA6_*`, `DPCR`.
+- libetc: `D_800A2638` -> root counter 1 mode, and `D_800A263C` -> DICR
+  0x1F8010F4.
 
-14-field per-round arena state set up by `gnd_init_8001B294`.  Includes
-midpoint X/Y/Z (camera anchor), 4 gauge slots, facing angle, round
-timer max.  See [combat.md](combat.md).
-
-### Motion-ex per-id state — `0x800F_0BA8..0CFC` + `0x800F_10D0..1134`
-
-8-slot state-block table (12 bytes/slot at 0x800F0CA0-CFC), 24-entry
-flag table (at 0x800F10D0), 2-byte stride counter table (at
-0x800F0BA8).  See [motion.md](motion.md).
-
-### Menu-control — `0x800A_34F8..3514`
-
-Packed cursor/slot state + mode-state pointer + pad-result buffer +
-frame counter.  See [menus.md](menus.md).
-
-### D_8008D090 handler table — `0x8008D090..0x8008D117`
-
-34-entry function-pointer table at `0x8008D090`, statically defined in
-`src/main/d_7D870.c:22` inline asm.  Each entry is a "mode handler" function.
-100% decoded as of 2026-05-17 — see [main_loop.md](main_loop.md) for
-the full per-mode table.
-
-### Naming-pass data clusters (2026-05-17)
-
-Folded in from the former `recent_naming_findings.md` (full traces: `pre-slim-2026-10-01:docs/engine/recent_naming_findings.md`; names per
-`named_syms.txt`, which wins on drift):
-
-- **BIOS event handles** `0x800A37DC..3850` — 4 memcard-class (0xF4000001) + 4 kernel-class
-  (0xF0000011) events (IO-complete / disconnect / count / general error), opened in
-  `memcard_event_init` and `bios_EnableEvent`'d; root-counter events at `0x800A3810`/`0x800A3738`;
-  memcard file handles at `0x800A3734`/`0x800A373C` (`"sio:"`).
-- **Scratchpad pointer cache** `0x800A346C..34EC` — 7 globals caching `0x1F8000xx` addresses
-  (set in one pass by `func_80060E38`); `g_scratchpad_save` (`0x800F5370`, 0x3E0 bytes) is the IRQ
-  save mirror.
-- **Match-round bookkeeping** — round index `0x800A3874`, per-round byte pairs `0x800F65F8` /
-  `0x800A389B`, outcome table `0x800A377C`; consumed by `_GetBattleSwichData`.
-- **Replay attack position** `0x80101E3C..1E44` (+ input position `0x80101E02/04`, camera
-  state/mode/target globals `0x80101E62..1FBC`, `0x800A3740`, `0x800A370C`) — see [replay.md](replay.md).
-- **text1b render state** `0x800F116C` (pointer cached at `0x800A3468`, field pointers
-  `0x800A3478/347C`, glyph cursor `0x800F1180`, slot busy-flag pairs `0x800F1152..1164`).
-- **GTE back colour** `0x800F6338..633A` (R/G/B bytes for `gte_SetBackColor`).
-- **SPU registers** — block pointer `0x800A3044`, register pairs `0x800F7420/7424`, voice array
-  `0x800F7298`, key/transfer masks and pending flags `0x800A2874..2D2C`.
-- **IRQ / alarm state** `0x800A26D0..26DE`, alarm handle `0x800A14E4`, intrEnv.inInterrupt `0x800A157A`,
-  dispatch counter `0x800F19BC`, VSync deadline `0x800F19B8` — walked by `irq_ProcessPending`.
-- **CD-ROM callback buffers** `0x800F19A0/19A8` (8-byte payloads for `cdrom_SetCallbackA/B`).
-- `g_file_disc_size` (`0x80106A50`) is a misnomer: it is a move-enable bitmap (see [combat.md](combat.md)).
+[file_io.md](file_io.md) and [gpu_pipeline.md](gpu_pipeline.md) describe the
+code that uses each pointer.
