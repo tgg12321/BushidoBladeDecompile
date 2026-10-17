@@ -114,13 +114,8 @@ nonmatching g_comb_recv_buf
 
 dlabel g_comb_recv_buf
     /* 93E88 800A3688 00000000 */ .word 0x00000000
-enddlabel g_comb_recv_buf
-
-nonmatching g_comb_recv_buf_plus_0x4
-
-dlabel g_comb_recv_buf_plus_0x4
     /* 93E8C 800A368C 00000000 */ .word 0x00000000
-enddlabel g_comb_recv_buf_plus_0x4
+enddlabel g_comb_recv_buf
 
 nonmatching D_800A3690
 

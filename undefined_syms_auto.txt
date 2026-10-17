@@ -498,7 +498,6 @@ D_800A3670 = 0x800A3670;
 D_800A3678 = 0x800A3678;
 D_800A3680 = 0x800A3680;
 g_comb_recv_buf = 0x800A3688;  /* data-wave 2026-09-24: was D_800A3688 */
-g_comb_recv_buf_plus_0x4 = 0x800A368C;  /* data-wave 2026-09-29: was D_800A368C */
 D_800A3690 = 0x800A3690;
 g_comb_send_buf = 0x800A3698;  /* data-wave 2026-09-24: was D_800A3698 */
 g_comb_send_buf_plus_0x4 = 0x800A369C;  /* data-wave 2026-09-29: was D_800A369C */

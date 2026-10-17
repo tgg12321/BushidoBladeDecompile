@@ -2144,7 +2144,7 @@ D_800A35B0                           = 0x800A35B0;  /* +8 from D_800A35A8 (0x800
 D_800A35C0                   = 0x800A35C0;  /* = &g_gpu_db[D_800A36AC & 1]; draw.clip / draw.ofs are read from it */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_c_plus_4 */
 D_800A35DC                             = 0x800A35DC;  /* +4 from D_800A35D8 */  /* data-wave 2026-10-08: was g_mode_state_arg_alt_plus_4 */
 D_800A3680                               = 0x800A3680;  /* +8 from D_800A3678 (0x800A3678) */  /* data-wave 2026-10-08: was g_leaf_muki_buffer_plus_8 */
-g_comb_recv_buf_plus_0x4                          = 0x800A368C;  /* +4 from g_comb_recv_buf (0x800A3688) */  /* data-wave 2026-09-29: was g_comb_recv_buf_plus_4 */
+/* g_comb_recv_buf_plus_0x4 (0x800A368C) retired: word 1 of s32 g_comb_recv_buf[2] (28708.c) */
 D_800A36C2                       = 0x800A36C2;  /* +2 from D_800A36C0 */  /* data-wave 2026-10-08: was g_pad_rec_validated_packed_plus_2 */
 D_800A36C6                         = 0x800A36C6;  /* +2 from D_800A36C4 */  /* data-wave 2026-10-08: was g_pad_rec_validated_hash_plus_2 */
 D_800A36CC                                = 0x800A36CC;  /* limit in units of 30 frames */  /* data-wave 2026-10-08: was g_char_id_saved_d_plus_4 */

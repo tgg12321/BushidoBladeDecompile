@@ -274,7 +274,6 @@ extern u8 D_800A3671;
  * zeroes them. */
 extern u16 D_800A3678[3];
 extern u8 D_800A3680;
-extern s32 g_comb_recv_buf_plus_0x4;
 extern u8 D_800A3690;
 extern s32 g_comb_send_buf_plus_0x4;
 extern s16 D_800A36A4;

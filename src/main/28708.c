@@ -33,7 +33,7 @@ extern u8 D_800A3782;
 extern u8 D_800A31FC;
 
 extern s32 g_comb_wait_state;
-extern s32 g_comb_recv_buf;
+extern s32 g_comb_recv_buf[2];
 extern s32 g_comb_send_buf;
 extern u8 D_800A37D0;
 
@@ -1659,7 +1659,7 @@ s32 comb_Write8(void) {
     return D_800A382C;
 }
 
-void comb_Read8(void) { read(g_comb_read_fd, &g_comb_recv_buf, 8); }
+void comb_Read8(void) { read(g_comb_read_fd, g_comb_recv_buf, 8); }
 
 s32 comb_WaitRead8(void) {
     s32 s0;
@@ -1705,8 +1705,8 @@ poll:
     }
     goto overflow;
 success:
-    a1 = g_comb_recv_buf;
-    a0 = g_comb_recv_buf_plus_0x4;
+    a1 = g_comb_recv_buf[0];
+    a0 = g_comb_recv_buf[1];
     v0 = a1 ^ (a1 >> 16);
     v0 = v0 ^ (a0 >> 16);
     v0 = v0 & 0xFFFF;
@@ -1909,7 +1909,7 @@ s16 D_800A320A = 0; /* not named by any code or data: size from the gap */
 u8 D_800A320C = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
-s32 g_comb_recv_buf;
+s32 g_comb_recv_buf[2];
 s32 g_comb_send_buf;
 s32 D_800A36C0;
 s32 D_800A36D0;
