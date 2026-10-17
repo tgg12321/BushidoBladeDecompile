@@ -437,7 +437,7 @@ extern u8 D_800A3918[6];
 extern u8 D_800A391E;
 extern u8 D_800A391F;
 extern u8 D_800A3920;
-extern u8 D_800A3928;
+extern u8 g_comb_abort_request;
 extern u8 D_800A3929;
 extern Unk800A3D40Rec D_800A3D40[];
 

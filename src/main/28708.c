@@ -12,7 +12,7 @@ extern s32 g_str_sio_800A3210;
 
 extern s32 D_800A36C0;
 
-extern s32 D_800A3730;
+extern s32 g_comb_close_request;
 extern s16 D_800A379E;
 extern s16 D_800A3814;
 extern s16 D_800A37C8;
@@ -32,7 +32,7 @@ extern u8 D_800A3782;
 
 extern u8 D_800A31FC;
 
-extern s32 D_800A3870;
+extern s32 g_comb_wait_state;
 extern s32 g_comb_recv_buf;
 extern s32 g_comb_send_buf;
 extern u8 D_800A37D0;
@@ -1590,12 +1590,12 @@ void comb_EnableEvents(void) {
     EnableEvent(g_comb_event_error);
     EnableEvent(g_comb_event_ioer);
     D_800A320C = 1;
-    D_800A3730 = 0;
+    g_comb_close_request = 0;
 }
 
 void comb_ResetClose(void) {
     D_800A320C = 0;
-    D_800A3730 = 0;
+    g_comb_close_request = 0;
     _comb_control(2, 0, 0);
     _comb_control(1, 1, 0);
     comb_Close();
@@ -1604,10 +1604,10 @@ void comb_ResetClose(void) {
 
 void comb_Abort(void) {
     comb_ResetClose();
-    D_800A3928 = 1;
+    g_comb_abort_request = 1;
 }
 
-void comb_RequestClose(void) { D_800A3730 = 1; }
+void comb_RequestClose(void) { g_comb_close_request = 1; }
 
 s32 comb_WriteWaitCallback(s32 a0, u32 a1) {
     if (a1 > 0x10000) {
@@ -1736,10 +1736,10 @@ extern s32 D_800A36D0;
 
 typedef s32 (*FuncBufType)(void *);
 
-/* Clears D_800A3870 while D_800A320C is 0. Otherwise packs bits of
- * D_800A38A0, D_800A3730 and D_800A3870, a0->type[0] and the low half of
- * a0->held into g_comb_send_buf, puts D_800A37C4 and a 16-bit xor check in
- * g_comb_send_buf_plus_0x4, and calls comb_Write8, comb_Read8 or
+/* Clears g_comb_wait_state while D_800A320C is 0. Otherwise packs bits of
+ * D_800A38A0, g_comb_close_request and g_comb_wait_state, a0->type[0] and the
+ * low half of a0->held into g_comb_send_buf, puts D_800A37C4 and a 16-bit xor
+ * check in g_comb_send_buf_plus_0x4, and calls comb_Write8, comb_Read8 or
  * comb_WaitRead8 as D_800A3916 and D_800A38A0 select, returning early when
  * a transfer fails or after comb_ResetClose. If D_800A3916 is then 0, it
  * stores new values to a0->held and a0->type. FAKE: the tail's u16 loads
@@ -1760,8 +1760,9 @@ void comb_ExchangePad(PadState *a0) {
         buf8 = a0->held;
         var_4 = D_800A38A0;
         zero = 0;
-        var_1 = (var_4 << 31) | (D_800A3730 << 30) | ((D_800A3870 & 3) << 28) |
-                (a0->type[0] << 16) | (buf8 & 0xFFFF);
+        var_1 = (var_4 << 31) | (g_comb_close_request << 30) |
+                ((g_comb_wait_state & 3) << 28) | (a0->type[0] << 16) |
+                (buf8 & 0xFFFF);
         g_comb_send_buf = var_1;
         hi16 = D_800A37C4 << 16;
         var_1 = var_1 ^ (var_1 >> 16);
@@ -1804,7 +1805,7 @@ void comb_ExchangePad(PadState *a0) {
             D_800A3908 += math_Popcount32(buf8 & 0xFFFF);
             comb_Read8();
             if (D_800A38A0 == 0) {
-                if (D_800A3730 != zero || (D_800A36C0 & 0x40000000)) {
+                if (g_comb_close_request != zero || (D_800A36C0 & 0x40000000)) {
                     comb_ResetClose();
                     return;
                 }
@@ -1834,13 +1835,13 @@ void comb_ExchangePad(PadState *a0) {
                 type[1] = t & 0xF;
             }
             if (D_800A38A0 == 0) {
-                if (((D_800A36C0 >> 28) & 3) == 2 && D_800A3870 == 2) {
-                    D_800A3870 = 0;
+                if (((D_800A36C0 >> 28) & 3) == 2 && g_comb_wait_state == 2) {
+                    g_comb_wait_state = 0;
                 }
             } else {
                 if (((D_800A36C0 >> 28) & 3) == 2 &&
                     ((D_800A36D0 >> 28) & 3) == 2) {
-                    D_800A3870 = 0;
+                    g_comb_wait_state = 0;
                 }
             }
         }
@@ -1848,7 +1849,7 @@ void comb_ExchangePad(PadState *a0) {
         D_800A36D0 = g_comb_send_buf;
         D_800A36D4 = g_comb_send_buf_plus_0x4;
     } else {
-        D_800A3870 = 0;
+        g_comb_wait_state = 0;
     }
 }
 
@@ -1861,7 +1862,7 @@ void comb_ExchangeEmptyPad(void) {
 }
 
 void comb_BeginWait(void) {
-    D_800A3870 = 1;
+    g_comb_wait_state = 1;
     VSync(2);
     comb_ExchangeEmptyPad();
     VSync(2);
@@ -1869,7 +1870,7 @@ void comb_BeginWait(void) {
 
 void comb_EndWait(void) {
     s32 val;
-    D_800A3870 = 2;
+    g_comb_wait_state = 2;
     VSync(2);
     val = 2;
     do {
@@ -1880,7 +1881,7 @@ void comb_EndWait(void) {
         ResetRCnt(0xF2000001);
         do {
         } while (GetRCnt(0xF2000001) < 0x100);
-    } while (D_800A3870 == val);
+    } while (g_comb_wait_state == val);
 end:
     VSync(2);
     comb_ExchangeEmptyPad();
@@ -1915,7 +1916,7 @@ s32 D_800A36D0;
 Rec1C (*D_800A36EC)[2];
 u8 D_800A36F8;
 s16 D_800A3714;
-s32 D_800A3730;
+s32 g_comb_close_request;
 s32 g_comb_read_fd;
 s32 g_comb_event_ioer;
 s32 g_comb_write_fd;
@@ -1928,7 +1929,7 @@ u8 D_800A37D0;
 s32 g_comb_event_error;
 s16 D_800A3814;
 u8 D_800A382C;
-s32 D_800A3870;
+s32 g_comb_wait_state;
 u8 D_800A38CC;
 s32 D_800A38D0;
 s32 D_800A38FC;

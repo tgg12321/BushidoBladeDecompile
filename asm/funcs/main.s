@@ -60,7 +60,7 @@ glabel main
     /* 7AE0 800172E0 00000000 */   nop
     /* 7AE4 800172E4 B471010C */  jal        func_8005C6D0
     /* 7AE8 800172E8 00000000 */   nop
-    /* 7AEC 800172EC 5C088293 */  lbu        $v0, %gp_rel(D_800A3928)($gp)
+    /* 7AEC 800172EC 5C088293 */  lbu        $v0, %gp_rel(g_comb_abort_request)($gp)
     /* 7AF0 800172F0 00000000 */  nop
     /* 7AF4 800172F4 0A004010 */  beqz       $v0, .L80017320
     /* 7AF8 800172F8 00000000 */   nop
@@ -69,7 +69,7 @@ glabel main
     /* 7B04 80017304 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 7B08 80017308 9C0682A3 */  sb         $v0, %gp_rel(D_800A3768)($gp)
     /* 7B0C 8001730C 08000224 */  addiu      $v0, $zero, 0x8
-    /* 7B10 80017310 5C0880A3 */  sb         $zero, %gp_rel(D_800A3928)($gp)
+    /* 7B10 80017310 5C0880A3 */  sb         $zero, %gp_rel(g_comb_abort_request)($gp)
     /* 7B14 80017314 0A80013C */  lui        $at, %hi(D_800A31DA)
     /* 7B18 80017318 DA3120A0 */  sb         $zero, %lo(D_800A31DA)($at)
     /* 7B1C 8001731C 680782A7 */  sh         $v0, %gp_rel(D_800A3834)($gp)

@@ -7,7 +7,7 @@ glabel comb_Connect
     /* 2B4CC 8003ACCC 21200000 */   addu      $a0, $zero, $zero
     /* 2B4D0 8003ACD0 0A80013C */  lui        $at, %hi(D_800A37B8)
     /* 2B4D4 8003ACD4 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
-    /* 2B4D8 8003ACD8 E00780A3 */  sb         $zero, %gp_rel(D_800A38AC)($gp)
+    /* 2B4D8 8003ACD8 E00780A3 */  sb         $zero, %gp_rel(g_comb_handshake_step)($gp)
     /* 2B4DC 8003ACDC 040880AF */  sw         $zero, %gp_rel(D_800A38D0)($gp)
     /* 2B4E0 8003ACE0 3C0880AF */  sw         $zero, %gp_rel(D_800A3908)($gp)
     /* 2B4E4 8003ACE4 300880AF */  sw         $zero, %gp_rel(D_800A38FC)($gp)

@@ -2,7 +2,7 @@ glabel comb_BeginWait
     /* 2B278 8003AA78 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2B27C 8003AA7C 01000224 */  addiu      $v0, $zero, 0x1
     /* 2B280 8003AA80 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2B284 8003AA84 A40782AF */  sw         $v0, %gp_rel(D_800A3870)($gp)
+    /* 2B284 8003AA84 A40782AF */  sw         $v0, %gp_rel(g_comb_wait_state)($gp)
     /* 2B288 8003AA88 330A020C */  jal        VSync
     /* 2B28C 8003AA8C 02000424 */   addiu     $a0, $zero, 0x2
     /* 2B290 8003AA90 92EA000C */  jal        comb_ExchangeEmptyPad

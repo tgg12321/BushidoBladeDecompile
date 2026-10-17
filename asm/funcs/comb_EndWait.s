@@ -3,7 +3,7 @@ glabel comb_EndWait
     /* 2B2B4 8003AAB4 02000224 */  addiu      $v0, $zero, 0x2
     /* 2B2B8 8003AAB8 1400BFAF */  sw         $ra, 0x14($sp)
     /* 2B2BC 8003AABC 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 2B2C0 8003AAC0 A40782AF */  sw         $v0, %gp_rel(D_800A3870)($gp)
+    /* 2B2C0 8003AAC0 A40782AF */  sw         $v0, %gp_rel(g_comb_wait_state)($gp)
     /* 2B2C4 8003AAC4 330A020C */  jal        VSync
     /* 2B2C8 8003AAC8 02000424 */   addiu     $a0, $zero, 0x2
     /* 2B2CC 8003AACC 02001024 */  addiu      $s0, $zero, 0x2
@@ -23,7 +23,7 @@ glabel comb_EndWait
     /* 2B2FC 8003AAFC 00014228 */  slti       $v0, $v0, 0x100
     /* 2B300 8003AB00 FBFF4014 */  bnez       $v0, .L8003AAF0
     /* 2B304 8003AB04 00000000 */   nop
-    /* 2B308 8003AB08 A407828F */  lw         $v0, %gp_rel(D_800A3870)($gp)
+    /* 2B308 8003AB08 A407828F */  lw         $v0, %gp_rel(g_comb_wait_state)($gp)
     /* 2B30C 8003AB0C 00000000 */  nop
     /* 2B310 8003AB10 EFFF5010 */  beq        $v0, $s0, .L8003AAD0
     /* 2B314 8003AB14 00000000 */   nop

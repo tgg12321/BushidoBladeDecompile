@@ -304,7 +304,7 @@ void func_80016D78(void) {
     D_800A36F1 = 2;
     D_800A38C4[1] = 0;
     D_800A36B0 = 0;
-    D_800A3928 = 0;
+    g_comb_abort_request = 0;
 }
 
 void gpu_WaitDrawSync(void) { DrawSync(0); }
@@ -457,10 +457,10 @@ loop:
     cdrom_Update();
     func_8005C6D0();
 
-    if (D_800A3928 != 0) {
+    if (g_comb_abort_request != 0) {
         cdrom_PauseAndWait();
         D_800A3768 = DISP_DISABLED;
-        D_800A3928 = 0;
+        g_comb_abort_request = 0;
         D_800A31DA = 0;
         D_800A3834 = 8;
     }
@@ -834,4 +834,4 @@ s16 D_800A38DC;
 u8 D_800A38F8;
 u8 D_800A3906;
 u8 D_800A390D;
-u8 D_800A3928;
+u8 g_comb_abort_request;

@@ -44,7 +44,7 @@ glabel func_80016D78
     /* 7620 80016E20 0A80013C */  lui        $at, %hi(D_800A38C4 + 0x2)
     /* 7624 80016E24 C63820A4 */  sh         $zero, %lo(D_800A38C4 + 0x2)($at)
     /* 7628 80016E28 E40580A3 */  sb         $zero, %gp_rel(D_800A36B0)($gp)
-    /* 762C 80016E2C 5C0880A3 */  sb         $zero, %gp_rel(D_800A3928)($gp)
+    /* 762C 80016E2C 5C0880A3 */  sb         $zero, %gp_rel(g_comb_abort_request)($gp)
     /* 7630 80016E30 1000BF8F */  lw         $ra, 0x10($sp)
     /* 7634 80016E34 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 7638 80016E38 0800E003 */  jr         $ra

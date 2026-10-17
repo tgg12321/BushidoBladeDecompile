@@ -453,11 +453,11 @@ dlabel D_800A372C
     /* 93F2C 800A372C 00000000 */ .word 0x00000000
 enddlabel D_800A372C
 
-nonmatching D_800A3730
+nonmatching g_comb_close_request
 
-dlabel D_800A3730
+dlabel g_comb_close_request
     /* 93F30 800A3730 00000000 */ .word 0x00000000
-enddlabel D_800A3730
+enddlabel g_comb_close_request
 
 nonmatching g_comb_read_fd
 

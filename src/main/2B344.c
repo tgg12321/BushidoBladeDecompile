@@ -10,23 +10,23 @@
 #include <psxsdk/inline_o.h>
 #include <psxsdk/gtemac.h>
 
-extern u8 D_800A38AC;
+extern u8 g_comb_handshake_step;
 extern s32 D_800A37D8;
 
 s32 comb_HandshakeStep(void) {
     D_800A37B8++;
-    switch (D_800A38AC) {
+    switch (g_comb_handshake_step) {
     case 0:
-        D_800A38AC = 1;
+        g_comb_handshake_step = 1;
         break;
     case 1:
         comb_ReadCtsSetRts();
         D_800A37D8 = 0;
         if (D_800A38A0 == 0) {
             SetDispMask(1);
-            D_800A38AC = 2;
+            g_comb_handshake_step = 2;
         } else {
-            D_800A38AC = 3;
+            g_comb_handshake_step = 3;
         }
         break;
     case 2:
@@ -36,13 +36,13 @@ s32 comb_HandshakeStep(void) {
         }
         if (_comb_control(3, 1, 0) != 0) {
             _comb_control(3, 0, 0);
-            D_800A38AC = 4;
+            g_comb_handshake_step = 4;
         }
         break;
     case 3:
         if (_comb_control(3, 1, 0) == 0) {
             _comb_control(3, 0, 0);
-            D_800A38AC = 4;
+            g_comb_handshake_step = 4;
             break;
         }
         D_800A37D8++;
@@ -56,7 +56,7 @@ s32 comb_HandshakeStep(void) {
         /* fall through */
     case 5:
     case 6:
-        D_800A38AC++;
+        g_comb_handshake_step++;
         break;
     case 7:
         D_800A3916 = 1;
@@ -72,7 +72,7 @@ s32 comb_Connect(void) {
     func_80077AE0();
     SetDispMask(0);
     D_800A37B8 = 0;
-    D_800A38AC = 0;
+    g_comb_handshake_step = 0;
     D_800A38D0 = 0;
     D_800A3908 = 0;
     D_800A38FC = 0;
@@ -450,7 +450,7 @@ void func_8003B8E4(void) {
 /* Q65: tentative definitions (COMMON) of small data reached gp-relative. */
 u16 D_800A37C4;
 s32 D_800A37D8;
-u8 D_800A38AC;
+u8 g_comb_handshake_step;
 s32 D_800A38D0;
 s32 D_800A38FC;
 s32 D_800A3908;
