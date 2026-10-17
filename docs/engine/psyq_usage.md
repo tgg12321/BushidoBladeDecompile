@@ -1,209 +1,75 @@
-# PsyQ Library Usage
+# PsyQ library usage
 
-BB2 is built against the **PsyQ SDK 3.5** (DTL-S3000), Sony's official PS1
-development kit. This was confirmed by CVS `$Id:` tags left in the binary:
+The Sony and SN Systems code linked into the main EXE lives in
+`src/main/psxsdk/<lib>/`, one file per library module. Each file's top comment
+gives the module's `.text` span and the evidence for it, usually a verbatim
+match against PsyQ 4.0 `PSX/LIB` from LIBSCAN
+(`docs/naming/libscan/matches.json`). Everything else in `src/main/` is game
+code.
 
-- `$Id: sys.c,v 1.129 1996/12/25 03:36:20 noda Exp $` (libgpu) — at
-  `0x80015E28`
-- `$Id: bios.c,v 1.86 1997/03/28 07:42:42 makoto Exp $` (libcd) — at
-  `0x80016274`
-- `$Id: intr.c,v 1.76 1997/02/12 12:45:05 makoto Exp $` (libapi) — at
-  `0x80016328`
+## Version
 
-The PsyQ libraries (libgpu, libcd, libapi, libspu, libgte, libpress) are
-distributed in pre-compiled form; BB2 links them all into the same EXE.
-This document describes how BB2 uses each library — useful for modders who
-want to know which calls are PsyQ stock vs BB2-custom.
+The 175 retained verbatim modules all match PsyQ 4.0 `.LIB` modules
+(`.text`, relocations and exports). 79 of them match no 3.3, 3.5 or 3.6
+module (docs/naming/libscan/psyq_versions.txt). That dates the libraries, not
+the compiler (see AGENTS.md). Three modules carry CVS ids in their
+`.rodata`:
 
-The MOVOVL.EXE overlay additionally links `libmdec` for FMV playback.
+- libgpu `sys.c,v 1.129` (src/main/psxsdk/libgpu/sys.c:86);
+- libcd `bios.c,v 1.86` (src/main/psxsdk/libcd/bios.c:191);
+- libetc `intr.c,v 1.76` (src/main/psxsdk/libetc/intr.c:14).
 
-## libgpu — `sys.c v1.129`
+LIBSND is an interim build between 4.0 and 4.1
+(src/main/psxsdk/libsnd/vm_init.c:1-4).
 
-Sony's GPU library. Its calls go through the callback table `_gpucb`,
-reached via the pointer `D_8009BE6C` (see [gpu_pipeline.md](gpu_pipeline.md)). The wrappers
-in `gpu.c` and `display.c` use it via indirect calls.
+## Libraries linked
 
-Identifiable libgpu functions (these are PsyQ originals, not BB2-custom):
-
-| BB2 wrapper / direct | PsyQ original | Notes |
+| Library | Files | What the game uses it for |
 | --- | --- | --- |
-| `gpu_SetMode` | `GsInitGraph` / `SetGraphReverse` | Debug string `"SetGraphReverse(%d)...\n"` at 0x80015E90 |
-| `gpu_SetDispMask` | `SetDispMask` | Debug string `"SetDispMask(%d)...\n"` at 0x80015F04 |
-| `gpu_DrawSync` | `DrawSync` | Debug string `"DrawSync(%d)...\n"` |
-| `gpu_DrawOTag` | `DrawOTag` | Debug string `"DrawOTag(%08x)...\n"` |
-| `func_8007B9B0` | `PutDrawEnv` | Debug `"PutDrawEnv(%08x)...\n"` |
-| `func_8007BC08` | `PutDispEnv` | Debug `"PutDispEnv(%08x)...\n"` |
-| `gpu_LoadImage` | `LoadImage` | Image upload to VRAM |
-| `gpu_StoreImage` | `StoreImage` | Image readback from VRAM |
-| `gpu_ClearOTag` | `ClearOTag` | OT init (forward chain) |
-| `func_8007B844` | `ClearOTagR` | OT init (reverse chain) |
-| `gpu_CalcTPage`, `gpu_CalcClut` | `GetTPage`, `GetClut` | Texture page / CLUT id calculation |
-| `gpu_InitDrawEnv`, `gpu_InitDispEnv` | `SetDefDrawEnv`, `SetDefDispEnv` | Initialize env structs |
+| libgpu | 3: `sys.c`, `prim.c`, `ext.c` | `ResetGraph`, `SetDispMask`, `DrawSync`, `ClearOTagR`, `DrawOTag`, `PutDrawEnv`, `PutDispEnv`, `LoadImage`, `ClearImage`, `SetDefDrawEnv` / `SetDefDispEnv`, `GetTPage` / `GetClut`, `AddPrim`; see [gpu_pipeline.md](gpu_pipeline.md) |
+| libgte | 37 | `InitGeom`, `SetGeomOffset`, `SetGeomScreen`, `SetRotMatrix`, `SetTransMatrix`, `RotMatrix*`, `MulMatrix*`, `ApplyMatrix*`, `RotTransPers*`, `rsin` / `rcos`, `ratan2`. Most are canonical inline-asm (GTE) bodies |
+| libetc | 5: `intr.c`, `intr_vb.c`, `intr_dma.c`, `vsync.c`, `vmode.c` | `ResetCallback`, `InterruptCallback`, `DMACallback`, `VSyncCallback`, `StopCallback`, `CheckCallback`, `SetIntrMask`, `VSync`, `SetVideoMode` |
+| libapi | 42 | BIOS trampolines (events, `open` / `read` / `write` / `close`, `firstfile` / `nextfile`, `Exec`, `InitHeap`, `SetMem`, `EnterCriticalSection` / `ExitCriticalSection`, `ChangeClearPAD`); pad (`pad.c`: `InitPAD`, `StartPAD`, `StopPAD`); root counters (`counter.c`: `SetRCnt`, `GetRCnt`, `StartRCnt`, `StopRCnt`, `ResetRCnt`) |
+| libcd | 4: `event.c`, `sys.c`, `bios.c`, `cdread.c` | `CdInit`, `CdControl` / `CdControlF` / `CdControlB`, `CdSync`, `CdReady`, `CdReadyCallback`, `CdGetSector`, `CdMix`, `CdRead` / `CdReadSync`, `CdIntToPos` / `CdPosToInt`; see [file_io.md](file_io.md) |
+| libcard | 10 | `InitCARD`, `StartCARD`, `StopCARD`, `_bu_init` and the card BIOS calls behind `memcard.c` |
+| libspu | 32 | `SpuInit`, `SpuSetKey`, `SpuSetReverb*`, `SpuSetCommonAttr`, `SpuMalloc` / `SpuFree`, `SpuWrite` / `SpuRead`, the `_spu_*` register layer in `spu.c` |
+| libsnd | 46 | `SsInit`, `SsVabOpenHead*` / `SsVabTransBody`, `SsUtKeyOnV` / `SsUtKeyOffV`, `SsSetSerialAttr` / `SsSetSerialVol`, the `_SsVm*` voice manager, the SEQ player; see [sound.md](sound.md) |
+| libcomb | 1: `comb.c` | the link-cable SIO driver. The game's `comb_*` session layer (28708.c) calls `AddCOMB` / `DelCOMB` and `_comb_control`, and opens the driver's device with BIOS `open` for `read` / `write` |
+| libc2 | 13 | `printf`, `sprintf`, `puts`, `putchar`, `memcpy`, `memmove`, `memchr`, `strcpy`, `strlen`, `rand`, `toupper` / `tolower`, `setjmp` |
+| libsn | 2: `73E98.c`, `7407C.c` | the SN runtime: `__SN_ENTRY_POINT`, `__main`, `__do_global_dtors`, and the PC file server `PCopen`, `PCclose`, `PClseek`, `PCread` / `_SN_read` |
 
-BB2 also uses several `Vu0SetLightColMatrix_*` named asm functions — these
-are NOT VU0 (PS2) ops; they're libgpu `SetLightMatrix` / `SetColorMatrix`
-variants that the Kengo name table mislabelled.
+The game calls some of these directly at boot:
 
-## libcd — `bios.c v1.86`
+- `sys_Init` (src/main/6CF8.c:175) runs `ResetCallback`, `InitPAD`,
+  `StartPAD` and `ChangeClearPAD(0)`, then `disp_Init`, `cdrom_Init`,
+  `memcard_Init` and `rcnt_StartCnt1Wrapper`.
+- `disp_Init` (src/main/6CF8.c:157) is the libgpu / libgte set-up.
+- `memcard_Init` (src/main/memcard.c:28) is the libcard and event set-up.
+- `snd_InitAndLoadCommonVab` (src/main/6CF8.c:265) is the sound set-up.
 
-PsyQ's CD-ROM library. BB2 wraps via `cdrom_*` (in `system.c`) — see
-[file_io.md](file_io.md). All CD I/O ultimately goes through these.
+## BIOS trampolines
 
-Identifiable libcd functions:
+The libapi and libcard trampolines are written with `BIOS_A_FUNCTION` /
+`BIOS_B_FUNCTION` / `BIOS_C_FUNCTION` (`include/bios.h`), one per Sony
+module. Each one jumps through the A0 / B0 / C0 table with its function
+number, for example `BIOS_B_FUNCTION(open, 0x32)` and
+`BIOS_B_FUNCTION(read, 0x34)`. These have no C form and are canonical.
 
-| BB2 wrapper | PsyQ original | Notes |
-| --- | --- | --- |
-| `cdrom_GetMode`, `cdrom_SetCallbackA/B` | `CdGetSysMode`, `CdReadyCallback` | Async callback installation |
-| `cdrom_CheckReady` | `CdInit` | Drive initialization. Debug `"CdInit: Init failed\n"` at 0x8001605C |
-| `cdrom_SendCmd` | `CdControl` | Issue a CD command |
-| `cdrom_DmaToRam`, `cdrom_DmaChain` | `CdRead`, `CdRead2` | DMA-based reads |
-| `cdrom_GetCmdName`, `cdrom_GetResultName` | (internal libcd debug helpers) | Used for verbose logging |
-| `cdrom_FramesToBcd`, `cdrom_BcdToFrames` | `CdIntToPos`, `CdPosToInt` | MSF/sector conversion |
-| `bios_FileRead`, `bios_FileReadRaw` | `read()` BIOS syscall | Posix-like file I/O |
-| `tslTm2LoadImage` | (PsyQ wrapper, name from Kengo) | High-level CD command dispatcher |
+## SN Systems runtime
 
-CD streaming (XA-ADPCM) uses libcd's `CdReadyCallback` (the "B" callback
-slot) to fire per-sector, plus the SPU's CD-input voice to render the
-audio. See [sound.md](sound.md).
+- `__SN_ENTRY_POINT` is the EXE entry. See
+  [memory_layout.md](memory_layout.md) for what it sets up.
+- `__main` walks the empty `.ctors` table
+  (src/main/psxsdk/libsn/73E98.c:16-21).
+- `PCopen` / `PCclose` / `PClseek` / `PCread` talk to the SN PC file
+  server, which needs a development host. The game's only callers,
+  `pcdrv_LoadFile` and `pcdrv_LoadSectors` (src/main/6CF8.c:47, :78), are
+  themselves unreferenced. Disc and memory-card I/O use libcd and the BIOS
+  file calls instead.
 
-## libapi — `intr.c v1.76`
+## The FMV overlay
 
-PsyQ's interrupt and event API. Used for IRQs, timers, pad input, and
-critical sections.
-
-Identifiable libapi functions:
-
-| BB2 wrapper | PsyQ original | Notes |
-| --- | --- | --- |
-| `irq_DisableInterrupts` | `EnterCriticalSection` (BIOS A(2)) | Disables hardware IRQs |
-| `EnterCriticalSection`, `ExitCriticalSection` | (BIOS-level) | Save/restore IRQ state |
-| `irq_AcknowledgeVblank` | `EnterCriticalSection` + ack | VBlank ack |
-| `irq_SetAlarm`, `irq_EnableInterrupts` | `SetAlarm`, `EnableEvent` | Event system |
-| `func_80078C9C` (`InitPAD`) | `InitPAD` | Initialize pad input buffers |
-| `func_80078D38` (`StartPAD`) | `StartPAD` | Start pad input polling |
-| `func_80078A58` | `VSyncCallback` | Install VBlank callback |
-| `func_80078BA8` | `EnterCriticalSection` variant | Used for SPU I/O |
-| `sys_VSync` | `VSync` | Vblank wait. Debug `"VSync: timeout\n"` at 0x80016318 |
-
-Timer / IRQ globals:
-- `pCallbacks` (`0x800A2600`) — pointer to the INTR callbacks table (`D_800A25E0`)
-- `intrEnv.inInterrupt` (`0x800A157A`) — LIBETC's in-interrupt flag (CheckCallback's return)
-- `g_sys_vsync_mode` (`0x800A14CC`) — VSync wait mode
-
-## libspu — Sound Processing Unit
-
-PsyQ's SPU library. BB2 uses it via `spu_*` (in `main.c`) and the channel
-allocator in `text1b.c`. The CVS Id tag is not visible in the bin (libspu's
-source isn't tagged), but the linked functions are unambiguous:
-
-| BB2 wrapper / direct | PsyQ original | Notes |
-| --- | --- | --- |
-| `spu_Init` (asm-only) | `SpuInit` | Initialize SPU subsystem |
-| `spu_TransferData`, `spu_TransferDirect` | `SpuWrite0`, `SpuWriteRaw` | Sample upload |
-| `spu_SetVolume` | `SpuSetCommonMasterVolume` | Master volume |
-| `spu_WriteReg`, `spu_WriteReg16` | (low-level register access) | Direct SPU register writes |
-| `spu_NotifyChannel` (`main.c:1823`) | (BB2-custom) | Per-channel notify (not PsyQ) |
-| `func_80078A68` | `SpuMalloc` / channel-alloc | SPU RAM management |
-
-Globals:
-- `_spu_RXX` (`0x800A2CDC`) — pointer to the SPU registers (0x1F801C00)
-- `spu_delay` (`0x800A2CF0`, -> 0x1F801014, the SPU delay/size
-  memory-control register), `_spu_tsa` (`0x800A2CF4`),
-  `_spu_transMode` (`0x800A2CF8`), etc. (libspu spu.c)
-
-The `coli_HitPauseKatana` voice-allocator (despite the name) is BB2-custom
-on top of libspu — see [sound.md](sound.md).
-
-## libgte — Geometry Transformation Engine
-
-PsyQ's GTE wrappers. The inline GTE macros (`gte_rtps()`, `gte_rtpt()`,
-etc.) are PsyQ 4.0's own, vendored in `include/psxsdk/inline_o.h`,
-`inline_c.h` and `gtemac.h` with the DMPSX command words already substituted
-as raw `.word` encodings, so the project builds without running DMPSX.
-
-PsyQ entry points BB2 calls directly:
-- `func_8007E094` = `InitGeom` — initialize GTE registers at boot
-- `gte_SetScreenOffset(x, y)` = sets screen center for projection
-- `gte_SetRotMatrix(mat)`, `gte_SetTransVector(vec)` = matrix/vec load
-
-The `g_gte_sqrt_table` (`0x8009C7A8`) is the PsyQ-standard 64-entry square
-root lookup that the GTE square-root op (`SQRT`) uses for the integer
-remainder Newton-Raphson step.
-
-The `g_gte_saved_ra` (`0x8009C798`) is a per-thread save area that PsyQ's
-`InitGeom` populates with the return-address-to-restore — used to bail
-out of GTE callbacks safely.
-
-## libpress / libcomb / libpad
-
-Not linked into BB2's main EXE (no symbol evidence). Pad input goes
-through libapi's `InitPAD` / `StartPAD`.
-
-## MDEC overlay — MOVOVL.EXE
-
-The FMV overlay (loaded at runtime to `0x801D8800`) handles `.STR`
-playback. It links libmdec — the PS1 Motion Decoder driver:
-
-- `MDEC_in` / `MDEC_out` register access (at `0x1F801820..0x1F801824`)
-- Macroblock decode (Y, Cb, Cr planes)
-- YUV-to-RGB conversion (handled in the GPU's "macroblock receive" mode)
-
-The overlay loads OPENING.STR (intro FMV), TITLE.TIM (title screen — not
-FMV, just a TIM texture), and possibly per-ending movies. The overlay is
-loaded only when FMV playback is needed, then thrown away (its memory
-region is reused for sound-data scratch otherwise).
-
-## Other PsyQ patterns BB2 uses
-
-### Debug printf
-
-`debug_printf` is BB2's name for PsyQ's `printf` (which goes to SIO if
-enabled, or is no-op'd in release builds). The release build has
-`debug_printf` enabled but with no SIO destination — the strings are still
-present and would be visible in a debugger.
-
-The `g_str_*` strings at `0x80015F00..0x80016400` are mostly debug
-format strings PsyQ's libgpu/libcd debug-callback would emit. BB2 ships
-with the debug strings still in the binary (helpful for decomp).
-
-### BIOS syscalls
-
-PsyQ provides POSIX-like wrappers (`open`, `read`, `close`, `lseek`) on
-top of the BIOS A0/B0/C0 jump tables. BB2 calls these as:
-
-- `func_80083698` = `open` (BIOS A(36h) or wrapper)
-- `bios_FileRead` = `read` (chunked over BIOS A(34h))
-- `func_80078A18` = `close` (BIOS A(33h))
-- `ang_hosei_800836C8` (now `PClseek`, `asm/funcs/PClseek.s`) = `lseek`
-  (BIOS A(35h))
-
-The naming collision is a Kengo-name-table artifact and is THREE-way:
-`ang_hosei` attaches to this file-seek trampoline (0x800836C8), to the
-real angle-correction orchestrator (`ang_hosei_8003F62C`, src/code6cac_c2.c),
-and to `char_disp_offset_80056FE8` (character display-offset lookup via
-the D_8009A830/38/40 byte tables — neither rotation nor file-seek; see
-docs/naming/MISNOMERS.md §ang_hosei). BB2 originally had distinct
-PsyQ-style names like `FileSeek`.
-
-### Critical sections
-
-`EnterCriticalSection` / `ExitCriticalSection` are the standard PsyQ
-disable/enable IRQ pair. Used wherever multi-step register state needs
-to be atomic — e.g., updating SPU voice keys, swapping DMA channels,
-flipping framebuffers.
-
-## What's NOT a PsyQ library
-
-Most of BB2 is NOT PsyQ. The Marionation engine is entirely custom:
-combat, motion playback, character data, replay/cam, fighting AI, menu
-state machines, character select. The PsyQ usage is limited to:
-
-- GPU low-level (libgpu)
-- CD I/O (libcd)
-- IRQ + timer + pad input (libapi)
-- SPU low-level (libspu)
-- GTE math (libgte)
-- FMV playback (libmdec, only in overlay)
-
-The high-level game logic — the parts that make BB2 distinctively "Bushido
-Blade" — are all original code by Lightweight.
+`STR\MOVOVL.EXE` is a separate PS-X EXE that `sys_Exec` loads and runs
+(src/main/cdrom.c:209). Its contents are described in
+[docs/formats/MOVOVL.md](../formats/MOVOVL.md). Its libraries are not part
+of this tree's `src/`.
