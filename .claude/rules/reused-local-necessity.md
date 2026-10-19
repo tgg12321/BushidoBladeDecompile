@@ -74,7 +74,7 @@ path); values are grouped by Ruling 11's definition with that one read excluded,
 (C)(1)/(C)(3)/(D) are met on that grouping (no other read may be excluded); every other prong
 applies unchanged; fresh layer-2. Not a precedent for any other read or function.
 
-**Owner ruling Q78 (2026-10-01) — func_800770B8 only: the `p_old` restore store** (reverses
+**Owner ruling Q78 (2026-10-01) — menu_InitSelScreen only: the `p_old` restore store** (reverses
 Q66's "refuse for now" after the post-Q65 re-measure). One local (`p_old`; the name may change
 under (E)) may hold the list pointer, then the new work-area pointer, under Ruling 11, plus ONE
 dead restore store `p_old = prev;` placed after the +4 store (`sw` 0x80077140) and before the

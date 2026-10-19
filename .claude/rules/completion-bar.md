@@ -89,7 +89,7 @@ item that links them (e.g. [[phantom-frame-pad-family]]'s allowlist row and labe
 - Uniform from 2026-10-02. COMPLETED functions are not re-audited against the hygiene tier;
   their existing debt (e.g. `memory/grind/judge-decl-cleanup/` disposition rows) stays there.
 - **Re-opened (clause D):** per-function refusals that rested on hygiene grounds or on
-  "outside the frozen list" alone, including Q45/Q77 (func_8005C8A8), Q66 (func_800770B8),
+  "outside the frozen list" alone, including Q45/Q77 (func_8005C8A8), Q66 (menu_InitSelScreen),
   Q84 (camera_CalcAngles) and the motion_LoadFighterData / _SsVmFlush rotations. Re-judge them under
   items 1-6. Refusals resting on item 2 stand.
 - The narrow per-function admissions Q76 and Q82 ([[ordinary-c-judge-decidable]]) are

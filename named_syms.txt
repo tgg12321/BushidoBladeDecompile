@@ -1142,13 +1142,13 @@ D_800EFA00                                = 0x800EFA00;  /* D_800EF9F8.unk8 (+8)
 g_vab_rec_ptr                                       = 0x800EFC38;  /* data-wave 2026-09-24: was g_effect_struct_b */
 
 /* === func_8006E49C result pointer + its argument (2026-05-17) -- 2 highs === */
-/* func_800770B8 saves its arg0 in D_800A35D8, passes it to */
+/* menu_InitSelScreen saves its arg0 in D_800A35D8, passes it to */
 /* func_8006E49C and stores the result in D_800A36A0 (64FD8.c:1076-1083), */
 /* the pattern func_80068F70 follows with D_800A351C / D_800A34FC */
 /* (596CC.c:56-74). */
 /* See each line. */
-D_800A36A0                                    = 0x800A36A0;  /* SelWork pointer (SELWORK) that func_8006E49C returns for func_800770B8 */  /* data-wave 2026-10-08: was g_mode_state_ptr_alt */
-D_800A35D8                                    = 0x800A35D8;  /* record array func_800770B8 was given (arg0); passed to func_8006E49C, indexed by func_80077098 */  /* data-wave 2026-10-08: was g_mode_state_arg_alt */
+D_800A36A0                                    = 0x800A36A0;  /* SelWork pointer (SELWORK) that func_8006E49C returns for menu_InitSelScreen */  /* data-wave 2026-10-08: was g_mode_state_ptr_alt */
+D_800A35D8                                    = 0x800A35D8;  /* record array menu_InitSelScreen was given (arg0); passed to func_8006E49C, indexed by func_80077098 */  /* data-wave 2026-10-08: was g_mode_state_arg_alt */
 
 /* === Fade/transition state machine (2026-05-17) -- 4 highs === */
 /* From text1b.c func_8006EC0C (line 16108): fade-in/out state machine */
@@ -1787,7 +1787,7 @@ D_800A9B28                                     = 0x800A9B28;  /* VECTOR copied f
 D_800A9A20                                = 0x800A9A20;  /* = arg0[4] cached; compared against (s16*)var_0[4] for change detection */  /* data-wave 2026-10-08: was g_anim_event_arg4_cached */
 
 /* === func_80077940 packed value, D_8009BD58 byte, D_800A324C cache (2026-05-17) -- 3 highs === */
-D_800A35E8                                     = 0x800A35E8;  /* bit-packed from func_80077940's arg0: bits0-9 + (bits12-21 >> 2) + (bit24 >> 4) + (bit26 >> 5); read as an argument of func_8006E534 / func_800770B8 */  /* data-wave 2026-10-08: was g_text1b_packed_arg */
+D_800A35E8                                     = 0x800A35E8;  /* bit-packed from func_80077940's arg0: bits0-9 + (bits12-21 >> 2) + (bit24 >> 4) + (bit26 >> 5); read as an argument of func_8006E534 / menu_InitSelScreen */  /* data-wave 2026-10-08: was g_text1b_packed_arg */
 D_800A35E0                                    = 0x800A35E0;  /* s32 word = D_8009BD58[D_8009BD24.unk14_0][1] (func_80077904); func_8006E534's second argument in func_80077984 */  /* data-wave 2026-10-08: was g_text1b_cached_byte */
 D_800A324C                                  = 0x800A324C;  /* last i seen by func_80049584; a change forces the func_80045B68 reload; init -1, reset to -1 by func_80049E1C */  /* data-wave 2026-10-08: was g_text1b_last_frame_id */
 
@@ -2083,7 +2083,7 @@ func_80077D00                                = 0x80077D00;  /* MISNAMED: not gau
 func_80044F80                                 = 0x80044F80;  /* MISNAMED: not Satan2 info init; 1-line wrapper of ndata_Read(a0+0x4D, a1) */
 func_8006C1FC                                 = 0x8006C1FC;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006C168(a0, a1) */
 func_80077A60                                 = 0x80077A60;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006E068() */
-func_80077AC0                                 = 0x80077AC0;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_80077724() */
+func_80077AC0                                 = 0x80077AC0;  /* 1-line wrapper of menu_StepSelScreen() */
 func_800444BC                               = 0x800444BC;  /* MISNAMED: not ground display; 1-line wrapper of func_80044504(D_800A378C) */
 func_80046020                               = 0x80046020;  /* MISNAMED: not ground display; arena_Free(6) then func_8005B6AC() */
 func_80077A04                               = 0x80077A04;  /* MISNAMED: not ground display; D_800A35E4=0 then func_8006D74C(a0, a1) */
