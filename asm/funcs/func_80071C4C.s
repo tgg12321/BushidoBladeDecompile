@@ -275,7 +275,7 @@ glabel func_80071C4C
     /* 6284C 8007204C F2FF4014 */  bnez       $v0, .L80072018
     /* 62850 80072050 0A008424 */   addiu     $a0, $a0, 0xA
   .L80072054:
-    /* 62854 80072054 0EBC010C */  jal        func_8006F038
+    /* 62854 80072054 0EBC010C */  jal        gpu_AddScreenDarken
     /* 62858 80072058 21208002 */   addu      $a0, $s4, $zero
     /* 6285C 8007205C 7000BF8F */  lw         $ra, 0x70($sp)
     /* 62860 80072060 6C00B58F */  lw         $s5, 0x6C($sp)

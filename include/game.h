@@ -213,11 +213,11 @@ typedef struct {
  * func_8006E480); count, the cell count; cx / cy, the CLUT position (GetClut);
  * ubase / vbase, the texel origin the cells' u / v add to; cells, the cell
  * table that follows. A resource sheet may carry two or three headers (the
- * plain one, then one highlight per player: func_8006F97C, menu_DrawSelGrid)
- * ahead of one shared cell table, which then starts at the last header's cells.
- * 0x8009B0E0 is a table of 9 such headers (0x8009B0E0..0x8009B14B) that
- * func_8005C8A8 reaches off one base; D_8009B14C and D_8009B158 are two more
- * of the same shape. */
+ * plain one, then one highlight per player: menu_UpdateEntryGrid,
+ * menu_DrawSelGrid) ahead of one shared cell table, which then starts at the
+ * last header's cells. 0x8009B0E0 is a table of 9 such headers
+ * (0x8009B0E0..0x8009B14B) that func_8005C8A8 reaches off one base; D_8009B14C
+ * and D_8009B158 are two more of the same shape. */
 typedef struct {
     u8 tp0;
     u8 tp1;
@@ -238,10 +238,10 @@ typedef struct {
  * pass unk_00 and unk_04 to the VAB loader func_8005C2A8 (menu_RelocateSelLists
  * / func_80077D10, for D_SEL / NAR, make no such call, and those files'
  * unk_00..unk_08 are equal), func_8006E950 loads the image at unk_08 into VRAM,
- * and func_8006E8CC loads the 640x32 strip at unk_0C or unk_10. The four
- * per-file relocators (func_8006919C, func_8006EA28, menu_RelocateSelLists,
- * func_80077D10) return unk_04, where the caller's func_8006E49C buffer starts.
- * The words after the head differ per file. */
+ * and gpu_LoadVramBottomStrip loads the 640x32 strip at unk_0C or unk_10. The
+ * four per-file relocators (func_8006919C, func_8006EA28,
+ * menu_RelocateSelLists, func_80077D10) return unk_04, where the caller's
+ * func_8006E49C buffer starts. The words after the head differ per file. */
 typedef struct {
     Unk8005C2A8Pack *unk_00;
     s32 unk_04;
@@ -280,13 +280,13 @@ typedef struct {
 /* SEL.BIN / SEL1.BIN / SEL2.BIN (resource files 3-5), the root 5ED34's
  * func_8006E534 loads at its work area + 0x58 (D_800A35A8; func_8006EACC hands
  * it to the handlers as Unk8006EACCRec.unk_00). After the head:
- * - unk_14: per entry id two TIM pixel addresses, one per column, func_80070F78
- * loads (LoadImage).
+ * - unk_14: per entry id two TIM pixel addresses, one per column,
+ * menu_UpdateRowCursors loads (LoadImage).
  * - unk_54..unk_74: the nine lists func_8006EA28 relocates (func_8006920C):
  * unk_54, the header block func_8006ECF4 draws (Unk8006ECF4Rec);
  * unk_58..unk_74, sprite-sheet lists. unk_78 is a further offset no code reads.
- * - unk_7C: per player a row of eight VRAM RECTs func_80070F78 hands LoadImage
- * as the destination; unk_80: the bytes func_800720FC reads.
+ * - unk_7C: per player a row of eight VRAM RECTs menu_UpdateRowCursors hands
+ * LoadImage as the destination; unk_80: the bytes menu_UpdateChoiceGrid reads.
  * - unk_84: TIM pixel addresses func_8006ECF4 loads per character case. */
 typedef struct {
     Unk8006E950Head unk_00;
@@ -666,9 +666,9 @@ typedef struct {
 
 /* 0x800A3560: two 3-byte records, one per selection slot i (slot i at
  * 0x800A3560 + i * 3; 0x800A3566/7 pad before D_800A3568). Object-model
- * evidence: func_8006F100 and func_80070C70 step one offset register by 3 per
- * slot; func_80070188 reaches +0 / +1 / +2 through i * 3; func_8006E534 stores
- * byte +1 of both. `word` (Q33 union word view) is
+ * evidence: func_8006F100 and menu_UpdateRow step one offset register by 3 per
+ * slot; menu_UpdateEntryGridCursors reaches +0 / +1 / +2 through i * 3;
+ * func_8006E534 stores byte +1 of both. `word` (Q33 union word view) is
  * func_8006E534's one word store of -1 over bytes 0..3; every other access goes
  * through rec[]. Every consumer is in the -G8 file src/main/5ED34.c (Q44/Q54).
  */

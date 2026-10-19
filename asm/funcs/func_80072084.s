@@ -3,7 +3,7 @@ glabel func_80072084
     /* 62888 80072088 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 6288C 8007208C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 62890 80072090 6800458C */  lw         $a1, 0x68($v0)
-    /* 62894 80072094 3FC8010C */  jal        func_800720FC
+    /* 62894 80072094 3FC8010C */  jal        menu_UpdateChoiceGrid
     /* 62898 80072098 21300000 */   addu      $a2, $zero, $zero
     /* 6289C 8007209C 1000BF8F */  lw         $ra, 0x10($sp)
     /* 628A0 800720A0 1800BD27 */  addiu      $sp, $sp, 0x18

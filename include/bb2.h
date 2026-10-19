@@ -45,10 +45,10 @@ extern Unk800F0E38Record D_800F0E38[12];
 extern MenuState D_8009BC04;
 
 /* The three scroll pages' origins: s16 (x, y) pairs for pages 4..6
- * (func_800720FC). */
+ * (menu_UpdateChoiceGrid). */
 extern s16 D_8009BCC4[3][2];
 
-/* The current scroll offset, one s16 per axis (func_800720FC). */
+/* The current scroll offset, one s16 per axis (menu_UpdateChoiceGrid). */
 extern s16 D_8009BCD0[2];
 
 extern Unk8009BCF8Record D_8009BCF8[2][10];
@@ -977,7 +977,7 @@ extern s32 func_8006E534(s32, s32, Unk8009BD24Block *, u32);
 extern void func_8006E950(s32, Unk8006E950Head *);
 extern s32 func_8006EA28(Unk8006EA28Rec *);
 extern s32 func_8006EACC(s32, s32);
-extern void func_80073060(Unk8006EACCRec *);
+extern void gpu_AddPanelGrid(Unk8006EACCRec *);
 extern s32 func_8007352C(Unk8007352CRec *);
 extern s32 func_80073728(Unk8007352CRec *, s32);
 /* No prototype: defined old-style (63D2C.c) with an s16 parameter, which a

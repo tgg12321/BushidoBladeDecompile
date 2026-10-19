@@ -3063,7 +3063,7 @@ gte_rtpt_batch_8004A76C                            = 0x8004A76C;  /* GTE: rtpt l
 /* RESET 0x80072BC4: retired name 'gpu_build_quad_80072BC4' — preserved note: initPolyG4 + ot_Link (build+link a Gouraud quad; sibling of func_80072CD4) */
 /* RESET 0x8006A3CC: retired name 'draw_anim_sprite_8006A3CC' — preserved note: render sub-obj: satan_sprite_batch_render + saMotionSet + initTexPage + ot_Link */
 /* RESET 0x8006A494: retired name 'draw_anim_sprite_scaled_8006A494' — preserved note: as draw_anim_sprite but sets scale fields 0x20/0x24=0x100; func_80073728 + saMotionSet + initTexPage + ot_Link */
-gpu_draw_fullscreen_overlay_8006F038                   = 0x8006F038;  /* SetTile full-screen 0x280 x 0xF0, grey D_800A3550, SetSemiTrans(1), AddPrim(g_gpu_ot_ptr); then SetDrawMode (tpage 0x40) + AddPrim; semi-transparent full-screen overlay */
+/* RENAME 0x8006F038: retired name 'gpu_draw_fullscreen_overlay_8006F038' — preserved note: SetTile full-screen 0x280 x 0xF0, grey D_800A3550, SetSemiTrans(1), AddPrim(g_gpu_ot_ptr); then SetDrawMode (tpage 0x40) + AddPrim; semi-transparent full-screen overlay */
 /* RESET 0x80074D2C: retired name 'draw_anim_sprite_pos_80074D2C' — preserved note: anim-sprite render at computed offset, OT-depth select; satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link */
 gpu_draw_layered_box_80069898                          = 0x80069898;  /* 3x SetTile at y, y-1, y-2 (grey 0x80 / 0x80 / 0x40, SetSemiTrans 0 / 1 / 1) + AddPrim(g_gpu_ot_ptr + arg2) */
 draw_bg_and_sprites_80069E18                           = 0x80069E18;  /* full-screen overlay tile + saMotionSet sprite + initTexPage + 3x func_8007352C; composite screen render */

@@ -2,8 +2,9 @@
  * G8. Compiled -G8 (Q10, Q44, Q54): the original bytes reach the small globals
  * 0x800A32E8..0x800A35CA straight off $gp, which the original compiler emits
  * only at -G8, and no function outside this range gp-accesses any of them.
- * func_8006E8CC, func_8006E950, func_8006EA28 and func_80072F30 have no gp
- * access and compile identically at -G8 and -G0 (Q54). */
+ * gpu_LoadVramBottomStrip, func_8006E950, func_8006EA28 and
+ * gpu_AddPanelGridTile have no gp access and compile identically at -G8 and -G0
+ * (Q54). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -148,7 +149,7 @@ s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
 
 Unk8006E49CRec *func_8006E8AC(s32 a0) { return &D_800A35AC[a0]; }
 
-void func_8006E8CC(Unk8006E950Head *a0) {
+void gpu_LoadVramBottomStrip(Unk8006E950Head *a0) {
     Unk8009BD24Block *p;
     s32 data;
     RECT rect;
@@ -192,7 +193,7 @@ void func_8006E950(s32 a0, Unk8006E950Head *a1) {
     DrawSync(0);
     LoadImage(&rect, (u32 *)(s3 + 0x59400));
 
-    func_8006E8CC(a1);
+    gpu_LoadVramBottomStrip(a1);
 }
 
 s32 func_8006EA28(Unk8006EA28Rec *a0) {
@@ -367,7 +368,7 @@ void func_8006ECF4(Unk8006EACCRec *arg0) {
     }
 }
 
-void func_8006F038(Unk8006EACCRec *arg0) {
+void gpu_AddScreenDarken(Unk8006EACCRec *arg0) {
     TILE *temp_s0;
     s16 v1;
     s16 v2;
@@ -394,7 +395,7 @@ void func_8006F038(Unk8006EACCRec *arg0) {
     arg0->unk_04.unk_14++;
 }
 
-extern void func_80072E10(Unk8006EACCRec *);
+extern void gpu_AddGradientPanel(Unk8006EACCRec *);
 extern void func_80073200(Unk8006EACCRec *);
 
 void func_8006F100(Unk8006EACCRec *arg0) {
@@ -412,13 +413,13 @@ void func_8006F100(Unk8006EACCRec *arg0) {
         D_800A3550 += 0x10;
         if (D_800A3550 >= 0x100) {
             D_800A3550 = 0xFF;
-            func_8006F038(arg0);
+            gpu_AddScreenDarken(arg0);
             D_800A3550 = 0;
         } else {
-            func_8006F038(arg0);
+            gpu_AddScreenDarken(arg0);
         }
         func_8006ECF4(arg0);
-        func_80072E10(arg0);
+        gpu_AddGradientPanel(arg0);
         func_80073200(arg0);
         return;
     }
@@ -652,10 +653,10 @@ void func_8006F528(Unk8006EACCRec *arg0) {
     arg0->unk_04.unk_00 = func_80073728(&s, 2);
 }
 
-extern void func_80070188(Unk8006EACCRec *);
+extern void menu_UpdateEntryGridCursors(Unk8006EACCRec *);
 extern void func_80073200(Unk8006EACCRec *);
 
-void func_8006F97C(Unk8006EACCRec *arg0) {
+void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
     s16 shift[2];
     u16 var_2[4];
@@ -812,18 +813,18 @@ void func_8006F97C(Unk8006EACCRec *arg0) {
      * func_80069898 reads +0x18 as its TILE cursor, and arg0's +0x18 is the
      * DR_MODE cursor unk_04.unk_14. */
     func_80069898((s32 *)arg0, var_2, 1);
-    func_80070188(arg0);
+    menu_UpdateEntryGridCursors(arg0);
     func_8006ECF4(arg0);
     D_800A32E8 = D_800A3560.rec[1].unk1;
     D_800A32E9 = D_800A3554;
-    func_80072E10(arg0);
+    gpu_AddGradientPanel(arg0);
     func_80073200(arg0);
 }
 
 extern s16 D_800A3530[];
 extern s16 D_800A3534[];
 
-void func_80070188(Unk8006EACCRec *arg0) {
+void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
     Unk8009B0E0Record **var_1;
     s16 *col;
@@ -1004,9 +1005,9 @@ void func_80070188(Unk8006EACCRec *arg0) {
     func_8005C6D0();
 }
 
-extern void func_80070F78(Unk8006EACCRec *a0, Unk8007352CRec *s);
+extern void menu_UpdateRowCursors(Unk8006EACCRec *a0, Unk8007352CRec *s);
 extern void func_8006ECF4(Unk8006EACCRec *);
-extern void func_80072E10(Unk8006EACCRec *);
+extern void gpu_AddGradientPanel(Unk8006EACCRec *);
 extern void func_80073200(Unk8006EACCRec *);
 
 typedef struct Unk80070C70Rec {
@@ -1016,7 +1017,7 @@ typedef struct Unk80070C70Rec {
     s16 sp4E;
 } Unk80070C70Rec;
 
-void func_80070C70(Unk8006EACCRec *arg0) {
+void menu_UpdateRow(Unk8006EACCRec *arg0) {
     /* FAKE: constant-holder local kept in a callee-saved register across
      * the calls (the target's `li s4,96`, then `move a1,s4`); the inline
      * literal re-materializes `li a1,0x60` at each call site: score 7 */
@@ -1092,15 +1093,15 @@ void func_80070C70(Unk8006EACCRec *arg0) {
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(var_1.header, c60), 0);
     AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
-    func_80070F78(arg0, &var_1);
+    menu_UpdateRowCursors(arg0, &var_1);
     func_8006ECF4(arg0);
-    func_80072E10(arg0);
+    gpu_AddGradientPanel(arg0);
     func_80073200(arg0);
 }
 
 extern u8 D_8009BC38[];
 
-void func_80070F78(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
+void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
     /* several values of one kind, a sprite-sheet header table:
      * D_800A35A8->unk_74 (loaded at entry and again in the selected-slot arm)
      * and D_800A35A8->unk_60 (the table the last loop draws from) (Ruling 11,
@@ -1460,24 +1461,25 @@ void func_80071C4C(Unk8006EACCRec *arg0) {
             D_800A3568->unk00[i][0].unk1 = D_800A3560.rec[i].unk2;
         }
     }
-    func_8006F038(arg0);
+    gpu_AddScreenDarken(arg0);
 }
 
-void func_800720FC(Unk8006EACCRec *, Unk8009B0E0Record **, s32);
+void menu_UpdateChoiceGrid(Unk8006EACCRec *, Unk8009B0E0Record **, s32);
 
 void func_80072084(Unk8006EACCRec *a0) {
-    func_800720FC(a0, D_800A35A8->unk_68, 0);
+    menu_UpdateChoiceGrid(a0, D_800A35A8->unk_68, 0);
 }
 
 void func_800720AC(Unk8006EACCRec *a0) {
-    func_800720FC(a0, D_800A35A8->unk_6C, 1);
+    menu_UpdateChoiceGrid(a0, D_800A35A8->unk_6C, 1);
 }
 
 void func_800720D4(Unk8006EACCRec *a0) {
-    func_800720FC(a0, D_800A35A8->unk_70, 2);
+    menu_UpdateChoiceGrid(a0, D_800A35A8->unk_70, 2);
 }
 
-void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
+void menu_UpdateChoiceGrid(
+    Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
     Unk8007352CRec s;
     u16 var_1[4];
     RECT rect;
@@ -1706,12 +1708,12 @@ void func_800720FC(Unk8006EACCRec *arg0, Unk8009B0E0Record **arg1, s32 mode) {
         }
     }
 end:
-    func_80072E10(arg0);
+    gpu_AddGradientPanel(arg0);
     func_80073200(arg0);
     func_8005C6D0();
 }
 
-POLY_G4 *func_80072BC4(s32 arg0, POLY_G4 *arg1) {
+POLY_G4 *gpu_AddPanelUpperQuad(s32 arg0, POLY_G4 *arg1) {
     u8 var_v0;
     /* FAKE: constant holder -- 0xFC held from before the branch; the literal at
      * each store rematerialises it at the r3 store and swaps v0 / v1: score 5
@@ -1758,11 +1760,11 @@ POLY_G4 *func_80072BC4(s32 arg0, POLY_G4 *arg1) {
     return arg1 + 1;
 }
 
-/* func_80072CD4 - colours a Gouraud quad (POLY_G4) by mode: warm per-vertex
- * RGB triples (two variants on D_800A35C4's flag 4) for modes < 4, a fixed
- * dark set otherwise; then adds it to the OT and returns the next primitive
- * slot. */
-POLY_G4 *func_80072CD4(s32 arg0, POLY_G4 *arg1) {
+/* gpu_AddPanelLowerQuad - colours a Gouraud quad (POLY_G4) by mode: warm
+ * per-vertex RGB triples (two variants on D_800A35C4's flag 4) for modes < 4, a
+ * fixed dark set otherwise; then adds it to the OT and returns the next
+ * primitive slot. */
+POLY_G4 *gpu_AddPanelLowerQuad(s32 arg0, POLY_G4 *arg1) {
     SetPolyG4(arg1);
     SetSemiTrans(arg1, 0);
     if (arg0 < 4) {
@@ -1805,9 +1807,9 @@ POLY_G4 *func_80072CD4(s32 arg0, POLY_G4 *arg1) {
     return arg1 + 1;
 }
 
-void func_80072E10(Unk8006EACCRec *arg0) {
+void gpu_AddGradientPanel(Unk8006EACCRec *arg0) {
     POLY_G4 *p;
-    func_80073060(arg0);
+    gpu_AddPanelGrid(arg0);
     p = arg0->unk_04.unk_08;
     p->x0 = 0x50;
     p->y0 = 0x32;
@@ -1817,7 +1819,7 @@ void func_80072E10(Unk8006EACCRec *arg0) {
     p->y2 = 0x32;
     p->x3 = 0x140;
     p->y3 = 0x52;
-    p = func_80072BC4(D_800A3580, p);
+    p = gpu_AddPanelUpperQuad(D_800A3580, p);
     p->x0 = 0x231;
     p->y0 = 0x32;
     p->x1 = 0x231;
@@ -1826,7 +1828,7 @@ void func_80072E10(Unk8006EACCRec *arg0) {
     p->y2 = 0x32;
     p->x3 = 0x140;
     p->y3 = 0x52;
-    p = func_80072BC4(D_800A3580, p);
+    p = gpu_AddPanelUpperQuad(D_800A3580, p);
     p->x0 = 0x140;
     p->y0 = 0x52;
     p->x1 = 0x140;
@@ -1835,7 +1837,7 @@ void func_80072E10(Unk8006EACCRec *arg0) {
     p->y2 = 0x52;
     p->x3 = 0x50;
     p->y3 = 0x71;
-    p = func_80072CD4(D_800A3580, p);
+    p = gpu_AddPanelLowerQuad(D_800A3580, p);
     p->x0 = 0x140;
     p->y0 = 0x52;
     p->x1 = 0x140;
@@ -1844,11 +1846,11 @@ void func_80072E10(Unk8006EACCRec *arg0) {
     p->y2 = 0x52;
     p->x3 = 0x231;
     p->y3 = 0x71;
-    p = func_80072CD4(D_800A3580, p);
+    p = gpu_AddPanelLowerQuad(D_800A3580, p);
     arg0->unk_04.unk_08 = p;
 }
 
-TILE *func_80072F30(s32 a0, TILE *a1) {
+TILE *gpu_AddPanelGridTile(s32 a0, TILE *a1) {
     SetTile(a1);
     if (a0 < 4) {
         a1->r0 = 0x9E;
@@ -1882,7 +1884,7 @@ TILE *func_80072FCC(s32 arg0, TILE *a1) {
     return a1 + 1;
 }
 
-void func_80073060(Unk8006EACCRec *arg0) {
+void gpu_AddPanelGrid(Unk8006EACCRec *arg0) {
     TILE *p;
     s32 i;
     p = arg0->unk_04.unk_10;
@@ -1891,23 +1893,23 @@ void func_80073060(Unk8006EACCRec *arg0) {
         p->y0 = 0x32;
         p->w = 2;
         p->h = 0x3F;
-        p = func_80072F30(D_800A3580, p);
+        p = gpu_AddPanelGridTile(D_800A3580, p);
     }
     p->x0 = 0x51;
     p->y0 = 0x41;
     p->w = 0x1E0;
     p->h = 1;
-    p = func_80072F30(D_800A3580, p);
+    p = gpu_AddPanelGridTile(D_800A3580, p);
     p->x0 = 0x51;
     p->y0 = 0x61;
     p->w = 0x1E0;
     p->h = 1;
-    p = func_80072F30(D_800A3580, p);
+    p = gpu_AddPanelGridTile(D_800A3580, p);
     p->x0 = 0x51;
     p->y0 = 0x50;
     p->w = 0x1E0;
     p->h = 2;
-    p = func_80072F30(D_800A3580, p);
+    p = gpu_AddPanelGridTile(D_800A3580, p);
     for (i = 0; i < 5; i++) {
         p->x0 = 0x6A + i * 0x21;
         p->y0 = 0x32;

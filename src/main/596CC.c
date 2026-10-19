@@ -164,7 +164,7 @@ Unk8006E49CRec *func_80069120(s32 a0) {
     Unk8009BD24Block *v0 = D_800A3524;
     Unk800A34FCRec *v1 = D_800A34FC;
     if (v1->unk_30 != v0->unk20_0) {
-        func_8006E8CC(D_800A372C);
+        gpu_LoadVramBottomStrip(D_800A372C);
     }
     v0 = D_800A3524;
     v1 = D_800A34FC;

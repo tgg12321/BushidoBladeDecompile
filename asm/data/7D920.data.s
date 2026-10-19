@@ -23479,8 +23479,8 @@ enddlabel D_8009BC0D
 nonmatching D_8009BC1C
 
 dlabel D_8009BC1C
-    /* 8C41C 8009BC1C 7CF90680 */ .word func_8006F97C
-    /* 8C420 8009BC20 700C0780 */ .word func_80070C70
+    /* 8C41C 8009BC1C 7CF90680 */ .word menu_UpdateEntryGrid
+    /* 8C420 8009BC20 700C0780 */ .word menu_UpdateRow
     /* 8C424 8009BC24 00F10680 */ .word func_8006F100
     /* 8C428 8009BC28 4C1C0780 */ .word func_80071C4C
     /* 8C42C 8009BC2C 84200780 */ .word func_80072084

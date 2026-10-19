@@ -43,7 +43,7 @@ glabel func_8006E950
     /* 5F1F4 8006E9F4 1000A427 */  addiu      $a0, $sp, 0x10
     /* 5F1F8 8006E9F8 80ED010C */  jal        LoadImage
     /* 5F1FC 8006E9FC 21286502 */   addu      $a1, $s3, $a1
-    /* 5F200 8006EA00 33BA010C */  jal        func_8006E8CC
+    /* 5F200 8006EA00 33BA010C */  jal        gpu_LoadVramBottomStrip
     /* 5F204 8006EA04 21202002 */   addu      $a0, $s1, $zero
     /* 5F208 8006EA08 2800BF8F */  lw         $ra, 0x28($sp)
     /* 5F20C 8006EA0C 2400B38F */  lw         $s3, 0x24($sp)

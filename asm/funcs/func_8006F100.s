@@ -21,18 +21,18 @@ glabel func_8006F100
     /* 5F94C 8006F14C 07004014 */  bnez       $v0, .L8006F16C
     /* 5F950 8006F150 FF000224 */   addiu     $v0, $zero, 0xFF
     /* 5F954 8006F154 840482A7 */  sh         $v0, %gp_rel(D_800A3550)($gp)
-    /* 5F958 8006F158 0EBC010C */  jal        func_8006F038
+    /* 5F958 8006F158 0EBC010C */  jal        gpu_AddScreenDarken
     /* 5F95C 8006F15C 00000000 */   nop
     /* 5F960 8006F160 840480A7 */  sh         $zero, %gp_rel(D_800A3550)($gp)
     /* 5F964 8006F164 5DBC0108 */  j          .L8006F174
     /* 5F968 8006F168 00000000 */   nop
   .L8006F16C:
-    /* 5F96C 8006F16C 0EBC010C */  jal        func_8006F038
+    /* 5F96C 8006F16C 0EBC010C */  jal        gpu_AddScreenDarken
     /* 5F970 8006F170 21204002 */   addu      $a0, $s2, $zero
   .L8006F174:
     /* 5F974 8006F174 3DBB010C */  jal        func_8006ECF4
     /* 5F978 8006F178 21204002 */   addu      $a0, $s2, $zero
-    /* 5F97C 8006F17C 84CB010C */  jal        func_80072E10
+    /* 5F97C 8006F17C 84CB010C */  jal        gpu_AddGradientPanel
     /* 5F980 8006F180 21204002 */   addu      $a0, $s2, $zero
     /* 5F984 8006F184 80CC010C */  jal        func_80073200
     /* 5F988 8006F188 21204002 */   addu      $a0, $s2, $zero

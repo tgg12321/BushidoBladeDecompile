@@ -1,0 +1,1 @@
+{"func": "menu_UpdateRowCursors", "addr": "80070F78", "verdict": "PASS", "body_hash": "da849713aa7c7e6c", "body_kind": "c", "file": "main/5ED34", "reviewer": "af462973268acdd4d", "scope": "cheat-cleanup", "date": "2026-10-16T17:29:25Z", "head": "d599cefab", "notes": "", "renamed_from": ["func_80070F78"]}
