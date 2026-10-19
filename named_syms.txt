@@ -509,7 +509,7 @@ D_800F65F8            = 0x800F65F8;  /* two-column byte table [D_800A3874][2]: f
 D_800A37B8           = 0x800A37B8;  /* frame counter; `<<3` for byte stride, `<<12 / 105` for BAM angle conversion */  /* data-wave 2026-10-08: was g_practice_loop_frame */
 D_800A3817                = 0x800A3817;  /* cursor of a three-item pad menu: up / down step it through 0..2 with wrap (lower bound D_800A3804), func_8005C8A8 draws it, 0x400040 acts on it (2B344.c:1004-1062) */  /* data-wave 2026-10-08: was g_cpu_attack_idx */
 D_800F116C           = 0x800F116C;  /* 0x2C-byte command block (Unk1F800000Unk00) that func_800611A4..func_80061EC0 fill before func_80060A68; D_800A3468 points at it */  /* data-wave 2026-10-08: was g_text1b_render_state */
-D_800A3468       = 0x800A3468;  /* pointer to the current command block (D_800F116C, or the scratchpad block in func_80060E38); +0x0 command word (low halfword indexes the handler dispatch; bit 0x200000 sets D_800A32BC = 0xA), +0x14 the byte that receives the handler's return */  /* data-wave 2026-10-08: was g_text1b_render_state_ptr */
+D_800A3468       = 0x800A3468;  /* pointer to the current command block (D_800F116C, or the scratchpad block in eff_BindScratchpad); +0x0 command word (low halfword indexes the handler dispatch; bit 0x200000 sets D_800A32BC = 0xA), +0x14 the byte that receives the handler's return */  /* data-wave 2026-10-08: was g_text1b_render_state_ptr */
 D_800A347C         = 0x800A347C;  /* = D_800A3468->unk20 (func_80060A68), the command block's three-word copy of unk0C; every consumer reads words [0..2] through it */  /* data-wave 2026-10-08: was g_text1b_render_buf_ptr */
 /* 2026-10-16: D_800F1180 retired -- D_800F116C.unk14 (Unk1F800000Unk00, include/game.h); the address of the D_800F1150 status byte that receives the dispatched handler's return. */
 /* 2026-09-23: g_replay_attack_pos_x (batch 7) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
@@ -569,7 +569,7 @@ _snd_seq_tick_env_plus_0x10        = 0x800A26DC;  /* boolean: alarm callback pen
 Result          = 0x800F19A0;  /* 8-byte payload buffer for Callback A */  /* data-wave 2026-09-25: was g_cdrom_callback_buf_a */
 Result_plus_0x8          = 0x800F19A8;  /* 8-byte payload buffer for Callback B */  /* data-wave 2026-09-25: was g_cdrom_callback_buf_b */
 /* command-block copy pointer (sibling of D_800A347C at block +0x20) */
-D_800A3478         = 0x800A3478;  /* = D_800A3468->unk18 (func_80060A68), the command block's s16-triple copy of unk10; read by func_8006288C, func_80063BD0, func_80067200 */  /* data-wave 2026-10-08: was g_text1b_render_dst_ptr */
+D_800A3478         = 0x800A3478;  /* = D_800A3468->unk18 (func_80060A68), the command block's s16-triple copy of unk10; read by func_8006288C, func_80063BD0, eff_SpawnParticles */  /* data-wave 2026-10-08: was g_text1b_render_dst_ptr */
 /* SPU state additions */
 _spu_env          = 0x800A2CD4;  /* SPU IRQ/pending-op mask */  /* data-wave 2026-09-07: was g_spu_pending_irq_mask */
 _spu_rev_flag         = 0x800A287C;  /* SPU transfer callback arg cache */  /* data-wave 2026-09-07: was g_spu_xfer_callback_arg */
@@ -586,7 +586,7 @@ g_memcard_poll_count        = 0x800A3924;  /* incremented once per memcard_PollS
 /* === Data-symbol auto-classifier pass (2026-05-17) -- final scratchpad ptr === */
 /* See pre-slim-2026-10-01:docs/naming/REMAINING_DATA_CATALOG.md for mechanical classification of */
 /* the remaining 1032 unnamed D_* globals (refs mostly <= 5). */
-g_scratchpad_ptr_a8             = 0x800A3480;  /* -> 0x1F8000A8, set by func_80060E38 (51268.c:243) with g_scratchpad_ptr_ac / _b8 (:244, :246) */
+g_scratchpad_ptr_a8             = 0x800A3480;  /* -> 0x1F8000A8, set by eff_BindScratchpad (51268.c:243) with g_scratchpad_ptr_ac / _b8 (:244, :246) */
 
 /* === String literals (2026-05-17) -- 89 entries === */
 /* Auto-generated names derived from .asciz content via bb2_string_names.py. */
@@ -1877,12 +1877,12 @@ D_800FF610                                   = 0x800FF610;  /* MATRIX: output of
 D_800F1198                                     = 0x800F1198;  /* list of 12-byte packed records (unk0 bit 0 = present, unk0 / 2 = x; unk4 & 7 = type, unk4 / 8 = y; unk8 = z) ended by one with unk0 bit 0 clear; each is drawn as one POLY_FT4 (51268.c:893-964) */  /* data-wave 2026-10-08: was g_eff_vertex_buffer */
 
 /* === Scratchpad pointer cache extension (2026-05-17) -- 13 highs === */
-/* Per func_80060E38 (text1b.c:13328): caches PSX scratchpad RAM */
+/* Per eff_BindScratchpad (text1b.c:13328): caches PSX scratchpad RAM */
 /* (0x1F8000xx) pointers as ordinary main-RAM globals for fast access. */
 /* Naming convention: g_scratchpad_ptr_<hex offset> (per existing */
 /* g_scratchpad_ptr_18/20/30/etc. in recent_naming_findings.md). */
-D_800A3488                                     = 0x800A3488;  /* seeded with 0x1F800050 (func_80060E38); the 51268.c draw code points it at main-RAM TexRec tables */  /* data-wave 2026-10-08: was g_scratchpad_ptr_50 */
-D_800A348C                                     = 0x800A348C;  /* seeded with 0x1F8000B0; func_800620B8 points it at a main-RAM TexRec and reads clut_x / clut_y */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b0 */
+D_800A3488                                     = 0x800A3488;  /* seeded with 0x1F800050 (eff_BindScratchpad); the 51268.c draw code points it at main-RAM TexRec tables */  /* data-wave 2026-10-08: was g_scratchpad_ptr_50 */
+D_800A348C                                     = 0x800A348C;  /* seeded with 0x1F8000B0; eff_DrawBillboardList points it at a main-RAM TexRec and reads clut_x / clut_y */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b0 */
 g_scratchpad_ptr_58                                     = 0x800A3490;  /* -> 0x1F800058 */
 g_scratchpad_ptr_5c                                     = 0x800A3494;  /* -> 0x1F80005C */
 g_scratchpad_ptr_60                                     = 0x800A3498;  /* -> 0x1F800060 */
@@ -1917,10 +1917,10 @@ D_800A340C                                  = 0x800A340C;  /* SPU address where 
 /* === Ground fog state pair (2026-05-17) -- 4 highs === */
 /* From text1b.c gnd_get_fog (line 13286): selects fog value per */
 /* framebuffer parity. */
-D_800A3420                                       = 0x800A3420;  /* POLY_FT4 buffer base A (func_80060CB8's arg1); selected as the cursor at 0x800A37D4 when arg0 == 0 (51268.c:202-211) */  /* data-wave 2026-10-08: was g_gnd_fog_value_a */
+D_800A3420                                       = 0x800A3420;  /* POLY_FT4 buffer base A (eff_LoadImagesAndSetup's arg1); selected as the cursor at 0x800A37D4 when arg0 == 0 (51268.c:202-211) */  /* data-wave 2026-10-08: was g_gnd_fog_value_a */
 D_800A3424                                       = 0x800A3424;  /* POLY_FT4 buffer base B (arg1 + 0x4650); selected as the cursor at 0x800A37D4 when arg0 != 0 */  /* data-wave 2026-10-08: was g_gnd_fog_value_b */
-D_800A37D4                                        = 0x800A37D4;  /* POLY_FT4 * output cursor of the selected buffer (D_800A3420 / D_800A3424, chosen by func_80060E04); the prim writers advance it and store it back */  /* data-wave 2026-10-08: was g_gnd_fog_active */
-D_800A3720                                          = 0x800A3720;  /* snapshot of the POLY_FT4 cursor at 0x800A37D4 taken by func_80060E04; later reads measure the cursor's advance from it */  /* data-wave 2026-10-08: was g_gnd_fog_prev */
+D_800A37D4                                        = 0x800A37D4;  /* POLY_FT4 * output cursor of the selected buffer (D_800A3420 / D_800A3424, chosen by eff_SelectQuadBuffer); the prim writers advance it and store it back */  /* data-wave 2026-10-08: was g_gnd_fog_active */
+D_800A3720                                          = 0x800A3720;  /* snapshot of the POLY_FT4 cursor at 0x800A37D4 taken by eff_SelectQuadBuffer; later reads measure the cursor's advance from it */  /* data-wave 2026-10-08: was g_gnd_fog_prev */
 
 /* === Per-player slot active flag array (2026-05-17) -- 1 high === */
 D_8009BCE4                              = 0x8009BCE4;  /* 20 u8 entries indexed by entry id: bit 0 = selectable (set from arg2's bit idx), bit (4 << arg3) = held by selector arg3 (64FD8.c:598-1132) */  /* data-wave 2026-10-08: was g_per_player_slot_flags_20 */
@@ -2127,7 +2127,7 @@ D_800A3334                            = 0x800A3334;  /* +4 from D_800A3330 */  /
 D_800A3340                     = 0x800A3340;  /* +4 from D_800A333C (0x800A333C) */  /* data-wave 2026-10-08: was g_result_timer_complete_flag_plus_4 */
 D_800A3344                     = 0x800A3344;  /* +8 from D_800A333C (0x800A333C) */  /* data-wave 2026-10-08: was g_result_timer_complete_flag_plus_8 */
 D_800A3448                           = 0x800A3448;  /* +4 from D_800A3444 */  /* data-wave 2026-10-08: was g_particle_slot_bitmap_plus_4 */
-D_800A34F0                              = 0x800A34F0;  /* s16[2]: func_80061C00 stores arg2 into [0] / [1]; func_800678A8 / func_80067D14 test [arg0 - 4] */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b8_plus_4 */
+D_800A34F0                              = 0x800A34F0;  /* s16[2]: func_80061C00 stores arg2 into [0] / [1]; eff_PrepareParticles / eff_UpdateParticles test [arg0 - 4] */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b8_plus_4 */
 D_800A34F2                              = 0x800A34F2;  /* D_800A34F0[1] */  /* data-wave 2026-10-08: was g_scratchpad_ptr_b8_plus_6 */
 D_800A3520                             = 0x800A3520;  /* Unk8006E49CRec *: func_8006E390 stores func_80069120(a1[0] & 1), i.e. &D_800A351C[parity] (596CC.c:2515, :2524, :172) */  /* data-wave 2026-10-08: was g_menuctl_arg0_saved_plus_4 */
 D_800A352C                           = 0x800A352C;  /* +4 from D_800A3528 */  /* data-wave 2026-10-08: was g_menuctl_call_counter_plus_4 */

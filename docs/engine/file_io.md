@@ -19,7 +19,7 @@ plus an offset. The groups that appear in calls:
 - group 1: `motion_LoadCommonData` reads `cdrom_GetFileIndex(1, 1)` into the buffer
   at `D_800A3830` (src/main/9F9C.c:2991), and the motion data `(1, 0)` /
   `(1, j + 2)` (9F9C.c:3040, :3090).
-- group 2: image and data files. Readers include `func_80060CB8`,
+- group 2: image and data files. Readers include `eff_LoadImagesAndSetup`,
   `func_80016A8C`, and functions in 4BC3C.c, 4D0A8.c, 51268.c, 596CC.c and 5ED34.c.
 - group 5: CD-audio tracks, started through `cdrom_StartAudio`. Callers are
   `cdrom_StartAudioEntry` and three functions in src/main/2B344.c:
@@ -132,15 +132,15 @@ are described in [replay.md](replay.md).
 
 ## Callers that load data
 
-- `func_80060CB8(dest, prim_buf)` (51268.c) picks a group-2 file by
+- `eff_LoadImagesAndSetup(dest, prim_buf)` (51268.c) picks a group-2 file by
   `D_8009BD24.unk14_0` (0x3C, 0x2F, 0x30, 0x31 or 0). It reads the file to
   `dest` and uploads two VRAM rectangles from it: (0x380, 0, 0x80, 0x1DC),
   then (0x380, 0x1DC, 0x70, 0x24) from `dest + 0x1DC00`. It then splits
   `prim_buf` into two 0x4650-byte `POLY_FT4` buffers
   (`D_800A3420` / `D_800A3424`) and returns the end of the second.
 - `eff_Init` (src/main/6CF8.c:248) calls
-  `func_80060CB8(0x801D8800, 0x8010E800)` once (flag `D_800A3716`, cleared by
-  `eff_ClearInitFlag`). It prints the base 0x8010E800 and `func_80060CB8`'s
+  `eff_LoadImagesAndSetup(0x801D8800, 0x8010E800)` once (flag `D_800A3716`, cleared by
+  `eff_ClearInitFlag`). It prints the base 0x8010E800 and `eff_LoadImagesAndSetup`'s
   return (the end of the second buffer, 0x801174A0) as `size`. The
   `sys_Panic` check (`0xA000 < size`) is a signed compare against a KSEG0
   address, so it never fires.

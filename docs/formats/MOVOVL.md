@@ -123,16 +123,17 @@ DMAs the overlay body into RAM at the canonical overlay address:
 void file_LoadOverlay(void) {
     s32 size;
     if (g_file_dma_flag != 0) return;
-    size = func_80060CB8(0x801D8800, 0x8010E800);
+    size = eff_LoadImagesAndSetup(0x801D8800, 0x8010E800);
     debug_printf((s32)&g_str_eff_init, 0x8010E800, size);
     if (0xA000 < size) sys_Panic();        // sanity-check: <40 KB
     g_file_dma_flag = 1;
 }
 ```
 
-`func_80060CB8(dest, staging)` is the not-yet-named CD-load shim — given
-the size guard `0xA000 < size -> Panic`, it appears to copy a small
-overlay/effect blob (≤ 40 KB) rather than the full 122 KB MOVOVL.EXE.
+`eff_LoadImagesAndSetup(dest, staging)` (51268.c) reads the effect file into
+`dest`, uploads its two images to VRAM and carves the effect quad buffers from
+`staging`. With the size guard `0xA000 < size -> Panic` it handles a small
+effect blob (≤ 40 KB), not the full 122 KB MOVOVL.EXE.
 That suggests `file_LoadOverlay` actually loads a *different* overlay
 blob (the in-game effects overlay) into the same address window, and
 the FMV overlay is loaded by a separate boot-time path that the main

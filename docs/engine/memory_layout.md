@@ -53,9 +53,9 @@ These addresses are set in code:
 | --- | --- | --- | --- |
 | 0x801D8800 | 0x13400 | primitive buffer 0 (`D_800A3770[0]`) | `func_80016D78` (src/main/6CF8.c:289) |
 | 0x801EBC00 | 0x13400 | primitive buffer 1 (`D_800A3770[1]`); ends at 0x801FF000 | src/main/6CF8.c:290 |
-| 0x801D8800 | | also load scratch: `eff_Init`'s `func_80060CB8(0x801D8800, ...)` (called from mode handlers) and `snd_LoadCommonVab(0x801D8800)` (at boot and again after `sys_Exec` returns) | src/main/6CF8.c:254, :269 |
+| 0x801D8800 | | also load scratch: `eff_Init`'s `eff_LoadImagesAndSetup(0x801D8800, ...)` (called from mode handlers) and `snd_LoadCommonVab(0x801D8800)` (at boot and again after `sys_Exec` returns) | src/main/6CF8.c:254, :269 |
 | 0x8010DB00 | <= 0xD00 | the common VAB's main-RAM part (sound table + VabHdr), copied from 0x801D8800 | src/main/6CF8.c:273 |
-| 0x8010E800 | 2 x 0x4650 | `POLY_FT4` buffers `D_800A3420` / `D_800A3424` set by `func_80060CB8` | 51268.c, `func_80060CB8` |
+| 0x8010E800 | 2 x 0x4650 | `POLY_FT4` buffers `D_800A3420` / `D_800A3424` set by `eff_LoadImagesAndSetup` | 51268.c, `eff_LoadImagesAndSetup` |
 | 0x80118800 | | `func_80016A8C`'s image buffer at boot | src/main/6CF8.c:440 |
 | 0x801FFF00 | | stack top after `SetSp` | src/main/6CF8.c:435 |
 
@@ -94,7 +94,7 @@ prove that code reaches it through `$gp`. Check the listing.
 The 1 KB scratchpad is shared work space. Different code puts different
 records there at different times. `include/game.h` holds the per-file views:
 
-- `Unk1F800000Rec`, the 51268.c view from 0x1F800000. `func_80060E38` caches
+- `Unk1F800000Rec`, the 51268.c view from 0x1F800000. `eff_BindScratchpad` caches
   pointers into it in `D_800A3468..`.
 - the 17AFC.c collision record at 0x1F8002B8..0x1F8003FF.
 
@@ -105,7 +105,7 @@ other users of those bytes. GTE helpers also stage values there, for example
 ## VRAM
 
 The two display buffers are 640 x 240 at (0, 0) and (0, 240) (`disp_Init`,
-src/main/6CF8.c:164-167). `func_80060CB8` uploads its image to the column
+src/main/6CF8.c:164-167). `eff_LoadImagesAndSetup` uploads its image to the column
 x = 0x380..0x3FF, as rectangles (0x380, 0, 0x80, 0x1DC) and
 (0x380, 0x1DC, 0x70, 0x24) (51268.c).
 

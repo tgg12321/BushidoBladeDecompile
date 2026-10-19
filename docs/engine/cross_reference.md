@@ -32,7 +32,7 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 | `4510C.c` | 0x8005490C | 20 functions: motion-stream playback (`func_8005490C`, `func_80058580`) ([motion.md](motion.md)) |
 | `4BC3C.c` | 0x8005B43C | 28 functions: the sound-bank layer `snd_*` / `func_8005C650` / `func_8005C6D0` ([sound.md](sound.md)) |
 | `4D0A8.c` | 0x8005C8A8 | 17 functions: UI draw chunks (`func_8005C8A8` .. `func_80060768`) |
-| `51268.c` | 0x80060A68 | 99 functions, among them `func_80060CB8` and `func_80060E04` |
+| `51268.c` | 0x80060A68 | 99 functions, among them `eff_LoadImagesAndSetup` and `eff_SelectQuadBuffer` |
 | `596CC.c` | 0x80068ECC | 48 functions: the row menu (`func_80068F70`, `func_8006B578`) and `func_8006E49C` ([menus.md](menus.md)) |
 | `5ED34.c` | 0x8006E534 | `func_8006E534` .. `func_80073200` (`menu_UpdateEntryGridCursors`, [replay.md](replay.md)) |
 | `63D2C.c` | 0x8007352C | 5 functions: the sprite walkers `func_8007352C` / `func_80073728` ([gpu_pipeline.md](gpu_pipeline.md)) |

@@ -710,7 +710,7 @@ void eff_SetBillboardList(Unk800F1198Record *arg0) {
     D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;
 }
 
-/* Draw the D_800F1198 effect particles (see eff_SetBillboardList): per record
+/* Draw the D_800F1198 billboard list (see eff_SetBillboardList): per record
    until the terminator, pick a sprite size and an animation frame from the
    record's type, rotate/translate its position, project it, and when it lands
    in range emit one textured POLY_FT4 billboard and link it into the OT at its
