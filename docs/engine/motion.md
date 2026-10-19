@@ -113,6 +113,6 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
   `replay_RecordFighter` from `unk_50`, `unk_F4`, `unk_64..unk_68` and others): it
   decodes the two stored frame keys and calls `func_80041188` /
   `func_80040D48` as the live path does.
-- `func_8005490C` (src/main/4510C.c) plays a loaded sequence: a camera
+- `motion_UpdatePlayback` (src/main/4510C.c) plays a loaded sequence: a camera
   stream plus per-object motion streams it registers with `func_8001979C`
   and decodes each frame with `func_800198D0`.

@@ -57,7 +57,7 @@ banked; landing on a referenced object or a different-kind sub-object fails. (4)
 describe what the code assumes, not a claim about all data.
 
 Still banned under Ruling 9: `y1`, `c`, `src`/`idx`, `half`, prnt's `n`, func_8001BE20
-`shift`, func_8005490C `obj`, fighter_CastWeaponSegment dx/dy/dz, func_8008B488 `rate` (except via Q51),
+`shift`, motion_UpdatePlayback `obj`, fighter_CastWeaponSegment dx/dy/dz, func_8008B488 `rate` (except via Q51),
 func_80057E84 `vtx`/`node`, fighter_ResolveBodyOverlap `tbl`, fighter_CastWeaponSegment `lzc_in`.
 
 ## Ruling 10 — verified original source, verbatim reuse (2026-09-25)

@@ -36,7 +36,7 @@ start-up code, in order:
    - `eff_SelectQuadBuffer(idx)` (src/main/51268.c), `font_BeginFrame()`
      (src/main/2B344.c:1131), `pad_Update(skip)` (last frame's `D_800A390D`),
      `cdrom_Update()`,
-     `func_8005C6D0()` (src/main/4BC3C.c);
+     `snd_FlushSoundQueue()` (src/main/4BC3C.c);
    - if the link-abort request `g_comb_abort_request` is set (its one setter is
      `comb_Abort`, src/main/28708.c:1605): `cdrom_PauseAndWait()`, display off
      (`D_800A3768 = DISP_DISABLED`), clears the request and `D_800A31DA`, and
@@ -76,7 +76,7 @@ start-up code, in order:
 ## The pause menu: `func_80016E60`
 
 `func_80016E60` (src/main/6CF8.c:312) runs its own frame loop (OT, `pad_Update`,
-`func_8005C8A8` to draw, `cdrom_Update`, `func_8005C6D0`, present) with 3
+`func_8005C8A8` to draw, `cdrom_Update`, `snd_FlushSoundQueue`, present) with 3
 choices, or 6 when `D_800A38DC == 2` and `D_800A389A` is 0. Up / Down move
 the choice, Left / Right toggle bits of `D_800A3788` on choices 3..5, Cross
 confirms and Triangle cancels. Choice 1 sets `D_800A31DA = 1` and mode 8;

@@ -26,7 +26,7 @@ are described in [docs/formats/](../formats/README.md).
 4. `func_8005C614`, which sets `SsSetMVol(0x7F, 0x7F)`, stereo and auto
    key-off mode 0.
 5. Sets `D_800A3906 = 1`. That flag lets `cdrom_WaitIdle` call
-   `func_8005C6D0` on each pass (`main` calls it every frame regardless,
+   `snd_FlushSoundQueue` on each pass (`main` calls it every frame regardless,
    src/main/6CF8.c:458).
 
 `sys_Exec` (src/main/cdrom.c:209) runs it again after the FMV overlay
@@ -44,23 +44,23 @@ fourth is the body size in SPU RAM.
 | --- | --- |
 | `snd_Init` | clears the 16 slots, `SsInit`, all voices off (`func_800858D0`), reverb off, `SsSetReservedVoice(0)`, `SsSetTickMode(1)`, resets the 24-entry request pool, `SsStart` |
 | `snd_Quit` | voices and reverb off, `SsEnd`, `SsQuit`, clears the slots |
-| `snd_LoadCommonVab(dst)` | reads group-2 file 1 into `dst` and loads it as slot 0 with `func_8005C2A8`, at SPU address 0x1010 |
-| `func_8005C2A8(pack, slot, scratch)` | closes the slot. For a slot other than 0 it sets the next SPU address to the end of the resident banks and compacts SPU RAM (`func_8005C074`). It relocates the pack's offsets, opens it with `snd_VabOpen`, then records the slot and `SsUtGetVBaddrInSB(slot)`. Prints `"vab id:%d mistake"` on failure |
+| `snd_LoadCommonVab(dst)` | reads group-2 file 1 into `dst` and loads it as slot 0 with `snd_LoadVabPack`, at SPU address 0x1010 |
+| `snd_LoadVabPack(pack, slot, scratch)` | closes the slot. For a slot other than 0 it sets the next SPU address to the end of the resident banks and compacts SPU RAM (`snd_CompactVabBodies`). It relocates the pack's offsets, opens it with `snd_VabOpen`, then records the slot and `SsUtGetVBaddrInSB(slot)`. Prints `"vab id:%d mistake"` on failure |
 | `snd_VabOpen(pack, slot)` | `SsVabOpenHeadSticky` at the next SPU address, then `SsVabTransBody` |
 | `snd_VabFakeOpen(delta, slot)` | moves a slot's pack in main RAM by `delta` and re-registers it with `SsVabFakeHead` / `SsVabFakeBody` |
-| `func_8005C074(slot, buf)` | sorts slots 1..15 by SPU address and moves every body after the first gap down to close it (`snd_MoveVabBody`) |
+| `snd_CompactVabBodies(slot, buf)` | sorts slots 1..15 by SPU address and moves every body after the first gap down to close it (`snd_MoveVabBody`) |
 | `snd_MoveVabBody(buf, slot, dst, src)` | copies a body inside SPU RAM through `buf` (`SpuRead`, then `SpuWrite`) and re-fakes its head |
 | `func_8005B8B8` / `func_8005B9FC` / `func_8005BA8C` | load group-2 files 0x5D + 0x5E into slots 8 and 4, file 8 into slot 9, and file `9 + arg1` into the three slots in `g_vab_id_list` |
 | `snd_CloseVab1`, `snd_CloseListedVabs`, `func_8005B644`, `func_8005B6AC`, `func_8005B868`, `func_8005B9C4`, `func_8005B72C` | `SsVabClose` on fixed slots (`func_8005B644(a0)`: slot `3*a0 + 1`; `func_8005B72C`: slots 1..15, plus reverb off and a pool reset), clearing their records |
-| `func_8005BE84(n)` / `func_8005BF3C` | set reverb type `D_8009AD1C[n][0]` (`SpuClearReverbWorkArea`, `SsUtReverbOn`) and depth `2n + 1` / reverb off |
+| `snd_SetReverb(n)` / `snd_StopVoicesAndReverb` | set reverb type `D_8009AD1C[n][0]` (`SpuClearReverbWorkArea`, `SsUtReverbOn`) and depth `2n + 1` / reverb off |
 
 ## One-shot sounds
 
-`func_8005C650(id, volr, voll)` (4BC3C.c) queues sound `id`. It puts
+`snd_QueueSound(id, volr, voll)` (4BC3C.c) queues sound `id`. It puts
 `&D_8009AA70[id]`, a pair (slot, index), into the first free entry of the
 24-entry pool `D_800EFB78` (`Unk800EFB78Entry`, include/game.h:840-849).
 
-`func_8005C6D0` (4BC3C.c) flushes the pool once per frame. For each
+`snd_FlushSoundQueue` (4BC3C.c) flushes the pool once per frame. For each
 queued entry whose slot is loaded, it takes the next voice from the running
 cursor that `SpuGetKeyStatus` reports free. It reads the slot's sound table
 word `w = table[index]` and calls:
@@ -72,7 +72,7 @@ SsUtKeyOnV(voice, slot, w & 0x7F, (w >> 7) & 0xF,
 
 The arguments after `slot` are program, tone, note and fine pitch. A request
 for slot 6 plays slot 3 when the two are the same pack. Every entry is
-cleared as it is visited. `func_8005C650` has callers in 11 game TUs.
+cleared as it is visited. `snd_QueueSound` has callers in 11 game TUs.
 
 ## CD audio mix
 

@@ -50,7 +50,7 @@ member is `Unk80101E60Rec`):
 its 1 + `D_800A35B0` + `D_800A3554` cursors it moves a (row, column) position
 over a 5-row table
 (`D_8009BC40`) on the pad bits in `D_800A354C`, skipping cells already taken
-(`D_8009BC7C` flag 4), plays `func_8005C650` sounds, confirms or cancels a
+(`D_8009BC7C` flag 4), plays `snd_QueueSound` sounds, confirms or cancels a
 choice, and draws the cells with `func_8007352C`.
 
 `func_8003E2D8(arg0, arg1, arg2, arg3)` (src/main/2B344.c:1713) walks the cells
@@ -119,7 +119,7 @@ The two other "rob back" names sit on unrelated code: `func_80035618`
 argument (0..7) that sets the state `D_800A3740` and, by case, calls
 `func_800784E4`, `func_80077984` and `func_80077A80` (each with the buffer
 address 0x80118800), `snd_SerialMixOn`, `cdrom_StartAudioEntry`,
-`func_80077A28`, `comb_Connect`, `func_80077940`, `func_8005C650` and
+`func_80077A28`, `comb_Connect`, `func_80077940`, `snd_QueueSound` and
 `func_800355E8`;
 `math_RotMatrixYXZ` (src/main/32D04.c:268, once
 `replay_camera_rob_back_loose3`) builds a rotation matrix from three angles.
@@ -143,7 +143,7 @@ while (1) {
     if (cdrom_IsIdle() != 0) break;
     comb_ExchangeEmptyPad();
     cdrom_Update();
-    if (D_800A3906 != 0) func_8005C6D0();
+    if (D_800A3906 != 0) snd_FlushSoundQueue();
     func_800174F4();
     *p = *p + 2;                          // D_80101E58.rec.unk3E
     VSync(2);

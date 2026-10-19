@@ -28,9 +28,9 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 | `35000.c` | 0x80044800 | 44 functions: the `arena_*` allocator and the `ndata_*` NDATA reader / pack cache ([NDATA.md](../formats/NDATA.md)) |
 | `368E4.c` | 0x800460E4 | 103 functions: `rcnt_StartCnt1`, `camera_CalcAngles`, `math_Grayscale*`, `gpu_LoadTimClut`, the view set-up `func_80046BF4` ([replay.md](replay.md)), `math_SetLightPlaneProjection` / `math_ApplyLightPlaneProjection` ([gpu_pipeline.md](gpu_pipeline.md)) |
 | `3AB48.c` | 0x8004A348 | 72 functions: GTE and math helpers (`gte_*`, `math_*`) and the renderers `func_8004C994` .. `func_80051ED4` |
-| `43500.c` | 0x80052D00 | 16 functions: the stage-collision grid walk `func_80052D00` and its tests and accessors (`func_80053614`), then the motion-sequence loader `func_80054604` ([motion.md](motion.md)) |
-| `4510C.c` | 0x8005490C | 20 functions: motion-stream playback (`func_8005490C`, `func_80058580`) ([motion.md](motion.md)) |
-| `4BC3C.c` | 0x8005B43C | 28 functions: the sound-bank layer `snd_*` / `func_8005C650` / `func_8005C6D0` ([sound.md](sound.md)) |
+| `43500.c` | 0x80052D00 | 16 functions: the stage-collision grid walk `collision_WalkSegmentGrid` and its tests and accessors (`collision_TestSegmentWithWork`), then the motion-sequence loader `motion_StartPlayback` ([motion.md](motion.md)) |
+| `4510C.c` | 0x8005490C | 20 functions: motion-stream playback (`motion_UpdatePlayback`, `func_80058580`) ([motion.md](motion.md)) |
+| `4BC3C.c` | 0x8005B43C | 28 functions: the sound-bank layer `snd_*` / `snd_QueueSound` / `snd_FlushSoundQueue` ([sound.md](sound.md)) |
 | `4D0A8.c` | 0x8005C8A8 | 17 functions: UI draw chunks (`func_8005C8A8` .. `func_80060768`) |
 | `51268.c` | 0x80060A68 | 99 functions, among them `eff_LoadImagesAndSetup` and `eff_SelectQuadBuffer` |
 | `596CC.c` | 0x80068ECC | 48 functions: the row menu (`func_80068F70`, `func_8006B578`) and `gpu_InitPrimBufferPair` ([menus.md](menus.md)) |

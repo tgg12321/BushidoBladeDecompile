@@ -113,7 +113,7 @@ Steppers:
 Waits:
 
 - `cdrom_WaitIdle` (src/main/cdrom.c:57) loops until state 0. Each pass calls
-  `comb_ExchangeEmptyPad`, `cdrom_Update`, `func_8005C6D0` (while
+  `comb_ExchangeEmptyPad`, `cdrom_Update`, `snd_FlushSoundQueue` (while
   `D_800A3906` is set), `func_800174F4`, and `VSync(2)`. The loop sits
   between `comb_BeginWait` and `comb_EndWait`.
 - `cdrom_WaitAudioStarted` (src/main/cdrom.c:146) loops until state 0x16.
