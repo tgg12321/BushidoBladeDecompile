@@ -90,7 +90,7 @@ item that links them (e.g. [[phantom-frame-pad-family]]'s allowlist row and labe
   their existing debt (e.g. `memory/grind/judge-decl-cleanup/` disposition rows) stays there.
 - **Re-opened (clause D):** per-function refusals that rested on hygiene grounds or on
   "outside the frozen list" alone, including Q45/Q77 (func_8005C8A8), Q66 (func_800770B8),
-  Q84 (camera_CalcAngles) and the func_80020E74 / _SsVmFlush rotations. Re-judge them under
+  Q84 (camera_CalcAngles) and the motion_LoadFighterData / _SsVmFlush rotations. Re-judge them under
   items 1-6. Refusals resting on item 2 stand.
 - The narrow per-function admissions Q76 and Q82 ([[ordinary-c-judge-decidable]]) are
   instances of item 3 and need no ruling of their own going forward.

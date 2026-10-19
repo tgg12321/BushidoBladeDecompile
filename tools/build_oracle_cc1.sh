@@ -177,7 +177,7 @@ fi
 #           from stock only at (plus REG CONST_INT) disjoint-bit sites; its one
 #           dependent function, func_800174F4, returned to INCLUDE_ASM in the
 #           same change. Expects:
-#     main/9F9C: func_8001A820 (landed 2026-09-27, 87450b3e7) — stock emits
+#     main/9F9C: camera_UpdateTwoFighterView (landed 2026-09-27, 87450b3e7) — stock emits
 #             the target's `lhu` + `sll 16; sra 16` for its s16 field reads;
 #             the narrow compiler folds them to `lh` and swaps the subtraction
 #             operands (28 lines).

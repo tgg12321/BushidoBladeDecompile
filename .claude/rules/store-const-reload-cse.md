@@ -37,7 +37,7 @@ if (GLOBAL == 2) goto ...;  /* re-read */
 ```
 
 On the no-store path the entry value is still available and GCC reuses `$v1`; on the store path the store kills
-it and GCC reloads with `lui;lbu %lo` exactly where the target does. func_8001E404: 2 → 0.
+it and GCC reloads with `lui;lbu %lo` exactly where the target does. camera_ApplyFightView: 2 → 0.
 
 **Do NOT use `volatile`** (`*(volatile u8 *)&GLOBAL`): it is a forbidden coercion and measurably worse (full
 address materialization, a stray `nop`, an extra `andi`).

@@ -2892,7 +2892,7 @@ def ledger_close_refusal(root, func):
     """None when `func`'s ledger may be closed, else the reason: it is still
     queued, still INCLUDE_ASM in src/, has no body in src/ at all, or carries
     a HANDOFF.md (open follow-up work banked under a completed function's
-    name, e.g. func_80021424's PracticeMenuRec cleanup series)."""
+    name, e.g. motion_ResolveMoveData's PracticeMenuRec cleanup series)."""
     if os.path.isfile(os.path.join(ledger_dir(root, func), "HANDOFF.md")):
         return f"memory/grind/{func}/HANDOFF.md holds open work; close it by hand when done"
     try:

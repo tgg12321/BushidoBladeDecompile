@@ -9,11 +9,11 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 
 ## Loading
 
-- `func_80020DDC` (src/main/9F9C.c:2991) reads file `cdrom_GetFileIndex(1, 1)`
+- `motion_LoadCommonData` (src/main/9F9C.c:2991) reads file `cdrom_GetFileIndex(1, 1)`
   to `D_800A3830` and points the common record `D_80102760` (include/bb2.h:479)
   at its sections: the move streams at +0x14, then the sections named by the
   header words at +4, +8 and +0x10 (`unk_04`, `unk_08`, `unk_10`).
-- `func_80020E74` (src/main/9F9C.c:3016) loads up to two character files
+- `motion_LoadFighterData` (src/main/9F9C.c:3016) loads up to two character files
   (`cdrom_GetFileIndex(1, j + 2)`, `j` the model id's index in `D_8008DCCC`)
   into `D_800A3860[0..1]` (`Tbl800A3860Entry`, include/game.h:720-734) and points
   `D_801027B0[i]` (include/bb2.h:482) at their sections, as the comment on
@@ -26,7 +26,7 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 
 ## Move scripts
 
-`func_80021424(rec, id, out)` (src/main/9F9C.c:3231) turns a move id into a
+`motion_ResolveMoveData(rec, id, out)` (src/main/9F9C.c:3231) turns a move id into a
 `MoveScript *`:
 
 - ids 0x7FF0..0x7FFF select through the character file's tables (`f4E`,
@@ -46,7 +46,7 @@ from `script->unk_06` and records the previous state in `unk_6C`.
 
 The script's own fields (`unk_00` / `unk_02` follow-up ids, `unk_07` /
 `unk_08` frame bounds, `unk_09` flags, and the command list from `unk_0A`)
-are walked by `func_80023F08`, as the comment on `MoveScript` records
+are walked by `fighter_Update`, as the comment on `MoveScript` records
 (include/game.h:1364).
 
 ## The frame decoder
@@ -71,15 +71,15 @@ loaded bitstream.
 and distance, `unk_06..unk_0A` the root rotation angles, and `unk_0C[]` the
 per-joint channels (the comment at include/game.h:1317).
 
-## Per-frame update: `func_80023F08`
+## Per-frame update: `fighter_Update`
 
-The fighter loop calls `func_8001BE20(i, pad)` and then `func_80023F08(i, pad)`
+The fighter loop calls `func_8001BE20(i, pad)` and then `fighter_Update(i, pad)`
 for each fighter (src/main/9F9C.c:2040-2043); the variants at :2086 and :2195
-call only `func_80023F08`, with a pad cleared by `pad_ClearStateBits`.
-`func_80023F08` (src/main/9F9C.c:4337; its comment lists the whole sequence):
+call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
+`fighter_Update` (src/main/9F9C.c:4337; its comment lists the whole sequence):
 
 1. converts the pad bits, advances the frame `unk_40` and runs the move
-   script's command list, switching moves through `func_80021424` /
+   script's command list, switching moves through `motion_ResolveMoveData` /
    `func_80021A98`;
 2. decodes the frames at `unk_40` and the next one with `func_800198D0`
    (src/main/9F9C.c:4704-4705), or copies `D_800A3888[i][unk_40]` in state
@@ -89,7 +89,7 @@ call only `func_80023F08`, with a pad cleared by `pad_ClearStateBits`.
    through `Judge`, scaled by `unk_1A`), blended by `unk_42` or by `unk_318`
    against the held frame `unk_290`; the weight goes to `unk_68`;
 4. integrates the velocities `unk_104` / `unk_134`, resolves the position
-   (`func_8002304C`, src/main/9F9C.c:3868), and builds the pose:
+   (`fighter_ResolveMovement`, src/main/9F9C.c:3868), and builds the pose:
    `func_80041188(i, &f0, &f1, unk_68, ...)` (src/main/9F9C.c:4898) and
    `func_80040D48` (src/main/9F9C.c:4901).
 

@@ -98,11 +98,11 @@ an opponent order; the code does not name it.
   position, with a weight that shrinks from 60 to 10 as the counter `unk_34C`
   (capped at 0x40) grows; otherwise the entry
   `func_80046F14()[D_800A36A4 * 12 + index * 3]`. It then zeroes `unk_104` /
-  `unk_134`, switches its move (the script `func_80021424` resolves from
+  `unk_134`, switches its move (the script `motion_ResolveMoveData` resolves from
   `unk_50->unk_00` and that record's halfword 0x1D, made current by
   `func_80021A98`) and plays
   cue 0x30.
-- `func_8001BC70(rec, a1)` (src/main/9F9C.c:980) sets the view target
+- `camera_SetFighterFocusView(rec, a1)` (src/main/9F9C.c:980) sets the view target
   `D_800F6608.unk_00` to `rec->unk_174`, its rotation to `(0x120, a1, 0)` and
   its distance `w18` to 0x1162. Its caller is `func_8001EA84`
   (src/main/9F9C.c:2081).

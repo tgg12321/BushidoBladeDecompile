@@ -614,7 +614,7 @@ PROLOGUE_BODY_INSN_RE = re.compile(
 def scan_prologue_config_splices(config_text):
     """Functions whose tools/prologue_config.json entry contains BODY-class
     instructions (loads/branches) — beyond prologue_fix's contract of
-    reordering cc1's OWN prologue insns (audit 2026-08-18: func_8002304C's
+    reordering cc1's OWN prologue insns (audit 2026-08-18: fighter_ResolveMovement's
     29-line entry carried 5 body instructions with no detector coverage).
     `config_text` is the raw JSON text (current file or a git-show of HEAD)."""
     import json as _json

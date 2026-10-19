@@ -16,7 +16,7 @@ Code names a file by group and index:
 `(&D_8008F12C)[group] + i`, a group base from the s16 table `D_8008F12C`
 plus an offset. The groups that appear in calls:
 
-- group 1: `func_80020DDC` reads `cdrom_GetFileIndex(1, 1)` into the buffer
+- group 1: `motion_LoadCommonData` reads `cdrom_GetFileIndex(1, 1)` into the buffer
   at `D_800A3830` (src/main/9F9C.c:2991), and the motion data `(1, 0)` /
   `(1, j + 2)` (9F9C.c:3040, :3090).
 - group 2: image and data files. Readers include `func_80060CB8`,
