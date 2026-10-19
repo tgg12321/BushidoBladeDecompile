@@ -1888,15 +1888,15 @@ typedef struct Unk8001CD68Rec {
 
 /* Two 0x58-byte records set up side by side by func_80049E4C: 0x80101DF0
  * (unk0 = 0x64, unk8 = 5; pointer stored to D_800A3708) and 0x800FF638
- * (unk0 = 0x65, unk8 = 2; pointer stored to D_800A370C). func_800418D0
- * passes a negated stack copy of xf.rot and &work to D_800F66A0[unk8],
- * then copies work to xf.mat; func_80046BF4 writes work.t just before that
- * call. func_800475A4 passes &xf.rot to D_800F66A0[0] and &xf.mat to
- * ApplyMatrix. D_800EEDF0 and D_800EF070 are two more
- * records of this layout: func_800472C0 initialises the first,
- * wave_Init sets up the second and passes it to func_800417D0, which reads
- * unk6 as a state. rot is the RotMatrix-style angle SVECTOR the rotation
- * handlers take; mat and work are libgte MATRIXes. */
+ * (unk0 = 0x65, unk8 = 2; pointer stored to D_800A370C).
+ * node_SetMatrixFromNegatedRot passes a negated stack copy of xf.rot and &work
+ * to D_800F66A0[unk8], then copies work to xf.mat; func_80046BF4 writes work.t
+ * just before that call. func_800475A4 passes &xf.rot to D_800F66A0[0] and
+ * &xf.mat to ApplyMatrix. D_800EEDF0 and D_800EF070 are two more records of
+ * this layout: func_800472C0 initialises the first, wave_Init sets up the
+ * second and passes it to node_UpdateWorldMatrix, which reads unk6 as a state.
+ * rot is the RotMatrix-style angle SVECTOR the rotation handlers take; mat and
+ * work are libgte MATRIXes. */
 typedef struct {
     SVECTOR rot; /* +0x00 */
     MATRIX mat;  /* +0x08 */
@@ -1943,16 +1943,17 @@ typedef struct {
 /* 0x800F66A0: the rotation-to-matrix handlers a transform node's unk8 selects
  * (rot -> matrix, PsyQ RotMatrix shape).  func_80042E90 fills [0] ZYX, [2] ZXY,
  * [4] YXZ, [5] XYZ ([1] and [3] are never written); the nodes set unk8 to 0, 2,
- * 4 and 5, and func_8003EDC0 / func_800417D0 / func_800418D0 /
- * func_800472C0 index it by unk8 (4-byte stride).  _svm_vab_vh follows at
- * 0x800F66B8. */
+ * 4 and 5, and func_8003EDC0 / node_UpdateWorldMatrix /
+ * node_SetMatrixFromNegatedRot / func_800472C0 index it by unk8 (4-byte
+ * stride).  _svm_vab_vh follows at 0x800F66B8. */
 typedef void (*RotMatrixFunc)(SVECTOR *, MATRIX *);
 
 /* The 0x68-byte records of the table func_8003F1D4 returns: a transform
  * node of the Unk80101DF0Record layout, then a byte flag. func_8003EDC0
  * fills them from a stream and calls D_800F66A0[unk8] on &xf.rot /
- * &xf.mat (func_800418D0's call); func_8003E6D8 and func_8003EB84 queue each
- * one on g_draw_queue at most once, guarded by unk58. */
+ * &xf.mat (node_SetMatrixFromNegatedRot's call); func_8003E6D8 and
+ * func_8003EB84 queue each one on g_draw_queue at most once, guarded by unk58.
+ */
 typedef struct {
     Unk80101DF0Record node; /* +0x00 */
     u8 unk58;               /* +0x58 */
@@ -2174,10 +2175,10 @@ typedef struct {
 } Func80017848Edge;
 
 /* 6CF8's object record (sizeof = 0x34): D_800F6740 holds eight,
- * func_80017D84 fills a free one from a Func80017A44Input and func_80017A44
- * builds its node / edge graph; 87A0 steps it (func_8001924C by each
+ * softbody_Create fills a free one from a Func80017A44Input and softbody_Build
+ * builds its node / edge graph; 87A0 steps it (softbody_UpdateList by each
  * Unk80017FA0Rec's unk0). points: the input's point table, 0 = free
- * (func_80017E8C); count: its node count; flags: the input's flags; records /
+ * (softbody_Free); count: its node count; flags: the input's flags; records /
  * edges: the node and edge tables (edges right after the count 0x40-byte
  * nodes); matrix: a copy of the input's matrix. */
 typedef struct {
@@ -2192,9 +2193,10 @@ typedef struct {
 
 /* The 16-byte object descriptor (2B344 func_8003FA24 fills it in each
  * Unk8003F824Rec, func_8003F824 copies it into Unk8003F62CRec.unk418; 87A0
- * func_8001924C steps one object per descriptor): the object's D_800F6740
- * index (unk0), its flags (unk2; bit 0 picks func_80019310 over func_800187F4),
- * the object's matrix, its point table end and its collision-volume block. */
+ * softbody_UpdateList steps one object per descriptor): the object's D_800F6740
+ * index (unk0), its flags (unk2; bit 0 picks softbody_SnapToPoints over
+ * softbody_Step), the object's matrix, its point table end and its
+ * collision-volume block. */
 typedef struct {
     /* 0x00 */ s16 unk0;
     /* 0x02 */ u8 unk2;
@@ -2206,9 +2208,9 @@ typedef struct {
 
 /* The collision volumes of one Unk8003F824Rec (2B344 Func8003F6D8Inner +0x10;
  * Unk80017FA0Rec.unkC points here): unk00 (func_800400B0 sets it; 87A0
- * func_80017FA0 scales it into the scratchpad's ground word), the volume count,
- * each volume's two foci (gte_SetMatrixRotTransIR writes each as three words)
- * and its bound (unk68). */
+ * softbody_LoadColliders scales it into the scratchpad's ground word), the
+ * volume count, each volume's two foci (gte_SetMatrixRotTransIR writes each as
+ * three words) and its bound (unk68). */
 typedef struct Unk8003F6D8Coll {
     /* 0x00 */ s32 unk00;
     /* 0x04 */ s32 count;
@@ -2216,7 +2218,7 @@ typedef struct Unk8003F6D8Coll {
     /* 0x68 */ s32 unk68[3];
 } Unk8003F6D8Coll;
 
-/* func_80017D84's argument (2B344 func_8003FA24 builds it on its stack): the
+/* softbody_Create's argument (2B344 func_8003FA24 builds it on its stack): the
  * point table and its count, the flags, the group list, the object's matrix and
  * the buffer the node / edge tables go to. */
 typedef struct {

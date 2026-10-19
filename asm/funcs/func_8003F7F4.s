@@ -1,7 +1,7 @@
 glabel func_8003F7F4
     /* 2FFF4 8003F7F4 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2FFF8 8003F7F8 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 2FFFC 8003F7FC C55D000C */  jal        func_80017714
+    /* 2FFFC 8003F7FC C55D000C */  jal        softbody_FreeAll
     /* 30000 8003F800 00000000 */   nop
     /* 30004 8003F804 E45F000C */  jal        func_80017F90
     /* 30008 8003F808 00000000 */   nop

@@ -79,7 +79,7 @@ glabel func_80046BF4
     /* 37528 80046D28 21104300 */  addu       $v0, $v0, $v1
     /* 3752C 80046D2C 1080013C */  lui        $at, %hi(D_80101E44)
     /* 37530 80046D30 441E22AC */  sw         $v0, %lo(D_80101E44)($at)
-    /* 37534 80046D34 3406010C */  jal        func_800418D0
+    /* 37534 80046D34 3406010C */  jal        node_SetMatrixFromNegatedRot
     /* 37538 80046D38 F0FF2426 */   addiu     $a0, $s1, -0x10
     /* 3753C 80046D3C 841C010C */  jal        func_80047210
     /* 37540 80046D40 00000000 */   nop

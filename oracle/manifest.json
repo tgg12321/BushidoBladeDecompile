@@ -277,7 +277,7 @@
       "text_sha1": "22debe3af7d4c7b3ed04c11abc5c06f9df1f05d6"
     },
     {
-      "name": "func_8003F6D8",
+      "name": "softbody_UpdateColliders",
       "file": "src/main/2B344.c",
       "vram": "0x8003F6D8",
       "size": 284,

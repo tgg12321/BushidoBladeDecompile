@@ -46,7 +46,7 @@ void func_80044800(void) {
             rec->node.xf.rot.vy = *var_7++;
             rec->node.xf.rot.vz = *var_7++;
             rec->node.unk6 = 0;
-            func_800417D0(&rec->node);
+            node_UpdateWorldMatrix(&rec->node);
             MulMatrix2(&mat, &rec->node.xf.mat);
             cos_val = Judge[(angle + 0x400) & 0xFFF];
             cz = cos_val * var_0.vz;
@@ -79,7 +79,7 @@ void func_80044800(void) {
                 rec->node.xf.rot.vy = *var_7++;
                 rec->node.xf.rot.vz = *var_7++;
                 rec->node.unk6 = 0;
-                func_800417D0(&rec->node);
+                node_UpdateWorldMatrix(&rec->node);
                 rec->node.xf.mat.t[0] += var_0.vx;
                 rec->node.xf.mat.t[1] += var_0.vy;
                 rec->node.xf.mat.t[2] += var_0.vz;

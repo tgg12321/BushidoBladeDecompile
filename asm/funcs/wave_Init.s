@@ -136,7 +136,7 @@ glabel wave_Init
     /* 381E8 800479E8 7CF020AC */  sw         $zero, %lo(D_800EF07C)($at)
     /* 381EC 800479EC 0F80013C */  lui        $at, %hi(D_800EF076)
     /* 381F0 800479F0 76F020A4 */  sh         $zero, %lo(D_800EF076)($at)
-    /* 381F4 800479F4 F405010C */  jal        func_800417D0
+    /* 381F4 800479F4 F405010C */  jal        node_UpdateWorldMatrix
     /* 381F8 800479F8 00000000 */   nop
     /* 381FC 800479FC 21380000 */  addu       $a3, $zero, $zero
     /* 38200 80047A00 21300000 */  addu       $a2, $zero, $zero

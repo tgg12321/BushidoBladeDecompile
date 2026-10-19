@@ -481,7 +481,7 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
             D_80101DF0.work.t[2] = result[2] + a0->z;
         }
 
-        func_800418D0(&D_80101DF0);
+        node_SetMatrixFromNegatedRot(&D_80101DF0);
         func_80047210();
         func_8003F274();
 
@@ -851,7 +851,7 @@ s32 wave_Init(void) {
         node->unk8 = 0;
         node->unkC = 0;
         node->unk6 = 0;
-        func_800417D0(node);
+        node_UpdateWorldMatrix(node);
     }
 
     a3 = 0;
@@ -2052,7 +2052,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     obj->node.unkC = &slot_obj->unk_2C[12].node;
     obj->node.unk6 = 0;
     obj->node.xf.rot.vz = rot_z;
-    func_800417D0(&obj->node);
+    node_UpdateWorldMatrix(&obj->node);
     list = g_draw_queue_cursor;
     g_draw_queue_cursor = list + 1;
     *list = obj;
@@ -2213,7 +2213,7 @@ void func_80049E4C(void) {
     D_80101DF0.work.t[2] = 0;
     D_80101DF0.unkC = 0;
     D_80101DF0.unk8 = 5;
-    func_800418D0(p1);
+    node_SetMatrixFromNegatedRot(p1);
     p2->unk0 = 0x65;
     D_800FF638.unk1 = 0;
     D_800FF638.xf.rot.vx = 0;
@@ -2224,7 +2224,7 @@ void func_80049E4C(void) {
     D_800FF638.work.t[2] = 0;
     D_800FF638.unkC = 0;
     D_800FF638.unk8 = 2;
-    func_800418D0(p2);
+    node_SetMatrixFromNegatedRot(p2);
     D_800A3708 = p1;
     D_800A370C = p2;
 }

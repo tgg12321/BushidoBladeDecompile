@@ -81,7 +81,7 @@ glabel func_80049A2C
     /* 3A364 80049B64 0C052226 */  addiu      $v0, $s1, 0x50C
     /* 3A368 80049B68 0C0002AE */  sw         $v0, 0xC($s0)
     /* 3A36C 80049B6C 060000A6 */  sh         $zero, 0x6($s0)
-    /* 3A370 80049B70 F405010C */  jal        func_800417D0
+    /* 3A370 80049B70 F405010C */  jal        node_UpdateWorldMatrix
     /* 3A374 80049B74 140003A6 */   sh        $v1, 0x14($s0)
     /* 3A378 80049B78 0A80033C */  lui        $v1, %hi(g_draw_queue_cursor)
     /* 3A37C 80049B7C 2038638C */  lw         $v1, %lo(g_draw_queue_cursor)($v1)

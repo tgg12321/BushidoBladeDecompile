@@ -218,7 +218,7 @@ glabel motion_UpdatePlayback
     /* 4544C 80054C4C 18530108 */  j          .L80054C60
     /* 45450 80054C50 21880000 */   addu      $s1, $zero, $zero
   .L80054C54:
-    /* 45454 80054C54 3406010C */  jal        func_800418D0
+    /* 45454 80054C54 3406010C */  jal        node_SetMatrixFromNegatedRot
     /* 45458 80054C58 B4FF8426 */   addiu     $a0, $s4, -0x4C
     /* 4545C 80054C5C 21880000 */  addu       $s1, $zero, $zero
   .L80054C60:

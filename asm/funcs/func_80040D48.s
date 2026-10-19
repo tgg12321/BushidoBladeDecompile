@@ -171,7 +171,7 @@ glabel func_80040D48
     /* 317D8 80040FD8 500062AE */  sw         $v0, 0x50($s3)
     /* 317DC 80040FDC 0600A0A6 */  sh         $zero, 0x6($s5)
   .L80040FE0:
-    /* 317E0 80040FE0 F405010C */  jal        func_800417D0
+    /* 317E0 80040FE0 F405010C */  jal        node_UpdateWorldMatrix
     /* 317E4 80040FE4 21202002 */   addu      $a0, $s1, $zero
     /* 317E8 80040FE8 01001026 */  addiu      $s0, $s0, 0x1
     /* 317EC 80040FEC 1200022A */  slti       $v0, $s0, 0x12

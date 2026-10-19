@@ -26,10 +26,10 @@ glabel func_8003F62C
     /* 2FE88 8003F688 0700010C */  jal        func_8004001C
     /* 2FE8C 8003F68C 21200002 */   addu      $a0, $s0, $zero
   .L8003F690:
-    /* 2FE90 8003F690 B6FD000C */  jal        func_8003F6D8
+    /* 2FE90 8003F690 B6FD000C */  jal        softbody_UpdateColliders
     /* 2FE94 8003F694 21200002 */   addu      $a0, $s0, $zero
     /* 2FE98 8003F698 00000586 */  lh         $a1, 0x0($s0)
-    /* 2FE9C 8003F69C 9364000C */  jal        func_8001924C
+    /* 2FE9C 8003F69C 9364000C */  jal        softbody_UpdateList
     /* 2FEA0 8003F6A0 18040426 */   addiu     $a0, $s0, 0x418
     /* 2FEA4 8003F6A4 02000286 */  lh         $v0, 0x2($s0)
     /* 2FEA8 8003F6A8 00000000 */  nop

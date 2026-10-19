@@ -61,7 +61,7 @@ glabel func_80044800
     /* 350E8 800448E8 02002296 */  lhu        $v0, 0x2($s1)
     /* 350EC 800448EC 21204002 */  addu       $a0, $s2, $zero
     /* 350F0 800448F0 060040A6 */  sh         $zero, 0x6($s2)
-    /* 350F4 800448F4 F405010C */  jal        func_800417D0
+    /* 350F4 800448F4 F405010C */  jal        node_UpdateWorldMatrix
     /* 350F8 800448F8 140042A6 */   sh        $v0, 0x14($s2)
     /* 350FC 800448FC 2120E002 */  addu       $a0, $s7, $zero
     /* 35100 80044900 17FB010C */  jal        MulMatrix2
@@ -145,7 +145,7 @@ glabel func_80044800
     /* 35234 80044A34 02002296 */  lhu        $v0, 0x2($s1)
     /* 35238 80044A38 21204002 */  addu       $a0, $s2, $zero
     /* 3523C 80044A3C 060040A6 */  sh         $zero, 0x6($s2)
-    /* 35240 80044A40 F405010C */  jal        func_800417D0
+    /* 35240 80044A40 F405010C */  jal        node_UpdateWorldMatrix
     /* 35244 80044A44 140042A6 */   sh        $v0, 0x14($s2)
     /* 35248 80044A48 1000A387 */  lh         $v1, 0x10($sp)
     /* 3524C 80044A4C 2C00428E */  lw         $v0, 0x2C($s2)

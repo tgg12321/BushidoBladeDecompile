@@ -594,7 +594,7 @@ void func_800174F4(void) {
     DrawSync(0);
 }
 
-void func_80017714(void) {
+void softbody_FreeAll(void) {
     s32 i;
     /* FAKE: the table walked by byte offset, the target's one induction
        variable; indexed by record: score 4 */
@@ -604,7 +604,7 @@ void func_80017714(void) {
     }
 }
 
-s32 func_80017738(s32 a0, s32 a1) { return (a0 << 6) + (a1 << 4); }
+s32 softbody_GetBufferSize(s32 a0, s32 a1) { return (a0 << 6) + (a1 << 4); }
 
 s32 math_Distance3D(s32 *a0, s32 *a1) {
     s32 in[3];
@@ -631,7 +631,7 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
 /* Adds an edge between records a and b unless a == b, both records have a
  * non-negative field_18, or an edge a->b or b->a already exists. Returns 1
  * when an edge was added. */
-s32 func_80017848(Func80017A44Output *out, s32 arg1, s32 a, s32 b) {
+s32 softbody_AddSpring(Func80017A44Output *out, s32 arg1, s32 a, s32 b) {
     s32 i;
     s32 dist;
     Func80017848Edge *edge;
@@ -664,7 +664,7 @@ s32 func_80017848(Func80017A44Output *out, s32 arg1, s32 a, s32 b) {
     return 1;
 }
 
-void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
+void softbody_Build(Func80017A44Input *a0, Func80017A44Output *a1) {
     VECTOR pos;
     VECTOR var_1;
     s32 flag;
@@ -728,9 +728,9 @@ void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
             for (j = i + 1; j < var_8; j++) {
                 if (dist < math_Distance3D_16(
                                (s32 *)&var_1, record_base[var_4[j]].pos)) {
-                    func_80017848(a1, var_9, var_4[i], var_4[j]);
+                    softbody_AddSpring(a1, var_9, var_4[i], var_4[j]);
                 } else {
-                    func_80017848(a1, var_9, var_4[j], var_4[i]);
+                    softbody_AddSpring(a1, var_9, var_4[j], var_4[i]);
                 }
             }
         }
@@ -738,7 +738,7 @@ void func_80017A44(Func80017A44Input *a0, Func80017A44Output *a1) {
     }
 }
 
-s32 func_80017D84(Func80017A44Input *a0) {
+s32 softbody_Create(Func80017A44Input *a0) {
     Func80017A44Output *p;
     s32 i;
     Func80017A44Record *c;
@@ -761,20 +761,20 @@ s32 func_80017D84(Func80017A44Input *a0) {
     p->edge_count = 0;
     p->records = c;
     p->edges = (Func80017848Edge *)(c + p->count);
-    func_80017A44(a0, p);
+    softbody_Build(a0, p);
     return i;
 }
 
-void func_80017E8C(s32 a0) { D_800F6740[a0].points = 0; }
+void softbody_Free(s32 a0) { D_800F6740[a0].points = 0; }
 
-void func_80017EB4(s32 a0, s32 a1) {
+void softbody_RebaseBuffer(s32 a0, s32 a1) {
     Func80017A44Output *ptr = &D_800F6740[a0];
 
     ptr->records = (Func80017A44Record *)((u8 *)ptr->records + a1);
     ptr->edges = (Func80017848Edge *)(ptr->records + ptr->count);
 }
 
-void func_80017EF4(s32 a0, s32 a1) {
+void softbody_RebasePoints(s32 a0, s32 a1) {
     Func80017A44Output *ptr = &D_800F6740[a0];
     ptr->points = (SVECTOR *)((u8 *)ptr->points + a1);
 }

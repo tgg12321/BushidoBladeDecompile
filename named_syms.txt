@@ -364,9 +364,9 @@ func_80017F98         = 0x80017F98;  /* literal `jr ra; nop` */
 rng_SetSeed_800171AC            = 0x800171AC;  /* 3-insn setter: D_800A38BC = a0 */
 rng_Next_800171B8               = 0x800171B8;  /* LCG step: 15-bit output, multiplier chain that simplifies to *0x41C64E6D + 0x7FA9 == BB2 LCG constants */
 /* Object table helpers (4) -- all index D_800F6740 (8 object records) with stride 0x34 */
-func_80017714           = 0x80017714;  /* clear .points of all 8 entries (stride 0x34) of D_800F6740 */
+softbody_FreeAll           = 0x80017714;  /* clear .points of all 8 entries (stride 0x34) of D_800F6740 */
 /* RESET 0x80017738: retired name 'obj_CalcOffset_80017738' — preserved note: pure math: (a0<<6) + (a1<<4) -- offset into 64-byte row + 16-byte col */
-func_80017E8C              = 0x80017E8C;  /* D_800F6740[a0].points = 0 */
+softbody_Free              = 0x80017E8C;  /* D_800F6740[a0].points = 0 */
 /* RESET 0x80017EB4: retired name 'obj_UpdatePosition_80017EB4' — preserved note: add a1 bytes to D_800F6740[a0].records and recompute .edges (6CF8.c:773-778) */
 /* RESET 0x80017EF4: retired name 'obj_AddValue_80017EF4' — preserved note: add a1 bytes to field 0 (.points) of D_800F6740[a0] (6CF8.c:780-783) */
 /* Distance math (1; companion to math_Distance3D_80017748) */
@@ -1245,7 +1245,7 @@ g_font_color                                      = 0x800A3364;  /* current colo
 /* generally accurate for BB2 functions where the function body matches. */
 /* These were noted in src/ comments but never promoted into */
 /* named_syms.txt. */
-func_800187F4                              = 0x800187F4;  /* in code6cac.c */
+softbody_Step                              = 0x800187F4;  /* in code6cac.c */
 /* Skipped: replay_camera_get_attack_number at 0x8003E6A0 -- name */
 /* collides with same-named real impl that BB2's wrapper at this addr */
 /* calls (already named separately as replay_camera_get_attack_number_2arg). */
@@ -2641,7 +2641,7 @@ _svm_cur_plus_0x14                            = 0x80102804;  /* 6 refs; +4 compa
 /* RENAME 0x8007B4D0: retired name 'gpu_draw_color_prim_8007B4D0' — preserved note: GPU draw helper: gpu_DebugCheckRect(str) + pack RGB + draw via ctx fn-ptr D_8009BE6C[8] */
 /* RENAME 0x8007B564: retired name 'gpu_draw_color_prim_stp_8007B564' — preserved note: as gpu_draw_color_prim_8007B4D0 but sets color bit31 (STP/semi-transparent) */
 /* RENAME 0x8007B9B0: retired name 'gpu_copy_draw_packet_8007B9B0' — preserved note: GPU: copies 0x50-byte primitive packet (forces white 0xFFFFFF), submits via ctx D_8009BE6C[8] */
-graph_add_edge_80017848                        = 0x80017848;  /* graph edge insertion: nodes at $s2[0xC] stride64 (flag 0x18, adj-counts 0x1C/0x20, adj-lists 0x24/0x2C), edges at $s2[0x */
+/* RENAME 0x80017848: retired name 'graph_add_edge_80017848' — preserved note: graph edge insertion: nodes at $s2[0xC] stride64 (flag 0x18, adj-counts 0x1C/0x20, adj-lists 0x24/0x2C), edges at $s2[0x */
 /* RESET 0x8002BC68: retired name 'calc_fighter_separation_vec_8002BC68' — preserved note: inter-fighter distance (sqrt LUT D_8008D118) between pts D_80101FA0/A8 & D_801023EC/F4 (0x44C apart=fighter stride); wri */
 /* RENAME 0x800526A0: retired name 'math_sqrt_800526A0' — preserved note: fixed-pt sqrt via GTE leading-zero-count: mtc2 $a0->r30(LZCS), mfc2 r31(LZCR) to normalize, index LUT g_sqrt_table (0x80015620), halve */
 /* RENAME 0x8005763C: retired name 'calc_line_seg_intersect_8005763C' — preserved note: 2D line-seg intersection: all coords sra>>3 (1/8 fixed-pt), dx/dy deltas of 2 segs, mult/div cross-products w/ div0(brea */

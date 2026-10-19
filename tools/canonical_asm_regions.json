@@ -13,7 +13,7 @@
         "4b60c819184a5325ec85a30d665d4d16a93607f7d4d0bf032c2e99854b05c6fe"
       ]
     },
-    "func_80018094": {
+    "softbody_PrepareStep": {
       "file": "main/87A0",
       "sha256": [
         "b62d76a8485096d523094eea098f2ebe3341b964d9a99fe5eb3b114e6ce420f3",
@@ -21,7 +21,7 @@
         "a12120e27742dac37d5a4a2f466b33db9d8bca4a453002516b276180dbee7b88"
       ]
     },
-    "func_80019310": {
+    "softbody_SnapToPoints": {
       "file": "main/87A0",
       "sha256": [
         "b62d76a8485096d523094eea098f2ebe3341b964d9a99fe5eb3b114e6ce420f3",
@@ -168,7 +168,7 @@
         "24c81aa2b3811d102f608a9907295fe88eb9c02c018556146f59139d89f2a9e4"
       ]
     },
-    "func_80018300": {
+    "softbody_SolveSprings": {
       "file": "main/87A0",
       "sha256": [
         "1366cc731f4ec1a35c900d24746ac391cc70cf235e255aef01d5f20a8d1748fd",
@@ -261,7 +261,7 @@
         "0d3ecbe485c14f6b50281029ad7da36dfb2e6d87ff3c9e9e1ae17d4065ebfc60"
       ]
     },
-    "func_800187F4": {
+    "softbody_Step": {
       "file": "main/87A0",
       "sha256": [
         "5741f64c67984b0b2ca7ddf6975d9bbf0dc69f35453402b62ace67780d5688be",

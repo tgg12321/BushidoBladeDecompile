@@ -2347,7 +2347,7 @@ typedef struct {
     /* 0x468 */ u8 data[1];
 } Unk8003F62CRec;
 
-extern void func_8003F6D8(Unk8003F62CRec *);
+extern void softbody_UpdateColliders(Unk8003F62CRec *);
 extern void func_8004001C(Unk8003F62CRec *);
 extern void func_80040068(Unk8003F62CRec *);
 
@@ -2363,15 +2363,15 @@ void func_8003F62C(Unk80045878Obj *a0) {
     if (s0->unk2) {
         func_8004001C(s0);
     }
-    func_8003F6D8(s0);
-    func_8001924C(s0->unk418, s0->count);
+    softbody_UpdateColliders(s0);
+    softbody_UpdateList(s0->unk418, s0->count);
     if (s0->unk2) {
         func_80040068(s0);
         s0->unk2 = 0;
     }
 }
 
-void func_8003F6D8(Unk8003F62CRec *arg0) {
+void softbody_UpdateColliders(Unk8003F62CRec *arg0) {
     s32 i;
     s32 j;
 
@@ -2386,7 +2386,7 @@ void func_8003F6D8(Unk8003F62CRec *arg0) {
 }
 
 void func_8003F7F4(void) {
-    func_80017714();
+    softbody_FreeAll();
     func_80017F90();
     D_800A3370 = 0;
     D_800A3374 = 0;
@@ -2480,12 +2480,13 @@ typedef struct {
     u16 unk10[12];
 } FaceQuadLong; /* mode 3 */
 
-s16 *func_8003FE40(SVECTOR *a0, s32 a1, s16 *a2);
+s16 *softbody_SetAnchorWeights(SVECTOR *a0, s32 a1, s16 *a2);
 
 u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
-    /* FAKE: frame layout (oversized live object): func_80017D84's argument plus
-       an unwritten tail (two or three words are byte-identical: three chosen);
-       the argument alone gives a frame 8 short (0x48 for 0x50): score 16. */
+    /* FAKE: frame layout (oversized live object): softbody_Create's argument
+       plus an unwritten tail (two or three words are byte-identical: three
+       chosen); the argument alone gives a frame 8 short (0x48 for 0x50):
+       score 16. */
     struct {
         Func80017A44Input in;
         s32 tail[3];
@@ -2540,7 +2541,7 @@ u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     }
 
     init.in.buf = cur;
-    cur = cur + func_80017738(init.in.count, point_count);
+    cur = cur + softbody_GetBufferSize(init.in.count, point_count);
     cur = ((u32)cur & 3) ? cur + 2 : cur;
 
     src = block;
@@ -2593,11 +2594,11 @@ u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     if (*src != 0) {
         func_80052C10(D_80010D8C);
     }
-    func_8003FE40(init.in.points, init.in.count, cmds);
+    softbody_SetAnchorWeights(init.in.points, init.in.count, cmds);
 
     init.in.matrix = &obj->node.xf.mat;
     init.in.flags = 0xE00;
-    rec->unk0 = func_80017D84(&init.in);
+    rec->unk0 = softbody_Create(&init.in);
     obj->unk60 = init.in.buf;
     rec->inner.count = 0;
     rec->inner.coll.count = 0;
@@ -2611,7 +2612,7 @@ u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     return cur;
 }
 
-s16 *func_8003FE40(SVECTOR *a0, s32 a1, s16 *a2) {
+s16 *softbody_SetAnchorWeights(SVECTOR *a0, s32 a1, s16 *a2) {
     /* FAKE: also the point index read from a2 in the second loop; its own local
      * there: score 12 */
     s32 i;
@@ -2723,7 +2724,7 @@ void func_800400F8(Unk80045878Obj *a0) {
     s2 = a0->unk_24;
     if (s2 != 0) {
         for (s0 = 0; s0 < s2->count; s0++) {
-            func_80017E8C(s2->recs[s0].unk0);
+            softbody_Free(s2->recs[s0].unk0);
         }
     }
 }

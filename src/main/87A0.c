@@ -11,7 +11,7 @@
 extern s32 memcpy(s32 *, s32, s32);
 extern s32 collision_GetHitTag(void);
 
-extern void func_80018300(Func80017A44Output *);
+extern void softbody_SolveSprings(Func80017A44Output *);
 
 typedef struct {
     s32 d0[3];       /* 0x00 delta to focus 0 (GTE input) */
@@ -32,14 +32,15 @@ typedef struct {
 
 #define SCR ((Scr1F800000 *)0x1F800000)
 
-/* func_80017FA0 - copies the Unk80017FA0Rec's collision volumes (a0->unkC) into
- * scratchpad RAM (0x1F800000). unk00 is written scaled by 128 (the ground
- * word); count is the volume count, and each volume writes its two foci (three
- * words each, scaled by 4) at a 0x18 stride plus its bound from unk68. Nothing
- * happens when a0->unkC is null. The outer guard tests the live counter
+/* softbody_LoadColliders - copies the Unk80017FA0Rec's collision volumes
+ * (a0->unkC) into scratchpad RAM (0x1F800000). unk00 is written scaled by 128
+ * (the ground word); count is the volume count, and each volume writes its two
+ * foci (three words each, scaled by 4) at a 0x18 stride plus its bound from
+ * unk68. Nothing happens when a0->unkC is null. The outer guard tests the live
+ * counter
  * (`i < ptr->count`) for the target's empty 8-byte leaf frame
  * (phantom-slot-frame-lever). */
-void func_80017FA0(Unk80017FA0Rec *a0) {
+void softbody_LoadColliders(Unk80017FA0Rec *a0) {
     /* FAKE: temp takes the block pointer for the null test and ptr a copy after
      * it (lw v0 / move t1,v0); tested as ptr itself the load goes straight to
      * t1 and the move drops: score 3 */
@@ -92,11 +93,12 @@ void func_80017FA0(Unk80017FA0Rec *a0) {
 end:;
 }
 
-/* func_80018094 -- loads the GTE rotation/translation from arg0's MATRIX
- * (arg0->unk4), runs func_80017FA0, writes that MATRIX's translation minus the
- * object's (arg1->matrix.t) to scratchpad, scales it by a factor derived from
- * its length (byte-LUT integer sqrt, GTE LZC above 0x400; 0x100 beyond 250000),
- * copies the MATRIX to arg1->matrix and runs func_80018300. */
+/* softbody_PrepareStep -- loads the GTE rotation/translation from arg0's MATRIX
+ * (arg0->unk4), runs softbody_LoadColliders, writes that MATRIX's translation
+ * minus the object's (arg1->matrix.t) to scratchpad, scales it by a factor
+ * derived from its length (byte-LUT integer sqrt, GTE LZC above 0x400; 0x100
+ * beyond 250000), copies the MATRIX to arg1->matrix and runs
+ * softbody_SolveSprings. */
 typedef struct {
     s32 pad[9];
     s32 x, y, z;
@@ -104,7 +106,7 @@ typedef struct {
 
 #define SCRV ((ScrV *)0x1F800000)
 
-void func_80018094(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
+void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     /* FAKE: frame layout -- sp_tmp[0] is the live LZC output; the unwritten
      * tail sizes the 16-byte locals region of the 0x30 frame (as s32
      * sp_tmp[1]: score 8) (dead-vars-local-array, oversized-locals) */
@@ -117,7 +119,7 @@ void func_80018094(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     gte_SetRotMatrix(arg0->unk4);
     gte_SetTransMatrix(arg0->unk4);
 
-    func_80017FA0(arg0);
+    softbody_LoadColliders(arg0);
 
     dx = arg0->unk4->t[0] - arg1->matrix.t[0];
     SCRV->x = dx;
@@ -162,16 +164,16 @@ void func_80018094(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     SCRV->z = (SCRV->z * scale) >> 1;
 
     arg1->matrix = *arg0->unk4;
-    func_80018300(arg1);
+    softbody_SolveSprings(arg1);
 }
 
-/* func_80018300 -- distance-constraint pass over a chain of 64-byte nodes:
- * each link's node pair (packed indices, rest length dist) is bisected until
- * every axis delta is within 3x the rest length, then the delta >> 3 is scaled
- * on the GTE by ((len - rest) << 14) / len into the 0x1F8000BC output array
- * (len via the byte-LUT integer sqrt, GTE LZC above 0x400). The last link is
- * emitted after the loop without the bisection. */
-void func_80018300(Func80017A44Output *arg0) {
+/* softbody_SolveSprings -- distance-constraint pass over a chain of 64-byte
+ * nodes: each link's node pair (packed indices, rest length dist) is bisected
+ * until every axis delta is within 3x the rest length, then the delta >> 3 is
+ * scaled on the GTE by ((len - rest) << 14) / len into the 0x1F8000BC output
+ * array (len via the byte-LUT integer sqrt, GTE LZC above 0x400). The last link
+ * is emitted after the loop without the bisection. */
+void softbody_SolveSprings(Func80017A44Output *arg0) {
     s32 *out;
     Func80017848Edge *data;
     Func80017A44Record *base;
@@ -295,16 +297,16 @@ void func_80018300(Func80017A44Output *arg0) {
     gte_stlvl(out);
 }
 
-void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
-void func_80019310(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
+void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
+void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
 
-/* func_800187F4 -- node-chain integrator, called by func_8001924C for each
- * Unk80017FA0Rec whose unk2 bit 0 is clear. A node with state >= 0 springs
+/* softbody_Step -- node-chain integrator, called by softbody_UpdateList for
+ * each Unk80017FA0Rec whose unk2 bit 0 is clear. A node with state >= 0 springs
  * toward (or snaps to) its GTE-transformed anchor; otherwise the indexed
  * scratchpad forces are applied, the node is pushed out of the ground and out
  * of each collision ellipsoid, and the velocity is damped by 7/8 with 0x190
  * added to Y. */
-void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
+void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     Func80017A44Record *node;
     s32 i;
     s32 count;
@@ -319,7 +321,7 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
      * oversized-locals) */
     s32 lz[6];
 
-    func_80018094(arg0, arg1);
+    softbody_PrepareStep(arg0, arg1);
     count = arg1->count;
     node = arg1->records;
 
@@ -539,7 +541,7 @@ void func_800187F4(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     }
 }
 
-void func_8001924C(Unk80017FA0Rec *arg0, s32 arg1) {
+void softbody_UpdateList(Unk80017FA0Rec *arg0, s32 arg1) {
     s32 i = 0;
     Unk80017FA0Rec *s0;
     /* FAKE: pointer alias -- D_800F6740's address held in an integer
@@ -553,10 +555,11 @@ void func_8001924C(Unk80017FA0Rec *arg0, s32 arg1) {
         do {
             if (s0->unk2 & 1) {
                 s16 val = s0->unk0;
-                func_80019310(s0, (Func80017A44Output *)(val * 52 + buf));
+                softbody_SnapToPoints(
+                    s0, (Func80017A44Output *)(val * 52 + buf));
             } else {
                 s16 val = s0->unk0;
-                func_800187F4(s0, (Func80017A44Output *)(val * 52 + buf));
+                softbody_Step(s0, (Func80017A44Output *)(val * 52 + buf));
             }
             i++;
             s0++;
@@ -564,10 +567,10 @@ void func_8001924C(Unk80017FA0Rec *arg0, s32 arg1) {
     }
 }
 
-/* func_80019310 - GTE rotate-translate of an SVECTOR array (by arg0's MATRIX)
- * into a 0x40-stride VECTOR table, scaled << 7, then a 32-byte MATRIX copy
- * into the descriptor. */
-void func_80019310(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
+/* softbody_SnapToPoints - GTE rotate-translate of an SVECTOR array (by arg0's
+ * MATRIX) into a 0x40-stride VECTOR table, scaled << 7, then a 32-byte MATRIX
+ * copy into the descriptor. */
+void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     s32 out[3];
     s32 i;
     Func80017A44Record *dst;

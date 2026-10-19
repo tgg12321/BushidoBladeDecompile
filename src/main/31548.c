@@ -119,7 +119,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         s3->node.work.t[1] = (s3->node.work.t[1] * s4->unk_12) >> 12;
         s5->node.unk6 = 0;
         do {
-            func_800417D0(&s1p->node);
+            node_UpdateWorldMatrix(&s1p->node);
             s0++;
             s1p++;
         } while (s0 < 0x12);
@@ -297,9 +297,9 @@ void func_80041430(s32 a0, s32 a1) {
     base = &D_800A9A10[a0];
     s0 = (Unk80045878Obj *)((u8 *)*base + a1);
     *base = s0;
-    func_800414FC(a1, s0->unk_2C, 0x15);
-    func_800414FC(a1, s0->unk_8B4, 0x14);
-    func_800414FC(a1, s0->unk_10D4, 0x14);
+    node_RebaseParents(a1, s0->unk_2C, 0x15);
+    node_RebaseParents(a1, s0->unk_8B4, 0x14);
+    node_RebaseParents(a1, s0->unk_10D4, 0x14);
     {
         Unk80045878Node *c = s0->unk_10D4;
         do {

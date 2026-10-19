@@ -26,7 +26,7 @@ glabel func_80049E4C
     /* 3A6AC 80049EAC FC1D20AC */  sw         $zero, %lo(D_80101DFC)($at)
     /* 3A6B0 80049EB0 1080013C */  lui        $at, %hi(D_80101DF8)
     /* 3A6B4 80049EB4 F81D22A4 */  sh         $v0, %lo(D_80101DF8)($at)
-    /* 3A6B8 80049EB8 3406010C */  jal        func_800418D0
+    /* 3A6B8 80049EB8 3406010C */  jal        node_SetMatrixFromNegatedRot
     /* 3A6BC 80049EBC 21202002 */   addu      $a0, $s1, $zero
     /* 3A6C0 80049EC0 1080103C */  lui        $s0, %hi(D_800FF638)
     /* 3A6C4 80049EC4 38F61026 */  addiu      $s0, $s0, %lo(D_800FF638)
@@ -51,7 +51,7 @@ glabel func_80049E4C
     /* 3A710 80049F10 44F620AC */  sw         $zero, %lo(D_800FF644)($at)
     /* 3A714 80049F14 1080013C */  lui        $at, %hi(D_800FF640)
     /* 3A718 80049F18 40F622A4 */  sh         $v0, %lo(D_800FF640)($at)
-    /* 3A71C 80049F1C 3406010C */  jal        func_800418D0
+    /* 3A71C 80049F1C 3406010C */  jal        node_SetMatrixFromNegatedRot
     /* 3A720 80049F20 21200002 */   addu      $a0, $s0, $zero
     /* 3A724 80049F24 0A80013C */  lui        $at, %hi(D_800A3708)
     /* 3A728 80049F28 083731AC */  sw         $s1, %lo(D_800A3708)($at)

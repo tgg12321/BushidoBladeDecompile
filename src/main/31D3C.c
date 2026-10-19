@@ -121,7 +121,7 @@ after2:
 
 extern void gte_SetMatrixRotTransIRVec(void *, void *, void *);
 
-void func_800417D0(Unk80101DF0Record *a0) {
+void node_UpdateWorldMatrix(Unk80101DF0Record *a0) {
     RotMatrixFunc func;
 
     if (a0->unk6 == 1) {
@@ -133,7 +133,7 @@ void func_800417D0(Unk80101DF0Record *a0) {
     }
     if (a0->unkC != 0) {
         if (a0->unkC->unk6 == 0) {
-            func_800417D0(a0->unkC);
+            node_UpdateWorldMatrix(a0->unkC);
         }
         gte_MulMatrix0ClearTrans(&a0->unkC->xf.mat, &a0->work, &a0->xf.mat);
         gte_SetMatrixRotTransIRVec(&a0->unkC->xf.mat, a0->work.t, a0->xf.mat.t);
@@ -143,7 +143,7 @@ void func_800417D0(Unk80101DF0Record *a0) {
     a0->unk6 = 1;
 }
 
-void func_800418D0(Unk80101DF0Record *a0) {
+void node_SetMatrixFromNegatedRot(Unk80101DF0Record *a0) {
     SVECTOR sp10;
     sp10.vx = -(u16)a0->xf.rot.vx;
     sp10.vy = -(u16)a0->xf.rot.vy;
