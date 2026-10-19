@@ -155,6 +155,7 @@ def nested_body(s, i, e, name):
 def rename_declaration(t, m, n, files):
     """t is T, or T.u... for a member of the inline anonymous aggregate declared as
     member u of T (as naming_keycheck's T.u.m=n)."""
+    spec = f"{t}.{m}"
     t, *path = t.split(".")
     hits = []
     for f in files:
@@ -192,17 +193,20 @@ def rename_declaration(t, m, n, files):
                 elif d > 1:
                     flat[k] = " "
             flat = "".join(flat)
-            ms = list(re.finditer(r"(?<![\w.>])" + re.escape(m) + r"(?=\s*(\[|;|,|:))", flat))
+            # plain / array / bit-field declarators, and a function pointer's (*m)
+            ms = [x.start() for x in re.finditer(r"(?<![\w.>])" + re.escape(m) + r"(?=\s*(\[|;|,|:))", flat)]
+            ms += [x.start(1) for x in re.finditer(r"\(\s*\*\s*(" + re.escape(m) + r")\s*\)", flat)]
             hits.append((f, i, ms))
     found = [(f, i, ms) for f, i, ms in hits if ms]
     if len(found) != 1 or len(found[0][2]) != 1:
-        die(f"naming_member_apply: {t}.{m}: expected one declarator in one `}} {t};` body, "
+        die(f"naming_member_apply: {spec}: expected one declarator in one `}} {t};` body"
+            + (" (nested path)" if path else "") + ", "
                  f"found {[(f, len(ms)) for f, _, ms in hits]}")
     f, i, ms = found[0]
     s = rd(f)
-    k = i + ms[0].start()
+    k = i + ms[0]
     wr(f, s[:k] + n + s[k + len(m):])
-    print(f"decl {t}.{m} -> {n}  {f}:{s.count(chr(10), 0, k) + 1}")
+    print(f"decl {spec} -> {n}  {f}:{s.count(chr(10), 0, k) + 1}")
 
 
 def compile_errors(mv, srcs):

@@ -4510,6 +4510,27 @@ def test_naming_keycheck_scoped_pairs() -> None:
                     {"src/a.c": nested_new.replace("int pair;", "int pairs;")})
     check("keycheck: other edits in the nested aggregate rejected", not ok)
     check("keycheck: nested member pair parses", nk.parse_pairs("E.ends.node=pt") == {"E.ends.node": "pt"})
+    # bit-field and function-pointer declarators in the nested container
+    for label, decl, new_decl, use, new_use in [
+            ("bit-field", "unsigned node : 4;", "unsigned pt : 4;", "e->ends.node", "e->ends.pt"),
+            ("function pointer", "int (*node)(int);", "int (*pt)(int);", "e->ends.node(1)", "e->ends.pt(1)")]:
+        b = ("typedef struct { int d; union { int pair; " + decl + " } ends; } E;\n"
+             "int f(E *e) { return " + use + "; }\n")
+        n_ = b.replace(decl, new_decl).replace(use, new_use)
+        ok, why = proof("E.ends.node=pt", {"src/a.c": b}, {"src/a.c": n_})
+        check("keycheck: nested " + label + " member renamed (" + why + ")", ok)
+    # depth-2 path T.u.v.m
+    deep = ("typedef struct { int d; union { int pair; struct { short b; union { int raw; short node; } w; } s; } ends; } E;\n"
+            "int f(E *e) { return e->ends.s.w.node; }\n")
+    deep_new = deep.replace("short node; } w;", "short pt; } w;").replace("w.node", "w.pt")
+    ok, why = proof("E.ends.s.w.node=pt", {"src/a.c": deep}, {"src/a.c": deep_new})
+    check("keycheck: depth-2 nested path T.u.v.m (" + why + ")", ok)
+    ok, why = proof("E.ends.node=pt", {"src/a.c": deep}, {"src/a.c": deep_new})
+    check("keycheck: depth-2 member is not reachable with a depth-1 path (" + why + ")", not ok)
+    # a nested pair and a flat pair on the same T
+    both_new = nested_new.replace("int d;", "int dd;")
+    ok, why = proof("E.ends.node=pt,E.d=dd", {"src/a.c": nested}, {"src/a.c": both_new})
+    check("keycheck: nested and flat pairs on one T (" + why + ")", ok)
 
     # Member pairs and macro arguments: an unchanged argument naming m is allowed when
     # the macro expands it plainly; an edited argument, or one the macro may drop,
@@ -4530,6 +4551,119 @@ def test_naming_keycheck_scoped_pairs() -> None:
         ok, why = proof("T.m=n", {"src/a.c": b}, {"src/a.c": n_})
         check("keycheck: unchanged argument of a stringizing / dropping macro refused " + macro + " (" + why + ")",
               not ok and "macro " + macro in why)
+    # A small expanding cpp for the macro-argument sentinel proof (fake_cpp echoes
+    # source lines): object / function-like #define, # stringize, rescan with a
+    # hide set, `#if 0` blocks; one TU, no includes.
+    def mini_cpp(tree, tu):
+        macros, out, skip = {}, [cpp_preamble(tu)], 0
+        tok_re = re.compile(r'"[^"]*"|\w+|->|##|#|\S')
+
+        def expand(toks, hide=frozenset()):
+            res, i = [], 0
+            while i < len(toks):
+                t = toks[i]
+                if t in macros and t not in hide:
+                    params, body = macros[t]
+                    if params is None:
+                        res += expand(body, hide | {t})
+                        i += 1
+                        continue
+                    if toks[i + 1:i + 2] == ["("]:
+                        depth, args, j = 0, [[]], i + 1
+                        while True:
+                            tok = toks[j]
+                            if tok == "(":
+                                depth += 1
+                                if depth > 1:
+                                    args[-1].append(tok)
+                            elif tok == ")":
+                                depth -= 1
+                                if depth == 0:
+                                    break
+                                args[-1].append(tok)
+                            elif tok == "," and depth == 1:
+                                args.append([])
+                            else:
+                                args[-1].append(tok)
+                            j += 1
+                        sub, k = [], 0
+                        while k < len(body):
+                            bt = body[k]
+                            if bt == "#" and k + 1 < len(body) and body[k + 1] in params:
+                                sub.append('"' + " ".join(args[params.index(body[k + 1])]) + '"')
+                                k += 2
+                                continue
+                            sub += expand(args[params.index(bt)], hide) if bt in params else [bt]
+                            k += 1
+                        res += expand(sub, hide | {t})
+                        i = j + 1
+                        continue
+                res.append(t)
+                i += 1
+            return res
+        for line in tree[tu].splitlines():
+            m = re.match(r"\s*#\s*(\w+)(.*)", line)
+            if m:
+                if m[1] == "if":
+                    skip += 1 if skip or m[2].strip() == "0" else 0
+                elif m[1] == "endif" and skip:
+                    skip -= 1
+                elif m[1] == "define" and not skip:
+                    d = re.match(r"\s*(\w+)(\(([^)]*)\))?\s*(.*)", m[2])
+                    params = [p.strip() for p in d[3].split(",")] if d[2] else None
+                    macros[d[1]] = (params, tok_re.findall(d[4]))
+                    out.append(line + "\n")
+                    continue
+                out.append("\n")
+                continue
+            out.append("\n" if skip else " ".join(expand(tok_re.findall(line))) + "\n")
+        return "".join(out)
+
+    # The unchanged m inside a macro argument must reach cpp output as a member access.
+    sq = "#define SQ(x) ((x) * (x))\n"
+    plain_base = (sq + "struct T { int m; }; struct U { int m; };\n"
+                  "int f(struct T *t, struct U *u) { return t->m + SQ(u->m); }\n")
+    plain_new = plain_base.replace("struct T { int m;", "struct T { int n;").replace("t->m +", "t->n +")
+    ok, why = proof("T.m=n", {"src/a.c": plain_base}, {"src/a.c": plain_new}, cpp=mini_cpp)
+    check("keycheck: kept macro argument expanded as a member access passes (" + why + ")", ok)
+    for label, defs, invocation in [
+            ("nested forwarding into a dropping macro", "#define DROP(y) 0\n#define A(x) DROP(x)\n", "A(u->m)"),
+            ("macro passed as an argument", "#define DROP(y) 0\n#define CALL(f, a) f(a)\n", "CALL(DROP, u->m)"),
+            ("stringized through forwarding", "#define STR(y) #y\n#define A(x) STR(x)\n", "A(u->m)")]:
+        b = defs + plain_base.replace("SQ(u->m)", invocation)
+        n_ = defs + plain_new.replace("SQ(u->m)", invocation)
+        ok, why = proof("T.m=n", {"src/a.c": b}, {"src/a.c": n_}, cpp=mini_cpp)
+        check("keycheck: kept macro argument refused: " + label + " (" + why + ")",
+              not ok and ("discarded" in why or "stringified" in why))
+    getm = "#define GETM(p, f) ((p)->f)\n"
+    b = getm + plain_base.replace("SQ(u->m)", "GETM(u, m)")
+    n_ = getm + plain_new.replace("SQ(u->m)", "GETM(u, m)")
+    ok, why = proof("T.m=n", {"src/a.c": b}, {"src/a.c": n_}, cpp=mini_cpp)
+    check("keycheck: member name passed as a macro argument and expanded after -> passes (" + why + ")", ok)
+    b = "#define ID(x) (x)\n" + plain_base.replace("SQ(u->m)", "ID(m)") .replace("int f(", "int m;\nint f(")
+    n_ = "#define ID(x) (x)\n" + plain_new.replace("SQ(u->m)", "ID(m)").replace("int f(", "int m;\nint f(")
+    ok, why = proof("T.m=n", {"src/a.c": b}, {"src/a.c": n_}, cpp=mini_cpp)
+    check("keycheck: kept m in a macro argument that is not a member access refused (" + why + ")",
+          not ok and "member access" in why)
+    # item 2: conditional code and headers no TU includes
+    b = plain_base.replace("int f(", "#if 0\nint g(struct U *u) { return SQ(u->m); }\n#endif\nint f(")
+    n_ = plain_new.replace("int f(", "#if 0\nint g(struct U *u) { return SQ(u->m); }\n#endif\nint f(")
+    ok, why = proof("T.m=n", {"src/a.c": b}, {"src/a.c": n_}, cpp=mini_cpp)
+    check("keycheck: kept macro argument in #if 0 code refused (" + why + ")", not ok and "never compiles" in why)
+    hdr = sq + "struct U; static int h(struct U *u) { return SQ(u->m); }\n"
+    ok, why = proof("T.m=n", {"src/a.c": plain_base.replace(sq, ""), "include/unused.h": hdr},
+                    {"src/a.c": plain_new.replace(sq, "")}, compile_headers=False)
+    check("keycheck: kept macro argument in a header no TU includes refused (" + why + ")",
+          not ok and "never compiles" in why)
+    # item 3: n as an unrelated local inside a macro argument
+    b = plain_base.replace("return t->m + SQ(u->m);", "int pt = 2; return t->m + SQ(pt);")
+    n_ = (plain_base.replace("struct T { int m;", "struct T { int pt;")
+          .replace("return t->m + SQ(u->m);", "int pt = 2; return t->pt + SQ(pt);"))
+    ok, why = proof("T.m=pt", {"src/a.c": b}, {"src/a.c": n_}, cpp=mini_cpp)
+    check("keycheck: destination as an unrelated local in a macro argument is not an edit (" + why + ")", ok)
+    ok, why = proof("T.m=pt", {"src/a.c": b}, {"src/a.c": n_.replace("SQ(pt)", "SQ(u->pt)")}, cpp=mini_cpp)
+    check("keycheck: destination after -> in a macro argument is an edit, refused (" + why + ")", not ok)
+
     nested_macro = nested.replace("+ n->node;", "+ SQ(n->node);")
     nested_macro = "#define SQ(x) ((x) * (x))\n" + nested_macro
     check("keycheck: nested member with an unchanged plain macro argument naming m (" +
@@ -10392,6 +10526,50 @@ def test_naming_member_apply() -> None:
         check("naming_member_apply --dry-run: the plan shows the declaration and the access",
               "+    s32 counts[4];" in text and "+    return r->counts[0];" in text
               and "DRY RUN: 2 file(s) would change; nothing written" in text)
+
+        # nested pair, a line that also reaches another type's .m: the revert path
+        put("include/e.h", "typedef struct { s32 d; union { s32 pair; struct { u16 b; s16 a; } node; } ends; } Edge;\n"
+                           "struct N { s32 node; };\n")
+        mixed = "s32 g(Edge *e, struct N *n) {\n    return e->ends.node.a + n->node;\n}\n"
+        put("src/b.c", mixed)
+        Path(td, "pairs2.txt").write_text("Edge.ends.node=pt\n")
+
+        def mixed_errors(mv, srcs):
+            errs = []
+            for i, line in enumerate(nma.rd("src/b.c").split("\n"), 1):
+                if "ends.node" in line:
+                    errs.append(("src/b.c", i, "node"))
+                elif "n->pt" in line:
+                    errs.append(("src/b.c", i, "pt"))
+            return errs
+        nma.tracked = lambda *roots: ["include/e.h", "src/b.c"]
+        nma.compile_errors = mixed_errors
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            rc = nma.main([str(Path(td, "pairs2.txt"))])
+        text = out.getvalue()
+        eq("naming_member_apply: a line reaching T.u.m and another type's .m is unresolved (exit 1)", rc, 1)
+        eq("naming_member_apply: that line is restored for a hand edit", Path(td, "src/b.c").read_text(), mixed)
+        check("naming_member_apply: the nested declaration is renamed and the line reported",
+              "} pt; } ends;" in Path(td, "include/e.h").read_text()
+              and "src/b.c:2: also reaches `node` through another type" in text)
+        # bit-field and function-pointer declarators (nested)
+        for decl, new_decl in [("unsigned node : 4;", "unsigned pt : 4;"),
+                               ("s32 (*node)(s32);", "s32 (*pt)(s32);"),
+                               ("s32 ( * node ) (s32);", "s32 ( * pt ) (s32);")]:
+            put("include/e.h", "typedef struct { s32 d; union { s32 pair; " + decl + " } ends; } Edge;\n")
+            eq("naming_member_apply: nested declarator " + decl,
+               exit_code(nma.rename_declaration, "Edge.ends", "node", "pt", ["include/e.h"]), 0)
+            check("naming_member_apply: renamed " + decl, new_decl in Path(td, "include/e.h").read_text())
+        put("include/e.h", "typedef struct { s32 d; } Edge;\n")
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+            try:
+                nma.rename_declaration("Edge.ends", "node", "pt", ["include/e.h"])
+            except SystemExit:
+                pass
+        check("naming_member_apply: the failure message keeps the nested path",
+              "Edge.ends.node" in err.getvalue())
 
 
 def test_move_tu() -> None:

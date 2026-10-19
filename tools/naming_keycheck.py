@@ -94,8 +94,11 @@ Scoped pairs apply only to src/include C and header files. T.m=n renames the sin
 member m in struct/union tag or typedef T; either pre- or post-global spelling of T is accepted.
 T.u.m=n (any depth, T.u.v.m=n) renames member m of the anonymous struct/union declared inline as
 member u of T (`union { ... } u;`); each path step must name exactly one such member at depth 1
-of its container, m must occur once in T's whole definition, and the final container cannot
-hold a further nested aggregate. Tagged nested aggregates are addressed as Tag.m instead.
+of its container, m must occur once in T's whole definition, and m must be a depth-1 declarator
+of the final container: plain, array, bit-field, function pointer, or an inline aggregate member
+(`struct { ... } m;`, whose own body may be tagged). Tagged path steps are not followed (address
+them as Tag.m). A flat T.m on a T that holds inline aggregates uses the same depth-1 declarator
+census.
 Accesses after . or -> may retain m or become n. The destination cannot be a member, type name,
 macro name/body token, pasted token or C/GNU keyword (base and post-global trees). Qualifier-only
 declarations and unterminated aggregate declarations fail. Other aggregate edits must be explained
@@ -793,9 +796,10 @@ def nested_container(ts, j, end, path):
 
 def container_declarators(ts, j, end):
     """Index -> name of the depth-1 member declarators of the aggregate body ts[j] == '{'
-    .. ts[end] == '}': simple declarators (member_declarators), and the one declarator
-    of an inline aggregate member (`struct { ... } m;`). Unrecognized declarations are
-    skipped (they declare nothing this proof can certify)."""
+    .. ts[end] == '}': plain, array, bit-field (`m : 3`) and function-pointer (`(*m)(...)`)
+    declarators, and the one declarator of an inline aggregate member
+    (`struct { ... } m;`). Unrecognized declarations are skipped (they declare nothing
+    this proof can certify)."""
     out, start, k = {}, j + 1, j + 1
     while k < end:
         if ts[k] == "{":
@@ -804,13 +808,17 @@ def container_declarators(ts, j, end):
         if ts[k] == ";":
             seg = ts[start:k]
             if "{" not in seg:
-                try:
-                    declared = member_declarators(seg)
-                except ValueError:
-                    declared = []
+                depth = 0
                 for q in range(start, k):
-                    if ts[q] in declared and (q + 1 == k or ts[q + 1] in (",", "[")):
-                        out[q] = ts[q]
+                    tok = ts[q]
+                    depth += (tok in ("(", "[")) - (tok in (")", "]"))
+                    if not IDENT.fullmatch(tok) or tok in C_KEYWORDS:
+                        continue
+                    following = ts[q + 1] if q + 1 < k else ";"
+                    if depth == 0 and following in (";", ",", "[", ":") and ts[q - 1] not in (".", "->"):
+                        out[q] = tok  # plain, array or bit-field declarator
+                    elif depth == 1 and ts[q - 1] == "*" and ts[q - 2] == "(" and following == ")":
+                        out[q] = tok  # function-pointer declarator (*m)(...)
             else:
                 p = start + seg.index("{")
                 q = balanced(ts, p, "{", "}")
@@ -1890,16 +1898,22 @@ def sentinel_namespaces(output, names):
             if not owners:
                 continue
             start = j + 1
-            for k in range(start, end):
-                if ts[k] == ";":
-                    try:
-                        declared = member_declarators(ts[start:k])
-                    except ValueError:
-                        declared = ()
-                    for q in range(start, k):
-                        if ts[q] in names and ts[q] in declared:
-                            declarations.setdefault(q, set()).update(owners)
-                    start = k + 1
+            if "{" in ts[j + 1:end]:
+                # A body with inline aggregates: its depth-1 declarator census.
+                for q, name in container_declarators(ts, j, end).items():
+                    if name in names:
+                        declarations.setdefault(q, set()).update(owners)
+            else:
+                for k in range(start, end):
+                    if ts[k] == ";":
+                        try:
+                            declared = member_declarators(ts[start:k])
+                        except ValueError:
+                            declared = ()
+                        for q in range(start, k):
+                            if ts[q] in names and ts[q] in declared:
+                                declarations.setdefault(q, set()).update(owners)
+                        start = k + 1
             # A nested member (T.u.m) is declared at depth 1 of the anonymous
             # aggregate the path reaches from T's body.
             for owner in owners:
@@ -1923,6 +1937,8 @@ def sentinel_namespaces(output, names):
                     or following == ":" and i + 1 not in conditional_colons):
                 raise ValueError("local sentinel changed namespace in cpp output: " + token)
         elif prev not in (".", "->") and scope not in declarations.get(i, ()):
+            if scope == "\x00macro-argument":
+                raise ValueError("unchanged member name in a macro argument does not expand to a member access: " + token)
             raise ValueError("member sentinel changed namespace in cpp output: " + token)
 
 
@@ -1945,7 +1961,7 @@ def cpp_source_guards(output, tree, scoped):
                 # argument only where the wave edited that argument; an unchanged
                 # argument naming m cannot reach the renamed T.m without failing
                 # to compile (member pairs require the oracle build).
-                reject_macro_arguments(text, dest, functions, path)
+                reject_macro_arguments(text, dest, functions, path, member_access=True)
                 reject_unexpanded_macro_arguments(text, old, output.macros, path)
                 continue
             for func, start, _, end in function_definitions(text):
@@ -2204,6 +2220,52 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
         if len(owners) != 1:
             raise ValueError(f"{target}: cannot establish scoped edit namespace")
         namespaces[(path, k)] = namespaces[(target, k)] = owners[0]
+    # Member pairs: every unchanged m inside a function-like macro argument is also
+    # sentinelized below and must come out of cpp as a member access (after . or ->)
+    # in some compiled TU; a dropped, stringized or pasted argument, nested-macro
+    # forwarding into one, #if 0 code or an unincluded header fails. Then a stale m
+    # that reached the renamed T.m is compiled, and the oracle build catches it.
+    # A macro invocation's expansion comes out on its first line, so a kept site is
+    # checked over the invocation's whole line span (merged per file).
+    keep, keep_spans = [], {}
+    member_olds = {scoped_parts(spec)[2] for spec in (scoped or {}) if "." in spec}
+    if member_olds:
+        cfiles = {p: t for p, t in base.items()
+                  if p.startswith(("src/", "include/")) and p.endswith((".c", ".h"))}
+        functions = macro_table(cfiles)[0]
+        changed = {(p, k) for p, _, k in changes}
+        for path, text in sorted(cfiles.items()):
+            target = map_path(path)
+            if target not in new:
+                continue
+            spans = code_spans(text)
+            after = code_spans(new[target]) if new[target] != text else spans
+            if len(after) != len(spans):
+                continue
+            for opener, close, args in macro_invocations(text, functions):
+                hits = [k for k in sorted(args) if spans[k][0] in member_olds
+                        and (path, k) not in changed and after[k][0] == spans[k][0]]
+                if not hits:
+                    continue
+                keep.extend((path, target, k) for k in hits)
+                for side, name, body, toks in (("base", path, text, spans), ("new", target, new[target], after)):
+                    keep_spans.setdefault((side, name), []).append(
+                        (body.count("\n", 0, toks[opener].start()) + 1,
+                         body.count("\n", 0, toks[close].start()) + 1))
+    for name, intervals in keep_spans.items():
+        merged = []
+        for first, last in sorted(intervals):
+            if merged and first <= merged[-1][1]:
+                merged[-1] = (merged[-1][0], max(merged[-1][1], last))
+            else:
+                merged.append((first, last))
+        keep_spans[name] = merged
+
+    def line_span(side, path, line):
+        for first, last in keep_spans.get((side, path), ()):
+            if first <= line <= last:
+                return first, last
+        return line, line
     touched = {path for path, _, _ in changes}
     all_tus = {path for path in base if path.startswith("src/") and path.endswith(".c")}
     trees = {label: CppTree(files, label) for label, files in (("base", base), ("new", new))}
@@ -2256,8 +2318,15 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
                     if not matching:
                         raise ValueError(f"{source}: cpp function span disagrees with source (edit in code the build never compiles)")
                 # Census every TU's include markers; sentinel/cc1 runs need only
-                # contexts containing an edit (member census above still sees all).
-                if edit_sites & cache[key].keys():
+                # contexts containing an edit or a kept macro-argument m (member
+                # census above still sees all).
+                keep_sites = set()
+                for p, q, k in keep:
+                    f = p if label == "base" else q
+                    line = tree[f].count("\n", 0, code_spans(tree[f])[k].start()) + 1
+                    first, last = line_span(label, f, line)
+                    keep_sites.update((f, l) for l in range(first, last + 1))
+                if (edit_sites | keep_sites) & cache[key].keys():
                     normal[label][target] = cache[key]
         prefix = "__kc_s" + uuid.uuid4().hex + "_"
         while any(prefix in text for tree in trees.values() for text in tree.values()):
@@ -2266,6 +2335,8 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
             wanted = {}
             for path, target, k in changes:
                 wanted[(path if label == "base" else target, k)] = "edit"
+            for path, target, k in keep:
+                wanted.setdefault((path if label == "base" else target, k), "macro argument")
             for path, target, start, end, old, dest in local_spans:
                 filename = path if label == "base" else target
                 text = tree[filename]
@@ -2282,13 +2353,22 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
                         wanted.setdefault((filename, k), "local survival")
             # Protect every source occurrence of the same spelling on an edited
             # line, so the normal-output count can be compared without alignment.
+            # A line inside a kept macro invocation uses the invocation's whole
+            # line span (cpp emits the expansion on its first line).
+            line_starts = {}
+
+            def span_offsets(path, first_line, last_line):
+                if path not in line_starts:
+                    text = tree[path]
+                    line_starts[path] = [0] + [i + 1 for i, c in enumerate(text) if c == "\n"] + [len(text) + 1]
+                starts = line_starts[path]
+                return starts[first_line - 1], starts[min(last_line, len(starts) - 1)] - 1
+
             for (path, k), kind in list(wanted.items()):
                 spans = code_spans(tree[path])
                 token = spans[k]
-                first = tree[path].rfind("\n", 0, token.start()) + 1
-                last = tree[path].find("\n", token.end())
-                if last < 0:
-                    last = len(tree[path])
+                first_line, last_line = line_span(label, path, tree[path].count("\n", 0, token.start()) + 1)
+                first, last = span_offsets(path, first_line, last_line)
                 starts = [m.start() for m in spans]
                 for other in range(bisect_left(starts, first), bisect_left(starts, last)):
                     if spans[other][0] == token[0]:
@@ -2296,13 +2376,16 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
             contents, replacements, sentinels, namespace_names = dict(tree), {}, {}, {}
             for i, ((path, k), kind) in enumerate(sorted(wanted.items())):
                 token = code_spans(tree[path])[k]
-                site = (path, tree[path].count("\n", 0, token.start()) + 1)
+                site = (path, *line_span(label, path, tree[path].count("\n", 0, token.start()) + 1))
                 name = prefix + str(i) + "__"
                 sentinels[name] = (site, kind, token[0])
                 if kind == "edit":
                     kind_name, scope = namespaces[(path, k)]
                     namespace_names[name] = (kind_name, scoped_type_name(scope, global_pairs, label == "new")
                                              )
+                elif kind == "macro argument":
+                    # A scope no aggregate declares: the sentinel must follow . or ->.
+                    namespace_names[name] = ("member", "\x00macro-argument")
                 replacements.setdefault(path, []).append((token.start(), token.end(), name))
             for path, items in replacements.items():
                 for start, end, name in sorted(items, reverse=True):
@@ -2317,14 +2400,18 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
                 marked_outputs[tu] = cache[key]
             counts = {}
             for name, (site, kind, spelling) in sentinels.items():
-                applicable = [tu for tu, output in normal[label].items() if site in output]
+                path, first_line, last_line = site
+                lines = [(path, line) for line in range(first_line, last_line + 1)]
+                applicable = [tu for tu, output in normal[label].items() if any(l in output for l in lines)]
                 if not applicable:
+                    if kind == "macro argument":
+                        raise ValueError(f"{site[0]}:{site[1]}: unchanged {spelling} in a macro argument in code the build never compiles ({label})")
                     raise ValueError(f"{site[0]}:{site[1]}: edit in code the build never compiles ({label})")
                 for tu in applicable:
                     found = 0
                     for location, tokens in marked_outputs[tu].items():
                         count = sentinel_occurrences(tokens, name)
-                        if count and location != site:
+                        if count and location not in lines:
                             raise ValueError(f"{site[0]}:{site[1]}: sentinel emitted at wrong source line ({label})")
                         found += count
                     if not found:
@@ -2332,7 +2419,9 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
                     key = (tu, site, spelling)
                     counts[key] = counts.get(key, 0) + found
             for (tu, site, spelling), count in counts.items():
-                if normal[label][tu][site].count(spelling) != count:
+                path, first_line, last_line = site
+                if sum(normal[label][tu].get((path, line), []).count(spelling)
+                       for line in range(first_line, last_line + 1)) != count:
                     raise ValueError(f"{site[0]}:{site[1]}: original spelling/count differs from sentinel ({label})")
             for output in marked_outputs.values():
                 sentinel_namespaces(output, namespace_names)
@@ -2372,21 +2461,28 @@ def macro_table_records(records):
     return functions, objects
 
 
-def reject_macro_arguments(text, old, functions, path, indices=None):
+def reject_macro_arguments(text, old, functions, path, indices=None, member_access=False):
+    """Refuse `old` inside a function-like macro's arguments. member_access: only an
+    occurrence after `.` / `->` counts (a member pair's destination n: elsewhere n may
+    be an unrelated local or global)."""
     ms = code_spans(text)
     ts = [m[0] for m in ms]
     directives, _ = pp_regions(text)
+
+    def holds(a, b):
+        return any(ts[q] == old and (not member_access or ts[q - 1] in (".", "->"))
+                   for q in range(a, b))
     for k in range(len(ts)) if indices is None else indices:
         if any(a <= ms[k].start() < b for a, b in directives):
             continue
         if ts[k] in functions and ts[k + 1:k + 2] == ["("]:
             end = balanced(ts, k + 1, "(", ")")
-            if old in ts[k + 2:end]:
+            if holds(k + 2, end):
                 raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}")
             while ts[end + 1:end + 2] == ["("]:
                 start = end + 1
                 end = balanced(ts, start, "(", ")")
-                if old in ts[start + 1:end]:
+                if holds(start + 1, end):
                     raise ValueError(f"{path}: {old} is an argument of chained function-like macro {ts[k]}")
 
 
@@ -2429,24 +2525,31 @@ def reject_unexpanded_macro_arguments(text, old, records, path):
                         raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, which stringizes or pastes a parameter")
 
 
-def macro_argument_indices(text, functions):
-    """Token indices inside the arguments of function-like macro invocations
-    (chained invocations included), outside directives."""
+def macro_invocations(text, functions):
+    """(name index, closing index, argument indices) of each function-like macro
+    invocation outside directives; chained invocations (`F(a)(b)`) are one span."""
     ms = code_spans(text)
     ts = [m[0] for m in ms]
     directives, _ = pp_regions(text)
-    out = set()
+    out = []
     for k in range(len(ts)):
         if any(a <= ms[k].start() < b for a, b in directives):
             continue
         if ts[k] in functions and ts[k + 1:k + 2] == ["("]:
             end = balanced(ts, k + 1, "(", ")")
-            out.update(range(k + 2, end))
+            args = set(range(k + 2, end))
             while ts[end + 1:end + 2] == ["("]:
                 start = end + 1
                 end = balanced(ts, start, "(", ")")
-                out.update(range(start + 1, end))
+                args.update(range(start + 1, end))
+            out.append((k, end, args))
     return out
+
+
+def macro_argument_indices(text, functions):
+    """Token indices inside the arguments of function-like macro invocations
+    (chained invocations included), outside directives."""
+    return {k for _, _, args in macro_invocations(text, functions) for k in args}
 
 
 def member_freshness(base, name):
@@ -3027,7 +3130,7 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                 # Unchanged macro arguments naming m are allowed when the macro
                 # expands them plainly; an edit inside one is refused (no planned
                 # edit there, and the cpp guard checks n).
-                reject_macro_arguments(text, new, macros, path)
+                reject_macro_arguments(text, new, macros, path, member_access=True)
                 reject_unexpanded_macro_arguments(text, old, macro_records, path)
                 if macro_uses(text, old, body_only=True):
                     raise ValueError(f"{spec}: {old} occurs in a #define body or token paste ({path})")
@@ -3064,20 +3167,21 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                         raise ValueError(f"{spec}: member must occur exactly once in T's definition")
                     k = hits[0]
                     # The member's container: T's body, or the anonymous aggregate the
-                    # nested path names (T.u.m). It holds no further aggregate.
+                    # nested path names (T.u.m). With inline aggregates inside it, the
+                    # depth-1 declarator census decides; a plain body keeps the
+                    # member_declarators rule.
                     container = (j, end) if not member_path else nested_container(ts, j, end, member_path)
                     if container is None:
                         raise ValueError(f"{spec}: nested path must name one inline anonymous struct/union member at each step")
                     cj, cend = container
-                    if not member_path:
-                        if "{" in ts[cj + 1:cend]:
-                            raise ValueError(f"{spec}: nested or preprocessed aggregate is unsupported")
+                    if not member_path and "{" not in ts[cj + 1:cend]:
                         a = max([cj] + [x for x in range(cj + 1, k) if ts[x] == ";"]) + 1
                         b = next((x for x in range(k, cend) if ts[x] == ";"), cend)
                         if member_declarators(ts[a:b]).count(old) != 1:
                             raise ValueError(f"{spec}: ambiguous/unsupported member declaration")
                     elif container_declarators(ts, cj, cend).get(k) != old:
-                        raise ValueError(f"{spec}: member is not declared in the named nested aggregate")
+                        raise ValueError(f"{spec}: member is not declared at depth 1 of "
+                                         + ("the named nested aggregate" if member_path else "T (a nested member needs T.u.m)"))
                     found.append((path, [k]))
             else:
                 for name, _, begin, end in function_definitions(text):
