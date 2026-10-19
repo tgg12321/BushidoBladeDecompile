@@ -20,11 +20,12 @@
 # (typically a shared header declaration). The Judge still rules on the C,
 # and the full-build SHA1 gate still applies — this widens scope, not standards.
 
-# replay_camera_Init: the honest D_80101E62 array declaration retires a /* FAKE */
-# pointer-alias construct. The declaration lives at its canonical extern in the
-# shared header, and per the s8 ledger the correction is beneficial TU-wide.
+# cdrom_StartRead (named replay_camera_Init when granted): the honest D_80101E62 array
+# declaration retires a /* FAKE */ pointer-alias construct. The declaration lives at its
+# canonical extern in the shared header, and per the s8 ledger the correction is beneficial
+# TU-wide. The function is COMPLETED; D_80101E62 no longer occurs in src/ or include/.
 # Owner-approved 2026-08-01 after the function livelocked 161 sessions proposing it.
-replay_camera_Init include/game.h include/bb2.h
+cdrom_StartRead include/game.h include/bb2.h
 # memcard_BuildFileHeader: pipeline scope grant 2026-08-19 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
 # memcard_BuildFileHeader: pipeline scope grant 2026-08-20 (judge ESCALATE integration-handoff,
