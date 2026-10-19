@@ -4,7 +4,7 @@ glabel func_80077A80
     /* 68288 80077A88 0A80053C */  lui        $a1, %hi(D_8009BD24)
     /* 6828C 80077A8C 24BDA524 */  addiu      $a1, $a1, %lo(D_8009BD24)
     /* 68290 80077A90 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 68294 80077A94 2EDC010C */  jal        func_800770B8
+    /* 68294 80077A94 2EDC010C */  jal        menu_InitSelScreen
     /* 68298 80077A98 00000000 */   nop
     /* 6829C 80077A9C 01000424 */  addiu      $a0, $zero, 0x1
     /* 682A0 80077AA0 21280000 */  addu       $a1, $zero, $zero

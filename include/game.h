@@ -133,9 +133,9 @@ typedef struct {
 
 /* 0x8009BCF8: 2 pages x 10 two-byte records (0x8009BCF8..0x8009BD1F; D_8009BD20
  * follows), one page per character-select page, 2 rows x 5 columns of cells
- * (cell = row * 5 + col). func_80075F80 / func_800759D0 index it [page][cell];
- * func_80076D74 reads unk1 flat. Data: unk1 is 0x00..0x09 (page 0) then
- * 0x0C..0x15 (page 1). */
+ * (cell = row * 5 + col). menu_UpdateSelGridPicks / menu_DrawSelGrid index it
+ * [page][cell]; menu_FadeOutSelAndWriteResult reads unk1 flat. Data: unk1 is
+ * 0x00..0x09 (page 0) then 0x0C..0x15 (page 1). */
 typedef struct {
     u8 unk0;
     u8 unk1;
@@ -213,8 +213,8 @@ typedef struct {
  * func_8006E480); count, the cell count; cx / cy, the CLUT position (GetClut);
  * ubase / vbase, the texel origin the cells' u / v add to; cells, the cell
  * table that follows. A resource sheet may carry two or three headers (the
- * plain one, then one highlight per player: func_8006F97C, func_800759D0) ahead
- * of one shared cell table, which then starts at the last header's cells.
+ * plain one, then one highlight per player: func_8006F97C, menu_DrawSelGrid)
+ * ahead of one shared cell table, which then starts at the last header's cells.
  * 0x8009B0E0 is a table of 9 such headers (0x8009B0E0..0x8009B14B) that
  * func_8005C8A8 reaches off one base; D_8009B14C and D_8009B158 are two more
  * of the same shape. */
@@ -235,11 +235,11 @@ typedef struct {
  * SEL1 / SEL2.BIN, 6 D_SEL.BIN, 0x32 NAR.BIN. Each file starts with a list of
  * file-relative offsets ending in -1, which func_8006E440 turns into addresses.
  * The first five mean the same in every file: func_8006919C / func_8006EA28
- * pass unk_00 and unk_04 to the VAB loader func_8005C2A8 (func_80076FF8 /
- * func_80077D10, for D_SEL / NAR, make no such call, and those files'
+ * pass unk_00 and unk_04 to the VAB loader func_8005C2A8 (menu_RelocateSelLists
+ * / func_80077D10, for D_SEL / NAR, make no such call, and those files'
  * unk_00..unk_08 are equal), func_8006E950 loads the image at unk_08 into VRAM,
  * and func_8006E8CC loads the 640x32 strip at unk_0C or unk_10. The four
- * per-file relocators (func_8006919C, func_8006EA28, func_80076FF8,
+ * per-file relocators (func_8006919C, func_8006EA28, menu_RelocateSelLists,
  * func_80077D10) return unk_04, where the caller's func_8006E49C buffer starts.
  * The words after the head differ per file. */
 typedef struct {
@@ -261,7 +261,7 @@ typedef struct {
 } Unk80078824Rec;
 
 /* 12-byte rectangle rows {x, y, w, h, r, g, b}: MOD.BIN's unk_44 (func_8006C21C
- * draws them) and D_SEL.BIN's unk_3C (func_80074B18). */
+ * draws them) and D_SEL.BIN's unk_3C (menu_DrawSelRowTiles). */
 typedef struct {
     s16 x, y, w, h;
     u8 r, g, b, pad;
@@ -306,11 +306,12 @@ typedef struct {
     s32 unk_84[5];
 } Unk8006EA28Rec;
 
-/* D_SEL.BIN (resource file 6), the root 64FD8's func_800770B8 loads at its work
- * area + 0x58 and keeps in SelWork.f04 (func_80077724 hands it to the handlers
- * as Unk8006EACCRec.unk_00). After the head: unk_14..unk_38, the ten lists
- * func_80076FF8 relocates, each a list of sprite sheets (unk_20 is indexed by
- * the round count SelWork.f65); unk_3C, the rectangle rows func_80074B18 draws.
+/* D_SEL.BIN (resource file 6), the root 64FD8's menu_InitSelScreen loads at its
+ * work area + 0x58 and keeps in SelWork.f04 (menu_StepSelScreen hands it to the
+ * handlers as Unk8006EACCRec.unk_00). After the head: unk_14..unk_38, the ten
+ * lists menu_RelocateSelLists relocates, each a list of sprite sheets (unk_20
+ * is indexed by the round count SelWork.f65); unk_3C, the rectangle rows
+ * menu_DrawSelRowTiles draws.
  */
 typedef struct {
     Unk8006E950Head unk_00;
@@ -348,10 +349,11 @@ typedef struct {
     s32 img38[5];
 } Ctx77D94;
 
-/* Draw context filled by 5ED34 func_8006EACC and 64FD8 func_80077724 /
+/* Draw context filled by 5ED34 func_8006EACC and 64FD8 menu_StepSelScreen /
  * func_8007855C: unk_00 the resource root (SEL for func_8006EACC's handlers,
- * D_SEL for func_80077724's; func_8007855C leaves it unset), then the cursors;
- * unk_24 (pool word +0x20) only func_8006EACC / func_80077724 set. */
+ * D_SEL for menu_StepSelScreen's; func_8007855C leaves it unset), then the
+ * cursors; unk_24 (pool word +0x20) only func_8006EACC / menu_StepSelScreen
+ * set. */
 typedef struct {
     union {
         Unk8006EA28Rec *v8006EA28;
@@ -469,8 +471,8 @@ typedef struct {
 } Unk8009BD45Rec;
 
 /* 0x8009BD24..0x8009BD57: the settings record func_80077D00 returns and 64FD8
-   hands to func_80068F70 / func_8006E534 / func_800770B8, whose callees reach
-   every field off that one base (596CC D_800A3524, 5ED34 D_800A3568,
+   hands to func_80068F70 / func_8006E534 / menu_InitSelScreen, whose callees
+   reach every field off that one base (596CC D_800A3524, 5ED34 D_800A3568,
    SelWork.f00). Bit fields are named by bit offset.
    - unk14_*: the word at +0x14. unk14_0 (`& 0xF`; func_80077894 stores it),
    unk14_4 (6 bits), unk14_10 (the round count - 3; also picks the
@@ -505,19 +507,20 @@ typedef struct {
     u8 unk30;
 } Unk8009BD24Block;
 
-/* The select-screen work area D_800A36A0 points at (func_800770B8 places it at
- * the end of the buffers func_8006E49C lays out). Two-element arrays are per
- * player. Per player, f48 is a list of f60 entries with cursor f5C; confirming
- * moves the entry under the cursor to f7E[f3C++], cancelling moves f7E[--f3C]
- * back into f48 in sorted order; f6A holds the picked entries func_80076D74
- * reports. f00 is the result record func_80076D74 writes; f04 is the resource
- * table the select draw functions receive as arg0[0] (func_80077724 passes it
- * as the first word of that context). f10, f14, f1C and f20 are per-player s16
- * pairs the code also accesses as one word (union word views, Q33/Q46):
- * func_800747D8 and func_80075670 read f10 whole, func_80077374 reads f14
- * whole, func_800770B8 clears f1C / f20 whole (func_80075F80 reads and writes
- * their halves). The s32 members make the struct
- * 4-aligned: sizeof is 0x94 (members end at 0x92; Q57). */
+/* The select-screen work area D_800A36A0 points at (menu_InitSelScreen places
+ * it at the end of the buffers func_8006E49C lays out). Two-element arrays are
+ * per player. Per player, f48 is a list of f60 entries with cursor f5C;
+ * confirming moves the entry under the cursor to f7E[f3C++], cancelling moves
+ * f7E[--f3C] back into f48 in sorted order; f6A holds the picked entries
+ * menu_FadeOutSelAndWriteResult reports. f00 is the result record
+ * menu_FadeOutSelAndWriteResult writes; f04 is the resource table the select
+ * draw functions receive as arg0[0] (menu_StepSelScreen passes it as the first
+ * word of that context). f10, f14, f1C and f20 are per-player s16 pairs the
+ * code also accesses as one word (union word views, Q33/Q46): func_800747D8 and
+ * func_80075670 read f10 whole, menu_RunSelPhases reads f14 whole,
+ * menu_InitSelScreen clears f1C / f20 whole (menu_UpdateSelGridPicks reads and
+ * writes their halves). The s32 members make the struct 4-aligned: sizeof is
+ * 0x94 (members end at 0x92; Q57). */
 typedef struct {
     Unk8009BD24Block *f00;
     Unk80076FF8Rec *f04;

@@ -146,7 +146,7 @@ s32 func_800747D8(u32 arg0) {
     return result;
 }
 
-void func_80074B18(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
+void menu_DrawSelRowTiles(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
     TILE *p;
     Rec_8006C21C *t;
     s16 i;
@@ -210,7 +210,7 @@ void func_80074D2C(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
     arg0->unk_04.unk_14++;
 }
 
-void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
+void menu_DrawSelPanel(Unk8006EACCRec *arg0, s32 arg1) {
     Unk8007352CRec s;
     RECT rect;
     u16 offset[2];
@@ -328,7 +328,7 @@ void func_80074E08(Unk8006EACCRec *arg0, s32 arg1) {
     arg0->unk_04.unk_1C++;
 }
 
-void func_8007526C(void) {
+void menu_StepSelPanelSlides(void) {
     SelWork *base;
     s32 i;
 
@@ -535,11 +535,11 @@ void func_80075830(Unk8006EACCRec *arg0, s32 arg1, s32 arg2, s32 arg3) {
  * i.e. bit 2 + player = taken by that player). */
 extern u8 D_8009BCE4[20];
 
-/* Character-select grid renderer (the draw half of func_80075F80), once per
- * player per frame: arg1 = page into D_8009BCF8, arg2 = pick list (-1 =
- * cleared), arg3 = player. Draws the page frame, the page's 10 character
+/* Character-select grid renderer (the draw half of menu_UpdateSelGridPicks),
+ * once per player per frame: arg1 = page into D_8009BCF8, arg2 = pick list (-1
+ * = cleared), arg3 = player. Draws the page frame, the page's 10 character
  * cells, the picks so far and the f65+3 slot sprites. */
-void func_800759D0(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
+void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     Unk8007352CRec s;
     /* the current sprite-sheet pointer table: the page table, then the slot
      * table in loop 3, then the page table again (Ruling 11) */
@@ -673,7 +673,7 @@ void func_800759D0(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
  *   arg1 = select page into D_8009BCF8 (2 rows x 5 columns per page)
  *   arg2 = this player's pick list (character ids, -1 = cleared slot)
  *   arg3 = player index (0/1) */
-void func_80075F80(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
+void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     u8 *flag;
     s32 result;
     s32 bit;
@@ -899,7 +899,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     arg0->unk_04.unk_14++;
 }
 
-void func_800768DC(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
+void menu_UpdateSelListPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     s16 i;
     s16 j;
 
@@ -982,7 +982,7 @@ void func_800768DC(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 /* Select-screen fade-out: raises SELWORK->f36 by 8 per frame and, once it
  * reaches 0xFF, fills the result record at SELWORK->f00. Draws the full-screen
  * TILE with f36 as its colour. */
-s32 func_80076D74(Unk8006EACCRec *arg0) {
+s32 menu_FadeOutSelAndWriteResult(Unk8006EACCRec *arg0) {
     TILE *p;
     Unk8009BD24Block *var_1;
     u16 *cnt;
@@ -1037,7 +1037,7 @@ s32 func_80076D74(Unk8006EACCRec *arg0) {
     return ret;
 }
 
-s32 func_80076FF8(s32 *a0) {
+s32 menu_RelocateSelLists(s32 *a0) {
     func_8006920C(a0, a0[5]);
     func_8006920C(a0, a0[6]);
     func_8006920C(a0, a0[7]);
@@ -1053,9 +1053,9 @@ s32 func_80076FF8(s32 *a0) {
 
 Unk8006E49CRec *func_80077098(s32 a0) { return &D_800A35D8[a0]; }
 
-extern s32 func_80076FF8(s32 *);
+extern s32 menu_RelocateSelLists(s32 *);
 
-s32 func_800770B8(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
+s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     s16 sp[2];
     /* work: the entry list pointer (arg0 + 0x58), then the work area
        func_8006E49C returns (Ruling 11, Q78) */
@@ -1076,7 +1076,7 @@ s32 func_800770B8(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     D_800A35D8 = (Unk8006E49CRec *)arg0;
     func_80046AA0();
     func_8006E950(6, work);
-    r = func_80076FF8(work);
+    r = menu_RelocateSelLists(work);
     {
         Unk80076FF8Rec *list = work;
         work = (void *)func_8006E49C(r, D_800A35D8);
@@ -1157,7 +1157,7 @@ s32 func_800770B8(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
 /* Tail word after func_800747D8's switch table. */
 const u32 D_80015A20[1] = {0x00000000};
 
-s32 func_80077374(s32 arg0, Unk8006EACCRec *arg1) {
+s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *arg1) {
     s32 ret;
     s16 i;
 
@@ -1169,7 +1169,7 @@ s32 func_80077374(s32 arg0, Unk8006EACCRec *arg1) {
     }
     func_80074220(arg1, SELWORK->f14.half[0]);
     if (SELWORK->f14.half[0] != 5) {
-        func_8007526C();
+        menu_StepSelPanelSlides();
     }
 
     for (i = 0; i < 2; i++) {
@@ -1184,27 +1184,27 @@ s32 func_80077374(s32 arg0, Unk8006EACCRec *arg1) {
             func_80075670(arg0, i);
             func_80074D2C(arg1, i, (s16)(SELWORK->f14.half[i] - 1));
             func_800753D8(arg1, i);
-            func_80074E08(arg1, i);
+            menu_DrawSelPanel(arg1, i);
             break;
         case 2:
-            func_80075F80(arg0, SELWORK->f68[i], SELWORK->f6A[i], i);
+            menu_UpdateSelGridPicks(arg0, SELWORK->f68[i], SELWORK->f6A[i], i);
             func_80074D2C(arg1, i, (s16)(SELWORK->f14.half[i] - 1));
-            func_80074B18(arg1, i, 0);
-            func_800759D0(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
-            func_80074E08(arg1, i);
+            menu_DrawSelRowTiles(arg1, i, 0);
+            menu_DrawSelGrid(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
+            menu_DrawSelPanel(arg1, i);
             break;
         case 3:
-            func_800768DC(arg0, SELWORK->f68[i], SELWORK->f6A[i], i);
+            menu_UpdateSelListPicks(arg0, SELWORK->f68[i], SELWORK->f6A[i], i);
             func_80074D2C(arg1, i, (s16)(SELWORK->f14.half[i] - 1));
-            func_80074B18(arg1, i, 1);
+            menu_DrawSelRowTiles(arg1, i, 1);
             func_8007636C(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
-            func_80074E08(arg1, i);
+            menu_DrawSelPanel(arg1, i);
             break;
         case 4:
             func_80074D2C(arg1, i, 2);
-            func_80074B18(arg1, i, 1);
+            menu_DrawSelRowTiles(arg1, i, 1);
             func_8007636C(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
-            func_80074E08(arg1, i);
+            menu_DrawSelPanel(arg1, i);
             if (arg0 & (0x10 << (i * 16))) {
                 func_8005C650(2, 0x7F, 0x7F);
                 SELWORK->f14.half[i] = 3;
@@ -1212,17 +1212,17 @@ s32 func_80077374(s32 arg0, Unk8006EACCRec *arg1) {
             break;
         case 5:
             func_80074D2C(arg1, i, 2);
-            func_80074B18(arg1, i, 1);
+            menu_DrawSelRowTiles(arg1, i, 1);
             func_8007636C(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
-            ret = func_80076D74(arg1);
-            func_80074E08(arg1, i);
+            ret = menu_FadeOutSelAndWriteResult(arg1);
+            menu_DrawSelPanel(arg1, i);
             break;
         }
     }
     return ret;
 }
 
-s32 func_80077724(s32 arg0, s32 arg1) {
+s32 menu_StepSelScreen(s32 arg0, s32 arg1) {
     Unk8006EACCRec s;
     Unk8006E49CRec *p;
     s32 temp_v1;
@@ -1242,7 +1242,7 @@ s32 func_80077724(s32 arg0, s32 arg1) {
     s.unk_04.unk_18 = p->unk_18;
     s.unk_04.unk_1C = p->unk_1C;
     s.unk_24 = p->unk_20;
-    return func_80077374(arg1, &s);
+    return menu_RunSelPhases(arg1, &s);
 }
 
 s32 func_80077820(s32 a0) {
@@ -1315,15 +1315,15 @@ void func_80077A28(void) {
 
 s32 func_80077A60(s32 arg0, s32 arg1) { return func_8006E068(arg0, arg1); }
 
-s32 func_800770B8(s32, Unk8009BD24Block *, s32);
+s32 menu_InitSelScreen(s32, Unk8009BD24Block *, s32);
 
 s32 func_80077A80(s32 a0) {
-    func_800770B8(a0, &D_8009BD24, D_800A35E8);
+    menu_InitSelScreen(a0, &D_8009BD24, D_800A35E8);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
 
-s32 func_80077AC0(s32 arg0, s32 arg1) { return func_80077724(arg0, arg1); }
+s32 func_80077AC0(s32 arg0, s32 arg1) { return menu_StepSelScreen(arg0, arg1); }
 
 void func_80077AE0(void) { func_8006E10C(); }
 

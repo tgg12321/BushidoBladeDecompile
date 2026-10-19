@@ -5930,7 +5930,7 @@ def test_naming_keycheck_scoped_pairs() -> None:
     for func, body, macro, expanded in [
             ("func_8007636C", "s.y = SELWORK->f3C[arg3] * 34;", "SELWORK", "((SelWork *)D_800A36A0)"),
             ("func_8002F2D0", "m = &SPAD->unk2B8.rec.unkD8;", "SPAD", "((ScrPad *)0x1F800000)"),
-            ("func_80077724", "s.unk_00.v80076FF8 = SELWORK->f04;", "SELWORK", "((SelWork *)D_800A36A0)")]:
+            ("menu_StepSelScreen", "s.unk_00.v80076FF8 = SELWORK->f04;", "SELWORK", "((SelWork *)D_800A36A0)")]:
         old = "m" if func == "func_8002F2D0" else "s"
         text = f"typedef int Matrix;\n#define {macro} {expanded}\nint {func}(int arg3){{\nMatrix {old};\n{body}\nreturn 0;\n}}\n"
         after = re.sub(r"\b" + old + r"\b", "renamed", text)

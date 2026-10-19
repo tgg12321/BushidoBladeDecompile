@@ -54,7 +54,7 @@ extern s16 D_8009BCD0[2];
 extern Unk8009BCF8Record D_8009BCF8[2][10];
 
 /* Two 2-byte records, {0x01, 0x02} and {0x03, 0x04}, indexed [row][col] by
- * func_800747D8, func_80074488 and func_800770B8. */
+ * func_800747D8, func_80074488 and menu_InitSelScreen. */
 extern u8 D_8009BD20[2][2];
 
 extern u8 *D_800A36A0;
