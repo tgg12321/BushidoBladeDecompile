@@ -1293,8 +1293,9 @@ typedef struct {
 
 #define SPAD ((ScrPad *)0x1F800000)
 
-/* One CPU path waypoint (CpuRoute.node[]): func_800571C0 writes x/z from the
- * opponent's position and kind 2; func_80058580 walks them back to front. */
+/* One CPU path waypoint (CpuRoute.node[]): fighter_BuildCpuOrbitRoute writes
+ * x/z from the opponent's position and kind 2; func_80058580 walks them back to
+ * front. */
 typedef struct CpuWaypoint {
     s16 x;
     s16 z;
@@ -1302,10 +1303,10 @@ typedef struct CpuWaypoint {
     u8 unk5;
 } CpuWaypoint;
 
-/* A CPU route: the polygon and vertex the walker stands at (func_80057ACC), the
- * waypoint count and the waypoints. Unk80101EC8Record carries one at +0x360;
- * func_80057E84 builds two candidates of the same layout on its stack and
- * appends the cheaper one. */
+/* A CPU route: the polygon and edge (its first vertex) of the nearest crossing
+ * fighter_FindNearestNavCrossing found, the waypoint count and the waypoints.
+ * Unk80101EC8Record carries one at +0x360; fighter_AppendNavDetour builds two
+ * candidates of the same layout on its stack and appends the cheaper one. */
 typedef struct CpuRoute {
     u8 poly;  /* index into the stage's NavPolySet.polys */
     u8 vtx;   /* vertex index in that polygon */
@@ -1315,8 +1316,9 @@ typedef struct CpuRoute {
 
 /* One polygon of a stage's navigation set (8 bytes): flags (0x80 = open chain,
  * the last vertex does not close back to the first), a kind byte copied into
- * the route waypoints built around it, a corner margin (func_80057CC8 scales it
- * by 40), the vertex count and the vertex table of x/z pairs. */
+ * the route waypoints built around it, a corner margin
+ * (fighter_GetNavCornerPoint scales it by 40), the vertex count and the vertex
+ * table of x/z pairs. */
 typedef struct NavPoly {
     u8 flags;
     u8 kind;
@@ -1671,7 +1673,7 @@ typedef struct Unk80101EC8Record {
     u8 unk_441;
     u8 unk_442;
     u8 unk_443;
-    u8 unk_444[8];   /* func_80056CB8's per-direction results */
+    u8 unk_444[8];   /* fighter_UpdateCpuProbes's per-direction results */
 } Unk80101EC8Record; /* sizeof == 0x44C */
 
 /* 14-byte record table indexed by the kind field (+0x2) of the 0x64-byte

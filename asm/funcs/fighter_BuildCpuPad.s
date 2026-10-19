@@ -459,7 +459,7 @@ glabel fighter_BuildCpuPad
     /* 469D8 800561D8 24104300 */  and        $v0, $v0, $v1
     /* 469DC 800561DC 03004010 */  beqz       $v0, .L800561EC
     /* 469E0 800561E0 00000000 */   nop
-    /* 469E4 800561E4 2E5B010C */  jal        func_80056CB8
+    /* 469E4 800561E4 2E5B010C */  jal        fighter_UpdateCpuProbes
     /* 469E8 800561E8 21204002 */   addu      $a0, $s2, $zero
   .L800561EC:
     /* 469EC 800561EC 40004286 */  lh         $v0, 0x40($s2)

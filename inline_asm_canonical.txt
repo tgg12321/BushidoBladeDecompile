@@ -379,7 +379,7 @@ SetGeomScreen  # gcc-cannot-emit:gte_cop2_control_transfer; canonical-body (owne
 func_80018094  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_SetRotMatrix, gte_SetTransMatrix, gte_Lzc); the C remains audited.
 math_TestPreparedTriangleSphere  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_ApplyRotMatrix, gte_Lzc); the C remains audited.
 math_ScaleVectorInDirectionFrame  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_Lzc, gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
-func_8002F2D0  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_Lzc, gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
+math_MatrixToAngles  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_Lzc, gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
 func_8002F770  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_Lzc, gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
 eff_PrepareParticles  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_c.h: gte_SetRotMatrix, gte_ReadGeomScreen); the C remains audited.
 func_8003E6D8  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_ApplyMatrix); the C remains audited.

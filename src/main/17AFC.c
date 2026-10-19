@@ -3367,9 +3367,9 @@ void math_InvertMatrix3x3(void *arg0, void *arg1) {
          temp_v1_2);
 }
 
-void func_8002F2D0(MATRIX *a0, s16 *a1);
+void math_MatrixToAngles(MATRIX *a0, s16 *a1);
 
-void func_8002F2D0(MATRIX *a0, s16 *a1) {
+void math_MatrixToAngles(MATRIX *a0, s16 *a1) {
     MATRIX *m;
     Unk1F8002B8Rec *scr;
     MATRIX *mat;
@@ -3643,7 +3643,7 @@ void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 arg1) {
 /* Rotates the object's local vector (pos) by bone unk_09's matrix of
  * func_80046DEC() and adds that matrix's translation, composes the bone
  * matrix with the object's, and hands the point and the angles
- * func_8002F2D0 reads from that matrix to func_80049718 /
+ * math_MatrixToAngles reads from that matrix to func_80049718 /
  * replay_RecordModelDraw. */
 void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
@@ -3667,7 +3667,7 @@ void func_800300B4(Obj80106A78 *arg0) {
     mac[2] += mat->t[2];
 
     MulMatrix0(mat, &arg0->mtx, &mtx);
-    func_8002F2D0(&mtx, var_1);
+    math_MatrixToAngles(&mtx, var_1);
 
     lookup = D_8008EB80[arg0->kind];
     func_80049718(lookup, 1, mac, var_1);

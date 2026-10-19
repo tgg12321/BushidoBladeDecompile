@@ -1,0 +1,1 @@
+{"func": "fighter_GetNavCornerPoint", "addr": "80057CC8", "verdict": "PASS", "body_hash": "d6742239aa42a7b8", "body_kind": "c", "file": "main/3AB48", "reviewer": "af462973268acdd4d", "scope": "cheat-cleanup", "date": "2026-10-16T17:28:42Z", "head": "d599cefab", "notes": "", "renamed_from": ["func_80057CC8"]}

@@ -886,7 +886,7 @@ glabel func_80058580
     /* 49A2C 8005922C 21200002 */  addu       $a0, $s0, $zero
     /* 49A30 80059230 21288002 */  addu       $a1, $s4, $zero
     /* 49A34 80059234 2130C002 */  addu       $a2, $s6, $zero
-    /* 49A38 80059238 B35E010C */  jal        func_80057ACC
+    /* 49A38 80059238 B35E010C */  jal        fighter_FindNearestNavCrossing
     /* 49A3C 8005923C 2138E002 */   addu      $a3, $s7, $zero
     /* 49A40 80059240 340402AE */  sw         $v0, 0x434($s0)
     /* 49A44 80059244 01000224 */  addiu      $v0, $zero, 0x1
@@ -1083,7 +1083,7 @@ glabel func_80058580
     /* 49D04 80059504 21200002 */   addu      $a0, $s0, $zero
     /* 49D08 80059508 21288002 */  addu       $a1, $s4, $zero
     /* 49D0C 8005950C 2130C002 */  addu       $a2, $s6, $zero
-    /* 49D10 80059510 A15F010C */  jal        func_80057E84
+    /* 49D10 80059510 A15F010C */  jal        fighter_AppendNavDetour
     /* 49D14 80059514 2138E002 */   addu      $a3, $s7, $zero
   .L80059518:
     /* 49D18 80059518 62030292 */  lbu        $v0, 0x362($s0)
@@ -1529,7 +1529,7 @@ glabel func_80058580
     /* 4A380 80059B80 008F4230 */  andi       $v0, $v0, 0x8F00
     /* 4A384 80059B84 0C004014 */  bnez       $v0, .L80059BB8
     /* 4A388 80059B88 00000000 */   nop
-    /* 4A38C 80059B8C 705C010C */  jal        func_800571C0
+    /* 4A38C 80059B8C 705C010C */  jal        fighter_BuildCpuOrbitRoute
     /* 4A390 80059B90 21200002 */   addu      $a0, $s0, $zero
     /* 4A394 80059B94 620302A2 */  sb         $v0, 0x362($s0)
     /* 4A398 80059B98 FF004230 */  andi       $v0, $v0, 0xFF

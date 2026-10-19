@@ -2560,7 +2560,7 @@ typedef struct {
     u8 b[4];
 } Unk8001FAE4Entry;
 
-Unk8001FAE4Entry *func_8001FAE4(MoveScript *arg0) {
+Unk8001FAE4Entry *motion_FindPairedMoveEntry(MoveScript *arg0) {
     u16 v1;
     u16 *a0;
 
@@ -2600,9 +2600,9 @@ s32 func_8001FB34(Unk80101EC8Record *arg0, s32 arg1) {
     return 1;
 }
 
-void func_8001FBE8(void);
+void fight_UpdatePairedMoves(void);
 
-void func_8001FBE8(void) {
+void fight_UpdatePairedMoves(void) {
     Unk80101EC8Record *rec;
     Unk8001FAE4Entry *ent;
     u8 *data;
@@ -2665,7 +2665,7 @@ void func_8001FBE8(void) {
         if (rec->unk_7A == 0) {
             continue;
         }
-        ent = func_8001FAE4(rec->unk_50);
+        ent = motion_FindPairedMoveEntry(rec->unk_50);
         if (ent == 0) {
             continue;
         }
@@ -2718,7 +2718,7 @@ s32 func_8002006C(void) {
     D_800A387C = v0;
     D_800A38F0 = v0 - s0;
     if (v != 5 && v != 2) {
-        func_8001FBE8();
+        fight_UpdatePairedMoves();
     }
     D_800A38A8 = 0;
 }

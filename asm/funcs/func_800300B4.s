@@ -60,7 +60,7 @@ glabel func_800300B4
     /* 2099C 8003019C 1800A2AF */   sw        $v0, 0x18($sp)
     /* 209A0 800301A0 21200002 */  addu       $a0, $s0, $zero
     /* 209A4 800301A4 2000B127 */  addiu      $s1, $sp, 0x20
-    /* 209A8 800301A8 B4BC000C */  jal        func_8002F2D0
+    /* 209A8 800301A8 B4BC000C */  jal        math_MatrixToAngles
     /* 209AC 800301AC 21282002 */   addu      $a1, $s1, $zero
     /* 209B0 800301B0 01000524 */  addiu      $a1, $zero, 0x1
     /* 209B4 800301B4 02006286 */  lh         $v0, 0x2($s3)

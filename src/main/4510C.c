@@ -1,12 +1,13 @@
 /* 20 game functions: motion-stream playback (motion_UpdatePlayback,
- * motion_RebasePlayback, func_80057CC8, func_80058580, ...). .text 0x8005490C
- * (ROM 0x4510C). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #85,
- * placed before motion_UpdatePlayback rather than motion_StartPlayback so the
- * string D_80015840 belongs to its user's object): no static crosses the cut;
- * the .sdata D_800A3250..D_800A3263 belongs to these functions, and
- * func_80058580's jump tables start this file's .rodata at 0x8001585C, right
- * after 43500.o's string; the only calls back are to 43500.c's collision API
- * collision_TestSegmentWithWork. */
+ * motion_RebasePlayback, ...) and the CPU fighter's control
+ * (fighter_BuildCpuPad, fighter_GetNavCornerPoint, func_80058580, ...). .text
+ * 0x8005490C (ROM 0x4510C). Start boundary: SEAM (owner ruling 2026-10-17;
+ * Codex seam #85, placed before motion_UpdatePlayback rather than
+ * motion_StartPlayback so the string D_80015840 belongs to its user's object):
+ * no static crosses the cut; the .sdata D_800A3250..D_800A3263 belongs to these
+ * functions, and func_80058580's jump tables start this file's .rodata at
+ * 0x8001585C, right after 43500.o's string; the only calls back are to
+ * 43500.c's collision API collision_TestSegmentWithWork. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "bb2.h"
@@ -539,7 +540,7 @@ typedef struct {
 extern PadBitTable D_800A3258;
 extern u8 D_8009A088[];
 extern s32 func_80058580(Unk80101EC8Record *);
-extern void func_80056CB8(Unk80101EC8Record *);
+extern void fighter_UpdateCpuProbes(Unk80101EC8Record *);
 extern s32 func_80056FE8(Unk80101EC8Record *);
 
 void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
@@ -665,7 +666,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         rec->unk_442 = 0;
     }
     if (rec->unk_430 & 0x15500) {
-        func_80056CB8(rec);
+        fighter_UpdateCpuProbes(rec);
     }
     if ((rec->unk_40 == 0 && (rec->unk_6A == 3 || rec->unk_6A == 0x2C)) ||
         (rec->other->unk_40 == 0 &&
@@ -883,10 +884,10 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     *arg1 = rec->unk_3D0;
 }
 
-/* 8 {distance, direction} byte pairs (func_80056CB8) */
+/* 8 {distance, direction} byte pairs (fighter_UpdateCpuProbes) */
 extern u8 D_8009A820[8][2];
 
-void func_80056CB8(Unk80101EC8Record *arg0) {
+void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
     s32 var_0[4];
     s32 var_1[4];
     s32 var_2[4];
@@ -1046,7 +1047,7 @@ typedef struct {
     s32 x, y, z, w;
 } Vec4_571C0;
 
-s32 func_800571C0(Unk80101EC8Record *obj) {
+s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
     Vec4_571C0 var_0;
     Vec4_571C0 top;
     Vec4_571C0 left;
@@ -1168,8 +1169,8 @@ s32 func_800571C0(Unk80101EC8Record *obj) {
     return ret;
 }
 
-s32 func_8005763C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5,
-                  s32 arg6, s32 arg7, s32 *arg8, s32 *arg9) {
+s32 math_IntersectSegments(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
+                           s32 arg5, s32 arg6, s32 arg7, s32 *arg8, s32 *arg9) {
     s32 var_0;
     s32 x1;
     s32 dx1;
@@ -1245,9 +1246,10 @@ s32 func_8005763C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5,
     return 1;
 }
 
-extern s32 func_8005763C(s32, s32, s32, s32, s32, s32, s32, s32, s32 *, s32 *);
+extern s32 math_IntersectSegments(
+    s32, s32, s32, s32, s32, s32, s32, s32, s32 *, s32 *);
 
-s32 func_80057ACC(
+s32 fighter_FindNearestNavCrossing(
     Unk80101EC8Record *arg0, NavPolySet *arg1, s32 arg2, s32 arg3) {
     s32 sp28;
     s32 sp2C;
@@ -1273,9 +1275,10 @@ s32 func_80057ACC(
             if (!(k < poly->nvtx)) {
                 k = 0;
             }
-            if (func_8005763C(arg0->unk_F4.x, arg0->unk_F4.z, arg2, arg3,
-                              poly->vtx[j][0], poly->vtx[j][1], poly->vtx[k][0],
-                              poly->vtx[k][1], &sp28, &sp2C) != 0) {
+            if (math_IntersectSegments(
+                    arg0->unk_F4.x, arg0->unk_F4.z, arg2, arg3, poly->vtx[j][0],
+                    poly->vtx[j][1], poly->vtx[k][0], poly->vtx[k][1], &sp28,
+                    &sp2C) != 0) {
                 dx = sp28 - arg0->unk_F4.x;
                 dy = sp2C - arg0->unk_F4.z;
                 d = SquareRoot0(dx * dx + dy * dy);
@@ -1290,13 +1293,13 @@ s32 func_80057ACC(
     return best;
 }
 
-/* Per-vertex neighbour-angle midpoint: computes the outward bisector direction
+/* Per-vertex neighbour-angle midpoint: computes the bisector direction
  * at vertex arg1 of polygon arg0 and writes the offset point into *arg2 /
  * *arg3. FAKE: arg0->vtx is spelled at each of its five uses rather than cached
  * in a local (F3, no-new-park-categories entry 15; ruling 6b): cse folds them
  * to the target's two loads (the ratan2 call stops the fold); one local gives
  * one load: score 30. */
-void func_80057CC8(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
+void fighter_GetNavCornerPoint(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     unsigned short prev_idx;
     unsigned short next_idx;
     s32 ang_prev;
@@ -1351,13 +1354,13 @@ void func_80057CC8(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
 
 /* Walks the vertex ring of arg0's polygon arg1->polys[arg0->cpu_route.poly]
  * both ways from vertex cpu_route.vtx, each way starting at arg0->unk_F4.
- * While func_8005763C reports that the segment from the way's current point
- * to (arg2, arg3) crosses a polygon edge, the way steps to the next
- * vertex's func_80057CC8 point, appends it (up to 8) to its CpuRoute and adds
- * the step's SquareRoot0 length to its sum; a clear segment adds that
- * segment's length and ends the way. The way with the smaller sum is appended,
- * last point first, to arg0->cpu_route. */
-void func_80057E84(
+ * While math_IntersectSegments reports that the segment from the way's current
+ * point to (arg2, arg3) crosses a polygon edge, the way steps to the next
+ * vertex's fighter_GetNavCornerPoint point, appends it (up to 8) to its
+ * CpuRoute and adds the step's SquareRoot0 length to its sum; a clear segment
+ * adds that segment's length and ends the way. The way with the smaller sum is
+ * appended, last point first, to arg0->cpu_route. */
+void fighter_AppendNavDetour(
     Unk80101EC8Record *arg0, NavPolySet *arg1, s32 arg2, s32 arg3) {
     CpuRoute var_0[2];
     s16 ofs0_x;
@@ -1438,16 +1441,16 @@ void func_80057E84(
             var_29 = poly->vtx[i];
             ax = var_29[0];
             az = var_29[1];
-            func_80057CC8(poly, i, &ofs0_x, &ofs0_z);
+            fighter_GetNavCornerPoint(poly, i, &ofs0_x, &ofs0_z);
             var_29 = poly->vtx[next];
             bx = var_29[0];
             bz = var_29[1];
-            func_80057CC8(poly, next, &ofs1_x, &ofs1_z);
+            fighter_GetNavCornerPoint(poly, next, &ofs1_x, &ofs1_z);
             if (var_11 && !var_19) {
                 if ((var_7 != ofs0_x || var_8 != ofs0_z) &&
                     (var_7 != ofs1_x || var_8 != ofs1_z)) {
-                    if (func_8005763C(var_7, var_8, arg2, arg3, ax, az, bx, bz,
-                                      &var_5, &var_6)) {
+                    if (math_IntersectSegments(var_7, var_8, arg2, arg3, ax, az,
+                                               bx, bz, &var_5, &var_6)) {
                         var_19 = 1;
                     }
                 }
@@ -1455,8 +1458,8 @@ void func_80057E84(
             if (var_18 && !var_20) {
                 if ((var_9 != ofs0_x || var_10 != ofs0_z) &&
                     (var_9 != ofs1_x || var_10 != ofs1_z)) {
-                    if (func_8005763C(var_9, var_10, arg2, arg3, ax, az, bx, bz,
-                                      &var_5, &var_6)) {
+                    if (math_IntersectSegments(var_9, var_10, arg2, arg3, ax,
+                                               az, bx, bz, &var_5, &var_6)) {
                         var_20 = 1;
                     }
                 }
@@ -1473,7 +1476,7 @@ void func_80057E84(
                 var_16 +=
                     SquareRoot0((var_29[0] - var_7) * (var_29[0] - var_7) +
                                 (var_29[1] - var_8) * (var_29[1] - var_8));
-                func_80057CC8(poly, var_12, &var_7, &var_8);
+                fighter_GetNavCornerPoint(poly, var_12, &var_7, &var_8);
                 route = &var_0[0];
                 c = route->count;
                 route->count = c + 1;
@@ -1506,7 +1509,7 @@ void func_80057E84(
                 var_17 +=
                     SquareRoot0((var_29[0] - var_9) * (var_29[0] - var_9) +
                                 (var_29[1] - var_10) * (var_29[1] - var_10));
-                func_80057CC8(poly, var_13, &var_9, &var_10);
+                fighter_GetNavCornerPoint(poly, var_13, &var_9, &var_10);
                 route = &var_0[1];
                 c = route->count;
                 route->count = c + 1;
@@ -1565,7 +1568,8 @@ extern u8 D_8009A9DC[][3];
 extern s32 D_8009A9F0[][8];
 extern u8 D_800A325C[4];
 extern u8 D_800A3260[4];
-extern void func_80057E84(Unk80101EC8Record *, NavPolySet *, s32, s32);
+extern void fighter_AppendNavDetour(
+    Unk80101EC8Record *, NavPolySet *, s32, s32);
 
 #define CPU_SQ(x) ((x) * (x))
 
@@ -1912,7 +1916,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                (p->unk_0E >= 6 && p->unk_34A == 0)) &&
               var_38 == 1)) {
             if (!(p->unk_3E8 & 7)) {
-                p->unk_434 = func_80057ACC(p, var_25, tx, tz);
+                p->unk_434 = fighter_FindNearestNavCrossing(p, var_25, tx, tz);
             }
             if (var_38 == 1) {
                 work1 = p->unk_444[6];
@@ -1967,7 +1971,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                     p->cpu_route.node[0].kind = var_38;
                     p->cpu_route.count = 1;
                     if (p->unk_434 != 100000 && !(p->unk_3E8 & 7)) {
-                        func_80057E84(p, var_25, tx, tz);
+                        fighter_AppendNavDetour(p, var_25, tx, tz);
                     }
                 }
             }
@@ -2109,7 +2113,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
              D_800A387C < p->other->unk_404[p->other->unk_86] &&
              p->other->unk_43C < 0x10 && p->unk_34A != 0)) {
             if (!(D_80099D88[p->unk_443].flags & 0x8F00)) {
-                if ((p->cpu_route.count = func_800571C0(p)) != 0) {
+                if ((p->cpu_route.count = fighter_BuildCpuOrbitRoute(p)) != 0) {
                     p->unk_39D = 2;
                     return -1;
                 }
