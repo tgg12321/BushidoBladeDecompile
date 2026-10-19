@@ -8779,6 +8779,94 @@ def test_layer2_addresses() -> None:
             os.chdir(cwd)
 
 
+def test_naming_wave_keyed_registries() -> None:
+    """A RENAME reaches every function-keyed grant / registry / fixture file:
+    canonical_asm_regions.json and deferred.json keys, the golden fixtures'
+    `name`, and the `<func> <rest>` lines of scope_allow / owner_cluster_grants /
+    known_psyq_stdlib, leaving every other key, value and comment alone."""
+    import naming_wave as nw
+    from unittest.mock import patch
+
+    scratch = Path(__file__).resolve().parent.parent / "tmp"
+    scratch.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=scratch) as td:
+        root = Path(td)
+        (root / "asm/funcs").mkdir(parents=True)
+        (root / "asm/funcs/func_80001000.s").write_text(
+            "glabel func_80001000\n/* 000000 80001000 0800E003 */ jr $ra\n"
+            "endlabel func_80001000\n", newline="\n")
+        (root / "src/main").mkdir(parents=True)
+        (root / "src/main/t.c").write_text("void func_80001000(void) {}\n", newline="\n")
+        for d in ("tools/grinder", "engine", "oracle"):
+            (root / d).mkdir(parents=True, exist_ok=True)
+
+        def dump(rel, obj):
+            (root / rel).write_text(json.dumps(obj, indent=2) + "\n", newline="\n")
+
+        dump("tools/canonical_asm_regions.json", {"schema": 2, "functions": {
+            "func_80001000": {"file": "main/t", "sha256": ["aa"]},
+            "func_80002000": {"file": "main/u", "sha256": ["bb"]}}})
+        dump("engine/deferred.json", {"_doc": "func_80001000 in prose stays",
+                                      "members": {"func_80001000": "REFUSED: x"}})
+        dump("oracle/manifest.json", {"schema": 1, "golden_fixtures": [
+            {"name": "func_80001000", "file": "src/main/t.c"},
+            {"name": "func_80002000", "file": "src/main/u.c"}]})
+        lines = {
+            "tools/grinder/scope_allow.txt": "# func_80001000 comment\n"
+                                             "func_80001000 include/game.h\n",
+            "tools/grinder/owner_cluster_grants.txt": "func_80001000 ruling.md\n",
+            "known_psyq_stdlib.txt": "func_80001000  syscall_kernel  4 insns\n",
+        }
+        for rel, text in lines.items():
+            (root / rel).write_text(text, newline="\n")
+
+        op = nw.Op("0x80001000", "RENAME", "sem_KeyedProbe", {"glabel": "func_80001000"})
+        op.olds = {"func_80001000"}
+        with patch.object(nw, "ROOT", root), \
+             patch.object(nw, "load_census", return_value=[]), \
+             patch.object(nw, "_SRC_DEF_CACHE", {}), \
+             patch.object(nw, "git_ignored", return_value=False), \
+             patch.object(nw, "asm_file_referenced", return_value=True):
+            wave = nw.Wave([op])
+            before = dict(nw.residual_audit(wave)).get("func_80001000", [])
+            for rel in ("tools/canonical_asm_regions.json", "engine/deferred.json",
+                        "oracle/manifest.json", *lines):
+                check(f"naming_wave: residual_audit sees func_80001000 in {rel} before apply",
+                      rel in before)
+            plan = nw.plan_wave(wave)
+            for rel in ("tools/canonical_asm_regions.json", "engine/deferred.json",
+                        "oracle/manifest.json"):
+                check(f"naming_wave: {rel} is a planned JSON edit", rel in plan.json_edits)
+            nw.apply_plan(plan)
+            for rel in ("tools/canonical_asm_regions.json", "engine/deferred.json",
+                        "oracle/manifest.json"):
+                raw = (root / rel).read_bytes()
+                eq(f"naming_wave: {rel} written as indent-2 JSON with LF",
+                   raw, json.dumps(json.loads(raw), indent=2).encode() + b"\n")
+            got = json.loads((root / "tools/canonical_asm_regions.json").read_text())
+            eq("naming_wave: canonical_asm_regions key renamed, order and others kept",
+               list(got["functions"]), ["sem_KeyedProbe", "func_80002000"])
+            eq("naming_wave: canonical_asm_regions grant body unchanged",
+               got["functions"].get("sem_KeyedProbe"), {"file": "main/t", "sha256": ["aa"]})
+            got = json.loads((root / "engine/deferred.json").read_text())
+            eq("naming_wave: deferred.json member key renamed",
+               got["members"], {"sem_KeyedProbe": "REFUSED: x"})
+            eq("naming_wave: deferred.json prose untouched",
+               got["_doc"], "func_80001000 in prose stays")
+            got = json.loads((root / "oracle/manifest.json").read_text())
+            eq("naming_wave: golden fixture name renamed, other fixture kept",
+               [f["name"] for f in got["golden_fixtures"]],
+               ["sem_KeyedProbe", "func_80002000"])
+            for rel, text in lines.items():
+                want = text.replace("func_80001000 include", "sem_KeyedProbe include") \
+                    if rel.endswith("scope_allow.txt") else \
+                    text.replace("func_80001000", "sem_KeyedProbe")
+                eq(f"naming_wave: {rel} key line renamed (comments kept)",
+                   (root / rel).read_text(), want)
+            eq("naming_wave: residual_audit clean over the keyed registries",
+               dict(nw.residual_audit(wave)), {})
+
+
 def test_naming_wave_own_target() -> None:
     """An address-named reference file can already belong to the live glabel."""
     import naming_wave as nw
@@ -11190,6 +11278,7 @@ def main() -> int:
     test_layer2_addresses()
     test_layer2_asm_addr_after_glabel()
     test_naming_wave_own_target()
+    test_naming_wave_keyed_registries()
     test_naming_wave_renames()
     test_naming_keycheck_scoped_pairs()
     test_volatile_unused_locals()

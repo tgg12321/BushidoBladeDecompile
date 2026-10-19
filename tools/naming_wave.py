@@ -86,7 +86,27 @@ LIST_FILES = [
     # version of this tool missed them.
     "tools/delay_slot_ra_funcs.txt",
     "tools/frame_fix_funcs.txt",
+    # `<func> <rest>` registries: the Grinder's per-function scope widening and
+    # owner-cluster grants (an entry under the old name silently stops applying),
+    # and the PsyQ-stdlib scan's per-function kinds (canonical asm evidence).
+    "tools/grinder/scope_allow.txt",
+    "tools/grinder/owner_cluster_grants.txt",
+    "known_psyq_stdlib.txt",
 ]
+
+# JSON objects keyed by function name: {file: path of keys to the keyed dict}.
+# canonical_asm_regions.json holds the reviewed GTE-island grants that
+# check_completion_integrity matches by name (a stale key reads as a changed,
+# ungranted island); deferred.json the byte-coupling deferred set.
+JSON_KEY_FILES = {
+    "tools/canonical_asm_regions.json": ("functions",),
+    "engine/deferred.json": ("members",),
+}
+# JSON lists of records whose field names a function: {file: (list key, field)}.
+# oracle/manifest.json's golden fixtures are looked up by name.
+JSON_FIELD_FILES = {
+    "oracle/manifest.json": ("golden_fixtures", "name"),
+}
 
 # Live tool/engine sources that gate BEHAVIOUR on a function name held in a
 # string literal. tools/prologue_fix.py's PROLOGUE_ACCEPT_ARG_REGS_FUNCS is the
@@ -875,6 +895,42 @@ def plan_wave(wave: Wave) -> Plan:
             newdata = {wave.code_map.get(k, k): v for k, v in data.items()}
             plan.json_edits[prel] = (json.dumps(newdata, indent=2) + "\n", changed)
 
+    # --- function-keyed JSON objects and record lists ---------------------
+    for rel, keypath in JSON_KEY_FILES.items():
+        jp = ROOT / rel
+        if not jp.exists():
+            continue
+        data = json.loads(read(jp))
+        obj = data
+        for k in keypath:
+            obj = obj.get(k) if isinstance(obj, dict) else None
+        if not isinstance(obj, dict):
+            continue
+        changed = [k for k in obj if k in wave.code_map]
+        if changed:
+            renamed = {}
+            for k, v in obj.items():
+                nk = wave.code_map.get(k, k)
+                if nk in renamed:
+                    die(f"{rel}: key collision on {nk}")
+                renamed[nk] = v
+            obj.clear()
+            obj.update(renamed)
+            plan.json_edits[rel] = (json.dumps(data, indent=2) + "\n", changed)
+    for rel, (lkey, field) in JSON_FIELD_FILES.items():
+        jp = ROOT / rel
+        if not jp.exists():
+            continue
+        data = json.loads(read(jp))
+        changed = []
+        for i, rec in enumerate(data.get(lkey) or []):
+            if isinstance(rec, dict) and rec.get(field) in wave.code_map:
+                changed.append(f"{lkey}[{i}].{field}: {rec[field]} -> "
+                               f"{wave.code_map[rec[field]]}")
+                rec[field] = wave.code_map[rec[field]]
+        if changed:
+            plan.json_edits[rel] = (json.dumps(data, indent=2) + "\n", changed)
+
     # --- engine/queue.json (func field only; status/verdict untouched) ----
     qrel = "engine/queue.json"
     qpath = ROOT / qrel
@@ -1291,6 +1347,23 @@ def residual_audit(wave: Wave) -> dict[str, list[str]]:
         p = ROOT / rel
         if p.exists():
             scan(rel, read(p), None)
+    # The keyed JSON files: only the keys / named fields are KEYS (a value or
+    # `_doc` string citing a function is prose).
+    for rel, keypath in JSON_KEY_FILES.items():
+        p = ROOT / rel
+        if p.exists():
+            obj = json.loads(read(p))
+            for k in keypath:
+                obj = obj.get(k) if isinstance(obj, dict) else None
+            for k in (obj or {}):
+                if k in wave.code_map:
+                    out[k].append(rel)
+    for rel, (lkey, field) in JSON_FIELD_FILES.items():
+        p = ROOT / rel
+        if p.exists():
+            for rec in json.loads(read(p)).get(lkey) or []:
+                if isinstance(rec, dict) and rec.get(field) in wave.code_map:
+                    out[rec[field]].append(rel)
     # Name-keyed gates in live tool source: report a surviving SHORT string
     # literal only — a name cited in prose is history and is expected to remain.
     for base in PY_ROOTS:
