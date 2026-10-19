@@ -10212,6 +10212,84 @@ def test_tus() -> None:
            (mk_ids, bc_ids), (["gpu", "main/psxsdk/libcomb/comb"], ["gpu", "main/psxsdk/libcomb/comb"]))
 
 
+def test_naming_member_apply() -> None:
+    """tools/naming_member_apply.py on a scratch tree: a member named in a
+    comment of the struct body is not a declarator; two bodies or no declarator
+    still fail closed (exit 2); --dry-run reports the planned edits and writes
+    nothing (the compiler is stubbed by a member-error oracle)."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("nma", "tools/naming_member_apply.py")
+    nma = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(nma)
+    hdr = ("typedef struct {\n"
+           "    s32 unk_198[4]; /* the counts; unk_198[i] is read by f() */\n"
+           "    /* unk_198[i] again, with a } brace and a } Rec; */\n"
+           "    s32 other; // unk_198: also in a line comment\n"
+           "} Rec;\n")
+    src = "s32 f(Rec *r) {\n    return r->unk_198[0];\n}\n"
+
+    def exit_code(fn, *a):
+        try:
+            with contextlib.redirect_stdout(io.StringIO()), \
+                    contextlib.redirect_stderr(io.StringIO()):
+                fn(*a)
+        except SystemExit as e:
+            return e.code
+        return 0
+
+    with tempfile.TemporaryDirectory() as td:
+        def put(rel, text):
+            Path(td, rel).parent.mkdir(parents=True, exist_ok=True)
+            Path(td, rel).write_bytes(text.encode())
+
+        nma.ROOT = nma.WORK = td
+        put("include/t.h", hdr)
+        eq("naming_member_apply: a comment's unk_198[i] is not a second declarator",
+           exit_code(nma.rename_declaration, "Rec", "unk_198", "counts", ["include/t.h"]), 0)
+        eq("naming_member_apply: only the declarator is renamed, the comments are kept",
+           Path(td, "include/t.h").read_text(), hdr.replace("s32 unk_198[4];", "s32 counts[4];", 1))
+        put("include/t.h", hdr)
+        put("include/u.h", hdr)
+        eq("naming_member_apply: two `} Rec;` bodies still exit 2",
+           exit_code(nma.rename_declaration, "Rec", "unk_198", "counts",
+                     ["include/t.h", "include/u.h"]), 2)
+        eq("naming_member_apply: a name only in comments is no declarator (exit 2)",
+           exit_code(nma.rename_declaration, "Rec", "missing", "x", ["include/t.h"]), 2)
+
+        # --dry-run: the whole run on a scratch copy, nothing written to the tree
+        put("src/a.c", src)
+        Path(td, "pairs.txt").write_text("Rec.unk_198=counts\n")
+        seen = []
+
+        def fake_errors(mv, srcs):
+            seen.append(nma.WORK)
+            if "counts[4]" not in nma.rd("include/t.h"):
+                return []
+            return [("src/a.c", i, "unk_198")
+                    for i, line in enumerate(nma.rd("src/a.c").split("\n"), 1)
+                    if "->unk_198" in line]
+
+        nma.tracked = lambda *roots: ["include/t.h", "src/a.c"]
+        nma.make_vars = lambda: {}
+        nma.compile_errors = fake_errors
+        before = {f: Path(td, f).read_bytes() for f in ("include/t.h", "src/a.c")}
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            rc = nma.main(["--dry-run", str(Path(td, "pairs.txt"))])
+        text = out.getvalue()
+        eq("naming_member_apply --dry-run: exit 0", rc, 0)
+        eq("naming_member_apply --dry-run: the tree is untouched",
+           {f: Path(td, f).read_bytes() for f in before}, before)
+        check("naming_member_apply --dry-run: compiled in a scratch copy, not the tree",
+              bool(seen) and all(w != td for w in seen))
+        check("naming_member_apply --dry-run: the scratch copy is removed",
+              not any(os.path.exists(w) for w in seen))
+        eq("naming_member_apply --dry-run: WORK is the tree again", nma.WORK, td)
+        check("naming_member_apply --dry-run: the plan shows the declaration and the access",
+              "+    s32 counts[4];" in text and "+    return r->counts[0];" in text
+              and "DRY RUN: 2 file(s) would change; nothing written" in text)
+
+
 def test_move_tu() -> None:
     """tools/move_tu.py on a scratch git repo: dry run writes nothing, a dirty
     tree refuses, --apply moves every keyed surface, and moving back restores
@@ -11409,6 +11487,7 @@ def main() -> int:
     test_maspsx_small_data_sdata()
     test_psyq_library_files()
     test_tus()
+    test_naming_member_apply()
     test_move_tu()
     test_maspsx_fingerprint()
     test_objdump_failure_is_loud()

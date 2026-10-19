@@ -7,6 +7,8 @@ by compiler feedback; naming_keycheck.py proves the result.
 
   1. Rename `m` in T's declaration: the aggregate body closed by `} T;` in
      src/ or include/ (exactly one body, one depth-1 declarator; else exit 2).
+     Comments are ignored while finding the body and its declarators (an
+     `m[i]` written in a member's comment is not a declarator).
   2. Preprocess and compile every src/**/*.c TU with the Makefile's CPP /
      CPP_FLAGS / CPP_DEFS / CC1 / CC_FLAGS (output discarded). Each
      "has no member named `m'" error marks an access line: rename the `.m` /
@@ -21,8 +23,12 @@ Pairs sharing an old member name run in separate passes. Exit status: 0 clean,
 a compile error other than a member error, a Makefile variable using $(...), no
 convergence). Files are written LF.
 
+--dry-run does the same work on a scratch copy of the tracked src/ and include/
+files, prints the planned edits as a unified diff, and writes nothing to the tree
+(same exit statuses).
+
 Run inside WSL from the repo root (it needs the mipsel cpp and the built cc1):
-  python3 tools/naming_member_apply.py <pairs.txt>
+  python3 tools/naming_member_apply.py [--dry-run] <pairs.txt>
 pairs.txt: one `T.m=n` per line; other lines (`Old=New`, `f:l=n`, blank,
 `#` comments) are ignored.
 """
@@ -30,11 +36,16 @@ import argparse
 import os
 import re
 import shlex
+import difflib
+import shutil
 import subprocess
 import sys
+import tempfile
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+# where src/ and include/ are read, edited and compiled: ROOT, or --dry-run's scratch copy
+WORK = ROOT
 MEMBER_PAIR = re.compile(r"^([A-Za-z_]\w*)\.([A-Za-z_]\w*)=([A-Za-z_]\w*)$")
 NO_MEMBER = re.compile(r"^(\S+?):(\d+): .*has no member named `(\w+)'", re.M)
 MAX_ROUNDS = 8
@@ -47,17 +58,29 @@ def die(msg):
 
 
 def rd(p):
-    return open(os.path.join(ROOT, p), encoding="utf-8", newline="").read()
+    return open(os.path.join(WORK, p), encoding="utf-8", newline="").read()
 
 
 def wr(p, s):
-    open(os.path.join(ROOT, p), "w", encoding="utf-8", newline="\n").write(s)
+    open(os.path.join(WORK, p), "w", encoding="utf-8", newline="\n").write(s)
+
+
+def mask_comments(s):
+    """s with every /* */ and // comment blanked to spaces (newlines kept), so an
+    offset into the result is the same offset into s. String and char literals are
+    not recognised: a "/*" or "//" inside one starts a comment here. The result is
+    only searched for a declaration, so a wrongly blanked declarator fails closed
+    (no declarator found: exit 2)."""
+    return re.sub(r"/\*.*?\*/|//[^\n]*", lambda m: re.sub(r"[^\n]", " ", m.group(0)),
+                  s, flags=re.S)
 
 
 def make_vars():
     """CPP, CPP_FLAGS, CPP_DEFS, CC1, CC_FLAGS from the Makefile (`:=` lines,
-    backslash continuations joined)."""
-    text = re.sub(r"\\\n", " ", rd("Makefile"))
+    backslash continuations joined). A repo-relative tool path is made absolute,
+    so it still resolves when --dry-run compiles in its scratch copy."""
+    text = re.sub(r"\\\n", " ",
+                  open(os.path.join(ROOT, "Makefile"), encoding="utf-8", newline="").read())
     out = {}
     for name in ("CPP", "CPP_FLAGS", "CPP_DEFS", "CC1", "CC_FLAGS"):
         m = re.search(r"^%s\s*:=\s*(.*)$" % name, text, re.M)
@@ -67,6 +90,9 @@ def make_vars():
             die(f"naming_member_apply: Makefile {name} uses a make expansion ($(...)); "
                      "not supported")
         out[name] = shlex.split(m.group(1))
+    for name in ("CPP", "CC1"):
+        if out[name] and "/" in out[name][0] and not os.path.isabs(out[name][0]):
+            out[name][0] = os.path.join(ROOT, out[name][0])
     return out
 
 
@@ -100,7 +126,8 @@ def tracked(*roots):
 def rename_declaration(t, m, n, files):
     hits = []
     for f in files:
-        s = rd(f)
+        # comments blanked: a brace, a `} T;` or an `m[i]` in a comment is not code
+        s = mask_comments(rd(f))
         for e in re.finditer(r"\}\s*" + re.escape(t) + r"\s*;", s):
             depth, i = 0, e.start()
             while i >= 0:
@@ -141,10 +168,10 @@ def compile_errors(mv, srcs):
     cc1 = mv["CC1"] + mv["CC_FLAGS"] + ["-o", "/dev/null"]
 
     def one(f):
-        pp = subprocess.run(cpp + [f], cwd=ROOT, capture_output=True, text=True)
+        pp = subprocess.run(cpp + [f], cwd=WORK, capture_output=True, text=True)
         if pp.returncode != 0:
             return f, [], "cpp failed:\n" + pp.stderr[:400]
-        cc = subprocess.run(cc1, input=pp.stdout, cwd=ROOT, capture_output=True, text=True)
+        cc = subprocess.run(cc1, input=pp.stdout, cwd=WORK, capture_output=True, text=True)
         errs = [(os.path.normpath(e[1]).replace("\\", "/"), int(e[2]), e[3])
                 for e in NO_MEMBER.finditer(cc.stderr)]
         other = cc.returncode != 0 and not errs
@@ -193,10 +220,27 @@ def run_pass(pairs, mv, srcs, decl_files, unresolved):
     die("naming_member_apply: no convergence after %d rounds" % MAX_ROUNDS)
 
 
-def main():
+def report_plan(files):
+    """--dry-run's report: a unified diff, against the tree, of each tracked file
+    the run changed in the scratch copy."""
+    n = 0
+    for f in files:
+        a = open(os.path.join(ROOT, f), encoding="utf-8", newline="").read()
+        b = rd(f)
+        if a != b:
+            n += 1
+            sys.stdout.writelines(difflib.unified_diff(
+                a.splitlines(True), b.splitlines(True), "a/" + f, "b/" + f, n=0))
+    print(f"DRY RUN: {n} file(s) would change; nothing written")
+
+
+def main(argv=None):
+    global WORK
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("pairs", help="the wave's pairs.txt (T.m=n lines are applied)")
-    args = ap.parse_args()
+    ap.add_argument("--dry-run", action="store_true",
+                    help="work on a scratch copy of src/ and include/, print the planned edits")
+    args = ap.parse_args(argv)
     pairs = read_pairs(args.pairs)
     if not pairs:
         die("naming_member_apply: no T.m=n pairs in " + args.pairs)
@@ -204,10 +248,28 @@ def main():
     files = tracked("src", "include")
     decl_files = [f for f in files if f.endswith((".c", ".h"))]
     srcs = [f for f in files if f.endswith(".c")]
+    scratch = None
+    try:
+        if args.dry_run:
+            scratch = tempfile.mkdtemp(prefix="naming_member_apply.")
+            for f in files:
+                os.makedirs(os.path.dirname(os.path.join(scratch, f)), exist_ok=True)
+                shutil.copyfile(os.path.join(ROOT, f), os.path.join(scratch, f))
+            WORK = scratch
+        return apply_pairs(pairs, mv, files, decl_files, srcs, bool(scratch))
+    finally:
+        WORK = ROOT
+        if scratch:
+            shutil.rmtree(scratch)  # the scratch copy this run made
+
+
+def apply_pairs(pairs, mv, files, decl_files, srcs, dry_run):
     unresolved = {}
     for ps in split_passes(pairs):
         print("PASS", ", ".join(f"{t}.{m}={n}" for t, m, n in ps))
         run_pass(ps, mv, srcs, decl_files, unresolved)
+    if dry_run:
+        report_plan(files)
     if unresolved:
         print(f"UNRESOLVED ({len(unresolved)}): edit by hand, then re-run the keycheck")
         for (p, ln), why in sorted(unresolved.items()):
