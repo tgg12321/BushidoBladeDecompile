@@ -8779,6 +8779,30 @@ def test_layer2_addresses() -> None:
             os.chdir(cwd)
 
 
+def test_note_kind_function_reset() -> None:
+    """data_wave.note_kind: a retired alias whose surviving name is the address's auto name is a
+    RESET for a function (func_) as for data (D_), so naming_keycheck accepts the RESET note
+    naming_wave writes when a wave resets a function's registry alias (wave57: 0x80069898
+    gpu_draw_layered_box_80069898 -> func_80069898)."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+    import data_wave as dw
+    import naming_keycheck as nk
+
+    eq("note_kind: function auto name is a RESET", dw.note_kind("0x80069898", "func_80069898"),
+       "RESET")
+    eq("note_kind: data auto name is a RESET", dw.note_kind("0x800A3928", "D_800A3928"), "RESET")
+    eq("note_kind: a semantic survivor is a RENAME", dw.note_kind("0x80069898", "gpu_Box"),
+       "RENAME")
+    line = "gpu_draw_layered_box_80069898  = 0x80069898;  /* 3x SetTile */"
+    outs = nk.registry_outputs(line, "named_syms.txt",
+                               {"gpu_draw_layered_box_80069898": "func_80069898"},
+                               lambda n, a: True, lambda n, a: False)
+    check("keycheck: the function alias RESET note is a tool output",
+          ["/* RESET 0x80069898: retired name 'gpu_draw_layered_box_80069898' — "
+           "preserved note: 3x SetTile */"] in outs)
+
+
 def test_naming_wave_py_escape_boundary() -> None:
     r"""naming_wave.sub_py splits a non-raw string literal on its escape sequences, so a name
     glued to `\t` / `\n` in the source is renamed with the rest of the file (wave52 half-renamed
@@ -11362,6 +11386,7 @@ def main() -> int:
     test_naming_wave_keyed_registries()
     test_census_manifest_precedence()
     test_naming_wave_py_escape_boundary()
+    test_note_kind_function_reset()
     test_naming_wave_renames()
     test_naming_keycheck_scoped_pairs()
     test_volatile_unused_locals()

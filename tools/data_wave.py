@@ -168,7 +168,10 @@ def c_defined(name):
 
 
 def note_kind(addr, survivor):
-    return "RESET" if survivor.upper() == "D_" + addr.removeprefix("0x").upper() else "RENAME"
+    """RESET when the surviving name is the address's auto name (D_ for data, func_ for a
+    function, as naming_wave writes its RESET notes), else RENAME."""
+    a = addr.removeprefix("0x").upper()
+    return "RESET" if survivor.upper() in ("D_" + a, "FUNC_" + a) else "RENAME"
 
 
 def registry_note(indent, tail, rel, message):
