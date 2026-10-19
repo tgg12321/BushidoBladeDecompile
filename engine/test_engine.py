@@ -8779,6 +8779,36 @@ def test_layer2_addresses() -> None:
             os.chdir(cwd)
 
 
+def test_naming_wave_py_escape_boundary() -> None:
+    r"""naming_wave.sub_py splits a non-raw string literal on its escape sequences, so a name
+    glued to `\t` / `\n` in the source is renamed with the rest of the file (wave52 half-renamed
+    tools/test_label_census.py's cc1 dump: '\t.globl\tfunc_800272FC' has no \b before `func`).
+    A raw literal keeps its backslashes as characters, so `r"\tfunc_A"` holds no name."""
+    import re
+
+    import naming_wave as nw
+
+    pat = re.compile(r"\b(func_80001000)\b")
+    lines = ['    "\\t.globl\\tfunc_80001000\\n"',
+             '    "func_80001000:\\n"',
+             '    "\\tjal\\tfunc_80001000\\n\\tnop\\n\\t.end\\tfunc_80001000\\n  # a long dump line"',
+             '    "\\\\func_80001000"',
+             '    r"\\tfunc_80001000"']
+    new, n, _ = nw.sub_py(pat, lambda m: "sem_EscProbe", "X = (\n" + "\n".join(lines) + ")\n")
+    got = new.split("\n")[1:6]
+    eq("naming_wave: sub_py renames a name glued to an escape (short literal)",
+       got[0], '    "\\t.globl\\tsem_EscProbe\\n"')
+    eq("naming_wave: sub_py renames the plain key in the same file", got[1],
+       '    "sem_EscProbe:\\n"')
+    eq("naming_wave: sub_py renames names glued to escapes in a long literal", got[2],
+       '    "\\tjal\\tsem_EscProbe\\n\\tnop\\n\\t.end\\tsem_EscProbe\\n  # a long dump line"')
+    eq("naming_wave: sub_py renames after an escaped backslash", got[3],
+       '    "\\\\sem_EscProbe"')
+    eq("naming_wave: sub_py leaves a raw literal's glued name alone", got[4],
+       '    r"\\tfunc_80001000")')
+    eq("naming_wave: sub_py counts every rename", n, 5)
+
+
 def test_census_manifest_precedence() -> None:
     """docs/naming/census_manifests.read_manifests: for one address the latest CONFIRMed
     manifest row wins -- a later reset-contradicted RESET retires an earlier sotn-review KEEP
@@ -11331,6 +11361,7 @@ def main() -> int:
     test_naming_wave_own_target()
     test_naming_wave_keyed_registries()
     test_census_manifest_precedence()
+    test_naming_wave_py_escape_boundary()
     test_naming_wave_renames()
     test_naming_keycheck_scoped_pairs()
     test_volatile_unused_locals()

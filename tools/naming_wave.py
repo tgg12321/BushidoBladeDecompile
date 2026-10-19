@@ -327,6 +327,20 @@ def sub_py(pattern: re.Pattern, repl, text: str) -> tuple[str, int, list[str]]:
         return (len(s) <= PY_KEYLIKE_MAXLEN
                 and not s.startswith(('"""', "'''", 'r"""', "r'''")))
 
+    # In a non-raw literal an escape's letter is glued to the next word in the
+    # SOURCE (`"\tfunc_X"`: ..., t, f, ...), so a `\b` pattern misses the name and
+    # a file gets half-renamed (tools/test_label_census.py's cc1 dump, wave52).
+    # Match per escape-separated segment, as sub_in_string does for C; a raw
+    # literal has no escapes (its backslashes are characters of the value).
+    def is_raw(lit: str) -> bool:
+        return "r" in lit[:lit.index(lit[-1])].lower()
+
+    def findall(pat: re.Pattern, lit: str) -> list[str]:
+        return list(pat.findall(lit)) if is_raw(lit) else list(find_in_string(pat, lit))
+
+    def subn(pat: re.Pattern, lit: str) -> tuple[str, int]:
+        return pat.subn(repl, lit) if is_raw(lit) else sub_in_string(pat, repl, lit)
+
     # Pass 1 — which names does this file use as a KEY (a short literal)?
     #
     # Consistency within a file is the thing that must hold. A file that renames
@@ -339,7 +353,7 @@ def sub_py(pattern: re.Pattern, repl, text: str) -> tuple[str, int, list[str]]:
     keyed: set[str] = set()
     for tok in toks:
         if tok.type == tokenize.STRING and keylike(tok.string):
-            keyed.update(pattern.findall(tok.string))
+            keyed.update(findall(pattern, tok.string))
 
     edits: list[tuple[tuple[int, int], tuple[int, int], str]] = []
     n = 0
@@ -347,7 +361,7 @@ def sub_py(pattern: re.Pattern, repl, text: str) -> tuple[str, int, list[str]]:
         if tok.type != tokenize.STRING:
             continue
         s = tok.string
-        hits = pattern.findall(s)
+        hits = findall(pattern, s)
         if not hits:
             continue
         if not keylike(s):
@@ -361,9 +375,9 @@ def sub_py(pattern: re.Pattern, repl, text: str) -> tuple[str, int, list[str]]:
             # stays self-consistent without rewriting genuine prose.
             sub_pat = re.compile(r"\b(" + "|".join(
                 sorted((re.escape(h) for h in set(hits) & keyed), key=len, reverse=True)) + r")\b")
-            new, k = sub_pat.subn(repl, s)
+            new, k = subn(sub_pat, s)
         else:
-            new, k = pattern.subn(repl, s)
+            new, k = subn(pattern, s)
         if k:
             edits.append((tok.start, tok.end, new))
             n += k
