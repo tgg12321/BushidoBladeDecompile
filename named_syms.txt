@@ -943,8 +943,8 @@ D_800A35BC                          = 0x800A35BC;  /* mode = arg2->unk14_0 (func
 D_800A358A                          = 0x800A358A;  /* slot 1's column cursor, D_800A3588[1] */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_d */
 D_800A3560                          = 0x800A3560;  /* 2x3-byte per-slot records (union D_800A3560, include/game.h) */  /* data-wave 2026-10-08: was g_replay_motion_shared_state_e */
 D_800A3550                                  = 0x800A3550;  /* shorts; full-screen tile intensity ramp */  /* data-wave 2026-10-08: was g_motion_shift_state_a */
-D_800A371C                                = 0x800A371C;  /* word: table entry data[2] * 20 (func_8001FBE8); func_8002C0DC compares it with func_8002BC68's result */  /* data-wave 2026-10-08: was g_status_up_data_state_a */
-D_800A3769                                = 0x800A3769;  /* byte: 0/1 set with D_800A3758 by func_800238C4; read by func_8001FBE8 */  /* data-wave 2026-10-08: was g_status_up_data_state_b */
+D_800A371C                                = 0x800A371C;  /* word: table entry data[2] * 20 (fight_UpdatePairedMoves); func_8002C0DC compares it with func_8002BC68's result */  /* data-wave 2026-10-08: was g_status_up_data_state_a */
+D_800A3769                                = 0x800A3769;  /* byte: 0/1 set with D_800A3758 by func_800238C4; read by fight_UpdatePairedMoves */  /* data-wave 2026-10-08: was g_status_up_data_state_b */
 
 /* === Cluster at 0x800A34F8-3514 (2026-05-17) -- 4 highs === */
 /* Discovered via cluster-consumer analysis: D_800A34F8/350C/3514 are */
@@ -2181,7 +2181,7 @@ D_800A38DF                         = 0x800A38DF;  /* func_80022408(&D_80101EC8[D
 D_800A38E0                         = 0x800A38E0;  /* 0..3, set by func_8001C8DC at D_800A38E2 = 0x1F / 0x33 / 0x51; func_80021D10's third argument */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_2 */
 D_800A38E1                         = 0x800A38E1;  /* = p->unk14_15 (func_8003504C); bit 0 picks D_800A36A4 = 0x21 / 0x20 */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_3 */
 D_800A38E4                       = 0x800A38E4;  /* bits_DepositMask3F83F8(D_800A36C6) (comb_Connect); OR-ed into func_80077940's argument */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_2 */
-D_800A38E8                       = 0x800A38E8;  /* 0xFF or data[3] & 0x7F (func_8001FBE8); lower bound on unk_40 in func_8002C0DC */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_6 */
+D_800A38E8                       = 0x800A38E8;  /* 0xFF or data[3] & 0x7F (fight_UpdatePairedMoves); lower bound on unk_40 in func_8002C0DC */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_6 */
 D_800A38F0                         = 0x800A38F0;  /* store-only: func_8002006C stores the change of D_800A387C */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_2 */
 D_800A38F4                         = 0x800A38F4;  /* frame clock of func_8001CE60's mode-5 branch (vs D_800A36CC * 30) */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_6 */
 D_800A3904                            = 0x800A3904;  /* +8 from D_800A38FC */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_b_plus_8 */
@@ -2588,7 +2588,7 @@ g_cd_result                          = 0x800A3760;  /* u8[8] result buffer of Cd
 D_800A37E8                                = 0x800A37E8;  /* 35 refs; s16 paired with g_round_timer; reload value */  /* data-wave 2026-09-25: was g_round_timer_reload_800A37E8 */
 D_800A37EA                                = 0x800A37EA;  /* 11 refs; paired secondary timer near g_game_timer (0x800A3790) */  /* data-wave 2026-09-25: was g_round_timer_plus_2_800A37EA */
 D_800A37EC                                = 0x800A37EC;  /* 11 refs; +4 from timer base */  /* data-wave 2026-09-29: was g_round_timer_plus_4_800A37EC */
-D_800A381C                                  = 0x800A381C;  /* stored by fighter_Update from a player record; passed with D_800A36D8 to func_80021A98 by func_8001FBE8 */  /* data-wave 2026-10-08: was g_file_state_field_800A381C */
+D_800A381C                                  = 0x800A381C;  /* stored by fighter_Update from a player record; passed with D_800A36D8 to func_80021A98 by fight_UpdatePairedMoves */  /* data-wave 2026-10-08: was g_file_state_field_800A381C */
 D_800A38B0                              = 0x800A38B0;  /* u8 0/1/2, the per-player index of D_800A38AA[] / D_800A3898[] (func_8001CE60 only) */  /* data-wave 2026-10-08: was g_file_heap_state_flag_800A38B0 */
 D_800F1858                      = 0x800F1858;  /* 12 refs; +8 from g_stdout_column_counter (0x800F1850) */  /* data-wave 2026-09-25: was g_stdout_column_counter_plus_8_800F1858 */
 D_800F1B14               = 0x800F1B14;  /* 20 refs; 4-byte prefix to the D_800F1B18 decoder records */  /* data-wave 2026-09-24: was g_per_char_motion_buffer_table_prefix_800F1B14 */
