@@ -105,5 +105,5 @@ Cited by function name.
   states 1 / 3 (low byte of `D_800A3578`) slide in to 0x1E8 and then switch
   `D_800A3580` to `D_800A3584`; states 2 / 4 slide back to 0, playing sound 5
   as they start.
-- `func_80070188` (src/main/5ED34.c:826) is the grid cursor of that screen
+- `menu_UpdateEntryGridCursors` (src/main/5ED34.c:826) is the grid cursor of that screen
   (see [replay.md](replay.md)).

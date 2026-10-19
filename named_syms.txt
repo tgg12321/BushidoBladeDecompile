@@ -1161,7 +1161,7 @@ D_800A35D8                                    = 0x800A35D8;  /* record array men
 D_800A3570                                            = 0x800A3570;  /* s16 slide offset, 0..0x1E8 (488), stepped by +/-0x20 in func_8006EC0C; an x displacement and width in func_8006F528 (5ED34.c:266-288, :558-637) */  /* data-wave 2026-10-08: was g_fade_value */
 D_800A3580                                     = 0x800A3580;  /* the module's current mode: indexes the handler table at 0x8009BC1C, D_8009BCC4 and the menu table (5ED34.c:245, :1600, :1653) */  /* data-wave 2026-10-08: was g_fade_dispatch_idx */
 D_800A3584                                = 0x800A3584;  /* the module's next mode; func_8006EC0C copies it into D_800A3580 when D_800A3570 reaches 0x1E8 (5ED34.c:265-274) */  /* data-wave 2026-10-08: was g_fade_next_dispatch_idx */
-D_8009BC1C                                   = 0x8009BC1C;  /* 7-entry handler table (func_8006F97C, func_80070C70, func_8006F100, func_80071C4C, func_80072084, func_800720AC, func_800720D4); func_8006EACC calls (&D_8009BC1C)[D_800A3580](sp10) */  /* data-wave 2026-10-08: was g_fade_dispatch_table */
+D_8009BC1C                                   = 0x8009BC1C;  /* 7-entry handler table (menu_UpdateEntryGrid, menu_UpdateRow, func_8006F100, func_80071C4C, func_80072084, func_800720AC, func_800720D4); func_8006EACC calls (&D_8009BC1C)[D_800A3580](sp10) */  /* data-wave 2026-10-08: was g_fade_dispatch_table */
 
 /* === D_800F116C command-block cluster (2026-05-17) -- 4 highs === */
 /* From 51268.c func_800617C8 etc.  Complements the command block */

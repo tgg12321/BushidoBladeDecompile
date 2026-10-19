@@ -484,7 +484,7 @@ def find_empty_do_while_zero(text: str, body_lo: int, body_hi: int) -> list[tupl
 # anything with it, influencing scheduling / register allocation).
 #
 # Identified by the 2026-06-02 cheat-by-spelling audit on 3 affected
-# COMPLETED-C functions (func_80072E10 with 4× `if (D_800A3580) {}`,
+# COMPLETED-C functions (gpu_AddGradientPanel with 4× `if (D_800A3580) {}`,
 # func_8003D7B4 with `if (!val) {}`, func_80049A2C with `if (a1_val) {}`).
 # Same intent as the dead-conditional-store / Lever D / dead-vars-local-
 # array family: a code construct with no semantic purpose, written

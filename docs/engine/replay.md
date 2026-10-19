@@ -44,9 +44,9 @@ member is `Unk80101E60Rec`):
 `cdrom_IsIdle` (src/main/cdrom.c:11) is `rec.unk02 == 0`. The old table of
 "replay state" variables at `0x80101E60..0x80101EA4` is this record's members.
 
-## `func_80070188` and `func_8003E2D8` (once `replay_camera_attack` / `replay_camera_get_attack_number`)
+## `menu_UpdateEntryGridCursors` and `func_8003E2D8` (once `replay_camera_attack` / `replay_camera_get_attack_number`)
 
-`func_80070188(arg0)` (src/main/5ED34.c:826) is a grid-menu cursor: for each of
+`menu_UpdateEntryGridCursors(arg0)` (src/main/5ED34.c:826) is a grid-menu cursor: for each of
 its 1 + `D_800A35B0` + `D_800A3554` cursors it moves a (row, column) position
 over a 5-row table
 (`D_8009BC40`) on the pad bits in `D_800A354C`, skipping cells already taken
