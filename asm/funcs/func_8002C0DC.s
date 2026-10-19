@@ -22,7 +22,7 @@ glabel func_8002C0DC
     /* 1C928 8002C128 57FF010C */  jal        ratan2
     /* 1C92C 8002C12C 23284500 */   subu      $a1, $v0, $a1
     /* 1C930 8002C130 21200002 */  addu       $a0, $s0, $zero
-    /* 1C934 8002C134 187E000C */  jal        func_8001F860
+    /* 1C934 8002C134 187E000C */  jal        fighter_SetTurnDelta
     /* 1C938 8002C138 21284000 */   addu      $a1, $v0, $zero
     /* 1C93C 8002C13C 0200222A */  slti       $v0, $s1, 0x2
     /* 1C940 8002C140 F2FF4014 */  bnez       $v0, .L8002C10C

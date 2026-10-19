@@ -165,9 +165,8 @@ void func_8003AF40(s32 arg0) {
     if (D_80102778.unk_4[2 + arg0] == 0xFF) {
         D_80102778.unk_4[2 + arg0] = (&D_80102778.unk_4[2])[(u32)arg0 < 1u];
     }
-    func_80022580(
-        arg0, (s8)D_80102778.unk_4[4 + arg0], (s8)D_80102778.unk_4[arg0],
-        (s8)D_80102778.unk_4[2 + arg0], 0);
+    fighter_Init(arg0, (s8)D_80102778.unk_4[4 + arg0],
+                 (s8)D_80102778.unk_4[arg0], (s8)D_80102778.unk_4[2 + arg0], 0);
     gpu_ResetGraphMode1();
     func_80020D38();
     func_80040510(

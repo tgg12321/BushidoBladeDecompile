@@ -279,7 +279,7 @@ glabel func_80027AD8
     /* 186E8 80027EE8 57FF010C */  jal        ratan2
     /* 186EC 80027EEC 00000000 */   nop
     /* 186F0 80027EF0 21202002 */  addu       $a0, $s1, $zero
-    /* 186F4 80027EF4 187E000C */  jal        func_8001F860
+    /* 186F4 80027EF4 187E000C */  jal        fighter_SetTurnDelta
     /* 186F8 80027EF8 21284000 */   addu      $a1, $v0, $zero
     /* 186FC 80027EFC 0000E386 */  lh         $v1, 0x0($s7)
     /* 18700 80027F00 00000000 */  nop
@@ -338,7 +338,7 @@ glabel func_80027AD8
     /* 187C4 80027FC4 57FF010C */  jal        ratan2
     /* 187C8 80027FC8 00000000 */   nop
     /* 187CC 80027FCC 21202002 */  addu       $a0, $s1, $zero
-    /* 187D0 80027FD0 187E000C */  jal        func_8001F860
+    /* 187D0 80027FD0 187E000C */  jal        fighter_SetTurnDelta
     /* 187D4 80027FD4 21284000 */   addu      $a1, $v0, $zero
     /* 187D8 80027FD8 0000E386 */  lh         $v1, 0x0($s7)
     /* 187DC 80027FDC 00000000 */  nop

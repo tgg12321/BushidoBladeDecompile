@@ -31,7 +31,7 @@ glabel func_8001EEB4
     /* F728 8001EF28 00000000 */  nop
     /* F72C 8001EF2C 0F004014 */  bnez       $v0, .L8001EF6C
     /* F730 8001EF30 00000000 */   nop
-    /* F734 8001EF34 3286000C */  jal        func_800218C8
+    /* F734 8001EF34 3286000C */  jal        motion_ResetVariantIndex
     /* F738 8001EF38 01001024 */   addiu     $s0, $zero, 0x1
     /* F73C 8001EF3C 0A80043C */  lui        $a0, %hi(D_800A3748)
     /* F740 8001EF40 48378480 */  lb         $a0, %lo(D_800A3748)($a0)

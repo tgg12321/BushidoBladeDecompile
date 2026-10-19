@@ -8,7 +8,7 @@ glabel func_80016D78
     /* 7590 80016D90 00DBA534 */   ori       $a1, $a1, (0x8010DB00 & 0xFFFF)
     /* 7594 80016D94 FB59000C */  jal        func_800167EC
     /* 7598 80016D98 00000000 */   nop
-    /* 759C 80016D9C 5C83000C */  jal        func_80020D70
+    /* 759C 80016D9C 5C83000C */  jal        motion_InitBuffers
     /* 75A0 80016DA0 00000000 */   nop
     /* 75A4 80016DA4 1D80043C */  lui        $a0, (0x801D8800 >> 16)
     /* 75A8 80016DA8 00888434 */  ori        $a0, $a0, (0x801D8800 & 0xFFFF)
@@ -28,7 +28,7 @@ glabel func_80016D78
     /* 75E0 80016DE0 00000000 */   nop
     /* 75E4 80016DE4 B1F4000C */  jal        font_LoadImage
     /* 75E8 80016DE8 00000000 */   nop
-    /* 75EC 80016DEC 1171000C */  jal        func_8001C444
+    /* 75EC 80016DEC 1171000C */  jal        fight_InitSettings
     /* 75F0 80016DF0 00000000 */   nop
     /* 75F4 80016DF4 2D0680A3 */  sb         $zero, %gp_rel(D_800A36F9)($gp)
     /* 75F8 80016DF8 C40580A3 */  sb         $zero, %gp_rel(D_800A3690)($gp)

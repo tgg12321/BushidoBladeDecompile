@@ -328,7 +328,7 @@ decode:
     }
 }
 
-void func_8001A484(u16 *arg0) {
+void font_PrintU16Triples(u16 *arg0) {
     s32 i;
     u16 *p;
     i = 0;
@@ -410,18 +410,19 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
     arg0[2] = (s16)math_FloorDiv2000(arg2[2] + ((dz << 10) / ((s32)var_3)));
 }
 
-void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
-                   Unk80101EC8Record *arg3);
+void camera_UpdateTwoFighterView(
+    Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
+    Unk80101EC8Record *arg3);
 extern u8 D_800A30F0[];
 extern s32 D_800A30F4[];
 typedef VECTOR CamVec;
 
-/* Scratchpad work area (0x1F800000) used by func_8001A820: the target yaw and
- * vz angle that D_800F6608's unk_10.vy / vz ease toward, the camera focus, the
- * eye position camera_CalcEye computes, a fighter record's unk_B8 less 0xC8 in
- * vy (the collision segment's start), and the hit position, surface normal and
- * work area func_80053614 is given (its 3rd/4th/5th arguments; its other
- * callers pass a VECTOR hit and an s16[4] normal). */
+/* Scratchpad work area (0x1F800000) used by camera_UpdateTwoFighterView: the
+ * target yaw and vz angle that D_800F6608's unk_10.vy / vz ease toward, the
+ * camera focus, the eye position camera_CalcEye computes, a fighter record's
+ * unk_B8 less 0xC8 in vy (the collision segment's start), and the hit position,
+ * surface normal and work area func_80053614 is given (its 3rd/4th/5th
+ * arguments; its other callers pass a VECTOR hit and an s16[4] normal). */
 typedef struct {
     s16 unk0;     /* 0x00 */
     s16 yaw;      /* 0x02 */
@@ -436,7 +437,7 @@ typedef struct {
 } CamScratch;
 
 /* Two-fighter camera for D_800F6608 (arg0/arg1 = the fighters' positions,
- * arg2/arg3 = the fighter records; caller func_8001E878). Eases the focus
+ * arg2/arg3 = the fighter records; caller fight_Update). Eases the focus
  * toward the fighters' midpoint (or arg0's position when D_800A3690 is set);
  * turns their separation (byte-LUT square root, GTE leading-zero count for
  * large inputs) into the value D_800F6608.w18 eases 1/12 toward (0xBB8 in
@@ -447,8 +448,9 @@ typedef struct {
  * camera-collision test (step in D_800A30F4[], blocked flag in D_800A30F0[]),
  * and eases unk_10.vx toward the larger result, clamped to 0x80..0x1C0. GTE:
  * gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc). */
-void func_8001A820(Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
-                   Unk80101EC8Record *arg3) {
+void camera_UpdateTwoFighterView(
+    Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
+    Unk80101EC8Record *arg3) {
     s32 lzc_out;
     CamScratch *scr;
     Rec44 *var_2;
@@ -696,7 +698,7 @@ void func_8001B138(s32 *arg0) {
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
 }
 
-void func_8001B294(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
+void camera_InitTwoFighterView(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
     D_800A36FA = 0;
     D_800F6608.h30[0][0] = 0x64;
     D_800F6608.h30[0][1] = 0;
@@ -717,7 +719,8 @@ void func_8001B294(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
     D_800F6608.b1E = 0;
 }
 
-void func_8001B3C0(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
+void camera_InitTrackedFighterFocus(
+    Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
     D_800A36FA = 0;
     D_800F5328.h30[0][0] = 0x64;
     D_800F5328.h30[0][1] = 0;
@@ -738,7 +741,7 @@ void func_8001B3C0(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
     }
 }
 
-void func_8001B478(Unk80101EC8Record *obj) {
+void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
     /* FAKE: s2 holds &D_800F5328 in a saved register; through the symbol each
      * access re-forms the address (score 34). */
     Rec44 *s2 = &D_800F5328;
@@ -977,7 +980,7 @@ void func_8001BBD8(Rec1C *arg0, Rec1C *arg1, s32 arg2) {
                   -0x200 - ratan2(arg1->h4 - arg0->h4, arg1->h8 - arg0->h8));
 }
 
-void func_8001BC70(Unk80101EC8Record *arg0, s32 arg1) {
+void camera_SetFighterFocusView(Unk80101EC8Record *arg0, s32 arg1) {
     func_8003F1E4(0);
     D_800F6608.unk_00 = arg0->unk_174;
     D_800F6608.unk_10.vx = 0x120;
@@ -986,7 +989,7 @@ void func_8001BC70(Unk80101EC8Record *arg0, s32 arg1) {
     D_800F6608.w18 = 0x1162;
 }
 
-void func_8001BCF0(Unk80101EC8Record *arg0, s32 arg1) {
+void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
     s32 diff = 0x1000 - arg1;
 
     func_8003F1E4(0);
@@ -1133,7 +1136,7 @@ void func_8001BE20(s32 arg0, PadState *arg1) {
     }
 }
 
-void func_8001C444(void) {
+void fight_InitSettings(void) {
     D_80102778.unk_0[1] = 0x800;
     D_80102778.unk_0[0] = 0x800;
     D_80102778.unk_4[0] = 1;
@@ -1151,9 +1154,9 @@ void func_8001C444(void) {
 void func_8001C4C0(void) {
     u16 v = D_80101EC8[0].unk_6A;
     if (v == 0x32 || v == 0x11) {
-        func_800218C8(0);
+        motion_ResetVariantIndex(0);
         {
-            MoveScript *v0 = func_80021974(0);
+            MoveScript *v0 = motion_GetDefaultVariantScript(0);
             D_80101EC8[0].unk_5E = 0;
             func_80021A98(0, v0, 0);
         }
@@ -1164,22 +1167,22 @@ void func_8001C51C(void) {
     MoveScript *v0;
     func_8001C4C0();
     if (D_800A38DC == 3 && D_800A3728 != 0) {
-        func_80022580(1, (s8)D_80102778.unk_4[5], (s8)D_80102778.unk_4[1],
-                      (s8)D_80102778.unk_4[3], 0);
+        fighter_Init(1, (s8)D_80102778.unk_4[5], (s8)D_80102778.unk_4[1],
+                     (s8)D_80102778.unk_4[3], 0);
     } else {
-        func_80022580(1, (s8)D_80102778.unk_4[5], (s8)D_80102778.unk_4[1],
-                      (s8)D_80102778.unk_4[3], 1);
+        fighter_Init(1, (s8)D_80102778.unk_4[5], (s8)D_80102778.unk_4[1],
+                     (s8)D_80102778.unk_4[3], 1);
     }
     func_80022F34();
-    func_800218C8(1);
-    v0 = func_80021974(1);
+    motion_ResetVariantIndex(1);
+    v0 = motion_GetDefaultVariantScript(1);
     D_80101EC8[1].unk_5E = 0;
     func_80021A98(1, v0, 0);
     D_800A382E = 0;
     D_800A3748 = -1;
     func_80030524();
     func_80030D04();
-    func_8001B294(&D_80101EC8[0], &D_80101EC8[1]);
+    camera_InitTwoFighterView(&D_80101EC8[0], &D_80101EC8[1]);
     func_800392C8();
     func_80021280(1);
 }
@@ -1328,7 +1331,7 @@ void func_8001C8DC(void) {
         }
         if (D_800A3728 = prev != D_800A38E0) {
             func_8001C624();
-            var_1 = func_80021904(0);
+            var_1 = motion_GetCurrentVariantScript(0);
             D_80101EC8[0].unk_5E = 0;
             func_80021A98(0, var_1, 0);
         }
@@ -1674,7 +1677,7 @@ void func_8001DA2C(void) {
     }
 }
 
-void func_8001DA8C(void) {
+void snd_StartFightCdAudio(void) {
     snd_SerialMixOn();
     if (func_800167D4()) {
         return;
@@ -1749,12 +1752,13 @@ void func_8001DBE4(void) {
     gpu_SetDispMaskOn();
 }
 
-extern void func_80020E74(s32, s32, s32, s32);
+extern void motion_LoadFighterData(s32, s32, s32, s32);
 extern void func_80021210(void);
-extern void func_8001B294(Unk80101EC8Record *, Unk80101EC8Record *);
-extern void func_8001B3C0(Unk80101EC8Record *, Unk80101EC8Record *);
+extern void camera_InitTwoFighterView(Unk80101EC8Record *, Unk80101EC8Record *);
+extern void camera_InitTrackedFighterFocus(
+    Unk80101EC8Record *, Unk80101EC8Record *);
 
-void func_8001DCB0(void) {
+void fight_Init(void) {
     s32 i;
     s32 addr;
 
@@ -1774,8 +1778,8 @@ void func_8001DCB0(void) {
         if (D_800A38DC != 0) {
             func_80041604(0, 0);
         }
-        func_80022580(i, (s8)D_80102778.unk_4[4 + i], (s8)D_80102778.unk_4[i],
-                      (s8)D_80102778.unk_4[2 + i], 0);
+        fighter_Init(i, (s8)D_80102778.unk_4[4 + i], (s8)D_80102778.unk_4[i],
+                     (s8)D_80102778.unk_4[2 + i], 0);
         if (D_800A38BA != 0 && D_800A36F6 == i) {
             func_8003E164(i == 0);
         }
@@ -1835,7 +1839,7 @@ void func_8001DCB0(void) {
             func_8001D998();
             func_8001DB9C();
         }
-        func_80020E74(
+        motion_LoadFighterData(
             D_8008D538[(s8)D_80102778.unk_4[0]], (s8)D_80102778.unk_4[2],
             D_8008D538[(s8)D_80102778.unk_4[1]], (s8)D_80102778.unk_4[3]);
     } else if (D_800A38DC == 5) {
@@ -1847,26 +1851,26 @@ void func_8001DCB0(void) {
     func_80022F34();
     if (D_800A38DC == 2 || D_800A38DC == 5) {
         if (D_800A3670 != 0) {
-            func_800218C8(0);
+            motion_ResetVariantIndex(0);
             {
-                MoveScript *v = func_80021974(0);
+                MoveScript *v = motion_GetDefaultVariantScript(0);
                 D_80101EC8[0].unk_5E = 0;
                 func_80021A98(0, v, 0);
             }
             if (D_800A38DC == 2 && D_800A389A == 0) {
-                MoveScript *v = func_80021904(1);
+                MoveScript *v = motion_GetCurrentVariantScript(1);
                 D_80101EC8[1].unk_5E = 0;
                 func_80021A98(1, v, 0);
             } else {
                 MoveScript *v;
-                func_800218C8(1);
-                v = func_80021974(1);
+                motion_ResetVariantIndex(1);
+                v = motion_GetDefaultVariantScript(1);
                 D_80101EC8[1].unk_5E = 0;
                 func_80021A98(1, v, 0);
             }
         } else {
-            func_800218C8(0);
-            func_800218C8(1);
+            motion_ResetVariantIndex(0);
+            motion_ResetVariantIndex(1);
             {
                 MoveScript *v = func_800219E4(0);
                 D_80101EC8[0].unk_5E = 1;
@@ -1879,24 +1883,24 @@ void func_8001DCB0(void) {
             }
         }
     } else {
-        func_800218C8(0);
-        func_800218C8(1);
+        motion_ResetVariantIndex(0);
+        motion_ResetVariantIndex(1);
         {
-            MoveScript *v = func_80021974(0);
+            MoveScript *v = motion_GetDefaultVariantScript(0);
             D_80101EC8[0].unk_5E = 0;
             func_80021A98(0, v, 0);
         }
         {
-            MoveScript *v = func_80021974(1);
+            MoveScript *v = motion_GetDefaultVariantScript(1);
             D_80101EC8[1].unk_5E = 0;
             func_80021A98(1, v, 0);
         }
     }
     D_800A382E = 0;
     D_800A3748 = -1;
-    func_8001B294(&D_80101EC8[0], &D_80101EC8[1]);
+    camera_InitTwoFighterView(&D_80101EC8[0], &D_80101EC8[1]);
     if (D_800A38BA != 0) {
-        func_8001B3C0(&D_80101EC8[0], &D_80101EC8[1]);
+        camera_InitTrackedFighterFocus(&D_80101EC8[0], &D_80101EC8[1]);
     }
     func_800392C8();
     func_80061178();
@@ -1907,7 +1911,7 @@ void func_8001DCB0(void) {
     D_800A3670 = 0;
     D_800A3834 = 1;
     func_8001C820();
-    func_8001DA8C();
+    snd_StartFightCdAudio();
     func_80033510();
     func_8005BE84(D_800A36A4);
     if (D_800A38DC == 6) {
@@ -1915,7 +1919,7 @@ void func_8001DCB0(void) {
     }
 }
 
-void func_8001E404(void) {
+void camera_ApplyFightView(void) {
     /* FAKE: frame layout: unwritten leading pad for the original frame's 8
      * untouched bytes (dead-vars-local-array carve-out; SOTN precedent:
      * volatile u32 pad[4]; // FAKE at st/sel/stream.c:80); without: score 23.
@@ -2025,22 +2029,22 @@ void func_8001E800(void) {
     }
 }
 
-void func_8001E878(void) {
+void fight_Update(void) {
     PadState buf;
 
     D_800A3778 = func_800472B0();
-    func_8001A820(&D_80101EC8[0].unk_168, &D_80101EC8[1].unk_168,
-                  &D_80101EC8[0], &D_80101EC8[1]);
+    camera_UpdateTwoFighterView(&D_80101EC8[0].unk_168, &D_80101EC8[1].unk_168,
+                                &D_80101EC8[0], &D_80101EC8[1]);
     if (D_800A38BA != 0) {
-        func_8001B478(&D_80101EC8[D_800A36F6]);
+        camera_UpdateTrackedFighterView(&D_80101EC8[D_800A36F6]);
     }
-    func_8001E404();
+    camera_ApplyFightView();
     func_80039320();
     func_8002006C();
     func_8001BE20(0, &buf);
-    func_80023F08(0, &buf);
+    fighter_Update(0, &buf);
     func_8001BE20(1, &buf);
-    func_80023F08(1, &buf);
+    fighter_Update(1, &buf);
     func_8002C61C();
     func_80030D7C();
     func_800321E8();
@@ -2078,13 +2082,13 @@ void func_8001EA84(void) {
 
     D_800A37B8 += 1;
     D_800A3778 = func_800472B0();
-    func_8001BC70(&D_80101EC8[D_800A3748 == 0], D_800A37B8 << 3);
-    func_8001E404();
+    camera_SetFighterFocusView(&D_80101EC8[D_800A3748 == 0], D_800A37B8 << 3);
+    camera_ApplyFightView();
     func_80039320();
     func_8002006C();
     pad_ClearStateBits(&sp10);
-    func_80023F08(0, &sp10);
-    func_80023F08(1, &sp10);
+    fighter_Update(0, &sp10);
+    fighter_Update(1, &sp10);
     func_8002C61C();
     func_80030D7C();
     func_800321E8();
@@ -2166,7 +2170,7 @@ void func_8001EEB4(void) {
 
     if (a1 != 0xA && entry->unk_72 == 0 && a1 != 0x17 && a1 != 0x18 &&
         entry->unk_96 == 0) {
-        func_800218C8(D_800A3748);
+        motion_ResetVariantIndex(D_800A3748);
         {
             MoveScript *ret = func_80021A3C(D_800A3748, entry->unk_0A);
             s32 idx2 = D_800A3748;
@@ -2187,13 +2191,14 @@ void func_8001EFA0(void) {
 
     D_800A37B8 += 1;
     D_800A3778 = func_800472B0();
-    func_8001BCF0(&D_80101EC8[D_800A3748], (D_800A37B8 << 12) / 105);
-    func_8001E404();
+    camera_SetInterpolatedFighterView(
+        &D_80101EC8[D_800A3748], (D_800A37B8 << 12) / 105);
+    camera_ApplyFightView();
     func_80039320();
     func_8002006C();
     pad_ClearStateBits(&sp10);
-    func_80023F08(0, &sp10);
-    func_80023F08(1, &sp10);
+    fighter_Update(0, &sp10);
+    fighter_Update(1, &sp10);
     func_8002C61C();
     func_80030D7C();
     func_800321E8();
@@ -2231,8 +2236,8 @@ void func_8001EFA0(void) {
     }
 }
 
-void func_8001F1C4(Unk80101EC8Record *arg0, Rec1C *arg1, MotionFrame *arg2,
-                   MotionFrame *arg3) {
+void motion_ApplyRecordedPoseAdjustments(Unk80101EC8Record *arg0, Rec1C *arg1,
+                                         MotionFrame *arg2, MotionFrame *arg3) {
     s16 temp_v1;
     if (!(arg1->b18 & 0x80)) {
         func_80027334(arg2);
@@ -2261,7 +2266,8 @@ void func_8001F1C4(Unk80101EC8Record *arg0, Rec1C *arg1, MotionFrame *arg2,
  * 2), and adds random jitter to both sets when obj+0x26E is set and obj+0x96
  * == 0. The ground distance is the g_sqrt_table_u8 byte-LUT integer sqrt (the
  * func_8002E838 idiom), with one gte_Lzc per root. */
-void func_8001F2E4(Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
+void motion_AdjustFighterPose(
+    Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
     s32 lzc_out;
     s32 lzc_out2;
     s32 var_2;
@@ -2430,7 +2436,7 @@ void func_8001F2E4(Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
     }
 }
 
-void func_8001F860(Unk80101EC8Record *arg0, s32 arg1) {
+void fighter_SetTurnDelta(Unk80101EC8Record *arg0, s32 arg1) {
     arg1 = (arg1 - arg0->unk_1C8.vy) & 0xFFF;
     if (arg1 >= 0x800) {
         arg1 -= 0x1000;
@@ -2438,7 +2444,7 @@ void func_8001F860(Unk80101EC8Record *arg0, s32 arg1) {
     arg0->unk_14C = arg1;
 }
 
-s32 func_8001F888(void) {
+s32 fighter_CalcHorizontalSeparation(void) {
     s32 dx = D_80101EC8[1].unk_F4.x - D_80101EC8[0].unk_F4.x;
     s32 dy = D_80101EC8[1].unk_F4.z - D_80101EC8[0].unk_F4.z;
     s32 s0 = 0;
@@ -2470,7 +2476,7 @@ s32 func_8001F888(void) {
  * second `lhu`, the `sll 16 ; sra 15` and the 8-byte stack frame. `var_0`
  * / `kind = var_0 & 0xFFFFU` mirror the target's
  * `lhu $a1,0x6A ; andi $v1,$a1,0xFFFF`. */
-void func_8001F938(Unk80101EC8Record *arg0) {
+void motion_UpdateFrameStep(Unk80101EC8Record *arg0) {
     u32 var_0;
     u32 kind;
     s32 val;
@@ -2683,7 +2689,7 @@ void func_8001FBE8(void) {
         D_800A3758 = 0xFF;
         D_800A371C = data[2] * 20;
         D_800A38E8 = data[3] & 0x7F;
-        var_3 = func_80021424(rec, ent->id, &rec->unk_5E);
+        var_3 = motion_ResolveMoveData(rec, ent->id, &rec->unk_5E);
         func_80021A98(i, var_3, rec->unk_5E);
         rec->other->unk_4C = 1;
         rec->other->unk_5E = rec->unk_5E;
@@ -2702,7 +2708,7 @@ void func_8001FBE8(void) {
 
 s32 func_8002006C(void) {
     s32 s0 = D_800A387C;
-    s32 v0 = func_8001F888();
+    s32 v0 = fighter_CalcHorizontalSeparation();
     s32 v = D_800A38DC;
     D_800A387C = v0;
     D_800A38F0 = v0 - s0;
@@ -2836,7 +2842,7 @@ void func_800204C0(Unk80101EC8Record *rec) {
     }
 }
 
-void func_800206B0(s32 arg0, s32 arg1) {
+void fighter_ScaleBoneHitRecords(s32 arg0, s32 arg1) {
     BoneHitRec *src = D_8008D59C;
     BoneHitRec *dst = D_800F5F68[arg0];
     s32 i;
@@ -2866,8 +2872,8 @@ void func_800206B0(s32 arg0, s32 arg1) {
  * down a segment from y - 100 to y + 2000; the segment's lower end when it
  * finds nothing) into rec->unk_1B0[], and the two bones' headings into
  * unk_1BA / unk_1C2. */
-void func_800207C8(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
-                   Unk80107850Rec *arg2, Unk80107850Rec *arg3) {
+void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
+                                 Unk80107850Rec *arg2, Unk80107850Rec *arg3) {
     /* func_80053614's arguments in scratchpad: from (words 0..2), to (4..6),
      * hit (8..10), normal (12..13), work area (14..) */
     s32 *var_0 = (s32 *)0x1F8002B8;
@@ -2979,7 +2985,7 @@ void func_80020D38(void) {
     p[1] = 0;
 }
 
-void func_80020D70(void) {
+void motion_InitBuffers(void) {
     D_800A3888[0] = (MotionFrame *)0x80118800;
     D_800A3888[1] = (MotionFrame *)0x8011C400;
     D_800A3830 = (s32)0x80120000;
@@ -2988,7 +2994,7 @@ void func_80020D70(void) {
     func_80020CDC();
 }
 
-void func_80020DDC(void) {
+void motion_LoadCommonData(void) {
     s32 v1;
     cdrom_StartRead(cdrom_GetFileIndex(1, 1), D_800A3830);
     cdrom_WaitIdle();
@@ -3013,7 +3019,7 @@ void func_80020DDC(void) {
  * nonzero var_0[i] it calls cdrom_StartRead(cdrom_GetFileIndex(1, j + 2),
  * D_800A3860[i]), j the id's D_8008DCCC index, points D_801027B0[i] into
  * D_800A3860[i] and stores the id in D_800A38C4[i]. */
-void func_80020E74(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* FAKE: frame layout: only var_0[0..1] are used; the target frame (0x140)
      * reserves 0x100 untouched bytes after them (N = 129..132; var_0[2] gives
      * the wrong frame); without it: score 20. */
@@ -3025,7 +3031,7 @@ void func_80020E74(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 j;
 
     if (D_800A3880 == 0) {
-        func_80020DDC();
+        motion_LoadCommonData();
     }
 
     if (D_800A38DC == 1 || D_800A38DC == 4 || D_800A38DC == 6) {
@@ -3213,7 +3219,7 @@ void func_800213A0(Unk80101EC8Record *arg0) {
 /* The 66-name animation/asset table (12-byte stride: 8 chars + null + pad).
  * No code reads it; a data word at 0x8008D9E8 points at its first name.
  * Defined here, between the switch tables of the functions above and
- * func_80021424's own, as in the original rodata order. */
+ * motion_ResolveMoveData's own, as in the original rodata order. */
 const char D_800100FC[66][12] = {
     "WIN     ",    "KARAMI_ED", "RUN_ED  ", "RUN_ST  ", "CHAKUTI ", "APPEAR  ",
     "KAISHAKU_ST", "HAJIKARE",  "SERIEXIT", "SYAGAMI ", "HOM_ED  ", "HOM_AT  ",
@@ -3228,7 +3234,7 @@ const char D_800100FC[66][12] = {
     "U235.BBM",    "U135.BBM",  "U134.BBM", "U125.BBM", "U124.BBM", "U123.BBM",
 };
 
-void *func_80021424(Unk80101EC8Record *rec, s32 id, s16 *out) {
+void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
     s16 t;
     s32 var_1;
 
@@ -3284,15 +3290,17 @@ void *func_80021424(Unk80101EC8Record *rec, s32 id, s16 *out) {
     return &D_80102760.unk_00[id];
 }
 
-void func_800218C8(s32 a0) { D_80101EC8[a0].unk_86 = D_80101EC8[a0].unk_84; }
+void motion_ResetVariantIndex(s32 a0) {
+    D_80101EC8[a0].unk_86 = D_80101EC8[a0].unk_84;
+}
 
-MoveScript *func_80021904(s32 a0) {
+MoveScript *motion_GetCurrentVariantScript(s32 a0) {
     s16 v1 = D_80101EC8[a0].unk_4A;
     s16 v0 = D_80101EC8[a0].unk_86;
     return (MoveScript *)&D_801027B0[v1].unk_00[D_800A3860[v1]->f4E[v0]];
 }
 
-MoveScript *func_80021974(s32 a0) {
+MoveScript *motion_GetDefaultVariantScript(s32 a0) {
     s16 v1 = D_80101EC8[a0].unk_4A;
     s16 v0 = D_80101EC8[a0].unk_84;
     return (MoveScript *)&D_801027B0[v1].unk_00[D_800A3860[v1]->f4E[v0]];
@@ -3611,7 +3619,7 @@ void func_80022568(Unk80101EC8Record *arg0) {
     arg0->unk_272 = 0;
 }
 
-void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     Unk80101EC8Record *p;
     Vec3i32 var_1;
     s32 var_2;
@@ -3761,7 +3769,7 @@ void func_80022580(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         p->unk_1C8.vy = ang + 0x800;
     }
     p->unk_1D0 = p->unk_1C8;
-    func_800206B0(idx, p->unk_1A);
+    fighter_ScaleBoneHitRecords(idx, p->unk_1A);
     if (D_800A38DC != 0 || idx != 0 || D_800A3907 < 2 || D_800A3670 != 0) {
         func_80022568(p);
     }
@@ -3865,7 +3873,7 @@ void func_80022F34(void) {
  * 0xFFFF;`, same comparison cascade), which keeps the target's
  * `andi $v1,$a0,0xffff`: the raw value stays live for `mode - 0x17`, so
  * combine never folds the mask. A u16 on either side loses it. */
-void func_8002304C(
+void fighter_ResolveMovement(
     Unk80101EC8Record *obj, VECTOR *pos1, VECTOR *pos2, s32 *arg3) {
     /* FAKE: the scratchpad addresses scratch_c (0x1F8001C0) / scratch_d
      * (0x1F8001D0) and work (0x1F8002B8) are held in locals; as literals they
@@ -4057,9 +4065,9 @@ void func_80023648(Unk80101EC8Record *arg0) {
             a2 = row[a1];
 
             if (D_800A38BA != 0 && arg0->unk_06 == 0) {
-                func_8001F860(arg0, arg0->unk_1C8.vy + a2 / 4);
+                fighter_SetTurnDelta(arg0, arg0->unk_1C8.vy + a2 / 4);
             } else {
-                func_8001F860(arg0, arg0->unk_1D8 + a2);
+                fighter_SetTurnDelta(arg0, arg0->unk_1D8 + a2);
             }
         } else {
             if (D_800A38BA != 0 && arg0->unk_06 == 0) {
@@ -4249,7 +4257,7 @@ void math_RotMatrixZYXAngles(s32 arg0, s32 arg1, s32 arg2, MATRIX *arg3) {
     RotMatrixZ(arg2, arg3);
 }
 
-void func_80023CB4(Unk80101EC8Record *arg0, s16 arg1) {
+void fighter_RequestPoseBlend(Unk80101EC8Record *arg0, s16 arg1) {
     s16 v;
     arg0->unk_31A += 1;
     v = arg0->unk_31A;
@@ -4265,7 +4273,9 @@ void func_80023CB4(Unk80101EC8Record *arg0, s16 arg1) {
     }
 }
 
-void func_80023D08(Unk80101EC8Record *arg0) { func_80023CB4(arg0, 0x200); }
+void func_80023D08(Unk80101EC8Record *arg0) {
+    fighter_RequestPoseBlend(arg0, 0x200);
+}
 
 void func_80023D28(Unk80101EC8Record *arg0) {
     if (arg0->unk_104.vy < 0) {
@@ -4314,27 +4324,27 @@ void func_80023E40(Unk80101EC8Record *arg0) {
     }
 }
 
-/* [unk_0A][min(unk_272, 3)]: 4.12 scale of unk_1E into unk_20 (func_80023F08).
+/* [unk_0A][min(unk_272, 3)]: 4.12 scale of unk_1E into unk_20 (fighter_Update).
  */
 extern s16 D_8008E0BC[27][4];
-/* [D_8008D9EC[unk_0A]][unk_0E]: the move command func_80023F08 hands
+/* [D_8008D9EC[unk_0A]][unk_0E]: the move command fighter_Update hands
  * func_80030A2C. */
 extern u8 D_8008D90C[28][8];
 extern void func_800204C0(Unk80101EC8Record *);
 
 /* Per-frame update of character `arg0`'s record from this frame's pad input:
  * converts the pad bits, advances the move frame, runs the move script's
- * command list (unk_50 / unk_7C, func_80021424 / func_80021A98), decodes two
- * MotionFrames with func_800198D0 (at unk_40 and at unk_40 + 1, capped at
- * unk_58[1] - 1, each offset by *unk_54, and by unk_58[1] in some states;
- * state unk_6A 0x33 instead copies D_800A3888[arg0][unk_40] into both); when
- * unk_31A is 0 it mixes their root offsets into unk_E8 by the 4.12 weight
+ * command list (unk_50 / unk_7C, motion_ResolveMoveData / func_80021A98),
+ * decodes two MotionFrames with func_800198D0 (at unk_40 and at unk_40 + 1,
+ * capped at unk_58[1] - 1, each offset by *unk_54, and by unk_58[1] in some
+ * states; state unk_6A 0x33 instead copies D_800A3888[arg0][unk_40] into both);
+ * when unk_31A is 0 it mixes their root offsets into unk_E8 by the 4.12 weight
  * unk_42, otherwise the first one's (by the weight unk_318) with unk_290's
  * less unk_320 (by 0x1000 - unk_318),
  * integrates the velocities (unk_104 / unk_134) into the position, resolves
- * it (func_8002304C), then refreshes the bone points, the flags unk_62,
- * unk_AE and unk_288, the damping and the per-frame side effects. */
-void func_80023F08(s32 arg0, PadState *pad) {
+ * it (fighter_ResolveMovement), then refreshes the bone points, the flags
+ * unk_62, unk_AE and unk_288, the damping and the per-frame side effects. */
+void fighter_Update(s32 arg0, PadState *pad) {
     MotionFrame var_0[2];
     Vec3i32 v[2];
     VECTOR pos;
@@ -4397,7 +4407,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
     if (rec->unk_7A == 1) {
         rec->unk_7A = 0;
     }
-    func_8001F938(rec);
+    motion_UpdateFrameStep(rec);
     frac = rec->unk_42 + rec->unk_44;
     rec->unk_42 = frac;
     if (frac >= 0x1000) {
@@ -4416,9 +4426,10 @@ void func_80023F08(s32 arg0, PadState *pad) {
             rec->unk_72 = 1;
         }
         rec->unk_31A = 0;
-        table = func_80021424(rec, rec->unk_50->unk_00, &rec->unk_5E);
+        table = motion_ResolveMoveData(rec, rec->unk_50->unk_00, &rec->unk_5E);
         func_80021A98(
-            arg0, func_80021424(rec, table[rec->unk_286], &rec->unk_5E),
+            arg0,
+            motion_ResolveMoveData(rec, table[rec->unk_286], &rec->unk_5E),
             rec->unk_5E);
         rec->unk_286 = -1;
     }
@@ -4429,11 +4440,13 @@ void func_80023F08(s32 arg0, PadState *pad) {
             func_800233AC(rec, &var_4) != 0) {
             u16 *table;
 
-            func_8001F860(rec, var_4);
+            fighter_SetTurnDelta(rec, var_4);
             rec->unk_31A = 0;
-            table = func_80021424(rec, rec->unk_50->unk_00, &rec->unk_5E);
-            func_80021A98(arg0, func_80021424(rec, table[0xD], &rec->unk_5E),
-                          rec->unk_5E);
+            table =
+                motion_ResolveMoveData(rec, rec->unk_50->unk_00, &rec->unk_5E);
+            func_80021A98(
+                arg0, motion_ResolveMoveData(rec, table[0xD], &rec->unk_5E),
+                rec->unk_5E);
             rec->unk_104.vx = 0;
             rec->unk_104.vy = 0;
             rec->unk_104.vz = 0;
@@ -4451,17 +4464,18 @@ void func_80023F08(s32 arg0, PadState *pad) {
                 if (rec->unk_50->unk_0A[0] & 0x1000) {
                     rec->unk_4C = 1;
                 }
-                func_80021A98(
-                    arg0,
-                    func_80021424(rec, rec->unk_50->unk_0A[1], &rec->unk_5E),
-                    rec->unk_5E);
+                func_80021A98(arg0,
+                              motion_ResolveMoveData(
+                                  rec, rec->unk_50->unk_0A[1], &rec->unk_5E),
+                              rec->unk_5E);
             } else {
                 if (rec->unk_50->unk_09 & 0x20) {
                     rec->unk_4C = 1;
                 }
-                func_80021A98(
-                    arg0, func_80021424(rec, rec->unk_50->unk_02, &rec->unk_5E),
-                    rec->unk_5E);
+                func_80021A98(arg0,
+                              motion_ResolveMoveData(
+                                  rec, rec->unk_50->unk_02, &rec->unk_5E),
+                              rec->unk_5E);
             }
         }
     }
@@ -4522,7 +4536,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
                     if (var_7 & 0x1000) {
                         rec->unk_4C = 1;
                     }
-                    move = func_80021424(rec, ent[1], &var_5);
+                    move = motion_ResolveMoveData(rec, ent[1], &var_5);
                     if (rec->unk_50->unk_09 & 0x80) {
                         rec->unk_7C = move;
                         rec->unk_82 = var_7;
@@ -4552,16 +4566,18 @@ void func_80023F08(s32 arg0, PadState *pad) {
             if (rec->unk_74 + 0xFA0 < rec->unk_B8.vy) {
                 u16 *table;
 
-                table = func_80021424(rec, rec->unk_50->unk_00, &rec->unk_5E);
-                func_80021A98(
-                    arg0,
-                    func_80021424(rec, table[rec->unk_94 != 0 ? 0x17 : 0x18],
+                table = motion_ResolveMoveData(
+                    rec, rec->unk_50->unk_00, &rec->unk_5E);
+                func_80021A98(arg0,
+                              motion_ResolveMoveData(
+                                  rec, table[rec->unk_94 != 0 ? 0x17 : 0x18],
                                   &rec->unk_5E),
-                    rec->unk_5E);
+                              rec->unk_5E);
             } else if (rec->unk_72 == 0) {
-                func_80021A98(
-                    arg0, func_80021424(rec, rec->unk_50->unk_02, &rec->unk_5E),
-                    rec->unk_5E);
+                func_80021A98(arg0,
+                              motion_ResolveMoveData(
+                                  rec, rec->unk_50->unk_02, &rec->unk_5E),
+                              rec->unk_5E);
             }
             rec->unk_72 = 0;
         }
@@ -4571,17 +4587,18 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_74 + 0xFA0 < rec->unk_B8.vy) {
         u16 *table;
 
-        table = func_80021424(rec, rec->unk_50->unk_00, &rec->unk_5E);
+        table = motion_ResolveMoveData(rec, rec->unk_50->unk_00, &rec->unk_5E);
         func_80021A98(
-            arg0, func_80021424(rec, table[0x18], &rec->unk_5E), rec->unk_5E);
+            arg0, motion_ResolveMoveData(rec, table[0x18], &rec->unk_5E),
+            rec->unk_5E);
     }
     if (rec->unk_70 == 1) {
-        func_8001F860(rec, rec->unk_1D8);
+        fighter_SetTurnDelta(rec, rec->unk_1D8);
     }
     if (rec->unk_7A != 0) {
         if (rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 ||
             rec->unk_6A == 0x26 || rec->unk_6A == 0x24) {
-            func_8001F860(rec, rec->unk_1D8);
+            fighter_SetTurnDelta(rec, rec->unk_1D8);
             if (rec->unk_6A == 2 || rec->unk_6A == 0x24) {
                 temp = (rec->unk_58[2] >> 4) * 0x88;
                 if (rec->unk_14C > temp) {
@@ -4593,7 +4610,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         }
     }
     if (rec->unk_46 == 0 && rec->unk_6A == 9 && rec->unk_A9 == rec->unk_40) {
-        func_8001F860(rec, rec->unk_1D8);
+        fighter_SetTurnDelta(rec, rec->unk_1D8);
     }
     if (rec->unk_7A != 0 && rec->unk_6C != 0x18 && rec->unk_6A == 0x18) {
         rec->unk_104.vx +=
@@ -4653,7 +4670,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         if (rec->unk_78 != 0) {
             func_80023D08(rec);
         } else if (rec->unk_6A == 0x1C) {
-            func_80023CB4(rec, 0x400);
+            fighter_RequestPoseBlend(rec, 0x400);
         } else {
             if (rec->unk_6C == 0x1C || rec->unk_6A == 0x11 ||
                 rec->unk_6C == 0x11 || rec->unk_6A == 0x15 ||
@@ -4723,7 +4740,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
         rec->unk_1C8.vy += var_34;
         func_8001B690(arg0, var_34);
     }
-    func_8001F2E4(rec, &var_0[0], &var_0[1]);
+    motion_AdjustFighterPose(rec, &var_0[0], &var_0[1]);
     if (rec->unk_6A == 0x11) {
         rec->unk_154 = rec->unk_1C8.vy;
     }
@@ -4877,7 +4894,7 @@ void func_80023F08(s32 arg0, PadState *pad) {
     }
     pos.vz = rec->unk_D8.z + rec->unk_E8.z;
     rec->unk_C8 = rec->unk_B8;
-    func_8002304C(rec, &rec->unk_B8, &pos, &rec->unk_104.vx);
+    fighter_ResolveMovement(rec, &rec->unk_B8, &pos, &rec->unk_104.vx);
     if (rec->unk_B1 != 7 && rec->unk_B1 != 0) {
         rec->unk_B2 = ((0x2A >> rec->unk_B1) ^ 1) & 1;
     }
@@ -5009,7 +5026,8 @@ skip_62:
                           rec->other->unk_F4.z - rec->unk_F4.z);
     rec->unk_24C = rec->unk_104;
     func_80023D28(rec);
-    func_800207C8(rec, SPAD->unkA8[arg0], SPAD->unk00[arg0], SPAD->unk48[arg0]);
+    fighter_UpdateBoneWorldData(
+        rec, SPAD->unkA8[arg0], SPAD->unk00[arg0], SPAD->unk48[arg0]);
     if (rec->unk_3C == 1) {
         rec->unk_210[0] = SPAD->unk00[arg0][0];
     }
@@ -5169,7 +5187,8 @@ skip_62:
     func_80039680(rec);
 }
 
-/* Tail word after func_80021424's five-entry compiler-generated switch table.
+/* Tail word after motion_ResolveMoveData's five-entry compiler-generated switch
+ * table.
  */
 const u32 D_80010428[1] = {0x00000000};
 

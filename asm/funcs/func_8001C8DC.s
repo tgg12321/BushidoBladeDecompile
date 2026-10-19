@@ -197,7 +197,7 @@ glabel func_8001C8DC
     /* D3A8 8001CBA8 00000000 */   nop
     /* D3AC 8001CBAC 8971000C */  jal        func_8001C624
     /* D3B0 8001CBB0 00000000 */   nop
-    /* D3B4 8001CBB4 4186000C */  jal        func_80021904
+    /* D3B4 8001CBB4 4186000C */  jal        motion_GetCurrentVariantScript
     /* D3B8 8001CBB8 21200000 */   addu      $a0, $zero, $zero
     /* D3BC 8001CBBC 1080013C */  lui        $at, %hi(D_80101EC8 + 0x5E)
     /* D3C0 8001CBC0 261F20A4 */  sh         $zero, %lo(D_80101EC8 + 0x5E)($at)

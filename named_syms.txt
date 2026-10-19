@@ -2066,7 +2066,7 @@ func_8004939C                                      = 0x8004939C;  /* MISNAMED: n
 func_80041688                                       = 0x80041688;  /* MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+) */
 font_LoadImage                          = 0x8003D2C4;  /* MISNAMED: not katinuki data; 1-line gpu_LoadImage(&g_font_rect, &g_font_image) */
 func_800548DC                          = 0x800548DC;  /* MISNAMED: not katinuki data; gpu_DrawSync(0)+func_8004659C(-1)+snd_StopSelection() */
-func_8001B3C0                        = 0x8001B3C0;  /* MISNAMED: not voice data; reads obj pos fields 0x180/184/188 into D_800F5328/532C/5330 */
+camera_InitTrackedFighterFocus                        = 0x8001B3C0;  /* MISNAMED: not voice data; reads obj pos fields 0x180/184/188 into D_800F5328/532C/5330 */
 func_8001C820                        = 0x8001C820;  /* MISNAMED: not voice data; conditional func_800325E0 with sound IDs 0x56..0x58 */
 func_80048AD0                        = 0x80048AD0;  /* MISNAMED: not voice data; loads BGM and initializes 0x11 sound table entries at offset 0x68 */
 func_8005BE84                        = 0x8005BE84;  /* MISNAMED: not voice data; calls title_mv_exec2 + md_game_check_change_main_mode_katinuki */
@@ -2544,7 +2544,6 @@ breakpoint_trap_loop_800164F8 = 0x800164F8;
 /* clusters: obj_/calc_/disppracticemenutex_/single_game_/se_ (pass 3A) + */
 /* special_camera_/game_/gnd_/action_/md_game_/player_/hirahira_ (pass 3B). */
 /* 2 UNCLEAR stubs deferred (calc_*_stub at 0x8002A458, 0x8002CA8C). */
-calc_AngleDelta_8001F860 = 0x8001F860;
 
 /* === Medium-tier sole_caller_path helpers (2026-05-18) === */
 /* sole_caller_path proposals: function X is called ONLY by Y, so */

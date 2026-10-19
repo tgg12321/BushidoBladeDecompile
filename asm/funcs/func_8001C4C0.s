@@ -9,9 +9,9 @@ glabel func_8001C4C0
     /* CCDC 8001C4DC 0B006214 */  bne        $v1, $v0, .L8001C50C
     /* CCE0 8001C4E0 00000000 */   nop
   .L8001C4E4:
-    /* CCE4 8001C4E4 3286000C */  jal        func_800218C8
+    /* CCE4 8001C4E4 3286000C */  jal        motion_ResetVariantIndex
     /* CCE8 8001C4E8 21200000 */   addu      $a0, $zero, $zero
-    /* CCEC 8001C4EC 5D86000C */  jal        func_80021974
+    /* CCEC 8001C4EC 5D86000C */  jal        motion_GetDefaultVariantScript
     /* CCF0 8001C4F0 21200000 */   addu      $a0, $zero, $zero
     /* CCF4 8001C4F4 1080013C */  lui        $at, %hi(D_80101EC8 + 0x5E)
     /* CCF8 8001C4F8 261F20A4 */  sh         $zero, %lo(D_80101EC8 + 0x5E)($at)

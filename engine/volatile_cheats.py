@@ -761,7 +761,7 @@ def _record_kept_orphan_candidates(
 # must be volatile-qualified (oracle-verified byte-neutral 2026-08-17) and
 # FAKE-annotated in source. Any extension requires a fresh owner ruling.
 _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
-    "func_8001E404": frozenset({("pre_pad", 2)}),
+    "camera_ApplyFightView": frozenset({("pre_pad", 2)}),
     "func_8001E6E4": frozenset({("pre_pad", 2)}),
     # 2026-08-18 owner ruling: func_8003CF84 carries a SECOND, trailing
     # 8-byte untouched frame object (census in memory/wip/func_8003CF84/);

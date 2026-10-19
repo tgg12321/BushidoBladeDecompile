@@ -285,7 +285,7 @@ extern u8 D_800A36B0;
 void func_80016D78(void) {
     printf(g_str_limit, 0x8010DB00);
     func_800167EC();
-    func_80020D70();
+    motion_InitBuffers();
     D_800A3770[0] = 0x801D8800;
     D_800A3770[1] = 0x801EBC00;
     D_800A3798 = 0x13400;
@@ -294,7 +294,7 @@ void func_80016D78(void) {
     snd_InitAndLoadCommonVab();
     pad_ResetStateMarkValid();
     font_LoadImage();
-    func_8001C444();
+    fight_InitSettings();
     D_800A36F9 = 0;
     D_800A3690 = 0;
     D_800A3744 = 0;

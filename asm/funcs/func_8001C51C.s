@@ -31,13 +31,13 @@ glabel func_8001C51C
     /* CD8C 8001C58C 01000224 */  addiu      $v0, $zero, 0x1
     /* CD90 8001C590 1000A2AF */  sw         $v0, 0x10($sp)
   .L8001C594:
-    /* CD94 8001C594 6089000C */  jal        func_80022580
+    /* CD94 8001C594 6089000C */  jal        fighter_Init
     /* CD98 8001C598 00000000 */   nop
     /* CD9C 8001C59C CD8B000C */  jal        func_80022F34
     /* CDA0 8001C5A0 00000000 */   nop
-    /* CDA4 8001C5A4 3286000C */  jal        func_800218C8
+    /* CDA4 8001C5A4 3286000C */  jal        motion_ResetVariantIndex
     /* CDA8 8001C5A8 01000424 */   addiu     $a0, $zero, 0x1
-    /* CDAC 8001C5AC 5D86000C */  jal        func_80021974
+    /* CDAC 8001C5AC 5D86000C */  jal        motion_GetDefaultVariantScript
     /* CDB0 8001C5B0 01000424 */   addiu     $a0, $zero, 0x1
     /* CDB4 8001C5B4 01000424 */  addiu      $a0, $zero, 0x1
     /* CDB8 8001C5B8 21284000 */  addu       $a1, $v0, $zero
@@ -56,7 +56,7 @@ glabel func_8001C51C
     /* CDEC 8001C5EC 41C3000C */  jal        func_80030D04
     /* CDF0 8001C5F0 00000000 */   nop
     /* CDF4 8001C5F4 56FB0426 */  addiu      $a0, $s0, -0x4AA
-    /* CDF8 8001C5F8 A56C000C */  jal        func_8001B294
+    /* CDF8 8001C5F8 A56C000C */  jal        camera_InitTwoFighterView
     /* CDFC 8001C5FC A2FF0526 */   addiu     $a1, $s0, -0x5E
     /* CE00 8001C600 B2E4000C */  jal        func_800392C8
     /* CE04 8001C604 00000000 */   nop

@@ -26,7 +26,7 @@ glabel func_8003AF40
     /* 2B79C 8003AF9C 21083000 */  addu       $at, $at, $s0
     /* 2B7A0 8003AFA0 7E272780 */  lb         $a3, %lo(D_80102778 + 0x6)($at)
     /* 2B7A4 8003AFA4 21200002 */  addu       $a0, $s0, $zero
-    /* 2B7A8 8003AFA8 6089000C */  jal        func_80022580
+    /* 2B7A8 8003AFA8 6089000C */  jal        fighter_Init
     /* 2B7AC 8003AFAC 1000A0AF */   sw        $zero, 0x10($sp)
     /* 2B7B0 8003AFB0 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 2B7B4 8003AFB4 00000000 */   nop

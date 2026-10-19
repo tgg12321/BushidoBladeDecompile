@@ -219,7 +219,7 @@ glabel func_8001FBE8
     /* 10728 8001FF28 7F004230 */  andi       $v0, $v0, 0x7F
     /* 1072C 8001FF2C 0A80013C */  lui        $at, %hi(D_800A38E8)
     /* 10730 8001FF30 E83822A0 */  sb         $v0, %lo(D_800A38E8)($at)
-    /* 10734 8001FF34 0985000C */  jal        func_80021424
+    /* 10734 8001FF34 0985000C */  jal        motion_ResolveMoveData
     /* 10738 8001FF38 5E002626 */   addiu     $a2, $s1, 0x5E
     /* 1073C 8001FF3C 2120A002 */  addu       $a0, $s5, $zero
     /* 10740 8001FF40 21804000 */  addu       $s0, $v0, $zero

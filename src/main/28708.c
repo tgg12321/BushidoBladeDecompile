@@ -1388,7 +1388,7 @@ void func_8003993C(void) {
         var_11 = &D_80101EC8[i];
         func_800198D0((p->hE >> 14) & 3, p->hE & 0x3FFF, &work[0], sp1C0);
         func_800198D0((p->h10 >> 14) & 3, p->h10 & 0x3FFF, &work[1], sp1C0);
-        func_8001F1C4(var_11, p, &work[0], &work[1]);
+        motion_ApplyRecordedPoseAdjustments(var_11, p, &work[0], &work[1]);
         func_80041188(
             i, (u8 *)&work[0], (u8 *)&work[1], p->h12, (MATRIX *)sp120);
         pos[0] = p->h4;
@@ -1411,7 +1411,8 @@ void func_8003993C(void) {
             func_80049A2C(
                 D_8008EB80[var_11->unk_14], i * 2 | 1, (p->b18 >> 5) & 1);
         }
-        func_800207C8(var_11, SPAD->unkA8[i], SPAD->unk00[i], SPAD->unk48[i]);
+        fighter_UpdateBoneWorldData(
+            var_11, SPAD->unkA8[i], SPAD->unk00[i], SPAD->unk48[i]);
         func_8003984C(var_11, &out_b1, &out_b2);
         if (out_b1 != 1) {
             var_11->unk_B1 = out_b1;

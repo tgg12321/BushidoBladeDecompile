@@ -248,7 +248,7 @@
         "b8e63269724d3889e30a5a31ccc81a98d3b84b07139950e1dd103d15ff6d7adf"
       ]
     },
-    "func_8001A820": {
+    "camera_UpdateTwoFighterView": {
       "file": "main/9F9C",
       "sha256": [
         "06ecd464234fa6428aa554814f305c29d208edcb637acd213f97fd7d60158782"
@@ -334,7 +334,7 @@
         "daefdbaa2d88cd5cd5746debe37b41394d4a5e8c1b8f9d334481d8db8287a54c"
       ]
     },
-    "func_8001F2E4": {
+    "motion_AdjustFighterPose": {
       "file": "main/9F9C",
       "sha256": [
         "06ecd464234fa6428aa554814f305c29d208edcb637acd213f97fd7d60158782",
@@ -407,7 +407,7 @@
         "2f7f16231b85b4857425e569c6d174187c73af4c33a1f6e1092ba53f1139885e"
       ]
     },
-    "func_800207C8": {
+    "fighter_UpdateBoneWorldData": {
       "file": "main/9F9C",
       "sha256": [
         "6f3ee61e1d5d88d3bed015b7e5338a6530b752d100e17b330372747c6395fd31",

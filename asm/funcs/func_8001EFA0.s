@@ -32,9 +32,9 @@ glabel func_8001EFA0
     /* F818 8001F018 2128E600 */  addu       $a1, $a3, $a2
     /* F81C 8001F01C 83290500 */  sra        $a1, $a1, 6
     /* F820 8001F020 C3370600 */  sra        $a2, $a2, 31
-    /* F824 8001F024 3C6F000C */  jal        func_8001BCF0
+    /* F824 8001F024 3C6F000C */  jal        camera_SetInterpolatedFighterView
     /* F828 8001F028 2328A600 */   subu      $a1, $a1, $a2
-    /* F82C 8001F02C 0179000C */  jal        func_8001E404
+    /* F82C 8001F02C 0179000C */  jal        camera_ApplyFightView
     /* F830 8001F030 00000000 */   nop
     /* F834 8001F034 C8E4000C */  jal        func_80039320
     /* F838 8001F038 00000000 */   nop
@@ -43,10 +43,10 @@ glabel func_8001EFA0
     /* F844 8001F044 826F000C */  jal        pad_ClearStateBits
     /* F848 8001F048 1000A427 */   addiu     $a0, $sp, 0x10
     /* F84C 8001F04C 21200000 */  addu       $a0, $zero, $zero
-    /* F850 8001F050 C28F000C */  jal        func_80023F08
+    /* F850 8001F050 C28F000C */  jal        fighter_Update
     /* F854 8001F054 1000A527 */   addiu     $a1, $sp, 0x10
     /* F858 8001F058 01000424 */  addiu      $a0, $zero, 0x1
-    /* F85C 8001F05C C28F000C */  jal        func_80023F08
+    /* F85C 8001F05C C28F000C */  jal        fighter_Update
     /* F860 8001F060 1000A527 */   addiu     $a1, $sp, 0x10
     /* F864 8001F064 87B1000C */  jal        func_8002C61C
     /* F868 8001F068 00000000 */   nop

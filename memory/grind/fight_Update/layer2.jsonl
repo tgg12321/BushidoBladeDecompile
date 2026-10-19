@@ -1,0 +1,1 @@
+{"func": "fight_Update", "addr": "8001E878", "verdict": "PASS", "body_hash": "cdf21bff335a99b7", "body_kind": "c", "file": "main/9F9C", "reviewer": "cheat-reviewer-debt3-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T12:41:31Z", "head": "1afa4eb78", "notes": "", "renamed_from": ["func_8001E878"]}

@@ -4,7 +4,7 @@ glabel func_8002006C
     /* 10874 80020074 0A80103C */  lui        $s0, %hi(D_800A387C)
     /* 10878 80020078 7C38108E */  lw         $s0, %lo(D_800A387C)($s0)
     /* 1087C 8002007C 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 10880 80020080 227E000C */  jal        func_8001F888
+    /* 10880 80020080 227E000C */  jal        fighter_CalcHorizontalSeparation
     /* 10884 80020084 00000000 */   nop
     /* 10888 80020088 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* 1088C 8002008C DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)

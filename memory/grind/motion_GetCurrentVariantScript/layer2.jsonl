@@ -1,0 +1,1 @@
+{"func": "motion_GetCurrentVariantScript", "addr": "80021904", "verdict": "PASS", "body_hash": "08f55653efe75e7c", "body_kind": "c", "file": "main/9F9C", "reviewer": "ab876d2eca6ae0220", "scope": "cheat-cleanup", "date": "2026-10-16T13:31:12Z", "head": "c6e0b139b", "notes": "", "renamed_from": ["func_80021904"]}

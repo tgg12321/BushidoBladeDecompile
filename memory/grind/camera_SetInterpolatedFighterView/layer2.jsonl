@@ -1,0 +1,1 @@
+{"func": "camera_SetInterpolatedFighterView", "addr": "8001BCF0", "verdict": "PASS", "body_hash": "6750b0c654f437b8", "body_kind": "c", "file": "main/9F9C", "reviewer": "af462973268acdd4d", "scope": "cheat-cleanup", "date": "2026-10-16T17:26:34Z", "head": "d599cefab", "notes": "", "renamed_from": ["func_8001BCF0"]}

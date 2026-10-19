@@ -127,7 +127,7 @@ glabel func_8003993C
     /* 2A314 80039B14 21202002 */  addu       $a0, $s1, $zero
     /* 2A318 80039B18 21280002 */  addu       $a1, $s0, $zero
     /* 2A31C 80039B1C 6003A78F */  lw         $a3, 0x360($sp)
-    /* 2A320 80039B20 717C000C */  jal        func_8001F1C4
+    /* 2A320 80039B20 717C000C */  jal        motion_ApplyRecordedPoseAdjustments
     /* 2A324 80039B24 1800A627 */   addiu     $a2, $sp, 0x18
     /* 2A328 80039B28 21206002 */  addu       $a0, $s3, $zero
     /* 2A32C 80039B2C 1800A527 */  addiu      $a1, $sp, 0x18
@@ -218,7 +218,7 @@ glabel func_8003993C
     /* 2A470 80039C70 2130C200 */  addu       $a2, $a2, $v0
     /* 2A474 80039C74 21389302 */  addu       $a3, $s4, $s3
     /* 2A478 80039C78 C0380700 */  sll        $a3, $a3, 3
-    /* 2A47C 80039C7C F281000C */  jal        func_800207C8
+    /* 2A47C 80039C7C F281000C */  jal        fighter_UpdateBoneWorldData
     /* 2A480 80039C80 2138E300 */   addu      $a3, $a3, $v1
     /* 2A484 80039C84 21202002 */  addu       $a0, $s1, $zero
     /* 2A488 80039C88 5003A527 */  addiu      $a1, $sp, 0x350

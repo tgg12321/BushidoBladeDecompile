@@ -9340,21 +9340,21 @@ def test_sanctioned_unwritten_pads() -> None:
 
     pad = "    volatile u32 pre_pad[2];" + NL + "    other();" + NL
     eq("pad-allowlist: sanctioned func+name+count+volatile is exempt",
-       len(spans_for("func_8001E404", pad)), 0)
+       len(spans_for("camera_ApplyFightView", pad)), 0)
     eq("pad-allowlist: second sanctioned function exempt",
        len(spans_for("func_8001E6E4", pad)), 0)
     eq("pad-allowlist: unsanctioned function still flagged",
        len(spans_for("func_80012345", pad)), 1)
     eq("pad-allowlist: non-volatile spelling still flagged",
-       len(spans_for("func_8001E404",
+       len(spans_for("camera_ApplyFightView",
                      "    s32 pre_pad[2];" + NL + "    other();" + NL)), 1)
     eq("pad-allowlist: wrong count still flagged",
-       len(spans_for("func_8001E404",
+       len(spans_for("camera_ApplyFightView",
                      "    volatile u32 pre_pad[8];" + NL + "    other();" + NL)), 1)
     eq("pad-allowlist: wrong name still flagged",
-       len(spans_for("func_8001E404",
+       len(spans_for("camera_ApplyFightView",
                      "    volatile u32 spill[2];" + NL + "    other();" + NL)), 1)
-    text = "void func_8001E404(void) {" + NL + pad + "}" + NL
+    text = "void camera_ApplyFightView(void) {" + NL + pad + "}" + NL
     eq("pad-allowlist: no-fname call (default) still flagged",
        len(volatile_cheats.body_cheat_spans(
            text, text.index("{"), text.rindex("}") + 1, [])), 1)

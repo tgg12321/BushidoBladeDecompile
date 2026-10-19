@@ -137,8 +137,9 @@ extern Vec3i32 D_800F0D78[16];
 
 extern Unk800EED10Entry g_arena_blocks[10];
 
-/* The two characters' hit records (0x800F5F68..0x800F62D7): func_800206B0 fills
- * D_800F5F68[ch] from the template D_8008D59C, offsets and limits scaled. */
+/* The two characters' hit records (0x800F5F68..0x800F62D7):
+ * fighter_ScaleBoneHitRecords fills D_800F5F68[ch] from the template
+ * D_8008D59C, offsets and limits scaled. */
 extern BoneHitRec D_800F5F68[2][22];
 
 extern BoneHitRec D_8008D59C[22];
@@ -158,10 +159,10 @@ extern u8 D_8008D538[];
 extern u8 D_8008D55C;
 extern u8 D_8008D578[];
 
-/* Attachment point sets func_800207C8 rotates by a character's bone matrices:
- * D_8008D86C[unk_0E] (D_8008D864[unk_0E] points; D_8008D774 when unk_12 == 50)
- * and D_8008D88C[unk_14] (two points, when unk_8C != 0).  D_800A3138 is the
- * unit y vector (0, 0x1000, 0). */
+/* Attachment point sets fighter_UpdateBoneWorldData rotates by a character's
+ * bone matrices: D_8008D86C[unk_0E] (D_8008D864[unk_0E] points; D_8008D774 when
+ * unk_12 == 50) and D_8008D88C[unk_14] (two points, when unk_8C != 0).
+ * D_800A3138 is the unit y vector (0, 0x1000, 0). */
 extern u8 D_8008D864[8];
 
 extern SVec4i16 *D_8008D86C[8];
@@ -170,10 +171,11 @@ extern SVec4i16 D_8008D774[2];
 extern SVec4i16 D_800A3138;
 extern u8 D_8008D9EC[];
 extern u8 D_8008DA08[0x48];
-extern s16 D_8008DA50[]; /* [unk_0A] (func_80023F08) */
-extern s16 D_8008DA94[]; /* [unk_0A] (func_80023F08) */
-extern s16 D_8008DAD8[]; /* [unk_0A] (func_80023F08) */
-/* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_48 model id (func_80020E74) */
+extern s16 D_8008DA50[]; /* [unk_0A] (fighter_Update) */
+extern s16 D_8008DA94[]; /* [unk_0A] (fighter_Update) */
+extern s16 D_8008DAD8[]; /* [unk_0A] (fighter_Update) */
+/* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_48 model id
+ * (motion_LoadFighterData) */
 extern u16 D_8008DB1C[27][8];
 /* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_84 */
 extern u8 D_8008DD5C[27][8];
@@ -281,8 +283,8 @@ extern u8 D_800A3690;
 extern s32 g_comb_send_buf_plus_0x4;
 extern s16 D_800A36A4;
 extern s32 D_800A36AC;
-/* the Rec44 view record func_8001E404 / func_8001E6E4 last placed (read by
- * func_800325E0 as the listener) */
+/* the Rec44 view record camera_ApplyFightView / func_8001E6E4 last placed (read
+ * by func_800325E0 as the listener) */
 extern Rec44 *g_listener_cam;
 extern CdlATV g_cd_atv_target;
 extern s16 D_800A36C2;
@@ -383,7 +385,7 @@ extern s16 D_800A3876;
 extern u8 *D_800A3878;
 extern s32 D_800A387C;
 extern u8 D_800A3880;
-/* per player: preset motion frames (func_80020D70, func_80023F08) */
+/* per player: preset motion frames (motion_InitBuffers, fighter_Update) */
 extern MotionFrame *D_800A3888[2];
 extern u8 D_800A389A;
 extern u8 D_800A389B;
@@ -397,9 +399,9 @@ extern u8 D_800A38B8;
 extern s16 D_800A38BA;
 /* per player: character of the D_800A3888 motion set (0xFF = none) */
 extern u8 D_800A38C0[2];
-/* per slot: model id in the D_800A3860[i] buffer (func_80020E74); [1] = 0xFFFF:
- * func_8001DB9C passed 0x80190800 (D_800A3860[1]'s buffer) to ndata_LoadPack;
- * func_80020D38 calls ndata_InvalidatePack for it */
+/* per slot: model id in the D_800A3860[i] buffer (motion_LoadFighterData); [1]
+ * = 0xFFFF: func_8001DB9C passed 0x80190800 (D_800A3860[1]'s buffer) to
+ * ndata_LoadPack; func_80020D38 calls ndata_InvalidatePack for it */
 extern u16 D_800A38C4[2];
 extern u8 D_800A38D4;
 extern s16 D_800A38DC;
@@ -504,7 +506,7 @@ extern Unk80107850Rec D_80107850[6];
 extern void func_8001B748(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32);
 extern void font_Printf(u8 *, s32, ...);
 extern void func_80021A98(s32, MoveScript *, s32);
-extern void func_80022580(s32, s32, s32, s32, s32);
+extern void fighter_Init(s32, s32, s32, s32, s32);
 extern s32 cdrom_GetFileIndex(s32, s32);
 extern void comb_ExchangePad(PadState *);
 extern void func_8003AE5C(u8 *);
@@ -634,28 +636,28 @@ extern void func_8001B138(s32 *);
 extern void func_8001B6F4(void);
 extern void func_8001BAE4(Rec1C *, Rec1C *, s32);
 extern void func_8001BBD8(Rec1C *, Rec1C *, s32);
-extern void func_8001C444(void);
+extern void fight_InitSettings(void);
 extern void func_8001CD68(Unk8001CD68Rec *);
 extern void func_8001D790(void);
 extern void func_8001DA2C(void);
 extern s32 func_8001DB58(void);
 extern void func_8001DBE4(void);
 extern void func_8001E6E4(s32);
-extern void func_8001F1C4(
+extern void motion_ApplyRecordedPoseAdjustments(
     Unk80101EC8Record *, Rec1C *, MotionFrame *, MotionFrame *);
-extern void func_8001F860(Unk80101EC8Record *, s32);
+extern void fighter_SetTurnDelta(Unk80101EC8Record *, s32);
 extern void func_800203B4(Unk80101EC8Record *, s32, s16 *);
 extern s32 func_8002006C(void);
-extern void func_800207C8(
+extern void fighter_UpdateBoneWorldData(
     Unk80101EC8Record *, Unk80107850Rec *, Unk80107850Rec *, Unk80107850Rec *);
 extern void func_80020CDC(void);
 extern void func_80020D38(void);
-extern void func_80020D70(void);
+extern void motion_InitBuffers(void);
 extern void func_80021280(s32);
-extern void *func_80021424(Unk80101EC8Record *, s32, s16 *);
-extern void func_800218C8(s32);
-extern MoveScript *func_80021904(s32);
-extern MoveScript *func_80021974(s32);
+extern void *motion_ResolveMoveData(Unk80101EC8Record *, s32, s16 *);
+extern void motion_ResetVariantIndex(s32);
+extern MoveScript *motion_GetCurrentVariantScript(s32);
+extern MoveScript *motion_GetDefaultVariantScript(s32);
 extern MoveScript *func_800219E4(s32);
 extern MoveScript *func_80021A3C(s32, s32);
 extern void func_80021D10(s32, s32 *, s32);
@@ -663,7 +665,7 @@ extern s32 func_80022408(Vec3i32 *);
 extern void func_80022568(Unk80101EC8Record *);
 extern void func_80022F34(void);
 extern s32 func_800233AC(Unk80101EC8Record *, s32 *);
-extern void func_80023F08(s32, PadState *);
+extern void fighter_Update(s32, PadState *);
 extern void func_80026DA4(void);
 extern void func_80027334(MotionFrame *);
 extern s32 func_8002798C(Unk80101EC8Record *);
