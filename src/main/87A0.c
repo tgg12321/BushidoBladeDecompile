@@ -97,8 +97,8 @@ end:;
  * (arg0->unk4), runs softbody_LoadColliders, writes that MATRIX's translation
  * minus the object's (arg1->matrix.t) to scratchpad, scales it by a factor
  * derived from its length (byte-LUT integer sqrt, GTE LZC above 0x400; 0x100
- * beyond 250000), copies the MATRIX to arg1->matrix and runs
- * softbody_SolveSprings. */
+ * when the squared length exceeds 250000), copies the MATRIX to arg1->matrix
+ * and runs softbody_SolveSprings. */
 typedef struct {
     s32 pad[9];
     s32 x, y, z;
@@ -167,12 +167,13 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     softbody_SolveSprings(arg1);
 }
 
-/* softbody_SolveSprings -- distance-constraint pass over a chain of 64-byte
- * nodes: each link's node pair (packed indices, rest length dist) is bisected
+/* softbody_SolveSprings -- the spring-force pass over the body's edges (the
+ * springs between the nodes of each mesh face group, Func80017848Edge; 64-byte
+ * nodes): each edge's node pair (packed indices, rest length dist) is bisected
  * until every axis delta is within 3x the rest length, then the delta >> 3 is
  * scaled on the GTE by ((len - rest) << 14) / len into the 0x1F8000BC output
- * array (len via the byte-LUT integer sqrt, GTE LZC above 0x400). The last link
- * is emitted after the loop without the bisection. */
+ * array (len via the byte-LUT integer sqrt, GTE LZC above 0x400). The last
+ * edge is emitted after the loop without the bisection. */
 void softbody_SolveSprings(Func80017A44Output *arg0) {
     s32 *out;
     Func80017848Edge *data;
@@ -300,12 +301,12 @@ void softbody_SolveSprings(Func80017A44Output *arg0) {
 void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
 void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
 
-/* softbody_Step -- node-chain integrator, called by softbody_UpdateList for
- * each Unk80017FA0Rec whose unk2 bit 0 is clear. A node with state >= 0 springs
- * toward (or snaps to) its GTE-transformed anchor; otherwise the indexed
- * scratchpad forces are applied, the node is pushed out of the ground and out
- * of each collision ellipsoid, and the velocity is damped by 7/8 with 0x190
- * added to Y. */
+/* softbody_Step -- one integration step of the body's nodes, called by
+ * softbody_UpdateList for each Unk80017FA0Rec whose unk2 bit 0 is clear. A node
+ * with state >= 0 springs toward (or snaps to) its GTE-transformed anchor;
+ * otherwise the indexed scratchpad forces are applied, the node is pushed out
+ * of the ground and out of each collision ellipsoid, and the velocity is damped
+ * by 7/8 with 0x190 added to Y. */
 void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     Func80017A44Record *node;
     s32 i;
@@ -567,9 +568,9 @@ void softbody_UpdateList(Unk80017FA0Rec *arg0, s32 arg1) {
     }
 }
 
-/* softbody_SnapToPoints - GTE rotate-translate of an SVECTOR array (by arg0's
- * MATRIX) into a 0x40-stride VECTOR table, scaled << 7, then a 32-byte MATRIX
- * copy into the descriptor. */
+/* softbody_SnapToPoints - GTE rotate-translate of the body's SVECTOR points (by
+ * arg0's MATRIX) into its 0x40-stride node table, scaled << 7, with each node's
+ * velocity zeroed; then copies that MATRIX (32 bytes) into arg1->matrix. */
 void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     s32 out[3];
     s32 i;

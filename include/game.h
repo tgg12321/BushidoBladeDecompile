@@ -1389,8 +1389,14 @@ typedef struct Unk800F1B18Rec {
  * current move, unk_7C a buffered one).  unk_00 / unk_02 are follow-up move
  * ids, unk_07 / unk_08 frame bounds against Unk80101EC8Record.unk_40, unk_09
  * flag bits (fighter_Update, fighter_BuildCpuPad, func_80058580); unk_0A starts
- * the command list fighter_Update walks: (flags, move id[, mask lo, mask hi])
- * entries of 2 or 4 halfwords, ended by a zero flags word. */
+ * the command list fighter_Update walks: (flags, move id) entries of 2
+ * halfwords, or 4 when flags has a 0xC000 bit, ended by a zero flags word. The
+ * two extra halfwords are [mask lo, mask hi], except in a 0x4000 paired entry
+ * (motion_FindPairedMoveEntry), whose four bytes are a distance range (min,
+ * max, x 20), a target separation (x 20, stored to D_800A371C: the distance
+ * func_8002BC68 pulls the two fighters toward) and a flags byte (bit 7 tested;
+ * the low 7 bits, stored to D_800A38E8, are a frame threshold for
+ * func_8002C0DC; fight_UpdatePairedMoves). */
 typedef struct MoveScript {
     u16 unk_00;
     u16 unk_02;
@@ -1951,7 +1957,8 @@ typedef void (*RotMatrixFunc)(SVECTOR *, MATRIX *);
 /* The 0x68-byte records of the table func_8003F1D4 returns: a transform
  * node of the Unk80101DF0Record layout, then a byte flag. func_8003EDC0
  * fills them from a stream and calls D_800F66A0[unk8] on &xf.rot /
- * &xf.mat (node_SetMatrixFromNegatedRot's call); func_8003E6D8 and
+ * &xf.mat (the angles as stored, straight into xf.mat; unlike
+ * node_SetMatrixFromNegatedRot, no negation and no work); func_8003E6D8 and
  * func_8003EB84 queue each one on g_draw_queue at most once, guarded by unk58.
  */
 typedef struct {
