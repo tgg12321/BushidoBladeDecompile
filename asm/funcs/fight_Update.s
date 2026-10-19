@@ -50,7 +50,7 @@ glabel fight_Update
     /* F134 8001E934 1000A527 */   addiu     $a1, $sp, 0x10
     /* F138 8001E938 87B1000C */  jal        func_8002C61C
     /* F13C 8001E93C 00000000 */   nop
-    /* F140 8001E940 5FC3000C */  jal        func_80030D7C
+    /* F140 8001E940 5FC3000C */  jal        object_UpdatePool
     /* F144 8001E944 00000000 */   nop
     /* F148 8001E948 7AC8000C */  jal        func_800321E8
     /* F14C 8001E94C 00000000 */   nop
@@ -92,7 +92,7 @@ glabel fight_Update
     /* F1D4 8001E9D4 2B200400 */   sltu      $a0, $zero, $a0
     /* F1D8 8001E9D8 9873000C */  jal        func_8001CE60
     /* F1DC 8001E9DC 00000000 */   nop
-    /* F1E0 8001E9E0 76CD000C */  jal        func_800335D8
+    /* F1E0 8001E9E0 76CD000C */  jal        snd_UpdateStageSounds
     /* F1E4 8001E9E4 00000000 */   nop
     /* F1E8 8001E9E8 3772000C */  jal        func_8001C8DC
     /* F1EC 8001E9EC 00000000 */   nop

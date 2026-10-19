@@ -1,1 +1,0 @@
-{"func": "func_8002EA24", "addr": "8002EA24", "verdict": "PASS", "body_hash": "c251d48c08a06bcf", "body_kind": "c", "file": "main/17AFC", "reviewer": "gterev-r2a", "scope": "cheat-cleanup", "date": "2026-10-16T03:07:27Z", "head": "b08d34704", "notes": "GTE macro-call conversion 2026-10-15 (inline-asm-policy PsyQ GTE macro calls); verdict tmp/gterev/gterev-r2a.json"}

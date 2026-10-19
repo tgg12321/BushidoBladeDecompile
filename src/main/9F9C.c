@@ -1180,7 +1180,7 @@ void func_8001C51C(void) {
     func_80021A98(1, v0, 0);
     D_800A382E = 0;
     D_800A3748 = -1;
-    func_80030524();
+    object_FreeAttachedObjects();
     func_80030D04();
     camera_InitTwoFighterView(&D_80101EC8[0], &D_80101EC8[1]);
     func_800392C8();
@@ -1257,7 +1257,7 @@ void func_8001C820(void) {
     /* FAKE: player 1's unk_F4 reached from s0 (player 0's unk_0A) so the call
        reuses s0's register; &D_80101EC8[1].unk_F4.x rematerialises the address
        (score 11). */
-    func_800325E0(a0, (s32 *)((u8 *)s0 + 0x536));
+    snd_QueuePositionalSound(a0, (s32 *)((u8 *)s0 + 0x536));
 }
 
 void func_8001C8DC(void);
@@ -1770,7 +1770,7 @@ void fight_Init(void) {
     func_800174F4();
     gpu_ResetGraphMode1();
     func_8003E22C();
-    func_8003043C();
+    object_ResetPool();
     func_80032040();
     func_8003F218(D_800A38BA);
     SetGeomScreen(math_FovToScreenDist(D_800A38BA != 0 ? 0x50 : 0x2D));
@@ -1912,7 +1912,7 @@ void fight_Init(void) {
     D_800A3834 = 1;
     func_8001C820();
     snd_StartFightCdAudio();
-    func_80033510();
+    snd_ResetStageSoundState();
     func_8005BE84(D_800A36A4);
     if (D_800A38DC == 6) {
         rng_SetSeed(D_800A3904);
@@ -2046,7 +2046,7 @@ void fight_Update(void) {
     func_8001BE20(1, &buf);
     fighter_Update(1, &buf);
     func_8002C61C();
-    func_80030D7C();
+    object_UpdatePool();
     func_800321E8();
     func_800397A0();
     if (D_800A38BA != 0 && D_800A36FA == 0) {
@@ -2057,7 +2057,7 @@ void fight_Update(void) {
     }
     func_80046DA8((D_800A3690 ^ 1) != 0);
     func_8001CE60();
-    func_800335D8();
+    snd_UpdateStageSounds();
     func_8001C8DC();
 }
 
@@ -2090,11 +2090,11 @@ void func_8001EA84(void) {
     fighter_Update(0, &sp10);
     fighter_Update(1, &sp10);
     func_8002C61C();
-    func_80030D7C();
+    object_UpdatePool();
     func_800321E8();
     func_800397A0();
     func_80046DA8(1);
-    func_800335D8();
+    snd_UpdateStageSounds();
     if (D_800A38DC == 3) {
         func_8001CD68(&buf);
         g_prim_buf_cursor +=
@@ -2200,11 +2200,11 @@ void func_8001EFA0(void) {
     fighter_Update(0, &sp10);
     fighter_Update(1, &sp10);
     func_8002C61C();
-    func_80030D7C();
+    object_UpdatePool();
     func_800321E8();
     func_800397A0();
     func_80046DA8(1);
-    func_800335D8();
+    snd_UpdateStageSounds();
 
     if (D_80101EC8[D_800A3748].unk_96 != 0 && D_800A38DC == 1) {
         D_800A37B8 = 0x69;
@@ -2219,7 +2219,7 @@ void func_8001EFA0(void) {
             if (D_800A3748 == 0) {
                 func_8001DA2C();
                 D_800A3768 = 2;
-                func_80033BC0();
+                fight_AdvanceOpponentOrder();
                 return;
             }
             var_v0 = 0xC;
@@ -2265,7 +2265,7 @@ void motion_ApplyRecordedPoseAdjustments(Unk80101EC8Record *arg0, Rec1C *arg1,
  * (states 0x1D/0xE with obj+0x8C != 0, or obj+0xE in 6..7 with obj+0x6A ==
  * 2), and adds random jitter to both sets when obj+0x26E is set and obj+0x96
  * == 0. The ground distance is the g_sqrt_table_u8 byte-LUT integer sqrt (the
- * func_8002E838 idiom), with one gte_Lzc per root. */
+ * math_PrepareSegmentCollisionFrame idiom), with one gte_Lzc per root. */
 void motion_AdjustFighterPose(
     Unk80101EC8Record *obj, MotionFrame *a, MotionFrame *b) {
     s32 lzc_out;
@@ -2790,7 +2790,7 @@ void func_800203B4(Unk80101EC8Record *rec, s32 arg1, s16 *arg2) {
     rec->unk_350 = 1;
     rec->unk_352 = D_8008D59C[arg1].bone;
     src = ((MATRIX **)func_80046DEC(rec->index))[rec->unk_352];
-    func_8002EECC(src, mat);
+    math_InvertMatrix3x3(src, mat);
     gte_SetRotMatrix(mat);
     vec[0] = arg2[0];
     vec[1] = arg2[1];
@@ -3381,7 +3381,7 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
                 }
                 s0->unk_AD = a0_flag;
             }
-            func_800324D0(s0);
+            fighter_ReadFrameMetadata(s0);
             {
                 u16 state = s0->unk_6A;
 
@@ -3788,7 +3788,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_B1 = 7;
     p->unk_B2 = 0;
     p->unk_34C = 0;
-    func_8003047C(p);
+    object_InitKindQueue(p);
     p->unk_14 = p->unk_332[0];
     if (D_800A38DC == 5 || (D_800A38DC == 2 && D_800A389A == 0)) {
         if (p->unk_0A == 1 || p->unk_0A == 3 || p->unk_0A == 4 ||
@@ -3896,7 +3896,7 @@ loop:
         }
         obj->unk_B1 = func_80054434();
         *pos1 = *(VECTOR *)scratch;
-        func_8002EBDC(arg3, scratch_c, arg3, -0x40, 0xE6);
+        math_ScaleVectorInDirectionFrame(arg3, scratch_c, arg3, -0x40, 0xE6);
         scratch[12] = pos1->vx + (*((s16 *)(((u8 *)scratch) + 0x10)) / 1024);
         scratch[13] = pos1->vy + (*((s16 *)(((u8 *)scratch) + 0x12)) / 1024);
         scratch[14] = pos1->vz + (*((s16 *)(((u8 *)scratch) + 0x14)) / 1024);
@@ -3909,8 +3909,9 @@ loop:
             scratch[8] = pos2->vx - pos1->vx;
             scratch[9] = pos2->vy - pos1->vy;
             scratch[10] = pos2->vz - pos1->vz;
-            func_8002EBDC((s32 *)scratch_d, scratch_c, (s32 *)scratch_d, 0,
-                          (obj->unk_6A == 0x15) ? 0x80 : 0x100);
+            math_ScaleVectorInDirectionFrame(
+                (s32 *)scratch_d, scratch_c, (s32 *)scratch_d, 0,
+                (obj->unk_6A == 0x15) ? 0x80 : 0x100);
             if (*((s16 *)(((u8 *)scratch) + 0x12)) >= (-0x7FF)) {
                 s32 mode = obj->unk_6A;
                 s32 m = mode & 0xFFFF;
@@ -4328,7 +4329,7 @@ void func_80023E40(Unk80101EC8Record *arg0) {
  */
 extern s16 D_8008E0BC[27][4];
 /* [D_8008D9EC[unk_0A]][unk_0E]: the move command fighter_Update hands
- * func_80030A2C. */
+ * object_SpawnScatteredAt. */
 extern u8 D_8008D90C[28][8];
 extern void func_800204C0(Unk80101EC8Record *);
 
@@ -5116,8 +5117,9 @@ skip_62:
             func_80032854(arg0, 0x2E, &rec->unk_F4.x, 0);
         }
         if (rec->unk_0C != 0x1F) {
-            func_80030A2C(rec, D_8008D90C[D_8008D9EC[rec->unk_0A]][rec->unk_0E],
-                          (Vec3i32 *)var_37[0x12]->t);
+            object_SpawnScatteredAt(
+                rec, D_8008D90C[D_8008D9EC[rec->unk_0A]][rec->unk_0E],
+                (Vec3i32 *)var_37[0x12]->t);
         }
         rec->unk_96 = 1;
         if (D_800A3748 == -1) {
@@ -5136,19 +5138,20 @@ skip_62:
                     if (rec->unk_34D != 0) {
                         rec->unk_34D--;
                     }
-                } else if (
-                    rec->unk_26C != 0 && func_800307D0(rec) == rec->unk_14) {
+                } else if (rec->unk_26C != 0 &&
+                           object_ThrowQueuedKind(rec) == rec->unk_14) {
                     rec->unk_8A = 0;
                 }
             }
         }
         if (rec->unk_6A == 6) {
-            if (func_80030BA8(rec) == rec->unk_14) {
+            if (object_PickUpNearby(rec) == rec->unk_14) {
                 rec->unk_8A = rec->unk_26C;
             }
         } else if (
             rec->unk_26C != 0 && (rec->unk_6A == 0xC || rec->unk_6A == 0x2A) &&
-            rec->unk_40 == rec->unk_A8 && func_80030BA8(rec) == rec->unk_14) {
+            rec->unk_40 == rec->unk_A8 &&
+            object_PickUpNearby(rec) == rec->unk_14) {
             rec->unk_8A = 1;
         }
         if (rec->unk_6A == 0x12 && rec->unk_40 == rec->unk_A7 &&
@@ -5163,7 +5166,7 @@ skip_62:
         }
         if (rec->unk_46 == 0 && (rec->unk_6A != 0x11 || arg0 == D_800A38AE)) {
             rec->unk_62 |= 0x40;
-            func_8003339C(rec);
+            fighter_ProcessFrameEvents(rec);
         }
     }
     if (rec->unk_26C != 0) {

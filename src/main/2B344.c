@@ -1053,7 +1053,7 @@ void func_8003CF84(void) {
     s8 p;
     s16 var_7;
 
-    func_800335D8();
+    snd_UpdateStageSounds();
     p = D_800A3748;
     var_7 = D_80101EC8[p].unk_0A;
     if (D_800A37B8 == D_8008EAC0[var_7]) {

@@ -191,7 +191,7 @@ extern Tbl8008E194 D_8008E194[];
 extern u8 D_8009BD58[8][2];
 
 extern Obj80106A78 D_80106A78[12];
-/* [unk_0A][i] -> Unk80101EC8Record.unk_332[i] (func_8003047C) */
+/* [unk_0A][i] -> Unk80101EC8Record.unk_332[i] (object_InitKindQueue) */
 extern s8 D_8008E338[27][5];
 extern u16 D_8008E3C0[28]; /* [unk_0A] -> Unk80101EC8Record.unk_274 */
 /* [unk_0A][i] -> Unk80101EC8Record.unk_276[i] */
@@ -284,7 +284,7 @@ extern s32 g_comb_send_buf_plus_0x4;
 extern s16 D_800A36A4;
 extern s32 D_800A36AC;
 /* the Rec44 view record camera_ApplyFightView / func_8001E6E4 last placed (read
- * by func_800325E0 as the listener) */
+ * by snd_QueuePositionalSound as the listener) */
 extern Rec44 *g_listener_cam;
 extern CdlATV g_cd_atv_target;
 extern s16 D_800A36C2;
@@ -299,7 +299,7 @@ extern MoveScript *D_800A36D8;
 extern u8 D_800A36E8;
 extern u8 D_800A36F0;
 extern u8 D_800A36F1;
-/* per-player byte, [unk_04] (func_8003047C) */
+/* per-player byte, [unk_04] (object_InitKindQueue) */
 extern u8 D_800A36F2[2];
 extern u8 D_800A36F4;
 extern s16 D_800A36F6;
@@ -313,9 +313,9 @@ extern s32 D_800A371C;
 extern u8 D_800A3728;
 extern s8 D_800A3748;
 
-/* Four s16 counters / latches, one per D_8008E914 row func_800335D8 walks
-   (type 1 latches 1; types 2..6 count up until an rng_Next() draw clears
-   them); func_80033510 clears it from the last element down. */
+/* Four s16 counters / latches, one per D_8008E914 row snd_UpdateStageSounds
+   walks (type 1 latches 1; types 2..6 count up until an rng_Next() draw clears
+   them); snd_ResetStageSoundState clears it from the last element down. */
 extern s16 D_800A3750[4];
 
 extern u8 D_800A3758;
@@ -432,10 +432,10 @@ extern u8 D_800A3913;
 extern u8 D_800A3914;
 extern u8 D_800A3915;
 
-/* Six per-slot counters, 0 = free: func_80033550 claims a slot with 1,
-   func_800335D8 advances and frees them, func_80033510 zeroes all six.
-   D_800A391E is not an element: it is its own countdown byte, and
-   func_800335D8 uses only its address, as the loop bound. */
+/* Six per-slot counters, 0 = free: snd_QueuePositionSequence claims a slot with
+   1, snd_UpdateStageSounds advances and frees them, snd_ResetStageSoundState
+   zeroes all six. D_800A391E is not an element: it is its own countdown byte,
+   and snd_UpdateStageSounds uses only its address, as the loop bound. */
 extern u8 D_800A3918[6];
 
 extern u8 D_800A391E;
@@ -497,9 +497,9 @@ extern s32 *D_80103608[];
 extern Unk80104E88Rec D_80104E88[];
 extern s32 D_80104F38;
 
-/* func_800338CC's list: the set bit numbers of D_80106A50.unk_00 & mask,
- * shuffled, plus up to three appended values (D_800A391F entries; func_80033BC0
- * reads entry D_800A3783, then advances it). */
+/* fight_BuildOpponentOrder's list: the set bit numbers of D_80106A50.unk_00 &
+ * mask, shuffled, plus up to three appended values (D_800A391F entries;
+ * fight_AdvanceOpponentOrder reads entry D_800A3783, then advances it). */
 extern u8 D_801077B0[24];
 
 extern Unk80107850Rec D_80107850[6];
@@ -672,38 +672,38 @@ extern s32 func_8002798C(Unk80101EC8Record *);
 /* func_80027A58 (17AFC.c, void (Unk80101EC8Record *)) has no declaration:
  * 175A4.c calls it implicitly, and any truthful declaration changes
  * func_80026DA4's register-save order. */
-extern void func_800288C8(void);
+extern void fighter_ResolveBodyOverlap(void);
 extern void func_8002906C(void);
-extern s32 func_80029454(void);
-extern void func_8002AB08(s32);
+extern s32 fighter_ProcessWeaponContacts(void);
+extern void fighter_ProcessWeaponBodyHits(s32);
 extern s32 func_8002BEA0(void);
 extern void func_8002C61C(void);
-extern void func_8002EBDC(s32 *, s16 *, s32 *, s32, s32);
-extern void func_8002EECC(void *, void *);
+extern void math_ScaleVectorInDirectionFrame(s32 *, s16 *, s32 *, s32, s32);
+extern void math_InvertMatrix3x3(void *, void *);
 extern void func_8002F770(s16 *, s32, s32, s32);
 extern s32 func_8002FDB0(Unk80101EC8Record *);
-extern void func_8003043C(void);
-extern void func_8003047C(Unk80101EC8Record *);
-extern void func_80030524(void);
-extern s32 func_800307D0(Unk80101EC8Record *);
-extern void func_80030900(Unk80101EC8Record *, Vec3i32 *);
-extern void func_80030A2C(Unk80101EC8Record *, s32, Vec3i32 *);
-extern s32 func_80030BA8(Unk80101EC8Record *);
+extern void object_ResetPool(void);
+extern void object_InitKindQueue(Unk80101EC8Record *);
+extern void object_FreeAttachedObjects(void);
+extern s32 object_ThrowQueuedKind(Unk80101EC8Record *);
+extern void object_DropQueuedHeadAt(Unk80101EC8Record *, Vec3i32 *);
+extern void object_SpawnScatteredAt(Unk80101EC8Record *, s32, Vec3i32 *);
+extern s32 object_PickUpNearby(Unk80101EC8Record *);
 extern void func_80030D04(void);
-extern void func_80030D7C(void);
-extern void func_80031B24(void);
+extern void object_UpdatePool(void);
+extern void object_ResolveFighterHits(void);
 extern void func_80032040(void);
 extern Unk80104E88Rec *func_80032064(Unk80101EC8Record *, s32);
 extern void func_800321E8(void);
 extern void func_80032314(void);
-extern void func_800324D0(Unk80101EC8Record *);
-extern void func_800325E0(s32, s32 *);
+extern void fighter_ReadFrameMetadata(Unk80101EC8Record *);
+extern void snd_QueuePositionalSound(s32, s32 *);
 extern void func_80032854(s32, s32, s32 *, s16 *);
-extern void func_8003339C(Unk80101EC8Record *);
-extern void func_80033510(void);
-extern void func_800335D8(void);
-extern void func_800338CC(void);
-extern void func_80033BC0(void);
+extern void fighter_ProcessFrameEvents(Unk80101EC8Record *);
+extern void snd_ResetStageSoundState(void);
+extern void snd_UpdateStageSounds(void);
+extern void fight_BuildOpponentOrder(void);
+extern void fight_AdvanceOpponentOrder(void);
 extern s32 func_80033DF4(void);
 extern void func_80033FE4(void);
 extern void func_800340A0(void);

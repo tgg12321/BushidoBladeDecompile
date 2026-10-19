@@ -2960,7 +2960,7 @@ glabel fighter_Update
     /* 1720C 80026A0C 21104500 */  addu       $v0, $v0, $a1
     /* 17210 80026A10 21104300 */  addu       $v0, $v0, $v1
     /* 17214 80026A14 00004590 */  lbu        $a1, 0x0($v0)
-    /* 17218 80026A18 8BC2000C */  jal        func_80030A2C
+    /* 17218 80026A18 8BC2000C */  jal        object_SpawnScatteredAt
     /* 1721C 80026A1C 1400C624 */   addiu     $a2, $a2, 0x14
   .L80026A20:
     /* 17220 80026A20 0A80033C */  lui        $v1, %hi(D_800A3748)
@@ -3037,7 +3037,7 @@ glabel fighter_Update
     /* 1732C 80026B2C 00000000 */  nop
     /* 17330 80026B30 08004010 */  beqz       $v0, .L80026B54
     /* 17334 80026B34 00000000 */   nop
-    /* 17338 80026B38 F4C1000C */  jal        func_800307D0
+    /* 17338 80026B38 F4C1000C */  jal        object_ThrowQueuedKind
     /* 1733C 80026B3C 21202002 */   addu      $a0, $s1, $zero
     /* 17340 80026B40 14002386 */  lh         $v1, 0x14($s1)
     /* 17344 80026B44 00000000 */  nop
@@ -3050,7 +3050,7 @@ glabel fighter_Update
   .L80026B5C:
     /* 1735C 80026B5C 0A006214 */  bne        $v1, $v0, .L80026B88
     /* 17360 80026B60 00000000 */   nop
-    /* 17364 80026B64 EAC2000C */  jal        func_80030BA8
+    /* 17364 80026B64 EAC2000C */  jal        object_PickUpNearby
     /* 17368 80026B68 21202002 */   addu      $a0, $s1, $zero
     /* 1736C 80026B6C 14002386 */  lh         $v1, 0x14($s1)
     /* 17370 80026B70 00000000 */  nop
@@ -3074,7 +3074,7 @@ glabel fighter_Update
     /* 173B0 80026BB0 00000000 */  nop
     /* 173B4 80026BB4 08006214 */  bne        $v1, $v0, .L80026BD8
     /* 173B8 80026BB8 00000000 */   nop
-    /* 173BC 80026BBC EAC2000C */  jal        func_80030BA8
+    /* 173BC 80026BBC EAC2000C */  jal        object_PickUpNearby
     /* 173C0 80026BC0 21202002 */   addu      $a0, $s1, $zero
     /* 173C4 80026BC4 14002386 */  lh         $v1, 0x14($s1)
     /* 173C8 80026BC8 00000000 */  nop
@@ -3155,7 +3155,7 @@ glabel fighter_Update
     /* 174DC 80026CDC 62002292 */  lbu        $v0, 0x62($s1)
     /* 174E0 80026CE0 21202002 */  addu       $a0, $s1, $zero
     /* 174E4 80026CE4 40004234 */  ori        $v0, $v0, 0x40
-    /* 174E8 80026CE8 E7CC000C */  jal        func_8003339C
+    /* 174E8 80026CE8 E7CC000C */  jal        fighter_ProcessFrameEvents
     /* 174EC 80026CEC 620022A2 */   sb        $v0, 0x62($s1)
   .L80026CF0:
     /* 174F0 80026CF0 6C022286 */  lh         $v0, 0x26C($s1)

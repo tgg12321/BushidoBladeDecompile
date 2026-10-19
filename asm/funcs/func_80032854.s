@@ -130,10 +130,10 @@ glabel func_80032854
     /* 23218 80032A18 00000000 */   nop
   jlabel .L80032A1C
     /* 2321C 80032A1C 3C000424 */  addiu      $a0, $zero, 0x3C
-    /* 23220 80032A20 78C9000C */  jal        func_800325E0
+    /* 23220 80032A20 78C9000C */  jal        snd_QueuePositionalSound
     /* 23224 80032A24 21282002 */   addu      $a1, $s1, $zero
     /* 23228 80032A28 3C008426 */  addiu      $a0, $s4, 0x3C
-    /* 2322C 80032A2C 78C9000C */  jal        func_800325E0
+    /* 2322C 80032A2C 78C9000C */  jal        snd_QueuePositionalSound
     /* 23230 80032A30 21282002 */   addu      $a1, $s1, $zero
     /* 23234 80032A34 CF84010C */  jal        func_8006133C
     /* 23238 80032A38 21202002 */   addu      $a0, $s1, $zero
@@ -143,10 +143,10 @@ glabel func_80032854
     /* 23248 80032A48 00000000 */   nop
   jlabel .L80032A4C
     /* 2324C 80032A4C 3C000424 */  addiu      $a0, $zero, 0x3C
-    /* 23250 80032A50 78C9000C */  jal        func_800325E0
+    /* 23250 80032A50 78C9000C */  jal        snd_QueuePositionalSound
     /* 23254 80032A54 21282002 */   addu      $a1, $s1, $zero
     /* 23258 80032A58 3C008426 */  addiu      $a0, $s4, 0x3C
-    /* 2325C 80032A5C 78C9000C */  jal        func_800325E0
+    /* 2325C 80032A5C 78C9000C */  jal        snd_QueuePositionalSound
     /* 23260 80032A60 21282002 */   addu      $a1, $s1, $zero
     /* 23264 80032A64 F284010C */  jal        func_800613C8
     /* 23268 80032A68 21202002 */   addu      $a0, $s1, $zero
@@ -156,10 +156,10 @@ glabel func_80032854
     /* 23278 80032A78 00000000 */   nop
   jlabel .L80032A7C
     /* 2327C 80032A7C 3C000424 */  addiu      $a0, $zero, 0x3C
-    /* 23280 80032A80 78C9000C */  jal        func_800325E0
+    /* 23280 80032A80 78C9000C */  jal        snd_QueuePositionalSound
     /* 23284 80032A84 21282002 */   addu      $a1, $s1, $zero
     /* 23288 80032A88 3C008426 */  addiu      $a0, $s4, 0x3C
-    /* 2328C 80032A8C 78C9000C */  jal        func_800325E0
+    /* 2328C 80032A8C 78C9000C */  jal        snd_QueuePositionalSound
     /* 23290 80032A90 21282002 */   addu      $a1, $s1, $zero
     /* 23294 80032A94 1585010C */  jal        func_80061454
     /* 23298 80032A98 21202002 */   addu      $a0, $s1, $zero
@@ -169,10 +169,10 @@ glabel func_80032854
     /* 232A8 80032AA8 00000000 */   nop
   jlabel .L80032AAC
     /* 232AC 80032AAC 3C000424 */  addiu      $a0, $zero, 0x3C
-    /* 232B0 80032AB0 78C9000C */  jal        func_800325E0
+    /* 232B0 80032AB0 78C9000C */  jal        snd_QueuePositionalSound
     /* 232B4 80032AB4 21282002 */   addu      $a1, $s1, $zero
     /* 232B8 80032AB8 3C008426 */  addiu      $a0, $s4, 0x3C
-    /* 232BC 80032ABC 78C9000C */  jal        func_800325E0
+    /* 232BC 80032ABC 78C9000C */  jal        snd_QueuePositionalSound
     /* 232C0 80032AC0 21282002 */   addu      $a1, $s1, $zero
     /* 232C4 80032AC4 3885010C */  jal        func_800614E0
     /* 232C8 80032AC8 21202002 */   addu      $a0, $s1, $zero
@@ -192,7 +192,7 @@ glabel func_80032854
     /* 232F8 80032AF8 00000000 */   nop
   jlabel .L80032AFC
     /* 232FC 80032AFC 31000426 */  addiu      $a0, $s0, 0x31
-    /* 23300 80032B00 78C9000C */  jal        func_800325E0
+    /* 23300 80032B00 78C9000C */  jal        snd_QueuePositionalSound
     /* 23304 80032B04 21282002 */   addu      $a1, $s1, $zero
     /* 23308 80032B08 21202002 */  addu       $a0, $s1, $zero
     /* 2330C 80032B0C 6984010C */  jal        func_800611A4
@@ -201,7 +201,7 @@ glabel func_80032854
     /* 23318 80032B18 00000000 */   nop
   jlabel .L80032B1C
     /* 2331C 80032B1C 78000424 */  addiu      $a0, $zero, 0x78
-    /* 23320 80032B20 78C9000C */  jal        func_800325E0
+    /* 23320 80032B20 78C9000C */  jal        snd_QueuePositionalSound
     /* 23324 80032B24 21282002 */   addu      $a1, $s1, $zero
     /* 23328 80032B28 0200A586 */  lh         $a1, 0x2($s5)
     /* 2332C 80032B2C 0087010C */  jal        func_80061C00
@@ -210,7 +210,7 @@ glabel func_80032854
     /* 23338 80032B38 00000000 */   nop
   jlabel .L80032B3C
     /* 2333C 80032B3C 79000424 */  addiu      $a0, $zero, 0x79
-    /* 23340 80032B40 78C9000C */  jal        func_800325E0
+    /* 23340 80032B40 78C9000C */  jal        snd_QueuePositionalSound
     /* 23344 80032B44 21282002 */   addu      $a1, $s1, $zero
     /* 23348 80032B48 0200A586 */  lh         $a1, 0x2($s5)
     /* 2334C 80032B4C 5D87010C */  jal        func_80061D74
@@ -219,7 +219,7 @@ glabel func_80032854
     /* 23358 80032B58 00000000 */   nop
   jlabel .L80032B5C
     /* 2335C 80032B5C 22000426 */  addiu      $a0, $s0, 0x22
-    /* 23360 80032B60 78C9000C */  jal        func_800325E0
+    /* 23360 80032B60 78C9000C */  jal        snd_QueuePositionalSound
     /* 23364 80032B64 21282002 */   addu      $a1, $s1, $zero
     /* 23368 80032B68 21202002 */  addu       $a0, $s1, $zero
     /* 2336C 80032B6C B386010C */  jal        func_80061ACC
@@ -288,7 +288,7 @@ glabel func_80032854
   jlabel .L80032C1C
     /* 2341C 80032C1C 33000426 */  addiu      $a0, $s0, 0x33
   .L80032C20:
-    /* 23420 80032C20 78C9000C */  jal        func_800325E0
+    /* 23420 80032C20 78C9000C */  jal        snd_QueuePositionalSound
     /* 23424 80032C24 21282002 */   addu      $a1, $s1, $zero
   jlabel .L80032C28
     /* 23428 80032C28 2800BF8F */  lw         $ra, 0x28($sp)

@@ -2027,7 +2027,7 @@ D_80054600                                   = 0x80054600;  /* instruction word 
 /* Medium-confidence Kengo matches.  Bodies have similar shape but */
 /* not exact -- promoted because "myRobGeneiMove" beats "func_8001B690" */
 /* as a starting point for future analysis. */
-func_8002AB08                                         = 0x8002AB08;  /* MISNAMED: actually a GPU DMA scheduler (see gpu_dma_schedule_8002AB08 in pass-6 replacement section) */
+fighter_ProcessWeaponBodyHits                                         = 0x8002AB08;
 /* Note: 0x80037774, 0x80037964, 0x80037804 already named with class-suffixed */
 /* identifiers elsewhere in this file (search "memcard_event_*_8003xxxx") -- */
 /* keeping those over my proposed shorter names. */

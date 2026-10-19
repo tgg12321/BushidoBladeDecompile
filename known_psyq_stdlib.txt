@@ -21,7 +21,7 @@ ExitCriticalSection                   syscall_kernel            4 insns, BIOS tr
 ang_hosei                             handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 bb2_memcpy                            psyq_memcpy               13 insns, lbu/sb loop
 func_80016768                         psyq_memset               17 insns, store-loop with no load
-func_8003043C                         psyq_memset               16 insns, store-loop with no load
+object_ResetPool                         psyq_memset               16 insns, store-loop with no load
 func_80038148                         psyq_memset               10 insns, store-loop with no load
 func_800404D8                         psyq_memset               14 insns, store-loop with no load
 func_8004A348                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)

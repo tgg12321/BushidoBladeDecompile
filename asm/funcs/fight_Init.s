@@ -21,7 +21,7 @@ glabel fight_Init
     /* E4F8 8001DCF8 00000000 */   nop
     /* E4FC 8001DCFC 8BF8000C */  jal        func_8003E22C
     /* E500 8001DD00 00000000 */   nop
-    /* E504 8001DD04 0FC1000C */  jal        func_8003043C
+    /* E504 8001DD04 0FC1000C */  jal        object_ResetPool
     /* E508 8001DD08 00000000 */   nop
     /* E50C 8001DD0C 10C8000C */  jal        func_80032040
     /* E510 8001DD10 00000000 */   nop
@@ -477,7 +477,7 @@ glabel fight_Init
     /* EBA0 8001E3A0 00000000 */   nop
     /* EBA4 8001E3A4 A376000C */  jal        snd_StartFightCdAudio
     /* EBA8 8001E3A8 00000000 */   nop
-    /* EBAC 8001E3AC 44CD000C */  jal        func_80033510
+    /* EBAC 8001E3AC 44CD000C */  jal        snd_ResetStageSoundState
     /* EBB0 8001E3B0 00000000 */   nop
     /* EBB4 8001E3B4 0A80043C */  lui        $a0, %hi(D_800A36A4)
     /* EBB8 8001E3B8 A4368484 */  lh         $a0, %lo(D_800A36A4)($a0)

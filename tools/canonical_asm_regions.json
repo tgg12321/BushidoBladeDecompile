@@ -71,13 +71,13 @@
         "94901d48e9783db2481fb86176af0ee7b838cf6aba6d2ac22e6bd43a9a6a5141"
       ]
     },
-    "func_8002D518": {
+    "math_TestSegmentCircle2D": {
       "file": "main/17AFC",
       "sha256": [
         "240cddca2bf671eb22806bca1f01df5a5842627a7cc7253327ffae85f7f33b4c"
       ]
     },
-    "func_8002E838": {
+    "math_PrepareSegmentCollisionFrame": {
       "file": "main/17AFC",
       "sha256": [
         "e048fe5f5dd5cf60cf4be4eeda341b160ee177d38a46b0598f425417b1e22f0d",
@@ -87,7 +87,7 @@
         "5144f3f0d97eb7f71682a2c019a2014801ea6c417ff08d2bd53f21bda2d3db15"
       ]
     },
-    "func_8002EA24": {
+    "math_TestPreparedSegmentSphere": {
       "file": "main/17AFC",
       "sha256": [
         "8ca686fd7296bf921a974aacaf37eff273dfe747ac7d514811f7baf3461c3aea",
@@ -109,7 +109,7 @@
         "a87912cce8b75771c81d1a077212e668a48f127cc4abbcda4a65179f5054ff11"
       ]
     },
-    "func_8002FF20": {
+    "object_AttachToOpponentBone": {
       "file": "main/17AFC",
       "sha256": [
         "4ade8e4fd5c8d4064afe5d62a85286b6a1039f99b1dfcad71542be7476129232",
@@ -142,7 +142,7 @@
         "e048fe5f5dd5cf60cf4be4eeda341b160ee177d38a46b0598f425417b1e22f0d"
       ]
     },
-    "func_800325E0": {
+    "snd_QueuePositionalSound": {
       "file": "main/17AFC",
       "sha256": [
         "e048fe5f5dd5cf60cf4be4eeda341b160ee177d38a46b0598f425417b1e22f0d"
@@ -222,7 +222,7 @@
         "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860"
       ]
     },
-    "func_8002DAD0": {
+    "math_TryPrepareTriangleNormalFrame": {
       "file": "main/17AFC",
       "sha256": [
         "42d27b24a36aeac13341cf9a3ce6d12ac8a5c4a725f27ccbb3a6116d53e1b172",
@@ -254,7 +254,7 @@
         "06ecd464234fa6428aa554814f305c29d208edcb637acd213f97fd7d60158782"
       ]
     },
-    "func_8002A458": {
+    "fighter_CastWeaponSegment": {
       "file": "main/17AFC",
       "sha256": [
         "36692eec8c2d4fdd61f26af8c3f3a85c3ad1ec8c532cbc9bab05fc9a83af7747",
@@ -305,7 +305,7 @@
         "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860"
       ]
     },
-    "func_8002EBDC": {
+    "math_ScaleVectorInDirectionFrame": {
       "file": "main/17AFC",
       "sha256": [
         "e048fe5f5dd5cf60cf4be4eeda341b160ee177d38a46b0598f425417b1e22f0d",
@@ -327,7 +327,7 @@
         "d2e2ea5d619185285653fcfc5bc46516318a5756fd141b91a244e281d17f08ea"
       ]
     },
-    "func_8002D780": {
+    "math_TestPreparedTriangleSphere": {
       "file": "main/17AFC",
       "sha256": [
         "9214276b02a9f0aec9fcf3c3da5c095ca6659ceba9c8f870d5a6e39d2f22b3fd",
@@ -367,7 +367,7 @@
         "4142a4bba198df862057732c6dd0ca471c6d33fbb3aedcaa7f711c55cc44ec0f"
       ]
     },
-    "func_8002CD58": {
+    "math_PrepareTriangleCollisionFrame": {
       "file": "main/17AFC",
       "sha256": [
         "42d27b24a36aeac13341cf9a3ce6d12ac8a5c4a725f27ccbb3a6116d53e1b172",
@@ -401,7 +401,7 @@
         "beb580c9cc9dda60c1ed7e10f87b84c288c81f2a2ab31eebf5d429944ebc341e"
       ]
     },
-    "func_800288C8": {
+    "fighter_ResolveBodyOverlap": {
       "file": "main/17AFC",
       "sha256": [
         "2f7f16231b85b4857425e569c6d174187c73af4c33a1f6e1092ba53f1139885e"

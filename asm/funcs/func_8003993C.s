@@ -281,7 +281,7 @@ glabel func_8003993C
     /* 2A560 80039D60 40004230 */  andi       $v0, $v0, 0x40
     /* 2A564 80039D64 04004010 */  beqz       $v0, .L80039D78
     /* 2A568 80039D68 21206002 */   addu      $a0, $s3, $zero
-    /* 2A56C 80039D6C E7CC000C */  jal        func_8003339C
+    /* 2A56C 80039D6C E7CC000C */  jal        fighter_ProcessFrameEvents
     /* 2A570 80039D70 21202002 */   addu      $a0, $s1, $zero
     /* 2A574 80039D74 21206002 */  addu       $a0, $s3, $zero
   .L80039D78:
@@ -394,7 +394,7 @@ glabel func_8003993C
     /* 2A708 80039F08 10003126 */   addiu     $s1, $s1, 0x10
     /* 2A70C 80039F0C 6A1B010C */  jal        func_80046DA8
     /* 2A710 80039F10 01000424 */   addiu     $a0, $zero, 0x1
-    /* 2A714 80039F14 76CD000C */  jal        func_800335D8
+    /* 2A714 80039F14 76CD000C */  jal        snd_UpdateStageSounds
     /* 2A718 80039F18 00000000 */   nop
     /* 2A71C 80039F1C 04078293 */  lbu        $v0, %gp_rel(D_800A37D0)($gp)
     /* 2A720 80039F20 B6068393 */  lbu        $v1, %gp_rel(D_800A3782)($gp)

@@ -53,9 +53,9 @@ void func_800344B4(void) {
         break;
     case 1:
         D_80102778.unk_4[5] = 1;
-        func_800338CC();
+        fight_BuildOpponentOrder();
         D_800A3768 = 1;
-        func_80033BC0();
+        fight_AdvanceOpponentOrder();
         break;
     case 3:
         D_80102778.unk_4[5] = 1;

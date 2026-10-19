@@ -1,1 +1,0 @@
-{"func": "func_800325E0", "addr": "800325E0", "verdict": "PASS", "body_hash": "6682590baa449e4a", "body_kind": "c", "file": "main/17AFC", "reviewer": "small-review", "scope": "cheat-cleanup", "date": "2026-10-16T06:22:03Z", "head": "ce61ce18b", "notes": "lane-small 2026-10-16; verdict tmp/cr_small/verdict.json + verdict2.json"}

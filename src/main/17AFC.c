@@ -26,7 +26,7 @@ extern u8 D_800A38AB;
 
 INCLUDE_RODATA("asm/rodata", D_80010478);
 
-s32 func_800272FC(s32 a0) {
+s32 math_ClassifyAbsMagnitude(s32 a0) {
     s32 v1;
     if (a0 < 0) {
         a0 = -a0;
@@ -59,10 +59,9 @@ void func_80027334(MotionFrame *arg0) {
 }
 
 /* func_8002738C ORs limb bits into `*(&D_800A376A + a0)`; its only caller
- * passes a0 = 0 (func_80027AD8), so D_800A376B (written 0 elsewhere, never
- * read) is not reached from here.
- * FAKE (Q97): two u8 scalars; as u8[2], func_8003B2C8 / func_8003B328 were
- * reported at 12 / 16 (not banked). */
+ * passes a0 = 0 (fighter_ResolveBoneHit), so D_800A376B (written 0 elsewhere,
+ * never read) is not reached from here. FAKE (Q97): two u8 scalars; as u8[2],
+ * func_8003B2C8 / func_8003B328 were reported at 12 / 16 (not banked). */
 void func_8002738C(s32 a0, s32 a1) {
     if (D_800A38DC != 0) {
         return;
@@ -306,7 +305,7 @@ void func_80027A58(Unk80101EC8Record *a0) {
         if (a0->unk_8A) {
             if (func_8002798C(a0)) {
                 u8 *v0 = func_80046DEC(a0->index);
-                func_80030900(a0, *(s32 *)(v0 + 0x4C) + 0x14);
+                object_DropQueuedHeadAt(a0, *(s32 *)(v0 + 0x4C) + 0x14);
                 a0->unk_8A = 0;
                 a0->unk_86 = a0->unk_84;
             }
@@ -316,8 +315,9 @@ void func_80027A58(Unk80101EC8Record *a0) {
 
 extern u8 D_8008EB74[3][2][2];
 
-s32 func_80027AD8(s32 arg0, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
-                  s32 flag, Tbl8008E194 *rec, s32 arg6, s32 *out) {
+s32 fighter_ResolveBoneHit(
+    s32 arg0, Unk80101EC8Record *arg1, s32 arg2, s32 thresh, s32 flag,
+    Tbl8008E194 *rec, s32 arg6, s32 *out) {
     /* FAKE: tbl, tbl_arg: copies of the stack-passed parameter `rec` (an
      * unmodified stack parameter gets half the register priority); rec used
      * directly: score 78 (Ruling 12) */
@@ -386,7 +386,7 @@ s32 func_80027AD8(s32 arg0, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
         arg1->unk_40 < arg1->unk_A0) {
         if (arg0 == 0) {
             diff = var_5->unk_20 - arg1->unk_20;
-            var_10 = func_800272FC(diff);
+            var_10 = math_ClassifyAbsMagnitude(diff);
             sign = (u32)diff >> 31;
             var_12 = arg1->unk_AF == var_5->unk_AF;
             arg1->unk_B4 = var_5->unk_B4 = var_12;
@@ -571,7 +571,7 @@ s32 func_80027AD8(s32 arg0, Unk80101EC8Record *arg1, s32 arg2, s32 thresh,
     }
 }
 
-s32 func_800283D0(Unk80101EC8Record *arg0, s32 *arg1) {
+s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
     Unk80101EC8Record *temp_s4;
     u16 state;
     s32 var_s1;
@@ -770,7 +770,7 @@ extern s32 D_800A3144[2];
  * x/z, scaled by the distance. After an overlap, the unk_6A states and the
  * unk_1C8.vy difference (folded to 0..0x800) pick the reaction (unk_286,
  * D_800A38A8 / D_800A3876). The push is added to unk_134.vx / .vz. */
-void func_800288C8(void) {
+void fighter_ResolveBodyOverlap(void) {
     s32 lzc_out;
     s32 var_1;
     s32 i;
@@ -948,17 +948,18 @@ void func_8002906C(void) {
     }
 }
 
-s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3);
+s32 math_PointInTriangleXZ(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3);
 s32 func_8002FC80(VECTOR *a0, VECTOR *a1, VECTOR *a2);
-void func_80033550(Unk80107850Rec *arg0);
+void snd_QueuePositionSequence(Unk80107850Rec *arg0);
 
 /* Tests the unused PosRec entries inside grid `idx`'s x/z bounds against the
- * grid's two triangles (points 0,1,2 and 1,2,3) with func_8002E6B0. `tbl` holds
- * two 2x2 grids of points (entry idx * 4 + row * 2 + col); the bounds go to the
- * scratch record at 0x1F8002B8. A type-2 hit restarts on grid 1 when `flag` is
- * set and idx is 0; otherwise it calls func_80044B30 / func_80033550, marks the
- * entry used and returns 0. Any other hit, or a miss with `flag` set and idx
- * not 0, stores the average of unk78.y and the top y in unk100[0].y and returns
+ * grid's two triangles (points 0,1,2 and 1,2,3) with math_PointInTriangleXZ.
+ * `tbl` holds two 2x2 grids of points (entry idx * 4 + row * 2 + col); the
+ * bounds go to the scratch record at 0x1F8002B8. A type-2 hit restarts on grid
+ * 1 when `flag` is set and idx is 0; otherwise it calls func_80044B30 /
+ * snd_QueuePositionSequence, marks the entry used and returns 0. Any other hit,
+ * or a miss with `flag` set and idx not 0, stores the average of unk78.y and
+ * the top y in unk100[0].y and returns
  * 1. Returns 0 when the list runs out. */
 s32 func_800290B8(s32 idx, s32 flag, Unk80107850Rec *tbl) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
@@ -1024,7 +1025,7 @@ s32 func_800290B8(s32 idx, s32 flag, Unk80107850Rec *tbl) {
                 b = &tbl[idx * 4 + 2];
                 c = &tbl[idx * 4 + 3];
             }
-            if (func_8002E6B0(
+            if (math_PointInTriangleXZ(
                     (s32 *)a, (s32 *)b, (s32 *)c, &scr->unk100[0].x) != 0) {
                 if (rec->type != 2)
                     goto hit;
@@ -1035,7 +1036,7 @@ s32 func_800290B8(s32 idx, s32 flag, Unk80107850Rec *tbl) {
                 }
                 func_80044B30(
                     temp, func_8002FC80((VECTOR *)a, (VECTOR *)b, (VECTOR *)c));
-                func_80033550(a);
+                snd_QueuePositionSequence(a);
                 rec->used = 1;
                 return 0;
             }
@@ -1058,7 +1059,7 @@ static inline s32 box_overlap(Unk1F8002B8Rec *scr) {
 }
 
 /* Both are defined further down this file. */
-extern s32 func_8002DAD0(Unk1F8002B8Rec *obj);
+extern s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj);
 extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
                          Unk80107850Rec *p1, Unk80107850Rec *p2);
 
@@ -1070,11 +1071,11 @@ extern s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0,
  * hits plays effects 1, 0x26 and 0x2D and sets +0x286 to 0x19 or 0xB; the hit
  * counts only when +0x40 lies within +0xA1..+0xA3 (+0xA2..+0xA4 for grid 1,
  * which is tested only with +0x8C set). Then each record-0 triangle
- * func_8002DAD0 accepts is tested against each record-1 triangle (bounding
- * boxes, then func_8002DE20), the rejected ones again with the roles swapped. A
- * hit returns (record-1 grid << 1) | record-0 grid, else -1; the points are
- * restored. */
-s32 func_80029454(void) {
+ * math_TryPrepareTriangleNormalFrame accepts is tested against each record-1
+ * triangle (bounding boxes, then func_8002DE20), the rejected ones again with
+ * the roles swapped. A hit returns (record-1 grid << 1) | record-0 grid, else
+ * -1; the points are restored. */
+s32 fighter_ProcessWeaponContacts(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     Unk80107850Rec *var_1 = SPAD->unkA8[0];
     Unk80107850Rec saved[16];
@@ -1208,7 +1209,7 @@ s32 func_80029454(void) {
             scr->unk60[2] = &var_1[6];
             break;
         }
-        if (func_8002DAD0(scr) == 0) {
+        if (math_TryPrepareTriangleNormalFrame(scr) == 0) {
             mask |= 1 << j;
             continue;
         }
@@ -1313,7 +1314,7 @@ s32 func_80029454(void) {
             scr->unk60[2] = &var_1[14];
             break;
         }
-        if (func_8002DAD0(scr) == 0) {
+        if (math_TryPrepareTriangleNormalFrame(scr) == 0) {
             continue;
         }
         scr->unk84 = *scr->unk60[0];
@@ -1401,26 +1402,27 @@ s32 func_80029454(void) {
  * negative square prints "ILLEGAL GUN MOTION" and returns) and unit direction
  * q, and pushes the tip out by q*4. If the yaw difference to obj->other's
  * unk_1D8 is under 0x400, each of character `id`'s 22 records (D_800F5F68;
- * records 6..9 only when obj+0x26C is set) is tested: a func_8002EA24 test
- * with unk_0C / unk_0E sets bit i in *arg1 and, only when the record's first
- * halfword is nonzero, a second test with unk_10 / unk_12 sets bit i in
- * *arg2. Then func_80053614 casts the segment against the stage; when it
- * returns nonzero and func_80054434() != 7: if *arg1 is nonzero, the function
- * skips to the end when the cast point is no nearer the base than obj+0xF4
- * and otherwise clears *arg1 and *arg2; then, unless `arg3`, effect 0xA
- * plays at the cast point. D_800A37E8.. receive -q.
- * GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc) per square root, inline_o.h
- * class (inline-asm-policy, owner ruling 2026-09-26). Everything else is
- * ordinary C, except the five Ruling 11 locals (dx, dy, dz, temp, temp2) and
- * the do-while(0), each annotated below. */
+ * records 6..9 only when obj+0x26C is set) is tested: a
+ * math_TestPreparedSegmentSphere test with unk_0C / unk_0E sets bit i in *arg1
+ * and, only when the record's first halfword is nonzero, a second test with
+ * unk_10 / unk_12 sets bit i in *arg2. Then func_80053614 casts the segment
+ * against the stage; when it returns nonzero and func_80054434() != 7: if *arg1
+ * is nonzero, the function skips to the end when the cast point is no nearer
+ * the base than obj+0xF4 and otherwise clears *arg1 and *arg2; then, unless
+ * `arg3`, effect 0xA plays at the cast point. D_800A37E8.. receive -q. GTE:
+ * gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc) per square root, inline_o.h class
+ * (inline-asm-policy, owner ruling 2026-09-26). Everything else is ordinary C,
+ * except the five Ruling 11 locals (dx, dy, dz, temp, temp2) and the
+ * do-while(0), each annotated below. */
 extern char D_80010478[];
 extern void printf();
-extern void func_8002E838(Unk1F8002B8Rec *scr);
-extern s32 func_8002EA24(
+extern void math_PrepareSegmentCollisionFrame(Unk1F8002B8Rec *scr);
+extern s32 math_TestPreparedSegmentSphere(
     Unk1F8002B8Rec *scr, Unk80107850Rec *pos, s32 threshold, s32 r_sq);
 extern s32 func_80054434(void);
 
-void func_8002A458(Unk80101EC8Record *obj, u32 *arg1, u32 *arg2, s32 arg3) {
+void fighter_CastWeaponSegment(
+    Unk80101EC8Record *obj, u32 *arg1, u32 *arg2, s32 arg3) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 id = obj->index;
     Unk80101EC8Record *var_2 = obj->other;
@@ -1508,7 +1510,7 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *arg1, u32 *arg2, s32 arg3) {
     scr->unk60[1]->y += qy * 4;
     scr->unk60[1]->z += qz * 4;
     if (diff < 0x400) {
-        func_8002E838(scr);
+        math_PrepareSegmentCollisionFrame(scr);
         /* FAKE: do-while(0) puts id in $s7 / obj in $fp as in the target;
          * unwrapped they swap (16 instructions differ)
          * (do-while-zero-exception) */
@@ -1521,11 +1523,13 @@ void func_8002A458(Unk80101EC8Record *obj, u32 *arg1, u32 *arg2, s32 arg3) {
                 continue;
             }
             pos = &SPAD->unkA8[id][i];
-            if (func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E) != 0) {
+            if (math_TestPreparedSegmentSphere(
+                    scr, pos, rec->unk_0C, rec->unk_0E) != 0) {
                 s32 bit = 1 << i;
                 *arg1 |= bit;
                 if (rec->unk_00 != 0 &&
-                    func_8002EA24(scr, pos, rec->unk_10, rec->unk_12) != 0) {
+                    math_TestPreparedSegmentSphere(
+                        scr, pos, rec->unk_10, rec->unk_12) != 0) {
                     *arg2 |= bit;
                 }
             }
@@ -1562,10 +1566,10 @@ done:
     D_800A37EC = -qz;
 }
 
-extern void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2);
-extern s32 func_8002CD58(Unk1F8002B8Rec *obj);
+extern void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2);
+extern s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj);
 
-void func_8002AB08(s32 mode) {
+void fighter_ProcessWeaponBodyHits(s32 mode) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     /* FAKE: second handle to D_800A37E8, so the address is rematerialized at
      * each of the three calls as in the target; spelled directly, cse keeps it
@@ -1657,7 +1661,7 @@ void func_8002AB08(s32 mode) {
                 var_3->unk_34A -= 1;
                 scr->unk00.unk00[0] = SPAD->unk00[i == 0][1];
                 scr->unk00.unk00[1] = SPAD->unk00[i == 0][0];
-                func_8002A458(var_4, &var_5, &var_6, 0);
+                fighter_CastWeaponSegment(var_4, &var_5, &var_6, 0);
                 mask_a |= var_5;
             } else {
                 func_80032854(
@@ -1674,16 +1678,17 @@ void func_8002AB08(s32 mode) {
             var_3->unk_34A -= 1;
             scr->unk00.unk00[0] = SPAD->unk48[i == 0][1];
             scr->unk00.unk00[1] = SPAD->unk48[i == 0][0];
-            func_8002A458(var_4, &var_5, &var_6, var_3->unk_0C == 0xE);
+            fighter_CastWeaponSegment(
+                var_4, &var_5, &var_6, var_3->unk_0C == 0xE);
             func_80032854(
                 i == 0, 0x2A,
                 i == 0 ? &SPAD->unk00[1][1].x : &SPAD->unk00[0][1].x, 0);
             mask_a |= var_5;
         }
         for (var_11 = 0; var_11 < var_10; var_11++) {
-            /* var_32: func_8002CA8C's third argument, per-branch constants
-             * 1 / 1 / 0 (Q20); the unk_8C arm's store is shared with the first
-             * iteration (Q85, Ruling 11) */
+            /* var_32: fighter_TestTriangleBoneHits's third argument, per-branch
+             * constants 1 / 1 / 0 (Q20); the unk_8C arm's store is shared with
+             * the first iteration (Q85, Ruling 11) */
             s32 var_32;
 
             if (var_11 == 0) {
@@ -1787,7 +1792,8 @@ void func_8002AB08(s32 mode) {
                         scr->unk84.z = scr->unk60[j]->z;
                     }
                 }
-                func_8002CA8C(var_4, func_8002CD58(scr), var_32);
+                fighter_TestTriangleBoneHits(
+                    var_4, math_PrepareTriangleCollisionFrame(scr), var_32);
                 var_5 |= scr->unkB4;
                 var_6 |= scr->unkC4;
                 if (var_12 != 0) {
@@ -1951,12 +1957,12 @@ void func_8002AB08(s32 mode) {
         if (mask_b & (1 << idx) & ~mask_c) {
             var_31 = 0;
         }
-        /* func_80027AD8's sixth argument is a record pointer on the calls
-         * from func_80031B24 (first argument 1) and, on this call (first
-         * argument 0), the 0/1 alternate-blade flag the target passes in that
-         * slot: its `tbl == NULL ? 0xB : 0x19` picks the same reaction
-         * func_80029454 picks from +0x8C. */
-        func_80027AD8(
+        /* fighter_ResolveBoneHit's sixth argument is a record pointer on the
+         * calls from object_ResolveFighterHits (first argument 1) and, on this
+         * call (first argument 0), the 0/1 alternate-blade flag the target
+         * passes in that slot: its `tbl == NULL ? 0xB : 0x19` picks the same
+         * reaction fighter_ProcessWeaponContacts picks from +0x8C. */
+        fighter_ResolveBoneHit(
             0, var_4, idx, ang, var_31, (Tbl8008E194 *)var_12, flag, 0);
         var_3->unk_AD = 0;
     }
@@ -2083,7 +2089,7 @@ void func_8002C0DC(void) {
         if (chk == 0) {
             if (D_800A3758 == 0xFF) {
                 if (var_s0->unk_AA == var_s0->unk_40) {
-                    func_8002AB08(1);
+                    fighter_ProcessWeaponBodyHits(1);
                 }
             }
         }
@@ -2211,18 +2217,18 @@ void func_8002C61C(void) {
         func_8002C0DC();
     } else {
         func_8002872C();
-        func_800288C8();
-        D_800A3824 = func_80029454();
+        fighter_ResolveBodyOverlap();
+        D_800A3824 = fighter_ProcessWeaponContacts();
         if (D_800A3824 >= 0) {
             func_8002C22C();
         }
         if (D_800A3824 >= 0 && (s1->unk_AD != 0 || s0->unk_AD != 0)) {
-            func_800283D0(s1, &SPAD->unk2B8.rec.unk13C.x);
-            func_800283D0(s0, &SPAD->unk2B8.rec.unk13C.x);
+            fighter_ResolveWeaponContact(s1, &SPAD->unk2B8.rec.unk13C.x);
+            fighter_ResolveWeaponContact(s0, &SPAD->unk2B8.rec.unk13C.x);
             s0->unk_AD = 0;
             s1->unk_AD = 0;
         } else {
-            func_8002AB08(0);
+            fighter_ProcessWeaponBodyHits(0);
         }
         if (s1->unk_3C >= 3 && s0->unk_3C >= 3 && D_800A38A8 != 0 &&
             s1->unk_286 == -1 && s0->unk_286 == -1 && s1->unk_0C != 0x1F &&
@@ -2280,7 +2286,7 @@ void func_8002C61C(void) {
     {
         s16 saved = s1->unk_286;
         if (saved == -1) {
-            func_80031B24();
+            object_ResolveFighterHits();
             if (s1->unk_286 == saved) {
                 func_80032314();
             }
@@ -2290,10 +2296,10 @@ void func_8002C61C(void) {
 
 extern s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
                          s32 threshold, s32 r_sq);
-extern s32 func_8002D780(
+extern s32 math_TestPreparedTriangleSphere(
     s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq);
 
-void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
+void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 id = a0->index;
     BoneHitRec *recbase = D_800F5F68[id];
@@ -2337,11 +2343,11 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
         }
 
         if (a1 != 0) {
-            var_11 = func_8002D780(
+            var_11 = math_TestPreparedTriangleSphere(
                 0, scr, (s32 *)&SPAD->unkA8[id][i], r, rec->unk_0E);
             if (var_11 != 0) {
                 if (rec->unk_00 != 0 && a2 != 0) {
-                    if (func_8002D780(
+                    if (math_TestPreparedTriangleSphere(
                             1, scr, (s32 *)0, rec->unk_10, rec->unk_12) != 0) {
                         var_4 |= 1 << i;
                     }
@@ -2374,7 +2380,7 @@ void func_8002CA8C(Unk80101EC8Record *a0, s32 a1, s32 a2) {
  * 64 and the angles come from n (returns 1). A rotation matrix built in unkD8
  * (RotMatrixY, RotMatrixX) then rotates a and b in place. `len` and `temp`
  * each hold two values (Ruling 11). */
-s32 func_8002CD58(Unk1F8002B8Rec *obj) {
+s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj) {
     s32 sp_tmp;
     s32 sp_tmp2;
     s32 sp_tmp3;
@@ -2589,7 +2595,7 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
  * `var_18` holding the value under the root, the square root and the <<9
  * result, `num1` before `denom`, and `result` kept apart from the comparison
  * flag. The `var_22` re-store is a FAKE, explained at its site. */
-s32 func_8002D518(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
+s32 math_TestSegmentCircle2D(s32 threshold, s32 r_sq, s32 *p1, s32 *p2) {
     s32 x1, z1, x2, z2;
 
     x1 = p1[0];
@@ -2698,7 +2704,7 @@ dist_calc: {
 }
 }
 
-s32 func_8002D780(
+s32 math_TestPreparedTriangleSphere(
     s32 flag, Unk1F8002B8Rec *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         obj->unkF8.vx = pos[0] - obj->unk60[0]->x;
@@ -2765,8 +2771,8 @@ s32 func_8002D780(
             if (dist >= 0) {
                 /* FAKE: same-value re-store of `m`: breaks the m == dist
                  * equivalence across the skipped arm so the shift below reads
-                 * the $a0 copy, not dist ($s1), as in func_8002D518; without
-                 * it: score 4 */
+                 * the $a0 copy, not dist ($s1), as in math_TestSegmentCircle2D;
+                 * without it: score 4 */
                 m = dist;
                 gte_Lzc(m, &sp_var);
                 lzcr = sp_var;
@@ -2784,27 +2790,31 @@ s32 func_8002D780(
         p118->y = obj->unkA8.y - obj->unk100[0].y;
         p124->x = obj->unkB8.x - obj->unk100[0].x;
         p124->y = obj->unkB8.y - obj->unk100[0].y;
-        if (func_8002D518(sqrt_val, dist, (s32 *)p118, (s32 *)p124) != 0)
+        if (math_TestSegmentCircle2D(
+                sqrt_val, dist, (s32 *)p118, (s32 *)p124) != 0)
             return 1;
 
         p10C = &obj->unk100[1];
         p10C->x = -obj->unk100[0].x;
         p10C->y = -obj->unk100[0].y;
-        if (func_8002D518(sqrt_val, dist, (s32 *)p10C, (s32 *)p118) != 0)
+        if (math_TestSegmentCircle2D(
+                sqrt_val, dist, (s32 *)p10C, (s32 *)p118) != 0)
             return 1;
 
-        if (func_8002D518(sqrt_val, dist, (s32 *)p10C, (s32 *)p124) != 0)
+        if (math_TestSegmentCircle2D(
+                sqrt_val, dist, (s32 *)p10C, (s32 *)p124) != 0)
             return 1;
         return 0;
     }
 }
 
-/* func_8002CD58's frame, built from the normal: edge vectors a = v1 - v0
- * (unkA8), b = v2 - v0 (unkB8) and n = a x b (unkC8). It returns 0 while n's
- * components are within +-0x3FFF; otherwise n is scaled down by 64, the yaw
- * (unkF8.vy) and pitch (.vx) come from n, and the rotation built in unkD8
- * (RotMatrixY, RotMatrixX) rotates a and b in place (returns 1). */
-s32 func_8002DAD0(Unk1F8002B8Rec *obj) {
+/* math_PrepareTriangleCollisionFrame's frame, built from the normal: edge
+ * vectors a = v1 - v0 (unkA8), b = v2 - v0 (unkB8) and n = a x b (unkC8). It
+ * returns 0 while n's components are within +-0x3FFF; otherwise n is scaled
+ * down by 64, the yaw (unkF8.vy) and pitch (.vx) come from n, and the rotation
+ * built in unkD8 (RotMatrixY, RotMatrixX) rotates a and b in place (returns 1).
+ */
+s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
     MATRIX *mat;
     s32 sp_tmp;
     s32 dist_sq;
@@ -3078,8 +3088,8 @@ s32 func_8002DE20(Unk1F8002B8Rec *obj, Unk80107850Rec *p0, Unk80107850Rec *p1,
  * arg1->arg2) the 2D cross product of the edge vector with the centroid
  * offset and with the query-point offset must have the same sign; the sign
  * agreement is tested as `(cc ^ cp) >= 0`. Same idiom as the triangle test
- * inside func_8002D780 in this file. */
-s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
+ * inside math_TestPreparedTriangleSphere in this file. */
+s32 math_PointInTriangleXZ(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
     s32 var_0 = ((arg0[0] + arg1[0]) + arg2[0]) / 3;
     s32 var_1 = ((arg0[2] + arg1[2]) + arg2[2]) / 3;
     s32 var_2;
@@ -3113,7 +3123,7 @@ s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
     return 0;
 }
 
-void func_8002E838(Unk1F8002B8Rec *scr) {
+void math_PrepareSegmentCollisionFrame(Unk1F8002B8Rec *scr) {
     s32 sp_tmp;
     MATRIX *mat;
     s32 dist_sq;
@@ -3165,7 +3175,7 @@ void func_8002E838(Unk1F8002B8Rec *scr) {
     gte_stlvnl(&scr->unkA8);
 }
 
-s32 func_8002EA24(
+s32 math_TestPreparedSegmentSphere(
     Unk1F8002B8Rec *scr, Unk80107850Rec *pos, s32 threshold, s32 r_sq) {
     scr->unkF8.vx = pos->x - scr->unk60[0]->x;
     scr->unkF8.vy = pos->y - scr->unk60[0]->y;
@@ -3230,7 +3240,7 @@ s32 func_8002EA24(
     }
 }
 
-void func_8002EBDC(
+void math_ScaleVectorInDirectionFrame(
     s32 *vec_in, s16 *arg1, s32 *out, s32 scale_z, s32 scale_xy) {
     s32 sp_tmp;
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
@@ -3304,7 +3314,7 @@ void func_8002EBDC(
     gte_stlvnl(out);
 }
 
-void func_8002EECC(void *arg0, void *arg1) {
+void math_InvertMatrix3x3(void *arg0, void *arg1) {
     MATRIX *src = arg0;
     MATRIX *dst = arg1;
     s16 temp_a3;
@@ -3582,10 +3592,10 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
 
 /* Starts the record (unk_08 = 1, bone unk_09 = arg1): its matrix becomes the
  * inverse of bone unk_09's rotation (func_80046DEC()'s table, inverted by
- * func_8002EECC) times the rot[] rotation (X, Y, Z), and pos is taken into
- * the bone's frame: less the bone translation, rotated by that inverse, then
- * halved. */
-void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
+ * math_InvertMatrix3x3) times the rot[] rotation (X, Y, Z), and pos is taken
+ * into the bone's frame: less the bone translation, rotated by that inverse,
+ * then halved. */
+void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 arg1) {
     MATRIX mat_local;
     MATRIX **mat_tbl;
     MATRIX *s2_ptr;
@@ -3610,7 +3620,7 @@ void func_8002FF20(Obj80106A78 *arg0, s16 arg1) {
     RotMatrixX(arg0->rot[0], rot_mat);
     RotMatrixY(arg0->rot[1], rot_mat);
     RotMatrixZ(arg0->rot[2], rot_mat);
-    func_8002EECC(s2_ptr, &mat_local);
+    math_InvertMatrix3x3(s2_ptr, &mat_local);
     MulMatrix0(&mat_local, rot_mat, rot_mat);
 
     /* Subtract mat_tbl[arg0->unk_09]'s translation from the position. */
@@ -3716,7 +3726,7 @@ void func_8003032C(s32 *a0, s16 *a1) {
     a0[0x12] = v48 >> 2;
 }
 
-void func_8003043C(void) {
+void object_ResetPool(void) {
     s32 i;
 
     for (i = 0; i < 12; i++) {
@@ -3725,7 +3735,7 @@ void func_8003043C(void) {
     }
 }
 
-void func_8003047C(Unk80101EC8Record *a0) {
+void object_InitKindQueue(Unk80101EC8Record *a0) {
     s32 i;
     s16 val;
 
@@ -3742,7 +3752,7 @@ void func_8003047C(Unk80101EC8Record *a0) {
     D_800A36F2[a0->index] = D_8008E338[a0->unk_0A][0];
 }
 
-void func_80030524(void) {
+void object_FreeAttachedObjects(void) {
     s32 i = 0;
     do {
         if (D_80106A78[i].kind != -1) {
@@ -3753,7 +3763,7 @@ void func_80030524(void) {
     } while (++i < 12);
 }
 
-Obj80106A78 *func_80030580(Unk80101EC8Record *arg0, s32 arg1) {
+Obj80106A78 *object_SpawnFromFighter(Unk80101EC8Record *arg0, s32 arg1) {
     /* FAKE: unwritten pad reserving the 16 untouched local bytes of the
      * target frame (target vars=24, ours 8 without the pad) (phantom-frame pad,
      * owner ruling 2026-08-18; row granted by owner ruling 2026-09-02). SOTN
@@ -3814,9 +3824,9 @@ Obj80106A78 *func_80030580(Unk80101EC8Record *arg0, s32 arg1) {
     return obj;
 }
 
-extern Obj80106A78 *func_80030580(Unk80101EC8Record *, s32);
+extern Obj80106A78 *object_SpawnFromFighter(Unk80101EC8Record *, s32);
 
-s32 func_800307D0(Unk80101EC8Record *a0) {
+s32 object_ThrowQueuedKind(Unk80101EC8Record *a0) {
     s32 count;
     s32 idx;
     s32 kind;
@@ -3833,7 +3843,7 @@ s32 func_800307D0(Unk80101EC8Record *a0) {
         idx = a0->unk_332[0] == a0->unk_14;
     }
     id = a0->unk_332[idx];
-    obj = func_80030580(a0, id);
+    obj = object_SpawnFromFighter(a0, id);
     for (i = idx; i < a0->unk_330 - 1; i++) {
         a0->unk_332[i] = a0->unk_332[i + 1];
     }
@@ -3848,14 +3858,14 @@ s32 func_800307D0(Unk80101EC8Record *a0) {
     return id;
 }
 
-extern Obj80106A78 *func_80030580(Unk80101EC8Record *, s32);
+extern Obj80106A78 *object_SpawnFromFighter(Unk80101EC8Record *, s32);
 
-void func_80030900(Unk80101EC8Record *a0, Vec3i32 *a1) {
+void object_DropQueuedHeadAt(Unk80101EC8Record *a0, Vec3i32 *a1) {
     Obj80106A78 *p;
     s32 var_1;
     s32 i;
 
-    p = func_80030580(a0, a0->unk_332[0]);
+    p = object_SpawnFromFighter(a0, a0->unk_332[0]);
     p->unk_04 = 0;
     p->pos = *a1;
     p->vel.x = (rng_Next() & 0xFF) - 0x80;
@@ -3876,11 +3886,11 @@ void func_80030900(Unk80101EC8Record *a0, Vec3i32 *a1) {
     a0->unk_330--;
 }
 
-void func_80030A2C(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
+void object_SpawnScatteredAt(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
     Obj80106A78 *p;
     s32 var_1;
 
-    p = func_80030580(a0, a1);
+    p = object_SpawnFromFighter(a0, a1);
     p->unk_04 = 0;
     p->pos = *a2;
     p->vel.x = (rng_Next() & 0xFF) - 0x80;
@@ -3898,7 +3908,7 @@ void func_80030A2C(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
     p->unk_0B = a0->unk_12;
 }
 
-s32 func_80030B10(Unk80101EC8Record *arg0, s32 arg1) {
+s32 object_QueueKind(Unk80101EC8Record *arg0, s32 arg1) {
     s32 i;
 
     if (arg0->unk_330 == 0xC) {
@@ -3916,7 +3926,7 @@ s32 func_80030B10(Unk80101EC8Record *arg0, s32 arg1) {
     return 1;
 }
 
-s32 func_80030BA8(Unk80101EC8Record *arg0) {
+s32 object_PickUpNearby(Unk80101EC8Record *arg0) {
     Obj80106A78 *p;
     s32 i;
     s32 old_val;
@@ -3949,7 +3959,7 @@ s32 func_80030BA8(Unk80101EC8Record *arg0) {
                 continue;
             }
         }
-        if (func_80030B10(arg0, kind) == 0) {
+        if (object_QueueKind(arg0, kind) == 0) {
             return -1;
         }
         old_val = p->kind;
@@ -3988,7 +3998,7 @@ s32 math_LerpAngle(s32 arg0, s32 arg1, s32 arg2) {
  * off the returned normal, func_80032854 cues, and the rest / re-hop logic.
  * Scratch vectors live in its layout of the scratchpad area at 0x1F8002B8
  * (Unk1F8002B8_8005344C). */
-void func_80030D7C(void) {
+void object_UpdatePool(void) {
     Unk1F8002B8_8005344C *scr;
     Obj80106A78 *obj;
     s32 i;
@@ -4183,7 +4193,8 @@ void func_80030D7C(void) {
     func_80030208();
 }
 
-/* GTE rotate-velocity-by-table-angle (sibling of func_8002E838) */
+/* GTE rotate-velocity-by-table-angle (sibling of
+ * math_PrepareSegmentCollisionFrame) */
 void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
     MATRIX *mat;
     s32 angle1;
@@ -4240,10 +4251,10 @@ void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
     ent->pos.z += ent->vel.z / 2;
 }
 
-extern s32 func_80027AD8(
+extern s32 fighter_ResolveBoneHit(
     s32, Unk80101EC8Record *, s32, s32, s32, Tbl8008E194 *, s32, s32 *);
 
-void func_80031B24(void) {
+void object_ResolveFighterHits(void) {
     Unk1F8002B8Rec *scr = &SPAD->unk2B8.rec;
     s32 i;
     s32 var_2;
@@ -4281,7 +4292,7 @@ void func_80031B24(void) {
         var_4[1] = obj->pos;
         scr->unk60[0] = &var_4[0];
         scr->unk60[1] = &var_4[1];
-        func_8002E838(scr);
+        math_PrepareSegmentCollisionFrame(scr);
 
         var_10 = 0;
         rec = D_800F5F68[var_6];
@@ -4290,12 +4301,13 @@ void func_80031B24(void) {
             if (var_5->unk_26C == 0 && j >= 6 && j <= 9)
                 continue;
             pos = &SPAD->unkA8[var_6][j];
-            var_10 = func_8002EA24(scr, pos, rec->unk_0C, rec->unk_0E);
+            var_10 = math_TestPreparedSegmentSphere(
+                scr, pos, rec->unk_0C, rec->unk_0E);
             if (var_10 != 0) {
                 var_2 = 0;
                 if (rec->unk_00 != 0 && D_8008E194[obj->kind].unkD == 0) {
-                    var_2 =
-                        func_8002EA24(scr, pos, rec->unk_10, rec->unk_12) != 0;
+                    var_2 = math_TestPreparedSegmentSphere(
+                                scr, pos, rec->unk_10, rec->unk_12) != 0;
                 }
                 break;
             }
@@ -4310,19 +4322,19 @@ void func_80031B24(void) {
             (s32 *)&obj->vel,
             /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached
              * by the first's address, passed to math_NegNormalize3D (Q96 /
-             * Q117; as s16[3] or {x,y,z}, func_80027AD8 scores 2) */
+             * Q117; as s16[3] or {x,y,z}, fighter_ResolveBoneHit scores 2) */
             &D_800A37E8);
         obj->pos.x -= obj->vel.x / 2;
         obj->pos.y -= obj->vel.y / 2;
         obj->pos.z -= obj->vel.z / 2;
-        r = func_80027AD8(
+        r = fighter_ResolveBoneHit(
             1, var_5, j, diff, var_2, &D_8008E194[obj->kind], 0, &flag);
         if (r == 2)
             continue;
         if (r != 0) {
             func_80032854((obj->kind ^ D_800A36F2[0]) != 0, 0x2B,
                           &SPAD->unkA8[var_6][j].x, 0);
-            func_8002FF20(obj, rec->bone);
+            object_AttachToOpponentBone(obj, rec->bone);
             obj->unk_04 = 0;
             var_7 = var_5->unk_6A;
             if (var_7 == 8 || var_7 == 0x23) {
@@ -4336,7 +4348,7 @@ void func_80031B24(void) {
                 var_6 ^ 1, 0xE, &SPAD->unkA8[var_6][j].x,
                 /* FAKE: D_800A37E8 / EA / EC are one s16 x,y,z vector reached
                  * by the first's address, passed to func_80032854 (Q96 / Q117;
-                 * as s16[3] or {x,y,z}, func_80027AD8 scores 2) */
+                 * as s16[3] or {x,y,z}, fighter_ResolveBoneHit scores 2) */
                 &D_800A37E8);
             obj->kind = -1;
             continue;
@@ -4502,7 +4514,7 @@ next:
         goto loop;
 }
 
-void func_800324D0(Unk80101EC8Record *rec) {
+void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
     u8 *ptr;
     u8 c;
     u8 val;
@@ -4573,7 +4585,7 @@ void func_800324D0(Unk80101EC8Record *rec) {
  * distance attenuation via the g_sqrt_table_u8 byte-LUT square root (gte_Lzc
  * for >= 0x400), then a sin/cos left/right pan scaled by distance, clamped to
  * 0x7F, sent to func_8005C650(arg0, L, R). */
-void func_800325E0(s32 arg0, s32 *arg1) {
+void snd_QueuePositionalSound(s32 arg0, s32 *arg1) {
     s32 sp_tmp;
     s32 dx, dy, dz;
     u32 var_4;
@@ -4699,23 +4711,23 @@ void func_80032854(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
         func_8006156C(arg2);
         break;
     case 5:
-        func_800325E0(0x3C, arg2);
-        func_800325E0(s4 + 0x3C, arg2);
+        snd_QueuePositionalSound(0x3C, arg2);
+        snd_QueuePositionalSound(s4 + 0x3C, arg2);
         D_800A3910 = func_8006133C(arg2);
         break;
     case 6:
-        func_800325E0(0x3C, arg2);
-        func_800325E0(s4 + 0x3C, arg2);
+        snd_QueuePositionalSound(0x3C, arg2);
+        snd_QueuePositionalSound(s4 + 0x3C, arg2);
         D_800A3910 = func_800613C8(arg2);
         break;
     case 7:
-        func_800325E0(0x3C, arg2);
-        func_800325E0(s4 + 0x3C, arg2);
+        snd_QueuePositionalSound(0x3C, arg2);
+        snd_QueuePositionalSound(s4 + 0x3C, arg2);
         D_800A3910 = func_80061454(arg2);
         break;
     case 8:
-        func_800325E0(0x3C, arg2);
-        func_800325E0(s4 + 0x3C, arg2);
+        snd_QueuePositionalSound(0x3C, arg2);
+        snd_QueuePositionalSound(s4 + 0x3C, arg2);
         D_800A3910 = func_800614E0(arg2);
         break;
     case 9:
@@ -4725,86 +4737,86 @@ void func_80032854(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
         func_800619F0(arg2);
         break;
     case 11:
-        func_800325E0(s0 + 0x31, arg2);
+        snd_QueuePositionalSound(s0 + 0x31, arg2);
         func_800611A4(arg2, arg3);
         break;
     case 12:
-        func_800325E0(0x78, arg2);
+        snd_QueuePositionalSound(0x78, arg2);
         func_80061C00(arg2, arg3[1]);
         break;
     case 13:
-        func_800325E0(0x79, arg2);
+        snd_QueuePositionalSound(0x79, arg2);
         func_80061D74(arg2, arg3[1]);
         break;
     case 14:
-        func_800325E0(s0 + 0x22, arg2);
+        snd_QueuePositionalSound(s0 + 0x22, arg2);
         func_80061ACC(arg2, arg3);
         break;
     case 17:
-        func_800325E0(s0 + 0x39, arg2);
+        snd_QueuePositionalSound(s0 + 0x39, arg2);
         break;
     case 18:
         func_80061EC0(arg2);
-        func_800325E0(s0 + 0x22, arg2);
+        snd_QueuePositionalSound(s0 + 0x22, arg2);
         break;
     case 33:
-        func_800325E0(0x7A, arg2);
+        snd_QueuePositionalSound(0x7A, arg2);
         break;
     case 34:
-        func_800325E0(s0 + 0x35, arg2);
+        snd_QueuePositionalSound(s0 + 0x35, arg2);
         break;
     case 35:
-        func_800325E0(s0 + 0x35, arg2);
+        snd_QueuePositionalSound(s0 + 0x35, arg2);
         break;
     case 36:
-        func_800325E0(s0 + 0x34, arg2);
+        snd_QueuePositionalSound(s0 + 0x34, arg2);
         break;
     case 37:
-        func_800325E0(s0 + 0x3A, arg2);
+        snd_QueuePositionalSound(s0 + 0x3A, arg2);
         break;
     case 38:
-        func_800325E0(s0 + 0x3B, arg2);
+        snd_QueuePositionalSound(s0 + 0x3B, arg2);
         break;
     case 39:
-        func_800325E0(s0 + 0x22, arg2);
+        snd_QueuePositionalSound(s0 + 0x22, arg2);
         break;
     case 40:
-        func_800325E0(s0 + 0x3E, arg2);
+        snd_QueuePositionalSound(s0 + 0x3E, arg2);
         break;
     case 41:
-        func_800325E0(s0 + 0x40, arg2);
+        snd_QueuePositionalSound(s0 + 0x40, arg2);
         break;
     case 42:
-        func_800325E0(s0 + 0x21, arg2);
+        snd_QueuePositionalSound(s0 + 0x21, arg2);
         break;
     case 43:
-        func_800325E0(s0 + 0x22, arg2);
+        snd_QueuePositionalSound(s0 + 0x22, arg2);
         break;
     case 44:
-        func_800325E0(s0 + 0x23, arg2);
+        snd_QueuePositionalSound(s0 + 0x23, arg2);
         break;
     case 45:
-        func_800325E0(s0 + 0x29, arg2);
+        snd_QueuePositionalSound(s0 + 0x29, arg2);
         break;
     case 46:
-        func_800325E0(s0 + 0x2B, arg2);
+        snd_QueuePositionalSound(s0 + 0x2B, arg2);
         break;
     case 47:
-        func_800325E0(s0 + 0x22, arg2);
+        snd_QueuePositionalSound(s0 + 0x22, arg2);
         break;
     case 48:
-        func_800325E0(s0 + 0x22, arg2);
+        snd_QueuePositionalSound(s0 + 0x22, arg2);
         break;
     case 49:
-        func_800325E0(s0 + 0x32, arg2);
+        snd_QueuePositionalSound(s0 + 0x32, arg2);
         break;
     case 50:
-        func_800325E0(s0 + 0x33, arg2);
+        snd_QueuePositionalSound(s0 + 0x33, arg2);
         break;
     }
 }
 
-void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
+void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
     s32 pos[3];
     s32 base;
     s32 base2;
@@ -4894,210 +4906,211 @@ void func_80032C50(Unk80101EC8Record *obj, s32 kind) {
         func_80032854(obj->index, 10, &obj->unk_174.x, 0);
         break;
     case 7:
-        func_800325E0(base + 0x31, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x31, &obj->unk_F4.x);
         break;
     case 8:
-        func_800325E0(base + 0x32, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x32, &obj->unk_F4.x);
         break;
     case 9:
-        func_800325E0(base + 0x33, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x33, &obj->unk_F4.x);
         break;
     case 10:
-        func_800325E0(base + 0x37, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x37, &obj->unk_F4.x);
         break;
     case 11:
-        func_800325E0(base + 0x38, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x38, &obj->unk_F4.x);
         break;
     case 12:
-        func_800325E0(base + 0x39, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x39, &obj->unk_F4.x);
         break;
     case 13:
-        func_800325E0(base + 0x3D, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x3D, &obj->unk_F4.x);
         break;
     case 14:
-        func_800325E0(base + 0x3E, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x3E, &obj->unk_F4.x);
         break;
     case 15:
-        func_800325E0(base + 0x3D, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x3D, &obj->unk_F4.x);
         break;
     case 16:
-        func_800325E0(base + 0x3F, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x3F, &obj->unk_F4.x);
         break;
     case 17:
-        func_800325E0(base + 0x40, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x40, &obj->unk_F4.x);
         break;
     case 18:
-        func_800325E0(base + 0x22, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x22, &obj->unk_F4.x);
         break;
     case 19:
-        func_800325E0(base + 0x23, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x23, &obj->unk_F4.x);
         break;
     case 20:
-        func_800325E0(base + 0x24, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x24, &obj->unk_F4.x);
         break;
     case 21:
-        func_800325E0(base + 0x25, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x25, &obj->unk_F4.x);
         break;
     case 22:
-        func_800325E0(base + 0x26, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x26, &obj->unk_F4.x);
         break;
     case 23:
-        func_800325E0(base + 0x27, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x27, &obj->unk_F4.x);
         break;
     case 24:
-        func_800325E0(base + 0x28, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x28, &obj->unk_F4.x);
         break;
     case 25:
-        func_800325E0(base + 0x29, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x29, &obj->unk_F4.x);
         break;
     case 26:
-        func_800325E0(base + 0x2A, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x2A, &obj->unk_F4.x);
         break;
     case 27:
-        func_800325E0(row + 0x41, &obj->unk_F4.x);
+        snd_QueuePositionalSound(row + 0x41, &obj->unk_F4.x);
         break;
     case 28:
-        func_800325E0(row + 0x42, &obj->unk_F4.x);
+        snd_QueuePositionalSound(row + 0x42, &obj->unk_F4.x);
         break;
     case 29:
-        func_800325E0(row + 0x43, &obj->unk_F4.x);
+        snd_QueuePositionalSound(row + 0x43, &obj->unk_F4.x);
         break;
     case 30:
-        func_800325E0(row + 0x44, &obj->unk_F4.x);
+        snd_QueuePositionalSound(row + 0x44, &obj->unk_F4.x);
         break;
     case 31:
-        func_800325E0(var_5 + 0x71, &obj->unk_F4.x);
+        snd_QueuePositionalSound(var_5 + 0x71, &obj->unk_F4.x);
         break;
     case 32:
-        func_800325E0(var_5 + 0x72, &obj->unk_F4.x);
+        snd_QueuePositionalSound(var_5 + 0x72, &obj->unk_F4.x);
         break;
     case 33:
-        func_800325E0(var_5 + 0x73, &obj->unk_F4.x);
+        snd_QueuePositionalSound(var_5 + 0x73, &obj->unk_F4.x);
         break;
     case 34:
-        func_800325E0(0x77, &obj->unk_F4.x);
+        snd_QueuePositionalSound(0x77, &obj->unk_F4.x);
         break;
     case 35:
-        func_800325E0(0x7A, &obj->unk_F4.x);
+        snd_QueuePositionalSound(0x7A, &obj->unk_F4.x);
         break;
     case 36:
-        func_800325E0(base + 0x3A, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x3A, &obj->unk_F4.x);
         break;
     case 37:
-        func_800325E0(base + 0x36, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x36, &obj->unk_F4.x);
         break;
     case 38:
-        func_800325E0(base + 0x2B, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x2B, &obj->unk_F4.x);
         break;
     case 39:
-        func_800325E0(base + 0x2C, &obj->unk_F4.x);
+        snd_QueuePositionalSound(base + 0x2C, &obj->unk_F4.x);
         break;
     case 40:
-        func_800325E0(base2 + 0x31, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x31, &obj->other->unk_F4.x);
         break;
     case 41:
-        func_800325E0(base2 + 0x32, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x32, &obj->other->unk_F4.x);
         break;
     case 42:
-        func_800325E0(base2 + 0x33, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x33, &obj->other->unk_F4.x);
         break;
     case 43:
-        func_800325E0(base2 + 0x37, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x37, &obj->other->unk_F4.x);
         break;
     case 44:
-        func_800325E0(base2 + 0x38, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x38, &obj->other->unk_F4.x);
         break;
     case 45:
-        func_800325E0(base2 + 0x39, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x39, &obj->other->unk_F4.x);
         break;
     case 46:
-        func_800325E0(base2 + 0x3D, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x3D, &obj->other->unk_F4.x);
         break;
     case 47:
-        func_800325E0(base2 + 0x3E, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x3E, &obj->other->unk_F4.x);
         break;
     case 48:
-        func_800325E0(base2 + 0x3D, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x3D, &obj->other->unk_F4.x);
         break;
     case 49:
-        func_800325E0(base2 + 0x3F, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x3F, &obj->other->unk_F4.x);
         break;
     case 50:
-        func_800325E0(base2 + 0x40, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x40, &obj->other->unk_F4.x);
         break;
     case 51:
-        func_800325E0(base2 + 0x22, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x22, &obj->other->unk_F4.x);
         break;
     case 52:
-        func_800325E0(base2 + 0x23, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x23, &obj->other->unk_F4.x);
         break;
     case 53:
-        func_800325E0(base2 + 0x24, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x24, &obj->other->unk_F4.x);
         break;
     case 54:
-        func_800325E0(base2 + 0x25, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x25, &obj->other->unk_F4.x);
         break;
     case 55:
-        func_800325E0(base2 + 0x26, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x26, &obj->other->unk_F4.x);
         break;
     case 56:
-        func_800325E0(base2 + 0x27, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x27, &obj->other->unk_F4.x);
         break;
     case 57:
-        func_800325E0(base2 + 0x28, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x28, &obj->other->unk_F4.x);
         break;
     case 58:
-        func_800325E0(base2 + 0x29, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x29, &obj->other->unk_F4.x);
         break;
     case 59:
-        func_800325E0(base2 + 0x2A, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x2A, &obj->other->unk_F4.x);
         break;
     case 60:
-        func_800325E0(row2 + 0x41, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(row2 + 0x41, &obj->other->unk_F4.x);
         break;
     case 61:
-        func_800325E0(row2 + 0x42, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(row2 + 0x42, &obj->other->unk_F4.x);
         break;
     case 62:
-        func_800325E0(row2 + 0x43, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(row2 + 0x43, &obj->other->unk_F4.x);
         break;
     case 63:
-        func_800325E0(row2 + 0x44, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(row2 + 0x44, &obj->other->unk_F4.x);
         break;
     case 64:
-        func_800325E0(var_6 + 0x71, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(var_6 + 0x71, &obj->other->unk_F4.x);
         break;
     case 65:
-        func_800325E0(var_6 + 0x72, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(var_6 + 0x72, &obj->other->unk_F4.x);
         break;
     case 66:
-        func_800325E0(var_6 + 0x73, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(var_6 + 0x73, &obj->other->unk_F4.x);
         break;
     case 67:
-        func_800325E0(0x77, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(0x77, &obj->other->unk_F4.x);
         break;
     case 68:
-        func_800325E0(0x7A, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(0x7A, &obj->other->unk_F4.x);
         break;
     case 69:
-        func_800325E0(base2 + 0x3A, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x3A, &obj->other->unk_F4.x);
         break;
     case 70:
-        func_800325E0(base2 + 0x36, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x36, &obj->other->unk_F4.x);
         break;
     case 71:
-        func_800325E0(base2 + 0x2B, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x2B, &obj->other->unk_F4.x);
         break;
     case 72:
-        func_800325E0(base2 + 0x2C, &obj->other->unk_F4.x);
+        snd_QueuePositionalSound(base2 + 0x2C, &obj->other->unk_F4.x);
         break;
     }
 }
 
-/* Tail word after func_80032C50's 73-entry compiler-generated switch table. */
+/* Tail word after fighter_DispatchFrameEvent's 73-entry compiler-generated
+ * switch table. */
 const u32 D_800107BC[1] = {0x00000000};
 
-void func_8003339C(Unk80101EC8Record *base) {
+void fighter_ProcessFrameEvents(Unk80101EC8Record *base) {
     u8 *s0 = base->unk_58 + 5;
     u8 command = s0[-1];
     while (command != 0) {
@@ -5112,7 +5125,7 @@ void func_8003339C(Unk80101EC8Record *base) {
             u8 val = *s0++;
             s16 var_11 = base->unk_40;
             if (val == var_11) {
-                func_80032C50(base, command - 1);
+                fighter_DispatchFrameEvent(base, command - 1);
             } else if (var_11 < val) {
                 return;
             }
@@ -5143,7 +5156,7 @@ s32 func_80033498(void) {
     }
 }
 
-void func_80033510(void) {
+void snd_ResetStageSoundState(void) {
     s32 i = 3;
     s16 *p1 = &D_800A3750[3];
     do {
@@ -5162,7 +5175,7 @@ void func_80033510(void) {
     }
 }
 
-void func_80033550(Unk80107850Rec *arg0) {
+void snd_QueuePositionSequence(Unk80107850Rec *arg0) {
     s32 i;
 
     for (i = 0; i < 6; i++) {
@@ -5177,7 +5190,7 @@ void func_80033550(Unk80107850Rec *arg0) {
     D_80107850[i] = *arg0;
 }
 
-void func_800335D8(void) {
+void snd_UpdateStageSounds(void) {
     s32 i;
     u8 *tbl = D_8008E914[D_800A36A4];
 
@@ -5187,11 +5200,13 @@ void func_800335D8(void) {
             u8 cur = D_800A3918[i];
 
             if (cur == 1) {
-                func_800325E0(D_8008EBF4[var_2], &D_80107850[i].x);
+                snd_QueuePositionalSound(D_8008EBF4[var_2], &D_80107850[i].x);
             } else if (cur == D_8008EBFC[var_2].a) {
-                func_800325E0(D_8008EBF4[var_2] + 1, &D_80107850[i].x);
+                snd_QueuePositionalSound(
+                    D_8008EBF4[var_2] + 1, &D_80107850[i].x);
             } else if (cur == D_8008EBFC[var_2].b) {
-                func_800325E0(D_8008EBF4[var_2] + 2, &D_80107850[i].x);
+                snd_QueuePositionalSound(
+                    D_8008EBF4[var_2] + 2, &D_80107850[i].x);
             }
 
             {
@@ -5252,7 +5267,7 @@ void func_800335D8(void) {
                     buf[i] = 0;
                     type = *tbl;
                     if ((u32)(type - 5) < 2) {
-                        func_800325E0(0x7B + i, D_8008EA00[type]);
+                        snd_QueuePositionalSound(0x7B + i, D_8008EA00[type]);
                         continue;
                     }
                     goto call_default;
@@ -5276,7 +5291,7 @@ void func_80033898(void) {
     D_800A3834 = 3;
 }
 
-void func_800338CC(void) {
+void fight_BuildOpponentOrder(void) {
     s32 sp[2];
     s32 count;
     s32 i;
@@ -5394,7 +5409,7 @@ set_count:
     D_800A37BC = 0;
 }
 
-void func_80033BC0(void) {
+void fight_AdvanceOpponentOrder(void) {
     u8 a0 = D_800A3783;
     u8 b = D_800A391F;
 
@@ -5674,7 +5689,8 @@ void func_800342A0(void) {
 /* Q65: this file's initialized small data (.sdata), in address order; values
  * from the original EXE. */
 s32 D_800A3140 = 0;
-/* address taken (lui/addiu) in func_800288C8: size from the blob label */
+/* address taken (lui/addiu) in fighter_ResolveBodyOverlap: size from the blob
+ * label */
 s32 D_800A3144[2] = {0x15e, 0x172};
 s32 D_800A314C = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches

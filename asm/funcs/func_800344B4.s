@@ -50,11 +50,11 @@ glabel func_800344B4
     /* 24D68 80034568 01001024 */  addiu      $s0, $zero, 0x1
     /* 24D6C 8003456C 1080013C */  lui        $at, %hi(D_80102778 + 0x9)
     /* 24D70 80034570 812730A0 */  sb         $s0, %lo(D_80102778 + 0x9)($at)
-    /* 24D74 80034574 33CE000C */  jal        func_800338CC
+    /* 24D74 80034574 33CE000C */  jal        fight_BuildOpponentOrder
     /* 24D78 80034578 00000000 */   nop
     /* 24D7C 8003457C 0A80013C */  lui        $at, %hi(D_800A3768)
     /* 24D80 80034580 683730A0 */  sb         $s0, %lo(D_800A3768)($at)
-    /* 24D84 80034584 F0CE000C */  jal        func_80033BC0
+    /* 24D84 80034584 F0CE000C */  jal        fight_AdvanceOpponentOrder
     /* 24D88 80034588 00000000 */   nop
     /* 24D8C 8003458C B6D10008 */  j          .L800346D8
     /* 24D90 80034590 00000000 */   nop

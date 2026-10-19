@@ -2916,9 +2916,9 @@ def test_canonical_build() -> None:
     if "__do_global_dtors" in tbl:
         eq("classify(__do_global_dtors): resolves its canonical grant",
            canonical.classify("__do_global_dtors")["verdict"], "ASM-WHOLE")
-    if "func_8002EBDC" in tbl:
-        eq("classify(func_8002EBDC): reviewed mixed C/GTE -> ASM-PARTIAL",
-           canonical.classify("func_8002EBDC")["verdict"], "ASM-PARTIAL")
+    if "math_ScaleVectorInDirectionFrame" in tbl:
+        eq("classify(math_ScaleVectorInDirectionFrame): reviewed mixed C/GTE -> ASM-PARTIAL",
+           canonical.classify("math_ScaleVectorInDirectionFrame")["verdict"], "ASM-PARTIAL")
     if "func_8003F1C8" in tbl:
         eq("classify(func_8003F1C8): ordinary C -> C",
            canonical.classify("func_8003F1C8")["verdict"], "C")

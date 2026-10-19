@@ -15,4 +15,4 @@
 # (.claude/rules/cop2-addressing-preamble-cluster.md; members enumerated in the
 # rule's census table; registry rows limited to the proven-or-near-floor set
 # named in the 2026-08-30 ruling):
-func_800325E0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)
+snd_QueuePositionalSound cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; registry per ruling 2026-08-30)

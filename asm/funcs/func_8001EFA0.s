@@ -50,7 +50,7 @@ glabel func_8001EFA0
     /* F860 8001F060 1000A527 */   addiu     $a1, $sp, 0x10
     /* F864 8001F064 87B1000C */  jal        func_8002C61C
     /* F868 8001F068 00000000 */   nop
-    /* F86C 8001F06C 5FC3000C */  jal        func_80030D7C
+    /* F86C 8001F06C 5FC3000C */  jal        object_UpdatePool
     /* F870 8001F070 00000000 */   nop
     /* F874 8001F074 7AC8000C */  jal        func_800321E8
     /* F878 8001F078 00000000 */   nop
@@ -58,7 +58,7 @@ glabel func_8001EFA0
     /* F880 8001F080 00000000 */   nop
     /* F884 8001F084 6A1B010C */  jal        func_80046DA8
     /* F888 8001F088 01000424 */   addiu     $a0, $zero, 0x1
-    /* F88C 8001F08C 76CD000C */  jal        func_800335D8
+    /* F88C 8001F08C 76CD000C */  jal        snd_UpdateStageSounds
     /* F890 8001F090 00000000 */   nop
     /* F894 8001F094 0A80033C */  lui        $v1, %hi(D_800A3748)
     /* F898 8001F098 48376380 */  lb         $v1, %lo(D_800A3748)($v1)
@@ -125,7 +125,7 @@ glabel func_8001EFA0
     /* F97C 8001F17C 02000224 */  addiu      $v0, $zero, 0x2
     /* F980 8001F180 0A80013C */  lui        $at, %hi(D_800A3768)
     /* F984 8001F184 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
-    /* F988 8001F188 F0CE000C */  jal        func_80033BC0
+    /* F988 8001F188 F0CE000C */  jal        fight_AdvanceOpponentOrder
     /* F98C 8001F18C 00000000 */   nop
     /* F990 8001F190 6D7C0008 */  j          .L8001F1B4
     /* F994 8001F194 00000000 */   nop

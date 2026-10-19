@@ -51,7 +51,7 @@ glabel func_8001C51C
     /* CDD8 8001C5D8 2E3820A4 */  sh         $zero, %lo(D_800A382E)($at)
     /* CDDC 8001C5DC 0A80013C */  lui        $at, %hi(D_800A3748)
     /* CDE0 8001C5E0 483722A0 */  sb         $v0, %lo(D_800A3748)($at)
-    /* CDE4 8001C5E4 49C1000C */  jal        func_80030524
+    /* CDE4 8001C5E4 49C1000C */  jal        object_FreeAttachedObjects
     /* CDE8 8001C5E8 00000000 */   nop
     /* CDEC 8001C5EC 41C3000C */  jal        func_80030D04
     /* CDF0 8001C5F0 00000000 */   nop

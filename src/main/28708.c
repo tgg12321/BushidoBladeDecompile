@@ -1432,7 +1432,7 @@ void func_8003993C(void) {
             var_11->unk_58 = D_801027B0[temp].unk_08 + entry[1];
         }
         if (p->b18 & 0x40) {
-            func_8003339C(var_11);
+            fighter_ProcessFrameEvents(var_11);
         }
         var_11->unk_40 = var_15;
         var_11->unk_58 = var_16;
@@ -1474,7 +1474,7 @@ void func_8003993C(void) {
     }
 
     func_80046DA8(1);
-    func_800335D8();
+    snd_UpdateStageSounds();
     D_800A37D0++;
     if ((D_800A3782 != 0 ? D_800A37D0 == 0x78 : D_800A37D0 == D_800A36F8) ||
         (g_pad_state.pressed & 0x400040)) {

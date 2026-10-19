@@ -36,9 +36,9 @@ glabel func_8002C61C
   .L8002C69C:
     /* 1CE9C 8002C69C CBA1000C */  jal        func_8002872C
     /* 1CEA0 8002C6A0 00000000 */   nop
-    /* 1CEA4 8002C6A4 32A2000C */  jal        func_800288C8
+    /* 1CEA4 8002C6A4 32A2000C */  jal        fighter_ResolveBodyOverlap
     /* 1CEA8 8002C6A8 00000000 */   nop
-    /* 1CEAC 8002C6AC 15A5000C */  jal        func_80029454
+    /* 1CEAC 8002C6AC 15A5000C */  jal        fighter_ProcessWeaponContacts
     /* 1CEB0 8002C6B0 00000000 */   nop
     /* 1CEB4 8002C6B4 0A80013C */  lui        $at, %hi(D_800A3824)
     /* 1CEB8 8002C6B8 243822A4 */  sh         $v0, %lo(D_800A3824)($at)
@@ -64,11 +64,11 @@ glabel func_8002C61C
     /* 1CF08 8002C708 00000000 */   nop
   .L8002C70C:
     /* 1CF0C 8002C70C 801F053C */  lui        $a1, (0x1F8003F4 >> 16)
-    /* 1CF10 8002C710 F4A0000C */  jal        func_800283D0
+    /* 1CF10 8002C710 F4A0000C */  jal        fighter_ResolveWeaponContact
     /* 1CF14 8002C714 F403A534 */   ori       $a1, $a1, (0x1F8003F4 & 0xFFFF)
     /* 1CF18 8002C718 21200002 */  addu       $a0, $s0, $zero
     /* 1CF1C 8002C71C 801F053C */  lui        $a1, (0x1F8003F4 >> 16)
-    /* 1CF20 8002C720 F4A0000C */  jal        func_800283D0
+    /* 1CF20 8002C720 F4A0000C */  jal        fighter_ResolveWeaponContact
     /* 1CF24 8002C724 F403A534 */   ori       $a1, $a1, (0x1F8003F4 & 0xFFFF)
     /* 1CF28 8002C728 1080013C */  lui        $at, %hi(D_80101EC8 + 0x4F9)
     /* 1CF2C 8002C72C C12320A0 */  sb         $zero, %lo(D_80101EC8 + 0x4F9)($at)
@@ -77,7 +77,7 @@ glabel func_8002C61C
     /* 1CF38 8002C738 D2B10008 */  j          .L8002C748
     /* 1CF3C 8002C73C 00000000 */   nop
   .L8002C740:
-    /* 1CF40 8002C740 C2AA000C */  jal        func_8002AB08
+    /* 1CF40 8002C740 C2AA000C */  jal        fighter_ProcessWeaponBodyHits
     /* 1CF44 8002C744 21200000 */   addu      $a0, $zero, $zero
   .L8002C748:
     /* 1CF48 8002C748 3C00228E */  lw         $v0, 0x3C($s1)
@@ -283,7 +283,7 @@ glabel func_8002C61C
     /* 1D248 8002CA48 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 1D24C 8002CA4C 09000216 */  bne        $s0, $v0, .L8002CA74
     /* 1D250 8002CA50 00000000 */   nop
-    /* 1D254 8002CA54 C9C6000C */  jal        func_80031B24
+    /* 1D254 8002CA54 C9C6000C */  jal        object_ResolveFighterHits
     /* 1D258 8002CA58 00000000 */   nop
     /* 1D25C 8002CA5C 86022286 */  lh         $v0, 0x286($s1)
     /* 1D260 8002CA60 00000000 */  nop

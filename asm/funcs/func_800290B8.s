@@ -172,7 +172,7 @@ glabel func_800290B8
     /* 19B30 80029330 21284002 */  addu       $a1, $s2, $zero
     /* 19B34 80029334 21302002 */  addu       $a2, $s1, $zero
     /* 19B38 80029338 00016726 */  addiu      $a3, $s3, 0x100
-    /* 19B3C 8002933C ACB9000C */  jal        func_8002E6B0
+    /* 19B3C 8002933C ACB9000C */  jal        math_PointInTriangleXZ
     /* 19B40 80029340 1800A8AF */   sw        $t0, 0x18($sp)
     /* 19B44 80029344 1800A88F */  lw         $t0, 0x18($sp)
     /* 19B48 80029348 1B004010 */  beqz       $v0, .L800293B8
@@ -200,7 +200,7 @@ glabel func_800290B8
     /* 19B98 80029398 21284000 */  addu       $a1, $v0, $zero
     /* 19B9C 8002939C CC12010C */  jal        func_80044B30
     /* 19BA0 800293A0 21200001 */   addu      $a0, $t0, $zero
-    /* 19BA4 800293A4 54CD000C */  jal        func_80033550
+    /* 19BA4 800293A4 54CD000C */  jal        snd_QueuePositionSequence
     /* 19BA8 800293A8 21208002 */   addu      $a0, $s4, $zero
     /* 19BAC 800293AC 01000224 */  addiu      $v0, $zero, 0x1
     /* 19BB0 800293B0 07A50008 */  j          .L8002941C

@@ -516,7 +516,7 @@ glabel fighter_Init
     /* 13514 80022D14 960000A6 */  sh         $zero, 0x96($s0)
     /* 13518 80022D18 B10002A2 */  sb         $v0, 0xB1($s0)
     /* 1351C 80022D1C B20000A2 */  sb         $zero, 0xB2($s0)
-    /* 13520 80022D20 1FC1000C */  jal        func_8003047C
+    /* 13520 80022D20 1FC1000C */  jal        object_InitKindQueue
     /* 13524 80022D24 4C0300A2 */   sb        $zero, 0x34C($s0)
     /* 13528 80022D28 32030296 */  lhu        $v0, 0x332($s0)
     /* 1352C 80022D2C 0A80033C */  lui        $v1, %hi(D_800A38DC)

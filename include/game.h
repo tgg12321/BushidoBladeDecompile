@@ -802,9 +802,9 @@ typedef struct {
 /* A hit record: one of the 22 test points of a character.
  * fighter_UpdateBoneWorldData places point i at SPAD->unkA8[ch][i] (`ofs`
  * rotated by func_80046DEC()'s matrix `bone`, plus that matrix's translation);
- * the hit tests (func_8002A458, func_8002CA8C, func_80031B24) take unk_0C /
- * unk_0E as the first test's limits and, when unk_00 != 0, unk_10 / unk_12 as a
- * second test's. */
+ * the hit tests (fighter_CastWeaponSegment, fighter_TestTriangleBoneHits,
+ * object_ResolveFighterHits) take unk_0C / unk_0E as the first test's limits
+ * and, when unk_00 != 0, unk_10 / unk_12 as a second test's. */
 typedef struct BoneHitRec {
     s16 unk_00;
     s16 bone;
@@ -1097,8 +1097,8 @@ typedef struct {
 /* The 0xEC-byte work area of 43500's stage-collision cast (func_80052D00 and
  * its helpers, through D_800A33F4). func_8005344C / func_80053614 place it at
  * their last argument; func_80053304 / func_80053584 at D_800EF9F8. 17AFC
- * func_80030D7C / func_800321E8 pass 0x1F8002F0, its place in their scratchpad
- * layout (Unk1F8002B8_8005344C.unk38). */
+ * object_UpdatePool / func_800321E8 pass 0x1F8002F0, its place in their
+ * scratchpad layout (Unk1F8002B8_8005344C.unk38). */
 typedef struct {
     s32 unk0;
     u16 unk4;
@@ -1161,17 +1161,19 @@ typedef struct {
 } Work_80053E9C;
 
 /* Unk1F8002B8Rec.unk00, 0x60 bytes of scratch. unk00 is up to six points that
- * unk60[0..2] aim at. func_8002A458 and func_80031B24 use [0] / [1], for
- * func_8002E838 / func_8002EA24: func_8002A458's segment, base then tip
- * (func_8002AB08 writes them before each call), and func_80031B24's D_80106A78
- * object step, prev_pos then pos. func_8002AB08 uses all six: [0] / [1] are two
- * of the other character's scratchpad points (ScrPad.unk00 or unk48), [2] / [3]
- * the same two from its record (unk_210 or unk_234), [4] / [5] the midpoints of
- * [0] / [2] and [1] / [3]; for each triangle it hands func_8002CD58 it aims
- * unk60[0..2] at three of them. func_80030D7C / func_800321E8 lay the bytes out
- * differently (func_8005344C's argument block, its work area from +0x38 through
- * +0x123): Unk1F8002B8_8005344C, the other member of Unk1F8002B8Union. raw
- * sizes the union to 0x60. */
+ * unk60[0..2] aim at. fighter_CastWeaponSegment and object_ResolveFighterHits
+ * use [0] / [1], for math_PrepareSegmentCollisionFrame /
+ * math_TestPreparedSegmentSphere: fighter_CastWeaponSegment's segment, base
+ * then tip (fighter_ProcessWeaponBodyHits writes them before each call), and
+ * object_ResolveFighterHits's D_80106A78 object step, prev_pos then pos.
+ * fighter_ProcessWeaponBodyHits uses all six: [0] / [1] are two of the other
+ * character's scratchpad points (ScrPad.unk00 or unk48), [2] / [3] the same two
+ * from its record (unk_210 or unk_234), [4] / [5] the midpoints of [0] / [2]
+ * and [1] / [3]; for each triangle it hands math_PrepareTriangleCollisionFrame
+ * it aims unk60[0..2] at three of them. object_UpdatePool / func_800321E8 lay
+ * the bytes out differently (func_8005344C's argument block, its work area from
+ * +0x38 through +0x123): Unk1F8002B8_8005344C, the other member of
+ * Unk1F8002B8Union. raw sizes the union to 0x60. */
 typedef union {
     u8 raw[0x60];
     Unk80107850Rec unk00[6];
@@ -1192,15 +1194,16 @@ typedef union {
  * func_80051ED4 read, an s16 per-vertex table at 0x1F8002B4 + 2 * i, which runs
  * into the record for i >= 2.
  * In 17AFC, the collision code takes the record's address (`scr`) and passes it
- * on, or addresses it directly (func_80030D7C / func_800321E8 use
+ * on, or addresses it directly (object_UpdatePool / func_800321E8 use
  * Unk1F8002B8_8005344C instead). unk60 / unk6C hold point pointers
- * (func_80029454 reads unk60[0..2]); unkB4 / unkC4 are func_8002CA8C's two hit
- * masks (func_8002AB08 reads them; no 17AFC code accesses unkD4 as a member);
- * unkD8 is the matrix the RotMatrix* calls build, and the GTE rotates unkA8
- * through it; func_8002DE20 rotates three points, relative to the origin
- * *unk60[0], into unk118 and tests them against the triangle (0,0) / unkA8 /
- * unkB8. unk00 is scratch (Unk1F8002B8Unk00): func_8002A458 / func_80031B24 /
- * func_8002AB08 use its points. */
+ * (fighter_ProcessWeaponContacts reads unk60[0..2]); unkB4 / unkC4 are
+ * fighter_TestTriangleBoneHits's two hit masks (fighter_ProcessWeaponBodyHits
+ * reads them; no 17AFC code accesses unkD4 as a member); unkD8 is the matrix
+ * the RotMatrix* calls build, and the GTE rotates unkA8 through it;
+ * func_8002DE20 rotates three points, relative to the origin *unk60[0], into
+ * unk118 and tests them against the triangle (0,0) / unkA8 / unkB8. unk00 is
+ * scratch (Unk1F8002B8Unk00): fighter_CastWeaponSegment /
+ * object_ResolveFighterHits / fighter_ProcessWeaponBodyHits use its points. */
 typedef struct {
     Unk1F8002B8Unk00 unk00;
     Unk80107850Rec *unk60[3];
@@ -1222,7 +1225,7 @@ typedef struct {
     Vec3i32 unk13C;
 } Unk1F8002B8Rec;
 
-/* The layout func_80030D7C and func_800321E8 give the scratchpad area at
+/* The layout object_UpdatePool and func_800321E8 give the scratchpad area at
  * 0x1F8002B8 (Unk1F8002B8Union.v8005344C): the to point, hit point and normal
  * they pass func_8005344C, and its work area, which runs over Unk1F8002B8Rec's
  * unk60..unk118. */
@@ -1230,11 +1233,11 @@ typedef struct {
     /* to; func_8005344C copies 16 bytes from it */
     Vec3i32 unk00;
     s32 unk0C; /* read only as the 4th word of that copy */
-    /* the hit point; func_80030D7C's turn block first keeps a
+    /* the hit point; object_UpdatePool's turn block first keeps a
        rotated velocity here */
     Vec3i32 unk10;
     s32 unk1C; /* no access */
-    /* func_80030D7C's turn block's second rotated vector
+    /* object_UpdatePool's turn block's second rotated vector
        (func_800321E8 does not access it) */
     Vec3i32 unk20;
     s32 unk2C;    /* no access */
@@ -1246,8 +1249,8 @@ typedef struct {
 
 /* ScrPad.unk2B8: the scratchpad's last 0x148 bytes, 0x1F8002B8..0x1F8003FF,
  * which 17AFC uses with two layouts. Its collision code uses rec
- * (Unk1F8002B8Rec). func_80030D7C and func_800321E8 use v8005344C: they pass
- * 0x1F8002F0 as func_8005344C's work-area address, so its 0xEC-byte
+ * (Unk1F8002B8Rec). object_UpdatePool and func_800321E8 use v8005344C: they
+ * pass 0x1F8002F0 as func_8005344C's work-area address, so its 0xEC-byte
  * Work_80053E9C sits at +0x38..+0x123, over rec's unk60..unk118. */
 typedef union {
     Unk1F8002B8Rec rec;
@@ -1257,9 +1260,9 @@ typedef union {
 /* Scratchpad point tables at 0x1F800000.  unk00: three points per character
  * (func_8002C61C copies [0][0..2] and [1][0..2] to the two records' +0x210);
  * unk48: two more per character (copied to +0x234); unk78: two body points
- * per character (func_800288C8 builds them from unkA8 joint 1 and the
- * midpoint of joints 15 and 19); unkA8: 22 points per
- * character (func_8002A458 reads 0x1F8000A8 + id * 0x108 + i * 0xC, i < 22).
+ * per character (fighter_ResolveBodyOverlap builds them from unkA8 joint 1 and
+ * the midpoint of joints 15 and 19); unkA8: 22 points per character
+ * (fighter_CastWeaponSegment reads 0x1F8000A8 + id * 0x108 + i * 0xC, i < 22).
  * fighter_Update hands fighter_UpdateBoneWorldData its character's unkA8 /
  * unk00 / unk48. unk2B8: the area at 0x1F8002B8 (Unk1F8002B8Union), to the end
  * of the scratchpad; the scratchpad is shared scratch that other code also uses
@@ -1469,7 +1472,8 @@ typedef struct Unk80101EC8Record {
     u8 unk_AA;
     u8 unk_AB;
     u8 unk_AC;
-    /* != 0: func_8002C61C re-runs func_800283D0 for both records */
+    /* != 0: func_8002C61C re-runs fighter_ResolveWeaponContact for both records
+     */
     u8 unk_AD;
     u8 unk_AE;
     u8 unk_AF;
@@ -1487,7 +1491,8 @@ typedef struct Unk80101EC8Record {
     Vec3i32 unk_F4;
     u8 unk_100[0x104 - 0x100];
     VECTOR unk_104;
-    /* per blade; func_8002AB08 indexes it with its 0/1 blade flag */
+    /* per blade; fighter_ProcessWeaponBodyHits indexes it with its 0/1 blade
+     * flag */
     VECTOR unk_114[2];
     VECTOR unk_134;
     s32 unk_144;
@@ -1566,7 +1571,8 @@ typedef struct Unk80101EC8Record {
     Vec3i32 unk_320;
     u8 unk_32C[0x330 - 0x32C];
     s16 unk_330;
-    /* queued kinds, unk_330 of them (func_8003047C / func_80030B10) */
+    /* queued kinds, unk_330 of them (object_InitKindQueue / object_QueueKind)
+     */
     s16 unk_332[12];
     u8 unk_34A;
     u8 unk_34B;
@@ -1653,8 +1659,8 @@ typedef struct Unk80101EC8Record {
 } Unk80101EC8Record; /* sizeof == 0x44C */
 
 /* 14-byte record table indexed by the kind field (+0x2) of the 0x64-byte
- * objects at D_80106A78: func_80030580 and func_80031B24 index it with
- * stride 14, func_80030D7C reads +0x0 / +0xA of a record. */
+ * objects at D_80106A78: object_SpawnFromFighter and object_ResolveFighterHits
+ * index it with stride 14, object_UpdatePool reads +0x0 / +0xA of a record. */
 typedef struct {
     s16 unk0;
     s16 unk2;
@@ -1666,30 +1672,31 @@ typedef struct {
     u8 unkD;
 } Tbl8008E194;
 
-/* The twelve 0x64-byte object records at 0x80106A78. func_80030580 spawns one
- * (its kind indexes D_8008E194 / D_8008EB80), func_80030D7C moves them,
- * func_80031B24 tests them against both fighters, func_80030208 hands them to
- * the effect calls; kind == -1 marks a free record. */
+/* The twelve 0x64-byte object records at 0x80106A78. object_SpawnFromFighter
+ * spawns one (its kind indexes D_8008E194 / D_8008EB80), object_UpdatePool
+ * moves them, object_ResolveFighterHits tests them against both fighters,
+ * func_80030208 hands them to the effect calls; kind == -1 marks a free record.
+ */
 typedef struct {
-    /* 0 at spawn; func_80030D7C adds 1 per step while unk_50 != 0 */
+    /* 0 at spawn; object_UpdatePool adds 1 per step while unk_50 != 0 */
     s16 unk_00;
     s16 kind; /* -1 = free */
     u8 unk_04;
     u8 unk_05;
-    /* .index of the spawning record (func_80030580) */
+    /* .index of the spawning record (object_SpawnFromFighter) */
     u8 owner;
     u8 unk_07;
     u8 unk_08;
     /* index into the owner's matrix table (func_800300B4) */
     u8 unk_09;
-    /* own index in D_80106A78 once allocated; 0xFF = free (set by func_8003043C
-     * at init and by func_80030D7C once kind == -1) */
+    /* own index in D_80106A78 once allocated; 0xFF = free (set by
+     * object_ResetPool at init and by object_UpdatePool once kind == -1) */
     u8 slot;
     u8 unk_0B;
-    /* func_8002FF20 builds it (identity, RotMatrixX/Y/Z,
+    /* object_AttachToOpponentBone builds it (identity, RotMatrixX/Y/Z,
        MulMatrix0); func_800300B4 reads it */
     MATRIX mtx;
-    Vec3i32 pos;      /* += vel each func_80030D7C step */
+    Vec3i32 pos;      /* += vel each object_UpdatePool step */
     Vec3i32 prev_pos; /* pos before the step */
     Vec3i32 vel;
     s32 unk_50; /* != 0: moving */
@@ -1702,7 +1709,7 @@ typedef struct {
 
 /* 2-byte {a,b} threshold pairs. D_8008EA44: indexed by (type - 2), 5 entries
    (types 2..6); D_8008EBFC: indexed by the category func_80033498 returns, 6
-   entries (both read by func_800335D8). */
+   entries (both read by snd_UpdateStageSounds). */
 typedef struct {
     u8 a;
     u8 b;

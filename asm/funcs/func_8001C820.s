@@ -41,7 +41,7 @@ glabel func_8001C820
     /* D0B8 8001C8B8 58000424 */   addiu     $a0, $zero, 0x58
     /* D0BC 8001C8BC 57000424 */  addiu      $a0, $zero, 0x57
   .L8001C8C0:
-    /* D0C0 8001C8C0 78C9000C */  jal        func_800325E0
+    /* D0C0 8001C8C0 78C9000C */  jal        snd_QueuePositionalSound
     /* D0C4 8001C8C4 36050526 */   addiu     $a1, $s0, 0x536
   .L8001C8C8:
     /* D0C8 8001C8C8 1400BF8F */  lw         $ra, 0x14($sp)

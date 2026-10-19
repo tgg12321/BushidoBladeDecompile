@@ -2,7 +2,7 @@ glabel func_8003CF84
     /* 2D784 8003CF84 B8FFBD27 */  addiu      $sp, $sp, -0x48
     /* 2D788 8003CF88 4000BFAF */  sw         $ra, 0x40($sp)
     /* 2D78C 8003CF8C 3C00B1AF */  sw         $s1, 0x3C($sp)
-    /* 2D790 8003CF90 76CD000C */  jal        func_800335D8
+    /* 2D790 8003CF90 76CD000C */  jal        snd_UpdateStageSounds
     /* 2D794 8003CF94 3800B0AF */   sw        $s0, 0x38($sp)
     /* 2D798 8003CF98 0A80053C */  lui        $a1, %hi(D_800A3748)
     /* 2D79C 8003CF9C 4837A580 */  lb         $a1, %lo(D_800A3748)($a1)
