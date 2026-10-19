@@ -162,8 +162,13 @@ Aggregate tables across every TU block competing member destinations, including 
 .inc declarations.
 
 Scoped destinations cannot equal global sources/destinations. Member destinations cannot be
-shared; local destinations may be shared only across distinct functions. Macro arguments
-containing a scoped old name fail even when unchanged. Closure macro guards use cpp -dD
+shared; local destinations may be shared only across distinct functions. For local pairs,
+macro arguments containing the old name fail even when unchanged. For member pairs, an edited
+macro argument fails (n occurs in it; no planned edit lies inside a macro argument); an
+unchanged argument naming m is allowed only when every definition of that macro expands all
+its parameters plainly (no dropped, stringized, pasted or variadic parameter; not an
+object-like alias; not chained), since a stale m there that reached the renamed T.m fails to
+compile and member pairs require the oracle build. Closure macro guards use cpp -dD
 definitions from every included file and command-line definition, in both trees. Object- and
 function-like call openers fail, as do local tokens adjacent to either kind of macro invocation.
 Closure macros containing unbalanced braces or aggregate syntax fail even if never invoked;
@@ -1935,7 +1940,13 @@ def cpp_source_guards(output, tree, scoped):
             spans = code_spans(text)
             ts = [token[0] for token in spans]
             if "." in spec:
-                reject_macro_arguments(text, old, functions, path)
+                # Member pairs: only an edited argument token is refused. The
+                # destination is fresh, so in either tree it occurs in a macro
+                # argument only where the wave edited that argument; an unchanged
+                # argument naming m cannot reach the renamed T.m without failing
+                # to compile (member pairs require the oracle build).
+                reject_macro_arguments(text, dest, functions, path)
+                reject_unexpanded_macro_arguments(text, old, output.macros, path)
                 continue
             for func, start, _, end in function_definitions(text):
                 if func != scope:
@@ -2377,6 +2388,65 @@ def reject_macro_arguments(text, old, functions, path, indices=None):
                 end = balanced(ts, start, "(", ")")
                 if old in ts[start + 1:end]:
                     raise ValueError(f"{path}: {old} is an argument of chained function-like macro {ts[k]}")
+
+
+def reject_unexpanded_macro_arguments(text, old, records, path):
+    """Member pairs keep an unchanged macro argument naming m only when every
+    definition of that macro expands all of its parameters plainly (each occurs in
+    the body, never stringized or pasted): then a stale m that reached the renamed
+    T.m would fail to compile, which the required oracle build catches. A macro that
+    may drop, stringize or paste an argument, an object-like alias of a function-like
+    macro, and chained invocations still fail."""
+    forms = {}
+    for name, params, body in records:
+        forms.setdefault(name, []).append((params, body))
+    functions, _ = macro_table_records(records)
+    ms = code_spans(text)
+    ts = [m[0] for m in ms]
+    directives, _ = pp_regions(text)
+    for k in range(len(ts)):
+        if any(a <= ms[k].start() < b for a, b in directives):
+            continue
+        if ts[k] not in functions or ts[k + 1:k + 2] != ["("]:
+            continue
+        end = balanced(ts, k + 1, "(", ")")
+        if ts[end + 1:end + 2] == ["("] and old in ts[k + 2:balanced(ts, end + 1, "(", ")")]:
+            raise ValueError(f"{path}: {old} is an argument of chained function-like macro {ts[k]}")
+        if old not in ts[k + 2:end]:
+            continue
+        defs = forms.get(ts[k], [])
+        if not defs or any(params is None for params, _ in defs):
+            raise ValueError(f"{path}: {old} is an argument of function-like macro alias {ts[k]}")
+        for params, body in defs:
+            names = [p for p in params if IDENT.fullmatch(p)]
+            if "..." in params or "__VA_ARGS__" in body:
+                raise ValueError(f"{path}: {old} is an argument of variadic macro {ts[k]}")
+            for p in names:
+                if p not in body:
+                    raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, which drops a parameter")
+                for j, tok in enumerate(body):
+                    if tok == p and ((j and body[j - 1] in ("#", "##")) or body[j + 1:j + 2] == ("##",)):
+                        raise ValueError(f"{path}: {old} is an argument of function-like macro {ts[k]}, which stringizes or pastes a parameter")
+
+
+def macro_argument_indices(text, functions):
+    """Token indices inside the arguments of function-like macro invocations
+    (chained invocations included), outside directives."""
+    ms = code_spans(text)
+    ts = [m[0] for m in ms]
+    directives, _ = pp_regions(text)
+    out = set()
+    for k in range(len(ts)):
+        if any(a <= ms[k].start() < b for a, b in directives):
+            continue
+        if ts[k] in functions and ts[k + 1:k + 2] == ["("]:
+            end = balanced(ts, k + 1, "(", ")")
+            out.update(range(k + 2, end))
+            while ts[end + 1:end + 2] == ["("]:
+                start = end + 1
+                end = balanced(ts, start, "(", ")")
+                out.update(range(start + 1, end))
+    return out
 
 
 def member_freshness(base, name):
@@ -2917,6 +2987,7 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
     cfiles = {p: t for p, t in base.items() if p.startswith(("src/", "include/")) and p.endswith((".c", ".h"))}
     macro_sources = {p: t for p, t in base.items() if p.startswith(("src/", "include/"))}
     macros, object_macros = macro_table(cfiles)
+    macro_records = [r for t in cfiles.values() for r in macro_analysis(t)[0]]
     types = declaration_types(cfiles)
     typedef_names = typedef_words(cfiles)
     global_pat = re.compile(r"\b(?:" + ("|".join(map(re.escape, globals or {})) or "(?!)") + r")\b")
@@ -2953,7 +3024,11 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
             ms = code_spans(text)
             ts = [m[0] for m in ms]
             if member:
-                reject_macro_arguments(text, old, macros, path)
+                # Unchanged macro arguments naming m are allowed when the macro
+                # expands them plainly; an edit inside one is refused (no planned
+                # edit there, and the cpp guard checks n).
+                reject_macro_arguments(text, new, macros, path)
+                reject_unexpanded_macro_arguments(text, old, macro_records, path)
                 if macro_uses(text, old, body_only=True):
                     raise ValueError(f"{spec}: {old} occurs in a #define body or token paste ({path})")
                 if any(tok == "##" and old in ts[max(0, i - 1):i + 2] for i, tok in enumerate(ts)):
@@ -3245,6 +3320,11 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
             spans = code_spans(t)
             toks = [m[0] for m in spans]
             aggregates = aggregate_indices(toks) if member else set()
+            # Member pairs never plan an edit inside a macro argument: an edited
+            # argument is an unexplained change, an unchanged one stays allowed.
+            margs = macro_argument_indices(t, macros) if member else set()
+            if member and p == path and any(k in margs for k in indices):
+                raise ValueError(f"{spec}: member declaration inside a macro argument")
             edits = plan.setdefault(p, {})
             directives, conditions = pp_regions(t)
             for k, tok in enumerate(toks):
@@ -3253,6 +3333,7 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                 replacement = None
                 if tok == old and ((p == path and k in indices)
                                    or member and k and k not in aggregates
+                                   and k not in margs
                                    and toks[k - 1] in (".", "->")):
                     if member or not local_exception(toks, k):
                         replacement = new

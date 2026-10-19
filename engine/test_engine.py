@@ -4510,6 +4510,33 @@ def test_naming_keycheck_scoped_pairs() -> None:
                     {"src/a.c": nested_new.replace("int pair;", "int pairs;")})
     check("keycheck: other edits in the nested aggregate rejected", not ok)
     check("keycheck: nested member pair parses", nk.parse_pairs("E.ends.node=pt") == {"E.ends.node": "pt"})
+
+    # Member pairs and macro arguments: an unchanged argument naming m is allowed when
+    # the macro expands it plainly; an edited argument, or one the macro may drop,
+    # stringize or paste, is refused.
+    macro_base = ("#define SQ(x) ((x) * (x))\n#define STR(x) #x\n#define DROP(x) 0\n"
+                  "struct T { int m; }; struct U { int m; };\n"
+                  "int f(struct T *t, struct U *u) { return t->m + SQ(u->m); }\n")
+    macro_new = macro_base.replace("struct T { int m;", "struct T { int n;").replace("t->m +", "t->n +")
+    ok, why = proof("T.m=n", {"src/a.c": macro_base}, {"src/a.c": macro_new})
+    check("keycheck: unchanged plain macro argument naming m accepted (" + why + ")", ok)
+    edited_base = macro_base.replace("SQ(u->m)", "SQ(t->m)")
+    edited_new = macro_new.replace("SQ(u->m)", "SQ(t->n)")
+    ok, why = proof("T.m=n", {"src/a.c": edited_base}, {"src/a.c": edited_new})
+    check("keycheck: edited macro argument refused (" + why + ")", not ok)
+    for macro in ("STR", "DROP"):
+        b = macro_base.replace("SQ(u->m)", macro + "(u->m)")
+        n_ = macro_new.replace("SQ(u->m)", macro + "(u->m)")
+        ok, why = proof("T.m=n", {"src/a.c": b}, {"src/a.c": n_})
+        check("keycheck: unchanged argument of a stringizing / dropping macro refused " + macro + " (" + why + ")",
+              not ok and "macro " + macro in why)
+    nested_macro = nested.replace("+ n->node;", "+ SQ(n->node);")
+    nested_macro = "#define SQ(x) ((x) * (x))\n" + nested_macro
+    check("keycheck: nested member with an unchanged plain macro argument naming m (" +
+          proof("E.ends.node=pt", {"src/a.c": nested_macro},
+                {"src/a.c": "#define SQ(x) ((x) * (x))\n" + nested_new.replace("+ n->node;", "+ SQ(n->node);")})[1] + ")",
+          proof("E.ends.node=pt", {"src/a.c": nested_macro},
+                {"src/a.c": "#define SQ(x) ((x) * (x))\n" + nested_new.replace("+ n->node;", "+ SQ(n->node);")})[0])
     with contextlib.redirect_stderr(io.StringIO()):
         try:
             nk.parse_pairs("f:a.b=c")
@@ -5265,7 +5292,9 @@ def test_naming_keycheck_scoped_pairs() -> None:
                     '# 8 ' + json.dumps(tu) + '\n+(s->q + 0 + m + n); }\n')
         ok, why = proof("T.m=n", {"src/a.c": text}, {"src/a.c": after}, cpp=multiline_cpp)
         check("keycheck: round-8 chained macro guard " + label, not ok and "chained function-like macro" in why)
-        with patch.object(nk, "reject_macro_arguments", lambda *args, **kwargs: None):
+        with patch.object(nk, "reject_macro_arguments", lambda *args, **kwargs: None), \
+                patch.object(nk, "reject_unexpanded_macro_arguments", lambda *args, **kwargs: None), \
+                patch.object(nk, "macro_argument_indices", lambda *args, **kwargs: set()):
             ok, why = proof("T.m=n", {"src/a.c": text}, {"src/a.c": after}, cpp=multiline_cpp)
         check("keycheck: round-8 sentinel proof independent of guard " + label,
               not ok and ("stringified or pasted" in why if macro == "STR" else "sentinel discarded" in why))
@@ -5708,15 +5737,20 @@ def test_naming_keycheck_scoped_pairs() -> None:
         except ValueError as e:
             why = str(e)
         check("keycheck: independent macro adjacency " + body, "adjacent to cpp macro" in why)
-    text = "#define FN(x) (x)\nstruct T{int m;}; int f(struct T*t){return FN(t->m);}"
-    tree = nk.CppTree({"src/a.c": text}, "fixture")
-    output = nk.emitted_lines(cpp_preamble("src/a.c") + text, tree, "src/a.c")
-    try:
-        nk.cpp_source_guards(output, tree, {"T.m": "n"})
-        why = ""
-    except ValueError as e:
-        why = str(e)
-    check("keycheck: cpp member argument scan independently fails", "argument of function-like macro" in why)
+    for text, fails in [
+            ("#define FN(x) (x)\nstruct T{int m;}; int f(struct T*t){return FN(t->n);}", True),
+            ("#define FN(x) (x)\nstruct T{int m;}; int f(struct T*t){return FN(t->m);}", False),
+            ("#define FN(x) (0)\nstruct T{int m;}; int f(struct T*t){return FN(t->m);}", True)]:
+        tree = nk.CppTree({"src/a.c": text}, "fixture")
+        output = nk.emitted_lines(cpp_preamble("src/a.c") + text, tree, "src/a.c")
+        try:
+            nk.cpp_source_guards(output, tree, {"T.m": "n"})
+            why = ""
+        except ValueError as e:
+            why = str(e)
+        check("keycheck: cpp member argument scan: edited / dropped argument fails, plain unchanged one passes ("
+              + text.split("return ")[1] + text.split(")")[1][:4] + ")",
+              ("argument of function-like macro" in why) == fails)
     for param in ("l", "n"):
         text = '#include "params.h"\nint f(int l){return l;}\n'
         check("keycheck: cpp guards exclude macro own parameter " + param, proof("f:l=n",
