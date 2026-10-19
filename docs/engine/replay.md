@@ -79,12 +79,12 @@ to (arg2, arg3) (both offset by 0x7D00), a DDA in 4.12 fixed point, and calls
   BIOS `Exec(&exec, a0, a1)` after `EnterCriticalSection()`; on return it runs
   `sys_Init()`, `snd_InitAndLoadCommonVab()`, `VSync(0)`, `SetDispMask(1)`.
 
-## `func_80018094` (once `marionation_camera_Exec`)
+## `softbody_PrepareStep` (once `marionation_camera_Exec`)
 
-`func_80018094(arg0, arg1)` (src/main/87A0.c:107):
+`softbody_PrepareStep(arg0, arg1)` (src/main/87A0.c:107):
 
 1. Loads `arg0->unk4` (a MATRIX) as the GTE rotation and translation and calls
-   `func_80017FA0(arg0)` (src/main/87A0.c:42).
+   `softbody_LoadColliders(arg0)` (src/main/87A0.c:42).
 2. Stores the translation delta `arg0->unk4->t - arg1->matrix.t` in the
    scratchpad words 0x1F800024..0x1F80002C (`SCRV`'s x, y, z,
    src/main/87A0.c:105).
@@ -93,11 +93,11 @@ to (arg2, arg3) (both offset by 0x7D00), a DDA in 4.12 fixed point, and calls
    `(isqrt(len2) << 6) / 500 + 0xC0`, the integer square root read from
    `g_sqrt_table_u8` (normalized with the GTE leading-zero count above 0x400).
 4. Sets each `SCRV` component to `(delta * scale) >> 1`, copies `*arg0->unk4`
-   into `arg1->matrix` and calls `func_80018300(arg1)` (src/main/87A0.c:174),
+   into `arg1->matrix` and calls `softbody_SolveSprings(arg1)` (src/main/87A0.c:174),
    the distance-constraint pass over a chain of 64-byte nodes described above it.
 
 It is not a camera runner. The function once named `cpu_check_run_attack`
-is `func_80018300` (step 4); the reset wave retired that name.
+is `softbody_SolveSprings` (step 4); the reset wave retired that name.
 
 ## `func_80046BF4`: the view transform (once `replay_camera_rob_back_win_near`)
 
@@ -108,7 +108,7 @@ is `func_80018300` (step 4); the reset wave retired that name.
 2. If `a0` is given: stores `-a1` as the rotation of the view record
    `D_80101DF0`, builds its matrix through `D_800F66A0[0]`, and sets the
    record's translation to `a0 + M * (0, 0, -a2)`, a point `a2` units back
-   from `a0` along the view direction; then `func_800418D0(&D_80101DF0)`,
+   from `a0` along the view direction; then `node_SetMatrixFromNegatedRot(&D_80101DF0)`,
    `func_80047210()`, `func_8003F274()`, and keeps `a2` in `D_800A33C0`.
 3. Recomputes the light matrices of `D_800F62E0[0]`, `[1]`, `[4]`
    (`calc_LightMatrix`) and runs `func_800420D0`, `func_8003F568`,

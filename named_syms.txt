@@ -1055,7 +1055,7 @@ D_800A38CC                                    = 0x800A38CC;  /* memory-card writ
 /* === Wave grid (wave_Init / wave_Update / wave_Draw, 368E4.c:740-971) === */
 /* A 9 x 17 grid: row 0 driven from the Judge[] sine table by 17 column phases, */
 /* rows 1..8 following the row before; drawn as a textured mesh. */
-D_800EF070                                  = 0x800EF070;  /* the wave grid's draw node: set up by wave_Init (368E4.c:841-854, func_800417D0), queued by wave_Update */  /* data-wave 2026-09-25: was g_snd_voice_init_block */
+D_800EF070                                  = 0x800EF070;  /* the wave grid's draw node: set up by wave_Init (368E4.c:841-854, node_UpdateWorldMatrix), queued by wave_Update */  /* data-wave 2026-09-25: was g_snd_voice_init_block */
 D_800EF558                                  = 0x800EF558;  /* 17 column phases: (j << 7) & 0xFFF at wave_Init, + 0x12 per wave_Update; the Judge[] index of row 0 */  /* data-wave 2026-09-25: was g_snd_wave_phase_table */
 D_800EF59C                                 = 0x800EF59C;  /* the 9 x 17 wave grid (stride 0x44): row 0 = (Judge[phase] * 0x271) >> 10, rows 1..8 follow (wave_Update); wave_Draw's x offsets */  /* data-wave 2026-09-25: was g_snd_wave_output_table */
 
@@ -1245,7 +1245,7 @@ g_font_color                                      = 0x800A3364;  /* current colo
 /* generally accurate for BB2 functions where the function body matches. */
 /* These were noted in src/ comments but never promoted into */
 /* named_syms.txt. */
-softbody_Step                              = 0x800187F4;  /* in code6cac.c */
+softbody_Step                              = 0x800187F4;  /* src/main/87A0.c */
 /* Skipped: replay_camera_get_attack_number at 0x8003E6A0 -- name */
 /* collides with same-named real impl that BB2's wrapper at this addr */
 /* calls (already named separately as replay_camera_get_attack_number_2arg). */
@@ -1439,7 +1439,7 @@ D_800A33CA                                      = 0x800A33CA;  /* vertical angle
 /* These were referenced in main_loop.md but not yet bound to names. */
 g_comb_abort_request                                  = 0x800A3928;  /* set to 1 only by comb_Abort (a failed link transfer); main (6CF8.c:460-465) then calls cdrom_PauseAndWait, sets D_800A3768 = DISP_DISABLED, clears it and D_800A31DA, sets mode 8 */  /* data-wave 2026-10-08: was g_global_reset_request */
 D_800A30DC                                      = 0x800A30DC;  /* min observed bytes left in the frame's primitive buffer; tripping <0 triggers sys_Panic ("common prim over flow") */  /* data-wave 2026-10-08: was g_ot_remaining_min */
-D_800A30E8                                           = 0x800A30E8;  /* high-water mark of the D_800F6740 slot index func_80017D84 hands out (6CF8.c:757-758): `if D_800A30E8 < i then D_800A30E8 = i` */  /* data-wave 2026-10-08: was g_ot_used_max */
+D_800A30E8                                           = 0x800A30E8;  /* high-water mark of the D_800F6740 slot index softbody_Create hands out (6CF8.c:757-758): `if D_800A30E8 < i then D_800A30E8 = i` */  /* data-wave 2026-10-08: was g_ot_used_max */
 D_800A390D                                      = 0x800A390D;  /* frame-skip count: frames main draws without presenting; decrements before frame submit */  /* data-wave 2026-10-08: was g_voice_skip_count */
 D_800A3713                                = 0x800A3713;  /* countdown gating the START-pause menu (func_80016E60) entry; main_loop.md step 13 */  /* data-wave 2026-10-08: was g_select_pause_countdown */
 D_800A37C0                                  = 0x800A37C0;  /* per-step timer of func_800174F4's case 20 (6CF8.c:566-590), preset to 500; reset at 6CF8.c:585 and 2B344.c:452 */  /* data-wave 2026-10-08: was g_global_frame_counter */

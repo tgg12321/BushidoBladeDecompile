@@ -130,7 +130,7 @@ the LIBGTE modules in `src/main/psxsdk/libgte/`.
 `gte_Lzc` (include/psxsdk/gtemac.h:174), the LZCS / LZCR leading-zero count,
 to normalise a value above 0x400 before reading the square-root table
 `g_sqrt_table_u8`. Values below 0x400 index the table directly. For an
-example, see `func_80018300` (src/main/87A0.c:174, the `gte_Lzc` at :284).
+example, see `softbody_SolveSprings` (src/main/87A0.c:174, the `gte_Lzc` at :284).
 
 **`D_800EEDB0`** (`MATRIX`, declared at src/main/368E4.c:296) is built by
 `math_SetLightPlaneProjection` (src/main/368E4.c:555) from row 0 `(l0, l1, l2)` of

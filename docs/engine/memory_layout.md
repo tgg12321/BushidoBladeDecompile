@@ -100,7 +100,7 @@ records there at different times. `include/game.h` holds the per-file views:
 
 The comment above the 17AFC.c record (include/game.h:1180-1196) lists the
 other users of those bytes. GTE helpers also stage values there, for example
-`gte_ldlvl((s32 *)0x1F800000)` in `func_80018300` (src/main/87A0.c:291).
+`gte_ldlvl((s32 *)0x1F800000)` in `softbody_SolveSprings` (src/main/87A0.c:291).
 
 ## VRAM
 

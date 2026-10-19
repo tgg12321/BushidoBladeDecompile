@@ -103,7 +103,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
   (`func_80044DE4`).
 - `func_80040D48(i, mode, pos, rot, ...)` (src/main/31548.c:10) sets the root
   node's position and rotation, completes the joint nodes (mode 0 takes the
-  angles from a channel array), runs `func_800417D0` on each of the 18 nodes,
+  angles from a channel array), runs `node_UpdateWorldMatrix` on each of the 18 nodes,
   and queues the nodes on `g_draw_queue_cursor`.
 
 ## Other users of the decoder

@@ -177,7 +177,7 @@ D_800A36A8 = 0x800A36A8; // 0/1 switch that multiplies the func_8005D554 sprite 
 // === Data symbols once named g_file_* (all since reset) ===
 g_camera_distance_offset = 0x800A3710; // s16 camera distance offset: func_8001B138 steps it by 0x4CC, clamps it to -0x1C00..0x7400 and adds it >> 4 to g_camera_view_offset.w18  // data-wave 2026-09-25: was g_file_vram_timer
 D_800A3716 = 0x800A3716; // eff_Init done flag (eff_ClearInitFlag / func_80016D78 clear it)  // data-wave 2026-10-07: was g_file_dma_flag
-D_800F6740 = 0x800F6740; // 8 object records of 0x34 bytes: func_80017D84 takes a free one, func_80017E8C / func_80017714 free them (6CF8.c:603-606, :749-771)  // data-wave 2026-10-08: was g_file_data_buf
+D_800F6740 = 0x800F6740; // 8 object records of 0x34 bytes: softbody_Create takes a free one, softbody_Free / softbody_FreeAll free them (6CF8.c:603-606, :749-771)  // data-wave 2026-10-08: was g_file_data_buf
 
 // === Animation ===
 D_800F66A0 = 0x800F66A0; // rotation func ptrs  // data-wave 2026-10-08: was g_anim_func_table
