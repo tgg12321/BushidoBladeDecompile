@@ -878,7 +878,7 @@ _svm_voice_plus_0x6                          = 0x800F4E1E;  /* +0x04 -- counter 
 
 /* === More indexed struct tables discovered (2026-05-17) === */
 D_800A3D40                         = 0x800A3D40;  /* 24-byte stride per slot; 3 s32 + 6 s16 layout; delta-decoder state: func_8003D774 points it at a bit stream, func_8003D7B4 accumulates into it */  /* data-wave 2026-10-08: was g_sleep_menu_cursor_state_table */
-D_8008EA00                        = 0x8008EA00;  /* 16-byte rows; func_800335D8 passes row 5 or 6 to func_800325E0 as a 3-D sound-source position */  /* data-wave 2026-10-08: was g_type_descriptor_table_8008EA00 */
+D_8008EA00                        = 0x8008EA00;  /* 16-byte rows; snd_UpdateStageSounds passes row 5 or 6 to snd_QueuePositionalSound as a 3-D sound-source position */  /* data-wave 2026-10-08: was g_type_descriptor_table_8008EA00 */
 D_80099D88                     = 0x80099D88;  /* 12-byte stride; u16 record indexed by `idx`; bit-tested with 0xBF00 mask */  /* data-wave 2026-10-08: was g_status_flag_record_table_80099D88 */
 
 /* === GPU packet buffer + shadow tables (2026-05-17) === */
@@ -927,7 +927,7 @@ D_8009ADD8                                             = 0x8009ADD8;  /* per-cha
 D_8009BA7C                        = 0x8009BA7C;  /* 62 function pointers, called by jalr in func_80060A68 / func_80060B70 */  /* data-wave 2026-10-08: was chractar_use_pset_combo_id_table */
 D_800A3D70                                        = 0x800A3D70;  /* DR_MOVE[31][2]: double-buffered VRAM moves set up by gpu_SetDrawMoveArray, queued by func_8003DBE4 */  /* data-wave 2026-10-08: was light_effect_col */
 D_800F19D0                                            = 0x800F19D0;  /* MarioCam structure */  /* data-wave 2026-09-24: was MarioCam_str */
-D_80102092                                              = 0x80102092;  /* D_80101EC8[0].unk_1C8.vy, player 0's 12-bit facing angle; func_800288C8 differences it with player 1's (17AFC.c:995) */  /* data-wave 2026-10-08: was selCharaID */
+D_80102092                                              = 0x80102092;  /* D_80101EC8[0].unk_1C8.vy, player 0's 12-bit facing angle; fighter_ResolveBodyOverlap differences it with player 1's (17AFC.c:995) */  /* data-wave 2026-10-08: was selCharaID */
 
 /* === Named-consumer multiplier pass (2026-05-17) -- 13 highs === */
 /* Lines from a consumer-role pass; each tail now cites its accesses. */
@@ -1203,7 +1203,7 @@ D_800A36FA                                         = 0x800A36FA;  /* three value
 D_800A36A4                                      = 0x800A36A4;  /* selector = D_80102778.unk_C or a per-mode constant; indexes tables (e.g. func_80046F14's block) */  /* data-wave 2026-10-08: was g_stage_id_current */
 D_800A390E                                         = 0x800A390E;  /* previous D_800A36A4: func_8001D790 compares and copies it; func_80035480 sets -1 */  /* data-wave 2026-10-08: was g_stage_id_prev */
 D_800F5328                                      = 0x800F5328;  /* Rec44 record (as D_800F6608): position, rotation, distance fed to func_80046BF4 / camera_CalcEye; g_listener_cam points at it (camera_ApplyFightView) */  /* data-wave 2026-10-08: was g_mario_voice_data */
-D_8008E5A8                                      = 0x8008E5A8;  /* u8 lookup, values 0..4, indexed by D_80102778.unk_4[0] / [1] (D_8010277C) or obj->unk_0C; func_8001D790 passes the values to func_8005BA8C, func_80032C50 indexes D_8008EBE0 with one */  /* data-wave 2026-10-08: was g_char_class_table */
+D_8008E5A8                                      = 0x8008E5A8;  /* u8 lookup, values 0..4, indexed by D_80102778.unk_4[0] / [1] (D_8010277C) or obj->unk_0C; func_8001D790 passes the values to func_8005BA8C, fighter_DispatchFrameEvent indexes D_8008EBE0 with one */  /* data-wave 2026-10-08: was g_char_class_table */
 D_800A387C                                     = 0x800A387C;  /* planar distance between the two fighters (fighter_CalcHorizontalSeparation: SquareRoot0 of the unk_F4 x / z deltas of D_80101EC8[1] and [0]), stored each frame by func_8002006C; readers compare it with ranges (e.g. < 0x2711) */  /* data-wave 2026-10-08: was g_round_total_score */
 D_800A38BA                              = 0x800A38BA;  /* (s8)D_80102778.unk_E (func_800343F0); non-zero picks 0x50 over 0x2D for SetGeomScreen and gates per-fighter paths */  /* data-wave 2026-10-08: was g_practice_dispatch_active */
 D_800A36F6                                    = 0x800A36F6;  /* fighter index, written 0 or (D_800A38A0 != 0) (24BF0.c:19, :46, 25788.c:115); read as D_80101EC8[it] and compared with func_8001B690's arg0 (9F9C.c:930) */  /* data-wave 2026-10-08: was g_gnd_init_arg_saved */
@@ -1213,11 +1213,11 @@ D_800A36F6                                    = 0x800A36F6;  /* fighter index, w
 /* or fighter_Init's arg2 (9F9C.c:3978); D_8008D55C maps a table index */
 /* into the D_80102778.unk_4 id space.  g_listener_cam, D_800A3824 and */
 /* D_801077B0: see their lines. */
-D_8008D538                                   = 0x8008D538;  /* 36-byte u8 table, values 0..0x1A: func_800338CC clears bit (1 << value) of 0x3EF3DF (17AFC.c:6372); fighter_Init stores it in unk_0A (9F9C.c:3978), the row of D_8008E5CC / D_8008E6A4 */  /* data-wave 2026-10-09: was g_char_class_id_table */
+D_8008D538                                   = 0x8008D538;  /* 36-byte u8 table, values 0..0x1A: fight_BuildOpponentOrder clears bit (1 << value) of 0x3EF3DF (17AFC.c:6372); fighter_Init stores it in unk_0A (9F9C.c:3978), the row of D_8008E5CC / D_8008E6A4 */  /* data-wave 2026-10-09: was g_char_class_id_table */
 D_8008D55C                                 = 0x8008D55C;  /* byte map from a table index into the D_80102778.unk_4 id space (skips 0-2 and 0x0F-0x11) */  /* data-wave 2026-10-08: was g_char_lesson_idx_table */
-g_listener_cam                                      = 0x800A36B4;  /* Rec44 view record pointer (camera_ApplyFightView / camera_ApplyReplayView); func_800325E0 reads its +0x20 eye */  /* data-wave 2026-10-07: was g_attacker_pos_ptr */
-D_800A3824                                   = 0x800A3824;  /* func_80029454()'s result (negative = skip); bits tested per fighter index */  /* data-wave 2026-10-08: was g_practice_state_word */
-D_801077B0                                   = 0x801077B0;  /* order list built and shuffled by func_800338CC; func_80033BC0 takes entry [D_800A3783] */  /* data-wave 2026-10-08: was g_practice_byte_table */
+g_listener_cam                                      = 0x800A36B4;  /* Rec44 view record pointer (camera_ApplyFightView / camera_ApplyReplayView); snd_QueuePositionalSound reads its +0x20 eye */  /* data-wave 2026-10-07: was g_attacker_pos_ptr */
+D_800A3824                                   = 0x800A3824;  /* fighter_ProcessWeaponContacts()'s result (negative = skip); bits tested per fighter index */  /* data-wave 2026-10-08: was g_practice_state_word */
+D_801077B0                                   = 0x801077B0;  /* order list built and shuffled by fight_BuildOpponentOrder; fight_AdvanceOpponentOrder takes entry [D_800A3783] */  /* data-wave 2026-10-08: was g_practice_byte_table */
 
 /* === text1a.c text/title render cluster (2026-05-17) -- 7 highs === */
 /* From text1a.c around lines 55, 1093, 1201, 1235 etc.  D_80094E08 */
@@ -1329,13 +1329,13 @@ kMaxPrograms                              = 0x800FF634;  /* max frame offset (co
 /* From code6cac_b.c mk_leaf_newpos (line 3388): places 6 leaves per */
 /* stage, with per-cat action lookup tables and random placement. */
 /* "leaf" likely refers to foliage/falling-leaves stage effect. */
-D_800A3918                                       = 0x800A3918;  /* 6 per-slot counters (0 = free): claimed by func_80033550, advanced and freed by func_800335D8 (17AFC.c:6249-6284) */  /* data-wave 2026-10-08: was g_leaf_slot_state */
-D_800A391E                                   = 0x800A391E;  /* its own countdown byte (set 0x50 / 1, decremented by func_8001CE60); func_800335D8 uses only its address, as the bound past D_800A3918[5] */  /* data-wave 2026-10-08: was g_leaf_slot_state_end */
+D_800A3918                                       = 0x800A3918;  /* 6 per-slot counters (0 = free): claimed by snd_QueuePositionSequence, advanced and freed by snd_UpdateStageSounds (17AFC.c:6249-6284) */  /* data-wave 2026-10-08: was g_leaf_slot_state */
+D_800A391E                                   = 0x800A391E;  /* its own countdown byte (set 0x50 / 1, decremented by func_8001CE60); snd_UpdateStageSounds uses only its address, as the bound past D_800A3918[5] */  /* data-wave 2026-10-08: was g_leaf_slot_state_end */
 D_80107850                                   = 0x80107850;  /* 12-byte stride, one per D_800A3918 slot, 6 entries = 72-byte position array */  /* data-wave 2026-10-08: was g_leaf_position_table */
-D_8008E914                                 = 0x8008E914;  /* u8[][8] rows indexed by D_800A36A4; func_800335D8 reads 4 (type, value) pairs that queue sounds 0x7B + i */  /* data-wave 2026-10-08: was g_leaf_stage_data_table */
-D_8008EBF4                                   = 0x8008EBF4;  /* per-category byte; + 0 / 1 / 2 it is func_800325E0's first argument (17AFC.c:6268-6277) */  /* data-wave 2026-10-08: was g_leaf_action_id_base */
+D_8008E914                                 = 0x8008E914;  /* u8[][8] rows indexed by D_800A36A4; snd_UpdateStageSounds reads 4 (type, value) pairs that queue sounds 0x7B + i */  /* data-wave 2026-10-08: was g_leaf_stage_data_table */
+D_8008EBF4                                   = 0x8008EBF4;  /* per-category byte; + 0 / 1 / 2 it is snd_QueuePositionalSound's first argument (17AFC.c:6268-6277) */  /* data-wave 2026-10-08: was g_leaf_action_id_base */
 D_8008EBFC                               = 0x8008EBFC;  /* per-category {a, b} thresholds compared with the D_800A3918 slot counter (cat*2 index) */  /* data-wave 2026-10-08: was g_leaf_action_threshold_a */
-D_800A3750                                    = 0x800A3750;  /* 4 s16 counters / latches, one per D_8008E914 row func_800335D8 walks (0x7B is the sound-slot id base, not a size) */  /* data-wave 2026-10-08: was g_leaf_random_buffer */
+D_800A3750                                    = 0x800A3750;  /* 4 s16 counters / latches, one per D_8008E914 row snd_UpdateStageSounds walks (0x7B is the sound-slot id base, not a size) */  /* data-wave 2026-10-08: was g_leaf_random_buffer */
 
 /* === Dispatch-offset table base (2026-05-17) -- 1 high === */
 /* D_800F10E0 is entry [4] of the 28-entry s32 table at 0x800F10D0. */
@@ -1516,7 +1516,7 @@ D_800A38AA                                   = 0x800A38AA;  /* secondary per-sid
 D_800A38AB                                   = 0x800A38AB;  /* secondary counter [1] (D_800A38AA[1]) */  /* data-wave 2026-10-08: was g_match_p2_tiebreaker */
 
 /* === Misc state arrays in code6cac_b.c (2026-05-17) -- 4 highs === */
-D_800A36F2                                = 0x800A36F2;  /* u8[2]: func_8003047C stores the first entry of row D_8008E338[unk_0A] (5-byte stride) in [a0->index]; [0] is XORed with object kinds (or 0xE) as func_80032854's first argument */  /* data-wave 2026-10-08: was g_char_class_state_array */
+D_800A36F2                                = 0x800A36F2;  /* u8[2]: object_InitKindQueue stores the first entry of row D_8008E338[unk_0A] (5-byte stride) in [a0->index]; [0] is XORed with object kinds (or 0xE) as func_80032854's first argument */  /* data-wave 2026-10-08: was g_char_class_state_array */
 D_80104E88                                   = 0x80104E88;  /* 4 entries x 0x2C bytes; flag byte at offset 0 (== 0 = empty slot); allocated by func_80032064 */  /* data-wave 2026-10-08: was g_effect_slot_table_4 */
 
 /* === Result-screen state machine (2026-05-17) -- 3 highs === */
@@ -1805,11 +1805,11 @@ g_font_tpage                                  = 0x800A3D30;  /* two draw-mode (t
 /* === Mottest (motion test mode) sequencer (2026-05-17) -- 5 highs === */
 /* From code6cac_b.c mottest_disp (line 3622): walks through test slots */
 /* until counter reaches max, then dispatches anim ID. */
-D_800A3783                                   = 0x800A3783;  /* read position in the D_801077B0 list func_800338CC builds; func_80033BC0 advances it until it equals the count D_800A391F (17AFC.c:6479-6499) */  /* data-wave 2026-10-08: was g_mottest_current_idx */
-D_800A37BC                                 = 0x800A37BC;  /* index into D_8008E748; zeroed by func_800338CC with D_800A3783, advanced by func_80033BC0 when the list entry is neither 5 nor 0x10 (17AFC.c:6505-6509) */  /* data-wave 2026-10-08: was g_mottest_secondary_idx */
-D_800A391F                                    = 0x800A391F;  /* number of entries func_800338CC writes to D_801077B0; func_80033BC0 ends the list when D_800A3783 reaches it (17AFC.c:6473-6492) */  /* data-wave 2026-10-08: was g_mottest_test_count */
+D_800A3783                                   = 0x800A3783;  /* read position in the D_801077B0 list fight_BuildOpponentOrder builds; fight_AdvanceOpponentOrder advances it until it equals the count D_800A391F (17AFC.c:6479-6499) */  /* data-wave 2026-10-08: was g_mottest_current_idx */
+D_800A37BC                                 = 0x800A37BC;  /* index into D_8008E748; zeroed by fight_BuildOpponentOrder with D_800A3783, advanced by fight_AdvanceOpponentOrder when the list entry is neither 5 nor 0x10 (17AFC.c:6505-6509) */  /* data-wave 2026-10-08: was g_mottest_secondary_idx */
+D_800A391F                                    = 0x800A391F;  /* number of entries fight_BuildOpponentOrder writes to D_801077B0; fight_AdvanceOpponentOrder ends the list when D_800A3783 reaches it (17AFC.c:6473-6492) */  /* data-wave 2026-10-08: was g_mottest_test_count */
 D_800A376B                                      = 0x800A376B;  /* reset to 0 alongside indices */  /* data-wave 2026-10-08: was g_mottest_substate */
-D_8008E748                              = 0x8008E748;  /* s8 table indexed by D_800A37BC; func_80033BC0 stores the entry into D_80102778.unk_4[3] (17AFC.c:6501-6517) */  /* data-wave 2026-10-08: was g_mottest_slot_value_table */
+D_8008E748                              = 0x8008E748;  /* s8 table indexed by D_800A37BC; fight_AdvanceOpponentOrder stores the entry into D_80102778.unk_4[3] (17AFC.c:6501-6517) */  /* data-wave 2026-10-08: was g_mottest_slot_value_table */
 
 /* === Dispatch offset + lookup tables (2026-05-17) -- 3 highs === */
 D_8009BA60                           = 0x8009BA60;  /* per-idx offset added to D_800F10D0[idx] to select the function pointer in D_8009BA7C */  /* data-wave 2026-10-08: was g_motion_func_dispatch_offset */
@@ -2067,7 +2067,7 @@ func_80041688                                       = 0x80041688;  /* MISNAMED: 
 font_LoadImage                          = 0x8003D2C4;  /* MISNAMED: not katinuki data; 1-line gpu_LoadImage(&g_font_rect, &g_font_image) */
 func_800548DC                          = 0x800548DC;  /* MISNAMED: not katinuki data; gpu_DrawSync(0)+func_8004659C(-1)+snd_StopSelection() */
 camera_InitTrackedFighterFocus                        = 0x8001B3C0;  /* MISNAMED: not voice data; reads obj pos fields 0x180/184/188 into D_800F5328/532C/5330 */
-func_8001C820                        = 0x8001C820;  /* MISNAMED: not voice data; conditional func_800325E0 with sound IDs 0x56..0x58 */
+func_8001C820                        = 0x8001C820;  /* MISNAMED: not voice data; conditional snd_QueuePositionalSound with sound IDs 0x56..0x58 */
 func_80048AD0                        = 0x80048AD0;  /* MISNAMED: not voice data; loads BGM and initializes 0x11 sound table entries at offset 0x68 */
 func_8005BE84                        = 0x8005BE84;  /* MISNAMED: not voice data; calls title_mv_exec2 + md_game_check_change_main_mode_katinuki */
 memcard_Format                         = 0x80037F08;  /* MISNAMED: not motion-pre-calc; calls func_80079A30 then bios_FormatDevice_B() */
@@ -2578,7 +2578,7 @@ empty_stub_800457D4                                = 0x800457D4;  /* stub: jr $r
 /* triggers the GCC cascade (LONG_TERM_DX_PROMOTION_FIX.md). */
 D_1F80000C                                  = 0x1F80000C;  /* 14 refs; scratchpad RAM offset 0xC (0x1F800000 + 0xC) */  /* data-wave 2026-10-10: was g_scratchpad_ptr_c_1F80000C */
 D_800A30F0                                = 0x800A30F0;  /* u8[4] per-fighter flag that camera_UpdateTwoFighterView sets and clears */  /* data-wave 2026-10-08: was g_ot_used_max_plus_8_800A30F0 */
-D_800A3144                                    = 0x800A3144;  /* 11 refs; gp-relative; two radii: func_800288C8 adds [i] + [j] and compares the sum with the separation of the two characters' points (17AFC.c:926-934) */  /* data-wave 2026-10-08: was g_game_pad_index_800A3144 */
+D_800A3144                                    = 0x800A3144;  /* 11 refs; gp-relative; two radii: fighter_ResolveBodyOverlap adds [i] + [j] and compares the sum with the separation of the two characters' points (17AFC.c:926-934) */  /* data-wave 2026-10-08: was g_game_pad_index_800A3144 */
 D_800A3207                                  = 0x800A3207;  /* 20 refs; u8 state, values 0-5 */  /* data-wave 2026-10-08: was g_motion_init_flag_800A3207 */
 D_800A35C8                                = 0x800A35C8;  /* 13 refs; two countdowns driving screen offsets */  /* data-wave 2026-10-08: was g_motion_table_entry_800A35C8 */
 D_800A36CA                            = 0x800A36CA;  /* 15 refs; copy of the buffered move's command word */  /* data-wave 2026-10-08: was g_char_id_saved_d_plus_2_800A36CA */
