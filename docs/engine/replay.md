@@ -5,7 +5,9 @@ At nearly every address once named `replay_camera_*`, `special_camera_*` or
 names) the code is the CD reader, a menu, the save flow or geometry helpers, not
 a camera. This page describes what each one does today, read from `src/` (path:line cites the
 definition). The one view-transform routine among them is `func_80046BF4`
-(below).
+(below). The game's actual replay (a 120-frame ring of fighter frames, events and
+model draws, played back in modes 4 / 5) is the `replay_*` code in
+`src/main/28708.c`.
 
 ## `g_cd_file_table` and `cdrom_LoadExec` (once `SpecialCam` / `special_camera_get_rot_dir`)
 

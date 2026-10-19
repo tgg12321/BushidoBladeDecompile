@@ -55,7 +55,7 @@ must precede the fence.
 operand order in the `addu` (pointer+int canonicalizes the pointer first);
 [[compare-operand-order-register]] family.
 
-Every statement is real (the actual copy loop); owner-sanctioned 2026-06-11 (func_80037F40, 7 → 0).
+Every statement is real (the actual copy loop); owner-sanctioned 2026-06-11 (memcard_BuildSaveBlock, 7 → 0).
 
 ## Does NOT apply when
 

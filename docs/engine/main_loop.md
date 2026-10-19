@@ -94,8 +94,8 @@ assigns to `D_800A3834` itself.
 | 1 | `fight_Update` (src/main/9F9C.c:2028) | | per-frame fight: `func_8001BE20` / `fighter_Update` per fighter, `func_8002C61C`, `object_UpdatePool` ([combat.md](combat.md), [motion.md](motion.md)) |
 | 2 | `func_80033898` (src/main/17AFC.c:5273) | 3 | resets graphics, clears `D_800A37B8` |
 | 3 | `func_80034708` (src/main/24F08.c:28) | | prints the `D_80102778` settings with `font_Printf` and steps the two cursors `D_800A3174`; calls `func_800344B4` |
-| 4 | `func_800397D4` (src/main/28708.c:1287) | 5 | view and fighter setup |
-| 5 | `func_8003993C` (src/main/28708.c:1338) | 0xC, 0x10, 0x1E | rebuilds the fighters from the per-frame records `D_800A36EC` ([motion.md](motion.md)) |
+| 4 | `replay_Start` (src/main/28708.c:1287) | 5 | view and fighter setup |
+| 5 | `replay_PlayFrame` (src/main/28708.c:1338) | 0xC, 0x10, 0x1E | rebuilds the fighters from the per-frame records `D_800A36EC` ([motion.md](motion.md)) |
 | 6 | `func_8003B9D0` (src/main/2B344.c:478) | 7 | loads a script scene ([menus.md](menus.md)) |
 | 7 | `func_8003BCB4` (src/main/2B344.c:550) | 0 | waits, then the next script step |
 | 8 | `func_80035480` (src/main/25C38.c:34) | 9 | resets the scene, requests the link close (`comb_RequestClose`, unless `D_800A31DA` is set), sets up the row menu (`func_80077820`) |

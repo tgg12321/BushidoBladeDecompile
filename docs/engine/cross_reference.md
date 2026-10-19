@@ -21,7 +21,7 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 | `25C38.c` | 0x80035438 | 10 functions: `bits_ExtractMask3F83F8`, `bits_DepositMask3F83F8`, `gpu_AddScreenGradient`, `func_80035618` |
 | `26730.c`, `267A8.c`, `26940.c`, `cdrom.c` | 0x80035F30.. | the CD module: `cdrom_*`, `snd_SerialMixOn`, `sys_Exec`; [file_io.md](file_io.md) |
 | `memcard.c`, `28514.c` | 0x800375EC.. | memory card: `memcard_*`, `func_80037D14`; [file_io.md](file_io.md) |
-| `28708.c` | 0x80037F08 | `memcard_Format`, the save flow (`func_800383A4`, `memcard_PollFileCompletion`), the link-cable session layer `comb_*`, `math_Popcount32` |
+| `28708.c` | 0x80037F08 | `memcard_Format`, the save flow (`memcard_StepRequest`, `memcard_PollFileCompletion`), the link-cable session layer `comb_*`, `math_Popcount32` |
 | `2B344.c` | 0x8003AB44 | 92 functions: `font_*`, `bitstream_ReadBits`, `gpu_SetDrawMoveArray`, `comb_HandshakeStep`, `comb_Connect`, the CD-audio starters `func_8003B9D0` / `func_8003BE10` / `func_8003C040` |
 | `309CC.c`, `31548.c`, `31CFC.c`, `31D3C.c` | 0x800401CC.. | 12 + 4 + 1 + 21 functions (`gpu_AddDrawMove`) |
 | `32D04.c` | 0x80042504 | rotation-matrix and colour math (`math_RotMatrix*`, `math_RgbToHsv`) and the primitive texture-offset helpers `gpu_OffsetTex*` |

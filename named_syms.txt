@@ -708,7 +708,7 @@ D_800A389B                                    = 0x800A389B;  /* entry count p->u
 D_800A31DA                                  = 0x800A31DA;  /* ref: func_80035480 */  /* data-wave 2026-10-08: was g_game_session_running */
 D_800A31F4                                       = 0x800A31F4;  /* memory-card state machine state (1 start, 3/5/7 write/read/format, 4/6 wait on memcard_PollSwEvents, 0 idle) */  /* data-wave 2026-10-08: was g_pad_analog_mode */
 D_800A31FC                                  = 0x800A31FC;  /* 0/1 flag of the memory-card status flow (func_80038988 / func_80038C70) */  /* data-wave 2026-10-08: was g_damage_debug_enabled */
-D_800A3203                                  = 0x800A3203;  /* one-shot latch that re-arms the memory-card status poll through func_8003877C (28708.c:457-462) */  /* data-wave 2026-10-08: was g_damage_debug_pending */
+D_800A3203                                  = 0x800A3203;  /* one-shot latch that re-arms the memory-card status poll through memcard_RequestLoad (28708.c:457-462) */  /* data-wave 2026-10-08: was g_damage_debug_pending */
 g_arena_block_count                                   = 0x800A33AC;  /* live entry count of the block table g_arena_blocks */  /* data-wave 2026-10-08: was g_text1a_active_count */
 D_800A3418                                 = 0x800A3418;  /* ref: bb2_rand */  /* data-wave 2026-10-08: was g_gnd_landing_rand_seed */
 D_800A3524                                = 0x800A3524;  /* pointer to the Unk8009BD24Block work block: = arg1 of func_80068F70, &D_8009BD24 at its one call site */  /* data-wave 2026-10-08: was g_text1b_arg1_struct_ptr */
@@ -889,7 +889,7 @@ D_8009BF70                             = 0x8009BF70;  /* set to arg3 of submit f
 D_800A9830                             = 0x800A9830;  /* bank 0 of ten DR_MOVE packets (240 bytes), picked by frame parity for gpu_AddDrawMove */  /* data-wave 2026-10-08: was g_shadow_record_a_table_240 */
 D_800A9920                             = 0x800A9920;  /* bank 1 of ten DR_MOVE packets (240 bytes); see D_800A9830 */  /* data-wave 2026-10-08: was g_shadow_record_b_table_240 */
 /* SE slot table */
-D_800F68E0                                      = 0x800F68E0;  /* 0xB4 16-byte timed event records (frame counter, frames seen, id, position, three angles): func_800393C8 adds, func_80039320 ages, func_8003993C replays them through func_80049718 */  /* data-wave 2026-10-08: was g_se_slot_table_16 */
+D_800F68E0                                      = 0x800F68E0;  /* 0xB4 16-byte timed event records (frame counter, frames seen, id, position, three angles): replay_RecordModelDraw adds, replay_BeginFrame ages, replay_PlayFrame replays them through func_80049718 */  /* data-wave 2026-10-08: was g_se_slot_table_16 */
 D_800F1B18                     = 0x800F1B18;  /* 0x570-byte motion-stream decoder records (Unk800F1B18Rec), indexed by decoder slot 0..2; func_8001979C sets one up, func_800198D0 decodes through it */  /* data-wave 2026-10-08: was g_per_char_motion_buffer_table_1392 */
 D_800F5F68                                   = 0x800F5F68;  /* BoneHitRec[2][22] (20 bytes each): one row of 22 hit-test records per fighter record, row = its index */  /* data-wave 2026-10-08: was g_per_char_record_440 */
 D_800A4750                              = 0x800A4750;  /* 16-byte records; filled by func_8003EDC0, read by func_8003E6D8 / func_8003EB84 (src/main/2B344.c) */  /* data-wave 2026-10-08: was g_record_table_16_800A4750 */
@@ -1043,14 +1043,14 @@ D_800A38EE                                = 0x800A38EE;  /* table[3] of func_800
 /* RENAME 0x800379D8: retired name 'rcnt0_AckEvents' — preserved note: unconditionally acks/consumes 4 rcnt0 events */
 
 /* === Memory-card setter functions (2026-05-17) -- 4 highs === */
-/* These 3 setters, like func_8003877C (which sets D_800A37C8 = 0), */
+/* These 3 setters, like memcard_RequestLoad (which sets D_800A37C8 = 0), */
 /* set the status code D_800A379E and the operation selector */
 /* D_800A37C8, zero D_800A3814 (counter) and set D_800A31F4 = 1 */
 /* (state-machine start). */
 /* RESET 0x8003879C: retired name 'motion_shift_set_mode1' — preserved note: sub-id=1, mode=1 (D_800A379E=1, D_800A37C8=1) */
 /* RESET 0x800387C0: retired name 'motion_shift_set_mode2' — preserved note: sub-id=1, mode=2 */
 /* RESET 0x800387E8: retired name 'motion_shift_set_mode3' — preserved note: sub-id=9, mode=3 */
-D_800A38CC                                    = 0x800A38CC;  /* memory-card write-path flag; zeroed by func_8003879C / func_800387C0 */  /* data-wave 2026-10-08: was g_motion_shift_flag2 */
+D_800A38CC                                    = 0x800A38CC;  /* memory-card write-path flag; zeroed by memcard_RequestSave / memcard_RequestOverwrite */  /* data-wave 2026-10-08: was g_motion_shift_flag2 */
 
 /* === Wave grid (wave_Init / wave_Update / wave_Draw, 368E4.c:740-971) === */
 /* A 9 x 17 grid: row 0 driven from the Judge[] sine table by 17 column phases, */
@@ -1215,7 +1215,7 @@ D_800A36F6                                    = 0x800A36F6;  /* fighter index, w
 /* D_801077B0: see their lines. */
 D_8008D538                                   = 0x8008D538;  /* 36-byte u8 table, values 0..0x1A: func_800338CC clears bit (1 << value) of 0x3EF3DF (17AFC.c:6372); fighter_Init stores it in unk_0A (9F9C.c:3978), the row of D_8008E5CC / D_8008E6A4 */  /* data-wave 2026-10-09: was g_char_class_id_table */
 D_8008D55C                                 = 0x8008D55C;  /* byte map from a table index into the D_80102778.unk_4 id space (skips 0-2 and 0x0F-0x11) */  /* data-wave 2026-10-08: was g_char_lesson_idx_table */
-g_listener_cam                                      = 0x800A36B4;  /* Rec44 view record pointer (camera_ApplyFightView / func_8001E6E4); func_800325E0 reads its +0x20 eye */  /* data-wave 2026-10-07: was g_attacker_pos_ptr */
+g_listener_cam                                      = 0x800A36B4;  /* Rec44 view record pointer (camera_ApplyFightView / camera_ApplyReplayView); func_800325E0 reads its +0x20 eye */  /* data-wave 2026-10-07: was g_attacker_pos_ptr */
 D_800A3824                                   = 0x800A3824;  /* func_80029454()'s result (negative = skip); bits tested per fighter index */  /* data-wave 2026-10-08: was g_practice_state_word */
 D_801077B0                                   = 0x801077B0;  /* order list built and shuffled by func_800338CC; func_80033BC0 takes entry [D_800A3783] */  /* data-wave 2026-10-08: was g_practice_byte_table */
 
@@ -1305,7 +1305,7 @@ D_800F6644                                       = 0x800F6644;  /* D_800F6608.h3
 /* RESET 0x80065000: retired name 'motion_ex_Init_id5' — preserved note: init id5 (state @ D_800F0CA0[5], flag @ D_800F10FC, counter @ D_800F0BA8[5]) */
 
 /* === State words cleared by func_8001B138 === */
-D_800FF5C8                                    = 0x800FF5C8;  /* Unk800FF5C8Rec: camera-target offset added to a Rec44 (camera_ApplyFightView / func_8001E6E4), zeroed by func_8001B138 */  /* data-wave 2026-09-25: was g_voice_state_word_a */
+D_800FF5C8                                    = 0x800FF5C8;  /* Unk800FF5C8Rec: camera-target offset added to a Rec44 (camera_ApplyFightView / camera_ApplyReplayView), zeroed by func_8001B138 */  /* data-wave 2026-09-25: was g_voice_state_word_a */
 /* 2026-10-16: D_800FF5CC, D_800FF5D0, D_800FF5D8, D_800FF5DA, D_800FF5DC, D_800FF5E0 retired -- fields of Unk800FF5C8Rec D_800FF5C8 (include/game.h). */
 
 /* === SPU voice volume table (2026-05-17) -- 1 high === */
@@ -1823,7 +1823,7 @@ g_draw_queue                                  = 0x80102C00;  /* data-wave 2026-0
 D_800A3808                                 = 0x800A3808;  /* data-wave 2026-09-29: was g_sound_3d_dma_snapshot */
 
 /* === Memcard operation globals (2026-05-17) -- 3 highs === */
-/* From 28708.c func_800383A4 (:342-378): memcard file find/read/write */
+/* From 28708.c memcard_StepRequest (:342-378): memcard file find/read/write */
 /* operations.  D_800F33D8 (draw-state struct) is reused as the 0x200-byte */
 /* memcard save data buffer in this context. */
 D_800A31F0                                  = 0x800A31F0;  /* pointer to the const save-file name D_80010AAC (28708.c:1902; never written); passed to memcard_HasFile, a card-directory name compare (memcard.c:190-240), and to memcard_WriteFile / memcard_ReadFile (28708.c:342-378) */  /* data-wave 2026-10-09: was g_memcard_filename_buf */
@@ -1952,8 +1952,8 @@ D_800A36C8                                       = 0x800A36C8;  /* func_8003B2C8
 D_800A333C                            = 0x800A333C;  /* latch set with D_800A3330 = 0x5A when the D_800A331C retry count reaches 5 or on case 3; while set the function shows message 0xA and runs the D_800A3330 countdown (28708.c:622-759) */  /* data-wave 2026-10-08: was g_result_timer_complete_flag */
 D_800A31F8                                 = 0x800A31F8;  /* func_80037D14's return D_800A3890: 0 while the card machine runs, then status 1/2/-1/-2/-3 */  /* data-wave 2026-10-08: was g_memcard_op_alt_handle */
 D_800A3204                             = 0x800A3204;  /* re-arm latch: func_800388A8 sets it when its two-way pad prompt returns a choice; the next call clears it and resets D_800A3318 (28708.c:573-595) */  /* data-wave 2026-10-08: was g_input_pause_pending_clear */
-D_800A331C                                 = 0x800A331C;  /* retry counter: +1 per status 8 from func_80038734 while D_800A31FC != 0; at 5 it sets D_800A333C = 1 (28708.c:605-695) */  /* data-wave 2026-10-08: was g_input_retry_counter_a */
-D_800A3320                                 = 0x800A3320;  /* counts the status-5 restarts of the func_80038734 state machine; the fifth also clears D_800A31FC (28708.c:724-731) */  /* data-wave 2026-10-08: was g_input_retry_counter_b */
+D_800A331C                                 = 0x800A331C;  /* retry counter: +1 per status 8 from memcard_Update while D_800A31FC != 0; at 5 it sets D_800A333C = 1 (28708.c:605-695) */  /* data-wave 2026-10-08: was g_input_retry_counter_a */
+D_800A3320                                 = 0x800A3320;  /* counts the status-5 restarts of the memcard_Update state machine; the fifth also clears D_800A31FC (28708.c:724-731) */  /* data-wave 2026-10-08: was g_input_retry_counter_b */
 
 /* === D_80101EC8[1].unk_F4 words (2026-05-17) -- 2 highs === */
 D_80102408                                = 0x80102408;  /* D_80101EC8[1].unk_F4.x (D_80101FBC + 0x44C) */  /* data-wave 2026-10-08: was g_replay_camera_target_b */
@@ -2153,7 +2153,7 @@ D_800A3728                                   = 0x800A3728;  /* +8 from D_800A372
 D_800A3758                             = 0x800A3758;  /* +8 from D_800A3750 (0x800A3750) */  /* data-wave 2026-10-08: was g_leaf_random_buffer_plus_8 */
 D_800A376C                               = 0x800A376C;  /* +1 from D_800A376B (0x800A376B) */  /* data-wave 2026-10-08: was g_mottest_substate_plus_1 */
 D_800A376E                               = 0x800A376E;  /* +3 from D_800A376B (0x800A376B) */  /* data-wave 2026-10-08: was g_mottest_substate_plus_3 */
-D_800A3782                = 0x800A3782;  /* 0/1: cleared by func_800392C8, set by func_800397A0, read by func_8003993C */  /* data-wave 2026-10-08: was g_practice_p2_move_unlock_pending_plus_1 */
+D_800A3782                = 0x800A3782;  /* 0/1: cleared by replay_Reset, set by replay_AdvanceFrame, read by replay_PlayFrame */  /* data-wave 2026-10-08: was g_practice_p2_move_unlock_pending_plus_1 */
 D_800A3784                            = 0x800A3784;  /* +1 from D_800A3783 (0x800A3783) */  /* data-wave 2026-10-08: was g_mottest_current_idx_plus_1 */
 D_800A37A4                        = 0x800A37A4;  /* +4 from D_800A37A0 (0x800A37A0) */  /* data-wave 2026-10-08: was g_mental_bar_packet_count_plus_4 */
 D_800A37B0                          = 0x800A37B0;  /* +8 from D_800A37A8 (0x800A37A8) */  /* data-wave 2026-10-08: was g_mental_bar_packet_buf_plus_8 */

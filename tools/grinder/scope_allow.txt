@@ -25,9 +25,9 @@
 # shared header, and per the s8 ledger the correction is beneficial TU-wide.
 # Owner-approved 2026-08-01 after the function livelocked 161 sessions proposing it.
 replay_camera_Init include/game.h include/bb2.h
-# func_80038170: pipeline scope grant 2026-08-19 (judge ESCALATE integration-handoff,
+# memcard_BuildFileHeader: pipeline scope grant 2026-08-19 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
-# func_80038170: pipeline scope grant 2026-08-20 (judge ESCALATE integration-handoff,
+# memcard_BuildFileHeader: pipeline scope grant 2026-08-20 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
 memcard_BuildFileHeader include/game.h include/bb2.h undefined_syms_auto.txt
 # SioSyncroRead: pipeline scope grant 2026-08-25 (judge ESCALATE integration-handoff,

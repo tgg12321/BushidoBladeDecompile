@@ -108,9 +108,9 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
 
 ## Other users of the decoder
 
-- `func_8003993C` (src/main/28708.c:1338) rebuilds both fighters from the
+- `replay_PlayFrame` (src/main/28708.c:1338) rebuilds both fighters from the
   per-frame records `D_800A36EC` (`Rec1C`, include/game.h:1807, written by
-  `func_80039680` from `unk_50`, `unk_F4`, `unk_64..unk_68` and others): it
+  `replay_RecordFighter` from `unk_50`, `unk_F4`, `unk_64..unk_68` and others): it
   decodes the two stored frame keys and calls `func_80041188` /
   `func_80040D48` as the live path does.
 - `func_8005490C` (src/main/4510C.c) plays a loaded sequence: a camera

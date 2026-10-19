@@ -249,18 +249,18 @@ or clears the channel's enable bit (16 + ch).
   `memcard_WriteFile` first creates the file (`open(name, (blocks << 16) |
   0x200)`) when its last argument is set.
 
-The save flow is `func_800383A4` (28708.c:277), stepped on `D_800A31F4`:
+The save flow is `memcard_StepRequest` (28708.c:277), stepped on `D_800A31F4`:
 
 - **Save (state 3):** it checks for the save file `D_80010AAC`
   (`"BASLUS-00663BUSHIDO2"`, through `D_800A31F0`) and for free blocks. It
-  clears the 0x200-byte buffer `D_800F33D8` (`func_80038148`) and writes the
-  card header into it (`func_80038170`: icon CLUT and image). It fills the
-  save block at `+0x100` (`func_80037F40`, an `Unk800F34D8Save`,
+  clears the 0x200-byte buffer `D_800F33D8` (`memcard_ClearBuffer`) and writes the
+  card header into it (`memcard_BuildFileHeader`: icon CLUT and image). It fills the
+  save block at `+0x100` (`memcard_BuildSaveBlock`, an `Unk800F34D8Save`,
   include/game.h:40-52), then writes 0x200 bytes.
 - **Load (state 5):** it reads the file into the same buffer.
 - **Completion:** `memcard_PollFileCompletion` (28708.c:413) reaps the
   result through `memcard_PollSwEvents` and closes the file. After a load it
-  restores the save block with `func_8003800C(&D_800F34D8)`. It posts a
+  restores the save block with `memcard_RestoreSaveBlock(&D_800F34D8)`. It posts a
   result code to `D_800A379E`.
 
 ## PCdrv host files
