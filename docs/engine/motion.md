@@ -10,16 +10,16 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 ## Loading
 
 - `motion_LoadCommonData` (src/main/9F9C.c:2991) reads file `cdrom_GetFileIndex(1, 1)`
-  to `D_800A3830` and points the common record `D_80102760` (include/bb2.h:479)
+  to `g_motion_common_buffer` and points the common record `g_motion_common_sections` (include/bb2.h:479)
   at its sections: the move streams at +0x14, then the sections named by the
   header words at +4, +8 and +0x10 (`unk_04`, `unk_08`, `unk_10`).
 - `motion_LoadFighterData` (src/main/9F9C.c:3016) loads up to two character files
   (`cdrom_GetFileIndex(1, j + 2)`, `j` the model id's index in `D_8008DCCC`)
-  into `D_800A3860[0..1]` (`Tbl800A3860Entry`, include/game.h:720-734) and points
-  `D_801027B0[i]` (include/bb2.h:482) at their sections, as the comment on
+  into `g_motion_fighter_buffers[0..1]` (`Tbl800A3860Entry`, include/game.h:720-734) and points
+  `g_motion_fighter_sections[i]` (include/bb2.h:482) at their sections, as the comment on
   `Unk801027B0Rec` describes (include/game.h:736). In modes 1, 4 and 6
   (`D_800A38DC`) it also reads seven sectors per fighter from
-  `cdrom_GetFileIndex(1, 0)` into `D_800A3888[i]`, a table of ready
+  `cdrom_GetFileIndex(1, 0)` into `g_motion_frame_buffers[i]`, a table of ready
   `MotionFrame`s.
 - `func_80021210` (src/main/9F9C.c:3107) hands each loaded file's bitstream
   (`unk_10`) to `func_8001979C`, decoder slots 0 (common), 1 and 2.
@@ -30,7 +30,7 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 `MoveScript *`:
 
 - ids 0x7FF0..0x7FFF select through the character file's tables (`f4E`,
-  `f54`, `f66` of `D_800A3860[rec->unk_4A]`) using the record's cycling index
+  `f54`, `f66` of `g_motion_fighter_buffers[rec->unk_4A]`) using the record's cycling index
   `unk_86` (wrapped by `f14`; for some ids it skips the entries `unk_88` /
   `unk_8E` while their flags `unk_8A` / `unk_90` are clear);
 - other ids with bit 15 set index the character file's streams (the
@@ -82,7 +82,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
    script's command list, switching moves through `motion_ResolveMoveData` /
    `func_80021A98`;
 2. decodes the frames at `unk_40` and the next one with `func_800198D0`
-   (src/main/9F9C.c:4704-4705), or copies `D_800A3888[i][unk_40]` in state
+   (src/main/9F9C.c:4704-4705), or copies `g_motion_frame_buffers[i][unk_40]` in state
    0x33; the frame keys go to `unk_64` / `unk_66` as `(slot << 14) | frame`
    (src/main/9F9C.c:4698);
 3. turns the two root offsets into a position delta (heading and distance
@@ -109,7 +109,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
 ## Other users of the decoder
 
 - `replay_PlayFrame` (src/main/28708.c:1338) rebuilds both fighters from the
-  per-frame records `D_800A36EC` (`Rec1C`, include/game.h:1807, written by
+  per-frame records `g_replay_fighter_frames` (`Rec1C`, include/game.h:1807, written by
   `replay_RecordFighter` from `unk_50`, `unk_F4`, `unk_64..unk_68` and others): it
   decodes the two stored frame keys and calls `func_80041188` /
   `func_80040D48` as the live path does.

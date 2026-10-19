@@ -397,8 +397,8 @@ extern s16 D_800A38AE;
 extern u8 D_800A38B0;
 extern u8 D_800A38B8;
 extern s16 D_800A38BA;
-/* per player: character of the g_motion_frame_buffers motion set (0xFF = none)
- */
+/* per player: id of the 7-sector frame set loaded into
+ * g_motion_frame_buffers[i] (0xFF = none) */
 extern u8 g_motion_frame_set_ids[2];
 /* per slot: model id in the g_motion_fighter_buffers[i] buffer
  * (motion_LoadFighterData); [1] = 0xFFFF: func_8001DB9C passed 0x80190800

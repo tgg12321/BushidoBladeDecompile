@@ -7,10 +7,10 @@ that picks moves for a computer-controlled fighter. Both fighters are
 per-fighter kind queue and its object pool, the shuffled ID list built for a
 match sequence, and three standalone helpers. All are C.
 
-## The per-fighter kind queue and the object pool `D_80106A78`
+## The per-fighter kind queue and the object pool `g_object_pool`
 
 Each fighter record holds a queue of up to 12 kinds: a count `unk_330` and the
-entries `unk_332[12]` (include/game.h:1562-1564). `D_80106A78[12]`
+entries `unk_332[12]` (include/game.h:1562-1564). `g_object_pool[12]`
 (include/bb2.h:191) is a pool of 0x64-byte `Obj80106A78` objects
 (include/game.h:1695); a free slot has `kind == -1` and `slot == 0xFF`.
 

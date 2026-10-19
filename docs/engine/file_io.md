@@ -17,7 +17,7 @@ Code names a file by group and index:
 plus an offset. The groups that appear in calls:
 
 - group 1: `motion_LoadCommonData` reads `cdrom_GetFileIndex(1, 1)` into the buffer
-  at `D_800A3830` (src/main/9F9C.c:2991), and the motion data `(1, 0)` /
+  at `g_motion_common_buffer` (src/main/9F9C.c:2991), and the motion data `(1, 0)` /
   `(1, j + 2)` (9F9C.c:3040, :3090).
 - group 2: image and data files. Readers include `eff_LoadImagesAndSetup`,
   `func_80016A8C`, and functions in 4BC3C.c, 4D0A8.c, 51268.c, 596CC.c and 5ED34.c.
@@ -249,7 +249,7 @@ or clears the channel's enable bit (16 + ch).
   `memcard_WriteFile` first creates the file (`open(name, (blocks << 16) |
   0x200)`) when its last argument is set.
 
-The save flow is `memcard_StepRequest` (28708.c:277), stepped on `D_800A31F4`:
+The save flow is `memcard_StepRequest` (28708.c:277), stepped on `g_memcard_request_state`:
 
 - **Save (state 3):** it checks for the save file `D_80010AAC`
   (`"BASLUS-00663BUSHIDO2"`, through `D_800A31F0`) and for free blocks. It
@@ -261,7 +261,7 @@ The save flow is `memcard_StepRequest` (28708.c:277), stepped on `D_800A31F4`:
 - **Completion:** `memcard_PollFileCompletion` (28708.c:413) reaps the
   result through `memcard_PollSwEvents` and closes the file. After a load it
   restores the save block with `memcard_RestoreSaveBlock(&D_800F34D8)`. It posts a
-  result code to `D_800A379E`.
+  result code to `g_memcard_request_status`.
 
 ## PCdrv host files
 

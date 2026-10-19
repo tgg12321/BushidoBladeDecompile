@@ -58,7 +58,7 @@ fourth is the body size in SPU RAM.
 
 `snd_QueueSound(id, volr, voll)` (4BC3C.c) queues sound `id`. It puts
 `&D_8009AA70[id]`, a pair (slot, index), into the first free entry of the
-24-entry pool `D_800EFB78` (`Unk800EFB78Entry`, include/game.h:840-849).
+24-entry pool `g_snd_queue` (`Unk800EFB78Entry`, include/game.h:840-849).
 
 `snd_FlushSoundQueue` (4BC3C.c) flushes the pool once per frame. For each
 queued entry whose slot is loaded, it takes the next voice from the running
