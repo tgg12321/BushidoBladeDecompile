@@ -195,7 +195,7 @@ class TestExhaustionEscalation(unittest.TestCase):
         st = self.hist([3] * G.ESCALATION_FLAT_SESSIONS)
         self.assertEqual(G.assign_modality(8, st), "escalation")
 
-    # Object-model gate (2026-09-03, func_80033550 post-mortem): exhaustion
+    # Object-model gate (2026-09-03, snd_QueuePositionSequence post-mortem): exhaustion
     # routes through ONE object-model audit session before escalation.
     def test_exhausted_unaudited_routes_to_object_model(self):
         st = self.hist([3] * G.ESCALATION_FLAT_SESSIONS, audited=False)
@@ -1328,7 +1328,7 @@ class TestForeclosureMechanics(unittest.TestCase):
 
 
 class TestDeclarationPunScan(unittest.TestCase):
-    """Per-use address puns on splat symbols (2026-09-03): both func_80033550
+    """Per-use address puns on splat symbols (2026-09-03): both snd_QueuePositionSequence
     layer-1 FAILs were these, one session apart."""
 
     def setUp(self):

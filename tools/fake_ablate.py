@@ -2,10 +2,10 @@
 """FAKE-ablation sweep — score one candidate form across the grid of its
 FAKE-annotated constructs removed.
 
-WHY (post-mortem 2026-09-01): func_8002EA24 recorded its winning lever
+WHY (post-mortem 2026-09-01): math_TestPreparedSegmentSphere recorded its winning lever
 "inert" in s8 because a /* FAKE */ carrier occupied the pseudo the lever
 targeted; the same lever applied to the no-carrier control scores 0.
-func_800324D0's staged read diverted a reference lift to the wrong web the
+fighter_ReadFrameMetadata's staged read diverted a reference lift to the wrong web the
 same way. A lever may not be called dead while a FAKE construct sits on the
 register it is trying to move — so measure every lever on every subset of
 the FAKE constructs, in one call.

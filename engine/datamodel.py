@@ -1,7 +1,7 @@
 """Per-function DATA MODEL: declared shape vs evidence for every global the
 target asm touches. Surfaced by the dossier and the grind brief.
 
-Why (2026-09-03 post-mortem, func_80033550): 13 of 17 sessions modeled
+Why (2026-09-03 post-mortem, snd_QueuePositionSequence): 13 of 17 sessions modeled
 register allocation for a tail that named_syms.txt had described since
 2026-05-17 as "12-byte stride per leaf, 6 entries" -- three splat per-word
 scalars that were one record copy. The census row, the sibling function that

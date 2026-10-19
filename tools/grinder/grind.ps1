@@ -76,7 +76,7 @@ param(
     #     residual work is long-horizon register-allocation/scheduler modelling.
     #     Recon is also the lowest-volume, highest-leverage lane (one shot, and
     #     its quality decides whether a function rotates — cf. the 2026-09-03
-    #     func_80033550 post-mortem that created the object-model modality).
+    #     snd_QueuePositionSequence post-mortem that created the object-model modality).
     #
     # History that shaped the mechanism: four Fable-allowance outages
     # (2026-08-12 judge 429 x5 over 2.5 h; 2026-09-06 execution lane 429 x5;
@@ -656,7 +656,7 @@ Write your verdict JSON to the exact path given below.
         # integration-handoff-self-serve (owner ruling 2026-08-19): a ruling that
         # explicitly narrows/supersedes an earlier ban clears the mechanical
         # tripwire, so the authorized resubmission is not auto-discarded
-        # (func_8002D518 burned two sessions exactly this way).
+        # (math_TestSegmentCircle2D burned two sessions exactly this way).
         $n = (python tools/grinder/grindlib.py unban . $func ([string]$v.unban_construct) | Out-String).Trim()
         if ([int]$n -gt 0) { Log "${func}: $n superseded ban(s) cleared per judge narrowing." }
     }
@@ -965,7 +965,7 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         # Judge PASS on an island-carrying body must go through the canonical-asm
         # grant door BEFORE `queue done`. The engine gate scores cop2 islands as
         # non-cheat, so without this check the function lands titled COMPLETED-C
-        # with no allowlist line (func_8002E838 49d6927e, func_80031890 1a2e49e4).
+        # with no allowlist line (math_PrepareSegmentCollisionFrame 49d6927e, func_80031890 1a2e49e4).
         $bucket = 'COMPLETED-C'
         $isl = (python tools/grinder/grindlib.py island-count . $func $stem 2>$null | Out-String).Trim()
         $nIsl = 0; $listed = $false

@@ -52,7 +52,7 @@ COMMON model.
 - `tools/check_completion_integrity.py` flags any COMPLETED-C function in a cheat-pathway list.
 - Gate lists are on the add-scope-allow denylist (`_SCOPE_GRANT_DENY` in `tools/grinder/grindlib.py`).
 
-Current dependents: prefill-label — `main`; expand-lb — func_8003047C; expand-dest — func_8007CE0C.
+Current dependents: prefill-label — `main`; expand-lb — object_InitKindQueue; expand-dest — func_8007CE0C.
 
 ## Related
 

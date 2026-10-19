@@ -238,7 +238,7 @@ def dossier(func: str) -> str:
           if any(n in ln for n in names)][-3:]
     lines.append("journal tail:")
     lines += [f"  {l[:160]}" for l in jl] or ["  (none)"]
-    # Data model (2026-09-03, func_80033550 post-mortem): declared shape vs
+    # Data model (2026-09-03, snd_QueuePositionSequence post-mortem): declared shape vs
     # census / sibling-addressing evidence for every global the target touches.
     try:
         from . import datamodel as _dm

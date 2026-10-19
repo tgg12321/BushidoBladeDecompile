@@ -9,7 +9,7 @@ stated, otherwise only its use is described.
 ## Per-frame entry: `func_8002C61C`
 
 `func_8002C61C` (src/main/17AFC.c:2194) runs once per frame; its callers are
-src/main/9F9C.c:2044, :2088 and :2197, each followed by `func_80030D7C` (the
+src/main/9F9C.c:2044, :2088 and :2197, each followed by `object_UpdatePool` (the
 object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
 `unk_6A`:
 
@@ -18,16 +18,16 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
 - otherwise, in order:
   1. `func_8002872C` (src/main/17AFC.c:736): per-fighter checks of
      `unk_0C == 0x1B` records against the opponent's state.
-  2. `func_800288C8` (src/main/17AFC.c:773): the body-overlap push (its
+  2. `fighter_ResolveBodyOverlap` (src/main/17AFC.c:773): the body-overlap push (its
      comment at :766): two points per fighter tested pairwise against the
      radii `D_800A3144[0..1]`, an overlap pushing both apart along x/z
      through `unk_134`.
-  3. `D_800A3824 = func_80029454()` (src/main/17AFC.c:1077): the blade
+  3. `D_800A3824 = fighter_ProcessWeaponContacts()` (src/main/17AFC.c:1077): the blade
      contact test between the two fighters (comment at :1065); it returns
      `(fighter-1 grid << 1) | fighter-0 grid` on contact, else -1.
   4. On contact, `func_8002C22C` (src/main/17AFC.c:2118), then
-     `func_800283D0` (src/main/17AFC.c:574) for each fighter when either has
-     `unk_AD` set; otherwise `func_8002AB08(0)` (below).
+     `fighter_ResolveWeaponContact` (src/main/17AFC.c:574) for each fighter when either has
+     `unk_AD` set; otherwise `fighter_ProcessWeaponBodyHits(0)` (below).
   5. When both fighters have `unk_3C >= 3`, `D_800A38A8` is set, both
      `unk_286` are -1, neither `unk_0C` is 0x1F and their heights `unk_F4.y`
      differ by less than 1000, both get `unk_286 = 0xA`.
@@ -36,15 +36,15 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
   scratchpad body points are copied into `unk_210` / `unk_234`, `unk_18C`
   (the centroid of points 1..3) and `unk_174` (the midpoint of points 4..5)
   (src/main/17AFC.c:2252-2278); and while fighter 0's `unk_286` is -1,
-  `func_80031B24` (src/main/17AFC.c:4246) tests the pool objects against the
+  `object_ResolveFighterHits` (src/main/17AFC.c:4246) tests the pool objects against the
   fighters, followed by `func_80032314` (src/main/17AFC.c:4432) when that
   left `unk_286` unchanged.
 
 `unk_286` is the reaction code these paths write; -1 means none pending.
 
-## Blade against body: `func_8002AB08`
+## Blade against body: `fighter_ProcessWeaponBodyHits`
 
-`func_8002AB08(mode)` (src/main/17AFC.c:1568) runs for each fighter `i` as the
+`fighter_ProcessWeaponBodyHits(mode)` (src/main/17AFC.c:1568) runs for each fighter `i` as the
 target, with the opponent as the attacker:
 
 1. It decides how many blade quads to test (`var_10`): one when the
@@ -52,15 +52,15 @@ target, with the opponent as the attacker:
    one more with `unk_8C` set, and one more when `unk_0E` is 4 or 5 and any is
    tested. (With `mode == 1` the fighter `D_800A38AE` is skipped as a target.)
    Attackers with `unk_0E` 6 or 7, in states 2 / 0x1B / 0x28 / 0x26 at frame
-   `unk_40 == unk_A1[0]`, also sweep a segment with `func_8002A458`
+   `unk_40 == unk_A1[0]`, also sweep a segment with `fighter_CastWeaponSegment`
    (src/main/17AFC.c:1423, comment at :1399) while the counter `unk_34A`
    lasts (once it is spent they play cue 0x32 and test no quads); `unk_0C`
    0x1D / 0xE (with `unk_26C` set) do the same with the second blade
    (`unk_A1[1]`).
 2. Each blade quad (this frame's points from the scratchpad and last frame's
    from `unk_210` / `unk_234`) is split into 2 or 4 triangles (4 when the tip
-   moved more than 2500 units) and each triangle goes through `func_8002CD58`
-   (src/main/17AFC.c:2377) and `func_8002CA8C` (src/main/17AFC.c:2296), which
+   moved more than 2500 units) and each triangle goes through `math_PrepareTriangleCollisionFrame`
+   (src/main/17AFC.c:2377) and `fighter_TestTriangleBoneHits` (src/main/17AFC.c:2296), which
    leave bit masks of struck limb records in the scratch record.
 3. Of the struck records among the target's 22 limb records (`D_800F5F68[i]`)
    it picks the one nearest the attacker's point `unk_210[1]`
@@ -73,13 +73,13 @@ target, with the opponent as the attacker:
    `unk_134` when the facing difference is under 0x400.
 5. If the attacker's `unk_AE` is set and (with `unk_8C`) its frame `unk_40`
    is inside the window `unk_A1[k]..unk_A3[k]`, it calls
-   `func_80027AD8(0, target, limb, facing difference, ...)`.
+   `fighter_ResolveBoneHit(0, target, limb, facing difference, ...)`.
 
-## Hit reaction: `func_80027AD8`
+## Hit reaction: `fighter_ResolveBoneHit`
 
-`func_80027AD8(src, rec, limb, thresh, flag, tbl, arg6, out)`
-(src/main/17AFC.c:319) is called with `src == 0` from `func_8002AB08` and with
-`src == 1` and a `Tbl8008E194` record from `func_80031B24` (the comment at
+`fighter_ResolveBoneHit(src, rec, limb, thresh, flag, tbl, arg6, out)`
+(src/main/17AFC.c:319) is called with `src == 0` from `fighter_ProcessWeaponBodyHits` and with
+`src == 1` and a `Tbl8008E194` record from `object_ResolveFighterHits` (the comment at
 src/main/17AFC.c:1954 records both call shapes). Its branches, in order:
 
 - `rec->unk_0C == 0x1C`: when the limb is not 1..3, or the dot product of
@@ -93,7 +93,7 @@ src/main/17AFC.c:1954 records both call shapes). Its branches, in order:
   latter case also sets `unk_286 = 7`.
 - The target in an attack state (2, 0x1B, 0x28, 0x26) with `unk_40 < unk_A0`:
   with `src == 0` the reaction code
-  comes from `D_8008EB74[func_800272FC(diff)][sign][same]`, where `diff` is
+  comes from `D_8008EB74[math_ClassifyAbsMagnitude(diff)][sign][same]`, where `diff` is
   the difference of the two `unk_20` values and `same` whether their `unk_AF`
   match; codes 0..2 play cue pairs (0x25 / 0x26 / 0x2D), and code 2 also runs
   `func_80027A58`. With `src == 1` the table record's `unkC` picks code 0
@@ -103,32 +103,32 @@ src/main/17AFC.c:1954 records both call shapes). Its branches, in order:
   and the target's `unk_0A` is 2, 4, 0xE or 0xF; else a `switch` on the struck
   limb picks it.
 
-## Frame windows: `func_800324D0` and `func_8003339C`
+## Frame windows: `fighter_ReadFrameMetadata` and `fighter_ProcessFrameEvents`
 
 Both walk the byte stream at `rec->unk_58 + 4`; 0 ends it.
 
-- `func_800324D0` (src/main/17AFC.c:4505; called at src/main/9F9C.c:3376)
+- `fighter_ReadFrameMetadata` (src/main/17AFC.c:4505; called at src/main/9F9C.c:3376)
   resets the window fields and reads: 0xFF skips six bytes, a byte below 0x80
   skips one, and 0x80..0x8B take the next byte into `unk_A1[0]`, `unk_A3[0]`,
   `unk_A7`, `unk_A8`, `unk_A9`, `unk_A5`, `unk_A6`, `unk_A1[1]`, `unk_A3[1]`,
   `unk_AA`, `unk_AB`, `unk_AC` (src/main/17AFC.c:4530-4566). `unk_A1[k]` /
   `unk_A3[k]` are the frame windows the contact tests compare `unk_40` with.
-- `func_8003339C` (src/main/17AFC.c:5100; called at src/main/9F9C.c:5148 and
+- `fighter_ProcessFrameEvents` (src/main/17AFC.c:5100; called at src/main/9F9C.c:5148 and
   src/main/28708.c:1434) reads the same stream: 0xFF tests a 32-bit mask
   against `1 << rec->unk_0A` and skips 4 or 6 bytes; a byte `c` below 0x80
   is followed by a frame number, and when that equals `unk_40` it calls
-  `func_80032C50(rec, c - 1)` (src/main/17AFC.c:4807); it stops at the first
+  `fighter_DispatchFrameEvent(rec, c - 1)` (src/main/17AFC.c:4807); it stops at the first
   frame number above `unk_40`.
 
 ## Geometry helpers
 
-- `func_8002D518` (src/main/17AFC.c:2592): segment against circle in x/z.
-- `func_8002DAD0` (src/main/17AFC.c:2807) / `func_8002CD58`: a triangle's
+- `math_TestSegmentCircle2D` (src/main/17AFC.c:2592): segment against circle in x/z.
+- `math_TryPrepareTriangleNormalFrame` (src/main/17AFC.c:2807) / `math_PrepareTriangleCollisionFrame`: a triangle's
   local frame from its edge vectors and normal.
 - `func_8002DE20` (src/main/17AFC.c:2889): cuts a triangle rotated by the GTE
   matrix with the plane z = 0 and tests the cut segment against a second
   triangle.
-- `func_8002E6B0` (src/main/17AFC.c:3082): point in triangle.
+- `math_PointInTriangleXZ` (src/main/17AFC.c:3082): point in triangle.
 - `func_8002FC80` (src/main/17AFC.c:3535): the GTE cross product of
   `(a1 - a0)` and `(a2 - a0)`, returning `ratan2` of its x/z (+0x800 when y is
   positive). `func_8002FDB0` (src/main/17AFC.c:3563) takes the same cross
@@ -140,5 +140,5 @@ Both walk the byte stream at `rec->unk_58 + 4`; 0 ends it.
 
 `func_80032854(who, cue, pos, dir)` (src/main/17AFC.c:4657) dispatches the
 effect and sound cues the paths above play; sound cues are `who * 40 + id`
-(per-player blocks of 40) panned by `func_800325E0` (src/main/17AFC.c:4576)
+(per-player blocks of 40) panned by `snd_QueuePositionalSound` (src/main/17AFC.c:4576)
 from `pos` relative to `g_listener_cam`.

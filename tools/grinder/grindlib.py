@@ -34,7 +34,7 @@ import sys
 
 MODALITIES = ["recon", "structural", "permuter", "solver", "forensics", "rederive", "synthesis",
               "object-model"]
-# "object-model" (2026-09-03, func_80033550 post-mortem): a one-session audit of
+# "object-model" (2026-09-03, snd_QueuePositionSequence post-mortem): a one-session audit of
 # declared shape vs evidence for every global the target touches, forced ONCE
 # before the driver may declare exhaustion. 13 of that function's 17 sessions
 # modeled register allocation for a tail named_syms.txt had described as a
@@ -377,7 +377,7 @@ def data_model_signals(root, func):
 
 # Per-use puns on a splat symbol's ADDRESS: `(T *)&D_x`, `(&D_x + i)`,
 # `(&D_x)[i]`. Each spells an object model at the use site that belongs at
-# the declaration (aggregate-merge family prong (d)); both func_80033550
+# the declaration (aggregate-merge family prong (d)); both snd_QueuePositionSequence
 # layer-1 FAILs on 2026-09-03 were exactly these, one session apart.
 _SYM = r"(D_[0-9A-Fa-f]{8}|g_\w+)"
 _PUN_RES = (re.compile(r"\(\s*(?:struct\s+\w+|\w+)\s*\*+\s*\)\s*\(?\s*&\s*" + _SYM + r"\b"),
@@ -429,7 +429,7 @@ def unban_construct(root, func, needle):
     (integration-handoff-self-serve, owner ruling 2026-08-19). The narrowing
     itself stays in judge_constraints; this clears just the mechanical
     tripwire so a Judge-authorized resubmission is not auto-discarded
-    (func_8002D518 deadlocked twice on exactly that). Returns entries removed."""
+    (math_TestSegmentCircle2D deadlocked twice on exactly that). Returns entries removed."""
     st = load_state(root, func)
     if not st:
         return 0
@@ -1054,7 +1054,7 @@ ESCALATION_MIN_MODALITIES_WIDE = 6
 
 # ── Ruling 3 (2026-09-08, rotation-not-foreclosure): no repeat without a new instrument ──
 # At a flat floor the ladder used to walk its fixed cycle, re-running synthesis /
-# forensics / rederive twice each while the floor sat still (func_8002D780:
+# forensics / rederive twice each while the floor sat still (math_TestPreparedTriangleSphere:
 # eight sessions at 2/202, three repeated instruments, no new tool). Once the
 # honest floor has been flat for FLAT_WINDOW_MIN sessions, the next modality
 # is the first ladder rung that has NOT run since the floor went flat; a rung
@@ -1117,7 +1117,7 @@ def untried_rung(state):
 
 
 # ── Ruling 2 (2026-09-08): the cc1psx self-disproof gates exhaustion ─────────
-# func_8002D780 was foreclosed with a record blaming policy; the original
+# math_TestPreparedTriangleSphere was foreclosed with a record blaming policy; the original
 # compiler, never run in 14 sessions, emits the same residual from the same
 # source. Before the driver may assign `escalation` it runs
 # `engine cc1psx-check <func>` (out of tree) and records the result here. A
@@ -1989,7 +1989,7 @@ def island_count(root, func, stem):
     """(n_islands, allowlisted) for the APPLIED body of `func` in src/<stem>.c.
 
     Owner Ruling C 2026-09-02 (decisions.md "2026-09-02 — OWNER RULING"): two
-    cluster members (func_8002E838, func_80031890) merged as COMPLETED-C because
+    cluster members (math_PrepareSegmentCollisionFrame, func_80031890) merged as COMPLETED-C because
     the Judge said PASS (with a prose "write the allowlist line" note the driver
     never parses) and the engine gate scores cop2 islands as non-cheat
     ([[operator-gotchas]]). The PASS path now asks this
@@ -2110,7 +2110,7 @@ MODALITY_PLAYBOOK = {
                   "disposition in `escalation` modality.)"),
     "object-model": ("OBJECT-MODEL AUDIT — the driver has found the honest floor flat across "
                      "the ladder and will declare exhaustion NEXT session unless the object "
-                     "model is checked first. func_80033550 (2026-09-03) spent 13 of 17 sessions "
+                     "model is checked first. snd_QueuePositionSequence (2026-09-03) spent 13 of 17 sessions "
                      "modeling register allocation for a tail that named_syms.txt had described "
                      "as a 12-byte record table since 2026-05-17; the residual closed the moment "
                      "the three per-word scalars were declared as one record. Your ENTIRE job: "
@@ -3400,7 +3400,7 @@ def compact_ledger(root, func, cap=LEDGER_MAX, force=False):
 
 # ── Current-scope injection (2026-09-01 post-mortem) ─────────────────────────
 # A ledger paraphrases a rule's scope at the time it was written; rule text
-# moves by owner ruling. func_800283D0 banked its decisive find as "out of
+# moves by owner ruling. fighter_ResolveWeaponContact banked its decisive find as "out of
 # scope" by quoting a scoping abolished seven weeks earlier and lost 18
 # sessions; func_8003C714 s1 carried the same caveat. The brief now prints the
 # CURRENT `description:` line of every rule slug the ledger mentions, so a
@@ -3586,7 +3586,7 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
                   + "\n".join(_rows) + "\n")
         if _flags:
             dmodel += ("SIGNALS — declaration-level facts, not codegen levers. A flagged symbol's\n"
-                       "declaration is hypothesis #1 (func_80033550: 13 sessions of RA modeling for a\n"
+                       "declaration is hypothesis #1 (snd_QueuePositionSequence: 13 sessions of RA modeling for a\n"
                        "record copy the census had named since 2026-05-17):\n"
                        + "\n".join("  " + f for f in _flags) + "\n")
     _puns = scan_declaration_puns(root, func)
@@ -3657,8 +3657,8 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
             "closest to the target, and re-measure it (a) on the CURRENT chassis and (b) with\n"
             "every FAKE construct ablated (`python3 tools/fake_ablate.py --func " + func +
             " --file " + st['file'] + " --candidate <form.c>`). A lever measured 'inert' while\n"
-            "a FAKE carrier occupied its target pseudo is not a kill (func_8002EA24 s8);\n"
-            "a lever killed on 3 of 12 arms is not a class kill (func_800324D0 s6). Record\n"
+            "a FAKE carrier occupied its target pseudo is not a kill (math_TestPreparedSegmentSphere s8);\n"
+            "a lever killed on 3 of 12 arms is not a class kill (fighter_ReadFrameMetadata s6). Record\n"
             "the re-measurement as a hypothesis either way.\n")
     return f"""# GRIND SESSION — {func} (src/{st['file']}.c)
 

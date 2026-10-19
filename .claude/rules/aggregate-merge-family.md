@@ -77,12 +77,12 @@ extended, once a one-object spelling matches.
   (`.cse` `use_related_value` and `.greg`/final `.s` addressing), with Q31 mechanism + search.
   Each per-word declaration is `/* FAKE */`-annotated; every other access goes through
   `D_80101EC8`.
-- **D_800A37E8 / EA / EC (Q96; Q117 2026-10-06):** func_80027AD8, func_8002AB08 and func_80031B24's two
-  call sites only (func_80031B24: at each argument). Three `s16` scalars;
+- **D_800A37E8 / EA / EC (Q96; Q117 2026-10-06):** fighter_ResolveBoneHit, fighter_ProcessWeaponBodyHits and object_ResolveFighterHits's two
+  call sites only (object_ResolveFighterHits: at each argument). Three `s16` scalars;
   the vector's address handed to callees is `&D_800A37E8`, `/* FAKE */`-annotated at the
   assignment. Basis: the `s16[3]` and `{x,y,z}` forms banked at 2 (cse rewrites the dot's [0]
   address to `vec`'s register; cc1psx identical),
-  memory/grind/judge-decl-cleanup/followups/func_80027AD8.vec-investigation.md.
+  memory/grind/judge-decl-cleanup/followups/fighter_ResolveBoneHit.vec-investigation.md.
 - **D_800A376A / D_800A376B (Q97):** func_8002738C only: the per-player byte indexed as
   `*(&D_800A376A + a0)`, `/* FAKE */`-annotated. Basis: the `u8 D_800A376A[2]` form only
   (source in followups/func_8002738C.c12-merge-variant.diff; func_8003B2C8 12 / func_8003B328 16

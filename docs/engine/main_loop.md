@@ -91,7 +91,7 @@ assigns to `D_800A3834` itself.
 | Mode | Handler | Sets | What it does |
 | --- | --- | --- | --- |
 | 0 | `fight_Init` (src/main/9F9C.c:1757) | 1 | sets up the fight (fighters through `fighter_Init`, the object pool, the view) |
-| 1 | `fight_Update` (src/main/9F9C.c:2028) | | per-frame fight: `func_8001BE20` / `fighter_Update` per fighter, `func_8002C61C`, `func_80030D7C` ([combat.md](combat.md), [motion.md](motion.md)) |
+| 1 | `fight_Update` (src/main/9F9C.c:2028) | | per-frame fight: `func_8001BE20` / `fighter_Update` per fighter, `func_8002C61C`, `object_UpdatePool` ([combat.md](combat.md), [motion.md](motion.md)) |
 | 2 | `func_80033898` (src/main/17AFC.c:5273) | 3 | resets graphics, clears `D_800A37B8` |
 | 3 | `func_80034708` (src/main/24F08.c:28) | | prints the `D_80102778` settings with `font_Printf` and steps the two cursors `D_800A3174`; calls `func_800344B4` |
 | 4 | `func_800397D4` (src/main/28708.c:1287) | 5 | view and fighter setup |
@@ -107,7 +107,7 @@ assigns to `D_800A3834` itself.
 | 14 | `func_80035430` (src/main/25788.c:202) | | empty |
 | 15 | `func_8003BFC4` (src/main/2B344.c:651) | 8 | runs the FMV overlay (`sys_ExecMovieOverlay`) |
 | 16 | `func_8001EEB4` (src/main/9F9C.c:2162) | 0x11 | sets both fighters' moves (`func_80021A98`) |
-| 17 | `func_8001EFA0` (src/main/9F9C.c:2184) | 0xC, 2 | per-frame fight variant with the view `camera_SetInterpolatedFighterView`; after frame 0x69 or on Cross it sets 0xC (`D_800A38DC` 4 / 6, or 1 with `D_800A3748 != 0`), calls `func_80033BC0` (`D_800A38DC` 1, `D_800A3748 == 0`), or sets 2 |
+| 17 | `func_8001EFA0` (src/main/9F9C.c:2184) | 0xC, 2 | per-frame fight variant with the view `camera_SetInterpolatedFighterView`; after frame 0x69 or on Cross it sets 0xC (`D_800A38DC` 4 / 6, or 1 with `D_800A3748 != 0`), calls `fight_AdvanceOpponentOrder` (`D_800A38DC` 1, `D_800A3748 == 0`), or sets 2 |
 | 18 | `func_8003C040` (src/main/2B344.c:666) | 0x13 | scene setup chosen by `D_800A38A4` |
 | 19 | `func_8003C2C0` (src/main/2B344.c:725) | 0x12, 0x18, 0x1A, 0xA, 8 | waits on `func_80054F68`, then picks the next mode |
 | 20 | `func_8003C42C` (src/main/2B344.c:754) | 0x15 | |

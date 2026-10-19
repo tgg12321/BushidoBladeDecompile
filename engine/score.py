@@ -101,7 +101,7 @@ _SYMTAB_CACHE: dict[str, int] | None = None
 # by the assembled data object, not by any linker symbol file — so before
 # 2026-09-22 they were invisible here, and an honest `sym+N` (or a C name for
 # the same address) scored a false +2 per lui/load pair against the splat-asm
-# reference (func_800335D8, _drs, CD_cw). Their address is the vaddr in the
+# reference (snd_UpdateStageSounds, _drs, CD_cw). Their address is the vaddr in the
 # comment on the first data line after the label:
 #     dlabel D_800A12FC
 #         /* 91AFC 800A12FC 00000000 */ .word 0x00000000

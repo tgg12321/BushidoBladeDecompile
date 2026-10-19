@@ -14,47 +14,47 @@ entries `unk_332[12]` (include/game.h:1562-1564). `D_80106A78[12]`
 (include/bb2.h:191) is a pool of 0x64-byte `Obj80106A78` objects
 (include/game.h:1695); a free slot has `kind == -1` and `slot == 0xFF`.
 
-- `func_8003047C(rec)` (src/main/17AFC.c:3728) seeds the queue: it copies the five entries of
+- `object_InitKindQueue(rec)` (src/main/17AFC.c:3728) seeds the queue: it copies the five entries of
   `D_8008E338[rec->unk_0A]` (`s8 [27][5]`, include/bb2.h:193), counts the ones
   other than -1, and stores the first in `D_800A36F2[rec->index]`. Called from
   src/main/9F9C.c:3783.
-- `func_80030B10(rec, kind)` (src/main/17AFC.c:3901) appends a kind, or puts it
+- `object_QueueKind(rec, kind)` (src/main/17AFC.c:3901) appends a kind, or puts it
   first when `rec->unk_88 != -1` and `kind == rec->unk_14`; it returns 0 when
   the queue already holds 12.
-- `func_80030580(rec, kind)` (src/main/17AFC.c:3756) allocates the first free
+- `object_SpawnFromFighter(rec, kind)` (src/main/17AFC.c:3756) allocates the first free
   pool slot and places the object at the fighter (`unk_F4`, raised by
   `unk_1A / 32`). Its velocity comes from `D_8008E194[kind]`
   (`Tbl8008E194`, include/game.h:1661): the horizontal speed `unk4` along the
   fighter's heading `unk_1C8.vy`, the vertical speed `unk6`, and a spin
   `unk8` about Y or X by `unk0`.
-- `func_800307D0(rec)` (src/main/17AFC.c:3819) takes an entry off the queue
+- `object_ThrowQueuedKind(rec)` (src/main/17AFC.c:3819) takes an entry off the queue
   (index 1 instead of 0 when it holds two or more, the head equals
-  `rec->unk_14` and `rec->unk_88 != -1`), spawns it through `func_80030580`, and plays a cue
-  through `func_80032854`. `func_80030900(rec, pos)` (src/main/17AFC.c:3853)
-  spawns the head entry at `pos`, and `func_80030A2C(rec, kind, pos)`
+  `rec->unk_14` and `rec->unk_88 != -1`), spawns it through `object_SpawnFromFighter`, and plays a cue
+  through `func_80032854`. `object_DropQueuedHeadAt(rec, pos)` (src/main/17AFC.c:3853)
+  spawns the head entry at `pos`, and `object_SpawnScatteredAt(rec, kind, pos)`
   (src/main/17AFC.c:3879) spawns `kind` at `pos`; both give the object a
   random velocity and spin from `rng_Next`.
-- `func_80030BA8(rec)` (src/main/17AFC.c:3919) takes a pool object back into
+- `object_PickUpNearby(rec)` (src/main/17AFC.c:3919) takes a pool object back into
   the queue: the first object whose kind is not -1 or 0x12..0x1D, whose
   `unk_50` is 0, which lies within 100 units of the fighter's `unk_B8.vy`
   vertically and within a squared horizontal distance of 0xF423F of
   `unk_F4`. It frees the slot and returns the kind (-1 if none, or if the
   queue is full).
-- The fighter update calls these at src/main/9F9C.c:5101 (`func_80030A2C`),
-  :5122 (`func_800307D0`) and :5128 / :5133 (`func_80030BA8`), gated on the
+- The fighter update calls these at src/main/9F9C.c:5101 (`object_SpawnScatteredAt`),
+  :5122 (`object_ThrowQueuedKind`) and :5128 / :5133 (`object_PickUpNearby`), gated on the
   record's `unk_6A` / `unk_40` values.
-- Pool cleanup: `func_8003043C` (src/main/17AFC.c:3719) frees all twelve
-  slots (called at src/main/9F9C.c:1769); `func_80030524`
+- Pool cleanup: `object_ResetPool` (src/main/17AFC.c:3719) frees all twelve
+  slots (called at src/main/9F9C.c:1769); `object_FreeAttachedObjects`
   (src/main/17AFC.c:3745) frees objects with `unk_08 != 0` and `func_80030D04`
   (src/main/17AFC.c:3967) frees kinds 0x12..0x1D (both called at
   src/main/9F9C.c:1180-1181).
 
 ## The shuffled ID list `D_801077B0`
 
-`func_800344B4` case 1 (src/main/24BF0.c:54) calls `func_800338CC` and then
-`func_80033BC0`.
+`func_800344B4` case 1 (src/main/24BF0.c:54) calls `fight_BuildOpponentOrder` and then
+`fight_AdvanceOpponentOrder`.
 
-`func_800338CC` (src/main/17AFC.c:5279):
+`fight_BuildOpponentOrder` (src/main/17AFC.c:5279):
 
 1. Collects the IDs `i` in 0..26 whose bit is set in
    `D_80106A50.unk_00 & 0x3EF3DF`, minus the bit
@@ -69,7 +69,7 @@ entries `unk_332[12]` (include/game.h:1562-1564). `D_80106A78[12]`
    is tested depends on `D_8008D9EC`), stores the count in `D_800A391F`, and
    clears the cursor `D_800A3783`.
 
-`func_80033BC0` (src/main/17AFC.c:5397) steps the cursor: it sets
+`fight_AdvanceOpponentOrder` (src/main/17AFC.c:5397) steps the cursor: it sets
 `D_80102778.unk_4[1] = D_8008D55C[D_801077B0[cursor]]`, or, once the cursor
 reaches the count, sets the mode `D_800A3834` to 0x12 (count 20) or 0x20.
 The 27 IDs match the row count of the per-character tables (`D_8008E338`,
@@ -90,7 +90,7 @@ an opponent order; the code does not name it.
   `ratan2(a1[0], a1[2])`, rotates the X/Z pair at `a0[0x11]` / `a0[0x13]`
   into that angle's frame (`>> 12`), negates the second component, rotates back
   with `>> 15` (an eighth of the magnitude), and divides `a0[0x12]` by four. No direct caller appears in `src/`.
-- `func_80027640(rec)` (src/main/17AFC.c:178), called from `func_80027AD8`
+- `func_80027640(rec)` (src/main/17AFC.c:178), called from `fighter_ResolveBoneHit`
   (src/main/17AFC.c:370) when `rec->unk_0C == 0xD`, moves the fighter's
   positions (`unk_F4`, `unk_D8`, `unk_B8`) to a target: with
   `D_800A36A4 == 3` a percentage blend from the fighter's position toward the

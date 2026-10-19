@@ -14,7 +14,7 @@ Usage:
   python tools/grinder/grant_rescan.py --term "compound-address duplication" --bans-only
   # 2. apply, narrowed to the ledgers you actually vetted
   python tools/grinder/grant_rescan.py --term "compound-address duplication" --apply \\
-        --only func_8002D518 --family "F3 compound-address duplication" \\
+        --only math_TestSegmentCircle2D --family "F3 compound-address duplication" \\
         --ref ".claude/rules/no-new-park-categories.md:78"
 
 Without --apply: prints every ledger whose rejected/* headers, banned

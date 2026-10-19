@@ -104,7 +104,7 @@ CAVEAT_BLOCK = """
 > (`prera_hard`) and reports unreachable preference atoms as **FORECLOSED**
 > with the mechanism instead of emitting them as levers. Ground truth
 > reproduced exactly: func_80037A20 `v0 a0 a1 a2 a3 ra` (no $s1),
-> func_80033550 `a0` (no $a3), special_camera_get_rot_dir `v0 v1 a0 a1 a2 ra`
+> snd_QueuePositionSequence `a0` (no $a3), special_camera_get_rot_dir `v0 v1 a0 a1 a2 ra`
 > (no $s5). The refs-delta search was also widened from +3/-2 to +12/-6 with a
 > cost gradient, and every report now prints its search bounds — the old cap is
 > why pref_add looked like the UNIQUE 1-atom vector for func_80037A20 when

@@ -70,7 +70,7 @@ array element since the previous write.
 
 Still banned (Ruling 5 and extension): func_800200DC `y1` (different consumers);
 func_80045878 `c` (different templates, a constant write); func_80060A68 `src`/`idx`
-(re-load); func_800460E4 off_a/off_b (borrow, split); func_8002D780 `tmp`; constant-holders
+(re-load); func_800460E4 off_a/off_b (borrow, split); math_TestPreparedTriangleSphere `tmp`; constant-holders
 spelled as reused locals; cast-laundered or multi-role bases. Allocator effect alone is never
 sufficient.
 

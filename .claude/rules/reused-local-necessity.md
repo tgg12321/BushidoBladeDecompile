@@ -86,7 +86,7 @@ without the store are banked with command lines; the full Ruling 11 package cove
 real values; fresh layer-2. Q78 admits only this store: any other dead write in the function
 is judged under its own rule, neither banned nor admitted by Q78. Not a precedent elsewhere.
 
-**Owner ruling Q85 (2026-10-01) — func_8002AB08 only: per-arm re-stores.** In its blade-pass loop,
+**Owner ruling Q85 (2026-10-01) — fighter_ProcessWeaponBodyHits only: per-arm re-stores.** In its blade-pass loop,
 `temp1 = 0; temp2 = 1; c = 1;` in the unk_8C arm (target 0x8002AEF0..0x8002AEFC) and `alt = 0;` in the
 4/5 arm (`move $fp,$zero` 0x8002AF18) may re-store values the variables always hold there, despite
 (B)(2)/Ruling 5 2(c). Each variable's comment (c's too) cites its address. Q85 does not admit c (one
