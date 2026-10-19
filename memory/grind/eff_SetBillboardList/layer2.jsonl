@@ -1,0 +1,1 @@
+{"func": "eff_SetBillboardList", "addr": "80062020", "verdict": "PASS", "body_hash": "d89b952ef56db013", "body_kind": "c", "file": "main/51268", "reviewer": "aabf97e728a81ad36", "scope": "cheat-cleanup", "date": "2026-10-16T17:50:06Z", "head": "f24433eb2", "notes": "", "renamed_from": ["func_80062020"]}

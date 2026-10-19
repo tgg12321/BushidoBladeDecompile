@@ -55,7 +55,7 @@ glabel func_8005BA8C
     /* 4C35C 8005BB5C 3000648E */  lw         $a0, 0x30($s3)
     /* 4C360 8005BB60 03001624 */  addiu      $s6, $zero, 0x3
     /* 4C364 8005BB64 21209300 */  addu       $a0, $a0, $s3
-    /* 4C368 8005BB68 0888010C */  jal        func_80062020
+    /* 4C368 8005BB68 0888010C */  jal        eff_SetBillboardList
     /* 4C36C 8005BB6C 300064AE */   sw        $a0, 0x30($s3)
     /* 4C370 8005BB70 0200FE16 */  bne        $s7, $fp, .L8005BB7C
     /* 4C374 8005BB74 3800B3AF */   sw        $s3, 0x38($sp)

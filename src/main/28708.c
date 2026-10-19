@@ -1292,7 +1292,7 @@ void replay_Start(void) {
     func_80041688(0, 0);
     func_80041688(1, 0);
     func_8001B6F4();
-    func_80061178();
+    eff_StopCommands();
     D_800A37D0 = 0;
     D_800A3834 = 5;
 }

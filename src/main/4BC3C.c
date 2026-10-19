@@ -262,7 +262,7 @@ s32 func_8005BA8C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     size = cdrom_GetFileSize(var_3);
     cdrom_WaitIdle();
     ((s32 *)p)[12] += (s32)p;
-    func_80062020(((s32 *)p)[12]);
+    eff_SetBillboardList(((s32 *)p)[12]);
     count = 3;
     base = (s32)p;
     if (arg2 == arg3) {

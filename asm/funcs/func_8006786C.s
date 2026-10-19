@@ -2,13 +2,13 @@ glabel func_8006786C
     /* 5806C 8006786C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 58070 80067870 1000BFAF */  sw         $ra, 0x10($sp)
     /* 58074 80067874 07000424 */  addiu      $a0, $zero, 0x7
-    /* 58078 80067878 2A9E010C */  jal        func_800678A8
+    /* 58078 80067878 2A9E010C */  jal        eff_PrepareParticles
     /* 5807C 8006787C 02000524 */   addiu     $a1, $zero, 0x2
     /* 58080 80067880 07000424 */  addiu      $a0, $zero, 0x7
-    /* 58084 80067884 459F010C */  jal        func_80067D14
+    /* 58084 80067884 459F010C */  jal        eff_UpdateParticles
     /* 58088 80067888 02000524 */   addiu     $a1, $zero, 0x2
     /* 5808C 8006788C 07000424 */  addiu      $a0, $zero, 0x7
-    /* 58090 80067890 62A3010C */  jal        func_80068D88
+    /* 58090 80067890 62A3010C */  jal        eff_LinkParticleQuads
     /* 58094 80067894 02000524 */   addiu     $a1, $zero, 0x2
     /* 58098 80067898 1000BF8F */  lw         $ra, 0x10($sp)
     /* 5809C 8006789C FF004230 */  andi       $v0, $v0, 0xFF

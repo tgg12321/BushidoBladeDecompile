@@ -7,7 +7,7 @@ glabel eff_Init
     /* 7494 80016C94 1D80043C */  lui        $a0, (0x801D8800 >> 16)
     /* 7498 80016C98 00888434 */  ori        $a0, $a0, (0x801D8800 & 0xFFFF)
     /* 749C 80016C9C 1080053C */  lui        $a1, (0x8010E800 >> 16)
-    /* 74A0 80016CA0 2E83010C */  jal        func_80060CB8
+    /* 74A0 80016CA0 2E83010C */  jal        eff_LoadImagesAndSetup
     /* 74A4 80016CA4 00E8A534 */   ori       $a1, $a1, (0x8010E800 & 0xFFFF)
     /* 74A8 80016CA8 0180043C */  lui        $a0, %hi(g_str_eff_init)
     /* 74AC 80016CAC 0C008424 */  addiu      $a0, $a0, %lo(g_str_eff_init)

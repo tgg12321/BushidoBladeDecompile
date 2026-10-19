@@ -485,7 +485,7 @@ void func_8003B9D0(void) {
 
     var_4 = 0x80190800;
     func_8001DA2C();
-    func_80061178();
+    eff_StopCommands();
     if (D_800A3768 != DISP_ACTIVE)
         func_80016888();
     if (D_800A3768 != DISP_DISABLED)
@@ -709,7 +709,7 @@ void func_8003C040(void) {
                   -1, -1, (s32)0x80118800);
     func_80041688(0, 0);
     func_80041688(1, 0);
-    func_80061178();
+    eff_StopCommands();
     p = D_8008EA70[D_800A38A4];
     if (p[0] >= 0) {
         snd_SerialMixOn();
@@ -957,7 +957,7 @@ void func_8003C9A4(void) {
 
 void func_8003CCCC(void) {
     func_80016888();
-    func_80061178();
+    eff_StopCommands();
     D_800A37B8 = 0;
     D_800A3834 = 0x21;
     gpu_SetDispMaskOn();
@@ -1025,7 +1025,7 @@ void func_8003CE18(void) {
     }
     func_80041688(0, 0);
     func_80041688(1, 0);
-    func_80061178();
+    eff_StopCommands();
     D_800A37B8 = 0;
     D_800A3834 = 0x1D;
     gpu_SetDispMaskOn();
@@ -1984,7 +1984,7 @@ void func_8003E6D8(s32 arg0) {
     pos[0] = -D_80101DF0.xf.rot.vx;
     pos[1] = -D_80101DF0.xf.rot.vy;
     pos[2] = -D_80101DF0.xf.rot.vz;
-    func_800620B8(pos, D_80101DF0.xf.mat.t);
+    eff_DrawBillboardList(pos, D_80101DF0.xf.mat.t);
 }
 
 Unk800A6690Rec **func_8003EB84(s32 a0, s32 a1, Unk800A6690Rec **out) {

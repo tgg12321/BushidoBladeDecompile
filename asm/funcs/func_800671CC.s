@@ -3,7 +3,7 @@ glabel func_800671CC
     /* 579D0 800671D0 07000424 */  addiu      $a0, $zero, 0x7
     /* 579D4 800671D4 02000524 */  addiu      $a1, $zero, 0x2
     /* 579D8 800671D8 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 579DC 800671DC 809C010C */  jal        func_80067200
+    /* 579DC 800671DC 809C010C */  jal        eff_SpawnParticles
     /* 579E0 800671E0 01000624 */   addiu     $a2, $zero, 0x1
     /* 579E4 800671E4 02000324 */  addiu      $v1, $zero, 0x2
     /* 579E8 800671E8 0F80013C */  lui        $at, %hi(D_800F10D0 + 0x64)

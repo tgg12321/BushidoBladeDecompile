@@ -310,7 +310,7 @@ glabel func_8003E6D8
     /* 2F354 8003EB54 23180300 */  negu       $v1, $v1
     /* 2F358 8003EB58 4C00A3A7 */  sh         $v1, 0x4C($sp)
     /* 2F35C 8003EB5C 23100200 */  negu       $v0, $v0
-    /* 2F360 8003EB60 2E88010C */  jal        func_800620B8
+    /* 2F360 8003EB60 2E88010C */  jal        eff_DrawBillboardList
     /* 2F364 8003EB64 4A00A2A7 */   sh        $v0, 0x4A($sp)
     /* 2F368 8003EB68 6400BF8F */  lw         $ra, 0x64($sp)
     /* 2F36C 8003EB6C 6000B28F */  lw         $s2, 0x60($sp)

@@ -1,7 +1,7 @@
 /* 99 game functions. .text 0x80060A68 (ROM 0x51268). Start boundary: PHASE
  * (rodata-align section 9), moved by the per-file gp model (Q65). Ends at
- * func_80068D88: the menu controller after it is 596CC.c (seam, owner ruling
- * 2026-10-17). */
+ * eff_LinkParticleQuads: the menu controller after it is 596CC.c (seam, owner
+ * ruling 2026-10-17). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -10,7 +10,7 @@
 #include <psxsdk/inline_c.h>
 #include <psxsdk/gtemac.h>
 
-/* func_80060A68 .. func_80060E38 belong here by the per-file gp evidence
+/* func_80060A68 .. eff_BindScratchpad belong here by the per-file gp evidence
  * (Q65). */
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by
@@ -64,8 +64,8 @@ static u16 *D_800A34E0;
 static u32 *D_800A34E4;
 static u32 *D_800A34E8;
 static Unk1F8000B8Union *D_800A34EC;
-/* Two s16 slots at 0x800A34F0, indexed as one array (func_800678A8 and
- * func_80067D14 read the pair through one indexed access). */
+/* Two s16 slots at 0x800A34F0, indexed as one array (eff_PrepareParticles and
+ * eff_UpdateParticles read the pair through one indexed access). */
 static s16 D_800A34F0[2];
 static s32 D_800A34F4; /* not named by any code or data: size from the gap */
 
@@ -119,7 +119,7 @@ void func_80060B70(void) {
     dst_s32[0] = var_0->unk08[0];
     dst_s32[1] = var_0->unk08[1];
     dst_s32[2] = var_0->unk08[2];
-    func_80061FAC(dst16, dst_s32, D_800A3474);
+    eff_SetRotMatrix(dst16, dst_s32, D_800A3474);
 
     idx = D_800A3468->unk00.h;
     result = ((s32(*)(void))D_8009BA7C[D_8009BA60[idx] + D_800F10D0[idx]])();
@@ -149,7 +149,7 @@ void func_80060C60(void) {
     D_800A3448 = 0;
 }
 
-s32 func_80060CB8(s32 arg0, s32 arg1) {
+s32 eff_LoadImagesAndSetup(s32 arg0, s32 arg1) {
     /* FAKE: single forward-order param alias; flips the s2/s1 save+copy pair
      * order to the target's (param-local-alias-prologue-pair-flip); arg0
      * throughout: score 4 */
@@ -194,14 +194,14 @@ s32 func_80060CB8(s32 arg0, s32 arg1) {
 
 extern POLY_FT4 *D_800A3720;
 
-void func_80060E04(s32 arg0) {
+void eff_SelectQuadBuffer(s32 arg0) {
     D_800A37D4 = arg0 != 0 ? D_800A3424 : D_800A3420;
     D_800A3720 = D_800A37D4;
 }
 
 #define SPAD51268 ((Unk1F800000Rec *)0x1F800000)
 
-void func_80060E38(s16 *arg0, s32 *arg1) {
+void eff_BindScratchpad(s16 *arg0, s32 *arg1) {
     D_800A3468 = &SPAD51268->unk00;
     D_800A346C = SPAD51268->unk00.unk18;
     D_800A3470 = SPAD51268->unk00.unk20;
@@ -244,7 +244,7 @@ extern void AddPrim(void *, void *);
 void func_80060A68(void);
 void func_80060B70(void);
 void func_80060C60(void);
-void func_80060E38(s16 *arg0, s32 *arg1);
+void eff_BindScratchpad(s16 *arg0, s32 *arg1);
 
 /* the message, alignment and an empty trailing string */
 const char D_800158E0[24] = "eff prim over :%d \n";
@@ -252,7 +252,7 @@ const char D_800158E0[24] = "eff prim over :%d \n";
 void func_80061064(s16 *a0, s32 *a1) {
     s32 temp_a1;
     s32 i;
-    func_80060E38(a0, a1);
+    eff_BindScratchpad(a0, a1);
     i = 0;
     do {
         D_800A3468->unk14 = &D_800F1150[i];
@@ -275,7 +275,7 @@ void func_80061064(s16 *a0, s32 *a1) {
     }
 }
 
-void func_80061178(void) {
+void eff_StopCommands(void) {
     func_80060C60();
     func_800421A4();
     D_800A32BC = 0;
@@ -683,7 +683,7 @@ void func_80061EC0(s32 *arg0) {
 
 extern VECTOR D_8009BB74;
 
-void func_80061FAC(s16 *a0, s32 *a1, MATRIX *a2) {
+void eff_SetRotMatrix(s16 *a0, s32 *a1, MATRIX *a2) {
     SVECTOR *dest = &D_800A34EC->v80061FAC;
     dest->vx = a0[0];
     dest->vy = a0[1];
@@ -698,7 +698,7 @@ void func_80061FAC(s16 *a0, s32 *a1, MATRIX *a2) {
 
 extern s32 D_800A32B8;
 
-void func_80062020(Unk800F1198Record *arg0) {
+void eff_SetBillboardList(Unk800F1198Record *arg0) {
     s32 i;
 
     D_800A32B8 = 0;
@@ -710,11 +710,12 @@ void func_80062020(Unk800F1198Record *arg0) {
     D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;
 }
 
-/* Draw the D_800F1198 effect particles (see func_80062020): per record until
-   the terminator, pick a sprite size and an animation frame from the record's
-   type, rotate/translate its position, project it, and when it lands in range
-   emit one textured POLY_FT4 billboard and link it into the OT at its depth. */
-void func_800620B8(s16 *arg0, s32 *arg1) {
+/* Draw the D_800F1198 effect particles (see eff_SetBillboardList): per record
+   until the terminator, pick a sprite size and an animation frame from the
+   record's type, rotate/translate its position, project it, and when it lands
+   in range emit one textured POLY_FT4 billboard and link it into the OT at its
+   depth. */
+void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
     extern s32 D_800A32B8;
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
@@ -738,7 +739,7 @@ void func_800620B8(s16 *arg0, s32 *arg1) {
     s16 width;
     s16 height;
 
-    func_80060E38(arg0, arg1);
+    eff_BindScratchpad(arg0, arg1);
     var_9 = D_800A3468;
     dst16 = D_800A346C;
     dst16[0] = var_9->unk04[0];
@@ -746,14 +747,14 @@ void func_800620B8(s16 *arg0, s32 *arg1) {
     dst16[1] = var_9->unk04[1];
     dst16[2] = var_9->unk04[2];
     dst32 = D_800A3470;
-    /* the matrix func_80061FAC builds from the angles at arg0 */
+    /* the matrix eff_SetRotMatrix builds from the angles at arg0 */
     rot = D_800A3474;
     dst32[0] = var_9->unk08[0];
     base = &D_800A34EC->v800620B8;
     dst32[1] = var_9->unk08[1];
     dst32[2] = var_9->unk08[2];
     D_800A32B8++;
-    func_80061FAC(dst16, dst32, rot);
+    eff_SetRotMatrix(dst16, dst32, rot);
     SetRotMatrix(D_800A3474);
     w = &base->unk10;
     h = &base->unk12;
@@ -2283,100 +2284,100 @@ again:
     return 1;
 }
 
-u8 func_80067200(s32, s32, s32);
+u8 eff_SpawnParticles(s32, s32, s32);
 
 u8 func_80066EC0(void) {
-    u8 ret = func_80067200(0, 0, 0);
+    u8 ret = eff_SpawnParticles(0, 0, 0);
     D_800F10D0[2] = 1;
     return ret;
 }
 
 u8 func_80066EF4(void) {
-    u8 ret = func_80067200(0, 0, 1);
+    u8 ret = eff_SpawnParticles(0, 0, 1);
     D_800F10D0[2] = 2;
     return ret;
 }
 
 u8 func_80066F28(void) {
-    u8 ret = func_80067200(1, 1, 0);
+    u8 ret = eff_SpawnParticles(1, 1, 0);
     D_800F10D0[3] = 1;
     return ret;
 }
 
 u8 func_80066F5C(void) {
-    u8 ret = func_80067200(1, 1, 1);
+    u8 ret = eff_SpawnParticles(1, 1, 1);
     D_800F10D0[3] = 2;
     return ret;
 }
 
 u8 func_80066F90(void) {
-    u8 ret = func_80067200(2, 1, 0);
+    u8 ret = eff_SpawnParticles(2, 1, 0);
     D_800F10D0[20] = 1;
     return ret;
 }
 
 u8 func_80066FC4(void) {
-    u8 ret = func_80067200(2, 1, 1);
+    u8 ret = eff_SpawnParticles(2, 1, 1);
     D_800F10D0[20] = 2;
     return ret;
 }
 
 u8 func_80066FF8(void) {
-    u8 ret = func_80067200(3, 0, 0);
+    u8 ret = eff_SpawnParticles(3, 0, 0);
     D_800F10D0[21] = 1;
     return ret;
 }
 
 u8 func_8006702C(void) {
-    u8 ret = func_80067200(3, 0, 1);
+    u8 ret = eff_SpawnParticles(3, 0, 1);
     D_800F10D0[21] = 2;
     return ret;
 }
 
 u8 func_80067060(void) {
-    u8 ret = func_80067200(4, 2, 0);
+    u8 ret = eff_SpawnParticles(4, 2, 0);
     D_800F10D0[22] = 1;
     return ret;
 }
 
 u8 func_80067094(void) {
-    u8 ret = func_80067200(4, 2, 1);
+    u8 ret = eff_SpawnParticles(4, 2, 1);
     D_800F10D0[22] = 2;
     return ret;
 }
 
 u8 func_800670C8(void) {
-    u8 ret = func_80067200(5, 3, 0);
+    u8 ret = eff_SpawnParticles(5, 3, 0);
     D_800F10D0[23] = 1;
     return ret;
 }
 
 u8 func_800670FC(void) {
-    u8 ret = func_80067200(5, 3, 1);
+    u8 ret = eff_SpawnParticles(5, 3, 1);
     D_800F10D0[23] = 2;
     return ret;
 }
 
 u8 func_80067130(void) {
-    u8 ret = func_80067200(6, 3, 0);
+    u8 ret = eff_SpawnParticles(6, 3, 0);
     D_800F10D0[24] = 1;
     return ret;
 }
 
 u8 func_80067164(void) {
-    u8 ret = func_80067200(6, 3, 1);
+    u8 ret = eff_SpawnParticles(6, 3, 1);
     D_800F10D0[24] = 2;
     return ret;
 }
 
 u8 func_80067198(void) {
-    u8 ret = func_80067200(7, 2, 0);
+    u8 ret = eff_SpawnParticles(7, 2, 0);
     D_800F10D0[25] = 1;
     return ret;
 }
 
 u8 func_800671CC(void) {
-    u8 ret = func_80067200(7, 2, 1);
+    u8 ret = eff_SpawnParticles(7, 2, 1);
     D_800F10D0[25] = 2;
     return ret;
 }
@@ -2384,12 +2385,12 @@ u8 func_800671CC(void) {
 extern SVECTOR D_800F0B78[];
 extern Unk800EFC78Record D_800EFC78[][48];
 
-/* func_80067200 -- spawns half (arg2 selects which) of the 0x30
+/* eff_SpawnParticles -- spawns half (arg2 selects which) of the 0x30
  * D_800EFC78[arg1] particle records: each gets the D_800F0B78[arg1] vector
  * scaled per axis by its own random factor and turned by a random rotation
  * (spread chosen by mode arg0). arg2 == 0 first latches D_800A347C / D_800A3478
  * into the emitter. Returns 1. */
-u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
+u8 eff_SpawnParticles(s32 arg0, s32 arg1, s32 arg2) {
     SVECTOR v;
     s32 r[6];
     MATRIX m;
@@ -2471,67 +2472,67 @@ u8 func_80067200(s32 arg0, s32 arg1, s32 arg2) {
     return 1;
 }
 
-u8 func_800678A8(s32, s32);
-void func_80067D14(s32, s32);
-u8 func_80068D88(s32, s32);
+u8 eff_PrepareParticles(s32, s32);
+void eff_UpdateParticles(s32, s32);
+u8 eff_LinkParticleQuads(s32, s32);
 
 u8 func_800676C8(void) {
-    func_800678A8(0, 0);
-    func_80067D14(0, 0);
-    return func_80068D88(0, 0);
+    eff_PrepareParticles(0, 0);
+    eff_UpdateParticles(0, 0);
+    return eff_LinkParticleQuads(0, 0);
 }
 
 u8 func_80067704(void) {
-    func_800678A8(1, 1);
-    func_80067D14(1, 1);
-    return func_80068D88(1, 1);
+    eff_PrepareParticles(1, 1);
+    eff_UpdateParticles(1, 1);
+    return eff_LinkParticleQuads(1, 1);
 }
 
 u8 func_80067740(void) {
-    func_800678A8(2, 1);
-    func_80067D14(2, 1);
-    return func_80068D88(2, 1);
+    eff_PrepareParticles(2, 1);
+    eff_UpdateParticles(2, 1);
+    return eff_LinkParticleQuads(2, 1);
 }
 
 u8 func_8006777C(void) {
-    func_800678A8(3, 0);
-    func_80067D14(3, 0);
-    return func_80068D88(3, 0);
+    eff_PrepareParticles(3, 0);
+    eff_UpdateParticles(3, 0);
+    return eff_LinkParticleQuads(3, 0);
 }
 
 u8 func_800677B8(void) {
-    func_800678A8(4, 2);
-    func_80067D14(4, 2);
-    return func_80068D88(4, 2);
+    eff_PrepareParticles(4, 2);
+    eff_UpdateParticles(4, 2);
+    return eff_LinkParticleQuads(4, 2);
 }
 
 u8 func_800677F4(void) {
-    func_800678A8(5, 3);
-    func_80067D14(5, 3);
-    return func_80068D88(5, 3);
+    eff_PrepareParticles(5, 3);
+    eff_UpdateParticles(5, 3);
+    return eff_LinkParticleQuads(5, 3);
 }
 
 u8 func_80067830(void) {
-    func_800678A8(6, 3);
-    func_80067D14(6, 3);
-    return func_80068D88(6, 3);
+    eff_PrepareParticles(6, 3);
+    eff_UpdateParticles(6, 3);
+    return eff_LinkParticleQuads(6, 3);
 }
 
 u8 func_8006786C(void) {
-    func_800678A8(7, 2);
-    func_80067D14(7, 2);
-    return func_80068D88(7, 2);
+    eff_PrepareParticles(7, 2);
+    eff_UpdateParticles(7, 2);
+    return eff_LinkParticleQuads(7, 2);
 }
 
 extern s16 D_800EFC8A[];
 extern s16 D_800F0B98[];
 
-u8 func_800678A8(s32 arg0, s32 arg1) {
+u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *var_0 = &D_800A34EC->v800678A8;
     /* work-area fields through pointers to them, the style of the file's
-     * scratchpad pointers (D_800A3490 .., set by func_80060E38) and of
-     * func_80067D14's locals */
+     * scratchpad pointers (D_800A3490 .., set by eff_BindScratchpad) and of
+     * eff_UpdateParticles's locals */
     u16 *p0 = &var_0->unk00;
     u16 *p2 = &var_0->unk02;
     u32 *p4 = &var_0->unk04;
@@ -2613,14 +2614,14 @@ u8 func_800678A8(s32 arg0, s32 arg1) {
 }
 
 /* Per-frame update + draw of the D_800EFC78[arg1] records, the middle of
- * the func_800678A8 / func_80067D14 / func_80068D88 trio. For each live record
- * of D_800EFC78[arg1] (state 1): step its unk12 and derive r/g/b from it, take
- * its D_800F0C10[arg1] entry less D_800A3470 through the GTE rotation, set
- * state 3 (and skip it) once r and g are both low or once the squared length
- * p_out[0..2] passes *var_1 plus a rand() term, project three vertices, size
- * the sprite by type (arg0), then emit up to three POLY_FT4 quads, storing
- * *D_800A34D0 for each in var_9[]. */
-void func_80067D14(s32 arg0, s32 arg1) {
+ * the eff_PrepareParticles / eff_UpdateParticles / eff_LinkParticleQuads trio.
+ * For each live record of D_800EFC78[arg1] (state 1): step its unk12 and derive
+ * r/g/b from it, take its D_800F0C10[arg1] entry less D_800A3470 through the
+ * GTE rotation, set state 3 (and skip it) once r and g are both low or once the
+ * squared length p_out[0..2] passes *var_1 plus a rand() term, project three
+ * vertices, size the sprite by type (arg0), then emit up to three POLY_FT4
+ * quads, storing *D_800A34D0 for each in var_9[]. */
+void eff_UpdateParticles(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *var_0 = &D_800A34EC->v800678A8;
     u32 *var_1;
@@ -2850,7 +2851,7 @@ void func_80067D14(s32 arg0, s32 arg1) {
     }
 }
 
-u8 func_80068D88(s32 arg0, s32 arg1) {
+u8 eff_LinkParticleQuads(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *var_0 = &D_800A34EC->v800678A8;
     s16 *p_idx = &var_0->unk6E;

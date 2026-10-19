@@ -251,7 +251,7 @@ void eff_Init(void) {
     if (D_800A3716 != 0) {
         return;
     }
-    size = func_80060CB8(0x801D8800, 0x8010E800);
+    size = eff_LoadImagesAndSetup(0x801D8800, 0x8010E800);
     printf(g_str_eff_init, 0x8010E800, size);
     if (0xA000 < size) {
         sys_Panic();
@@ -451,7 +451,7 @@ loop:
     ClearOTagR(var_2, 0x1008);
     g_gpu_ot_ptr = var_2;
     g_prim_buf_cursor = (u32 *)tbl[idx];
-    func_80060E04(idx);
+    eff_SelectQuadBuffer(idx);
     font_BeginFrame();
     pad_Update(var_3);
     cdrom_Update();

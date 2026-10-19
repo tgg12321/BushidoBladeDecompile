@@ -2,7 +2,7 @@ glabel func_80061064
     /* 51864 80061064 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 51868 80061068 1800BFAF */  sw         $ra, 0x18($sp)
     /* 5186C 8006106C 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 51870 80061070 8E83010C */  jal        func_80060E38
+    /* 51870 80061070 8E83010C */  jal        eff_BindScratchpad
     /* 51874 80061074 1000B0AF */   sw        $s0, 0x10($sp)
     /* 51878 80061078 21800000 */  addu       $s0, $zero, $zero
     /* 5187C 8006107C 0F80113C */  lui        $s1, %hi(D_800F1150)

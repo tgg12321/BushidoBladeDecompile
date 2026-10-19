@@ -50,7 +50,7 @@ glabel main
     /* 7AB8 800172B8 0000428C */  lw         $v0, 0x0($v0)
     /* 7ABC 800172BC 800690AF */  sw         $s0, %gp_rel(g_gpu_ot_ptr)($gp)
     /* 7AC0 800172C0 E80782AF */  sw         $v0, %gp_rel(g_prim_buf_cursor)($gp)
-    /* 7AC4 800172C4 8183010C */  jal        func_80060E04
+    /* 7AC4 800172C4 8183010C */  jal        eff_SelectQuadBuffer
     /* 7AC8 800172C8 21202002 */   addu      $a0, $s1, $zero
     /* 7ACC 800172CC BDF4000C */  jal        font_BeginFrame
     /* 7AD0 800172D0 00000000 */   nop

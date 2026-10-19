@@ -154,14 +154,14 @@
         "1c6a3148cb0796eb902a43a6081410f5d1c7cd9f534a77e39820854dbf8df9ac"
       ]
     },
-    "func_800678A8": {
+    "eff_PrepareParticles": {
       "file": "main/51268",
       "sha256": [
         "6982783f681ad30eab0d292cb6ee5dc40dddf41b7b2c7aeaa1eedb52792bedbb",
         "f99e18ffafa00134b93215c8b335005be08ef00f76902c5a186529f87d56f431"
       ]
     },
-    "func_80067200": {
+    "eff_SpawnParticles": {
       "file": "main/51268",
       "sha256": [
         "6982783f681ad30eab0d292cb6ee5dc40dddf41b7b2c7aeaa1eedb52792bedbb",
@@ -188,7 +188,7 @@
         "f6792f4af050e05505f5b307927403c08542df79f060fdd34c7257527267c09e"
       ]
     },
-    "func_800620B8": {
+    "eff_DrawBillboardList": {
       "file": "main/51268",
       "sha256": [
         "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860"
@@ -293,7 +293,7 @@
         "cd260e0565e91623890ee0155b86dcbc33cf22e552d3f2d416177f2628c29860"
       ]
     },
-    "func_80067D14": {
+    "eff_UpdateParticles": {
       "file": "main/51268",
       "sha256": [
         "42a93cad87d0fa035e2b7946eac17d4b9f823abed30bc381cffb910b5b92b426",

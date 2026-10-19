@@ -457,7 +457,7 @@ glabel fight_Init
   .L8001E354:
     /* EB54 8001E354 B2E4000C */  jal        replay_Reset
     /* EB58 8001E358 00000000 */   nop
-    /* EB5C 8001E35C 5E84010C */  jal        func_80061178
+    /* EB5C 8001E35C 5E84010C */  jal        eff_StopCommands
     /* EB60 8001E360 00000000 */   nop
     /* EB64 8001E364 F976000C */  jal        func_8001DBE4
     /* EB68 8001E368 00000000 */   nop

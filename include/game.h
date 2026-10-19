@@ -71,7 +71,7 @@ typedef struct {
 } Unk800EF848Rec;
 
 /* 3-word record table at 0x800F1198, terminated by an all-zero record
- * (func_80062020 walks it with a 12-byte stride). */
+ * (eff_SetBillboardList walks it with a 12-byte stride). */
 typedef struct {
     s32 unk0;
     s32 unk4;
@@ -684,9 +684,9 @@ typedef union {
 } Unk800A3560Slots;
 
 /* Record table at 0x800F0C10 (0x90 bytes, ends at D_800F0CA0): 4 rows of 3
- * records of 3 s32 words. func_800678A8 indexes it [arg1][idx] (arg1 0..3 from
- * the callers func_800676C8..func_8006786C); func_80067200 and func_80067D14
- * use it too. */
+ * records of 3 s32 words. eff_PrepareParticles indexes it [arg1][idx] (arg1
+ * 0..3 from the callers func_800676C8..func_8006786C); eff_SpawnParticles and
+ * eff_UpdateParticles use it too. */
 typedef struct {
     /* 0x0 */ s32 unk0;
     /* 0x4 */ s32 unk4;
@@ -864,17 +864,17 @@ typedef struct {
 } TexRec;
 
 /* The 0x2C-byte block D_800A3468 points at (51268): Unk1F800000Rec.unk00
- * (func_80060E38's seed) or D_800F116C, where func_800611A4 .. func_80061EC0
- * point it before calling func_80060A68. D_800F1198 follows D_800F116C, so that
- * copy ends at +0x2C. Each copy sets one pointer pair:
+ * (eff_BindScratchpad's seed) or D_800F116C, where func_800611A4 ..
+ * func_80061EC0 point it before calling func_80060A68. D_800F1198 follows
+ * D_800F116C, so that copy ends at +0x2C. Each copy sets one pointer pair:
  * - unk00: one word, stored whole and read whole (bit 21 in func_80060A68, bits
  * 17-18 / 19-20 in func_80063AF0 / func_80063B34 / func_80065000);
  * func_80060A68 / func_80060B70 also read its low halfword (`lhu`), their
  * D_800F10D0 / D_8009BA60 index.
  * - unk04 / unk08: the three halfwords / three words func_80060B70 and
- * func_800620B8 copy into the scratchpad block's unk18 / unk20 (through
- * D_800A346C / D_800A3470). Only the scratchpad block's are set: func_80060E38
- * stores its two arguments there.
+ * eff_DrawBillboardList copy into the scratchpad block's unk18 / unk20 (through
+ * D_800A346C / D_800A3470). Only the scratchpad block's are set:
+ * eff_BindScratchpad stores its two arguments there.
  * - unk0C / unk10: the three words / three halfwords func_80060A68 copies into
  * unk20 / unk18. Set only in the D_800F116C block (through D_800A3468 or
  * D_800F116C directly).
@@ -883,7 +883,8 @@ typedef struct {
  * - unk18 / unk20: the copies. D_800A346C / D_800A3470 point at the scratchpad
  * block's, D_800A3478 / D_800A347C at the D_800F116C block's (func_80060A68).
  * unk18 is s16 like its sources (unk04 / unk10) and every consumer (SVECTOR /
- * SVec4i16 fields: func_80061FAC, func_8006288C, func_80063BD0, func_80067200).
+ * SVec4i16 fields: eff_SetRotMatrix, func_8006288C, func_80063BD0,
+ * eff_SpawnParticles).
  * - unk1E: no access. */
 typedef struct {
     union {
@@ -902,7 +903,7 @@ typedef struct {
 } Unk1F800000Unk00;
 
 /* 20-byte record table at 0x800EFC78 (51268): 4 rows (arg1) of 48 records,
- * filled by func_80067200 (which leaves +0xE untouched). */
+ * filled by eff_SpawnParticles (which leaves +0xE untouched). */
 typedef struct {
     s16 unk0;
     s16 unk2;
@@ -916,10 +917,11 @@ typedef struct {
     s16 unk12;
 } Unk800EFC78Record;
 
-/* func_800620B8's layout of the 51268 work area (Unk1F8000B8Union.v800620B8).
- * func_80061FAC, which func_800620B8 calls before it touches the area, writes
- * and consumes its SVECTOR at +0x00..+0x07. SetTransMatrix is handed the
- * address 0x14 below unk14, so unk14 is read as a MATRIX's t[]. */
+/* eff_DrawBillboardList's layout of the 51268 work area
+ * (Unk1F8000B8Union.v800620B8). eff_SetRotMatrix, which eff_DrawBillboardList
+ * calls before it touches the area, writes and consumes its SVECTOR at
+ * +0x00..+0x07. SetTransMatrix is handed the address 0x14 below unk14, so unk14
+ * is read as a MATRIX's t[]. */
 typedef struct {
     u8 unk00[0x10]; /* no access here */
     s16 unk10;      /* w */
@@ -980,54 +982,57 @@ typedef struct {
     s16 unk96;    /* added to the texture v */
 } Unk1F8000B8_80065800;
 
-/* The layout func_800678A8 / func_80067D14 / func_80068D88 share
- * (Unk1F8000B8Union.v800678A8): each of the wrappers func_800676C8 ..
+/* The layout eff_PrepareParticles / eff_UpdateParticles / eff_LinkParticleQuads
+ * share (Unk1F8000B8Union.v800678A8): each of the wrappers func_800676C8 ..
  * func_8006786C calls the three in turn, and values cross the calls (unk04,
- * unk6C, unk80, the unk8C table; func_800678A8 and func_80067D14 each use unk70
- * for their own value). func_800678A8 sets it up, func_80067D14 builds the
- * quads at unk80 and records each one's depth (its OT slot index) in unk8C,
- * func_80068D88 links them. */
+ * unk6C, unk80, the unk8C table; eff_PrepareParticles and eff_UpdateParticles
+ * each use unk70 for their own value). eff_PrepareParticles sets it up,
+ * eff_UpdateParticles builds the quads at unk80 and records each one's depth
+ * (its OT slot index) in unk8C, eff_LinkParticleQuads links them. */
 typedef struct {
-    u16 unk00; /* func_800678A8: added to the texture u */
-    u16 unk02; /* func_800678A8: added to the texture v */
-    /* func_800678A8 stores 0x895440; func_80067D14 compares against it */
+    u16 unk00; /* eff_PrepareParticles: added to the texture u */
+    u16 unk02; /* eff_PrepareParticles: added to the texture v */
+    /* eff_PrepareParticles stores 0x895440; eff_UpdateParticles compares
+     * against it */
     u32 unk04;
     u8 unk08[8]; /* no access */
-    /* func_80067D14: only its translation (+0x24) is used: the
+    /* eff_UpdateParticles: only its translation (+0x24) is used: the
        gte_ApplyRotMatrix / gte_Square0 output, loaded by gte_SetTransMatrix */
     MATRIX unk10;
-    u8 unk30[4];      /* no access */
-    VECTOR unk34;     /* func_80067D14: gte_Square0 in */
-    SVECTOR unk44[3]; /* func_80067D14: gte_ApplyRotMatrix / gte_ldv3 in */
-    VECTOR unk5C;     /* func_80067D14 */
-    /* func_800678A8 stores it; func_80067D14's loop bound */
+    u8 unk30[4];  /* no access */
+    VECTOR unk34; /* eff_UpdateParticles: gte_Square0 in */
+    /* eff_UpdateParticles: gte_ApplyRotMatrix / gte_ldv3 in */
+    SVECTOR unk44[3];
+    VECTOR unk5C; /* eff_UpdateParticles */
+    /* eff_PrepareParticles stores it; eff_UpdateParticles's loop bound */
     s16 unk6C;
-    /* func_80067D14 / func_80068D88 loop index */
+    /* eff_UpdateParticles / eff_LinkParticleQuads loop index */
     s16 unk6E;
-    /* func_800678A8: table index; func_80067D14: per entry */
+    /* eff_PrepareParticles: table index; eff_UpdateParticles: per entry */
     s16 unk70;
-    u8 unk72; /* func_80067D14 colours */
+    u8 unk72; /* eff_UpdateParticles colours */
     u8 unk73;
     u8 unk74;
     u8 unk75[3];              /* no access */
-    s16 unk78;                /* func_80067D14 */
+    s16 unk78;                /* eff_UpdateParticles */
     u8 unk7A[2];              /* no access */
-    POLY_FT4 *unk7C;          /* func_80068D88: the end of the quads */
+    POLY_FT4 *unk7C;          /* eff_LinkParticleQuads: the end of the quads */
     POLY_FT4 *unk80;          /* the quad cursor */
-    Unk800EFC78Record *unk84; /* func_80067D14 */
-    Unk800F0C10Record *unk88; /* func_80067D14 */
-    /* per quad, its depth, the OT slot index (func_80067D14 stores,
-       func_80068D88 reads) */
+    Unk800EFC78Record *unk84; /* eff_UpdateParticles */
+    Unk800F0C10Record *unk88; /* eff_UpdateParticles */
+    /* per quad, its depth, the OT slot index (eff_UpdateParticles stores,
+       eff_LinkParticleQuads reads) */
     u16 unk8C[0x90];
-    /* func_80067D14 stores rand() values here; D_800A3724 points at it */
+    /* eff_UpdateParticles stores rand() values here; D_800A3724 points at it */
     s32 unk1AC;
 } Unk1F8000B8_800678A8;
 
 /* Unk1F800000Rec.unkB8, the 51268 work area D_800A34EC points at (0x1F8000B8 to
  * the end of the scratchpad). Each user lays it out for one call (or, for the
- * func_800678A8 trio, one wrapper call); raw sizes the union. func_80061FAC's
- * is one SVECTOR. func_8006295C and func_80063E10 still convert D_800A34EC
- * (their work-area base is staged through a POLY_FT4 * local). */
+ * eff_PrepareParticles trio, one wrapper call); raw sizes the union.
+ * eff_SetRotMatrix's is one SVECTOR. func_8006295C and func_80063E10 still
+ * convert D_800A34EC (their work-area base is staged through a POLY_FT4 *
+ * local). */
 typedef union {
     u8 raw[0x400 - 0xB8];
     SVECTOR v80061FAC;
@@ -1040,16 +1045,16 @@ typedef union {
 
 /* 51268's view of the scratchpad from 0x1F800000 (SPAD51268).
  * 17AFC's view of the same memory, used at other times, is ScrPad.
- * func_80060E38 points 51268's D_800A34xx globals at these members; apart from
- * its own two stores to unk00.unk04 / unk08, the code reaches them only through
- * those globals:
+ * eff_BindScratchpad points 51268's D_800A34xx globals at these members; apart
+ * from its own two stores to unk00.unk04 / unk08, the code reaches them only
+ * through those globals:
  * - unk00: the command block D_800A3468 points at until a function retargets
  * it; D_800A346C / D_800A3470 point at its unk18 / unk20.
  * - unk2C: no access.
  * - unk50 / unkB0: the initial targets of D_800A3488 / D_800A348C (TexRec).
- * func_800620B8 retargets them only in its switch cases 0-3 (unk4 & 7), so its
- * later reads go through these seeded values when no earlier record took one
- * of those cases.
+ * eff_DrawBillboardList retargets them only in its switch cases 0-3 (unk4 & 7),
+ * so its later reads go through these seeded values when no earlier record took
+ * one of those cases.
  * - unkA0 / unkA4: the initial targets of D_800A34E4 (u32 *) / D_800A34E8 (u32
  * *), which every user retargets before use.
  * - unkB8: the work area D_800A34EC points at (Unk1F8000B8Union), laid out
