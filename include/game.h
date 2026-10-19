@@ -2028,7 +2028,7 @@ typedef struct Unk80045878Node {
     Unk80101DF0Record node; /* +0x00 */
     s32 unk58;              /* +0x58 */
     s32 unk5C;              /* +0x5C */
-    u8 *unk60;              /* +0x60 softbody_CreateForNode's point data */
+    u8 *unk60;              /* +0x60 softbody_Create's node/edge buffer */
     s32 unk64;              /* +0x64 */
 } Unk80045878Node;          /* 0x68 */
 
