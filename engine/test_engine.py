@@ -4519,6 +4519,9 @@ def test_naming_keycheck_scoped_pairs() -> None:
         n_ = b.replace(decl, new_decl).replace(use, new_use)
         ok, why = proof("E.ends.node=pt", {"src/a.c": b}, {"src/a.c": n_})
         check("keycheck: nested " + label + " member renamed (" + why + ")", ok)
+    ts = ["{", "unsigned", "node", ":", "W", ";", "int", "x", ":", "3", ";", "}"]
+    check("keycheck: an identifier bit-field width is not a declarator",
+          nk.container_declarators(ts, 0, len(ts) - 1) == {2: "node", 7: "x"})
     # depth-2 path T.u.v.m
     deep = ("typedef struct { int d; union { int pair; struct { short b; union { int raw; short node; } w; } s; } ends; } E;\n"
             "int f(E *e) { return e->ends.s.w.node; }\n")
@@ -4655,6 +4658,55 @@ def test_naming_keycheck_scoped_pairs() -> None:
                     {"src/a.c": plain_new.replace(sq, "")}, compile_headers=False)
     check("keycheck: kept macro argument in a header no TU includes refused (" + why + ")",
           not ok and "never compiles" in why)
+    # A retained plain .m / ->m (no macro) needs a compiled TU too.
+    access_base = plain_base.replace("SQ(u->m)", "u->m")
+    access_new = plain_new.replace("SQ(u->m)", "u->m")
+    ok, why = proof("T.m=n", {"src/a.c": access_base}, {"src/a.c": access_new}, cpp=mini_cpp)
+    check("keycheck: kept plain member access in compiled code passes (" + why + ")", ok)
+    dead = "#if 0\nint g(struct U *u) { return u->m; }\n#endif\nint f("
+    ok, why = proof("T.m=n", {"src/a.c": access_base.replace("int f(", dead)},
+                    {"src/a.c": access_new.replace("int f(", dead)}, cpp=mini_cpp)
+    check("keycheck: kept plain member access in #if 0 code refused (" + why + ")",
+          not ok and ("member access in code the build never compiles" in why or "conditional code" in why))
+    hdr = "struct U; static int h(struct U *u) { return u->m; }\n"
+    ok, why = proof("T.m=n", {"src/a.c": access_base, "include/unused.h": hdr},
+                    {"src/a.c": access_new}, compile_headers=False)
+    check("keycheck: kept plain member access in a header no TU includes refused (" + why + ")",
+          not ok and "never compiles" in why)
+    # An entire-file #ifndef guard is not conditional code to the static plan; a guard
+    # the TU pre-defines drops the header body, so the kept access never compiles.
+    guarded = "#ifndef G_H\n#define G_H\nstruct U; static int h(struct U *u) { return u->m; }\n#endif\n"
+    predefined = '#define G_H\n#include "../include/g.h"\n'
+
+    def guard_cpp(tree, tu):
+        out, inside = [], False
+        for line in fake_cpp(tree, tu).splitlines(keepends=True):
+            if line.startswith("# "):
+                inside = '"include/g.h"' in line and line.rstrip().endswith(" 1")
+                out.append(line)
+            else:
+                out.append("\n" if inside else line)
+        return "".join(out)
+    ok, why = proof("T.m=n", {"src/a.c": predefined + access_base, "include/g.h": guarded},
+                    {"src/a.c": predefined + access_new}, compile_headers=False, cpp=guard_cpp)
+    check("keycheck: kept plain member access in a pre-guarded header refused (" + why + ")",
+          not ok and "member access in code the build never compiles" in why)
+    # A file the census cannot map, or one missing from the new tree, refuses instead
+    # of skipping its kept sites.
+    ok, why = proof("T.m=n", {"src/a.c": access_base, "src/b.c": "int x;\n"},
+                    {"src/a.c": access_new, "src/b.c": "int x ;;\n"}, cpp=mini_cpp)
+    check("keycheck: token-count mismatch in the keep census refused (" + why + ")",
+          not ok and "cannot map" in why)
+    edits = nk.scoped_plan({"src/a.c": access_base, "src/b.c": "int x;\n"}, {"T.m": "n"}, {})
+    try:
+        with patch.object(nk, "preprocess", mini_cpp), patch.object(nk, "compile_cc1", fake_cc1), \
+                patch.object(nk, "cpp_dependencies", fake_dependencies):
+            nk.verify_compiled_edits({"src/a.c": access_base, "src/b.c": "int x;\n"},
+                                     {"src/a.c": access_new}, edits, scoped={"T.m": "n"}, global_pairs={})
+        why = ""
+    except ValueError as e:
+        why = str(e)
+    check("keycheck: file missing from the new tree refused (" + why + ")", "missing from the new tree" in why)
     # item 3: n as an unrelated local inside a macro argument
     b = plain_base.replace("return t->m + SQ(u->m);", "int pt = 2; return t->m + SQ(pt);")
     n_ = (plain_base.replace("struct T { int m;", "struct T { int pt;")

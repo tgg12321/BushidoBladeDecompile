@@ -815,7 +815,8 @@ def container_declarators(ts, j, end):
                     if not IDENT.fullmatch(tok) or tok in C_KEYWORDS:
                         continue
                     following = ts[q + 1] if q + 1 < k else ";"
-                    if depth == 0 and following in (";", ",", "[", ":") and ts[q - 1] not in (".", "->"):
+                    if (depth == 0 and following in (";", ",", "[", ":")
+                            and ts[q - 1] not in (".", "->", ":")):
                         out[q] = tok  # plain, array or bit-field declarator
                     elif depth == 1 and ts[q - 1] == "*" and ts[q - 2] == "(" and following == ")":
                         out[q] = tok  # function-pointer declarator (*m)(...)
@@ -1937,8 +1938,9 @@ def sentinel_namespaces(output, names):
                     or following == ":" and i + 1 not in conditional_colons):
                 raise ValueError("local sentinel changed namespace in cpp output: " + token)
         elif prev not in (".", "->") and scope not in declarations.get(i, ()):
-            if scope == "\x00macro-argument":
-                raise ValueError("unchanged member name in a macro argument does not expand to a member access: " + token)
+            if scope in ("\x00macro-argument", "\x00member-access"):
+                raise ValueError("unchanged member name in a " + scope[1:].replace("-", " ")
+                                 + " does not expand to a member access: " + token)
             raise ValueError("member sentinel changed namespace in cpp output: " + token)
 
 
@@ -2237,21 +2239,32 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
         for path, text in sorted(cfiles.items()):
             target = map_path(path)
             if target not in new:
-                continue
+                raise ValueError(f"{path}: missing from the new tree; cannot prove kept {'/'.join(sorted(member_olds))}")
             spans = code_spans(text)
             after = code_spans(new[target]) if new[target] != text else spans
             if len(after) != len(spans):
-                continue
+                raise ValueError(f"{target}: cannot map tokens to the base tree; cannot prove kept {'/'.join(sorted(member_olds))}")
+            in_macro = set()
             for opener, close, args in macro_invocations(text, functions):
                 hits = [k for k in sorted(args) if spans[k][0] in member_olds
                         and (path, k) not in changed and after[k][0] == spans[k][0]]
+                in_macro.update(hits)
                 if not hits:
                     continue
-                keep.extend((path, target, k) for k in hits)
+                keep.extend((path, target, k, "macro argument") for k in hits)
                 for side, name, body, toks in (("base", path, text, spans), ("new", target, new[target], after)):
                     keep_spans.setdefault((side, name), []).append(
                         (body.count("\n", 0, toks[opener].start()) + 1,
                          body.count("\n", 0, toks[close].start()) + 1))
+            # A retained plain .m / ->m outside any macro argument must be emitted by
+            # a compiled TU too: in #if 0 code or an unincluded header it would keep
+            # the stale name unseen by the oracle build.
+            directives, _ = pp_regions(text)
+            keep.extend((path, target, k, "member access") for k in range(1, len(spans))
+                        if spans[k][0] in member_olds and spans[k - 1][0] in (".", "->")
+                        and k not in in_macro and (path, k) not in changed
+                        and after[k][0] == spans[k][0]
+                        and not any(a <= spans[k].start() < b for a, b in directives))
     for name, intervals in keep_spans.items():
         merged = []
         for first, last in sorted(intervals):
@@ -2321,7 +2334,7 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
                 # contexts containing an edit or a kept macro-argument m (member
                 # census above still sees all).
                 keep_sites = set()
-                for p, q, k in keep:
+                for p, q, k, _ in keep:
                     f = p if label == "base" else q
                     line = tree[f].count("\n", 0, code_spans(tree[f])[k].start()) + 1
                     first, last = line_span(label, f, line)
@@ -2335,8 +2348,8 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
             wanted = {}
             for path, target, k in changes:
                 wanted[(path if label == "base" else target, k)] = "edit"
-            for path, target, k in keep:
-                wanted.setdefault((path if label == "base" else target, k), "macro argument")
+            for path, target, k, kind in keep:
+                wanted.setdefault((path if label == "base" else target, k), kind)
             for path, target, start, end, old, dest in local_spans:
                 filename = path if label == "base" else target
                 text = tree[filename]
@@ -2383,9 +2396,9 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
                     kind_name, scope = namespaces[(path, k)]
                     namespace_names[name] = (kind_name, scoped_type_name(scope, global_pairs, label == "new")
                                              )
-                elif kind == "macro argument":
+                elif kind in ("macro argument", "member access"):
                     # A scope no aggregate declares: the sentinel must follow . or ->.
-                    namespace_names[name] = ("member", "\x00macro-argument")
+                    namespace_names[name] = ("member", "\x00" + kind.replace(" ", "-"))
                 replacements.setdefault(path, []).append((token.start(), token.end(), name))
             for path, items in replacements.items():
                 for start, end, name in sorted(items, reverse=True):
@@ -2404,8 +2417,8 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
                 lines = [(path, line) for line in range(first_line, last_line + 1)]
                 applicable = [tu for tu, output in normal[label].items() if any(l in output for l in lines)]
                 if not applicable:
-                    if kind == "macro argument":
-                        raise ValueError(f"{site[0]}:{site[1]}: unchanged {spelling} in a macro argument in code the build never compiles ({label})")
+                    if kind in ("macro argument", "member access"):
+                        raise ValueError(f"{site[0]}:{site[1]}: unchanged {spelling} in a {kind} in code the build never compiles ({label})")
                     raise ValueError(f"{site[0]}:{site[1]}: edit in code the build never compiles ({label})")
                 for tu in applicable:
                     found = 0
