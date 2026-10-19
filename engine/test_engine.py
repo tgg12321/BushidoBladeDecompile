@@ -8779,6 +8779,57 @@ def test_layer2_addresses() -> None:
             os.chdir(cwd)
 
 
+def test_census_manifest_precedence() -> None:
+    """docs/naming/census_manifests.read_manifests: for one address the latest CONFIRMed
+    manifest row wins -- a later reset-contradicted RESET retires an earlier sotn-review KEEP
+    (wave10's gpu_draw_layered_box, reset by wave57), and a later KEEP supersedes an earlier
+    RESET. Rows of other addresses and unCONFIRMed rows are unaffected."""
+    import csv
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "docs" / "naming"))
+    from census_manifests import read_manifests
+
+    cols = ["addr", "glabel", "current_name", "proposed_name", "action", "evidence_class",
+            "evidence", "verdict", "verifier_note"]
+    tier = {"sotn-review": ("sotn-review", "CORROBORATED")}
+    scratch = Path(__file__).resolve().parent.parent / "tmp"
+    scratch.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=scratch) as td:
+        def manifest(name, rows):
+            p = Path(td, name, "func_manifest.csv")
+            p.parent.mkdir()
+            with open(p, "w", newline="", encoding="utf-8") as fh:
+                w = csv.writer(fh, lineterminator="\n")
+                w.writerow(cols)
+                for r in rows:
+                    w.writerow(r)
+            return (str(p), None, None)
+
+        keep = ["0x80069898", "gpu_draw_layered_box", "gpu_draw_layered_box",
+                "gpu_draw_layered_box", "KEEP", "sotn-review", "e", "CONFIRM", "n"]
+        reset = ["0x80069898", "gpu_draw_layered_box", "gpu_draw_layered_box",
+                 "func_80069898", "RESET", "reset-contradicted", "h=1", "CONFIRM", "r"]
+        other = ["0x80010000", "x_Other", "x_Other", "x_Other", "KEEP", "sotn-review", "e",
+                 "CONFIRM", "n"]
+        unconfirmed = list(reset)
+        unconfirmed[0] = "0x80010000"
+        unconfirmed[7] = "FAIL"
+        w10 = manifest("wave10", [keep, other])
+        w57 = manifest("wave57", [reset, unconfirmed])
+        api, resets = read_manifests([w10, w57], tier)
+        check("census: a later RESET retires an earlier KEEP", "80069898" not in api)
+        eq("census: the later RESET is recorded", resets.get("80069898", {}).get("cls"),
+           "reset-contradicted")
+        eq("census: another address's KEEP is unaffected", api.get("80010000", {}).get("name"),
+           "x_Other")
+        check("census: an unCONFIRMed RESET is ignored", "80010000" not in resets)
+        api, resets = read_manifests([w57, w10], tier)
+        eq("census: a later KEEP supersedes an earlier RESET",
+           (api.get("80069898", {}).get("name"), "80069898" in resets),
+           ("gpu_draw_layered_box", False))
+
+
 def test_naming_wave_keyed_registries() -> None:
     """A RENAME reaches every function-keyed grant / registry / fixture file:
     canonical_asm_regions.json and deferred.json keys, the golden fixtures'
@@ -11279,6 +11330,7 @@ def main() -> int:
     test_layer2_asm_addr_after_glabel()
     test_naming_wave_own_target()
     test_naming_wave_keyed_registries()
+    test_census_manifest_precedence()
     test_naming_wave_renames()
     test_naming_keycheck_scoped_pairs()
     test_volatile_unused_locals()

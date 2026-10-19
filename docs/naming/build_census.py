@@ -398,34 +398,12 @@ CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
 # RESET rows from a verified manifest (evidence_class reset-contradicted, proposed_name =
 # the auto name): the current name is contradicted by the body. Consumed only while the
 # address still carries a semantic name; once reset, the row falls through to AUTO.
-manifest_resets = {}   # ADDR(no 0x, upper) -> dict(evidence, note)
-for ap, dorigin, dtier in MANIFESTS:
-    if not os.path.exists(ap):
-        continue
-    with open(ap, newline="", encoding="utf-8", errors="replace") as fh:
-        for r in csv.DictReader(fh):
-            if (r.get("verdict") or "").strip().upper() != "CONFIRM":
-                continue
-            a = (r.get("addr") or "").strip().upper().replace("0X", "")
-            if not re.fullmatch(r"[0-9A-F]{8}", a) or not (r.get("proposed_name") or "").strip():
-                continue
-            cls = (r.get("evidence_class") or "").strip()
-            if cls == "libscan-desync":
-                continue
-            # basis-withdrawn (owner ruling Q103): the name's only recorded basis was a name
-            # since RESET; consumed exactly like a verified contradiction.
-            if cls in ("reset-contradicted", "basis-withdrawn"):
-                manifest_resets[a] = dict(cls=cls, evidence=(r.get("evidence") or "").strip(),
-                                          note=(r.get("verifier_note") or "").strip(),
-                                          sweep=os.path.basename(os.path.dirname(ap)))
-                continue
-            origin, tier = CLASS_TIER.get(cls, (dorigin, dtier))
-            if not origin:
-                continue
-            apiscan[a] = dict(name=r["proposed_name"].strip(),
-                              evidence=(r.get("evidence") or "").strip(),
-                              note=(r.get("verifier_note") or "").strip(),
-                              origin=origin, tier=tier)
+# For one address the LATEST CONFIRMed row in MANIFESTS order wins: a later RESET
+# retires an earlier KEEP / RENAME, a later KEEP / RENAME supersedes an earlier RESET
+# (docs/naming/census_manifests.py).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from census_manifests import read_manifests  # noqa: E402
+apiscan, manifest_resets = read_manifests(MANIFESTS, CLASS_TIER)
 
 
 # ---------------------------------------------------------------- queue
