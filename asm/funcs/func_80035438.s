@@ -12,7 +12,7 @@ glabel func_80035438
     /* 25C60 80035460 F7000424 */   addiu     $a0, $zero, 0xF7
     /* 25C64 80035464 FF000424 */  addiu      $a0, $zero, 0xFF
   .L80035468:
-    /* 25C68 80035468 B3A3010C */  jal        func_80068ECC
+    /* 25C68 80035468 B3A3010C */  jal        menu_SetEnabledRows
     /* 25C6C 8003546C 00000000 */   nop
     /* 25C70 80035470 1000BF8F */  lw         $ra, 0x10($sp)
     /* 25C74 80035474 1800BD27 */  addiu      $sp, $sp, 0x18

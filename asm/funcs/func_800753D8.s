@@ -93,7 +93,7 @@ glabel func_800753D8
     /* 65D3C 8007553C 2000A2AF */   sw        $v0, 0x20($sp)
     /* 65D40 80075540 100022AE */  sw         $v0, 0x10($s1)
     /* 65D44 80075544 1800A48F */  lw         $a0, 0x18($sp)
-    /* 65D48 80075548 20B9010C */  jal        func_8006E480
+    /* 65D48 80075548 20B9010C */  jal        gpu_GetSheetTPage
     /* 65D4C 8007554C 2128A002 */   addu      $a1, $s5, $zero
     /* 65D50 80075550 01000524 */  addiu      $a1, $zero, 0x1
     /* 65D54 80075554 21300000 */  addu       $a2, $zero, $zero
@@ -136,7 +136,7 @@ glabel func_800753D8
     /* 65DDC 800755DC 2000A2AF */   sw        $v0, 0x20($sp)
     /* 65DE0 800755E0 100022AE */  sw         $v0, 0x10($s1)
     /* 65DE4 800755E4 1800A48F */  lw         $a0, 0x18($sp)
-    /* 65DE8 800755E8 20B9010C */  jal        func_8006E480
+    /* 65DE8 800755E8 20B9010C */  jal        gpu_GetSheetTPage
     /* 65DEC 800755EC 2128A002 */   addu      $a1, $s5, $zero
     /* 65DF0 800755F0 01000524 */  addiu      $a1, $zero, 0x1
     /* 65DF4 800755F4 21300000 */  addu       $a2, $zero, $zero

@@ -2,7 +2,7 @@ glabel func_80077894
     /* 68094 80077894 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 68098 80077898 1000B0AF */  sw         $s0, 0x10($sp)
     /* 6809C 8007789C 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 680A0 800778A0 F3A4010C */  jal        func_800693CC
+    /* 680A0 800778A0 F3A4010C */  jal        menu_UpdateRowMenu
     /* 680A4 800778A4 21800000 */   addu      $s0, $zero, $zero
     /* 680A8 800778A8 21284000 */  addu       $a1, $v0, $zero
     /* 680AC 800778AC 0B00A004 */  bltz       $a1, .L800778DC

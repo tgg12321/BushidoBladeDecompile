@@ -32,7 +32,7 @@ glabel menu_UpdateRow
     /* 614E8 80070CE8 2000A3AF */   sw        $v1, 0x20($sp)
     /* 614EC 80070CEC 100022AE */  sw         $v0, 0x10($s1)
     /* 614F0 80070CF0 1800A48F */  lw         $a0, 0x18($sp)
-    /* 614F4 80070CF4 20B9010C */  jal        func_8006E480
+    /* 614F4 80070CF4 20B9010C */  jal        gpu_GetSheetTPage
     /* 614F8 80070CF8 60000524 */   addiu     $a1, $zero, 0x60
     /* 614FC 80070CFC 01000524 */  addiu      $a1, $zero, 0x1
     /* 61500 80070D00 21300000 */  addu       $a2, $zero, $zero
@@ -83,7 +83,7 @@ glabel menu_UpdateRow
     /* 615B0 80070DB0 80111000 */   sll       $v0, $s0, 6
     /* 615B4 80070DB4 0000448E */  lw         $a0, 0x0($s2)
     /* 615B8 80070DB8 21288002 */  addu       $a1, $s4, $zero
-    /* 615BC 80070DBC 20B9010C */  jal        func_8006E480
+    /* 615BC 80070DBC 20B9010C */  jal        gpu_GetSheetTPage
     /* 615C0 80070DC0 1800A4AF */   sw        $a0, 0x18($sp)
     /* 615C4 80070DC4 01000524 */  addiu      $a1, $zero, 0x1
     /* 615C8 80070DC8 21300000 */  addu       $a2, $zero, $zero
@@ -166,7 +166,7 @@ glabel menu_UpdateRow
     /* 616E8 80070EE8 03005226 */   addiu     $s2, $s2, 0x3
   .L80070EEC:
     /* 616EC 80070EEC 1800A48F */  lw         $a0, 0x18($sp)
-    /* 616F0 80070EF0 20B9010C */  jal        func_8006E480
+    /* 616F0 80070EF0 20B9010C */  jal        gpu_GetSheetTPage
     /* 616F4 80070EF4 21288002 */   addu      $a1, $s4, $zero
     /* 616F8 80070EF8 01000524 */  addiu      $a1, $zero, 0x1
     /* 616FC 80070EFC 21300000 */  addu       $a2, $zero, $zero

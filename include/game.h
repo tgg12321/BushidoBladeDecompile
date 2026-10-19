@@ -112,8 +112,8 @@ typedef struct {
     s32 unk8;
 } Unk800F0E38Record;
 
-/* 0x8009BC0C: the eight option rows of the list menu func_800693CC drives, one
- * {state, mode} byte pair per row (0x8009BC0C..0x8009BC1B), indexed by
+/* 0x8009BC0C: the eight option rows of the list menu menu_UpdateRowMenu drives,
+ * one {state, mode} byte pair per row (0x8009BC0C..0x8009BC1B), indexed by
  * D_800A34F8 & 0xF. state: accept / reject / return value; mode: passed to the
  * three render calls, 1/2/3 select the D_800A3524 bit-3 action. */
 typedef struct {
@@ -122,9 +122,9 @@ typedef struct {
 } MenuOption;
 
 /* 0x8009BC04: the list menu's state -- the rows switched on (one bit per
- * row; func_80068ECC sets them), a second row mask func_800693CC sets from
- * the cursor row (func_8006A880 scans it for the first row drawn), then
- * the eight option rows. */
+ * row; menu_SetEnabledRows sets them), a second row mask menu_UpdateRowMenu
+ * sets from the cursor row (func_8006A880 scans it for the first row drawn),
+ * then the eight option rows. */
 typedef struct {
     s32 rows_on;
     s32 unk4;
@@ -141,14 +141,14 @@ typedef struct {
     u8 unk1;
 } Unk8009BCF8Record;
 
-/* The 0x2C-byte record func_8006E49C fills, two at a time (596CC / 5ED34 /
- * 64FD8 keep the pair at the start of their work area; getters `base + i *
- * 44`). Each word holds the start of a region func_8006E49C carves from its
- * buffer: +0x00 0x9C40 bytes, +0x04 0x5DC0, +0x08 0x438, +0x0C 0x640, +0x10
- * 0x1B58, +0x14 0x258, +0x18 0x78, +0x1C 0x78, +0x20 0x110; +0x24 / +0x28 it
- * leaves alone. The 5ED34 / 64FD8 draw contexts copy them into Unk800788B0Rec,
- * whose members name the primitive types; 596CC's func_8006E390 copies them
- * into the s32 words of its context array. */
+/* The 0x2C-byte record gpu_InitPrimBufferPair fills, two at a time (596CC /
+ * 5ED34 / 64FD8 keep the pair at the start of their work area; getters `base +
+ * i * 44`). Each word holds the start of a region gpu_InitPrimBufferPair carves
+ * from its buffer: +0x00 0x9C40 bytes, +0x04 0x5DC0, +0x08 0x438, +0x0C 0x640,
+ * +0x10 0x1B58, +0x14 0x258, +0x18 0x78, +0x1C 0x78, +0x20 0x110; +0x24 / +0x28
+ * it leaves alone. The 5ED34 / 64FD8 draw contexts copy them into
+ * Unk800788B0Rec, whose members name the primitive types; 596CC's func_8006E390
+ * copies them into the s32 words of its context array. */
 typedef struct {
     s32 unk_00;
     void *unk_04;
@@ -210,10 +210,10 @@ typedef struct {
 
 /* The 12-byte sprite-sheet header the walkers read (Unk8007352CRec.header): tp0
  * / tp1, the texture-page bits (func_80073728: (tp0 & 0xFE1F) + (tp1 << 7),
- * func_8006E480); count, the cell count; cx / cy, the CLUT position (GetClut);
- * ubase / vbase, the texel origin the cells' u / v add to; cells, the cell
- * table that follows. A resource sheet may carry two or three headers (the
- * plain one, then one highlight per player: menu_UpdateEntryGrid,
+ * gpu_GetSheetTPage); count, the cell count; cx / cy, the CLUT position
+ * (GetClut); ubase / vbase, the texel origin the cells' u / v add to; cells,
+ * the cell table that follows. A resource sheet may carry two or three headers
+ * (the plain one, then one highlight per player: menu_UpdateEntryGrid,
  * menu_DrawSelGrid) ahead of one shared cell table, which then starts at the
  * last header's cells. 0x8009B0E0 is a table of 9 such headers
  * (0x8009B0E0..0x8009B14B) that func_8005C8A8 reaches off one base; D_8009B14C
@@ -233,15 +233,16 @@ typedef struct {
 /* The head of the resource files func_8006E950 loads. By g_cd_file_table's
  * sizes, file 2 of cdrom_GetFileIndex's group 2 is MOD.BIN, 3 SEL.BIN, 4 / 5
  * SEL1 / SEL2.BIN, 6 D_SEL.BIN, 0x32 NAR.BIN. Each file starts with a list of
- * file-relative offsets ending in -1, which func_8006E440 turns into addresses.
- * The first five mean the same in every file: func_8006919C / func_8006EA28
- * pass unk_00 and unk_04 to the VAB loader func_8005C2A8 (menu_RelocateSelLists
- * / func_80077D10, for D_SEL / NAR, make no such call, and those files'
- * unk_00..unk_08 are equal), func_8006E950 loads the image at unk_08 into VRAM,
- * and gpu_LoadVramBottomStrip loads the 640x32 strip at unk_0C or unk_10. The
- * four per-file relocators (func_8006919C, func_8006EA28,
+ * file-relative offsets ending in -1, which reloc_RelocateSelfOffsets turns
+ * into addresses. The first five mean the same in every file: func_8006919C /
+ * func_8006EA28 pass unk_00 and unk_04 to the VAB loader func_8005C2A8
+ * (menu_RelocateSelLists / func_80077D10, for D_SEL / NAR, make no such call,
+ * and those files' unk_00..unk_08 are equal), func_8006E950 loads the image at
+ * unk_08 into VRAM, and gpu_LoadVramBottomStrip loads the 640x32 strip at
+ * unk_0C or unk_10. The four per-file relocators (func_8006919C, func_8006EA28,
  * menu_RelocateSelLists, func_80077D10) return unk_04, where the caller's
- * func_8006E49C buffer starts. The words after the head differ per file. */
+ * gpu_InitPrimBufferPair buffer starts. The words after the head differ per
+ * file. */
 typedef struct {
     Unk8005C2A8Pack *unk_00;
     s32 unk_04;
@@ -252,9 +253,9 @@ typedef struct {
 
 /* STAFF.BIN (resource file 0x5F), the root 64FD8's func_80078824 loads at its
  * work area + 0x58 (D_800A3610). After the head, one offset list (relocated
- * with the head by func_8006E440, so it ends in -1 like the head's own list):
- * the sprite sheets func_80078654 draws: unk_14[10] first, then unk_14[0]
- * onward while the next entry is not -1. */
+ * with the head by reloc_RelocateSelfOffsets, so it ends in -1 like the head's
+ * own list): the sprite sheets func_80078654 draws: unk_14[10] first, then
+ * unk_14[0] onward while the next entry is not -1. */
 typedef struct {
     Unk8006E950Head unk_00;
     Unk8009B0E0Record *unk_14[0];
@@ -282,9 +283,10 @@ typedef struct {
  * it to the handlers as Unk8006EACCRec.unk_00). After the head:
  * - unk_14: per entry id two TIM pixel addresses, one per column,
  * menu_UpdateRowCursors loads (LoadImage).
- * - unk_54..unk_74: the nine lists func_8006EA28 relocates (func_8006920C):
- * unk_54, the header block func_8006ECF4 draws (Unk8006ECF4Rec);
- * unk_58..unk_74, sprite-sheet lists. unk_78 is a further offset no code reads.
+ * - unk_54..unk_74: the nine lists func_8006EA28 relocates
+ * (reloc_RelocateOffsetList): unk_54, the header block func_8006ECF4 draws
+ * (Unk8006ECF4Rec); unk_58..unk_74, sprite-sheet lists. unk_78 is a further
+ * offset no code reads.
  * - unk_7C: per player a row of eight VRAM RECTs menu_UpdateRowCursors hands
  * LoadImage as the destination; unk_80: the bytes menu_UpdateChoiceGrid reads.
  * - unk_84: TIM pixel addresses func_8006ECF4 loads per character case. */
@@ -478,8 +480,8 @@ typedef struct {
    unk14_4 (6 bits), unk14_10 (the round count - 3; also picks the
    results-screen layout), unk14_12 (`== 2` tests), unk14_14, unk14_15 (one bit
    per player), unk14_17, unk14_18 (3 bits); no code reads bits 21-23.
-   - unk17 / unk1A / unk1D: three byte triples. func_8006CCC8 rebuilds a
-   player's nibble of unk17 from unk1A or unk1D; 64FD8 copies unk17 and unk1D
+   - unk17 / unk1A / unk1D: three byte triples. menu_HandleRowBitInput rebuilds
+   a player's nibble of unk17 from unk1A or unk1D; 64FD8 copies unk17 and unk1D
    into each other.
    - unk20_*: the word at +0x20, bits 0-3; its upper bytes start the unk21
    records. */
@@ -508,10 +510,10 @@ typedef struct {
 } Unk8009BD24Block;
 
 /* The select-screen work area D_800A36A0 points at (menu_InitSelScreen places
- * it at the end of the buffers func_8006E49C lays out). Two-element arrays are
- * per player. Per player, f48 is a list of f60 entries with cursor f5C;
- * confirming moves the entry under the cursor to f7E[f3C++], cancelling moves
- * f7E[--f3C] back into f48 in sorted order; f6A holds the picked entries
+ * it at the end of the buffers gpu_InitPrimBufferPair lays out). Two-element
+ * arrays are per player. Per player, f48 is a list of f60 entries with cursor
+ * f5C; confirming moves the entry under the cursor to f7E[f3C++], cancelling
+ * moves f7E[--f3C] back into f48 in sorted order; f6A holds the picked entries
  * menu_FadeOutSelAndWriteResult reports. f00 is the result record
  * menu_FadeOutSelAndWriteResult writes; f04 is the resource table the select
  * draw functions receive as arg0[0] (menu_StepSelScreen passes it as the first
@@ -2243,14 +2245,15 @@ typedef struct {
 /* MOD.BIN (resource file 2), the root 596CC's func_80068F70 loads at its work
  * area + 0x58; it keeps it in D_800A34FC's word 9, and func_8006E390 copies
  * that into word 1 of the draw context. After the head:
- * - unk_14..unk_40: the twelve lists func_8006919C relocates (func_8006920C:
- * entries up to a 0 word, -1 entries skipped). Their entries are sprite sheets
- * (unk_20 pairs each sheet with a -1), except unk_3C, func_8006DD94's list
- * (Unk8006DD94List); func_8006919C walks the twelve slots as one run of list
- * pointers.
+ * - unk_14..unk_40: the twelve lists func_8006919C relocates
+ * (reloc_RelocateOffsetList: entries up to a 0 word, -1 entries skipped). Their
+ * entries are sprite sheets (unk_20 pairs each sheet with a -1), except unk_3C,
+ * func_8006DD94's list (Unk8006DD94List); func_8006919C walks the twelve slots
+ * as one run of list pointers.
  * - unk_44: the Rec_8006C21C rows func_8006C21C draws; unk_48: the Size2s16
  * box sizes (x = width, y = height) func_8006BEC4 reads. The -1 ending
- * func_8006E440's offset list follows at +0x4C; no reader touches it. */
+ * reloc_RelocateSelfOffsets's offset list follows at +0x4C; no reader touches
+ * it. */
 typedef struct {
     Unk8006E950Head unk_00;
     Unk8009B0E0Record **unk_14;
@@ -2288,8 +2291,8 @@ typedef struct {
 } Unk800A3D40Rec;
 
 /* 5ED34's work block: the 0x14 bytes func_8006E534 keeps at the start of
- * func_8006E49C's returned space (D_800A35C4; the arena cursor D_800A356C moves
- * past it), as 596CC's Unk800A34FCRec.
+ * gpu_InitPrimBufferPair's returned space (D_800A35C4; the arena cursor
+ * D_800A356C moves past it), as 596CC's Unk800A34FCRec.
  * - unk_00 / unk_04: one s16 per player each (counted down from 0x1E by the
  * draw handlers).
  * - unk_08: the frame counter func_8006EACC advances; unk_0C: its buffer
@@ -2304,15 +2307,17 @@ typedef struct {
 } Unk800A35C4Rec;
 
 /* 596CC's work block: the 0x34 bytes func_80068F70 keeps at the start of
- * func_8006E49C's returned space (D_800A34FC; its arena cursor D_800A3500 moves
- * past the block). func_80068F70 zeroes unk_0C / unk_10 / unk_12, sets both
- * unk_28 halves to 5 and unk_30 to bit 0 of D_800A3524's word 8 (func_80069120
- * compares and refreshes it), and stores the MOD.BIN root in unk_24.
+ * gpu_InitPrimBufferPair's returned space (D_800A34FC; its arena cursor
+ * D_800A3500 moves past the block). func_80068F70 zeroes unk_0C / unk_10 /
+ * unk_12, sets both unk_28 halves to 5 and unk_30 to bit 0 of D_800A3524's word
+ * 8 (func_80069120 compares and refreshes it), and stores the MOD.BIN root in
+ * unk_24.
  * - unk_0C: the s16 pair func_800692C0 steps (its arg2); the draw functions use
  * unk_0C[0] / [1] as x / y offsets.
- * - unk_28: one s16 per player (func_8006C21C, func_8006CBD4, func_8006CCC8);
- * func_8006CCC8 and func_8006CFBC also test the pair as one word (== 0x50005:
- * both 5), as SelWork's f1C / f20. No code touches the other bytes. */
+ * - unk_28: one s16 per player (func_8006C21C, menu_SetExclusiveRowBit,
+ * menu_HandleRowBitInput); menu_HandleRowBitInput and func_8006CFBC also test
+ * the pair as one word (== 0x50005: both 5), as SelWork's f1C / f20. No code
+ * touches the other bytes. */
 typedef struct {
     u8 pad00[0xC];
     s16 unk_0C[2];

@@ -26,7 +26,7 @@ void func_80035438(void) {
     } else {
         a0 = 0xF7;
     }
-    func_80068ECC(a0);
+    menu_SetEnabledRows(a0);
 }
 
 extern u8 D_800A31D8;
@@ -284,9 +284,9 @@ void func_80035828(void) {
             func_80034F88();
             D_800A37B8 = 0;
             if (D_80106A50.unk_04 == 0x3F) {
-                func_80068ECC(0xFF);
+                menu_SetEnabledRows(0xFF);
             } else {
-                func_80068ECC(0xF7);
+                menu_SetEnabledRows(0xF7);
             }
             break;
         case 0:

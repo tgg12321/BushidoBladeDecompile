@@ -20,7 +20,7 @@ glabel menu_UpdateEntryGridCursors
     /* 609D0 800701D0 60000524 */  addiu      $a1, $zero, 0x60
     /* 609D4 800701D4 0000C48F */  lw         $a0, 0x0($fp)
     /* 609D8 800701D8 21A00000 */  addu       $s4, $zero, $zero
-    /* 609DC 800701DC 20B9010C */  jal        func_8006E480
+    /* 609DC 800701DC 20B9010C */  jal        gpu_GetSheetTPage
     /* 609E0 800701E0 1800A4AF */   sw        $a0, 0x18($sp)
     /* 609E4 800701E4 01000524 */  addiu      $a1, $zero, 0x1
     /* 609E8 800701E8 21300000 */  addu       $a2, $zero, $zero

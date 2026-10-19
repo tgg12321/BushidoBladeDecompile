@@ -100,7 +100,7 @@ s32 func_8006E534(s32 arg0, s32 arg1, Unk8009BD24Block *arg2, u32 arg3) {
     }
 
     D_800A356C = func_8006EA28((Unk8006EA28Rec *)D_800A356C);
-    D_800A356C = func_8006E49C(D_800A356C, D_800A35AC);
+    D_800A356C = gpu_InitPrimBufferPair(D_800A356C, D_800A35AC);
     D_800A3560.word = -1;
     D_800A3570 = 0;
     D_800A3578 = 0;
@@ -175,7 +175,7 @@ void func_8006E950(s32 a0, Unk8006E950Head *a1) {
     cdrom_WaitIdle();
     cdrom_StartRead(cdrom_GetFileIndex(2, a0), (s32)a1);
     cdrom_WaitIdle();
-    func_8006E440((s32 *)a1);
+    reloc_RelocateSelfOffsets((s32 *)a1);
 
     s3 = a1->unk_08;
 
@@ -197,15 +197,15 @@ void func_8006E950(s32 a0, Unk8006E950Head *a1) {
 }
 
 s32 func_8006EA28(Unk8006EA28Rec *a0) {
-    func_8006920C((s32 *)a0, (s32)a0->unk_54);
-    func_8006920C((s32 *)a0, (s32)a0->unk_58);
-    func_8006920C((s32 *)a0, (s32)a0->unk_5C);
-    func_8006920C((s32 *)a0, (s32)a0->unk_60);
-    func_8006920C((s32 *)a0, (s32)a0->unk_64);
-    func_8006920C((s32 *)a0, (s32)a0->unk_68);
-    func_8006920C((s32 *)a0, (s32)a0->unk_6C);
-    func_8006920C((s32 *)a0, (s32)a0->unk_70);
-    func_8006920C((s32 *)a0, (s32)a0->unk_74);
+    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_54);
+    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_58);
+    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_5C);
+    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_60);
+    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_64);
+    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_68);
+    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_6C);
+    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_70);
+    reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_74);
     func_8005C2A8(a0->unk_00.unk_00, 1, a0->unk_00.unk_04);
     return a0->unk_00.unk_04;
 }
@@ -677,7 +677,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     s.col_r = s.col_g = s.col_b = 0x70;
     var_3 = D_800A35A8->unk_60;
     s.header = var_3[0];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0xD, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
@@ -736,7 +736,8 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     s.x = 0;
     s.y = 0;
     s.header = var_3[1];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0x60), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
     AddPrim(g_gpu_ot_ptr + 0xB, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
@@ -802,7 +803,8 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     s.sprt_out = arg0->unk_04.unk_0C;
     s.ot_idx = 1;
     arg0->unk_04.unk_0C = func_8007352C(&s);
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0x60), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
     AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     var_2[2] = 0xF3;
@@ -839,7 +841,8 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
     s.scale_y = 0x100;
     var_1 = D_800A35A8->unk_74;
     s.header = var_1[0];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0x60), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
     AddPrim(g_gpu_ot_ptr + 8, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     for (i = 0; i < 1 + D_800A35B0 + (var_7 = D_800A3554); i++) {
@@ -1048,7 +1051,8 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
     var_1.sprt_out = arg0->unk_04.unk_0C;
     var_1.ot_idx = 1;
     arg0->unk_04.unk_0C = func_8007352C(&var_1);
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(var_1.header, c60), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
     AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     var_2[2] = 0xE7;
@@ -1070,7 +1074,8 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
         var_1.header++;
     }
     var_1.header = var_3[0];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(var_1.header, c60), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
     AddPrim(g_gpu_ot_ptr + 0xA, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     var_1.header = var_3[2];
@@ -1090,7 +1095,8 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
             arg0->unk_04.unk_0C = func_8007352C(&var_1);
         }
     }
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(var_1.header, c60), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
     AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     menu_UpdateRowCursors(arg0, &var_1);
@@ -1121,7 +1127,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
     flag = 0;
     var_0 = D_800A35A8->unk_74;
     s->header = var_0[0];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s->header, 0x60), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s->header, 0x60), 0);
     AddPrim(g_gpu_ot_ptr + 8, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     s->has_color = 1;
@@ -1537,7 +1544,8 @@ void menu_UpdateChoiceGrid(
             }
         }
         s.header = var_4[4];
-        SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
+        SetDrawMode(
+            arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
         arg0->unk_04.unk_14++;
     }
@@ -1579,7 +1587,7 @@ void menu_UpdateChoiceGrid(
     SetDrawArea(arg0->unk_04.unk_18, &rect);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_18);
     arg0->unk_04.unk_18++;
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
@@ -1945,7 +1953,7 @@ void func_80073200(Unk8006EACCRec *arg0) {
     s.scale_y = 0x100;
     var_1 = D_800A35A8->unk_5C;
     s.header = var_1[3];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x1C, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     s.has_color = 1;
@@ -1998,7 +2006,8 @@ void func_80073200(Unk8006EACCRec *arg0) {
     s.table = s1;
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C(&s);
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0x60), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     if (D_800A3580 < 2) {
@@ -2010,7 +2019,7 @@ void func_80073200(Unk8006EACCRec *arg0) {
         s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C(&s);
         SetDrawMode(
-            arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0x20), 0);
+            arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x20), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
         arg0->unk_04.unk_14++;
     }

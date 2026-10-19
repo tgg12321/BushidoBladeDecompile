@@ -24,7 +24,7 @@ glabel menu_InitSelScreen
     /* 67910 80077110 FEDB010C */  jal        menu_RelocateSelLists
     /* 67914 80077114 21202002 */   addu      $a0, $s1, $zero
     /* 67918 80077118 0C05858F */  lw         $a1, %gp_rel(D_800A35D8)($gp)
-    /* 6791C 8007711C 27B9010C */  jal        func_8006E49C
+    /* 6791C 8007711C 27B9010C */  jal        gpu_InitPrimBufferPair
     /* 67920 80077120 21204000 */   addu      $a0, $v0, $zero
     /* 67924 80077124 21182002 */  addu       $v1, $s1, $zero
     /* 67928 80077128 21884000 */  addu       $s1, $v0, $zero

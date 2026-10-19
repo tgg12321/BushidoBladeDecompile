@@ -216,12 +216,12 @@ glabel func_80035828
     /* 26340 80035B40 B83720AC */  sw         $zero, %lo(D_800A37B8)($at)
     /* 26344 80035B44 05006214 */  bne        $v1, $v0, .L80035B5C
     /* 26348 80035B48 00000000 */   nop
-    /* 2634C 80035B4C B3A3010C */  jal        func_80068ECC
+    /* 2634C 80035B4C B3A3010C */  jal        menu_SetEnabledRows
     /* 26350 80035B50 FF000424 */   addiu     $a0, $zero, 0xFF
     /* 26354 80035B54 67D70008 */  j          .L80035D9C
     /* 26358 80035B58 00000000 */   nop
   .L80035B5C:
-    /* 2635C 80035B5C B3A3010C */  jal        func_80068ECC
+    /* 2635C 80035B5C B3A3010C */  jal        menu_SetEnabledRows
     /* 26360 80035B60 F7000424 */   addiu     $a0, $zero, 0xF7
     /* 26364 80035B64 67D70008 */  j          .L80035D9C
     /* 26368 80035B68 00000000 */   nop

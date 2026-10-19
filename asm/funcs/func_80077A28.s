@@ -7,7 +7,7 @@ glabel func_80077A28
     /* 6823C 80077A3C 180580AF */  sw         $zero, %gp_rel(D_800A35E4)($gp)
     /* 68240 80077A40 DA59000C */  jal        gpu_SetDrawEnvBg
     /* 68244 80077A44 21380000 */   addu      $a3, $zero, $zero
-    /* 68248 80077A48 FFB5010C */  jal        func_8006D7FC
+    /* 68248 80077A48 FFB5010C */  jal        menu_ResetConfirmCursor
     /* 6824C 80077A4C 00000000 */   nop
     /* 68250 80077A50 1000BF8F */  lw         $ra, 0x10($sp)
     /* 68254 80077A54 1800BD27 */  addiu      $sp, $sp, 0x18

@@ -33,7 +33,7 @@ glabel func_8006C21C
     /* 5CA98 8006C298 00000000 */  nop
     /* 5CA9C 8006C29C 140002AD */  sw         $v0, 0x14($t0)
     /* 5CAA0 8006C2A0 1800A48F */  lw         $a0, 0x18($sp)
-    /* 5CAA4 8006C2A4 20B9010C */  jal        func_8006E480
+    /* 5CAA4 8006C2A4 20B9010C */  jal        gpu_GetSheetTPage
     /* 5CAA8 8006C2A8 21280000 */   addu      $a1, $zero, $zero
     /* 5CAAC 8006C2AC 01000524 */  addiu      $a1, $zero, 0x1
     /* 5CAB0 8006C2B0 4800A88F */  lw         $t0, 0x48($sp)
@@ -112,7 +112,7 @@ glabel func_8006C21C
     /* 5CBC4 8006C3C4 18019426 */   addiu     $s4, $s4, 0x118
     /* 5CBC8 8006C3C8 3400648E */  lw         $a0, 0x34($s3)
     /* 5CBCC 8006C3CC 2128A002 */  addu       $a1, $s5, $zero
-    /* 5CBD0 8006C3D0 20B9010C */  jal        func_8006E480
+    /* 5CBD0 8006C3D0 20B9010C */  jal        gpu_GetSheetTPage
     /* 5CBD4 8006C3D4 1800A4AF */   sw        $a0, 0x18($sp)
     /* 5CBD8 8006C3D8 01000524 */  addiu      $a1, $zero, 0x1
     /* 5CBDC 8006C3DC 4800A88F */  lw         $t0, 0x48($sp)
@@ -205,7 +205,7 @@ glabel func_8006C21C
     /* 5CD28 8006C528 00000000 */  nop
     /* 5CD2C 8006C52C 0400648E */  lw         $a0, 0x4($s3)
     /* 5CD30 8006C530 2128A002 */  addu       $a1, $s5, $zero
-    /* 5CD34 8006C534 20B9010C */  jal        func_8006E480
+    /* 5CD34 8006C534 20B9010C */  jal        gpu_GetSheetTPage
     /* 5CD38 8006C538 1800A4AF */   sw        $a0, 0x18($sp)
     /* 5CD3C 8006C53C 01000524 */  addiu      $a1, $zero, 0x1
     /* 5CD40 8006C540 4800A88F */  lw         $t0, 0x48($sp)

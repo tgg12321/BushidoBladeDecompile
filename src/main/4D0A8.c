@@ -309,7 +309,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
     tile->h = D_8009B2BC[mode].h;
     SetSemiTrans(tile, 1);
     AddPrim(g_gpu_ot_ptr + arg3, tile);
-    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B0E0[0], 0), 0);
+    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B0E0[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3, mode_off);
     return size;
 }
@@ -608,7 +608,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         s.sprt_out = cur;
         cur = func_8007352C(&s);
     }
-    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B398[0], 0), 0);
+    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B398[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3, mode_off);
     return end_off - arg2;
 }
@@ -724,7 +724,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             break;
         }
     }
-    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B398[0], 0), 0);
+    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B398[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3, mode_off);
     return end_off - arg2;
 }
@@ -908,7 +908,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             cur = func_8007352C(&s);
         }
     }
-    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B524, 0), 0);
+    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B524, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg2, mode_off);
     /* The second DR_MODE goes at the record's end, past the size this function
      * returns (2B344 func_8003C560 advances its cursor g_prim_buf_cursor by
@@ -1034,7 +1034,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     tile->h = 1;
     SetSemiTrans(tile, 0);
     AddPrim(g_gpu_ot_ptr + arg2, tile);
-    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009ADB4, 0), 0);
+    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009ADB4, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg2, mode_off);
     return end_off - arg1;
 }
@@ -1099,7 +1099,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
             }
         }
     }
-    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B5A0[0], 0), 0);
+    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B5A0[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3, mode_off);
     /* The second DR_MODE goes at the record's end, past the size this function
      * returns (its caller, 9F9C func_8001CE60, advances its cursor
@@ -1213,7 +1213,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         s.sprt_out = cur;
         cur = func_8007352C(&s);
     }
-    SetDrawMode(mode_off, 1, 0, func_8006E480(&D_8009B398[1], 0), 0);
+    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B398[1], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3, mode_off);
     return end_off - arg2;
 }
@@ -1385,7 +1385,7 @@ s32 func_8005FC9C(s32 arg0, s32 arg1) {
         }
         j++;
     } while (j < 2);
-    SetDrawMode(mode_off, 1, 0, func_8006E480(D_8009B698, 0x20), 0);
+    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(D_8009B698, 0x20), 0);
     AddPrim(g_gpu_ot_ptr + arg1, mode_off);
     if (off <= 0x140) {
         D_800A3278++;
@@ -1440,7 +1440,7 @@ s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2) {
             break;
         }
     }
-    SetDrawMode(mode_off, 1, 0, func_8006E480(D_8009B6F0, 0), 0);
+    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(D_8009B6F0, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg2, mode_off);
     return end_off - arg1;
 }
@@ -1505,7 +1505,7 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     s.table = &D_800A328C;
     s.sprt_out = (s32)&var_1->unk_00;
     func_8007352C(&s);
-    SetDrawMode(mode_off, 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg2, mode_off);
     return end_off - arg1;
 }
@@ -1585,7 +1585,7 @@ s32 func_80060544(s32 arg0, s32 arg1) {
         j += 1;
         p0++;
     } while (j < 2);
-    SetDrawMode(mode_off, 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg1, mode_off);
     return end_off - arg0;
 }

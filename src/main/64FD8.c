@@ -205,7 +205,7 @@ void func_80074D2C(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
     s.ot_idx = var_1;
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C(&s);
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + var_1, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 }
@@ -286,7 +286,7 @@ void menu_DrawSelPanel(Unk8006EACCRec *arg0, s32 arg1) {
     s.table = var_7;
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C(&s);
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
@@ -394,7 +394,7 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
     /* FAKE: the holder between the header's cells and s.table; stored directly:
      * score 15. */
     Unk8009B400Record *var_3;
-    /* FAKE: constant-holder: keeps the 0 for both func_8006E480 calls in
+    /* FAKE: constant-holder: keeps the 0 for both gpu_GetSheetTPage calls in
        $s5 instead of `li $a1,0` (SOTN src/dra/7879C.c:2067 `s32 zero = 0;`);
        the literal: score 9 */
     s32 zero;
@@ -431,7 +431,8 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
     s.table += s.header->count;
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C(&s);
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, zero), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     tbl = arg0->unk_00.v80076FF8->unk_2C;
@@ -449,7 +450,7 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
         s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C(&s);
         SetDrawMode(
-            arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, zero), 0);
+            arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
         i++;
         arg0->unk_04.unk_14++;
@@ -544,7 +545,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     /* the current sprite-sheet pointer table: the page table, then the slot
      * table in loop 3, then the page table again (Ruling 11) */
     Unk8009B0E0Record **table;
-    /* FAKE: constant-holder: keeps func_8006E480's 0 argument in $fp across
+    /* FAKE: constant-holder: keeps gpu_GetSheetTPage's 0 argument in $fp across
        the calls; the literal: score 30 (named-local-fake-exception) */
     s32 zero;
     s16 i;
@@ -577,7 +578,8 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     }
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = func_8007352C(&s);
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, zero), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
@@ -660,10 +662,12 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     table = arg0->unk_00.v80076FF8->unk_14;
     s.header = table[1];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, zero), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, zero), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx - 1, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 }
@@ -799,7 +803,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
        cells and s.table; stored directly: score 6. */
     Unk8009B400Record *var_3;
     s16 i;
-    /* FAKE: constant-holder for func_8006E480's 0 argument; live past the
+    /* FAKE: constant-holder for gpu_GetSheetTPage's 0 argument; live past the
      * first loop it gives that loop's entry guard `move t0,zero; slt` instead
      * of a beqz. The literal: score 3 (named-local-fake-exception) */
     s32 mode;
@@ -823,7 +827,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = func_8007352C(&s);
         SetDrawMode(
-            arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, mode), 0);
+            arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, mode), 0);
         AddPrim(g_gpu_ot_ptr + var_1, arg0->unk_04.unk_14);
         arg0->unk_04.unk_14++;
     }
@@ -894,7 +898,8 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     table = arg0->unk_00.v80076FF8->unk_14;
     s.header = table[1];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, mode), 0);
+    SetDrawMode(
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, mode), 0);
     AddPrim(g_gpu_ot_ptr + var_1, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 }
@@ -1038,16 +1043,16 @@ s32 menu_FadeOutSelAndWriteResult(Unk8006EACCRec *arg0) {
 }
 
 s32 menu_RelocateSelLists(s32 *a0) {
-    func_8006920C(a0, a0[5]);
-    func_8006920C(a0, a0[6]);
-    func_8006920C(a0, a0[7]);
-    func_8006920C(a0, a0[8]);
-    func_8006920C(a0, a0[9]);
-    func_8006920C(a0, a0[10]);
-    func_8006920C(a0, a0[11]);
-    func_8006920C(a0, a0[12]);
-    func_8006920C(a0, a0[13]);
-    func_8006920C(a0, a0[14]);
+    reloc_RelocateOffsetList(a0, a0[5]);
+    reloc_RelocateOffsetList(a0, a0[6]);
+    reloc_RelocateOffsetList(a0, a0[7]);
+    reloc_RelocateOffsetList(a0, a0[8]);
+    reloc_RelocateOffsetList(a0, a0[9]);
+    reloc_RelocateOffsetList(a0, a0[10]);
+    reloc_RelocateOffsetList(a0, a0[11]);
+    reloc_RelocateOffsetList(a0, a0[12]);
+    reloc_RelocateOffsetList(a0, a0[13]);
+    reloc_RelocateOffsetList(a0, a0[14]);
     return a0[1];
 }
 
@@ -1058,7 +1063,7 @@ extern s32 menu_RelocateSelLists(s32 *);
 s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     s16 sp[2];
     /* work: the entry list pointer (arg0 + 0x58), then the work area
-       func_8006E49C returns (Ruling 11, Q78) */
+       gpu_InitPrimBufferPair returns (Ruling 11, Q78) */
     void *work;
     s32 r;
     s16 t0;
@@ -1079,7 +1084,7 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     r = menu_RelocateSelLists(work);
     {
         Unk80076FF8Rec *list = work;
-        work = (void *)func_8006E49C(r, D_800A35D8);
+        work = (void *)gpu_InitPrimBufferPair(r, D_800A35D8);
         D_800A36A0 = work;
         SELWORK->f04 = list;
         /* FAKE: dead store (never read) takes work out of the call result's
@@ -1265,7 +1270,7 @@ s32 func_80077894(s32 arg0, s32 arg1) {
     s32 result;
 
     ret = 0;
-    result = func_800693CC(arg0, arg1);
+    result = menu_UpdateRowMenu(arg0, arg1);
     if (result >= 0) {
         ret = 1;
         D_800A35E4 = 0;
@@ -1310,10 +1315,12 @@ s32 func_80077A04(s32 a0, s32 a1) {
 void func_80077A28(void) {
     D_800A35E4 = 0;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
-    func_8006D7FC();
+    menu_ResetConfirmCursor();
 }
 
-s32 func_80077A60(s32 arg0, s32 arg1) { return func_8006E068(arg0, arg1); }
+s32 func_80077A60(s32 arg0, s32 arg1) {
+    return menu_UpdateConfirmMenu(arg0, arg1);
+}
 
 s32 menu_InitSelScreen(s32, Unk8009BD24Block *, s32);
 
@@ -1377,12 +1384,12 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
         s2 = 3;
         break;
     case 4:
-        func_8006D324();
+        menu_ResetRowBitCursors();
         D_800A35E4++;
         /* fall through */
     case 5:
         s2 = 0;
-        result = func_8006D338(arg0, arg1);
+        result = menu_UpdateRowBitMenu(arg0, arg1);
         if (result == 1) {
             D_800A35E4 = 0;
             D_8009BD24.unk1D[0] = D_8009BD24.unk17[0];
@@ -1399,11 +1406,11 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
 Unk8009BD24Block *func_80077D00(void) { return &D_8009BD24; }
 
 s32 func_80077D10(s32 *a0) {
-    func_8006920C(a0, a0[6]);
-    func_8006920C(a0, a0[7]);
-    func_8006920C(a0, a0[8]);
-    func_8006920C(a0, a0[9]);
-    func_8006920C(a0, a0[10]);
+    reloc_RelocateOffsetList(a0, a0[6]);
+    reloc_RelocateOffsetList(a0, a0[7]);
+    reloc_RelocateOffsetList(a0, a0[8]);
+    reloc_RelocateOffsetList(a0, a0[9]);
+    reloc_RelocateOffsetList(a0, a0[10]);
     return a0[1];
 }
 
@@ -1417,7 +1424,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
     s16 *in;
     s16 *out;
     Unk8009B400Record *table;
-    /* FAKE: constant-holder for the 0x20 passed as func_8006E480's second
+    /* FAKE: constant-holder for the 0x20 passed as gpu_GetSheetTPage's second
        argument; kept in $s7 instead of `li a1,0x20` per call; the literal:
        score 12 (named-local-fake-exception) */
     s32 var_5;
@@ -1466,7 +1473,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                     s.sprt_out = arg0->unk_04.unk_0C;
                     arg0->unk_04.unk_0C = func_8007352C(&s);
                     SetDrawMode(arg0->unk_04.unk_14, 1, 0,
-                                func_8006E480(s.header, var_5), 0);
+                                gpu_GetSheetTPage(s.header, var_5), 0);
                     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
                     arg0->unk_04.unk_14++;
                 }
@@ -1487,7 +1494,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                 s.sprt_out = arg0->unk_04.unk_0C;
                 arg0->unk_04.unk_0C = func_8007352C(&s);
                 SetDrawMode(arg0->unk_04.unk_14, 1, 0,
-                            func_8006E480(s.header, var_5), 0);
+                            gpu_GetSheetTPage(s.header, var_5), 0);
                 AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
                 arg0->unk_04.unk_14++;
             }
@@ -1507,7 +1514,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                 s.sprt_out = arg0->unk_04.unk_0C;
                 arg0->unk_04.unk_0C = func_8007352C(&s);
                 SetDrawMode(arg0->unk_04.unk_14, 1, 0,
-                            func_8006E480(s.header, var_5), 0);
+                            gpu_GetSheetTPage(s.header, var_5), 0);
                 AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
                 arg0->unk_04.unk_14++;
             }
@@ -1532,7 +1539,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                     s.sprt_out = arg0->unk_04.unk_0C;
                     arg0->unk_04.unk_0C = func_8007352C(&s);
                     SetDrawMode(arg0->unk_04.unk_14, 1, 0,
-                                func_8006E480(s.header, var_5), 0);
+                                gpu_GetSheetTPage(s.header, var_5), 0);
                     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
                     arg0->unk_04.unk_14++;
                 }
@@ -1572,8 +1579,8 @@ void func_80077D94(Unk8006EACCRec *arg0) {
             s.table = s.header->cells;
             s.sprt_out = arg0->unk_04.unk_0C;
             arg0->unk_04.unk_0C = func_8007352C(&s);
-            SetDrawMode(
-                arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, var_5), 0);
+            SetDrawMode(arg0->unk_04.unk_14, 1, 0,
+                        gpu_GetSheetTPage(s.header, var_5), 0);
             AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
             arg0->unk_04.unk_14++;
         }
@@ -1590,7 +1597,7 @@ s32 func_800784E4(s32 arg0) {
     D_800A35F8 = s0;
     func_8006E950(0x32, &s0->unk_00);
     r = func_80077D10((s32 *)s0);
-    func_8006E49C(r, D_800A35F4);
+    gpu_InitPrimBufferPair(r, D_800A35F4);
     D_800A35FC = 0;
     D_800A35F0 = 0;
     D_800A3600 = 0;
@@ -1659,7 +1666,7 @@ void func_80078654(Unk800788B0Rec *arg0) {
         }
         s.sprt_out = arg0->unk_0C;
         arg0->unk_0C = func_8007352C(&s);
-        SetDrawMode(arg0->unk_14, 1, 0, func_8006E480(s.header, zero), 0);
+        SetDrawMode(arg0->unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_14);
         arg0->unk_14++;
     }
@@ -1670,7 +1677,7 @@ void func_80078654(Unk800788B0Rec *arg0) {
         s.y = -D_800A3608;
         s.sprt_out = arg0->unk_0C;
         arg0->unk_0C = func_8007352C(&s);
-        SetDrawMode(arg0->unk_14, 1, 0, func_8006E480(s.header, zero), 0);
+        SetDrawMode(arg0->unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_14);
         arg0->unk_14++;
     }
@@ -1686,7 +1693,7 @@ s32 func_80078824(s32 arg0) {
     D_800A360C = (Unk8006E49CRec *)arg0;
     D_800A3610 = s0;
     func_8006E950(0x5F, &s0->unk_00);
-    func_8006E49C(func_80078628(s0), D_800A360C);
+    gpu_InitPrimBufferPair(func_80078628(s0), D_800A360C);
     D_800A3304 = 0;
     D_800A3608 = 0;
     D_800A3614 = 0;

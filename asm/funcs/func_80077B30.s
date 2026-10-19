@@ -85,7 +85,7 @@ glabel func_80077B30
     /* 68458 80077C58 38DF0108 */  j          .L80077CE0
     /* 6845C 80077C5C 03001224 */   addiu     $s2, $zero, 0x3
   jlabel .L80077C60
-    /* 68460 80077C60 C9B4010C */  jal        func_8006D324
+    /* 68460 80077C60 C9B4010C */  jal        menu_ResetRowBitCursors
     /* 68464 80077C64 00000000 */   nop
     /* 68468 80077C68 1805828F */  lw         $v0, %gp_rel(D_800A35E4)($gp)
     /* 6846C 80077C6C 00000000 */  nop
@@ -94,7 +94,7 @@ glabel func_80077B30
   jlabel .L80077C78
     /* 68478 80077C78 21900000 */  addu       $s2, $zero, $zero
     /* 6847C 80077C7C 21200002 */  addu       $a0, $s0, $zero
-    /* 68480 80077C80 CEB4010C */  jal        func_8006D338
+    /* 68480 80077C80 CEB4010C */  jal        menu_UpdateRowBitMenu
     /* 68484 80077C84 21282002 */   addu      $a1, $s1, $zero
     /* 68488 80077C88 21184000 */  addu       $v1, $v0, $zero
     /* 6848C 80077C8C 01000224 */  addiu      $v0, $zero, 0x1

@@ -16,7 +16,7 @@ glabel func_8006E950
     /* 5F188 8006E988 21282002 */   addu      $a1, $s1, $zero
     /* 5F18C 8006E98C D0DB000C */  jal        cdrom_WaitIdle
     /* 5F190 8006E990 80021224 */   addiu     $s2, $zero, 0x280
-    /* 5F194 8006E994 10B9010C */  jal        func_8006E440
+    /* 5F194 8006E994 10B9010C */  jal        reloc_RelocateSelfOffsets
     /* 5F198 8006E998 21202002 */   addu      $a0, $s1, $zero
     /* 5F19C 8006E99C 21200000 */  addu       $a0, $zero, $zero
     /* 5F1A0 8006E9A0 80010224 */  addiu      $v0, $zero, 0x180

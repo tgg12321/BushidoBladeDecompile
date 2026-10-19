@@ -11,7 +11,7 @@ glabel func_8006919C
   .L800691C0:
     /* 599C0 800691C0 0000058E */  lw         $a1, 0x0($s0)
     /* 599C4 800691C4 04001026 */  addiu      $s0, $s0, 0x4
-    /* 599C8 800691C8 83A4010C */  jal        func_8006920C
+    /* 599C8 800691C8 83A4010C */  jal        reloc_RelocateOffsetList
     /* 599CC 800691CC 01003126 */   addiu     $s1, $s1, 0x1
     /* 599D0 800691D0 0C00222A */  slti       $v0, $s1, 0xC
     /* 599D4 800691D4 FAFF4014 */  bnez       $v0, .L800691C0

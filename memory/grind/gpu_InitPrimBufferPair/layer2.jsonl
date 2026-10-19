@@ -1,0 +1,1 @@
+{"func": "gpu_InitPrimBufferPair", "addr": "8006E49C", "verdict": "PASS", "body_hash": "bc02bd15e1e2ebbb", "body_kind": "c", "file": "main/51268", "reviewer": "cheat-reviewer-fakea-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T09:55:40Z", "head": "8ccce0b12", "notes": "", "renamed_from": ["func_8006E49C"]}

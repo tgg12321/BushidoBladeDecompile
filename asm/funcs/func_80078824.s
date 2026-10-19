@@ -17,7 +17,7 @@ glabel func_80078824
     /* 69060 80078860 8AE1010C */  jal        func_80078628
     /* 69064 80078864 21200002 */   addu      $a0, $s0, $zero
     /* 69068 80078868 4005858F */  lw         $a1, %gp_rel(D_800A360C)($gp)
-    /* 6906C 8007886C 27B9010C */  jal        func_8006E49C
+    /* 6906C 8007886C 27B9010C */  jal        gpu_InitPrimBufferPair
     /* 69070 80078870 21204000 */   addu      $a0, $v0, $zero
     /* 69074 80078874 01000424 */  addiu      $a0, $zero, 0x1
     /* 69078 80078878 21280000 */  addu       $a1, $zero, $zero

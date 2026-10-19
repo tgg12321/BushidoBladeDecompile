@@ -310,7 +310,7 @@ void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
     }
 
     s.header = *temp_s2;
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 0x1F, arg0->unk_04.unk_14);
     q = arg0->unk_04.unk_04;
     arg0->unk_04.unk_14++;
@@ -442,7 +442,7 @@ void func_80074488(Unk8006EACCRec *arg0) {
     } while (i < 15);
 
     s.header = table[0];
-    SetDrawMode(arg0->unk_04.unk_14, 1, 0, func_8006E480(s.header, 0), 0);
+    SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + 2, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     var_4[2] = 0x108;

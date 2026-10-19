@@ -4,19 +4,19 @@ glabel func_80077D10
     /* 68518 80077D18 21808000 */  addu       $s0, $a0, $zero
     /* 6851C 80077D1C 1400BFAF */  sw         $ra, 0x14($sp)
     /* 68520 80077D20 1800058E */  lw         $a1, 0x18($s0)
-    /* 68524 80077D24 83A4010C */  jal        func_8006920C
+    /* 68524 80077D24 83A4010C */  jal        reloc_RelocateOffsetList
     /* 68528 80077D28 00000000 */   nop
     /* 6852C 80077D2C 1C00058E */  lw         $a1, 0x1C($s0)
-    /* 68530 80077D30 83A4010C */  jal        func_8006920C
+    /* 68530 80077D30 83A4010C */  jal        reloc_RelocateOffsetList
     /* 68534 80077D34 21200002 */   addu      $a0, $s0, $zero
     /* 68538 80077D38 2000058E */  lw         $a1, 0x20($s0)
-    /* 6853C 80077D3C 83A4010C */  jal        func_8006920C
+    /* 6853C 80077D3C 83A4010C */  jal        reloc_RelocateOffsetList
     /* 68540 80077D40 21200002 */   addu      $a0, $s0, $zero
     /* 68544 80077D44 2400058E */  lw         $a1, 0x24($s0)
-    /* 68548 80077D48 83A4010C */  jal        func_8006920C
+    /* 68548 80077D48 83A4010C */  jal        reloc_RelocateOffsetList
     /* 6854C 80077D4C 21200002 */   addu      $a0, $s0, $zero
     /* 68550 80077D50 2800058E */  lw         $a1, 0x28($s0)
-    /* 68554 80077D54 83A4010C */  jal        func_8006920C
+    /* 68554 80077D54 83A4010C */  jal        reloc_RelocateOffsetList
     /* 68558 80077D58 21200002 */   addu      $a0, $s0, $zero
     /* 6855C 80077D5C 0400028E */  lw         $v0, 0x4($s0)
     /* 68560 80077D60 1400BF8F */  lw         $ra, 0x14($sp)

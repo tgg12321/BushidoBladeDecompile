@@ -16,7 +16,7 @@ glabel menu_UpdateRowCursors
     /* 617B0 80070FB0 2188A000 */  addu       $s1, $a1, $zero
     /* 617B4 80070FB4 0000C48F */  lw         $a0, 0x0($fp)
     /* 617B8 80070FB8 60000524 */  addiu      $a1, $zero, 0x60
-    /* 617BC 80070FBC 20B9010C */  jal        func_8006E480
+    /* 617BC 80070FBC 20B9010C */  jal        gpu_GetSheetTPage
     /* 617C0 80070FC0 000024AE */   sw        $a0, 0x0($s1)
     /* 617C4 80070FC4 01000524 */  addiu      $a1, $zero, 0x1
     /* 617C8 80070FC8 21300000 */  addu       $a2, $zero, $zero

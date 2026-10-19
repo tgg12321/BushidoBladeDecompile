@@ -3065,7 +3065,7 @@ gte_rtpt_batch_8004A76C                            = 0x8004A76C;  /* GTE: rtpt l
 /* RESET 0x8006A494: retired name 'draw_anim_sprite_scaled_8006A494' — preserved note: as draw_anim_sprite but sets scale fields 0x20/0x24=0x100; func_80073728 + saMotionSet + initTexPage + ot_Link */
 /* RENAME 0x8006F038: retired name 'gpu_draw_fullscreen_overlay_8006F038' — preserved note: SetTile full-screen 0x280 x 0xF0, grey D_800A3550, SetSemiTrans(1), AddPrim(g_gpu_ot_ptr); then SetDrawMode (tpage 0x40) + AddPrim; semi-transparent full-screen overlay */
 /* RESET 0x80074D2C: retired name 'draw_anim_sprite_pos_80074D2C' — preserved note: anim-sprite render at computed offset, OT-depth select; satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link */
-gpu_draw_layered_box_80069898                          = 0x80069898;  /* 3x SetTile at y, y-1, y-2 (grey 0x80 / 0x80 / 0x40, SetSemiTrans 0 / 1 / 1) + AddPrim(g_gpu_ot_ptr + arg2) */
+/* RESET 0x80069898: retired name 'gpu_draw_layered_box_80069898' — preserved note: 3x SetTile at y, y-1, y-2 (grey 0x80 / 0x80 / 0x40, SetSemiTrans 0 / 1 / 1) + AddPrim(g_gpu_ot_ptr + arg2) */
 draw_bg_and_sprites_80069E18                           = 0x80069E18;  /* full-screen overlay tile + saMotionSet sprite + initTexPage + 3x func_8007352C; composite screen render */
 /* RESET 0x8006E950: retired name 'replay_setup_display_8006E950' — preserved note: game_FrameLoop + replay_camera_Init + 2x gpu_LoadImage (VRAM regions); replay-mode display init */
 /* RENAME 0x800484A0: retired name 'gpu_decode_load_image_800484A0' — preserved note: checks image header tag 0x10+flag, decodes via func_800486FC/8004876C into 0x400 buffer, gpu_LoadImage to VRAM */
