@@ -141,8 +141,8 @@ Unk80045878Obj *func_80040510(s32 a0, s32 a1, s32 a2) {
     func_80040594(ptr);
     func_800408F8(ptr);
     func_80040B44(ptr);
-    func_8003F824(ptr, 1);
-    func_8003FFC4(ptr);
+    softbody_SetupObject(ptr, 1);
+    softbody_RequestRebuild(ptr);
     func_80040CB8(ptr);
     func_8003E120();
     return ptr;

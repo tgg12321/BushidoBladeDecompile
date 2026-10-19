@@ -547,7 +547,7 @@ Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
     }
     s3 = a0 + 3;
     if (arena_FindBlock(s3) != 0) {
-        func_800400F8(s1);
+        softbody_FreeObject(s1);
     }
     if (((arena_FindBlock(s3) != 0) && (s1->unk_08 == a1)) &&
         (s1->unk_06 != (-2))) {
@@ -613,7 +613,7 @@ void func_80045AA4(s32 a0, s32 a1) {
     if (ptr == 0)
         return;
     ptr->unk_1C = ptr->unk_1C + a1;
-    func_8004019C(ptr, a1);
+    softbody_RebaseObject(ptr, a1);
     if ((ptr->unk_00.word >> 1) & 1) {
         /* FAKE: idx (a0 - 3) is reused for the sound index; a fresh local swaps
          * the s0 / s1 seats (score 8) */

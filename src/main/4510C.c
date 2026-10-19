@@ -76,11 +76,11 @@ s32 motion_UpdatePlayback(void) {
         }
         var_5 = func_8004153C(0);
         if (var_5 != 0) {
-            func_8003FFC4(var_5);
+            softbody_RequestRebuild(var_5);
         }
         var_5 = func_8004153C(1);
         if (var_5 != 0) {
-            func_8003FFC4(var_5);
+            softbody_RequestRebuild(var_5);
         }
     }
     v = func_8003D7B4(0);

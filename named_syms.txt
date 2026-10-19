@@ -2052,7 +2052,7 @@ g_memcard_hw_event_new                                   = 0x800A3850;  /* OpenE
 /* These functions had proper names in their C source but no addr binding */
 /* in named_syms.txt.  Addresses derived from asm/funcs/<name>.s. */
 math_AlignUp4                                        = 0x8003FFA8;  /* MISNAMED: not fade; 4-byte alignment via modulo-and-round */
-func_8003FFC4                                        = 0x8003FFC4;  /* MISNAMED: not fade; sets v1[3] = 1 in passed 9-index array */
+softbody_RequestRebuild                                        = 0x8003FFC4;  /* MISNAMED: not fade; sets v1[3] = 1 in passed 9-index array */
 CdSync                           = 0x800801E8;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of cpu_side_move_dir_4() */
 CdReady                           = 0x80080208;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of marionation_Exec() */
 CdGetSector2                           = 0x80080640;  /* MISNAMED: VU0 is PS2-only; actually returns cdrom_DmaChain() == 0 */

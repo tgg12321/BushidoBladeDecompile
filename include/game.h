@@ -2015,8 +2015,8 @@ typedef struct {
  * - unk_18: written as the word 0x8000 by func_80045878, read as three colour
  * bytes by func_80041688.
  * - unk_1C / unk_20: the resource blocks func_80045878 stores; unk_24 / unk_28:
- * the attached Unk8003F62CRec block and the s16 list func_8003F824 walks up
- * to its -3 end (func_8004019C moves both by its a1).
+ * the attached Unk8003F62CRec block and the s16 list softbody_SetupObject walks
+ * up to its -3 end (softbody_RebaseObject moves both by its a1).
  * - unk_2C[]: node 0 is the root (func_80049718 reads its xf.mat);
  * func_800408F8 builds 0..20, func_80040CB8 fills unk_8B4[] (unk2 = -1 ends
  * it), func_80040B44 copies duplicates into unk_10D4[] (unk58 = the source
@@ -2028,7 +2028,7 @@ typedef struct Unk80045878Node {
     Unk80101DF0Record node; /* +0x00 */
     s32 unk58;              /* +0x58 */
     s32 unk5C;              /* +0x5C */
-    u8 *unk60;              /* +0x60 func_8003FA24's point data */
+    u8 *unk60;              /* +0x60 softbody_CreateForNode's point data */
     s32 unk64;              /* +0x64 */
 } Unk80045878Node;          /* 0x68 */
 
@@ -2198,11 +2198,11 @@ typedef struct {
     MATRIX matrix;
 } Func80017A44Output;
 
-/* The 16-byte object descriptor (2B344 func_8003FA24 fills it in each
- * Unk8003F824Rec, func_8003F824 copies it into Unk8003F62CRec.unk418; 87A0
- * softbody_UpdateList steps one object per descriptor): the object's D_800F6740
- * index (unk0), its flags (unk2; bit 0 picks softbody_SnapToPoints over
- * softbody_Step), the object's matrix, its point table end and its
+/* The 16-byte object descriptor (2B344 softbody_CreateForNode fills it in each
+ * Unk8003F824Rec, softbody_SetupObject copies it into Unk8003F62CRec.unk418;
+ * 87A0 softbody_UpdateList steps one object per descriptor): the object's
+ * D_800F6740 index (unk0), its flags (unk2; bit 0 picks softbody_SnapToPoints
+ * over softbody_Step), the object's matrix, its point table end and its
  * collision-volume block. */
 typedef struct {
     /* 0x00 */ s16 unk0;
@@ -2214,8 +2214,8 @@ typedef struct {
 } Unk80017FA0Rec;
 
 /* The collision volumes of one Unk8003F824Rec (2B344 Func8003F6D8Inner +0x10;
- * Unk80017FA0Rec.unkC points here): unk00 (func_800400B0 sets it; 87A0
- * softbody_LoadColliders scales it into the scratchpad's ground word), the
+ * Unk80017FA0Rec.unkC points here): unk00 (softbody_SetObjectGround sets it;
+ * 87A0 softbody_LoadColliders scales it into the scratchpad's ground word), the
  * volume count, each volume's two foci (gte_SetMatrixRotTransIR writes each as
  * three words) and its bound (unk68). */
 typedef struct Unk8003F6D8Coll {
@@ -2225,9 +2225,9 @@ typedef struct Unk8003F6D8Coll {
     /* 0x68 */ s32 unk68[3];
 } Unk8003F6D8Coll;
 
-/* softbody_Create's argument (2B344 func_8003FA24 builds it on its stack): the
- * point table and its count, the flags, the group list, the object's matrix and
- * the buffer the node / edge tables go to. */
+/* softbody_Create's argument (2B344 softbody_CreateForNode builds it on its
+ * stack): the point table and its count, the flags, the group list, the
+ * object's matrix and the buffer the node / edge tables go to. */
 typedef struct {
     s16 count;
     s16 flags;

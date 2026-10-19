@@ -30,7 +30,7 @@ s32 func_80041584(void) {
 }
 
 void func_800415C4(s32 a0) {
-    func_8004016C(a0);
+    softbody_FreeObjectById(a0);
     func_80045A50(a0);
     D_800A9A10[a0] = 0;
 }

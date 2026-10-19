@@ -78,9 +78,9 @@ glabel fight_Init
     /* E5CC 8001DDCC 0200022A */  slti       $v0, $s0, 0x2
     /* E5D0 8001DDD0 DEFF4014 */  bnez       $v0, .L8001DD4C
     /* E5D4 8001DDD4 00000000 */   nop
-    /* E5D8 8001DDD8 F8FF000C */  jal        func_8003FFE0
+    /* E5D8 8001DDD8 F8FF000C */  jal        softbody_RequestSnap
     /* E5DC 8001DDDC 21200000 */   addu      $a0, $zero, $zero
-    /* E5E0 8001DDE0 F8FF000C */  jal        func_8003FFE0
+    /* E5E0 8001DDE0 F8FF000C */  jal        softbody_RequestSnap
     /* E5E4 8001DDE4 01000424 */   addiu     $a0, $zero, 0x1
     /* E5E8 8001DDE8 0A80023C */  lui        $v0, %hi(D_800A3670)
     /* E5EC 8001DDEC 70364290 */  lbu        $v0, %lo(D_800A3670)($v0)

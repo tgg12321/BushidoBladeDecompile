@@ -494,7 +494,8 @@ extern Unk801027B0Rec g_motion_fighter_sections[]; /* per load slot */
  * func_80044098 subtracts the base again (and clears bit 15), and func_80044100
  * moves [i] by a1 / 4 words and adds a1 to each slot.  func_800432A0 /
  * func_800433E4 store a slot to scratchpad word 0, the u16 * cursor
- * gpu_OffsetTexPrimStream reads, and func_8003FA24 reads u16 data through one.
+ * gpu_OffsetTexPrimStream reads, and softbody_CreateForNode reads u16 data
+ * through one.
  */
 extern s32 *D_80103608[];
 extern Unk80104E88Rec D_80104E88[];
@@ -774,15 +775,15 @@ extern void func_8003F218(s32);
 extern s32 func_8003F268(void);
 extern void func_8003F3D4(s16 *);
 extern void func_8003F52C(s32, s32, s32);
-extern void func_8003F62C(Unk80045878Obj *);
+extern void softbody_UpdateObject(Unk80045878Obj *);
 extern void func_8003F7F4(void);
-extern void func_8003F824(Unk80045878Obj *, s32);
-extern void func_8003FFC4(Unk80045878Obj *);
-extern void func_8003FFE0(s32);
-extern void func_800400B0(Unk80045878Obj *, s32);
-extern void func_800400F8(Unk80045878Obj *);
-extern void func_8004016C(s32);
-extern void func_8004019C(Unk80045878Obj *, s32);
+extern void softbody_SetupObject(Unk80045878Obj *, s32);
+extern void softbody_RequestRebuild(Unk80045878Obj *);
+extern void softbody_RequestSnap(s32);
+extern void softbody_SetObjectGround(Unk80045878Obj *, s32);
+extern void softbody_FreeObject(Unk80045878Obj *);
+extern void softbody_FreeObjectById(s32);
+extern void softbody_RebaseObject(Unk80045878Obj *, s32);
 extern void func_80040304(s32, s32);
 extern void func_800404A0(Unk80045878Node *, s32);
 extern void func_800404D8(void);
@@ -882,8 +883,8 @@ extern void func_80049E1C(void);
 extern void calc_LightMatrix(Unk800F62E0Rec *);
 extern s16 *func_8004BCC0(s32, s16 *, s16 *, s32);
 extern void func_800523E0(MATRIX *, MATRIX *, s32, MATRIX *);
-/* No prototype: defined with no arguments, but func_8003EDC0 / func_8003FA24
- * pass it one. */
+/* No prototype: defined with no arguments, but func_8003EDC0 /
+ * softbody_CreateForNode pass it one. */
 extern void func_80052C10();
 extern s32 func_8005344C(s32 *, s32 *, s32 *, s16 *, s32);
 extern s32 collision_TestSegment(s32 *, s32 *, s32 *, s16 *);

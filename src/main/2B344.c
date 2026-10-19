@@ -2154,9 +2154,9 @@ void func_8003EDC0(u16 *p, s32 arg1) {
     D_800A3230 = (D_800A3230 >= i) ? D_800A3230 : i;
     if (D_800A3230 >= 1000) {
         /* FAKE: the argument is unproven -- the halt stub ignores its
-         * arguments (func_8003FA24 passes it a string). The target holds the
-         * count in $a0 at this jal; without the argument it is given $v1:
-         * score 5. */
+         * arguments (softbody_CreateForNode passes it a string). The target
+         * holds the count in $a0 at this jal; without the argument it is given
+         * $v1: score 5. */
         func_80052C10(D_800A3230);
     }
     D_800A3678[0] = 0;
@@ -2166,7 +2166,7 @@ void func_8003EDC0(u16 *p, s32 arg1) {
 
 /* Merged section (Q65: one original file). */
 
-/* Read by func_8003FA24: 14 chars + NUL + 1 pad. */
+/* Read by softbody_CreateForNode: 14 chars + NUL + 1 pad. */
 const char D_80010D8C[16] = "Multipul Model";
 
 extern void gte_SetMatrixRotTransIR(MATRIX *, SVECTOR *, VECTOR *);
@@ -2348,25 +2348,25 @@ typedef struct {
 } Unk8003F62CRec;
 
 extern void softbody_UpdateColliders(Unk8003F62CRec *);
-extern void func_8004001C(Unk8003F62CRec *);
-extern void func_80040068(Unk8003F62CRec *);
+extern void softbody_SetObjectSnap(Unk8003F62CRec *);
+extern void softbody_ClearObjectSnap(Unk8003F62CRec *);
 
-void func_8003F62C(Unk80045878Obj *a0) {
+void softbody_UpdateObject(Unk80045878Obj *a0) {
     Unk8003F62CRec *s0;
     s0 = a0->unk_24;
     if (s0 == 0)
         return;
     if (s0->unk6) {
-        func_8004016C(a0->unk_04);
-        func_8003F824(a0, 0);
+        softbody_FreeObjectById(a0->unk_04);
+        softbody_SetupObject(a0, 0);
     }
     if (s0->unk2) {
-        func_8004001C(s0);
+        softbody_SetObjectSnap(s0);
     }
     softbody_UpdateColliders(s0);
     softbody_UpdateList(s0->unk418, s0->count);
     if (s0->unk2) {
-        func_80040068(s0);
+        softbody_ClearObjectSnap(s0);
         s0->unk2 = 0;
     }
 }
@@ -2392,10 +2392,10 @@ void func_8003F7F4(void) {
     D_800A3374 = 0;
 }
 
-extern u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur);
-void func_8003FECC(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2);
+extern u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur);
+void softbody_AddColliders(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2);
 
-void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
+void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
     Unk8003F62CRec *var_0;
     s16 *var_1;
     u8 *cur;
@@ -2425,7 +2425,7 @@ void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
             obj = arg0->unk_1A34[i];
             rec->cur = cur;
             rec->obj = obj;
-            cur = func_8003FA24(rec, var_1, cur);
+            cur = softbody_CreateForNode(rec, var_1, cur);
             var_0->unk418[var_0->count] = rec->f824_04;
             obj->node.unk0 = 0xD;
             var_0->count++;
@@ -2437,7 +2437,7 @@ void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
             }
             if (*var_1 == -1) {
                 var_1++;
-                func_8003FECC(arg0, rec, var_1);
+                softbody_AddColliders(arg0, rec, var_1);
             }
         }
         while (*var_1++ != -2) {
@@ -2450,11 +2450,12 @@ void func_8003F824(Unk80045878Obj *arg0, s32 arg1) {
 
 extern s16 D_80094AEC[];
 
-/* The face records func_8003FA24 walks, one layout per mode ((flags >> 3) & 3):
- * bit 0 set is a quad (6 points per face in the size pass, 3 for a triangle),
- * bit 1 picks the longer record. The sizes are the D_80094AEC[mode] strides
- * in halfwords (12, 12, 18, 22); col is the colour word the packet takes,
- * read as two halfwords (the mode-1 quad record places it off word alignment).
+/* The face records softbody_CreateForNode walks, one layout per mode ((flags >>
+ * 3) & 3): bit 0 set is a quad (6 points per face in the size pass, 3 for a
+ * triangle), bit 1 picks the longer record. The sizes are the D_80094AEC[mode]
+ * strides in halfwords (12, 12, 18, 22); col is the colour word the packet
+ * takes, read as two halfwords (the mode-1 quad record places it off word
+ * alignment).
  */
 typedef struct {
     u16 unk0[6];
@@ -2482,7 +2483,7 @@ typedef struct {
 
 s16 *softbody_SetAnchorWeights(SVECTOR *a0, s32 a1, s16 *a2);
 
-u8 *func_8003FA24(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
+u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     /* FAKE: frame layout (oversized live object): softbody_Create's argument
        plus an unwritten tail (two or three words are byte-identical: three
        chosen); the argument alone gives a frame 8 short (0x48 for 0x50):
@@ -2644,7 +2645,7 @@ s16 *softbody_SetAnchorWeights(SVECTOR *a0, s32 a1, s16 *a2) {
     return a2;
 }
 
-void func_8003FECC(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2) {
+void softbody_AddColliders(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2) {
     Func8003F6D8Inner *in = &rec->inner;
     s32 n = in->count;
     s16 id = a2[0];
@@ -2675,14 +2676,14 @@ s32 math_AlignUp4(s32 a0) {
     return a0;
 }
 
-void func_8003FFC4(Unk80045878Obj *a0) {
+void softbody_RequestRebuild(Unk80045878Obj *a0) {
     Unk8003F62CRec *v1 = a0->unk_24;
     if (v1) {
         v1->unk6 = 1;
     }
 }
 
-void func_8003FFE0(s32 a0) {
+void softbody_RequestSnap(s32 a0) {
     Unk80045878Obj *v0 = func_8004153C(a0);
     if (v0) {
         Unk8003F62CRec *v1 = v0->unk_24;
@@ -2692,7 +2693,7 @@ void func_8003FFE0(s32 a0) {
     }
 }
 
-void func_8004001C(Unk8003F62CRec *a0) {
+void softbody_SetObjectSnap(Unk8003F62CRec *a0) {
     s32 i;
     for (i = 0; i < a0->count; i++) {
         a0->unk418[i].unk2 = 1;
@@ -2700,7 +2701,7 @@ void func_8004001C(Unk8003F62CRec *a0) {
     }
 }
 
-void func_80040068(Unk8003F62CRec *a0) {
+void softbody_ClearObjectSnap(Unk8003F62CRec *a0) {
     s32 i;
     for (i = 0; i < a0->count; i++) {
         a0->unk418[i].unk2 = 0;
@@ -2708,7 +2709,7 @@ void func_80040068(Unk8003F62CRec *a0) {
     }
 }
 
-void func_800400B0(Unk80045878Obj *a0, s32 a1) {
+void softbody_SetObjectGround(Unk80045878Obj *a0, s32 a1) {
     Unk8003F62CRec *v1 = a0->unk_24;
     if (v1) {
         s32 i;
@@ -2718,7 +2719,7 @@ void func_800400B0(Unk80045878Obj *a0, s32 a1) {
     }
 }
 
-void func_800400F8(Unk80045878Obj *a0) {
+void softbody_FreeObject(Unk80045878Obj *a0) {
     Unk8003F62CRec *s2;
     s32 s0;
     s2 = a0->unk_24;
@@ -2729,14 +2730,14 @@ void func_800400F8(Unk80045878Obj *a0) {
     }
 }
 
-void func_8004016C(s32 a0) {
+void softbody_FreeObjectById(s32 a0) {
     Unk80045878Obj *v0 = func_8004153C(a0);
     if (v0) {
-        func_800400F8(v0);
+        softbody_FreeObject(v0);
     }
 }
 
-void func_8004019C(Unk80045878Obj *a0, s32 a1) {
+void softbody_RebaseObject(Unk80045878Obj *a0, s32 a1) {
     Unk8003F62CRec *v1 = a0->unk_24;
     if (v1) {
         v1 = (Unk8003F62CRec *)((u8 *)v1 + a1);

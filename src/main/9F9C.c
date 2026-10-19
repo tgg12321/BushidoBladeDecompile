@@ -1237,7 +1237,7 @@ void func_8001C624(void) {
     e->unk_152 = 0;
     e->unk_14E = 0;
     e->unk_148 = e->unk_B8.vy;
-    func_8003FFE0(0);
+    softbody_RequestSnap(0);
 }
 
 void func_8001C820(void) {
@@ -1789,8 +1789,8 @@ void fight_Init(void) {
             func_8003E164(i == 0);
         }
     }
-    func_8003FFE0(0);
-    func_8003FFE0(1);
+    softbody_RequestSnap(0);
+    softbody_RequestSnap(1);
     if (D_800A3670 == 0) {
         func_8004939C();
         addr = (s32)0x80190800;

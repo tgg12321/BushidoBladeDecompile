@@ -608,11 +608,11 @@ s32 motion_StartPlayback(
     }
     v = func_8004153C(0);
     if (v != 0) {
-        func_8003FFC4(v);
+        softbody_RequestRebuild(v);
     }
     v = func_8004153C(1);
     if (v != 0) {
-        func_8003FFC4(v);
+        softbody_RequestRebuild(v);
     }
     s->unk8 = a1;
     func_8003F218(0);
