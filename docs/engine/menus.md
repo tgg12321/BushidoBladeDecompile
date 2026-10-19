@@ -84,7 +84,7 @@ Cited by function name.
   0..5; bits 13-15 a cursor 0..2.
 - `func_800692C0` reads the pad word and returns, in its high half, 1 or 2
   for a step one way or the other.
-- `func_800693CC` (called from `func_80077894`, src/main/64FD8.c:1268) moves
+- `menu_UpdateRowMenu` (called from `func_80077894`, src/main/64FD8.c:1268) moves
   the row index with that result, applies the row's `opt[].mode` to
   `D_800A3524->unk20_3`, and on Cross (with per-player conditions on the
   row's `state`) returns that `state`; Triangle returns -2, otherwise -1.

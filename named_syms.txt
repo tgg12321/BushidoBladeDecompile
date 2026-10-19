@@ -953,7 +953,7 @@ D_800A3769                                = 0x800A3769;  /* byte: 0/1 set with D
 /*   - D_800A34F8 packs three cursors (a static, 596CC.c:16): */
 /*     (bits 0-3 = 0..7, :303-326; bits 10-12 = 0..5, :1325-1339; */
 /*      bits 13-15 = 0..2, :1435-1448) */
-/*   - D_800A34FC is a struct pointer assigned from func_8006E49C */
+/*   - D_800A34FC is a struct pointer assigned from gpu_InitPrimBufferPair */
 /*     (596CC.c:71-74), accessed at offsets 0x12/0x10/0xE/ */
 /*     0xC/0x28/0x2A/0x30 */
 /*   - D_800A3514 is a counter (only += 1 or = 0; see its line) */
@@ -961,7 +961,7 @@ D_800A3769                                = 0x800A3769;  /* byte: 0/1 set with D
 /*     decodes direction (1=down, 2=up), navigates cursor, */
 /*     calls func_8005C650 for menu sound effects */
 D_800A34F8                                = 0x800A34F8;  /* packed cursor state: bits 0-3, 10-12 and 13-15 step over 8, 6 and 3 entries (596CC.c:303-326, :1325-1339, :1435-1448) */  /* data-wave 2026-10-09: was g_menuctl_state_bitfield */
-D_800A34FC                                = 0x800A34FC;  /* Unk800A34FCRec *: func_80068F70 stores func_8006E49C(..., D_800A351C)'s result (596CC.c:71-74); read throughout 596CC.c */  /* data-wave 2026-10-09: was g_menuctl_mode_state_ptr */
+D_800A34FC                                = 0x800A34FC;  /* Unk800A34FCRec *: func_80068F70 stores gpu_InitPrimBufferPair(..., D_800A351C)'s result (596CC.c:71-74); read throughout 596CC.c */  /* data-wave 2026-10-09: was g_menuctl_mode_state_ptr */
 D_800A350C                                = 0x800A350C;  /* s16[2]: func_800692C0's per-axis step (its arg3): set to 1 / -1 / -6 / 0 and added to D_800A34FC->unk_0C[i]; zeroed by func_80068F70 with D_800A3510 / D_800A3512 */  /* data-wave 2026-10-08: was g_menuctl_pad_result_buf */
 D_800A3514                                 = 0x800A3514;  /* counter: += 1 per call of func_8006B898 / C168 / D338 / D74C / E068 and per cursor-row draw in func_8006A880; zeroed at init and on cursor moves; read as the rsin phase ((x & 0x1F) << 7) of a pulsing colour */  /* data-wave 2026-10-08: was g_menuctl_frame_counter */
 
@@ -1141,14 +1141,14 @@ D_800EF9F8                                       = 0x800EF9F8;  /* static Work_8
 D_800EFA00                                = 0x800EFA00;  /* D_800EF9F8.unk8 (+8): the cast's start VECTOR */  /* data-wave 2026-10-08: was g_effect_struct_a_vfield */
 g_vab_rec_ptr                                       = 0x800EFC38;  /* data-wave 2026-09-24: was g_effect_struct_b */
 
-/* === func_8006E49C result pointer + its argument (2026-05-17) -- 2 highs === */
+/* === gpu_InitPrimBufferPair result pointer + its argument (2026-05-17) -- 2 highs === */
 /* menu_InitSelScreen saves its arg0 in D_800A35D8, passes it to */
-/* func_8006E49C and stores the result in D_800A36A0 (64FD8.c:1076-1083), */
+/* gpu_InitPrimBufferPair and stores the result in D_800A36A0 (64FD8.c:1076-1083), */
 /* the pattern func_80068F70 follows with D_800A351C / D_800A34FC */
 /* (596CC.c:56-74). */
 /* See each line. */
-D_800A36A0                                    = 0x800A36A0;  /* SelWork pointer (SELWORK) that func_8006E49C returns for menu_InitSelScreen */  /* data-wave 2026-10-08: was g_mode_state_ptr_alt */
-D_800A35D8                                    = 0x800A35D8;  /* record array menu_InitSelScreen was given (arg0); passed to func_8006E49C, indexed by func_80077098 */  /* data-wave 2026-10-08: was g_mode_state_arg_alt */
+D_800A36A0                                    = 0x800A36A0;  /* SelWork pointer (SELWORK) that gpu_InitPrimBufferPair returns for menu_InitSelScreen */  /* data-wave 2026-10-08: was g_mode_state_ptr_alt */
+D_800A35D8                                    = 0x800A35D8;  /* record array menu_InitSelScreen was given (arg0); passed to gpu_InitPrimBufferPair, indexed by func_80077098 */  /* data-wave 2026-10-08: was g_mode_state_arg_alt */
 
 /* === Fade/transition state machine (2026-05-17) -- 4 highs === */
 /* From text1b.c func_8006EC0C (line 16108): fade-in/out state machine */
@@ -1578,7 +1578,7 @@ D_800A350E                                   = 0x800A350E;  /* D_800A350C[1]: fu
 D_800A3510                                   = 0x800A3510;  /* only two zero stores found */  /* data-wave 2026-10-08: was g_menuctl_pad_result_2 */
 D_800A3512                                   = 0x800A3512;  /* only a zero store found */  /* data-wave 2026-10-08: was g_menuctl_pad_result_3 */
 D_800A3518                                     = 0x800A3518;  /* counter bumped on every func_8006E390 call; its low bit picks the g_gpu_db buffer */  /* data-wave 2026-10-08: was g_menuctl_init_state */
-D_800A351C                                     = 0x800A351C;  /* Unk8006E49CRec *: func_80068F70's arg0 (596CC.c:56), passed to func_8006E49C (:71); func_80069120 returns &D_800A351C[a0] (:172) */  /* data-wave 2026-10-09: was g_menuctl_arg0_saved */
+D_800A351C                                     = 0x800A351C;  /* Unk8006E49CRec *: func_80068F70's arg0 (596CC.c:56), passed to gpu_InitPrimBufferPair (:71); func_80069120 returns &D_800A351C[a0] (:172) */  /* data-wave 2026-10-09: was g_menuctl_arg0_saved */
 D_800A3528                                   = 0x800A3528;  /* three-way cursor (wraps mod 3) moved by func_800692C0's decoded input */  /* data-wave 2026-10-08: was g_menuctl_call_counter */
 D_800A372C                                  = 0x800A372C;  /* arena pointer arg0 + 0x58 stored in init */  /* data-wave 2026-10-08: was g_menuctl_effect_handle */
 
@@ -1601,17 +1601,17 @@ is_pad_init                                   = 0x8009BD80;  /* PAD-initialised 
 /* Statics of src/main/64FD8.c (:24-28), the counterpart of the */
 /* D_800A34F8 cluster (0x800A34F8-3528) for a second menu screen. */
 D_800A35F0                                  = 0x800A35F0;  /* state value (init 0; > 0 = active) */  /* data-wave 2026-10-08: was g_menu_screen_b_active */
-D_800A35F4                               = 0x800A35F4;  /* arg passed to func_8006E49C */  /* data-wave 2026-10-08: was g_menu_screen_b_state_arg */
+D_800A35F4                               = 0x800A35F4;  /* arg passed to gpu_InitPrimBufferPair */  /* data-wave 2026-10-08: was g_menu_screen_b_state_arg */
 D_800A35F8                               = 0x800A35F8;  /* pointer to allocated state struct */  /* data-wave 2026-10-08: was g_menu_screen_b_state_ptr */
 D_800A35FC                           = 0x800A35FC;  /* per-frame counter (incremented in handler) */  /* data-wave 2026-10-08: was g_menu_screen_b_frame_counter */
 D_800A3600                               = 0x800A3600;  /* init flag (reset to 0) */  /* data-wave 2026-10-08: was g_menu_screen_b_init_flag */
 
 /* === func_80078824 work-area state (2026-05-17) -- 4 highs === */
 /* func_80078824 (64FD8.c:1739-1745) stores its work-area argument, */
-/* passes it to func_8006E49C and resets these cells; D_800A3608 is */
+/* passes it to gpu_InitPrimBufferPair and resets these cells; D_800A3608 is */
 /* the frame count func_800788B0 advances. */
 D_800A3304                                     = 0x800A3304;  /* incremented & ANDed with 1 to select alternating buffer in func_80078634 */  /* data-wave 2026-10-08: was g_intro_dbuf_parity */
-D_800A360C                                       = 0x800A360C;  /* arg passed to func_8006E49C (mode-state allocator) */  /* data-wave 2026-10-08: was g_intro_state_arg */
+D_800A360C                                       = 0x800A360C;  /* arg passed to gpu_InitPrimBufferPair (mode-state allocator) */  /* data-wave 2026-10-08: was g_intro_state_arg */
 D_800A3610                                 = 0x800A3610;  /* work area + 0x58 (func_80078824); func_80078654 reads its sprite-header list unk_14 */  /* data-wave 2026-10-08: was g_intro_sprite_data_ptr */
 D_800A3614                                     = 0x800A3614;  /* extra state cell (reset to 0 in init) */  /* data-wave 2026-10-08: was g_intro_extra_state */
 
@@ -1629,13 +1629,13 @@ column                                 = 0x800F1850;  /* stdout column counter; 
 
 /* === D_8009BD24 unk17 / unk1D byte triples (2026-05-17) -- 6 highs === */
 /* func_80077B30 (64FD8.c:1375-1414), switching on D_800A35E4: on */
-/* entering state 4 it copies unk1D[] into unk17[]; when func_8006D338 */
+/* entering state 4 it copies unk1D[] into unk17[]; when menu_UpdateRowBitMenu */
 /* returns 1 it copies unk17[] back into unk1D[].  The code that edits */
 /* the bytes works on unk17[] (596CC.c:1939-1941). */
 D_8009BD3B                             = 0x8009BD3B;  /* D_8009BD24.unk17[0]: edited in place (596CC.c:1939-1941), loaded from unk1D[0] by func_80077B30 */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_a */
 D_8009BD3C                             = 0x8009BD3C;  /* D_8009BD24.unk17[1]: edited in place (596CC.c:1939-1941), loaded from unk1D[1] by func_80077B30 */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_b */
 D_8009BD3D                             = 0x8009BD3D;  /* D_8009BD24.unk17[2]: edited in place (596CC.c:1939-1941), loaded from unk1D[2] by func_80077B30 */  /* data-wave 2026-10-08: was g_menu_screen_backup_byte_c */
-D_8009BD41                               = 0x8009BD41;  /* D_8009BD24.unk1D[0]: copied into unk17[0] on entering state 4, written back from it when func_8006D338 returns 1 (func_80077B30) */  /* data-wave 2026-10-08: was g_menu_screen_live_byte_a */
+D_8009BD41                               = 0x8009BD41;  /* D_8009BD24.unk1D[0]: copied into unk17[0] on entering state 4, written back from it when menu_UpdateRowBitMenu returns 1 (func_80077B30) */  /* data-wave 2026-10-08: was g_menu_screen_live_byte_a */
 D_8009BD42                               = 0x8009BD42;  /* data-wave 2026-10-08: was g_menu_screen_live_byte_b */
 D_8009BD43                               = 0x8009BD43;  /* data-wave 2026-10-08: was g_menu_screen_live_byte_c */
 
@@ -2082,7 +2082,7 @@ func_80077B20                                = 0x80077B20;  /* MISNAMED: not gau
 func_80077D00                                = 0x80077D00;  /* MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr) */
 func_80044F80                                 = 0x80044F80;  /* MISNAMED: not Satan2 info init; 1-line wrapper of ndata_Read(a0+0x4D, a1) */
 func_8006C1FC                                 = 0x8006C1FC;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006C168(a0, a1) */
-func_80077A60                                 = 0x80077A60;  /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006E068() */
+func_80077A60                                 = 0x80077A60;  /* MISNAMED: not Satan2 info init; 1-line wrapper of menu_UpdateConfirmMenu() */
 func_80077AC0                                 = 0x80077AC0;  /* 1-line wrapper of menu_StepSelScreen() */
 func_800444BC                               = 0x800444BC;  /* MISNAMED: not ground display; 1-line wrapper of func_80044504(D_800A378C) */
 func_80046020                               = 0x80046020;  /* MISNAMED: not ground display; arena_Free(6) then func_8005B6AC() */
