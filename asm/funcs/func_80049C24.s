@@ -98,7 +98,7 @@ glabel func_80049C24
     /* 3A574 80049D74 00000000 */   nop
     /* 3A578 80049D78 21202002 */  addu       $a0, $s1, $zero
     /* 3A57C 80049D7C 02000524 */  addiu      $a1, $zero, 0x2
-    /* 3A580 80049D80 AA70010C */  jal        func_8005C2A8
+    /* 3A580 80049D80 AA70010C */  jal        snd_LoadVabPack
     /* 3A584 80049D84 2130E002 */   addu      $a2, $s7, $zero
     /* 3A588 80049D88 21882202 */  addu       $s1, $s1, $v0
   .L80049D8C:
@@ -123,7 +123,7 @@ glabel func_80049C24
     /* 3A5CC 80049DCC 00000000 */   nop
     /* 3A5D0 80049DD0 21202002 */  addu       $a0, $s1, $zero
     /* 3A5D4 80049DD4 05000524 */  addiu      $a1, $zero, 0x5
-    /* 3A5D8 80049DD8 AA70010C */  jal        func_8005C2A8
+    /* 3A5D8 80049DD8 AA70010C */  jal        snd_LoadVabPack
     /* 3A5DC 80049DDC 2130E002 */   addu      $a2, $s7, $zero
     /* 3A5E0 80049DE0 21882202 */  addu       $s1, $s1, $v0
   .L80049DE4:

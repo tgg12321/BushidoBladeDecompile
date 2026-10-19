@@ -10,7 +10,7 @@
 #include <psxsdk/gtemac.h>
 
 extern s32 memcpy(s32 *, s32, s32);
-extern s32 func_80054434(void);
+extern s32 collision_GetHitTag(void);
 
 INCLUDE_RODATA("asm/rodata", D_800100A4);
 
@@ -421,8 +421,9 @@ typedef VECTOR CamVec;
  * target yaw and vz angle that D_800F6608's unk_10.vy / vz ease toward, the
  * camera focus, the eye position camera_CalcEye computes, a fighter record's
  * unk_B8 less 0xC8 in vy (the collision segment's start), and the hit position,
- * surface normal and work area func_80053614 is given (its 3rd/4th/5th
- * arguments; its other callers pass a VECTOR hit and an s16[4] normal). */
+ * surface normal and work area collision_TestSegmentWithWork is given (its
+ * 3rd/4th/5th arguments; its other callers pass a VECTOR hit and an s16[4]
+ * normal). */
 typedef struct {
     s16 unk0;     /* 0x00 */
     s16 yaw;      /* 0x02 */
@@ -444,10 +445,10 @@ typedef struct {
  * some arg2->unk_6A states), clamps w18,
  * and sets a hysteresis flag for func_8003F1E4; eases unk_10.vy / vz toward
  * the facing yaw and zero; then per fighter bisects unk_10.vx (rot_x) so
- * the segment from its unk_B8 less 0xC8 in vy to the eye passes func_80053614's
- * camera-collision test (step in D_800A30F4[], blocked flag in D_800A30F0[]),
- * and eases unk_10.vx toward the larger result, clamped to 0x80..0x1C0. GTE:
- * gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc). */
+ * the segment from its unk_B8 less 0xC8 in vy to the eye passes
+ * collision_TestSegmentWithWork's camera-collision test (step in D_800A30F4[],
+ * blocked flag in D_800A30F0[]), and eases unk_10.vx toward the larger result,
+ * clamped to 0x80..0x1C0. GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc). */
 void camera_UpdateTwoFighterView(
     Vec3i32 *arg0, Vec3i32 *arg1, Unk80101EC8Record *arg2,
     Unk80101EC8Record *arg3) {
@@ -573,8 +574,9 @@ void camera_UpdateTwoFighterView(
             scr->scr28 = arg2->unk_B8;
         }
         scr->scr28.vy -= 0xC8;
-        if (func_80053614((s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
-                          scr->nrm, (s32)&scr->unk60) &&
+        if (collision_TestSegmentWithWork(
+                (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit, scr->nrm,
+                (s32)&scr->unk60) &&
             scr->nrm[1] < -0x320) {
             func_8001A67C(var_2->h30[p], (s32 *)&scr->eye, scr->hit);
             if (D_800A30F0[p]) {
@@ -602,8 +604,9 @@ void camera_UpdateTwoFighterView(
                 }
                 var_2->unk_10.vx = hi + d / 2;
                 camera_CalcEye(var_2, &scr->eye.vx);
-                if (func_80053614((s32 *)&scr->scr28, (s32 *)&scr->eye,
-                                  scr->hit, scr->nrm, (s32)&scr->unk60) &&
+                if (collision_TestSegmentWithWork(
+                        (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
+                        scr->nrm, (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
                     work = var_2->unk_10.vx;
                 } else {
@@ -632,8 +635,9 @@ void camera_UpdateTwoFighterView(
                 }
                 var_2->unk_10.vx = lo + d / 2;
                 camera_CalcEye(var_2, &scr->eye.vx);
-                if (func_80053614((s32 *)&scr->scr28, (s32 *)&scr->eye,
-                                  scr->hit, scr->nrm, (s32)&scr->unk60) &&
+                if (collision_TestSegmentWithWork(
+                        (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
+                        scr->nrm, (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
                     func_8001A67C(var_2->h30[p], (s32 *)&scr->eye, scr->hit);
                     lo = var_2->unk_10.vx;
@@ -1038,7 +1042,7 @@ void func_8001BE20(s32 arg0, PadState *arg1) {
         D_800A38DC == 2 && D_800A389A == 0 && arg0 == 0 &&
         ((g_pad_state.pressed >> 8) & 1);
     if (D_80101EC8[arg0].unk_06 != 0) {
-        func_80055B60(arg0, arg1);
+        fighter_BuildCpuPad(arg0, arg1);
         return;
     }
     *arg1 = g_pad_state;
@@ -1282,7 +1286,7 @@ void func_8001C8DC(void) {
             break;
         if (D_800A3680 != 0) {
             if (--D_800A3680 == 0) {
-                func_8005B58C();
+                snd_StopAllVoices();
                 if (D_800A37C6 != 0) {
                     D_800A37C6 = 0;
                     break;
@@ -1453,7 +1457,7 @@ void func_8001CE60(void) {
 
         if (D_800A381E != 0) {
             if (D_800A381E == 0x2D) {
-                func_8005C650(0xA3, 0x7F, 0x7F);
+                snd_QueueSound(0xA3, 0x7F, 0x7F);
             }
             if (++D_800A381E == 0x50) {
                 D_800A381E = 0;
@@ -1462,7 +1466,7 @@ void func_8001CE60(void) {
             }
         } else if (D_800A3816 != 0) {
             if (++D_800A3816 == 0x46) {
-                func_8005C650(0x9D, 0x7F, 0x7F);
+                snd_QueueSound(0x9D, 0x7F, 0x7F);
             } else if (D_800A3816 == 0x82) {
                 D_800A3816 = 0;
                 D_800A3670 = 1;
@@ -1474,7 +1478,7 @@ void func_8001CE60(void) {
             if (++D_800A37E1 == 0x3C) {
                 D_800A37E1 = 0;
                 if (D_800A38B0 != 2) {
-                    func_8005C650(0xA0, 0x7F, 0x7F);
+                    snd_QueueSound(0xA0, 0x7F, 0x7F);
                     D_800A38AA[D_800A38B0]++;
                     D_800A38B8 = 1;
                 } else {
@@ -1498,10 +1502,10 @@ void func_8001CE60(void) {
             g_prim_buf_cursor +=
                 func_8005FA98(1, (s32)g_prim_buf_cursor, 1) / 4;
             if (++D_800A3920 == 0x1E) {
-                func_8005C650(0xA1, 0x7F, 0x7F);
+                snd_QueueSound(0xA1, 0x7F, 0x7F);
             }
             if (D_800A3920 == 0x69) {
-                func_8005C650(0xA2, 0x7F, 0x7F);
+                snd_QueueSound(0xA2, 0x7F, 0x7F);
             }
             if (D_800A3920 == 0x5A || D_800A3920 == 0xB4) {
                 D_800A3920 = 0;
@@ -1515,20 +1519,20 @@ void func_8001CE60(void) {
             }
         } else if (D_800A391E != 0) {
             if (--D_800A391E == 0) {
-                func_8005C650(0x9C, 0x7F, 0x7F);
+                snd_QueueSound(0x9C, 0x7F, 0x7F);
             }
         } else if (D_800A36E8 != 0) {
             if (D_800A377C[D_800A3874 - 1] == 2) {
                 if (D_800A36E8 == 1) {
-                    func_8005C650(0xA4, 0x7F, 0x7F);
+                    snd_QueueSound(0xA4, 0x7F, 0x7F);
                 }
                 temp = 0x50;
             } else {
                 if (D_800A36E8 == 1) {
-                    func_8005C650(0xA6, 0x7F, 0x7F);
+                    snd_QueueSound(0xA6, 0x7F, 0x7F);
                 }
                 if (D_800A36E8 == 0x14) {
-                    func_8005C650(
+                    snd_QueueSound(
                         D_8008D9EC[D_80101EC8[D_800A377C[D_800A3874 - 1]]
                                        .unk_0A]
                             ? 0xA8
@@ -1557,7 +1561,7 @@ void func_8001CE60(void) {
         } else if (D_80101EC8[0].unk_B1 == 2) {
             u16 id;
 
-            func_8005C650(0x9F, 0x7F, 0x7F);
+            snd_QueueSound(0x9F, 0x7F, 0x7F);
             D_800A37E1 = 1;
             id = D_80101EC8[0].unk_6A;
             if (id == 0x13 || id == 0x1B || id == 0x30 || id == 0x19 ||
@@ -1569,7 +1573,7 @@ void func_8001CE60(void) {
         } else if (D_80101EC8[1].unk_B1 == 2) {
             u16 id;
 
-            func_8005C650(0x9F, 0x7F, 0x7F);
+            snd_QueueSound(0x9F, 0x7F, 0x7F);
             D_800A37E1 = 1;
             id = D_80101EC8[1].unk_6A;
             if (id == 0x13 || id == 0x1B || id == 0x30 || id == 0x19 ||
@@ -1581,7 +1585,7 @@ void func_8001CE60(void) {
         } else if (D_800A36CC != 0) {
             D_800A38F4++;
             if (D_800A38F4 >= D_800A36CC * 30) {
-                func_8005C650(0x9E, 0x7F, 0x7F);
+                snd_QueueSound(0x9E, 0x7F, 0x7F);
                 D_800A381E = 1;
             }
         }
@@ -1631,7 +1635,7 @@ void func_8001D790(void) {
 
         s0 = &D_800FF6A8;
         memcpy(s0, s2, s1);
-        func_8005BD30((s32)s0 - s2);
+        snd_RebaseListedVabs((s32)s0 - s2);
     }
 }
 
@@ -1668,8 +1672,8 @@ void func_8001D998(void) {
 }
 
 void func_8001DA2C(void) {
-    func_8005B5AC();
-    func_8005BF3C();
+    snd_ResetVoicesAndQueue();
+    snd_StopVoicesAndReverb();
     if (D_800A38DC == 5) {
         func_8005B9C4();
     }
@@ -1763,7 +1767,7 @@ void fight_Init(void) {
     s32 i;
     s32 addr;
 
-    func_8005B5AC();
+    snd_ResetVoicesAndQueue();
     if (D_800A3768 != DISP_ACTIVE) {
         func_80016888();
         gpu_SetDispMaskOn();
@@ -1914,7 +1918,7 @@ void fight_Init(void) {
     func_8001C820();
     snd_StartFightCdAudio();
     snd_ResetStageSoundState();
-    func_8005BE84(D_800A36A4);
+    snd_SetReverb(D_800A36A4);
     if (D_800A38DC == 6) {
         rng_SetSeed(D_800A3904);
     }
@@ -2105,14 +2109,14 @@ void func_8001EA84(void) {
         g_prim_buf_cursor +=
             func_8005C8A8(1, D_800A3817, (s32)g_prim_buf_cursor, 0) / 4;
         if ((g_pad_state.pressed & 0x10001000) != 0) {
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             if (D_800A3817 != D_800A3804) {
                 D_800A3817 = D_800A3817 - 1;
             } else {
                 D_800A3817 = 2;
             }
         } else if ((g_pad_state.pressed & 0x40004000) != 0) {
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             if (D_800A3817 == 2) {
                 D_800A3817 = D_800A3804;
             } else {
@@ -2120,7 +2124,7 @@ void func_8001EA84(void) {
             }
         }
         if ((g_pad_state.pressed & 0x400040) != 0) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             D_800A3929 = (D_800A3817 == 0) ? 1 : 0x3C;
             if (D_800A3817 != 0)
                 return;
@@ -2145,7 +2149,7 @@ void func_8001EA84(void) {
         D_800A380C = D_800A380C + 1;
         D_800A38DF = func_80022408(&D_80101EC8[D_800A3748].unk_F4);
         if (D_80101EC8[1].unk_06 != 0) {
-            func_800550E8(1);
+            fighter_HalveCpuTally(1);
         }
         D_800A3834 = 0;
         return;
@@ -2869,14 +2873,14 @@ void fighter_ScaleBoneHitRecords(s32 arg0, s32 arg1) {
  * arg3. A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
  * matrix translation. Then: bone 11's y axis into rec->unk_1EC, arg1[0]
  * into rec->unk_180, the translations of bones 17 and 14 (y raised by (unk_1A *
- * 71) >> 11) into rec->unk_198[], the floor height under each (func_80053614
- * down a segment from y - 100 to y + 2000; the segment's lower end when it
- * finds nothing) into rec->unk_1B0[], and the two bones' headings into
- * unk_1BA / unk_1C2. */
+ * 71) >> 11) into rec->unk_198[], the floor height under each
+ * (collision_TestSegmentWithWork down a segment from y - 100 to y + 2000; the
+ * segment's lower end when it finds nothing) into rec->unk_1B0[], and the two
+ * bones' headings into unk_1BA / unk_1C2. */
 void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
                                  Unk80107850Rec *arg2, Unk80107850Rec *arg3) {
-    /* func_80053614's arguments in scratchpad: from (words 0..2), to (4..6),
-     * hit (8..10), normal (12..13), work area (14..) */
+    /* collision_TestSegmentWithWork's arguments in scratchpad: from (words
+     * 0..2), to (4..6), hit (8..10), normal (12..13), work area (14..) */
     s32 *var_0 = (s32 *)0x1F8002B8;
     MATRIX **var_1;
     MATRIX *m;
@@ -2947,8 +2951,8 @@ void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
         var_0[4] = rec->unk_198[i].x;
         var_0[5] = rec->unk_198[i].y + 2000;
         var_0[6] = rec->unk_198[i].z;
-        if (func_80053614(&var_0[0], &var_0[4], &var_0[8], (s16 *)&var_0[12],
-                          (s32)&var_0[14])) {
+        if (collision_TestSegmentWithWork(&var_0[0], &var_0[4], &var_0[8],
+                                          (s16 *)&var_0[12], (s32)&var_0[14])) {
             rec->unk_1B0[i] = var_0[9];
         } else {
             rec->unk_1B0[i] = var_0[5];
@@ -3464,8 +3468,8 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
         var_2.x = base.x + dx;
         var_2.y = base.y;
         var_2.z = base.z + dz;
-        if (func_80053614(&base.x, &var_2.x, &var_3.x, var_4, 0x1F8002B8) !=
-            0) {
+        if (collision_TestSegmentWithWork(
+                &base.x, &var_2.x, &var_3.x, var_4, 0x1F8002B8) != 0) {
             continue;
         }
         cur = base;
@@ -3482,8 +3486,8 @@ void func_80021DB0(s32 arg0, Vec3i32 *out, s32 *pos) {
         }
         var_2 = *out;
         var_2.y += 4000;
-        if (func_80053614(&out->x, &var_2.x, &var_3.x, var_4, 0x1F8002B8) ==
-            0) {
+        if (collision_TestSegmentWithWork(
+                &out->x, &var_2.x, &var_3.x, var_4, 0x1F8002B8) == 0) {
             continue;
         }
         if (var_4[1] != -0x1000) {
@@ -3856,8 +3860,9 @@ void func_80022F34(void) {
 
             {
                 {
-                    func_80055138(i, D_801027B0[rec->unk_4A].unk_0C,
-                                  D_801027B0[rec->other->unk_4A].unk_0C);
+                    fighter_InitCpuControl(
+                        i, D_801027B0[rec->unk_4A].unk_0C,
+                        D_801027B0[rec->other->unk_4A].unk_0C);
                 }
             }
         }
@@ -3895,7 +3900,7 @@ loop:
             *pos1 = *pos2;
             goto done;
         }
-        obj->unk_B1 = func_80054434();
+        obj->unk_B1 = collision_GetHitTag();
         *pos1 = *(VECTOR *)scratch;
         math_ScaleVectorInDirectionFrame(arg3, scratch_c, arg3, -0x40, 0xE6);
         scratch[12] = pos1->vx + (*((s16 *)(((u8 *)scratch) + 0x10)) / 1024);
@@ -3991,7 +3996,8 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
         }
     }
 
-    if (func_80053614(pos, off, out2, &out1.vx, (s32)0x1F8002B8) == 0) {
+    if (collision_TestSegmentWithWork(
+            pos, off, out2, &out1.vx, (s32)0x1F8002B8) == 0) {
         return 0;
     }
 
@@ -4021,7 +4027,8 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
             off[2] = pos[2] + var_20 / 8;
         }
 
-        if (func_80053614(pos, off, out2, &out1.vx, (s32)0x1F8002B8) != 0) {
+        if (collision_TestSegmentWithWork(
+                pos, off, out2, &out1.vx, (s32)0x1F8002B8) != 0) {
             return 0;
         }
 
@@ -4029,7 +4036,8 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
         pos[1] = off[1] + 0x190;
         pos[2] = off[2];
 
-        if (func_80053614(off, pos, out2, &out1.vx, (s32)0x1F8002B8) == 0) {
+        if (collision_TestSegmentWithWork(
+                off, pos, out2, &out1.vx, (s32)0x1F8002B8) == 0) {
             return 0;
         }
 
@@ -4176,7 +4184,7 @@ void func_800238C4(Unk80101EC8Record *arg0) {
     dst[0] = arg0->unk_B8.vx;
     dst[1] = arg0->unk_B8.vy + 0x514;
     dst[2] = arg0->unk_B8.vz;
-    s1 = func_80053614(src, dst, out, offsets, scratchpad);
+    s1 = collision_TestSegmentWithWork(src, dst, out, offsets, scratchpad);
     var_9 = 1;
     if (s1 != 0) {
         if (out[1] - src[1] > 0x190) {
@@ -4184,7 +4192,8 @@ void func_800238C4(Unk80101EC8Record *arg0) {
         } else if (offsets[1] >= -0x7FF) {
             dst[0] += offsets[0] / 8;
             dst[2] += offsets[2] / 8;
-            var_9 = func_80053614(src, dst, out, offsets2, scratchpad) == 0;
+            var_9 = collision_TestSegmentWithWork(
+                        src, dst, out, offsets2, scratchpad) == 0;
         } else {
             var_9 = 0;
         }
@@ -4317,8 +4326,8 @@ void func_80023E40(Unk80101EC8Record *arg0) {
         s1[0xC] = arg0->unk_B8.vx;
         s1[0xD] = arg0->unk_B8.vy + 0x1F40;
         s1[0xE] = arg0->unk_B8.vz;
-        if (func_80053614(&arg0->unk_B8.vx, &s1[0xC], s1, (s16 *)&s1[4],
-                          0x1F8002B8) != 0) {
+        if (collision_TestSegmentWithWork(&arg0->unk_B8.vx, &s1[0xC], s1,
+                                          (s16 *)&s1[4], 0x1F8002B8) != 0) {
             arg0->unk_148 = s1[1];
         }
     } else {

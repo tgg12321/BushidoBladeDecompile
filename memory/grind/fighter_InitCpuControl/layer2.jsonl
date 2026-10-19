@@ -1,0 +1,1 @@
+{"func": "fighter_InitCpuControl", "addr": "80055138", "verdict": "PASS", "body_hash": "0f04f502200bf67b", "body_kind": "c", "file": "main/3AB48", "reviewer": "a91371abafd813e69", "scope": "cheat-cleanup", "date": "2026-10-16T13:48:28Z", "head": "e1948eec2", "notes": "", "renamed_from": ["func_80055138"]}

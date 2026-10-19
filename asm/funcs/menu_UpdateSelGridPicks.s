@@ -24,7 +24,7 @@ glabel menu_UpdateSelGridPicks
     /* 667D8 80075FD8 32004010 */  beqz       $v0, .L800760A4
     /* 667DC 80075FDC 02000424 */   addiu     $a0, $zero, 0x2
     /* 667E0 80075FE0 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 667E4 80075FE4 9471010C */  jal        func_8005C650
+    /* 667E4 80075FE4 9471010C */  jal        snd_QueueSound
     /* 667E8 80075FE8 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 667EC 80075FEC D405848F */  lw         $a0, %gp_rel(D_800A36A0)($gp)
     /* 667F0 80075FF0 00000000 */  nop
@@ -92,7 +92,7 @@ glabel menu_UpdateSelGridPicks
     /* 668DC 800760DC 04006010 */  beqz       $v1, .L800760F0
     /* 668E0 800760E0 21200000 */   addu      $a0, $zero, $zero
     /* 668E4 800760E4 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 668E8 800760E8 9471010C */  jal        func_8005C650
+    /* 668E8 800760E8 9471010C */  jal        snd_QueueSound
     /* 668EC 800760EC 7F000624 */   addiu     $a2, $zero, 0x7F
   .L800760F0:
     /* 668F0 800760F0 FF006332 */  andi       $v1, $s3, 0xFF
@@ -190,7 +190,7 @@ glabel menu_UpdateSelGridPicks
     /* 66A40 80076240 40006010 */  beqz       $v1, .L80076344
     /* 66A44 80076244 01000424 */   addiu     $a0, $zero, 0x1
     /* 66A48 80076248 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 66A4C 8007624C 9471010C */  jal        func_8005C650
+    /* 66A4C 8007624C 9471010C */  jal        snd_QueueSound
     /* 66A50 80076250 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 66A54 80076254 00002292 */  lbu        $v0, 0x0($s1)
     /* 66A58 80076258 00000000 */  nop
@@ -254,7 +254,7 @@ glabel menu_UpdateSelGridPicks
     /* 66B30 80076330 04006010 */  beqz       $v1, .L80076344
     /* 66B34 80076334 04000424 */   addiu     $a0, $zero, 0x4
     /* 66B38 80076338 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 66B3C 8007633C 9471010C */  jal        func_8005C650
+    /* 66B3C 8007633C 9471010C */  jal        snd_QueueSound
     /* 66B40 80076340 7F000624 */   addiu     $a2, $zero, 0x7F
   .L80076344:
     /* 66B44 80076344 4000BF8F */  lw         $ra, 0x40($sp)

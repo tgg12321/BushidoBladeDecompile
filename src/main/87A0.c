@@ -9,7 +9,7 @@
 #include <psxsdk/gtemac.h>
 
 extern s32 memcpy(s32 *, s32, s32);
-extern s32 func_80054434(void);
+extern s32 collision_GetHitTag(void);
 
 extern void func_80018300(Func80017A44Output *);
 

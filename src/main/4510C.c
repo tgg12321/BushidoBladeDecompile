@@ -1,11 +1,12 @@
-/* 20 game functions: motion-stream playback (func_8005490C, func_80054FDC,
- * func_80057CC8, func_80058580, ...). .text 0x8005490C (ROM 0x4510C). Start
- * boundary: SEAM (owner ruling 2026-10-17; Codex seam #85, placed before
- * func_8005490C rather than func_80054604 so the string D_80015840 belongs to
- * its user's object): no static crosses the cut; the .sdata
- * D_800A3250..D_800A3263 belongs to these functions, and func_80058580's jump
- * tables start this file's .rodata at 0x8001585C, right after 43500.o's string;
- * the only calls back are to 43500.c's collision API func_80053614. */
+/* 20 game functions: motion-stream playback (motion_UpdatePlayback,
+ * motion_RebasePlayback, func_80057CC8, func_80058580, ...). .text 0x8005490C
+ * (ROM 0x4510C). Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #85,
+ * placed before motion_UpdatePlayback rather than motion_StartPlayback so the
+ * string D_80015840 belongs to its user's object): no static crosses the cut;
+ * the .sdata D_800A3250..D_800A3263 belongs to these functions, and
+ * func_80058580's jump tables start this file's .rodata at 0x8001585C, right
+ * after 43500.o's string; the only calls back are to 43500.c's collision API
+ * collision_TestSegmentWithWork. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "bb2.h"
@@ -13,21 +14,23 @@
 #include <psxsdk/libgte.h>
 
 /* 43500.c's collision API */
-extern s32 func_80053614(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4);
+extern s32 collision_TestSegmentWithWork(
+    s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4);
 
 extern s32 D_800A3250[2];
 
-/* Per-frame playback of the record D_800EFAE8 that func_80054604 fills.
+/* Per-frame playback of the record D_800EFAE8 that motion_StartPlayback fills.
  * On the first frame (unk0 == 0) it resolves the loaded data's offset table
  * (unk2C) into the camera stream (unk30), the per-object motion streams
  * (unk34[], dropped when they start with the "NULL" tag D_800A3250) and the
  * per-object nibble tables (unk3C[]). Every frame it places the camera (rotated
- * about y by unk1E, plus the offset unkC..unk14 func_80054604 picks), then
- * decodes (func_800198D0) and places each func_8004153C object's data. The
+ * about y by unk1E, plus the offset unkC..unk14 motion_StartPlayback picks),
+ * then decodes (func_800198D0) and places each func_8004153C object's data. The
  * block holds those addresses as integers: typed as pointers, the relocation
- * sums in func_80054FDC and func_80054604 swap their addu operands.
+ * sums in motion_RebasePlayback and motion_StartPlayback swap their addu
+ * operands.
  */
-s32 func_8005490C(void) {
+s32 motion_UpdatePlayback(void) {
     Unk800EFAE8Rec *s = &D_800EFAE8;
     VECTOR vec;
     /* The 0x84 bytes func_800198D0 decodes, as s16: three of its fields load
@@ -167,7 +170,7 @@ s32 func_8005490C(void) {
     return 1;
 }
 
-extern s32 func_8005490C(void);
+extern s32 motion_UpdatePlayback(void);
 
 s32 func_80054F68(void) {
     s32 s0;
@@ -175,12 +178,12 @@ s32 func_80054F68(void) {
     D_800A38D6 = D_800A38D6 + 1;
     D_800A3808 = g_gpu_ot_ptr;
     D_800A378C = g_gpu_ot_ptr + 4;
-    s0 = func_8005490C();
+    s0 = motion_UpdatePlayback();
     func_800444E0();
     return s0;
 }
 
-void func_80054FDC(s32 a0) {
+void motion_RebasePlayback(s32 a0) {
     s32 *p = &D_800EFAE8.unk2C;
     *p = a0 + *p;
     D_800EFAE8.unk30 = a0 + D_800EFAE8.unk30;
@@ -198,11 +201,11 @@ void func_80054FDC(s32 a0) {
     }
 }
 
-s16 *func_8005507C(void) { return D_800EFAE8.unk24; }
+s16 *motion_GetPlaybackViewAngles(void) { return D_800EFAE8.unk24; }
 
 s32 *func_8005508C(void) { return D_80101DF0.xf.mat.t; }
 
-void func_8005509C(s32 arg0) {
+void fighter_ClearCpuTally(s32 arg0) {
     s32 i;
     Unk80101EC8Record *p = &D_80101EC8[arg0];
     i = 0;
@@ -212,7 +215,7 @@ void func_8005509C(s32 arg0) {
     } while ((++i) < 8);
 }
 
-void func_800550E8(s32 arg0) {
+void fighter_HalveCpuTally(s32 arg0) {
     s32 i;
     Unk80101EC8Record *p = &D_80101EC8[arg0];
     i = 0;
@@ -221,7 +224,7 @@ void func_800550E8(s32 arg0) {
     } while (++i < 8);
 }
 
-void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
+void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
     Unk80101EC8Record *p = &D_80101EC8[arg0];
     Unk8009A8C8Entry *src;
     u8 *var_2;
@@ -258,7 +261,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
         break;
     case 0:
         if (D_800A3680 == D_800A3671) {
-            func_8005509C(p->index);
+            fighter_ClearCpuTally(p->index);
         }
         if (D_80099D88[p->unk_443].flags & 0x300) {
             src = &D_8009A8C8[p->unk_86][D_800A37A0 - 1];
@@ -274,7 +277,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
                 p->unk_438 = 0x1000;
             }
             if (D_800A37D2 % 5 == 0) {
-                func_8005509C(p->index);
+                fighter_ClearCpuTally(p->index);
             }
         } else {
             temp = D_800A37D2 / 3;
@@ -300,7 +303,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
             p->unk_438 += 0x200;
         }
         if ((D_800A38E2 - 1) % 10 == 0) {
-            func_8005509C(p->index);
+            fighter_ClearCpuTally(p->index);
         }
         temp = D_800A38E2 / 10 * 2;
         if (D_800A38E2 % 10 == 0) {
@@ -433,7 +436,7 @@ void func_80055138(s32 arg0, u16 *arg1, u16 *arg2) {
     p->unk_3D0.unheld = -1;
 }
 
-s32 func_80055948(Unk80101EC8Record *arg0) {
+s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
     u8 *p;
     u8 var_1;
     s32 t;
@@ -519,7 +522,7 @@ ret_3c8:
     return arg0->unk_3C8;
 }
 
-void func_80055B44(Unk80101EC8Record *a0, u8 *a1, s32 a2, s32 a3) {
+void fighter_StartCpuPadScript(Unk80101EC8Record *a0, u8 *a1, s32 a2, s32 a3) {
     a0->unk_3B4 = a1;
     a0->unk_3BC = a2;
     a0->unk_3B8 = a3;
@@ -527,8 +530,8 @@ void func_80055B44(Unk80101EC8Record *a0, u8 *a1, s32 a2, s32 a3) {
     a0->unk_3CC = -1;
 }
 
-/* Four pad-bit numbers; func_80055B60 copies the table whole (align 1: lwl/lwr)
-   and indexes the copy by Unk80101EC8Record.unk_441. */
+/* Four pad-bit numbers; fighter_BuildCpuPad copies the table whole (align 1:
+   lwl/lwr) and indexes the copy by Unk80101EC8Record.unk_441. */
 typedef struct {
     u8 bit[4];
 } PadBitTable;
@@ -539,7 +542,7 @@ extern s32 func_80058580(Unk80101EC8Record *);
 extern void func_80056CB8(Unk80101EC8Record *);
 extern s32 func_80056FE8(Unk80101EC8Record *);
 
-void func_80055B60(s32 arg0, PadState *arg1) {
+void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     Unk80101EC8Record *rec;
     Unk80101EC8Record *var_1;
     Unk80101EC8Record *var_2;
@@ -552,8 +555,8 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     /* temp holds six values: the unk_148 distance, a slot count minus one
      * (clamped at 0), the slot increment (4 or 8, then plus the old count,
      * clamped at 0xFF), the 0x20/0x60 flag, the wrapped ratan2() angle
-     * difference and the poll result of func_80055948/func_80058580 (Ruling 11;
-     * per-branch constants: Q20). */
+     * difference and the poll result of fighter_StepCpuPadScript/func_80058580
+     * (Ruling 11; per-branch constants: Q20). */
     s32 temp;
     /* temp2 holds three values: the unk7 * 25 >> 3 limit, the func_80056FE8()
      * result and the SquareRoot0() distance (Ruling 11). */
@@ -852,7 +855,7 @@ void func_80055B60(s32 arg0, PadState *arg1) {
     i = 0;
     do {
         if (rec->unk_3B4 != 0) {
-            temp = func_80055948(rec);
+            temp = fighter_StepCpuPadScript(rec);
         } else {
             temp = func_80058580(rec);
         }
@@ -927,7 +930,8 @@ void func_80056CB8(Unk80101EC8Record *arg0) {
         var_1[1] = obj->unk_B8.vy - 0x320;
         var_1[2] = z;
 
-        flags = func_80053614(var_0, var_1, var_2, work, 0x1F8002B8);
+        flags = collision_TestSegmentWithWork(
+            var_0, var_1, var_2, work, 0x1F8002B8);
         if (flags != 0) {
             x += (*sin_p * 0x7D) >> 8;
             z += (*cos_p * 0x7D) >> 8;
@@ -940,7 +944,9 @@ void func_80056CB8(Unk80101EC8Record *arg0) {
         var_1[1] = obj->unk_B8.vy + 0x1004;
         var_1[2] = z;
 
-        flags |= func_80053614(var_0, var_1, var_3, work, 0x1F8002B8) << 1;
+        flags |=
+            collision_TestSegmentWithWork(var_0, var_1, var_3, work, 0x1F8002B8)
+            << 1;
         flags += 1;
         if (flags == 3 && var_3[1] - obj->unk_B8.vy < 5) {
             flags = 0;
@@ -1090,8 +1096,9 @@ s32 func_800571C0(Unk80101EC8Record *obj) {
             top.x = x;
             top.y = obj->unk_B8.vy + 5;
             top.z = z;
-            if (func_80053614(&var_0.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
-                var_9 = func_80053614(
+            if (collision_TestSegmentWithWork(
+                    &var_0.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
+                var_9 = collision_TestSegmentWithWork(
                             &left.x, &var_0.x, var_4, work, 0x1F8002B8) == 0;
             }
             if (var_9) {
@@ -1113,8 +1120,9 @@ s32 func_800571C0(Unk80101EC8Record *obj) {
             top.x = x;
             top.y = obj->unk_B8.vy + 5;
             top.z = z;
-            if (func_80053614(&var_0.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
-                var_10 = func_80053614(
+            if (collision_TestSegmentWithWork(
+                    &var_0.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
+                var_10 = collision_TestSegmentWithWork(
                              &var_3.x, &var_0.x, var_4, work, 0x1F8002B8) == 0;
             }
             if (var_10) {
@@ -1731,7 +1739,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
             }
         }
         if (var_7 != 0) {
-            func_80055B44(p, var_7, mode, 0);
+            fighter_StartCpuPadScript(p, var_7, mode, 0);
             return p->unk_3CC;
         }
     }
@@ -2007,7 +2015,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                                     }
                                 }
                                 if (var_8 != 0) {
-                                    func_80055B44(p, var_8, 4, 0);
+                                    fighter_StartCpuPadScript(p, var_8, 4, 0);
                                 }
                             }
                         }
@@ -2224,7 +2232,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
             if (var_9 != 0) {
                 p->unk_398 = 0;
                 if (p->unk_430 & 0xA000) {
-                    func_80055B44(p, var_9, 4, 0);
+                    fighter_StartCpuPadScript(p, var_9, 4, 0);
                 }
             }
         } else if (p->unk_398 == 0) {
@@ -2550,7 +2558,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                         work4++;
                     }
                     if (var_35 != -1) {
-                        func_80055B44(p, var_1, 0, 0);
+                        fighter_StartCpuPadScript(p, var_1, 0, 0);
                         p->unk_40C = var_4;
                         p->unk_40D = p->unk_86;
                         p->unk_40E = p->unk_F4.x;
@@ -2607,7 +2615,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                     }
                 }
                 if (var_10 != 0) {
-                    func_80055B44(p, var_10, 2, 0);
+                    fighter_StartCpuPadScript(p, var_10, 2, 0);
                 }
             }
         }
@@ -2638,7 +2646,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
         } else if ((p->unk_430 & 0x800) && (D_80099D88[p->unk_443].flags & 1) &&
                    D_800A387C < 4000 && p->unk_440 != 4 &&
                    (p->unk_442 == 0 || p->unk_442 == 2)) {
-            func_80055B44(p, D_8009A898, 1, p->unk_3BD);
+            fighter_StartCpuPadScript(p, D_8009A898, 1, p->unk_3BD);
             p->unk_3F2++;
         } else if ((p->unk_430 & 0xA801) || p->other->unk_6A == 0x18 ||
                    p->other->unk_6A == 0x25 || p->other->unk_6A == 8 ||
@@ -2669,8 +2677,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
 #undef CPU_SQ
 
 /* This file's initialized small data (.sdata), in address order (Q65). */
-/* "NULL" tag func_8005490C compares the motion streams against (gp-relative):
- * size from the blob label */
+/* "NULL" tag motion_UpdatePlayback compares the motion streams against
+ * (gp-relative): size from the blob label */
 s32 D_800A3250[2] = {0x4c4c554e, 0};
 PadBitTable D_800A3258 = {{0xd, 0xf, 0xc, 0xe}};
 u8 D_800A325C[4] = {1, 0, 2, 3};

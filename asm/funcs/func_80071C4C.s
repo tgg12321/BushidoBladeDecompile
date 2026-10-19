@@ -185,7 +185,7 @@ glabel func_80071C4C
     /* 62700 80071F00 01001024 */  addiu      $s0, $zero, 0x1
     /* 62704 80071F04 840482A7 */  sh         $v0, %gp_rel(D_800A3550)($gp)
     /* 62708 80071F08 AC0490A7 */  sh         $s0, %gp_rel(D_800A3578)($gp)
-    /* 6270C 80071F0C 9471010C */  jal        func_8005C650
+    /* 6270C 80071F0C 9471010C */  jal        snd_QueueSound
     /* 62710 80071F10 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 62714 80071F14 F004838F */  lw         $v1, %gp_rel(D_800A35BC)($gp)
     /* 62718 80071F18 00000000 */  nop

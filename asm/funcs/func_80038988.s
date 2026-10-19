@@ -198,7 +198,7 @@ glabel func_80038988
   .L80038C34:
     /* 29434 80038C34 02000424 */  addiu      $a0, $zero, 0x2
     /* 29438 80038C38 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 2943C 80038C3C 9471010C */  jal        func_8005C650
+    /* 2943C 80038C3C 9471010C */  jal        snd_QueueSound
     /* 29440 80038C40 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 29444 80038C44 01001124 */  addiu      $s1, $zero, 0x1
   jlabel .L80038C48

@@ -15,7 +15,7 @@ glabel func_80054884
     /* 450B8 800548B8 1400A3AF */  sw         $v1, 0x14($sp)
     /* 450BC 800548BC 1800A8AF */  sw         $t0, 0x18($sp)
     /* 450C0 800548C0 3800A78F */  lw         $a3, 0x38($sp)
-    /* 450C4 800548C4 8151010C */  jal        func_80054604
+    /* 450C4 800548C4 8151010C */  jal        motion_StartPlayback
     /* 450C8 800548C8 CFFE8424 */   addiu     $a0, $a0, -0x131
     /* 450CC 800548CC 2000BF8F */  lw         $ra, 0x20($sp)
     /* 450D0 800548D0 2800BD27 */  addiu      $sp, $sp, 0x28

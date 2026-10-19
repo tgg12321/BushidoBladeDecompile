@@ -69,21 +69,21 @@ void func_80034708(void) {
 
     for (i = 0; i < 2; i++) {
         if (g_pad_state.pressed & (0x1000 << (i * 16))) {
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             if (D_800A3174[i] > 0) {
                 D_800A3174[i]--;
             } else {
                 D_800A3174[i] = (i != 0) ? 3 : 11;
             }
         } else if (g_pad_state.pressed & (0x4000 << (i * 16))) {
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             if (D_800A3174[i] < ((i != 0) ? 3 : 11)) {
                 D_800A3174[i]++;
             } else {
                 D_800A3174[i] = 0;
             }
         } else if (g_pad_state.pressed & (0x8000 << (i * 16))) {
-            func_8005C650(4, 0x3F, 0x3F);
+            snd_QueueSound(4, 0x3F, 0x3F);
             switch (D_800A3174[i]) {
             case 0:
                 D_80102778.unk_4[i]--;
@@ -123,7 +123,7 @@ void func_80034708(void) {
                 break;
             }
         } else if (g_pad_state.pressed & (0x2000 << (i * 16))) {
-            func_8005C650(4, 0x3F, 0x3F);
+            snd_QueueSound(4, 0x3F, 0x3F);
             switch (D_800A3174[i]) {
             case 0:
                 D_80102778.unk_4[i]++;
@@ -174,7 +174,7 @@ void func_80034708(void) {
     D_800A36F9 = (D_800A36F9 + 4) % 4;
     D_800A3690 &= 1;
     if (g_pad_state.pressed & 0x08000800) {
-        func_8005C650(1, 0x7F, 0x7F);
+        snd_QueueSound(1, 0x7F, 0x7F);
         func_800344B4();
     }
 }

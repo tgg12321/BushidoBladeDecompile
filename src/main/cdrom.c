@@ -65,7 +65,7 @@ void cdrom_WaitIdle(void) {
         comb_ExchangeEmptyPad();
         cdrom_Update();
         if (D_800A3906 != 0) {
-            func_8005C6D0();
+            snd_FlushSoundQueue();
         }
         func_800174F4();
         *p = *p + 2;

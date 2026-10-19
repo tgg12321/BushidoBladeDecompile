@@ -3,7 +3,7 @@ glabel fight_Init
     /* E4B4 8001DCB4 2400BFAF */  sw         $ra, 0x24($sp)
     /* E4B8 8001DCB8 2000B2AF */  sw         $s2, 0x20($sp)
     /* E4BC 8001DCBC 1C00B1AF */  sw         $s1, 0x1C($sp)
-    /* E4C0 8001DCC0 6B6D010C */  jal        func_8005B5AC
+    /* E4C0 8001DCC0 6B6D010C */  jal        snd_ResetVoicesAndQueue
     /* E4C4 8001DCC4 1800B0AF */   sw        $s0, 0x18($sp)
     /* E4C8 8001DCC8 0A80033C */  lui        $v1, %hi(D_800A3768)
     /* E4CC 8001DCCC 68376390 */  lbu        $v1, %lo(D_800A3768)($v1)
@@ -481,7 +481,7 @@ glabel fight_Init
     /* EBB0 8001E3B0 00000000 */   nop
     /* EBB4 8001E3B4 0A80043C */  lui        $a0, %hi(D_800A36A4)
     /* EBB8 8001E3B8 A4368484 */  lh         $a0, %lo(D_800A36A4)($a0)
-    /* EBBC 8001E3BC A16F010C */  jal        func_8005BE84
+    /* EBBC 8001E3BC A16F010C */  jal        snd_SetReverb
     /* EBC0 8001E3C0 00000000 */   nop
     /* EBC4 8001E3C4 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* EBC8 8001E3C8 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)

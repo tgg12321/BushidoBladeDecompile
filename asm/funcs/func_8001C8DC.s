@@ -73,7 +73,7 @@ glabel func_8001C8DC
     /* D1E8 8001C9E8 FF004230 */  andi       $v0, $v0, 0xFF
     /* D1EC 8001C9EC 24004014 */  bnez       $v0, .L8001CA80
     /* D1F0 8001C9F0 00000000 */   nop
-    /* D1F4 8001C9F4 636D010C */  jal        func_8005B58C
+    /* D1F4 8001C9F4 636D010C */  jal        snd_StopAllVoices
     /* D1F8 8001C9F8 00000000 */   nop
     /* D1FC 8001C9FC 0A80023C */  lui        $v0, %hi(D_800A37C6)
     /* D200 8001CA00 C6374290 */  lbu        $v0, %lo(D_800A37C6)($v0)

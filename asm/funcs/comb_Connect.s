@@ -16,7 +16,7 @@ glabel comb_Connect
   .L8003ACF0:
     /* 2B4F0 8003ACF0 5A65000C */  jal        pad_Update
     /* 2B4F4 8003ACF4 01000424 */   addiu     $a0, $zero, 0x1
-    /* 2B4F8 8003ACF8 B471010C */  jal        func_8005C6D0
+    /* 2B4F8 8003ACF8 B471010C */  jal        snd_FlushSoundQueue
     /* 2B4FC 8003ACFC 00000000 */   nop
     /* 2B500 8003AD00 D1EA000C */  jal        comb_HandshakeStep
     /* 2B504 8003AD04 00000000 */   nop

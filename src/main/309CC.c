@@ -184,7 +184,7 @@ after_b644:
     {
         ptr = (s32 *)((s32)var_0 + (((u32)var_0[count - 1] >> 2) << 2));
         ptr = (s32 *)((s32)ptr +
-                      func_8005C2A8(
+                      snd_LoadVabPack(
                           ptr, a0->unk_04 * 3 + 1,
                           (s32 *)((s32)var_0 +
                                   (((u32)var_0[count + 1] >> 2) << 2))));

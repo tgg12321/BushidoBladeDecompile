@@ -34,11 +34,11 @@ glabel func_8003984C
     /* 2A0CC 800398CC 43180300 */  sra        $v1, $v1, 1
     /* 2A0D0 800398D0 1000A427 */  addiu      $a0, $sp, 0x10
     /* 2A0D4 800398D4 1800A3AF */  sw         $v1, 0x18($sp)
-    /* 2A0D8 800398D8 614D010C */  jal        func_80053584
+    /* 2A0D8 800398D8 614D010C */  jal        collision_TestSegment
     /* 2A0DC 800398DC 2800A3AF */   sw        $v1, 0x28($sp)
     /* 2A0E0 800398E0 0D004010 */  beqz       $v0, .L80039918
     /* 2A0E4 800398E4 FFFF0224 */   addiu     $v0, $zero, -0x1
-    /* 2A0E8 800398E8 0D51010C */  jal        func_80054434
+    /* 2A0E8 800398E8 0D51010C */  jal        collision_GetHitTag
     /* 2A0EC 800398EC 00000000 */   nop
     /* 2A0F0 800398F0 21184000 */  addu       $v1, $v0, $zero
     /* 2A0F4 800398F4 07000224 */  addiu      $v0, $zero, 0x7

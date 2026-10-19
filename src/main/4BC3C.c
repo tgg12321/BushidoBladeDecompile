@@ -10,7 +10,7 @@
 #include "include_asm.h"
 #include <psxsdk/libgte.h>
 
-extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
+extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 
 /* This file's statics (.sbss, allocated per file in link order), in address
  * order (Q65). */
@@ -83,9 +83,9 @@ void snd_Quit(void) {
     D_800A3408 = 0;
 }
 
-void func_8005B58C(void) { func_800858D0(0); }
+void snd_StopAllVoices(void) { func_800858D0(0); }
 
-void func_8005B5AC(void) {
+void snd_ResetVoicesAndQueue(void) {
     s32 i;
     func_800858D0(0);
     for (i = 0; i < 24; i++) {
@@ -140,7 +140,7 @@ void func_8005B72C(void) {
         s1++;
     }
     D_800A3408 = 0;
-    func_8005B5AC();
+    snd_ResetVoicesAndQueue();
 }
 
 s32 printf(s32 *, s32); /* extern */
@@ -162,7 +162,7 @@ s32 snd_LoadCommonVab(s32 arg0) {
     D_800A3408 = 0;
     D_800A340C = 0x1010;
     g_vab_sticky_sbaddr = 0x1010;
-    ret = func_8005C2A8((Unk8005C2A8Pack *)arg0, 0, arg0 + temp_s0);
+    ret = snd_LoadVabPack((Unk8005C2A8Pack *)arg0, 0, arg0 + temp_s0);
     D_800A340C = g_vab_sticky_sbaddr;
     return ret;
 }
@@ -190,13 +190,14 @@ s32 func_8005B8B8(s32 arg0) {
     cdrom_StartRead(t0, arg0);
     size = cdrom_GetFileSize(t0);
     cdrom_WaitIdle();
-    ret = func_8005C2A8((Unk8005C2A8Pack *)arg0, 8, arg0 + size);
+    ret = snd_LoadVabPack((Unk8005C2A8Pack *)arg0, 8, arg0 + size);
     t0_2 = cdrom_GetFileIndex(2, 0x5E);
     cdrom_WaitIdle();
     cdrom_StartRead(t0_2, arg0 + ret);
     size = cdrom_GetFileSize(t0_2) + ret;
     cdrom_WaitIdle();
-    return func_8005C2A8((Unk8005C2A8Pack *)(arg0 + ret), 4, arg0 + size) + ret;
+    return snd_LoadVabPack((Unk8005C2A8Pack *)(arg0 + ret), 4, arg0 + size) +
+           ret;
 }
 
 s32 snd_VabFakeOpen(s32, s16);
@@ -222,7 +223,7 @@ s32 func_8005B9FC(s32 a0) {
     cdrom_StartRead(var_0, a0);
     size = cdrom_GetFileSize(var_0);
     cdrom_WaitIdle();
-    return func_8005C2A8((Unk8005C2A8Pack *)a0, 9, a0 + size);
+    return snd_LoadVabPack((Unk8005C2A8Pack *)a0, 9, a0 + size);
 }
 
 void snd_VabFakeOpen9(s32 a0) { snd_VabFakeOpen(a0, 9); }
@@ -278,8 +279,8 @@ s32 func_8005BA8C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
     for (i = 0; i < count; i++) {
         var_0.ent[i].off += (s32)p;
-        var_0.len[i] = func_8005C2A8((Unk8005C2A8Pack *)var_0.ent[i].off,
-                                     g_vab_id_list[i], (s32)p + size);
+        var_0.len[i] = snd_LoadVabPack((Unk8005C2A8Pack *)var_0.ent[i].off,
+                                       g_vab_id_list[i], (s32)p + size);
     }
     for (i = 0; i < count; i++) {
         for (j = 0; j < (u32)var_0.len[i]; j++) {
@@ -295,7 +296,7 @@ s32 func_8005BA8C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     return (s32)p - base;
 }
 
-void func_8005BD30(s32 arg0) {
+void snd_RebaseListedVabs(s32 arg0) {
     u8 count;
     s32 i;
     func_800858D0(0);
@@ -323,7 +324,7 @@ void snd_CloseListedVabs(void) {
 
 extern s16 D_8009AD1C[][2];
 
-s32 func_8005BE84(s32 arg0) {
+s32 snd_SetReverb(s32 arg0) {
     s32 result;
     s16 *p;
     s16 temp_a0;
@@ -348,7 +349,7 @@ s32 func_8005BE84(s32 arg0) {
     return (s16)result;
 }
 
-void func_8005BF3C(void) {
+void snd_StopVoicesAndReverb(void) {
     func_800858D0(0);
     SsUtReverbOff();
     SsUtSetReverbType(0);
@@ -377,7 +378,7 @@ s32 snd_MoveVabBody(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
  * slot that is not already contiguous and every slot after it. `arg0` is never
  * read. `addr` is assigned inside the first (otherwise empty) loop: the target
  * computes it after the loop's `count > 0` guard. */
-s32 func_8005C074(s16 arg0, s32 base) {
+s32 snd_CompactVabBodies(s16 arg0, s32 base) {
     s16 var_0[16];
     s16 count;
     u16 mask;
@@ -423,9 +424,9 @@ s32 func_8005C074(s16 arg0, s32 base) {
     return 0;
 }
 
-/* func_8005C2A8 - load a VAB: close whatever occupies slot `arg1`, recompute
+/* snd_LoadVabPack - load a VAB: close whatever occupies slot `arg1`, recompute
  * the sticky SPU address from the resident banks (compacting them with
- * func_8005C074 for arg1 != 0), turn the pack's first three offsets
+ * snd_CompactVabBodies for arg1 != 0), turn the pack's first three offsets
  * (Unk8005C2A8Pack unk_00..unk_08) into addresses, open it with snd_VabOpen
  * and record its slot and SPU address. Returns unk_08 less the pack's
  * address (the third offset, unrelocated), or 0 on failure. snd_VabOpen returns
@@ -436,7 +437,7 @@ extern s32 snd_VabOpen(Unk8005C2A8Pack *, s16);
 
 const char D_800158CC[20] = "vab id:%d mistake\n";
 
-s32 func_8005C2A8(Unk8005C2A8Pack *arg0, s16 arg1, s32 arg2) {
+s32 snd_LoadVabPack(Unk8005C2A8Pack *arg0, s16 arg1, s32 arg2) {
     s16 i;
     s16 id;
 
@@ -459,7 +460,7 @@ s32 func_8005C2A8(Unk8005C2A8Pack *arg0, s16 arg1, s32 arg2) {
     }
     D_800A3408 = g_vab_sticky_sbaddr - D_800A340C;
     if (arg1 != 0) {
-        func_8005C074(arg1, arg2);
+        snd_CompactVabBodies(arg1, arg2);
     }
     arg0->unk_00 += (s32)arg0;
     arg0->unk_04 += (s32)arg0;
@@ -534,7 +535,7 @@ extern u16 D_8009AA70[][2];
 /* FAKE: declared int though no value is returned (plausibly an implicit-int
  * function in the original): with void, its call in snd_QueuePositionalSound
  * sets no $v0, so reload re-places the var_7 product in $v0 there (score 2). */
-s32 func_8005C650(s32 a0, s32 a1, s32 a2) {
+s32 snd_QueueSound(s32 a0, s32 a1, s32 a2) {
     s16 i = 0;
     u16 *var_1 = D_8009AA70[a0];
     do {
@@ -553,7 +554,7 @@ s32 func_8005C650(s32 a0, s32 a1, s32 a2) {
  * the running `next` cursor and key the note on with the entry's stored
  * volumes. Each pool slot is cleared as it is visited.
  */
-void func_8005C6D0(void) {
+void snd_FlushSoundQueue(void) {
 
     u8 var_0[24];
     s16 i;

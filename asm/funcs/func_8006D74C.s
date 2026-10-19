@@ -33,7 +33,7 @@ glabel func_8006D74C
     /* 5DFC8 8006D7C8 21202002 */  addu       $a0, $s1, $zero
     /* 5DFCC 8006D7CC 75B5010C */  jal        func_8006D5D4
     /* 5DFD0 8006D7D0 21284002 */   addu      $a1, $s2, $zero
-    /* 5DFD4 8006D7D4 B471010C */  jal        func_8005C6D0
+    /* 5DFD4 8006D7D4 B471010C */  jal        snd_FlushSoundQueue
     /* 5DFD8 8006D7D8 21804000 */   addu      $s0, $v0, $zero
     /* 5DFDC 8006D7DC 21100002 */  addu       $v0, $s0, $zero
     /* 5DFE0 8006D7E0 7400BF8F */  lw         $ra, 0x74($sp)

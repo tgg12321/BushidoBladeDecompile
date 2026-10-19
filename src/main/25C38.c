@@ -150,7 +150,7 @@ void func_80035618(s32 arg0) {
         }
 
         if (temp == -1) {
-            func_8005C650(2, 0x7F, 0x7F);
+            snd_QueueSound(2, 0x7F, 0x7F);
             D_800A3834 = 9;
             D_800A37B8 = 0;
             D_800A3740 = 1;

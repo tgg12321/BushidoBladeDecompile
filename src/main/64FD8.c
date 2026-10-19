@@ -54,7 +54,7 @@ s32 func_800747D8(u32 arg0) {
             if (SELWORK->f3C[0] >= 5) {
                 SELWORK->f3C[0] = 0;
             }
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             break;
         case 2:
             SELWORK->f34 = 0;
@@ -62,7 +62,7 @@ s32 func_800747D8(u32 arg0) {
             if (SELWORK->f3C[0] < 0) {
                 SELWORK->f3C[0] = 4;
             }
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             break;
         }
 
@@ -98,14 +98,14 @@ s32 func_800747D8(u32 arg0) {
             if (SELWORK->f64 != 0) {
                 var_7 = 0;
             }
-            func_8005C650(var_7, 0x7F, 0x7F);
+            snd_QueueSound(var_7, 0x7F, 0x7F);
             goto confirm;
         case 1:
             if ((ret & 0xFF) != 0) {
                 SELWORK->f67 += 1;
                 SELWORK->f67 &= 1;
                 SELWORK->f66 = D_8009BD20[SELWORK->f67][D_800A35DC & 1];
-                func_8005C650(0, 0x7F, 0x7F);
+                snd_QueueSound(0, 0x7F, 0x7F);
             }
             goto confirm;
         case 2:
@@ -113,17 +113,17 @@ s32 func_800747D8(u32 arg0) {
                 row = SELWORK->f67;
                 D_800A35DC += 1;
                 SELWORK->f66 = D_8009BD20[row][D_800A35DC & 1];
-                func_8005C650(0, 0x7F, 0x7F);
+                snd_QueueSound(0, 0x7F, 0x7F);
             }
         confirm:
             if (arg0 & 0x400040) {
-                func_8005C650(1, 0x7F, 0x7F);
+                snd_QueueSound(1, 0x7F, 0x7F);
                 SELWORK->f3C[0] = 3;
             }
             break;
         case 3:
             if (arg0 & 0x400040) {
-                func_8005C650(1, 0x7F, 0x7F);
+                snd_QueueSound(1, 0x7F, 0x7F);
                 for (i = 0; i < 2; i++) {
                     SELWORK->f10.half[i] = 3;
                     SELWORK->f18[i] = 1;
@@ -133,13 +133,13 @@ s32 func_800747D8(u32 arg0) {
             break;
         case 4:
             if (arg0 & 0x400040) {
-                func_8005C650(1, 0x7F, 0x7F);
+                snd_QueueSound(1, 0x7F, 0x7F);
                 result = -1;
             }
             break;
         }
         if (arg0 & 0x100010) {
-            func_8005C650(2, 0x7F, 0x7F);
+            snd_QueueSound(2, 0x7F, 0x7F);
             result = -1;
         }
     }
@@ -471,7 +471,7 @@ void func_80075670(s32 arg0, s32 arg1) {
         SELWORK->f34 = 0;
         SELWORK->f68[arg1] = SELWORK->f68[arg1] + 1;
         SELWORK->f68[arg1] &= 1;
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
     }
     work = SELWORK;
     work->f3C[arg1] = work->f68[arg1];
@@ -482,7 +482,7 @@ void func_80075670(s32 arg0, s32 arg1) {
             work->f18[i] = 2;
         }
         SELWORK->f68[(arg1 + 1) & 1] = (SELWORK->f68[arg1] + 1) & 1;
-        func_8005C650(1, 0x7F, 0x7F);
+        snd_QueueSound(1, 0x7F, 0x7F);
         return;
     }
     if (arg0 & (0x10 << (arg1 * 16))) {
@@ -492,9 +492,9 @@ void func_80075670(s32 arg0, s32 arg1) {
                 work->f10.half[i] = 3;
                 work->f18[i] = 0;
             }
-            func_8005C650(2, 0x7F, 0x7F);
+            snd_QueueSound(2, 0x7F, 0x7F);
         } else {
-            func_8005C650(4, 0x7F, 0x7F);
+            snd_QueueSound(4, 0x7F, 0x7F);
         }
     }
 }
@@ -688,7 +688,7 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     }
 
     if (arg0 & (0x10 << (arg3 * 16))) {
-        func_8005C650(2, 0x7F, 0x7F);
+        snd_QueueSound(2, 0x7F, 0x7F);
         if (SELWORK->f3C[arg3] != 0) {
             arg2[SELWORK->f3C[arg3]] = -1;
             SELWORK->f3C[arg3]--;
@@ -710,7 +710,7 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     result = func_800692C0(&arg0, arg3, SELWORK->f40[arg3], D_800A35D0[arg3]);
     if (arg0 & (0xF000 << (arg3 * 16))) {
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
     }
     {
         s32 low;
@@ -758,7 +758,7 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
                 arg2[SELWORK->f3C[arg3]] = entry;
                 if (arg0 & (0x40 << (arg3 * 16))) {
-                    func_8005C650(1, 0x7F, 0x7F);
+                    snd_QueueSound(1, 0x7F, 0x7F);
                     *flag |= bit;
                     count = SELWORK->f3C[arg3];
                     SELWORK->f3C[arg3] = count + 1;
@@ -779,7 +779,7 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
             }
             arg2[SELWORK->f3C[arg3]] = 0x14;
             if (arg0 & (0x40 << (arg3 * 16))) {
-                func_8005C650(4, 0x7F, 0x7F);
+                snd_QueueSound(4, 0x7F, 0x7F);
             }
         } else {
             /* FAKE: placeholder tail duplicated into both arms so cse reuses
@@ -788,7 +788,7 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
              * arms, Q47): score 6 */
             arg2[SELWORK->f3C[arg3]] = 0x14;
             if (arg0 & (0x40 << (arg3 * 16))) {
-                func_8005C650(4, 0x7F, 0x7F);
+                snd_QueueSound(4, 0x7F, 0x7F);
             }
         }
     }
@@ -912,7 +912,7 @@ void menu_UpdateSelListPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         return;
     }
     if (arg0 & (0xA000 << (arg3 * 16))) {
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
     }
     switch (func_800692C0(
                 (u32 *)&arg0, arg3, SELWORK->f40[arg3], D_800A35D0[arg3]) &
@@ -933,7 +933,7 @@ void menu_UpdateSelListPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     if (arg0 & (0x40 << (arg3 * 16))) {
         if (SELWORK->f3C[arg3] < SELWORK->f65 + 3) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             SELWORK->f7E[arg3][SELWORK->f3C[arg3]] =
                 SELWORK->f48[arg3][SELWORK->f5C[arg3]];
             if (SELWORK->f3C[arg3] == SELWORK->f65 + 2) {
@@ -948,7 +948,7 @@ void menu_UpdateSelListPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
             SELWORK->f3C[arg3]++;
         }
     } else if (arg0 & (0x10 << (arg3 * 16))) {
-        func_8005C650(2, 0x7F, 0x7F);
+        snd_QueueSound(2, 0x7F, 0x7F);
         if (SELWORK->f3C[arg3] == 0) {
             SELWORK->f10.half[arg3] = 3;
             SELWORK->f18[arg3] = 2;
@@ -1211,7 +1211,7 @@ s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *arg1) {
             func_8007636C(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
             menu_DrawSelPanel(arg1, i);
             if (arg0 & (0x10 << (i * 16))) {
-                func_8005C650(2, 0x7F, 0x7F);
+                snd_QueueSound(2, 0x7F, 0x7F);
                 SELWORK->f14.half[i] = 3;
             }
             break;

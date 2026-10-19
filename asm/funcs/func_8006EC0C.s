@@ -45,7 +45,7 @@ glabel func_8006EC0C
     /* 5F4AC 8006ECAC 04006214 */  bne        $v1, $v0, .L8006ECC0
     /* 5F4B0 8006ECB0 05000424 */   addiu     $a0, $zero, 0x5
     /* 5F4B4 8006ECB4 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5F4B8 8006ECB8 9471010C */  jal        func_8005C650
+    /* 5F4B8 8006ECB8 9471010C */  jal        snd_QueueSound
     /* 5F4BC 8006ECBC 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8006ECC0:
     /* 5F4C0 8006ECC0 A4048297 */  lhu        $v0, %gp_rel(D_800A3570)($gp)

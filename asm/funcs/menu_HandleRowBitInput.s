@@ -26,7 +26,7 @@ glabel menu_HandleRowBitInput
     /* 5D528 8006CD28 05004010 */  beqz       $v0, .L8006CD40
     /* 5D52C 8006CD2C 01000424 */   addiu     $a0, $zero, 0x1
     /* 5D530 8006CD30 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5D534 8006CD34 9471010C */  jal        func_8005C650
+    /* 5D534 8006CD34 9471010C */  jal        snd_QueueSound
     /* 5D538 8006CD38 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5D53C 8006CD3C 01001E24 */  addiu      $fp, $zero, 0x1
   .L8006CD40:
@@ -51,7 +51,7 @@ glabel menu_HandleRowBitInput
     /* 5D580 8006CD80 10004010 */  beqz       $v0, .L8006CDC4
     /* 5D584 8006CD84 21200000 */   addu      $a0, $zero, $zero
     /* 5D588 8006CD88 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5D58C 8006CD8C 9471010C */  jal        func_8005C650
+    /* 5D58C 8006CD8C 9471010C */  jal        snd_QueueSound
     /* 5D590 8006CD90 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5D594 8006CD94 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
     /* 5D598 8006CD98 00000000 */  nop
@@ -72,7 +72,7 @@ glabel menu_HandleRowBitInput
     /* 5D5CC 8006CDCC 24106200 */  and        $v0, $v1, $v0
     /* 5D5D0 8006CDD0 0F004010 */  beqz       $v0, .L8006CE10
     /* 5D5D4 8006CDD4 7F000524 */   addiu     $a1, $zero, 0x7F
-    /* 5D5D8 8006CDD8 9471010C */  jal        func_8005C650
+    /* 5D5D8 8006CDD8 9471010C */  jal        snd_QueueSound
     /* 5D5DC 8006CDDC 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5D5E0 8006CDE0 3004828F */  lw         $v0, %gp_rel(D_800A34FC)($gp)
     /* 5D5E4 8006CDE4 00000000 */  nop
@@ -110,7 +110,7 @@ glabel menu_HandleRowBitInput
     /* 5D658 8006CE58 44006010 */  beqz       $v1, .L8006CF6C
     /* 5D65C 8006CE5C 21200000 */   addu      $a0, $zero, $zero
     /* 5D660 8006CE60 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5D664 8006CE64 9471010C */  jal        func_8005C650
+    /* 5D664 8006CE64 9471010C */  jal        snd_QueueSound
     /* 5D668 8006CE68 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5D66C 8006CE6C 0000858E */  lw         $a1, 0x0($s4)
     /* 5D670 8006CE70 F5B2010C */  jal        menu_SetExclusiveRowBit
@@ -125,7 +125,7 @@ glabel menu_HandleRowBitInput
     /* 5D690 8006CE90 36006010 */  beqz       $v1, .L8006CF6C
     /* 5D694 8006CE94 01000424 */   addiu     $a0, $zero, 0x1
     /* 5D698 8006CE98 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5D69C 8006CE9C 9471010C */  jal        func_8005C650
+    /* 5D69C 8006CE9C 9471010C */  jal        snd_QueueSound
     /* 5D6A0 8006CEA0 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5D6A4 8006CEA4 21280000 */  addu       $a1, $zero, $zero
     /* 5D6A8 8006CEA8 0430B602 */  sllv       $a2, $s6, $s5
@@ -159,7 +159,7 @@ glabel menu_HandleRowBitInput
     /* 5D708 8006CF08 18006010 */  beqz       $v1, .L8006CF6C
     /* 5D70C 8006CF0C 01000424 */   addiu     $a0, $zero, 0x1
     /* 5D710 8006CF10 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5D714 8006CF14 9471010C */  jal        func_8005C650
+    /* 5D714 8006CF14 9471010C */  jal        snd_QueueSound
     /* 5D718 8006CF18 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5D71C 8006CF1C 21280000 */  addu       $a1, $zero, $zero
     /* 5D720 8006CF20 0430B602 */  sllv       $a2, $s6, $s5

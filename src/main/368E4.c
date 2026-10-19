@@ -166,7 +166,7 @@ void func_800460E4(s32 arg0, s32 arg1) {
     func_80044010(s6, 7);
     func_800481E8((s32)var_7, 0);
     func_8003EDC0((u16 *)s4, 7);
-    func_80054410((s32)sp10);
+    collision_SetGrid((s32)sp10);
     D_800A33B0 = (s32)sp18;
     D_800A33B4 = (s32)sp20;
     DrawSync(0);
@@ -238,7 +238,7 @@ void func_8004659C(s32 a0) {
     s0p = (s32 *)((u8 *)s0 + *(s32 *)(v0 + 4));
     func_80044098(7);
     func_80044010(s2, 7);
-    func_80054410(s3);
+    collision_SetGrid(s3);
     D_800A33B0 = (s32)s4p;
     D_800A33B4 = (s32)s1p;
     func_8003EDC0((u16 *)s0p, 7);
@@ -256,7 +256,7 @@ extern void wave_MoveCellBuffer(s32);
 void func_800466C0(s32 a0, s32 a1) {
     s32 var_0;
     func_80044100(7, a1);
-    func_8005441C(a1);
+    collision_RebaseGrid(a1);
     var_0 = (a1 / 4) * 4;
     D_800A33B0 += var_0;
     D_800A33B4 += var_0;
@@ -396,7 +396,7 @@ s32 *func_800469C4(s32 a0) {
 
 void func_80046A60(void) { arena_Free(0xA); }
 
-void func_80046A80(s32 a0, s32 a1) { func_80054FDC(a1); }
+void func_80046A80(s32 a0, s32 a1) { motion_RebasePlayback(a1); }
 
 void func_80046AA0(void) {
     func_800415C4(0);
@@ -1007,7 +1007,7 @@ s32 func_80047E5C(void) {
 s32 wave_GetCellBufferSize(void) { return 0xD00; }
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
-extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
+extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 
 void wave_MoveCellBuffer(s32 a0) {
     D_800A33D0 = (s16 *)((u8 *)D_800A33D0 + a0);
@@ -2168,7 +2168,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
             a0_arg = var_s1 + var_s4;
         }
         arena_UpdatePeak(a0_arg);
-        var_s1 += func_8005C2A8((Unk8005C2A8Pack *)var_s1, 2, var_s7);
+        var_s1 += snd_LoadVabPack((Unk8005C2A8Pack *)var_s1, 2, var_s7);
     }
 
     if (var_s2 >= 0) {
@@ -2181,7 +2181,7 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
             a0_arg = var_s1 + var_s4;
         }
         arena_UpdatePeak(a0_arg);
-        var_s1 += func_8005C2A8((Unk8005C2A8Pack *)var_s1, 5, var_s7);
+        var_s1 += snd_LoadVabPack((Unk8005C2A8Pack *)var_s1, 5, var_s7);
     }
     return var_s1;
 }

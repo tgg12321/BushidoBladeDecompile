@@ -394,7 +394,7 @@ glabel camera_UpdateTwoFighterView
     /* B5D8 8001ADD8 6000E226 */  addiu      $v0, $s7, %lo(D_1F800060)
     /* B5DC 8001ADDC 1000A2AF */  sw         $v0, 0x10($sp)
     /* B5E0 8001ADE0 38FF6324 */  addiu      $v1, $v1, -0xC8
-    /* B5E4 8001ADE4 854D010C */  jal        func_80053614
+    /* B5E4 8001ADE4 854D010C */  jal        collision_TestSegmentWithWork
     /* B5E8 8001ADE8 2C00E3AE */   sw        $v1, (0x1F80002C & 0xFFFF)($s7)
     /* B5EC 8001ADEC 53004010 */  beqz       $v0, .L8001AF3C
     /* B5F0 8001ADF0 00000000 */   nop
@@ -464,7 +464,7 @@ glabel camera_UpdateTwoFighterView
     /* B6D4 8001AED4 3800E626 */  addiu      $a2, $s7, %lo(D_1F800038)
     /* B6D8 8001AED8 5800E726 */  addiu      $a3, $s7, %lo(D_1F800058)
     /* B6DC 8001AEDC 6000E226 */  addiu      $v0, $s7, %lo(D_1F800060)
-    /* B6E0 8001AEE0 854D010C */  jal        func_80053614
+    /* B6E0 8001AEE0 854D010C */  jal        collision_TestSegmentWithWork
     /* B6E4 8001AEE4 1000A2AF */   sw        $v0, 0x10($sp)
     /* B6E8 8001AEE8 0B004010 */  beqz       $v0, .L8001AF18
     /* B6EC 8001AEEC 00000000 */   nop
@@ -546,7 +546,7 @@ glabel camera_UpdateTwoFighterView
     /* B7F4 8001AFF4 5800E726 */  addiu      $a3, $s7, %lo(D_1F800058)
     /* B7F8 8001AFF8 4800A68F */  lw         $a2, 0x48($sp)
     /* B7FC 8001AFFC 6000E226 */  addiu      $v0, $s7, %lo(D_1F800060)
-    /* B800 8001B000 854D010C */  jal        func_80053614
+    /* B800 8001B000 854D010C */  jal        collision_TestSegmentWithWork
     /* B804 8001B004 1000A2AF */   sw        $v0, 0x10($sp)
     /* B808 8001B008 0E004010 */  beqz       $v0, .L8001B044
     /* B80C 8001B00C 00000000 */   nop

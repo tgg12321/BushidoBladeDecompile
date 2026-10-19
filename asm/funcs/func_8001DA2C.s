@@ -1,9 +1,9 @@
 glabel func_8001DA2C
     /* E22C 8001DA2C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* E230 8001DA30 1000BFAF */  sw         $ra, 0x10($sp)
-    /* E234 8001DA34 6B6D010C */  jal        func_8005B5AC
+    /* E234 8001DA34 6B6D010C */  jal        snd_ResetVoicesAndQueue
     /* E238 8001DA38 00000000 */   nop
-    /* E23C 8001DA3C CF6F010C */  jal        func_8005BF3C
+    /* E23C 8001DA3C CF6F010C */  jal        snd_StopVoicesAndReverb
     /* E240 8001DA40 00000000 */   nop
     /* E244 8001DA44 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* E248 8001DA48 DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)

@@ -129,7 +129,7 @@ glabel menu_UpdateRowMenu
     /* 59DA4 800695A4 01006338 */  xori       $v1, $v1, 0x1
     /* 59DA8 800695A8 C0180300 */  sll        $v1, $v1, 3
     /* 59DAC 800695AC 2538E300 */  or         $a3, $a3, $v1
-    /* 59DB0 800695B0 9471010C */  jal        func_8005C650
+    /* 59DB0 800695B0 9471010C */  jal        snd_QueueSound
     /* 59DB4 800695B4 200047AC */   sw        $a3, 0x20($v0)
   .L800695B8:
     /* 59DB8 800695B8 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
@@ -236,9 +236,9 @@ glabel menu_UpdateRowMenu
     /* 59F3C 8006973C 01000424 */   addiu     $a0, $zero, 0x1
     /* 59F40 80069740 02000424 */  addiu      $a0, $zero, 0x2
     /* 59F44 80069744 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 59F48 80069748 9471010C */  jal        func_8005C650
+    /* 59F48 80069748 9471010C */  jal        snd_QueueSound
     /* 59F4C 8006974C 7F000624 */   addiu     $a2, $zero, 0x7F
-    /* 59F50 80069750 B471010C */  jal        func_8005C6D0
+    /* 59F50 80069750 B471010C */  jal        snd_FlushSoundQueue
     /* 59F54 80069754 00000000 */   nop
     /* 59F58 80069758 18A60108 */  j          .L80069860
     /* 59F5C 8006975C 0050023C */   lui       $v0, (0x50005000 >> 16)
@@ -271,7 +271,7 @@ glabel menu_UpdateRowMenu
   .L800697C0:
     /* 59FC0 800697C0 7F000524 */  addiu      $a1, $zero, 0x7F
   .L800697C4:
-    /* 59FC4 800697C4 9471010C */  jal        func_8005C650
+    /* 59FC4 800697C4 9471010C */  jal        snd_QueueSound
     /* 59FC8 800697C8 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 59FCC 800697CC 18A60108 */  j          .L80069860
     /* 59FD0 800697D0 0050023C */   lui       $v0, (0x50005000 >> 16)
@@ -279,7 +279,7 @@ glabel menu_UpdateRowMenu
     /* 59FD4 800697D4 01000424 */  addiu      $a0, $zero, 0x1
   .L800697D8:
     /* 59FD8 800697D8 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 59FDC 800697DC 9471010C */  jal        func_8005C650
+    /* 59FDC 800697DC 9471010C */  jal        snd_QueueSound
     /* 59FE0 800697E0 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 59FE4 800697E4 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
     /* 59FE8 800697E8 00000000 */  nop
@@ -309,7 +309,7 @@ glabel menu_UpdateRowMenu
     /* 5A040 80069840 06004010 */  beqz       $v0, .L8006985C
     /* 5A044 80069844 02000424 */   addiu     $a0, $zero, 0x2
     /* 5A048 80069848 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5A04C 8006984C 9471010C */  jal        func_8005C650
+    /* 5A04C 8006984C 9471010C */  jal        snd_QueueSound
     /* 5A050 80069850 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5A054 80069854 20A60108 */  j          .L80069880
     /* 5A058 80069858 FEFF0224 */   addiu     $v0, $zero, -0x2
@@ -321,7 +321,7 @@ glabel menu_UpdateRowMenu
     /* 5A068 80069868 04004010 */  beqz       $v0, .L8006987C
     /* 5A06C 8006986C 21200000 */   addu      $a0, $zero, $zero
     /* 5A070 80069870 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5A074 80069874 9471010C */  jal        func_8005C650
+    /* 5A074 80069874 9471010C */  jal        snd_QueueSound
     /* 5A078 80069878 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8006987C:
     /* 5A07C 8006987C FFFF0224 */  addiu      $v0, $zero, -0x1

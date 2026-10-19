@@ -42,7 +42,7 @@ glabel func_800344B4
     /* 24D4C 8003454C 7D2720A0 */  sb         $zero, %lo(D_80102778 + 0x5)($at)
     /* 24D50 80034550 69ED000C */  jal        func_8003B5A4
     /* 24D54 80034554 00000000 */   nop
-    /* 24D58 80034558 2754010C */  jal        func_8005509C
+    /* 24D58 80034558 2754010C */  jal        fighter_ClearCpuTally
     /* 24D5C 8003455C 01000424 */   addiu     $a0, $zero, 0x1
     /* 24D60 80034560 B6D10008 */  j          .L800346D8
     /* 24D64 80034564 00000000 */   nop
@@ -153,7 +153,7 @@ glabel func_800344B4
     /* 24EE0 800346E0 00000000 */  nop
     /* 24EE4 800346E4 03004010 */  beqz       $v0, .L800346F4
     /* 24EE8 800346E8 00000000 */   nop
-    /* 24EEC 800346EC 2754010C */  jal        func_8005509C
+    /* 24EEC 800346EC 2754010C */  jal        fighter_ClearCpuTally
     /* 24EF0 800346F0 01000424 */   addiu     $a0, $zero, 0x1
   .L800346F4:
     /* 24EF4 800346F4 1400BF8F */  lw         $ra, 0x14($sp)

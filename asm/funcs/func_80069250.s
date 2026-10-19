@@ -20,7 +20,7 @@ glabel func_80069250
     /* 59A98 80069298 21100000 */   addu      $v0, $zero, $zero
   .L8006929C:
     /* 59A9C 8006929C 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 59AA0 800692A0 9471010C */  jal        func_8005C650
+    /* 59AA0 800692A0 9471010C */  jal        snd_QueueSound
     /* 59AA4 800692A4 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 59AA8 800692A8 01000224 */  addiu      $v0, $zero, 0x1
   .L800692AC:

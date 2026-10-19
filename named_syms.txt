@@ -2069,7 +2069,7 @@ func_800548DC                          = 0x800548DC;  /* MISNAMED: not katinuki 
 camera_InitTrackedFighterFocus                        = 0x8001B3C0;  /* MISNAMED: not voice data; reads obj pos fields 0x180/184/188 into D_800F5328/532C/5330 */
 func_8001C820                        = 0x8001C820;  /* MISNAMED: not voice data; conditional snd_QueuePositionalSound with sound IDs 0x56..0x58 */
 func_80048AD0                        = 0x80048AD0;  /* MISNAMED: not voice data; loads BGM and initializes 0x11 sound table entries at offset 0x68 */
-func_8005BE84                        = 0x8005BE84;  /* MISNAMED: not voice data; calls title_mv_exec2 + md_game_check_change_main_mode_katinuki */
+snd_SetReverb                        = 0x8005BE84;  /* func_800858D0(0); reverb off, type D_8009AD1C[n][0], SpuClearReverbWorkArea, depth, reverb on; returns the type result or -1 */
 memcard_Format                         = 0x80037F08;  /* MISNAMED: not motion-pre-calc; calls func_80079A30 then bios_FormatDevice_B() */
 snd_VabFakeOpen8And4                         = 0x8005B98C;  /* typed-restatement (Q103): snd_VabFakeOpen(a0, 8) then snd_VabFakeOpen(a0, 4); the old motion-pre-calc reading was wrong */
 set_alarm                         = 0x8007DC68;  /* libgpu alarm: D_8009BF8C = VSync(-1) + 0xF0 (deadline), D_8009BF90 = 0 (sys.c:1157-1160); not motion-pre-calc */

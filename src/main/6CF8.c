@@ -334,7 +334,7 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
     }
 
     D_800A36B0 = 1;
-    func_8005C650(3, 0x7F, 0x7F);
+    snd_QueueSound(3, 0x7F, 0x7F);
     var_5 = D_800A3770[D_800A36AC & 1];
 
     while (1) {
@@ -352,7 +352,7 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
             func_8005C8A8(0, var_2, (s32)g_prim_buf_cursor, 0);
         }
         cdrom_Update();
-        func_8005C6D0();
+        snd_FlushSoundQueue();
         DrawSync(0);
         VSync(2);
         /* FAKE: do-while(0) raises var_1's loop-depth weight above var_2's,
@@ -367,28 +367,28 @@ void func_80016E60(GpuDb *arg0, s32 arg1) {
         D_800A36AC++;
 
         if (g_pad_state.pressed & 0x100010) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             var_2 = 0;
             break;
         }
         if (g_pad_state.pressed & 0x400040) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             break;
         }
         if (g_pad_state.pressed & 0x10001000) {
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             var_2 = (var_2 == 0) ? limit - 1 : var_2 - 1;
         } else if (g_pad_state.pressed & 0x40004000) {
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             var_2 = (var_2 == limit - 1) ? 0 : var_2 + 1;
         }
 
         if ((var_3 != 0) && (var_2 >= 3)) {
             if (g_pad_state.pressed & 0x80008000) {
-                func_8005C650(0, 0x7F, 0x7F);
+                snd_QueueSound(0, 0x7F, 0x7F);
                 D_800A3788 |= 1 << (var_2 - 3);
             } else if (g_pad_state.pressed & 0x20002000) {
-                func_8005C650(0, 0x7F, 0x7F);
+                snd_QueueSound(0, 0x7F, 0x7F);
                 D_800A3788 &= ~(1 << (var_2 - 3));
             }
         }
@@ -455,7 +455,7 @@ loop:
     font_BeginFrame();
     pad_Update(var_3);
     cdrom_Update();
-    func_8005C6D0();
+    snd_FlushSoundQueue();
 
     if (g_comb_abort_request != 0) {
         cdrom_PauseAndWait();

@@ -190,7 +190,7 @@ glabel menu_RunSelPhases
     /* 67E44 80077644 01006226 */   addiu     $v0, $s3, 0x1
     /* 67E48 80077648 02000424 */  addiu      $a0, $zero, 0x2
     /* 67E4C 8007764C 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 67E50 80077650 9471010C */  jal        func_8005C650
+    /* 67E50 80077650 9471010C */  jal        snd_QueueSound
     /* 67E54 80077654 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 67E58 80077658 D405828F */  lw         $v0, %gp_rel(D_800A36A0)($gp)
     /* 67E5C 8007765C 40181000 */  sll        $v1, $s0, 1

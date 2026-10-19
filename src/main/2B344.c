@@ -79,7 +79,7 @@ s32 comb_Connect(void) {
     comb_Init();
     do {
         pad_Update(1);
-        func_8005C6D0();
+        snd_FlushSoundQueue();
         temp_s0 = comb_HandshakeStep();
         VSync(2);
     } while (temp_s0 == 0);
@@ -321,7 +321,7 @@ void func_8003B5A4(void) {
     s32 var_0;
     u8 *var_1;
 
-    func_8005B5AC();
+    snd_ResetVoicesAndQueue();
     var_0 = 0;
     var_1 = &D_80102778.unk_4[1];
 
@@ -420,7 +420,7 @@ void func_8003B5A4(void) {
 void func_8003B870(void) {
     func_80041604(0, D_800A376A);
     func_80041604(1, 0);
-    func_8005B5AC();
+    snd_ResetVoicesAndQueue();
     func_80016888();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     D_800A37B8 = 0;
@@ -787,16 +787,16 @@ void func_8003C560(void) {
     D_800A37B8 = D_800A37B8 + 1;
     if (D_800A382D == 2) {
         if (D_800A37B8 == 0x1E) {
-            func_8005C650(0xA4, 0x7F, 0x7F);
+            snd_QueueSound(0xA4, 0x7F, 0x7F);
         }
     } else {
         if (D_800A37B8 == 0x1E) {
-            func_8005C650(
+            snd_QueueSound(
                 D_8008D9EC[D_80101EC8[D_800A382D].unk_0A] != 0 ? 0xA8 : 0xA7,
                 0x7F, 0x7F);
         }
         if (D_800A37B8 == 0x43) {
-            func_8005C650(0xA9, 0x7F, 0x7F);
+            snd_QueueSound(0xA9, 0x7F, 0x7F);
         }
     }
     g_prim_buf_cursor +=
@@ -899,14 +899,14 @@ void func_8003C9A4(void) {
             func_8005C8A8(1, D_800A3817, (s32)g_prim_buf_cursor, 0) / 4;
 
         if ((g_pad_state.pressed & 0x10001000) != 0) {
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             if (D_800A3817 != 0) {
                 D_800A3817 = D_800A3817 - 1;
             } else {
                 D_800A3817 = 2;
             }
         } else if ((g_pad_state.pressed & 0x40004000) != 0) {
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             if (D_800A3817 == 2) {
                 D_800A3817 = 0;
             } else {
@@ -915,7 +915,7 @@ void func_8003C9A4(void) {
         }
 
         if ((g_pad_state.pressed & 0x400040) != 0) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             D_800A3929 = (D_800A3817 == 0) ? 1 : 0x3C;
         }
         return;
@@ -1057,23 +1057,23 @@ void func_8003CF84(void) {
     p = D_800A3748;
     var_7 = D_80101EC8[p].unk_0A;
     if (D_800A37B8 == D_8008EAC0[var_7]) {
-        func_8005C650(40 * p + 0x2D, 0x7F, 0x7F);
+        snd_QueueSound(40 * p + 0x2D, 0x7F, 0x7F);
     }
     if (D_800A37B8 == D_8008EB04) {
-        func_8005C650(40 * D_800A3748 + 0x31, 0x7F, 0x7F);
+        snd_QueueSound(40 * D_800A3748 + 0x31, 0x7F, 0x7F);
     }
     if (D_800A37B8 == D_8008EB06) {
-        func_8005C650(40 * D_800A3748 + 0x36, 0x7F, 0x7F);
+        snd_QueueSound(40 * D_800A3748 + 0x36, 0x7F, 0x7F);
     }
     if (D_800A37B8 == D_8008EB08) {
         if (D_800A3748 == 0) {
-            func_8005C650(0x53, 0x7F, 0x7F);
+            snd_QueueSound(0x53, 0x7F, 0x7F);
         } else {
-            func_8005C650(0x2B, 0x7F, 0x7F);
+            snd_QueueSound(0x2B, 0x7F, 0x7F);
         }
     }
     if (D_800A37B8 == D_8008EB0A) {
-        func_8005C650(0x71, 0x7F, 0x7F);
+        snd_QueueSound(0x71, 0x7F, 0x7F);
     }
     if (D_800A37B8 == D_8008EB0C) {
         func_80021D10(0, vec, D_800A3818);
@@ -1082,7 +1082,7 @@ void func_8003CF84(void) {
         vec[2] += D_8008EB18;
         func_800618B4(vec, &D_800A312C.vx);
     }
-    a = func_8005507C();
+    a = motion_GetPlaybackViewAngles();
     b = func_8005508C();
     func_80061064(a, b);
     if (func_80054F68() == 0) {

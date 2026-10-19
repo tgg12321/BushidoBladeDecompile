@@ -178,12 +178,12 @@ typedef struct {
     DR_OFFSET *unk_1C;
 } Unk800788B0Rec;
 
-/* The VAB pack func_8005C2A8 loads (MOD.BIN's head unk_00 points at one;
+/* The VAB pack snd_LoadVabPack loads (MOD.BIN's head unk_00 points at one;
    g_vab_rec_ptr keeps the loaded ones): four words, the first three
-   file-relative offsets func_8005C2A8 turns into addresses in place. unk_00:
-   the u32 key-event table func_8005C6D0 reads; unk_04: the VabHdr snd_VabOpen
-   opens; unk_08: the body snd_VabOpen transfers; unk_0C: the body's size in SPU
-   memory. */
+   file-relative offsets snd_LoadVabPack turns into addresses in place. unk_00:
+   the u32 key-event table snd_FlushSoundQueue reads; unk_04: the VabHdr
+   snd_VabOpen opens; unk_08: the body snd_VabOpen transfers; unk_0C: the body's
+   size in SPU memory. */
 typedef struct {
     s32 unk_00;
     s32 unk_04;
@@ -235,7 +235,7 @@ typedef struct {
  * SEL1 / SEL2.BIN, 6 D_SEL.BIN, 0x32 NAR.BIN. Each file starts with a list of
  * file-relative offsets ending in -1, which reloc_RelocateSelfOffsets turns
  * into addresses. The first five mean the same in every file: func_8006919C /
- * func_8006EA28 pass unk_00 and unk_04 to the VAB loader func_8005C2A8
+ * func_8006EA28 pass unk_00 and unk_04 to the VAB loader snd_LoadVabPack
  * (menu_RelocateSelLists / func_80077D10, for D_SEL / NAR, make no such call,
  * and those files' unk_00..unk_08 are equal), func_8006E950 loads the image at
  * unk_08 into VRAM, and gpu_LoadVramBottomStrip loads the 640x32 strip at
@@ -622,9 +622,10 @@ typedef struct {
     s16 h;
 } Unk8009B2BCRecord;
 
-/* The stage data a stage loads (func_800469C4, or the buffer func_80054604 is
-   handed; Unk800EFAE8Rec .unk2C): its header holds file-relative offsets of
-   the parts func_80054604 / func_8005490C use. */
+/* The stage data a stage loads (func_800469C4, or the buffer
+   motion_StartPlayback is handed; Unk800EFAE8Rec .unk2C): its header holds
+   file-relative offsets of the parts motion_StartPlayback /
+   motion_UpdatePlayback use. */
 typedef struct {
     s32 unk0;
     s32 unk4;
@@ -634,12 +635,14 @@ typedef struct {
     s32 unk18[2];
 } Unk800469C4Hdr;
 
-/* Record at 0x800EFAE8 (0x4C bytes): func_80054604 sets it
- * up, the per-frame handler func_8005490C runs it (walking the per-object
- * arrays in its object loop), and func_80054FDC relocates the 0x2C..0x40 words.
+/* Record at 0x800EFAE8 (0x4C bytes): motion_StartPlayback sets it
+ * up, the per-frame handler motion_UpdatePlayback runs it (walking the
+ * per-object arrays in its object loop), and motion_RebasePlayback relocates
+ * the 0x2C..0x40 words.
  */
 typedef struct {
-    /* 0x00 */ s16 unk0; /* phase (func_8005490C: -1 = done, 0 = init) */
+    /* phase (motion_UpdatePlayback: -1 = done, 0 = init) */
+    /* 0x00 */ s16 unk0;
     /* 0x02 */ s16 unk2;
     /* stage flags (bit31/bit30 tests, low 6 bits = cleanup index + 1) */
     /* 0x04 */ s32 unk4;
@@ -653,14 +656,15 @@ typedef struct {
     /* 0x1E */ s16 unk1E;
     /* 0x20 */ s16 unk20;
     /* 0x22 */ s16 unk22;
-    /* negated camera rotation vx/vy/vz; func_8005507C returns its address */
+    /* negated camera rotation vx/vy/vz; motion_GetPlaybackViewAngles returns
+     * its address */
     /* 0x24 */ s16 unk24[4];
-    /* loaded data base; relocated by func_80054FDC */
+    /* loaded data base; relocated by motion_RebasePlayback */
     /* 0x2C */ s32 unk2C;
-    /* 0x30 */ s32 unk30; /* relocated by func_80054FDC */
-    /* per player; relocated by func_80054FDC when nonzero */
+    /* 0x30 */ s32 unk30; /* relocated by motion_RebasePlayback */
+    /* per player; relocated by motion_RebasePlayback when nonzero */
     /* 0x34 */ s32 unk34[2];
-    /* per player; relocated by func_80054FDC when nonzero */
+    /* per player; relocated by motion_RebasePlayback when nonzero */
     /* 0x3C */ s32 unk3C[2];
     /* 0x44 */ s16 unk44[2]; /* per player */
     /* 0x48 */ s16 unk48[2]; /* per player */
@@ -745,8 +749,8 @@ typedef struct {
  * = file + 0x14, the others file + its header words 1 / 2 / 4; unk_0C unset).
  * unk_00: halfword streams motion_ResolveMoveData indexes (the f4E / f54 / f66
  * / f16 / f18 entries); unk_04: 4-byte entries whose second halfword offsets
- * unk_08 (func_80021A98, replay_PlayFrame); unk_0C: func_80055138's table;
- * unk_10: func_8001979C's motion bitstream. */
+ * unk_08 (func_80021A98, replay_PlayFrame); unk_0C: fighter_InitCpuControl's
+ * table; unk_10: func_8001979C's motion bitstream. */
 typedef struct Unk801027B0Rec {
     u16 *unk_00;
     u16 *unk_04;
@@ -832,7 +836,7 @@ typedef struct PadState {
        to 4, 4 when the status byte != 0 (pad_Update,
        where comb_ExchangePad can first replace them with
        nibbles from the link-cable exchange words);
-       4 from pad_ResetState (both) and func_80055B60
+       4 from pad_ResetState (both) and fighter_BuildCpuPad
        (entry arg0 of its own record) */
     s16 type[2];
     /* per pad: 1 iff the InitPAD buffer status byte == 0
@@ -844,10 +848,10 @@ typedef struct PadState {
     u32 unheld;   /* 0x14 */
 } PadState;       /* sizeof == 0x18 */
 
-/* The 24-entry pending-sound pool (4BC3C): func_8005C650 queues a request (an
- * entry of D_8009AA70) with its volumes in the first free entry; func_8005C6D0
- * keys each queued note on via SsUtKeyOnV(.., voll, volr) and clears the entry;
- * snd_Init / func_8005B5AC reset all 24. */
+/* The 24-entry pending-sound pool (4BC3C): snd_QueueSound queues a request (an
+ * entry of D_8009AA70) with its volumes in the first free entry;
+ * snd_FlushSoundQueue keys each queued note on via SsUtKeyOnV(.., voll, volr)
+ * and clears the entry; snd_Init / snd_ResetVoicesAndQueue reset all 24. */
 typedef struct {
     u16 *req;
     u8 volr;
@@ -1097,16 +1101,17 @@ typedef struct {
     Unk1F8000B8Union unkB8;
 } Unk1F800000Rec;
 
-/* A cell (x, z) of the 32x32 grid of 2000-unit cells that 43500's func_80052D00
- * walks (Work_80053E9C.unk88 / unk8C). */
+/* A cell (x, z) of the 32x32 grid of 2000-unit cells that 43500's
+ * collision_WalkSegmentGrid walks (Work_80053E9C.unk88 / unk8C). */
 typedef struct {
     s16 x;
     s16 z;
 } Cell_80052D00;
 
-/* The 0xEC-byte work area of 43500's stage-collision cast (func_80052D00 and
- * its helpers, through D_800A33F4). func_8005344C / func_80053614 place it at
- * their last argument; func_80053304 / func_80053584 at D_800EF9F8. 17AFC
+/* The 0xEC-byte work area of 43500's stage-collision cast
+ * (collision_WalkSegmentGrid and its helpers, through D_800A33F4).
+ * func_8005344C / collision_TestSegmentWithWork place it at their last
+ * argument; func_80053304 / collision_TestSegment at D_800EF9F8. 17AFC
  * object_UpdatePool / func_800321E8 pass 0x1F8002F0, its place in their
  * scratchpad layout (Unk1F8002B8_8005344C.unk38). */
 typedef struct {
@@ -1193,12 +1198,13 @@ typedef union {
  * 0x1F8002B8..0x1F8003FF (ScrPad.unk2B8.rec). The scratchpad is shared scratch:
  * other code puts its own data in these bytes at other times, with its own
  * views. Among others:
- * - 43500 func_80053614 / func_8005344C keep their work area (Work_80053E9C,
- * 0xEC bytes) at the address of their last argument (D_800A33F4); callers pass
- * 0x1F8002B8 (the area spans record +0x00..+0xEB) or 0x1F8002F0 (+0x38..+0x123,
- * over unk60 up into unk118).
- * - 9F9C fighter_UpdateBoneWorldData keeps func_80053614's whole argument
- * record at 0x1F8002B8: from, to, hit, normal, then that work area.
+ * - 43500 collision_TestSegmentWithWork / func_8005344C keep their work area
+ * (Work_80053E9C, 0xEC bytes) at the address of their last argument
+ * (D_800A33F4); callers pass 0x1F8002B8 (the area spans record +0x00..+0xEB) or
+ * 0x1F8002F0 (+0x38..+0x123, over unk60 up into unk118).
+ * - 9F9C fighter_UpdateBoneWorldData keeps collision_TestSegmentWithWork's
+ * whole argument record at 0x1F8002B8: from, to, hit, normal, then that work
+ * area.
  * - 32D04 func_800430E4 keeps a MATRIX at 0x1F8003A0.
  * - 3AB48 func_8004DA74 fills, and the renderers func_8004C994 ..
  * func_80051ED4 read, an s16 per-vertex table at 0x1F8002B4 + 2 * i, which runs
@@ -1379,8 +1385,8 @@ typedef struct Unk800F1B18Rec {
  * motion_ResolveMoveData returns pointers into; Unk80101EC8Record.unk_50 is the
  * current move, unk_7C a buffered one).  unk_00 / unk_02 are follow-up move
  * ids, unk_07 / unk_08 frame bounds against Unk80101EC8Record.unk_40, unk_09
- * flag bits (fighter_Update, func_80055B60, func_80058580); unk_0A starts the
- * command list fighter_Update walks: (flags, move id[, mask lo, mask hi])
+ * flag bits (fighter_Update, fighter_BuildCpuPad, func_80058580); unk_0A starts
+ * the command list fighter_Update walks: (flags, move id[, mask lo, mask hi])
  * entries of 2 or 4 halfwords, ended by a zero flags word. */
 typedef struct MoveScript {
     u16 unk_00;
@@ -1403,7 +1409,7 @@ typedef struct Unk80101EC8Record {
     /* the other record: [1] for record 0, else [0] (fighter_Init) */
     struct Unk80101EC8Record *other;
     s16 index; /* this record's own index (fighter_Init) */
-    /* != 0: func_8001BE20 hands pad input to func_80055B60 */
+    /* != 0: func_8001BE20 hands pad input to fighter_BuildCpuPad */
     s16 unk_06;
     s16 unk_08;
     /* row of D_8008E5CC / D_8008E6A4, index of D_8008D9EC */
@@ -1527,8 +1533,8 @@ typedef struct Unk80101EC8Record {
     /* fighter_UpdateBoneWorldData: bone 17 / 14 translations, y + ((unk_1A *
      * 71) >> 11) */
     Vec3i32 unk_198[2];
-    /* fighter_UpdateBoneWorldData: floor y under unk_198[i] (func_80053614
-     * segment test) */
+    /* fighter_UpdateBoneWorldData: floor y under unk_198[i]
+     * (collision_TestSegmentWithWork segment test) */
     s32 unk_1B0[2];
     u8 unk_1B8[0x1BA - 0x1B8];
     /* fighter_UpdateBoneWorldData: ratan2 heading of bone 17's matrix column 2,
@@ -1608,9 +1614,9 @@ typedef struct Unk80101EC8Record {
     s16 unk_3A2;
     /* script list: u16 byte offsets from its own start */
     u16 *unk_3A4;
-    /* per-row cursor into unk_3A4 (func_80055138) */
+    /* per-row cursor into unk_3A4 (fighter_InitCpuControl) */
     u16 *unk_3A8[3];
-    /* script pointer (func_80055B44 / func_80055948) */
+    /* script pointer (fighter_StartCpuPadScript / fighter_StepCpuPadScript) */
     u8 *unk_3B4;
     u8 unk_3B8;
     u8 unk_3B9[0x3BC - 0x3B9];
@@ -1623,7 +1629,7 @@ typedef struct Unk80101EC8Record {
     s32 unk_3C4;
     s32 unk_3C8;
     s32 unk_3CC;
-    /* the pad record func_80055B60 builds for func_8001BE20 */
+    /* the pad record fighter_BuildCpuPad builds for func_8001BE20 */
     PadState unk_3D0;
     u16 unk_3E8;
     u8 unk_3EA[0x3EE - 0x3EA];
@@ -1635,7 +1641,7 @@ typedef struct Unk80101EC8Record {
     u8 unk_3F5;
     u8 unk_3F6;
     u8 unk_3F7;
-    /* [unk_86] distance bounds (func_80055138) */
+    /* [unk_86] distance bounds (fighter_InitCpuControl) */
     s16 unk_3F8[3];
     s16 unk_3FE[3];
     s16 unk_404[3];
@@ -1645,7 +1651,7 @@ typedef struct Unk80101EC8Record {
     s16 unk_40E;
     s16 unk_410;
     s16 unk_412;
-    /* func_80055B60: 8 (target id, count) pairs */
+    /* fighter_BuildCpuPad: 8 (target id, count) pairs */
     u8 unk_414[8][2];
     u8 unk_424;
     u8 unk_425;
@@ -1734,8 +1740,8 @@ typedef struct {
 } Tbl8008EB54Entry;
 
 /* 0x18-byte record table at 0x80099D88 (behaviour flags and random-pick
- * weights), indexed by Unk80101EC8Record.unk_443 in func_80055138,
- * func_80055948, func_80055B60 and func_80058580. */
+ * weights), indexed by Unk80101EC8Record.unk_443 in fighter_InitCpuControl,
+ * fighter_StepCpuPadScript, fighter_BuildCpuPad and func_80058580. */
 typedef struct Unk80099D88Rec {
     u16 flags;
     u8 unk2;
@@ -1755,8 +1761,8 @@ typedef struct Unk80099D88Rec {
 
 /* Rows of eight 4-byte entries starting at 0x8009A8C8: each 0x20-byte row ends
  * with a zero entry (0x8009A8E4 / 0x8009A904 / 0x8009A924). Both readers index
- * the column 1-based, [row][D_800A37A0 - 1]: func_80055138 reads unk0/unk1,
- * func_80058580 the mask halfword. */
+ * the column 1-based, [row][D_800A37A0 - 1]: fighter_InitCpuControl reads
+ * unk0/unk1, func_80058580 the mask halfword. */
 typedef struct Unk8009A8C8Entry {
     u8 unk0;
     u8 unk1;
@@ -2283,8 +2289,8 @@ typedef struct {
 
 /* 0x800A3D40: 24-byte records func_8003D774 starts and func_8003D7B4 advances:
    the bit stream bitstream_ReadBits reads and six s16 values func_8003D7B4 adds
-   the decoded deltas to and returns (4510C func_8005490C reads them as an
-   offset and a rotation). */
+   the decoded deltas to and returns (4510C motion_UpdatePlayback reads them as
+   an offset and a rotation). */
 typedef struct {
     BitStream bits;
     s16 unkC[6];

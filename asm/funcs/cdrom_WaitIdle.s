@@ -19,7 +19,7 @@ glabel cdrom_WaitIdle
     /* 27780 80036F80 00000000 */  nop
     /* 27784 80036F84 03004010 */  beqz       $v0, .L80036F94
     /* 27788 80036F88 00000000 */   nop
-    /* 2778C 80036F8C B471010C */  jal        func_8005C6D0
+    /* 2778C 80036F8C B471010C */  jal        snd_FlushSoundQueue
     /* 27790 80036F90 00000000 */   nop
   .L80036F94:
     /* 27794 80036F94 3D5D000C */  jal        func_800174F4

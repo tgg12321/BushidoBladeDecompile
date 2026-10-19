@@ -180,7 +180,7 @@ s32 func_8006919C(Unk8006919CRec *a0) {
         p++;
         i++;
     } while (i < 12);
-    func_8005C2A8(a0->unk_00.unk_00, 1, a0->unk_00.unk_04);
+    snd_LoadVabPack(a0->unk_00.unk_00, 1, a0->unk_00.unk_04);
     return a0->unk_00.unk_04;
 }
 
@@ -204,7 +204,7 @@ s32 func_80069250(s32 arg0, s32 arg1) {
     func_8006E390(sp10, &D_800A3518);
     func_80069E18(sp10, 0);
     if ((arg1 & 0x400040) != 0) {
-        func_8005C650(1, 0x7F, 0x7F);
+        snd_QueueSound(1, 0x7F, 0x7F);
         return 1;
     }
     return 0;
@@ -331,7 +331,7 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
     if (((result & 0xFF) < 3) && ((result & 0xFF) != 0) &&
         (D_8009BC04.opt[D_800A34F8 & 0xF].mode == 3)) {
         D_800A3524->unk20_3 ^= 1;
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
     }
     if (D_8009BC04.opt[D_800A34F8 & 0xF].mode == 2) {
         D_800A3524->unk20_3 = 1;
@@ -356,8 +356,8 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
         case 4:
         case 5:
             if (g_pad_state.valid[1] == 0) {
-                func_8005C650(2, 0x7F, 0x7F);
-                func_8005C6D0();
+                snd_QueueSound(2, 0x7F, 0x7F);
+                snd_FlushSoundQueue();
                 goto cancel;
             }
         }
@@ -374,23 +374,23 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
         }
         if (g_pad_state.valid[0] == 0) {
         reject:
-            func_8005C650(2, 0x7F, 0x7F);
+            snd_QueueSound(2, 0x7F, 0x7F);
             goto cancel;
         }
     accept:
-        func_8005C650(1, 0x7F, 0x7F);
+        snd_QueueSound(1, 0x7F, 0x7F);
         if (D_8009BC04.opt[D_800A34F8 & 0xF].state != 7) {
             snd_CloseVab1();
         }
         return D_8009BC04.opt[D_800A34F8 & 0xF].state;
     }
     if (arg1 & 0x100010) {
-        func_8005C650(2, 0x7F, 0x7F);
+        snd_QueueSound(2, 0x7F, 0x7F);
         return -2;
     }
 cancel:
     if (arg1 & 0x50005000) {
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
     }
     return -1;
 }
@@ -1331,7 +1331,7 @@ s32 func_8006B578(s32 *arg0, u32 *arg1) {
             D_800A34F8 = (D_800A34F8 & ~0x1C00) |
                          (((((u32)D_800A34F8 >> 10) & 7) + 1) & 7) << 10;
         }
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
         D_800A3514 = 0;
         break;
     case 2:
@@ -1341,7 +1341,7 @@ s32 func_8006B578(s32 *arg0, u32 *arg1) {
             D_800A34F8 = (D_800A34F8 & ~0x1C00) |
                          (((((u32)D_800A34F8 >> 10) & 7) - 1) & 7) << 10;
         }
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
         D_800A3514 = 0;
         break;
     }
@@ -1350,10 +1350,10 @@ s32 func_8006B578(s32 *arg0, u32 *arg1) {
     case 0:
         if ((ret & 0xFF) != 0) {
             D_800A3524->unk20_0 ^= 1;
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
         }
         if (*arg1 & 0x400040) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             D_800A34F8 = (D_800A34F8 & ~0x1C00) |
                          (((((u32)D_800A34F8 >> 10) & 7) + 1) & 7) << 10;
         }
@@ -1361,10 +1361,10 @@ s32 func_8006B578(s32 *arg0, u32 *arg1) {
     case 1:
         if ((ret & 0xFF) != 0) {
             D_800A3524->unk20_1 ^= 1;
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
         }
         if (*arg1 & 0x400040) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             D_800A34F8 = (D_800A34F8 & ~0x1C00) |
                          (((((u32)D_800A34F8 >> 10) & 7) + 1) & 7) << 10;
         }
@@ -1372,37 +1372,37 @@ s32 func_8006B578(s32 *arg0, u32 *arg1) {
     case 2:
         if ((ret & 0xFF) != 0) {
             D_800A3524->unk20_2 ^= 1;
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
         }
         if (*arg1 & 0x400040) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             D_800A34F8 = (D_800A34F8 & ~0x1C00) |
                          (((((u32)D_800A34F8 >> 10) & 7) + 1) & 7) << 10;
         }
         break;
     case 3:
         if (*arg1 & 0x400040) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) | 0x4000;
             var_s2 = 2;
         }
         break;
     case 4:
         if (*arg1 & 0x400040) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             var_s2 = 3;
         }
         break;
     case 5:
         if (*arg1 & 0x400040) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             var_s2 = 1;
         }
         break;
     }
 
     if (*arg1 & 0x100010) {
-        func_8005C650(2, 0x7F, 0x7F);
+        snd_QueueSound(2, 0x7F, 0x7F);
         var_s2 = 1;
     }
     return var_s2;
@@ -1441,7 +1441,7 @@ s32 func_8006B92C(s32 *arg0, u32 *arg1) {
             D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) |
                          (((((u32)D_800A34F8 >> 13) & 7) + 1) & 7) << 13;
         }
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
         break;
     case 2:
         if ((D_800A34F8 & 0xE000) == 0) {
@@ -1450,7 +1450,7 @@ s32 func_8006B92C(s32 *arg0, u32 *arg1) {
             D_800A34F8 = (D_800A34F8 & 0xFFFF1FFF) |
                          (((((u32)D_800A34F8 >> 13) & 7) - 1) & 7) << 13;
         }
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
         break;
     }
 
@@ -1458,19 +1458,19 @@ s32 func_8006B92C(s32 *arg0, u32 *arg1) {
     switch (idx) {
     case 0:
         if (*arg1 & 0x400040) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             var_s0 = 2;
         }
         break;
     case 1:
         if (*arg1 & 0x400040) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             var_s0 = 3;
         }
         break;
     case 2:
         if (*arg1 & 0x400040) {
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             var_s0 = 1;
             D_800A34F8 = (D_800A34F8 & ~0x1C00) |
                          ((((((u32)D_800A34F8 >> 10) & 7) + 1) & 7) << 10);
@@ -1479,7 +1479,7 @@ s32 func_8006B92C(s32 *arg0, u32 *arg1) {
     }
 
     if (*arg1 & 0x100010) {
-        func_8005C650(2, 0x7F, 0x7F);
+        snd_QueueSound(2, 0x7F, 0x7F);
         var_s0 = 1;
     }
     return var_s0;
@@ -1960,7 +1960,7 @@ s32 menu_HandleRowBitInput(s32 *arg0, s32 *arg1, s16 arg2) {
 
     ret = 0;
     if ((D_800A34FC->unk_28.word == 0x50005) && (*arg1 & 0x400040)) {
-        func_8005C650(1, 0x7F, 0x7F);
+        snd_QueueSound(1, 0x7F, 0x7F);
         ret = 1;
     }
 
@@ -1972,14 +1972,14 @@ s32 menu_HandleRowBitInput(s32 *arg0, s32 *arg1, s16 arg2) {
         lim = ((arg2 >> i) & 1) ? 4 : 5;
 
         if (*arg1 & (0x1000 << shift)) {
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             if (D_800A34FC->unk_28.half[i] <= 0) {
                 D_800A34FC->unk_28.half[i] = lim;
             } else {
                 D_800A34FC->unk_28.half[i] = D_800A34FC->unk_28.half[i] - 1;
             }
         } else if (*arg1 & (0x4000 << shift)) {
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             if (D_800A34FC->unk_28.half[i] >= lim) {
                 D_800A34FC->unk_28.half[i] = 0;
             } else {
@@ -1993,13 +1993,13 @@ s32 menu_HandleRowBitInput(s32 *arg0, s32 *arg1, s16 arg2) {
         case 1:
         case 2:
             if (*arg1 & (0xF0 << shift)) {
-                func_8005C650(0, 0x7F, 0x7F);
+                snd_QueueSound(0, 0x7F, 0x7F);
                 menu_SetExclusiveRowBit(i, *arg1);
             }
             break;
         case 3:
             if (*arg1 & (0x40 << shift)) {
-                func_8005C650(1, 0x7F, 0x7F);
+                snd_QueueSound(1, 0x7F, 0x7F);
                 for (j = 0; j < 3; j++) {
                     rec = (u8 *)D_800A3524 + j;
                     var_8 = *(rec + 0x1A) & (nib << var_4);
@@ -2010,7 +2010,7 @@ s32 menu_HandleRowBitInput(s32 *arg0, s32 *arg1, s16 arg2) {
             break;
         case 4:
             if (*arg1 & (0x40 << shift)) {
-                func_8005C650(1, 0x7F, 0x7F);
+                snd_QueueSound(1, 0x7F, 0x7F);
                 for (j = 0; j < 3; j++) {
                     rec = (u8 *)D_800A3524 + j;
                     var_8 = *(rec + 0x1D) & (nib << var_4);
@@ -2207,20 +2207,20 @@ s32 func_8006D5D4(s32 arg0, u32 arg1) {
     ret = func_800692C0(&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
     if ((ret >> 16) == 1) {
         D_800A3528 = D_800A3528 + 1;
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
     } else if ((ret >> 16) == 2) {
         D_800A3528 = D_800A3528 - 1;
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
     }
     if ((s16)D_800A3528 < 0) {
         D_800A3528 = 2;
     }
     D_800A3528 = (s16)D_800A3528 % 3;
     if (arg1 & 0x100010) {
-        func_8005C650(2, 0x7F, 0x7F);
+        snd_QueueSound(2, 0x7F, 0x7F);
         result = -1;
     } else if (arg1 & 0x400040) {
-        func_8005C650(1, 0x7F, 0x7F);
+        snd_QueueSound(1, 0x7F, 0x7F);
         sval = (s16)D_800A3528;
         if (sval == 2) {
             result = -1;
@@ -2244,7 +2244,7 @@ s32 func_8006D74C(s32 arg0, s32 arg1) {
     func_80069AE4((s32)&sp_buf[0], 1, db);
     func_8006D3DC((s32)&sp_buf[0]);
     result = func_8006D5D4(arg0, arg1);
-    func_8005C6D0();
+    snd_FlushSoundQueue();
     return result;
 }
 
@@ -2426,21 +2426,21 @@ s32 menu_HandleConfirmInput(s32 arg0, u32 arg1) {
     ret = func_800692C0(&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
     if (((ret >> 16) & 0xFF) != 0) {
         D_800A352C += 1;
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
     }
     D_800A352C &= 1;
     if ((arg1 & 0x100010) != 0) {
         result = -1;
-        func_8005C650(2, 0x7F, 0x7F);
+        snd_QueueSound(2, 0x7F, 0x7F);
     } else if ((arg1 & 0x400040) != 0) {
-        func_8005C650(1, 0x7F, 0x7F);
+        snd_QueueSound(1, 0x7F, 0x7F);
         if (D_800A352C != 0) {
             result = -1;
         } else {
             result = 1;
         }
     }
-    func_8005C6D0();
+    snd_FlushSoundQueue();
     return result;
 }
 

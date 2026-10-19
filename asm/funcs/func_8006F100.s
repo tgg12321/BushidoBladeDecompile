@@ -242,7 +242,7 @@ glabel func_8006F100
     /* 5FC88 8006F488 04006214 */  bne        $v1, $v0, .L8006F49C
     /* 5FC8C 8006F48C 07000424 */   addiu     $a0, $zero, 0x7
     /* 5FC90 8006F490 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5FC94 8006F494 9471010C */  jal        func_8005C650
+    /* 5FC94 8006F494 9471010C */  jal        snd_QueueSound
     /* 5FC98 8006F498 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8006F49C:
     /* 5FC9C 8006F49C 00000286 */  lh         $v0, 0x0($s0)
@@ -251,7 +251,7 @@ glabel func_8006F100
     /* 5FCA8 8006F4A8 08000424 */   addiu     $a0, $zero, 0x8
     /* 5FCAC 8006F4AC 000000A6 */  sh         $zero, 0x0($s0)
     /* 5FCB0 8006F4B0 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5FCB4 8006F4B4 9471010C */  jal        func_8005C650
+    /* 5FCB4 8006F4B4 9471010C */  jal        snd_QueueSound
     /* 5FCB8 8006F4B8 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8006F4BC:
     /* 5FCBC 8006F4BC 02001026 */  addiu      $s0, $s0, 0x2

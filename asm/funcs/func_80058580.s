@@ -314,7 +314,7 @@ glabel func_80058580
     /* 491FC 800589FC 21200002 */   addu      $a0, $s0, $zero
   .L80058A00:
     /* 49200 80058A00 FF00C630 */  andi       $a2, $a2, 0xFF
-    /* 49204 80058A04 D156010C */  jal        func_80055B44
+    /* 49204 80058A04 D156010C */  jal        fighter_StartCpuPadScript
     /* 49208 80058A08 21380000 */   addu      $a3, $zero, $zero
     /* 4920C 80058A0C 016D0108 */  j          .L8005B404
     /* 49210 80058A10 00000000 */   nop
@@ -1200,7 +1200,7 @@ glabel func_80058580
     /* 49EB4 800596B4 0400A010 */  beqz       $a1, .L800596C8
     /* 49EB8 800596B8 21200002 */   addu      $a0, $s0, $zero
     /* 49EBC 800596BC 04000624 */  addiu      $a2, $zero, 0x4
-    /* 49EC0 800596C0 D156010C */  jal        func_80055B44
+    /* 49EC0 800596C0 D156010C */  jal        fighter_StartCpuPadScript
     /* 49EC4 800596C4 21380000 */   addu      $a3, $zero, $zero
   .L800596C8:
     /* 49EC8 800596C8 CC03028E */  lw         $v0, 0x3CC($s0)
@@ -1887,7 +1887,7 @@ glabel func_80058580
     /* 4A89C 8005A09C 21200002 */  addu       $a0, $s0, $zero
     /* 4A8A0 8005A0A0 2128C000 */  addu       $a1, $a2, $zero
     /* 4A8A4 8005A0A4 04000624 */  addiu      $a2, $zero, 0x4
-    /* 4A8A8 8005A0A8 D156010C */  jal        func_80055B44
+    /* 4A8A8 8005A0A8 D156010C */  jal        fighter_StartCpuPadScript
     /* 4A8AC 8005A0AC 21380000 */   addu      $a3, $zero, $zero
     /* 4A8B0 8005A0B0 2F690108 */  j          .L8005A4BC
     /* 4A8B4 8005A0B4 00000000 */   nop
@@ -2706,7 +2706,7 @@ glabel func_80058580
     /* 4B458 8005AC58 21200002 */   addu      $a0, $s0, $zero
     /* 4B45C 8005AC5C 21300000 */  addu       $a2, $zero, $zero
     /* 4B460 8005AC60 2000A58F */  lw         $a1, 0x20($sp)
-    /* 4B464 8005AC64 D156010C */  jal        func_80055B44
+    /* 4B464 8005AC64 D156010C */  jal        fighter_StartCpuPadScript
     /* 4B468 8005AC68 21380000 */   addu      $a3, $zero, $zero
     /* 4B46C 8005AC6C 3800A993 */  lbu        $t1, 0x38($sp)
     /* 4B470 8005AC70 86000496 */  lhu        $a0, 0x86($s0)
@@ -2918,7 +2918,7 @@ glabel func_80058580
     /* 4B77C 8005AF7C 21200002 */   addu      $a0, $s0, $zero
     /* 4B780 8005AF80 21286002 */  addu       $a1, $s3, $zero
     /* 4B784 8005AF84 02000624 */  addiu      $a2, $zero, 0x2
-    /* 4B788 8005AF88 D156010C */  jal        func_80055B44
+    /* 4B788 8005AF88 D156010C */  jal        fighter_StartCpuPadScript
     /* 4B78C 8005AF8C 21380000 */   addu      $a3, $zero, $zero
   .L8005AF90:
     /* 4B790 8005AF90 CC03028E */  lw         $v0, 0x3CC($s0)
@@ -3060,7 +3060,7 @@ glabel func_80058580
     /* 4B990 8005B190 0A80053C */  lui        $a1, %hi(D_8009A898)
     /* 4B994 8005B194 98A8A524 */  addiu      $a1, $a1, %lo(D_8009A898)
     /* 4B998 8005B198 BD030792 */  lbu        $a3, 0x3BD($s0)
-    /* 4B99C 8005B19C D156010C */  jal        func_80055B44
+    /* 4B99C 8005B19C D156010C */  jal        fighter_StartCpuPadScript
     /* 4B9A0 8005B1A0 01000624 */   addiu     $a2, $zero, 0x1
     /* 4B9A4 8005B1A4 F2030292 */  lbu        $v0, 0x3F2($s0)
     /* 4B9A8 8005B1A8 00000000 */  nop

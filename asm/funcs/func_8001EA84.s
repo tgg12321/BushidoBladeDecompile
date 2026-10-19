@@ -104,7 +104,7 @@ glabel func_8001EA84
     /* F40C 8001EC0C 0D008010 */  beqz       $a0, .L8001EC44
     /* F410 8001EC10 21200000 */   addu      $a0, $zero, $zero
     /* F414 8001EC14 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* F418 8001EC18 9471010C */  jal        func_8005C650
+    /* F418 8001EC18 9471010C */  jal        snd_QueueSound
     /* F41C 8001EC1C 7F000624 */   addiu     $a2, $zero, 0x7F
     /* F420 8001EC20 0A80033C */  lui        $v1, %hi(D_800A3817)
     /* F424 8001EC24 17386390 */  lbu        $v1, %lo(D_800A3817)($v1)
@@ -121,7 +121,7 @@ glabel func_8001EA84
     /* F44C 8001EC4C 2410A200 */  and        $v0, $a1, $v0
     /* F450 8001EC50 0D004010 */  beqz       $v0, .L8001EC88
     /* F454 8001EC54 7F000524 */   addiu     $a1, $zero, 0x7F
-    /* F458 8001EC58 9471010C */  jal        func_8005C650
+    /* F458 8001EC58 9471010C */  jal        snd_QueueSound
     /* F45C 8001EC5C 7F000624 */   addiu     $a2, $zero, 0x7F
     /* F460 8001EC60 0A80043C */  lui        $a0, %hi(D_800A3817)
     /* F464 8001EC64 17388490 */  lbu        $a0, %lo(D_800A3817)($a0)
@@ -143,7 +143,7 @@ glabel func_8001EA84
     /* F49C 8001EC9C 80004010 */  beqz       $v0, .L8001EEA0
     /* F4A0 8001ECA0 01000424 */   addiu     $a0, $zero, 0x1
     /* F4A4 8001ECA4 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* F4A8 8001ECA8 9471010C */  jal        func_8005C650
+    /* F4A8 8001ECA8 9471010C */  jal        snd_QueueSound
     /* F4AC 8001ECAC 7F000624 */   addiu     $a2, $zero, 0x7F
     /* F4B0 8001ECB0 0A80033C */  lui        $v1, %hi(D_800A3817)
     /* F4B4 8001ECB4 17386390 */  lbu        $v1, %lo(D_800A3817)($v1)
@@ -247,7 +247,7 @@ glabel func_8001EA84
     /* F62C 8001EE2C DF3822A0 */  sb         $v0, %lo(D_800A38DF)($at)
     /* F630 8001EE30 03006010 */  beqz       $v1, .L8001EE40
     /* F634 8001EE34 00000000 */   nop
-    /* F638 8001EE38 3A54010C */  jal        func_800550E8
+    /* F638 8001EE38 3A54010C */  jal        fighter_HalveCpuTally
     /* F63C 8001EE3C 01000424 */   addiu     $a0, $zero, 0x1
   .L8001EE40:
     /* F640 8001EE40 0A80013C */  lui        $at, %hi(D_800A3834)

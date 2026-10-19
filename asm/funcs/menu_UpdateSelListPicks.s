@@ -22,7 +22,7 @@ glabel menu_UpdateSelListPicks
     /* 6712C 8007692C 04004010 */  beqz       $v0, .L80076940
     /* 67130 80076930 21200000 */   addu      $a0, $zero, $zero
     /* 67134 80076934 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 67138 80076938 9471010C */  jal        func_8005C650
+    /* 67138 80076938 9471010C */  jal        snd_QueueSound
     /* 6713C 8007693C 7F000624 */   addiu     $a2, $zero, 0x7F
   .L80076940:
     /* 67140 80076940 3800A427 */  addiu      $a0, $sp, 0x38
@@ -92,7 +92,7 @@ glabel menu_UpdateSelListPicks
     /* 67230 80076A30 C8006010 */  beqz       $v1, .L80076D54
     /* 67234 80076A34 01000424 */   addiu     $a0, $zero, 0x1
     /* 67238 80076A38 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 6723C 80076A3C 9471010C */  jal        func_8005C650
+    /* 6723C 80076A3C 9471010C */  jal        snd_QueueSound
     /* 67240 80076A40 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 67244 80076A44 80181000 */  sll        $v1, $s0, 2
     /* 67248 80076A48 21187000 */  addu       $v1, $v1, $s0
@@ -158,7 +158,7 @@ glabel menu_UpdateSelListPicks
     /* 67328 80076B28 8A004010 */  beqz       $v0, .L80076D54
     /* 6732C 80076B2C 02000424 */   addiu     $a0, $zero, 0x2
     /* 67330 80076B30 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 67334 80076B34 9471010C */  jal        func_8005C650
+    /* 67334 80076B34 9471010C */  jal        snd_QueueSound
     /* 67338 80076B38 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 6733C 80076B3C D405848F */  lw         $a0, %gp_rel(D_800A36A0)($gp)
     /* 67340 80076B40 40301000 */  sll        $a2, $s0, 1

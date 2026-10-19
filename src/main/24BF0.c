@@ -49,7 +49,7 @@ void func_800344B4(void) {
         func_8003B20C(D_8008D538[(s8)D_80102778.unk_4[0]]);
         D_80102778.unk_4[1] = 0;
         func_8003B5A4();
-        func_8005509C(1);
+        fighter_ClearCpuTally(1);
         break;
     case 1:
         D_80102778.unk_4[5] = 1;
@@ -96,6 +96,6 @@ void func_800344B4(void) {
         break;
     }
     if ((s8)D_80102778.unk_4[5] != 0) {
-        func_8005509C(1);
+        fighter_ClearCpuTally(1);
     }
 }

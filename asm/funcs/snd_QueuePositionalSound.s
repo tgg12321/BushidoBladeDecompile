@@ -161,7 +161,7 @@ glabel snd_QueuePositionalSound
     /* 23034 80032834 00000000 */   nop
     /* 23038 80032838 7F000624 */  addiu      $a2, $zero, 0x7F
   .L8003283C:
-    /* 2303C 8003283C 9471010C */  jal        func_8005C650
+    /* 2303C 8003283C 9471010C */  jal        snd_QueueSound
     /* 23040 80032840 21204001 */   addu      $a0, $t2, $zero
     /* 23044 80032844 2800BF8F */  lw         $ra, 0x28($sp)
     /* 23048 80032848 3000BD27 */  addiu      $sp, $sp, 0x30

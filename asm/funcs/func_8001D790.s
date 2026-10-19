@@ -85,7 +85,7 @@ glabel func_8001D790
     /* E0D4 8001D8D4 21284002 */  addu       $a1, $s2, $zero
     /* E0D8 8001D8D8 48E4010C */  jal        memcpy
     /* E0DC 8001D8DC 21302002 */   addu      $a2, $s1, $zero
-    /* E0E0 8001D8E0 4C6F010C */  jal        func_8005BD30
+    /* E0E0 8001D8E0 4C6F010C */  jal        snd_RebaseListedVabs
     /* E0E4 8001D8E4 23201202 */   subu      $a0, $s0, $s2
   .L8001D8E8:
     /* E0E8 8001D8E8 1C00BF8F */  lw         $ra, 0x1C($sp)

@@ -396,7 +396,7 @@ glabel menu_UpdateChoiceGrid
     /* 62EE8 800726E8 0040023C */   lui       $v0, (0x40004000 >> 16)
     /* 62EEC 800726EC 21200000 */  addu       $a0, $zero, $zero
     /* 62EF0 800726F0 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 62EF4 800726F4 9471010C */  jal        func_8005C650
+    /* 62EF4 800726F4 9471010C */  jal        snd_QueueSound
     /* 62EF8 800726F8 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 62EFC 800726FC 0020023C */  lui        $v0, (0x20002000 >> 16)
     /* 62F00 80072700 8004838F */  lw         $v1, %gp_rel(D_800A354C)($gp)
@@ -434,7 +434,7 @@ glabel menu_UpdateChoiceGrid
     /* 62F78 80072778 AC0482A7 */  sh         $v0, %gp_rel(D_800A3578)($gp)
     /* 62F7C 8007277C 06000424 */  addiu      $a0, $zero, 0x6
     /* 62F80 80072780 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 62F84 80072784 9471010C */  jal        func_8005C650
+    /* 62F84 80072784 9471010C */  jal        snd_QueueSound
     /* 62F88 80072788 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8007278C:
     /* 62F8C 8007278C CC048287 */  lh         $v0, %gp_rel(D_800A3598)($gp)
@@ -451,7 +451,7 @@ glabel menu_UpdateChoiceGrid
     /* 62FAC 800727AC 07004010 */  beqz       $v0, .L800727CC
     /* 62FB0 800727B0 21200000 */   addu      $a0, $zero, $zero
     /* 62FB4 800727B4 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 62FB8 800727B8 9471010C */  jal        func_8005C650
+    /* 62FB8 800727B8 9471010C */  jal        snd_QueueSound
     /* 62FBC 800727BC 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 62FC0 800727C0 D0048297 */  lhu        $v0, %gp_rel(D_800A359C)($gp)
     /* 62FC4 800727C4 FDC90108 */  j          .L800727F4
@@ -462,7 +462,7 @@ glabel menu_UpdateChoiceGrid
     /* 62FD4 800727D4 24106200 */  and        $v0, $v1, $v0
     /* 62FD8 800727D8 07004010 */  beqz       $v0, .L800727F8
     /* 62FDC 800727DC 7F000524 */   addiu     $a1, $zero, 0x7F
-    /* 62FE0 800727E0 9471010C */  jal        func_8005C650
+    /* 62FE0 800727E0 9471010C */  jal        snd_QueueSound
     /* 62FE4 800727E4 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 62FE8 800727E8 D0048297 */  lhu        $v0, %gp_rel(D_800A359C)($gp)
     /* 62FEC 800727EC 00000000 */  nop
@@ -618,7 +618,7 @@ glabel menu_UpdateChoiceGrid
     /* 63214 80072A14 24006010 */  beqz       $v1, .L80072AA8
     /* 63218 80072A18 02000424 */   addiu     $a0, $zero, 0x2
     /* 6321C 80072A1C 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 63220 80072A20 9471010C */  jal        func_8005C650
+    /* 63220 80072A20 9471010C */  jal        snd_QueueSound
     /* 63224 80072A24 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 63228 80072A28 0A80013C */  lui        $at, %hi(D_800A3560)
     /* 6322C 80072A2C 21083000 */  addu       $at, $at, $s0
@@ -680,7 +680,7 @@ glabel menu_UpdateChoiceGrid
     /* 632F8 80072AF8 21104700 */  addu       $v0, $v0, $a3
     /* 632FC 80072AFC 21104C00 */  addu       $v0, $v0, $t4
     /* 63300 80072B00 E0FF5090 */  lbu        $s0, -0x20($v0)
-    /* 63304 80072B04 9471010C */  jal        func_8005C650
+    /* 63304 80072B04 9471010C */  jal        snd_QueueSound
     /* 63308 80072B08 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 6330C 80072B0C 0D000224 */  addiu      $v0, $zero, 0xD
     /* 63310 80072B10 FF001032 */  andi       $s0, $s0, 0xFF
@@ -717,7 +717,7 @@ glabel menu_UpdateChoiceGrid
     /* 6337C 80072B7C 21208002 */   addu      $a0, $s4, $zero
     /* 63380 80072B80 80CC010C */  jal        func_80073200
     /* 63384 80072B84 21208002 */   addu      $a0, $s4, $zero
-    /* 63388 80072B88 B471010C */  jal        func_8005C6D0
+    /* 63388 80072B88 B471010C */  jal        snd_FlushSoundQueue
     /* 6338C 80072B8C 00000000 */   nop
     /* 63390 80072B90 9400BF8F */  lw         $ra, 0x94($sp)
     /* 63394 80072B94 9000BE8F */  lw         $fp, 0x90($sp)

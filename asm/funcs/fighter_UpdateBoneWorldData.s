@@ -290,7 +290,7 @@ glabel fighter_UpdateBoneWorldData
     /* 11428 80020C28 A001038E */  lw         $v1, 0x1A0($s0)
     /* 1142C 80020C2C 38006226 */  addiu      $v0, $s3, 0x38
     /* 11430 80020C30 1000A2AF */  sw         $v0, 0x10($sp)
-    /* 11434 80020C34 854D010C */  jal        func_80053614
+    /* 11434 80020C34 854D010C */  jal        collision_TestSegmentWithWork
     /* 11438 80020C38 180063AE */   sw        $v1, 0x18($s3)
     /* 1143C 80020C3C 04004010 */  beqz       $v0, .L80020C50
     /* 11440 80020C40 00000000 */   nop

@@ -18,7 +18,7 @@ glabel func_80054F68
     /* 457A8 80054FA8 D63822A4 */  sh         $v0, %lo(D_800A38D6)($at)
     /* 457AC 80054FAC 0A80013C */  lui        $at, %hi(D_800A378C)
     /* 457B0 80054FB0 8C3723AC */  sw         $v1, %lo(D_800A378C)($at)
-    /* 457B4 80054FB4 4352010C */  jal        func_8005490C
+    /* 457B4 80054FB4 4352010C */  jal        motion_UpdatePlayback
     /* 457B8 80054FB8 00000000 */   nop
     /* 457BC 80054FBC 3811010C */  jal        func_800444E0
     /* 457C0 80054FC0 21804000 */   addu      $s0, $v0, $zero

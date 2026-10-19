@@ -584,17 +584,17 @@ s32 func_800388A8(void) {
     }
     var_1 = g_pad_state.pressed;
     if (var_1 & 0x400040) {
-        func_8005C650(1, 0x7F, 0x7F);
+        snd_QueueSound(1, 0x7F, 0x7F);
         if (D_800A3318 == 0) {
             result = 1;
         } else {
             result = -1;
         }
     } else if (var_1 & (u32)0x80008000) {
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
         D_800A3318 = 0;
     } else if (var_1 & 0x20002000) {
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
         D_800A3318 = 1;
     }
     func_8006BEC4(0x13, D_800A3318);
@@ -762,7 +762,7 @@ s32 func_80038988(void) {
 timer:
     D_800A3330--;
     if ((u8)D_800A3330 == 0 || (g_pad_state.pressed & 0x100010)) {
-        func_8005C650(2, 0x7F, 0x7F);
+        snd_QueueSound(2, 0x7F, 0x7F);
         result = 1;
     }
 
@@ -799,7 +799,7 @@ s32 func_80038C70(void) {
         func_8006BEC4(0xA, -1);
         D_800A334C--;
         if (((u8)D_800A334C) == 0 || (g_pad_state.pressed & 0x100010)) {
-            func_8005C650(2, 0x7F, 0x7F);
+            snd_QueueSound(2, 0x7F, 0x7F);
             D_800A3207 = 1;
             D_800A334C = 0x5A;
             D_800A3350 = 0;
@@ -873,7 +873,7 @@ s32 func_80038C70(void) {
         }
         if (g_pad_state.pressed & 0x400040) {
             D_800A3206 = 0;
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             var_3 = 0xD;
             if (D_800A3350 == 0) {
                 memcard_RequestFormat();
@@ -973,7 +973,7 @@ sel_dispatch:
         case 6:
             D_800A334C--;
             if (((u8)D_800A334C) == 0 || (g_pad_state.pressed & 0x100010)) {
-                func_8005C650(2, 0x7F, 0x7F);
+                snd_QueueSound(2, 0x7F, 0x7F);
                 result = 1;
                 break;
             }
@@ -991,7 +991,7 @@ sel_dispatch:
         case 12:
             D_800A334C--;
             if (((u8)D_800A334C) == 0 || (g_pad_state.pressed & 0x100010)) {
-                func_8005C650(2, 0x7F, 0x7F);
+                snd_QueueSound(2, 0x7F, 0x7F);
                 if (v0 != 7) {
                     result = 1;
                     break;
@@ -1023,7 +1023,7 @@ sel_dispatch:
         case 17:
         sw4_L2:
             if (g_pad_state.pressed & 0x400040) {
-                func_8005C650(1, 0x7F, 0x7F);
+                snd_QueueSound(1, 0x7F, 0x7F);
                 if (v0 == 0) {
                     if (D_800A3350 != 0) {
                         result = 1;
@@ -1052,12 +1052,12 @@ sel_dispatch:
         case 10:
         sw4_buttons:
             if (g_pad_state.pressed & 0x80008000U) {
-                func_8005C650(0, 0x7F, 0x7F);
+                snd_QueueSound(0, 0x7F, 0x7F);
                 D_800A3350 = 0;
                 break;
             }
             if (g_pad_state.pressed & 0x20002000) {
-                func_8005C650(0, 0x7F, 0x7F);
+                snd_QueueSound(0, 0x7F, 0x7F);
                 D_800A3350 = 1;
             }
             break;
@@ -1297,7 +1297,7 @@ void replay_Start(void) {
     D_800A3834 = 5;
 }
 
-extern s32 func_80054434(void);
+extern s32 collision_GetHitTag(void);
 
 void func_8003984C(Unk80101EC8Record *arg0, s32 *arg1, s32 *arg2) {
     s32 sp10[3];
@@ -1316,8 +1316,8 @@ void func_8003984C(Unk80101EC8Record *arg0, s32 *arg1, s32 *arg2) {
     sp20[1] = mid_y + 0x190;
     sp10[2] = mid_z;
     sp20[2] = mid_z;
-    if (func_80053584(sp10, sp20, sp30, sp40) != 0) {
-        result = func_80054434();
+    if (collision_TestSegment(sp10, sp20, sp30, sp40) != 0) {
+        result = collision_GetHitTag();
         *arg1 = result;
         if (result == 7) {
             goto neg;

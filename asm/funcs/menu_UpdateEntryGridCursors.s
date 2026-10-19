@@ -90,7 +90,7 @@ glabel menu_UpdateEntryGridCursors
     /* 60AE4 800702E4 29004010 */  beqz       $v0, .L8007038C
     /* 60AE8 800702E8 7F000524 */   addiu     $a1, $zero, 0x7F
     /* 60AEC 800702EC 21200000 */  addu       $a0, $zero, $zero
-    /* 60AF0 800702F0 9471010C */  jal        func_8005C650
+    /* 60AF0 800702F0 9471010C */  jal        snd_QueueSound
     /* 60AF4 800702F4 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 60AF8 800702F8 00000292 */  lbu        $v0, 0x0($s0)
     /* 60AFC 800702FC 21282002 */  addu       $a1, $s1, $zero
@@ -138,7 +138,7 @@ glabel menu_UpdateEntryGridCursors
     /* 60B98 80070398 27004010 */  beqz       $v0, .L80070438
     /* 60B9C 8007039C 21200000 */   addu      $a0, $zero, $zero
     /* 60BA0 800703A0 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 60BA4 800703A4 9471010C */  jal        func_8005C650
+    /* 60BA4 800703A4 9471010C */  jal        snd_QueueSound
     /* 60BA8 800703A8 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 60BAC 800703AC 04000624 */  addiu      $a2, $zero, 0x4
     /* 60BB0 800703B0 00000292 */  lbu        $v0, 0x0($s0)
@@ -188,7 +188,7 @@ glabel menu_UpdateEntryGridCursors
     /* 60C50 80070450 34004010 */  beqz       $v0, .L80070524
     /* 60C54 80070454 7F000524 */   addiu     $a1, $zero, 0x7F
     /* 60C58 80070458 21200000 */  addu       $a0, $zero, $zero
-    /* 60C5C 8007045C 9471010C */  jal        func_8005C650
+    /* 60C5C 8007045C 9471010C */  jal        snd_QueueSound
     /* 60C60 80070460 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 60C64 80070464 00141400 */  sll        $v0, $s4, 16
     /* 60C68 80070468 03140200 */  sra        $v0, $v0, 16
@@ -248,7 +248,7 @@ glabel menu_UpdateEntryGridCursors
     /* 60D30 80070530 32004010 */  beqz       $v0, .L800705FC
     /* 60D34 80070534 21200000 */   addu      $a0, $zero, $zero
     /* 60D38 80070538 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 60D3C 8007053C 9471010C */  jal        func_8005C650
+    /* 60D3C 8007053C 9471010C */  jal        snd_QueueSound
     /* 60D40 80070540 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 60D44 80070544 00141400 */  sll        $v0, $s4, 16
     /* 60D48 80070548 03140200 */  sra        $v0, $v0, 16
@@ -428,7 +428,7 @@ glabel menu_UpdateEntryGridCursors
     /* 60FDC 800707DC 21082300 */  addu       $at, $at, $v1
     /* 60FE0 800707E0 40BC2490 */  lbu        $a0, %lo(D_8009BC40)($at)
     /* 60FE4 800707E4 7F000624 */  addiu      $a2, $zero, 0x7F
-    /* 60FE8 800707E8 9471010C */  jal        func_8005C650
+    /* 60FE8 800707E8 9471010C */  jal        snd_QueueSound
     /* 60FEC 800707EC 0B008424 */   addiu     $a0, $a0, 0xB
     /* 60FF0 800707F0 0F000224 */  addiu      $v0, $zero, 0xF
     /* 60FF4 800707F4 FC0482A7 */  sh         $v0, %gp_rel(D_800A35C8)($gp)
@@ -491,7 +491,7 @@ glabel menu_UpdateEntryGridCursors
   .L800708D0:
     /* 610D0 800708D0 0A000424 */  addiu      $a0, $zero, 0xA
     /* 610D4 800708D4 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 610D8 800708D8 9471010C */  jal        func_8005C650
+    /* 610D8 800708D8 9471010C */  jal        snd_QueueSound
     /* 610DC 800708DC 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 610E0 800708E0 7FC20108 */  j          .L800709FC
     /* 610E4 800708E4 00141400 */   sll       $v0, $s4, 16
@@ -511,7 +511,7 @@ glabel menu_UpdateEntryGridCursors
     /* 61114 80070914 00141400 */   sll       $v0, $s4, 16
     /* 61118 80070918 02000424 */  addiu      $a0, $zero, 0x2
     /* 6111C 8007091C 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 61120 80070920 9471010C */  jal        func_8005C650
+    /* 61120 80070920 9471010C */  jal        snd_QueueSound
     /* 61124 80070924 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 61128 80070928 00141400 */  sll        $v0, $s4, 16
     /* 6112C 8007092C 03140200 */  sra        $v0, $v0, 16
@@ -724,7 +724,7 @@ glabel menu_UpdateEntryGridCursors
   .L80070C30:
     /* 61430 80070C30 B80484A7 */  sh         $a0, %gp_rel(D_800A3584)($gp)
   .L80070C34:
-    /* 61434 80070C34 B471010C */  jal        func_8005C6D0
+    /* 61434 80070C34 B471010C */  jal        snd_FlushSoundQueue
     /* 61438 80070C38 00000000 */   nop
     /* 6143C 80070C3C 8C00BF8F */  lw         $ra, 0x8C($sp)
     /* 61440 80070C40 8800BE8F */  lw         $fp, 0x88($sp)

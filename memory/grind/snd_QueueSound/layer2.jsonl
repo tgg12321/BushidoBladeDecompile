@@ -1,0 +1,1 @@
+{"func": "snd_QueueSound", "addr": "8005C650", "verdict": "PASS", "body_hash": "2af6359a32fca91e", "body_kind": "c", "file": "main/3AB48", "reviewer": "small-review", "scope": "match", "date": "2026-10-16T06:22:20Z", "head": "ce61ce18b", "notes": "lane-small 2026-10-16; verdict tmp/cr_small/verdict.json + verdict2.json", "renamed_from": ["func_8005C650"]}

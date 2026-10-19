@@ -1,16 +1,17 @@
-/* 16 game functions: the collision grid walk (func_80052D00) and its per-cell
- * tests, accessors and setters (func_80053614, func_80053694, func_80053754,
- * func_80053E9C, ...), then the motion-sequence loader func_80054604 and its
- * wrappers func_80054884 / func_800548DC. .text 0x80052D00 (ROM 0x43500).
- * Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #72): the statics
- * D_800A33F0..D_800A33F8 are used only here and open the old 3AB48 .sbss group
- * in address order; calls run from here into 3AB48.c's GTE helpers
- * (gte_SumSquares3, gte_ReadIR1IR2Sra2, func_80052C4C), back only once
- * (func_8004DDB4 -> func_80054440); three NOPs follow gte_ReadIR1IR2Sra2. A
- * control cut inside this group (before func_80053754) does not byte-match:
- * the shared statics lose gp access. End: before func_8005490C (seam #85,
- * moved there from func_80054604), so func_80054604's printf string
- * D_80015840 is this file's .rodata (0x80015840+0x1C) and 4510C.o's starts with
+/* 16 game functions: the collision grid walk (collision_WalkSegmentGrid) and
+ * its per-cell tests, accessors and setters (collision_TestSegmentWithWork,
+ * collision_GetHit, func_80053754, func_80053E9C, ...), then the
+ * motion-sequence loader motion_StartPlayback and its wrappers func_80054884 /
+ * func_800548DC. .text 0x80052D00 (ROM 0x43500). Start boundary: SEAM (owner
+ * ruling 2026-10-17; Codex seam #72): the statics D_800A33F0..D_800A33F8 are
+ * used only here and open the old 3AB48 .sbss group in address order; calls run
+ * from here into 3AB48.c's GTE helpers (gte_SumSquares3, gte_ReadIR1IR2Sra2,
+ * func_80052C4C), back only once (func_8004DDB4 -> func_80054440); three NOPs
+ * follow gte_ReadIR1IR2Sra2. A control cut inside this group (before
+ * func_80053754) does not byte-match: the shared statics lose gp access. End:
+ * before motion_UpdatePlayback (seam #85, moved there from
+ * motion_StartPlayback), so motion_StartPlayback's printf string D_80015840 is
+ * this file's .rodata (0x80015840+0x1C) and 4510C.o's starts with
  * func_80058580's tables at offset 0. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
@@ -25,7 +26,7 @@ static Work_80053E9C *D_800A33F4;
 static u16 D_800A33F8;
 static s32 D_800A33FC; /* not named by any code or data: size from the gap */
 
-extern s32 func_80053694(s32 *, s16 *);
+extern s32 collision_GetHit(s32 *, s16 *);
 
 /* Walks the 32x32 grid of 2000-unit cells (origin -32000) along the XZ
  * segment from the start point (+0x8/+0x10) to the end point (+0x18/+0x20),
@@ -34,8 +35,8 @@ extern s32 func_80053694(s32 *, s16 *);
  * +0x74 > +0x70), +0x7C the 4.12 slope and
  * +0x90 the major-axis steps left. Each cell crossed goes to the per-cell
  * test at +0x5C (func_80053E9C or func_80053754) until one reports a hit;
- * func_80053694 then reads the result back out. */
-s32 func_80052D00(s32 *arg0, s16 *arg1) {
+ * collision_GetHit then reads the result back out. */
+s32 collision_WalkSegmentGrid(s32 *arg0, s16 *arg1) {
     s32 var_0;
     s32 var_1;
     s32 var_2;
@@ -153,10 +154,10 @@ s32 func_80052D00(s32 *arg0, s16 *arg1) {
             D_800A33F4->unk5C(D_800A33F4->unk8C.x, D_800A33F4->unk8C.z);
         }
     }
-    return func_80053694(arg0, arg1);
+    return collision_GetHit(arg0, arg1);
 }
 
-extern s32 func_80052D00(s32 *, s16 *);
+extern s32 collision_WalkSegmentGrid(s32 *, s16 *);
 extern s32 func_80053754();
 extern s32 func_80053E9C();
 extern Work_80053E9C D_800EF9F8;
@@ -183,7 +184,7 @@ void func_80053304(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
     } else {
         D_800A33F4->unk5C = func_80053E9C;
     }
-    func_80052D00(arg2, arg3);
+    collision_WalkSegmentGrid(arg2, arg3);
 }
 
 s32 func_8005344C(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
@@ -208,26 +209,27 @@ s32 func_8005344C(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
     } else {
         D_800A33F4->unk5C = func_80053E9C;
     }
-    return func_80052D00(arg2, arg3);
+    return collision_WalkSegmentGrid(arg2, arg3);
 }
 
-s32 func_80053584(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
+s32 collision_TestSegment(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3) {
     D_800A33F4 = &D_800EF9F8;
     D_800EF9F8.unk8 = *(VECTOR *)arg0;
     D_800A33F4->unk18 = *(VECTOR *)arg1;
     D_800A33F4->unk5C = func_80053E9C;
-    return func_80052D00(arg2, arg3);
+    return collision_WalkSegmentGrid(arg2, arg3);
 }
 
-s32 func_80053614(s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
+s32 collision_TestSegmentWithWork(
+    s32 *arg0, s32 *arg1, s32 *arg2, s16 *arg3, s32 arg4) {
     D_800A33F4 = (Work_80053E9C *)arg4;
     D_800A33F4->unk8 = *(VECTOR *)arg0;
     D_800A33F4->unk18 = *(VECTOR *)arg1;
     D_800A33F4->unk5C = func_80053E9C;
-    return func_80052D00(arg2, arg3);
+    return collision_WalkSegmentGrid(arg2, arg3);
 }
 
-s32 func_80053694(s32 *arg0, s16 *arg1) {
+s32 collision_GetHit(s32 *arg0, s16 *arg1) {
     Work_80053E9C *p = D_800A33F4;
     s32 t;
     if (p->unk0 != 0x7FFFFFFF) {
@@ -552,18 +554,19 @@ s32 func_80053E9C(s32 arg0, s32 arg1) {
     return D_800A33F4->unk0 != 0x7FFFFFFF;
 }
 
-void func_80054410(s32 a0) { D_800A33F0 = a0; }
+void collision_SetGrid(s32 a0) { D_800A33F0 = a0; }
 
-void func_8005441C(s32 a0) { D_800A33F0 += a0; }
+void collision_RebaseGrid(s32 a0) { D_800A33F0 += a0; }
 
-s16 func_80054434(void) { return D_800A33F8; }
+s16 collision_GetHitTag(void) { return D_800A33F8; }
 
 INCLUDE_ASM("asm/funcs", func_80054440);
 INCLUDE_ASM("asm/funcs", func_800545F4);
 
 const char D_80015840[28] = "Destruction tiny model.\n";
 
-s32 func_80054604(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
+s32 motion_StartPlayback(
+    s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6) {
     Unk800EFAE8Rec *s = &D_800EFAE8;
     s32 id = a0 + 0x131;
     s32 ret;
@@ -634,7 +637,7 @@ extern s16 D_80099D54[];
 
 void func_80054884(
     s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5, s32 a6, s32 a7) {
-    func_80054604(D_80099D54[a0] + a1 - 0x131, a2, a3, a4, a5, a6, a7);
+    motion_StartPlayback(D_80099D54[a0] + a1 - 0x131, a2, a3, a4, a5, a6, a7);
 }
 
 void func_800548DC(void) {

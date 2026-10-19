@@ -57,7 +57,7 @@ glabel func_8003C9A4
     /* 2D27C 8003CA7C 0B008010 */  beqz       $a0, .L8003CAAC
     /* 2D280 8003CA80 21200000 */   addu      $a0, $zero, $zero
     /* 2D284 8003CA84 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 2D288 8003CA88 9471010C */  jal        func_8005C650
+    /* 2D288 8003CA88 9471010C */  jal        snd_QueueSound
     /* 2D28C 8003CA8C 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 2D290 8003CA90 0A80023C */  lui        $v0, %hi(D_800A3817)
     /* 2D294 8003CA94 17384290 */  lbu        $v0, %lo(D_800A3817)($v0)
@@ -72,7 +72,7 @@ glabel func_8003C9A4
     /* 2D2B4 8003CAB4 2410A200 */  and        $v0, $a1, $v0
     /* 2D2B8 8003CAB8 0F004010 */  beqz       $v0, .L8003CAF8
     /* 2D2BC 8003CABC 7F000524 */   addiu     $a1, $zero, 0x7F
-    /* 2D2C0 8003CAC0 9471010C */  jal        func_8005C650
+    /* 2D2C0 8003CAC0 9471010C */  jal        snd_QueueSound
     /* 2D2C4 8003CAC4 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 2D2C8 8003CAC8 0A80043C */  lui        $a0, %hi(D_800A3817)
     /* 2D2CC 8003CACC 17388490 */  lbu        $a0, %lo(D_800A3817)($a0)
@@ -97,7 +97,7 @@ glabel func_8003C9A4
     /* 2D30C 8003CB0C 6B004010 */  beqz       $v0, .L8003CCBC
     /* 2D310 8003CB10 01000424 */   addiu     $a0, $zero, 0x1
     /* 2D314 8003CB14 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 2D318 8003CB18 9471010C */  jal        func_8005C650
+    /* 2D318 8003CB18 9471010C */  jal        snd_QueueSound
     /* 2D31C 8003CB1C 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 2D320 8003CB20 0A80023C */  lui        $v0, %hi(D_800A3817)
     /* 2D324 8003CB24 17384290 */  lbu        $v0, %lo(D_800A3817)($v0)

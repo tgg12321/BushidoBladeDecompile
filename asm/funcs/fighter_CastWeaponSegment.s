@@ -351,11 +351,11 @@ glabel fighter_CastWeaponSegment
     /* 1B17C 8002A97C 1000A3AF */  sw         $v1, 0x10($sp)
     /* 1B180 8002A980 83180800 */  sra        $v1, $t0, 2
     /* 1B184 8002A984 23104300 */  subu       $v0, $v0, $v1
-    /* 1B188 8002A988 854D010C */  jal        func_80053614
+    /* 1B188 8002A988 854D010C */  jal        collision_TestSegmentWithWork
     /* 1B18C 8002A98C B000A2AE */   sw        $v0, 0xB0($s5)
     /* 1B190 8002A990 43004010 */  beqz       $v0, .L8002AAA0
     /* 1B194 8002A994 00000000 */   nop
-    /* 1B198 8002A998 0D51010C */  jal        func_80054434
+    /* 1B198 8002A998 0D51010C */  jal        collision_GetHitTag
     /* 1B19C 8002A99C 00000000 */   nop
     /* 1B1A0 8002A9A0 07000324 */  addiu      $v1, $zero, 0x7
     /* 1B1A4 8002A9A4 3E004310 */  beq        $v0, $v1, .L8002AAA0

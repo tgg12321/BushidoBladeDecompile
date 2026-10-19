@@ -302,7 +302,7 @@ glabel object_UpdatePool
     /* 219F0 800311F0 21A04000 */  addu       $s4, $v0, $zero
     /* 219F4 800311F4 F8008012 */  beqz       $s4, .L800315D8
     /* 219F8 800311F8 00000000 */   nop
-    /* 219FC 800311FC 0D51010C */  jal        func_80054434
+    /* 219FC 800311FC 0D51010C */  jal        collision_GetHitTag
     /* 21A00 80031200 00000000 */   nop
     /* 21A04 80031204 07000324 */  addiu      $v1, $zero, 0x7
     /* 21A08 80031208 02004314 */  bne        $v0, $v1, .L80031214

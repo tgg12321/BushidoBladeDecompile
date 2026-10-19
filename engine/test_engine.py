@@ -8338,12 +8338,12 @@ def test_departures() -> None:
                   len(v) == 1 and "cannot establish the anchor (shallow clone?)" in v[0])
 
             # ── repo w: naming waves never make a departure ────────────────
-            new_repo(Path(td) / "w", ["func_80058580", "func_80055B60", "func_P1",
+            new_repo(Path(td) / "w", ["func_80058580", "fighter_BuildCpuPad", "func_P1",
                                       "func_RVA", "func_DN", "func_RQ", "func_WL",
                                       "func_FX", "func_UL", "func_BX", "func_SX1",
                                       "func_SW1", "func_SX2", "func_SW2", "func_HX",
                                       "func_HW", "func_Q"])
-            wave({"func_80055B60": "func_Caller", "func_80058580": "func_Callee"})
+            wave({"fighter_BuildCpuPad": "func_Caller", "func_80058580": "func_Callee"})
             commit("caller + callee renamed in one wave")
             wave({"func_RQ": "func_RQ2"})                 # renamed while queued,
             commit("RQ -> RQ2")

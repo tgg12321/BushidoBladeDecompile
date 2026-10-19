@@ -25,7 +25,7 @@ glabel menu_HandleConfirmInput
     /* 5E7C4 8006DFC4 00000000 */  nop
     /* 5E7C8 8006DFC8 01004224 */  addiu      $v0, $v0, 0x1
     /* 5E7CC 8006DFCC 600482AF */  sw         $v0, %gp_rel(D_800A352C)($gp)
-    /* 5E7D0 8006DFD0 9471010C */  jal        func_8005C650
+    /* 5E7D0 8006DFD0 9471010C */  jal        snd_QueueSound
     /* 5E7D4 8006DFD4 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8006DFD8:
     /* 5E7D8 8006DFD8 1000033C */  lui        $v1, (0x100010 >> 16)
@@ -38,7 +38,7 @@ glabel menu_HandleConfirmInput
     /* 5E7F4 8006DFF4 02000424 */   addiu     $a0, $zero, 0x2
     /* 5E7F8 8006DFF8 FFFF1124 */  addiu      $s1, $zero, -0x1
     /* 5E7FC 8006DFFC 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5E800 8006E000 9471010C */  jal        func_8005C650
+    /* 5E800 8006E000 9471010C */  jal        snd_QueueSound
     /* 5E804 8006E004 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5E808 8006E008 11B80108 */  j          .L8006E044
     /* 5E80C 8006E00C 00000000 */   nop
@@ -49,7 +49,7 @@ glabel menu_HandleConfirmInput
     /* 5E81C 8006E01C 09004010 */  beqz       $v0, .L8006E044
     /* 5E820 8006E020 01000424 */   addiu     $a0, $zero, 0x1
     /* 5E824 8006E024 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5E828 8006E028 9471010C */  jal        func_8005C650
+    /* 5E828 8006E028 9471010C */  jal        snd_QueueSound
     /* 5E82C 8006E02C 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5E830 8006E030 6004828F */  lw         $v0, %gp_rel(D_800A352C)($gp)
     /* 5E834 8006E034 00000000 */  nop
@@ -57,7 +57,7 @@ glabel menu_HandleConfirmInput
     /* 5E83C 8006E03C 01001124 */   addiu     $s1, $zero, 0x1
     /* 5E840 8006E040 FFFF1124 */  addiu      $s1, $zero, -0x1
   .L8006E044:
-    /* 5E844 8006E044 B471010C */  jal        func_8005C6D0
+    /* 5E844 8006E044 B471010C */  jal        snd_FlushSoundQueue
     /* 5E848 8006E048 00000000 */   nop
     /* 5E84C 8006E04C 21102002 */  addu       $v0, $s1, $zero
     /* 5E850 8006E050 2000BF8F */  lw         $ra, 0x20($sp)

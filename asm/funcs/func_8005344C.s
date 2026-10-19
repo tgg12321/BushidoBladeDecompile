@@ -71,7 +71,7 @@ glabel func_8005344C
     /* 43D5C 8005355C 5C0062AC */  sw         $v0, 0x5C($v1)
   .L80053560:
     /* 43D60 80053560 21200002 */  addu       $a0, $s0, $zero
-    /* 43D64 80053564 404B010C */  jal        func_80052D00
+    /* 43D64 80053564 404B010C */  jal        collision_WalkSegmentGrid
     /* 43D68 80053568 21282002 */   addu      $a1, $s1, $zero
     /* 43D6C 8005356C 1800BF8F */  lw         $ra, 0x18($sp)
     /* 43D70 80053570 1400B18F */  lw         $s1, 0x14($sp)

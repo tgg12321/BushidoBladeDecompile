@@ -10,7 +10,7 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
+extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 extern void AddPrim(void *, void *);
 
 typedef struct SelectEntryE534 {
@@ -206,7 +206,7 @@ s32 func_8006EA28(Unk8006EA28Rec *a0) {
     reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_6C);
     reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_70);
     reloc_RelocateOffsetList((s32 *)a0, (s32)a0->unk_74);
-    func_8005C2A8(a0->unk_00.unk_00, 1, a0->unk_00.unk_04);
+    snd_LoadVabPack(a0->unk_00.unk_00, 1, a0->unk_00.unk_04);
     return a0->unk_00.unk_04;
 }
 
@@ -263,7 +263,7 @@ void func_8006EC0C(void) {
     case 2:
     case 4:
         if (D_800A3570 == 0x1E8) {
-            func_8005C650(5, 0x7F, 0x7F);
+            snd_QueueSound(5, 0x7F, 0x7F);
         }
         D_800A3570 -= 0x20;
         if (D_800A3570 <= 0) {
@@ -491,11 +491,11 @@ void func_8006F100(Unk8006EACCRec *arg0) {
             D_800A35C8[i]--;
         }
         if (D_800A35C8[i] == 10) {
-            func_8005C650(7, 0x7F, 0x7F);
+            snd_QueueSound(7, 0x7F, 0x7F);
         }
         if (D_800A35C8[i] < 0) {
             D_800A35C8[i] = 0;
-            func_8005C650(8, 0x7F, 0x7F);
+            snd_QueueSound(8, 0x7F, 0x7F);
         }
     }
     D_800A355C++;
@@ -854,7 +854,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
         if (D_800A3560.rec[i].unk0 == 0xFF) {
             D_800A35C4->unk_00[i] = 0x1E;
             if (D_800A354C & (0x4000 << (var_6 * 16))) {
-                func_8005C650(0, 0x7F, 0x7F);
+                snd_QueueSound(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
                     (*row)++;
@@ -866,7 +866,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
                 } while (*flags & 4);
                 *flags |= 4;
             } else if (D_800A354C & (0x1000 << (var_6 * 16))) {
-                func_8005C650(0, 0x7F, 0x7F);
+                snd_QueueSound(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
                     (*row)--;
@@ -879,7 +879,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
                 *flags |= 4;
             }
             if (D_800A354C & (0x2000 << (var_6 * 16))) {
-                func_8005C650(0, 0x7F, 0x7F);
+                snd_QueueSound(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
                     (*col)++;
@@ -891,7 +891,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
                 } while ((!(*flags & 1) && *col >= 4) || (*flags & 4));
                 *flags |= 4;
             } else if (D_800A354C & (0x8000 << (var_6 * 16))) {
-                func_8005C650(0, 0x7F, 0x7F);
+                snd_QueueSound(0, 0x7F, 0x7F);
                 *flags &= ~4;
                 do {
                     (*col)--;
@@ -929,7 +929,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
                 D_800A3560.rec[i].unk2 = 0xFF;
                 D_800A3590[i] = 2;
                 D_800A3560.rec[i].unk0 = D_8009BC40[*row][*col].unk1;
-                func_8005C650(D_8009BC40[*row][*col].value + 0xB, 0x7F, 0x7F);
+                snd_QueueSound(D_8009BC40[*row][*col].value + 0xB, 0x7F, 0x7F);
                 D_800A35C8[0] = 0xF;
                 D_800A35C8[1] = 0x14;
                 if (D_800A35BC == 2 && (D_800A3568->unk14_17) && i == 0) {
@@ -947,11 +947,11 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
                     break;
                 }
             } else {
-                func_8005C650(0xA, 0x7F, 0x7F);
+                snd_QueueSound(0xA, 0x7F, 0x7F);
             }
         } else if (D_800A354C & (0x10 << (var_6 * 16))) {
             if (D_800A3578 == 0) {
-                func_8005C650(2, 0x7F, 0x7F);
+                snd_QueueSound(2, 0x7F, 0x7F);
                 if (D_800A3560.rec[i].unk0 == 0xFF && D_800A3554 == 0) {
                     D_800A35A0 = -1;
                 } else if (D_800A3554 == 1) {
@@ -1005,7 +1005,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
             D_800A3584 = 1;
         }
     }
-    func_8005C6D0();
+    snd_FlushSoundQueue();
 }
 
 extern void menu_UpdateRowCursors(Unk8006EACCRec *a0, Unk8007352CRec *s);
@@ -1184,11 +1184,11 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 D_800A35C4->unk_04[i] = 0x1E;
                 if ((D_800A354C & (0x2000 << (var_4 * 16))) &&
                     D_800A3590[i] < max) {
-                    func_8005C650(0, 0x7F, 0x7F);
+                    snd_QueueSound(0, 0x7F, 0x7F);
                     D_800A3590[i]++;
                 } else if ((D_800A354C & (0x8000 << (var_4 * 16))) &&
                            min < D_800A3590[i]) {
-                    func_8005C650(0, 0x7F, 0x7F);
+                    snd_QueueSound(0, 0x7F, 0x7F);
                     D_800A3590[i]--;
                 }
                 D_800A3594[i] = i;
@@ -1197,7 +1197,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                     s32 id;
                     s32 *tim;
 
-                    func_8005C650(1, 0x7F, 0x7F);
+                    snd_QueueSound(1, 0x7F, 0x7F);
                     D_800A3560.rec[1].unk2 = 0;
                     D_800A3560.rec[0].unk2 = 0;
                     if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) {
@@ -1214,7 +1214,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                     s32 id;
                     s32 *tim;
 
-                    func_8005C650(1, 0x7F, 0x7F);
+                    snd_QueueSound(1, 0x7F, 0x7F);
                     D_800A3560.rec[i].unk2 = D_8009BC38[D_800A3590[i]];
                     sel = 1;
                     if (D_800A35BC == 2 && !(D_800A3568->unk14_17) && i == 1) {
@@ -1229,7 +1229,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                     LoadImage(&var_6[id], (u32 *)*tim);
                     DrawSync(0);
                 } else if (D_800A354C & (0x10 << (var_4 * 16))) {
-                    func_8005C650(2, 0x7F, 0x7F);
+                    snd_QueueSound(2, 0x7F, 0x7F);
                     if (D_800A3558 == 1) {
                         D_800A3558 = 0;
                         D_800A3560.rec[0].unk2 = 0xFF;
@@ -1238,7 +1238,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                         D_800A3560.rec[0].unk2 = 0xFF;
                         D_800A3578 = 3;
                         D_800A3584 = 0;
-                        func_8005C650(6, 0x7F, 0x7F);
+                        snd_QueueSound(6, 0x7F, 0x7F);
                         if (D_800A3554 == 1) {
                             D_800A3560.rec[1].unk0 = 0xFF;
                         } else {
@@ -1250,7 +1250,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
             } else {
                 if ((D_800A354C & (0x10 << (var_4 * 16))) && D_800A3578 == 0 &&
                     D_800A35BC != 3) {
-                    func_8005C650(2, 0x7F, 0x7F);
+                    snd_QueueSound(2, 0x7F, 0x7F);
                     D_800A35C8[0] = 0xF;
                     D_800A35C8[1] = 0x14;
                     D_800A3560.rec[i].unk2 = 0xFF;
@@ -1309,7 +1309,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                     s32 id;
                     s32 *tim;
 
-                    func_8005C650(1, 0x7F, 0x7F);
+                    snd_QueueSound(1, 0x7F, 0x7F);
                     flag = 2;
                     var_6 = D_800A35A8->unk_7C;
                     var_6 += i * 8;
@@ -1325,9 +1325,9 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 }
             }
             if (D_800A354C & (0x10 << (i * 16))) {
-                func_8005C650(2, 0x7F, 0x7F);
+                snd_QueueSound(2, 0x7F, 0x7F);
                 D_800A3578 = 3;
-                func_8005C650(6, 0x7F, 0x7F);
+                snd_QueueSound(6, 0x7F, 0x7F);
                 D_800A3584 = 0;
                 D_800A3560.rec[1].unk2 = 0xFF;
                 D_800A3560.rec[0].unk2 = 0xFF;
@@ -1448,7 +1448,7 @@ void func_80071C4C(Unk8006EACCRec *arg0) {
     if (D_800A3550 >= 0xFF) {
         D_800A3550 = 0xFF;
         D_800A3578 = 1;
-        func_8005C650(6, 0x7F, 0x7F);
+        snd_QueueSound(6, 0x7F, 0x7F);
         if ((u32)D_800A35BC < 2) {
             D_800A3568->unk14_4 = func_80071C20();
             D_800A35A0 = 1;
@@ -1609,24 +1609,24 @@ void menu_UpdateChoiceGrid(
 
     if (D_800A354C & 0xA000A000) {
         if ((D_800A3578 & 0xFF) == 0) {
-            func_8005C650(0, 0x7F, 0x7F);
+            snd_QueueSound(0, 0x7F, 0x7F);
             if (((D_800A354C & 0x20002000) && D_800A3598 != 0) ||
                 ((D_800A354C & 0x80008000) && D_800A3598 == 0)) {
                 code = var_3[(D_800A3580 - 4) * 8 + 3 * 2 + D_800A3598];
                 D_800A3584 = code & 0xF;
                 if (D_800A3584 != 0xF) {
                     D_800A3578 = code >> 4;
-                    func_8005C650(6, 0x7F, 0x7F);
+                    snd_QueueSound(6, 0x7F, 0x7F);
                 }
             }
             D_800A3598 = D_800A3598 == 0;
         }
     }
     if (D_800A354C & 0x40004000) {
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
         D_800A359C++;
     } else if (D_800A354C & 0x10001000) {
-        func_8005C650(0, 0x7F, 0x7F);
+        snd_QueueSound(0, 0x7F, 0x7F);
         D_800A359C--;
     }
     if (D_800A359C >= 3) {
@@ -1687,7 +1687,7 @@ void menu_UpdateChoiceGrid(
             if (D_800A354C & (0x10 << (i * 16))) {
                 s32 var_11;
 
-                func_8005C650(2, 0x7F, 0x7F);
+                snd_QueueSound(2, 0x7F, 0x7F);
                 var_11 = D_800A3560.rec[i].unk0;
                 D_800A3560.rec[i].unk2 = 0xFF;
                 if (var_11 == 5 || var_11 == 16) {
@@ -1706,7 +1706,7 @@ void menu_UpdateChoiceGrid(
         }
         if (D_800A354C & 0x400040) {
             var_10 = var_3[(D_800A3580 - 4) * 8 + D_800A359C * 2 + D_800A3598];
-            func_8005C650(1, 0x7F, 0x7F);
+            snd_QueueSound(1, 0x7F, 0x7F);
             if (var_10 != 0xD || D_800A35BC != 6) {
                 D_800A3568->unk14_4 = var_10;
             } else {
@@ -1718,7 +1718,7 @@ void menu_UpdateChoiceGrid(
 end:
     gpu_AddGradientPanel(arg0);
     func_80073200(arg0);
-    func_8005C6D0();
+    snd_FlushSoundQueue();
 }
 
 POLY_G4 *gpu_AddPanelUpperQuad(s32 arg0, POLY_G4 *arg1) {

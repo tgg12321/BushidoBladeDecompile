@@ -5,7 +5,7 @@ glabel func_800466C0
     /* 36ECC 800466CC 1400BFAF */  sw         $ra, 0x14($sp)
     /* 36ED0 800466D0 4010010C */  jal        func_80044100
     /* 36ED4 800466D4 07000424 */   addiu     $a0, $zero, 0x7
-    /* 36ED8 800466D8 0751010C */  jal        func_8005441C
+    /* 36ED8 800466D8 0751010C */  jal        collision_RebaseGrid
     /* 36EDC 800466DC 21200002 */   addu      $a0, $s0, $zero
     /* 36EE0 800466E0 02000106 */  bgez       $s0, .L800466EC
     /* 36EE4 800466E4 21200002 */   addu      $a0, $s0, $zero

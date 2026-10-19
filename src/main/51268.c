@@ -238,7 +238,7 @@ void eff_BindScratchpad(s16 *arg0, s32 *arg1) {
     SPAD51268->unk00.unk08 = arg1;
 }
 
-extern s32 func_8005C2A8(Unk8005C2A8Pack *, s16, s32);
+extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 s32 printf(s32 *, s32);
 extern void AddPrim(void *, void *);
 void func_80060A68(void);

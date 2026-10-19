@@ -1405,21 +1405,21 @@ s32 fighter_ProcessWeaponContacts(void) {
  * records 6..9 only when obj+0x26C is set) is tested: a
  * math_TestPreparedSegmentSphere test with unk_0C / unk_0E sets bit i in *arg1
  * and, only when the record's first halfword is nonzero, a second test with
- * unk_10 / unk_12 sets bit i in *arg2. Then func_80053614 casts the segment
- * against the stage; when it returns nonzero and func_80054434() != 7: if *arg1
- * is nonzero, the function skips to the end when the cast point is no nearer
- * the base than obj+0xF4 and otherwise clears *arg1 and *arg2; then, unless
- * `arg3`, effect 0xA plays at the cast point. D_800A37E8.. receive -q. GTE:
- * gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc) per square root, inline_o.h class
- * (inline-asm-policy, owner ruling 2026-09-26). Everything else is ordinary C,
- * except the five Ruling 11 locals (dx, dy, dz, temp, temp2) and the
- * do-while(0), each annotated below. */
+ * unk_10 / unk_12 sets bit i in *arg2. Then collision_TestSegmentWithWork casts
+ * the segment against the stage; when it returns nonzero and
+ * collision_GetHitTag() != 7: if *arg1 is nonzero, the function skips to the
+ * end when the cast point is no nearer the base than obj+0xF4 and otherwise
+ * clears *arg1 and *arg2; then, unless `arg3`, effect 0xA plays at the cast
+ * point. D_800A37E8.. receive -q. GTE: gte_Lzc (gte_ldlzc, gte_nop x2,
+ * gte_stlzc) per square root, inline_o.h class (inline-asm-policy, owner ruling
+ * 2026-09-26). Everything else is ordinary C, except the five Ruling 11 locals
+ * (dx, dy, dz, temp, temp2) and the do-while(0), each annotated below. */
 extern char D_80010478[];
 extern void printf();
 extern void math_PrepareSegmentCollisionFrame(Unk1F8002B8Rec *scr);
 extern s32 math_TestPreparedSegmentSphere(
     Unk1F8002B8Rec *scr, Unk80107850Rec *pos, s32 threshold, s32 r_sq);
-extern s32 func_80054434(void);
+extern s32 collision_GetHitTag(void);
 
 void fighter_CastWeaponSegment(
     Unk80101EC8Record *obj, u32 *arg1, u32 *arg2, s32 arg3) {
@@ -1538,9 +1538,10 @@ void fighter_CastWeaponSegment(
     scr->unkA8.x = scr->unk60[0]->x - qx / 4;
     scr->unkA8.y = scr->unk60[0]->y - qy / 4;
     scr->unkA8.z = scr->unk60[0]->z - qz / 4;
-    if (func_80053614(&scr->unkA8.x, &scr->unk60[1]->x, &scr->unk100[0].x,
-                      &scr->unkF8.vx, (s32)work) != 0 &&
-        func_80054434() != 7) {
+    if (collision_TestSegmentWithWork(
+            &scr->unkA8.x, &scr->unk60[1]->x, &scr->unk100[0].x, &scr->unkF8.vx,
+            (s32)work) != 0 &&
+        collision_GetHitTag() != 7) {
         if (*arg1 != 0) {
             p = scr->unk60[0];
             dx = scr->unk100[0].x - p->x;
@@ -4017,8 +4018,9 @@ void object_UpdatePool(void) {
          * ordinary-c-judge-decidable) */
         s32 work;
         /* temp: the ratan2() heading of the velocity (turn block), then
-         * the func_8005344C() collision result (cleared when func_80054434() ==
-         * 7) (Ruling 11, ordinary-c-judge-decidable) */
+         * the func_8005344C() collision result (cleared when
+         * collision_GetHitTag() == 7) (Ruling 11, ordinary-c-judge-decidable)
+         */
         s32 temp;
 
         if (obj->kind == -1) {
@@ -4083,7 +4085,7 @@ void object_UpdatePool(void) {
         var_7 = scr->unk30;
         temp = func_8005344C(
             &obj->pos.x, &scr->unk00.x, &scr->unk10.x, var_7, (s32)&scr->unk38);
-        if (temp != 0 && func_80054434() == 7) {
+        if (temp != 0 && collision_GetHitTag() == 7) {
             temp = 0;
         }
         if (temp != 0) {
@@ -4585,7 +4587,7 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
 /* 3D positional sound pan/volume: listener-relative delta of *arg1,
  * distance attenuation via the g_sqrt_table_u8 byte-LUT square root (gte_Lzc
  * for >= 0x400), then a sin/cos left/right pan scaled by distance, clamped to
- * 0x7F, sent to func_8005C650(arg0, L, R). */
+ * 0x7F, sent to snd_QueueSound(arg0, L, R). */
 void snd_QueuePositionalSound(s32 arg0, s32 *arg1) {
     s32 sp_tmp;
     s32 dx, dy, dz;
@@ -4664,7 +4666,7 @@ void snd_QueuePositionalSound(s32 arg0, s32 *arg1) {
     if (var_10 >= 0x80)
         var_10 = 0x7F;
 
-    func_8005C650(arg0, var_9, var_10);
+    snd_QueueSound(arg0, var_9, var_10);
 }
 
 void func_80032854(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
@@ -5279,7 +5281,7 @@ void snd_UpdateStageSounds(void) {
 
         call_default: {
             u8 val = *data;
-            func_8005C650(0x7B + i, val, val);
+            snd_QueueSound(0x7B + i, val, val);
         }
         skip:;
         }

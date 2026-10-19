@@ -71,7 +71,7 @@ glabel func_8006B92C
     /* 5C22C 8006BA2C 21200000 */  addu       $a0, $zero, $zero
   .L8006BA30:
     /* 5C230 8006BA30 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5C234 8006BA34 9471010C */  jal        func_8005C650
+    /* 5C234 8006BA34 9471010C */  jal        snd_QueueSound
     /* 5C238 8006BA38 7F000624 */   addiu     $a2, $zero, 0x7F
   .L8006BA3C:
     /* 5C23C 8006BA3C 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
@@ -100,7 +100,7 @@ glabel func_8006B92C
     /* 5C290 8006BA90 24004010 */  beqz       $v0, .L8006BB24
     /* 5C294 8006BA94 01000424 */   addiu     $a0, $zero, 0x1
     /* 5C298 8006BA98 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5C29C 8006BA9C 9471010C */  jal        func_8005C650
+    /* 5C29C 8006BA9C 9471010C */  jal        snd_QueueSound
     /* 5C2A0 8006BAA0 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5C2A4 8006BAA4 C9AE0108 */  j          .L8006BB24
     /* 5C2A8 8006BAA8 02001024 */   addiu     $s0, $zero, 0x2
@@ -112,7 +112,7 @@ glabel func_8006B92C
     /* 5C2BC 8006BABC 19004010 */  beqz       $v0, .L8006BB24
     /* 5C2C0 8006BAC0 01000424 */   addiu     $a0, $zero, 0x1
     /* 5C2C4 8006BAC4 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5C2C8 8006BAC8 9471010C */  jal        func_8005C650
+    /* 5C2C8 8006BAC8 9471010C */  jal        snd_QueueSound
     /* 5C2CC 8006BACC 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5C2D0 8006BAD0 C9AE0108 */  j          .L8006BB24
     /* 5C2D4 8006BAD4 03001024 */   addiu     $s0, $zero, 0x3
@@ -123,7 +123,7 @@ glabel func_8006B92C
     /* 5C2E4 8006BAE4 0F004010 */  beqz       $v0, .L8006BB24
     /* 5C2E8 8006BAE8 01000424 */   addiu     $a0, $zero, 0x1
     /* 5C2EC 8006BAEC 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5C2F0 8006BAF0 9471010C */  jal        func_8005C650
+    /* 5C2F0 8006BAF0 9471010C */  jal        snd_QueueSound
     /* 5C2F4 8006BAF4 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5C2F8 8006BAF8 01001024 */  addiu      $s0, $zero, 0x1
     /* 5C2FC 8006BAFC 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
@@ -145,7 +145,7 @@ glabel func_8006B92C
     /* 5C334 8006BB34 05004010 */  beqz       $v0, .L8006BB4C
     /* 5C338 8006BB38 02000424 */   addiu     $a0, $zero, 0x2
     /* 5C33C 8006BB3C 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 5C340 8006BB40 9471010C */  jal        func_8005C650
+    /* 5C340 8006BB40 9471010C */  jal        snd_QueueSound
     /* 5C344 8006BB44 7F000624 */   addiu     $a2, $zero, 0x7F
     /* 5C348 8006BB48 01001024 */  addiu      $s0, $zero, 0x1
   .L8006BB4C:
