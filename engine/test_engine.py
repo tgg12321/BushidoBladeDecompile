@@ -9481,7 +9481,7 @@ def test_sanctioned_unwritten_pads() -> None:
     eq("pad-allowlist: sanctioned func+name+count+volatile is exempt",
        len(spans_for("camera_ApplyFightView", pad)), 0)
     eq("pad-allowlist: second sanctioned function exempt",
-       len(spans_for("func_8001E6E4", pad)), 0)
+       len(spans_for("camera_ApplyReplayView", pad)), 0)
     eq("pad-allowlist: unsanctioned function still flagged",
        len(spans_for("func_80012345", pad)), 1)
     eq("pad-allowlist: non-volatile spelling still flagged",

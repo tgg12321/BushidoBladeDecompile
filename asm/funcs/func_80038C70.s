@@ -17,7 +17,7 @@ glabel func_80038C70
     /* 294AC 80038CAC 880280A3 */  sb         $zero, %gp_rel(D_800A3354)($gp)
     /* 294B0 80038CB0 300180A3 */  sb         $zero, %gp_rel(D_800A31FC)($gp)
   .L80038CB4:
-    /* 294B4 80038CB4 CDE1000C */  jal        func_80038734
+    /* 294B4 80038CB4 CDE1000C */  jal        memcard_Update
     /* 294B8 80038CB8 00000000 */   nop
     /* 294BC 80038CBC 88028393 */  lbu        $v1, %gp_rel(D_800A3354)($gp)
     /* 294C0 80038CC0 00000000 */  nop
@@ -144,7 +144,7 @@ glabel func_80038C70
     /* 29668 80038E68 00000000 */  nop
     /* 2966C 80038E6C 05004014 */  bnez       $v0, .L80038E84
     /* 29670 80038E70 0D001024 */   addiu     $s0, $zero, 0xD
-    /* 29674 80038E74 FAE1000C */  jal        func_800387E8
+    /* 29674 80038E74 FAE1000C */  jal        memcard_RequestFormat
     /* 29678 80038E78 00000000 */   nop
     /* 2967C 80038E7C B7E30008 */  j          .L80038EDC
     /* 29680 80038E80 00000000 */   nop
@@ -216,7 +216,7 @@ glabel func_80038C70
     /* 29764 80038F64 11004014 */  bnez       $v0, .L80038FAC
     /* 29768 80038F68 00000000 */   nop
     /* 2976C 80038F6C 300180A3 */  sb         $zero, %gp_rel(D_800A31FC)($gp)
-    /* 29770 80038F70 E7E1000C */  jal        func_8003879C
+    /* 29770 80038F70 E7E1000C */  jal        memcard_RequestSave
     /* 29774 80038F74 00000000 */   nop
     /* 29778 80038F78 90E40008 */  j          .L80039240
     /* 2977C 80038F7C 0B00222A */   slti      $v0, $s1, 0xB
@@ -233,7 +233,7 @@ glabel func_80038C70
     /* 297A4 80038FA4 90E40008 */  j          .L80039240
     /* 297A8 80038FA8 00000000 */   nop
   .L80038FAC:
-    /* 297AC 80038FAC DFE1000C */  jal        func_8003877C
+    /* 297AC 80038FAC DFE1000C */  jal        memcard_RequestLoad
     /* 297B0 80038FB0 00000000 */   nop
     /* 297B4 80038FB4 90E40008 */  j          .L80039240
     /* 297B8 80038FB8 0B00222A */   slti      $v0, $s1, 0xB
@@ -253,7 +253,7 @@ glabel func_80038C70
     /* 297EC 80038FEC 08004000 */  jr         $v0
     /* 297F0 80038FF0 00000000 */   nop
   jlabel .L80038FF4
-    /* 297F4 80038FF4 E7E1000C */  jal        func_8003879C
+    /* 297F4 80038FF4 E7E1000C */  jal        memcard_RequestSave
     /* 297F8 80038FF8 00000000 */   nop
     /* 297FC 80038FFC 73E40008 */  j          .L800391CC
     /* 29800 80039000 02000224 */   addiu     $v0, $zero, 0x2
@@ -326,7 +326,7 @@ glabel func_80038C70
   jlabel .L800390F0
     /* 298F0 800390F0 01000224 */  addiu      $v0, $zero, 0x1
     /* 298F4 800390F4 300182A3 */  sb         $v0, %gp_rel(D_800A31FC)($gp)
-    /* 298F8 800390F8 DFE1000C */  jal        func_8003877C
+    /* 298F8 800390F8 DFE1000C */  jal        memcard_RequestLoad
     /* 298FC 800390FC 00000000 */   nop
     /* 29900 80039100 03000224 */  addiu      $v0, $zero, 0x3
     /* 29904 80039104 3B0182A3 */  sb         $v0, %gp_rel(D_800A3204 + 0x3)($gp)
@@ -369,7 +369,7 @@ glabel func_80038C70
     /* 29984 80039184 740280A3 */  sb         $zero, %gp_rel(D_800A3340)($gp)
     /* 29988 80039188 780280A3 */  sb         $zero, %gp_rel(D_800A3344)($gp)
     /* 2998C 8003918C 300182A3 */  sb         $v0, %gp_rel(D_800A31FC)($gp)
-    /* 29990 80039190 DFE1000C */  jal        func_8003877C
+    /* 29990 80039190 DFE1000C */  jal        memcard_RequestLoad
     /* 29994 80039194 00000000 */   nop
     /* 29998 80039198 6FE40008 */  j          .L800391BC
     /* 2999C 8003919C 02000224 */   addiu     $v0, $zero, 0x2
@@ -378,7 +378,7 @@ glabel func_80038C70
     /* 299A4 800391A4 00000000 */  nop
     /* 299A8 800391A8 07004014 */  bnez       $v0, .L800391C8
     /* 299AC 800391AC 01000224 */   addiu     $v0, $zero, 0x1
-    /* 299B0 800391B0 F0E1000C */  jal        func_800387C0
+    /* 299B0 800391B0 F0E1000C */  jal        memcard_RequestOverwrite
     /* 299B4 800391B4 00000000 */   nop
     /* 299B8 800391B8 02000224 */  addiu      $v0, $zero, 0x2
   .L800391BC:

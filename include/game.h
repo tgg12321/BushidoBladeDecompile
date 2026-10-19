@@ -19,8 +19,8 @@
 #include <psxsdk/libsnd.h>
 #include <psxsdk/libspu.h>
 
-/* The 0x24-byte file record at 0x80106A50 (func_80037F40 checksums it as one
- * block; func_800167EC initialises it). */
+/* The 0x24-byte file record at 0x80106A50 (memcard_BuildSaveBlock checksums it
+ * as one block; func_800167EC initialises it). */
 typedef struct {
     u8 unk_0;
     u8 unk_1;
@@ -38,11 +38,11 @@ typedef struct {
 } FileRecord;
 
 /* The 0x100-byte save block after the memory-card header (D_800F34D8 = the
- * 0x200-byte card buffer + 0x100): func_80037F40 writes three copies of
- * D_80106A50 with their byte checksums and clears the pointer / value table;
- * func_8003800C restores the first copy whose checksum holds (unless its flags
- * bit 7 is set) and writes each val[j] through ptr[j] when ptr[j] is a KSEG0
- * RAM address. */
+ * 0x200-byte card buffer + 0x100): memcard_BuildSaveBlock writes three copies
+ * of D_80106A50 with their byte checksums and clears the pointer / value table;
+ * memcard_RestoreSaveBlock restores the first copy whose checksum holds (unless
+ * its flags bit 7 is set) and writes each val[j] through ptr[j] when ptr[j] is
+ * a KSEG0 RAM address. */
 typedef struct Unk800F34D8Save {
     FileRecord rec[3]; /* +0x00 */
     s32 sum[3];        /* +0x6C byte sums of rec[] */
@@ -743,8 +743,8 @@ typedef struct {
  * = file + 0x14, the others file + its header words 1 / 2 / 4; unk_0C unset).
  * unk_00: halfword streams motion_ResolveMoveData indexes (the f4E / f54 / f66
  * / f16 / f18 entries); unk_04: 4-byte entries whose second halfword offsets
- * unk_08 (func_80021A98, func_8003993C); unk_0C: func_80055138's table; unk_10:
- * func_8001979C's motion bitstream. */
+ * unk_08 (func_80021A98, replay_PlayFrame); unk_0C: func_80055138's table;
+ * unk_10: func_8001979C's motion bitstream. */
 typedef struct Unk801027B0Rec {
     u16 *unk_00;
     u16 *unk_04;
@@ -1783,10 +1783,10 @@ typedef struct Rec44 {
     u8 b43;
 } Rec44;
 
-/* The camera-target offset at 0x800FF5C8: camera_ApplyFightView / func_8001E6E4
- * add its fields to a Rec44's unk_00, unk_10 and w18, and func_8001B138 zeroes
- * them. The fields sit at Rec44's offsets; +0x0C and the SVECTOR pad are never
- * accessed. */
+/* The camera-target offset at 0x800FF5C8: camera_ApplyFightView /
+ * camera_ApplyReplayView add its fields to a Rec44's unk_00, unk_10 and w18,
+ * and func_8001B138 zeroes them. The fields sit at Rec44's offsets; +0x0C and
+ * the SVECTOR pad are never accessed. */
 typedef struct Unk800FF5C8Rec {
     Vec3i32 unk_00;
     u8 unk_0C[4];
@@ -1795,12 +1795,12 @@ typedef struct Unk800FF5C8Rec {
 } Unk800FF5C8Rec;
 
 /* 0x1C-byte record: one player's state in one frame of the replay buffer
- * D_800A36EC (frames of two, Rec1C[2] = 0x38 bytes; func_80039680 writes player
- * a0->index's record of frame D_800A36F8 from the character record,
- * func_8003993C reads both back and passes two of them to func_8001BAE4 /
+ * D_800A36EC (frames of two, Rec1C[2] = 0x38 bytes; replay_RecordFighter writes
+ * player a0->index's record of frame D_800A36F8 from the character record,
+ * replay_PlayFrame reads both back and passes two of them to func_8001BAE4 /
  * func_8001BBD8, motion_ApplyRecordedPoseAdjustments reads b14..b16 / b18).
- * - w0: the character's current move (Unk80101EC8Record.unk_50); func_8003993C
- * reads its unk_04.
+ * - w0: the character's current move (Unk80101EC8Record.unk_50);
+ * replay_PlayFrame reads its unk_04.
  * - h4 / h6 / h8: unk_F4 x / y / z; hA: unk_1C8.vy & 0xFFF with unk_B3 in the
  * top four bits; hC: unk_148; hE / h10 / h12: unk_64 / unk_66 / unk_68.
  * - b14..b16: unk_1E6 / unk_1E8 / unk_1EA >> 2, read back signed; b17: bit 0 =
@@ -1824,12 +1824,12 @@ typedef struct Rec1C {
     u8 pad1A[2];
 } Rec1C;
 
-/* The 0xB4 0x10-byte records of the event table D_800F68E0 (func_800392C8
- * clears unk_0 to -1, func_80039320 ages them, func_800393C8 adds or refreshes
- * one, func_8003993C replays them). unk_0: -1 = free, else a frame counter;
- * unk_2: frames seen; unk_3: func_800393C8's arg1; unk_4: the s16 x / y / z of
- * arg2; unk_A: arg3[0] & 0xFFF with arg0 in the top four bits; unk_C / unk_E:
- * arg3[1] / arg3[2]. */
+/* The 0xB4 0x10-byte records of the event table D_800F68E0 (replay_Reset
+ * clears unk_0 to -1, replay_BeginFrame ages them, replay_RecordModelDraw adds
+ * or refreshes one, replay_PlayFrame replays them). unk_0: -1 = free, else a
+ * frame counter; unk_2: frames seen; unk_3: replay_RecordModelDraw's arg1;
+ * unk_4: the s16 x / y / z of arg2; unk_A: arg3[0] & 0xFFF with arg0 in the top
+ * four bits; unk_C / unk_E: arg3[1] / arg3[2]. */
 typedef struct Unk800F68E0Rec {
     s16 unk_0;
     u8 unk_2;
@@ -1840,11 +1840,12 @@ typedef struct Unk800F68E0Rec {
     s16 unk_E;
 } Unk800F68E0Rec;
 
-/* The 0x20 0x10-byte records of the event table D_80101BF0 (func_800392C8 sets
- * unk_0 to 0xFF = free, func_80039320 frees the current frame's, func_800395B4
- * fills one, func_8003993C replays those whose unk_0 is the frame index).
- * unk_0: the frame (D_800A36F8); unk_1 / unk_2: func_800395B4's arg0 / arg1;
- * unk_4: the s16 x / y / z of arg2; unk_A: arg3[0..2]. */
+/* The 0x20 0x10-byte records of the event table D_80101BF0 (replay_Reset sets
+ * unk_0 to 0xFF = free, replay_BeginFrame frees the current frame's,
+ * replay_RecordEvent fills one, replay_PlayFrame replays those whose unk_0 is
+ * the frame index). unk_0: the frame (D_800A36F8); unk_1 / unk_2:
+ * replay_RecordEvent's arg0 / arg1; unk_4: the s16 x / y / z of arg2; unk_A:
+ * arg3[0..2]. */
 typedef struct Unk80101BF0Rec {
     u8 unk_0;
     u8 unk_1;

@@ -36,7 +36,7 @@ glabel func_8001EFA0
     /* F828 8001F028 2328A600 */   subu      $a1, $a1, $a2
     /* F82C 8001F02C 0179000C */  jal        camera_ApplyFightView
     /* F830 8001F030 00000000 */   nop
-    /* F834 8001F034 C8E4000C */  jal        func_80039320
+    /* F834 8001F034 C8E4000C */  jal        replay_BeginFrame
     /* F838 8001F038 00000000 */   nop
     /* F83C 8001F03C 1B80000C */  jal        func_8002006C
     /* F840 8001F040 00000000 */   nop
@@ -54,7 +54,7 @@ glabel func_8001EFA0
     /* F870 8001F070 00000000 */   nop
     /* F874 8001F074 7AC8000C */  jal        func_800321E8
     /* F878 8001F078 00000000 */   nop
-    /* F87C 8001F07C E8E5000C */  jal        func_800397A0
+    /* F87C 8001F07C E8E5000C */  jal        replay_AdvanceFrame
     /* F880 8001F080 00000000 */   nop
     /* F884 8001F084 6A1B010C */  jal        func_80046DA8
     /* F888 8001F088 01000424 */   addiu     $a0, $zero, 0x1

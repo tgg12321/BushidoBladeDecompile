@@ -8,10 +8,10 @@ glabel func_8003880C
     /* 29024 80038824 01000224 */  addiu      $v0, $zero, 0x1
     /* 29028 80038828 370180A3 */  sb         $zero, %gp_rel(D_800A3203)($gp)
     /* 2902C 8003882C 300182A3 */  sb         $v0, %gp_rel(D_800A31FC)($gp)
-    /* 29030 80038830 DFE1000C */  jal        func_8003877C
+    /* 29030 80038830 DFE1000C */  jal        memcard_RequestLoad
     /* 29034 80038834 00000000 */   nop
   .L80038838:
-    /* 29038 80038838 CDE1000C */  jal        func_80038734
+    /* 29038 80038838 CDE1000C */  jal        memcard_Update
     /* 2903C 8003883C 00000000 */   nop
     /* 29040 80038840 FCFF4324 */  addiu      $v1, $v0, -0x4
     /* 29044 80038844 0C00622C */  sltiu      $v0, $v1, 0xC

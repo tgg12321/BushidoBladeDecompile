@@ -283,8 +283,8 @@ extern u8 D_800A3690;
 extern s32 g_comb_send_buf_plus_0x4;
 extern s16 D_800A36A4;
 extern s32 D_800A36AC;
-/* the Rec44 view record camera_ApplyFightView / func_8001E6E4 last placed (read
- * by snd_QueuePositionalSound as the listener) */
+/* the Rec44 view record camera_ApplyFightView / camera_ApplyReplayView last
+ * placed (read by snd_QueuePositionalSound as the listener) */
 extern Rec44 *g_listener_cam;
 extern CdlATV g_cd_atv_target;
 extern s16 D_800A36C2;
@@ -503,7 +503,7 @@ extern s32 D_80104F38;
 extern u8 D_801077B0[24];
 
 extern Unk80107850Rec D_80107850[6];
-extern void func_8001B748(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32);
+extern void camera_UpdateReplayView(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32);
 extern void font_Printf(u8 *, s32, ...);
 extern void func_80021A98(s32, MoveScript *, s32);
 extern void fighter_Init(s32, s32, s32, s32, s32);
@@ -642,7 +642,7 @@ extern void func_8001D790(void);
 extern void func_8001DA2C(void);
 extern s32 func_8001DB58(void);
 extern void func_8001DBE4(void);
-extern void func_8001E6E4(s32);
+extern void camera_ApplyReplayView(s32);
 extern void motion_ApplyRecordedPoseAdjustments(
     Unk80101EC8Record *, Rec1C *, MotionFrame *, MotionFrame *);
 extern void fighter_SetTurnDelta(Unk80101EC8Record *, s32);
@@ -726,13 +726,13 @@ extern s32 func_8003880C(void);
 extern s32 func_800388A8(void);
 extern s32 func_80038988(void);
 extern s32 *func_800392B8(void);
-extern void func_800392C8(void);
-extern void func_80039320(void);
-extern void func_800393C8(s32, s32, s32 *, s16 *);
-/* func_800395B4 (28708.c, u8 / u8 / s32 * / u16 *) has no declaration: 17AFC.c
- * calls it implicitly, and its prototype changes 17AFC.c's bytes. */
-extern void func_80039680(Unk80101EC8Record *);
-extern void func_800397A0(void);
+extern void replay_Reset(void);
+extern void replay_BeginFrame(void);
+extern void replay_RecordModelDraw(s32, s32, s32 *, s16 *);
+/* replay_RecordEvent (28708.c, u8 / u8 / s32 * / u16 *) has no declaration:
+ * 17AFC.c calls it implicitly, and its prototype changes 17AFC.c's bytes. */
+extern void replay_RecordFighter(Unk80101EC8Record *);
+extern void replay_AdvanceFrame(void);
 extern void comb_Init(void);
 extern void comb_ReadCtsSetRts(void);
 extern void comb_EnableEvents(void);

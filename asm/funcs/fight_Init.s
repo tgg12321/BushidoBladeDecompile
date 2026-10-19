@@ -455,7 +455,7 @@ glabel fight_Init
     /* EB4C 8001E34C F06C000C */  jal        camera_InitTrackedFighterFocus
     /* EB50 8001E350 21282002 */   addu      $a1, $s1, $zero
   .L8001E354:
-    /* EB54 8001E354 B2E4000C */  jal        func_800392C8
+    /* EB54 8001E354 B2E4000C */  jal        replay_Reset
     /* EB58 8001E358 00000000 */   nop
     /* EB5C 8001E35C 5E84010C */  jal        func_80061178
     /* EB60 8001E360 00000000 */   nop

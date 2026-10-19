@@ -32,7 +32,7 @@ glabel fight_Update
   .L8001E8F0:
     /* F0F0 8001E8F0 0179000C */  jal        camera_ApplyFightView
     /* F0F4 8001E8F4 00000000 */   nop
-    /* F0F8 8001E8F8 C8E4000C */  jal        func_80039320
+    /* F0F8 8001E8F8 C8E4000C */  jal        replay_BeginFrame
     /* F0FC 8001E8FC 00000000 */   nop
     /* F100 8001E900 1B80000C */  jal        func_8002006C
     /* F104 8001E904 00000000 */   nop
@@ -54,7 +54,7 @@ glabel fight_Update
     /* F144 8001E944 00000000 */   nop
     /* F148 8001E948 7AC8000C */  jal        func_800321E8
     /* F14C 8001E94C 00000000 */   nop
-    /* F150 8001E950 E8E5000C */  jal        func_800397A0
+    /* F150 8001E950 E8E5000C */  jal        replay_AdvanceFrame
     /* F154 8001E954 00000000 */   nop
     /* F158 8001E958 0A80023C */  lui        $v0, %hi(D_800A38BA)
     /* F15C 8001E95C BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)

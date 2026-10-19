@@ -762,7 +762,7 @@ def _record_kept_orphan_candidates(
 # FAKE-annotated in source. Any extension requires a fresh owner ruling.
 _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     "camera_ApplyFightView": frozenset({("pre_pad", 2)}),
-    "func_8001E6E4": frozenset({("pre_pad", 2)}),
+    "camera_ApplyReplayView": frozenset({("pre_pad", 2)}),
     # 2026-08-18 owner ruling: func_8003CF84 carries a SECOND, trailing
     # 8-byte untouched frame object (census in memory/wip/func_8003CF84/);
     # sanctioned as pad2[2] for this function only.

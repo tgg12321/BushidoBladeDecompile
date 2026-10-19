@@ -13,7 +13,7 @@ glabel func_80038988
     /* 291B4 800389B4 5C0280A3 */  sb         $zero, %gp_rel(D_800A3328)($gp)
     /* 291B8 800389B8 600280A3 */  sb         $zero, %gp_rel(D_800A332C)($gp)
     /* 291BC 800389BC 300182A3 */  sb         $v0, %gp_rel(D_800A31FC)($gp)
-    /* 291C0 800389C0 DFE1000C */  jal        func_8003877C
+    /* 291C0 800389C0 DFE1000C */  jal        memcard_RequestLoad
     /* 291C4 800389C4 00000000 */   nop
     /* 291C8 800389C8 5A000224 */  addiu      $v0, $zero, 0x5A
     /* 291CC 800389CC 390180A3 */  sb         $zero, %gp_rel(D_800A3204 + 0x1)($gp)
@@ -22,7 +22,7 @@ glabel func_80038988
     /* 291D8 800389D8 6C0280A3 */  sb         $zero, %gp_rel(D_800A3338)($gp)
     /* 291DC 800389DC 700280A3 */  sb         $zero, %gp_rel(D_800A333C)($gp)
   .L800389E0:
-    /* 291E0 800389E0 CDE1000C */  jal        func_80038734
+    /* 291E0 800389E0 CDE1000C */  jal        memcard_Update
     /* 291E4 800389E4 00000000 */   nop
     /* 291E8 800389E8 70028393 */  lbu        $v1, %gp_rel(D_800A333C)($gp)
     /* 291EC 800389EC 00000000 */  nop
@@ -158,7 +158,7 @@ glabel func_80038988
     /* 293A8 80038BA8 300180A3 */  sb         $zero, %gp_rel(D_800A31FC)($gp)
     /* 293AC 80038BAC 6C0282A3 */  sb         $v0, %gp_rel(D_800A3338)($gp)
   .L80038BB0:
-    /* 293B0 80038BB0 DFE1000C */  jal        func_8003877C
+    /* 293B0 80038BB0 DFE1000C */  jal        memcard_RequestLoad
     /* 293B4 80038BB4 00000000 */   nop
     /* 293B8 80038BB8 12E30008 */  j          .L80038C48
     /* 293BC 80038BBC 00000000 */   nop

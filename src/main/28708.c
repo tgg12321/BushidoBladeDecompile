@@ -46,7 +46,7 @@ s32 memcard_Format(s32 a0, s32 a1) {
     return format(buf);
 }
 
-void func_80037F40(u8 *a0) {
+void memcard_BuildSaveBlock(u8 *a0) {
     s32 var_0;
     u8 *p;
     s32 i;
@@ -81,7 +81,7 @@ void func_80037F40(u8 *a0) {
     }
 }
 
-s32 func_8003800C(Unk800F34D8Save *arg0) {
+s32 memcard_RestoreSaveBlock(Unk800F34D8Save *arg0) {
     s32 i;
     /* FAKE: one counter j for both loops lengthens its live range so sum,
        not j, gets $a0; two counters: score 16 */
@@ -134,7 +134,7 @@ s32 func_8003800C(Unk800F34D8Save *arg0) {
     return 1;
 }
 
-void func_80038148(void) {
+void memcard_ClearBuffer(void) {
     u8 *p = D_800F33D8;
     s32 i = 0;
     do {
@@ -145,11 +145,11 @@ void func_80038148(void) {
 }
 
 extern u8 D_8008F1C0[];
-/* func_80038170 copies D_800109EC's first 16 halfwords to +0x60 of its buffer
- * and D_80010A2C's 128 bytes to +0x80: the memory-card file header's icon CLUT
- * (16 RGB555 colours; the 16 halfwords after them are zero) and its 16x16 4-bit
- * icon image. D_80010AAC is the save-file id (D_800A31F0 holds its address),
- * then 3 bytes of rodata padding. */
+/* memcard_BuildFileHeader copies D_800109EC's first 16 halfwords to +0x60 of
+ * its buffer and D_80010A2C's 128 bytes to +0x80: the memory-card file header's
+ * icon CLUT (16 RGB555 colours; the 16 halfwords after them are zero) and its
+ * 16x16 4-bit icon image. D_80010AAC is the save-file id (D_800A31F0 holds its
+ * address), then 3 bytes of rodata padding. */
 const u16 D_800109EC[32] = {
     0x7FFF, 0x77DF, 0x6B9F, 0x635E, 0x5B1E, 0x56FD, 0x4ABD, 0x427C,
     0x323C, 0x2DFB, 0x21BB, 0x199B, 0x115A, 0x0D3A, 0x051A, 0x8000,
@@ -173,7 +173,7 @@ const char D_80010AAC[] = "BASLUS-00663BUSHIDO2";
 extern u8 D_800A3200;
 extern u8 D_800A3201;
 
-void func_80038170(u8 *out) {
+void memcard_BuildFileHeader(u8 *out) {
     s32 s1, s2, s3;
     s32 i;
     s32 mask;
@@ -274,7 +274,7 @@ void func_80038170(u8 *out) {
     }
 }
 
-void func_800383A4(void) {
+void memcard_StepRequest(void) {
     s32 var_v1;
     s32 var_v0;
     s32 temp_s0;
@@ -362,9 +362,9 @@ state_3:
     }
 setup_load:
     D_800A38CC = 1;
-    func_80038148();
-    func_80038170(D_800F33D8);
-    func_80037F40(D_800F33D8 + 0x100);
+    memcard_ClearBuffer();
+    memcard_BuildFileHeader(D_800F33D8);
+    memcard_BuildSaveBlock(D_800F33D8 + 0x100);
     if (memcard_WriteFile(
             0, 0, D_800A31F0, (s32)D_800F33D8, 1, 0x200, var_s1) != 0) {
         close(g_memcard_fd);
@@ -382,7 +382,7 @@ state_5:
         goto finish;
     }
     D_800A379E = 4;
-    func_80038148();
+    memcard_ClearBuffer();
     if (memcard_ReadFile(0, 0, D_800A31F0, (s32)D_800F33D8, 0x200) != 0) {
         close(g_memcard_fd);
         var_v0 = 6;
@@ -403,7 +403,7 @@ finish:
     D_800A31F4 = 0;
 }
 
-extern s32 func_8003800C(Unk800F34D8Save *);
+extern s32 memcard_RestoreSaveBlock(Unk800F34D8Save *);
 
 /* Load/save state-machine completion handler: dispatches on D_800A31F4
  * (4 = after a write, 6 = after a read), reaps memcard_PollSwEvents()'s status,
@@ -438,7 +438,7 @@ void memcard_PollFileCompletion(void) {
         close(g_memcard_fd);
         if (ret == 1) {
             D_800A379E = 5;
-            if (func_8003800C(&D_800F34D8) == 0) {
+            if (memcard_RestoreSaveBlock(&D_800F34D8) == 0) {
                 D_800A379E = 0xF;
             }
         } else {
@@ -453,23 +453,23 @@ fail_store:
     D_800A379E = var_1;
 }
 
-s32 func_80038734(void) {
+s32 memcard_Update(void) {
     if ((u32)D_800A31F4 < 2) {
         D_800A31F8 = func_80037D14(0, 0);
     }
-    func_800383A4();
+    memcard_StepRequest();
     memcard_PollFileCompletion();
     return D_800A379E;
 }
 
-void func_8003877C(void) {
+void memcard_RequestLoad(void) {
     D_800A379E = 4;
     D_800A3814 = 0;
     D_800A37C8 = 0;
     D_800A31F4 = 1;
 }
 
-void func_8003879C(void) {
+void memcard_RequestSave(void) {
     D_800A379E = 1;
     D_800A37C8 = 1;
     D_800A38CC = 0;
@@ -477,7 +477,7 @@ void func_8003879C(void) {
     D_800A31F4 = 1;
 }
 
-void func_800387C0(void) {
+void memcard_RequestOverwrite(void) {
     D_800A379E = 1;
     D_800A37C8 = 2;
     D_800A38CC = 0;
@@ -485,7 +485,7 @@ void func_800387C0(void) {
     D_800A31F4 = 1;
 }
 
-void func_800387E8(void) {
+void memcard_RequestFormat(void) {
     D_800A379E = 9;
     D_800A37C8 = 3;
     D_800A3814 = 0;
@@ -494,8 +494,8 @@ void func_800387E8(void) {
 
 extern u8 D_800A3203;
 extern u8 D_800A31FC;
-extern void func_8003877C(void);
-extern s32 func_80038734(void);
+extern void memcard_RequestLoad(void);
+extern s32 memcard_Update(void);
 
 s32 func_8003880C(void) {
     s32 s0;
@@ -505,9 +505,9 @@ s32 func_8003880C(void) {
     if (D_800A3203) {
         D_800A3203 = 0;
         D_800A31FC = 1;
-        func_8003877C();
+        memcard_RequestLoad();
     }
-    v0 = func_80038734();
+    v0 = memcard_Update();
     switch (v0 - 4) {
     case 0:
         break;
@@ -617,7 +617,7 @@ s32 func_80038988(void) {
         D_800A3328 = 0;
         D_800A332C = 0;
         D_800A31FC = 1;
-        func_8003877C();
+        memcard_RequestLoad();
         D_800A3205 = 0;
         D_800A3330 = 0x5A;
         D_800A3334 = 0;
@@ -625,7 +625,7 @@ s32 func_80038988(void) {
         D_800A333C = 0;
     }
 
-    v0 = func_80038734();
+    v0 = memcard_Update();
 
     if (D_800A333C != 0) {
         func_8006BEC4(0xA, -1);
@@ -700,7 +700,7 @@ s32 func_80038988(void) {
                 D_800A3330 = 0x5A;
                 break;
             }
-            func_8003877C();
+            memcard_RequestLoad();
             break;
         case 11:
             D_800A332C++;
@@ -708,7 +708,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 break;
             }
-            func_8003877C();
+            memcard_RequestLoad();
             break;
         case 6:
             D_800A3328++;
@@ -716,7 +716,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 break;
             }
-            func_8003877C();
+            memcard_RequestLoad();
             break;
         case 10:
             D_800A3324++;
@@ -724,7 +724,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 break;
             }
-            func_8003877C();
+            memcard_RequestLoad();
             break;
         case 2:
             D_800A31FC = 0;
@@ -735,7 +735,7 @@ s32 func_80038988(void) {
                 D_800A31FC = 0;
                 D_800A3338 = 1;
             }
-            func_8003877C();
+            memcard_RequestLoad();
             break;
         default:
             break;
@@ -776,10 +776,10 @@ end:
 s32 func_80038C70(void) {
     extern u8 D_800A3207;
     extern u8 D_800A3206;
-    extern void func_8003877C(void);
-    extern void func_8003879C(void);
-    extern void func_800387C0(void);
-    extern void func_800387E8(void);
+    extern void memcard_RequestLoad(void);
+    extern void memcard_RequestSave(void);
+    extern void memcard_RequestOverwrite(void);
+    extern void memcard_RequestFormat(void);
     s32 result = 0;
     s32 var_1 = -1;
     s32 v0;
@@ -793,7 +793,7 @@ s32 func_80038C70(void) {
         D_800A31FC = 0;
     }
 
-    v0 = func_80038734();
+    v0 = memcard_Update();
 
     if (D_800A3354 != 0) {
         func_8006BEC4(0xA, -1);
@@ -876,7 +876,7 @@ s32 func_80038C70(void) {
             func_8005C650(1, 0x7F, 0x7F);
             var_3 = 0xD;
             if (D_800A3350 == 0) {
-                func_800387E8();
+                memcard_RequestFormat();
                 goto sel_dispatch;
             }
             v0 = 0;
@@ -921,7 +921,7 @@ sel_dispatch:
                 D_800A334C = 0x5A;
                 break;
             }
-            func_8003877C();
+            memcard_RequestLoad();
             break;
         case 1:
         case 2:
@@ -932,10 +932,10 @@ sel_dispatch:
             D_800A3340++;
             if (((u8)D_800A3340) >= 5) {
                 D_800A31FC = 0;
-                func_8003879C();
+                memcard_RequestSave();
                 break;
             }
-            func_8003877C();
+            memcard_RequestLoad();
             break;
         case 6:
             D_800A3344++;
@@ -943,7 +943,7 @@ sel_dispatch:
                 D_800A31FC = 0;
                 break;
             }
-            func_8003877C();
+            memcard_RequestLoad();
             break;
         default:
             break;
@@ -965,7 +965,7 @@ sel_dispatch:
         case 10:
         case 11:
         default:
-            func_8003879C();
+            memcard_RequestSave();
             D_800A3207 = 2;
             D_800A334C = 0x5A;
             D_800A3350 = 0;
@@ -1005,7 +1005,7 @@ sel_dispatch:
             break;
         case 11:
             D_800A31FC = 1;
-            func_8003877C();
+            memcard_RequestLoad();
             D_800A3207 = 3;
             D_800A334C = 0x5A;
             break;
@@ -1033,11 +1033,11 @@ sel_dispatch:
                     D_800A3340 = 0;
                     D_800A3344 = 0;
                     D_800A31FC = 1;
-                    func_8003877C();
+                    memcard_RequestLoad();
                 } else {
                     if (D_800A3350 != 0)
                         goto area_c_long;
-                    func_800387C0();
+                    memcard_RequestOverwrite();
                 }
                 D_800A3207 = 2;
                 break;
@@ -1094,7 +1094,7 @@ end:
 
 s32 *func_800392B8(void) { return (s32 *)D_800F33D8; }
 
-void func_800392C8(void) {
+void replay_Reset(void) {
     s32 i;
     s32 j;
 
@@ -1109,7 +1109,7 @@ void func_800392C8(void) {
     }
 }
 
-void func_80039320(void) {
+void replay_BeginFrame(void) {
     extern u8 D_800A379C;
     extern s16 D_800A3714;
     s32 i;
@@ -1141,7 +1141,7 @@ void func_80039320(void) {
     D_800A3714 = 0;
 }
 
-void func_800393C8(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
+void replay_RecordModelDraw(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     extern s16 D_800A3714;
     extern u8 D_800A3209;
     Unk800F68E0Rec *var_0;
@@ -1205,7 +1205,7 @@ void func_800393C8(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     var_0->unk_E = arg3[2];
 }
 
-void func_800395B4(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
+void replay_RecordEvent(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
     extern u8 D_800A3208;
     extern u8 D_800A379C;
     Unk80101BF0Rec *var_0;
@@ -1236,7 +1236,7 @@ void func_800395B4(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
     }
 }
 
-void func_80039680(Unk80101EC8Record *a0) {
+void replay_RecordFighter(Unk80101EC8Record *a0) {
     s16 idx;
     Rec1C *dest;
 
@@ -1274,7 +1274,7 @@ void func_80039680(Unk80101EC8Record *a0) {
     dest->b19 = a0->unk_40;
 }
 
-void func_800397A0(void) {
+void replay_AdvanceFrame(void) {
     u8 val = D_800A36F8;
     if (val == 0x77) {
         D_800A36F8 = 0;
@@ -1284,7 +1284,7 @@ void func_800397A0(void) {
     }
 }
 
-void func_800397D4(void) {
+void replay_Start(void) {
     gpu_ResetGraphMode1();
     func_8003E22C();
     func_8003F218(0);
@@ -1335,7 +1335,7 @@ void func_8003984C(Unk80101EC8Record *arg0, s32 *arg1, s32 *arg2) {
 
 extern u8 D_800A3208;
 
-void func_8003993C(void) {
+void replay_PlayFrame(void) {
     MotionFrame work[2];
     /* FAKE: frame layout - func_80041188 writes two MATRIXes (0x40 bytes); 0x88
      * keeps the frame (MATRIX[2]: score 58; MATRIX[4] also differs) */
@@ -1376,7 +1376,7 @@ void func_8003993C(void) {
     func_8001BBD8(
         &D_800A36EC[idx][D_800A3748],
         D_800A3748 == 0 ? &D_800A36EC[idx][1] : &D_800A36EC[idx][0], var_8);
-    func_8001E6E4(var_8);
+    camera_ApplyReplayView(var_8);
 
     for (i = 0; i < 2; i++) {
         /* entry: the frame's entry in the practice weapon table (if arm) or

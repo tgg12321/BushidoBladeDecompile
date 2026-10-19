@@ -3198,7 +3198,7 @@ glabel fighter_Update
     /* 17574 80026D74 00000000 */   nop
     /* 17578 80026D78 7A0020A6 */  sh         $zero, 0x7A($s1)
   .L80026D7C:
-    /* 1757C 80026D7C A0E5000C */  jal        func_80039680
+    /* 1757C 80026D7C A0E5000C */  jal        replay_RecordFighter
     /* 17580 80026D80 21202002 */   addu      $a0, $s1, $zero
     /* 17584 80026D84 4802BF8F */  lw         $ra, 0x248($sp)
     /* 17588 80026D88 4402B38F */  lw         $s3, 0x244($sp)

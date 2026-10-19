@@ -867,7 +867,7 @@ void func_8001B6F4(void) {
 /* Q65: this file's statics (.sbss), in address order. */
 static u16 D_800A3310;
 
-void func_8001B748(
+void camera_UpdateReplayView(
     Rec44 *dst, Rec1C *a, Rec1C *b, s32 frac_s1, s32 frac, s32 val) {
     s32 inv_frac = 0x1000 - frac;
     s32 inv_s1 = 0x1000 - frac_s1;
@@ -969,15 +969,16 @@ void func_8001BAE4(Rec1C *arg0, Rec1C *arg1, s32 arg2) {
     if (var_v0 < 0) {
         var_v0 += 3;
     }
-    func_8001B748(&D_800F6608, arg0, arg1, arg2, var_s3,
-                  (0x500 - temp_a2) - (var_v0 >> 2));
+    camera_UpdateReplayView(&D_800F6608, arg0, arg1, arg2, var_s3,
+                            (0x500 - temp_a2) - (var_v0 >> 2));
 }
 
 void func_8001BBD8(Rec1C *arg0, Rec1C *arg1, s32 arg2) {
     s32 temp_s0;
     temp_s0 = (D_800A387C < 0x2711) << 0xB;
-    func_8001B748(&D_800F5328, arg0, arg1, arg2, temp_s0,
-                  -0x200 - ratan2(arg1->h4 - arg0->h4, arg1->h8 - arg0->h8));
+    camera_UpdateReplayView(
+        &D_800F5328, arg0, arg1, arg2, temp_s0,
+        -0x200 - ratan2(arg1->h4 - arg0->h4, arg1->h8 - arg0->h8));
 }
 
 void camera_SetFighterFocusView(Unk80101EC8Record *arg0, s32 arg1) {
@@ -1183,7 +1184,7 @@ void func_8001C51C(void) {
     object_FreeAttachedObjects();
     func_80030D04();
     camera_InitTwoFighterView(&D_80101EC8[0], &D_80101EC8[1]);
-    func_800392C8();
+    replay_Reset();
     func_80021280(1);
 }
 
@@ -1902,7 +1903,7 @@ void fight_Init(void) {
     if (D_800A38BA != 0) {
         camera_InitTrackedFighterFocus(&D_80101EC8[0], &D_80101EC8[1]);
     }
-    func_800392C8();
+    replay_Reset();
     func_80061178();
     func_8001DBE4();
     D_800A3768 = DISP_DISABLED;
@@ -1982,7 +1983,7 @@ void camera_ApplyFightView(void) {
     g_listener_cam = s2;
 }
 
-void func_8001E6E4(s32 arg0) {
+void camera_ApplyReplayView(s32 arg0) {
     /* FAKE: frame layout: unwritten leading pad for the original frame's 8
      * untouched bytes (dead-vars-local-array carve-out; SOTN precedent:
      * volatile u32 pad[4]; // FAKE at st/sel/stream.c:80); without: score 21.
@@ -2039,7 +2040,7 @@ void fight_Update(void) {
         camera_UpdateTrackedFighterView(&D_80101EC8[D_800A36F6]);
     }
     camera_ApplyFightView();
-    func_80039320();
+    replay_BeginFrame();
     func_8002006C();
     func_8001BE20(0, &buf);
     fighter_Update(0, &buf);
@@ -2048,7 +2049,7 @@ void fight_Update(void) {
     func_8002C61C();
     object_UpdatePool();
     func_800321E8();
-    func_800397A0();
+    replay_AdvanceFrame();
     if (D_800A38BA != 0 && D_800A36FA == 0) {
         func_8001E800();
     } else {
@@ -2084,7 +2085,7 @@ void func_8001EA84(void) {
     D_800A3778 = func_800472B0();
     camera_SetFighterFocusView(&D_80101EC8[D_800A3748 == 0], D_800A37B8 << 3);
     camera_ApplyFightView();
-    func_80039320();
+    replay_BeginFrame();
     func_8002006C();
     pad_ClearStateBits(&sp10);
     fighter_Update(0, &sp10);
@@ -2092,7 +2093,7 @@ void func_8001EA84(void) {
     func_8002C61C();
     object_UpdatePool();
     func_800321E8();
-    func_800397A0();
+    replay_AdvanceFrame();
     func_80046DA8(1);
     snd_UpdateStageSounds();
     if (D_800A38DC == 3) {
@@ -2194,7 +2195,7 @@ void func_8001EFA0(void) {
     camera_SetInterpolatedFighterView(
         &D_80101EC8[D_800A3748], (D_800A37B8 << 12) / 105);
     camera_ApplyFightView();
-    func_80039320();
+    replay_BeginFrame();
     func_8002006C();
     pad_ClearStateBits(&sp10);
     fighter_Update(0, &sp10);
@@ -2202,7 +2203,7 @@ void func_8001EFA0(void) {
     func_8002C61C();
     object_UpdatePool();
     func_800321E8();
-    func_800397A0();
+    replay_AdvanceFrame();
     func_80046DA8(1);
     snd_UpdateStageSounds();
 
@@ -5187,7 +5188,7 @@ skip_62:
     if (rec->unk_7A == 2) {
         rec->unk_7A = 0;
     }
-    func_80039680(rec);
+    replay_RecordFighter(rec);
 }
 
 /* Tail word after motion_ResolveMoveData's five-entry compiler-generated switch

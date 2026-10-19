@@ -3642,7 +3642,8 @@ void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 arg1) {
 /* Rotates the object's local vector (pos) by bone unk_09's matrix of
  * func_80046DEC() and adds that matrix's translation, composes the bone
  * matrix with the object's, and hands the point and the angles
- * func_8002F2D0 reads from that matrix to func_80049718 / func_800393C8. */
+ * func_8002F2D0 reads from that matrix to func_80049718 /
+ * replay_RecordModelDraw. */
 void func_800300B4(Obj80106A78 *arg0) {
     s32 mac[3];
     s16 var_1[4];
@@ -3669,7 +3670,7 @@ void func_800300B4(Obj80106A78 *arg0) {
 
     lookup = D_8008EB80[arg0->kind];
     func_80049718(lookup, 1, mac, var_1);
-    func_800393C8(arg0->slot, lookup, mac, var_1);
+    replay_RecordModelDraw(arg0->slot, lookup, mac, var_1);
 }
 
 void func_80030208(void) {
@@ -3697,7 +3698,7 @@ void func_80030208(void) {
             lookup += 3;
         }
         func_80049718(lookup, 1, &obj->pos.x, obj->rot);
-        func_800393C8(obj->slot, lookup, &obj->pos, obj->rot);
+        replay_RecordModelDraw(obj->slot, lookup, &obj->pos, obj->rot);
     }
 }
 
@@ -4684,7 +4685,7 @@ void func_80032854(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
         s0 += D_8008EBCC[D_800A384C];
     }
 
-    func_800395B4(arg0, arg1, arg2, arg3);
+    replay_RecordEvent(arg0, arg1, arg2, arg3);
 
     switch (arg1) {
     case 4:

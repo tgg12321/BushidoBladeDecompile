@@ -1056,7 +1056,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 end_off;
     /* FAKE: i/row count the first phase's two loops; k and j are reused
      * as plain loop indices by the later phases (tile strip k/j, timer j/k),
-     * the same counter reuse as func_8005E098 and the func_8003800C
+     * the same counter reuse as func_8005E098 and the memcard_RestoreSaveBlock
      * single-counter shape. Separate counters for the later phases: score 11.
      */
     s16 i;
