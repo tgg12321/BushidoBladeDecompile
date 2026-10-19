@@ -8,7 +8,9 @@ by compiler feedback; naming_keycheck.py proves the result.
   1. Rename `m` in T's declaration: the aggregate body closed by `} T;` in
      src/ or include/ (exactly one body, one depth-1 declarator; else exit 2).
      Comments are ignored while finding the body and its declarators (an
-     `m[i]` written in a member's comment is not a declarator).
+     `m[i]` written in a member's comment is not a declarator). `T.u.m=n`
+     (any depth) renames m in the inline anonymous struct/union declared as
+     member u of T (`union { ... } u;`), as naming_keycheck.py's nested pairs.
   2. Preprocess and compile every src/**/*.c TU with the Makefile's CPP /
      CPP_FLAGS / CPP_DEFS / CC1 / CC_FLAGS (output discarded). Each
      "has no member named `m'" error marks an access line: rename the `.m` /
@@ -29,7 +31,7 @@ files, prints the planned edits as a unified diff, and writes nothing to the tre
 
 Run inside WSL from the repo root (it needs the mipsel cpp and the built cc1):
   python3 tools/naming_member_apply.py [--dry-run] <pairs.txt>
-pairs.txt: one `T.m=n` per line; other lines (`Old=New`, `f:l=n`, blank,
+pairs.txt: one `T.m=n` (or `T.u.m=n`) per line; other lines (`Old=New`, `f:l=n`, blank,
 `#` comments) are ignored.
 """
 import argparse
@@ -46,7 +48,7 @@ from concurrent.futures import ThreadPoolExecutor
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 # where src/ and include/ are read, edited and compiled: ROOT, or --dry-run's scratch copy
 WORK = ROOT
-MEMBER_PAIR = re.compile(r"^([A-Za-z_]\w*)\.([A-Za-z_]\w*)=([A-Za-z_]\w*)$")
+MEMBER_PAIR = re.compile(r"^([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\.([A-Za-z_]\w*)=([A-Za-z_]\w*)$")
 NO_MEMBER = re.compile(r"^(\S+?):(\d+): .*has no member named `(\w+)'", re.M)
 MAX_ROUNDS = 8
 
@@ -123,7 +125,37 @@ def tracked(*roots):
     return out
 
 
+def matching_brace(s, i):
+    """Index of the '}' closing the '{' at s[i]."""
+    depth = 0
+    for k in range(i, len(s)):
+        depth += (s[k] == "{") - (s[k] == "}")
+        if depth == 0:
+            return k
+    return -1
+
+
+def nested_body(s, i, e, name):
+    """(open, close) of the inline anonymous struct/union declared as member `name`
+    at depth 1 of the body s[i] == '{' .. s[e] == '}', or None unless exactly one."""
+    found, k, start = [], i + 1, i + 1
+    while k < e:
+        if s[k] == ";":
+            start = k + 1
+        elif s[k] == "{":
+            q = matching_brace(s, k)
+            if (re.fullmatch(r"\s*(?:(?:const|volatile)\s+)*(?:struct|union)\s*", s[start:k])
+                    and re.match(r"\s*" + re.escape(name) + r"\s*;", s[q + 1:e])):
+                found.append((k, q))
+            k = q
+        k += 1
+    return found[0] if len(found) == 1 else None
+
+
 def rename_declaration(t, m, n, files):
+    """t is T, or T.u... for a member of the inline anonymous aggregate declared as
+    member u of T (as naming_keycheck's T.u.m=n)."""
+    t, *path = t.split(".")
     hits = []
     for f in files:
         # comments blanked: a brace, a `} T;` or an `m[i]` in a comment is not code
@@ -138,7 +170,17 @@ def rename_declaration(t, m, n, files):
                     if depth == 0:
                         break
                 i -= 1
-            body = s[i:e.start()]
+            close = e.start()
+            for name in path:
+                sub = nested_body(s, i, close, name)
+                if sub is None:
+                    i = -1
+                    break
+                i, close = sub
+            if i < 0:
+                hits.append((f, 0, []))
+                continue
+            body = s[i:close]
             # depth-1 declarators only: blank out nested bodies first
             flat = list(body)
             d = 0

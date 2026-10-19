@@ -4468,6 +4468,55 @@ def test_naming_keycheck_scoped_pairs() -> None:
         check("keycheck: unrelated member destination token allowed in " + label, ok)
     check("keycheck: member bare-name change rejected", not proof("T.m=fresh",
           {"src/a.c": member + "int m;"}, {"src/a.c": renamed + "int fresh;"})[0])
+
+    # Nested members (T.u.m): m of the anonymous aggregate declared as member u of T.
+    nested = ("typedef struct { int d; union { int pair; struct { short b; short a; } node; } ends; } E;\n"
+              "struct N { int node; };\n"
+              "int f(E *e, struct N *n) { return e->ends.node.a + e[1].ends.node.b + n->node; } /* node */\n")
+    nested_new = (nested.replace("} node; } ends;", "} pt; } ends;")
+                  .replace("ends.node.a", "ends.pt.a").replace("ends.node.b", "ends.pt.b")
+                  .replace("/* node */", "/* pt */"))
+    check("keycheck: nested union member T.u.m renamed (declaration, accesses, comment)",
+          proof("E.ends.node=pt", {"src/a.c": nested}, {"src/a.c": nested_new})[0])
+    check("keycheck: nested member accesses may keep the old name",
+          proof("E.ends.node=pt", {"src/a.c": nested},
+                {"src/a.c": nested.replace("} node; } ends;", "} pt; } ends;")
+                 .replace("ends.node.a", "ends.pt.a")})[0])
+    ok, why = proof("E.node=pt", {"src/a.c": nested}, {"src/a.c": nested_new})
+    check("keycheck: flat T.m for a nested member rejected (" + why + ")",
+          not ok and "nested" in why)
+    ok, why = proof("E.missing.node=pt", {"src/a.c": nested},
+                    {"src/a.c": nested_new})
+    check("keycheck: nested path naming no inline aggregate rejected (" + why + ")",
+          not ok and "nested path" in why)
+    tagged = nested.replace("struct { short b;", "struct NS { short b;")
+    ok, why = proof("E.ends.node=pt", {"src/a.c": tagged},
+                    {"src/a.c": tagged.replace("} node; } ends;", "} pt; } ends;")})
+    check("keycheck: nested member whose own type is a tagged inline struct (" + why + ")", ok)
+    tagged_path = nested.replace("union { int pair;", "union U { int pair;")
+    ok, why = proof("E.ends.node=pt", {"src/a.c": tagged_path},
+                    {"src/a.c": tagged_path.replace("} node; } ends;", "} pt; } ends;")})
+    check("keycheck: a tagged path step is not followed (use U.node) (" + why + ")",
+          not ok and "nested path" in why)
+    twice = nested.replace("int d;", "int node;")
+    ok, why = proof("E.ends.node=pt", {"src/a.c": twice},
+                    {"src/a.c": twice.replace("} node; } ends;", "} pt; } ends;")})
+    check("keycheck: nested member also named at T's top level rejected (" + why + ")",
+          not ok and "exactly once" in why)
+    ok, why = proof("E.ends.node=pair", {"src/a.c": nested},
+                    {"src/a.c": nested.replace("} node; } ends;", "} pair; } ends;")})
+    check("keycheck: nested member destination already a member rejected", not ok)
+    ok, why = proof("E.ends.node=pt", {"src/a.c": nested},
+                    {"src/a.c": nested_new.replace("int pair;", "int pairs;")})
+    check("keycheck: other edits in the nested aggregate rejected", not ok)
+    check("keycheck: nested member pair parses", nk.parse_pairs("E.ends.node=pt") == {"E.ends.node": "pt"})
+    with contextlib.redirect_stderr(io.StringIO()):
+        try:
+            nk.parse_pairs("f:a.b=c")
+            bad = False
+        except SystemExit:
+            bad = True
+    check("keycheck: a local pair cannot carry a member path", bad)
     for text in ["struct T { int x; };", "struct T { int m; int m; };",
                  "struct T { int m; }; struct T { int m; };",
                  "struct T { struct { int m; } x; };",
@@ -10255,6 +10304,27 @@ def test_naming_member_apply() -> None:
                      ["include/t.h", "include/u.h"]), 2)
         eq("naming_member_apply: a name only in comments is no declarator (exit 2)",
            exit_code(nma.rename_declaration, "Rec", "missing", "x", ["include/t.h"]), 2)
+
+        # T.u.m: the member of the inline anonymous aggregate declared as member u
+        edge = ("typedef struct {\n    s32 dist;\n    union {\n        s32 pair; /* a << 16 | b */\n"
+                "        struct {\n            u16 b;\n            s16 a;\n        } node;\n"
+                "    } ends; /* ends.node: the two points */\n    s32 node_count;\n} Edge;\n")
+        put("include/e.h", edge)
+        eq("naming_member_apply: nested T.u.m pair parses",
+           nma.MEMBER_PAIR.match("Edge.ends.node=pt").groups(), ("Edge.ends", "node", "pt"))
+        eq("naming_member_apply: nested member renamed in its union",
+           exit_code(nma.rename_declaration, "Edge.ends", "node", "pt", ["include/e.h"]), 0)
+        eq("naming_member_apply: only the nested declarator changes",
+           Path(td, "include/e.h").read_text(), edge.replace("} node;", "} pt;"))
+        put("include/e.h", edge)
+        eq("naming_member_apply: a flat T.m does not reach the nested member (exit 2)",
+           exit_code(nma.rename_declaration, "Edge", "node", "pt", ["include/e.h"]), 2)
+        eq("naming_member_apply: a path naming no inline aggregate exits 2",
+           exit_code(nma.rename_declaration, "Edge.missing", "node", "pt", ["include/e.h"]), 2)
+        put("include/e.h", edge.replace("union {", "union U {"))
+        eq("naming_member_apply: a tagged path step is not followed (exit 2)",
+           exit_code(nma.rename_declaration, "Edge.ends", "node", "pt", ["include/e.h"]), 2)
+        Path(td, "include/e.h").unlink()
 
         # --dry-run: the whole run on a scratch copy, nothing written to the tree
         put("src/a.c", src)

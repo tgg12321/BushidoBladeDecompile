@@ -92,6 +92,10 @@ fail closed. Reader-owned trees cache successful gates and invalidate on mutatio
 
 Scoped pairs apply only to src/include C and header files. T.m=n renames the single declaration of
 member m in struct/union tag or typedef T; either pre- or post-global spelling of T is accepted.
+T.u.m=n (any depth, T.u.v.m=n) renames member m of the anonymous struct/union declared inline as
+member u of T (`union { ... } u;`); each path step must name exactly one such member at depth 1
+of its container, m must occur once in T's whole definition, and the final container cannot
+hold a further nested aggregate. Tagged nested aggregates are addressed as Tag.m instead.
 Accesses after . or -> may retain m or become n. The destination cannot be a member, type name,
 macro name/body token, pasted token or C/GNU keyword (base and post-global trees). Qualifier-only
 declarations and unterminated aggregate declarations fail. Other aggregate edits must be explained
@@ -726,7 +730,8 @@ def parse_pairs(spec: str) -> dict[str, str]:
         old, sep, new = item.partition("=")
         old, new = old.strip(), new.strip()
         names = re.split(r"[.:]", old)
-        if (not sep or len(names) > 2 or not all(IDENT.fullmatch(x) for x in names)
+        if (not sep or (len(names) > 2 and (":" in old or len(names) > 8))
+                or not all(IDENT.fullmatch(x) for x in names)
                 or not IDENT.fullmatch(new) or names[-1] == new):
             sys.exit(f"bad pair {item!r} (want old=new, two different identifiers)")
         if old in pairs and pairs[old] != new:
@@ -735,6 +740,82 @@ def parse_pairs(spec: str) -> dict[str, str]:
     if not pairs:
         sys.exit("no pairs given")
     return pairs
+
+
+def scoped_parts(spec):
+    """(scope, path, old) of a scoped pair: T.m and f:l have an empty path; T.u.m names
+    member m of the anonymous aggregate declared as member u of T (path ("u",))."""
+    if ":" in spec:
+        scope, old = spec.split(":")
+        return scope, (), old
+    names = spec.split(".")
+    return names[0], tuple(names[1:-1]), names[-1]
+
+
+def member_scope_key(scope, path):
+    """The namespace key of a member pair: T, or T.u... for a nested member."""
+    return ".".join((scope,) + tuple(path))
+
+
+def nested_container(ts, j, end, path):
+    """Follow path from the aggregate body ts[j] == '{' .. ts[end] == '}': each step is a
+    depth-1 member declared as an inline anonymous struct/union (`union { ... } u;`).
+    Returns the (open, close) indices of the last container, or None."""
+    qualifiers = {"const", "volatile", "__const", "__const__", "__volatile", "__volatile__"}
+    for name in path:
+        found, start, k = [], j + 1, j + 1
+        while k < end:
+            if ts[k] == "{":
+                k = balanced(ts, k, "{", "}") + 1
+                continue
+            if ts[k] == ";":
+                seg = list(range(start, k))
+                opens = [x for x in seg if ts[x] == "{"]
+                if opens:
+                    p = opens[0]
+                    q = balanced(ts, p, "{", "}")
+                    if (p - 1 >= start and ts[p - 1] in ("struct", "union")
+                            and all(ts[x] in qualifiers for x in range(start, p - 1))
+                            and q == k - 2 and ts[k - 1] == name):
+                        found.append((p, q))
+                start = k + 1
+            k += 1
+        if len(found) != 1:
+            return None
+        j, end = found[0]
+    return j, end
+
+
+def container_declarators(ts, j, end):
+    """Index -> name of the depth-1 member declarators of the aggregate body ts[j] == '{'
+    .. ts[end] == '}': simple declarators (member_declarators), and the one declarator
+    of an inline aggregate member (`struct { ... } m;`). Unrecognized declarations are
+    skipped (they declare nothing this proof can certify)."""
+    out, start, k = {}, j + 1, j + 1
+    while k < end:
+        if ts[k] == "{":
+            k = balanced(ts, k, "{", "}") + 1
+            continue
+        if ts[k] == ";":
+            seg = ts[start:k]
+            if "{" not in seg:
+                try:
+                    declared = member_declarators(seg)
+                except ValueError:
+                    declared = []
+                for q in range(start, k):
+                    if ts[q] in declared and (q + 1 == k or ts[q + 1] in (",", "[")):
+                        out[q] = ts[q]
+            else:
+                p = start + seg.index("{")
+                q = balanced(ts, p, "{", "}")
+                kw = p - 1 - (IDENT.fullmatch(ts[p - 1]) is not None and ts[p - 1] not in ("struct", "union"))
+                if (q == k - 2 and IDENT.fullmatch(ts[k - 1]) and kw >= start
+                        and ts[kw] in ("struct", "union")):
+                    out[k - 1] = ts[k - 1]
+            start = k + 1
+        k += 1
+    return out
 
 
 def code_spans(text: str):
@@ -1047,7 +1128,7 @@ def closure_hazards(text, path):
 def closure_macro_checks(records, scoped):
     names = {name for name, _, _ in records}
     for spec, new in (scoped or {}).items():
-        old = re.split(r"[.:]", spec)[1]
+        old = scoped_parts(spec)[2]
         if old in names or new in names:
             raise ValueError(f"{spec}={new}: scoped names are not fresh in macros (#define name)")
     functions = {name for name, params, _ in records if params is not None}
@@ -1704,7 +1785,7 @@ def cpp_scope_checks(output, scoped, global_pairs, label, source_tree=None):
             if row not in originals:
                 uncertain.update(_typedef_classes((" ".join(row),)))
     for spec, dest in (scoped or {}).items():
-        scope, old = re.split(r"[.:]", spec)
+        scope, _member_path, old = scoped_parts(spec)
         if "." in spec:
             owner = scoped_type_name(scope, global_pairs, label == "new")
             if dest in types:
@@ -1776,7 +1857,12 @@ def sentinel_namespaces(output, names):
             if ts[j:j + 1] == ["{"]:
                 aggregate_bodies.update(range(j + 1, balanced(ts, j, "{", "}")))
     functions = cpp_functions(ts, declaration_types({"src/cpp.c": " ".join(ts)}))
-    members = {scope for kind, scope in names.values() if kind == "member"}
+    members = {scope.split(".")[0] for kind, scope in names.values() if kind == "member"}
+    nested_paths = {}
+    for kind, scope in names.values():
+        if kind == "member" and "." in scope:
+            owner, *path = scope.split(".")
+            nested_paths.setdefault(owner, set()).add(tuple(path))
     if members:
         forward_aliases = {}
         for k in range(len(ts) - 4):
@@ -1809,6 +1895,16 @@ def sentinel_namespaces(output, names):
                         if ts[q] in names and ts[q] in declared:
                             declarations.setdefault(q, set()).update(owners)
                     start = k + 1
+            # A nested member (T.u.m) is declared at depth 1 of the anonymous
+            # aggregate the path reaches from T's body.
+            for owner in owners:
+                for path in nested_paths.get(owner, ()):
+                    container = nested_container(ts, j, end, path)
+                    if container is None:
+                        continue
+                    for q, name in container_declarators(ts, *container).items():
+                        if name in names:
+                            declarations.setdefault(q, set()).add(member_scope_key(owner, path))
     for i, token in enumerate(ts):
         if token not in names:
             continue
@@ -1830,7 +1926,7 @@ def cpp_source_guards(output, tree, scoped):
     functions, objects = macro_table_records(output.macros)
     names = functions | objects.keys()
     for spec, dest in (scoped or {}).items():
-        scope, old = re.split(r"[.:]", spec)
+        scope, _path, old = scoped_parts(spec)
         for macro, params, body in output.macros:
             if any(word in body and word not in (params or ()) for word in (old, dest)):
                 raise ValueError(f"{spec}={dest}: scoped name in cpp macro body: {macro}")
@@ -2086,11 +2182,11 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
         old, dest = code_spans(base[path])[k][0], code_spans(new[target])[k][0]
         owners = []
         for spec, replacement in (scoped or {}).items():
-            scope, source = re.split(r"[.:]", spec)
+            scope, member_path, source = scoped_parts(spec)
             if source != old or replacement != dest:
                 continue
             if "." in spec:
-                owners.append(("member", scoped_type_name(scope, global_pairs)))
+                owners.append(("member", member_scope_key(scoped_type_name(scope, global_pairs), member_path)))
             elif any(name == scoped_type_name(scope, global_pairs) and start <= k <= end
                      for name, start, _, end in function_definitions(base[path])):
                 owners.append(("local", scoped_type_name(scope, global_pairs)))
@@ -2834,13 +2930,13 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
         peers = [o for o, n in pairs.items() if o != spec and n == new]
         if any("." in spec or "." in o or scoped_type_name(spec.split(":")[0], globals) == scoped_type_name(o.split(":")[0], globals) for o in peers):
             raise ValueError(f"{spec}: scoped destination {new} is shared by another pair")
-        old = re.split(r"[.:]", spec)[1]
+        old = scoped_parts(spec)[2]
         if any(macro_uses(text, old, name_only=True) or macro_uses(text, new, name_only=True)
                for text in macro_sources.values()):
             raise ValueError(f"{spec}={new}: scoped names are not fresh in macros (#define name)")
     for spec, new in pairs.items():
         member = "." in spec
-        scope, old = re.split(r"[.:]", spec)
+        scope, member_path, old = scoped_parts(spec)
         scope = scoped_type_name(scope, globals)
         for macro_path, macro_text in cfiles.items():
             if not member and macro_uses(macro_text, new, body_only=True):
@@ -2886,16 +2982,27 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                                 aliases.append(ts[k + 3])
                     if scope != tag and scope not in aliases:
                         continue
-                    if "{" in ts[j + 1:end] or "#" in ts[j + 1:end]:
+                    if "#" in ts[j + 1:end]:
                         raise ValueError(f"{spec}: nested or preprocessed aggregate is unsupported")
                     hits = [k for k in range(j + 1, end) if ts[k] == old]
                     if len(hits) != 1:
                         raise ValueError(f"{spec}: member must occur exactly once in T's definition")
                     k = hits[0]
-                    a = max([j] + [x for x in range(j + 1, k) if ts[x] == ";"]) + 1
-                    b = next((x for x in range(k, end) if ts[x] == ";"), end)
-                    if member_declarators(ts[a:b]).count(old) != 1:
-                        raise ValueError(f"{spec}: ambiguous/unsupported member declaration")
+                    # The member's container: T's body, or the anonymous aggregate the
+                    # nested path names (T.u.m). It holds no further aggregate.
+                    container = (j, end) if not member_path else nested_container(ts, j, end, member_path)
+                    if container is None:
+                        raise ValueError(f"{spec}: nested path must name one inline anonymous struct/union member at each step")
+                    cj, cend = container
+                    if not member_path:
+                        if "{" in ts[cj + 1:cend]:
+                            raise ValueError(f"{spec}: nested or preprocessed aggregate is unsupported")
+                        a = max([cj] + [x for x in range(cj + 1, k) if ts[x] == ";"]) + 1
+                        b = next((x for x in range(k, cend) if ts[x] == ";"), cend)
+                        if member_declarators(ts[a:b]).count(old) != 1:
+                            raise ValueError(f"{spec}: ambiguous/unsupported member declaration")
+                    elif container_declarators(ts, cj, cend).get(k) != old:
+                        raise ValueError(f"{spec}: member is not declared in the named nested aggregate")
                     found.append((path, [k]))
             else:
                 for name, _, begin, end in function_definitions(text):
@@ -3198,7 +3305,7 @@ def scoped_comments(want: str, new: str, pairs: dict[str, str]):
     notes = False
     allowed = {}
     for spec, dest in pairs.items():
-        allowed.setdefault(re.split(r"[.:]", spec)[1], set()).add(dest)
+        allowed.setdefault(scoped_parts(spec)[2], set()).add(dest)
     if len(a) != len(b):
         return False, notes
     for x, y in zip(a, b):
