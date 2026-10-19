@@ -1,8 +1,8 @@
 glabel func_80030208
     /* 20A08 80030208 C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 20A0C 8003020C 2800B4AF */  sw         $s4, 0x28($sp)
-    /* 20A10 80030210 1080143C */  lui        $s4, %hi(D_80106A78)
-    /* 20A14 80030214 786A9426 */  addiu      $s4, $s4, %lo(D_80106A78)
+    /* 20A10 80030210 1080143C */  lui        $s4, %hi(g_object_pool)
+    /* 20A14 80030214 786A9426 */  addiu      $s4, $s4, %lo(g_object_pool)
     /* 20A18 80030218 2C00B5AF */  sw         $s5, 0x2C($sp)
     /* 20A1C 8003021C 21A80000 */  addu       $s5, $zero, $zero
     /* 20A20 80030220 2400B3AF */  sw         $s3, 0x24($sp)

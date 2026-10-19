@@ -6,8 +6,8 @@ glabel camera_InitTwoFighterView
     /* BAA4 8001B2A4 2180A000 */  addu       $s0, $a1, $zero
     /* BAA8 8001B2A8 64000224 */  addiu      $v0, $zero, 0x64
     /* BAAC 8001B2AC 1800BFAF */  sw         $ra, 0x18($sp)
-    /* BAB0 8001B2B0 0A80013C */  lui        $at, %hi(D_800A36FA)
-    /* BAB4 8001B2B4 FA3620A0 */  sb         $zero, %lo(D_800A36FA)($at)
+    /* BAB0 8001B2B0 0A80013C */  lui        $at, %hi(g_camera_fight_view_mode)
+    /* BAB4 8001B2B4 FA3620A0 */  sb         $zero, %lo(g_camera_fight_view_mode)($at)
     /* BAB8 8001B2B8 0F80013C */  lui        $at, %hi(D_800F6638)
     /* BABC 8001B2BC 386622A4 */  sh         $v0, %lo(D_800F6638)($at)
     /* BAC0 8001B2C0 0F80013C */  lui        $at, %hi(D_800F663A)

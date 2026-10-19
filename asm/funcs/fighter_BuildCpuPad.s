@@ -792,8 +792,8 @@ glabel fighter_BuildCpuPad
     /* 46E74 80056674 21980000 */  addu       $s3, $zero, $zero
     /* 46E78 80056678 21A80000 */  addu       $s5, $zero, $zero
   .L8005667C:
-    /* 46E7C 8005667C 1080023C */  lui        $v0, %hi(D_80106A78)
-    /* 46E80 80056680 786A4224 */  addiu      $v0, $v0, %lo(D_80106A78)
+    /* 46E7C 8005667C 1080023C */  lui        $v0, %hi(g_object_pool)
+    /* 46E80 80056680 786A4224 */  addiu      $v0, $v0, %lo(g_object_pool)
     /* 46E84 80056684 2188A202 */  addu       $s1, $s5, $v0
     /* 46E88 80056688 F400428E */  lw         $v0, 0xF4($s2)
     /* 46E8C 8005668C 2C00238E */  lw         $v1, 0x2C($s1)

@@ -2,7 +2,7 @@ glabel func_80063084
     /* 53884 80063084 2004828F */  lw         $v0, %gp_rel(D_800A34EC)($gp)
     /* 53888 80063088 A0FFBD27 */  addiu      $sp, $sp, -0x60
     /* 5388C 8006308C 4400B3AF */  sw         $s3, 0x44($sp)
-    /* 53890 80063090 0807938F */  lw         $s3, %gp_rel(D_800A37D4)($gp)
+    /* 53890 80063090 0807938F */  lw         $s3, %gp_rel(g_eff_quad_cursor)($gp)
     /* 53894 80063094 5C00BFAF */  sw         $ra, 0x5C($sp)
     /* 53898 80063098 5800BEAF */  sw         $fp, 0x58($sp)
     /* 5389C 8006309C 5400B7AF */  sw         $s7, 0x54($sp)
@@ -630,7 +630,7 @@ glabel func_80063084
     /* 541E8 800639E8 24186500 */  and        $v1, $v1, $a1
     /* 541EC 800639EC 25104300 */  or         $v0, $v0, $v1
     /* 541F0 800639F0 000082AC */  sw         $v0, 0x0($a0)
-    /* 541F4 800639F4 5406838F */  lw         $v1, %gp_rel(D_800A3720)($gp)
+    /* 541F4 800639F4 5406838F */  lw         $v1, %gp_rel(g_eff_quad_buffer_base)($gp)
     /* 541F8 800639F8 00000000 */  nop
     /* 541FC 800639FC 23186302 */  subu       $v1, $s3, $v1
     /* 54200 80063A00 40100300 */  sll        $v0, $v1, 1
@@ -682,7 +682,7 @@ glabel func_80063084
     /* 542A8 80063AA8 B6FD4014 */  bnez       $v0, .L80063184
     /* 542AC 80063AAC 00141E00 */   sll       $v0, $fp, 16
     /* 542B0 80063AB0 7C03828F */  lw         $v0, %gp_rel(D_800A3448)($gp)
-    /* 542B4 80063AB4 080793AF */  sw         $s3, %gp_rel(D_800A37D4)($gp)
+    /* 542B4 80063AB4 080793AF */  sw         $s3, %gp_rel(g_eff_quad_cursor)($gp)
     /* 542B8 80063AB8 2B100200 */  sltu       $v0, $zero, $v0
     /* 542BC 80063ABC 5C00BF8F */  lw         $ra, 0x5C($sp)
     /* 542C0 80063AC0 5800BE8F */  lw         $fp, 0x58($sp)

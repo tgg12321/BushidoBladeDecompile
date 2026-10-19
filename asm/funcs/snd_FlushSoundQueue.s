@@ -18,9 +18,9 @@ glabel snd_FlushSoundQueue
     /* 4CF10 8005C710 00141300 */  sll        $v0, $s3, 16
   .L8005C714:
     /* 4CF14 8005C714 431B0200 */  sra        $v1, $v0, 13
-    /* 4CF18 8005C718 0F80013C */  lui        $at, %hi(D_800EFB78)
+    /* 4CF18 8005C718 0F80013C */  lui        $at, %hi(g_snd_queue)
     /* 4CF1C 8005C71C 21082300 */  addu       $at, $at, $v1
-    /* 4CF20 8005C720 78FB318C */  lw         $s1, %lo(D_800EFB78)($at)
+    /* 4CF20 8005C720 78FB318C */  lw         $s1, %lo(g_snd_queue)($at)
     /* 4CF24 8005C724 00000000 */  nop
     /* 4CF28 8005C728 4A002012 */  beqz       $s1, .L8005C854
     /* 4CF2C 8005C72C 43130200 */   sra       $v0, $v0, 13
@@ -102,9 +102,9 @@ glabel snd_FlushSoundQueue
   .L8005C850:
     /* 4D050 8005C850 43130200 */  sra        $v0, $v0, 13
   .L8005C854:
-    /* 4D054 8005C854 0F80013C */  lui        $at, %hi(D_800EFB78)
+    /* 4D054 8005C854 0F80013C */  lui        $at, %hi(g_snd_queue)
     /* 4D058 8005C858 21082200 */  addu       $at, $at, $v0
-    /* 4D05C 8005C85C 78FB20AC */  sw         $zero, %lo(D_800EFB78)($at)
+    /* 4D05C 8005C85C 78FB20AC */  sw         $zero, %lo(g_snd_queue)($at)
     /* 4D060 8005C860 01006226 */  addiu      $v0, $s3, 0x1
     /* 4D064 8005C864 21984000 */  addu       $s3, $v0, $zero
     /* 4D068 8005C868 00140200 */  sll        $v0, $v0, 16

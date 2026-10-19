@@ -1,7 +1,7 @@
 glabel func_80021210
     /* 11A10 80021210 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 11A14 80021214 1080053C */  lui        $a1, %hi(D_80102760 + 0x10)
-    /* 11A18 80021218 7027A58C */  lw         $a1, %lo(D_80102760 + 0x10)($a1)
+    /* 11A14 80021214 1080053C */  lui        $a1, %hi(g_motion_common_sections + 0x10)
+    /* 11A18 80021218 7027A58C */  lw         $a1, %lo(g_motion_common_sections + 0x10)($a1)
     /* 11A1C 8002121C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 11A20 80021220 E765000C */  jal        func_8001979C
     /* 11A24 80021224 21200000 */   addu      $a0, $zero, $zero

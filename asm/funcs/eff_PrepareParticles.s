@@ -4,7 +4,7 @@ glabel eff_PrepareParticles
     /* 580B0 800678B0 8900043C */  lui        $a0, (0x895440 >> 16)
     /* 580B4 800678B4 40548434 */  ori        $a0, $a0, (0x895440 & 0xFFFF)
     /* 580B8 800678B8 2004868F */  lw         $a2, %gp_rel(D_800A34EC)($gp)
-    /* 580BC 800678BC 0807838F */  lw         $v1, %gp_rel(D_800A37D4)($gp)
+    /* 580BC 800678BC 0807838F */  lw         $v1, %gp_rel(g_eff_quad_cursor)($gp)
     /* 580C0 800678C0 AC01C224 */  addiu      $v0, $a2, 0x1AC
     /* 580C4 800678C4 580682AF */  sw         $v0, %gp_rel(D_800A3724)($gp)
     /* 580C8 800678C8 8000C3AC */  sw         $v1, 0x80($a2)

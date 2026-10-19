@@ -6,8 +6,8 @@ glabel camera_InitTrackedFighterFocus
     /* BBD0 8001B3D0 2188A000 */  addu       $s1, $a1, $zero
     /* BBD4 8001B3D4 64000224 */  addiu      $v0, $zero, 0x64
     /* BBD8 8001B3D8 1800BFAF */  sw         $ra, 0x18($sp)
-    /* BBDC 8001B3DC 0A80013C */  lui        $at, %hi(D_800A36FA)
-    /* BBE0 8001B3E0 FA3620A0 */  sb         $zero, %lo(D_800A36FA)($at)
+    /* BBDC 8001B3DC 0A80013C */  lui        $at, %hi(g_camera_fight_view_mode)
+    /* BBE0 8001B3E0 FA3620A0 */  sb         $zero, %lo(g_camera_fight_view_mode)($at)
     /* BBE4 8001B3E4 0F80013C */  lui        $at, %hi(D_800F5358)
     /* BBE8 8001B3E8 585322A4 */  sh         $v0, %lo(D_800F5358)($at)
     /* BBEC 8001B3EC 0F80013C */  lui        $at, %hi(D_800F535A)

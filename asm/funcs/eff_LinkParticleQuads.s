@@ -1,6 +1,6 @@
 glabel eff_LinkParticleQuads
     /* 59588 80068D88 2004848F */  lw         $a0, %gp_rel(D_800A34EC)($gp)
-    /* 5958C 80068D8C 0807878F */  lw         $a3, %gp_rel(D_800A37D4)($gp)
+    /* 5958C 80068D8C 0807878F */  lw         $a3, %gp_rel(g_eff_quad_cursor)($gp)
     /* 59590 80068D90 AC018224 */  addiu      $v0, $a0, 0x1AC
     /* 59594 80068D94 6E008824 */  addiu      $t0, $a0, 0x6E
     /* 59598 80068D98 7C008A24 */  addiu      $t2, $a0, 0x7C
@@ -76,7 +76,7 @@ glabel eff_LinkParticleQuads
   .L80068EAC:
     /* 596AC 80068EAC 0000428D */  lw         $v0, 0x0($t2)
     /* 596B0 80068EB0 00000000 */  nop
-    /* 596B4 80068EB4 080782AF */  sw         $v0, %gp_rel(D_800A37D4)($gp)
+    /* 596B4 80068EB4 080782AF */  sw         $v0, %gp_rel(g_eff_quad_cursor)($gp)
     /* 596B8 80068EB8 B1A30108 */  j          .L80068EC4
     /* 596BC 80068EBC 00000000 */   nop
   .L80068EC0:

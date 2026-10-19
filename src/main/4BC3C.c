@@ -50,8 +50,8 @@ void snd_Init(void) {
     SsSetReservedVoice(0);
     SsSetTickMode(1);
     for (j = 0; j < 24; j++) {
-        D_800EFB78[j].req = 0;
-        D_800EFB78[j].volr = D_800EFB78[j].voll = 0x7F;
+        g_snd_queue[j].req = 0;
+        g_snd_queue[j].volr = g_snd_queue[j].voll = 0x7F;
     }
     SsStart();
     D_800A3408 = 0;
@@ -89,8 +89,8 @@ void snd_ResetVoicesAndQueue(void) {
     s32 i;
     func_800858D0(0);
     for (i = 0; i < 24; i++) {
-        D_800EFB78[i].req = 0;
-        D_800EFB78[i].volr = D_800EFB78[i].voll = 0x7F;
+        g_snd_queue[i].req = 0;
+        g_snd_queue[i].volr = g_snd_queue[i].voll = 0x7F;
         func_80086130((s16)i, 0, 0);
     }
 }
@@ -539,10 +539,10 @@ s32 snd_QueueSound(s32 a0, s32 a1, s32 a2) {
     s16 i = 0;
     u16 *var_1 = D_8009AA70[a0];
     do {
-        if (D_800EFB78[i].req == 0) {
-            D_800EFB78[i].req = var_1;
-            D_800EFB78[i].volr = a1;
-            D_800EFB78[i].voll = a2;
+        if (g_snd_queue[i].req == 0) {
+            g_snd_queue[i].req = var_1;
+            g_snd_queue[i].volr = a1;
+            g_snd_queue[i].voll = a2;
             return;
         }
         i++;
@@ -567,7 +567,7 @@ void snd_FlushSoundQueue(void) {
     SpuGetAllKeysStatus(var_0);
     next = 0;
     for (i = 0; i < 0x18; i++) {
-        p = D_800EFB78[i].req;
+        p = g_snd_queue[i].req;
         if (p != 0 && (s32)g_vab_rec_ptr[*p] < 0) {
             var_2 = next;
             for (; var_2 < 0x18; var_2++) {
@@ -580,13 +580,13 @@ void snd_FlushSoundQueue(void) {
                     SsUtKeyOnV((s16)var_2, (s16)var_4, (s16)(*var_6 & 0x7F),
                                (s16)((*var_6 >> 7) & 0xF),
                                (s16)((*var_6 >> 11) & 0x7F),
-                               (s16)((*var_6 >> 18) & 0x7F), D_800EFB78[i].voll,
-                               D_800EFB78[i].volr);
+                               (s16)((*var_6 >> 18) & 0x7F),
+                               g_snd_queue[i].voll, g_snd_queue[i].volr);
                     next = var_2 + 1;
                     break;
                 }
             }
         }
-        D_800EFB78[i].req = 0;
+        g_snd_queue[i].req = 0;
     }
 }

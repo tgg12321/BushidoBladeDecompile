@@ -2,7 +2,7 @@ glabel gpu_AddDrawMove
     /* 309CC 800401CC E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 309D0 800401D0 0A80023C */  lui        $v0, %hi(D_800A36AC)
     /* 309D4 800401D4 AC36428C */  lw         $v0, %lo(D_800A36AC)($v0)
-    /* 309D8 800401D8 6801838F */  lw         $v1, %gp_rel(D_800A3234)($gp)
+    /* 309D8 800401D8 6801838F */  lw         $v1, %gp_rel(g_gpu_draw_move_bank)($gp)
     /* 309DC 800401DC 21408000 */  addu       $t0, $a0, $zero
     /* 309E0 800401E0 01004630 */  andi       $a2, $v0, 0x1
     /* 309E4 800401E4 0900C310 */  beq        $a2, $v1, .L8004020C
@@ -10,14 +10,14 @@ glabel gpu_AddDrawMove
     /* 309EC 800401EC 00110600 */  sll        $v0, $a2, 4
     /* 309F0 800401F0 23104600 */  subu       $v0, $v0, $a2
     /* 309F4 800401F4 00110200 */  sll        $v0, $v0, 4
-    /* 309F8 800401F8 0B80033C */  lui        $v1, %hi(D_800A9830)
-    /* 309FC 800401FC 30986324 */  addiu      $v1, $v1, %lo(D_800A9830)
+    /* 309F8 800401F8 0B80033C */  lui        $v1, %hi(g_gpu_draw_move_packets)
+    /* 309FC 800401FC 30986324 */  addiu      $v1, $v1, %lo(g_gpu_draw_move_packets)
     /* 30A00 80040200 21104300 */  addu       $v0, $v0, $v1
-    /* 30A04 80040204 AC0282AF */  sw         $v0, %gp_rel(D_800A3378)($gp)
-    /* 30A08 80040208 680186AF */  sw         $a2, %gp_rel(D_800A3234)($gp)
+    /* 30A04 80040204 AC0282AF */  sw         $v0, %gp_rel(g_gpu_draw_move_cursor)($gp)
+    /* 30A08 80040208 680186AF */  sw         $a2, %gp_rel(g_gpu_draw_move_bank)($gp)
   .L8004020C:
-    /* 30A0C 8004020C 6801828F */  lw         $v0, %gp_rel(D_800A3234)($gp)
-    /* 30A10 80040210 AC02848F */  lw         $a0, %gp_rel(D_800A3378)($gp)
+    /* 30A0C 8004020C 6801828F */  lw         $v0, %gp_rel(g_gpu_draw_move_bank)($gp)
+    /* 30A10 80040210 AC02848F */  lw         $a0, %gp_rel(g_gpu_draw_move_cursor)($gp)
     /* 30A14 80040214 00190200 */  sll        $v1, $v0, 4
     /* 30A18 80040218 23186200 */  subu       $v1, $v1, $v0
     /* 30A1C 8004021C 00190300 */  sll        $v1, $v1, 4
@@ -28,8 +28,8 @@ glabel gpu_AddDrawMove
     /* 30A30 80040230 40100500 */   sll       $v0, $a1, 1
     /* 30A34 80040234 21104500 */  addu       $v0, $v0, $a1
     /* 30A38 80040238 80100200 */  sll        $v0, $v0, 2
-    /* 30A3C 8004023C 0980033C */  lui        $v1, %hi(D_80094AF4)
-    /* 30A40 80040240 F44A6324 */  addiu      $v1, $v1, %lo(D_80094AF4)
+    /* 30A3C 8004023C 0980033C */  lui        $v1, %hi(g_gpu_draw_move_table)
+    /* 30A40 80040240 F44A6324 */  addiu      $v1, $v1, %lo(g_gpu_draw_move_table)
     /* 30A44 80040244 21104300 */  addu       $v0, $v0, $v1
     /* 30A48 80040248 00004594 */  lhu        $a1, 0x0($v0)
     /* 30A4C 8004024C 02004224 */  addiu      $v0, $v0, 0x2
@@ -59,7 +59,7 @@ glabel gpu_AddDrawMove
     /* 30AA8 800402A8 FF00063C */  lui        $a2, (0xFFFFFF >> 16)
     /* 30AAC 800402AC FFFFC634 */  ori        $a2, $a2, (0xFFFFFF & 0xFFFF)
     /* 30AB0 800402B0 00FF073C */  lui        $a3, (0xFF000000 >> 16)
-    /* 30AB4 800402B4 AC02848F */  lw         $a0, %gp_rel(D_800A3378)($gp)
+    /* 30AB4 800402B4 AC02848F */  lw         $a0, %gp_rel(g_gpu_draw_move_cursor)($gp)
     /* 30AB8 800402B8 0A80053C */  lui        $a1, %hi(D_800A378C)
     /* 30ABC 800402BC 8C37A58C */  lw         $a1, %lo(D_800A378C)($a1)
     /* 30AC0 800402C0 0000838C */  lw         $v1, 0x0($a0)
@@ -71,7 +71,7 @@ glabel gpu_AddDrawMove
     /* 30AD8 800402D8 18008324 */  addiu      $v1, $a0, 0x18
     /* 30ADC 800402DC FC3FA28C */  lw         $v0, 0x3FFC($a1)
     /* 30AE0 800402E0 24208600 */  and        $a0, $a0, $a2
-    /* 30AE4 800402E4 AC0283AF */  sw         $v1, %gp_rel(D_800A3378)($gp)
+    /* 30AE4 800402E4 AC0283AF */  sw         $v1, %gp_rel(g_gpu_draw_move_cursor)($gp)
     /* 30AE8 800402E8 24104700 */  and        $v0, $v0, $a3
     /* 30AEC 800402EC 25104400 */  or         $v0, $v0, $a0
     /* 30AF0 800402F0 FC3FA2AC */  sw         $v0, 0x3FFC($a1)

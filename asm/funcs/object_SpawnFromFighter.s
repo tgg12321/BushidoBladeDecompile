@@ -1,8 +1,8 @@
 glabel object_SpawnFromFighter
     /* 20D80 80030580 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 20D84 80030584 21488000 */  addu       $t1, $a0, $zero
-    /* 20D88 80030588 1080073C */  lui        $a3, %hi(D_80106A78)
-    /* 20D8C 8003058C 786AE724 */  addiu      $a3, $a3, %lo(D_80106A78)
+    /* 20D88 80030588 1080073C */  lui        $a3, %hi(g_object_pool)
+    /* 20D8C 8003058C 786AE724 */  addiu      $a3, $a3, %lo(g_object_pool)
     /* 20D90 80030590 21200000 */  addu       $a0, $zero, $zero
     /* 20D94 80030594 FFFF0824 */  addiu      $t0, $zero, -0x1
     /* 20D98 80030598 FF000624 */  addiu      $a2, $zero, 0xFF

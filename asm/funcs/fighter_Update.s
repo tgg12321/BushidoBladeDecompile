@@ -1092,9 +1092,9 @@ glabel fighter_Update
     /* 156C8 80024EC8 80201300 */  sll        $a0, $s3, 2
     /* 156CC 80024ECC 40110300 */  sll        $v0, $v1, 5
     /* 156D0 80024ED0 21104300 */  addu       $v0, $v0, $v1
-    /* 156D4 80024ED4 0A80013C */  lui        $at, %hi(D_800A3888)
+    /* 156D4 80024ED4 0A80013C */  lui        $at, %hi(g_motion_frame_buffers)
     /* 156D8 80024ED8 21082400 */  addu       $at, $at, $a0
-    /* 156DC 80024EDC 8838238C */  lw         $v1, %lo(D_800A3888)($at)
+    /* 156DC 80024EDC 8838238C */  lw         $v1, %lo(g_motion_frame_buffers)($at)
     /* 156E0 80024EE0 80100200 */  sll        $v0, $v0, 2
     /* 156E4 80024EE4 21304300 */  addu       $a2, $v0, $v1
     /* 156E8 80024EE8 2510C700 */  or         $v0, $a2, $a3

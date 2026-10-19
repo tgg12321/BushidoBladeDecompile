@@ -1,15 +1,15 @@
 glabel eff_SetBillboardList
     /* 52820 80062020 0000828C */  lw         $v0, 0x0($a0)
-    /* 52824 80062024 EC0180AF */  sw         $zero, %gp_rel(D_800A32B8)($gp)
+    /* 52824 80062024 EC0180AF */  sw         $zero, %gp_rel(g_eff_billboard_draw_count)($gp)
     /* 52828 80062028 01004230 */  andi       $v0, $v0, 0x1
     /* 5282C 8006202C 15004010 */  beqz       $v0, .L80062084
     /* 52830 80062030 21280000 */   addu      $a1, $zero, $zero
     /* 52834 80062034 21180000 */  addu       $v1, $zero, $zero
   .L80062038:
     /* 52838 80062038 0000828C */  lw         $v0, 0x0($a0)
-    /* 5283C 8006203C 0F80013C */  lui        $at, %hi(D_800F1198)
+    /* 5283C 8006203C 0F80013C */  lui        $at, %hi(g_eff_billboards)
     /* 52840 80062040 21082300 */  addu       $at, $at, $v1
-    /* 52844 80062044 981122AC */  sw         $v0, %lo(D_800F1198)($at)
+    /* 52844 80062044 981122AC */  sw         $v0, %lo(g_eff_billboards)($at)
     /* 52848 80062048 0400828C */  lw         $v0, 0x4($a0)
     /* 5284C 8006204C 0100A524 */  addiu      $a1, $a1, 0x1
     /* 52850 80062050 0F80013C */  lui        $at, %hi(D_800F119C)
@@ -29,14 +29,14 @@ glabel eff_SetBillboardList
     /* 52884 80062084 40180500 */  sll        $v1, $a1, 1
     /* 52888 80062088 21186500 */  addu       $v1, $v1, $a1
     /* 5288C 8006208C 80180300 */  sll        $v1, $v1, 2
-    /* 52890 80062090 0F80023C */  lui        $v0, %hi(D_800F1198)
-    /* 52894 80062094 98114224 */  addiu      $v0, $v0, %lo(D_800F1198)
+    /* 52890 80062090 0F80023C */  lui        $v0, %hi(g_eff_billboards)
+    /* 52894 80062094 98114224 */  addiu      $v0, $v0, %lo(g_eff_billboards)
     /* 52898 80062098 21106200 */  addu       $v0, $v1, $v0
     /* 5289C 8006209C 080040AC */  sw         $zero, 0x8($v0)
     /* 528A0 800620A0 040040AC */  sw         $zero, 0x4($v0)
-    /* 528A4 800620A4 0F80013C */  lui        $at, %hi(D_800F1198)
+    /* 528A4 800620A4 0F80013C */  lui        $at, %hi(g_eff_billboards)
     /* 528A8 800620A8 21082300 */  addu       $at, $at, $v1
-    /* 528AC 800620AC 981120AC */  sw         $zero, %lo(D_800F1198)($at)
+    /* 528AC 800620AC 981120AC */  sw         $zero, %lo(g_eff_billboards)($at)
     /* 528B0 800620B0 0800E003 */  jr         $ra
     /* 528B4 800620B4 00000000 */   nop
 endlabel eff_SetBillboardList

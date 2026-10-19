@@ -8,8 +8,8 @@ glabel func_8001B6F4
     /* BF0C 8001B70C A205010C */  jal        func_80041688
     /* BF10 8001B710 21280000 */   addu      $a1, $zero, $zero
     /* BF14 8001B714 01000224 */  addiu      $v0, $zero, 0x1
-    /* BF18 8001B718 0A80013C */  lui        $at, %hi(D_800A36FA)
-    /* BF1C 8001B71C FA3622A0 */  sb         $v0, %lo(D_800A36FA)($at)
+    /* BF18 8001B718 0A80013C */  lui        $at, %hi(g_camera_fight_view_mode)
+    /* BF1C 8001B71C FA3622A0 */  sb         $v0, %lo(g_camera_fight_view_mode)($at)
     /* BF20 8001B720 0F80013C */  lui        $at, %hi(D_800F6627)
     /* BF24 8001B724 276620A0 */  sb         $zero, %lo(D_800F6627)($at)
     /* BF28 8001B728 0F80013C */  lui        $at, %hi(D_800F5347)

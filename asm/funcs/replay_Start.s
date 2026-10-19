@@ -22,7 +22,7 @@ glabel replay_Start
     /* 2A024 80039824 5E84010C */  jal        eff_StopCommands
     /* 2A028 80039828 00000000 */   nop
     /* 2A02C 8003982C 05000224 */  addiu      $v0, $zero, 0x5
-    /* 2A030 80039830 040780A3 */  sb         $zero, %gp_rel(D_800A37D0)($gp)
+    /* 2A030 80039830 040780A3 */  sb         $zero, %gp_rel(g_replay_playback_frame)($gp)
     /* 2A034 80039834 0A80013C */  lui        $at, %hi(D_800A3834)
     /* 2A038 80039838 343822A4 */  sh         $v0, %lo(D_800A3834)($at)
     /* 2A03C 8003983C 1000BF8F */  lw         $ra, 0x10($sp)

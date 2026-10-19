@@ -2,11 +2,11 @@ glabel replay_BeginFrame
     /* 29B20 80039320 F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 29B24 80039324 21280000 */  addu       $a1, $zero, $zero
     /* 29B28 80039328 FF000624 */  addiu      $a2, $zero, 0xFF
-    /* 29B2C 8003932C 1080043C */  lui        $a0, %hi(D_80101BF0)
-    /* 29B30 80039330 F01B8424 */  addiu      $a0, $a0, %lo(D_80101BF0)
+    /* 29B2C 8003932C 1080043C */  lui        $a0, %hi(g_replay_events)
+    /* 29B30 80039330 F01B8424 */  addiu      $a0, $a0, %lo(g_replay_events)
   .L80039334:
     /* 29B34 80039334 00008390 */  lbu        $v1, 0x0($a0)
-    /* 29B38 80039338 2C068293 */  lbu        $v0, %gp_rel(D_800A36F8)($gp)
+    /* 29B38 80039338 2C068293 */  lbu        $v0, %gp_rel(g_replay_write_frame)($gp)
     /* 29B3C 8003933C 00000000 */  nop
     /* 29B40 80039340 02006214 */  bne        $v1, $v0, .L8003934C
     /* 29B44 80039344 00000000 */   nop
@@ -16,8 +16,8 @@ glabel replay_BeginFrame
     /* 29B50 80039350 2000A228 */  slti       $v0, $a1, 0x20
     /* 29B54 80039354 F7FF4014 */  bnez       $v0, .L80039334
     /* 29B58 80039358 10008424 */   addiu     $a0, $a0, 0x10
-    /* 29B5C 8003935C 0F80043C */  lui        $a0, %hi(D_800F68E0)
-    /* 29B60 80039360 E0688424 */  addiu      $a0, $a0, %lo(D_800F68E0)
+    /* 29B5C 8003935C 0F80043C */  lui        $a0, %hi(g_replay_model_draws)
+    /* 29B60 80039360 E0688424 */  addiu      $a0, $a0, %lo(g_replay_model_draws)
     /* 29B64 80039364 21280000 */  addu       $a1, $zero, $zero
     /* 29B68 80039368 FFFF0624 */  addiu      $a2, $zero, -0x1
   .L8003936C:
@@ -40,8 +40,8 @@ glabel replay_BeginFrame
     /* 29BA8 800393A8 B400A228 */  slti       $v0, $a1, 0xB4
     /* 29BAC 800393AC EFFF4014 */  bnez       $v0, .L8003936C
     /* 29BB0 800393B0 10008424 */   addiu     $a0, $a0, 0x10
-    /* 29BB4 800393B4 D00680A3 */  sb         $zero, %gp_rel(D_800A379C)($gp)
-    /* 29BB8 800393B8 480680A7 */  sh         $zero, %gp_rel(D_800A3714)($gp)
+    /* 29BB4 800393B4 D00680A3 */  sb         $zero, %gp_rel(g_replay_event_search_cursor)($gp)
+    /* 29BB8 800393B8 480680A7 */  sh         $zero, %gp_rel(g_replay_model_draw_search_cursor)($gp)
     /* 29BBC 800393BC 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 29BC0 800393C0 0800E003 */  jr         $ra
     /* 29BC4 800393C4 00000000 */   nop

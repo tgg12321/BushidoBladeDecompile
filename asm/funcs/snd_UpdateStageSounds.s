@@ -1,11 +1,11 @@
 glabel snd_UpdateStageSounds
     /* 23DD8 800335D8 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 23DDC 800335DC 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 23DE0 800335E0 0A80103C */  lui        $s0, %hi(D_800A3918)
-    /* 23DE4 800335E4 18391026 */  addiu      $s0, $s0, %lo(D_800A3918)
+    /* 23DE0 800335E0 0A80103C */  lui        $s0, %hi(g_snd_sequence_ticks)
+    /* 23DE4 800335E4 18391026 */  addiu      $s0, $s0, %lo(g_snd_sequence_ticks)
     /* 23DE8 800335E8 1800B2AF */  sw         $s2, 0x18($sp)
-    /* 23DEC 800335EC 1080123C */  lui        $s2, %hi(D_80107850)
-    /* 23DF0 800335F0 50785226 */  addiu      $s2, $s2, %lo(D_80107850)
+    /* 23DEC 800335EC 1080123C */  lui        $s2, %hi(g_snd_sequence_positions)
+    /* 23DF0 800335F0 50785226 */  addiu      $s2, $s2, %lo(g_snd_sequence_positions)
     /* 23DF4 800335F4 0A80023C */  lui        $v0, %hi(D_800A36A4)
     /* 23DF8 800335F8 A4364284 */  lh         $v0, %lo(D_800A36A4)($v0)
     /* 23DFC 800335FC 0980033C */  lui        $v1, %hi(D_8008E914)
@@ -87,8 +87,8 @@ glabel snd_UpdateStageSounds
     /* 23F14 80033714 01001524 */   addiu     $s5, $zero, 0x1
     /* 23F18 80033718 01007226 */  addiu      $s2, $s3, 0x1
     /* 23F1C 8003371C 7B001124 */  addiu      $s1, $zero, 0x7B
-    /* 23F20 80033720 0A80143C */  lui        $s4, %hi(D_800A3750)
-    /* 23F24 80033724 50379426 */  addiu      $s4, $s4, %lo(D_800A3750)
+    /* 23F20 80033720 0A80143C */  lui        $s4, %hi(g_snd_stage_sound_state)
+    /* 23F24 80033724 50379426 */  addiu      $s4, $s4, %lo(g_snd_stage_sound_state)
     /* 23F28 80033728 21808002 */  addu       $s0, $s4, $zero
   .L8003372C:
     /* 23F2C 8003372C 6E5C000C */  jal        rng_Next

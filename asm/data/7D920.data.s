@@ -9494,9 +9494,9 @@ dlabel D_80094AEC
     /* 852F0 80094AF0 12001600 */ .word 0x00160012
 enddlabel D_80094AEC
 
-nonmatching D_80094AF4
+nonmatching g_gpu_draw_move_table
 
-dlabel D_80094AF4
+dlabel g_gpu_draw_move_table
     /* 852F4 80094AF4 90020000 */ .word 0x00000290
     /* 852F8 80094AF8 10002000 */ .word 0x00200010
     /* 852FC 80094AFC 80020000 */ .word 0x00000280
@@ -9518,7 +9518,7 @@ dlabel D_80094AF4
     /* 8533C 80094B3C D0024000 */ .word 0x004002D0
     /* 85340 80094B40 10002800 */ .word 0x00280010
     /* 85344 80094B44 80022000 */ .word 0x00200280
-enddlabel D_80094AF4
+enddlabel g_gpu_draw_move_table
 
 nonmatching D_80094B48
 

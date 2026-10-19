@@ -12,9 +12,9 @@ glabel func_800213A0
     /* 11BC4 800213C4 4A008284 */  lh         $v0, 0x4A($a0)
     /* 11BC8 800213C8 00000000 */  nop
     /* 11BCC 800213CC 80100200 */  sll        $v0, $v0, 2
-    /* 11BD0 800213D0 0A80013C */  lui        $at, %hi(D_800A3860)
+    /* 11BD0 800213D0 0A80013C */  lui        $at, %hi(g_motion_fighter_buffers)
     /* 11BD4 800213D4 21082200 */  addu       $at, $at, $v0
-    /* 11BD8 800213D8 6038228C */  lw         $v0, %lo(D_800A3860)($at)
+    /* 11BD8 800213D8 6038228C */  lw         $v0, %lo(g_motion_fighter_buffers)($at)
     /* 11BDC 800213DC 00000000 */  nop
     /* 11BE0 800213E0 14004384 */  lh         $v1, 0x14($v0)
     /* 11BE4 800213E4 0100A224 */  addiu      $v0, $a1, 0x1

@@ -39,7 +39,7 @@ glabel func_80063E10
     /* 5469C 80063E9C 0A80033C */  lui        $v1, %hi(D_8009B920)
     /* 546A0 80063EA0 20B96324 */  addiu      $v1, $v1, %lo(D_8009B920)
     /* 546A4 80063EA4 0000428C */  lw         $v0, 0x0($v0)
-    /* 546A8 80063EA8 0807928F */  lw         $s2, %gp_rel(D_800A37D4)($gp)
+    /* 546A8 80063EA8 0807928F */  lw         $s2, %gp_rel(g_eff_quad_cursor)($gp)
     /* 546AC 80063EAC C0100200 */  sll        $v0, $v0, 3
     /* 546B0 80063EB0 21104300 */  addu       $v0, $v0, $v1
     /* 546B4 80063EB4 C403838F */  lw         $v1, %gp_rel(D_800A3490)($gp)
@@ -371,7 +371,7 @@ glabel func_80063E10
     /* 54BC8 800643C8 0C00628E */  lw         $v0, 0xC($s3)
     /* 54BCC 800643CC 00000000 */  nop
     /* 54BD0 800643D0 000002AE */  sw         $v0, 0x0($s0)
-    /* 54BD4 800643D4 5406838F */  lw         $v1, %gp_rel(D_800A3720)($gp)
+    /* 54BD4 800643D4 5406838F */  lw         $v1, %gp_rel(g_eff_quad_buffer_base)($gp)
     /* 54BD8 800643D8 00000000 */  nop
     /* 54BDC 800643DC 23184302 */  subu       $v1, $s2, $v1
     /* 54BE0 800643E0 40100300 */  sll        $v0, $v1, 1
@@ -398,7 +398,7 @@ glabel func_80063E10
     /* 54C30 80064430 0C00D626 */   addiu     $s6, $s6, 0xC
   .L80064434:
     /* 54C34 80064434 21384002 */  addu       $a3, $s2, $zero
-    /* 54C38 80064438 0807928F */  lw         $s2, %gp_rel(D_800A37D4)($gp)
+    /* 54C38 80064438 0807928F */  lw         $s2, %gp_rel(g_eff_quad_cursor)($gp)
     /* 54C3C 8006443C 00000000 */  nop
     /* 54C40 80064440 2B104702 */  sltu       $v0, $s2, $a3
     /* 54C44 80064444 1E004010 */  beqz       $v0, .L800644C0
@@ -434,7 +434,7 @@ glabel func_80063E10
     /* 54CB8 800644B8 E8FF4014 */  bnez       $v0, .L8006445C
     /* 54CBC 800644BC 000083AC */   sw        $v1, 0x0($a0)
   .L800644C0:
-    /* 54CC0 800644C0 080787AF */  sw         $a3, %gp_rel(D_800A37D4)($gp)
+    /* 54CC0 800644C0 080787AF */  sw         $a3, %gp_rel(g_eff_quad_cursor)($gp)
     /* 54CC4 800644C4 01000224 */  addiu      $v0, $zero, 0x1
     /* 54CC8 800644C8 5400BF8F */  lw         $ra, 0x54($sp)
     /* 54CCC 800644CC 5000BE8F */  lw         $fp, 0x50($sp)

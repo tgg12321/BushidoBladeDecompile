@@ -1,7 +1,7 @@
 glabel wave_Draw
     /* 383E0 80047BE0 98FFBD27 */  addiu      $sp, $sp, -0x68
     /* 383E4 80047BE4 5C00B7AF */  sw         $s7, 0x5C($sp)
-    /* 383E8 80047BE8 0403978F */  lw         $s7, %gp_rel(D_800A33D0)($gp)
+    /* 383E8 80047BE8 0403978F */  lw         $s7, %gp_rel(g_wave_cell_buffer)($gp)
     /* 383EC 80047BEC 5400B5AF */  sw         $s5, 0x54($sp)
     /* 383F0 80047BF0 21A80000 */  addu       $s5, $zero, $zero
     /* 383F4 80047BF4 5800B6AF */  sw         $s6, 0x58($sp)

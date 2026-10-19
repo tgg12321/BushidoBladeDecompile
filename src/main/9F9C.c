@@ -666,44 +666,44 @@ void camera_UpdateTwoFighterView(
 }
 
 void func_8001B138(s32 *arg0) {
-    D_800FF5C8.unk_00.x = 0;
-    D_800FF5C8.unk_00.y = 0;
-    D_800FF5C8.unk_00.z = 0;
-    D_800FF5C8.unk_10.vx = 0;
-    D_800FF5C8.unk_10.vy = 0;
-    D_800FF5C8.unk_10.vz = 0;
-    D_800FF5C8.w18 = 0;
+    g_camera_view_offset.unk_00.x = 0;
+    g_camera_view_offset.unk_00.y = 0;
+    g_camera_view_offset.unk_00.z = 0;
+    g_camera_view_offset.unk_10.vx = 0;
+    g_camera_view_offset.unk_10.vy = 0;
+    g_camera_view_offset.unk_10.vz = 0;
+    g_camera_view_offset.w18 = 0;
     if (D_800A38BA != 0 && D_800A3834 == 1) {
         if (*arg0 & 1) {
             D_800A37E0 = 1;
             if (*arg0 & 8) {
-                D_800A3710 = D_800A3710 + 0x4CC;
+                g_camera_distance_offset = g_camera_distance_offset + 0x4CC;
             }
             if (*arg0 & 2) {
-                D_800A3710 = D_800A3710 - 0x4CC;
+                g_camera_distance_offset = g_camera_distance_offset - 0x4CC;
             }
-            if (D_800A3710 < -0x1C00) {
-                D_800A3710 = -0x1C00;
+            if (g_camera_distance_offset < -0x1C00) {
+                g_camera_distance_offset = -0x1C00;
             }
-            if (D_800A3710 >= 0x7401) {
-                D_800A3710 = 0x7400;
+            if (g_camera_distance_offset >= 0x7401) {
+                g_camera_distance_offset = 0x7400;
             }
             *arg0 = *arg0 & ~0xB;
         }
         {
             s32 v;
-            v = D_800A3710;
+            v = g_camera_distance_offset;
             if (v < 0) {
                 v = v + 0xF;
             }
-            D_800FF5C8.w18 = v >> 4;
+            g_camera_view_offset.w18 = v >> 4;
         }
     }
     *arg0 = *arg0 & (s32)0xFFFEFFFE;
 }
 
 void camera_InitTwoFighterView(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
-    D_800A36FA = 0;
+    g_camera_fight_view_mode = 0;
     D_800F6608.h30[0][0] = 0x64;
     D_800F6608.h30[0][1] = 0;
     D_800F6608.h30[0][2] = 0x64;
@@ -725,7 +725,7 @@ void camera_InitTwoFighterView(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
 
 void camera_InitTrackedFighterFocus(
     Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
-    D_800A36FA = 0;
+    g_camera_fight_view_mode = 0;
     D_800F5328.h30[0][0] = 0x64;
     D_800F5328.h30[0][1] = 0;
     D_800F5328.h30[0][2] = 0x64;
@@ -862,7 +862,7 @@ void func_8001B690(s32 arg0, s32 arg1) {
 void func_8001B6F4(void) {
     func_80041688(0, 0);
     func_80041688(1, 0);
-    D_800A36FA = 1;
+    g_camera_fight_view_mode = 1;
     D_800F6608.b1F = 0;
     D_800F5328.b1F = 0;
     func_8003F1E4(0);
@@ -1934,27 +1934,28 @@ void camera_ApplyFightView(void) {
     Rec44 *s2;
 
     if (D_800A38BA != 0) {
-        if (D_800A36FA == 1) {
+        if (g_camera_fight_view_mode == 1) {
             if (D_80101EC8[0].unk_96 != 0 || D_80101EC8[1].unk_96 != 0) {
-                D_800A36FA = 2;
+                g_camera_fight_view_mode = 2;
             }
         }
-        if (D_800A36FA != 2) {
+        if (g_camera_fight_view_mode != 2) {
             if (D_80101EC8[0].unk_6A == 0x11 || D_80101EC8[1].unk_6A == 0x11) {
                 s2 = &D_800F6608;
-                D_800A36FA = 1;
+                g_camera_fight_view_mode = 1;
             } else {
                 s2 = &D_800F5328;
-                D_800A36FA = 0;
+                g_camera_fight_view_mode = 0;
             }
         } else {
             s2 = &D_800F6608;
         }
-        func_8003F218(D_800A36FA < 1);
+        func_8003F218(g_camera_fight_view_mode < 1);
 
-        SetGeomScreen(math_FovToScreenDist(D_800A36FA == 0 ? 0x50 : 0x2D));
+        SetGeomScreen(
+            math_FovToScreenDist(g_camera_fight_view_mode == 0 ? 0x50 : 0x2D));
 
-        if (D_800A36FA == 0) {
+        if (g_camera_fight_view_mode == 0) {
             func_80041688(D_800A36F6, 1);
             func_80041688(D_800A36F6 == 0, 0);
         } else {
@@ -1966,13 +1967,13 @@ void camera_ApplyFightView(void) {
     }
 
     if (D_800A3834 == 1) {
-        local.unk_00.x = s2->unk_00.x + D_800FF5C8.unk_00.x;
-        local.unk_00.y = s2->unk_00.y + D_800FF5C8.unk_00.y;
-        local.unk_00.z = s2->unk_00.z + D_800FF5C8.unk_00.z;
-        local.unk_10.vx = s2->unk_10.vx + D_800FF5C8.unk_10.vx;
-        local.unk_10.vy = s2->unk_10.vy + D_800FF5C8.unk_10.vy;
-        local.unk_10.vz = s2->unk_10.vz + D_800FF5C8.unk_10.vz;
-        local.w18 = s2->w18 + D_800FF5C8.w18;
+        local.unk_00.x = s2->unk_00.x + g_camera_view_offset.unk_00.x;
+        local.unk_00.y = s2->unk_00.y + g_camera_view_offset.unk_00.y;
+        local.unk_00.z = s2->unk_00.z + g_camera_view_offset.unk_00.z;
+        local.unk_10.vx = s2->unk_10.vx + g_camera_view_offset.unk_10.vx;
+        local.unk_10.vy = s2->unk_10.vy + g_camera_view_offset.unk_10.vy;
+        local.unk_10.vz = s2->unk_10.vz + g_camera_view_offset.unk_10.vz;
+        local.w18 = s2->w18 + g_camera_view_offset.w18;
     } else {
         local = *s2;
     }
@@ -2001,14 +2002,14 @@ void camera_ApplyReplayView(s32 arg0) {
         s2 = &D_800F6608;
     }
 
-    local.unk_00.x = s2->unk_00.x + D_800FF5C8.unk_00.x;
-    local.unk_00.y = s2->unk_00.y + D_800FF5C8.unk_00.y;
-    local.unk_00.z = s2->unk_00.z + D_800FF5C8.unk_00.z;
-    local.unk_10.vx = s2->unk_10.vx + D_800FF5C8.unk_10.vx;
-    local.unk_10.vy = s2->unk_10.vy + D_800FF5C8.unk_10.vy;
-    local.unk_10.vz = s2->unk_10.vz + D_800FF5C8.unk_10.vz;
+    local.unk_00.x = s2->unk_00.x + g_camera_view_offset.unk_00.x;
+    local.unk_00.y = s2->unk_00.y + g_camera_view_offset.unk_00.y;
+    local.unk_00.z = s2->unk_00.z + g_camera_view_offset.unk_00.z;
+    local.unk_10.vx = s2->unk_10.vx + g_camera_view_offset.unk_10.vx;
+    local.unk_10.vy = s2->unk_10.vy + g_camera_view_offset.unk_10.vy;
+    local.unk_10.vz = s2->unk_10.vz + g_camera_view_offset.unk_10.vz;
 
-    local.w18 = s2->w18 + D_800FF5C8.w18;
+    local.w18 = s2->w18 + g_camera_view_offset.w18;
     func_80046BF4(&local.unk_00, &local.unk_10, local.w18);
 
     {
@@ -2054,7 +2055,7 @@ void fight_Update(void) {
     object_UpdatePool();
     func_800321E8();
     replay_AdvanceFrame();
-    if (D_800A38BA != 0 && D_800A36FA == 0) {
+    if (D_800A38BA != 0 && g_camera_fight_view_mode == 0) {
         func_8001E800();
     } else {
         func_8003E6A0(D_80101EC8[0].unk_F4.x, D_80101EC8[0].unk_F4.z);
@@ -2972,11 +2973,11 @@ void func_80020CDC(void) {
     if (p[1] == 0xFFFF) {
         ndata_InvalidatePack();
     }
-    D_800A3880 = 0;
+    g_motion_common_loaded = 0;
     p[1] = 0;
     p[0] = 0;
-    D_800A38C0[1] = 0xFF;
-    D_800A38C0[0] = 0xFF;
+    g_motion_frame_set_ids[1] = 0xFF;
+    g_motion_frame_set_ids[0] = 0xFF;
 }
 
 void func_80020D38(void) {
@@ -2991,30 +2992,30 @@ void func_80020D38(void) {
 }
 
 void motion_InitBuffers(void) {
-    D_800A3888[0] = (MotionFrame *)0x80118800;
-    D_800A3888[1] = (MotionFrame *)0x8011C400;
-    D_800A3830 = (s32)0x80120000;
-    D_800A3860[0] = (Tbl800A3860Entry *)0x80148800;
-    D_800A3860[1] = (Tbl800A3860Entry *)0x80190800;
+    g_motion_frame_buffers[0] = (MotionFrame *)0x80118800;
+    g_motion_frame_buffers[1] = (MotionFrame *)0x8011C400;
+    g_motion_common_buffer = (s32)0x80120000;
+    g_motion_fighter_buffers[0] = (Tbl800A3860Entry *)0x80148800;
+    g_motion_fighter_buffers[1] = (Tbl800A3860Entry *)0x80190800;
     func_80020CDC();
 }
 
 void motion_LoadCommonData(void) {
     s32 v1;
-    cdrom_StartRead(cdrom_GetFileIndex(1, 1), D_800A3830);
+    cdrom_StartRead(cdrom_GetFileIndex(1, 1), g_motion_common_buffer);
     cdrom_WaitIdle();
-    v1 = D_800A3830;
-    D_80102760.unk_00 = (u16 *)(v1 + 0x14);
-    D_80102760.unk_04 = (u16 *)(v1 + *(s32 *)(v1 + 4));
-    D_80102760.unk_08 = (u8 *)(v1 + *(s32 *)(v1 + 8));
-    D_80102760.unk_10 = (u32 *)(v1 + *(s32 *)(v1 + 0x10));
-    D_800A3880 = 1;
+    v1 = g_motion_common_buffer;
+    g_motion_common_sections.unk_00 = (u16 *)(v1 + 0x14);
+    g_motion_common_sections.unk_04 = (u16 *)(v1 + *(s32 *)(v1 + 4));
+    g_motion_common_sections.unk_08 = (u8 *)(v1 + *(s32 *)(v1 + 8));
+    g_motion_common_sections.unk_10 = (u32 *)(v1 + *(s32 *)(v1 + 0x10));
+    g_motion_common_loaded = 1;
 }
 
 /* For i = 0, 1 with v = arg0, then arg2 (when D_800A38DC is 1, 4 or 6): when
- * D_800A38C0[i] differs from v, stores v there and calls
- * cdrom_StartReadAt(cdrom_GetFileIndex(1, 0), D_800A3888[i], v * 7, 7). Then
- * sets D_80101EC8[0].unk_48 to D_8008DB1C[arg0][arg1] | arg1 << 12 and
+ * g_motion_frame_set_ids[i] differs from v, stores v there and calls
+ * cdrom_StartReadAt(cdrom_GetFileIndex(1, 0), g_motion_frame_buffers[i], v * 7,
+ * 7). Then sets D_80101EC8[0].unk_48 to D_8008DB1C[arg0][arg1] | arg1 << 12 and
  * D_80101EC8[1].unk_48 to the same of arg2 and arg3 (a copy of the first
  * when D_800A38DC is 3). It then fills var_0[0..1] from D_800A38C4[0..1]: it
  * returns when every id is already there; equal ids give var_0[0] = id0; an
@@ -3022,8 +3023,9 @@ void motion_LoadCommonData(void) {
  * found only in D_800A38C4[1] gives var_0[0] = id0; otherwise (also when id0
  * is only in D_800A38C4[1]) var_0[0] = id0 and var_0[1] = id1. For each
  * nonzero var_0[i] it calls cdrom_StartRead(cdrom_GetFileIndex(1, j + 2),
- * D_800A3860[i]), j the id's D_8008DCCC index, points D_801027B0[i] into
- * D_800A3860[i] and stores the id in D_800A38C4[i]. */
+ * g_motion_fighter_buffers[i]), j the id's D_8008DCCC index, points
+ * g_motion_fighter_sections[i] into g_motion_fighter_buffers[i] and stores the
+ * id in D_800A38C4[i]. */
 void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* FAKE: frame layout: only var_0[0..1] are used; the target frame (0x140)
      * reserves 0x100 untouched bytes after them (N = 129..132; var_0[2] gives
@@ -3035,7 +3037,7 @@ void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * (score 3). */
     s32 j;
 
-    if (D_800A3880 == 0) {
+    if (g_motion_common_loaded == 0) {
         motion_LoadCommonData();
     }
 
@@ -3045,10 +3047,10 @@ void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             if (i != 0) {
                 j = arg2;
             }
-            if (D_800A38C0[i] != j) {
-                D_800A38C0[i] = j;
-                cdrom_StartReadAt(
-                    cdrom_GetFileIndex(1, 0), (s32)D_800A3888[i], j * 7, 7);
+            if (g_motion_frame_set_ids[i] != j) {
+                g_motion_frame_set_ids[i] = j;
+                cdrom_StartReadAt(cdrom_GetFileIndex(1, 0),
+                                  (s32)g_motion_frame_buffers[i], j * 7, 7);
                 cdrom_WaitIdle();
             }
         }
@@ -3098,30 +3100,36 @@ void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                     break;
                 }
             }
-            cdrom_StartRead(cdrom_GetFileIndex(1, j + 2), (s32)D_800A3860[i]);
+            cdrom_StartRead(
+                cdrom_GetFileIndex(1, j + 2), (s32)g_motion_fighter_buffers[i]);
             cdrom_WaitIdle();
-            D_801027B0[i].unk_00 = (u16 *)((s32)D_800A3860[i] + 0x6C +
-                                           (D_800A3860[i]->unk_03 - 1) * 6);
-            D_801027B0[i].unk_04 =
-                (u16 *)((s32)D_800A3860[i] + D_800A3860[i]->unk_04[0]);
-            D_801027B0[i].unk_08 =
-                (u8 *)((s32)D_800A3860[i] + D_800A3860[i]->unk_04[1]);
-            D_801027B0[i].unk_0C =
-                (u16 *)((s32)D_800A3860[i] + D_800A3860[i]->unk_04[2]);
-            D_801027B0[i].unk_10 =
-                (u32 *)((s32)D_800A3860[i] + D_800A3860[i]->unk_04[3]);
+            g_motion_fighter_sections[i].unk_00 =
+                (u16 *)((s32)g_motion_fighter_buffers[i] + 0x6C +
+                        (g_motion_fighter_buffers[i]->unk_03 - 1) * 6);
+            g_motion_fighter_sections[i].unk_04 =
+                (u16 *)((s32)g_motion_fighter_buffers[i] +
+                        g_motion_fighter_buffers[i]->unk_04[0]);
+            g_motion_fighter_sections[i].unk_08 =
+                (u8 *)((s32)g_motion_fighter_buffers[i] +
+                       g_motion_fighter_buffers[i]->unk_04[1]);
+            g_motion_fighter_sections[i].unk_0C =
+                (u16 *)((s32)g_motion_fighter_buffers[i] +
+                        g_motion_fighter_buffers[i]->unk_04[2]);
+            g_motion_fighter_sections[i].unk_10 =
+                (u32 *)((s32)g_motion_fighter_buffers[i] +
+                        g_motion_fighter_buffers[i]->unk_04[3]);
             D_800A38C4[i] = var_0[i];
         }
     }
 }
 
 void func_80021210(void) {
-    func_8001979C(0, D_80102760.unk_10);
+    func_8001979C(0, g_motion_common_sections.unk_10);
     if (D_800A38C4[0]) {
-        func_8001979C(1, D_801027B0[0].unk_10);
+        func_8001979C(1, g_motion_fighter_sections[0].unk_10);
     }
     if (D_800A38C4[1]) {
-        func_8001979C(2, D_801027B0[1].unk_10);
+        func_8001979C(2, g_motion_fighter_sections[1].unk_10);
     }
 }
 
@@ -3218,7 +3226,8 @@ void func_800213A0(Unk80101EC8Record *arg0) {
             return;
         }
     }
-    arg0->unk_86 = (s16)((a1 + 1) % D_800A3860[arg0->unk_4A]->f14);
+    arg0->unk_86 =
+        (s16)((a1 + 1) % g_motion_fighter_buffers[arg0->unk_4A]->f14);
 }
 
 /* The 66-name animation/asset table (12-byte stride: 8 chars + null + pad).
@@ -3246,17 +3255,19 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
     rec->unk_78 = 0;
     *out = 0;
     if ((u32)(id - 0x7FF5) < 11) {
-        return &D_801027B0[rec->unk_4A].unk_00
-                    [D_800A3860[rec->unk_4A]->f66[id - 0x7FF5][rec->unk_86]];
+        return &g_motion_fighter_sections[rec->unk_4A]
+                    .unk_00[g_motion_fighter_buffers[rec->unk_4A]
+                                ->f66[id - 0x7FF5][rec->unk_86]];
     }
     switch (id) {
     case 0x7FF0:
         rec->unk_78 = 1;
         rec->unk_86 = rec->unk_84;
-        return &D_801027B0[rec->unk_4A]
-                    .unk_00[D_800A3860[rec->unk_4A]->f4E[rec->unk_84]];
+        return &g_motion_fighter_sections[rec->unk_4A].unk_00
+                    [g_motion_fighter_buffers[rec->unk_4A]->f4E[rec->unk_84]];
     case 0x7FF1:
-        rec->unk_86 = (rec->unk_86 + 1) % D_800A3860[rec->unk_4A]->f14;
+        rec->unk_86 =
+            (rec->unk_86 + 1) % g_motion_fighter_buffers[rec->unk_4A]->f14;
     case 0x7FF2:
     case 0x7FF4:
         if (id == 0x7FF4) {
@@ -3265,23 +3276,25 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
         t = rec->unk_86;
         if ((t == rec->unk_88 && rec->unk_8A == 0) ||
             (t == rec->unk_8E && rec->unk_90 == 0)) {
-            rec->unk_86 = (rec->unk_86 + 1) % D_800A3860[rec->unk_4A]->f14;
+            rec->unk_86 =
+                (rec->unk_86 + 1) % g_motion_fighter_buffers[rec->unk_4A]->f14;
         } else if (D_800A38DC == 3 && rec->unk_06 != 0) {
             func_800213A0(rec);
         }
-        return &D_801027B0[rec->unk_4A]
-                    .unk_00[D_800A3860[rec->unk_4A]->f4E[rec->unk_86]];
+        return &g_motion_fighter_sections[rec->unk_4A].unk_00
+                    [g_motion_fighter_buffers[rec->unk_4A]->f4E[rec->unk_86]];
     case 0x7FF3:
-        t = (rec->unk_86 + 1) % D_800A3860[rec->unk_4A]->f14;
+        t = (rec->unk_86 + 1) % g_motion_fighter_buffers[rec->unk_4A]->f14;
         if ((t == rec->unk_88 && rec->unk_8A == 0) ||
             (t == rec->unk_8E && rec->unk_90 == 0)) {
-            t = (t + 1) % D_800A3860[rec->unk_4A]->f14;
+            t = (t + 1) % g_motion_fighter_buffers[rec->unk_4A]->f14;
         } else if (D_800A38DC == 3 && rec->unk_06 != 0 &&
                    (t == rec->unk_88 || t == rec->unk_8E)) {
-            t = (t + 1) % D_800A3860[rec->unk_4A]->f14;
+            t = (t + 1) % g_motion_fighter_buffers[rec->unk_4A]->f14;
         }
-        return &D_801027B0[rec->unk_4A]
-                    .unk_00[D_800A3860[rec->unk_4A]->f54[rec->unk_86][t]];
+        return &g_motion_fighter_sections[rec->unk_4A]
+                    .unk_00[g_motion_fighter_buffers[rec->unk_4A]
+                                ->f54[rec->unk_86][t]];
     }
     if (id & 0x8000) {
         if (rec->unk_4C != 0) {
@@ -3289,10 +3302,10 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
         } else {
             var_1 = rec->unk_4A;
         }
-        return &D_801027B0[var_1].unk_00[id & 0x7FFF];
+        return &g_motion_fighter_sections[var_1].unk_00[id & 0x7FFF];
     }
     *out = 1;
-    return &D_80102760.unk_00[id];
+    return &g_motion_common_sections.unk_00[id];
 }
 
 void motion_ResetVariantIndex(s32 a0) {
@@ -3302,23 +3315,25 @@ void motion_ResetVariantIndex(s32 a0) {
 MoveScript *motion_GetCurrentVariantScript(s32 a0) {
     s16 v1 = D_80101EC8[a0].unk_4A;
     s16 v0 = D_80101EC8[a0].unk_86;
-    return (MoveScript *)&D_801027B0[v1].unk_00[D_800A3860[v1]->f4E[v0]];
+    return (MoveScript *)&g_motion_fighter_sections[v1]
+        .unk_00[g_motion_fighter_buffers[v1]->f4E[v0]];
 }
 
 MoveScript *motion_GetDefaultVariantScript(s32 a0) {
     s16 v1 = D_80101EC8[a0].unk_4A;
     s16 v0 = D_80101EC8[a0].unk_84;
-    return (MoveScript *)&D_801027B0[v1].unk_00[D_800A3860[v1]->f4E[v0]];
+    return (MoveScript *)&g_motion_fighter_sections[v1]
+        .unk_00[g_motion_fighter_buffers[v1]->f4E[v0]];
 }
 
 MoveScript *func_800219E4(s32 a0) {
-    return (MoveScript *)&D_80102760
-        .unk_00[D_800A3860[D_80101EC8[a0].unk_4A]->f16];
+    return (MoveScript *)&g_motion_common_sections
+        .unk_00[g_motion_fighter_buffers[D_80101EC8[a0].unk_4A]->f16];
 }
 
 MoveScript *func_80021A3C(s32 a0, s32 a1) {
-    return (MoveScript *)&D_80102760
-        .unk_00[D_800A3860[D_80101EC8[a0].unk_4A]->f18[a1]];
+    return (MoveScript *)&g_motion_common_sections
+        .unk_00[g_motion_fighter_buffers[D_80101EC8[a0].unk_4A]->f18[a1]];
 }
 
 void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
@@ -3335,13 +3350,13 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
         u16 v1 = arg1->unk_04;
         s0->unk_5C = v1;
         if (arg2 != 0) {
-            u16 *v0 = &D_80102760.unk_04[v1 * 2];
+            u16 *v0 = &g_motion_common_sections.unk_04[v1 * 2];
             s0->unk_54 = v0;
-            s0->unk_58 = D_80102760.unk_08 + v0[1];
+            s0->unk_58 = g_motion_common_sections.unk_08 + v0[1];
         } else {
-            u16 *v0 = &D_801027B0[a3].unk_04[v1 * 2];
+            u16 *v0 = &g_motion_fighter_sections[a3].unk_04[v1 * 2];
             s0->unk_54 = v0;
-            s0->unk_58 = D_801027B0[a3].unk_08 + v0[1];
+            s0->unk_58 = g_motion_fighter_sections[a3].unk_08 + v0[1];
         }
     }
     {
@@ -3861,8 +3876,8 @@ void func_80022F34(void) {
             {
                 {
                     fighter_InitCpuControl(
-                        i, D_801027B0[rec->unk_4A].unk_0C,
-                        D_801027B0[rec->other->unk_4A].unk_0C);
+                        i, g_motion_fighter_sections[rec->unk_4A].unk_0C,
+                        g_motion_fighter_sections[rec->other->unk_4A].unk_0C);
                 }
             }
         }
@@ -4348,13 +4363,13 @@ extern void func_800204C0(Unk80101EC8Record *);
  * command list (unk_50 / unk_7C, motion_ResolveMoveData / func_80021A98),
  * decodes two MotionFrames with func_800198D0 (at unk_40 and at unk_40 + 1,
  * capped at unk_58[1] - 1, each offset by *unk_54, and by unk_58[1] in some
- * states; state unk_6A 0x33 instead copies D_800A3888[arg0][unk_40] into both);
- * when unk_31A is 0 it mixes their root offsets into unk_E8 by the 4.12 weight
- * unk_42, otherwise the first one's (by the weight unk_318) with unk_290's
- * less unk_320 (by 0x1000 - unk_318),
- * integrates the velocities (unk_104 / unk_134) into the position, resolves
- * it (fighter_ResolveMovement), then refreshes the bone points, the flags
- * unk_62, unk_AE and unk_288, the damping and the per-frame side effects. */
+ * states; state unk_6A 0x33 instead copies g_motion_frame_buffers[arg0][unk_40]
+ * into both); when unk_31A is 0 it mixes their root offsets into unk_E8 by
+ * the 4.12 weight unk_42, otherwise the first one's (by the weight unk_318)
+ * with unk_290's less unk_320 (by 0x1000 - unk_318), integrates the velocities
+ * (unk_104 / unk_134) into the position, resolves it (fighter_ResolveMovement),
+ * then refreshes the bone points, the flags unk_62, unk_AE and unk_288, the
+ * damping and the per-frame side effects. */
 void fighter_Update(s32 arg0, PadState *pad) {
     MotionFrame var_0[2];
     Vec3i32 v[2];
@@ -4726,7 +4741,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
     rec->unk_64 = (var_18 << 14) | var_15;
     rec->unk_66 = (var_18 << 14) | var_17;
     if (rec->unk_6A == 0x33) {
-        var_0[1] = D_800A3888[arg0][rec->unk_40];
+        var_0[1] = g_motion_frame_buffers[arg0][rec->unk_40];
         var_0[0] = var_0[1];
     } else {
         func_800198D0(var_18, var_15, &var_0[0], (u16 *)0x1F8001B0);

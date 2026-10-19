@@ -26,7 +26,7 @@ static s32 D_800A33C0;
 static s32 D_800A33C4; /* not named by any code or data: size from the gap */
 static s16 D_800A33C8[2];
 static s32 D_800A33CC; /* not named by any code or data: size from the gap */
-static s16 *D_800A33D0;
+static s16 *g_wave_cell_buffer;
 static s32 D_800A33D4;
 static s32 D_800A33D8;
 static s32 D_800A33DC; /* not named by any code or data: size from the gap */
@@ -730,7 +730,7 @@ void func_800477CC(void) {}
 
 void func_800477D4(void) {}
 
-void wave_SetCellBuffer(s32 a0) { D_800A33D0 = (s16 *)a0; }
+void wave_SetCellBuffer(s32 a0) { g_wave_cell_buffer = (s16 *)a0; }
 
 /* 17 phases and the 9 x 17 table wave_Update steps from them
  * (D_800EF800 takes the last row's deltas) */
@@ -756,7 +756,7 @@ s32 wave_Init(void) {
     s32 w;
     s32 val;
 
-    s0 = D_800A33D0;
+    s0 = g_wave_cell_buffer;
     s3val = GetTPage(0, 0, 0x2C0, 0x1C0);
     s2val = GetTPage(0, 0, 0x2C0, 0x180);
     s1val = GetClut(0x10, 0x1E0);
@@ -875,7 +875,7 @@ loop3:
     if (0x11 > a0)
         goto loop3;
 
-    return (s32)s0 - (s32)D_800A33D0;
+    return (s32)s0 - (s32)g_wave_cell_buffer;
 }
 
 void wave_Update(void) {
@@ -923,7 +923,7 @@ void wave_Draw(void) {
     s16 *dst16;
     s16 z;
 
-    s7val = D_800A33D0;
+    s7val = g_wave_cell_buffer;
     i = 0;
     src = D_800EF59C[0];
     while (i < 9) {
@@ -1010,7 +1010,7 @@ s32 wave_GetCellBufferSize(void) { return 0xD00; }
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 
 void wave_MoveCellBuffer(s32 a0) {
-    D_800A33D0 = (s16 *)((u8 *)D_800A33D0 + a0);
+    g_wave_cell_buffer = (s16 *)((u8 *)g_wave_cell_buffer + a0);
 }
 
 void gpu_LoadTimGroup(s32 arg0, s32 arg1) {
@@ -2230,13 +2230,13 @@ void func_80049E4C(void) {
 }
 
 /* 0x800153F0: the 22-halfword record light_Unpack unpacks. */
-extern const Unk800153F0Record D_800153F0;
+extern const Unk800153F0Record g_light_default_template;
 extern void light_Unpack(Unk800F62E0Rec *, u16 *);
 
 void light_InitDefaults(void) {
     Unk800153F0Record sp10;
     s32 i;
-    sp10 = D_800153F0;
+    sp10 = g_light_default_template;
     for (i = 0; i < 8; i++) {
         light_Unpack(&D_800F62E0[i], sp10.v);
     }

@@ -4,7 +4,7 @@ glabel wave_Init
     /* 37FF0 800477F0 21280000 */  addu       $a1, $zero, $zero
     /* 37FF4 800477F4 C0020624 */  addiu      $a2, $zero, 0x2C0
     /* 37FF8 800477F8 1000B0AF */  sw         $s0, 0x10($sp)
-    /* 37FFC 800477FC 0403908F */  lw         $s0, %gp_rel(D_800A33D0)($gp)
+    /* 37FFC 800477FC 0403908F */  lw         $s0, %gp_rel(g_wave_cell_buffer)($gp)
     /* 38000 80047800 C0010724 */  addiu      $a3, $zero, 0x1C0
     /* 38004 80047804 2000BFAF */  sw         $ra, 0x20($sp)
     /* 38008 80047808 1C00B3AF */  sw         $s3, 0x1C($sp)
@@ -167,7 +167,7 @@ glabel wave_Init
     /* 38258 80047A58 11008228 */  slti       $v0, $a0, 0x11
     /* 3825C 80047A5C FAFF4014 */  bnez       $v0, .L80047A48
     /* 38260 80047A60 04006324 */   addiu     $v1, $v1, 0x4
-    /* 38264 80047A64 0403828F */  lw         $v0, %gp_rel(D_800A33D0)($gp)
+    /* 38264 80047A64 0403828F */  lw         $v0, %gp_rel(g_wave_cell_buffer)($gp)
     /* 38268 80047A68 00000000 */  nop
     /* 3826C 80047A6C 23100202 */  subu       $v0, $s0, $v0
     /* 38270 80047A70 2000BF8F */  lw         $ra, 0x20($sp)

@@ -2,7 +2,7 @@ glabel func_800646E8
     /* 54EE8 800646E8 2004828F */  lw         $v0, %gp_rel(D_800A34EC)($gp)
     /* 54EEC 800646EC 98FFBD27 */  addiu      $sp, $sp, -0x68
     /* 54EF0 800646F0 4400B1AF */  sw         $s1, 0x44($sp)
-    /* 54EF4 800646F4 0807918F */  lw         $s1, %gp_rel(D_800A37D4)($gp)
+    /* 54EF4 800646F4 0807918F */  lw         $s1, %gp_rel(g_eff_quad_cursor)($gp)
     /* 54EF8 800646F8 6400BFAF */  sw         $ra, 0x64($sp)
     /* 54EFC 800646FC 6000BEAF */  sw         $fp, 0x60($sp)
     /* 54F00 80064700 5C00B7AF */  sw         $s7, 0x5C($sp)
@@ -406,7 +406,7 @@ glabel func_800646E8
     /* 55508 80064D08 21202002 */  addu       $a0, $s1, $zero
     /* 5550C 80064D0C 5AEA010C */  jal        SetSemiTrans
     /* 55510 80064D10 01000524 */   addiu     $a1, $zero, 0x1
-    /* 55514 80064D14 5406838F */  lw         $v1, %gp_rel(D_800A3720)($gp)
+    /* 55514 80064D14 5406838F */  lw         $v1, %gp_rel(g_eff_quad_buffer_base)($gp)
     /* 55518 80064D18 00000000 */  nop
     /* 5551C 80064D1C 23182302 */  subu       $v1, $s1, $v1
     /* 55520 80064D20 40100300 */  sll        $v0, $v1, 1
@@ -455,7 +455,7 @@ glabel func_800646E8
     /* 555BC 80064DBC 27004010 */  beqz       $v0, .L80064E5C
     /* 555C0 80064DC0 21100000 */   addu      $v0, $zero, $zero
     /* 555C4 80064DC4 0000D1AF */  sw         $s1, 0x0($fp)
-    /* 555C8 80064DC8 0807918F */  lw         $s1, %gp_rel(D_800A37D4)($gp)
+    /* 555C8 80064DC8 0807918F */  lw         $s1, %gp_rel(g_eff_quad_cursor)($gp)
     /* 555CC 80064DCC 0000C28F */  lw         $v0, 0x0($fp)
     /* 555D0 80064DD0 00000000 */  nop
     /* 555D4 80064DD4 2B102202 */  sltu       $v0, $s1, $v0
@@ -493,7 +493,7 @@ glabel func_800646E8
   .L80064E50:
     /* 55650 80064E50 0000C38F */  lw         $v1, 0x0($fp)
     /* 55654 80064E54 01000224 */  addiu      $v0, $zero, 0x1
-    /* 55658 80064E58 080783AF */  sw         $v1, %gp_rel(D_800A37D4)($gp)
+    /* 55658 80064E58 080783AF */  sw         $v1, %gp_rel(g_eff_quad_cursor)($gp)
   .L80064E5C:
     /* 5565C 80064E5C 6400BF8F */  lw         $ra, 0x64($sp)
     /* 55660 80064E60 6000BE8F */  lw         $fp, 0x60($sp)

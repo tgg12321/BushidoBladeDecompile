@@ -17,9 +17,9 @@ glabel motion_ResolveMoveData
     /* 11C60 80021460 40100200 */  sll        $v0, $v0, 1
     /* 11C64 80021464 80180400 */  sll        $v1, $a0, 2
     /* 11C68 80021468 21206400 */  addu       $a0, $v1, $a0
-    /* 11C6C 8002146C 0A80013C */  lui        $at, %hi(D_800A3860)
+    /* 11C6C 8002146C 0A80013C */  lui        $at, %hi(g_motion_fighter_buffers)
     /* 11C70 80021470 21082300 */  addu       $at, $at, $v1
-    /* 11C74 80021474 6038238C */  lw         $v1, %lo(D_800A3860)($at)
+    /* 11C74 80021474 6038238C */  lw         $v1, %lo(g_motion_fighter_buffers)($at)
     /* 11C78 80021478 80200400 */  sll        $a0, $a0, 2
     /* 11C7C 8002147C 21186200 */  addu       $v1, $v1, $v0
     /* 11C80 80021480 86000286 */  lh         $v0, 0x86($s0)
@@ -27,9 +27,9 @@ glabel motion_ResolveMoveData
     /* 11C88 80021488 40100200 */  sll        $v0, $v0, 1
     /* 11C8C 8002148C 21104300 */  addu       $v0, $v0, $v1
     /* 11C90 80021490 00004294 */  lhu        $v0, 0x0($v0)
-    /* 11C94 80021494 1080013C */  lui        $at, %hi(D_801027B0)
+    /* 11C94 80021494 1080013C */  lui        $at, %hi(g_motion_fighter_sections)
     /* 11C98 80021498 21082400 */  addu       $at, $at, $a0
-    /* 11C9C 8002149C B027238C */  lw         $v1, %lo(D_801027B0)($at)
+    /* 11C9C 8002149C B027238C */  lw         $v1, %lo(g_motion_fighter_sections)($at)
     /* 11CA0 800214A0 2C860008 */  j          .L800218B0
     /* 11CA4 800214A4 40100200 */   sll       $v0, $v0, 1
   .L800214A8:
@@ -53,24 +53,24 @@ glabel motion_ResolveMoveData
     /* 11CE8 800214E8 80200300 */  sll        $a0, $v1, 2
     /* 11CEC 800214EC 21188300 */  addu       $v1, $a0, $v1
     /* 11CF0 800214F0 80180300 */  sll        $v1, $v1, 2
-    /* 11CF4 800214F4 0A80013C */  lui        $at, %hi(D_800A3860)
+    /* 11CF4 800214F4 0A80013C */  lui        $at, %hi(g_motion_fighter_buffers)
     /* 11CF8 800214F8 21082400 */  addu       $at, $at, $a0
-    /* 11CFC 800214FC 6038248C */  lw         $a0, %lo(D_800A3860)($at)
+    /* 11CFC 800214FC 6038248C */  lw         $a0, %lo(g_motion_fighter_buffers)($at)
     /* 11D00 80021500 40100200 */  sll        $v0, $v0, 1
     /* 11D04 80021504 21104400 */  addu       $v0, $v0, $a0
     /* 11D08 80021508 4E004294 */  lhu        $v0, 0x4E($v0)
-    /* 11D0C 8002150C 1080013C */  lui        $at, %hi(D_801027B0)
+    /* 11D0C 8002150C 1080013C */  lui        $at, %hi(g_motion_fighter_sections)
     /* 11D10 80021510 21082300 */  addu       $at, $at, $v1
-    /* 11D14 80021514 B027238C */  lw         $v1, %lo(D_801027B0)($at)
+    /* 11D14 80021514 B027238C */  lw         $v1, %lo(g_motion_fighter_sections)($at)
     /* 11D18 80021518 2C860008 */  j          .L800218B0
     /* 11D1C 8002151C 40100200 */   sll       $v0, $v0, 1
   jlabel .L80021520
     /* 11D20 80021520 4A000286 */  lh         $v0, 0x4A($s0)
     /* 11D24 80021524 00000000 */  nop
     /* 11D28 80021528 80100200 */  sll        $v0, $v0, 2
-    /* 11D2C 8002152C 0A80013C */  lui        $at, %hi(D_800A3860)
+    /* 11D2C 8002152C 0A80013C */  lui        $at, %hi(g_motion_fighter_buffers)
     /* 11D30 80021530 21082200 */  addu       $at, $at, $v0
-    /* 11D34 80021534 6038238C */  lw         $v1, %lo(D_800A3860)($at)
+    /* 11D34 80021534 6038238C */  lw         $v1, %lo(g_motion_fighter_buffers)($at)
     /* 11D38 80021538 86000286 */  lh         $v0, 0x86($s0)
     /* 11D3C 8002153C 14006384 */  lh         $v1, 0x14($v1)
     /* 11D40 80021540 01004224 */  addiu      $v0, $v0, 0x1
@@ -117,9 +117,9 @@ glabel motion_ResolveMoveData
     /* 11DCC 800215CC 4A000286 */  lh         $v0, 0x4A($s0)
     /* 11DD0 800215D0 00000000 */  nop
     /* 11DD4 800215D4 80100200 */  sll        $v0, $v0, 2
-    /* 11DD8 800215D8 0A80013C */  lui        $at, %hi(D_800A3860)
+    /* 11DD8 800215D8 0A80013C */  lui        $at, %hi(g_motion_fighter_buffers)
     /* 11DDC 800215DC 21082200 */  addu       $at, $at, $v0
-    /* 11DE0 800215E0 6038238C */  lw         $v1, %lo(D_800A3860)($at)
+    /* 11DE0 800215E0 6038238C */  lw         $v1, %lo(g_motion_fighter_buffers)($at)
     /* 11DE4 800215E4 86000286 */  lh         $v0, 0x86($s0)
     /* 11DE8 800215E8 14006384 */  lh         $v1, 0x14($v1)
     /* 11DEC 800215EC 01004224 */  addiu      $v0, $v0, 0x1
@@ -156,24 +156,24 @@ glabel motion_ResolveMoveData
     /* 11E58 80021658 80200300 */  sll        $a0, $v1, 2
     /* 11E5C 8002165C 21188300 */  addu       $v1, $a0, $v1
     /* 11E60 80021660 80180300 */  sll        $v1, $v1, 2
-    /* 11E64 80021664 0A80013C */  lui        $at, %hi(D_800A3860)
+    /* 11E64 80021664 0A80013C */  lui        $at, %hi(g_motion_fighter_buffers)
     /* 11E68 80021668 21082400 */  addu       $at, $at, $a0
-    /* 11E6C 8002166C 6038248C */  lw         $a0, %lo(D_800A3860)($at)
+    /* 11E6C 8002166C 6038248C */  lw         $a0, %lo(g_motion_fighter_buffers)($at)
     /* 11E70 80021670 40100200 */  sll        $v0, $v0, 1
     /* 11E74 80021674 21104400 */  addu       $v0, $v0, $a0
     /* 11E78 80021678 4E004294 */  lhu        $v0, 0x4E($v0)
-    /* 11E7C 8002167C 1080013C */  lui        $at, %hi(D_801027B0)
+    /* 11E7C 8002167C 1080013C */  lui        $at, %hi(g_motion_fighter_sections)
     /* 11E80 80021680 21082300 */  addu       $at, $at, $v1
-    /* 11E84 80021684 B027238C */  lw         $v1, %lo(D_801027B0)($at)
+    /* 11E84 80021684 B027238C */  lw         $v1, %lo(g_motion_fighter_sections)($at)
     /* 11E88 80021688 2C860008 */  j          .L800218B0
     /* 11E8C 8002168C 40100200 */   sll       $v0, $v0, 1
   jlabel .L80021690
     /* 11E90 80021690 4A000286 */  lh         $v0, 0x4A($s0)
     /* 11E94 80021694 00000000 */  nop
     /* 11E98 80021698 80100200 */  sll        $v0, $v0, 2
-    /* 11E9C 8002169C 0A80013C */  lui        $at, %hi(D_800A3860)
+    /* 11E9C 8002169C 0A80013C */  lui        $at, %hi(g_motion_fighter_buffers)
     /* 11EA0 800216A0 21082200 */  addu       $at, $at, $v0
-    /* 11EA4 800216A4 6038238C */  lw         $v1, %lo(D_800A3860)($at)
+    /* 11EA4 800216A4 6038238C */  lw         $v1, %lo(g_motion_fighter_buffers)($at)
     /* 11EA8 800216A8 86000286 */  lh         $v0, 0x86($s0)
     /* 11EAC 800216AC 14006384 */  lh         $v1, 0x14($v1)
     /* 11EB0 800216B0 01004224 */  addiu      $v0, $v0, 0x1
@@ -213,9 +213,9 @@ glabel motion_ResolveMoveData
     /* 11F28 80021728 4A000386 */  lh         $v1, 0x4A($s0)
     /* 11F2C 8002172C 00140600 */  sll        $v0, $a2, 16
     /* 11F30 80021730 80180300 */  sll        $v1, $v1, 2
-    /* 11F34 80021734 0A80013C */  lui        $at, %hi(D_800A3860)
+    /* 11F34 80021734 0A80013C */  lui        $at, %hi(g_motion_fighter_buffers)
     /* 11F38 80021738 21082300 */  addu       $at, $at, $v1
-    /* 11F3C 8002173C 6038238C */  lw         $v1, %lo(D_800A3860)($at)
+    /* 11F3C 8002173C 6038238C */  lw         $v1, %lo(g_motion_fighter_buffers)($at)
     /* 11F40 80021740 03140200 */  sra        $v0, $v0, 16
     /* 11F44 80021744 14006384 */  lh         $v1, 0x14($v1)
     /* 11F48 80021748 EF850008 */  j          .L800217BC
@@ -243,9 +243,9 @@ glabel motion_ResolveMoveData
     /* 11F98 80021798 4A000286 */  lh         $v0, 0x4A($s0)
     /* 11F9C 8002179C 00000000 */  nop
     /* 11FA0 800217A0 80100200 */  sll        $v0, $v0, 2
-    /* 11FA4 800217A4 0A80013C */  lui        $at, %hi(D_800A3860)
+    /* 11FA4 800217A4 0A80013C */  lui        $at, %hi(g_motion_fighter_buffers)
     /* 11FA8 800217A8 21082200 */  addu       $at, $at, $v0
-    /* 11FAC 800217AC 6038228C */  lw         $v0, %lo(D_800A3860)($at)
+    /* 11FAC 800217AC 6038228C */  lw         $v0, %lo(g_motion_fighter_buffers)($at)
     /* 11FB0 800217B0 00000000 */  nop
     /* 11FB4 800217B4 14004384 */  lh         $v1, 0x14($v0)
     /* 11FB8 800217B8 01008224 */  addiu      $v0, $a0, 0x1
@@ -273,18 +273,18 @@ glabel motion_ResolveMoveData
     /* 12000 80021800 80200400 */  sll        $a0, $a0, 2
     /* 12004 80021804 40180200 */  sll        $v1, $v0, 1
     /* 12008 80021808 21186200 */  addu       $v1, $v1, $v0
-    /* 1200C 8002180C 0A80013C */  lui        $at, %hi(D_800A3860)
+    /* 1200C 8002180C 0A80013C */  lui        $at, %hi(g_motion_fighter_buffers)
     /* 12010 80021810 21082500 */  addu       $at, $at, $a1
-    /* 12014 80021814 6038228C */  lw         $v0, %lo(D_800A3860)($at)
+    /* 12014 80021814 6038228C */  lw         $v0, %lo(g_motion_fighter_buffers)($at)
     /* 12018 80021818 40180300 */  sll        $v1, $v1, 1
     /* 1201C 8002181C 21186200 */  addu       $v1, $v1, $v0
     /* 12020 80021820 00140600 */  sll        $v0, $a2, 16
     /* 12024 80021824 C3130200 */  sra        $v0, $v0, 15
     /* 12028 80021828 21186200 */  addu       $v1, $v1, $v0
     /* 1202C 8002182C 54006294 */  lhu        $v0, 0x54($v1)
-    /* 12030 80021830 1080013C */  lui        $at, %hi(D_801027B0)
+    /* 12030 80021830 1080013C */  lui        $at, %hi(g_motion_fighter_sections)
     /* 12034 80021834 21082400 */  addu       $at, $at, $a0
-    /* 12038 80021838 B027238C */  lw         $v1, %lo(D_801027B0)($at)
+    /* 12038 80021838 B027238C */  lw         $v1, %lo(g_motion_fighter_sections)($at)
     /* 1203C 8002183C 2C860008 */  j          .L800218B0
     /* 12040 80021840 40100200 */   sll       $v0, $v0, 1
   .L80021844:
@@ -308,15 +308,15 @@ glabel motion_ResolveMoveData
     /* 12080 80021880 21186200 */  addu       $v1, $v1, $v0
     /* 12084 80021884 80180300 */  sll        $v1, $v1, 2
     /* 12088 80021888 FF7FE230 */  andi       $v0, $a3, 0x7FFF
-    /* 1208C 8002188C 1080013C */  lui        $at, %hi(D_801027B0)
+    /* 1208C 8002188C 1080013C */  lui        $at, %hi(g_motion_fighter_sections)
     /* 12090 80021890 21082300 */  addu       $at, $at, $v1
-    /* 12094 80021894 B027238C */  lw         $v1, %lo(D_801027B0)($at)
+    /* 12094 80021894 B027238C */  lw         $v1, %lo(g_motion_fighter_sections)($at)
     /* 12098 80021898 2C860008 */  j          .L800218B0
     /* 1209C 8002189C 40100200 */   sll       $v0, $v0, 1
   .L800218A0:
     /* 120A0 800218A0 0000C2A4 */  sh         $v0, 0x0($a2)
-    /* 120A4 800218A4 1080033C */  lui        $v1, %hi(D_80102760)
-    /* 120A8 800218A8 6027638C */  lw         $v1, %lo(D_80102760)($v1)
+    /* 120A4 800218A4 1080033C */  lui        $v1, %hi(g_motion_common_sections)
+    /* 120A8 800218A8 6027638C */  lw         $v1, %lo(g_motion_common_sections)($v1)
     /* 120AC 800218AC 40100700 */  sll        $v0, $a3, 1
   .L800218B0:
     /* 120B0 800218B0 21106200 */  addu       $v0, $v1, $v0

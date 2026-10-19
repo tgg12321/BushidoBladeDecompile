@@ -4,8 +4,8 @@ glabel object_UpdatePool
     /* 21584 80030D84 801F133C */  lui        $s3, (0x1F8002B8 >> 16)
     /* 21588 80030D88 B8027336 */  ori        $s3, $s3, (0x1F8002B8 & 0xFFFF)
     /* 2158C 80030D8C 4000B6AF */  sw         $s6, 0x40($sp)
-    /* 21590 80030D90 1080163C */  lui        $s6, %hi(D_80106A78)
-    /* 21594 80030D94 786AD626 */  addiu      $s6, $s6, %lo(D_80106A78)
+    /* 21590 80030D90 1080163C */  lui        $s6, %hi(g_object_pool)
+    /* 21594 80030D94 786AD626 */  addiu      $s6, $s6, %lo(g_object_pool)
     /* 21598 80030D98 4800BEAF */  sw         $fp, 0x48($sp)
     /* 2159C 80030D9C 21F00000 */  addu       $fp, $zero, $zero
     /* 215A0 80030DA0 4400B7AF */  sw         $s7, 0x44($sp)

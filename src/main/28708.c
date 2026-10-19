@@ -13,10 +13,10 @@ extern s32 g_str_sio_800A3210;
 extern s32 D_800A36C0;
 
 extern s32 g_comb_close_request;
-extern s16 D_800A379E;
+extern s16 g_memcard_request_status;
 extern s16 D_800A3814;
-extern s16 D_800A37C8;
-extern s32 D_800A31F4;
+extern s16 g_memcard_request_operation;
+extern s32 g_memcard_request_state;
 extern u8 D_800A38CC;
 extern u8 D_800A382C;
 extern s32 g_comb_read_fd;
@@ -26,16 +26,16 @@ extern s32 g_comb_event_ioer;
 extern u8 D_800A320C;
 
 extern s32 D_800A31F8;
-extern u8 D_800A36F8;
-extern Rec1C (*D_800A36EC)[2];
-extern u8 D_800A3782;
+extern u8 g_replay_write_frame;
+extern Rec1C (*g_replay_fighter_frames)[2];
+extern u8 g_replay_ring_wrapped;
 
 extern u8 D_800A31FC;
 
 extern s32 g_comb_wait_state;
 extern s32 g_comb_recv_buf[2];
 extern s32 g_comb_send_buf;
-extern u8 D_800A37D0;
+extern u8 g_replay_playback_frame;
 
 extern Unk800F34D8Save D_800F34D8; /* = D_800F33D8 + 0x100 */
 extern s32 D_800A31F0;
@@ -281,7 +281,7 @@ void memcard_StepRequest(void) {
     s32 var_s1;
     u16 temp_v0;
 
-    var_v1 = D_800A31F4;
+    var_v1 = g_memcard_request_state;
     if (var_v1 != 1)
         goto state_other;
 
@@ -300,24 +300,24 @@ positive_path:
         return;
     if (var_v1 <= 0)
         return;
-    if (D_800A37C8 == 0) {
-        D_800A31F4 = 5;
+    if (g_memcard_request_operation == 0) {
+        g_memcard_request_state = 5;
         return;
     }
-    if (D_800A37C8 == 3)
+    if (g_memcard_request_operation == 3)
         goto set_state_7;
-    D_800A31F4 = 3;
+    g_memcard_request_state = 3;
     return;
 
 neg2_handler:
-    if (D_800A37C8 != 3)
+    if (g_memcard_request_operation != 3)
         goto neg2_else;
 set_state_7:
-    D_800A31F4 = 7;
+    g_memcard_request_state = 7;
     return;
 neg2_else:
-    D_800A31F4 = 0;
-    D_800A379E = 0xA;
+    g_memcard_request_state = 0;
+    g_memcard_request_status = 0xA;
     return;
 
 sub_inc:
@@ -344,12 +344,12 @@ state_other:
     return;
 
 state_3:
-    D_800A379E = 1;
+    g_memcard_request_status = 1;
     memcard_CountFiles(0, 0);
     temp_s0 = memcard_CountFreeBlocks();
     if (memcard_HasFile((u8 *)D_800A31F0) != 0) {
         var_s1 = 0;
-        if (D_800A37C8 == 1) {
+        if (g_memcard_request_operation == 1) {
             var_v0 = 0xD;
             goto finish;
         }
@@ -371,7 +371,7 @@ setup_load:
         var_v0 = 3;
         goto finish;
     }
-    D_800A31F4 = 4;
+    g_memcard_request_state = 4;
     return;
 
 state_5:
@@ -381,14 +381,14 @@ state_5:
         var_v0 = 0xE;
         goto finish;
     }
-    D_800A379E = 4;
+    g_memcard_request_status = 4;
     memcard_ClearBuffer();
     if (memcard_ReadFile(0, 0, D_800A31F0, (s32)D_800F33D8, 0x200) != 0) {
         close(g_memcard_fd);
         var_v0 = 6;
         goto finish;
     }
-    D_800A31F4 = 6;
+    g_memcard_request_state = 6;
     return;
 
 state_7:
@@ -399,22 +399,22 @@ state_7:
     }
     var_v0 = 0xC;
 finish:
-    D_800A379E = var_v0;
-    D_800A31F4 = 0;
+    g_memcard_request_status = var_v0;
+    g_memcard_request_state = 0;
 }
 
 extern s32 memcard_RestoreSaveBlock(Unk800F34D8Save *);
 
-/* Load/save state-machine completion handler: dispatches on D_800A31F4
- * (4 = after a write, 6 = after a read), reaps memcard_PollSwEvents()'s status,
- * closes the file and posts a result code to D_800A379E. The still-pending
- * paths share the fail_store end label (the shared-end-label recipe,
- * .claude/rules/shared-end-label.md). */
+/* Load/save state-machine completion handler: dispatches on
+ * g_memcard_request_state (4 = after a write, 6 = after a read), reaps
+ * memcard_PollSwEvents()'s status, closes the file and posts a result code to
+ * g_memcard_request_status. The still-pending paths share the fail_store end
+ * label (the shared-end-label recipe, .claude/rules/shared-end-label.md). */
 void memcard_PollFileCompletion(void) {
     s32 ret;
     s32 var_1;
 
-    switch (D_800A31F4) {
+    switch (g_memcard_request_state) {
     case 4:
         ret = memcard_PollSwEvents();
         if (ret == 0) {
@@ -423,11 +423,11 @@ void memcard_PollFileCompletion(void) {
         }
         close(g_memcard_fd);
         if (ret == 1) {
-            D_800A379E = 2;
+            g_memcard_request_status = 2;
         } else {
-            D_800A379E = 3;
+            g_memcard_request_status = 3;
         }
-        D_800A31F4 = 0;
+        g_memcard_request_state = 0;
         return;
     case 6:
         ret = memcard_PollSwEvents();
@@ -437,59 +437,59 @@ void memcard_PollFileCompletion(void) {
         }
         close(g_memcard_fd);
         if (ret == 1) {
-            D_800A379E = 5;
+            g_memcard_request_status = 5;
             if (memcard_RestoreSaveBlock(&D_800F34D8) == 0) {
-                D_800A379E = 0xF;
+                g_memcard_request_status = 0xF;
             }
         } else {
-            D_800A379E = 6;
+            g_memcard_request_status = 6;
         }
-        D_800A31F4 = 0;
+        g_memcard_request_state = 0;
         return;
     }
     return;
 
 fail_store:
-    D_800A379E = var_1;
+    g_memcard_request_status = var_1;
 }
 
 s32 memcard_Update(void) {
-    if ((u32)D_800A31F4 < 2) {
+    if ((u32)g_memcard_request_state < 2) {
         D_800A31F8 = func_80037D14(0, 0);
     }
     memcard_StepRequest();
     memcard_PollFileCompletion();
-    return D_800A379E;
+    return g_memcard_request_status;
 }
 
 void memcard_RequestLoad(void) {
-    D_800A379E = 4;
+    g_memcard_request_status = 4;
     D_800A3814 = 0;
-    D_800A37C8 = 0;
-    D_800A31F4 = 1;
+    g_memcard_request_operation = 0;
+    g_memcard_request_state = 1;
 }
 
 void memcard_RequestSave(void) {
-    D_800A379E = 1;
-    D_800A37C8 = 1;
+    g_memcard_request_status = 1;
+    g_memcard_request_operation = 1;
     D_800A38CC = 0;
     D_800A3814 = 0;
-    D_800A31F4 = 1;
+    g_memcard_request_state = 1;
 }
 
 void memcard_RequestOverwrite(void) {
-    D_800A379E = 1;
-    D_800A37C8 = 2;
+    g_memcard_request_status = 1;
+    g_memcard_request_operation = 2;
     D_800A38CC = 0;
     D_800A3814 = 0;
-    D_800A31F4 = 1;
+    g_memcard_request_state = 1;
 }
 
 void memcard_RequestFormat(void) {
-    D_800A379E = 9;
-    D_800A37C8 = 3;
+    g_memcard_request_status = 9;
+    g_memcard_request_operation = 3;
     D_800A3814 = 0;
-    D_800A31F4 = 1;
+    g_memcard_request_state = 1;
 }
 
 extern u8 D_800A3203;
@@ -1098,31 +1098,31 @@ void replay_Reset(void) {
     s32 i;
     s32 j;
 
-    D_800A36EC = (Rec1C(*)[2])D_800F33D8;
-    D_800A36F8 = 0;
-    D_800A3782 = 0;
+    g_replay_fighter_frames = (Rec1C(*)[2])D_800F33D8;
+    g_replay_write_frame = 0;
+    g_replay_ring_wrapped = 0;
     for (i = 0x1F; i >= 0; i--) {
-        D_80101BF0[i].unk_0 = 0xFF;
+        g_replay_events[i].unk_0 = 0xFF;
     }
     for (j = 0xB3; j >= 0; j--) {
-        D_800F68E0[j].unk_0 = -1;
+        g_replay_model_draws[j].unk_0 = -1;
     }
 }
 
 void replay_BeginFrame(void) {
-    extern u8 D_800A379C;
-    extern s16 D_800A3714;
+    extern u8 g_replay_event_search_cursor;
+    extern s16 g_replay_model_draw_search_cursor;
     s32 i;
     Unk800F68E0Rec *q;
     s16 val;
     s16 newval;
     for (i = 0; i < 0x20; i++) {
-        if (D_80101BF0[i].unk_0 == D_800A36F8) {
-            D_80101BF0[i].unk_0 = 0xFF;
+        if (g_replay_events[i].unk_0 == g_replay_write_frame) {
+            g_replay_events[i].unk_0 = 0xFF;
         }
     }
 
-    q = D_800F68E0;
+    q = g_replay_model_draws;
     i = 0;
     do {
         val = q->unk_0;
@@ -1137,12 +1137,12 @@ void replay_BeginFrame(void) {
         q++;
     } while (i < 0xB4);
 
-    D_800A379C = 0;
-    D_800A3714 = 0;
+    g_replay_event_search_cursor = 0;
+    g_replay_model_draw_search_cursor = 0;
 }
 
 void replay_RecordModelDraw(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
-    extern s16 D_800A3714;
+    extern s16 g_replay_model_draw_search_cursor;
     extern u8 D_800A3209;
     Unk800F68E0Rec *var_0;
     s32 i;
@@ -1153,7 +1153,7 @@ void replay_RecordModelDraw(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
     s32 raw;
     s32 rot;
 
-    var_0 = D_800F68E0;
+    var_0 = g_replay_model_draws;
     i = 0;
     do {
         state = var_0->unk_0;
@@ -1177,19 +1177,19 @@ void replay_RecordModelDraw(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
         var_0++;
     } while (i < 0xB4);
 
-    idx = D_800A3714;
-    var_0 = &D_800F68E0[idx];
+    idx = g_replay_model_draw_search_cursor;
+    var_0 = &g_replay_model_draws[idx];
     while (idx < 0xB4) {
         if (var_0->unk_0 == -1) {
             break;
         }
         cur = idx + 1;
-        D_800A3714 = cur;
+        g_replay_model_draw_search_cursor = cur;
         var_0++;
         idx = cur;
     }
 
-    if (D_800A3714 == 0xB4) {
+    if (g_replay_model_draw_search_cursor == 0xB4) {
         D_800A3209++;
         return;
     }
@@ -1206,21 +1206,21 @@ void replay_RecordModelDraw(s32 arg0, s32 arg1, s32 *arg2, s16 *arg3) {
 }
 
 void replay_RecordEvent(u8 arg0, u8 arg1, s32 *arg2, u16 *arg3) {
-    extern u8 D_800A3208;
-    extern u8 D_800A379C;
+    extern u8 g_replay_replaying_event;
+    extern u8 g_replay_event_search_cursor;
     Unk80101BF0Rec *var_0;
     u8 idx;
-    if (D_800A3208 == 0) {
-        idx = D_800A379C;
-        var_0 = &D_80101BF0[idx];
+    if (g_replay_replaying_event == 0) {
+        idx = g_replay_event_search_cursor;
+        var_0 = &g_replay_events[idx];
         for (; idx < 0x20; idx++, var_0++) {
             if (var_0->unk_0 == 0xFF) {
                 break;
             }
-            D_800A379C = idx + 1;
+            g_replay_event_search_cursor = idx + 1;
         }
-        if (D_800A379C != 0x20) {
-            u8 tmp = D_800A36F8;
+        if (g_replay_event_search_cursor != 0x20) {
+            u8 tmp = g_replay_write_frame;
             var_0->unk_1 = arg0;
             var_0->unk_2 = arg1;
             var_0->unk_0 = tmp;
@@ -1241,7 +1241,7 @@ void replay_RecordFighter(Unk80101EC8Record *a0) {
     Rec1C *dest;
 
     idx = a0->index;
-    dest = &D_800A36EC[D_800A36F8][idx];
+    dest = &g_replay_fighter_frames[g_replay_write_frame][idx];
 
     dest->h4 = a0->unk_F4.x;
     dest->h8 = a0->unk_F4.z;
@@ -1275,12 +1275,12 @@ void replay_RecordFighter(Unk80101EC8Record *a0) {
 }
 
 void replay_AdvanceFrame(void) {
-    u8 val = D_800A36F8;
+    u8 val = g_replay_write_frame;
     if (val == 0x77) {
-        D_800A36F8 = 0;
-        D_800A3782 = 1;
+        g_replay_write_frame = 0;
+        g_replay_ring_wrapped = 1;
     } else {
-        D_800A36F8 = val + 1;
+        g_replay_write_frame = val + 1;
     }
 }
 
@@ -1293,7 +1293,7 @@ void replay_Start(void) {
     func_80041688(1, 0);
     func_8001B6F4();
     eff_StopCommands();
-    D_800A37D0 = 0;
+    g_replay_playback_frame = 0;
     D_800A3834 = 5;
 }
 
@@ -1333,7 +1333,7 @@ void func_8003984C(Unk80101EC8Record *arg0, s32 *arg1, s32 *arg2) {
     }
 }
 
-extern u8 D_800A3208;
+extern u8 g_replay_replaying_event;
 
 void replay_PlayFrame(void) {
     MotionFrame work[2];
@@ -1359,23 +1359,25 @@ void replay_PlayFrame(void) {
     u8 var_15;
     u8 *var_16;
 
-    if (D_800A3782 != 0) {
-        idx = (D_800A36F8 + D_800A37D0) % 120;
-        var_8 = (D_800A37D0 << 12) / 120;
+    if (g_replay_ring_wrapped != 0) {
+        idx = (g_replay_write_frame + g_replay_playback_frame) % 120;
+        var_8 = (g_replay_playback_frame << 12) / 120;
     } else {
-        idx = D_800A37D0;
-        var_8 = (idx << 12) / D_800A36F8;
+        idx = g_replay_playback_frame;
+        var_8 = (idx << 12) / g_replay_write_frame;
     }
     D_800A3778 = func_800472B0();
     /* The frame record's address is written out at each argument (F3
      * compound-address duplication, no-new-park-categories); a `rec` local:
      * score 20. */
-    func_8001BAE4(
-        &D_800A36EC[idx][D_800A3748],
-        D_800A3748 == 0 ? &D_800A36EC[idx][1] : &D_800A36EC[idx][0], var_8);
-    func_8001BBD8(
-        &D_800A36EC[idx][D_800A3748],
-        D_800A3748 == 0 ? &D_800A36EC[idx][1] : &D_800A36EC[idx][0], var_8);
+    func_8001BAE4(&g_replay_fighter_frames[idx][D_800A3748],
+                  D_800A3748 == 0 ? &g_replay_fighter_frames[idx][1]
+                                  : &g_replay_fighter_frames[idx][0],
+                  var_8);
+    func_8001BBD8(&g_replay_fighter_frames[idx][D_800A3748],
+                  D_800A3748 == 0 ? &g_replay_fighter_frames[idx][1]
+                                  : &g_replay_fighter_frames[idx][0],
+                  var_8);
     camera_ApplyReplayView(var_8);
 
     for (i = 0; i < 2; i++) {
@@ -1384,7 +1386,7 @@ void replay_PlayFrame(void) {
          * ordinary-c-judge-decidable) */
         u16 *entry;
 
-        p = &D_800A36EC[idx][i];
+        p = &g_replay_fighter_frames[idx][i];
         var_11 = &D_80101EC8[i];
         func_800198D0((p->hE >> 14) & 3, p->hE & 0x3FFF, &work[0], sp1C0);
         func_800198D0((p->h10 >> 14) & 3, p->h10 & 0x3FFF, &work[1], sp1C0);
@@ -1424,12 +1426,12 @@ void replay_PlayFrame(void) {
         var_11->unk_40 = p->b19;
         var_16 = var_11->unk_58;
         if (p->b17 & 1) {
-            entry = &D_80102760.unk_04[p->w0->unk_04 * 2];
-            var_11->unk_58 = D_80102760.unk_08 + entry[1];
+            entry = &g_motion_common_sections.unk_04[p->w0->unk_04 * 2];
+            var_11->unk_58 = g_motion_common_sections.unk_08 + entry[1];
         } else {
             temp = (p->b17 >> 1) & 1;
-            entry = &D_801027B0[temp].unk_04[p->w0->unk_04 * 2];
-            var_11->unk_58 = D_801027B0[temp].unk_08 + entry[1];
+            entry = &g_motion_fighter_sections[temp].unk_04[p->w0->unk_04 * 2];
+            var_11->unk_58 = g_motion_fighter_sections[temp].unk_08 + entry[1];
         }
         if (p->b18 & 0x40) {
             fighter_ProcessFrameEvents(var_11);
@@ -1439,7 +1441,7 @@ void replay_PlayFrame(void) {
         func_80040304(i, (p->hA >> 12) & 7);
     }
 
-    e = D_80101BF0;
+    e = g_replay_events;
     for (i = 0; i < 0x20; i++, e++) {
         if (e->unk_0 == idx) {
             pos[0] = e->unk_4[0];
@@ -1448,19 +1450,19 @@ void replay_PlayFrame(void) {
             rot[0] = e->unk_A[0];
             rot[1] = e->unk_A[1];
             rot[2] = e->unk_A[2];
-            D_800A3208 = 1;
+            g_replay_replaying_event = 1;
             func_80032854(e->unk_1, e->unk_2, pos, rot);
-            D_800A3208 = 0;
+            g_replay_replaying_event = 0;
         }
     }
 
-    if (D_800A3782 != 0) {
-        temp = 0x77 - D_800A37D0;
+    if (g_replay_ring_wrapped != 0) {
+        temp = 0x77 - g_replay_playback_frame;
     } else {
-        s32 next_count = D_800A37D0 + 1;
-        temp = D_800A36F8 - next_count;
+        s32 next_count = g_replay_playback_frame + 1;
+        temp = g_replay_write_frame - next_count;
     }
-    s = D_800F68E0;
+    s = g_replay_model_draws;
     for (i = 0; i < 0xB4; i++, s++) {
         if (s->unk_0 >= temp && s->unk_0 - s->unk_2 <= temp) {
             pos[0] = s->unk_4[0];
@@ -1475,8 +1477,10 @@ void replay_PlayFrame(void) {
 
     func_80046DA8(1);
     snd_UpdateStageSounds();
-    D_800A37D0++;
-    if ((D_800A3782 != 0 ? D_800A37D0 == 0x78 : D_800A37D0 == D_800A36F8) ||
+    g_replay_playback_frame++;
+    if ((g_replay_ring_wrapped != 0
+             ? g_replay_playback_frame == 0x78
+             : g_replay_playback_frame == g_replay_write_frame) ||
         (g_pad_state.pressed & 0x400040)) {
         switch (D_800A38DC) {
         case 0:
@@ -1891,7 +1895,7 @@ end:
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
 s32 D_800A31F0 = (s32)D_80010AAC;
-s32 D_800A31F4 = 0;
+s32 g_memcard_request_state = 0;
 s32 D_800A31F8 = 0;
 u8 D_800A31FC = 0;
 u8 D_800A31FD = 0;  /* not named by any code or data: size from the gap */
@@ -1904,7 +1908,7 @@ u8 D_800A3204 = 1;
 u8 D_800A3205 = 1;
 u8 D_800A3206 = 0;
 u8 D_800A3207 = 0;
-u8 D_800A3208 = 0;
+u8 g_replay_replaying_event = 0;
 u8 D_800A3209 = 0;
 s16 D_800A320A = 0; /* not named by any code or data: size from the gap */
 u8 D_800A320C = 0;
@@ -1914,19 +1918,19 @@ s32 g_comb_recv_buf[2];
 s32 g_comb_send_buf;
 s32 D_800A36C0;
 s32 D_800A36D0;
-Rec1C (*D_800A36EC)[2];
-u8 D_800A36F8;
-s16 D_800A3714;
+Rec1C (*g_replay_fighter_frames)[2];
+u8 g_replay_write_frame;
+s16 g_replay_model_draw_search_cursor;
 s32 g_comb_close_request;
 s32 g_comb_read_fd;
 s32 g_comb_event_ioer;
 s32 g_comb_write_fd;
-u8 D_800A3782;
-u8 D_800A379C;
-s16 D_800A379E;
+u8 g_replay_ring_wrapped;
+u8 g_replay_event_search_cursor;
+s16 g_memcard_request_status;
 u16 D_800A37C4;
-s16 D_800A37C8;
-u8 D_800A37D0;
+s16 g_memcard_request_operation;
+u8 g_replay_playback_frame;
 s32 g_comb_event_error;
 s16 D_800A3814;
 u8 D_800A382C;

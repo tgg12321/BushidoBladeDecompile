@@ -9,16 +9,16 @@ glabel snd_ResetVoicesAndQueue
     /* 4BDC8 8005B5C8 1000B0AF */   sw        $s0, 0x10($sp)
     /* 4BDCC 8005B5CC 21880000 */  addu       $s1, $zero, $zero
     /* 4BDD0 8005B5D0 7F001324 */  addiu      $s3, $zero, 0x7F
-    /* 4BDD4 8005B5D4 0F80123C */  lui        $s2, %hi(D_800EFB78)
-    /* 4BDD8 8005B5D8 78FB5226 */  addiu      $s2, $s2, %lo(D_800EFB78)
+    /* 4BDD4 8005B5D4 0F80123C */  lui        $s2, %hi(g_snd_queue)
+    /* 4BDD8 8005B5D8 78FB5226 */  addiu      $s2, $s2, %lo(g_snd_queue)
     /* 4BDDC 8005B5DC 21800000 */  addu       $s0, $zero, $zero
   .L8005B5E0:
     /* 4BDE0 8005B5E0 00241100 */  sll        $a0, $s1, 16
     /* 4BDE4 8005B5E4 03240400 */  sra        $a0, $a0, 16
     /* 4BDE8 8005B5E8 21280000 */  addu       $a1, $zero, $zero
-    /* 4BDEC 8005B5EC 0F80013C */  lui        $at, %hi(D_800EFB78)
+    /* 4BDEC 8005B5EC 0F80013C */  lui        $at, %hi(g_snd_queue)
     /* 4BDF0 8005B5F0 21083000 */  addu       $at, $at, $s0
-    /* 4BDF4 8005B5F4 78FB20AC */  sw         $zero, %lo(D_800EFB78)($at)
+    /* 4BDF4 8005B5F4 78FB20AC */  sw         $zero, %lo(g_snd_queue)($at)
     /* 4BDF8 8005B5F8 050053A2 */  sb         $s3, 0x5($s2)
     /* 4BDFC 8005B5FC 0F80013C */  lui        $at, %hi(D_800EFB7C)
     /* 4BE00 8005B600 21083000 */  addu       $at, $at, $s0

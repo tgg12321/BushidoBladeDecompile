@@ -1,8 +1,8 @@
 glabel replay_RecordModelDraw
     /* 29BC8 800393C8 F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 29BCC 800393CC 21608000 */  addu       $t4, $a0, $zero
-    /* 29BD0 800393D0 0F80043C */  lui        $a0, %hi(D_800F68E0)
-    /* 29BD4 800393D4 E0688424 */  addiu      $a0, $a0, %lo(D_800F68E0)
+    /* 29BD0 800393D0 0F80043C */  lui        $a0, %hi(g_replay_model_draws)
+    /* 29BD4 800393D4 E0688424 */  addiu      $a0, $a0, %lo(g_replay_model_draws)
     /* 29BD8 800393D8 21500000 */  addu       $t2, $zero, $zero
     /* 29BDC 800393DC 0E008924 */  addiu      $t1, $a0, 0xE
   .L800393E0:
@@ -65,9 +65,9 @@ glabel replay_RecordModelDraw
     /* 29CBC 800394BC B4004229 */  slti       $v0, $t2, 0xB4
     /* 29CC0 800394C0 C7FF4014 */  bnez       $v0, .L800393E0
     /* 29CC4 800394C4 10008424 */   addiu     $a0, $a0, 0x10
-    /* 29CC8 800394C8 48068287 */  lh         $v0, %gp_rel(D_800A3714)($gp)
-    /* 29CCC 800394CC 0F80033C */  lui        $v1, %hi(D_800F68E0)
-    /* 29CD0 800394D0 E0686324 */  addiu      $v1, $v1, %lo(D_800F68E0)
+    /* 29CC8 800394C8 48068287 */  lh         $v0, %gp_rel(g_replay_model_draw_search_cursor)($gp)
+    /* 29CCC 800394CC 0F80033C */  lui        $v1, %hi(g_replay_model_draws)
+    /* 29CD0 800394D0 E0686324 */  addiu      $v1, $v1, %lo(g_replay_model_draws)
     /* 29CD4 800394D4 21404000 */  addu       $t0, $v0, $zero
     /* 29CD8 800394D8 00210200 */  sll        $a0, $v0, 4
     /* 29CDC 800394DC B4004228 */  slti       $v0, $v0, 0xB4
@@ -80,7 +80,7 @@ glabel replay_RecordModelDraw
     /* 29CF4 800394F4 09004910 */  beq        $v0, $t1, .L8003951C
     /* 29CF8 800394F8 01000225 */   addiu     $v0, $t0, 0x1
     /* 29CFC 800394FC 21184000 */  addu       $v1, $v0, $zero
-    /* 29D00 80039500 480683A7 */  sh         $v1, %gp_rel(D_800A3714)($gp)
+    /* 29D00 80039500 480683A7 */  sh         $v1, %gp_rel(g_replay_model_draw_search_cursor)($gp)
     /* 29D04 80039504 10008424 */  addiu      $a0, $a0, 0x10
     /* 29D08 80039508 00140200 */  sll        $v0, $v0, 16
     /* 29D0C 8003950C 03140200 */  sra        $v0, $v0, 16
@@ -88,7 +88,7 @@ glabel replay_RecordModelDraw
     /* 29D14 80039514 F5FF4014 */  bnez       $v0, .L800394EC
     /* 29D18 80039518 21406000 */   addu      $t0, $v1, $zero
   .L8003951C:
-    /* 29D1C 8003951C 48068387 */  lh         $v1, %gp_rel(D_800A3714)($gp)
+    /* 29D1C 8003951C 48068387 */  lh         $v1, %gp_rel(g_replay_model_draw_search_cursor)($gp)
     /* 29D20 80039520 B4000224 */  addiu      $v0, $zero, 0xB4
     /* 29D24 80039524 09006214 */  bne        $v1, $v0, .L8003954C
     /* 29D28 80039528 001B0C00 */   sll       $v1, $t4, 12

@@ -15,15 +15,15 @@ glabel motion_GetCurrentVariantScript
     /* 12138 80021938 80200300 */  sll        $a0, $v1, 2
     /* 1213C 8002193C 21188300 */  addu       $v1, $a0, $v1
     /* 12140 80021940 80180300 */  sll        $v1, $v1, 2
-    /* 12144 80021944 0A80013C */  lui        $at, %hi(D_800A3860)
+    /* 12144 80021944 0A80013C */  lui        $at, %hi(g_motion_fighter_buffers)
     /* 12148 80021948 21082400 */  addu       $at, $at, $a0
-    /* 1214C 8002194C 6038248C */  lw         $a0, %lo(D_800A3860)($at)
+    /* 1214C 8002194C 6038248C */  lw         $a0, %lo(g_motion_fighter_buffers)($at)
     /* 12150 80021950 40100200 */  sll        $v0, $v0, 1
     /* 12154 80021954 21104400 */  addu       $v0, $v0, $a0
     /* 12158 80021958 4E004294 */  lhu        $v0, 0x4E($v0)
-    /* 1215C 8002195C 1080013C */  lui        $at, %hi(D_801027B0)
+    /* 1215C 8002195C 1080013C */  lui        $at, %hi(g_motion_fighter_sections)
     /* 12160 80021960 21082300 */  addu       $at, $at, $v1
-    /* 12164 80021964 B027238C */  lw         $v1, %lo(D_801027B0)($at)
+    /* 12164 80021964 B027238C */  lw         $v1, %lo(g_motion_fighter_sections)($at)
     /* 12168 80021968 40100200 */  sll        $v0, $v0, 1
     /* 1216C 8002196C 0800E003 */  jr         $ra
     /* 12170 80021970 21106200 */   addu      $v0, $v1, $v0

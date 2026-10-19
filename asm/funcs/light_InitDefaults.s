@@ -1,8 +1,8 @@
 glabel light_InitDefaults
     /* 3A74C 80049F4C B0FFBD27 */  addiu      $sp, $sp, -0x50
     /* 3A750 80049F50 1000A727 */  addiu      $a3, $sp, 0x10
-    /* 3A754 80049F54 0180063C */  lui        $a2, %hi(D_800153F0)
-    /* 3A758 80049F58 F053C624 */  addiu      $a2, $a2, %lo(D_800153F0)
+    /* 3A754 80049F54 0180063C */  lui        $a2, %hi(g_light_default_template)
+    /* 3A758 80049F58 F053C624 */  addiu      $a2, $a2, %lo(g_light_default_template)
     /* 3A75C 80049F5C 2510E600 */  or         $v0, $a3, $a2
     /* 3A760 80049F60 03004230 */  andi       $v0, $v0, 0x3
     /* 3A764 80049F64 4800BFAF */  sw         $ra, 0x48($sp)

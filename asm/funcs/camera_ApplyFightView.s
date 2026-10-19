@@ -7,8 +7,8 @@ glabel camera_ApplyFightView
     /* EC18 8001E418 6400B1AF */  sw         $s1, 0x64($sp)
     /* EC1C 8001E41C 55004010 */  beqz       $v0, .L8001E574
     /* EC20 8001E420 6000B0AF */   sw        $s0, 0x60($sp)
-    /* EC24 8001E424 0A80033C */  lui        $v1, %hi(D_800A36FA)
-    /* EC28 8001E428 FA366390 */  lbu        $v1, %lo(D_800A36FA)($v1)
+    /* EC24 8001E424 0A80033C */  lui        $v1, %hi(g_camera_fight_view_mode)
+    /* EC28 8001E428 FA366390 */  lbu        $v1, %lo(g_camera_fight_view_mode)($v1)
     /* EC2C 8001E42C 01000224 */  addiu      $v0, $zero, 0x1
     /* EC30 8001E430 10006214 */  bne        $v1, $v0, .L8001E474
     /* EC34 8001E434 02000224 */   addiu     $v0, $zero, 0x2
@@ -23,10 +23,10 @@ glabel camera_ApplyFightView
     /* EC58 8001E458 05004010 */  beqz       $v0, .L8001E470
     /* EC5C 8001E45C 02000224 */   addiu     $v0, $zero, 0x2
   .L8001E460:
-    /* EC60 8001E460 0A80013C */  lui        $at, %hi(D_800A36FA)
-    /* EC64 8001E464 FA3622A0 */  sb         $v0, %lo(D_800A36FA)($at)
-    /* EC68 8001E468 0A80033C */  lui        $v1, %hi(D_800A36FA)
-    /* EC6C 8001E46C FA366390 */  lbu        $v1, %lo(D_800A36FA)($v1)
+    /* EC60 8001E460 0A80013C */  lui        $at, %hi(g_camera_fight_view_mode)
+    /* EC64 8001E464 FA3622A0 */  sb         $v0, %lo(g_camera_fight_view_mode)($at)
+    /* EC68 8001E468 0A80033C */  lui        $v1, %hi(g_camera_fight_view_mode)
+    /* EC6C 8001E46C FA366390 */  lbu        $v1, %lo(g_camera_fight_view_mode)($v1)
   .L8001E470:
     /* EC70 8001E470 02000224 */  addiu      $v0, $zero, 0x2
   .L8001E474:
@@ -46,27 +46,27 @@ glabel camera_ApplyFightView
     /* ECA4 8001E4A4 0F80123C */  lui        $s2, %hi(D_800F6608)
     /* ECA8 8001E4A8 08665226 */  addiu      $s2, $s2, %lo(D_800F6608)
     /* ECAC 8001E4AC 01000224 */  addiu      $v0, $zero, 0x1
-    /* ECB0 8001E4B0 0A80013C */  lui        $at, %hi(D_800A36FA)
-    /* ECB4 8001E4B4 FA3622A0 */  sb         $v0, %lo(D_800A36FA)($at)
+    /* ECB0 8001E4B0 0A80013C */  lui        $at, %hi(g_camera_fight_view_mode)
+    /* ECB4 8001E4B4 FA3622A0 */  sb         $v0, %lo(g_camera_fight_view_mode)($at)
     /* ECB8 8001E4B8 38790008 */  j          .L8001E4E0
     /* ECBC 8001E4BC 00000000 */   nop
   .L8001E4C0:
     /* ECC0 8001E4C0 0F80123C */  lui        $s2, %hi(D_800F5328)
     /* ECC4 8001E4C4 28535226 */  addiu      $s2, $s2, %lo(D_800F5328)
-    /* ECC8 8001E4C8 0A80013C */  lui        $at, %hi(D_800A36FA)
-    /* ECCC 8001E4CC FA3620A0 */  sb         $zero, %lo(D_800A36FA)($at)
+    /* ECC8 8001E4C8 0A80013C */  lui        $at, %hi(g_camera_fight_view_mode)
+    /* ECCC 8001E4CC FA3620A0 */  sb         $zero, %lo(g_camera_fight_view_mode)($at)
     /* ECD0 8001E4D0 38790008 */  j          .L8001E4E0
     /* ECD4 8001E4D4 00000000 */   nop
   .L8001E4D8:
     /* ECD8 8001E4D8 0F80123C */  lui        $s2, %hi(D_800F6608)
     /* ECDC 8001E4DC 08665226 */  addiu      $s2, $s2, %lo(D_800F6608)
   .L8001E4E0:
-    /* ECE0 8001E4E0 0A80043C */  lui        $a0, %hi(D_800A36FA)
-    /* ECE4 8001E4E4 FA368490 */  lbu        $a0, %lo(D_800A36FA)($a0)
+    /* ECE0 8001E4E0 0A80043C */  lui        $a0, %hi(g_camera_fight_view_mode)
+    /* ECE4 8001E4E4 FA368490 */  lbu        $a0, %lo(g_camera_fight_view_mode)($a0)
     /* ECE8 8001E4E8 86FC000C */  jal        func_8003F218
     /* ECEC 8001E4EC 0100842C */   sltiu     $a0, $a0, 0x1
-    /* ECF0 8001E4F0 0A80023C */  lui        $v0, %hi(D_800A36FA)
-    /* ECF4 8001E4F4 FA364290 */  lbu        $v0, %lo(D_800A36FA)($v0)
+    /* ECF0 8001E4F0 0A80023C */  lui        $v0, %hi(g_camera_fight_view_mode)
+    /* ECF4 8001E4F4 FA364290 */  lbu        $v0, %lo(g_camera_fight_view_mode)($v0)
     /* ECF8 8001E4F8 00000000 */  nop
     /* ECFC 8001E4FC 02004014 */  bnez       $v0, .L8001E508
     /* ED00 8001E500 2D000424 */   addiu     $a0, $zero, 0x2D
@@ -76,8 +76,8 @@ glabel camera_ApplyFightView
     /* ED0C 8001E50C 00000000 */   nop
     /* ED10 8001E510 FFFB010C */  jal        SetGeomScreen
     /* ED14 8001E514 21204000 */   addu      $a0, $v0, $zero
-    /* ED18 8001E518 0A80023C */  lui        $v0, %hi(D_800A36FA)
-    /* ED1C 8001E51C FA364290 */  lbu        $v0, %lo(D_800A36FA)($v0)
+    /* ED18 8001E518 0A80023C */  lui        $v0, %hi(g_camera_fight_view_mode)
+    /* ED1C 8001E51C FA364290 */  lbu        $v0, %lo(g_camera_fight_view_mode)($v0)
     /* ED20 8001E520 00000000 */  nop
     /* ED24 8001E524 0C004014 */  bnez       $v0, .L8001E558
     /* ED28 8001E528 21200000 */   addu      $a0, $zero, $zero
@@ -110,44 +110,44 @@ glabel camera_ApplyFightView
     /* ED88 8001E588 2C006214 */  bne        $v1, $v0, .L8001E63C
     /* ED8C 8001E58C 1800A727 */   addiu     $a3, $sp, 0x18
     /* ED90 8001E590 0000428E */  lw         $v0, 0x0($s2)
-    /* ED94 8001E594 1080033C */  lui        $v1, %hi(D_800FF5C8)
-    /* ED98 8001E598 C8F5638C */  lw         $v1, %lo(D_800FF5C8)($v1)
+    /* ED94 8001E594 1080033C */  lui        $v1, %hi(g_camera_view_offset)
+    /* ED98 8001E598 C8F5638C */  lw         $v1, %lo(g_camera_view_offset)($v1)
     /* ED9C 8001E59C 00000000 */  nop
     /* EDA0 8001E5A0 21104300 */  addu       $v0, $v0, $v1
     /* EDA4 8001E5A4 1800A2AF */  sw         $v0, 0x18($sp)
     /* EDA8 8001E5A8 0400428E */  lw         $v0, 0x4($s2)
-    /* EDAC 8001E5AC 1080033C */  lui        $v1, %hi(D_800FF5C8 + 0x4)
-    /* EDB0 8001E5B0 CCF5638C */  lw         $v1, %lo(D_800FF5C8 + 0x4)($v1)
+    /* EDAC 8001E5AC 1080033C */  lui        $v1, %hi(g_camera_view_offset + 0x4)
+    /* EDB0 8001E5B0 CCF5638C */  lw         $v1, %lo(g_camera_view_offset + 0x4)($v1)
     /* EDB4 8001E5B4 00000000 */  nop
     /* EDB8 8001E5B8 21104300 */  addu       $v0, $v0, $v1
     /* EDBC 8001E5BC 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* EDC0 8001E5C0 0800428E */  lw         $v0, 0x8($s2)
-    /* EDC4 8001E5C4 1080033C */  lui        $v1, %hi(D_800FF5C8 + 0x8)
-    /* EDC8 8001E5C8 D0F5638C */  lw         $v1, %lo(D_800FF5C8 + 0x8)($v1)
+    /* EDC4 8001E5C4 1080033C */  lui        $v1, %hi(g_camera_view_offset + 0x8)
+    /* EDC8 8001E5C8 D0F5638C */  lw         $v1, %lo(g_camera_view_offset + 0x8)($v1)
     /* EDCC 8001E5CC 00000000 */  nop
     /* EDD0 8001E5D0 21104300 */  addu       $v0, $v0, $v1
     /* EDD4 8001E5D4 2000A2AF */  sw         $v0, 0x20($sp)
     /* EDD8 8001E5D8 10004296 */  lhu        $v0, 0x10($s2)
-    /* EDDC 8001E5DC 1080033C */  lui        $v1, %hi(D_800FF5C8 + 0x10)
-    /* EDE0 8001E5E0 D8F56394 */  lhu        $v1, %lo(D_800FF5C8 + 0x10)($v1)
+    /* EDDC 8001E5DC 1080033C */  lui        $v1, %hi(g_camera_view_offset + 0x10)
+    /* EDE0 8001E5E0 D8F56394 */  lhu        $v1, %lo(g_camera_view_offset + 0x10)($v1)
     /* EDE4 8001E5E4 00000000 */  nop
     /* EDE8 8001E5E8 21104300 */  addu       $v0, $v0, $v1
     /* EDEC 8001E5EC 2800A2A7 */  sh         $v0, 0x28($sp)
     /* EDF0 8001E5F0 12004296 */  lhu        $v0, 0x12($s2)
-    /* EDF4 8001E5F4 1080033C */  lui        $v1, %hi(D_800FF5C8 + 0x12)
-    /* EDF8 8001E5F8 DAF56394 */  lhu        $v1, %lo(D_800FF5C8 + 0x12)($v1)
+    /* EDF4 8001E5F4 1080033C */  lui        $v1, %hi(g_camera_view_offset + 0x12)
+    /* EDF8 8001E5F8 DAF56394 */  lhu        $v1, %lo(g_camera_view_offset + 0x12)($v1)
     /* EDFC 8001E5FC 00000000 */  nop
     /* EE00 8001E600 21104300 */  addu       $v0, $v0, $v1
     /* EE04 8001E604 2A00A2A7 */  sh         $v0, 0x2A($sp)
     /* EE08 8001E608 14004296 */  lhu        $v0, 0x14($s2)
-    /* EE0C 8001E60C 1080033C */  lui        $v1, %hi(D_800FF5C8 + 0x14)
-    /* EE10 8001E610 DCF56394 */  lhu        $v1, %lo(D_800FF5C8 + 0x14)($v1)
+    /* EE0C 8001E60C 1080033C */  lui        $v1, %hi(g_camera_view_offset + 0x14)
+    /* EE10 8001E610 DCF56394 */  lhu        $v1, %lo(g_camera_view_offset + 0x14)($v1)
     /* EE14 8001E614 00000000 */  nop
     /* EE18 8001E618 21104300 */  addu       $v0, $v0, $v1
     /* EE1C 8001E61C 2C00A2A7 */  sh         $v0, 0x2C($sp)
     /* EE20 8001E620 1800428E */  lw         $v0, 0x18($s2)
-    /* EE24 8001E624 1080033C */  lui        $v1, %hi(D_800FF5C8 + 0x18)
-    /* EE28 8001E628 E0F5638C */  lw         $v1, %lo(D_800FF5C8 + 0x18)($v1)
+    /* EE24 8001E624 1080033C */  lui        $v1, %hi(g_camera_view_offset + 0x18)
+    /* EE28 8001E628 E0F5638C */  lw         $v1, %lo(g_camera_view_offset + 0x18)($v1)
     /* EE2C 8001E62C 00000000 */  nop
     /* EE30 8001E630 21104300 */  addu       $v0, $v0, $v1
     /* EE34 8001E634 9F790008 */  j          .L8001E67C

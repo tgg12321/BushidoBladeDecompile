@@ -8,7 +8,7 @@ glabel func_800167EC
     /* 7004 80016804 21184000 */  addu       $v1, $v0, $zero
     /* 7008 80016808 07700224 */  addiu      $v0, $zero, 0x7007
     /* 700C 8001680C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 7010 80016810 440680A7 */  sh         $zero, %gp_rel(D_800A3710)($gp)
+    /* 7010 80016810 440680A7 */  sh         $zero, %gp_rel(g_camera_distance_offset)($gp)
     /* 7014 80016814 1080013C */  lui        $at, %hi(D_80106A50 + 0x23)
     /* 7018 80016818 736A20A0 */  sb         $zero, %lo(D_80106A50 + 0x23)($at)
     /* 701C 8001681C 000062AC */  sw         $v0, 0x0($v1)

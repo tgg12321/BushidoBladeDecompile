@@ -7,7 +7,7 @@
 #include "game.h"
 
 extern FileRecord D_80106A50;
-extern s16 D_800A3710;
+extern s16 g_camera_distance_offset;
 extern GpuDb g_gpu_db[2];
 /* The current frame's ordering table (OT entry n is g_gpu_ot_ptr + n). */
 extern u32 *g_gpu_ot_ptr;
@@ -25,7 +25,7 @@ extern u32 *D_800A378C;
 
 extern DR_MOVE D_800A3D70[31][2];
 extern DR_MOVE D_800A4340[19][2];
-extern DR_MOVE D_800A9830[2][10];
+extern DR_MOVE g_gpu_draw_move_packets[2][10];
 
 /* The VRAM rectangle font_LoadImage loads the image at g_font_image into
  * (x 0x3F0, y 0x1DC, 16 x 36). */
@@ -38,7 +38,7 @@ extern s16 D_800F6658;
 extern s32 D_800A3790;
 extern s16 D_80099478;
 extern s16 D_8009947A;
-extern Unk800F1198Record D_800F1198[];
+extern Unk800F1198Record g_eff_billboards[];
 extern Unk800A9CF8Rec D_800A9CF8;
 extern Unk800F0EC8Record D_800F0EC8[][10];
 extern Unk800F0E38Record D_800F0E38[12];
@@ -150,7 +150,7 @@ extern Vec3i32 D_800F0FB8[6];
 
 extern SVec4i16 D_800F10A0[6];
 extern s16 D_800F0C04[6];
-extern Unk800EFB78Entry D_800EFB78[24];
+extern Unk800EFB78Entry g_snd_queue[24];
 extern Unk80101EC8Record D_80101EC8[];
 extern u8 D_800100A4[];
 extern const char D_800109C8[];
@@ -190,7 +190,7 @@ extern Tbl8008E194 D_8008E194[];
  * n = D_8009BD24.unk14_0. */
 extern u8 D_8009BD58[8][2];
 
-extern Obj80106A78 D_80106A78[12];
+extern Obj80106A78 g_object_pool[12];
 /* [unk_0A][i] -> Unk80101EC8Record.unk_332[i] (object_InitKindQueue) */
 extern s8 D_8008E338[27][5];
 extern u16 D_8008E3C0[28]; /* [unk_0A] -> Unk80101EC8Record.unk_274 */
@@ -304,7 +304,7 @@ extern u8 D_800A36F2[2];
 extern u8 D_800A36F4;
 extern s16 D_800A36F6;
 extern u8 D_800A36F9;
-extern u8 D_800A36FA;
+extern u8 g_camera_fight_view_mode;
 extern s16 D_800A36FC;
 extern u8 D_800A3712;
 extern u8 D_800A3713;
@@ -316,7 +316,7 @@ extern s8 D_800A3748;
 /* Four s16 counters / latches, one per D_8008E914 row snd_UpdateStageSounds
    walks (type 1 latches 1; types 2..6 count up until an rng_Next() draw clears
    them); snd_ResetStageSoundState clears it from the last element down. */
-extern s16 D_800A3750[4];
+extern s16 g_snd_stage_sound_state[4];
 
 extern u8 D_800A3758;
 
@@ -373,20 +373,20 @@ extern void **g_draw_queue_cursor;
 extern s16 D_800A3824;
 extern u8 D_800A382D;
 extern s16 D_800A382E;
-extern s32 D_800A3830;
+extern s32 g_motion_common_buffer;
 extern s16 D_800A3834;
 extern u8 D_800A3836;
 extern u8 *D_800A3844;
 extern s32 D_800A3858;
 extern u8 *D_800A385C;
-extern Tbl800A3860Entry *D_800A3860[];
+extern Tbl800A3860Entry *g_motion_fighter_buffers[];
 extern u8 D_800A3874;
 extern s16 D_800A3876;
 extern u8 *D_800A3878;
 extern s32 D_800A387C;
-extern u8 D_800A3880;
+extern u8 g_motion_common_loaded;
 /* per player: preset motion frames (motion_InitBuffers, fighter_Update) */
-extern MotionFrame *D_800A3888[2];
+extern MotionFrame *g_motion_frame_buffers[2];
 extern u8 D_800A389A;
 extern u8 D_800A389B;
 extern u16 D_800A389C;
@@ -397,11 +397,13 @@ extern s16 D_800A38AE;
 extern u8 D_800A38B0;
 extern u8 D_800A38B8;
 extern s16 D_800A38BA;
-/* per player: character of the D_800A3888 motion set (0xFF = none) */
-extern u8 D_800A38C0[2];
-/* per slot: model id in the D_800A3860[i] buffer (motion_LoadFighterData); [1]
- * = 0xFFFF: func_8001DB9C passed 0x80190800 (D_800A3860[1]'s buffer) to
- * ndata_LoadPack; func_80020D38 calls ndata_InvalidatePack for it */
+/* per player: character of the g_motion_frame_buffers motion set (0xFF = none)
+ */
+extern u8 g_motion_frame_set_ids[2];
+/* per slot: model id in the g_motion_fighter_buffers[i] buffer
+ * (motion_LoadFighterData); [1] = 0xFFFF: func_8001DB9C passed 0x80190800
+ * (g_motion_fighter_buffers[1]'s buffer) to ndata_LoadPack; func_80020D38 calls
+ * ndata_InvalidatePack for it */
 extern u16 D_800A38C4[2];
 extern u8 D_800A38D4;
 extern s16 D_800A38DC;
@@ -436,7 +438,7 @@ extern u8 D_800A3915;
    1, snd_UpdateStageSounds advances and frees them, snd_ResetStageSoundState
    zeroes all six. D_800A391E is not an element: it is its own countdown byte,
    and snd_UpdateStageSounds uses only its address, as the loop bound. */
-extern u8 D_800A3918[6];
+extern u8 g_snd_sequence_ticks[6];
 
 extern u8 D_800A391E;
 extern u8 D_800A391F;
@@ -459,12 +461,12 @@ extern Rec44 D_800F6608;
  * pairs into D_800A3784, func_8003C42C sums them. */
 extern u8 D_800F65F8[8][2];
 
-extern Unk800F68E0Rec D_800F68E0[0xB4];
+extern Unk800F68E0Rec g_replay_model_draws[0xB4];
 /* The two InitPAD receive buffers, 0x24 bytes each (sys_Init); pad_Update
  * copies the first two words of each. */
 extern s32 g_pad_buf[2][9];
-extern Unk800FF5C8Rec D_800FF5C8;
-extern Unk80101BF0Rec D_80101BF0[0x20];
+extern Unk800FF5C8Rec g_camera_view_offset;
+extern Unk80101BF0Rec g_replay_events[0x20];
 extern Unk80101DF0Record D_80101DF0;
 extern Unk80101DF0Record D_800FF638;
 extern Unk80101DF0Record D_800EEDF0;
@@ -480,10 +482,11 @@ extern RotMatrixFunc D_800F66A0[6];
 extern CdFileEntry g_cd_file_table[159]; /* 0x8008EC34..0x8008F12B */
 
 extern CdState D_80101E58;
-extern Unk801027B0Rec D_80102760; /* the common file's section pointers */
+/* the common file's section pointers */
+extern Unk801027B0Rec g_motion_common_sections;
 extern Unk80102778Rec D_80102778;
 extern PadState g_pad_state;
-extern Unk801027B0Rec D_801027B0[]; /* per load slot */
+extern Unk801027B0Rec g_motion_fighter_sections[]; /* per load slot */
 /* [i] points to block i's slots, the words after its header word (func_80044010
  * records it and D_80103658[i] holds the slot count).  Each slot is a
  * word holding a block-relative offset that func_80044010 turns into an address
@@ -502,7 +505,7 @@ extern s32 D_80104F38;
  * fight_AdvanceOpponentOrder reads entry D_800A3783, then advances it). */
 extern u8 D_801077B0[24];
 
-extern Unk80107850Rec D_80107850[6];
+extern Unk80107850Rec g_snd_sequence_positions[6];
 extern void camera_UpdateReplayView(Rec44 *, Rec1C *, Rec1C *, s32, s32, s32);
 extern void font_Printf(u8 *, s32, ...);
 extern void func_80021A98(s32, MoveScript *, s32);
@@ -570,7 +573,7 @@ extern s32 g_memcard_poll_count;
 extern void func_800520B8(s32, s32, s32);
 extern u8 D_800A37A8[];
 extern u16 D_800A37C4;
-extern POLY_FT4 *D_800A37D4;
+extern POLY_FT4 *g_eff_quad_cursor;
 extern u32 *D_800A3808;
 extern s16 g_cd_fade_step;
 extern u8 D_800A384C;

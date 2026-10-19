@@ -15,15 +15,15 @@ glabel motion_GetDefaultVariantScript
     /* 121A8 800219A8 80200300 */  sll        $a0, $v1, 2
     /* 121AC 800219AC 21188300 */  addu       $v1, $a0, $v1
     /* 121B0 800219B0 80180300 */  sll        $v1, $v1, 2
-    /* 121B4 800219B4 0A80013C */  lui        $at, %hi(D_800A3860)
+    /* 121B4 800219B4 0A80013C */  lui        $at, %hi(g_motion_fighter_buffers)
     /* 121B8 800219B8 21082400 */  addu       $at, $at, $a0
-    /* 121BC 800219BC 6038248C */  lw         $a0, %lo(D_800A3860)($at)
+    /* 121BC 800219BC 6038248C */  lw         $a0, %lo(g_motion_fighter_buffers)($at)
     /* 121C0 800219C0 40100200 */  sll        $v0, $v0, 1
     /* 121C4 800219C4 21104400 */  addu       $v0, $v0, $a0
     /* 121C8 800219C8 4E004294 */  lhu        $v0, 0x4E($v0)
-    /* 121CC 800219CC 1080013C */  lui        $at, %hi(D_801027B0)
+    /* 121CC 800219CC 1080013C */  lui        $at, %hi(g_motion_fighter_sections)
     /* 121D0 800219D0 21082300 */  addu       $at, $at, $v1
-    /* 121D4 800219D4 B027238C */  lw         $v1, %lo(D_801027B0)($at)
+    /* 121D4 800219D4 B027238C */  lw         $v1, %lo(g_motion_fighter_sections)($at)
     /* 121D8 800219D8 40100200 */  sll        $v0, $v0, 1
     /* 121DC 800219DC 0800E003 */  jr         $ra
     /* 121E0 800219E0 21106200 */   addu      $v0, $v1, $v0

@@ -295,11 +295,11 @@ dlabel D_800A36E8
     /* 93EEB 800A36EB */ .byte 0x00
 enddlabel D_800A36E8
 
-nonmatching D_800A36EC
+nonmatching g_replay_fighter_frames
 
-dlabel D_800A36EC
+dlabel g_replay_fighter_frames
     /* 93EEC 800A36EC 00000000 */ .word 0x00000000
-enddlabel D_800A36EC
+enddlabel g_replay_fighter_frames
 
 nonmatching D_800A36F0
 
@@ -333,11 +333,11 @@ dlabel D_800A36F6
     /* 93EF6 800A36F6 */ .short 0x0000
 enddlabel D_800A36F6
 
-nonmatching D_800A36F8
+nonmatching g_replay_write_frame
 
-dlabel D_800A36F8
+dlabel g_replay_write_frame
     /* 93EF8 800A36F8 */ .byte 0x00
-enddlabel D_800A36F8
+enddlabel g_replay_write_frame
 
 nonmatching D_800A36F9
 
@@ -345,12 +345,12 @@ dlabel D_800A36F9
     /* 93EF9 800A36F9 */ .byte 0x00
 enddlabel D_800A36F9
 
-nonmatching D_800A36FA
+nonmatching g_camera_fight_view_mode
 
-dlabel D_800A36FA
+dlabel g_camera_fight_view_mode
     /* 93EFA 800A36FA */ .byte 0x00
     /* 93EFB 800A36FB */ .byte 0x00
-enddlabel D_800A36FA
+enddlabel g_camera_fight_view_mode
 
 nonmatching D_800A36FC
 
@@ -375,11 +375,11 @@ dlabel D_800A370C
     /* 93F0C 800A370C 00000000 */ .word 0x00000000
 enddlabel D_800A370C
 
-nonmatching D_800A3710
+nonmatching g_camera_distance_offset
 
-dlabel D_800A3710
+dlabel g_camera_distance_offset
     /* 93F10 800A3710 */ .short 0x0000
-enddlabel D_800A3710
+enddlabel g_camera_distance_offset
 
 nonmatching D_800A3712
 
@@ -393,11 +393,11 @@ dlabel D_800A3713
     /* 93F13 800A3713 */ .byte 0x00
 enddlabel D_800A3713
 
-nonmatching D_800A3714
+nonmatching g_replay_model_draw_search_cursor
 
-dlabel D_800A3714
+dlabel g_replay_model_draw_search_cursor
     /* 93F14 800A3714 */ .short 0x0000
-enddlabel D_800A3714
+enddlabel g_replay_model_draw_search_cursor
 
 nonmatching D_800A3716
 
@@ -421,11 +421,11 @@ dlabel D_800A371C
     /* 93F1C 800A371C 00000000 */ .word 0x00000000
 enddlabel D_800A371C
 
-nonmatching D_800A3720
+nonmatching g_eff_quad_buffer_base
 
-dlabel D_800A3720
+dlabel g_eff_quad_buffer_base
     /* 93F20 800A3720 00000000 */ .word 0x00000000
-enddlabel D_800A3720
+enddlabel g_eff_quad_buffer_base
 
 nonmatching D_800A3724
 
@@ -515,12 +515,12 @@ dlabel g_gpu_ot_ptr
     /* 93F4C 800A374C 00000000 */ .word 0x00000000
 enddlabel g_gpu_ot_ptr
 
-nonmatching D_800A3750
+nonmatching g_snd_stage_sound_state
 
-dlabel D_800A3750
+dlabel g_snd_stage_sound_state
     /* 93F50 800A3750 00000000 */ .word 0x00000000
     /* 93F54 800A3754 */ .short 0x0000
-enddlabel D_800A3750
+enddlabel g_snd_stage_sound_state
 
 nonmatching D_800A3756
 
@@ -623,11 +623,11 @@ dlabel D_800A3781
     /* 93F81 800A3781 */ .byte 0x00
 enddlabel D_800A3781
 
-nonmatching D_800A3782
+nonmatching g_replay_ring_wrapped
 
-dlabel D_800A3782
+dlabel g_replay_ring_wrapped
     /* 93F82 800A3782 */ .byte 0x00
-enddlabel D_800A3782
+enddlabel g_replay_ring_wrapped
 
 nonmatching D_800A3783
 
@@ -674,18 +674,18 @@ dlabel D_800A3798
     /* 93F98 800A3798 00000000 */ .word 0x00000000
 enddlabel D_800A3798
 
-nonmatching D_800A379C
+nonmatching g_replay_event_search_cursor
 
-dlabel D_800A379C
+dlabel g_replay_event_search_cursor
     /* 93F9C 800A379C */ .byte 0x00
     /* 93F9D 800A379D */ .byte 0x00
-enddlabel D_800A379C
+enddlabel g_replay_event_search_cursor
 
-nonmatching D_800A379E
+nonmatching g_memcard_request_status
 
-dlabel D_800A379E
+dlabel g_memcard_request_status
     /* 93F9E 800A379E */ .short 0x0000
-enddlabel D_800A379E
+enddlabel g_memcard_request_status
 
 nonmatching D_800A37A0
 
@@ -777,21 +777,21 @@ dlabel D_800A37C6
     /* 93FC7 800A37C7 */ .byte 0x00
 enddlabel D_800A37C6
 
-nonmatching D_800A37C8
+nonmatching g_memcard_request_operation
 
-dlabel D_800A37C8
+dlabel g_memcard_request_operation
     /* 93FC8 800A37C8 */ .short 0x0000
     /* 93FCA 800A37CA */ .short 0x0000
     /* 93FCC 800A37CC */ .short 0x0000
     /* 93FCE 800A37CE */ .short 0x0000
-enddlabel D_800A37C8
+enddlabel g_memcard_request_operation
 
-nonmatching D_800A37D0
+nonmatching g_replay_playback_frame
 
-dlabel D_800A37D0
+dlabel g_replay_playback_frame
     /* 93FD0 800A37D0 */ .byte 0x00
     /* 93FD1 800A37D1 */ .byte 0x00
-enddlabel D_800A37D0
+enddlabel g_replay_playback_frame
 
 nonmatching D_800A37D2
 
@@ -805,11 +805,11 @@ dlabel D_800A37D3
     /* 93FD3 800A37D3 */ .byte 0x00
 enddlabel D_800A37D3
 
-nonmatching D_800A37D4
+nonmatching g_eff_quad_cursor
 
-dlabel D_800A37D4
+dlabel g_eff_quad_cursor
     /* 93FD4 800A37D4 00000000 */ .word 0x00000000
-enddlabel D_800A37D4
+enddlabel g_eff_quad_cursor
 
 nonmatching D_800A37D8
 

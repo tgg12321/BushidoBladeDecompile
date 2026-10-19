@@ -1,8 +1,8 @@
 glabel func_80030D04
     /* 21504 80030D04 21200000 */  addu       $a0, $zero, $zero
     /* 21508 80030D08 FFFF0524 */  addiu      $a1, $zero, -0x1
-    /* 2150C 80030D0C 1080033C */  lui        $v1, %hi(D_80106A78 + 0x2)
-    /* 21510 80030D10 7A6A6324 */  addiu      $v1, $v1, %lo(D_80106A78 + 0x2)
+    /* 2150C 80030D0C 1080033C */  lui        $v1, %hi(g_object_pool + 0x2)
+    /* 21510 80030D10 7A6A6324 */  addiu      $v1, $v1, %lo(g_object_pool + 0x2)
   .L80030D14:
     /* 21514 80030D14 00006294 */  lhu        $v0, 0x0($v1)
     /* 21518 80030D18 00000000 */  nop

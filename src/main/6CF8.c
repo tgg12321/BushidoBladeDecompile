@@ -124,7 +124,7 @@ void func_800167EC(void) {
      * everywhere: score 19; final times[0].unk_4 store through rec: score 10 */
     FileRecord *rec = &D_80106A50; /* SOTN: src/st/st0/2A218.c:48 @db41b28 */
 
-    D_800A3710 = 0;
+    g_camera_distance_offset = 0;
     rec->flags = 0;
     rec->unk_00 = 0x7007;
     rec->unk_04 = 0;
@@ -814,7 +814,7 @@ s32 D_800A36AC;
 u8 D_800A36B0;
 u8 D_800A36F1;
 u8 D_800A36F9;
-s16 D_800A3710;
+s16 g_camera_distance_offset;
 u8 D_800A3713;
 u8 D_800A3716;
 u8 D_800A3744;

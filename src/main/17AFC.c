@@ -3680,7 +3680,7 @@ void func_80030208(void) {
     s16 kind;
     s32 lookup;
 
-    for (obj = D_80106A78, i = 0; i < 12; i++, obj++) {
+    for (obj = g_object_pool, i = 0; i < 12; i++, obj++) {
         kind = obj->kind;
         if (kind == -1) {
             continue;
@@ -3732,8 +3732,8 @@ void object_ResetPool(void) {
     s32 i;
 
     for (i = 0; i < 12; i++) {
-        D_80106A78[i].kind = -1;
-        D_80106A78[i].slot = 0xFF;
+        g_object_pool[i].kind = -1;
+        g_object_pool[i].slot = 0xFF;
     }
 }
 
@@ -3757,9 +3757,9 @@ void object_InitKindQueue(Unk80101EC8Record *a0) {
 void object_FreeAttachedObjects(void) {
     s32 i = 0;
     do {
-        if (D_80106A78[i].kind != -1) {
-            if (D_80106A78[i].unk_08 != 0) {
-                D_80106A78[i].kind = -1;
+        if (g_object_pool[i].kind != -1) {
+            if (g_object_pool[i].unk_08 != 0) {
+                g_object_pool[i].kind = -1;
             }
         }
     } while (++i < 12);
@@ -3775,7 +3775,7 @@ Obj80106A78 *object_SpawnFromFighter(Unk80101EC8Record *arg0, s32 arg1) {
     Tbl8008E194 *tbl;
     s32 i;
 
-    obj = D_80106A78;
+    obj = g_object_pool;
     for (i = 0; i < 12; i++, obj++) {
         if (obj->kind == -1 && obj->slot == 0xFF)
             break;
@@ -3933,7 +3933,7 @@ s32 object_PickUpNearby(Unk80101EC8Record *arg0) {
     s32 i;
     s32 old_val;
 
-    for (i = 0, p = D_80106A78; i < 12; i++, p++) {
+    for (i = 0, p = g_object_pool; i < 12; i++, p++) {
         s16 kind = p->kind;
         if (kind >= 0x12 && kind < 0x1E) {
             continue;
@@ -3979,8 +3979,8 @@ s32 object_PickUpNearby(Unk80101EC8Record *arg0) {
 void func_80030D04(void) {
     s32 i = 0;
     do {
-        if (D_80106A78[i].kind >= 0x12 && D_80106A78[i].kind < 0x1E) {
-            D_80106A78[i].kind = -1;
+        if (g_object_pool[i].kind >= 0x12 && g_object_pool[i].kind < 0x1E) {
+            g_object_pool[i].kind = -1;
         }
     } while (++i < 12);
 }
@@ -3995,7 +3995,7 @@ s32 math_LerpAngle(s32 arg0, s32 arg1, s32 arg2) {
     return arg1 + ((arg0 * arg2) >> 12);
 }
 
-/* Per-frame update of the twelve 0x64-byte records at D_80106A78: velocity
+/* Per-frame update of the twelve 0x64-byte records at g_object_pool: velocity
  * turn, spin decay, gravity, collision test through func_8005344C, reflection
  * off the returned normal, func_80032854 cues, and the rest / re-hop logic.
  * Scratch vectors live in its layout of the scratchpad area at 0x1F8002B8
@@ -4011,7 +4011,7 @@ void object_UpdatePool(void) {
     s16 *var_7;
 
     scr = &SPAD->unk2B8.v8005344C;
-    obj = D_80106A78;
+    obj = g_object_pool;
     for (i = 0; i < 12; i++, obj++) {
         /* work: the clamped turn amount (turn block), then the bounce
          * restitution factor D_8008E194[kind].unkA (Ruling 11,
@@ -4274,7 +4274,7 @@ void object_ResolveFighterHits(void) {
     s32 kind;
     s32 flag;
 
-    obj = D_80106A78;
+    obj = g_object_pool;
     for (i = 0; i < 12; i++, obj++) {
         if (obj->kind == -1)
             continue;
@@ -5161,7 +5161,7 @@ s32 func_80033498(void) {
 
 void snd_ResetStageSoundState(void) {
     s32 i = 3;
-    s16 *p1 = &D_800A3750[3];
+    s16 *p1 = &g_snd_stage_sound_state[3];
     do {
         *p1 = 0;
         i--;
@@ -5169,7 +5169,7 @@ void snd_ResetStageSoundState(void) {
     } while (i >= 0);
     i = 5;
     {
-        u8 *p2 = &D_800A3918[5];
+        u8 *p2 = &g_snd_sequence_ticks[5];
         do {
             *p2 = 0;
             i--;
@@ -5182,15 +5182,15 @@ void snd_QueuePositionSequence(Unk80107850Rec *arg0) {
     s32 i;
 
     for (i = 0; i < 6; i++) {
-        if (D_800A3918[i] == 0) {
+        if (g_snd_sequence_ticks[i] == 0) {
             break;
         }
     }
     if (i == 6) {
         return;
     }
-    D_800A3918[i] = 1;
-    D_80107850[i] = *arg0;
+    g_snd_sequence_ticks[i] = 1;
+    g_snd_sequence_positions[i] = *arg0;
 }
 
 void snd_UpdateStageSounds(void) {
@@ -5198,32 +5198,33 @@ void snd_UpdateStageSounds(void) {
     u8 *tbl = D_8008E914[D_800A36A4];
 
     for (i = 0; i < 6; i++) {
-        if (D_800A3918[i] != 0) {
+        if (g_snd_sequence_ticks[i] != 0) {
             s32 var_2 = func_80033498();
-            u8 cur = D_800A3918[i];
+            u8 cur = g_snd_sequence_ticks[i];
 
             if (cur == 1) {
-                snd_QueuePositionalSound(D_8008EBF4[var_2], &D_80107850[i].x);
+                snd_QueuePositionalSound(
+                    D_8008EBF4[var_2], &g_snd_sequence_positions[i].x);
             } else if (cur == D_8008EBFC[var_2].a) {
                 snd_QueuePositionalSound(
-                    D_8008EBF4[var_2] + 1, &D_80107850[i].x);
+                    D_8008EBF4[var_2] + 1, &g_snd_sequence_positions[i].x);
             } else if (cur == D_8008EBFC[var_2].b) {
                 snd_QueuePositionalSound(
-                    D_8008EBF4[var_2] + 2, &D_80107850[i].x);
+                    D_8008EBF4[var_2] + 2, &g_snd_sequence_positions[i].x);
             }
 
             {
-                s32 val = D_800A3918[i] + 1;
-                D_800A3918[i] = val;
+                s32 val = g_snd_sequence_ticks[i] + 1;
+                g_snd_sequence_ticks[i] = val;
                 if ((u32)D_8008EBFC[var_2].b < (u32)(val & 0xFF)) {
-                    D_800A3918[i] = 0;
+                    g_snd_sequence_ticks[i] = 0;
                 }
             }
         }
     }
 
     if (func_8001DB58() != 0) {
-        s16 *buf = D_800A3750;
+        s16 *buf = g_snd_stage_sound_state;
 
         for (i = 0; i < 4; i++, tbl += 2) {
             u8 *data = tbl + 1;

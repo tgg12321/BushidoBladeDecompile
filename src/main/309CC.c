@@ -5,14 +5,14 @@
 #include "include_asm.h"
 #include "bb2.h"
 
-extern s32 D_800A3234;
-extern u16 D_80094AF4[];
+extern s32 g_gpu_draw_move_bank;
+extern u16 g_gpu_draw_move_table[];
 extern u8 D_80094B48[];
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by
  * PSYLINK), in address order. */
-/* Cursor in the 10-packet bank D_800A9830[D_800A36AC & 1]. */
-static DR_MOVE *D_800A3378;
+/* Cursor in the 10-packet bank g_gpu_draw_move_packets[D_800A36AC & 1]. */
+static DR_MOVE *g_gpu_draw_move_cursor;
 
 void gpu_AddDrawMove(s32 a0, s32 a1) {
     s32 var_0;
@@ -21,12 +21,13 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
     s16 u, v;
 
     var_0 = D_800A36AC & 1;
-    if (var_0 != D_800A3234) {
-        D_800A3378 = D_800A9830[var_0];
-        D_800A3234 = var_0;
+    if (var_0 != g_gpu_draw_move_bank) {
+        g_gpu_draw_move_cursor = g_gpu_draw_move_packets[var_0];
+        g_gpu_draw_move_bank = var_0;
     }
-    if (D_800A3378 != D_800A9830[D_800A3234] + 10) {
-        tbl = D_80094AF4 + a1 * 6;
+    if (g_gpu_draw_move_cursor !=
+        g_gpu_draw_move_packets[g_gpu_draw_move_bank] + 10) {
+        tbl = g_gpu_draw_move_table + a1 * 6;
         buf.x = *tbl++;
         buf.y = *tbl++;
         buf.w = *tbl++;
@@ -37,9 +38,9 @@ void gpu_AddDrawMove(s32 a0, s32 a1) {
             buf.x = buf.x + 0x80;
             u = u + 0x80;
         }
-        SetDrawMove(D_800A3378, &buf, u, v);
-        addPrim(&D_800A378C[0x3FFC / 4], D_800A3378);
-        D_800A3378++;
+        SetDrawMove(g_gpu_draw_move_cursor, &buf, u, v);
+        addPrim(&D_800A378C[0x3FFC / 4], g_gpu_draw_move_cursor);
+        g_gpu_draw_move_cursor++;
     }
 }
 
@@ -477,4 +478,4 @@ void func_80040CB8(Unk80045878Obj *arg0) {
 
 /* Q65: this file's initialized small data (.sdata), in address order; values
  * from the original EXE. */
-s32 D_800A3234 = -1;
+s32 g_gpu_draw_move_bank = -1;

@@ -61,8 +61,8 @@ glabel eff_UpdateParticles
     /* 585FC 80067DFC 80100300 */  sll        $v0, $v1, 2
     /* 58600 80067E00 21104300 */  addu       $v0, $v0, $v1
     /* 58604 80067E04 80100200 */  sll        $v0, $v0, 2
-    /* 58608 80067E08 0F80033C */  lui        $v1, %hi(D_800EFC78)
-    /* 5860C 80067E0C 78FC6324 */  addiu      $v1, $v1, %lo(D_800EFC78)
+    /* 58608 80067E08 0F80033C */  lui        $v1, %hi(g_eff_particles)
+    /* 5860C 80067E0C 78FC6324 */  addiu      $v1, $v1, %lo(g_eff_particles)
     /* 58610 80067E10 21104300 */  addu       $v0, $v0, $v1
     /* 58614 80067E14 21208200 */  addu       $a0, $a0, $v0
     /* 58618 80067E18 000064AE */  sw         $a0, 0x0($s3)
@@ -864,7 +864,7 @@ glabel eff_UpdateParticles
     /* 591DC 800689DC 00000000 */   nop
   .L800689E0:
     /* 591E0 800689E0 0000238E */  lw         $v1, 0x0($s1)
-    /* 591E4 800689E4 0807828F */  lw         $v0, %gp_rel(D_800A37D4)($gp)
+    /* 591E4 800689E4 0807828F */  lw         $v0, %gp_rel(g_eff_quad_cursor)($gp)
     /* 591E8 800689E8 5800A98F */  lw         $t1, 0x58($sp)
     /* 591EC 800689EC EC03868F */  lw         $a2, %gp_rel(D_800A34B8)($gp)
     /* 591F0 800689F0 F003888F */  lw         $t0, %gp_rel(D_800A34BC)($gp)
@@ -993,7 +993,7 @@ glabel eff_UpdateParticles
     /* 593D4 80068BD4 21004010 */  beqz       $v0, .L80068C5C
     /* 593D8 80068BD8 0800A22A */   slti      $v0, $s5, 0x8
     /* 593DC 80068BDC 0000248E */  lw         $a0, 0x0($s1)
-    /* 593E0 80068BE0 5406838F */  lw         $v1, %gp_rel(D_800A3720)($gp)
+    /* 593E0 80068BE0 5406838F */  lw         $v1, %gp_rel(g_eff_quad_buffer_base)($gp)
     /* 593E4 80068BE4 00000000 */  nop
     /* 593E8 80068BE8 23188300 */  subu       $v1, $a0, $v1
     /* 593EC 80068BEC 40100300 */  sll        $v0, $v1, 1
@@ -1028,7 +1028,7 @@ glabel eff_UpdateParticles
     /* 5945C 80068C5C 17004010 */  beqz       $v0, .L80068CBC
     /* 59460 80068C60 00000000 */   nop
     /* 59464 80068C64 0000248E */  lw         $a0, 0x0($s1)
-    /* 59468 80068C68 5406838F */  lw         $v1, %gp_rel(D_800A3720)($gp)
+    /* 59468 80068C68 5406838F */  lw         $v1, %gp_rel(g_eff_quad_buffer_base)($gp)
     /* 5946C 80068C6C 00000000 */  nop
     /* 59470 80068C70 23188300 */  subu       $v1, $a0, $v1
     /* 59474 80068C74 40100300 */  sll        $v0, $v1, 1
@@ -1052,7 +1052,7 @@ glabel eff_UpdateParticles
     /* 594B8 80068CB8 040083AC */   sw        $v1, 0x4($a0)
   .L80068CBC:
     /* 594BC 80068CBC 0000248E */  lw         $a0, 0x0($s1)
-    /* 594C0 80068CC0 5406838F */  lw         $v1, %gp_rel(D_800A3720)($gp)
+    /* 594C0 80068CC0 5406838F */  lw         $v1, %gp_rel(g_eff_quad_buffer_base)($gp)
     /* 594C4 80068CC4 00000000 */  nop
     /* 594C8 80068CC8 23188300 */  subu       $v1, $a0, $v1
     /* 594CC 80068CCC 40100300 */  sll        $v0, $v1, 1

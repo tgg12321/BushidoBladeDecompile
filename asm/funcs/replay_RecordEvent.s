@@ -1,11 +1,11 @@
 glabel replay_RecordEvent
-    /* 29DB4 800395B4 3C018293 */  lbu        $v0, %gp_rel(D_800A3208)($gp)
+    /* 29DB4 800395B4 3C018293 */  lbu        $v0, %gp_rel(g_replay_replaying_event)($gp)
     /* 29DB8 800395B8 00000000 */  nop
     /* 29DBC 800395BC 2E004014 */  bnez       $v0, .L80039678
     /* 29DC0 800395C0 21488000 */   addu      $t1, $a0, $zero
-    /* 29DC4 800395C4 D0068893 */  lbu        $t0, %gp_rel(D_800A379C)($gp)
-    /* 29DC8 800395C8 1080033C */  lui        $v1, %hi(D_80101BF0)
-    /* 29DCC 800395CC F01B6324 */  addiu      $v1, $v1, %lo(D_80101BF0)
+    /* 29DC4 800395C4 D0068893 */  lbu        $t0, %gp_rel(g_replay_event_search_cursor)($gp)
+    /* 29DC8 800395C8 1080033C */  lui        $v1, %hi(g_replay_events)
+    /* 29DCC 800395CC F01B6324 */  addiu      $v1, $v1, %lo(g_replay_events)
     /* 29DD0 800395D0 FF000231 */  andi       $v0, $t0, 0xFF
     /* 29DD4 800395D4 00210200 */  sll        $a0, $v0, 4
     /* 29DD8 800395D8 2000422C */  sltiu      $v0, $v0, 0x20
@@ -17,18 +17,18 @@ glabel replay_RecordEvent
     /* 29DEC 800395EC 00000000 */  nop
     /* 29DF0 800395F0 07004310 */  beq        $v0, $v1, .L80039610
     /* 29DF4 800395F4 01000225 */   addiu     $v0, $t0, 0x1
-    /* 29DF8 800395F8 D00682A3 */  sb         $v0, %gp_rel(D_800A379C)($gp)
+    /* 29DF8 800395F8 D00682A3 */  sb         $v0, %gp_rel(g_replay_event_search_cursor)($gp)
     /* 29DFC 800395FC 21404000 */  addu       $t0, $v0, $zero
     /* 29E00 80039600 FF000231 */  andi       $v0, $t0, 0xFF
     /* 29E04 80039604 2000422C */  sltiu      $v0, $v0, 0x20
     /* 29E08 80039608 F7FF4014 */  bnez       $v0, .L800395E8
     /* 29E0C 8003960C 10008424 */   addiu     $a0, $a0, 0x10
   .L80039610:
-    /* 29E10 80039610 D0068393 */  lbu        $v1, %gp_rel(D_800A379C)($gp)
+    /* 29E10 80039610 D0068393 */  lbu        $v1, %gp_rel(g_replay_event_search_cursor)($gp)
     /* 29E14 80039614 20000224 */  addiu      $v0, $zero, 0x20
     /* 29E18 80039618 17006210 */  beq        $v1, $v0, .L80039678
     /* 29E1C 8003961C 00000000 */   nop
-    /* 29E20 80039620 2C068293 */  lbu        $v0, %gp_rel(D_800A36F8)($gp)
+    /* 29E20 80039620 2C068293 */  lbu        $v0, %gp_rel(g_replay_write_frame)($gp)
     /* 29E24 80039624 010089A0 */  sb         $t1, 0x1($a0)
     /* 29E28 80039628 020085A0 */  sb         $a1, 0x2($a0)
     /* 29E2C 8003962C 000082A0 */  sb         $v0, 0x0($a0)

@@ -61,8 +61,8 @@ glabel fight_Update
     /* F160 8001E960 00000000 */  nop
     /* F164 8001E964 0A004010 */  beqz       $v0, .L8001E990
     /* F168 8001E968 00000000 */   nop
-    /* F16C 8001E96C 0A80023C */  lui        $v0, %hi(D_800A36FA)
-    /* F170 8001E970 FA364290 */  lbu        $v0, %lo(D_800A36FA)($v0)
+    /* F16C 8001E96C 0A80023C */  lui        $v0, %hi(g_camera_fight_view_mode)
+    /* F170 8001E970 FA364290 */  lbu        $v0, %lo(g_camera_fight_view_mode)($v0)
     /* F174 8001E974 00000000 */  nop
     /* F178 8001E978 05004014 */  bnez       $v0, .L8001E990
     /* F17C 8001E97C 00000000 */   nop

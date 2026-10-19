@@ -246,8 +246,8 @@ glabel eff_SpawnParticles
     /* 57D94 80067594 23105700 */  subu       $v0, $v0, $s7
     /* 57D98 80067598 2000A2AF */  sw         $v0, 0x20($sp)
     /* 57D9C 8006759C 5400A2A7 */  sh         $v0, 0x54($sp)
-    /* 57DA0 800675A0 0F80023C */  lui        $v0, %hi(D_800EFC78)
-    /* 57DA4 800675A4 78FC4224 */  addiu      $v0, $v0, %lo(D_800EFC78)
+    /* 57DA0 800675A0 0F80023C */  lui        $v0, %hi(g_eff_particles)
+    /* 57DA4 800675A4 78FC4224 */  addiu      $v0, $v0, %lo(g_eff_particles)
     /* 57DA8 800675A8 2110A202 */  addu       $v0, $s5, $v0
     /* 57DAC 800675AC 21886200 */  addu       $s1, $v1, $v0
     /* 57DB0 800675B0 1000AAA7 */  sh         $t2, 0x10($sp)

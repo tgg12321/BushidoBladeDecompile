@@ -1,6 +1,6 @@
 glabel memcard_PollFileCompletion
     /* 28E58 80038658 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 28E5C 8003865C 2801838F */  lw         $v1, %gp_rel(D_800A31F4)($gp)
+    /* 28E5C 8003865C 2801838F */  lw         $v1, %gp_rel(g_memcard_request_state)($gp)
     /* 28E60 80038660 04000224 */  addiu      $v0, $zero, 0x4
     /* 28E64 80038664 1400BFAF */  sw         $ra, 0x14($sp)
     /* 28E68 80038668 06006210 */  beq        $v1, $v0, .L80038684
@@ -39,7 +39,7 @@ glabel memcard_PollFileCompletion
     /* 28EE4 800386E4 09000216 */  bne        $s0, $v0, .L8003870C
     /* 28EE8 800386E8 06000224 */   addiu     $v0, $zero, 0x6
     /* 28EEC 800386EC 05000224 */  addiu      $v0, $zero, 0x5
-    /* 28EF0 800386F0 D20682A7 */  sh         $v0, %gp_rel(D_800A379E)($gp)
+    /* 28EF0 800386F0 D20682A7 */  sh         $v0, %gp_rel(g_memcard_request_status)($gp)
     /* 28EF4 800386F4 0F80043C */  lui        $a0, %hi(D_800F34D8)
     /* 28EF8 800386F8 D8348424 */  addiu      $a0, $a0, %lo(D_800F34D8)
     /* 28EFC 800386FC 03E0000C */  jal        memcard_RestoreSaveBlock
@@ -47,13 +47,13 @@ glabel memcard_PollFileCompletion
     /* 28F04 80038704 02004014 */  bnez       $v0, .L80038710
     /* 28F08 80038708 0F000224 */   addiu     $v0, $zero, 0xF
   .L8003870C:
-    /* 28F0C 8003870C D20682A7 */  sh         $v0, %gp_rel(D_800A379E)($gp)
+    /* 28F0C 8003870C D20682A7 */  sh         $v0, %gp_rel(g_memcard_request_status)($gp)
   .L80038710:
-    /* 28F10 80038710 280180AF */  sw         $zero, %gp_rel(D_800A31F4)($gp)
+    /* 28F10 80038710 280180AF */  sw         $zero, %gp_rel(g_memcard_request_state)($gp)
     /* 28F14 80038714 C8E10008 */  j          .L80038720
     /* 28F18 80038718 00000000 */   nop
   .L8003871C:
-    /* 28F1C 8003871C D20682A7 */  sh         $v0, %gp_rel(D_800A379E)($gp)
+    /* 28F1C 8003871C D20682A7 */  sh         $v0, %gp_rel(g_memcard_request_status)($gp)
   .L80038720:
     /* 28F20 80038720 1400BF8F */  lw         $ra, 0x14($sp)
     /* 28F24 80038724 1000B08F */  lw         $s0, 0x10($sp)

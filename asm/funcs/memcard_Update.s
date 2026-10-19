@@ -1,5 +1,5 @@
 glabel memcard_Update
-    /* 28F34 80038734 2801828F */  lw         $v0, %gp_rel(D_800A31F4)($gp)
+    /* 28F34 80038734 2801828F */  lw         $v0, %gp_rel(g_memcard_request_state)($gp)
     /* 28F38 80038738 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 28F3C 8003873C 0200422C */  sltiu      $v0, $v0, 0x2
     /* 28F40 80038740 05004010 */  beqz       $v0, .L80038758
@@ -13,7 +13,7 @@ glabel memcard_Update
     /* 28F5C 8003875C 00000000 */   nop
     /* 28F60 80038760 96E1000C */  jal        memcard_PollFileCompletion
     /* 28F64 80038764 00000000 */   nop
-    /* 28F68 80038768 D2068287 */  lh         $v0, %gp_rel(D_800A379E)($gp)
+    /* 28F68 80038768 D2068287 */  lh         $v0, %gp_rel(g_memcard_request_status)($gp)
     /* 28F6C 8003876C 1000BF8F */  lw         $ra, 0x10($sp)
     /* 28F70 80038770 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 28F74 80038774 0800E003 */  jr         $ra

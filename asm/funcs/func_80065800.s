@@ -3,7 +3,7 @@ glabel func_80065800
     /* 56004 80065804 3000B0AF */  sw         $s0, 0x30($sp)
     /* 56008 80065808 2004908F */  lw         $s0, %gp_rel(D_800A34EC)($gp)
     /* 5600C 8006580C 3800B2AF */  sw         $s2, 0x38($sp)
-    /* 56010 80065810 0807928F */  lw         $s2, %gp_rel(D_800A37D4)($gp)
+    /* 56010 80065810 0807928F */  lw         $s2, %gp_rel(g_eff_quad_cursor)($gp)
     /* 56014 80065814 3C00B3AF */  sw         $s3, 0x3C($sp)
     /* 56018 80065818 21988000 */  addu       $s3, $a0, $zero
     /* 5601C 8006581C 5400BFAF */  sw         $ra, 0x54($sp)
@@ -1472,7 +1472,7 @@ glabel func_80065800
     /* 575D4 80066DD4 4C37848C */  lw         $a0, %lo(g_gpu_ot_ptr)($a0)
     /* 575D8 80066DD8 2DEA010C */  jal        AddPrim
     /* 575DC 80066DDC 04008424 */   addiu     $a0, $a0, 0x4
-    /* 575E0 80066DE0 5406838F */  lw         $v1, %gp_rel(D_800A3720)($gp)
+    /* 575E0 80066DE0 5406838F */  lw         $v1, %gp_rel(g_eff_quad_buffer_base)($gp)
     /* 575E4 80066DE4 00000000 */  nop
     /* 575E8 80066DE8 23184302 */  subu       $v1, $s2, $v1
     /* 575EC 80066DEC 40100300 */  sll        $v0, $v1, 1
@@ -1498,7 +1498,7 @@ glabel func_80065800
     /* 57634 80066E34 21284002 */  addu       $a1, $s2, $zero
     /* 57638 80066E38 2DEA010C */  jal        AddPrim
     /* 5763C 80066E3C 04008424 */   addiu     $a0, $a0, 0x4
-    /* 57640 80066E40 5406838F */  lw         $v1, %gp_rel(D_800A3720)($gp)
+    /* 57640 80066E40 5406838F */  lw         $v1, %gp_rel(g_eff_quad_buffer_base)($gp)
     /* 57644 80066E44 00000000 */  nop
     /* 57648 80066E48 23184302 */  subu       $v1, $s2, $v1
     /* 5764C 80066E4C 40100300 */  sll        $v0, $v1, 1
@@ -1516,7 +1516,7 @@ glabel func_80065800
     /* 5767C 80066E7C 00000000 */   nop
     /* 57680 80066E80 28005226 */  addiu      $s2, $s2, 0x28
   .L80066E84:
-    /* 57684 80066E84 080792AF */  sw         $s2, %gp_rel(D_800A37D4)($gp)
+    /* 57684 80066E84 080792AF */  sw         $s2, %gp_rel(g_eff_quad_cursor)($gp)
     /* 57688 80066E88 01000224 */  addiu      $v0, $zero, 0x1
     /* 5768C 80066E8C 5400BF8F */  lw         $ra, 0x54($sp)
     /* 57690 80066E90 5000BE8F */  lw         $fp, 0x50($sp)

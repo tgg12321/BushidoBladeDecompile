@@ -192,11 +192,11 @@ s32 eff_LoadImagesAndSetup(s32 arg0, s32 arg1) {
     return ret + 0x4650;
 }
 
-extern POLY_FT4 *D_800A3720;
+extern POLY_FT4 *g_eff_quad_buffer_base;
 
 void eff_SelectQuadBuffer(s32 arg0) {
-    D_800A37D4 = arg0 != 0 ? D_800A3424 : D_800A3420;
-    D_800A3720 = D_800A37D4;
+    g_eff_quad_cursor = arg0 != 0 ? D_800A3424 : D_800A3420;
+    g_eff_quad_buffer_base = g_eff_quad_cursor;
 }
 
 #define SPAD51268 ((Unk1F800000Rec *)0x1F800000)
@@ -269,7 +269,7 @@ void func_80061064(s16 *a0, s32 *a1) {
         func_800421A4();
         D_800A32BC = 0;
     }
-    temp_a1 = D_800A37D4 - D_800A3720;
+    temp_a1 = g_eff_quad_cursor - g_eff_quad_buffer_base;
     if (temp_a1 >= 0x1C2) {
         printf(&D_800158E0, temp_a1 - 0x1C2);
     }
@@ -696,27 +696,28 @@ void eff_SetRotMatrix(s16 *a0, s32 *a1, MATRIX *a2) {
     SetRotMatrix(a2);
 }
 
-extern s32 D_800A32B8;
+extern s32 g_eff_billboard_draw_count;
 
 void eff_SetBillboardList(Unk800F1198Record *arg0) {
     s32 i;
 
-    D_800A32B8 = 0;
+    g_eff_billboard_draw_count = 0;
     for (i = 0; arg0[i].unk0 & 1; i++) {
-        D_800F1198[i].unk0 = arg0[i].unk0;
-        D_800F1198[i].unk4 = arg0[i].unk4;
-        D_800F1198[i].unk8 = arg0[i].unk8;
+        g_eff_billboards[i].unk0 = arg0[i].unk0;
+        g_eff_billboards[i].unk4 = arg0[i].unk4;
+        g_eff_billboards[i].unk8 = arg0[i].unk8;
     }
-    D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;
+    g_eff_billboards[i].unk0 = g_eff_billboards[i].unk4 =
+        g_eff_billboards[i].unk8 = 0;
 }
 
-/* Draw the D_800F1198 billboard list (see eff_SetBillboardList): per record
-   until the terminator, pick a sprite size and an animation frame from the
-   record's type, rotate/translate its position, project it, and when it lands
-   in range emit one textured POLY_FT4 billboard and link it into the OT at its
-   depth. */
+/* Draw the g_eff_billboards billboard list (see eff_SetBillboardList): per
+   record until the terminator, pick a sprite size and an animation frame from
+   the record's type, rotate/translate its position, project it, and when it
+   lands in range emit one textured POLY_FT4 billboard and link it into the OT
+   at its depth. */
 void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
-    extern s32 D_800A32B8;
+    extern s32 g_eff_billboard_draw_count;
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
     extern s32 rand(void);
@@ -743,7 +744,7 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
     var_9 = D_800A3468;
     dst16 = D_800A346C;
     dst16[0] = var_9->unk04[0];
-    prim = D_800A37D4;
+    prim = g_eff_quad_cursor;
     dst16[1] = var_9->unk04[1];
     dst16[2] = var_9->unk04[2];
     dst32 = D_800A3470;
@@ -753,7 +754,7 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
     base = &D_800A34EC->v800620B8;
     dst32[1] = var_9->unk08[1];
     dst32[2] = var_9->unk08[2];
-    D_800A32B8++;
+    g_eff_billboard_draw_count++;
     eff_SetRotMatrix(dst16, dst32, rot);
     SetRotMatrix(D_800A3474);
     w = &base->unk10;
@@ -768,8 +769,8 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
     var_5->vx = 0;
     *D_800A34B0 = ReadGeomScreen() << 8;
     *D_800A3490 = 0x2F;
-    for (i = 0; D_800F1198[i].unk0 & 1; i++) {
-        switch (D_800F1198[i].unk4 & 7) {
+    for (i = 0; g_eff_billboards[i].unk0 & 1; i++) {
+        switch (g_eff_billboards[i].unk4 & 7) {
         case 3:
             *D_800A34A8 = 0x151;
             *D_800A34AC = 0xA8;
@@ -778,7 +779,8 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
             *D_800A34A8 = 0x1C2;
             *D_800A34AC = 0xE1;
         sel_a:
-            D_800A348C = D_800A3488 = &D_8009BA00[(u32)D_800A32B8 % 6];
+            D_800A348C = D_800A3488 =
+                &D_8009BA00[(u32)g_eff_billboard_draw_count % 6];
             if (D_8009BD24.unk20_0) {
                 D_800A348C = &D_8009BA00[10];
             }
@@ -793,7 +795,8 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
             *D_800A34A8 = 0x64;
             *D_800A34AC = 0x78;
         sel_b:
-            D_800A348C = D_800A3488 = &D_8009BA00[6 + (D_800A32B8 & 3)];
+            D_800A348C = D_800A3488 =
+                &D_8009BA00[6 + (g_eff_billboard_draw_count & 3)];
             if (D_8009BD24.unk20_0) {
                 D_800A348C = &D_8009BA00[11];
             }
@@ -801,9 +804,9 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
             *D_800A34A4 = D_800A3488->v + 0x13;
             break;
         }
-        v->vx = D_800F1198[i].unk0 / 2 - D_800A3470[0];
-        v->vy = D_800F1198[i].unk4 / 8 - D_800A3470[1];
-        v->vz = D_800F1198[i].unk8 - D_800A3470[2];
+        v->vx = g_eff_billboards[i].unk0 / 2 - D_800A3470[0];
+        v->vy = g_eff_billboards[i].unk4 / 8 - D_800A3470[1];
+        v->vz = g_eff_billboards[i].unk8 - D_800A3470[2];
         ApplyRotMatrixLV(v, var_3);
         /* FAKE: SetTransMatrix reads only m->t (+0x14): handed the address 0x14
          * below var_3, it loads var_3 as the translation (there is no whole
@@ -850,7 +853,7 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
             prim->v3 = *D_800A34A4;
             SetShadeTex(prim, 1);
             SetSemiTrans(prim, 1);
-            if (prim - D_800A3720 < 0x1C1) {
+            if (prim - g_eff_quad_buffer_base < 0x1C1) {
                 D_800A34E4 = g_gpu_ot_ptr + *z;
                 D_800A34E8 = &prim->tag;
                 *D_800A34E8 =
@@ -861,7 +864,7 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
             }
         }
     }
-    D_800A37D4 = prim;
+    g_eff_quad_cursor = prim;
 }
 
 s32 func_8006288C(void) {
@@ -928,7 +931,7 @@ s32 func_8006295C(void) {
     var_3 = (u16 *)((u8 *)prim + 0x16C);
     scale = (s32 *)((u8 *)prim + 0x178);
     var_5 = (s32 *)((u8 *)prim + 0x188);
-    prim = D_800A37D4;
+    prim = g_eff_quad_cursor;
     for (i = 0; i < 6; i++) {
         bit = 1 << i;
         if (!(D_800A3460 & bit)) {
@@ -999,7 +1002,7 @@ s32 func_8006295C(void) {
                 *(s32 *)&prim->x2 = sxy[2];
                 *(s32 *)&prim->x3 = sxy[3];
                 count++;
-                if (prim - D_800A3720 < 0x1C1) {
+                if (prim - g_eff_quad_buffer_base < 0x1C1) {
                     prim++;
                 }
             }
@@ -1009,15 +1012,15 @@ s32 func_8006295C(void) {
             D_800A3460 &= ~(1 << i);
         }
     }
-    if (D_800A37D4 != prim) {
+    if (g_eff_quad_cursor != prim) {
         /* FAKE: `end` keeps the fill position and prim walks the same buffer
          * again to link each quad; with a fresh cursor local the registers
          * rotate: score 37. */
         end = prim;
-        for (prim = D_800A37D4, k = 0; prim < end; prim++, k++) {
+        for (prim = g_eff_quad_cursor, k = 0; prim < end; prim++, k++) {
             AddPrim(g_gpu_ot_ptr + var_3[k], prim);
         }
-        D_800A37D4 = end;
+        g_eff_quad_cursor = end;
         return 1;
     }
     if (D_800A3460 == 0) {
@@ -1077,7 +1080,7 @@ s32 func_80063084(void) {
     s32 var_12;
 
     base = &D_800A34EC->v80063084;
-    prim = D_800A37D4;
+    prim = g_eff_quad_cursor;
     var_2 = &base->unk14;
     var_3 = &base->unk24;
     v = &base->unk2C;
@@ -1218,7 +1221,7 @@ s32 func_80063084(void) {
                         (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
                     *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) |
                                   (*D_800A34E4 & 0xFF000000);
-                    if (prim - D_800A3720 < 0x1C1) {
+                    if (prim - g_eff_quad_buffer_base < 0x1C1) {
                         prim++;
                     }
                 }
@@ -1228,7 +1231,7 @@ s32 func_80063084(void) {
         }
         D_800F0BEC[i]++;
     }
-    D_800A37D4 = prim;
+    g_eff_quad_cursor = prim;
     return D_800A3448 != 0;
 }
 
@@ -1335,7 +1338,7 @@ s32 func_80063E10(s32 arg0) {
     }
     func_800644FC(&count, mats, arg0);
     D_800A3488 = &D_8009B920[*D_800A3480];
-    prim = D_800A37D4;
+    prim = g_eff_quad_cursor;
     *D_800A3490 = 0xE;
     *D_800A3494 =
         (((D_800A3488->clut_x >> 4) & 0x3F) + (D_800A3488->clut_y << 6)) << 16;
@@ -1392,7 +1395,7 @@ s32 func_80063E10(s32 arg0) {
         *(s32 *)&prim->x1 = sxy[1];
         *(s32 *)&prim->x2 = sxy[2];
         *(s32 *)&prim->x3 = sxy[3];
-        if (prim - D_800A3720 < 0x1C1) {
+        if (prim - g_eff_quad_buffer_base < 0x1C1) {
             prim++;
         }
     }
@@ -1400,13 +1403,13 @@ s32 func_80063E10(s32 arg0) {
      * to link each quad; with a fresh tail cursor sxy and prim swap s2/s3:
      * score 36. */
     end = prim;
-    for (prim = D_800A37D4, k = 0; prim < end; prim++, k++) {
+    for (prim = g_eff_quad_cursor, k = 0; prim < end; prim++, k++) {
         D_800A34E8 = &prim->tag;
         D_800A34E4 = g_gpu_ot_ptr + var_4[k];
         *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
         *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
     }
-    D_800A37D4 = end;
+    g_eff_quad_cursor = end;
     return 1;
 }
 
@@ -1489,7 +1492,7 @@ s32 func_800646E8(void) {
     var_7 = &base->unk38;
     p = &base->unk40;
     end = &base->unk44;
-    prim = D_800A37D4;
+    prim = g_eff_quad_cursor;
     gte_SetRotMatrix(D_800A3474);
     var_7->vx = var_7->vy = var_7->vz = 0;
     *D_800A34B0 = ReadGeomScreen() * 1000;
@@ -1567,7 +1570,7 @@ s32 func_800646E8(void) {
             prim->v3 = *D_800A34A4;
             SetShadeTex(prim, 0);
             SetSemiTrans(prim, 1);
-            if (prim - D_800A3720 < 0x1C1) {
+            if (prim - g_eff_quad_buffer_base < 0x1C1) {
                 prim++;
                 var_11++;
             }
@@ -1580,13 +1583,13 @@ s32 func_800646E8(void) {
         return 0;
     }
     *end = prim;
-    for (prim = D_800A37D4; prim < *end; prim++, var_1++) {
+    for (prim = g_eff_quad_cursor; prim < *end; prim++, var_1++) {
         D_800A34E4 = g_gpu_ot_ptr + *var_1;
         D_800A34E8 = &prim->tag;
         *D_800A34E8 = (*D_800A34E8 & 0xFF000000) | (*D_800A34E4 & 0xFFFFFF);
         *D_800A34E4 = ((u32)D_800A34E8 & 0xFFFFFF) | (*D_800A34E4 & 0xFF000000);
     }
-    D_800A37D4 = *end;
+    g_eff_quad_cursor = *end;
     return 1;
 }
 
@@ -1939,7 +1942,7 @@ u8 func_80065800(s32 arg0) {
     s32 i;
 
     var_0 = &D_800A34EC->v80065800;
-    prim = D_800A37D4;
+    prim = g_eff_quad_cursor;
     var_2 = &var_0->unk10;
     p_t = var_0->unk14;
     p_in = &var_0->unk54;
@@ -2268,7 +2271,7 @@ again:
         }
         if (arg0 < 9) {
             AddPrim(g_gpu_ot_ptr + 1, prim);
-            if (prim - D_800A3720 < 0x1C1) {
+            if (prim - g_eff_quad_buffer_base < 0x1C1) {
                 prim++;
             }
             arg0 += 2;
@@ -2277,10 +2280,10 @@ again:
         break;
     }
     AddPrim(g_gpu_ot_ptr + 1, prim);
-    if (prim - D_800A3720 < 0x1C1) {
+    if (prim - g_eff_quad_buffer_base < 0x1C1) {
         prim++;
     }
-    D_800A37D4 = prim;
+    g_eff_quad_cursor = prim;
     return 1;
 }
 
@@ -2383,10 +2386,10 @@ u8 func_800671CC(void) {
 }
 
 extern SVECTOR D_800F0B78[];
-extern Unk800EFC78Record D_800EFC78[][48];
+extern Unk800EFC78Record g_eff_particles[][48];
 
 /* eff_SpawnParticles -- spawns half (arg2 selects which) of the 0x30
- * D_800EFC78[arg1] particle records: each gets the D_800F0B78[arg1] vector
+ * g_eff_particles[arg1] particle records: each gets the D_800F0B78[arg1] vector
  * scaled per axis by its own random factor and turned by a random rotation
  * (spread chosen by mode arg0). arg2 == 0 first latches D_800A347C / D_800A3478
  * into the emitter. Returns 1. */
@@ -2456,7 +2459,7 @@ u8 eff_SpawnParticles(s32 arg0, s32 arg1, s32 arg2) {
         v.vx = var_5.vx * (base + r[3]) / mask;
         v.vy = var_5.vy * (base + r[4]) / mask;
         v.vz = var_5.vz * (base + r[5]) / mask;
-        p = &D_800EFC78[arg1][i];
+        p = &g_eff_particles[arg1][i];
         p->unk6 = i / 16;
         p->unk12 = 0;
         p->unk4 = 0;
@@ -2540,7 +2543,7 @@ u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
     POLY_FT4 **p80 = &var_0->unk80;
 
     D_800A3724 = &var_0->unk1AC;
-    *p80 = D_800A37D4;
+    *p80 = g_eff_quad_cursor;
     *p4 = 0x895440;
     *D_800A3490 = 0x2E;
 
@@ -2613,14 +2616,14 @@ u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
     }
 }
 
-/* Per-frame update + draw of the D_800EFC78[arg1] records, the middle of
+/* Per-frame update + draw of the g_eff_particles[arg1] records, the middle of
  * the eff_PrepareParticles / eff_UpdateParticles / eff_LinkParticleQuads trio.
- * For each live record of D_800EFC78[arg1] (state 1): step its unk12 and derive
- * r/g/b from it, take its D_800F0C10[arg1] entry less D_800A3470 through the
- * GTE rotation, set state 3 (and skip it) once r and g are both low or once the
- * squared length p_out[0..2] passes *var_1 plus a rand() term, project three
- * vertices, size the sprite by type (arg0), then emit up to three POLY_FT4
- * quads, storing *D_800A34D0 for each in var_9[]. */
+ * For each live record of g_eff_particles[arg1] (state 1): step its unk12 and
+ * derive r/g/b from it, take its D_800F0C10[arg1] entry less D_800A3470 through
+ * the GTE rotation, set state 3 (and skip it) once r and g are both low or once
+ * the squared length p_out[0..2] passes *var_1 plus a rand() term, project
+ * three vertices, size the sprite by type (arg0), then emit up to three
+ * POLY_FT4 quads, storing *D_800A34D0 for each in var_9[]. */
 void eff_UpdateParticles(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *var_0 = &D_800A34EC->v800678A8;
@@ -2665,7 +2668,7 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
     var_9 = var_0->unk8C;
 
     for (*p_idx = 0; *p_idx < *p_count; (*p_idx)++) {
-        *p_ent = &D_800EFC78[arg1][*p_idx];
+        *p_ent = &g_eff_particles[arg1][*p_idx];
         if ((*p_ent)->unk10 != 1) {
             continue;
         }
@@ -2803,7 +2806,7 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
            SOTN: src/dra/8BEF8.c:185 @aa53500
            SOTN: src/st/cat/e_bone_ark.c:436 @aa53500 */
         for (; *p_n >= 0; (*p_n)--) {
-            var_9[*p_prim - D_800A37D4] = *D_800A34D0;
+            var_9[*p_prim - g_eff_quad_cursor] = *D_800A34D0;
             *(s32 *)&(*p_prim)->x0 =
                 D_800A34B8[*p_n] + *D_800A34BC + *D_800A34C4;
             *(s32 *)&(*p_prim)->x1 =
@@ -2823,7 +2826,7 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
                 *(s32 *)&(*p_prim)->r0 =
                     *p_r + ((*p_r >> 2) << 8) + (*p_b << 16) + 0x2E000000;
             } else if (arg0 < 6) {
-                if (*p_prim - D_800A3720 >= 0x1C1) {
+                if (*p_prim - g_eff_quad_buffer_base >= 0x1C1) {
                     continue;
                 }
                 if (D_8009BD24.unk20_0) {
@@ -2838,13 +2841,13 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
                     break;
                 }
             } else if (arg0 < 8) {
-                if (*p_prim - D_800A3720 >= 0x1C1) {
+                if (*p_prim - g_eff_quad_buffer_base >= 0x1C1) {
                     break;
                 }
                 *(s32 *)&(*p_prim)++->r0 = 0x2EFF8080;
                 break;
             }
-            if (*p_prim - D_800A3720 < 0x1C1) {
+            if (*p_prim - g_eff_quad_buffer_base < 0x1C1) {
                 (*p_prim)++;
             }
         }
@@ -2864,7 +2867,7 @@ u8 eff_LinkParticleQuads(s32 arg0, s32 arg1) {
     s32 ret;
 
     D_800A3724 = &var_0->unk1AC;
-    var_6 = D_800A37D4;
+    var_6 = g_eff_quad_cursor;
     var_5 = *p_cur;
     count = var_5 - var_6;
 
@@ -2889,7 +2892,7 @@ u8 eff_LinkParticleQuads(s32 arg0, s32 arg1) {
                 (*p_idx)++;
             } while (*p_cur < *p_end);
         }
-        D_800A37D4 = *p_end;
+        g_eff_quad_cursor = *p_end;
     } else {
         ret = 0;
     }
@@ -2899,10 +2902,10 @@ u8 eff_LinkParticleQuads(s32 arg0, s32 arg1) {
 
 /* Q65: this file's initialized small data (.sdata), in address order; values
  * from the original EXE. */
-s32 D_800A32B8 = 0;
+s32 g_eff_billboard_draw_count = 0;
 s32 D_800A32BC = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
-POLY_FT4 *D_800A3720;
+POLY_FT4 *g_eff_quad_buffer_base;
 s32 *D_800A3724;
-POLY_FT4 *D_800A37D4;
+POLY_FT4 *g_eff_quad_cursor;

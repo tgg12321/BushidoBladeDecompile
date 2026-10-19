@@ -786,7 +786,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     } else {
         rec->unk_425 = 0;
         for (i = 0; i < 12; i++) {
-            Obj80106A78 *obj = &D_80106A78[i];
+            Obj80106A78 *obj = &g_object_pool[i];
 
             temp2 = SquareRoot0(
                 (rec->unk_F4.x - obj->pos.x) * (rec->unk_F4.x - obj->pos.x) +

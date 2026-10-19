@@ -30,13 +30,13 @@ glabel snd_Init
     /* 4BCA8 8005B4A8 5115020C */  jal        SsSetTickMode
     /* 4BCAC 8005B4AC 01000424 */   addiu     $a0, $zero, 0x1
     /* 4BCB0 8005B4B0 7F000524 */  addiu      $a1, $zero, 0x7F
-    /* 4BCB4 8005B4B4 0F80043C */  lui        $a0, %hi(D_800EFB78)
-    /* 4BCB8 8005B4B8 78FB8424 */  addiu      $a0, $a0, %lo(D_800EFB78)
+    /* 4BCB4 8005B4B4 0F80043C */  lui        $a0, %hi(g_snd_queue)
+    /* 4BCB8 8005B4B8 78FB8424 */  addiu      $a0, $a0, %lo(g_snd_queue)
     /* 4BCBC 8005B4BC 21180000 */  addu       $v1, $zero, $zero
   .L8005B4C0:
-    /* 4BCC0 8005B4C0 0F80013C */  lui        $at, %hi(D_800EFB78)
+    /* 4BCC0 8005B4C0 0F80013C */  lui        $at, %hi(g_snd_queue)
     /* 4BCC4 8005B4C4 21082300 */  addu       $at, $at, $v1
-    /* 4BCC8 8005B4C8 78FB20AC */  sw         $zero, %lo(D_800EFB78)($at)
+    /* 4BCC8 8005B4C8 78FB20AC */  sw         $zero, %lo(g_snd_queue)($at)
     /* 4BCCC 8005B4CC 050085A0 */  sb         $a1, 0x5($a0)
     /* 4BCD0 8005B4D0 0F80013C */  lui        $at, %hi(D_800EFB7C)
     /* 4BCD4 8005B4D4 21082300 */  addu       $at, $at, $v1

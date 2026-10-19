@@ -170,8 +170,8 @@ glabel func_8003CF84
     /* 2D9FC 8003D1FC 21082300 */  addu       $at, $at, $v1
     /* 2DA00 8003D200 D23722A0 */  sb         $v0, %lo(D_800A37D2)($at)
   .L8003D204:
-    /* 2DA04 8003D204 1080053C */  lui        $a1, %hi(D_80102760 + 0x10)
-    /* 2DA08 8003D208 7027A58C */  lw         $a1, %lo(D_80102760 + 0x10)($a1)
+    /* 2DA04 8003D204 1080053C */  lui        $a1, %hi(g_motion_common_sections + 0x10)
+    /* 2DA08 8003D208 7027A58C */  lw         $a1, %lo(g_motion_common_sections + 0x10)($a1)
     /* 2DA0C 8003D20C E765000C */  jal        func_8001979C
     /* 2DA10 8003D210 21200000 */   addu      $a0, $zero, $zero
     /* 2DA14 8003D214 1080053C */  lui        $a1, %hi(D_801027C0)

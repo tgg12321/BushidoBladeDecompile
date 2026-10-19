@@ -1,10 +1,10 @@
 glabel replay_RecordFighter
     /* 29E80 80039680 21308000 */  addu       $a2, $a0, $zero
-    /* 29E84 80039684 2C068393 */  lbu        $v1, %gp_rel(D_800A36F8)($gp)
+    /* 29E84 80039684 2C068393 */  lbu        $v1, %gp_rel(g_replay_write_frame)($gp)
     /* 29E88 80039688 0400C484 */  lh         $a0, 0x4($a2)
     /* 29E8C 8003968C C0100300 */  sll        $v0, $v1, 3
     /* 29E90 80039690 23104300 */  subu       $v0, $v0, $v1
-    /* 29E94 80039694 2006838F */  lw         $v1, %gp_rel(D_800A36EC)($gp)
+    /* 29E94 80039694 2006838F */  lw         $v1, %gp_rel(g_replay_fighter_frames)($gp)
     /* 29E98 80039698 C0100200 */  sll        $v0, $v0, 3
     /* 29E9C 8003969C 21186200 */  addu       $v1, $v1, $v0
     /* 29EA0 800396A0 C0100400 */  sll        $v0, $a0, 3

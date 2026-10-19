@@ -1,6 +1,6 @@
 glabel motion_LoadFighterData
-    /* 11674 80020E74 0A80023C */  lui        $v0, %hi(D_800A3880)
-    /* 11678 80020E78 80384290 */  lbu        $v0, %lo(D_800A3880)($v0)
+    /* 11674 80020E74 0A80023C */  lui        $v0, %hi(g_motion_common_loaded)
+    /* 11678 80020E78 80384290 */  lbu        $v0, %lo(g_motion_common_loaded)($v0)
     /* 1167C 80020E7C C0FEBD27 */  addiu      $sp, $sp, -0x140
     /* 11680 80020E80 2801B4AF */  sw         $s4, 0x128($sp)
     /* 11684 80020E84 21A08000 */  addu       $s4, $a0, $zero
@@ -30,10 +30,10 @@ glabel motion_LoadFighterData
     /* 116E0 80020EE0 00000000 */   nop
   .L80020EE4:
     /* 116E4 80020EE4 21900000 */  addu       $s2, $zero, $zero
-    /* 116E8 80020EE8 0A80133C */  lui        $s3, %hi(D_800A3888)
-    /* 116EC 80020EEC 88387326 */  addiu      $s3, $s3, %lo(D_800A3888)
-    /* 116F0 80020EF0 0A80113C */  lui        $s1, %hi(D_800A38C0)
-    /* 116F4 80020EF4 C0383126 */  addiu      $s1, $s1, %lo(D_800A38C0)
+    /* 116E8 80020EE8 0A80133C */  lui        $s3, %hi(g_motion_frame_buffers)
+    /* 116EC 80020EEC 88387326 */  addiu      $s3, $s3, %lo(g_motion_frame_buffers)
+    /* 116F0 80020EF0 0A80113C */  lui        $s1, %hi(g_motion_frame_set_ids)
+    /* 116F4 80020EF4 C0383126 */  addiu      $s1, $s1, %lo(g_motion_frame_set_ids)
   .L80020EF8:
     /* 116F8 80020EF8 02004012 */  beqz       $s2, .L80020F04
     /* 116FC 80020EFC 21808002 */   addu      $s0, $s4, $zero
@@ -170,8 +170,8 @@ glabel motion_LoadFighterData
     /* 118D4 800210D4 01000424 */  addiu      $a0, $zero, 0x1
     /* 118D8 800210D8 AADB000C */  jal        cdrom_GetFileIndex
     /* 118DC 800210DC 02000526 */   addiu     $a1, $s0, 0x2
-    /* 118E0 800210E0 0A80033C */  lui        $v1, %hi(D_800A3860)
-    /* 118E4 800210E4 60386324 */  addiu      $v1, $v1, %lo(D_800A3860)
+    /* 118E0 800210E0 0A80033C */  lui        $v1, %hi(g_motion_fighter_buffers)
+    /* 118E4 800210E4 60386324 */  addiu      $v1, $v1, %lo(g_motion_fighter_buffers)
     /* 118E8 800210E8 80801200 */  sll        $s0, $s2, 2
     /* 118EC 800210EC 21800302 */  addu       $s0, $s0, $v1
     /* 118F0 800210F0 0000058E */  lw         $a1, 0x0($s0)
@@ -189,25 +189,25 @@ glabel motion_LoadFighterData
     /* 11920 80021120 40100200 */  sll        $v0, $v0, 1
     /* 11924 80021124 6C004224 */  addiu      $v0, $v0, 0x6C
     /* 11928 80021128 21208200 */  addu       $a0, $a0, $v0
-    /* 1192C 8002112C 1080013C */  lui        $at, %hi(D_801027B0)
+    /* 1192C 8002112C 1080013C */  lui        $at, %hi(g_motion_fighter_sections)
     /* 11930 80021130 21083100 */  addu       $at, $at, $s1
-    /* 11934 80021134 B02724AC */  sw         $a0, %lo(D_801027B0)($at)
+    /* 11934 80021134 B02724AC */  sw         $a0, %lo(g_motion_fighter_sections)($at)
     /* 11938 80021138 0000028E */  lw         $v0, 0x0($s0)
     /* 1193C 8002113C 00000000 */  nop
     /* 11940 80021140 0400438C */  lw         $v1, 0x4($v0)
     /* 11944 80021144 00000000 */  nop
     /* 11948 80021148 21104300 */  addu       $v0, $v0, $v1
-    /* 1194C 8002114C 1080013C */  lui        $at, %hi(D_801027B0 + 0x4)
+    /* 1194C 8002114C 1080013C */  lui        $at, %hi(g_motion_fighter_sections + 0x4)
     /* 11950 80021150 21083100 */  addu       $at, $at, $s1
-    /* 11954 80021154 B42722AC */  sw         $v0, %lo(D_801027B0 + 0x4)($at)
+    /* 11954 80021154 B42722AC */  sw         $v0, %lo(g_motion_fighter_sections + 0x4)($at)
     /* 11958 80021158 0000028E */  lw         $v0, 0x0($s0)
     /* 1195C 8002115C 00000000 */  nop
     /* 11960 80021160 0800438C */  lw         $v1, 0x8($v0)
     /* 11964 80021164 00000000 */  nop
     /* 11968 80021168 21104300 */  addu       $v0, $v0, $v1
-    /* 1196C 8002116C 1080013C */  lui        $at, %hi(D_801027B0 + 0x8)
+    /* 1196C 8002116C 1080013C */  lui        $at, %hi(g_motion_fighter_sections + 0x8)
     /* 11970 80021170 21083100 */  addu       $at, $at, $s1
-    /* 11974 80021174 B82722AC */  sw         $v0, %lo(D_801027B0 + 0x8)($at)
+    /* 11974 80021174 B82722AC */  sw         $v0, %lo(g_motion_fighter_sections + 0x8)($at)
     /* 11978 80021178 0000028E */  lw         $v0, 0x0($s0)
     /* 1197C 8002117C 00000000 */  nop
     /* 11980 80021180 0C00438C */  lw         $v1, 0xC($v0)
