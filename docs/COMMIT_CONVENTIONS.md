@@ -52,6 +52,9 @@ These prefixes are what `git log --grep '^<prefix>'` matches on. Keep them recog
 | `skills: <change>` | Changes to `.claude/skills/*/SKILL.md`. |
 | `docs: <change>` | Documentation changes (docs/, README, CLAUDE.md, AGENTS.md). |
 | `engine: <change>` | Changes to the decomp engine (`engine/`) or its CLI. |
+| `build: <change>` | Linker scripts, symbol files, `Makefile`, EXE packaging (foundation lanes: pins, BSS, shift test). Bytes unchanged unless the subject says otherwise. |
+| `data: <scope>` | Data representation: `.data`/`.rodata` moved from asm to C, raw pointers made relocations, tables typed. Bytes unchanged. |
+| `lanes: <change>` | The lane tooling (`tools/lanes/`, `lane_guard.py`). |
 | `.claude/rules: <change>` | Path-scoped rule additions / migrations. |
 
 ### Lifecycle / coordination

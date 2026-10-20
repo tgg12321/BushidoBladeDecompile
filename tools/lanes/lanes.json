@@ -1,0 +1,55 @@
+{
+  "_doc": "Lane configuration for tools/lanes/lanes.py. Read from the MAIN checkout only.",
+  "worktree_root": "../bb2-worktrees",
+  "dir_prefix": "ln-",
+  "branch_prefix": "lanes/",
+  "remote": "origin",
+  "stale_hours": 6,
+  "lock_wait_minutes": 45,
+  "oracle_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+  "oracle_exe": "build/bb2.exe",
+  "runner": "wsl",
+  "bootstrap": ["pwsh", "-NoProfile", "-File", "tools/setup_worker_worktree.ps1"],
+  "shared_paths": [
+    "include/game.h",
+    "include/bb2.h",
+    "named_syms.txt",
+    "undefined_syms_auto.txt",
+    "undefined_funcs_auto.txt",
+    "symbol_addrs.txt",
+    "bb2.ld",
+    "Makefile",
+    "inline_asm_canonical.txt",
+    "docs/naming/function-names.csv",
+    "docs/naming/phase3/backlog.tsv",
+    "docs/foundation/backlog.tsv"
+  ],
+  "rowmerge": [
+    "docs/naming/phase3/backlog.tsv",
+    "docs/foundation/backlog.tsv"
+  ],
+  "regenerate": [
+    {
+      "path": "docs/naming/function-names.csv",
+      "cmd": "python3 docs/naming/build_census.py",
+      "subject": "docs: census refresh"
+    }
+  ],
+  "gates": {
+    "naming": [
+      "python3 -m engine.cli verify-oracle --rebuild",
+      "python3 -m engine.cli tus-check",
+      "python3 tools/check_completion_integrity.py",
+      "python3 -m engine.cli test",
+      "python3 tools/test_label_census.py"
+    ],
+    "foundation": [
+      "python3 -m engine.cli verify-oracle --rebuild",
+      "python3 -m engine.cli tus-check",
+      "python3 tools/check_completion_integrity.py",
+      "python3 -m engine.cli test"
+    ],
+    "docs": []
+  },
+  "docs_only_paths": ["docs/", "memory/", ".claude/"]
+}
