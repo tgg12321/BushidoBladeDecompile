@@ -3598,11 +3598,11 @@ s32 func_8002FDB0(Unk80101EC8Record *arg0) {
     return 0 < SPAD->unk2B8.rec.unkC8.y;
 }
 
-/* Starts the record (unk_08 = 1, bone unk_09 = arg1): its matrix becomes the
- * inverse of bone unk_09's rotation (func_80046DEC()'s table, inverted by
- * math_InvertMatrix3x3) times the rot[] rotation (X, Y, Z), and pos is taken
- * into the bone's frame: less the bone translation, rotated by that inverse,
- * then halved. */
+/* Starts the record (is_attached = 1, bone attached_bone = arg1): its matrix
+ * becomes the inverse of bone attached_bone's rotation (func_80046DEC()'s
+ * table, inverted by math_InvertMatrix3x3) times the rot[] rotation (X, Y, Z),
+ * and pos is taken into the bone's frame: less the bone translation, rotated by
+ * that inverse, then halved. */
 void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 arg1) {
     MATRIX mat_local;
     MATRIX **mat_tbl;
@@ -3631,7 +3631,7 @@ void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 arg1) {
     math_InvertMatrix3x3(s2_ptr, &mat_local);
     MulMatrix0(&mat_local, rot_mat, rot_mat);
 
-    /* Subtract mat_tbl[arg0->unk_09]'s translation from the position. */
+    /* Subtract mat_tbl[arg0->attached_bone]'s translation from the position. */
     arg0->pos.x -= s2_ptr->t[0];
     arg0->pos.y -= s2_ptr->t[1];
     arg0->pos.z -= s2_ptr->t[2];
@@ -3647,7 +3647,7 @@ void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 arg1) {
     arg0->pos.z >>= 1;
 }
 
-/* Rotates the object's local vector (pos) by bone unk_09's matrix of
+/* Rotates the object's local vector (pos) by bone attached_bone's matrix of
  * func_80046DEC() and adds that matrix's translation, composes the bone
  * matrix with the object's, and hands the point and the angles
  * math_MatrixToAngles reads from that matrix to func_80049718 /

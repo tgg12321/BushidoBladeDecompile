@@ -1710,7 +1710,7 @@ typedef struct {
  * a free record.
  */
 typedef struct {
-    /* 0 at spawn; object_UpdatePool adds 1 per step while unk_50 != 0 */
+    /* 0 at spawn; object_UpdatePool adds 1 per step while is_moving != 0 */
     s16 moving_ticks;
     s16 kind; /* -1 = free */
     u8 unk_04;
@@ -1719,7 +1719,8 @@ typedef struct {
     u8 owner;
     u8 unk_07;
     u8 is_attached;
-    /* index into the owner's matrix table (object_SubmitAttachedTransform) */
+    /* index into the opponent's bone-matrix table, func_80046DEC(owner < 1)
+     * (object_AttachToOpponentBone, object_SubmitAttachedTransform) */
     u8 attached_bone;
     /* own index in g_object_pool once allocated; 0xFF = free (set by
      * object_ResetPool at init and by object_UpdatePool once kind == -1) */
