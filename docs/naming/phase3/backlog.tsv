@@ -1,6 +1,6 @@
 id	kind	stage	draft	note
 m08	member	applied	-	branch m08 e11b9a80b (on 440589c3f): 9 Unk80101EC8Record pairs, gates green; comment pass NOT done ("model id" for motion_data_id in game.h/bb2.h:178, 9F9C.c/4510C.c comments); then R6 (judge suggested root_offset_yaw / use_root_offset_yaw fresh) and LAND
-m10	member	applied	docs/naming/phase3/pending/m10	branch lane-debt bb250b9ed (on m07 ac05bc29e/467de4add, already on main as f08fba223/133c26008): cherry-pick bb250b9ed only; check its comment pass (game.h:1668, 4510C.c:553/1001/1618), then R6 and LAND
+m10	member	applied	docs/naming/phase3/pending/m10	branch lane-debt bb250b9ed (on m07 ac05bc29e/467de4add, already on main as f08fba223/133c26008): cherry-pick bb250b9ed only; comment pass NOT done (game.h:1668, 4510C.c:553/1001/1618), then R6 and LAND
 m06	member	reviewed	-	REDO: 16 soft-body pairs = docs/naming/phase3/m06 on origin/m06 ba682ad68 minus Func80017A44Record.field_18=anchor (R6 FAIL: NO_NAME). Do not land ba682ad68/cf1634eed. Fix named_syms.txt "flag unk6" -> rebuild_request and "D_800F6740[a0].records" -> nodes
 m09	member	reviewed	docs/naming/phase3/pending/m09	12 Unk80101EC8Record pairs, 12/12 pre-apply PASS; land after m08
 m11	member	reviewed	docs/naming/phase3/pending/m11	5 pairs (Unk80101DF0Record x4, MoveScript.unk_06), 5/5 pre-apply PASS; set VERDICT CONFIRM; fix 31548.c:254 evidence (fills work, not xf.mat)
