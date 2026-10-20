@@ -85,6 +85,39 @@ class GuardTest(unittest.TestCase):
         wsl = "/mnt/c/x/wts/ln-naming-a"
         self.assertEqual(self.run_hook("S2", "Bash", command=f"cd '{wsl}' && make"), 2)
 
+    def test_review_probes(self):
+        main = str(self.main)
+        wt = str(self.wts / "ln-naming-a")
+        # quoted main path with spaces must not hide the git subcommand
+        self.assertEqual(self.run_hook("S1", "Bash", command=f'git -C "{main}" commit -F tmp/m.txt'), 2)
+        self.assertEqual(self.run_hook("S1", "Bash", command=f'git -C "{main.replace(chr(92), "/")}" add -A'), 2)
+        # lanes.py exemption only when the command is solely a lanes.py call
+        self.assertEqual(self.run_hook("S1", "Bash", command=f'python tools/lanes/lanes.py status; git -C "{main}" reset --hard'), 2)
+        self.assertEqual(self.run_hook("S1", "PowerShell", command="python tools/lanes/lanes.py land naming-a"), 0)
+        # non-git writes into main by a lane owner
+        self.assertEqual(self.run_hook("S1", "Bash", command="python tools/naming_wave.py --from-census --apply"), 2)
+        self.assertEqual(self.run_hook("S1", "Bash", command=f'cd "{wt}" && python tools/naming_wave.py --apply'), 0)
+        self.assertEqual(self.run_hook("S1", "Bash", command="cp tmp/x.c src/main/x.c"), 2)
+        self.assertEqual(self.run_hook("S1", "Bash", command="echo hi > src/main/x.c"), 2)
+        self.assertEqual(self.run_hook("S1", "Bash", command="python tmp/probe.py > tmp/out.txt"), 0)
+        self.assertEqual(self.run_hook("S1", "Bash", command="mkdir -p tmp/scratch"), 0)
+        self.assertEqual(self.run_hook("S1", "Bash", command=f'cd "{wt}" && echo x > notes.txt'), 0)
+        self.assertEqual(self.run_hook("S1", "PowerShell", command="& tools/wteng.ps1 main verify-oracle --rebuild"), 2)
+        self.assertEqual(self.run_hook("S1", "PowerShell", command=f'& tools/wteng.ps1 "{wt}" verify-oracle --rebuild'), 0)
+        # read-only commands by others don't false-block
+        self.assertEqual(self.run_hook("OTHER", "PowerShell", command=f'git -C "{wt}" log -5 2>$null'), 0)
+        self.assertEqual(self.run_hook("OTHER", "Bash", command=f'rg -n "make" "{wt}\\Makefile" 2>&1'), 0)
+        self.assertEqual(self.run_hook("OTHER", "Bash", command=f'echo x > "{wt}/a.txt"'), 2)
+        # case variants
+        self.assertEqual(self.run_hook("S2", "Bash", command=f'git -C "{wt.upper()}" commit -m x'), 2)
+        self.assertEqual(self.run_hook("S1", "Edit", file_path=str(self.wts / "ln-naming-a" / "src/main/9f9c.c")), 2)
+
+    def test_stale_owner_still_guarded(self):
+        reg = json.loads((self.main / "tmp" / "lanes-state" / "registry.json").read_text())
+        reg["lanes"]["naming-a"]["heartbeat"] = 0
+        (self.main / "tmp" / "lanes-state" / "registry.json").write_text(json.dumps(reg))
+        self.assertEqual(self.run_hook("S1", "Edit", file_path=str(self.main / "src/main/a.c")), 2)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)

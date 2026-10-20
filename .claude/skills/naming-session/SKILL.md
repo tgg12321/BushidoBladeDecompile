@@ -42,6 +42,9 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
 - **Lane-Replay.** A commit that is exactly tool output (no hand edits) may carry
   `Lane-Replay: <shell command>` trailers, run at the worktree root in WSL with the venv. On a
   conflict, `land` re-runs the commands instead of bouncing.
+- **Commit messages.** Write them to main's `tmp/` and pass an absolute path:
+  `git -C "<wt>" commit -F "<main>\tmp\<msg>.txt"`. Under `-C`, a relative `tmp/...` resolves
+  inside the worktree.
 - **Freezes.** A foundation lane can freeze a shared file (for example `named_syms.txt!` while pins
   are removed). `land` then refuses until the freeze is released. Prepare the next wave meanwhile,
   or stop.

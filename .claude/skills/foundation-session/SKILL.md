@@ -56,7 +56,9 @@ live session owns, and say which one you took.
      - Everything else gets one fresh adversarial `general-purpose` reviewer (default FAIL). It
        checks that the change does what the row says, keeps bytes identical, and hides no
        address assumption.
-   - Commit with `git -C "<wt>" commit -F tmp/<msg>.txt` (conventions:
+   - Write the message to main's scratch dir and commit with an absolute path:
+     `git -C "<wt>" commit -F "<main>\tmp\<msg>.txt"`. A relative `tmp/...` resolves inside
+     `<wt>` under `-C` (conventions:
      `docs/COMMIT_CONVENTIONS.md`: `build:`, `data:`, `tools:`, `cheat-cleanup:`, or
      `<tu>.c: <action>`). In the same or a following commit, update the row's
      `stage`/`note` in `docs/foundation/backlog.tsv` (backlog rows merge row by row on land).
@@ -77,8 +79,8 @@ live session owns, and say which one you took.
   updating `bb2.ld` object order: run `tus-check`.
 - **fake**: one TU per unit, claimed as `path:src/main/<tu>.c`. Naming lanes may still rename
   symbols in it; that merges line by line on land.
-- **assets / trace**: tools and docs only, no build input. `land` skips the build gates for
-  docs-only changes.
+- **assets / trace**: tools and docs only, no build input. `land` still runs the full gates when
+  anything outside `docs/`, `memory/` or `.claude/` changes (a `tools/` script can be a build input).
 
 ## Hard limits
 

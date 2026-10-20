@@ -245,9 +245,82 @@ class LaneTest(unittest.TestCase):
     def test_lock_held_by_other_refuses(self):
         self.L("s1", "open", "a")
         self.commit("a", "src/b.c", "int b;\n")
-        lanes.write_lock(lanes.Ctx(self.main, "other"), "someone")
+        self.assertTrue(lanes._create_lock(lanes.Ctx(self.main, "other"), "someone"))
         self.assertEqual(self.L("s1", "land", "a"), 1, self.last)
         self.assertIn("main lock held", self.last)
+
+    def test_merge_commit_refused(self):
+        self.L("s1", "open", "a")
+        d = self.wt("a")
+        sh("checkout", "-q", "-b", "side", cwd=d)
+        self.commit("a", "src/evil.c", "int e;\n")
+        sh("checkout", "-q", "lanes/a", cwd=d)
+        self.commit("a", "src/c.c", "int c;\n")
+        sh("-c", "user.email=t@example.com", "-c", "user.name=t", "merge", "-q", "--no-ff", "-m", "m",
+           "side", cwd=d)
+        self.assertEqual(self.L("s1", "land", "a"), 1, self.last)
+        self.assertIn("merge commits", self.last)
+
+    def test_push_failure_is_an_error(self):
+        hook = self.tmp / "origin.git" / "hooks" / "pre-receive"
+        hook.write_text("#!/bin/sh\nexit 1\n", newline="\n")
+        os.chmod(hook, 0o755)
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n")
+        self.assertEqual(self.L("s1", "land", "a"), 5, self.last)
+        self.assertIn("PUSH FAILED", self.last)
+        self.assertIsNone(lanes.read_lock(lanes.Ctx(self.main, "s1")))
+
+    def test_replay_rejects_stray_paths(self):
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        self.edit_line("a", "shared.txt", 5, "A")
+        d = self.wt("b")
+        (d / "rename.py").write_text(
+            "import pathlib\n"
+            "p = pathlib.Path('shared.txt')\n"
+            "t = p.read_text().splitlines()\n"
+            "t[5] = 'R'\n"
+            "p.write_text('\\n'.join(t) + '\\n', newline='\\n')\n"
+            "pathlib.Path('src/stray.c').write_text('x', newline='\\n')\n", newline="\n")
+        sh("add", "rename.py", cwd=d)
+        sh("-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-q", "-m", "tool", cwd=d)
+        lines = (d / "shared.txt").read_text().splitlines()
+        lines[5] = "R"
+        (d / "shared.txt").write_text("\n".join(lines) + "\n", newline="\n")
+        sh("add", "shared.txt", cwd=d)
+        sh("-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-q", "-m",
+           "naming: wave\n\nLane-Replay: python rename.py", cwd=d)
+        (d / "untracked_notes.txt").write_text("mine")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertEqual(self.L("s2", "land", "b"), 3, self.last)
+        self.assertIn("src/stray.c", self.last)
+        self.assertFalse((self.main / "untracked_notes.txt").exists())
+        self.assertFalse((self.main / "src" / "stray.c").exists())
+
+    def test_rowmerge_order_and_safety(self):
+        base = "id\tv\na\t1\nb\t1\nc\t1\n"
+        # a row the lane inserts mid-file keeps its place
+        self.assertEqual(lanes.rowmerge(base, "id\tv\na\t2\nb\t1\nc\t1\n",
+                                        "id\tv\na\t1\nb\t1\nx\t9\nc\t1\n"),
+                         "id\tv\na\t2\nb\t1\nx\t9\nc\t1\n")
+        # a pure move by the lane is not silently dropped
+        self.assertIsNone(lanes.rowmerge(base, "id\tv\na\t2\nb\t1\nc\t1\n",
+                                         "id\tv\nc\t1\na\t1\nb\t1\n"))
+        # a missing side or blank lines go to a human
+        self.assertIsNone(lanes.rowmerge(base, "", "id\tv\na\t1\nb\t2\nc\t1\n"))
+        self.assertIsNone(lanes.rowmerge(base, "id\tv\na\t2\n\nb\t1\nc\t1\n",
+                                         "id\tv\na\t1\nb\t2\nc\t1\n"))
+
+    def test_lock_is_exclusive(self):
+        c1, c2 = lanes.Ctx(self.main, "s1"), lanes.Ctx(self.main, "s2")
+        self.assertTrue(lanes._create_lock(c1, "x"))
+        self.assertFalse(lanes._create_lock(c2, "y"))
+        with self.assertRaises(lanes.Refuse):
+            lanes.write_lock(c2, "y")  # heartbeat only while ours
+        lanes.release_lock(c2)
+        self.assertEqual(lanes.read_lock(c1)["session"], "s1")
+        lanes.release_lock(c1)
+        self.assertIsNone(lanes.read_lock(c1))
 
 
 if __name__ == "__main__":

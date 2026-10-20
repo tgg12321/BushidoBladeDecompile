@@ -8,13 +8,18 @@ Blocks (exit 2):
     - a file another live lane has a path: claim on (inside any lane worktree);
     - a file in the MAIN checkout (outside tmp/) while the session owns a lane: lane work
       happens in the lane worktree (a subagent's cwd is main, so relative paths land there).
-  Bash|PowerShell
-    - a mutating command that names a lane worktree the session does not own;
-    - a mutating git command with no lane-worktree pin while the session owns a lane (it would
-      hit main). `tools/lanes/lanes.py` itself is always allowed: it checks ownership itself.
+  Bash|PowerShell (quoted strings are blanked before matching, so a quoted path can't hide a
+  subcommand)
+    - a possibly-writing command (git mutation, writer verb, redirect, python, wave/build tool)
+      that names a lane worktree the session does not own; reads are fine;
+    - for a session that owns a lane: a git mutation or wave/build tool (wteng.ps1,
+      naming_wave.py, ...) not pinned to its worktree, or pinned to main; a writer verb or
+      redirect whose target is in main outside tmp/.
+    A command that is solely a `tools/lanes/lanes.py` call is allowed (it checks ownership itself).
 
-Sessions that own no lane and touch no lane worktree are never affected. Fails open (exit 0)
-on any internal error, with a note on stderr.
+Ownership holds until `lanes.py close` or a takeover, however stale the heartbeat. Sessions that
+own no lane and write into no lane worktree are never affected. Fails open (exit 0) on any
+internal error, with a note on stderr.
 """
 from __future__ import annotations
 
@@ -27,16 +32,37 @@ import time
 from pathlib import Path
 
 MAIN = Path(__file__).resolve().parents[2]
+ARG = r"""("[^"]*"|'[^']*'|[^\s;&|()<>]+)"""
+# matched against the command with quoted strings blanked (so a quoted path or message can't hide
+# or fake a subcommand)
 MUTATING_GIT = re.compile(
-    r"\bgit\b(?:\s+-[cC]\s+\S+|\s+--\S+)*\s+"
+    r"\bgit(?:\s+(?:-[cC]\s+\S+|--\S+))*\s+"
     r"(commit|add|rm|mv|reset|checkout|switch|restore|rebase|merge|cherry-pick|revert|stash|"
     r"clean|apply|am|pull|push|tag|branch\s+-[dDfmM]|worktree\s+(?:add|remove|move|prune)|"
     r"update-ref|update-index)\b")
-WRITERS = re.compile(
-    r"(?<![<>=!])>(?!=)|\b(Set-Content|Out-File|Add-Content|New-Item|Remove-Item|Move-Item|"
-    r"Copy-Item|Rename-Item|tee|sed\s+-i|rm|rmdir|mv|cp|mkdir|touch|make|wteng\.ps1|"
-    r"naming_wave\.py|data_wave\.py|naming_member_apply\.py|format\.py)\b", re.IGNORECASE)
-LANES_CLI = re.compile(r"tools[\\/]+lanes[\\/]+lanes\.py", re.IGNORECASE)
+SEP = r"(?:^|[;&|(\n{]|&&|\|\|)\s*(?:&\s*)?"
+WRITER_VERB = re.compile(
+    SEP + r"(Set-Content|Out-File|Add-Content|New-Item|Remove-Item|Move-Item|Copy-Item|"
+    r"Rename-Item|tee|sed|rm|rmdir|mv|cp|mkdir|touch|make|ni|del|erase|ren|rd|md)\b", re.IGNORECASE)
+PYTHON_CMD = re.compile(SEP + r"(?:python3?|py)(?:\.exe)?\b", re.IGNORECASE)
+REDIRECT = re.compile(r"(?<![\d>&=\-])>>?(?!\s*(?:\$null|&\d|/dev/null|nul\b))")
+REDIRECT_TARGET = re.compile(r"(?<![\d>&=\-])>>?\s*" + ARG)
+# matched against the raw command (these names are usually inside a quoted path)
+TOOL_WRITERS = re.compile(r"(wteng\.ps1|naming_wave\.py|data_wave\.py|naming_member_apply\.py|"
+                          r"format\.py|wavefollow\.py|build_census\.py|reintegrate_lock\.ps1)",
+                          re.IGNORECASE)
+LANES_ONLY = re.compile(r"""^\s*(?:&\s*)?(?:python3?|py)(?:\.exe)?\s+["']?[^;&|\n"']*"""
+                        r"""tools[\\/]+lanes[\\/]+lanes\.py["']?(?:\s+[^;&|\n<>`$]*)?\s*$""",
+                        re.IGNORECASE)
+PIN = re.compile(r"(?:\s-C\s+|(?i:\b(?:cd|set-location|push-location|pushd|sl)\s+(?:-LiteralPath\s+|-Path\s+)?))" + ARG)
+
+
+def blank_quotes(cmd: str) -> str:
+    return re.sub(r""""[^"]*"|'[^']*'""", "Q", cmd)
+
+
+def unq(tok: str) -> str:
+    return tok[1:-1] if len(tok) >= 2 and tok[0] == tok[-1] and tok[0] in "\"'" else tok
 
 
 def load_cfg():
@@ -56,8 +82,7 @@ def to_win(p: str) -> str:
 
 
 def live(cfg, e) -> bool:
-    return bool(e.get("owner")) and time.time() - float(e.get("heartbeat", 0)) <= \
-        float(cfg.get("stale_hours", 6)) * 3600
+    return bool(e.get("owner")) and time.time() - float(e.get("heartbeat", 0)) <=         float(cfg.get("stale_hours", 12)) * 3600
 
 
 def lane_of_path(cfg, fp: str):
@@ -80,14 +105,15 @@ def claimed_by_other(cfg, lanes, lane, rel):
         for tok in e.get("claims", []):
             kind, _, val = tok.partition(":")
             val = val.rstrip("!")
-            if kind == "path" and (rel == val or fnmatch.fnmatchcase(rel, val)):
+            if kind == "path" and fnmatch.fnmatchcase(rel.lower(), val.lower()):
                 return other, tok
     return None
 
 
 def owned_lane(cfg, lanes, sid):
+    """The lane this session owns. Ownership holds until close or takeover, stale or not."""
     for lane, e in lanes.items():
-        if e.get("owner") == sid and live(cfg, e):
+        if sid and e.get("owner") == sid:
             return lane
     return None
 
@@ -124,27 +150,76 @@ def check_edit(cfg, lanes, sid, fp, cwd) -> int:
     return 0
 
 
-def check_shell(cfg, lanes, sid, cmd) -> int:
-    if LANES_CLI.search(cmd):
-        return 0
-    root = str((MAIN / cfg["worktree_root"]).resolve())
-    mentioned = set()
-    for m in re.finditer(re.escape(cfg["dir_prefix"]) + r"([a-z0-9][a-z0-9-]{0,30})", cmd):
-        before = cmd[max(0, m.start() - 1):m.start()]
-        if before in ("/", "\\"):
-            mentioned.add(m.group(1))
-    mutating = bool(MUTATING_GIT.search(cmd) or WRITERS.search(cmd))
+def where(cfg, path: str, cwd: str):
+    """'main' (main outside tmp/), 'tmp' (main's tmp/), ('lane', name), or 'outside'."""
+    p = unq(path)
+    if not p or p.startswith("$") or p.startswith("-"):
+        return "outside"
+    p = to_win(p)
+    if not os.path.isabs(p):
+        p = os.path.join(cwd, p)
+    hit = lane_of_path(cfg, p)
+    if hit:
+        return ("lane", hit[0])
+    n, m = norm(p), norm(str(MAIN))
+    if n == m or n.startswith(m + os.sep):
+        return "tmp" if (n + os.sep).startswith(norm(str(MAIN / "tmp")) + os.sep) else "main"
+    return "outside"
+
+
+def write_targets(cmd: str):
+    """Arguments of writer verbs, and redirect targets (best effort: every path-like argument of
+    a writer counts, sources included, which errs toward blocking)."""
+    out = [m.group(1) for m in REDIRECT_TARGET.finditer(cmd)]
+    for seg in re.split(r"&&|\|\||[;|\n]", cmd):
+        mv = WRITER_VERB.search(blank_quotes(seg))
+        if mv:
+            at = seg.lower().find(mv.group(1).lower()) + len(mv.group(1))
+            out += [t for t in re.findall(ARG, seg[at:]) if not unq(t).startswith("-")]
+    return out
+
+
+def check_shell(cfg, lanes, sid, cmd, cwd) -> int:
+    if LANES_ONLY.match(cmd):
+        return 0  # lanes.py enforces ownership itself
+    bq = blank_quotes(cmd)
+    mentioned = {m.group(1).lower() for m in
+                 re.finditer(r"[\\/]" + re.escape(cfg["dir_prefix"]) + r"([a-z0-9][a-z0-9-]{0,30})",
+                             cmd, re.IGNORECASE)}
+    git_mut = bool(MUTATING_GIT.search(bq))
+    verb = bool(WRITER_VERB.search(bq) or REDIRECT.search(bq))
+    tool = bool(TOOL_WRITERS.search(cmd))
+    py = bool(PYTHON_CMD.search(bq))
+    mine = owned_lane(cfg, lanes, sid)
+
     for lane in mentioned:
         e = lanes.get(lane, {})
-        if e.get("owner") != sid and mutating:
+        if e.get("owner") != sid and (git_mut or verb or tool or py):
             who = e.get("owner") or "nobody (closed)"
-            return block(f"this command writes into lane worktree '{lane}' ({root}), owned by {who}, "
-                         f"not this session. Read-only commands are fine; writes need your own lane.")
-    mine = owned_lane(cfg, lanes, sid)
-    if mine and MUTATING_GIT.search(cmd) and mine not in mentioned:
-        return block(f"this session owns lane '{mine}', and this git command has no -C/cd pin to "
-                     f"its worktree, so it would hit main. Pin it: git -C \"<lane worktree>\" ... "
-                     f"(python tools/lanes/lanes.py path {mine}). Landing is lanes.py land {mine}.")
+            return block(f"this command may write into lane worktree '{lane}', owned by {who}, not "
+                         f"this session. Read-only commands are fine; writes need your own lane.")
+    if not mine:
+        return 0
+
+    pins = [where(cfg, m.group(1), cwd) for m in PIN.finditer(" " + cmd)]
+    if (git_mut or tool) and "main" in pins:
+        return block(f"this session owns lane '{mine}', and this command is pinned to main. "
+                     f"Work in the lane worktree; landing is lanes.py land {mine}.")
+    if (git_mut or tool) and mine not in mentioned:
+        return block(f"this session owns lane '{mine}', and this command has no pin to its "
+                     f"worktree, so it would run against main (a subagent's cwd is main). Pin it: "
+                     f"git -C \"<wt>\" ..., cd \"<wt>\" && ..., or tools/wteng.ps1 \"<wt>\" ... "
+                     f"(python tools/lanes/lanes.py path {mine}).")
+    if verb:
+        # a relative target after a `cd <lane>` resolves in the lane, not main
+        lane_pinned = any(isinstance(p, tuple) for p in pins)
+        for t in write_targets(cmd):
+            if lane_pinned and not os.path.isabs(to_win(unq(t))):
+                continue
+            if where(cfg, t, cwd) == "main":
+                return block(f"this session owns lane '{mine}', and this command writes into main "
+                             f"({unq(t)}). Main is only a landing pad; write in the lane worktree, "
+                             f"or under main's tmp/ for scratch.")
     return 0
 
 
@@ -164,7 +239,7 @@ def main() -> int:
             fp = ti.get("file_path") or ti.get("notebook_path") or ""
             return check_edit(cfg, lanes, sid, fp, cwd) if fp else 0
         if tool in ("Bash", "PowerShell"):
-            return check_shell(cfg, lanes, sid, ti.get("command") or "")
+            return check_shell(cfg, lanes, sid, ti.get("command") or "", cwd)
         return 0
     except Exception as e:
         print(f"lane_guard: fail-open (error: {e})", file=sys.stderr)

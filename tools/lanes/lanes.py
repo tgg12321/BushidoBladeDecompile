@@ -27,7 +27,7 @@ Usage (Windows Python, from any cwd):
   python tools/lanes/lanes.py fresh <lane> [--discard]
   python tools/lanes/lanes.py claim <lane> <token>...       # path:src/main/9F9C.c  topic:row:m09
   python tools/lanes/lanes.py unclaim <lane> [<token>...]   # no tokens = all
-  python tools/lanes/lanes.py land  <lane> [--no-push] [--skip-gates-for-docs]
+  python tools/lanes/lanes.py land  <lane> [--no-push]
   python tools/lanes/lanes.py close <lane> [--remove]
   python tools/lanes/lanes.py path  <lane> [--wsl]
 
@@ -121,7 +121,7 @@ class Ctx:
         return f"{self.cfg['branch_prefix']}{lane}-land"
 
     def stale_secs(self) -> int:
-        return int(float(self.cfg.get("stale_hours", 6)) * 3600)
+        return int(float(self.cfg.get("stale_hours", 12)) * 3600)
 
     # ---- registry (short critical sections under an O_EXCL mutex file)
     def _acquire_mutex(self):
@@ -225,12 +225,12 @@ def path_claims(entry: dict):
 
 def claimed_by_other(ctx: Ctx, reg: dict, lane: str, rel: str):
     """(other_lane, glob, frozen) if another live lane claims path `rel`, else None."""
-    rel = rel.replace("\\", "/")
+    rel = rel.replace("\\", "/").lower()  # NTFS is case-insensitive
     for other, e in reg["lanes"].items():
         if other == lane or not e.get("owner") or is_stale(ctx, e):
             continue
         for glob, freeze in path_claims(e):
-            if fnmatch.fnmatchcase(rel, glob) or rel == glob:
+            if fnmatch.fnmatchcase(rel, glob.lower()):
                 return other, glob, freeze
     return None
 
@@ -248,22 +248,60 @@ def read_lock(ctx: Ctx):
         return None
 
 
-def write_lock(ctx: Ctx, label: str):
+def _lock_json(ctx: Ctx, label: str) -> bytes:
     head = git("rev-parse", "--short", "HEAD", cwd=ctx.main)
     obj = {"session": ctx.session, "ts": int(time.time()), "head": head, "label": label}
-    (ctx.main / LOCK_REL).parent.mkdir(parents=True, exist_ok=True)
-    (ctx.main / LOCK_REL).write_text(json.dumps(obj, separators=(",", ":")), encoding="utf-8")
+    return json.dumps(obj, separators=(",", ":")).encode("utf-8")
+
+
+def _create_lock(ctx: Ctx, label: str) -> bool:
+    """Atomically create the lock file; False if it already exists."""
+    data = _lock_json(ctx, label)
+    p = ctx.main / LOCK_REL
+    p.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        fd = os.open(p, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError:
+        return False
+    with os.fdopen(fd, "wb") as f:
+        f.write(data)
+    return True
+
+
+def write_lock(ctx: Ctx, label: str):
+    """Heartbeat: rewrite the lock only while it is still ours."""
+    lk = read_lock(ctx)
+    if not lk or lk.get("session") != ctx.session:
+        raise Refuse("lost the main lock mid-land (another session took it); main was not "
+                     "changed by this land", 1)
+    p = ctx.main / LOCK_REL
+    tmp = p.with_name(p.name + f".{os.getpid()}.tmp")
+    tmp.write_bytes(_lock_json(ctx, label))
+    os.replace(tmp, p)
 
 
 def acquire_lock(ctx: Ctx, label: str):
     deadline = time.time() + 60 * float(ctx.cfg.get("lock_wait_minutes", 45))
     announced = False
     while True:
+        if _create_lock(ctx, label):
+            return
         lk = read_lock(ctx)
         age = time.time() - float(lk.get("ts", 0)) if lk else 0
-        if not lk or lk.get("session") == ctx.session or age > LOCK_STALE_SECS:
+        if lk and lk.get("session") == ctx.session:
             write_lock(ctx, label)
             return
+        if lk is None or age > LOCK_STALE_SECS:
+            # unreadable (mid-write) or stale: re-check after a pause, then steal by unlink +
+            # O_EXCL create, so two stealers cannot both win.
+            time.sleep(1)
+            lk2 = read_lock(ctx)
+            if lk2 == lk or (lk2 and time.time() - float(lk2.get("ts", 0)) > LOCK_STALE_SECS):
+                try:
+                    (ctx.main / LOCK_REL).unlink()
+                except FileNotFoundError:
+                    pass
+            continue
         if time.time() > deadline:
             raise Refuse(f"main lock held by {lk.get('session')} ({lk.get('label')}) "
                          f"for {int(age)}s; gave up waiting")
@@ -313,34 +351,45 @@ def run_shell(ctx: Ctx, wt: Path, cmd: str, log) -> int:
 # ---------------------------------------------------------------- row merge
 
 def _rows(text: str):
+    """(header, key order, key->line), or None if the text is not a clean row-keyed table
+    (missing, blank lines, duplicate keys): those merge only by hand."""
     lines = text.splitlines()
     if not lines:
-        return "", [], {}
+        return None
     header, body = lines[0], lines[1:]
     order, rows = [], {}
     for ln in body:
-        key = ln.split("\t", 1)[0] if ln.strip() else f"\0blank{len(order)}"
-        if key in rows:
-            key = f"{key}\0{len(order)}"
+        key = ln.split("\t", 1)[0]
+        if not ln.strip() or key in rows:
+            return None
         order.append(key)
         rows[key] = ln
     return header, order, rows
 
 
+def _same_relative_order(a, b) -> bool:
+    common = set(a) & set(b)
+    return [k for k in a if k in common] == [k for k in b if k in common]
+
+
 def rowmerge(base: str, ours: str, theirs: str):
-    """Three-way merge of a row-keyed TSV (first column = key). Returns text, or None on a real
-    conflict (the same row changed differently on both sides, or the header changed on both)."""
-    hb, ob, rb = _rows(base)
-    ho, oo, ro = _rows(ours)
-    ht, ot, rt = _rows(theirs)
+    """Three-way merge of a row-keyed TSV (first column = key). Returns text, or None when it must
+    be resolved by hand: the same row changed differently on both sides, the header changed on
+    both, the lane reordered rows, or a side is missing/not a clean table."""
+    pb, po, pt = _rows(base), _rows(ours), _rows(theirs)
+    if pb is None or po is None or pt is None:
+        return None
+    (hb, ob, rb), (ho, oo, ro), (ht, ot, rt) = pb, po, pt
     if ht == hb:
         header = ho
     elif ho == hb or ho == ht:
         header = ht
     else:
         return None
-    out_order = list(oo)
+    if not _same_relative_order(ob, ot):  # the lane moved rows: not a row edit
+        return None
     result = dict(ro)
+    out_order = list(oo)
     for key in set(rb) | set(ro) | set(rt):
         b, o, t = rb.get(key), ro.get(key), rt.get(key)
         if t == b:
@@ -350,11 +399,18 @@ def rowmerge(base: str, ours: str, theirs: str):
                 result.pop(key, None)
             else:
                 result[key] = t
-                if key not in out_order:
-                    out_order.append(key)
         elif o != t:
             return None
-    # place rows new in theirs after their predecessor in theirs, when possible
+    # rows new in theirs go right after their nearest predecessor (in theirs) that we keep
+    for i, key in enumerate(ot):
+        if key in out_order or key not in result:
+            continue
+        pos = 0
+        for prev in reversed(ot[:i]):
+            if prev in out_order:
+                pos = out_order.index(prev) + 1
+                break
+        out_order.insert(pos, key)
     lines = [header] + [result[k] for k in out_order if k in result]
     nl = "\n" if (ours.endswith("\n") or theirs.endswith("\n")) else ""
     return "\n".join(lines) + nl
@@ -556,24 +612,40 @@ def show_stage(wt: Path, stage: int, path: str) -> str:
     return r.stdout if r.returncode == 0 else ""
 
 
-def replay_commit(ctx: Ctx, wt: Path, sha: str, log, regen_needed: set) -> str:
+def picking(wt: Path) -> bool:
+    return git_ok("rev-parse", "-q", "--verify", "CHERRY_PICK_HEAD", cwd=wt)
+
+
+def index_matches_head(wt: Path) -> bool:
+    return git_ok("diff", "--cached", "--quiet", "HEAD", cwd=wt)
+
+
+def replay_commit(ctx: Ctx, wt: Path, sha: str, log) -> str:
     """Apply one lane commit on HEAD. Returns 'picked' | 'resolved' | 'replayed' | 'empty'.
     Raises Refuse(code=3) on a conflict it may not resolve."""
     r = run(["git", "cherry-pick", "--allow-empty", "--keep-redundant-commits", sha], cwd=wt, check=False)
     if r.returncode == 0:
         return "picked"
     files = conflicted(wt)
-    if not files:  # e.g. empty after resolution
-        run(["git", "cherry-pick", "--skip"], cwd=wt, check=False)
-        return "empty"
+    if not files:
+        # Only a cherry-pick that stopped because the change is already in main may be skipped.
+        # Anything else (a refusal, an error) must never silently drop the commit.
+        if picking(wt) and index_matches_head(wt):
+            run(["git", "cherry-pick", "--skip"], cwd=wt, check=False)
+            return "empty"
+        run(["git", "cherry-pick", "--abort"], cwd=wt, check=False)
+        raise Refuse(f"cherry-pick of {sha[:9]} failed without a conflict:\n"
+                     f"{(r.stdout or '')[-1500:]}{(r.stderr or '')[-1500:]}", 3)
     regen_paths = {g["path"] for g in ctx.cfg.get("regenerate", [])}
     rowmerge_paths = set(ctx.cfg.get("rowmerge", []))
     unresolved = []
     for f in files:
         if f in regen_paths:
-            git("checkout", "--ours", "--", f, cwd=wt)
-            git("add", "--", f, cwd=wt)
-            regen_needed.add(f)
+            ok = run(["git", "checkout", "--ours", "--", f], cwd=wt, check=False).returncode == 0
+            if not ok:
+                unresolved.append(f)
+                continue
+            git("add", "--", f, cwd=wt)  # main's copy; rebuilt after the gates
         elif f in rowmerge_paths:
             merged = rowmerge(show_stage(wt, 1, f), show_stage(wt, 2, f), show_stage(wt, 3, f))
             if merged is None:
@@ -584,7 +656,7 @@ def replay_commit(ctx: Ctx, wt: Path, sha: str, log, regen_needed: set) -> str:
         else:
             unresolved.append(f)
     if not unresolved:
-        if not git("diff", "--cached", "--name-only", cwd=wt):
+        if index_matches_head(wt):
             run(["git", "cherry-pick", "--skip"], cwd=wt, check=False)
             return "empty"
         env = dict(os.environ, GIT_EDITOR="true")
@@ -600,12 +672,23 @@ def replay_commit(ctx: Ctx, wt: Path, sha: str, log, regen_needed: set) -> str:
                      f"  The lane must redo it on fresh main (lanes.py fresh --discard), or mark a "
                      f"pure tool-output commit with Lane-Replay: trailers.", 3)
     print(f"lanes:   {sha[:9]} conflicts in {', '.join(unresolved)}; replaying its Lane-Replay commands")
+    before = set(git("status", "--porcelain", cwd=wt).splitlines())
     for c in cmds:
         if run_shell(ctx, wt, c, log) != 0:
             git("reset", "-q", "--hard", "HEAD", cwd=wt)
             raise Refuse(f"Lane-Replay command failed for {sha[:9]}: {c}", 3)
-    git("add", "-A", cwd=wt)
-    if not git("diff", "--cached", "--name-only", cwd=wt):
+    # Stage only what the original commit touched; anything else the commands left behind is an
+    # error (it would otherwise land unreviewed).
+    paths = git("diff-tree", "--no-commit-id", "--name-only", "-r", sha, cwd=wt).splitlines()
+    if paths:
+        git("add", "-A", "--", *paths, cwd=wt)
+    stray = [ln for ln in git("status", "--porcelain", cwd=wt).splitlines()
+             if ln not in before and ln[3:] not in paths]
+    if stray:
+        git("reset", "-q", "--hard", "HEAD", cwd=wt)
+        raise Refuse(f"Lane-Replay for {sha[:9]} changed paths its commit did not: "
+                     f"{', '.join(x[3:] for x in stray[:10])}", 3)
+    if index_matches_head(wt):
         return "empty"
     msgfile = wt / "tmp" / "lanes" / "replay-msg.txt"
     msgfile.parent.mkdir(parents=True, exist_ok=True)
@@ -613,6 +696,42 @@ def replay_commit(ctx: Ctx, wt: Path, sha: str, log, regen_needed: set) -> str:
     author = git("log", "-1", "--format=%an <%ae>", sha, cwd=wt)
     git("commit", "-q", "-F", str(msgfile), f"--author={author}", cwd=wt)
     return "replayed"
+
+
+def pid_alive(pid: int) -> bool:
+    if os.name == "nt":  # os.kill(pid, 0) would TerminateProcess on Windows
+        import ctypes
+        h = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)  # QUERY_LIMITED_INFORMATION
+        if not h:
+            return False
+        code = ctypes.c_ulong()
+        ctypes.windll.kernel32.GetExitCodeProcess(h, ctypes.byref(code))
+        ctypes.windll.kernel32.CloseHandle(h)
+        return code.value == 259  # STILL_ACTIVE
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+def check_main_idle(ctx: Ctx):
+    """Main must be on main, have no tracked edits, and no Grinder run may be live there (its
+    sessions keep candidate edits in main and its scope check discards a moved HEAD)."""
+    if git("rev-parse", "--abbrev-ref", "HEAD", cwd=ctx.main) != "main":
+        raise Refuse("the main checkout is not on branch main")
+    lockf = ctx.main / "tmp" / "grind" / "grind.lock"
+    if lockf.exists():
+        try:
+            pid = int(lockf.read_text(encoding="utf-8-sig").split()[0])
+        except Exception:
+            pid = 0
+        if pid and pid_alive(pid):
+            raise Refuse(f"the Grinder is running in main (pid {pid}); lanes land between Grinder "
+                         f"runs (pwsh tools/grinder/grind.ps1 -Stop)")
+    if git("status", "--porcelain", "--untracked-files=no", cwd=ctx.main):
+        raise Refuse("the main checkout has uncommitted tracked changes; under the lane model "
+                     "nobody edits main. Commit or move them first.")
 
 
 def cmd_land(ctx: Ctx, a):
@@ -628,6 +747,9 @@ def cmd_land(ctx: Ctx, a):
     if not commits:
         print("lanes: nothing to land")
         return 0
+    if git("rev-list", "--merges", "main..HEAD", cwd=wt):
+        raise Refuse("the lane holds merge commits; replay cannot carry them. Rebuild the lane as "
+                     "linear commits on fresh main (lanes.py fresh --discard).")
 
     touched = sorted(set(git("diff", "--name-only", "main...HEAD", cwd=wt).split()))
     reg = ctx.load()
@@ -643,11 +765,7 @@ def cmd_land(ctx: Ctx, a):
     acquire_lock(ctx, f"lanes land {lane}")
     land_ok = False
     try:
-        if git("rev-parse", "--abbrev-ref", "HEAD", cwd=ctx.main) != "main":
-            raise Refuse("the main checkout is not on branch main")
-        if git("status", "--porcelain", "--untracked-files=no", cwd=ctx.main):
-            raise Refuse("the main checkout has uncommitted tracked changes; under the lane model "
-                         "nobody edits main. Commit or move them first.")
+        check_main_idle(ctx)
         remote = ctx.cfg.get("remote")
         if remote and not a.no_push:
             git("fetch", "-q", remote, "main", cwd=ctx.main)
@@ -661,9 +779,8 @@ def cmd_land(ctx: Ctx, a):
         print(f"lanes: landing {len(commits)} commit(s) of {lane} onto main {base[:9]}", flush=True)
 
         git("checkout", "-q", "-B", lbr, base, cwd=wt)
-        regen_needed: set = set()
         for sha in commits:
-            how = replay_commit(ctx, wt, sha, log, regen_needed)
+            how = replay_commit(ctx, wt, sha, log)
             print(f"lanes:   {sha[:9]} {how}", flush=True)
             write_lock(ctx, f"lanes land {lane}")  # heartbeat
 
@@ -699,16 +816,22 @@ def cmd_land(ctx: Ctx, a):
             raise Refuse("the gates left tracked changes in the lane worktree: "
                          + git("status", "--porcelain", "--untracked-files=no", cwd=wt), 4)
 
+        write_lock(ctx, f"lanes land {lane}")  # still ours?
         if git("rev-parse", "main", cwd=ctx.main) != base:
             raise Refuse("main moved during the land despite the lock; run land again")
+        check_main_idle(ctx)  # again: the gates took minutes
         tip = git("rev-parse", "HEAD", cwd=wt)
         git("merge", "-q", "--ff-only", tip, cwd=ctx.main)
         land_ok = True
-        pushed = "not pushed (--no-push)"
         if remote and not a.no_push:
             r = run(["git", "push", "-q", remote, "main"], cwd=ctx.main, check=False)
-            pushed = "pushed" if r.returncode == 0 else f"PUSH FAILED: {(r.stderr or '').strip()[-300:]}"
-        print(f"lanes: main -> {tip[:9]} ({pushed})")
+            if r.returncode != 0:
+                raise Refuse(f"main -> {tip[:9]} locally, but the PUSH FAILED: "
+                             f"{(r.stderr or '').strip()[-400:]}\n  Push main by hand "
+                             f"(git -C <main> push {remote} main) before the next land.", 5)
+            print(f"lanes: main -> {tip[:9]} (pushed)")
+        else:
+            print(f"lanes: main -> {tip[:9]} (not pushed: --no-push)")
     finally:
         # Always put the lane back on its branch; on success the branch becomes the new main.
         run(["git", "cherry-pick", "--abort"], cwd=wt, check=False)
