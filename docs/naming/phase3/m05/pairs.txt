@@ -1,0 +1,4 @@
+Obj80106A78.unk_08=is_attached
+Obj80106A78.unk_09=attached_bone
+Obj80106A78.unk_50=is_moving
+Obj80106A78.unk_00=moving_ticks

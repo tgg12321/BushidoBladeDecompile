@@ -3609,11 +3609,11 @@ void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 arg1) {
     MATRIX *s2_ptr;
     MATRIX *rot_mat;
 
-    arg0->unk_08 = 1;
-    arg0->unk_09 = arg1;
+    arg0->is_attached = 1;
+    arg0->attached_bone = arg1;
     mat_tbl = func_80046DEC(arg0->owner < 1);
     rot_mat = &arg0->mtx;
-    s2_ptr = mat_tbl[arg0->unk_09];
+    s2_ptr = mat_tbl[arg0->attached_bone];
 
     /* 3x3 identity rotation in the record's matrix. */
     arg0->mtx.m[0][0] = 0x1000;
@@ -3661,7 +3661,7 @@ void object_SubmitAttachedTransform(Obj80106A78 *arg0) {
     s32 lookup;
 
     mat_tbl = func_80046DEC(arg0->owner < 1);
-    mat = mat_tbl[arg0->unk_09];
+    mat = mat_tbl[arg0->attached_bone];
 
     gte_SetRotMatrix(mat);
     gte_ldlv0(&arg0->pos);
@@ -3692,11 +3692,11 @@ void object_SubmitPoolTransforms(void) {
         if (kind == -1) {
             continue;
         }
-        if (obj->unk_08 != 0) {
+        if (obj->is_attached != 0) {
             object_SubmitAttachedTransform(obj);
             continue;
         }
-        if (obj->unk_00 < 2) {
+        if (obj->moving_ticks < 2) {
             continue;
         }
         lookup = D_8008EB80[kind];
@@ -3765,7 +3765,7 @@ void object_FreeAttachedObjects(void) {
     s32 i = 0;
     do {
         if (g_object_pool[i].kind != -1) {
-            if (g_object_pool[i].unk_08 != 0) {
+            if (g_object_pool[i].is_attached != 0) {
                 g_object_pool[i].kind = -1;
             }
         }
@@ -3790,7 +3790,7 @@ Obj80106A78 *object_SpawnFromFighter(Unk80101EC8Record *arg0, s32 arg1) {
     obj->slot = i;
     obj->kind = arg1;
     obj->unk_07 = 0;
-    obj->unk_08 = 0;
+    obj->is_attached = 0;
     obj->unk_04 = 1;
     obj->owner = arg0->index;
     obj->pos.x = arg0->world_pos.x;
@@ -3828,9 +3828,9 @@ Obj80106A78 *object_SpawnFromFighter(Unk80101EC8Record *arg0, s32 arg1) {
         obj->rot_vel[1] = 0;
         obj->rot_vel[2] = 0;
     }
-    obj->unk_50 = 1;
+    obj->is_moving = 1;
     obj->unk_05 = 0;
-    obj->unk_00 = 0;
+    obj->moving_ticks = 0;
     return obj;
 }
 
@@ -3949,7 +3949,7 @@ s32 object_PickUpNearby(Unk80101EC8Record *arg0) {
         if (kind == -1) {
             continue;
         }
-        if (p->unk_50 != 0) {
+        if (p->is_moving != 0) {
             continue;
         }
         {
@@ -4036,17 +4036,17 @@ void object_UpdatePool(void) {
             obj->slot = 0xFF;
             continue;
         }
-        if (obj->unk_08 != 0) {
+        if (obj->is_attached != 0) {
             continue;
         }
         obj->prev_pos = obj->pos;
-        if (obj->unk_50 != 0) {
-            obj->unk_00++;
+        if (obj->is_moving != 0) {
+            obj->moving_ticks++;
         }
-        if (obj->kind == 0x10 && obj->unk_50 != 0 && obj->unk_05 == 0 &&
-            obj->unk_00 >= 14) {
+        if (obj->kind == 0x10 && obj->is_moving != 0 && obj->unk_05 == 0 &&
+            obj->moving_ticks >= 14) {
             temp = ratan2(obj->vel.x, obj->vel.z);
-            work = (0x4E - obj->unk_00) * 96 / 64;
+            work = (0x4E - obj->moving_ticks) * 96 / 64;
             if (work < 0) {
                 work = 0;
             } else if (work > 0x42) {
@@ -4112,7 +4112,7 @@ void object_UpdatePool(void) {
             obj->pos = scr->unk10;
             kind = obj->kind;
             work = D_8008E194[kind].unkA;
-            if (obj->unk_50 != 0) {
+            if (obj->is_moving != 0) {
                 obj->vel.x = obj->vel.x * work / 4096;
                 obj->vel.y = obj->vel.y * work / 4096;
                 obj->vel.z = obj->vel.z * work / 4096;
@@ -4141,7 +4141,7 @@ void object_UpdatePool(void) {
                 }
             } else if (scr->unk30[1] >= -0x7FF && kind == 0xE) {
                 if (obj->unk_05 == 1) {
-                    obj->unk_50 = 1;
+                    obj->is_moving = 1;
                     obj->rot[1] += 0x780 + (rng_Next() & 0xFF);
                     obj->vel.x = Judge[obj->rot[1] & 0xFFF] / 64;
                     obj->vel.y = -150;
@@ -4167,7 +4167,7 @@ void object_UpdatePool(void) {
                 if (D_800A38DC == 3) {
                     obj->kind = -1;
                 } else {
-                    obj->unk_50 = 0;
+                    obj->is_moving = 0;
                     obj->unk_05 = 1;
                     obj->vel.x = 0;
                     obj->vel.y = 0;
@@ -4175,11 +4175,11 @@ void object_UpdatePool(void) {
                 }
             }
         } else {
-            obj->unk_50 = 1;
+            obj->is_moving = 1;
         }
         if (obj->kind == 0xE) {
             if (obj->unk_05 == 1 && !(rng_Next() & 0x133)) {
-                obj->unk_50 = 1;
+                obj->is_moving = 1;
                 obj->rot_vel[1] += (rng_Next() & 0x7F) - 0x40;
                 obj->vel.x = Judge[obj->rot[1] & 0xFFF] / 64;
                 obj->vel.y = -150;
@@ -4290,7 +4290,7 @@ void object_ResolveFighterHits(void) {
             continue;
         if (obj->unk_04 == 0)
             continue;
-        if (obj->unk_50 == 0)
+        if (obj->is_moving == 0)
             continue;
         var_6 = obj->owner == 0;
         var_5 = &D_80101EC8[var_6];

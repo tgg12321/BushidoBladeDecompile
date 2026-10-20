@@ -1711,16 +1711,16 @@ typedef struct {
  */
 typedef struct {
     /* 0 at spawn; object_UpdatePool adds 1 per step while unk_50 != 0 */
-    s16 unk_00;
+    s16 moving_ticks;
     s16 kind; /* -1 = free */
     u8 unk_04;
     u8 unk_05;
     /* .index of the spawning record (object_SpawnFromFighter) */
     u8 owner;
     u8 unk_07;
-    u8 unk_08;
+    u8 is_attached;
     /* index into the owner's matrix table (object_SubmitAttachedTransform) */
-    u8 unk_09;
+    u8 attached_bone;
     /* own index in g_object_pool once allocated; 0xFF = free (set by
      * object_ResetPool at init and by object_UpdatePool once kind == -1) */
     u8 slot;
@@ -1731,7 +1731,7 @@ typedef struct {
     Vec3i32 pos;      /* += vel each object_UpdatePool step */
     Vec3i32 prev_pos; /* pos before the step */
     Vec3i32 vel;
-    s32 unk_50; /* != 0: moving */
+    s32 is_moving; /* != 0: moving */
     /* RotMatrixX/Y/Z angles; += rot_vel each step */
     s16 rot[3];
     u8 unk_5A[0x5C - 0x5A];
