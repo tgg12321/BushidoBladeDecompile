@@ -367,7 +367,7 @@ rng_Next_800171B8               = 0x800171B8;  /* LCG step: 15-bit output, multi
 softbody_FreeAll           = 0x80017714;  /* clear .points of all 8 entries (stride 0x34) of g_softbody_slots */
 /* RESET 0x80017738: retired name 'obj_CalcOffset_80017738' — preserved note: pure math: (a0<<6) + (a1<<4) -- offset into 64-byte row + 16-byte col */
 softbody_Free              = 0x80017E8C;  /* g_softbody_slots[a0].points = 0 */
-/* RESET 0x80017EB4: retired name 'obj_UpdatePosition_80017EB4' — preserved note: add a1 bytes to D_800F6740[a0].records and recompute .edges (6CF8.c:773-778) */
+/* RESET 0x80017EB4: retired name 'obj_UpdatePosition_80017EB4' — preserved note: add a1 bytes to D_800F6740[a0].nodes and recompute .edges (6CF8.c:773-778) */
 /* RESET 0x80017EF4: retired name 'obj_AddValue_80017EF4' — preserved note: add a1 bytes to field 0 (.points) of D_800F6740[a0] (6CF8.c:780-783) */
 /* Distance math (1; companion to math_Distance3D_80017748) */
 math_Distance3D_16_800177C8     = 0x800177C8;  /* same as math_Distance3D but `sra 4` instead of `sra 2` -- /16 scaling for larger-range vectors */
@@ -2052,7 +2052,7 @@ g_memcard_hw_event_new                                   = 0x800A3850;  /* OpenE
 /* These functions had proper names in their C source but no addr binding */
 /* in named_syms.txt.  Addresses derived from asm/funcs/<name>.s. */
 math_AlignUp4                                        = 0x8003FFA8;  /* 4-byte alignment via modulo-and-round */
-softbody_RequestRebuild                                        = 0x8003FFC4;  /* sets the object's soft-body block flag unk6 (a0->unk_24->unk6 = 1: rebuild on the next update; 2B344.c) */
+softbody_RequestRebuild                                        = 0x8003FFC4;  /* sets the object's soft-body block's rebuild_request (a0->unk_24->rebuild_request = 1: rebuild on the next update; 2B344.c) */
 CdSync                           = 0x800801E8;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of cpu_side_move_dir_4() */
 CdReady                           = 0x80080208;  /* MISNAMED: VU0 is PS2-only; actually a 1-line wrapper of marionation_Exec() */
 CdGetSector2                           = 0x80080640;  /* MISNAMED: VU0 is PS2-only; actually returns cdrom_DmaChain() == 0 */

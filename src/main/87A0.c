@@ -33,11 +33,11 @@ typedef struct {
 #define SCR ((Scr1F800000 *)0x1F800000)
 
 /* softbody_LoadColliders - copies the Unk80017FA0Rec's collision volumes
- * (a0->unkC) into scratchpad RAM (0x1F800000). unk00 is written scaled by 128
- * (the ground word); count is the volume count, and each volume writes its two
- * foci (three words each, scaled by 4) at a 0x18 stride plus its bound from
- * unk68. Nothing happens when a0->unkC is null. The outer guard tests the live
- * counter
+ * (a0->colliders) into scratchpad RAM (0x1F800000). unk00 is written scaled by
+ * 128 (the ground word); count is the volume count, and each volume writes its
+ * two foci (three words each, scaled by 4) at a 0x18 stride plus its bound from
+ * unk68. Nothing happens when a0->colliders is null. The outer guard tests the
+ * live counter
  * (`i < ptr->count`) for the target's empty 8-byte leaf frame
  * (phantom-slot-frame-lever). */
 void softbody_LoadColliders(Unk80017FA0Rec *a0) {
@@ -302,7 +302,7 @@ void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
 void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1);
 
 /* softbody_Step -- one integration step of the body's nodes, called by
- * softbody_UpdateList for each Unk80017FA0Rec whose unk2 bit 0 is clear. A node
+ * softbody_UpdateList for each Unk80017FA0Rec whose snap bit 0 is clear. A node
  * with state >= 0 springs toward (or snaps to) its GTE-transformed anchor;
  * otherwise the indexed scratchpad forces are applied, the node is pushed out
  * of the ground and out of each collision ellipsoid, and the velocity is damped
@@ -330,8 +330,8 @@ void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
         /* Ruling 11 (reused local): loop index of the add-force,
          * subtract-force and ellipsoid loops */
         s32 idx;
-        /* Ruling 11 (reused local): force count, field_1C (added) then
-         * field_20 (subtracted) */
+        /* Ruling 11 (reused local): force count, a_edge_count (added) then
+         * b_edge_count (subtracted) */
         s32 var_14;
 
         SCR->pos[0] = node->pos[0];
