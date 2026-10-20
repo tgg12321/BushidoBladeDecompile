@@ -166,12 +166,13 @@ Aggregate tables across every TU block competing member destinations, including 
 
 Scoped destinations cannot equal global sources/destinations. Member destinations cannot be
 shared; local destinations may be shared only across distinct functions. For local pairs,
-macro arguments containing the old name fail even when unchanged. For member pairs, an edited
-macro argument fails (n occurs in it; no planned edit lies inside a macro argument); an
-unchanged argument naming m is allowed only when every definition of that macro expands all
-its parameters plainly (no dropped, stringized, pasted or variadic parameter; not an
-object-like alias; not chained), since a stale m there that reached the renamed T.m fails to
-compile and member pairs require the oracle build. Closure macro guards use cpp -dD
+macro arguments containing the old name fail even when unchanged. For member pairs, a macro
+argument naming m (edited to n or unchanged) is allowed only when every definition of that
+macro expands all its parameters plainly (no dropped, stringized, pasted or variadic parameter;
+not an object-like alias; not chained), and its cpp sentinel proves it: emitted by a compiled
+TU, never dropped, stringized or pasted (also through nested forwarding), and after . or -> in
+every TU that emits it. A stale m that reached the renamed T.m then fails to compile, and member
+pairs require the oracle build. Closure macro guards use cpp -dD
 definitions from every included file and command-line definition, in both trees. Object- and
 function-like call openers fail, as do local tokens adjacent to either kind of macro invocation.
 Closure macros containing unbalanced braces or aggregate syntax fail even if never invoked;
@@ -1958,12 +1959,11 @@ def cpp_source_guards(output, tree, scoped):
             spans = code_spans(text)
             ts = [token[0] for token in spans]
             if "." in spec:
-                # Member pairs: only an edited argument token is refused. The
-                # destination is fresh, so in either tree it occurs in a macro
-                # argument only where the wave edited that argument; an unchanged
-                # argument naming m cannot reach the renamed T.m without failing
-                # to compile (member pairs require the oracle build).
-                reject_macro_arguments(text, dest, functions, path, member_access=True)
+                # Member pairs: an edited argument token (n after . / ->) is proven
+                # by its edit sentinel (emitted by a compiled TU, never dropped,
+                # stringized or pasted, always after . or ->); an unchanged one by
+                # its kept sentinel. The static test refuses macros that may drop,
+                # stringize or paste an argument naming m.
                 reject_unexpanded_macro_arguments(text, old, output.macros, path)
                 continue
             for func, start, _, end in function_definitions(text):
@@ -2223,12 +2223,12 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
             raise ValueError(f"{target}: cannot establish scoped edit namespace")
         namespaces[(path, k)] = namespaces[(target, k)] = owners[0]
     # Member pairs: every unchanged m inside a function-like macro argument is also
-    # sentinelized below and must come out of cpp as a member access (after . or ->)
+    # sentinelized below (an edited one already is, as an edit) and must come out of cpp as a member access (after . or ->)
     # in some compiled TU; a dropped, stringized or pasted argument, nested-macro
     # forwarding into one, #if 0 code or an unincluded header fails. Then a stale m
     # that reached the renamed T.m is compiled, and the oracle build catches it.
-    # A macro invocation's expansion comes out on its first line, so a kept site is
-    # checked over the invocation's whole line span (merged per file).
+    # A macro invocation's expansion comes out on its first line, so a kept or edited
+    # site inside one is checked over the invocation's whole line span (merged per file).
     keep, keep_spans = [], {}
     member_olds = {scoped_parts(spec)[2] for spec in (scoped or {}) if "." in spec}
     if member_olds:
@@ -2249,7 +2249,7 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
                 hits = [k for k in sorted(args) if spans[k][0] in member_olds
                         and (path, k) not in changed and after[k][0] == spans[k][0]]
                 in_macro.update(hits)
-                if not hits:
+                if not hits and not any((path, k) in changed for k in args):
                     continue
                 keep.extend((path, target, k, "macro argument") for k in hits)
                 for side, name, body, toks in (("base", path, text, spans), ("new", target, new[target], after)):
@@ -2300,10 +2300,11 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
                 key = (label, target)
                 if key not in cache:
                     cache[key] = emitted_lines(preprocess(tree, target), tree, target)
-                edit_sites = {(p if label == "base" else q,
-                               tree[p if label == "base" else q].count("\n", 0,
-                                   code_spans(tree[p if label == "base" else q])[k].start()) + 1)
-                              for p, q, k in changes}
+                edit_sites = set()
+                for p, q, k in changes:
+                    f = p if label == "base" else q
+                    first, last = line_span(label, f, tree[f].count("\n", 0, code_spans(tree[f])[k].start()) + 1)
+                    edit_sites.update((f, l) for l in range(first, last + 1))
                 active_scoped = {spec: dest for spec, dest in (scoped or {}).items()
                     if "." in spec or any(
                         (p if label == "base" else q) in cache[key].sources
@@ -3140,9 +3141,8 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
             ms = code_spans(text)
             ts = [m[0] for m in ms]
             if member:
-                # Unchanged macro arguments naming m are allowed when the macro
-                # expands them plainly; an edit inside one is refused (no planned
-                # edit there, and the cpp guard checks n).
+                # Macro arguments naming m (kept or edited) are allowed when the
+                # macro expands them plainly; n is fresh, so none occurs in the base.
                 reject_macro_arguments(text, new, macros, path, member_access=True)
                 reject_unexpanded_macro_arguments(text, old, macro_records, path)
                 if macro_uses(text, old, body_only=True):
@@ -3437,8 +3437,9 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
             spans = code_spans(t)
             toks = [m[0] for m in spans]
             aggregates = aggregate_indices(toks) if member else set()
-            # Member pairs never plan an edit inside a macro argument: an edited
-            # argument is an unexplained change, an unchanged one stays allowed.
+            # Member accesses inside macro arguments are planned like any other
+            # (optional) access edit; the cpp sentinel proof then requires an edited
+            # one to expand after . or -> in every compiled TU that emits it.
             margs = macro_argument_indices(t, macros) if member else set()
             if member and p == path and any(k in margs for k in indices):
                 raise ValueError(f"{spec}: member declaration inside a macro argument")
@@ -3450,7 +3451,6 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                 replacement = None
                 if tok == old and ((p == path and k in indices)
                                    or member and k and k not in aggregates
-                                   and k not in margs
                                    and toks[k - 1] in (".", "->")):
                     if member or not local_exception(toks, k):
                         replacement = new

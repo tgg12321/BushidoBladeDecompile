@@ -4547,7 +4547,7 @@ def test_naming_keycheck_scoped_pairs() -> None:
     edited_base = macro_base.replace("SQ(u->m)", "SQ(t->m)")
     edited_new = macro_new.replace("SQ(u->m)", "SQ(t->n)")
     ok, why = proof("T.m=n", {"src/a.c": edited_base}, {"src/a.c": edited_new})
-    check("keycheck: edited macro argument refused (" + why + ")", not ok)
+    check("keycheck: edited plain macro argument accepted (" + why + ")", ok)
     for macro in ("STR", "DROP"):
         b = macro_base.replace("SQ(u->m)", macro + "(u->m)")
         n_ = macro_new.replace("SQ(u->m)", macro + "(u->m)")
@@ -4604,7 +4604,18 @@ def test_naming_keycheck_scoped_pairs() -> None:
                 res.append(t)
                 i += 1
             return res
-        for line in tree[tu].splitlines():
+        lines, joined = tree[tu].splitlines(), 0
+        for n, line in enumerate(lines):
+            if joined:
+                joined -= 1
+                out.append("\n")
+                continue
+            # A line with an open parenthesis takes the following lines (an
+            # invocation's expansion comes out on its first line, as with cpp).
+            while not line.lstrip().startswith("#") and line.count("(") > line.count(")") \
+                    and n + joined + 1 < len(lines):
+                joined += 1
+                line += " " + lines[n + joined]
             m = re.match(r"\s*#\s*(\w+)(.*)", line)
             if m:
                 if m[1] == "if":
@@ -4652,7 +4663,8 @@ def test_naming_keycheck_scoped_pairs() -> None:
     b = plain_base.replace("int f(", "#if 0\nint g(struct U *u) { return SQ(u->m); }\n#endif\nint f(")
     n_ = plain_new.replace("int f(", "#if 0\nint g(struct U *u) { return SQ(u->m); }\n#endif\nint f(")
     ok, why = proof("T.m=n", {"src/a.c": b}, {"src/a.c": n_}, cpp=mini_cpp)
-    check("keycheck: kept macro argument in #if 0 code refused (" + why + ")", not ok and "never compiles" in why)
+    check("keycheck: kept macro argument in #if 0 code refused (" + why + ")",
+          not ok and ("never compiles" in why or "conditional code" in why))
     hdr = sq + "struct U; static int h(struct U *u) { return SQ(u->m); }\n"
     ok, why = proof("T.m=n", {"src/a.c": plain_base.replace(sq, ""), "include/unused.h": hdr},
                     {"src/a.c": plain_new.replace(sq, "")}, compile_headers=False)
@@ -4707,6 +4719,52 @@ def test_naming_keycheck_scoped_pairs() -> None:
     except ValueError as e:
         why = str(e)
     check("keycheck: file missing from the new tree refused (" + why + ")", "missing from the new tree" in why)
+    # An edited member token inside a macro argument: its edit sentinel must be emitted
+    # by a compiled TU, survive cpp and follow . or -> (4b).
+    eb = plain_base.replace("SQ(u->m)", "SQ(t->m)")
+    en = plain_new.replace("SQ(u->m)", "SQ(t->n)")
+    ok, why = proof("T.m=n", {"src/a.c": eb}, {"src/a.c": en}, cpp=mini_cpp)
+    check("keycheck: edited macro argument expanded as a member access passes (" + why + ")", ok)
+    multi_b = eb.replace("SQ(t->m)", "SQ(t->m +\n        1)")
+    multi_n = en.replace("SQ(t->n)", "SQ(t->n +\n        1)")
+    ok, why = proof("T.m=n", {"src/a.c": multi_b}, {"src/a.c": multi_n}, cpp=mini_cpp)
+    check("keycheck: edited argument on a multi-line invocation passes (" + why + ")", ok)
+    multi_b = eb.replace("SQ(t->m)", "SQ(1 +\n        t->m)")
+    multi_n = en.replace("SQ(t->n)", "SQ(1 +\n        t->n)")
+    ok, why = proof("T.m=n", {"src/a.c": multi_b}, {"src/a.c": multi_n}, cpp=mini_cpp)
+    check("keycheck: edited argument on an invocation's second line passes (" + why + ")", ok)
+    # ... also when it is a TU's only edit (that line emits nothing itself)
+    other = sq + "struct T;\nint g(struct T *t) { return SQ(1 +\n        t->m); }\n"
+    ok, why = proof("T.m=n", {"src/a.c": eb, "src/b.c": other},
+                    {"src/a.c": en, "src/b.c": other.replace("t->m", "t->n")}, cpp=mini_cpp)
+    check("keycheck: a TU whose only edit is on an invocation's second line passes (" + why + ")", ok)
+    for label, defs, invocation in [
+            ("nested forwarding into a dropping macro", "#define DROP(y) 0\n#define A(x) DROP(x)\n", "A(t->%s)"),
+            ("macro passed as an argument", "#define DROP(y) 0\n#define CALL(f, a) f(a)\n", "CALL(DROP, t->%s)"),
+            ("stringized through forwarding", "#define STR(y) #y\n#define A(x) STR(x)\n", "A(t->%s)")]:
+        b = defs + plain_base.replace("SQ(u->m)", invocation % "m")
+        n_ = defs + plain_new.replace("SQ(u->m)", invocation % "n")
+        ok, why = proof("T.m=n", {"src/a.c": b}, {"src/a.c": n_}, cpp=mini_cpp)
+        check("keycheck: edited macro argument refused: " + label + " (" + why + ")",
+              not ok and ("discarded" in why or "stringified" in why))
+    for macro in ("STR", "DROP"):
+        b = macro_base.replace("SQ(u->m)", macro + "(t->m)")
+        n_ = macro_new.replace("SQ(u->m)", macro + "(t->n)")
+        ok, why = proof("T.m=n", {"src/a.c": b}, {"src/a.c": n_})
+        check("keycheck: edited argument of a stringizing / dropping macro refused " + macro + " (" + why + ")",
+              not ok and "macro " + macro in why)
+    # GETM(p, f) pastes nothing but puts its member after ->; the bare argument m is
+    # no member access in the source, so editing it stays an unexplained change.
+    b = getm + plain_base.replace("SQ(u->m)", "GETM(t, m)")
+    n_ = getm + plain_new.replace("SQ(u->m)", "GETM(t, n)")
+    ok, why = proof("T.m=n", {"src/a.c": b}, {"src/a.c": n_}, cpp=mini_cpp)
+    check("keycheck: edited bare macro argument (not after . / ->) refused (" + why + ")", not ok)
+    hdr = sq + "struct T; static int h(struct T *t) { return SQ(t->m); }\n"
+    ok, why = proof("T.m=n", {"src/a.c": plain_base.replace(sq, ""), "include/unused.h": hdr},
+                    {"src/a.c": plain_new.replace(sq, ""), "include/unused.h": hdr.replace("t->m", "t->n")},
+                    compile_headers=False)
+    check("keycheck: edited macro argument in a header no TU includes refused (" + why + ")",
+          not ok and "never compiles" in why)
     # item 3: n as an unrelated local inside a macro argument
     b = plain_base.replace("return t->m + SQ(u->m);", "int pt = 2; return t->m + SQ(pt);")
     n_ = (plain_base.replace("struct T { int m;", "struct T { int pt;")
@@ -5924,7 +5982,7 @@ def test_naming_keycheck_scoped_pairs() -> None:
             why = str(e)
         check("keycheck: independent macro adjacency " + body, "adjacent to cpp macro" in why)
     for text, fails in [
-            ("#define FN(x) (x)\nstruct T{int m;}; int f(struct T*t){return FN(t->n);}", True),
+            ("#define FN(x) (x)\nstruct T{int m;}; int f(struct T*t){return FN(t->n);}", False),
             ("#define FN(x) (x)\nstruct T{int m;}; int f(struct T*t){return FN(t->m);}", False),
             ("#define FN(x) (0)\nstruct T{int m;}; int f(struct T*t){return FN(t->m);}", True)]:
         tree = nk.CppTree({"src/a.c": text}, "fixture")
@@ -5934,7 +5992,7 @@ def test_naming_keycheck_scoped_pairs() -> None:
             why = ""
         except ValueError as e:
             why = str(e)
-        check("keycheck: cpp member argument scan: edited / dropped argument fails, plain unchanged one passes ("
+        check("keycheck: cpp member argument scan: dropped argument fails, plain kept / edited one passes ("
               + text.split("return ")[1] + text.split(")")[1][:4] + ")",
               ("argument of function-like macro" in why) == fails)
     for param in ("l", "n"):
@@ -10622,6 +10680,49 @@ def test_naming_member_apply() -> None:
                 pass
         check("naming_member_apply: the failure message keeps the nested path",
               "Edge.ends.node" in err.getvalue())
+
+        # cc1 reports a multi-line macro invocation's error on its first line: the
+        # access on a following line of the invocation is renamed; when that edit
+        # then reaches another type's member, the whole span is restored.
+        put("include/t.h", "typedef struct { s32 pos; } Rec;\nstruct N { s32 pos; };\n")
+        sq = ("s32 f(Rec *r, struct N *n) {\n    if (SQ(1 -\n           r->pos) +\n"
+              "        SQ(2 -\n           r->pos) > 0) {\n        return 1;\n    }\n    return 0;\n}\n")
+        put("src/c.c", sq)
+        Path(td, "pairs3.txt").write_text("Rec.pos=world_pos\n")
+        first_lines = [i for i, line in enumerate(sq.split("\n"), 1) if "SQ(" in line]
+
+        def macro_errors(mv, srcs):
+            L = nma.rd("src/c.c").split("\n")
+            if "world_pos;" not in nma.rd("include/t.h"):
+                return []
+            errs = []
+            for i in first_lines:
+                tail = L[i - 1] + L[i]
+                if "->pos" in tail:
+                    errs.append(("src/c.c", i, "pos"))
+                elif "n->world_pos" in tail:
+                    errs.append(("src/c.c", i, "world_pos"))
+            return errs
+        nma.tracked = lambda *roots: ["include/t.h", "src/c.c"]
+        nma.compile_errors = macro_errors
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            rc = nma.main([str(Path(td, "pairs3.txt"))])
+        eq("naming_member_apply: accesses on an invocation's later lines renamed (exit 0)", rc, 0)
+        eq("naming_member_apply: both invocations' accesses renamed",
+           Path(td, "src/c.c").read_text(), sq.replace("r->pos", "r->world_pos"))
+        mixed_sq = sq.replace("SQ(2 -\n           r->pos)", "SQ(2 -\n           n->pos)")
+        put("include/t.h", "typedef struct { s32 pos; } Rec;\nstruct N { s32 pos; };\n")
+        put("src/c.c", mixed_sq)
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            rc = nma.main([str(Path(td, "pairs3.txt"))])
+        eq("naming_member_apply: an invocation span reaching another type's .m is unresolved (exit 1)", rc, 1)
+        eq("naming_member_apply: only that span is restored",
+           Path(td, "src/c.c").read_text(),
+           mixed_sq.replace("SQ(1 -\n           r->pos)", "SQ(1 -\n           r->world_pos)"))
+        check("naming_member_apply: the invocation's first line is reported",
+              "src/c.c:" + str(first_lines[1]) + ": also reaches `pos` through another type" in out.getvalue())
 
 
 def test_move_tu() -> None:

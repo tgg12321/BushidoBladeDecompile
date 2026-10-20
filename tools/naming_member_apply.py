@@ -15,8 +15,12 @@ by compiler feedback; naming_keycheck.py proves the result.
      CPP_FLAGS / CPP_DEFS / CC1 / CC_FLAGS (output discarded). Each
      "has no member named `m'" error marks an access line: rename the `.m` /
      `->m` tokens on it. Repeat until no such error remains.
+     cc1 reports a macro invocation's errors on its first line: when that line
+     holds no `.m` / `->m` token and leaves a parenthesis open, the following
+     lines up to the one closing the innermost open one are its access lines (a
+     span reaching another type's `.m` is restored whole).
   3. A line it cannot settle is reported, restored and left for a hand edit:
-     no `.m` / `->m` token on it (a macro-spelled access), or one that then
+     no `.m` / `->m` token on it or its invocation (a macro-spelled access), or one that then
      fails as "no member named `n'" (the line also reaches `m` through another
      type). Comments naming an old member are not edited (do them by hand).
 
@@ -237,7 +241,7 @@ def run_pass(pairs, mv, srcs, decl_files, unresolved):
         rename_declaration(t, m, n, decl_files)
     olds = {m: n for _, m, n in pairs}
     news = {n: m for _, m, n in pairs}
-    edited = {}  # (path, line) -> the line before this tool edited it
+    edited = {}  # (path, error line) -> {line index: the line before this tool edited it}
     for rnd in range(MAX_ROUNDS):
         errs = [e for e in compile_errors(mv, srcs) if (e[0], e[1]) not in unresolved]
         print(f"  round {rnd}: {len(errs)} member error line(s)")
@@ -245,24 +249,38 @@ def run_pass(pairs, mv, srcs, decl_files, unresolved):
             return
         for p, ln, name in errs:
             L = rd(p).split("\n")
-            if name in news and (p, ln) in edited:
+            owner = next((key for key, lines in edited.items()
+                          if key[0] == p and ln - 1 in lines), (p, ln))
+            if name in news and owner in edited:
                 # the edit reached `name`'s old spelling through another type
-                L[ln - 1] = edited.pop((p, ln))
+                for i, line in edited.pop(owner).items():
+                    L[i] = line
                 wr(p, "\n".join(L))
-                unresolved[(p, ln)] = f"also reaches `{news[name]}` through another type"
+                unresolved[owner] = f"also reaches `{news[name]}` through another type"
                 continue
             if name not in olds:
                 unresolved[(p, ln)] = f"no member named `{name}` (not a pair of this pass)"
                 continue
-            new, k = re.subn(r"(\.|->)(\s*)" + re.escape(name) + r"\b",
-                             lambda x: x[1] + x[2] + olds[name], L[ln - 1])
+            access = re.compile(r"(\.|->)(\s*)" + re.escape(name) + r"\b")
+            span = [ln - 1]
+            if not access.search(L[ln - 1]):
+                # up to the line that closes the innermost parenthesis left open
+                start = depth = L[ln - 1].count("(") - L[ln - 1].count(")")
+                while depth >= start > 0 and span[-1] + 1 < len(L):
+                    span.append(span[-1] + 1)
+                    depth += L[span[-1]].count("(") - L[span[-1]].count(")")
+            k = 0
+            for i in span:
+                new, hits = access.subn(lambda x: x[1] + x[2] + olds[name], L[i])
+                if hits:
+                    edited.setdefault((p, ln), {}).setdefault(i, L[i])
+                    L[i] = new
+                    k += hits
             if not k:
                 unresolved[(p, ln)] = f"no `.{name}` / `->{name}` token on the line (macro?)"
                 continue
-            edited.setdefault((p, ln), L[ln - 1])
-            L[ln - 1] = new
             wr(p, "\n".join(L))
-            print(f"    {p}:{ln} {name} x{k}")
+            print(f"    {p}:{ln}" + (f"-{span[-1] + 1}" if len(span) > 1 else "") + f" {name} x{k}")
     die("naming_member_apply: no convergence after %d rounds" % MAX_ROUNDS)
 
 
