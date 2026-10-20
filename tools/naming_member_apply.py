@@ -17,12 +17,17 @@ by compiler feedback; naming_keycheck.py proves the result.
      `->m` tokens on it. Repeat until no such error remains.
      cc1 reports a macro invocation's errors on its first line: when that line
      holds no `.m` / `->m` token and leaves a parenthesis open, the following
-     lines up to the one closing the innermost open one are its access lines (a
-     span reaching another type's `.m` is restored whole).
-  3. A line it cannot settle is reported, restored and left for a hand edit:
-     no `.m` / `->m` token on it or its invocation (a macro-spelled access), or one that then
-     fails as "no member named `n'" (the line also reaches `m` through another
-     type). Comments naming an old member are not edited (do them by hand).
+     lines up to the one closing the innermost open one are its access lines.
+     Tokens and parentheses are found with comments and string / char literals
+     blanked. An error line's span is its owner; an error on a line some owner's
+     span already covers belongs to that owner.
+  3. An owner it cannot settle is reported, restored and left for a hand edit:
+     no `.m` / `->m` token on its lines (a macro-spelled access), an error naming
+     another member there, or one that then fails as "no member named `n'" (the
+     lines also reach `m` through another type). Restoring is by line, to the
+     line as it was before this tool first edited it; every owner sharing a
+     restored line is restored and reported with it, and those lines are never
+     edited again. Comments naming an old member are not edited (do them by hand).
 
 Pairs sharing an old member name run in separate passes. Exit status: 0 clean,
 1 unresolved lines reported, 2 hard failure (declaration not found, a cpp failure,
@@ -72,13 +77,14 @@ def wr(p, s):
 
 
 def mask_comments(s):
-    """s with every /* */ and // comment blanked to spaces (newlines kept), so an
-    offset into the result is the same offset into s. String and char literals are
-    not recognised: a "/*" or "//" inside one starts a comment here. The result is
-    only searched for a declaration, so a wrongly blanked declarator fails closed
-    (no declarator found: exit 2)."""
-    return re.sub(r"/\*.*?\*/|//[^\n]*", lambda m: re.sub(r"[^\n]", " ", m.group(0)),
-                  s, flags=re.S)
+    """s with every /* */ and // comment and every string and char literal blanked
+    to spaces (newlines kept), so an offset into the result is the same offset into
+    s. Scanned left to right: a "/*" inside a literal is no comment, a quote inside a
+    comment no literal. Callers search the result for declarations, `.m` / `->m`
+    tokens and parentheses; a wrongly blanked declarator fails closed (no declarator
+    found: exit 2)."""
+    return re.sub(r"/\*.*?\*/|//[^\n]*|\"(?:\\.|[^\"\\\n])*\"|'(?:\\.|[^'\\\n])*'",
+                  lambda m: re.sub(r"[^\n]", " ", m.group(0)), s, flags=re.S)
 
 
 def make_vars():
@@ -241,44 +247,78 @@ def run_pass(pairs, mv, srcs, decl_files, unresolved):
         rename_declaration(t, m, n, decl_files)
     olds = {m: n for _, m, n in pairs}
     news = {n: m for _, m, n in pairs}
-    edited = {}  # (path, error line) -> {line index: the line before this tool edited it}
+    spans = {}      # owner (path, error line) -> the 0-based line indices it covers
+    originals = {}  # (path, line index) -> the line before this tool first edited it
+    frozen = set()  # (path, line index) restored for a hand edit: never edited again
+
+    def owner_of(p, i):
+        return next((key for key, lines in spans.items() if key[0] == p and i in lines), None)
+
+    def give_up(p, key, why):
+        """Restore key's owner and every owner sharing one of its lines, by line."""
+        todo, lines = [key], {key[1] - 1}
+        while todo:
+            k = todo.pop()
+            if k in spans:
+                cover = spans.pop(k)
+                lines |= cover
+                todo += [o for o, c in spans.items() if o[0] == p and c & cover]
+            if k not in unresolved:
+                unresolved[k] = why
+        L = rd(p).split("\n")
+        for i in lines:
+            if (p, i) in originals:
+                L[i] = originals.pop((p, i))
+            frozen.add((p, i))
+        wr(p, "\n".join(L))
+
+    def blocked(p, ln):
+        return (p, ln) in unresolved or (p, ln - 1) in frozen
+
     for rnd in range(MAX_ROUNDS):
-        errs = [e for e in compile_errors(mv, srcs) if (e[0], e[1]) not in unresolved]
+        errs = [e for e in compile_errors(mv, srcs) if not blocked(e[0], e[1])]
         print(f"  round {rnd}: {len(errs)} member error line(s)")
         if not errs:
             return
         for p, ln, name in errs:
-            L = rd(p).split("\n")
-            owner = next((key for key, lines in edited.items()
-                          if key[0] == p and ln - 1 in lines), (p, ln))
-            if name in news and owner in edited:
+            if blocked(p, ln):
+                continue  # restored earlier in this round
+            owner = owner_of(p, ln - 1)
+            if name in news and owner:
                 # the edit reached `name`'s old spelling through another type
-                for i, line in edited.pop(owner).items():
-                    L[i] = line
-                wr(p, "\n".join(L))
-                unresolved[owner] = f"also reaches `{news[name]}` through another type"
+                give_up(p, owner, f"also reaches `{news[name]}` through another type")
                 continue
             if name not in olds:
-                unresolved[(p, ln)] = f"no member named `{name}` (not a pair of this pass)"
+                give_up(p, owner or (p, ln), f"no member named `{name}` (not a pair of this pass)")
                 continue
+            L = rd(p).split("\n")
+            M = mask_comments("\n".join(L)).split("\n")
             access = re.compile(r"(\.|->)(\s*)" + re.escape(name) + r"\b")
             span = [ln - 1]
-            if not access.search(L[ln - 1]):
+            if not access.search(M[ln - 1]):
                 # up to the line that closes the innermost parenthesis left open
-                start = depth = L[ln - 1].count("(") - L[ln - 1].count(")")
+                start = depth = M[ln - 1].count("(") - M[ln - 1].count(")")
                 while depth >= start > 0 and span[-1] + 1 < len(L):
                     span.append(span[-1] + 1)
-                    depth += L[span[-1]].count("(") - L[span[-1]].count(")")
+                    depth += M[span[-1]].count("(") - M[span[-1]].count(")")
+            key = owner or (p, ln)
+            if any((p, i) in frozen for i in span):
+                give_up(p, key, "shares a line with an access left for a hand edit")
+                continue
             k = 0
             for i in span:
-                new, hits = access.subn(lambda x: x[1] + x[2] + olds[name], L[i])
-                if hits:
-                    edited.setdefault((p, ln), {}).setdefault(i, L[i])
-                    L[i] = new
-                    k += hits
+                hits = [x for x in access.finditer(M[i])]
+                for x in reversed(hits):
+                    originals.setdefault((p, i), L[i])
+                    L[i] = L[i][:x.start()] + x[1] + x[2] + olds[name] + L[i][x.end():]
+                k += len(hits)
             if not k:
-                unresolved[(p, ln)] = f"no `.{name}` / `->{name}` token on the line (macro?)"
+                give_up(p, key, f"no `.{name}` / `->{name}` token on the line (macro?)")
                 continue
+            # a span reaching another owner's lines joins it: one owner, one restore
+            for other in {o for o in (owner_of(p, i) for i in span) if o and o != key}:
+                spans.setdefault(key, set()).update(spans.pop(other))
+            spans.setdefault(key, set()).update(span)
             wr(p, "\n".join(L))
             print(f"    {p}:{ln}" + (f"-{span[-1] + 1}" if len(span) > 1 else "") + f" {name} x{k}")
     die("naming_member_apply: no convergence after %d rounds" % MAX_ROUNDS)

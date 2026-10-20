@@ -6377,6 +6377,20 @@ def test_naming_keycheck_scoped_pairs() -> None:
         edits = nk.scoped_plan(files, {"T.m": "n"})
         nk.verify_compiled_edits(files, {**files, "include/h.h": "struct T {int n;};\n"}, edits, scoped={"T.m": "n"})
         check("keycheck: real project cpp emits edited header", True)
+        files = {"Makefile": files["Makefile"],
+                 "src/cpp_probe.c": ("#define SQ(x) ((x) * (x))\nstruct T {int m;};\n"
+                                     "int f(struct T *t) { return SQ(1 +\n        t->m); }\n")}
+        tree = nk.CppTree(files, "real-cpp-probe")
+        try:
+            out = nk.emitted_lines(nk.preprocess(tree, "src/cpp_probe.c"), tree, "src/cpp_probe.c")
+        finally:
+            nk.close_cpp_trees([tree])
+        check("keycheck: real cpp emits a multi-line invocation's expansion on its first line",
+              out.get(("src/cpp_probe.c", 3), []).count("m") == 2 and "m" not in out.get(("src/cpp_probe.c", 4), []))
+        new_files = {**files, "src/cpp_probe.c": files["src/cpp_probe.c"].replace("m;", "n;").replace("->m", "->n")}
+        edits = nk.scoped_plan(files, {"T.m": "n"})
+        nk.verify_compiled_edits(files, new_files, edits, scoped={"T.m": "n"})
+        check("keycheck: real cpp proves an edit on an invocation's second line", True)
     text = "int f(int arg0){return arg0;} int g(int arg0){return arg0;}"
     check("keycheck: distinct functions share local destination", proof("f:arg0=player,g:arg0=player",
           {"src/a.c": text}, {"src/a.c": text.replace("arg0", "player")})[0])
@@ -10545,6 +10559,7 @@ def test_naming_member_apply() -> None:
     still fail closed (exit 2); --dry-run reports the planned edits and writes
     nothing (the compiler is stubbed by a member-error oracle)."""
     import importlib.util
+    import re
     spec = importlib.util.spec_from_file_location("nma", "tools/naming_member_apply.py")
     nma = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(nma)
@@ -10723,6 +10738,91 @@ def test_naming_member_apply() -> None:
            mixed_sq.replace("SQ(1 -\n           r->pos)", "SQ(1 -\n           r->world_pos)"))
         check("naming_member_apply: the invocation's first line is reported",
               "src/c.c:" + str(first_lines[1]) + ": also reaches `pos` through another type" in out.getvalue())
+
+        # A small cc1 model: an access's member error is reported on the first line of
+        # the outermost macro invocation (SQ, VEL, AT) holding it, else on its own
+        # line; r and g are Rec *, n is struct N *; VEL(x) is x->vel, AT(x) is g x.
+        rec_hdr = "typedef struct { s32 pos; s32 vel; } Rec;\nstruct N { s32 pos; s32 vel; };\n"
+
+        def model_errors(mv, srcs):
+            rec = set(re.findall(r"s32 (\w+);", nma.rd("include/t.h").split("} Rec;")[0]))
+            types = {"r": rec, "g": rec, "n": {"pos", "vel"}}
+            text = nma.rd("src/c.c")
+            masked = "\n".join("" if line.lstrip().startswith("#") else line
+                               for line in nma.mask_comments(text).split("\n"))
+            calls = []
+            for m in re.finditer(r"\b(SQ|VEL|AT)\(", masked):
+                depth, i = 0, m.end() - 1
+                while True:
+                    depth += {"(": 1, ")": -1}.get(masked[i], 0)
+                    if depth == 0:
+                        break
+                    i += 1
+                calls.append((m.start(), i, m[1]))
+            accesses = [(m.start(), m[1], m[2]) for m in re.finditer(r"\b(\w+)\s*->\s*(\w+)", masked)]
+            for start, end, macro in calls:
+                inner = masked[start:end]
+                if macro == "VEL":
+                    accesses.append((start, re.match(r"VEL\(\s*(\w+)", inner)[1], "vel"))
+                if macro == "AT":
+                    accesses.append((start, "g", re.match(r"AT\(\s*->\s*(\w+)", inner)[1]))
+            errs = set()
+            for pos, var, field in accesses:
+                if var in types and field not in types[var]:
+                    outer = [c for c in calls if c[0] <= pos <= c[1]]
+                    at = min(c[0] for c in outer) if outer else pos
+                    errs.add(("src/c.c", masked.count("\n", 0, at) + 1, field))
+            return sorted(errs)
+        nma.tracked = lambda *roots: ["include/t.h", "src/c.c"]
+        nma.compile_errors = model_errors
+        Path(td, "pairs4.txt").write_text("Rec.pos=world_pos\nRec.vel=speed\n")
+
+        def apply_model(body):
+            put("include/t.h", rec_hdr)
+            put("src/c.c", "#define VEL(x) x->vel\n#define AT(x) g x\nextern Rec *g;\n"
+                           "s32 f(Rec *r, struct N *n) {\n" + body + "    return 0;\n}\n")
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                rc = nma.main([str(Path(td, "pairs4.txt"))])
+            return rc, Path(td, "src/c.c").read_text().split("s32 f(Rec *r, struct N *n) {\n")[1][:-len("    return 0;\n}\n")], out.getvalue()
+        # 1: an error on a line an owner's span already covers belongs to that owner
+        body = "    s32 a = SQ(1 -\n        r->pos) + VEL(r);\n"
+        rc, got, text = apply_model(body)
+        eq("naming_member_apply: an unsettled line inside an owner's span restores the owner (exit 1)", rc, 1)
+        eq("naming_member_apply: the owner's lines are restored", got, body)
+        check("naming_member_apply: the owner is reported", "src/c.c:5: no `.vel` / `->vel` token" in text)
+        # 2: restore by line, to the line before this tool first edited it
+        body = "    s32 a = SQ(1 -\n        r->pos) + r->vel + n->vel;\n"
+        rc, got, text = apply_model(body)
+        eq("naming_member_apply: a line edited by two errors and then reaching another type (exit 1)", rc, 1)
+        eq("naming_member_apply: it is restored to its true original", got, body)
+        # 3: parentheses in comments and literals are not counted
+        body = "    s32 a = SQ(1 - /* ) */\n        r->pos) + f(\")\", ')');\n"
+        rc, got, text = apply_model(body)
+        eq("naming_member_apply: comment / literal parentheses do not cut the span (exit 0)", rc, 0)
+        eq("naming_member_apply: the access after a commented ')' is renamed", got, body.replace("r->pos", "r->world_pos"))
+        # two invocations sharing a line, the edit on it
+        body = "    s32 a = SQ(r->pos) + SQ(r->pos);\n"
+        rc, got, text = apply_model(body)
+        eq("naming_member_apply: two invocations on one line both renamed", (rc, got), (0, body.replace("pos", "world_pos")))
+        body = "    s32 a = SQ(r->pos) + SQ(n->pos);\n"
+        rc, got, text = apply_model(body)
+        eq("naming_member_apply: two invocations on one line, one reaching another type: restored",
+           (rc, got), (1, body))
+        # #if inside an invocation's arguments
+        body = "    s32 a = SQ(1 -\n#if 1\n        r->pos\n#else\n        r->pos + 1\n#endif\n        );\n"
+        rc, got, text = apply_model(body)
+        eq("naming_member_apply: #if inside an invocation's arguments: the span runs to its ')'",
+           (rc, got), (0, body.replace("r->pos", "r->world_pos")))
+        # the receiver from the macro body: AT(->m) is spelled ->m in the argument
+        body = "    s32 b = AT(->pos);\n"
+        rc, got, text = apply_model(body)
+        eq("naming_member_apply: a receiver from the macro body (AT(->m)) renamed",
+           (rc, got), (0, body.replace("pos", "world_pos")))
+        raw = 'a("/*", \'(\') /* ( */ b( // (\n"x\\"(" c'
+        masked = nma.mask_comments(raw)
+        eq("naming_member_apply: mask_comments blanks comments and literals, keeps offsets",
+           (len(masked), masked.split(), masked.index("\n")), (len(raw), ["a(", ",", ")", "b(", "c"], raw.index("\n")))
 
 
 def test_move_tu() -> None:
