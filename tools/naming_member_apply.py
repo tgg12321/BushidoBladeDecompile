@@ -254,7 +254,8 @@ def run_pass(pairs, mv, srcs, decl_files, unresolved):
             news[n].append(m)
     spans = {}      # owner (path, error line) -> the 0-based line indices it covers
     originals = {}  # (path, line index) -> the line before this tool first edited it
-    frozen = set()  # (path, line index) restored for a hand edit: never edited again
+    frozen = {}     # (path, line index) restored for a hand edit -> its owner; never edited again
+    noted = set()   # (path, line, name) of filtered errors already added to an owner's report
 
     def owner_of(p, i):
         return next((key for key, lines in spans.items() if key[0] == p and i in lines), None)
@@ -274,19 +275,32 @@ def run_pass(pairs, mv, srcs, decl_files, unresolved):
         for i in lines:
             if (p, i) in originals:
                 L[i] = originals.pop((p, i))
-            frozen.add((p, i))
+            frozen.setdefault((p, i), key)
         wr(p, "\n".join(L))
 
     def blocked(p, ln):
         return (p, ln) in unresolved or (p, ln - 1) in frozen
 
+    def note(p, ln, name):
+        """A filtered error on a frozen line is reported next to its owner."""
+        owner = frozen.get((p, ln - 1))
+        if owner and owner != (p, ln) and (p, ln, name) not in noted and owner in unresolved:
+            noted.add((p, ln, name))
+            unresolved[owner] += f"; also `{name}` at :{ln}"
+
     for rnd in range(MAX_ROUNDS):
-        errs = [e for e in compile_errors(mv, srcs) if not blocked(e[0], e[1])]
+        errs = []
+        for e in compile_errors(mv, srcs):
+            if blocked(e[0], e[1]):
+                note(*e)
+            else:
+                errs.append(e)
         print(f"  round {rnd}: {len(errs)} member error line(s)")
         if not errs:
             return
         for p, ln, name in errs:
             if blocked(p, ln):
+                note(p, ln, name)
                 continue  # restored earlier in this round
             owner = owner_of(p, ln - 1)
             if name in news and owner:
@@ -302,9 +316,15 @@ def run_pass(pairs, mv, srcs, decl_files, unresolved):
             access = re.compile(r"(\.|->)(\s*)" + re.escape(name) + r"\b")
             span = [ln - 1]
             if not access.search(M[ln - 1]):
-                # up to the line that closes the innermost parenthesis left open
-                start = depth = M[ln - 1].count("(") - M[ln - 1].count(")")
-                while depth >= start > 0 and span[-1] + 1 < len(L):
+                # A parenthesis is left open when the line ends above its lowest
+                # depth (`r->pos) + SQ(2 -` ends at 0, its minimum is -1): the span
+                # runs to the line that closes the innermost one.
+                depth = lowest = 0
+                for c in M[ln - 1]:
+                    depth += (c == "(") - (c == ")")
+                    lowest = min(lowest, depth)
+                start, opened = depth, depth > lowest
+                while opened and depth >= start and span[-1] + 1 < len(L):
                     span.append(span[-1] + 1)
                     depth += M[span[-1]].count("(") - M[span[-1]].count(")")
             key = owner or (p, ln)

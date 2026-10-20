@@ -10917,6 +10917,13 @@ def test_naming_member_apply() -> None:
         rc, got, text = apply_model(body)
         eq("naming_member_apply: a line edited by two errors and then reaching another type (exit 1)", rc, 1)
         eq("naming_member_apply: it is restored to its true original", got, body)
+        check("naming_member_apply: an error filtered on a frozen line is reported with its owner (" + text + ")",
+              "also `vel` at :6" in text and "src/c.c:6:" not in text)
+        # a line ending above its lowest depth leaves a parenthesis open
+        body = "    s32 a = (1 +\n        2) + SQ(3 -\n        r->pos);\n"
+        rc, got, text = apply_model(body)
+        eq("naming_member_apply: a span opens on `2) + SQ(3 -` (net 0, lowest -1)",
+           (rc, got), (0, body.replace("r->pos", "r->world_pos")))
         # 3: parentheses in comments and literals are not counted
         body = "    s32 a = SQ(1 - /* ) */\n        r->pos) + f(\")\", ')');\n"
         rc, got, text = apply_model(body)
