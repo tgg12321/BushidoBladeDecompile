@@ -1,0 +1,19 @@
+id	kind	stage	draft	note
+m08	member	applied	-	branch m08 e11b9a80b (on 440589c3f): 9 Unk80101EC8Record pairs, gates green; comment pass NOT done ("model id" for motion_data_id in game.h/bb2.h:178, 9F9C.c/4510C.c comments); then R6 (judge suggested root_offset_yaw / use_root_offset_yaw fresh) and LAND
+m10	member	reviewed	docs/naming/phase3/pending/m10	12 Unk80101EC8Record CPU pairs; unk_414/424/43E dropped. lane-debt may have an applied branch: check origin/lane-debt
+m06	member	reviewed	-	REDO: 16 soft-body pairs = docs/naming/phase3/m06 on origin/m06 ba682ad68 minus Func80017A44Record.field_18=anchor (R6 FAIL: NO_NAME). Do not land ba682ad68/cf1634eed. Fix named_syms.txt "flag unk6" -> rebuild_request and "D_800F6740[a0].records" -> nodes
+m09	member	reviewed	docs/naming/phase3/pending/m09	12 Unk80101EC8Record pairs, 12/12 pre-apply PASS; land after m08
+m11	member	reviewed	docs/naming/phase3/pending/m11	5 pairs (Unk80101DF0Record x4, MoveScript.unk_06), 5/5 pre-apply PASS; set VERDICT CONFIRM; fix 31548.c:254 evidence (fills work, not xf.mat)
+wave55	func	reviewed	docs/naming/phase3/pending/wave55	12 renames in 32D04.c (reloc_, gpu_, math_); also substitutes a fixture label in tools/test_board_cards.py: run its tests
+wave69	func	reviewed	docs/naming/phase3/pending/wave69	
+wave70	func	reviewed	docs/naming/phase3/pending/wave70	
+wave71	func	reviewed	docs/naming/phase3/pending/wave71	
+wave72	func	reviewed	docs/naming/phase3/pending/wave72	
+wave74	func	reviewed	docs/naming/phase3/pending/wave74	
+wave75	func	reviewed	docs/naming/phase3/pending/wave75	applier: fix include/game.h:55 comment
+wave77	func	reviewed	docs/naming/phase3/pending/wave77	1 row eff_DrawAnimatedQuads
+wave47	func	researched	docs/naming/phase3/pending/wave47	no VERDICT; cites main 032e23f8c (stale): re-derive and pre-apply review before landing
+wave39	local	researched	docs/naming/phase3/pending/wave39	77 local pairs (f:l=n), legacy format; re-check against current tree and review
+wave48	func	idea	-	was queued; draft not found in tmp/: re-research
+m12	member	idea	-	MoveScript.unk_04 = motion_entry_index (same meaning as fighter rec unk_5C, pending m08): needs a different fresh name, or land after m08 under a new name
+m13	member	idea	-	Unk80101EC8Record: ~170 members still unk_; next pass, skip judged NO_NAME (156/158/15A, 3A4/3A8, 3CC, 414/424/43E)

@@ -1,0 +1,12 @@
+Unk80101EC8Record.unk_290=saved_motion_frame
+Unk80101EC8Record.unk_314=saved_frame_offset_yaw
+Unk80101EC8Record.unk_318=pose_blend_progress
+Unk80101EC8Record.unk_31C=pose_blend_step
+Unk80101EC8Record.unk_320=pose_blend_base_shift
+Unk80101EC8Record.unk_330=carried_object_count
+Unk80101EC8Record.unk_332=carried_object_kinds
+Unk80101EC8Record.unk_3B4=cpu_pad_script_cursor
+Unk80101EC8Record.unk_3B8=cpu_pad_script_delay_left
+Unk80101EC8Record.unk_3C8=cpu_pad_script_held
+Unk80101EC8Record.unk_3D0=last_cpu_pad
+Unk80101EC8Record.unk_3E8=cpu_pad_build_count

@@ -1,0 +1,312 @@
+PASS Unk80101DF0Record.unk6=matrix_state, Unk80101DF0Record.unk8=rotation_order, Unk80101DF0Record.unkA=light_setup_index, Unk80101DF0Record.unkC=parent_node, MoveScript.unk_06=first_move_frame
+decl Unk80101DF0Record.unk6 -> matrix_state  include/game.h:1924
+decl Unk80101DF0Record.unk8 -> rotation_order  include/game.h:1925
+decl Unk80101DF0Record.unkA -> light_setup_index  include/game.h:1926
+decl Unk80101DF0Record.unkC -> parent_node  include/game.h:1927
+decl MoveScript.unk_06 -> first_move_frame  include/game.h:1408
+  round 0: 73 member error line(s)
+    src/main/2B344.c:2116 unkC x1
+    src/main/2B344.c:2117 unk8 x1
+    src/main/2B344.c:2118 unkA x1
+    src/main/2B344.c:2135 unk8 x1
+    src/main/309CC.c:98 unkC x1
+    src/main/309CC.c:99 unk6 x1
+    src/main/309CC.c:100 unk8 x1
+    src/main/309CC.c:101 unkA x1
+    src/main/309CC.c:301 unk8 x1
+    src/main/309CC.c:305 unkC x1
+    src/main/309CC.c:307 unkC x1
+    src/main/309CC.c:315 unk6 x1
+    src/main/309CC.c:316 unkA x1
+    src/main/31548.c:71 unk6 x1
+    src/main/31548.c:99 unk6 x1
+    src/main/31548.c:120 unk6 x1
+    src/main/31548.c:224 unk6 x1
+    src/main/31548.c:254 unk6 x1
+    src/main/31CFC.c:17 unkC x1
+    src/main/31CFC.c:18 unkC x1
+    src/main/31CFC.c:19 unkC x1
+    src/main/31D3C.c:127 unk6 x1
+    src/main/31D3C.c:130 unk6 x1
+    src/main/31D3C.c:131 unk8 x1
+    src/main/31D3C.c:134 unkC x1
+    src/main/31D3C.c:135 unkC x1
+    src/main/31D3C.c:136 unkC x1
+    src/main/31D3C.c:138 unkC x1
+    src/main/31D3C.c:139 unkC x1
+    src/main/31D3C.c:143 unk6 x1
+    src/main/31D3C.c:151 unk8 x1
+    src/main/32D04.c:1208 unk8 x1
+    src/main/32D04.c:1209 unkC x1
+    src/main/32D04.c:1210 unkA x1
+    src/main/32D04.c:1217 unk6 x1
+    src/main/35000.c:48 unk6 x1
+    src/main/35000.c:81 unk6 x1
+    src/main/35000.c:137 unkC x1
+    src/main/35000.c:140 unk6 x1
+    src/main/35000.c:141 unk8 x1
+    src/main/368E4.c:619 unk8 x1
+    src/main/368E4.c:623 unkC x1
+    src/main/368E4.c:624 unkA x1
+    src/main/368E4.c:628 unk8 x1
+    src/main/368E4.c:673 unk8 x1
+    src/main/368E4.c:847 unkA x1
+    src/main/368E4.c:855 unk8 x1
+    src/main/368E4.c:856 unkC x1
+    src/main/368E4.c:857 unk6 x1
+    src/main/368E4.c:1924 unk8 x1
+    src/main/368E4.c:1925 unkC x1
+    src/main/368E4.c:1926 unkA x1
+    src/main/368E4.c:1956 unkC x1
+    src/main/368E4.c:1958 unkC x1
+    src/main/368E4.c:1960 unkC x1
+    src/main/368E4.c:1962 unkC x1
+    src/main/368E4.c:1986 unkC x1
+    src/main/368E4.c:1987 unk6 x1
+    src/main/368E4.c:1988 unk8 x1
+    src/main/368E4.c:1989 unkA x1
+    src/main/368E4.c:2042 unk8 x1
+    src/main/368E4.c:2043 unkA x1
+    src/main/368E4.c:2056 unkC x1
+    src/main/368E4.c:2057 unk6 x1
+    src/main/368E4.c:2066 unkC x1
+    src/main/368E4.c:2068 unk8 x1
+    src/main/368E4.c:2069 unk6 x1
+    src/main/368E4.c:2070 unkA x1
+    src/main/368E4.c:2218 unkC x1
+    src/main/368E4.c:2219 unk8 x1
+    src/main/368E4.c:2229 unkC x1
+    src/main/368E4.c:2230 unk8 x1
+    src/main/9F9C.c:3387 unk_06 x1
+  round 1: 1 member error line(s)
+    src/main/31D3C.c:135 unk6 x1
+  round 2: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1408 +1408 @@
+-    u8 unk_06;
++    u8 first_move_frame;
+@@ -1924,4 +1924,4 @@
+-    s16 unk6;                       /* +0x06 */
+-    s16 unk8;                       /* +0x08 D_800F66A0 index */
+-    s16 unkA;                       /* +0x0A */
+-    struct Unk80101DF0Record *unkC; /* +0x0C */
++    s16 matrix_state;                       /* +0x06 */
++    s16 rotation_order;                       /* +0x08 D_800F66A0 index */
++    s16 light_setup_index;                       /* +0x0A */
++    struct Unk80101DF0Record *parent_node; /* +0x0C */
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -2116,3 +2116,3 @@
+-        c->node.unkC = 0;
+-        c->node.unk8 = 0;
+-        c->node.unkA = 4;
++        c->node.parent_node = 0;
++        c->node.rotation_order = 0;
++        c->node.light_setup_index = 4;
+@@ -2135 +2135 @@
+-        D_800F66A0[c->node.unk8](&c->node.xf.rot, &c->node.xf.mat);
++        D_800F66A0[c->node.rotation_order](&c->node.xf.rot, &c->node.xf.mat);
+--- a/src/main/309CC.c
++++ b/src/main/309CC.c
+@@ -98,4 +98,4 @@
+-    a1->node.unkC = &a0[6].node;
+-    a1->node.unk6 = 1;
+-    a1->node.unk8 = 0;
+-    a1->node.unkA = 0;
++    a1->node.parent_node = &a0[6].node;
++    a1->node.matrix_state = 1;
++    a1->node.rotation_order = 0;
++    a1->node.light_setup_index = 0;
+@@ -301 +301 @@
+-            p->node.unk8 = 0;
++            p->node.rotation_order = 0;
+@@ -305 +305 @@
+-                p->node.unkC = &base[v1].node;
++                p->node.parent_node = &base[v1].node;
+@@ -307 +307 @@
+-                p->node.unkC = 0;
++                p->node.parent_node = 0;
+@@ -315,2 +315,2 @@
+-            p->node.unk6 = 0;
+-            p->node.unkA = a0->unk_10;
++            p->node.matrix_state = 0;
++            p->node.light_setup_index = a0->unk_10;
+--- a/src/main/31548.c
++++ b/src/main/31548.c
+@@ -71 +71 @@
+-            p->node.unk6 = 0;
++            p->node.matrix_state = 0;
+@@ -99 +99 @@
+-        s3->node.unk6 = 0;
++        s3->node.matrix_state = 0;
+@@ -120 +120 @@
+-        s5->node.unk6 = 0;
++        s5->node.matrix_state = 0;
+@@ -224 +224 @@
+-        ents[i].node.unk6 = 2;
++        ents[i].node.matrix_state = 2;
+@@ -254 +254 @@
+-    var_9->node.unk6 = 1;
++    var_9->node.matrix_state = 1;
+--- a/src/main/31CFC.c
++++ b/src/main/31CFC.c
+@@ -17,3 +17,3 @@
+-        if (rec->node.unkC != 0) {
+-            rec->node.unkC =
+-                (Unk80101DF0Record *)((u8 *)rec->node.unkC + delta);
++        if (rec->node.parent_node != 0) {
++            rec->node.parent_node =
++                (Unk80101DF0Record *)((u8 *)rec->node.parent_node + delta);
+--- a/src/main/31D3C.c
++++ b/src/main/31D3C.c
+@@ -127,5 +127,5 @@
+-    if (a0->unk6 == 1) {
+-        return;
+-    }
+-    if (a0->unk6 != 2) {
+-        func = D_800F66A0[a0->unk8];
++    if (a0->matrix_state == 1) {
++        return;
++    }
++    if (a0->matrix_state != 2) {
++        func = D_800F66A0[a0->rotation_order];
+@@ -134,6 +134,6 @@
+-    if (a0->unkC != 0) {
+-        if (a0->unkC->unk6 == 0) {
+-            node_UpdateWorldMatrix(a0->unkC);
+-        }
+-        gte_MulMatrix0ClearTrans(&a0->unkC->xf.mat, &a0->work, &a0->xf.mat);
+-        gte_SetMatrixRotTransIRVec(&a0->unkC->xf.mat, a0->work.t, a0->xf.mat.t);
++    if (a0->parent_node != 0) {
++        if (a0->parent_node->matrix_state == 0) {
++            node_UpdateWorldMatrix(a0->parent_node);
++        }
++        gte_MulMatrix0ClearTrans(&a0->parent_node->xf.mat, &a0->work, &a0->xf.mat);
++        gte_SetMatrixRotTransIRVec(&a0->parent_node->xf.mat, a0->work.t, a0->xf.mat.t);
+@@ -143 +143 @@
+-    a0->unk6 = 1;
++    a0->matrix_state = 1;
+@@ -151 +151 @@
+-    D_800F66A0[a0->unk8](&sp10, &a0->work);
++    D_800F66A0[a0->rotation_order](&sp10, &a0->work);
+--- a/src/main/32D04.c
++++ b/src/main/32D04.c
+@@ -1208,3 +1208,3 @@
+-        dst->node.unk8 = 0;
+-        dst->node.unkC = 0;
+-        dst->node.unkA = 4;
++        dst->node.rotation_order = 0;
++        dst->node.parent_node = 0;
++        dst->node.light_setup_index = 4;
+@@ -1217 +1217 @@
+-        dst->node.unk6 = 0;
++        dst->node.matrix_state = 0;
+--- a/src/main/35000.c
++++ b/src/main/35000.c
+@@ -48 +48 @@
+-            rec->node.unk6 = 0;
++            rec->node.matrix_state = 0;
+@@ -81 +81 @@
+-                rec->node.unk6 = 0;
++                rec->node.matrix_state = 0;
+@@ -137 +137 @@
+-    p->node.unkC = 0;
++    p->node.parent_node = 0;
+@@ -140,2 +140,2 @@
+-    p->node.unk6 = 1;
+-    D_800F66A0[p->node.unk8](&p->node.xf.rot, &p->node.xf.mat);
++    p->node.matrix_state = 1;
++    D_800F66A0[p->node.rotation_order](&p->node.xf.rot, &p->node.xf.mat);
+--- a/src/main/368E4.c
++++ b/src/main/368E4.c
+@@ -619 +619 @@
+-    node->unk8 = 0;
++    node->rotation_order = 0;
+@@ -623,2 +623,2 @@
+-    node->unkC = 0;
+-    node->unkA = 4;
++    node->parent_node = 0;
++    node->light_setup_index = 4;
+@@ -628 +628 @@
+-    D_800F66A0[node->unk8](&node->xf.rot, &node->work);
++    D_800F66A0[node->rotation_order](&node->xf.rot, &node->work);
+@@ -673 +673 @@
+-    D_800EEDF0.unk8 = 4;
++    D_800EEDF0.rotation_order = 4;
+@@ -847 +847 @@
+-        node->unkA = 4;
++        node->light_setup_index = 4;
+@@ -855,3 +855,3 @@
+-        node->unk8 = 0;
+-        node->unkC = 0;
+-        node->unk6 = 0;
++        node->rotation_order = 0;
++        node->parent_node = 0;
++        node->matrix_state = 0;
+@@ -1924,3 +1924,3 @@
+-    obj->node.unk8 = 0;
+-    obj->node.unkC = 0;
+-    obj->node.unkA = 4;
++    obj->node.rotation_order = 0;
++    obj->node.parent_node = 0;
++    obj->node.light_setup_index = 4;
+@@ -1956 +1956 @@
+-                &var_4->node.unkC->xf.mat, &ofs, (VECTOR *)obj->node.xf.mat.t);
++                &var_4->node.parent_node->xf.mat, &ofs, (VECTOR *)obj->node.xf.mat.t);
+@@ -1958 +1958 @@
+-                obj->node.xf.mat.t[0] + var_4->node.unkC->xf.mat.t[0];
++                obj->node.xf.mat.t[0] + var_4->node.parent_node->xf.mat.t[0];
+@@ -1960 +1960 @@
+-                obj->node.xf.mat.t[1] + var_4->node.unkC->xf.mat.t[1];
++                obj->node.xf.mat.t[1] + var_4->node.parent_node->xf.mat.t[1];
+@@ -1962 +1962 @@
+-                obj->node.xf.mat.t[2] + var_4->node.unkC->xf.mat.t[2];
++                obj->node.xf.mat.t[2] + var_4->node.parent_node->xf.mat.t[2];
+@@ -1986,4 +1986,4 @@
+-            obj->node.unkC = &obj[-1].node;
+-            obj->node.unk6 = 1;
+-            obj->node.unk8 = 0;
+-            obj->node.unkA = 0;
++            obj->node.parent_node = &obj[-1].node;
++            obj->node.matrix_state = 1;
++            obj->node.rotation_order = 0;
++            obj->node.light_setup_index = 0;
+@@ -2042,2 +2042,2 @@
+-    obj->node.unk8 = 0;
+-    obj->node.unkA = 4;
++    obj->node.rotation_order = 0;
++    obj->node.light_setup_index = 4;
+@@ -2056,2 +2056,2 @@
+-    obj->node.unkC = &slot_obj->unk_2C[12].node;
+-    obj->node.unk6 = 0;
++    obj->node.parent_node = &slot_obj->unk_2C[12].node;
++    obj->node.matrix_state = 0;
+@@ -2066 +2066 @@
+-    obj->node.unkC = &obj[-1].node;
++    obj->node.parent_node = &obj[-1].node;
+@@ -2068,3 +2068,3 @@
+-    obj->node.unk8 = 0;
+-    obj->node.unk6 = 1;
+-    obj->node.unkA = 0;
++    obj->node.rotation_order = 0;
++    obj->node.matrix_state = 1;
++    obj->node.light_setup_index = 0;
+@@ -2218,2 +2218,2 @@
+-    D_80101DF0.unkC = 0;
+-    D_80101DF0.unk8 = 5;
++    D_80101DF0.parent_node = 0;
++    D_80101DF0.rotation_order = 5;
+@@ -2229,2 +2229,2 @@
+-    D_800FF638.unkC = 0;
+-    D_800FF638.unk8 = 2;
++    D_800FF638.parent_node = 0;
++    D_800FF638.rotation_order = 2;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -3387 +3387 @@
+-            u8 a1_val = v0_50->unk_06;
++            u8 a1_val = v0_50->first_move_frame;
+DRY RUN: 10 file(s) would change; nothing written
+OK: every member access renamed
+exit=0

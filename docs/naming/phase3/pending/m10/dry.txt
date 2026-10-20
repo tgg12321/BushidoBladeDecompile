@@ -1,0 +1,384 @@
+PASS Unk80101EC8Record.unk_40A=scale_distance_offset, Unk80101EC8Record.unk_40C=last_chosen_script_index, Unk80101EC8Record.unk_40D=last_chosen_script_list_index, Unk80101EC8Record.unk_40E=chosen_script_start_x, Unk80101EC8Record.unk_410=chosen_script_start_z, Unk80101EC8Record.unk_412=chosen_script_radius, Unk80101EC8Record.unk_414=opponent_move_tally, Unk80101EC8Record.unk_424=opponent_move_tally_threshold, Unk80101EC8Record.unk_42A=opponent_snapshot_x, Unk80101EC8Record.unk_42C=opponent_snapshot_z, Unk80101EC8Record.unk_42E=opponent_snapshot_radius, Unk80101EC8Record.unk_434=nearest_nav_crossing_distance, Unk80101EC8Record.unk_43A=opponent_angle_from_orientation, Unk80101EC8Record.unk_43C=opponent_angle_from_orientation_abs, Unk80101EC8Record.unk_43E=interpolated_separation
+decl Unk80101EC8Record.unk_40A -> scale_distance_offset  include/game.h:1662
+decl Unk80101EC8Record.unk_40C -> last_chosen_script_index  include/game.h:1663
+decl Unk80101EC8Record.unk_40D -> last_chosen_script_list_index  include/game.h:1664
+decl Unk80101EC8Record.unk_40E -> chosen_script_start_x  include/game.h:1665
+decl Unk80101EC8Record.unk_410 -> chosen_script_start_z  include/game.h:1666
+decl Unk80101EC8Record.unk_412 -> chosen_script_radius  include/game.h:1667
+decl Unk80101EC8Record.unk_414 -> opponent_move_tally  include/game.h:1669
+decl Unk80101EC8Record.unk_424 -> opponent_move_tally_threshold  include/game.h:1670
+decl Unk80101EC8Record.unk_42A -> opponent_snapshot_x  include/game.h:1675
+decl Unk80101EC8Record.unk_42C -> opponent_snapshot_z  include/game.h:1676
+decl Unk80101EC8Record.unk_42E -> opponent_snapshot_radius  include/game.h:1677
+decl Unk80101EC8Record.unk_434 -> nearest_nav_crossing_distance  include/game.h:1679
+decl Unk80101EC8Record.unk_43A -> opponent_angle_from_orientation  include/game.h:1681
+decl Unk80101EC8Record.unk_43C -> opponent_angle_from_orientation_abs  include/game.h:1682
+decl Unk80101EC8Record.unk_43E -> interpolated_separation  include/game.h:1683
+  round 0: 89 member error line(s)
+    src/main/4510C.c:214 unk_414 x1
+    src/main/4510C.c:215 unk_414 x1
+    src/main/4510C.c:224 unk_414 x2
+    src/main/4510C.c:269 unk_424 x1
+    src/main/4510C.c:292 unk_424 x1
+    src/main/4510C.c:314 unk_424 x1
+    src/main/4510C.c:322 unk_424 x1
+    src/main/4510C.c:345 unk_40A x1
+    src/main/4510C.c:390 unk_40A x1
+    src/main/4510C.c:402 unk_40D x1
+    src/main/4510C.c:403 unk_40C x1
+    src/main/4510C.c:415 unk_43C x1
+    src/main/4510C.c:416 unk_43A x1
+    src/main/4510C.c:417 unk_43C x1
+    src/main/4510C.c:418 unk_43A x1
+    src/main/4510C.c:467 unk_43C x1
+    src/main/4510C.c:469 unk_43C x1
+    src/main/4510C.c:484 unk_40E x1
+    src/main/4510C.c:485 unk_410 x1
+    src/main/4510C.c:486 unk_412 x1
+    src/main/4510C.c:582 unk_43A x1
+    src/main/4510C.c:586 unk_43A x1
+    src/main/4510C.c:587 unk_43A x1
+    src/main/4510C.c:589 unk_43A x3
+    src/main/4510C.c:589 unk_43C x1
+    src/main/4510C.c:640 unk_43C x1
+    src/main/4510C.c:648 unk_43E x1
+    src/main/4510C.c:653 unk_43E x1
+    src/main/4510C.c:695 unk_424 x1
+    src/main/4510C.c:706 unk_414 x1
+    src/main/4510C.c:709 unk_414 x1
+    src/main/4510C.c:710 unk_414 x1
+    src/main/4510C.c:712 unk_414 x1
+    src/main/4510C.c:717 unk_414 x1
+    src/main/4510C.c:722 unk_414 x1
+    src/main/4510C.c:723 unk_414 x1
+    src/main/4510C.c:725 unk_414 x1
+    src/main/4510C.c:729 unk_414 x1
+    src/main/4510C.c:749 unk_43C x1
+    src/main/4510C.c:766 unk_42A x1
+    src/main/4510C.c:767 unk_42C x1
+    src/main/4510C.c:768 unk_42E x1
+    src/main/4510C.c:771 unk_414 x1
+    src/main/4510C.c:772 unk_414 x1
+    src/main/4510C.c:773 unk_414 x1
+    src/main/4510C.c:773 unk_424 x1
+    src/main/4510C.c:775 unk_414 x1
+    src/main/4510C.c:775 unk_424 x1
+    src/main/4510C.c:788 unk_43C x1
+    src/main/4510C.c:845 unk_43C x1
+    src/main/4510C.c:1010 unk_40A x1
+    src/main/4510C.c:1708 unk_42E x2
+    src/main/4510C.c:1709 unk_42A x1
+    src/main/4510C.c:1710 unk_42C x1
+    src/main/4510C.c:1730 unk_43A x1
+    src/main/4510C.c:1764 unk_43A x1
+    src/main/4510C.c:1787 unk_43C x1
+    src/main/4510C.c:1861 unk_40A x1
+    src/main/4510C.c:1864 unk_43C x1
+    src/main/4510C.c:1928 unk_434 x1
+    src/main/4510C.c:1942 unk_434 x1
+    src/main/4510C.c:1953 unk_43C x1
+    src/main/4510C.c:1955 unk_43C x1
+    src/main/4510C.c:1957 unk_43C x1
+    src/main/4510C.c:1970 unk_434 x1
+    src/main/4510C.c:1974 unk_434 x1
+    src/main/4510C.c:1982 unk_434 x1
+    src/main/4510C.c:1989 unk_434 x1
+    src/main/4510C.c:2120 unk_43C x1
+    src/main/4510C.c:2123 unk_43C x1
+    src/main/4510C.c:2139 unk_43A x1
+    src/main/4510C.c:2230 unk_43C x1
+    src/main/4510C.c:2300 unk_43A x1
+    src/main/4510C.c:2310 unk_43C x1
+    src/main/4510C.c:2483 unk_40C x1
+    src/main/4510C.c:2483 unk_40D x1
+    src/main/4510C.c:2522 unk_40A x1
+    src/main/4510C.c:2523 unk_40A x1
+    src/main/4510C.c:2530 unk_43C x1
+    src/main/4510C.c:2531 unk_43C x1
+    src/main/4510C.c:2539 unk_43C x1
+    src/main/4510C.c:2583 unk_40C x1
+    src/main/4510C.c:2584 unk_40D x1
+    src/main/4510C.c:2585 unk_40E x1
+    src/main/4510C.c:2586 unk_410 x1
+    src/main/4510C.c:2588 unk_412 x1
+    src/main/4510C.c:2594 unk_43C x1
+    src/main/4510C.c:2624 unk_434 x1
+    src/main/4510C.c:2650 unk_43C x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1662,6 +1662,6 @@
+-    s16 unk_40A;
+-    s8 unk_40C;
+-    s8 unk_40D;
+-    s16 unk_40E;
+-    s16 unk_410;
+-    s16 unk_412;
++    s16 scale_distance_offset;
++    s8 last_chosen_script_index;
++    s8 last_chosen_script_list_index;
++    s16 chosen_script_start_x;
++    s16 chosen_script_start_z;
++    s16 chosen_script_radius;
+@@ -1669,2 +1669,2 @@
+-    u8 unk_414[8][2];
+-    u8 unk_424;
++    u8 opponent_move_tally[8][2];
++    u8 opponent_move_tally_threshold;
+@@ -1675,3 +1675,3 @@
+-    s16 unk_42A;
+-    s16 unk_42C;
+-    s16 unk_42E;
++    s16 opponent_snapshot_x;
++    s16 opponent_snapshot_z;
++    s16 opponent_snapshot_radius;
+@@ -1679 +1679 @@
+-    s32 unk_434;
++    s32 nearest_nav_crossing_distance;
+@@ -1681,3 +1681,3 @@
+-    s16 unk_43A;
+-    s16 unk_43C;
+-    s16 unk_43E;
++    s16 opponent_angle_from_orientation;
++    s16 opponent_angle_from_orientation_abs;
++    s16 interpolated_separation;
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -214,2 +214,2 @@
+-        p->unk_414[i][1] = 0;
+-        p->unk_414[i][0] = 0;
++        p->opponent_move_tally[i][1] = 0;
++        p->opponent_move_tally[i][0] = 0;
+@@ -224 +224 @@
+-        p->unk_414[i][1] = p->unk_414[i][1] >> 1;
++        p->opponent_move_tally[i][1] = p->opponent_move_tally[i][1] >> 1;
+@@ -269 +269 @@
+-            p->unk_424 = src->unk0;
++            p->opponent_move_tally_threshold = src->unk0;
+@@ -292 +292 @@
+-            p->unk_424 = 0;
++            p->opponent_move_tally_threshold = 0;
+@@ -314 +314 @@
+-        p->unk_424 = var_2[0];
++        p->opponent_move_tally_threshold = var_2[0];
+@@ -322 +322 @@
+-        p->unk_424 = 0x11 - (p->unk_438 >> 8);
++        p->opponent_move_tally_threshold = 0x11 - (p->unk_438 >> 8);
+@@ -345 +345 @@
+-        rec->unk_40A = (rec->unk_1A - 0x1000) * 225 >> 11;
++        rec->scale_distance_offset = (rec->unk_1A - 0x1000) * 225 >> 11;
+@@ -390 +390 @@
+-                hi2_val = rec->unk_40A + 100;
++                hi2_val = rec->scale_distance_offset + 100;
+@@ -402,2 +402,2 @@
+-    p->unk_40D = -1;
+-    p->unk_40C = -1;
++    p->last_chosen_script_list_index = -1;
++    p->last_chosen_script_index = -1;
+@@ -415,4 +415,4 @@
+-    var_19->unk_43C = 0;
+-    var_19->unk_43A = 0;
+-    p->unk_43C = 0;
+-    p->unk_43A = 0;
++    var_19->opponent_angle_from_orientation_abs = 0;
++    var_19->opponent_angle_from_orientation = 0;
++    p->opponent_angle_from_orientation_abs = 0;
++    p->opponent_angle_from_orientation = 0;
+@@ -467 +467 @@
+-                var_8 = (arg0->unk_43C < 0x801);
++                var_8 = (arg0->opponent_angle_from_orientation_abs < 0x801);
+@@ -469 +469 @@
+-                var_8 = (arg0->unk_43C < 0x401);
++                var_8 = (arg0->opponent_angle_from_orientation_abs < 0x401);
+@@ -484,3 +484,3 @@
+-            dx = var_9->world_pos.x - arg0->unk_40E;
+-            dy = var_9->world_pos.z - arg0->unk_410;
+-            dz = arg0->unk_412;
++            dx = var_9->world_pos.x - arg0->chosen_script_start_x;
++            dy = var_9->world_pos.z - arg0->chosen_script_start_z;
++            dz = arg0->chosen_script_radius;
+@@ -582 +582 @@
+-    var_1->unk_43A = (ratan2(var_2->world_pos.x - var_1->world_pos.x,
++    var_1->opponent_angle_from_orientation = (ratan2(var_2->world_pos.x - var_1->world_pos.x,
+@@ -586,4 +586,4 @@
+-    if (var_1->unk_43A > 0x800) {
+-        var_1->unk_43A -= 0x1000;
+-    }
+-    var_1->unk_43C = var_1->unk_43A < 0 ? -var_1->unk_43A : var_1->unk_43A;
++    if (var_1->opponent_angle_from_orientation > 0x800) {
++        var_1->opponent_angle_from_orientation -= 0x1000;
++    }
++    var_1->opponent_angle_from_orientation_abs = var_1->opponent_angle_from_orientation < 0 ? -var_1->opponent_angle_from_orientation : var_1->opponent_angle_from_orientation;
+@@ -640 +640 @@
+-        rec->other->unk_43C < (rec->unk_438 >> 4) && rec->unk_0E < 6 &&
++        rec->other->opponent_angle_from_orientation_abs < (rec->unk_438 >> 4) && rec->unk_0E < 6 &&
+@@ -648 +648 @@
+-    rec->unk_43E = rec->unk_3F8[rec->unk_86] +
++    rec->interpolated_separation = rec->unk_3F8[rec->unk_86] +
+@@ -653 +653 @@
+-    work = D_800A387C - rec->unk_43E;
++    work = D_800A387C - rec->interpolated_separation;
+@@ -695 +695 @@
+-            if (rec->unk_424 != 0 &&
++            if (rec->opponent_move_tally_threshold != 0 &&
+@@ -706 +706 @@
+-                    if (rec->unk_414[i][0] == rec->unk_428) {
++                    if (rec->opponent_move_tally[i][0] == rec->unk_428) {
+@@ -709,2 +709,2 @@
+-                        temp = rec->unk_414[i][1] - 1;
+-                        if (rec->unk_414[i][1] < temp3) {
++                        temp = rec->opponent_move_tally[i][1] - 1;
++                        if (rec->opponent_move_tally[i][1] < temp3) {
+@@ -712 +712 @@
+-                            temp3 = rec->unk_414[i][1];
++                            temp3 = rec->opponent_move_tally[i][1];
+@@ -717 +717 @@
+-                        rec->unk_414[i][1] = temp;
++                        rec->opponent_move_tally[i][1] = temp;
+@@ -722,2 +722,2 @@
+-                    rec->unk_414[var_12][0] = rec->unk_428;
+-                    rec->unk_414[var_12][1] = temp;
++                    rec->opponent_move_tally[var_12][0] = rec->unk_428;
++                    rec->opponent_move_tally[var_12][1] = temp;
+@@ -725 +725 @@
+-                    temp += rec->unk_414[var_13][1];
++                    temp += rec->opponent_move_tally[var_13][1];
+@@ -729 +729 @@
+-                    rec->unk_414[var_13][1] = temp;
++                    rec->opponent_move_tally[var_13][1] = temp;
+@@ -749 +749 @@
+-                    ((rec->unk_430 & 0x100) && rec->unk_43C > 0x400)) {
++                    ((rec->unk_430 & 0x100) && rec->opponent_angle_from_orientation_abs > 0x400)) {
+@@ -766,3 +766,3 @@
+-                rec->unk_42A = rec->other->world_pos.x;
+-                rec->unk_42C = rec->other->world_pos.z;
+-                rec->unk_42E = temp3;
++                rec->opponent_snapshot_x = rec->other->world_pos.x;
++                rec->opponent_snapshot_z = rec->other->world_pos.z;
++                rec->opponent_snapshot_radius = temp3;
+@@ -771,3 +771,3 @@
+-                if (rec->unk_414[i][0] == rec->unk_428 &&
+-                    rec->unk_414[i][1] != 0 &&
+-                    rec->unk_414[i][1] >= rec->unk_424) {
++                if (rec->opponent_move_tally[i][0] == rec->unk_428 &&
++                    rec->opponent_move_tally[i][1] != 0 &&
++                    rec->opponent_move_tally[i][1] >= rec->opponent_move_tally_threshold) {
+@@ -775 +775 @@
+-                    if (rec->unk_414[i][1] >= rec->unk_424 * 4) {
++                    if (rec->opponent_move_tally[i][1] >= rec->opponent_move_tally_threshold * 4) {
+@@ -788 +788 @@
+-    if (rec->other->move_kind == 0x12 && rec->other->unk_43C < 0x80 &&
++    if (rec->other->move_kind == 0x12 && rec->other->opponent_angle_from_orientation_abs < 0x80 &&
+@@ -845 +845 @@
+-           rec->other->unk_43C > 0x400)))) {
++           rec->other->opponent_angle_from_orientation_abs > 0x400)))) {
+@@ -1010 +1010 @@
+-    return base + arg0->other->unk_40A + 0x12C;
++    return base + arg0->other->scale_distance_offset + 0x12C;
+@@ -1708,3 +1708,3 @@
+-                if (p->unk_42E * p->unk_42E <
+-                    CPU_SQ(p->unk_42A - p->world_pos.x) +
+-                        CPU_SQ(p->unk_42C - p->world_pos.z)) {
++                if (p->opponent_snapshot_radius * p->opponent_snapshot_radius <
++                    CPU_SQ(p->opponent_snapshot_x - p->world_pos.x) +
++                        CPU_SQ(p->opponent_snapshot_z - p->world_pos.z)) {
+@@ -1730 +1730 @@
+-                    if (p->other->unk_43A > 0) {
++                    if (p->other->opponent_angle_from_orientation > 0) {
+@@ -1764 +1764 @@
+-            work3 = p->unk_43A;
++            work3 = p->opponent_angle_from_orientation;
+@@ -1787 +1787 @@
+-                if (p->unk_43C < 0x400 && p->cpu_probes[3] == 0) {
++                if (p->opponent_angle_from_orientation_abs < 0x400 && p->cpu_probes[3] == 0) {
+@@ -1861 +1861 @@
+-                        work2 = D_8009A850[work4][2] * 16 + work1 + p->unk_40A;
++                        work2 = D_8009A850[work4][2] * 16 + work1 + p->scale_distance_offset;
+@@ -1864 +1864 @@
+-                              p->unk_43C < 0x100) &&
++                              p->opponent_angle_from_orientation_abs < 0x100) &&
+@@ -1928 +1928 @@
+-                p->unk_434 = fighter_FindNearestNavCrossing(p, var_25, tx, tz);
++                p->nearest_nav_crossing_distance = fighter_FindNearestNavCrossing(p, var_25, tx, tz);
+@@ -1942 +1942 @@
+-                    } else if (p->unk_434 != 100000) {
++                    } else if (p->nearest_nav_crossing_distance != 100000) {
+@@ -1953 +1953 @@
+-                            if (p->other->unk_43C > 0x600) {
++                            if (p->other->opponent_angle_from_orientation_abs > 0x600) {
+@@ -1955 +1955 @@
+-                            } else if (p->other->unk_43C > 0x300) {
++                            } else if (p->other->opponent_angle_from_orientation_abs > 0x300) {
+@@ -1957 +1957 @@
+-                            } else if (p->other->unk_43C > 0x100) {
++                            } else if (p->other->opponent_angle_from_orientation_abs > 0x100) {
+@@ -1970 +1970 @@
+-                    (p->unk_434 != 100000 || D_800A387C >= lim)) {
++                    (p->nearest_nav_crossing_distance != 100000 || D_800A387C >= lim)) {
+@@ -1974 +1974 @@
+-                if (p->unk_434 != 100000 ||
++                if (p->nearest_nav_crossing_distance != 100000 ||
+@@ -1982 +1982 @@
+-                    if (p->unk_434 != 100000 && !(p->unk_3E8 & 7)) {
++                    if (p->nearest_nav_crossing_distance != 100000 && !(p->unk_3E8 & 7)) {
+@@ -1989 +1989 @@
+-                        ? (p->unk_434 == 100000 && D_800A387C < lim)
++                        ? (p->nearest_nav_crossing_distance == 100000 && D_800A387C < lim)
+@@ -2120 +2120 @@
+-             p->other->unk_43C < 0x10) ||
++             p->other->opponent_angle_from_orientation_abs < 0x10) ||
+@@ -2123 +2123 @@
+-             p->other->unk_43C < 0x10 && p->unk_34A != 0)) {
++             p->other->opponent_angle_from_orientation_abs < 0x10 && p->unk_34A != 0)) {
+@@ -2139 +2139 @@
+-                        if (p->other->unk_43A < 0) {
++                        if (p->other->opponent_angle_from_orientation < 0) {
+@@ -2230 +2230 @@
+-                    p->unk_43C < 0x200) {
++                    p->opponent_angle_from_orientation_abs < 0x200) {
+@@ -2300 +2300 @@
+-                            var_37 = p->unk_43A > 0;
++                            var_37 = p->opponent_angle_from_orientation > 0;
+@@ -2310 +2310 @@
+-                            p->unk_43C >= 0x201 || p->unk_440 == 4 ||
++                            p->opponent_angle_from_orientation_abs >= 0x201 || p->unk_440 == 4 ||
+@@ -2483 +2483 @@
+-                            p->unk_40D == p->unk_86 && p->unk_40C == work4) {
++                            p->last_chosen_script_list_index == p->unk_86 && p->last_chosen_script_index == work4) {
+@@ -2522,2 +2522,2 @@
+-                                work1 += work5 + p->unk_40A;
+-                                hi += work5 + p->unk_40A;
++                                work1 += work5 + p->scale_distance_offset;
++                                hi += work5 + p->scale_distance_offset;
+@@ -2530,2 +2530,2 @@
+-                                            ? p->unk_43C < 0x800
+-                                            : p->unk_43C < 0x400) {
++                                            ? p->opponent_angle_from_orientation_abs < 0x800
++                                            : p->opponent_angle_from_orientation_abs < 0x400) {
+@@ -2539 +2539 @@
+-                                p->unk_43C <
++                                p->opponent_angle_from_orientation_abs <
+@@ -2583,4 +2583,4 @@
+-                        p->unk_40C = var_4;
+-                        p->unk_40D = p->unk_86;
+-                        p->unk_40E = p->world_pos.x;
+-                        p->unk_410 = p->world_pos.z;
++                        p->last_chosen_script_index = var_4;
++                        p->last_chosen_script_list_index = p->unk_86;
++                        p->chosen_script_start_x = p->world_pos.x;
++                        p->chosen_script_start_z = p->world_pos.z;
+@@ -2588 +2588 @@
+-                        p->unk_412 = var_5;
++                        p->chosen_script_radius = var_5;
+@@ -2594 +2594 @@
+-                       p->unk_43C < 0x200 - ((p->unk_438 * 0x100) >> 12) &&
++                       p->opponent_angle_from_orientation_abs < 0x200 - ((p->unk_438 * 0x100) >> 12) &&
+@@ -2624 +2624 @@
+-                        p->unk_434 == 100000 && p->unk_442 == 0 &&
++                        p->nearest_nav_crossing_distance == 100000 && p->unk_442 == 0 &&
+@@ -2650 +2650 @@
+-        if (p->unk_43C > 0x100 &&
++        if (p->opponent_angle_from_orientation_abs > 0x100 &&
+DRY RUN: 2 file(s) would change; nothing written
+OK: every member access renamed
+exit=0

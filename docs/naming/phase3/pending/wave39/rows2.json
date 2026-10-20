@@ -1,0 +1,268 @@
+[
+{
+"current_names": "func_80027AD8:tbl",
+"proposed_name": "var_0",
+"_file": "src/main/17AFC.c",
+"_line": 324,
+"_cls": "F"
+},
+{
+"current_names": "func_80027AD8:tbl_arg",
+"proposed_name": "var_1",
+"_file": "src/main/17AFC.c",
+"_line": 325,
+"_cls": "F"
+},
+{
+"current_names": "func_800288C8:dist",
+"proposed_name": "var_13",
+"_file": "src/main/17AFC.c",
+"_line": 790,
+"_cls": "F"
+},
+{
+"current_names": "func_800288C8:shift",
+"proposed_name": "var_20",
+"_file": "src/main/17AFC.c",
+"_line": 839,
+"_cls": "F"
+},
+{
+"current_names": "func_8002AB08:vec",
+"proposed_name": "var_1",
+"_file": "src/main/17AFC.c",
+"_line": 1574,
+"_cls": "F"
+},
+{
+"current_names": "func_8002F2D0:work",
+"proposed_name": "var_7",
+"_file": "src/main/17AFC.c",
+"_line": 3370,
+"_cls": "F"
+},
+{
+"current_names": "func_8002F770:work",
+"proposed_name": "var_7",
+"_file": "src/main/17AFC.c",
+"_line": 3450,
+"_cls": "F"
+},
+{
+"current_names": "func_80033D38:rec",
+"proposed_name": "var_0",
+"_file": "src/main/17AFC.c",
+"_line": 5451,
+"_cls": "F"
+},
+{
+"current_names": "func_800338CC:one",
+"proposed_name": "var_5",
+"_file": "src/main/17AFC.c",
+"_line": 5285,
+"_cls": "U"
+},
+{
+"current_names": "func_80035280:base",
+"proposed_name": "var_2",
+"_file": "src/main/25788.c",
+"_line": 170,
+"_cls": "F"
+},
+{
+"current_names": "func_80037F40:base",
+"proposed_name": "var_3",
+"_file": "src/main/28708.c",
+"_line": 65,
+"_cls": "F"
+},
+{
+"current_names": "func_8003A728:zero",
+"proposed_name": "var_7",
+"_file": "src/main/28708.c",
+"_line": 1757,
+"_cls": "F"
+},
+{
+"current_names": "func_800408F8:base",
+"proposed_name": "var_4",
+"_file": "src/main/309CC.c",
+"_line": 293,
+"_cls": "F"
+},
+{
+"current_names": "func_80040CB8:kind",
+"proposed_name": "var_4",
+"_file": "src/main/309CC.c",
+"_line": 429,
+"_cls": "U"
+},
+{
+"current_names": "func_80040CB8:one",
+"proposed_name": "var_5",
+"_file": "src/main/309CC.c",
+"_line": 430,
+"_cls": "U"
+},
+{
+"current_names": "func_80043278:mask",
+"proposed_name": "var_0",
+"_file": "src/main/32D04.c",
+"_line": 528,
+"_cls": "F"
+},
+{
+"current_names": "func_8004428C:stop",
+"proposed_name": "var_9",
+"_file": "src/main/32D04.c",
+"_line": 1029,
+"_cls": "F"
+},
+{
+"current_names": "func_8005490C:rot_z",
+"proposed_name": "var_6",
+"_file": "src/main/3AB48.c",
+"_line": 767,
+"_cls": "F"
+},
+{
+"current_names": "func_80058580:one",
+"proposed_name": "var_59",
+"_file": "src/main/3AB48.c",
+"_line": 3113,
+"_cls": "F"
+},
+{
+"current_names": "func_8005D554:scale",
+"proposed_name": "var_10",
+"_file": "src/main/3AB48.c",
+"_line": 4313,
+"_cls": "F"
+},
+{
+"current_names": "func_80065800:tbl",
+"proposed_name": "var_18",
+"_file": "src/main/51268.c",
+"_line": 1949,
+"_cls": "F"
+},
+{
+"current_names": "func_80069F80:tbl",
+"proposed_name": "var_4",
+"_file": "src/main/51268.c",
+"_line": 3549,
+"_cls": "F"
+},
+{
+"current_names": "func_8006A1A0:tbl",
+"proposed_name": "var_4",
+"_file": "src/main/51268.c",
+"_line": 3625,
+"_cls": "F"
+},
+{
+"current_names": "func_8006C21C:mode",
+"proposed_name": "var_8",
+"_file": "src/main/51268.c",
+"_line": 4567,
+"_cls": "F"
+},
+{
+"current_names": "func_8006C21C:work",
+"proposed_name": "var_9",
+"_file": "src/main/51268.c",
+"_line": 4572,
+"_cls": "F"
+},
+{
+"current_names": "func_8006C21C:col",
+"proposed_name": "var_10",
+"_file": "src/main/51268.c",
+"_line": 4577,
+"_cls": "F"
+},
+{
+"current_names": "func_8006BEC4:pos",
+"proposed_name": "var_2",
+"_file": "src/main/51268.c",
+"_line": 4480,
+"_cls": "C"
+},
+{
+"current_names": "func_8006F100:cx",
+"proposed_name": "var_10",
+"_file": "src/main/5ED34.c",
+"_line": 470,
+"_cls": "F"
+},
+{
+"current_names": "func_8006F100:cy",
+"proposed_name": "var_11",
+"_file": "src/main/5ED34.c",
+"_line": 478,
+"_cls": "F"
+},
+{
+"current_names": "func_8007352C:env",
+"proposed_name": "arg0",
+"_file": "src/main/63D2C.c",
+"_line": 11,
+"_cls": "C"
+},
+{
+"current_names": "func_80073728:env",
+"proposed_name": "arg0",
+"_file": "src/main/63D2C.c",
+"_line": 55,
+"_cls": "C"
+},
+{
+"current_names": "func_800759D0:zero",
+"proposed_name": "var_2",
+"_file": "src/main/64FD8.c",
+"_line": 549,
+"_cls": "F"
+},
+{
+"current_names": "func_8007636C:mode",
+"proposed_name": "var_5",
+"_file": "src/main/64FD8.c",
+"_line": 805,
+"_cls": "F"
+},
+{
+"current_names": "func_80078654:zero",
+"proposed_name": "var_5",
+"_file": "src/main/64FD8.c",
+"_line": 1639,
+"_cls": "F"
+},
+{
+"current_names": "func_800167EC:rec",
+"proposed_name": "var_1",
+"_file": "src/main/6CF8.c",
+"_line": 125,
+"_cls": "F"
+},
+{
+"current_names": "main:tbl",
+"proposed_name": "var_4",
+"_file": "src/main/6CF8.c",
+"_line": 432,
+"_cls": "F"
+},
+{
+"current_names": "func_8001924C:buf",
+"proposed_name": "var_2",
+"_file": "src/main/87A0.c",
+"_line": 548,
+"_cls": "F"
+},
+{
+"current_names": "pad_Update:rec",
+"proposed_name": "var_5",
+"_file": "src/main/87A0.c",
+"_line": 642,
+"_cls": "F"
+}
+]

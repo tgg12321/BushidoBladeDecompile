@@ -1,0 +1,5 @@
+Unk80101DF0Record.unk6=matrix_state
+Unk80101DF0Record.unk8=rotation_order
+Unk80101DF0Record.unkA=light_setup_index
+Unk80101DF0Record.unkC=parent_node
+MoveScript.unk_06=first_move_frame

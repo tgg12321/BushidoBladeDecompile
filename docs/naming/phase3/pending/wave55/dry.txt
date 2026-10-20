@@ -1,0 +1,66 @@
+==============================================================================
+NAMING WAVE — 12 operations (0 RESET, 12 RENAME)
+  12 identifiers remapped
+  link map: OK   — build/bb2.map is present and newer than every build input
+==============================================================================
+
+-- file edits (34) --
+  (root): 1 files, 1 substitutions
+      named_syms.txt  (1)
+  asm: 26 files, 52 substitutions
+      asm/funcs/func_8003E164.s  (1)
+      asm/funcs/func_8003E22C.s  (1)
+      asm/funcs/func_80040594.s  (5)
+      asm/funcs/func_80042504.s  (2)
+      asm/funcs/func_80042E90.s  (2)
+      asm/funcs/func_800432A0.s  (2)
+      ... and 20 more
+  include: 1 files, 9 substitutions
+      include/bb2.h  (9)
+  src: 5 files, 47 substitutions
+      src/main/2B344.c  (4)
+      src/main/309CC.c  (5)
+      src/main/32D04.c  (13)
+      src/main/35000.c  (13)
+      src/main/368E4.c  (12)
+  tools: 1 files, 6 substitutions
+      tools/test_board_cards.py  (6)
+
+-- .s file renames (12) --
+  asm/funcs/func_80042504.s -> asm/funcs/math_HsvToRgb.s
+  asm/funcs/func_80042E90.s -> asm/funcs/math_InitRotMatrixFuncs.s
+  asm/funcs/func_800432A0.s -> asm/funcs/gpu_OffsetBlockTexPrimStreams.s
+  asm/funcs/func_80043398.s -> asm/funcs/gpu_OffsetBlockTexPrimStreamsByPages.s
+  asm/funcs/func_800433E4.s -> asm/funcs/gpu_OffsetBlockTexPrimStream.s
+  asm/funcs/func_80044010.s -> asm/funcs/reloc_RelocateBlock.s
+  asm/funcs/func_80044098.s -> asm/funcs/reloc_UnrelocateBlock.s
+  asm/funcs/func_80044100.s -> asm/funcs/reloc_RebaseBlock.s
+  asm/funcs/func_80044170.s -> asm/funcs/reloc_KeepListedEntries.s
+  asm/funcs/func_8004428C.s -> asm/funcs/reloc_KeepSelectedEntries.s
+  ... and 2 more
+
+-- ledger directory renames (6) --
+  memory/grind/func_800432A0 -> memory/grind/gpu_OffsetBlockTexPrimStreams
+  memory/grind/_completed/func_80042504 -> memory/grind/_completed/math_HsvToRgb
+  memory/grind/_completed/func_80042E90 -> memory/grind/_completed/math_InitRotMatrixFuncs
+  memory/grind/_completed/func_800432A0 -> memory/grind/_completed/gpu_OffsetBlockTexPrimStreams
+  memory/grind/_completed/func_80044010 -> memory/grind/_completed/reloc_RelocateBlock
+  memory/grind/_completed/func_80044170 -> memory/grind/_completed/reloc_KeepListedEntries
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (6) --
+  memory/grind/func_800432A0/layer2.jsonl: 1 changes
+      line 1: func func_800432A0 -> gpu_OffsetBlockTexPrimStreams
+  memory/grind/_completed/func_80042504/layer2.jsonl: 1 changes
+      line 1: func func_80042504 -> math_HsvToRgb
+  memory/grind/_completed/func_80042E90/layer2.jsonl: 1 changes
+      line 1: func func_80042E90 -> math_InitRotMatrixFuncs
+  memory/grind/_completed/func_800432A0/layer2.jsonl: 1 changes
+      line 1: func func_800432A0 -> gpu_OffsetBlockTexPrimStreams
+  memory/grind/_completed/func_80044010/layer2.jsonl: 1 changes
+      line 1: func func_80044010 -> reloc_RelocateBlock
+  memory/grind/_completed/func_80044170/layer2.jsonl: 1 changes
+      line 1: func func_80044170 -> reloc_KeepListedEntries
+
+DRY RUN — nothing written. Re-run with --apply.

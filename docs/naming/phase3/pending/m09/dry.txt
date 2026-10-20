@@ -1,0 +1,402 @@
+PASS Unk80101EC8Record.unk_290=saved_motion_frame, Unk80101EC8Record.unk_314=saved_frame_offset_yaw, Unk80101EC8Record.unk_318=pose_blend_progress, Unk80101EC8Record.unk_31C=pose_blend_step, Unk80101EC8Record.unk_320=pose_blend_base_shift, Unk80101EC8Record.unk_330=carried_object_count, Unk80101EC8Record.unk_332=carried_object_kinds, Unk80101EC8Record.unk_3B4=cpu_pad_script_cursor, Unk80101EC8Record.unk_3B8=cpu_pad_script_delay_left, Unk80101EC8Record.unk_3C8=cpu_pad_script_held, Unk80101EC8Record.unk_3D0=last_cpu_pad, Unk80101EC8Record.unk_3E8=cpu_pad_build_count
+decl Unk80101EC8Record.unk_290 -> saved_motion_frame  include/game.h:1594
+decl Unk80101EC8Record.unk_314 -> saved_frame_offset_yaw  include/game.h:1595
+decl Unk80101EC8Record.unk_318 -> pose_blend_progress  include/game.h:1597
+decl Unk80101EC8Record.unk_31C -> pose_blend_step  include/game.h:1599
+decl Unk80101EC8Record.unk_320 -> pose_blend_base_shift  include/game.h:1601
+decl Unk80101EC8Record.unk_330 -> carried_object_count  include/game.h:1603
+decl Unk80101EC8Record.unk_332 -> carried_object_kinds  include/game.h:1606
+decl Unk80101EC8Record.unk_3B4 -> cpu_pad_script_cursor  include/game.h:1634
+decl Unk80101EC8Record.unk_3B8 -> cpu_pad_script_delay_left  include/game.h:1635
+decl Unk80101EC8Record.unk_3C8 -> cpu_pad_script_held  include/game.h:1644
+decl Unk80101EC8Record.unk_3D0 -> last_cpu_pad  include/game.h:1647
+decl Unk80101EC8Record.unk_3E8 -> cpu_pad_build_count  include/game.h:1648
+  round 0: 93 member error line(s)
+    src/main/17AFC.c:3751 unk_330 x1
+    src/main/17AFC.c:3755 unk_332 x1
+    src/main/17AFC.c:3757 unk_330 x1
+    src/main/17AFC.c:3847 unk_330 x1
+    src/main/17AFC.c:3853 unk_332 x1
+    src/main/17AFC.c:3855 unk_332 x1
+    src/main/17AFC.c:3857 unk_330 x1
+    src/main/17AFC.c:3858 unk_332 x2
+    src/main/17AFC.c:3861 unk_330 x1
+    src/main/17AFC.c:3878 unk_332 x1
+    src/main/17AFC.c:3893 unk_330 x1
+    src/main/17AFC.c:3894 unk_332 x2
+    src/main/17AFC.c:3896 unk_330 x1
+    src/main/17AFC.c:3924 unk_330 x1
+    src/main/17AFC.c:3928 unk_330 x1
+    src/main/17AFC.c:3929 unk_332 x2
+    src/main/17AFC.c:3931 unk_332 x1
+    src/main/17AFC.c:3932 unk_330 x1
+    src/main/17AFC.c:3934 unk_330 x1
+    src/main/17AFC.c:3934 unk_332 x1
+    src/main/4510C.c:407 unk_3B4 x1
+    src/main/4510C.c:408 unk_3D0 x1
+    src/main/4510C.c:409 unk_3D0 x1
+    src/main/4510C.c:410 unk_3D0 x1
+    src/main/4510C.c:427 unk_3E8 x1
+    src/main/4510C.c:437 unk_3D0 x1
+    src/main/4510C.c:447 unk_3B8 x1
+    src/main/4510C.c:448 unk_3B4 x1
+    src/main/4510C.c:451 unk_3B8 x1
+    src/main/4510C.c:499 unk_3B4 x1
+    src/main/4510C.c:502 unk_3B4 x1
+    src/main/4510C.c:511 unk_3B4 x1
+    src/main/4510C.c:512 unk_3B8 x1
+    src/main/4510C.c:517 unk_3C8 x1
+    src/main/4510C.c:519 unk_3C8 x1
+    src/main/4510C.c:523 unk_3C8 x1
+    src/main/4510C.c:527 unk_3B4 x1
+    src/main/4510C.c:529 unk_3B8 x1
+    src/main/4510C.c:530 unk_3C8 x1
+    src/main/4510C.c:574 unk_3E8 x1
+    src/main/4510C.c:596 unk_3E8 x1
+    src/main/4510C.c:599 unk_3E8 x1
+    src/main/4510C.c:601 unk_3E8 x1
+    src/main/4510C.c:604 unk_3E8 x1
+    src/main/4510C.c:627 unk_3E8 x1
+    src/main/4510C.c:837 unk_330 x1
+    src/main/4510C.c:864 unk_3B4 x1
+    src/main/4510C.c:885 unk_3D0 x1
+    src/main/4510C.c:887 unk_3D0 x1
+    src/main/4510C.c:889 unk_3D0 x1
+    src/main/4510C.c:890 unk_3D0 x1
+    src/main/4510C.c:905 unk_3E8 x1
+    src/main/4510C.c:1031 unk_3E8 x1
+    src/main/4510C.c:1806 unk_3E8 x1
+    src/main/4510C.c:1849 unk_3E8 x1
+    src/main/4510C.c:1872 unk_3E8 x1
+    src/main/4510C.c:1879 unk_3E8 x1
+    src/main/4510C.c:1927 unk_3E8 x1
+    src/main/4510C.c:1982 unk_3E8 x1
+    src/main/4510C.c:2390 unk_3E8 x1
+    src/main/4510C.c:2554 unk_330 x1
+    src/main/4510C.c:2617 unk_330 x1
+    src/main/9F9C.c:2606 unk_330 x1
+    src/main/9F9C.c:2606 unk_332 x1
+    src/main/9F9C.c:3825 unk_332 x1
+    src/main/9F9C.c:3829 unk_332 x1
+    src/main/9F9C.c:3832 unk_330 x1
+    src/main/9F9C.c:3836 unk_330 x1
+    src/main/9F9C.c:3841 unk_332 x1
+    src/main/9F9C.c:3842 unk_330 x1
+    src/main/9F9C.c:4305 unk_318 x1
+    src/main/9F9C.c:4306 unk_320 x1
+    src/main/9F9C.c:4307 unk_320 x1
+    src/main/9F9C.c:4309 unk_31C x1
+    src/main/9F9C.c:4795 unk_290 x3
+    src/main/9F9C.c:4839 unk_290 x1
+    src/main/9F9C.c:4840 unk_314 x1
+    src/main/9F9C.c:4841 unk_318 x1
+    src/main/9F9C.c:4855 unk_320 x1
+    src/main/9F9C.c:4856 unk_320 x1
+    src/main/9F9C.c:4868 unk_320 x1
+    src/main/9F9C.c:4869 unk_320 x1
+    src/main/9F9C.c:5043 unk_330 x1
+    src/main/9F9C.c:5043 unk_332 x1
+    src/main/9F9C.c:5054 unk_330 x1
+    src/main/9F9C.c:5054 unk_332 x1
+    src/main/9F9C.c:5073 unk_290 x1
+    src/main/9F9C.c:5074 unk_314 x1
+    src/main/9F9C.c:5080 unk_318 x1
+    src/main/9F9C.c:5080 unk_31C x1
+    src/main/9F9C.c:5081 unk_318 x1
+    src/main/9F9C.c:5083 unk_290 x1
+    src/main/9F9C.c:5084 unk_314 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1594,2 +1594,2 @@
+-    MotionFrame unk_290;
+-    u16 unk_314;
++    MotionFrame saved_motion_frame;
++    u16 saved_frame_offset_yaw;
+@@ -1597 +1597 @@
+-    s16 unk_318;
++    s16 pose_blend_progress;
+@@ -1599 +1599 @@
+-    s16 unk_31C;
++    s16 pose_blend_step;
+@@ -1601 +1601 @@
+-    Vec3i32 unk_320;
++    Vec3i32 pose_blend_base_shift;
+@@ -1603 +1603 @@
+-    s16 unk_330;
++    s16 carried_object_count;
+@@ -1606 +1606 @@
+-    s16 unk_332[12];
++    s16 carried_object_kinds[12];
+@@ -1634,2 +1634,2 @@
+-    u8 *unk_3B4;
+-    u8 unk_3B8;
++    u8 *cpu_pad_script_cursor;
++    u8 cpu_pad_script_delay_left;
+@@ -1644 +1644 @@
+-    s32 unk_3C8;
++    s32 cpu_pad_script_held;
+@@ -1647,2 +1647,2 @@
+-    PadState unk_3D0;
+-    u16 unk_3E8;
++    PadState last_cpu_pad;
++    u16 cpu_pad_build_count;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -3751 +3751 @@
+-    a0->unk_330 = 0;
++    a0->carried_object_count = 0;
+@@ -3755 +3755 @@
+-        a0->unk_332[i] = val;
++        a0->carried_object_kinds[i] = val;
+@@ -3757 +3757 @@
+-            a0->unk_330++;
++            a0->carried_object_count++;
+@@ -3847 +3847 @@
+-    count = a0->unk_330;
++    count = a0->carried_object_count;
+@@ -3853,3 +3853,3 @@
+-        idx = a0->unk_332[0] == a0->unk_14;
+-    }
+-    id = a0->unk_332[idx];
++        idx = a0->carried_object_kinds[0] == a0->unk_14;
++    }
++    id = a0->carried_object_kinds[idx];
+@@ -3857,5 +3857,5 @@
+-    for (i = idx; i < a0->unk_330 - 1; i++) {
+-        a0->unk_332[i] = a0->unk_332[i + 1];
+-    }
+-
+-    a0->unk_330--;
++    for (i = idx; i < a0->carried_object_count - 1; i++) {
++        a0->carried_object_kinds[i] = a0->carried_object_kinds[i + 1];
++    }
++
++    a0->carried_object_count--;
+@@ -3878 +3878 @@
+-    p = object_SpawnFromFighter(a0, a0->unk_332[0]);
++    p = object_SpawnFromFighter(a0, a0->carried_object_kinds[0]);
+@@ -3893,4 +3893,4 @@
+-    for (i = 0; i < a0->unk_330 - 1; i++) {
+-        a0->unk_332[i] = a0->unk_332[i + 1];
+-    }
+-    a0->unk_330--;
++    for (i = 0; i < a0->carried_object_count - 1; i++) {
++        a0->carried_object_kinds[i] = a0->carried_object_kinds[i + 1];
++    }
++    a0->carried_object_count--;
+@@ -3924 +3924 @@
+-    if (arg0->unk_330 == 0xC) {
++    if (arg0->carried_object_count == 0xC) {
+@@ -3928,5 +3928,5 @@
+-        for (i = arg0->unk_330; i > 0; i--) {
+-            arg0->unk_332[i] = arg0->unk_332[i - 1];
+-        }
+-        arg0->unk_332[0] = arg1;
+-        arg0->unk_330++;
++        for (i = arg0->carried_object_count; i > 0; i--) {
++            arg0->carried_object_kinds[i] = arg0->carried_object_kinds[i - 1];
++        }
++        arg0->carried_object_kinds[0] = arg1;
++        arg0->carried_object_count++;
+@@ -3934 +3934 @@
+-        arg0->unk_332[arg0->unk_330++] = arg1;
++        arg0->carried_object_kinds[arg0->carried_object_count++] = arg1;
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -407,4 +407,4 @@
+-    p->unk_3B4 = 0;
+-    p->unk_3D0.released = 0;
+-    p->unk_3D0.pressed = 0;
+-    p->unk_3D0.held = 0;
++    p->cpu_pad_script_cursor = 0;
++    p->last_cpu_pad.released = 0;
++    p->last_cpu_pad.pressed = 0;
++    p->last_cpu_pad.held = 0;
+@@ -427 +427 @@
+-    p->unk_3E8 = 0;
++    p->cpu_pad_build_count = 0;
+@@ -437 +437 @@
+-    p->unk_3D0.unheld = -1;
++    p->last_cpu_pad.unheld = -1;
+@@ -447,2 +447,2 @@
+-    var_1 = arg0->unk_3B8;
+-    p = arg0->unk_3B4;
++    var_1 = arg0->cpu_pad_script_delay_left;
++    p = arg0->cpu_pad_script_cursor;
+@@ -451 +451 @@
+-            arg0->unk_3B8 = var_1 - 1;
++            arg0->cpu_pad_script_delay_left = var_1 - 1;
+@@ -499 +499 @@
+-    arg0->unk_3B4 = 0;
++    arg0->cpu_pad_script_cursor = 0;
+@@ -502 +502 @@
+-    arg0->unk_3B4 = 0;
++    arg0->cpu_pad_script_cursor = 0;
+@@ -511,2 +511,2 @@
+-            arg0->unk_3B4 = p;
+-            arg0->unk_3B8 = (t & 0x7F) - 1;
++            arg0->cpu_pad_script_cursor = p;
++            arg0->cpu_pad_script_delay_left = (t & 0x7F) - 1;
+@@ -517 +517 @@
+-            arg0->unk_3C8 &= ~mask;
++            arg0->cpu_pad_script_held &= ~mask;
+@@ -519 +519 @@
+-            arg0->unk_3C8 |= mask;
++            arg0->cpu_pad_script_held |= mask;
+@@ -523 +523 @@
+-    return arg0->unk_3C8;
++    return arg0->cpu_pad_script_held;
+@@ -527 +527 @@
+-    a0->unk_3B4 = a1;
++    a0->cpu_pad_script_cursor = a1;
+@@ -529,2 +529,2 @@
+-    a0->unk_3B8 = a3;
+-    a0->unk_3C8 = 0;
++    a0->cpu_pad_script_delay_left = a3;
++    a0->cpu_pad_script_held = 0;
+@@ -574 +574 @@
+-    if (rec->unk_3E8 & 1) {
++    if (rec->cpu_pad_build_count & 1) {
+@@ -596 +596 @@
+-        ((rand() & 0xFFF) < (rec->unk_438 >> 3) && rec->unk_3E8 >= 0x3D) |
++        ((rand() & 0xFFF) < (rec->unk_438 >> 3) && rec->cpu_pad_build_count >= 0x3D) |
+@@ -599 +599 @@
+-             : ((rand() & 0xFFF) < (rec->unk_438 >> 3) && rec->unk_3E8 >= 0x3D)
++             : ((rand() & 0xFFF) < (rec->unk_438 >> 3) && rec->cpu_pad_build_count >= 0x3D)
+@@ -601 +601 @@
+-        (((rand() & 0xFFF) < rec->unk_438 || rec->unk_3E8 < (rec->unk_438 >> 3))
++        (((rand() & 0xFFF) < rec->unk_438 || rec->cpu_pad_build_count < (rec->unk_438 >> 3))
+@@ -604 +604 @@
+-          rec->unk_3E8 < (rec->unk_438 >> 4))
++          rec->cpu_pad_build_count < (rec->unk_438 >> 4))
+@@ -627 +627 @@
+-    rec->unk_3E8++;
++    rec->cpu_pad_build_count++;
+@@ -837 +837 @@
+-            ((rec->other->unk_330 == 0 && rec->unk_425 != 1 &&
++            ((rec->other->carried_object_count == 0 && rec->unk_425 != 1 &&
+@@ -864 +864 @@
+-        if (rec->unk_3B4 != 0) {
++        if (rec->cpu_pad_script_cursor != 0) {
+@@ -885 +885 @@
+-    pad.pressed = pad.held & ~rec->unk_3D0.held;
++    pad.pressed = pad.held & ~rec->last_cpu_pad.held;
+@@ -887 +887 @@
+-    pad.released = ~pad.held & rec->unk_3D0.held;
++    pad.released = ~pad.held & rec->last_cpu_pad.held;
+@@ -889,2 +889,2 @@
+-    rec->unk_3D0 = pad;
+-    *arg1 = rec->unk_3D0;
++    rec->last_cpu_pad = pad;
++    *arg1 = rec->last_cpu_pad;
+@@ -905 +905 @@
+-    start = (arg0->unk_3E8 & 3) * 2;
++    start = (arg0->cpu_pad_build_count & 3) * 2;
+@@ -1031 +1031 @@
+-        if (arg0->unk_3E8 & 0x10) {
++        if (arg0->cpu_pad_build_count & 0x10) {
+@@ -1806 +1806 @@
+-                if (p->unk_3E8 % (0x12 - (p->unk_438 >> 8)) == 0) {
++                if (p->cpu_pad_build_count % (0x12 - (p->unk_438 >> 8)) == 0) {
+@@ -1849 +1849 @@
+-                    var_41 = p->unk_3E8 > 0x3C;
++                    var_41 = p->cpu_pad_build_count > 0x3C;
+@@ -1872 +1872 @@
+-                                    if (p->unk_3E8 & 1) {
++                                    if (p->cpu_pad_build_count & 1) {
+@@ -1879 +1879 @@
+-                                    p->unk_3CC = (p->unk_3E8 & 1) * 8;
++                                    p->unk_3CC = (p->cpu_pad_build_count & 1) * 8;
+@@ -1927 +1927 @@
+-            if (!(p->unk_3E8 & 7)) {
++            if (!(p->cpu_pad_build_count & 7)) {
+@@ -1982 +1982 @@
+-                    if (p->unk_434 != 100000 && !(p->unk_3E8 & 7)) {
++                    if (p->unk_434 != 100000 && !(p->cpu_pad_build_count & 7)) {
+@@ -2390 +2390 @@
+-            if ((p->unk_3E8 & 1) || p->unk_0E >= 6) {
++            if ((p->cpu_pad_build_count & 1) || p->unk_0E >= 6) {
+@@ -2554 +2554 @@
+-                                        p->unk_330 != 0) {
++                                        p->carried_object_count != 0) {
+@@ -2617 +2617 @@
+-                            var_60 = p->unk_330;
++                            var_60 = p->carried_object_count;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -2606 +2606 @@
+-        (arg0->unk_330 == 0 || arg0->unk_332[0] != 0xA)) {
++        (arg0->carried_object_count == 0 || arg0->carried_object_kinds[0] != 0xA)) {
+@@ -3825 +3825 @@
+-    p->unk_14 = p->unk_332[0];
++    p->unk_14 = p->carried_object_kinds[0];
+@@ -3829 +3829 @@
+-            p->unk_332[0] = p->unk_14 = 0x11;
++            p->carried_object_kinds[0] = p->unk_14 = 0x11;
+@@ -3832 +3832 @@
+-            p->unk_330 = 0;
++            p->carried_object_count = 0;
+@@ -3836 +3836 @@
+-        p->unk_330 = 0;
++        p->carried_object_count = 0;
+@@ -3841,2 +3841,2 @@
+-            p->unk_332[0] = p->unk_14 = p->other->unk_14;
+-            p->unk_330 = 1;
++            p->carried_object_kinds[0] = p->unk_14 = p->other->unk_14;
++            p->carried_object_count = 1;
+@@ -4305,5 +4305,5 @@
+-        arg0->unk_318 = arg1;
+-        arg0->unk_320.x = 0;
+-        arg0->unk_320.z = 0;
+-    }
+-    arg0->unk_31C = arg1;
++        arg0->pose_blend_progress = arg1;
++        arg0->pose_blend_base_shift.x = 0;
++        arg0->pose_blend_base_shift.z = 0;
++    }
++    arg0->pose_blend_step = arg1;
+@@ -4795 +4795 @@
+-            rec->unk_290.unk_06, rec->unk_290.unk_08, rec->unk_290.unk_0A, &m1);
++            rec->saved_motion_frame.unk_06, rec->saved_motion_frame.unk_08, rec->saved_motion_frame.unk_0A, &m1);
+@@ -4839,3 +4839,3 @@
+-        var_0[0] = rec->unk_290;
+-        ang[0] = rec->unk_314;
+-        var_14 = rec->unk_318;
++        var_0[0] = rec->saved_motion_frame;
++        ang[0] = rec->saved_frame_offset_yaw;
++        var_14 = rec->pose_blend_progress;
+@@ -4855,2 +4855,2 @@
+-            rec->unk_320.x += rec->unk_1F8.x - v[0].x;
+-            rec->unk_320.z += rec->unk_1F8.z - v[0].z;
++            rec->pose_blend_base_shift.x += rec->unk_1F8.x - v[0].x;
++            rec->pose_blend_base_shift.z += rec->unk_1F8.z - v[0].z;
+@@ -4868,2 +4868,2 @@
+-        var_35.x -= rec->unk_320.x;
+-        var_35.z -= rec->unk_320.z;
++        var_35.x -= rec->pose_blend_base_shift.x;
++        var_35.z -= rec->pose_blend_base_shift.z;
+@@ -5043 +5043 @@
+-        if (rec->unk_330 > 0 && rec->unk_332[0] == rec->unk_14 &&
++        if (rec->carried_object_count > 0 && rec->carried_object_kinds[0] == rec->unk_14 &&
+@@ -5054 +5054 @@
+-        if (rec->unk_330 > 0 && rec->unk_332[0] == rec->unk_14 &&
++        if (rec->carried_object_count > 0 && rec->carried_object_kinds[0] == rec->unk_14 &&
+@@ -5073,2 +5073,2 @@
+-    rec->unk_290 = var_0[0];
+-    rec->unk_314 = ang[0];
++    rec->saved_motion_frame = var_0[0];
++    rec->saved_frame_offset_yaw = ang[0];
+@@ -5080,2 +5080,2 @@
+-        rec->unk_318 += rec->unk_31C;
+-        if (rec->unk_318 >= 0x1000) {
++        rec->pose_blend_progress += rec->pose_blend_step;
++        if (rec->pose_blend_progress >= 0x1000) {
+@@ -5083,2 +5083,2 @@
+-            rec->unk_290 = var_0[1];
+-            rec->unk_314 = ang[1];
++            rec->saved_motion_frame = var_0[1];
++            rec->saved_frame_offset_yaw = ang[1];
+DRY RUN: 4 file(s) would change; nothing written
+OK: every member access renamed
+exit=0
