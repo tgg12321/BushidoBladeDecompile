@@ -118,7 +118,7 @@
         "a25fccea1419d485f784ec0608f0126d1d57469cf3f7111091a8dca005ab998e"
       ]
     },
-    "func_800300B4": {
+    "object_SubmitAttachedTransform": {
       "file": "main/17AFC",
       "sha256": [
         "0c26ac8afc328f78cfc769104332e86da4d944b1e277dd08b8db4815c8fd0d28",
@@ -127,7 +127,7 @@
         "beb580c9cc9dda60c1ed7e10f87b84c288c81f2a2ab31eebf5d429944ebc341e"
       ]
     },
-    "func_80031890": {
+    "object_DeflectFromFighterHit": {
       "file": "main/17AFC",
       "sha256": [
         "0c26ac8afc328f78cfc769104332e86da4d944b1e277dd08b8db4815c8fd0d28",

@@ -22,7 +22,7 @@ glabel snd_UpdateStageSounds
     /* 23E24 80033624 00000000 */  nop
     /* 23E28 80033628 31004010 */  beqz       $v0, .L800336F0
     /* 23E2C 8003362C 00000000 */   nop
-    /* 23E30 80033630 26CD000C */  jal        func_80033498
+    /* 23E30 80033630 26CD000C */  jal        snd_GetStageSoundIndex
     /* 23E34 80033634 00000000 */   nop
     /* 23E38 80033638 21884000 */  addu       $s1, $v0, $zero
     /* 23E3C 8003363C 00000392 */  lbu        $v1, 0x0($s0)

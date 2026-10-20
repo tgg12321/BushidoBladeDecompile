@@ -313,7 +313,7 @@ glabel object_ResolveFighterHits
   .L80031FD4:
     /* 227D4 80031FD4 2800A48F */  lw         $a0, 0x28($sp)
     /* 227D8 80031FD8 4000A58F */  lw         $a1, 0x40($sp)
-    /* 227DC 80031FDC 24C6000C */  jal        func_80031890
+    /* 227DC 80031FDC 24C6000C */  jal        object_DeflectFromFighterHit
     /* 227E0 80031FE0 2130A002 */   addu      $a2, $s5, $zero
     /* 227E4 80031FE4 000060A2 */  sb         $zero, 0x0($s3)
   .L80031FE8:

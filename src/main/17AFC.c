@@ -11,8 +11,8 @@
 
 /* P1/P2 round scores and tiebreakers, declared here as single u8s (per-file
  * declarations: Q21-Q25, no-new-park-categories aggregate-merge exception):
- * every counting aggregate spelling of func_800340A0 misses the shipped code
- * (constant subscripts put element 0 behind a base register; the
+ * every counting aggregate spelling of fight_RecordMatchResult misses the
+ * shipped code (constant subscripts put element 0 behind a base register; the
  * index-variable and regrouped-condition spellings miss its round-result
  * stores or compares); dummy-index and pointer-alias spellings are refused
  * (Q22/Q23). src/main/9F9C.c declares the same bytes as D_800A3898[2] /
@@ -3645,7 +3645,7 @@ void object_AttachToOpponentBone(Obj80106A78 *arg0, s16 arg1) {
  * matrix with the object's, and hands the point and the angles
  * math_MatrixToAngles reads from that matrix to func_80049718 /
  * replay_RecordModelDraw. */
-void func_800300B4(Obj80106A78 *arg0) {
+void object_SubmitAttachedTransform(Obj80106A78 *arg0) {
     s32 mac[3];
     s16 var_1[4];
     MATRIX mtx;
@@ -3674,7 +3674,7 @@ void func_800300B4(Obj80106A78 *arg0) {
     replay_RecordModelDraw(arg0->slot, lookup, mac, var_1);
 }
 
-void func_80030208(void) {
+void object_SubmitPoolTransforms(void) {
     Obj80106A78 *obj;
     s32 i;
     s16 kind;
@@ -3686,7 +3686,7 @@ void func_80030208(void) {
             continue;
         }
         if (obj->unk_08 != 0) {
-            func_800300B4(obj);
+            object_SubmitAttachedTransform(obj);
             continue;
         }
         if (obj->unk_00 < 2) {
@@ -4193,12 +4193,13 @@ void object_UpdatePool(void) {
             obj->kind = -1;
         }
     }
-    func_80030208();
+    object_SubmitPoolTransforms();
 }
 
 /* GTE rotate-velocity-by-table-angle (sibling of
  * math_PrepareSegmentCollisionFrame) */
-void func_80031890(Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
+void object_DeflectFromFighterHit(
+    Unk1F8002B8Rec *scr, Obj80106A78 *ent, s32 idx) {
     MATRIX *mat;
     s32 angle1;
     s32 angle2;
@@ -4362,7 +4363,7 @@ void object_ResolveFighterHits(void) {
             func_80032854(
                 (kind ^ D_800A36F2[0]) != 0, 0x2B, &SPAD->unkA8[var_6][j].x, 0);
         }
-        func_80031890(scr, obj, j);
+        object_DeflectFromFighterHit(scr, obj, j);
         obj->unk_04 = 0;
     }
 }
@@ -5139,7 +5140,7 @@ void fighter_ProcessFrameEvents(Unk80101EC8Record *base) {
     }
 }
 
-s32 func_80033498(void) {
+s32 snd_GetStageSoundIndex(void) {
     s16 idx = D_800A36A4 - 2;
     switch (idx) {
     case 0:
@@ -5199,7 +5200,7 @@ void snd_UpdateStageSounds(void) {
 
     for (i = 0; i < 6; i++) {
         if (g_snd_sequence_ticks[i] != 0) {
-            s32 var_2 = func_80033498();
+            s32 var_2 = snd_GetStageSoundIndex();
             u8 cur = g_snd_sequence_ticks[i];
 
             if (cur == 1) {
@@ -5462,7 +5463,7 @@ void fight_AdvanceOpponentOrder(void) {
     }
 }
 
-void func_80033D38(void) {
+void fight_InsertBestTime(void) {
     /* FAKE: pointer to the record, admitted on SOTN precedent (Q50, Q53);
      * mechanism: its register (t1) is the base of every times[] access and of
      * the shift loop's pointer; written directly, each D_80106A50.times[]
@@ -5533,7 +5534,7 @@ s32 func_80033DF4(void) {
             *flags = word | mask;
         }
 
-        func_80033D38();
+        fight_InsertBestTime();
         D_800A3834 = 4;
         return 0;
     } else {
@@ -5585,7 +5586,7 @@ void func_80033FE4(void) {
     }
 }
 
-void func_800340A0(void) {
+void fight_RecordMatchResult(void) {
     u8 p1, p2, var_2;
 
     p1 = D_800A3898;
@@ -5623,7 +5624,7 @@ void func_800340A0(void) {
     D_800A3874 = D_800A3874 + 1;
 }
 
-void func_80034200(void) {
+void fight_PackMatchScores(void) {
     s32 shift = 0;
     s32 i = 0;
     s32 acc = 0;
@@ -5658,10 +5659,10 @@ void func_80034200(void) {
     D_800A3784 = acc;
 }
 
-extern void func_80034200(void);
+extern void fight_PackMatchScores(void);
 
-void func_800342A0(void) {
-    func_80034200();
+void fight_AdvanceMatch(void) {
+    fight_PackMatchScores();
     if (D_800A3874 == D_800A389B) {
         D_800A3768 = DISP_DISABLED;
         D_800A36A8 = 0;

@@ -223,7 +223,7 @@ extern u8 D_8008EB38[8]; /* [unk_0E] -> Unk80101EC8Record.unk_12 */
 extern Tbl8008EB54Entry D_8008EB54[6];
 extern u8 D_8008EB6C[6];
 extern u8 D_8008EB80[];
-/* per-limb angle (func_80031890: [j], j < 22) */
+/* per-limb angle (object_DeflectFromFighterHit: [j], j < 22) */
 extern u16 D_8008EBA0[22];
 extern s32 D_8008EBCC[];
 extern s32 D_8008EBE0[];
@@ -456,9 +456,9 @@ extern s32 D_800A93BC[3];
 extern Rec44 D_800F5328;
 extern Rec44 D_800F6608;
 
-/* Per-round snapshot: func_800340A0 stores both players' counters
- * (D_800A3898 / D_800A3899) for round D_800A3874; func_80034200 packs the
- * pairs into D_800A3784, func_8003C42C sums them. */
+/* Per-round snapshot: fight_RecordMatchResult stores both players' counters
+ * (D_800A3898 / D_800A3899) for round D_800A3874; fight_PackMatchScores packs
+ * the pairs into D_800A3784, func_8003C42C sums them. */
 extern u8 D_800F65F8[8][2];
 
 extern Unk800F68E0Rec g_replay_model_draws[0xB4];
@@ -710,8 +710,8 @@ extern void fight_BuildOpponentOrder(void);
 extern void fight_AdvanceOpponentOrder(void);
 extern s32 func_80033DF4(void);
 extern void func_80033FE4(void);
-extern void func_800340A0(void);
-extern void func_800342A0(void);
+extern void fight_RecordMatchResult(void);
+extern void fight_AdvanceMatch(void);
 extern void func_800344B4(void);
 extern void func_80034F88(void);
 extern void func_8003504C(void);

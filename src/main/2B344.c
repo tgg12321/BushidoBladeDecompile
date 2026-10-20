@@ -934,7 +934,7 @@ void func_8003C9A4(void) {
             gpu_ResetGraphMode1();
             func_80020CDC();
             D_800A3874 = 0;
-            func_800342A0();
+            fight_AdvanceMatch();
             return;
         }
         D_800A3670 = 1;

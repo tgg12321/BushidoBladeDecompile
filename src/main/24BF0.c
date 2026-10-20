@@ -75,7 +75,7 @@ void func_800344B4(void) {
         D_800A3874 = 0;
         gpu_ResetGraphMode1();
         eff_Init();
-        func_800342A0();
+        fight_AdvanceMatch();
         break;
     case 2:
         D_800A3713 = (D_800A389A == 0) << 1;

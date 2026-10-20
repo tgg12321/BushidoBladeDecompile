@@ -1,4 +1,4 @@
-glabel func_80033498
+glabel snd_GetStageSoundIndex
     /* 23C98 80033498 0A80023C */  lui        $v0, %hi(D_800A36A4)
     /* 23C9C 8003349C A4364294 */  lhu        $v0, %lo(D_800A36A4)($v0)
     /* 23CA0 800334A0 00000000 */  nop
@@ -37,4 +37,4 @@ glabel func_80033498
   .L80033508:
     /* 23D08 80033508 0800E003 */  jr         $ra
     /* 23D0C 8003350C 00000000 */   nop
-endlabel func_80033498
+endlabel snd_GetStageSoundIndex

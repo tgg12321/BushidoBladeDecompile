@@ -160,7 +160,7 @@ glabel func_8003C9A4
     /* 2D3F8 8003CBF8 00000000 */   nop
     /* 2D3FC 8003CBFC 0A80013C */  lui        $at, %hi(D_800A3874)
     /* 2D400 8003CC00 743820A0 */  sb         $zero, %lo(D_800A3874)($at)
-    /* 2D404 8003CC04 A8D0000C */  jal        func_800342A0
+    /* 2D404 8003CC04 A8D0000C */  jal        fight_AdvanceMatch
     /* 2D408 8003CC08 00000000 */   nop
     /* 2D40C 8003CC0C 2FF30008 */  j          .L8003CCBC
     /* 2D410 8003CC10 00000000 */   nop

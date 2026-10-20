@@ -1,4 +1,4 @@
-glabel func_80030208
+glabel object_SubmitPoolTransforms
     /* 20A08 80030208 C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 20A0C 8003020C 2800B4AF */  sw         $s4, 0x28($sp)
     /* 20A10 80030210 1080143C */  lui        $s4, %hi(g_object_pool)
@@ -20,7 +20,7 @@ glabel func_80030208
     /* 20A4C 8003024C 00000000 */  nop
     /* 20A50 80030250 05004010 */  beqz       $v0, .L80030268
     /* 20A54 80030254 00000000 */   nop
-    /* 20A58 80030258 2DC0000C */  jal        func_800300B4
+    /* 20A58 80030258 2DC0000C */  jal        object_SubmitAttachedTransform
     /* 20A5C 8003025C 21208002 */   addu      $a0, $s4, $zero
     /* 20A60 80030260 BDC00008 */  j          .L800302F4
     /* 20A64 80030264 0100B526 */   addiu     $s5, $s5, 0x1
@@ -79,4 +79,4 @@ glabel func_80030208
     /* 20B20 80030320 3800BD27 */  addiu      $sp, $sp, 0x38
     /* 20B24 80030324 0800E003 */  jr         $ra
     /* 20B28 80030328 00000000 */   nop
-endlabel func_80030208
+endlabel object_SubmitPoolTransforms

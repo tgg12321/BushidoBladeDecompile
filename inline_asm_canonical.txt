@@ -362,9 +362,9 @@ math_TestSegmentCircle2D  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: ca
 math_TestPreparedSegmentSphere  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_ApplyRotMatrix, gte_Lzc); the C remains audited.
 func_80032314  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_Lzc); the C remains audited.
 math_PrepareSegmentCollisionFrame  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_Lzc, gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
-func_80031890  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h: gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
+object_DeflectFromFighterHit  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h: gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
 object_AttachToOpponentBone  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h: gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
-func_800300B4  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h: gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
+object_SubmitAttachedTransform  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h: gte_SetRotMatrix, gte_ldlv0, gte_rtv0, gte_stlvnl); the C remains audited.
 snd_QueuePositionalSound  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h with gtemac.h: gte_Lzc); the C remains audited.
 softbody_SnapToPoints  # gcc-cannot-emit:gte_psyq_macro_call. Mixed C/GTE: calls of the vendored PsyQ macros (inline_o.h: gte_SetRotMatrix, gte_SetTransMatrix, gte_ldv0, gte_rtv0tr, gte_stlvnl); the C remains audited.
 

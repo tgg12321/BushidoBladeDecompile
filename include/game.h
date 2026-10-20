@@ -1701,7 +1701,8 @@ typedef struct {
 /* The twelve 0x64-byte object records at 0x80106A78. object_SpawnFromFighter
  * spawns one (its kind indexes D_8008E194 / D_8008EB80), object_UpdatePool
  * moves them, object_ResolveFighterHits tests them against both fighters,
- * func_80030208 hands them to the effect calls; kind == -1 marks a free record.
+ * object_SubmitPoolTransforms hands them to the effect calls; kind == -1 marks
+ * a free record.
  */
 typedef struct {
     /* 0 at spawn; object_UpdatePool adds 1 per step while unk_50 != 0 */
@@ -1713,14 +1714,14 @@ typedef struct {
     u8 owner;
     u8 unk_07;
     u8 unk_08;
-    /* index into the owner's matrix table (func_800300B4) */
+    /* index into the owner's matrix table (object_SubmitAttachedTransform) */
     u8 unk_09;
     /* own index in g_object_pool once allocated; 0xFF = free (set by
      * object_ResetPool at init and by object_UpdatePool once kind == -1) */
     u8 slot;
     u8 unk_0B;
     /* object_AttachToOpponentBone builds it (identity, RotMatrixX/Y/Z,
-       MulMatrix0); func_800300B4 reads it */
+       MulMatrix0); object_SubmitAttachedTransform reads it */
     MATRIX mtx;
     Vec3i32 pos;      /* += vel each object_UpdatePool step */
     Vec3i32 prev_pos; /* pos before the step */
@@ -1734,8 +1735,8 @@ typedef struct {
 } Obj80106A78; /* sizeof == 0x64 */
 
 /* 2-byte {a,b} threshold pairs. D_8008EA44: indexed by (type - 2), 5 entries
-   (types 2..6); D_8008EBFC: indexed by the category func_80033498 returns, 6
-   entries (both read by snd_UpdateStageSounds). */
+   (types 2..6); D_8008EBFC: indexed by the category snd_GetStageSoundIndex
+   returns, 6 entries (both read by snd_UpdateStageSounds). */
 typedef struct {
     u8 a;
     u8 b;

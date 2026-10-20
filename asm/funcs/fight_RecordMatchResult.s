@@ -1,4 +1,4 @@
-glabel func_800340A0
+glabel fight_RecordMatchResult
     /* 248A0 800340A0 0A80063C */  lui        $a2, %hi(D_800A3898)
     /* 248A4 800340A4 9838C690 */  lbu        $a2, %lo(D_800A3898)($a2)
     /* 248A8 800340A8 0A80023C */  lui        $v0, %hi(D_800A37F8)
@@ -95,4 +95,4 @@ glabel func_800340A0
     /* 249F4 800341F4 743822A0 */  sb         $v0, %lo(D_800A3874)($at)
     /* 249F8 800341F8 0800E003 */  jr         $ra
     /* 249FC 800341FC 00000000 */   nop
-endlabel func_800340A0
+endlabel fight_RecordMatchResult

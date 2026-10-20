@@ -288,7 +288,7 @@ glabel func_8001CE60
     /* DA90 8001D290 09006214 */  bne        $v1, $v0, .L8001D2B8
     /* DA94 8001D294 01000224 */   addiu     $v0, $zero, 0x1
   .L8001D298:
-    /* DA98 8001D298 28D0000C */  jal        func_800340A0
+    /* DA98 8001D298 28D0000C */  jal        fight_RecordMatchResult
     /* DA9C 8001D29C 00000000 */   nop
     /* DAA0 8001D2A0 01000224 */  addiu      $v0, $zero, 0x1
     /* DAA4 8001D2A4 0A80013C */  lui        $at, %hi(D_800A36E8)
@@ -395,7 +395,7 @@ glabel func_8001CE60
     /* DC14 8001D414 00000000 */   nop
     /* DC18 8001D418 0A80013C */  lui        $at, %hi(D_800A36E8)
     /* DC1C 8001D41C E83620A0 */  sb         $zero, %lo(D_800A36E8)($at)
-    /* DC20 8001D420 A8D0000C */  jal        func_800342A0
+    /* DC20 8001D420 A8D0000C */  jal        fight_AdvanceMatch
     /* DC24 8001D424 00000000 */   nop
     /* DC28 8001D428 9F750008 */  j          .L8001D67C
     /* DC2C 8001D42C 00000000 */   nop

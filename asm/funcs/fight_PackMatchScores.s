@@ -1,4 +1,4 @@
-glabel func_80034200
+glabel fight_PackMatchScores
     /* 24A00 80034200 F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 24A04 80034204 21300000 */  addu       $a2, $zero, $zero
     /* 24A08 80034208 21380000 */  addu       $a3, $zero, $zero
@@ -44,4 +44,4 @@ glabel func_80034200
     /* 24A94 80034294 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 24A98 80034298 0800E003 */  jr         $ra
     /* 24A9C 8003429C 00000000 */   nop
-endlabel func_80034200
+endlabel fight_PackMatchScores

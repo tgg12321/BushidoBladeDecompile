@@ -1,4 +1,4 @@
-glabel func_80031890
+glabel object_DeflectFromFighterHit
     /* 22090 80031890 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 22094 80031894 2000B4AF */  sw         $s4, 0x20($sp)
     /* 22098 80031898 21A08000 */  addu       $s4, $a0, $zero
@@ -175,4 +175,4 @@ glabel func_80031890
     /* 22318 80031B18 3000BD27 */  addiu      $sp, $sp, 0x30
     /* 2231C 80031B1C 0800E003 */  jr         $ra
     /* 22320 80031B20 00000000 */   nop
-endlabel func_80031890
+endlabel object_DeflectFromFighterHit

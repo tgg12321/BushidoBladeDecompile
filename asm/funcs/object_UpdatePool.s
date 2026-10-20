@@ -745,7 +745,7 @@ glabel object_UpdatePool
     /* 22048 80031848 0C00C22B */  slti       $v0, $fp, 0xC
     /* 2204C 8003184C 62FD4014 */  bnez       $v0, .L80030DD8
     /* 22050 80031850 6400D626 */   addiu     $s6, $s6, 0x64
-    /* 22054 80031854 82C0000C */  jal        func_80030208
+    /* 22054 80031854 82C0000C */  jal        object_SubmitPoolTransforms
     /* 22058 80031858 00000000 */   nop
     /* 2205C 8003185C 4C00BF8F */  lw         $ra, 0x4C($sp)
     /* 22060 80031860 4800BE8F */  lw         $fp, 0x48($sp)

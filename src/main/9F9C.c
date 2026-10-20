@@ -1413,18 +1413,18 @@ void func_8001CD68(Unk8001CD68Rec *arg0) {
 }
 
 /* P1/P2 round scores and tiebreakers, declared here as [2] arrays because
- * func_8001CE60 indexes them by player (D_800A38B0); func_800340A0's
+ * func_8001CE60 indexes them by player (D_800A38B0); fight_RecordMatchResult's
  * declarations in src/main/17AFC.c give the same bytes as single u8s
  * (per-file declarations: Q21-Q25, no-new-park-categories aggregate-merge
  * exception). No single declaration compiles both files' accesses with an
  * admissible spelling. Under scalars, func_8001CE60's player-indexed accesses
  * are not produced (conditional selects compile to separate direct accesses;
  * a pointer pun is refused). Under an aggregate, every measured counting
- * spelling of func_800340A0 (Q22/Q23 set-asides excluded) misses: constant
- * subscripts put element 0 behind a base register, and the index-variable and
- * regrouped-condition spellings miss its round-result stores or compares; the
- * dummy-index and pointer-alias spellings that match are refused/set aside
- * (Q22/Q23). */
+ * spelling of fight_RecordMatchResult (Q22/Q23 set-asides excluded) misses:
+ * constant subscripts put element 0 behind a base register, and the
+ * index-variable and regrouped-condition spellings miss its round-result stores
+ * or compares; the dummy-index and pointer-alias spellings that match are
+ * refused/set aside (Q22/Q23). */
 extern u8 D_800A3898[2];
 extern u8 D_800A38AA[2];
 
@@ -1461,7 +1461,7 @@ void func_8001CE60(void) {
             }
             if (++D_800A381E == 0x50) {
                 D_800A381E = 0;
-                func_800340A0();
+                fight_RecordMatchResult();
                 D_800A36E8 = 1;
             }
         } else if (D_800A3816 != 0) {
@@ -1510,7 +1510,7 @@ void func_8001CE60(void) {
             if (D_800A3920 == 0x5A || D_800A3920 == 0xB4) {
                 D_800A3920 = 0;
                 if (D_800A3898[D_800A38B0 == 0] == D_800A37F8) {
-                    func_800340A0();
+                    fight_RecordMatchResult();
                     D_800A36E8 = 1;
                 } else {
                     D_800A3670 = 1;
@@ -1543,7 +1543,7 @@ void func_8001CE60(void) {
             }
             if (++D_800A36E8 == temp) {
                 D_800A36E8 = 0;
-                func_800342A0();
+                fight_AdvanceMatch();
             }
         } else if (D_80101EC8[0].unk_96 != 0 && D_80101EC8[1].unk_96 != 0) {
             D_800A3816 = 1;

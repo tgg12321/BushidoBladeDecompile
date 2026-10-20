@@ -1,4 +1,4 @@
-glabel func_800300B4
+glabel object_SubmitAttachedTransform
     /* 208B4 800300B4 A0FFBD27 */  addiu      $sp, $sp, -0x60
     /* 208B8 800300B8 5400B3AF */  sw         $s3, 0x54($sp)
     /* 208BC 800300BC 21988000 */  addu       $s3, $a0, $zero
@@ -84,4 +84,4 @@ glabel func_800300B4
     /* 209FC 800301FC 6000BD27 */  addiu      $sp, $sp, 0x60
     /* 20A00 80030200 0800E003 */  jr         $ra
     /* 20A04 80030204 00000000 */   nop
-endlabel func_800300B4
+endlabel object_SubmitAttachedTransform
