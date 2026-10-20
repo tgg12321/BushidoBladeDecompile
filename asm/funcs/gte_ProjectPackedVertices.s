@@ -1,4 +1,4 @@
-glabel func_8004A808
+glabel gte_ProjectPackedVertices
     /* 3B008 8004A808 FDFF8424 */  addiu      $a0, $a0, -0x3
     /* 3B00C 8004A80C 00000E96 */  lhu        $t6, 0x0($s0)
     /* 3B010 8004A810 02000F96 */  lhu        $t7, 0x2($s0)
@@ -78,4 +78,4 @@ glabel func_8004A808
     /* 3B12C 8004A92C 20800802 */  add        $s0, $s0, $t0 /* handwritten instruction */
     /* 3B130 8004A930 0800E003 */  jr         $ra
     /* 3B134 8004A934 00000000 */   nop
-endlabel func_8004A808
+endlabel gte_ProjectPackedVertices

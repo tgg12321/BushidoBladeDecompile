@@ -940,7 +940,7 @@ typedef struct {
     SVECTOR unk34;  /* RotTransPers in */
     s32 unk3C;      /* RotTransPers' p */
     u8 unk40[4];    /* no access */
-    u32 unk44;      /* func_80052C28's depth, the OT index */
+    u32 unk44;      /* gpu_DepthToOtIndex's depth, the OT index */
 } Unk1F8000B8_800620B8;
 
 /* func_80063084's layout (Unk1F8000B8Union.v80063084). SetTransMatrix is handed
@@ -953,7 +953,7 @@ typedef struct {
     SVECTOR unk2C;  /* RotTransPers in */
     s32 unk34;      /* RotTransPers' p */
     s32 unk38;      /* D_800F0BEC[i] - 15, the colour scale */
-    s32 unk3C;      /* func_80052C28's depth, the OT index */
+    s32 unk3C;      /* gpu_DepthToOtIndex's depth, the OT index */
 } Unk1F8000B8_80063084;
 
 /* func_800646E8's layout (Unk1F8000B8Union.v800646E8). SetTransMatrix is handed

@@ -12,8 +12,8 @@ extern void func_80052C10(void);
 
 INCLUDE_ASM("asm/funcs", math_RotMatrixZYX);
 INCLUDE_ASM("asm/funcs", func_8004A4E0);
-INCLUDE_ASM("asm/funcs", func_8004A76C);
-INCLUDE_ASM("asm/funcs", func_8004A808);
+INCLUDE_ASM("asm/funcs", gte_ProjectSVectorTriples);
+INCLUDE_ASM("asm/funcs", gte_ProjectPackedVertices);
 
 void func_8004A938(void) {}
 
@@ -70,7 +70,7 @@ INCLUDE_ASM("asm/funcs", func_80051D08);
 INCLUDE_ASM("asm/funcs", func_80051ED4);
 INCLUDE_ASM("asm/funcs", func_800520B8);
 INCLUDE_ASM("asm/funcs", func_800523E0);
-INCLUDE_ASM("asm/funcs", func_800525D8);
+INCLUDE_ASM("asm/funcs", gte_NormalizeIRVector);
 /* Hand-written asm in the PsyQ source: trapping add/addi/sub ops GCC cannot
  * emit, a dead delay-slot init, three separate jr $ra exits; GTE LZCS/LZCR
  * leading-zero count. */
@@ -102,6 +102,6 @@ INCLUDE_ASM("asm/funcs", func_80052B7C);
  * results in $t0-$t2, a nop in the jr delay slot. */
 INCLUDE_ASM("asm/funcs", gte_ReadFarColor);
 INCLUDE_ASM("asm/funcs", func_80052C10);
-INCLUDE_ASM("asm/funcs", func_80052C28);
+INCLUDE_ASM("asm/funcs", gpu_DepthToOtIndex);
 INCLUDE_ASM("asm/funcs", func_80052C4C);
 INCLUDE_ASM("asm/funcs", gte_ReadIR1IR2Sra2);

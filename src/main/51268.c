@@ -814,7 +814,7 @@ void eff_DrawBillboardList(s16 *arg0, s32 *arg1) {
         SetTransMatrix((MATRIX *)((u8 *)var_3 - 0x14));
         RotTransPers(var_5, D_800A34B8, var_6, D_800A34CC);
         gte_stsz(D_800A34D0);
-        *z = func_80052C28(*D_800A34D0, 0);
+        *z = gpu_DepthToOtIndex(*D_800A34D0, 0);
         if (*z < 0x1005 && (*D_800A34B0 / 256 >> 4) < *z) {
             *D_800A3494 = (u16)(((D_800A348C->clut_x >> 4) & 0x3F) +
                                 (D_800A348C->clut_y << 6));
@@ -991,7 +991,7 @@ s32 func_8006295C(void) {
             RotTransPers4(var_16, var_16 + 4, var_16 + 8, var_16 + 12, sxy,
                           sxy + 1, sxy + 2, sxy + 3, var_2, D_800A34CC);
             gte_stsz(D_800A34D0);
-            *D_800A34D0 = func_80052C28(*D_800A34D0, 0);
+            *D_800A34D0 = gpu_DepthToOtIndex(*D_800A34D0, 0);
             if (*D_800A34D0 == 0) {
                 *D_800A34D0 = 1;
             }
@@ -1139,7 +1139,7 @@ s32 func_80063084(void) {
                 *D_800A34D8 = *D_800A349C + (*D_800A34A0 << 8);
                 *D_800A34DC = *D_800A3498 + (*D_800A34A4 << 8);
                 *D_800A34E0 = *D_800A349C + (*D_800A34A4 << 8);
-                *z = func_80052C28(*D_800A34D0, 0);
+                *z = gpu_DepthToOtIndex(*D_800A34D0, 0);
                 if (*z < 0x1005 && *D_800A34B0 / 1000 >> 4 < *z) {
                     *D_800A34B4 = *D_800A34B0 / *D_800A34D0;
                     /* Sprite size = base size * depth scale, in 1/256 units,
@@ -1380,7 +1380,7 @@ s32 func_80063E10(s32 arg0) {
         if (*D_800A34D0 <= 0) {
             continue;
         }
-        *D_800A34D0 = func_80052C28(*D_800A34D0 - 50, 0);
+        *D_800A34D0 = gpu_DepthToOtIndex(*D_800A34D0 - 50, 0);
         if (*D_800A34D0 >= 0x1005) {
             continue;
         }
@@ -1524,7 +1524,7 @@ s32 func_800646E8(void) {
             *D_800A34A0 = D_800A3488->v;
             *D_800A349C = D_800A3488->u + 0x3F;
             *D_800A34A4 = D_800A3488->v + 0x1F;
-            *var_11 = func_80052C28(*D_800A34D0, 0);
+            *var_11 = gpu_DepthToOtIndex(*D_800A34D0, 0);
             if (*var_11 >= 0x1005) {
                 continue;
             }
@@ -2734,7 +2734,7 @@ void eff_UpdateParticles(s32 arg0, s32 arg1) {
             continue;
         }
         D_800A34D0[1] = *D_800A34D0 ? *D_800A34D0 : 1;
-        *D_800A34D0 = func_80052C28(D_800A34D0[1], 0);
+        *D_800A34D0 = gpu_DepthToOtIndex(D_800A34D0[1], 0);
         if (*D_800A34D0 == 0) {
             *D_800A34D0 = 1;
         }

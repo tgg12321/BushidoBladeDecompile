@@ -80,7 +80,7 @@ glabel func_8003DBE4
     /* 2E4F4 8003DCF4 00FF163C */  lui        $s6, (0xFF000000 >> 16)
   .L8003DCF8:
     /* 2E4F8 8003DCF8 82201400 */  srl        $a0, $s4, 2
-    /* 2E4FC 8003DCFC 0A4B010C */  jal        func_80052C28
+    /* 2E4FC 8003DCFC 0A4B010C */  jal        gpu_DepthToOtIndex
     /* 2E500 8003DD00 02000524 */   addiu     $a1, $zero, 0x2
     /* 2E504 8003DD04 21284000 */  addu       $a1, $v0, $zero
     /* 2E508 8003DD08 0010A228 */  slti       $v0, $a1, 0x1000

@@ -242,7 +242,7 @@ glabel eff_DrawBillboardList
     /* 52C48 80062448 0404828F */  lw         $v0, %gp_rel(D_800A34D0)($gp)
     /* 52C4C 8006244C 00000000 */  nop
     /* 52C50 80062450 0000448C */  lw         $a0, 0x0($v0)
-    /* 52C54 80062454 0A4B010C */  jal        func_80052C28
+    /* 52C54 80062454 0A4B010C */  jal        gpu_DepthToOtIndex
     /* 52C58 80062458 21280000 */   addu      $a1, $zero, $zero
     /* 52C5C 8006245C 21184000 */  addu       $v1, $v0, $zero
     /* 52C60 80062460 0510622C */  sltiu      $v0, $v1, 0x1005

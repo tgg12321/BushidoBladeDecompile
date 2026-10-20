@@ -1,4 +1,4 @@
-glabel func_8004954C
+glabel math_UnorderedPairIndex
     /* 39D4C 8004954C F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 39D50 80049550 21380000 */  addu       $a3, $zero, $zero
     /* 39D54 80049554 0600A018 */  blez       $a1, .L80049570
@@ -15,4 +15,4 @@ glabel func_8004954C
     /* 39D78 80049578 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 39D7C 8004957C 0800E003 */  jr         $ra
     /* 39D80 80049580 00000000 */   nop
-endlabel func_8004954C
+endlabel math_UnorderedPairIndex

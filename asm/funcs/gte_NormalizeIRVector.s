@@ -1,4 +1,4 @@
-glabel func_800525D8
+glabel gte_NormalizeIRVector
     /* 42DD8 800525D8 00480848 */  mfc2       $t0, $9 /* handwritten instruction */
     /* 42DDC 800525DC 00500948 */  mfc2       $t1, $10 /* handwritten instruction */
     /* 42DE0 800525E0 00580A48 */  mfc2       $t2, $11 /* handwritten instruction */
@@ -51,4 +51,4 @@ glabel func_800525D8
     /* 42E94 80052694 0750CA01 */  srav       $t2, $t2, $t6
     /* 42E98 80052698 0800E003 */  jr         $ra
     /* 42E9C 8005269C 00000000 */   nop
-endlabel func_800525D8
+endlabel gte_NormalizeIRVector

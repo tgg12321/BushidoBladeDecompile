@@ -1,4 +1,4 @@
-glabel func_80052C28
+glabel gpu_DepthToOtIndex
     /* 43428 80052C28 03000824 */  addiu      $t0, $zero, 0x3
     /* 4342C 80052C2C 22280501 */  sub        $a1, $t0, $a1 /* handwritten instruction */
     /* 43430 80052C30 0620A400 */  srlv       $a0, $a0, $a1
@@ -8,4 +8,4 @@ glabel func_80052C28
     /* 43440 80052C40 07200401 */  srav       $a0, $a0, $t0
     /* 43444 80052C44 0800E003 */  jr         $ra
     /* 43448 80052C48 FF0F8230 */   andi      $v0, $a0, 0xFFF
-endlabel func_80052C28
+endlabel gpu_DepthToOtIndex
