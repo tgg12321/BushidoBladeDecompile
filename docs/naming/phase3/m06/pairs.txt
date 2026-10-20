@@ -1,0 +1,16 @@
+Func80017A44Record.field_C=vel_x
+Func80017A44Record.field_10=vel_y
+Func80017A44Record.field_14=vel_z
+Func80017A44Record.field_1C=a_edge_count
+Func80017A44Record.field_20=b_edge_count
+Func80017A44Record.field_24=a_edges
+Func80017A44Record.field_2C=b_edges
+Func80017A44Output.records=nodes
+Unk80017FA0Rec.unk0=slot_index
+Unk80017FA0Rec.unk2=snap
+Unk80017FA0Rec.unkC=colliders
+Unk8003F824Rec.unk0=slot_index
+Unk8003F824Rec.f824_04=step_desc
+Unk8003F62CRec.unk2=snap_request
+Unk8003F62CRec.unk6=rebuild_request
+Unk8003F62CRec.unk418=step_descs

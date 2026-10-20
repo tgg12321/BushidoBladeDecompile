@@ -639,27 +639,27 @@ s32 softbody_AddSpring(Func80017A44Output *out, s32 arg1, s32 a, s32 b) {
     if (a == b) {
         return 0;
     }
-    if (out->records[a].field_18 >= 0 && out->records[b].field_18 >= 0) {
+    if (out->nodes[a].field_18 >= 0 && out->nodes[b].field_18 >= 0) {
         return 0;
     }
-    for (i = 0; i < out->records[a].field_1C; i++) {
-        if (out->edges[out->records[a].field_24[i]].ends.node.b == b) {
+    for (i = 0; i < out->nodes[a].a_edge_count; i++) {
+        if (out->edges[out->nodes[a].a_edges[i]].ends.node.b == b) {
             return 0;
         }
     }
-    for (i = 0; i < out->records[a].field_20; i++) {
-        if (out->edges[out->records[a].field_2C[i]].ends.node.a == b) {
+    for (i = 0; i < out->nodes[a].b_edge_count; i++) {
+        if (out->edges[out->nodes[a].b_edges[i]].ends.node.a == b) {
             return 0;
         }
     }
-    dist = math_Distance3D(out->records[a].pos, out->records[b].pos);
+    dist = math_Distance3D(out->nodes[a].pos, out->nodes[b].pos);
     edge = &out->edges[out->edge_count];
     edge->dist = dist;
     edge->field_8 = dist * 3;
     edge->group_id = arg1;
     edge->ends.pair = (a << 16) | b;
-    out->records[a].field_24[out->records[a].field_1C++] = out->edge_count;
-    out->records[b].field_2C[out->records[b].field_20++] = out->edge_count;
+    out->nodes[a].a_edges[out->nodes[a].a_edge_count++] = out->edge_count;
+    out->nodes[b].b_edges[out->nodes[b].b_edge_count++] = out->edge_count;
     out->edge_count++;
     return 1;
 }
@@ -685,7 +685,7 @@ void softbody_Build(Func80017A44Input *a0, Func80017A44Output *a1) {
     SetRotMatrix(a0->matrix);
     SetTransMatrix(a0->matrix);
 
-    record_base = a1->records;
+    record_base = a1->nodes;
     for (i = 0; i < a0->count; i++) {
         record_base[i].field_18 = a0->points[i].pad;
         RotTrans(&a0->points[i], &pos, &flag);
@@ -701,11 +701,11 @@ void softbody_Build(Func80017A44Input *a0, Func80017A44Output *a1) {
         record_base[i].pos[0] = pos.vx;
         record_base[i].pos[1] = pos.vy;
         record_base[i].pos[2] = pos.vz;
-        record_base[i].field_C = 0;
-        record_base[i].field_10 = 0;
-        record_base[i].field_14 = 0;
-        record_base[i].field_1C = 0;
-        record_base[i].field_20 = 0;
+        record_base[i].vel_x = 0;
+        record_base[i].vel_y = 0;
+        record_base[i].vel_z = 0;
+        record_base[i].a_edge_count = 0;
+        record_base[i].b_edge_count = 0;
     }
 
     var_1.vx /= var_5;
@@ -759,7 +759,7 @@ s32 softbody_Create(Func80017A44Input *a0) {
     p->flags = a0->flags;
     c = (Func80017A44Record *)a0->buf;
     p->edge_count = 0;
-    p->records = c;
+    p->nodes = c;
     p->edges = (Func80017848Edge *)(c + p->count);
     softbody_Build(a0, p);
     return i;
@@ -770,8 +770,8 @@ void softbody_Free(s32 a0) { g_softbody_slots[a0].points = 0; }
 void softbody_RebaseBuffer(s32 a0, s32 a1) {
     Func80017A44Output *ptr = &g_softbody_slots[a0];
 
-    ptr->records = (Func80017A44Record *)((u8 *)ptr->records + a1);
-    ptr->edges = (Func80017848Edge *)(ptr->records + ptr->count);
+    ptr->nodes = (Func80017A44Record *)((u8 *)ptr->nodes + a1);
+    ptr->edges = (Func80017848Edge *)(ptr->nodes + ptr->count);
 }
 
 void softbody_RebasePoints(s32 a0, s32 a1) {

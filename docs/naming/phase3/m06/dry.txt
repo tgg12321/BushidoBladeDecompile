@@ -1,0 +1,383 @@
+PASS Func80017A44Record.field_C=vel_x, Func80017A44Record.field_10=vel_y, Func80017A44Record.field_14=vel_z, Func80017A44Record.field_1C=a_edge_count, Func80017A44Record.field_20=b_edge_count, Func80017A44Record.field_24=a_edges, Func80017A44Record.field_2C=b_edges, Func80017A44Output.records=nodes, Unk80017FA0Rec.unk0=slot_index, Unk80017FA0Rec.unk2=snap, Unk80017FA0Rec.unkC=colliders, Unk8003F824Rec.unk0=slot_index, Unk8003F824Rec.f824_04=step_desc, Unk8003F62CRec.unk6=rebuild_request, Unk8003F62CRec.unk418=step_descs
+decl Func80017A44Record.field_C -> vel_x  include/game.h:2170
+decl Func80017A44Record.field_10 -> vel_y  include/game.h:2171
+decl Func80017A44Record.field_14 -> vel_z  include/game.h:2172
+decl Func80017A44Record.field_1C -> a_edge_count  include/game.h:2174
+decl Func80017A44Record.field_20 -> b_edge_count  include/game.h:2175
+decl Func80017A44Record.field_24 -> a_edges  include/game.h:2176
+decl Func80017A44Record.field_2C -> b_edges  include/game.h:2177
+decl Func80017A44Output.records -> nodes  include/game.h:2210
+decl Unk80017FA0Rec.unk0 -> slot_index  include/game.h:2222
+decl Unk80017FA0Rec.unk2 -> snap  include/game.h:2223
+decl Unk80017FA0Rec.unkC -> colliders  include/game.h:2227
+decl Unk8003F824Rec.unk0 -> slot_index  src/main/2B344.c:2333
+decl Unk8003F824Rec.f824_04 -> step_desc  src/main/2B344.c:2335
+decl Unk8003F62CRec.unk6 -> rebuild_request  src/main/2B344.c:2345
+decl Unk8003F62CRec.unk418 -> step_descs  src/main/2B344.c:2347
+  round 0: 79 member error line(s)
+    src/main/2B344.c:2360 unk6 x1
+    src/main/2B344.c:2368 unk418 x1
+    src/main/2B344.c:2419 unk6 x1
+    src/main/2B344.c:2430 f824_04 x1
+    src/main/2B344.c:2430 unk418 x1
+    src/main/2B344.c:2605 unk0 x1
+    src/main/2B344.c:2610 f824_04 x1
+    src/main/2B344.c:2610 unk0 x2
+    src/main/2B344.c:2611 f824_04 x1
+    src/main/2B344.c:2612 f824_04 x1
+    src/main/2B344.c:2613 f824_04 x1
+    src/main/2B344.c:2614 f824_04 x1
+    src/main/2B344.c:2615 f824_04 x1
+    src/main/2B344.c:2685 unk6 x1
+    src/main/2B344.c:2702 unk418 x1
+    src/main/2B344.c:2703 f824_04 x1
+    src/main/2B344.c:2710 unk418 x1
+    src/main/2B344.c:2711 f824_04 x1
+    src/main/2B344.c:2731 unk0 x1
+    src/main/2B344.c:2749 unk6 x1
+    src/main/6CF8.c:642 records x2
+    src/main/6CF8.c:645 records x1
+    src/main/6CF8.c:646 records x1
+    src/main/6CF8.c:650 records x1
+    src/main/6CF8.c:651 records x1
+    src/main/6CF8.c:655 records x2
+    src/main/6CF8.c:661 records x2
+    src/main/6CF8.c:662 records x2
+    src/main/6CF8.c:688 records x1
+    src/main/6CF8.c:704 field_C x1
+    src/main/6CF8.c:705 field_10 x1
+    src/main/6CF8.c:706 field_14 x1
+    src/main/6CF8.c:707 field_1C x1
+    src/main/6CF8.c:708 field_20 x1
+    src/main/6CF8.c:762 records x1
+    src/main/6CF8.c:773 records x2
+    src/main/6CF8.c:774 records x1
+    src/main/87A0.c:50 unkC x1
+    src/main/87A0.c:92 unkC x1
+    src/main/87A0.c:198 records x1
+    src/main/87A0.c:221 field_C x1
+    src/main/87A0.c:222 field_10 x1
+    src/main/87A0.c:223 field_14 x1
+    src/main/87A0.c:228 field_C x1
+    src/main/87A0.c:229 field_10 x1
+    src/main/87A0.c:230 field_14 x1
+    src/main/87A0.c:327 records x1
+    src/main/87A0.c:346 field_C x1
+    src/main/87A0.c:347 field_C x1
+    src/main/87A0.c:350 field_C x1
+    src/main/87A0.c:352 field_10 x1
+    src/main/87A0.c:353 field_10 x1
+    src/main/87A0.c:357 field_10 x1
+    src/main/87A0.c:359 field_14 x1
+    src/main/87A0.c:360 field_14 x1
+    src/main/87A0.c:363 field_14 x1
+    src/main/87A0.c:382 field_C x1
+    src/main/87A0.c:383 field_10 x1
+    src/main/87A0.c:384 field_14 x1
+    src/main/87A0.c:385 field_1C x1
+    src/main/87A0.c:386 field_24 x1
+    src/main/87A0.c:395 field_24 x1
+    src/main/87A0.c:400 field_20 x1
+    src/main/87A0.c:401 field_2C x1
+    src/main/87A0.c:410 field_2C x1
+    src/main/87A0.c:418 unkC x1
+    src/main/87A0.c:536 field_C x1
+    src/main/87A0.c:537 field_C x1
+    src/main/87A0.c:538 field_10 x1
+    src/main/87A0.c:539 field_10 x1
+    src/main/87A0.c:540 field_14 x1
+    src/main/87A0.c:541 field_14 x1
+    src/main/87A0.c:557 unk2 x1
+    src/main/87A0.c:558 unk0 x1
+    src/main/87A0.c:562 unk0 x1
+    src/main/87A0.c:582 records x1
+    src/main/87A0.c:590 field_C x1
+    src/main/87A0.c:591 field_10 x1
+    src/main/87A0.c:592 field_14 x1
+  round 1: 14 member error line(s)
+    src/main/2B344.c:2613 unkC x1
+    src/main/2B344.c:2614 unk2 x1
+    src/main/2B344.c:2702 unk2 x1
+    src/main/2B344.c:2703 unk2 x1
+    src/main/2B344.c:2710 unk2 x1
+    src/main/2B344.c:2711 unk2 x1
+    src/main/6CF8.c:645 field_1C x1
+    src/main/6CF8.c:646 field_24 x1
+    src/main/6CF8.c:650 field_20 x1
+    src/main/6CF8.c:651 field_2C x1
+    src/main/6CF8.c:661 field_1C x1
+    src/main/6CF8.c:661 field_24 x1
+    src/main/6CF8.c:662 field_20 x1
+    src/main/6CF8.c:662 field_2C x1
+  round 2: 0 member error line(s)
+PASS Unk8003F62CRec.unk2=snap_request
+decl Unk8003F62CRec.unk2 -> snap_request  src/main/2B344.c:2343
+  round 0: 5 member error line(s)
+    src/main/2B344.c:2364 unk2 x1
+    src/main/2B344.c:2369 unk2 x1
+    src/main/2B344.c:2371 unk2 x1
+    src/main/2B344.c:2417 unk2 x1
+    src/main/2B344.c:2694 unk2 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -2170,3 +2170,3 @@
+-    s32 field_C;
+-    s32 field_10;
+-    s32 field_14;
++    s32 vel_x;
++    s32 vel_y;
++    s32 vel_z;
+@@ -2174,4 +2174,4 @@
+-    s32 field_1C;   /* entries used in field_24 */
+-    s32 field_20;   /* entries used in field_2C */
+-    u8 field_24[8]; /* edges whose node a is this record */
+-    u8 field_2C[8]; /* edges whose node b is this record */
++    s32 a_edge_count;   /* entries used in field_24 */
++    s32 b_edge_count;   /* entries used in field_2C */
++    u8 a_edges[8]; /* edges whose node a is this record */
++    u8 b_edges[8]; /* edges whose node b is this record */
+@@ -2210 +2210 @@
+-    Func80017A44Record *records;
++    Func80017A44Record *nodes;
+@@ -2222,2 +2222,2 @@
+-    /* 0x00 */ s16 unk0;
+-    /* 0x02 */ u8 unk2;
++    /* 0x00 */ s16 slot_index;
++    /* 0x02 */ u8 snap;
+@@ -2227 +2227 @@
+-    /* 0x0C */ struct Unk8003F6D8Coll *unkC;
++    /* 0x0C */ struct Unk8003F6D8Coll *colliders;
+--- a/src/main/2B344.c
++++ b/src/main/2B344.c
+@@ -2333 +2333 @@
+-    /* 0x00 */ s16 unk0;
++    /* 0x00 */ s16 slot_index;
+@@ -2335 +2335 @@
+-    /* 0x04 */ Unk80017FA0Rec f824_04;
++    /* 0x04 */ Unk80017FA0Rec step_desc;
+@@ -2343 +2343 @@
+-    /* 0x002 */ s16 unk2;
++    /* 0x002 */ s16 snap_request;
+@@ -2345 +2345 @@
+-    /* 0x006 */ s16 unk6;
++    /* 0x006 */ s16 rebuild_request;
+@@ -2347 +2347 @@
+-    /* 0x418 */ Unk80017FA0Rec unk418[5];
++    /* 0x418 */ Unk80017FA0Rec step_descs[5];
+@@ -2360 +2360 @@
+-    if (s0->unk6) {
++    if (s0->rebuild_request) {
+@@ -2364 +2364 @@
+-    if (s0->unk2) {
++    if (s0->snap_request) {
+@@ -2368,2 +2368,2 @@
+-    softbody_UpdateList(s0->unk418, s0->count);
+-    if (s0->unk2) {
++    softbody_UpdateList(s0->step_descs, s0->count);
++    if (s0->snap_request) {
+@@ -2371 +2371 @@
+-        s0->unk2 = 0;
++        s0->snap_request = 0;
+@@ -2417 +2417 @@
+-    var_0->unk2 = 0;
++    var_0->snap_request = 0;
+@@ -2419 +2419 @@
+-    var_0->unk6 = 0;
++    var_0->rebuild_request = 0;
+@@ -2430 +2430 @@
+-            var_0->unk418[var_0->count] = rec->f824_04;
++            var_0->step_descs[var_0->count] = rec->step_desc;
+@@ -2605 +2605 @@
+-    rec->unk0 = softbody_Create(&init.in);
++    rec->slot_index = softbody_Create(&init.in);
+@@ -2610,6 +2610,6 @@
+-    rec->f824_04.unk0 = rec->unk0;
+-    rec->f824_04.unk4 = &obj->node.xf.mat;
+-    rec->f824_04.unk8 = obj->softbody_nodes;
+-    rec->f824_04.unkC = &rec->inner.coll;
+-    rec->f824_04.unk2 = 0;
+-    rec->f824_04.unk3 = 0;
++    rec->step_desc.slot_index = rec->slot_index;
++    rec->step_desc.unk4 = &obj->node.xf.mat;
++    rec->step_desc.unk8 = obj->softbody_nodes;
++    rec->step_desc.colliders = &rec->inner.coll;
++    rec->step_desc.snap = 0;
++    rec->step_desc.unk3 = 0;
+@@ -2685 +2685 @@
+-        v1->unk6 = 1;
++        v1->rebuild_request = 1;
+@@ -2694 +2694 @@
+-            v1->unk2 = 1;
++            v1->snap_request = 1;
+@@ -2702,2 +2702,2 @@
+-        a0->unk418[i].unk2 = 1;
+-        a0->recs[i].f824_04.unk2 = 1;
++        a0->step_descs[i].snap = 1;
++        a0->recs[i].step_desc.snap = 1;
+@@ -2710,2 +2710,2 @@
+-        a0->unk418[i].unk2 = 0;
+-        a0->recs[i].f824_04.unk2 = 0;
++        a0->step_descs[i].snap = 0;
++        a0->recs[i].step_desc.snap = 0;
+@@ -2731 +2731 @@
+-            softbody_Free(s2->recs[s0].unk0);
++            softbody_Free(s2->recs[s0].slot_index);
+@@ -2749 +2749 @@
+-        v1->unk6 = 1;
++        v1->rebuild_request = 1;
+--- a/src/main/6CF8.c
++++ b/src/main/6CF8.c
+@@ -642 +642 @@
+-    if (out->records[a].field_18 >= 0 && out->records[b].field_18 >= 0) {
++    if (out->nodes[a].field_18 >= 0 && out->nodes[b].field_18 >= 0) {
+@@ -645,2 +645,2 @@
+-    for (i = 0; i < out->records[a].field_1C; i++) {
+-        if (out->edges[out->records[a].field_24[i]].ends.node.b == b) {
++    for (i = 0; i < out->nodes[a].a_edge_count; i++) {
++        if (out->edges[out->nodes[a].a_edges[i]].ends.node.b == b) {
+@@ -650,2 +650,2 @@
+-    for (i = 0; i < out->records[a].field_20; i++) {
+-        if (out->edges[out->records[a].field_2C[i]].ends.node.a == b) {
++    for (i = 0; i < out->nodes[a].b_edge_count; i++) {
++        if (out->edges[out->nodes[a].b_edges[i]].ends.node.a == b) {
+@@ -655 +655 @@
+-    dist = math_Distance3D(out->records[a].pos, out->records[b].pos);
++    dist = math_Distance3D(out->nodes[a].pos, out->nodes[b].pos);
+@@ -661,2 +661,2 @@
+-    out->records[a].field_24[out->records[a].field_1C++] = out->edge_count;
+-    out->records[b].field_2C[out->records[b].field_20++] = out->edge_count;
++    out->nodes[a].a_edges[out->nodes[a].a_edge_count++] = out->edge_count;
++    out->nodes[b].b_edges[out->nodes[b].b_edge_count++] = out->edge_count;
+@@ -688 +688 @@
+-    record_base = a1->records;
++    record_base = a1->nodes;
+@@ -704,5 +704,5 @@
+-        record_base[i].field_C = 0;
+-        record_base[i].field_10 = 0;
+-        record_base[i].field_14 = 0;
+-        record_base[i].field_1C = 0;
+-        record_base[i].field_20 = 0;
++        record_base[i].vel_x = 0;
++        record_base[i].vel_y = 0;
++        record_base[i].vel_z = 0;
++        record_base[i].a_edge_count = 0;
++        record_base[i].b_edge_count = 0;
+@@ -762 +762 @@
+-    p->records = c;
++    p->nodes = c;
+@@ -773,2 +773,2 @@
+-    ptr->records = (Func80017A44Record *)((u8 *)ptr->records + a1);
+-    ptr->edges = (Func80017848Edge *)(ptr->records + ptr->count);
++    ptr->nodes = (Func80017A44Record *)((u8 *)ptr->nodes + a1);
++    ptr->edges = (Func80017848Edge *)(ptr->nodes + ptr->count);
+--- a/src/main/87A0.c
++++ b/src/main/87A0.c
+@@ -50 +50 @@
+-    temp = a0->unkC;
++    temp = a0->colliders;
+@@ -92 +92 @@
+-    SCR->scr60 = a0->unkC->count;
++    SCR->scr60 = a0->colliders->count;
+@@ -198 +198 @@
+-    base = arg0->records;
++    base = arg0->nodes;
+@@ -221,3 +221,3 @@
+-                p2->field_C /= 4;
+-                p2->field_10 /= 4;
+-                p2->field_14 /= 4;
++                p2->vel_x /= 4;
++                p2->vel_y /= 4;
++                p2->vel_z /= 4;
+@@ -228,3 +228,3 @@
+-                p1->field_C /= 4;
+-                p1->field_10 /= 4;
+-                p1->field_14 /= 4;
++                p1->vel_x /= 4;
++                p1->vel_y /= 4;
++                p1->vel_z /= 4;
+@@ -327 +327 @@
+-    node = arg1->records;
++    node = arg1->nodes;
+@@ -346,2 +346,2 @@
+-                node->field_C =
+-                    node->field_C / 2 +
++                node->vel_x =
++                    node->vel_x / 2 +
+@@ -350 +350 @@
+-                node->pos[0] = SCR->pos[0] + node->field_C;
++                node->pos[0] = SCR->pos[0] + node->vel_x;
+@@ -352,2 +352,2 @@
+-                node->field_10 =
+-                    node->field_10 / 2 +
++                node->vel_y =
++                    node->vel_y / 2 +
+@@ -357 +357 @@
+-                node->pos[1] = SCR->pos[1] + node->field_10;
++                node->pos[1] = SCR->pos[1] + node->vel_y;
+@@ -359,2 +359,2 @@
+-                node->field_14 =
+-                    node->field_14 / 2 +
++                node->vel_z =
++                    node->vel_z / 2 +
+@@ -363 +363 @@
+-                node->pos[2] = SCR->pos[2] + node->field_14;
++                node->pos[2] = SCR->pos[2] + node->vel_z;
+@@ -382,5 +382,5 @@
+-        vx = node->field_C;
+-        vy = node->field_10;
+-        vz = node->field_14;
+-        var_14 = node->field_1C;
+-        bits = *(s32 *)&node->field_24[0];
++        vx = node->vel_x;
++        vy = node->vel_y;
++        vz = node->vel_z;
++        var_14 = node->a_edge_count;
++        bits = *(s32 *)&node->a_edges[0];
+@@ -395 +395 @@
+-                bits = *(s32 *)&node->field_24[4];
++                bits = *(s32 *)&node->a_edges[4];
+@@ -400,2 +400,2 @@
+-        var_14 = node->field_20;
+-        bits2 = *(s32 *)&node->field_2C[0];
++        var_14 = node->b_edge_count;
++        bits2 = *(s32 *)&node->b_edges[0];
+@@ -410 +410 @@
+-                bits2 = *(s32 *)&node->field_2C[4];
++                bits2 = *(s32 *)&node->b_edges[4];
+@@ -418 +418 @@
+-        if (arg0->unkC != 0) {
++        if (arg0->colliders != 0) {
+@@ -536,6 +536,6 @@
+-        node->field_C = (SCR->scr18[0] * 7) >> 3;
+-        node->pos[0] = SCR->pos[0] + SCR->dpos[0] + node->field_C;
+-        node->field_10 = ((SCR->scr18[1] * 7) >> 3) + 0x190;
+-        node->pos[1] = SCR->pos[1] + SCR->dpos[1] + node->field_10;
+-        node->field_14 = (SCR->scr18[2] * 7) >> 3;
+-        node->pos[2] = SCR->pos[2] + SCR->dpos[2] + node->field_14;
++        node->vel_x = (SCR->scr18[0] * 7) >> 3;
++        node->pos[0] = SCR->pos[0] + SCR->dpos[0] + node->vel_x;
++        node->vel_y = ((SCR->scr18[1] * 7) >> 3) + 0x190;
++        node->pos[1] = SCR->pos[1] + SCR->dpos[1] + node->vel_y;
++        node->vel_z = (SCR->scr18[2] * 7) >> 3;
++        node->pos[2] = SCR->pos[2] + SCR->dpos[2] + node->vel_z;
+@@ -557,2 +557,2 @@
+-            if (s0->unk2 & 1) {
+-                s16 val = s0->unk0;
++            if (s0->snap & 1) {
++                s16 val = s0->slot_index;
+@@ -562 +562 @@
+-                s16 val = s0->unk0;
++                s16 val = s0->slot_index;
+@@ -582 +582 @@
+-    dst = arg1->records;
++    dst = arg1->nodes;
+@@ -590,3 +590,3 @@
+-        dst->field_C = 0;
+-        dst->field_10 = 0;
+-        dst->field_14 = 0;
++        dst->vel_x = 0;
++        dst->vel_y = 0;
++        dst->vel_z = 0;
+DRY RUN: 4 file(s) would change; nothing written
+OK: every member access renamed
