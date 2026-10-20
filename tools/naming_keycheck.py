@@ -165,9 +165,10 @@ Aggregate tables across every TU block competing member destinations, including 
 .inc declarations.
 
 Scoped destinations cannot equal global sources/destinations. Member destinations may be
-shared only by member pairs naming distinct members (naming-bar §5: the code shows they hold
-the same thing, and all of those pairs are in the wave); n must still be fresh against every
-other member, type and macro. Local destinations may be shared only across distinct functions. For local pairs,
+shared only by member pairs of distinct aggregates (naming-bar §5: the code shows they hold
+the same thing, and all of those pairs are in the wave); the aggregate is the resolved outer
+definition (a tag and its typedef are one; T.u.m is T's), and n must still be fresh against
+every other member, type and macro. Local destinations may be shared only across distinct functions. For local pairs,
 macro arguments containing the old name fail even when unchanged. For member pairs, a macro
 argument naming m (edited to n or unchanged) is allowed only when every definition of that
 macro expands all its parameters plainly (no dropped, stringized, pasted or variadic parameter;
@@ -3127,12 +3128,11 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
         peers = [o for o, n in pairs.items() if o != spec and n == new]
         if "." in spec and peers:
             # naming-bar §5: members the code shows hold the same thing may share
-            # one new name when all of those pairs land in this wave; each pair
-            # names a distinct member (T, path). n stays fresh against every other
-            # member, type and macro (member_freshness below).
-            keys = [member_scope_key(scoped_type_name(scoped_parts(o)[0], globals), scoped_parts(o)[1])
-                    for o in (spec, *peers) if "." in o]
-            if len(keys) != 1 + len(peers) or len(set(keys)) != len(keys):
+            # one new name when all of those pairs land in this wave. Every sharer
+            # is a member pair; each names a member of a different aggregate,
+            # checked on the resolved definitions below (spellings can alias). n
+            # stays fresh against every other member, type and macro.
+            if any("." not in o for o in peers):
                 raise ValueError(f"{spec}: scoped destination {new} is shared by a pair that is not a distinct member pair")
         elif any("." in spec or "." in o or scoped_type_name(spec.split(":")[0], globals) == scoped_type_name(o.split(":")[0], globals) for o in peers):
             raise ValueError(f"{spec}: scoped destination {new} is shared by another pair")
@@ -3140,6 +3140,7 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
         if any(macro_uses(text, old, name_only=True) or macro_uses(text, new, name_only=True)
                for text in macro_sources.values()):
             raise ValueError(f"{spec}={new}: scoped names are not fresh in macros (#define name)")
+    outer_defs = {}  # member spec -> (path, token index of its outer aggregate's "{")
     for spec, new in pairs.items():
         member = "." in spec
         scope, member_path, old = scoped_parts(spec)
@@ -3214,6 +3215,7 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                         raise ValueError(f"{spec}: member is not declared at depth 1 of "
                                          + ("the named nested aggregate" if member_path else "T (a nested member needs T.u.m)"))
                     found.append((path, [k]))
+                    outer_defs[spec] = (path, j)
             else:
                 for name, _, begin, end in function_definitions(text):
                     if name == scope:
@@ -3484,6 +3486,16 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
                         else:
                             raise ValueError(f"{spec}: overlapping scoped pairs")
                     edits[k] = value
+    # Shared destinations: one sharer per aggregate. Keyed on the resolved outer
+    # definition, so a tag and its typedef are one T, and a nested member (T.u.m)
+    # counts as T's: no two members of one T share n, at any depth.
+    owners = {}
+    for spec, new in pairs.items():
+        if spec in outer_defs:
+            other = owners.setdefault((new, outer_defs[spec]), spec)
+            if other != spec:
+                raise ValueError(f"{spec}: scoped destination {new} is shared by a pair that is not a distinct member pair "
+                                 f"({other} names the same aggregate)")
     return plan
 
 

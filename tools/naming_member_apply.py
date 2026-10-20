@@ -247,7 +247,11 @@ def run_pass(pairs, mv, srcs, decl_files, unresolved):
     for t, m, n in pairs:
         rename_declaration(t, m, n, decl_files)
     olds = {m: n for _, m, n in pairs}
-    news = {n: m for _, m, n in pairs}
+    news = {}  # n -> every old name it replaces in this pass
+    for _, m, n in pairs:
+        news.setdefault(n, [])
+        if m not in news[n]:
+            news[n].append(m)
     spans = {}      # owner (path, error line) -> the 0-based line indices it covers
     originals = {}  # (path, line index) -> the line before this tool first edited it
     frozen = set()  # (path, line index) restored for a hand edit: never edited again
@@ -287,7 +291,8 @@ def run_pass(pairs, mv, srcs, decl_files, unresolved):
             owner = owner_of(p, ln - 1)
             if name in news and owner:
                 # the edit reached `name`'s old spelling through another type
-                give_up(p, owner, f"also reaches `{news[name]}` through another type")
+                give_up(p, owner, "also reaches " + " / ".join(f"`{m}`" for m in news[name])
+                        + " through another type")
                 continue
             if name not in olds:
                 give_up(p, owner or (p, ln), f"no member named `{name}` (not a pair of this pass)")

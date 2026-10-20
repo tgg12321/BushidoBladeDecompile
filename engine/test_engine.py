@@ -4562,10 +4562,52 @@ def test_naming_keycheck_scoped_pairs() -> None:
     same_t = "struct T { int a; int b; };\nint f(struct T *t) { return t->a + t->b; }\n"
     ok, why = proof("T.a=n,T.b=n", {"src/a.c": same_t}, {"src/a.c": same_t.replace("a", "n").replace("b", "n")})
     check("keycheck: two members of one T sharing n refused (" + why + ")", not ok and "distinct member" in why)
-    ok, why = proof("FaceTri.col=vtx,f:t=vtx", {"src/a.c": faces},
-                    {"src/a.c": faces.replace("FaceTri.col", "")})
+    local_new = faces.replace("FaceTri *t, ", "FaceTri *vtx, ").replace("t->col[0]", "vtx->vtx[0]")
+    local_new = local_new.replace("unsigned char col[4]; } FaceTri", "unsigned char vtx[4]; } FaceTri")
+    ok, why = proof("FaceTri.col=vtx,f:t=vtx", {"src/a.c": faces}, {"src/a.c": local_new})
     check("keycheck: a member pair sharing n with a local pair refused (" + why + ")",
           not ok and "distinct member" in why)
+    # The aggregate is the resolved definition: a tag and its typedef are one T, and
+    # a nested member (T.u.m) is T's.
+    tagged = ("typedef struct Tag { int a; int b; int m; } T;\n"
+              "int f(T *t) { return t->a + t->b + t->m; }\n")
+    for spec, new_text in [("Tag.a=n,T.b=n", tagged.replace("int a; int b;", "int n; int n;")
+                            .replace("t->a + t->b", "t->n + t->n")),
+                           ("Tag.m=n,T.m=n", tagged.replace("int m;", "int n;").replace("t->m", "t->n"))]:
+        ok, why = proof(spec, {"src/a.c": tagged}, {"src/a.c": new_text})
+        check("keycheck: tag and typedef spellings of one T cannot share n: " + spec + " (" + why + ")",
+              not ok and "same aggregate" in why)
+    nest = ("typedef struct { int d; union { int pair; int m; } u; } T;\n"
+            "typedef struct { int m; } V;\n"
+            "int f(T *t, V *v) { return t->u.m + v->m + t->d; }\n")
+    ok, why = proof("T.u.m=n,V.m=n", {"src/a.c": nest},
+                    {"src/a.c": nest.replace("int m; } u;", "int n; } u;").replace("int m; } V;", "int n; } V;")
+                     .replace("t->u.m", "t->u.n").replace("v->m", "v->n")})
+    check("keycheck: a nested pair sharing n with another type's flat pair accepted (" + why + ")", ok)
+    ok, why = proof("T.d=n,T.u.m=n", {"src/a.c": nest},
+                    {"src/a.c": nest.replace("int d;", "int n;").replace("int m; } u;", "int n; } u;")
+                     .replace("t->u.m", "t->u.n").replace("t->d", "t->n")})
+    check("keycheck: T.a=n with T.u.b=n refused: one T (" + why + ")", not ok and "same aggregate" in why)
+    # A third type U keeps col. Keeping u->col passes. A hand edit u->col -> u->vtx is
+    # token-explained (the token proof never resolves a receiver); n is fresh, so it
+    # names no member of U and the build refuses it: the member-pair contract is
+    # keycheck + oracle build (real cc1 below, skipped without the toolchain).
+    third = faces + "typedef struct { int col; } U;\nint h(U *u) { return u->col; }\n"
+    third_new = faces_new + "typedef struct { int col; } U;\nint h(U *u) { return u->vtx; }\n"
+    ok, why = proof("FaceTri.col=vtx,FaceQuad.col=vtx", {"src/a.c": third},
+                    {"src/a.c": third_new.replace("u->vtx", "u->col")})
+    check("keycheck: a third type keeping col and its access passes (" + why + ")", ok)
+    make_text = (Path(nk.CODE) / "Makefile").read_text(encoding="utf-8")
+    if not nk.shutil.which(nk.cpp_command(make_text)[0]) or not (nk.ROOT / nk.cc1_command(make_text, "src/a.c")[0]).is_file():
+        skip("keycheck: shared-n wrong receiver", "project cpp / cc1 unavailable")
+    else:
+        tree = nk.CppTree({"Makefile": make_text, "src/a.c": third_new}, "shared-n-third")
+        try:
+            result = nk.compile_cc1(tree, "src/a.c")
+        finally:
+            nk.close_cpp_trees([tree])
+        check("keycheck: the build refuses a third type's access edited to the shared n",
+              result.returncode != 0 and "has no member named `vtx'" in result.stderr)
 
     # Member pairs and macro arguments: an unchanged argument naming m is allowed when
     # the macro expands it plainly; an edited argument, or one the macro may drop,
@@ -4797,6 +4839,11 @@ def test_naming_keycheck_scoped_pairs() -> None:
                     compile_headers=False)
     check("keycheck: edited macro argument in a header no TU includes refused (" + why + ")",
           not ok and "never compiles" in why)
+    # Shared n: an edit owned by two pairs (same m and n) inside a macro argument.
+    sq_faces = sq + faces.replace("t->col[0] + q->col[1]", "SQ(t->col[0]) + SQ(q->col[1])")
+    ok, why = proof("FaceTri.col=vtx,FaceQuad.col=vtx", {"src/a.c": sq_faces},
+                    {"src/a.c": sq_faces.replace("col", "vtx")}, cpp=mini_cpp)
+    check("keycheck: shared-n edits inside macro arguments carry the combined namespace (" + why + ")", ok)
     # item 3: n as an unrelated local inside a macro argument
     b = plain_base.replace("return t->m + SQ(u->m);", "int pt = 2; return t->m + SQ(pt);")
     n_ = (plain_base.replace("struct T { int m;", "struct T { int pt;")
@@ -8328,7 +8375,8 @@ def test_naming_keycheck_scoped_pairs() -> None:
                                  "int func_80010000(int arg0){return arg0;}", "int good_fn(int count){return count;}")
         check("keycheck: CLI globally renamed local function " + scope, result == 0)
     result, output = run_main("T.m=n,U.k=n", shared_base, shared_new)
-    check("keycheck: CLI rejects shared scoped destination (" + output[-300:] + ")", result == 1)
+    check("keycheck: CLI rejects shared scoped destination (" + output[-300:] + ")",
+          result == 1 and "not fresh in cpp aggregates" in output)
     result, output = run_main("T.m=n,k=x", shared_base,
                               shared_base.replace("int m; }; union", "int n; }; union")
                               .replace("int k;", "int x;"))
@@ -10728,6 +10776,43 @@ def test_naming_member_apply() -> None:
                 pass
         check("naming_member_apply: the failure message keeps the nested path",
               "Edge.ends.node" in err.getvalue())
+        put("include/f.h", "typedef struct { s32 pad; u8 col[4]; } FaceTri;\n"
+                           "typedef struct { s32 pad; u8 col[4]; s16 uv; } FaceQuad;\n")
+        put("src/f.c", "s32 f(FaceTri *t, FaceQuad *q) {\n    return t->col[0] +\n        q->col[1];\n}\n")
+        Path(td, "pairs5.txt").write_text("FaceTri.col=vtx_ids\nFaceQuad.col=vtx_ids\n")
+
+        def face_errors(mv, srcs):
+            h = nma.rd("include/f.h")
+            members = {"t": "vtx_ids" if "col[4]; } FaceTri" not in h else "col",
+                       "q": "vtx_ids" if "col[4]; s16 uv; } FaceQuad" not in h else "col"}
+            return sorted(("src/f.c", i, field)
+                          for i, line in enumerate(nma.rd("src/f.c").split("\n"), 1)
+                          for var, field in re.findall(r"(\w)->(\w+)", line) if field != members[var])
+        nma.tracked = lambda *roots: ["include/f.h", "src/f.c"]
+        nma.compile_errors = face_errors
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            rc = nma.main([str(Path(td, "pairs5.txt"))])
+        eq("naming_member_apply: two declarations sharing n in one pass (exit 0)", rc, 0)
+        check("naming_member_apply: one pass renames both declarations and every access",
+              out.getvalue().count("PASS ") == 1
+              and Path(td, "include/f.h").read_text().count("vtx_ids[4]") == 2
+              and Path(td, "src/f.c").read_text().count("->vtx_ids[") == 2)
+        put("include/f.h", "typedef struct { s32 col; } A;\ntypedef struct { s32 idx; } B;\nstruct N { s32 col; };\n")
+        put("src/f.c", "s32 f(A *a, struct N *n) {\n    return a->col + n->col;\n}\n")
+        Path(td, "pairs6.txt").write_text("A.col=v\nB.idx=v\n")
+
+        def reach_errors(mv, srcs):
+            line = nma.rd("src/f.c").split("\n")[1]
+            if "s32 v; } A" in nma.rd("include/f.h") and "a->col" in line:
+                return [("src/f.c", 2, "col")]
+            return [("src/f.c", 2, "v")] if "n->v" in line else []
+        nma.compile_errors = reach_errors
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            rc = nma.main([str(Path(td, "pairs6.txt"))])
+        check("naming_member_apply: the report names every old name the shared n replaces",
+              rc == 1 and "also reaches `col` / `idx` through another type" in out.getvalue())
         eq("naming_member_apply: pairs sharing m and n run in one pass, a different n in another",
            nma.split_passes([("A", "col", "vtx"), ("B", "col", "vtx"), ("C", "col", "rgb"), ("D", "x", "y")]),
            [[("A", "col", "vtx"), ("B", "col", "vtx"), ("D", "x", "y")], [("C", "col", "rgb")]])
