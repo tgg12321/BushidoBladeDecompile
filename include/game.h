@@ -1454,7 +1454,9 @@ typedef struct Unk80101EC8Record {
     u16 *unk_54;
     u8 *unk_58; /* byte 3 read by func_80056FE8 */
     u16 unk_5C;
-    s16 move_is_common; /* 0/1, set alongside func_80021A98 */
+    /* 1: the last-resolved move is in g_motion_common_sections
+     * (motion_ResolveMoveData's out flag), 0: in the fighter's slot */
+    s16 move_is_common;
     u8 cur_move_is_common;
     u8 cur_move_slot;
     u8 unk_62;
@@ -1752,7 +1754,7 @@ typedef struct {
 } Tbl8008EB54Entry;
 
 /* 0x18-byte record table at 0x80099D88 (behaviour flags and random-pick
- * weights), indexed by Unk80101EC8Record.unk_443 in fighter_InitCpuControl,
+ * weights), indexed by Unk80101EC8Record.cpu_profile in fighter_InitCpuControl,
  * fighter_StepCpuPadScript, fighter_BuildCpuPad and func_80058580. */
 typedef struct Unk80099D88Rec {
     u16 flags;
@@ -1830,7 +1832,8 @@ typedef struct Unk800FF5C8Rec {
  * - h4 / h6 / h8: world_pos x / y / z; hA: orientation.vy & 0xFFF with unk_B3
  * in the top four bits; hC: unk_148; hE / h10 / h12: unk_64 / unk_66 / unk_68.
  * - b14..b16: unk_1E6 / unk_1E8 / unk_1EA >> 2, read back signed; b17: bit 0 =
- * unk_60 != 0, bit 1 = unk_61 != 0; b18: unk_62; b19: move_frame. */
+ * cur_move_is_common != 0, bit 1 = cur_move_slot != 0; b18: unk_62; b19:
+ * move_frame. */
 typedef struct Rec1C {
     MoveScript *w0;
     s16 h4;
