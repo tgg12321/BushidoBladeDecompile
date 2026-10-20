@@ -293,7 +293,7 @@ extern void func_8004668C(void);
 
 extern s16 D_800A324A;
 
-extern MATRIX D_800EEDB0;
+extern MATRIX g_math_light_plane_projection;
 
 /* row 8's last pulls (wave_Update writes [0..16]); 18 words up to
  * D_800EF848, which func_80047E5C's [v1 + 1] reaches at v1 == 17 */
@@ -557,24 +557,28 @@ void math_SetLightPlaneProjection(void) {
     s32 div = D_800F62E0[0].lmat.m[0][1];
     s32 v0 = num / div;
     s32 v1 = ((s32)D_800F62E0[0].lmat.m[0][2] << 12) / div;
-    D_800EEDB0.m[0][2] = 0;
-    D_800EEDB0.m[1][0] = 0;
+    g_math_light_plane_projection.m[0][2] = 0;
+    g_math_light_plane_projection.m[1][0] = 0;
     v1 = -(s16)v1;
-    D_800EEDB0.m[1][1] = 0;
-    D_800EEDB0.m[1][2] = 0;
-    D_800EEDB0.m[2][0] = 0;
-    D_800EEDB0.m[0][0] = 0x1000;
-    D_800EEDB0.m[2][2] = 0x1000;
+    g_math_light_plane_projection.m[1][1] = 0;
+    g_math_light_plane_projection.m[1][2] = 0;
+    g_math_light_plane_projection.m[2][0] = 0;
+    g_math_light_plane_projection.m[0][0] = 0x1000;
+    g_math_light_plane_projection.m[2][2] = 0x1000;
     v0 = -(s16)v0;
-    D_800EEDB0.m[0][1] = v0;
-    D_800EEDB0.m[2][1] = v1;
+    g_math_light_plane_projection.m[0][1] = v0;
+    g_math_light_plane_projection.m[2][1] = v1;
 }
 
 void math_ApplyLightPlaneProjection(MATRIX *a0, MATRIX *a1, s32 a2) {
-    gte_MulMatrix0ClearTrans(&D_800EEDB0, a0, a1);
-    a1->t[0] = a0->t[0] + (((a0->t[1] - a2) * D_800EEDB0.m[0][1]) >> 12);
+    gte_MulMatrix0ClearTrans(&g_math_light_plane_projection, a0, a1);
+    a1->t[0] =
+        a0->t[0] +
+        (((a0->t[1] - a2) * g_math_light_plane_projection.m[0][1]) >> 12);
     a1->t[1] = a2;
-    a1->t[2] = a0->t[2] + (((a0->t[1] - a2) * D_800EEDB0.m[2][1]) >> 12);
+    a1->t[2] =
+        a0->t[2] +
+        (((a0->t[1] - a2) * g_math_light_plane_projection.m[2][1]) >> 12);
 }
 
 void math_LightPlaneProject(s32 arg0, MATRIX *arg1, MATRIX *arg2, s32 arg3) {

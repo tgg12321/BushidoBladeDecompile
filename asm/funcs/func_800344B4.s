@@ -94,8 +94,8 @@ glabel func_800344B4
   .L80034610:
     /* 24E10 80034610 0A80013C */  lui        $at, %hi(D_800A36A4)
     /* 24E14 80034614 A43623A4 */  sh         $v1, %lo(D_800A36A4)($at)
-    /* 24E18 80034618 0A80013C */  lui        $at, %hi(D_800A3874)
-    /* 24E1C 8003461C 743820A0 */  sb         $zero, %lo(D_800A3874)($at)
+    /* 24E18 80034618 0A80013C */  lui        $at, %hi(g_fight_match_cursor)
+    /* 24E1C 8003461C 743820A0 */  sb         $zero, %lo(g_fight_match_cursor)($at)
     /* 24E20 80034620 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 24E24 80034624 00000000 */   nop
     /* 24E28 80034628 205B000C */  jal        eff_Init

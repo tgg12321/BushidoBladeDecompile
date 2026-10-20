@@ -3,10 +3,10 @@ glabel fight_AdvanceMatch
     /* 24AA4 800342A4 1000BFAF */  sw         $ra, 0x10($sp)
     /* 24AA8 800342A8 80D0000C */  jal        fight_PackMatchScores
     /* 24AAC 800342AC 00000000 */   nop
-    /* 24AB0 800342B0 0A80033C */  lui        $v1, %hi(D_800A3874)
-    /* 24AB4 800342B4 74386390 */  lbu        $v1, %lo(D_800A3874)($v1)
-    /* 24AB8 800342B8 0A80023C */  lui        $v0, %hi(D_800A389B)
-    /* 24ABC 800342BC 9B384290 */  lbu        $v0, %lo(D_800A389B)($v0)
+    /* 24AB0 800342B0 0A80033C */  lui        $v1, %hi(g_fight_match_cursor)
+    /* 24AB4 800342B4 74386390 */  lbu        $v1, %lo(g_fight_match_cursor)($v1)
+    /* 24AB8 800342B8 0A80023C */  lui        $v0, %hi(g_fight_match_count)
+    /* 24ABC 800342BC 9B384290 */  lbu        $v0, %lo(g_fight_match_count)($v0)
     /* 24AC0 800342C0 00000000 */  nop
     /* 24AC4 800342C4 0B006214 */  bne        $v1, $v0, .L800342F4
     /* 24AC8 800342C8 21180000 */   addu      $v1, $zero, $zero
@@ -51,8 +51,8 @@ glabel fight_AdvanceMatch
     /* 24B60 80034360 0A80013C */  lui        $at, %hi(D_800A3920)
     /* 24B64 80034364 203920A0 */  sb         $zero, %lo(D_800A3920)($at)
   .L80034368:
-    /* 24B68 80034368 0A80023C */  lui        $v0, %hi(D_800A3874)
-    /* 24B6C 8003436C 74384290 */  lbu        $v0, %lo(D_800A3874)($v0)
+    /* 24B68 80034368 0A80023C */  lui        $v0, %hi(g_fight_match_cursor)
+    /* 24B6C 8003436C 74384290 */  lbu        $v0, %lo(g_fight_match_cursor)($v0)
     /* 24B70 80034370 00000000 */  nop
     /* 24B74 80034374 40100200 */  sll        $v0, $v0, 1
     /* 24B78 80034378 21104500 */  addu       $v0, $v0, $a1
@@ -61,8 +61,8 @@ glabel fight_AdvanceMatch
     /* 24B84 80034384 1080013C */  lui        $at, %hi(D_80102778 + 0x4)
     /* 24B88 80034388 21082300 */  addu       $at, $at, $v1
     /* 24B8C 8003438C 7C2722A0 */  sb         $v0, %lo(D_80102778 + 0x4)($at)
-    /* 24B90 80034390 0A80023C */  lui        $v0, %hi(D_800A3874)
-    /* 24B94 80034394 74384290 */  lbu        $v0, %lo(D_800A3874)($v0)
+    /* 24B90 80034390 0A80023C */  lui        $v0, %hi(g_fight_match_cursor)
+    /* 24B94 80034394 74384290 */  lbu        $v0, %lo(g_fight_match_cursor)($v0)
     /* 24B98 80034398 00000000 */  nop
     /* 24B9C 8003439C 40100200 */  sll        $v0, $v0, 1
     /* 24BA0 800343A0 21104400 */  addu       $v0, $v0, $a0

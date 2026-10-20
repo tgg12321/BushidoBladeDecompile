@@ -249,7 +249,7 @@ extern u8 D_8008F204[];
 extern u8 *D_800900EC[];
 extern u8 D_8009016C;
 extern u32 g_font_image;
-extern u32 D_800905F8;
+extern u32 g_gpu_last_fog_ot_index;
 extern s32 D_80090600;
 extern s32 D_80090604;
 extern s16 D_80090608;
@@ -332,8 +332,8 @@ extern u8 D_800A376B;
 extern u8 D_800A376C;
 extern s16 D_800A376E;
 extern MATRIX *D_800A3778;
-/* match-result table: 0/1/2 per match, indexed by D_800A3874 */
-extern u8 D_800A377C[];
+/* match-result table: 0/1/2 per match, indexed by g_fight_match_cursor */
+extern u8 g_fight_match_results[];
 
 /* Two buffer addresses selected by frame parity: func_80016D78 sets 0x801D8800
  * / 0x801EBC00, func_80016E60 and main read [D_800A36AC & 1]. */
@@ -361,7 +361,7 @@ extern u8 D_800A37E1;
 extern s16 D_800A37E8;
 extern s16 D_800A37EA;
 extern s16 D_800A37EC;
-extern u8 D_800A37F8;
+extern u8 g_fight_win_target;
 extern u8 D_800A3804;
 extern s32 D_800A380C;
 extern u8 D_800A3816;
@@ -380,7 +380,7 @@ extern u8 *D_800A3844;
 extern s32 D_800A3858;
 extern u8 *D_800A385C;
 extern Tbl800A3860Entry *g_motion_fighter_buffers[];
-extern u8 D_800A3874;
+extern u8 g_fight_match_cursor;
 extern s16 D_800A3876;
 extern u8 *D_800A3878;
 extern s32 D_800A387C;
@@ -388,7 +388,7 @@ extern u8 g_motion_common_loaded;
 /* per player: preset motion frames (motion_InitBuffers, fighter_Update) */
 extern MotionFrame *g_motion_frame_buffers[2];
 extern u8 D_800A389A;
-extern u8 D_800A389B;
+extern u8 g_fight_match_count;
 extern u16 D_800A389C;
 extern s32 D_800A38A0;
 extern u8 D_800A38A4;
@@ -445,7 +445,7 @@ extern u8 D_800A391F;
 extern u8 D_800A3920;
 extern u8 g_comb_abort_request;
 extern u8 D_800A3929;
-extern Unk800A3D40Rec D_800A3D40[];
+extern Unk800A3D40Rec g_bitstream_delta_accumulators[];
 
 /* Three word pairs: the uncalled func_8003F5A8 stores pair i,
  * func_8003F568 zeroes all six, func_8003F5CC passes pair i to
@@ -457,9 +457,10 @@ extern Rec44 D_800F5328;
 extern Rec44 D_800F6608;
 
 /* Per-match snapshot: fight_RecordMatchResult stores both players' counters
- * (D_800A3898 / D_800A3899) for match D_800A3874; fight_PackMatchScores packs
- * the pairs into D_800A3784, func_8003C42C sums them. */
-extern u8 D_800F65F8[8][2];
+ * (D_800A3898 / D_800A3899) for match g_fight_match_cursor;
+ * fight_PackMatchScores packs the pairs into D_800A3784, func_8003C42C sums
+ * them. */
+extern u8 g_fight_match_scores[8][2];
 
 extern Unk800F68E0Rec g_replay_model_draws[0xB4];
 /* The two InitPAD receive buffers, 0x24 bytes each (sys_Init); pad_Update
@@ -602,7 +603,7 @@ extern u8 D_801027D8[5][2];
 /* the draw queue: record pointers (0x80102C00..0x801035FF) */
 extern void *g_draw_queue[640];
 extern s32 D_8009BA7C[];
-extern Func80017A44Output D_800F6740[8];
+extern Func80017A44Output g_softbody_slots[8];
 extern s32 D_80094B88[];
 extern Unk80045878Obj *D_800A9A10[];
 

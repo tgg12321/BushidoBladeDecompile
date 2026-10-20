@@ -282,8 +282,8 @@ glabel func_8001CE60
     /* DA78 8001D278 0A80013C */  lui        $at, %hi(D_800A3898)
     /* DA7C 8001D27C 21082200 */  addu       $at, $at, $v0
     /* DA80 8001D280 98382390 */  lbu        $v1, %lo(D_800A3898)($at)
-    /* DA84 8001D284 0A80023C */  lui        $v0, %hi(D_800A37F8)
-    /* DA88 8001D288 F8374290 */  lbu        $v0, %lo(D_800A37F8)($v0)
+    /* DA84 8001D284 0A80023C */  lui        $v0, %hi(g_fight_win_target)
+    /* DA88 8001D288 F8374290 */  lbu        $v0, %lo(g_fight_win_target)($v0)
     /* DA8C 8001D28C 00000000 */  nop
     /* DA90 8001D290 09006214 */  bne        $v1, $v0, .L8001D2B8
     /* DA94 8001D294 01000224 */   addiu     $v0, $zero, 0x1
@@ -327,11 +327,11 @@ glabel func_8001CE60
     /* DB14 8001D314 00000000 */  nop
     /* DB18 8001D318 45006010 */  beqz       $v1, .L8001D430
     /* DB1C 8001D31C 00000000 */   nop
-    /* DB20 8001D320 0A80023C */  lui        $v0, %hi(D_800A3874)
-    /* DB24 8001D324 74384290 */  lbu        $v0, %lo(D_800A3874)($v0)
-    /* DB28 8001D328 0A80013C */  lui        $at, %hi(D_800A377C - 0x1)
+    /* DB20 8001D320 0A80023C */  lui        $v0, %hi(g_fight_match_cursor)
+    /* DB24 8001D324 74384290 */  lbu        $v0, %lo(g_fight_match_cursor)($v0)
+    /* DB28 8001D328 0A80013C */  lui        $at, %hi(g_fight_match_results - 0x1)
     /* DB2C 8001D32C 21082200 */  addu       $at, $at, $v0
-    /* DB30 8001D330 7B372290 */  lbu        $v0, %lo(D_800A377C - 0x1)($at)
+    /* DB30 8001D330 7B372290 */  lbu        $v0, %lo(g_fight_match_results - 0x1)($at)
     /* DB34 8001D334 00000000 */  nop
     /* DB38 8001D338 09005014 */  bne        $v0, $s0, .L8001D360
     /* DB3C 8001D33C 01000224 */   addiu     $v0, $zero, 0x1
@@ -355,11 +355,11 @@ glabel func_8001CE60
     /* DB7C 8001D37C 14000224 */  addiu      $v0, $zero, 0x14
     /* DB80 8001D380 1C006214 */  bne        $v1, $v0, .L8001D3F4
     /* DB84 8001D384 64000324 */   addiu     $v1, $zero, 0x64
-    /* DB88 8001D388 0A80023C */  lui        $v0, %hi(D_800A3874)
-    /* DB8C 8001D38C 74384290 */  lbu        $v0, %lo(D_800A3874)($v0)
-    /* DB90 8001D390 0A80013C */  lui        $at, %hi(D_800A377C - 0x1)
+    /* DB88 8001D388 0A80023C */  lui        $v0, %hi(g_fight_match_cursor)
+    /* DB8C 8001D38C 74384290 */  lbu        $v0, %lo(g_fight_match_cursor)($v0)
+    /* DB90 8001D390 0A80013C */  lui        $at, %hi(g_fight_match_results - 0x1)
     /* DB94 8001D394 21082200 */  addu       $at, $at, $v0
-    /* DB98 8001D398 7B372390 */  lbu        $v1, %lo(D_800A377C - 0x1)($at)
+    /* DB98 8001D398 7B372390 */  lbu        $v1, %lo(g_fight_match_results - 0x1)($at)
     /* DB9C 8001D39C 00000000 */  nop
     /* DBA0 8001D3A0 00110300 */  sll        $v0, $v1, 4
     /* DBA4 8001D3A4 21104300 */  addu       $v0, $v0, $v1

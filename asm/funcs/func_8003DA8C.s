@@ -3,8 +3,8 @@ glabel func_8003DA8C
     /* 2E290 8003DA90 2400B1AF */  sw         $s1, 0x24($sp)
     /* 2E294 8003DA94 21888000 */  addu       $s1, $a0, $zero
     /* 2E298 8003DA98 FFFF0234 */  ori        $v0, $zero, 0xFFFF
-    /* 2E29C 8003DA9C 0980013C */  lui        $at, %hi(D_800905F8)
-    /* 2E2A0 8003DAA0 F80522AC */  sw         $v0, %lo(D_800905F8)($at)
+    /* 2E29C 8003DA9C 0980013C */  lui        $at, %hi(g_gpu_last_fog_ot_index)
+    /* 2E2A0 8003DAA0 F80522AC */  sw         $v0, %lo(g_gpu_last_fog_ot_index)($at)
     /* 2E2A4 8003DAA4 80101100 */  sll        $v0, $s1, 2
     /* 2E2A8 8003DAA8 2C00BFAF */  sw         $ra, 0x2C($sp)
     /* 2E2AC 8003DAAC 2800B2AF */  sw         $s2, 0x28($sp)

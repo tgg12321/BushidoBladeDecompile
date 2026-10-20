@@ -158,8 +158,8 @@ glabel func_8003C9A4
     /* 2D3F0 8003CBF0 00000000 */   nop
     /* 2D3F4 8003CBF4 3783000C */  jal        func_80020CDC
     /* 2D3F8 8003CBF8 00000000 */   nop
-    /* 2D3FC 8003CBFC 0A80013C */  lui        $at, %hi(D_800A3874)
-    /* 2D400 8003CC00 743820A0 */  sb         $zero, %lo(D_800A3874)($at)
+    /* 2D3FC 8003CBFC 0A80013C */  lui        $at, %hi(g_fight_match_cursor)
+    /* 2D400 8003CC00 743820A0 */  sb         $zero, %lo(g_fight_match_cursor)($at)
     /* 2D404 8003CC04 A8D0000C */  jal        fight_AdvanceMatch
     /* 2D408 8003CC08 00000000 */   nop
     /* 2D40C 8003CC0C 2FF30008 */  j          .L8003CCBC

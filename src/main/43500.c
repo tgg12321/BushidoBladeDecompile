@@ -3,16 +3,16 @@
  * collision_GetHit, func_80053754, func_80053E9C, ...), then the
  * motion-sequence loader motion_StartPlayback and its wrappers func_80054884 /
  * func_800548DC. .text 0x80052D00 (ROM 0x43500). Start boundary: SEAM (owner
- * ruling 2026-10-17; Codex seam #72): the statics D_800A33F0..D_800A33F8 are
- * used only here and open the old 3AB48 .sbss group in address order; calls run
- * from here into 3AB48.c's GTE helpers (gte_SumSquares3, gte_ReadIR1IR2Sra2,
- * func_80052C4C), back only once (func_8004DDB4 -> func_80054440); three NOPs
- * follow gte_ReadIR1IR2Sra2. A control cut inside this group (before
- * func_80053754) does not byte-match: the shared statics lose gp access. End:
- * before motion_UpdatePlayback (seam #85, moved there from
- * motion_StartPlayback), so motion_StartPlayback's printf string D_80015840 is
- * this file's .rodata (0x80015840+0x1C) and 4510C.o's starts with
- * func_80058580's tables at offset 0. */
+ * ruling 2026-10-17; Codex seam #72): the statics
+ * D_800A33F0..g_collision_hit_tag are used only here and open the old 3AB48
+ * .sbss group in address order; calls run from here into 3AB48.c's GTE helpers
+ * (gte_SumSquares3, gte_ReadIR1IR2Sra2, func_80052C4C), back only once
+ * (func_8004DDB4 -> func_80054440); three NOPs follow gte_ReadIR1IR2Sra2. A
+ * control cut inside this group (before func_80053754) does not byte-match: the
+ * shared statics lose gp access. End: before motion_UpdatePlayback (seam #85,
+ * moved there from motion_StartPlayback), so motion_StartPlayback's printf
+ * string D_80015840 is this file's .rodata (0x80015840+0x1C) and 4510C.o's
+ * starts with func_80058580's tables at offset 0. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "bb2.h"
@@ -23,7 +23,7 @@
  * order (Q65). */
 static s32 D_800A33F0;
 static Work_80053E9C *D_800A33F4;
-static u16 D_800A33F8;
+static u16 g_collision_hit_tag;
 static s32 D_800A33FC; /* not named by any code or data: size from the gap */
 
 extern s32 collision_GetHit(s32 *, s16 *);
@@ -241,7 +241,7 @@ s32 collision_GetHit(s32 *arg0, s16 *arg1) {
         arg1[0] = p->unk28 >> 2;
         arg1[1] = p->unk2C >> 2;
         arg1[2] = p->unk30 >> 2;
-        D_800A33F8 = p->unk4;
+        g_collision_hit_tag = p->unk4;
         return 1;
     }
     return 0;
@@ -558,7 +558,7 @@ void collision_SetGrid(s32 a0) { D_800A33F0 = a0; }
 
 void collision_RebaseGrid(s32 a0) { D_800A33F0 += a0; }
 
-s16 collision_GetHitTag(void) { return D_800A33F8; }
+s16 collision_GetHitTag(void) { return g_collision_hit_tag; }
 
 INCLUDE_ASM("asm/funcs", func_80054440);
 INCLUDE_ASM("asm/funcs", func_800545F4);

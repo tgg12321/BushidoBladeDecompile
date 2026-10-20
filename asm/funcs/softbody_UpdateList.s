@@ -8,8 +8,8 @@ glabel softbody_UpdateList
     /* 9A64 80019264 2400B3AF */  sw         $s3, 0x24($sp)
     /* 9A68 80019268 2100401A */  blez       $s2, .L800192F0
     /* 9A6C 8001926C 1800B0AF */   sw        $s0, 0x18($sp)
-    /* 9A70 80019270 0F80133C */  lui        $s3, %hi(D_800F6740)
-    /* 9A74 80019274 40677326 */  addiu      $s3, $s3, %lo(D_800F6740)
+    /* 9A70 80019270 0F80133C */  lui        $s3, %hi(g_softbody_slots)
+    /* 9A74 80019274 40677326 */  addiu      $s3, $s3, %lo(g_softbody_slots)
     /* 9A78 80019278 21808000 */  addu       $s0, $a0, $zero
   .L8001927C:
     /* 9A7C 8001927C 02000292 */  lbu        $v0, 0x2($s0)

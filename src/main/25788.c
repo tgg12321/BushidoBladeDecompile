@@ -121,13 +121,13 @@ void func_8003504C(void) {
     } else if (val == 5) {
         s32 var_8;
 
-        D_800A389B = p->unk14_10 + 3;
+        g_fight_match_count = p->unk14_10 + 3;
         D_800A36CC = D_8008EC30[p->unk14_12];
         var_8 = 1;
         if (p->unk14_14) {
             var_8 = 2;
         }
-        D_800A37F8 = var_8;
+        g_fight_win_target = var_8;
         s = D_801027D8[0];
         D_800A38E1 = p->unk14_15;
         {

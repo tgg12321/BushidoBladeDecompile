@@ -91,8 +91,8 @@ glabel func_8003504C
     /* 259A0 800351A0 03004224 */  addiu      $v0, $v0, 0x3
     /* 259A4 800351A4 021B0300 */  srl        $v1, $v1, 12
     /* 259A8 800351A8 03006330 */  andi       $v1, $v1, 0x3
-    /* 259AC 800351AC 0A80013C */  lui        $at, %hi(D_800A389B)
-    /* 259B0 800351B0 9B3822A0 */  sb         $v0, %lo(D_800A389B)($at)
+    /* 259AC 800351AC 0A80013C */  lui        $at, %hi(g_fight_match_count)
+    /* 259B0 800351B0 9B3822A0 */  sb         $v0, %lo(g_fight_match_count)($at)
     /* 259B4 800351B4 1400628D */  lw         $v0, 0x14($t3)
     /* 259B8 800351B8 0980013C */  lui        $at, %hi(D_8008EC30)
     /* 259BC 800351BC 21082300 */  addu       $at, $at, $v1
@@ -110,8 +110,8 @@ glabel func_8003504C
     /* 259E8 800351E8 1400628D */  lw         $v0, 0x14($t3)
     /* 259EC 800351EC 1080093C */  lui        $t1, %hi(D_801027A0)
     /* 259F0 800351F0 A0272925 */  addiu      $t1, $t1, %lo(D_801027A0)
-    /* 259F4 800351F4 0A80013C */  lui        $at, %hi(D_800A37F8)
-    /* 259F8 800351F8 F83724A0 */  sb         $a0, %lo(D_800A37F8)($at)
+    /* 259F4 800351F4 0A80013C */  lui        $at, %hi(g_fight_win_target)
+    /* 259F8 800351F8 F83724A0 */  sb         $a0, %lo(g_fight_win_target)($at)
     /* 259FC 800351FC C2130200 */  srl        $v0, $v0, 15
     /* 25A00 80035200 03004230 */  andi       $v0, $v0, 0x3
     /* 25A04 80035204 0A80013C */  lui        $at, %hi(D_800A38E1)

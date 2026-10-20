@@ -758,17 +758,17 @@ void func_8003C42C(void) {
     counts[2] = 0;
     counts[1] = 0;
     counts[0] = 0;
-    for (i = 0; i < D_800A389B; i++) {
-        counts[D_800A377C[i]]++;
+    for (i = 0; i < g_fight_match_count; i++) {
+        counts[g_fight_match_results[i]]++;
     }
     if (counts[0] != counts[1]) {
         D_800A382D = counts[0] < counts[1];
     } else {
         counts[1] = 0;
         counts[0] = 0;
-        for (i = 0; i < D_800A389B; i++) {
+        for (i = 0; i < g_fight_match_count; i++) {
             for (j = 0; j < 2; j++) {
-                counts[j] += D_800F65F8[i][j];
+                counts[j] += g_fight_match_scores[i][j];
             }
         }
         if (counts[0] != counts[1]) {
@@ -933,7 +933,7 @@ void func_8003C9A4(void) {
         if (D_800A38DC == 5) {
             gpu_ResetGraphMode1();
             func_80020CDC();
-            D_800A3874 = 0;
+            g_fight_match_cursor = 0;
             fight_AdvanceMatch();
             return;
         }
@@ -1272,7 +1272,7 @@ void font_Printf(u8 *arg0, s32 first_arg, ...) {
 }
 
 void bitstream_InitDeltaAccumulator(s32 arg0, s32 arg1) {
-    Unk800A3D40Rec *ptr = &D_800A3D40[arg1];
+    Unk800A3D40Rec *ptr = &g_bitstream_delta_accumulators[arg1];
     ptr->bits.next = (u32 *)arg0;
     ptr->bits.word = 0;
     ptr->bits.avail = 0;
@@ -1288,7 +1288,7 @@ extern s32 bitstream_ReadBits(BitStream *, s32);
 
 s16 *bitstream_AccumulateDeltas(s32 arg0) {
     s32 i = 0;
-    Unk800A3D40Rec *base = &D_800A3D40[arg0];
+    Unk800A3D40Rec *base = &g_bitstream_delta_accumulators[arg0];
     do {
         s32 nbits;
         s16 val;
@@ -1391,10 +1391,10 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
     s32 dist;
     s32 offset;
 
-    D_800905F8 = 0xFFFF;
+    g_gpu_last_fog_ot_index = 0xFFFF;
     /* FAKE: the pair read through a pointer local; a direct
-       `D_800906A4[arg0][0]` read is scheduled above the D_800905F8 store:
-       score 9 */
+       `D_800906A4[arg0][0]` read is scheduled above the g_gpu_last_fog_ot_index
+       store: score 9 */
     rec = D_800906A4[arg0];
     if (rec[0] != 0) {
         {
@@ -1482,7 +1482,7 @@ void func_8003DBE4(s32 arg0, s32 arg1, DR_MOVE (*arg2)[2], s32 arg3, s32 arg4) {
             addPrim(&D_800A378C[idx], pkt);
             pkt += 2;
             if (i == limit - 1) {
-                D_800905F8 = idx;
+                g_gpu_last_fog_ot_index = idx;
             }
         }
         arg0 += step;
@@ -1647,13 +1647,13 @@ void func_8003E120(void) {
     gpu_BuildFogImageLevels(&buf, 0x13);
 }
 
-extern s32 D_800A3228;
+extern s32 g_gpu_fog_clut_object;
 
 void gpu_MoveObjectClutsToFogBlock(s32 arg0) {
     RECT buf;
     Unk80045878Obj *obj;
 
-    if (D_800A3228 != arg0) {
+    if (g_gpu_fog_clut_object != arg0) {
         gpu_RestoreObjectClutOffsets();
         obj = func_8004153C(arg0);
         if (obj != 0) {
@@ -1675,26 +1675,26 @@ void gpu_MoveObjectClutsToFogBlock(s32 arg0) {
             func_8003E120();
         }
     }
-    D_800A3228 = arg0;
+    g_gpu_fog_clut_object = arg0;
 }
 
 void gpu_RestoreObjectClutOffsets(void) {
     Unk80045878Obj *v1;
 
-    if (D_800A3228 != -1) {
-        v1 = func_8004153C(D_800A3228);
+    if (g_gpu_fog_clut_object != -1) {
+        v1 = func_8004153C(g_gpu_fog_clut_object);
         if (v1 != 0) {
-            if (D_800A3228 == 0) {
+            if (g_gpu_fog_clut_object == 0) {
                 func_800432A0(v1->unk_14, 0, 0, 0x140, -0xE8);
             } else {
                 func_800432A0(v1->unk_14, 0, 0, 0x1C0, -0xE8);
             }
         }
-        D_800A3228 = -1;
+        g_gpu_fog_clut_object = -1;
     }
 }
 
-s32 gpu_GetFogClutObject(void) { return D_800A3228; }
+s32 gpu_GetFogClutObject(void) { return g_gpu_fog_clut_object; }
 
 void func_8003E2AC(void) {
     /* FAKE: the flag word's address held in p (one lui / addiu, lhu / sh off
@@ -1703,7 +1703,7 @@ void func_8003E2AC(void) {
     *p &= ~2;
 }
 
-u32 gpu_GetLastFogOtIndex(void) { return D_800905F8; }
+u32 gpu_GetLastFogOtIndex(void) { return g_gpu_last_fog_ot_index; }
 
 extern void func_8003F388(s16 *arg0);
 
@@ -2754,7 +2754,7 @@ void softbody_RebaseObject(Unk80045878Obj *a0, s32 a1) {
 s32 g_font_buf_index = 0;
 s32 g_font_enabled = 1;
 RECT g_font_rect = {0x3F0, 0x1DC, 0x10, 0x24};
-s32 D_800A3228 = -1;
+s32 g_gpu_fog_clut_object = -1;
 s32 D_800A322C = 0;
 /* reached gp-relative by func_8003EDC0: size from the blob label */
 s32 D_800A3230 = 0;

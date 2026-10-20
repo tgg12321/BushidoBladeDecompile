@@ -1,8 +1,8 @@
 glabel softbody_Create
     /* 8584 80017D84 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 8588 80017D88 21408000 */  addu       $t0, $a0, $zero
-    /* 858C 80017D8C 0F80073C */  lui        $a3, %hi(D_800F6740)
-    /* 8590 80017D90 4067E724 */  addiu      $a3, $a3, %lo(D_800F6740)
+    /* 858C 80017D8C 0F80073C */  lui        $a3, %hi(g_softbody_slots)
+    /* 8590 80017D90 4067E724 */  addiu      $a3, $a3, %lo(g_softbody_slots)
     /* 8594 80017D94 1000B0AF */  sw         $s0, 0x10($sp)
     /* 8598 80017D98 21800000 */  addu       $s0, $zero, $zero
     /* 859C 80017D9C 1400BFAF */  sw         $ra, 0x14($sp)
@@ -19,12 +19,12 @@ glabel softbody_Create
   .L80017DC4:
     /* 85C4 80017DC4 2C000212 */  beq        $s0, $v0, .L80017E78
     /* 85C8 80017DC8 FFFF0224 */   addiu     $v0, $zero, -0x1
-    /* 85CC 80017DCC 1C008293 */  lbu        $v0, %gp_rel(D_800A30E8)($gp)
+    /* 85CC 80017DCC 1C008293 */  lbu        $v0, %gp_rel(g_softbody_slot_high_water)($gp)
     /* 85D0 80017DD0 00000000 */  nop
     /* 85D4 80017DD4 2A105000 */  slt        $v0, $v0, $s0
     /* 85D8 80017DD8 02004010 */  beqz       $v0, .L80017DE4
     /* 85DC 80017DDC 00000000 */   nop
-    /* 85E0 80017DE0 1C0090A3 */  sb         $s0, %gp_rel(D_800A30E8)($gp)
+    /* 85E0 80017DE0 1C0090A3 */  sb         $s0, %gp_rel(g_softbody_slot_high_water)($gp)
   .L80017DE4:
     /* 85E4 80017DE4 00000295 */  lhu        $v0, 0x0($t0)
     /* 85E8 80017DE8 00000000 */  nop

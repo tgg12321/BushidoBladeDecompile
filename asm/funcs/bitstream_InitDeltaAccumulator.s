@@ -2,8 +2,8 @@ glabel bitstream_InitDeltaAccumulator
     /* 2DF74 8003D774 40100500 */  sll        $v0, $a1, 1
     /* 2DF78 8003D778 21104500 */  addu       $v0, $v0, $a1
     /* 2DF7C 8003D77C C0100200 */  sll        $v0, $v0, 3
-    /* 2DF80 8003D780 0A80033C */  lui        $v1, %hi(D_800A3D40)
-    /* 2DF84 8003D784 403D6324 */  addiu      $v1, $v1, %lo(D_800A3D40)
+    /* 2DF80 8003D780 0A80033C */  lui        $v1, %hi(g_bitstream_delta_accumulators)
+    /* 2DF84 8003D784 403D6324 */  addiu      $v1, $v1, %lo(g_bitstream_delta_accumulators)
     /* 2DF88 8003D788 21104300 */  addu       $v0, $v0, $v1
     /* 2DF8C 8003D78C 000044AC */  sw         $a0, 0x0($v0)
     /* 2DF90 8003D790 040040AC */  sw         $zero, 0x4($v0)

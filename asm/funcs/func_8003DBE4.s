@@ -104,8 +104,8 @@ glabel func_8003DBE4
     /* 2E550 8003DD50 FFFFA226 */  addiu      $v0, $s5, -0x1
     /* 2E554 8003DD54 03002216 */  bne        $s1, $v0, .L8003DD64
     /* 2E558 8003DD58 30001026 */   addiu     $s0, $s0, 0x30
-    /* 2E55C 8003DD5C 0980013C */  lui        $at, %hi(D_800905F8)
-    /* 2E560 8003DD60 F80525AC */  sw         $a1, %lo(D_800905F8)($at)
+    /* 2E55C 8003DD5C 0980013C */  lui        $at, %hi(g_gpu_last_fog_ot_index)
+    /* 2E560 8003DD60 F80525AC */  sw         $a1, %lo(g_gpu_last_fog_ot_index)($at)
   .L8003DD64:
     /* 2E564 8003DD64 01003126 */  addiu      $s1, $s1, 0x1
     /* 2E568 8003DD68 2A103502 */  slt        $v0, $s1, $s5

@@ -607,15 +607,15 @@ dlabel D_800A3778
     /* 93F7B 800A377B */ .byte 0x00
 enddlabel D_800A3778
 
-nonmatching D_800A377C
+nonmatching g_fight_match_results
 
-dlabel D_800A377C
+dlabel g_fight_match_results
     /* 93F7C 800A377C */ .byte 0x00
     /* 93F7D 800A377D */ .byte 0x00
     /* 93F7E 800A377E */ .byte 0x00
     /* 93F7F 800A377F */ .byte 0x00
     /* 93F80 800A3780 */ .byte 0x00
-enddlabel D_800A377C
+enddlabel g_fight_match_results
 
 nonmatching D_800A3781
 
@@ -872,14 +872,14 @@ dlabel D_800A37F4
     /* 93FF4 800A37F4 00000000 */ .word 0x00000000
 enddlabel D_800A37F4
 
-nonmatching D_800A37F8
+nonmatching g_fight_win_target
 
-dlabel D_800A37F8
+dlabel g_fight_win_target
     /* 93FF8 800A37F8 */ .byte 0x00
     /* 93FF9 800A37F9 */ .byte 0x00
     /* 93FFA 800A37FA */ .byte 0x00
     /* 93FFB 800A37FB */ .byte 0x00
-enddlabel D_800A37F8
+enddlabel g_fight_win_target
 
 nonmatching g_memcard_sw_event_timeout
 

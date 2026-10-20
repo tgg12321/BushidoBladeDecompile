@@ -4,8 +4,8 @@ glabel softbody_RebaseBuffer
     /* 86BC 80017EBC 80100200 */  sll        $v0, $v0, 2
     /* 86C0 80017EC0 21104400 */  addu       $v0, $v0, $a0
     /* 86C4 80017EC4 80100200 */  sll        $v0, $v0, 2
-    /* 86C8 80017EC8 0F80033C */  lui        $v1, %hi(D_800F6740)
-    /* 86CC 80017ECC 40676324 */  addiu      $v1, $v1, %lo(D_800F6740)
+    /* 86C8 80017EC8 0F80033C */  lui        $v1, %hi(g_softbody_slots)
+    /* 86CC 80017ECC 40676324 */  addiu      $v1, $v1, %lo(g_softbody_slots)
     /* 86D0 80017ED0 21104300 */  addu       $v0, $v0, $v1
     /* 86D4 80017ED4 0C00438C */  lw         $v1, 0xC($v0)
     /* 86D8 80017ED8 04004484 */  lh         $a0, 0x4($v0)

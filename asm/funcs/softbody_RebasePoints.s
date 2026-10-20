@@ -4,8 +4,8 @@ glabel softbody_RebasePoints
     /* 86FC 80017EFC 80100200 */  sll        $v0, $v0, 2
     /* 8700 80017F00 21104400 */  addu       $v0, $v0, $a0
     /* 8704 80017F04 80100200 */  sll        $v0, $v0, 2
-    /* 8708 80017F08 0F80033C */  lui        $v1, %hi(D_800F6740)
-    /* 870C 80017F0C 40676324 */  addiu      $v1, $v1, %lo(D_800F6740)
+    /* 8708 80017F08 0F80033C */  lui        $v1, %hi(g_softbody_slots)
+    /* 870C 80017F0C 40676324 */  addiu      $v1, $v1, %lo(g_softbody_slots)
     /* 8710 80017F10 21104300 */  addu       $v0, $v0, $v1
     /* 8714 80017F14 0000438C */  lw         $v1, 0x0($v0)
     /* 8718 80017F18 00000000 */  nop

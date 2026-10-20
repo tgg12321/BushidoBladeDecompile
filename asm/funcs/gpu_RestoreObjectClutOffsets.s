@@ -1,6 +1,6 @@
 glabel gpu_RestoreObjectClutOffsets
     /* 2EA2C 8003E22C E0FFBD27 */  addiu      $sp, $sp, -0x20
-    /* 2EA30 8003E230 5C01848F */  lw         $a0, %gp_rel(D_800A3228)($gp)
+    /* 2EA30 8003E230 5C01848F */  lw         $a0, %gp_rel(g_gpu_fog_clut_object)($gp)
     /* 2EA34 8003E234 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 2EA38 8003E238 15008210 */  beq        $a0, $v0, .L8003E290
     /* 2EA3C 8003E23C 1800BFAF */   sw        $ra, 0x18($sp)
@@ -9,7 +9,7 @@ glabel gpu_RestoreObjectClutOffsets
     /* 2EA48 8003E248 21184000 */  addu       $v1, $v0, $zero
     /* 2EA4C 8003E24C 0F006010 */  beqz       $v1, .L8003E28C
     /* 2EA50 8003E250 FFFF0224 */   addiu     $v0, $zero, -0x1
-    /* 2EA54 8003E254 5C01828F */  lw         $v0, %gp_rel(D_800A3228)($gp)
+    /* 2EA54 8003E254 5C01828F */  lw         $v0, %gp_rel(g_gpu_fog_clut_object)($gp)
     /* 2EA58 8003E258 00000000 */  nop
     /* 2EA5C 8003E25C 04004014 */  bnez       $v0, .L8003E270
     /* 2EA60 8003E260 21280000 */   addu      $a1, $zero, $zero
@@ -26,7 +26,7 @@ glabel gpu_RestoreObjectClutOffsets
     /* 2EA84 8003E284 1000A2AF */   sw        $v0, 0x10($sp)
     /* 2EA88 8003E288 FFFF0224 */  addiu      $v0, $zero, -0x1
   .L8003E28C:
-    /* 2EA8C 8003E28C 5C0182AF */  sw         $v0, %gp_rel(D_800A3228)($gp)
+    /* 2EA8C 8003E28C 5C0182AF */  sw         $v0, %gp_rel(g_gpu_fog_clut_object)($gp)
   .L8003E290:
     /* 2EA90 8003E290 1800BF8F */  lw         $ra, 0x18($sp)
     /* 2EA94 8003E294 2000BD27 */  addiu      $sp, $sp, 0x20

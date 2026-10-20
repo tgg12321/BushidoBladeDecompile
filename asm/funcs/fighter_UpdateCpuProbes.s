@@ -27,9 +27,9 @@ glabel fighter_UpdateCpuProbes
     /* 4751C 80056D1C 80F00300 */  sll        $fp, $v1, 2
     /* 47520 80056D20 7800ABAF */  sw         $t3, 0x78($sp)
   .L80056D24:
-    /* 47524 80056D24 0A80013C */  lui        $at, %hi(D_8009A820 + 0x1)
+    /* 47524 80056D24 0A80013C */  lui        $at, %hi(g_fighter_cpu_probes + 0x1)
     /* 47528 80056D28 21083E00 */  addu       $at, $at, $fp
-    /* 4752C 80056D2C 21A82290 */  lbu        $v0, %lo(D_8009A820 + 0x1)($at)
+    /* 4752C 80056D2C 21A82290 */  lbu        $v0, %lo(g_fighter_cpu_probes + 0x1)($at)
     /* 47530 80056D30 00000000 */  nop
     /* 47534 80056D34 00820200 */  sll        $s0, $v0, 8
     /* 47538 80056D38 00100232 */  andi       $v0, $s0, 0x1000
@@ -64,9 +64,9 @@ glabel fighter_UpdateCpuProbes
     /* 4759C 80056D9C 09800B3C */  lui        $t3, %hi(Judge)
     /* 475A0 80056DA0 FC736B25 */  addiu      $t3, $t3, %lo(Judge)
     /* 475A4 80056DA4 21A84B00 */  addu       $s5, $v0, $t3
-    /* 475A8 80056DA8 0A80013C */  lui        $at, %hi(D_8009A820)
+    /* 475A8 80056DA8 0A80013C */  lui        $at, %hi(g_fighter_cpu_probes)
     /* 475AC 80056DAC 21083E00 */  addu       $at, $at, $fp
-    /* 475B0 80056DB0 20A82390 */  lbu        $v1, %lo(D_8009A820)($at)
+    /* 475B0 80056DB0 20A82390 */  lbu        $v1, %lo(g_fighter_cpu_probes)($at)
     /* 475B4 80056DB4 0000A286 */  lh         $v0, 0x0($s5)
     /* 475B8 80056DB8 001A0300 */  sll        $v1, $v1, 8
     /* 475BC 80056DBC 18006200 */  mult       $v1, $v0

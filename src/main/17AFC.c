@@ -5597,38 +5597,38 @@ void fight_RecordMatchResult(void) {
     u8 p1, p2, var_2;
 
     p1 = D_800A3898;
-    if ((u8)p1 == D_800A37F8) {
-        var_2 = D_800A3874;
-        D_800A377C[var_2] = 0;
+    if ((u8)p1 == g_fight_win_target) {
+        var_2 = g_fight_match_cursor;
+        g_fight_match_results[var_2] = 0;
     } else {
         p2 = D_800A3899;
-        if ((u8)p2 == D_800A37F8) {
-            var_2 = D_800A3874;
-            D_800A377C[var_2] = 1;
+        if ((u8)p2 == g_fight_win_target) {
+            var_2 = g_fight_match_cursor;
+            g_fight_match_results[var_2] = 1;
         } else if ((u8)p2 < (u8)p1) {
-            var_2 = D_800A3874;
-            D_800A377C[var_2] = 0;
+            var_2 = g_fight_match_cursor;
+            g_fight_match_results[var_2] = 0;
         } else if ((u8)p1 < (u8)p2) {
-            var_2 = D_800A3874;
-            D_800A377C[var_2] = 1;
+            var_2 = g_fight_match_cursor;
+            g_fight_match_results[var_2] = 1;
         } else {
             if ((u8)D_800A38AA < (u8)D_800A38AB) {
                 D_800A3898 = p1 + 1;
-                var_2 = D_800A3874;
-                D_800A377C[var_2] = 0;
+                var_2 = g_fight_match_cursor;
+                g_fight_match_results[var_2] = 0;
             } else if ((u8)D_800A38AB < (u8)D_800A38AA) {
                 D_800A3899 = p2 + 1;
-                var_2 = D_800A3874;
-                D_800A377C[var_2] = 1;
+                var_2 = g_fight_match_cursor;
+                g_fight_match_results[var_2] = 1;
             } else {
-                var_2 = D_800A3874;
-                D_800A377C[var_2] = 2;
+                var_2 = g_fight_match_cursor;
+                g_fight_match_results[var_2] = 2;
             }
         }
     }
-    D_800F65F8[D_800A3874][0] = D_800A3898;
-    D_800F65F8[D_800A3874][1] = D_800A3899;
-    D_800A3874 = D_800A3874 + 1;
+    g_fight_match_scores[g_fight_match_cursor][0] = D_800A3898;
+    g_fight_match_scores[g_fight_match_cursor][1] = D_800A3899;
+    g_fight_match_cursor = g_fight_match_cursor + 1;
 }
 
 void fight_PackMatchScores(void) {
@@ -5640,13 +5640,13 @@ void fight_PackMatchScores(void) {
     u8 *base;
 
     D_800A3768 = DISP_LOADING;
-    n = D_800A389B;
+    n = g_fight_match_count;
     if (i < n) {
-        var_4 = D_800A3874;
+        var_4 = g_fight_match_cursor;
         do {
             s32 var_6;
             s32 j;
-            base = D_800F65F8[i];
+            base = g_fight_match_scores[i];
             var_6 = (i < var_4);
             j = 0;
             do {
@@ -5659,7 +5659,7 @@ void fight_PackMatchScores(void) {
                 j++;
             } while (j < 2);
             i++;
-            n = D_800A389B;
+            n = g_fight_match_count;
         } while (i < n);
     }
 
@@ -5670,7 +5670,7 @@ extern void fight_PackMatchScores(void);
 
 void fight_AdvanceMatch(void) {
     fight_PackMatchScores();
-    if (D_800A3874 == D_800A389B) {
+    if (g_fight_match_cursor == g_fight_match_count) {
         D_800A3768 = DISP_DISABLED;
         D_800A36A8 = 0;
         D_800A3834 = 0x14;
@@ -5689,8 +5689,8 @@ void fight_AdvanceMatch(void) {
         D_800A38B8 = 0;
         D_800A3920 = 0;
         for (v1 = 0; v1 < 2; v1++) {
-            D_80102778.unk_4[v1] = D_801027A0[D_800A3874][v1];
-            D_80102778.unk_4[2 + v1] = D_801027D8[D_800A3874][v1];
+            D_80102778.unk_4[v1] = D_801027A0[g_fight_match_cursor][v1];
+            D_80102778.unk_4[2 + v1] = D_801027D8[g_fight_match_cursor][v1];
         }
         func_80016888();
         cdrom_PauseAndWait();
