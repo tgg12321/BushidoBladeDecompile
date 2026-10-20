@@ -2017,8 +2017,9 @@ typedef struct {
  * (word >> 16) & 0x1F; no code reads it through half[].
  * - arena_id: func_80045878's a0, the arena_OpenBlock id and the D_800A9A10
  * index; load_status: 0, 1 after a fresh load (func_80045878), -2 to request a
- * reload (func_80041604); func_80040594 clears it after its setup; unk_08:
- * func_80045878's a1, indexing the D_80094C68 / D_80094B48 tables.
+ * reload (func_80041604); func_80040594 returns at once when it is 0, else
+ * clears it and runs its setup; unk_08: func_80045878's a1, indexing the
+ * D_80094C68 / D_80094B48 tables.
  * - unk_10 / unk_14 / unk_16: func_80045878's a0 / a0 / a0 + 3 (unk_14 / unk_16
  * are the func_80044010 / func_800432A0 ids); position_scale: the Q12 scale
  * func_800408F8 sets from D_80094C68.

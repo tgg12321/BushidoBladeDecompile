@@ -299,7 +299,7 @@ g_fight_match_cursor          = 0x800A3874;  /* entry index: fight_RecordMatchRe
 func_8004678C            = 0x8004678C;  /* gp-rel getter for g_snd_se_id (paired with snd_GetBgmId for g_snd_bgm_id) */
 /* RESET 0x800467A8: retired name 'stage_GetVariant_800467A8' — preserved note: lh getter for D_8009947A (paired with func_80046798 for D_80099478, +0x2 offset) */
 /* RESET 0x80046DE4: retired name 'game_GetDummyFlag_80046DE4' — preserved note: literal `return 0;` (jr ra; v0 = 0) -- the dummy-flag accessor stub */
-func_80046DEC     = 0x80046DEC;  /* func_8004153C(a0)->unk_1994: a MATRIX * table */
+func_80046DEC     = 0x80046DEC;  /* func_8004153C(a0)->node_matrix_ptrs: a MATRIX * table */
 /* RESET 0x80046E18: retired name 'game_GetPlayerBase_80046E18' — preserved note: func_8004153C(a0) + 0x2C offset (player struct base field) */
 /* RESET 0x80046E44: retired name 'game_DisablePause_80046E44' — preserved note: writes 0 to g_game_pause_flag */
 func_80046E54          = 0x80046E54;  /* writes (a0 ? 1 : 0) to g_game_pause_flag */
@@ -1780,8 +1780,8 @@ D_80094D40                                     = 0x80094D40;  /* bit-mask table 
 /* factors and dispatch tables for attack/animation. */
 D_80094C68                             = 0x80094C68;  /* u16 table; stored into the fighter record's +0x1A (9F9C.c:3992 / :3994) and an Unk80045878Obj's +0x12 (309CC.c) */  /* data-wave 2026-10-08: was g_char_field12_lookup_table */
 D_80094B96                                        = 0x80094B96;  /* D_80094B96[0].unk_00: s16 parent-node index, -1 for none (func_800408F8) */  /* data-wave 2026-10-08: was g_attack_scale_x */
-D_80094B98                                        = 0x80094B98;  /* D_80094B96[0].unk_02[0]: s16, times a0->unk_12 >> 12 it becomes node work.t[0] */  /* data-wave 2026-10-08: was g_attack_scale_y */
-D_80094B9A                                        = 0x80094B9A;  /* D_80094B96[0].unk_02[1]: s16, times a0->unk_12 >> 12 it becomes node work.t[1] */  /* data-wave 2026-10-08: was g_attack_scale_z */
+D_80094B98                                        = 0x80094B98;  /* D_80094B96[0].unk_02[0]: s16, times a0->position_scale >> 12 it becomes node work.t[0] */  /* data-wave 2026-10-08: was g_attack_scale_y */
+D_80094B9A                                        = 0x80094B9A;  /* D_80094B96[0].unk_02[1]: s16, times a0->position_scale >> 12 it becomes node work.t[1] */  /* data-wave 2026-10-08: was g_attack_scale_z */
 D_800A3388                                      = 0x800A3388;  /* holds the node translation address func_80040D48 passes for player 1; light_ApplyPointLightTargets hands it to light_ApplyPointLight as the second position (31D3C.c:478-487) */  /* data-wave 2026-10-08: was g_attack_state_ptr */
 D_800A9B28                                     = 0x800A9B28;  /* VECTOR copied from *a0 by light_SetPointLight; light_ApplyPointLight subtracts it from tracked positions to aim light[1] */  /* data-wave 2026-10-08: was g_cam_saved_a0_data */
 D_800A9A20                                = 0x800A9A20;  /* = arg0[4] cached; compared against (s16*)var_0[4] for change detection */  /* data-wave 2026-10-08: was g_anim_event_arg4_cached */
@@ -2009,8 +2009,8 @@ _svm_tn                                = 0x80101BC8;  /* base ptr to weapon fram
 _svm_damper                                 = 0x800F66F8;  /* Y-offset added to *(u16*)(base + 0x12); reset to 0 by spu_ResetCounter (likely misnamed; actually wave/frame offset reset) */  /* data-wave 2026-09-24: was g_weapon_frame_y_offset */
 
 /* === Attack scale factor extensions + effect slot field+2 (2026-05-17) -- 5 highs === */
-D_80094B9C                                        = 0x80094B9C;  /* D_80094B96[0].unk_02[2]: s16, times a0->unk_12 >> 12 it becomes node work.t[2] */  /* data-wave 2026-10-08: was g_attack_scale_w */
-D_80094B9E                                        = 0x80094B9E;  /* D_80094B96[0].unk_08: s16 node id, -1 for none, stored into the next arg0->unk_8B4[] node (func_80040CB8) */  /* data-wave 2026-10-08: was g_attack_scale_v */
+D_80094B9C                                        = 0x80094B9C;  /* D_80094B96[0].unk_02[2]: s16, times a0->position_scale >> 12 it becomes node work.t[2] */  /* data-wave 2026-10-08: was g_attack_scale_w */
+D_80094B9E                                        = 0x80094B9E;  /* D_80094B96[0].unk_08: s16 node id, -1 for none, stored into the next arg0->projected_nodes[] node (func_80040CB8) */  /* data-wave 2026-10-08: was g_attack_scale_v */
 D_800F6462                                 = 0x800F6462;  /* D_800F62E0[4].light[0].yaw (light-setup record 4; = D_80094E48[a0][4] & 0xFFF in func_800421C8) */  /* data-wave 2026-10-08: was g_effect_slot_a_field_2 */
 D_800F6342                                 = 0x800F6342;  /* D_800F62E0[1].light[0].yaw (light-setup record 1) */  /* data-wave 2026-10-08: was g_effect_slot_b_field_2 */
 D_800F62E2                                 = 0x800F62E2;  /* D_800F62E0[0].light[0].yaw (light-setup record 0) */  /* data-wave 2026-10-08: was g_effect_slot_c_field_2 */
