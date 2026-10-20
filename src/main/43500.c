@@ -3,14 +3,14 @@
  * collision_GetHit, func_80053754, func_80053E9C, ...), then the
  * motion-sequence loader motion_StartPlayback and its wrappers func_80054884 /
  * func_800548DC. .text 0x80052D00 (ROM 0x43500). Start boundary: SEAM (owner
- * ruling 2026-10-17; Codex seam #72): the statics
- * D_800A33F0..g_collision_hit_tag are used only here and open the old 3AB48
- * .sbss group in address order; calls run from here into 3AB48.c's GTE helpers
- * (gte_SumSquares3, gte_ReadIR1IR2Sra2, func_80052C4C), back only once
- * (func_8004DDB4 -> func_80054440); three NOPs follow gte_ReadIR1IR2Sra2. A
- * control cut inside this group (before func_80053754) does not byte-match: the
- * shared statics lose gp access. End: before motion_UpdatePlayback (seam #85,
- * moved there from motion_StartPlayback), so motion_StartPlayback's printf
+ * ruling 2026-10-17; Codex seam #72): the statics D_800A33F0, D_800A33F4 and
+ * g_collision_hit_tag (0x800A33F0..0x800A33F8) are used only here and open the
+ * old 3AB48 .sbss group in address order; calls run from here into 3AB48.c's
+ * GTE helpers (gte_SumSquares3, gte_ReadIR1IR2Sra2, func_80052C4C), back only
+ * once (func_8004DDB4 -> func_80054440); three NOPs follow gte_ReadIR1IR2Sra2.
+ * A control cut inside this group (before func_80053754) does not byte-match:
+ * the shared statics lose gp access. End: before motion_UpdatePlayback (seam
+ * #85, moved there from motion_StartPlayback), so motion_StartPlayback's printf
  * string D_80015840 is this file's .rodata (0x80015840+0x1C) and 4510C.o's
  * starts with func_80058580's tables at offset 0. */
 #define INCLUDE_ASM_USE_MACRO_INC 1

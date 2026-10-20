@@ -41,7 +41,7 @@ tmp = (*pal & 0xFF000000) | ((u32)colors & rgb_mask);  /* variant value, USED ne
 colors = (s32 *)((u8 *)colors + 0x30);
 tmp = limit - 1;                                       /* REUSE tmp for the invariant */
 if (i == tmp) {                                        /* addiu limit-1; bne i,limit-1 inline */
-    D_800905F8 = idx;
+    g_gpu_last_fog_ot_index = idx;
 }
 ```
 
