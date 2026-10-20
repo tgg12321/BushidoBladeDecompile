@@ -2156,14 +2156,14 @@ typedef struct {
 
 typedef struct {
     s32 pos[3];
-    s32 field_C;
-    s32 field_10;
-    s32 field_14;
-    s32 field_18;
-    s32 field_1C;   /* entries used in field_24 */
-    s32 field_20;   /* entries used in field_2C */
-    u8 field_24[8]; /* edges whose node a is this record */
-    u8 field_2C[8]; /* edges whose node b is this record */
+    s32 vel_x;
+    s32 vel_y;
+    s32 vel_z;
+    s32 anchor;
+    s32 a_edge_count; /* entries used in field_24 */
+    s32 b_edge_count; /* entries used in field_2C */
+    u8 a_edges[8];    /* edges whose node a is this record */
+    u8 b_edges[8];    /* edges whose node b is this record */
     s32 field_34;
     s32 field_38[2];
 } Func80017A44Record;
@@ -2196,7 +2196,7 @@ typedef struct {
     s16 count;
     s16 edge_count;
     s32 flags;
-    Func80017A44Record *records;
+    Func80017A44Record *nodes;
     Func80017848Edge *edges;
     MATRIX matrix;
 } Func80017A44Output;
@@ -2208,12 +2208,12 @@ typedef struct {
  * softbody_SnapToPoints over softbody_Step), the object's matrix, its point
  * table end and its collision-volume block. */
 typedef struct {
-    /* 0x00 */ s16 unk0;
-    /* 0x02 */ u8 unk2;
+    /* 0x00 */ s16 slot_index;
+    /* 0x02 */ u8 snap;
     /* 0x03 */ u8 unk3;
     /* 0x04 */ MATRIX *unk4;
     /* 0x08 */ u8 *unk8;
-    /* 0x0C */ struct Unk8003F6D8Coll *unkC;
+    /* 0x0C */ struct Unk8003F6D8Coll *colliders;
 } Unk80017FA0Rec;
 
 /* The collision volumes of one Unk8003F824Rec (2B344 Func8003F6D8Inner +0x10;

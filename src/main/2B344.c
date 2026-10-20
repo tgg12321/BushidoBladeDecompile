@@ -2330,9 +2330,9 @@ typedef struct {
                         records start at arg0+8 */
 
 typedef struct {
-    /* 0x00 */ s16 unk0;
+    /* 0x00 */ s16 slot_index;
     /* 0x02 */ u8 unk2[2];
-    /* 0x04 */ Unk80017FA0Rec f824_04;
+    /* 0x04 */ Unk80017FA0Rec step_desc;
     /* 0x14 */ Unk80045878Node *obj;
     /* 0x18 */ u8 *cur;
     /* 0x1C */ Func8003F6D8Inner inner;
@@ -2340,11 +2340,11 @@ typedef struct {
 
 typedef struct {
     /* 0x000 */ s16 count;
-    /* 0x002 */ s16 unk2;
+    /* 0x002 */ s16 snap_request;
     /* 0x004 */ s16 unk4;
-    /* 0x006 */ s16 unk6;
+    /* 0x006 */ s16 rebuild_request;
     /* 0x008 */ Unk8003F824Rec recs[5];
-    /* 0x418 */ Unk80017FA0Rec unk418[5];
+    /* 0x418 */ Unk80017FA0Rec step_descs[5];
     /* 0x468 */ u8 data[1];
 } Unk8003F62CRec;
 
@@ -2357,18 +2357,18 @@ void softbody_UpdateObject(Unk80045878Obj *a0) {
     s0 = a0->unk_24;
     if (s0 == 0)
         return;
-    if (s0->unk6) {
+    if (s0->rebuild_request) {
         softbody_FreeObjectById(a0->unk_04);
         softbody_SetupObject(a0, 0);
     }
-    if (s0->unk2) {
+    if (s0->snap_request) {
         softbody_SetObjectSnap(s0);
     }
     softbody_UpdateColliders(s0);
-    softbody_UpdateList(s0->unk418, s0->count);
-    if (s0->unk2) {
+    softbody_UpdateList(s0->step_descs, s0->count);
+    if (s0->snap_request) {
         softbody_ClearObjectSnap(s0);
-        s0->unk2 = 0;
+        s0->snap_request = 0;
     }
 }
 
@@ -2414,9 +2414,9 @@ void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
         return;
     }
     var_0->count = 0;
-    var_0->unk2 = 0;
+    var_0->snap_request = 0;
     var_0->unk4 = 0;
-    var_0->unk6 = 0;
+    var_0->rebuild_request = 0;
     for (i = 0; *var_1 != -3; i++) {
         if (*var_1 != -2) {
             if (var_0->count >= 5) {
@@ -2427,7 +2427,7 @@ void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
             rec->cur = cur;
             rec->obj = obj;
             cur = softbody_CreateForNode(rec, var_1, cur);
-            var_0->unk418[var_0->count] = rec->f824_04;
+            var_0->step_descs[var_0->count] = rec->step_desc;
             obj->node.unk0 = 0xD;
             var_0->count++;
             if (*var_1 >= 0) {
@@ -2602,17 +2602,17 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
 
     init.in.matrix = &obj->node.xf.mat;
     init.in.flags = 0xE00;
-    rec->unk0 = softbody_Create(&init.in);
+    rec->slot_index = softbody_Create(&init.in);
     obj->unk60 = init.in.buf;
     rec->inner.count = 0;
     rec->inner.coll.count = 0;
     cur = ((u32)cur & 3) ? cur + 2 : cur;
-    rec->f824_04.unk0 = rec->unk0;
-    rec->f824_04.unk4 = &obj->node.xf.mat;
-    rec->f824_04.unk8 = obj->unk60;
-    rec->f824_04.unkC = &rec->inner.coll;
-    rec->f824_04.unk2 = 0;
-    rec->f824_04.unk3 = 0;
+    rec->step_desc.slot_index = rec->slot_index;
+    rec->step_desc.unk4 = &obj->node.xf.mat;
+    rec->step_desc.unk8 = obj->unk60;
+    rec->step_desc.colliders = &rec->inner.coll;
+    rec->step_desc.snap = 0;
+    rec->step_desc.unk3 = 0;
     return cur;
 }
 
@@ -2682,7 +2682,7 @@ s32 math_AlignUp4(s32 a0) {
 void softbody_RequestRebuild(Unk80045878Obj *a0) {
     Unk8003F62CRec *v1 = a0->unk_24;
     if (v1) {
-        v1->unk6 = 1;
+        v1->rebuild_request = 1;
     }
 }
 
@@ -2691,7 +2691,7 @@ void softbody_RequestSnap(s32 a0) {
     if (v0) {
         Unk8003F62CRec *v1 = v0->unk_24;
         if (v1) {
-            v1->unk2 = 1;
+            v1->snap_request = 1;
         }
     }
 }
@@ -2699,16 +2699,16 @@ void softbody_RequestSnap(s32 a0) {
 void softbody_SetObjectSnap(Unk8003F62CRec *a0) {
     s32 i;
     for (i = 0; i < a0->count; i++) {
-        a0->unk418[i].unk2 = 1;
-        a0->recs[i].f824_04.unk2 = 1;
+        a0->step_descs[i].snap = 1;
+        a0->recs[i].step_desc.snap = 1;
     }
 }
 
 void softbody_ClearObjectSnap(Unk8003F62CRec *a0) {
     s32 i;
     for (i = 0; i < a0->count; i++) {
-        a0->unk418[i].unk2 = 0;
-        a0->recs[i].f824_04.unk2 = 0;
+        a0->step_descs[i].snap = 0;
+        a0->recs[i].step_desc.snap = 0;
     }
 }
 
@@ -2728,7 +2728,7 @@ void softbody_FreeObject(Unk80045878Obj *a0) {
     s2 = a0->unk_24;
     if (s2 != 0) {
         for (s0 = 0; s0 < s2->count; s0++) {
-            softbody_Free(s2->recs[s0].unk0);
+            softbody_Free(s2->recs[s0].slot_index);
         }
     }
 }
@@ -2746,7 +2746,7 @@ void softbody_RebaseObject(Unk80045878Obj *a0, s32 a1) {
         v1 = (Unk8003F62CRec *)((u8 *)v1 + a1);
         a0->unk_24 = v1;
         a0->unk_28 = a0->unk_28 + a1;
-        v1->unk6 = 1;
+        v1->rebuild_request = 1;
     }
 }
 

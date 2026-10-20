@@ -47,7 +47,7 @@ void softbody_LoadColliders(Unk80017FA0Rec *a0) {
     Unk8003F6D8Coll *temp;
     Unk8003F6D8Coll *ptr;
 
-    temp = a0->unkC;
+    temp = a0->colliders;
     if (temp == 0) {
         goto end;
     }
@@ -89,7 +89,7 @@ void softbody_LoadColliders(Unk80017FA0Rec *a0) {
         }
     }
 
-    SCR->scr60 = a0->unkC->count;
+    SCR->scr60 = a0->colliders->count;
 end:;
 }
 
@@ -195,7 +195,7 @@ void softbody_SolveSprings(Func80017A44Output *arg0) {
     out = (s32 *)0x1F8000BC;
     count = arg0->edge_count - 1;
     data = arg0->edges;
-    base = arg0->records;
+    base = arg0->nodes;
     /* FAKE: the packed node-index word staged through the still-dead
      * `thresh` so it shares thresh's register ($t1); its own local takes $a1:
      * score 5 (staged-value-reused-variable) */
@@ -214,20 +214,20 @@ void softbody_SolveSprings(Func80017A44Output *arg0) {
             dx = (p2->pos[0] + p1->pos[0]) / 2;
             dy = (p2->pos[1] + p1->pos[1]) / 2;
             dz = (p2->pos[2] + p1->pos[2]) / 2;
-            if (p2->field_18 < 0) {
+            if (p2->anchor < 0) {
                 p2->pos[0] = dx;
                 p2->pos[1] = dy;
                 p2->pos[2] = dz;
-                p2->field_C /= 4;
-                p2->field_10 /= 4;
-                p2->field_14 /= 4;
+                p2->vel_x /= 4;
+                p2->vel_y /= 4;
+                p2->vel_z /= 4;
             } else {
                 p1->pos[0] = dx;
                 p1->pos[1] = dy;
                 p1->pos[2] = dz;
-                p1->field_C /= 4;
-                p1->field_10 /= 4;
-                p1->field_14 /= 4;
+                p1->vel_x /= 4;
+                p1->vel_y /= 4;
+                p1->vel_z /= 4;
             }
             dx = p2->pos[0] - p1->pos[0];
             dy = p2->pos[1] - p1->pos[1];
@@ -324,7 +324,7 @@ void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
 
     softbody_PrepareStep(arg0, arg1);
     count = arg1->count;
-    node = arg1->records;
+    node = arg1->nodes;
 
     for (i = 0; i < count; i++, node++) {
         /* Ruling 11 (reused local): loop index of the add-force,
@@ -337,30 +337,30 @@ void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
         SCR->pos[0] = node->pos[0];
         SCR->pos[1] = node->pos[1];
         SCR->pos[2] = node->pos[2];
-        if (node->field_18 >= 0) {
+        if (node->anchor >= 0) {
             gte_ldv0(&arg1->points[i]);
             gte_rtv0tr();
             gte_stlvnl(SCR->scr18);
-            if (node->field_18 > 0) {
+            if (node->anchor > 0) {
                 SCR->pos[0] += SCR->dpos[0];
-                node->field_C =
-                    node->field_C / 2 +
-                    ((((SCR->scr18[0] << 7) - SCR->pos[0]) * node->field_18) >>
+                node->vel_x =
+                    node->vel_x / 2 +
+                    ((((SCR->scr18[0] << 7) - SCR->pos[0]) * node->anchor) >>
                      8);
-                node->pos[0] = SCR->pos[0] + node->field_C;
+                node->pos[0] = SCR->pos[0] + node->vel_x;
                 SCR->pos[1] += SCR->dpos[1];
-                node->field_10 =
-                    node->field_10 / 2 +
-                    ((((SCR->scr18[1] << 7) - SCR->pos[1]) * node->field_18 +
-                      (0x100 - node->field_18) * 25) >>
+                node->vel_y =
+                    node->vel_y / 2 +
+                    ((((SCR->scr18[1] << 7) - SCR->pos[1]) * node->anchor +
+                      (0x100 - node->anchor) * 25) >>
                      8);
-                node->pos[1] = SCR->pos[1] + node->field_10;
+                node->pos[1] = SCR->pos[1] + node->vel_y;
                 SCR->pos[2] += SCR->dpos[2];
-                node->field_14 =
-                    node->field_14 / 2 +
-                    ((((SCR->scr18[2] << 7) - SCR->pos[2]) * node->field_18) >>
+                node->vel_z =
+                    node->vel_z / 2 +
+                    ((((SCR->scr18[2] << 7) - SCR->pos[2]) * node->anchor) >>
                      8);
-                node->pos[2] = SCR->pos[2] + node->field_14;
+                node->pos[2] = SCR->pos[2] + node->vel_z;
             } else {
                 node->pos[0] = SCR->scr18[0] << 7;
                 node->pos[1] = SCR->scr18[1] << 7;
@@ -368,22 +368,22 @@ void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
             }
             continue;
         }
-        if (node->field_18 >= -0xFF) {
+        if (node->anchor >= -0xFF) {
             gte_ldv0(&arg1->points[i]);
             gte_rtv0tr();
             gte_stlvnl(SCR->scr18);
             SCR->pos[0] -=
-                (((SCR->scr18[0] << 7) - SCR->pos[0]) * node->field_18) >> 8;
+                (((SCR->scr18[0] << 7) - SCR->pos[0]) * node->anchor) >> 8;
             SCR->pos[1] -=
-                (((SCR->scr18[1] << 7) - SCR->pos[1]) * node->field_18) >> 8;
+                (((SCR->scr18[1] << 7) - SCR->pos[1]) * node->anchor) >> 8;
             SCR->pos[2] -=
-                (((SCR->scr18[2] << 7) - SCR->pos[2]) * node->field_18) >> 8;
+                (((SCR->scr18[2] << 7) - SCR->pos[2]) * node->anchor) >> 8;
         }
-        vx = node->field_C;
-        vy = node->field_10;
-        vz = node->field_14;
-        var_14 = node->field_1C;
-        bits = *(s32 *)&node->field_24[0];
+        vx = node->vel_x;
+        vy = node->vel_y;
+        vz = node->vel_z;
+        var_14 = node->a_edge_count;
+        bits = *(s32 *)&node->a_edges[0];
         for (idx = 0; idx < var_14; idx++) {
             s32 *f_add;
 
@@ -392,13 +392,13 @@ void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
             vy += f_add[1];
             vz += f_add[2];
             if (idx == 3) {
-                bits = *(s32 *)&node->field_24[4];
+                bits = *(s32 *)&node->a_edges[4];
             } else {
                 bits >>= 8;
             }
         }
-        var_14 = node->field_20;
-        bits2 = *(s32 *)&node->field_2C[0];
+        var_14 = node->b_edge_count;
+        bits2 = *(s32 *)&node->b_edges[0];
         for (idx = 0; idx < var_14; idx++) {
             s32 *f_sub;
 
@@ -407,7 +407,7 @@ void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
             vy -= f_sub[1];
             vz -= f_sub[2];
             if (idx == 3) {
-                bits2 = *(s32 *)&node->field_2C[4];
+                bits2 = *(s32 *)&node->b_edges[4];
             } else {
                 bits2 >>= 8;
             }
@@ -415,7 +415,7 @@ void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
         SCR->scr18[0] = vx;
         SCR->scr18[1] = vy;
         SCR->scr18[2] = vz;
-        if (arg0->unkC != 0) {
+        if (arg0->colliders != 0) {
             /* Ruling 11 (reused local): Y delta, depth below the ground then
              * the delta to focus 0 */
             s32 delta;
@@ -533,12 +533,12 @@ void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
                 gte_stlvl(SCR->scr18);
             }
         }
-        node->field_C = (SCR->scr18[0] * 7) >> 3;
-        node->pos[0] = SCR->pos[0] + SCR->dpos[0] + node->field_C;
-        node->field_10 = ((SCR->scr18[1] * 7) >> 3) + 0x190;
-        node->pos[1] = SCR->pos[1] + SCR->dpos[1] + node->field_10;
-        node->field_14 = (SCR->scr18[2] * 7) >> 3;
-        node->pos[2] = SCR->pos[2] + SCR->dpos[2] + node->field_14;
+        node->vel_x = (SCR->scr18[0] * 7) >> 3;
+        node->pos[0] = SCR->pos[0] + SCR->dpos[0] + node->vel_x;
+        node->vel_y = ((SCR->scr18[1] * 7) >> 3) + 0x190;
+        node->pos[1] = SCR->pos[1] + SCR->dpos[1] + node->vel_y;
+        node->vel_z = (SCR->scr18[2] * 7) >> 3;
+        node->pos[2] = SCR->pos[2] + SCR->dpos[2] + node->vel_z;
     }
 }
 
@@ -554,12 +554,12 @@ void softbody_UpdateList(Unk80017FA0Rec *arg0, s32 arg1) {
         buf = (s32)g_softbody_slots;
         s0 = arg0;
         do {
-            if (s0->unk2 & 1) {
-                s16 val = s0->unk0;
+            if (s0->snap & 1) {
+                s16 val = s0->slot_index;
                 softbody_SnapToPoints(
                     s0, (Func80017A44Output *)(val * 52 + buf));
             } else {
-                s16 val = s0->unk0;
+                s16 val = s0->slot_index;
                 softbody_Step(s0, (Func80017A44Output *)(val * 52 + buf));
             }
             i++;
@@ -579,7 +579,7 @@ void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     gte_SetRotMatrix(arg0->unk4);
     gte_SetTransMatrix(arg0->unk4);
 
-    dst = arg1->records;
+    dst = arg1->nodes;
     for (i = 0; i < arg1->count; i++) {
         gte_ldv0(&arg1->points[i]);
         gte_rtv0tr();
@@ -587,9 +587,9 @@ void softbody_SnapToPoints(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
         dst->pos[0] = out[0] << 7;
         dst->pos[1] = out[1] << 7;
         dst->pos[2] = out[2] << 7;
-        dst->field_C = 0;
-        dst->field_10 = 0;
-        dst->field_14 = 0;
+        dst->vel_x = 0;
+        dst->vel_y = 0;
+        dst->vel_z = 0;
         dst++;
     }
     arg1->matrix = *arg0->unk4;
