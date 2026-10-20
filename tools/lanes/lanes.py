@@ -30,6 +30,7 @@ Usage (Windows Python, from any cwd):
   python tools/lanes/lanes.py land  <lane> [--no-push]
   python tools/lanes/lanes.py close <lane> [--remove]
   python tools/lanes/lanes.py path  <lane> [--wsl]
+  python tools/lanes/lanes.py recover <lane>                # after an interrupted land
 
 The session identity is $CLAUDE_CODE_SESSION_ID (override with --session for tests).
 Exit codes: 0 ok, 1 refused, 3 land bounced on a conflict, 4 a gate failed.
@@ -759,11 +760,100 @@ def check_claims(ctx: Ctx, lane: str, wt: Path):
                          f"it cannot land until that claim is released")
 
 
+def recover_lane(ctx: Ctx, lane: str, quiet=False) -> bool:
+    """Undo a land that was killed midway: abort any cherry-pick, put the worktree back on the
+    lane branch (its commits were never touched), drop the -land branch, and release the main
+    lock if this session holds it for this lane. Returns True if anything was recovered."""
+    wt = ctx.lane_dir(lane)
+    br, lbr = ctx.branch(lane), ctx.land_branch(lane)
+    did = False
+    if picking(wt):
+        run(["git", "cherry-pick", "--abort"], cwd=wt, check=False)
+        did = True
+    if git("rev-parse", "--abbrev-ref", "HEAD", cwd=wt) == lbr:
+        run(["git", "reset", "-q", "--hard"], cwd=wt, check=False)
+        git("checkout", "-q", br, cwd=wt)
+        did = True
+    if git_ok("rev-parse", "--verify", "-q", f"refs/heads/{lbr}", cwd=wt):
+        run(["git", "branch", "-D", lbr], cwd=wt, check=False)
+        did = True
+    lk = read_lock(ctx)
+    if lk and lk.get("session") == ctx.session and lk.get("label") == f"lanes land {lane}":
+        release_lock(ctx)
+        did = True
+    if did and not quiet:
+        print(f"lanes: recovered {lane} from an interrupted land (lane branch {br} untouched)")
+    return did
+
+
+def cmd_recover(ctx: Ctx, a):
+    ctx.update(lambda reg: require_owner(ctx, reg, a.lane))
+    if not recover_lane(ctx, a.lane):
+        print(f"lanes: {a.lane}: nothing to recover")
+    return 0
+
+
+def build_candidate(ctx: Ctx, lane: str, wt: Path, commits, base: str, log) -> str:
+    """Replay the lane onto `base` on the -land branch, run the gates, regenerate. No lock is
+    held: nothing here touches main. Returns the gated tip."""
+    git("checkout", "-q", "-B", ctx.land_branch(lane), base, cwd=wt)
+    for sha in commits:
+        how = replay_commit(ctx, wt, sha, log)
+        print(f"lanes:   {sha[:9]} {how}", flush=True)
+    new_paths = set(git("diff", "--name-only", f"{base}..HEAD", cwd=wt).split())
+    docs_only = all(any(p.startswith(d) for d in ctx.cfg.get("docs_only_paths", [])) for p in new_paths)
+    kind = ctx.load()["lanes"][lane].get("kind", "foundation")
+    gates = [] if docs_only else ctx.cfg["gates"].get(kind, ctx.cfg["gates"]["foundation"])
+    if docs_only:
+        print("lanes: docs-only change; build gates skipped")
+    check_untracked(wt)  # the gates must see exactly what lands
+    for g in gates:
+        if run_shell(ctx, wt, g, log) != 0:
+            raise Refuse(f"gate failed: {g}  (log {log.name})", 4)
+    if gates and ctx.cfg.get("oracle_sha1"):
+        exe = wt / ctx.cfg["oracle_exe"]
+        got = hashlib.sha1(exe.read_bytes()).hexdigest() if exe.exists() else "missing"
+        if got != ctx.cfg["oracle_sha1"]:
+            raise Refuse(f"{exe} SHA1 {got} != oracle {ctx.cfg['oracle_sha1']}", 4)
+        print(f"lanes: SHA1 == oracle ({got[:12]})")
+    if not docs_only:
+        for g in ctx.cfg.get("regenerate", []):
+            if run_shell(ctx, wt, g["cmd"], log) != 0:
+                raise Refuse(f"regenerate failed: {g['cmd']}", 4)
+            git("add", "--", g["path"], cwd=wt)
+            if not git_ok("diff", "--cached", "--quiet", "--", g["path"], cwd=wt):
+                msgfile = wt / "tmp" / "lanes" / "regen-msg.txt"
+                msgfile.parent.mkdir(parents=True, exist_ok=True)
+                msgfile.write_text(f"{g['subject']} after lane {lane}\n", encoding="utf-8", newline="\n")
+                git("commit", "-q", "-F", str(msgfile), cwd=wt)
+                print(f"lanes:   regenerated {g['path']}")
+    if git("status", "--porcelain", "--untracked-files=no", cwd=wt):
+        raise Refuse("the gates left tracked changes in the lane worktree: "
+                     + git("status", "--porcelain", "--untracked-files=no", cwd=wt), 4)
+    return git("rev-parse", "HEAD", cwd=wt)
+
+
+def sync_main_with_remote(ctx: Ctx, remote: str):
+    """Under the lock: main must not hold commits origin lacks (they would be pushed unreviewed
+    with ours); fast-forward main if origin is ahead."""
+    git("fetch", "-q", remote, "main", cwd=ctx.main)
+    rmain = f"{remote}/main"
+    local_only = git("rev-list", "--oneline", f"{rmain}..main", cwd=ctx.main)
+    if local_only:
+        raise Refuse(f"main has commits that are not on {rmain}; a land would push them along "
+                     f"unreviewed. Push or investigate them first:\n  "
+                     + "\n  ".join(local_only.splitlines()[:8]))
+    if git("rev-parse", "main", cwd=ctx.main) != git("rev-parse", rmain, cwd=ctx.main):
+        check_main_idle(ctx)
+        git("merge", "-q", "--ff-only", rmain, cwd=ctx.main)
+
+
 def cmd_land(ctx: Ctx, a):
     lane = a.lane
     ctx.update(lambda reg: require_owner(ctx, reg, lane))
     wt = ctx.lane_dir(lane)
-    br, lbr = ctx.branch(lane), ctx.land_branch(lane)
+    br = ctx.branch(lane)
+    recover_lane(ctx, lane)
     if git("rev-parse", "--abbrev-ref", "HEAD", cwd=wt) != br:
         raise Refuse(f"{wt} is not on {br}")
     if git("status", "--porcelain", "--untracked-files=no", cwd=wt):
@@ -775,100 +865,56 @@ def cmd_land(ctx: Ctx, a):
     if git("rev-list", "--merges", "main..HEAD", cwd=wt):
         raise Refuse("the lane holds merge commits; replay cannot carry them. Rebuild the lane as "
                      "linear commits on fresh main (lanes.py fresh --discard).")
-
     check_untracked(wt)
     check_claims(ctx, lane, wt)
+    remote = None if a.no_push else ctx.cfg.get("remote")
 
     logp = ctx.state_dir / "logs" / f"{lane}-{time.strftime('%Y%m%d-%H%M%S')}.log"
     logp.parent.mkdir(parents=True, exist_ok=True)
     log = open(logp, "w", encoding="utf-8", newline="\n")
     lk = read_lock(ctx)
     held_before = bool(lk and lk.get("session") == ctx.session)  # e.g. a codex-worker landing
-    acquire_lock(ctx, f"lanes land {lane}")
-    land_ok = False
+    landed = False
     try:
-        check_claims(ctx, lane, wt)  # again: a freeze may have arrived while we waited
-        check_main_idle(ctx)
-        remote = ctx.cfg.get("remote")
-        if remote and not a.no_push:
-            git("fetch", "-q", remote, "main", cwd=ctx.main)
-            rmain = f"{remote}/main"
-            if not git_ok("merge-base", "--is-ancestor", rmain, "main", cwd=ctx.main):
-                if git_ok("merge-base", "--is-ancestor", "main", rmain, cwd=ctx.main):
-                    git("merge", "-q", "--ff-only", rmain, cwd=ctx.main)
+        for attempt in range(3):
+            base = git("rev-parse", "main", cwd=ctx.main)
+            print(f"lanes: landing {len(commits)} commit(s) of {lane} onto main {base[:9]}"
+                  + (f" (retry {attempt}: main moved)" if attempt else ""), flush=True)
+            tip = build_candidate(ctx, lane, wt, commits, base, log)  # no lock held
+            # Short critical section: verify nothing moved, then fast-forward and push.
+            acquire_lock(ctx, f"lanes land {lane}")
+            try:
+                check_claims(ctx, lane, wt)  # a freeze may have arrived meanwhile
+                check_main_idle(ctx)
+                if remote:
+                    sync_main_with_remote(ctx, remote)
+                if git("rev-parse", "main", cwd=ctx.main) != base:
+                    continue  # main moved: rebuild on the new main (finally releases the lock)
+                git("merge", "-q", "--ff-only", tip, cwd=ctx.main)
+                landed = True
+                if remote:
+                    r = run(["git", "push", "-q", remote, "main"], cwd=ctx.main, check=False)
+                    if r.returncode != 0:
+                        raise Refuse(f"main -> {tip[:9]} locally, but the PUSH FAILED: "
+                                     f"{(r.stderr or '').strip()[-400:]}\n  Push main by hand "
+                                     f"(git -C <main> push {remote} main) before the next land.", 5)
+                    print(f"lanes: main -> {tip[:9]} (pushed)")
                 else:
-                    raise Refuse(f"main and {rmain} have diverged; resolve by hand")
-        base = git("rev-parse", "main", cwd=ctx.main)
-        print(f"lanes: landing {len(commits)} commit(s) of {lane} onto main {base[:9]}", flush=True)
-
-        git("checkout", "-q", "-B", lbr, base, cwd=wt)
-        for sha in commits:
-            how = replay_commit(ctx, wt, sha, log)
-            print(f"lanes:   {sha[:9]} {how}", flush=True)
-            write_lock(ctx, f"lanes land {lane}")  # heartbeat
-
-        new_paths = set(git("diff", "--name-only", f"{base}..HEAD", cwd=wt).split())
-        docs_only = all(any(p.startswith(d) for d in ctx.cfg.get("docs_only_paths", [])) for p in new_paths)
-        kind = ctx.load()["lanes"][lane].get("kind", "foundation")
-        gates = [] if docs_only else ctx.cfg["gates"].get(kind, ctx.cfg["gates"]["foundation"])
-        if docs_only:
-            print("lanes: docs-only change; build gates skipped")
-        check_untracked(wt)  # the gates must see exactly what lands
-        for g in gates:
-            write_lock(ctx, f"lanes land {lane}")
-            if run_shell(ctx, wt, g, log) != 0:
-                raise Refuse(f"gate failed: {g}  (log {logp})", 4)
-        if gates and ctx.cfg.get("oracle_sha1"):
-            exe = wt / ctx.cfg["oracle_exe"]
-            got = hashlib.sha1(exe.read_bytes()).hexdigest() if exe.exists() else "missing"
-            if got != ctx.cfg["oracle_sha1"]:
-                raise Refuse(f"{exe} SHA1 {got} != oracle {ctx.cfg['oracle_sha1']}", 4)
-            print(f"lanes: SHA1 == oracle ({got[:12]})")
-
-        if not docs_only:
-            for g in ctx.cfg.get("regenerate", []):
-                if run_shell(ctx, wt, g["cmd"], log) != 0:
-                    raise Refuse(f"regenerate failed: {g['cmd']}", 4)
-                git("add", "--", g["path"], cwd=wt)
-                if not git_ok("diff", "--cached", "--quiet", "--", g["path"], cwd=wt):
-                    msgfile = wt / "tmp" / "lanes" / "regen-msg.txt"
-                    msgfile.parent.mkdir(parents=True, exist_ok=True)
-                    msgfile.write_text(f"{g['subject']} after lane {lane}\n", encoding="utf-8", newline="\n")
-                    git("commit", "-q", "-F", str(msgfile), cwd=wt)
-                    print(f"lanes:   regenerated {g['path']}")
-        if git("status", "--porcelain", "--untracked-files=no", cwd=wt):
-            raise Refuse("the gates left tracked changes in the lane worktree: "
-                         + git("status", "--porcelain", "--untracked-files=no", cwd=wt), 4)
-
-        write_lock(ctx, f"lanes land {lane}")  # still ours?
-        if git("rev-parse", "main", cwd=ctx.main) != base:
-            raise Refuse("main moved during the land despite the lock; run land again")
-        check_main_idle(ctx)  # again: the gates took minutes
-        tip = git("rev-parse", "HEAD", cwd=wt)
-        git("merge", "-q", "--ff-only", tip, cwd=ctx.main)
-        land_ok = True
-        if remote and not a.no_push:
-            r = run(["git", "push", "-q", remote, "main"], cwd=ctx.main, check=False)
-            if r.returncode != 0:
-                raise Refuse(f"main -> {tip[:9]} locally, but the PUSH FAILED: "
-                             f"{(r.stderr or '').strip()[-400:]}\n  Push main by hand "
-                             f"(git -C <main> push {remote} main) before the next land.", 5)
-            print(f"lanes: main -> {tip[:9]} (pushed)")
-        else:
-            print(f"lanes: main -> {tip[:9]} (not pushed: --no-push)")
+                    print(f"lanes: main -> {tip[:9]} (not pushed: --no-push)")
+                return 0
+            finally:
+                if not held_before:
+                    release_lock(ctx)
+        raise Refuse("main kept moving during three land attempts; try again", 1)
     finally:
-        # Always put the lane back on its branch; on success the branch becomes the new main.
         run(["git", "cherry-pick", "--abort"], cwd=wt, check=False)
-        if land_ok:
+        if landed:
             git("checkout", "-q", "-B", br, "main", cwd=wt)
         else:
             run(["git", "reset", "-q", "--hard"], cwd=wt, check=False)
             run(["git", "checkout", "-q", br], cwd=wt, check=False)
-        run(["git", "branch", "-D", lbr], cwd=wt, check=False)
-        if not held_before:
-            release_lock(ctx)
+        run(["git", "branch", "-D", ctx.land_branch(lane)], cwd=wt, check=False)
         log.close()
-    return 0
 
 
 # ---------------------------------------------------------------- cli
@@ -887,6 +933,7 @@ def main(argv=None) -> int:
     s = sub.add_parser("close"); s.add_argument("lane"); s.add_argument("--remove", action="store_true")
     s.add_argument("--force", action="store_true")
     s = sub.add_parser("path"); s.add_argument("lane"); s.add_argument("--wsl", action="store_true")
+    s = sub.add_parser("recover"); s.add_argument("lane")
     a = p.parse_args(argv)
     try:
         if a.cmd not in ("status", "path") and not a.session:
@@ -894,7 +941,7 @@ def main(argv=None) -> int:
         ctx = Ctx(find_main(Path(__file__).resolve().parent), a.session)
         return {"status": cmd_status, "open": cmd_open, "fresh": cmd_fresh, "claim": cmd_claim,
                 "unclaim": cmd_unclaim, "land": cmd_land, "close": cmd_close,
-                "path": cmd_path}[a.cmd](ctx, a)
+                "path": cmd_path, "recover": cmd_recover}[a.cmd](ctx, a)
     except Refuse as e:
         print(f"lanes: REFUSED: {e}", file=sys.stderr)
         return e.code

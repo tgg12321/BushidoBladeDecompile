@@ -51,5 +51,5 @@
     ],
     "docs": []
   },
-  "docs_only_paths": ["docs/", "memory/", ".claude/"]
+  "docs_only_paths": ["docs/", "memory/"]
 }

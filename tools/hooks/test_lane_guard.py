@@ -157,7 +157,39 @@ class GuardTest(unittest.TestCase):
                     f'python tools/lanes/lanes.py status; git -C "{wt}" log -3']:
             self.assertEqual(self.sh("OTHER", cmd), 0, f"{cmd}\n{self.err}")
 
+    def test_third_review_probes(self):
+        m, wt = self.m, self.wt
+        wsl_m = "/mnt/" + m[0].lower() + "/" + m[3:].replace(chr(92), "/")
+        for cmd in [f"wsl git -C '{wsl_m}' commit -m x",
+                    f'bash -c "cd \'{wsl_m}\' && git commit -m x"',
+                    "cmd /c git commit -m x",
+                    f'cd "{wt}"; python "{m}/tools/naming_wave.py" --apply']:
+            self.assertEqual(self.sh("S1", cmd), 2, cmd)
+        for cmd in ['$wt="x"; git -C $wt commit -m x', 'git -C "$WT" add -A',
+                    f'python "{wt}/tools/naming_wave.py" --apply',
+                    f'python tools/format.py "{wt}/src/main/a.c"']:
+            self.assertEqual(self.sh("S1", cmd), 0, f"{cmd}\n{self.err}")
+
     # ---- post check
+    def test_post_reports_commit_untracked_and_redirty(self):
+        def run(cmd, act):
+            self.assertEqual(self.hook("S1", "Bash", command=cmd, tool_use_id="t1"), 0)
+            act()
+            return self.hook("S1", "Bash", post=True, command=cmd, tool_use_id="t1")
+
+        def commit_main():
+            (self.main / "src" / "main" / "a.c").write_text("int c;\n")
+            subprocess.run(["git", "-c", "user.email=t@e", "-c", "user.name=t", "commit", "-qam", "r"],
+                           cwd=self.main, check=True)
+        self.assertEqual(run("echo", commit_main), 2)
+        self.assertIn("HEAD moved", self.err)
+        self.assertEqual(run("echo", lambda: (self.main / "src" / "new.c").write_text("x")), 2)
+        self.assertIn("src/new.c", self.err)
+        time.sleep(0.05)
+        self.assertEqual(run("echo", lambda: (self.main / "src" / "new.c").write_text("xyz")), 2)
+        self.assertEqual(run("echo", lambda: None), 0)
+        self.assertNotIn("restore", self.err)
+
     def test_post_detects_new_main_changes(self):
         self.assertEqual(self.sh("S1", "cp tmp/x.c src/main/a.c"), 0)  # not parseable as a write
         (self.main / "src" / "main" / "a.c").write_text("int b;\n")     # ...but it wrote main

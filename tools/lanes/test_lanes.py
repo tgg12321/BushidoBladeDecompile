@@ -358,5 +358,56 @@ class LaneTest(unittest.TestCase):
         self.assertIsNone(lanes.read_lock(c1))
 
 
+    def test_interrupted_land_recovers(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n")
+        lane_tip = sh("rev-parse", "lanes/a", cwd=self.main)
+        # simulate a land killed mid-gates: worktree on the -land branch, lock held
+        sh("checkout", "-q", "-B", "lanes/a-land", "main", cwd=self.wt("a"))
+        self.assertTrue(lanes._create_lock(lanes.Ctx(self.main, "s1"), "lanes land a"))
+        self.assertEqual(self.L("s1", "recover", "a"), 0, self.last)
+        self.assertIn("recovered", self.last)
+        self.assertIsNone(lanes.read_lock(lanes.Ctx(self.main, "s1")))
+        self.assertEqual(sh("rev-parse", "HEAD", cwd=self.wt("a")), lane_tip)
+        # and land itself recovers too
+        sh("checkout", "-q", "-B", "lanes/a-land", "main", cwd=self.wt("a"))
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertTrue((self.main / "src" / "b.c").exists())
+
+    def test_main_moving_during_gates_rebuilds(self):
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        self.commit("a", "src/b.c", "int b;\n")
+        self.commit("b", "src/c.c", "int c;\n")
+        real = lanes.build_candidate
+        calls = []
+
+        def racing(ctx, lane, wt, commits, base, log):
+            tip = real(ctx, lane, wt, commits, base, log)
+            if not calls:  # the other lane lands while our gates run
+                calls.append(1)
+                lanes.build_candidate = real
+                self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+                lanes.build_candidate = racing
+            return tip
+
+        lanes.build_candidate = racing
+        try:
+            rc = self.L("s1", "land", "a")
+        finally:
+            lanes.build_candidate = real
+        self.assertEqual(rc, 0, self.last)
+        self.assertTrue((self.main / "src" / "b.c").exists() and (self.main / "src" / "c.c").exists())
+
+    def test_unpushed_main_commit_blocks_land(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n")
+        (self.main / "rogue.txt").write_text("x\n", newline="\n")
+        sh("add", "rogue.txt", cwd=self.main)
+        sh("commit", "-q", "-m", "rogue", cwd=self.main)
+        self.assertEqual(self.L("s1", "land", "a"), 1, self.last)
+        self.assertIn("not on origin/main", self.last)
+        self.assertNotIn("rogue", sh("log", "--oneline", "origin/main", cwd=self.main))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

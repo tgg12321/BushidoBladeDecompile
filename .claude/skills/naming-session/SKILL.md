@@ -35,7 +35,12 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
     `test_label_census.py`) and checks the SHA1;
   - regenerates the census (never merge `function-names.csv` by hand);
   - merges backlog rows row by row;
-  - fast-forwards main and pushes.
+  - fast-forwards main and pushes (the main lock is held only for this last step).
+
+  A land takes many minutes, so run it with `run_in_background: true` and wait for the
+  completion notice, never under a short tool timeout. After an interruption, run
+  `lanes.py recover <lane>` (the next `land` also does it). Exit 4 means a gate failed; exit 5
+  means main moved but the push failed (push by hand, then tell the user).
 - **Bounces.** If `land` bounces (exit 3: a real conflict, for example the same line of
   `named_syms.txt` renamed by two lanes), run `lanes.py fresh <lane> --discard` and redo the apply on
   the new main. The wave tools are deterministic, so this takes minutes. Never hand-merge into main.

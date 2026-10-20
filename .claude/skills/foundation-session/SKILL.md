@@ -28,8 +28,13 @@ live session owns, and say which one you took.
   work (for example `topic:data:8008D120-8008E000`).
 - `lanes.py land` replays your commits onto the current main in your worktree, runs the gates
   (oracle SHA1 rebuild, tus-check, integrity, engine test), regenerates the census, fast-forwards
-  main and pushes. It holds the main lock only while it runs. If it **bounces** (exit 3, conflict),
-  run `lanes.py fresh <lane> --discard` and redo the unit on the new main. Never hand-merge into main.
+  main and pushes. The gates run without the main lock; the lock covers only the final check and
+  fast-forward. A land takes many minutes (full rebuild + engine test), so run it with
+  `run_in_background: true` and wait for the completion notice, never under a short tool timeout.
+  If a land was interrupted anyway, `lanes.py recover <lane>` (the next `land` also does it).
+  Exit codes: 3 bounce (conflict: run `lanes.py fresh <lane> --discard` and redo the unit on the
+  new main), 4 gate failed, 5 main moved but the push failed (push by hand, then tell the user).
+  Never hand-merge into main.
 - If a commit is exactly the output of a deterministic script, add a `Lane-Replay: <shell command>`
   trailer (run at the worktree root in WSL with the venv active). On a conflict, `land` re-runs the
   command instead of bouncing. Don't use the trailer on hand edits.
@@ -80,7 +85,7 @@ live session owns, and say which one you took.
 - **fake**: one TU per unit, claimed as `path:src/main/<tu>.c`. Naming lanes may still rename
   symbols in it; that merges line by line on land.
 - **assets / trace**: tools and docs only, no build input. `land` still runs the full gates when
-  anything outside `docs/`, `memory/` or `.claude/` changes (a `tools/` script can be a build input).
+  anything outside `docs/` or `memory/` changes (a `tools/` script can be a build input).
 
 ## Hard limits
 

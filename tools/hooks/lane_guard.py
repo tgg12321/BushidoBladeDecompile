@@ -92,9 +92,15 @@ def lane_of_path(cfg, fp: str):
     return first[len(cfg["dir_prefix"]):], rest.replace(os.sep, "/")
 
 
-def resolve(path: str, cur: str) -> str:
+def resolve(path: str, cur):
+    """Absolute path, or None when it can't be known statically ($var, unknown cwd); unknown
+    targets are left to the post-command check rather than blocked."""
     p = to_win(unq(path))
-    return p if os.path.isabs(p) else os.path.join(cur, p)
+    if "$" in p or "%" in p or "`" in p:
+        return None
+    if os.path.isabs(p):
+        return p
+    return None if cur is None else os.path.join(cur, p)
 
 
 def where(cfg, path: str):
@@ -136,6 +142,8 @@ def block(msg: str) -> int:
 
 def check_edit(cfg, lanes, sid, fp, cwd) -> int:
     fp = resolve(fp, cwd)
+    if fp is None:
+        return 0
     hit = lane_of_path(cfg, fp)
     mine = owned_lane(lanes, sid)
     if hit:
@@ -238,6 +246,31 @@ def shell_targets(cmd: str, cwd: str):
             continue
         verb = unq(w[0]).lower()
         base = os.path.basename(verb)
+        flat0 = [unq(x) for x in w]
+        # wrappers: analyse the command they run
+        if base in ("wsl", "wsl.exe"):
+            rest, j = flat0[1:], 0
+            while j < len(rest) and rest[j].startswith("-"):
+                if rest[j] == "--cd" and j + 1 < len(rest):
+                    cur = resolve(rest[j + 1], cur)
+                    j += 2
+                elif rest[j] in ("-d", "--distribution", "-u", "--user") and j + 1 < len(rest):
+                    j += 2
+                else:
+                    j += 1
+            if j < len(rest):
+                yield from shell_targets(" ".join(w[1 + j:]), cur)
+            continue
+        if base in ("bash", "bash.exe", "sh", "pwsh", "pwsh.exe", "powershell", "powershell.exe",
+                    "cmd", "cmd.exe"):
+            j = next((j for j, x in enumerate(flat0[1:], 1)
+                      if x.lower() in ("-c", "-lc", "-command", "/c", "/k")), None)
+            if j is not None:  # bash -c "<cmd>", pwsh -Command "<cmd>", cmd /c <cmd>
+                if j + 1 < len(flat0):
+                    inner = flat0[j + 1] if len(w) == j + 2 else " ".join(w[j + 1:])
+                    yield from shell_targets(inner, cur)
+                continue
+            # otherwise (pwsh -File script.ps1 ...) fall through to the wteng scan below
         if verb in CD_VERBS:
             args = [x for x in w[1:] if not unq(x).startswith("-")]
             if args:
@@ -257,9 +290,20 @@ def shell_targets(cmd: str, cwd: str):
             yield (str(MAIN) if tgt.lower() == "main" else resolve(tgt, cur)), "wteng " + " ".join(sub)
             continue
         if base.startswith("python") or base in ("py", "py.exe", "python3"):
-            script = next((x for x in flat[1:] if not x.startswith("-")), "")
+            i = next((i for i, x in enumerate(flat) if i and not x.startswith("-")), None)
+            script = flat[i] if i else ""
             if TOOL_WRITERS.search(script):
-                yield cur, os.path.basename(script)
+                # These tools find the repo from their own file location (an absolute script path
+                # names its checkout) or, if given absolute file arguments, act on those.
+                files = [x for x in flat[i + 1:] if not x.startswith("-")
+                         and os.path.isabs(to_win(x)) and "$" not in x]
+                if os.path.isabs(to_win(script)):
+                    t = resolve(script, cur)
+                elif files:
+                    t = resolve(files[0], cur)
+                else:
+                    t = cur
+                yield t, os.path.basename(script)
 
 
 def check_shell(cfg, lanes, sid, cmd, cwd) -> int:
@@ -267,6 +311,8 @@ def check_shell(cfg, lanes, sid, cmd, cwd) -> int:
         return 0
     mine = owned_lane(lanes, sid)
     for target, what in shell_targets(cmd, cwd):
+        if target is None:
+            continue  # unknown statically ($var); the post-command check still sees main
         loc = where(cfg, target)
         if isinstance(loc, tuple):
             e = lanes.get(loc[1], {})
@@ -285,38 +331,70 @@ def check_shell(cfg, lanes, sid, cmd, cwd) -> int:
 
 # ---------------------------------------------------------------- post check
 
-def main_dirty() -> set:
-    r = subprocess.run(["git", "-C", str(MAIN), "status", "--porcelain", "--untracked-files=no"],
+def _git_main(*args) -> str:
+    r = subprocess.run(["git", "--no-optional-locks", "-C", str(MAIN), *args],
                        capture_output=True, text=True, encoding="utf-8", errors="replace")
-    return set(r.stdout.splitlines()) if r.returncode == 0 else set()
+    return r.stdout if r.returncode == 0 else ""
 
 
-def snap_path(sid: str) -> Path:
-    h = hashlib.sha1(sid.encode()).hexdigest()[:16]
-    return MAIN / "tmp" / "lanes-state" / f"snap-{h}.json"
+def main_state() -> dict:
+    """HEAD plus every changed or untracked (non-ignored) path in main with a cheap content
+    signature, so a further edit to an already-dirty file also shows."""
+    st = {}
+    for ln in _git_main("status", "--porcelain", "--untracked-files=all").splitlines():
+        path = ln[3:].split(" -> ")[-1].strip('"')
+        try:
+            s = (MAIN / path).stat()
+            sig = f"{ln[:2]}:{s.st_size}:{s.st_mtime_ns}"
+        except OSError:
+            sig = f"{ln[:2]}:gone"
+        st[path] = sig
+    return {"head": _git_main("rev-parse", "HEAD").strip(), "paths": st}
 
 
-def pre_snapshot(sid):
-    p = snap_path(sid)
+def snap_path(key: str) -> Path:
+    h = hashlib.sha1(key.encode()).hexdigest()[:16]
+    return MAIN / "tmp" / "lanes-state" / "snaps" / f"{h}.json"
+
+
+def snap_key(payload) -> str:
+    # one snapshot per tool call, so parallel subagents of one session don't overwrite each other
+    return str(payload.get("tool_use_id") or payload.get("session_id") or "")
+
+
+def pre_snapshot(payload):
+    p = snap_path(snap_key(payload))
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(sorted(main_dirty())), encoding="utf-8")
+    p.write_text(json.dumps(main_state()), encoding="utf-8")
 
 
-def post_check(cfg, lanes, sid) -> int:
+def post_check(cfg, lanes, payload) -> int:
+    sid = str(payload.get("session_id") or "")
     mine = owned_lane(lanes, sid)
-    p = snap_path(sid)
+    p = snap_path(snap_key(payload))
     if not mine or not p.exists():
         return 0
-    before = set(json.loads(p.read_text(encoding="utf-8")))
-    new = sorted(main_dirty() - before)
-    if not new:
+    before = json.loads(p.read_text(encoding="utf-8"))
+    try:
+        p.unlink()
+    except OSError:
+        pass
+    now = main_state()
+    changed = sorted(k for k, v in now["paths"].items() if before["paths"].get(k) != v)
+    head_note = ""
+    if now["head"] != before["head"]:
+        pushed = subprocess.run(["git", "-C", str(MAIN), "merge-base", "--is-ancestor", now["head"],
+                                 f"{cfg.get('remote', 'origin')}/main"], capture_output=True).returncode == 0
+        if not pushed:  # a land moves main too, but it pushes before this check runs
+            head_note = f"main HEAD moved {before['head'][:9]} -> {now['head'][:9]} (not on origin/main)"
+    if not changed and not head_note:
         return 0
-    wt = (MAIN / cfg["worktree_root"] / f"{cfg['dir_prefix']}{mine}").resolve()
-    print("lane_guard: main has NEW uncommitted changes after this command, and this session owns "
-          f"lane '{mine}':\n  " + "\n  ".join(new[:15]) +
-          f"\nIf this command made them: redo the change in the lane worktree {wt}, then restore "
-          f"main's copies (git -C \"{MAIN}\" restore -- <paths>). Main must stay clean: every "
-          f"lane's land refuses while it is dirty.", file=sys.stderr)
+    lines = ([head_note] if head_note else []) + changed[:15]
+    print("lane_guard (report only): main changed while this command ran, and this session owns "
+          f"lane '{mine}':\n  " + "\n  ".join(lines) +
+          "\nIf this command did it, the change belongs in the lane worktree, and main needs "
+          "putting back: tell the user, who can restore it. It may also be another session's work "
+          "running at the same time; don't undo anything you didn't do.", file=sys.stderr)
     return 2
 
 
@@ -336,14 +414,14 @@ def main() -> int:
         ti = payload.get("tool_input") or {}
         cwd = payload.get("cwd") or os.getcwd()
         if post:
-            return post_check(cfg, lanes, sid) if tool in ("Bash", "PowerShell") else 0
+            return post_check(cfg, lanes, payload) if tool in ("Bash", "PowerShell") else 0
         if tool in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
             fp = ti.get("file_path") or ti.get("notebook_path") or ""
             return check_edit(cfg, lanes, sid, fp, cwd) if fp else 0
         if tool in ("Bash", "PowerShell"):
             rc = check_shell(cfg, lanes, sid, ti.get("command") or "", cwd)
             if rc == 0 and owned_lane(lanes, sid):
-                pre_snapshot(sid)
+                pre_snapshot(payload)
             return rc
         return 0
     except Exception as e:
