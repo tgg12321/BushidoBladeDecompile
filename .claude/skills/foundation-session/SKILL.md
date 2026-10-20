@@ -32,8 +32,11 @@ live session owns, and say which one you took.
   fast-forward. A land takes many minutes (full rebuild + engine test), so run it with
   `run_in_background: true` and wait for the completion notice, never under a short tool timeout.
   If a land was interrupted anyway, `lanes.py recover <lane>` (the next `land` also does it).
-  Exit codes: 3 bounce (conflict: run `lanes.py fresh <lane> --discard` and redo the unit on the
-  new main), 4 gate failed, 5 main moved but the push failed (push by hand, then tell the user).
+  The land builds in a private landing worktree, so you may keep working in the lane meanwhile;
+  commits made during it land next time. Exit codes: 3 bounce (conflict: run
+  `lanes.py fresh <lane> --discard` and redo the unit on the new main), 4 gate failed, 5 main
+  moved but the push failed (retry with `python tools/lanes/lanes.py push`; tell the user if that
+  fails too).
   Never hand-merge into main.
 - If a commit is exactly the output of a deterministic script, add a `Lane-Replay: <shell command>`
   trailer (run at the worktree root in WSL with the venv active). On a conflict, `land` re-runs the

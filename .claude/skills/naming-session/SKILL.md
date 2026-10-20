@@ -40,7 +40,8 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   A land takes many minutes, so run it with `run_in_background: true` and wait for the
   completion notice, never under a short tool timeout. After an interruption, run
   `lanes.py recover <lane>` (the next `land` also does it). Exit 4 means a gate failed; exit 5
-  means main moved but the push failed (push by hand, then tell the user).
+  means main moved but the push failed: retry with `python tools/lanes/lanes.py push`, and tell
+  the user if that fails too.
 - **Bounces.** If `land` bounces (exit 3: a real conflict, for example the same line of
   `named_syms.txt` renamed by two lanes), run `lanes.py fresh <lane> --discard` and redo the apply on
   the new main. The wave tools are deterministic, so this takes minutes. Never hand-merge into main.
@@ -74,8 +75,12 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   waiting for a notification. Independent tasks can go as several Agent calls in one message.
 - Models: `naming-reviewer` for every review; `general-purpose` with `model: sonnet` for drafting
   and mechanical applies; Codex (`tools/codex_worker.py research`) for research only.
-- Codex is the one background job. Start it as the **last** step of a session, and record the
-  backlog row as `researching`. The next session extracts the result.
+- Codex is the one background job you leave running. Start it as the **last** step of a
+  session, and record the backlog row as `researching`. The next session extracts the result.
+- The one thing you do wait on is `lanes.py land`: run it with `run_in_background: true`, because
+  it can outlast a tool timeout. It builds in a private landing worktree, so you may prepare the
+  next unit in the lane worktree meanwhile. Commits made during a land are not included; they
+  are rebased onto the new main afterwards and land next time.
 
 ## Backlog (`docs/naming/phase3/backlog.tsv`)
 

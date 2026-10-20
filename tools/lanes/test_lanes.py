@@ -39,7 +39,18 @@ CFG = {
 
 GEN = "import pathlib\nn=sum(1 for _ in pathlib.Path('.').glob('src/*.c'))\n" \
       "pathlib.Path('census.csv').write_text(f'files,{n}\\n', newline='\\n')\n"
-GATE = "import pathlib,sys\nsys.exit(1 if pathlib.Path('FAIL_GATE').exists() else 0)\n"
+# fails on a committed FAIL marker anywhere outside docs/, or a .c including a missing header
+GATE = ("import pathlib,sys\n"
+        "bad = any(p.name == 'FAIL' and p.parts[0] != 'docs' for p in pathlib.Path('.').rglob('FAIL'))\n"
+        "for c in pathlib.Path('src').glob('*.c'):\n"
+        "    if 'h.h' in c.read_text() and not pathlib.Path('src/h.h').exists():\n"
+        "        bad = True\n"
+        "sys.exit(1 if bad else 0)\n")
+
+
+def _rm_readonly(func, path, _exc):
+    os.chmod(path, 0o700)  # git objects are read-only on Windows
+    func(path)
 
 
 def sh(*args, cwd):
@@ -78,7 +89,7 @@ class LaneTest(unittest.TestCase):
     def tearDown(self):
         os.environ.pop("BB2_LANES_MAIN", None)
         subprocess.run(["git", "worktree", "prune"], cwd=self.main, capture_output=True)
-        shutil.rmtree(self.tmp, ignore_errors=True)
+        shutil.rmtree(self.tmp, onerror=_rm_readonly)  # the test's own temp repo
 
     # helpers
     def L(self, session, *argv):
@@ -212,8 +223,7 @@ class LaneTest(unittest.TestCase):
 
     def test_gate_failure_keeps_main(self):
         self.L("s1", "open", "a")
-        self.commit("a", "src/b.c", "int b;\n")
-        (self.wt("a") / "FAIL_GATE").write_text("x")
+        self.commit("a", "src/FAIL", "x\n")
         before = sh("rev-parse", "main", cwd=self.main)
         self.assertEqual(self.L("s1", "land", "a"), 4, self.last)
         self.assertEqual(sh("rev-parse", "main", cwd=self.main), before)
@@ -221,8 +231,7 @@ class LaneTest(unittest.TestCase):
 
     def test_docs_only_skips_gates(self):
         self.L("s1", "open", "a")
-        (self.wt("a") / "FAIL_GATE").write_text("x")
-        self.commit("a", "docs/note.txt", "x\n")
+        self.commit("a", "docs/FAIL", "x\n")  # would fail the gate if it ran
         self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
         self.assertIn("docs-only", self.last)
 
@@ -295,15 +304,111 @@ class LaneTest(unittest.TestCase):
         self.assertIn("src/stray.c", self.last)
         self.assertFalse((self.main / "src" / "stray.c").exists())
 
-    def test_untracked_files_refuse_land(self):
-        # a gate that passes only because of an uncommitted file must not let the commit land
+    def test_gates_see_only_committed_files(self):
+        # the lane forgot to commit a header its .c needs: the gate must fail, main must not move
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", '#include "h.h"\n')
+        (self.wt("a") / "src" / "h.h").write_text("int h;\n")  # untracked
+        before = sh("rev-parse", "main", cwd=self.main)
+        self.assertEqual(self.L("s1", "land", "a"), 4, self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), before)
+        self.assertTrue((self.wt("a") / "src" / "h.h").exists())  # the lane's file is untouched
+
+    def test_work_during_land_is_safe(self):
         self.L("s1", "open", "a")
         self.commit("a", "src/b.c", "int b;\n")
-        (self.wt("a") / "src" / "h.h").write_text("int h;\n")
-        before = sh("rev-parse", "main", cwd=self.main)
-        self.assertEqual(self.L("s1", "land", "a"), 1, self.last)
-        self.assertIn("src/h.h", self.last)
-        self.assertEqual(sh("rev-parse", "main", cwd=self.main), before)
+        real = lanes.build_candidate
+
+        def busy(ctx, lane, ld, commits, base, log):
+            tip = real(ctx, lane, ld, commits, base, log)
+            self.commit("a", "src/later.c", "int later;\n", "made during the land")
+            return tip
+
+        lanes.build_candidate = busy
+        try:
+            self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        finally:
+            lanes.build_candidate = real
+        self.assertTrue((self.main / "src" / "b.c").exists())
+        self.assertFalse((self.main / "src" / "later.c").exists())  # ungated: not landed
+        self.assertNotIn("made during", sh("log", "--format=%s", "origin/main", cwd=self.main))
+        # it survives on the lane branch, rebased onto the new main, and lands next time
+        self.assertEqual(sh("rev-list", "--count", "main..lanes/a", cwd=self.main), "1")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertTrue((self.main / "src" / "later.c").exists())
+
+    def test_uncommitted_edit_during_land_survives(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n")
+        real = lanes.build_candidate
+
+        def busy(ctx, lane, ld, commits, base, log):
+            (self.wt("a") / "src" / "a.c").write_text("int edited;\n", newline="\n")
+            return real(ctx, lane, ld, commits, base, log)
+
+        lanes.build_candidate = busy
+        try:
+            self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        finally:
+            lanes.build_candidate = real
+        self.assertEqual((self.wt("a") / "src" / "a.c").read_text(), "int edited;\n")
+
+    def test_reland_after_interrupted_push_adds_nothing(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n")
+        old_tip = sh("rev-parse", "lanes/a", cwd=self.main)
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        n = sh("rev-list", "--count", "origin/main", cwd=self.main)
+        sh("reset", "-q", "--hard", old_tip, cwd=self.wt("a"))  # as if killed before advancing
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        # (the replayed commit may even share the old SHA, then there is nothing to land at all)
+        self.assertTrue("already in main" in self.last or "nothing to land" in self.last, self.last)
+        self.assertEqual(sh("rev-list", "--count", "origin/main", cwd=self.main), n)
+        # force distinct SHAs: amend the old tip's date, then re-land
+        sh("-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-q", "--amend",
+           "--no-edit", "--date=2001-01-01T00:00:00", cwd=self.wt("a"))
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("already in main", self.last)
+        self.assertEqual(sh("rev-list", "--count", "origin/main", cwd=self.main), n)
+
+    def test_push_retry(self):
+        hook = self.tmp / "origin.git" / "hooks" / "pre-receive"
+        hook.write_text("#!/bin/sh\nexit 1\n", newline="\n")
+        os.chmod(hook, 0o755)
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n")
+        self.assertEqual(self.L("s1", "land", "a"), 5, self.last)
+        hook.unlink()
+        self.assertEqual(self.L("s1", "push"), 0, self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main),
+                         sh("rev-parse", "origin/main", cwd=self.main))
+
+    def test_concurrent_land_refused(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n")
+        ctx = lanes.Ctx(self.main, "s1")
+        p = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
+        try:
+            lanes.land_pidfile(ctx, "a").write_text(str(p.pid))
+            self.assertEqual(self.L("s1", "land", "a"), 1, self.last)
+            self.assertIn("still running", self.last)
+            self.assertEqual(self.L("s1", "recover", "a"), 1, self.last)
+        finally:
+            p.kill()
+            p.wait()
+
+    def test_takeover_releases_dead_owners_lock(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n")
+        self.assertTrue(lanes._create_lock(lanes.Ctx(self.main, "s1"), "lanes land a"))
+        # s1 crashed; s2 takes the lane over (it is stale)
+        reg_p = self.main / "tmp" / "lanes-state" / "registry.json"
+        reg = json.loads(reg_p.read_text())
+        reg["lanes"]["a"]["heartbeat"] = 0
+        reg_p.write_text(json.dumps(reg))
+        self.assertEqual(self.L("s2", "open", "a"), 0, self.last)
+        self.assertEqual(self.L("s2", "land", "a"), 0, self.last)
+        self.assertTrue((self.main / "src" / "b.c").exists())
 
     def test_freeze_arriving_during_lock_wait(self):
         self.L("s1", "open", "a"); self.L("s2", "open", "pins")
@@ -362,17 +467,24 @@ class LaneTest(unittest.TestCase):
         self.L("s1", "open", "a")
         self.commit("a", "src/b.c", "int b;\n")
         lane_tip = sh("rev-parse", "lanes/a", cwd=self.main)
-        # simulate a land killed mid-gates: worktree on the -land branch, lock held
-        sh("checkout", "-q", "-B", "lanes/a-land", "main", cwd=self.wt("a"))
-        self.assertTrue(lanes._create_lock(lanes.Ctx(self.main, "s1"), "lanes land a"))
+        ctx = lanes.Ctx(self.main, "s1")
+        # simulate a land killed under the lock: dead pid file, lock held, landing tree dirty
+        ld = lanes.ensure_land_tree(ctx, "a")
+        (ld / "src" / "a.c").write_text("half-applied\n")
+        lanes.land_pidfile(ctx, "a").write_text("999999")
+        self.assertTrue(lanes._create_lock(ctx, "lanes land a"))
         self.assertEqual(self.L("s1", "recover", "a"), 0, self.last)
         self.assertIn("recovered", self.last)
-        self.assertIsNone(lanes.read_lock(lanes.Ctx(self.main, "s1")))
+        self.assertIsNone(lanes.read_lock(ctx))
         self.assertEqual(sh("rev-parse", "HEAD", cwd=self.wt("a")), lane_tip)
         # and land itself recovers too
-        sh("checkout", "-q", "-B", "lanes/a-land", "main", cwd=self.wt("a"))
+        self.assertTrue(lanes._create_lock(ctx, "lanes land a"))
         self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
         self.assertTrue((self.main / "src" / "b.c").exists())
+        # a lock left by another session for another purpose is never touched
+        self.assertTrue(lanes._create_lock(lanes.Ctx(self.main, "zz"), "codex reintegration"))
+        self.assertEqual(self.L("s1", "recover", "a"), 0, self.last)
+        self.assertEqual(lanes.read_lock(ctx)["session"], "zz")
 
     def test_main_moving_during_gates_rebuilds(self):
         self.L("s1", "open", "a"); self.L("s2", "open", "b")

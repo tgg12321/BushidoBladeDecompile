@@ -52,7 +52,11 @@ class GuardTest(unittest.TestCase):
 
     def tearDown(self):
         lane_guard.MAIN = self._orig
-        shutil.rmtree(self.tmp, ignore_errors=True)
+        def rm_readonly(func, path, _exc):
+            import os
+            os.chmod(path, 0o700)  # git objects are read-only on Windows
+            func(path)
+        shutil.rmtree(self.tmp, onerror=rm_readonly)  # the test's own temp repo
 
     def hook(self, sid, tool, post=False, **ti):
         payload = {"session_id": sid, "tool_name": tool, "tool_input": ti, "cwd": self.m}

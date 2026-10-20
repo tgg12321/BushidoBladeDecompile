@@ -31,6 +31,7 @@ Usage (Windows Python, from any cwd):
   python tools/lanes/lanes.py close <lane> [--remove]
   python tools/lanes/lanes.py path  <lane> [--wsl]
   python tools/lanes/lanes.py recover <lane>                # after an interrupted land
+  python tools/lanes/lanes.py push                          # retry a failed push (exit 5)
 
 The session identity is $CLAUDE_CODE_SESSION_ID (override with --session for tests).
 Exit codes: 0 ok, 1 refused, 3 land bounced on a conflict, 4 a gate failed.
@@ -120,6 +121,9 @@ class Ctx:
 
     def land_branch(self, lane: str) -> str:
         return f"{self.cfg['branch_prefix']}{lane}-land"
+
+    def land_dir(self, lane: str) -> Path:
+        return self.wt_root / "lands" / lane
 
     def stale_secs(self) -> int:
         return int(float(self.cfg.get("stale_hours", 12)) * 3600)
@@ -444,6 +448,38 @@ def cmd_status(ctx: Ctx, a):
     return 0
 
 
+def finish_worktree(ctx: Ctx, d: Path):
+    """Relative gitdir (WSL git cannot read a Windows `gitdir: C:/...` line) + toolchain bootstrap
+    (private build/, junctioned toolchain)."""
+    gd = git("rev-parse", "--git-dir", cwd=d)
+    gd_abs = gd if os.path.isabs(gd) else str((d / gd).resolve())
+    with open(d / ".git", "r+", encoding="utf-8", newline="\n") as f:
+        f.write(f"gitdir: {os.path.relpath(gd_abs, d).replace(os.sep, '/')}\n")
+        f.truncate()
+    boot = ctx.cfg.get("bootstrap")
+    if boot:
+        env = dict(os.environ, WORKTREE_STALE_POLICY="fail")
+        r = subprocess.run([*boot[:-1], str(d / boot[-1])] if boot[-1].endswith(".ps1") else boot,
+                           cwd=d, env=env)
+        if r.returncode != 0:
+            raise Refuse(f"bootstrap failed in {d}; remove it with "
+                         f"pwsh -NoProfile -File tools/safe_remove_worktree.ps1 {d} -Force")
+
+
+def ensure_land_tree(ctx: Ctx, lane: str) -> Path:
+    """The lane's private landing worktree (detached; only `land` uses it), so a land never
+    touches the lane worktree the agent keeps working in."""
+    d = ctx.land_dir(lane)
+    if d.exists():
+        if not (d / ".git").exists():
+            raise Refuse(f"{d} exists but is not a worktree; inspect it by hand")
+        return d
+    d.parent.mkdir(parents=True, exist_ok=True)
+    git("worktree", "add", "-q", "--detach", str(d), "main", cwd=ctx.main)
+    finish_worktree(ctx, d)
+    return d
+
+
 def ensure_worktree(ctx: Ctx, lane: str) -> Path:
     d = ctx.lane_dir(lane)
     br = ctx.branch(lane)
@@ -462,20 +498,7 @@ def ensure_worktree(ctx: Ctx, lane: str) -> Path:
         git("worktree", "add", str(d), br, cwd=ctx.main)
     else:
         git("worktree", "add", "-b", br, str(d), "main", cwd=ctx.main)
-    # WSL git cannot read a Windows `gitdir: C:/...` line: make it relative.
-    gd = git("rev-parse", "--git-dir", cwd=d)
-    gd_abs = gd if os.path.isabs(gd) else str((d / gd).resolve())
-    with open(d / ".git", "r+", encoding="utf-8", newline="\n") as f:
-        f.write(f"gitdir: {os.path.relpath(gd_abs, d).replace(os.sep, '/')}\n")
-        f.truncate()
-    boot = ctx.cfg.get("bootstrap")
-    if boot:
-        env = dict(os.environ, WORKTREE_STALE_POLICY="fail")
-        r = subprocess.run([*boot[:-1], str(d / boot[-1])] if boot[-1].endswith(".ps1") else boot,
-                           cwd=d, env=env)
-        if r.returncode != 0:
-            raise Refuse(f"bootstrap failed in {d}; remove it with "
-                         f"pwsh -NoProfile -File tools/safe_remove_worktree.ps1 {d} -Force")
+    finish_worktree(ctx, d)
     return d
 
 
@@ -584,14 +607,17 @@ def cmd_close(ctx: Ctx, a):
 
     ctx.update(do)
     print(f"lanes: closed {a.lane}")
-    if a.remove and d.exists():
-        if git("status", "--porcelain", "--untracked-files=no", cwd=d):
+    if a.remove:
+        if d.exists() and git("status", "--porcelain", "--untracked-files=no", cwd=d):
             raise Refuse(f"{d} is dirty; not removing it")
-        r = subprocess.run(["pwsh", "-NoProfile", "-File",
-                            str(ctx.main / "tools" / "safe_remove_worktree.ps1"), str(d), "-Force"])
-        if r.returncode != 0:
-            raise Refuse(f"safe_remove_worktree.ps1 failed for {d}")
-        print(f"lanes: removed worktree {d}")
+        for tree in (d, ctx.land_dir(a.lane)):  # the lane and its private landing worktree
+            if not tree.exists():
+                continue
+            r = subprocess.run(["pwsh", "-NoProfile", "-File",
+                                str(ctx.main / "tools" / "safe_remove_worktree.ps1"), str(tree), "-Force"])
+            if r.returncode != 0:
+                raise Refuse(f"safe_remove_worktree.ps1 failed for {tree}")
+            print(f"lanes: removed worktree {tree}")
     return 0
 
 
@@ -624,7 +650,7 @@ def index_matches_head(wt: Path) -> bool:
 def replay_commit(ctx: Ctx, wt: Path, sha: str, log) -> str:
     """Apply one lane commit on HEAD. Returns 'picked' | 'resolved' | 'replayed' | 'empty'.
     Raises Refuse(code=3) on a conflict it may not resolve."""
-    r = run(["git", "cherry-pick", "--allow-empty", "--keep-redundant-commits", sha], cwd=wt, check=False)
+    r = run(["git", "cherry-pick", "--allow-empty", sha], cwd=wt, check=False)
     if r.returncode == 0:
         return "picked"
     files = conflicted(wt)
@@ -744,14 +770,12 @@ def check_untracked(wt: Path):
     extra = [ln[3:] for ln in out.splitlines()
              if ln.startswith("?? ") and ln[3:].rstrip("/") not in UNTRACKED_OK]
     if extra:
-        raise Refuse("the lane worktree has untracked files, which the gates would see but main "
-                     "would not: " + ", ".join(extra[:10]) +
-                     ("..." if len(extra) > 10 else "") +
-                     "\n  Commit them, delete them, or move scratch to main's tmp/.")
+        raise Refuse("the landing worktree has untracked files the gates would see: "
+                     + ", ".join(extra[:10]) + ("..." if len(extra) > 10 else ""), 4)
 
 
-def check_claims(ctx: Ctx, lane: str, wt: Path):
-    touched = sorted(set(git("diff", "--name-only", "main...HEAD", cwd=wt).split()))
+def check_claims(ctx: Ctx, lane: str, rev: str):
+    touched = sorted(set(git("diff", "--name-only", f"main...{rev}", cwd=ctx.main).split()))
     reg = ctx.load()
     for p in touched:
         hit = claimed_by_other(ctx, reg, lane, p)
@@ -760,29 +784,51 @@ def check_claims(ctx: Ctx, lane: str, wt: Path):
                          f"it cannot land until that claim is released")
 
 
+def land_pidfile(ctx: Ctx, lane: str) -> Path:
+    return ctx.state_dir / f"land-{lane}.pid"
+
+
+def land_running(ctx: Ctx, lane: str) -> int:
+    """pid of a live land of this lane, else 0."""
+    try:
+        pid = int(land_pidfile(ctx, lane).read_text(encoding="utf-8").split()[0])
+    except Exception:
+        return 0
+    return pid if pid != os.getpid() and pid_alive(pid) else 0
+
+
 def recover_lane(ctx: Ctx, lane: str, quiet=False) -> bool:
-    """Undo a land that was killed midway: abort any cherry-pick, put the worktree back on the
-    lane branch (its commits were never touched), drop the -land branch, and release the main
-    lock if this session holds it for this lane. Returns True if anything was recovered."""
-    wt = ctx.lane_dir(lane)
-    br, lbr = ctx.branch(lane), ctx.land_branch(lane)
+    """Undo a land that died midway. The lane worktree and branch were never touched by it; this
+    resets the private landing worktree and releases a main lock that land left behind (held by
+    this session, or by the session this lane was taken over from). Refuses while a land of this
+    lane is still running. Returns True if anything was recovered."""
+    pid = land_running(ctx, lane)
+    if pid:
+        raise Refuse(f"a land of '{lane}' is still running (pid {pid}); wait for it to finish")
     did = False
-    if picking(wt):
-        run(["git", "cherry-pick", "--abort"], cwd=wt, check=False)
-        did = True
-    if git("rev-parse", "--abbrev-ref", "HEAD", cwd=wt) == lbr:
-        run(["git", "reset", "-q", "--hard"], cwd=wt, check=False)
-        git("checkout", "-q", br, cwd=wt)
-        did = True
-    if git_ok("rev-parse", "--verify", "-q", f"refs/heads/{lbr}", cwd=wt):
-        run(["git", "branch", "-D", lbr], cwd=wt, check=False)
-        did = True
+    ld = ctx.land_dir(lane)
+    if ld.exists():
+        if picking(ld):
+            run(["git", "cherry-pick", "--abort"], cwd=ld, check=False)
+            did = True
+        if git("status", "--porcelain", "--untracked-files=no", cwd=ld):
+            run(["git", "reset", "-q", "--hard"], cwd=ld, check=False)
+            did = True
     lk = read_lock(ctx)
-    if lk and lk.get("session") == ctx.session and lk.get("label") == f"lanes land {lane}":
-        release_lock(ctx)
+    e = ctx.load()["lanes"].get(lane, {})
+    if lk and lk.get("label") == f"lanes land {lane}" and \
+            lk.get("session") in (ctx.session, e.get("stolen_from")):
+        try:
+            (ctx.main / LOCK_REL).unlink()
+        except FileNotFoundError:
+            pass
         did = True
+    try:
+        land_pidfile(ctx, lane).unlink()
+    except FileNotFoundError:
+        pass
     if did and not quiet:
-        print(f"lanes: recovered {lane} from an interrupted land (lane branch {br} untouched)")
+        print(f"lanes: recovered {lane} from an interrupted land (lane branch untouched)")
     return did
 
 
@@ -793,44 +839,48 @@ def cmd_recover(ctx: Ctx, a):
     return 0
 
 
-def build_candidate(ctx: Ctx, lane: str, wt: Path, commits, base: str, log) -> str:
-    """Replay the lane onto `base` on the -land branch, run the gates, regenerate. No lock is
-    held: nothing here touches main. Returns the gated tip."""
-    git("checkout", "-q", "-B", ctx.land_branch(lane), base, cwd=wt)
+def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log) -> str:
+    """Replay the lane's commits onto `base` in the private landing worktree, gate, regenerate.
+    No lock is held: nothing here touches main or the lane worktree. Returns the gated tip
+    (equal to `base` if every commit was already in main)."""
+    run(["git", "cherry-pick", "--abort"], cwd=ld, check=False)
+    git("checkout", "-q", "--detach", "-f", base, cwd=ld)
+    git("reset", "-q", "--hard", base, cwd=ld)
     for sha in commits:
-        how = replay_commit(ctx, wt, sha, log)
+        how = replay_commit(ctx, ld, sha, log)
         print(f"lanes:   {sha[:9]} {how}", flush=True)
-    new_paths = set(git("diff", "--name-only", f"{base}..HEAD", cwd=wt).split())
+    new_paths = set(git("diff", "--name-only", f"{base}..HEAD", cwd=ld).split())
+    if not new_paths:
+        return git("rev-parse", "HEAD", cwd=ld)
     docs_only = all(any(p.startswith(d) for d in ctx.cfg.get("docs_only_paths", [])) for p in new_paths)
     kind = ctx.load()["lanes"][lane].get("kind", "foundation")
     gates = [] if docs_only else ctx.cfg["gates"].get(kind, ctx.cfg["gates"]["foundation"])
     if docs_only:
         print("lanes: docs-only change; build gates skipped")
-    check_untracked(wt)  # the gates must see exactly what lands
+    check_untracked(ld)
     for g in gates:
-        if run_shell(ctx, wt, g, log) != 0:
+        if run_shell(ctx, ld, g, log) != 0:
             raise Refuse(f"gate failed: {g}  (log {log.name})", 4)
     if gates and ctx.cfg.get("oracle_sha1"):
-        exe = wt / ctx.cfg["oracle_exe"]
+        exe = ld / ctx.cfg["oracle_exe"]
         got = hashlib.sha1(exe.read_bytes()).hexdigest() if exe.exists() else "missing"
         if got != ctx.cfg["oracle_sha1"]:
             raise Refuse(f"{exe} SHA1 {got} != oracle {ctx.cfg['oracle_sha1']}", 4)
         print(f"lanes: SHA1 == oracle ({got[:12]})")
     if not docs_only:
         for g in ctx.cfg.get("regenerate", []):
-            if run_shell(ctx, wt, g["cmd"], log) != 0:
+            if run_shell(ctx, ld, g["cmd"], log) != 0:
                 raise Refuse(f"regenerate failed: {g['cmd']}", 4)
-            git("add", "--", g["path"], cwd=wt)
-            if not git_ok("diff", "--cached", "--quiet", "--", g["path"], cwd=wt):
-                msgfile = wt / "tmp" / "lanes" / "regen-msg.txt"
-                msgfile.parent.mkdir(parents=True, exist_ok=True)
+            git("add", "--", g["path"], cwd=ld)
+            if not git_ok("diff", "--cached", "--quiet", "--", g["path"], cwd=ld):
+                msgfile = ctx.state_dir / f"regen-msg-{lane}.txt"
                 msgfile.write_text(f"{g['subject']} after lane {lane}\n", encoding="utf-8", newline="\n")
-                git("commit", "-q", "-F", str(msgfile), cwd=wt)
+                git("commit", "-q", "-F", str(msgfile), cwd=ld)
                 print(f"lanes:   regenerated {g['path']}")
-    if git("status", "--porcelain", "--untracked-files=no", cwd=wt):
-        raise Refuse("the gates left tracked changes in the lane worktree: "
-                     + git("status", "--porcelain", "--untracked-files=no", cwd=wt), 4)
-    return git("rev-parse", "HEAD", cwd=wt)
+    if git("status", "--porcelain", "--untracked-files=no", cwd=ld):
+        raise Refuse("the gates left tracked changes in the landing worktree: "
+                     + git("status", "--porcelain", "--untracked-files=no", cwd=ld), 4)
+    return git("rev-parse", "HEAD", cwd=ld)
 
 
 def sync_main_with_remote(ctx: Ctx, remote: str):
@@ -841,80 +891,126 @@ def sync_main_with_remote(ctx: Ctx, remote: str):
     local_only = git("rev-list", "--oneline", f"{rmain}..main", cwd=ctx.main)
     if local_only:
         raise Refuse(f"main has commits that are not on {rmain}; a land would push them along "
-                     f"unreviewed. Push or investigate them first:\n  "
+                     f"unreviewed. If they are an earlier land whose push failed, run "
+                     f"`lanes.py push`; otherwise investigate:\n  "
                      + "\n  ".join(local_only.splitlines()[:8]))
     if git("rev-parse", "main", cwd=ctx.main) != git("rev-parse", rmain, cwd=ctx.main):
         check_main_idle(ctx)
         git("merge", "-q", "--ff-only", rmain, cwd=ctx.main)
 
 
+def advance_lane(ctx: Ctx, lane: str, landed_from: str):
+    """After a land, move the lane branch onto the new main without touching uncommitted work:
+    commits made during the land are rebased onto main; with local edits they stay as they are
+    (their already-landed parents then replay as empty picks next time)."""
+    wt, br = ctx.lane_dir(lane), ctx.branch(lane)
+    head = git("rev-parse", "HEAD", cwd=wt)
+    if head == landed_from:
+        r = run(["git", "reset", "-q", "--keep", "main"], cwd=wt, check=False)
+        if r.returncode != 0:
+            print(f"lanes: note: could not move {br} to main without touching your edits; "
+                  f"run `lanes.py fresh {lane}` when they are committed")
+        return
+    if git("status", "--porcelain", "--untracked-files=no", cwd=wt):
+        print(f"lanes: note: {br} gained commits during the land and has uncommitted edits; it "
+              f"was left as is (the landed commits will replay as empty next land)")
+        return
+    r = run(["git", "rebase", "-q", "--onto", "main", landed_from, br], cwd=wt, check=False)
+    if r.returncode != 0:
+        run(["git", "rebase", "--abort"], cwd=wt, check=False)
+        print(f"lanes: note: the commits made during the land did not rebase cleanly onto main; "
+              f"{br} was left as is")
+    else:
+        print(f"lanes: {br}: commits made during the land were rebased onto the new main")
+
+
 def cmd_land(ctx: Ctx, a):
     lane = a.lane
     ctx.update(lambda reg: require_owner(ctx, reg, lane))
-    wt = ctx.lane_dir(lane)
-    br = ctx.branch(lane)
-    recover_lane(ctx, lane)
-    if git("rev-parse", "--abbrev-ref", "HEAD", cwd=wt) != br:
-        raise Refuse(f"{wt} is not on {br}")
-    if git("status", "--porcelain", "--untracked-files=no", cwd=wt):
-        raise Refuse(f"{wt} has uncommitted changes; commit them first")
-    commits = git("rev-list", "--reverse", "main..HEAD", cwd=wt).split()
+    wt, br = ctx.lane_dir(lane), ctx.branch(lane)
+    recover_lane(ctx, lane)  # refuses if a land of this lane is still running
+    tipsrc = git("rev-parse", br, cwd=ctx.main)  # land exactly this; later lane commits wait
+    commits = git("rev-list", "--reverse", f"main..{tipsrc}", cwd=ctx.main).split()
     if not commits:
         print("lanes: nothing to land")
         return 0
-    if git("rev-list", "--merges", "main..HEAD", cwd=wt):
+    if git("rev-list", "--merges", f"main..{tipsrc}", cwd=ctx.main):
         raise Refuse("the lane holds merge commits; replay cannot carry them. Rebuild the lane as "
                      "linear commits on fresh main (lanes.py fresh --discard).")
-    check_untracked(wt)
-    check_claims(ctx, lane, wt)
+    check_claims(ctx, lane, tipsrc)
     remote = None if a.no_push else ctx.cfg.get("remote")
+    land_pidfile(ctx, lane).write_text(str(os.getpid()), encoding="utf-8")
+    ld = ensure_land_tree(ctx, lane)
 
     logp = ctx.state_dir / "logs" / f"{lane}-{time.strftime('%Y%m%d-%H%M%S')}.log"
     logp.parent.mkdir(parents=True, exist_ok=True)
     log = open(logp, "w", encoding="utf-8", newline="\n")
     lk = read_lock(ctx)
     held_before = bool(lk and lk.get("session") == ctx.session)  # e.g. a codex-worker landing
-    landed = False
     try:
         for attempt in range(3):
             base = git("rev-parse", "main", cwd=ctx.main)
             print(f"lanes: landing {len(commits)} commit(s) of {lane} onto main {base[:9]}"
                   + (f" (retry {attempt}: main moved)" if attempt else ""), flush=True)
-            tip = build_candidate(ctx, lane, wt, commits, base, log)  # no lock held
+            tip = build_candidate(ctx, lane, ld, commits, base, log)  # no lock held
+            if tip == base:
+                print("lanes: every lane commit is already in main; nothing new to land")
+                advance_lane(ctx, lane, tipsrc)
+                return 0
             # Short critical section: verify nothing moved, then fast-forward and push.
-            acquire_lock(ctx, f"lanes land {lane}")
+            if not held_before:
+                acquire_lock(ctx, f"lanes land {lane}")
             try:
-                check_claims(ctx, lane, wt)  # a freeze may have arrived meanwhile
+                check_claims(ctx, lane, tip)  # a freeze may have arrived meanwhile
                 check_main_idle(ctx)
                 if remote:
                     sync_main_with_remote(ctx, remote)
                 if git("rev-parse", "main", cwd=ctx.main) != base:
                     continue  # main moved: rebuild on the new main (finally releases the lock)
                 git("merge", "-q", "--ff-only", tip, cwd=ctx.main)
-                landed = True
-                if remote:
-                    r = run(["git", "push", "-q", remote, "main"], cwd=ctx.main, check=False)
-                    if r.returncode != 0:
-                        raise Refuse(f"main -> {tip[:9]} locally, but the PUSH FAILED: "
-                                     f"{(r.stderr or '').strip()[-400:]}\n  Push main by hand "
-                                     f"(git -C <main> push {remote} main) before the next land.", 5)
-                    print(f"lanes: main -> {tip[:9]} (pushed)")
-                else:
-                    print(f"lanes: main -> {tip[:9]} (not pushed: --no-push)")
-                return 0
+                pushed = push_main(ctx, remote) if remote else "not pushed: --no-push"
             finally:
                 if not held_before:
                     release_lock(ctx)
+            print(f"lanes: main -> {tip[:9]} ({pushed})")
+            advance_lane(ctx, lane, tipsrc)
+            return 0
         raise Refuse("main kept moving during three land attempts; try again", 1)
     finally:
-        run(["git", "cherry-pick", "--abort"], cwd=wt, check=False)
-        if landed:
-            git("checkout", "-q", "-B", br, "main", cwd=wt)
-        else:
-            run(["git", "reset", "-q", "--hard"], cwd=wt, check=False)
-            run(["git", "checkout", "-q", br], cwd=wt, check=False)
-        run(["git", "branch", "-D", ctx.land_branch(lane)], cwd=wt, check=False)
+        run(["git", "cherry-pick", "--abort"], cwd=ld, check=False)
+        try:
+            land_pidfile(ctx, lane).unlink()
+        except FileNotFoundError:
+            pass
         log.close()
+
+
+def push_main(ctx: Ctx, remote: str) -> str:
+    r = run(["git", "push", "-q", remote, "main"], cwd=ctx.main, check=False)
+    if r.returncode != 0:
+        raise Refuse(f"main moved locally, but the PUSH FAILED: {(r.stderr or '').strip()[-400:]}"
+                     f"\n  Retry with `python tools/lanes/lanes.py push` before the next land.", 5)
+    return "pushed"
+
+
+def cmd_push(ctx: Ctx, a):
+    """Retry the push after a land whose push failed (exit 5). Pushes only a fast-forward."""
+    remote = ctx.cfg.get("remote") or "origin"
+    acquire_lock(ctx, "lanes push")
+    try:
+        git("fetch", "-q", remote, "main", cwd=ctx.main)
+        if not git_ok("merge-base", "--is-ancestor", f"{remote}/main", "main", cwd=ctx.main):
+            raise Refuse(f"main is not a fast-forward of {remote}/main; resolve by hand")
+        ahead = git("rev-list", "--oneline", f"{remote}/main..main", cwd=ctx.main)
+        if not ahead:
+            print("lanes: main is already pushed")
+            return 0
+        print("lanes: pushing:\n  " + "\n  ".join(ahead.splitlines()[:10]))
+        push_main(ctx, remote)
+        print("lanes: pushed")
+        return 0
+    finally:
+        release_lock(ctx)
 
 
 # ---------------------------------------------------------------- cli
@@ -934,6 +1030,7 @@ def main(argv=None) -> int:
     s.add_argument("--force", action="store_true")
     s = sub.add_parser("path"); s.add_argument("lane"); s.add_argument("--wsl", action="store_true")
     s = sub.add_parser("recover"); s.add_argument("lane")
+    sub.add_parser("push")
     a = p.parse_args(argv)
     try:
         if a.cmd not in ("status", "path") and not a.session:
@@ -941,7 +1038,7 @@ def main(argv=None) -> int:
         ctx = Ctx(find_main(Path(__file__).resolve().parent), a.session)
         return {"status": cmd_status, "open": cmd_open, "fresh": cmd_fresh, "claim": cmd_claim,
                 "unclaim": cmd_unclaim, "land": cmd_land, "close": cmd_close,
-                "path": cmd_path, "recover": cmd_recover}[a.cmd](ctx, a)
+                "path": cmd_path, "recover": cmd_recover, "push": cmd_push}[a.cmd](ctx, a)
     except Refuse as e:
         print(f"lanes: REFUSED: {e}", file=sys.stderr)
         return e.code

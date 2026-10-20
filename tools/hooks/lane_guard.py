@@ -365,6 +365,13 @@ def snap_key(payload) -> str:
 def pre_snapshot(payload):
     p = snap_path(snap_key(payload))
     p.parent.mkdir(parents=True, exist_ok=True)
+    if time.time() % 50 < 1:  # now and then, drop snapshots whose PostToolUse never fired
+        for old in p.parent.glob("*.json"):
+            try:
+                if time.time() - old.stat().st_mtime > 86400:
+                    old.unlink()
+            except OSError:
+                pass
     p.write_text(json.dumps(main_state()), encoding="utf-8")
 
 
