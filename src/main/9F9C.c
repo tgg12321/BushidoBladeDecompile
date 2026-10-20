@@ -787,7 +787,7 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
         if (obj->move_kind == 0x2A) {
             val = 0x200;
         } else {
-            val = (-obj->unk_1D8 - s2->unk_10.vy) & 0xFFF;
+            val = (-obj->opponent_bearing - s2->unk_10.vy) & 0xFFF;
 
             if (val >= 0x800) {
                 val = 0x1000 - val;
@@ -1164,7 +1164,7 @@ void func_8001C4C0(void) {
         motion_ResetVariantIndex(0);
         {
             MoveScript *v0 = motion_GetDefaultVariantScript(0);
-            D_80101EC8[0].unk_5E = 0;
+            D_80101EC8[0].move_is_common = 0;
             func_80021A98(0, v0, 0);
         }
     }
@@ -1183,7 +1183,7 @@ void func_8001C51C(void) {
     func_80022F34();
     motion_ResetVariantIndex(1);
     v0 = motion_GetDefaultVariantScript(1);
-    D_80101EC8[1].unk_5E = 0;
+    D_80101EC8[1].move_is_common = 0;
     func_80021A98(1, v0, 0);
     D_800A382E = 0;
     D_800A3748 = -1;
@@ -1273,7 +1273,7 @@ void func_8001C8DC(void) {
     u8 prev;
     MoveScript *var_1;
 
-    if (D_80101EC8[0].unk_96 != 0 || D_80101EC8[1].unk_96 != 0) {
+    if (D_80101EC8[0].is_defeated != 0 || D_80101EC8[1].is_defeated != 0) {
         D_800A382E++;
     } else if (
         D_800A38DC == 0 && D_800A385C != 0 && D_80101EC8[0].unk_B2 == 1) {
@@ -1284,7 +1284,7 @@ void func_8001C8DC(void) {
 
     switch (D_800A38DC) {
     case 0:
-        if (D_80101EC8[0].unk_96 != 0)
+        if (D_80101EC8[0].is_defeated != 0)
             break;
         if (D_800A3680 != 0) {
             if (--D_800A3680 == 0) {
@@ -1314,7 +1314,7 @@ void func_8001C8DC(void) {
         func_8003B56C(2);
         goto end;
     case 3:
-        if (D_80101EC8[0].unk_96 != 0)
+        if (D_80101EC8[0].is_defeated != 0)
             break;
         if (func_80033DF4() == 0)
             goto end;
@@ -1339,7 +1339,7 @@ void func_8001C8DC(void) {
         if (D_800A3728 = prev != D_800A38E0) {
             func_8001C624();
             var_1 = motion_GetCurrentVariantScript(0);
-            D_80101EC8[0].unk_5E = 0;
+            D_80101EC8[0].move_is_common = 0;
             func_80021A98(0, var_1, 0);
         }
         func_8001C51C();
@@ -1350,7 +1350,8 @@ void func_8001C8DC(void) {
     case 2: {
         s16 t;
         u8 *p;
-        if ((t = D_80101EC8[0].unk_96) == 0 || D_80101EC8[1].unk_96 == 0) {
+        if ((t = D_80101EC8[0].is_defeated) == 0 ||
+            D_80101EC8[1].is_defeated == 0) {
             /* FAKE: second handle to D_800A37D2 (pointer-alias-fake-exception,
              * Q63): the target sets the pair's base in its own register before
              * the index; indexing &D_800A37D2 at both sites: score 17; each
@@ -1372,7 +1373,8 @@ void func_8001C8DC(void) {
     case 6: {
         s16 t;
         u8 *p;
-        if ((t = D_80101EC8[0].unk_96) == 0 || D_80101EC8[1].unk_96 == 0) {
+        if ((t = D_80101EC8[0].is_defeated) == 0 ||
+            D_80101EC8[1].is_defeated == 0) {
             /* FAKE: second handle, as above (owner Q63); indexing &D_800A37D2
              * here: score 8. */
             p = &D_800A37D2;
@@ -1438,8 +1440,8 @@ void func_8001CE60(void) {
         g_prim_buf_cursor +=
             func_8005E51C(D_800A3783, (s32)g_prim_buf_cursor, 1) / 4;
     } else if (D_800A38DC == 3) {
-        if (D_80101EC8[0].unk_96 == 0 &&
-            (D_80101EC8[1].unk_96 == 0 || D_800A38E2 != 100)) {
+        if (D_80101EC8[0].is_defeated == 0 &&
+            (D_80101EC8[1].is_defeated == 0 || D_800A38E2 != 100)) {
             D_800A3858++;
             if (D_800A3858 > 0x2BF20) {
                 D_800A3858 = 0x2BF20;
@@ -1549,13 +1551,14 @@ void func_8001CE60(void) {
                 D_800A36E8 = 0;
                 fight_AdvanceMatch();
             }
-        } else if (D_80101EC8[0].unk_96 != 0 && D_80101EC8[1].unk_96 != 0) {
+        } else if (
+            D_80101EC8[0].is_defeated != 0 && D_80101EC8[1].is_defeated != 0) {
             D_800A3816 = 1;
-        } else if (D_80101EC8[1].unk_96 != 0) {
+        } else if (D_80101EC8[1].is_defeated != 0) {
             D_800A38B0 = 1;
             D_800A3920 = 1;
             D_800A3898[D_800A38B0 ^ 1]++;
-        } else if (D_80101EC8[0].unk_96 != 0) {
+        } else if (D_80101EC8[0].is_defeated != 0) {
             D_800A38B0 = 0;
             D_800A3920 = 1;
             D_800A3898[D_800A38B0 ^ 1]++;
@@ -1863,18 +1866,18 @@ void fight_Init(void) {
             motion_ResetVariantIndex(0);
             {
                 MoveScript *v = motion_GetDefaultVariantScript(0);
-                D_80101EC8[0].unk_5E = 0;
+                D_80101EC8[0].move_is_common = 0;
                 func_80021A98(0, v, 0);
             }
             if (D_800A38DC == 2 && D_800A389A == 0) {
                 MoveScript *v = motion_GetCurrentVariantScript(1);
-                D_80101EC8[1].unk_5E = 0;
+                D_80101EC8[1].move_is_common = 0;
                 func_80021A98(1, v, 0);
             } else {
                 MoveScript *v;
                 motion_ResetVariantIndex(1);
                 v = motion_GetDefaultVariantScript(1);
-                D_80101EC8[1].unk_5E = 0;
+                D_80101EC8[1].move_is_common = 0;
                 func_80021A98(1, v, 0);
             }
         } else {
@@ -1882,12 +1885,12 @@ void fight_Init(void) {
             motion_ResetVariantIndex(1);
             {
                 MoveScript *v = func_800219E4(0);
-                D_80101EC8[0].unk_5E = 1;
+                D_80101EC8[0].move_is_common = 1;
                 func_80021A98(0, v, 1);
             }
             {
                 MoveScript *v = func_800219E4(1);
-                D_80101EC8[1].unk_5E = 1;
+                D_80101EC8[1].move_is_common = 1;
                 func_80021A98(1, v, 1);
             }
         }
@@ -1896,12 +1899,12 @@ void fight_Init(void) {
         motion_ResetVariantIndex(1);
         {
             MoveScript *v = motion_GetDefaultVariantScript(0);
-            D_80101EC8[0].unk_5E = 0;
+            D_80101EC8[0].move_is_common = 0;
             func_80021A98(0, v, 0);
         }
         {
             MoveScript *v = motion_GetDefaultVariantScript(1);
-            D_80101EC8[1].unk_5E = 0;
+            D_80101EC8[1].move_is_common = 0;
             func_80021A98(1, v, 0);
         }
     }
@@ -1939,7 +1942,8 @@ void camera_ApplyFightView(void) {
 
     if (D_800A38BA != 0) {
         if (g_camera_fight_view_mode == 1) {
-            if (D_80101EC8[0].unk_96 != 0 || D_80101EC8[1].unk_96 != 0) {
+            if (D_80101EC8[0].is_defeated != 0 ||
+                D_80101EC8[1].is_defeated != 0) {
                 g_camera_fight_view_mode = 2;
             }
         }
@@ -2181,12 +2185,12 @@ void func_8001EEB4(void) {
     u16 a1 = entry->move_kind;
 
     if (a1 != 0xA && entry->unk_72 == 0 && a1 != 0x17 && a1 != 0x18 &&
-        entry->unk_96 == 0) {
+        entry->is_defeated == 0) {
         motion_ResetVariantIndex(D_800A3748);
         {
             MoveScript *ret = func_80021A3C(D_800A3748, entry->unk_0A);
             s32 idx2 = D_800A3748;
-            entry->unk_5E = 1;
+            entry->move_is_common = 1;
             func_80021A98(idx2, ret, 1);
         }
         entry->unk_26C = 1;
@@ -2218,7 +2222,7 @@ void func_8001EFA0(void) {
     func_80046DA8(1);
     snd_UpdateStageSounds();
 
-    if (D_80101EC8[D_800A3748].unk_96 != 0 && D_800A38DC == 1) {
+    if (D_80101EC8[D_800A3748].is_defeated != 0 && D_800A38DC == 1) {
         D_800A37B8 = 0x69;
     }
 
@@ -2317,7 +2321,7 @@ void motion_AdjustFighterPose(
             s32 dist_sq;
             s32 dist;
 
-            var_2 = (obj->unk_1D8 - obj->orientation.vy) & 0xFFF;
+            var_2 = (obj->opponent_bearing - obj->orientation.vy) & 0xFFF;
             if (var_2 >= 0x800) {
                 var_2 -= 0x1000;
             }
@@ -2435,7 +2439,7 @@ void motion_AdjustFighterPose(
         b->unk_0C[0x33] += obj->unk_1EA;
     }
 
-    if (obj->unk_26E != 0 && obj->unk_96 == 0) {
+    if (obj->unk_26E != 0 && obj->is_defeated == 0) {
         temp = (rng_Next() & 0x3F) - 0x20;
         a->unk_0C[0] += temp;
         b->unk_0C[0] += temp;
@@ -2625,19 +2629,19 @@ void fight_UpdatePairedMoves(void) {
     if (D_800A376E != 0) {
         D_800A376E = 0;
         D_800A38E8 = 0xFF;
-        if (D_80101EC8[0].unk_96 != 0) {
+        if (D_80101EC8[0].is_defeated != 0) {
             return;
         }
-        if (D_80101EC8[1].unk_96 != 0) {
+        if (D_80101EC8[1].is_defeated != 0) {
             return;
         }
         func_80021A98(D_800A38AE, D_800A36D8, D_800A381C);
         if (D_800A36CA & 0x1000) {
-            D_80101EC8[D_800A38AE == 0].unk_4C = 1;
+            D_80101EC8[D_800A38AE == 0].borrow_other_motion = 1;
         }
         func_80021A98(D_800A38AE == 0, D_800A36D8, D_800A381C);
-        D_80101EC8[1].unk_7A = 2;
-        D_80101EC8[0].unk_7A = 2;
+        D_80101EC8[1].move_started = 2;
+        D_80101EC8[0].move_started = 2;
         return;
     }
     if (D_800A3758 != 0xFF) {
@@ -2649,14 +2653,14 @@ void fight_UpdatePairedMoves(void) {
             rec->pending_move_event = 0;
             rec->unk_94 = 1;
         }
-        if (rec->unk_96 != 0) {
+        if (rec->is_defeated != 0) {
             rec->pending_move_event += 2;
         }
         rec->unk_74 = rec->collision_pos.vy;
         rec->other->pending_move_event = 1;
         rec->other->unk_94 = 0;
         rec->other->unk_74 = rec->other->collision_pos.vy;
-        if (rec->other->unk_96 != 0) {
+        if (rec->other->is_defeated != 0) {
             rec->other->pending_move_event += 2;
         }
         D_800A3758 = 0xFF;
@@ -2670,7 +2674,7 @@ void fight_UpdatePairedMoves(void) {
     }
     for (i = 0; i < 2; i++) {
         rec = &D_80101EC8[i];
-        if (rec->unk_7A == 0) {
+        if (rec->move_started == 0) {
             continue;
         }
         ent = motion_FindPairedMoveEntry(rec->cur_move);
@@ -2702,13 +2706,13 @@ void fight_UpdatePairedMoves(void) {
         D_800A3758 = 0xFF;
         D_800A371C = data[2] * 20;
         D_800A38E8 = data[3] & 0x7F;
-        var_3 = motion_ResolveMoveData(rec, ent->id, &rec->unk_5E);
-        func_80021A98(i, var_3, rec->unk_5E);
-        rec->other->unk_4C = 1;
-        rec->other->unk_5E = rec->unk_5E;
-        func_80021A98(i == 0, var_3, rec->unk_5E);
-        rec->unk_7A = 2;
-        rec->other->unk_7A = 2;
+        var_3 = motion_ResolveMoveData(rec, ent->id, &rec->move_is_common);
+        func_80021A98(i, var_3, rec->move_is_common);
+        rec->other->borrow_other_motion = 1;
+        rec->other->move_is_common = rec->move_is_common;
+        func_80021A98(i == 0, var_3, rec->move_is_common);
+        rec->move_started = 2;
+        rec->other->move_started = 2;
         rec->other->unk_86 = rec->other->unk_84;
         rec->other->unk_272 += 1;
         pos[0] = (rec->world_pos.x + rec->other->world_pos.x) / 2;
@@ -3162,8 +3166,8 @@ done1_21280:
 
 {
     u16 val = a2->unk_48;
-    a2->unk_4A = a1;
-    a2->unk_4C = 0;
+    a2->motion_slot = a1;
+    a2->borrow_other_motion = 0;
 
     if ((u32)(val >> 12) < 2) {
         u16 t1; /* FAKE: copy of val (shifting val directly: score 7) */
@@ -3234,7 +3238,7 @@ void func_800213A0(Unk80101EC8Record *arg0) {
         }
     }
     arg0->unk_86 =
-        (s16)((a1 + 1) % g_motion_fighter_buffers[arg0->unk_4A]->f14);
+        (s16)((a1 + 1) % g_motion_fighter_buffers[arg0->motion_slot]->f14);
 }
 
 /* The 66-name animation/asset table (12-byte stride: 8 chars + null + pad).
@@ -3262,19 +3266,20 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
     rec->unk_78 = 0;
     *out = 0;
     if ((u32)(id - 0x7FF5) < 11) {
-        return &g_motion_fighter_sections[rec->unk_4A]
-                    .unk_00[g_motion_fighter_buffers[rec->unk_4A]
+        return &g_motion_fighter_sections[rec->motion_slot]
+                    .unk_00[g_motion_fighter_buffers[rec->motion_slot]
                                 ->f66[id - 0x7FF5][rec->unk_86]];
     }
     switch (id) {
     case 0x7FF0:
         rec->unk_78 = 1;
         rec->unk_86 = rec->unk_84;
-        return &g_motion_fighter_sections[rec->unk_4A].unk_00
-                    [g_motion_fighter_buffers[rec->unk_4A]->f4E[rec->unk_84]];
+        return &g_motion_fighter_sections[rec->motion_slot]
+                    .unk_00[g_motion_fighter_buffers[rec->motion_slot]
+                                ->f4E[rec->unk_84]];
     case 0x7FF1:
         rec->unk_86 =
-            (rec->unk_86 + 1) % g_motion_fighter_buffers[rec->unk_4A]->f14;
+            (rec->unk_86 + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
     case 0x7FF2:
     case 0x7FF4:
         if (id == 0x7FF4) {
@@ -3283,31 +3288,32 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
         t = rec->unk_86;
         if ((t == rec->unk_88 && rec->unk_8A == 0) ||
             (t == rec->unk_8E && rec->unk_90 == 0)) {
-            rec->unk_86 =
-                (rec->unk_86 + 1) % g_motion_fighter_buffers[rec->unk_4A]->f14;
+            rec->unk_86 = (rec->unk_86 + 1) %
+                          g_motion_fighter_buffers[rec->motion_slot]->f14;
         } else if (D_800A38DC == 3 && rec->unk_06 != 0) {
             func_800213A0(rec);
         }
-        return &g_motion_fighter_sections[rec->unk_4A].unk_00
-                    [g_motion_fighter_buffers[rec->unk_4A]->f4E[rec->unk_86]];
+        return &g_motion_fighter_sections[rec->motion_slot]
+                    .unk_00[g_motion_fighter_buffers[rec->motion_slot]
+                                ->f4E[rec->unk_86]];
     case 0x7FF3:
-        t = (rec->unk_86 + 1) % g_motion_fighter_buffers[rec->unk_4A]->f14;
+        t = (rec->unk_86 + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
         if ((t == rec->unk_88 && rec->unk_8A == 0) ||
             (t == rec->unk_8E && rec->unk_90 == 0)) {
-            t = (t + 1) % g_motion_fighter_buffers[rec->unk_4A]->f14;
+            t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
         } else if (D_800A38DC == 3 && rec->unk_06 != 0 &&
                    (t == rec->unk_88 || t == rec->unk_8E)) {
-            t = (t + 1) % g_motion_fighter_buffers[rec->unk_4A]->f14;
+            t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
         }
-        return &g_motion_fighter_sections[rec->unk_4A]
-                    .unk_00[g_motion_fighter_buffers[rec->unk_4A]
+        return &g_motion_fighter_sections[rec->motion_slot]
+                    .unk_00[g_motion_fighter_buffers[rec->motion_slot]
                                 ->f54[rec->unk_86][t]];
     }
     if (id & 0x8000) {
-        if (rec->unk_4C != 0) {
-            var_1 = rec->other->unk_4A;
+        if (rec->borrow_other_motion != 0) {
+            var_1 = rec->other->motion_slot;
         } else {
-            var_1 = rec->unk_4A;
+            var_1 = rec->motion_slot;
         }
         return &g_motion_fighter_sections[var_1].unk_00[id & 0x7FFF];
     }
@@ -3320,14 +3326,14 @@ void motion_ResetVariantIndex(s32 a0) {
 }
 
 MoveScript *motion_GetCurrentVariantScript(s32 a0) {
-    s16 v1 = D_80101EC8[a0].unk_4A;
+    s16 v1 = D_80101EC8[a0].motion_slot;
     s16 v0 = D_80101EC8[a0].unk_86;
     return (MoveScript *)&g_motion_fighter_sections[v1]
         .unk_00[g_motion_fighter_buffers[v1]->f4E[v0]];
 }
 
 MoveScript *motion_GetDefaultVariantScript(s32 a0) {
-    s16 v1 = D_80101EC8[a0].unk_4A;
+    s16 v1 = D_80101EC8[a0].motion_slot;
     s16 v0 = D_80101EC8[a0].unk_84;
     return (MoveScript *)&g_motion_fighter_sections[v1]
         .unk_00[g_motion_fighter_buffers[v1]->f4E[v0]];
@@ -3335,23 +3341,23 @@ MoveScript *motion_GetDefaultVariantScript(s32 a0) {
 
 MoveScript *func_800219E4(s32 a0) {
     return (MoveScript *)&g_motion_common_sections
-        .unk_00[g_motion_fighter_buffers[D_80101EC8[a0].unk_4A]->f16];
+        .unk_00[g_motion_fighter_buffers[D_80101EC8[a0].motion_slot]->f16];
 }
 
 MoveScript *func_80021A3C(s32 a0, s32 a1) {
     return (MoveScript *)&g_motion_common_sections
-        .unk_00[g_motion_fighter_buffers[D_80101EC8[a0].unk_4A]->f18[a1]];
+        .unk_00[g_motion_fighter_buffers[D_80101EC8[a0].motion_slot]->f18[a1]];
 }
 
 void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
     Unk80101EC8Record *s0 = &D_80101EC8[arg0];
     s32 a3;
-    if ((s0->unk_4C) != 0) {
-        a3 = s0->other->unk_4A;
+    if ((s0->borrow_other_motion) != 0) {
+        a3 = s0->other->motion_slot;
     } else {
-        a3 = s0->unk_4A;
+        a3 = s0->motion_slot;
     }
-    s0->unk_4C = 0;
+    s0->borrow_other_motion = 0;
     s0->cur_move = arg1;
     {
         u16 v1 = arg1->unk_04;
@@ -3370,20 +3376,20 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
         MoveScript *v0_50 = s0->cur_move;
         u16 old_kind = s0->move_kind;
         u8 *a0_58 = s0->unk_58;
-        s0->unk_60 = (u8)arg2;
+        s0->cur_move_is_common = (u8)arg2;
         /* FAKE: empty do-while(0) -- its loop note puts a0_58 in $a0 and
          * v1_58 in $v1 (the two unk_58 lbu bases); without it they swap,
          * score 2. */
         do {
         } while (0);
-        s0->unk_61 = (u8)a3;
+        s0->cur_move_slot = (u8)a3;
         {
             u8 a1_val = v0_50->unk_06;
             s0->prev_move_kind = old_kind;
             {
                 u8 *v1_58 = s0->unk_58;
                 s0->move_frame_frac = 0;
-                s0->unk_7A = 1;
+                s0->move_started = 1;
                 s0->queued_move = 0;
                 s0->unk_46 = 0;
                 s0->move_frame = a1_val;
@@ -3417,13 +3423,13 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
                     s0->unk_154 = s0->orientation.vy;
                 } else if (state == 2) {
                     if (s0->unk_152 == 0 && s0->prev_move_kind != 0x13) {
-                        s0->unk_154 = s0->unk_1D8;
+                        s0->unk_154 = s0->opponent_bearing;
                     }
                     s0->unk_152 = 0;
                 } else if (state == 0x19 || state == 0x1A) {
                     if (s0->unk_152 == 0 ||
                         (state == 0x19 && s0->prev_move_kind == state)) {
-                        s0->unk_154 = s0->unk_1D8;
+                        s0->unk_154 = s0->opponent_bearing;
                     }
                     s0->unk_152 = 1;
                 } else if (state == 0x11) {
@@ -3791,7 +3797,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->orientation.vy = 0;
     p->orientation.vz = 0;
     ang = ratan2(var_1.x - p->world_pos.x, var_1.z - p->world_pos.z);
-    p->orientation.vy = p->unk_1D8 = ang;
+    p->orientation.vy = p->opponent_bearing = ang;
     if (p->unk_0C == 0x1F) {
         p->orientation.vy = ang + 0x800;
     }
@@ -3811,7 +3817,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_31A = 0;
     p->unk_1DC = 0;
     p->unk_72 = 0;
-    p->unk_96 = 0;
+    p->is_defeated = 0;
     p->unk_B1 = 7;
     p->unk_B2 = 0;
     p->unk_34C = 0;
@@ -3883,8 +3889,9 @@ void func_80022F34(void) {
             {
                 {
                     fighter_InitCpuControl(
-                        i, g_motion_fighter_sections[rec->unk_4A].unk_0C,
-                        g_motion_fighter_sections[rec->other->unk_4A].unk_0C);
+                        i, g_motion_fighter_sections[rec->motion_slot].unk_0C,
+                        g_motion_fighter_sections[rec->other->motion_slot]
+                            .unk_0C);
                 }
             }
         }
@@ -4003,7 +4010,7 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
         pos[2] = arg0->collision_pos.vz;
 
         {
-            s32 angle = (arg0->unk_1D8 + a1_val) & 0xFFF;
+            s32 angle = (arg0->opponent_bearing + a1_val) & 0xFFF;
             s16 var_12 = Judge[angle];
 
             off[0] = px + var_12 / 4;
@@ -4011,7 +4018,7 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
         }
 
         {
-            s32 angle2 = (arg0->unk_1D8 + a1_val + 0x400) & 0xFFF;
+            s32 angle2 = (arg0->opponent_bearing + a1_val + 0x400) & 0xFFF;
             s16 var_14 = Judge[angle2];
 
             off[2] = pos[2] + var_14 / 4;
@@ -4099,7 +4106,7 @@ void func_80023648(Unk80101EC8Record *arg0) {
             if (D_800A38BA != 0 && arg0->unk_06 == 0) {
                 fighter_SetTurnDelta(arg0, arg0->orientation.vy + a2 / 4);
             } else {
-                fighter_SetTurnDelta(arg0, arg0->unk_1D8 + a2);
+                fighter_SetTurnDelta(arg0, arg0->opponent_bearing + a2);
             }
         } else {
             if (D_800A38BA != 0 && arg0->unk_06 == 0) {
@@ -4302,7 +4309,7 @@ void fighter_RequestPoseBlend(Unk80101EC8Record *arg0, s16 arg1) {
     arg0->unk_31C = arg1;
     if (arg0->unk_152 == 0) {
         arg0->unk_152 = 1;
-        arg0->unk_154 = arg0->unk_1D8;
+        arg0->unk_154 = arg0->opponent_bearing;
     }
 }
 
@@ -4441,8 +4448,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
         (rec->unk_1E *
          D_8008E0BC[rec->unk_0A][rec->unk_272 >= 4 ? 3 : rec->unk_272]) >>
         12;
-    if (rec->unk_7A == 1) {
-        rec->unk_7A = 0;
+    if (rec->move_started == 1) {
+        rec->move_started = 0;
     }
     motion_UpdateFrameStep(rec);
     frac = rec->move_frame_frac + rec->move_frame_step;
@@ -4465,12 +4472,13 @@ void fighter_Update(s32 arg0, PadState *pad) {
             rec->unk_72 = 1;
         }
         rec->unk_31A = 0;
-        table =
-            motion_ResolveMoveData(rec, rec->cur_move->unk_00, &rec->unk_5E);
-        func_80021A98(arg0,
-                      motion_ResolveMoveData(
-                          rec, table[rec->pending_move_event], &rec->unk_5E),
-                      rec->unk_5E);
+        table = motion_ResolveMoveData(
+            rec, rec->cur_move->unk_00, &rec->move_is_common);
+        func_80021A98(
+            arg0,
+            motion_ResolveMoveData(
+                rec, table[rec->pending_move_event], &rec->move_is_common),
+            rec->move_is_common);
         rec->pending_move_event = -1;
     }
     if ((rec->pad_input.held & 8) && (rec->pad_input.held & 0xF000)) {
@@ -4483,10 +4491,11 @@ void fighter_Update(s32 arg0, PadState *pad) {
             fighter_SetTurnDelta(rec, var_4);
             rec->unk_31A = 0;
             table = motion_ResolveMoveData(
-                rec, rec->cur_move->unk_00, &rec->unk_5E);
+                rec, rec->cur_move->unk_00, &rec->move_is_common);
             func_80021A98(
-                arg0, motion_ResolveMoveData(rec, table[0xD], &rec->unk_5E),
-                rec->unk_5E);
+                arg0,
+                motion_ResolveMoveData(rec, table[0xD], &rec->move_is_common),
+                rec->move_is_common);
             rec->unk_104.vx = 0;
             rec->unk_104.vy = 0;
             rec->unk_104.vz = 0;
@@ -4494,28 +4503,29 @@ void fighter_Update(s32 arg0, PadState *pad) {
     }
     if (rec->cur_move->unk_07 < rec->move_frame) {
         if (rec->queued_move != NULL) {
-            rec->unk_5E = rec->unk_80;
+            rec->move_is_common = rec->queued_move_is_common;
             if (rec->unk_82 & 0x1000) {
-                rec->unk_4C = 1;
+                rec->borrow_other_motion = 1;
             }
-            func_80021A98(arg0, rec->queued_move, rec->unk_80);
+            func_80021A98(arg0, rec->queued_move, rec->queued_move_is_common);
         } else {
             if ((rec->cur_move->unk_0A[0] & 0x2000) && D_800A38AE != arg0) {
                 if (rec->cur_move->unk_0A[0] & 0x1000) {
-                    rec->unk_4C = 1;
+                    rec->borrow_other_motion = 1;
                 }
-                func_80021A98(arg0,
-                              motion_ResolveMoveData(
-                                  rec, rec->cur_move->unk_0A[1], &rec->unk_5E),
-                              rec->unk_5E);
+                func_80021A98(
+                    arg0,
+                    motion_ResolveMoveData(
+                        rec, rec->cur_move->unk_0A[1], &rec->move_is_common),
+                    rec->move_is_common);
             } else {
                 if (rec->cur_move->unk_09 & 0x20) {
-                    rec->unk_4C = 1;
+                    rec->borrow_other_motion = 1;
                 }
                 func_80021A98(arg0,
-                              motion_ResolveMoveData(
-                                  rec, rec->cur_move->unk_02, &rec->unk_5E),
-                              rec->unk_5E);
+                              motion_ResolveMoveData(rec, rec->cur_move->unk_02,
+                                                     &rec->move_is_common),
+                              rec->move_is_common);
             }
         }
     }
@@ -4524,14 +4534,15 @@ void fighter_Update(s32 arg0, PadState *pad) {
             if (rec->move_kind == 0x11) {
                 D_800A376E = 1;
                 D_800A36D8 = rec->queued_move;
-                D_800A381C = rec->unk_80;
+                D_800A381C = rec->queued_move_is_common;
                 D_800A36CA = rec->unk_82;
             } else {
-                rec->unk_5E = rec->unk_80;
+                rec->move_is_common = rec->queued_move_is_common;
                 if (rec->unk_82 & 0x1000) {
-                    rec->unk_4C = 1;
+                    rec->borrow_other_motion = 1;
                 }
-                func_80021A98(arg0, rec->queued_move, rec->unk_80);
+                func_80021A98(
+                    arg0, rec->queued_move, rec->queued_move_is_common);
             }
         }
     } else if (rec->cur_move->unk_08 >= rec->move_frame) {
@@ -4574,21 +4585,21 @@ void fighter_Update(s32 arg0, PadState *pad) {
                 if ((var_8 >> (var_7 & 0xF)) & 1) {
                     rec->unk_B0 = var_7;
                     if (var_7 & 0x1000) {
-                        rec->unk_4C = 1;
+                        rec->borrow_other_motion = 1;
                     }
                     move = motion_ResolveMoveData(rec, ent[1], &var_5);
                     if (rec->cur_move->unk_09 & 0x80) {
                         rec->queued_move = move;
                         rec->unk_82 = var_7;
-                        rec->unk_4C = 0;
-                        rec->unk_80 = var_5;
+                        rec->borrow_other_motion = 0;
+                        rec->queued_move_is_common = var_5;
                     } else if (rec->move_kind == 0x11) {
                         D_800A376E = 1;
                         D_800A36D8 = move;
                         D_800A36CA = var_7;
                         D_800A381C = var_5;
                     } else {
-                        rec->unk_5E = var_5;
+                        rec->move_is_common = var_5;
                         func_80021A98(arg0, move, var_5);
                     }
                     break;
@@ -4607,40 +4618,41 @@ void fighter_Update(s32 arg0, PadState *pad) {
                 u16 *table;
 
                 table = motion_ResolveMoveData(
-                    rec, rec->cur_move->unk_00, &rec->unk_5E);
+                    rec, rec->cur_move->unk_00, &rec->move_is_common);
                 func_80021A98(arg0,
                               motion_ResolveMoveData(
                                   rec, table[rec->unk_94 != 0 ? 0x17 : 0x18],
-                                  &rec->unk_5E),
-                              rec->unk_5E);
+                                  &rec->move_is_common),
+                              rec->move_is_common);
             } else if (rec->unk_72 == 0) {
                 func_80021A98(arg0,
-                              motion_ResolveMoveData(
-                                  rec, rec->cur_move->unk_02, &rec->unk_5E),
-                              rec->unk_5E);
+                              motion_ResolveMoveData(rec, rec->cur_move->unk_02,
+                                                     &rec->move_is_common),
+                              rec->move_is_common);
             }
             rec->unk_72 = 0;
         }
-    } else if (rec->unk_7A != 0 &&
+    } else if (rec->move_started != 0 &&
                (rec->prev_move_kind == 0x17 || rec->prev_move_kind == 0x18) &&
                !(rec->move_kind == 0x17 || rec->move_kind == 0x18) &&
                rec->unk_74 + 0xFA0 < rec->collision_pos.vy) {
         u16 *table;
 
-        table =
-            motion_ResolveMoveData(rec, rec->cur_move->unk_00, &rec->unk_5E);
+        table = motion_ResolveMoveData(
+            rec, rec->cur_move->unk_00, &rec->move_is_common);
         func_80021A98(
-            arg0, motion_ResolveMoveData(rec, table[0x18], &rec->unk_5E),
-            rec->unk_5E);
+            arg0,
+            motion_ResolveMoveData(rec, table[0x18], &rec->move_is_common),
+            rec->move_is_common);
     }
     if (rec->unk_70 == 1) {
-        fighter_SetTurnDelta(rec, rec->unk_1D8);
+        fighter_SetTurnDelta(rec, rec->opponent_bearing);
     }
-    if (rec->unk_7A != 0) {
+    if (rec->move_started != 0) {
         if (rec->move_kind == 2 || rec->move_kind == 0x1B ||
             rec->move_kind == 0x28 || rec->move_kind == 0x26 ||
             rec->move_kind == 0x24) {
-            fighter_SetTurnDelta(rec, rec->unk_1D8);
+            fighter_SetTurnDelta(rec, rec->opponent_bearing);
             if (rec->move_kind == 2 || rec->move_kind == 0x24) {
                 temp = (rec->unk_58[2] >> 4) * 0x88;
                 if (rec->unk_14C > temp) {
@@ -4653,9 +4665,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
     }
     if (rec->unk_46 == 0 && rec->move_kind == 9 &&
         rec->unk_A9 == rec->move_frame) {
-        fighter_SetTurnDelta(rec, rec->unk_1D8);
+        fighter_SetTurnDelta(rec, rec->opponent_bearing);
     }
-    if (rec->unk_7A != 0 && rec->prev_move_kind != 0x18 &&
+    if (rec->move_started != 0 && rec->prev_move_kind != 0x18 &&
         rec->move_kind == 0x18) {
         rec->unk_104.vx +=
             (Judge[rec->orientation.vy & 0xFFF] * D_8008DA94[rec->unk_0A]) >>
@@ -4666,24 +4678,25 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->unk_104.vy += D_8008DA50[rec->unk_0A];
         rec->unk_74 = rec->collision_pos.vy;
     }
-    if (rec->unk_7A != 0 && rec->prev_move_kind != 0x17 &&
+    if (rec->move_started != 0 && rec->prev_move_kind != 0x17 &&
         rec->move_kind == 0x17) {
         rec->unk_104.vy += D_8008DAD8[rec->unk_0A];
         rec->unk_74 = rec->collision_pos.vy;
     }
-    if (rec->unk_7A != 0 && rec->move_kind == 0x28) {
+    if (rec->move_started != 0 && rec->move_kind == 0x28) {
         s32 dv[3];
         s32 var_30[3];
 
-        temp = (rec->unk_1D8 - rec->orientation.vy) & 0xFFF;
+        temp = (rec->opponent_bearing - rec->orientation.vy) & 0xFFF;
         if (temp >= 0x800) {
             temp = 0x1000 - temp;
         }
         var_30[0] = rec->other->unk_18C.x -
-                    ((Judge[rec->unk_1D8 & 0xFFF] * temp) >> 14);
+                    ((Judge[rec->opponent_bearing & 0xFFF] * temp) >> 14);
         var_30[1] = rec->other->unk_18C.y;
-        var_30[2] = rec->other->unk_18C.z -
-                    ((Judge[(rec->unk_1D8 + 0x400) & 0xFFF] * temp) >> 14);
+        var_30[2] =
+            rec->other->unk_18C.z -
+            ((Judge[(rec->opponent_bearing + 0x400) & 0xFFF] * temp) >> 14);
         rec->unk_104.vy -= 0xFA;
         func_800200DC((s32 *)&rec->unk_180, var_30, rec->unk_104.vy, 0x1F, dv);
         rec->unk_104.vx += dv[0];
@@ -4697,7 +4710,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
             rec->move_frame = rec->cur_move->unk_07 - 1;
         }
     }
-    if (rec->unk_7A != 0 && rec->move_kind == 0x23) {
+    if (rec->move_started != 0 && rec->move_kind == 0x23) {
         rec->collision_pos.vy -= 0x898;
         rec->base_pos.y -= 0x898;
         rec->unk_1F8.y += 0x898;
@@ -4705,14 +4718,14 @@ void fighter_Update(s32 arg0, PadState *pad) {
     {
         s32 state = rec->move_kind;
 
-        if (rec->unk_7A != 0 && state == 6) {
+        if (rec->move_started != 0 && state == 6) {
             rec->unk_86 = rec->unk_84;
         }
     }
     temp = (rec->unk_14C * rec->move_frame_step) / 24576;
     rec->orientation.vy += temp;
     rec->unk_14C -= temp;
-    if (rec->unk_7A != 0) {
+    if (rec->move_started != 0) {
         if (rec->unk_78 != 0) {
             func_80023D08(rec);
         } else if (rec->move_kind == 0x1C) {
@@ -4742,14 +4755,16 @@ void fighter_Update(s32 arg0, PadState *pad) {
         next = rec->unk_58[1] - 1;
     }
     if (rec->cur_move->unk_09 & 0x40) {
-        var_18 = rec->unk_5E == 0 ? D_80101EC8[D_800A38AE].unk_4A + 1 : 0;
+        var_18 = rec->move_is_common == 0
+                     ? D_80101EC8[D_800A38AE].motion_slot + 1
+                     : 0;
         if (rec->move_kind == 0x11 && D_800A38AE != arg0) {
             var_19 = rec->unk_58[1];
         } else {
             var_19 = 0;
         }
     } else {
-        var_18 = rec->unk_5E == 0 ? rec->unk_4A + 1 : 0;
+        var_18 = rec->move_is_common == 0 ? rec->motion_slot + 1 : 0;
         if (rec->move_kind == 0x15 && D_8008D9EC[rec->unk_0A] != 0) {
             var_19 = rec->unk_58[1];
         } else {
@@ -4767,7 +4782,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
         func_800198D0(var_18, var_15, &var_0[0], (u16 *)0x1F8001B0);
         func_800198D0(var_18, var_17, &var_0[1], (u16 *)0x1F8001B0);
     }
-    if (rec->unk_7A != 0 && (rec->move_kind == 6 || rec->move_kind == 0x14) &&
+    if (rec->move_started != 0 &&
+        (rec->move_kind == 6 || rec->move_kind == 0x14) &&
         rec->prev_move_kind == 6) {
         MATRIX m1;
         MATRIX m2;
@@ -4833,7 +4849,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
     if (rec->unk_31A != 0) {
         Vec3i32 var_35;
 
-        if (rec->unk_7A != 0) {
+        if (rec->move_started != 0) {
             rec->base_pos.x += rec->unk_1F8.x - v[0].x;
             rec->base_pos.z += rec->unk_1F8.z - v[0].z;
             rec->unk_320.x += rec->unk_1F8.x - v[0].x;
@@ -4859,7 +4875,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->root_offset.y = (v[0].y * var_22 + v[1].y * var_14) >> 12;
         rec->root_offset.z = (v[0].z * var_22 + v[1].z * var_14) >> 12;
     }
-    if (rec->unk_7A != 0 && rec->unk_31A == 0) {
+    if (rec->move_started != 0 && rec->unk_31A == 0) {
         rec->base_pos.x += rec->unk_1F8.x - rec->root_offset.x;
         rec->base_pos.z += rec->unk_1F8.z - rec->root_offset.z;
         if (rec->move_kind == 0x23 || rec->move_kind == 0xA) {
@@ -4879,7 +4895,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
             rec->unk_134.vz -= rec->unk_98.vz / 256;
         }
     }
-    if (rec->unk_7A == 0 || rec->move_kind != 0x28) {
+    if (rec->move_started == 0 || rec->move_kind != 0x28) {
         rec->unk_104.vx = (rec->unk_104.vx * rec->unk_156) >> 12;
         rec->unk_104.vy = (rec->unk_104.vy * rec->unk_158) >> 12;
         rec->unk_104.vz = (rec->unk_104.vz * rec->unk_15A) >> 12;
@@ -4904,12 +4920,13 @@ void fighter_Update(s32 arg0, PadState *pad) {
             rec->unk_134.vx /= 2;
             rec->unk_134.vz /= 2;
             rec->unk_134.vx +=
-                (Judge[rec->unk_1D8 & 0xFFF] -
-                 Judge[(rec->unk_1D8 + 0x400) & 0xFFF] * temp * 3) /
+                (Judge[rec->opponent_bearing & 0xFFF] -
+                 Judge[(rec->opponent_bearing + 0x400) & 0xFFF] * temp * 3) /
                 128;
-            rec->unk_134.vz += (Judge[(rec->unk_1D8 + 0x400) & 0xFFF] +
-                                Judge[rec->unk_1D8 & 0xFFF] * temp * 3) /
-                               128;
+            rec->unk_134.vz +=
+                (Judge[(rec->opponent_bearing + 0x400) & 0xFFF] +
+                 Judge[rec->opponent_bearing & 0xFFF] * temp * 3) /
+                128;
         }
     }
     rec->unk_134.vx = (rec->unk_134.vx * rec->unk_15E) >> 12;
@@ -4974,7 +4991,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->unk_92 = rec->unk_92 != 0 ? 1 : 2;
     }
     rec->unk_62 = 0;
-    if (rec->unk_0C != 0x1F && rec->unk_96 == 0 && rec->unk_92 != 0) {
+    if (rec->unk_0C != 0x1F && rec->is_defeated == 0 && rec->unk_92 != 0) {
         rec->unk_62 = 1;
     }
     if ((D_800A38DC != 3 || arg0 != 1 || D_800A384C == 4) &&
@@ -5069,8 +5086,8 @@ skip_62:
             rec->unk_1F8 = v[1];
         }
     }
-    rec->unk_1D8 = ratan2(rec->other->world_pos.x - rec->world_pos.x,
-                          rec->other->world_pos.z - rec->world_pos.z);
+    rec->opponent_bearing = ratan2(rec->other->world_pos.x - rec->world_pos.x,
+                                   rec->other->world_pos.z - rec->world_pos.z);
     rec->unk_24C = rec->unk_104;
     func_80023D28(rec);
     fighter_UpdateBoneWorldData(
@@ -5154,8 +5171,8 @@ skip_62:
         rec->unk_158 = 0xFC0;
         rec->unk_15A = 0xFC0;
     }
-    if (rec->unk_96 == 0 &&
-        ((rec->unk_7A != 0 && rec->prev_move_kind != 4 &&
+    if (rec->is_defeated == 0 &&
+        ((rec->move_started != 0 && rec->prev_move_kind != 4 &&
           rec->prev_move_kind != 0x14 &&
           (rec->move_kind == 4 || rec->move_kind == 0x14)) ||
          (rec->move_kind == 0x11 && arg0 != D_800A38AE &&
@@ -5170,13 +5187,13 @@ skip_62:
                 rec, D_8008D90C[D_8008D9EC[rec->unk_0A]][rec->unk_0E],
                 (Vec3i32 *)var_37[0x12]->t);
         }
-        rec->unk_96 = 1;
+        rec->is_defeated = 1;
         if (D_800A3748 == -1) {
             D_800A3748 = arg0 == 0;
         }
     }
-    if (rec->unk_7A != 0 && rec->unk_0C == 0x1B && rec->move_kind == 0xB &&
-        rec->unk_34D == 0) {
+    if (rec->move_started != 0 && rec->unk_0C == 0x1B &&
+        rec->move_kind == 0xB && rec->unk_34D == 0) {
         rec->pending_move_event = 0x1F;
     }
     if (rec->unk_46 == 0) {
@@ -5222,7 +5239,7 @@ skip_62:
     if (rec->unk_26C != 0) {
         rec->unk_62 |= 0x80;
     }
-    if (rec->unk_96 != 0) {
+    if (rec->is_defeated != 0) {
         if (D_800A3834 != 0xD) {
             rec->unk_B3 = 4;
         }
@@ -5234,8 +5251,8 @@ skip_62:
     }
     func_80040304(arg0, rec->unk_B3);
     func_800204C0(rec);
-    if (rec->unk_7A == 2) {
-        rec->unk_7A = 0;
+    if (rec->move_started == 2) {
+        rec->move_started = 0;
     }
     replay_RecordFighter(rec);
 }

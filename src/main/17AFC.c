@@ -228,9 +228,10 @@ void func_80027640(Unk80101EC8Record *arg0) {
     arg0->unk_134.vx = 0;
     arg0->unk_134.vy = 0;
     arg0->unk_134.vz = 0;
-    r1 = motion_ResolveMoveData(arg0, arg0->cur_move->unk_00, &arg0->unk_5E);
-    r2 = motion_ResolveMoveData(arg0, r1[0x1D], &arg0->unk_5E);
-    func_80021A98(idx, r2, arg0->unk_5E);
+    r1 = motion_ResolveMoveData(
+        arg0, arg0->cur_move->unk_00, &arg0->move_is_common);
+    r2 = motion_ResolveMoveData(arg0, r1[0x1D], &arg0->move_is_common);
+    func_80021A98(idx, r2, arg0->move_is_common);
     func_80032854(arg0->index, 0x30, &arg0->world_pos.x, 0);
 }
 
@@ -356,7 +357,7 @@ s32 fighter_ResolveBoneHit(
         }
         var_7 = dot < 0x400;
         if (!((0xE >> arg2) & 1) || var_7) {
-            if (arg1->unk_96 == 0) {
+            if (arg1->is_defeated == 0) {
                 arg1->pending_move_event = 0x1E;
             }
             if (arg0 == 0 && var_5->pending_move_event == -1) {
@@ -366,7 +367,8 @@ s32 fighter_ResolveBoneHit(
             return 0;
         }
     }
-    if (arg1->unk_0C == 0xD && arg1->unk_96 == 0 && arg1->move_kind != 0x2E) {
+    if (arg1->unk_0C == 0xD && arg1->is_defeated == 0 &&
+        arg1->move_kind != 0x2E) {
         func_80027640(arg1);
         return 2;
     }
@@ -1161,7 +1163,7 @@ s32 fighter_ProcessWeaponContacts(void) {
         dst[2] = rec->unk_210[0];
         dst[3] = rec->unk_210[1];
         count[i] = 2;
-        if (rec->unk_96 != 0 || rec->unk_92 == 0 || rec->unk_0C == 0x1F) {
+        if (rec->is_defeated != 0 || rec->unk_92 == 0 || rec->unk_0C == 0x1F) {
             dst[0].y = 100000;
             dst[1].y = 100000;
             dst[2].y = 100000;
@@ -1461,7 +1463,7 @@ void fighter_CastWeaponSegment(
     dx = scr->unk60[1]->x - scr->unk60[0]->x;
     dy = scr->unk60[1]->y - scr->unk60[0]->y;
     dz = scr->unk60[1]->z - scr->unk60[0]->z;
-    diff = (var_2->unk_1D8 - ratan2(dx, dz)) & 0xFFF;
+    diff = (var_2->opponent_bearing - ratan2(dx, dz)) & 0xFFF;
     if (diff >= 0x800) {
         diff = 0x1000 - diff;
     }
@@ -1648,7 +1650,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         var_10 = 0;
         var_5 = 0;
         var_6 = 0;
-        if (var_3->unk_96 == 0 && var_3->unk_92 != 0 &&
+        if (var_3->is_defeated == 0 && var_3->unk_92 != 0 &&
             var_3->update_count != 0) {
             var_10 = var_3->unk_0C != 0x1F;
         }
@@ -1887,14 +1889,14 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 dx = -dx;
                 dz = -dz;
             }
-            diff = (var_3->unk_1D8 - ratan2(dx, dz)) & 0xFFF;
+            diff = (var_3->opponent_bearing - ratan2(dx, dz)) & 0xFFF;
             if (diff >= 0x800) {
                 diff = 0x1000 - diff;
             }
             if (diff < 0x400) {
                 work = (ratan2(var_3->unk_114[var_12].vx,
                                var_3->unk_114[var_12].vz) +
-                        0x800 - var_4->unk_1D8) &
+                        0x800 - var_4->opponent_bearing) &
                        0xFFF;
                 if (work >= 0x800) {
                     work = 0x1000 - work;

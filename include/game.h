@@ -1447,17 +1447,17 @@ typedef struct Unk80101EC8Record {
     /* model id (motion_LoadFighterData); func_80021280 finds it in D_800A38C4
      */
     u16 unk_48;
-    s16 unk_4A;
-    s16 unk_4C;
+    s16 motion_slot;
+    s16 borrow_other_motion;
     u8 unk_4E[0x50 - 0x4E];
     /* current move; unk_08 bounds move_frame (func_80058580) */
     MoveScript *cur_move;
     u16 *unk_54;
     u8 *unk_58; /* byte 3 read by func_80056FE8 */
     u16 unk_5C;
-    s16 unk_5E; /* 0/1, set alongside func_80021A98 */
-    u8 unk_60;
-    u8 unk_61;
+    s16 move_is_common; /* 0/1, set alongside func_80021A98 */
+    u8 cur_move_is_common;
+    u8 cur_move_slot;
     u8 unk_62;
     u8 unk_63;
     u16 unk_64;
@@ -1471,9 +1471,9 @@ typedef struct Unk80101EC8Record {
     s16 unk_72;
     s32 unk_74;
     s16 unk_78;
-    s16 unk_7A;
+    s16 move_started;
     MoveScript *queued_move; /* buffered next move (fighter_Update) */
-    s16 unk_80;
+    s16 queued_move_is_common;
     u16 unk_82;
     s16 unk_84;
     /* row of unk_3A8 / unk_3F8 / unk_3FE / unk_404 */
@@ -1486,7 +1486,7 @@ typedef struct Unk80101EC8Record {
     s16 unk_90;
     s16 unk_92;
     s16 unk_94;
-    s16 unk_96;
+    s16 is_defeated;
     SVec4i16 unk_98;
     u8 unk_A0;
     u8 unk_A1[2];
@@ -1556,7 +1556,7 @@ typedef struct Unk80101EC8Record {
     u8 unk_1C4[0x1C8 - 0x1C4];
     SVec4i16 orientation;
     SVec4i16 unk_1D0;
-    s16 unk_1D8;
+    s16 opponent_bearing;
     s16 unk_1DA;
     s16 unk_1DC;
     u8 unk_1DE[0x1E6 - 0x1DE];
@@ -1681,9 +1681,9 @@ typedef struct Unk80101EC8Record {
     u8 unk_440;
     u8 unk_441;
     u8 unk_442;
-    u8 unk_443;
-    u8 unk_444[8];   /* fighter_UpdateCpuProbes's per-direction results */
-} Unk80101EC8Record; /* sizeof == 0x44C */
+    u8 cpu_profile;
+    u8 cpu_probes[8]; /* fighter_UpdateCpuProbes's per-direction results */
+} Unk80101EC8Record;  /* sizeof == 0x44C */
 
 /* 14-byte record table indexed by the kind field (+0x2) of the 0x64-byte
  * objects at g_object_pool: object_SpawnFromFighter and
