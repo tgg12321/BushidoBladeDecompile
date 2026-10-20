@@ -997,8 +997,9 @@ extern s8 D_8009A838[];
 extern u8 D_8009A840[];
 
 /* func_80056FE8: per-record table lookup on arg0->other: its row
- * (unk_58[3] * 40), plus a D_8009A830 / D_8009A838 (by arg0->move_is_common) or
- * D_8009A840 (when unk_A3[0] is 0xFF) term, plus its unk_40A and 300. */
+ * (motion_metadata[3] * 40), plus a D_8009A830 / D_8009A838 (by
+ * arg0->move_is_common) or D_8009A840 (when unk_A3[0] is 0xFF) term, plus its
+ * unk_40A and 300. */
 s32 func_80056FE8(Unk80101EC8Record *arg0) {
     Unk80101EC8Record *a2 = arg0->other;
     s32 base = a2->motion_metadata[3] * 40;

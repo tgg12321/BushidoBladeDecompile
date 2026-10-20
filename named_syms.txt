@@ -867,7 +867,7 @@ D_80101FA8                                      = 0x80101FA8;  /* D_80101EC8[0].
 /* Vec3i32 unk_F4: set to unk_D8 with y - 0x384 (9F9C.c:1305-1307) or to unk_D8 + unk_E8 (:4060, :5286) */
 D_80101FC0                                     = 0x80101FC0;  /* D_80101EC8[0].unk_F4.y */  /* data-wave 2026-10-09: was g_char_stored_pos_y */
 /* +0x4A load slot and the +0x84 / +0x86 indices (func_80021280, func_800213A0, motion_ResolveMoveData) */
-D_80101F12                                               = 0x80101F12;  /* +0x4A of D_80101EC8[0] (s16): load slot of the record's model id unk_48 in D_800A38C4 (func_80021280); indexes g_motion_fighter_buffers */  /* data-wave 2026-10-08: was g_char_id */
+D_80101F12                                               = 0x80101F12;  /* +0x4A of D_80101EC8[0] (s16): load slot of the record's motion_data_id in D_800A38C4 (func_80021280); indexes g_motion_fighter_buffers */  /* data-wave 2026-10-08: was g_char_id */
 D_80101F4C                                = 0x80101F4C;  /* +0x84 of D_80101EC8[0] (s16): set at record setup; row of the loaded block's f4E table and the reset value of unk_86 */  /* data-wave 2026-10-08: was g_char_curr_keyframe_idx */
 D_80101F4E                                = 0x80101F4E;  /* +0x86 of D_80101EC8[0]: advances on its own modulo f14 (func_800213A0 / motion_ResolveMoveData) */  /* data-wave 2026-10-08: was g_char_prev_keyframe_idx */
 

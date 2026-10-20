@@ -105,7 +105,7 @@ src/main/17AFC.c:1954 records both call shapes). Its branches, in order:
 
 ## Frame windows: `fighter_ReadFrameMetadata` and `fighter_ProcessFrameEvents`
 
-Both walk the byte stream at `rec->unk_58 + 4`; 0 ends it.
+Both walk the byte stream at `rec->motion_metadata + 4`; 0 ends it.
 
 - `fighter_ReadFrameMetadata` (src/main/17AFC.c:4505; called at src/main/9F9C.c:3376)
   resets the window fields and reads: 0xFF skips six bytes, a byte below 0x80

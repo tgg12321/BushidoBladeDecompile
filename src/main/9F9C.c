@@ -3026,15 +3026,15 @@ void motion_LoadCommonData(void) {
 /* For i = 0, 1 with v = arg0, then arg2 (when D_800A38DC is 1, 4 or 6): when
  * g_motion_frame_set_ids[i] differs from v, stores v there and calls
  * cdrom_StartReadAt(cdrom_GetFileIndex(1, 0), g_motion_frame_buffers[i], v * 7,
- * 7). Then sets D_80101EC8[0].unk_48 to D_8008DB1C[arg0][arg1] | arg1 << 12 and
- * D_80101EC8[1].unk_48 to the same of arg2 and arg3 (a copy of the first
- * when D_800A38DC is 3). It then fills var_0[0..1] from D_800A38C4[0..1]: it
- * returns when every id is already there; equal ids give var_0[0] = id0; an
- * id found in D_800A38C4[0] stays and the other id goes to var_0[1]; id1
- * found only in D_800A38C4[1] gives var_0[0] = id0; otherwise (also when id0
- * is only in D_800A38C4[1]) var_0[0] = id0 and var_0[1] = id1. For each
- * nonzero var_0[i] it calls cdrom_StartRead(cdrom_GetFileIndex(1, j + 2),
- * g_motion_fighter_buffers[i]), j the id's D_8008DCCC index, points
+ * 7). Then sets D_80101EC8[0].motion_data_id to D_8008DB1C[arg0][arg1] | arg1
+ * << 12 and D_80101EC8[1].motion_data_id to the same of arg2 and arg3 (a copy
+ * of the first when D_800A38DC is 3). It then fills var_0[0..1] from
+ * D_800A38C4[0..1]: it returns when every id is already there; equal ids give
+ * var_0[0] = id0; an id found in D_800A38C4[0] stays and the other id goes to
+ * var_0[1]; id1 found only in D_800A38C4[1] gives var_0[0] = id0; otherwise
+ * (also when id0 is only in D_800A38C4[1]) var_0[0] = id0 and var_0[1] = id1.
+ * For each nonzero var_0[i] it calls cdrom_StartRead(cdrom_GetFileIndex(1, j +
+ * 2), g_motion_fighter_buffers[i]), j the id's D_8008DCCC index, points
  * g_motion_fighter_sections[i] into g_motion_fighter_buffers[i] and stores the
  * id in D_800A38C4[i]. */
 void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -3144,7 +3144,7 @@ void func_80021210(void) {
     }
 }
 
-/* The record's model id (unk_48) -> its slot in D_800A38C4 (motion_slot); for
+/* The record's motion_data_id -> its slot in D_800A38C4 (motion_slot); for
  * ids below 0x2000, the nibble positions of 4 and 5 (unk_88 / unk_8E),
  * copying unk_26C into unk_8A / unk_90 under conditions on D_800A38DC. The
  * loop-tail duplication is accepted by an owner ruling on SOTN evidence; every
@@ -3378,8 +3378,8 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
         u8 *a0_58 = s0->motion_metadata;
         s0->cur_move_is_common = (u8)arg2;
         /* FAKE: empty do-while(0) -- its loop note puts a0_58 in $a0 and
-         * v1_58 in $v1 (the two unk_58 lbu bases); without it they swap,
-         * score 2. */
+         * v1_58 in $v1 (the two motion_metadata lbu bases); without it they
+         * swap, score 2. */
         do {
         } while (0);
         s0->cur_move_slot = (u8)a3;
@@ -4377,15 +4377,15 @@ extern void func_800204C0(Unk80101EC8Record *);
  * converts the pad bits, advances the move frame, runs the move script's
  * command list (cur_move / queued_move, motion_ResolveMoveData /
  * func_80021A98), decodes two MotionFrames with func_800198D0 (at move_frame
- * and at move_frame + 1, capped at unk_58[1] - 1, each offset by *unk_54, and
- * by unk_58[1] in some states; state move_kind 0x33 instead copies
- * g_motion_frame_buffers[arg0][move_frame] into both); when unk_31A is 0 it
- * mixes their root offsets into root_offset by the 4.12 weight move_frame_frac,
- * otherwise the first one's (by the weight unk_318) with unk_290's less unk_320
- * (by 0x1000 - unk_318), integrates the velocities (unk_104 / unk_134) into the
- * position, resolves it (fighter_ResolveMovement), then refreshes the bone
- * points, the flags unk_62, unk_AE and unk_288, the damping and the per-frame
- * side effects. */
+ * and at move_frame + 1, capped at motion_metadata[1] - 1, each offset by
+ * *motion_entry, and by motion_metadata[1] in some states; state move_kind 0x33
+ * instead copies g_motion_frame_buffers[arg0][move_frame] into both); when
+ * unk_31A is 0 it mixes their root offsets into root_offset by the 4.12 weight
+ * move_frame_frac, otherwise the first one's (by the weight unk_318) with
+ * unk_290's less unk_320 (by 0x1000 - unk_318), integrates the velocities
+ * (unk_104 / unk_134) into the position, resolves it (fighter_ResolveMovement),
+ * then refreshes the bone points, the flags unk_62, unk_AE and unk_288, the
+ * damping and the per-frame side effects. */
 void fighter_Update(s32 arg0, PadState *pad) {
     MotionFrame var_0[2];
     Vec3i32 v[2];
@@ -4399,10 +4399,10 @@ void fighter_Update(s32 arg0, PadState *pad) {
     u16 *ent;
     MoveScript *move;
     /* FAKE: one local reused for four values (no-new-park-categories entry
-     * 1): the unk_14C clamp limit, the
+     * 1): the remaining_turn clamp limit, the
      * opponent_bearing / orientation.vy angle gap (folded to 0..0x800), the
-     * unk_14C turn step and the -1/0/1 stick side. The target keeps all four in
-     * $a1; one local per value: score 25. */
+     * remaining_turn step and the -1/0/1 stick side. The target keeps all four
+     * in $a1; one local per value: score 25. */
     s32 temp;
     s32 var_12;
     s32 var_13;

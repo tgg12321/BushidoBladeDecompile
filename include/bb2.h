@@ -175,7 +175,7 @@ extern u8 D_8008DA08[0x48];
 extern s16 D_8008DA50[]; /* [unk_0A] (fighter_Update) */
 extern s16 D_8008DA94[]; /* [unk_0A] (fighter_Update) */
 extern s16 D_8008DAD8[]; /* [unk_0A] (fighter_Update) */
-/* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_48 model id
+/* [unk_0A][unk_0E] -> Unk80101EC8Record.motion_data_id
  * (motion_LoadFighterData) */
 extern u16 D_8008DB1C[27][8];
 /* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_84 */

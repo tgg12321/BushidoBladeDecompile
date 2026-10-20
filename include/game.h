@@ -1444,8 +1444,8 @@ typedef struct Unk80101EC8Record {
     s16 move_frame_frac; /* frame fraction, 0x1000 = one frame */
     s16 move_frame_step; /* frame-fraction step */
     s16 unk_46;
-    /* model id (motion_LoadFighterData); func_80021280 finds it in D_800A38C4
-     */
+    /* motion data id (motion_LoadFighterData); func_80021280 finds it in
+     * D_800A38C4 */
     u16 motion_data_id;
     s16 motion_slot;
     s16 borrow_other_motion;
@@ -1833,7 +1833,8 @@ typedef struct Unk800FF5C8Rec {
  * - w0: the character's current move (Unk80101EC8Record.cur_move);
  * replay_PlayFrame reads its unk_04.
  * - h4 / h6 / h8: world_pos x / y / z; hA: orientation.vy & 0xFFF with unk_B3
- * in the top four bits; hC: unk_148; hE / h10 / h12: unk_64 / unk_66 / unk_68.
+ * in the top four bits; hC: unk_148; hE / h10 / h12: unk_64 / unk_66 /
+ * pose_interp_weight.
  * - b14..b16: unk_1E6 / unk_1E8 / unk_1EA >> 2, read back signed; b17: bit 0 =
  * cur_move_is_common != 0, bit 1 = cur_move_slot != 0; b18: unk_62; b19:
  * move_frame. */

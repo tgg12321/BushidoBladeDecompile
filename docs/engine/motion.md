@@ -38,8 +38,8 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 - the rest index the common file's streams, and `*out` is set to 1.
 
 `func_80021A98(i, script, common)` (src/main/9F9C.c:3311) makes `script` the
-current move of fighter `i`: `cur_move = script`, `unk_5C = script->unk_04`, and
-`unk_54` / `unk_58` point at the script's entry in the file's `unk_04` table
+current move of fighter `i`: `cur_move = script`, `motion_entry_index = script->unk_04`, and
+`motion_entry` / `motion_metadata` point at the script's entry in the file's `unk_04` table
 and at the byte stream it names in `unk_08` (the frame-window stream that
 [combat.md](combat.md) describes). It also resets the frame counter `move_frame`
 from `script->unk_06` and records the previous state in `prev_move_kind`.
@@ -87,10 +87,10 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
    (src/main/9F9C.c:4698);
 3. turns the two root offsets into a position delta (heading and distance
    through `Judge`, scaled by `unk_1A`), blended by `move_frame_frac` or by `unk_318`
-   against the held frame `unk_290`; the weight goes to `unk_68`;
+   against the held frame `unk_290`; the weight goes to `pose_interp_weight`;
 4. integrates the velocities `unk_104` / `unk_134`, resolves the position
    (`fighter_ResolveMovement`, src/main/9F9C.c:3868), and builds the pose:
-   `func_80041188(i, &f0, &f1, unk_68, ...)` (src/main/9F9C.c:4898) and
+   `func_80041188(i, &f0, &f1, pose_interp_weight, ...)` (src/main/9F9C.c:4898) and
    `func_80040D48` (src/main/9F9C.c:4901).
 
 ## Building the pose
@@ -110,7 +110,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
 
 - `replay_PlayFrame` (src/main/28708.c:1338) rebuilds both fighters from the
   per-frame records `g_replay_fighter_frames` (`Rec1C`, include/game.h:1807, written by
-  `replay_RecordFighter` from `cur_move`, `world_pos`, `unk_64..unk_68` and others): it
+  `replay_RecordFighter` from `cur_move`, `world_pos`, `unk_64`, `unk_66`, `pose_interp_weight` and others): it
   decodes the two stored frame keys and calls `func_80041188` /
   `func_80040D48` as the live path does.
 - `motion_UpdatePlayback` (src/main/4510C.c) plays a loaded sequence: a camera
