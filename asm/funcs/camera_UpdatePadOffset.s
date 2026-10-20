@@ -1,4 +1,4 @@
-glabel func_8001B138
+glabel camera_UpdatePadOffset
     /* B938 8001B138 0A80023C */  lui        $v0, %hi(D_800A38BA)
     /* B93C 8001B13C BA384284 */  lh         $v0, %lo(D_800A38BA)($v0)
     /* B940 8001B140 1080013C */  lui        $at, %hi(g_camera_view_offset)
@@ -93,4 +93,4 @@ glabel func_8001B138
     /* BA88 8001B288 24104300 */  and        $v0, $v0, $v1
     /* BA8C 8001B28C 0800E003 */  jr         $ra
     /* BA90 8001B290 000082AC */   sw        $v0, 0x0($a0)
-endlabel func_8001B138
+endlabel camera_UpdatePadOffset

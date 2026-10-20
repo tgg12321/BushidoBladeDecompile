@@ -1,4 +1,4 @@
-glabel func_80021D10
+glabel fight_GetStartPosition
     /* 12510 80021D10 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 12514 80021D14 1800B2AF */  sw         $s2, 0x18($sp)
     /* 12518 80021D18 21908000 */  addu       $s2, $a0, $zero
@@ -39,4 +39,4 @@ glabel func_80021D10
     /* 125A4 80021DA4 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 125A8 80021DA8 0800E003 */  jr         $ra
     /* 125AC 80021DAC 00000000 */   nop
-endlabel func_80021D10
+endlabel fight_GetStartPosition

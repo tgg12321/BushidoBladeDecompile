@@ -665,7 +665,7 @@ void camera_UpdateTwoFighterView(
     var_2->unk_10.vx += work;
 }
 
-void func_8001B138(s32 *arg0) {
+void camera_UpdatePadOffset(s32 *arg0) {
     g_camera_view_offset.unk_00.x = 0;
     g_camera_view_offset.unk_00.y = 0;
     g_camera_view_offset.unk_00.z = 0;
@@ -1198,8 +1198,8 @@ void func_8001C624(void) {
     VECTOR local;
     s32 x, y, z;
 
-    func_80021D10(0, &e->unk_D8.x, (s32)D_800A38E0);
-    func_80021D10(1, &local.vx, (s32)D_800A38E0);
+    fight_GetStartPosition(0, &e->unk_D8.x, (s32)D_800A38E0);
+    fight_GetStartPosition(1, &local.vx, (s32)D_800A38E0);
     e->unk_E8.x = 0;
     x = e->unk_D8.x;
     y = e->unk_D8.y;
@@ -1362,7 +1362,7 @@ void func_8001C8DC(void) {
         }
     }
         D_800A3670 = 1;
-        D_800A38DF = func_80022408(&D_80101EC8[D_800A3748].unk_F4);
+        D_800A38DF = fight_FindNearestStartPair(&D_80101EC8[D_800A3748].unk_F4);
         D_800A3834 = 0;
         goto end;
     case 4:
@@ -2148,7 +2148,7 @@ void func_8001EA84(void) {
     if (D_800A3817 == 0) {
         D_800A3670 = 1;
         D_800A380C = D_800A380C + 1;
-        D_800A38DF = func_80022408(&D_80101EC8[D_800A3748].unk_F4);
+        D_800A38DF = fight_FindNearestStartPair(&D_80101EC8[D_800A3748].unk_F4);
         if (D_80101EC8[1].unk_06 != 0) {
             fighter_HalveCpuTally(1);
         }
@@ -3436,7 +3436,7 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
     }
 }
 
-void func_80021D10(s32 arg0, s32 *arg1, s32 arg2) {
+void fight_GetStartPosition(s32 arg0, s32 *arg1, s32 arg2) {
     s16 *temp_v0;
     temp_v0 = (s16 *)func_80046F14() +
               ((D_800A36A4 * 0x18) + (arg2 * 6) + (arg0 * 3));
@@ -3586,7 +3586,7 @@ void func_80022224(s32 arg0, s32 *arg1, s32 *arg2) {
     arg1[2] = base[2];
 }
 
-s32 func_80022408(Vec3i32 *arg0) {
+s32 fight_FindNearestStartPair(Vec3i32 *arg0) {
     s16 *p;
     s32 i;
     s32 best_dist;
@@ -3708,13 +3708,13 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
             var_1 = p->other->unk_D8;
             func_80022224(idx, &p->unk_D8.x, &var_1.x);
         } else {
-            /* FAKE: default's two func_80021D10 calls repeated in this arm
-             * (duplicated-statement-into-arms, Q47); cross-jump merges the
+            /* FAKE: default's two fight_GetStartPosition calls repeated in this
+             * arm (duplicated-statement-into-arms, Q47); cross-jump merges the
              * copies. With the copy, the dispatch tests mode == 0 first and
              * reaches case 2/3 through the target's `j`; every shared form
              * lays the dispatch out in another order. */
-            func_80021D10(idx, &p->unk_D8.x, var_5);
-            func_80021D10(idx == 0, &var_1.x, var_5);
+            fight_GetStartPosition(idx, &p->unk_D8.x, var_5);
+            fight_GetStartPosition(idx == 0, &var_1.x, var_5);
         }
         break;
     case 2:
@@ -3723,13 +3723,13 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
             var_1 = p->other->unk_D8;
             func_80021DB0(idx, &p->unk_D8, &var_1.x);
         } else {
-            func_80021D10(idx, &p->unk_D8.x, D_800A38E0);
-            func_80021D10(idx == 0, &var_1.x, D_800A38E0);
+            fight_GetStartPosition(idx, &p->unk_D8.x, D_800A38E0);
+            fight_GetStartPosition(idx == 0, &var_1.x, D_800A38E0);
         }
         break;
     default:
-        func_80021D10(idx, &p->unk_D8.x, var_5);
-        func_80021D10(idx == 0, &var_1.x, var_5);
+        fight_GetStartPosition(idx, &p->unk_D8.x, var_5);
+        fight_GetStartPosition(idx == 0, &var_1.x, var_5);
         break;
     }
 

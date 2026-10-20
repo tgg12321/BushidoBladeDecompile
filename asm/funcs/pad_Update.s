@@ -69,7 +69,7 @@ glabel pad_Update
     /* 9E5C 8001965C D9FF4014 */  bnez       $v0, .L800195C4
     /* 9E60 80019660 0800E724 */   addiu     $a3, $a3, 0x8
     /* 9E64 80019664 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 9E68 80019668 4E6C000C */  jal        func_8001B138
+    /* 9E68 80019668 4E6C000C */  jal        camera_UpdatePadOffset
     /* 9E6C 8001966C 1800A9AF */   sw        $t1, 0x18($sp)
     /* 9E70 80019670 0A80033C */  lui        $v1, %hi(D_800A3834)
     /* 9E74 80019674 34386384 */  lh         $v1, %lo(D_800A3834)($v1)

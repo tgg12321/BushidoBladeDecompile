@@ -183,7 +183,7 @@ glabel func_8003C9A4
     /* 2D450 8003CC50 01004224 */  addiu      $v0, $v0, 0x1
     /* 2D454 8003CC54 0A80013C */  lui        $at, %hi(D_800A380C)
     /* 2D458 8003CC58 0C3822AC */  sw         $v0, %lo(D_800A380C)($at)
-    /* 2D45C 8003CC5C 0289000C */  jal        func_80022408
+    /* 2D45C 8003CC5C 0289000C */  jal        fight_FindNearestStartPair
     /* 2D460 8003CC60 21208300 */   addu      $a0, $a0, $v1
     /* 2D464 8003CC64 0A80013C */  lui        $at, %hi(D_800A38DF)
     /* 2D468 8003CC68 DF3822A0 */  sb         $v0, %lo(D_800A38DF)($at)

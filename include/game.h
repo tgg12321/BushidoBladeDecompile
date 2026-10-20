@@ -1809,8 +1809,8 @@ typedef struct Rec44 {
 
 /* The camera-target offset at 0x800FF5C8: camera_ApplyFightView /
  * camera_ApplyReplayView add its fields to a Rec44's unk_00, unk_10 and w18,
- * and func_8001B138 zeroes them. The fields sit at Rec44's offsets; +0x0C and
- * the SVECTOR pad are never accessed. */
+ * and camera_UpdatePadOffset zeroes them. The fields sit at Rec44's offsets;
+ * +0x0C and the SVECTOR pad are never accessed. */
 typedef struct Unk800FF5C8Rec {
     Vec3i32 unk_00;
     u8 unk_0C[4];

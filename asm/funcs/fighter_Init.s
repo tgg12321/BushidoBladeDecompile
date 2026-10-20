@@ -284,7 +284,7 @@ glabel fighter_Init
   .L80022998:
     /* 13198 80022998 0A80063C */  lui        $a2, %hi(D_800A38E0)
     /* 1319C 8002299C E038C690 */  lbu        $a2, %lo(D_800A38E0)($a2)
-    /* 131A0 800229A0 4487000C */  jal        func_80021D10
+    /* 131A0 800229A0 4487000C */  jal        fight_GetStartPosition
     /* 131A4 800229A4 D8000526 */   addiu     $a1, $s0, 0xD8
     /* 131A8 800229A8 0100442E */  sltiu      $a0, $s2, 0x1
     /* 131AC 800229AC 0A80063C */  lui        $a2, %hi(D_800A38E0)
@@ -295,13 +295,13 @@ glabel fighter_Init
     /* 131BC 800229BC 21204002 */  addu       $a0, $s2, $zero
   .L800229C0:
     /* 131C0 800229C0 D8000526 */  addiu      $a1, $s0, 0xD8
-    /* 131C4 800229C4 4487000C */  jal        func_80021D10
+    /* 131C4 800229C4 4487000C */  jal        fight_GetStartPosition
     /* 131C8 800229C8 21302002 */   addu      $a2, $s1, $zero
     /* 131CC 800229CC 0100442E */  sltiu      $a0, $s2, 0x1
     /* 131D0 800229D0 1000A527 */  addiu      $a1, $sp, 0x10
     /* 131D4 800229D4 21302002 */  addu       $a2, $s1, $zero
   .L800229D8:
-    /* 131D8 800229D8 4487000C */  jal        func_80021D10
+    /* 131D8 800229D8 4487000C */  jal        fight_GetStartPosition
     /* 131DC 800229DC 00000000 */   nop
   .L800229E0:
     /* 131E0 800229E0 D800038E */  lw         $v1, 0xD8($s0)

@@ -1,4 +1,4 @@
-glabel func_80022408
+glabel fight_FindNearestStartPair
     /* 12C08 80022408 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 12C0C 8002240C 1000B0AF */  sw         $s0, 0x10($sp)
     /* 12C10 80022410 21808000 */  addu       $s0, $a0, $zero
@@ -55,4 +55,4 @@ glabel func_80022408
     /* 12CD4 800224D4 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 12CD8 800224D8 0800E003 */  jr         $ra
     /* 12CDC 800224DC 00000000 */   nop
-endlabel func_80022408
+endlabel fight_FindNearestStartPair

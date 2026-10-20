@@ -680,7 +680,7 @@ void pad_Update(s32 arg0) {
     } while (i < 2);
 
     pad.held = var_3;
-    func_8001B138(&pad.held);
+    camera_UpdatePadOffset(&pad.held);
 
     if (D_800A3834 == 1 && arg0 == 0) {
 

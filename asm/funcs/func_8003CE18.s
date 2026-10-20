@@ -57,7 +57,7 @@ glabel func_8003CE18
     /* 2D6EC 8003CEEC 00000000 */   nop
     /* 2D6F0 8003CEF0 4C048424 */  addiu      $a0, $a0, 0x44C
   .L8003CEF4:
-    /* 2D6F4 8003CEF4 0289000C */  jal        func_80022408
+    /* 2D6F4 8003CEF4 0289000C */  jal        fight_FindNearestStartPair
     /* 2D6F8 8003CEF8 00000000 */   nop
     /* 2D6FC 8003CEFC 16000424 */  addiu      $a0, $zero, 0x16
     /* 2D700 8003CF00 21304000 */  addu       $a2, $v0, $zero

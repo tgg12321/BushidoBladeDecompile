@@ -939,7 +939,7 @@ void func_8003C9A4(void) {
         }
         D_800A3670 = 1;
         D_800A380C = D_800A380C + 1;
-        D_800A38DF = func_80022408(&D_80101EC8[D_800A3748].unk_F4);
+        D_800A38DF = fight_FindNearestStartPair(&D_80101EC8[D_800A3748].unk_F4);
         D_800A3834 = 0;
         return;
     }
@@ -1018,7 +1018,7 @@ void func_8003CE18(void) {
         if (D_800A3748 == 0) {
             addr = &D_80101EC8[1].unk_F4;
         }
-        result = func_80022408(addr);
+        result = fight_FindNearestStartPair(addr);
         D_800A3818 = result;
         func_80054884(0x16, s0, result, (s32)D_80101EC8[0].unk_12,
                       (s32)D_80101EC8[1].unk_12, -1, -1, 0);
@@ -1076,7 +1076,7 @@ void func_8003CF84(void) {
         snd_QueueSound(0x71, 0x7F, 0x7F);
     }
     if (D_800A37B8 == D_8008EB0C) {
-        func_80021D10(0, vec, D_800A3818);
+        fight_GetStartPosition(0, vec, D_800A3818);
         vec[0] += D_8008EB10;
         vec[1] += D_8008EB14;
         vec[2] += D_8008EB18;
