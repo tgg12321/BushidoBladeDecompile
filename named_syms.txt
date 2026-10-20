@@ -285,7 +285,7 @@ D_800A378C           = 0x800A378C;  /* ordering-table pointer: every store is g_
 D_800A3044           = 0x800A3044;  /* SioRegs *: holds 0x1F801050, the SIO port 1 (link cable) register block; libcomb only (comb.c:17, include/psxsdk/libapi.h:23-37) */  /* data-wave 2026-10-09: was g_spu_reg_base_ptr */
 _ss_score             = 0x80106F28;  /* struct SeqStruct *_ss_score[32] (src/main/psxsdk/libsnd/libsnd_i.h; SOTN libsnd_i.h:176 @aa53500, BB2's own 0xB0 record) */  /* data-wave 2026-09-07: was g_seq_bank_table */
 D_800A334C      = 0x800A334C;  /* u8 90-frame display countdown of a memory-card message: set to 0x5A, decremented, gated on `== 0 || (g_seq_active_voice_mask & 0x100010)` */  /* data-wave 2026-10-08: was g_motion_play_countdown */
-D_800A3874          = 0x800A3874;  /* entry index: func_800340A0 stores D_800A377C[it] and D_800F65F8[it][0..1], then increments it */  /* data-wave 2026-10-08: was g_match_round_index */
+D_800A3874          = 0x800A3874;  /* entry index: fight_RecordMatchResult stores D_800A377C[it] and D_800F65F8[it][0..1], then increments it */  /* data-wave 2026-10-08: was g_match_round_index */
 
 /* === Legacy renamer audit: sound.c cluster (2026-05-17) === */
 /* 25 high-confidence cross-validated names from `tools/rename_funcs.py` */
@@ -502,7 +502,7 @@ camera_CalcAngles_80047384      = 0x80047384;  /* 58-insn angle calc using repla
 /* docs/naming/data_evidence/). The 5 highs landed below. */
 /* 2026-09-23: g_replay_pos_x/y/z (3 of the 5) retired -- per-word pieces of Unk80101DF0Record (include/game.h). */
 /* RENAME 0x800A37C8: retired name 'D_800A37C8' — preserved note: halfword; memory-card operation selector for the D_800A31F4 machine (0 load, 1/2 write, 3 memcard_Format) */  /* data-wave 2026-10-08: was g_pad_analog_substate */
-D_800F65F8            = 0x800F65F8;  /* two-column byte table [D_800A3874][2]: func_800340A0 snapshots D_800A3898 / D_800A3899 into it */  /* data-wave 2026-10-08: was g_match_round_byte_a */
+D_800F65F8            = 0x800F65F8;  /* two-column byte table [D_800A3874][2]: fight_RecordMatchResult snapshots D_800A3898 / D_800A3899 into it */  /* data-wave 2026-10-08: was g_match_round_byte_a */
 
 /* === Data-symbol batch 7 (2026-05-17) -- highest-ref unproposed === */
 /* 8 high-confidence names landed; 18 more proposals in data_evidence/. */
@@ -701,8 +701,8 @@ g_str_sio_800A3210                                   = 0x800A3210;  /* 'sio:' se
 /* RESET 0x80061454: retired name 'anim_emit_29000B_80061454' — preserved note: [func] refs: D_800F1180, D_800A3468, D_800F116C, D_800F1178 */
 /* RESET 0x80065000: retired name 'motion_ex_init_state_80065000' — preserved note: [func] refs: D_800A3468, D_800A347C */
 /* RESET 0x80077724: retired name 'setup_double_buffer_swap_80077724' — preserved note: [func] refs: g_gpu_db, D_800A36AC */
-D_800A377C                              = 0x800A377C;  /* 0/1/2 per D_800A3874 entry, stored by func_800340A0; func_8001CE60 reads the last one */  /* data-wave 2026-10-08: was g_match_round_result_table */
-D_800A389B                                    = 0x800A389B;  /* entry count p->unk14_10 + 3 (func_8003504C); func_800342A0 stops when D_800A3874 reaches it */  /* data-wave 2026-10-08: was g_match_round_byte_b */
+D_800A377C                              = 0x800A377C;  /* 0/1/2 per D_800A3874 entry, stored by fight_RecordMatchResult; func_8001CE60 reads the last one */  /* data-wave 2026-10-08: was g_match_round_result_table */
+D_800A389B                                    = 0x800A389B;  /* entry count p->unk14_10 + 3 (func_8003504C); fight_AdvanceMatch stops when D_800A3874 reaches it */  /* data-wave 2026-10-08: was g_match_round_byte_b */
 
 /* Tier 2 -- 1 newly-named ref (data only -- lower-risk promotions) */
 D_800A31DA                                  = 0x800A31DA;  /* ref: func_80035480 */  /* data-wave 2026-10-08: was g_game_session_running */
@@ -1023,7 +1023,7 @@ eff_FrameUpdate                                         = 0x80061064;  /* per-fr
 /* From src/main/17AFC.c func_80033DF4 (:6605-6620): each row */
 /* of D_8008E778 is 4 bytes (table[0..3]).  The */
 /* fetcher copies them into the globals below. */
-D_800A38E9                            = 0x800A38E9;  /* rank 0..3 at which func_80033D38 inserts D_800A3858 into D_80106A50.times[] (3 = not inserted); func_80033FE4 tests < 3 */  /* data-wave 2026-10-08: was g_practice_lesson_subcounter */
+D_800A38E9                            = 0x800A38E9;  /* rank 0..3 at which fight_InsertBestTime inserts D_800A3858 into D_80106A50.times[] (3 = not inserted); func_80033FE4 tests < 3 */  /* data-wave 2026-10-08: was g_practice_lesson_subcounter */
 D_800A38DE                                = 0x800A38DE;  /* D_8008EC24[row][table[0]] (func_80033DF4); passed to func_80040510(1, it, 0) */  /* data-wave 2026-10-08: was g_practice_lesson_param0 */
 D_800A38EC                                = 0x800A38EC;  /* table[1] of func_80033DF4's row; func_80041BF4's first argument (r) */  /* data-wave 2026-10-08: was g_practice_lesson_param1 */
 D_800A38ED                                = 0x800A38ED;  /* table[2] of func_80033DF4's row; func_80041BF4's second argument (g) */  /* data-wave 2026-10-08: was g_practice_lesson_param2 */
@@ -1668,8 +1668,8 @@ D_800F1159                                   = 0x800F1159;  /* D_800F1150[9..10]
 /* === char-id tables indexed by D_800A3874 (2026-05-17) -- 2 highs === */
 /* 2 parallel u8 tables indexed */
 /* by D_800A3874 * 2 + variant; each entry/variant */
-/* combination yields a character ID written to D_8010277C */
-/* (D_8010277C + variant), loaded by func_800342A0. */
+/* combination yields a character ID written to */
+/* (D_8010277C + variant), loaded by fight_AdvanceMatch. */
 D_801027A0                                = 0x801027A0;  /* per-match table, one byte for each of the two sides (u8, stride 2 per match) */  /* data-wave 2026-10-08: was g_round_p1_char_id_table */
 D_801027D8                                = 0x801027D8;  /* per-match table of each side's settings unk1 byte (parallel to D_801027A0) */  /* data-wave 2026-10-08: was g_round_p2_char_id_table */
 
@@ -2163,7 +2163,7 @@ D_800A37C6                           = 0x800A37C6;  /* +6 from D_800A37C0 (0x800
 D_800A37E0                      = 0x800A37E0;  /* +4 from g_memcard_event_io_complete (0x800A37DC) */  /* data-wave 2026-09-29: was g_memcard_event_io_complete_plus_4 */
 D_800A37E1                      = 0x800A37E1;  /* +5 from g_memcard_event_io_complete (0x800A37DC) */  /* data-wave 2026-09-29: was g_memcard_event_io_complete_plus_5 */
 D_800A3816                       = 0x800A3816;  /* +2 from D_800A3814 */  /* data-wave 2026-10-08: was g_pad_analog_frame_counter_plus_2 */
-D_800A381E                      = 0x800A381E;  /* frame counter of func_8001CE60's D_800A38DC == 5 branch; cleared by func_800342A0 */  /* data-wave 2026-10-08: was g_stage_helper_result_cache_plus_6 */
+D_800A381E                      = 0x800A381E;  /* frame counter of func_8001CE60's D_800A38DC == 5 branch; cleared by fight_AdvanceMatch */  /* data-wave 2026-10-08: was g_stage_helper_result_cache_plus_6 */
 D_800A3828                            = 0x800A3828;  /* = &D_800F62E0[arg2] (func_800430E4); read by func_80054440 */  /* data-wave 2026-10-08: was g_practice_state_word_plus_4 */
 D_800A382E                       = 0x800A382E;  /* frame counter gating func_8001C8DC at 0x3D */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx_plus_1 */
 g_motion_common_buffer                       = 0x800A3830;  /* load address 0x80120000 used as a CD read destination (9F9C.c:3302 / :3311) */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx_plus_3 */
