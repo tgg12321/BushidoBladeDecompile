@@ -237,7 +237,7 @@ g_motion_fighter_buffers      = 0x800A3860;  /* data-wave 2026-10-08: was g_moti
 /* system-restart wrapper around bios_Exec(sp, a0, a1). Sets up GPU, */
 /* interrupts, critical section then EXECs a new PS-X EXE. */
 /* special_camera_check_pos_outside_ground_80035DC8 -- scene teardown: */
-/* gpu_ResetGraphMode1 + func_80016888 + func_80020CDC + func_800415C4(0,1) */
+/* gpu_ResetGraphMode1 + gpu_HideResetAndClear + func_80020CDC + func_800415C4(0,1) */
 /* + eff_ClearInitFlag ..., D_800A3834 = 0x1B. NOT a position check. */
 /* special_camera_check_pos_outside_ground_80036E34 -- now cdrom_StartReadAt: */
 /* starts a CD read of a file at a sector offset (ndata_StartReadInf, */
@@ -1107,11 +1107,11 @@ g_vsync_gpu_stat_reg                                 = 0x800A1510;  /* libetc VS
 
 /* === Primitive-buffer bases + render state (2026-05-17) -- 6 highs === */
 /* From 6CF8.c: func_80016D78 (:291-292) stores two main-RAM primitive-buffer */
-/* bases in D_800A3770[0] / [1]; main (:455) and func_80016E60 (:340-344) */
+/* bases in D_800A3770[0] / [1]; main (:455) and menu_RunPauseMenu (:340-344) */
 /* base g_prim_buf_cursor on D_800A3770[D_800A36AC & 1]. */
 D_800A3770                                            = 0x800A3770;  /* u32[2] primitive-buffer bases 0x801D8800 / 0x801EBC00 (func_80016D78); also a CD-read destination via motion_StartPlayback */  /* data-wave 2026-10-08: was g_video_fb_a */
 D_800A3798                                         = 0x800A3798;  /* = 0x13400 (D_800A3770[1] - D_800A3770[0]), one store in func_80016D78; never read */  /* data-wave 2026-10-08: was g_video_fb_size */
-D_800A36B0                                   = 0x800A36B0;  /* store-only: 0 in func_80016D78, 1 in func_80016E60 before and after its menu loop */  /* data-wave 2026-10-08: was g_intro_render_active */
+D_800A36B0                                   = 0x800A36B0;  /* store-only: 0 in func_80016D78, 1 in menu_RunPauseMenu before and after its menu loop */  /* data-wave 2026-10-08: was g_intro_render_active */
 D_800A3906                                     = 0x800A3906;  /* set 1 by snd_InitAndLoadCommonVab, 0 by func_80016D78; gates snd_FlushSoundQueue in cdrom_WaitIdle */  /* data-wave 2026-10-07: was g_intro_render_busy */
 g_pad_state_plus_0xC                                    = 0x80102794;  /* g_pad_state.pressed */  /* data-wave 2026-10-03: was g_pad_input_combined */
 
@@ -1182,10 +1182,10 @@ D_800A33EC                                 = 0x800A33EC;  /* s32: -1 = uninit, 0
 D_800EF980                               = 0x800EF980;  /* s16 array; D[arg0] = 1 to mark slot active; size >= 0x65 entries */  /* data-wave 2026-10-08: was g_gnd_target_active_slots */
 
 /* === D_800A3464 colour word (2026-05-17) -- 1 high === */
-/* Passed to func_80041E10 by func_80061064.  Set per command to 24-bit */
-/* values like 0xFFFFEF, 0xC06013, etc; func_80041E10 scales its bytes */
+/* Passed to light_SetPointLight by func_80061064.  Set per command to 24-bit */
+/* values like 0xFFFFEF, 0xC06013, etc; light_SetPointLight scales its bytes */
 /* into D_800A3238[0..2], column 1 of a light colour matrix. */
-D_800A3464                                   = 0x800A3464;  /* 24-bit colour, a constant stored by each command setter (func_800611A4..func_80061EC0); func_80061064 passes it to func_80041E10 while D_800A32BC >= 2 */  /* data-wave 2026-10-08: was g_text1b_render_color */
+D_800A3464                                   = 0x800A3464;  /* 24-bit colour, a constant stored by each command setter (func_800611A4..func_80061EC0); func_80061064 passes it to light_SetPointLight while D_800A32BC >= 2 */  /* data-wave 2026-10-08: was g_text1b_render_color */
 
 /* === GPU type tables (2026-05-17) -- 2 highs === */
 /* libgpu ResetGraph (sys.c:166-169) reads VRAM (width, height) */
@@ -1375,7 +1375,7 @@ D_800F10D0                               = 0x800F10D0;  /* 28-entry s32 table of
 
 /* === D_8008D090 handler decode (cont'd) -- 1 high === */
 /* Mode 18 confirmed from asm at pre-restructure-2026-10-03:asm/6CAC.s:41135: */
-/*   - func_80016888 + gpu_ResetGraphMode1 */
+/*   - gpu_HideResetAndClear + gpu_ResetGraphMode1 */
 /*   - func_80020CDC */
 /*   - Reads D_800A38A4: cases 6, 7, 8, 9 */
 /*   - Each case sets g_practice_lesson_char_id + slot for the */
@@ -1441,9 +1441,9 @@ g_comb_abort_request                                  = 0x800A3928;  /* set to 1
 D_800A30DC                                      = 0x800A30DC;  /* min observed bytes left in the frame's primitive buffer; tripping <0 triggers sys_Panic ("common prim over flow") */  /* data-wave 2026-10-08: was g_ot_remaining_min */
 /* RENAME 0x800A30E8: retired name 'D_800A30E8' — preserved note: high-water mark of the D_800F6740 slot index softbody_Create hands out (6CF8.c:757-758): `if D_800A30E8 < i then D_800A30E8 = i` */  /* data-wave 2026-10-08: was g_ot_used_max */
 D_800A390D                                      = 0x800A390D;  /* frame-skip count: frames main draws without presenting; decrements before frame submit */  /* data-wave 2026-10-08: was g_voice_skip_count */
-D_800A3713                                = 0x800A3713;  /* countdown gating the START-pause menu (func_80016E60) entry; main_loop.md step 13 */  /* data-wave 2026-10-08: was g_select_pause_countdown */
+D_800A3713                                = 0x800A3713;  /* countdown gating the START-pause menu (menu_RunPauseMenu) entry; main_loop.md step 13 */  /* data-wave 2026-10-08: was g_select_pause_countdown */
 D_800A37C0                                  = 0x800A37C0;  /* per-step timer of func_800174F4's case 20 (6CF8.c:566-590), preset to 500; reset at 6CF8.c:585 and 2B344.c:452 */  /* data-wave 2026-10-08: was g_global_frame_counter */
-D_800A3788                             = 0x800A3788;  /* 3-bit set toggled per menu line (var_2 3..5) by func_80016E60, passed as var_2 | D << 16 to func_8005C8A8; column index of D_8009A9F0 in func_80058580 */  /* data-wave 2026-10-08: was g_intro_select_packed_state */
+D_800A3788                             = 0x800A3788;  /* 3-bit set toggled per menu line (var_2 3..5) by menu_RunPauseMenu, passed as var_2 | D << 16 to func_8005C8A8; column index of D_8009A9F0 in func_80058580 */  /* data-wave 2026-10-08: was g_intro_select_packed_state */
 
 /* === Cross-cutting unnamed state used in 3+ named functions (2026-05-17) -- 4 highs === */
 /* RENAME 0x800A3244: retired name 'D_800A3244' — preserved note: set 1 by func_800450BC, cleared by func_80045188 / func_800450F4, returned by func_80045194; gates func_800450F4's block copy */  /* data-wave 2026-10-08: was g_seq_active_flag */
@@ -1493,14 +1493,14 @@ D_800A3894                                  = 0x800A3894;  /* byte pointer set f
 D_800A3368                                    = 0x800A3368;  /* count of D_800A4750 records func_8003EDC0 unpacks; the draw walks send ids at or above it to D_800A6690[v1 - D] (0x68-byte records) */  /* data-wave 2026-10-08: was g_char_data_base_idx */
 
 /* === Block arena manager (2026-05-17) -- 9 highs === */
-/* From 35000.c func_800451D0 (init) + arena_UpdatePeak (high-water) */
+/* From 35000.c arena_Reset (init) + arena_UpdatePeak (high-water) */
 /* + arena_ShiftBlocks (compaction).  A fixed 0x45000-byte arena at */
 /* g_arena with a cursor and high-water mark, plus the block table */
 /* g_arena_blocks (id, address, byte amount, relocation callback). */
 /* D_800A9CFE / D_800A9D04 are fields of the D_800A9CF8 header. */
 g_arena_blocks                                 = 0x800EED10;  /* 10 entries x 0x10 bytes; +0 = state s16, +0xC = callback fn ptr */  /* data-wave 2026-10-08: was g_snd_stream_slot_table */
 D_800EED1C                             = 0x800EED1C;  /* callback function pointer at offset +0xC of each slot */  /* data-wave 2026-10-08: was g_snd_stream_slot_callbacks */
-g_arena                                     = 0x800A9D10;  /* base of the fixed 0x45000-byte block arena (func_800451D0) */  /* data-wave 2026-10-08: was g_snd_stream_buffer */
+g_arena                                     = 0x800A9D10;  /* base of the fixed 0x45000-byte block arena (arena_Reset) */  /* data-wave 2026-10-08: was g_snd_stream_buffer */
 g_arena_free_ptr                                  = 0x800A33A0;  /* arena cursor (init &g_arena); arena_OpenBlock hands it out as the new block's address */  /* data-wave 2026-10-08: was g_snd_stream_write_pos */
 D_800A9CFE                               = 0x800A9CFE;  /* header state at -0x12 from buffer base; values 0x11/2/0xA */  /* data-wave 2026-10-08: was g_snd_stream_header_state */
 D_800A9D04                                 = 0x800A9D04;  /* header pointer at -0xC from buffer base */  /* data-wave 2026-10-08: was g_snd_stream_header_ptr */
@@ -1590,7 +1590,7 @@ g_vab_vb_sbaddr                                      = 0x800EFB38;  /* 16-entry 
 D_800EFB7C                              = 0x800EFB7C;  /* g_snd_queue[i].volr: right volume of a queued key-on (init 0x7F), passed to SsUtKeyOnV by snd_FlushSoundQueue */  /* data-wave 2026-10-08: was g_effect_pool_b_24_field_4 */
 
 /* === D_800A32BC countdown + func_80077B30 state (2026-05-17) -- 2 highs === */
-D_800A32BC                          = 0x800A32BC;  /* set to 0xA by func_80060A68 when the command word has bit 0x200000; func_80061064 decrements it (calling func_80041E10) while >= 2, calls func_800421A4 and clears it at 1 */  /* data-wave 2026-10-08: was g_text1b_post_render_countdown */
+D_800A32BC                          = 0x800A32BC;  /* set to 0xA by func_80060A68 when the command word has bit 0x200000; func_80061064 decrements it (calling light_SetPointLight) while >= 2, calls light_DisablePointLight and clears it at 1 */  /* data-wave 2026-10-08: was g_text1b_post_render_countdown */
 D_800A35E4                            = 0x800A35E4;  /* state (0..5) of the handler func_80077B30 over D_8009BD24; = 0 by func_80077820..func_80077A28, = 1 by func_80077B20 */  /* data-wave 2026-10-08: was g_menu_screen_result_pending */
 
 /* === D_800A3608 frame count + LIBAPI PAD init flag (2026-05-17) -- 2 highs === */
@@ -1782,8 +1782,8 @@ D_80094C68                             = 0x80094C68;  /* u16 table; stored into 
 D_80094B96                                        = 0x80094B96;  /* D_80094B96[0].unk_00: s16 parent-node index, -1 for none (func_800408F8) */  /* data-wave 2026-10-08: was g_attack_scale_x */
 D_80094B98                                        = 0x80094B98;  /* D_80094B96[0].unk_02[0]: s16, times a0->unk_12 >> 12 it becomes node work.t[0] */  /* data-wave 2026-10-08: was g_attack_scale_y */
 D_80094B9A                                        = 0x80094B9A;  /* D_80094B96[0].unk_02[1]: s16, times a0->unk_12 >> 12 it becomes node work.t[1] */  /* data-wave 2026-10-08: was g_attack_scale_z */
-D_800A3388                                      = 0x800A3388;  /* holds the node translation address func_80040D48 passes for player 1; func_8004211C hands it to func_80041EB0 as the second position (31D3C.c:478-487) */  /* data-wave 2026-10-08: was g_attack_state_ptr */
-D_800A9B28                                     = 0x800A9B28;  /* VECTOR copied from *a0 by func_80041E10; func_80041EB0 subtracts it from tracked positions to aim light[1] */  /* data-wave 2026-10-08: was g_cam_saved_a0_data */
+D_800A3388                                      = 0x800A3388;  /* holds the node translation address func_80040D48 passes for player 1; light_ApplyPointLightTargets hands it to light_ApplyPointLight as the second position (31D3C.c:478-487) */  /* data-wave 2026-10-08: was g_attack_state_ptr */
+D_800A9B28                                     = 0x800A9B28;  /* VECTOR copied from *a0 by light_SetPointLight; light_ApplyPointLight subtracts it from tracked positions to aim light[1] */  /* data-wave 2026-10-08: was g_cam_saved_a0_data */
 D_800A9A20                                = 0x800A9A20;  /* = arg0[4] cached; compared against (s16*)var_0[4] for change detection */  /* data-wave 2026-10-08: was g_anim_event_arg4_cached */
 
 /* === func_80077940 packed value, D_8009BD58 byte, D_800A324C cache (2026-05-17) -- 3 highs === */
@@ -3066,7 +3066,7 @@ gte_rtpt_batch_8004A76C                            = 0x8004A76C;  /* GTE: rtpt l
 /* RENAME 0x8006F038: retired name 'gpu_draw_fullscreen_overlay_8006F038' — preserved note: SetTile full-screen 0x280 x 0xF0, grey D_800A3550, SetSemiTrans(1), AddPrim(g_gpu_ot_ptr); then SetDrawMode (tpage 0x40) + AddPrim; semi-transparent full-screen overlay */
 /* RESET 0x80074D2C: retired name 'draw_anim_sprite_pos_80074D2C' — preserved note: anim-sprite render at computed offset, OT-depth select; satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link */
 /* RESET 0x80069898: retired name 'gpu_draw_layered_box_80069898' — preserved note: 3x SetTile at y, y-1, y-2 (grey 0x80 / 0x80 / 0x40, SetSemiTrans 0 / 1 / 1) + AddPrim(g_gpu_ot_ptr + arg2) */
-draw_bg_and_sprites_80069E18                           = 0x80069E18;  /* full-screen overlay tile + saMotionSet sprite + initTexPage + 3x func_8007352C; composite screen render */
+draw_bg_and_sprites_80069E18                           = 0x80069E18;  /* full-screen overlay tile + saMotionSet sprite + initTexPage + 3x gpu_AddSpriteCells; composite screen render */
 /* RESET 0x8006E950: retired name 'replay_setup_display_8006E950' — preserved note: game_FrameLoop + replay_camera_Init + 2x gpu_LoadImage (VRAM regions); replay-mode display init */
 /* RENAME 0x800484A0: retired name 'gpu_decode_load_image_800484A0' — preserved note: checks image header tag 0x10+flag, decodes via func_800486FC/8004876C into 0x400 buffer, gpu_LoadImage to VRAM */
 /* RESET 0x8006BB68: retired name 'draw_anim_sprites_seq_8006BB68' — preserved note: animated-sprite render (satan_sprite_batch_render+saMotionSet+initTexPage+ot_Link) looped over i = 0..2, comparing i with D_800A34F8 bits 13-15 (596CC.c:1515), a cursor func_8006B92C steps (:1435-1448) */

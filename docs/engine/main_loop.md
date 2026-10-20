@@ -56,7 +56,7 @@ start-up code, in order:
      increments `D_800A36AC`;
    - in mode 1, when no frame was skipped, Start (`0x08000800`) or the
      `D_800A3713` countdown (with `D_800A38DC == 2`) opens the pause menu
-     `func_80016E60` (src/main/6CF8.c:508-522).
+     `menu_RunPauseMenu` (src/main/6CF8.c:508-522).
 
 ## Start-up routines
 
@@ -73,9 +73,9 @@ start-up code, in order:
   `func_800164F8`; `eff_Init` and `snd_InitAndLoadCommonVab` call it when
   their data is too large.
 
-## The pause menu: `func_80016E60`
+## The pause menu: `menu_RunPauseMenu`
 
-`func_80016E60` (src/main/6CF8.c:312) runs its own frame loop (OT, `pad_Update`,
+`menu_RunPauseMenu` (src/main/6CF8.c:312) runs its own frame loop (OT, `pad_Update`,
 `func_8005C8A8` to draw, `cdrom_Update`, `snd_FlushSoundQueue`, present) with 3
 choices, or 6 when `D_800A38DC == 2` and `D_800A389A` is 0. Up / Down move
 the choice, Left / Right toggle bits of `D_800A3788` on choices 3..5, Cross

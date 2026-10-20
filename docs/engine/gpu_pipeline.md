@@ -43,7 +43,7 @@ Two small extra lists use a local 1- or 2-entry OT:
 - `func_800174F4` (src/main/6CF8.c:526) draws a full-screen overlay into the
   buffer at `D_800F33D8`, chosen by `D_800A3768`. It uses `ClearOTagR(ot, 2)`
   and `DrawOTag(ot + 1)`.
-- `func_80016E60` (src/main/6CF8.c:312), the pause menu loop, uses
+- `menu_RunPauseMenu` (src/main/6CF8.c:312), the pause menu loop, uses
   `ClearOTagR(ot, 1)`.
 
 ## Display set-up
@@ -147,14 +147,14 @@ The sprite sheets are 12-byte headers `Unk8009B0E0Record`
 (include/game.h:231) followed by 8-byte cells `Unk8009B400Record`
 (include/game.h:202-209). The draw walkers are in src/main/63D2C.c:
 
-- `func_8007352C(env)` (src/main/63D2C.c:11) emits one `SPRT` per cell
+- `gpu_AddSpriteCells(env)` (src/main/63D2C.c:11) emits one `SPRT` per cell
   inside 640 x 240. It applies the header's CLUT and texel base and the
   optional colour and semi-transparency. It links the `SPRT` at
   `g_gpu_ot_ptr + env->ot_idx`. An index of 0x1006 or more is reset to 1
   with a printed warning.
-- `func_80073728(env, mode)` (:55) is the `POLY_FT4` form.
+- `gpu_AddScaledSpriteQuads(env, mode)` (:55) is the `POLY_FT4` form.
 
 `func_80060414` (4D0A8.c) takes the screen position from the packed table
 `D_8009B850`, picks one of the `D_8009B7AC` sheets, and draws it with
-`func_8007352C` plus a `DR_MODE`. `func_800174F4` calls
+`gpu_AddSpriteCells` plus a `DR_MODE`. `func_800174F4` calls
 it in overlay mode 20.

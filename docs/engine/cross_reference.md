@@ -35,7 +35,7 @@ gives its `.text` start and its boundary evidence. Sony and SN code is in
 | `51268.c` | 0x80060A68 | 99 functions, among them `eff_LoadImagesAndSetup` and `eff_SelectQuadBuffer` |
 | `596CC.c` | 0x80068ECC | 48 functions: the row menu (`func_80068F70`, `func_8006B578`) and `gpu_InitPrimBufferPair` ([menus.md](menus.md)) |
 | `5ED34.c` | 0x8006E534 | `func_8006E534` .. `func_80073200` (`menu_UpdateEntryGridCursors`, [replay.md](replay.md)) |
-| `63D2C.c` | 0x8007352C | 5 functions: the sprite walkers `func_8007352C` / `func_80073728` ([gpu_pipeline.md](gpu_pipeline.md)) |
+| `63D2C.c` | 0x8007352C | 5 functions: the sprite walkers `gpu_AddSpriteCells` / `gpu_AddScaledSpriteQuads` ([gpu_pipeline.md](gpu_pipeline.md)) |
 | `64FD8.c` | 0x800747D8 | `func_800747D8` .. `func_800788B0`, the character-select screen among them |
 
 Data-only files: `d_1068.c`, `d_15EC.c` (the asset path table, see
