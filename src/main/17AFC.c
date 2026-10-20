@@ -13,7 +13,7 @@
  * declarations: Q21-Q25, no-new-park-categories aggregate-merge exception):
  * every counting aggregate spelling of fight_RecordMatchResult misses the
  * shipped code (constant subscripts put element 0 behind a base register; the
- * index-variable and regrouped-condition spellings miss its round-result
+ * index-variable and regrouped-condition spellings miss its match-result
  * stores or compares); dummy-index and pointer-alias spellings are refused
  * (Q22/Q23). src/main/9F9C.c declares the same bytes as D_800A3898[2] /
  * D_800A38AA[2] for func_8001CE60, whose player-indexed accesses single bytes

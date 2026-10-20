@@ -332,7 +332,7 @@ extern u8 D_800A376B;
 extern u8 D_800A376C;
 extern s16 D_800A376E;
 extern MATRIX *D_800A3778;
-/* round-result table: 0/1/2 per round, indexed by round */
+/* match-result table: 0/1/2 per match, indexed by D_800A3874 */
 extern u8 D_800A377C[];
 
 /* Two buffer addresses selected by frame parity: func_80016D78 sets 0x801D8800
@@ -456,8 +456,8 @@ extern s32 D_800A93BC[3];
 extern Rec44 D_800F5328;
 extern Rec44 D_800F6608;
 
-/* Per-round snapshot: fight_RecordMatchResult stores both players' counters
- * (D_800A3898 / D_800A3899) for round D_800A3874; fight_PackMatchScores packs
+/* Per-match snapshot: fight_RecordMatchResult stores both players' counters
+ * (D_800A3898 / D_800A3899) for match D_800A3874; fight_PackMatchScores packs
  * the pairs into D_800A3784, func_8003C42C sums them. */
 extern u8 D_800F65F8[8][2];
 

@@ -1422,7 +1422,7 @@ void func_8001CD68(Unk8001CD68Rec *arg0) {
  * a pointer pun is refused). Under an aggregate, every measured counting
  * spelling of fight_RecordMatchResult (Q22/Q23 set-asides excluded) misses:
  * constant subscripts put element 0 behind a base register, and the
- * index-variable and regrouped-condition spellings miss its round-result stores
+ * index-variable and regrouped-condition spellings miss its match-result stores
  * or compares; the dummy-index and pointer-alias spellings that match are
  * refused/set aside (Q22/Q23). */
 extern u8 D_800A3898[2];
