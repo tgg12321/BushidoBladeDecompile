@@ -1360,7 +1360,7 @@ void fighter_GetNavCornerPoint(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
 }
 
 /* Walks the vertex ring of arg0's polygon arg1->polys[arg0->cpu_route.poly]
- * both ways from vertex cpu_route.vtx, each way starting at arg0->unk_F4.
+ * both ways from vertex cpu_route.vtx, each way starting at arg0->world_pos.
  * While math_IntersectSegments reports that the segment from the way's current
  * point to (arg2, arg3) crosses a polygon edge, the way steps to the next
  * vertex's fighter_GetNavCornerPoint point, appends it (up to 8) to its

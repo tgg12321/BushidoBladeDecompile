@@ -783,8 +783,9 @@ typedef struct {
  * unk_00 == 0) and func_800321E8 steps each frame (unk_02 counts frames; unk_10
  * keeps the previous unk_04; unk_1C is added to unk_04 with unk_1C.y growing by
  * 0xD; the record is freed when func_8005344C reports a hit or unk_04.y passes
- * unk_28). func_80032314 measures the distance from the other player's unk_F4
- * to unk_04 (unk_03 is the owner). func_80032040 clears unk_00 of all four. */
+ * unk_28). func_80032314 measures the distance from the other player's
+ * world_pos to unk_04 (unk_03 is the owner). func_80032040 clears unk_00 of all
+ * four. */
 typedef struct Unk80104E88Rec {
     u8 unk_00; /* 0 = free; func_80032064's type (1 / 2) */
     u8 unk_01;
@@ -1385,11 +1386,11 @@ typedef struct Unk800F1B18Rec {
 } Unk800F1B18Rec;            /* sizeof == 0x570 */
 
 /* Header of one move record of a character's move script (the u16 stream
- * motion_ResolveMoveData returns pointers into; Unk80101EC8Record.unk_50 is the
- * current move, unk_7C a buffered one).  unk_00 / unk_02 are follow-up move
- * ids, unk_07 / unk_08 frame bounds against Unk80101EC8Record.unk_40, unk_09
- * flag bits (fighter_Update, fighter_BuildCpuPad, func_80058580); unk_0A starts
- * the command list fighter_Update walks: (flags, move id) entries of 2
+ * motion_ResolveMoveData returns pointers into; Unk80101EC8Record.cur_move is
+ * the current move, queued_move a buffered one).  unk_00 / unk_02 are follow-up
+ * move ids, unk_07 / unk_08 frame bounds against Unk80101EC8Record.move_frame,
+ * unk_09 flag bits (fighter_Update, fighter_BuildCpuPad, func_80058580); unk_0A
+ * starts the command list fighter_Update walks: (flags, move id) entries of 2
  * halfwords, or 4 when flags has a 0xC000 bit, ended by a zero flags word. The
  * two extra halfwords are [mask lo, mask hi], except in a 0x4000 paired entry
  * (motion_FindPairedMoveEntry), whose four bytes are a distance range (min,
@@ -1402,7 +1403,7 @@ typedef struct MoveScript {
     u16 unk_02;
     /* row of the bank's 4-byte entry table (func_80021A98) */
     u16 unk_04;
-    /* first frame: Unk80101EC8Record.unk_40 starts here (func_80021A98) */
+    /* first frame: Unk80101EC8Record.move_frame starts here (func_80021A98) */
     u8 unk_06;
     u8 unk_07;
     u8 unk_08;
@@ -1448,7 +1449,7 @@ typedef struct Unk80101EC8Record {
     s16 unk_4A;
     s16 unk_4C;
     u8 unk_4E[0x50 - 0x4E];
-    /* current move; unk_08 bounds unk_40 (func_80058580) */
+    /* current move; unk_08 bounds move_frame (func_80058580) */
     MoveScript *cur_move;
     u16 *unk_54;
     u8 *unk_58; /* byte 3 read by func_80056FE8 */
@@ -1461,7 +1462,7 @@ typedef struct Unk80101EC8Record {
     u16 unk_64;
     u16 unk_66;
     s16 unk_68;
-    /* SEQ state code */
+    /* byte 0 of the current move's frame metadata (func_80021A98) */
     u16 move_kind;
     s16 prev_move_kind;
     s16 unk_6E;
@@ -1742,9 +1743,9 @@ typedef struct {
     u8 b;
 } Unk8008EA44Entry;
 
-/* 6-row tables func_80026DA4 selects by D_80101EC8[0].unk_6A mode (row 0..5):
- * unk0 scales the Judge sin/cos offset, unk2 is added to y; D_8008EB6C[row] is
- * passed as func_80032854's arg1. */
+/* 6-row tables func_80026DA4 selects by D_80101EC8[0].move_kind mode (row
+ * 0..5): unk0 scales the Judge sin/cos offset, unk2 is added to y;
+ * D_8008EB6C[row] is passed as func_80032854's arg1. */
 typedef struct {
     s16 unk0;
     s16 unk2;
@@ -1824,12 +1825,12 @@ typedef struct Unk800FF5C8Rec {
  * g_replay_write_frame from the character record, replay_PlayFrame reads both
  * back and passes two of them to func_8001BAE4 / func_8001BBD8,
  * motion_ApplyRecordedPoseAdjustments reads b14..b16 / b18).
- * - w0: the character's current move (Unk80101EC8Record.unk_50);
+ * - w0: the character's current move (Unk80101EC8Record.cur_move);
  * replay_PlayFrame reads its unk_04.
- * - h4 / h6 / h8: unk_F4 x / y / z; hA: unk_1C8.vy & 0xFFF with unk_B3 in the
- * top four bits; hC: unk_148; hE / h10 / h12: unk_64 / unk_66 / unk_68.
+ * - h4 / h6 / h8: world_pos x / y / z; hA: orientation.vy & 0xFFF with unk_B3
+ * in the top four bits; hC: unk_148; hE / h10 / h12: unk_64 / unk_66 / unk_68.
  * - b14..b16: unk_1E6 / unk_1E8 / unk_1EA >> 2, read back signed; b17: bit 0 =
- * unk_60 != 0, bit 1 = unk_61 != 0; b18: unk_62; b19: unk_40. */
+ * unk_60 != 0, bit 1 = unk_61 != 0; b18: unk_62; b19: move_frame. */
 typedef struct Rec1C {
     MoveScript *w0;
     s16 h4;

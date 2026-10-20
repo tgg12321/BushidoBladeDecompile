@@ -764,12 +764,13 @@ void func_8002872C(void) {
 extern s32 D_800A3144[2];
 
 /* Body-overlap push between the two characters (D_80101EC8[0] and [1]),
- * skipped while either's unk_6A is 0x28. Each character's two points (joint 1,
- * and the midpoint of joints 15 and 19) are tested pairwise with the radii
+ * skipped while either's move_kind is 0x28. Each character's two points (joint
+ * 1, and the midpoint of joints 15 and 19) are tested pairwise with the radii
  * D_800A3144[0..1]; an overlap (at most 0x80) pushes the characters apart along
- * x/z, scaled by the distance. After an overlap, the unk_6A states and the
- * unk_1C8.vy difference (folded to 0..0x800) pick the reaction (unk_286,
- * D_800A38A8 / D_800A3876). The push is added to unk_134.vx / .vz. */
+ * x/z, scaled by the distance. After an overlap, the move_kind states and the
+ * orientation.vy difference (folded to 0..0x800) pick the reaction
+ * (pending_move_event, D_800A38A8 / D_800A3876). The push is added to
+ * unk_134.vx / .vz. */
 void fighter_ResolveBodyOverlap(void) {
     s32 lzc_out;
     s32 var_1;
@@ -2204,10 +2205,10 @@ void func_8002C22C(void) {
  * midpoint of SPAD->unkA8[k][4..5]. */
 void func_8002C61C(void) {
     /* FAKE: pointer aliases to D_80101EC8[0] / [1]: the target keeps both
-     * bases in $s1 / $s0 for unk_3C / unk_286 / unk_0C / unk_F4 / unk_28C;
-     * without them those accesses become absolute lui pairs
-     * (GO_IF_LEGITIMATE_ADDRESS, mips.h:2286): 12 more instructions, score 38
-     * (pointer-alias-fake-exception) */
+     * bases in $s1 / $s0 for update_count / pending_move_event / unk_0C /
+     * world_pos / unk_28C; without them those accesses become absolute lui
+     * pairs (GO_IF_LEGITIMATE_ADDRESS, mips.h:2286): 12 more instructions,
+     * score 38 (pointer-alias-fake-exception) */
     Unk80101EC8Record *s1 = &D_80101EC8[0];
     Unk80101EC8Record *s0 = &D_80101EC8[1];
     s32 i;

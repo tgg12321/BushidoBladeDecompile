@@ -420,9 +420,9 @@ typedef VECTOR CamVec;
 /* Scratchpad work area (0x1F800000) used by camera_UpdateTwoFighterView: the
  * target yaw and vz angle that D_800F6608's unk_10.vy / vz ease toward, the
  * camera focus, the eye position camera_CalcEye computes, a fighter record's
- * unk_B8 less 0xC8 in vy (the collision segment's start), and the hit position,
- * surface normal and work area collision_TestSegmentWithWork is given (its
- * 3rd/4th/5th arguments; its other callers pass a VECTOR hit and an s16[4]
+ * collision_pos less 0xC8 in vy (the collision segment's start), and the hit
+ * position, surface normal and work area collision_TestSegmentWithWork is given
+ * (its 3rd/4th/5th arguments; its other callers pass a VECTOR hit and an s16[4]
  * normal). */
 typedef struct {
     s16 unk0;     /* 0x00 */
@@ -442,10 +442,10 @@ typedef struct {
  * toward the fighters' midpoint (or arg0's position when D_800A3690 is set);
  * turns their separation (byte-LUT square root, GTE leading-zero count for
  * large inputs) into the value D_800F6608.w18 eases 1/12 toward (0xBB8 in
- * some arg2->unk_6A states), clamps w18,
+ * some arg2->move_kind states), clamps w18,
  * and sets a hysteresis flag for func_8003F1E4; eases unk_10.vy / vz toward
  * the facing yaw and zero; then per fighter bisects unk_10.vx (rot_x) so
- * the segment from its unk_B8 less 0xC8 in vy to the eye passes
+ * the segment from its collision_pos less 0xC8 in vy to the eye passes
  * collision_TestSegmentWithWork's camera-collision test (step in D_800A30F4[],
  * blocked flag in D_800A30F0[]), and eases unk_10.vx toward the larger result,
  * clamped to 0x80..0x1C0. GTE: gte_Lzc (gte_ldlzc, gte_nop x2, gte_stlzc). */
@@ -1001,9 +1001,9 @@ void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
 
     func_8003F1E4(0);
 
-    /* FAKE: block copy of unk_B8's x / y / z (three lw, then three sw through
-       one base); the three member assignments interleave the loads and stores
-       (score 27). */
+    /* FAKE: block copy of collision_pos's x / y / z (three lw, then three sw
+       through one base); the three member assignments interleave the loads and
+       stores (score 27). */
     D_800F6608.unk_00 = *(Vec3i32 *)&arg0->collision_pos;
 
     D_800F6608.unk_00.y -= 0x44C;
@@ -1261,9 +1261,9 @@ void func_8001C820(void) {
             a0 = 0x58;
         }
     }
-    /* FAKE: player 1's unk_F4 reached from s0 (player 0's unk_0A) so the call
-       reuses s0's register; &D_80101EC8[1].unk_F4.x rematerialises the address
-       (score 11). */
+    /* FAKE: player 1's world_pos reached from s0 (player 0's unk_0A) so the
+       call reuses s0's register; &D_80101EC8[1].world_pos.x rematerialises the
+       address (score 11). */
     snd_QueuePositionalSound(a0, (s32 *)((u8 *)s0 + 0x536));
 }
 
@@ -3896,7 +3896,7 @@ void func_80022F34(void) {
 /* Its scratchpad address holders are
  * a labelled FAKE.
  * The masked state id is spelled as in its
- * copy-paste sibling func_80023E40 (`s32 a0 = arg0->unk_6A; s32 v1 = a0 &
+ * copy-paste sibling func_80023E40 (`s32 a0 = arg0->move_kind; s32 v1 = a0 &
  * 0xFFFF;`, same comparison cascade), which keeps the target's
  * `andi $v1,$a0,0xffff`: the raw value stays live for `mode - 0x17`, so
  * combine never folds the mask. A u16 on either side loses it. */
@@ -4366,16 +4366,17 @@ extern void func_800204C0(Unk80101EC8Record *);
 
 /* Per-frame update of character `arg0`'s record from this frame's pad input:
  * converts the pad bits, advances the move frame, runs the move script's
- * command list (unk_50 / unk_7C, motion_ResolveMoveData / func_80021A98),
- * decodes two MotionFrames with func_800198D0 (at unk_40 and at unk_40 + 1,
- * capped at unk_58[1] - 1, each offset by *unk_54, and by unk_58[1] in some
- * states; state unk_6A 0x33 instead copies g_motion_frame_buffers[arg0][unk_40]
- * into both); when unk_31A is 0 it mixes their root offsets into unk_E8 by
- * the 4.12 weight unk_42, otherwise the first one's (by the weight unk_318)
- * with unk_290's less unk_320 (by 0x1000 - unk_318), integrates the velocities
- * (unk_104 / unk_134) into the position, resolves it (fighter_ResolveMovement),
- * then refreshes the bone points, the flags unk_62, unk_AE and unk_288, the
- * damping and the per-frame side effects. */
+ * command list (cur_move / queued_move, motion_ResolveMoveData /
+ * func_80021A98), decodes two MotionFrames with func_800198D0 (at move_frame
+ * and at move_frame + 1, capped at unk_58[1] - 1, each offset by *unk_54, and
+ * by unk_58[1] in some states; state move_kind 0x33 instead copies
+ * g_motion_frame_buffers[arg0][move_frame] into both); when unk_31A is 0 it
+ * mixes their root offsets into root_offset by the 4.12 weight move_frame_frac,
+ * otherwise the first one's (by the weight unk_318) with unk_290's less unk_320
+ * (by 0x1000 - unk_318), integrates the velocities (unk_104 / unk_134) into the
+ * position, resolves it (fighter_ResolveMovement), then refreshes the bone
+ * points, the flags unk_62, unk_AE and unk_288, the damping and the per-frame
+ * side effects. */
 void fighter_Update(s32 arg0, PadState *pad) {
     MotionFrame var_0[2];
     Vec3i32 v[2];
@@ -4390,7 +4391,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
     MoveScript *move;
     /* FAKE: one local reused for four values (no-new-park-categories entry
      * 1): the unk_14C clamp limit, the
-     * unk_1D8 / unk_1C8.vy angle gap (folded to 0..0x800), the unk_14C turn
+     * unk_1D8 / orientation.vy angle gap (folded to 0..0x800), the unk_14C turn
      * step and the -1/0/1 stick side. The target keeps all four in $a1; one
      * local per value: score 25. */
     s32 temp;
@@ -4453,8 +4454,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->unk_46 = 1;
     }
     if (rec->pending_move_event >= 0) {
-        /* the move-script record of unk_50's follow-up id is a u16 move-id
-         * table indexed by event code (here unk_286; 0xD, 0x17/0x18 below) */
+        /* the move-script record of cur_move's follow-up id is a u16 move-id
+         * table indexed by event code (here pending_move_event; 0xD, 0x17/0x18
+         * below) */
         u16 *table;
 
         if (rec->move_kind == 0xA || rec->move_kind == 0x17 ||
@@ -4992,7 +4994,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
           rec->move_kind == 0x28 || rec->move_kind == 0x26) &&
          rec->unk_A1[1] < 0xFF && rec->unk_26C != 0 &&
          rec->move_frame >= rec->unk_A5 && rec->move_frame <= rec->unk_A6) ||
-        /* FAKE: this second range test is written unk_A6 >= unk_40;
+        /* FAKE: this second range test is written unk_A6 >= move_frame;
          * spelled like the first, fold-const factors the two identical
          * tests out of the || (score 11). */
         (rec->unk_0A == 0xE && rec->move_kind == 0x11 && D_800A38AE == arg0 &&
