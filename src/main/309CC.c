@@ -289,9 +289,9 @@ void func_800408F8(Unk80045878Obj *a0) {
 
     {
         Unk80045878Node *p = a0->transform_nodes;
-        /* FAKE: base keeps the array start (move t1,a3); &a0->unk_2C[v1]
-         * rebuilds it from a0 (addiu 44 + addu) and the mflo temps move to t1
-         * (score 9) */
+        /* FAKE: base keeps the array start (move t1,a3);
+         * &a0->transform_nodes[v1] rebuilds it from a0 (addiu 44 + addu) and
+         * the mflo temps move to t1 (score 9) */
         Unk80045878Node *base = p;
         s32 i = 0;
 
