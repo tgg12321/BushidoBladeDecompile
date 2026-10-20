@@ -114,7 +114,7 @@ s32 comb_Connect(void) {
         }
         D_800A3904 = var_v0;
     }
-    func_80016888();
+    gpu_HideResetAndClear();
     gpu_SetDispMaskOn();
     ResetRCnt(0xF2000001);
     return temp_s0;
@@ -421,7 +421,7 @@ void func_8003B870(void) {
     func_80041604(0, D_800A376A);
     func_80041604(1, 0);
     snd_ResetVoicesAndQueue();
-    func_80016888();
+    gpu_HideResetAndClear();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     D_800A37B8 = 0;
     D_800A3834 = 0x17;
@@ -487,7 +487,7 @@ void func_8003B9D0(void) {
     func_8001DA2C();
     eff_StopCommands();
     if (D_800A3768 != DISP_ACTIVE)
-        func_80016888();
+        gpu_HideResetAndClear();
     if (D_800A3768 != DISP_DISABLED)
         gpu_SetDispMaskOn();
     func_800174F4();
@@ -593,7 +593,7 @@ void func_8003BCB4(void) {
 
 void func_8003BE10(void) {
     gpu_ResetGraphMode1();
-    func_80016888();
+    gpu_HideResetAndClear();
     func_80020CDC();
     func_800415C4(0);
     func_800415C4(1);
@@ -665,7 +665,7 @@ extern void func_8003B10C(s32);
 void func_8003C040(void) {
     s32 var_1;
     s8 *p;
-    func_80016888();
+    gpu_HideResetAndClear();
     gpu_ResetGraphMode1();
     func_80020CDC();
     if (D_800A38A4 == 4 || D_800A38A4 == 5) {
@@ -828,7 +828,7 @@ void func_8003C714(void) {
 
     s0 = func_80077D00();
     cdrom_PauseAndWait();
-    func_80016888();
+    gpu_HideResetAndClear();
     func_80060758();
     i = 0;
     base = D_80106A50.times;
@@ -874,7 +874,7 @@ void func_8003C8B4(void) {
 }
 
 void func_8003C958(void) {
-    func_80016888();
+    gpu_HideResetAndClear();
     D_800A3817 = 0;
     D_800A3929 = 0;
     D_800A37B8 = 0;
@@ -957,7 +957,7 @@ void func_8003C9A4(void) {
 }
 
 void func_8003CCCC(void) {
-    func_80016888();
+    gpu_HideResetAndClear();
     eff_StopCommands();
     D_800A37B8 = 0;
     D_800A3834 = 0x21;
@@ -993,7 +993,7 @@ void func_8003CE18(void) {
 
     func_8001DA2C();
     cdrom_PauseAndWait();
-    func_80016888();
+    gpu_HideResetAndClear();
     gpu_ResetGraphMode1();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     gpu_RestoreObjectClutOffsets();

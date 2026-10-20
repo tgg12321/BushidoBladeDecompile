@@ -347,7 +347,7 @@ func_800167D4          = 0x800167D4;  /* `return (D_80106A73 >> 2) & 1` */
 math_FovToScreenDist           = 0x800166C4;  /* uses Judge table for trig calc */
 gpu_SetDrawEnvBg = 0x80016768; /* writes to g_disp_fb_base + 0x18 */
 /* RENAME 0x80016868: retired name 'gpu_EnableDisplay_80016868' — preserved note: gpu_SetMode(1) wrapper */
-func_80016888        = 0x80016888;  /* SetDispMask(0) + ResetGraph(1) + ClearImage(640x480) + DrawSync */
+gpu_HideResetAndClear        = 0x80016888;  /* SetDispMask(0) + ResetGraph(1) + ClearImage(640x480) + DrawSync */
 /* RENAME 0x800168D0: retired name 'gpu_DisableDisplay_800168D0' — preserved note: gpu_SetDispMask(1) wrapper */
 /* RENAME 0x80016E40: retired name 'gpu_SetDrawMode_80016E40' — preserved note: wrapper around gpu_DrawSync */
 disp_Init_80016918              = 0x80016918;  /* full PSX display init: SetMode/SetDebugLevel/InitDrawEnv*2/InitDispEnv*2/SetFramebufferMode */

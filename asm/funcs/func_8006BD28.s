@@ -68,7 +68,7 @@ glabel func_8006BD28
     /* 5C618 8006BE18 0C004224 */  addiu      $v0, $v0, 0xC
     /* 5C61C 8006BE1C 21104500 */  addu       $v0, $v0, $a1
     /* 5C620 8006BE20 080023AE */  sw         $v1, 0x8($s1)
-    /* 5C624 8006BE24 4BCD010C */  jal        func_8007352C
+    /* 5C624 8006BE24 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5C628 8006BE28 040022AE */   sw        $v0, 0x4($s1)
     /* 5C62C 8006BE2C 180682AF */  sw         $v0, %gp_rel(D_800A36E4)($gp)
     /* 5C630 8006BE30 2A101202 */  slt        $v0, $s0, $s2

@@ -3,7 +3,7 @@ glabel func_80035480
     /* 25C84 80035484 1000BFAF */  sw         $ra, 0x10($sp)
     /* 25C88 80035488 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 25C8C 8003548C 00000000 */   nop
-    /* 25C90 80035490 225A000C */  jal        func_80016888
+    /* 25C90 80035490 225A000C */  jal        gpu_HideResetAndClear
     /* 25C94 80035494 00000000 */   nop
     /* 25C98 80035498 0E018293 */  lbu        $v0, %gp_rel(D_800A31DA)($gp)
     /* 25C9C 8003549C 00000000 */  nop

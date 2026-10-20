@@ -71,7 +71,7 @@ glabel menu_DrawSelPanel
     /* 65714 80074F14 1C00A3AF */  sw         $v1, 0x1C($sp)
     /* 65718 80074F18 1000628E */  lw         $v0, 0x10($s3)
     /* 6571C 80074F1C 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 65720 80074F20 4BCD010C */  jal        func_8007352C
+    /* 65720 80074F20 4BCD010C */  jal        gpu_AddSpriteCells
     /* 65724 80074F24 2000A2AF */   sw        $v0, 0x20($sp)
     /* 65728 80074F28 100062AE */  sw         $v0, 0x10($s3)
     /* 6572C 80074F2C 0800428E */  lw         $v0, 0x8($s2)
@@ -81,7 +81,7 @@ glabel menu_DrawSelPanel
     /* 6573C 80074F3C 1C00A3AF */  sw         $v1, 0x1C($sp)
     /* 65740 80074F40 1000628E */  lw         $v0, 0x10($s3)
     /* 65744 80074F44 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 65748 80074F48 4BCD010C */  jal        func_8007352C
+    /* 65748 80074F48 4BCD010C */  jal        gpu_AddSpriteCells
     /* 6574C 80074F4C 2000A2AF */   sw        $v0, 0x20($sp)
     /* 65750 80074F50 100062AE */  sw         $v0, 0x10($s3)
     /* 65754 80074F54 1800A28F */  lw         $v0, 0x18($sp)
@@ -97,7 +97,7 @@ glabel menu_DrawSelPanel
     /* 6577C 80074F7C 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 65780 80074F80 0400628E */  lw         $v0, 0x4($s3)
     /* 65784 80074F84 21280000 */  addu       $a1, $zero, $zero
-    /* 65788 80074F88 CACD010C */  jal        func_80073728
+    /* 65788 80074F88 CACD010C */  jal        gpu_AddScaledSpriteQuads
     /* 6578C 80074F8C 2400A2AF */   sw        $v0, 0x24($sp)
     /* 65790 80074F90 01002326 */  addiu      $v1, $s1, 0x1
     /* 65794 80074F94 21886000 */  addu       $s1, $v1, $zero
@@ -125,7 +125,7 @@ glabel menu_DrawSelPanel
     /* 657E4 80074FE4 2C00A2AF */  sw         $v0, 0x2C($sp)
     /* 657E8 80074FE8 1000628E */  lw         $v0, 0x10($s3)
     /* 657EC 80074FEC 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 657F0 80074FF0 4BCD010C */  jal        func_8007352C
+    /* 657F0 80074FF0 4BCD010C */  jal        gpu_AddSpriteCells
     /* 657F4 80074FF4 2000A2AF */   sw        $v0, 0x20($sp)
     /* 657F8 80074FF8 100062AE */  sw         $v0, 0x10($s3)
     /* 657FC 80074FFC 0400428E */  lw         $v0, 0x4($s2)
@@ -135,7 +135,7 @@ glabel menu_DrawSelPanel
     /* 6580C 8007500C 1C00A3AF */  sw         $v1, 0x1C($sp)
     /* 65810 80075010 1000628E */  lw         $v0, 0x10($s3)
     /* 65814 80075014 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 65818 80075018 4BCD010C */  jal        func_8007352C
+    /* 65818 80075018 4BCD010C */  jal        gpu_AddSpriteCells
     /* 6581C 8007501C 2000A2AF */   sw        $v0, 0x20($sp)
     /* 65820 80075020 100062AE */  sw         $v0, 0x10($s3)
     /* 65824 80075024 1800A48F */  lw         $a0, 0x18($sp)

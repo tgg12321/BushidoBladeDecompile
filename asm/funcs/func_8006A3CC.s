@@ -22,7 +22,7 @@ glabel func_8006A3CC
     /* 5AC1C 8006A41C 040002AE */  sw         $v0, 0x4($s0)
     /* 5AC20 8006A420 1400228E */  lw         $v0, 0x14($s1)
     /* 5AC24 8006A424 21200002 */  addu       $a0, $s0, $zero
-    /* 5AC28 8006A428 4BCD010C */  jal        func_8007352C
+    /* 5AC28 8006A428 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5AC2C 8006A42C 080002AE */   sw        $v0, 0x8($s0)
     /* 5AC30 8006A430 140022AE */  sw         $v0, 0x14($s1)
     /* 5AC34 8006A434 0000048E */  lw         $a0, 0x0($s0)

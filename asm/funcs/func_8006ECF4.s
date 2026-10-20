@@ -205,7 +205,7 @@ glabel func_8006ECF4
   .L8006EFD8:
     /* 5F7D8 8006EFD8 21280000 */  addu       $a1, $zero, $zero
   .L8006EFDC:
-    /* 5F7DC 8006EFDC CACD010C */  jal        func_80073728
+    /* 5F7DC 8006EFDC CACD010C */  jal        gpu_AddScaledSpriteQuads
     /* 5F7E0 8006EFE0 00000000 */   nop
     /* 5F7E4 8006EFE4 040042AE */  sw         $v0, 0x4($s2)
     /* 5F7E8 8006EFE8 01002226 */  addiu      $v0, $s1, 0x1

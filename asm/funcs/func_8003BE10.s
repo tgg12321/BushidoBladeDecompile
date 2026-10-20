@@ -3,7 +3,7 @@ glabel func_8003BE10
     /* 2C614 8003BE14 1000BFAF */  sw         $ra, 0x10($sp)
     /* 2C618 8003BE18 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 2C61C 8003BE1C 00000000 */   nop
-    /* 2C620 8003BE20 225A000C */  jal        func_80016888
+    /* 2C620 8003BE20 225A000C */  jal        gpu_HideResetAndClear
     /* 2C624 8003BE24 00000000 */   nop
     /* 2C628 8003BE28 3783000C */  jal        func_80020CDC
     /* 2C62C 8003BE2C 00000000 */   nop

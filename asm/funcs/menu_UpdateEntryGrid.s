@@ -149,7 +149,7 @@ glabel menu_UpdateEntryGrid
     /* 603B4 8006FBB4 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 603B8 8006FBB8 1000828E */  lw         $v0, 0x10($s4)
     /* 603BC 8006FBBC 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 603C0 8006FBC0 4BCD010C */  jal        func_8007352C
+    /* 603C0 8006FBC0 4BCD010C */  jal        gpu_AddSpriteCells
     /* 603C4 8006FBC4 2000A2AF */   sw        $v0, 0x20($sp)
     /* 603C8 8006FBC8 100082AE */  sw         $v0, 0x10($s4)
     /* 603CC 8006FBCC 7E010224 */  addiu      $v0, $zero, 0x17E
@@ -265,7 +265,7 @@ glabel menu_UpdateEntryGrid
     /* 60570 8006FD70 1C00A3AF */  sw         $v1, 0x1C($sp)
     /* 60574 8006FD74 1000828E */  lw         $v0, 0x10($s4)
     /* 60578 8006FD78 1800B527 */  addiu      $s5, $sp, 0x18
-    /* 6057C 8006FD7C 4BCD010C */  jal        func_8007352C
+    /* 6057C 8006FD7C 4BCD010C */  jal        gpu_AddSpriteCells
     /* 60580 8006FD80 2000A2AF */   sw        $v0, 0x20($sp)
     /* 60584 8006FD84 100082AE */  sw         $v0, 0x10($s4)
     /* 60588 8006FD88 3000A0AF */  sw         $zero, 0x30($sp)
@@ -450,7 +450,7 @@ glabel menu_UpdateEntryGrid
     /* 60820 80070020 1000838E */  lw         $v1, 0x10($s4)
     /* 60824 80070024 0A000224 */  addiu      $v0, $zero, 0xA
     /* 60828 80070028 2C00A2AF */  sw         $v0, 0x2C($sp)
-    /* 6082C 8007002C 4BCD010C */  jal        func_8007352C
+    /* 6082C 8007002C 4BCD010C */  jal        gpu_AddSpriteCells
     /* 60830 80070030 2000A3AF */   sw        $v1, 0x20($sp)
     /* 60834 80070034 100082AE */  sw         $v0, 0x10($s4)
     /* 60838 80070038 01006226 */  addiu      $v0, $s3, 0x1
@@ -481,7 +481,7 @@ glabel menu_UpdateEntryGrid
     /* 60898 80070098 1000838E */  lw         $v1, 0x10($s4)
     /* 6089C 8007009C 01000224 */  addiu      $v0, $zero, 0x1
     /* 608A0 800700A0 2C00A2AF */  sw         $v0, 0x2C($sp)
-    /* 608A4 800700A4 4BCD010C */  jal        func_8007352C
+    /* 608A4 800700A4 4BCD010C */  jal        gpu_AddSpriteCells
     /* 608A8 800700A8 2000A3AF */   sw        $v1, 0x20($sp)
     /* 608AC 800700AC 100082AE */  sw         $v0, 0x10($s4)
     /* 608B0 800700B0 1800A48F */  lw         $a0, 0x18($sp)

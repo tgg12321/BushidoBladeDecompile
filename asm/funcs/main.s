@@ -187,7 +187,7 @@ glabel main
     /* 7CB8 800174B8 00000000 */   nop
   .L800174BC:
     /* 7CBC 800174BC 21204002 */  addu       $a0, $s2, $zero
-    /* 7CC0 800174C0 985B000C */  jal        func_80016E60
+    /* 7CC0 800174C0 985B000C */  jal        menu_RunPauseMenu
     /* 7CC4 800174C4 21282002 */   addu      $a1, $s1, $zero
     /* 7CC8 800174C8 9F5C0008 */  j          .L8001727C
     /* 7CCC 800174CC 08100524 */   addiu     $a1, $zero, 0x1008

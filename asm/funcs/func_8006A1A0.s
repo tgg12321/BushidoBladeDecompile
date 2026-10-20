@@ -83,7 +83,7 @@ glabel func_8006A1A0
     /* 5AAD0 8006A2D0 1C00A3AF */  sw         $v1, 0x1C($sp)
     /* 5AAD4 8006A2D4 0800028E */  lw         $v0, 0x8($s0)
     /* 5AAD8 8006A2D8 21280000 */  addu       $a1, $zero, $zero
-    /* 5AADC 8006A2DC CACD010C */  jal        func_80073728
+    /* 5AADC 8006A2DC CACD010C */  jal        gpu_AddScaledSpriteQuads
     /* 5AAE0 8006A2E0 2400A2AF */   sw        $v0, 0x24($sp)
     /* 5AAE4 8006A2E4 080002AE */  sw         $v0, 0x8($s0)
     /* 5AAE8 8006A2E8 3400A0AF */  sw         $zero, 0x34($sp)
@@ -96,7 +96,7 @@ glabel func_8006A1A0
     /* 5AB04 8006A304 1C00A3AF */  sw         $v1, 0x1C($sp)
     /* 5AB08 8006A308 1400028E */  lw         $v0, 0x14($s0)
     /* 5AB0C 8006A30C 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 5AB10 8006A310 4BCD010C */  jal        func_8007352C
+    /* 5AB10 8006A310 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5AB14 8006A314 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5AB18 8006A318 140002AE */  sw         $v0, 0x14($s0)
     /* 5AB1C 8006A31C 02004232 */  andi       $v0, $s2, 0x2
@@ -113,7 +113,7 @@ glabel func_8006A1A0
     /* 5AB48 8006A348 1C00A3AF */  sw         $v1, 0x1C($sp)
     /* 5AB4C 8006A34C 1400028E */  lw         $v0, 0x14($s0)
     /* 5AB50 8006A350 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 5AB54 8006A354 4BCD010C */  jal        func_8007352C
+    /* 5AB54 8006A354 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5AB58 8006A358 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5AB5C 8006A35C 140002AE */  sw         $v0, 0x14($s0)
   .L8006A360:

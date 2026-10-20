@@ -422,7 +422,7 @@ void func_80046B44(void) {
     s16 two;
 
     ndata_StartReadInf();
-    func_800451D0();
+    arena_Reset();
     func_80042E90();
     func_80044498();
     func_80049E4C();
@@ -491,7 +491,7 @@ void func_80046BF4(Vec3i32 *a0, SVECTOR *a1, s32 a2) {
     calc_LightMatrix(&D_800F62E0[0]);
     calc_LightMatrix(&D_800F62E0[1]);
     calc_LightMatrix(&D_800F62E0[4]);
-    func_800420D0();
+    light_ResetPointLight();
     func_8003F568();
     func_8003F5CC();
 }
@@ -500,7 +500,7 @@ void func_80046DA8(s32 a0) {
     if (a0 & 1) {
         func_80046EA0(D_800A33C0);
     }
-    func_8004211C();
+    light_ApplyPointLightTargets();
     func_800444BC();
 }
 

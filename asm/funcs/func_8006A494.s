@@ -24,7 +24,7 @@ glabel func_8006A494
     /* 5ACEC 8006A4EC 040002AE */  sw         $v0, 0x4($s0)
     /* 5ACF0 8006A4F0 0800228E */  lw         $v0, 0x8($s1)
     /* 5ACF4 8006A4F4 21280000 */  addu       $a1, $zero, $zero
-    /* 5ACF8 8006A4F8 CACD010C */  jal        func_80073728
+    /* 5ACF8 8006A4F8 CACD010C */  jal        gpu_AddScaledSpriteQuads
     /* 5ACFC 8006A4FC 0C0002AE */   sw        $v0, 0xC($s0)
     /* 5AD00 8006A500 080022AE */  sw         $v0, 0x8($s1)
     /* 5AD04 8006A504 0000048E */  lw         $a0, 0x0($s0)

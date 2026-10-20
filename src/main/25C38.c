@@ -33,7 +33,7 @@ extern u8 D_800A31D8;
 
 void func_80035480(void) {
     gpu_ResetGraphMode1();
-    func_80016888();
+    gpu_HideResetAndClear();
     if (D_800A31DA == 0) {
         comb_RequestClose();
     }
@@ -393,7 +393,7 @@ void func_80035828(void) {
 
 void func_80035DC8(void) {
     gpu_ResetGraphMode1();
-    func_80016888();
+    gpu_HideResetAndClear();
     func_80020CDC();
     func_800415C4(0);
     func_800415C4(1);

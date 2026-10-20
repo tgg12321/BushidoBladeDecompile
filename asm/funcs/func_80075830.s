@@ -99,7 +99,7 @@ glabel func_80075830
     /* 6619C 8007599C 2400A2AF */  sw         $v0, 0x24($sp)
     /* 661A0 800759A0 1000428E */  lw         $v0, 0x10($s2)
     /* 661A4 800759A4 1000A427 */  addiu      $a0, $sp, 0x10
-    /* 661A8 800759A8 4BCD010C */  jal        func_8007352C
+    /* 661A8 800759A8 4BCD010C */  jal        gpu_AddSpriteCells
     /* 661AC 800759AC 1800A2AF */   sw        $v0, 0x18($sp)
     /* 661B0 800759B0 100042AE */  sw         $v0, 0x10($s2)
     /* 661B4 800759B4 4C00BF8F */  lw         $ra, 0x4C($sp)

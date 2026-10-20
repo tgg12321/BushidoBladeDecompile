@@ -177,7 +177,7 @@ void func_80044CCC(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     LoadAverage12(sp18, sp28, 0x1000 - a2, a2, a3);
 }
 
-void func_80044DE4(s16 *a0, s16 *a1, s32 a2, s32 a3) {
+void math_LerpShortVectorsNegateYZ(s16 *a0, s16 *a1, s32 a2, s32 a3) {
     s32 sp18[3];
     s32 sp28[3];
     sp18[0] = a0[0];
@@ -319,7 +319,7 @@ s32 ndata_IsPackLoaded(void) { return g_ndata_pack_loaded; }
 
 void ndata_StartReadInf(void) { cdrom_StartReadAt(1, (s32)g_ndata_inf, 0, 2); }
 
-void func_800451D0(void) {
+void arena_Reset(void) {
     s32 i;
     for (i = 9; i >= 0; i--) {
         g_arena_blocks[i].id = -1;

@@ -227,7 +227,7 @@ glabel func_8006F100
     /* 5FC54 8006F454 400E0524 */  addiu      $a1, $zero, 0xE40
     /* 5FC58 8006F458 21300000 */  addu       $a2, $zero, $zero
   .L8006F45C:
-    /* 5FC5C 8006F45C 1ECF010C */  jal        func_80073C78
+    /* 5FC5C 8006F45C 1ECF010C */  jal        gpu_AddRotatedSpriteQuads
     /* 5FC60 8006F460 00000000 */   nop
     /* 5FC64 8006F464 040042AE */  sw         $v0, 0x4($s2)
     /* 5FC68 8006F468 00000286 */  lh         $v0, 0x0($s0)

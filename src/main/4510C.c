@@ -118,8 +118,8 @@ s32 motion_UpdatePlayback(void) {
     s->unk24[0] = -D_80101DF0.xf.rot.vx;
     s->unk24[1] = -D_80101DF0.xf.rot.vy;
     s->unk24[2] = -D_80101DF0.xf.rot.vz;
-    func_800420D0();
-    func_8004211C();
+    light_ResetPointLight();
+    light_ApplyPointLightTargets();
     func_80047210();
     func_8003F274();
     calc_LightMatrix(&D_800F62E0[0]);

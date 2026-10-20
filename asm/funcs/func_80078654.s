@@ -50,7 +50,7 @@ glabel func_80078654
   .L80078710:
     /* 68F10 80078710 0C00228E */  lw         $v0, 0xC($s1)
     /* 68F14 80078714 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 68F18 80078718 4BCD010C */  jal        func_8007352C
+    /* 68F18 80078718 4BCD010C */  jal        gpu_AddSpriteCells
     /* 68F1C 8007871C 2000A2AF */   sw        $v0, 0x20($sp)
     /* 68F20 80078720 0C0022AE */  sw         $v0, 0xC($s1)
     /* 68F24 80078724 1800A48F */  lw         $a0, 0x18($sp)
@@ -85,7 +85,7 @@ glabel func_80078654
     /* 68F90 80078790 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 68F94 80078794 3400A3AF */  sw         $v1, 0x34($sp)
     /* 68F98 80078798 0C00228E */  lw         $v0, 0xC($s1)
-    /* 68F9C 8007879C 4BCD010C */  jal        func_8007352C
+    /* 68F9C 8007879C 4BCD010C */  jal        gpu_AddSpriteCells
     /* 68FA0 800787A0 2000A2AF */   sw        $v0, 0x20($sp)
     /* 68FA4 800787A4 0C0022AE */  sw         $v0, 0xC($s1)
     /* 68FA8 800787A8 1800A48F */  lw         $a0, 0x18($sp)

@@ -371,7 +371,7 @@ glabel menu_UpdateEntryGridCursors
     /* 60EFC 800706FC 3400A3AF */  sw         $v1, 0x34($sp)
     /* 60F00 80070700 1000E28E */  lw         $v0, 0x10($s7)
     /* 60F04 80070704 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 60F08 80070708 4BCD010C */  jal        func_8007352C
+    /* 60F08 80070708 4BCD010C */  jal        gpu_AddSpriteCells
     /* 60F0C 8007070C 2000A2AF */   sw        $v0, 0x20($sp)
     /* 60F10 80070710 1000E2AE */  sw         $v0, 0x10($s7)
     /* 60F14 80070714 00141500 */  sll        $v0, $s5, 16
@@ -651,7 +651,7 @@ glabel menu_UpdateEntryGridCursors
     /* 6131C 80070B1C 3400A3AF */  sw         $v1, 0x34($sp)
     /* 61320 80070B20 1000E28E */  lw         $v0, 0x10($s7)
     /* 61324 80070B24 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 61328 80070B28 4BCD010C */  jal        func_8007352C
+    /* 61328 80070B28 4BCD010C */  jal        gpu_AddSpriteCells
     /* 6132C 80070B2C 2000A2AF */   sw        $v0, 0x20($sp)
     /* 61330 80070B30 01008426 */  addiu      $a0, $s4, 0x1
     /* 61334 80070B34 21A08000 */  addu       $s4, $a0, $zero

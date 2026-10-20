@@ -238,9 +238,9 @@ glabel motion_UpdatePlayback
     /* 45494 80054C94 23100200 */  negu       $v0, $v0
     /* 45498 80054C98 23180300 */  negu       $v1, $v1
     /* 4549C 80054C9C 260062A6 */  sh         $v0, 0x26($s3)
-    /* 454A0 80054CA0 3408010C */  jal        func_800420D0
+    /* 454A0 80054CA0 3408010C */  jal        light_ResetPointLight
     /* 454A4 80054CA4 280063A6 */   sh        $v1, 0x28($s3)
-    /* 454A8 80054CA8 4708010C */  jal        func_8004211C
+    /* 454A8 80054CA8 4708010C */  jal        light_ApplyPointLightTargets
     /* 454AC 80054CAC 00000000 */   nop
     /* 454B0 80054CB0 841C010C */  jal        func_80047210
     /* 454B4 80054CB4 00000000 */   nop

@@ -7,7 +7,7 @@ glabel func_80046DA8
     /* 375BC 80046DBC A81B010C */  jal        func_80046EA0
     /* 375C0 80046DC0 00000000 */   nop
   .L80046DC4:
-    /* 375C4 80046DC4 4708010C */  jal        func_8004211C
+    /* 375C4 80046DC4 4708010C */  jal        light_ApplyPointLightTargets
     /* 375C8 80046DC8 00000000 */   nop
     /* 375CC 80046DCC 2F11010C */  jal        func_800444BC
     /* 375D0 80046DD0 00000000 */   nop

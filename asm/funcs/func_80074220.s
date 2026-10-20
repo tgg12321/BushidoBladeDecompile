@@ -52,7 +52,7 @@ glabel func_80074220
     /* 64AE0 800742E0 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 64AE4 800742E4 1000828E */  lw         $v0, 0x10($s4)
     /* 64AE8 800742E8 01003126 */  addiu      $s1, $s1, 0x1
-    /* 64AEC 800742EC 4BCD010C */  jal        func_8007352C
+    /* 64AEC 800742EC 4BCD010C */  jal        gpu_AddSpriteCells
     /* 64AF0 800742F0 2000A2AF */   sw        $v0, 0x20($sp)
     /* 64AF4 800742F4 100082AE */  sw         $v0, 0x10($s4)
     /* 64AF8 800742F8 0300222A */  slti       $v0, $s1, 0x3

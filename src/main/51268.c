@@ -264,9 +264,9 @@ void func_80061064(s16 *a0, s32 *a1) {
     } while (i < 0x1C);
     if (D_800A32BC >= 2) {
         D_800A32BC -= 1;
-        func_80041E10(&D_800F1140, D_800A3464);
+        light_SetPointLight(&D_800F1140, D_800A3464);
     } else if (D_800A32BC == 1) {
-        func_800421A4();
+        light_DisablePointLight();
         D_800A32BC = 0;
     }
     temp_a1 = g_eff_quad_cursor - g_eff_quad_buffer_base;
@@ -277,7 +277,7 @@ void func_80061064(s16 *a0, s32 *a1) {
 
 void eff_StopCommands(void) {
     func_80060C60();
-    func_800421A4();
+    light_DisablePointLight();
     D_800A32BC = 0;
 }
 
