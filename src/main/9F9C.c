@@ -1777,7 +1777,7 @@ void fight_Init(void) {
     }
     func_800174F4();
     gpu_ResetGraphMode1();
-    func_8003E22C();
+    gpu_RestoreObjectClutOffsets();
     object_ResetPool();
     func_80032040();
     func_8003F218(D_800A38BA);
@@ -1789,7 +1789,7 @@ void fight_Init(void) {
         fighter_Init(i, (s8)D_80102778.unk_4[4 + i], (s8)D_80102778.unk_4[i],
                      (s8)D_80102778.unk_4[2 + i], 0);
         if (D_800A38BA != 0 && D_800A36F6 == i) {
-            func_8003E164(i == 0);
+            gpu_MoveObjectClutsToFogBlock(i == 0);
         }
     }
     softbody_RequestSnap(0);

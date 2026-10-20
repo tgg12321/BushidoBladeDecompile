@@ -10,7 +10,7 @@ glabel func_8003E120
     /* 2E940 8003E140 1000A427 */  addiu      $a0, $sp, 0x10
     /* 2E944 8003E144 13000524 */  addiu      $a1, $zero, 0x13
     /* 2E948 8003E148 1800BFAF */  sw         $ra, 0x18($sp)
-    /* 2E94C 8003E14C 85F7000C */  jal        func_8003DE14
+    /* 2E94C 8003E14C 85F7000C */  jal        gpu_BuildFogImageLevels
     /* 2E950 8003E150 1600A2A7 */   sh        $v0, 0x16($sp)
     /* 2E954 8003E154 1800BF8F */  lw         $ra, 0x18($sp)
     /* 2E958 8003E158 2000BD27 */  addiu      $sp, $sp, 0x20

@@ -1,4 +1,4 @@
-glabel func_8003D7B4
+glabel bitstream_AccumulateDeltas
     /* 2DFB4 8003D7B4 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 2DFB8 8003D7B8 1C00B3AF */  sw         $s3, 0x1C($sp)
     /* 2DFBC 8003D7BC 21980000 */  addu       $s3, $zero, $zero
@@ -55,4 +55,4 @@ glabel func_8003D7B4
     /* 2E07C 8003D87C 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 2E080 8003D880 0800E003 */  jr         $ra
     /* 2E084 8003D884 00000000 */   nop
-endlabel func_8003D7B4
+endlabel bitstream_AccumulateDeltas

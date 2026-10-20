@@ -1,4 +1,4 @@
-glabel func_8003E22C
+glabel gpu_RestoreObjectClutOffsets
     /* 2EA2C 8003E22C E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2EA30 8003E230 5C01848F */  lw         $a0, %gp_rel(D_800A3228)($gp)
     /* 2EA34 8003E234 FFFF0224 */  addiu      $v0, $zero, -0x1
@@ -32,4 +32,4 @@ glabel func_8003E22C
     /* 2EA94 8003E294 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 2EA98 8003E298 0800E003 */  jr         $ra
     /* 2EA9C 8003E29C 00000000 */   nop
-endlabel func_8003E22C
+endlabel gpu_RestoreObjectClutOffsets

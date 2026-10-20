@@ -1,4 +1,4 @@
-glabel func_8003D91C
+glabel gpu_InitFogDrawMoves
     /* 2E11C 8003D91C D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 2E120 8003D920 1000A427 */  addiu      $a0, $sp, 0x10
     /* 2E124 8003D924 1F000524 */  addiu      $a1, $zero, 0x1F
@@ -32,4 +32,4 @@ glabel func_8003D91C
     /* 2E194 8003D994 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 2E198 8003D998 0800E003 */  jr         $ra
     /* 2E19C 8003D99C 00000000 */   nop
-endlabel func_8003D91C
+endlabel gpu_InitFogDrawMoves

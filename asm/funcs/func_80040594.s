@@ -124,7 +124,7 @@ glabel func_80040594
     /* 30F5C 8004075C 21206002 */  addu       $a0, $s3, $zero
     /* 30F60 80040760 BA1F010C */  jal        gpu_LoadTimGroup
     /* 30F64 80040764 21280000 */   addu      $a1, $zero, $zero
-    /* 30F68 80040768 A8F8000C */  jal        func_8003E2A0
+    /* 30F68 80040768 A8F8000C */  jal        gpu_GetFogClutObject
     /* 30F6C 8004076C 00000000 */   nop
     /* 30F70 80040770 34004014 */  bnez       $v0, .L80040844
     /* 30F74 80040774 21280000 */   addu      $a1, $zero, $zero
@@ -151,7 +151,7 @@ glabel func_80040594
     /* 30FC4 800407C4 80000624 */  addiu      $a2, $zero, 0x80
     /* 30FC8 800407C8 EF1F010C */  jal        gpu_LoadTimGroupOffset
     /* 30FCC 800407CC 21380000 */   addu      $a3, $zero, $zero
-    /* 30FD0 800407D0 A8F8000C */  jal        func_8003E2A0
+    /* 30FD0 800407D0 A8F8000C */  jal        gpu_GetFogClutObject
     /* 30FD4 800407D4 00000000 */   nop
     /* 30FD8 800407D8 13005014 */  bne        $v0, $s0, .L80040828
     /* 30FDC 800407DC 02000524 */   addiu     $a1, $zero, 0x2

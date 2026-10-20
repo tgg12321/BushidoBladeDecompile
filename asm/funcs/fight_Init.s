@@ -19,7 +19,7 @@ glabel fight_Init
     /* E4F0 8001DCF0 00000000 */   nop
     /* E4F4 8001DCF4 1A5A000C */  jal        gpu_ResetGraphMode1
     /* E4F8 8001DCF8 00000000 */   nop
-    /* E4FC 8001DCFC 8BF8000C */  jal        func_8003E22C
+    /* E4FC 8001DCFC 8BF8000C */  jal        gpu_RestoreObjectClutOffsets
     /* E500 8001DD00 00000000 */   nop
     /* E504 8001DD04 0FC1000C */  jal        object_ResetPool
     /* E508 8001DD08 00000000 */   nop
@@ -71,7 +71,7 @@ glabel fight_Init
     /* E5B4 8001DDB4 00000000 */  nop
     /* E5B8 8001DDB8 03005014 */  bne        $v0, $s0, .L8001DDC8
     /* E5BC 8001DDBC 00000000 */   nop
-    /* E5C0 8001DDC0 59F8000C */  jal        func_8003E164
+    /* E5C0 8001DDC0 59F8000C */  jal        gpu_MoveObjectClutsToFogBlock
     /* E5C4 8001DDC4 0100042E */   sltiu     $a0, $s0, 0x1
   .L8001DDC8:
     /* E5C8 8001DDC8 01001026 */  addiu      $s0, $s0, 0x1

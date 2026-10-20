@@ -2304,10 +2304,11 @@ typedef struct {
     s32 avail;
 } BitStream;
 
-/* 0x800A3D40: 24-byte records func_8003D774 starts and func_8003D7B4 advances:
-   the bit stream bitstream_ReadBits reads and six s16 values func_8003D7B4 adds
-   the decoded deltas to and returns (4510C motion_UpdatePlayback reads them as
-   an offset and a rotation). */
+/* 0x800A3D40: 24-byte records bitstream_InitDeltaAccumulator starts and
+   bitstream_AccumulateDeltas advances: the bit stream bitstream_ReadBits reads
+   and six s16 values bitstream_AccumulateDeltas adds the decoded deltas to and
+   returns (4510C motion_UpdatePlayback reads them as an offset and a rotation).
+ */
 typedef struct {
     BitStream bits;
     s16 unkC[6];

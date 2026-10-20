@@ -1286,7 +1286,7 @@ void replay_AdvanceFrame(void) {
 
 void replay_Start(void) {
     gpu_ResetGraphMode1();
-    func_8003E22C();
+    gpu_RestoreObjectClutOffsets();
     func_8003F218(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
     func_80041688(0, 0);

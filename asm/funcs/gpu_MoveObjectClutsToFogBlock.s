@@ -1,4 +1,4 @@
-glabel func_8003E164
+glabel gpu_MoveObjectClutsToFogBlock
     /* 2E964 8003E164 5C01828F */  lw         $v0, %gp_rel(D_800A3228)($gp)
     /* 2E968 8003E168 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 2E96C 8003E16C 2400B1AF */  sw         $s1, 0x24($sp)
@@ -6,7 +6,7 @@ glabel func_8003E164
     /* 2E974 8003E174 2800BFAF */  sw         $ra, 0x28($sp)
     /* 2E978 8003E178 25005110 */  beq        $v0, $s1, .L8003E210
     /* 2E97C 8003E17C 2000B0AF */   sw        $s0, 0x20($sp)
-    /* 2E980 8003E180 8BF8000C */  jal        func_8003E22C
+    /* 2E980 8003E180 8BF8000C */  jal        gpu_RestoreObjectClutOffsets
     /* 2E984 8003E184 00000000 */   nop
     /* 2E988 8003E188 4F05010C */  jal        func_8004153C
     /* 2E98C 8003E18C 21202002 */   addu      $a0, $s1, $zero
@@ -53,4 +53,4 @@ glabel func_8003E164
     /* 2EA20 8003E220 3000BD27 */  addiu      $sp, $sp, 0x30
     /* 2EA24 8003E224 0800E003 */  jr         $ra
     /* 2EA28 8003E228 00000000 */   nop
-endlabel func_8003E164
+endlabel gpu_MoveObjectClutsToFogBlock

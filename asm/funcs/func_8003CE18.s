@@ -14,7 +14,7 @@ glabel func_8003CE18
     /* 2D648 8003CE48 21300000 */  addu       $a2, $zero, $zero
     /* 2D64C 8003CE4C DA59000C */  jal        gpu_SetDrawEnvBg
     /* 2D650 8003CE50 21380000 */   addu      $a3, $zero, $zero
-    /* 2D654 8003CE54 8BF8000C */  jal        func_8003E22C
+    /* 2D654 8003CE54 8BF8000C */  jal        gpu_RestoreObjectClutOffsets
     /* 2D658 8003CE58 00000000 */   nop
     /* 2D65C 8003CE5C 86FC000C */  jal        func_8003F218
     /* 2D660 8003CE60 21200000 */   addu      $a0, $zero, $zero

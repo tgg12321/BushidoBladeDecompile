@@ -37,7 +37,7 @@ glabel motion_UpdatePlayback
     /* 45194 80054994 21104300 */  addu       $v0, $v0, $v1
     /* 45198 80054998 0F80013C */  lui        $at, %hi(D_800EFB20)
     /* 4519C 8005499C 20FB22AC */  sw         $v0, %lo(D_800EFB20)($at)
-    /* 451A0 800549A0 DDF5000C */  jal        func_8003D774
+    /* 451A0 800549A0 DDF5000C */  jal        bitstream_InitDeltaAccumulator
     /* 451A4 800549A4 21806002 */   addu      $s0, $s3, $zero
   .L800549A8:
     /* 451A8 800549A8 3400028E */  lw         $v0, 0x34($s0)
@@ -100,7 +100,7 @@ glabel motion_UpdatePlayback
     /* 45278 80054A78 F1FF000C */  jal        softbody_RequestRebuild
     /* 4527C 80054A7C 21200002 */   addu      $a0, $s0, $zero
   .L80054A80:
-    /* 45280 80054A80 EDF5000C */  jal        func_8003D7B4
+    /* 45280 80054A80 EDF5000C */  jal        bitstream_AccumulateDeltas
     /* 45284 80054A84 21200000 */   addu      $a0, $zero, $zero
     /* 45288 80054A88 00004684 */  lh         $a2, 0x0($v0)
     /* 4528C 80054A8C 00000000 */  nop

@@ -167,14 +167,14 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
         }
         switch (a0) {
         case 0:
-            if (func_8003E2A0() == 0) {
+            if (gpu_GetFogClutObject() == 0) {
                 gpu_LoadTimGroupSplitOffset(a3, i + 1, 0, 0, -0x140, 0xE8);
             } else {
                 gpu_LoadTimGroup(a3, i + 1);
             }
             break;
         case 1:
-            if (func_8003E2A0() == a0) {
+            if (gpu_GetFogClutObject() == a0) {
                 gpu_LoadTimGroupSplitOffset(a3, i + 1, 0x80, 0, -0x140, 0xE8);
             } else {
                 gpu_LoadTimGroupOffset(a3, i + 1, 0x80, 0);
@@ -210,7 +210,7 @@ void func_80041AC8(Unk80045878Obj *arg0) {
     id_ptr = &arg0->unk_08;
     D_800A9A20 = arg0->unk_08;
     tbl = D_80094DF0[D_80094E08[*id_ptr]];
-    if (func_8003E2A0() == 1) {
+    if (gpu_GetFogClutObject() == 1) {
         xoff = -0x140;
         yoff = 0xF0;
     } else {
@@ -278,7 +278,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2) {
             gpu_TintVramRowInPlace(rect.x, rect.y, 0x10, r, g, b);
         }
     }
-    if (func_8003E2A0() == one) {
+    if (gpu_GetFogClutObject() == one) {
         func_8003E120();
     }
 }

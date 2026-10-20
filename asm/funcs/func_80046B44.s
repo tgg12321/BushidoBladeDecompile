@@ -13,7 +13,7 @@ glabel func_80046B44
     /* 37370 80046B70 00000000 */   nop
     /* 37374 80046B74 D327010C */  jal        light_InitDefaults
     /* 37378 80046B78 00000000 */   nop
-    /* 3737C 80046B7C 47F6000C */  jal        func_8003D91C
+    /* 3737C 80046B7C 47F6000C */  jal        gpu_InitFogDrawMoves
     /* 37380 80046B80 00000000 */   nop
     /* 37384 80046B84 3601010C */  jal        func_800404D8
     /* 37388 80046B88 00000000 */   nop

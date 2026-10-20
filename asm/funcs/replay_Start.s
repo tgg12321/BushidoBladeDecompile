@@ -3,7 +3,7 @@ glabel replay_Start
     /* 29FD8 800397D8 1000BFAF */  sw         $ra, 0x10($sp)
     /* 29FDC 800397DC 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 29FE0 800397E0 00000000 */   nop
-    /* 29FE4 800397E4 8BF8000C */  jal        func_8003E22C
+    /* 29FE4 800397E4 8BF8000C */  jal        gpu_RestoreObjectClutOffsets
     /* 29FE8 800397E8 00000000 */   nop
     /* 29FEC 800397EC 86FC000C */  jal        func_8003F218
     /* 29FF0 800397F0 21200000 */   addu      $a0, $zero, $zero

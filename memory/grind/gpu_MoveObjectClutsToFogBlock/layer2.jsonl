@@ -1,0 +1,1 @@
+{"func": "gpu_MoveObjectClutsToFogBlock", "addr": "8003E164", "verdict": "PASS", "body_hash": "fd762c6e159724f5", "body_kind": "c", "file": "main/2B344", "reviewer": "cheat-reviewer-fakeb3-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T11:10:16Z", "head": "bf43e110c", "notes": "", "renamed_from": ["func_8003E164"]}

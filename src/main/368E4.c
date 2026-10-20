@@ -427,7 +427,7 @@ void func_80046B44(void) {
     func_80044498();
     func_80049E4C();
     light_InitDefaults();
-    func_8003D91C();
+    gpu_InitFogDrawMoves();
     func_800404D8();
     func_8003F7F4();
     one = 1;

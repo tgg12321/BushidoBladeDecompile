@@ -1,4 +1,4 @@
-glabel func_8003D774
+glabel bitstream_InitDeltaAccumulator
     /* 2DF74 8003D774 40100500 */  sll        $v0, $a1, 1
     /* 2DF78 8003D778 21104500 */  addu       $v0, $v0, $a1
     /* 2DF7C 8003D77C C0100200 */  sll        $v0, $v0, 3
@@ -15,4 +15,4 @@ glabel func_8003D774
     /* 2DFA8 8003D7A8 0E0040A4 */  sh         $zero, 0xE($v0)
     /* 2DFAC 8003D7AC 0800E003 */  jr         $ra
     /* 2DFB0 8003D7B0 0C0040A4 */   sh        $zero, 0xC($v0)
-endlabel func_8003D774
+endlabel bitstream_InitDeltaAccumulator

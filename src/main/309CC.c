@@ -230,7 +230,7 @@ after_select:
             goto done_cases;
 
         gpu_LoadTimGroup(var_1, 0);
-        if (func_8003E2A0() != 0)
+        if (gpu_GetFogClutObject() != 0)
             goto done_cases;
         func_800432A0(a0->unk_14, 0, 0, -0x140, 0xE8);
         gpu_LoadTimGroupSplitOffset((s32)var_1, 0, 0, 0, -0x140, 0xF0);
@@ -238,7 +238,7 @@ after_select:
 
     case_1:
         gpu_LoadTimGroupOffset(var_1, 0, 0x80, 0);
-        if (func_8003E2A0() != 1)
+        if (gpu_GetFogClutObject() != 1)
             goto case_1_else;
         func_800432A0(a0->unk_14, 0x80, 0, -0x140, 0xE8);
         gpu_LoadTimGroupSplitOffset((s32)var_1, 0, 0x80, 0, -0x140, 0xF0);

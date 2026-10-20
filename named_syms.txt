@@ -2061,7 +2061,7 @@ func_80056FE8                                      = 0x80056FE8;  /* MISNAMED: n
 func_80044378                                           = 0x80044378;  /* MISNAMED: actually builds an offset table; counts -2 terminators (see build_offset_table_80044378 in pass-6 replacement section) */
 func_800203B4                                  = 0x800203B4;  /* MISNAMED: not frame calc; extracts motion matrix and applies GTE rotation to a vector */
 func_8001DBE4                               = 0x8001DBE4;  /* MISNAMED: not a camera fn; returns unless D_800A3768 == DISP_ACTIVE (0x14); then comb_BeginWait, comb_ExchangeEmptyPad wait loops, comb_EndWait (9F9C.c:1729-1747) */
-func_8003E164                               = 0x8003E164;  /* MISNAMED: not a camera fn; cache check + gnd_open() + load via func_8007B6C8 */
+gpu_MoveObjectClutsToFogBlock                               = 0x8003E164;  /* MISNAMED: not a camera fn; cache check + gnd_open() + load via func_8007B6C8 */
 func_8004939C                                      = 0x8004939C;  /* MISNAMED: not ground close; fills 0x800EF9F2/F4 with -1/-2 sentinels + three D_800A3* cells */
 func_80041688                                       = 0x80041688;  /* MISNAMED: not ground init; sets bit flags in player weapon/move records (struct at 0x94+) */
 font_LoadImage                          = 0x8003D2C4;  /* MISNAMED: not katinuki data; 1-line gpu_LoadImage(&g_font_rect, &g_font_image) */

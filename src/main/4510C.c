@@ -57,7 +57,7 @@ s32 motion_UpdatePlayback(void) {
         s->unk30 = ((Unk800469C4Hdr *)s->unk2C)->unkC + s->unk2C;
         s->unk34[0] = ((Unk800469C4Hdr *)s->unk2C)->unk10[0] + s->unk2C;
         s->unk34[1] = ((Unk800469C4Hdr *)s->unk2C)->unk10[1] + s->unk2C;
-        func_8003D774(s->unk30, 0);
+        bitstream_InitDeltaAccumulator(s->unk30, 0);
         for (j = 0; j < 2; j++) {
             if (*(s32 *)s->unk34[j] == D_800A3250[0]) {
                 s->unk34[j] = 0;
@@ -83,7 +83,7 @@ s32 motion_UpdatePlayback(void) {
             softbody_RequestRebuild(var_5);
         }
     }
-    v = func_8003D7B4(0);
+    v = bitstream_AccumulateDeltas(0);
     vec.vx = -v[0];
     vec.vy = v[1];
     vec.vz = -v[2];

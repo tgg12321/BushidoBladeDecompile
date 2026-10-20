@@ -996,7 +996,7 @@ void func_8003CE18(void) {
     func_80016888();
     gpu_ResetGraphMode1();
     gpu_SetDrawEnvBg(1, 0, 0, 0);
-    func_8003E22C();
+    gpu_RestoreObjectClutOffsets();
     func_8003F218(0);
     SetGeomScreen(math_FovToScreenDist(0x2D));
     var_1 = D_800A3748;
@@ -1271,7 +1271,7 @@ void font_Printf(u8 *arg0, s32 first_arg, ...) {
     }
 }
 
-void func_8003D774(s32 arg0, s32 arg1) {
+void bitstream_InitDeltaAccumulator(s32 arg0, s32 arg1) {
     Unk800A3D40Rec *ptr = &D_800A3D40[arg1];
     ptr->bits.next = (u32 *)arg0;
     ptr->bits.word = 0;
@@ -1286,7 +1286,7 @@ void func_8003D774(s32 arg0, s32 arg1) {
 
 extern s32 bitstream_ReadBits(BitStream *, s32);
 
-s16 *func_8003D7B4(s32 arg0) {
+s16 *bitstream_AccumulateDeltas(s32 arg0) {
     s32 i = 0;
     Unk800A3D40Rec *base = &D_800A3D40[arg0];
     do {
@@ -1345,7 +1345,7 @@ s32 bitstream_ReadBits(BitStream *s, s32 n) {
 
 void gpu_SetDrawMoveArray(RECT *, s32, DR_MOVE (*)[2]);
 
-void func_8003D91C(void) {
+void gpu_InitFogDrawMoves(void) {
     RECT buf;
     buf.x = 0;
     buf.y = 0x1E0;
@@ -1510,7 +1510,7 @@ void func_8003DDF8(u32 arg0) {
  * FAKE constructs (each labelled at its site): the `var_24` mask and the
  * two combine-foldable chain-extender detours (zero emitted bytes;
  * dead-store-fake-exception). */
-void func_8003DE14(RECT *rect, s32 count) {
+void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
     u16 src_buf[0x200];
     u16 dst_buf[0x200];
     u8 var_2[0x20];
@@ -1635,7 +1635,7 @@ void func_8003E0E0(void) {
     buf.w = 0x140;
     buf.x = 0;
     buf.h = 1;
-    func_8003DE14(&buf, 0x1F);
+    gpu_BuildFogImageLevels(&buf, 0x1F);
 }
 
 void func_8003E120(void) {
@@ -1644,17 +1644,17 @@ void func_8003E120(void) {
     buf.y = 0x1E8;
     buf.w = 0x40;
     buf.h = 8;
-    func_8003DE14(&buf, 0x13);
+    gpu_BuildFogImageLevels(&buf, 0x13);
 }
 
 extern s32 D_800A3228;
 
-void func_8003E164(s32 arg0) {
+void gpu_MoveObjectClutsToFogBlock(s32 arg0) {
     RECT buf;
     Unk80045878Obj *obj;
 
     if (D_800A3228 != arg0) {
-        func_8003E22C();
+        gpu_RestoreObjectClutOffsets();
         obj = func_8004153C(arg0);
         if (obj != 0) {
             if (arg0 != 0) {
@@ -1678,7 +1678,7 @@ void func_8003E164(s32 arg0) {
     D_800A3228 = arg0;
 }
 
-void func_8003E22C(void) {
+void gpu_RestoreObjectClutOffsets(void) {
     Unk80045878Obj *v1;
 
     if (D_800A3228 != -1) {
@@ -1694,7 +1694,7 @@ void func_8003E22C(void) {
     }
 }
 
-s32 func_8003E2A0(void) { return D_800A3228; }
+s32 gpu_GetFogClutObject(void) { return D_800A3228; }
 
 void func_8003E2AC(void) {
     /* FAKE: the flag word's address held in p (one lui / addiu, lhu / sh off
@@ -1703,7 +1703,7 @@ void func_8003E2AC(void) {
     *p &= ~2;
 }
 
-u32 func_8003E2C8(void) { return D_800905F8; }
+u32 gpu_GetLastFogOtIndex(void) { return D_800905F8; }
 
 extern void func_8003F388(s16 *arg0);
 

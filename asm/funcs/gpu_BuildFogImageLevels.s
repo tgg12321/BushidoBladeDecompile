@@ -1,4 +1,4 @@
-glabel func_8003DE14
+glabel gpu_BuildFogImageLevels
     /* 2E614 8003DE14 A8F7BD27 */  addiu      $sp, $sp, -0x858
     /* 2E618 8003DE18 3008B0AF */  sw         $s0, 0x830($sp)
     /* 2E61C 8003DE1C 21808000 */  addu       $s0, $a0, $zero
@@ -190,4 +190,4 @@ glabel func_8003DE14
     /* 2E8D4 8003E0D4 5808BD27 */  addiu      $sp, $sp, 0x858
     /* 2E8D8 8003E0D8 0800E003 */  jr         $ra
     /* 2E8DC 8003E0DC 00000000 */   nop
-endlabel func_8003DE14
+endlabel gpu_BuildFogImageLevels

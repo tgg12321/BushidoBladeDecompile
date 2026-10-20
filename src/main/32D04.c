@@ -1149,7 +1149,7 @@ void func_80044504(u32 *a0) {
     *(s32 *)0x1F80001C = (s32)&D_80095328;
     *(s32 *)0x1F80000C = (s32)a0;
     if (D_800A3790 & 8) {
-        *(s32 *)0x1F800010 = func_8003E2C8();
+        *(s32 *)0x1F800010 = gpu_GetLastFogOtIndex();
     } else {
         *(s32 *)0x1F800010 = 0x7FFFFFFF;
     }
