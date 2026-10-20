@@ -290,12 +290,47 @@ class LaneTest(unittest.TestCase):
         sh("add", "shared.txt", cwd=d)
         sh("-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-q", "-m",
            "naming: wave\n\nLane-Replay: python rename.py", cwd=d)
-        (d / "untracked_notes.txt").write_text("mine")
         self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
         self.assertEqual(self.L("s2", "land", "b"), 3, self.last)
         self.assertIn("src/stray.c", self.last)
-        self.assertFalse((self.main / "untracked_notes.txt").exists())
         self.assertFalse((self.main / "src" / "stray.c").exists())
+
+    def test_untracked_files_refuse_land(self):
+        # a gate that passes only because of an uncommitted file must not let the commit land
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n")
+        (self.wt("a") / "src" / "h.h").write_text("int h;\n")
+        before = sh("rev-parse", "main", cwd=self.main)
+        self.assertEqual(self.L("s1", "land", "a"), 1, self.last)
+        self.assertIn("src/h.h", self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), before)
+
+    def test_freeze_arriving_during_lock_wait(self):
+        self.L("s1", "open", "a"); self.L("s2", "open", "pins")
+        self.edit_line("a", "shared.txt", 1, "N")
+        ctx = lanes.Ctx(self.main, "s1")
+        real = lanes.acquire_lock
+
+        def slow_acquire(c, label):
+            # the other lane freezes the file while we wait for the lock
+            self.assertEqual(self.L("s2", "claim", "pins", "path:shared.txt!"), 0)
+            real(c, label)
+
+        lanes.acquire_lock = slow_acquire
+        try:
+            rc = self.L("s1", "land", "a")
+        finally:
+            lanes.acquire_lock = real
+        self.assertEqual(rc, 1, self.last)
+        self.assertIn("claimed by lane 'pins'", self.last)
+        self.assertIsNone(lanes.read_lock(ctx))
+
+    def test_lock_already_held_is_kept(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n")
+        self.assertTrue(lanes._create_lock(lanes.Ctx(self.main, "s1"), "codex reintegration"))
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertEqual(lanes.read_lock(lanes.Ctx(self.main, "s1"))["session"], "s1")
 
     def test_rowmerge_order_and_safety(self):
         base = "id\tv\na\t1\nb\t1\nc\t1\n"

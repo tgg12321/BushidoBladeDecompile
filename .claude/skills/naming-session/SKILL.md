@@ -90,7 +90,8 @@ reviewed`.
    earlier rows failed. Launch it, mark the row `researching`, and that ends the unit.
 2. `researching` or `researched`: `python tmp/codex/extract_final.py <run dir> tmp/codex/<id>-research.md`.
 3. Sonnet drafter (foreground) writes `docs/naming/phase3/pending/<id>/`. For members this
-   includes a compiled dry run (`tools/naming_member_apply.py --dry-run`, run from PowerShell).
+   includes a compiled dry run, run from PowerShell inside the worktree:
+   `cd "<wt>"; python tools/naming_member_apply.py --dry-run <pairs.txt>`.
    The drafter re-derives every use and drops anything it can't show.
 4. `naming-reviewer` pre-apply (foreground).
    - Rows that FAIL are dropped.
@@ -108,9 +109,9 @@ reviewed`.
    the gates in the worktree:
    - `& tools/wteng.ps1 "<wt>" verify-oracle --rebuild`
    - `& tools/wteng.ps1 "<wt>" tus-check`
-   - the integrity check
+   - the integrity check (§Gate commands)
    - `& tools/wteng.ps1 "<wt>" test`
-   - `naming_keycheck`
+   - `naming_keycheck`, in WSL inside the worktree (§Gate commands)
 
    It commits the wave plus a `docs:` comment commit in `<wt>` and returns the hashes. It never
    touches main.
@@ -118,9 +119,9 @@ reviewed`.
    old names in live docs and registries, and suggested names judged fresh.
 3. In the lane worktree:
    - Apply R6's blocking fixes verbatim in a `docs:` commit.
-   - For function waves, run `cd "<wt>" && python "<main>/tmp/wavefollow.py" <id> symbol_addrs.txt`.
+   - For function waves, run `cd "<wt>" && python tools/naming_wavefollow.py <id> symbol_addrs.txt`.
      It is deterministic, so commit it on its own with the trailer
-     `Lane-Replay: python3 '<main as /mnt/c/...>/tmp/wavefollow.py' <id> symbol_addrs.txt`.
+     `Lane-Replay: python3 tools/naming_wavefollow.py <id> symbol_addrs.txt`.
    - Set the backlog row to `landed` and commit.
    - Run `python tools/lanes/lanes.py land <lane>`. It rebuilds, regenerates the census, runs
      `test_label_census.py` and the integrity check, fast-forwards main and pushes. That is the
@@ -132,8 +133,11 @@ reviewed`.
 
 - `& tools/wteng.ps1 "<wt>" verify-oracle --rebuild` (commit first, because it refuses dirty
   build inputs)
-- Integrity: `wsl bash -c "cd '<wt as /mnt/c/...>' && . .venv/bin/activate && python3 tools/check_completion_integrity.py"`
-  (or put that line in `tmp/integ_<lane>.sh` and run the file)
+- WSL commands inside the worktree go through a script file in main's tmp/ (shell quoting is
+  guarded). For example, `tmp/<lane>_gate.sh`:
+  `cd '<wt as /mnt/c/...>' && . .venv/bin/activate && python3 tools/check_completion_integrity.py`.
+  Use the same form for `python3 tools/naming_keycheck.py --from-manifests ... --pairs-file ...`.
+  Run it with `wsl bash '<main as /mnt/c/...>/tmp/<lane>_gate.sh'`.
 - Census conflicts don't happen: `land` takes main's census and regenerates it.
 
 ## Hard limits

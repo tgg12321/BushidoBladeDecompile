@@ -60,6 +60,15 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/tooling_error_guard.py\""
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/tools/hooks/lane_guard.py\" --post"
+          }
+        ]
       }
     ],
     "Stop": [

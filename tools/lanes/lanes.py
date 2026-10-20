@@ -734,6 +734,31 @@ def check_main_idle(ctx: Ctx):
                      "nobody edits main. Commit or move them first.")
 
 
+UNTRACKED_OK = {".venv"}  # the toolchain link setup_worker_worktree.ps1 creates
+
+
+def check_untracked(wt: Path):
+    """Untracked (non-ignored) files would feed the gates but never reach main."""
+    out = git("status", "--porcelain", "--untracked-files=all", cwd=wt)
+    extra = [ln[3:] for ln in out.splitlines()
+             if ln.startswith("?? ") and ln[3:].rstrip("/") not in UNTRACKED_OK]
+    if extra:
+        raise Refuse("the lane worktree has untracked files, which the gates would see but main "
+                     "would not: " + ", ".join(extra[:10]) +
+                     ("..." if len(extra) > 10 else "") +
+                     "\n  Commit them, delete them, or move scratch to main's tmp/.")
+
+
+def check_claims(ctx: Ctx, lane: str, wt: Path):
+    touched = sorted(set(git("diff", "--name-only", "main...HEAD", cwd=wt).split()))
+    reg = ctx.load()
+    for p in touched:
+        hit = claimed_by_other(ctx, reg, lane, p)
+        if hit:
+            raise Refuse(f"{p} is claimed by lane '{hit[0]}' ({hit[1]}{'!' if hit[2] else ''}); "
+                         f"it cannot land until that claim is released")
+
+
 def cmd_land(ctx: Ctx, a):
     lane = a.lane
     ctx.update(lambda reg: require_owner(ctx, reg, lane))
@@ -751,20 +776,18 @@ def cmd_land(ctx: Ctx, a):
         raise Refuse("the lane holds merge commits; replay cannot carry them. Rebuild the lane as "
                      "linear commits on fresh main (lanes.py fresh --discard).")
 
-    touched = sorted(set(git("diff", "--name-only", "main...HEAD", cwd=wt).split()))
-    reg = ctx.load()
-    for p in touched:
-        hit = claimed_by_other(ctx, reg, lane, p)
-        if hit:
-            raise Refuse(f"{p} is claimed by lane '{hit[0]}' ({hit[1]}{'!' if hit[2] else ''}); "
-                         f"it cannot land until that claim is released")
+    check_untracked(wt)
+    check_claims(ctx, lane, wt)
 
     logp = ctx.state_dir / "logs" / f"{lane}-{time.strftime('%Y%m%d-%H%M%S')}.log"
     logp.parent.mkdir(parents=True, exist_ok=True)
     log = open(logp, "w", encoding="utf-8", newline="\n")
+    lk = read_lock(ctx)
+    held_before = bool(lk and lk.get("session") == ctx.session)  # e.g. a codex-worker landing
     acquire_lock(ctx, f"lanes land {lane}")
     land_ok = False
     try:
+        check_claims(ctx, lane, wt)  # again: a freeze may have arrived while we waited
         check_main_idle(ctx)
         remote = ctx.cfg.get("remote")
         if remote and not a.no_push:
@@ -790,6 +813,7 @@ def cmd_land(ctx: Ctx, a):
         gates = [] if docs_only else ctx.cfg["gates"].get(kind, ctx.cfg["gates"]["foundation"])
         if docs_only:
             print("lanes: docs-only change; build gates skipped")
+        check_untracked(wt)  # the gates must see exactly what lands
         for g in gates:
             write_lock(ctx, f"lanes land {lane}")
             if run_shell(ctx, wt, g, log) != 0:
@@ -841,7 +865,8 @@ def cmd_land(ctx: Ctx, a):
             run(["git", "reset", "-q", "--hard"], cwd=wt, check=False)
             run(["git", "checkout", "-q", br], cwd=wt, check=False)
         run(["git", "branch", "-D", lbr], cwd=wt, check=False)
-        release_lock(ctx)
+        if not held_before:
+            release_lock(ctx)
         log.close()
     return 0
 
