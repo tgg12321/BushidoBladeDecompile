@@ -861,7 +861,7 @@ D_8010205C                                   = 0x8010205C;  /* D_80101EC8[0].unk
 D_80102114                                = 0x80102114;  /* +0x24C of D_80101EC8[0]: vx of VECTOR unk_24C (copied as a whole vector) */  /* data-wave 2026-10-08: was g_char_vec3_b_w_or_alpha */
 
 /* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2104-2108) */
-D_80101FA0                                      = 0x80101FA0;  /* D_80101EC8[0].unk_D8.x; passed by address to func_80021D10 (9F9C.c:1297) */  /* data-wave 2026-10-09: was g_char_world_pos_x */
+D_80101FA0                                      = 0x80101FA0;  /* D_80101EC8[0].unk_D8.x; passed by address to fight_GetStartPosition (9F9C.c:1297) */  /* data-wave 2026-10-09: was g_char_world_pos_x */
 D_80101FA4                                      = 0x80101FA4;  /* D_80101EC8[0].unk_D8.y */  /* data-wave 2026-10-09: was g_char_world_pos_y */
 D_80101FA8                                      = 0x80101FA8;  /* D_80101EC8[0].unk_D8.z */  /* data-wave 2026-10-09: was g_char_world_pos_z */
 /* Vec3i32 unk_F4: set to unk_D8 with y - 0x384 (9F9C.c:1305-1307) or to unk_D8 + unk_E8 (:4060, :5286) */
@@ -1304,8 +1304,8 @@ D_800F6644                                       = 0x800F6644;  /* D_800F6608.h3
 /* RESET 0x80064FB4: retired name 'motion_ex_Init_id4' — preserved note: init id4 (state @ D_800F0CA0[4], flag @ D_800F10F8, counter @ D_800F0BA8[4] = 0x40) */
 /* RESET 0x80065000: retired name 'motion_ex_Init_id5' — preserved note: init id5 (state @ D_800F0CA0[5], flag @ D_800F10FC, counter @ D_800F0BA8[5]) */
 
-/* === State words cleared by func_8001B138 === */
-g_camera_view_offset                                    = 0x800FF5C8;  /* Unk800FF5C8Rec: camera-target offset added to a Rec44 (camera_ApplyFightView / camera_ApplyReplayView), zeroed by func_8001B138 */  /* data-wave 2026-09-25: was g_voice_state_word_a */
+/* === State words cleared by camera_UpdatePadOffset === */
+g_camera_view_offset                                    = 0x800FF5C8;  /* Unk800FF5C8Rec: camera-target offset added to a Rec44 (camera_ApplyFightView / camera_ApplyReplayView), zeroed by camera_UpdatePadOffset */  /* data-wave 2026-09-25: was g_voice_state_word_a */
 /* 2026-10-16: D_800FF5CC, D_800FF5D0, D_800FF5D8, D_800FF5DA, D_800FF5DC, D_800FF5E0 retired -- fields of Unk800FF5C8Rec g_camera_view_offset (include/game.h). */
 
 /* === SPU voice volume table (2026-05-17) -- 1 high === */
@@ -1488,7 +1488,7 @@ D_800A3878                      = 0x800A3878;  /* state struct ptr; bits at +3 c
 
 /* === code6cac_c2.c misc state names (2026-05-17) -- 4 highs === */
 D_800A382D                              = 0x800A382D;  /* func_8003C42C's tally result: counts[0] < counts[1] (0 / 1), or 2 on a second tie; func_8003C560 tests == 2, else indexes D_80101EC8 (stride 0x44C) with it */  /* data-wave 2026-10-08: was g_menuctl_current_char_idx */
-D_800A3818                             = 0x800A3818;  /* func_80022408 result stored by func_8003CE18; func_8003CF84 passes it to func_80021D10 */  /* data-wave 2026-10-08: was g_stage_helper_result_cache */
+D_800A3818                             = 0x800A3818;  /* fight_FindNearestStartPair result stored by func_8003CE18; func_8003CF84 passes it to fight_GetStartPosition */  /* data-wave 2026-10-08: was g_stage_helper_result_cache */
 D_800A3894                                  = 0x800A3894;  /* byte pointer set from the cursor D_800A3844, read at +1 / +6 / a0*4+1 */  /* data-wave 2026-10-08: was g_menuctl_pending_flag */
 D_800A3368                                    = 0x800A3368;  /* count of D_800A4750 records func_8003EDC0 unpacks; the draw walks send ids at or above it to D_800A6690[v1 - D] (0x68-byte records) */  /* data-wave 2026-10-08: was g_char_data_base_idx */
 
@@ -2177,8 +2177,8 @@ g_motion_frame_set_ids                                 = 0x800A38C0;  /* +4 from
 /* 2026-10-16: D_800A38C1 retired -- g_motion_frame_set_ids[1] (u8 [2], include/bb2.h). */
 D_800A38D4                           = 0x800A38D4;  /* +4 from D_800A38D0 */  /* data-wave 2026-10-08: was g_pad_rec_misc_counter_plus_4 */
 g_gpu_ot256_ptr                        = 0x800A38D8;  /* = g_gpu_ot256_db[D_800A36AC & 1], cleared with ClearOTagR(., 0x100) and linked into D_800A378C[0] (368E4.c:1714-1718) */  /* data-wave 2026-09-24: was g_replay_pos_change_count_plus_2 */
-D_800A38DF                         = 0x800A38DF;  /* func_80022408(&D_80101EC8[D_800A3748].unk_F4); read by fighter_Init */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_1 */
-D_800A38E0                         = 0x800A38E0;  /* 0..3, set by func_8001C8DC at D_800A38E2 = 0x1F / 0x33 / 0x51; func_80021D10's third argument */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_2 */
+D_800A38DF                         = 0x800A38DF;  /* fight_FindNearestStartPair(&D_80101EC8[D_800A3748].unk_F4); read by fighter_Init */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_1 */
+D_800A38E0                         = 0x800A38E0;  /* 0..3, set by func_8001C8DC at D_800A38E2 = 0x1F / 0x33 / 0x51; fight_GetStartPosition's third argument */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_2 */
 D_800A38E1                         = 0x800A38E1;  /* = p->unk14_15 (func_8003504C); bit 0 picks D_800A36A4 = 0x21 / 0x20 */  /* data-wave 2026-10-08: was g_practice_lesson_param0_plus_3 */
 D_800A38E4                       = 0x800A38E4;  /* bits_DepositMask3F83F8(D_800A36C6) (comb_Connect); OR-ed into func_80077940's argument */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_2 */
 D_800A38E8                       = 0x800A38E8;  /* 0xFF or data[3] & 0x7F (fight_UpdatePairedMoves); lower bound on unk_40 in func_8002C0DC */  /* data-wave 2026-10-08: was g_practice_lesson_progress_plus_6 */
