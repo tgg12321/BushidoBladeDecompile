@@ -11,7 +11,7 @@ stated, otherwise only its use is described.
 `func_8002C61C` (src/main/17AFC.c:2194) runs once per frame; its callers are
 src/main/9F9C.c:2044, :2088 and :2197, each followed by `object_UpdatePool` (the
 object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
-`unk_6A`:
+`move_kind`:
 
 - 0xF, 0x1C..0x21: `func_80026DA4` (src/main/175A4.c:21) only.
 - 0x11: `func_8002C0DC` (src/main/17AFC.c:2061) only.
@@ -28,19 +28,19 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
   4. On contact, `func_8002C22C` (src/main/17AFC.c:2118), then
      `fighter_ResolveWeaponContact` (src/main/17AFC.c:574) for each fighter when either has
      `unk_AD` set; otherwise `fighter_ProcessWeaponBodyHits(0)` (below).
-  5. When both fighters have `unk_3C >= 3`, `D_800A38A8` is set, both
-     `unk_286` are -1, neither `unk_0C` is 0x1F and their heights `unk_F4.y`
-     differ by less than 1000, both get `unk_286 = 0xA`.
-- Then for every state: a fighter whose `unk_6A` is 5 ends the round
+  5. When both fighters have `update_count >= 3`, `D_800A38A8` is set, both
+     `pending_move_event` are -1, neither `unk_0C` is 0x1F and their heights `world_pos.y`
+     differ by less than 1000, both get `pending_move_event = 0xA`.
+- Then for every state: a fighter whose `move_kind` is 5 ends the round
   (`D_800A3834 = 0x1C`, with `D_800A3748` the other fighter's index); the
   scratchpad body points are copied into `unk_210` / `unk_234`, `unk_18C`
   (the centroid of points 1..3) and `unk_174` (the midpoint of points 4..5)
-  (src/main/17AFC.c:2252-2278); and while fighter 0's `unk_286` is -1,
+  (src/main/17AFC.c:2252-2278); and while fighter 0's `pending_move_event` is -1,
   `object_ResolveFighterHits` (src/main/17AFC.c:4246) tests the pool objects against the
   fighters, followed by `func_80032314` (src/main/17AFC.c:4432) when that
-  left `unk_286` unchanged.
+  left `pending_move_event` unchanged.
 
-`unk_286` is the reaction code these paths write; -1 means none pending.
+`pending_move_event` is the reaction code these paths write; -1 means none pending.
 
 ## Blade against body: `fighter_ProcessWeaponBodyHits`
 
@@ -48,11 +48,11 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
 target, with the opponent as the attacker:
 
 1. It decides how many blade quads to test (`var_10`): one when the
-   attacker's `unk_96 == 0`, `unk_92 != 0`, `unk_3C != 0` and `unk_0C != 0x1F`,
+   attacker's `unk_96 == 0`, `unk_92 != 0`, `update_count != 0` and `unk_0C != 0x1F`,
    one more with `unk_8C` set, and one more when `unk_0E` is 4 or 5 and any is
    tested. (With `mode == 1` the fighter `D_800A38AE` is skipped as a target.)
    Attackers with `unk_0E` 6 or 7, in states 2 / 0x1B / 0x28 / 0x26 at frame
-   `unk_40 == unk_A1[0]`, also sweep a segment with `fighter_CastWeaponSegment`
+   `move_frame == unk_A1[0]`, also sweep a segment with `fighter_CastWeaponSegment`
    (src/main/17AFC.c:1423, comment at :1399) while the counter `unk_34A`
    lasts (once it is spent they play cue 0x32 and test no quads); `unk_0C`
    0x1D / 0xE (with `unk_26C` set) do the same with the second blade
@@ -71,7 +71,7 @@ target, with the opponent as the attacker:
    state (2, 0x1B, 0x28, 0x26) within three frames before a window start, it
    pushes the target along x/z through
    `unk_134` when the facing difference is under 0x400.
-5. If the attacker's `unk_AE` is set and (with `unk_8C`) its frame `unk_40`
+5. If the attacker's `unk_AE` is set and (with `unk_8C`) its frame `move_frame`
    is inside the window `unk_A1[k]..unk_A3[k]`, it calls
    `fighter_ResolveBoneHit(0, target, limb, facing difference, ...)`.
 
@@ -84,14 +84,14 @@ src/main/17AFC.c:1954 records both call shapes). Its branches, in order:
 
 - `rec->unk_0C == 0x1C`: when the limb is not 1..3, or the dot product of
   `unk_1EC` with the vector `D_800A37E8` is under 0x400, it plays cue 0x12,
-  sets `unk_286 = 0x1E` (and, with `src == 0`, the attacker's `unk_286` to 0xB
+  sets `pending_move_event = 0x1E` (and, with `src == 0`, the attacker's `pending_move_event` to 0xB
   or 0x19) and returns 0.
 - `rec->unk_0C == 0xD` (outside state 0x2E): `func_80027640`, see
   [ai.md](ai.md).
-- `unk_6A` 4 or 0x14, or `unk_0C == 0x1F`: `func_800203B4`
+- `move_kind` 4 or 0x14, or `unk_0C == 0x1F`: `func_800203B4`
   (src/main/9F9C.c:2779) and `func_800278C0` (src/main/17AFC.c:238); the
-  latter case also sets `unk_286 = 7`.
-- The target in an attack state (2, 0x1B, 0x28, 0x26) with `unk_40 < unk_A0`:
+  latter case also sets `pending_move_event = 7`.
+- The target in an attack state (2, 0x1B, 0x28, 0x26) with `move_frame < unk_A0`:
   with `src == 0` the reaction code
   comes from `D_8008EB74[math_ClassifyAbsMagnitude(diff)][sign][same]`, where `diff` is
   the difference of the two `unk_20` values and `same` whether their `unk_AF`
@@ -112,13 +112,13 @@ Both walk the byte stream at `rec->unk_58 + 4`; 0 ends it.
   skips one, and 0x80..0x8B take the next byte into `unk_A1[0]`, `unk_A3[0]`,
   `unk_A7`, `unk_A8`, `unk_A9`, `unk_A5`, `unk_A6`, `unk_A1[1]`, `unk_A3[1]`,
   `unk_AA`, `unk_AB`, `unk_AC` (src/main/17AFC.c:4530-4566). `unk_A1[k]` /
-  `unk_A3[k]` are the frame windows the contact tests compare `unk_40` with.
+  `unk_A3[k]` are the frame windows the contact tests compare `move_frame` with.
 - `fighter_ProcessFrameEvents` (src/main/17AFC.c:5100; called at src/main/9F9C.c:5148 and
   src/main/28708.c:1434) reads the same stream: 0xFF tests a 32-bit mask
   against `1 << rec->unk_0A` and skips 4 or 6 bytes; a byte `c` below 0x80
-  is followed by a frame number, and when that equals `unk_40` it calls
+  is followed by a frame number, and when that equals `move_frame` it calls
   `fighter_DispatchFrameEvent(rec, c - 1)` (src/main/17AFC.c:4807); it stops at the first
-  frame number above `unk_40`.
+  frame number above `move_frame`.
 
 ## Geometry helpers
 

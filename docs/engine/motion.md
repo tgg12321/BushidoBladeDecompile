@@ -1,7 +1,7 @@
 # Motion: move scripts, the frame decoder and the pose
 
 A fighter's animation is driven by two things: the move script it is in
-(`MoveScript`, include/game.h:1371; `Unk80101EC8Record.unk_50`), which says
+(`MoveScript`, include/game.h:1371; `Unk80101EC8Record.cur_move`), which says
 which frames to play and what may follow, and the motion bitstream those
 frames are decoded from (`func_800198D0`). Each frame two decoded
 `MotionFrame`s are blended into the model's joint matrices. The bundle files
@@ -38,11 +38,11 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 - the rest index the common file's streams, and `*out` is set to 1.
 
 `func_80021A98(i, script, common)` (src/main/9F9C.c:3311) makes `script` the
-current move of fighter `i`: `unk_50 = script`, `unk_5C = script->unk_04`, and
+current move of fighter `i`: `cur_move = script`, `unk_5C = script->unk_04`, and
 `unk_54` / `unk_58` point at the script's entry in the file's `unk_04` table
 and at the byte stream it names in `unk_08` (the frame-window stream that
-[combat.md](combat.md) describes). It also resets the frame counter `unk_40`
-from `script->unk_06` and records the previous state in `unk_6C`.
+[combat.md](combat.md) describes). It also resets the frame counter `move_frame`
+from `script->unk_06` and records the previous state in `prev_move_kind`.
 
 The script's own fields (`unk_00` / `unk_02` follow-up ids, `unk_07` /
 `unk_08` frame bounds, `unk_09` flags, and the command list from `unk_0A`)
@@ -78,15 +78,15 @@ for each fighter (src/main/9F9C.c:2040-2043); the variants at :2086 and :2195
 call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
 `fighter_Update` (src/main/9F9C.c:4337; its comment lists the whole sequence):
 
-1. converts the pad bits, advances the frame `unk_40` and runs the move
+1. converts the pad bits, advances the frame `move_frame` and runs the move
    script's command list, switching moves through `motion_ResolveMoveData` /
    `func_80021A98`;
-2. decodes the frames at `unk_40` and the next one with `func_800198D0`
-   (src/main/9F9C.c:4704-4705), or copies `g_motion_frame_buffers[i][unk_40]` in state
+2. decodes the frames at `move_frame` and the next one with `func_800198D0`
+   (src/main/9F9C.c:4704-4705), or copies `g_motion_frame_buffers[i][move_frame]` in state
    0x33; the frame keys go to `unk_64` / `unk_66` as `(slot << 14) | frame`
    (src/main/9F9C.c:4698);
 3. turns the two root offsets into a position delta (heading and distance
-   through `Judge`, scaled by `unk_1A`), blended by `unk_42` or by `unk_318`
+   through `Judge`, scaled by `unk_1A`), blended by `move_frame_frac` or by `unk_318`
    against the held frame `unk_290`; the weight goes to `unk_68`;
 4. integrates the velocities `unk_104` / `unk_134`, resolves the position
    (`fighter_ResolveMovement`, src/main/9F9C.c:3868), and builds the pose:
@@ -110,7 +110,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
 
 - `replay_PlayFrame` (src/main/28708.c:1338) rebuilds both fighters from the
   per-frame records `g_replay_fighter_frames` (`Rec1C`, include/game.h:1807, written by
-  `replay_RecordFighter` from `unk_50`, `unk_F4`, `unk_64..unk_68` and others): it
+  `replay_RecordFighter` from `cur_move`, `world_pos`, `unk_64..unk_68` and others): it
   decodes the two stored frame keys and calls `func_80041188` /
   `func_80040D48` as the live path does.
 - `motion_UpdatePlayback` (src/main/4510C.c) plays a loaded sequence: a camera

@@ -48,16 +48,16 @@ which only has record-2 references).
 | +0x04C | s32 | 0,3   | 4  | (asm-only refs) | -- |
 | +0x054 | s32 | 2,3   | 24 | `s32 v0 = (&D_801027B4)[idx] + (v1 * 4);` | base of indexed table |
 | +0x05E | ?   | 0,1   | 22 | `D_80101F26 = 0;` and `s0 = &D_80102372` | cleared cell + base-of-array |
-| **+0x06A** | u16 | 0,1   | 57 | `if ((u16)D_80101EC8[0].unk_6A == 0x11 \|\| (u16)D_80101EC8[1].unk_6A == 0x11)` (9F9C.c:2046-2047) | `unk_6A` (include/game.h:1424): compared with many constants (6, 5, 0xF, 0x11, 0x13, 0x15, 0x1C, 0x21, 0x28: 9F9C.c:1656, 175A4.c:34/:52/:88, 17AFC.c:913/:982/:1010/:2409); no role established, no SEQ use |
+| **+0x06A** | u16 | 0,1   | 57 | `if ((u16)D_80101EC8[0].move_kind == 0x11 \|\| (u16)D_80101EC8[1].move_kind == 0x11)` (9F9C.c:2046-2047) | `move_kind` (include/game.h:1424): compared with many constants (6, 5, 0xF, 0x11, 0x13, 0x15, 0x1C, 0x21, 0x28: 9F9C.c:1656, 175A4.c:34/:52/:88, 17AFC.c:913/:982/:1010/:2409); byte 0 of the current move's metadata, written only by func_80021A98 |
 | +0x07A | ?   | 0,1   | 4  | (asm-only refs) | -- |
 | +0x084 | s16 | 0,2   | 12 | `*(u16 *)((u8 *)&D_80101F4E + offset) = *(u16 *)((u8 *)&D_80101F4C + offset);` | **previous-frame keyframe field** (copy-old-to-new pattern) |
 | +0x096 | s16 | 0,1,2 | 55 | `if (D_80101F5E != 0 \|\| D_801023AA != 0)` | flag tested across records (player-1 vs player-2 OR) |
 | +0x0AD | s8  | 0,1   | 12 | `if (D_80101F75 != 0 \|\| D_801023C1 != 0); D_801023C1 = 0; D_80101F75 = 0;` | one-shot trigger flag |
 | +0x0B1 | s8  | 0,1   | 4  | (asm-only refs) | -- |
-| +0x0D8 | s32 | 0,1   | 6  | `temp_a3 = t2_base->unk_D8.x - t3_base->unk_D8.x` (17AFC.c:2104) | `unk_D8.x`, differenced between records 0 and 1 |
-| +0x0E0 | s32 | 0,1   | 7  | `temp_t1 = t2_base->unk_D8.z - t3_base->unk_D8.z` (17AFC.c:2105) | `unk_D8.z`, differenced between records 0 and 1 |
-| **+0x0F4** | s32 | 0,1   | 36 | `e->unk_F4.x = x;` (9F9C.c:1305); `func_8003E6A0(D_80101EC8[0].unk_F4.x, D_80101EC8[0].unk_F4.z)` (:2174) | `unk_F4.x` of the Vec3i32 `unk_F4` (include/game.h:1474); no role established |
-| **+0x0FC** | s32 | 0,1   | 21 | `e->unk_F4.z = z;` (9F9C.c:1307); the same `func_8003E6A0` call (:2174) | `unk_F4.z`; one read of many (9F9C.c:2580, 175A4.c:171, 17AFC.c:2169) |
+| +0x0D8 | s32 | 0,1   | 6  | `temp_a3 = t2_base->base_pos.x - t3_base->base_pos.x` (17AFC.c:2104) | `base_pos.x`, differenced between records 0 and 1 |
+| +0x0E0 | s32 | 0,1   | 7  | `temp_t1 = t2_base->base_pos.z - t3_base->base_pos.z` (17AFC.c:2105) | `base_pos.z`, differenced between records 0 and 1 |
+| **+0x0F4** | s32 | 0,1   | 36 | `e->world_pos.x = x;` (9F9C.c:1305); `func_8003E6A0(D_80101EC8[0].world_pos.x, D_80101EC8[0].world_pos.z)` (:2174) | `world_pos.x` of the Vec3i32 `world_pos` (include/game.h:1474): base_pos + root_offset |
+| **+0x0FC** | s32 | 0,1   | 21 | `e->world_pos.z = z;` (9F9C.c:1307); the same `func_8003E6A0` call (:2174) | `world_pos.z`; one read of many (9F9C.c:2580, 175A4.c:171, 17AFC.c:2169) |
 | +0x134 | s32 | 0,1   | 7  | `D_80101FFC = 0;` | cleared cell |
 | +0x13C | s32 | 0,1   | 9  | `D_80102004 = 0;` | cleared cell |
 | +0x14E | s16 | 0,1   | 5  | `D_80102016 = 0;` | cleared cell |
@@ -72,57 +72,58 @@ which only has record-2 references).
 Two names in `named_syms.txt` turn out to be record-0 field accesses,
 not standalone globals:
 
-- **`0x80101F32`** is `D_80101EC8[0].unk_6A` (u16, include/game.h:1424).  The
+- **`0x80101F32`** is `D_80101EC8[0].move_kind` (u16, include/game.h:1424).  The
   same member of records 1, 2, 3 is at 0x8010237E, 0x801027CA,
   0x80102C16.  Its old registry names are retired: wave16 reset it to
   `D_80101F32`.
-- **`0x80101FBC`** is `D_80101EC8[0].unk_F4.x` (include/game.h:1474); wave05
+- **`0x80101FBC`** is `D_80101EC8[0].world_pos.x` (include/game.h:1474); wave05
   reset it to `D_80101FBC`.
 
 The C spells both as record members, so a role found for them names
-the member (`unk_6A`, `unk_F4`), not an interior global; no access ties
+the member (`move_kind`, `world_pos`), not an interior global; no access ties
 record 0 to one player.
 
-### 2. Triples at +0xD8 (`unk_D8`) and +0xF4 (`unk_F4`)
+### 2. Triples at +0xD8 (`base_pos`) and +0xF4 (`world_pos`)
 
 src/main/17AFC.c:2102-2108 differences records 0 and 1:
 
 ```c
-temp_a3 = t2_base->unk_D8.x - t3_base->unk_D8.x;   // t2_base = D_80101EC8
-temp_t1 = t2_base->unk_D8.z - t3_base->unk_D8.z;   // t3_base = t2_base + 1
+temp_a3 = t2_base->base_pos.x - t3_base->base_pos.x;   // t2_base = D_80101EC8
+temp_t1 = t2_base->base_pos.z - t3_base->base_pos.z;   // t3_base = t2_base + 1
 temp_a0 = (temp_a3 * temp_a3) + (temp_t1 * temp_t1);
 if (temp_a0 < 0x400U) {
     var_t0 = ((u32)(g_sqrt_table_u8[temp_a0])) >> 3;
 ```
 
-and func_8001C624 (src/main/9F9C.c:1300-1307) copies `unk_D8` into
-`unk_F4` with a -0x384 bias on y:
+and func_8001C624 (src/main/9F9C.c:1300-1307) copies `base_pos` into
+`world_pos` with a -0x384 bias on y:
 
 ```c
-x = e->unk_D8.x;
-y = e->unk_D8.y;
-z = e->unk_D8.z;
-e->unk_F4.x = x;
-e->unk_F4.y = y - 0x384;
-e->unk_F4.z = z;
+x = e->base_pos.x;
+y = e->base_pos.y;
+z = e->base_pos.z;
+e->world_pos.x = x;
+e->world_pos.y = y - 0x384;
+e->world_pos.z = z;
 ```
 
 **Members (record 0 addresses; neutral `D_` names since waves 05, 15 and 16):**
 
 | Offset | Member | Record 0 address |
 |---|---|---|
-| +0xD8 | `unk_D8.x` | `D_80101FA0` |
-| +0xDC | `unk_D8.y` | `D_80101FA4` |
-| +0xE0 | `unk_D8.z` | `D_80101FA8` |
-| +0xF4 | `unk_F4.x` | `D_80101FBC` |
-| +0xF8 | `unk_F4.y` | `D_80101FC0` |
-| +0xFC | `unk_F4.z` | `D_80101FC4` |
+| +0xD8 | `base_pos.x` | `D_80101FA0` |
+| +0xDC | `base_pos.y` | `D_80101FA4` |
+| +0xE0 | `base_pos.z` | `D_80101FA8` |
+| +0xF4 | `world_pos.x` | `D_80101FBC` |
+| +0xF8 | `world_pos.y` | `D_80101FC0` |
+| +0xFC | `world_pos.z` | `D_80101FC4` |
 
-What the triples hold is not established: `unk_D8` is passed by address
-to fight_GetStartPosition / func_80021DB0 / func_80022224 (9F9C.c:1201, :4029-4051),
-stepped by `unk_104` and `unk_134` (:5228-5230, :5264-5266) and differenced
-between records 0 and 1 (17AFC.c:2104-2105, :2227-2228); `unk_F4` is also
-set to `unk_D8 + unk_E8` (9F9C.c:4060, :5286).
+`base_pos` + `root_offset` = `world_pos`: fighter_Init and fighter_Update
+(9F9C.c:4060, :5286) sum them. `collision_pos` (+0xB8) is the collision-space
+position. `base_pos` is also passed by address to fight_GetStartPosition /
+func_80021DB0 / func_80022224 (9F9C.c:1201, :4029-4051), stepped by `unk_104`
+and `unk_134` (:5228-5230, :5264-5266) and differenced between records 0 and 1
+(17AFC.c:2104-2105, :2227-2228).
 
 ### 4. Two-arm flag pattern (`X || sibling`)
 
