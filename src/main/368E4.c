@@ -509,7 +509,7 @@ s32 func_80046DE4(void) { return 0; }
 void *func_80046DEC(s32 a0) {
     Unk80045878Obj *v0 = func_8004153C(a0);
     if (v0) {
-        return v0->unk_1994;
+        return v0->node_matrix_ptrs;
     }
     return NULL;
 }
@@ -517,7 +517,7 @@ void *func_80046DEC(s32 a0) {
 void *func_80046E18(s32 a0) {
     Unk80045878Obj *v0 = func_8004153C(a0);
     if (v0) {
-        return v0->unk_2C;
+        return v0->transform_nodes;
     }
     return NULL;
 }
@@ -1940,15 +1940,15 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             flags &= 0x7FFF;
             node_bit = flags & 1;
             slot_obj = func_8004153C(flags >> 1);
-            var_4 = &slot_obj->unk_2C[19 + node_bit];
+            var_4 = &slot_obj->transform_nodes[19 + node_bit];
             var_4->node.work.t[0] =
-                (var_4->node.work.t[0] * slot_obj->unk_12) >> 12;
+                (var_4->node.work.t[0] * slot_obj->position_scale) >> 12;
             var_4->node.work.t[1] =
-                (var_4->node.work.t[1] * slot_obj->unk_12) >> 12;
+                (var_4->node.work.t[1] * slot_obj->position_scale) >> 12;
             var_4->node.work.t[2] =
-                (var_4->node.work.t[2] * slot_obj->unk_12) >> 12;
-            MulMatrix0(&slot_obj->unk_2C[0].node.xf.mat, &var_4->node.work,
-                       &obj->node.xf.mat);
+                (var_4->node.work.t[2] * slot_obj->position_scale) >> 12;
+            MulMatrix0(&slot_obj->transform_nodes[0].node.xf.mat,
+                       &var_4->node.work, &obj->node.xf.mat);
             ofs.vx = var_4->node.work.t[0];
             ofs.vy = var_4->node.work.t[1];
             ofs.vz = var_4->node.work.t[2];
@@ -2043,17 +2043,17 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     obj->node.unkA = 4;
     obj->node.unk2 = a1_val;
     src = &D_80099D3C[(arg1 & 1) * 6];
-    obj->node.work.t[0] = ((*src) * slot_obj->unk_12) >> 12;
+    obj->node.work.t[0] = ((*src) * slot_obj->position_scale) >> 12;
     src++;
-    obj->node.work.t[1] = ((*src) * slot_obj->unk_12) >> 12;
+    obj->node.work.t[1] = ((*src) * slot_obj->position_scale) >> 12;
     src++;
-    obj->node.work.t[2] = ((*src) * slot_obj->unk_12) >> 12;
+    obj->node.work.t[2] = ((*src) * slot_obj->position_scale) >> 12;
     src++;
     obj->node.xf.rot.vx = *src;
     src++;
     obj->node.xf.rot.vy = *src;
     rot_z = src[1];
-    obj->node.unkC = &slot_obj->unk_2C[12].node;
+    obj->node.unkC = &slot_obj->transform_nodes[12].node;
     obj->node.unk6 = 0;
     obj->node.xf.rot.vz = rot_z;
     node_UpdateWorldMatrix(&obj->node);

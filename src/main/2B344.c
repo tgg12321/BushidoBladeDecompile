@@ -2358,7 +2358,7 @@ void softbody_UpdateObject(Unk80045878Obj *a0) {
     if (s0 == 0)
         return;
     if (s0->unk6) {
-        softbody_FreeObjectById(a0->unk_04);
+        softbody_FreeObjectById(a0->arena_id);
         softbody_SetupObject(a0, 0);
     }
     if (s0->unk2) {
@@ -2407,7 +2407,7 @@ void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
     var_0 = arg0->unk_24;
     if (var_0 == 0)
         return;
-    var_1 = (s16 *)arg0->unk_28;
+    var_1 = (s16 *)arg0->softbody_params;
     cur = var_0->data;
     if (*var_1 == -3) {
         arg0->unk_24 = 0;
@@ -2423,7 +2423,7 @@ void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
                 func_80052C10();
             }
             rec = &var_0->recs[var_0->count];
-            obj = arg0->unk_1A34[i];
+            obj = arg0->node_by_id[i];
             rec->cur = cur;
             rec->obj = obj;
             cur = softbody_CreateForNode(rec, var_1, cur);
@@ -2445,7 +2445,7 @@ void softbody_SetupObject(Unk80045878Obj *arg0, s32 arg1) {
         }
     }
     if (arg1) {
-        func_80045A28(arg0->unk_04, cur - (u8 *)arg0->unk_1C);
+        func_80045A28(arg0->arena_id, cur - (u8 *)arg0->unk_1C);
     }
 }
 
@@ -2603,13 +2603,13 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
     init.in.matrix = &obj->node.xf.mat;
     init.in.flags = 0xE00;
     rec->unk0 = softbody_Create(&init.in);
-    obj->unk60 = init.in.buf;
+    obj->softbody_nodes = init.in.buf;
     rec->inner.count = 0;
     rec->inner.coll.count = 0;
     cur = ((u32)cur & 3) ? cur + 2 : cur;
     rec->f824_04.unk0 = rec->unk0;
     rec->f824_04.unk4 = &obj->node.xf.mat;
-    rec->f824_04.unk8 = obj->unk60;
+    rec->f824_04.unk8 = obj->softbody_nodes;
     rec->f824_04.unkC = &rec->inner.coll;
     rec->f824_04.unk2 = 0;
     rec->f824_04.unk3 = 0;
@@ -2656,7 +2656,7 @@ void softbody_AddColliders(Unk80045878Obj *a0, Unk8003F824Rec *rec, s16 *a2) {
     if (id != -2) {
         do {
             a2++;
-            in->objs[n] = &a0->unk_2C[id + 1];
+            in->objs[n] = &a0->transform_nodes[id + 1];
             in->f84[n][0].vx = *a2++;
             in->f84[n][0].vy = *a2++;
             in->f84[n][0].vz = *a2++;
@@ -2745,7 +2745,7 @@ void softbody_RebaseObject(Unk80045878Obj *a0, s32 a1) {
     if (v1) {
         v1 = (Unk8003F62CRec *)((u8 *)v1 + a1);
         a0->unk_24 = v1;
-        a0->unk_28 = a0->unk_28 + a1;
+        a0->softbody_params = a0->softbody_params + a1;
         v1->unk6 = 1;
     }
 }

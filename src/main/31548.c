@@ -23,19 +23,19 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     /* FAKE: s4 copies ent; using ent directly scores 4. */
     s4 = ent;
 
-    s4->unk_2C[0].node.xf.rot.vx = a3[0];
-    s4->unk_2C[0].node.xf.rot.vy = a3[1];
-    s4->unk_2C[0].node.xf.rot.vz = a3[2];
+    s4->transform_nodes[0].node.xf.rot.vx = a3[0];
+    s4->transform_nodes[0].node.xf.rot.vy = a3[1];
+    s4->transform_nodes[0].node.xf.rot.vz = a3[2];
 
-    s4->unk_2C[0].node.work.t[0] = a2[0];
+    s4->transform_nodes[0].node.work.t[0] = a2[0];
     /* FAKE: s5 holds s4 + 0x2C here and the linked record pointer in the copy
      * loop below; a fresh loop local scores 35, dropping this first role 46. */
-    s5 = s4->unk_2C;
-    s4->unk_2C[0].node.work.t[1] = a2[1];
-    s3 = &s4->unk_2C[1];
-    s4->unk_2C[0].node.work.t[2] = a2[2];
+    s5 = s4->transform_nodes;
+    s4->transform_nodes[0].node.work.t[1] = a2[1];
+    s3 = &s4->transform_nodes[1];
+    s4->transform_nodes[0].node.work.t[2] = a2[2];
 
-    s2 = &s4->unk_2C[19];
+    s2 = &s4->transform_nodes[19];
 
     switch (a1) {
     case 0: {
@@ -116,7 +116,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         Unk80045878Node *s1p;
         s0 = 0;
         s1p = s3;
-        s3->node.work.t[1] = (s3->node.work.t[1] * s4->unk_12) >> 12;
+        s3->node.work.t[1] = (s3->node.work.t[1] * s4->position_scale) >> 12;
         s5->node.unk6 = 0;
         do {
             node_UpdateWorldMatrix(&s1p->node);
@@ -156,7 +156,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
 
     {
         Unk80045878Node *a2p;
-        a2p = s4->unk_10D4;
+        a2p = s4->duplicate_nodes;
         for (;;) {
             void **list3;
             s5 = (Unk80045878Node *)a2p->unk58;
@@ -170,8 +170,8 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
             a2p++;
         }
 
-        a2p = s4->unk_8B4;
-        if (s4->unk_8B4[0].node.unk2 != -1) {
+        a2p = s4->projected_nodes;
+        if (s4->projected_nodes[0].node.unk2 != -1) {
             do {
                 void **list4;
                 list4 = g_draw_queue_cursor;
@@ -182,7 +182,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         }
     }
 
-    func_800404A0(s4->unk_8B4, arg5);
+    func_800404A0(s4->projected_nodes, arg5);
     s4->unk_1A84 = arg5;
     softbody_SetObjectGround(s4, arg5);
     softbody_UpdateObject(s4);
@@ -202,7 +202,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
     s32 offset;
     u16 *p;
     Unk80045878Node *var_9;
-    ents = &base->unk_2C[1];
+    ents = &base->transform_nodes[1];
     out2 = a4 + 1;
     do {
         offset = (*tbl) * 6;
@@ -298,11 +298,11 @@ void func_80041430(s32 a0, s32 a1) {
     base = &D_800A9A10[a0];
     s0 = (Unk80045878Obj *)((u8 *)*base + a1);
     *base = s0;
-    node_RebaseParents(a1, s0->unk_2C, 0x15);
-    node_RebaseParents(a1, s0->unk_8B4, 0x14);
-    node_RebaseParents(a1, s0->unk_10D4, 0x14);
+    node_RebaseParents(a1, s0->transform_nodes, 0x15);
+    node_RebaseParents(a1, s0->projected_nodes, 0x14);
+    node_RebaseParents(a1, s0->duplicate_nodes, 0x14);
     {
-        Unk80045878Node *c = s0->unk_10D4;
+        Unk80045878Node *c = s0->duplicate_nodes;
         do {
             s32 val = c->unk58;
             if (val) {
@@ -315,9 +315,9 @@ void func_80041430(s32 a0, s32 a1) {
     }
     i = 0;
     do {
-        Unk80045878Node *val = s0->unk_1A34[i];
+        Unk80045878Node *val = s0->node_by_id[i];
         if (val) {
-            s0->unk_1A34[i] = (Unk80045878Node *)((u8 *)val + a1);
+            s0->node_by_id[i] = (Unk80045878Node *)((u8 *)val + a1);
         }
         i++;
     } while (i < 0x14);
