@@ -1,0 +1,4 @@
+FaceTri.col=vtx_ids
+FaceQuad.col=vtx_ids
+FaceTriLong.col=vtx_ids
+FaceQuadLong.col=vtx_ids

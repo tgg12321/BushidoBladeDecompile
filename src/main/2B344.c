@@ -2462,25 +2462,25 @@ extern s16 D_80094AEC[];
  */
 typedef struct {
     u16 unk0[6];
-    u16 col[2];
+    u16 vtx_ids[2];
     u16 unk8[4];
 } FaceTri; /* mode 0 */
 
 typedef struct {
     u16 unk0[7];
-    u16 col[2];
+    u16 vtx_ids[2];
     u16 unk9[3];
 } FaceQuad; /* mode 1 */
 
 typedef struct {
     u16 unk0[6];
-    u16 col[2];
+    u16 vtx_ids[2];
     u16 unk8[10];
 } FaceTriLong; /* mode 2 */
 
 typedef struct {
     u16 unk0[8];
-    u16 col[2];
+    u16 vtx_ids[2];
     u16 unk10[12];
 } FaceQuadLong; /* mode 3 */
 
@@ -2560,10 +2560,10 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
             while (--count != -1) {
                 if (((s16)flags >> 3) & 2) {
                     FaceQuadLong *f = (FaceQuadLong *)src;
-                    value = ((u32)f->col[1] << 16) | f->col[0];
+                    value = ((u32)f->vtx_ids[1] << 16) | f->vtx_ids[0];
                 } else {
                     FaceQuad *f = (FaceQuad *)src;
-                    value = ((u32)f->col[1] << 16) | f->col[0];
+                    value = ((u32)f->vtx_ids[1] << 16) | f->vtx_ids[0];
                 }
                 *packet++ = 4;
                 *packet++ = 2;
@@ -2577,10 +2577,10 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
             while (--count != -1) {
                 if (((s16)flags >> 3) & 2) {
                     FaceTriLong *f = (FaceTriLong *)src;
-                    value = ((u32)f->col[1] << 16) | f->col[0];
+                    value = ((u32)f->vtx_ids[1] << 16) | f->vtx_ids[0];
                 } else {
                     FaceTri *f = (FaceTri *)src;
-                    value = ((u32)f->col[1] << 16) | f->col[0];
+                    value = ((u32)f->vtx_ids[1] << 16) | f->vtx_ids[0];
                 }
                 *packet++ = 3;
                 *packet++ = 2;
