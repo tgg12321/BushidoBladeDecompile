@@ -861,7 +861,7 @@ D_8010205C                                   = 0x8010205C;  /* D_80101EC8[0].unk
 D_80102114                                = 0x80102114;  /* +0x24C of D_80101EC8[0]: vx of VECTOR unk_24C (copied as a whole vector) */  /* data-wave 2026-10-08: was g_char_vec3_b_w_or_alpha */
 
 /* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2104-2108) */
-D_80101FA0                                      = 0x80101FA0;  /* D_80101EC8[0].unk_D8.x; passed by address to fight_GetStartPosition (9F9C.c:1297) */  /* data-wave 2026-10-09: was g_char_world_pos_x */
+D_80101FA0                                      = 0x80101FA0;  /* D_80101EC8[0].unk_D8.x; passed by address to fight_GetStartPosition (9F9C.c:1201) */  /* data-wave 2026-10-09: was g_char_world_pos_x */
 D_80101FA4                                      = 0x80101FA4;  /* D_80101EC8[0].unk_D8.y */  /* data-wave 2026-10-09: was g_char_world_pos_y */
 D_80101FA8                                      = 0x80101FA8;  /* D_80101EC8[0].unk_D8.z */  /* data-wave 2026-10-09: was g_char_world_pos_z */
 /* Vec3i32 unk_F4: set to unk_D8 with y - 0x384 (9F9C.c:1305-1307) or to unk_D8 + unk_E8 (:4060, :5286) */

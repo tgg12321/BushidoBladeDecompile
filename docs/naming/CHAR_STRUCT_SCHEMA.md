@@ -119,7 +119,7 @@ e->unk_F4.z = z;
 | +0xFC | `unk_F4.z` | `D_80101FC4` |
 
 What the triples hold is not established: `unk_D8` is passed by address
-to func_80021D10 / func_80021DB0 / func_80022224 (9F9C.c:1297, :4029-4051),
+to fight_GetStartPosition / func_80021DB0 / func_80022224 (9F9C.c:1201, :4029-4051),
 stepped by `unk_104` and `unk_134` (:5228-5230, :5264-5266) and differenced
 between records 0 and 1 (17AFC.c:2104-2105, :2227-2228); `unk_F4` is also
 set to `unk_D8 + unk_E8` (9F9C.c:4060, :5286).
