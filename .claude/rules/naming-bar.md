@@ -30,8 +30,7 @@ One contradicting use fails the name.
 ## N2 — neutral beats a guess
 
 Without enough evidence, keep the neutral name (`func_8XXXXXXX`, `D_8XXXXXXX`, `Unk<addr>Rec`,
-`unk_XX`). A neutral name makes no claim. A false name sends the next reader down a false trail,
-so it costs more than a neutral one.
+`unk_XX`). A neutral name makes no claim; a false one sends the next reader down a false trail.
 
 ## N3 — evidence: conflict order, not a gate
 
@@ -97,8 +96,7 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
    and run `python3 tools/naming_keycheck.py --from-manifests <naming_wave.json>,<data_wave.json>
    --pairs-file <pairs.txt>`. It checks what a commit would store (an unstaged or intent-to-add
    path fails), failing closed. Every changed, added, deleted or renamed path must be the base
-   with the pairs substituted, using the wave
-   tools' own substitutions:
+   with the pairs substituted, using the wave tools' own substitutions:
    - C and header tokens, and each comment in its place, change only by the pairs, as is or as
      `tools/format.py` lands them (a longer name can re-wrap or hoist a comment). Any other moved
      comment, or a `#define NAME(` spacing change, fails.
@@ -108,13 +106,14 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
      `build/bb2.map`, so it runs after the rebuild). `docs/naming/phase3/**` is the
      only free path. Registries change line by line, only into what naming_wave / data_wave
      emit for that line. Other text files (gate lists, tools) change only by the pairs.
-   - `.claude/**`, `movovl/**` (the overlay; the oracle does not cover it) and the tool itself
+   - `.claude/**`, `movovl/**` (not oracle-covered) and the tool itself
      never change.
    - Global pairs: a new non-auto name must not already exist in a build or tool file; an auto
      name must carry the old name's address; old names may share a new name only when they name
      one address; no old name survives in a build file (C comments included).
    - `T.m=n`: `n` is no member, type, macro, paste or keyword name in `src/` / `include/` C
-     (base and post-global trees); accesses resolve to `T` only by the oracle build.
+     (base and post-global trees), save that members the code shows alike may share `n` in one
+     wave; accesses resolve to `T` only by the oracle build.
    - `f:l=n`: `n` is fresh in `f`, at file scope and in enums (post-global tree), in no macro,
      no keyword; the cc1 differential proves the binding. Scoped comment edits are notes (R6).
 
