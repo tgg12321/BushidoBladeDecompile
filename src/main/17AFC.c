@@ -4532,7 +4532,7 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
     u8 c;
     u8 val;
 
-    ptr = rec->unk_58 + 4;
+    ptr = rec->motion_metadata + 4;
     rec->unk_A1[0] = 0xFF;
     rec->unk_A3[0] = 0xFF;
     rec->unk_A1[1] = 0xFF;
@@ -5124,7 +5124,7 @@ void fighter_DispatchFrameEvent(Unk80101EC8Record *obj, s32 kind) {
 const u32 D_800107BC[1] = {0x00000000};
 
 void fighter_ProcessFrameEvents(Unk80101EC8Record *base) {
-    u8 *s0 = base->unk_58 + 5;
+    u8 *s0 = base->motion_metadata + 5;
     u8 command = s0[-1];
     while (command != 0) {
         if (command == 0xFF) {

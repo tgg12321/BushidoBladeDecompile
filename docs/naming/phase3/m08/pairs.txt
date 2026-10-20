@@ -1,0 +1,9 @@
+Unk80101EC8Record.unk_06=cpu_controlled
+Unk80101EC8Record.unk_48=motion_data_id
+Unk80101EC8Record.unk_54=motion_entry
+Unk80101EC8Record.unk_58=motion_metadata
+Unk80101EC8Record.unk_5C=motion_entry_index
+Unk80101EC8Record.unk_68=pose_interp_weight
+Unk80101EC8Record.unk_14C=remaining_turn
+Unk80101EC8Record.unk_152=use_root_offset_yaw
+Unk80101EC8Record.unk_154=root_offset_yaw
