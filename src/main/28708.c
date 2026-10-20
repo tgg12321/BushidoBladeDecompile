@@ -1243,12 +1243,12 @@ void replay_RecordFighter(Unk80101EC8Record *a0) {
     idx = a0->index;
     dest = &g_replay_fighter_frames[g_replay_write_frame][idx];
 
-    dest->h4 = a0->unk_F4.x;
-    dest->h8 = a0->unk_F4.z;
-    dest->h6 = a0->unk_F4.y;
+    dest->h4 = a0->world_pos.x;
+    dest->h8 = a0->world_pos.z;
+    dest->h6 = a0->world_pos.y;
 
     {
-        u16 v = a0->unk_1C8.vy;
+        u16 v = a0->orientation.vy;
         u8 b = a0->unk_B3;
         dest->hA = (v & 0xFFF) | (b << 12);
     }
@@ -1257,7 +1257,7 @@ void replay_RecordFighter(Unk80101EC8Record *a0) {
     dest->b14 = a0->unk_1E6 >> 2;
     dest->b15 = a0->unk_1E8 >> 2;
     dest->b16 = a0->unk_1EA >> 2;
-    dest->w0 = a0->unk_50;
+    dest->w0 = a0->cur_move;
     dest->b17 = 0;
 
     if (a0->unk_60 != 0) {
@@ -1271,7 +1271,7 @@ void replay_RecordFighter(Unk80101EC8Record *a0) {
     dest->h10 = a0->unk_66;
     dest->h12 = a0->unk_68;
     dest->b18 = a0->unk_62;
-    dest->b19 = a0->unk_40;
+    dest->b19 = a0->move_frame;
 }
 
 void replay_AdvanceFrame(void) {
@@ -1422,8 +1422,8 @@ void replay_PlayFrame(void) {
                 var_11->unk_B2 = out_b2;
             }
         }
-        var_15 = var_11->unk_40;
-        var_11->unk_40 = p->b19;
+        var_15 = var_11->move_frame;
+        var_11->move_frame = p->b19;
         var_16 = var_11->unk_58;
         if (p->b17 & 1) {
             entry = &g_motion_common_sections.unk_04[p->w0->unk_04 * 2];
@@ -1436,7 +1436,7 @@ void replay_PlayFrame(void) {
         if (p->b18 & 0x40) {
             fighter_ProcessFrameEvents(var_11);
         }
-        var_11->unk_40 = var_15;
+        var_11->move_frame = var_15;
         var_11->unk_58 = var_16;
         func_80040304(i, (p->hA >> 12) & 7);
     }

@@ -939,7 +939,8 @@ void func_8003C9A4(void) {
         }
         D_800A3670 = 1;
         D_800A380C = D_800A380C + 1;
-        D_800A38DF = fight_FindNearestStartPair(&D_80101EC8[D_800A3748].unk_F4);
+        D_800A38DF =
+            fight_FindNearestStartPair(&D_80101EC8[D_800A3748].world_pos);
         D_800A3834 = 0;
         return;
     }
@@ -1013,10 +1014,10 @@ void func_8003CE18(void) {
         }
     }
     {
-        Vec3i32 *addr = &D_80101EC8[0].unk_F4;
+        Vec3i32 *addr = &D_80101EC8[0].world_pos;
         s32 result;
         if (D_800A3748 == 0) {
-            addr = &D_80101EC8[1].unk_F4;
+            addr = &D_80101EC8[1].world_pos;
         }
         result = fight_FindNearestStartPair(addr);
         D_800A3818 = result;

@@ -1435,12 +1435,12 @@ typedef struct Unk80101EC8Record {
     s16 unk_20;
     u8 unk_22[0x24 - 0x22];
     /* this frame's pad input (fighter_Update copies it whole) */
-    PadState unk_24;
+    PadState pad_input;
     /* frames since the record started (fighter_Update) */
-    s32 unk_3C;
-    s16 unk_40; /* current frame of the move */
-    s16 unk_42; /* frame fraction, 0x1000 = one frame */
-    s16 unk_44; /* frame-fraction step */
+    s32 update_count;
+    s16 move_frame;      /* current frame of the move */
+    s16 move_frame_frac; /* frame fraction, 0x1000 = one frame */
+    s16 move_frame_step; /* frame-fraction step */
     s16 unk_46;
     /* model id (motion_LoadFighterData); func_80021280 finds it in D_800A38C4
      */
@@ -1449,7 +1449,7 @@ typedef struct Unk80101EC8Record {
     s16 unk_4C;
     u8 unk_4E[0x50 - 0x4E];
     /* current move; unk_08 bounds unk_40 (func_80058580) */
-    MoveScript *unk_50;
+    MoveScript *cur_move;
     u16 *unk_54;
     u8 *unk_58; /* byte 3 read by func_80056FE8 */
     u16 unk_5C;
@@ -1462,15 +1462,15 @@ typedef struct Unk80101EC8Record {
     u16 unk_66;
     s16 unk_68;
     /* SEQ state code */
-    u16 unk_6A;
-    s16 unk_6C;
+    u16 move_kind;
+    s16 prev_move_kind;
     s16 unk_6E;
     s16 unk_70;
     s16 unk_72;
     s32 unk_74;
     s16 unk_78;
     s16 unk_7A;
-    MoveScript *unk_7C; /* buffered next move (fighter_Update) */
+    MoveScript *queued_move; /* buffered next move (fighter_Update) */
     s16 unk_80;
     u16 unk_82;
     s16 unk_84;
@@ -1508,12 +1508,12 @@ typedef struct Unk80101EC8Record {
     u8 unk_B3;
     u8 unk_B4;
     u8 unk_B5[0xB8 - 0xB5];
-    VECTOR unk_B8;
-    VECTOR unk_C8;
-    Vec3i32 unk_D8;
+    VECTOR collision_pos;
+    VECTOR prev_collision_pos;
+    Vec3i32 base_pos;
     u8 unk_E4[0xE8 - 0xE4];
-    Vec3i32 unk_E8;
-    Vec3i32 unk_F4;
+    Vec3i32 root_offset;
+    Vec3i32 world_pos;
     u8 unk_100[0x104 - 0x100];
     VECTOR unk_104;
     /* per blade; fighter_ProcessWeaponBodyHits indexes it with its 0/1 blade
@@ -1552,7 +1552,7 @@ typedef struct Unk80101EC8Record {
     u8 unk_1BC[0x1C2 - 0x1BC];
     s16 unk_1C2; /* the same for bone 14 */
     u8 unk_1C4[0x1C8 - 0x1C4];
-    SVec4i16 unk_1C8;
+    SVec4i16 orientation;
     SVec4i16 unk_1D0;
     s16 unk_1D8;
     s16 unk_1DA;
@@ -1581,7 +1581,7 @@ typedef struct Unk80101EC8Record {
     s16 unk_274;
     s16 unk_276[4];
     s16 unk_27E[4];
-    s16 unk_286;
+    s16 pending_move_event;
     /* per blade (unk_A1 / unk_A3 bounds), fighter_Update */
     s16 unk_288[2];
     s32 unk_28C;

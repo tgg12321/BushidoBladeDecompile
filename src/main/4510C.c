@@ -479,10 +479,10 @@ s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
             goto reset_ret_neg1;
         {
             Unk80101EC8Record *var_9 = arg0->other;
-            if (var_9->unk_6A == 0x2D)
+            if (var_9->move_kind == 0x2D)
                 goto reset_ret_neg1;
-            dx = var_9->unk_F4.x - arg0->unk_40E;
-            dy = var_9->unk_F4.z - arg0->unk_410;
+            dx = var_9->world_pos.x - arg0->unk_40E;
+            dy = var_9->world_pos.z - arg0->unk_410;
             dz = arg0->unk_412;
             if ((dz * dz) >= ((dx * dx) + (dy * dy)))
                 goto loop;
@@ -579,15 +579,15 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         var_2 = rec;
     }
     var_1->unk_441 = var_1->unk_58[2] & 0xF;
-    var_1->unk_43A = (ratan2(var_2->unk_F4.x - var_1->unk_F4.x,
-                             var_2->unk_F4.z - var_1->unk_F4.z) -
-                      var_1->unk_1C8.vy) &
+    var_1->unk_43A = (ratan2(var_2->world_pos.x - var_1->world_pos.x,
+                             var_2->world_pos.z - var_1->world_pos.z) -
+                      var_1->orientation.vy) &
                      0xFFF;
     if (var_1->unk_43A > 0x800) {
         var_1->unk_43A -= 0x1000;
     }
     var_1->unk_43C = var_1->unk_43A < 0 ? -var_1->unk_43A : var_1->unk_43A;
-    if (var_1->unk_6A == 0x15) {
+    if (var_1->move_kind == 0x15) {
         var_1->unk_440 = var_1->unk_441;
     }
 
@@ -603,29 +603,32 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         (((rand() & 0xFFF) < (rec->unk_438 >> 1) ||
           rec->unk_3E8 < (rec->unk_438 >> 4))
          << 4) |
-        ((rec->other->unk_6A == 2 || rec->other->unk_6A == 0x1B ||
-          rec->other->unk_6A == 0x28 || rec->other->unk_6A == 0x26 ||
-          (rec->unk_6A == 0x11 && rec->unk_50->unk_08 != rec->unk_58[1] - 1))
+        ((rec->other->move_kind == 2 || rec->other->move_kind == 0x1B ||
+          rec->other->move_kind == 0x28 || rec->other->move_kind == 0x26 ||
+          (rec->move_kind == 0x11 &&
+           rec->cur_move->unk_08 != rec->unk_58[1] - 1))
          << 7) |
-        ((rec->unk_6A == 0x13 || rec->unk_6A == 0x1B || rec->unk_6A == 0x30)
+        ((rec->move_kind == 0x13 || rec->move_kind == 0x1B ||
+          rec->move_kind == 0x30)
          << 8) |
-        ((rec->other->unk_6A == 0x13 || rec->other->unk_6A == 0x1B ||
-          rec->other->unk_6A == 0x30)
+        ((rec->other->move_kind == 0x13 || rec->other->move_kind == 0x1B ||
+          rec->other->move_kind == 0x30)
          << 9) |
-        ((rec->unk_6A == 6 || rec->unk_6A == 4 || rec->unk_6A == 0x14) << 10) |
-        ((rec->other->unk_6A == 6 || rec->other->unk_6A == 4 ||
-          rec->other->unk_6A == 0x14)
+        ((rec->move_kind == 6 || rec->move_kind == 4 || rec->move_kind == 0x14)
+         << 10) |
+        ((rec->other->move_kind == 6 || rec->other->move_kind == 4 ||
+          rec->other->move_kind == 0x14)
          << 11) |
-        (rec->unk_6A == 0x15 ? 0x1000 : 0) |
-        (rec->other->unk_6A == 0x15 ? 0x2000 : 0) |
-        (rec->unk_6A == 0x19 ? 0x4000 : 0) |
-        (rec->other->unk_6A == 0x19 ? 0x8000 : 0) |
-        (rec->unk_6A == 0x1A ? 0x10000 : 0);
+        (rec->move_kind == 0x15 ? 0x1000 : 0) |
+        (rec->other->move_kind == 0x15 ? 0x2000 : 0) |
+        (rec->move_kind == 0x19 ? 0x4000 : 0) |
+        (rec->other->move_kind == 0x19 ? 0x8000 : 0) |
+        (rec->move_kind == 0x1A ? 0x10000 : 0);
     rec->unk_3E8++;
 
-    if (rec->unk_6A != 2 && rec->unk_6A != 0x1B && rec->unk_6A != 0x28 &&
-        rec->unk_6A != 0x26 && rec->unk_6A != 0x2C && rec->unk_6A != 3 &&
-        rec->unk_6A != 7) {
+    if (rec->move_kind != 2 && rec->move_kind != 0x1B &&
+        rec->move_kind != 0x28 && rec->move_kind != 0x26 &&
+        rec->move_kind != 0x2C && rec->move_kind != 3 && rec->move_kind != 7) {
         if (rec->unk_3F5 != 0xFF) {
             rec->unk_3F5++;
         }
@@ -668,9 +671,10 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     if (rec->unk_430 & 0x15500) {
         fighter_UpdateCpuProbes(rec);
     }
-    if ((rec->unk_40 == 0 && (rec->unk_6A == 3 || rec->unk_6A == 0x2C)) ||
-        (rec->other->unk_40 == 0 &&
-         (rec->other->unk_6A == 0xD || rec->other->unk_6A == 0x2C))) {
+    if ((rec->move_frame == 0 &&
+         (rec->move_kind == 3 || rec->move_kind == 0x2C)) ||
+        (rec->other->move_frame == 0 &&
+         (rec->other->move_kind == 0xD || rec->other->move_kind == 0x2C))) {
         if (rec->unk_3F4 != 0xFF) {
             rec->unk_3F4++;
         }
@@ -683,9 +687,9 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
                                            : rec->other->unk_A3[1];
     }
     if (!(rec->unk_430 & 0x80) ||
-        (rec->unk_6A != 0x11
-             ? (hi < rec->other->unk_40 || lo - rec->other->unk_40 >= 9)
-             : rec->unk_50->unk_08 < rec->unk_40)) {
+        (rec->move_kind != 0x11
+             ? (hi < rec->other->move_frame || lo - rec->other->move_frame >= 9)
+             : rec->cur_move->unk_08 < rec->move_frame)) {
         if (rec->unk_428 != -1) {
             if (rec->unk_424 != 0 &&
                 (func_800167BC() == 0 || D_800A38DC == 3)) {
@@ -712,7 +716,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
                         rec->unk_414[i][1] = temp;
                     }
                 }
-                temp = rec->unk_6A == 0x11 ? 8 : 4;
+                temp = rec->move_kind == 0x11 ? 8 : 4;
                 if (var_13 == -1) {
                     rec->unk_414[var_12][0] = rec->unk_428;
                     rec->unk_414[var_12][1] = temp;
@@ -730,13 +734,13 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         }
     } else {
         if (rec->unk_428 != rec->other->unk_5C) {
-            if (rec->unk_6A == 0x11) {
+            if (rec->move_kind == 0x11) {
                 rec->unk_428 = 0xFF;
             } else {
-                rec->unk_428 =
-                    (rec->other->unk_6C != 0xE && rec->other->unk_6C != 0x2C)
-                        ? rec->other->unk_5C
-                        : 0xFE;
+                rec->unk_428 = (rec->other->prev_move_kind != 0xE &&
+                                rec->other->prev_move_kind != 0x2C)
+                                   ? rec->other->unk_5C
+                                   : 0xFE;
                 rec->unk_427 = lo;
                 temp2 = func_80056FE8(rec);
                 temp3 = temp2 + 800;
@@ -758,8 +762,8 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
                         rec->unk_426 = 3;
                     }
                 }
-                rec->unk_42A = rec->other->unk_F4.x;
-                rec->unk_42C = rec->other->unk_F4.z;
+                rec->unk_42A = rec->other->world_pos.x;
+                rec->unk_42C = rec->other->world_pos.z;
                 rec->unk_42E = temp3;
             }
             for (i = 0; i < 8; i++) {
@@ -780,7 +784,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         }
     }
 
-    if (rec->other->unk_6A == 0x12 && rec->other->unk_43C < 0x80 &&
+    if (rec->other->move_kind == 0x12 && rec->other->unk_43C < 0x80 &&
         D_800A387C < 0x1194) {
         rec->unk_425 = 1;
     } else {
@@ -788,13 +792,14 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         for (i = 0; i < 12; i++) {
             Obj80106A78 *obj = &g_object_pool[i];
 
-            temp2 = SquareRoot0(
-                (rec->unk_F4.x - obj->pos.x) * (rec->unk_F4.x - obj->pos.x) +
-                (rec->unk_F4.z - obj->pos.z) * (rec->unk_F4.z - obj->pos.z));
+            temp2 = SquareRoot0((rec->world_pos.x - obj->pos.x) *
+                                    (rec->world_pos.x - obj->pos.x) +
+                                (rec->world_pos.z - obj->pos.z) *
+                                    (rec->world_pos.z - obj->pos.z));
             if (obj->kind != -1 && obj->unk_04 != 0 &&
                 obj->owner != rec->index) {
-                temp = (ratan2(rec->unk_F4.x - obj->pos.x,
-                               rec->unk_F4.z - obj->pos.z) -
+                temp = (ratan2(rec->world_pos.x - obj->pos.x,
+                               rec->world_pos.z - obj->pos.z) -
                         ratan2(obj->pos.x - obj->prev_pos.x,
                                obj->pos.z - obj->prev_pos.z)) &
                        0xFFF;
@@ -802,9 +807,9 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
                     temp -= 0x1000;
                 }
                 if ((temp < 0 ? -temp : temp) < 0x80) {
-                    if ((rec->unk_B8.vy - obj->pos.y >= 0)
-                            ? (rec->unk_B8.vy - obj->pos.y < 2000)
-                            : (obj->pos.y - rec->unk_B8.vy < 2000)) {
+                    if ((rec->collision_pos.vy - obj->pos.y >= 0)
+                            ? (rec->collision_pos.vy - obj->pos.y < 2000)
+                            : (obj->pos.y - rec->collision_pos.vy < 2000)) {
                         rec->unk_425 = temp2 < 3000 ? 2 : 1;
                     }
                 }
@@ -816,26 +821,26 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         rec->unk_426 != 1 && rec->unk_426 != 2 && rec->unk_425 != 1 &&
         rec->unk_425 != 2 &&
         (((rec->unk_430 & 0x80) &&
-          ((rec->other->unk_7C == 0 && hi < rec->other->unk_40) ||
-           lo - rec->other->unk_40 >= 9)) ||
-         rec->other->unk_6A == 0x10 || rec->other->unk_6A == 3 ||
-         rec->other->unk_6A == 7 || rec->other->unk_6A == 0x2C ||
-         rec->other->unk_6A == 0x24 ||
+          ((rec->other->queued_move == 0 && hi < rec->other->move_frame) ||
+           lo - rec->other->move_frame >= 9)) ||
+         rec->other->move_kind == 0x10 || rec->other->move_kind == 3 ||
+         rec->other->move_kind == 7 || rec->other->move_kind == 0x2C ||
+         rec->other->move_kind == 0x24 ||
          (!(D_80099D88[rec->unk_443].flags & 0x20) &&
           (((rec->unk_430 & 0x80) && rec->unk_426 == 3) ||
-           (rec->other->unk_6A == 0x2A && rec->other->unk_26C == 0) ||
-           (rec->other->unk_6A == 0x12 &&
+           (rec->other->move_kind == 0x2A && rec->other->unk_26C == 0) ||
+           (rec->other->move_kind == 0x12 &&
             (!((0x78 >> rec->other->unk_B1) & 1) ||
              rec->other->unk_26C == 0)) ||
-           (rec->other->unk_6A == 0xB &&
+           (rec->other->move_kind == 0xB &&
             ((rec->other->unk_330 == 0 && rec->unk_425 != 1 &&
               rec->unk_425 != 2) ||
              rec->other->unk_26C == 0)))) ||
          ((D_80099D88[rec->unk_443].flags & 0x20) &&
-          (rec->other->unk_6A == 0x25 || rec->other->unk_6A == 9 ||
-           rec->other->unk_6A == 0x16 || rec->other->unk_6A == 0x17 ||
-           rec->other->unk_6A == 0xA ||
-           (rec->other->unk_6A == 0x22 && rec->unk_442 == 0) ||
+          (rec->other->move_kind == 0x25 || rec->other->move_kind == 9 ||
+           rec->other->move_kind == 0x16 || rec->other->move_kind == 0x17 ||
+           rec->other->move_kind == 0xA ||
+           (rec->other->move_kind == 0x22 && rec->unk_442 == 0) ||
            rec->other->unk_43C > 0x400)))) {
         rec->unk_430 |= 2;
     } else {
@@ -844,7 +849,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
 
     if (D_80099D88[rec->unk_443].flags & 0x8000) {
         rec->unk_430 &= ~0x78;
-        if (rec->unk_6A != 0x25 && (g_pad_state.held & 0x100)) {
+        if (rec->move_kind != 0x25 && (g_pad_state.held & 0x100)) {
             rec->unk_430 |= 0x40000;
             rec->unk_3F2 = 0;
         }
@@ -869,9 +874,9 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     }
     if (pad.held & 0x660) {
         bits = D_800A3258;
-        if (rec->unk_6A == 0x19) {
+        if (rec->move_kind == 0x19) {
             pad.held |= 1 << bits.bit[rec->unk_441];
-        } else if (rec->unk_6A == 0x13) {
+        } else if (rec->move_kind == 0x13) {
             pad.held |= 4;
         }
     }
@@ -912,23 +917,23 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
             obj = arg0->other;
         }
 
-        if (arg0->unk_6A == 0x13 || arg0->unk_6A == 6) {
-            flags += obj->unk_1C8.vy;
+        if (arg0->move_kind == 0x13 || arg0->move_kind == 6) {
+            flags += obj->orientation.vy;
         } else {
-            flags += ratan2(D_800F6608.unk_00.x - obj->unk_F4.x,
-                            D_800F6608.unk_00.z - obj->unk_F4.z);
+            flags += ratan2(D_800F6608.unk_00.x - obj->world_pos.x,
+                            D_800F6608.unk_00.z - obj->world_pos.z);
         }
 
         sin_p = &Judge[flags & 0xFFF];
         scale = D_8009A820[i][0] << 8;
-        x = obj->unk_B8.vx + ((scale * *sin_p) >> 12);
+        x = obj->collision_pos.vx + ((scale * *sin_p) >> 12);
         cos_p = &Judge[(flags + 0x400) & 0xFFF];
-        z = obj->unk_B8.vz + ((scale * *cos_p) >> 12);
-        var_0[0] = obj->unk_B8.vx;
-        var_0[1] = obj->unk_B8.vy - 0x320;
-        var_0[2] = obj->unk_B8.vz;
+        z = obj->collision_pos.vz + ((scale * *cos_p) >> 12);
+        var_0[0] = obj->collision_pos.vx;
+        var_0[1] = obj->collision_pos.vy - 0x320;
+        var_0[2] = obj->collision_pos.vz;
         var_1[0] = x;
-        var_1[1] = obj->unk_B8.vy - 0x320;
+        var_1[1] = obj->collision_pos.vy - 0x320;
         var_1[2] = z;
 
         flags = collision_TestSegmentWithWork(
@@ -939,23 +944,23 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
         }
 
         var_0[0] = x;
-        var_0[1] = obj->unk_B8.vy - 0x834;
+        var_0[1] = obj->collision_pos.vy - 0x834;
         var_0[2] = z;
         var_1[0] = x;
-        var_1[1] = obj->unk_B8.vy + 0x1004;
+        var_1[1] = obj->collision_pos.vy + 0x1004;
         var_1[2] = z;
 
         flags |=
             collision_TestSegmentWithWork(var_0, var_1, var_3, work, 0x1F8002B8)
             << 1;
         flags += 1;
-        if (flags == 3 && var_3[1] - obj->unk_B8.vy < 5) {
+        if (flags == 3 && var_3[1] - obj->collision_pos.vy < 5) {
             flags = 0;
         } else if (flags == 4) {
-            s32 dx = var_2[0] - obj->unk_B8.vx;
-            s32 dz = var_2[2] - obj->unk_B8.vz;
+            s32 dx = var_2[0] - obj->collision_pos.vx;
+            s32 dz = var_2[2] - obj->collision_pos.vz;
             if (0x3D0900 < dx * dx + dz * dz) {
-                s32 y = obj->unk_B8.vy;
+                s32 y = obj->collision_pos.vy;
                 if ((y - var_3[1] >= 0 ? y - var_3[1] : var_3[1] - y) >=
                     0x3E9) {
                     flags = 5;
@@ -1013,9 +1018,10 @@ s32 func_80057094(Unk80101EC8Record *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_v1;
     s32 var_v0;
 
-    temp_s0 = ratan2(D_800F6608.unk_00.x - arg0->unk_F4.x,
-                     D_800F6608.unk_00.z - arg0->unk_F4.z);
-    var_v0 = temp_s0 - ratan2(arg1 - arg0->unk_F4.x, arg2 - arg0->unk_F4.z);
+    temp_s0 = ratan2(D_800F6608.unk_00.x - arg0->world_pos.x,
+                     D_800F6608.unk_00.z - arg0->world_pos.z);
+    var_v0 =
+        temp_s0 - ratan2(arg1 - arg0->world_pos.x, arg2 - arg0->world_pos.z);
     var_v0 -= 0x100;
     temp_v0 = (s32)var_v0 >> 9;
     temp_v1 = temp_v0 & 7;
@@ -1077,10 +1083,10 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
     var_10 = 1;
     var_9 = 1;
     ret = 0;
-    left.x = obj->unk_B8.vx;
-    left.y = obj->unk_B8.vy - 5;
+    left.x = obj->collision_pos.vx;
+    left.y = obj->collision_pos.vy - 5;
     var_12 = D_800A387C + 800;
-    left.z = obj->unk_B8.vz;
+    left.z = obj->collision_pos.vz;
     var_3 = left;
     for (ang = 0x200; ang <= 0x800; ang += 0x200) {
         if (var_9) {
@@ -1089,13 +1095,13 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
             var_9 = 0;
             dx = var_12 * Judge[a & 0xFFF];
             dz = var_12 * Judge[(a + 0x400) & 0xFFF];
-            x = p->unk_B8.vx + (dx >> 12);
-            z = p->unk_B8.vz + (dz >> 12);
+            x = p->collision_pos.vx + (dx >> 12);
+            z = p->collision_pos.vz + (dz >> 12);
             var_0.x = x;
-            var_0.y = obj->unk_B8.vy - 5;
+            var_0.y = obj->collision_pos.vy - 5;
             var_0.z = z;
             top.x = x;
-            top.y = obj->unk_B8.vy + 5;
+            top.y = obj->collision_pos.vy + 5;
             top.z = z;
             if (collision_TestSegmentWithWork(
                     &var_0.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
@@ -1113,13 +1119,13 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
             var_10 = 0;
             dx = var_12 * Judge[a & 0xFFF];
             dz = var_12 * Judge[(a + 0x400) & 0xFFF];
-            x = p->unk_B8.vx + (dx >> 12);
-            z = p->unk_B8.vz + (dz >> 12);
+            x = p->collision_pos.vx + (dx >> 12);
+            z = p->collision_pos.vz + (dz >> 12);
             var_0.x = x;
-            var_0.y = obj->unk_B8.vy - 5;
+            var_0.y = obj->collision_pos.vy - 5;
             var_0.z = z;
             top.x = x;
-            top.y = obj->unk_B8.vy + 5;
+            top.y = obj->collision_pos.vy + 5;
             top.z = z;
             if (collision_TestSegmentWithWork(
                     &var_0.x, &top.x, var_4, work, 0x1F8002B8) != 0) {
@@ -1155,9 +1161,10 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
                 a = base - ang;
             }
             obj->cpu_route.node[var_7].x =
-                obj->other->unk_B8.vx + ((D_800A387C * Judge[a & 0xFFF]) >> 12);
+                obj->other->collision_pos.vx +
+                ((D_800A387C * Judge[a & 0xFFF]) >> 12);
             obj->cpu_route.node[var_7].z =
-                obj->other->unk_B8.vz +
+                obj->other->collision_pos.vz +
                 ((D_800A387C * Judge[(a + 0x400) & 0xFFF]) >> 12);
             obj->cpu_route.node[var_7].kind = 2;
         }
@@ -1276,11 +1283,11 @@ s32 fighter_FindNearestNavCrossing(
                 k = 0;
             }
             if (math_IntersectSegments(
-                    arg0->unk_F4.x, arg0->unk_F4.z, arg2, arg3, poly->vtx[j][0],
-                    poly->vtx[j][1], poly->vtx[k][0], poly->vtx[k][1], &sp28,
-                    &sp2C) != 0) {
-                dx = sp28 - arg0->unk_F4.x;
-                dy = sp2C - arg0->unk_F4.z;
+                    arg0->world_pos.x, arg0->world_pos.z, arg2, arg3,
+                    poly->vtx[j][0], poly->vtx[j][1], poly->vtx[k][0],
+                    poly->vtx[k][1], &sp28, &sp2C) != 0) {
+                dx = sp28 - arg0->world_pos.x;
+                dy = sp2C - arg0->world_pos.z;
                 d = SquareRoot0(dx * dx + dy * dy);
                 if (d < best) {
                     best = d;
@@ -1401,8 +1408,8 @@ void fighter_AppendNavDetour(
     var_11 = 1;
     var_18 = 1;
     poly = &arg1->polys[arg0->cpu_route.poly];
-    var_7 = var_9 = arg0->unk_F4.x;
-    var_8 = var_10 = arg0->unk_F4.z;
+    var_7 = var_9 = arg0->world_pos.x;
+    var_8 = var_10 = arg0->world_pos.z;
     var_0[1].count = 0;
     var_0[0].count = 0;
     var_17 = 0;
@@ -1656,14 +1663,14 @@ s32 func_80058580(Unk80101EC8Record *p) {
     s8 var_43;
     s32 var_44;
 
-    if (p->other->unk_6A == 4 || p->other->unk_6A == 0x14) {
+    if (p->other->move_kind == 4 || p->other->move_kind == 0x14) {
         return 0;
     }
     if (p->unk_443 != 0x16 &&
         ((p->unk_430 & 0x15100) ||
-         (p->unk_6A == 0xD && (p->unk_426 == 4 || p->unk_425 == 4)))) {
+         (p->move_kind == 0xD && (p->unk_426 == 4 || p->unk_425 == 4)))) {
         var_7 = 0;
-        if ((p->unk_426 == 1 && p->other->unk_40 + 1 >= p->unk_427) ||
+        if ((p->unk_426 == 1 && p->other->move_frame + 1 >= p->unk_427) ||
             p->unk_425 == 2) {
             if (p->unk_430 & 8) {
                 u8 *tbl[2];
@@ -1683,22 +1690,22 @@ s32 func_80058580(Unk80101EC8Record *p) {
                 var_7 = tbl[work3];
                 mode = 3;
             }
-            if (p->unk_6A == 0xD) {
+            if (p->move_kind == 0xD) {
                 var_7 = 0;
                 p->unk_3CC = 0;
                 p->unk_426 = 4;
                 p->unk_425 = 4;
                 p->unk_3F3++;
             }
-        } else if (p->unk_6A == 0x15) {
+        } else if (p->move_kind == 0x15) {
             mode = 4;
             work3 = p->unk_444[3] == 0;
             work1 = p->unk_444[5] == 0;
             work2 = p->unk_444[1] == 0;
             if (p->unk_426 == 2) {
                 if (p->unk_42E * p->unk_42E <
-                    CPU_SQ(p->unk_42A - p->unk_F4.x) +
-                        CPU_SQ(p->unk_42C - p->unk_F4.z)) {
+                    CPU_SQ(p->unk_42A - p->world_pos.x) +
+                        CPU_SQ(p->unk_42C - p->world_pos.z)) {
                     p->unk_3CC = 0;
                     p->unk_426 = 4;
                     p->unk_425 = 4;
@@ -1712,7 +1719,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
             }
             if (p->unk_425 == 1 ||
                 (p->unk_426 == 1 && p->other->unk_441 == 2 &&
-                 p->unk_427 - p->other->unk_40 >= 6) ||
+                 p->unk_427 - p->other->move_frame >= 6) ||
                 (p->unk_426 == 2 && var_7 == 0)) {
                 if ((p->unk_430 & 8) &&
                     (!(D_80099D88[p->unk_443].flags & 0xBF00) ||
@@ -1771,9 +1778,9 @@ s32 func_80058580(Unk80101EC8Record *p) {
                 }
             }
             if (!(p->unk_425 == 1 || p->unk_425 == 2) && p->unk_426 != 2 &&
-                (p->unk_3CC == 0 || p->unk_442 != 0 || p->other->unk_6A == 2 ||
-                 p->other->unk_6A == 0x29 || p->other->unk_6A == 0x13 ||
-                 p->other->unk_6A == 6 ||
+                (p->unk_3CC == 0 || p->unk_442 != 0 ||
+                 p->other->move_kind == 2 || p->other->move_kind == 0x29 ||
+                 p->other->move_kind == 0x13 || p->other->move_kind == 6 ||
                  p->other->unk_404[p->other->unk_86] < D_800A387C)) {
                 if (p->unk_43C < 0x400 && p->unk_444[3] == 0) {
                     p->unk_3CC = 0x8000;
@@ -1785,10 +1792,10 @@ s32 func_80058580(Unk80101EC8Record *p) {
     } else {
         u16 state;
 
-        state = p->unk_6A;
+        state = p->move_kind;
         if (state == 0xF || state == 0x1C || state == 0x1D || state == 0x1E ||
             state == 0x1F || state == 0x20 || state == 0x21) {
-            if (p->unk_6A == 0x1D &&
+            if (p->move_kind == 0x1D &&
                 (rand() & 0xFF) < D_80099D88[p->unk_443].unk4 &&
                 p->unk_444[3] == 0) {
                 p->unk_3CC = 0x8000;
@@ -1810,7 +1817,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                 }
             }
         } else if (state == 0x11 && p->index != D_800A38AE &&
-                   p->unk_40 == p->unk_50->unk_08 - 1) {
+                   p->move_frame == p->cur_move->unk_08 - 1) {
             {
                 s32 a, b, c;
                 a = p->unk_26E;
@@ -1826,9 +1833,9 @@ s32 func_80058580(Unk80101EC8Record *p) {
                 }
             }
         } else {
-            if ((p->unk_148 - p->unk_B8.vy >= 0
-                     ? p->unk_148 - p->unk_B8.vy
-                     : p->unk_B8.vy - p->unk_148) < 200 &&
+            if ((p->unk_148 - p->collision_pos.vy >= 0
+                     ? p->unk_148 - p->collision_pos.vy
+                     : p->collision_pos.vy - p->unk_148) < 200 &&
                 !(D_80099D88[p->unk_443].flags & 0x8C00) &&
                 ((!func_800167BC() && D_800A38DC != 3) || D_800A38DC == 3)) {
                 work3 = 0;
@@ -1848,16 +1855,16 @@ s32 func_80058580(Unk80101EC8Record *p) {
                      work4 < sizeof(D_8009A850) / sizeof(D_8009A850[0]);
                      work4++) {
                     if (!(D_8009A850[work4][3] & 1) ||
-                        p->unk_40 >= p->unk_50->unk_08 - 2 || work3) {
+                        p->move_frame >= p->cur_move->unk_08 - 2 || work3) {
                         work2 = D_8009A850[work4][2] * 16 + work1 + p->unk_40A;
                         if ((D_800A387C < work2 &&
                              (!(D_8009A850[work4][3] & 8) ||
                               p->unk_43C < 0x100) &&
                              (var_41 || (D_8009A850[work4][3] & 4))) ||
                             work3) {
-                            if (D_8009A850[work4][0] == p->unk_6A &&
+                            if (D_8009A850[work4][0] == p->move_kind &&
                                 ((var_36 = D_8009A850[work4][1]) == 0xFF ||
-                                 var_36 == p->other->unk_6A)) {
+                                 var_36 == p->other->move_kind)) {
                                 if (D_8009A850[work4][3] & 2) {
                                     var_21 = 0x40;
                                     if (p->unk_3E8 & 1) {
@@ -1884,7 +1891,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
     if ((p->unk_430 & 0x4108) == 8) {
         u16 state;
 
-        state = p->unk_6A;
+        state = p->move_kind;
         if (state == 3 || state == 0x2C || state == 7 ||
             (p->unk_426 == 1 || p->unk_426 == 2) ||
             (p->unk_425 == 1 || p->unk_425 == 2)) {
@@ -1898,8 +1905,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
     if (p->unk_430 & 0x5100) {
         var_25 = &D_8009A658[D_800A36A4];
         if (p->unk_39D == 0) {
-            tx = p->other->unk_F4.x;
-            tz = p->other->unk_F4.z;
+            tx = p->other->world_pos.x;
+            tz = p->other->world_pos.z;
             var_38 = 1;
         } else {
             tx = p->unk_3A0;
@@ -1912,7 +1919,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
          * instructions shorter
          */
         if (!(var_38 == 1 &&
-              (p->other->unk_6A == 0xA || p->unk_443 == 0xA ||
+              (p->other->move_kind == 0xA || p->unk_443 == 0xA ||
                (p->unk_0E >= 6 && p->unk_34A == 0)) &&
               var_38 == 1)) {
             if (!(p->unk_3E8 & 7)) {
@@ -1963,7 +1970,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                 }
             } else if (p->cpu_route.count == 0) {
                 if (p->unk_434 != 100000 ||
-                    CPU_SQ(p->unk_F4.x - tx) + CPU_SQ(p->unk_F4.z - tz) >
+                    CPU_SQ(p->world_pos.x - tx) + CPU_SQ(p->world_pos.z - tz) >
                         0x15F8F) {
                 record:
                     p->cpu_route.node[0].x = tx;
@@ -1978,8 +1985,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
             if (p->cpu_route.count != 0) {
                 if (p->cpu_route.node[0].kind == 1
                         ? (p->unk_434 == 100000 && D_800A387C < lim)
-                        : SquareRoot0(CPU_SQ(p->unk_F4.x - tx) +
-                                      CPU_SQ(p->unk_F4.z - tz)) < 2000) {
+                        : SquareRoot0(CPU_SQ(p->world_pos.x - tx) +
+                                      CPU_SQ(p->world_pos.z - tz)) < 2000) {
                     p->cpu_route.count = 0;
                     p->unk_39D = 0;
                     goto after_nav;
@@ -2012,7 +2019,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                                 if (D_800A387C <
                                     p->other->unk_404[p->other->unk_86]) {
                                 pick2:
-                                    if (p->unk_6A == 0x13) {
+                                    if (p->move_kind == 0x13) {
                                         var_8 = D_8009A8A4;
                                     } else if (p->unk_440 != 4) {
                                         var_8 = D_8009A89C;
@@ -2029,16 +2036,16 @@ s32 func_80058580(Unk80101EC8Record *p) {
                     }
                     if (var_53 == 0) {
                         if (p->cpu_route.node[0].kind == 1) {
-                            dist = SquareRoot0(CPU_SQ(p->unk_F4.x - tx) +
-                                               CPU_SQ(p->unk_F4.z - tz));
+                            dist = SquareRoot0(CPU_SQ(p->world_pos.x - tx) +
+                                               CPU_SQ(p->world_pos.z - tz));
                         } else {
-                            dist = SquareRoot0(CPU_SQ(p->unk_F4.x - wx) +
-                                               CPU_SQ(p->unk_F4.z - wz));
+                            dist = SquareRoot0(CPU_SQ(p->world_pos.x - wx) +
+                                               CPU_SQ(p->world_pos.z - wz));
                         }
                     } else {
                         work4 = var_53;
-                        dist = SquareRoot0(CPU_SQ(wx - p->unk_F4.x) +
-                                           CPU_SQ(wz - p->unk_F4.z));
+                        dist = SquareRoot0(CPU_SQ(wx - p->world_pos.x) +
+                                           CPU_SQ(wz - p->world_pos.z));
                         while (work4 >= 2) {
                             dist += SquareRoot0(
                                 CPU_SQ(p->cpu_route.node[work4].x -
@@ -2068,20 +2075,20 @@ s32 func_80058580(Unk80101EC8Record *p) {
                         var_19 = 1000;
                     }
                     if (CPU_SQ(p->cpu_route.node[p->cpu_route.count - 1].x -
-                               p->unk_F4.x) +
+                               p->world_pos.x) +
                             CPU_SQ(p->cpu_route.node[p->cpu_route.count - 1].z -
-                                   p->unk_F4.z) <
+                                   p->world_pos.z) <
                         var_19 * (var_22 ? 1000 : 300)) {
                         if (--p->cpu_route.count != 0) {
                             work3 =
                                 (ratan2(
                                      p->cpu_route.node[p->cpu_route.count - 1]
                                              .x -
-                                         p->unk_F4.x,
+                                         p->world_pos.x,
                                      p->cpu_route.node[p->cpu_route.count - 1]
                                              .z -
-                                         p->unk_F4.z) -
-                                 p->unk_1C8.vy) &
+                                         p->world_pos.z) -
+                                 p->orientation.vy) &
                                 0xFFF;
                             if (work3 > 0x800) {
                                 work3 -= 0x1000;
@@ -2160,11 +2167,11 @@ s32 func_80058580(Unk80101EC8Record *p) {
             var_9 = 0;
             if (p->unk_39C != 1) {
                 work3 = p->unk_394;
-            } else if (p->other->unk_6A == 0x19) {
+            } else if (p->other->move_kind == 0x19) {
                 u8 var_54[4];
                 __builtin_memcpy(var_54, D_800A325C, 4);
                 work3 = var_54[p->other->unk_441];
-            } else if (p->other->unk_6A == 0x1A) {
+            } else if (p->other->move_kind == 0x1A) {
                 u8 var_55[4];
                 __builtin_memcpy(var_55, D_800A3260, 4);
                 work3 = var_55[p->other->unk_441];
@@ -2294,8 +2301,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
                         if ((p->unk_444[6] == 1 || p->unk_444[6] == 2) ||
                             !(D_800A387C >= 3000 && D_800A387C <= 5000) ||
                             p->unk_43C >= 0x201 || p->unk_440 == 4 ||
-                            p->other->unk_6A == 0x18 ||
-                            p->other->unk_6A == 0x2A) {
+                            p->other->move_kind == 0x18 ||
+                            p->other->move_kind == 0x2A) {
                             goto pick_next;
                         }
                         break;
@@ -2370,7 +2377,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
     if ((p->unk_430 & 6) && !(p->unk_430 & 0x800)) {
         u16 state;
 
-        state = p->unk_6A;
+        state = p->move_kind;
         if (state == 0x15 || (state == 0x19 && p->unk_441 >= 2)) {
             if ((p->unk_3E8 & 1) || p->unk_0E >= 6) {
                 if (p->unk_442 == 0 && p->unk_444[3] != 1 &&
@@ -2490,10 +2497,10 @@ s32 func_80058580(Unk80101EC8Record *p) {
                         work3 = 0;
                         if (var_18 == 0) {
                             if (work1 < D_800A387C && D_800A387C < hi) {
-                                if (p->other->unk_6A == 0x15 ||
-                                    p->other->unk_6A == 0x2C ||
-                                    p->other->unk_6A == 0xE ||
-                                    p->other->unk_6A == 0x19) {
+                                if (p->other->move_kind == 0x15 ||
+                                    p->other->move_kind == 0x2C ||
+                                    p->other->move_kind == 0xE ||
+                                    p->other->move_kind == 0x19) {
                                     work3 = 1;
                                 }
                             }
@@ -2565,8 +2572,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
                         fighter_StartCpuPadScript(p, var_1, 0, 0);
                         p->unk_40C = var_4;
                         p->unk_40D = p->unk_86;
-                        p->unk_40E = p->unk_F4.x;
-                        p->unk_410 = p->unk_F4.z;
+                        p->unk_40E = p->world_pos.x;
+                        p->unk_410 = p->world_pos.z;
                         p->unk_3F2++;
                         p->unk_412 = var_5;
                     }
@@ -2628,8 +2635,9 @@ s32 func_80058580(Unk80101EC8Record *p) {
     if (p->unk_3CC != 0) {
         return p->unk_3CC;
     }
-    if (p->unk_6A == 0x15) {
-        if (p->unk_43C > 0x100 && !(p->unk_6C == 0x19 || p->unk_6C == 0x1A) &&
+    if (p->move_kind == 0x15) {
+        if (p->unk_43C > 0x100 &&
+            !(p->prev_move_kind == 0x19 || p->prev_move_kind == 0x1A) &&
             p->unk_0E < 7 && p->unk_443 != 0x16) {
             p->unk_39C = 0;
             p->unk_398 = 0x17000 / p->unk_1C;
@@ -2652,10 +2660,10 @@ s32 func_80058580(Unk80101EC8Record *p) {
                    (p->unk_442 == 0 || p->unk_442 == 2)) {
             fighter_StartCpuPadScript(p, D_8009A898, 1, p->unk_3BD);
             p->unk_3F2++;
-        } else if ((p->unk_430 & 0xA801) || p->other->unk_6A == 0x18 ||
-                   p->other->unk_6A == 0x25 || p->other->unk_6A == 8 ||
-                   p->other->unk_6A == 0xA ||
-                   (p->other->unk_6A == 0x1A && p->unk_441 == 1)) {
+        } else if ((p->unk_430 & 0xA801) || p->other->move_kind == 0x18 ||
+                   p->other->move_kind == 0x25 || p->other->move_kind == 8 ||
+                   p->other->move_kind == 0xA ||
+                   (p->other->move_kind == 0x1A && p->unk_441 == 1)) {
             if (D_80099D88[p->unk_443].unk3 != 0 &&
                 ((!(D_80099D88[p->unk_443].flags & 0xFF00) &&
                   p->other->unk_404[p->other->unk_86] < D_800A387C &&

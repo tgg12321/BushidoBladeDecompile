@@ -521,8 +521,9 @@ void camera_UpdateTwoFighterView(
     }
     dist <<= shift;
     q = 0x2000000U / (dist + 0x4000) + 0x400;
-    if (arg2->unk_6A == 0x13 || arg2->unk_6A == 0x1B || arg2->unk_6A == 0x30 ||
-        arg3->unk_6A == 0x13 || arg3->unk_6A == 0x1B || arg3->unk_6A == 0x30) {
+    if (arg2->move_kind == 0x13 || arg2->move_kind == 0x1B ||
+        arg2->move_kind == 0x30 || arg3->move_kind == 0x13 ||
+        arg3->move_kind == 0x1B || arg3->move_kind == 0x30) {
         q += 0x1000;
     }
     var_13 = ((dist + q) << 7) / 100;
@@ -530,15 +531,17 @@ void camera_UpdateTwoFighterView(
         dy = -dy;
     }
     var_13 += dy;
-    if (arg2->unk_6A == 0xF || arg2->unk_6A == 0x1C || arg2->unk_6A == 0x1D ||
-        arg2->unk_6A == 0x1E || arg2->unk_6A == 0x1F || arg2->unk_6A == 0x20 ||
-        arg2->unk_6A == 0x21) {
+    if (arg2->move_kind == 0xF || arg2->move_kind == 0x1C ||
+        arg2->move_kind == 0x1D || arg2->move_kind == 0x1E ||
+        arg2->move_kind == 0x1F || arg2->move_kind == 0x20 ||
+        arg2->move_kind == 0x21) {
         var_13 = 0xBB8;
     }
     var_2->w18 += (var_13 - var_2->w18) / 12;
-    if (!(arg2->unk_6A == 0xF || arg2->unk_6A == 0x1C || arg2->unk_6A == 0x1D ||
-          arg2->unk_6A == 0x1E || arg2->unk_6A == 0x1F ||
-          arg2->unk_6A == 0x20 || arg2->unk_6A == 0x21) &&
+    if (!(arg2->move_kind == 0xF || arg2->move_kind == 0x1C ||
+          arg2->move_kind == 0x1D || arg2->move_kind == 0x1E ||
+          arg2->move_kind == 0x1F || arg2->move_kind == 0x20 ||
+          arg2->move_kind == 0x21) &&
         var_2->w18 < 0x1770) {
         var_2->w18 = 0x1770;
     }
@@ -552,7 +555,7 @@ void camera_UpdateTwoFighterView(
     }
     func_8003F1E4(var_2->b1E);
 
-    if (arg2->unk_6A == 0x11) {
+    if (arg2->move_kind == 0x11) {
         scr->yaw = var_2->unk_10.vy;
     } else {
         scr->yaw = (0x400 - ratan2(dx, dz)) & 0xFFF;
@@ -569,9 +572,9 @@ void camera_UpdateTwoFighterView(
         var_2->unk_10.vx = work;
         camera_CalcEye(var_2, &scr->eye.vx);
         if (p != 0) {
-            scr->scr28 = arg3->unk_B8;
+            scr->scr28 = arg3->collision_pos;
         } else {
-            scr->scr28 = arg2->unk_B8;
+            scr->scr28 = arg2->collision_pos;
         }
         scr->scr28.vy -= 0xC8;
         if (collision_TestSegmentWithWork(
@@ -711,13 +714,12 @@ void camera_InitTwoFighterView(Unk80101EC8Record *a0, Unk80101EC8Record *a1) {
     D_800F6608.h30[1][1] = 0;
     D_800F6608.h30[1][2] = 0x64;
     func_8003F1E4(0);
-    D_800F6608.unk_00.x = (a0->unk_F4.x + a1->unk_F4.x) / 2;
-    D_800F6608.unk_00.y = (a0->unk_F4.y + a1->unk_F4.y) / 2;
-    D_800F6608.unk_00.z = (a0->unk_F4.z + a1->unk_F4.z) / 2;
+    D_800F6608.unk_00.x = (a0->world_pos.x + a1->world_pos.x) / 2;
+    D_800F6608.unk_00.y = (a0->world_pos.y + a1->world_pos.y) / 2;
+    D_800F6608.unk_00.z = (a0->world_pos.z + a1->world_pos.z) / 2;
     D_800F6608.unk_10.vx = 0;
-    D_800F6608.unk_10.vy =
-        0x400 -
-        ratan2(a1->unk_F4.x - a0->unk_F4.x, a1->unk_F4.z - a0->unk_F4.z);
+    D_800F6608.unk_10.vy = 0x400 - ratan2(a1->world_pos.x - a0->world_pos.x,
+                                          a1->world_pos.z - a0->world_pos.z);
     D_800F6608.unk_10.vz = 0;
     D_800F6608.w18 = 0x1388;
     D_800F6608.b1E = 0;
@@ -758,7 +760,7 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
     val = (obj->unk_198[0].y + obj->unk_198[1].y) / 2 - obj->unk_180.y;
     var_3 = val >= 0x391;
 
-    if (obj->unk_6A == 0x2A) {
+    if (obj->move_kind == 0x2A) {
         val = 0x200;
     } else {
         s2->unk_00.x = obj->unk_180.x;
@@ -782,7 +784,7 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
             s2->unk_00.y = a2;
         }
 
-        if (obj->unk_6A == 0x2A) {
+        if (obj->move_kind == 0x2A) {
             val = 0x200;
         } else {
             val = (-obj->unk_1D8 - s2->unk_10.vy) & 0xFFF;
@@ -794,7 +796,7 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
                 val = 0x400;
             }
 
-            val = (ratan2(obj->other->unk_F4.y - a2, D_800A387C) *
+            val = (ratan2(obj->other->world_pos.y - a2, D_800A387C) *
                    (0x400 - val)) >>
                   10;
         }
@@ -812,7 +814,7 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
 
     {
         s16 counter;
-        val = -obj->unk_1C8.vy;
+        val = -obj->orientation.vy;
         counter = D_800A36FC;
 
         if (counter != 0) {
@@ -1002,7 +1004,7 @@ void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
     /* FAKE: block copy of unk_B8's x / y / z (three lw, then three sw through
        one base); the three member assignments interleave the loads and stores
        (score 27). */
-    D_800F6608.unk_00 = *(Vec3i32 *)&arg0->unk_B8;
+    D_800F6608.unk_00 = *(Vec3i32 *)&arg0->collision_pos;
 
     D_800F6608.unk_00.y -= 0x44C;
 
@@ -1010,7 +1012,7 @@ void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
 
     {
         s32 div4 = arg1 / 4;
-        u16 rot_y = arg0->unk_1C8.vy;
+        u16 rot_y = arg0->orientation.vy;
         s32 val;
         D_800F6608.w18 = (arg1 * 3000 + diff * 8000) >> 12;
         val = 0xB00 - div4;
@@ -1157,7 +1159,7 @@ void fight_InitSettings(void) {
 }
 
 void func_8001C4C0(void) {
-    u16 v = D_80101EC8[0].unk_6A;
+    u16 v = D_80101EC8[0].move_kind;
     if (v == 0x32 || v == 0x11) {
         motion_ResetVariantIndex(0);
         {
@@ -1198,22 +1200,22 @@ void func_8001C624(void) {
     VECTOR local;
     s32 x, y, z;
 
-    fight_GetStartPosition(0, &e->unk_D8.x, (s32)D_800A38E0);
+    fight_GetStartPosition(0, &e->base_pos.x, (s32)D_800A38E0);
     fight_GetStartPosition(1, &local.vx, (s32)D_800A38E0);
-    e->unk_E8.x = 0;
-    x = e->unk_D8.x;
-    y = e->unk_D8.y;
-    z = e->unk_D8.z;
-    e->unk_E8.y = -0x384;
-    e->unk_E8.z = 0;
-    e->unk_F4.x = x;
-    e->unk_F4.y = y - 0x384;
-    e->unk_F4.z = z;
-    e->unk_B8.vx = x;
-    e->unk_B8.vy = y;
-    e->unk_B8.vz = z;
-    e->unk_C8 = e->unk_B8;
-    e->unk_1F8 = e->unk_E8;
+    e->root_offset.x = 0;
+    x = e->base_pos.x;
+    y = e->base_pos.y;
+    z = e->base_pos.z;
+    e->root_offset.y = -0x384;
+    e->root_offset.z = 0;
+    e->world_pos.x = x;
+    e->world_pos.y = y - 0x384;
+    e->world_pos.z = z;
+    e->collision_pos.vx = x;
+    e->collision_pos.vy = y;
+    e->collision_pos.vz = z;
+    e->prev_collision_pos = e->collision_pos;
+    e->unk_1F8 = e->root_offset;
     e->unk_104.vx = 0;
     e->unk_104.vy = 0;
     e->unk_104.vz = 0;
@@ -1236,7 +1238,7 @@ void func_8001C624(void) {
     e->unk_150 = 0;
     e->unk_152 = 0;
     e->unk_14E = 0;
-    e->unk_148 = e->unk_B8.vy;
+    e->unk_148 = e->collision_pos.vy;
     softbody_RequestSnap(0);
 }
 
@@ -1362,7 +1364,8 @@ void func_8001C8DC(void) {
         }
     }
         D_800A3670 = 1;
-        D_800A38DF = fight_FindNearestStartPair(&D_80101EC8[D_800A3748].unk_F4);
+        D_800A38DF =
+            fight_FindNearestStartPair(&D_80101EC8[D_800A3748].world_pos);
         D_800A3834 = 0;
         goto end;
     case 4:
@@ -1555,15 +1558,15 @@ void func_8001CE60(void) {
             D_800A38B0 = 0;
             D_800A3920 = 1;
             D_800A3898[D_800A38B0 ^ 1]++;
-        } else if (
-            (u16)D_80101EC8->unk_6A == 6 || (u16)D_80101EC8[1].unk_6A == 6) {
+        } else if ((u16)D_80101EC8->move_kind == 6 ||
+                   (u16)D_80101EC8[1].move_kind == 6) {
             D_800A3816 = 0x3C;
         } else if (D_80101EC8[0].unk_B1 == 2) {
             u16 id;
 
             snd_QueueSound(0x9F, 0x7F, 0x7F);
             D_800A37E1 = 1;
-            id = D_80101EC8[0].unk_6A;
+            id = D_80101EC8[0].move_kind;
             if (id == 0x13 || id == 0x1B || id == 0x30 || id == 0x19 ||
                 id == 0x1A || id == 0x18) {
                 D_800A38B0 = 0;
@@ -1575,7 +1578,7 @@ void func_8001CE60(void) {
 
             snd_QueueSound(0x9F, 0x7F, 0x7F);
             D_800A37E1 = 1;
-            id = D_80101EC8[1].unk_6A;
+            id = D_80101EC8[1].move_kind;
             if (id == 0x13 || id == 0x1B || id == 0x30 || id == 0x19 ||
                 id == 0x1A || id == 0x18) {
                 D_800A38B0 = 1;
@@ -1940,7 +1943,8 @@ void camera_ApplyFightView(void) {
             }
         }
         if (g_camera_fight_view_mode != 2) {
-            if (D_80101EC8[0].unk_6A == 0x11 || D_80101EC8[1].unk_6A == 0x11) {
+            if (D_80101EC8[0].move_kind == 0x11 ||
+                D_80101EC8[1].move_kind == 0x11) {
                 s2 = &D_800F6608;
                 g_camera_fight_view_mode = 1;
             } else {
@@ -2058,8 +2062,8 @@ void fight_Update(void) {
     if (D_800A38BA != 0 && g_camera_fight_view_mode == 0) {
         func_8001E800();
     } else {
-        func_8003E6A0(D_80101EC8[0].unk_F4.x, D_80101EC8[0].unk_F4.z);
-        func_8003E6A0(D_80101EC8[1].unk_F4.x, D_80101EC8[1].unk_F4.z);
+        func_8003E6A0(D_80101EC8[0].world_pos.x, D_80101EC8[0].world_pos.z);
+        func_8003E6A0(D_80101EC8[1].world_pos.x, D_80101EC8[1].world_pos.z);
     }
     func_80046DA8((D_800A3690 ^ 1) != 0);
     func_8001CE60();
@@ -2148,7 +2152,8 @@ void func_8001EA84(void) {
     if (D_800A3817 == 0) {
         D_800A3670 = 1;
         D_800A380C = D_800A380C + 1;
-        D_800A38DF = fight_FindNearestStartPair(&D_80101EC8[D_800A3748].unk_F4);
+        D_800A38DF =
+            fight_FindNearestStartPair(&D_80101EC8[D_800A3748].world_pos);
         if (D_80101EC8[1].unk_06 != 0) {
             fighter_HalveCpuTally(1);
         }
@@ -2172,7 +2177,7 @@ void func_8001EA84(void) {
 void func_8001EEB4(void) {
     s8 idx = D_800A3748;
     Unk80101EC8Record *entry = &D_80101EC8[idx];
-    u16 a1 = entry->unk_6A;
+    u16 a1 = entry->move_kind;
 
     if (a1 != 0xA && entry->unk_72 == 0 && a1 != 0x17 && a1 != 0x18 &&
         entry->unk_96 == 0) {
@@ -2302,7 +2307,7 @@ void motion_AdjustFighterPose(
         func_80027334(a);
         func_80027334(b);
     }
-    if (obj->unk_6A == 0x15 || obj->unk_6A == 0x25) {
+    if (obj->move_kind == 0x15 || obj->move_kind == 0x25) {
         if (obj->unk_0C == 0x1F) {
             temp2 = 0x100;
             var_4 = 0;
@@ -2311,7 +2316,7 @@ void motion_AdjustFighterPose(
             s32 dist_sq;
             s32 dist;
 
-            var_2 = (obj->unk_1D8 - obj->unk_1C8.vy) & 0xFFF;
+            var_2 = (obj->unk_1D8 - obj->orientation.vy) & 0xFFF;
             if (var_2 >= 0x800) {
                 var_2 -= 0x1000;
             }
@@ -2367,9 +2372,9 @@ void motion_AdjustFighterPose(
 
     t = obj->unk_0C;
     if ((t == 0x1D || t == 0xE) && obj->unk_8C != 0) {
-        temp =
-            (ratan2(D_800A387C, obj->other->unk_F4.y - obj->unk_F4.y) - 0x400) &
-            0xFFF;
+        temp = (ratan2(D_800A387C, obj->other->world_pos.y - obj->world_pos.y) -
+                0x400) &
+               0xFFF;
         if (temp >= 0x800) {
             temp -= 0x1000;
         }
@@ -2383,17 +2388,17 @@ void motion_AdjustFighterPose(
         b->unk_0C[0x39] += temp;
     }
 
-    if ((u32)((u16)obj->unk_0E - 6) < 2U && obj->unk_6A == 2) {
+    if ((u32)((u16)obj->unk_0E - 6) < 2U && obj->move_kind == 2) {
         s32 dist_sq;
         s32 dist;
 
         if (obj->unk_268 == 0) {
-            obj->unk_25C.x = obj->unk_F4.x;
-            obj->unk_25C.y = obj->unk_F4.y;
-            obj->unk_25C.z = obj->unk_F4.z;
+            obj->unk_25C.x = obj->world_pos.x;
+            obj->unk_25C.y = obj->world_pos.y;
+            obj->unk_25C.z = obj->world_pos.z;
         }
-        dx = obj->other->unk_F4.x - obj->unk_25C.x;
-        dz = obj->other->unk_F4.z - obj->unk_25C.z;
+        dx = obj->other->world_pos.x - obj->unk_25C.x;
+        dz = obj->other->world_pos.z - obj->unk_25C.z;
         dist_sq = dx * dx + dz * dz;
         if ((u32)dist_sq < 0x400) {
             dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
@@ -2409,8 +2414,9 @@ void motion_AdjustFighterPose(
                 dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
             }
         }
-        temp2 = (ratan2(dist, obj->other->unk_F4.y - obj->unk_25C.y) - 0x400) &
-                0xFFF;
+        temp2 =
+            (ratan2(dist, obj->other->world_pos.y - obj->unk_25C.y) - 0x400) &
+            0xFFF;
         if (temp2 >= 0x800) {
             temp2 -= 0x1000;
         }
@@ -2443,7 +2449,7 @@ void motion_AdjustFighterPose(
 }
 
 void fighter_SetTurnDelta(Unk80101EC8Record *arg0, s32 arg1) {
-    arg1 = (arg1 - arg0->unk_1C8.vy) & 0xFFF;
+    arg1 = (arg1 - arg0->orientation.vy) & 0xFFF;
     if (arg1 >= 0x800) {
         arg1 -= 0x1000;
     }
@@ -2451,8 +2457,8 @@ void fighter_SetTurnDelta(Unk80101EC8Record *arg0, s32 arg1) {
 }
 
 s32 fighter_CalcHorizontalSeparation(void) {
-    s32 dx = D_80101EC8[1].unk_F4.x - D_80101EC8[0].unk_F4.x;
-    s32 dy = D_80101EC8[1].unk_F4.z - D_80101EC8[0].unk_F4.z;
+    s32 dx = D_80101EC8[1].world_pos.x - D_80101EC8[0].world_pos.x;
+    s32 dy = D_80101EC8[1].world_pos.z - D_80101EC8[0].world_pos.z;
     s32 s0 = 0;
     while ((u32)(dx + 0x4000) > 0x8000 || (u32)(dy + 0x4000) > 0x8000) {
         s32 t;
@@ -2489,7 +2495,7 @@ void motion_UpdateFrameStep(Unk80101EC8Record *arg0) {
     s32 a2;
     s32 idx;
     s32 factor;
-    var_0 = arg0->unk_6A;
+    var_0 = arg0->move_kind;
     kind = var_0 & 0xFFFFU;
     a2 = arg0->unk_1C;
     if (kind == 0x11 || kind == 0xF || ((u32)((s32)var_0 - 0x1C)) < 2U ||
@@ -2511,7 +2517,7 @@ void motion_UpdateFrameStep(Unk80101EC8Record *arg0) {
         goto defaultpath;
     }
 rangecheck:
-    val = arg0->unk_40;
+    val = arg0->move_frame;
     if (val < arg0->unk_A1[0]) {
         goto check_outer;
     }
@@ -2527,7 +2533,7 @@ check_outer:
         goto multpath_start;
     }
 clamp:
-    arg0->unk_44 = 0x1000;
+    arg0->move_frame_step = 0x1000;
     return;
 multpath_start:
     if (arg0->unk_26C == 0) {
@@ -2552,7 +2558,7 @@ defaultpath: {
 }
     factor = arg0->unk_27E[idx];
     a2 = (a2 * factor) >> 12;
-    arg0->unk_44 = a2;
+    arg0->move_frame_step = a2;
 }
 
 typedef struct {
@@ -2636,29 +2642,29 @@ void fight_UpdatePairedMoves(void) {
     if (D_800A3758 != 0xFF) {
         rec = &D_80101EC8[D_800A3758];
         if (D_800A3769 != 0) {
-            rec->unk_286 = 1;
+            rec->pending_move_event = 1;
             rec->unk_94 = 0;
         } else {
-            rec->unk_286 = 0;
+            rec->pending_move_event = 0;
             rec->unk_94 = 1;
         }
         if (rec->unk_96 != 0) {
-            rec->unk_286 += 2;
+            rec->pending_move_event += 2;
         }
-        rec->unk_74 = rec->unk_B8.vy;
-        rec->other->unk_286 = 1;
+        rec->unk_74 = rec->collision_pos.vy;
+        rec->other->pending_move_event = 1;
         rec->other->unk_94 = 0;
-        rec->other->unk_74 = rec->other->unk_B8.vy;
+        rec->other->unk_74 = rec->other->collision_pos.vy;
         if (rec->other->unk_96 != 0) {
-            rec->other->unk_286 += 2;
+            rec->other->pending_move_event += 2;
         }
         D_800A3758 = 0xFF;
         return;
     }
-    if (D_80101EC8[0].unk_286 != -1) {
+    if (D_80101EC8[0].pending_move_event != -1) {
         return;
     }
-    if (D_80101EC8[1].unk_286 != -1) {
+    if (D_80101EC8[1].pending_move_event != -1) {
         return;
     }
     for (i = 0; i < 2; i++) {
@@ -2666,14 +2672,14 @@ void fight_UpdatePairedMoves(void) {
         if (rec->unk_7A == 0) {
             continue;
         }
-        ent = motion_FindPairedMoveEntry(rec->unk_50);
+        ent = motion_FindPairedMoveEntry(rec->cur_move);
         if (ent == 0) {
             continue;
         }
         data = ent->b;
         lo = data[0] * 20;
         hi = data[1] * 20;
-        dz = rec->unk_B8.vy - rec->other->unk_B8.vy;
+        dz = rec->collision_pos.vy - rec->other->collision_pos.vy;
         if (func_8001FB34(rec, data[3] & 0x80) == 0) {
             continue;
         }
@@ -2686,7 +2692,7 @@ void fight_UpdatePairedMoves(void) {
         if (dz <= -100 || dz >= 100) {
             continue;
         }
-        kind = rec->other->unk_6A;
+        kind = rec->other->move_kind;
         if (kind != 0x15 && kind != 0x2C && kind != 0xE && kind != 0x19) {
             continue;
         }
@@ -2704,9 +2710,9 @@ void fight_UpdatePairedMoves(void) {
         rec->other->unk_7A = 2;
         rec->other->unk_86 = rec->other->unk_84;
         rec->other->unk_272 += 1;
-        pos[0] = (rec->unk_F4.x + rec->other->unk_F4.x) / 2;
-        pos[1] = (rec->unk_F4.y + rec->other->unk_F4.y) / 2;
-        pos[2] = (rec->unk_F4.z + rec->other->unk_F4.z) / 2;
+        pos[0] = (rec->world_pos.x + rec->other->world_pos.x) / 2;
+        pos[1] = (rec->world_pos.y + rec->other->world_pos.y) / 2;
+        pos[2] = (rec->world_pos.z + rec->other->world_pos.z) / 2;
         func_80032854(i, 0x10, pos, 0);
         return;
     }
@@ -3345,7 +3351,7 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
         a3 = s0->unk_4A;
     }
     s0->unk_4C = 0;
-    s0->unk_50 = arg1;
+    s0->cur_move = arg1;
     {
         u16 v1 = arg1->unk_04;
         s0->unk_5C = v1;
@@ -3360,8 +3366,8 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
         }
     }
     {
-        MoveScript *v0_50 = s0->unk_50;
-        u16 old_kind = s0->unk_6A;
+        MoveScript *v0_50 = s0->cur_move;
+        u16 old_kind = s0->move_kind;
         u8 *a0_58 = s0->unk_58;
         s0->unk_60 = (u8)arg2;
         /* FAKE: empty do-while(0) -- its loop note puts a0_58 in $a0 and
@@ -3372,26 +3378,26 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
         s0->unk_61 = (u8)a3;
         {
             u8 a1_val = v0_50->unk_06;
-            s0->unk_6C = old_kind;
+            s0->prev_move_kind = old_kind;
             {
                 u8 *v1_58 = s0->unk_58;
-                s0->unk_42 = 0;
+                s0->move_frame_frac = 0;
                 s0->unk_7A = 1;
-                s0->unk_7C = 0;
+                s0->queued_move = 0;
                 s0->unk_46 = 0;
-                s0->unk_40 = a1_val;
+                s0->move_frame = a1_val;
                 /* FAKE: the do-while(0) wrap's loop-depth weighting seats a0_58
                  * in $a0 and a1_val in $a1 as in target; without it they swap,
                  * score 4. */
                 do {
-                    s0->unk_6A = *a0_58;
+                    s0->move_kind = *a0_58;
                 } while (0);
                 s0->unk_6E = v1_58[2];
             }
         }
         {
-            MoveScript *v0_50b = s0->unk_50;
-            s32 kind = s0->unk_6A;
+            MoveScript *v0_50b = s0->cur_move;
+            s32 kind = s0->move_kind;
             s0->unk_70 = (v0_50b->unk_09) & 3;
             {
                 s32 a0_flag = 0;
@@ -3403,19 +3409,19 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
             }
             fighter_ReadFrameMetadata(s0);
             {
-                u16 state = s0->unk_6A;
+                u16 state = s0->move_kind;
 
                 if (state == 9) {
                     s0->unk_152 = 1;
-                    s0->unk_154 = s0->unk_1C8.vy;
+                    s0->unk_154 = s0->orientation.vy;
                 } else if (state == 2) {
-                    if (s0->unk_152 == 0 && s0->unk_6C != 0x13) {
+                    if (s0->unk_152 == 0 && s0->prev_move_kind != 0x13) {
                         s0->unk_154 = s0->unk_1D8;
                     }
                     s0->unk_152 = 0;
                 } else if (state == 0x19 || state == 0x1A) {
                     if (s0->unk_152 == 0 ||
-                        (state == 0x19 && s0->unk_6C == state)) {
+                        (state == 0x19 && s0->prev_move_kind == state)) {
                         s0->unk_154 = s0->unk_1D8;
                     }
                     s0->unk_152 = 1;
@@ -3426,7 +3432,7 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
                 }
             }
             {
-                u16 v1f = s0->unk_6A;
+                u16 v1f = s0->move_kind;
                 if ((((v1f == 2) || (v1f == 0x1B)) || (v1f == 0x28)) ||
                     (v1f == 0x26)) {
                     s0->unk_AF = ((s0->unk_B0) & 0xF) != 5;
@@ -3650,7 +3656,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p = &D_80101EC8[idx];
     D_800A3758 = 0xFF;
     D_800A376E = 0;
-    p->unk_3C = 0;
+    p->update_count = 0;
     p->other = (idx != 0) ? &D_80101EC8[0] : &D_80101EC8[1];
     p->index = idx;
     p->unk_06 = arg1;
@@ -3705,48 +3711,48 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     switch (D_800A38DC) {
     case 0:
         if (arg4 != 0) {
-            var_1 = p->other->unk_D8;
-            func_80022224(idx, &p->unk_D8.x, &var_1.x);
+            var_1 = p->other->base_pos;
+            func_80022224(idx, &p->base_pos.x, &var_1.x);
         } else {
             /* FAKE: default's two fight_GetStartPosition calls repeated in this
              * arm (duplicated-statement-into-arms, Q47); cross-jump merges the
              * copies. With the copy, the dispatch tests mode == 0 first and
              * reaches case 2/3 through the target's `j`; every shared form
              * lays the dispatch out in another order. */
-            fight_GetStartPosition(idx, &p->unk_D8.x, var_5);
+            fight_GetStartPosition(idx, &p->base_pos.x, var_5);
             fight_GetStartPosition(idx == 0, &var_1.x, var_5);
         }
         break;
     case 2:
     case 3:
         if (arg4 != 0) {
-            var_1 = p->other->unk_D8;
-            func_80021DB0(idx, &p->unk_D8, &var_1.x);
+            var_1 = p->other->base_pos;
+            func_80021DB0(idx, &p->base_pos, &var_1.x);
         } else {
-            fight_GetStartPosition(idx, &p->unk_D8.x, D_800A38E0);
+            fight_GetStartPosition(idx, &p->base_pos.x, D_800A38E0);
             fight_GetStartPosition(idx == 0, &var_1.x, D_800A38E0);
         }
         break;
     default:
-        fight_GetStartPosition(idx, &p->unk_D8.x, var_5);
+        fight_GetStartPosition(idx, &p->base_pos.x, var_5);
         fight_GetStartPosition(idx == 0, &var_1.x, var_5);
         break;
     }
 
-    p->unk_E8.x = 0;
-    p->unk_E8.y = -0x384;
-    p->unk_E8.z = 0;
-    p->unk_F4.x = p->unk_D8.x + p->unk_E8.x;
-    p->unk_F4.y = p->unk_D8.y + p->unk_E8.y;
-    p->unk_F4.z = p->unk_D8.z + p->unk_E8.z;
-    var_1.x += p->unk_E8.x;
-    var_1.y += p->unk_E8.y;
-    var_1.z += p->unk_E8.z;
-    p->unk_B8.vx = p->unk_F4.x;
-    p->unk_B8.vy = p->unk_D8.y;
-    p->unk_B8.vz = p->unk_F4.z;
-    p->unk_C8 = p->unk_B8;
-    p->unk_1F8 = p->unk_E8;
+    p->root_offset.x = 0;
+    p->root_offset.y = -0x384;
+    p->root_offset.z = 0;
+    p->world_pos.x = p->base_pos.x + p->root_offset.x;
+    p->world_pos.y = p->base_pos.y + p->root_offset.y;
+    p->world_pos.z = p->base_pos.z + p->root_offset.z;
+    var_1.x += p->root_offset.x;
+    var_1.y += p->root_offset.y;
+    var_1.z += p->root_offset.z;
+    p->collision_pos.vx = p->world_pos.x;
+    p->collision_pos.vy = p->base_pos.y;
+    p->collision_pos.vz = p->world_pos.z;
+    p->prev_collision_pos = p->collision_pos;
+    p->unk_1F8 = p->root_offset;
     p->unk_104.vx = 0;
     p->unk_104.vy = 0;
     p->unk_104.vz = 0;
@@ -3761,7 +3767,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_134.vy = 0;
     p->unk_134.vz = 0;
     p->unk_144 = 0;
-    p->unk_148 = p->unk_B8.vy;
+    p->unk_148 = p->collision_pos.vy;
     p->unk_14C = 0;
     p->unk_150 = 0;
     p->unk_152 = 0;
@@ -3776,19 +3782,19 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_1E6 = 0;
     p->unk_1EA = 0;
     p->unk_268 = 0;
-    p->unk_168 = p->unk_F4;
-    p->unk_174 = p->unk_F4;
-    p->unk_180 = p->unk_F4;
-    p->unk_18C = p->unk_F4;
-    p->unk_1C8.vx = 0;
-    p->unk_1C8.vy = 0;
-    p->unk_1C8.vz = 0;
-    ang = ratan2(var_1.x - p->unk_F4.x, var_1.z - p->unk_F4.z);
-    p->unk_1C8.vy = p->unk_1D8 = ang;
+    p->unk_168 = p->world_pos;
+    p->unk_174 = p->world_pos;
+    p->unk_180 = p->world_pos;
+    p->unk_18C = p->world_pos;
+    p->orientation.vx = 0;
+    p->orientation.vy = 0;
+    p->orientation.vz = 0;
+    ang = ratan2(var_1.x - p->world_pos.x, var_1.z - p->world_pos.z);
+    p->orientation.vy = p->unk_1D8 = ang;
     if (p->unk_0C == 0x1F) {
-        p->unk_1C8.vy = ang + 0x800;
+        p->orientation.vy = ang + 0x800;
     }
-    p->unk_1D0 = p->unk_1C8;
+    p->unk_1D0 = p->orientation;
     fighter_ScaleBoneHitRecords(idx, p->unk_1A);
     if (D_800A38DC != 0 || idx != 0 || D_800A3907 < 2 || D_800A3670 != 0) {
         func_80022568(p);
@@ -3799,8 +3805,8 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         p->unk_27E[i] = D_8008E4D0[p->unk_0A][i];
     }
     p->unk_A0 = 8;
-    p->unk_7C = 0;
-    p->unk_286 = -1;
+    p->queued_move = 0;
+    p->pending_move_event = -1;
     p->unk_31A = 0;
     p->unk_1DC = 0;
     p->unk_72 = 0;
@@ -3932,9 +3938,9 @@ loop:
             scratch[10] = pos2->vz - pos1->vz;
             math_ScaleVectorInDirectionFrame(
                 (s32 *)scratch_d, scratch_c, (s32 *)scratch_d, 0,
-                (obj->unk_6A == 0x15) ? 0x80 : 0x100);
+                (obj->move_kind == 0x15) ? 0x80 : 0x100);
             if (*((s16 *)(((u8 *)scratch) + 0x12)) >= (-0x7FF)) {
-                s32 mode = obj->unk_6A;
+                s32 mode = obj->move_kind;
                 s32 m = mode & 0xFFFF;
                 if (((((m != 8) && (m != 0x22)) &&
                       (((u32)(mode - 0x17)) >= 2)) &&
@@ -3965,7 +3971,7 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
     s32 a1_idx;
     s32 a0_idx;
 
-    bits = arg0->unk_24.held;
+    bits = arg0->pad_input.held;
     a1_idx = (bits >> 14) & 1;
     if (!(bits & 0x1000)) {
         a1_idx++;
@@ -3987,13 +3993,13 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
         s16 *row;
         s32 a1_val;
 
-        px = arg0->unk_B8.vx;
+        px = arg0->collision_pos.vx;
         row = tbl[a0_idx];
         a1_val = row[a1_idx];
 
         pos[0] = px;
-        pos[1] = arg0->unk_B8.vy - 0x64;
-        pos[2] = arg0->unk_B8.vz;
+        pos[1] = arg0->collision_pos.vy - 0x64;
+        pos[2] = arg0->collision_pos.vz;
 
         {
             s32 angle = (arg0->unk_1D8 + a1_val) & 0xFFF;
@@ -4022,9 +4028,9 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
         s32 var_15 = ratan2(out1.vx, out1.vz);
         s32 var_16;
 
-        pos[0] = arg0->unk_B8.vx;
-        pos[1] = arg0->unk_B8.vy - 0x898;
-        pos[2] = arg0->unk_B8.vz;
+        pos[0] = arg0->collision_pos.vx;
+        pos[1] = arg0->collision_pos.vy - 0x898;
+        pos[2] = arg0->collision_pos.vz;
 
         var_16 = var_15 + 0x800;
 
@@ -4062,7 +4068,7 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
 }
 
 void func_80023648(Unk80101EC8Record *arg0) {
-    u16 kind = arg0->unk_6A;
+    u16 kind = arg0->move_kind;
     /* FAKE: pointer alias to D_8008EB40 (pointer-alias-fake-exception), as
      * in func_800233AC: the table
      * address is in a register ahead of the a0 * 6 row offset; direct
@@ -4071,7 +4077,7 @@ void func_80023648(Unk80101EC8Record *arg0) {
 
     if (kind == 0x13 || kind == 0x1B || kind == 0x30) {
         s32 a2;
-        u32 bits = arg0->unk_24.held;
+        u32 bits = arg0->pad_input.held;
         if (bits & 0xF000) {
             s32 a1 = (bits >> 14) & 1;
             s32 a0;
@@ -4090,7 +4096,7 @@ void func_80023648(Unk80101EC8Record *arg0) {
             a2 = row[a1];
 
             if (D_800A38BA != 0 && arg0->unk_06 == 0) {
-                fighter_SetTurnDelta(arg0, arg0->unk_1C8.vy + a2 / 4);
+                fighter_SetTurnDelta(arg0, arg0->orientation.vy + a2 / 4);
             } else {
                 fighter_SetTurnDelta(arg0, arg0->unk_1D8 + a2);
             }
@@ -4145,19 +4151,19 @@ void func_80023648(Unk80101EC8Record *arg0) {
                 }
 
                 {
-                    s32 var_13 = arg0->unk_14E * arg0->unk_44;
-                    s16 sin_val = Judge[(arg0->unk_1C8.vy & 0xFFF)];
+                    s32 var_13 = arg0->unk_14E * arg0->move_frame_step;
+                    s16 sin_val = Judge[(arg0->orientation.vy & 0xFFF)];
 
                     /* FAKE: the >>12 speed is staged through the dead `a2`, as
                      * above; a fresh local or the shift inline: score 30. */
                     a2 = var_13 >> 12;
 
-                    arg0->unk_D8.x += (sin_val * a2) >> 16;
+                    arg0->base_pos.x += (sin_val * a2) >> 16;
 
                     {
                         s16 cos_val =
-                            Judge[((arg0->unk_1C8.vy + 0x400) & 0xFFF)];
-                        arg0->unk_D8.z += (cos_val * a2) >> 16;
+                            Judge[((arg0->orientation.vy + 0x400) & 0xFFF)];
+                        arg0->base_pos.z += (cos_val * a2) >> 16;
                     }
                 }
             }
@@ -4187,23 +4193,23 @@ void func_800238C4(Unk80101EC8Record *arg0) {
     if (arg0->unk_104.vy <= 0) {
         return;
     }
-    kind = arg0->unk_6A;
+    kind = arg0->move_kind;
     if (kind == 0x17 || kind == 0x18 || kind == 0xA || arg0->unk_72 != 0 ||
         kind == 1 || kind == 0x28) {
         return;
     }
     scratchpad = 0x1F8002B8;
-    src[0] = arg0->unk_B8.vx;
-    src[1] = arg0->unk_B8.vy - 0xC8;
-    src[2] = arg0->unk_B8.vz;
-    dst[0] = arg0->unk_B8.vx;
-    dst[1] = arg0->unk_B8.vy + 0x514;
-    dst[2] = arg0->unk_B8.vz;
+    src[0] = arg0->collision_pos.vx;
+    src[1] = arg0->collision_pos.vy - 0xC8;
+    src[2] = arg0->collision_pos.vz;
+    dst[0] = arg0->collision_pos.vx;
+    dst[1] = arg0->collision_pos.vy + 0x514;
+    dst[2] = arg0->collision_pos.vz;
     s1 = collision_TestSegmentWithWork(src, dst, out, offsets, scratchpad);
     var_9 = 1;
     if (s1 != 0) {
         if (out[1] - src[1] > 0x190) {
-            var_9 = arg0->unk_6A != 0x22;
+            var_9 = arg0->move_kind != 0x22;
         } else if (offsets[1] >= -0x7FF) {
             dst[0] += offsets[0] / 8;
             dst[2] += offsets[2] / 8;
@@ -4217,8 +4223,8 @@ void func_800238C4(Unk80101EC8Record *arg0) {
         return;
     }
     if (s1 == 0) {
-        offsets[0] = arg0->unk_B8.vx - arg0->unk_C8.vx;
-        offsets[2] = arg0->unk_B8.vz - arg0->unk_C8.vz;
+        offsets[0] = arg0->collision_pos.vx - arg0->prev_collision_pos.vx;
+        offsets[2] = arg0->collision_pos.vz - arg0->prev_collision_pos.vz;
         if (offsets[0] < -0x40) {
             offsets[0] = -0x40;
         } else if (offsets[0] > 0x40) {
@@ -4235,34 +4241,34 @@ void func_800238C4(Unk80101EC8Record *arg0) {
         dx_delta = offsets[0] / 64;
         dz_delta = offsets[2] / 64;
     }
-    s1 = (arg0->unk_1C8.vy - ratan2(offsets[0], offsets[2])) & 0xFFF;
+    s1 = (arg0->orientation.vy - ratan2(offsets[0], offsets[2])) & 0xFFF;
     if (s1 >= 0x800) {
         s1 = 0x1000 - s1;
     }
-    kind = arg0->unk_6A;
+    kind = arg0->move_kind;
     if (kind == 0xF || kind == 0x1C || kind == 0x1D || kind == 0x1E ||
         kind == 0x1F || kind == 0x20 || kind == 0x21) {
         if (s1 < 0x400) {
-            arg0->unk_286 = 0;
+            arg0->pending_move_event = 0;
             arg0->unk_94 = 0;
         } else {
-            arg0->unk_286 = 1;
+            arg0->pending_move_event = 1;
             arg0->unk_94 = 1;
         }
-        arg0->other->unk_286 = 2;
-        arg0->unk_74 = arg0->unk_B8.vy;
+        arg0->other->pending_move_event = 2;
+        arg0->unk_74 = arg0->collision_pos.vy;
     } else if (kind == 0x11) {
         D_800A3769 = s1 < 0x400;
         D_800A3758 = arg0->index;
     } else {
         if (s1 < 0x400) {
-            arg0->unk_286 = 0x12;
+            arg0->pending_move_event = 0x12;
             arg0->unk_94 = 0;
         } else {
-            arg0->unk_286 = 0x11;
+            arg0->pending_move_event = 0x11;
             arg0->unk_94 = 1;
         }
-        arg0->unk_74 = arg0->unk_B8.vy;
+        arg0->unk_74 = arg0->collision_pos.vy;
     }
     arg0->unk_104.vx += dx_delta;
     arg0->unk_104.vz += dz_delta;
@@ -4308,21 +4314,21 @@ void func_80023D28(Unk80101EC8Record *arg0) {
         arg0->unk_1DC = 0;
         return;
     }
-    ((VECTOR *)0x1F8001E0)->vx = arg0->unk_B8.vx;
-    ((VECTOR *)0x1F8001E0)->vy = arg0->unk_B8.vy + 0x1F4;
-    ((VECTOR *)0x1F8001E0)->vz = arg0->unk_B8.vz;
+    ((VECTOR *)0x1F8001E0)->vx = arg0->collision_pos.vx;
+    ((VECTOR *)0x1F8001E0)->vy = arg0->collision_pos.vy + 0x1F4;
+    ((VECTOR *)0x1F8001E0)->vz = arg0->collision_pos.vz;
     arg0->unk_1DC =
-        func_8005344C(&arg0->unk_B8.vx, (s32 *)0x1F8001E0, (s32 *)0x1F8001B0,
-                      (s16 *)0x1F8001C0, 0x1F8002B8);
+        func_8005344C(&arg0->collision_pos.vx, (s32 *)0x1F8001E0,
+                      (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8);
 }
 
 s32 func_80023DB8(Unk80101EC8Record *arg0) {
     s32 result;
-    ((VECTOR *)0x1F8001E0)->vx = arg0->unk_B8.vx;
-    ((VECTOR *)0x1F8001E0)->vy = arg0->unk_B8.vy + 5;
-    ((VECTOR *)0x1F8001E0)->vz = arg0->unk_B8.vz;
-    if (func_8005344C(&arg0->unk_B8.vx, (s32 *)0x1F8001E0, (s32 *)0x1F8001B0,
-                      (s16 *)0x1F8001C0, 0x1F8002B8) != 0) {
+    ((VECTOR *)0x1F8001E0)->vx = arg0->collision_pos.vx;
+    ((VECTOR *)0x1F8001E0)->vy = arg0->collision_pos.vy + 5;
+    ((VECTOR *)0x1F8001E0)->vz = arg0->collision_pos.vz;
+    if (func_8005344C(&arg0->collision_pos.vx, (s32 *)0x1F8001E0,
+                      (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8) != 0) {
         result = *(s16 *)0x1F8001C2 < -0x800;
     } else {
         result = 0;
@@ -4332,21 +4338,21 @@ s32 func_80023DB8(Unk80101EC8Record *arg0) {
 
 void func_80023E40(Unk80101EC8Record *arg0) {
     s32 *s1 = (s32 *)0x1F8001B0;
-    u16 state = arg0->unk_6A;
+    u16 state = arg0->move_kind;
 
     if (state == 8 || state == 0x22) {
         return;
     }
     if (state == 0x17 || state == 0x18 || state == 0x28 || state == 0xA) {
-        s1[0xC] = arg0->unk_B8.vx;
-        s1[0xD] = arg0->unk_B8.vy + 0x1F40;
-        s1[0xE] = arg0->unk_B8.vz;
-        if (collision_TestSegmentWithWork(&arg0->unk_B8.vx, &s1[0xC], s1,
+        s1[0xC] = arg0->collision_pos.vx;
+        s1[0xD] = arg0->collision_pos.vy + 0x1F40;
+        s1[0xE] = arg0->collision_pos.vz;
+        if (collision_TestSegmentWithWork(&arg0->collision_pos.vx, &s1[0xC], s1,
                                           (s16 *)&s1[4], 0x1F8002B8) != 0) {
             arg0->unk_148 = s1[1];
         }
     } else {
-        arg0->unk_148 = arg0->unk_B8.vy;
+        arg0->unk_148 = arg0->collision_pos.vy;
     }
 }
 
@@ -4402,29 +4408,32 @@ void fighter_Update(s32 arg0, PadState *pad) {
     s32 ang_q;
 
     rec = &D_80101EC8[arg0];
-    rec->unk_3C++;
-    rec->unk_24 = *pad;
+    rec->update_count++;
+    rec->pad_input = *pad;
     if (D_800A38BA != 0 && (arg0 == 0 || (arg0 == 1 && rec->unk_06 == 0))) {
-        rec->unk_24.held =
-            (rec->unk_24.held & 0xFFF) | ((rec->unk_24.held & 0x8000) >> 3) |
-            ((rec->unk_24.held & 0x7000) << 1);
-        rec->unk_24.pressed = (rec->unk_24.pressed & 0xFFF) |
-                              ((rec->unk_24.pressed & 0x8000) >> 3) |
-                              ((rec->unk_24.pressed & 0x7000) << 1);
-        rec->unk_24.released = (rec->unk_24.released & 0xFFF) |
-                               ((rec->unk_24.released & 0x8000) >> 3) |
-                               ((rec->unk_24.released & 0x7000) << 1);
-        rec->unk_24.unheld = (rec->unk_24.unheld & 0xFFF) |
-                             ((rec->unk_24.unheld & 0x8000) >> 3) |
-                             ((rec->unk_24.unheld & 0x7000) << 1);
+        rec->pad_input.held = (rec->pad_input.held & 0xFFF) |
+                              ((rec->pad_input.held & 0x8000) >> 3) |
+                              ((rec->pad_input.held & 0x7000) << 1);
+        rec->pad_input.pressed =
+            (rec->pad_input.pressed & 0xFFF) |
+            ((rec->pad_input.pressed & 0x8000) >> 3) |
+            ((rec->pad_input.pressed & 0x7000) << 1);
+        rec->pad_input.released =
+            (rec->pad_input.released & 0xFFF) |
+            ((rec->pad_input.released & 0x8000) >> 3) |
+            ((rec->pad_input.released & 0x7000) << 1);
+        rec->pad_input.unheld = (rec->pad_input.unheld & 0xFFF) |
+                                ((rec->pad_input.unheld & 0x8000) >> 3) |
+                                ((rec->pad_input.unheld & 0x7000) << 1);
     }
     if (D_800A38DC == 2 || D_800A38DC == 5 || D_800A38DC == 3 ||
         (D_800A38DC == 0 && D_800A385C != 0)) {
-        rec->unk_24.pressed &= ~0x100;
+        rec->pad_input.pressed &= ~0x100;
     }
-    if (rec->unk_3C < 2) {
-        rec->unk_24.held = rec->unk_24.pressed = rec->unk_24.released = 0;
-        rec->unk_24.unheld = 0xFFFF;
+    if (rec->update_count < 2) {
+        rec->pad_input.held = rec->pad_input.pressed = rec->pad_input.released =
+            0;
+        rec->pad_input.unheld = 0xFFFF;
     }
     rec->unk_20 =
         (rec->unk_1E *
@@ -4434,42 +4443,44 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->unk_7A = 0;
     }
     motion_UpdateFrameStep(rec);
-    frac = rec->unk_42 + rec->unk_44;
-    rec->unk_42 = frac;
+    frac = rec->move_frame_frac + rec->move_frame_step;
+    rec->move_frame_frac = frac;
     if (frac >= 0x1000) {
         rec->unk_46 = 0;
-        rec->unk_40 += frac >> 12;
-        rec->unk_42 &= 0xFFF;
+        rec->move_frame += frac >> 12;
+        rec->move_frame_frac &= 0xFFF;
     } else {
         rec->unk_46 = 1;
     }
-    if (rec->unk_286 >= 0) {
+    if (rec->pending_move_event >= 0) {
         /* the move-script record of unk_50's follow-up id is a u16 move-id
          * table indexed by event code (here unk_286; 0xD, 0x17/0x18 below) */
         u16 *table;
 
-        if (rec->unk_6A == 0xA || rec->unk_6A == 0x17 || rec->unk_6A == 0x18) {
+        if (rec->move_kind == 0xA || rec->move_kind == 0x17 ||
+            rec->move_kind == 0x18) {
             rec->unk_72 = 1;
         }
         rec->unk_31A = 0;
-        table = motion_ResolveMoveData(rec, rec->unk_50->unk_00, &rec->unk_5E);
-        func_80021A98(
-            arg0,
-            motion_ResolveMoveData(rec, table[rec->unk_286], &rec->unk_5E),
-            rec->unk_5E);
-        rec->unk_286 = -1;
+        table =
+            motion_ResolveMoveData(rec, rec->cur_move->unk_00, &rec->unk_5E);
+        func_80021A98(arg0,
+                      motion_ResolveMoveData(
+                          rec, table[rec->pending_move_event], &rec->unk_5E),
+                      rec->unk_5E);
+        rec->pending_move_event = -1;
     }
-    if ((rec->unk_24.held & 8) && (rec->unk_24.held & 0xF000)) {
-        if ((rec->unk_6A == 0x15 || rec->unk_6A == 0x19 ||
-             rec->unk_6A == 0x1A || rec->unk_6A == 0x13 ||
-             rec->unk_6A == 0x30 || rec->unk_6A == 0x31) &&
+    if ((rec->pad_input.held & 8) && (rec->pad_input.held & 0xF000)) {
+        if ((rec->move_kind == 0x15 || rec->move_kind == 0x19 ||
+             rec->move_kind == 0x1A || rec->move_kind == 0x13 ||
+             rec->move_kind == 0x30 || rec->move_kind == 0x31) &&
             func_800233AC(rec, &var_4) != 0) {
             u16 *table;
 
             fighter_SetTurnDelta(rec, var_4);
             rec->unk_31A = 0;
-            table =
-                motion_ResolveMoveData(rec, rec->unk_50->unk_00, &rec->unk_5E);
+            table = motion_ResolveMoveData(
+                rec, rec->cur_move->unk_00, &rec->unk_5E);
             func_80021A98(
                 arg0, motion_ResolveMoveData(rec, table[0xD], &rec->unk_5E),
                 rec->unk_5E);
@@ -4478,38 +4489,38 @@ void fighter_Update(s32 arg0, PadState *pad) {
             rec->unk_104.vz = 0;
         }
     }
-    if (rec->unk_50->unk_07 < rec->unk_40) {
-        if (rec->unk_7C != NULL) {
+    if (rec->cur_move->unk_07 < rec->move_frame) {
+        if (rec->queued_move != NULL) {
             rec->unk_5E = rec->unk_80;
             if (rec->unk_82 & 0x1000) {
                 rec->unk_4C = 1;
             }
-            func_80021A98(arg0, rec->unk_7C, rec->unk_80);
+            func_80021A98(arg0, rec->queued_move, rec->unk_80);
         } else {
-            if ((rec->unk_50->unk_0A[0] & 0x2000) && D_800A38AE != arg0) {
-                if (rec->unk_50->unk_0A[0] & 0x1000) {
+            if ((rec->cur_move->unk_0A[0] & 0x2000) && D_800A38AE != arg0) {
+                if (rec->cur_move->unk_0A[0] & 0x1000) {
                     rec->unk_4C = 1;
                 }
                 func_80021A98(arg0,
                               motion_ResolveMoveData(
-                                  rec, rec->unk_50->unk_0A[1], &rec->unk_5E),
+                                  rec, rec->cur_move->unk_0A[1], &rec->unk_5E),
                               rec->unk_5E);
             } else {
-                if (rec->unk_50->unk_09 & 0x20) {
+                if (rec->cur_move->unk_09 & 0x20) {
                     rec->unk_4C = 1;
                 }
                 func_80021A98(arg0,
                               motion_ResolveMoveData(
-                                  rec, rec->unk_50->unk_02, &rec->unk_5E),
+                                  rec, rec->cur_move->unk_02, &rec->unk_5E),
                               rec->unk_5E);
             }
         }
     }
-    if (rec->unk_7C != NULL) {
-        if (rec->unk_50->unk_08 < rec->unk_40) {
-            if (rec->unk_6A == 0x11) {
+    if (rec->queued_move != NULL) {
+        if (rec->cur_move->unk_08 < rec->move_frame) {
+            if (rec->move_kind == 0x11) {
                 D_800A376E = 1;
-                D_800A36D8 = rec->unk_7C;
+                D_800A36D8 = rec->queued_move;
                 D_800A381C = rec->unk_80;
                 D_800A36CA = rec->unk_82;
             } else {
@@ -4517,38 +4528,38 @@ void fighter_Update(s32 arg0, PadState *pad) {
                 if (rec->unk_82 & 0x1000) {
                     rec->unk_4C = 1;
                 }
-                func_80021A98(arg0, rec->unk_7C, rec->unk_80);
+                func_80021A98(arg0, rec->queued_move, rec->unk_80);
             }
         }
-    } else if (rec->unk_50->unk_08 >= rec->unk_40) {
-        ent = rec->unk_50->unk_0A;
+    } else if (rec->cur_move->unk_08 >= rec->move_frame) {
+        ent = rec->cur_move->unk_0A;
         while ((var_7 = ent[0]) != 0) {
             if (!(var_7 & 0x8000) ||
                 ((ent[2] | ((u32)ent[3] << 16)) & (1 << rec->unk_0A))) {
                 switch (var_7 & 0x30) {
                 case 0x00:
-                    var_8 = rec->unk_24.held;
+                    var_8 = rec->pad_input.held;
                     break;
                 case 0x10:
-                    var_8 = rec->unk_24.pressed;
+                    var_8 = rec->pad_input.pressed;
                     break;
                 case 0x20:
-                    var_8 = rec->unk_24.unheld;
+                    var_8 = rec->pad_input.unheld;
                     break;
                 case 0x30:
-                    var_8 = rec->unk_24.released;
+                    var_8 = rec->pad_input.released;
                     break;
                 }
                 if (var_7 & 0x2000) {
                     var_8 = 0;
                 }
-                if (rec->unk_6A == 0x11 && D_800A38AE == arg0) {
+                if (rec->move_kind == 0x11 && D_800A38AE == arg0) {
                     var_8 = 0;
                 }
                 if ((var_7 & 0xF) == 9) {
                     var_7 = (var_7 & 0xFFF0) | 3;
-                    if (rec->other->unk_6A != 6 &&
-                        rec->other->unk_40 < rec->other->unk_AB) {
+                    if (rec->other->move_kind != 6 &&
+                        rec->other->move_frame < rec->other->unk_AB) {
                         var_8 = 0;
                     }
                 } else if ((var_7 & 0xF) == 0xA) {
@@ -4563,12 +4574,12 @@ void fighter_Update(s32 arg0, PadState *pad) {
                         rec->unk_4C = 1;
                     }
                     move = motion_ResolveMoveData(rec, ent[1], &var_5);
-                    if (rec->unk_50->unk_09 & 0x80) {
-                        rec->unk_7C = move;
+                    if (rec->cur_move->unk_09 & 0x80) {
+                        rec->queued_move = move;
                         rec->unk_82 = var_7;
                         rec->unk_4C = 0;
                         rec->unk_80 = var_5;
-                    } else if (rec->unk_6A == 0x11) {
+                    } else if (rec->move_kind == 0x11) {
                         D_800A376E = 1;
                         D_800A36D8 = move;
                         D_800A36CA = var_7;
@@ -4587,13 +4598,13 @@ void fighter_Update(s32 arg0, PadState *pad) {
             }
         }
     }
-    if (rec->unk_6A == 0xA || rec->unk_72 != 0) {
+    if (rec->move_kind == 0xA || rec->unk_72 != 0) {
         if (func_80023DB8(rec) != 0) {
-            if (rec->unk_74 + 0xFA0 < rec->unk_B8.vy) {
+            if (rec->unk_74 + 0xFA0 < rec->collision_pos.vy) {
                 u16 *table;
 
                 table = motion_ResolveMoveData(
-                    rec, rec->unk_50->unk_00, &rec->unk_5E);
+                    rec, rec->cur_move->unk_00, &rec->unk_5E);
                 func_80021A98(arg0,
                               motion_ResolveMoveData(
                                   rec, table[rec->unk_94 != 0 ? 0x17 : 0x18],
@@ -4602,18 +4613,19 @@ void fighter_Update(s32 arg0, PadState *pad) {
             } else if (rec->unk_72 == 0) {
                 func_80021A98(arg0,
                               motion_ResolveMoveData(
-                                  rec, rec->unk_50->unk_02, &rec->unk_5E),
+                                  rec, rec->cur_move->unk_02, &rec->unk_5E),
                               rec->unk_5E);
             }
             rec->unk_72 = 0;
         }
-    } else if (
-        rec->unk_7A != 0 && (rec->unk_6C == 0x17 || rec->unk_6C == 0x18) &&
-        !(rec->unk_6A == 0x17 || rec->unk_6A == 0x18) &&
-        rec->unk_74 + 0xFA0 < rec->unk_B8.vy) {
+    } else if (rec->unk_7A != 0 &&
+               (rec->prev_move_kind == 0x17 || rec->prev_move_kind == 0x18) &&
+               !(rec->move_kind == 0x17 || rec->move_kind == 0x18) &&
+               rec->unk_74 + 0xFA0 < rec->collision_pos.vy) {
         u16 *table;
 
-        table = motion_ResolveMoveData(rec, rec->unk_50->unk_00, &rec->unk_5E);
+        table =
+            motion_ResolveMoveData(rec, rec->cur_move->unk_00, &rec->unk_5E);
         func_80021A98(
             arg0, motion_ResolveMoveData(rec, table[0x18], &rec->unk_5E),
             rec->unk_5E);
@@ -4622,10 +4634,11 @@ void fighter_Update(s32 arg0, PadState *pad) {
         fighter_SetTurnDelta(rec, rec->unk_1D8);
     }
     if (rec->unk_7A != 0) {
-        if (rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 ||
-            rec->unk_6A == 0x26 || rec->unk_6A == 0x24) {
+        if (rec->move_kind == 2 || rec->move_kind == 0x1B ||
+            rec->move_kind == 0x28 || rec->move_kind == 0x26 ||
+            rec->move_kind == 0x24) {
             fighter_SetTurnDelta(rec, rec->unk_1D8);
-            if (rec->unk_6A == 2 || rec->unk_6A == 0x24) {
+            if (rec->move_kind == 2 || rec->move_kind == 0x24) {
                 temp = (rec->unk_58[2] >> 4) * 0x88;
                 if (rec->unk_14C > temp) {
                     rec->unk_14C = temp;
@@ -4635,27 +4648,31 @@ void fighter_Update(s32 arg0, PadState *pad) {
             }
         }
     }
-    if (rec->unk_46 == 0 && rec->unk_6A == 9 && rec->unk_A9 == rec->unk_40) {
+    if (rec->unk_46 == 0 && rec->move_kind == 9 &&
+        rec->unk_A9 == rec->move_frame) {
         fighter_SetTurnDelta(rec, rec->unk_1D8);
     }
-    if (rec->unk_7A != 0 && rec->unk_6C != 0x18 && rec->unk_6A == 0x18) {
+    if (rec->unk_7A != 0 && rec->prev_move_kind != 0x18 &&
+        rec->move_kind == 0x18) {
         rec->unk_104.vx +=
-            (Judge[rec->unk_1C8.vy & 0xFFF] * D_8008DA94[rec->unk_0A]) >> 12;
-        rec->unk_104.vz += (Judge[(rec->unk_1C8.vy + 0x400) & 0xFFF] *
+            (Judge[rec->orientation.vy & 0xFFF] * D_8008DA94[rec->unk_0A]) >>
+            12;
+        rec->unk_104.vz += (Judge[(rec->orientation.vy + 0x400) & 0xFFF] *
                             D_8008DA94[rec->unk_0A]) >>
                            12;
         rec->unk_104.vy += D_8008DA50[rec->unk_0A];
-        rec->unk_74 = rec->unk_B8.vy;
+        rec->unk_74 = rec->collision_pos.vy;
     }
-    if (rec->unk_7A != 0 && rec->unk_6C != 0x17 && rec->unk_6A == 0x17) {
+    if (rec->unk_7A != 0 && rec->prev_move_kind != 0x17 &&
+        rec->move_kind == 0x17) {
         rec->unk_104.vy += D_8008DAD8[rec->unk_0A];
-        rec->unk_74 = rec->unk_B8.vy;
+        rec->unk_74 = rec->collision_pos.vy;
     }
-    if (rec->unk_7A != 0 && rec->unk_6A == 0x28) {
+    if (rec->unk_7A != 0 && rec->move_kind == 0x28) {
         s32 dv[3];
         s32 var_30[3];
 
-        temp = (rec->unk_1D8 - rec->unk_1C8.vy) & 0xFFF;
+        temp = (rec->unk_1D8 - rec->orientation.vy) & 0xFFF;
         if (temp >= 0x800) {
             temp = 0x1000 - temp;
         }
@@ -4669,41 +4686,41 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->unk_104.vx += dv[0];
         rec->unk_104.vz += dv[2];
         rec->unk_72 = 1;
-        rec->unk_74 = rec->unk_B8.vy;
+        rec->unk_74 = rec->collision_pos.vy;
     }
-    if (rec->unk_6A == 0x17 || rec->unk_6A == 0x18 || rec->unk_6A == 0x28 ||
-        rec->unk_6A == 0xA) {
-        if (rec->unk_40 == rec->unk_50->unk_07 && rec->unk_104.vy > 0) {
-            rec->unk_40 = rec->unk_50->unk_07 - 1;
+    if (rec->move_kind == 0x17 || rec->move_kind == 0x18 ||
+        rec->move_kind == 0x28 || rec->move_kind == 0xA) {
+        if (rec->move_frame == rec->cur_move->unk_07 && rec->unk_104.vy > 0) {
+            rec->move_frame = rec->cur_move->unk_07 - 1;
         }
     }
-    if (rec->unk_7A != 0 && rec->unk_6A == 0x23) {
-        rec->unk_B8.vy -= 0x898;
-        rec->unk_D8.y -= 0x898;
+    if (rec->unk_7A != 0 && rec->move_kind == 0x23) {
+        rec->collision_pos.vy -= 0x898;
+        rec->base_pos.y -= 0x898;
         rec->unk_1F8.y += 0x898;
     }
     {
-        s32 state = rec->unk_6A;
+        s32 state = rec->move_kind;
 
         if (rec->unk_7A != 0 && state == 6) {
             rec->unk_86 = rec->unk_84;
         }
     }
-    temp = (rec->unk_14C * rec->unk_44) / 24576;
-    rec->unk_1C8.vy += temp;
+    temp = (rec->unk_14C * rec->move_frame_step) / 24576;
+    rec->orientation.vy += temp;
     rec->unk_14C -= temp;
     if (rec->unk_7A != 0) {
         if (rec->unk_78 != 0) {
             func_80023D08(rec);
-        } else if (rec->unk_6A == 0x1C) {
+        } else if (rec->move_kind == 0x1C) {
             fighter_RequestPoseBlend(rec, 0x400);
         } else {
-            if (rec->unk_6C == 0x1C || rec->unk_6A == 0x11 ||
-                rec->unk_6C == 0x11 || rec->unk_6A == 0x15 ||
-                rec->unk_6A == 0xA || rec->unk_6A == 0x2D) {
+            if (rec->prev_move_kind == 0x1C || rec->move_kind == 0x11 ||
+                rec->prev_move_kind == 0x11 || rec->move_kind == 0x15 ||
+                rec->move_kind == 0xA || rec->move_kind == 0x2D) {
                 func_80023D08(rec);
             } else {
-                switch ((rec->unk_6C << 8) | rec->unk_6A) {
+                switch ((rec->prev_move_kind << 8) | rec->move_kind) {
                 case 0x1525:
                 case 0x1502:
                 case 0x1322:
@@ -4717,38 +4734,38 @@ void fighter_Update(s32 arg0, PadState *pad) {
             }
         }
     }
-    next = rec->unk_40 + 1;
+    next = rec->move_frame + 1;
     if (next >= rec->unk_58[1]) {
         next = rec->unk_58[1] - 1;
     }
-    if (rec->unk_50->unk_09 & 0x40) {
+    if (rec->cur_move->unk_09 & 0x40) {
         var_18 = rec->unk_5E == 0 ? D_80101EC8[D_800A38AE].unk_4A + 1 : 0;
-        if (rec->unk_6A == 0x11 && D_800A38AE != arg0) {
+        if (rec->move_kind == 0x11 && D_800A38AE != arg0) {
             var_19 = rec->unk_58[1];
         } else {
             var_19 = 0;
         }
     } else {
         var_18 = rec->unk_5E == 0 ? rec->unk_4A + 1 : 0;
-        if (rec->unk_6A == 0x15 && D_8008D9EC[rec->unk_0A] != 0) {
+        if (rec->move_kind == 0x15 && D_8008D9EC[rec->unk_0A] != 0) {
             var_19 = rec->unk_58[1];
         } else {
             var_19 = 0;
         }
     }
-    var_15 = var_19 + *rec->unk_54 + rec->unk_40;
+    var_15 = var_19 + *rec->unk_54 + rec->move_frame;
     var_17 = var_19 + *rec->unk_54 + next;
     rec->unk_64 = (var_18 << 14) | var_15;
     rec->unk_66 = (var_18 << 14) | var_17;
-    if (rec->unk_6A == 0x33) {
-        var_0[1] = g_motion_frame_buffers[arg0][rec->unk_40];
+    if (rec->move_kind == 0x33) {
+        var_0[1] = g_motion_frame_buffers[arg0][rec->move_frame];
         var_0[0] = var_0[1];
     } else {
         func_800198D0(var_18, var_15, &var_0[0], (u16 *)0x1F8001B0);
         func_800198D0(var_18, var_17, &var_0[1], (u16 *)0x1F8001B0);
     }
-    if (rec->unk_7A != 0 && (rec->unk_6A == 6 || rec->unk_6A == 0x14) &&
-        rec->unk_6C == 6) {
+    if (rec->unk_7A != 0 && (rec->move_kind == 6 || rec->move_kind == 0x14) &&
+        rec->prev_move_kind == 6) {
         MATRIX m1;
         MATRIX m2;
         s32 old_heading;
@@ -4763,17 +4780,17 @@ void fighter_Update(s32 arg0, PadState *pad) {
         new_heading = ratan2(m2.m[0][0], m2.m[2][0]);
         var_34 = new_heading - old_heading;
 
-        rec->unk_1C8.vy += var_34;
+        rec->orientation.vy += var_34;
         func_8001B690(arg0, var_34);
     }
     motion_AdjustFighterPose(rec, &var_0[0], &var_0[1]);
-    if (rec->unk_6A == 0x11) {
-        rec->unk_154 = rec->unk_1C8.vy;
+    if (rec->move_kind == 0x11) {
+        rec->unk_154 = rec->orientation.vy;
     }
     if (rec->unk_152 != 0) {
         var_12 = rec->unk_154;
     } else {
-        var_12 = rec->unk_1C8.vy;
+        var_12 = rec->orientation.vy;
     }
     ang[0] = ang[1] = var_12;
     var_13 = var_12 + 0x400;
@@ -4793,7 +4810,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
     v[0].z = (v[0].z * rec->unk_1A) >> 12;
     v[1].x = (v[1].x * rec->unk_1A) >> 12;
     v[1].z = (v[1].z * rec->unk_1A) >> 12;
-    if (rec->unk_6A != 8) {
+    if (rec->move_kind != 8) {
         v[0].y = (v[0].y * rec->unk_1A) >> 12;
         v[1].y = (v[1].y * rec->unk_1A) >> 12;
     }
@@ -4806,7 +4823,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->unk_66 = rec->unk_64;
         rec->unk_64 = rec->unk_316;
     } else {
-        var_14 = rec->unk_42;
+        var_14 = rec->move_frame_frac;
     }
     var_22 = 0x1000 - var_14;
     rec->unk_68 = var_14;
@@ -4814,8 +4831,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
         Vec3i32 var_35;
 
         if (rec->unk_7A != 0) {
-            rec->unk_D8.x += rec->unk_1F8.x - v[0].x;
-            rec->unk_D8.z += rec->unk_1F8.z - v[0].z;
+            rec->base_pos.x += rec->unk_1F8.x - v[0].x;
+            rec->base_pos.z += rec->unk_1F8.z - v[0].z;
             rec->unk_320.x += rec->unk_1F8.x - v[0].x;
             rec->unk_320.z += rec->unk_1F8.z - v[0].z;
         }
@@ -4831,35 +4848,35 @@ void fighter_Update(s32 arg0, PadState *pad) {
         var_35.z = (var_35.z * rec->unk_1A) >> 12;
         var_35.x -= rec->unk_320.x;
         var_35.z -= rec->unk_320.z;
-        rec->unk_E8.x = (var_35.x * var_22 + v[0].x * var_14) >> 12;
-        rec->unk_E8.y = (var_35.y * var_22 + v[0].y * var_14) >> 12;
-        rec->unk_E8.z = (var_35.z * var_22 + v[0].z * var_14) >> 12;
+        rec->root_offset.x = (var_35.x * var_22 + v[0].x * var_14) >> 12;
+        rec->root_offset.y = (var_35.y * var_22 + v[0].y * var_14) >> 12;
+        rec->root_offset.z = (var_35.z * var_22 + v[0].z * var_14) >> 12;
     } else {
-        rec->unk_E8.x = (v[0].x * var_22 + v[1].x * var_14) >> 12;
-        rec->unk_E8.y = (v[0].y * var_22 + v[1].y * var_14) >> 12;
-        rec->unk_E8.z = (v[0].z * var_22 + v[1].z * var_14) >> 12;
+        rec->root_offset.x = (v[0].x * var_22 + v[1].x * var_14) >> 12;
+        rec->root_offset.y = (v[0].y * var_22 + v[1].y * var_14) >> 12;
+        rec->root_offset.z = (v[0].z * var_22 + v[1].z * var_14) >> 12;
     }
     if (rec->unk_7A != 0 && rec->unk_31A == 0) {
-        rec->unk_D8.x += rec->unk_1F8.x - rec->unk_E8.x;
-        rec->unk_D8.z += rec->unk_1F8.z - rec->unk_E8.z;
-        if (rec->unk_6A == 0x23 || rec->unk_6A == 0xA) {
-            rec->unk_D8.y += rec->unk_1F8.y - rec->unk_E8.y;
+        rec->base_pos.x += rec->unk_1F8.x - rec->root_offset.x;
+        rec->base_pos.z += rec->unk_1F8.z - rec->root_offset.z;
+        if (rec->move_kind == 0x23 || rec->move_kind == 0xA) {
+            rec->base_pos.y += rec->unk_1F8.y - rec->root_offset.y;
         }
     }
     func_80023648(rec);
     func_800238C4(rec);
-    if (rec->unk_6A != 8 && rec->unk_6A != 0x22) {
+    if (rec->move_kind != 8 && rec->move_kind != 0x22) {
         rec->unk_104.vy += 0x15;
     }
     {
-        s32 state = rec->unk_6A;
+        s32 state = rec->move_kind;
 
         if (state == 8 || state == 0x22) {
             rec->unk_134.vx -= rec->unk_98.vx / 256;
             rec->unk_134.vz -= rec->unk_98.vz / 256;
         }
     }
-    if (rec->unk_7A == 0 || rec->unk_6A != 0x28) {
+    if (rec->unk_7A == 0 || rec->move_kind != 0x28) {
         rec->unk_104.vx = (rec->unk_104.vx * rec->unk_156) >> 12;
         rec->unk_104.vy = (rec->unk_104.vy * rec->unk_158) >> 12;
         rec->unk_104.vz = (rec->unk_104.vz * rec->unk_15A) >> 12;
@@ -4873,13 +4890,13 @@ void fighter_Update(s32 arg0, PadState *pad) {
     if (rec->unk_104.vz >= -15 && rec->unk_104.vz <= 15) {
         rec->unk_104.vz /= 2;
     }
-    rec->unk_D8.x += rec->unk_104.vx;
-    rec->unk_D8.y += rec->unk_104.vy;
-    rec->unk_D8.z += rec->unk_104.vz;
-    if ((rec->unk_6A == 7 || rec->unk_6A == 0xD) && rec->unk_B4 == 0) {
-        temp = (rec->unk_24.held & 0x1000)
+    rec->base_pos.x += rec->unk_104.vx;
+    rec->base_pos.y += rec->unk_104.vy;
+    rec->base_pos.z += rec->unk_104.vz;
+    if ((rec->move_kind == 7 || rec->move_kind == 0xD) && rec->unk_B4 == 0) {
+        temp = (rec->pad_input.held & 0x1000)
                    ? 1
-                   : -((rec->unk_24.held & 0x4000) != 0);
+                   : -((rec->pad_input.held & 0x4000) != 0);
         if (temp != 0) {
             rec->unk_134.vx /= 2;
             rec->unk_134.vz /= 2;
@@ -4904,50 +4921,51 @@ void fighter_Update(s32 arg0, PadState *pad) {
     if (rec->unk_134.vz >= -3 && rec->unk_134.vz <= 3) {
         rec->unk_134.vz = 0;
     }
-    if (rec->unk_6A == 4 || rec->unk_6A == 0x14 || rec->unk_0C == 0x1F) {
+    if (rec->move_kind == 4 || rec->move_kind == 0x14 || rec->unk_0C == 0x1F) {
         rec->unk_134.vx = 0;
         rec->unk_134.vy = 0;
         rec->unk_134.vz = 0;
     } else {
-        rec->unk_D8.x += rec->unk_134.vx;
-        rec->unk_D8.y += rec->unk_134.vy;
-        rec->unk_D8.z += rec->unk_134.vz;
+        rec->base_pos.x += rec->unk_134.vx;
+        rec->base_pos.y += rec->unk_134.vy;
+        rec->base_pos.z += rec->unk_134.vz;
     }
-    pos.vx = rec->unk_D8.x + rec->unk_E8.x;
-    pos.vy = rec->unk_D8.y;
-    if (rec->unk_6A == 8 || rec->unk_6A == 0x22) {
-        pos.vy += rec->unk_E8.y;
+    pos.vx = rec->base_pos.x + rec->root_offset.x;
+    pos.vy = rec->base_pos.y;
+    if (rec->move_kind == 8 || rec->move_kind == 0x22) {
+        pos.vy += rec->root_offset.y;
     }
-    pos.vz = rec->unk_D8.z + rec->unk_E8.z;
-    rec->unk_C8 = rec->unk_B8;
-    fighter_ResolveMovement(rec, &rec->unk_B8, &pos, &rec->unk_104.vx);
+    pos.vz = rec->base_pos.z + rec->root_offset.z;
+    rec->prev_collision_pos = rec->collision_pos;
+    fighter_ResolveMovement(rec, &rec->collision_pos, &pos, &rec->unk_104.vx);
     if (rec->unk_B1 != 7 && rec->unk_B1 != 0) {
         rec->unk_B2 = ((0x2A >> rec->unk_B1) ^ 1) & 1;
     }
-    rec->unk_D8.x = rec->unk_B8.vx - rec->unk_E8.x;
-    rec->unk_D8.y = rec->unk_B8.vy;
-    if (rec->unk_6A == 8 || rec->unk_6A == 0x22) {
-        rec->unk_D8.y -= rec->unk_E8.y;
+    rec->base_pos.x = rec->collision_pos.vx - rec->root_offset.x;
+    rec->base_pos.y = rec->collision_pos.vy;
+    if (rec->move_kind == 8 || rec->move_kind == 0x22) {
+        rec->base_pos.y -= rec->root_offset.y;
     }
-    rec->unk_D8.z = rec->unk_B8.vz - rec->unk_E8.z;
-    rec->unk_F4.x = rec->unk_D8.x + rec->unk_E8.x;
-    rec->unk_F4.y = rec->unk_D8.y + rec->unk_E8.y;
-    rec->unk_F4.z = rec->unk_D8.z + rec->unk_E8.z;
-    rec->unk_1F8 = rec->unk_E8;
-    rec->unk_168.x = rec->unk_F4.x;
-    rec->unk_168.y = rec->unk_D8.y - 0x384;
-    rec->unk_168.z = rec->unk_F4.z;
+    rec->base_pos.z = rec->collision_pos.vz - rec->root_offset.z;
+    rec->world_pos.x = rec->base_pos.x + rec->root_offset.x;
+    rec->world_pos.y = rec->base_pos.y + rec->root_offset.y;
+    rec->world_pos.z = rec->base_pos.z + rec->root_offset.z;
+    rec->unk_1F8 = rec->root_offset;
+    rec->unk_168.x = rec->world_pos.x;
+    rec->unk_168.y = rec->base_pos.y - 0x384;
+    rec->unk_168.z = rec->world_pos.z;
     func_80023E40(rec);
     func_80041188(arg0, (u8 *)&var_0[0], (u8 *)&var_0[1], rec->unk_68,
                   (MATRIX *)0x1F8001B0);
     scratchpad_Save();
-    func_80040D48(
-        arg0, 1, (s32 *)&rec->unk_F4, (s16 *)&rec->unk_1C8, 0, rec->unk_148);
+    func_80040D48(arg0, 1, (s32 *)&rec->world_pos, (s16 *)&rec->orientation, 0,
+                  rec->unk_148);
     scratchpad_Restore();
     if (rec->unk_86 == rec->unk_8E &&
-        (rec->unk_6A == 0x15 || rec->unk_6A == 0x19 || rec->unk_6A == 0x1A ||
-         rec->unk_6A == 0x16 || rec->unk_6A == 0x30 || rec->unk_6A == 0x13 ||
-         rec->unk_6A == 0x31)) {
+        (rec->move_kind == 0x15 || rec->move_kind == 0x19 ||
+         rec->move_kind == 0x1A || rec->move_kind == 0x16 ||
+         rec->move_kind == 0x30 || rec->move_kind == 0x13 ||
+         rec->move_kind == 0x31)) {
         rec->unk_92 = 0;
     } else {
         rec->unk_92 = rec->unk_92 != 0 ? 1 : 2;
@@ -4970,15 +4988,15 @@ void fighter_Update(s32 arg0, PadState *pad) {
         }
     } else if (
         ((rec->unk_0C == 0x1D || rec->unk_0C == 0xE) &&
-         (rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 ||
-          rec->unk_6A == 0x26) &&
+         (rec->move_kind == 2 || rec->move_kind == 0x1B ||
+          rec->move_kind == 0x28 || rec->move_kind == 0x26) &&
          rec->unk_A1[1] < 0xFF && rec->unk_26C != 0 &&
-         rec->unk_40 >= rec->unk_A5 && rec->unk_40 <= rec->unk_A6) ||
+         rec->move_frame >= rec->unk_A5 && rec->move_frame <= rec->unk_A6) ||
         /* FAKE: this second range test is written unk_A6 >= unk_40;
          * spelled like the first, fold-const factors the two identical
          * tests out of the || (score 11). */
-        (rec->unk_0A == 0xE && rec->unk_6A == 0x11 && D_800A38AE == arg0 &&
-         rec->unk_40 >= rec->unk_A5 && rec->unk_A6 >= rec->unk_40)) {
+        (rec->unk_0A == 0xE && rec->move_kind == 0x11 && D_800A38AE == arg0 &&
+         rec->move_frame >= rec->unk_A5 && rec->unk_A6 >= rec->move_frame)) {
         rec->unk_8C = rec->unk_8C != 0 ? 1 : 2;
         rec->unk_62 |= 4;
     } else {
@@ -4999,7 +5017,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
         } else {
             goto skip_62;
         }
-        if (rec->unk_6A != 4 && rec->unk_6A != 0x14 && rec->unk_92 == 0) {
+        if (rec->move_kind != 4 && rec->move_kind != 0x14 && rec->unk_92 == 0) {
             rec->unk_62 |= 0x10;
         }
         if (rec->unk_330 > 0 && rec->unk_332[0] == rec->unk_14 &&
@@ -5009,8 +5027,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
     }
 skip_62:
     if ((D_800A38DC == 2 && D_800A389A == 0) || D_800A38DC == 5) {
-        if ((rec->unk_0E == 0 || rec->unk_0E == 1) && rec->unk_6A != 4 &&
-            rec->unk_6A != 0x14 && rec->unk_92 == 0) {
+        if ((rec->unk_0E == 0 || rec->unk_0E == 1) && rec->move_kind != 4 &&
+            rec->move_kind != 0x14 && rec->unk_92 == 0) {
             rec->unk_62 = (rec->unk_62 | 2) & ~0x10;
         }
         if (rec->unk_330 > 0 && rec->unk_332[0] == rec->unk_14 &&
@@ -5048,13 +5066,13 @@ skip_62:
             rec->unk_1F8 = v[1];
         }
     }
-    rec->unk_1D8 = ratan2(rec->other->unk_F4.x - rec->unk_F4.x,
-                          rec->other->unk_F4.z - rec->unk_F4.z);
+    rec->unk_1D8 = ratan2(rec->other->world_pos.x - rec->world_pos.x,
+                          rec->other->world_pos.z - rec->world_pos.z);
     rec->unk_24C = rec->unk_104;
     func_80023D28(rec);
     fighter_UpdateBoneWorldData(
         rec, SPAD->unkA8[arg0], SPAD->unk00[arg0], SPAD->unk48[arg0]);
-    if (rec->unk_3C == 1) {
+    if (rec->update_count == 1) {
         rec->unk_210[0] = SPAD->unk00[arg0][0];
     }
     if (rec->unk_8C == 2) {
@@ -5081,11 +5099,13 @@ skip_62:
     rec->unk_114[1].vz = SPAD->unk48[arg0][0].z - rec->unk_234[0].z;
     rec->unk_1DA = func_8002FDB0(rec);
     var_20 = 0;
-    if ((rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 ||
-         rec->unk_6A == 0x26) &&
+    if ((rec->move_kind == 2 || rec->move_kind == 0x1B ||
+         rec->move_kind == 0x28 || rec->move_kind == 0x26) &&
         rec->unk_AD != 0) {
-        if ((rec->unk_40 >= rec->unk_A1[0] && rec->unk_40 <= rec->unk_A3[0]) ||
-            (rec->unk_40 >= rec->unk_A1[1] && rec->unk_40 <= rec->unk_A3[1])) {
+        if ((rec->move_frame >= rec->unk_A1[0] &&
+             rec->move_frame <= rec->unk_A3[0]) ||
+            (rec->move_frame >= rec->unk_A1[1] &&
+             rec->move_frame <= rec->unk_A3[1])) {
             var_20 = 1;
         }
     }
@@ -5093,27 +5113,27 @@ skip_62:
     rec->unk_288[0] = 0;
     rec->unk_288[1] = 0;
     if (rec->unk_AD != 0) {
-        if (rec->unk_6A == 2 || rec->unk_6A == 0x1B || rec->unk_6A == 0x28 ||
-            rec->unk_6A == 0x26) {
+        if (rec->move_kind == 2 || rec->move_kind == 0x1B ||
+            rec->move_kind == 0x28 || rec->move_kind == 0x26) {
             rec->unk_288[0] += 1;
             rec->unk_288[1] += 1;
-            if (rec->unk_40 < rec->unk_A1[0]) {
+            if (rec->move_frame < rec->unk_A1[0]) {
                 rec->unk_288[0] += 2;
-            } else if (rec->unk_40 <= rec->unk_A3[0]) {
+            } else if (rec->move_frame <= rec->unk_A3[0]) {
                 rec->unk_288[0] += 4;
             }
-            if (rec->unk_40 < rec->unk_A1[1]) {
+            if (rec->move_frame < rec->unk_A1[1]) {
                 rec->unk_288[1] += 2;
-            } else if (rec->unk_40 <= rec->unk_A3[1]) {
+            } else if (rec->move_frame <= rec->unk_A3[1]) {
                 rec->unk_288[1] += 4;
             }
         }
     }
-    if (rec->unk_6A == 6) {
+    if (rec->move_kind == 6) {
         rec->unk_15E = 0x600;
         rec->unk_160 = 0x600;
         rec->unk_162 = 0x600;
-    } else if (rec->unk_6A == 8) {
+    } else if (rec->move_kind == 8) {
         rec->unk_15E = 0x100;
         rec->unk_160 = 0x100;
         rec->unk_162 = 0x100;
@@ -5132,14 +5152,15 @@ skip_62:
         rec->unk_15A = 0xFC0;
     }
     if (rec->unk_96 == 0 &&
-        ((rec->unk_7A != 0 && rec->unk_6C != 4 && rec->unk_6C != 0x14 &&
-          (rec->unk_6A == 4 || rec->unk_6A == 0x14)) ||
-         (rec->unk_6A == 0x11 && arg0 != D_800A38AE &&
-          rec->unk_AA == rec->unk_40))) {
+        ((rec->unk_7A != 0 && rec->prev_move_kind != 4 &&
+          rec->prev_move_kind != 0x14 &&
+          (rec->move_kind == 4 || rec->move_kind == 0x14)) ||
+         (rec->move_kind == 0x11 && arg0 != D_800A38AE &&
+          rec->unk_AA == rec->move_frame))) {
         MATRIX **var_37 = func_80046DEC(arg0);
         if (D_800A38DC != 0 || D_8008D9EC[D_80101EC8[0].unk_0A] == 0 ||
             D_800A37A0 != 1 || arg0 != D_800A37A0) {
-            func_80032854(arg0, 0x2E, &rec->unk_F4.x, 0);
+            func_80032854(arg0, 0x2E, &rec->world_pos.x, 0);
         }
         if (rec->unk_0C != 0x1F) {
             object_SpawnScatteredAt(
@@ -5151,14 +5172,14 @@ skip_62:
             D_800A3748 = arg0 == 0;
         }
     }
-    if (rec->unk_7A != 0 && rec->unk_0C == 0x1B && rec->unk_6A == 0xB &&
+    if (rec->unk_7A != 0 && rec->unk_0C == 0x1B && rec->move_kind == 0xB &&
         rec->unk_34D == 0) {
-        rec->unk_286 = 0x1F;
+        rec->pending_move_event = 0x1F;
     }
     if (rec->unk_46 == 0) {
         if (D_800A38DC != 5 && D_800A38DC != 2 && D_800A38DC != 3 &&
             (D_800A38DC != 0 || D_800A385C == 0)) {
-            if (rec->unk_6A == 0xB && rec->unk_40 == rec->unk_A7) {
+            if (rec->move_kind == 0xB && rec->move_frame == rec->unk_A7) {
                 if (rec->unk_0C == 0x1B) {
                     if (rec->unk_34D != 0) {
                         rec->unk_34D--;
@@ -5169,27 +5190,28 @@ skip_62:
                 }
             }
         }
-        if (rec->unk_6A == 6) {
+        if (rec->move_kind == 6) {
             if (object_PickUpNearby(rec) == rec->unk_14) {
                 rec->unk_8A = rec->unk_26C;
             }
-        } else if (
-            rec->unk_26C != 0 && (rec->unk_6A == 0xC || rec->unk_6A == 0x2A) &&
-            rec->unk_40 == rec->unk_A8 &&
-            object_PickUpNearby(rec) == rec->unk_14) {
+        } else if (rec->unk_26C != 0 &&
+                   (rec->move_kind == 0xC || rec->move_kind == 0x2A) &&
+                   rec->move_frame == rec->unk_A8 &&
+                   object_PickUpNearby(rec) == rec->unk_14) {
             rec->unk_8A = 1;
         }
-        if (rec->unk_6A == 0x12 && rec->unk_40 == rec->unk_A7 &&
+        if (rec->move_kind == 0x12 && rec->move_frame == rec->unk_A7 &&
             ((0x78 >> rec->unk_B1) & 1) && rec->unk_26C != 0) {
             func_80032064(rec, ((0x18 >> rec->unk_B1) & 1) ? 1 : 2);
         }
-        if (rec->unk_6A == 0x10 && rec->unk_40 == rec->unk_AC &&
+        if (rec->move_kind == 0x10 && rec->move_frame == rec->unk_AC &&
             rec->unk_26C != 0 && rec->unk_34B != 0) {
             rec->unk_34A = 0xA;
             rec->unk_34B--;
-            func_80032854(arg0, 0x31, &rec->unk_F4.x, 0);
+            func_80032854(arg0, 0x31, &rec->world_pos.x, 0);
         }
-        if (rec->unk_46 == 0 && (rec->unk_6A != 0x11 || arg0 == D_800A38AE)) {
+        if (rec->unk_46 == 0 &&
+            (rec->move_kind != 0x11 || arg0 == D_800A38AE)) {
             rec->unk_62 |= 0x40;
             fighter_ProcessFrameEvents(rec);
         }

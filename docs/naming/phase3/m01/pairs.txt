@@ -1,0 +1,16 @@
+Unk80101EC8Record.unk_3C=update_count
+Unk80101EC8Record.unk_40=move_frame
+Unk80101EC8Record.unk_42=move_frame_frac
+Unk80101EC8Record.unk_44=move_frame_step
+Unk80101EC8Record.unk_50=cur_move
+Unk80101EC8Record.unk_7C=queued_move
+Unk80101EC8Record.unk_6A=move_kind
+Unk80101EC8Record.unk_6C=prev_move_kind
+Unk80101EC8Record.unk_D8=base_pos
+Unk80101EC8Record.unk_E8=root_offset
+Unk80101EC8Record.unk_F4=world_pos
+Unk80101EC8Record.unk_B8=collision_pos
+Unk80101EC8Record.unk_C8=prev_collision_pos
+Unk80101EC8Record.unk_1C8=orientation
+Unk80101EC8Record.unk_286=pending_move_event
+Unk80101EC8Record.unk_24=pad_input
