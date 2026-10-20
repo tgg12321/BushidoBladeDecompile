@@ -45,7 +45,7 @@ entries `unk_332[12]` (include/game.h:1562-1564). `g_object_pool[12]`
   record's `move_kind` / `move_frame` values.
 - Pool cleanup: `object_ResetPool` (src/main/17AFC.c:3719) frees all twelve
   slots (called at src/main/9F9C.c:1769); `object_FreeAttachedObjects`
-  (src/main/17AFC.c:3745) frees objects with `unk_08 != 0` and `func_80030D04`
+  (src/main/17AFC.c:3764) frees objects with `is_attached != 0` and `func_80030D04`
   (src/main/17AFC.c:3967) frees kinds 0x12..0x1D (both called at
   src/main/9F9C.c:1180-1181).
 
