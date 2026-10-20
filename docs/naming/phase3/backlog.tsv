@@ -14,6 +14,6 @@ wave75	func	reviewed	docs/naming/phase3/pending/wave75	applier: fix include/game
 wave77	func	reviewed	docs/naming/phase3/pending/wave77	1 row eff_DrawAnimatedQuads
 wave47	func	researched	docs/naming/phase3/pending/wave47	no VERDICT; cites main 032e23f8c (stale): re-derive and pre-apply review before landing
 wave39	local	researched	docs/naming/phase3/pending/wave39	77 local pairs (f:l=n), legacy format; re-check against current tree and review
-wave48	func	idea	-	was queued; draft not found in tmp/: re-research
+wave48	func	researching	-	Codex run 20261020-164120-research-wave48 (~/.claude/codex-bridge/runs/); scope: 37 unnamed funcs in src/main/3AB48.c (GTE/math helpers); prompt tmp/codex/prompt-research-w48.md. Next: extract_final.py <run dir> tmp/codex/wave48-research.md
 m12	member	idea	-	MoveScript.unk_04 = motion_entry_index (same meaning as fighter rec unk_5C, pending m08): needs a different fresh name, or land after m08 under a new name
 m13	member	idea	-	Unk80101EC8Record: ~170 members still unk_; next pass, skip judged NO_NAME (156/158/15A, 3A4/3A8, 3CC, 414/424/43E)
