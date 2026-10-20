@@ -1,0 +1,11 @@
+Unk80101EC8Record.unk_4A=motion_slot
+Unk80101EC8Record.unk_4C=borrow_other_motion
+Unk80101EC8Record.unk_5E=move_is_common
+Unk80101EC8Record.unk_80=queued_move_is_common
+Unk80101EC8Record.unk_60=cur_move_is_common
+Unk80101EC8Record.unk_61=cur_move_slot
+Unk80101EC8Record.unk_7A=move_started
+Unk80101EC8Record.unk_96=is_defeated
+Unk80101EC8Record.unk_1D8=opponent_bearing
+Unk80101EC8Record.unk_443=cpu_profile
+Unk80101EC8Record.unk_444=cpu_probes

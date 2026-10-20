@@ -1260,10 +1260,10 @@ void replay_RecordFighter(Unk80101EC8Record *a0) {
     dest->w0 = a0->cur_move;
     dest->b17 = 0;
 
-    if (a0->unk_60 != 0) {
+    if (a0->cur_move_is_common != 0) {
         dest->b17 = 1;
     }
-    if (a0->unk_61 != 0) {
+    if (a0->cur_move_slot != 0) {
         dest->b17 |= 2;
     }
 
@@ -1484,7 +1484,7 @@ void replay_PlayFrame(void) {
         (g_pad_state.pressed & 0x400040)) {
         switch (D_800A38DC) {
         case 0:
-            if (D_80101EC8[0].unk_96 == 0) {
+            if (D_80101EC8[0].is_defeated == 0) {
                 s32 var_19 = D_800A3836 != 0xFF;
                 if (D_800A3712 != 0) {
                     D_800A38D4 = 2;
@@ -1517,21 +1517,22 @@ void replay_PlayFrame(void) {
             func_8003B328();
             func_8003AF40(0);
             func_8003AFFC();
-            if (D_800A3712 != 0 && D_80101EC8[1].unk_96 != 0) {
+            if (D_800A3712 != 0 && D_80101EC8[1].is_defeated != 0) {
                 func_8003B534(6);
             } else {
                 func_8003B534(4);
             }
             return;
         case 3:
-            if (D_80101EC8[0].unk_96 == 0) {
+            if (D_80101EC8[0].is_defeated == 0) {
                 D_800A3834 = 0x1E;
             } else {
                 D_800A3834 = 0xC;
             }
             break;
         default:
-            if (D_80101EC8[0].unk_96 == 0 || D_80101EC8[1].unk_96 == 0) {
+            if (D_80101EC8[0].is_defeated == 0 ||
+                D_80101EC8[1].is_defeated == 0) {
                 D_800A3834 = 0x10;
             } else {
                 D_800A3834 = 0xC;

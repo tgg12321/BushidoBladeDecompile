@@ -172,11 +172,11 @@ tail:
             pos[0] = (record->world_pos.x + var_1->world_pos.x) / 2;
             pos[1] = (record->base_pos.y + var_1->base_pos.y) / 2;
             pos[2] = (record->world_pos.z + var_1->world_pos.z) / 2;
-            pos[0] +=
-                (Judge[(u16)record->unk_1D8 & 0xFFF] * D_8008EB54[kind].unk0) >>
-                12;
+            pos[0] += (Judge[(u16)record->opponent_bearing & 0xFFF] *
+                       D_8008EB54[kind].unk0) >>
+                      12;
             pos[1] += D_8008EB54[kind].unk2;
-            pos[2] += (Judge[(record->unk_1D8 + 0x400) & 0xFFF] *
+            pos[2] += (Judge[(record->opponent_bearing + 0x400) & 0xFFF] *
                        D_8008EB54[kind].unk0) >>
                       12;
             func_80032854(0, D_8008EB6C[kind], pos, (s16 *)0);
