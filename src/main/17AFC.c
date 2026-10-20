@@ -1406,8 +1406,8 @@ s32 fighter_ProcessWeaponContacts(void) {
  * 0x1F8002B8) against its limb spheres. Takes the segment's pitch and yaw (a
  * negative square prints "ILLEGAL GUN MOTION" and returns) and unit direction
  * q, and pushes the tip out by q*4. If the yaw difference to obj->other's
- * unk_1D8 is under 0x400, each of character `id`'s 22 records (D_800F5F68;
- * records 6..9 only when obj+0x26C is set) is tested: a
+ * opponent_bearing is under 0x400, each of character `id`'s 22 records
+ * (D_800F5F68; records 6..9 only when obj+0x26C is set) is tested: a
  * math_TestPreparedSegmentSphere test with unk_0C / unk_0E sets bit i in *arg1
  * and, only when the record's first halfword is nonzero, a second test with
  * unk_10 / unk_12 sets bit i in *arg2. Then collision_TestSegmentWithWork casts

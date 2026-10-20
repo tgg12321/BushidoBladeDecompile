@@ -3144,7 +3144,7 @@ void func_80021210(void) {
     }
 }
 
-/* The record's model id (unk_48) -> its slot in D_800A38C4 (unk_4A); for
+/* The record's model id (unk_48) -> its slot in D_800A38C4 (motion_slot); for
  * ids below 0x2000, the nibble positions of 4 and 5 (unk_88 / unk_8E),
  * copying unk_26C into unk_8A / unk_90 under conditions on D_800A38DC. The
  * loop-tail duplication is accepted by an owner ruling on SOTN evidence; every
@@ -4399,9 +4399,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
     MoveScript *move;
     /* FAKE: one local reused for four values (no-new-park-categories entry
      * 1): the unk_14C clamp limit, the
-     * unk_1D8 / orientation.vy angle gap (folded to 0..0x800), the unk_14C turn
-     * step and the -1/0/1 stick side. The target keeps all four in $a1; one
-     * local per value: score 25. */
+     * opponent_bearing / orientation.vy angle gap (folded to 0..0x800), the
+     * unk_14C turn step and the -1/0/1 stick side. The target keeps all four in
+     * $a1; one local per value: score 25. */
     s32 temp;
     s32 var_12;
     s32 var_13;

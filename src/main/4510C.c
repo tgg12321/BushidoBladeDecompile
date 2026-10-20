@@ -997,7 +997,7 @@ extern s8 D_8009A838[];
 extern u8 D_8009A840[];
 
 /* func_80056FE8: per-record table lookup on arg0->other: its row
- * (unk_58[3] * 40), plus a D_8009A830 / D_8009A838 (by arg0->unk_5E) or
+ * (unk_58[3] * 40), plus a D_8009A830 / D_8009A838 (by arg0->move_is_common) or
  * D_8009A840 (when unk_A3[0] is 0xFF) term, plus its unk_40A and 300. */
 s32 func_80056FE8(Unk80101EC8Record *arg0) {
     Unk80101EC8Record *a2 = arg0->other;
@@ -1064,9 +1064,10 @@ s32 fighter_BuildCpuOrbitRoute(Unk80101EC8Record *obj) {
     s32 ret;
     s8 var_7;
     /* temp holds two values: the count of probes accepted at angle
-     * unk_1D8 - ang (var_7 counts those at unk_1D8 + ang), then which count the
-     * waypoint loop takes (0: temp's, stepping by -ang; 1: var_7's, by +ang;
-     * per-branch constants, Q20) (Ruling 11, ordinary-c-judge-decidable). */
+     * opponent_bearing - ang (var_7 counts those at opponent_bearing + ang),
+     * then which count the waypoint loop takes (0: temp's, stepping by -ang; 1:
+     * var_7's, by +ang; per-branch constants, Q20) (Ruling 11,
+     * ordinary-c-judge-decidable). */
     s8 temp;
     u8 var_9;
     u8 var_10;
@@ -1595,26 +1596,26 @@ s32 func_80058580(Unk80101EC8Record *p) {
     u8 *var_10;
     u8 mode;
     /* work1 holds nine values in turn, each read before the next write: the
-     * unk_444[5] == 0 flag of the state-0x15 script choice; the stage distance
-     * base (100000, or D_8009A838[stage] * 8) of the D_8009A850 scan;
-     * unk_444[6] for the lim chain; unk_444[6] again for the waypoint script;
-     * the x of waypoint 1; the unk_444[1] == 0 flag of the 0x394 choice;
-     * case 2's D_8009A9F0 pattern word, shifted in place; a script entry's low
-     * distance bound (e[1] * 40, then adjusted); the state-0x15 script's near
-     * bound (the opponent's unk_3F8 entry, or its unk_404 entry + 300)
-     * (Ruling 11, reused-local-necessity). */
+     * cpu_probes[5] == 0 flag of the state-0x15 script choice; the stage
+     * distance base (100000, or D_8009A838[stage] * 8) of the D_8009A850 scan;
+     * cpu_probes[6] for the lim chain; cpu_probes[6] again for the waypoint
+     * script; the x of waypoint 1; the cpu_probes[1] == 0 flag of the 0x394
+     * choice; case 2's D_8009A9F0 pattern word, shifted in place; a script
+     * entry's low distance bound (e[1] * 40, then adjusted); the state-0x15
+     * script's near bound (the opponent's unk_3F8 entry, or its unk_404 entry +
+     * 300) (Ruling 11, reused-local-necessity). */
     s32 work1;
     /* work2 holds seven values in turn, each read before the next write: the
-     * unk_444[1] == 0 flag of the state-0x15 script choice; a D_8009A850
-     * entry's distance; the pace byte unk_444[0]; the z of waypoint 1; the
-     * unk_444[5] == 0 flag of the 0x394 choice; the best weighted random value
-     * so far (Q75 constant start + copy; compared as an s16, `sll; sra 16`,
-     * Q82); case 2's nibble count, counted down (Ruling 11,
+     * cpu_probes[1] == 0 flag of the state-0x15 script choice; a D_8009A850
+     * entry's distance; the pace byte cpu_probes[0]; the z of waypoint 1; the
+     * cpu_probes[5] == 0 flag of the 0x394 choice; the best weighted random
+     * value so far (Q75 constant start + copy; compared as an s16, `sll; sra
+     * 16`, Q82); case 2's nibble count, counted down (Ruling 11,
      * reused-local-necessity). */
     s32 work2;
     /* work3 holds thirteen values in turn, each read before the next write: the
-     * script side bit (opponent unk_AF & 1, possibly inverted); unk_444[3] ==
-     * 0; the unk_43A angle, wrapped to +-0x800; the state-0x11 threshold
+     * script side bit (opponent unk_AF & 1, possibly inverted); cpu_probes[3]
+     * == 0; the unk_43A angle, wrapped to +-0x800; the state-0x11 threshold
      * (0x1000 - (stance sum << 8)), scaled by unk_438 >> 12; the forced-scan
      * flag of the D_8009A850 scan; the "longer than lim" flag; the bearing to
      * the next waypoint, wrapped; the 0x394 choice's coin bit, stepped per
