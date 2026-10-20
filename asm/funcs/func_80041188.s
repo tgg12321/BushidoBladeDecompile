@@ -77,7 +77,7 @@ glabel func_80041188
     /* 31AAC 800412AC 21202002 */  addu       $a0, $s1, $zero
     /* 31AB0 800412B0 21284002 */  addu       $a1, $s2, $zero
     /* 31AB4 800412B4 2130C003 */  addu       $a2, $fp, $zero
-    /* 31AB8 800412B8 7913010C */  jal        func_80044DE4
+    /* 31AB8 800412B8 7913010C */  jal        math_LerpShortVectorsNegateYZ
     /* 31ABC 800412BC 4C000726 */   addiu     $a3, $s0, 0x4C
     /* 31AC0 800412C0 06003126 */  addiu      $s1, $s1, 0x6
     /* 31AC4 800412C4 06005226 */  addiu      $s2, $s2, 0x6

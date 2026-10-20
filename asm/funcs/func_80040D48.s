@@ -269,7 +269,7 @@ glabel func_80040D48
     /* 31944 80041144 8BFD000C */  jal        softbody_UpdateObject
     /* 31948 80041148 21208002 */   addu      $a0, $s4, $zero
     /* 3194C 8004114C 2120E002 */  addu       $a0, $s7, $zero
-    /* 31950 80041150 3A08010C */  jal        func_800420E8
+    /* 31950 80041150 3A08010C */  jal        light_SetPointLightTarget
     /* 31954 80041154 2C006526 */   addiu     $a1, $s3, 0x2C
   .L80041158:
     /* 31958 80041158 3000BF8F */  lw         $ra, 0x30($sp)

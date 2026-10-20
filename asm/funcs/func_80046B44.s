@@ -3,7 +3,7 @@ glabel func_80046B44
     /* 37348 80046B48 1000BFAF */  sw         $ra, 0x10($sp)
     /* 3734C 80046B4C 6814010C */  jal        ndata_StartReadInf
     /* 37350 80046B50 00000000 */   nop
-    /* 37354 80046B54 7414010C */  jal        func_800451D0
+    /* 37354 80046B54 7414010C */  jal        arena_Reset
     /* 37358 80046B58 00000000 */   nop
     /* 3735C 80046B5C A40B010C */  jal        func_80042E90
     /* 37360 80046B60 00000000 */   nop

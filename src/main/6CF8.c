@@ -139,7 +139,7 @@ void func_800167EC(void) {
 
 void gpu_ResetGraphMode1(void) { ResetGraph(1); }
 
-void func_80016888(void) {
+void gpu_HideResetAndClear(void) {
     SetDispMask(0);
     ResetGraph(1);
     ClearImage(&g_gpu_clear_rect, 0, 0, 0);
@@ -309,7 +309,7 @@ void func_80016D78(void) {
 
 void gpu_WaitDrawSync(void) { DrawSync(0); }
 
-void func_80016E60(GpuDb *arg0, s32 arg1) {
+void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
     u32 var_0[2];
     GpuDb *var_1;
     s32 var_2;
@@ -519,7 +519,7 @@ loop:
     if (D_800A3713 != 0)
         goto loop;
 call_func:
-    func_80016E60(var_1, idx);
+    menu_RunPauseMenu(var_1, idx);
     goto loop;
 }
 

@@ -58,7 +58,7 @@ glabel func_800753D8
     /* 65CB0 800754B0 4000A2A3 */  sb         $v0, 0x40($sp)
     /* 65CB4 800754B4 1000228E */  lw         $v0, 0x10($s1)
     /* 65CB8 800754B8 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 65CBC 800754BC 4BCD010C */  jal        func_8007352C
+    /* 65CBC 800754BC 4BCD010C */  jal        gpu_AddSpriteCells
     /* 65CC0 800754C0 2000A2AF */   sw        $v0, 0x20($sp)
     /* 65CC4 800754C4 100022AE */  sw         $v0, 0x10($s1)
     /* 65CC8 800754C8 4000A0A3 */  sb         $zero, 0x40($sp)
@@ -76,7 +76,7 @@ glabel func_800753D8
     /* 65CF8 800754F8 1C00A6AF */  sw         $a2, 0x1C($sp)
     /* 65CFC 800754FC 1000228E */  lw         $v0, 0x10($s1)
     /* 65D00 80075500 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 65D04 80075504 4BCD010C */  jal        func_8007352C
+    /* 65D04 80075504 4BCD010C */  jal        gpu_AddSpriteCells
     /* 65D08 80075508 2000A2AF */   sw        $v0, 0x20($sp)
     /* 65D0C 8007550C 100022AE */  sw         $v0, 0x10($s1)
     /* 65D10 80075510 1800A38F */  lw         $v1, 0x18($sp)
@@ -89,7 +89,7 @@ glabel func_800753D8
     /* 65D2C 8007552C 1C00A3AF */  sw         $v1, 0x1C($sp)
     /* 65D30 80075530 1000228E */  lw         $v0, 0x10($s1)
     /* 65D34 80075534 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 65D38 80075538 4BCD010C */  jal        func_8007352C
+    /* 65D38 80075538 4BCD010C */  jal        gpu_AddSpriteCells
     /* 65D3C 8007553C 2000A2AF */   sw        $v0, 0x20($sp)
     /* 65D40 80075540 100022AE */  sw         $v0, 0x10($s1)
     /* 65D44 80075544 1800A48F */  lw         $a0, 0x18($sp)
@@ -132,7 +132,7 @@ glabel func_800753D8
     /* 65DCC 800755CC 1C00A6AF */  sw         $a2, 0x1C($sp)
     /* 65DD0 800755D0 1000228E */  lw         $v0, 0x10($s1)
     /* 65DD4 800755D4 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 65DD8 800755D8 4BCD010C */  jal        func_8007352C
+    /* 65DD8 800755D8 4BCD010C */  jal        gpu_AddSpriteCells
     /* 65DDC 800755DC 2000A2AF */   sw        $v0, 0x20($sp)
     /* 65DE0 800755E0 100022AE */  sw         $v0, 0x10($s1)
     /* 65DE4 800755E4 1800A48F */  lw         $a0, 0x18($sp)

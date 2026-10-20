@@ -57,7 +57,7 @@ glabel func_8005E098
     /* 4E968 8005E168 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 4E96C 8005E16C 2000B2AF */  sw         $s2, 0x20($sp)
   .L8005E170:
-    /* 4E970 8005E170 4BCD010C */  jal        func_8007352C
+    /* 4E970 8005E170 4BCD010C */  jal        gpu_AddSpriteCells
     /* 4E974 8005E174 1800A427 */   addiu     $a0, $sp, 0x18
     /* 4E978 8005E178 08008006 */  bltz       $s4, .L8005E19C
     /* 4E97C 8005E17C 21904000 */   addu      $s2, $v0, $zero
@@ -177,7 +177,7 @@ glabel func_8005E098
   .L8005E320:
     /* 4EB20 8005E320 3000A2AF */  sw         $v0, 0x30($sp)
     /* 4EB24 8005E324 2000B2AF */  sw         $s2, 0x20($sp)
-    /* 4EB28 8005E328 4BCD010C */  jal        func_8007352C
+    /* 4EB28 8005E328 4BCD010C */  jal        gpu_AddSpriteCells
     /* 4EB2C 8005E32C 1800A427 */   addiu     $a0, $sp, 0x18
     /* 4EB30 8005E330 21904000 */  addu       $s2, $v0, $zero
     /* 4EB34 8005E334 01000226 */  addiu      $v0, $s0, 0x1
@@ -253,7 +253,7 @@ glabel func_8005E098
     /* 4EC44 8005E444 3400BEAF */  sw         $fp, 0x34($sp)
     /* 4EC48 8005E448 1800B7AF */  sw         $s7, 0x18($sp)
     /* 4EC4C 8005E44C 1C00A2AF */  sw         $v0, 0x1C($sp)
-    /* 4EC50 8005E450 4BCD010C */  jal        func_8007352C
+    /* 4EC50 8005E450 4BCD010C */  jal        gpu_AddSpriteCells
     /* 4EC54 8005E454 2000B2AF */   sw        $s2, 0x20($sp)
     /* 4EC58 8005E458 1800A427 */  addiu      $a0, $sp, 0x18
     /* 4EC5C 8005E45C 0C00E326 */  addiu      $v1, $s7, 0xC
@@ -262,7 +262,7 @@ glabel func_8005E098
     /* 4EC68 8005E468 21800902 */  addu       $s0, $s0, $t1
     /* 4EC6C 8005E46C 1800A3AF */  sw         $v1, 0x18($sp)
     /* 4EC70 8005E470 1C00B0AF */  sw         $s0, 0x1C($sp)
-    /* 4EC74 8005E474 4BCD010C */  jal        func_8007352C
+    /* 4EC74 8005E474 4BCD010C */  jal        gpu_AddSpriteCells
     /* 4EC78 8005E478 2000A2AF */   sw        $v0, 0x20($sp)
     /* 4EC7C 8005E47C 08008006 */  bltz       $s4, .L8005E4A0
     /* 4EC80 8005E480 21904000 */   addu      $s2, $v0, $zero

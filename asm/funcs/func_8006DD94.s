@@ -66,7 +66,7 @@ glabel func_8006DD94
     /* 5E680 8006DE80 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 5E684 8006DE84 1400028E */  lw         $v0, 0x14($s0)
     /* 5E688 8006DE88 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 5E68C 8006DE8C 4BCD010C */  jal        func_8007352C
+    /* 5E68C 8006DE8C 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5E690 8006DE90 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5E694 8006DE94 140002AE */  sw         $v0, 0x14($s0)
     /* 5E698 8006DE98 1800A48F */  lw         $a0, 0x18($sp)

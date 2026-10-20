@@ -83,7 +83,7 @@ glabel func_8006D3DC
     /* 5DD08 8006D508 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 5DD0C 8006D50C 1400028E */  lw         $v0, 0x14($s0)
     /* 5DD10 8006D510 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 5DD14 8006D514 4BCD010C */  jal        func_8007352C
+    /* 5DD14 8006D514 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5DD18 8006D518 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5DD1C 8006D51C 140002AE */  sw         $v0, 0x14($s0)
     /* 5DD20 8006D520 1800A48F */  lw         $a0, 0x18($sp)

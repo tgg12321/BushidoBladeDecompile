@@ -361,9 +361,9 @@ void func_8006ECF4(Unk8006EACCRec *arg0) {
         }
         s.ft4_out = arg0->unk_04.unk_00;
         if (i != 0) {
-            arg0->unk_04.unk_00 = func_80073728(&s, 1);
+            arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 1);
         } else {
-            arg0->unk_04.unk_00 = func_80073728(&s, 0);
+            arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
         }
     }
 }
@@ -483,9 +483,9 @@ void func_8006F100(Unk8006EACCRec *arg0) {
         }
         s.ft4_out = arg0->unk_04.unk_00;
         if (i != 0) {
-            arg0->unk_04.unk_00 = func_80073C78(&s, 0x1C0, 1);
+            arg0->unk_04.unk_00 = gpu_AddRotatedSpriteQuads(&s, 0x1C0, 1);
         } else {
-            arg0->unk_04.unk_00 = func_80073C78(&s, 0xE40, 0);
+            arg0->unk_04.unk_00 = gpu_AddRotatedSpriteQuads(&s, 0xE40, 0);
         }
         if (D_800A35C8[i] > 0) {
             D_800A35C8[i]--;
@@ -529,19 +529,19 @@ void func_8006F528(Unk8006EACCRec *arg0) {
     }
     s.table = p1;
     s.ft4_out = arg0->unk_04.unk_00;
-    arg0->unk_04.unk_00 = func_80073728(&s, 0);
+    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
 
     s.table++;
     s.scale_y = 0x4C00;
     s.ft4_out = arg0->unk_04.unk_00;
-    arg0->unk_04.unk_00 = func_80073728(&s, 0);
+    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
 
     s.scale_y = 0x100;
     s.header = var_2[1];
     p1 = s.header->cells;
     s.table = p1;
     s.ft4_out = arg0->unk_04.unk_00;
-    arg0->unk_04.unk_00 = func_80073728(&s, 0);
+    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
 
     s.header = var_2[0];
     p1 = s.header->cells;
@@ -552,19 +552,19 @@ void func_8006F528(Unk8006EACCRec *arg0) {
     }
     s.table = p1;
     s.ft4_out = arg0->unk_04.unk_00;
-    arg0->unk_04.unk_00 = func_80073728(&s, 1);
+    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 1);
 
     s.table++;
     s.scale_y = 0x4C00;
     s.ft4_out = arg0->unk_04.unk_00;
-    arg0->unk_04.unk_00 = func_80073728(&s, 0);
+    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
 
     s.scale_y = 0x100;
     s.header = var_2[1];
     p1 = s.header->cells;
     s.table = p1;
     s.ft4_out = arg0->unk_04.unk_00;
-    arg0->unk_04.unk_00 = func_80073728(&s, 1);
+    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 1);
 
     if (state >= 3) {
         rect.x = D_800A3570 + 0x4C;
@@ -646,11 +646,11 @@ void func_8006F528(Unk8006EACCRec *arg0) {
     s.x = 0;
     s.ot_idx = 0xE;
     s.ft4_out = arg0->unk_04.unk_00;
-    arg0->unk_04.unk_00 = func_80073728(&s, 0);
+    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
 
     s.y = 0x50;
     s.ft4_out = arg0->unk_04.unk_00;
-    arg0->unk_04.unk_00 = func_80073728(&s, 2);
+    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 2);
 }
 
 extern void menu_UpdateEntryGridCursors(Unk8006EACCRec *);
@@ -706,7 +706,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     }
     s.table = var_4;
     s.sprt_out = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
 
     s.x = 0x17E;
     s.y = 0x86;
@@ -731,7 +731,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     }
     s.table += s.header->count;
     s.sprt_out = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
 
     s.x = 0;
     s.y = 0;
@@ -775,7 +775,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
                 s.table = var_4;
                 s.sprt_out = arg0->unk_04.unk_0C;
                 s.ot_idx = 0xA;
-                arg0->unk_04.unk_0C = func_8007352C(&s);
+                arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
             } else {
                 s.y = col << 4;
                 s.x = row * 116 + (row >> 1) * 20;
@@ -789,7 +789,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
                 s.table = var_4;
                 s.sprt_out = arg0->unk_04.unk_0C;
                 s.ot_idx = 0xA;
-                arg0->unk_04.unk_0C = func_8007352C(&s);
+                arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
             }
         }
     }
@@ -802,7 +802,7 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     s.table = var_4;
     s.sprt_out = arg0->unk_04.unk_0C;
     s.ot_idx = 1;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     SetDrawMode(
         arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
     AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
@@ -921,7 +921,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
             s.y = *row * 16 + 0x80;
             s.ot_idx = 7;
             s.sprt_out = arg0->unk_04.unk_0C;
-            arg0->unk_04.unk_0C = func_8007352C(&s);
+            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         }
         if ((D_800A354C & (0x40 << (var_6 * 16))) &&
             D_800A3560.rec[i].unk0 == 0xFF) {
@@ -987,7 +987,7 @@ void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
         s.y = *row * 16 + 0x80;
         s.ot_idx = 7;
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C(&s);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     }
     if (D_800A3580 == 0 && D_800A3560.rec[0].unk0 != 0xFF &&
         D_800A35C4->unk_00[0] == 0) {
@@ -1050,7 +1050,7 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
     var_1.table = t;
     var_1.sprt_out = arg0->unk_04.unk_0C;
     var_1.ot_idx = 1;
-    arg0->unk_04.unk_0C = func_8007352C(&var_1);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&var_1);
     SetDrawMode(
         arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(var_1.header, c60), 0);
     AddPrim(g_gpu_ot_ptr + 1, arg0->unk_04.unk_14);
@@ -1070,7 +1070,7 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
         var_1.x = var_s0 << 6;
         var_1.sprt_out = arg0->unk_04.unk_0C;
         var_1.ot_idx = 0xA;
-        arg0->unk_04.unk_0C = func_8007352C(&var_1);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&var_1);
         var_1.header++;
     }
     var_1.header = var_3[0];
@@ -1092,7 +1092,7 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
             }
             var_1.sprt_out = arg0->unk_04.unk_0C;
             var_1.ot_idx = 1;
-            arg0->unk_04.unk_0C = func_8007352C(&var_1);
+            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&var_1);
         }
     }
     SetDrawMode(
@@ -1272,7 +1272,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 s->y = 0xB6 - (D_800A3594[i] << 5);
                 s->ot_idx = 7;
                 s->sprt_out = arg0->unk_04.unk_0C;
-                arg0->unk_04.unk_0C = func_8007352C(s);
+                arg0->unk_04.unk_0C = gpu_AddSpriteCells(s);
             }
             if (D_800A3578 != 3) {
                 s->scale_x = 0x100;
@@ -1299,7 +1299,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 s->y = 0xAC - (D_800A3594[i] << 5);
                 s->ft4_out = arg0->unk_04.unk_00;
                 s->ot_idx = 7;
-                arg0->unk_04.unk_00 = func_80073728(s, 0);
+                arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(s, 0);
             }
         } else {
             if (D_800A3578 == 0) {
@@ -1362,7 +1362,7 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 s->table += s->header->count;
             }
             s->ft4_out = arg0->unk_04.unk_00;
-            arg0->unk_04.unk_00 = func_80073728(s, 0);
+            arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(s, 0);
         }
     }
     if (D_800A3560.rec[0].unk2 != 0xFF && D_800A35C4->unk_04[0] == 0) {
@@ -1437,9 +1437,9 @@ void func_80071C4C(Unk8006EACCRec *arg0) {
                   ((dy * s.scale_y >> 8) / 2);
             s.ft4_out = arg0->unk_04.unk_00;
             if (i != 0) {
-                arg0->unk_04.unk_00 = func_80073C78(&s, 0x1C0, 1);
+                arg0->unk_04.unk_00 = gpu_AddRotatedSpriteQuads(&s, 0x1C0, 1);
             } else {
-                arg0->unk_04.unk_00 = func_80073C78(&s, 0xE40, 0);
+                arg0->unk_04.unk_00 = gpu_AddRotatedSpriteQuads(&s, 0xE40, 0);
             }
         }
     }
@@ -1532,7 +1532,7 @@ void menu_UpdateChoiceGrid(
             s.table = var_5;
             s.table += (D_800A359C + mode * 3) * 2 + D_800A3598;
             s.sprt_out = arg0->unk_04.unk_0C;
-            arg0->unk_04.unk_0C = func_8007352C(&s);
+            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         }
         s.header++;
         for (i = 0; i < 6; i++) {
@@ -1540,7 +1540,7 @@ void menu_UpdateChoiceGrid(
                 D_800A359C * 2 + D_800A3598 != i) {
                 s.table = var_5 + (mode * 6 + i);
                 s.sprt_out = arg0->unk_04.unk_0C;
-                arg0->unk_04.unk_0C = func_8007352C(&s);
+                arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
             }
         }
         s.header = var_4[4];
@@ -1556,7 +1556,7 @@ void menu_UpdateChoiceGrid(
     var_5 = s.header->cells;
     s.table = var_5;
     s.sprt_out = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     D_800A35C4->unk_10[0] = D_800A35C0->draw.ofs[0] - D_8009BCC4[mode][0];
     D_800A35C4->unk_10[1] = D_800A35C0->draw.ofs[1] - D_8009BCC4[mode][1];
     if (((D_800A3578 & 0xFF) == 1 || (D_800A3578 & 0xFF) == 3) &&
@@ -1602,10 +1602,10 @@ void menu_UpdateChoiceGrid(
     var_5 = s.header->cells;
     s.table = var_5;
     s.ft4_out = arg0->unk_04.unk_00;
-    arg0->unk_04.unk_00 = func_80073728(&s, 0);
+    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
     s.table += s.header->count;
     s.ft4_out = arg0->unk_04.unk_00;
-    arg0->unk_04.unk_00 = func_80073728(&s, 1);
+    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 1);
 
     if (D_800A354C & 0xA000A000) {
         if ((D_800A3578 & 0xFF) == 0) {
@@ -1646,7 +1646,7 @@ void menu_UpdateChoiceGrid(
     var_5 = s.header->cells;
     s.table = var_5;
     s.ft4_out = arg0->unk_04.unk_00;
-    arg0->unk_04.unk_00 = func_80073728(&s, 0);
+    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
     var_1[2] = 0x111;
     var_1[0] = 0xB7;
     var_1[1] = 0x25;
@@ -1672,7 +1672,7 @@ void menu_UpdateChoiceGrid(
             var_5 = s.header->cells;
             s.table = var_5;
             s.ft4_out = arg0->unk_04.unk_00;
-            arg0->unk_04.unk_00 = func_80073728(&s, 0);
+            arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
         }
     }
     s.has_color = 0;
@@ -1680,7 +1680,7 @@ void menu_UpdateChoiceGrid(
     var_5 = s.header->cells;
     s.table = var_5;
     s.ft4_out = arg0->unk_04.unk_00;
-    arg0->unk_04.unk_00 = func_80073728(&s, 0);
+    arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
 
     if (D_800A3578 == 0) {
         for (i = 0; i < D_800A35B0 + 1; i++) {
@@ -1936,10 +1936,10 @@ void gpu_AddPanelGrid(Unk8006EACCRec *arg0) {
 }
 
 /* func_80073200 - draws three sprite-sheet layers: in modes D_800A3580 < 4,
- * four cells of var_1[4]'s sheet through func_80073728; then var_1[5]'s sheet
- * and, for D_800A3580 < 2, the var_1[10..13] sheet picked by the frame counter
- * at D_800A35C4->unk_08 (incremented in func_8006EACC), each
- * through func_8007352C, with a draw-mode primitive per layer. */
+ * four cells of var_1[4]'s sheet through gpu_AddScaledSpriteQuads; then
+ * var_1[5]'s sheet and, for D_800A3580 < 2, the var_1[10..13] sheet picked by
+ * the frame counter at D_800A35C4->unk_08 (incremented in func_8006EACC), each
+ * through gpu_AddSpriteCells, with a draw-mode primitive per layer. */
 void func_80073200(Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
     Unk8009B0E0Record **var_1;
@@ -1971,24 +1971,24 @@ void func_80073200(Unk8006EACCRec *arg0) {
             /* FAKE: `s.col_b = 0x14;` written in both arms instead of once at
              * the join (cross-jump re-merges them: no extra insn). Keeping
              * the sb stores out of the join block lets the first
-             * func_80073728 call's `&s` argument set land after them, as in
-             * the target; stored once at the join it is emitted first:
-             * score 2 */
+             * gpu_AddScaledSpriteQuads call's `&s` argument set land after
+             * them, as in the target; stored once at the join it is emitted
+             * first: score 2 */
             s.col_b = 0x14;
         }
         s.ot_idx = 0x14;
         s.table = s1;
         s.ft4_out = arg0->unk_04.unk_00;
-        arg0->unk_04.unk_00 = func_80073728(&s, 0);
+        arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
         s.table = s1 + 1;
         s.ft4_out = arg0->unk_04.unk_00;
-        arg0->unk_04.unk_00 = func_80073728(&s, 1);
+        arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 1);
         s.table = s1 + 2;
         s.ft4_out = arg0->unk_04.unk_00;
-        arg0->unk_04.unk_00 = func_80073728(&s, 2);
+        arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 2);
         s.table = s1 + 3;
         s.ft4_out = arg0->unk_04.unk_00;
-        arg0->unk_04.unk_00 = func_80073728(&s, 3);
+        arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 3);
         SetDrawMode(arg0->unk_04.unk_14, 1, 0, 0x60, 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
         arg0->unk_04.unk_14++;
@@ -2005,7 +2005,7 @@ void func_80073200(Unk8006EACCRec *arg0) {
     s1 = s.header->cells;
     s.table = s1;
     s.sprt_out = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     SetDrawMode(
         arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x60), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
@@ -2017,7 +2017,7 @@ void func_80073200(Unk8006EACCRec *arg0) {
         s1 = s.header->cells;
         s.table = s1;
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C(&s);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         SetDrawMode(
             arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0x20), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);

@@ -8,7 +8,7 @@
 extern void AddPrim(void *, void *);
 extern const u8 D_800159A0[16];
 
-s32 func_8007352C(Unk8007352CRec *env) {
+s32 gpu_AddSpriteCells(Unk8007352CRec *env) {
     Unk8009B0E0Record *var_0 = env->header;
     SPRT *sp = (SPRT *)env->sprt_out;
     Unk8009B400Record *e;
@@ -52,7 +52,7 @@ s32 func_8007352C(Unk8007352CRec *env) {
     return (s32)sp;
 }
 
-s32 func_80073728(Unk8007352CRec *env, s32 mode) {
+s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *env, s32 mode) {
     Unk8009B400Record *e = env->table;
     Unk8009B0E0Record *var_1 = env->header;
     POLY_FT4 *p;
@@ -153,7 +153,7 @@ s32 func_80073728(Unk8007352CRec *env, s32 mode) {
 
 extern VECTOR D_8009BCD4;
 
-s32 func_80073C78(env, angle, mode)
+s32 gpu_AddRotatedSpriteQuads(env, angle, mode)
 Unk8007352CRec *env;
 s16 angle;
 s32 mode;
@@ -161,8 +161,8 @@ s32 mode;
     s16 i;
     u32 tpage;
     u32 clut;
-    /* FAKE: du0 / dv0 stay 0 in this walker (func_80073728 sets them per mirror
-       mode); u / v written without them: score 33. */
+    /* FAKE: du0 / dv0 stay 0 in this walker (gpu_AddScaledSpriteQuads sets them
+       per mirror mode); u / v written without them: score 33. */
     s16 du0, dv0;
     s16 du1, dv1;
     u16 ub, vb;
@@ -306,7 +306,7 @@ void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
         s.header = temp_s2[i];
         s.table = s.header->cells;
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C(&s);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     }
 
     s.header = *temp_s2;
@@ -436,7 +436,7 @@ void func_80074488(Unk8006EACCRec *arg0) {
             s.header = table[i];
             s.table = s.header->cells;
             s.sprt_out = arg0->unk_04.unk_0C;
-            arg0->unk_04.unk_0C = func_8007352C(&s);
+            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         }
         i++;
     } while (i < 15);

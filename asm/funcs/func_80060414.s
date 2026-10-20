@@ -52,7 +52,7 @@ glabel func_80060414
     /* 50CD0 800604D0 0A80023C */  lui        $v0, %hi(D_800A328C)
     /* 50CD4 800604D4 8C324224 */  addiu      $v0, $v0, %lo(D_800A328C)
     /* 50CD8 800604D8 1C00A2AF */  sw         $v0, 0x1C($sp)
-    /* 50CDC 800604DC 4BCD010C */  jal        func_8007352C
+    /* 50CDC 800604DC 4BCD010C */  jal        gpu_AddSpriteCells
     /* 50CE0 800604E0 2000A3AF */   sw        $v1, 0x20($sp)
     /* 50CE4 800604E4 1800A48F */  lw         $a0, 0x18($sp)
     /* 50CE8 800604E8 20B9010C */  jal        gpu_GetSheetTPage

@@ -1757,7 +1757,7 @@ void func_8001DBE4(void) {
         } while (i < 15);
     }
     comb_EndWait();
-    func_80016888();
+    gpu_HideResetAndClear();
     gpu_SetDispMaskOn();
 }
 
@@ -1773,7 +1773,7 @@ void fight_Init(void) {
 
     snd_ResetVoicesAndQueue();
     if (D_800A3768 != DISP_ACTIVE) {
-        func_80016888();
+        gpu_HideResetAndClear();
         gpu_SetDispMaskOn();
     }
     func_800174F4();

@@ -204,7 +204,7 @@ void func_80074D2C(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
     }
     s.ot_idx = var_1;
     s.sprt_out = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + var_1, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
@@ -255,17 +255,17 @@ void menu_DrawSelPanel(Unk8006EACCRec *arg0, s32 arg1) {
         var_7 = s.header->cells;
         s.table = var_7;
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C(&s);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         s.header = records[2];
         var_7 = s.header->cells;
         s.table = var_7;
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C(&s);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         s.table += s.header->count;
         s.scale_x = 0xCE00;
         s.scale_y = 0x100;
         s.ft4_out = arg0->unk_04.unk_00;
-        arg0->unk_04.unk_00 = func_80073728(&s, 0);
+        arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
         i++;
     } while (i < 2);
 
@@ -280,12 +280,12 @@ void menu_DrawSelPanel(Unk8006EACCRec *arg0, s32 arg1) {
         s.ot_idx = 0xC;
     }
     s.sprt_out = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     s.header = records[1];
     var_7 = s.header->cells;
     s.table = var_7;
     s.sprt_out = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
@@ -416,7 +416,7 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
         ((rsin(((SELWORK->f34 & 0x1F) << 7) + 0x1FF) << 5) >> 12) - 0x80;
     s.has_color = 1;
     s.sprt_out = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     s.has_color = 0;
     tbl = arg0->unk_00.v80076FF8->unk_14;
     i = 0;
@@ -426,11 +426,11 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
     var_3 = s.header->cells;
     s.table = var_3;
     s.sprt_out = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     s.y = 0x90;
     s.table += s.header->count;
     s.sprt_out = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     SetDrawMode(
         arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
@@ -448,7 +448,7 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
         }
         s.table = var_3;
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C(&s);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         SetDrawMode(
             arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
@@ -529,7 +529,7 @@ void func_80075830(Unk8006EACCRec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         s.ot_idx = 9;
     }
     s.sprt_out = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
 }
 
 /* 20 flag bytes indexed by entry id (bit 0 = selectable; mask 4 << player,
@@ -577,7 +577,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         s.table += s.header->count;
     }
     s.sprt_out = arg0->unk_04.unk_0C;
-    arg0->unk_04.unk_0C = func_8007352C(&s);
+    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     SetDrawMode(
         arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
@@ -613,7 +613,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             }
             s.y = 0;
             s.sprt_out = arg0->unk_04.unk_0C;
-            arg0->unk_04.unk_0C = func_8007352C(&s);
+            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
             if (D_8009BCE4[(&D_8009BCF8[0][0] + i)->unk0] & (4 << arg3)) {
                 func_80075830(arg0, i, arg3, 1);
             }
@@ -636,7 +636,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             s.table = var_4;
             s.table += s.header->count;
             s.sprt_out = arg0->unk_04.unk_0C;
-            arg0->unk_04.unk_0C = func_8007352C(&s);
+            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         }
     }
 
@@ -657,7 +657,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             s.ot_idx = 0xA;
         }
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C(&s);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     }
 
     table = arg0->unk_00.v80076FF8->unk_14;
@@ -825,7 +825,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         s.y = SELWORK->f3C[arg3] * 34;
         s.ot_idx = var_1;
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C(&s);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         SetDrawMode(
             arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, mode), 0);
         AddPrim(g_gpu_ot_ptr + var_1, arg0->unk_04.unk_14);
@@ -849,7 +849,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         s.y = i * 34;
         s.ot_idx = var_1;
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C(&s);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     }
 
     table = arg0->unk_00.v80076FF8->unk_30;
@@ -871,13 +871,13 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         s.y = i * 34;
         s.ot_idx = var_1;
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C(&s);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         s.header = table[(s16)idx * 2 + 1];
         s.has_color = 0;
         var_3 = s.header->cells;
         s.table = var_3;
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C(&s);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     }
 
     table = arg0->unk_00.v80076FF8->unk_20[SELWORK->f65];
@@ -893,7 +893,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         s.x = arg3 * 240;
         s.y = i * 34;
         s.sprt_out = arg0->unk_04.unk_0C;
-        arg0->unk_04.unk_0C = func_8007352C(&s);
+        arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     }
 
     table = arg0->unk_00.v80076FF8->unk_14;
@@ -1471,7 +1471,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                     s.table = table;
                     s.x = i << 7;
                     s.sprt_out = arg0->unk_04.unk_0C;
-                    arg0->unk_04.unk_0C = func_8007352C(&s);
+                    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
                     SetDrawMode(arg0->unk_04.unk_14, 1, 0,
                                 gpu_GetSheetTPage(s.header, var_5), 0);
                     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
@@ -1492,7 +1492,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                 s.x = x;
                 s.table = table;
                 s.sprt_out = arg0->unk_04.unk_0C;
-                arg0->unk_04.unk_0C = func_8007352C(&s);
+                arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
                 SetDrawMode(arg0->unk_04.unk_14, 1, 0,
                             gpu_GetSheetTPage(s.header, var_5), 0);
                 AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
@@ -1512,7 +1512,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                 s.x = x;
                 s.table = table;
                 s.sprt_out = arg0->unk_04.unk_0C;
-                arg0->unk_04.unk_0C = func_8007352C(&s);
+                arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
                 SetDrawMode(arg0->unk_04.unk_14, 1, 0,
                             gpu_GetSheetTPage(s.header, var_5), 0);
                 AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
@@ -1537,7 +1537,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
                     s.table = table;
                     s.x = i << 7;
                     s.sprt_out = arg0->unk_04.unk_0C;
-                    arg0->unk_04.unk_0C = func_8007352C(&s);
+                    arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
                     SetDrawMode(arg0->unk_04.unk_14, 1, 0,
                                 gpu_GetSheetTPage(s.header, var_5), 0);
                     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
@@ -1578,7 +1578,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
             s.header = var_6[i];
             s.table = s.header->cells;
             s.sprt_out = arg0->unk_04.unk_0C;
-            arg0->unk_04.unk_0C = func_8007352C(&s);
+            arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
             SetDrawMode(arg0->unk_04.unk_14, 1, 0,
                         gpu_GetSheetTPage(s.header, var_5), 0);
             AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
@@ -1665,7 +1665,7 @@ void func_80078654(Unk800788B0Rec *arg0) {
             s.col_r = s.col_g = s.col_b = var_3;
         }
         s.sprt_out = arg0->unk_0C;
-        arg0->unk_0C = func_8007352C(&s);
+        arg0->unk_0C = gpu_AddSpriteCells(&s);
         SetDrawMode(arg0->unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_14);
         arg0->unk_14++;
@@ -1676,7 +1676,7 @@ void func_80078654(Unk800788B0Rec *arg0) {
         s.table = s.header->cells;
         s.y = -D_800A3608;
         s.sprt_out = arg0->unk_0C;
-        arg0->unk_0C = func_8007352C(&s);
+        arg0->unk_0C = gpu_AddSpriteCells(&s);
         SetDrawMode(arg0->unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_14);
         arg0->unk_14++;

@@ -286,14 +286,14 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2) {
 extern s16 D_800A3238[3];
 extern VECTOR D_800A9B28;
 
-void func_80041E10(VECTOR *a0, s32 a1) {
+void light_SetPointLight(VECTOR *a0, s32 a1) {
     D_800A3238[0] = (s16)((((a1 >> 16) & 0xFF) << 12) / 255);
     D_800A3238[1] = (s16)((((a1 >> 8) & 0xFF) << 12) / 255);
     D_800A3238[2] = (s16)(((a1 & 0xFF) << 12) / 255);
     D_800A9B28 = *a0;
 }
 
-void func_80041EB0(s32 a0, s32 a1) {
+void light_ApplyPointLight(s32 a0, s32 a1) {
     Unk800F62E0Rec *var_0;
     s32 var_1;
     Unk800F62E0Rec *tbl;
@@ -389,37 +389,37 @@ extern s16 D_800A3238[3];
 static s16 D_800A3380[2];
 static s32 D_800A3384[2];
 
-void func_800420D0(void) {
+void light_ResetPointLight(void) {
     D_800A3380[1] = 0;
     D_800A3380[0] = 0;
     D_800A3238[0] = -1;
 }
 
-void func_800420E8(s32 a0, s32 a1) {
+void light_SetPointLightTarget(s32 a0, s32 a1) {
     if (a0 < 2) {
         D_800A3380[a0] = 1;
         D_800A3384[a0] = a1;
     }
 }
 
-void func_8004211C(void) {
+void light_ApplyPointLightTargets(void) {
     s32 val = D_800A3380[0] * 2 + D_800A3380[1];
     switch (val) {
     case 1:
-        func_80041EB0(0, D_800A3384[1]);
+        light_ApplyPointLight(0, D_800A3384[1]);
         break;
     case 2:
-        func_80041EB0(D_800A3384[0], 0);
+        light_ApplyPointLight(D_800A3384[0], 0);
         break;
     case 3:
-        func_80041EB0(D_800A3384[0], D_800A3384[1]);
+        light_ApplyPointLight(D_800A3384[0], D_800A3384[1]);
         break;
     }
 }
 
-extern void func_80041EB0(s32, s32);
+extern void light_ApplyPointLight(s32, s32);
 
-void func_800421A4(void) { func_80041EB0(0, 0); }
+void light_DisablePointLight(void) { light_ApplyPointLight(0, 0); }
 
 extern void func_800422BC(s32, s32, s32, s32);
 extern void func_80042478(s32);

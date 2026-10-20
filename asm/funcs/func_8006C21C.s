@@ -27,7 +27,7 @@ glabel func_8006C21C
     /* 5CA80 8006C280 1C00A5AF */  sw         $a1, 0x1C($sp)
     /* 5CA84 8006C284 1400028D */  lw         $v0, 0x14($t0)
     /* 5CA88 8006C288 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 5CA8C 8006C28C 4BCD010C */  jal        func_8007352C
+    /* 5CA8C 8006C28C 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5CA90 8006C290 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5CA94 8006C294 4800A88F */  lw         $t0, 0x48($sp)
     /* 5CA98 8006C298 00000000 */  nop
@@ -94,7 +94,7 @@ glabel func_8006C21C
     /* 5CB84 8006C384 1800A2AF */  sw         $v0, 0x18($sp)
     /* 5CB88 8006C388 1C00A5AF */  sw         $a1, 0x1C($sp)
     /* 5CB8C 8006C38C 1400028D */  lw         $v0, 0x14($t0)
-    /* 5CB90 8006C390 4BCD010C */  jal        func_8007352C
+    /* 5CB90 8006C390 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5CB94 8006C394 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5CB98 8006C398 4800A88F */  lw         $t0, 0x48($sp)
     /* 5CB9C 8006C39C 00000000 */  nop
@@ -150,7 +150,7 @@ glabel func_8006C21C
     /* 5CC5C 8006C45C 1C00A5AF */  sw         $a1, 0x1C($sp)
     /* 5CC60 8006C460 1400028D */  lw         $v0, 0x14($t0)
     /* 5CC64 8006C464 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 5CC68 8006C468 4BCD010C */  jal        func_8007352C
+    /* 5CC68 8006C468 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5CC6C 8006C46C 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5CC70 8006C470 4800A88F */  lw         $t0, 0x48($sp)
     /* 5CC74 8006C474 21806002 */  addu       $s0, $s3, $zero
@@ -183,7 +183,7 @@ glabel func_8006C21C
     /* 5CCD0 8006C4D0 1800A427 */  addiu      $a0, $sp, 0x18
     /* 5CCD4 8006C4D4 01000825 */  addiu      $t0, $t0, 0x1
     /* 5CCD8 8006C4D8 5000A8AF */  sw         $t0, 0x50($sp)
-    /* 5CCDC 8006C4DC 4BCD010C */  jal        func_8007352C
+    /* 5CCDC 8006C4DC 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5CCE0 8006C4E0 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5CCE4 8006C4E4 4800A88F */  lw         $t0, 0x48($sp)
     /* 5CCE8 8006C4E8 00000000 */  nop

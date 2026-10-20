@@ -13,7 +13,7 @@ extern GpuDb g_gpu_db[2];
 extern u32 *g_gpu_ot_ptr;
 extern void gpu_SetDispMaskOn(void);
 extern void gpu_ResetGraphMode1(void);
-extern void func_80016888(void);
+extern void gpu_HideResetAndClear(void);
 extern Unk800EF848Rec D_800EF848[];
 extern u16 D_80099C34[][7];
 /* 58 byte pairs (0x80099CC8..0x80099D3B), each byte an index into D_800EF980 or
@@ -73,8 +73,9 @@ extern Unk8009B400Record D_8009B400[10];
 extern Unk8009B400Record D_8009B458[3][2];
 extern Unk8009B450Record D_8009B450[2];
 
-/* Two 8-byte sprite cells, the cell table func_8005D554 hands func_80073728
- * for the row's header record 2 (cell 0) and records 3/4 (cell 1). */
+/* Two 8-byte sprite cells, the cell table func_8005D554 hands
+ * gpu_AddScaledSpriteQuads for the row's header record 2 (cell 0) and records
+ * 3/4 (cell 1). */
 extern Unk8009B400Record D_8009B388[2];
 
 /* 2 x 2 table of 8-byte sprite records (func_8005F1C8). */
@@ -96,7 +97,7 @@ extern Unk8009B400Record D_8009B164[2][2];
 extern Unk8009B400Record D_8009B184[2];
 
 /* One 8-byte sprite cell (x, y = 0, u, v = 0, w 0x14, h 0x0E), the cell
- * table func_80060414 hands func_8007352C in its descriptor. */
+ * table func_80060414 hands gpu_AddSpriteCells in its descriptor. */
 extern Unk8009B400Record D_800A328C;
 
 extern Unk8009B2BCRecord D_8009B2BC[3];
@@ -336,7 +337,7 @@ extern MATRIX *D_800A3778;
 extern u8 g_fight_match_results[];
 
 /* Two buffer addresses selected by frame parity: func_80016D78 sets 0x801D8800
- * / 0x801EBC00, func_80016E60 and main read [D_800A36AC & 1]. */
+ * / 0x801EBC00, menu_RunPauseMenu and main read [D_800A36AC & 1]. */
 extern u32 D_800A3770[2];
 
 extern u8 D_800A3781;
@@ -592,7 +593,7 @@ extern s16 D_800F0BCC[];
 extern s16 D_800F0BEC[];
 extern s32 D_800F10D0[];
 /* A 16-byte vector: thirteen functions store x / y / z; func_80061064 passes
- * it to func_80041E10, which copies all 16 bytes to D_800A9B28. */
+ * it to light_SetPointLight, which copies all 16 bytes to D_800A9B28. */
 extern VECTOR D_800F1140;
 extern Unk800F1B18Rec D_800F1B18[];
 extern u8 D_800F33D8[];
@@ -632,7 +633,7 @@ extern void softbody_UpdateList(Unk80017FA0Rec *, s32);
 extern void func_8001945C(void);
 extern s32 func_80019488(void);
 extern void func_800194C0(s32);
-/* No prototype: defined void (s32), but func_80016E60 calls it with no
+/* No prototype: defined void (s32), but menu_RunPauseMenu calls it with no
  * argument. */
 extern void pad_Update();
 extern void func_8001979C(s32, u32 *);
@@ -802,11 +803,11 @@ extern void node_SetMatrixFromNegatedRot(Unk80101DF0Record *);
 extern void func_80041988(s32, s32, s32, s32);
 extern void func_80041AC8(Unk80045878Obj *);
 extern void func_80041BF4(s32, s32, s32);
-extern void func_80041E10(VECTOR *, s32);
-extern void func_800420D0(void);
-extern void func_800420E8(s32, s32);
-extern void func_8004211C(void);
-extern void func_800421A4(void);
+extern void light_SetPointLight(VECTOR *, s32);
+extern void light_ResetPointLight(void);
+extern void light_SetPointLightTarget(s32, s32);
+extern void light_ApplyPointLightTargets(void);
+extern void light_DisablePointLight(void);
 extern void func_800421C8(s32);
 extern void func_80042E90(void);
 extern void func_800432A0(s16, s16, s16, s16, s32);
@@ -829,7 +830,7 @@ extern void func_8004473C(void);
 extern void func_80044800(void);
 extern void func_80044B30(s32, s32);
 extern void func_80044C70(s32);
-extern void func_80044DE4(s16 *, s16 *, s32, s32);
+extern void math_LerpShortVectorsNegateYZ(s16 *, s16 *, s32, s32);
 extern void func_80044F30(s32, s32);
 extern void func_80044F80(s32, s32);
 extern s32 ndata_ReadChecked(s32, s32);
@@ -837,7 +838,7 @@ extern s32 ndata_GetArenaRoomAfter(s32);
 extern s32 ndata_ReadFromPack(s32, s32);
 extern s32 ndata_IsPackLoaded(void);
 extern void ndata_StartReadInf(void);
-extern void func_800451D0(void);
+extern void arena_Reset(void);
 extern void arena_UpdatePeak(s32);
 extern void arena_Free(s32);
 extern void arena_Resize(s32, s32);
@@ -983,11 +984,11 @@ extern void func_8006E950(s32, Unk8006E950Head *);
 extern s32 func_8006EA28(Unk8006EA28Rec *);
 extern s32 func_8006EACC(s32, s32);
 extern void gpu_AddPanelGrid(Unk8006EACCRec *);
-extern s32 func_8007352C(Unk8007352CRec *);
-extern s32 func_80073728(Unk8007352CRec *, s32);
+extern s32 gpu_AddSpriteCells(Unk8007352CRec *);
+extern s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *, s32);
 /* No prototype: defined old-style (63D2C.c) with an s16 parameter, which a
  * prototype cannot match. */
-extern s32 func_80073C78();
+extern s32 gpu_AddRotatedSpriteQuads();
 extern void func_80074220(Unk8006EACCRec *, s32);
 extern void func_80074488(Unk8006EACCRec *);
 extern s32 func_80077820(s32);

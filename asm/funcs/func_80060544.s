@@ -62,14 +62,14 @@ glabel func_80060544
     /* 50E20 80060620 0A80023C */  lui        $v0, %hi(D_8009B7D0)
     /* 50E24 80060624 D0B74224 */  addiu      $v0, $v0, %lo(D_8009B7D0)
     /* 50E28 80060628 1C00A2AF */  sw         $v0, 0x1C($sp)
-    /* 50E2C 8006062C CACD010C */  jal        func_80073728
+    /* 50E2C 8006062C CACD010C */  jal        gpu_AddScaledSpriteQuads
     /* 50E30 80060630 2400B2AF */   sw        $s2, 0x24($sp)
     /* 50E34 80060634 21904000 */  addu       $s2, $v0, $zero
   .L80060638:
     /* 50E38 80060638 05001512 */  beq        $s0, $s5, .L80060650
     /* 50E3C 8006063C 00000000 */   nop
     /* 50E40 80060640 2000B3AF */  sw         $s3, 0x20($sp)
-    /* 50E44 80060644 4BCD010C */  jal        func_8007352C
+    /* 50E44 80060644 4BCD010C */  jal        gpu_AddSpriteCells
     /* 50E48 80060648 1800A427 */   addiu     $a0, $sp, 0x18
     /* 50E4C 8006064C 21984000 */  addu       $s3, $v0, $zero
   .L80060650:
@@ -84,7 +84,7 @@ glabel func_80060544
     /* 50E70 80060670 0A80023C */  lui        $v0, %hi(D_8009B820)
     /* 50E74 80060674 20B84224 */  addiu      $v0, $v0, %lo(D_8009B820)
     /* 50E78 80060678 1C00A2AF */  sw         $v0, 0x1C($sp)
-    /* 50E7C 8006067C 4BCD010C */  jal        func_8007352C
+    /* 50E7C 8006067C 4BCD010C */  jal        gpu_AddSpriteCells
     /* 50E80 80060680 2000B3AF */   sw        $s3, 0x20($sp)
     /* 50E84 80060684 21984000 */  addu       $s3, $v0, $zero
     /* 50E88 80060688 21900000 */  addu       $s2, $zero, $zero
@@ -103,7 +103,7 @@ glabel func_80060544
     /* 50EB8 800606B8 1800A427 */  addiu      $a0, $sp, 0x18
     /* 50EBC 800606BC 1800B0AF */  sw         $s0, 0x18($sp)
     /* 50EC0 800606C0 1C00B1AF */  sw         $s1, 0x1C($sp)
-    /* 50EC4 800606C4 4BCD010C */  jal        func_8007352C
+    /* 50EC4 800606C4 4BCD010C */  jal        gpu_AddSpriteCells
     /* 50EC8 800606C8 2000B3AF */   sw        $s3, 0x20($sp)
     /* 50ECC 800606CC 21984000 */  addu       $s3, $v0, $zero
     /* 50ED0 800606D0 08003126 */  addiu      $s1, $s1, 0x8

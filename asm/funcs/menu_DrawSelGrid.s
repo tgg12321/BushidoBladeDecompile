@@ -48,7 +48,7 @@ glabel menu_DrawSelGrid
   .L80075A80:
     /* 66280 80075A80 1000028E */  lw         $v0, 0x10($s0)
     /* 66284 80075A84 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 66288 80075A88 4BCD010C */  jal        func_8007352C
+    /* 66288 80075A88 4BCD010C */  jal        gpu_AddSpriteCells
     /* 6628C 80075A8C 2000A2AF */   sw        $v0, 0x20($sp)
     /* 66290 80075A90 100002AE */  sw         $v0, 0x10($s0)
     /* 66294 80075A94 1800A48F */  lw         $a0, 0x18($sp)
@@ -156,7 +156,7 @@ glabel menu_DrawSelGrid
     /* 66418 80075C18 3400A0AF */  sw         $zero, 0x34($sp)
     /* 6641C 80075C1C 1000028E */  lw         $v0, 0x10($s0)
     /* 66420 80075C20 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 66424 80075C24 4BCD010C */  jal        func_8007352C
+    /* 66424 80075C24 4BCD010C */  jal        gpu_AddSpriteCells
     /* 66428 80075C28 2000A2AF */   sw        $v0, 0x20($sp)
     /* 6642C 80075C2C 100002AE */  sw         $v0, 0x10($s0)
     /* 66430 80075C30 00141100 */  sll        $v0, $s1, 16
@@ -247,7 +247,7 @@ glabel menu_DrawSelGrid
     /* 66568 80075D68 1C00A2AF */  sw         $v0, 0x1C($sp)
     /* 6656C 80075D6C 1000028E */  lw         $v0, 0x10($s0)
     /* 66570 80075D70 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 66574 80075D74 4BCD010C */  jal        func_8007352C
+    /* 66574 80075D74 4BCD010C */  jal        gpu_AddSpriteCells
     /* 66578 80075D78 2000A2AF */   sw        $v0, 0x20($sp)
     /* 6657C 80075D7C 100002AE */  sw         $v0, 0x10($s0)
   .L80075D80:
@@ -312,7 +312,7 @@ glabel menu_DrawSelGrid
     /* 66654 80075E54 2C00A2AF */  sw         $v0, 0x2C($sp)
     /* 66658 80075E58 1000028E */  lw         $v0, 0x10($s0)
     /* 6665C 80075E5C 1800A427 */  addiu      $a0, $sp, 0x18
-    /* 66660 80075E60 4BCD010C */  jal        func_8007352C
+    /* 66660 80075E60 4BCD010C */  jal        gpu_AddSpriteCells
     /* 66664 80075E64 2000A2AF */   sw        $v0, 0x20($sp)
     /* 66668 80075E68 01002326 */  addiu      $v1, $s1, 0x1
     /* 6666C 80075E6C 21886000 */  addu       $s1, $v1, $zero

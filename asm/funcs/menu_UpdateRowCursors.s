@@ -482,7 +482,7 @@ glabel menu_UpdateRowCursors
     /* 61E80 80071680 1C0022AE */  sw         $v0, 0x1C($s1)
     /* 61E84 80071684 1000E28E */  lw         $v0, 0x10($s7)
     /* 61E88 80071688 21202002 */  addu       $a0, $s1, $zero
-    /* 61E8C 8007168C 4BCD010C */  jal        func_8007352C
+    /* 61E8C 8007168C 4BCD010C */  jal        gpu_AddSpriteCells
     /* 61E90 80071690 080022AE */   sw        $v0, 0x8($s1)
     /* 61E94 80071694 1000E2AE */  sw         $v0, 0x10($s7)
   .L80071698:
@@ -568,7 +568,7 @@ glabel menu_UpdateRowCursors
     /* 61FC4 800717C4 0400E38E */  lw         $v1, 0x4($s7)
     /* 61FC8 800717C8 07000224 */  addiu      $v0, $zero, 0x7
     /* 61FCC 800717CC 140022AE */  sw         $v0, 0x14($s1)
-    /* 61FD0 800717D0 CACD010C */  jal        func_80073728
+    /* 61FD0 800717D0 CACD010C */  jal        gpu_AddScaledSpriteQuads
     /* 61FD4 800717D4 0C0023AE */   sw        $v1, 0xC($s1)
     /* 61FD8 800717D8 57C60108 */  j          .L8007195C
     /* 61FDC 800717DC 0400E2AE */   sw        $v0, 0x4($s7)
@@ -791,7 +791,7 @@ glabel menu_UpdateRowCursors
   .L80071B10:
     /* 62310 80071B10 0400E28E */  lw         $v0, 0x4($s7)
     /* 62314 80071B14 21280000 */  addu       $a1, $zero, $zero
-    /* 62318 80071B18 CACD010C */  jal        func_80073728
+    /* 62318 80071B18 CACD010C */  jal        gpu_AddScaledSpriteQuads
     /* 6231C 80071B1C 0C0022AE */   sw        $v0, 0xC($s1)
     /* 62320 80071B20 0400E2AE */  sw         $v0, 0x4($s7)
     /* 62324 80071B24 01006226 */  addiu      $v0, $s3, 0x1

@@ -186,7 +186,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     s4->unk_1A84 = arg5;
     softbody_SetObjectGround(s4, arg5);
     softbody_UpdateObject(s4);
-    func_800420E8(a0, (s32)s3->node.xf.mat.t);
+    light_SetPointLightTarget(a0, (s32)s3->node.xf.mat.t);
 }
 
 extern s32 D_80094CFC[];
@@ -232,7 +232,8 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
      * drops the copy and moves lw t0,24(sp) up (score 4) */
     out3 = a4 + 1;
 loop2:
-    func_80044DE4((s16 *)a1, (s16 *)a2, a3, (s32)var_9->node.work.t);
+    math_LerpShortVectorsNegateYZ(
+        (s16 *)a1, (s16 *)a2, a3, (s32)var_9->node.work.t);
     a1 += 6;
     a2 += 6;
     buf.vx = *((u16 *)a1);

@@ -57,7 +57,7 @@ glabel func_8005FA98
     /* 50360 8005FB60 1000A427 */  addiu      $a0, $sp, 0x10
   .L8005FB64:
     /* 50364 8005FB64 21280000 */  addu       $a1, $zero, $zero
-    /* 50368 8005FB68 CACD010C */  jal        func_80073728
+    /* 50368 8005FB68 CACD010C */  jal        gpu_AddScaledSpriteQuads
     /* 5036C 8005FB6C 1C00A3AF */   sw        $v1, 0x1C($sp)
     /* 50370 8005FB70 1000A427 */  addiu      $a0, $sp, 0x10
     /* 50374 8005FB74 21280000 */  addu       $a1, $zero, $zero
@@ -71,7 +71,7 @@ glabel func_8005FA98
     /* 50394 8005FB94 0A80033C */  lui        $v1, %hi(D_8009B634)
     /* 50398 8005FB98 34B66324 */  addiu      $v1, $v1, %lo(D_8009B634)
     /* 5039C 8005FB9C 1400A3AF */  sw         $v1, 0x14($sp)
-    /* 503A0 8005FBA0 CACD010C */  jal        func_80073728
+    /* 503A0 8005FBA0 CACD010C */  jal        gpu_AddScaledSpriteQuads
     /* 503A4 8005FBA4 1C00A2AF */   sw        $v0, 0x1C($sp)
     /* 503A8 8005FBA8 23105102 */  subu       $v0, $s2, $s1
     /* 503AC 8005FBAC 4C00BF8F */  lw         $ra, 0x4C($sp)

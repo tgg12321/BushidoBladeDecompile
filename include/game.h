@@ -165,8 +165,8 @@ typedef struct {
 
 /* The eight primitive cursors of a draw context (func_800788B0 fills one bare;
  * Unk8006EACCRec embeds it). The draw functions build primitives at a cursor
- * and advance it. unk_00 / unk_0C hold the s32 cursors func_80073728 /
- * func_80073C78 and func_8007352C return. */
+ * and advance it. unk_00 / unk_0C hold the s32 cursors gpu_AddScaledSpriteQuads
+ * / gpu_AddRotatedSpriteQuads and gpu_AddSpriteCells return. */
 typedef struct {
     s32 unk_00;
     POLY_F4 *unk_04;
@@ -193,7 +193,7 @@ typedef struct {
 
 /* The 8-byte sprite cell: x / y, its offset from the descriptor's screen
  * position; u / v, its texel offset from the sheet's ubase / vbase; w / h, its
- * size (func_8007352C: x0 = x + the descriptor's x, u0 = u + ubase, w / h
+ * size (gpu_AddSpriteCells: x0 = x + the descriptor's x, u0 = u + ubase, w / h
  * copied). A sheet's cells follow its header(s) (Unk8009B0E0Record.cells). The
  * 0x8009B400 tables hold such cells: 0x8009B400..0x8009B44F is 10 records, one
  * per digit (func_8005D814 / func_8005E098 index it with a 0..9 value), and
@@ -209,8 +209,8 @@ typedef struct {
 } Unk8009B400Record;
 
 /* The 12-byte sprite-sheet header the walkers read (Unk8007352CRec.header): tp0
- * / tp1, the texture-page bits (func_80073728: (tp0 & 0xFE1F) + (tp1 << 7),
- * gpu_GetSheetTPage); count, the cell count; cx / cy, the CLUT position
+ * / tp1, the texture-page bits (gpu_AddScaledSpriteQuads: (tp0 & 0xFE1F) + (tp1
+ * << 7), gpu_GetSheetTPage); count, the cell count; cx / cy, the CLUT position
  * (GetClut); ubase / vbase, the texel origin the cells' u / v add to; cells,
  * the cell table that follows. A resource sheet may carry two or three headers
  * (the plain one, then one highlight per player: menu_UpdateEntryGrid,
@@ -368,8 +368,8 @@ typedef struct {
 
 /* The draw chunk 4D0A8 func_8005C8A8 builds at the address its caller passes:
  * TILEs from +0 up to +0xF0 (15; it writes at most 13), SPRTs from +0xF0 up to
- * +0x4D8 (50; func_8007352C's cursor), then the DR_MODE at +0x4D8. It returns
- * the chunk size, 0x4F0; the last 0xC bytes are never written. */
+ * +0x4D8 (50; gpu_AddSpriteCells's cursor), then the DR_MODE at +0x4D8. It
+ * returns the chunk size, 0x4F0; the last 0xC bytes are never written. */
 typedef struct {
     TILE unk_00[15];
     SPRT unk_F0[50];
@@ -380,9 +380,9 @@ typedef struct {
 /* The draw chunk 4D0A8 func_8005D814, func_8005E098 and func_8005F1C8 each
  * build at the address their caller passes (one layout): TILEs from +0 up to
  * +0xA0 (10; they write at most 2, 2 and 4), SPRTs from +0xA0 up to +0x2F8 (30;
- * func_8007352C's cursor), then the DR_MODE at +0x2F8. Each returns the chunk
- * size, 0x304. func_8005F1C8 also writes a second DR_MODE at the chunk's end,
- * outside the chunk. */
+ * gpu_AddSpriteCells's cursor), then the DR_MODE at +0x2F8. Each returns the
+ * chunk size, 0x304. func_8005F1C8 also writes a second DR_MODE at the chunk's
+ * end, outside the chunk. */
 typedef struct {
     TILE unk_00[10];
     SPRT unk_A0[30];
@@ -391,10 +391,10 @@ typedef struct {
 
 /* The draw chunk 4D0A8 func_8005E54C builds at the address its caller passes:
  * TILEs from +0 up to +0xA0 (10; it writes 3), SPRTs from +0xA0 up to +0x898
- * (102; func_8007352C's cursor), POLY_FT4s from +0x898 up to +0xBB8 (20;
- * func_80073728's cursor), then the DR_MODE at +0xBB8. It returns the chunk
- * size, 0xBC4, and also writes a second DR_MODE at the chunk's end, outside the
- * chunk. */
+ * (102; gpu_AddSpriteCells's cursor), POLY_FT4s from +0x898 up to +0xBB8 (20;
+ * gpu_AddScaledSpriteQuads's cursor), then the DR_MODE at +0xBB8. It returns
+ * the chunk size, 0xBC4, and also writes a second DR_MODE at the chunk's end,
+ * outside the chunk. */
 typedef struct {
     TILE unk_00[10];
     SPRT unk_A0[102];
@@ -403,13 +403,13 @@ typedef struct {
 } Unk8005E54CRec;
 
 /* The draw chunk 4D0A8 func_8005FC9C builds at the address its caller passes:
- * SPRTs from +0 (func_8007352C's cursor), the DR_MODE at +0x280, two POLY_G4 at
- * +0x28C (at most one per pass) and three DR_AREA at +0x2D4 (the first, then at
- * most one per pass). func_8005FC9C returns the chunk size, 0x2F8. The 32 SPRTs
- * are the most it writes: func_8007352C writes at most one per cell of the
- * sheet header it is given (cell count: the byte at +2), and each of the two
- * passes draws D_8009B698's header and the one 12 bytes after it (8 cells
- * each). */
+ * SPRTs from +0 (gpu_AddSpriteCells's cursor), the DR_MODE at +0x280, two
+ * POLY_G4 at +0x28C (at most one per pass) and three DR_AREA at +0x2D4 (the
+ * first, then at most one per pass). func_8005FC9C returns the chunk size,
+ * 0x2F8. The 32 SPRTs are the most it writes: gpu_AddSpriteCells writes at most
+ * one per cell of the sheet header it is given (cell count: the byte at +2),
+ * and each of the two passes draws D_8009B698's header and the one 12 bytes
+ * after it (8 cells each). */
 typedef struct {
     SPRT unk_00[32];
     DR_MODE unk_280;
@@ -418,10 +418,10 @@ typedef struct {
 } Unk8005FC9CRec;
 
 /* The draw chunk 4D0A8 func_800600C8 builds at the address its caller passes:
- * 0xB4 bytes of SPRTs from +0 (func_8007352C's cursor), then the DR_MODE at
- * +0xB4. func_800600C8 returns the chunk size, 0xC0. At most 5 SPRTs are
- * written: func_8007352C writes at most one per cell of the sheet header it is
- * given (cell count: the byte at +2); D_8009B6F0's header holds 3, and
+ * 0xB4 bytes of SPRTs from +0 (gpu_AddSpriteCells's cursor), then the DR_MODE
+ * at +0xB4. func_800600C8 returns the chunk size, 0xC0. At most 5 SPRTs are
+ * written: gpu_AddSpriteCells writes at most one per cell of the sheet header
+ * it is given (cell count: the byte at +2); D_8009B6F0's header holds 3, and
  * D_8009B6FC's holds 1, drawn once per digit for up to two digits. */
 typedef struct {
     SPRT unk_00[9];
@@ -429,10 +429,10 @@ typedef struct {
 } Unk800600C8Rec;
 
 /* The draw chunk 4D0A8 func_80060414 builds at the address its caller passes:
- * one SPRT at +0 (func_8007352C's cursor; each of the three sheet headers it
- * may pass, D_8009B7AC / D_8009B7B8 / D_8009B7C4, has one cell: the count byte
- * at +2 is 1), then the DR_MODE at +0x14. It returns the chunk size, 0x2C; the
- * last 0xC bytes are never written. */
+ * one SPRT at +0 (gpu_AddSpriteCells's cursor; each of the three sheet headers
+ * it may pass, D_8009B7AC / D_8009B7B8 / D_8009B7C4, has one cell: the count
+ * byte at +2 is 1), then the DR_MODE at +0x14. It returns the chunk size, 0x2C;
+ * the last 0xC bytes are never written. */
 typedef struct {
     SPRT unk_00;
     DR_MODE unk_14;
@@ -440,13 +440,13 @@ typedef struct {
 } Unk80060414Rec;
 
 /* The draw chunk 4D0A8 func_80060544 builds at the address its caller passes:
- * SPRTs from +0 up to +0x4EC (63; func_8007352C's cursor), POLY_FT4s from
- * +0x4EC up to +0x5DC (6; func_80073728's cursor), then the DR_MODE at +0x5DC.
- * It returns the chunk size, 0x5F4; the last 0xC bytes are never written. The
- * walkers write at most one primitive per cell of the sheet header they are
- * given (cell count: the byte at +2): at most 19 SPRTs (D_8009B770[0..2] hold 5
- * / 4 / 4 cells, D_8009B7A0 4, D_8009B398[2] / [3] 1 each) and 1 POLY_FT4
- * (D_8009B770[3] holds 1). */
+ * SPRTs from +0 up to +0x4EC (63; gpu_AddSpriteCells's cursor), POLY_FT4s from
+ * +0x4EC up to +0x5DC (6; gpu_AddScaledSpriteQuads's cursor), then the DR_MODE
+ * at +0x5DC. It returns the chunk size, 0x5F4; the last 0xC bytes are never
+ * written. The walkers write at most one primitive per cell of the sheet header
+ * they are given (cell count: the byte at +2): at most 19 SPRTs
+ * (D_8009B770[0..2] hold 5 / 4 / 4 cells, D_8009B7A0 4, D_8009B398[2] / [3] 1
+ * each) and 1 POLY_FT4 (D_8009B770[3] holds 1). */
 typedef struct {
     SPRT unk_00[63];
     POLY_FT4 unk_4EC[6];
@@ -587,16 +587,17 @@ typedef struct {
     s16 y;
 } Unk8009B450Record;
 
-/* The 0x2C-byte draw descriptor the sprite walkers consume: func_8007352C (one
- * SPRT per cell), func_80073728 / func_80073C78 (one POLY_FT4 per cell, scaled
- * / rotated). header / table: the sprite sheet (Unk8009B0E0Record) and its
- * cells; sprt_out / ft4_out: the SPRT and POLY_FT4 cursors the walkers advance
- * and return; semi: their SetSemiTrans argument; ot_idx: the ordering-table
- * slot (g_gpu_ot_ptr + ot_idx); x / y: the screen offset added to every cell;
- * scale_x / scale_y: the 8.8 cell scales of the POLY_FT4 walkers; has_color /
- * col_r / col_g / col_b: the SetShadeTex switch and the primitive colour. The
- * cursors are s32 because every source of them is an s32 word: the draw
- * contexts' primitive cursors (Unk800788B0Rec, 596CC's context words). */
+/* The 0x2C-byte draw descriptor the sprite walkers consume: gpu_AddSpriteCells
+ * (one SPRT per cell), gpu_AddScaledSpriteQuads / gpu_AddRotatedSpriteQuads
+ * (one POLY_FT4 per cell, scaled / rotated). header / table: the sprite sheet
+ * (Unk8009B0E0Record) and its cells; sprt_out / ft4_out: the SPRT and POLY_FT4
+ * cursors the walkers advance and return; semi: their SetSemiTrans argument;
+ * ot_idx: the ordering-table slot (g_gpu_ot_ptr + ot_idx); x / y: the screen
+ * offset added to every cell; scale_x / scale_y: the 8.8 cell scales of the
+ * POLY_FT4 walkers; has_color / col_r / col_g / col_b: the SetShadeTex switch
+ * and the primitive colour. The cursors are s32 because every source of them is
+ * an s32 word: the draw contexts' primitive cursors (Unk800788B0Rec, 596CC's
+ * context words). */
 typedef struct {
     Unk8009B0E0Record *header;
     Unk8009B400Record *table;
@@ -798,8 +799,8 @@ typedef struct Unk80104E88Rec {
 } Unk80104E88Rec; /* sizeof == 0x2C */
 
 /* The 10-entry block table over the 0x45000-byte buffer at g_arena
- * (func_800451D0 .. arena_FindBlock; g_arena_block_count live entries).
- * func_800451D0 clears id in all 10. arena_ShiftBlocks(a0, a1) hands
+ * (arena_Reset .. arena_FindBlock; g_arena_block_count live entries).
+ * arena_Reset clears id in all 10. arena_ShiftBlocks(a0, a1) hands
  * func_800520B8 entry a0's unk4, unk4 + a1 and the summed amt of entries a0..,
  * then adds a1 to their unk4 and calls each fn(id, a1). */
 typedef struct {

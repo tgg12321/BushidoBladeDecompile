@@ -23,7 +23,7 @@ glabel func_8006BB68
     /* 5C3BC 8006BBBC 1C00A5AF */  sw         $a1, 0x1C($sp)
     /* 5C3C0 8006BBC0 1400028E */  lw         $v0, 0x14($s0)
     /* 5C3C4 8006BBC4 21880000 */  addu       $s1, $zero, $zero
-    /* 5C3C8 8006BBC8 4BCD010C */  jal        func_8007352C
+    /* 5C3C8 8006BBC8 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5C3CC 8006BBCC 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5C3D0 8006BBD0 140002AE */  sw         $v0, 0x14($s0)
     /* 5C3D4 8006BBD4 1800A48F */  lw         $a0, 0x18($sp)
@@ -67,7 +67,7 @@ glabel func_8006BB68
     /* 5C460 8006BC60 04005226 */  addiu      $s2, $s2, 0x4
     /* 5C464 8006BC64 1400028E */  lw         $v0, 0x14($s0)
     /* 5C468 8006BC68 01003126 */  addiu      $s1, $s1, 0x1
-    /* 5C46C 8006BC6C 4BCD010C */  jal        func_8007352C
+    /* 5C46C 8006BC6C 4BCD010C */  jal        gpu_AddSpriteCells
     /* 5C470 8006BC70 2000A2AF */   sw        $v0, 0x20($sp)
     /* 5C474 8006BC74 140002AE */  sw         $v0, 0x14($s0)
     /* 5C478 8006BC78 0300222A */  slti       $v0, $s1, 0x3

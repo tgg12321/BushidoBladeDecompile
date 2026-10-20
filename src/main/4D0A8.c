@@ -74,14 +74,14 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
         s.ot_idx = arg3;
         D_8009B184[0].x = (0x280 - D_8009B2BC[2].w) / 2;
         D_8009B184[1].x = (D_8009B2BC[2].w + 0x280) / 2 - 0xC;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         s.header = &D_8009B0E0[8];
         s.table = D_8009B20C;
         s.x = 0;
         s.y = 0;
         s.sprt_out = cur;
         s.ot_idx = arg3;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         for (j = 0; j < 3; j++) {
             if (var_4 == j + 3) {
                 s.semi = 0;
@@ -94,7 +94,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
             s.y = 0;
             s.sprt_out = cur;
             s.ot_idx = arg3;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
             for (i = 0; i < 2; i++) {
                 if (((arg1 >> (j + 16)) & 1) == i) {
                     s.semi = 0;
@@ -107,7 +107,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
                 s.y = j * 15;
                 s.sprt_out = cur;
                 s.ot_idx = arg3;
-                cur = func_8007352C(&s);
+                cur = gpu_AddSpriteCells(&s);
             }
         }
         for (i = 0; i < 2; i++) {
@@ -142,7 +142,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
         s.sprt_out = cur;
         s.y = y_base + top;
         s.ot_idx = arg3;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         s.header = &D_8009B0E0[3];
         s.has_color = 0;
         s.table = D_8009B194;
@@ -151,7 +151,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
         s.semi = 0;
         s.sprt_out = cur;
         s.ot_idx = arg3;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         top += 0xE;
         s.header = &D_8009B0E0[2];
         s.table = D_8009B184;
@@ -162,7 +162,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
         s.ot_idx = arg3;
         D_8009B184[0].x = (0x280 - D_8009B2BC[mode].w) / 2;
         D_8009B184[1].x = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         for (i = 0; i < 2; i++) {
             SetTile(tile);
             if (i != 0) {
@@ -195,7 +195,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
         s.y = top;
         s.sprt_out = cur;
         s.ot_idx = arg3;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         break;
     }
 
@@ -212,7 +212,7 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
         s.y = y_base + top;
         s.sprt_out = cur;
         s.ot_idx = arg3;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
     }
 
     s.has_color = 0;
@@ -225,14 +225,14 @@ s32 func_8005C8A8(s32 mode, s32 arg1, s32 arg2, s32 arg3) {
     s.ot_idx = arg3;
     D_8009B164[0][0].x = (0x280 - D_8009B2BC[mode].w) / 2;
     D_8009B164[0][1].x = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
-    cur = func_8007352C(&s);
+    cur = gpu_AddSpriteCells(&s);
     s.header = &D_8009B0E0[1];
     s.table = D_8009B164[1];
     s.y = (D_8009B2BC[mode].h + 0xF0) / 2;
     s.sprt_out = cur;
     D_8009B164[1][0].x = (0x280 - D_8009B2BC[mode].w) / 2;
     D_8009B164[1][1].x = (D_8009B2BC[mode].w + 0x280) / 2 - 0xC;
-    func_8007352C(&s);
+    gpu_AddSpriteCells(&s);
 
     for (j = 0; j < 2; j++) {
         x = (0x280 - D_8009B2BC[mode].w) / 2;
@@ -339,7 +339,7 @@ s32 func_8005D46C(s32 arg0, s32 arg1) {
     s.semi = 0;
     s.ot_idx = 1;
     s.ft4_out = arg0;
-    arg0 = func_80073728(&s, 0);
+    arg0 = gpu_AddScaledSpriteQuads(&s, 0);
     s.has_color = 0;
     s.header = &D_8009B2C8[idx][1];
     s.table = D_8009B358;
@@ -350,7 +350,7 @@ s32 func_8005D46C(s32 arg0, s32 arg1) {
     s.semi = 0;
     s.ot_idx = 1;
     s.ft4_out = arg0;
-    return func_80073728(&s, 0);
+    return gpu_AddScaledSpriteQuads(&s, 0);
 }
 
 s32 func_8005D554(s32 arg0, s32 arg1) {
@@ -417,7 +417,7 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             tmp1 = var_4;
             s.ft4_out = tmp1;
             s.y = y;
-            var_4 = func_80073728(&s, 0);
+            var_4 = gpu_AddScaledSpriteQuads(&s, 0);
 
             s.has_color = 0;
             s.scale_y = scale;
@@ -440,7 +440,7 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             tmp2 = var_4;
             s.ft4_out = tmp2;
             s.y = y;
-            var_4 = func_80073728(&s, 0);
+            var_4 = gpu_AddScaledSpriteQuads(&s, 0);
             i += 1;
         } while (i < ((D_800A326C + 1) * 2));
     }
@@ -480,7 +480,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     for (i = 0; i < 3; i++) {
         s.table = &D_8009B3C8[i];
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
     }
 
     s.header = &D_8009B398[1];
@@ -494,7 +494,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
             }
         }
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
     }
 
     s.header = &D_8009B398[0];
@@ -552,7 +552,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 break;
             }
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
         }
     }
 
@@ -575,7 +575,7 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 s.x = j * 21;
             }
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
         }
     }
 
@@ -602,11 +602,11 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
         s.header = &D_8009B398[2];
         s.table = &D_8009B3C8[5];
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         s.header = &D_8009B398[3];
         s.table = &D_8009B3C8[6];
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
     }
     SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B398[0], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3, mode_off);
@@ -650,7 +650,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             s.table = &D_8009B458[0][i];
         }
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         if (arg0 < 0) {
             break;
         }
@@ -685,7 +685,7 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                 s.x = i * 20;
             }
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
         }
         if (arg0 < 0) {
             break;
@@ -715,11 +715,11 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         s.header = &D_8009B398[2];
         s.table = &D_8009B458[j + 1][0];
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         s.header = &D_8009B398[3];
         s.table = &D_8009B458[j + 1][1];
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         if (arg0 < 0) {
             break;
         }
@@ -803,7 +803,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         s.x = i * 320;
         s.table = D_8009B554;
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         if (!(D_8009BD24.unk14_15 >> i & 1)) {
             s.header = &D_8009B530;
             s.table = D_8009B56C;
@@ -812,7 +812,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             s.table = D_8009B57C;
         }
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
     }
 
     s.semi = 0;
@@ -833,13 +833,13 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             s.y += 2;
             s.table = &D_8009B4BC[D_800A3270[i]];
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
         } else {
             s.header = &D_8009B4E4;
             s.x = 0;
             s.table = &D_8009B514;
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
             for (j = 0; j < 2; j++) {
                 s.x = j * 70;
                 if (var_1[j] > var_1[!j]) {
@@ -850,7 +850,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
                     s.table = &D_8009B50C;
                 }
                 s.sprt_out = cur;
-                cur = func_8007352C(&s);
+                cur = gpu_AddSpriteCells(&s);
             }
             s.y += 5;
             for (j = 0; j < 2; j++) {
@@ -863,7 +863,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
                         s.x = (1 - k) * 16 + 0xE2;
                     }
                     s.sprt_out = cur;
-                    cur = func_8007352C(&s);
+                    cur = gpu_AddSpriteCells(&s);
                 }
             }
         }
@@ -881,7 +881,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s.y = y + 3;
     s.table = &D_8009B514;
     s.sprt_out = cur;
-    cur = func_8007352C(&s);
+    cur = gpu_AddSpriteCells(&s);
     /* FAKE: one 32-bit store clears the whole pair (target `sw
      * $zero,0x18($sp)`; Q36, no-new-park-categories); `var_1[0] = var_1[1] =
      * 0`: score 2 */
@@ -905,7 +905,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
             }
             s.y = y + (k & 1) * 12;
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
         }
     }
     SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B524, 0), 0);
@@ -950,11 +950,11 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
                 s.y = i * 34 + 3;
             }
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
             if (D_8009BD24.unk00[j][i].bd0 == 8) {
                 s.table = D_8009ADC0;
                 s.sprt_out = cur;
-                cur = func_8007352C(&s);
+                cur = gpu_AddSpriteCells(&s);
             }
         }
         s.has_color = 0;
@@ -969,10 +969,10 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
                 s.header = &D_8009B398[j + 2];
                 s.table = D_8009B490[j];
                 s.ft4_out = var_7;
-                var_7 = func_80073728(&s, 0);
+                var_7 = gpu_AddScaledSpriteQuads(&s, 0);
                 s.table = &D_8009B490[j][1];
                 s.ft4_out = var_7;
-                var_7 = func_80073728(&s, 0);
+                var_7 = gpu_AddScaledSpriteQuads(&s, 0);
             }
         }
     }
@@ -994,7 +994,7 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
         s.table = &D_8009B400[var_2[j]];
         s.table->x = s.table->y = 0;
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
     }
 
     SetTile(tile);
@@ -1095,7 +1095,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                     s.table++;
                 }
                 s.sprt_out = cur;
-                cur = func_8007352C(&s);
+                cur = gpu_AddSpriteCells(&s);
             }
         }
     }
@@ -1116,7 +1116,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
             s.x = j * 550;
             s.table = &D_8009B5D8[k];
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
         }
     }
 
@@ -1144,11 +1144,11 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
             s.header = &D_8009B398[2];
             s.table = &D_8009B5F0[j][0];
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
             s.header = &D_8009B398[3];
             s.table = &D_8009B5F0[j][1];
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
         }
     }
 
@@ -1202,7 +1202,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
                 s.table->x = 0x113;
             }
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
         }
         s.table = &D_8009B5E8;
         if (D_8009BD24.unk14_12 == 2) {
@@ -1211,7 +1211,7 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
             s.x = j * 6 + 0x13B;
         }
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
     }
     SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(&D_8009B398[1], 0), 0);
     AddPrim(g_gpu_ot_ptr + arg3, mode_off);
@@ -1253,11 +1253,11 @@ s32 func_8005FA98(s32 arg0, s32 arg1, s32 arg2) {
         break;
     }
     s.ft4_out = cursor;
-    cursor = func_80073728(&s, 0);
+    cursor = gpu_AddScaledSpriteQuads(&s, 0);
     s.header = &D_8009B610[arg0];
     s.table = &D_8009B634;
     s.ft4_out = cursor;
-    func_80073728(&s, 0);
+    gpu_AddScaledSpriteQuads(&s, 0);
     return end - arg1;
 }
 
@@ -1376,7 +1376,7 @@ s32 func_8005FC9C(s32 arg0, s32 arg1) {
             s.header = &D_8009B698[i];
             s.y = i << 6;
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
         }
         if (D_800A3278 >= 0xB5) {
             SetDrawArea(area, &r);
@@ -1422,7 +1422,7 @@ s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2) {
     }
     s.table = D_8009B758;
     s.sprt_out = cur;
-    cur = func_8007352C(&s);
+    cur = gpu_AddSpriteCells(&s);
     s.header = &D_8009B6F0[1];
     d[0] = d[1] = arg0;
     d[1] = d[1] / 10 % 10;
@@ -1435,7 +1435,7 @@ s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2) {
             s.x = (((1 - i) << 2) << 3) + 0x54;
         }
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         if (d[1] == 0) {
             break;
         }
@@ -1504,7 +1504,7 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     }
     s.table = &D_800A328C;
     s.sprt_out = (s32)&var_1->unk_00;
-    func_8007352C(&s);
+    gpu_AddSpriteCells(&s);
     SetDrawMode(mode_off, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
     AddPrim(g_gpu_ot_ptr + arg2, mode_off);
     return end_off - arg1;
@@ -1556,19 +1556,19 @@ s32 func_80060544(s32 arg0, s32 arg1) {
         case 3:
             s.table = &D_8009B7D0;
             s.ft4_out = var_3;
-            var_3 = func_80073728(&s, 0);
+            var_3 = gpu_AddScaledSpriteQuads(&s, 0);
             break;
         }
         if (i != 3) {
             s.sprt_out = cur;
-            cur = func_8007352C(&s);
+            cur = gpu_AddSpriteCells(&s);
         }
         i += 1;
     } while (i < 4);
     s.header = &D_8009B7A0;
     s.table = D_8009B820;
     s.sprt_out = cur;
-    cur = func_8007352C(&s);
+    cur = gpu_AddSpriteCells(&s);
     j = 0;
     p1 = D_8009B840;
     p0 = &D_8009B398[2];
@@ -1580,7 +1580,7 @@ s32 func_80060544(s32 arg0, s32 arg1) {
         s.header = p0;
         s.table = p1;
         s.sprt_out = cur;
-        cur = func_8007352C(&s);
+        cur = gpu_AddSpriteCells(&s);
         p1++;
         j += 1;
         p0++;

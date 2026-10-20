@@ -3,7 +3,7 @@ glabel func_80035DC8
     /* 265CC 80035DCC 1000BFAF */  sw         $ra, 0x10($sp)
     /* 265D0 80035DD0 1A5A000C */  jal        gpu_ResetGraphMode1
     /* 265D4 80035DD4 00000000 */   nop
-    /* 265D8 80035DD8 225A000C */  jal        func_80016888
+    /* 265D8 80035DD8 225A000C */  jal        gpu_HideResetAndClear
     /* 265DC 80035DDC 00000000 */   nop
     /* 265E0 80035DE0 3783000C */  jal        func_80020CDC
     /* 265E4 80035DE4 00000000 */   nop

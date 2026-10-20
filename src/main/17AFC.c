@@ -5692,7 +5692,7 @@ void fight_AdvanceMatch(void) {
             D_80102778.unk_4[v1] = D_801027A0[g_fight_match_cursor][v1];
             D_80102778.unk_4[2 + v1] = D_801027D8[g_fight_match_cursor][v1];
         }
-        func_80016888();
+        gpu_HideResetAndClear();
         cdrom_PauseAndWait();
         D_800A3834 = 0;
     }
