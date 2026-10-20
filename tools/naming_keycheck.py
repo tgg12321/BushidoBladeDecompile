@@ -164,8 +164,10 @@ sizeof operands are type contexts. Shadowed typedefs and locals inside aggregate
 Aggregate tables across every TU block competing member destinations, including macro-spelled and
 .inc declarations.
 
-Scoped destinations cannot equal global sources/destinations. Member destinations cannot be
-shared; local destinations may be shared only across distinct functions. For local pairs,
+Scoped destinations cannot equal global sources/destinations. Member destinations may be
+shared only by member pairs naming distinct members (naming-bar §5: the code shows they hold
+the same thing, and all of those pairs are in the wave); n must still be fresh against every
+other member, type and macro. Local destinations may be shared only across distinct functions. For local pairs,
 macro arguments containing the old name fail even when unchanged. For member pairs, a macro
 argument naming m (edited to n or unchanged) is allowed only when every definition of that
 macro expands all its parameters plainly (no dropped, stringized, pasted or variadic parameter;
@@ -1872,12 +1874,15 @@ def sentinel_namespaces(output, names):
             if ts[j:j + 1] == ["{"]:
                 aggregate_bodies.update(range(j + 1, balanced(ts, j, "{", "}")))
     functions = cpp_functions(ts, declaration_types({"src/cpp.c": " ".join(ts)}))
-    members = {scope.split(".")[0] for kind, scope in names.values() if kind == "member"}
+    # A member scope "A|B" (pairs sharing m and n) is declared by either.
+    members = {alt.split(".")[0] for kind, scope in names.values() if kind == "member"
+               for alt in scope.split("|")}
     nested_paths = {}
     for kind, scope in names.values():
-        if kind == "member" and "." in scope:
-            owner, *path = scope.split(".")
-            nested_paths.setdefault(owner, set()).add(tuple(path))
+        for alt in scope.split("|") if kind == "member" else ():
+            if "." in alt:
+                owner, *path = alt.split(".")
+                nested_paths.setdefault(owner, set()).add(tuple(path))
     if members:
         forward_aliases = {}
         for k in range(len(ts) - 4):
@@ -1938,7 +1943,7 @@ def sentinel_namespaces(output, names):
                     or prev in (".", "->", "struct", "union", "enum", "goto")
                     or following == ":" and i + 1 not in conditional_colons):
                 raise ValueError("local sentinel changed namespace in cpp output: " + token)
-        elif prev not in (".", "->") and scope not in declarations.get(i, ()):
+        elif prev not in (".", "->") and not set(scope.split("|")) & declarations.get(i, set()):
             if scope in ("\x00macro-argument", "\x00member-access"):
                 raise ValueError("unchanged member name in a " + scope[1:].replace("-", " ")
                                  + " does not expand to a member access: " + token)
@@ -2219,6 +2224,10 @@ def _verify_compiled_edits(base, new, edits, map_path, scoped, global_pairs):
             elif any(name == scoped_type_name(scope, global_pairs) and start <= k <= end
                      for name, start, _, end in function_definitions(base[path])):
                 owners.append(("local", scoped_type_name(scope, global_pairs)))
+        if len(owners) > 1 and all(kind == "member" for kind, _ in owners):
+            # Member pairs sharing m and n: the sentinel may sit in any of their
+            # aggregates (an access needs only . or ->).
+            owners = [("member", "|".join(sorted(scope for _, scope in owners)))]
         if len(owners) != 1:
             raise ValueError(f"{target}: cannot establish scoped edit namespace")
         namespaces[(path, k)] = namespaces[(target, k)] = owners[0]
@@ -3116,7 +3125,16 @@ def _scoped_plan(base: dict[str, str], pairs: dict[str, str], globals=None, unce
         if new in (globals or {}) or new in (globals or {}).values():
             raise ValueError(f"{spec}: scoped destination {new} collides with a global pair")
         peers = [o for o, n in pairs.items() if o != spec and n == new]
-        if any("." in spec or "." in o or scoped_type_name(spec.split(":")[0], globals) == scoped_type_name(o.split(":")[0], globals) for o in peers):
+        if "." in spec and peers:
+            # naming-bar §5: members the code shows hold the same thing may share
+            # one new name when all of those pairs land in this wave; each pair
+            # names a distinct member (T, path). n stays fresh against every other
+            # member, type and macro (member_freshness below).
+            keys = [member_scope_key(scoped_type_name(scoped_parts(o)[0], globals), scoped_parts(o)[1])
+                    for o in (spec, *peers) if "." in o]
+            if len(keys) != 1 + len(peers) or len(set(keys)) != len(keys):
+                raise ValueError(f"{spec}: scoped destination {new} is shared by a pair that is not a distinct member pair")
+        elif any("." in spec or "." in o or scoped_type_name(spec.split(":")[0], globals) == scoped_type_name(o.split(":")[0], globals) for o in peers):
             raise ValueError(f"{spec}: scoped destination {new} is shared by another pair")
         old = scoped_parts(spec)[2]
         if any(macro_uses(text, old, name_only=True) or macro_uses(text, new, name_only=True)

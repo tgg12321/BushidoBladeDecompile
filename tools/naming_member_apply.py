@@ -29,7 +29,8 @@ by compiler feedback; naming_keycheck.py proves the result.
      restored line is restored and reported with it, and those lines are never
      edited again. Comments naming an old member are not edited (do them by hand).
 
-Pairs sharing an old member name run in separate passes. Exit status: 0 clean,
+Pairs sharing an old member name run in separate passes, unless they also share the
+new name (naming-bar §5 shared destination): those run in one pass. Exit status: 0 clean,
 1 unresolved lines reported, 2 hard failure (declaration not found, a cpp failure,
 a compile error other than a member error, a Makefile variable using $(...), no
 convergence). Files are written LF.
@@ -121,7 +122,7 @@ def split_passes(pairs):
     passes = []
     for pr in pairs:
         for ps in passes:
-            if all(q[1] != pr[1] for q in ps):
+            if all(q[1] != pr[1] or q[2] == pr[2] for q in ps):
                 ps.append(pr)
                 break
         else:

@@ -4535,6 +4535,38 @@ def test_naming_keycheck_scoped_pairs() -> None:
     ok, why = proof("E.ends.node=pt,E.d=dd", {"src/a.c": nested}, {"src/a.c": both_new})
     check("keycheck: nested and flat pairs on one T (" + why + ")", ok)
 
+    # naming-bar §5: member pairs naming distinct members may share one n in a wave.
+    faces = ("typedef struct { int pad; unsigned char col[4]; } FaceTri;\n"
+             "typedef struct { int pad; unsigned char col[4]; short uv; } FaceQuad;\n"
+             "int f(FaceTri *t, FaceQuad *q) { return t->col[0] + q->col[1]; }\n"
+             "int g(FaceQuad *q) { return q->col[2]; }\n")
+    faces_new = faces.replace("col", "vtx")
+    ok, why = proof("FaceTri.col=vtx,FaceQuad.col=vtx", {"src/a.c": faces}, {"src/a.c": faces_new})
+    check("keycheck: the same n across distinct types in one wave accepted (" + why + ")", ok)
+    ok, why = proof("FaceTri.col=vtx,FaceQuad.col=vtx", {"src/a.c": faces},
+                    {"src/a.c": faces_new.replace("unsigned char vtx[4]; short uv;",
+                                                  "unsigned char col[4]; short uv;")})
+    check("keycheck: a shared-n wave still renames every pair's declaration (" + why + ")", not ok)
+    mixed = faces.replace("FaceQuad", "FaceQ").replace("FaceQ *q) { return q->col[2]", "FaceQ *q) { return q->idx[2]")
+    mixed = mixed.replace("unsigned char col[4]; short uv;", "unsigned char idx[4]; short uv;").replace("q->col[1]", "q->idx[1]")
+    ok, why = proof("FaceTri.col=vtx,FaceQ.idx=vtx", {"src/a.c": mixed},
+                    {"src/a.c": mixed.replace("col", "vtx").replace("idx", "vtx")})
+    check("keycheck: distinct old names sharing n accepted (" + why + ")", ok)
+    for label, extra in [
+            ("another member", "struct NavPoly { int vtx; };\n"),
+            ("a type", "typedef int vtx;\n"),
+            ("a macro", "#define vtx 3\n")]:
+        ok, why = proof("FaceTri.col=vtx,FaceQuad.col=vtx", {"src/a.c": extra + faces},
+                        {"src/a.c": extra + faces_new})
+        check("keycheck: shared n colliding with " + label + " outside the pairs refused (" + why + ")", not ok)
+    same_t = "struct T { int a; int b; };\nint f(struct T *t) { return t->a + t->b; }\n"
+    ok, why = proof("T.a=n,T.b=n", {"src/a.c": same_t}, {"src/a.c": same_t.replace("a", "n").replace("b", "n")})
+    check("keycheck: two members of one T sharing n refused (" + why + ")", not ok and "distinct member" in why)
+    ok, why = proof("FaceTri.col=vtx,f:t=vtx", {"src/a.c": faces},
+                    {"src/a.c": faces.replace("FaceTri.col", "")})
+    check("keycheck: a member pair sharing n with a local pair refused (" + why + ")",
+          not ok and "distinct member" in why)
+
     # Member pairs and macro arguments: an unchanged argument naming m is allowed when
     # the macro expands it plainly; an edited argument, or one the macro may drop,
     # stringize or paste, is refused.
@@ -5146,7 +5178,8 @@ def test_naming_keycheck_scoped_pairs() -> None:
     shared_new = ("struct T { int n; }; union U { int n; int m; }; "
                   "int f(union U *u) { return u->n; }")
     ok, why = proof("T.m=n,U.k=n", {"src/a.c": shared_base}, {"src/a.c": shared_new})
-    check("keycheck: shared scoped destination union rebinding fails", not ok and "shared" in why)
+    check("keycheck: shared scoped destination union rebinding fails (" + why + ")",
+          not ok and "not fresh in cpp aggregates" in why)
     ok, why = proof("T.m=n,k=n", {"src/a.c": shared_base}, {"src/a.c": shared_new})
     check("keycheck: scoped/global destination collision fails", not ok and "global pair" in why)
     # An unrelated nested declarator contains a member-selection token. It must
@@ -8295,7 +8328,7 @@ def test_naming_keycheck_scoped_pairs() -> None:
                                  "int func_80010000(int arg0){return arg0;}", "int good_fn(int count){return count;}")
         check("keycheck: CLI globally renamed local function " + scope, result == 0)
     result, output = run_main("T.m=n,U.k=n", shared_base, shared_new)
-    check("keycheck: CLI rejects shared scoped destination", result == 1 and "shared" in output)
+    check("keycheck: CLI rejects shared scoped destination (" + output[-300:] + ")", result == 1)
     result, output = run_main("T.m=n,k=x", shared_base,
                               shared_base.replace("int m; }; union", "int n; }; union")
                               .replace("int k;", "int x;"))
@@ -10695,6 +10728,9 @@ def test_naming_member_apply() -> None:
                 pass
         check("naming_member_apply: the failure message keeps the nested path",
               "Edge.ends.node" in err.getvalue())
+        eq("naming_member_apply: pairs sharing m and n run in one pass, a different n in another",
+           nma.split_passes([("A", "col", "vtx"), ("B", "col", "vtx"), ("C", "col", "rgb"), ("D", "x", "y")]),
+           [[("A", "col", "vtx"), ("B", "col", "vtx"), ("D", "x", "y")], [("C", "col", "rgb")]])
 
         # cc1 reports a multi-line macro invocation's error on its first line: the
         # access on a following line of the invocation is renamed; when that edit
