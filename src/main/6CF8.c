@@ -628,8 +628,8 @@ s32 math_Distance3D_16(s32 *a0, s32 *a1) {
     return SquareRoot12(out[0] + out[1] + out[2]) << 4;
 }
 
-/* Adds an edge between records a and b unless a == b, both records have a
- * non-negative field_18, or an edge a->b or b->a already exists. Returns 1
+/* Adds an edge between nodes a and b unless a == b, both nodes have a
+ * non-negative anchor, or an edge a->b or b->a already exists. Returns 1
  * when an edge was added. */
 s32 softbody_AddSpring(Func80017A44Output *out, s32 arg1, s32 a, s32 b) {
     s32 i;

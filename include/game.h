@@ -2160,10 +2160,10 @@ typedef struct {
     s32 vel_y;
     s32 vel_z;
     s32 anchor;
-    s32 a_edge_count; /* entries used in field_24 */
-    s32 b_edge_count; /* entries used in field_2C */
-    u8 a_edges[8];    /* edges whose node a is this record */
-    u8 b_edges[8];    /* edges whose node b is this record */
+    s32 a_edge_count; /* entries used in a_edges */
+    s32 b_edge_count; /* entries used in b_edges */
+    u8 a_edges[8];    /* edges whose end a is this node */
+    u8 b_edges[8];    /* edges whose end b is this node */
     s32 field_34;
     s32 field_38[2];
 } Func80017A44Record;
@@ -2187,8 +2187,8 @@ typedef struct {
 /* 6CF8's object record (sizeof = 0x34): g_softbody_slots holds eight,
  * softbody_Create fills a free one from a Func80017A44Input and softbody_Build
  * builds its node / edge graph; 87A0 steps it (softbody_UpdateList by each
- * Unk80017FA0Rec's unk0). points: the input's point table, 0 = free
- * (softbody_Free); count: its node count; flags: the input's flags; records /
+ * Unk80017FA0Rec's slot_index). points: the input's point table, 0 = free
+ * (softbody_Free); count: its node count; flags: the input's flags; nodes /
  * edges: the node and edge tables (edges right after the count 0x40-byte
  * nodes); matrix: a copy of the input's matrix. */
 typedef struct {
@@ -2202,11 +2202,11 @@ typedef struct {
 } Func80017A44Output;
 
 /* The 16-byte object descriptor (2B344 softbody_CreateForNode fills it in each
- * Unk8003F824Rec, softbody_SetupObject copies it into Unk8003F62CRec.unk418;
- * 87A0 softbody_UpdateList steps one object per descriptor): the object's
- * g_softbody_slots index (unk0), its flags (unk2; bit 0 picks
- * softbody_SnapToPoints over softbody_Step), the object's matrix, its point
- * table end and its collision-volume block. */
+ * Unk8003F824Rec, softbody_SetupObject copies it into
+ * Unk8003F62CRec.step_descs; 87A0 softbody_UpdateList steps one object per
+ * descriptor): the object's g_softbody_slots index (slot_index), its flags
+ * (snap; bit 0 picks softbody_SnapToPoints over softbody_Step), the object's
+ * matrix, its point table end and its collision-volume block. */
 typedef struct {
     /* 0x00 */ s16 slot_index;
     /* 0x02 */ u8 snap;
@@ -2217,10 +2217,10 @@ typedef struct {
 } Unk80017FA0Rec;
 
 /* The collision volumes of one Unk8003F824Rec (2B344 Func8003F6D8Inner +0x10;
- * Unk80017FA0Rec.unkC points here): unk00 (softbody_SetObjectGround sets it;
- * 87A0 softbody_LoadColliders scales it into the scratchpad's ground word), the
- * volume count, each volume's two foci (gte_SetMatrixRotTransIR writes each as
- * three words) and its bound (unk68). */
+ * Unk80017FA0Rec.colliders points here): unk00 (softbody_SetObjectGround sets
+ * it; 87A0 softbody_LoadColliders scales it into the scratchpad's ground word),
+ * the volume count, each volume's two foci (gte_SetMatrixRotTransIR writes each
+ * as three words) and its bound (unk68). */
 typedef struct Unk8003F6D8Coll {
     /* 0x00 */ s32 unk00;
     /* 0x04 */ s32 count;
