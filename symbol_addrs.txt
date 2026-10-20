@@ -181,8 +181,8 @@ D_800F6740 = 0x800F6740; // 8 object records of 0x34 bytes: softbody_Create take
 
 // === Animation ===
 D_800F66A0 = 0x800F66A0; // rotation func ptrs  // data-wave 2026-10-08: was g_anim_func_table
-D_800A3380 = 0x800A3380; // 0/1 presence flags [2] (func_800420E8 / func_8004211C)  // data-wave 2026-10-08: was g_anim_hit_flags
-D_800A3384 = 0x800A3384; // [2] position pointers: func_800420E8 stores [a0]; func_80041EB0 sets light[1] from the flagged ones  // data-wave 2026-10-08: was g_anim_hit_data
+D_800A3380 = 0x800A3380; // 0/1 presence flags [2] (light_SetPointLightTarget / light_ApplyPointLightTargets)  // data-wave 2026-10-08: was g_anim_hit_flags
+D_800A3384 = 0x800A3384; // [2] position pointers: light_SetPointLightTarget stores [a0]; light_ApplyPointLight sets light[1] from the flagged ones  // data-wave 2026-10-08: was g_anim_hit_data
 // data-wave 2026-10-08: g_anim_select = 0x800A3238 retired; D_800A3238 is now object-defined
 D_800A3382 = 0x800A3382; // [1] of the D_800A3380 flag pair (0/1)  // data-wave 2026-10-08: was g_anim_counter
 

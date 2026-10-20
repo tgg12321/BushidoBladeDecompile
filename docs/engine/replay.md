@@ -51,7 +51,7 @@ its 1 + `D_800A35B0` + `D_800A3554` cursors it moves a (row, column) position
 over a 5-row table
 (`D_8009BC40`) on the pad bits in `D_800A354C`, skipping cells already taken
 (`D_8009BC7C` flag 4), plays `snd_QueueSound` sounds, confirms or cancels a
-choice, and draws the cells with `func_8007352C`.
+choice, and draws the cells with `gpu_AddSpriteCells`.
 
 `func_8003E2D8(arg0, arg1, arg2, arg3)` (src/main/2B344.c:1713) walks the cells
 of a 32 x 32 grid of 2000-unit squares crossed by the line from (arg0, arg1)
@@ -111,7 +111,7 @@ is `softbody_SolveSprings` (step 4); the reset wave retired that name.
    from `a0` along the view direction; then `node_SetMatrixFromNegatedRot(&D_80101DF0)`,
    `func_80047210()`, `func_8003F274()`, and keeps `a2` in `D_800A33C0`.
 3. Recomputes the light matrices of `D_800F62E0[0]`, `[1]`, `[4]`
-   (`calc_LightMatrix`) and runs `func_800420D0`, `func_8003F568`,
+   (`calc_LightMatrix`) and runs `light_ResetPointLight`, `func_8003F568`,
    `func_8003F5CC`.
 
 The two other "rob back" names sit on unrelated code: `func_80035618`
