@@ -1421,7 +1421,7 @@ typedef struct Unk80101EC8Record {
     struct Unk80101EC8Record *other;
     s16 index; /* this record's own index (fighter_Init) */
     /* != 0: func_8001BE20 hands pad input to fighter_BuildCpuPad */
-    s16 unk_06;
+    s16 cpu_controlled;
     s16 unk_08;
     /* row of D_8008E5CC / D_8008E6A4, index of D_8008D9EC */
     s16 unk_0A;
@@ -1446,15 +1446,15 @@ typedef struct Unk80101EC8Record {
     s16 unk_46;
     /* model id (motion_LoadFighterData); func_80021280 finds it in D_800A38C4
      */
-    u16 unk_48;
+    u16 motion_data_id;
     s16 motion_slot;
     s16 borrow_other_motion;
     u8 unk_4E[0x50 - 0x4E];
     /* current move; unk_08 bounds move_frame (func_80058580) */
     MoveScript *cur_move;
-    u16 *unk_54;
-    u8 *unk_58; /* byte 3 read by func_80056FE8 */
-    u16 unk_5C;
+    u16 *motion_entry;
+    u8 *motion_metadata; /* byte 3 read by func_80056FE8 */
+    u16 motion_entry_index;
     /* 1: the last-resolved move is in g_motion_common_sections
      * (motion_ResolveMoveData's out flag), 0: in a fighter slot (its own, or
      * the other fighter's when borrow_other_motion is set) */
@@ -1465,7 +1465,7 @@ typedef struct Unk80101EC8Record {
     u8 unk_63;
     u16 unk_64;
     u16 unk_66;
-    s16 unk_68;
+    s16 pose_interp_weight;
     /* byte 0 of the current move's frame metadata (func_80021A98) */
     u16 move_kind;
     s16 prev_move_kind;
@@ -1527,11 +1527,11 @@ typedef struct Unk80101EC8Record {
     VECTOR unk_134;
     s32 unk_144;
     s32 unk_148;
-    s16 unk_14C;
+    s16 remaining_turn;
     s16 unk_14E;
     s16 unk_150;
-    s16 unk_152;
-    s16 unk_154;
+    s16 use_root_offset_yaw;
+    s16 root_offset_yaw;
     s16 unk_156;
     s16 unk_158;
     s16 unk_15A;

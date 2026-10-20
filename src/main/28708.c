@@ -1269,7 +1269,7 @@ void replay_RecordFighter(Unk80101EC8Record *a0) {
 
     dest->hE = a0->unk_64;
     dest->h10 = a0->unk_66;
-    dest->h12 = a0->unk_68;
+    dest->h12 = a0->pose_interp_weight;
     dest->b18 = a0->unk_62;
     dest->b19 = a0->move_frame;
 }
@@ -1424,20 +1424,22 @@ void replay_PlayFrame(void) {
         }
         var_15 = var_11->move_frame;
         var_11->move_frame = p->b19;
-        var_16 = var_11->unk_58;
+        var_16 = var_11->motion_metadata;
         if (p->b17 & 1) {
             entry = &g_motion_common_sections.unk_04[p->w0->unk_04 * 2];
-            var_11->unk_58 = g_motion_common_sections.unk_08 + entry[1];
+            var_11->motion_metadata =
+                g_motion_common_sections.unk_08 + entry[1];
         } else {
             temp = (p->b17 >> 1) & 1;
             entry = &g_motion_fighter_sections[temp].unk_04[p->w0->unk_04 * 2];
-            var_11->unk_58 = g_motion_fighter_sections[temp].unk_08 + entry[1];
+            var_11->motion_metadata =
+                g_motion_fighter_sections[temp].unk_08 + entry[1];
         }
         if (p->b18 & 0x40) {
             fighter_ProcessFrameEvents(var_11);
         }
         var_11->move_frame = var_15;
-        var_11->unk_58 = var_16;
+        var_11->motion_metadata = var_16;
         func_80040304(i, (p->hA >> 12) & 7);
     }
 

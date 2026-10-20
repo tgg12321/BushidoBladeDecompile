@@ -578,7 +578,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         var_1 = rec->other;
         var_2 = rec;
     }
-    var_1->unk_441 = var_1->unk_58[2] & 0xF;
+    var_1->unk_441 = var_1->motion_metadata[2] & 0xF;
     var_1->unk_43A = (ratan2(var_2->world_pos.x - var_1->world_pos.x,
                              var_2->world_pos.z - var_1->world_pos.z) -
                       var_1->orientation.vy) &
@@ -606,7 +606,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         ((rec->other->move_kind == 2 || rec->other->move_kind == 0x1B ||
           rec->other->move_kind == 0x28 || rec->other->move_kind == 0x26 ||
           (rec->move_kind == 0x11 &&
-           rec->cur_move->unk_08 != rec->unk_58[1] - 1))
+           rec->cur_move->unk_08 != rec->motion_metadata[1] - 1))
          << 7) |
         ((rec->move_kind == 0x13 || rec->move_kind == 0x1B ||
           rec->move_kind == 0x30)
@@ -734,13 +734,13 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
             rec->unk_430 &= ~0x60;
         }
     } else {
-        if (rec->unk_428 != rec->other->unk_5C) {
+        if (rec->unk_428 != rec->other->motion_entry_index) {
             if (rec->move_kind == 0x11) {
                 rec->unk_428 = 0xFF;
             } else {
                 rec->unk_428 = (rec->other->prev_move_kind != 0xE &&
                                 rec->other->prev_move_kind != 0x2C)
-                                   ? rec->other->unk_5C
+                                   ? rec->other->motion_entry_index
                                    : 0xFE;
                 rec->unk_427 = lo;
                 temp2 = func_80056FE8(rec);
@@ -1001,7 +1001,7 @@ extern u8 D_8009A840[];
  * D_8009A840 (when unk_A3[0] is 0xFF) term, plus its unk_40A and 300. */
 s32 func_80056FE8(Unk80101EC8Record *arg0) {
     Unk80101EC8Record *a2 = arg0->other;
-    s32 base = a2->unk_58[3] * 40;
+    s32 base = a2->motion_metadata[3] * 40;
 
     base += a2->unk_A3[0] != 0xFF
                 ? (arg0->move_is_common == 0 ? D_8009A830[a2->unk_0E] * 2

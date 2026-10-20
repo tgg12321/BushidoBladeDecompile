@@ -1043,7 +1043,7 @@ void func_8001BE20(s32 arg0, PadState *arg1) {
     D_80101EC8[arg0 == 0].unk_34E =
         D_800A38DC == 2 && D_800A389A == 0 && arg0 == 0 &&
         ((g_pad_state.pressed >> 8) & 1);
-    if (D_80101EC8[arg0].unk_06 != 0) {
+    if (D_80101EC8[arg0].cpu_controlled != 0) {
         fighter_BuildCpuPad(arg0, arg1);
         return;
     }
@@ -1234,9 +1234,9 @@ void func_8001C624(void) {
     e->unk_134.vy = 0;
     e->unk_134.vz = 0;
     e->unk_144 = 0;
-    e->unk_14C = 0;
+    e->remaining_turn = 0;
     e->unk_150 = 0;
-    e->unk_152 = 0;
+    e->use_root_offset_yaw = 0;
     e->unk_14E = 0;
     e->unk_148 = e->collision_pos.vy;
     softbody_RequestSnap(0);
@@ -2159,7 +2159,7 @@ void func_8001EA84(void) {
         D_800A380C = D_800A380C + 1;
         D_800A38DF =
             fight_FindNearestStartPair(&D_80101EC8[D_800A3748].world_pos);
-        if (D_80101EC8[1].unk_06 != 0) {
+        if (D_80101EC8[1].cpu_controlled != 0) {
             fighter_HalveCpuTally(1);
         }
         D_800A3834 = 0;
@@ -2458,7 +2458,7 @@ void fighter_SetTurnDelta(Unk80101EC8Record *arg0, s32 arg1) {
     if (arg1 >= 0x800) {
         arg1 -= 0x1000;
     }
-    arg0->unk_14C = arg1;
+    arg0->remaining_turn = arg1;
 }
 
 s32 fighter_CalcHorizontalSeparation(void) {
@@ -3078,8 +3078,8 @@ void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         } else {
             id1 = D_8008DB1C[arg2][arg3] | (arg3 << 12);
         }
-        D_80101EC8[0].unk_48 = id0;
-        D_80101EC8[1].unk_48 = id1;
+        D_80101EC8[0].motion_data_id = id0;
+        D_80101EC8[1].motion_data_id = id1;
 
         if (id0 == id1) {
             if (D_800A38C4[0] == id1 || D_800A38C4[1] == id1) {
@@ -3152,7 +3152,7 @@ void func_80021210(void) {
 void func_80021280(s32 a0) {
     s32 a1 = 0;
     Unk80101EC8Record *a2 = &D_80101EC8[a0];
-    s32 a3 = a2->unk_48;
+    s32 a3 = a2->motion_data_id;
     u16 *v1 = D_800A38C4;
 
 loop1_21280:
@@ -3165,7 +3165,7 @@ loop1_21280:
 done1_21280:
 
 {
-    u16 val = a2->unk_48;
+    u16 val = a2->motion_data_id;
     a2->motion_slot = a1;
     a2->borrow_other_motion = 0;
 
@@ -3290,7 +3290,7 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
             (t == rec->unk_8E && rec->unk_90 == 0)) {
             rec->unk_86 = (rec->unk_86 + 1) %
                           g_motion_fighter_buffers[rec->motion_slot]->f14;
-        } else if (D_800A38DC == 3 && rec->unk_06 != 0) {
+        } else if (D_800A38DC == 3 && rec->cpu_controlled != 0) {
             func_800213A0(rec);
         }
         return &g_motion_fighter_sections[rec->motion_slot]
@@ -3301,7 +3301,7 @@ void *motion_ResolveMoveData(Unk80101EC8Record *rec, s32 id, s16 *out) {
         if ((t == rec->unk_88 && rec->unk_8A == 0) ||
             (t == rec->unk_8E && rec->unk_90 == 0)) {
             t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
-        } else if (D_800A38DC == 3 && rec->unk_06 != 0 &&
+        } else if (D_800A38DC == 3 && rec->cpu_controlled != 0 &&
                    (t == rec->unk_88 || t == rec->unk_8E)) {
             t = (t + 1) % g_motion_fighter_buffers[rec->motion_slot]->f14;
         }
@@ -3361,21 +3361,21 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
     s0->cur_move = arg1;
     {
         u16 v1 = arg1->unk_04;
-        s0->unk_5C = v1;
+        s0->motion_entry_index = v1;
         if (arg2 != 0) {
             u16 *v0 = &g_motion_common_sections.unk_04[v1 * 2];
-            s0->unk_54 = v0;
-            s0->unk_58 = g_motion_common_sections.unk_08 + v0[1];
+            s0->motion_entry = v0;
+            s0->motion_metadata = g_motion_common_sections.unk_08 + v0[1];
         } else {
             u16 *v0 = &g_motion_fighter_sections[a3].unk_04[v1 * 2];
-            s0->unk_54 = v0;
-            s0->unk_58 = g_motion_fighter_sections[a3].unk_08 + v0[1];
+            s0->motion_entry = v0;
+            s0->motion_metadata = g_motion_fighter_sections[a3].unk_08 + v0[1];
         }
     }
     {
         MoveScript *v0_50 = s0->cur_move;
         u16 old_kind = s0->move_kind;
-        u8 *a0_58 = s0->unk_58;
+        u8 *a0_58 = s0->motion_metadata;
         s0->cur_move_is_common = (u8)arg2;
         /* FAKE: empty do-while(0) -- its loop note puts a0_58 in $a0 and
          * v1_58 in $v1 (the two unk_58 lbu bases); without it they swap,
@@ -3387,7 +3387,7 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
             u8 a1_val = v0_50->unk_06;
             s0->prev_move_kind = old_kind;
             {
-                u8 *v1_58 = s0->unk_58;
+                u8 *v1_58 = s0->motion_metadata;
                 s0->move_frame_frac = 0;
                 s0->move_started = 1;
                 s0->queued_move = 0;
@@ -3419,23 +3419,24 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
                 u16 state = s0->move_kind;
 
                 if (state == 9) {
-                    s0->unk_152 = 1;
-                    s0->unk_154 = s0->orientation.vy;
+                    s0->use_root_offset_yaw = 1;
+                    s0->root_offset_yaw = s0->orientation.vy;
                 } else if (state == 2) {
-                    if (s0->unk_152 == 0 && s0->prev_move_kind != 0x13) {
-                        s0->unk_154 = s0->opponent_bearing;
+                    if (s0->use_root_offset_yaw == 0 &&
+                        s0->prev_move_kind != 0x13) {
+                        s0->root_offset_yaw = s0->opponent_bearing;
                     }
-                    s0->unk_152 = 0;
+                    s0->use_root_offset_yaw = 0;
                 } else if (state == 0x19 || state == 0x1A) {
-                    if (s0->unk_152 == 0 ||
+                    if (s0->use_root_offset_yaw == 0 ||
                         (state == 0x19 && s0->prev_move_kind == state)) {
-                        s0->unk_154 = s0->opponent_bearing;
+                        s0->root_offset_yaw = s0->opponent_bearing;
                     }
-                    s0->unk_152 = 1;
+                    s0->use_root_offset_yaw = 1;
                 } else if (state == 0x11) {
-                    s0->unk_152 = 1;
+                    s0->use_root_offset_yaw = 1;
                 } else {
-                    s0->unk_152 = 0;
+                    s0->use_root_offset_yaw = 0;
                 }
             }
             {
@@ -3666,7 +3667,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->update_count = 0;
     p->other = (idx != 0) ? &D_80101EC8[0] : &D_80101EC8[1];
     p->index = idx;
-    p->unk_06 = arg1;
+    p->cpu_controlled = arg1;
     p->unk_0C = arg2;
     p->unk_0A = D_8008D538[arg2];
     p->unk_0E = arg3;
@@ -3775,9 +3776,9 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_134.vz = 0;
     p->unk_144 = 0;
     p->unk_148 = p->collision_pos.vy;
-    p->unk_14C = 0;
+    p->remaining_turn = 0;
     p->unk_150 = 0;
-    p->unk_152 = 0;
+    p->use_root_offset_yaw = 0;
     p->unk_14E = 0;
     p->unk_156 = 0xC00;
     p->unk_158 = 0xF80;
@@ -3871,7 +3872,7 @@ void func_80022F34(void) {
     do {
         Unk80101EC8Record *rec = &D_80101EC8[i];
 
-        if (rec->unk_06 != 0) {
+        if (rec->cpu_controlled != 0) {
 
             switch (D_800A38DC) {
             case 0:
@@ -4103,14 +4104,14 @@ void func_80023648(Unk80101EC8Record *arg0) {
             row = tbl[a0];
             a2 = row[a1];
 
-            if (D_800A38BA != 0 && arg0->unk_06 == 0) {
+            if (D_800A38BA != 0 && arg0->cpu_controlled == 0) {
                 fighter_SetTurnDelta(arg0, arg0->orientation.vy + a2 / 4);
             } else {
                 fighter_SetTurnDelta(arg0, arg0->opponent_bearing + a2);
             }
         } else {
-            if (D_800A38BA != 0 && arg0->unk_06 == 0) {
-                arg0->unk_14C = 0;
+            if (D_800A38BA != 0 && arg0->cpu_controlled == 0) {
+                arg0->remaining_turn = 0;
             }
         }
 
@@ -4179,7 +4180,7 @@ void func_80023648(Unk80101EC8Record *arg0) {
     } else {
         if (arg0->unk_14E > 0) {
             if (kind != 0x22) {
-                arg0->unk_14C = 0;
+                arg0->remaining_turn = 0;
             }
             arg0->unk_14E = 0;
         }
@@ -4307,9 +4308,9 @@ void fighter_RequestPoseBlend(Unk80101EC8Record *arg0, s16 arg1) {
         arg0->unk_320.z = 0;
     }
     arg0->unk_31C = arg1;
-    if (arg0->unk_152 == 0) {
-        arg0->unk_152 = 1;
-        arg0->unk_154 = arg0->opponent_bearing;
+    if (arg0->use_root_offset_yaw == 0) {
+        arg0->use_root_offset_yaw = 1;
+        arg0->root_offset_yaw = arg0->opponent_bearing;
     }
 }
 
@@ -4419,7 +4420,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
     rec = &D_80101EC8[arg0];
     rec->update_count++;
     rec->pad_input = *pad;
-    if (D_800A38BA != 0 && (arg0 == 0 || (arg0 == 1 && rec->unk_06 == 0))) {
+    if (D_800A38BA != 0 &&
+        (arg0 == 0 || (arg0 == 1 && rec->cpu_controlled == 0))) {
         rec->pad_input.held = (rec->pad_input.held & 0xFFF) |
                               ((rec->pad_input.held & 0x8000) >> 3) |
                               ((rec->pad_input.held & 0x7000) << 1);
@@ -4654,11 +4656,11 @@ void fighter_Update(s32 arg0, PadState *pad) {
             rec->move_kind == 0x24) {
             fighter_SetTurnDelta(rec, rec->opponent_bearing);
             if (rec->move_kind == 2 || rec->move_kind == 0x24) {
-                temp = (rec->unk_58[2] >> 4) * 0x88;
-                if (rec->unk_14C > temp) {
-                    rec->unk_14C = temp;
-                } else if (rec->unk_14C < -temp) {
-                    rec->unk_14C = -temp;
+                temp = (rec->motion_metadata[2] >> 4) * 0x88;
+                if (rec->remaining_turn > temp) {
+                    rec->remaining_turn = temp;
+                } else if (rec->remaining_turn < -temp) {
+                    rec->remaining_turn = -temp;
                 }
             }
         }
@@ -4722,9 +4724,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
             rec->unk_86 = rec->unk_84;
         }
     }
-    temp = (rec->unk_14C * rec->move_frame_step) / 24576;
+    temp = (rec->remaining_turn * rec->move_frame_step) / 24576;
     rec->orientation.vy += temp;
-    rec->unk_14C -= temp;
+    rec->remaining_turn -= temp;
     if (rec->move_started != 0) {
         if (rec->unk_78 != 0) {
             func_80023D08(rec);
@@ -4751,28 +4753,28 @@ void fighter_Update(s32 arg0, PadState *pad) {
         }
     }
     next = rec->move_frame + 1;
-    if (next >= rec->unk_58[1]) {
-        next = rec->unk_58[1] - 1;
+    if (next >= rec->motion_metadata[1]) {
+        next = rec->motion_metadata[1] - 1;
     }
     if (rec->cur_move->unk_09 & 0x40) {
         var_18 = rec->move_is_common == 0
                      ? D_80101EC8[D_800A38AE].motion_slot + 1
                      : 0;
         if (rec->move_kind == 0x11 && D_800A38AE != arg0) {
-            var_19 = rec->unk_58[1];
+            var_19 = rec->motion_metadata[1];
         } else {
             var_19 = 0;
         }
     } else {
         var_18 = rec->move_is_common == 0 ? rec->motion_slot + 1 : 0;
         if (rec->move_kind == 0x15 && D_8008D9EC[rec->unk_0A] != 0) {
-            var_19 = rec->unk_58[1];
+            var_19 = rec->motion_metadata[1];
         } else {
             var_19 = 0;
         }
     }
-    var_15 = var_19 + *rec->unk_54 + rec->move_frame;
-    var_17 = var_19 + *rec->unk_54 + next;
+    var_15 = var_19 + *rec->motion_entry + rec->move_frame;
+    var_17 = var_19 + *rec->motion_entry + next;
     rec->unk_64 = (var_18 << 14) | var_15;
     rec->unk_66 = (var_18 << 14) | var_17;
     if (rec->move_kind == 0x33) {
@@ -4804,10 +4806,10 @@ void fighter_Update(s32 arg0, PadState *pad) {
     }
     motion_AdjustFighterPose(rec, &var_0[0], &var_0[1]);
     if (rec->move_kind == 0x11) {
-        rec->unk_154 = rec->orientation.vy;
+        rec->root_offset_yaw = rec->orientation.vy;
     }
-    if (rec->unk_152 != 0) {
-        var_12 = rec->unk_154;
+    if (rec->use_root_offset_yaw != 0) {
+        var_12 = rec->root_offset_yaw;
     } else {
         var_12 = rec->orientation.vy;
     }
@@ -4845,7 +4847,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
         var_14 = rec->move_frame_frac;
     }
     var_22 = 0x1000 - var_14;
-    rec->unk_68 = var_14;
+    rec->pose_interp_weight = var_14;
     if (rec->unk_31A != 0) {
         Vec3i32 var_35;
 
@@ -4975,8 +4977,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
     rec->unk_168.y = rec->base_pos.y - 0x384;
     rec->unk_168.z = rec->world_pos.z;
     func_80023E40(rec);
-    func_80041188(arg0, (u8 *)&var_0[0], (u8 *)&var_0[1], rec->unk_68,
-                  (MATRIX *)0x1F8001B0);
+    func_80041188(arg0, (u8 *)&var_0[0], (u8 *)&var_0[1],
+                  rec->pose_interp_weight, (MATRIX *)0x1F8001B0);
     scratchpad_Save();
     func_80040D48(arg0, 1, (s32 *)&rec->world_pos, (s16 *)&rec->orientation, 0,
                   rec->unk_148);
