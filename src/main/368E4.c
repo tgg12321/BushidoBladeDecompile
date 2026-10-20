@@ -1899,9 +1899,9 @@ void func_80049710(void) {}
  * entry arg0 and queues each on g_draw_queue. The first
  * node (type 0) takes its rotation and position from rot_in / pos (flags == 1)
  * or from node 19 + (flags & 1) of the object in D_800A9A10 slot flags >> 1
- * (func_8004153C), whose offset it scales in place by the object's unk_12
- * and into which it copies the new matrix back; the second (type 3, parent =
- * the first) follows unless flags is still 1. */
+ * (func_8004153C), whose offset it scales in place by the object's
+ * position_scale and into which it copies the new matrix back; the second (type
+ * 3, parent = the first) follows unless flags is still 1. */
 void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     SVECTOR ofs;
     s32 val58;

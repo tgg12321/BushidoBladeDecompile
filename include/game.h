@@ -1997,16 +1997,17 @@ typedef struct {
 } Unk800A9CF8Entry;         /* 0x68 */
 
 /* The 21 ten-byte node-template records at 0x80094B96 (up to D_80094C68):
- * func_800408F8 builds Unk80045878Obj.unk_2C[i] from record i (unk_00: the
- * parent node index, -1 for none; unk_02: the position, scaled by unk_12),
- * func_80040CB8 copies unk_08 (-1: no node) into unk_8B4[]. */
+ * func_800408F8 builds Unk80045878Obj.transform_nodes[i] from record i (unk_00:
+ * the parent node index, -1 for none; unk_02: the position, scaled by
+ * position_scale), func_80040CB8 copies unk_08 (-1: no node) into
+ * projected_nodes[]. */
 typedef struct {
     s16 unk_00;
     s16 unk_02[3];
     s16 unk_08;
 } Unk80094B96Rec;
 
-/* The per-player model object func_80045878 builds (0x1A88 bytes, its
+/* The per-slot model object func_80045878 builds (0x1A88 bytes, its
  * arena_SetBlockEnd block) and D_800A9A10[] / func_8004153C hand out. The
  * header (0x00..0x2B) is followed by three arrays of 0x68-byte transform nodes
  * (func_80041430 rebases them as 0x15, 0x14 and 0x14 records), then three
@@ -2014,24 +2015,26 @@ typedef struct {
  * - unk_00: flag word; func_80040594 sets bit 1 and keeps the character id in
  * bits 16..20, which func_80041604 / func_80041650 read as
  * (word >> 16) & 0x1F; no code reads it through half[].
- * - unk_04: the player index (func_80045878's a0); unk_06: a state
- * func_80040594 clears (func_80045878 sets 1, func_80041604 -2); unk_08:
+ * - arena_id: func_80045878's a0, the arena_OpenBlock id and the D_800A9A10
+ * index; load_status: 0, 1 after a fresh load (func_80045878), -2 to request a
+ * reload (func_80041604); func_80040594 clears it after its setup; unk_08:
  * func_80045878's a1, indexing the D_80094C68 / D_80094B48 tables.
  * - unk_10 / unk_14 / unk_16: func_80045878's a0 / a0 / a0 + 3 (unk_14 / unk_16
- * are the func_80044010 / func_800432A0 ids); unk_12: the Q12 scale
+ * are the func_80044010 / func_800432A0 ids); position_scale: the Q12 scale
  * func_800408F8 sets from D_80094C68.
  * - unk_18: written as the word 0x8000 by func_80045878, read as three colour
  * bytes by func_80041688.
- * - unk_1C / unk_20: the resource blocks func_80045878 stores; unk_24 / unk_28:
- * the attached Unk8003F62CRec block and the s16 list softbody_SetupObject walks
- * up to its -3 end (softbody_RebaseObject moves both by its a1).
- * - unk_2C[]: node 0 is the root (func_80049718 reads its xf.mat);
- * func_800408F8 builds 0..20, func_80040CB8 fills unk_8B4[] (unk2 = -1 ends
- * it), func_80040B44 copies duplicates into unk_10D4[] (unk58 = the source
- * node; 0 ends it).
- * - unk_18F4[] / unk_1994[]: &node.xf.mat of unk_2C[] nodes (func_80040A78);
- * unk_1A34[]: the node each id selects (func_80040B44); unk_1A84:
- * func_80040D48's arg5. */
+ * - unk_1C / unk_20: the resource blocks func_80045878 stores; unk_24 /
+ * softbody_params: the attached Unk8003F62CRec block and the s16 list
+ * softbody_SetupObject walks up to its -3 end (softbody_RebaseObject moves both
+ * by its a1).
+ * - transform_nodes[]: node 0 is the root (func_80049718 reads its xf.mat);
+ * func_800408F8 builds 0..20, func_80040CB8 fills projected_nodes[] (unk2 = -1
+ * ends it), func_80040B44 copies duplicates into duplicate_nodes[] (unk58 = the
+ * source node; 0 ends it).
+ * - unk_18F4[] / node_matrix_ptrs[]: &node.xf.mat of transform_nodes[] nodes
+ * (func_80040A78); node_by_id[]: the node each id selects (func_80040B44);
+ * unk_1A84: func_80040D48's arg5. */
 typedef struct Unk80045878Node {
     Unk80101DF0Record node; /* +0x00 */
     s32 unk58;              /* +0x58 */
