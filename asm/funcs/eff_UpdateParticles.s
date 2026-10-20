@@ -412,7 +412,7 @@ glabel eff_UpdateParticles
     /* 58B50 80068350 21280000 */   addu      $a1, $zero, $zero
     /* 58B54 80068354 01000424 */  addiu      $a0, $zero, 0x1
   .L80068358:
-    /* 58B58 80068358 0A4B010C */  jal        func_80052C28
+    /* 58B58 80068358 0A4B010C */  jal        gpu_DepthToOtIndex
     /* 58B5C 8006835C 040044AC */   sw        $a0, 0x4($v0)
     /* 58B60 80068360 0404838F */  lw         $v1, %gp_rel(D_800A34D0)($gp)
     /* 58B64 80068364 00000000 */  nop

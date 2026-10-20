@@ -1706,16 +1706,16 @@ def test_cheats() -> None:
     # so the check exercises the live list.
     check("canon-extract: wiring for canonical member IS exempt",
           cheats.is_canonical_extraction_rule(
-              'func_8004A76C: replace_with_asmfile "asm/funcs/func_8004A76C.s"'))
+              'gte_ProjectSVectorTriples: replace_with_asmfile "asm/funcs/gte_ProjectSVectorTriples.s"'))
     check("canon-extract: wiring for NON-canonical func is NOT exempt",
           not cheats.is_canonical_extraction_rule(
               'not_a_canonical_func_zz: replace_with_asmfile "asm/funcs/x.s"'))
     check("canon-extract: non-wiring rule for canonical member is NOT exempt",
           not cheats.is_canonical_extraction_rule(
-              'func_8004A76C: insert_after "addu $8,$3,$zero"'))
+              'gte_ProjectSVectorTriples: insert_after "addu $8,$3,$zero"'))
     check("canon-extract: path outside asm/funcs is NOT exempt",
           not cheats.is_canonical_extraction_rule(
-              'func_8004A76C: replace_with_asmfile "tmp/evil.s"'))
+              'gte_ProjectSVectorTriples: replace_with_asmfile "tmp/evil.s"'))
     # The wiring still COUNTS as a rule for completion purposes (reviewer
     # verdict 2026-08-06: zero-rules bar unchanged; the recognizer only
     # routes wiring-only functions to the authorize bucket, never to done).

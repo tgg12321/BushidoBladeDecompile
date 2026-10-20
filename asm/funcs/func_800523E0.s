@@ -37,7 +37,7 @@ glabel func_800523E0
     /* 42C6C 8005246C 3E00A84B */  gpl        1
     /* 42C70 80052470 0A002786 */  lh         $a3, 0xA($s1)
     /* 42C74 80052474 00000000 */  nop
-    /* 42C78 80052478 7649010C */  jal        func_800525D8
+    /* 42C78 80052478 7649010C */  jal        gte_NormalizeIRVector
     /* 42C7C 8005247C 00000000 */   nop
     /* 42C80 80052480 00409448 */  mtc2       $s4, $8 /* handwritten instruction */
     /* 42C84 80052484 00488448 */  mtc2       $a0, $9 /* handwritten instruction */
@@ -89,7 +89,7 @@ glabel func_800523E0
     /* 42D3C 8005253C 3E00A84B */  gpl        1
     /* 42D40 80052540 00000000 */  nop
     /* 42D44 80052544 00000000 */  nop
-    /* 42D48 80052548 7649010C */  jal        func_800525D8
+    /* 42D48 80052548 7649010C */  jal        gte_NormalizeIRVector
     /* 42D4C 8005254C 00000000 */   nop
     /* 42D50 80052550 00004B48 */  cfc2       $t3, $0 /* handwritten instruction */
     /* 42D54 80052554 00104C48 */  cfc2       $t4, $2 /* handwritten instruction */

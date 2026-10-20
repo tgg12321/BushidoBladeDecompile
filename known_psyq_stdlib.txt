@@ -26,7 +26,7 @@ memcard_ClearBuffer                         psyq_memset               10 insns, 
 func_800404D8                         psyq_memset               14 insns, store-loop with no load
 func_8004A348                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_8004A4E0                         handwritten_asm           uses GCC-unfriendly mnemonics: 2 trapping addi (0x8004A5A0, 0x8004A67C) and 4 ctc2; no add/sub/syscall (corrected 2026-09-29, owner Q40)
-func_8004A808                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
+gte_ProjectPackedVertices                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_8004A940                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_8004BB68                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_8004BCC0                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
@@ -75,12 +75,12 @@ func_80051D08                         handwritten_asm           uses GCC-unfrien
 func_80051ED4                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_800520B8                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_800523E0                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
-func_800525D8                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
+gte_NormalizeIRVector                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_800526A0                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_80052720                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_80052788                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_800527FC                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
-func_80052C28                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
+gpu_DepthToOtIndex                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_80052C4C                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 func_80054440                         handwritten_asm           uses GCC-unfriendly mnemonics (add/addi/sub/syscall)
 bios_Exec                         bios_table_0xA0           3 insns, BIOS trampoline shape

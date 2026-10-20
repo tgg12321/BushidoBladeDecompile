@@ -88,7 +88,7 @@ glabel func_8004A4E0
     /* 3AE20 8004A620 080028AC */  sw         $t0, (0x1F800008 & 0xFFFF)($at)
     /* 3AE24 8004A624 20002526 */  addiu      $a1, $s1, 0x20
     /* 3AE28 8004A628 B4022626 */  addiu      $a2, $s1, 0x2B4
-    /* 3AE2C 8004A62C DB29010C */  jal        func_8004A76C
+    /* 3AE2C 8004A62C DB29010C */  jal        gte_ProjectSVectorTriples
     /* 3AE30 8004A630 00000000 */   nop
     /* 3AE34 8004A634 502A010C */  jal        func_8004A940
     /* 3AE38 8004A638 00000000 */   nop
@@ -101,7 +101,7 @@ glabel func_8004A4E0
     /* 3AE50 8004A650 080028AC */  sw         $t0, (0x1F800008 & 0xFFFF)($at)
     /* 3AE54 8004A654 20002526 */  addiu      $a1, $s1, 0x20
     /* 3AE58 8004A658 B4022626 */  addiu      $a2, $s1, 0x2B4
-    /* 3AE5C 8004A65C 022A010C */  jal        func_8004A808
+    /* 3AE5C 8004A65C 022A010C */  jal        gte_ProjectPackedVertices
     /* 3AE60 8004A660 00000000 */   nop
     /* 3AE64 8004A664 01004992 */  lbu        $t1, 0x1($s2)
     /* 3AE68 8004A668 0980143C */  lui        $s4, %hi(D_80095328)
@@ -127,7 +127,7 @@ glabel func_8004A4E0
     /* 3AEB0 8004A6B0 3C00093C */  lui        $t1, (0x3C0000 >> 16)
     /* 3AEB4 8004A6B4 00C0C848 */  ctc2       $t0, $24 /* handwritten instruction */
     /* 3AEB8 8004A6B8 00C8C948 */  ctc2       $t1, $25 /* handwritten instruction */
-    /* 3AEBC 8004A6BC DB29010C */  jal        func_8004A76C
+    /* 3AEBC 8004A6BC DB29010C */  jal        gte_ProjectSVectorTriples
     /* 3AEC0 8004A6C0 00000000 */   nop
     /* 3AEC4 8004A6C4 4001083C */  lui        $t0, (0x1400000 >> 16)
     /* 3AEC8 8004A6C8 7800093C */  lui        $t1, (0x780000 >> 16)
@@ -164,7 +164,7 @@ glabel func_8004A4E0
     /* 3AF3C 8004A73C 080028AC */  sw         $t0, (0x1F800008 & 0xFFFF)($at)
     /* 3AF40 8004A740 20002526 */  addiu      $a1, $s1, 0x20
     /* 3AF44 8004A744 B4022626 */  addiu      $a2, $s1, 0x2B4
-    /* 3AF48 8004A748 022A010C */  jal        func_8004A808
+    /* 3AF48 8004A748 022A010C */  jal        gte_ProjectPackedVertices
     /* 3AF4C 8004A74C 00000000 */   nop
     /* 3AF50 8004A750 0980143C */  lui        $s4, %hi(D_80095488)
     /* 3AF54 8004A754 88549426 */  addiu      $s4, $s4, %lo(D_80095488)

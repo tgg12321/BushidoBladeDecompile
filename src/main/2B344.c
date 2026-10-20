@@ -466,7 +466,7 @@ extern u8 D_800A8FB0[];
 
 extern void func_8003AF40(s32);
 
-extern s32 func_80052C28(s32, s32);
+extern s32 gpu_DepthToOtIndex(s32, s32);
 
 extern void gte_ReadFarColor(u8 *);
 
@@ -1477,7 +1477,7 @@ void func_8003DBE4(s32 arg0, s32 arg1, DR_MOVE (*arg2)[2], s32 arg3, s32 arg4) {
     pkt += D_800A36AC & 1;
 
     for (i = 0; i < limit; i++) {
-        s32 idx = func_80052C28((u32)arg0 >> 2, 2);
+        s32 idx = gpu_DepthToOtIndex((u32)arg0 >> 2, 2);
         if (idx < 0x1000) {
             addPrim(&D_800A378C[idx], pkt);
             pkt += 2;

@@ -2958,7 +2958,7 @@ CD_init                    = 0x800819C4;  /* MISNAMED: first-pass auto-tag; body
 /* RESET 0x800300B4: retired name 'gte_mvmva_800300B4' — preserved note: GTE: mvmva matrix*vector(+translation) */
 /* RESET 0x80031890: retired name 'gte_mvmva_80031890' — preserved note: GTE: mvmva matrix*vector(+translation) */
 /* RENAME 0x8004A348: retired name 'gte_gpf_8004A348' — preserved note: GTE: gpf scalar interpolation */
-gte_rtpt_batch_8004A76C                            = 0x8004A76C;  /* GTE: rtpt loop: batch triangle perspective projection -> screen XY(swc2 12-14)+Z(mfc2 17-19) */
+/* RENAME 0x8004A76C: retired name 'gte_rtpt_batch_8004A76C' — preserved note: GTE: rtpt loop: batch triangle perspective projection -> screen XY(swc2 12-14)+Z(mfc2 17-19) */
 /* RESET 0x8004A808: retired name 'gte_rtpt_8004A808' — preserved note: GTE: rtpt perspective transform of 3 verts */
 /* RESET 0x8004BB68: retired name 'gte_rtpt_8004BB68' — preserved note: GTE: rtpt perspective transform of 3 verts */
 /* RESET 0x8004C404: retired name 'gte_rtpt_8004C404' — preserved note: GTE: rtpt perspective transform of 3 verts */

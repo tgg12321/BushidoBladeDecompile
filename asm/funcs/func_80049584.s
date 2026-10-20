@@ -79,7 +79,7 @@ glabel func_80049584
   .L8004969C:
     /* 39E9C 8004969C 21286000 */  addu       $a1, $v1, $zero
   .L800496A0:
-    /* 39EA0 800496A0 5325010C */  jal        func_8004954C
+    /* 39EA0 800496A0 5325010C */  jal        math_UnorderedPairIndex
     /* 39EA4 800496A4 00000000 */   nop
     /* 39EA8 800496A8 21804000 */  addu       $s0, $v0, $zero
   .L800496AC:

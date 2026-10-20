@@ -1,4 +1,4 @@
-glabel func_8004A76C
+glabel gte_ProjectSVectorTriples
     /* 3AF6C 8004A76C FFFF8424 */  addiu      $a0, $a0, -0x1
     /* 3AF70 8004A770 000000CA */  lwc2       $0, 0x0($s0)
     /* 3AF74 8004A774 040001CA */  lwc2       $1, 0x4($s0)
@@ -41,4 +41,4 @@ glabel func_8004A76C
     /* 3AFFC 8004A7FC 0400CAA4 */  sh         $t2, 0x4($a2)
     /* 3B000 8004A800 0800E003 */  jr         $ra
     /* 3B004 8004A804 00000000 */   nop
-endlabel func_8004A76C
+endlabel gte_ProjectSVectorTriples

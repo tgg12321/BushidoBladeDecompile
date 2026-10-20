@@ -664,9 +664,9 @@ void func_800474F0(void) { func_8004473C(); }
 
 void func_80047510(void) { func_80044800(); }
 
-void func_80047530(void) { wave_Init(); }
+void wave_InitCallback(void) { wave_Init(); }
 
-void func_80047550(void) { wave_Update(); }
+void wave_UpdateCallback(void) { wave_Update(); }
 
 void func_80047570(void) {
     func_800472C0(&D_800EEDF0);
@@ -1797,7 +1797,7 @@ void func_800494D4(s32 idx, s32 val) {
     D_800A33E8[idx] = (s16)val;
 }
 
-s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2) {
+s32 math_UnorderedPairIndex(s32 arg0, s32 arg1, s32 arg2) {
     s32 sum = 0;
     s32 i;
     for (i = 0; i < arg1; i++) {
@@ -1814,7 +1814,7 @@ s32 func_8004954C(s32 arg0, s32 arg1, s32 arg2) {
 
 extern s16 D_80099C50[];
 extern s32 D_800A324C;
-extern s32 func_8004954C(s32, s32, s32);
+extern s32 math_UnorderedPairIndex(s32, s32, s32);
 
 void func_80049584(s32 arg0) {
     s16 *dst;
@@ -1880,7 +1880,7 @@ void func_80049584(s32 arg0) {
             }
         }
     }
-    i = func_8004954C(step, lo, hi);
+    i = math_UnorderedPairIndex(step, lo, hi);
 end:
     if (D_800A324C != i) {
         D_800A324C = i;
