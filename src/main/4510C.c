@@ -382,11 +382,11 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
                 hi2_val = 0x7530;
                 hi1_val = 0x7530;
             } else {
-                /* FAKE: the shared base (rec's 0x40A halfword + 100) is staged
-                 * through hi2_val, completed below; a separate base local is
-                 * tied to the lh result (target: lh v0; addiu v1,v0,100)
-                 * (staged-value-reused-variable); a separate base local: score
-                 * 6 */
+                /* FAKE: the shared base (rec's scale_distance_offset + 100) is
+                 * staged through hi2_val, completed below; a separate base
+                 * local is tied to the lh result (target: lh v0; addiu
+                 * v1,v0,100) (staged-value-reused-variable); a separate base
+                 * local: score 6 */
                 hi2_val = rec->scale_distance_offset + 100;
                 lo_val = hi2_val + lo * 40;
                 hi1_val = hi2_val + hi1 * 40;
@@ -1005,7 +1005,7 @@ extern u8 D_8009A840[];
 /* func_80056FE8: per-record table lookup on arg0->other: its row
  * (motion_metadata[3] * 40), plus a D_8009A830 / D_8009A838 (by
  * arg0->move_is_common) or D_8009A840 (when unk_A3[0] is 0xFF) term, plus its
- * unk_40A and 300. */
+ * scale_distance_offset and 300. */
 s32 func_80056FE8(Unk80101EC8Record *arg0) {
     Unk80101EC8Record *a2 = arg0->other;
     s32 base = a2->motion_metadata[3] * 40;
@@ -1622,19 +1622,19 @@ s32 func_80058580(Unk80101EC8Record *p) {
     s32 work2;
     /* work3 holds thirteen values in turn, each read before the next write: the
      * script side bit (opponent unk_AF & 1, possibly inverted); cpu_probes[3]
-     * == 0; the unk_43A angle, wrapped to +-0x800; the state-0x11 threshold
-     * (0x1000 - (stance sum << 8)), scaled by unk_438 >> 12; the forced-scan
-     * flag of the D_8009A850 scan; the "longer than lim" flag; the bearing to
-     * the next waypoint, wrapped; the 0x394 choice's coin bit, stepped per
-     * try; the 0x394 slot (unk_394, or a D_800A325C / D_800A3260 entry); case
-     * 3's column in D_8009A928; the entry-type mask; a script entry's character
-     * mask; the entry's accept flag. Read-before-write kept from the original
-     * (Q74): the 0x394 slot switch below reads work3 with no write on the path
-     * unk_39C == 1, opponent state neither 0x19 nor 0x1A (target 0x80059D18 ->
-     * 0x80059D6C -> 0x80059DB0; $s3 read by the sltiu at 0x80059D70 and the sll
-     * at 0x80059DB4), switching on whatever earlier work left there (that read
-     * is excluded from the value grouping above) (Ruling 11,
-     * reused-local-necessity). */
+     * == 0; the opponent_angle_from_orientation, wrapped to +-0x800; the
+     * state-0x11 threshold (0x1000 - (stance sum << 8)), scaled by unk_438 >>
+     * 12; the forced-scan flag of the D_8009A850 scan; the "longer than lim"
+     * flag; the bearing to the next waypoint, wrapped; the 0x394 choice's coin
+     * bit, stepped per try; the 0x394 slot (unk_394, or a D_800A325C /
+     * D_800A3260 entry); case 3's column in D_8009A928; the entry-type mask; a
+     * script entry's character mask; the entry's accept flag. Read-before-write
+     * kept from the original (Q74): the 0x394 slot switch below reads work3
+     * with no write on the path unk_39C == 1, opponent state neither 0x19 nor
+     * 0x1A (target 0x80059D18 -> 0x80059D6C -> 0x80059DB0; $s3 read by the
+     * sltiu at 0x80059D70 and the sll at 0x80059DB4), switching on whatever
+     * earlier work left there (that read is excluded from the value grouping
+     * above) (Ruling 11, reused-local-necessity). */
     s32 work3;
     /* work4 holds three values in turn, each read before the next write: the
      * D_8009A850 scan index; a copy of var_53 taken in the walk branch
