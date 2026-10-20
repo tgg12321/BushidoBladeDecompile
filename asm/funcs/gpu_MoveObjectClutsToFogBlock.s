@@ -1,5 +1,5 @@
 glabel gpu_MoveObjectClutsToFogBlock
-    /* 2E964 8003E164 5C01828F */  lw         $v0, %gp_rel(D_800A3228)($gp)
+    /* 2E964 8003E164 5C01828F */  lw         $v0, %gp_rel(g_gpu_fog_clut_object)($gp)
     /* 2E968 8003E168 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 2E96C 8003E16C 2400B1AF */  sw         $s1, 0x24($sp)
     /* 2E970 8003E170 21888000 */  addu       $s1, $a0, $zero
@@ -46,7 +46,7 @@ glabel gpu_MoveObjectClutsToFogBlock
     /* 2EA08 8003E208 48F8000C */  jal        func_8003E120
     /* 2EA0C 8003E20C 00000000 */   nop
   .L8003E210:
-    /* 2EA10 8003E210 5C0191AF */  sw         $s1, %gp_rel(D_800A3228)($gp)
+    /* 2EA10 8003E210 5C0191AF */  sw         $s1, %gp_rel(g_gpu_fog_clut_object)($gp)
     /* 2EA14 8003E214 2800BF8F */  lw         $ra, 0x28($sp)
     /* 2EA18 8003E218 2400B18F */  lw         $s1, 0x24($sp)
     /* 2EA1C 8003E21C 2000B08F */  lw         $s0, 0x20($sp)

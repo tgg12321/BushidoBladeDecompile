@@ -1,7 +1,7 @@
 glabel func_8003C42C
     /* 2CC2C 8003C42C C8FFBD27 */  addiu      $sp, $sp, -0x38
-    /* 2CC30 8003C430 0A80023C */  lui        $v0, %hi(D_800A389B)
-    /* 2CC34 8003C434 9B384290 */  lbu        $v0, %lo(D_800A389B)($v0)
+    /* 2CC30 8003C430 0A80023C */  lui        $v0, %hi(g_fight_match_count)
+    /* 2CC34 8003C434 9B384290 */  lbu        $v0, %lo(g_fight_match_count)($v0)
     /* 2CC38 8003C438 21380000 */  addu       $a3, $zero, $zero
     /* 2CC3C 8003C43C 3000BFAF */  sw         $ra, 0x30($sp)
     /* 2CC40 8003C440 1800A0AF */  sw         $zero, 0x18($sp)
@@ -11,9 +11,9 @@ glabel func_8003C42C
     /* 2CC50 8003C450 1000A527 */  addiu      $a1, $sp, 0x10
     /* 2CC54 8003C454 21204000 */  addu       $a0, $v0, $zero
   .L8003C458:
-    /* 2CC58 8003C458 0A80013C */  lui        $at, %hi(D_800A377C)
+    /* 2CC58 8003C458 0A80013C */  lui        $at, %hi(g_fight_match_results)
     /* 2CC5C 8003C45C 21082700 */  addu       $at, $at, $a3
-    /* 2CC60 8003C460 7C372290 */  lbu        $v0, %lo(D_800A377C)($at)
+    /* 2CC60 8003C460 7C372290 */  lbu        $v0, %lo(g_fight_match_results)($at)
     /* 2CC64 8003C464 00000000 */  nop
     /* 2CC68 8003C468 80100200 */  sll        $v0, $v0, 2
     /* 2CC6C 8003C46C 21104500 */  addu       $v0, $v0, $a1
@@ -30,16 +30,16 @@ glabel func_8003C42C
     /* 2CC94 8003C494 00000000 */  nop
     /* 2CC98 8003C498 21004314 */  bne        $v0, $v1, .L8003C520
     /* 2CC9C 8003C49C 2A104300 */   slt       $v0, $v0, $v1
-    /* 2CCA0 8003C4A0 0A80023C */  lui        $v0, %hi(D_800A389B)
-    /* 2CCA4 8003C4A4 9B384290 */  lbu        $v0, %lo(D_800A389B)($v0)
+    /* 2CCA0 8003C4A0 0A80023C */  lui        $v0, %hi(g_fight_match_count)
+    /* 2CCA4 8003C4A4 9B384290 */  lbu        $v0, %lo(g_fight_match_count)($v0)
     /* 2CCA8 8003C4A8 21380000 */  addu       $a3, $zero, $zero
     /* 2CCAC 8003C4AC 1400A0AF */  sw         $zero, 0x14($sp)
     /* 2CCB0 8003C4B0 15004018 */  blez       $v0, .L8003C508
     /* 2CCB4 8003C4B4 1000A0AF */   sw        $zero, 0x10($sp)
     /* 2CCB8 8003C4B8 1000AA27 */  addiu      $t2, $sp, 0x10
     /* 2CCBC 8003C4BC 21484000 */  addu       $t1, $v0, $zero
-    /* 2CCC0 8003C4C0 0F80083C */  lui        $t0, %hi(D_800F65F8)
-    /* 2CCC4 8003C4C4 F8650825 */  addiu      $t0, $t0, %lo(D_800F65F8)
+    /* 2CCC0 8003C4C0 0F80083C */  lui        $t0, %hi(g_fight_match_scores)
+    /* 2CCC4 8003C4C4 F8650825 */  addiu      $t0, $t0, %lo(g_fight_match_scores)
   .L8003C4C8:
     /* 2CCC8 8003C4C8 21300000 */  addu       $a2, $zero, $zero
     /* 2CCCC 8003C4CC 21204001 */  addu       $a0, $t2, $zero

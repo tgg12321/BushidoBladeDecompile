@@ -4969,12 +4969,12 @@ dlabel g_font_image
     /* 80DF4 800905F4 10111100 */ .word 0x00111110
 enddlabel g_font_image
 
-nonmatching D_800905F8
+nonmatching g_gpu_last_fog_ot_index
 
-dlabel D_800905F8
+dlabel g_gpu_last_fog_ot_index
     /* 80DF8 800905F8 00000000 */ .word 0x00000000
     /* 80DFC 800905FC 00000000 */ .word 0x00000000
-enddlabel D_800905F8
+enddlabel g_gpu_last_fog_ot_index
 
 nonmatching D_80090600
 
@@ -21188,9 +21188,9 @@ dlabel D_8009A794
     /* 8B01E 8009A81E */ .short 0x0000
 enddlabel D_8009A794
 
-nonmatching D_8009A820
+nonmatching g_fighter_cpu_probes
 
-dlabel D_8009A820
+dlabel g_fighter_cpu_probes
     /* 8B020 8009A820 */ .byte 0x0D
     /* 8B021 8009A821 */ .byte 0x00
     /* 8B022 8009A822 */ .byte 0x09
@@ -21207,7 +21207,7 @@ dlabel D_8009A820
     /* 8B02D 8009A82D */ .byte 0x00
     /* 8B02E 8009A82E */ .byte 0x0D
     /* 8B02F 8009A82F */ .byte 0x18
-enddlabel D_8009A820
+enddlabel g_fighter_cpu_probes
 
 nonmatching D_8009A830
 

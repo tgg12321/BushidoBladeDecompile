@@ -6,8 +6,8 @@ glabel math_ApplyLightPlaneProjection
     /* 3781C 8004701C 2190A000 */  addu       $s2, $a1, $zero
     /* 37820 80047020 1400B1AF */  sw         $s1, 0x14($sp)
     /* 37824 80047024 2188C000 */  addu       $s1, $a2, $zero
-    /* 37828 80047028 0F80043C */  lui        $a0, %hi(D_800EEDB0)
-    /* 3782C 8004702C B0ED8424 */  addiu      $a0, $a0, %lo(D_800EEDB0)
+    /* 37828 80047028 0F80043C */  lui        $a0, %hi(g_math_light_plane_projection)
+    /* 3782C 8004702C B0ED8424 */  addiu      $a0, $a0, %lo(g_math_light_plane_projection)
     /* 37830 80047030 21280002 */  addu       $a1, $s0, $zero
     /* 37834 80047034 1C00BFAF */  sw         $ra, 0x1C($sp)
     /* 37838 80047038 4C4A010C */  jal        gte_MulMatrix0ClearTrans

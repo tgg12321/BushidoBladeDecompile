@@ -45,8 +45,8 @@ glabel math_SetLightPlaneProjection
     /* 377C0 80046FC0 0F80013C */  lui        $at, %hi(D_800EEDBC)
     /* 377C4 80046FC4 BCED20A4 */  sh         $zero, %lo(D_800EEDBC)($at)
     /* 377C8 80046FC8 00100424 */  addiu      $a0, $zero, 0x1000
-    /* 377CC 80046FCC 0F80013C */  lui        $at, %hi(D_800EEDB0)
-    /* 377D0 80046FD0 B0ED24A4 */  sh         $a0, %lo(D_800EEDB0)($at)
+    /* 377CC 80046FCC 0F80013C */  lui        $at, %hi(g_math_light_plane_projection)
+    /* 377D0 80046FD0 B0ED24A4 */  sh         $a0, %lo(g_math_light_plane_projection)($at)
     /* 377D4 80046FD4 0F80013C */  lui        $at, %hi(D_800EEDC0)
     /* 377D8 80046FD8 C0ED24A4 */  sh         $a0, %lo(D_800EEDC0)($at)
     /* 377DC 80046FDC 00140200 */  sll        $v0, $v0, 16

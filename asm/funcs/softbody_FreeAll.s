@@ -1,9 +1,9 @@
 glabel softbody_FreeAll
     /* 7F14 80017714 6C010224 */  addiu      $v0, $zero, 0x16C
   .L80017718:
-    /* 7F18 80017718 0F80013C */  lui        $at, %hi(D_800F6740)
+    /* 7F18 80017718 0F80013C */  lui        $at, %hi(g_softbody_slots)
     /* 7F1C 8001771C 21082200 */  addu       $at, $at, $v0
-    /* 7F20 80017720 406720AC */  sw         $zero, %lo(D_800F6740)($at)
+    /* 7F20 80017720 406720AC */  sw         $zero, %lo(g_softbody_slots)($at)
     /* 7F24 80017724 CCFF4224 */  addiu      $v0, $v0, -0x34
     /* 7F28 80017728 FBFF4104 */  bgez       $v0, .L80017718
     /* 7F2C 8001772C 00000000 */   nop

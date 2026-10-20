@@ -25,7 +25,7 @@ const char D_8001004C[28] = "Fri Aug  7 22:26:32 1998\n";
 extern void printf();
 extern void func_800164F8(void);
 
-extern u8 D_800A30E8;
+extern u8 g_softbody_slot_high_water;
 extern RECT D_800A30D4;
 extern s32 D_800A30DC;
 
@@ -600,7 +600,7 @@ void softbody_FreeAll(void) {
        variable; indexed by record: score 4 */
     for (i = 7 * sizeof(Func80017A44Output); i >= 0;
          i -= sizeof(Func80017A44Output)) {
-        ((Func80017A44Output *)((u8 *)D_800F6740 + i))->points = 0;
+        ((Func80017A44Output *)((u8 *)g_softbody_slots + i))->points = 0;
     }
 }
 
@@ -743,7 +743,7 @@ s32 softbody_Create(Func80017A44Input *a0) {
     s32 i;
     Func80017A44Record *c;
 
-    p = D_800F6740;
+    p = g_softbody_slots;
     for (i = 0; i < 8; i++) {
         if (p->points == 0)
             break;
@@ -751,8 +751,8 @@ s32 softbody_Create(Func80017A44Input *a0) {
     }
     if (i == 8)
         return -1;
-    if (D_800A30E8 < i)
-        D_800A30E8 = i;
+    if (g_softbody_slot_high_water < i)
+        g_softbody_slot_high_water = i;
     p->count = a0->count;
     p->points = a0->points;
     p->matrix = *a0->matrix;
@@ -765,17 +765,17 @@ s32 softbody_Create(Func80017A44Input *a0) {
     return i;
 }
 
-void softbody_Free(s32 a0) { D_800F6740[a0].points = 0; }
+void softbody_Free(s32 a0) { g_softbody_slots[a0].points = 0; }
 
 void softbody_RebaseBuffer(s32 a0, s32 a1) {
-    Func80017A44Output *ptr = &D_800F6740[a0];
+    Func80017A44Output *ptr = &g_softbody_slots[a0];
 
     ptr->records = (Func80017A44Record *)((u8 *)ptr->records + a1);
     ptr->edges = (Func80017848Edge *)(ptr->records + ptr->count);
 }
 
 void softbody_RebasePoints(s32 a0, s32 a1) {
-    Func80017A44Output *ptr = &D_800F6740[a0];
+    Func80017A44Output *ptr = &g_softbody_slots[a0];
     ptr->points = (SVECTOR *)((u8 *)ptr->points + a1);
 }
 
@@ -805,7 +805,7 @@ void func_80017F98(s32 arg0, s32 arg1, s32 arg2) {}
 s32 D_800A30DC = 0x13400;
 /* not named by any code or data: size from the gap */
 s32 D_800A30E0[2] = {(s32)D_8001004C, 0x190};
-u8 D_800A30E8 = 0;
+u8 g_softbody_slot_high_water = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
 u8 D_800A3690;

@@ -44,7 +44,7 @@ glabel collision_GetHit
     /* 43F3C 8005373C 0400A2A4 */  sh         $v0, 0x4($a1)
     /* 43F40 80053740 0400C394 */  lhu        $v1, 0x4($a2)
     /* 43F44 80053744 01000224 */  addiu      $v0, $zero, 0x1
-    /* 43F48 80053748 2C0383A7 */  sh         $v1, %gp_rel(D_800A33F8)($gp)
+    /* 43F48 80053748 2C0383A7 */  sh         $v1, %gp_rel(g_collision_hit_tag)($gp)
   .L8005374C:
     /* 43F4C 8005374C 0800E003 */  jr         $ra
     /* 43F50 80053750 00000000 */   nop

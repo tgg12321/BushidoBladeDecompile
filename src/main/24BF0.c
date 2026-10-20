@@ -72,7 +72,7 @@ void func_800344B4(void) {
         break;
     case 5:
         D_800A36A4 = (D_800A38E1 & 1) ? 0x21 : 0x20;
-        D_800A3874 = 0;
+        g_fight_match_cursor = 0;
         gpu_ResetGraphMode1();
         eff_Init();
         fight_AdvanceMatch();

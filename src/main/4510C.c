@@ -890,7 +890,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
 }
 
 /* 8 {distance, direction} byte pairs (fighter_UpdateCpuProbes) */
-extern u8 D_8009A820[8][2];
+extern u8 g_fighter_cpu_probes[8][2];
 
 void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
     s32 var_0[4];
@@ -912,7 +912,7 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
         s32 z;
 
         obj = arg0;
-        flags = D_8009A820[i][1] << 8;
+        flags = g_fighter_cpu_probes[i][1] << 8;
         if ((flags & 0x1000) != 0) {
             obj = arg0->other;
         }
@@ -925,7 +925,7 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
         }
 
         sin_p = &Judge[flags & 0xFFF];
-        scale = D_8009A820[i][0] << 8;
+        scale = g_fighter_cpu_probes[i][0] << 8;
         x = obj->collision_pos.vx + ((scale * *sin_p) >> 12);
         cos_p = &Judge[(flags + 0x400) & 0xFFF];
         z = obj->collision_pos.vz + ((scale * *cos_p) >> 12);

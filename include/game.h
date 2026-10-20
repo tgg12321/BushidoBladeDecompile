@@ -2183,7 +2183,7 @@ typedef struct {
     s32 group_id;
 } Func80017848Edge;
 
-/* 6CF8's object record (sizeof = 0x34): D_800F6740 holds eight,
+/* 6CF8's object record (sizeof = 0x34): g_softbody_slots holds eight,
  * softbody_Create fills a free one from a Func80017A44Input and softbody_Build
  * builds its node / edge graph; 87A0 steps it (softbody_UpdateList by each
  * Unk80017FA0Rec's unk0). points: the input's point table, 0 = free
@@ -2203,9 +2203,9 @@ typedef struct {
 /* The 16-byte object descriptor (2B344 softbody_CreateForNode fills it in each
  * Unk8003F824Rec, softbody_SetupObject copies it into Unk8003F62CRec.unk418;
  * 87A0 softbody_UpdateList steps one object per descriptor): the object's
- * D_800F6740 index (unk0), its flags (unk2; bit 0 picks softbody_SnapToPoints
- * over softbody_Step), the object's matrix, its point table end and its
- * collision-volume block. */
+ * g_softbody_slots index (unk0), its flags (unk2; bit 0 picks
+ * softbody_SnapToPoints over softbody_Step), the object's matrix, its point
+ * table end and its collision-volume block. */
 typedef struct {
     /* 0x00 */ s16 unk0;
     /* 0x02 */ u8 unk2;
