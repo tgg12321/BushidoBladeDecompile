@@ -131,7 +131,7 @@ s32 motion_UpdatePlayback(void) {
             var_5 = func_8004153C(i);
             func_800198D0(i, s->unk0, (MotionFrame *)var_2, (u16 *)0x1F800000);
             vec.vy = var_2[0];
-            vec.vy *= var_5->unk_12;
+            vec.vy *= var_5->position_scale;
             vec.vy >>= 12;
             ang = var_2[1];
             vec.vx = (Judge[ang & 0xFFF] * var_2[2]) >> 12;

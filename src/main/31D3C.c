@@ -39,7 +39,7 @@ void func_80041604(s32 a0, s32 a1) {
     Unk80045878Obj *ptr = D_800A9A10[a0];
     if (ptr) {
         if (((ptr->unk_00.word >> 16) & 0x1F) != a1) {
-            ptr->unk_06 = -2;
+            ptr->load_status = -2;
         }
     }
     D_80094B88[a0] = a1;
@@ -70,7 +70,7 @@ void func_80041688(s32 arg0, s32 arg1) {
     if (var_1 == NULL)
         return;
 
-    p = &var_1->unk_2C[1];
+    p = &var_1->transform_nodes[1];
     if (arg1) {
         p->node.unk1 |= 1;
     } else {
@@ -197,7 +197,7 @@ void func_80041AC8(Unk80045878Obj *arg0) {
     s32 yoff;
     s16 *id_ptr;
 
-    if (arg0->unk_04 != 1) {
+    if (arg0->arena_id != 1) {
         return;
     }
     if (D_80094E08[arg0->unk_08] == 0xFF) {

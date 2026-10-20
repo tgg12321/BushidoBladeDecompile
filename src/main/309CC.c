@@ -106,7 +106,7 @@ void func_80040400(Unk80045878Node *a0, Unk80045878Node *a1, s16 a2) {
 
 Unk80045878Node *func_8004046C(s32 a0, s32 a1) {
     Unk80045878Obj *base = func_8004153C(a0);
-    return base->unk_1A34[a1];
+    return base->node_by_id[a1];
 }
 
 void func_800404A0(Unk80045878Node *a0, s32 a1) {
@@ -155,11 +155,11 @@ void func_80040594(Unk80045878Obj *a0) {
     s32 *ptr;
     s32 off;
 
-    if (a0->unk_06 == 0) {
+    if (a0->load_status == 0) {
         return;
     }
 
-    a0->unk_06 = 0;
+    a0->load_status = 0;
 
     if (a0->unk_20 != 0) {
         var_0 = (s32 *)a0->unk_20;
@@ -172,11 +172,11 @@ void func_80040594(Unk80045878Obj *a0) {
 
     if (ndata_IsPackLoaded() == 0)
         goto call_b644;
-    if (a0->unk_04 == 1)
+    if (a0->arena_id == 1)
         goto after_b644;
 
 call_b644:
-    func_8005B644(a0->unk_04);
+    func_8005B644(a0->arena_id);
 
 after_b644:
     if (count < 6)
@@ -186,7 +186,7 @@ after_b644:
         ptr = (s32 *)((s32)var_0 + (((u32)var_0[count - 1] >> 2) << 2));
         ptr = (s32 *)((s32)ptr +
                       snd_LoadVabPack(
-                          ptr, a0->unk_04 * 3 + 1,
+                          ptr, a0->arena_id * 3 + 1,
                           (s32 *)((s32)var_0 +
                                   (((u32)var_0[count + 1] >> 2) << 2))));
 
@@ -208,7 +208,7 @@ after_select:
         func_800520B8(a0->unk_20, a0->unk_1C, off);
         var_0 = (s32 *)a0->unk_1C;
         if ((a0->unk_00.word >> 1) & 1) {
-            snd_VabFakeOpen((s32)var_0 - a0->unk_20, a0->unk_04 * 3 + 1);
+            snd_VabFakeOpen((s32)var_0 - a0->unk_20, a0->arena_id * 3 + 1);
         }
     }
 
@@ -216,17 +216,17 @@ after_select:
         s32 *block_1 = (s32 *)((s32)var_0 + (((u32)var_0[1] >> 2) << 2));
         s32 *block_4;
         block_4 = (s32 *)((s32)var_0 + (((u32)var_0[4] >> 2) << 2));
-        a0->unk_28 = (s32)var_0 + (((u32)var_0[3] >> 2) << 2);
+        a0->softbody_params = (s32)var_0 + (((u32)var_0[3] >> 2) << 2);
         func_80044010(block_1, a0->unk_14);
         func_80044010(block_4, a0->unk_16);
     }
 
     {
-        if (a0->unk_04 == 1)
+        if (a0->arena_id == 1)
             goto case_1;
-        if (a0->unk_04 >= 2)
+        if (a0->arena_id >= 2)
             goto done_cases;
-        if (a0->unk_04 != 0)
+        if (a0->arena_id != 0)
             goto done_cases;
 
         gpu_LoadTimGroup(var_1, 0);
@@ -253,17 +253,18 @@ after_select:
 
 done_cases:
     DrawSync(0);
-    func_80041988(a0->unk_04, a0->unk_08, D_80094B88[a0->unk_04], (s32)var_1);
+    func_80041988(
+        a0->arena_id, a0->unk_08, D_80094B88[a0->arena_id], (s32)var_1);
 
     {
         a0->unk_00.word = (a0->unk_00.word & 0xFFE0FFFF) |
-                          ((D_80094B88[a0->unk_04] & 0x1F) << 16);
-        D_80094B88[a0->unk_04] = 0;
+                          ((D_80094B88[a0->arena_id] & 0x1F) << 16);
+        D_80094B88[a0->arena_id] = 0;
     }
 
     DrawSync(0);
     a0->unk_24 = (void *)(a0->unk_1C + off);
-    func_80045A28(a0->unk_04, off);
+    func_80045A28(a0->arena_id, off);
 }
 
 extern Unk80094B96Rec D_80094B96[21];
@@ -281,13 +282,13 @@ void func_800408F8(Unk80045878Obj *a0) {
 
     idx = a0->unk_08;
     if (idx < count) {
-        a0->unk_12 = D_80094C68[idx];
+        a0->position_scale = D_80094C68[idx];
     } else {
-        a0->unk_12 = 0x1000;
+        a0->position_scale = 0x1000;
     }
 
     {
-        Unk80045878Node *p = a0->unk_2C;
+        Unk80045878Node *p = a0->transform_nodes;
         /* FAKE: base keeps the array start (move t1,a3); &a0->unk_2C[v1]
          * rebuilds it from a0 (addiu 44 + addu) and the mflo temps move to t1
          * (score 9) */
@@ -306,9 +307,12 @@ void func_800408F8(Unk80045878Obj *a0) {
             } else {
                 p->node.unkC = 0;
             }
-            p->node.work.t[0] = (D_80094B96[i].unk_02[0] * a0->unk_12) >> 12;
-            p->node.work.t[1] = (D_80094B96[i].unk_02[1] * a0->unk_12) >> 12;
-            p->node.work.t[2] = (D_80094B96[i].unk_02[2] * a0->unk_12) >> 12;
+            p->node.work.t[0] =
+                (D_80094B96[i].unk_02[0] * a0->position_scale) >> 12;
+            p->node.work.t[1] =
+                (D_80094B96[i].unk_02[1] * a0->position_scale) >> 12;
+            p->node.work.t[2] =
+                (D_80094B96[i].unk_02[2] * a0->position_scale) >> 12;
             p->node.xf.rot.vx = 0;
             p->node.xf.rot.vy = 0;
             p->node.xf.rot.vz = 0;
@@ -328,29 +332,29 @@ void func_80040A78(Unk80045878Obj *arg0) {
     Unk80045878Node *n;
 
     var_a1 = 0;
-    arg0->unk_18F4[0] = &arg0->unk_2C[6].node.xf.mat;
-    arg0->unk_18F4[1] = &arg0->unk_2C[5].node.xf.mat;
-    arg0->unk_18F4[2] = &arg0->unk_2C[4].node.xf.mat;
-    arg0->unk_18F4[3] = &arg0->unk_2C[10].node.xf.mat;
-    arg0->unk_18F4[4] = &arg0->unk_2C[9].node.xf.mat;
-    arg0->unk_18F4[5] = &arg0->unk_2C[8].node.xf.mat;
-    arg0->unk_18F4[6] = &arg0->unk_2C[3].node.xf.mat;
-    arg0->unk_18F4[7] = &arg0->unk_2C[2].node.xf.mat;
-    arg0->unk_18F4[8] = &arg0->unk_2C[17].node.xf.mat;
-    arg0->unk_18F4[9] = &arg0->unk_2C[16].node.xf.mat;
-    arg0->unk_18F4[10] = &arg0->unk_2C[14].node.xf.mat;
-    arg0->unk_18F4[11] = &arg0->unk_2C[13].node.xf.mat;
-    arg0->unk_18F4[12] = &arg0->unk_2C[12].node.xf.mat;
-    arg0->unk_18F4[13] = &arg0->unk_2C[1].node.xf.mat;
-    arg0->unk_18F4[14] = &arg0->unk_2C[7].node.xf.mat;
-    arg0->unk_18F4[15] = &arg0->unk_2C[11].node.xf.mat;
-    arg0->unk_18F4[16] = &arg0->unk_2C[18].node.xf.mat;
-    arg0->unk_18F4[17] = &arg0->unk_2C[15].node.xf.mat;
-    arg0->unk_18F4[18] = &arg0->unk_2C[19].node.xf.mat;
-    arg0->unk_18F4[19] = &arg0->unk_2C[20].node.xf.mat;
-    n = &arg0->unk_2C[1];
+    arg0->unk_18F4[0] = &arg0->transform_nodes[6].node.xf.mat;
+    arg0->unk_18F4[1] = &arg0->transform_nodes[5].node.xf.mat;
+    arg0->unk_18F4[2] = &arg0->transform_nodes[4].node.xf.mat;
+    arg0->unk_18F4[3] = &arg0->transform_nodes[10].node.xf.mat;
+    arg0->unk_18F4[4] = &arg0->transform_nodes[9].node.xf.mat;
+    arg0->unk_18F4[5] = &arg0->transform_nodes[8].node.xf.mat;
+    arg0->unk_18F4[6] = &arg0->transform_nodes[3].node.xf.mat;
+    arg0->unk_18F4[7] = &arg0->transform_nodes[2].node.xf.mat;
+    arg0->unk_18F4[8] = &arg0->transform_nodes[17].node.xf.mat;
+    arg0->unk_18F4[9] = &arg0->transform_nodes[16].node.xf.mat;
+    arg0->unk_18F4[10] = &arg0->transform_nodes[14].node.xf.mat;
+    arg0->unk_18F4[11] = &arg0->transform_nodes[13].node.xf.mat;
+    arg0->unk_18F4[12] = &arg0->transform_nodes[12].node.xf.mat;
+    arg0->unk_18F4[13] = &arg0->transform_nodes[1].node.xf.mat;
+    arg0->unk_18F4[14] = &arg0->transform_nodes[7].node.xf.mat;
+    arg0->unk_18F4[15] = &arg0->transform_nodes[11].node.xf.mat;
+    arg0->unk_18F4[16] = &arg0->transform_nodes[18].node.xf.mat;
+    arg0->unk_18F4[17] = &arg0->transform_nodes[15].node.xf.mat;
+    arg0->unk_18F4[18] = &arg0->transform_nodes[19].node.xf.mat;
+    arg0->unk_18F4[19] = &arg0->transform_nodes[20].node.xf.mat;
+    n = &arg0->transform_nodes[1];
     do {
-        arg0->unk_1994[var_a1] = &n->node.xf.mat;
+        arg0->node_matrix_ptrs[var_a1] = &n->node.xf.mat;
         n++;
         var_a1 += 1;
     } while (var_a1 < 0x14);
@@ -365,8 +369,8 @@ void func_80040B44(Unk80045878Obj *arg0) {
     u16 a0_val;
     s32 i;
 
-    t5 = arg0->unk_10D4;
-    t7 = &arg0->unk_2C[1];
+    t5 = arg0->duplicate_nodes;
+    t7 = &arg0->transform_nodes[1];
     v1 = (s32 *)arg0->unk_1C;
     t3 = (u16 *)((u8 *)v1 + v1[2]);
 
@@ -377,7 +381,7 @@ void func_80040B44(Unk80045878Obj *arg0) {
     } while (i >= 0);
     i = 0x13;
     do {
-        arg0->unk_1A34[i] = 0;
+        arg0->node_by_id[i] = 0;
         i--;
     } while (i >= 0);
 
@@ -404,12 +408,12 @@ void func_80040B44(Unk80045878Obj *arg0) {
             if (*a1 == 0) {
                 t7[a3].node.unk2 = t2;
                 *a1 = 1;
-                arg0->unk_1A34[t2] = &t7[a3];
+                arg0->node_by_id[t2] = &t7[a3];
             } else {
                 *t5 = t7[a3];
                 t5->node.unk2 = t2;
                 t5->unk58 = (s32)&t7[a3];
-                arg0->unk_1A34[t2] = t5;
+                arg0->node_by_id[t2] = t5;
                 t5++;
             }
 
@@ -422,7 +426,7 @@ done:
 
 void func_80040CB8(Unk80045878Obj *arg0) {
     s16 id;
-    Unk80045878Node *var_1 = arg0->unk_8B4;
+    Unk80045878Node *var_1 = arg0->projected_nodes;
     s32 i = 0;
     // FAKE (var_3/kind/one): constant-holders keep -1/3/1 in $t4/$t3/$t2
     // across the goto-loop, which gets no LICM; literals: score 23
@@ -440,7 +444,7 @@ void func_80040CB8(Unk80045878Obj *arg0) {
         kind = 3;
         one = 1;
     } while (0);
-    var_6 = (s32)&arg0->unk_2C[1];
+    var_6 = (s32)&arg0->transform_nodes[1];
     /* FAKE: tbl walks the records' unk_08 members, stepped by a record; a
        record pointer: score 2, D_80094B96[i].unk_08: score 21 */
     tbl = &D_80094B96[0].unk_08;
@@ -448,7 +452,7 @@ void func_80040CB8(Unk80045878Obj *arg0) {
     // (seats id in $v1, the cursor in $a1); ent is set inside so the region is
     // not a real loop and gets no extra induction pointer; without: score 21
     do {
-        ent = (s32)&arg0->unk_8B4[0].unk58;
+        ent = (s32)&arg0->projected_nodes[0].unk58;
     loop:
         id = *tbl;
         if (id != var_3) {

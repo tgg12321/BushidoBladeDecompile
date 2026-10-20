@@ -543,15 +543,15 @@ Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
         arena_UpdatePeak(0);
         arena_SetMoveCallback(a0, (s32)(&func_80045AA4));
         s1->unk_08 = -1;
-        s1->unk_06 = 0;
+        s1->load_status = 0;
     }
     s3 = a0 + 3;
     if (arena_FindBlock(s3) != 0) {
         softbody_FreeObject(s1);
     }
     if (((arena_FindBlock(s3) != 0) && (s1->unk_08 == a1)) &&
-        (s1->unk_06 != (-2))) {
-        s1->unk_06 = 0;
+        (s1->load_status != (-2))) {
+        s1->load_status = 0;
     } else {
         s1->unk_20 = a2;
         s0 = (s32)arena_OpenBlock(s3);
@@ -565,11 +565,11 @@ Unk80045878Obj *func_80045878(s32 a0, s32 a1, s32 a2) {
         }
         arena_SetBlockEnd(s3, s0);
         arena_SetMoveCallback(s3, (s32)(&func_80045AA4));
-        s1->unk_06 = 1;
+        s1->load_status = 1;
         s1->unk_24 = 0;
         s1->unk_00.word = 0;
     }
-    s1->unk_04 = a0;
+    s1->arena_id = a0;
     s1->unk_08 = a1;
     s1->unk_14 = a0;
     s1->unk_10 = a0;
@@ -617,7 +617,7 @@ void func_80045AA4(s32 a0, s32 a1) {
     if ((ptr->unk_00.word >> 1) & 1) {
         /* FAKE: idx (a0 - 3) is reused for the sound index; a fresh local swaps
          * the s0 / s1 seats (score 8) */
-        idx = 3 * ptr->unk_04 + 1;
+        idx = 3 * ptr->arena_id + 1;
         snd_VabFakeOpen(a1, idx);
     }
 }

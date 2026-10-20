@@ -1,0 +1,10 @@
+Unk80045878Obj.unk_04=arena_id
+Unk80045878Obj.unk_06=load_status
+Unk80045878Obj.unk_12=position_scale
+Unk80045878Obj.unk_28=softbody_params
+Unk80045878Obj.unk_2C=transform_nodes
+Unk80045878Obj.unk_8B4=projected_nodes
+Unk80045878Obj.unk_10D4=duplicate_nodes
+Unk80045878Obj.unk_1994=node_matrix_ptrs
+Unk80045878Obj.unk_1A34=node_by_id
+Unk80045878Node.unk60=softbody_nodes

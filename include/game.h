@@ -2036,9 +2036,10 @@ typedef struct Unk80045878Node {
     Unk80101DF0Record node; /* +0x00 */
     s32 unk58;              /* +0x58 */
     s32 unk5C;              /* +0x5C */
-    u8 *unk60;              /* +0x60 softbody_Create's node/edge buffer */
-    s32 unk64;              /* +0x64 */
-} Unk80045878Node;          /* 0x68 */
+    /* +0x60 softbody_Create's node/edge buffer */
+    u8 *softbody_nodes;
+    s32 unk64;     /* +0x64 */
+} Unk80045878Node; /* 0x68 */
 
 typedef struct Unk80045878Obj {
     union {
@@ -2046,35 +2047,35 @@ typedef struct Unk80045878Obj {
         s16 half[2];
     } unk_00; /* +0x0000 */
 
-    s16 unk_04;  /* +0x0004 */
-    s16 unk_06;  /* +0x0006 */
-    s16 unk_08;  /* +0x0008 */
-    u8 pad0A[6]; /* +0x000A */
-    u16 unk_10;  /* +0x0010 */
-    s16 unk_12;  /* +0x0012 */
-    s16 unk_14;  /* +0x0014 */
-    s16 unk_16;  /* +0x0016 */
+    s16 arena_id;       /* +0x0004 */
+    s16 load_status;    /* +0x0006 */
+    s16 unk_08;         /* +0x0008 */
+    u8 pad0A[6];        /* +0x000A */
+    u16 unk_10;         /* +0x0010 */
+    s16 position_scale; /* +0x0012 */
+    s16 unk_14;         /* +0x0014 */
+    s16 unk_16;         /* +0x0016 */
 
     union {
         s32 word;
         u8 byte[4];
     } unk_18; /* +0x0018 */
 
-    s32 unk_1C;                    /* +0x001C */
-    s32 unk_20;                    /* +0x0020 */
-    void *unk_24;                  /* +0x0024 */
-    s32 unk_28;                    /* +0x0028 */
-    Unk80045878Node unk_2C[21];    /* +0x002C */
-    Unk80045878Node unk_8B4[20];   /* +0x08B4 */
-    Unk80045878Node unk_10D4[20];  /* +0x10D4 */
-    MATRIX *unk_18F4[20];          /* +0x18F4 */
-    u8 pad1944[0x50];              /* +0x1944 */
-    MATRIX *unk_1994[20];          /* +0x1994 */
-    u8 pad19E4[0x50];              /* +0x19E4 */
-    Unk80045878Node *unk_1A34[20]; /* +0x1A34 */
-    s16 unk_1A84;                  /* +0x1A84 */
-    u8 pad1A86[2];                 /* +0x1A86 */
-} Unk80045878Obj;                  /* 0x1A88 */
+    s32 unk_1C;                          /* +0x001C */
+    s32 unk_20;                          /* +0x0020 */
+    void *unk_24;                        /* +0x0024 */
+    s32 softbody_params;                 /* +0x0028 */
+    Unk80045878Node transform_nodes[21]; /* +0x002C */
+    Unk80045878Node projected_nodes[20]; /* +0x08B4 */
+    Unk80045878Node duplicate_nodes[20]; /* +0x10D4 */
+    MATRIX *unk_18F4[20];                /* +0x18F4 */
+    u8 pad1944[0x50];                    /* +0x1944 */
+    MATRIX *node_matrix_ptrs[20];        /* +0x1994 */
+    u8 pad19E4[0x50];                    /* +0x19E4 */
+    Unk80045878Node *node_by_id[20];     /* +0x1A34 */
+    s16 unk_1A84;                        /* +0x1A84 */
+    u8 pad1A86[2];                       /* +0x1A86 */
+} Unk80045878Obj;                        /* 0x1A88 */
 
 /* The 16-byte records func_8003EDC0 fills ahead of those (unk8 / unkC = the
  * grid cell's column / row * 2000 - 32000); func_8003E6D8 and func_8003EB84
