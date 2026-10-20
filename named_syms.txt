@@ -2090,7 +2090,7 @@ func_80077A04                               = 0x80077A04;  /* MISNAMED: not grou
 
 /* === asm/funcs bulk promotion: 51 BIOS/library wrappers + helpers (2026-05-17) === */
 /* asm/funcs/<name>.s files with semantic names not yet in named_syms.txt. */
-func_8004A940                                = 0x8004A940;  /* MISNAMED: not local matrix calc; u16 stream decoder dispatching to func_8004A76C */
+func_8004A940                                = 0x8004A940;  /* MISNAMED: not local matrix calc; u16 stream decoder dispatching to gte_ProjectSVectorTriples */
 
 /* === Tier 1 batch: named-adjacent sibling fields (2026-05-17) === */
 /* 187 unnamed addresses that sit 1-8 bytes after a */

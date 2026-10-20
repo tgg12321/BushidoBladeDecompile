@@ -46,7 +46,7 @@ Signals detectable from asm/funcs/<func>.s alone:
       decisive evidence of hand-coded asm: there is no C-level mechanism
       to read from $s0 (or write to it) while preventing GCC from
       generating the prologue save. Originated 2026-05-16 from the
-      func_8004A808 / func_8004BB68 / func_8004C1F4 / func_80050774
+      gte_ProjectPackedVertices / func_8004BB68 / func_8004C1F4 / func_80050774
       polygon-dispatch cluster that S1-S6 miss.
 
   S8. Redundant low-bits mask before a discarding left-shift.

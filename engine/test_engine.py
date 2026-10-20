@@ -1701,7 +1701,7 @@ def test_cheats() -> None:
 
     # canonical-extraction wiring recognition ([infra-rule: canonical-asm-
     # extraction]): replace_with_asmfile + inline_asm_canonical.txt member
-    # ONLY. Uses a real canonical member (func_8004A76C, custom $s0 ABI; was
+    # ONLY. Uses a real canonical member (gte_ProjectSVectorTriples, custom $s0 ABI; was
     # save_vc_ctrl until its 2026-10-01 de-authorization)
     # so the check exercises the live list.
     check("canon-extract: wiring for canonical member IS exempt",
