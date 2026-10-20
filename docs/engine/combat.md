@@ -48,7 +48,7 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
 target, with the opponent as the attacker:
 
 1. It decides how many blade quads to test (`var_10`): one when the
-   attacker's `unk_96 == 0`, `unk_92 != 0`, `update_count != 0` and `unk_0C != 0x1F`,
+   attacker's `is_defeated == 0`, `unk_92 != 0`, `update_count != 0` and `unk_0C != 0x1F`,
    one more with `unk_8C` set, and one more when `unk_0E` is 4 or 5 and any is
    tested. (With `mode == 1` the fighter `D_800A38AE` is skipped as a target.)
    Attackers with `unk_0E` 6 or 7, in states 2 / 0x1B / 0x28 / 0x26 at frame

@@ -1764,7 +1764,7 @@ D_80101FC4                               = 0x80101FC4;  /* D_80101EC8[0].unk_F4.
 g_pad_state_plus_0x4                             = 0x8010278C;  /* g_pad_state.valid[0] (set to 1 by pad_ResetStateMarkValid) */  /* data-wave 2026-10-03: was g_practice_lesson_init_done */
 
 /* === Attack-angle offset table + D_80101EC8[1].unk_6A (2026-05-17) -- 2 highs === */
-D_8008EB40                             = 0x8008EB40;  /* s16 2D table, both indices from bits 12-15 of the fighter's unk_24.held; the value is added to the facing angle unk_1D8 (9F9C.c:4286-4410) */  /* data-wave 2026-10-08: was g_attack_angle_offset_table */
+D_8008EB40                             = 0x8008EB40;  /* s16 2D table, both indices from bits 12-15 of the fighter's unk_24.held; the value is added to opponent_bearing (9F9C.c:4286-4410) */  /* data-wave 2026-10-08: was g_attack_angle_offset_table */
 D_8010237E                               = 0x8010237E;  /* D_80101EC8[1].unk_6A (D_80101F32 + 0x44C); compared with many constants (9F9C.c:1656, :2047; 175A4.c:88; 17AFC.c:913, :989, :1010) */  /* data-wave 2026-10-09: was g_char_struct_p2_field_6A */
 
 /* === Sprite rect tables + buffer banks (2026-05-17) -- 5 highs === */

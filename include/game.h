@@ -1456,7 +1456,8 @@ typedef struct Unk80101EC8Record {
     u8 *unk_58; /* byte 3 read by func_80056FE8 */
     u16 unk_5C;
     /* 1: the last-resolved move is in g_motion_common_sections
-     * (motion_ResolveMoveData's out flag), 0: in the fighter's slot */
+     * (motion_ResolveMoveData's out flag), 0: in a fighter slot (its own, or
+     * the other fighter's when borrow_other_motion is set) */
     s16 move_is_common;
     u8 cur_move_is_common;
     u8 cur_move_slot;

@@ -30,11 +30,11 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 `MoveScript *`:
 
 - ids 0x7FF0..0x7FFF select through the character file's tables (`f4E`,
-  `f54`, `f66` of `g_motion_fighter_buffers[rec->unk_4A]`) using the record's cycling index
+  `f54`, `f66` of `g_motion_fighter_buffers[rec->motion_slot]`) using the record's cycling index
   `unk_86` (wrapped by `f14`; for some ids it skips the entries `unk_88` /
   `unk_8E` while their flags `unk_8A` / `unk_90` are clear);
 - other ids with bit 15 set index the character file's streams (the
-  opponent's when `unk_4C` is set);
+  opponent's when `borrow_other_motion` is set);
 - the rest index the common file's streams, and `*out` is set to 1.
 
 `func_80021A98(i, script, common)` (src/main/9F9C.c:3311) makes `script` the
