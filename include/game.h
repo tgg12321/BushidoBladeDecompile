@@ -1902,16 +1902,16 @@ typedef struct Unk8001CD68Rec {
 } Unk8001CD68Rec;
 
 /* Two 0x58-byte records set up side by side by func_80049E4C: 0x80101DF0
- * (unk0 = 0x64, unk8 = 5; pointer stored to D_800A3708) and 0x800FF638
- * (unk0 = 0x65, unk8 = 2; pointer stored to D_800A370C).
+ * (unk0 = 0x64, rotation_order = 5; pointer stored to D_800A3708) and
+ * 0x800FF638 (unk0 = 0x65, rotation_order = 2; pointer stored to D_800A370C).
  * node_SetMatrixFromNegatedRot passes a negated stack copy of xf.rot and &work
- * to D_800F66A0[unk8], then copies work to xf.mat; func_80046BF4 writes work.t
- * just before that call. func_800475A4 passes &xf.rot to D_800F66A0[0] and
- * &xf.mat to ApplyMatrix. D_800EEDF0 and D_800EF070 are two more records of
- * this layout: func_800472C0 initialises the first, wave_Init sets up the
- * second and passes it to node_UpdateWorldMatrix, which reads unk6 as a state.
- * rot is the RotMatrix-style angle SVECTOR the rotation handlers take; mat and
- * work are libgte MATRIXes. */
+ * to D_800F66A0[rotation_order], then copies work to xf.mat; func_80046BF4
+ * writes work.t just before that call. func_800475A4 passes &xf.rot to
+ * D_800F66A0[0] and &xf.mat to ApplyMatrix. D_800EEDF0 and D_800EF070 are two
+ * more records of this layout: func_800472C0 initialises the first, wave_Init
+ * sets up the second and passes it to node_UpdateWorldMatrix, which reads
+ * matrix_state. rot is the RotMatrix-style angle SVECTOR the rotation handlers
+ * take; mat and work are libgte MATRIXes. */
 typedef struct {
     SVECTOR rot; /* +0x00 */
     MATRIX mat;  /* +0x08 */
@@ -1955,17 +1955,17 @@ typedef struct {
     s16 unk5C;                 /* +0x5C */
 } Unk800F62E0Rec;              /* 0x60 */
 
-/* 0x800F66A0: the rotation-to-matrix handlers a transform node's unk8 selects
- * (rot -> matrix, PsyQ RotMatrix shape).  func_80042E90 fills [0] ZYX, [2] ZXY,
- * [4] YXZ, [5] XYZ ([1] and [3] are never written); the nodes set unk8 to 0, 2,
- * 4 and 5, and func_8003EDC0 / node_UpdateWorldMatrix /
- * node_SetMatrixFromNegatedRot / func_800472C0 index it by unk8 (4-byte
- * stride).  _svm_vab_vh follows at 0x800F66B8. */
+/* 0x800F66A0: the rotation-to-matrix handlers a transform node's rotation_order
+ * selects (rot -> matrix, PsyQ RotMatrix shape).  func_80042E90 fills [0] ZYX,
+ * [2] ZXY, [4] YXZ, [5] XYZ ([1] and [3] are never written); the nodes set
+ * rotation_order to 0, 2, 4 and 5, and func_8003EDC0 / node_UpdateWorldMatrix /
+ * node_SetMatrixFromNegatedRot / func_800472C0 index it by rotation_order
+ * (4-byte stride).  _svm_vab_vh follows at 0x800F66B8. */
 typedef void (*RotMatrixFunc)(SVECTOR *, MATRIX *);
 
 /* The 0x68-byte records of the table func_8003F1D4 returns: a transform
  * node of the Unk80101DF0Record layout, then a byte flag. func_8003EDC0
- * fills them from a stream and calls D_800F66A0[unk8] on &xf.rot /
+ * fills them from a stream and calls D_800F66A0[rotation_order] on &xf.rot /
  * &xf.mat (the angles as stored, straight into xf.mat; unlike
  * node_SetMatrixFromNegatedRot, no negation and no work); func_8003E6D8 and
  * func_8003EB84 queue each one on g_draw_queue at most once, guarded by unk58.
