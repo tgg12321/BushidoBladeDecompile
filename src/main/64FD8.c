@@ -1332,9 +1332,9 @@ s32 func_80077A80(s32 a0) {
 
 s32 func_80077AC0(s32 arg0, s32 arg1) { return menu_StepSelScreen(arg0, arg1); }
 
-void func_80077AE0(void) { func_8006E10C(); }
+void func_80077AE0(void) { gpu_BeginFullscreenImageDisplay(); }
 
-void func_80077B00(void) { func_8006E2A8(); }
+void func_80077B00(void) { gpu_EndFullscreenImageDisplay(); }
 
 void func_80077B20(void) { D_800A35E4 = 1; }
 

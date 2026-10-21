@@ -52,10 +52,11 @@ typedef struct Unk800F34D8Save {
 } Unk800F34D8Save; /* sizeof == 0x100 */
 
 /* The game's display double buffer at 0x800F7438: two 0x4090-byte records, one
- * per frame parity (D_800A36AC & 1). disp_Init / func_8006E10C pass +0x00 to
- * SetDefDrawEnv and +0x5C to SetDefDispEnv for each record; main clears +0x70
- * with ClearOTagR(ot, 0x1008) (0x1008 words = 0x4020 bytes, which ends the
- * record) and draws it from its last entry, DrawOTag(+0x408C). */
+ * per frame parity (D_800A36AC & 1). disp_Init /
+ * gpu_BeginFullscreenImageDisplay pass +0x00 to SetDefDrawEnv and +0x5C to
+ * SetDefDispEnv for each record; main clears +0x70 with ClearOTagR(ot, 0x1008)
+ * (0x1008 words = 0x4020 bytes, which ends the record) and draws it from its
+ * last entry, DrawOTag(+0x408C). */
 typedef struct {
     DRAWENV draw;   /* +0x00 */
     DISPENV disp;   /* +0x5C */

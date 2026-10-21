@@ -1,4 +1,4 @@
-glabel func_8006E2A8
+glabel gpu_EndFullscreenImageDisplay
     /* 5EAA8 8006E2A8 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 5EAAC 8006E2AC 21200000 */  addu       $a0, $zero, $zero
     /* 5EAB0 8006E2B0 1C00BFAF */  sw         $ra, 0x1C($sp)
@@ -57,4 +57,4 @@ glabel func_8006E2A8
     /* 5EB84 8006E384 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 5EB88 8006E388 0800E003 */  jr         $ra
     /* 5EB8C 8006E38C 00000000 */   nop
-endlabel func_8006E2A8
+endlabel gpu_EndFullscreenImageDisplay

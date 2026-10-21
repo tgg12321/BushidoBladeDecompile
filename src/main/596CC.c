@@ -2459,7 +2459,7 @@ s32 menu_UpdateConfirmMenu(s32 arg0, s32 arg1) {
 
 extern RECT D_800A32D8;
 
-s32 func_8006E10C(void) {
+s32 gpu_BeginFullscreenImageDisplay(void) {
     s32 temp_s3 = D_800A3500;
     RECT rect;
     s32 v0;
@@ -2495,7 +2495,7 @@ s32 func_8006E10C(void) {
 
 extern RECT D_800A32E0;
 
-s32 func_8006E2A8(void) {
+s32 gpu_EndFullscreenImageDisplay(void) {
     RECT rect;
     SetDispMask(0);
     PutDrawEnv(&g_gpu_db[D_800A3518 & 1].draw);

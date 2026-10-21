@@ -1,4 +1,4 @@
-glabel func_8006E10C
+glabel gpu_BeginFullscreenImageDisplay
     /* 5E90C 8006E10C 5804828F */  lw         $v0, %gp_rel(D_800A3524)($gp)
     /* 5E910 8006E110 C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 5E914 8006E114 3000BFAF */  sw         $ra, 0x30($sp)
@@ -104,4 +104,4 @@ glabel func_8006E10C
     /* 5EA9C 8006E29C 3800BD27 */  addiu      $sp, $sp, 0x38
     /* 5EAA0 8006E2A0 0800E003 */  jr         $ra
     /* 5EAA4 8006E2A4 00000000 */   nop
-endlabel func_8006E10C
+endlabel gpu_BeginFullscreenImageDisplay
