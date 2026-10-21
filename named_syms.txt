@@ -1236,7 +1236,7 @@ _svm_sreg_buf_plus_0x2                                   = 0x80102A7A;  /* s16 a
 
 /* === func_80068F70 state cells (2026-05-17) -- 8 highs === */
 /* From 596CC.c func_80068F70 and the functions it sets up. */
-D_800A3500                                   = 0x800A3500;  /* allocation cursor stepped past each block func_80068F70 sets up; func_8006E10C reads it as the CD read destination */  /* data-wave 2026-10-08: was g_menuctl_scratch_ctx */
+D_800A3500                                   = 0x800A3500;  /* allocation cursor stepped past each block func_80068F70 sets up; gpu_BeginFullscreenImageDisplay reads it as the CD read destination */  /* data-wave 2026-10-08: was g_menuctl_scratch_ctx */
 D_800A350E                                   = 0x800A350E;  /* D_800A350C[1]: func_800692C0's second-axis step (see D_800A350C) */  /* data-wave 2026-10-08: was g_menuctl_pad_result_1 */
 D_800A3510                                   = 0x800A3510;  /* only two zero stores found */  /* data-wave 2026-10-08: was g_menuctl_pad_result_2 */
 D_800A3512                                   = 0x800A3512;  /* only a zero store found */  /* data-wave 2026-10-08: was g_menuctl_pad_result_3 */
