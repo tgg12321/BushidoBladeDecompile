@@ -623,6 +623,17 @@ SECTIONS
         build/asm/data/93E18.data.o(.data);
         main_DATA_END = .;
         main_DATA_SIZE = ABSOLUTE(main_DATA_END - main_DATA_START);
+    }
+    __romPos += SIZEOF(.main);
+    __romPos = ALIGN(__romPos, 16);
+    . = ALIGN(., 16);
+    main_ROM_END = __romPos;
+    main_VRAM_END = .;
+
+    /* .bss: NOLOAD, never in the EXE (objcopy -j .main); crt0 zeroes it. */
+    main_bss_VRAM = ADDR(.main_bss);
+    .main_bss (NOLOAD) :
+    {
         main_BSS_START = .;
         build/src/main/87A0.o(.bss);
         build/src/main/9F9C.o(.bss);
@@ -856,11 +867,7 @@ SECTIONS
         main_BSS_END = .;
         main_BSS_SIZE = ABSOLUTE(main_BSS_END - main_BSS_START);
     }
-    __romPos += SIZEOF(.main);
-    __romPos = ALIGN(__romPos, 16);
-    . = ALIGN(., 16);
-    main_ROM_END = __romPos;
-    main_VRAM_END = .;
+    main_bss_VRAM_END = .;
 
     /DISCARD/ :
     {
