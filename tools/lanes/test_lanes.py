@@ -270,6 +270,31 @@ class LaneTest(unittest.TestCase):
         self.assertEqual((t[5], t[10], t[15]), ("B5", "A10", "B15"))
         self.assertEqual(self.L("s1", "fresh", "a"), 0, self.last)  # nothing unlanded is left
 
+    def test_main_reset_after_land_unlands_again(self):
+        # seventh review: `landed` must not hide commits once main no longer holds them
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        self.assertEqual(self.L("s1", "land", "a", "--no-push"), 0, self.last)
+        sh("reset", "-q", "--hard", "origin/main", cwd=self.main)  # undo the unpushed land
+        self.assertEqual(self.L("s1", "fresh", "a"), 1, self.last)  # work is unlanded again
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertTrue((self.main / "src" / "b.c").exists())
+
+    def test_reopen_after_left_as_is_land(self):
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        d = self.wt("a")
+        self.edit_line("a", "shared.txt", 5, "A")
+        self.edit_line("b", "shared.txt", 15, "B")
+        self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        (d / "shared.txt").write_text("dirty\n", newline="\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("next `land` skips", self.last)
+        sh("checkout", "--", "shared.txt", cwd=d)
+        self.assertEqual(self.L("s1", "close", "a"), 0, self.last)
+        sh("worktree", "remove", "--force", str(d), cwd=self.main)
+        self.assertEqual(self.L("s1", "open", "a"), 0, self.last)
+        self.assertEqual(sh("rev-parse", "HEAD", cwd=d), sh("rev-parse", "main", cwd=self.main))
+
     def test_replay_trailer(self):
         self.L("s1", "open", "a"); self.L("s2", "open", "b")
         self.edit_line("a", "shared.txt", 5, "A")

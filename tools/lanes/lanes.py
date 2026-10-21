@@ -458,8 +458,12 @@ def unlanded(ctx: Ctx, lane: str, rev: str, reg=None) -> list:
     that could not be moved after a land still holds those commits, and replaying them would
     re-apply landed work over newer main changes."""
     excl = ["^main"]
-    done = (reg or ctx.load())["lanes"].get(lane, {}).get("landed")
-    if done and git_ok("cat-file", "-e", f"{done}^{{commit}}", cwd=ctx.main):
+    e = (reg or ctx.load())["lanes"].get(lane, {})
+    done, at = e.get("landed"), e.get("landed_main")
+    # trusted only while the main tip that land produced is still in main (a reset of main
+    # after a failed push or a --no-push land un-lands those commits again)
+    if done and at and git_ok("cat-file", "-e", f"{done}^{{commit}}", cwd=ctx.main) and \
+            git_ok("merge-base", "--is-ancestor", at, "main", cwd=ctx.main):
         excl.append(f"^{done}")
     return git("rev-list", "--reverse", rev, *excl, cwd=ctx.main).split()
 
@@ -527,7 +531,7 @@ def ensure_worktree(ctx: Ctx, lane: str) -> Path:
         raise Refuse("bb2-work-* names re-arm the worktree-era guards")
     ctx.wt_root.mkdir(parents=True, exist_ok=True)
     if git_ok("rev-parse", "--verify", "-q", f"refs/heads/{br}", cwd=ctx.main):
-        if not git_ok("merge-base", "--is-ancestor", br, "main", cwd=ctx.main):
+        if unlanded(ctx, lane, br):
             raise Refuse(f"branch {br} exists with unlanded commits but no worktree; "
                          f"inspect it (git log main..{br})")
         git("branch", "-f", br, "main", cwd=ctx.main)
@@ -854,9 +858,13 @@ def paths_of(ctx: Ctx, commits) -> list:
     return sorted(out)
 
 
-def mark_landed(ctx: Ctx, lane: str, tipsrc: str):
-    """Record the lane tip whose commits are now in main (see unlanded)."""
-    ctx.update(lambda reg: reg["lanes"].setdefault(lane, {}).__setitem__("landed", tipsrc))
+def mark_landed(ctx: Ctx, lane: str, tipsrc: str, main_tip: str):
+    """Record the lane tip whose commits are now in main, and the main tip that holds them
+    (see unlanded)."""
+    def do(reg):
+        e = reg["lanes"].setdefault(lane, {})
+        e["landed"], e["landed_main"] = tipsrc, main_tip
+    ctx.update(do)
 
 
 def check_claims(ctx: Ctx, lane: str, touched):
@@ -1045,7 +1053,7 @@ def cmd_land(ctx: Ctx, a):
             tip = build_candidate(ctx, lane, ld, commits, base, log)  # no lock held
             if tip == base:
                 print("lanes: every lane commit is already in main; nothing new to land")
-                mark_landed(ctx, lane, tipsrc)
+                mark_landed(ctx, lane, tipsrc, base)
                 advance_lane(ctx, lane, tipsrc)
                 return 0
             # Short critical section: verify nothing moved, then fast-forward and push.
@@ -1053,14 +1061,15 @@ def cmd_land(ctx: Ctx, a):
                 acquire_lock(ctx, f"lanes land {lane}")
             try:
                 check_claims(ctx, lane,  # a freeze may have arrived meanwhile
-                             git("diff", "--name-only", f"{base}..{tip}", cwd=ctx.main).split())
+                             git("diff", "--name-only", "--no-renames", f"{base}..{tip}",
+                                 cwd=ctx.main).split())
                 check_main_idle(ctx)
                 if remote:
                     sync_main_with_remote(ctx, remote)
                 if git("rev-parse", "main", cwd=ctx.main) != base:
                     continue  # main moved: rebuild on the new main (finally releases the lock)
                 git("merge", "-q", "--ff-only", tip, cwd=ctx.main)
-                mark_landed(ctx, lane, tipsrc)
+                mark_landed(ctx, lane, tipsrc, tip)
                 pushed = push_main(ctx, remote) if remote else "not pushed: --no-push"
             finally:
                 if not held_before:
