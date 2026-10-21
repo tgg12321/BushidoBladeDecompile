@@ -4,8 +4,15 @@
 #include "common.h"
 #include "libsnd_i.h"
 
-extern u16 default_voice;
-extern u16 default_state;
+/* SSINIT .data (0x800A2694..0x800A26CC, 56 bytes; the module's .data in
+ * LIBSND.LIB, no XDEF, no relocation). The first 8 bytes are read by no code;
+ * the library object holds other values there (15107350 9CB14000). */
+u32 D_800A2694[2] = {0x17107350, 0x404097E4};
+/* the 8 SPU voice registers written to each of the 24 voices: volume L/R 0,
+ * pitch 0x1000, start address 0x3000, ADSR 0x00BF / 0 */
+u16 default_voice[8] = {0, 0, 0x1000, 0x3000, 0xBF, 0, 0, 0};
+/* the 16 SPU control registers from 0x1F801D80: main volume L/R 0x3FFF */
+u16 default_state[16] = {0x3FFF, 0x3FFF};
 extern s32 _SsMarkCallback[32][16];
 
 /* PsyQ 4.0 LIBSND ssinit: _SsInit — verbatim-linked Sony object (census
@@ -17,13 +24,13 @@ void _SsInit(void) {
     var_a2 = (u16 *)0x1F801C00;
     for (i = 0; i < 24; i++) {
         for (j = 0; j < 8; j++) {
-            *var_a2++ = (&default_voice)[j];
+            *var_a2++ = default_voice[j];
         }
     }
 
     var_a2 = (u16 *)0x1F801D80;
     for (i = 0; i < 16; i++) {
-        *var_a2++ = (&default_state)[i];
+        *var_a2++ = default_state[i];
     }
 
     _SsVmInit(0x18);

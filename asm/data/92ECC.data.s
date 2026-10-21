@@ -3,35 +3,6 @@
 .section .data, "wa"
     .align 0
 
-nonmatching D_800A2694
-
-dlabel D_800A2694
-    /* 92E94 800A2694 50731017 */ .word 0x17107350
-    /* 92E98 800A2698 E4974040 */ .word 0x404097E4
-enddlabel D_800A2694
-
-nonmatching default_voice
-
-dlabel default_voice
-    /* 92E9C 800A269C 00000000 */ .word 0x00000000
-    /* 92EA0 800A26A0 00100030 */ .word 0x30001000
-    /* 92EA4 800A26A4 BF000000 */ .word 0x000000BF
-    /* 92EA8 800A26A8 00000000 */ .word 0x00000000
-enddlabel default_voice
-
-nonmatching default_state
-
-dlabel default_state
-    /* 92EAC 800A26AC FF3FFF3F */ .word 0x3FFF3FFF
-    /* 92EB0 800A26B0 00000000 */ .word 0x00000000
-    /* 92EB4 800A26B4 00000000 */ .word 0x00000000
-    /* 92EB8 800A26B8 00000000 */ .word 0x00000000
-    /* 92EBC 800A26BC 00000000 */ .word 0x00000000
-    /* 92EC0 800A26C0 00000000 */ .word 0x00000000
-    /* 92EC4 800A26C4 00000000 */ .word 0x00000000
-    /* 92EC8 800A26C8 00000000 */ .word 0x00000000
-enddlabel default_state
-
 nonmatching _snd_seq_tick_env
 
 dlabel _snd_seq_tick_env

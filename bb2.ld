@@ -473,12 +473,12 @@ SECTIONS
         build/src/main/psxsdk/libetc/intr_dma.o(.data);
         build/src/main/psxsdk/libetc/vmode.o(.data);
         build/src/main/psxsdk/libsn/73E98.o(.data);
-        build/asm/data/92E94.data.o(.data);
         build/src/main/psxsdk/libapi/c57.o(.data);
         build/src/main/psxsdk/libsn/7407C.o(.data);
         build/src/main/psxsdk/libsnd/ssend.o(.data);
         build/src/main/psxsdk/libsnd/ssinit_c.o(.data);
         build/src/main/psxsdk/libsnd/ssinit.o(.data);
+        build/asm/data/92ECC.data.o(.data);
         build/src/main/psxsdk/libsnd/ssquit.o(.data);
         build/src/main/psxsdk/libsnd/scssattr.o(.data);
         build/src/main/psxsdk/libsnd/scsmvol.o(.data);
