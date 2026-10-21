@@ -17,6 +17,10 @@ Deterministic and re-runnable (Lane-Replay): it reads only the tracked pin
 files, build/bb2.map and the linked objects, so build first:
     make build/bb2.elf && python3 tools/pins_drop.py
 A second run finds nothing to drop and changes nothing.
+
+With --unreferenced it also drops the `b` pins unreferenced_rule() accepts
+(appended under their own marker):
+    make build/bb2.elf && python3 tools/pins_drop.py --unreferenced
 """
 import re
 import sys
@@ -28,21 +32,54 @@ import pins_audit  # noqa: E402
 REGISTRY = "symbol_addrs.txt"
 MARKER = ("// pins-drop: names a linked object defines at this address "
           "(moved out of the linker pin files by tools/pins_drop.py)")
+MARKER_UNREF = ("// pins-drop --unreferenced: names no linked object references, at "
+                "addresses the link places (moved out of the linker pin files)")
 SYM_LINE = re.compile(r"^\s*([A-Za-z_]\w*)\s*=\s*0x([0-9A-Fa-f]+)\s*;")
 
 
+def unreferenced_rule(rows, map_path="build/bb2.map"):
+    """--unreferenced: a `b` pin no linked object references (no UND entry, no
+    mention in bb2.ld) whose address lies inside an input section the link
+    places (program memory the build lays out, under another name or none).
+    The assignment feeds no relocation, so it leaves the linker files like an
+    `a` pin does. BSS-range names (no placed section, bss-link) and hardware
+    or kernel absolutes keep their pins: new C reaches them only through one.
+    A name pinned at more than one address is left alone."""
+    objs, spans = pins_audit.map_sections(map_path)
+    spans = [s for s in spans if s[3] > 0 and s[0] != "build/asm/header.o"]
+    refs = pins_audit.undefined_refs(objs)
+    with open("bb2.ld", encoding="utf-8") as f:
+        refs.update(re.findall(r"[A-Za-z_]\w*", f.read()))
+    values = defaultdict(set)
+    for r in rows:
+        values[r[0]].add(r[1])
+
+    def placed(a):
+        return any(s[2] <= a < s[2] + s[3] for s in spans)
+
+    def rule(row):
+        return (row[3] == "b" and row[0] not in refs and len(values[row[0]]) == 1
+                and placed(int(row[1], 16)))
+    return rule
+
+
 def main():
+    unreferenced = "--unreferenced" in sys.argv[1:]
     rows, _ = pins_audit.classify()
+    droppable = pins_audit.droppable
+    if unreferenced:
+        alias = unreferenced_rule(rows)
+        droppable = lambda r: pins_audit.droppable(r) or alias(r)  # noqa: E731
     drop = defaultdict(set)  # file -> line numbers
     addr = {}
     for r in rows:
-        if pins_audit.droppable(r):
+        if droppable(r):
             fn, ln = r[2].rsplit(":", 1)
             drop[fn].add(int(ln))
             addr[r[0]] = r[1]
     # a name is either dropped everywhere or nowhere
     for r in rows:
-        if r[0] in addr and not pins_audit.droppable(r):
+        if r[0] in addr and not droppable(r):
             sys.exit("pins_drop: %s is droppable in one place but not at %s" % (r[0], r[2]))
 
     moved = defaultdict(list)  # file -> [(name, trailing text)] in line order
@@ -100,8 +137,10 @@ def main():
             seen.add(line)
             have.setdefault(name, int(addr[name], 16))
     if add:
-        if MARKER not in reg:
-            reg = reg.rstrip("\n") + "\n\n" + MARKER + "\n"
+        marker = MARKER_UNREF if unreferenced else MARKER
+        # lines append at the end, so the last marker there must be this mode's
+        if reg.rfind(marker) < max(reg.rfind(MARKER), reg.rfind(MARKER_UNREF)) or marker not in reg:
+            reg = reg.rstrip("\n") + "\n\n" + marker + "\n"
         reg = reg.rstrip("\n") + "\n" + "\n".join(add) + "\n"
         with open(REGISTRY, "w", encoding="utf-8", newline="\n") as f:
             f.write(reg)

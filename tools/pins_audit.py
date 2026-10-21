@@ -49,7 +49,16 @@ def read_pins():
 
 def read_map(path):
     """Linked objects and input-section addresses: {(obj, section): addr}."""
-    objs, place = [], {}
+    objs, spans = map_sections(path)
+    place = {}
+    for o, sec, addr, size in spans:
+        place.setdefault((o, sec), addr)
+    return objs, place
+
+
+def map_sections(path):
+    """Linked objects and every placed input section: [(obj, section, addr, size)]."""
+    objs, spans = [], []
     pending = None
     with open(path, encoding="utf-8", errors="replace") as f:
         lines = f.read().split("\n")
@@ -67,7 +76,7 @@ def read_map(path):
             continue
         m = re.match(r"^ (\.\S+)\s+0x([0-9a-f]+)\s+0x([0-9a-f]+)\s+(\S+\.o)\s*$", line)
         if m:
-            place.setdefault((m.group(4), m.group(1)), int(m.group(2), 16))
+            spans.append((m.group(4), m.group(1), int(m.group(2), 16), int(m.group(3), 16)))
             pending = None
             continue
         m = re.match(r"^ (\.\S+)\s*$", line)
@@ -77,9 +86,22 @@ def read_map(path):
         if pending:
             m = re.match(r"^\s+0x([0-9a-f]+)\s+0x([0-9a-f]+)\s+(\S+\.o)\s*$", line)
             if m:
-                place.setdefault((m.group(3), pending), int(m.group(1), 16))
+                spans.append((m.group(3), pending, int(m.group(1), 16), int(m.group(2), 16)))
             pending = None
-    return objs, place
+    return objs, spans
+
+
+def undefined_refs(objs):
+    """Names some linked object references without defining (UND symtab entries)."""
+    out = set()
+    for o in objs:
+        text = subprocess.run([READELF, "-sW", o], capture_output=True, text=True,
+                              check=True).stdout
+        for line in text.split("\n"):
+            m = re.match(r"^\s*\d+:\s+[0-9a-f]+\s+\d+\s+\S+\s+\S+\s+\S+\s+UND\s+(\S+)\s*$", line)
+            if m:
+                out.add(m.group(1))
+    return out
 
 
 def object_symbols(obj):
