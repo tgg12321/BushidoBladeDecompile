@@ -359,7 +359,6 @@ _svm_okof1 = 0x801078D8;  /* data-wave 2026-09-24: was D_801078D8 */
 _svm_okof2 = 0x801078DA;  /* data-wave 2026-09-24: was D_801078DA */
 D_801078E0 = 0x801078E0;
 D_00000000 = 0x00000000;
-D_800A1494 = 0x800A1494;  /* alias of Intr+0x0 (static volatile CD_intr, src/system.c) */  /* named by the CD_init_struct word in asm/data/91C98.data.s; retires when that data moves to C */
 D_800F66A0 = 0x800F66A0;  /* data-wave 2026-10-08: was g_anim_func_table */
 D_800EEDD0 = 0x800EEDD0;  /* data-wave 2026-10-07: was g_cam_bone_data */
 D_800EEDF0 = 0x800EEDF0;  /* data-wave 2026-10-07: was g_cam_bone_data2 */

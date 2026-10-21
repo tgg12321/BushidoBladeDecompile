@@ -3,17 +3,6 @@
 .section .data, "wa"
     .align 0
 
-nonmatching D_800A1498
-
-dlabel D_800A1498
-    /* 91C98 800A1498 94140A80 */ .word D_800A1494
-    /* 91C9C 800A149C A0190F80 */ .word Result
-    /* 91CA0 800A14A0 D5110A80 */ .word CD_com
-    /* 91CA4 800A14A4 C4110A80 */ .word CD_status
-    /* 91CA8 800A14A8 D0110A80 */ .word CD_pos
-    /* 91CAC 800A14AC 74620180 */ .word 0x80016274
-enddlabel D_800A1498
-
 nonmatching D_800A14B0
 
 dlabel D_800A14B0

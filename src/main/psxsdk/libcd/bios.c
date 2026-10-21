@@ -188,8 +188,10 @@ const char D_80016254[8] = "%s...\n\0\0";
 
 const char D_8001625C[16] = "%s: no param\n\0\0\0";
 
-const char D_8001626C[60] = "CD_cw\0\0\0$Id: bios.c,v 1.86 1997/"
-                            "03/28 07:42:42 makoto Exp $\0";
+const char D_8001626C[8] = "CD_cw\0\0\0";
+
+const char D_80016274[52] =
+    "$Id: bios.c,v 1.86 1997/03/28 07:42:42 makoto Exp $\0";
 
 const char D_800162A8[12] = "CD_init:\0\0\0\0";
 
@@ -447,7 +449,11 @@ void CD_initintr(void) {
     InterruptCallback(2, cdrom_IrqHandler);
 }
 
-extern void D_800A1498;
+/* .data 0x800A1498..0x800A14B0, right behind Intr: the module's state
+ * pointers and its rcsid, the block CD_init prints the address of. */
+const volatile void *D_800A1498[] = {
+    &Intr, &Result, &CD_com, &CD_status, CD_pos, D_80016274,
+};
 
 s32 CD_init(void) {
     u8 v0;
