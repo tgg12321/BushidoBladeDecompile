@@ -136,7 +136,7 @@ def make_exe(build_dir: str = "build") -> str:
             capture_output=True, text=True)
     if r1.returncode != 0:
         raise RuntimeError(f"objcopy failed\nSTDERR:\n{r1.stderr}")
-    r2 = sh(f"python3 tools/make_psexe.py {cfg.TARGET_EXE} {bd}/bb2.bin {bd}/bb2.exe",
+    r2 = sh(f"python3 tools/make_psexe.py {bd}/bb2.elf {bd}/bb2.bin {bd}/bb2.exe",
             capture_output=True, text=True)
     if r2.returncode != 0:
         raise RuntimeError(f"make_psexe failed\nSTDERR:\n{r2.stderr}")

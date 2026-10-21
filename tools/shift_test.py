@@ -20,8 +20,9 @@ and reports, without failing on them:
           and no relocation (a pointer the linker cannot move)
   rawlui  `lui` of 0x8001..0x801F with no HI16 relocation in .text
 
-The matching build is not touched: scripts, ELFs and maps go to build/shift/,
-and nothing makes an EXE. Run `make shift` (WSL, repo root, venv active), or
+The matching build is not touched: scripts, ELFs, maps and the padded EXEs
+(build/shift/pad_<point>.exe, header from tools/make_psexe.py) go to
+build/shift/. Run `make shift` (WSL, repo root, venv active), or
     python3 tools/shift_test.py [--pad 0x10] [--points text,data,rodata]
 Exit 0 when no link/alias/absref/escape finding, 1 otherwise. Findings are
 written to build/shift/report.tsv.
@@ -34,9 +35,11 @@ import sys
 from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from elf32 import Elf  # noqa: E402
 from pins_audit import map_sections  # noqa: E402
 
 LD = "mipsel-linux-gnu-ld"
+OBJCOPY = "mipsel-linux-gnu-objcopy"
 LD_SCRIPT = "bb2.ld"
 PIN_SCRIPTS = ["undefined_funcs_auto.txt", "undefined_syms_auto.txt", "named_syms.txt"]
 BASE_ELF = "build/bb2.elf"
@@ -44,58 +47,9 @@ BASE_MAP = "build/bb2.map"
 OUT = "build/shift"
 RAM_LO, RAM_HI = 0x80010000, 0x80200000
 SHN_UNDEF, SHN_ABS, SHN_COMMON = 0, 0xFFF1, 0xFFF2
-SHT_SYMTAB, SHT_REL, SHF_ALLOC = 2, 9, 2
+SHF_ALLOC = 2
 R_MIPS_32, R_MIPS_26, R_MIPS_HI16, R_MIPS_LO16, R_MIPS_GPREL16, R_MIPS_PC16 = 2, 4, 5, 6, 7, 10
 POINTS = ("text", "data", "rodata")
-
-
-# -- minimal ELF32 little-endian reader --------------------------------------
-
-class Elf:
-    def __init__(self, path):
-        self.path = path
-        with open(path, "rb") as f:
-            self.data = d = f.read()
-        if d[:4] != b"\x7fELF" or d[4] != 1 or d[5] != 1:
-            sys.exit("shift_test: %s is not an ELF32 LE file" % path)
-        shoff, = struct.unpack_from("<I", d, 0x20)
-        shentsize, shnum, shstrndx = struct.unpack_from("<HHH", d, 0x2E)
-        self.secs = []
-        for i in range(shnum):
-            f = struct.unpack_from("<10I", d, shoff + i * shentsize)
-            self.secs.append(dict(name_off=f[0], type=f[1], flags=f[2], addr=f[3],
-                                  offset=f[4], size=f[5], link=f[6], info=f[7]))
-        strtab = self.secs[shstrndx]
-        for s in self.secs:
-            s["name"] = self.cstr(strtab["offset"] + s["name_off"])
-        self.syms = []
-        for s in self.secs:
-            if s["type"] == SHT_SYMTAB:
-                names = self.secs[s["link"]]["offset"]
-                for off in range(s["offset"], s["offset"] + s["size"], 16):
-                    nm, val, size, info, _, ndx = struct.unpack_from("<IIIBBH", d, off)
-                    self.syms.append(dict(name=self.cstr(names + nm), value=val, size=size,
-                                          bind=info >> 4, type=info & 0xF, shndx=ndx))
-
-    def cstr(self, off):
-        return self.data[off:self.data.index(b"\0", off)].decode("latin-1")
-
-    def sec_bytes(self, i):
-        s = self.secs[i]
-        return self.data[s["offset"]:s["offset"] + s["size"]]
-
-    def rels(self):
-        """{target section index: [(offset, type, symbol index)]}"""
-        out = {}
-        for s in self.secs:
-            if s["type"] != SHT_REL:
-                continue
-            lst = []
-            for off in range(s["offset"], s["offset"] + s["size"], 8):
-                r_off, info = struct.unpack_from("<II", self.data, off)
-                lst.append((r_off, info & 0xFF, info >> 8))
-            out[s["info"]] = lst
-        return out
 
 
 def final_symbols(elf):
@@ -135,6 +89,15 @@ def link(script, tag):
     r = subprocess.run(cmd, capture_output=True, text=True)
     msgs = [l for l in (r.stdout + r.stderr).splitlines() if l.strip()]
     return r.returncode, msgs, elf
+
+
+def make_exe(elf, tag):
+    """build/shift/<tag>.exe the way the matching build makes bb2.exe."""
+    binp, exe = "%s/%s.bin" % (OUT, tag), "%s/%s.exe" % (OUT, tag)
+    subprocess.run([OBJCOPY, "-O", "binary", "-j", ".main", elf, binp], check=True)
+    subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                 "make_psexe.py"), elf, binp, exe],
+                   check=True, stdout=subprocess.DEVNULL)
 
 
 # -- static reference analysis over the linked objects --------------------------
@@ -269,15 +232,21 @@ def main():
     bsyms = final_symbols(base)
     main_sec = next(s for s in base.secs if s["name"] == ".main")
     lo, hi = main_sec["addr"], main_sec["addr"] + main_sec["size"]
+    # globals only: final_symbols() is how a padded link's addresses are read
     defs_at = defaultdict(list)
     for s in base.syms:
         if 0 < s["shndx"] < SHN_ABS and lo <= s["value"] < hi and s["name"] \
-                and not s["name"].endswith(".NON_MATCHING") and s["type"] != 3:
+                and s["bind"] in (1, 2) and s["type"] != 3 \
+                and not s["name"].endswith(".NON_MATCHING"):
             defs_at[s["value"]].append(s["name"])
     aliases = [(n, v, defs_at[v][0]) for n, (v, isabs) in sorted(bsyms.items())
                if isabs and v in defs_at]
 
-    for point in [p.strip() for p in args.points.split(",") if p.strip()]:
+    points = [p.strip() for p in args.points.split(",") if p.strip()]
+    bad = [p for p in points if p not in POINTS + ("all",)]
+    if bad:
+        ap.error("unknown point(s) %s; choose from %s,all" % (",".join(bad), ",".join(POINTS)))
+    for point in points:
         tag = "pad_" + point
         script = "%s/%s.ld" % (OUT, tag)
         with open(script, "w", encoding="utf-8", newline="\n") as f:
@@ -291,12 +260,11 @@ def main():
                 continue
         ssyms = final_symbols(Elf(elf))
         for pin, v, d in aliases:
-            dv = ssyms.get(d, (None,))[0]
-            if dv is None:  # local definition: look it up by value shift instead
-                continue
+            dv = ssyms[d][0]
             if dv != v and ssyms[pin][0] == v:
                 findings.append(("alias", point, "0x%08X" % v,
                                  "pin stayed, %s moved to 0x%08X" % (d, dv), pin))
+        make_exe(elf, tag)
         print("shift_test: pad 0x%X at %-6s linked (%d linker messages, %d new)"
               % (args.pad, point, len(msgs), len(new)))
 

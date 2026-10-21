@@ -37,7 +37,7 @@ The main 2 MB of RAM is mapped at `0x80000000` in KSEG0. BB2's executable loads 
 | File offset of image | `0x800` (immediately after header) |
 | Total file size | 606,208 bytes |
 
-The header bytes are preserved verbatim from the original (`disc/SLUS_006.63[0:0x800]`) and prepended to the linker's output by `tools/make_psexe.py`. The rebuilt image only needs to match the body.
+The header template is `asm/header.s` (linked as `.header`); `tools/make_psexe.py` fills in pc0 (`__SN_ENTRY_POINT`), t_addr (`.main` address) and t_size (binary size rounded up to 0x800) from the ELF and prepends it to the linker's output. For the matching link these equal the retail header.
 
 ### Sections
 
@@ -155,8 +155,8 @@ build/bb2.elf
 mipsel-linux-gnu-objcopy -O binary -j .main   ->   build/bb2.bin
     |
     v
-python3 tools/make_psexe.py disc/SLUS_006.63 build/bb2.bin   ->   build/bb2.exe
-    |                  (prepends original 0x800-byte PS-EXE header)
+python3 tools/make_psexe.py build/bb2.elf build/bb2.bin   ->   build/bb2.exe
+    |                  (prepends the 0x800-byte header, fields from the ELF)
     v
 sha1sum -c bb2.sha1   ->   "OK: bb2 matches!"
 ```

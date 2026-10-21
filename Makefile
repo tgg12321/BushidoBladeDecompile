@@ -124,9 +124,10 @@ $(ELF): $(ALL_O_FILES) $(TARGET).ld undefined_funcs_auto.txt undefined_syms_auto
 $(BIN): $(ELF)
 	$(OBJCOPY) -O binary -j .main $< $@
 
-# Construct PS-X EXE (prepend original 0x800-byte header)
-$(EXE): $(BIN) $(TARGET_EXE) tools/make_psexe.py
-	python3 tools/make_psexe.py $(TARGET_EXE) $< $@
+# Construct PS-X EXE: the linked .header (asm/header.s) with pc0 / t_addr / t_size
+# computed from the ELF (tools/make_psexe.py), then the binary
+$(EXE): $(BIN) $(ELF) tools/make_psexe.py tools/elf32.py
+	python3 tools/make_psexe.py $(ELF) $< $@
 
 # -- Per-file GP-relative opt-in --
 # List C files (TU ids: path under src/ without .c) that need GP-relative addressing.

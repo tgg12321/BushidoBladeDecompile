@@ -23,7 +23,7 @@ CONFIGS = (
     'undefined_funcs_auto.txt', 'undefined_syms_auto.txt', 'named_syms.txt',
     'tools/prologue_config.json', 'delay_slot_ra_funcs.txt', 'frame_fix_funcs.txt',
     'tools/prologue_fix.py', 'tools/multu_pad.py', 'tools/make_psexe.py',
-    'engine/pipeline.py', 'engine/buildconfig.py', 'engine/buildstamp.py', 'engine/tus.py',
+    'tools/elf32.py', 'engine/pipeline.py', 'engine/buildconfig.py', 'engine/buildstamp.py', 'engine/tus.py',
     cfg.TARGET_EXE, cfg.CC1,
 )
 

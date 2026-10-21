@@ -116,7 +116,7 @@ cpp | cc1 (GCC 2.7.2) | prologue_fix | maspsx (aspsx 2.34) |
   mipsel-linux-gnu-as -> .o
 ```
 
-Assembly objects (in `asm/`) take the much shorter route `mipsel-linux-gnu-as -> .o`. Everything is then linked with `mipsel-linux-gnu-ld -T bb2.ld`, stripped to raw binary with `objcopy`, and prepended with the original PS-EXE header via `tools/make_psexe.py`. The resulting `build/bb2.exe` is SHA1-compared to `62efab4f73f992798c43e8c730aa43baa10bb4fa`.
+Assembly objects (in `asm/`) take the much shorter route `mipsel-linux-gnu-as -> .o`. Everything is then linked with `mipsel-linux-gnu-ld -T bb2.ld`, stripped to raw binary with `objcopy`, and prepended with the PS-EXE header via `tools/make_psexe.py` (the linked `asm/header.s` bytes, with pc0 / t_addr / t_size computed from the ELF). The resulting `build/bb2.exe` is SHA1-compared to `62efab4f73f992798c43e8c730aa43baa10bb4fa`.
 
 Details on each stage and why the pipeline has so many post-passes are in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
