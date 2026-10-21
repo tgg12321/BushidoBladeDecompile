@@ -26,15 +26,17 @@ live session owns, and say which one you took.
   backlogs, census) can only be claimed as a freeze (`path:named_syms.txt!`), and that blocks every
   other lane's landing on it, so hold a freeze only while a unit needs it. `topic:<text>` reserves
   work (for example `topic:data:8008D120-8008E000`).
-- `lanes.py land` replays your commits onto the current main in your worktree, runs the gates
+- `lanes.py land` replays your commits onto the current main in a private landing worktree, runs the gates
   (oracle SHA1 rebuild, tus-check, integrity, engine test), regenerates the census, fast-forwards
   main and pushes. The gates run without the main lock; the lock covers only the final check and
   fast-forward. A land takes many minutes (full rebuild + engine test), so run it with
   `run_in_background: true` and wait for the completion notice, never under a short tool timeout.
   If a land was interrupted anyway, `lanes.py recover <lane>` (the next `land` also does it).
-  The land builds in a private landing worktree, so you may keep working in the lane meanwhile;
-  commits made during it land next time. Exit codes: 3 bounce (conflict: run
-  `lanes.py fresh <lane> --discard` and redo the unit on the new main), 4 gate failed, 5 main
+  You may keep working in the lane meanwhile; commits made during it land next time (if the
+  branch could not be moved because of uncommitted edits, just land again: already-landed
+  commits are skipped). Exit codes: 3 bounce (conflict: `lanes.py drop <lane> <sha>` removes
+  only the bounced commit and keeps later ones; redo that unit on the new main. Use
+  `fresh --discard` only to throw away everything unlanded), 4 gate failed, 5 main
   moved but the push failed (retry with `python tools/lanes/lanes.py push`; tell the user if that
   fails too).
   Never hand-merge into main.

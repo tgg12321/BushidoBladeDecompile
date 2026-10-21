@@ -30,7 +30,7 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   targets no other lane has claimed (`lanes.py status`). Parallel lanes then never name the same
   thing.
 - **Landing.** `python tools/lanes/lanes.py land <lane>` replays the lane's commits onto the current
-  main inside the worktree, then:
+  main in a private landing worktree, then:
   - runs the gates (`verify-oracle --rebuild`, `tus-check`, integrity, `engine test`,
     `test_label_census.py`) and checks the SHA1;
   - regenerates the census (never merge `function-names.csv` by hand);
@@ -43,8 +43,11 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   means main moved but the push failed: retry with `python tools/lanes/lanes.py push`, and tell
   the user if that fails too.
 - **Bounces.** If `land` bounces (exit 3: a real conflict, for example the same line of
-  `named_syms.txt` renamed by two lanes), run `lanes.py fresh <lane> --discard` and redo the apply on
-  the new main. The wave tools are deterministic, so this takes minutes. Never hand-merge into main.
+  `named_syms.txt` renamed by two lanes), run `lanes.py drop <lane> <sha>` for the commit it names
+  (later commits, such as the next unit, are kept) and redo that apply on the new main. The wave
+  tools are deterministic, so this takes minutes. `fresh --discard` throws away every unlanded
+  commit (the tip is saved under `refs/lanes-backup/`); use it only when that is the intent.
+  Never hand-merge into main.
 - **Lane-Replay.** A commit that is exactly tool output (no hand edits) may carry
   `Lane-Replay: <shell command>` trailers, run at the worktree root in WSL with the venv. On a
   conflict, `land` re-runs the commands instead of bouncing.
@@ -80,7 +83,8 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
 - The one thing you do wait on is `lanes.py land`: run it with `run_in_background: true`, because
   it can outlast a tool timeout. It builds in a private landing worktree, so you may prepare the
   next unit in the lane worktree meanwhile. Commits made during a land are not included; they
-  are rebased onto the new main afterwards and land next time.
+  are rebased onto the new main afterwards and land next time. If land notes that the branch
+  was left as is, nothing needs doing: the next land skips the already-landed commits.
 
 ## Backlog (`docs/naming/phase3/backlog.tsv`)
 

@@ -3,7 +3,7 @@
 
 A lane is a named worktree (`../bb2-worktrees/ln-<lane>`, branch `lanes/<lane>`) owned by exactly
 one Claude session. Lanes never edit the main checkout. Main is only a landing pad: `land`
-replays the lane's commits onto the current main in the lane's own worktree, runs the gates
+replays the lane's commits onto the current main in a private landing worktree, runs the gates
 there, and fast-forwards main to the gated commit under the main-reintegration lock
 (tools/reintegrate_lock.ps1, same lock file), so main never holds an ungated state.
 
@@ -24,7 +24,8 @@ tools/hooks/lane_guard.py enforces ownership and claims on Edit/Write/Bash/Power
 Usage (Windows Python, from any cwd):
   python tools/lanes/lanes.py status [--json]
   python tools/lanes/lanes.py open  <lane> [--kind naming|foundation] [--steal]
-  python tools/lanes/lanes.py fresh <lane> [--discard]
+  python tools/lanes/lanes.py fresh <lane> [--discard]     # --discard backs the tip up first
+  python tools/lanes/lanes.py drop  <lane> <sha>            # remove one unlanded commit (a bounce)
   python tools/lanes/lanes.py claim <lane> <token>...       # path:src/main/9F9C.c  topic:row:m09
   python tools/lanes/lanes.py unclaim <lane> [<token>...]   # no tokens = all
   python tools/lanes/lanes.py land  <lane> [--no-push]
@@ -34,7 +35,7 @@ Usage (Windows Python, from any cwd):
   python tools/lanes/lanes.py push                          # retry a failed push (exit 5)
 
 The session identity is $CLAUDE_CODE_SESSION_ID (override with --session for tests).
-Exit codes: 0 ok, 1 refused, 3 land bounced on a conflict, 4 a gate failed.
+Exit codes: 0 ok, 1 refused, 3 land bounced on a conflict, 4 a gate failed, 5 push failed.
 """
 from __future__ import annotations
 
@@ -462,8 +463,16 @@ def finish_worktree(ctx: Ctx, d: Path):
         r = subprocess.run([*boot[:-1], str(d / boot[-1])] if boot[-1].endswith(".ps1") else boot,
                            cwd=d, env=env)
         if r.returncode != 0:
-            raise Refuse(f"bootstrap failed in {d}; remove it with "
-                         f"pwsh -NoProfile -File tools/safe_remove_worktree.ps1 {d} -Force")
+            raise Refuse(f"bootstrap failed in {d}; the next open/land retries it, or remove it "
+                         f"with pwsh -NoProfile -File tools/safe_remove_worktree.ps1 {d} -Force")
+    boot_marker(d).write_text(f"{time.time()}\n", encoding="utf-8")
+
+
+def boot_marker(d: Path) -> Path:
+    """Written (inside the worktree's git dir, so the gates never see it) once the bootstrap
+    succeeded; a tree without it is re-bootstrapped instead of reused half set up."""
+    gd = git("rev-parse", "--git-dir", cwd=d)
+    return Path(gd if os.path.isabs(gd) else d / gd) / "lanes-bootstrapped"
 
 
 def ensure_land_tree(ctx: Ctx, lane: str) -> Path:
@@ -473,6 +482,10 @@ def ensure_land_tree(ctx: Ctx, lane: str) -> Path:
     if d.exists():
         if not (d / ".git").exists():
             raise Refuse(f"{d} exists but is not a worktree; inspect it by hand")
+        if not boot_marker(d).exists():  # an earlier bootstrap failed: redo it at main
+            run(["git", "cherry-pick", "--abort"], cwd=d, check=False)
+            git("checkout", "-q", "--detach", "-f", "main", cwd=d)
+            finish_worktree(ctx, d)
         return d
     d.parent.mkdir(parents=True, exist_ok=True)
     git("worktree", "add", "-q", "--detach", str(d), "main", cwd=ctx.main)
@@ -486,6 +499,14 @@ def ensure_worktree(ctx: Ctx, lane: str) -> Path:
     if d.exists():
         if not (d / ".git").exists():
             raise Refuse(f"{d} exists but is not a worktree; inspect it by hand")
+        if not boot_marker(d).exists():  # an earlier bootstrap failed
+            if git("status", "--porcelain", "--untracked-files=no", cwd=d) or \
+                    git("rev-list", "--count", f"main..{br}", cwd=ctx.main) != "0":
+                raise Refuse(f"{d} was never bootstrapped and holds work; bootstrap it by hand "
+                             f"(tools/setup_worker_worktree.ps1) or remove it with "
+                             f"tools/safe_remove_worktree.ps1")
+            git("checkout", "-q", "-B", br, "main", cwd=d)
+            finish_worktree(ctx, d)
         return d
     if d.name.startswith("bb2-work-"):
         raise Refuse("bb2-work-* names re-arm the worktree-era guards")
@@ -544,9 +565,46 @@ def cmd_fresh(ctx: Ctx, a):
         raise Refuse(f"{d} has uncommitted changes; commit or discard them first")
     ahead = int(git("rev-list", "--count", "main..HEAD", cwd=d))
     if ahead and not a.discard:
-        raise Refuse(f"lane has {ahead} unlanded commit(s); land them, or pass --discard")
+        raise Refuse(f"lane has {ahead} unlanded commit(s); land them, drop one with "
+                     f"`lanes.py drop {a.lane} <sha>`, or pass --discard")
+    if ahead:
+        backup_lane(ctx, a.lane, d, "discarded")
     git("checkout", "-q", "-B", ctx.branch(a.lane), "main", cwd=d)
     print(f"lanes: {a.lane} reset to main {git('rev-parse', '--short', 'HEAD', cwd=d)}")
+    return 0
+
+
+def backup_lane(ctx: Ctx, lane: str, d: Path, what: str):
+    """Save the lane tip under refs/lanes-backup/ and list the unlanded commits being rewritten."""
+    ref = (f"refs/lanes-backup/{lane}/{time.strftime('%Y%m%d-%H%M%S')}-"
+           f"{git('rev-parse', '--short', 'HEAD', cwd=d)}")
+    git("update-ref", ref, "HEAD", cwd=d)
+    print(f"lanes: {what} from {ctx.branch(lane)} (tip saved as {ref}):")
+    for ln in git("log", "--oneline", "main..HEAD", cwd=d).splitlines():
+        print(f"  {ln}")
+
+
+def cmd_drop(ctx: Ctx, a):
+    """Remove one unlanded commit (typically the one a land bounced on) and keep the rest."""
+    ctx.update(lambda reg: require_owner(ctx, reg, a.lane))
+    d, br = ctx.lane_dir(a.lane), ctx.branch(a.lane)
+    if land_running(ctx, a.lane):
+        raise Refuse(f"a land of '{a.lane}' is running; wait for it to finish")
+    if git("status", "--porcelain", "--untracked-files=no", cwd=d):
+        raise Refuse(f"{d} has uncommitted changes; commit or discard them first")
+    sha = git("rev-parse", "--verify", "-q", f"{a.sha}^{{commit}}", cwd=d, check=False)
+    if not sha or sha not in git("rev-list", f"main..{br}", cwd=d).split():
+        raise Refuse(f"{a.sha} is not an unlanded commit of {br}")
+    if git("rev-list", "--merges", f"{sha}~1..{br}", cwd=d):
+        raise Refuse("merge commits after it; rebuild the lane with fresh --discard")
+    backup_lane(ctx, a.lane, d, f"dropping {sha[:9]}")
+    r = run(["git", "rebase", "-q", "--onto", f"{sha}~1", sha, br], cwd=d, check=False)
+    if r.returncode != 0:
+        run(["git", "rebase", "--abort"], cwd=d, check=False)
+        raise Refuse(f"later commits depend on {sha[:9]} (rebase conflicted; lane unchanged):\n"
+                     f"{r.stdout}{r.stderr}")
+    print(f"lanes: dropped {sha[:9]}; {br} keeps "
+          f"{git('rev-list', '--count', f'main..{br}', cwd=d)} unlanded commit(s)")
     return 0
 
 
@@ -696,8 +754,9 @@ def replay_commit(ctx: Ctx, wt: Path, sha: str, log) -> str:
     run(["git", "cherry-pick", "--abort"], cwd=wt, check=False)
     if not cmds:
         raise Refuse(f"commit {sha[:9]} conflicts with main in: {', '.join(unresolved)}\n"
-                     f"  The lane must redo it on fresh main (lanes.py fresh --discard), or mark a "
-                     f"pure tool-output commit with Lane-Replay: trailers.", 3)
+                     f"  Drop just this commit (`lanes.py drop <lane> {sha[:9]}`; later commits are "
+                     f"kept) and redo it, or mark a pure tool-output commit with Lane-Replay: "
+                     f"trailers.", 3)
     print(f"lanes:   {sha[:9]} conflicts in {', '.join(unresolved)}; replaying its Lane-Replay commands")
     before = set(git("status", "--porcelain", cwd=wt).splitlines())
     for c in cmds:
@@ -908,8 +967,8 @@ def advance_lane(ctx: Ctx, lane: str, landed_from: str):
     if head == landed_from:
         r = run(["git", "reset", "-q", "--keep", "main"], cwd=wt, check=False)
         if r.returncode != 0:
-            print(f"lanes: note: could not move {br} to main without touching your edits; "
-                  f"run `lanes.py fresh {lane}` when they are committed")
+            print(f"lanes: note: {br} was left as is to keep your uncommitted edits; nothing to "
+                  f"do: the next `land` skips the already-landed commits")
         return
     if git("status", "--porcelain", "--untracked-files=no", cwd=wt):
         print(f"lanes: note: {br} gained commits during the land and has uncommitted edits; it "
@@ -1023,6 +1082,7 @@ def main(argv=None) -> int:
     s = sub.add_parser("open"); s.add_argument("lane"); s.add_argument("--kind", choices=["naming", "foundation"])
     s.add_argument("--steal", action="store_true"); s.add_argument("--allow-multi", action="store_true")
     s = sub.add_parser("fresh"); s.add_argument("lane"); s.add_argument("--discard", action="store_true")
+    s = sub.add_parser("drop"); s.add_argument("lane"); s.add_argument("sha")
     s = sub.add_parser("claim"); s.add_argument("lane"); s.add_argument("tokens", nargs="+")
     s = sub.add_parser("unclaim"); s.add_argument("lane"); s.add_argument("tokens", nargs="*")
     s = sub.add_parser("land"); s.add_argument("lane"); s.add_argument("--no-push", action="store_true")
@@ -1036,7 +1096,7 @@ def main(argv=None) -> int:
         if a.cmd not in ("status", "path") and not a.session:
             raise Refuse("no session id: $CLAUDE_CODE_SESSION_ID is unset (pass --session)")
         ctx = Ctx(find_main(Path(__file__).resolve().parent), a.session)
-        return {"status": cmd_status, "open": cmd_open, "fresh": cmd_fresh, "claim": cmd_claim,
+        return {"status": cmd_status, "open": cmd_open, "fresh": cmd_fresh, "drop": cmd_drop, "claim": cmd_claim,
                 "unclaim": cmd_unclaim, "land": cmd_land, "close": cmd_close,
                 "path": cmd_path, "recover": cmd_recover, "push": cmd_push}[a.cmd](ctx, a)
     except Refuse as e:

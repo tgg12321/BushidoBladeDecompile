@@ -179,6 +179,74 @@ class LaneTest(unittest.TestCase):
         self.edit_line("b", "shared.txt", 6, "B")
         self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
 
+    def test_bounce_drop_keeps_later_commits(self):
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        self.edit_line("a", "shared.txt", 5, "A")
+        self.edit_line("b", "shared.txt", 5, "B")
+        bounced = sh("rev-parse", "HEAD", cwd=self.wt("b"))
+        self.commit("b", "src/next.c", "int n;\n", "next unit")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertEqual(self.L("s2", "land", "b"), 3, self.last)
+        self.assertIn(f"drop <lane> {bounced[:9]}", self.last)
+        self.assertEqual(self.L("s2", "drop", "b", bounced[:9]), 0, self.last)
+        self.assertIn("refs/lanes-backup/b/", self.last)
+        self.assertTrue((self.wt("b") / "src" / "next.c").exists())
+        self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        self.assertTrue((self.main / "src" / "next.c").exists())
+        self.assertEqual(self.main_file("shared.txt").splitlines()[5], "A")
+        # --discard lists what it drops and keeps a backup ref
+        self.commit("b", "src/gone.c", "int g;\n", "gone unit")
+        self.assertEqual(self.L("s2", "fresh", "b", "--discard"), 0, self.last)
+        self.assertIn("gone unit", self.last)
+        refs = sh("for-each-ref", "--format=%(refname)", "refs/lanes-backup/b/", cwd=self.main).split()
+        self.assertEqual(len(refs), 2)
+        self.assertTrue(any(lanes.git_ok("cat-file", "-e", f"{r}:src/gone.c", cwd=self.main) for r in refs))
+        self.assertEqual(self.L("s2", "drop", "b", "main"), 1)
+
+    def test_failed_bootstrap_is_retried(self):
+        boot = self.main / "tmp" / "boot.py"
+        boot.parent.mkdir(exist_ok=True)
+        flag = self.main / "tmp" / "bootfail"
+        boot.write_text(f"import pathlib,sys\nsys.exit(1 if pathlib.Path({str(flag)!r}).exists() else 0)\n",
+                        newline="\n")
+        cfg = dict(CFG, bootstrap=[sys.executable, str(boot)])
+        (self.main / "tools" / "lanes" / "lanes.json").write_text(json.dumps(cfg), newline="\n")
+        sh("commit", "-qam", "boot cfg", cwd=self.main)
+        sh("push", "-q", "origin", "main", cwd=self.main)
+        flag.write_text("x")
+        self.assertEqual(self.L("s1", "open", "a"), 1, self.last)
+        self.assertIn("bootstrap failed", self.last)
+        flag.unlink()
+        self.assertEqual(self.L("s1", "open", "a"), 0, self.last)  # retried, not reused half set up
+        self.assertTrue(lanes.boot_marker(self.wt("a")).exists())
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        flag.write_text("x")
+        self.assertEqual(self.L("s1", "land", "a"), 1, self.last)  # landing tree bootstrap fails
+        self.assertIn("bootstrap failed", self.last)
+        flag.unlink()
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        land = self.tmp / "wts" / "lands" / "a"
+        self.assertTrue(lanes.boot_marker(land).exists())
+
+    def test_advance_note_when_edits_block_reset(self):
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        d = self.wt("a")
+        lines = (d / "backlog.tsv").read_text().splitlines()
+        lines[1] = "r1\tlanded"
+        self.commit("a", "backlog.tsv", "\n".join(lines) + "\n", "r1")
+        lb = (self.wt("b") / "backlog.tsv").read_text().splitlines()
+        lb[3] = "r3\tlanded"
+        self.commit("b", "backlog.tsv", "\n".join(lb) + "\n", "r3")
+        self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        lines[2] = "r2\tactive"  # uncommitted next-unit edit
+        (d / "backlog.tsv").write_text("\n".join(lines) + "\n", newline="\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("next `land` skips", self.last)
+        sh("-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-qam", "r2", cwd=d)
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertEqual(self.main_file("backlog.tsv"),
+                         "id\tstage\nr1\tlanded\nr2\tactive\nr3\tlanded\n")
+
     def test_replay_trailer(self):
         self.L("s1", "open", "a"); self.L("s2", "open", "b")
         self.edit_line("a", "shared.txt", 5, "A")
