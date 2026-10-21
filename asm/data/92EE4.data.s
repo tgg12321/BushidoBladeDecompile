@@ -3,55 +3,6 @@
 .section .data, "wa"
     .align 0
 
-nonmatching _snd_seq_tick_env
-
-dlabel _snd_seq_tick_env
-    /* 92ECC 800A26CC 3C000000 */ .word 0x0000003C
-enddlabel _snd_seq_tick_env
-
-nonmatching _snd_seq_tick_env_plus_0x4
-
-dlabel _snd_seq_tick_env_plus_0x4
-    /* 92ED0 800A26D0 01000000 */ .word 0x00000001
-enddlabel _snd_seq_tick_env_plus_0x4
-
-nonmatching _snd_seq_tick_env_plus_0x8
-
-dlabel _snd_seq_tick_env_plus_0x8
-    /* 92ED4 800A26D4 6C3F0880 */ .word SsSeqCalledTbyT
-enddlabel _snd_seq_tick_env_plus_0x8
-
-nonmatching _snd_seq_tick_env_plus_0xC
-
-dlabel _snd_seq_tick_env_plus_0xC
-    /* 92ED8 800A26D8 00000000 */ .word 0x00000000
-enddlabel _snd_seq_tick_env_plus_0xC
-
-nonmatching _snd_seq_tick_env_plus_0x10
-
-dlabel _snd_seq_tick_env_plus_0x10
-    /* 92EDC 800A26DC */ .byte 0x00
-enddlabel _snd_seq_tick_env_plus_0x10
-
-nonmatching _snd_seq_tick_env_plus_0x11
-
-dlabel _snd_seq_tick_env_plus_0x11
-    /* 92EDD 800A26DD */ .byte 0x00
-enddlabel _snd_seq_tick_env_plus_0x11
-
-nonmatching _snd_seq_tick_env_plus_0x12
-
-dlabel _snd_seq_tick_env_plus_0x12
-    /* 92EDE 800A26DE */ .byte 0x7F
-    /* 92EDF 800A26DF */ .byte 0x00
-enddlabel _snd_seq_tick_env_plus_0x12
-
-nonmatching _snd_seq_tick_env_plus_0x14
-
-dlabel _snd_seq_tick_env_plus_0x14
-    /* 92EE0 800A26E0 00000000 */ .word 0x00000000
-enddlabel _snd_seq_tick_env_plus_0x14
-
 nonmatching D_800A26E4
 
 dlabel D_800A26E4

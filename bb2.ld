@@ -478,11 +478,11 @@ SECTIONS
         build/src/main/psxsdk/libsnd/ssend.o(.data);
         build/src/main/psxsdk/libsnd/ssinit_c.o(.data);
         build/src/main/psxsdk/libsnd/ssinit.o(.data);
-        build/asm/data/92ECC.data.o(.data);
         build/src/main/psxsdk/libsnd/ssquit.o(.data);
         build/src/main/psxsdk/libsnd/scssattr.o(.data);
         build/src/main/psxsdk/libsnd/scsmvol.o(.data);
         build/src/main/psxsdk/libsnd/ssstart.o(.data);
+        build/asm/data/92EE4.data.o(.data);
         build/src/main/psxsdk/libsnd/sscall.o(.data);
         build/src/main/psxsdk/libsnd/cres.o(.data);
         build/src/main/psxsdk/libsnd/decre.o(.data);

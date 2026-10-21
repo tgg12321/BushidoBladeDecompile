@@ -9,6 +9,13 @@
 extern s32 InterruptCallback(s32, s32);
 static void _SsTrapIntrVSync(void);
 static void _SsSeqCalledTbyT_1per2(void);
+extern void SsSeqCalledTbyT(void);
+
+/* SSSTART .data (0x800A26CC..0x800A26E4, the module's 24-byte .data in
+ * LIBSND.LIB, XDEF _snd_seq_tick_env): tick mode 60, tick-mode flag 1, the
+ * tick handler SsSeqCalledTbyT, and the interrupt slot 0x7F (none). */
+SndSeqTickEnv _snd_seq_tick_env = {
+    60, 1, (s32)SsSeqCalledTbyT, 0, 0, 0, 0x7F, 0, 0};
 
 /* BB2's 4.0 rev uses 0x7F for the case-0 sentinel where SOTN's uses 0xFF. */
 void _SsStart(s32 arg0) {
