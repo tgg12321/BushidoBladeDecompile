@@ -440,13 +440,28 @@ def cmd_status(ctx: Ctx, a):
         d = ctx.lane_dir(lane)
         ahead = "-"
         if d.exists():
-            ahead = git("rev-list", "--count", f"main..{ctx.branch(lane)}", cwd=ctx.main, check=False) or "?"
+            try:
+                ahead = len(unlanded(ctx, lane, ctx.branch(lane), reg))
+            except Exception:
+                ahead = "?"
         owner = e.get("owner") or "(closed)"
         tag = " STALE" if e.get("owner") and is_stale(ctx, e) else ""
         mine = " (you)" if e.get("owner") == ctx.session else ""
         print(f"  {lane:<16} {e.get('kind', '?'):<10} owner={owner[:8]}{mine}{tag}  "
               f"unlanded={ahead}  claims={' '.join(e.get('claims', [])) or '-'}")
     return 0
+
+
+def unlanded(ctx: Ctx, lane: str, rev: str, reg=None) -> list:
+    """The lane commits up to `rev` that have not landed, oldest first. Landed means in main, or
+    an ancestor of the lane tip the last successful land took (registry `landed`): a lane branch
+    that could not be moved after a land still holds those commits, and replaying them would
+    re-apply landed work over newer main changes."""
+    excl = ["^main"]
+    done = (reg or ctx.load())["lanes"].get(lane, {}).get("landed")
+    if done and git_ok("cat-file", "-e", f"{done}^{{commit}}", cwd=ctx.main):
+        excl.append(f"^{done}")
+    return git("rev-list", "--reverse", rev, *excl, cwd=ctx.main).split()
 
 
 def finish_worktree(ctx: Ctx, d: Path):
@@ -501,7 +516,7 @@ def ensure_worktree(ctx: Ctx, lane: str) -> Path:
             raise Refuse(f"{d} exists but is not a worktree; inspect it by hand")
         if not boot_marker(d).exists():  # an earlier bootstrap failed
             if git("status", "--porcelain", "--untracked-files=no", cwd=d) or \
-                    git("rev-list", "--count", f"main..{br}", cwd=ctx.main) != "0":
+                    unlanded(ctx, lane, br):
                 raise Refuse(f"{d} was never bootstrapped and holds work; bootstrap it by hand "
                              f"(tools/setup_worker_worktree.ps1) or remove it with "
                              f"tools/safe_remove_worktree.ps1")
@@ -549,7 +564,7 @@ def cmd_open(ctx: Ctx, a):
     take_prev = ctx.update(take)
     d = ensure_worktree(ctx, lane)
     dirty = git("status", "--porcelain", "--untracked-files=no", cwd=d)
-    ahead = git("rev-list", "--count", f"main..{ctx.branch(lane)}", cwd=ctx.main)
+    ahead = len(unlanded(ctx, lane, ctx.branch(lane)))
     behind = git("rev-list", "--count", f"{ctx.branch(lane)}..main", cwd=ctx.main)
     print(f"lanes: lane '{lane}' ({kind}) owned by {ctx.session}"
           + (f" (taken over from {take_prev})" if take_prev and take_prev != ctx.session else ""))
@@ -563,7 +578,7 @@ def cmd_fresh(ctx: Ctx, a):
     d = ctx.lane_dir(a.lane)
     if git("status", "--porcelain", "--untracked-files=no", cwd=d):
         raise Refuse(f"{d} has uncommitted changes; commit or discard them first")
-    ahead = int(git("rev-list", "--count", "main..HEAD", cwd=d))
+    ahead = len(unlanded(ctx, a.lane, git("rev-parse", "HEAD", cwd=d)))
     if ahead and not a.discard:
         raise Refuse(f"lane has {ahead} unlanded commit(s); land them, drop one with "
                      f"`lanes.py drop {a.lane} <sha>`, or pass --discard")
@@ -580,8 +595,8 @@ def backup_lane(ctx: Ctx, lane: str, d: Path, what: str):
            f"{git('rev-parse', '--short', 'HEAD', cwd=d)}")
     git("update-ref", ref, "HEAD", cwd=d)
     print(f"lanes: {what} from {ctx.branch(lane)} (tip saved as {ref}):")
-    for ln in git("log", "--oneline", "main..HEAD", cwd=d).splitlines():
-        print(f"  {ln}")
+    for sha in reversed(unlanded(ctx, lane, git("rev-parse", "HEAD", cwd=d))):
+        print(f"  {git('log', '-1', '--oneline', sha, cwd=d)}")
 
 
 def cmd_drop(ctx: Ctx, a):
@@ -593,7 +608,7 @@ def cmd_drop(ctx: Ctx, a):
     if git("status", "--porcelain", "--untracked-files=no", cwd=d):
         raise Refuse(f"{d} has uncommitted changes; commit or discard them first")
     sha = git("rev-parse", "--verify", "-q", f"{a.sha}^{{commit}}", cwd=d, check=False)
-    if not sha or sha not in git("rev-list", f"main..{br}", cwd=d).split():
+    if not sha or sha not in unlanded(ctx, a.lane, br):
         raise Refuse(f"{a.sha} is not an unlanded commit of {br}")
     if git("rev-list", "--merges", f"{sha}~1..{br}", cwd=d):
         raise Refuse("merge commits after it; rebuild the lane with fresh --discard")
@@ -601,10 +616,11 @@ def cmd_drop(ctx: Ctx, a):
     r = run(["git", "rebase", "-q", "--onto", f"{sha}~1", sha, br], cwd=d, check=False)
     if r.returncode != 0:
         run(["git", "rebase", "--abort"], cwd=d, check=False)
-        raise Refuse(f"later commits depend on {sha[:9]} (rebase conflicted; lane unchanged):\n"
+        raise Refuse(f"could not drop {sha[:9]} (rebase failed, most likely a later commit depends "
+                     f"on it; lane unchanged):\n"
                      f"{r.stdout}{r.stderr}")
     print(f"lanes: dropped {sha[:9]}; {br} keeps "
-          f"{git('rev-list', '--count', f'main..{br}', cwd=d)} unlanded commit(s)")
+          f"{len(unlanded(ctx, a.lane, br))} unlanded commit(s)")
     return 0
 
 
@@ -655,7 +671,7 @@ def cmd_close(ctx: Ctx, a):
     def do(reg):
         e = require_owner(ctx, reg, a.lane)
         if d.exists():
-            ahead = int(git("rev-list", "--count", f"main..{ctx.branch(a.lane)}", cwd=ctx.main))
+            ahead = len(unlanded(ctx, a.lane, ctx.branch(a.lane), reg))
             if ahead and not a.force:
                 raise Refuse(f"lane has {ahead} unlanded commit(s); land them or pass --force "
                              f"(the branch is kept either way)")
@@ -754,9 +770,7 @@ def replay_commit(ctx: Ctx, wt: Path, sha: str, log) -> str:
     run(["git", "cherry-pick", "--abort"], cwd=wt, check=False)
     if not cmds:
         raise Refuse(f"commit {sha[:9]} conflicts with main in: {', '.join(unresolved)}\n"
-                     f"  Drop just this commit (`lanes.py drop <lane> {sha[:9]}`; later commits are "
-                     f"kept) and redo it, or mark a pure tool-output commit with Lane-Replay: "
-                     f"trailers.", 3)
+                     f"  (A pure tool-output commit can carry Lane-Replay: trailers instead.)", 3)
     print(f"lanes:   {sha[:9]} conflicts in {', '.join(unresolved)}; replaying its Lane-Replay commands")
     before = set(git("status", "--porcelain", cwd=wt).splitlines())
     for c in cmds:
@@ -833,8 +847,19 @@ def check_untracked(wt: Path):
                      + ", ".join(extra[:10]) + ("..." if len(extra) > 10 else ""), 4)
 
 
-def check_claims(ctx: Ctx, lane: str, rev: str):
-    touched = sorted(set(git("diff", "--name-only", f"main...{rev}", cwd=ctx.main).split()))
+def paths_of(ctx: Ctx, commits) -> list:
+    out = set()
+    for c in commits:
+        out.update(git("diff-tree", "--no-commit-id", "--name-only", "-r", c, cwd=ctx.main).split())
+    return sorted(out)
+
+
+def mark_landed(ctx: Ctx, lane: str, tipsrc: str):
+    """Record the lane tip whose commits are now in main (see unlanded)."""
+    ctx.update(lambda reg: reg["lanes"].setdefault(lane, {}).__setitem__("landed", tipsrc))
+
+
+def check_claims(ctx: Ctx, lane: str, touched):
     reg = ctx.load()
     for p in touched:
         hit = claimed_by_other(ctx, reg, lane, p)
@@ -906,7 +931,13 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log) -> s
     git("checkout", "-q", "--detach", "-f", base, cwd=ld)
     git("reset", "-q", "--hard", base, cwd=ld)
     for sha in commits:
-        how = replay_commit(ctx, ld, sha, log)
+        try:
+            how = replay_commit(ctx, ld, sha, log)
+        except Refuse as e:
+            if e.code == 3:  # every bounce names the commit and the way out
+                raise Refuse(f"{e}\n  Drop just this commit (later commits are kept) and redo it "
+                             f"on the new main: python tools/lanes/lanes.py drop {lane} {sha[:9]}", 3)
+            raise
         print(f"lanes:   {sha[:9]} {how}", flush=True)
     new_paths = set(git("diff", "--name-only", f"{base}..HEAD", cwd=ld).split())
     if not new_paths:
@@ -961,7 +992,7 @@ def sync_main_with_remote(ctx: Ctx, remote: str):
 def advance_lane(ctx: Ctx, lane: str, landed_from: str):
     """After a land, move the lane branch onto the new main without touching uncommitted work:
     commits made during the land are rebased onto main; with local edits they stay as they are
-    (their already-landed parents then replay as empty picks next time)."""
+    (the next land skips the already-landed ones: unlanded() excludes the recorded tip)."""
     wt, br = ctx.lane_dir(lane), ctx.branch(lane)
     head = git("rev-parse", "HEAD", cwd=wt)
     if head == landed_from:
@@ -972,7 +1003,7 @@ def advance_lane(ctx: Ctx, lane: str, landed_from: str):
         return
     if git("status", "--porcelain", "--untracked-files=no", cwd=wt):
         print(f"lanes: note: {br} gained commits during the land and has uncommitted edits; it "
-              f"was left as is (the landed commits will replay as empty next land)")
+              f"was left as is (the next land skips the already-landed commits)")
         return
     r = run(["git", "rebase", "-q", "--onto", "main", landed_from, br], cwd=wt, check=False)
     if r.returncode != 0:
@@ -989,14 +1020,14 @@ def cmd_land(ctx: Ctx, a):
     wt, br = ctx.lane_dir(lane), ctx.branch(lane)
     recover_lane(ctx, lane)  # refuses if a land of this lane is still running
     tipsrc = git("rev-parse", br, cwd=ctx.main)  # land exactly this; later lane commits wait
-    commits = git("rev-list", "--reverse", f"main..{tipsrc}", cwd=ctx.main).split()
+    commits = unlanded(ctx, lane, tipsrc)
     if not commits:
         print("lanes: nothing to land")
         return 0
-    if git("rev-list", "--merges", f"main..{tipsrc}", cwd=ctx.main):
+    if any(len(git("rev-list", "--parents", "-n1", c, cwd=ctx.main).split()) > 2 for c in commits):
         raise Refuse("the lane holds merge commits; replay cannot carry them. Rebuild the lane as "
                      "linear commits on fresh main (lanes.py fresh --discard).")
-    check_claims(ctx, lane, tipsrc)
+    check_claims(ctx, lane, paths_of(ctx, commits))
     remote = None if a.no_push else ctx.cfg.get("remote")
     land_pidfile(ctx, lane).write_text(str(os.getpid()), encoding="utf-8")
     ld = ensure_land_tree(ctx, lane)
@@ -1014,19 +1045,22 @@ def cmd_land(ctx: Ctx, a):
             tip = build_candidate(ctx, lane, ld, commits, base, log)  # no lock held
             if tip == base:
                 print("lanes: every lane commit is already in main; nothing new to land")
+                mark_landed(ctx, lane, tipsrc)
                 advance_lane(ctx, lane, tipsrc)
                 return 0
             # Short critical section: verify nothing moved, then fast-forward and push.
             if not held_before:
                 acquire_lock(ctx, f"lanes land {lane}")
             try:
-                check_claims(ctx, lane, tip)  # a freeze may have arrived meanwhile
+                check_claims(ctx, lane,  # a freeze may have arrived meanwhile
+                             git("diff", "--name-only", f"{base}..{tip}", cwd=ctx.main).split())
                 check_main_idle(ctx)
                 if remote:
                     sync_main_with_remote(ctx, remote)
                 if git("rev-parse", "main", cwd=ctx.main) != base:
                     continue  # main moved: rebuild on the new main (finally releases the lock)
                 git("merge", "-q", "--ff-only", tip, cwd=ctx.main)
+                mark_landed(ctx, lane, tipsrc)
                 pushed = push_main(ctx, remote) if remote else "not pushed: --no-push"
             finally:
                 if not held_before:

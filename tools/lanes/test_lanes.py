@@ -187,7 +187,7 @@ class LaneTest(unittest.TestCase):
         self.commit("b", "src/next.c", "int n;\n", "next unit")
         self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
         self.assertEqual(self.L("s2", "land", "b"), 3, self.last)
-        self.assertIn(f"drop <lane> {bounced[:9]}", self.last)
+        self.assertIn(f"lanes.py drop b {bounced[:9]}", self.last)
         self.assertEqual(self.L("s2", "drop", "b", bounced[:9]), 0, self.last)
         self.assertIn("refs/lanes-backup/b/", self.last)
         self.assertTrue((self.wt("b") / "src" / "next.c").exists())
@@ -246,6 +246,29 @@ class LaneTest(unittest.TestCase):
         self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
         self.assertEqual(self.main_file("backlog.tsv"),
                          "id\tstage\nr1\tlanded\nr2\tactive\nr3\tlanded\n")
+
+    def test_left_as_is_landed_commit_not_replayed_over_newer_main(self):
+        # sixth review: a landed commit still on the branch must not replay (and bounce, or
+        # re-apply) after main changed the same lines
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        d = self.wt("a")
+        self.edit_line("a", "shared.txt", 5, "A")
+        self.edit_line("b", "shared.txt", 15, "B15")
+        self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        lines = (d / "shared.txt").read_text().splitlines()
+        lines[10] = "A10"  # uncommitted next unit, in a file main changed: reset --keep refuses
+        (d / "shared.txt").write_text("\n".join(lines) + "\n", newline="\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("next `land` skips", self.last)
+        self.assertEqual(self.L("s2", "fresh", "b"), 0, self.last)
+        self.edit_line("b", "shared.txt", 5, "B5")
+        self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        sh("-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-qam", "next", cwd=d)
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("landing 1 commit(s)", self.last)
+        t = self.main_file("shared.txt").splitlines()
+        self.assertEqual((t[5], t[10], t[15]), ("B5", "A10", "B15"))
+        self.assertEqual(self.L("s1", "fresh", "a"), 0, self.last)  # nothing unlanded is left
 
     def test_replay_trailer(self):
         self.L("s1", "open", "a"); self.L("s2", "open", "b")
