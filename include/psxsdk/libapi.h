@@ -71,7 +71,7 @@ extern void AddDrv(struct DCB *);  /* PsyQ: not in LIBAPI.H */
 extern s32 open(s32 *, s32);       /* PsyQ: long open(char *, unsigned long) */
 extern void read(s32, s32 *, s32); /* PsyQ: long read(long, void *, long) */
 extern void close(s32);            /* PsyQ: long close(long) */
-extern s32 format(s32 *);          /* PsyQ: long format(char *) */
+extern s32 format(char *);
 /* PsyQ: struct DIRENTRY *firstfile(char *, struct DIRENTRY *) */
 extern struct DIRENTRY *firstfile(s32 *, struct DIRENTRY *);
 extern struct DIRENTRY *nextfile(struct DIRENTRY *);

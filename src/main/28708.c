@@ -35,13 +35,14 @@ extern u8 D_800A31FC;
 extern s32 g_comb_wait_state;
 extern s32 g_comb_recv_buf[2];
 extern s32 g_comb_send_buf;
+extern s32 write(s32, void *, s32); /* PsyQ: long write(long, void *, long) */
 extern u8 g_replay_playback_frame;
 
 extern Unk800F34D8Save D_800F34D8; /* = D_800F33D8 + 0x100 */
 extern s32 D_800A31F0;
 
 s32 memcard_Format(s32 a0, s32 a1) {
-    s32 buf[2];
+    char buf[8];
     sprintf(buf, (char *)D_800109C8, a0, a1);
     return format(buf);
 }
