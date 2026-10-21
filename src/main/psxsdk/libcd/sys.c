@@ -72,7 +72,11 @@ CdlCB CdReadyCallback(CdlCB func) {
     return old;
 }
 
-extern s32 g_cd_setloc_flags[];
+/* .data 0x800A112C..0x800A11AC, the module's 128-byte .data in LIBCD.LIB:
+ * per command, whether CdControl* issues CdlSetloc first (SOTN D_80032A24). */
+static s32 g_cd_setloc_flags[32] = {
+    0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0};
 
 s32 CdControl(u8 a0, u8 *a1, u8 *a2) {
     s32 result;
