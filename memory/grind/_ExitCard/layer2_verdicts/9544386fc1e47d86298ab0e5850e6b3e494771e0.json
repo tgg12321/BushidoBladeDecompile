@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "_ExitCard",
+  "body_hash": "473b741183513f0d",
+  "summary": "Canonical-asm body (PsyQ 4.0 LIBCARD END, inline_asm_canonical.txt:141) unchanged in bytes; the only edit adds two zero-size dlabel symbols at 0x8007A4C0/0x8007A4CC, exactly where the module's own inline data words sit and where its lui/addiu pairs point; nm confirms 8007a4c0/8007a4cc, build SHA1 == oracle. No cheat introduced.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": []
+}

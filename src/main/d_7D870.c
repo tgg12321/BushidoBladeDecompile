@@ -1,12 +1,16 @@
 /* Game data at the end of .text (0x8008D070..0x8008D120, ROM 0x7D870), after
  * the last PsyQ module (LIBAPI A72 ends at 0x8008D070; LIBSCAN, Q106 D3):
- * g_data_start (8 zero words), D_8008D090 (34 game function pointers)
+ * g_data_start (8 zero words; also D_8008D070, the empty .ctors table
+ * __main and __do_global_dtors walk), D_8008D090 (34 game function pointers)
  * and the first 8 bytes of g_sqrt_table_u8, whose rest opens
  * asm/data/7D920.data.s. The labels keep the .aent form they had inside
  * DelDrv's asm block. */
 __asm__(
     ".set noreorder\n"
     ".set noat\n"
+    ".global D_8008D070\n"
+    ".type D_8008D070, @object\n"
+    "D_8008D070:\n"
     ".global g_data_start\n"
     ".type g_data_start, @function\n"
     "g_data_start:\n"

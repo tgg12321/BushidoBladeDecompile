@@ -27,9 +27,11 @@ glabel _ExitCard
     /* 6ACB8 8007A4B8 0800E003 */  jr         $ra
     /* 6ACBC 8007A4BC 00000000 */   nop
     /* Inline data: D_8007A4C0 and D_8007A4CC (zero-initialized) */
+dlabel D_8007A4C0
     .word 0x00000000 /* 8007A4C0 */
     .word 0x00000000 /* 8007A4C4 */
     .word 0x00000000 /* 8007A4C8 */
+dlabel D_8007A4CC
     .word 0x00000000 /* 8007A4CC */
     .word 0x00000000 /* 8007A4D0 */
     .word 0x00000000 /* 8007A4D4 */
