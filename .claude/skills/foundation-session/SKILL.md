@@ -74,9 +74,12 @@ live session owns, and say which one you took.
      `stage`/`note` in `docs/foundation/backlog.tsv` (backlog rows merge row by row on land).
    - `python tools/lanes/lanes.py land <lane>`, then `lanes.py unclaim <lane>` for the unit's
      claims. That is the stopping point.
-4. **Stop** after 3 units, or earlier if context passes ~300k or a unit fails twice. Run
-   `python tools/lanes/lanes.py close <lane>` (keep the worktree; `--remove` only when the lane's
-   rows are all landed). Report one line per unit. Don't hand off and don't wait on anything.
+4. **Stop** after 3 units, or earlier if context passes ~300k or a unit fails twice. Before calling
+   the session ended, every lane commit must be on main (`lanes.py status` shows `unlanded=0`;
+   land or drop what is left), then run `python tools/lanes/lanes.py close <lane> --remove`. It
+   removes the lane and landing worktrees through `tools/safe_remove_worktree.ps1` and deletes the
+   branch. Report one line per unit, say plainly that the session is complete, and stop. Don't
+   hand off and don't wait on anything.
 
 ## Lane notes
 

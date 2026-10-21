@@ -696,6 +696,14 @@ def cmd_close(ctx: Ctx, a):
             if r.returncode != 0:
                 raise Refuse(f"safe_remove_worktree.ps1 failed for {tree}")
             print(f"lanes: removed worktree {tree}")
+        br = ctx.branch(a.lane)
+        if git_ok("rev-parse", "--verify", "-q", f"refs/heads/{br}", cwd=ctx.main):
+            left = unlanded(ctx, a.lane, br)
+            if left:
+                print(f"lanes: kept branch {br}: {len(left)} unlanded commit(s)")
+            else:
+                git("branch", "-D", br, cwd=ctx.main)  # every commit is in main (unlanded())
+                print(f"lanes: deleted branch {br} (all of it is on main)")
     return 0
 
 

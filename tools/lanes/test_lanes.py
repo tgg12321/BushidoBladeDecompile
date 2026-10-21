@@ -393,6 +393,26 @@ class LaneTest(unittest.TestCase):
         self.assertTrue(Path(d, sh("rev-parse", "--git-path", "rebase-merge", cwd=d)).exists())
         sh("rebase", "--abort", cwd=d)
 
+    def test_close_remove_deletes_landed_branch_only(self):
+        stub = self.main / "tools" / "safe_remove_worktree.ps1"  # untracked stand-in
+        stub.write_text(f"param($p, [switch]$Force)\ngit -C '{self.main}' worktree remove --force $p\n"
+                        "exit $LASTEXITCODE\n", newline="\n")
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertEqual(self.L("s1", "close", "a", "--remove"), 0, self.last)
+        self.assertIn("deleted branch lanes/a", self.last)
+        self.assertFalse(self.wt("a").exists())
+        self.assertFalse((self.tmp / "wts" / "lands" / "a").exists())
+        self.assertFalse(lanes.git_ok("rev-parse", "--verify", "-q", "refs/heads/lanes/a", cwd=self.main))
+        # unlanded work keeps its branch even under --force
+        self.L("s1", "open", "a")
+        self.commit("a", "src/c.c", "int c;\n", "add c")
+        self.assertEqual(self.L("s1", "close", "a", "--remove"), 1, self.last)
+        self.assertEqual(self.L("s1", "open", "a"), 0, self.last)
+        self.assertEqual(self.L("s1", "close", "a", "--remove", "--force"), 0, self.last)
+        self.assertIn("kept branch lanes/a", self.last)
+
     def test_mark_landed_failure_leaves_main_unmoved(self):
         # tenth review S1: the record is written before main moves
         self.L("s1", "open", "a")

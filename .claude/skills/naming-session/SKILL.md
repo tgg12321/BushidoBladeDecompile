@@ -65,9 +65,12 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
 - **Work:** do at most **3 units**, each from the list below. A unit ends at a **stopping point**:
   `lanes.py land` succeeded (main gated and pushed), with the backlog row updated in the landed
   commits, and the unit's claims released (`lanes.py unclaim <lane> <tokens>`).
-- **Stop:** after 3 units, or earlier if context passes ~300k or a unit fails twice. Run
-  `lanes.py close <lane>`, report one line per unit, then stop. Don't hand off and don't wait on
-  anything. The next session starts from the backlog.
+- **Stop:** after 3 units, or earlier if context passes ~300k or a unit fails twice. Before calling
+  the session ended, every lane commit must be on main (`lanes.py status` shows `unlanded=0`; land
+  or drop what is left), then run `lanes.py close <lane> --remove`. It removes the lane and landing
+  worktrees through `tools/safe_remove_worktree.ps1` and deletes the branch (never use a raw
+  `git worktree remove`). Report one line per unit, say plainly that the session is complete, and
+  stop. Don't hand off and don't wait on anything. The next session starts from the backlog.
 - **Pick order:** LAND first (oldest `reviewed` row no other lane claims), then PREPARE (first
   unclaimed `idea` row).
 
