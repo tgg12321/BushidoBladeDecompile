@@ -654,7 +654,7 @@ void func_8003BFC4(void) {
     func_800415C4(0);
     func_800415C4(1);
     eff_ClearInitFlag();
-    v = arena_GetBase();
+    v = (s32)arena_GetBase();
     sys_ExecMovieOverlay(v, (s32)0x80118000, 1, 0xCF8, 0xB01);
     func_80046B44();
     D_800A3834 = 8;
