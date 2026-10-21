@@ -835,19 +835,18 @@ _svm_okof1	0x801078D8	undefined_syms_auto.txt:358	b							dup
 _svm_okof2	0x801078DA	undefined_syms_auto.txt:359	b							dup
 D_801078E0	0x801078E0	undefined_syms_auto.txt:360	b							
 D_00000000	0x00000000	undefined_syms_auto.txt:361	b							
-D_800A1494	0x800A1494	undefined_syms_auto.txt:362	b							
-D_800F66A0	0x800F66A0	undefined_syms_auto.txt:363	b							dup
-D_800EEDD0	0x800EEDD0	undefined_syms_auto.txt:364	b							dup
-D_800EEDF0	0x800EEDF0	undefined_syms_auto.txt:365	b							dup
-D_800EEDF8	0x800EEDF8	undefined_syms_auto.txt:366	b							dup
-g_color_mode	0x800F6652	undefined_syms_auto.txt:373	b							dup
-D_800F6656	0x800F6656	undefined_syms_auto.txt:376	b							dup
-D_800F6654	0x800F6654	undefined_syms_auto.txt:377	b							dup
-D_800A9A10	0x800A9A10	undefined_syms_auto.txt:378	b							dup
-D_800EF848	0x800EF848	undefined_syms_auto.txt:380	b							dup
-D_800EF7BC	0x800EF7BC	undefined_syms_auto.txt:381	b							dup
-D_800EF800	0x800EF800	undefined_syms_auto.txt:382	b							dup
-D_800A8FB0	0x800A8FB0	undefined_syms_auto.txt:383	b							dup
-D_800A93BC	0x800A93BC	undefined_syms_auto.txt:384	b							dup
-D_800A93B0	0x800A93B0	undefined_syms_auto.txt:385	b							dup
+D_800F66A0	0x800F66A0	undefined_syms_auto.txt:362	b							dup
+D_800EEDD0	0x800EEDD0	undefined_syms_auto.txt:363	b							dup
+D_800EEDF0	0x800EEDF0	undefined_syms_auto.txt:364	b							dup
+D_800EEDF8	0x800EEDF8	undefined_syms_auto.txt:365	b							dup
+g_color_mode	0x800F6652	undefined_syms_auto.txt:372	b							dup
+D_800F6656	0x800F6656	undefined_syms_auto.txt:375	b							dup
+D_800F6654	0x800F6654	undefined_syms_auto.txt:376	b							dup
+D_800A9A10	0x800A9A10	undefined_syms_auto.txt:377	b							dup
+D_800EF848	0x800EF848	undefined_syms_auto.txt:379	b							dup
+D_800EF7BC	0x800EF7BC	undefined_syms_auto.txt:380	b							dup
+D_800EF800	0x800EF800	undefined_syms_auto.txt:381	b							dup
+D_800A8FB0	0x800A8FB0	undefined_syms_auto.txt:382	b							dup
+D_800A93BC	0x800A93BC	undefined_syms_auto.txt:383	b							dup
+D_800A93B0	0x800A93B0	undefined_syms_auto.txt:384	b							dup
 func_842C2000	0x842C2000	undefined_funcs_auto.txt:1	b							
