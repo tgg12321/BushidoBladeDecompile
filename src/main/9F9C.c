@@ -4465,9 +4465,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->unk_46 = 1;
     }
     if (rec->pending_move_event >= 0) {
-        /* the move-script record of cur_move's follow-up id is a u16 move-id
-         * table indexed by event code (here pending_move_event; 0xD, 0x17/0x18
-         * below) */
+        /* the move-script record of cur_move's event_move_table_id is a u16
+         * move-id table indexed by event code (here pending_move_event; 0xD,
+         * 0x17/0x18 below) */
         u16 *table;
 
         if (rec->move_kind == 0xA || rec->move_kind == 0x17 ||

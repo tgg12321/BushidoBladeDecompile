@@ -38,14 +38,15 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 - the rest index the common file's streams, and `*out` is set to 1.
 
 `func_80021A98(i, script, common)` (src/main/9F9C.c:3311) makes `script` the
-current move of fighter `i`: `cur_move = script`, `motion_entry_index = script->unk_04`, and
+current move of fighter `i`: `cur_move = script`, `motion_entry_index = script->motion_bank_entry_index`, and
 `motion_entry` / `motion_metadata` point at the script's entry in the file's `unk_04` table
 and at the byte stream it names in `unk_08` (the frame-window stream that
 [combat.md](combat.md) describes). It also resets the frame counter `move_frame`
 from `script->first_move_frame` and records the previous state in `prev_move_kind`.
 
-The script's own fields (`unk_00` / `unk_02` follow-up ids, `unk_07` /
-`unk_08` frame bounds, `unk_09` flags, and the command list from `unk_0A`)
+The script's own fields (`event_move_table_id` / `fallback_move_id` move ids,
+`last_move_frame` / `last_command_frame` frame bounds, `unk_09` flags, and the
+command list `transition_commands`)
 are walked by `fighter_Update`, as the comment on `MoveScript` records
 (include/game.h:1364).
 

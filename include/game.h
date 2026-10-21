@@ -1388,12 +1388,15 @@ typedef struct Unk800F1B18Rec {
 
 /* Header of one move record of a character's move script (the u16 stream
  * motion_ResolveMoveData returns pointers into; Unk80101EC8Record.cur_move is
- * the current move, queued_move a buffered one).  unk_00 / unk_02 are follow-up
- * move ids, unk_07 / unk_08 frame bounds against Unk80101EC8Record.move_frame,
- * unk_09 flag bits (fighter_Update, fighter_BuildCpuPad, func_80058580); unk_0A
- * starts the command list fighter_Update walks: (flags, move id) entries of 2
- * halfwords, or 4 when flags has a 0xC000 bit, ended by a zero flags word. The
- * two extra halfwords are [mask lo, mask hi], except in a 0x4000 paired entry
+ * the current move, queued_move a buffered one).  event_move_table_id is a move
+ * id that resolves to a u16 move-id table indexed by event code,
+ * fallback_move_id the move that follows when the script runs out,
+ * last_move_frame / last_command_frame frame bounds against
+ * Unk80101EC8Record.move_frame, unk_09 flag bits (fighter_Update,
+ * fighter_BuildCpuPad, func_80058580); transition_commands starts the command
+ * list fighter_Update walks: (flags, move id) entries of 2 halfwords, or 4 when
+ * flags has a 0xC000 bit, ended by a zero flags word. The two extra halfwords
+ * are [mask lo, mask hi], except in a 0x4000 paired entry
  * (motion_FindPairedMoveEntry), whose four bytes are a distance range (min,
  * max, x 20), a target separation (x 20, stored to D_800A371C: the distance
  * func_8002BC68 pulls the two fighters toward) and a flags byte (bit 7 tested;
@@ -1450,7 +1453,7 @@ typedef struct Unk80101EC8Record {
     s16 motion_slot;
     s16 borrow_other_motion;
     u8 unk_4E[0x50 - 0x4E];
-    /* current move; unk_08 bounds move_frame (func_80058580) */
+    /* current move; last_command_frame bounds move_frame (func_80058580) */
     MoveScript *cur_move;
     u16 *motion_entry;
     u8 *motion_metadata; /* byte 3 read by func_80056FE8 */

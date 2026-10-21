@@ -99,7 +99,7 @@ an opponent order; the code does not name it.
   (capped at 0x40) grows; otherwise the entry
   `func_80046F14()[D_800A36A4 * 12 + index * 3]`. It then zeroes `unk_104` /
   `unk_134`, switches its move (the script `motion_ResolveMoveData` resolves from
-  `cur_move->unk_00` and that record's halfword 0x1D, made current by
+  `cur_move->event_move_table_id` and that record's halfword 0x1D, made current by
   `func_80021A98`) and plays
   cue 0x30.
 - `camera_SetFighterFocusView(rec, a1)` (src/main/9F9C.c:980) sets the view target
