@@ -102,7 +102,7 @@ typedef struct {
     s32 unk8;
 } Unk800F0EC8Record;
 
-/* Flare-slot position table at 0x800F0E38: 12 slots x one 3-word {x, y, z}
+/* Effect-slot position table at 0x800F0E38: 12 slots x one 3-word {x, y, z}
  * record (12 bytes; 0x800F0E38 + 12 * 12 == 0x800F0EC8, the table above).
  * eff_SpawnBillboardPair spawns into it, func_80063084 draws from it. The slot
  * bitmask D_800A3448 and the age table D_800F0BEC[slot] index the same slot. */

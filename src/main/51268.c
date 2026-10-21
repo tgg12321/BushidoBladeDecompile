@@ -1030,7 +1030,7 @@ s32 func_8006295C(void) {
     return D_800A3460;
 }
 
-/* Spawn a flare: claim the first free slot bit in D_800A3448 (of 12), copy
+/* Spawn a slot: claim the first free slot bit in D_800A3448 (of 12), copy
    the position at *D_800A347C into its D_800F0E38 record and reset its age.
    With every slot taken it writes slot 12 (0x800F0EC8, the next table) --
    the original has no guard. */
@@ -1055,13 +1055,13 @@ s32 eff_SpawnBillboardPair(void) {
     return 1;
 }
 
-/* Draw the up-to-12 flare slots eff_SpawnBillboardPair spawns: per live slot i
+/* Draw the up-to-12 slots eff_SpawnBillboardPair spawns: per live slot i
    (bit i of D_800A3448, age D_800F0BEC[i], world position D_800F0E38[i]) emit
-   two textured POLY_FT4 billboards -- j == 0 the flare itself, j == 1 a halo
-   that bobs above it -- each rotated/translated relative to the camera,
-   projected, sized from its depth and animated by its age, then linked into the
-   OT at its depth. A slot whose age reaches 16 clears its bit. Returns nonzero
-   while any slot is still live. */
+   two textured POLY_FT4 billboards (j == 0, then j == 1 bobbing above it),
+   each rotated/translated relative to the camera, projected, sized from its
+   depth and animated by its age, then linked into the OT at its depth. A slot
+   whose age reaches 16 clears its bit. Returns nonzero while any slot is still
+   live. */
 s32 func_80063084(void) {
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);

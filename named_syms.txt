@@ -722,7 +722,7 @@ D_800A3916                                     = 0x800A3916;  /* 1 = skip the bu
 /* */
 /* func_80033FE4 then sets D_800A38A4 = 6/7 (D_800A36F0) or 8/9 */
 /* (D_800A3781) and D_800A3834 = 0x12. */
-D_800A3444                                  = 0x800A3444;  /* live mask of 16 effect slots: func_800645B0 claims a slot (1 << slot), func_800646E8 draws it and clears its bit */  /* data-wave 2026-10-08: was g_particle_slot_bitmap */
+D_800A3444                                  = 0x800A3444;  /* live mask of 16 effect slots: eff_SpawnJitteredBillboards claims a slot (1 << slot), func_800646E8 draws it and clears its bit */  /* data-wave 2026-10-08: was g_particle_slot_bitmap */
 D_800A3834                            = 0x800A3834;  /* main loop's handler index: main calls D_8008D090[it]() each frame; handlers store the next one */  /* data-wave 2026-10-08: was g_practice_mode_dispatch_idx */
 D_800A38A4                               = 0x800A38A4;  /* 0..9 selector; func_8003C040 branches on 4..9 and indexes D_8009016C / D_8008EA70 with it */  /* data-wave 2026-10-08: was g_practice_unlock_anim_id */
 D_800A38E2                              = 0x800A38E2;  /* step counter: func_80033DF4 picks table row [it] and stores it + 1; at 0x64 runs its end branch */  /* data-wave 2026-10-08: was g_practice_lesson_progress */
