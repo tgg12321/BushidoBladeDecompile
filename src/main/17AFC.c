@@ -699,11 +699,11 @@ s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
                     s32 temp_v1_4 = -arg0->orientation.vy;
                     s32 temp_v1_5 =
                         (s32)(Judge[(temp_v1_4 + 0x400) & 0xFFF] *
-                                  temp_s4->unk_114[temp_s5].vx +
+                                  temp_s4->weapon_point_delta[temp_s5].vx +
                               Judge[temp_v1_4 & 0xFFF] *
-                                  temp_s4->unk_114[temp_s5].vz) >>
+                                  temp_s4->weapon_point_delta[temp_s5].vz) >>
                         0xC;
-                    s32 temp_a0_2 = temp_s4->unk_114[temp_s5].vy;
+                    s32 temp_a0_2 = temp_s4->weapon_point_delta[temp_s5].vy;
                     s32 var_a1 = temp_a0_2;
                     s32 var_v0_3;
                     if (temp_a0_2 < 0) {
@@ -866,14 +866,14 @@ void fighter_ResolveBodyOverlap(void) {
     flag1 = 0;
     if (D_80101EC8[0].move_kind == 0x13 || D_80101EC8[0].move_kind == 0x1B ||
         D_80101EC8[0].move_kind == 0x30) {
-        if (D_80101EC8[0].unk_14E > 0x9C4) {
+        if (D_80101EC8[0].forward_move_rate > 0x9C4) {
             flag1 = 1;
         }
     }
     flag2 = 0;
     if (D_80101EC8[1].move_kind == 0x13 || D_80101EC8[1].move_kind == 0x1B ||
         D_80101EC8[1].move_kind == 0x30) {
-        if (D_80101EC8[1].unk_14E > 0x9C4) {
+        if (D_80101EC8[1].forward_move_rate > 0x9C4) {
             flag2 = 1;
         }
     }
@@ -1135,8 +1135,8 @@ s32 fighter_ProcessWeaponContacts(void) {
                 var_1[7] = rec->unk_234[1];
             }
         }
-        if (rec->move_frame >= rec->unk_A1[0] &&
-            rec->move_frame <= rec->unk_A3[0] &&
+        if (rec->move_frame >= rec->weapon_hit_start_frames[0] &&
+            rec->move_frame <= rec->weapon_hit_end_frames[0] &&
             func_800290B8(0, rec->unk_0E == 4 || rec->unk_0E == 5, var_1) !=
                 0) {
             func_80032854(i, 1, &scr->unk100[0].x, 0);
@@ -1144,8 +1144,9 @@ s32 fighter_ProcessWeaponContacts(void) {
             func_80032854(i, 0x2D, &scr->unk100[0].x, 0);
             rec->pending_move_event = rec->unk_8C != 0 ? 0x19 : 0xB;
             rec->unk_AD = 0;
-        } else if (rec->unk_8C != 0 && rec->move_frame >= rec->unk_A1[1] &&
-                   rec->move_frame <= rec->unk_A3[1] &&
+        } else if (rec->unk_8C != 0 &&
+                   rec->move_frame >= rec->weapon_hit_start_frames[1] &&
+                   rec->move_frame <= rec->weapon_hit_end_frames[1] &&
                    func_800290B8(1, 0, var_1) != 0) {
             func_80032854(i, 1, &scr->unk100[0].x, 0);
             func_80032854(i, 0x26, &scr->unk100[0].x, 0);
@@ -1663,7 +1664,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         if ((var_3->unk_0E == 6 || var_3->unk_0E == 7) &&
             (var_3->move_kind == 2 || var_3->move_kind == 0x1B ||
              var_3->move_kind == 0x28 || var_3->move_kind == 0x26) &&
-            var_3->move_frame == var_3->unk_A1[0]) {
+            var_3->move_frame == var_3->weapon_hit_start_frames[0]) {
             if (var_3->unk_34A != 0) {
                 var_3->unk_34A -= 1;
                 scr->unk00.unk00[0] = SPAD->unk00[i == 0][1];
@@ -1681,7 +1682,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             var_3->unk_26C != 0 &&
             (var_3->move_kind == 2 || var_3->move_kind == 0x1B ||
              var_3->move_kind == 0x28 || var_3->move_kind == 0x26) &&
-            var_3->move_frame == var_3->unk_A1[1] && var_3->unk_34A != 0) {
+            var_3->move_frame == var_3->weapon_hit_start_frames[1] &&
+            var_3->unk_34A != 0) {
             var_3->unk_34A -= 1;
             scr->unk00.unk00[0] = SPAD->unk48[i == 0][1];
             scr->unk00.unk00[1] = SPAD->unk48[i == 0][0];
@@ -1834,15 +1836,15 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             }
         }
         if (mode == 1) {
-            math_NegNormalize3D(&var_3->unk_114[0].vx, vec);
+            math_NegNormalize3D(&var_3->weapon_point_delta[0].vx, vec);
             func_80032854(i, 4, &SPAD->unkA8[i][idx].x, vec);
             return;
         }
         var_24 = 0;
-        if ((var_3->move_frame >= var_3->unk_A1[0] - 3 &&
-             var_3->move_frame < var_3->unk_A1[0]) ||
-            (var_3->move_frame >= var_3->unk_A1[1] - 3 &&
-             var_3->move_frame < var_3->unk_A1[1])) {
+        if ((var_3->move_frame >= var_3->weapon_hit_start_frames[0] - 3 &&
+             var_3->move_frame < var_3->weapon_hit_start_frames[0]) ||
+            (var_3->move_frame >= var_3->weapon_hit_start_frames[1] - 3 &&
+             var_3->move_frame < var_3->weapon_hit_start_frames[1])) {
             var_24 = 1;
         }
         var_25 = 0;
@@ -1894,8 +1896,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 diff = 0x1000 - diff;
             }
             if (diff < 0x400) {
-                work = (ratan2(var_3->unk_114[var_12].vx,
-                               var_3->unk_114[var_12].vz) +
+                work = (ratan2(var_3->weapon_point_delta[var_12].vx,
+                               var_3->weapon_point_delta[var_12].vz) +
                         0x800 - var_4->opponent_bearing) &
                        0xFFF;
                 if (work >= 0x800) {
@@ -1905,8 +1907,10 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 if (work < 0) {
                     work = 0;
                 }
-                dx = dx / 4 + (var_3->unk_114[temp3].vx * work / 2 >> 11);
-                dz = dz / 4 + (var_3->unk_114[temp3].vz * work / 2 >> 11);
+                dx = dx / 4 +
+                     (var_3->weapon_point_delta[temp3].vx * work / 2 >> 11);
+                dz = dz / 4 +
+                     (var_3->weapon_point_delta[temp3].vz * work / 2 >> 11);
                 if (var_3->move_kind == 3 || var_3->move_kind == 7 ||
                     var_3->move_kind == 0xD || var_3->move_kind == 0x2C) {
                     var_4->unk_134.vx += dx / 2;
@@ -1944,8 +1948,9 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
         if (var_3->unk_AE == 0) {
             continue;
         }
-        if (var_3->unk_8C != 0 && (var_3->move_frame < var_3->unk_A1[var_12] ||
-                                   var_3->move_frame > var_3->unk_A3[var_12])) {
+        if (var_3->unk_8C != 0 &&
+            (var_3->move_frame < var_3->weapon_hit_start_frames[var_12] ||
+             var_3->move_frame > var_3->weapon_hit_end_frames[var_12])) {
             continue;
         }
         flag = 0;
@@ -1954,7 +1959,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 var_12 != 0) {
                 flag = 1;
             } else {
-                math_NegNormalize3D(&var_3->unk_114[var_12].vx, vec);
+                math_NegNormalize3D(&var_3->weapon_point_delta[var_12].vx, vec);
             }
         }
         if (D_800A3140 == 0) {
@@ -3794,7 +3799,7 @@ Obj80106A78 *object_SpawnFromFighter(Unk80101EC8Record *arg0, s32 arg1) {
     obj->unk_04 = 1;
     obj->owner = arg0->index;
     obj->pos.x = arg0->world_pos.x;
-    obj->pos.y = arg0->world_pos.y - arg0->unk_1A / 32;
+    obj->pos.y = arg0->world_pos.y - arg0->size_scale / 32;
     obj->pos.z = arg0->world_pos.z;
     tbl = &D_8008E194[arg1];
     obj->vel.x = (Judge[arg0->orientation.vy & 0xFFF] * tbl->unk4) >> 12;
@@ -4410,7 +4415,7 @@ Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
     s0->unk_03 = src->index;
     s0->unk_04.x = src->world_pos.x;
     {
-        s32 v1 = src->unk_1A;
+        s32 v1 = src->size_scale;
         if (v1 < 0)
             v1 += 0x1F;
         s0->unk_04.y = src->collision_pos.vy - (v1 >> 5);
@@ -4533,13 +4538,13 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
     u8 val;
 
     ptr = rec->motion_metadata + 4;
-    rec->unk_A1[0] = 0xFF;
-    rec->unk_A3[0] = 0xFF;
-    rec->unk_A1[1] = 0xFF;
-    rec->unk_A3[1] = 0xFF;
+    rec->weapon_hit_start_frames[0] = 0xFF;
+    rec->weapon_hit_end_frames[0] = 0xFF;
+    rec->weapon_hit_start_frames[1] = 0xFF;
+    rec->weapon_hit_end_frames[1] = 0xFF;
     rec->unk_AA = 0;
     rec->unk_A7 = 0;
-    rec->unk_A8 = 0;
+    rec->object_pickup_frame = 0;
     rec->unk_A5 = 0;
     rec->unk_A6 = 0xFF;
     rec->unk_AB = 0xFF;
@@ -4554,19 +4559,19 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
             val = *ptr++;
             switch (c) {
             case 0x80:
-                rec->unk_A1[0] = val;
+                rec->weapon_hit_start_frames[0] = val;
                 break;
             case 0x81:
-                rec->unk_A3[0] = val;
+                rec->weapon_hit_end_frames[0] = val;
                 break;
             case 0x82:
                 rec->unk_A7 = val;
                 break;
             case 0x83:
-                rec->unk_A8 = val;
+                rec->object_pickup_frame = val;
                 break;
             case 0x84:
-                rec->unk_A9 = val;
+                rec->opponent_turn_frame = val;
                 break;
             case 0x85:
                 rec->unk_A5 = val;
@@ -4575,10 +4580,10 @@ void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
                 rec->unk_A6 = val;
                 break;
             case 0x87:
-                rec->unk_A1[1] = val;
+                rec->weapon_hit_start_frames[1] = val;
                 break;
             case 0x88:
-                rec->unk_A3[1] = val;
+                rec->weapon_hit_end_frames[1] = val;
                 break;
             case 0x89:
                 rec->unk_AA = val;

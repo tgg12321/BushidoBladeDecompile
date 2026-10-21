@@ -289,7 +289,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
                 temp = 0;
             }
             p->cpu_profile = 0x19;
-            p->unk_1C = (temp + 2) << 10;
+            p->base_move_frame_step = (temp + 2) << 10;
             p->unk_438 = 0;
             p->unk_424 = 0;
             p->unk_3F6 = 0x3C - temp * 15;
@@ -323,7 +323,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
     if (!(D_80099D88[p->cpu_profile].flags & 0xFF00)) {
         p->unk_424 = 0x11 - (p->unk_438 >> 8);
     }
-    p->unk_39A = 0x8000 / p->unk_1C;
+    p->unk_39A = 0x8000 / p->base_move_frame_step;
     p->unk_3BD = 0x10 - (p->unk_438 >> 8);
     if (D_80099D88[p->cpu_profile].flags & 0x100) {
         D_80099D88[p->cpu_profile].unk3 = (rand() & 3) + 1;
@@ -344,7 +344,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
             list = arg1;
             var_9 = p->cpu_profile;
         }
-        rec->scale_distance_offset = (rec->unk_1A - 0x1000) * 225 >> 11;
+        rec->scale_distance_offset = (rec->size_scale - 0x1000) * 225 >> 11;
         for (var_5 = 0; var_5 < 3; var_5++) {
             bit = 1 << var_9;
             lo = 0xFFFF;
@@ -670,7 +670,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         rec->unk_3F0 = 0;
     }
 
-    temp = rec->other->unk_148 - rec->unk_148;
+    temp = rec->other->ground_y - rec->ground_y;
     if (temp < -1000) {
         rec->unk_442 = 1;
     } else if (temp > 1000) {
@@ -691,10 +691,12 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     }
 
     if (rec->unk_430 & 0x80) {
-        lo = rec->other->unk_A1[0] != 0xFF ? rec->other->unk_A1[0]
-                                           : rec->other->unk_A1[1];
-        hi = rec->other->unk_A3[0] != 0xFF ? rec->other->unk_A3[0]
-                                           : rec->other->unk_A3[1];
+        lo = rec->other->weapon_hit_start_frames[0] != 0xFF
+                 ? rec->other->weapon_hit_start_frames[0]
+                 : rec->other->weapon_hit_start_frames[1];
+        hi = rec->other->weapon_hit_end_frames[0] != 0xFF
+                 ? rec->other->weapon_hit_end_frames[0]
+                 : rec->other->weapon_hit_end_frames[1];
     }
     if (!(rec->unk_430 & 0x80) ||
         (rec->move_kind != 0x11
@@ -1015,7 +1017,7 @@ s32 func_80056FE8(Unk80101EC8Record *arg0) {
     Unk80101EC8Record *a2 = arg0->other;
     s32 base = a2->motion_metadata[3] * 40;
 
-    base += a2->unk_A3[0] != 0xFF
+    base += a2->weapon_hit_end_frames[0] != 0xFF
                 ? (arg0->move_is_common == 0 ? D_8009A830[a2->unk_0E] * 2
                                              : D_8009A838[a2->unk_0E] * 8)
                 : D_8009A840[a2->unk_14] * 2;
@@ -1848,9 +1850,9 @@ s32 func_80058580(Unk80101EC8Record *p) {
                 }
             }
         } else {
-            if ((p->unk_148 - p->collision_pos.vy >= 0
-                     ? p->unk_148 - p->collision_pos.vy
-                     : p->collision_pos.vy - p->unk_148) < 200 &&
+            if ((p->ground_y - p->collision_pos.vy >= 0
+                     ? p->ground_y - p->collision_pos.vy
+                     : p->collision_pos.vy - p->ground_y) < 200 &&
                 !(D_80099D88[p->cpu_profile].flags & 0x8C00) &&
                 ((!func_800167BC() && D_800A38DC != 3) || D_800A38DC == 3)) {
                 work3 = 0;
@@ -2364,7 +2366,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                            12) +
                           0x17)
                          << 12) /
-                        p->unk_1C;
+                        p->base_move_frame_step;
                     switch (var_43) {
                     case 0:
                         p->unk_394 = var_3 != 0;
@@ -2681,7 +2683,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
             !(p->prev_move_kind == 0x19 || p->prev_move_kind == 0x1A) &&
             p->unk_0E < 7 && p->cpu_profile != 0x16) {
             p->unk_39C = 0;
-            p->unk_398 = 0x17000 / p->unk_1C;
+            p->unk_398 = 0x17000 / p->base_move_frame_step;
             if (p->cpu_probes[5] == 0) {
                 p->unk_394 = 3;
             } else if (p->cpu_probes[1] == 0) {

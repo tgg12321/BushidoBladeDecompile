@@ -768,7 +768,7 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
         val = obj->unk_180.y;
 
         if (!var_3) {
-            s32 v = -(obj->unk_1A * 950);
+            s32 v = -(obj->size_scale * 950);
             if (v < 0) {
                 v += 0xFFF;
             }
@@ -1224,12 +1224,12 @@ void func_8001C624(void) {
      * as player 0's is, but never used (the target keeps these dead stores,
      * written with libgpu's setVector); without it: score 22. */
     setVector(&local, local.vx, local.vy - 0x384, local.vz);
-    e->unk_114[0].vx = 0;
-    e->unk_114[0].vy = 0;
-    e->unk_114[0].vz = 0;
-    e->unk_114[1].vx = 0;
-    e->unk_114[1].vy = 0;
-    e->unk_114[1].vz = 0;
+    e->weapon_point_delta[0].vx = 0;
+    e->weapon_point_delta[0].vy = 0;
+    e->weapon_point_delta[0].vz = 0;
+    e->weapon_point_delta[1].vx = 0;
+    e->weapon_point_delta[1].vy = 0;
+    e->weapon_point_delta[1].vz = 0;
     e->unk_134.vx = 0;
     e->unk_134.vy = 0;
     e->unk_134.vz = 0;
@@ -1237,8 +1237,8 @@ void func_8001C624(void) {
     e->remaining_turn = 0;
     e->unk_150 = 0;
     e->use_root_offset_yaw = 0;
-    e->unk_14E = 0;
-    e->unk_148 = e->collision_pos.vy;
+    e->forward_move_rate = 0;
+    e->ground_y = e->collision_pos.vy;
     softbody_RequestSnap(0);
 }
 
@@ -2048,8 +2048,9 @@ void fight_Update(void) {
     PadState buf;
 
     D_800A3778 = func_800472B0();
-    camera_UpdateTwoFighterView(&D_80101EC8[0].unk_168, &D_80101EC8[1].unk_168,
-                                &D_80101EC8[0], &D_80101EC8[1]);
+    camera_UpdateTwoFighterView(
+        &D_80101EC8[0].camera_fighter_point,
+        &D_80101EC8[1].camera_fighter_point, &D_80101EC8[0], &D_80101EC8[1]);
     if (D_800A38BA != 0) {
         camera_UpdateTrackedFighterView(&D_80101EC8[D_800A36F6]);
     }
@@ -2502,7 +2503,7 @@ void motion_UpdateFrameStep(Unk80101EC8Record *arg0) {
     s32 factor;
     var_0 = arg0->move_kind;
     kind = var_0 & 0xFFFFU;
-    a2 = arg0->unk_1C;
+    a2 = arg0->base_move_frame_step;
     if (kind == 0x11 || kind == 0xF || ((u32)((s32)var_0 - 0x1C)) < 2U ||
         ((u32)((s32)var_0 - 0x1E)) < 2U || ((u32)((s32)var_0 - 0x20)) < 2U ||
         kind == 0xE || kind == 0x2C || kind == 0xD || kind == 0x7 ||
@@ -2523,18 +2524,18 @@ void motion_UpdateFrameStep(Unk80101EC8Record *arg0) {
     }
 rangecheck:
     val = arg0->move_frame;
-    if (val < arg0->unk_A1[0]) {
+    if (val < arg0->weapon_hit_start_frames[0]) {
         goto check_outer;
     }
-    if (val > arg0->unk_A3[0]) {
+    if (val > arg0->weapon_hit_end_frames[0]) {
         goto check_outer;
     }
     goto clamp;
 check_outer:
-    if (val < arg0->unk_A1[1]) {
+    if (val < arg0->weapon_hit_start_frames[1]) {
         goto multpath_start;
     }
-    if (val > arg0->unk_A3[1]) {
+    if (val > arg0->weapon_hit_end_frames[1]) {
         goto multpath_start;
     }
 clamp:
@@ -2656,10 +2657,10 @@ void fight_UpdatePairedMoves(void) {
         if (rec->is_defeated != 0) {
             rec->pending_move_event += 2;
         }
-        rec->unk_74 = rec->collision_pos.vy;
+        rec->saved_collision_y = rec->collision_pos.vy;
         rec->other->pending_move_event = 1;
         rec->other->unk_94 = 0;
-        rec->other->unk_74 = rec->other->collision_pos.vy;
+        rec->other->saved_collision_y = rec->other->collision_pos.vy;
         if (rec->other->is_defeated != 0) {
             rec->other->pending_move_event += 2;
         }
@@ -2951,11 +2952,11 @@ void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
 
     pos = var_1[17]->t;
     rec->unk_198[0].x = pos[0];
-    rec->unk_198[0].y = pos[1] + ((rec->unk_1A * 71) >> 11);
+    rec->unk_198[0].y = pos[1] + ((rec->size_scale * 71) >> 11);
     rec->unk_198[0].z = pos[2];
     pos = var_1[14]->t;
     rec->unk_198[1].x = pos[0];
-    rec->unk_198[1].y = pos[1] + ((rec->unk_1A * 71) >> 11);
+    rec->unk_198[1].y = pos[1] + ((rec->size_scale * 71) >> 11);
     rec->unk_198[1].z = pos[2];
     for (i = 0; i < 2; i++) {
         var_0[0] = rec->unk_198[i].x;
@@ -3684,11 +3685,11 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     }
 
     if (idx == 1 && D_800A38DC == 3) {
-        p->unk_1A = D_80094C68[D_800A38DE];
+        p->size_scale = D_80094C68[D_800A38DE];
     } else {
-        p->unk_1A = D_80094C68[D_8008D578[p->unk_0C]];
+        p->size_scale = D_80094C68[D_8008D578[p->unk_0C]];
     }
-    p->unk_1C = D_8008DE34[p->unk_0A][p->unk_0E];
+    p->base_move_frame_step = D_8008DE34[p->unk_0A][p->unk_0E];
     p->unk_1E = D_8008DF78[p->unk_0A][p->unk_0E];
     p->unk_20 = p->unk_1E;
     p->unk_08 = 0x1000;
@@ -3696,7 +3697,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     if (D_800A38DC == 3 && idx == 1) {
         p->unk_84 = func_800224E0(p);
         var_2 = (D_800A38E2 - 1) / 10 + 1;
-        p->unk_1C = var_2 * 96 + ((var_2 == 9) ? 0xA00 : 0x800);
+        p->base_move_frame_step = var_2 * 96 + ((var_2 == 9) ? 0xA00 : 0x800);
         if (var_2 == 9) {
             p->unk_20 = 0x1080;
         } else {
@@ -3766,21 +3767,21 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_104.vy = 0;
     p->unk_104.vz = 0;
     p->unk_24C = p->unk_104;
-    p->unk_114[0].vx = 0;
-    p->unk_114[0].vy = 0;
-    p->unk_114[0].vz = 0;
-    p->unk_114[1].vx = 0;
-    p->unk_114[1].vy = 0;
-    p->unk_114[1].vz = 0;
+    p->weapon_point_delta[0].vx = 0;
+    p->weapon_point_delta[0].vy = 0;
+    p->weapon_point_delta[0].vz = 0;
+    p->weapon_point_delta[1].vx = 0;
+    p->weapon_point_delta[1].vy = 0;
+    p->weapon_point_delta[1].vz = 0;
     p->unk_134.vx = 0;
     p->unk_134.vy = 0;
     p->unk_134.vz = 0;
     p->unk_144 = 0;
-    p->unk_148 = p->collision_pos.vy;
+    p->ground_y = p->collision_pos.vy;
     p->remaining_turn = 0;
     p->unk_150 = 0;
     p->use_root_offset_yaw = 0;
-    p->unk_14E = 0;
+    p->forward_move_rate = 0;
     p->unk_156 = 0xC00;
     p->unk_158 = 0xF80;
     p->unk_15A = 0xC00;
@@ -3791,7 +3792,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_1E6 = 0;
     p->unk_1EA = 0;
     p->unk_268 = 0;
-    p->unk_168 = p->world_pos;
+    p->camera_fighter_point = p->world_pos;
     p->unk_174 = p->world_pos;
     p->unk_180 = p->world_pos;
     p->unk_18C = p->world_pos;
@@ -3804,7 +3805,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         p->orientation.vy = ang + 0x800;
     }
     p->unk_1D0 = p->orientation;
-    fighter_ScaleBoneHitRecords(idx, p->unk_1A);
+    fighter_ScaleBoneHitRecords(idx, p->size_scale);
     if (D_800A38DC != 0 || idx != 0 || D_800A3907 < 2 || D_800A3670 != 0) {
         func_80022568(p);
     }
@@ -3817,7 +3818,7 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->queued_move = 0;
     p->pending_move_event = -1;
     p->unk_31A = 0;
-    p->unk_1DC = 0;
+    p->downward_probe_hit = 0;
     p->unk_72 = 0;
     p->is_defeated = 0;
     p->unk_B1 = 7;
@@ -4032,7 +4033,7 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
         return 0;
     }
 
-    arg0->unk_98 = out1;
+    arg0->horizontal_probe_normal = out1;
 
     {
         s32 var_15 = ratan2(out1.vx, out1.vz);
@@ -4131,37 +4132,38 @@ void func_80023648(Unk80101EC8Record *arg0) {
             }
 
             {
-                s32 sub_result = (u16)arg0->unk_14E - a2;
-                s32 div16 = arg0->unk_1A;
+                s32 sub_result = (u16)arg0->forward_move_rate - a2;
+                s32 div16 = arg0->size_scale;
                 s16 new_14e;
                 s32 tbl_val;
                 s32 mult_res;
                 s32 limit;
 
-                arg0->unk_14E = sub_result;
+                arg0->forward_move_rate = sub_result;
                 if (div16 < 0) {
                     div16 += 15;
                 }
                 div16 >>= 4;
                 new_14e = sub_result + div16;
-                arg0->unk_14E = new_14e;
+                arg0->forward_move_rate = new_14e;
 
                 tbl_val = D_800A310C[D_8008DA08[arg0->unk_0A]];
                 /* FAKE: the second read of arg0->unk_1A is staged through
                  * the dead `sub_result`, as above; reading in place: score
                  * 11. */
-                sub_result = arg0->unk_1A;
+                sub_result = arg0->size_scale;
                 mult_res = sub_result * tbl_val;
                 limit = (mult_res << 4) >> 12;
 
                 if (limit < (s16)new_14e) {
-                    arg0->unk_14E = limit;
+                    arg0->forward_move_rate = limit;
                 } else if ((s16)new_14e < 0) {
-                    arg0->unk_14E = 0;
+                    arg0->forward_move_rate = 0;
                 }
 
                 {
-                    s32 var_13 = arg0->unk_14E * arg0->move_frame_step;
+                    s32 var_13 =
+                        arg0->forward_move_rate * arg0->move_frame_step;
                     s16 sin_val = Judge[(arg0->orientation.vy & 0xFFF)];
 
                     /* FAKE: the >>12 speed is staged through the dead `a2`, as
@@ -4179,11 +4181,11 @@ void func_80023648(Unk80101EC8Record *arg0) {
             }
         }
     } else {
-        if (arg0->unk_14E > 0) {
+        if (arg0->forward_move_rate > 0) {
             if (kind != 0x22) {
                 arg0->remaining_turn = 0;
             }
-            arg0->unk_14E = 0;
+            arg0->forward_move_rate = 0;
         }
     }
 }
@@ -4266,7 +4268,7 @@ void func_800238C4(Unk80101EC8Record *arg0) {
             arg0->unk_94 = 1;
         }
         arg0->other->pending_move_event = 2;
-        arg0->unk_74 = arg0->collision_pos.vy;
+        arg0->saved_collision_y = arg0->collision_pos.vy;
     } else if (kind == 0x11) {
         D_800A3769 = s1 < 0x400;
         D_800A3758 = arg0->index;
@@ -4278,7 +4280,7 @@ void func_800238C4(Unk80101EC8Record *arg0) {
             arg0->pending_move_event = 0x11;
             arg0->unk_94 = 1;
         }
-        arg0->unk_74 = arg0->collision_pos.vy;
+        arg0->saved_collision_y = arg0->collision_pos.vy;
     }
     arg0->unk_104.vx += dx_delta;
     arg0->unk_104.vz += dz_delta;
@@ -4321,13 +4323,13 @@ void func_80023D08(Unk80101EC8Record *arg0) {
 
 void func_80023D28(Unk80101EC8Record *arg0) {
     if (arg0->unk_104.vy < 0) {
-        arg0->unk_1DC = 0;
+        arg0->downward_probe_hit = 0;
         return;
     }
     ((VECTOR *)0x1F8001E0)->vx = arg0->collision_pos.vx;
     ((VECTOR *)0x1F8001E0)->vy = arg0->collision_pos.vy + 0x1F4;
     ((VECTOR *)0x1F8001E0)->vz = arg0->collision_pos.vz;
-    arg0->unk_1DC =
+    arg0->downward_probe_hit =
         func_8005344C(&arg0->collision_pos.vx, (s32 *)0x1F8001E0,
                       (s32 *)0x1F8001B0, (s16 *)0x1F8001C0, 0x1F8002B8);
 }
@@ -4359,10 +4361,10 @@ void func_80023E40(Unk80101EC8Record *arg0) {
         s1[0xE] = arg0->collision_pos.vz;
         if (collision_TestSegmentWithWork(&arg0->collision_pos.vx, &s1[0xC], s1,
                                           (s16 *)&s1[4], 0x1F8002B8) != 0) {
-            arg0->unk_148 = s1[1];
+            arg0->ground_y = s1[1];
         }
     } else {
-        arg0->unk_148 = arg0->collision_pos.vy;
+        arg0->ground_y = arg0->collision_pos.vy;
     }
 }
 
@@ -4620,7 +4622,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
     }
     if (rec->move_kind == 0xA || rec->unk_72 != 0) {
         if (func_80023DB8(rec) != 0) {
-            if (rec->unk_74 + 0xFA0 < rec->collision_pos.vy) {
+            if (rec->saved_collision_y + 0xFA0 < rec->collision_pos.vy) {
                 u16 *table;
 
                 table = motion_ResolveMoveData(
@@ -4643,7 +4645,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
     } else if (rec->move_started != 0 &&
                (rec->prev_move_kind == 0x17 || rec->prev_move_kind == 0x18) &&
                !(rec->move_kind == 0x17 || rec->move_kind == 0x18) &&
-               rec->unk_74 + 0xFA0 < rec->collision_pos.vy) {
+               rec->saved_collision_y + 0xFA0 < rec->collision_pos.vy) {
         u16 *table;
 
         table = motion_ResolveMoveData(
@@ -4672,7 +4674,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
         }
     }
     if (rec->unk_46 == 0 && rec->move_kind == 9 &&
-        rec->unk_A9 == rec->move_frame) {
+        rec->opponent_turn_frame == rec->move_frame) {
         fighter_SetTurnDelta(rec, rec->opponent_bearing);
     }
     if (rec->move_started != 0 && rec->prev_move_kind != 0x18 &&
@@ -4684,12 +4686,12 @@ void fighter_Update(s32 arg0, PadState *pad) {
                             D_8008DA94[rec->unk_0A]) >>
                            12;
         rec->unk_104.vy += D_8008DA50[rec->unk_0A];
-        rec->unk_74 = rec->collision_pos.vy;
+        rec->saved_collision_y = rec->collision_pos.vy;
     }
     if (rec->move_started != 0 && rec->prev_move_kind != 0x17 &&
         rec->move_kind == 0x17) {
         rec->unk_104.vy += D_8008DAD8[rec->unk_0A];
-        rec->unk_74 = rec->collision_pos.vy;
+        rec->saved_collision_y = rec->collision_pos.vy;
     }
     if (rec->move_started != 0 && rec->move_kind == 0x28) {
         s32 dv[3];
@@ -4711,7 +4713,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->unk_104.vx += dv[0];
         rec->unk_104.vz += dv[2];
         rec->unk_72 = 1;
-        rec->unk_74 = rec->collision_pos.vy;
+        rec->saved_collision_y = rec->collision_pos.vy;
     }
     if (rec->move_kind == 0x17 || rec->move_kind == 0x18 ||
         rec->move_kind == 0x28 || rec->move_kind == 0xA) {
@@ -4836,13 +4838,13 @@ void fighter_Update(s32 arg0, PadState *pad) {
     v[1].y = -var_0[1].unk_00;
     v[1].z =
         (var_0[1].unk_04 * Judge[(var_0[1].unk_02 - var_13) & 0xFFF]) >> 12;
-    v[0].x = (v[0].x * rec->unk_1A) >> 12;
-    v[0].z = (v[0].z * rec->unk_1A) >> 12;
-    v[1].x = (v[1].x * rec->unk_1A) >> 12;
-    v[1].z = (v[1].z * rec->unk_1A) >> 12;
+    v[0].x = (v[0].x * rec->size_scale) >> 12;
+    v[0].z = (v[0].z * rec->size_scale) >> 12;
+    v[1].x = (v[1].x * rec->size_scale) >> 12;
+    v[1].z = (v[1].z * rec->size_scale) >> 12;
     if (rec->move_kind != 8) {
-        v[0].y = (v[0].y * rec->unk_1A) >> 12;
-        v[1].y = (v[1].y * rec->unk_1A) >> 12;
+        v[0].y = (v[0].y * rec->size_scale) >> 12;
+        v[1].y = (v[1].y * rec->size_scale) >> 12;
     }
     if (rec->unk_31A != 0) {
         var_0[1] = var_0[0];
@@ -4873,9 +4875,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
         var_35.y = -var_0[0].unk_00;
         var_35.z =
             (var_0[0].unk_04 * Judge[(var_0[0].unk_02 - ang_q) & 0xFFF]) >> 12;
-        var_35.x = (var_35.x * rec->unk_1A) >> 12;
-        var_35.y = (var_35.y * rec->unk_1A) >> 12;
-        var_35.z = (var_35.z * rec->unk_1A) >> 12;
+        var_35.x = (var_35.x * rec->size_scale) >> 12;
+        var_35.y = (var_35.y * rec->size_scale) >> 12;
+        var_35.z = (var_35.z * rec->size_scale) >> 12;
         var_35.x -= rec->pose_blend_base_shift.x;
         var_35.z -= rec->pose_blend_base_shift.z;
         rec->root_offset.x = (var_35.x * var_22 + v[0].x * var_14) >> 12;
@@ -4902,8 +4904,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
         s32 state = rec->move_kind;
 
         if (state == 8 || state == 0x22) {
-            rec->unk_134.vx -= rec->unk_98.vx / 256;
-            rec->unk_134.vz -= rec->unk_98.vz / 256;
+            rec->unk_134.vx -= rec->horizontal_probe_normal.vx / 256;
+            rec->unk_134.vz -= rec->horizontal_probe_normal.vz / 256;
         }
     }
     if (rec->move_started == 0 || rec->move_kind != 0x28) {
@@ -4982,15 +4984,15 @@ void fighter_Update(s32 arg0, PadState *pad) {
     rec->world_pos.y = rec->base_pos.y + rec->root_offset.y;
     rec->world_pos.z = rec->base_pos.z + rec->root_offset.z;
     rec->unk_1F8 = rec->root_offset;
-    rec->unk_168.x = rec->world_pos.x;
-    rec->unk_168.y = rec->base_pos.y - 0x384;
-    rec->unk_168.z = rec->world_pos.z;
+    rec->camera_fighter_point.x = rec->world_pos.x;
+    rec->camera_fighter_point.y = rec->base_pos.y - 0x384;
+    rec->camera_fighter_point.z = rec->world_pos.z;
     func_80023E40(rec);
     func_80041188(arg0, (u8 *)&var_0[0], (u8 *)&var_0[1],
                   rec->pose_interp_weight, (MATRIX *)0x1F8001B0);
     scratchpad_Save();
     func_80040D48(arg0, 1, (s32 *)&rec->world_pos, (s16 *)&rec->orientation, 0,
-                  rec->unk_148);
+                  rec->ground_y);
     scratchpad_Restore();
     if (rec->unk_86 == rec->unk_8E &&
         (rec->move_kind == 0x15 || rec->move_kind == 0x19 ||
@@ -5021,7 +5023,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
         ((rec->unk_0C == 0x1D || rec->unk_0C == 0xE) &&
          (rec->move_kind == 2 || rec->move_kind == 0x1B ||
           rec->move_kind == 0x28 || rec->move_kind == 0x26) &&
-         rec->unk_A1[1] < 0xFF && rec->unk_26C != 0 &&
+         rec->weapon_hit_start_frames[1] < 0xFF && rec->unk_26C != 0 &&
          rec->move_frame >= rec->unk_A5 && rec->move_frame <= rec->unk_A6) ||
         /* FAKE: this second range test is written unk_A6 >= move_frame;
          * spelled like the first, fold-const factors the two identical
@@ -5122,21 +5124,21 @@ skip_62:
     } else {
         rec->unk_268 = 0;
     }
-    rec->unk_114[0].vx = SPAD->unk00[arg0][0].x - rec->unk_210[0].x;
-    rec->unk_114[0].vy = SPAD->unk00[arg0][0].y - rec->unk_210[0].y;
-    rec->unk_114[0].vz = SPAD->unk00[arg0][0].z - rec->unk_210[0].z;
-    rec->unk_114[1].vx = SPAD->unk48[arg0][0].x - rec->unk_234[0].x;
-    rec->unk_114[1].vy = SPAD->unk48[arg0][0].y - rec->unk_234[0].y;
-    rec->unk_114[1].vz = SPAD->unk48[arg0][0].z - rec->unk_234[0].z;
+    rec->weapon_point_delta[0].vx = SPAD->unk00[arg0][0].x - rec->unk_210[0].x;
+    rec->weapon_point_delta[0].vy = SPAD->unk00[arg0][0].y - rec->unk_210[0].y;
+    rec->weapon_point_delta[0].vz = SPAD->unk00[arg0][0].z - rec->unk_210[0].z;
+    rec->weapon_point_delta[1].vx = SPAD->unk48[arg0][0].x - rec->unk_234[0].x;
+    rec->weapon_point_delta[1].vy = SPAD->unk48[arg0][0].y - rec->unk_234[0].y;
+    rec->weapon_point_delta[1].vz = SPAD->unk48[arg0][0].z - rec->unk_234[0].z;
     rec->unk_1DA = func_8002FDB0(rec);
     var_20 = 0;
     if ((rec->move_kind == 2 || rec->move_kind == 0x1B ||
          rec->move_kind == 0x28 || rec->move_kind == 0x26) &&
         rec->unk_AD != 0) {
-        if ((rec->move_frame >= rec->unk_A1[0] &&
-             rec->move_frame <= rec->unk_A3[0]) ||
-            (rec->move_frame >= rec->unk_A1[1] &&
-             rec->move_frame <= rec->unk_A3[1])) {
+        if ((rec->move_frame >= rec->weapon_hit_start_frames[0] &&
+             rec->move_frame <= rec->weapon_hit_end_frames[0]) ||
+            (rec->move_frame >= rec->weapon_hit_start_frames[1] &&
+             rec->move_frame <= rec->weapon_hit_end_frames[1])) {
             var_20 = 1;
         }
     }
@@ -5148,14 +5150,14 @@ skip_62:
             rec->move_kind == 0x28 || rec->move_kind == 0x26) {
             rec->unk_288[0] += 1;
             rec->unk_288[1] += 1;
-            if (rec->move_frame < rec->unk_A1[0]) {
+            if (rec->move_frame < rec->weapon_hit_start_frames[0]) {
                 rec->unk_288[0] += 2;
-            } else if (rec->move_frame <= rec->unk_A3[0]) {
+            } else if (rec->move_frame <= rec->weapon_hit_end_frames[0]) {
                 rec->unk_288[0] += 4;
             }
-            if (rec->move_frame < rec->unk_A1[1]) {
+            if (rec->move_frame < rec->weapon_hit_start_frames[1]) {
                 rec->unk_288[1] += 2;
-            } else if (rec->move_frame <= rec->unk_A3[1]) {
+            } else if (rec->move_frame <= rec->weapon_hit_end_frames[1]) {
                 rec->unk_288[1] += 4;
             }
         }
@@ -5173,7 +5175,7 @@ skip_62:
         rec->unk_160 = 0xC00;
         rec->unk_162 = 0xC00;
     }
-    if (rec->unk_1DC != 0) {
+    if (rec->downward_probe_hit != 0) {
         rec->unk_156 = 0xD00;
         rec->unk_158 = 0xFC0;
         rec->unk_15A = 0xD00;
@@ -5227,7 +5229,7 @@ skip_62:
             }
         } else if (rec->unk_26C != 0 &&
                    (rec->move_kind == 0xC || rec->move_kind == 0x2A) &&
-                   rec->move_frame == rec->unk_A8 &&
+                   rec->move_frame == rec->object_pickup_frame &&
                    object_PickUpNearby(rec) == rec->unk_14) {
             rec->unk_8A = 1;
         }

@@ -1253,7 +1253,7 @@ void replay_RecordFighter(Unk80101EC8Record *a0) {
         dest->hA = (v & 0xFFF) | (b << 12);
     }
 
-    dest->hC = a0->unk_148;
+    dest->hC = a0->ground_y;
     dest->b14 = a0->unk_1E6 >> 2;
     dest->b15 = a0->unk_1E8 >> 2;
     dest->b16 = a0->unk_1EA >> 2;

@@ -1438,8 +1438,8 @@ typedef struct Unk80101EC8Record {
     s16 unk_12;
     s16 unk_14; /* -1 == none, else index of D_8008EB80 */
     u8 unk_16[0x1A - 0x16];
-    s16 unk_1A;
-    s16 unk_1C;
+    s16 size_scale;
+    s16 base_move_frame_step;
     s16 unk_1E;
     s16 unk_20;
     u8 unk_22[0x24 - 0x22];
@@ -1479,7 +1479,7 @@ typedef struct Unk80101EC8Record {
     s16 unk_6E;
     s16 unk_70;
     s16 unk_72;
-    s32 unk_74;
+    s32 saved_collision_y;
     s16 unk_78;
     s16 move_started;
     MoveScript *queued_move; /* buffered next move (fighter_Update) */
@@ -1497,15 +1497,15 @@ typedef struct Unk80101EC8Record {
     s16 unk_92;
     s16 unk_94;
     s16 is_defeated;
-    SVec4i16 unk_98;
+    SVec4i16 horizontal_probe_normal;
     u8 unk_A0;
-    u8 unk_A1[2];
-    u8 unk_A3[2];
+    u8 weapon_hit_start_frames[2];
+    u8 weapon_hit_end_frames[2];
     u8 unk_A5;
     u8 unk_A6;
     u8 unk_A7;
-    u8 unk_A8;
-    u8 unk_A9;
+    u8 object_pickup_frame;
+    u8 opponent_turn_frame;
     u8 unk_AA;
     u8 unk_AB;
     u8 unk_AC;
@@ -1530,12 +1530,12 @@ typedef struct Unk80101EC8Record {
     VECTOR unk_104;
     /* per blade; fighter_ProcessWeaponBodyHits indexes it with its 0/1 blade
      * flag */
-    VECTOR unk_114[2];
+    VECTOR weapon_point_delta[2];
     VECTOR unk_134;
     s32 unk_144;
-    s32 unk_148;
+    s32 ground_y;
     s16 remaining_turn;
-    s16 unk_14E;
+    s16 forward_move_rate;
     s16 unk_150;
     s16 use_root_offset_yaw;
     s16 root_offset_yaw;
@@ -1547,7 +1547,7 @@ typedef struct Unk80101EC8Record {
     s16 unk_160;
     s16 unk_162;
     u8 unk_164[0x168 - 0x164];
-    Vec3i32 unk_168;
+    Vec3i32 camera_fighter_point;
     Vec3i32 unk_174;
     Vec3i32 unk_180;
     Vec3i32 unk_18C;
@@ -1568,7 +1568,7 @@ typedef struct Unk80101EC8Record {
     SVec4i16 unk_1D0;
     s16 opponent_bearing;
     s16 unk_1DA;
-    s16 unk_1DC;
+    s16 downward_probe_hit;
     u8 unk_1DE[0x1E6 - 0x1DE];
     s16 unk_1E6;
     s16 unk_1E8;
