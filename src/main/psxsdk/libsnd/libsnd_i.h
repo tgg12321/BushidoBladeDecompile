@@ -234,5 +234,7 @@ extern void _SsSndStop(s16, s16);
 /* LIBSPU S_IT (libspu/s_it.c) */
 extern void _spu_setInTransfer(s32);
 extern s32 _spu_getInTransfer(void);
+/* LIBSPU 7BC88 (libspu/7BC88.c) */
+extern void func_8008B488(SpuVoiceAttr *);
 
 #endif /* LIBSND_I_H */
