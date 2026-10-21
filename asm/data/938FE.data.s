@@ -25,6 +25,7 @@ enddlabel D_800A310C
 nonmatching D_800A3114
 
 dlabel D_800A3114
+dlabel g_str_on_bbm_800A3114
     /* 93914 800A3114 */ .asciz "ON.BBM"
     .space 1
 enddlabel D_800A3114
@@ -32,6 +33,7 @@ enddlabel D_800A3114
 nonmatching D_800A311C
 
 dlabel D_800A311C
+dlabel g_str_gs_bbm_800A311C
     /* 9391C 800A311C */ .asciz "GS.BBM"
     .space 1
 enddlabel D_800A311C
@@ -39,6 +41,7 @@ enddlabel D_800A311C
 nonmatching D_800A3124
 
 dlabel D_800A3124
+dlabel g_str_gn_bbm_800A3124
     /* 93924 800A3124 */ .asciz "GN.BBM"
     .space 1
 enddlabel D_800A3124

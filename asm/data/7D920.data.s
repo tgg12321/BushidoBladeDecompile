@@ -14446,6 +14446,7 @@ enddlabel g_ndata_pack_index
 nonmatching Judge
 
 dlabel Judge
+dlabel g_sin_table
     /* 87BFC 800973FC */ .short 0x0000
     /* 87BFE 800973FE */ .short 0x0006
     /* 87C00 80097400 */ .short 0x000C
@@ -21393,6 +21394,7 @@ nonmatching D_8009A8C4
 
 dlabel D_8009A8C4
     /* 8B0C4 8009A8C4 80000000 */ .word 0x00000080
+dlabel D_8009A8C8
     /* 8B0C8 8009A8C8 */ .short 0x3200
 enddlabel D_8009A8C4
 
@@ -22884,6 +22886,7 @@ dlabel D_8009B770
     /* 8BF88 8009B788 1E000400 */ .word 0x0004001E
     /* 8BF8C 8009B78C 8003FF01 */ .word 0x01FF0380
     /* 8BF90 8009B790 00007F00 */ .word 0x007F0000
+dlabel D_8009B794
     /* 8BF94 8009B794 */ .short 0x001E
     /* 8BF96 8009B796 */ .short 0x0001
     /* 8BF98 8009B798 */ .short 0x0380
@@ -23872,6 +23875,7 @@ enddlabel D_8009BD6C
 nonmatching D_8009BD70
 
 dlabel D_8009BD70
+dlabel g_bitmask_table_4_8009BD70
     /* 8C570 8009BD70 10000000 */ .word 0x00000010
     /* 8C574 8009BD74 20000000 */ .word 0x00000020
     /* 8C578 8009BD78 40000000 */ .word 0x00000040
@@ -23984,6 +23988,7 @@ enddlabel GPU_printf
 nonmatching D_8009BE74
 
 dlabel D_8009BE74
+dlabel g_gpu_ctx
     /* 8C674 8009BE74 */ .byte 0x00
 enddlabel D_8009BE74
 
@@ -24159,6 +24164,7 @@ enddlabel D_8009BF2C
 nonmatching D_8009BF30
 
 dlabel D_8009BF30
+dlabel g_gpu_ot_end
     /* 8C730 8009BF30 FFFFFF04 */ .word 0x04FFFFFF
     /* 8C734 8009BF34 00000000 */ .word 0x00000000
     /* 8C738 8009BF38 00000000 */ .word 0x00000000
@@ -25315,6 +25321,7 @@ enddlabel rsin_tbl
 nonmatching D_8009C798
 
 dlabel D_8009C798
+dlabel g_gte_saved_ra
     /* 8CF98 8009C798 00000000 */ .word 0x00000000
     /* 8CF9C 8009C79C 00000000 */ .word 0x00000000
     /* 8CFA0 8009C7A0 00000000 */ .word 0x00000000
@@ -30653,6 +30660,7 @@ enddlabel ratan_tbl
 nonmatching D_800A112C
 
 dlabel D_800A112C
+dlabel g_cd_setloc_flags
     /* 9192C 800A112C 00000000 */ .word 0x00000000
     /* 91930 800A1130 00000000 */ .word 0x00000000
     /* 91934 800A1134 00000000 */ .word 0x00000000
@@ -30996,6 +31004,7 @@ enddlabel libcd_CDRegister3
 nonmatching D_800A148C
 
 dlabel D_800A148C
+dlabel g_com_delay_reg
     /* 91C8C 800A148C 2010801F */ .word 0x1F801020
 enddlabel D_800A148C
 

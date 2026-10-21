@@ -310,6 +310,7 @@ enddlabel D_800A36F0
 nonmatching D_800A36F1
 
 dlabel D_800A36F1
+dlabel g_vsync_target_frames
     /* 93EF1 800A36F1 */ .byte 0x00
 enddlabel D_800A36F1
 
@@ -355,6 +356,7 @@ enddlabel g_camera_fight_view_mode
 nonmatching D_800A36FC
 
 dlabel D_800A36FC
+dlabel g_cam_transition_timer
     /* 93EFC 800A36FC */ .short 0x0000
     /* 93EFE 800A36FE */ .short 0x0000
     /* 93F00 800A3700 */ .short 0x0000
@@ -869,6 +871,7 @@ enddlabel g_memcard_sw_event_err
 nonmatching D_800A37F4
 
 dlabel D_800A37F4
+dlabel g_memcard_op_result_code
     /* 93FF4 800A37F4 00000000 */ .word 0x00000000
 enddlabel D_800A37F4
 

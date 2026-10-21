@@ -2,8 +2,6 @@ jtbl_80010068 = 0x80010068;
 jtbl_80010088 = 0x80010088;
 D_800100B4 = 0x800100B4;  /* data-wave 2026-10-09: was g_str_sound_id_fmt */
 g_str_win = 0x800100FC;
-g_str_chanbara = 0x8001081C;
-g_str_practice = 0x80010828;
 g_str_bad_rect = 0x80015F2C;
 g_str_sio_console = 0x8001649C;
 g_str_sio = 0x800164A8;
@@ -14,27 +12,16 @@ g_str_intr_id = 0x80016328;
 /* RESET 0x80038148: retired name 'psyq_memset_80038148' — preserved note: MISNAMED: clears D_800F33D8 (512 bytes) — specific buffer clear, not generic memset; see also pad_clear_buffer_80038148 sibling */
 /* RESET 0x8005509C: retired name 'psyq_memset_8005509C' — preserved note: MISNAMED: clears 16 bytes at offset 0x414 of g_practice_menu_table per-record (indexed by a0, stride 0x44C) — not generic memset */
 /* RESET 0x80060758: retired name 'replay_camera_check_stage_80060758' — preserved note: MISNAMED: 2-halfword clear of D_800A32B4/D_800A32B6 — Kengo name-unique size collision, not a stage check */
-g_sin_table = 0x800973FC;
 /* data-wave 2026-09-07: g_gpu_debug_func = 0x8009BE70 retired; GPU_printf is now object-defined */
-g_gpu_ctx = 0x8009BE74;
-g_gpu_ot_end = 0x8009BF30;
 ctlbuf = 0x800F189C;  /* data-wave 2026-09-25: was g_gpu_color_table */
 /* data-wave 2026-09-07: g_sin_lut_q1 = 0x8009BF94 retired; rsin_tbl is now object-defined */
-D_8009B794 = 0x8009B794;  /* data-wave 2026-10-09: was g_cos_lut_q2 */
 /* data-wave 2026-09-07: g_gte_sqrt_table = 0x8009C7A8 retired; SQRT is now object-defined */
-g_gte_saved_ra = 0x8009C798;
 /* RENAME 0x800A147C: retired name 'g_cd_reg0' — preserved note: -> 0x1F801800 CD index/status register (SOTN libcd/registers.h:4) */
-g_com_delay_reg = 0x800A148C;  /* -> 0x1F801020 COM_DELAY memory-control register (SOTN bios.c:78) */
 /* data-wave 2026-09-07: g_cd_debug_level = 0x800A11C0 retired; CD_debug is now object-defined */
 /* data-wave 2026-09-07: g_cd_mode = 0x800A11C4 retired; CD_status is now object-defined */
 /* data-wave 2026-09-07: g_cd_param = 0x800A11D0 retired; CD_pos is now object-defined */
 /* data-wave 2026-09-07: g_cd_ready_flag = 0x800A11D4 retired; CD_mode is now object-defined */
 /* data-wave 2026-09-25: g_cd_init_flag = 0x800A11C8 retired; CD_status1 is now object-defined */
-g_cdrom_delay_reg = 0x800A14B0;
-g_cd_dma_dest = 0x800A14B8;
-g_cd_dma_size = 0x800A14BC;
-g_cd_dma_ctrl = 0x800A14C0;
-g_cd_setloc_flags = 0x800A112C;
 _svm_vab_used = 0x80102A68;  /* data-wave 2026-09-07: was g_snd_ch_status */
 _svm_vab_start = 0x80107810;  /* data-wave 2026-09-07: was g_snd_ch_addr */
 _svm_vab_count = 0x80107808;  /* data-wave 2026-09-07: was g_snd_ch_count */
@@ -443,8 +430,6 @@ g_scratchpad_ptr_a8             = 0x800A3480;  /* -> 0x1F8000A8, set by eff_Bind
 /* */
 /* Coverage: the 89 then-unnamed .asciz labels (the 0x800A3xxx ones are .data). */
 /* All other rodata strings were already named (34 g_str_* from earlier work). */
-g_str_cr_n_80010834_fmt                              = 0x80010834;  /* '%sCR%3d\n' */
-g_str_co_n_80010840_fmt                              = 0x80010840;  /* '%sCO%3d\n' */
 g_str_bu_800109BC_fmt                                = 0x800109BC;  /* 'bu%1d%1d:%s' */
 g_str_bu_800109C8_fmt                                = 0x800109C8;  /* 'bu%1d%1d:' */
 g_str_multipul_model_80010D8C                        = 0x80010D8C;  /* 'Multipul Model' */
@@ -508,21 +493,6 @@ g_str_madr_800163B0_fmt                              = 0x800163B0;  /* 'MADR[%d]
 g_str_wait_reset_800163E8                            = 0x800163E8;  /* 'wait (reset)' */
 g_str_wait_wrdy_h_l_800163F8                         = 0x800163F8;  /* 'wait (wrdy H -> L)' */
 g_str_wait_dmaf_clear_w_8001640C                     = 0x8001640C;  /* 'wait (dmaf clear/W)' */
-g_str_on_bbm_800A3114                                = 0x800A3114;  /* 'ON.BBM' (character motion file) */
-g_str_gs_bbm_800A311C                                = 0x800A311C;  /* 'GS.BBM' */
-g_str_gn_bbm_800A3124                                = 0x800A3124;  /* 'GN.BBM' */
-g_str_c777_800A3178                                  = 0x800A3178;  /* '~c777' (color/clut code) */
-g_str_c737_800A3180                                  = 0x800A3180;  /* '~c737' */
-g_str_pct_s5d_800A3188_fmt                           = 0x800A3188;  /* '%s%5d' */
-g_str_pct_s3d_n_800A3190_fmt                         = 0x800A3190;  /* '%s%3d\n' */
-g_str_c4d_800A3198_fmt                               = 0x800A3198;  /* '%sC%4d' */
-g_str_cl3x_800A31A0_fmt                              = 0x800A31A0;  /* '%sCL%3x' */
-g_str_pct_s3x_n_800A31A8_fmt                         = 0x800A31A8;  /* '%s%3x\n' */
-g_str_pct_s5d_n_800A31B0_fmt                         = 0x800A31B0;  /* '%s%5d\n' */
-g_str_o4d_n_800A31B8_fmt                             = 0x800A31B8;  /* '%sO%4d\n' */
-g_str_l4d_n_800A31C0_fmt                             = 0x800A31C0;  /* '%sL%4d\n' */
-g_str_m4d_n_800A31C8_fmt                             = 0x800A31C8;  /* '%sM%4d\n' */
-g_str_d4d_n_800A31D0_fmt                             = 0x800A31D0;  /* '%sD%4d\n' */
 
 /* === Medium-confidence promotion pass (2026-05-17) -- 39 entries === */
 /* Mediums promoted to highs after the relevant callees/data refs were */
@@ -620,7 +590,6 @@ VBLANK_MINUS                                      = 0x80104E80;  /* ref: md_game
 /* D_800A3074 is s16 {1, 2, 4, 8}: SIO_CTRL bits 8-9 -> packet size (comb.c:85, :142, :352) */
 /* libcd per-command flag tables (3) -- s32[32] each, +0x80 stride */
 /* Bitmask tables (4) -- power-of-2 .word values */
-g_bitmask_table_4_8009BD70                              = 0x8009BD70;  /* 4 entries */
 
 /* === Rodata record-cluster pass (2026-05-17) -- 9 high-confidence === */
 /* Fixed-stride record clusters identified by sequential-label stride scan. */
@@ -840,7 +809,6 @@ cb_read                                  = 0x80082050;  /* passed to CdReadyCall
 /* NOTE: conv_matrix_rotation (0x800833C8) was MISNAMED; it is */
 /* startIntrDMA (intr_dma.c:22-27), the DMA interrupt init. */
 /* See MISNOMERS.md. */
-g_irq_vsync_callbacks                                   = 0x800A2614;  /* 8 x s32 callback slots dispatched by trapIntrVSync (intr_vb.c:23-38) */
 
 /* === Primitive-buffer bases + render state (2026-05-17) -- 6 highs === */
 /* From 6CF8.c: func_80016D78 (:291-292) stores two main-RAM primitive-buffer */
@@ -1157,7 +1125,6 @@ D_800A390D                                      = 0x800A390D;  /* frame-skip cou
 
 /* === Cross-cutting unnamed state used in 3+ named functions (2026-05-17) -- 4 highs === */
 /* RENAME 0x800A3244: retired name 'D_800A3244' — preserved note: set 1 by func_800450BC, cleared by func_80045188 / func_800450F4, returned by func_80045194; gates func_800450F4's block copy */  /* data-wave 2026-10-08: was g_seq_active_flag */
-g_vsync_target_frames                                   = 0x800A36F1;  /* vsync target frame count (default 2 = 30 FPS); main loop uses `(D-1)<<8 + 0x80` for vsync window deadline */
 /* RENAME 0x800A3228: retired name 'D_800A3228' — preserved note: 0 / 1 / -1: gpu_MoveObjectClutsToFogBlock stores its argument, gpu_RestoreObjectClutOffsets stores -1; read by them and returned by gpu_GetFogClutObject */  /* data-wave 2026-10-08: was g_stage_id_arg */
 
 /* === SPU voice allocator state pair (2026-05-17) -- 2 highs === */
@@ -1176,7 +1143,6 @@ D_800EEE24                                          = 0x800EEE24;  /* position t
 
 /* === Animation interp / camera transition counters (2026-05-17) -- 3 highs === */
 D_800A3310                                = 0x800A3310;  /* counts consecutive "stable" interp frames in dst[0x1F]-marked struct; >= 0xB switches to high-precision update */  /* data-wave 2026-10-08: was g_anim_stability_counter */
-g_cam_transition_timer                                  = 0x800A36FC;  /* camera transition countdown; while != 0, runs interp + decrement on s2[+0x12] angle */
 
 /* === Text column + glyph count (2026-05-17) -- 2 highs === */
 /* font_Printf is a printf-style routine that draws each character */
@@ -1505,7 +1471,6 @@ g_cd_fade_step                                   = 0x800A3840;  /* fade step cou
 /* From code6cac_c0.c func_80037D14: 5-state machine driving memcard */
 /* bios_A0_0xAB / 0xAC operations with event polling and completion. */
 g_memcard_op_state                                      = 0x800A31EC;  /* state 0-4 (0 = start AB, 1 = poll AB, 2 = start AC, 3 = poll AC, 4 = done/err) */
-g_memcard_op_result_code                                = 0x800A37F4;  /* result code (-1/-3 = errors, 1-4 = poll result codes) */
 g_memcard_op_completion_code                            = 0x800A3890;  /* copy of g_memcard_op_result_code at end (caller reads this) */
 
 /* === func_80016D78 reset cluster (2026-05-17) -- 6 highs === */

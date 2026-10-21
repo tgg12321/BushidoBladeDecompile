@@ -1197,3 +1197,28 @@ func_8003F168 = 0x8003F168; /* calls D_800948BC[func_80046798()].init when non-n
 func_8003F218 = 0x8003F218; /* store D_800F665C + game_SetControllerPorts */
 func_8003F274 = 0x8003F274; /* rebuilds the 32x32 grid D_800A8FB0 around the view node; read by the draw walks */
 func_8003F5CC = 0x8003F5CC; /* func_80017F98(D_800A93B0[i], D_800A93BC[i], i) for i = 0..2; func_80017F98 is empty, so no effect */
+D_8009A8C8 = 0x8009A8C8; /* Unk8009A8C8Entry D_8009A8C8[][8] (include/bb2.h:260); inside asm/data/7D920.data.s dlabel D_8009A8C4 */
+D_8009B794 = 0x8009B794; /* data-wave 2026-10-09: was g_cos_lut_q2 */
+g_com_delay_reg = 0x800A148C; /* -> 0x1F801020 COM_DELAY memory-control register (SOTN bios.c:78) */
+g_str_cr_n_80010834_fmt = 0x80010834; /* '%sCR%3d\n' */
+g_str_co_n_80010840_fmt = 0x80010840; /* '%sCO%3d\n' */
+g_str_on_bbm_800A3114 = 0x800A3114; /* 'ON.BBM' (character motion file) */
+g_str_gs_bbm_800A311C = 0x800A311C; /* 'GS.BBM' */
+g_str_gn_bbm_800A3124 = 0x800A3124; /* 'GN.BBM' */
+g_str_c777_800A3178 = 0x800A3178; /* '~c777' (color/clut code) */
+g_str_c737_800A3180 = 0x800A3180; /* '~c737' */
+g_str_pct_s5d_800A3188_fmt = 0x800A3188; /* '%s%5d' */
+g_str_pct_s3d_n_800A3190_fmt = 0x800A3190; /* '%s%3d\n' */
+g_str_c4d_800A3198_fmt = 0x800A3198; /* '%sC%4d' */
+g_str_cl3x_800A31A0_fmt = 0x800A31A0; /* '%sCL%3x' */
+g_str_pct_s3x_n_800A31A8_fmt = 0x800A31A8; /* '%s%3x\n' */
+g_str_pct_s5d_n_800A31B0_fmt = 0x800A31B0; /* '%s%5d\n' */
+g_str_o4d_n_800A31B8_fmt = 0x800A31B8; /* '%sO%4d\n' */
+g_str_l4d_n_800A31C0_fmt = 0x800A31C0; /* '%sL%4d\n' */
+g_str_m4d_n_800A31C8_fmt = 0x800A31C8; /* '%sM%4d\n' */
+g_str_d4d_n_800A31D0_fmt = 0x800A31D0; /* '%sD%4d\n' */
+g_bitmask_table_4_8009BD70 = 0x8009BD70; /* 4 entries */
+g_irq_vsync_callbacks = 0x800A2614; /* 8 x s32 callback slots dispatched by trapIntrVSync (intr_vb.c:23-38) */
+g_vsync_target_frames = 0x800A36F1; /* vsync target frame count (default 2 = 30 FPS); main loop uses `(D-1)<<8 + 0x80` for vsync window deadline */
+g_cam_transition_timer = 0x800A36FC; /* camera transition countdown; while != 0, runs interp + decrement on s2[+0x12] angle */
+g_memcard_op_result_code = 0x800A37F4; /* result code (-1/-3 = errors, 1-4 = poll result codes) */
