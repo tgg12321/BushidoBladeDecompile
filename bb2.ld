@@ -462,7 +462,9 @@ SECTIONS
         build/src/main/psxsdk/libcd/cdread.o(.data);
         build/src/main/psxsdk/libetc/vsync.o(.data);
         build/src/main/psxsdk/libapi/l10.o(.data);
+        build/asm/data/91C98.data.o(.data);
         build/src/main/psxsdk/libetc/intr.o(.data);
+        build/asm/data/92E14.data.o(.data);
         build/src/main/psxsdk/libapi/c114.o(.data);
         build/src/main/psxsdk/libapi/a23.o(.data);
         build/src/main/psxsdk/libapi/a24.o(.data);
@@ -558,7 +560,6 @@ SECTIONS
         build/src/main/psxsdk/libapi/a71.o(.data);
         build/src/main/psxsdk/libapi/a72.o(.data);
         build/src/main/d_7D870.o(.data);
-        build/asm/data/91C98.data.o(.data);
         build/src/main/6CF8.o(.sdata);
         build/asm/data/938EA.data.o(.data);
         build/src/main/9F9C.o(.sdata);

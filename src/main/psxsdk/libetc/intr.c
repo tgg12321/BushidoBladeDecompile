@@ -17,10 +17,6 @@ const char D_8001635C[28] = "unexpected interrupt(%04x)\n\0";
 
 const char D_80016378[28] = "intr timeout(%04x:%04x)\n\0\0\0\0";
 
-/* g_InterruptMask = (u16 *)0x1F801074, I_MASK (MMIO) */
-extern volatile u16 *g_InterruptMask;
-extern s32 *pCallbacks;
-
 /* intr.c module state (SOTN libetc/intr.c:28, a static intrEnv_t);
  * i_stat/g_InterruptMask/d_pcr are the module's MMIO pointer statics
  * (0x1F801070/74/F0). */
@@ -35,9 +31,31 @@ typedef struct {
     s32 stack[1024];            /* +0x68 */
 } intrEnv_t;                    /* sizeof 0x1068; memclr count 0x41A words */
 
-extern volatile u16 *i_stat; /* i_stat = (u16 *)0x1F801070 (MMIO) */
-extern volatile s32 *d_pcr;  /* d_pcr  = (s32 *)0x1F8010F0 (MMIO) */
-extern intrEnv_t intrEnv;
+typedef void (*IntrCallback)(void);
+
+static IntrCallback setIntr(s32 irq, IntrCallback handler);
+intrEnv_t *startIntr(void);
+static intrEnv_t *stopIntr(void);
+static intrEnv_t *restartIntr(void);
+
+/* .data 0x800A1578..0x800A2614, the module's own .data in definition order:
+ * the state, the callbacks table that ResetCallback..RestartCallback call
+ * through (slots 2/3/4/6 are the statics below, 1 and 5 are filled by
+ * startIntr), the MMIO pointer statics and trapIntr's missed-count. */
+intrEnv_t intrEnv = {0};
+
+void *D_800A25E0[8] = {
+    (void *)D_80016328, 0, setIntr,     startIntr,
+    stopIntr,           0, restartIntr, &intrEnv,
+};
+
+s32 *pCallbacks = (s32 *)D_800A25E0;
+
+volatile u16 *i_stat = (volatile u16 *)0x1F801070;          /* I_STAT */
+volatile u16 *g_InterruptMask = (volatile u16 *)0x1F801074; /* I_MASK */
+volatile s32 *d_pcr = (volatile s32 *)0x1F8010F0;           /* DPCR */
+
+s32 D_800A2610 = 0; /* trapMissedCount */
 
 s32 ResetCallback(void) { return ((s32(*)(void))pCallbacks[3])(); }
 
@@ -96,11 +114,6 @@ intrEnv_t *startIntr(void) {
     ExitCriticalSection();
     return &intrEnv;
 }
-
-/* setIntr/stopIntr/restartIntr are statics referenced only through the
- * callbacks vtable words at 0x800A25E8/F0/F8. */
-typedef void (*IntrCallback)(void);
-extern s32 D_800A2610; /* trapMissedCount */
 
 /* trapIntr */
 void trapIntr(void) {
