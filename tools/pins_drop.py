@@ -40,7 +40,7 @@ MARKER_UNREF = ("// pins-drop --unreferenced: names no linked object references,
 MARKER_STATIC = ("// pins-drop --static-shadows: names only a static at this address "
                  "defines, no linked object references (moved out of the linker pin files)")
 MARKERS = (MARKER, MARKER_UNREF, MARKER_STATIC)
-SYM_LINE =re.compile(r"^\s*([A-Za-z_]\w*)\s*=\s*0x([0-9A-Fa-f]+)\s*;")
+SYM_LINE = re.compile(r"^\s*([A-Za-z_]\w*)\s*=\s*0x([0-9A-Fa-f]+)\s*;")
 
 
 def unreferenced_rule(rows, map_path="build/bb2.map"):
