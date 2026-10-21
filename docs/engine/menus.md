@@ -28,7 +28,7 @@ With the standard digital-pad bit order, the masks the handlers use are:
 
 ## Mode handlers and the scene script (src/main/2B344.c)
 
-`func_8003B5A4` (src/main/2B344.c:321) steps a byte script at `D_800A3844`
+`fight_RunCommandStream` (src/main/2B344.c:321) steps a byte script at `D_800A3844`
 until an opcode ends the step. The opcodes and what they do:
 
 - 0: mode 18 (with `D_800A38A4` from `D_8008D9EC[fighter 0's unk_0A]`), or
@@ -54,7 +54,7 @@ Handlers that the script's modes reach:
 - `func_8003BCB4` (src/main/2B344.c:550, mode 7) counts `D_800A37B8`; while
   `func_80054F68()` is nonzero it waits for Cross. It then pauses the CD and,
   depending on the pending `D_800A3894` / `D_800A385C` blocks, sets mode 0
-  or calls `func_8003B5A4` for the next script step.
+  or calls `fight_RunCommandStream` for the next script step.
 - `func_8003BE10` (src/main/2B344.c:595, mode 10) resets the scene state
   (`func_80020CDC`, `func_800415C4`, `eff_ClearInitFlag`, `func_8005B72C`,
   `func_80078824(0x80118800)`), starts CD audio

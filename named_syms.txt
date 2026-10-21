@@ -1201,9 +1201,9 @@ D_800A3354                             = 0x800A3354;  /* != 0 = display active; 
 /* func_8003B2C8 saves D_80102778.unk_4[0] in D_800A3836 before overwriting */
 /* it; func_8003B328 writes it back and sets D_800A3836 = 0xFF (empty) */
 /* (2B344.c:238-262).  D_800A37D8 / D_800A3844: see their lines. */
-D_800A3844                                = 0x800A3844;  /* byte cursor into the D_800900EC command streams: func_8003B20C sets it to D_800900EC[arg0] and passes it to func_8003AE5C, func_8003B5A4 advances it */  /* data-wave 2026-10-08: was g_file_overlay_arg_saved */
+D_800A3844                                = 0x800A3844;  /* byte cursor into the D_800900EC command streams: fight_InitCommandStream sets it to D_800900EC[arg0] and passes it to func_8003AE5C, fight_RunCommandStream advances it */  /* data-wave 2026-10-08: was g_file_overlay_arg_saved */
 D_800A3836                                       = 0x800A3836;  /* u8 save of D_80102778.unk_4[0] (func_8003B2C8, 2B344.c:239), written back by func_8003B328, which stores 0xFF (:254-259); readers test it against 0xFF (:1209, 28708.c:1497-1521, 9F9C.c:1393) */  /* data-wave 2026-10-09: was g_char_id_saved_a */
-D_800A3915                                       = 0x800A3915;  /* u8: 0xFF at func_8003B20C (2B344.c:227); func_8003B328 stores the D_80102778.unk_4[0] value it replaces (:257); func_8003B5A4 compares a D_800A3844 stream byte with it (:368) */  /* data-wave 2026-10-09: was g_char_id_saved_b */
+D_800A3915                                       = 0x800A3915;  /* u8: 0xFF at fight_InitCommandStream (2B344.c:227); func_8003B328 stores the D_80102778.unk_4[0] value it replaces (:257); fight_RunCommandStream compares a D_800A3844 stream byte with it (:368) */  /* data-wave 2026-10-09: was g_char_id_saved_b */
 
 /* === CD-ROM playback control cluster (2026-05-17) -- 4 highs === */
 /* From code6cac_b2.c around line 430-465: a 4-field BCD-tracked CD */
@@ -1698,7 +1698,7 @@ D_800A38E8                       = 0x800A38E8;  /* 0xFF or data[3] & 0x7F (fight
 D_800A38F0                         = 0x800A38F0;  /* store-only: func_8002006C stores the change of D_800A387C */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_2 */
 D_800A38F4                         = 0x800A38F4;  /* frame clock of func_8001CE60's mode-5 branch (vs D_800A36CC * 30) */  /* data-wave 2026-10-08: was g_practice_lesson_param3_plus_6 */
 D_800A3904                            = 0x800A3904;  /* +8 from D_800A38FC */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_b_plus_8 */
-D_800A3907                              = 0x800A3907;  /* counter: 0 / ++ in func_8003B5A4, ++ in func_8003BCB4; < 2 tested by fighter_Init */  /* data-wave 2026-10-08: was g_intro_render_busy_plus_1 */
+D_800A3907                              = 0x800A3907;  /* counter: 0 / ++ in fight_RunCommandStream, ++ in func_8003BCB4; < 2 tested by fighter_Init */  /* data-wave 2026-10-08: was g_intro_render_busy_plus_1 */
 D_800A390C                            = 0x800A390C;  /* +4 from D_800A3908 */  /* data-wave 2026-10-08: was g_pad_rec_bit_count_a_plus_4 */
 D_800A3920                             = 0x800A3920;  /* +1 from D_800A391F (0x800A391F) */  /* data-wave 2026-10-08: was g_mottest_test_count_plus_1 */
 g_font_sprites                               = 0x800A3930;  /* +7 from D_800A3929 (0x800A3929) */  /* data-wave 2026-10-08: was g_cpu_pattern_tick_plus_7 */

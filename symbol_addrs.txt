@@ -715,7 +715,7 @@ D_800A37B8 = 0x800A37B8; /* frame counter; `<<3` for byte stride, `<<12 / 105` f
 _snd_seq_tick_env_plus_0x12 = 0x800A26DE; /* 0x7F = alarm armed, 0 = inactive; tested in irq_ProcessPending */  /* data-wave 2026-09-07: was g_alarm_active_sentinel */
 g_memcard_sw_event_ioe = 0x800A37DC; /* BIOS event handle: class 0xF4000001 mode 4 (memcard I/O complete) */  /* data-wave 2026-09-24: was g_memcard_event_io_complete */
 g_memcard_sw_event_err = 0x800A37F0; /* BIOS event handle: class 0xF4000001 mode 0x8000 (memcard disconnect/error) */  /* data-wave 2026-09-24: was g_memcard_event_disconnect */
-D_800A37A0 = 0x800A37A0; /* count of the script's command-1 steps: func_8003B5A4 stores each operand at D_800A37A8[count] (2B344.c:376-387); reset by func_8003B20C; also tested as a stage number (>= 6 / >= 7) */  /* data-wave 2026-10-08: was g_mental_bar_packet_count */
+D_800A37A0 = 0x800A37A0; /* count of the script's command-1 steps: fight_RunCommandStream stores each operand at D_800A37A8[count] (2B344.c:376-387); reset by fight_InitCommandStream; also tested as a stage number (>= 6 / >= 7) */  /* data-wave 2026-10-08: was g_mental_bar_packet_count */
 _snd_seq_tick_env = 0x800A26CC; /* 12-bit packed position written by SetBloodSpot (paired with g_blood_spot_timer) */  /* data-wave 2026-09-07: was g_blood_spot_pos */
 g_memcard_sw_event_timeout = 0x800A37FC; /* bios_OpenEvent(0xF4000001, 0x100) */  /* data-wave 2026-09-24: was g_memcard_event_count_io */
 g_comb_event_ioer = 0x800A3738; /* OpenEvent(HwSIO=0xF000000B, EvSpIOER=0x400) by comb_Init; polled by comb_WaitRead8 */
@@ -755,7 +755,7 @@ D_80015820 = 0x80015820; /* 8 ptrs in 0x80050xxx-0x80051xxx range */  /* data-wa
 D_800951D8 = 0x800951D8; /* 42 words: [0..37] func_80044650, [38..41] func_8004E574 / func_8004E7E4 / func_8004EAC8 / func_8004ECC8 */  /* data-wave 2026-10-08: was g_uniform_handler_array_func_80044650 */
 D_80095280 = 0x80095280; /* 42 entries, sibling of D_800951D8 */  /* data-wave 2026-10-08: was g_uniform_handler_array_b_80095280 */
 D_8008D86C = 0x8008D86C; /* 8 ptrs into D_8008D754-base (16-byte stride records) */  /* data-wave 2026-10-08: was g_per_record_ptr_table_8008D86C */
-D_800900EC = 0x800900EC; /* 32 ptrs to the byte-coded command streams func_8003AE5C / func_8003B5A4 run through D_800A3844 */  /* data-wave 2026-10-08: was g_per_char_descriptor_table_32 */
+D_800900EC = 0x800900EC; /* 32 ptrs to the byte-coded command streams func_8003AE5C / fight_RunCommandStream run through D_800A3844 */  /* data-wave 2026-10-08: was g_per_char_descriptor_table_32 */
 D_80094DF0 = 0x80094DF0; /* 6 ptrs to (x, y) s16 lists, picked via D_80094E08; func_80041AC8 / func_80041BF4 save / reload those VRAM rects */  /* data-wave 2026-10-08: was g_stage_lighting_ptr_array_6 */
 D_8008EB28 = 0x8008EB28; /* u8[8][2] (include/bb2.h:216): {0..9, 8, 9, 0x2E, 0x2F, 0x2E, 0x2F} */  /* data-wave 2026-10-09: was g_byte_index_map_8008EB28 */
 D_8008EBCC = 0x8008EBCC; /* 5 entries: {0, 0x33, 0x3A, 0x41, 0x48}, indexed by D_800A384C; each read is an offset added to a slot base */  /* data-wave 2026-10-08: was g_step_lookup_5_8008EBCC */
@@ -771,7 +771,7 @@ D_8008D754 = 0x8008D754; /* two 8-byte vectors; entry [0] of D_8008D86C (fighter
 D_8008D7C4 = 0x8008D7C4; /* two 8-byte records; entry [6] of D_8008D86C (fighter_UpdateBoneWorldData) */  /* data-wave 2026-10-08: was g_motion_descriptor_table_10x16 */
 D_8008DA50 = 0x8008DA50; /* one s16 per class index (fighter record +0x0A), added to unk_104.vy (9F9C.c:4984-4990) */  /* data-wave 2026-10-08: was g_char_pose_data_table_3x68 */
 D_8008DE34 = 0x8008DE34; /* [27][6] halfword table by class; one read initialises fighter record +0x1C */  /* data-wave 2026-10-08: was g_char_anim_curve_table_3x324 */
-D_8008F220 = 0x8008F220; /* one 204-byte byte-coded command stream (D_800900EC entries 0, 5, 10, 11, 16, 22-31), read by the func_8003AE5C / func_8003B5A4 cursor */  /* data-wave 2026-10-08: was g_move_pattern_table_a_4x204 */
+D_8008F220 = 0x8008F220; /* one 204-byte byte-coded command stream (D_800900EC entries 0, 5, 10, 11, 16, 22-31), read by the func_8003AE5C / fight_RunCommandStream cursor */  /* data-wave 2026-10-08: was g_move_pattern_table_a_4x204 */
 D_8008F6C8 = 0x8008F6C8; /* one 204-byte command stream (D_800900EC entry 7) */  /* data-wave 2026-10-08: was g_move_pattern_table_b_4x204 */
 D_8008FA0C = 0x8008FA0C; /* one 224-byte command stream (D_800900EC entry 13) */  /* data-wave 2026-10-08: was g_move_pattern_table_c_5x224 */
 D_8008FF2C = 0x8008FF2C; /* one 224-byte command stream (D_800900EC entry 20) */  /* data-wave 2026-10-08: was g_move_pattern_table_d_3x224 */

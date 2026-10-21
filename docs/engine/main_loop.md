@@ -113,7 +113,7 @@ assigns to `D_800A3834` itself.
 | 20 | `func_8003C42C` (src/main/2B344.c:754) | 0x15 | |
 | 21 | `func_8003C560` (src/main/2B344.c:786) | 0x12, 0x18 | timed sounds, ends on Cross or frame 0xF1 |
 | 22 | `func_8003B870` (src/main/2B344.c:421) | 0x17 | |
-| 23 | `func_8003B8E4` (src/main/2B344.c:432) | | on its third frame runs the next script step (`func_8003B5A4`) |
+| 23 | `func_8003B8E4` (src/main/2B344.c:432) | | on its third frame runs the next script step (`fight_RunCommandStream`) |
 | 24 | `func_8003C958` (src/main/2B344.c:877) | 0x19 | |
 | 25 | `func_8003C9A4` (src/main/2B344.c:886) | 0, 8 | view (`func_80046BF4`) and its own per-frame work |
 | 26 | `func_80035DC8` (src/main/25C38.c:394) | 0x1B | resets the scene, sets up the row menu (`func_80077820`) |
