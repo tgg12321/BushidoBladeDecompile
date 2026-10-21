@@ -68,7 +68,7 @@ consumer; one site per sibling block, except at most ONE function-scope site pre
 others. (D) Prong 3 and 2(c) apply; additionally the member was re-assigned to a DIFFERENT
 array element since the previous write.
 
-Still banned (Ruling 5 and extension): func_800200DC `y1` (different consumers);
+Still banned (Ruling 5 and extension): math_ComputeBallisticVelocityXZ `y1` (different consumers);
 func_80045878 `c` (different templates, a constant write); func_80060A68 `src`/`idx`
 (re-load); func_800460E4 off_a/off_b (borrow, split); math_TestPreparedTriangleSphere `tmp`; constant-holders
 spelled as reused locals; cast-laundered or multi-role bases. Allocator effect alone is never
