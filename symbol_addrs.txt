@@ -1359,3 +1359,10 @@ stub_8004A938 = 0x8004A938; /* structural role; n=2 */
 stub_8004E564 = 0x8004E564; /* structural role; n=2 */
 stub_8004E56C = 0x8004E56C; /* structural role; n=2 */
 draw_bg_and_sprites_80069E18 = 0x80069E18; /* full-screen overlay tile + saMotionSet sprite + initTexPage + 3x gpu_AddSpriteCells; composite screen render */
+
+// pins-drop: names a linked object defines at this address (moved out of the linker pin files by tools/pins_drop.py)
+D_8007A4C0 = 0x8007A4C0;
+D_8007A4CC = 0x8007A4CC;
+D_8008D070 = 0x8008D070;
+D_8007A4C0 = 0x8007A4C0; /* data-wave 2026-10-09: was g_gpu_addr_8007A4C0 */
+D_8007A4CC = 0x8007A4CC; /* data-wave 2026-10-09: was g_gpu_addr_8007A4CC */

@@ -1679,8 +1679,6 @@ D_80103624                                          = 0x80103624;  /* data-wave 
 
 /* === Final cleanup batch: remaining 154 unnamed (2026-05-17) === */
 /* 154 addresses, pattern-based naming */
-D_8007A4C0                                          = 0x8007A4C0;  /* data-wave 2026-10-09: was g_gpu_addr_8007A4C0 */
-D_8007A4CC                                          = 0x8007A4CC;  /* data-wave 2026-10-09: was g_gpu_addr_8007A4CC */
 _SsTrapIntrVSync                                         = 0x80083EDC;  /* data-wave 2026-09-24: was g_irq_handler_entry_no_pri */
 _SsSeqCalledTbyT_1per2                                         = 0x80083F1C;  /* data-wave 2026-09-24: was g_irq_handler_entry_with_pri */
 /* RENAME 0x80090178: retired name 'D_80090178' — preserved note: data-wave 2026-09-29: was g_unlock_anim_char_table_plus_12 */
