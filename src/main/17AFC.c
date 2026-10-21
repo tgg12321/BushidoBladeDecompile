@@ -5233,7 +5233,7 @@ void snd_UpdateStageSounds(void) {
         }
     }
 
-    if (func_8001DB58() != 0) {
+    if (snd_ShouldUpdateStageSoundSlots() != 0) {
         s16 *buf = g_snd_stage_sound_state;
 
         for (i = 0; i < 4; i++, tbl += 2) {

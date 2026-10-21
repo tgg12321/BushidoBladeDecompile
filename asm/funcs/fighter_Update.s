@@ -843,7 +843,7 @@ glabel fighter_Update
     /* 1532C 80024B2C 5801A227 */  addiu      $v0, $sp, 0x158
     /* 15330 80024B30 1000A2AF */  sw         $v0, 0x10($sp)
     /* 15334 80024B34 0801268E */  lw         $a2, 0x108($s1)
-    /* 15338 80024B38 3780000C */  jal        func_800200DC
+    /* 15338 80024B38 3780000C */  jal        math_ComputeBallisticVelocityXZ
     /* 1533C 80024B3C 6801A527 */   addiu     $a1, $sp, 0x168
     /* 15340 80024B40 0401228E */  lw         $v0, 0x104($s1)
     /* 15344 80024B44 5801A38F */  lw         $v1, 0x158($sp)

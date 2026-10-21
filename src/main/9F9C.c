@@ -1722,7 +1722,7 @@ void snd_StartFightCdAudio(void) {
     cdrom_SetAudioRepeat(1);
 }
 
-s32 func_8001DB58(void) {
+s32 snd_ShouldUpdateStageSoundSlots(void) {
     s32 v = D_800A38DC;
     if (v >= 5) {
         return 1;
@@ -2735,7 +2735,8 @@ s32 func_8002006C(void) {
     D_800A38A8 = 0;
 }
 
-void func_800200DC(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
+void math_ComputeBallisticVelocityXZ(
+    s32 *arg0, s32 *arg1, s32 arg2, s32 arg3, s32 *arg4) {
     s32 var_0;
     s32 dx;
     s32 dz;
@@ -4705,7 +4706,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
             rec->other->unk_18C.z -
             ((Judge[(rec->opponent_bearing + 0x400) & 0xFFF] * temp) >> 14);
         rec->unk_104.vy -= 0xFA;
-        func_800200DC((s32 *)&rec->unk_180, var_30, rec->unk_104.vy, 0x1F, dv);
+        math_ComputeBallisticVelocityXZ(
+            (s32 *)&rec->unk_180, var_30, rec->unk_104.vy, 0x1F, dv);
         rec->unk_104.vx += dv[0];
         rec->unk_104.vz += dv[2];
         rec->unk_72 = 1;

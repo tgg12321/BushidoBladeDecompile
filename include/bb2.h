@@ -647,7 +647,7 @@ extern void fight_InitSettings(void);
 extern void func_8001CD68(Unk8001CD68Rec *);
 extern void func_8001D790(void);
 extern void func_8001DA2C(void);
-extern s32 func_8001DB58(void);
+extern s32 snd_ShouldUpdateStageSoundSlots(void);
 extern void func_8001DBE4(void);
 extern void camera_ApplyReplayView(s32);
 extern void motion_ApplyRecordedPoseAdjustments(

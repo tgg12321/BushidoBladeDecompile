@@ -1,4 +1,4 @@
-glabel func_800200DC
+glabel math_ComputeBallisticVelocityXZ
     /* 108DC 800200DC C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 108E0 800200E0 1800B2AF */  sw         $s2, 0x18($sp)
     /* 108E4 800200E4 21908000 */  addu       $s2, $a0, $zero
@@ -201,4 +201,4 @@ glabel func_800200DC
     /* 10BA8 800203A8 3800BD27 */  addiu      $sp, $sp, 0x38
     /* 10BAC 800203AC 0800E003 */  jr         $ra
     /* 10BB0 800203B0 00000000 */   nop
-endlabel func_800200DC
+endlabel math_ComputeBallisticVelocityXZ

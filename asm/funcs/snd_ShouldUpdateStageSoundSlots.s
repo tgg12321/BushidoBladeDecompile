@@ -1,4 +1,4 @@
-glabel func_8001DB58
+glabel snd_ShouldUpdateStageSoundSlots
     /* E358 8001DB58 0A80033C */  lui        $v1, %hi(D_800A38DC)
     /* E35C 8001DB5C DC386384 */  lh         $v1, %lo(D_800A38DC)($v1)
     /* E360 8001DB60 E8FFBD27 */  addiu      $sp, $sp, -0x18
@@ -19,4 +19,4 @@ glabel func_8001DB58
     /* E390 8001DB90 1800BD27 */  addiu      $sp, $sp, 0x18
     /* E394 8001DB94 0800E003 */  jr         $ra
     /* E398 8001DB98 00000000 */   nop
-endlabel func_8001DB58
+endlabel snd_ShouldUpdateStageSoundSlots

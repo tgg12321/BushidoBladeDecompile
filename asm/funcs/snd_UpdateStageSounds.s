@@ -81,7 +81,7 @@ glabel snd_UpdateStageSounds
     /* 23EFC 800336FC 2A100202 */  slt        $v0, $s0, $v0
     /* 23F00 80033700 C7FF4014 */  bnez       $v0, .L80033620
     /* 23F04 80033704 0C005226 */   addiu     $s2, $s2, 0xC
-    /* 23F08 80033708 D676000C */  jal        func_8001DB58
+    /* 23F08 80033708 D676000C */  jal        snd_ShouldUpdateStageSoundSlots
     /* 23F0C 8003370C 00000000 */   nop
     /* 23F10 80033710 57004010 */  beqz       $v0, .L80033870
     /* 23F14 80033714 01001524 */   addiu     $s5, $zero, 0x1
