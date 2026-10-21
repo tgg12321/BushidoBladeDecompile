@@ -348,6 +348,58 @@ class LaneTest(unittest.TestCase):
         self.assertEqual(self.main_file("shared.txt").splitlines()[5], "A")
         self.assertTrue((self.main / "src" / "c2.c").exists())
 
+    def test_commit_racing_the_branch_move_is_kept(self):
+        # tenth review B1: a commit between advance_lane's HEAD read and its reset
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        real, fired = lanes.run, []
+
+        def racing(cmd, *args, **kw):
+            if cmd[:4] == ["git", "reset", "-q", "--keep"] and not fired:
+                fired.append(1)
+                self.commit("a", "src/new.c", "int precious;\n", "precious")
+            return real(cmd, *args, **kw)
+        lanes.run = racing
+        try:
+            self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        finally:
+            lanes.run = real
+        self.assertTrue(fired)
+        self.assertIn("was kept", self.last)
+        self.assertTrue((self.wt("a") / "src" / "new.c").exists())
+        self.assertEqual(sh("log", "-1", "--format=%s", "lanes/a", cwd=self.main), "precious")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("landing 1 commit(s)", self.last)
+
+    def test_mark_landed_failure_leaves_main_unmoved(self):
+        # tenth review S1: the record is written before main moves
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        before = sh("rev-parse", "main", cwd=self.main)
+        real = lanes.mark_landed
+
+        def boom(*a, **k):
+            raise lanes.Refuse("registry mutex busy")
+        lanes.mark_landed = boom
+        try:
+            self.assertEqual(self.L("s1", "land", "a"), 1, self.last)
+        finally:
+            lanes.mark_landed = real
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), before)
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertTrue((self.main / "src" / "b.c").exists())
+
+    def test_nothing_to_land_still_advances(self):
+        # tenth review N2
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        self.edit_line("a", "shared.txt", 5, "A")
+        self.edit_line("b", "shared.txt", 15, "B")
+        self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        self._left_as_is_land("a")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("nothing to land", self.last)
+        self.assertEqual(sh("rev-parse", "HEAD", cwd=self.wt("a")), sh("rev-parse", "main", cwd=self.main))
+
     def test_partial_reset_keeps_earlier_lands_landed(self):
         # eighth review, blocking 2: undoing only the latest land must not re-replay older ones
         self.L("s1", "open", "a"); self.L("s2", "open", "b")

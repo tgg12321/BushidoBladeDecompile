@@ -1009,23 +1009,37 @@ def advance_lane(ctx: Ctx, lane: str, landed_from: str):
     commits made during the land are rebased onto main; with local edits they stay as they are
     (the next land skips the already-landed ones: see unlanded())."""
     wt, br = ctx.lane_dir(lane), ctx.branch(lane)
-    head = git("rev-parse", "HEAD", cwd=wt)
-    left = unlanded(ctx, lane, landed_from)
+    m = git("rev-parse", "main", cwd=ctx.main)  # one value throughout: main may move meanwhile
+    left = unlanded(ctx, lane, landed_from, base=m)
     if left:  # main changed under the land (e.g. a reset): never move work off the branch
         print(f"lanes: note: {len(left)} commit(s) of {br} are not in main (it changed during "
               f"the land); {br} was left as is, land again")
         return
+    run(["git", "update-index", "-q", "--refresh"], cwd=wt, check=False)  # stale stat info
+    # (a rewritten-but-unchanged file) makes reset --keep refuse
+    head = git("rev-parse", "HEAD", cwd=wt)  # read last, right before the move
     if head == landed_from:
-        r = run(["git", "reset", "-q", "--keep", "main"], cwd=wt, check=False)
+        r = run(["git", "reset", "-q", "--keep", m], cwd=wt, check=False)
         if r.returncode != 0:
             print(f"lanes: note: {br} was left as is to keep your uncommitted edits; nothing to "
                   f"do: the next `land` skips the already-landed commits")
+            return
+        # a commit made between the HEAD read and the reset is in the reflog entry the reset
+        # wrote; put the branch back on it rather than strand it
+        old = git("rev-parse", f"{br}@{{1}}", cwd=wt, check=False)
+        if old and old != head and unlanded(ctx, lane, old, base=m):
+            git("update-ref", f"refs/lanes-backup/{lane}/raced-{old[:9]}", old, cwd=wt)
+            run(["git", "reset", "-q", "--keep", old], cwd=wt, check=False)
+            print(f"lanes: note: a commit arrived while {br} was being moved; it was kept "
+                  f"({br} at {git('rev-parse', '--short', 'HEAD', cwd=wt)}, also saved as "
+                  f"refs/lanes-backup/{lane}/raced-{old[:9]})")
         return
     if git("status", "--porcelain", "--untracked-files=no", cwd=wt):
         print(f"lanes: note: {br} gained commits during the land and has uncommitted edits; it "
               f"was left as is (the next land skips the already-landed commits)")
         return
-    r = run(["git", "rebase", "-q", "--onto", "main", landed_from, br], cwd=wt, check=False)
+    git("update-ref", f"refs/lanes-backup/{lane}/advance-{head[:9]}", head, cwd=wt)
+    r = run(["git", "rebase", "-q", "--onto", m, landed_from, br], cwd=wt, check=False)
     if r.returncode != 0:
         run(["git", "rebase", "--abort"], cwd=wt, check=False)
         print(f"lanes: note: the commits made during the land did not rebase cleanly onto main; "
@@ -1043,6 +1057,8 @@ def cmd_land(ctx: Ctx, a):
     commits = unlanded(ctx, lane, tipsrc)
     if not commits:
         print("lanes: nothing to land")
+        if wt.exists() and tipsrc != git("rev-parse", "main", cwd=ctx.main):
+            advance_lane(ctx, lane, tipsrc)  # a branch an earlier land had to leave as is
         return 0
     if any(len(git("rev-list", "--parents", "-n1", c, cwd=ctx.main).split()) > 2 for c in commits):
         raise Refuse("the lane holds merge commits; replay cannot carry them. Rebuild the lane as "
@@ -1085,8 +1101,11 @@ def cmd_land(ctx: Ctx, a):
                     sync_main_with_remote(ctx, remote)
                 if git("rev-parse", "main", cwd=ctx.main) != base:
                     continue  # main moved: rebuild on the new main (finally releases the lock)
-                git("merge", "-q", "--ff-only", tip, cwd=ctx.main)
+                # recorded first: a mapping is trusted only once its commit is in main, so this
+                # is harmless if the fast-forward fails, and a failure here cannot leave main
+                # holding lane work it does not know has landed
                 mark_landed(ctx, lane, ctx.replayed)
+                git("merge", "-q", "--ff-only", tip, cwd=ctx.main)
                 pushed = push_main(ctx, remote) if remote else "not pushed: --no-push"
             finally:
                 if not held_before:
