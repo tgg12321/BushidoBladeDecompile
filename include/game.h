@@ -104,8 +104,8 @@ typedef struct {
 
 /* Flare-slot position table at 0x800F0E38: 12 slots x one 3-word {x, y, z}
  * record (12 bytes; 0x800F0E38 + 12 * 12 == 0x800F0EC8, the table above).
- * func_80062FEC spawns into it, func_80063084 draws from it. The slot bitmask
- * D_800A3448 and the age table D_800F0BEC[slot] index the same slot. */
+ * eff_SpawnBillboardPair spawns into it, func_80063084 draws from it. The slot
+ * bitmask D_800A3448 and the age table D_800F0BEC[slot] index the same slot. */
 typedef struct {
     s32 unk0;
     s32 unk4;

@@ -132,8 +132,8 @@ extern s16 D_8008EB40[3][3];
  * (cos(a) = Judge[(a + 0x400) & 0xFFF]). */
 extern s16 Judge[0x1000];
 
-/* The 16 slots func_800645B0 spawns and func_800646E8 draws (bit i of
- * D_800A3444 live): slot i's position. */
+/* The 16 slots eff_SpawnJitteredBillboards spawns and func_800646E8 draws (bit
+ * i of D_800A3444 live): slot i's position. */
 extern Vec3i32 D_800F0D78[16];
 
 extern Unk800EED10Entry g_arena_blocks[10];

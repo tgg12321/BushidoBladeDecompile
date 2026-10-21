@@ -23318,9 +23318,9 @@ dlabel D_8009BA7C
     /* 8C2B0 8009BAB0 44530680 */ .word func_80065344
     /* 8C2B4 8009BAB4 204F0680 */ .word func_80064F20
     /* 8C2B8 8009BAB8 94530680 */ .word func_80065394
-    /* 8C2BC 8009BABC B0450680 */ .word func_800645B0
+    /* 8C2BC 8009BABC B0450680 */ .word eff_SpawnJitteredBillboards
     /* 8C2C0 8009BAC0 E8460680 */ .word func_800646E8
-    /* 8C2C4 8009BAC4 EC2F0680 */ .word func_80062FEC
+    /* 8C2C4 8009BAC4 EC2F0680 */ .word eff_SpawnBillboardPair
     /* 8C2C8 8009BAC8 84300680 */ .word func_80063084
     /* 8C2CC 8009BACC 684F0680 */ .word func_80064F68
     /* 8C2D0 8009BAD0 E4530680 */ .word func_800653E4

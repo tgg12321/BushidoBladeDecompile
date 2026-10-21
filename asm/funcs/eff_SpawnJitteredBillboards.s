@@ -1,4 +1,4 @@
-glabel func_800645B0
+glabel eff_SpawnJitteredBillboards
     /* 54DB0 800645B0 D8FFBD27 */  addiu      $sp, $sp, -0x28
     /* 54DB4 800645B4 01000224 */  addiu      $v0, $zero, 0x1
     /* 54DB8 800645B8 1C00B3AF */  sw         $s3, 0x1C($sp)
@@ -81,4 +81,4 @@ glabel func_800645B0
     /* 54EDC 800646DC 2800BD27 */  addiu      $sp, $sp, 0x28
     /* 54EE0 800646E0 0800E003 */  jr         $ra
     /* 54EE4 800646E4 00000000 */   nop
-endlabel func_800645B0
+endlabel eff_SpawnJitteredBillboards

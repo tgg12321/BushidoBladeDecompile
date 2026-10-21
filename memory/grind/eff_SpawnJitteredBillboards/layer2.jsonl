@@ -1,0 +1,1 @@
+{"func": "eff_SpawnJitteredBillboards", "addr": "800645B0", "verdict": "PASS", "body_hash": "1ff06bbd77808745", "body_kind": "c", "file": "main/51268", "reviewer": "cheat-reviewer-fakea-2026-10-16", "scope": "cheat-cleanup", "date": "2026-10-16T09:38:51Z", "head": "8ccce0b12", "notes": "", "renamed_from": ["func_800645B0"]}

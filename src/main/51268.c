@@ -1034,7 +1034,7 @@ s32 func_8006295C(void) {
    the position at *D_800A347C into its D_800F0E38 record and reset its age.
    With every slot taken it writes slot 12 (0x800F0EC8, the next table) --
    the original has no guard. */
-s32 func_80062FEC(void) {
+s32 eff_SpawnBillboardPair(void) {
     s32 i;
     s32 bit;
     s32 *src;
@@ -1055,13 +1055,13 @@ s32 func_80062FEC(void) {
     return 1;
 }
 
-/* Draw the up-to-12 flare slots func_80062FEC spawns: per live slot i (bit i
-   of D_800A3448, age D_800F0BEC[i], world position D_800F0E38[i]) emit two
-   textured POLY_FT4 billboards -- j == 0 the flare itself, j == 1 a halo that
-   bobs above it -- each rotated/translated relative to the camera, projected,
-   sized from its depth and animated by its age, then linked into the OT at its
-   depth. A slot whose age reaches 16 clears its bit. Returns nonzero while any
-   slot is still live. */
+/* Draw the up-to-12 flare slots eff_SpawnBillboardPair spawns: per live slot i
+   (bit i of D_800A3448, age D_800F0BEC[i], world position D_800F0E38[i]) emit
+   two textured POLY_FT4 billboards -- j == 0 the flare itself, j == 1 a halo
+   that bobs above it -- each rotated/translated relative to the camera,
+   projected, sized from its depth and animated by its age, then linked into the
+   OT at its depth. A slot whose age reaches 16 clears its bit. Returns nonzero
+   while any slot is still live. */
 s32 func_80063084(void) {
     extern s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
     extern s32 ReadGeomScreen(void);
@@ -1336,7 +1336,7 @@ s32 func_80063E10(s32 arg0) {
     } else {
         count = 10;
     }
-    func_800644FC(&count, mats, arg0);
+    eff_BuildUsedSlotRotMatrices(&count, mats, arg0);
     D_800A3488 = &D_8009B920[*D_800A3480];
     prim = g_eff_quad_cursor;
     *D_800A3490 = 0xE;
@@ -1413,10 +1413,11 @@ s32 func_80063E10(s32 arg0) {
     return 1;
 }
 
-/* func_800644FC -- rotates one matrix per enabled bit: for every i < *count
- * whose bit is set in D_800A3454[idx], RotMatrix(&D_800F1000[idx][i], &m[i]).
+/* eff_BuildUsedSlotRotMatrices -- rotates one matrix per enabled bit: for every
+ * i < *count whose bit is set in D_800A3454[idx],
+ * RotMatrix(&D_800F1000[idx][i], &m[i]).
  */
-void func_800644FC(s32 *count, MATRIX *m, s32 idx) {
+void eff_BuildUsedSlotRotMatrices(s32 *count, MATRIX *m, s32 idx) {
     s32 i;
     s32 mask;
 
@@ -1431,11 +1432,11 @@ void func_800644FC(s32 *count, MATRIX *m, s32 idx) {
     }
 }
 
-/* func_800645B0 -- for each group of four slots (bits of D_800A3444), claim
- * the first free slot: set its position D_800F0D78[slot] to the position at
- * D_800A347C jittered by (rand() & 0xFF) - 0x7F per axis, give it a random
- * 0..7 in D_800F0BCC, and mark its bit. */
-s32 func_800645B0(void) {
+/* eff_SpawnJitteredBillboards -- for each group of four slots (bits of
+ * D_800A3444), claim the first free slot: set its position D_800F0D78[slot] to
+ * the position at D_800A347C jittered by (rand() & 0xFF) - 0x7F per axis, give
+ * it a random 0..7 in D_800F0BCC, and mark its bit. */
+s32 eff_SpawnJitteredBillboards(void) {
     s32 i;
     s32 j;
     s32 idx;
@@ -1459,13 +1460,13 @@ s32 func_800645B0(void) {
     return 1;
 }
 
-/* Draw the up-to-16 effect slots func_800645B0 spawns: per live slot (bit i
-   of D_800A3444) step its counter D_800F0BCC[i]; while counter / 4 is below
-   7, project the slot's world position through D_800A3474 and, when its depth
-   is in range, emit one textured, semi-transparent POLY_FT4 billboard sized by
-   the screen depth and step the counter again; once counter / 4 reaches 7 the
-   slot is retired. Finally link every new quad into the OT at its depth.
-   Returns 1 when any slot is still live, else 0. */
+/* Draw the up-to-16 effect slots eff_SpawnJitteredBillboards spawns: per live
+   slot (bit i of D_800A3444) step its counter D_800F0BCC[i]; while counter / 4
+   is below 7, project the slot's world position through D_800A3474 and, when
+   its depth is in range, emit one textured, semi-transparent POLY_FT4 billboard
+   sized by the screen depth and step the counter again; once counter / 4
+   reaches 7 the slot is retired. Finally link every new quad into the OT at its
+   depth. Returns 1 when any slot is still live, else 0. */
 s32 func_800646E8(void) {
     Unk1F8000B8_800646E8 *base;
     u32 *var_1;

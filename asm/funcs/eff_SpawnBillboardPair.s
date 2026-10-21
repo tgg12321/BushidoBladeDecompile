@@ -1,4 +1,4 @@
-glabel func_80062FEC
+glabel eff_SpawnBillboardPair
     /* 537EC 80062FEC 01000224 */  addiu      $v0, $zero, 0x1
     /* 537F0 80062FF0 0F80013C */  lui        $at, %hi(D_800F10D0 + 0x20)
     /* 537F4 80062FF4 F01022AC */  sw         $v0, %lo(D_800F10D0 + 0x20)($at)
@@ -40,4 +40,4 @@ glabel func_80062FEC
     /* 53878 80063078 EC0B20A4 */  sh         $zero, %lo(D_800F0BEC)($at)
     /* 5387C 8006307C 0800E003 */  jr         $ra
     /* 53880 80063080 01000224 */   addiu     $v0, $zero, 0x1
-endlabel func_80062FEC
+endlabel eff_SpawnBillboardPair

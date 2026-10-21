@@ -33,7 +33,7 @@ glabel func_80063E10
   .L80063E88:
     /* 54688 80063E88 1000A427 */  addiu      $a0, $sp, 0x10
     /* 5468C 80063E8C 21280002 */  addu       $a1, $s0, $zero
-    /* 54690 80063E90 3F91010C */  jal        func_800644FC
+    /* 54690 80063E90 3F91010C */  jal        eff_BuildUsedSlotRotMatrices
     /* 54694 80063E94 2130E002 */   addu      $a2, $s7, $zero
     /* 54698 80063E98 B403828F */  lw         $v0, %gp_rel(D_800A3480)($gp)
     /* 5469C 80063E9C 0A80033C */  lui        $v1, %hi(D_8009B920)

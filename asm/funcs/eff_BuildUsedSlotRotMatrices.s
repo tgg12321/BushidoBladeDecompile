@@ -1,4 +1,4 @@
-glabel func_800644FC
+glabel eff_BuildUsedSlotRotMatrices
     /* 54CFC 800644FC D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 54D00 80064500 2000B2AF */  sw         $s2, 0x20($sp)
     /* 54D04 80064504 21908000 */  addu       $s2, $a0, $zero
@@ -47,4 +47,4 @@ glabel func_800644FC
     /* 54DA4 800645A4 3000BD27 */  addiu      $sp, $sp, 0x30
     /* 54DA8 800645A8 0800E003 */  jr         $ra
     /* 54DAC 800645AC 00000000 */   nop
-endlabel func_800644FC
+endlabel eff_BuildUsedSlotRotMatrices
