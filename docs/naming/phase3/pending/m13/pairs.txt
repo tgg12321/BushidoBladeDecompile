@@ -1,0 +1,13 @@
+Unk80101EC8Record.unk_1A=size_scale
+Unk80101EC8Record.unk_1C=base_move_frame_step
+Unk80101EC8Record.unk_74=saved_collision_y
+Unk80101EC8Record.unk_98=horizontal_probe_normal
+Unk80101EC8Record.unk_A1=weapon_hit_start_frames
+Unk80101EC8Record.unk_A3=weapon_hit_end_frames
+Unk80101EC8Record.unk_A8=object_pickup_frame
+Unk80101EC8Record.unk_A9=opponent_turn_frame
+Unk80101EC8Record.unk_114=weapon_point_delta
+Unk80101EC8Record.unk_148=ground_y
+Unk80101EC8Record.unk_14E=forward_move_rate
+Unk80101EC8Record.unk_168=camera_fighter_point
+Unk80101EC8Record.unk_1DC=downward_probe_hit

@@ -1,0 +1,581 @@
+PASS Unk80101EC8Record.unk_1A=size_scale, Unk80101EC8Record.unk_1C=base_move_frame_step, Unk80101EC8Record.unk_74=saved_collision_y, Unk80101EC8Record.unk_98=horizontal_probe_normal, Unk80101EC8Record.unk_A1=weapon_hit_start_frames, Unk80101EC8Record.unk_A3=weapon_hit_end_frames, Unk80101EC8Record.unk_A8=object_pickup_frame, Unk80101EC8Record.unk_A9=opponent_turn_frame, Unk80101EC8Record.unk_114=weapon_point_delta, Unk80101EC8Record.unk_148=ground_y, Unk80101EC8Record.unk_14E=forward_move_rate, Unk80101EC8Record.unk_168=camera_fighter_point, Unk80101EC8Record.unk_1DC=downward_probe_hit
+decl Unk80101EC8Record.unk_1A -> size_scale  include/game.h:1438
+decl Unk80101EC8Record.unk_1C -> base_move_frame_step  include/game.h:1439
+decl Unk80101EC8Record.unk_74 -> saved_collision_y  include/game.h:1479
+decl Unk80101EC8Record.unk_98 -> horizontal_probe_normal  include/game.h:1497
+decl Unk80101EC8Record.unk_A1 -> weapon_hit_start_frames  include/game.h:1499
+decl Unk80101EC8Record.unk_A3 -> weapon_hit_end_frames  include/game.h:1500
+decl Unk80101EC8Record.unk_A8 -> object_pickup_frame  include/game.h:1504
+decl Unk80101EC8Record.unk_A9 -> opponent_turn_frame  include/game.h:1505
+decl Unk80101EC8Record.unk_114 -> weapon_point_delta  include/game.h:1530
+decl Unk80101EC8Record.unk_148 -> ground_y  include/game.h:1533
+decl Unk80101EC8Record.unk_14E -> forward_move_rate  include/game.h:1535
+decl Unk80101EC8Record.unk_168 -> camera_fighter_point  include/game.h:1547
+decl Unk80101EC8Record.unk_1DC -> downward_probe_hit  include/game.h:1568
+  round 0: 140 member error line(s)
+    src/main/17AFC.c:702 unk_114 x1
+    src/main/17AFC.c:704 unk_114 x1
+    src/main/17AFC.c:706 unk_114 x1
+    src/main/17AFC.c:869 unk_14E x1
+    src/main/17AFC.c:876 unk_14E x1
+    src/main/17AFC.c:1138 unk_A1 x1
+    src/main/17AFC.c:1139 unk_A3 x1
+    src/main/17AFC.c:1147 unk_A1 x1
+    src/main/17AFC.c:1148 unk_A3 x1
+    src/main/17AFC.c:1666 unk_A1 x1
+    src/main/17AFC.c:1684 unk_A1 x1
+    src/main/17AFC.c:1837 unk_114 x1
+    src/main/17AFC.c:1842 unk_A1 x1
+    src/main/17AFC.c:1843 unk_A1 x1
+    src/main/17AFC.c:1844 unk_A1 x1
+    src/main/17AFC.c:1845 unk_A1 x1
+    src/main/17AFC.c:1897 unk_114 x1
+    src/main/17AFC.c:1898 unk_114 x1
+    src/main/17AFC.c:1908 unk_114 x1
+    src/main/17AFC.c:1909 unk_114 x1
+    src/main/17AFC.c:1947 unk_A1 x1
+    src/main/17AFC.c:1948 unk_A3 x1
+    src/main/17AFC.c:1957 unk_114 x1
+    src/main/17AFC.c:3797 unk_1A x1
+    src/main/17AFC.c:4413 unk_1A x1
+    src/main/17AFC.c:4536 unk_A1 x1
+    src/main/17AFC.c:4537 unk_A3 x1
+    src/main/17AFC.c:4538 unk_A1 x1
+    src/main/17AFC.c:4539 unk_A3 x1
+    src/main/17AFC.c:4542 unk_A8 x1
+    src/main/17AFC.c:4557 unk_A1 x1
+    src/main/17AFC.c:4560 unk_A3 x1
+    src/main/17AFC.c:4566 unk_A8 x1
+    src/main/17AFC.c:4569 unk_A9 x1
+    src/main/17AFC.c:4578 unk_A1 x1
+    src/main/17AFC.c:4581 unk_A3 x1
+    src/main/28708.c:1256 unk_148 x1
+    src/main/4510C.c:290 unk_1C x1
+    src/main/4510C.c:324 unk_1C x1
+    src/main/4510C.c:345 unk_1A x1
+    src/main/4510C.c:671 unk_148 x2
+    src/main/4510C.c:692 unk_A1 x2
+    src/main/4510C.c:693 unk_A1 x1
+    src/main/4510C.c:694 unk_A3 x2
+    src/main/4510C.c:695 unk_A3 x1
+    src/main/4510C.c:1016 unk_A3 x1
+    src/main/4510C.c:1849 unk_148 x1
+    src/main/4510C.c:1850 unk_148 x1
+    src/main/4510C.c:1851 unk_148 x1
+    src/main/4510C.c:2365 unk_1C x1
+    src/main/4510C.c:2682 unk_1C x1
+    src/main/9F9C.c:771 unk_1A x1
+    src/main/9F9C.c:1227 unk_114 x1
+    src/main/9F9C.c:1228 unk_114 x1
+    src/main/9F9C.c:1229 unk_114 x1
+    src/main/9F9C.c:1230 unk_114 x1
+    src/main/9F9C.c:1231 unk_114 x1
+    src/main/9F9C.c:1232 unk_114 x1
+    src/main/9F9C.c:1240 unk_14E x1
+    src/main/9F9C.c:1241 unk_148 x1
+    src/main/9F9C.c:2051 unk_168 x2
+    src/main/9F9C.c:2505 unk_1C x1
+    src/main/9F9C.c:2526 unk_A1 x1
+    src/main/9F9C.c:2529 unk_A3 x1
+    src/main/9F9C.c:2534 unk_A1 x1
+    src/main/9F9C.c:2537 unk_A3 x1
+    src/main/9F9C.c:2659 unk_74 x1
+    src/main/9F9C.c:2662 unk_74 x1
+    src/main/9F9C.c:2953 unk_1A x1
+    src/main/9F9C.c:2957 unk_1A x1
+    src/main/9F9C.c:3686 unk_1A x1
+    src/main/9F9C.c:3688 unk_1A x1
+    src/main/9F9C.c:3690 unk_1C x1
+    src/main/9F9C.c:3698 unk_1C x1
+    src/main/9F9C.c:3768 unk_114 x1
+    src/main/9F9C.c:3769 unk_114 x1
+    src/main/9F9C.c:3770 unk_114 x1
+    src/main/9F9C.c:3771 unk_114 x1
+    src/main/9F9C.c:3772 unk_114 x1
+    src/main/9F9C.c:3773 unk_114 x1
+    src/main/9F9C.c:3778 unk_148 x1
+    src/main/9F9C.c:3782 unk_14E x1
+    src/main/9F9C.c:3793 unk_168 x1
+    src/main/9F9C.c:3806 unk_1A x1
+    src/main/9F9C.c:3819 unk_1DC x1
+    src/main/9F9C.c:4034 unk_98 x1
+    src/main/9F9C.c:4133 unk_14E x1
+    src/main/9F9C.c:4134 unk_1A x1
+    src/main/9F9C.c:4140 unk_14E x1
+    src/main/9F9C.c:4146 unk_14E x1
+    src/main/9F9C.c:4152 unk_1A x1
+    src/main/9F9C.c:4157 unk_14E x1
+    src/main/9F9C.c:4159 unk_14E x1
+    src/main/9F9C.c:4163 unk_14E x1
+    src/main/9F9C.c:4181 unk_14E x1
+    src/main/9F9C.c:4185 unk_14E x1
+    src/main/9F9C.c:4268 unk_74 x1
+    src/main/9F9C.c:4280 unk_74 x1
+    src/main/9F9C.c:4323 unk_1DC x1
+    src/main/9F9C.c:4329 unk_1DC x1
+    src/main/9F9C.c:4361 unk_148 x1
+    src/main/9F9C.c:4364 unk_148 x1
+    src/main/9F9C.c:4622 unk_74 x1
+    src/main/9F9C.c:4645 unk_74 x1
+    src/main/9F9C.c:4674 unk_A9 x1
+    src/main/9F9C.c:4686 unk_74 x1
+    src/main/9F9C.c:4691 unk_74 x1
+    src/main/9F9C.c:4712 unk_74 x1
+    src/main/9F9C.c:4837 unk_1A x1
+    src/main/9F9C.c:4838 unk_1A x1
+    src/main/9F9C.c:4839 unk_1A x1
+    src/main/9F9C.c:4840 unk_1A x1
+    src/main/9F9C.c:4842 unk_1A x1
+    src/main/9F9C.c:4843 unk_1A x1
+    src/main/9F9C.c:4874 unk_1A x1
+    src/main/9F9C.c:4875 unk_1A x1
+    src/main/9F9C.c:4876 unk_1A x1
+    src/main/9F9C.c:4903 unk_98 x1
+    src/main/9F9C.c:4904 unk_98 x1
+    src/main/9F9C.c:4983 unk_168 x1
+    src/main/9F9C.c:4984 unk_168 x1
+    src/main/9F9C.c:4985 unk_168 x1
+    src/main/9F9C.c:4991 unk_148 x1
+    src/main/9F9C.c:5022 unk_A1 x1
+    src/main/9F9C.c:5123 unk_114 x1
+    src/main/9F9C.c:5124 unk_114 x1
+    src/main/9F9C.c:5125 unk_114 x1
+    src/main/9F9C.c:5126 unk_114 x1
+    src/main/9F9C.c:5127 unk_114 x1
+    src/main/9F9C.c:5128 unk_114 x1
+    src/main/9F9C.c:5134 unk_A1 x1
+    src/main/9F9C.c:5135 unk_A3 x1
+    src/main/9F9C.c:5136 unk_A1 x1
+    src/main/9F9C.c:5137 unk_A3 x1
+    src/main/9F9C.c:5149 unk_A1 x1
+    src/main/9F9C.c:5151 unk_A3 x1
+    src/main/9F9C.c:5154 unk_A1 x1
+    src/main/9F9C.c:5156 unk_A3 x1
+    src/main/9F9C.c:5174 unk_1DC x1
+    src/main/9F9C.c:5228 unk_A8 x1
+  round 1: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1438,2 +1438,2 @@
+-    s16 unk_1A;
+-    s16 unk_1C;
++    s16 size_scale;
++    s16 base_move_frame_step;
+@@ -1479 +1479 @@
+-    s32 unk_74;
++    s32 saved_collision_y;
+@@ -1497 +1497 @@
+-    SVec4i16 unk_98;
++    SVec4i16 horizontal_probe_normal;
+@@ -1499,2 +1499,2 @@
+-    u8 unk_A1[2];
+-    u8 unk_A3[2];
++    u8 weapon_hit_start_frames[2];
++    u8 weapon_hit_end_frames[2];
+@@ -1504,2 +1504,2 @@
+-    u8 unk_A8;
+-    u8 unk_A9;
++    u8 object_pickup_frame;
++    u8 opponent_turn_frame;
+@@ -1530 +1530 @@
+-    VECTOR unk_114[2];
++    VECTOR weapon_point_delta[2];
+@@ -1533 +1533 @@
+-    s32 unk_148;
++    s32 ground_y;
+@@ -1535 +1535 @@
+-    s16 unk_14E;
++    s16 forward_move_rate;
+@@ -1547 +1547 @@
+-    Vec3i32 unk_168;
++    Vec3i32 camera_fighter_point;
+@@ -1568 +1568 @@
+-    s16 unk_1DC;
++    s16 downward_probe_hit;
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -702 +702 @@
+-                                  temp_s4->unk_114[temp_s5].vx +
++                                  temp_s4->weapon_point_delta[temp_s5].vx +
+@@ -704 +704 @@
+-                                  temp_s4->unk_114[temp_s5].vz) >>
++                                  temp_s4->weapon_point_delta[temp_s5].vz) >>
+@@ -706 +706 @@
+-                    s32 temp_a0_2 = temp_s4->unk_114[temp_s5].vy;
++                    s32 temp_a0_2 = temp_s4->weapon_point_delta[temp_s5].vy;
+@@ -869 +869 @@
+-        if (D_80101EC8[0].unk_14E > 0x9C4) {
++        if (D_80101EC8[0].forward_move_rate > 0x9C4) {
+@@ -876 +876 @@
+-        if (D_80101EC8[1].unk_14E > 0x9C4) {
++        if (D_80101EC8[1].forward_move_rate > 0x9C4) {
+@@ -1138,2 +1138,2 @@
+-        if (rec->move_frame >= rec->unk_A1[0] &&
+-            rec->move_frame <= rec->unk_A3[0] &&
++        if (rec->move_frame >= rec->weapon_hit_start_frames[0] &&
++            rec->move_frame <= rec->weapon_hit_end_frames[0] &&
+@@ -1147,2 +1147,2 @@
+-        } else if (rec->unk_8C != 0 && rec->move_frame >= rec->unk_A1[1] &&
+-                   rec->move_frame <= rec->unk_A3[1] &&
++        } else if (rec->unk_8C != 0 && rec->move_frame >= rec->weapon_hit_start_frames[1] &&
++                   rec->move_frame <= rec->weapon_hit_end_frames[1] &&
+@@ -1666 +1666 @@
+-            var_3->move_frame == var_3->unk_A1[0]) {
++            var_3->move_frame == var_3->weapon_hit_start_frames[0]) {
+@@ -1684 +1684 @@
+-            var_3->move_frame == var_3->unk_A1[1] && var_3->unk_34A != 0) {
++            var_3->move_frame == var_3->weapon_hit_start_frames[1] && var_3->unk_34A != 0) {
+@@ -1837 +1837 @@
+-            math_NegNormalize3D(&var_3->unk_114[0].vx, vec);
++            math_NegNormalize3D(&var_3->weapon_point_delta[0].vx, vec);
+@@ -1842,4 +1842,4 @@
+-        if ((var_3->move_frame >= var_3->unk_A1[0] - 3 &&
+-             var_3->move_frame < var_3->unk_A1[0]) ||
+-            (var_3->move_frame >= var_3->unk_A1[1] - 3 &&
+-             var_3->move_frame < var_3->unk_A1[1])) {
++        if ((var_3->move_frame >= var_3->weapon_hit_start_frames[0] - 3 &&
++             var_3->move_frame < var_3->weapon_hit_start_frames[0]) ||
++            (var_3->move_frame >= var_3->weapon_hit_start_frames[1] - 3 &&
++             var_3->move_frame < var_3->weapon_hit_start_frames[1])) {
+@@ -1897,2 +1897,2 @@
+-                work = (ratan2(var_3->unk_114[var_12].vx,
+-                               var_3->unk_114[var_12].vz) +
++                work = (ratan2(var_3->weapon_point_delta[var_12].vx,
++                               var_3->weapon_point_delta[var_12].vz) +
+@@ -1908,2 +1908,2 @@
+-                dx = dx / 4 + (var_3->unk_114[temp3].vx * work / 2 >> 11);
+-                dz = dz / 4 + (var_3->unk_114[temp3].vz * work / 2 >> 11);
++                dx = dx / 4 + (var_3->weapon_point_delta[temp3].vx * work / 2 >> 11);
++                dz = dz / 4 + (var_3->weapon_point_delta[temp3].vz * work / 2 >> 11);
+@@ -1947,2 +1947,2 @@
+-        if (var_3->unk_8C != 0 && (var_3->move_frame < var_3->unk_A1[var_12] ||
+-                                   var_3->move_frame > var_3->unk_A3[var_12])) {
++        if (var_3->unk_8C != 0 && (var_3->move_frame < var_3->weapon_hit_start_frames[var_12] ||
++                                   var_3->move_frame > var_3->weapon_hit_end_frames[var_12])) {
+@@ -1957 +1957 @@
+-                math_NegNormalize3D(&var_3->unk_114[var_12].vx, vec);
++                math_NegNormalize3D(&var_3->weapon_point_delta[var_12].vx, vec);
+@@ -3797 +3797 @@
+-    obj->pos.y = arg0->world_pos.y - arg0->unk_1A / 32;
++    obj->pos.y = arg0->world_pos.y - arg0->size_scale / 32;
+@@ -4413 +4413 @@
+-        s32 v1 = src->unk_1A;
++        s32 v1 = src->size_scale;
+@@ -4536,4 +4536,4 @@
+-    rec->unk_A1[0] = 0xFF;
+-    rec->unk_A3[0] = 0xFF;
+-    rec->unk_A1[1] = 0xFF;
+-    rec->unk_A3[1] = 0xFF;
++    rec->weapon_hit_start_frames[0] = 0xFF;
++    rec->weapon_hit_end_frames[0] = 0xFF;
++    rec->weapon_hit_start_frames[1] = 0xFF;
++    rec->weapon_hit_end_frames[1] = 0xFF;
+@@ -4542 +4542 @@
+-    rec->unk_A8 = 0;
++    rec->object_pickup_frame = 0;
+@@ -4557 +4557 @@
+-                rec->unk_A1[0] = val;
++                rec->weapon_hit_start_frames[0] = val;
+@@ -4560 +4560 @@
+-                rec->unk_A3[0] = val;
++                rec->weapon_hit_end_frames[0] = val;
+@@ -4566 +4566 @@
+-                rec->unk_A8 = val;
++                rec->object_pickup_frame = val;
+@@ -4569 +4569 @@
+-                rec->unk_A9 = val;
++                rec->opponent_turn_frame = val;
+@@ -4578 +4578 @@
+-                rec->unk_A1[1] = val;
++                rec->weapon_hit_start_frames[1] = val;
+@@ -4581 +4581 @@
+-                rec->unk_A3[1] = val;
++                rec->weapon_hit_end_frames[1] = val;
+--- a/src/main/28708.c
++++ b/src/main/28708.c
+@@ -1256 +1256 @@
+-    dest->hC = a0->unk_148;
++    dest->hC = a0->ground_y;
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -290 +290 @@
+-            p->unk_1C = (temp + 2) << 10;
++            p->base_move_frame_step = (temp + 2) << 10;
+@@ -324 +324 @@
+-    p->unk_39A = 0x8000 / p->unk_1C;
++    p->unk_39A = 0x8000 / p->base_move_frame_step;
+@@ -345 +345 @@
+-        rec->scale_distance_offset = (rec->unk_1A - 0x1000) * 225 >> 11;
++        rec->scale_distance_offset = (rec->size_scale - 0x1000) * 225 >> 11;
+@@ -671 +671 @@
+-    temp = rec->other->unk_148 - rec->unk_148;
++    temp = rec->other->ground_y - rec->ground_y;
+@@ -692,4 +692,4 @@
+-        lo = rec->other->unk_A1[0] != 0xFF ? rec->other->unk_A1[0]
+-                                           : rec->other->unk_A1[1];
+-        hi = rec->other->unk_A3[0] != 0xFF ? rec->other->unk_A3[0]
+-                                           : rec->other->unk_A3[1];
++        lo = rec->other->weapon_hit_start_frames[0] != 0xFF ? rec->other->weapon_hit_start_frames[0]
++                                           : rec->other->weapon_hit_start_frames[1];
++        hi = rec->other->weapon_hit_end_frames[0] != 0xFF ? rec->other->weapon_hit_end_frames[0]
++                                           : rec->other->weapon_hit_end_frames[1];
+@@ -1016 +1016 @@
+-    base += a2->unk_A3[0] != 0xFF
++    base += a2->weapon_hit_end_frames[0] != 0xFF
+@@ -1849,3 +1849,3 @@
+-            if ((p->unk_148 - p->collision_pos.vy >= 0
+-                     ? p->unk_148 - p->collision_pos.vy
+-                     : p->collision_pos.vy - p->unk_148) < 200 &&
++            if ((p->ground_y - p->collision_pos.vy >= 0
++                     ? p->ground_y - p->collision_pos.vy
++                     : p->collision_pos.vy - p->ground_y) < 200 &&
+@@ -2365 +2365 @@
+-                        p->unk_1C;
++                        p->base_move_frame_step;
+@@ -2682 +2682 @@
+-            p->unk_398 = 0x17000 / p->unk_1C;
++            p->unk_398 = 0x17000 / p->base_move_frame_step;
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -771 +771 @@
+-            s32 v = -(obj->unk_1A * 950);
++            s32 v = -(obj->size_scale * 950);
+@@ -1227,6 +1227,6 @@
+-    e->unk_114[0].vx = 0;
+-    e->unk_114[0].vy = 0;
+-    e->unk_114[0].vz = 0;
+-    e->unk_114[1].vx = 0;
+-    e->unk_114[1].vy = 0;
+-    e->unk_114[1].vz = 0;
++    e->weapon_point_delta[0].vx = 0;
++    e->weapon_point_delta[0].vy = 0;
++    e->weapon_point_delta[0].vz = 0;
++    e->weapon_point_delta[1].vx = 0;
++    e->weapon_point_delta[1].vy = 0;
++    e->weapon_point_delta[1].vz = 0;
+@@ -1240,2 +1240,2 @@
+-    e->unk_14E = 0;
+-    e->unk_148 = e->collision_pos.vy;
++    e->forward_move_rate = 0;
++    e->ground_y = e->collision_pos.vy;
+@@ -2051 +2051 @@
+-    camera_UpdateTwoFighterView(&D_80101EC8[0].unk_168, &D_80101EC8[1].unk_168,
++    camera_UpdateTwoFighterView(&D_80101EC8[0].camera_fighter_point, &D_80101EC8[1].camera_fighter_point,
+@@ -2505 +2505 @@
+-    a2 = arg0->unk_1C;
++    a2 = arg0->base_move_frame_step;
+@@ -2526 +2526 @@
+-    if (val < arg0->unk_A1[0]) {
++    if (val < arg0->weapon_hit_start_frames[0]) {
+@@ -2529 +2529 @@
+-    if (val > arg0->unk_A3[0]) {
++    if (val > arg0->weapon_hit_end_frames[0]) {
+@@ -2534 +2534 @@
+-    if (val < arg0->unk_A1[1]) {
++    if (val < arg0->weapon_hit_start_frames[1]) {
+@@ -2537 +2537 @@
+-    if (val > arg0->unk_A3[1]) {
++    if (val > arg0->weapon_hit_end_frames[1]) {
+@@ -2659 +2659 @@
+-        rec->unk_74 = rec->collision_pos.vy;
++        rec->saved_collision_y = rec->collision_pos.vy;
+@@ -2662 +2662 @@
+-        rec->other->unk_74 = rec->other->collision_pos.vy;
++        rec->other->saved_collision_y = rec->other->collision_pos.vy;
+@@ -2953 +2953 @@
+-    rec->unk_198[0].y = pos[1] + ((rec->unk_1A * 71) >> 11);
++    rec->unk_198[0].y = pos[1] + ((rec->size_scale * 71) >> 11);
+@@ -2957 +2957 @@
+-    rec->unk_198[1].y = pos[1] + ((rec->unk_1A * 71) >> 11);
++    rec->unk_198[1].y = pos[1] + ((rec->size_scale * 71) >> 11);
+@@ -3686 +3686 @@
+-        p->unk_1A = D_80094C68[D_800A38DE];
++        p->size_scale = D_80094C68[D_800A38DE];
+@@ -3688,3 +3688,3 @@
+-        p->unk_1A = D_80094C68[D_8008D578[p->unk_0C]];
+-    }
+-    p->unk_1C = D_8008DE34[p->unk_0A][p->unk_0E];
++        p->size_scale = D_80094C68[D_8008D578[p->unk_0C]];
++    }
++    p->base_move_frame_step = D_8008DE34[p->unk_0A][p->unk_0E];
+@@ -3698 +3698 @@
+-        p->unk_1C = var_2 * 96 + ((var_2 == 9) ? 0xA00 : 0x800);
++        p->base_move_frame_step = var_2 * 96 + ((var_2 == 9) ? 0xA00 : 0x800);
+@@ -3768,6 +3768,6 @@
+-    p->unk_114[0].vx = 0;
+-    p->unk_114[0].vy = 0;
+-    p->unk_114[0].vz = 0;
+-    p->unk_114[1].vx = 0;
+-    p->unk_114[1].vy = 0;
+-    p->unk_114[1].vz = 0;
++    p->weapon_point_delta[0].vx = 0;
++    p->weapon_point_delta[0].vy = 0;
++    p->weapon_point_delta[0].vz = 0;
++    p->weapon_point_delta[1].vx = 0;
++    p->weapon_point_delta[1].vy = 0;
++    p->weapon_point_delta[1].vz = 0;
+@@ -3778 +3778 @@
+-    p->unk_148 = p->collision_pos.vy;
++    p->ground_y = p->collision_pos.vy;
+@@ -3782 +3782 @@
+-    p->unk_14E = 0;
++    p->forward_move_rate = 0;
+@@ -3793 +3793 @@
+-    p->unk_168 = p->world_pos;
++    p->camera_fighter_point = p->world_pos;
+@@ -3806 +3806 @@
+-    fighter_ScaleBoneHitRecords(idx, p->unk_1A);
++    fighter_ScaleBoneHitRecords(idx, p->size_scale);
+@@ -3819 +3819 @@
+-    p->unk_1DC = 0;
++    p->downward_probe_hit = 0;
+@@ -4034 +4034 @@
+-    arg0->unk_98 = out1;
++    arg0->horizontal_probe_normal = out1;
+@@ -4133,2 +4133,2 @@
+-                s32 sub_result = (u16)arg0->unk_14E - a2;
+-                s32 div16 = arg0->unk_1A;
++                s32 sub_result = (u16)arg0->forward_move_rate - a2;
++                s32 div16 = arg0->size_scale;
+@@ -4140 +4140 @@
+-                arg0->unk_14E = sub_result;
++                arg0->forward_move_rate = sub_result;
+@@ -4146 +4146 @@
+-                arg0->unk_14E = new_14e;
++                arg0->forward_move_rate = new_14e;
+@@ -4152 +4152 @@
+-                sub_result = arg0->unk_1A;
++                sub_result = arg0->size_scale;
+@@ -4157 +4157 @@
+-                    arg0->unk_14E = limit;
++                    arg0->forward_move_rate = limit;
+@@ -4159 +4159 @@
+-                    arg0->unk_14E = 0;
++                    arg0->forward_move_rate = 0;
+@@ -4163 +4163 @@
+-                    s32 var_13 = arg0->unk_14E * arg0->move_frame_step;
++                    s32 var_13 = arg0->forward_move_rate * arg0->move_frame_step;
+@@ -4181 +4181 @@
+-        if (arg0->unk_14E > 0) {
++        if (arg0->forward_move_rate > 0) {
+@@ -4185 +4185 @@
+-            arg0->unk_14E = 0;
++            arg0->forward_move_rate = 0;
+@@ -4268 +4268 @@
+-        arg0->unk_74 = arg0->collision_pos.vy;
++        arg0->saved_collision_y = arg0->collision_pos.vy;
+@@ -4280 +4280 @@
+-        arg0->unk_74 = arg0->collision_pos.vy;
++        arg0->saved_collision_y = arg0->collision_pos.vy;
+@@ -4323 +4323 @@
+-        arg0->unk_1DC = 0;
++        arg0->downward_probe_hit = 0;
+@@ -4329 +4329 @@
+-    arg0->unk_1DC =
++    arg0->downward_probe_hit =
+@@ -4361 +4361 @@
+-            arg0->unk_148 = s1[1];
++            arg0->ground_y = s1[1];
+@@ -4364 +4364 @@
+-        arg0->unk_148 = arg0->collision_pos.vy;
++        arg0->ground_y = arg0->collision_pos.vy;
+@@ -4622 +4622 @@
+-            if (rec->unk_74 + 0xFA0 < rec->collision_pos.vy) {
++            if (rec->saved_collision_y + 0xFA0 < rec->collision_pos.vy) {
+@@ -4645 +4645 @@
+-               rec->unk_74 + 0xFA0 < rec->collision_pos.vy) {
++               rec->saved_collision_y + 0xFA0 < rec->collision_pos.vy) {
+@@ -4674 +4674 @@
+-        rec->unk_A9 == rec->move_frame) {
++        rec->opponent_turn_frame == rec->move_frame) {
+@@ -4686 +4686 @@
+-        rec->unk_74 = rec->collision_pos.vy;
++        rec->saved_collision_y = rec->collision_pos.vy;
+@@ -4691 +4691 @@
+-        rec->unk_74 = rec->collision_pos.vy;
++        rec->saved_collision_y = rec->collision_pos.vy;
+@@ -4712 +4712 @@
+-        rec->unk_74 = rec->collision_pos.vy;
++        rec->saved_collision_y = rec->collision_pos.vy;
+@@ -4837,4 +4837,4 @@
+-    v[0].x = (v[0].x * rec->unk_1A) >> 12;
+-    v[0].z = (v[0].z * rec->unk_1A) >> 12;
+-    v[1].x = (v[1].x * rec->unk_1A) >> 12;
+-    v[1].z = (v[1].z * rec->unk_1A) >> 12;
++    v[0].x = (v[0].x * rec->size_scale) >> 12;
++    v[0].z = (v[0].z * rec->size_scale) >> 12;
++    v[1].x = (v[1].x * rec->size_scale) >> 12;
++    v[1].z = (v[1].z * rec->size_scale) >> 12;
+@@ -4842,2 +4842,2 @@
+-        v[0].y = (v[0].y * rec->unk_1A) >> 12;
+-        v[1].y = (v[1].y * rec->unk_1A) >> 12;
++        v[0].y = (v[0].y * rec->size_scale) >> 12;
++        v[1].y = (v[1].y * rec->size_scale) >> 12;
+@@ -4874,3 +4874,3 @@
+-        var_35.x = (var_35.x * rec->unk_1A) >> 12;
+-        var_35.y = (var_35.y * rec->unk_1A) >> 12;
+-        var_35.z = (var_35.z * rec->unk_1A) >> 12;
++        var_35.x = (var_35.x * rec->size_scale) >> 12;
++        var_35.y = (var_35.y * rec->size_scale) >> 12;
++        var_35.z = (var_35.z * rec->size_scale) >> 12;
+@@ -4903,2 +4903,2 @@
+-            rec->unk_134.vx -= rec->unk_98.vx / 256;
+-            rec->unk_134.vz -= rec->unk_98.vz / 256;
++            rec->unk_134.vx -= rec->horizontal_probe_normal.vx / 256;
++            rec->unk_134.vz -= rec->horizontal_probe_normal.vz / 256;
+@@ -4983,3 +4983,3 @@
+-    rec->unk_168.x = rec->world_pos.x;
+-    rec->unk_168.y = rec->base_pos.y - 0x384;
+-    rec->unk_168.z = rec->world_pos.z;
++    rec->camera_fighter_point.x = rec->world_pos.x;
++    rec->camera_fighter_point.y = rec->base_pos.y - 0x384;
++    rec->camera_fighter_point.z = rec->world_pos.z;
+@@ -4991 +4991 @@
+-                  rec->unk_148);
++                  rec->ground_y);
+@@ -5022 +5022 @@
+-         rec->unk_A1[1] < 0xFF && rec->unk_26C != 0 &&
++         rec->weapon_hit_start_frames[1] < 0xFF && rec->unk_26C != 0 &&
+@@ -5123,6 +5123,6 @@
+-    rec->unk_114[0].vx = SPAD->unk00[arg0][0].x - rec->unk_210[0].x;
+-    rec->unk_114[0].vy = SPAD->unk00[arg0][0].y - rec->unk_210[0].y;
+-    rec->unk_114[0].vz = SPAD->unk00[arg0][0].z - rec->unk_210[0].z;
+-    rec->unk_114[1].vx = SPAD->unk48[arg0][0].x - rec->unk_234[0].x;
+-    rec->unk_114[1].vy = SPAD->unk48[arg0][0].y - rec->unk_234[0].y;
+-    rec->unk_114[1].vz = SPAD->unk48[arg0][0].z - rec->unk_234[0].z;
++    rec->weapon_point_delta[0].vx = SPAD->unk00[arg0][0].x - rec->unk_210[0].x;
++    rec->weapon_point_delta[0].vy = SPAD->unk00[arg0][0].y - rec->unk_210[0].y;
++    rec->weapon_point_delta[0].vz = SPAD->unk00[arg0][0].z - rec->unk_210[0].z;
++    rec->weapon_point_delta[1].vx = SPAD->unk48[arg0][0].x - rec->unk_234[0].x;
++    rec->weapon_point_delta[1].vy = SPAD->unk48[arg0][0].y - rec->unk_234[0].y;
++    rec->weapon_point_delta[1].vz = SPAD->unk48[arg0][0].z - rec->unk_234[0].z;
+@@ -5134,4 +5134,4 @@
+-        if ((rec->move_frame >= rec->unk_A1[0] &&
+-             rec->move_frame <= rec->unk_A3[0]) ||
+-            (rec->move_frame >= rec->unk_A1[1] &&
+-             rec->move_frame <= rec->unk_A3[1])) {
++        if ((rec->move_frame >= rec->weapon_hit_start_frames[0] &&
++             rec->move_frame <= rec->weapon_hit_end_frames[0]) ||
++            (rec->move_frame >= rec->weapon_hit_start_frames[1] &&
++             rec->move_frame <= rec->weapon_hit_end_frames[1])) {
+@@ -5149 +5149 @@
+-            if (rec->move_frame < rec->unk_A1[0]) {
++            if (rec->move_frame < rec->weapon_hit_start_frames[0]) {
+@@ -5151 +5151 @@
+-            } else if (rec->move_frame <= rec->unk_A3[0]) {
++            } else if (rec->move_frame <= rec->weapon_hit_end_frames[0]) {
+@@ -5154 +5154 @@
+-            if (rec->move_frame < rec->unk_A1[1]) {
++            if (rec->move_frame < rec->weapon_hit_start_frames[1]) {
+@@ -5156 +5156 @@
+-            } else if (rec->move_frame <= rec->unk_A3[1]) {
++            } else if (rec->move_frame <= rec->weapon_hit_end_frames[1]) {
+@@ -5174 +5174 @@
+-    if (rec->unk_1DC != 0) {
++    if (rec->downward_probe_hit != 0) {
+@@ -5228 +5228 @@
+-                   rec->move_frame == rec->unk_A8 &&
++                   rec->move_frame == rec->object_pickup_frame &&
+DRY RUN: 5 file(s) would change; nothing written
+OK: every member access renamed
+exit=0
