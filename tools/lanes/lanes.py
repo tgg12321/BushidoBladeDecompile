@@ -452,20 +452,20 @@ def cmd_status(ctx: Ctx, a):
     return 0
 
 
-def unlanded(ctx: Ctx, lane: str, rev: str, reg=None) -> list:
-    """The lane commits up to `rev` that have not landed, oldest first. Landed means in main, or
-    an ancestor of the lane tip the last successful land took (registry `landed`): a lane branch
-    that could not be moved after a land still holds those commits, and replaying them would
-    re-apply landed work over newer main changes."""
-    excl = ["^main"]
-    e = (reg or ctx.load())["lanes"].get(lane, {})
-    done, at = e.get("landed"), e.get("landed_main")
-    # trusted only while the main tip that land produced is still in main (a reset of main
-    # after a failed push or a --no-push land un-lands those commits again)
-    if done and at and git_ok("cat-file", "-e", f"{done}^{{commit}}", cwd=ctx.main) and \
-            git_ok("merge-base", "--is-ancestor", at, "main", cwd=ctx.main):
-        excl.append(f"^{done}")
-    return git("rev-list", "--reverse", rev, *excl, cwd=ctx.main).split()
+def unlanded(ctx: Ctx, lane: str, rev: str, reg=None, base: str = "main") -> list:
+    """The lane commits up to `rev` that have not landed in `base`, oldest first. A commit has
+    landed if it is in `base`, or if the main commit a land replayed it as (registry
+    `landed_map`, lane sha -> main sha) is in `base`. A lane branch that could not be moved after
+    a land still holds the originals, and replaying them would re-apply landed work over newer
+    main changes; checked per commit, so a reset of main un-lands exactly what it removed."""
+    lmap = (reg or ctx.load())["lanes"].get(lane, {}).get("landed_map", {})
+    out = []
+    for c in git("rev-list", "--reverse", rev, f"^{base}", cwd=ctx.main).split():
+        m = lmap.get(c)
+        if m and git_ok("merge-base", "--is-ancestor", m, base, cwd=ctx.main):
+            continue
+        out.append(c)
+    return out
 
 
 def finish_worktree(ctx: Ctx, d: Path):
@@ -858,12 +858,17 @@ def paths_of(ctx: Ctx, commits) -> list:
     return sorted(out)
 
 
-def mark_landed(ctx: Ctx, lane: str, tipsrc: str, main_tip: str):
-    """Record the lane tip whose commits are now in main, and the main tip that holds them
-    (see unlanded)."""
+def mark_landed(ctx: Ctx, lane: str, replayed: dict):
+    """Record which main commit each lane commit landed as (see unlanded); entries the lane
+    branch no longer reaches are pruned."""
+    live = set(git("rev-list", ctx.branch(lane), "^main", cwd=ctx.main).split()) | set(replayed)
+
     def do(reg):
         e = reg["lanes"].setdefault(lane, {})
-        e["landed"], e["landed_main"] = tipsrc, main_tip
+        m = {k: v for k, v in e.get("landed_map", {}).items() if k in live}
+        m.update(replayed)
+        e["landed_map"] = m
+        e.pop("landed", None); e.pop("landed_main", None)
     ctx.update(do)
 
 
@@ -938,6 +943,7 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log) -> s
     run(["git", "cherry-pick", "--abort"], cwd=ld, check=False)
     git("checkout", "-q", "--detach", "-f", base, cwd=ld)
     git("reset", "-q", "--hard", base, cwd=ld)
+    ctx.replayed = {}  # lane sha -> the candidate commit holding it (base's tip if it was empty)
     for sha in commits:
         try:
             how = replay_commit(ctx, ld, sha, log)
@@ -946,8 +952,9 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log) -> s
                 raise Refuse(f"{e}\n  Drop just this commit (later commits are kept) and redo it "
                              f"on the new main: python tools/lanes/lanes.py drop {lane} {sha[:9]}", 3)
             raise
+        ctx.replayed[sha] = git("rev-parse", "HEAD", cwd=ld)
         print(f"lanes:   {sha[:9]} {how}", flush=True)
-    new_paths = set(git("diff", "--name-only", f"{base}..HEAD", cwd=ld).split())
+    new_paths = set(git("diff", "--name-only", "--no-renames", f"{base}..HEAD", cwd=ld).split())
     if not new_paths:
         return git("rev-parse", "HEAD", cwd=ld)
     docs_only = all(any(p.startswith(d) for d in ctx.cfg.get("docs_only_paths", [])) for p in new_paths)
@@ -1000,7 +1007,7 @@ def sync_main_with_remote(ctx: Ctx, remote: str):
 def advance_lane(ctx: Ctx, lane: str, landed_from: str):
     """After a land, move the lane branch onto the new main without touching uncommitted work:
     commits made during the land are rebased onto main; with local edits they stay as they are
-    (the next land skips the already-landed ones: unlanded() excludes the recorded tip)."""
+    (the next land skips the already-landed ones: see unlanded())."""
     wt, br = ctx.lane_dir(lane), ctx.branch(lane)
     head = git("rev-parse", "HEAD", cwd=wt)
     if head == landed_from:
@@ -1048,12 +1055,17 @@ def cmd_land(ctx: Ctx, a):
     try:
         for attempt in range(3):
             base = git("rev-parse", "main", cwd=ctx.main)
+            if attempt:  # main moved (it may even have been reset): what is unlanded changes
+                commits = unlanded(ctx, lane, tipsrc, base=base)
+                if any(len(git("rev-list", "--parents", "-n1", c, cwd=ctx.main).split()) > 2
+                       for c in commits):
+                    raise Refuse("the lane holds merge commits; rebuild it as linear commits")
             print(f"lanes: landing {len(commits)} commit(s) of {lane} onto main {base[:9]}"
                   + (f" (retry {attempt}: main moved)" if attempt else ""), flush=True)
             tip = build_candidate(ctx, lane, ld, commits, base, log)  # no lock held
             if tip == base:
                 print("lanes: every lane commit is already in main; nothing new to land")
-                mark_landed(ctx, lane, tipsrc, base)
+                mark_landed(ctx, lane, ctx.replayed)
                 advance_lane(ctx, lane, tipsrc)
                 return 0
             # Short critical section: verify nothing moved, then fast-forward and push.
@@ -1069,7 +1081,7 @@ def cmd_land(ctx: Ctx, a):
                 if git("rev-parse", "main", cwd=ctx.main) != base:
                     continue  # main moved: rebuild on the new main (finally releases the lock)
                 git("merge", "-q", "--ff-only", tip, cwd=ctx.main)
-                mark_landed(ctx, lane, tipsrc, tip)
+                mark_landed(ctx, lane, ctx.replayed)
                 pushed = push_main(ctx, remote) if remote else "not pushed: --no-push"
             finally:
                 if not held_before:

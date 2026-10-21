@@ -295,6 +295,69 @@ class LaneTest(unittest.TestCase):
         self.assertEqual(self.L("s1", "open", "a"), 0, self.last)
         self.assertEqual(sh("rev-parse", "HEAD", cwd=d), sh("rev-parse", "main", cwd=self.main))
 
+    def _left_as_is_land(self, lane, *flags):
+        d = self.wt(lane)
+        keep = (d / "shared.txt").read_text()
+        (d / "shared.txt").write_text("dirty\n", newline="\n")
+        rc = self.L("s1", "land", lane, *flags)
+        (d / "shared.txt").write_text(keep, newline="\n")
+        self.assertEqual(rc, 0, self.last)
+        self.assertIn("left as is", self.last)
+
+    def test_reset_during_land_does_not_hide_work(self):
+        # eighth review, blocking 1: main reset while a land's gates run
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        self.edit_line("a", "shared.txt", 5, "A")
+        self.edit_line("b", "shared.txt", 15, "B")
+        self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        self._left_as_is_land("a", "--no-push")
+        self.commit("a", "src/c2.c", "int c2;\n", "c2")
+        real, fired = lanes.build_candidate, []
+
+        def racing(ctx, lane, ld, commits, base, log):
+            if not fired:
+                fired.append(1)
+                sh("reset", "-q", "--hard", "origin/main", cwd=self.main)
+            return real(ctx, lane, ld, commits, base, log)
+        lanes.build_candidate = racing
+        try:
+            self.assertEqual(self.L("s1", "land", "a", "--no-push"), 0, self.last)
+        finally:
+            lanes.build_candidate = real
+        self.assertEqual(self.main_file("shared.txt").splitlines()[5], "A")
+        self.assertTrue((self.main / "src" / "c2.c").exists())
+
+    def test_partial_reset_keeps_earlier_lands_landed(self):
+        # eighth review, blocking 2: undoing only the latest land must not re-replay older ones
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        self.commit("a", "src/b.c", "int b;\n", "A adds b.c")
+        self.edit_line("b", "shared.txt", 15, "B")
+        self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        self._left_as_is_land("a")  # pushed: M1 on origin holds b.c
+        self.commit("a", "src/c2.c", "int c2;\n", "c2")
+        self._left_as_is_land("a", "--no-push")
+        sh("reset", "-q", "--hard", "origin/main", cwd=self.main)
+        self.assertEqual(self.L("s2", "fresh", "b"), 0, self.last)
+        sh("rm", "-q", "src/b.c", cwd=self.wt("b"))
+        sh("-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-qm", "rm b", cwd=self.wt("b"))
+        self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("landing 1 commit(s)", self.last)  # only c2
+        self.assertFalse((self.main / "src" / "b.c").exists())
+        self.assertTrue((self.main / "src" / "c2.c").exists())
+
+    def test_rename_out_of_src_still_gated(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/h.h", "x\n", "h")
+        self.commit("a", "src/a.c", '#include "h.h"\n', "use h")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        d = self.wt("a")
+        (d / "docs").mkdir(exist_ok=True)
+        sh("mv", "src/h.h", "docs/h.h", cwd=d)
+        sh("-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-qm", "mv", cwd=d)
+        self.assertEqual(self.L("s1", "land", "a"), 4, self.last)
+        self.assertNotIn("docs-only", self.last)
+
     def test_replay_trailer(self):
         self.L("s1", "open", "a"); self.L("s2", "open", "b")
         self.edit_line("a", "shared.txt", 5, "A")
