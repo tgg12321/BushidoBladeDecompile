@@ -451,6 +451,8 @@ SECTIONS
         build/src/main/psxsdk/libgte/fgo_05.o(.data);
         build/src/main/psxsdk/libgte/fgo_06.o(.data);
         build/asm/data/7D920.data.o(.data);
+        build/src/main/psxsdk/libgte/sincos.o(.data);
+        build/asm/data/8CF96.data.o(.data);
         build/src/main/psxsdk/libgte/sqrtbl.o(.data);
         build/src/main/psxsdk/libgte/cstbl.o(.data);
         build/src/main/psxsdk/libgte/ratan.o(.data);
