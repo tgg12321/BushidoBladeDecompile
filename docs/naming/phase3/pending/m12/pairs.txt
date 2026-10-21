@@ -1,0 +1,6 @@
+MoveScript.unk_00=event_move_table_id
+MoveScript.unk_02=fallback_move_id
+MoveScript.unk_04=motion_bank_entry_index
+MoveScript.unk_07=last_move_frame
+MoveScript.unk_08=last_command_frame
+MoveScript.unk_0A=transition_commands

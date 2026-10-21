@@ -1,0 +1,126 @@
+PASS MoveScript.unk_00=event_move_table_id, MoveScript.unk_02=fallback_move_id, MoveScript.unk_04=motion_bank_entry_index, MoveScript.unk_07=last_move_frame, MoveScript.unk_08=last_command_frame, MoveScript.unk_0A=transition_commands
+decl MoveScript.unk_00 -> event_move_table_id  include/game.h:1403
+decl MoveScript.unk_02 -> fallback_move_id  include/game.h:1404
+decl MoveScript.unk_04 -> motion_bank_entry_index  include/game.h:1406
+decl MoveScript.unk_07 -> last_move_frame  include/game.h:1409
+decl MoveScript.unk_08 -> last_command_frame  include/game.h:1410
+decl MoveScript.unk_0A -> transition_commands  include/game.h:1412
+  round 0: 24 member error line(s)
+    src/main/17AFC.c:232 unk_00 x1
+    src/main/28708.c:1429 unk_04 x2
+    src/main/28708.c:1434 unk_04 x2
+    src/main/4510C.c:616 unk_08 x1
+    src/main/4510C.c:700 unk_08 x1
+    src/main/4510C.c:1833 unk_08 x1
+    src/main/4510C.c:1871 unk_08 x1
+    src/main/9F9C.c:2579 unk_0A x1
+    src/main/9F9C.c:3363 unk_04 x1
+    src/main/9F9C.c:4479 unk_00 x1
+    src/main/9F9C.c:4497 unk_00 x1
+    src/main/9F9C.c:4507 unk_07 x1
+    src/main/9F9C.c:4515 unk_0A x1
+    src/main/9F9C.c:4516 unk_0A x1
+    src/main/9F9C.c:4522 unk_0A x1
+    src/main/9F9C.c:4529 unk_02 x1
+    src/main/9F9C.c:4536 unk_08 x1
+    src/main/9F9C.c:4551 unk_08 x1
+    src/main/9F9C.c:4552 unk_0A x1
+    src/main/9F9C.c:4624 unk_00 x1
+    src/main/9F9C.c:4632 unk_02 x1
+    src/main/9F9C.c:4645 unk_00 x1
+    src/main/9F9C.c:4712 unk_07 x1
+    src/main/9F9C.c:4713 unk_07 x1
+  round 1: 2 member error line(s)
+  round 2: 0 member error line(s)
+--- a/include/game.h
++++ b/include/game.h
+@@ -1403,2 +1403,2 @@
+-    u16 unk_00;
+-    u16 unk_02;
++    u16 event_move_table_id;
++    u16 fallback_move_id;
+@@ -1406 +1406 @@
+-    u16 unk_04;
++    u16 motion_bank_entry_index;
+@@ -1409,2 +1409,2 @@
+-    u8 unk_07;
+-    u8 unk_08;
++    u8 last_move_frame;
++    u8 last_command_frame;
+@@ -1412 +1412 @@
+-    u16 unk_0A[1];
++    u16 transition_commands[1];
+--- a/src/main/17AFC.c
++++ b/src/main/17AFC.c
+@@ -232 +232 @@
+-        arg0, arg0->cur_move->unk_00, &arg0->move_is_common);
++        arg0, arg0->cur_move->event_move_table_id, &arg0->move_is_common);
+--- a/src/main/4510C.c
++++ b/src/main/4510C.c
+@@ -616 +616 @@
+-           rec->cur_move->unk_08 != rec->motion_metadata[1] - 1))
++           rec->cur_move->last_command_frame != rec->motion_metadata[1] - 1))
+@@ -700 +700 @@
+-             : rec->cur_move->unk_08 < rec->move_frame)) {
++             : rec->cur_move->last_command_frame < rec->move_frame)) {
+@@ -1833 +1833 @@
+-                   p->move_frame == p->cur_move->unk_08 - 1) {
++                   p->move_frame == p->cur_move->last_command_frame - 1) {
+@@ -1871 +1871 @@
+-                        p->move_frame >= p->cur_move->unk_08 - 2 || work3) {
++                        p->move_frame >= p->cur_move->last_command_frame - 2 || work3) {
+--- a/src/main/9F9C.c
++++ b/src/main/9F9C.c
+@@ -2579 +2579 @@
+-    a0 = arg0->unk_0A;
++    a0 = arg0->transition_commands;
+@@ -3363 +3363 @@
+-        u16 v1 = arg1->unk_04;
++        u16 v1 = arg1->motion_bank_entry_index;
+@@ -4479 +4479 @@
+-            rec, rec->cur_move->unk_00, &rec->move_is_common);
++            rec, rec->cur_move->event_move_table_id, &rec->move_is_common);
+@@ -4497 +4497 @@
+-                rec, rec->cur_move->unk_00, &rec->move_is_common);
++                rec, rec->cur_move->event_move_table_id, &rec->move_is_common);
+@@ -4507 +4507 @@
+-    if (rec->cur_move->unk_07 < rec->move_frame) {
++    if (rec->cur_move->last_move_frame < rec->move_frame) {
+@@ -4515,2 +4515,2 @@
+-            if ((rec->cur_move->unk_0A[0] & 0x2000) && D_800A38AE != arg0) {
+-                if (rec->cur_move->unk_0A[0] & 0x1000) {
++            if ((rec->cur_move->transition_commands[0] & 0x2000) && D_800A38AE != arg0) {
++                if (rec->cur_move->transition_commands[0] & 0x1000) {
+@@ -4522 +4522 @@
+-                        rec, rec->cur_move->unk_0A[1], &rec->move_is_common),
++                        rec, rec->cur_move->transition_commands[1], &rec->move_is_common),
+@@ -4529 +4529 @@
+-                              motion_ResolveMoveData(rec, rec->cur_move->unk_02,
++                              motion_ResolveMoveData(rec, rec->cur_move->fallback_move_id,
+@@ -4536 +4536 @@
+-        if (rec->cur_move->unk_08 < rec->move_frame) {
++        if (rec->cur_move->last_command_frame < rec->move_frame) {
+@@ -4551,2 +4551,2 @@
+-    } else if (rec->cur_move->unk_08 >= rec->move_frame) {
+-        ent = rec->cur_move->unk_0A;
++    } else if (rec->cur_move->last_command_frame >= rec->move_frame) {
++        ent = rec->cur_move->transition_commands;
+@@ -4624 +4624 @@
+-                    rec, rec->cur_move->unk_00, &rec->move_is_common);
++                    rec, rec->cur_move->event_move_table_id, &rec->move_is_common);
+@@ -4632 +4632 @@
+-                              motion_ResolveMoveData(rec, rec->cur_move->unk_02,
++                              motion_ResolveMoveData(rec, rec->cur_move->fallback_move_id,
+@@ -4645 +4645 @@
+-            rec, rec->cur_move->unk_00, &rec->move_is_common);
++            rec, rec->cur_move->event_move_table_id, &rec->move_is_common);
+@@ -4712,2 +4712,2 @@
+-        if (rec->move_frame == rec->cur_move->unk_07 && rec->unk_104.vy > 0) {
+-            rec->move_frame = rec->cur_move->unk_07 - 1;
++        if (rec->move_frame == rec->cur_move->last_move_frame && rec->unk_104.vy > 0) {
++            rec->move_frame = rec->cur_move->last_move_frame - 1;
+DRY RUN: 4 file(s) would change; nothing written
+UNRESOLVED (2): edit by hand, then re-run the keycheck
+  src/main/28708.c:1429: also reaches `unk_04` through another type
+  src/main/28708.c:1434: also reaches `unk_04` through another type
+exit=1
