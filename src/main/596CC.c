@@ -667,7 +667,7 @@ void func_80069F80(s32 *arg0, s32 arg1) {
     s32 c;
     /* FAKE: single-use holder of the cell table ahead of the descriptor's table
      * store; stored directly: score 8. */
-    Unk8009B400Record *tbl;
+    Unk8009B400Record *var_4;
 
     if (arg1 & 2) {
         ptr = ((Unk8006919CRec *)arg0[1])->unk_1C;
@@ -701,16 +701,16 @@ void func_80069F80(s32 *arg0, s32 arg1) {
         }
         s.fr00.semi = 0;
         s.fr00.ot_idx = 3;
-        tbl = s.fr00.header->cells;
-        s.fr00.table = tbl;
+        var_4 = s.fr00.header->cells;
+        s.fr00.table = var_4;
         s.fr00.ft4_out = arg0[2];
         arg0[2] = gpu_AddScaledSpriteQuads(&s.fr00, 0);
         s.fr00.y = 0;
         s.fr00.x = x0;
         s.fr00.has_color = 0;
         s.fr00.header = ptr[1];
-        tbl = s.fr00.header->cells;
-        s.fr00.table = tbl;
+        var_4 = s.fr00.header->cells;
+        s.fr00.table = var_4;
         s.fr00.sprt_out = arg0[5];
         arg0[5] = gpu_AddSpriteCells(&s.fr00);
         if (arg1 & 1) {
@@ -743,7 +743,7 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
     s32 c;
     /* FAKE: single-use holder of the cell table ahead of the descriptor's table
      * store; stored directly: score 8. */
-    Unk8009B400Record *tbl;
+    Unk8009B400Record *var_4;
 
     if (arg1 & 1) {
         ptr = ((Unk8006919CRec *)arg0[1])->unk_1C;
@@ -778,16 +778,16 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
         }
         s.fr00.semi = 0;
         s.fr00.ot_idx = 2;
-        tbl = s.fr00.header->cells;
-        s.fr00.table = tbl;
+        var_4 = s.fr00.header->cells;
+        s.fr00.table = var_4;
         s.fr00.ft4_out = arg0[2];
         arg0[2] = gpu_AddScaledSpriteQuads(&s.fr00, 0);
         s.fr00.y = 0;
         s.fr00.x = x0;
         s.fr00.has_color = 0;
         s.fr00.header = ptr[3];
-        tbl = s.fr00.header->cells;
-        s.fr00.table = tbl;
+        var_4 = s.fr00.header->cells;
+        s.fr00.table = var_4;
         s.fr00.sprt_out = arg0[5];
         arg0[5] = gpu_AddSpriteCells(&s.fr00);
         if (arg1 & 2) {
@@ -797,8 +797,8 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
             s.fr00.x = 0;
             s.fr00.y = 0;
             s.fr00.has_color = 1;
-            tbl = s.fr00.header->cells;
-            s.fr00.table = tbl;
+            var_4 = s.fr00.header->cells;
+            s.fr00.table = var_4;
             s.fr00.sprt_out = arg0[5];
             arg0[5] = gpu_AddSpriteCells(&s.fr00);
         }
@@ -1600,7 +1600,7 @@ extern TILE D_800F1498[];
 void func_8006BEC4(s32 arg0, s32 arg1) {
     Unk8007352CRec sp10;
     s32 var_1;
-    Size2s16 *pos;
+    Size2s16 *var_2;
     s16 i;
     s32 r;
     s32 w;
@@ -1614,12 +1614,12 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
     D_800A36DC = D_800F1498 + var_1 * 4;
     func_8006BD28(arg0, 0, &sp10, 0);
     h = 0;
-    pos = D_800A34FC->unk_24->unk_48;
-    pos += arg0;
+    var_2 = D_800A34FC->unk_24->unk_48;
+    var_2 += arg0;
     if (arg1 != -1) {
         w = arg1 ? 0x1F : 0x28;
         h = 0x10;
-        D_800A3900 = (pos->y + 0x10) >> 1;
+        D_800A3900 = (var_2->y + 0x10) >> 1;
         func_8006BD28(0x12, D_800A3900, &sp10, arg1);
         x0 = (arg1 & 1) * 0x3A + 0x113;
         for (i = 0; i < 3; i++) {
@@ -1646,10 +1646,10 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
     D_800A36DC->r0 = 0;
     D_800A36DC->g0 = 0;
     D_800A36DC->b0 = 0;
-    D_800A36DC->x0 = 0x140 - (pos->x >> 1);
-    D_800A36DC->y0 = 0x78 - (pos->y >> 1);
-    D_800A36DC->w = pos->x;
-    D_800A36DC->h = pos->y + h;
+    D_800A36DC->x0 = 0x140 - (var_2->x >> 1);
+    D_800A36DC->y0 = 0x78 - (var_2->y >> 1);
+    D_800A36DC->w = var_2->x;
+    D_800A36DC->h = var_2->y + h;
     SetSemiTrans(D_800A36DC, 1);
     AddPrim(g_gpu_ot_ptr + 8, D_800A36DC);
     D_800A36DC++;
@@ -1687,17 +1687,17 @@ void func_8006C21C(s32 *arg0) {
     /* FAKE: constant-holder (named-local-fake-exception) for the 0 passed as
      * gpu_GetSheetTPage's second argument; held in $s5 as in the target. A
      * literal 0 at every call: score 3. */
-    s32 mode;
+    s32 var_8;
     /* FAKE: holds several values (Ruling 11, ordinary-c-judge-decidable): the
      * phase-2 unlock-bit index,
      * the phase-4 sprite index, the phase-6 tile row and the phase-8 gauge
      * level; one counter per phase: score 90. */
-    s32 work;
+    s32 var_9;
     /* FAKE: per-branch constant holder (named-local-fake-exception, Q27 (B)) --
      * the bar's far-corner red, 0 in two arms and 0x80 in the other two; set in
      * each arm, it is not hoisted out of the row loop. The literals: score 8.
      */
-    s32 col;
+    s32 var_10;
     /* FAKE: always-zero narrow locals (named-local-fake-exception, Q27 (A)) --
      * SetDrawMode's dither and texture-window arguments and the descriptor
      * position, read up to the phase-4 head; their dead extension temps take
@@ -1718,7 +1718,7 @@ void func_8006C21C(s32 *arg0) {
      * score 12. */
     Unk8009B400Record *var_19;
 
-    mode = 0;
+    var_8 = 0;
     var_11 = 0;
     xpos = 0;
     ypos = 0;
@@ -1735,7 +1735,7 @@ void func_8006C21C(s32 *arg0) {
     s.sprt_out = arg0[5];
     arg0[5] = gpu_AddSpriteCells(&s);
     SetDrawMode((DR_MODE *)arg0[7], 1, var_11,
-                gpu_GetSheetTPage(s.header, mode), (RECT *)var_14);
+                gpu_GetSheetTPage(s.header, var_8), (RECT *)var_14);
     AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
@@ -1746,10 +1746,10 @@ void func_8006C21C(s32 *arg0) {
     for (var_15 = 0; var_15 < 2; var_15++) {
         s.x = var_15 * 280;
         if (D_800A34FC->unk_28.half[var_15] < 3) {
-            for (work = 0; work < 4; work++) {
+            for (var_9 = 0; var_9 < 4; var_9++) {
                 if (D_800A3524->unk17[D_800A34FC->unk_28.half[var_15]] &
-                    ((1 << work) << (var_15 * 4))) {
-                    s.header = table[work + 13];
+                    ((1 << var_9) << (var_15 * 4))) {
+                    s.header = table[var_9 + 13];
                     s.semi = 0;
                     var_19 = s.header->cells;
                     s.table = var_19;
@@ -1761,7 +1761,7 @@ void func_8006C21C(s32 *arg0) {
     }
     s.header = table[13];
     SetDrawMode((DR_MODE *)arg0[7], 1, var_11,
-                gpu_GetSheetTPage(s.header, mode), (RECT *)var_14);
+                gpu_GetSheetTPage(s.header, var_8), (RECT *)var_14);
     AddPrim(g_gpu_ot_ptr + 9, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
@@ -1776,8 +1776,8 @@ void func_8006C21C(s32 *arg0) {
     s.table = var_19;
     s.sprt_out = arg0[5];
     arg0[5] = gpu_AddSpriteCells(&s);
-    for (work = 0; work < 6; work++) {
-        s.header = table[work + 2];
+    for (var_9 = 0; var_9 < 6; var_9++) {
+        s.header = table[var_9 + 2];
         s.ot_idx = 10;
         s.has_color = 0;
         s.semi = 0;
@@ -1792,14 +1792,15 @@ void func_8006C21C(s32 *arg0) {
     }
     table = ((Unk8006919CRec *)arg0[1])->unk_30;
     s.header = table[1];
-    SetDrawMode((DR_MODE *)arg0[7], 1, 0, gpu_GetSheetTPage(s.header, mode), 0);
+    SetDrawMode(
+        (DR_MODE *)arg0[7], 1, 0, gpu_GetSheetTPage(s.header, var_8), 0);
     AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
     recs = D_800A34FC->unk_24->unk_44;
     tile = (TILE *)arg0[6];
-    for (work = 0; work < 11; work++) {
-        var_5 = &recs[work];
+    for (var_9 = 0; var_9 < 11; var_9++) {
+        var_5 = &recs[var_9];
         for (j = 0; j < 2; j++) {
             SetTile(tile);
             tile->r0 = var_5->r;
@@ -1820,40 +1821,40 @@ void func_8006C21C(s32 *arg0) {
     poly = (POLY_G4 *)arg0[4];
     x = 0;
     for (j = 0; j < 2; j++) {
-        work = D_800A34FC->unk_28.half[j];
-        rec = &recs[work + 1];
+        var_9 = D_800A34FC->unk_28.half[j];
+        rec = &recs[var_9 + 1];
         for (row = 0; row < 2; row++) {
             SetPolyG4(poly);
-            if (work == 5) {
+            if (var_9 == 5) {
                 SetSemiTrans(poly, 1);
-                col = 0;
+                var_10 = 0;
                 poly->r0 = var_18;
                 poly->g0 = var_18;
                 poly->b0 = var_18;
                 poly->r1 = var_18;
                 poly->g1 = var_18;
                 poly->b1 = var_18;
-                poly->r2 = col;
+                poly->r2 = var_10;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r3 = col;
+                poly->r3 = var_10;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 setXYWH(poly, rec[row].x + x, rec[row].y + 1 - row, rec[row].w,
                         -4 * row + 2);
             } else {
                 SetSemiTrans(poly, 0);
-                col = 0x80;
+                var_10 = 0x80;
                 poly->r0 = var_18;
                 poly->g0 = 0;
                 poly->b0 = 0;
                 poly->r1 = var_18;
                 poly->g1 = 0;
                 poly->b1 = 0;
-                poly->r2 = col;
+                poly->r2 = var_10;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r3 = col;
+                poly->r3 = var_10;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 setXYWH(poly, rec[row].x + x, rec[row].y + 1 - row, rec[row].w,
@@ -1862,19 +1863,19 @@ void func_8006C21C(s32 *arg0) {
             AddPrim(g_gpu_ot_ptr + 8, poly);
             poly++;
             SetPolyG4(poly);
-            if (work == 5) {
+            if (var_9 == 5) {
                 SetSemiTrans(poly, 1);
-                col = 0;
+                var_10 = 0;
                 poly->r0 = var_18;
                 poly->g0 = var_18;
                 poly->b0 = var_18;
                 poly->r2 = var_18;
                 poly->g2 = var_18;
                 poly->b2 = var_18;
-                poly->r1 = col;
+                poly->r1 = var_10;
                 poly->g1 = 0;
                 poly->b1 = 0;
-                poly->r3 = col;
+                poly->r3 = var_10;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec->x + rec->w * row + x;
@@ -1887,17 +1888,17 @@ void func_8006C21C(s32 *arg0) {
                 poly->y3 = rec[1].y - 1;
             } else {
                 SetSemiTrans(poly, 0);
-                col = 0x80;
+                var_10 = 0x80;
                 poly->r0 = var_18;
                 poly->g0 = 0;
                 poly->b0 = 0;
                 poly->r2 = var_18;
                 poly->g2 = 0;
                 poly->b2 = 0;
-                poly->r1 = col;
+                poly->r1 = var_10;
                 poly->g1 = 0;
                 poly->b1 = 0;
-                poly->r3 = col;
+                poly->r3 = var_10;
                 poly->g3 = 0;
                 poly->b3 = 0;
                 poly->x0 = rec->x + rec->w * row + x;

@@ -466,19 +466,19 @@ void func_8006F100(Unk8006EACCRec *arg0) {
             /* FAKE: constant-holder local: keeps the screen-centre offset added
              * to the shake offset before the table origin (`addiu 0x140` then
              * `addu tbl,v0`); a literal gets reassociated. Both literals
-             * inline (cx and cy): score 44 (named-local-fake-exception)
+             * inline (var_10 and var_11): score 44 (named-local-fake-exception)
              */
-            s32 cx = 0x140;
+            s32 var_10 = 0x140;
 
-            s.x = D_8009BC94[i][D_800A3590[i]].x + (t1 + cx) -
+            s.x = D_8009BC94[i][D_800A3590[i]].x + (t1 + var_10) -
                   ((dx * s.scale_x >> 8) / 2);
         }
         {
-            /* FAKE: same constant-holder mechanism as `cx` above, for the
+            /* FAKE: same constant-holder mechanism as `var_10` above, for the
              * vertical centre 0x9D; a literal alone scores 26. */
-            s32 cy = 0x9D;
+            s32 var_11 = 0x9D;
 
-            s.y = D_8009BC94[i][D_800A3590[i]].y + (t2 + cy) -
+            s.y = D_8009BC94[i][D_800A3590[i]].y + (t2 + var_11) -
                   ((dy * s.scale_y >> 8) / 2);
         }
         s.ft4_out = arg0->unk_04.unk_00;

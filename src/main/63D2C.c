@@ -8,9 +8,9 @@
 extern void AddPrim(void *, void *);
 extern const u8 D_800159A0[16];
 
-s32 gpu_AddSpriteCells(Unk8007352CRec *env) {
-    Unk8009B0E0Record *var_0 = env->header;
-    SPRT *sp = (SPRT *)env->sprt_out;
+s32 gpu_AddSpriteCells(Unk8007352CRec *arg0) {
+    Unk8009B0E0Record *var_0 = arg0->header;
+    SPRT *sp = (SPRT *)arg0->sprt_out;
     Unk8009B400Record *e;
     s32 clut;
     s16 i;
@@ -18,9 +18,9 @@ s32 gpu_AddSpriteCells(Unk8007352CRec *env) {
 
     clut = GetClut(var_0->cx, var_0->cy);
     for (i = var_0->count - 1; i >= 0; i--) {
-        e = env->table + i;
-        x0 = e->x + env->x;
-        y0 = e->y + env->y;
+        e = arg0->table + i;
+        x0 = e->x + arg0->x;
+        y0 = e->y + arg0->y;
         x1 = x0 + e->w;
         y1 = y0 + e->h;
         if (x1 > 0 && x0 < 0x280 && y0 < 0xF0 && y1 > 0) {
@@ -32,29 +32,29 @@ s32 gpu_AddSpriteCells(Unk8007352CRec *env) {
             sp->v0 = e->v + var_0->vbase;
             sp->w = e->w;
             sp->h = e->h;
-            if (env->has_color) {
+            if (arg0->has_color) {
                 SetShadeTex(sp, 0);
-                sp->r0 = env->col_r;
-                sp->g0 = env->col_g;
-                sp->b0 = env->col_b;
+                sp->r0 = arg0->col_r;
+                sp->g0 = arg0->col_g;
+                sp->b0 = arg0->col_b;
             } else {
                 SetShadeTex(sp, 1);
             }
-            SetSemiTrans((s32)sp, env->semi);
-            if (env->ot_idx >= 0x1006) {
-                env->ot_idx = 1;
+            SetSemiTrans((s32)sp, arg0->semi);
+            if (arg0->ot_idx >= 0x1006) {
+                arg0->ot_idx = 1;
                 ((void (*)())font_Printf)(D_800159A0);
             }
-            AddPrim(g_gpu_ot_ptr + env->ot_idx, sp);
+            AddPrim(g_gpu_ot_ptr + arg0->ot_idx, sp);
             sp++;
         }
     }
     return (s32)sp;
 }
 
-s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *env, s32 mode) {
-    Unk8009B400Record *e = env->table;
-    Unk8009B0E0Record *var_1 = env->header;
+s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *arg0, s32 mode) {
+    Unk8009B400Record *e = arg0->table;
+    Unk8009B0E0Record *var_1 = arg0->header;
     POLY_FT4 *p;
     s16 i;
     u32 tpage;
@@ -90,7 +90,7 @@ s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *env, s32 mode) {
         du0 = 0;
         dv0 = 0;
     }
-    p = (POLY_FT4 *)env->ft4_out;
+    p = (POLY_FT4 *)arg0->ft4_out;
     for (i = 0; i < var_1->count; i++) {
         if (mode == 1) {
             du0 = e->w - 1;
@@ -111,16 +111,16 @@ s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *env, s32 mode) {
         SetPolyFT4(p);
         p->tpage = tpage;
         p->clut = clut;
-        sx = env->scale_x;
-        sy = env->scale_y;
-        p->x0 = ox + env->x + (((e->x - ox) * sx) >> 8);
-        p->y0 = oy + env->y + (((e->y - oy) * sy) >> 8);
-        p->x1 = ox + env->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
-        p->y1 = oy + env->y + (((e->y - oy) * sy) >> 8);
-        p->x2 = ox + env->x + (((e->x - ox) * sx) >> 8);
-        p->y2 = oy + env->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
-        p->x3 = ox + env->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
-        p->y3 = oy + env->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
+        sx = arg0->scale_x;
+        sy = arg0->scale_y;
+        p->x0 = ox + arg0->x + (((e->x - ox) * sx) >> 8);
+        p->y0 = oy + arg0->y + (((e->y - oy) * sy) >> 8);
+        p->x1 = ox + arg0->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
+        p->y1 = oy + arg0->y + (((e->y - oy) * sy) >> 8);
+        p->x2 = ox + arg0->x + (((e->x - ox) * sx) >> 8);
+        p->y2 = oy + arg0->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
+        p->x3 = ox + arg0->x + (((e->x - ox) * sx) >> 8) + ((e->w * sx) >> 8);
+        p->y3 = oy + arg0->y + (((e->y - oy) * sy) >> 8) + ((e->h * sy) >> 8);
         u = var_10 + e->u;
         v = var_11 + e->v;
         p->u0 = u + du0;
@@ -131,23 +131,23 @@ s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *env, s32 mode) {
         p->v2 = v + dv1;
         p->u3 = u + du1;
         p->v3 = v + dv1;
-        if (env->has_color) {
+        if (arg0->has_color) {
             SetShadeTex(p, 0);
-            p->r0 = env->col_r;
-            p->g0 = env->col_g;
-            p->b0 = env->col_b;
+            p->r0 = arg0->col_r;
+            p->g0 = arg0->col_g;
+            p->b0 = arg0->col_b;
         } else {
             SetShadeTex(p, 1);
         }
-        SetSemiTrans(p, env->semi);
-        if (env->ot_idx >= 0x1006) {
-            env->ot_idx = 1;
+        SetSemiTrans(p, arg0->semi);
+        if (arg0->ot_idx >= 0x1006) {
+            arg0->ot_idx = 1;
         }
-        AddPrim(g_gpu_ot_ptr + env->ot_idx, p);
+        AddPrim(g_gpu_ot_ptr + arg0->ot_idx, p);
         p++;
         e++;
     }
-    env->ft4_out = (s32)p;
+    arg0->ft4_out = (s32)p;
     return (s32)p;
 }
 

@@ -167,7 +167,7 @@ void func_80035280(void) {
      * (D_80106A50.times) gives the target's single $a2 record cursor; indexing
      * D_80106A50.times[i] at each use creates a second address movable
      * (score 24). */
-    TimeRec *base;
+    TimeRec *var_2;
     s32 i;
 
     p = func_80077D00();
@@ -181,20 +181,20 @@ void func_80035280(void) {
         p->unk1D[i] = *src;
         src++;
     }
-    base = D_80106A50.times;
+    var_2 = D_80106A50.times;
     for (i = 0; i < 3; i++) {
         u8 var_4;
         u8 var_5;
         u8 var_6;
         s32 t;
 
-        var_4 = base[i].unk_4 / 1800;
+        var_4 = var_2[i].unk_4 / 1800;
         p->unk21[i].unk0 = var_4;
-        var_5 = (base[i].unk_4 / 30) % 60;
+        var_5 = (var_2[i].unk_4 / 30) % 60;
         p->unk21[i].unk1 = var_5;
-        var_6 = (base[i].unk_4 % 30) * 100 / 30;
+        var_6 = (var_2[i].unk_4 % 30) * 100 / 30;
         p->unk21[i].unk2 = var_6;
-        t = base[i].unk_0;
+        t = var_2[i].unk_0;
         p->unk21[i].unk3 = t;
     }
 }

@@ -289,10 +289,10 @@ void func_800408F8(Unk80045878Obj *a0) {
 
     {
         Unk80045878Node *p = a0->transform_nodes;
-        /* FAKE: base keeps the array start (move t1,a3);
+        /* FAKE: var_4 keeps the array start (move t1,a3);
          * &a0->transform_nodes[v1] rebuilds it from a0 (addiu 44 + addu) and
          * the mflo temps move to t1 (score 9) */
-        Unk80045878Node *base = p;
+        Unk80045878Node *var_4 = p;
         s32 i = 0;
 
         do {
@@ -303,7 +303,7 @@ void func_800408F8(Unk80045878Obj *a0) {
             p->node.unk2 = -1;
             v1 = D_80094B96[i].unk_00;
             if (v1 != -1) {
-                p->node.parent_node = &base[v1].node;
+                p->node.parent_node = &var_4[v1].node;
             } else {
                 p->node.parent_node = 0;
             }
@@ -428,11 +428,11 @@ void func_80040CB8(Unk80045878Obj *arg0) {
     s16 id;
     Unk80045878Node *var_1 = arg0->projected_nodes;
     s32 i = 0;
-    // FAKE (var_3/kind/one): constant-holders keep -1/3/1 in $t4/$t3/$t2
+    // FAKE (var_3/var_4/var_5): constant-holders keep -1/3/1 in $t4/$t3/$t2
     // across the goto-loop, which gets no LICM; literals: score 23
     s32 var_3;
-    s32 kind;
-    s32 one;
+    s32 var_4;
+    s32 var_5;
     s32 var_6;
     s16 *tbl;
     s32 ent;
@@ -441,8 +441,8 @@ void func_80040CB8(Unk80045878Obj *arg0) {
     // initialisers; without it the scheduler sinks them: score 6
     do {
         var_3 = -1;
-        kind = 3;
-        one = 1;
+        var_4 = 3;
+        var_5 = 1;
     } while (0);
     var_6 = (s32)&arg0->transform_nodes[1];
     /* FAKE: tbl walks the records' unk_08 members, stepped by a record; a
@@ -457,11 +457,11 @@ void func_80040CB8(Unk80045878Obj *arg0) {
         id = *tbl;
         if (id != var_3) {
             *(s16 *)(ent - 0x56) = id;
-            var_1->node.unk0 = kind;
+            var_1->node.unk0 = var_4;
             *(s8 *)(ent - 0x57) = 0;
             *(s16 *)(ent - 0x50) = 0;
             *(s32 *)(ent - 0x4C) = var_6;
-            *(s16 *)(ent - 0x52) = one;
+            *(s16 *)(ent - 0x52) = var_5;
             *(s16 *)(ent - 0x4E) = 0;
             {
                 u16 w = arg0->unk_16;

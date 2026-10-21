@@ -547,7 +547,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     Unk8009B0E0Record **table;
     /* FAKE: constant-holder: keeps gpu_GetSheetTPage's 0 argument in $fp across
        the calls; the literal: score 30 (named-local-fake-exception) */
-    s32 zero;
+    s32 var_2;
     s16 i;
     /* the sheet's cell array. The code treats each sheet it draws here as
        12-byte headers followed by 8-byte cells: one header for the table[0]
@@ -559,7 +559,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
        score 25. */
     Unk8009B400Record *var_4;
 
-    zero = 0;
+    var_2 = 0;
     s.semi = 0;
     s.has_color = 0;
     table = arg0->unk_00.v80076FF8->unk_14;
@@ -579,7 +579,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     SetDrawMode(
-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_2), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 
@@ -663,11 +663,11 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     table = arg0->unk_00.v80076FF8->unk_14;
     s.header = table[1];
     SetDrawMode(
-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_2), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
     SetDrawMode(
-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_2), 0);
     AddPrim(g_gpu_ot_ptr + s.ot_idx - 1, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 }
@@ -806,10 +806,10 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     /* FAKE: constant-holder for gpu_GetSheetTPage's 0 argument; live past the
      * first loop it gives that loop's entry guard `move t0,zero; slt` instead
      * of a beqz. The literal: score 3 (named-local-fake-exception) */
-    s32 mode;
+    s32 var_5;
     u16 idx;
 
-    mode = 0;
+    var_5 = 0;
     var_1 = 10;
     s.semi = 0;
     if (arg3 != 0) {
@@ -827,7 +827,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
         s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         SetDrawMode(
-            arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, mode), 0);
+            arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_5), 0);
         AddPrim(g_gpu_ot_ptr + var_1, arg0->unk_04.unk_14);
         arg0->unk_04.unk_14++;
     }
@@ -899,7 +899,7 @@ void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     table = arg0->unk_00.v80076FF8->unk_14;
     s.header = table[1];
     SetDrawMode(
-        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, mode), 0);
+        arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_5), 0);
     AddPrim(g_gpu_ot_ptr + var_1, arg0->unk_04.unk_14);
     arg0->unk_04.unk_14++;
 }
@@ -1643,9 +1643,9 @@ void func_80078654(Unk800788B0Rec *arg0) {
     s32 i;
     /* FAKE: constant-holder keeps the 0 argument in a register across the
        calls; the literal: score 7 */
-    s32 zero;
+    s32 var_4;
 
-    zero = 0;
+    var_4 = 0;
     s.ot_idx = 2;
     s.has_color = 0;
     s.semi = 0;
@@ -1666,7 +1666,7 @@ void func_80078654(Unk800788B0Rec *arg0) {
         }
         s.sprt_out = arg0->unk_0C;
         arg0->unk_0C = gpu_AddSpriteCells(&s);
-        SetDrawMode(arg0->unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
+        SetDrawMode(arg0->unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_4), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_14);
         arg0->unk_14++;
     }
@@ -1677,7 +1677,7 @@ void func_80078654(Unk800788B0Rec *arg0) {
         s.y = -D_800A3608;
         s.sprt_out = arg0->unk_0C;
         arg0->unk_0C = gpu_AddSpriteCells(&s);
-        SetDrawMode(arg0->unk_14, 1, 0, gpu_GetSheetTPage(s.header, zero), 0);
+        SetDrawMode(arg0->unk_14, 1, 0, gpu_GetSheetTPage(s.header, var_4), 0);
         AddPrim(g_gpu_ot_ptr + s.ot_idx, arg0->unk_14);
         arg0->unk_14++;
     }

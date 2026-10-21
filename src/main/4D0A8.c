@@ -366,7 +366,7 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
     /* FAKE: carrier, see the y sites (without tmp2: score 4; without both: 15)
      */
     s32 tmp2;
-    s32 scale;  /* FAKE: constant 0x100 in a local; the literal: score 15 */
+    s32 var_10; /* FAKE: constant 0x100 in a local; the literal: score 15 */
     s32 var_11; /* FAKE: constant 1 in a local; the literal: score 2 */
     /* FAKE: pointer alias of D_8009B2C8[0][2]; direct use: score 41 */
     Unk8009B0E0Record *var_12;
@@ -386,7 +386,7 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
 
     i = 0;
     if (i < ((D_800A326C + 1) * 2)) {
-        scale = 0x100;
+        var_10 = 0x100;
         var_11 = 1;
         row_off = arg1 * 0x3C;
         var_12 = &D_8009B2C8[0][2];
@@ -398,8 +398,8 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             s.header = (Unk8009B0E0Record *)(row_off + (s32)var_12);
             s.table = &D_8009B388[0];
             D_800A3418 ^= rand();
-            s.scale_y = scale;
-            s.scale_x = scale;
+            s.scale_y = var_10;
+            s.scale_x = var_10;
             D_800A3418 ^= rand();
             /* FAKE: split init; one expression does not match (score 3) */
             x = (s32)base_x - 0x19;
@@ -420,8 +420,8 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             var_4 = gpu_AddScaledSpriteQuads(&s, 0);
 
             s.has_color = 0;
-            s.scale_y = scale;
-            s.scale_x = scale;
+            s.scale_y = var_10;
+            s.scale_x = var_10;
             s.table = &D_8009B388[1];
             s.header = var_13 + (D_800A3418 & 1);
             D_800A3418 ^= rand();

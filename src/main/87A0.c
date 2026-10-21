@@ -548,19 +548,19 @@ void softbody_UpdateList(Unk80017FA0Rec *arg0, s32 arg1) {
     /* FAKE: pointer alias -- g_softbody_slots's address held in an integer
      * local. Referenced directly, its lui/addiu is scheduled after `move s0,a0`
      * (score 2); held as a u8 * the addu operands swap (score 2). */
-    s32 buf;
+    s32 var_2;
 
     if (i < arg1) {
-        buf = (s32)g_softbody_slots;
+        var_2 = (s32)g_softbody_slots;
         s0 = arg0;
         do {
             if (s0->snap & 1) {
                 s16 val = s0->slot_index;
                 softbody_SnapToPoints(
-                    s0, (Func80017A44Output *)(val * 52 + buf));
+                    s0, (Func80017A44Output *)(val * 52 + var_2));
             } else {
                 s16 val = s0->slot_index;
-                softbody_Step(s0, (Func80017A44Output *)(val * 52 + buf));
+                softbody_Step(s0, (Func80017A44Output *)(val * 52 + var_2));
             }
             i++;
             s0++;
@@ -641,15 +641,15 @@ void pad_Update(s32 arg0) {
     var_1[2] = g_pad_buf[1][0];
     var_1[3] = g_pad_buf[1][1];
     do {
-        /* FAKE: rec holds (u8 *)var_1 + i * 8 for the loop body; indexing
+        /* FAKE: var_5 holds (u8 *)var_1 + i * 8 for the loop body; indexing
          * from var_1 at each read adds a second induction (score 18). */
-        u8 *rec = (u8 *)var_1 + i * 8;
+        u8 *var_5 = (u8 *)var_1 + i * 8;
         s32 bits;
 
-        if (rec[0] == 0) {
+        if (var_5[0] == 0) {
             s32 type_m1;
 
-            pad.type[i] = rec[1] >> 4;
+            pad.type[i] = var_5[1] >> 4;
             pad.valid[i] = 1;
             type_m1 = (s16)((u16)pad.type[i] - 1);
 
@@ -660,7 +660,7 @@ void pad_Update(s32 arg0) {
             case 1:
             case 2:
             case 3:
-                bits = ~((rec[2] << 8) | rec[3]);
+                bits = ~((var_5[2] << 8) | var_5[3]);
                 break;
             case 0:
             case 5:

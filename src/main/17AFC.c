@@ -319,11 +319,11 @@ extern u8 D_8008EB74[3][2][2];
 s32 fighter_ResolveBoneHit(
     s32 arg0, Unk80101EC8Record *arg1, s32 arg2, s32 thresh, s32 flag,
     Tbl8008E194 *rec, s32 arg6, s32 *out) {
-    /* FAKE: tbl, tbl_arg: copies of the stack-passed parameter `rec` (an
+    /* FAKE: var_0, var_1: copies of the stack-passed parameter `rec` (an
      * unmodified stack parameter gets half the register priority); rec used
      * directly: score 78 (Ruling 12) */
-    Tbl8008E194 *tbl;     /* the record, read field by field */
-    Tbl8008E194 *tbl_arg; /* the record, passed on to func_800278C0 */
+    Tbl8008E194 *var_0; /* the record, read field by field */
+    Tbl8008E194 *var_1; /* the record, passed on to func_800278C0 */
     s16 *vec;
     s32 *scr;
     s32 var_4;
@@ -343,8 +343,8 @@ s32 fighter_ResolveBoneHit(
     vec = &D_800A37E8;
     var_4 = arg1->index;
     var_5 = arg1->other;
-    tbl = rec;
-    tbl_arg = rec;
+    var_0 = rec;
+    var_1 = rec;
     scr = &SPAD->unkA8[var_4][arg2].x;
     *out = 0;
     if (arg1->unk_0C == 0x1C) {
@@ -361,7 +361,7 @@ s32 fighter_ResolveBoneHit(
                 arg1->pending_move_event = 0x1E;
             }
             if (arg0 == 0 && var_5->pending_move_event == -1) {
-                var_5->pending_move_event = tbl == NULL ? 0xB : 0x19;
+                var_5->pending_move_event = var_0 == NULL ? 0xB : 0x19;
             }
             func_80032854(var_4, 0x12, scr, 0);
             return 0;
@@ -375,12 +375,12 @@ s32 fighter_ResolveBoneHit(
     var_8 = arg1->move_kind;
     if (var_8 == 4 || var_8 == 0x14) {
         func_800203B4(arg1, arg2, vec);
-        func_800278C0(arg0, arg1, arg2, tbl_arg, scr, arg6);
+        func_800278C0(arg0, arg1, arg2, var_1, scr, arg6);
         return 1;
     }
     if (arg1->unk_0C == 0x1F) {
         func_800203B4(arg1, arg2, vec);
-        func_800278C0(arg0, arg1, arg2, tbl_arg, scr, arg6);
+        func_800278C0(arg0, arg1, arg2, var_1, scr, arg6);
         arg1->pending_move_event = 7;
         return 1;
     }
@@ -420,14 +420,14 @@ s32 fighter_ResolveBoneHit(
             return 0;
         }
         if (arg0 == 1) {
-            if (tbl->unkC == 0) {
+            if (var_0->unkC == 0) {
                 func_80032854(var_4, 2, scr, 0);
                 func_80032854(var_4, 0x25, scr, 0);
                 arg1->pending_move_event = 0;
                 *out = arg0;
                 return 0;
             }
-            if (tbl->unkC == 1) {
+            if (var_0->unkC == 1) {
                 func_80032854(var_4, 2, scr, 0);
                 func_80032854(var_4, 0x25, scr, 0);
                 arg1->pending_move_event = 1;
@@ -442,7 +442,7 @@ s32 fighter_ResolveBoneHit(
     if (D_800A38DC == 0 && var_4 == 0) {
         func_8002738C(0, arg2);
     }
-    func_800278C0(arg0, arg1, arg2, tbl_arg, scr, arg6);
+    func_800278C0(arg0, arg1, arg2, var_1, scr, arg6);
     var_8 = arg1->move_kind;
     if (var_8 == 6 || var_8 == 9) {
         if (flag) {
@@ -455,10 +455,10 @@ s32 fighter_ResolveBoneHit(
         func_80027438(arg1, arg2, 1);
         return 0;
     }
-    if (arg0 == 1 && tbl->unk0 == 4) {
+    if (arg0 == 1 && var_0->unk0 == 4) {
         s16 kind = arg1->unk_0A;
         if (kind == 2 || kind == 4 || kind == 0xE || kind == 0xF) {
-            func_80027438(arg1, arg2, tbl->unkD == 2 ? 2 : 1);
+            func_80027438(arg1, arg2, var_0->unkD == 2 ? 2 : 1);
             arg1->pending_move_event = 0x1B;
             func_80032854(var_4, 3, scr, 0);
             return 0;
@@ -473,10 +473,10 @@ s32 fighter_ResolveBoneHit(
             return 1;
         }
         /* FAKE: count/return tail duplicated into each arm: the extra copies
-         * raise tbl's reference count (allocation priority) before
+         * raise var_0's reference count (allocation priority) before
          * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
          * 4-5 copy: score 31 */
-        if (arg0 == 1 && tbl->unkD == 2) {
+        if (arg0 == 1 && var_0->unkD == 2) {
             arg1->unk_272++;
         }
         if (D_800A38DC != 5) {
@@ -496,10 +496,10 @@ s32 fighter_ResolveBoneHit(
             return 1;
         }
         /* FAKE: count/return tail duplicated into each arm: the extra copies
-         * raise tbl's reference count (allocation priority) before
+         * raise var_0's reference count (allocation priority) before
          * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
          * 4-5 copy: score 31 */
-        if (arg0 == 1 && tbl->unkD == 2) {
+        if (arg0 == 1 && var_0->unkD == 2) {
             arg1->unk_272++;
         }
         if (D_800A38DC != 5) {
@@ -513,10 +513,10 @@ s32 fighter_ResolveBoneHit(
     case 5:
         if (!flag) {
             /* FAKE: count/return tail duplicated into each arm: the extra
-             * copies raise tbl's reference count (allocation priority) before
+             * copies raise var_0's reference count (allocation priority) before
              * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
              * 4-5 copy: score 31 */
-            if (arg0 == 1 && tbl->unkD == 2) {
+            if (arg0 == 1 && var_0->unkD == 2) {
                 arg1->unk_272++;
             }
             if (D_800A38DC != 5) {
@@ -790,9 +790,9 @@ void fighter_ResolveBodyOverlap(void) {
     /* FAKE: two values -- the squared distance, then its square root (clamped
      * to 1); a separate squared-distance local reorders the copy and the r*r
      * test (score 7) */
-    s32 dist;
+    s32 var_13;
     /* FAKE: two values -- the gte_Lzc input copy of the squared distance,
-     * then the table byte; a fresh copy local (or dist itself) takes $v1, not
+     * then the table byte; a fresh copy local (or var_13 itself) takes $v1, not
      * the target's $a0: score 13 (Q28) */
     s32 tbl;
     s32 var_15;
@@ -824,41 +824,41 @@ void fighter_ResolveBodyOverlap(void) {
                 dz > var_12 || dz < -var_12) {
                 continue;
             }
-            dist = dx * dx + dy * dy + dz * dz;
-            if (var_12 * var_12 < dist) {
+            var_13 = dx * dx + dy * dy + dz * dz;
+            if (var_12 * var_12 < var_13) {
                 continue;
             }
             var_1++;
-            tbl = dist;
-            if ((u32)dist < 0x400) {
-                dist = (u32)g_sqrt_table_u8[dist] >> 3;
+            tbl = var_13;
+            if ((u32)var_13 < 0x400) {
+                var_13 = (u32)g_sqrt_table_u8[var_13] >> 3;
             } else {
                 gte_Lzc(tbl, &lzc_out);
                 {
                     /* FAKE: two values -- the leading-zero count, then the
-                     * amount dist is shifted right by to index
-                     * g_sqrt_table_u8; as one expression `shift = 0x16 -
+                     * amount var_13 is shifted right by to index
+                     * g_sqrt_table_u8; as one expression `var_20 = 0x16 -
                      * (lzc_out & ~1)` the count lands in $a0 (target: $v1 /
                      * $v0): score 4 */
-                    s32 shift;
-                    shift = lzc_out;
-                    shift = 0x16 - (shift & ~1);
-                    tbl = g_sqrt_table_u8[(u32)dist >> shift];
-                    dist = (u32)(tbl << 16) >> (0x13 - ((u32)shift >> 1));
+                    s32 var_20;
+                    var_20 = lzc_out;
+                    var_20 = 0x16 - (var_20 & ~1);
+                    tbl = g_sqrt_table_u8[(u32)var_13 >> var_20];
+                    var_13 = (u32)(tbl << 16) >> (0x13 - ((u32)var_20 >> 1));
                 }
             }
-            var_15 = var_12 - dist;
+            var_15 = var_12 - var_13;
             if (var_15 > 0x80) {
                 var_15 = 0x80;
             }
-            if (dist == 0) {
-                dist = 1;
+            if (var_13 == 0) {
+                var_13 = 1;
             }
             var_16 = (D_80101EC8[1].unk_20 - D_80101EC8[0].unk_20) / 4;
-            var_5 += (dx * (var_15 * (0x400 + var_16)) / dist) >> 10;
-            var_6 += (dz * (var_15 * (0x400 + var_16)) / dist) >> 10;
-            var_7 -= (dx * (var_15 * (0x400 - var_16)) / dist) >> 10;
-            var_8 -= (dz * (var_15 * (0x400 - var_16)) / dist) >> 10;
+            var_5 += (dx * (var_15 * (0x400 + var_16)) / var_13) >> 10;
+            var_6 += (dz * (var_15 * (0x400 + var_16)) / var_13) >> 10;
+            var_7 -= (dx * (var_15 * (0x400 - var_16)) / var_13) >> 10;
+            var_8 -= (dz * (var_15 * (0x400 - var_16)) / var_13) >> 10;
         }
     }
     if (var_1 == 0) {
@@ -1583,7 +1583,7 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
      * each of the three calls as in the target; spelled directly, cse keeps it
      * in a callee-saved register: score 6 (pointer-alias-fake-exception;
      * vector: Q96) */
-    s16 *vec = &D_800A37E8;
+    s16 *var_1 = &D_800A37E8;
     s32 i;
 
     for (i = 0; i < 2; i++) {
@@ -1837,8 +1837,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
             }
         }
         if (mode == 1) {
-            math_NegNormalize3D(&var_3->weapon_point_delta[0].vx, vec);
-            func_80032854(i, 4, &SPAD->unkA8[i][idx].x, vec);
+            math_NegNormalize3D(&var_3->weapon_point_delta[0].vx, var_1);
+            func_80032854(i, 4, &SPAD->unkA8[i][idx].x, var_1);
             return;
         }
         var_24 = 0;
@@ -1960,7 +1960,8 @@ void fighter_ProcessWeaponBodyHits(s32 mode) {
                 var_12 != 0) {
                 flag = 1;
             } else {
-                math_NegNormalize3D(&var_3->weapon_point_delta[var_12].vx, vec);
+                math_NegNormalize3D(
+                    &var_3->weapon_point_delta[var_12].vx, var_1);
             }
         }
         if (D_800A3140 == 0) {
@@ -3391,7 +3392,7 @@ void math_MatrixToAngles(MATRIX *a0, s16 *a1) {
     /* FAKE: two values -- the 3x3 determinant (divisor of the six
      * cofactors), then the square root of i0*i0 + i1*i1; a separate root
      * local: score 35 (Ruling 11) */
-    s32 work;
+    s32 var_7;
     s32 d0;
     s32 i0, i1, i2;
     s32 r0, r1, r2;
@@ -3408,19 +3409,19 @@ void math_MatrixToAngles(MATRIX *a0, s16 *a1) {
     d0 = m->m[0][0] * (c0 >> 12);
     c1 = m->m[0][1] * m->m[2][2] - m->m[0][2] * m->m[2][1];
     c2 = m->m[0][2] * m->m[1][1] - m->m[0][1] * m->m[1][2];
-    work = (d0 + m->m[1][0] * (c1 >> 12) + m->m[2][0] * (c2 >> 12)) >> 12;
-    i0 = c0 / work;
-    i1 = c1 / work;
-    i2 = c2 / work;
-    r0 = (m->m[1][0] * m->m[2][2] - m->m[1][2] * m->m[2][0]) / work;
-    r1 = (m->m[0][2] * m->m[2][0] - m->m[0][0] * m->m[2][2]) / work;
-    r2 = (m->m[0][0] * m->m[1][2] - m->m[0][2] * m->m[1][0]) / work;
+    var_7 = (d0 + m->m[1][0] * (c1 >> 12) + m->m[2][0] * (c2 >> 12)) >> 12;
+    i0 = c0 / var_7;
+    i1 = c1 / var_7;
+    i2 = c2 / var_7;
+    r0 = (m->m[1][0] * m->m[2][2] - m->m[1][2] * m->m[2][0]) / var_7;
+    r1 = (m->m[0][2] * m->m[2][0] - m->m[0][0] * m->m[2][2]) / var_7;
+    r2 = (m->m[0][0] * m->m[1][2] - m->m[0][2] * m->m[1][0]) / var_7;
 
     ang_z = -ratan2(i1, i0);
     scr = &SPAD->unk2B8.rec;
     temp = i0 * i0 + i1 * i1;
     if ((u32)temp < 0x400) {
-        work = (u32)g_sqrt_table_u8[temp] >> 3;
+        var_7 = (u32)g_sqrt_table_u8[temp] >> 3;
     } else {
         s32 lzcr = 0;
         if (temp >= 0) {
@@ -3430,11 +3431,11 @@ void math_MatrixToAngles(MATRIX *a0, s16 *a1) {
         {
             s32 shift = 0x16 - (lzcr & ~1);
             temp = g_sqrt_table_u8[(u32)temp >> shift];
-            work = (u32)(temp << 16) >> (0x13 - ((u32)shift >> 1));
+            var_7 = (u32)(temp << 16) >> (0x13 - ((u32)shift >> 1));
         }
     }
 
-    ang_y = ratan2(i2, work);
+    ang_y = ratan2(i2, var_7);
     mat = &scr->unkD8;
     scr->unkD8.m[0][0] = 0x1000;
     scr->unkD8.m[0][1] = 0;
@@ -3471,7 +3472,7 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     /* FAKE: two values -- the 3x3 determinant (divisor of the six
      * cofactors), then the square root of i0*i0 + i1*i1; a separate root
      * local: score 35 (Ruling 11) */
-    s32 work;
+    s32 var_7;
     s32 d0;
     s32 i0, i1, i2;
     s32 r0, r1, r2;
@@ -3503,18 +3504,18 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     d0 = m->m[0][0] * (c0 >> 12);
     c1 = m->m[0][1] * m->m[2][2] - m->m[0][2] * m->m[2][1];
     c2 = m->m[0][2] * m->m[1][1] - m->m[0][1] * m->m[1][2];
-    work = (d0 + m->m[1][0] * (c1 >> 12) + m->m[2][0] * (c2 >> 12)) >> 12;
-    i0 = c0 / work;
-    i1 = c1 / work;
-    i2 = c2 / work;
-    r0 = (m->m[1][0] * m->m[2][2] - m->m[1][2] * m->m[2][0]) / work;
-    r1 = (m->m[0][2] * m->m[2][0] - m->m[0][0] * m->m[2][2]) / work;
-    r2 = (m->m[0][0] * m->m[1][2] - m->m[0][2] * m->m[1][0]) / work;
+    var_7 = (d0 + m->m[1][0] * (c1 >> 12) + m->m[2][0] * (c2 >> 12)) >> 12;
+    i0 = c0 / var_7;
+    i1 = c1 / var_7;
+    i2 = c2 / var_7;
+    r0 = (m->m[1][0] * m->m[2][2] - m->m[1][2] * m->m[2][0]) / var_7;
+    r1 = (m->m[0][2] * m->m[2][0] - m->m[0][0] * m->m[2][2]) / var_7;
+    r2 = (m->m[0][0] * m->m[1][2] - m->m[0][2] * m->m[1][0]) / var_7;
 
     ang_z = -ratan2(i1, i0);
     temp = i0 * i0 + i1 * i1;
     if ((u32)temp < 0x400) {
-        work = (u32)g_sqrt_table_u8[temp] >> 3;
+        var_7 = (u32)g_sqrt_table_u8[temp] >> 3;
     } else {
         s32 lzcr = 0;
         if (temp >= 0) {
@@ -3524,11 +3525,11 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
         {
             s32 shift = 0x16 - (lzcr & ~1);
             temp = g_sqrt_table_u8[(u32)temp >> shift];
-            work = (u32)(temp << 16) >> (0x13 - ((u32)shift >> 1));
+            var_7 = (u32)(temp << 16) >> (0x13 - ((u32)shift >> 1));
         }
     }
 
-    ang_y = ratan2(i2, work);
+    ang_y = ratan2(i2, var_7);
     mat = &scr->unkD8;
     scr->unkD8.m[0][0] = 0x1000;
     scr->unkD8.m[0][1] = 0;
@@ -5317,7 +5318,7 @@ void fight_BuildOpponentOrder(void) {
     s32 i;
     s32 idx1;
     u8 *ptr;
-    s32 one;
+    s32 var_5;
 
     {
         s32 mask = ~(1 << D_8008D538[(s8)D_80102778.unk_4[0]]) & 0x3EF3DF;
@@ -5325,13 +5326,13 @@ void fight_BuildOpponentOrder(void) {
         count = 0;
         i = 0;
         bits = D_80106A50.unk_00 & mask;
-        /* FAKE: `one` carries the constant 1 of `1 << i`; with the literal
+        /* FAKE: `var_5` carries the constant 1 of `1 << i`; with the literal
            the test becomes `(bits >> i) & 1` (srav/andi instead of the
            target's `li a2,1` + sllv/and), score 4. */
-        one = 1;
+        var_5 = 1;
         ptr = D_801077B0;
         do {
-            if (bits & (one << i)) {
+            if (bits & (var_5 << i)) {
                 *ptr = i;
                 ptr++;
                 count++;
@@ -5483,14 +5484,14 @@ void fight_InsertBestTime(void) {
      * mechanism: its register (t1) is the base of every times[] access and of
      * the shift loop's pointer; written directly, each D_80106A50.times[]
      * access is its own lui/addu/%lo: score 34. */
-    FileRecord *rec = &D_80106A50; /* SOTN: src/dra/4CE2C.c:63 @db41b28 */
+    FileRecord *var_0 = &D_80106A50; /* SOTN: src/dra/4CE2C.c:63 @db41b28 */
     s32 n = 3;
     s32 j;
     s32 k;
 
     while (1) {
         j = n - 1;
-        if (rec->times[j].unk_4 < D_800A3858) {
+        if (var_0->times[j].unk_4 < D_800A3858) {
             break;
         }
         n = j;
@@ -5501,11 +5502,11 @@ void fight_InsertBestTime(void) {
     D_800A38E9 = (u8)n;
     if (n < 3) {
         for (k = 2; k > n; k--) {
-            rec->times[k] = rec->times[k - 1];
+            var_0->times[k] = var_0->times[k - 1];
         }
-        rec->times[n].unk_0 = (u8)D_80101EC8[0].unk_0A;
-        rec->times[n].unk_1 = (u8)D_80101EC8[0].unk_0E;
-        rec->times[n].unk_4 = D_800A3858;
+        var_0->times[n].unk_0 = (u8)D_80101EC8[0].unk_0A;
+        var_0->times[n].unk_1 = (u8)D_80101EC8[0].unk_0E;
+        var_0->times[n].unk_4 = D_800A3858;
     }
 }
 

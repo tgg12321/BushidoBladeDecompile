@@ -525,10 +525,10 @@ s32 func_80043244(s32 a0) {
 s32 func_80043278(s32 a0) {
     /* FAKE: constant holder for 0xFFFFF000; with the literal the function is
      * one insn longer (score 4) */
-    s32 mask = (s32)0xFFFFF000;
+    s32 var_0 = (s32)0xFFFFF000;
     s32 v0 = a0 >> *(s32 *)0x1F800008;
     s32 a0_new = v0 >> 11;
-    v0 = (v0 & 0x7FF) | mask;
+    v0 = (v0 & 0x7FF) | var_0;
     v0 = v0 >> a0_new;
     return v0 & 0xFFF;
 }
@@ -1028,7 +1028,7 @@ s32 reloc_KeepSelectedEntries(s32 *base, s16 *offsets) {
     {
         /* FAKE: constant-holder (named-local-fake-exception); the literal:
          * score 2 */
-        s32 stop = -2;
+        s32 var_9 = -2;
         var_5 = var_1;
         do {
             if (v1 >= 0) {
@@ -1046,7 +1046,7 @@ s32 reloc_KeepSelectedEntries(s32 *base, s16 *offsets) {
             var_5++;
             v1 = *offsets;
             offsets++;
-        } while (v1 != stop);
+        } while (v1 != var_9);
     }
     ret = (s32)dest;
 

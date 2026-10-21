@@ -1942,7 +1942,7 @@ u8 eff_DrawAnimatedQuads(s32 arg0) {
     s16 *t;
     /* FAKE: pointer alias of D_800F0BA8 - case 10/11's base address in its own
      * register ahead of the index shift */
-    s16 *tbl;
+    s16 *var_18;
     s32 i;
 
     var_0 = &D_800A34EC->v80065800;
@@ -2023,8 +2023,8 @@ again:
         } else {
             D_800A3488 = D_8009B990;
         }
-        tbl = D_800F0BA8;
-        t = tbl + arg0;
+        var_18 = D_800F0BA8;
+        t = var_18 + arg0;
         if (*t > 0x96) {
             prim->r0 = 0;
             prim->g0 = (0xFF - *t) * 0xFF / 105;

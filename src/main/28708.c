@@ -62,22 +62,22 @@ void memcard_BuildSaveBlock(u8 *a0) {
     {
         /* FAKE: the save-block view in its own local; a cast of a0 at each
            use moves the copy into the loop's delay slot (score 2) */
-        Unk800F34D8Save *base = (Unk800F34D8Save *)a0;
+        Unk800F34D8Save *var_3 = (Unk800F34D8Save *)a0;
         i = 0;
         do {
-            base->rec[i] = D_80106A50;
-            base->sum[i] = var_0;
+            var_3->rec[i] = D_80106A50;
+            var_3->sum[i] = var_0;
             {
                 s32 j = 0;
                 do {
-                    base->ptr[j] = 0;
-                    base->val[j] = 0;
+                    var_3->ptr[j] = 0;
+                    var_3->val[j] = 0;
                     j++;
                 } while (j < 0x16);
             }
             i++;
         } while (i < 3);
-        base->unk_FC = 0;
+        var_3->unk_FC = 0;
     }
 }
 
@@ -1765,12 +1765,12 @@ void comb_ExchangePad(PadState *a0) {
     s32 t;
     /* FAKE: constant-holder displaces the g_comb_send_buf_plus_0x4 store from
      * the slot before the branch (emits nothing); the literal: score 3 */
-    s32 zero;
+    s32 var_7;
 
     if (D_800A320C != 0) {
         buf8 = a0->held;
         var_4 = D_800A38A0;
-        zero = 0;
+        var_7 = 0;
         var_1 = (var_4 << 31) | (g_comb_close_request << 30) |
                 ((g_comb_wait_state & 3) << 28) | (a0->type[0] << 16) |
                 (buf8 & 0xFFFF);
@@ -1816,7 +1816,8 @@ void comb_ExchangePad(PadState *a0) {
             D_800A3908 += math_Popcount32(buf8 & 0xFFFF);
             comb_Read8();
             if (D_800A38A0 == 0) {
-                if (g_comb_close_request != zero || (D_800A36C0 & 0x40000000)) {
+                if (g_comb_close_request != var_7 ||
+                    (D_800A36C0 & 0x40000000)) {
                     comb_ResetClose();
                     return;
                 }

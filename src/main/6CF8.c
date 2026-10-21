@@ -121,17 +121,18 @@ u32 func_800167D4(void) { return (D_80106A50.flags >> 2) & 1; }
 void func_800167EC(void) {
     s32 i;
     /* FAKE: second handle to D_80106A50; using the global directly
-     * everywhere: score 19; final times[0].unk_4 store through rec: score 10 */
-    FileRecord *rec = &D_80106A50; /* SOTN: src/st/st0/2A218.c:48 @db41b28 */
+     * everywhere: score 19; final times[0].unk_4 store through var_1: score 10
+     */
+    FileRecord *var_1 = &D_80106A50; /* SOTN: src/st/st0/2A218.c:48 @db41b28 */
 
     g_camera_distance_offset = 0;
-    rec->flags = 0;
-    rec->unk_00 = 0x7007;
-    rec->unk_04 = 0;
+    var_1->flags = 0;
+    var_1->unk_00 = 0x7007;
+    var_1->unk_04 = 0;
     for (i = 0; i < 3; i++) {
-        rec->times[i].unk_0 = 0;
-        rec->times[i].unk_1 = 0;
-        rec->times[i].unk_4 = 0x1A5E0;
+        var_1->times[i].unk_0 = 0;
+        var_1->times[i].unk_1 = 0;
+        var_1->times[i].unk_4 = 0x1A5E0;
     }
     D_80106A50.times[0].unk_4 = 0x6978;
     func_8001945C();
@@ -429,7 +430,7 @@ void main(void) {
     s32 var_3;
     /* FAKE: second handle on D_800A3770 keeps its address in $s4 for the
      * whole loop; D_800A3770[idx] at both uses: score 14 */
-    u32 *tbl;
+    u32 *var_4;
 
     __main();
     SetSp(0x801FFF00);
@@ -439,7 +440,7 @@ void main(void) {
     SetDispMask(1);
     func_80016A8C((u8 *)0x80118800, var_1, idx);
 
-    tbl = D_800A3770;
+    var_4 = D_800A3770;
     D_800A3834 = 0xF;
     D_800A390D = 0;
     D_800A36AC = 0;
@@ -450,7 +451,7 @@ loop:
     var_2 = var_1->ot;
     ClearOTagR(var_2, 0x1008);
     g_gpu_ot_ptr = var_2;
-    g_prim_buf_cursor = (u32 *)tbl[idx];
+    g_prim_buf_cursor = (u32 *)var_4[idx];
     eff_SelectQuadBuffer(idx);
     font_BeginFrame();
     pad_Update(var_3);
@@ -486,7 +487,7 @@ loop:
     }
 
     {
-        s32 remaining = tbl[idx] + 0x13400 - (s32)g_prim_buf_cursor;
+        s32 remaining = var_4[idx] + 0x13400 - (s32)g_prim_buf_cursor;
         if (remaining < D_800A30DC) {
             D_800A30DC = remaining;
         }

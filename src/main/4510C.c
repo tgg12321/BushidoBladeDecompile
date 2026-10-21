@@ -47,7 +47,7 @@ s32 motion_UpdatePlayback(void) {
     /* FAKE: one variable for the camera-rotated z of the camera and of object
      * i's offset: read in two blocks it is not tied to the subtraction and
      * takes $t0; one local per block: score 41 */
-    s32 rot_z;
+    s32 var_6;
 
     if (s->unk0 < 0) {
         return 0;
@@ -91,9 +91,9 @@ s32 motion_UpdatePlayback(void) {
     {
         s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
         s32 sn = Judge[s->unk1E & 0xFFF];
-        rot_z = (vec.vz * c - vec.vx * sn) >> 12;
+        var_6 = (vec.vz * c - vec.vx * sn) >> 12;
         vec.vx = (vec.vz * sn + vec.vx * c) >> 12;
-        vec.vz = rot_z;
+        vec.vz = var_6;
     }
     D_80101DF0.work.t[0] = vec.vx + s->unkC;
     D_80101DF0.work.t[1] = vec.vy + s->unk10;
@@ -143,9 +143,9 @@ s32 motion_UpdatePlayback(void) {
             {
                 s32 c = Judge[(s->unk1E + 0x400) & 0xFFF];
                 s32 sn = Judge[s->unk1E & 0xFFF];
-                rot_z = (vec.vz * c - vec.vx * sn) >> 12;
+                var_6 = (vec.vz * c - vec.vx * sn) >> 12;
                 vec.vx = (vec.vz * sn + vec.vx * c) >> 12;
-                vec.vz = rot_z;
+                vec.vz = var_6;
             }
             vec.vy += s->unk10;
             vec.vx += s->unkC;
@@ -2442,8 +2442,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
                          * srav; andi, while the target shifts the 1 held in
                          * $fp, set once before the loop and shared with case
                          * 2's mask shifts. `1U << n`, a u32 mask local and a
-                         * function-scope `one` all differ */
-                        s32 one = 1;
+                         * function-scope `var_59` all differ */
+                        s32 var_59 = 1;
                         var_32 = off + (u8 *)p->unk_3A4;
                         e = var_32;
                         var_32 += 4;
@@ -2487,13 +2487,14 @@ s32 func_80058580(Unk80101EC8Record *p) {
                                     if (work5) {
                                         while (work2 > 0) {
                                             work1 >>= 4;
-                                            work3 |= one << ((work1 & 0xF) - 1);
+                                            work3 |=
+                                                var_59 << ((work1 & 0xF) - 1);
                                             work2--;
                                         }
                                     } else {
                                         work1 >>=
                                             (p->unk_3F2 / 3 % work2) * 4 + 4;
-                                        work3 = one << ((work1 & 0xF) - 1);
+                                        work3 = var_59 << ((work1 & 0xF) - 1);
                                     }
                                 }
                                 break;
@@ -2503,7 +2504,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                                 break;
                             }
                             if ((e[3] >> 4) == 0 ||
-                                !(work3 & (one << ((e[3] >> 4) - 1)))) {
+                                !(work3 & (var_59 << ((e[3] >> 4) - 1)))) {
                                 goto next;
                             }
                         }
@@ -2514,7 +2515,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                         }
                         if (q[0] == 0x40) {
                             work3 = q[4] << 24 | q[3] << 16 | q[2] << 8 | q[1];
-                            if (!(work3 & (one << p->cpu_profile))) {
+                            if (!(work3 & (var_59 << p->cpu_profile))) {
                                 goto next;
                             }
                             var_32 += 5;
