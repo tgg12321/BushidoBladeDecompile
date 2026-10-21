@@ -864,6 +864,7 @@ SECTIONS
         build/src/main/psxsdk/libapi/a71.o(.bss);
         build/src/main/psxsdk/libapi/a72.o(.bss);
         build/src/main/d_7D870.o(.bss);
+        build/asm/data/94000.bss.o(.bss);
         main_BSS_END = .;
         main_BSS_SIZE = ABSOLUTE(main_BSS_END - main_BSS_START);
     }
