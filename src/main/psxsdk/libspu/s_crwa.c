@@ -5,7 +5,7 @@
 #include "libspu_internal.h"
 #include <psxsdk/libapi.h>
 
-extern s32 _spu_zerobuf;
+extern s32 _spu_zerobuf[]; /* S_INI .data, s_ini.c */
 
 /* C ref: sotn-decomp src/main/psxsdk/libspu/s_crwa.c */
 s32 SpuClearReverbWorkArea(u32 rev_mode) {

@@ -524,6 +524,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/vs_vtc.o(.data);
         build/src/main/psxsdk/libspu/s_i.o(.data);
         build/src/main/psxsdk/libspu/s_ini.o(.data);
+        build/asm/data/934DC.data.o(.data);
         build/src/main/psxsdk/libspu/spu.o(.data);
         build/src/main/psxsdk/libspu/s_dcb.o(.data);
         build/src/main/psxsdk/libspu/s_q.o(.data);
