@@ -60,9 +60,10 @@ in an `authorize` bucket and take the Judge-gated canonical-grant path ([[judge-
   Never edit tracked files while it runs — its scope check discards the live session.
 - **Parallel lanes** (`tools/lanes/lanes.py`) — one session per worktree `../bb2-worktrees/ln-<lane>`;
   main is only a landing pad (`lanes.py land`: replay onto main, gates, fast-forward, push).
-  Naming: `/naming-session <lane>`; foundation (pins, bss, data, shift, …):
-  `/foundation-session <lane>` over `docs/foundation/backlog.tsv`; several at once:
-  `pwsh tools/lanes/launch.ps1 naming-a naming-b pins`. `lane_guard.py` enforces ownership/claims.
+  Run them with **`python tools/lanes/orchestrate.py <N>`**: keeps N background sessions going
+  (`/naming-session <lane>` or `/foundation-session <lane>` over `docs/foundation/backlog.tsv`),
+  starting the next lane with work as each finishes; `orchestrate.py max <N>` changes N live,
+  `status` lists them, `claude attach <id>` watches one. `lane_guard.py` enforces ownership/claims.
 - **Manual lane** — one focused agent on `main`, one function: **invoke the `decomp-manual` skill**
   (`pwsh tools/manual_session.ps1 begin`). Per-function loop details: `.claude/rules/decomp-loop.md`.
 - Every manual completion-class commit (`Match:` / `cheat-cleanup:` / `auth:` / rule additions)
