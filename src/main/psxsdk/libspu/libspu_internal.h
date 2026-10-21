@@ -159,5 +159,6 @@ extern void _SpuInit(s32);
 extern void _SpuDataCallback(s32);
 extern s32 _SpuSetAnyVoice(s32, u32, s32, s32);
 extern s32 _SpuIsInAllocateArea_(u32);
+extern u16 _spu_note2pitch(u16, u16, u16, u16);
 
 #endif /* LIBSPU_INTERNAL_H */
