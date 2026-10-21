@@ -1551,8 +1551,8 @@ typedef struct Unk80101EC8Record {
     Vec3i32 unk_174;
     Vec3i32 unk_180;
     Vec3i32 unk_18C;
-    /* fighter_UpdateBoneWorldData: bone 17 / 14 translations, y + ((unk_1A *
-     * 71) >> 11) */
+    /* fighter_UpdateBoneWorldData: bone 17 / 14 translations, y + ((size_scale
+     * * 71) >> 11) */
     Vec3i32 unk_198[2];
     /* fighter_UpdateBoneWorldData: floor y under unk_198[i]
      * (collision_TestSegmentWithWork segment test) */
@@ -1594,7 +1594,8 @@ typedef struct Unk80101EC8Record {
     s16 unk_276[4];
     s16 unk_27E[4];
     s16 pending_move_event;
-    /* per blade (unk_A1 / unk_A3 bounds), fighter_Update */
+    /* per blade (weapon_hit_start_frames / weapon_hit_end_frames bounds),
+     * fighter_Update */
     s16 unk_288[2];
     s32 unk_28C;
     /* the motion frame fighter_Update last used */
@@ -1841,7 +1842,7 @@ typedef struct Unk800FF5C8Rec {
  * - w0: the character's current move (Unk80101EC8Record.cur_move);
  * replay_PlayFrame reads its motion_bank_entry_index.
  * - h4 / h6 / h8: world_pos x / y / z; hA: orientation.vy & 0xFFF with unk_B3
- * in the top four bits; hC: unk_148; hE / h10 / h12: unk_64 / unk_66 /
+ * in the top four bits; hC: ground_y; hE / h10 / h12: unk_64 / unk_66 /
  * pose_interp_weight.
  * - b14..b16: unk_1E6 / unk_1E8 / unk_1EA >> 2, read back signed; b17: bit 0 =
  * cur_move_is_common != 0, bit 1 = cur_move_slot != 0; b18: unk_62; b19:

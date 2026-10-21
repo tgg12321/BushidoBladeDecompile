@@ -555,7 +555,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     /* work holds two values: D_800A387C - unk_43E, then its sign (work >> 31)
      * (Ruling 11, ordinary-c-judge-decidable). */
     s32 work;
-    /* temp holds six values: the unk_148 distance, a slot count minus one
+    /* temp holds six values: the ground_y distance, a slot count minus one
      * (clamped at 0), the slot increment (4 or 8, then plus the old count,
      * clamped at 0xFF), the 0x20/0x60 flag, the wrapped ratan2() angle
      * difference and the poll result of fighter_StepCpuPadScript/func_80058580
@@ -1011,8 +1011,8 @@ extern u8 D_8009A840[];
 
 /* func_80056FE8: per-record table lookup on arg0->other: its row
  * (motion_metadata[3] * 40), plus a D_8009A830 / D_8009A838 (by
- * arg0->move_is_common) or D_8009A840 (when unk_A3[0] is 0xFF) term, plus its
- * scale_distance_offset and 300. */
+ * arg0->move_is_common) or D_8009A840 (when weapon_hit_end_frames[0] is 0xFF)
+ * term, plus its scale_distance_offset and 300. */
 s32 func_80056FE8(Unk80101EC8Record *arg0) {
     Unk80101EC8Record *a2 = arg0->other;
     s32 base = a2->motion_metadata[3] * 40;

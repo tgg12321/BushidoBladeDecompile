@@ -52,11 +52,11 @@ target, with the opponent as the attacker:
    one more with `unk_8C` set, and one more when `unk_0E` is 4 or 5 and any is
    tested. (With `mode == 1` the fighter `D_800A38AE` is skipped as a target.)
    Attackers with `unk_0E` 6 or 7, in states 2 / 0x1B / 0x28 / 0x26 at frame
-   `move_frame == unk_A1[0]`, also sweep a segment with `fighter_CastWeaponSegment`
+   `move_frame == weapon_hit_start_frames[0]`, also sweep a segment with `fighter_CastWeaponSegment`
    (src/main/17AFC.c:1423, comment at :1399) while the counter `unk_34A`
    lasts (once it is spent they play cue 0x32 and test no quads); `unk_0C`
    0x1D / 0xE (with `unk_26C` set) do the same with the second blade
-   (`unk_A1[1]`).
+   (`weapon_hit_start_frames[1]`).
 2. Each blade quad (this frame's points from the scratchpad and last frame's
    from `unk_210` / `unk_234`) is split into 2 or 4 triangles (4 when the tip
    moved more than 2500 units) and each triangle goes through `math_PrepareTriangleCollisionFrame`
@@ -72,7 +72,7 @@ target, with the opponent as the attacker:
    pushes the target along x/z through
    `unk_134` when the facing difference is under 0x400.
 5. If the attacker's `unk_AE` is set and (with `unk_8C`) its frame `move_frame`
-   is inside the window `unk_A1[k]..unk_A3[k]`, it calls
+   is inside the window `weapon_hit_start_frames[k]..weapon_hit_end_frames[k]`, it calls
    `fighter_ResolveBoneHit(0, target, limb, facing difference, ...)`.
 
 ## Hit reaction: `fighter_ResolveBoneHit`
@@ -109,10 +109,12 @@ Both walk the byte stream at `rec->motion_metadata + 4`; 0 ends it.
 
 - `fighter_ReadFrameMetadata` (src/main/17AFC.c:4505; called at src/main/9F9C.c:3376)
   resets the window fields and reads: 0xFF skips six bytes, a byte below 0x80
-  skips one, and 0x80..0x8B take the next byte into `unk_A1[0]`, `unk_A3[0]`,
-  `unk_A7`, `unk_A8`, `unk_A9`, `unk_A5`, `unk_A6`, `unk_A1[1]`, `unk_A3[1]`,
-  `unk_AA`, `unk_AB`, `unk_AC` (src/main/17AFC.c:4530-4566). `unk_A1[k]` /
-  `unk_A3[k]` are the frame windows the contact tests compare `move_frame` with.
+  skips one, and 0x80..0x8B take the next byte into `weapon_hit_start_frames[0]`,
+  `weapon_hit_end_frames[0]`, `unk_A7`, `object_pickup_frame`,
+  `opponent_turn_frame`, `unk_A5`, `unk_A6`, `weapon_hit_start_frames[1]`,
+  `weapon_hit_end_frames[1]`, `unk_AA`, `unk_AB`, `unk_AC`
+  (src/main/17AFC.c:4530-4566). `weapon_hit_start_frames[k]` /
+  `weapon_hit_end_frames[k]` are the frame windows the contact tests compare `move_frame` with.
 - `fighter_ProcessFrameEvents` (src/main/17AFC.c:5100; called at src/main/9F9C.c:5148 and
   src/main/28708.c:1434) reads the same stream: 0xFF tests a 32-bit mask
   against `1 << rec->unk_0A` and skips 4 or 6 bytes; a byte `c` below 0x80

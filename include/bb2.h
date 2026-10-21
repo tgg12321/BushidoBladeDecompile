@@ -180,7 +180,7 @@ extern s16 D_8008DAD8[]; /* [unk_0A] (fighter_Update) */
 extern u16 D_8008DB1C[27][8];
 /* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_84 */
 extern u8 D_8008DD5C[27][8];
-/* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_1C */
+/* [unk_0A][unk_0E] -> Unk80101EC8Record.base_move_frame_step */
 extern u16 D_8008DE34[27][6];
 /* [unk_0A][unk_0E] -> Unk80101EC8Record.unk_1E / unk_20 */
 extern u16 D_8008DF78[27][6];

@@ -23,7 +23,7 @@ the entries `carried_object_kinds[12]` (include/game.h:1603-1607). `g_object_poo
   the queue already holds 12.
 - `object_SpawnFromFighter(rec, kind)` (src/main/17AFC.c:3756) allocates the first free
   pool slot and places the object at the fighter (`world_pos`, raised by
-  `unk_1A / 32`). Its velocity comes from `D_8008E194[kind]`
+  `size_scale / 32`). Its velocity comes from `D_8008E194[kind]`
   (`Tbl8008E194`, include/game.h:1661): the horizontal speed `unk4` along the
   fighter's heading `orientation.vy`, the vertical speed `unk6`, and a spin
   `unk8` about Y or X by `unk0`.

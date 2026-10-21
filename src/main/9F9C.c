@@ -2886,8 +2886,8 @@ void fighter_ScaleBoneHitRecords(s32 arg0, s32 arg1) {
  * arg2; when unk_8C != 0, the pair D_8008D88C[unk_14] through bone 19 into
  * arg3. A point is the GTE MVMVA rotation (sf=1) of the SVECTOR plus the
  * matrix translation. Then: bone 11's y axis into rec->unk_1EC, arg1[0]
- * into rec->unk_180, the translations of bones 17 and 14 (y raised by (unk_1A *
- * 71) >> 11) into rec->unk_198[], the floor height under each
+ * into rec->unk_180, the translations of bones 17 and 14 (y raised by
+ * (size_scale * 71) >> 11) into rec->unk_198[], the floor height under each
  * (collision_TestSegmentWithWork down a segment from y - 100 to y + 2000; the
  * segment's lower end when it finds nothing) into rec->unk_1B0[], and the two
  * bones' headings into unk_1BA / unk_1C2. */
@@ -4148,7 +4148,7 @@ void func_80023648(Unk80101EC8Record *arg0) {
                 arg0->forward_move_rate = new_14e;
 
                 tbl_val = D_800A310C[D_8008DA08[arg0->unk_0A]];
-                /* FAKE: the second read of arg0->unk_1A is staged through
+                /* FAKE: the second read of arg0->size_scale is staged through
                  * the dead `sub_result`, as above; reading in place: score
                  * 11. */
                 sub_result = arg0->size_scale;

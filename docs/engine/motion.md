@@ -87,7 +87,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
    0x33; the frame keys go to `unk_64` / `unk_66` as `(slot << 14) | frame`
    (src/main/9F9C.c:4698);
 3. turns the two root offsets into a position delta (heading and distance
-   through `Judge`, scaled by `unk_1A`), blended by `move_frame_frac` or by
+   through `Judge`, scaled by `size_scale`), blended by `move_frame_frac` or by
    `pose_blend_progress` against the held frame `saved_motion_frame`; the weight goes to `pose_interp_weight`;
 4. integrates the velocities `unk_104` / `unk_134`, resolves the position
    (`fighter_ResolveMovement`, src/main/9F9C.c:3868), and builds the pose:
