@@ -482,7 +482,6 @@ SECTIONS
         build/src/main/psxsdk/libsnd/scssattr.o(.data);
         build/src/main/psxsdk/libsnd/scsmvol.o(.data);
         build/src/main/psxsdk/libsnd/ssstart.o(.data);
-        build/asm/data/92EE4.data.o(.data);
         build/src/main/psxsdk/libsnd/sscall.o(.data);
         build/src/main/psxsdk/libsnd/cres.o(.data);
         build/src/main/psxsdk/libsnd/decre.o(.data);
@@ -509,6 +508,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/vm_f.o(.data);
         build/src/main/psxsdk/libsnd/vm_init.o(.data);
         build/src/main/psxsdk/libsnd/vm_n2p.o(.data);
+        build/asm/data/93066.data.o(.data);
         build/src/main/psxsdk/libsnd/vm_no1.o(.data);
         build/src/main/psxsdk/libsnd/vm_nowof.o(.data);
         build/src/main/psxsdk/libsnd/vm_nowon.o(.data);
