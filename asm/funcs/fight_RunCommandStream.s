@@ -1,4 +1,4 @@
-glabel func_8003B5A4
+glabel fight_RunCommandStream
     /* 2BDA4 8003B5A4 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 2BDA8 8003B5A8 1800BFAF */  sw         $ra, 0x18($sp)
     /* 2BDAC 8003B5AC 1400B1AF */  sw         $s1, 0x14($sp)
@@ -192,4 +192,4 @@ glabel func_8003B5A4
     /* 2C064 8003B864 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 2C068 8003B868 0800E003 */  jr         $ra
     /* 2C06C 8003B86C 00000000 */   nop
-endlabel func_8003B5A4
+endlabel fight_RunCommandStream

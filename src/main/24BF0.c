@@ -46,9 +46,9 @@ void func_800344B4(void) {
         D_800A36F6 = (D_800A38A0 != 0);
         break;
     case 0:
-        func_8003B20C(D_8008D538[(s8)D_80102778.unk_4[0]]);
+        fight_InitCommandStream(D_8008D538[(s8)D_80102778.unk_4[0]]);
         D_80102778.unk_4[1] = 0;
-        func_8003B5A4();
+        fight_RunCommandStream();
         fighter_ClearCpuTally(1);
         break;
     case 1:

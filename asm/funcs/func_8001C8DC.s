@@ -107,7 +107,7 @@ glabel func_8001C8DC
     /* D268 8001CA68 44730008 */  j          .L8001CD10
     /* D26C 8001CA6C 00000000 */   nop
   .L8001CA70:
-    /* D270 8001CA70 69ED000C */  jal        func_8003B5A4
+    /* D270 8001CA70 69ED000C */  jal        fight_RunCommandStream
     /* D274 8001CA74 00000000 */   nop
     /* D278 8001CA78 44730008 */  j          .L8001CD10
     /* D27C 8001CA7C 00000000 */   nop

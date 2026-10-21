@@ -1,4 +1,4 @@
-glabel func_8003B20C
+glabel fight_InitCommandStream
     /* 2BA0C 8003B20C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2BA10 8003B210 01000324 */  addiu      $v1, $zero, 0x1
     /* 2BA14 8003B214 80200400 */  sll        $a0, $a0, 2
@@ -46,4 +46,4 @@ glabel func_8003B20C
     /* 2BABC 8003B2BC 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 2BAC0 8003B2C0 0800E003 */  jr         $ra
     /* 2BAC4 8003B2C4 00000000 */   nop
-endlabel func_8003B20C
+endlabel fight_InitCommandStream

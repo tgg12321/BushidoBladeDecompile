@@ -216,7 +216,7 @@ void func_8003B10C(s32 arg0) {
     func_80049584(addr);
 }
 
-void func_8003B20C(s32 arg0) {
+void fight_InitCommandStream(s32 arg0) {
     D_80102778.unk_4[4] = 0;
     D_80102778.unk_4[5] = 1;
     D_800A3894 = 0;
@@ -317,7 +317,7 @@ void func_8003B56C(s32 arg0) {
     D_800A3878 = D_800A385C + (arg0 * 4 - 4);
 }
 
-void func_8003B5A4(void) {
+void fight_RunCommandStream(void) {
     s32 var_0;
     u8 *var_1;
 
@@ -440,7 +440,7 @@ void func_8003B8E4(void) {
         D_800A38F8 = 0;
         D_800A3768 = DISP_ACTIVE;
         func_8001D790();
-        func_8003B5A4();
+        fight_RunCommandStream();
         gpu_SetDrawEnvBg(1, 0, 0, 0);
         D_800A390D = 1;
     }
@@ -588,7 +588,7 @@ void func_8003BCB4(void) {
         }
         D_800A385C = 0;
     }
-    func_8003B5A4();
+    fight_RunCommandStream();
 }
 
 void func_8003BE10(void) {

@@ -1301,7 +1301,7 @@ void func_8001C8DC(void) {
                         func_8003B534(5);
                     }
                 } else {
-                    func_8003B5A4();
+                    fight_RunCommandStream();
                 }
             } else {
                 func_8001C51C();

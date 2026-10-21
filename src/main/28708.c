@@ -1508,7 +1508,7 @@ void replay_PlayFrame(void) {
                         func_8003B534(var_19 ? 2 : 5);
                     }
                 } else {
-                    func_8003B5A4();
+                    fight_RunCommandStream();
                 }
                 return;
             }

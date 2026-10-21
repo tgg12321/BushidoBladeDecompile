@@ -36,11 +36,11 @@ glabel func_800344B4
     /* 24D34 80034534 0980013C */  lui        $at, %hi(D_8008D538)
     /* 24D38 80034538 21082200 */  addu       $at, $at, $v0
     /* 24D3C 8003453C 38D52490 */  lbu        $a0, %lo(D_8008D538)($at)
-    /* 24D40 80034540 83EC000C */  jal        func_8003B20C
+    /* 24D40 80034540 83EC000C */  jal        fight_InitCommandStream
     /* 24D44 80034544 00000000 */   nop
     /* 24D48 80034548 1080013C */  lui        $at, %hi(D_80102778 + 0x5)
     /* 24D4C 8003454C 7D2720A0 */  sb         $zero, %lo(D_80102778 + 0x5)($at)
-    /* 24D50 80034550 69ED000C */  jal        func_8003B5A4
+    /* 24D50 80034550 69ED000C */  jal        fight_RunCommandStream
     /* 24D54 80034554 00000000 */   nop
     /* 24D58 80034558 2754010C */  jal        fighter_ClearCpuTally
     /* 24D5C 8003455C 01000424 */   addiu     $a0, $zero, 0x1

@@ -87,7 +87,7 @@ glabel func_8003BCB4
     /* 2C5F0 8003BDF0 0A80013C */  lui        $at, %hi(D_800A385C)
     /* 2C5F4 8003BDF4 5C3820AC */  sw         $zero, %lo(D_800A385C)($at)
   .L8003BDF8:
-    /* 2C5F8 8003BDF8 69ED000C */  jal        func_8003B5A4
+    /* 2C5F8 8003BDF8 69ED000C */  jal        fight_RunCommandStream
     /* 2C5FC 8003BDFC 00000000 */   nop
   .L8003BE00:
     /* 2C600 8003BE00 1000BF8F */  lw         $ra, 0x10($sp)
