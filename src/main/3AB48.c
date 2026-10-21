@@ -97,7 +97,7 @@ INCLUDE_ASM("asm/funcs", gte_SetRotTransMatrix);
  * translation CR5-CR7 (last ctc2 in the jr delay slot). Hand-written GTE asm.
  */
 INCLUDE_ASM("asm/funcs", gte_SetRotMatrixClearTrans);
-INCLUDE_ASM("asm/funcs", func_80052B7C);
+INCLUDE_ASM("asm/funcs", gte_TransformSVectorWithSeparateTranslation);
 /* Reads the far colour (cfc2 RFC/GFC/BFC) >> 4 into a0[0..2]. Hand-written asm:
  * results in $t0-$t2, a nop in the jr delay slot. */
 INCLUDE_ASM("asm/funcs", gte_ReadFarColor);

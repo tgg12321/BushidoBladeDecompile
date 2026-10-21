@@ -1,4 +1,4 @@
-glabel func_80052B7C
+glabel gte_TransformSVectorWithSeparateTranslation
     /* 4337C 80052B7C 0000888C */  lw         $t0, 0x0($a0)
     /* 43380 80052B80 0400898C */  lw         $t1, 0x4($a0)
     /* 43384 80052B84 08008A8C */  lw         $t2, 0x8($a0)
@@ -25,4 +25,4 @@ glabel func_80052B7C
     /* 433D8 80052BD8 0400EAE8 */  swc2       $10, 0x4($a3)
     /* 433DC 80052BDC 0800E003 */  jr         $ra
     /* 433E0 80052BE0 0800EBE8 */   swc2      $11, 0x8($a3)
-endlabel func_80052B7C
+endlabel gte_TransformSVectorWithSeparateTranslation
