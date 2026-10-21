@@ -33,7 +33,10 @@ void func_800343F0(void) {
 
 void func_800343F0(void);
 
-INCLUDE_RODATA("asm/rodata", jtbl_8001084C);
+const char g_str_chanbara[] = "CHANBARA";
+const char g_str_practice[] = "PRACTICE";
+const char D_80010834[] = "%sCR%3d\n";
+const char D_80010840[] = "%sCO%3d\n";
 
 void func_800344B4(void) {
     func_800343F0();

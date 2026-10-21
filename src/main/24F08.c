@@ -22,8 +22,8 @@ extern u8 D_800A31B8[];
 extern u8 D_800A31C0[];
 extern u8 D_800A31C8[];
 extern u8 D_800A31D0[];
-extern u8 D_80010834[];
-extern u8 D_80010840[];
+extern const char D_80010834[];
+extern const char D_80010840[];
 
 void func_80034708(void) {
     s32 i;

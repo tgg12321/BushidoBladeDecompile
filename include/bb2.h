@@ -153,7 +153,6 @@ extern SVec4i16 D_800F10A0[6];
 extern s16 D_800F0C04[6];
 extern Unk800EFB78Entry g_snd_queue[24];
 extern Unk80101EC8Record D_80101EC8[];
-extern u8 D_800100A4[];
 extern const char D_800109C8[];
 extern u8 D_8008D518;
 extern u8 D_8008D538[];

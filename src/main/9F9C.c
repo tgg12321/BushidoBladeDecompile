@@ -12,7 +12,8 @@
 extern s32 memcpy(s32 *, s32, s32);
 extern s32 collision_GetHitTag(void);
 
-INCLUDE_RODATA("asm/rodata", D_800100A4);
+const char D_800100A4[] = "%04x %04x %04x\n";
+const char D_800100B4[] = "SOUND ID:%d\n";
 
 /* Motion bitstream reader: `cur` holds the unread bits left-aligned, `bits`
    how many of them are valid, `ptr` the next stream word. GETBITS reads `nb`

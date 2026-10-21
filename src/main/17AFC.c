@@ -24,7 +24,8 @@ extern u8 D_800A3899;
 extern u8 D_800A38AA;
 extern u8 D_800A38AB;
 
-INCLUDE_RODATA("asm/rodata", D_80010478);
+const char D_80010478[] = "ILLEGAL GUN MOTION : %d\n";
+const char D_80010494[] = "";
 
 s32 math_ClassifyAbsMagnitude(s32 a0) {
     s32 v1;
@@ -1421,7 +1422,6 @@ s32 fighter_ProcessWeaponContacts(void) {
  * gte_stlzc) per square root, inline_o.h class (inline-asm-policy, owner ruling
  * 2026-09-26). Everything else is ordinary C, except the five Ruling 11 locals
  * (dx, dy, dz, temp, temp2) and the do-while(0), each annotated below. */
-extern char D_80010478[];
 extern void printf();
 extern void math_PrepareSegmentCollisionFrame(Unk1F8002B8Rec *scr);
 extern s32 math_TestPreparedSegmentSphere(
