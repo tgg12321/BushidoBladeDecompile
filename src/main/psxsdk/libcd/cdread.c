@@ -19,6 +19,9 @@ const char D_80016304[20] = "CdRead: retry...\n\0\0\0";
    identical either way. */
 void cb_data(void);
 
+/* cb_read retries through it before its definition. */
+s32 cd_read_retry(s32);
+
 /* The cdread module state is D_800A14D0 (CdlREAD, include/psxsdk/libcd.h). */
 extern u8 *D_800A1504; /* v1.86: saved result ptr for cb dispatch */
 extern CdlCB g_CdReadCallback_func; /* CD_ReadCallbackFunc */
