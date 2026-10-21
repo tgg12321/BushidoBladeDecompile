@@ -16,8 +16,11 @@ The rules for names live in `.claude/rules/naming-bar.md`. This skill covers how
 - **Start:** `git status` must be clean on `main`. Then read `docs/naming/phase3/backlog.tsv`.
 - **Work:** do at most **3 units**, each from the list below. A unit ends at a **stopping point**:
   main is clean, gated and pushed, and the backlog row is updated in the same commit.
-- **Stop:** after 3 units, or earlier if context passes ~300k or a unit fails twice. Report one line
-  per unit, then stop. Don't hand off and don't wait on anything. The next session starts from the
+- **Stop:** after 3 units, or earlier if context passes ~300k or a unit fails twice. Before calling
+  the session ended: every branch it made is on main (`git cherry main <branch>` shows no `+`), its
+  worktrees are removed (`tools/safe_remove_worktree.ps1`, never a raw `git worktree remove`) and
+  their branches deleted. Then report one line per unit, say plainly that the session is complete,
+  and stop. Don't hand off and don't wait on anything. The next session starts from the
   backlog.
 - **Pick order:** LAND first (oldest `reviewed` row), then PREPARE (first `idea` row).
 
