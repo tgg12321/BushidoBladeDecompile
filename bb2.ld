@@ -471,8 +471,8 @@ SECTIONS
         build/src/main/psxsdk/libc2/setjmp.o(.data);
         build/src/main/psxsdk/libetc/intr_vb.o(.data);
         build/src/main/psxsdk/libetc/intr_dma.o(.data);
-        build/asm/data/92E64.data.o(.data);
         build/src/main/psxsdk/libetc/vmode.o(.data);
+        build/asm/data/92E68.data.o(.data);
         build/src/main/psxsdk/libsn/73E98.o(.data);
         build/src/main/psxsdk/libapi/c57.o(.data);
         build/src/main/psxsdk/libsn/7407C.o(.data);

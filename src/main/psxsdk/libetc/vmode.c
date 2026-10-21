@@ -4,9 +4,7 @@
 #include "common.h"
 #include <psxsdk/libetc.h>
 
-/* Declarations from the file this module was split from
- * (src/main/psxsdk/libetc/intr.c, ex ings2.c). */
-extern s32 video_mode;
+s32 video_mode = 0; /* 0 = NTSC, 1 = PAL */
 
 s32 SetVideoMode(s32 a0) {
     s32 old = video_mode;

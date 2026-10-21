@@ -3,12 +3,6 @@
 .section .data, "wa"
     .align 0
 
-nonmatching video_mode
-
-dlabel video_mode
-    /* 92E64 800A2664 00000000 */ .word 0x00000000
-enddlabel video_mode
-
 nonmatching D_800A2668
 
 dlabel D_800A2668
