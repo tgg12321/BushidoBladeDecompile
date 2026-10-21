@@ -25,6 +25,9 @@ def apply(path, history=False):
         open(path, 'w', encoding='utf-8', newline='').write(n)
         print('changed', path)
 
-for f in glob.glob('docs/engine/*.md') + extra:
+REGISTRIES = ('named_syms.txt', 'symbol_addrs.txt')
+for f in glob.glob('docs/engine/*.md') + [e for e in extra if e not in REGISTRIES]:
     apply(f)
-apply('named_syms.txt', history=True)
+for f in REGISTRIES:
+    if f == 'named_syms.txt' or f in extra:
+        apply(f, history=True)
