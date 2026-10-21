@@ -8,9 +8,10 @@ address, so the -T assignment only shadows it and removing it moves nothing.
 Each droppable assignment line leaves named_syms.txt / undefined_syms_auto.txt
 / undefined_funcs_auto.txt. The name's address is kept in symbol_addrs.txt
 (the registry ld never reads; the engine scorer, layer-2, datamodel and the
-naming tools all read it), appended under one marker comment with the
-original line's trailing comment, unless symbol_addrs.txt already carries the
-name. docs/foundation/pins_audit.tsv is rewritten for the remaining pins.
+naming tools all read it), appended under one marker comment: every
+commented pin line, in the order engine/datamodel.py reads the files, so its
+census keeps the same notes (a name may then appear more than once, always at
+one address); an uncommented line only when the registry lacks the name. docs/foundation/pins_audit.tsv is rewritten for the remaining pins.
 
 Deterministic and re-runnable (Lane-Replay): it reads only the tracked pin
 files, build/bb2.map and the linked objects, so build first:
