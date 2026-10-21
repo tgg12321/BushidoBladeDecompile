@@ -3075,14 +3075,8 @@ dlabel D_8008EBFD
     /* 7F40D 8008EC0D */ .byte 0x31
     /* 7F40E 8008EC0E */ .byte 0x0A
     /* 7F40F 8008EC0F */ .byte 0x80
-    /* 7F410 8008EC10 */ .byte 0x28
-    /* 7F411 8008EC11 */ .byte 0x08
-    /* 7F412 8008EC12 */ .byte 0x01
-    /* 7F413 8008EC13 */ .byte 0x80
-    /* 7F414 8008EC14 */ .byte 0x1C
-    /* 7F415 8008EC15 */ .byte 0x08
-    /* 7F416 8008EC16 */ .byte 0x01
-    /* 7F417 8008EC17 */ .byte 0x80
+    /* 7F410 8008EC10 */ .word g_str_practice
+    /* 7F414 8008EC14 */ .word g_str_chanbara
     /* 7F418 8008EC18 */ .byte 0x60
     /* 7F419 8008EC19 */ .byte 0x31
     /* 7F41A 8008EC1A */ .byte 0x0A
