@@ -11227,6 +11227,9 @@ def test_symtab_data_dlabels() -> None:
                      "    /* 919C0 800A11C0 */ .byte 0x00\n"
                      "dlabel Overridden\n"
                      "    /* 0 80000004 */ .byte 0x00\n"
+                     "dlabel Judge\n"
+                     "dlabel g_sin_table\n"
+                     "    /* 0 800973FC */ .word 0x00000000\n"
                      "dlabel NoData\n"
                      "\n"
                      "enddlabel NoData\n"
@@ -11246,6 +11249,8 @@ def test_symtab_data_dlabels() -> None:
         eq("dlabel: linker symbol file wins on conflict", t.get("Overridden"), 0x80001000)
         eq("dlabel: only the first data line after the label counts",
            t.get("NoData"), None)
+        eq("dlabel: stacked labels share the next data line",
+           (t.get("Judge"), t.get("g_sin_table")), (0x800973FC, 0x800973FC))
         eq("registry: an object-defined name with no pin resolves",
            t.get("g_obj_defined"), 0x800A1300)
         eq("registry: linker files and dlabels win over it",

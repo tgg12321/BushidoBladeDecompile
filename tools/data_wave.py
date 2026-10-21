@@ -74,11 +74,15 @@ def registry_defs():
 
 
 def asm_defs(text):
-    """All labels, bounded by the next label so empty blocks cannot steal its address."""
+    """All labels, bounded by the next label so empty blocks cannot steal its address.
+    Labels stacked with nothing between them share the address after the last one."""
     labels = list(LABEL.finditer(text))
     for i, label in enumerate(labels):
-        end = labels[i + 1].start() if i + 1 < len(labels) else len(text)
-        m = MACHINE_ADDR.search(text, label.end(), end)
+        j = i
+        while j + 1 < len(labels) and not text[labels[j].end():labels[j + 1].start()].strip():
+            j += 1
+        end = labels[j + 1].start() if j + 1 < len(labels) else len(text)
+        m = MACHINE_ADDR.search(text, labels[j].end(), end)
         name = label.group(1)
         addr = m.group(1) if m else name[-8:] if AUTO.fullmatch(name) else None
         if addr:

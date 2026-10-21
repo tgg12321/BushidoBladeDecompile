@@ -128,18 +128,19 @@ def _symtab() -> dict[str, int]:
         for fn in sorted(glob.glob(_DATA_ASM_GLOB)):
             try:
                 with open(fn, encoding="utf-8", errors="replace") as fh:
-                    pending = None
+                    pending = []   # stacked labels share the next data line
                     for line in fh:
                         m = _DLABEL_RE.match(line)
                         if m:
-                            pending = m.group(1)
+                            pending.append(m.group(1))
                             continue
-                        if pending is not None:
+                        if pending:
                             v = _DATA_VADDR_RE.match(line)
                             if v:
-                                tab.setdefault(pending, int(v.group(1), 16))
+                                for name in pending:
+                                    tab.setdefault(name, int(v.group(1), 16))
                             if line.strip():
-                                pending = None   # only the first data line counts
+                                pending = []   # only the first data line counts
             except OSError:
                 continue
         # Then the non-linker registry: names an object defines (pins-drop moves
