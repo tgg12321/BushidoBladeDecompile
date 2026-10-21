@@ -882,6 +882,7 @@ glabel func_8004A940
     /* 3BED8 8004B6D8 00000000 */   nop
     /* 3BEDC 8004B6DC 58290108 */  j          .L8004A560
     /* 3BEE0 8004B6E0 00000000 */   nop
+  jlabel .L8004B6E4
     /* 3BEE4 8004B6E4 801F083C */  lui        $t0, (0x1F8001D4 >> 16)
     /* 3BEE8 8004B6E8 E8011FAD */  sw         $ra, (0x1F8001E8 & 0xFFFF)($t0)
     /* 3BEEC 8004B6EC EC011EAD */  sw         $fp, (0x1F8001EC & 0xFFFF)($t0)

@@ -17,35 +17,68 @@ const Unk800153F0Record g_light_default_template = {{
     0x0000, 0x0000, 0x0030, 0x0030, 0x0030, 0x1000,
 }};
 
+/* Code addresses in these tables are symbols: the jump labels (.L<addr>) of
+ * the asm bodies that index them (3AB48.c), and functions. */
+#define CODE_LABEL(addr) extern u8 L##addr[] __asm__(".L" #addr)
+CODE_LABEL(8004A5D0);
+CODE_LABEL(8004A614);
+CODE_LABEL(8004A644);
+CODE_LABEL(8004A694);
+CODE_LABEL(8004A6F0);
+CODE_LABEL(8004A730);
+CODE_LABEL(8004A990);
+CODE_LABEL(8004ABD8);
+CODE_LABEL(8004AE0C);
+CODE_LABEL(8004AF84);
+CODE_LABEL(8004B0C8);
+CODE_LABEL(8004B0E4);
+CODE_LABEL(8004B27C);
+CODE_LABEL(8004B4D8);
+CODE_LABEL(8004B6E4);
+CODE_LABEL(80050C0C);
+CODE_LABEL(80050DAC);
+CODE_LABEL(80050FB4);
+CODE_LABEL(80051154);
+CODE_LABEL(80051358);
+CODE_LABEL(800514FC);
+CODE_LABEL(800516FC);
+CODE_LABEL(80051894);
+
+void func_8004BCC0();
+void func_80052C10();
+void func_8004C994();
+void func_8004CB8C();
+void func_8004CDB0();
+void func_8004CFE0();
+void func_80051208();
+void func_800513B0();
+void func_800515AC();
+void func_80051754();
+
 /* jtbl_8001541C: 16 words (64B) @ 0x8001541C */
-const u32 jtbl_8001541C[16] = {
-    0x8004A990, 0x8004ABD8, 0x8004A5D0, 0x8004AE0C, 0x8004A5D0, 0x8004A5D0,
-    0x8004A5D0, 0x8004A5D0, 0x8004A5D0, 0x8004A5D0, 0x8004AF84, 0x8004A5D0,
-    0x8004B0C8, 0x8004B0E4, 0x8004B4D8, 0x8004B27C,
+void * const jtbl_8001541C[16] = {
+    L8004A990, L8004ABD8, L8004A5D0, L8004AE0C, L8004A5D0, L8004A5D0,
+    L8004A5D0, L8004A5D0, L8004A5D0, L8004A5D0, L8004AF84, L8004A5D0,
+    L8004B0C8, L8004B0E4, L8004B4D8, L8004B27C,
 };
 
 /* jtbl_8001545C: 5 words (20B) @ 0x8001545C */
-const u32 jtbl_8001545C[5] = {
-    0x8004A614, 0x8004A644, 0x8004A694, 0x8004A6F0, 0x8004A730,
+void * const jtbl_8001545C[5] = {
+    L8004A614, L8004A644, L8004A694, L8004A6F0, L8004A730,
 };
 
 /* D_80015470: 4 words (16B) @ 0x80015470 */
-const u32 D_80015470[4] = {
-    0x8004B6E4, 0x8004BCC0, /* func_8004BCC0 */
-    0x80052C10,             /* func_80052C10 */
-    0x80052C10,             /* func_80052C10 */
+void * const D_80015470[4] = {
+    L8004B6E4,
+    func_8004BCC0,
+    func_80052C10,
+    func_80052C10,
 };
 
 /* D_80015480: 8 words (32B) @ 0x80015480 — function-pointer table */
-const u32 D_80015480[8] = {
-    0x8004C994, /* func_8004C994 */
-    0x8004CB8C, /* func_8004CB8C */
-    0x8004CDB0, /* func_8004CDB0 */
-    0x8004CFE0, /* func_8004CFE0 */
-    0x80051208, /* func_80051208 */
-    0x800513B0, /* func_800513B0 */
-    0x800515AC, /* func_800515AC */
-    0x80051754, /* func_80051754 */
+void (* const D_80015480[8])() = {
+    func_8004C994, func_8004CB8C, func_8004CDB0, func_8004CFE0,
+    func_80051208, func_800513B0, func_800515AC, func_80051754,
 };
 
 /* g_rsqrt_table: 96 words (384B) @ 0x800154A0 */
@@ -94,10 +127,11 @@ const u32 g_sqrt_table[128] = {
     0x1FCF1FBF, 0x1FEF1FDF,
 };
 
-/* D_80015820: 8 words (32B) @ 0x80015820 */
-const u32 D_80015820[8] = {
-    0x80050C0C, 0x80050DAC, 0x80050FB4, 0x80051154,
-    0x80051358, 0x800514FC, 0x800516FC, 0x80051894,
+/* D_80015820: 8 words (32B) @ 0x80015820: the code sites func_80041398
+ * patches */
+void * const D_80015820[8] = {
+    L80050C0C, L80050DAC, L80050FB4, L80051154,
+    L80051358, L800514FC, L800516FC, L80051894,
 };
 
 /* The cluster continues in 43500.c's rodata: motion_StartPlayback's string
