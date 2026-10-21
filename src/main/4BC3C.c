@@ -143,8 +143,6 @@ void func_8005B72C(void) {
     snd_ResetVoicesAndQueue();
 }
 
-s32 printf(s32 *, s32); /* extern */
-
 const char D_800158B4[24] = "common_vab start:%08x\n";
 
 s32 snd_LoadCommonVab(s32 arg0) {

@@ -20,6 +20,9 @@ extern void *memmove(u8 *, u8 *, s32);
 extern s32 rand(void);
 extern void srand(u32);
 extern s32 sprintf(char *, char *, ...);
+/* PsyQ: int printf(char *, ...) -- the LIBC2 definition takes four s32 words
+ * (it spills a1..a3 after fmt by hand), so callers see it unprototyped */
+extern void printf();
 extern void puts(char *);
 extern s32 setjmp(s32 *); /* PsyQ: int setjmp(jmp_buf) */
 

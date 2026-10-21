@@ -22,7 +22,6 @@ const char g_str_limit[12] = "LIMIT:%08x\n";
 const char g_str_prim_overflow[24] = "common prim over flow\n";
 const char D_8001004C[28] = "Fri Aug  7 22:26:32 1998\n";
 
-extern void printf();
 extern void func_800164F8(void);
 
 extern u8 g_softbody_slot_high_water;

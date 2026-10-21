@@ -1422,7 +1422,6 @@ s32 fighter_ProcessWeaponContacts(void) {
  * gte_stlzc) per square root, inline_o.h class (inline-asm-policy, owner ruling
  * 2026-09-26). Everything else is ordinary C, except the five Ruling 11 locals
  * (dx, dy, dz, temp, temp2) and the do-while(0), each annotated below. */
-extern void printf();
 extern void math_PrepareSegmentCollisionFrame(Unk1F8002B8Rec *scr);
 extern s32 math_TestPreparedSegmentSphere(
     Unk1F8002B8Rec *scr, Unk80107850Rec *pos, s32 threshold, s32 r_sq);

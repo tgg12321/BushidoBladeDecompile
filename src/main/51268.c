@@ -241,7 +241,6 @@ void eff_BindScratchpad(s16 *arg0, s32 *arg1) {
 }
 
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
-s32 printf(s32 *, s32);
 extern void AddPrim(void *, void *);
 void eff_StartCommand(void);
 void eff_StepCommand(void);
