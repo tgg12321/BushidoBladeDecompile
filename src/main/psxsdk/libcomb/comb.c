@@ -69,7 +69,10 @@ static s32 r_sioremove(void);
 static s32 r_siostrategy(Fcb *fcb, s32 mode);
 static s32 __nulldev(void);
 
-/* .data 0x800A3044..0x800A30CC, the module's own .data in definition order. */
+/* .data 0x800A303C..0x800A30CC, the module's 144-byte .data in LIBCOMB.LIB,
+ * in definition order. The first 8 bytes are read by no code and equal the
+ * library object's. */
+u32 D_800A303C[2] = {0x15057350, 0x0040879C};
 volatile SioRegs *D_800A3044 = (volatile SioRegs *)0x1F801050; /* SIO 1 */
 volatile u32 *D_800A3048 = (volatile u32 *)0x1F801050; /* SIO_DATA as a word */
 

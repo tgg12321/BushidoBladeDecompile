@@ -527,7 +527,6 @@ SECTIONS
         build/src/main/psxsdk/libspu/spu.o(.data);
         build/asm/data/93538.data.o(.data);
         build/src/main/psxsdk/libspu/s_rmp.o(.data);
-        build/asm/data/9383C.data.o(.data);
         build/src/main/psxsdk/libspu/s_dcb.o(.data);
         build/src/main/psxsdk/libspu/s_q.o(.data);
         build/src/main/psxsdk/libapi/a13.o(.data);
