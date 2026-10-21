@@ -1014,7 +1014,7 @@ def macro_analysis(text):
 
 def literal_makefile(makefile):
     logical = re.sub(r"\\\r?\n", " ", makefile)
-    names = r"(?:CPP\w*|CC\w*|GP_FILES|NO_SR_FILES)"
+    names = r"(?:CPP\w*|CC\w*|GP_FILES|NO_SR_FILES|NOWARN_FILES|WARN_FLAGS)"
     if re.search(r"(?m)^\s*(?:-?include|sinclude)\s", logical):
         raise ValueError("unsupported Makefile include directive")
     if re.search(r"(?m)^\s*(?:(?:override|export|private|unexport)\s+)+(?:define\s+)?" + names + r"\b", logical):
@@ -1024,8 +1024,8 @@ def literal_makefile(makefile):
     if re.search(r"(?m)^[^#\n\t]*:[^=\n]*\b" + names + r"\s*[:+?]?=", logical):
         raise ValueError("unsupported Makefile target-specific toolchain assignment")
     known = {
-        "FLAG_LISTS := GP_FILES PSYQ_LIBRARY_FILES EXPAND_LH_FILES NO_SR_FILES",
-        "cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))$(if $(filter $1,$(NO_SR_FILES)), -fno-strength-reduce)",
+        "FLAG_LISTS := GP_FILES PSYQ_LIBRARY_FILES EXPAND_LH_FILES NO_SR_FILES NOWARN_FILES",
+        "cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))$(if $(filter $1,$(NO_SR_FILES)), -fno-strength-reduce)$(if $(filter $1,$(NOWARN_FILES)), -w, $(WARN_FLAGS))",
         "maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(PSYQ_LIBRARY_FILES)),, -G8)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)",
         "$(foreach l,$(FLAG_LISTS),$(foreach f,$($(l)),$(if $(filter $(f),$(C_IDS)),,$(error $(l) names '$(f)', which is not a TU (no $(SRC_DIR)/$(f).c)))))",
     }
@@ -1317,13 +1317,14 @@ def cc1_command(makefile, tu):
     if len(recipe) != 1 or "| $(CC1) $(call cc_flags_for,$*) |" not in recipe[0]:
         raise ValueError("cannot determine Makefile cc1 recipe")
     rule = re.findall(r"(?m)^cc_flags_for\s*=\s*([^\n]*)", logical)
-    expected = "$(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))$(if $(filter $1,$(NO_SR_FILES)), -fno-strength-reduce)"
+    expected = "$(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))$(if $(filter $1,$(NO_SR_FILES)), -fno-strength-reduce)$(if $(filter $1,$(NOWARN_FILES)), -w, $(WARN_FLAGS))"
     if rule != [expected]:
         raise ValueError("cannot determine Makefile per-TU cc1 flags")
     ident = tu.removeprefix("src/").removesuffix(".c")
     flags = value("CC_FLAGS_GP" if ident in value("GP_FILES") else "CC_FLAGS")
     if ident in value("NO_SR_FILES"):
         flags.append("-fno-strength-reduce")
+    flags += ["-w"] if ident in value("NOWARN_FILES") else value("WARN_FLAGS")
     if any(flag.startswith("-g") for flag in flags):
         raise ValueError("local cc1 proof requires no debug flags")
     binary = value("CC1")

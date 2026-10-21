@@ -57,6 +57,12 @@ def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
     cc_flags = cfg.CC_FLAGS_GP if stem in cfg.GP_FILES else cfg.CC_FLAGS
     if stem in cfg.NO_SR_FILES:
         cc_flags += " -fno-strength-reduce"
+    # Warnings never change bytes. The faithful build (the oracle gate) applies the
+    # Makefile's per-TU policy; an override build (sandbox candidate) is scored, not linted.
+    if cheat_overrides or stem in cfg.NOWARN_FILES:
+        cc_flags += " -w"
+    else:
+        cc_flags += " " + cfg.WARN_FLAGS
 
     maspsx_flags = cfg.MASPSX_FLAGS_GP if stem in cfg.GP_FILES else cfg.MASPSX_FLAGS
     if stem not in cfg.PSYQ_LIBRARY_FILES:

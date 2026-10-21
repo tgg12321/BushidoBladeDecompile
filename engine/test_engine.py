@@ -10543,6 +10543,20 @@ def test_tus() -> None:
     finally:
         cfg.GP_FILES, cfg.PSYQ_LIBRARY_FILES = saved
 
+    # hygiene-w: the faithful build gates warnings per TU like make; a sandbox
+    # (override) build never does
+    saved_nw = cfg.NOWARN_FILES
+    try:
+        cfg.NOWARN_FILES = {"main/libcd/sys"}
+        cc1 = lambda stem, ov=None: P.c_pipeline_cmd(stem, "o/a.o", ov).split("|")[1]
+        check("tus: a gated TU's faithful build gets WARN_FLAGS",
+              cc1("main/libgpu/sys").rstrip().endswith(cfg.WARN_FLAGS) and " -w" not in cc1("main/libgpu/sys"))
+        check("tus: a NOWARN_FILES TU keeps -w", cc1("main/libcd/sys").rstrip().endswith(" -w"))
+        check("tus: an override (sandbox) build always gets -w",
+              cc1("main/libgpu/sys", {"src_override": "tmp/x.c"}).rstrip().endswith(" -w"))
+    finally:
+        cfg.NOWARN_FILES = saved_nw
+
     cwd = os.getcwd()
     with tempfile.TemporaryDirectory() as td:
         os.chdir(td)
@@ -10979,9 +10993,10 @@ def test_move_tu() -> None:
                        "        build/src/gpu.o(.text);\n        build/src/comb.o(.text);\n"
                        "        build/src/comb.o(.bss);\n}\n"),
             "Makefile": ("GP_FILES := gpu\nPSYQ_LIBRARY_FILES := comb gpu\n"
-                         "EXPAND_LH_FILES :=\nNO_SR_FILES :=\n"),
+                         "EXPAND_LH_FILES :=\nNO_SR_FILES :=\nNOWARN_FILES :=\n"),
             "engine/buildconfig.py": ('GP_FILES = {"gpu"}\nEXPAND_LH_FILES = set()\n'
-                                      'PSYQ_LIBRARY_FILES = {"comb", "gpu"}\nNO_SR_FILES = set()\n'),
+                                      'PSYQ_LIBRARY_FILES = {"comb", "gpu"}\nNO_SR_FILES = set()\n'
+                                      'NOWARN_FILES = set()\n'),
             "oracle/manifest.json": json.dumps({"corpus": {"src/comb.c": "h1", "src/gpu.c": "h2"},
                                                 "golden_fixtures": [{"name": "f", "file": "src/comb.c"}]},
                                                indent=2) + "\n",

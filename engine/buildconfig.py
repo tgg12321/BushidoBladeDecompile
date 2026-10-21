@@ -40,8 +40,13 @@ MULTU_PAD = "python3 tools/multu_pad.py --funcs multu_pad_funcs.txt"
 # tracked prologue_fix config only.
 
 # -- Flags ------------------------------------------------------------------
-CC_FLAGS = "-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
-CC_FLAGS_GP = "-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
+CC_FLAGS = "-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -mel -msoft-float"
+CC_FLAGS_GP = "-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -mel -msoft-float"
+# Mirrors the Makefile WARN_FLAGS / NOWARN_FILES (row hygiene-w). Warnings never
+# change the object. The faithful engine build (verify-oracle, the land gates)
+# applies the same per-TU policy as make; an override build (sandbox candidate)
+# always gets -w, so a candidate is scored, not linted (engine/pipeline.py).
+WARN_FLAGS = "-Wimplicit -Werror"
 AS_FLAGS = "-Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0"
 CPP_FLAGS = "-Iinclude -undef -Wall -lang-c -fno-builtin"
 CPP_DEFS = (
@@ -84,6 +89,7 @@ PSYQ_LIBRARY_FILES = {"main/psxsdk/libcomb/comb", "main/psxsdk/libgpu/sys", "mai
 # One rule for all objects; the per-file .align sed is retired.
 RODATA_OBJ_ALIGN = "--set-section-alignment .rodata=4"
 NO_SR_FILES = set()
+NOWARN_FILES = {"main/175A4", "main/17AFC", "main/24F08", "main/28708", "main/2B344", "main/309CC", "main/35000", "main/368E4", "main/43500", "main/4BC3C", "main/51268", "main/596CC", "main/63D2C", "main/6CF8", "main/9F9C", "main/memcard", "main/psxsdk/libc2/printf", "main/psxsdk/libc2/prnt", "main/psxsdk/libc2/sprintf", "main/psxsdk/libcard/card", "main/psxsdk/libcard/init", "main/psxsdk/libcd/bios", "main/psxsdk/libcd/cdread", "main/psxsdk/libetc/intr", "main/psxsdk/libetc/intr_dma", "main/psxsdk/libetc/intr_vb", "main/psxsdk/libetc/vsync", "main/psxsdk/libgpu/ext", "main/psxsdk/libgpu/sys", "main/psxsdk/libsnd/760D0", "main/psxsdk/libsnd/sstick", "main/psxsdk/libsnd/vm_f", "main/psxsdk/libsnd/vm_init", "main/psxsdk/libsnd/vs_vfb", "main/psxsdk/libsnd/vs_vh", "main/psxsdk/libsnd/vs_vtb", "main/psxsdk/libspu/7BC88", "main/psxsdk/libspu/s_crwa", "main/psxsdk/libspu/s_ini", "main/psxsdk/libspu/s_q", "main/psxsdk/libspu/spu"}
 
 # Mirrors the Makefile LINKED_ASM_FUNCS list: per-function objects assembled
 # straight from asm/funcs/<name>.s and linked by bb2.ld. Explicit opt-in, never

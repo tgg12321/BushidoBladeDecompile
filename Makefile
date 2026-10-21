@@ -39,8 +39,11 @@ CPP          := mipsel-linux-gnu-cpp
 # FPU and PsyQ cc1psx prints "# Cc1 defaults: -mgas -msoft-float". Hard float
 # leaves 32 FP regs allocatable, doubling loop.c's invariant-hoist threshold
 # (122 vs 58) — adopted 2026-09-07 (docs/grind/decisions.md). Do not remove.
-CC_FLAGS     := -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float
-CC_FLAGS_GP  := -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float
+CC_FLAGS     := -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -mel -msoft-float
+CC_FLAGS_GP  := -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -mel -msoft-float
+# Warnings never change the object; they are a source-hygiene gate. TUs in
+# NOWARN_FILES (below) still compile with -w; every other TU gets WARN_FLAGS.
+WARN_FLAGS   := -Wimplicit -Werror
 AS_FLAGS     := -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0
 CPP_FLAGS    := -Iinclude -undef -Wall -lang-c -fno-builtin
 CPP_DEFS     := -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx \
@@ -162,13 +165,18 @@ RODATA_OBJ_ALIGN := --set-section-alignment .rodata=4
 # These files get the flag applied; other files in NO_SR_FILES below.
 NO_SR_FILES :=
 
+# -- Per-file -w (foundation backlog row hygiene-w) --
+# TUs that still compile with -w: they warn under WARN_FLAGS (implicit declarations,
+# pointer/integer mixes). Fix a TU's warnings, then drop it from this list.
+NOWARN_FILES := main/175A4 main/17AFC main/24F08 main/28708 main/2B344 main/309CC main/35000 main/368E4 main/43500 main/4BC3C main/51268 main/596CC main/63D2C main/6CF8 main/9F9C main/memcard main/psxsdk/libc2/printf main/psxsdk/libc2/prnt main/psxsdk/libc2/sprintf main/psxsdk/libcard/card main/psxsdk/libcard/init main/psxsdk/libcd/bios main/psxsdk/libcd/cdread main/psxsdk/libetc/intr main/psxsdk/libetc/intr_dma main/psxsdk/libetc/intr_vb main/psxsdk/libetc/vsync main/psxsdk/libgpu/ext main/psxsdk/libgpu/sys main/psxsdk/libsnd/760D0 main/psxsdk/libsnd/sstick main/psxsdk/libsnd/vm_f main/psxsdk/libsnd/vm_init main/psxsdk/libsnd/vs_vfb main/psxsdk/libsnd/vs_vh main/psxsdk/libsnd/vs_vtb main/psxsdk/libspu/7BC88 main/psxsdk/libspu/s_crwa main/psxsdk/libspu/s_ini main/psxsdk/libspu/s_q main/psxsdk/libspu/spu
+
 # Every per-file list names TU ids. An id that is not a TU stops the build: a
 # moved or renamed file must take its flags along, never silently lose them.
-FLAG_LISTS := GP_FILES PSYQ_LIBRARY_FILES EXPAND_LH_FILES NO_SR_FILES
+FLAG_LISTS := GP_FILES PSYQ_LIBRARY_FILES EXPAND_LH_FILES NO_SR_FILES NOWARN_FILES
 $(foreach l,$(FLAG_LISTS),$(foreach f,$($(l)),$(if $(filter $(f),$(C_IDS)),,$(error $(l) names '$(f)', which is not a TU (no $(SRC_DIR)/$(f).c)))))
 
 # Helper: resolve CC/MASPSX flags based on whether file needs GP-relative
-cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))$(if $(filter $1,$(NO_SR_FILES)), -fno-strength-reduce)
+cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))$(if $(filter $1,$(NO_SR_FILES)), -fno-strength-reduce)$(if $(filter $1,$(NOWARN_FILES)), -w, $(WARN_FLAGS))
 maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(PSYQ_LIBRARY_FILES)),, -G8)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)
 
 # Shared pipeline dependencies for every C object. Without these, changing
