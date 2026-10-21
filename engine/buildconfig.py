@@ -93,3 +93,6 @@ LINKED_ASM_FUNCS = []
 # -- Linker -----------------------------------------------------------------
 LD_SCRIPT = "bb2.ld"
 LD_SYM_FILES = ["undefined_funcs_auto.txt", "undefined_syms_auto.txt", "named_syms.txt"]
+# name = 0xADDR; registry the linker never reads (splat's symbol file): the
+# address of a name an object defines, for tools that resolve names.
+SYM_REGISTRY_FILES = ["symbol_addrs.txt"]

@@ -94,7 +94,8 @@ _IMM_RE = re.compile(r"^-?(?:0x[0-9a-fA-F]+|\d+)")
 # linker symbol-file line:  NAME = 0xADDR;
 _SYM_DEF_RE = re.compile(r"^\s*([A-Za-z_]\w*)\s*=\s*(0x[0-9a-fA-F]+)\s*;")
 # name -> address, loaded once per process from cfg.LD_SYM_FILES (the same
-# files bb2.ld links against), then from the `dlabel`s in the data asm.
+# files bb2.ld links against), then from the `dlabel`s in the data asm, then
+# from cfg.SYM_REGISTRY_FILES.
 # Tests pre-seed this to stub the table.
 _SYMTAB_CACHE: dict[str, int] | None = None
 # Data symbols splat emitted as `dlabel NAME` inside asm/data/*.s are defined
@@ -139,6 +140,18 @@ def _symtab() -> dict[str, int]:
                                 tab.setdefault(pending, int(v.group(1), 16))
                             if line.strip():
                                 pending = None   # only the first data line counts
+            except OSError:
+                continue
+        # Then the non-linker registry: names an object defines (pins-drop moves
+        # an object-defined name's address here from the linker files), so a
+        # C name for a splat D_ address still resolves when no pin carries it.
+        for fn in cfg.SYM_REGISTRY_FILES:
+            try:
+                with open(fn, encoding="utf-8", errors="replace") as fh:
+                    for line in fh:
+                        m = _SYM_DEF_RE.match(line)
+                        if m:
+                            tab.setdefault(m.group(1), int(m.group(2), 16))
             except OSError:
                 continue
         _SYMTAB_CACHE = tab
