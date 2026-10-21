@@ -8,21 +8,36 @@
 #include "libspu_internal.h"
 #include <psxsdk/libapi.h>
 
-extern s32 _spu_mem_mode;
-extern s32 _spu_mem_mode_unit;
-extern volatile u32 *dma_dpcr;
-extern s32 _spu_addrMode;
-extern s32 D_800A2D1C;
 extern void printf(s32 *, s32 *);
 extern void _spu_Fw1ts(void);
-extern s32 D_800A2D2C;
-extern s32 spu_madr;
-extern s32 spu_bcr;
+
+/* SPU .data (0x800A2CDC..0x800A2D38, the module's 92-byte .data in
+ * LIBSPU.LIB, no relocation; XDEFs _spu_RXX and _spu_tsa .. _spu_IRQCallback,
+ * the rest module-local). */
+SpuUnion *_spu_RXX = (SpuUnion *)0x1F801C00;
 /* psyz names (Sony's are unknown): pointers to the SPU DMA (ch4) MMIO
  * registers 0x1F8010C0/C4/C8; pointee volatile per mmio-volatile-type-level. */
-extern volatile s32 *dma_spu_madr;
-extern volatile s32 *dma_spu_bcr;
-extern volatile s32 *dma_spu_chcr;
+volatile s32 *dma_spu_madr = (volatile s32 *)0x1F8010C0;
+volatile s32 *dma_spu_bcr = (volatile s32 *)0x1F8010C4;
+volatile s32 *dma_spu_chcr = (volatile s32 *)0x1F8010C8;
+/* DMA control (DPCR) and the SPU delay/size register (SPU_DELAY) */
+volatile u32 *dma_dpcr = (volatile u32 *)0x1F8010F0;
+volatile u32 *spu_delay = (volatile u32 *)0x1F801014;
+u16 _spu_tsa = 0;
+s32 _spu_transMode = 0;
+s32 _spu_addrMode = 0;
+s32 _spu_mem_mode = 2;
+s32 _spu_mem_mode_plus = 3;
+s32 _spu_mem_mode_unit = 8;
+s32 _spu_mem_mode_unitM = 7;
+s32 _spu_inTransfer = 1;
+void (* volatile _spu_transferCallback)() = 0;
+s32 _spu_IRQCallback = 0;
+/* the 16 bytes _spu_init writes to SPU RAM 0x1000 by I/O */
+u8 D_800A2D1C[16] = {7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7};
+s32 D_800A2D2C = 0;
+s32 spu_madr = 0;
+s32 spu_bcr = 0;
 
 /* SPU-module debug strings (rodata 0x800163D8..0x80016420). */
 const char D_800163D8[16] = "SPU:T/O [%s]\n";
@@ -373,8 +388,6 @@ void _spu_FsetPCR(s32 arg0) {
         *dma_dpcr |= 0x50000;
     }
 }
-
-extern volatile u32 *spu_delay;
 
 void _spu_FsetDelayW(void) {
     *spu_delay = (*spu_delay & DMA_CHAN_MASK) | DMA_SPU_FROM_RAM;
