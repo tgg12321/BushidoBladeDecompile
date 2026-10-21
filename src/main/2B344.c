@@ -1098,9 +1098,9 @@ void func_8003CF84(void) {
              * target's per-symbol access: score 16 */
             (&D_800A37D2)[D_800A3748] = (&D_800A37D2)[D_800A3748] + 1;
         }
-        func_8001979C(0, g_motion_common_sections.unk_10);
-        func_8001979C(1, g_motion_fighter_sections[0].unk_10);
-        func_8001979C(2, g_motion_fighter_sections[1].unk_10);
+        motion_InitStream(0, g_motion_common_sections.unk_10);
+        motion_InitStream(1, g_motion_fighter_sections[0].unk_10);
+        motion_InitStream(2, g_motion_fighter_sections[1].unk_10);
         if (D_800A38DC == 0 && (u8)D_800A3836 != 0xFF) {
             func_8001DA2C();
             func_8003B328();

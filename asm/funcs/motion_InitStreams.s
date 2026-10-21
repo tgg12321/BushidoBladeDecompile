@@ -1,9 +1,9 @@
-glabel func_80021210
+glabel motion_InitStreams
     /* 11A10 80021210 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 11A14 80021214 1080053C */  lui        $a1, %hi(g_motion_common_sections + 0x10)
     /* 11A18 80021218 7027A58C */  lw         $a1, %lo(g_motion_common_sections + 0x10)($a1)
     /* 11A1C 8002121C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 11A20 80021220 E765000C */  jal        func_8001979C
+    /* 11A20 80021220 E765000C */  jal        motion_InitStream
     /* 11A24 80021224 21200000 */   addu      $a0, $zero, $zero
     /* 11A28 80021228 0A80023C */  lui        $v0, %hi(D_800A38C4)
     /* 11A2C 8002122C C4384294 */  lhu        $v0, %lo(D_800A38C4)($v0)
@@ -12,7 +12,7 @@ glabel func_80021210
     /* 11A38 80021238 00000000 */   nop
     /* 11A3C 8002123C 1080053C */  lui        $a1, %hi(D_801027C0)
     /* 11A40 80021240 C027A58C */  lw         $a1, %lo(D_801027C0)($a1)
-    /* 11A44 80021244 E765000C */  jal        func_8001979C
+    /* 11A44 80021244 E765000C */  jal        motion_InitStream
     /* 11A48 80021248 01000424 */   addiu     $a0, $zero, 0x1
   .L8002124C:
     /* 11A4C 8002124C 0A80023C */  lui        $v0, %hi(D_800A38C4 + 0x2)
@@ -22,11 +22,11 @@ glabel func_80021210
     /* 11A5C 8002125C 00000000 */   nop
     /* 11A60 80021260 1080053C */  lui        $a1, %hi(D_801027D4)
     /* 11A64 80021264 D427A58C */  lw         $a1, %lo(D_801027D4)($a1)
-    /* 11A68 80021268 E765000C */  jal        func_8001979C
+    /* 11A68 80021268 E765000C */  jal        motion_InitStream
     /* 11A6C 8002126C 02000424 */   addiu     $a0, $zero, 0x2
   .L80021270:
     /* 11A70 80021270 1000BF8F */  lw         $ra, 0x10($sp)
     /* 11A74 80021274 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 11A78 80021278 0800E003 */  jr         $ra
     /* 11A7C 8002127C 00000000 */   nop
-endlabel func_80021210
+endlabel motion_InitStreams

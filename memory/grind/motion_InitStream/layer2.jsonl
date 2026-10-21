@@ -1,0 +1,1 @@
+{"func": "motion_InitStream", "addr": "8001979C", "verdict": "PASS", "body_hash": "879758a72a8f2bdb", "body_kind": "c", "file": "main/9F9C", "reviewer": "a6d3e7e2d187b5e14", "scope": "cheat-cleanup", "date": "2026-10-16T15:25:19Z", "head": "38c47b6ca", "notes": "", "renamed_from": ["func_8001979C"]}

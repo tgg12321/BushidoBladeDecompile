@@ -5244,15 +5244,15 @@ def test_naming_keycheck_scoped_pairs() -> None:
                         {"src/a.c": "int f(int n) { return n; }"})
         check("keycheck: local destination visible declarations only " + path,
               ok if path.startswith("asm/") else not ok and "not fresh" in why)
-    text = "int func_8001979C(int bits_left) { return bits_left; }"
-    after = "int func_8001979C(int nbits) { return nbits; }"
+    text = "int motion_InitStream(int bits_left) { return bits_left; }"
+    after = "int motion_InitStream(int nbits) { return nbits; }"
     for other in ["int g(void) { int nbits; return nbits; }",
                   "int g(int nbits) { return nbits; }"]:
         check("keycheck: another function's local destination is safe " + other,
-              proof("func_8001979C:bits_left=nbits", {"src/a.c": text, "src/b.c": other},
+              proof("motion_InitStream:bits_left=nbits", {"src/a.c": text, "src/b.c": other},
                     {"src/a.c": after})[0])
         check("keycheck: same-file other-function local destination is safe " + other,
-              proof("func_8001979C:bits_left=nbits", {"src/a.c": text + "\n" + other},
+              proof("motion_InitStream:bits_left=nbits", {"src/a.c": text + "\n" + other},
                     {"src/a.c": after + "\n" + other})[0])
     for label, other in [
             ("global", "int nbits;"), ("function", "int nbits(void) { return 0; }"),
@@ -5265,13 +5265,13 @@ def test_naming_keycheck_scoped_pairs() -> None:
             ("macro body", "#define X nbits\n"),
             ("prototype parameter", "int g(int nbits);"),
             ("token paste", "#define X(x) x ## nbits\n")]:
-        ok, why = proof("func_8001979C:bits_left=nbits",
+        ok, why = proof("motion_InitStream:bits_left=nbits",
                         {"src/a.c": text, "include/b.h": other}, {"src/a.c": after})
         check("keycheck: local destination visible via " + label,
               ok if label in ("macro parameter", "prototype parameter") else not ok and "nbits" in why)
     for symbol in ["glabel nbits", "dlabel nbits", ".global nbits", "jal nbits"]:
         check("keycheck: unreferenced asm identifier permits local destination " + symbol, proof(
-              "func_8001979C:bits_left=nbits", {"src/a.c": text, "asm/b.s": symbol},
+              "motion_InitStream:bits_left=nbits", {"src/a.c": text, "asm/b.s": symbol},
               {"src/a.c": after})[0])
     text = "int l; int f(int c, int l) { return c ? (int) l : 0; }"
     after = "int l; int f(int c, int n) { return c ? (int) n : 0; }"

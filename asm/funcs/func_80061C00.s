@@ -5,8 +5,8 @@ glabel func_80061C00
     /* 5240C 80061C0C 2118A000 */  addu       $v1, $a1, $zero
     /* 52410 80061C10 5C00B1AF */  sw         $s1, 0x5C($sp)
     /* 52414 80061C14 2188C000 */  addu       $s1, $a2, $zero
-    /* 52418 80061C18 0F80023C */  lui        $v0, %hi(D_800F116C)
-    /* 5241C 80061C1C 6C114224 */  addiu      $v0, $v0, %lo(D_800F116C)
+    /* 52418 80061C18 0F80023C */  lui        $v0, %hi(g_eff_command_block)
+    /* 5241C 80061C1C 6C114224 */  addiu      $v0, $v0, %lo(g_eff_command_block)
     /* 52420 80061C20 9C0382AF */  sw         $v0, %gp_rel(D_800A3468)($gp)
     /* 52424 80061C24 01000224 */  addiu      $v0, $zero, 0x1
     /* 52428 80061C28 6400BFAF */  sw         $ra, 0x64($sp)
@@ -88,7 +88,7 @@ glabel func_80061C00
     /* 52548 80061D48 0000A2AC */  sw         $v0, 0x0($a1)
     /* 5254C 80061D4C 260491A7 */  sh         $s1, %gp_rel(D_800A34F2)($gp)
   .L80061D50:
-    /* 52550 80061D50 9A82010C */  jal        func_80060A68
+    /* 52550 80061D50 9A82010C */  jal        eff_StartCommand
     /* 52554 80061D54 00000000 */   nop
     /* 52558 80061D58 6400BF8F */  lw         $ra, 0x64($sp)
     /* 5255C 80061D5C 6000B28F */  lw         $s2, 0x60($sp)

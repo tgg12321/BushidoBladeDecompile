@@ -1,7 +1,7 @@
 glabel eff_StopCommands
     /* 51978 80061178 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 5197C 8006117C 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 51980 80061180 1883010C */  jal        func_80060C60
+    /* 51980 80061180 1883010C */  jal        eff_ResetCommands
     /* 51984 80061184 00000000 */   nop
     /* 51988 80061188 6908010C */  jal        light_DisablePointLight
     /* 5198C 8006118C 00000000 */   nop

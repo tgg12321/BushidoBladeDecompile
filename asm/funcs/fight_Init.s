@@ -331,7 +331,7 @@ glabel fight_Init
     /* E974 8001E174 0A80013C */  lui        $at, %hi(D_800A391E)
     /* E978 8001E178 1E3922A0 */  sb         $v0, %lo(D_800A391E)($at)
   .L8001E17C:
-    /* E97C 8001E17C 8484000C */  jal        func_80021210
+    /* E97C 8001E17C 8484000C */  jal        motion_InitStreams
     /* E980 8001E180 02001024 */   addiu     $s0, $zero, 0x2
     /* E984 8001E184 A084000C */  jal        func_80021280
     /* E988 8001E188 21200000 */   addu      $a0, $zero, $zero

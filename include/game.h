@@ -754,7 +754,7 @@ typedef struct {
  * motion_ResolveMoveData indexes (the f4E / f54 / f66 / f16 / f18 entries);
  * unk_04: 4-byte entries whose second halfword offsets unk_08 (func_80021A98,
  * replay_PlayFrame); unk_0C: fighter_InitCpuControl's table; unk_10:
- * func_8001979C's motion bitstream. */
+ * motion_InitStream's motion bitstream. */
 typedef struct Unk801027B0Rec {
     u16 *unk_00;
     u16 *unk_04;
@@ -875,27 +875,28 @@ typedef struct {
 } TexRec;
 
 /* The 0x2C-byte block D_800A3468 points at (51268): Unk1F800000Rec.unk00
- * (eff_BindScratchpad's seed) or D_800F116C, where func_800611A4 ..
- * func_80061EC0 point it before calling func_80060A68. g_eff_billboards follows
- * D_800F116C, so that copy ends at +0x2C. Each copy sets one pointer pair:
- * - unk00: one word, stored whole and read whole (bit 21 in func_80060A68, bits
- * 17-18 / 19-20 in func_80063AF0 / func_80063B34 / func_80065000);
- * func_80060A68 / func_80060B70 also read its low halfword (`lhu`), their
- * D_800F10D0 / D_8009BA60 index.
- * - unk04 / unk08: the three halfwords / three words func_80060B70 and
+ * (eff_BindScratchpad's seed) or g_eff_command_block, where func_800611A4 ..
+ * func_80061EC0 point it before calling eff_StartCommand. g_eff_billboards
+ * follows g_eff_command_block, so that copy ends at +0x2C. Each copy sets one
+ * pointer pair:
+ * - unk00: one word, stored whole and read whole (bit 21 in eff_StartCommand,
+ * bits 17-18 / 19-20 in func_80063AF0 / func_80063B34 / func_80065000);
+ * eff_StartCommand / eff_StepCommand also read its low halfword (`lhu`), their
+ * g_eff_command_phase / D_8009BA60 index.
+ * - unk04 / unk08: the three halfwords / three words eff_StepCommand and
  * eff_DrawBillboardList copy into the scratchpad block's unk18 / unk20 (through
  * D_800A346C / D_800A3470). Only the scratchpad block's are set:
  * eff_BindScratchpad stores its two arguments there.
- * - unk0C / unk10: the three words / three halfwords func_80060A68 copies into
- * unk20 / unk18. Set only in the D_800F116C block (through D_800A3468 or
- * D_800F116C directly).
- * - unk14: the byte func_80060A68 / func_80060B70 store the called function's
- * result to (`sb`).
+ * - unk0C / unk10: the three words / three halfwords eff_StartCommand copies
+ * into unk20 / unk18. Set only in the g_eff_command_block block (through
+ * D_800A3468 or g_eff_command_block directly).
+ * - unk14: the byte eff_StartCommand / eff_StepCommand store the called
+ * function's result to (`sb`).
  * - unk18 / unk20: the copies. D_800A346C / D_800A3470 point at the scratchpad
- * block's, D_800A3478 / D_800A347C at the D_800F116C block's (func_80060A68).
- * unk18 is s16 like its sources (unk04 / unk10) and every consumer (SVECTOR /
- * SVec4i16 fields: eff_SetRotMatrix, func_8006288C, func_80063BD0,
- * eff_SpawnParticles).
+ * block's, D_800A3478 / D_800A347C at the g_eff_command_block block's
+ * (eff_StartCommand). unk18 is s16 like its sources (unk04 / unk10) and every
+ * consumer (SVECTOR / SVec4i16 fields: eff_SetRotMatrix, func_8006288C,
+ * func_80063BD0, eff_SpawnParticles).
  * - unk1E: no access. */
 typedef struct {
     union {
@@ -1341,14 +1342,14 @@ typedef struct NavPolySet {
     u8 unk8[4];
 } NavPolySet;
 
-/* One decoded motion frame (0x84 bytes, 33 words): func_800198D0 decodes one
- * stream entry into one, and fighter_Update fills two per call
+/* One decoded motion frame (0x84 bytes, 33 words): motion_DecodeFrame decodes
+ * one stream entry into one, and fighter_Update fills two per call
  * (Unk80101EC8Record.saved_motion_frame holds the one it last used).  Only
  * 16-bit channels, so a whole-frame assignment is the halfword-aligned block
  * copy fighter_Update shows.  unk_00 is the root offset it negates, unk_02 /
  * unk_04 the root heading and distance, unk_06.. unk_0A the three rotation
  * angles it hands math_RotMatrixZYXAngles.  unk_0C[] holds signed channels:
- * func_8002F770 reads the triplet at +0x36 with lh, and func_800198D0
+ * func_8002F770 reads the triplet at +0x36 with lh, and motion_DecodeFrame
  * sign-extends the 12-bit values at +0x6C..+0x70 / +0x78..+0x7C.
  */
 typedef struct MotionFrame {
@@ -1361,11 +1362,11 @@ typedef struct MotionFrame {
     s16 unk_0C[0x3C];
 } MotionFrame; /* sizeof == 0x84 */
 
-/* One cached decoded frame of a character's motion stream (func_800198D0): the
- * frame number
- * (-2 = empty, func_8001979C), the decoded pose and per-channel rates (u16
- * channels, the layout of func_800198D0's `work`), and the bitstream reader
- * state after the frame. */
+/* One cached decoded frame of a character's motion stream (motion_DecodeFrame):
+ * the frame number
+ * (-2 = empty, motion_InitStream), the decoded pose and per-channel rates (u16
+ * channels, the layout of motion_DecodeFrame's `work`), and the bitstream
+ * reader state after the frame. */
 typedef struct Unk800F1B18Slot {
     s32 frame;      /* +0x000 */
     u16 pose[0x42]; /* +0x004 */
@@ -1375,11 +1376,11 @@ typedef struct Unk800F1B18Slot {
     u32 cur;        /* +0x114 unread bits, left-aligned */
 } Unk800F1B18Slot;  /* sizeof == 0x118 */
 
-/* D_800F1B18[slot]: one motion-stream decoder record, slot 0..2 (func_8001979C
- * sets it up, func_800198D0 decodes through it). stream is the motion bitstream
- * (a byte table of 3-byte keyframe offsets at +0x70); pose / code the initial
- * channel values and channel codes func_8001979C unpacks; ctr the round-robin
- * counter over the four cache slots. */
+/* g_motion_decoders[slot]: one motion-stream decoder record, slot 0..2
+ * (motion_InitStream sets it up, motion_DecodeFrame decodes through it). stream
+ * is the motion bitstream (a byte table of 3-byte keyframe offsets at +0x70);
+ * pose / code the initial channel values and channel codes motion_InitStream
+ * unpacks; ctr the round-robin counter over the four cache slots. */
 typedef struct Unk800F1B18Rec {
     u32 *stream;             /* +0x000 */
     u16 pose[0x42];          /* +0x004 */

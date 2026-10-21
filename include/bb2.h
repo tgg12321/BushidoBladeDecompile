@@ -592,11 +592,11 @@ extern u8 D_800A3916;
 extern u8 g_arena;
 extern s16 D_800F0BCC[];
 extern s16 D_800F0BEC[];
-extern s32 D_800F10D0[];
+extern s32 g_eff_command_phase[];
 /* A 16-byte vector: thirteen functions store x / y / z; func_80061064 passes
  * it to light_SetPointLight, which copies all 16 bytes to D_800A9B28. */
 extern VECTOR D_800F1140;
-extern Unk800F1B18Rec D_800F1B18[];
+extern Unk800F1B18Rec g_motion_decoders[];
 extern u8 D_800F33D8[];
 extern s16 D_800F6650;
 extern s16 D_800F6656;
@@ -637,8 +637,8 @@ extern void func_800194C0(s32);
 /* No prototype: defined void (s32), but menu_RunPauseMenu calls it with no
  * argument. */
 extern void pad_Update();
-extern void func_8001979C(s32, u32 *);
-extern void func_800198D0(s32, s32, MotionFrame *, u16 *);
+extern void motion_InitStream(s32, u32 *);
+extern void motion_DecodeFrame(s32, s32, MotionFrame *, u16 *);
 extern void camera_UpdatePadOffset(s32 *);
 extern void func_8001B6F4(void);
 extern void func_8001BAE4(Rec1C *, Rec1C *, s32);

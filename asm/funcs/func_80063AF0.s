@@ -3,8 +3,8 @@ glabel func_80063AF0
     /* 542F4 80063AF4 9C03838F */  lw         $v1, %gp_rel(D_800A3468)($gp)
     /* 542F8 80063AF8 01000224 */  addiu      $v0, $zero, 0x1
     /* 542FC 80063AFC 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 54300 80063B00 0F80013C */  lui        $at, %hi(D_800F10D0)
-    /* 54304 80063B04 D01022AC */  sw         $v0, %lo(D_800F10D0)($at)
+    /* 54300 80063B00 0F80013C */  lui        $at, %hi(g_eff_command_phase)
+    /* 54304 80063B04 D01022AC */  sw         $v0, %lo(g_eff_command_phase)($at)
     /* 54308 80063B08 0000628C */  lw         $v0, 0x0($v1)
     /* 5430C 80063B0C 00000000 */  nop
     /* 54310 80063B10 43140200 */  sra        $v0, $v0, 17

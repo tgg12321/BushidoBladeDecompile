@@ -6,8 +6,8 @@ glabel func_80067130
     /* 57940 80067140 809C010C */  jal        eff_SpawnParticles
     /* 57944 80067144 21300000 */   addu      $a2, $zero, $zero
     /* 57948 80067148 01000324 */  addiu      $v1, $zero, 0x1
-    /* 5794C 8006714C 0F80013C */  lui        $at, %hi(D_800F10D0 + 0x60)
-    /* 57950 80067150 301123AC */  sw         $v1, %lo(D_800F10D0 + 0x60)($at)
+    /* 5794C 8006714C 0F80013C */  lui        $at, %hi(g_eff_command_phase + 0x60)
+    /* 57950 80067150 301123AC */  sw         $v1, %lo(g_eff_command_phase + 0x60)($at)
     /* 57954 80067154 1000BF8F */  lw         $ra, 0x10($sp)
     /* 57958 80067158 FF004230 */  andi       $v0, $v0, 0xFF
     /* 5795C 8006715C 0800E003 */  jr         $ra

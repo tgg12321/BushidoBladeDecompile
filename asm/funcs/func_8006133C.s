@@ -4,17 +4,17 @@ glabel func_8006133C
     /* 51B44 80061344 21808000 */  addu       $s0, $a0, $zero
     /* 51B48 80061348 2100043C */  lui        $a0, (0x210004 >> 16)
     /* 51B4C 8006134C 04008434 */  ori        $a0, $a0, (0x210004 & 0xFFFF)
-    /* 51B50 80061350 0F80033C */  lui        $v1, %hi(D_800F116C)
-    /* 51B54 80061354 6C116324 */  addiu      $v1, $v1, %lo(D_800F116C)
+    /* 51B50 80061350 0F80033C */  lui        $v1, %hi(g_eff_command_block)
+    /* 51B54 80061354 6C116324 */  addiu      $v1, $v1, %lo(g_eff_command_block)
     /* 51B58 80061358 0F80023C */  lui        $v0, %hi(D_800F1154)
     /* 51B5C 8006135C 54114224 */  addiu      $v0, $v0, %lo(D_800F1154)
     /* 51B60 80061360 1400BFAF */  sw         $ra, 0x14($sp)
     /* 51B64 80061364 9C0383AF */  sw         $v1, %gp_rel(D_800A3468)($gp)
     /* 51B68 80061368 0F80013C */  lui        $at, %hi(D_800F1178)
     /* 51B6C 8006136C 781130AC */  sw         $s0, %lo(D_800F1178)($at)
-    /* 51B70 80061370 0F80013C */  lui        $at, %hi(D_800F116C + 0x14)
-    /* 51B74 80061374 801122AC */  sw         $v0, %lo(D_800F116C + 0x14)($at)
-    /* 51B78 80061378 9A82010C */  jal        func_80060A68
+    /* 51B70 80061370 0F80013C */  lui        $at, %hi(g_eff_command_block + 0x14)
+    /* 51B74 80061374 801122AC */  sw         $v0, %lo(g_eff_command_block + 0x14)($at)
+    /* 51B78 80061378 9A82010C */  jal        eff_StartCommand
     /* 51B7C 8006137C 000064AC */   sw        $a0, 0x0($v1)
     /* 51B80 80061380 0000028E */  lw         $v0, 0x0($s0)
     /* 51B84 80061384 0F80013C */  lui        $at, %hi(D_800F1140)

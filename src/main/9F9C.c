@@ -61,14 +61,14 @@ INCLUDE_RODATA("asm/rodata", D_800100A4);
         }                                                                      \
     }
 
-void func_8001979C(s32 arg0, u32 *ptr) {
+void motion_InitStream(s32 arg0, u32 *ptr) {
     Unk800F1B18Rec *base;
     s32 i;
     u32 cur;
     s32 bits;
 
     bits = 0x20;
-    base = &D_800F1B18[arg0];
+    base = &g_motion_decoders[arg0];
     base->stream = ptr;
     cur = *ptr++;
     for (i = 0; i < 0x3F; i++) {
@@ -85,18 +85,18 @@ void func_8001979C(s32 arg0, u32 *ptr) {
 
 extern s32 D_800A30EC;
 
-/* Decode entry `arg1` of D_800F1B18[obj]'s stream into `out` (33 words). The
-   table at stream + 0x70 holds a 24-bit offset per group of 8 entries (index
-   arg1 >> 3), in bits from the table's start (0x380 bits past the stream's);
-   an entry is its group's start plus arg1 & 7 delta steps. rec->ctr steps
-   through the four slots; of the slot it steps to and the one before, one
+/* Decode entry `arg1` of g_motion_decoders[obj]'s stream into `out` (33 words).
+   The table at stream + 0x70 holds a 24-bit offset per group of 8 entries
+   (index arg1 >> 3), in bits from the table's start (0x380 bits past the
+   stream's); an entry is its group's start plus arg1 & 7 delta steps. rec->ctr
+   steps through the four slots; of the slot it steps to and the one before, one
    whose ->frame is arg1 is copied out (and the step is undone), one holding
    arg1 - 1 is continued from, and otherwise the entry is decoded from its
    group's start. When arg1 & 7 is below 7, the entry
    (->frame, ->pose, ->rate) and the reader state after it are kept in that
    slot. `work` holds the pose (+0x00), the rates (+0x84) and the codes
    (+0x108, copied from rec->code when D_800A30EC is 0). */
-void func_800198D0(s32 obj, s32 arg1, MotionFrame *out, u16 *work) {
+void motion_DecodeFrame(s32 obj, s32 arg1, MotionFrame *out, u16 *work) {
     Unk800F1B18Rec *rec;
     u8 *tbl;
     Unk800F1B18Slot *slot;
@@ -127,7 +127,7 @@ void func_800198D0(s32 obj, s32 arg1, MotionFrame *out, u16 *work) {
 
     var_7 = arg1 & 7;
     var_8 = arg1 >> 3;
-    rec = &D_800F1B18[obj];
+    rec = &g_motion_decoders[obj];
     tbl = (u8 *)rec->stream + 0x70;
     if (D_800A30EC == 0) {
         COPY33(work + 0x84, rec->code);
@@ -1765,7 +1765,7 @@ void func_8001DBE4(void) {
 }
 
 extern void motion_LoadFighterData(s32, s32, s32, s32);
-extern void func_80021210(void);
+extern void motion_InitStreams(void);
 extern void camera_InitTwoFighterView(Unk80101EC8Record *, Unk80101EC8Record *);
 extern void camera_InitTrackedFighterFocus(
     Unk80101EC8Record *, Unk80101EC8Record *);
@@ -1857,7 +1857,7 @@ void fight_Init(void) {
     } else if (D_800A38DC == 5) {
         D_800A391E = 1;
     }
-    func_80021210();
+    motion_InitStreams();
     func_80021280(0);
     func_80021280(1);
     func_80022F34();
@@ -3135,13 +3135,13 @@ void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
 }
 
-void func_80021210(void) {
-    func_8001979C(0, g_motion_common_sections.unk_10);
+void motion_InitStreams(void) {
+    motion_InitStream(0, g_motion_common_sections.unk_10);
     if (D_800A38C4[0]) {
-        func_8001979C(1, g_motion_fighter_sections[0].unk_10);
+        motion_InitStream(1, g_motion_fighter_sections[0].unk_10);
     }
     if (D_800A38C4[1]) {
-        func_8001979C(2, g_motion_fighter_sections[1].unk_10);
+        motion_InitStream(2, g_motion_fighter_sections[1].unk_10);
     }
 }
 
@@ -4377,12 +4377,12 @@ extern void func_800204C0(Unk80101EC8Record *);
 /* Per-frame update of character `arg0`'s record from this frame's pad input:
  * converts the pad bits, advances the move frame, runs the move script's
  * command list (cur_move / queued_move, motion_ResolveMoveData /
- * func_80021A98), decodes two MotionFrames with func_800198D0 (at move_frame
- * and at move_frame + 1, capped at motion_metadata[1] - 1, each offset by
- * *motion_entry, and by motion_metadata[1] in some states; state move_kind 0x33
- * instead copies g_motion_frame_buffers[arg0][move_frame] into both); when
- * unk_31A is 0 it mixes their root offsets into root_offset by the 4.12 weight
- * move_frame_frac, otherwise the first one's (by the weight
+ * func_80021A98), decodes two MotionFrames with motion_DecodeFrame (at
+ * move_frame and at move_frame + 1, capped at motion_metadata[1] - 1, each
+ * offset by *motion_entry, and by motion_metadata[1] in some states; state
+ * move_kind 0x33 instead copies g_motion_frame_buffers[arg0][move_frame] into
+ * both); when unk_31A is 0 it mixes their root offsets into root_offset by
+ * the 4.12 weight move_frame_frac, otherwise the first one's (by the weight
  * pose_blend_progress) with saved_motion_frame's less pose_blend_base_shift
  * (by 0x1000 - pose_blend_progress), integrates the velocities
  * (unk_104 / unk_134) into the position, resolves it (fighter_ResolveMovement),
@@ -4789,8 +4789,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
         var_0[1] = g_motion_frame_buffers[arg0][rec->move_frame];
         var_0[0] = var_0[1];
     } else {
-        func_800198D0(var_18, var_15, &var_0[0], (u16 *)0x1F8001B0);
-        func_800198D0(var_18, var_17, &var_0[1], (u16 *)0x1F8001B0);
+        motion_DecodeFrame(var_18, var_15, &var_0[0], (u16 *)0x1F8001B0);
+        motion_DecodeFrame(var_18, var_17, &var_0[1], (u16 *)0x1F8001B0);
     }
     if (rec->move_started != 0 &&
         (rec->move_kind == 6 || rec->move_kind == 0x14) &&

@@ -1,4 +1,4 @@
-glabel func_8001979C
+glabel motion_InitStream
     /* 9F9C 8001979C 20000724 */  addiu      $a3, $zero, 0x20
     /* 9FA0 800197A0 40100400 */  sll        $v0, $a0, 1
     /* 9FA4 800197A4 21104400 */  addu       $v0, $v0, $a0
@@ -7,8 +7,8 @@ glabel func_8001979C
     /* 9FB0 800197B0 C0100200 */  sll        $v0, $v0, 3
     /* 9FB4 800197B4 23104400 */  subu       $v0, $v0, $a0
     /* 9FB8 800197B8 00110200 */  sll        $v0, $v0, 4
-    /* 9FBC 800197BC 0F80033C */  lui        $v1, %hi(D_800F1B18)
-    /* 9FC0 800197C0 181B6324 */  addiu      $v1, $v1, %lo(D_800F1B18)
+    /* 9FBC 800197BC 0F80033C */  lui        $v1, %hi(g_motion_decoders)
+    /* 9FC0 800197C0 181B6324 */  addiu      $v1, $v1, %lo(g_motion_decoders)
     /* 9FC4 800197C4 21584300 */  addu       $t3, $v0, $v1
     /* 9FC8 800197C8 000065AD */  sw         $a1, 0x0($t3)
     /* 9FCC 800197CC 0000A68C */  lw         $a2, 0x0($a1)
@@ -83,4 +83,4 @@ glabel func_8001979C
     /* A0C4 800198C4 E8FE4224 */   addiu     $v0, $v0, -0x118
     /* A0C8 800198C8 0800E003 */  jr         $ra
     /* A0CC 800198CC 0C0160AD */   sw        $zero, 0x10C($t3)
-endlabel func_8001979C
+endlabel motion_InitStream

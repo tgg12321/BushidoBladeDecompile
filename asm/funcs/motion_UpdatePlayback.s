@@ -53,7 +53,7 @@ glabel motion_UpdatePlayback
     /* 451CC 800549CC 00000000 */  nop
     /* 451D0 800549D0 0300A010 */  beqz       $a1, .L800549E0
     /* 451D4 800549D4 00000000 */   nop
-    /* 451D8 800549D8 E765000C */  jal        func_8001979C
+    /* 451D8 800549D8 E765000C */  jal        motion_InitStream
     /* 451DC 800549DC 21202002 */   addu      $a0, $s1, $zero
   .L800549E0:
     /* 451E0 800549E0 01003126 */  addiu      $s1, $s1, 0x1
@@ -265,7 +265,7 @@ glabel motion_UpdatePlayback
     /* 454FC 80054CFC 21202002 */  addu       $a0, $s1, $zero
     /* 45500 80054D00 2130C002 */  addu       $a2, $s6, $zero
     /* 45504 80054D04 00006586 */  lh         $a1, 0x0($s3)
-    /* 45508 80054D08 3466000C */  jal        func_800198D0
+    /* 45508 80054D08 3466000C */  jal        motion_DecodeFrame
     /* 4550C 80054D0C 801F073C */   lui       $a3, (0x1F800000 >> 16)
     /* 45510 80054D10 2800A387 */  lh         $v1, 0x28($sp)
     /* 45514 80054D14 00000000 */  nop

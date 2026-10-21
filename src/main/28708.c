@@ -1388,8 +1388,9 @@ void replay_PlayFrame(void) {
 
         p = &g_replay_fighter_frames[idx][i];
         var_11 = &D_80101EC8[i];
-        func_800198D0((p->hE >> 14) & 3, p->hE & 0x3FFF, &work[0], sp1C0);
-        func_800198D0((p->h10 >> 14) & 3, p->h10 & 0x3FFF, &work[1], sp1C0);
+        motion_DecodeFrame((p->hE >> 14) & 3, p->hE & 0x3FFF, &work[0], sp1C0);
+        motion_DecodeFrame(
+            (p->h10 >> 14) & 3, p->h10 & 0x3FFF, &work[1], sp1C0);
         motion_ApplyRecordedPoseAdjustments(var_11, p, &work[0], &work[1]);
         func_80041188(
             i, (u8 *)&work[0], (u8 *)&work[1], p->h12, (MATRIX *)sp120);

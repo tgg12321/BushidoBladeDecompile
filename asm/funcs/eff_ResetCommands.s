@@ -1,12 +1,12 @@
-glabel func_80060C60
+glabel eff_ResetCommands
     /* 51460 80060C60 21180000 */  addu       $v1, $zero, $zero
-    /* 51464 80060C64 0F80043C */  lui        $a0, %hi(D_800F10D0)
-    /* 51468 80060C68 D0108424 */  addiu      $a0, $a0, %lo(D_800F10D0)
+    /* 51464 80060C64 0F80043C */  lui        $a0, %hi(g_eff_command_phase)
+    /* 51468 80060C68 D0108424 */  addiu      $a0, $a0, %lo(g_eff_command_phase)
   .L80060C6C:
     /* 5146C 80060C6C 000080AC */  sw         $zero, 0x0($a0)
-    /* 51470 80060C70 0F80013C */  lui        $at, %hi(D_800F1150)
+    /* 51470 80060C70 0F80013C */  lui        $at, %hi(g_eff_command_status)
     /* 51474 80060C74 21082300 */  addu       $at, $at, $v1
-    /* 51478 80060C78 501120A0 */  sb         $zero, %lo(D_800F1150)($at)
+    /* 51478 80060C78 501120A0 */  sb         $zero, %lo(g_eff_command_status)($at)
     /* 5147C 80060C7C 01006324 */  addiu      $v1, $v1, 0x1
     /* 51480 80060C80 1C006228 */  slti       $v0, $v1, 0x1C
     /* 51484 80060C84 F9FF4014 */  bnez       $v0, .L80060C6C
@@ -22,4 +22,4 @@ glabel func_80060C60
     /* 514AC 80060CAC 7C0380AF */  sw         $zero, %gp_rel(D_800A3448)($gp)
     /* 514B0 80060CB0 0800E003 */  jr         $ra
     /* 514B4 80060CB4 00000000 */   nop
-endlabel func_80060C60
+endlabel eff_ResetCommands

@@ -419,8 +419,8 @@ glabel func_8006295C
     /* 537A0 80062FA0 00000000 */  nop
     /* 537A4 80062FA4 04004014 */  bnez       $v0, .L80062FB8
     /* 537A8 80062FA8 00000000 */   nop
-    /* 537AC 80062FAC 0F80013C */  lui        $at, %hi(D_800F10D0 + 0x68)
-    /* 537B0 80062FB0 381120AC */  sw         $zero, %lo(D_800F10D0 + 0x68)($at)
+    /* 537AC 80062FAC 0F80013C */  lui        $at, %hi(g_eff_command_phase + 0x68)
+    /* 537B0 80062FB0 381120AC */  sw         $zero, %lo(g_eff_command_phase + 0x68)($at)
     /* 537B4 80062FB4 21100000 */  addu       $v0, $zero, $zero
   .L80062FB8:
     /* 537B8 80062FB8 8400BF8F */  lw         $ra, 0x84($sp)

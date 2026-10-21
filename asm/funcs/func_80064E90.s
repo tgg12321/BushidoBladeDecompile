@@ -9,8 +9,8 @@ glabel func_80064E90
     /* 556AC 80064EAC A40C22AC */  sw         $v0, %lo(D_800F0CA4)($at)
     /* 556B0 80064EB0 0800638C */  lw         $v1, 0x8($v1)
     /* 556B4 80064EB4 01000224 */  addiu      $v0, $zero, 0x1
-    /* 556B8 80064EB8 0F80013C */  lui        $at, %hi(D_800F10D0 + 0x10)
-    /* 556BC 80064EBC E01022AC */  sw         $v0, %lo(D_800F10D0 + 0x10)($at)
+    /* 556B8 80064EB8 0F80013C */  lui        $at, %hi(g_eff_command_phase + 0x10)
+    /* 556BC 80064EBC E01022AC */  sw         $v0, %lo(g_eff_command_phase + 0x10)($at)
     /* 556C0 80064EC0 0F80013C */  lui        $at, %hi(D_800F0BA8)
     /* 556C4 80064EC4 A80B20A4 */  sh         $zero, %lo(D_800F0BA8)($at)
     /* 556C8 80064EC8 0F80013C */  lui        $at, %hi(D_800F0CA8)

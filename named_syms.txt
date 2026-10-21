@@ -362,7 +362,7 @@ g_fight_match_scores            = 0x800F65F8;  /* two-column byte table [g_fight
 /* === Data-symbol batch 7 (2026-05-17) -- highest-ref unproposed === */
 /* 8 high-confidence names landed; 18 more proposals in data_evidence/. */
 D_800A3817                = 0x800A3817;  /* cursor of a three-item pad menu: up / down step it through 0..2 with wrap (lower bound D_800A3804), func_8005C8A8 draws it, 0x400040 acts on it (2B344.c:1004-1062) */  /* data-wave 2026-10-08: was g_cpu_attack_idx */
-D_800F116C           = 0x800F116C;  /* 0x2C-byte command block (Unk1F800000Unk00) that func_800611A4..func_80061EC0 fill before func_80060A68; D_800A3468 points at it */  /* data-wave 2026-10-08: was g_text1b_render_state */
+g_eff_command_block           = 0x800F116C;  /* 0x2C-byte command block (Unk1F800000Unk00) that func_800611A4..func_80061EC0 fill before func_80060A68; D_800A3468 points at it */  /* data-wave 2026-10-08: was g_text1b_render_state */
 D_800A3468       = 0x800A3468;  /* pointer to the current command block (D_800F116C, or the scratchpad block in eff_BindScratchpad); +0x0 command word (low halfword indexes the handler dispatch; bit 0x200000 sets D_800A32BC = 0xA), +0x14 the byte that receives the handler's return */  /* data-wave 2026-10-08: was g_text1b_render_state_ptr */
 D_800A347C         = 0x800A347C;  /* = D_800A3468->unk20 (func_80060A68), the command block's three-word copy of unk0C; every consumer reads words [0..2] through it */  /* data-wave 2026-10-08: was g_text1b_render_buf_ptr */
 /* 2026-10-16: D_800F1180 retired -- D_800F116C.unk14 (Unk1F800000Unk00, include/game.h); the address of the D_800F1150 status byte that receives the dispatched handler's return. */
@@ -643,7 +643,7 @@ g_gpu_draw_move_packets                             = 0x800A9830;  /* bank 0 of 
 D_800A9920                             = 0x800A9920;  /* bank 1 of ten DR_MOVE packets (240 bytes); see g_gpu_draw_move_packets */  /* data-wave 2026-10-08: was g_shadow_record_b_table_240 */
 /* SE slot table */
 g_replay_model_draws                                      = 0x800F68E0;  /* 0xB4 16-byte timed event records (frame counter, frames seen, id, position, three angles): replay_RecordModelDraw adds, replay_BeginFrame ages, replay_PlayFrame replays them through func_80049718 */  /* data-wave 2026-10-08: was g_se_slot_table_16 */
-D_800F1B18                     = 0x800F1B18;  /* 0x570-byte motion-stream decoder records (Unk800F1B18Rec), indexed by decoder slot 0..2; func_8001979C sets one up, func_800198D0 decodes through it */  /* data-wave 2026-10-08: was g_per_char_motion_buffer_table_1392 */
+g_motion_decoders                     = 0x800F1B18;  /* 0x570-byte motion-stream decoder records (Unk800F1B18Rec), indexed by decoder slot 0..2; func_8001979C sets one up, func_800198D0 decodes through it */  /* data-wave 2026-10-08: was g_per_char_motion_buffer_table_1392 */
 D_800F5F68                                   = 0x800F5F68;  /* BoneHitRec[2][22] (20 bytes each): one row of 22 hit-test records per fighter record, row = its index */  /* data-wave 2026-10-08: was g_per_char_record_440 */
 D_800A4750                              = 0x800A4750;  /* 16-byte records; filled by func_8003EDC0, read by func_8003E6D8 / func_8003EB84 (src/main/2B344.c) */  /* data-wave 2026-10-08: was g_record_table_16_800A4750 */
 
@@ -1024,7 +1024,7 @@ g_snd_sequence_positions                                   = 0x80107850;  /* 12-
 /* D_800F10E0 is entry [4] of the 28-entry s32 table at 0x800F10D0. */
 /* From text1b.c:13148: `*(s32 *)((s32)&D_800F10D0 + idx * 4) = 0;` */
 /* clears entries indexed by *(u16*)D_800A3468 (the current command block). */
-D_800F10D0                               = 0x800F10D0;  /* 28-entry s32 table of dispatch offsets (0/1/2), added to D_8009BA60[idx] to pick the D_8009BA7C entry; D_800F10E0 is entry [4] */  /* data-wave 2026-10-08: was g_motion_state_flag_table */
+g_eff_command_phase                               = 0x800F10D0;  /* 28-entry s32 table of dispatch offsets (0/1/2), added to D_8009BA60[idx] to pick the D_8009BA7C entry; D_800F10E0 is entry [4] */  /* data-wave 2026-10-08: was g_motion_state_flag_table */
 
 /* === GPU MoveImage wrapper (2026-05-17) -- 1 high === */
 /* MoveImage (0x8007B6C8): calls checkRECT with the literal string */
@@ -1354,7 +1354,7 @@ _svm_cur_plus_0x18                              = 0x80102808;  /* player select 
 /* of D_800F10D0 and D_800F1150, */
 /* plus 6 slot-allocator cells: D_800A344C[2] (live-slot counts), */
 /* D_800A3454[2] (in-use bitmasks), D_800A345C[2] (TexRec selectors). */
-D_800F1150                          = 0x800F1150;  /* 28-byte array of per-command status bytes paired with D_800F10D0; func_80061064 runs func_80060B70 for each nonzero entry */  /* data-wave 2026-10-08: was g_motion_state_secondary_flags */
+g_eff_command_status                          = 0x800F1150;  /* 28-byte array of per-command status bytes paired with D_800F10D0; func_80061064 runs func_80060B70 for each nonzero entry */  /* data-wave 2026-10-08: was g_motion_state_secondary_flags */
 D_800A344C                                  = 0x800A344C;  /* data-wave 2026-10-08: was g_satan1_gauge_state_a */
 D_800A3450                                  = 0x800A3450;  /* data-wave 2026-10-08: was g_satan1_gauge_state_b */
 D_800A3454                                  = 0x800A3454;  /* data-wave 2026-10-08: was g_satan1_gauge_state_c */

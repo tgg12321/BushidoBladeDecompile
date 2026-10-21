@@ -20,8 +20,8 @@ glabel func_800651F0
     /* 55A38 80065238 580D22AC */  sw         $v0, %lo(D_800F0D58)($at)
     /* 55A3C 8006523C 0800638C */  lw         $v1, 0x8($v1)
     /* 55A40 80065240 01000224 */  addiu      $v0, $zero, 0x1
-    /* 55A44 80065244 0F80013C */  lui        $at, %hi(D_800F10D0 + 0x44)
-    /* 55A48 80065248 141122AC */  sw         $v0, %lo(D_800F10D0 + 0x44)($at)
+    /* 55A44 80065244 0F80013C */  lui        $at, %hi(g_eff_command_phase + 0x44)
+    /* 55A48 80065248 141122AC */  sw         $v0, %lo(g_eff_command_phase + 0x44)($at)
     /* 55A4C 8006524C 0F80013C */  lui        $at, %hi(D_800F0BC6)
     /* 55A50 80065250 C60B20A4 */  sh         $zero, %lo(D_800F0BC6)($at)
     /* 55A54 80065254 0F80013C */  lui        $at, %hi(D_800F0D5C)

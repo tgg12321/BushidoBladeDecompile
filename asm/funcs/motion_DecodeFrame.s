@@ -1,4 +1,4 @@
-glabel func_800198D0
+glabel motion_DecodeFrame
     /* A0D0 800198D0 F0FFBD27 */  addiu      $sp, $sp, -0x10
     /* A0D4 800198D4 0400B1AF */  sw         $s1, 0x4($sp)
     /* A0D8 800198D8 2188A000 */  addu       $s1, $a1, $zero
@@ -13,8 +13,8 @@ glabel func_800198D0
     /* A0FC 800198FC C0100200 */  sll        $v0, $v0, 3
     /* A100 80019900 23104400 */  subu       $v0, $v0, $a0
     /* A104 80019904 00110200 */  sll        $v0, $v0, 4
-    /* A108 80019908 0F80033C */  lui        $v1, %hi(D_800F1B18)
-    /* A10C 8001990C 181B6324 */  addiu      $v1, $v1, %lo(D_800F1B18)
+    /* A108 80019908 0F80033C */  lui        $v1, %hi(g_motion_decoders)
+    /* A10C 8001990C 181B6324 */  addiu      $v1, $v1, %lo(g_motion_decoders)
     /* A110 80019910 21484300 */  addu       $t1, $v0, $v1
     /* A114 80019914 0000B0AF */  sw         $s0, 0x0($sp)
     /* A118 80019918 0000228D */  lw         $v0, 0x0($t1)
@@ -829,4 +829,4 @@ glabel func_800198D0
     /* AC78 8001A478 1000BD27 */  addiu      $sp, $sp, 0x10
     /* AC7C 8001A47C 0800E003 */  jr         $ra
     /* AC80 8001A480 00000000 */   nop
-endlabel func_800198D0
+endlabel motion_DecodeFrame

@@ -116,13 +116,13 @@ glabel replay_PlayFrame
     /* 2A2E8 80039AE8 0E000596 */  lhu        $a1, 0xE($s0)
     /* 2A2EC 80039AEC 2188C203 */  addu       $s1, $fp, $v0
     /* 2A2F0 80039AF0 82230500 */  srl        $a0, $a1, 14
-    /* 2A2F4 80039AF4 3466000C */  jal        func_800198D0
+    /* 2A2F4 80039AF4 3466000C */  jal        motion_DecodeFrame
     /* 2A2F8 80039AF8 FF3FA530 */   andi      $a1, $a1, 0x3FFF
     /* 2A2FC 80039AFC 6003A68F */  lw         $a2, 0x360($sp)
     /* 2A300 80039B00 10000596 */  lhu        $a1, 0x10($s0)
     /* 2A304 80039B04 5803A78F */  lw         $a3, 0x358($sp)
     /* 2A308 80039B08 82230500 */  srl        $a0, $a1, 14
-    /* 2A30C 80039B0C 3466000C */  jal        func_800198D0
+    /* 2A30C 80039B0C 3466000C */  jal        motion_DecodeFrame
     /* 2A310 80039B10 FF3FA530 */   andi      $a1, $a1, 0x3FFF
     /* 2A314 80039B14 21202002 */  addu       $a0, $s1, $zero
     /* 2A318 80039B18 21280002 */  addu       $a1, $s0, $zero

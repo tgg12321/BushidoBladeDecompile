@@ -26,16 +26,17 @@ extern s32 D_800A3250[2];
  * (unk34[], dropped when they start with the "NULL" tag D_800A3250) and the
  * per-object nibble tables (unk3C[]). Every frame it places the camera (rotated
  * about y by unk1E, plus the offset unkC..unk14 motion_StartPlayback picks),
- * then decodes (func_800198D0) and places each func_8004153C object's data. The
- * block holds those addresses as integers: typed as pointers, the relocation
- * sums in motion_RebasePlayback and motion_StartPlayback swap their addu
- * operands.
+ * then decodes (motion_DecodeFrame) and places each func_8004153C object's
+ * data. The block holds those addresses as integers: typed as pointers, the
+ * relocation sums in motion_RebasePlayback and motion_StartPlayback swap their
+ * addu operands.
  */
 s32 motion_UpdatePlayback(void) {
     Unk800EFAE8Rec *s = &D_800EFAE8;
     VECTOR vec;
-    /* The 0x84 bytes func_800198D0 decodes, as s16: three of its fields load
-     * signed (lh), and the array goes to func_80040D48's s16 * parameter. */
+    /* The 0x84 bytes motion_DecodeFrame decodes, as s16: three of its fields
+     * load signed (lh), and the array goes to func_80040D48's s16 * parameter.
+     */
     s16 var_2[0x42];
     s16 *v;
     s32 i;
@@ -63,7 +64,7 @@ s32 motion_UpdatePlayback(void) {
                 s->unk34[j] = 0;
             }
             if (s->unk34[j] != 0) {
-                func_8001979C(j, (u32 *)s->unk34[j]);
+                motion_InitStream(j, (u32 *)s->unk34[j]);
             }
         }
         s->unk3C[1] = 0;
@@ -129,7 +130,8 @@ s32 motion_UpdatePlayback(void) {
         if (s->unk34[i] != 0) {
             s32 ang;
             var_5 = func_8004153C(i);
-            func_800198D0(i, s->unk0, (MotionFrame *)var_2, (u16 *)0x1F800000);
+            motion_DecodeFrame(
+                i, s->unk0, (MotionFrame *)var_2, (u16 *)0x1F800000);
             vec.vy = var_2[0];
             vec.vy *= var_5->position_scale;
             vec.vy >>= 12;

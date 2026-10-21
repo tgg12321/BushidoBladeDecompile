@@ -172,15 +172,15 @@ glabel func_8003CF84
   .L8003D204:
     /* 2DA04 8003D204 1080053C */  lui        $a1, %hi(g_motion_common_sections + 0x10)
     /* 2DA08 8003D208 7027A58C */  lw         $a1, %lo(g_motion_common_sections + 0x10)($a1)
-    /* 2DA0C 8003D20C E765000C */  jal        func_8001979C
+    /* 2DA0C 8003D20C E765000C */  jal        motion_InitStream
     /* 2DA10 8003D210 21200000 */   addu      $a0, $zero, $zero
     /* 2DA14 8003D214 1080053C */  lui        $a1, %hi(D_801027C0)
     /* 2DA18 8003D218 C027A58C */  lw         $a1, %lo(D_801027C0)($a1)
-    /* 2DA1C 8003D21C E765000C */  jal        func_8001979C
+    /* 2DA1C 8003D21C E765000C */  jal        motion_InitStream
     /* 2DA20 8003D220 01000424 */   addiu     $a0, $zero, 0x1
     /* 2DA24 8003D224 1080053C */  lui        $a1, %hi(D_801027D4)
     /* 2DA28 8003D228 D427A58C */  lw         $a1, %lo(D_801027D4)($a1)
-    /* 2DA2C 8003D22C E765000C */  jal        func_8001979C
+    /* 2DA2C 8003D22C E765000C */  jal        motion_InitStream
     /* 2DA30 8003D230 02000424 */   addiu     $a0, $zero, 0x2
     /* 2DA34 8003D234 0A80023C */  lui        $v0, %hi(D_800A38DC)
     /* 2DA38 8003D238 DC384284 */  lh         $v0, %lo(D_800A38DC)($v0)

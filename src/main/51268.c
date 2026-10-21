@@ -10,8 +10,8 @@
 #include <psxsdk/inline_c.h>
 #include <psxsdk/gtemac.h>
 
-/* func_80060A68 .. eff_BindScratchpad belong here by the per-file gp evidence
- * (Q65). */
+/* eff_StartCommand .. eff_BindScratchpad belong here by the per-file gp
+ * evidence (Q65). */
 
 /* Q65: this file's statics (.sbss, allocated per file in link order by
  * PSYLINK), in address order. */
@@ -72,17 +72,17 @@ static s32 D_800A34F4; /* not named by any code or data: size from the gap */
 /* Runs the command in the block D_800A3468 points at (idx = the block's low
  * halfword, unk00.h): copies the three words at unk0C and the three halfwords
  * at unk10 into unk20 / unk18, points D_800A347C / D_800A3478 at the copies,
- * clears D_800F10D0[idx], calls the D_8009BA7C entry
- * D_8009BA60[idx] + D_800F10D0[idx], stores the result through unk14, and sets
- * D_800A32BC to 0xA when bit 21 of unk00.w is set. Member reads (not
+ * clears g_eff_command_phase[idx], calls the D_8009BA7C entry
+ * D_8009BA60[idx] + g_eff_command_phase[idx], stores the result through unk14,
+ * and sets D_800A32BC to 0xA when bit 21 of unk00.w is set. Member reads (not
  * *(u16 *)D_800A3468) let the second idx read (the D_8009BA60 index) rise
  * above the D_800A347C store, as in the target. */
-void func_80060A68(void) {
+void eff_StartCommand(void) {
     extern s32 D_800A32BC;
 
     s32 result;
 
-    D_800F10D0[D_800A3468->unk00.h] = 0;
+    g_eff_command_phase[D_800A3468->unk00.h] = 0;
     D_800A3468->unk20[0] = D_800A3468->unk0C[0];
     D_800A3468->unk20[1] = D_800A3468->unk0C[1];
     D_800A3468->unk20[2] = D_800A3468->unk0C[2];
@@ -92,8 +92,9 @@ void func_80060A68(void) {
     D_800A3468->unk18[2] = D_800A3468->unk10[2];
     D_800A347C = D_800A3468->unk20;
 
-    result = ((s32(*)(void))D_8009BA7C[D_8009BA60[D_800A3468->unk00.h] +
-                                       D_800F10D0[D_800A3468->unk00.h]])();
+    result =
+        ((s32(*)(void))D_8009BA7C[D_8009BA60[D_800A3468->unk00.h] +
+                                  g_eff_command_phase[D_800A3468->unk00.h]])();
     *D_800A3468->unk14 = result;
 
     if (D_800A3468->unk00.w & 0x200000) {
@@ -101,7 +102,7 @@ void func_80060A68(void) {
     }
 }
 
-void func_80060B70(void) {
+void eff_StepCommand(void) {
 
     Unk1F800000Unk00 *var_0;
     s16 *dst16;
@@ -122,19 +123,20 @@ void func_80060B70(void) {
     eff_SetRotMatrix(dst16, dst_s32, D_800A3474);
 
     idx = D_800A3468->unk00.h;
-    result = ((s32(*)(void))D_8009BA7C[D_8009BA60[idx] + D_800F10D0[idx]])();
+    result = ((
+        s32(*)(void))D_8009BA7C[D_8009BA60[idx] + g_eff_command_phase[idx]])();
 
     *D_800A3468->unk14 = result;
 }
 
-extern u8 D_800F1150[0x1C];
+extern u8 g_eff_command_status[0x1C];
 
-void func_80060C60(void) {
+void eff_ResetCommands(void) {
     s32 i = 0;
-    s32 *p = D_800F10D0;
+    s32 *p = g_eff_command_phase;
     do {
         *p = 0;
-        D_800F1150[i] = 0;
+        g_eff_command_status[i] = 0;
         i++;
         p++;
     } while (i < 0x1C);
@@ -184,7 +186,7 @@ s32 eff_LoadImagesAndSetup(s32 arg0, s32 arg1) {
     s.h = 0x24;
     LoadImage(&s, (u32 *)(new_var + 0x1DC00));
     DrawSync(0);
-    func_80060C60();
+    eff_ResetCommands();
     srand(rand());
     ret = arg1 + 0x4650;
     D_800A3420 = (POLY_FT4 *)arg1;
@@ -241,9 +243,9 @@ void eff_BindScratchpad(s16 *arg0, s32 *arg1) {
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 s32 printf(s32 *, s32);
 extern void AddPrim(void *, void *);
-void func_80060A68(void);
-void func_80060B70(void);
-void func_80060C60(void);
+void eff_StartCommand(void);
+void eff_StepCommand(void);
+void eff_ResetCommands(void);
 void eff_BindScratchpad(s16 *arg0, s32 *arg1);
 
 /* the message, alignment and an empty trailing string */
@@ -255,10 +257,10 @@ void func_80061064(s16 *a0, s32 *a1) {
     eff_BindScratchpad(a0, a1);
     i = 0;
     do {
-        D_800A3468->unk14 = &D_800F1150[i];
-        if (D_800F1150[i] != 0) {
+        D_800A3468->unk14 = &g_eff_command_status[i];
+        if (g_eff_command_status[i] != 0) {
             D_800A3468->unk00.w = i;
-            func_80060B70();
+            eff_StepCommand();
         }
         i += 1;
     } while (i < 0x1C);
@@ -276,12 +278,12 @@ void func_80061064(s16 *a0, s32 *a1) {
 }
 
 void eff_StopCommands(void) {
-    func_80060C60();
+    eff_ResetCommands();
     light_DisablePointLight();
     D_800A32BC = 0;
 }
 
-extern Unk1F800000Unk00 D_800F116C;
+extern Unk1F800000Unk00 g_eff_command_block;
 
 void func_800611A4(s32 *arg0, s16 *arg1) {
     s16 svec[3];
@@ -289,13 +291,13 @@ void func_800611A4(s32 *arg0, s16 *arg1) {
     s16 *q = arg1;
     svec[0] = *q++;
     svec[1] = *q++;
-    D_800A3468 = &D_800F116C;
+    D_800A3468 = &g_eff_command_block;
     svec[2] = *q;
-    D_800F116C.unk10 = svec;
-    D_800F116C.unk0C = arg0;
-    D_800F116C.unk14 = &D_800F1150[26];
-    D_800F116C.unk00.w = 0x21001A;
-    func_80060A68();
+    g_eff_command_block.unk10 = svec;
+    g_eff_command_block.unk0C = arg0;
+    g_eff_command_block.unk14 = &g_eff_command_status[26];
+    g_eff_command_block.unk00.w = 0x21001A;
+    eff_StartCommand();
     p = arg0;
     D_800F1140.vx = *p++;
     D_800F1140.vy = *p++;
@@ -305,20 +307,20 @@ void func_800611A4(s32 *arg0, s16 *arg1) {
 
 void func_80061250(s32 *arg0) {
     s32 *p;
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = arg0;
-    if (D_800F1150[9] != 0 && D_800F1150[10] != 0) {
-        D_800F1150[10] = 0;
-        D_800F1150[9] = 0;
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = arg0;
+    if (g_eff_command_status[9] != 0 && g_eff_command_status[10] != 0) {
+        g_eff_command_status[10] = 0;
+        g_eff_command_status[9] = 0;
     }
-    if (D_800F1150[9] == 0) {
-        D_800A3468->unk14 = &D_800F1150[9];
+    if (g_eff_command_status[9] == 0) {
+        D_800A3468->unk14 = &g_eff_command_status[9];
         D_800A3468->unk00.w = 0x210009;
-    } else if (D_800F1150[10] == 0) {
-        D_800F116C.unk14 = &D_800F1150[10];
-        D_800F116C.unk00.w = 0x21000A;
+    } else if (g_eff_command_status[10] == 0) {
+        g_eff_command_block.unk14 = &g_eff_command_status[10];
+        g_eff_command_block.unk00.w = 0x21000A;
     }
-    func_80060A68();
+    eff_StartCommand();
     p = arg0;
     D_800F1140.vx = *p++;
     D_800F1140.vy = *p++;
@@ -328,11 +330,11 @@ void func_80061250(s32 *arg0) {
 
 s32 func_8006133C(s32 *a0) {
     s32 *p = a0;
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = a0;
-    D_800F116C.unk14 = &D_800F1150[4];
-    D_800F116C.unk00.w = 0x210004;
-    func_80060A68();
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk14 = &g_eff_command_status[4];
+    g_eff_command_block.unk00.w = 0x210004;
+    eff_StartCommand();
     D_800F1140.vx = *p++;
     D_800F1140.vy = *p++;
     D_800F1140.vz = *p;
@@ -342,11 +344,11 @@ s32 func_8006133C(s32 *a0) {
 
 s32 func_800613C8(s32 *a0) {
     s32 *var_0 = a0;
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = a0;
-    D_800F116C.unk14 = &D_800F1150[11];
-    D_800F116C.unk00.w = 0x21000B;
-    func_80060A68();
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk14 = &g_eff_command_status[11];
+    g_eff_command_block.unk00.w = 0x21000B;
+    eff_StartCommand();
     D_800F1140.vx = *var_0++;
     D_800F1140.vy = *var_0++;
     D_800F1140.vz = *var_0++;
@@ -356,11 +358,11 @@ s32 func_800613C8(s32 *a0) {
 
 s32 func_80061454(s32 *a0) {
     s32 *p = a0;
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = a0;
-    D_800F116C.unk14 = &D_800F1150[11];
-    D_800F116C.unk00.w = 0x29000B;
-    func_80060A68();
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk14 = &g_eff_command_status[11];
+    g_eff_command_block.unk00.w = 0x29000B;
+    eff_StartCommand();
     D_800F1140.vx = *p++;
     D_800F1140.vy = *p++;
     D_800F1140.vz = *p;
@@ -370,11 +372,11 @@ s32 func_80061454(s32 *a0) {
 
 s32 func_800614E0(s32 *a0) {
     s32 *p = a0;
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = a0;
-    D_800F116C.unk14 = &D_800F1150[11];
-    D_800F116C.unk00.w = 0x31000B;
-    func_80060A68();
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk14 = &g_eff_command_status[11];
+    g_eff_command_block.unk00.w = 0x31000B;
+    eff_StartCommand();
     D_800F1140.vx = *p++;
     D_800F1140.vy = *p++;
     D_800F1140.vz = *p;
@@ -384,20 +386,20 @@ s32 func_800614E0(s32 *a0) {
 
 void func_8006156C(s32 *arg0) {
     s32 *p;
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = arg0;
-    if (D_800F1150[5] != 0 && D_800F1150[6] != 0) {
-        D_800F1150[6] = 0;
-        D_800F1150[5] = 0;
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = arg0;
+    if (g_eff_command_status[5] != 0 && g_eff_command_status[6] != 0) {
+        g_eff_command_status[6] = 0;
+        g_eff_command_status[5] = 0;
     }
-    if (D_800F1150[5] == 0) {
-        D_800A3468->unk14 = &D_800F1150[5];
+    if (g_eff_command_status[5] == 0) {
+        D_800A3468->unk14 = &g_eff_command_status[5];
         D_800A3468->unk00.w = 0x210005;
-    } else if (D_800F1150[6] == 0) {
-        D_800F116C.unk14 = &D_800F1150[6];
-        D_800F116C.unk00.w = 0x210006;
+    } else if (g_eff_command_status[6] == 0) {
+        g_eff_command_block.unk14 = &g_eff_command_status[6];
+        g_eff_command_block.unk00.w = 0x210006;
     }
-    func_80060A68();
+    eff_StartCommand();
     p = arg0;
     D_800F1140.vx = *p++;
     D_800F1140.vy = *p++;
@@ -408,21 +410,21 @@ void func_8006156C(s32 *arg0) {
 void func_80061658(s32 *arg0, s32 arg1) {
     s32 *p;
 
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = arg0;
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = arg0;
     switch (arg1) {
     case 0:
-        D_800F1150[12] = 0;
-        D_800F116C.unk14 = &D_800F1150[12];
-        D_800F116C.unk00.w = 0x21000C;
+        g_eff_command_status[12] = 0;
+        g_eff_command_block.unk14 = &g_eff_command_status[12];
+        g_eff_command_block.unk00.w = 0x21000C;
         break;
     case 1:
-        D_800F1150[13] = 0;
-        D_800F116C.unk14 = &D_800F1150[13];
-        D_800F116C.unk00.w = 0x21000D;
+        g_eff_command_status[13] = 0;
+        g_eff_command_block.unk14 = &g_eff_command_status[13];
+        g_eff_command_block.unk00.w = 0x21000D;
         break;
     }
-    func_80060A68();
+    eff_StartCommand();
     p = arg0;
     D_800F1140.vx = *p++;
     D_800F1140.vy = *p++;
@@ -433,21 +435,21 @@ void func_80061658(s32 *arg0, s32 arg1) {
 void func_80061710(s32 *arg0, s32 arg1) {
     s32 *p;
 
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = arg0;
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = arg0;
     switch (arg1) {
     case 0:
-        D_800F1150[14] = 0;
-        D_800F116C.unk14 = &D_800F1150[14];
-        D_800F116C.unk00.w = 0x21000E;
+        g_eff_command_status[14] = 0;
+        g_eff_command_block.unk14 = &g_eff_command_status[14];
+        g_eff_command_block.unk00.w = 0x21000E;
         break;
     case 1:
-        D_800F1150[15] = 0;
-        D_800F116C.unk14 = &D_800F1150[15];
-        D_800F116C.unk00.w = 0x21000F;
+        g_eff_command_status[15] = 0;
+        g_eff_command_block.unk14 = &g_eff_command_status[15];
+        g_eff_command_block.unk00.w = 0x21000F;
         break;
     }
-    func_80060A68();
+    eff_StartCommand();
     p = arg0;
     D_800F1140.vx = *p++;
     D_800F1140.vy = *p++;
@@ -457,20 +459,20 @@ void func_80061710(s32 *arg0, s32 arg1) {
 
 void func_800617C8(s32 *arg0) {
     s32 *p;
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = arg0;
-    if (D_800F1150[16] != 0 && D_800F1150[17] != 0) {
-        D_800F1150[17] = 0;
-        D_800F1150[16] = 0;
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = arg0;
+    if (g_eff_command_status[16] != 0 && g_eff_command_status[17] != 0) {
+        g_eff_command_status[17] = 0;
+        g_eff_command_status[16] = 0;
     }
-    if (D_800F1150[16] == 0) {
-        D_800A3468->unk14 = &D_800F1150[16];
+    if (g_eff_command_status[16] == 0) {
+        D_800A3468->unk14 = &g_eff_command_status[16];
         D_800A3468->unk00.w = 0x210010;
-    } else if (D_800F1150[17] == 0) {
-        D_800F116C.unk14 = &D_800F1150[17];
-        D_800F116C.unk00.w = 0x210011;
+    } else if (g_eff_command_status[17] == 0) {
+        g_eff_command_block.unk14 = &g_eff_command_status[17];
+        g_eff_command_block.unk00.w = 0x210011;
     }
-    func_80060A68();
+    eff_StartCommand();
     p = arg0;
     D_800F1140.vx = *p++;
     D_800F1140.vy = *p++;
@@ -480,21 +482,21 @@ void func_800617C8(s32 *arg0) {
 
 void func_800618B4(s32 *arg0, s16 *arg1) {
     s32 *p;
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = arg0;
-    D_800F116C.unk10 = arg1;
-    if (D_800F1150[2] != 0 && D_800F1150[3] != 0) {
-        D_800F1150[3] = 0;
-        D_800F1150[2] = 0;
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = arg0;
+    g_eff_command_block.unk10 = arg1;
+    if (g_eff_command_status[2] != 0 && g_eff_command_status[3] != 0) {
+        g_eff_command_status[3] = 0;
+        g_eff_command_status[2] = 0;
     }
-    if (D_800F1150[2] == 0) {
-        D_800A3468->unk14 = &D_800F1150[2];
+    if (g_eff_command_status[2] == 0) {
+        D_800A3468->unk14 = &g_eff_command_status[2];
         D_800A3468->unk00.w = 0x210002;
-    } else if (D_800F1150[3] == 0) {
-        D_800F116C.unk14 = &D_800F1150[3];
-        D_800F116C.unk00.w = 0x210003;
+    } else if (g_eff_command_status[3] == 0) {
+        g_eff_command_block.unk14 = &g_eff_command_status[3];
+        g_eff_command_block.unk00.w = 0x210003;
     }
-    func_80060A68();
+    eff_StartCommand();
     p = arg0;
     D_800F1140.vx = *p++;
     D_800F1140.vy = *p++;
@@ -503,63 +505,63 @@ void func_800618B4(s32 *arg0, s16 *arg1) {
 }
 
 void func_800619A4(s32 *a0) {
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = a0;
-    D_800F116C.unk14 = &D_800F1150[8];
-    D_800F116C.unk00.w = 0x10008;
-    func_80060A68();
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk14 = &g_eff_command_status[8];
+    g_eff_command_block.unk00.w = 0x10008;
+    eff_StartCommand();
 }
 
 void func_800619F0(s32 *a0) {
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = a0;
-    D_800F116C.unk14 = &D_800F1150[7];
-    D_800F116C.unk00.w = 0x10007;
-    func_80060A68();
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk14 = &g_eff_command_status[7];
+    g_eff_command_block.unk00.w = 0x10007;
+    eff_StartCommand();
 }
 
 void func_80061A3C(s32 *a0, s16 a1, s32 a2, s32 a3) {
     s16 sp[4];
 
-    D_800A3468 = &D_800F116C;
+    D_800A3468 = &g_eff_command_block;
     sp[2] = 0;
     sp[0] = 0;
     sp[1] = a1;
-    D_800F116C.unk0C = a0;
-    D_800F116C.unk10 = sp;
+    g_eff_command_block.unk0C = a0;
+    g_eff_command_block.unk10 = sp;
     if (a3 == 0) {
-        D_800F116C.unk14 = &D_800F1150[0];
-        D_800F116C.unk00.w = a2 + 0x10000;
+        g_eff_command_block.unk14 = &g_eff_command_status[0];
+        g_eff_command_block.unk00.w = a2 + 0x10000;
     } else {
-        D_800F116C.unk14 = &D_800F1150[1];
-        D_800F116C.unk00.w = a2 + 0x10001;
+        g_eff_command_block.unk14 = &g_eff_command_status[1];
+        g_eff_command_block.unk00.w = a2 + 0x10001;
     }
-    func_80060A68();
+    eff_StartCommand();
 }
 
 void func_80061ACC(s32 *arg0, s16 *arg1) {
     s32 *p;
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = arg0;
-    D_800F116C.unk10 = arg1;
-    if (D_800F1150[20] != 0 && D_800F1150[21] != 0) {
-        D_800F1150[21] = 0;
-        D_800F1150[20] = 0;
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = arg0;
+    g_eff_command_block.unk10 = arg1;
+    if (g_eff_command_status[20] != 0 && g_eff_command_status[21] != 0) {
+        g_eff_command_status[21] = 0;
+        g_eff_command_status[20] = 0;
     }
-    if (D_800F1150[20] == 0) {
-        D_800A3468->unk14 = &D_800F1150[20];
+    if (g_eff_command_status[20] == 0) {
+        D_800A3468->unk14 = &g_eff_command_status[20];
         D_800A3468->unk00.w = 0x210014;
-        func_80060A68();
-        D_800A3468->unk14 = &D_800F1150[7];
+        eff_StartCommand();
+        D_800A3468->unk14 = &g_eff_command_status[7];
         D_800A3468->unk00.w = 0x10007;
-    } else if (D_800F1150[21] == 0) {
-        D_800F116C.unk14 = &D_800F1150[21];
+    } else if (g_eff_command_status[21] == 0) {
+        g_eff_command_block.unk14 = &g_eff_command_status[21];
         D_800A3468->unk00.w = 0x210015;
-        func_80060A68();
-        D_800A3468->unk14 = &D_800F1150[7];
+        eff_StartCommand();
+        D_800A3468->unk14 = &g_eff_command_status[7];
         D_800A3468->unk00.w = 0x10007;
     }
-    func_80060A68();
+    eff_StartCommand();
     p = arg0;
     D_800F1140.vx = *p++;
     D_800F1140.vy = *p++;
@@ -574,7 +576,7 @@ void func_80061C00(s32 *arg0, s32 arg1, s32 arg2) {
     MATRIX sp30;
     s32 sp50;
 
-    D_800A3468 = &D_800F116C;
+    D_800A3468 = &g_eff_command_block;
     if (arg2 != 1) {
         arg2 = 0;
     }
@@ -599,20 +601,20 @@ void func_80061C00(s32 *arg0, s32 arg1, s32 arg2) {
     sp10.vz = sp20.vz;
     D_800A3468->unk0C = arg0;
     D_800A3468->unk10 = &sp10.vx;
-    if (D_800F1150[22] != 0 && D_800F1150[23] != 0) {
-        D_800F1150[23] = 0;
-        D_800F1150[22] = 0;
+    if (g_eff_command_status[22] != 0 && g_eff_command_status[23] != 0) {
+        g_eff_command_status[23] = 0;
+        g_eff_command_status[22] = 0;
     }
-    if (D_800F1150[22] == 0) {
-        D_800A3468->unk14 = &D_800F1150[22];
+    if (g_eff_command_status[22] == 0) {
+        D_800A3468->unk14 = &g_eff_command_status[22];
         D_800A3468->unk00.w = 0x10016;
         D_800A34F0[0] = arg2;
-    } else if (D_800F1150[23] == 0) {
-        D_800A3468->unk14 = &D_800F1150[23];
+    } else if (g_eff_command_status[23] == 0) {
+        D_800A3468->unk14 = &g_eff_command_status[23];
         D_800A3468->unk00.w = 0x10017;
         D_800A34F0[1] = arg2;
     }
-    func_80060A68();
+    eff_StartCommand();
 }
 
 void func_80061D74(s32 *arg0, s16 arg1) {
@@ -622,7 +624,7 @@ void func_80061D74(s32 *arg0, s16 arg1) {
     MATRIX sp30;
     s32 sp50;
 
-    D_800A3468 = &D_800F116C;
+    D_800A3468 = &g_eff_command_block;
     sp10.vy = -0xA00;
     sp10.vx = 0;
     sp10.vz = 0xA00;
@@ -644,36 +646,36 @@ void func_80061D74(s32 *arg0, s16 arg1) {
     sp10.vz = sp20.vz;
     D_800A3468->unk0C = arg0;
     D_800A3468->unk10 = &sp10.vx;
-    if (D_800F1150[24] != 0 && D_800F1150[25] != 0) {
-        D_800F1150[25] = 0;
-        D_800F1150[24] = 0;
+    if (g_eff_command_status[24] != 0 && g_eff_command_status[25] != 0) {
+        g_eff_command_status[25] = 0;
+        g_eff_command_status[24] = 0;
     }
-    if (D_800F1150[24] == 0) {
-        D_800A3468->unk14 = &D_800F1150[24];
+    if (g_eff_command_status[24] == 0) {
+        D_800A3468->unk14 = &g_eff_command_status[24];
         D_800A3468->unk00.w = 0x10018;
-    } else if (D_800F1150[25] == 0) {
-        D_800A3468->unk14 = &D_800F1150[25];
+    } else if (g_eff_command_status[25] == 0) {
+        D_800A3468->unk14 = &g_eff_command_status[25];
         D_800A3468->unk00.w = 0x10019;
     }
-    func_80060A68();
+    eff_StartCommand();
 }
 
 void func_80061EC0(s32 *arg0) {
     s32 *p;
-    D_800A3468 = &D_800F116C;
-    D_800F116C.unk0C = arg0;
-    if (D_800F1150[18] != 0 && D_800F1150[19] != 0) {
-        D_800F1150[19] = 0;
-        D_800F1150[18] = 0;
+    D_800A3468 = &g_eff_command_block;
+    g_eff_command_block.unk0C = arg0;
+    if (g_eff_command_status[18] != 0 && g_eff_command_status[19] != 0) {
+        g_eff_command_status[19] = 0;
+        g_eff_command_status[18] = 0;
     }
-    if (D_800F1150[18] == 0) {
-        D_800A3468->unk14 = &D_800F1150[18];
+    if (g_eff_command_status[18] == 0) {
+        D_800A3468->unk14 = &g_eff_command_status[18];
         D_800A3468->unk00.w = 0x210012;
-    } else if (D_800F1150[19] == 0) {
-        D_800F116C.unk14 = &D_800F1150[19];
-        D_800F116C.unk00.w = 0x210013;
+    } else if (g_eff_command_status[19] == 0) {
+        g_eff_command_block.unk14 = &g_eff_command_status[19];
+        g_eff_command_block.unk00.w = 0x210013;
     }
-    func_80060A68();
+    eff_StartCommand();
     p = arg0;
     D_800F1140.vx = *p++;
     D_800F1140.vy = *p++;
@@ -873,7 +875,7 @@ s32 func_8006288C(void) {
     s32 i;
     s32 mask;
 
-    D_800F10D0[26] = 1;
+    g_eff_command_phase[26] = 1;
     pos = D_800A347C;
     rot = D_800A3478;
     for (i = 0; i < 6; i++) {
@@ -1024,7 +1026,7 @@ s32 func_8006295C(void) {
         return 1;
     }
     if (D_800A3460 == 0) {
-        D_800F10D0[26] = 0;
+        g_eff_command_phase[26] = 0;
         return 0;
     }
     return D_800A3460;
@@ -1039,7 +1041,7 @@ s32 eff_SpawnBillboardPair(void) {
     s32 bit;
     s32 *src;
 
-    D_800F10D0[8] = 1;
+    g_eff_command_phase[8] = 1;
     for (i = 0; i < 12; i++) {
         bit = 1 << i;
         if (!(D_800A3448 & bit)) {
@@ -1239,13 +1241,13 @@ s32 func_80063084(void) {
 u8 func_80063BD0(s32);
 
 u8 func_80063AF0(void) {
-    D_800F10D0[0] = 1;
+    g_eff_command_phase[0] = 1;
     D_800A345C[0] = (D_800A3468->unk00.w >> 17) & 3;
     return func_80063BD0(0);
 }
 
 u8 func_80063B34(void) {
-    D_800F10D0[1] = 1;
+    g_eff_command_phase[1] = 1;
     D_800A345C[1] = (D_800A3468->unk00.w >> 17) & 3;
     return func_80063BD0(1);
 }
@@ -1443,7 +1445,7 @@ s32 eff_SpawnJitteredBillboards(void) {
     s32 idx;
     s32 mask;
 
-    D_800F10D0[7] = 1;
+    g_eff_command_phase[7] = 1;
     for (i = 0; i < 0xF; i += 4) {
         for (j = 0; j < 4; j++) {
             idx = i + j;
@@ -1599,7 +1601,7 @@ void func_80064E90(void) {
     D_800F0CA0[0].unk0 = D_800A347C[0];
     D_800F0CA0[0].unk4 = D_800A347C[1];
     D_800F0CA0[0].unk8 = D_800A347C[2];
-    D_800F10D0[4] = 1;
+    g_eff_command_phase[4] = 1;
     D_800F0BA8[0] = 0;
 }
 
@@ -1607,7 +1609,7 @@ void func_80064ED8(void) {
     D_800F0CA0[1].unk0 = D_800A347C[0];
     D_800F0CA0[1].unk4 = D_800A347C[1];
     D_800F0CA0[1].unk8 = D_800A347C[2];
-    D_800F10D0[5] = 1;
+    g_eff_command_phase[5] = 1;
     D_800F0BA8[1] = 0;
 }
 
@@ -1615,7 +1617,7 @@ void func_80064F20(void) {
     D_800F0CA0[2].unk0 = D_800A347C[0];
     D_800F0CA0[2].unk4 = D_800A347C[1];
     D_800F0CA0[2].unk8 = D_800A347C[2];
-    D_800F10D0[6] = 1;
+    g_eff_command_phase[6] = 1;
     D_800F0BA8[2] = 0;
 }
 
@@ -1623,7 +1625,7 @@ s32 func_80064F68(void) {
     D_800F0CA0[3].unk0 = D_800A347C[0];
     D_800F0CA0[3].unk4 = D_800A347C[1];
     D_800F0CA0[3].unk8 = D_800A347C[2];
-    D_800F10D0[9] = 1;
+    g_eff_command_phase[9] = 1;
     D_800F0BA8[3] = 0x40;
     return 1;
 }
@@ -1632,7 +1634,7 @@ s32 func_80064FB4(void) {
     D_800F0CA0[4].unk0 = D_800A347C[0];
     D_800F0CA0[4].unk4 = D_800A347C[1];
     D_800F0CA0[4].unk8 = D_800A347C[2];
-    D_800F10D0[10] = 1;
+    g_eff_command_phase[10] = 1;
     D_800F0BA8[4] = 0x40;
     return 1;
 }
@@ -1641,7 +1643,7 @@ s32 func_80065000(void) {
     D_800F0CA0[5].unk0 = D_800A347C[0];
     D_800F0CA0[5].unk4 = D_800A347C[1];
     D_800F0CA0[5].unk8 = D_800A347C[2];
-    D_800F10D0[11] = 1;
+    g_eff_command_phase[11] = 1;
     D_800F0BA8[5] = 0;
     D_800A3440 = (D_800A3468->unk00.w >> 19) & 3;
     return 1;
@@ -1651,7 +1653,7 @@ void func_8006505C(void) {
     D_800F0CA0[6].unk0 = D_800A347C[0];
     D_800F0CA0[6].unk4 = D_800A347C[1];
     D_800F0CA0[6].unk8 = D_800A347C[2];
-    D_800F10D0[12] = 1;
+    g_eff_command_phase[12] = 1;
     D_800F0BA8[6] = 0;
 }
 
@@ -1659,7 +1661,7 @@ void func_800650A4(void) {
     D_800F0CA0[7].unk0 = D_800A347C[0];
     D_800F0CA0[7].unk4 = D_800A347C[1];
     D_800F0CA0[7].unk8 = D_800A347C[2];
-    D_800F10D0[13] = 1;
+    g_eff_command_phase[13] = 1;
     D_800F0BA8[7] = 0;
 }
 
@@ -1667,7 +1669,7 @@ void func_800650EC(void) {
     D_800F0CA0[10].unk0 = D_800A347C[0];
     D_800F0CA0[10].unk4 = D_800A347C[1];
     D_800F0CA0[10].unk8 = D_800A347C[2];
-    D_800F10D0[14] = 1;
+    g_eff_command_phase[14] = 1;
     D_800F0BA8[10] = 0;
 }
 
@@ -1675,7 +1677,7 @@ void func_80065134(void) {
     D_800F0CA0[11].unk0 = D_800A347C[0];
     D_800F0CA0[11].unk4 = D_800A347C[1];
     D_800F0CA0[11].unk8 = D_800A347C[2];
-    D_800F10D0[15] = 1;
+    g_eff_command_phase[15] = 1;
     D_800F0BA8[11] = 0;
 }
 
@@ -1687,7 +1689,7 @@ void func_8006517C(void) {
     D_800F0CA0[14].unk0 = D_800A347C[0];
     D_800F0CA0[14].unk4 = D_800A347C[1];
     D_800F0CA0[14].unk8 = D_800A347C[2];
-    D_800F10D0[16] = 1;
+    g_eff_command_phase[16] = 1;
     D_800F0BA8[14] = 0;
 }
 
@@ -1699,7 +1701,7 @@ void func_800651F0(void) {
     D_800F0CA0[15].unk0 = D_800A347C[0];
     D_800F0CA0[15].unk4 = D_800A347C[1];
     D_800F0CA0[15].unk8 = D_800A347C[2];
-    D_800F10D0[17] = 1;
+    g_eff_command_phase[17] = 1;
     D_800F0BA8[15] = 0;
 }
 
@@ -1707,7 +1709,7 @@ void func_80065264(void) {
     D_800F0CA0[16].unk0 = D_800A347C[0];
     D_800F0CA0[16].unk4 = D_800A347C[1];
     D_800F0CA0[16].unk8 = D_800A347C[2];
-    D_800F10D0[18] = 1;
+    g_eff_command_phase[18] = 1;
     D_800F0BA8[16] = 0;
 }
 
@@ -1715,7 +1717,7 @@ void func_800652AC(void) {
     D_800F0CA0[17].unk0 = D_800A347C[0];
     D_800F0CA0[17].unk4 = D_800A347C[1];
     D_800F0CA0[17].unk8 = D_800A347C[2];
-    D_800F10D0[19] = 1;
+    g_eff_command_phase[19] = 1;
     D_800F0BA8[17] = 0;
 }
 
@@ -2293,97 +2295,97 @@ u8 eff_SpawnParticles(s32, s32, s32);
 
 u8 func_80066EC0(void) {
     u8 ret = eff_SpawnParticles(0, 0, 0);
-    D_800F10D0[2] = 1;
+    g_eff_command_phase[2] = 1;
     return ret;
 }
 
 u8 func_80066EF4(void) {
     u8 ret = eff_SpawnParticles(0, 0, 1);
-    D_800F10D0[2] = 2;
+    g_eff_command_phase[2] = 2;
     return ret;
 }
 
 u8 func_80066F28(void) {
     u8 ret = eff_SpawnParticles(1, 1, 0);
-    D_800F10D0[3] = 1;
+    g_eff_command_phase[3] = 1;
     return ret;
 }
 
 u8 func_80066F5C(void) {
     u8 ret = eff_SpawnParticles(1, 1, 1);
-    D_800F10D0[3] = 2;
+    g_eff_command_phase[3] = 2;
     return ret;
 }
 
 u8 func_80066F90(void) {
     u8 ret = eff_SpawnParticles(2, 1, 0);
-    D_800F10D0[20] = 1;
+    g_eff_command_phase[20] = 1;
     return ret;
 }
 
 u8 func_80066FC4(void) {
     u8 ret = eff_SpawnParticles(2, 1, 1);
-    D_800F10D0[20] = 2;
+    g_eff_command_phase[20] = 2;
     return ret;
 }
 
 u8 func_80066FF8(void) {
     u8 ret = eff_SpawnParticles(3, 0, 0);
-    D_800F10D0[21] = 1;
+    g_eff_command_phase[21] = 1;
     return ret;
 }
 
 u8 func_8006702C(void) {
     u8 ret = eff_SpawnParticles(3, 0, 1);
-    D_800F10D0[21] = 2;
+    g_eff_command_phase[21] = 2;
     return ret;
 }
 
 u8 func_80067060(void) {
     u8 ret = eff_SpawnParticles(4, 2, 0);
-    D_800F10D0[22] = 1;
+    g_eff_command_phase[22] = 1;
     return ret;
 }
 
 u8 func_80067094(void) {
     u8 ret = eff_SpawnParticles(4, 2, 1);
-    D_800F10D0[22] = 2;
+    g_eff_command_phase[22] = 2;
     return ret;
 }
 
 u8 func_800670C8(void) {
     u8 ret = eff_SpawnParticles(5, 3, 0);
-    D_800F10D0[23] = 1;
+    g_eff_command_phase[23] = 1;
     return ret;
 }
 
 u8 func_800670FC(void) {
     u8 ret = eff_SpawnParticles(5, 3, 1);
-    D_800F10D0[23] = 2;
+    g_eff_command_phase[23] = 2;
     return ret;
 }
 
 u8 func_80067130(void) {
     u8 ret = eff_SpawnParticles(6, 3, 0);
-    D_800F10D0[24] = 1;
+    g_eff_command_phase[24] = 1;
     return ret;
 }
 
 u8 func_80067164(void) {
     u8 ret = eff_SpawnParticles(6, 3, 1);
-    D_800F10D0[24] = 2;
+    g_eff_command_phase[24] = 2;
     return ret;
 }
 
 u8 func_80067198(void) {
     u8 ret = eff_SpawnParticles(7, 2, 0);
-    D_800F10D0[25] = 1;
+    g_eff_command_phase[25] = 1;
     return ret;
 }
 
 u8 func_800671CC(void) {
     u8 ret = eff_SpawnParticles(7, 2, 1);
-    D_800F10D0[25] = 2;
+    g_eff_command_phase[25] = 2;
     return ret;
 }
 

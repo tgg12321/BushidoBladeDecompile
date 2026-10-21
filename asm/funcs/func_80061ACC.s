@@ -7,8 +7,8 @@ glabel func_80061ACC
     /* 522E0 80061AE0 64111026 */  addiu      $s0, $s0, %lo(D_800F1164)
     /* 522E4 80061AE4 1800BFAF */  sw         $ra, 0x18($sp)
     /* 522E8 80061AE8 00000292 */  lbu        $v0, 0x0($s0)
-    /* 522EC 80061AEC 0F80043C */  lui        $a0, %hi(D_800F116C)
-    /* 522F0 80061AF0 6C118424 */  addiu      $a0, $a0, %lo(D_800F116C)
+    /* 522EC 80061AEC 0F80043C */  lui        $a0, %hi(g_eff_command_block)
+    /* 522F0 80061AF0 6C118424 */  addiu      $a0, $a0, %lo(g_eff_command_block)
     /* 522F4 80061AF4 9C0384AF */  sw         $a0, %gp_rel(D_800A3468)($gp)
     /* 522F8 80061AF8 0F80013C */  lui        $at, %hi(D_800F1178)
     /* 522FC 80061AFC 781131AC */  sw         $s1, %lo(D_800F1178)($at)
@@ -34,7 +34,7 @@ glabel func_80061ACC
     /* 52344 80061B44 0F80103C */  lui        $s0, %hi(D_800F1164)
     /* 52348 80061B48 64111026 */  addiu      $s0, $s0, %lo(D_800F1164)
     /* 5234C 80061B4C 140050AC */  sw         $s0, 0x14($v0)
-    /* 52350 80061B50 9A82010C */  jal        func_80060A68
+    /* 52350 80061B50 9A82010C */  jal        eff_StartCommand
     /* 52354 80061B54 000043AC */   sw        $v1, 0x0($v0)
     /* 52358 80061B58 0100033C */  lui        $v1, (0x10007 >> 16)
     /* 5235C 80061B5C 07006334 */  ori        $v1, $v1, (0x10007 & 0xFFFF)
@@ -49,9 +49,9 @@ glabel func_80061ACC
     /* 5237C 80061B7C 0C004014 */  bnez       $v0, .L80061BB0
     /* 52380 80061B80 2100023C */   lui       $v0, (0x210015 >> 16)
     /* 52384 80061B84 15004234 */  ori        $v0, $v0, (0x210015 & 0xFFFF)
-    /* 52388 80061B88 0F80013C */  lui        $at, %hi(D_800F116C + 0x14)
-    /* 5238C 80061B8C 801123AC */  sw         $v1, %lo(D_800F116C + 0x14)($at)
-    /* 52390 80061B90 9A82010C */  jal        func_80060A68
+    /* 52388 80061B88 0F80013C */  lui        $at, %hi(g_eff_command_block + 0x14)
+    /* 5238C 80061B8C 801123AC */  sw         $v1, %lo(g_eff_command_block + 0x14)($at)
+    /* 52390 80061B90 9A82010C */  jal        eff_StartCommand
     /* 52394 80061B94 000082AC */   sw        $v0, 0x0($a0)
     /* 52398 80061B98 0100043C */  lui        $a0, (0x10007 >> 16)
     /* 5239C 80061B9C 07008434 */  ori        $a0, $a0, (0x10007 & 0xFFFF)
@@ -60,7 +60,7 @@ glabel func_80061ACC
     /* 523A8 80061BA8 140062AC */  sw         $v0, 0x14($v1)
     /* 523AC 80061BAC 000064AC */  sw         $a0, 0x0($v1)
   .L80061BB0:
-    /* 523B0 80061BB0 9A82010C */  jal        func_80060A68
+    /* 523B0 80061BB0 9A82010C */  jal        eff_StartCommand
     /* 523B4 80061BB4 00000000 */   nop
     /* 523B8 80061BB8 0000228E */  lw         $v0, 0x0($s1)
     /* 523BC 80061BBC 0F80013C */  lui        $at, %hi(D_800F1140)
