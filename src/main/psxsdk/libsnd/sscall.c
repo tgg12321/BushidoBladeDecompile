@@ -8,7 +8,7 @@
 extern s16 _snd_seq_s_max; /* _snd_seq_s_max */
 extern s16 _snd_seq_t_max; /* _snd_seq_t_max */
 
-static void SsSeqCalledTbyT(void) {
+void SsSeqCalledTbyT(void) {
     int i;
     int j;
     if (_snd_ev_flag != 1) {

@@ -145,7 +145,7 @@ enddlabel _snd_seq_tick_env_plus_0x4
 nonmatching _snd_seq_tick_env_plus_0x8
 
 dlabel _snd_seq_tick_env_plus_0x8
-    /* 92ED4 800A26D4 6C3F0880 */ .word 0x80083F6C
+    /* 92ED4 800A26D4 6C3F0880 */ .word SsSeqCalledTbyT
 enddlabel _snd_seq_tick_env_plus_0x8
 
 nonmatching _snd_seq_tick_env_plus_0xC
