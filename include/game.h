@@ -1390,7 +1390,8 @@ typedef struct Unk800F1B18Rec {
  * motion_ResolveMoveData returns pointers into; Unk80101EC8Record.cur_move is
  * the current move, queued_move a buffered one).  event_move_table_id is a move
  * id that resolves to a u16 move-id table indexed by event code,
- * fallback_move_id the move that follows when the script runs out,
+ * fallback_move_id the move installed when nothing more specific applies (past
+ * last_move_frame with no queued move or 0x2000 entry, and on landing),
  * last_move_frame / last_command_frame frame bounds against
  * Unk80101EC8Record.move_frame, unk_09 flag bits (fighter_Update,
  * fighter_BuildCpuPad, func_80058580); transition_commands starts the command
@@ -1835,7 +1836,7 @@ typedef struct Unk800FF5C8Rec {
  * back and passes two of them to func_8001BAE4 / func_8001BBD8,
  * motion_ApplyRecordedPoseAdjustments reads b14..b16 / b18).
  * - w0: the character's current move (Unk80101EC8Record.cur_move);
- * replay_PlayFrame reads its unk_04.
+ * replay_PlayFrame reads its motion_bank_entry_index.
  * - h4 / h6 / h8: world_pos x / y / z; hA: orientation.vy & 0xFFF with unk_B3
  * in the top four bits; hC: unk_148; hE / h10 / h12: unk_64 / unk_66 /
  * pose_interp_weight.
