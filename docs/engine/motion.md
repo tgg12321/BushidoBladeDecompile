@@ -42,7 +42,7 @@ current move of fighter `i`: `cur_move = script`, `motion_entry_index = script->
 `motion_entry` / `motion_metadata` point at the script's entry in the file's `unk_04` table
 and at the byte stream it names in `unk_08` (the frame-window stream that
 [combat.md](combat.md) describes). It also resets the frame counter `move_frame`
-from `script->unk_06` and records the previous state in `prev_move_kind`.
+from `script->first_move_frame` and records the previous state in `prev_move_kind`.
 
 The script's own fields (`unk_00` / `unk_02` follow-up ids, `unk_07` /
 `unk_08` frame bounds, `unk_09` flags, and the command list from `unk_0A`)
