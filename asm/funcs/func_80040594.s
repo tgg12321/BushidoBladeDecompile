@@ -108,10 +108,10 @@ glabel func_80040594
     /* 30F1C 8004071C 82801000 */  srl        $s0, $s0, 2
     /* 30F20 80040720 80801000 */  sll        $s0, $s0, 2
     /* 30F24 80040724 21803002 */  addu       $s0, $s1, $s0
-    /* 30F28 80040728 0410010C */  jal        func_80044010
+    /* 30F28 80040728 0410010C */  jal        reloc_RelocateBlock
     /* 30F2C 8004072C 280042AE */   sw        $v0, 0x28($s2)
     /* 30F30 80040730 16004586 */  lh         $a1, 0x16($s2)
-    /* 30F34 80040734 0410010C */  jal        func_80044010
+    /* 30F34 80040734 0410010C */  jal        reloc_RelocateBlock
     /* 30F38 80040738 21200002 */   addu      $a0, $s0, $zero
     /* 30F3C 8004073C 04005086 */  lh         $s0, 0x4($s2)
     /* 30F40 80040740 01000224 */  addiu      $v0, $zero, 0x1
@@ -132,7 +132,7 @@ glabel func_80040594
     /* 30F7C 8004077C C0FE0724 */  addiu      $a3, $zero, -0x140
     /* 30F80 80040780 14004486 */  lh         $a0, 0x14($s2)
     /* 30F84 80040784 E8000224 */  addiu      $v0, $zero, 0xE8
-    /* 30F88 80040788 A80C010C */  jal        func_800432A0
+    /* 30F88 80040788 A80C010C */  jal        gpu_OffsetBlockTexPrimStreams
     /* 30F8C 8004078C 1000A2AF */   sw        $v0, 0x10($sp)
     /* 30F90 80040790 21206002 */  addu       $a0, $s3, $zero
     /* 30F94 80040794 21280000 */  addu       $a1, $zero, $zero
@@ -160,7 +160,7 @@ glabel func_80040594
     /* 30FE8 800407E8 C0FE0724 */  addiu      $a3, $zero, -0x140
     /* 30FEC 800407EC 14004486 */  lh         $a0, 0x14($s2)
     /* 30FF0 800407F0 E8000224 */  addiu      $v0, $zero, 0xE8
-    /* 30FF4 800407F4 A80C010C */  jal        func_800432A0
+    /* 30FF4 800407F4 A80C010C */  jal        gpu_OffsetBlockTexPrimStreams
     /* 30FF8 800407F8 1000A2AF */   sw        $v0, 0x10($sp)
     /* 30FFC 800407FC 21206002 */  addu       $a0, $s3, $zero
     /* 31000 80040800 21280000 */  addu       $a1, $zero, $zero
@@ -177,7 +177,7 @@ glabel func_80040594
     /* 31028 80040828 21300000 */  addu       $a2, $zero, $zero
     /* 3102C 8004082C 14004486 */  lh         $a0, 0x14($s2)
     /* 31030 80040830 02000724 */  addiu      $a3, $zero, 0x2
-    /* 31034 80040834 E60C010C */  jal        func_80043398
+    /* 31034 80040834 E60C010C */  jal        gpu_OffsetBlockTexPrimStreamsByPages
     /* 31038 80040838 1000A0AF */   sw        $zero, 0x10($sp)
   .L8004083C:
     /* 3103C 8004083C B206010C */  jal        func_80041AC8

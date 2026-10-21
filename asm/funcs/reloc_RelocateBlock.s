@@ -1,4 +1,4 @@
-glabel func_80044010
+glabel reloc_RelocateBlock
     /* 34810 80044010 21308000 */  addu       $a2, $a0, $zero
     /* 34814 80044014 002C0500 */  sll        $a1, $a1, 16
     /* 34818 80044018 0000838C */  lw         $v1, 0x0($a0)
@@ -35,4 +35,4 @@ glabel func_80044010
     /* 3488C 8004408C 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 34890 80044090 0800E003 */  jr         $ra
     /* 34894 80044094 00000000 */   nop
-endlabel func_80044010
+endlabel reloc_RelocateBlock

@@ -8,7 +8,7 @@
 #include "include_asm.h"
 #include <psxsdk/libgte.h>
 
-void func_80042504(s32 *arg0, s32 *arg1) {
+void math_HsvToRgb(s32 *arg0, s32 *arg1) {
     s32 h = arg0[0];
     s32 s = arg0[1];
     s32 v = arg0[2];
@@ -77,7 +77,7 @@ out:
     arg1[2] = b;
 }
 
-/* RGB -> HSV (4.12 fixed point). Inverse of func_80042504 above.
+/* RGB -> HSV (4.12 fixed point). Inverse of math_HsvToRgb above.
  * Outputs a1[] = { H, S, val }; val (V) = max(r,g,b) is the third
  * output channel, held separately from the max used for the (max - min)
  * deltas / max-channel compares. */
@@ -395,7 +395,7 @@ void math_RotMatrixXYZ(u16 *a0, MATRIX *a1) {
 
 extern void math_RotMatrixXYZ();
 
-void func_80042E90(void) {
+void math_InitRotMatrixFuncs(void) {
     D_800F66A0[0] = math_RotMatrixZYX;
     /* the three below take their angles as u16 *, not SVECTOR * */
     D_800F66A0[2] = (RotMatrixFunc)math_RotMatrixZXY;
@@ -536,7 +536,8 @@ s32 func_80043278(s32 a0) {
 extern u16 D_80103658[];
 extern void gpu_OffsetTexPrimStream(s16, s16, s16, s16);
 
-void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
+void gpu_OffsetBlockTexPrimStreams(
+    s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     u16 arg4_lo = arg4;
     s16 i;
 
@@ -546,15 +547,16 @@ void func_800432A0(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s32 arg4) {
     }
 }
 
-void func_80043398(s16 a0, s16 a1, s16 a2, s16 a3, s16 a4) {
-    func_800432A0(
+void gpu_OffsetBlockTexPrimStreamsByPages(
+    s16 a0, s16 a1, s16 a2, s16 a3, s16 a4) {
+    gpu_OffsetBlockTexPrimStreams(
         a0, (s16)(a1 << 6), (s16)(a2 << 8), (s16)(a3 << 6), (s16)(a4 << 8));
 }
 
 /* Old-style definition: the only caller, func_80045B68, passes every
  * argument as a plain int (no sign-extension at the call site), so no
  * prototype was in scope there; the body narrows each argument itself. */
-void func_800433E4(arg0, arg1, arg2, arg3, arg4, arg5) s16 arg0;
+void gpu_OffsetBlockTexPrimStream(arg0, arg1, arg2, arg3, arg4, arg5) s16 arg0;
 s16 arg1;
 s16 arg2;
 s16 arg3;
@@ -892,8 +894,8 @@ s16 gpu_OffsetClut(s16 a0, s16 a1, s32 a2) {
  * relocated (keeping the low halfword), records its first word (p + 1) and
  * count in D_80103608 / D_80103658 [arg1], and, if it was not relocated yet,
  * turns each word's block-relative offset into an address by adding the
- * block's base. func_80044098 is the inverse. */
-void func_80044010(s32 *p, s16 arg1) {
+ * block's base. reloc_UnrelocateBlock is the inverse. */
+void reloc_RelocateBlock(s32 *p, s16 arg1) {
     s32 *base = p;
     s32 var_1;
     s32 i;
@@ -912,7 +914,7 @@ void func_80044010(s32 *p, s16 arg1) {
     }
 }
 
-void func_80044098(s16 a0) {
+void reloc_UnrelocateBlock(s16 a0) {
     s32 *v1;
     s32 a4;
     s32 *a6;
@@ -939,7 +941,7 @@ void func_80044098(s16 a0) {
     }
 }
 
-void func_80044100(s32 a0, s32 a1) {
+void reloc_RebaseBlock(s32 a0, s32 a1) {
     s32 *ptr = D_80103608[a0];
     s32 count = D_80103658[a0];
     D_80103608[a0] = (ptr = ptr + (a1 / 4));
@@ -957,7 +959,7 @@ typedef char *va_list;
 #define va_start(ap, last) ((ap) = (va_list)(&(last) + 1))
 #define va_arg(ap, type) ((type *)(void *)(ap += 4))[-1]
 
-s32 func_80044170(s32 *a0, ...) {
+s32 reloc_KeepListedEntries(s32 *a0, ...) {
     s32 *base;
     s32 old_first;
     s32 count;
@@ -1003,7 +1005,7 @@ s32 func_80044170(s32 *a0, ...) {
     return dest;
 }
 
-s32 func_8004428C(s32 *base, s16 *offsets) {
+s32 reloc_KeepSelectedEntries(s32 *base, s16 *offsets) {
     /* FAKE: param alias gives the target's prologue save order
        (pointer-alias-fake-exception); base used directly: score 4 */
     s32 *b = base;
@@ -1055,7 +1057,7 @@ done:
     return ret;
 }
 
-s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *arg2) {
+s32 reloc_CopySelectedEntries(s32 src_base, s32 *dest_arr, s16 *arg2) {
     s16 *var_0;
     s16 *var_1;
     s32 *orig_dest;
@@ -1119,7 +1121,7 @@ s32 func_80044378(s32 src_base, s32 *dest_arr, s16 *arg2) {
 
 extern s16 D_8010367E;
 
-void func_80044498(void) {
+void reloc_ClearCounts(void) {
     s32 i = 0x13;
     s16 *p = &D_8010367E;
     for (; i >= 0; i--) {

@@ -1,4 +1,4 @@
-glabel func_80042504
+glabel math_HsvToRgb
     /* 32D04 80042504 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 32D08 80042508 2800B6AF */  sw         $s6, 0x28($sp)
     /* 32D0C 8004250C 2C00BFAF */  sw         $ra, 0x2C($sp)
@@ -105,4 +105,4 @@ glabel func_80042504
     /* 32E78 80042678 3000BD27 */  addiu      $sp, $sp, 0x30
     /* 32E7C 8004267C 0800E003 */  jr         $ra
     /* 32E80 80042680 00000000 */   nop
-endlabel func_80042504
+endlabel math_HsvToRgb

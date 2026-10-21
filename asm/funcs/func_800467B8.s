@@ -43,7 +43,7 @@ glabel func_800467B8
     /* 37054 80046854 8C14010C */  jal        arena_UpdatePeak
     /* 37058 80046858 21805002 */   addu      $s0, $s2, $s0
     /* 3705C 8004685C 21200002 */  addu       $a0, $s0, $zero
-    /* 37060 80046860 0410010C */  jal        func_80044010
+    /* 37060 80046860 0410010C */  jal        reloc_RelocateBlock
     /* 37064 80046864 09000524 */   addiu     $a1, $zero, 0x9
     /* 37068 80046868 21208002 */  addu       $a0, $s4, $zero
     /* 3706C 8004686C 8015010C */  jal        arena_SetBlockEnd

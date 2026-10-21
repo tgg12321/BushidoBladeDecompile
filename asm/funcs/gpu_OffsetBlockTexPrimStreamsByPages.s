@@ -1,4 +1,4 @@
-glabel func_80043398
+glabel gpu_OffsetBlockTexPrimStreamsByPages
     /* 33B98 80043398 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 33B9C 8004339C 00240400 */  sll        $a0, $a0, 16
     /* 33BA0 800433A0 802D0500 */  sll        $a1, $a1, 22
@@ -12,10 +12,10 @@ glabel func_80043398
     /* 33BC0 800433C0 1800BFAF */  sw         $ra, 0x18($sp)
     /* 33BC4 800433C4 00160200 */  sll        $v0, $v0, 24
     /* 33BC8 800433C8 03140200 */  sra        $v0, $v0, 16
-    /* 33BCC 800433CC A80C010C */  jal        func_800432A0
+    /* 33BCC 800433CC A80C010C */  jal        gpu_OffsetBlockTexPrimStreams
     /* 33BD0 800433D0 1000A2AF */   sw        $v0, 0x10($sp)
     /* 33BD4 800433D4 1800BF8F */  lw         $ra, 0x18($sp)
     /* 33BD8 800433D8 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 33BDC 800433DC 0800E003 */  jr         $ra
     /* 33BE0 800433E0 00000000 */   nop
-endlabel func_80043398
+endlabel gpu_OffsetBlockTexPrimStreamsByPages

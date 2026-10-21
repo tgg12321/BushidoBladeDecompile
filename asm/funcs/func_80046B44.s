@@ -5,9 +5,9 @@ glabel func_80046B44
     /* 37350 80046B50 00000000 */   nop
     /* 37354 80046B54 7414010C */  jal        arena_Reset
     /* 37358 80046B58 00000000 */   nop
-    /* 3735C 80046B5C A40B010C */  jal        func_80042E90
+    /* 3735C 80046B5C A40B010C */  jal        math_InitRotMatrixFuncs
     /* 37360 80046B60 00000000 */   nop
-    /* 37364 80046B64 2611010C */  jal        func_80044498
+    /* 37364 80046B64 2611010C */  jal        reloc_ClearCounts
     /* 37368 80046B68 00000000 */   nop
     /* 3736C 80046B6C 9327010C */  jal        func_80049E4C
     /* 37370 80046B70 00000000 */   nop

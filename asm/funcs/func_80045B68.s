@@ -203,19 +203,19 @@ glabel func_80045B68
     /* 36630 80045E30 5801A88F */  lw         $t0, 0x158($sp)
     /* 36634 80045E34 6001A48F */  lw         $a0, 0x160($sp)
     /* 36638 80045E38 04001025 */  addiu      $s0, $t0, 0x4
-    /* 3663C 80045E3C DE10010C */  jal        func_80044378
+    /* 3663C 80045E3C DE10010C */  jal        reloc_CopySelectedEntries
     /* 36640 80045E40 21280002 */   addu      $a1, $s0, $zero
     /* 36644 80045E44 21984000 */  addu       $s3, $v0, $zero
     /* 36648 80045E48 99170108 */  j          .L80045E64
     /* 3664C 80045E4C 21200002 */   addu      $a0, $s0, $zero
   .L80045E50:
     /* 36650 80045E50 6001A48F */  lw         $a0, 0x160($sp)
-    /* 36654 80045E54 A310010C */  jal        func_8004428C
+    /* 36654 80045E54 A310010C */  jal        reloc_KeepSelectedEntries
     /* 36658 80045E58 1800A527 */   addiu     $a1, $sp, 0x18
     /* 3665C 80045E5C 21984000 */  addu       $s3, $v0, $zero
     /* 36660 80045E60 6001A48F */  lw         $a0, 0x160($sp)
   .L80045E64:
-    /* 36664 80045E64 0410010C */  jal        func_80044010
+    /* 36664 80045E64 0410010C */  jal        reloc_RelocateBlock
     /* 36668 80045E68 06000524 */   addiu     $a1, $zero, 0x6
     /* 3666C 80045E6C 8C14010C */  jal        arena_UpdatePeak
     /* 36670 80045E70 21206002 */   addu      $a0, $s3, $zero
@@ -288,7 +288,7 @@ glabel func_80045B68
   .L80045F64:
     /* 36764 80045F64 1400B5AF */  sw         $s5, 0x14($sp)
   .L80045F68:
-    /* 36768 80045F68 F90C010C */  jal        func_800433E4
+    /* 36768 80045F68 F90C010C */  jal        gpu_OffsetBlockTexPrimStream
     /* 3676C 80045F6C 02005226 */   addiu     $s2, $s2, 0x2
   .L80045F70:
     /* 36770 80045F70 04001026 */  addiu      $s0, $s0, 0x4

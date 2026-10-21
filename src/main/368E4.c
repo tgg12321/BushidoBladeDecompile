@@ -141,7 +141,7 @@ void func_800460E4(s32 arg0, s32 arg1) {
     case 7:
     case 18:
         s1 = s2;
-        func_80044010((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
+        reloc_RelocateBlock((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
         s1 =
             (s32 *)func_80044670((s16 *)PTR_OFF(s0, ALIGN4(s0[6])), 8, (s32)s1);
         break;
@@ -153,7 +153,7 @@ void func_800460E4(s32 arg0, s32 arg1) {
         s1 = s2;
         s6 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 2]));
         s4 = (s32 *)((u8 *)s0 + ALIGN4(s0[s3 - 1]));
-        func_80044010((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
+        reloc_RelocateBlock((s32 *)PTR_OFF(s0, ALIGN4(s0[5])), 8);
         D_8009947A = 1;
         break;
     case 34:
@@ -163,7 +163,7 @@ void func_800460E4(s32 arg0, s32 arg1) {
         break;
     }
 
-    func_80044010(s6, 7);
+    reloc_RelocateBlock(s6, 7);
     func_800481E8((s32)var_7, 0);
     func_8003EDC0((u16 *)s4, 7);
     collision_SetGrid((s32)sp10);
@@ -203,7 +203,7 @@ void func_800464C4(void) {
         s1 = (s32 *)((u8 *)s0 + v0);
         break;
     }
-    func_80044010(a0, 7);
+    reloc_RelocateBlock(a0, 7);
     func_8003EDC0((u16 *)s1, 7);
     arena_Resize(7, (s32)((u8 *)s1 - (u8 *)s0));
     D_8009947A = 0;
@@ -236,8 +236,8 @@ void func_8004659C(s32 a0) {
     v0 += 4;
     s1p = (s32 *)((u8 *)s0 + *(s32 *)v0);
     s0p = (s32 *)((u8 *)s0 + *(s32 *)(v0 + 4));
-    func_80044098(7);
-    func_80044010(s2, 7);
+    reloc_UnrelocateBlock(7);
+    reloc_RelocateBlock(s2, 7);
     collision_SetGrid(s3);
     D_800A33B0 = (s32)s4p;
     D_800A33B4 = (s32)s1p;
@@ -255,7 +255,7 @@ extern void wave_MoveCellBuffer(s32);
 
 void func_800466C0(s32 a0, s32 a1) {
     s32 var_0;
-    func_80044100(7, a1);
+    reloc_RebaseBlock(7, a1);
     collision_RebaseGrid(a1);
     var_0 = (a1 / 4) * 4;
     D_800A33B0 += var_0;
@@ -267,7 +267,7 @@ void func_800466C0(s32 a0, s32 a1) {
         func_80044C70(a1);
         break;
     case 13:
-        func_80044100(8);
+        reloc_RebaseBlock(8);
         break;
     case 11:
         wave_MoveCellBuffer(a1);
@@ -342,7 +342,7 @@ s32 *func_800467B8(s32 a0) {
                 s0 = (s32 *)((u8 *)s2 + off0);
             }
             arena_UpdatePeak((s32)s1);
-            func_80044010(s0, 9);
+            reloc_RelocateBlock(s0, 9);
             arena_SetBlockEnd(var_1, (s32)s1);
             D_800A3248 = arg;
         }
@@ -358,7 +358,7 @@ void func_800468B0(s32 a0) {
 
 void func_800468DC(s32 a0, s32 a1) {
     func_80048B8C(a1);
-    func_80044100(9, a1);
+    reloc_RebaseBlock(9, a1);
 }
 
 void func_80046914(void) { arena_Free(8); }
@@ -423,8 +423,8 @@ void func_80046B44(void) {
 
     ndata_StartReadInf();
     arena_Reset();
-    func_80042E90();
-    func_80044498();
+    math_InitRotMatrixFuncs();
+    reloc_ClearCounts();
     func_80049E4C();
     light_InitDefaults();
     gpu_InitFogDrawMoves();

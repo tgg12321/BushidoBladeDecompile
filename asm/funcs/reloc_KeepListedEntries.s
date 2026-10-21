@@ -1,4 +1,4 @@
-glabel func_80044170
+glabel reloc_KeepListedEntries
     /* 34970 80044170 0000A4AF */  sw         $a0, 0x0($sp)
     /* 34974 80044174 0400A5AF */  sw         $a1, 0x4($sp)
     /* 34978 80044178 0800A6AF */  sw         $a2, 0x8($sp)
@@ -73,4 +73,4 @@ glabel func_80044170
     /* 34A80 80044280 3800BD27 */  addiu      $sp, $sp, 0x38
     /* 34A84 80044284 0800E003 */  jr         $ra
     /* 34A88 80044288 00000000 */   nop
-endlabel func_80044170
+endlabel reloc_KeepListedEntries

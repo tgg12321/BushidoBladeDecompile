@@ -39,10 +39,10 @@ glabel func_8004659C
     /* 36E2C 8004662C 21981302 */  addu       $s3, $s0, $s3
     /* 36E30 80046630 21A01402 */  addu       $s4, $s0, $s4
     /* 36E34 80046634 21881102 */  addu       $s1, $s0, $s1
-    /* 36E38 80046638 2610010C */  jal        func_80044098
+    /* 36E38 80046638 2610010C */  jal        reloc_UnrelocateBlock
     /* 36E3C 8004663C 21800202 */   addu      $s0, $s0, $v0
     /* 36E40 80046640 21204002 */  addu       $a0, $s2, $zero
-    /* 36E44 80046644 0410010C */  jal        func_80044010
+    /* 36E44 80046644 0410010C */  jal        reloc_RelocateBlock
     /* 36E48 80046648 07000524 */   addiu     $a1, $zero, 0x7
     /* 36E4C 8004664C 0451010C */  jal        collision_SetGrid
     /* 36E50 80046650 21206002 */   addu      $a0, $s3, $zero

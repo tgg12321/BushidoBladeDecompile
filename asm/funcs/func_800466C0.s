@@ -3,7 +3,7 @@ glabel func_800466C0
     /* 36EC4 800466C4 1000B0AF */  sw         $s0, 0x10($sp)
     /* 36EC8 800466C8 2180A000 */  addu       $s0, $a1, $zero
     /* 36ECC 800466CC 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 36ED0 800466D0 4010010C */  jal        func_80044100
+    /* 36ED0 800466D0 4010010C */  jal        reloc_RebaseBlock
     /* 36ED4 800466D4 07000424 */   addiu     $a0, $zero, 0x7
     /* 36ED8 800466D8 0751010C */  jal        collision_RebaseGrid
     /* 36EDC 800466DC 21200002 */   addu      $a0, $s0, $zero
@@ -39,7 +39,7 @@ glabel func_800466C0
     /* 36F4C 8004674C DB190108 */  j          .L8004676C
     /* 36F50 80046750 00000000 */   nop
   jlabel .L80046754
-    /* 36F54 80046754 4010010C */  jal        func_80044100
+    /* 36F54 80046754 4010010C */  jal        reloc_RebaseBlock
     /* 36F58 80046758 08000424 */   addiu     $a0, $zero, 0x8
     /* 36F5C 8004675C DB190108 */  j          .L8004676C
     /* 36F60 80046760 00000000 */   nop

@@ -1961,11 +1961,11 @@ typedef struct {
 } Unk800F62E0Rec;              /* 0x60 */
 
 /* 0x800F66A0: the rotation-to-matrix handlers a transform node's rotation_order
- * selects (rot -> matrix, PsyQ RotMatrix shape).  func_80042E90 fills [0] ZYX,
- * [2] ZXY, [4] YXZ, [5] XYZ ([1] and [3] are never written); the nodes set
- * rotation_order to 0, 2, 4 and 5, and func_8003EDC0 / node_UpdateWorldMatrix /
- * node_SetMatrixFromNegatedRot / func_800472C0 index it by rotation_order
- * (4-byte stride).  _svm_vab_vh follows at 0x800F66B8. */
+ * selects (rot -> matrix, PsyQ RotMatrix shape).  math_InitRotMatrixFuncs fills
+ * [0] ZYX, [2] ZXY, [4] YXZ, [5] XYZ ([1] and [3] are never written); the nodes
+ * set rotation_order to 0, 2, 4 and 5, and func_8003EDC0 /
+ * node_UpdateWorldMatrix / node_SetMatrixFromNegatedRot / func_800472C0 index
+ * it by rotation_order (4-byte stride).  _svm_vab_vh follows at 0x800F66B8. */
 typedef void (*RotMatrixFunc)(SVECTOR *, MATRIX *);
 
 /* The 0x68-byte records of the table func_8003F1D4 returns: a transform
@@ -2027,8 +2027,8 @@ typedef struct {
  * clears it and runs its setup; unk_08: func_80045878's a1, indexing the
  * D_80094C68 / D_80094B48 tables.
  * - unk_10 / unk_14 / unk_16: func_80045878's a0 / a0 / a0 + 3 (unk_14 / unk_16
- * are the func_80044010 / func_800432A0 ids); position_scale: the Q12 scale
- * func_800408F8 sets from D_80094C68.
+ * are the reloc_RelocateBlock / gpu_OffsetBlockTexPrimStreams ids);
+ * position_scale: the Q12 scale func_800408F8 sets from D_80094C68.
  * - unk_18: written as the word 0x8000 by func_80045878, read as three colour
  * bytes by func_80041688.
  * - unk_1C / unk_20: the resource blocks func_80045878 stores; unk_24 /

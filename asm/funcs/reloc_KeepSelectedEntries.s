@@ -1,4 +1,4 @@
-glabel func_8004428C
+glabel reloc_KeepSelectedEntries
     /* 34A8C 8004428C C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 34A90 80044290 1C00B3AF */  sw         $s3, 0x1C($sp)
     /* 34A94 80044294 2198A000 */  addu       $s3, $a1, $zero
@@ -61,4 +61,4 @@ glabel func_8004428C
     /* 34B6C 8004436C 3800BD27 */  addiu      $sp, $sp, 0x38
     /* 34B70 80044370 0800E003 */  jr         $ra
     /* 34B74 80044374 00000000 */   nop
-endlabel func_8004428C
+endlabel reloc_KeepSelectedEntries

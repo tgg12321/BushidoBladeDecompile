@@ -6,7 +6,7 @@ glabel func_80046048
     /* 36858 80046058 2000BFAF */  sw         $ra, 0x20($sp)
     /* 3685C 8004605C 1C00B3AF */  sw         $s3, 0x1C($sp)
     /* 36860 80046060 1400B1AF */  sw         $s1, 0x14($sp)
-    /* 36864 80046064 4010010C */  jal        func_80044100
+    /* 36864 80046064 4010010C */  jal        reloc_RebaseBlock
     /* 36868 80046068 1000B0AF */   sw        $s0, 0x10($sp)
     /* 3686C 8004606C E815010C */  jal        arena_GetBlockAddr
     /* 36870 80046070 06000424 */   addiu     $a0, $zero, 0x6

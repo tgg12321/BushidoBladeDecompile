@@ -490,15 +490,15 @@ extern Unk801027B0Rec g_motion_common_sections;
 extern Unk80102778Rec D_80102778;
 extern PadState g_pad_state;
 extern Unk801027B0Rec g_motion_fighter_sections[]; /* per load slot */
-/* [i] points to block i's slots, the words after its header word (func_80044010
- * records it and D_80103658[i] holds the slot count).  Each slot is a
- * word holding a block-relative offset that func_80044010 turns into an address
- * by adding the block's base, unless header bit 15 marks the block relocated;
- * func_80044098 subtracts the base again (and clears bit 15), and func_80044100
- * moves [i] by a1 / 4 words and adds a1 to each slot.  func_800432A0 /
- * func_800433E4 store a slot to scratchpad word 0, the u16 * cursor
- * gpu_OffsetTexPrimStream reads, and softbody_CreateForNode reads u16 data
- * through one.
+/* [i] points to block i's slots, the words after its header word
+ * (reloc_RelocateBlock records it and D_80103658[i] holds the slot count). Each
+ * slot is a word holding a block-relative offset that reloc_RelocateBlock turns
+ * into an address by adding the block's base, unless header bit 15 marks the
+ * block relocated; reloc_UnrelocateBlock subtracts the base again (and clears
+ * bit 15), and reloc_RebaseBlock moves [i] by a1 / 4 words and adds a1 to each
+ * slot.  gpu_OffsetBlockTexPrimStreams / gpu_OffsetBlockTexPrimStream store a
+ * slot to scratchpad word 0, the u16 * cursor gpu_OffsetTexPrimStream reads,
+ * and softbody_CreateForNode reads u16 data through one.
  */
 extern s32 *D_80103608[];
 extern Unk80104E88Rec D_80104E88[];
@@ -810,19 +810,19 @@ extern void light_SetPointLightTarget(s32, s32);
 extern void light_ApplyPointLightTargets(void);
 extern void light_DisablePointLight(void);
 extern void func_800421C8(s32);
-extern void func_80042E90(void);
-extern void func_800432A0(s16, s16, s16, s16, s32);
-extern void func_80043398(s16, s16, s16, s16, s16);
+extern void math_InitRotMatrixFuncs(void);
+extern void gpu_OffsetBlockTexPrimStreams(s16, s16, s16, s16, s32);
+extern void gpu_OffsetBlockTexPrimStreamsByPages(s16, s16, s16, s16, s16);
 extern s16 gpu_OffsetTPage(s16, s16, s16);
 extern s16 gpu_OffsetClut(s16, s16, s32);
-extern void func_80044010(s32 *, s16);
-extern void func_80044098(s16);
+extern void reloc_RelocateBlock(s32 *, s16);
+extern void reloc_UnrelocateBlock(s16);
 /* No prototype: defined void (s32, s32), but func_800466C0 calls it as
- * func_80044100(8). */
-extern void func_80044100();
-extern s32 func_8004428C(s32 *, s16 *);
-extern s32 func_80044378(s32, s32 *, s16 *);
-extern void func_80044498(void);
+ * reloc_RebaseBlock(8). */
+extern void reloc_RebaseBlock();
+extern s32 reloc_KeepSelectedEntries(s32 *, s16 *);
+extern s32 reloc_CopySelectedEntries(s32, s32 *, s16 *);
+extern void reloc_ClearCounts(void);
 extern void func_800444BC(void);
 extern void func_800444E0(void);
 extern void func_80044504(u32 *);

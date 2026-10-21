@@ -217,8 +217,8 @@ after_select:
         s32 *block_4;
         block_4 = (s32 *)((s32)var_0 + (((u32)var_0[4] >> 2) << 2));
         a0->softbody_params = (s32)var_0 + (((u32)var_0[3] >> 2) << 2);
-        func_80044010(block_1, a0->unk_14);
-        func_80044010(block_4, a0->unk_16);
+        reloc_RelocateBlock(block_1, a0->unk_14);
+        reloc_RelocateBlock(block_4, a0->unk_16);
     }
 
     {
@@ -232,7 +232,7 @@ after_select:
         gpu_LoadTimGroup(var_1, 0);
         if (gpu_GetFogClutObject() != 0)
             goto done_cases;
-        func_800432A0(a0->unk_14, 0, 0, -0x140, 0xE8);
+        gpu_OffsetBlockTexPrimStreams(a0->unk_14, 0, 0, -0x140, 0xE8);
         gpu_LoadTimGroupSplitOffset((s32)var_1, 0, 0, 0, -0x140, 0xF0);
         goto done_cases;
 
@@ -240,12 +240,12 @@ after_select:
         gpu_LoadTimGroupOffset(var_1, 0, 0x80, 0);
         if (gpu_GetFogClutObject() != 1)
             goto case_1_else;
-        func_800432A0(a0->unk_14, 0x80, 0, -0x140, 0xE8);
+        gpu_OffsetBlockTexPrimStreams(a0->unk_14, 0x80, 0, -0x140, 0xE8);
         gpu_LoadTimGroupSplitOffset((s32)var_1, 0, 0x80, 0, -0x140, 0xF0);
         goto case_1_done;
 
     case_1_else:
-        func_80043398(a0->unk_14, 2, 0, 2, 0);
+        gpu_OffsetBlockTexPrimStreamsByPages(a0->unk_14, 2, 0, 2, 0);
 
     case_1_done:
         func_80041AC8(a0);

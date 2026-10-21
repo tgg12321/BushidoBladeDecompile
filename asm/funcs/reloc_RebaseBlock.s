@@ -1,4 +1,4 @@
-glabel func_80044100
+glabel reloc_RebaseBlock
     /* 34900 80044100 1080033C */  lui        $v1, %hi(D_80103608)
     /* 34904 80044104 08366324 */  addiu      $v1, $v1, %lo(D_80103608)
     /* 34908 80044108 80100400 */  sll        $v0, $a0, 2
@@ -30,4 +30,4 @@ glabel func_80044100
   .L80044168:
     /* 34968 80044168 0800E003 */  jr         $ra
     /* 3496C 8004416C 00000000 */   nop
-endlabel func_80044100
+endlabel reloc_RebaseBlock

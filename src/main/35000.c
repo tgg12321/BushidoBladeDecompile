@@ -6,7 +6,7 @@
 #include "bb2.h"
 #include <psxsdk/libgte.h>
 
-void func_800433E4();
+void gpu_OffsetBlockTexPrimStream();
 
 void func_80044800(void) {
     SVECTOR var_0;
@@ -147,7 +147,7 @@ void func_80044B30(s32 a0, s32 a1) {
 }
 
 void func_80044C70(s32 a0) {
-    func_80044100((s32)D_800A9CF8.unk0, a0);
+    reloc_RebaseBlock((s32)D_800A9CF8.unk0, a0);
     D_800A9CF8.unkC += a0;
     D_800A9CF8.unk8 += a0;
 }
@@ -607,8 +607,8 @@ void func_80045AA4(s32 a0, s32 a1) {
         return;
     }
     idx = a0 - 3;
-    func_80044100(idx, a1);
-    func_80044100(a0, a1);
+    reloc_RebaseBlock(idx, a1);
+    reloc_RebaseBlock(a0, a1);
     ptr = (Unk80045878Obj *)arena_GetBlockAddr(idx);
     if (ptr == 0)
         return;
@@ -719,11 +719,11 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
     if (arg3 != 0) {
         dst = (s32 *)((s32)p + 4);
-        var_6 = func_80044378(last, dst, sp18);
-        func_80044010(dst, 6);
+        var_6 = reloc_CopySelectedEntries(last, dst, sp18);
+        reloc_RelocateBlock(dst, 6);
     } else {
-        var_6 = func_8004428C((s32 *)last, sp18);
-        func_80044010((s32 *)last, 6);
+        var_6 = reloc_KeepSelectedEntries((s32 *)last, sp18);
+        reloc_RelocateBlock((s32 *)last, 6);
     }
     arena_UpdatePeak(var_6);
 
@@ -734,16 +734,17 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         if (*q >= 0) {
             switch (sp108[D_800993FC[i]]) {
             case 0:
-                func_800433E4(6, y * 2, 0, 0, -0x180, 0xE8);
+                gpu_OffsetBlockTexPrimStream(6, y * 2, 0, 0, -0x180, 0xE8);
                 break;
             case 1:
-                func_800433E4(6, y * 2, 0, 0x40, -0x180, 0xE9);
+                gpu_OffsetBlockTexPrimStream(6, y * 2, 0, 0x40, -0x180, 0xE9);
                 break;
             case 2:
-                func_800433E4(6, y * 2, 0x80, 0, -0x160, 0xE8);
+                gpu_OffsetBlockTexPrimStream(6, y * 2, 0x80, 0, -0x160, 0xE8);
                 break;
             case 3:
-                func_800433E4(6, y * 2, 0x80, 0x40, -0x160, 0xE9);
+                gpu_OffsetBlockTexPrimStream(
+                    6, y * 2, 0x80, 0x40, -0x160, 0xE9);
                 break;
             }
             y++;
@@ -771,7 +772,7 @@ void func_80046020(void) {
 void func_80046048(s32 a0, s32 a1) {
     s32 *s0;
     s32 count;
-    func_80044100(6, a1);
+    reloc_RebaseBlock(6, a1);
     s0 = (s32 *)arena_GetBlockAddr(6);
     if (s0 == NULL) {
         return;

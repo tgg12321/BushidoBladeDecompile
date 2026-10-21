@@ -1,4 +1,4 @@
-glabel func_80044378
+glabel reloc_CopySelectedEntries
     /* 34B78 80044378 C8FFBD27 */  addiu      $sp, $sp, -0x38
     /* 34B7C 8004437C 2000B4AF */  sw         $s4, 0x20($sp)
     /* 34B80 80044380 21A0A000 */  addu       $s4, $a1, $zero
@@ -77,4 +77,4 @@ glabel func_80044378
     /* 34C8C 8004448C 3800BD27 */  addiu      $sp, $sp, 0x38
     /* 34C90 80044490 0800E003 */  jr         $ra
     /* 34C94 80044494 00000000 */   nop
-endlabel func_80044378
+endlabel reloc_CopySelectedEntries

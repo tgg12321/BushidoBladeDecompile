@@ -6,7 +6,7 @@ glabel func_800468DC
     /* 370EC 800468EC E322010C */  jal        func_80048B8C
     /* 370F0 800468F0 21200002 */   addu      $a0, $s0, $zero
     /* 370F4 800468F4 09000424 */  addiu      $a0, $zero, 0x9
-    /* 370F8 800468F8 4010010C */  jal        func_80044100
+    /* 370F8 800468F8 4010010C */  jal        reloc_RebaseBlock
     /* 370FC 800468FC 21280002 */   addu      $a1, $s0, $zero
     /* 37100 80046900 1400BF8F */  lw         $ra, 0x14($sp)
     /* 37104 80046904 1000B08F */  lw         $s0, 0x10($sp)

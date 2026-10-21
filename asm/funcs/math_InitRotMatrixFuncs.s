@@ -1,4 +1,4 @@
-glabel func_80042E90
+glabel math_InitRotMatrixFuncs
     /* 33690 80042E90 0580023C */  lui        $v0, %hi(math_RotMatrixZYX)
     /* 33694 80042E94 48A34224 */  addiu      $v0, $v0, %lo(math_RotMatrixZYX)
     /* 33698 80042E98 0F80013C */  lui        $at, %hi(D_800F66A0)
@@ -17,4 +17,4 @@ glabel func_80042E90
     /* 336CC 80042ECC B46622AC */  sw         $v0, %lo(D_800F66A0 + 0x14)($at)
     /* 336D0 80042ED0 0800E003 */  jr         $ra
     /* 336D4 80042ED4 00000000 */   nop
-endlabel func_80042E90
+endlabel math_InitRotMatrixFuncs

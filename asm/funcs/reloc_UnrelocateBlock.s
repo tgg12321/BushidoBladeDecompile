@@ -1,4 +1,4 @@
-glabel func_80044098
+glabel reloc_UnrelocateBlock
     /* 34898 80044098 00240400 */  sll        $a0, $a0, 16
     /* 3489C 8004409C 83230400 */  sra        $a0, $a0, 14
     /* 348A0 800440A0 1080013C */  lui        $at, %hi(D_80103608)
@@ -27,4 +27,4 @@ glabel func_80044098
   .L800440F8:
     /* 348F8 800440F8 0800E003 */  jr         $ra
     /* 348FC 800440FC 00000000 */   nop
-endlabel func_80044098
+endlabel reloc_UnrelocateBlock

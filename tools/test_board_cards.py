@@ -318,12 +318,12 @@ def test_disasm_by_address_slices_flat_stream():
         "8004437c:\tafb40020 \tsw\ts4,32(sp)\n"
         "80044380:\t00a0a021 \tmove\ts4,a1\n"
     )
-    sym = {0x80044360: "prev_func", 0x80044378: "func_80044378"}
+    sym = {0x80044360: "prev_func", 0x80044378: "reloc_CopySelectedEntries"}
     d = bc._disasm_by_address(text, sym)
-    check("header-less func recovered", "func_80044378" in d)
-    check("synthesized header", d["func_80044378"].splitlines()[0] == "80044378 <func_80044378>:")
-    check("owns its insns", "addiu\tsp,sp,-56" in d["func_80044378"])
-    check("stops at next boundary not present here", "8004437c" in d["func_80044378"])
+    check("header-less func recovered", "reloc_CopySelectedEntries" in d)
+    check("synthesized header", d["reloc_CopySelectedEntries"].splitlines()[0] == "80044378 <reloc_CopySelectedEntries>:")
+    check("owns its insns", "addiu\tsp,sp,-56" in d["reloc_CopySelectedEntries"])
+    check("stops at next boundary not present here", "8004437c" in d["reloc_CopySelectedEntries"])
     check("prev func owns earlier insns", "80044370" in d.get("prev_func", ""))
 
 

@@ -1667,9 +1667,9 @@ void gpu_MoveObjectClutsToFogBlock(s32 arg0) {
             buf.h = 6;
             MoveImage(&buf, 0x140, 0x1E8);
             if (arg0 == 0) {
-                func_800432A0(obj->unk_14, 0, 0, -0x140, 0xE8);
+                gpu_OffsetBlockTexPrimStreams(obj->unk_14, 0, 0, -0x140, 0xE8);
             } else {
-                func_800432A0(obj->unk_14, 0, 0, -0x1C0, 0xE8);
+                gpu_OffsetBlockTexPrimStreams(obj->unk_14, 0, 0, -0x1C0, 0xE8);
             }
             DrawSync(0);
             func_8003E120();
@@ -1685,9 +1685,9 @@ void gpu_RestoreObjectClutOffsets(void) {
         v1 = func_8004153C(g_gpu_fog_clut_object);
         if (v1 != 0) {
             if (g_gpu_fog_clut_object == 0) {
-                func_800432A0(v1->unk_14, 0, 0, 0x140, -0xE8);
+                gpu_OffsetBlockTexPrimStreams(v1->unk_14, 0, 0, 0x140, -0xE8);
             } else {
-                func_800432A0(v1->unk_14, 0, 0, 0x1C0, -0xE8);
+                gpu_OffsetBlockTexPrimStreams(v1->unk_14, 0, 0, 0x1C0, -0xE8);
             }
         }
         g_gpu_fog_clut_object = -1;

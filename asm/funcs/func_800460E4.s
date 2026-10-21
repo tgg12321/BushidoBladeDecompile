@@ -160,7 +160,7 @@ glabel func_800460E4
     /* 36B30 80046330 08000524 */  addiu      $a1, $zero, 0x8
     /* 36B34 80046334 82200400 */  srl        $a0, $a0, 2
     /* 36B38 80046338 80200400 */  sll        $a0, $a0, 2
-    /* 36B3C 8004633C 0410010C */  jal        func_80044010
+    /* 36B3C 8004633C 0410010C */  jal        reloc_RelocateBlock
     /* 36B40 80046340 21200402 */   addu      $a0, $s0, $a0
     /* 36B44 80046344 08000524 */  addiu      $a1, $zero, 0x8
     /* 36B48 80046348 1800048E */  lw         $a0, 0x18($s0)
@@ -194,7 +194,7 @@ glabel func_800460E4
     /* 36BB0 800463B0 21A00302 */  addu       $s4, $s0, $v1
     /* 36BB4 800463B4 82200400 */  srl        $a0, $a0, 2
     /* 36BB8 800463B8 80200400 */  sll        $a0, $a0, 2
-    /* 36BBC 800463BC 0410010C */  jal        func_80044010
+    /* 36BBC 800463BC 0410010C */  jal        reloc_RelocateBlock
     /* 36BC0 800463C0 21200402 */   addu      $a0, $s0, $a0
     /* 36BC4 800463C4 01000224 */  addiu      $v0, $zero, 0x1
     /* 36BC8 800463C8 0A80013C */  lui        $at, %hi(D_8009947A)
@@ -213,7 +213,7 @@ glabel func_800460E4
   jlabel .L800463F8
     /* 36BF8 800463F8 2120C002 */  addu       $a0, $s6, $zero
   .L800463FC:
-    /* 36BFC 800463FC 0410010C */  jal        func_80044010
+    /* 36BFC 800463FC 0410010C */  jal        reloc_RelocateBlock
     /* 36C00 80046400 07000524 */   addiu     $a1, $zero, 0x7
     /* 36C04 80046404 2120C003 */  addu       $a0, $fp, $zero
     /* 36C08 80046408 7A20010C */  jal        func_800481E8

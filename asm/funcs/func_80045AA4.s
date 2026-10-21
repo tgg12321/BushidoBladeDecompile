@@ -15,10 +15,10 @@ glabel func_80045AA4
   .L80045AD8:
     /* 362D8 80045AD8 FDFF1126 */  addiu      $s1, $s0, -0x3
     /* 362DC 80045ADC 21202002 */  addu       $a0, $s1, $zero
-    /* 362E0 80045AE0 4010010C */  jal        func_80044100
+    /* 362E0 80045AE0 4010010C */  jal        reloc_RebaseBlock
     /* 362E4 80045AE4 21284002 */   addu      $a1, $s2, $zero
     /* 362E8 80045AE8 21200002 */  addu       $a0, $s0, $zero
-    /* 362EC 80045AEC 4010010C */  jal        func_80044100
+    /* 362EC 80045AEC 4010010C */  jal        reloc_RebaseBlock
     /* 362F0 80045AF0 21284002 */   addu      $a1, $s2, $zero
     /* 362F4 80045AF4 E815010C */  jal        arena_GetBlockAddr
     /* 362F8 80045AF8 21202002 */   addu      $a0, $s1, $zero
