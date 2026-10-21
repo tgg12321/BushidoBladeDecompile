@@ -3,32 +3,6 @@
 .section .data, "wa"
     .align 0
 
-nonmatching D_800A2614
-
-dlabel D_800A2614
-dlabel g_irq_vsync_callbacks
-    /* 92E14 800A2614 00000000 */ .word 0x00000000
-    /* 92E18 800A2618 00000000 */ .word 0x00000000
-    /* 92E1C 800A261C 00000000 */ .word 0x00000000
-    /* 92E20 800A2620 00000000 */ .word 0x00000000
-    /* 92E24 800A2624 00000000 */ .word 0x00000000
-    /* 92E28 800A2628 00000000 */ .word 0x00000000
-    /* 92E2C 800A262C 00000000 */ .word 0x00000000
-    /* 92E30 800A2630 00000000 */ .word 0x00000000
-enddlabel D_800A2614
-
-nonmatching Vcount
-
-dlabel Vcount
-    /* 92E34 800A2634 00000000 */ .word 0x00000000
-enddlabel Vcount
-
-nonmatching D_800A2638
-
-dlabel D_800A2638
-    /* 92E38 800A2638 1411801F */ .word 0x1F801114
-enddlabel D_800A2638
-
 nonmatching D_800A263C
 
 dlabel D_800A263C

@@ -464,13 +464,13 @@ SECTIONS
         build/src/main/psxsdk/libapi/l10.o(.data);
         build/asm/data/91C98.data.o(.data);
         build/src/main/psxsdk/libetc/intr.o(.data);
-        build/asm/data/92E14.data.o(.data);
         build/src/main/psxsdk/libapi/c114.o(.data);
         build/src/main/psxsdk/libapi/a23.o(.data);
         build/src/main/psxsdk/libapi/a24.o(.data);
         build/src/main/psxsdk/libapi/a25.o(.data);
         build/src/main/psxsdk/libc2/setjmp.o(.data);
         build/src/main/psxsdk/libetc/intr_vb.o(.data);
+        build/asm/data/92E3C.data.o(.data);
         build/src/main/psxsdk/libetc/intr_dma.o(.data);
         build/src/main/psxsdk/libetc/vmode.o(.data);
         build/src/main/psxsdk/libsn/73E98.o(.data);

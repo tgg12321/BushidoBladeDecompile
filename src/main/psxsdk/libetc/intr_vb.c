@@ -5,9 +5,9 @@
 #include "common.h"
 #include "libetc_internal.h"
 
-extern s32 D_800A2614[8];
-extern volatile s32 Vcount;
-extern s32 *D_800A2638;
+s32 D_800A2614[8] = {0}; /* the 8 VSync callback slots */
+volatile s32 Vcount = 0;
+s32 *D_800A2638 = (s32 *)0x1F801114; /* root counter 1 mode */
 
 void trapIntrVSync(void);
 void setIntrVSync(s32, s32);
