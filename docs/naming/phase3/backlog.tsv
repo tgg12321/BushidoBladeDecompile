@@ -12,7 +12,7 @@ wave72	func	reviewed	docs/naming/phase3/pending/wave72
 wave74	func	reviewed	docs/naming/phase3/pending/wave74	
 wave75	func	reviewed	docs/naming/phase3/pending/wave75	applier: fix include/game.h:55 comment
 wave77	func	reviewed	docs/naming/phase3/pending/wave77	1 row eff_DrawAnimatedQuads
-wave47	func	researched	docs/naming/phase3/pending/wave47	no VERDICT; cites main 032e23f8c (stale): re-derive and pre-apply review before landing
+wave47	func	reviewed	docs/naming/phase3/pending/wave47	6 func (eff_ command core, motion_ stream decoder) + 4 data rows re-derived at aa7566f06, 10/10 pre-apply PASS; 0x80061064 stays eff_FrameUpdate (KEEP). Apply: pending/wave47/apply.sh then apply_data.sh (rebuild map first; stop Grinder: moves memory/grind/func_8001979C)
 wave39	local	researched	docs/naming/phase3/pending/wave39	77 local pairs (f:l=n), legacy format; re-check against current tree and review
 wave48	func	reviewed	docs/naming/phase3/pending/wave48	1 row gte_TransformSVectorWithSeparateTranslation (0x80052B7C), 1/1 pre-apply PASS; 36 other 3AB48.c funcs NO_NAME (Codex 20261020-164120). gates.ps1 still points at main tmp/p3w40/gates.sh: applier runs the gates directly
 m12	member	researching	-	Codex run 20261021-004237-research-research-m12 (~/.claude/codex-bridge/runs/; prompt is that run's prompt.md); scope: MoveScript unk_00/02/04/07/08/09/0A (+0x06 = first_move_frame, m11). unk_04 cannot reuse motion_entry_index (m08 landed alone): needs a fresh name. Next: extract_final.py <run dir> tmp/codex/m12-research.md
