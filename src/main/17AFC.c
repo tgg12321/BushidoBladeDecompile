@@ -836,9 +836,10 @@ void fighter_ResolveBodyOverlap(void) {
                 gte_Lzc(tbl, &lzc_out);
                 {
                     /* FAKE: two values -- the leading-zero count, then the
-                     * table shift; as one expression `shift = 0x16 - (lzc_out
-                     * & ~1)` the count lands in $a0 (target: $v1 / $v0): score
-                     * 4 */
+                     * amount dist is shifted right by to index
+                     * g_sqrt_table_u8; as one expression `shift = 0x16 -
+                     * (lzc_out & ~1)` the count lands in $a0 (target: $v1 /
+                     * $v0): score 4 */
                     s32 shift;
                     shift = lzc_out;
                     shift = 0x16 - (shift & ~1);

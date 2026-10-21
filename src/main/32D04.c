@@ -523,8 +523,8 @@ s32 func_80043244(s32 a0) {
 }
 
 s32 func_80043278(s32 a0) {
-    /* FAKE: constant holder for the 0xFFFFF000 mask; with the literal the
-     * function is one insn longer (score 4) */
+    /* FAKE: constant holder for 0xFFFFF000; with the literal the function is
+     * one insn longer (score 4) */
     s32 mask = (s32)0xFFFFF000;
     s32 v0 = a0 >> *(s32 *)0x1F800008;
     s32 a0_new = v0 >> 11;
