@@ -643,5 +643,5 @@ void func_80054884(
 void func_800548DC(void) {
     DrawSync(0);
     func_8004659C(-1);
-    func_80046A60();
+    motion_FreePlaybackBlock();
 }

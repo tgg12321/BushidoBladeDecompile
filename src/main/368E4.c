@@ -394,7 +394,7 @@ s32 *func_800469C4(s32 a0) {
     return v0;
 }
 
-void func_80046A60(void) { arena_Free(0xA); }
+void motion_FreePlaybackBlock(void) { arena_Free(0xA); }
 
 void func_80046A80(s32 a0, s32 a1) { motion_RebasePlayback(a1); }
 
@@ -614,7 +614,7 @@ void func_80047210(void) {
 
 MATRIX *func_800472B0(void) { return &D_800EEDD0; }
 
-void func_800472C0(Unk80101DF0Record *node) {
+void node_InitIdentity(Unk80101DF0Record *node) {
     node->unk4 = 8;
     node->rotation_order = 0;
     node->unk2 = 0;
@@ -669,7 +669,7 @@ void wave_InitCallback(void) { wave_Init(); }
 void wave_UpdateCallback(void) { wave_Update(); }
 
 void func_80047570(void) {
-    func_800472C0(&D_800EEDF0);
+    node_InitIdentity(&D_800EEDF0);
     D_800EEDF0.rotation_order = 4;
 }
 

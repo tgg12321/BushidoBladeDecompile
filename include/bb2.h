@@ -861,7 +861,7 @@ extern void func_8004659C(s32);
 extern s32 func_8004678C(void);
 extern void func_80046914(void);
 extern s32 *func_800469C4(s32);
-extern void func_80046A60(void);
+extern void motion_FreePlaybackBlock(void);
 extern void func_80046BF4(Vec3i32 *, SVECTOR *, s32);
 extern void func_80046DA8(s32);
 extern void func_80046E54(s32);

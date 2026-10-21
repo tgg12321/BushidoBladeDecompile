@@ -1,4 +1,4 @@
-glabel func_800472C0
+glabel node_InitIdentity
     /* 37AC0 800472C0 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 37AC4 800472C4 1000B0AF */  sw         $s0, 0x10($sp)
     /* 37AC8 800472C8 21808000 */  addu       $s0, $a0, $zero
@@ -48,4 +48,4 @@ glabel func_800472C0
     /* 37B78 80047378 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 37B7C 8004737C 0800E003 */  jr         $ra
     /* 37B80 80047380 00000000 */   nop
-endlabel func_800472C0
+endlabel node_InitIdentity

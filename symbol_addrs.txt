@@ -710,7 +710,7 @@ func_800467B8 = 0x800467B8; /* 62-insn loader using saTan2InfoInit + saTan5TakeG
 func_80046B44 = 0x80046B44; /* start-up init (func_80016D78, func_8003BFC4) */
 func_80046DA8 = 0x80046DA8; /* 15-insn stage init calling game_InitStageSound */
 math_SetLightPlaneProjection = 0x80046F24; /* 58-insn writing to D_800EEDB[4-C] matrix fields */
-func_800472C0 = 0x800472C0; /* resets an Unk80101DF0Record to identity (header fields, rot, t, mat) */
+// RENAME 0x800472C0: retired name 'func_800472C0' — preserved note: resets an Unk80101DF0Record to identity (header fields, rot, t, mat)
 D_800A37B8 = 0x800A37B8; /* frame counter; `<<3` for byte stride, `<<12 / 105` for BAM angle conversion */  /* data-wave 2026-10-08: was g_practice_loop_frame */
 _snd_seq_tick_env_plus_0x12 = 0x800A26DE; /* 0x7F = alarm armed, 0 = inactive; tested in irq_ProcessPending */  /* data-wave 2026-09-07: was g_alarm_active_sentinel */
 g_memcard_sw_event_ioe = 0x800A37DC; /* BIOS event handle: class 0xF4000001 mode 4 (memcard I/O complete) */  /* data-wave 2026-09-24: was g_memcard_event_io_complete */
