@@ -806,7 +806,7 @@ D_8008E778 = 0x8008E778; /* 100 rows of 4 bytes; func_80033DF4 copies a row into
 g_cd_file_table = 0x8008EC34; /* CD file table: CdFileEntry[159] {CdlLOC loc, u32 size} per disc file (include/bb2.h:480) */  /* data-wave 2026-09-24: was SpecialCam */
 D_80099D54 = 0x80099D54; /* s16 CD file id bases (-1 gaps), read by func_80054884 for motion_StartPlayback */  /* data-wave 2026-10-08: was InfoPosYTbl1 */
 D_8009ADD8 = 0x8009ADD8; /* per-character rows of three 8-byte sprite cells, read by func_8005E54C */  /* data-wave 2026-10-08: was UesrWorkDef */
-D_8009BA7C = 0x8009BA7C; /* 62 function pointers, called by jalr in func_80060A68 / func_80060B70 */  /* data-wave 2026-10-08: was chractar_use_pset_combo_id_table */
+D_8009BA7C = 0x8009BA7C; /* 62 function pointers, called by jalr in eff_StartCommand / eff_StepCommand */  /* data-wave 2026-10-08: was chractar_use_pset_combo_id_table */
 dma_spu_madr = 0x800A2CE0; /* holds 0x1F8010C0 (DMA channel 4 MADR); written through by _spu_Fr_ / _spu_t (spu.c:214, :299) */  /* data-wave 2026-10-09: was g_dma_chcr_ch4_ptr */
 spu_madr = 0x800A2D30; /* the SPU transfer's RAM address: set by _spu_t, copied to *dma_spu_madr (spu.c:295, :299) */  /* data-wave 2026-10-09: was g_satan0_gauge_state_word */
 g_cd_atv = 0x800A3718; /* CdlATV applied with CdMix by cdrom_SetMix (26730.c:14-18); cdrom_UpdateAudio fades from it to g_cd_atv_target (26940.c:17-33) */  /* data-wave 2026-09-24: was g_special_cam_win_byte_b */
@@ -883,7 +883,7 @@ g_vsync_rcnt1_count_reg = 0x800A1514; /* libetc VSync static: .word 0x1F801110 (
 Hcount = 0x800A1518; /* snapshot of *g_vsync_rcnt1_count_reg from prev call (for delta calc) */  /* data-wave 2026-09-29: was g_vsync_counter_snapshot */
 prevVcount = 0x800A151C; /* snapshot of Vcount at the end of the last VSync */  /* data-wave 2026-10-08: was g_vsync_dma_region_snapshot */
 D_800A372C = 0x800A372C; /* arena pointer arg0 + 0x58 stored in init */  /* data-wave 2026-10-08: was g_menuctl_effect_handle */
-D_800A32BC = 0x800A32BC; /* set to 0xA by func_80060A68 when the command word has bit 0x200000; func_80061064 decrements it (calling light_SetPointLight) while >= 2, calls light_DisablePointLight and clears it at 1 */  /* data-wave 2026-10-08: was g_text1b_post_render_countdown */
+D_800A32BC = 0x800A32BC; /* set to 0xA by eff_StartCommand when the command word has bit 0x200000; func_80061064 decrements it (calling light_SetPointLight) while >= 2, calls light_DisablePointLight and clears it at 1 */  /* data-wave 2026-10-08: was g_text1b_post_render_countdown */
 is_pad_init = 0x8009BD80; /* PAD-initialised flag: 1 by PAD_init / InitPAD, 0 by StopPAD; set by SetInitPadFlag, returned by ReadInitPadFlag (libapi/pad.c:15-68) */  /* data-wave 2026-10-09: was g_intro_get_set_value */
 D_800A3304 = 0x800A3304; /* incremented & ANDed with 1 to select alternating buffer in func_80078634 */  /* data-wave 2026-10-08: was g_intro_dbuf_parity */
 _ctype__plus_0x1 = 0x8009BD8D; /* 256-byte char-class lookup; bit 1 = is_upper, bit 2 = is_lower */  /* data-wave 2026-09-24: was g_char_class_table */
@@ -913,7 +913,7 @@ D_800A3783 = 0x800A3783; /* read position in the D_801077B0 list fight_BuildOppo
 D_800A37BC = 0x800A37BC; /* index into D_8008E748; zeroed by fight_BuildOpponentOrder with D_800A3783, advanced by fight_AdvanceOpponentOrder when the list entry is neither 5 nor 0x10 (17AFC.c:6505-6509) */  /* data-wave 2026-10-08: was g_mottest_secondary_idx */
 D_800A376B = 0x800A376B; /* reset to 0 alongside indices */  /* data-wave 2026-10-08: was g_mottest_substate */
 D_8008E748 = 0x8008E748; /* s8 table indexed by D_800A37BC; fight_AdvanceOpponentOrder stores the entry into D_80102778.unk_4[3] (17AFC.c:6501-6517) */  /* data-wave 2026-10-08: was g_mottest_slot_value_table */
-D_8009BA60 = 0x8009BA60; /* per-idx offset added to D_800F10D0[idx] to select the function pointer in D_8009BA7C */  /* data-wave 2026-10-08: was g_motion_func_dispatch_offset */
+D_8009BA60 = 0x8009BA60; /* per-idx offset added to g_eff_command_phase[idx] to select the function pointer in D_8009BA7C */  /* data-wave 2026-10-08: was g_motion_func_dispatch_offset */
 g_vab_id_list = 0x8009AD18; /* u8[3] {7,3,6}: VAB ids for SsVabClose / snd_VabFakeOpen (func_8005BA8C, snd_RebaseListedVabs, snd_CloseListedVabs) */  /* data-wave 2026-10-03: was g_byte_lookup_table_256 */
 D_8009BC7C = 0x8009BC7C; /* per-entry byte flags indexed by an entry value (D_8009BC40[row][col].value or D_800A3560.rec[i].unk1); bit 0 from arg3, bit 2 = a cursor stands on it, bit 1 only read */  /* data-wave 2026-10-08: was g_player_byte_flags_table */
 D_800A31F0 = 0x800A31F0; /* pointer to the const save-file name D_80010AAC (28708.c:1902; never written); passed to memcard_HasFile, a card-directory name compare (memcard.c:190-240), and to memcard_WriteFile / memcard_ReadFile (28708.c:342-378) */  /* data-wave 2026-10-09: was g_memcard_filename_buf */

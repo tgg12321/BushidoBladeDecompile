@@ -44,7 +44,7 @@ delay-slot fill: three fewer insns. This is the frozen-list "named-intermediate 
 family ([[no-new-park-categories]], [[narrow-byte-args-packed-call]]): `last_arg` is the value
 actually passed.
 
-Example: func_80060B70 (text1b.c) — 5 → 0.
+Example: eff_StepCommand (text1b.c) — 5 → 0.
 
 ## Does NOT apply when
 

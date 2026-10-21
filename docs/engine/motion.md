@@ -3,7 +3,7 @@
 A fighter's animation is driven by two things: the move script it is in
 (`MoveScript`, include/game.h:1371; `Unk80101EC8Record.cur_move`), which says
 which frames to play and what may follow, and the motion bitstream those
-frames are decoded from (`func_800198D0`). Each frame two decoded
+frames are decoded from (`motion_DecodeFrame`). Each frame two decoded
 `MotionFrame`s are blended into the model's joint matrices. The bundle files
 the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
 
@@ -21,8 +21,8 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
   (`D_800A38DC`) it also reads seven sectors per fighter from
   `cdrom_GetFileIndex(1, 0)` into `g_motion_frame_buffers[i]`, a table of ready
   `MotionFrame`s.
-- `func_80021210` (src/main/9F9C.c:3107) hands each loaded file's bitstream
-  (`unk_10`) to `func_8001979C`, decoder slots 0 (common), 1 and 2.
+- `motion_InitStreams` (src/main/9F9C.c:3138) hands each loaded file's bitstream
+  (`unk_10`) to `motion_InitStream`, decoder slots 0 (common), 1 and 2.
 
 ## Move scripts
 
@@ -52,13 +52,13 @@ are walked by `fighter_Update`, as the comment on `MoveScript` records
 
 ## The frame decoder
 
-`D_800F1B18[slot]` (`Unk800F1B18Rec`, include/game.h:1356) is one decoder per
+`g_motion_decoders[slot]` (`Unk800F1B18Rec`, include/game.h:1384) is one decoder per
 loaded bitstream.
 
-- `func_8001979C(slot, stream)` (src/main/9F9C.c:64) reads the 63 initial
+- `motion_InitStream(slot, stream)` (src/main/9F9C.c:64) reads the 63 initial
   12-bit channel values and their 2-bit channel codes and empties the four
   cache slots (`frame = -2`).
-- `func_800198D0(slot, n, out, work)` (src/main/9F9C.c:99) decodes frame `n`
+- `motion_DecodeFrame(slot, n, out, work)` (src/main/9F9C.c:99) decodes frame `n`
   into a 0x84-byte `MotionFrame` (include/game.h:1327). Frames come in groups
   of eight: a 24-bit table at stream + 0x70 gives each group's bit offset;
   the group start holds three optional 16-bit root values and the 63
@@ -82,7 +82,7 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
 1. converts the pad bits, advances the frame `move_frame` and runs the move
    script's command list, switching moves through `motion_ResolveMoveData` /
    `func_80021A98`;
-2. decodes the frames at `move_frame` and the next one with `func_800198D0`
+2. decodes the frames at `move_frame` and the next one with `motion_DecodeFrame`
    (src/main/9F9C.c:4704-4705), or copies `g_motion_frame_buffers[i][move_frame]` in state
    0x33; the frame keys go to `unk_64` / `unk_66` as `(slot << 14) | frame`
    (src/main/9F9C.c:4698);
@@ -115,5 +115,5 @@ call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
   decodes the two stored frame keys and calls `func_80041188` /
   `func_80040D48` as the live path does.
 - `motion_UpdatePlayback` (src/main/4510C.c) plays a loaded sequence: a camera
-  stream plus per-object motion streams it registers with `func_8001979C`
-  and decodes each frame with `func_800198D0`.
+  stream plus per-object motion streams it registers with `motion_InitStream`
+  and decodes each frame with `motion_DecodeFrame`.
