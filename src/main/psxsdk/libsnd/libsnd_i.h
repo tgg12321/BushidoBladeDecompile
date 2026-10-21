@@ -231,4 +231,8 @@ extern void _SsSndPause(s16, s16);
 extern void _SsSndReplay(s16, s16);
 extern void _SsSndStop(s16, s16);
 
+/* LIBSPU S_IT (libspu/s_it.c) */
+extern void _spu_setInTransfer(s32);
+extern s32 _spu_getInTransfer(void);
+
 #endif /* LIBSND_I_H */
