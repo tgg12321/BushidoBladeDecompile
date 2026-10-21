@@ -114,14 +114,15 @@ def object_symbols(obj):
         if m:
             secs[m.group(1)] = m.group(2)
             continue
-        m = re.match(r"^\s*\d+:\s+([0-9a-f]+)\s+(\d+)\s+(\S+)\s+(\S+)\s+\S+\s+(\S+)\s+(\S+)\s*$", line)
+        # readelf prints a size of 100000 or more in hex (0x44ff0)
+        m = re.match(r"^\s*\d+:\s+([0-9a-f]+)\s+(0x[0-9a-f]+|\d+)\s+(\S+)\s+(\S+)\s+\S+\s+(\S+)\s+(\S+)\s*$", line)
         if not m:
             continue
         val, size, typ, bind, ndx, name = m.groups()
         if ndx == "UND" or typ in ("SECTION", "FILE"):
             continue
         sec = "*COM*" if ndx == "COM" else "*ABS*" if ndx == "ABS" else secs.get(ndx, ndx)
-        syms.append((name, int(val, 16), int(size), typ, bind, sec))
+        syms.append((name, int(val, 16), int(size, 0), typ, bind, sec))
     return syms
 
 
