@@ -19,30 +19,29 @@ const Unk800153F0Record g_light_default_template = {{
 
 /* Code addresses in these tables are symbols: the jump labels (.L<addr>) of
  * the asm bodies that index them (3AB48.c), and functions. */
-#define CODE_LABEL(addr) extern u8 L##addr[] __asm__(".L" #addr)
-CODE_LABEL(8004A5D0);
-CODE_LABEL(8004A614);
-CODE_LABEL(8004A644);
-CODE_LABEL(8004A694);
-CODE_LABEL(8004A6F0);
-CODE_LABEL(8004A730);
-CODE_LABEL(8004A990);
-CODE_LABEL(8004ABD8);
-CODE_LABEL(8004AE0C);
-CODE_LABEL(8004AF84);
-CODE_LABEL(8004B0C8);
-CODE_LABEL(8004B0E4);
-CODE_LABEL(8004B27C);
-CODE_LABEL(8004B4D8);
-CODE_LABEL(8004B6E4);
-CODE_LABEL(80050C0C);
-CODE_LABEL(80050DAC);
-CODE_LABEL(80050FB4);
-CODE_LABEL(80051154);
-CODE_LABEL(80051358);
-CODE_LABEL(800514FC);
-CODE_LABEL(800516FC);
-CODE_LABEL(80051894);
+extern u8 L8004A5D0[] __asm__(".L8004A5D0");
+extern u8 L8004A614[] __asm__(".L8004A614");
+extern u8 L8004A644[] __asm__(".L8004A644");
+extern u8 L8004A694[] __asm__(".L8004A694");
+extern u8 L8004A6F0[] __asm__(".L8004A6F0");
+extern u8 L8004A730[] __asm__(".L8004A730");
+extern u8 L8004A990[] __asm__(".L8004A990");
+extern u8 L8004ABD8[] __asm__(".L8004ABD8");
+extern u8 L8004AE0C[] __asm__(".L8004AE0C");
+extern u8 L8004AF84[] __asm__(".L8004AF84");
+extern u8 L8004B0C8[] __asm__(".L8004B0C8");
+extern u8 L8004B0E4[] __asm__(".L8004B0E4");
+extern u8 L8004B27C[] __asm__(".L8004B27C");
+extern u8 L8004B4D8[] __asm__(".L8004B4D8");
+extern u8 L8004B6E4[] __asm__(".L8004B6E4");
+extern u8 L80050C0C[] __asm__(".L80050C0C");
+extern u8 L80050DAC[] __asm__(".L80050DAC");
+extern u8 L80050FB4[] __asm__(".L80050FB4");
+extern u8 L80051154[] __asm__(".L80051154");
+extern u8 L80051358[] __asm__(".L80051358");
+extern u8 L800514FC[] __asm__(".L800514FC");
+extern u8 L800516FC[] __asm__(".L800516FC");
+extern u8 L80051894[] __asm__(".L80051894");
 
 void func_8004BCC0();
 void func_80052C10();
