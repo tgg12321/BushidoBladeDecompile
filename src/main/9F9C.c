@@ -2602,8 +2602,8 @@ s32 func_8001FB34(Unk80101EC8Record *arg0, s32 arg1) {
     if (arg0->other->unk_0C == 0xD || arg0->other->unk_0C == 0x1C) {
         return 0;
     }
-    if (arg0->unk_0A == 0xE &&
-        (arg0->unk_330 == 0 || arg0->unk_332[0] != 0xA)) {
+    if (arg0->unk_0A == 0xE && (arg0->carried_object_count == 0 ||
+                                arg0->carried_object_kinds[0] != 0xA)) {
         return 0;
     }
     if (arg1 != 0) {
@@ -3823,24 +3823,24 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     p->unk_B2 = 0;
     p->unk_34C = 0;
     object_InitKindQueue(p);
-    p->unk_14 = p->unk_332[0];
+    p->unk_14 = p->carried_object_kinds[0];
     if (D_800A38DC == 5 || (D_800A38DC == 2 && D_800A389A == 0)) {
         if (p->unk_0A == 1 || p->unk_0A == 3 || p->unk_0A == 4 ||
             p->unk_0A == 9 || p->unk_0A == 0x11) {
-            p->unk_332[0] = p->unk_14 = 0x11;
+            p->carried_object_kinds[0] = p->unk_14 = 0x11;
         } else {
             p->unk_14 = -1;
-            p->unk_330 = 0;
+            p->carried_object_count = 0;
         }
     } else if (D_800A38DC == 3 && idx == 1 && D_800A384C != 4) {
         p->unk_14 = -1;
-        p->unk_330 = 0;
+        p->carried_object_count = 0;
     } else if (D_800A38DC == 3 && idx == 1 && D_800A384C == 4) {
         if (p->other->unk_0A == 1 || p->other->unk_0A == 3 ||
             p->other->unk_0A == 4 || p->other->unk_0A == 9 ||
             p->other->unk_0A == 0x11) {
-            p->unk_332[0] = p->unk_14 = p->other->unk_14;
-            p->unk_330 = 1;
+            p->carried_object_kinds[0] = p->unk_14 = p->other->unk_14;
+            p->carried_object_count = 1;
         }
     } else {
         if (p->unk_0C == 0x1D) {
@@ -4303,11 +4303,11 @@ void fighter_RequestPoseBlend(Unk80101EC8Record *arg0, s16 arg1) {
     arg0->unk_31A += 1;
     v = arg0->unk_31A;
     if (v == 1) {
-        arg0->unk_318 = arg1;
-        arg0->unk_320.x = 0;
-        arg0->unk_320.z = 0;
+        arg0->pose_blend_progress = arg1;
+        arg0->pose_blend_base_shift.x = 0;
+        arg0->pose_blend_base_shift.z = 0;
     }
-    arg0->unk_31C = arg1;
+    arg0->pose_blend_step = arg1;
     if (arg0->use_root_offset_yaw == 0) {
         arg0->use_root_offset_yaw = 1;
         arg0->root_offset_yaw = arg0->opponent_bearing;
@@ -4794,7 +4794,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
         s32 var_34;
 
         math_RotMatrixZYXAngles(
-            rec->unk_290.unk_06, rec->unk_290.unk_08, rec->unk_290.unk_0A, &m1);
+            rec->saved_motion_frame.unk_06, rec->saved_motion_frame.unk_08,
+            rec->saved_motion_frame.unk_0A, &m1);
         math_RotMatrixZYXAngles(
             var_0[0].unk_06, var_0[0].unk_08, var_0[0].unk_0A, &m2);
         old_heading = ratan2(m1.m[0][0], m1.m[2][0]);
@@ -4838,9 +4839,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
     if (rec->unk_31A != 0) {
         var_0[1] = var_0[0];
         ang[1] = ang[0];
-        var_0[0] = rec->unk_290;
-        ang[0] = rec->unk_314;
-        var_14 = rec->unk_318;
+        var_0[0] = rec->saved_motion_frame;
+        ang[0] = rec->saved_frame_offset_yaw;
+        var_14 = rec->pose_blend_progress;
         rec->unk_66 = rec->unk_64;
         rec->unk_64 = rec->unk_316;
     } else {
@@ -4854,8 +4855,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
         if (rec->move_started != 0) {
             rec->base_pos.x += rec->unk_1F8.x - v[0].x;
             rec->base_pos.z += rec->unk_1F8.z - v[0].z;
-            rec->unk_320.x += rec->unk_1F8.x - v[0].x;
-            rec->unk_320.z += rec->unk_1F8.z - v[0].z;
+            rec->pose_blend_base_shift.x += rec->unk_1F8.x - v[0].x;
+            rec->pose_blend_base_shift.z += rec->unk_1F8.z - v[0].z;
         }
         ang_q = ang[0] + 0x400;
         var_35.x = (var_0[0].unk_04 *
@@ -4867,8 +4868,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
         var_35.x = (var_35.x * rec->unk_1A) >> 12;
         var_35.y = (var_35.y * rec->unk_1A) >> 12;
         var_35.z = (var_35.z * rec->unk_1A) >> 12;
-        var_35.x -= rec->unk_320.x;
-        var_35.z -= rec->unk_320.z;
+        var_35.x -= rec->pose_blend_base_shift.x;
+        var_35.z -= rec->pose_blend_base_shift.z;
         rec->root_offset.x = (var_35.x * var_22 + v[0].x * var_14) >> 12;
         rec->root_offset.y = (var_35.y * var_22 + v[0].y * var_14) >> 12;
         rec->root_offset.z = (var_35.z * var_22 + v[0].z * var_14) >> 12;
@@ -5042,8 +5043,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
         if (rec->move_kind != 4 && rec->move_kind != 0x14 && rec->unk_92 == 0) {
             rec->unk_62 |= 0x10;
         }
-        if (rec->unk_330 > 0 && rec->unk_332[0] == rec->unk_14 &&
-            rec->unk_8C == 0) {
+        if (rec->carried_object_count > 0 &&
+            rec->carried_object_kinds[0] == rec->unk_14 && rec->unk_8C == 0) {
             rec->unk_62 |= 0x20;
         }
     }
@@ -5053,8 +5054,8 @@ skip_62:
             rec->move_kind != 0x14 && rec->unk_92 == 0) {
             rec->unk_62 = (rec->unk_62 | 2) & ~0x10;
         }
-        if (rec->unk_330 > 0 && rec->unk_332[0] == rec->unk_14 &&
-            rec->unk_8C == 0) {
+        if (rec->carried_object_count > 0 &&
+            rec->carried_object_kinds[0] == rec->unk_14 && rec->unk_8C == 0) {
             rec->unk_62 = (rec->unk_62 | 8) & ~0x20;
             func_80049A2C(D_8008EB80[rec->unk_14], (arg0 * 2) | 1, 0);
         }
@@ -5072,18 +5073,18 @@ skip_62:
         func_80049A2C(
             D_8008EB80[rec->unk_14], (arg0 * 2) | 1, (rec->unk_62 >> 5) & 1);
     }
-    rec->unk_290 = var_0[0];
-    rec->unk_314 = ang[0];
+    rec->saved_motion_frame = var_0[0];
+    rec->saved_frame_offset_yaw = ang[0];
     rec->unk_316 = rec->unk_64;
     if (rec->unk_31A != 0) {
         if (rec->unk_31A >= 2) {
             rec->unk_31A = 1;
         }
-        rec->unk_318 += rec->unk_31C;
-        if (rec->unk_318 >= 0x1000) {
+        rec->pose_blend_progress += rec->pose_blend_step;
+        if (rec->pose_blend_progress >= 0x1000) {
             rec->unk_31A = 0;
-            rec->unk_290 = var_0[1];
-            rec->unk_314 = ang[1];
+            rec->saved_motion_frame = var_0[1];
+            rec->saved_frame_offset_yaw = ang[1];
             rec->unk_316 = rec->unk_66;
             rec->unk_1F8 = v[1];
         }

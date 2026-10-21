@@ -3748,13 +3748,13 @@ void object_InitKindQueue(Unk80101EC8Record *a0) {
     s32 i;
     s16 val;
 
-    a0->unk_330 = 0;
+    a0->carried_object_count = 0;
     i = 0;
     do {
         val = D_8008E338[a0->unk_0A][i];
-        a0->unk_332[i] = val;
+        a0->carried_object_kinds[i] = val;
         if (val != -1) {
-            a0->unk_330++;
+            a0->carried_object_count++;
         }
         i++;
     } while (i < 5);
@@ -3844,21 +3844,21 @@ s32 object_ThrowQueuedKind(Unk80101EC8Record *a0) {
     Obj80106A78 *obj;
     s32 i;
 
-    count = a0->unk_330;
+    count = a0->carried_object_count;
     if (count == 0) {
         return -1;
     }
     idx = 0;
     if (count >= 2 && a0->unk_88 != -1) {
-        idx = a0->unk_332[0] == a0->unk_14;
+        idx = a0->carried_object_kinds[0] == a0->unk_14;
     }
-    id = a0->unk_332[idx];
+    id = a0->carried_object_kinds[idx];
     obj = object_SpawnFromFighter(a0, id);
-    for (i = idx; i < a0->unk_330 - 1; i++) {
-        a0->unk_332[i] = a0->unk_332[i + 1];
+    for (i = idx; i < a0->carried_object_count - 1; i++) {
+        a0->carried_object_kinds[i] = a0->carried_object_kinds[i + 1];
     }
 
-    a0->unk_330--;
+    a0->carried_object_count--;
     kind = obj->kind;
     if (kind == 0xE) {
         func_80032854((D_800A36F2[0] ^ 0xE) != 0, 0x2F, &obj->pos.x, 0);
@@ -3875,7 +3875,7 @@ void object_DropQueuedHeadAt(Unk80101EC8Record *a0, Vec3i32 *a1) {
     s32 var_1;
     s32 i;
 
-    p = object_SpawnFromFighter(a0, a0->unk_332[0]);
+    p = object_SpawnFromFighter(a0, a0->carried_object_kinds[0]);
     p->unk_04 = 0;
     p->pos = *a1;
     p->vel.x = (rng_Next() & 0xFF) - 0x80;
@@ -3890,10 +3890,10 @@ void object_DropQueuedHeadAt(Unk80101EC8Record *a0, Vec3i32 *a1) {
     p->rot_vel[1] = (rng_Next() & 0x7FF) - 0x400;
     p->rot_vel[2] = 0;
     p->unk_07 = 1;
-    for (i = 0; i < a0->unk_330 - 1; i++) {
-        a0->unk_332[i] = a0->unk_332[i + 1];
+    for (i = 0; i < a0->carried_object_count - 1; i++) {
+        a0->carried_object_kinds[i] = a0->carried_object_kinds[i + 1];
     }
-    a0->unk_330--;
+    a0->carried_object_count--;
 }
 
 void object_SpawnScatteredAt(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
@@ -3921,17 +3921,17 @@ void object_SpawnScatteredAt(Unk80101EC8Record *a0, s32 a1, Vec3i32 *a2) {
 s32 object_QueueKind(Unk80101EC8Record *arg0, s32 arg1) {
     s32 i;
 
-    if (arg0->unk_330 == 0xC) {
+    if (arg0->carried_object_count == 0xC) {
         return 0;
     }
     if (arg0->unk_88 != -1 && arg1 == arg0->unk_14) {
-        for (i = arg0->unk_330; i > 0; i--) {
-            arg0->unk_332[i] = arg0->unk_332[i - 1];
+        for (i = arg0->carried_object_count; i > 0; i--) {
+            arg0->carried_object_kinds[i] = arg0->carried_object_kinds[i - 1];
         }
-        arg0->unk_332[0] = arg1;
-        arg0->unk_330++;
+        arg0->carried_object_kinds[0] = arg1;
+        arg0->carried_object_count++;
     } else {
-        arg0->unk_332[arg0->unk_330++] = arg1;
+        arg0->carried_object_kinds[arg0->carried_object_count++] = arg1;
     }
     return 1;
 }

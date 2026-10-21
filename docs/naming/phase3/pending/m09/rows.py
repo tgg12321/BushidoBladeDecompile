@@ -54,8 +54,8 @@ engine/ and asm/: 0 hits each.
 import csv
 import os
 
-VERDICT = ''
-VERIFIER_NOTE = ''
+VERDICT = 'CONFIRM'
+VERIFIER_NOTE = 'naming-reviewer pre-apply 12/12 PASS'
 
 T = 'Unk80101EC8Record'
 

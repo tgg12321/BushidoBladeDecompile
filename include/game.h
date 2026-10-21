@@ -1591,19 +1591,19 @@ typedef struct Unk80101EC8Record {
     s16 unk_288[2];
     s32 unk_28C;
     /* the motion frame fighter_Update last used */
-    MotionFrame unk_290;
-    u16 unk_314;
+    MotionFrame saved_motion_frame;
+    u16 saved_frame_offset_yaw;
     u16 unk_316;
-    s16 unk_318;
+    s16 pose_blend_progress;
     s16 unk_31A;
-    s16 unk_31C;
+    s16 pose_blend_step;
     u8 unk_31E[0x320 - 0x31E];
-    Vec3i32 unk_320;
+    Vec3i32 pose_blend_base_shift;
     u8 unk_32C[0x330 - 0x32C];
-    s16 unk_330;
+    s16 carried_object_count;
     /* queued kinds, unk_330 of them (object_InitKindQueue / object_QueueKind)
      */
-    s16 unk_332[12];
+    s16 carried_object_kinds[12];
     u8 unk_34A;
     u8 unk_34B;
     u8 unk_34C;
@@ -1631,8 +1631,8 @@ typedef struct Unk80101EC8Record {
     /* per-row cursor into unk_3A4 (fighter_InitCpuControl) */
     u16 *unk_3A8[3];
     /* script pointer (fighter_StartCpuPadScript / fighter_StepCpuPadScript) */
-    u8 *unk_3B4;
-    u8 unk_3B8;
+    u8 *cpu_pad_script_cursor;
+    u8 cpu_pad_script_delay_left;
     u8 unk_3B9[0x3BC - 0x3B9];
     u8 unk_3BC;
     u8 unk_3BD;
@@ -1641,11 +1641,11 @@ typedef struct Unk80101EC8Record {
     u8 unk_3C1;
     s16 unk_3C2;
     s32 unk_3C4;
-    s32 unk_3C8;
+    s32 cpu_pad_script_held;
     s32 unk_3CC;
     /* the pad record fighter_BuildCpuPad builds for func_8001BE20 */
-    PadState unk_3D0;
-    u16 unk_3E8;
+    PadState last_cpu_pad;
+    u16 cpu_pad_build_count;
     u8 unk_3EA[0x3EE - 0x3EA];
     s16 unk_3EE;
     s16 unk_3F0;

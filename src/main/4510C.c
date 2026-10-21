@@ -404,10 +404,10 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
     p->unk_428 = -1;
     p->unk_425 = 0;
     p->unk_426 = 0;
-    p->unk_3B4 = 0;
-    p->unk_3D0.released = 0;
-    p->unk_3D0.pressed = 0;
-    p->unk_3D0.held = 0;
+    p->cpu_pad_script_cursor = 0;
+    p->last_cpu_pad.released = 0;
+    p->last_cpu_pad.pressed = 0;
+    p->last_cpu_pad.held = 0;
     var_19->unk_440 = 0;
     p->unk_440 = 0;
     var_19->unk_441 = 0;
@@ -424,7 +424,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
     p->unk_3F2 = 0;
     p->unk_3EE = 0;
     p->unk_3F0 = 0;
-    p->unk_3E8 = 0;
+    p->cpu_pad_build_count = 0;
     p->unk_39C = 0;
     p->unk_394 = 0;
     p->unk_398 = 0;
@@ -434,7 +434,7 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
     p->unk_3C0 = 0;
     p->unk_440 = 0;
     p->unk_430 = 0;
-    p->unk_3D0.unheld = -1;
+    p->last_cpu_pad.unheld = -1;
 }
 
 s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
@@ -444,11 +444,11 @@ s32 fighter_StepCpuPadScript(Unk80101EC8Record *arg0) {
     s32 mask;
     s32 dx, dy, dz;
 
-    var_1 = arg0->unk_3B8;
-    p = arg0->unk_3B4;
+    var_1 = arg0->cpu_pad_script_delay_left;
+    p = arg0->cpu_pad_script_cursor;
     if (var_1 != 0) {
         if (arg0->unk_46 == 0) {
-            arg0->unk_3B8 = var_1 - 1;
+            arg0->cpu_pad_script_delay_left = var_1 - 1;
         }
         goto ret_3c8;
     }
@@ -496,10 +496,10 @@ check_loop:
         goto loop;
     }
 reset_ret_neg1:
-    arg0->unk_3B4 = 0;
+    arg0->cpu_pad_script_cursor = 0;
     return -1;
 sentinel_reset:
-    arg0->unk_3B4 = 0;
+    arg0->cpu_pad_script_cursor = 0;
     goto ret_3c8;
 loop:
     while (1) {
@@ -508,26 +508,26 @@ loop:
         if (t & 0x80) {
             if (t == 0x80)
                 goto sentinel_reset;
-            arg0->unk_3B4 = p;
-            arg0->unk_3B8 = (t & 0x7F) - 1;
+            arg0->cpu_pad_script_cursor = p;
+            arg0->cpu_pad_script_delay_left = (t & 0x7F) - 1;
             goto ret_3c8;
         }
         mask = 1 << (t & 0xF);
         if (t & 0x10) {
-            arg0->unk_3C8 &= ~mask;
+            arg0->cpu_pad_script_held &= ~mask;
         } else {
-            arg0->unk_3C8 |= mask;
+            arg0->cpu_pad_script_held |= mask;
         }
     }
 ret_3c8:
-    return arg0->unk_3C8;
+    return arg0->cpu_pad_script_held;
 }
 
 void fighter_StartCpuPadScript(Unk80101EC8Record *a0, u8 *a1, s32 a2, s32 a3) {
-    a0->unk_3B4 = a1;
+    a0->cpu_pad_script_cursor = a1;
     a0->unk_3BC = a2;
-    a0->unk_3B8 = a3;
-    a0->unk_3C8 = 0;
+    a0->cpu_pad_script_delay_left = a3;
+    a0->cpu_pad_script_held = 0;
     a0->unk_3CC = -1;
 }
 
@@ -571,7 +571,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
 
     rec = &D_80101EC8[arg0];
     rec->unk_3CC = 0;
-    if (rec->unk_3E8 & 1) {
+    if (rec->cpu_pad_build_count & 1) {
         var_2 = rec->other;
         var_1 = rec;
     } else {
@@ -597,15 +597,18 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
 
     rec->unk_430 =
         (rec->unk_430 & 0x40060) |
-        ((rand() & 0xFFF) < (rec->unk_438 >> 3) && rec->unk_3E8 >= 0x3D) |
+        ((rand() & 0xFFF) < (rec->unk_438 >> 3) &&
+         rec->cpu_pad_build_count >= 0x3D) |
         ((D_80099D88[rec->cpu_profile].flags & 0xFF00)
              ? (rec->unk_3F6 < rec->unk_3F5) << 2
-             : ((rand() & 0xFFF) < (rec->unk_438 >> 3) && rec->unk_3E8 >= 0x3D)
+             : ((rand() & 0xFFF) < (rec->unk_438 >> 3) &&
+                rec->cpu_pad_build_count >= 0x3D)
                    << 2) |
-        (((rand() & 0xFFF) < rec->unk_438 || rec->unk_3E8 < (rec->unk_438 >> 3))
+        (((rand() & 0xFFF) < rec->unk_438 ||
+          rec->cpu_pad_build_count < (rec->unk_438 >> 3))
          << 3) |
         (((rand() & 0xFFF) < (rec->unk_438 >> 1) ||
-          rec->unk_3E8 < (rec->unk_438 >> 4))
+          rec->cpu_pad_build_count < (rec->unk_438 >> 4))
          << 4) |
         ((rec->other->move_kind == 2 || rec->other->move_kind == 0x1B ||
           rec->other->move_kind == 0x28 || rec->other->move_kind == 0x26 ||
@@ -628,7 +631,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         (rec->move_kind == 0x19 ? 0x4000 : 0) |
         (rec->other->move_kind == 0x19 ? 0x8000 : 0) |
         (rec->move_kind == 0x1A ? 0x10000 : 0);
-    rec->unk_3E8++;
+    rec->cpu_pad_build_count++;
 
     if (rec->move_kind != 2 && rec->move_kind != 0x1B &&
         rec->move_kind != 0x28 && rec->move_kind != 0x26 &&
@@ -840,7 +843,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
             (!((0x78 >> rec->other->unk_B1) & 1) ||
              rec->other->unk_26C == 0)) ||
            (rec->other->move_kind == 0xB &&
-            ((rec->other->unk_330 == 0 && rec->unk_425 != 1 &&
+            ((rec->other->carried_object_count == 0 && rec->unk_425 != 1 &&
               rec->unk_425 != 2) ||
              rec->other->unk_26C == 0)))) ||
          ((D_80099D88[rec->cpu_profile].flags & 0x20) &&
@@ -867,7 +870,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
 
     i = 0;
     do {
-        if (rec->unk_3B4 != 0) {
+        if (rec->cpu_pad_script_cursor != 0) {
             temp = fighter_StepCpuPadScript(rec);
         } else {
             temp = func_80058580(rec);
@@ -888,12 +891,12 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         }
     }
     pad.held &= 0xFFFF;
-    pad.pressed = pad.held & ~rec->unk_3D0.held;
+    pad.pressed = pad.held & ~rec->last_cpu_pad.held;
     pad.unheld = ~pad.held & 0xFFFF;
-    pad.released = ~pad.held & rec->unk_3D0.held;
+    pad.released = ~pad.held & rec->last_cpu_pad.held;
     pad.type[arg0] = 4;
-    rec->unk_3D0 = pad;
-    *arg1 = rec->unk_3D0;
+    rec->last_cpu_pad = pad;
+    *arg1 = rec->last_cpu_pad;
 }
 
 /* 8 {distance, direction} byte pairs (fighter_UpdateCpuProbes) */
@@ -908,7 +911,7 @@ void fighter_UpdateCpuProbes(Unk80101EC8Record *arg0) {
     s32 start;
     s32 i;
 
-    start = (arg0->unk_3E8 & 3) * 2;
+    start = (arg0->cpu_pad_build_count & 3) * 2;
     for (i = start; i < start + 2; i++) {
         Unk80101EC8Record *obj;
         s32 flags;
@@ -1035,7 +1038,7 @@ s32 func_80057094(Unk80101EC8Record *arg0, s32 arg1, s32 arg2, s32 arg3) {
     temp_v1 = temp_v0 & 7;
     sp10 = temp_v1;
     if ((arg3 == 0) && !(temp_v0 & 1)) {
-        if (arg0->unk_3E8 & 0x10) {
+        if (arg0->cpu_pad_build_count & 0x10) {
             sp10 = temp_v1 + 1;
             if (sp10 >= 8) {
                 sp10 = 0;
@@ -1811,7 +1814,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                 p->unk_3CC = 0x8000;
             } else {
                 var_20 = 0x80;
-                if (p->unk_3E8 % (0x12 - (p->unk_438 >> 8)) == 0) {
+                if (p->cpu_pad_build_count % (0x12 - (p->unk_438 >> 8)) == 0) {
                     var_20 = 0x20;
                 }
                 p->unk_3CC = var_20;
@@ -1854,7 +1857,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                 }
                 var_41 = 0;
                 if ((rand() & 0xFFF) < (p->unk_438 >> 3)) {
-                    var_41 = p->unk_3E8 > 0x3C;
+                    var_41 = p->cpu_pad_build_count > 0x3C;
                 }
                 if (p->unk_0E >= 6) {
                     work1 = 100000;
@@ -1878,14 +1881,15 @@ s32 func_80058580(Unk80101EC8Record *p) {
                                  var_36 == p->other->move_kind)) {
                                 if (D_8009A850[work4][3] & 2) {
                                     var_21 = 0x40;
-                                    if (p->unk_3E8 & 1) {
+                                    if (p->cpu_pad_build_count & 1) {
                                         var_21 = 0x20;
                                     }
                                     p->unk_3CC = var_21;
                                 } else if (
                                     (D_80099D88[p->cpu_profile].flags & 0x20) &&
                                     !(p->unk_440 == 3 || p->unk_440 == 4)) {
-                                    p->unk_3CC = (p->unk_3E8 & 1) * 8;
+                                    p->unk_3CC =
+                                        (p->cpu_pad_build_count & 1) * 8;
                                 }
                                 break;
                             }
@@ -1933,7 +1937,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
               (p->other->move_kind == 0xA || p->cpu_profile == 0xA ||
                (p->unk_0E >= 6 && p->unk_34A == 0)) &&
               var_38 == 1)) {
-            if (!(p->unk_3E8 & 7)) {
+            if (!(p->cpu_pad_build_count & 7)) {
                 p->nearest_nav_crossing_distance =
                     fighter_FindNearestNavCrossing(p, var_25, tx, tz);
             }
@@ -1996,7 +2000,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                     p->cpu_route.node[0].kind = var_38;
                     p->cpu_route.count = 1;
                     if (p->nearest_nav_crossing_distance != 100000 &&
-                        !(p->unk_3E8 & 7)) {
+                        !(p->cpu_pad_build_count & 7)) {
                         fighter_AppendNavDetour(p, var_25, tx, tz);
                     }
                 }
@@ -2406,7 +2410,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
 
         state = p->move_kind;
         if (state == 0x15 || (state == 0x19 && p->unk_441 >= 2)) {
-            if ((p->unk_3E8 & 1) || p->unk_0E >= 6) {
+            if ((p->cpu_pad_build_count & 1) || p->unk_0E >= 6) {
                 if (p->unk_442 == 0 && p->cpu_probes[3] != 1 &&
                     (p->unk_0E < 6 || p->unk_34A != 0)) {
                     var_35 = -1;
@@ -2573,7 +2577,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                                     break;
                                 case 6:
                                     if (p->cpu_profile == 0x15 ||
-                                        p->unk_330 != 0) {
+                                        p->carried_object_count != 0) {
                                         work3 = 1;
                                     }
                                     break;
@@ -2637,7 +2641,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                                 var_60 = p->unk_34A;
                             }
                         } else {
-                            var_60 = p->unk_330;
+                            var_60 = p->carried_object_count;
                         }
                     }
                     var_40 = 0;
