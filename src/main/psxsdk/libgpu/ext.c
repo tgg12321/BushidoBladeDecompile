@@ -2,6 +2,7 @@
  * SetDefDispEnv. .text 0x8007A4D8..0x8007A788, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
+#include <psxsdk/libetc.h>
 #include <psxsdk/libgpu.h>
 
 u16 LoadTPage(u32 *pix, s32 tp, s32 abr, s32 x, s32 y, s32 w, s32 h) {

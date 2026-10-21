@@ -3,6 +3,7 @@
  * ref: sotn-decomp src/main/psxsdk/libsnd/sstick.c. */
 #include "common.h"
 #include "libsnd_i.h"
+#include <psxsdk/libetc.h>
 
 void SsSetTickMode(s32 arg) {
     s32 mode;
