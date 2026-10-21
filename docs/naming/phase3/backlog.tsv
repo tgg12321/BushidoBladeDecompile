@@ -7,7 +7,7 @@ m11	member	landed	docs/naming/phase3/pending/m11	landed 26cb5d587 + ed3ad4cb1 (5
 wave55	func	landed	docs/naming/phase3/pending/wave55	landed 9199cfae1 + cecd4b6e9; R6 12/12 after verbatim registry/rule comment fixes. Advisory: named_syms.txt:122-123 32D04.c line cites stale (pre-existing); symbol_addrs.txt:963 retired MISNAMED build_offset_table note. test_board_cards.py 2 failures (func_80016A8C) pre-exist
 wave69	func	landed	docs/naming/phase3/pending/wave69	landed 499709bd1 + 10a3f18db (fight_InitCommandStream 0x8003B20C, fight_RunCommandStream 0x8003B5A4); R6 PASS 2/2, no blocking fixes; wavefollow no-op. Advisory: pre-existing drifted line cites in named_syms D_800A3915, symbol_addrs D_800A37A0, menus.md, main_loop.md. menu_ Choice pair still neutral (re-mine with 9F9C twin)
 wave70	func	landed	docs/naming/phase3/pending/wave70	landed 638fd61b1; R6 PASS 2/2, no blocking fixes. Advisory: tools/rename_funcs.py:47 legacy map func_800472C0->camera_InitRotation (inert); lane gate scripts must not git add -A the worktree junctions
-wave71	func	reviewed	docs/naming/phase3/pending/wave71	
+wave71	func	landed	docs/naming/phase3/pending/wave71	landed 6d335c765 + cd6f10726 (snd_ShouldUpdateStageSoundSlots 0x8001DB58 [reviewer-suggested, judged fresh], math_ComputeBallisticVelocityXZ 0x800200DC); R6 PASS 2/2, no blocking fixes; wavefollow no-op. Advisory: reused-local-one-role.md:71 cites local y1, body now uses dy (pre-existing); 0x8001DA2C still neutral
 wave72	func	reviewed	docs/naming/phase3/pending/wave72	
 wave74	func	reviewed	docs/naming/phase3/pending/wave74	
 wave75	func	reviewed	docs/naming/phase3/pending/wave75	applier: fix include/game.h:55 comment
