@@ -3,31 +3,6 @@
 .section .data, "wa"
     .align 0
 
-nonmatching D_800A263C
-
-dlabel D_800A263C
-    /* 92E3C 800A263C F410801F */ .word 0x1F8010F4
-enddlabel D_800A263C
-
-nonmatching D_800A2640
-
-dlabel D_800A2640
-    /* 92E40 800A2640 00000000 */ .word 0x00000000
-    /* 92E44 800A2644 00000000 */ .word 0x00000000
-    /* 92E48 800A2648 00000000 */ .word 0x00000000
-    /* 92E4C 800A264C 00000000 */ .word 0x00000000
-    /* 92E50 800A2650 00000000 */ .word 0x00000000
-    /* 92E54 800A2654 00000000 */ .word 0x00000000
-    /* 92E58 800A2658 00000000 */ .word 0x00000000
-    /* 92E5C 800A265C 00000000 */ .word 0x00000000
-enddlabel D_800A2640
-
-nonmatching D_800A2660
-
-dlabel D_800A2660
-    /* 92E60 800A2660 8010801F */ .word 0x1F801080
-enddlabel D_800A2660
-
 nonmatching video_mode
 
 dlabel video_mode

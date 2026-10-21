@@ -10,11 +10,11 @@ const char D_80016394[28] = "DMA bus error: code=%08x\n\0\0\0";
 
 const char D_800163B0[16] = "MADR[%d]=%08x\n\0\0";
 
-extern s32 D_800A2640[8];
 /* D_800A263C holds 0x1F8010F4 (DMA Interrupt Register); Sony declares it
    `static volatile u_long *`. */
-extern volatile u32 *D_800A263C;
-extern u32 *D_800A2660;
+volatile u32 *D_800A263C = (volatile u32 *)0x1F8010F4;
+s32 D_800A2640[8] = {0}; /* the 7 DMA channel callbacks (+1 spare) */
+u32 *D_800A2660 = (u32 *)0x1F801080; /* DMA channel 0 MADR */
 
 void trapIntrDMA(void);
 s32 setIntrDMA(s32, s32);
