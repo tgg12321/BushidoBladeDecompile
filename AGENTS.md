@@ -24,8 +24,8 @@ asset formats and inspectors: `docs/formats/`.
 - **Assembler:** ASPSX 2.34 via [maspsx](https://github.com/mkst/maspsx) (`--aspsx-version=2.34`).
 - **Section order:** `.rodata → .text → .data → .bss` (PsyQ standard).
 - Per C file: `mipsel-linux-gnu-cpp | cc1 | maspsx | mipsel-linux-gnu-as → .o`; link with
-  `mipsel-linux-gnu-ld`, `objcopy`, then `make_psexe.py` prepends the 0x800-byte header (`asm/header.s`, with entry,
-  load address and size computed from the ELF).
+  `mipsel-linux-gnu-ld`, `objcopy`, then `make_psexe.py` prepends the 0x800-byte header
+  (`asm/header.s`, with entry, load address and size computed from the ELF).
 - **`-mel` and `-msoft-float` in `CC_FLAGS` are load-bearing — do not remove.** The prebuilt cc1's
   `mips-mips-gnu` triple defaults to big-endian and hard float; the PS1 is little-endian with no
   FPU, and PsyQ's cc1psx reports `-msoft-float`.
