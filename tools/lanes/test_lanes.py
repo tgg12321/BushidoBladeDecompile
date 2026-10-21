@@ -327,6 +327,27 @@ class LaneTest(unittest.TestCase):
         self.assertEqual(self.main_file("shared.txt").splitlines()[5], "A")
         self.assertTrue((self.main / "src" / "c2.c").exists())
 
+    def test_reset_before_first_attempt_does_not_hide_work(self):
+        # ninth review: main reset between the first unlanded() and attempt 0's base
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        self.edit_line("a", "shared.txt", 5, "A")
+        self.edit_line("b", "shared.txt", 15, "B")
+        self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        self._left_as_is_land("a", "--no-push")
+        self.commit("a", "src/c2.c", "int c2;\n", "c2")
+        real = lanes.ensure_land_tree
+
+        def resetting(ctx, lane):
+            sh("reset", "-q", "--hard", "origin/main", cwd=self.main)
+            return real(ctx, lane)
+        lanes.ensure_land_tree = resetting
+        try:
+            self.assertEqual(self.L("s1", "land", "a", "--no-push"), 0, self.last)
+        finally:
+            lanes.ensure_land_tree = real
+        self.assertEqual(self.main_file("shared.txt").splitlines()[5], "A")
+        self.assertTrue((self.main / "src" / "c2.c").exists())
+
     def test_partial_reset_keeps_earlier_lands_landed(self):
         # eighth review, blocking 2: undoing only the latest land must not re-replay older ones
         self.L("s1", "open", "a"); self.L("s2", "open", "b")

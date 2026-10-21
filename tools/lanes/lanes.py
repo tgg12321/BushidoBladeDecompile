@@ -1010,6 +1010,11 @@ def advance_lane(ctx: Ctx, lane: str, landed_from: str):
     (the next land skips the already-landed ones: see unlanded())."""
     wt, br = ctx.lane_dir(lane), ctx.branch(lane)
     head = git("rev-parse", "HEAD", cwd=wt)
+    left = unlanded(ctx, lane, landed_from)
+    if left:  # main changed under the land (e.g. a reset): never move work off the branch
+        print(f"lanes: note: {len(left)} commit(s) of {br} are not in main (it changed during "
+              f"the land); {br} was left as is, land again")
+        return
     if head == landed_from:
         r = run(["git", "reset", "-q", "--keep", "main"], cwd=wt, check=False)
         if r.returncode != 0:
@@ -1055,11 +1060,11 @@ def cmd_land(ctx: Ctx, a):
     try:
         for attempt in range(3):
             base = git("rev-parse", "main", cwd=ctx.main)
-            if attempt:  # main moved (it may even have been reset): what is unlanded changes
-                commits = unlanded(ctx, lane, tipsrc, base=base)
-                if any(len(git("rev-list", "--parents", "-n1", c, cwd=ctx.main).split()) > 2
-                       for c in commits):
-                    raise Refuse("the lane holds merge commits; rebuild it as linear commits")
+            # against this attempt's base: main may have moved, or been reset, since the last look
+            commits = unlanded(ctx, lane, tipsrc, base=base)
+            if any(len(git("rev-list", "--parents", "-n1", c, cwd=ctx.main).split()) > 2
+                   for c in commits):
+                raise Refuse("the lane holds merge commits; rebuild it as linear commits")
             print(f"lanes: landing {len(commits)} commit(s) of {lane} onto main {base[:9]}"
                   + (f" (retry {attempt}: main moved)" if attempt else ""), flush=True)
             tip = build_candidate(ctx, lane, ld, commits, base, log)  # no lock held
