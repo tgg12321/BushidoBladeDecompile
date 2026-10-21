@@ -3,6 +3,7 @@
  */
 #include "common.h"
 #include "libspu_internal.h"
+#include <psxsdk/libapi.h>
 
 extern s32 _spu_zerobuf;
 

@@ -49,6 +49,9 @@ extern s32 EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
 extern void EnableEvent(s32); /* PsyQ: long EnableEvent(long) */
 extern void CloseEvent(s32);  /* PsyQ: long CloseEvent(long) */
+extern s32 OpenEvent(u32, s32, s32, s32 (*)());
+extern s32 WaitEvent(s32);
+extern s32 DisableEvent(s32);
 extern s32 TestEvent(s32);
 extern void ReturnFromException(void);
 extern void ResetEntryInt(void);       /* PsyQ: not in LIBAPI.H */
