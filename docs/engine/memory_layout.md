@@ -59,8 +59,8 @@ These addresses are set in code:
 | 0x80118800 | | `func_80016A8C`'s image buffer at boot | src/main/6CF8.c:440 |
 | 0x801FFF00 | | stack top after `SetSp` | src/main/6CF8.c:435 |
 
-Each frame, `main` checks the cursor against the buffer's end, `tbl[idx] +
-0x13400` (src/main/6CF8.c:489). `func_80016D78` also stores 0x13400 in
+Each frame, `main` checks the cursor against the buffer's end, `var_4[idx] +
+0x13400` (src/main/6CF8.c:490). `func_80016D78` also stores 0x13400 in
 `D_800A3798` (src/main/6CF8.c:291). See [gpu_pipeline.md](gpu_pipeline.md).
 
 Large objects named elsewhere in these pages:

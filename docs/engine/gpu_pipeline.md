@@ -147,12 +147,12 @@ The sprite sheets are 12-byte headers `Unk8009B0E0Record`
 (include/game.h:231) followed by 8-byte cells `Unk8009B400Record`
 (include/game.h:202-209). The draw walkers are in src/main/63D2C.c:
 
-- `gpu_AddSpriteCells(env)` (src/main/63D2C.c:11) emits one `SPRT` per cell
+- `gpu_AddSpriteCells(arg0)` (src/main/63D2C.c:11) emits one `SPRT` per cell
   inside 640 x 240. It applies the header's CLUT and texel base and the
   optional colour and semi-transparency. It links the `SPRT` at
-  `g_gpu_ot_ptr + env->ot_idx`. An index of 0x1006 or more is reset to 1
+  `g_gpu_ot_ptr + arg0->ot_idx`. An index of 0x1006 or more is reset to 1
   with a printed warning.
-- `gpu_AddScaledSpriteQuads(env, mode)` (:55) is the `POLY_FT4` form.
+- `gpu_AddScaledSpriteQuads(arg0, mode)` (:55) is the `POLY_FT4` form.
 
 `func_80060414` (4D0A8.c) takes the screen position from the packed table
 `D_8009B850`, picks one of the `D_8009B7AC` sheets, and draws it with
