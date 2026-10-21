@@ -2,738 +2,590 @@
 # class: a = shadows a global/weak/common definition in a linked object; al = only a local of that name exists; b = no definition
 # same: object's own address == pin value (Y/N, ? = common or unplaced)
 name	pin	where	class	def_obj	def_sec	type	bind	obj_addr	same	dup
-jtbl_80010068	0x80010068	named_syms.txt:1	b							
-jtbl_80010088	0x80010088	named_syms.txt:2	b							
-D_800100B4	0x800100B4	named_syms.txt:3	b							
-g_str_win	0x800100FC	named_syms.txt:4	b							
-g_str_bad_rect	0x80015F2C	named_syms.txt:5	b							
-g_str_sio_console	0x8001649C	named_syms.txt:6	b							
-g_str_sio	0x800164A8	named_syms.txt:7	b							dup
-g_str_bios_id	0x80016274	named_syms.txt:8	b							
-g_str_intr_id	0x80016328	named_syms.txt:9	b							
-ctlbuf	0x800F189C	named_syms.txt:16	b							dup
-_svm_vab_used	0x80102A68	named_syms.txt:25	b							dup
-_svm_vab_start	0x80107810	named_syms.txt:26	b							dup
-_svm_vab_count	0x80107808	named_syms.txt:27	b							dup
-D_800A9A10	0x800A9A10	named_syms.txt:29	b							dup
-g_math_light_plane_projection	0x800EEDB0	named_syms.txt:30	b							
-D_800EEDD0	0x800EEDD0	named_syms.txt:31	b							dup
-D_800EEDF0	0x800EEDF0	named_syms.txt:32	b							dup
-D_800EEDF8	0x800EEDF8	named_syms.txt:33	b							dup
-D_800A8FB0	0x800A8FB0	named_syms.txt:34	b							dup
-D_800A93B0	0x800A93B0	named_syms.txt:35	b							dup
-D_800A93BC	0x800A93BC	named_syms.txt:36	b							dup
-D_800F665C	0x800F665C	named_syms.txt:37	b							dup
-D_800F6656	0x800F6656	named_syms.txt:38	b							dup
-D_800F6658	0x800F6658	named_syms.txt:39	b							dup
-D_800F6654	0x800F6654	named_syms.txt:40	b							dup
-D_800EF848	0x800EF848	named_syms.txt:41	b							dup
-D_800EF800	0x800EF800	named_syms.txt:42	b							dup
-g_color_mode	0x800F6652	named_syms.txt:44	b							dup
-g_pad_buf	0x800FF580	named_syms.txt:45	b							dup
-g_gpu_db	0x800F7438	named_syms.txt:46	b							dup
-g_softbody_slots	0x800F6740	named_syms.txt:49	b							
-D_800F66A0	0x800F66A0	named_syms.txt:50	b							dup
-D_800A6690	0x800A6690	named_syms.txt:51	b							dup
-_svm_stereo_mono	0x800FF578	named_syms.txt:52	b							dup
-_SsVmMaxVoice	0x80101BCC	named_syms.txt:53	b							dup
-_svm_auto_kof_mode	0x80103600	named_syms.txt:54	b							dup
-g_str_putdispenv	0x80015FF8	named_syms.txt:55	b							
-g_str_spu_timeout	0x800163D8	named_syms.txt:56	b							
-g_str_bbm_y123	0x8001036C	named_syms.txt:57	b							
-g_str_bbm_n123	0x80010378	named_syms.txt:58	b							
-g_str_bbm_k123	0x80010384	named_syms.txt:59	b							
-g_str_bbm_t123	0x80010390	named_syms.txt:60	b							
-g_str_bbm_s123	0x800103C0	named_syms.txt:61	b							
-D_80104F38	0x80104F38	named_syms.txt:73	b							dup
-set_color_mode_80048744	0x80048744	named_syms.txt:94	b							
-g_rand_state	0x800F1848	named_syms.txt:118	b							
-D_80103608	0x80103608	named_syms.txt:122	b							dup
-D_80103658	0x80103658	named_syms.txt:123	b							dup
-g_motion_fighter_buffers	0x800A3860	named_syms.txt:125	b							
-math_Distance3D_80017748	0x80017748	named_syms.txt:180	b							
-D_80101EC8	0x80101EC8	named_syms.txt:192	b							
-_ss_score	0x80106F28	named_syms.txt:196	b							dup
-D_800A334C	0x800A334C	named_syms.txt:197	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A334C	Y	
-g_fight_match_cursor	0x800A3874	named_syms.txt:198	b							
-disp_Init_80016918	0x80016918	named_syms.txt:246	b							
-sys_Init_80016A18	0x80016A18	named_syms.txt:249	b							
-sys_Panic_80016C3C	0x80016C3C	named_syms.txt:250	b							
-rng_SetSeed_800171AC	0x800171AC	named_syms.txt:255	b							
-rng_Next_800171B8	0x800171B8	named_syms.txt:256	b							
-math_Distance3D_16_800177C8	0x800177C8	named_syms.txt:262	b							
-scratchpad_Save_80017F28	0x80017F28	named_syms.txt:264	b							
-scratchpad_Restore_80017F5C	0x80017F5C	named_syms.txt:265	b							
-g_rng_state	0x800A38BC	named_syms.txt:268	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-g_scratchpad_save	0x800F5370	named_syms.txt:269	b							dup
-sys_MemClear_8008339C	0x8008339C	named_syms.txt:285	b							
-sys_MemClear2_80083644	0x80083644	named_syms.txt:286	b							
-camera_CalcAngles_80047384	0x80047384	named_syms.txt:343	b							
-g_fight_match_scores	0x800F65F8	named_syms.txt:360	b							
-D_800A3817	0x800A3817	named_syms.txt:364	b							dup
-D_800F116C	0x800F116C	named_syms.txt:365	b							dup
-D_800A3468	0x800A3468	named_syms.txt:366	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3468	Y	
-D_800A347C	0x800A347C	named_syms.txt:367	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A347C	Y	
-D_800F1178	0x800F1178	named_syms.txt:370	b							dup
-_spu_RQ	0x800F7420	named_syms.txt:373	b							dup
-D_800A3814	0x800A3814	named_syms.txt:374	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3858	0x800A3858	named_syms.txt:375	b							dup
-g_memcard_sw_event_new	0x800A3800	named_syms.txt:379	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-g_memcard_hw_event_ioe	0x800A3838	named_syms.txt:380	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-g_memcard_hw_event_err	0x800A383C	named_syms.txt:381	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-g_memcard_hw_event_timeout	0x800A3848	named_syms.txt:382	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-g_memcard_hw_event_new	0x800A3850	named_syms.txt:383	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-g_comb_event_error	0x800A3810	named_syms.txt:384	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
-_spu_RQ_plus_0x4	0x800F7424	named_syms.txt:387	b							dup
-D_800F7298	0x800F7298	named_syms.txt:388	b							dup
-D_800A34E8	0x800A34E8	named_syms.txt:390	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A34E8	Y	
-g_scratchpad_ptr_b8	0x800A34EC	named_syms.txt:391	b							
-g_scratchpad_ptr_ac	0x800A3484	named_syms.txt:392	b							
-D_800A33E8	0x800A33E8	named_syms.txt:394	al	build/src/main/368E4.o	.sbss	NOTYPE	LOCAL	0x800A33E8	Y	
-D_800A38F8	0x800A38F8	named_syms.txt:396	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-Alarm	0x800F19B8	named_syms.txt:397	b							
-g_scratchpad_ptr_18	0x800A346C	named_syms.txt:402	b							
-g_scratchpad_ptr_20	0x800A3470	named_syms.txt:403	b							
-g_scratchpad_ptr_30	0x800A3474	named_syms.txt:404	b							
-Result	0x800F19A0	named_syms.txt:407	b							dup
-Result_plus_0x8	0x800F19A8	named_syms.txt:408	b							dup
-D_800A3478	0x800A3478	named_syms.txt:410	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3478	Y	
-g_arena_free_size	0x800A33A4	named_syms.txt:413	al	build/src/main/35000.o	.sbss	NOTYPE	LOCAL	0x800A33A4	Y	
-g_arena_peak	0x800A33A8	named_syms.txt:414	al	build/src/main/35000.o	.sbss	NOTYPE	LOCAL	0x800A33A8	Y	
-D_800A3330	0x800A3330	named_syms.txt:416	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3330	Y	
-g_font_row	0x800A3360	named_syms.txt:417	al	build/src/main/2B344.o	.sbss	NOTYPE	LOCAL	0x800A3360	Y	
-g_memcard_poll_count	0x800A3924	named_syms.txt:418	a	build/src/main/memcard.o (+1)	*COM*	OBJECT	GLOBAL		?	
-g_scratchpad_ptr_a8	0x800A3480	named_syms.txt:423	b							
-g_str_bu_800109BC_fmt	0x800109BC	named_syms.txt:433	b							
-g_str_bu_800109C8_fmt	0x800109C8	named_syms.txt:434	b							
-g_str_multipul_model_80010D8C	0x80010D8C	named_syms.txt:435	b							
-g_str_path_80010DEC	0x80010DEC	named_syms.txt:436	b							
-g_str_marionation_overflow_8001528C_fmt	0x8001528C	named_syms.txt:437	b							
-g_str_destruction_tiny_model_80015840	0x80015840	named_syms.txt:438	b							
-g_str_common_vab_start_800158B4_fmt	0x800158B4	named_syms.txt:439	b							
-g_str_vab_id_mistake_800158CC_fmt	0x800158CC	named_syms.txt:440	b							
-g_str_eff_prim_over_800158E0_fmt	0x800158E0	named_syms.txt:441	b							
-g_str_warning_800159A0	0x800159A0	named_syms.txt:442	b							
-g_str_hex_lower_80015A68	0x80015A68	named_syms.txt:443	b							
-g_str_null_marker_80015A7C	0x80015A7C	named_syms.txt:444	b							
-g_str_hex_upper_80015A84	0x80015A84	named_syms.txt:445	b							
-g_str_hex_upper_80015C7C	0x80015C7C	named_syms.txt:446	b							
-g_str_hex_lower_80015C90	0x80015C90	named_syms.txt:447	b							
-g_str_tpage_80015D58_fmt	0x80015D58	named_syms.txt:448	b							
-g_str_clut_80015D70_fmt	0x80015D70	named_syms.txt:449	b							
-g_str_clip_80015D80_fmt	0x80015D80	named_syms.txt:450	b							
-g_str_ofs_80015D98_fmt	0x80015D98	named_syms.txt:451	b							
-g_str_tw_80015DA8_fmt	0x80015DA8	named_syms.txt:452	b							
-g_str_dtd_80015DC0_fmt	0x80015DC0	named_syms.txt:453	b							
-g_str_dfe_80015DCC_fmt	0x80015DCC	named_syms.txt:454	b							
-g_str_disp_80015DD8_fmt	0x80015DD8	named_syms.txt:455	b							
-g_str_screen_80015DF4_fmt	0x80015DF4	named_syms.txt:456	b							
-g_str_isinter_80015E10_fmt	0x80015E10	named_syms.txt:457	b							
-g_str_isrgb24_80015E1C_fmt	0x80015E1C	named_syms.txt:458	b							
-g_str_resetgraph_jtb_env_80015E5C_fmt	0x80015E5C	named_syms.txt:459	b							
-g_str_resetgraph_80015E7C_fmt	0x80015E7C	named_syms.txt:460	b							
-g_str_setgraphreverse_80015E90_fmt	0x80015E90	named_syms.txt:461	b							
-g_str_setgraphdebug_80015EA8_fmt	0x80015EA8	named_syms.txt:462	b							
-g_str_setgrapque_80015ED4_fmt	0x80015ED4	named_syms.txt:463	b							
-g_str_drawsynccallback_80015EE8_fmt	0x80015EE8	named_syms.txt:464	b							
-g_str_rect_80015F38_fmt	0x80015F38	named_syms.txt:465	b							
-g_str_libgpu_label_80015F4C_fmt	0x80015F4C	named_syms.txt:466	b							
-g_str_moveimage_80015F74	0x80015F74	named_syms.txt:467	b							
-g_str_clearotagr_80015F98_fmt	0x80015F98	named_syms.txt:468	b							
-g_str_drawotagenv_80015FDC_fmt	0x80015FDC	named_syms.txt:469	b							
-g_str_func_call_80016044_fmt	0x80016044	named_syms.txt:470	b							
-g_str_sync_ready_800161C8_fmt	0x800161C8	named_syms.txt:471	b							
-g_str_diskerror_800161E4	0x800161E4	named_syms.txt:472	b							
-g_str_com_code_800161F0_fmt	0x800161F0	named_syms.txt:473	b							
-g_str_cdrom_unknown_intr_8001620C	0x8001620C	named_syms.txt:474	b							
-g_str_paren_n_80016220_fmt	0x80016220	named_syms.txt:475	b							
-g_str_cd_sync_80016240	0x80016240	named_syms.txt:476	b							
-g_str_cd_ready_80016248	0x80016248	named_syms.txt:477	b							
-g_str_dots_80016254_fmt	0x80016254	named_syms.txt:478	b							
-g_str_no_param_8001625C_fmt	0x8001625C	named_syms.txt:479	b							
-g_str_cd_cw_8001626C	0x8001626C	named_syms.txt:480	b							
-g_str_cd_init_800162A8	0x800162A8	named_syms.txt:481	b							
-g_str_addr_800162B4_fmt	0x800162B4	named_syms.txt:482	b							
-g_str_cd_datasync_800162C0	0x800162C0	named_syms.txt:483	b							
-g_str_null_angled_800162CC	0x800162CC	named_syms.txt:484	b							
-g_str_cdread_sector_error_800162D4	0x800162D4	named_syms.txt:485	b							
-g_str_cdread_shell_open_800162EC	0x800162EC	named_syms.txt:486	b							
-g_str_cdread_retry_80016304	0x80016304	named_syms.txt:487	b							
-g_str_vsync_timeout_80016318	0x80016318	named_syms.txt:488	b							
-g_str_unexpected_interrupt_8001635C_fmt	0x8001635C	named_syms.txt:489	b							
-g_str_intr_timeout_80016378_fmt	0x80016378	named_syms.txt:490	b							
-g_str_dma_bus_error_80016394_fmt	0x80016394	named_syms.txt:491	b							
-g_str_madr_800163B0_fmt	0x800163B0	named_syms.txt:492	b							
-g_str_wait_reset_800163E8	0x800163E8	named_syms.txt:493	b							
-g_str_wait_wrdy_h_l_800163F8	0x800163F8	named_syms.txt:494	b							
-g_str_wait_dmaf_clear_w_8001640C	0x8001640C	named_syms.txt:495	b							
-g_fight_match_count	0x800A389B	named_syms.txt:513	b							
-g_arena_block_count	0x800A33AC	named_syms.txt:517	al	build/src/main/35000.o	.sbss	NOTYPE	LOCAL	0x800A33AC	Y	
-D_800A3418	0x800A3418	named_syms.txt:518	al	build/src/main/4D0A8.o	.sbss	NOTYPE	LOCAL	0x800A3418	Y	
-D_800A3524	0x800A3524	named_syms.txt:519	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3524	Y	
-g_draw_queue_cursor	0x800A3820	named_syms.txt:520	a	build/src/main/32D04.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A384C	0x800A384C	named_syms.txt:521	b							dup
-D_800A385C	0x800A385C	named_syms.txt:522	b							dup
-g_comb_handshake_step	0x800A38AC	named_syms.txt:523	a	build/src/main/2B344.o	*COM*	OBJECT	GLOBAL		?	
-g_prim_buf_cursor	0x800A38B4	named_syms.txt:524	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38C4	0x800A38C4	named_syms.txt:525	b							dup
-D_800A38D6	0x800A38D6	named_syms.txt:526	b							dup
-D_800A3929	0x800A3929	named_syms.txt:528	b							dup
-g_snd_queue	0x800EFB78	named_syms.txt:529	b							
-D_800F1154	0x800F1154	named_syms.txt:530	b							dup
-D_800F62E0	0x800F62E0	named_syms.txt:531	b							dup
-D_800F6608	0x800F6608	named_syms.txt:532	b							dup
-D_80101F00	0x80101F00	named_syms.txt:533	b							
-D_80101FBC	0x80101FBC	named_syms.txt:534	b							
-g_motion_fighter_sections	0x801027B0	named_syms.txt:535	b							
-VBLANK_MINUS	0x80104E80	named_syms.txt:536	b							dup
-D_800A3338	0x800A3338	named_syms.txt:600	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3338	Y	
-D_800A3460	0x800A3460	named_syms.txt:602	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3460	Y	
-D_8010203C	0x8010203C	named_syms.txt:608	b							
-D_80102040	0x80102040	named_syms.txt:609	b							
-D_80102044	0x80102044	named_syms.txt:610	b							
-D_80102054	0x80102054	named_syms.txt:611	b							
-D_80102058	0x80102058	named_syms.txt:612	b							
-D_8010205C	0x8010205C	named_syms.txt:613	b							
-D_80102114	0x80102114	named_syms.txt:617	b							
-D_80101FA0	0x80101FA0	named_syms.txt:620	b							
-D_80101FA4	0x80101FA4	named_syms.txt:621	b							
-D_80101FA8	0x80101FA8	named_syms.txt:622	b							
-D_80101FC0	0x80101FC0	named_syms.txt:624	b							
-D_80101F12	0x80101F12	named_syms.txt:626	b							
-D_80101F4C	0x80101F4C	named_syms.txt:627	b							
-D_80101F4E	0x80101F4E	named_syms.txt:628	b							
-_svm_voice_plus_0x6	0x800F4E1E	named_syms.txt:633	b							dup
-g_bitstream_delta_accumulators	0x800A3D40	named_syms.txt:636	b							
-g_gpu_draw_move_packets	0x800A9830	named_syms.txt:642	b							
-D_800A9920	0x800A9920	named_syms.txt:643	b							
-g_replay_model_draws	0x800F68E0	named_syms.txt:645	b							
-D_800F1B18	0x800F1B18	named_syms.txt:646	b							dup
-D_800F5F68	0x800F5F68	named_syms.txt:647	b							dup
-D_800A4750	0x800A4750	named_syms.txt:648	b							dup
-D_80081F1C	0x80081F1C	named_syms.txt:652	b							
-patch0	0x800F1838	named_syms.txt:654	b							dup
-D_800F34D8	0x800F34D8	named_syms.txt:656	b							dup
-D_801027BC	0x801027BC	named_syms.txt:657	b							
-D_800A3D70	0x800A3D70	named_syms.txt:669	b							dup
-D_800F19D0	0x800F19D0	named_syms.txt:670	b							dup
-D_80102092	0x80102092	named_syms.txt:671	b							dup
-D_800A3578	0x800A3578	named_syms.txt:678	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3578	Y	
-D_800A35A0	0x800A35A0	named_syms.txt:679	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35A0	Y	
-D_800A35BC	0x800A35BC	named_syms.txt:680	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35BC	Y	
-D_800A358A	0x800A358A	named_syms.txt:681	b							
-D_800A3560	0x800A3560	named_syms.txt:682	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3560	Y	
-D_800A3550	0x800A3550	named_syms.txt:683	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3550	Y	
-D_800A34F8	0x800A34F8	named_syms.txt:699	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A34F8	Y	
-D_800A34FC	0x800A34FC	named_syms.txt:700	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A34FC	Y	
-D_800A350C	0x800A350C	named_syms.txt:701	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A350C	Y	
-D_800A3514	0x800A3514	named_syms.txt:702	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3514	Y	
-D_800A38A0	0x800A38A0	named_syms.txt:711	b							dup
-D_800A3916	0x800A3916	named_syms.txt:712	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3444	0x800A3444	named_syms.txt:725	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3444	Y	
-D_800A3834	0x800A3834	named_syms.txt:726	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38A4	0x800A38A4	named_syms.txt:727	b							dup
-D_800A38E2	0x800A38E2	named_syms.txt:728	b							dup
-eff_FrameUpdate	0x80061064	named_syms.txt:733	b							
-D_800A38E9	0x800A38E9	named_syms.txt:755	b							dup
-D_800A38DE	0x800A38DE	named_syms.txt:756	b							dup
-D_800A38EC	0x800A38EC	named_syms.txt:757	b							dup
-D_800A38ED	0x800A38ED	named_syms.txt:758	b							dup
-D_800A38EE	0x800A38EE	named_syms.txt:759	b							dup
-D_800A38CC	0x800A38CC	named_syms.txt:782	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800EF070	0x800EF070	named_syms.txt:787	b							dup
-D_800EF558	0x800EF558	named_syms.txt:788	b							dup
-D_800EF59C	0x800EF59C	named_syms.txt:789	b							dup
-cb_read	0x80082050	named_syms.txt:802	al	build/src/main/psxsdk/libcd/cdread.o	.text	FUNC	LOCAL	0x80082050	Y	dup
-D_800A3906	0x800A3906	named_syms.txt:817	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-g_pad_state_plus_0xC	0x80102794	named_syms.txt:818	b							
-_que	0x80103680	named_syms.txt:824	b							dup
-D_800A33F4	0x800A33F4	named_syms.txt:837	al	build/src/main/43500.o	.sbss	NOTYPE	LOCAL	0x800A33F4	Y	
-D_800EF9F8	0x800EF9F8	named_syms.txt:838	b							dup
-D_800EFA00	0x800EFA00	named_syms.txt:839	b							
-g_vab_rec_ptr	0x800EFC38	named_syms.txt:840	b							dup
-D_800A35D8	0x800A35D8	named_syms.txt:848	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35D8	Y	
-D_800A3570	0x800A3570	named_syms.txt:858	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3570	Y	
-D_800A3580	0x800A3580	named_syms.txt:859	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3580	Y	
-D_800A3584	0x800A3584	named_syms.txt:860	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3584	Y	
-D_800F1160	0x800F1160	named_syms.txt:868	b							dup
-D_800F1152	0x800F1152	named_syms.txt:869	b							dup
-D_800F1164	0x800F1164	named_syms.txt:870	b							dup
-D_800F117C	0x800F117C	named_syms.txt:871	b							dup
-D_800A33EC	0x800A33EC	named_syms.txt:877	al	build/src/main/368E4.o	.sbss	NOTYPE	LOCAL	0x800A33EC	Y	
-D_800EF980	0x800EF980	named_syms.txt:878	b							dup
-D_800A3464	0x800A3464	named_syms.txt:884	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3464	Y	
-D_800A38DC	0x800A38DC	named_syms.txt:895	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A390E	0x800A390E	named_syms.txt:897	b							dup
-D_800F5328	0x800F5328	named_syms.txt:898	b							dup
-D_800A387C	0x800A387C	named_syms.txt:899	b							dup
-D_800A38BA	0x800A38BA	named_syms.txt:900	b							dup
-D_800A3824	0x800A3824	named_syms.txt:907	b							dup
-D_801077B0	0x801077B0	named_syms.txt:908	b							dup
-g_gpu_draw_move_cursor	0x800A3378	named_syms.txt:914	al	build/src/main/309CC.o	.sbss	NOTYPE	LOCAL	0x800A3378	Y	
-D_800F6340	0x800F6340	named_syms.txt:916	b							
-g_gpu_store_buf	0x800A9A24	named_syms.txt:917	b							dup
-D_800A323A	0x800A323A	named_syms.txt:918	b							
-D_800A323C	0x800A323C	named_syms.txt:919	b							
-g_font_color	0x800A3364	named_syms.txt:925	al	build/src/main/2B344.o	.sbss	NOTYPE	LOCAL	0x800A3364	Y	
-D_800F532C	0x800F532C	named_syms.txt:943	b							dup
-D_800F5330	0x800F5330	named_syms.txt:944	b							dup
-D_800F5358	0x800F5358	named_syms.txt:945	b							dup
-D_800F535A	0x800F535A	named_syms.txt:946	b							dup
-D_800F535C	0x800F535C	named_syms.txt:947	b							dup
-D_800F5360	0x800F5360	named_syms.txt:948	b							dup
-D_800F5362	0x800F5362	named_syms.txt:949	b							dup
-D_800F5364	0x800F5364	named_syms.txt:950	b							dup
-D_800F5368	0x800F5368	named_syms.txt:951	b							dup
-D_800F660C	0x800F660C	named_syms.txt:957	b							dup
-D_800F6610	0x800F6610	named_syms.txt:958	b							dup
-D_800F6618	0x800F6618	named_syms.txt:959	b							dup
-D_800F661A	0x800F661A	named_syms.txt:960	b							dup
-D_800F661C	0x800F661C	named_syms.txt:961	b							dup
-D_800F6620	0x800F6620	named_syms.txt:962	b							dup
-D_800F6626	0x800F6626	named_syms.txt:963	b							dup
-D_800F6638	0x800F6638	named_syms.txt:964	b							dup
-D_800F663A	0x800F663A	named_syms.txt:965	b							dup
-D_800F663C	0x800F663C	named_syms.txt:966	b							dup
-D_800F6640	0x800F6640	named_syms.txt:967	b							dup
-D_800F6642	0x800F6642	named_syms.txt:968	b							dup
-D_800F6644	0x800F6644	named_syms.txt:969	b							dup
-g_camera_view_offset	0x800FF5C8	named_syms.txt:994	b							
-_svm_vab_pg	0x800F6660	named_syms.txt:1009	b							dup
-_svm_vab_vh	0x800F66B8	named_syms.txt:1010	b							dup
-_svm_vab_tn	0x800F6700	named_syms.txt:1011	b							dup
-kMaxPrograms	0x800FF634	named_syms.txt:1012	b							dup
-g_snd_sequence_ticks	0x800A3918	named_syms.txt:1018	b							
-D_800A391E	0x800A391E	named_syms.txt:1019	b							dup
-g_snd_sequence_positions	0x80107850	named_syms.txt:1020	b							
-D_800F10D0	0x800F10D0	named_syms.txt:1027	b							dup
-mode_handler_14_NoOp	0x80035430	named_syms.txt:1076	b							
-D_800F1168	0x800F1168	named_syms.txt:1092	b							dup
-D_800EEDB2	0x800EEDB2	named_syms.txt:1098	b							dup
-D_800EEDB4	0x800EEDB4	named_syms.txt:1099	b							dup
-D_800EEDB6	0x800EEDB6	named_syms.txt:1100	b							dup
-D_800EEDB8	0x800EEDB8	named_syms.txt:1101	b							dup
-D_800EEDBA	0x800EEDBA	named_syms.txt:1102	b							dup
-D_800EEDBC	0x800EEDBC	named_syms.txt:1103	b							dup
-D_800EEDBE	0x800EEDBE	named_syms.txt:1104	b							dup
-D_800EEDC0	0x800EEDC0	named_syms.txt:1105	b							dup
-D_800EEDD6	0x800EEDD6	named_syms.txt:1111	b							dup
-D_800EEDD8	0x800EEDD8	named_syms.txt:1112	b							dup
-D_800A33CA	0x800A33CA	named_syms.txt:1118	b							dup
-g_comb_abort_request	0x800A3928	named_syms.txt:1122	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	
-D_800A390D	0x800A390D	named_syms.txt:1124	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800EEE00	0x800EEE00	named_syms.txt:1138	b							dup
-D_800EEE02	0x800EEE02	named_syms.txt:1139	b							dup
-D_800EEE1C	0x800EEE1C	named_syms.txt:1140	b							dup
-D_800EEE20	0x800EEE20	named_syms.txt:1141	b							dup
-D_800EEE24	0x800EEE24	named_syms.txt:1142	b							dup
-D_800A3310	0x800A3310	named_syms.txt:1145	al	build/src/main/9F9C.o	.sbss	NOTYPE	LOCAL	0x800A3310	Y	
-g_font_col	0x800A335C	named_syms.txt:1151	al	build/src/main/2B344.o	.sbss	NOTYPE	LOCAL	0x800A335C	Y	
-g_font_sprite_count	0x800A3358	named_syms.txt:1152	al	build/src/main/2B344.o	.sbss	NOTYPE	LOCAL	0x800A3358	Y	
-D_800A3878	0x800A3878	named_syms.txt:1160	b							dup
-D_800A382D	0x800A382D	named_syms.txt:1163	b							dup
-D_800A3818	0x800A3818	named_syms.txt:1164	a	build/src/main/2B344.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3894	0x800A3894	named_syms.txt:1165	b							dup
-D_800A3368	0x800A3368	named_syms.txt:1166	al	build/src/main/2B344.o	.sbss	NOTYPE	LOCAL	0x800A3368	Y	
-g_arena_blocks	0x800EED10	named_syms.txt:1174	b							
-D_800EED1C	0x800EED1C	named_syms.txt:1175	b							
-g_arena	0x800A9D10	named_syms.txt:1176	b							
-g_arena_free_ptr	0x800A33A0	named_syms.txt:1177	al	build/src/main/35000.o	.sbss	NOTYPE	LOCAL	0x800A33A0	Y	
-D_800A9CFE	0x800A9CFE	named_syms.txt:1178	b							dup
-D_800A9D04	0x800A9D04	named_syms.txt:1179	b							dup
-D_800A3898	0x800A3898	named_syms.txt:1185	b							dup
-D_800A3899	0x800A3899	named_syms.txt:1186	b							dup
-D_800A38AA	0x800A38AA	named_syms.txt:1188	b							dup
-D_800A38AB	0x800A38AB	named_syms.txt:1189	b							dup
-D_80104E88	0x80104E88	named_syms.txt:1192	b							dup
-D_800A3354	0x800A3354	named_syms.txt:1197	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3354	Y	
-D_800A3844	0x800A3844	named_syms.txt:1204	b							dup
-D_800A3836	0x800A3836	named_syms.txt:1205	b							dup
-D_800A3915	0x800A3915	named_syms.txt:1206	b							dup
-g_memcard_file_list	0x80102810	named_syms.txt:1216	b							dup
-g_memcard_file_count	0x800A38C8	named_syms.txt:1217	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-_svm_sreg_dirty	0x800F65E0	named_syms.txt:1228	b							dup
-_svm_sreg_buf	0x80102A78	named_syms.txt:1229	b							dup
-_svm_sreg_buf_plus_0x2	0x80102A7A	named_syms.txt:1230	b							dup
-D_800A3500	0x800A3500	named_syms.txt:1239	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3500	Y	
-D_800A350E	0x800A350E	named_syms.txt:1240	b							
-D_800A3510	0x800A3510	named_syms.txt:1241	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3510	Y	
-D_800A3512	0x800A3512	named_syms.txt:1242	b							
-D_800A3518	0x800A3518	named_syms.txt:1243	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3518	Y	
-D_800A351C	0x800A351C	named_syms.txt:1244	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A351C	Y	
-D_800A3528	0x800A3528	named_syms.txt:1245	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3528	Y	
-g_vab_vb_sbaddr	0x800EFB38	named_syms.txt:1251	b							dup
-D_800EFB7C	0x800EFB7C	named_syms.txt:1252	b							
-D_800A35E4	0x800A35E4	named_syms.txt:1255	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35E4	Y	
-D_800A3608	0x800A3608	named_syms.txt:1258	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A3608	Y	
-D_800A35F0	0x800A35F0	named_syms.txt:1263	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35F0	Y	
-D_800A35F4	0x800A35F4	named_syms.txt:1264	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35F4	Y	
-D_800A35F8	0x800A35F8	named_syms.txt:1265	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35F8	Y	
-D_800A35FC	0x800A35FC	named_syms.txt:1266	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35FC	Y	
-D_800A3600	0x800A3600	named_syms.txt:1267	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A3600	Y	
-D_800A360C	0x800A360C	named_syms.txt:1273	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A360C	Y	
-D_800A3610	0x800A3610	named_syms.txt:1274	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A3610	Y	
-D_800A3614	0x800A3614	named_syms.txt:1275	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A3614	Y	
-column	0x800F1850	named_syms.txt:1286	b							dup
-D_8009BD3B	0x8009BD3B	named_syms.txt:1293	b							
-D_8009BD3D	0x8009BD3D	named_syms.txt:1294	b							
-D_8009BD43	0x8009BD43	named_syms.txt:1295	b							
-D_800A33EA	0x800A33EA	named_syms.txt:1311	b							
-D_800A35A8	0x800A35A8	named_syms.txt:1312	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35A8	Y	
-D_800A35C4	0x800A35C4	named_syms.txt:1313	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35C4	Y	
-D_800A354C	0x800A354C	named_syms.txt:1314	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A354C	Y	
-D_800F1159	0x800F1159	named_syms.txt:1319	b							
-D_801027A0	0x801027A0	named_syms.txt:1326	b							dup
-D_801027D8	0x801027D8	named_syms.txt:1327	b							dup
-D_800A3910	0x800A3910	named_syms.txt:1330	b							dup
-D_800A389A	0x800A389A	named_syms.txt:1331	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38A8	0x800A38A8	named_syms.txt:1332	b							dup
-_svm_rattr	0x800F5750	named_syms.txt:1338	b							dup
-_svm_cur_plus_0x1A	0x8010280A	named_syms.txt:1345	b							dup
-_svm_cur_plus_0x1C	0x8010280C	named_syms.txt:1346	b							dup
-_svm_cur_plus_0x1E	0x8010280E	named_syms.txt:1347	b							dup
-_svm_cur_plus_0x7	0x801027F7	named_syms.txt:1348	b							dup
-_svm_cur_plus_0xC	0x801027FC	named_syms.txt:1349	b							dup
-_svm_cur_plus_0x18	0x80102808	named_syms.txt:1350	b							dup
-D_800F1150	0x800F1150	named_syms.txt:1357	b							dup
-D_800A344C	0x800A344C	named_syms.txt:1358	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A344C	Y	
-D_800A3450	0x800A3450	named_syms.txt:1359	b							
-D_800A3454	0x800A3454	named_syms.txt:1360	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3454	Y	
-D_800A3458	0x800A3458	named_syms.txt:1361	b							
-D_800A345C	0x800A345C	named_syms.txt:1362	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A345C	Y	
-D_800A345E	0x800A345E	named_syms.txt:1363	b							
-g_collision_hit_tag	0x800A33F8	named_syms.txt:1376	al	build/src/main/43500.o	.sbss	NOTYPE	LOCAL	0x800A33F8	Y	
-D_800A33F0	0x800A33F0	named_syms.txt:1377	al	build/src/main/43500.o	.sbss	NOTYPE	LOCAL	0x800A33F0	Y	
-D_80101DF0	0x80101DF0	named_syms.txt:1389	b							dup
-D_800FF638	0x800FF638	named_syms.txt:1390	b							dup
-g_comb_wait_state	0x800A3870	named_syms.txt:1396	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	
-D_800A3318	0x800A3318	named_syms.txt:1397	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3318	Y	
-D_800A3350	0x800A3350	named_syms.txt:1398	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3350	Y	
-D_80101F32	0x80101F32	named_syms.txt:1406	b							
-D_80101FC4	0x80101FC4	named_syms.txt:1407	b							
-g_pad_state_plus_0x4	0x8010278C	named_syms.txt:1408	b							dup
-D_8010237E	0x8010237E	named_syms.txt:1411	b							
-D_800A3388	0x800A3388	named_syms.txt:1422	b							
-D_800A9B28	0x800A9B28	named_syms.txt:1423	b							dup
-D_800A9A20	0x800A9A20	named_syms.txt:1424	b							dup
-D_800A35E8	0x800A35E8	named_syms.txt:1427	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35E8	Y	
-D_800A35E0	0x800A35E0	named_syms.txt:1428	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35E0	Y	
-D_800A4340	0x800A4340	named_syms.txt:1431	b							dup
-g_font_tpage	0x800A3D30	named_syms.txt:1433	b							
-D_800A391F	0x800A391F	named_syms.txt:1444	b							dup
-g_draw_queue	0x80102C00	named_syms.txt:1449	b							dup
-D_800A3808	0x800A3808	named_syms.txt:1452	b							dup
-D_800A382C	0x800A382C	named_syms.txt:1458	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3908	0x800A3908	named_syms.txt:1462	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38FC	0x800A38FC	named_syms.txt:1463	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38D0	0x800A38D0	named_syms.txt:1464	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
-g_cd_fade_len	0x800A3854	named_syms.txt:1467	a	build/src/main/26730.o (+1)	*COM*	OBJECT	GLOBAL		?	
-g_cd_fade_step	0x800A3840	named_syms.txt:1468	a	build/src/main/26730.o (+1)	*COM*	OBJECT	GLOBAL		?	
-g_memcard_op_state	0x800A31EC	named_syms.txt:1473	b							
-g_memcard_op_completion_code	0x800A3890	named_syms.txt:1474	b							
-CombWaitCallback	0x800F1AE8	named_syms.txt:1483	b							dup
-sen	0x800F1AEC	named_syms.txt:1484	b							dup
-D_800A9CF8	0x800A9CF8	named_syms.txt:1487	b							dup
-D_800A9D00	0x800A9D00	named_syms.txt:1488	b							dup
-D_800F6650	0x800F6650	named_syms.txt:1489	b							dup
-D_800EED18	0x800EED18	named_syms.txt:1490	b							
-D_800FF610	0x800FF610	named_syms.txt:1491	b							dup
-g_eff_billboards	0x800F1198	named_syms.txt:1494	b							
-D_800A3488	0x800A3488	named_syms.txt:1501	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3488	Y	
-D_800A348C	0x800A348C	named_syms.txt:1502	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A348C	Y	
-g_scratchpad_ptr_58	0x800A3490	named_syms.txt:1503	b							
-g_scratchpad_ptr_5c	0x800A3494	named_syms.txt:1504	b							
-g_scratchpad_ptr_60	0x800A3498	named_syms.txt:1505	b							
-g_scratchpad_ptr_62	0x800A349C	named_syms.txt:1506	b							
-g_scratchpad_ptr_64	0x800A34A0	named_syms.txt:1507	b							
-g_scratchpad_ptr_66	0x800A34A4	named_syms.txt:1508	b							
-g_scratchpad_ptr_68	0x800A34A8	named_syms.txt:1509	b							
-g_scratchpad_ptr_6a	0x800A34AC	named_syms.txt:1510	b							
-g_scratchpad_ptr_6c	0x800A34B0	named_syms.txt:1511	b							
-g_scratchpad_ptr_70	0x800A34B4	named_syms.txt:1512	b							
-g_scratchpad_ptr_74	0x800A34B8	named_syms.txt:1513	b							
-g_scratchpad_ptr_80	0x800A34BC	named_syms.txt:1514	b							
-g_scratchpad_ptr_82	0x800A34C0	named_syms.txt:1515	b							
-g_scratchpad_ptr_84	0x800A34C4	named_syms.txt:1516	b							
-g_scratchpad_ptr_88	0x800A34C8	named_syms.txt:1517	b							
-g_scratchpad_ptr_8c	0x800A34CC	named_syms.txt:1518	b							
-g_scratchpad_ptr_90	0x800A34D0	named_syms.txt:1519	b							
-g_scratchpad_ptr_98	0x800A34D4	named_syms.txt:1520	b							
-g_scratchpad_ptr_9a	0x800A34D8	named_syms.txt:1521	b							
-g_scratchpad_ptr_9c	0x800A34DC	named_syms.txt:1522	b							
-g_scratchpad_ptr_9e	0x800A34E0	named_syms.txt:1523	b							
-D_800A34E4	0x800A34E4	named_syms.txt:1524	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A34E4	Y	
-g_motion_common_sections	0x80102760	named_syms.txt:1527	b							
-D_800A3804	0x800A3804	named_syms.txt:1528	b							dup
-D_800A3400	0x800A3400	named_syms.txt:1531	al	build/src/main/4BC3C.o	.sbss	NOTYPE	LOCAL	0x800A3400	Y	
-D_800A340C	0x800A340C	named_syms.txt:1532	al	build/src/main/4BC3C.o	.sbss	NOTYPE	LOCAL	0x800A340C	Y	
-D_800A3420	0x800A3420	named_syms.txt:1537	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3420	Y	
-D_800A3424	0x800A3424	named_syms.txt:1538	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3424	Y	
-D_800F115B	0x800F115B	named_syms.txt:1549	b							dup
-D_800F115C	0x800F115C	named_syms.txt:1550	b							dup
-D_800A333C	0x800A333C	named_syms.txt:1560	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A333C	Y	
-D_800A331C	0x800A331C	named_syms.txt:1561	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A331C	Y	
-D_800A3320	0x800A3320	named_syms.txt:1562	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3320	Y	
-D_80102408	0x80102408	named_syms.txt:1565	b							
-D_80102410	0x80102410	named_syms.txt:1566	b							
-D_800A380C	0x800A380C	named_syms.txt:1569	b							dup
-D_800A390F	0x800A390F	named_syms.txt:1570	b							dup
-D_800A3912	0x800A3912	named_syms.txt:1576	b							dup
-D_800A3913	0x800A3913	named_syms.txt:1577	b							dup
-D_800A3914	0x800A3914	named_syms.txt:1578	b							dup
-D_80101F80	0x80101F80	named_syms.txt:1583	b							
-D_80101F84	0x80101F84	named_syms.txt:1584	b							
-D_80101F90	0x80101F90	named_syms.txt:1585	b							
-D_801020C0	0x801020C0	named_syms.txt:1586	b							
-D_800EF071	0x800EF071	named_syms.txt:1591	b							dup
-D_800EF076	0x800EF076	named_syms.txt:1592	b							dup
-D_800EF078	0x800EF078	named_syms.txt:1593	b							dup
-D_800EF07A	0x800EF07A	named_syms.txt:1594	b							dup
-D_800EF07C	0x800EF07C	named_syms.txt:1595	b							dup
-D_800A9CFC	0x800A9CFC	named_syms.txt:1598	b							dup
-D_800A9D08	0x800A9D08	named_syms.txt:1599	b							dup
-D_800EED14	0x800EED14	named_syms.txt:1601	b							
-_svm_tn	0x80101BC8	named_syms.txt:1608	b							dup
-_svm_damper	0x800F66F8	named_syms.txt:1609	b							dup
-D_800F6462	0x800F6462	named_syms.txt:1612	b							
-D_800F6342	0x800F6342	named_syms.txt:1613	b							
-D_800F62E2	0x800F62E2	named_syms.txt:1614	b							
-g_memcard_sw_event_new	0x800A3800	named_syms.txt:1634	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-g_memcard_hw_event_ioe	0x800A3838	named_syms.txt:1635	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-g_memcard_hw_event_err	0x800A383C	named_syms.txt:1636	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-g_memcard_hw_event_timeout	0x800A3848	named_syms.txt:1637	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-g_memcard_hw_event_new	0x800A3850	named_syms.txt:1638	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3324	0x800A3324	named_syms.txt:1656	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3324	Y	
-D_800A3328	0x800A3328	named_syms.txt:1657	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3328	Y	
-D_800A3334	0x800A3334	named_syms.txt:1658	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3334	Y	
-D_800A3340	0x800A3340	named_syms.txt:1659	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3340	Y	
-D_800A3344	0x800A3344	named_syms.txt:1660	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3344	Y	
-D_800A3448	0x800A3448	named_syms.txt:1661	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3448	Y	
-D_800A34F0	0x800A34F0	named_syms.txt:1662	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A34F0	Y	
-D_800A34F2	0x800A34F2	named_syms.txt:1663	b							
-D_800A3520	0x800A3520	named_syms.txt:1664	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3520	Y	
-D_800A352C	0x800A352C	named_syms.txt:1665	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A352C	Y	
-D_800A3558	0x800A3558	named_syms.txt:1666	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3558	Y	
-D_800A3588	0x800A3588	named_syms.txt:1667	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3588	Y	
-D_800A358C	0x800A358C	named_syms.txt:1668	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A358C	Y	
-D_800A3590	0x800A3590	named_syms.txt:1669	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3590	Y	
-D_800A35A4	0x800A35A4	named_syms.txt:1670	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35A4	Y	
-D_800A35AC	0x800A35AC	named_syms.txt:1671	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35AC	Y	
-D_800A35B0	0x800A35B0	named_syms.txt:1672	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35B0	Y	
-D_800A35C0	0x800A35C0	named_syms.txt:1673	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35C0	Y	
-D_800A35DC	0x800A35DC	named_syms.txt:1674	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35DC	Y	
-D_800A3816	0x800A3816	named_syms.txt:1678	b							dup
-D_800A381E	0x800A381E	named_syms.txt:1679	b							dup
-D_800A3828	0x800A3828	named_syms.txt:1680	a	build/src/main/32D04.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A382E	0x800A382E	named_syms.txt:1681	b							dup
-g_motion_common_buffer	0x800A3830	named_syms.txt:1682	b							
-D_800A3864	0x800A3864	named_syms.txt:1683	b							
-D_800A3876	0x800A3876	named_syms.txt:1684	b							dup
-g_motion_common_loaded	0x800A3880	named_syms.txt:1685	b							
-D_800A389C	0x800A389C	named_syms.txt:1686	b							dup
-D_800A38AE	0x800A38AE	named_syms.txt:1687	b							dup
-D_800A38B8	0x800A38B8	named_syms.txt:1688	b							dup
-g_motion_frame_set_ids	0x800A38C0	named_syms.txt:1689	b							
-D_800A38D4	0x800A38D4	named_syms.txt:1691	b							dup
-g_gpu_ot256_ptr	0x800A38D8	named_syms.txt:1692	a	build/src/main/368E4.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38DF	0x800A38DF	named_syms.txt:1693	b							dup
-D_800A38E0	0x800A38E0	named_syms.txt:1694	b							dup
-D_800A38E1	0x800A38E1	named_syms.txt:1695	b							dup
-D_800A38E4	0x800A38E4	named_syms.txt:1696	b							dup
-D_800A38E8	0x800A38E8	named_syms.txt:1697	b							dup
-D_800A38F0	0x800A38F0	named_syms.txt:1698	b							dup
-D_800A38F4	0x800A38F4	named_syms.txt:1699	b							dup
-D_800A3904	0x800A3904	named_syms.txt:1700	b							dup
-D_800A3907	0x800A3907	named_syms.txt:1701	b							dup
-D_800A390C	0x800A390C	named_syms.txt:1702	b							dup
-D_800A3920	0x800A3920	named_syms.txt:1703	b							dup
-g_font_sprites	0x800A3930	named_syms.txt:1704	b							
-D_800A9CFA	0x800A9CFA	named_syms.txt:1705	b							dup
-D_800EF080	0x800EF080	named_syms.txt:1706	b							dup
-D_800EF082	0x800EF082	named_syms.txt:1707	b							dup
-D_800EF084	0x800EF084	named_syms.txt:1708	b							dup
-D_800EFB7D	0x800EFB7D	named_syms.txt:1709	b							
-D_800F0BCC	0x800F0BCC	named_syms.txt:1710	b							dup
-D_800F1151	0x800F1151	named_syms.txt:1712	b							dup
-D_800F1158	0x800F1158	named_syms.txt:1713	b							dup
-D_800F116A	0x800F116A	named_syms.txt:1714	b							dup
-D_800F119C	0x800F119C	named_syms.txt:1715	b							dup
-D_800F11A0	0x800F11A0	named_syms.txt:1716	b							dup
-patch0_plus_0x4	0x800F183C	named_syms.txt:1717	b							dup
-patch0_plus_0x8	0x800F1840	named_syms.txt:1718	b							dup
-Result_plus_0x10	0x800F19B0	named_syms.txt:1719	b							dup
-D_800F1AFC	0x800F1AFC	named_syms.txt:1720	b							dup
-_svm_voice_plus_0x1D	0x800F4E35	named_syms.txt:1721	b							dup
-D_800F6627	0x800F6627	named_syms.txt:1722	b							dup
-D_800F665A	0x800F665A	named_syms.txt:1723	b							dup
-D_80101BD0	0x80101BD0	named_syms.txt:1724	b							dup
-D_80101F88	0x80101F88	named_syms.txt:1725	b							
-D_80101FB0	0x80101FB0	named_syms.txt:1726	b							
-D_80101FCC	0x80101FCC	named_syms.txt:1727	b							
-g_pad_state	0x80102788	named_syms.txt:1728	b							dup
-g_pad_state_plus_0x2	0x8010278A	named_syms.txt:1729	b							
-g_pad_state_plus_0x6	0x8010278E	named_syms.txt:1730	b							dup
-g_pad_state_plus_0x10	0x80102798	named_syms.txt:1731	b							
-g_pad_state_plus_0x14	0x8010279C	named_syms.txt:1732	b							
-D_801027C0	0x801027C0	named_syms.txt:1733	b							
-_svm_sreg_buf_plus_0x6	0x80102A7E	named_syms.txt:1734	b							dup
-_svm_sreg_buf_plus_0x8	0x80102A80	named_syms.txt:1735	b							dup
-_svm_sreg_buf_plus_0xA	0x80102A82	named_syms.txt:1736	b							dup
-g_object_pool	0x80106A78	named_syms.txt:1737	b							
-D_801023EC	0x801023EC	named_syms.txt:1742	b							
-D_801023F4	0x801023F4	named_syms.txt:1743	b							
-_snd_openflag	0x801027E4	named_syms.txt:1744	b							dup
-D_800A35D0	0x800A35D0	named_syms.txt:1750	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35D0	Y	
-D_800EFB1C	0x800EFB1C	named_syms.txt:1752	b							
-D_800EFB20	0x800EFB20	named_syms.txt:1753	b							
-D_800EFB24	0x800EFB24	named_syms.txt:1754	b							
-D_800EFB28	0x800EFB28	named_syms.txt:1755	b							
-D_800F0FB8	0x800F0FB8	named_syms.txt:1756	b							dup
-D_800F0FBC	0x800F0FBC	named_syms.txt:1757	b							
-D_800F0FC0	0x800F0FC0	named_syms.txt:1758	b							
-D_800F10A0	0x800F10A0	named_syms.txt:1759	b							dup
-D_800F10A2	0x800F10A2	named_syms.txt:1760	b							
-D_800F10A4	0x800F10A4	named_syms.txt:1761	b							
-D_800F2B70	0x800F2B70	named_syms.txt:1763	b							dup
-D_800F33D8	0x800F33D8	named_syms.txt:1764	b							dup
-D_800FF558	0x800FF558	named_syms.txt:1765	b							dup
-_svm_pg	0x800FF6A0	named_syms.txt:1766	b							dup
-D_1F800020	0x1F800020	named_syms.txt:1774	b							
-D_1F800110	0x1F800110	named_syms.txt:1775	b							
-D_800A3438	0x800A3438	named_syms.txt:1782	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3438	Y	
-D_800A3440	0x800A3440	named_syms.txt:1783	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3440	Y	
-D_800A3540	0x800A3540	named_syms.txt:1784	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3540	Y	
-D_800A3544	0x800A3544	named_syms.txt:1785	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3544	Y	
-D_800A3548	0x800A3548	named_syms.txt:1786	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3548	Y	
-D_800A3594	0x800A3594	named_syms.txt:1787	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3594	Y	
-D_800EF9F2	0x800EF9F2	named_syms.txt:1788	b							dup
-D_800EF9F4	0x800EF9F4	named_syms.txt:1789	b							dup
-D_800EFB0C	0x800EFB0C	named_syms.txt:1790	b							
-D_800EFB14	0x800EFB14	named_syms.txt:1791	b							
-D_800EFB18	0x800EFB18	named_syms.txt:1792	b							
-D_800EFC8A	0x800EFC8A	named_syms.txt:1793	b							dup
-D_800F0B78	0x800F0B78	named_syms.txt:1794	b							dup
-D_800F0B7C	0x800F0B7C	named_syms.txt:1795	b							dup
-D_800F0B98	0x800F0B98	named_syms.txt:1796	b							dup
-D_800F0BA4	0x800F0BA4	named_syms.txt:1797	b							dup
-D_800F0BEC	0x800F0BEC	named_syms.txt:1798	b							dup
-D_800F0C04	0x800F0C04	named_syms.txt:1799	b							dup
-D_800F0C10	0x800F0C10	named_syms.txt:1800	b							dup
-D_800F0C14	0x800F0C14	named_syms.txt:1801	b							dup
-D_800F0C18	0x800F0C18	named_syms.txt:1802	b							dup
-D_800F0D78	0x800F0D78	named_syms.txt:1803	b							dup
-D_800F0D7C	0x800F0D7C	named_syms.txt:1804	b							
-D_800F0E38	0x800F0E38	named_syms.txt:1805	b							dup
-D_800F0E3C	0x800F0E3C	named_syms.txt:1806	b							
-D_800F0E40	0x800F0E40	named_syms.txt:1807	b							
-D_800F0EC8	0x800F0EC8	named_syms.txt:1808	b							dup
-D_800F0ECC	0x800F0ECC	named_syms.txt:1809	b							dup
-D_800F0ED0	0x800F0ED0	named_syms.txt:1810	b							dup
-D_800F1000	0x800F1000	named_syms.txt:1811	b							dup
-D_800F1002	0x800F1002	named_syms.txt:1812	b							dup
-D_800F1004	0x800F1004	named_syms.txt:1813	b							dup
-patch0_plus_0xC	0x800F1844	named_syms.txt:1815	b							dup
-D_80103624	0x80103624	named_syms.txt:1816	b							dup
-D_8007A4C0	0x8007A4C0	named_syms.txt:1820	b							dup
-D_8007A4CC	0x8007A4CC	named_syms.txt:1821	b							dup
-_SsTrapIntrVSync	0x80083EDC	named_syms.txt:1822	al	build/src/main/psxsdk/libsnd/ssstart.o	.text	FUNC	LOCAL	0x80083EDC	Y	dup
-_SsSeqCalledTbyT_1per2	0x80083F1C	named_syms.txt:1823	al	build/src/main/psxsdk/libsnd/ssstart.o	.text	FUNC	LOCAL	0x80083F1C	Y	dup
-D_800A332C	0x800A332C	named_syms.txt:1828	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A332C	Y	
-D_800A3348	0x800A3348	named_syms.txt:1829	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3348	Y	
-g_ndata_pack	0x800A3398	named_syms.txt:1830	al	build/src/main/35000.o	.sbss	NOTYPE	LOCAL	0x800A3398	Y	
-g_motion_frame_buffers	0x800A3888	named_syms.txt:1831	b							
-D_800A388C	0x800A388C	named_syms.txt:1832	b							
-D_800A7FE0	0x800A7FE0	named_syms.txt:1833	b							dup
-D_800A87E0	0x800A87E0	named_syms.txt:1834	b							dup
-D_800EED00	0x800EED00	named_syms.txt:1835	b							
-D_800EF0BC	0x800EF0BC	named_syms.txt:1836	b							dup
-D_800EF0C0	0x800EF0C0	named_syms.txt:1837	b							dup
-D_800EF0C4	0x800EF0C4	named_syms.txt:1838	b							dup
-D_800EF0D8	0x800EF0D8	named_syms.txt:1839	b							dup
-D_800EF168	0x800EF168	named_syms.txt:1840	b							dup
-_svm_okon1	0x800F1B10	named_syms.txt:1841	b							dup
-_svm_okon2	0x800F1B12	named_syms.txt:1842	b							dup
-_svm_voice	0x800F4E18	named_syms.txt:1843	b							dup
-D_800F5344	0x800F5344	named_syms.txt:1844	b							dup
-D_800F5347	0x800F5347	named_syms.txt:1845	b							dup
-_snd_ev_flag	0x800FF630	named_syms.txt:1846	b							dup
-D_800FF6A8	0x800FF6A8	named_syms.txt:1847	b							dup
-_svm_vh	0x80101BC4	named_syms.txt:1848	b							dup
-g_replay_events	0x80101BF0	named_syms.txt:1849	b							
-D_80101F5E	0x80101F5E	named_syms.txt:1850	b							
-D_80101F7B	0x80101F7B	named_syms.txt:1851	b							
-D_80101FB4	0x80101FB4	named_syms.txt:1852	b							
-D_80101FB8	0x80101FB8	named_syms.txt:1853	b							
-D_80101FD0	0x80101FD0	named_syms.txt:1854	b							
-D_80101FD4	0x80101FD4	named_syms.txt:1855	b							
-D_80101FDC	0x80101FDC	named_syms.txt:1856	b							
-D_80101FE0	0x80101FE0	named_syms.txt:1857	b							
-D_80101FE4	0x80101FE4	named_syms.txt:1858	b							
-D_80101FEC	0x80101FEC	named_syms.txt:1859	b							
-D_80101FF0	0x80101FF0	named_syms.txt:1860	b							
-D_80101FF4	0x80101FF4	named_syms.txt:1861	b							
-D_80101FFC	0x80101FFC	named_syms.txt:1862	b							
-D_80102000	0x80102000	named_syms.txt:1863	b							
-D_80102004	0x80102004	named_syms.txt:1864	b							
-D_8010200C	0x8010200C	named_syms.txt:1865	b							
-D_80102010	0x80102010	named_syms.txt:1866	b							
-D_80102014	0x80102014	named_syms.txt:1867	b							
-D_80102016	0x80102016	named_syms.txt:1868	b							
-D_80102018	0x80102018	named_syms.txt:1869	b							
-D_8010201A	0x8010201A	named_syms.txt:1870	b							
-D_80102030	0x80102030	named_syms.txt:1871	b							
-D_801021E2	0x801021E2	named_syms.txt:1872	b							
-D_8010231A	0x8010231A	named_syms.txt:1873	b							
-D_801023AA	0x801023AA	named_syms.txt:1874	b							
-D_8010262E	0x8010262E	named_syms.txt:1875	b							
-D_801027D4	0x801027D4	named_syms.txt:1876	b							
-_svm_cur_plus_0x1	0x801027F1	named_syms.txt:1877	b							dup
-_svm_cur_plus_0x6	0x801027F6	named_syms.txt:1878	b							dup
-_svm_cur_plus_0x16	0x80102806	named_syms.txt:1879	b							dup
-D_8010367E	0x8010367E	named_syms.txt:1880	b							dup
-_SsMarkCallback	0x80106FA8	named_syms.txt:1881	b							dup
-_svm_vab_total	0x801077C8	named_syms.txt:1882	b							dup
-_svm_envx_hist	0x80107898	named_syms.txt:1883	b							dup
-_svm_okof1	0x801078D8	named_syms.txt:1884	b							dup
-_svm_okof2	0x801078DA	named_syms.txt:1885	b							dup
-breakpoint_trap_loop_800164F8	0x800164F8	named_syms.txt:1899	b							
-const_return_0x25_80044E64	0x80044E64	named_syms.txt:1936	b							
-const_return_0x26_80044E6C	0x80044E6C	named_syms.txt:1937	b							
-empty_stub_800457D4	0x800457D4	named_syms.txt:1938	b							
-D_1F80000C	0x1F80000C	named_syms.txt:1953	b							
-D_800A35C8	0x800A35C8	named_syms.txt:1954	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35C8	Y	
-D_800A381C	0x800A381C	named_syms.txt:1956	b							dup
-D_800A38B0	0x800A38B0	named_syms.txt:1957	b							dup
-D_800F1858	0x800F1858	named_syms.txt:1958	b							dup
-D_800F1B14	0x800F1B14	named_syms.txt:1959	b							dup
-D_800F2B68	0x800F2B68	named_syms.txt:1960	b							dup
-D_8010214E	0x8010214E	named_syms.txt:1961	b							
-D_8010259A	0x8010259A	named_syms.txt:1962	b							
-D_1F800018	0x1F800018	named_syms.txt:1970	b							
-D_1F800024	0x1F800024	named_syms.txt:1971	b							
-D_1F800028	0x1F800028	named_syms.txt:1972	b							
-D_1F800058	0x1F800058	named_syms.txt:1973	b							
-D_1F800060	0x1F800060	named_syms.txt:1974	b							
-D_800F185C	0x800F185C	named_syms.txt:1975	b							
-D_800F1860	0x800F1860	named_syms.txt:1976	b							
-D_800F1864	0x800F1864	named_syms.txt:1977	b							
-D_800F1868	0x800F1868	named_syms.txt:1978	b							
-D_800F186C	0x800F186C	named_syms.txt:1979	b							
-_svm_cur_plus_0x2	0x801027F2	named_syms.txt:1980	b							dup
-_svm_cur_plus_0x4	0x801027F4	named_syms.txt:1981	b							dup
-_svm_cur_plus_0x5	0x801027F5	named_syms.txt:1982	b							dup
-_svm_cur_plus_0xA	0x801027FA	named_syms.txt:1983	b							dup
-_svm_cur_plus_0xB	0x801027FB	named_syms.txt:1984	b							dup
-_svm_cur_plus_0xD	0x801027FD	named_syms.txt:1985	b							dup
-_svm_cur_plus_0xE	0x801027FE	named_syms.txt:1986	b							dup
-_svm_cur_plus_0x10	0x80102800	named_syms.txt:1987	b							dup
-_svm_cur_plus_0x14	0x80102804	named_syms.txt:1988	b							dup
-stub_80030D48	0x80030D48	named_syms.txt:2210	b							
-stub_80049710	0x80049710	named_syms.txt:2248	b							
-stub_8004A938	0x8004A938	named_syms.txt:2250	b							
-stub_8004E564	0x8004E564	named_syms.txt:2251	b							
-stub_8004E56C	0x8004E56C	named_syms.txt:2252	b							
-draw_bg_and_sprites_80069E18	0x80069E18	named_syms.txt:2430	b							
+ctlbuf	0x800F189C	named_syms.txt:7	b							dup
+_svm_vab_used	0x80102A68	named_syms.txt:16	b							dup
+_svm_vab_start	0x80107810	named_syms.txt:17	b							dup
+_svm_vab_count	0x80107808	named_syms.txt:18	b							dup
+D_800A9A10	0x800A9A10	named_syms.txt:20	b							dup
+g_math_light_plane_projection	0x800EEDB0	named_syms.txt:21	b							
+D_800EEDD0	0x800EEDD0	named_syms.txt:22	b							dup
+D_800EEDF0	0x800EEDF0	named_syms.txt:23	b							dup
+D_800EEDF8	0x800EEDF8	named_syms.txt:24	b							dup
+D_800A8FB0	0x800A8FB0	named_syms.txt:25	b							dup
+D_800A93B0	0x800A93B0	named_syms.txt:26	b							dup
+D_800A93BC	0x800A93BC	named_syms.txt:27	b							dup
+D_800F665C	0x800F665C	named_syms.txt:28	b							dup
+D_800F6656	0x800F6656	named_syms.txt:29	b							dup
+D_800F6658	0x800F6658	named_syms.txt:30	b							dup
+D_800F6654	0x800F6654	named_syms.txt:31	b							dup
+D_800EF848	0x800EF848	named_syms.txt:32	b							dup
+D_800EF800	0x800EF800	named_syms.txt:33	b							dup
+g_color_mode	0x800F6652	named_syms.txt:35	b							dup
+g_pad_buf	0x800FF580	named_syms.txt:36	b							dup
+g_gpu_db	0x800F7438	named_syms.txt:37	b							dup
+g_softbody_slots	0x800F6740	named_syms.txt:40	b							
+D_800F66A0	0x800F66A0	named_syms.txt:41	b							dup
+D_800A6690	0x800A6690	named_syms.txt:42	b							dup
+_svm_stereo_mono	0x800FF578	named_syms.txt:43	b							dup
+_SsVmMaxVoice	0x80101BCC	named_syms.txt:44	b							dup
+_svm_auto_kof_mode	0x80103600	named_syms.txt:45	b							dup
+D_80104F38	0x80104F38	named_syms.txt:57	b							dup
+g_rand_state	0x800F1848	named_syms.txt:101	b							
+D_80103608	0x80103608	named_syms.txt:105	b							dup
+D_80103658	0x80103658	named_syms.txt:106	b							dup
+g_motion_fighter_buffers	0x800A3860	named_syms.txt:108	b							
+D_80101EC8	0x80101EC8	named_syms.txt:174	b							
+_ss_score	0x80106F28	named_syms.txt:178	b							dup
+D_800A334C	0x800A334C	named_syms.txt:179	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A334C	Y	
+g_fight_match_cursor	0x800A3874	named_syms.txt:180	b							
+g_rng_state	0x800A38BC	named_syms.txt:242	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+g_scratchpad_save	0x800F5370	named_syms.txt:243	b							dup
+g_fight_match_scores	0x800F65F8	named_syms.txt:331	b							
+D_800A3817	0x800A3817	named_syms.txt:335	b							dup
+g_eff_command_block	0x800F116C	named_syms.txt:336	b							
+D_800A3468	0x800A3468	named_syms.txt:337	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3468	Y	
+D_800A347C	0x800A347C	named_syms.txt:338	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A347C	Y	
+D_800F1178	0x800F1178	named_syms.txt:341	b							dup
+_spu_RQ	0x800F7420	named_syms.txt:344	b							dup
+D_800A3814	0x800A3814	named_syms.txt:345	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3858	0x800A3858	named_syms.txt:346	b							dup
+g_memcard_sw_event_new	0x800A3800	named_syms.txt:350	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+g_memcard_hw_event_ioe	0x800A3838	named_syms.txt:351	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+g_memcard_hw_event_err	0x800A383C	named_syms.txt:352	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+g_memcard_hw_event_timeout	0x800A3848	named_syms.txt:353	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+g_memcard_hw_event_new	0x800A3850	named_syms.txt:354	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+g_comb_event_error	0x800A3810	named_syms.txt:355	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
+_spu_RQ_plus_0x4	0x800F7424	named_syms.txt:358	b							dup
+D_800F7298	0x800F7298	named_syms.txt:359	b							dup
+D_800A34E8	0x800A34E8	named_syms.txt:361	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A34E8	Y	
+D_800A33E8	0x800A33E8	named_syms.txt:363	al	build/src/main/368E4.o	.sbss	NOTYPE	LOCAL	0x800A33E8	Y	
+D_800A38F8	0x800A38F8	named_syms.txt:365	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+Alarm	0x800F19B8	named_syms.txt:366	b							
+Result	0x800F19A0	named_syms.txt:373	b							dup
+Result_plus_0x8	0x800F19A8	named_syms.txt:374	b							dup
+D_800A3478	0x800A3478	named_syms.txt:376	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3478	Y	
+g_arena_free_size	0x800A33A4	named_syms.txt:379	al	build/src/main/35000.o	.sbss	NOTYPE	LOCAL	0x800A33A4	Y	
+g_arena_peak	0x800A33A8	named_syms.txt:380	al	build/src/main/35000.o	.sbss	NOTYPE	LOCAL	0x800A33A8	Y	
+D_800A3330	0x800A3330	named_syms.txt:382	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3330	Y	
+g_font_row	0x800A3360	named_syms.txt:383	al	build/src/main/2B344.o	.sbss	NOTYPE	LOCAL	0x800A3360	Y	
+g_memcard_poll_count	0x800A3924	named_syms.txt:384	a	build/src/main/memcard.o (+1)	*COM*	OBJECT	GLOBAL		?	
+g_fight_match_count	0x800A389B	named_syms.txt:415	b							
+g_arena_block_count	0x800A33AC	named_syms.txt:419	al	build/src/main/35000.o	.sbss	NOTYPE	LOCAL	0x800A33AC	Y	
+D_800A3418	0x800A3418	named_syms.txt:420	al	build/src/main/4D0A8.o	.sbss	NOTYPE	LOCAL	0x800A3418	Y	
+D_800A3524	0x800A3524	named_syms.txt:421	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3524	Y	
+g_draw_queue_cursor	0x800A3820	named_syms.txt:422	a	build/src/main/32D04.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A384C	0x800A384C	named_syms.txt:423	b							dup
+D_800A385C	0x800A385C	named_syms.txt:424	b							dup
+g_comb_handshake_step	0x800A38AC	named_syms.txt:425	a	build/src/main/2B344.o	*COM*	OBJECT	GLOBAL		?	
+g_prim_buf_cursor	0x800A38B4	named_syms.txt:426	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38C4	0x800A38C4	named_syms.txt:427	b							dup
+D_800A38D6	0x800A38D6	named_syms.txt:428	b							dup
+D_800A3929	0x800A3929	named_syms.txt:430	b							dup
+g_snd_queue	0x800EFB78	named_syms.txt:431	b							
+D_800F1154	0x800F1154	named_syms.txt:432	b							dup
+D_800F62E0	0x800F62E0	named_syms.txt:433	b							dup
+D_800F6608	0x800F6608	named_syms.txt:434	b							dup
+D_80101F00	0x80101F00	named_syms.txt:435	b							
+D_80101FBC	0x80101FBC	named_syms.txt:436	b							
+g_motion_fighter_sections	0x801027B0	named_syms.txt:437	b							
+VBLANK_MINUS	0x80104E80	named_syms.txt:438	b							dup
+D_800A3338	0x800A3338	named_syms.txt:502	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3338	Y	
+D_800A3460	0x800A3460	named_syms.txt:504	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3460	Y	
+D_8010203C	0x8010203C	named_syms.txt:510	b							
+D_80102040	0x80102040	named_syms.txt:511	b							
+D_80102044	0x80102044	named_syms.txt:512	b							
+D_80102054	0x80102054	named_syms.txt:513	b							
+D_80102058	0x80102058	named_syms.txt:514	b							
+D_8010205C	0x8010205C	named_syms.txt:515	b							
+D_80102114	0x80102114	named_syms.txt:519	b							
+D_80101FA0	0x80101FA0	named_syms.txt:522	b							
+D_80101FA4	0x80101FA4	named_syms.txt:523	b							
+D_80101FA8	0x80101FA8	named_syms.txt:524	b							
+D_80101FC0	0x80101FC0	named_syms.txt:526	b							
+D_80101F12	0x80101F12	named_syms.txt:528	b							
+D_80101F4C	0x80101F4C	named_syms.txt:529	b							
+D_80101F4E	0x80101F4E	named_syms.txt:530	b							
+_svm_voice_plus_0x6	0x800F4E1E	named_syms.txt:535	b							dup
+g_bitstream_delta_accumulators	0x800A3D40	named_syms.txt:538	b							
+g_gpu_draw_move_packets	0x800A9830	named_syms.txt:544	b							
+D_800A9920	0x800A9920	named_syms.txt:545	b							
+g_replay_model_draws	0x800F68E0	named_syms.txt:547	b							
+g_motion_decoders	0x800F1B18	named_syms.txt:548	b							
+D_800F5F68	0x800F5F68	named_syms.txt:549	b							dup
+D_800A4750	0x800A4750	named_syms.txt:550	b							dup
+patch0	0x800F1838	named_syms.txt:555	b							dup
+D_800F34D8	0x800F34D8	named_syms.txt:557	b							dup
+D_801027BC	0x801027BC	named_syms.txt:558	b							
+D_800A3D70	0x800A3D70	named_syms.txt:570	b							dup
+D_800F19D0	0x800F19D0	named_syms.txt:571	b							dup
+D_80102092	0x80102092	named_syms.txt:572	b							dup
+D_800A3578	0x800A3578	named_syms.txt:579	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3578	Y	
+D_800A35A0	0x800A35A0	named_syms.txt:580	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35A0	Y	
+D_800A35BC	0x800A35BC	named_syms.txt:581	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35BC	Y	
+D_800A3560	0x800A3560	named_syms.txt:582	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3560	Y	
+D_800A3550	0x800A3550	named_syms.txt:583	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3550	Y	
+D_800A34F8	0x800A34F8	named_syms.txt:599	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A34F8	Y	
+D_800A34FC	0x800A34FC	named_syms.txt:600	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A34FC	Y	
+D_800A350C	0x800A350C	named_syms.txt:601	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A350C	Y	
+D_800A3514	0x800A3514	named_syms.txt:602	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3514	Y	
+D_800A38A0	0x800A38A0	named_syms.txt:611	b							dup
+D_800A3916	0x800A3916	named_syms.txt:612	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3444	0x800A3444	named_syms.txt:625	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3444	Y	
+D_800A3834	0x800A3834	named_syms.txt:626	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38A4	0x800A38A4	named_syms.txt:627	b							dup
+D_800A38E2	0x800A38E2	named_syms.txt:628	b							dup
+D_800A38E9	0x800A38E9	named_syms.txt:654	b							dup
+D_800A38DE	0x800A38DE	named_syms.txt:655	b							dup
+D_800A38EC	0x800A38EC	named_syms.txt:656	b							dup
+D_800A38ED	0x800A38ED	named_syms.txt:657	b							dup
+D_800A38EE	0x800A38EE	named_syms.txt:658	b							dup
+D_800A38CC	0x800A38CC	named_syms.txt:681	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800EF070	0x800EF070	named_syms.txt:686	b							dup
+D_800EF558	0x800EF558	named_syms.txt:687	b							dup
+D_800EF59C	0x800EF59C	named_syms.txt:688	b							dup
+cb_read	0x80082050	named_syms.txt:701	al	build/src/main/psxsdk/libcd/cdread.o	.text	FUNC	LOCAL	0x80082050	Y	dup
+D_800A3906	0x800A3906	named_syms.txt:716	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+g_pad_state_plus_0xC	0x80102794	named_syms.txt:717	b							
+_que	0x80103680	named_syms.txt:723	b							dup
+D_800A33F4	0x800A33F4	named_syms.txt:736	al	build/src/main/43500.o	.sbss	NOTYPE	LOCAL	0x800A33F4	Y	
+D_800EF9F8	0x800EF9F8	named_syms.txt:737	b							dup
+D_800EFA00	0x800EFA00	named_syms.txt:738	b							
+g_vab_rec_ptr	0x800EFC38	named_syms.txt:739	b							dup
+D_800A35D8	0x800A35D8	named_syms.txt:747	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35D8	Y	
+D_800A3570	0x800A3570	named_syms.txt:757	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3570	Y	
+D_800A3580	0x800A3580	named_syms.txt:758	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3580	Y	
+D_800A3584	0x800A3584	named_syms.txt:759	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3584	Y	
+D_800F1160	0x800F1160	named_syms.txt:767	b							dup
+D_800F1152	0x800F1152	named_syms.txt:768	b							dup
+D_800F1164	0x800F1164	named_syms.txt:769	b							dup
+D_800F117C	0x800F117C	named_syms.txt:770	b							dup
+D_800A33EC	0x800A33EC	named_syms.txt:776	al	build/src/main/368E4.o	.sbss	NOTYPE	LOCAL	0x800A33EC	Y	
+D_800EF980	0x800EF980	named_syms.txt:777	b							dup
+D_800A3464	0x800A3464	named_syms.txt:783	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3464	Y	
+D_800A38DC	0x800A38DC	named_syms.txt:794	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A390E	0x800A390E	named_syms.txt:796	b							dup
+D_800F5328	0x800F5328	named_syms.txt:797	b							dup
+D_800A387C	0x800A387C	named_syms.txt:798	b							dup
+D_800A38BA	0x800A38BA	named_syms.txt:799	b							dup
+D_800A3824	0x800A3824	named_syms.txt:806	b							dup
+D_801077B0	0x801077B0	named_syms.txt:807	b							dup
+g_gpu_draw_move_cursor	0x800A3378	named_syms.txt:813	al	build/src/main/309CC.o	.sbss	NOTYPE	LOCAL	0x800A3378	Y	
+D_800F6340	0x800F6340	named_syms.txt:815	b							
+g_gpu_store_buf	0x800A9A24	named_syms.txt:816	b							dup
+g_font_color	0x800A3364	named_syms.txt:822	al	build/src/main/2B344.o	.sbss	NOTYPE	LOCAL	0x800A3364	Y	
+D_800F532C	0x800F532C	named_syms.txt:840	b							dup
+D_800F5330	0x800F5330	named_syms.txt:841	b							dup
+D_800F5358	0x800F5358	named_syms.txt:842	b							dup
+D_800F535A	0x800F535A	named_syms.txt:843	b							dup
+D_800F535C	0x800F535C	named_syms.txt:844	b							dup
+D_800F5360	0x800F5360	named_syms.txt:845	b							dup
+D_800F5362	0x800F5362	named_syms.txt:846	b							dup
+D_800F5364	0x800F5364	named_syms.txt:847	b							dup
+D_800F5368	0x800F5368	named_syms.txt:848	b							dup
+D_800F660C	0x800F660C	named_syms.txt:854	b							dup
+D_800F6610	0x800F6610	named_syms.txt:855	b							dup
+D_800F6618	0x800F6618	named_syms.txt:856	b							dup
+D_800F661A	0x800F661A	named_syms.txt:857	b							dup
+D_800F661C	0x800F661C	named_syms.txt:858	b							dup
+D_800F6620	0x800F6620	named_syms.txt:859	b							dup
+D_800F6626	0x800F6626	named_syms.txt:860	b							dup
+D_800F6638	0x800F6638	named_syms.txt:861	b							dup
+D_800F663A	0x800F663A	named_syms.txt:862	b							dup
+D_800F663C	0x800F663C	named_syms.txt:863	b							dup
+D_800F6640	0x800F6640	named_syms.txt:864	b							dup
+D_800F6642	0x800F6642	named_syms.txt:865	b							dup
+D_800F6644	0x800F6644	named_syms.txt:866	b							dup
+g_camera_view_offset	0x800FF5C8	named_syms.txt:891	b							
+_svm_vab_pg	0x800F6660	named_syms.txt:906	b							dup
+_svm_vab_vh	0x800F66B8	named_syms.txt:907	b							dup
+_svm_vab_tn	0x800F6700	named_syms.txt:908	b							dup
+kMaxPrograms	0x800FF634	named_syms.txt:909	b							dup
+g_snd_sequence_ticks	0x800A3918	named_syms.txt:915	b							
+D_800A391E	0x800A391E	named_syms.txt:916	b							dup
+g_snd_sequence_positions	0x80107850	named_syms.txt:917	b							
+g_eff_command_phase	0x800F10D0	named_syms.txt:924	b							
+D_800F1168	0x800F1168	named_syms.txt:988	b							dup
+D_800EEDB2	0x800EEDB2	named_syms.txt:994	b							dup
+D_800EEDB4	0x800EEDB4	named_syms.txt:995	b							dup
+D_800EEDB6	0x800EEDB6	named_syms.txt:996	b							dup
+D_800EEDB8	0x800EEDB8	named_syms.txt:997	b							dup
+D_800EEDBA	0x800EEDBA	named_syms.txt:998	b							dup
+D_800EEDBC	0x800EEDBC	named_syms.txt:999	b							dup
+D_800EEDBE	0x800EEDBE	named_syms.txt:1000	b							dup
+D_800EEDC0	0x800EEDC0	named_syms.txt:1001	b							dup
+D_800EEDD6	0x800EEDD6	named_syms.txt:1007	b							dup
+D_800EEDD8	0x800EEDD8	named_syms.txt:1008	b							dup
+g_comb_abort_request	0x800A3928	named_syms.txt:1017	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	
+D_800A390D	0x800A390D	named_syms.txt:1019	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800EEE00	0x800EEE00	named_syms.txt:1033	b							dup
+D_800EEE02	0x800EEE02	named_syms.txt:1034	b							dup
+D_800EEE1C	0x800EEE1C	named_syms.txt:1035	b							dup
+D_800EEE20	0x800EEE20	named_syms.txt:1036	b							dup
+D_800EEE24	0x800EEE24	named_syms.txt:1037	b							dup
+D_800A3310	0x800A3310	named_syms.txt:1040	al	build/src/main/9F9C.o	.sbss	NOTYPE	LOCAL	0x800A3310	Y	
+g_font_col	0x800A335C	named_syms.txt:1046	al	build/src/main/2B344.o	.sbss	NOTYPE	LOCAL	0x800A335C	Y	
+g_font_sprite_count	0x800A3358	named_syms.txt:1047	al	build/src/main/2B344.o	.sbss	NOTYPE	LOCAL	0x800A3358	Y	
+D_800A3878	0x800A3878	named_syms.txt:1055	b							dup
+D_800A382D	0x800A382D	named_syms.txt:1058	b							dup
+D_800A3818	0x800A3818	named_syms.txt:1059	a	build/src/main/2B344.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3894	0x800A3894	named_syms.txt:1060	b							dup
+D_800A3368	0x800A3368	named_syms.txt:1061	al	build/src/main/2B344.o	.sbss	NOTYPE	LOCAL	0x800A3368	Y	
+g_arena_blocks	0x800EED10	named_syms.txt:1069	b							
+D_800EED1C	0x800EED1C	named_syms.txt:1070	b							
+g_arena	0x800A9D10	named_syms.txt:1071	b							
+g_arena_free_ptr	0x800A33A0	named_syms.txt:1072	al	build/src/main/35000.o	.sbss	NOTYPE	LOCAL	0x800A33A0	Y	
+D_800A9CFE	0x800A9CFE	named_syms.txt:1073	b							dup
+D_800A9D04	0x800A9D04	named_syms.txt:1074	b							dup
+D_800A3898	0x800A3898	named_syms.txt:1080	b							dup
+D_800A3899	0x800A3899	named_syms.txt:1081	b							dup
+D_800A38AA	0x800A38AA	named_syms.txt:1083	b							dup
+D_800A38AB	0x800A38AB	named_syms.txt:1084	b							dup
+D_80104E88	0x80104E88	named_syms.txt:1087	b							dup
+D_800A3354	0x800A3354	named_syms.txt:1092	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3354	Y	
+D_800A3844	0x800A3844	named_syms.txt:1099	b							dup
+D_800A3836	0x800A3836	named_syms.txt:1100	b							dup
+D_800A3915	0x800A3915	named_syms.txt:1101	b							dup
+g_memcard_file_list	0x80102810	named_syms.txt:1111	b							dup
+g_memcard_file_count	0x800A38C8	named_syms.txt:1112	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+_svm_sreg_dirty	0x800F65E0	named_syms.txt:1123	b							dup
+_svm_sreg_buf	0x80102A78	named_syms.txt:1124	b							dup
+_svm_sreg_buf_plus_0x2	0x80102A7A	named_syms.txt:1125	b							dup
+D_800A3500	0x800A3500	named_syms.txt:1134	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3500	Y	
+D_800A3510	0x800A3510	named_syms.txt:1135	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3510	Y	
+D_800A3518	0x800A3518	named_syms.txt:1136	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3518	Y	
+D_800A351C	0x800A351C	named_syms.txt:1137	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A351C	Y	
+D_800A3528	0x800A3528	named_syms.txt:1138	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3528	Y	
+g_vab_vb_sbaddr	0x800EFB38	named_syms.txt:1144	b							dup
+D_800EFB7C	0x800EFB7C	named_syms.txt:1145	b							
+D_800A35E4	0x800A35E4	named_syms.txt:1148	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35E4	Y	
+D_800A3608	0x800A3608	named_syms.txt:1151	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A3608	Y	
+D_800A35F0	0x800A35F0	named_syms.txt:1156	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35F0	Y	
+D_800A35F4	0x800A35F4	named_syms.txt:1157	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35F4	Y	
+D_800A35F8	0x800A35F8	named_syms.txt:1158	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35F8	Y	
+D_800A35FC	0x800A35FC	named_syms.txt:1159	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35FC	Y	
+D_800A3600	0x800A3600	named_syms.txt:1160	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A3600	Y	
+D_800A360C	0x800A360C	named_syms.txt:1166	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A360C	Y	
+D_800A3610	0x800A3610	named_syms.txt:1167	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A3610	Y	
+D_800A3614	0x800A3614	named_syms.txt:1168	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A3614	Y	
+column	0x800F1850	named_syms.txt:1179	b							dup
+D_800A35A8	0x800A35A8	named_syms.txt:1201	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35A8	Y	
+D_800A35C4	0x800A35C4	named_syms.txt:1202	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35C4	Y	
+D_800A354C	0x800A354C	named_syms.txt:1203	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A354C	Y	
+D_800F1159	0x800F1159	named_syms.txt:1208	b							
+D_801027A0	0x801027A0	named_syms.txt:1215	b							dup
+D_801027D8	0x801027D8	named_syms.txt:1216	b							dup
+D_800A3910	0x800A3910	named_syms.txt:1219	b							dup
+D_800A389A	0x800A389A	named_syms.txt:1220	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38A8	0x800A38A8	named_syms.txt:1221	b							dup
+_svm_rattr	0x800F5750	named_syms.txt:1227	b							dup
+_svm_cur_plus_0x1A	0x8010280A	named_syms.txt:1234	b							dup
+_svm_cur_plus_0x1C	0x8010280C	named_syms.txt:1235	b							dup
+_svm_cur_plus_0x1E	0x8010280E	named_syms.txt:1236	b							dup
+_svm_cur_plus_0x7	0x801027F7	named_syms.txt:1237	b							dup
+_svm_cur_plus_0xC	0x801027FC	named_syms.txt:1238	b							dup
+_svm_cur_plus_0x18	0x80102808	named_syms.txt:1239	b							dup
+g_eff_command_status	0x800F1150	named_syms.txt:1246	b							
+D_800A344C	0x800A344C	named_syms.txt:1247	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A344C	Y	
+D_800A3454	0x800A3454	named_syms.txt:1248	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3454	Y	
+D_800A345C	0x800A345C	named_syms.txt:1249	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A345C	Y	
+g_collision_hit_tag	0x800A33F8	named_syms.txt:1262	al	build/src/main/43500.o	.sbss	NOTYPE	LOCAL	0x800A33F8	Y	
+D_800A33F0	0x800A33F0	named_syms.txt:1263	al	build/src/main/43500.o	.sbss	NOTYPE	LOCAL	0x800A33F0	Y	
+D_80101DF0	0x80101DF0	named_syms.txt:1275	b							dup
+D_800FF638	0x800FF638	named_syms.txt:1276	b							dup
+g_comb_wait_state	0x800A3870	named_syms.txt:1282	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	
+D_800A3318	0x800A3318	named_syms.txt:1283	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3318	Y	
+D_800A3350	0x800A3350	named_syms.txt:1284	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3350	Y	
+D_80101F32	0x80101F32	named_syms.txt:1292	b							
+D_80101FC4	0x80101FC4	named_syms.txt:1293	b							
+g_pad_state_plus_0x4	0x8010278C	named_syms.txt:1294	b							dup
+D_8010237E	0x8010237E	named_syms.txt:1297	b							
+D_800A9B28	0x800A9B28	named_syms.txt:1308	b							dup
+D_800A9A20	0x800A9A20	named_syms.txt:1309	b							dup
+D_800A35E8	0x800A35E8	named_syms.txt:1312	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35E8	Y	
+D_800A35E0	0x800A35E0	named_syms.txt:1313	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35E0	Y	
+D_800A4340	0x800A4340	named_syms.txt:1316	b							dup
+g_font_tpage	0x800A3D30	named_syms.txt:1318	b							
+D_800A391F	0x800A391F	named_syms.txt:1329	b							dup
+g_draw_queue	0x80102C00	named_syms.txt:1334	b							dup
+D_800A3808	0x800A3808	named_syms.txt:1337	b							dup
+D_800A382C	0x800A382C	named_syms.txt:1343	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3908	0x800A3908	named_syms.txt:1347	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38FC	0x800A38FC	named_syms.txt:1348	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38D0	0x800A38D0	named_syms.txt:1349	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
+g_cd_fade_len	0x800A3854	named_syms.txt:1352	a	build/src/main/26730.o (+1)	*COM*	OBJECT	GLOBAL		?	
+g_cd_fade_step	0x800A3840	named_syms.txt:1353	a	build/src/main/26730.o (+1)	*COM*	OBJECT	GLOBAL		?	
+g_memcard_op_completion_code	0x800A3890	named_syms.txt:1358	b							
+CombWaitCallback	0x800F1AE8	named_syms.txt:1367	b							dup
+sen	0x800F1AEC	named_syms.txt:1368	b							dup
+D_800A9CF8	0x800A9CF8	named_syms.txt:1371	b							dup
+D_800A9D00	0x800A9D00	named_syms.txt:1372	b							dup
+D_800F6650	0x800F6650	named_syms.txt:1373	b							dup
+D_800EED18	0x800EED18	named_syms.txt:1374	b							
+D_800FF610	0x800FF610	named_syms.txt:1375	b							dup
+g_eff_billboards	0x800F1198	named_syms.txt:1378	b							
+D_800A3488	0x800A3488	named_syms.txt:1385	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3488	Y	
+D_800A348C	0x800A348C	named_syms.txt:1386	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A348C	Y	
+D_800A34E4	0x800A34E4	named_syms.txt:1387	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A34E4	Y	
+g_motion_common_sections	0x80102760	named_syms.txt:1390	b							
+D_800A3804	0x800A3804	named_syms.txt:1391	b							dup
+D_800A3400	0x800A3400	named_syms.txt:1394	al	build/src/main/4BC3C.o	.sbss	NOTYPE	LOCAL	0x800A3400	Y	
+D_800A340C	0x800A340C	named_syms.txt:1395	al	build/src/main/4BC3C.o	.sbss	NOTYPE	LOCAL	0x800A340C	Y	
+D_800A3420	0x800A3420	named_syms.txt:1400	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3420	Y	
+D_800A3424	0x800A3424	named_syms.txt:1401	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3424	Y	
+D_800F115B	0x800F115B	named_syms.txt:1412	b							dup
+D_800F115C	0x800F115C	named_syms.txt:1413	b							dup
+D_800A333C	0x800A333C	named_syms.txt:1423	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A333C	Y	
+D_800A331C	0x800A331C	named_syms.txt:1424	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A331C	Y	
+D_800A3320	0x800A3320	named_syms.txt:1425	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3320	Y	
+D_80102408	0x80102408	named_syms.txt:1428	b							
+D_80102410	0x80102410	named_syms.txt:1429	b							
+D_800A380C	0x800A380C	named_syms.txt:1432	b							dup
+D_800A390F	0x800A390F	named_syms.txt:1433	b							dup
+D_800A3912	0x800A3912	named_syms.txt:1439	b							dup
+D_800A3913	0x800A3913	named_syms.txt:1440	b							dup
+D_800A3914	0x800A3914	named_syms.txt:1441	b							dup
+D_80101F80	0x80101F80	named_syms.txt:1446	b							
+D_80101F84	0x80101F84	named_syms.txt:1447	b							
+D_80101F90	0x80101F90	named_syms.txt:1448	b							
+D_801020C0	0x801020C0	named_syms.txt:1449	b							
+D_800EF071	0x800EF071	named_syms.txt:1454	b							dup
+D_800EF076	0x800EF076	named_syms.txt:1455	b							dup
+D_800EF078	0x800EF078	named_syms.txt:1456	b							dup
+D_800EF07A	0x800EF07A	named_syms.txt:1457	b							dup
+D_800EF07C	0x800EF07C	named_syms.txt:1458	b							dup
+D_800A9CFC	0x800A9CFC	named_syms.txt:1461	b							dup
+D_800A9D08	0x800A9D08	named_syms.txt:1462	b							dup
+D_800EED14	0x800EED14	named_syms.txt:1464	b							
+_svm_tn	0x80101BC8	named_syms.txt:1471	b							dup
+_svm_damper	0x800F66F8	named_syms.txt:1472	b							dup
+D_800F6462	0x800F6462	named_syms.txt:1475	b							
+D_800F6342	0x800F6342	named_syms.txt:1476	b							
+D_800F62E2	0x800F62E2	named_syms.txt:1477	b							
+g_memcard_sw_event_new	0x800A3800	named_syms.txt:1497	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+g_memcard_hw_event_ioe	0x800A3838	named_syms.txt:1498	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+g_memcard_hw_event_err	0x800A383C	named_syms.txt:1499	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+g_memcard_hw_event_timeout	0x800A3848	named_syms.txt:1500	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+g_memcard_hw_event_new	0x800A3850	named_syms.txt:1501	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3324	0x800A3324	named_syms.txt:1519	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3324	Y	
+D_800A3328	0x800A3328	named_syms.txt:1520	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3328	Y	
+D_800A3334	0x800A3334	named_syms.txt:1521	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3334	Y	
+D_800A3340	0x800A3340	named_syms.txt:1522	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3340	Y	
+D_800A3344	0x800A3344	named_syms.txt:1523	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3344	Y	
+D_800A3448	0x800A3448	named_syms.txt:1524	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3448	Y	
+D_800A34F0	0x800A34F0	named_syms.txt:1525	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A34F0	Y	
+D_800A3520	0x800A3520	named_syms.txt:1526	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A3520	Y	
+D_800A352C	0x800A352C	named_syms.txt:1527	al	build/src/main/596CC.o	.sbss	NOTYPE	LOCAL	0x800A352C	Y	
+D_800A3558	0x800A3558	named_syms.txt:1528	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3558	Y	
+D_800A3588	0x800A3588	named_syms.txt:1529	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3588	Y	
+D_800A358C	0x800A358C	named_syms.txt:1530	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A358C	Y	
+D_800A3590	0x800A3590	named_syms.txt:1531	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3590	Y	
+D_800A35A4	0x800A35A4	named_syms.txt:1532	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35A4	Y	
+D_800A35AC	0x800A35AC	named_syms.txt:1533	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35AC	Y	
+D_800A35B0	0x800A35B0	named_syms.txt:1534	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35B0	Y	
+D_800A35C0	0x800A35C0	named_syms.txt:1535	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35C0	Y	
+D_800A35DC	0x800A35DC	named_syms.txt:1536	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35DC	Y	
+D_800A3816	0x800A3816	named_syms.txt:1540	b							dup
+D_800A381E	0x800A381E	named_syms.txt:1541	b							dup
+D_800A3828	0x800A3828	named_syms.txt:1542	a	build/src/main/32D04.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A382E	0x800A382E	named_syms.txt:1543	b							dup
+g_motion_common_buffer	0x800A3830	named_syms.txt:1544	b							
+D_800A3864	0x800A3864	named_syms.txt:1545	b							
+D_800A3876	0x800A3876	named_syms.txt:1546	b							dup
+g_motion_common_loaded	0x800A3880	named_syms.txt:1547	b							
+D_800A389C	0x800A389C	named_syms.txt:1548	b							dup
+D_800A38AE	0x800A38AE	named_syms.txt:1549	b							dup
+D_800A38B8	0x800A38B8	named_syms.txt:1550	b							dup
+g_motion_frame_set_ids	0x800A38C0	named_syms.txt:1551	b							
+D_800A38D4	0x800A38D4	named_syms.txt:1553	b							dup
+g_gpu_ot256_ptr	0x800A38D8	named_syms.txt:1554	a	build/src/main/368E4.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38DF	0x800A38DF	named_syms.txt:1555	b							dup
+D_800A38E0	0x800A38E0	named_syms.txt:1556	b							dup
+D_800A38E1	0x800A38E1	named_syms.txt:1557	b							dup
+D_800A38E4	0x800A38E4	named_syms.txt:1558	b							dup
+D_800A38E8	0x800A38E8	named_syms.txt:1559	b							dup
+D_800A38F0	0x800A38F0	named_syms.txt:1560	b							dup
+D_800A38F4	0x800A38F4	named_syms.txt:1561	b							dup
+D_800A3904	0x800A3904	named_syms.txt:1562	b							dup
+D_800A3907	0x800A3907	named_syms.txt:1563	b							dup
+D_800A390C	0x800A390C	named_syms.txt:1564	b							dup
+D_800A3920	0x800A3920	named_syms.txt:1565	b							dup
+g_font_sprites	0x800A3930	named_syms.txt:1566	b							
+D_800A9CFA	0x800A9CFA	named_syms.txt:1567	b							dup
+D_800EF080	0x800EF080	named_syms.txt:1568	b							dup
+D_800EF082	0x800EF082	named_syms.txt:1569	b							dup
+D_800EF084	0x800EF084	named_syms.txt:1570	b							dup
+D_800EFB7D	0x800EFB7D	named_syms.txt:1571	b							
+D_800F0BCC	0x800F0BCC	named_syms.txt:1572	b							dup
+D_800F1151	0x800F1151	named_syms.txt:1574	b							dup
+D_800F1158	0x800F1158	named_syms.txt:1575	b							dup
+D_800F116A	0x800F116A	named_syms.txt:1576	b							dup
+D_800F119C	0x800F119C	named_syms.txt:1577	b							dup
+D_800F11A0	0x800F11A0	named_syms.txt:1578	b							dup
+patch0_plus_0x4	0x800F183C	named_syms.txt:1579	b							dup
+patch0_plus_0x8	0x800F1840	named_syms.txt:1580	b							dup
+Result_plus_0x10	0x800F19B0	named_syms.txt:1581	b							dup
+D_800F1AFC	0x800F1AFC	named_syms.txt:1582	b							dup
+_svm_voice_plus_0x1D	0x800F4E35	named_syms.txt:1583	b							dup
+D_800F6627	0x800F6627	named_syms.txt:1584	b							dup
+D_800F665A	0x800F665A	named_syms.txt:1585	b							dup
+D_80101BD0	0x80101BD0	named_syms.txt:1586	b							dup
+D_80101F88	0x80101F88	named_syms.txt:1587	b							
+D_80101FB0	0x80101FB0	named_syms.txt:1588	b							
+D_80101FCC	0x80101FCC	named_syms.txt:1589	b							
+g_pad_state	0x80102788	named_syms.txt:1590	b							dup
+g_pad_state_plus_0x2	0x8010278A	named_syms.txt:1591	b							
+g_pad_state_plus_0x6	0x8010278E	named_syms.txt:1592	b							dup
+g_pad_state_plus_0x10	0x80102798	named_syms.txt:1593	b							
+g_pad_state_plus_0x14	0x8010279C	named_syms.txt:1594	b							
+D_801027C0	0x801027C0	named_syms.txt:1595	b							
+_svm_sreg_buf_plus_0x6	0x80102A7E	named_syms.txt:1596	b							dup
+_svm_sreg_buf_plus_0x8	0x80102A80	named_syms.txt:1597	b							dup
+_svm_sreg_buf_plus_0xA	0x80102A82	named_syms.txt:1598	b							dup
+g_object_pool	0x80106A78	named_syms.txt:1599	b							
+D_801023EC	0x801023EC	named_syms.txt:1604	b							
+D_801023F4	0x801023F4	named_syms.txt:1605	b							
+_snd_openflag	0x801027E4	named_syms.txt:1606	b							dup
+D_800A35D0	0x800A35D0	named_syms.txt:1612	al	build/src/main/64FD8.o	.sbss	NOTYPE	LOCAL	0x800A35D0	Y	
+D_800EFB1C	0x800EFB1C	named_syms.txt:1614	b							
+D_800EFB20	0x800EFB20	named_syms.txt:1615	b							
+D_800EFB24	0x800EFB24	named_syms.txt:1616	b							
+D_800EFB28	0x800EFB28	named_syms.txt:1617	b							
+D_800F0FB8	0x800F0FB8	named_syms.txt:1618	b							dup
+D_800F0FBC	0x800F0FBC	named_syms.txt:1619	b							
+D_800F0FC0	0x800F0FC0	named_syms.txt:1620	b							
+D_800F10A0	0x800F10A0	named_syms.txt:1621	b							dup
+D_800F10A2	0x800F10A2	named_syms.txt:1622	b							
+D_800F10A4	0x800F10A4	named_syms.txt:1623	b							
+D_800F2B70	0x800F2B70	named_syms.txt:1625	b							dup
+D_800F33D8	0x800F33D8	named_syms.txt:1626	b							dup
+D_800FF558	0x800FF558	named_syms.txt:1627	b							dup
+_svm_pg	0x800FF6A0	named_syms.txt:1628	b							dup
+D_1F800020	0x1F800020	named_syms.txt:1636	b							
+D_1F800110	0x1F800110	named_syms.txt:1637	b							
+D_800A3438	0x800A3438	named_syms.txt:1644	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3438	Y	
+D_800A3440	0x800A3440	named_syms.txt:1645	al	build/src/main/51268.o	.sbss	NOTYPE	LOCAL	0x800A3440	Y	
+D_800A3540	0x800A3540	named_syms.txt:1646	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3540	Y	
+D_800A3544	0x800A3544	named_syms.txt:1647	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3544	Y	
+D_800A3548	0x800A3548	named_syms.txt:1648	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3548	Y	
+D_800A3594	0x800A3594	named_syms.txt:1649	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A3594	Y	
+D_800EF9F2	0x800EF9F2	named_syms.txt:1650	b							dup
+D_800EF9F4	0x800EF9F4	named_syms.txt:1651	b							dup
+D_800EFB0C	0x800EFB0C	named_syms.txt:1652	b							
+D_800EFB14	0x800EFB14	named_syms.txt:1653	b							
+D_800EFB18	0x800EFB18	named_syms.txt:1654	b							
+D_800EFC8A	0x800EFC8A	named_syms.txt:1655	b							dup
+D_800F0B78	0x800F0B78	named_syms.txt:1656	b							dup
+D_800F0B7C	0x800F0B7C	named_syms.txt:1657	b							dup
+D_800F0B98	0x800F0B98	named_syms.txt:1658	b							dup
+D_800F0BA4	0x800F0BA4	named_syms.txt:1659	b							dup
+D_800F0BEC	0x800F0BEC	named_syms.txt:1660	b							dup
+D_800F0C04	0x800F0C04	named_syms.txt:1661	b							dup
+D_800F0C10	0x800F0C10	named_syms.txt:1662	b							dup
+D_800F0C14	0x800F0C14	named_syms.txt:1663	b							dup
+D_800F0C18	0x800F0C18	named_syms.txt:1664	b							dup
+D_800F0D78	0x800F0D78	named_syms.txt:1665	b							dup
+D_800F0D7C	0x800F0D7C	named_syms.txt:1666	b							
+D_800F0E38	0x800F0E38	named_syms.txt:1667	b							dup
+D_800F0E3C	0x800F0E3C	named_syms.txt:1668	b							
+D_800F0E40	0x800F0E40	named_syms.txt:1669	b							
+D_800F0EC8	0x800F0EC8	named_syms.txt:1670	b							dup
+D_800F0ECC	0x800F0ECC	named_syms.txt:1671	b							dup
+D_800F0ED0	0x800F0ED0	named_syms.txt:1672	b							dup
+D_800F1000	0x800F1000	named_syms.txt:1673	b							dup
+D_800F1002	0x800F1002	named_syms.txt:1674	b							dup
+D_800F1004	0x800F1004	named_syms.txt:1675	b							dup
+patch0_plus_0xC	0x800F1844	named_syms.txt:1677	b							dup
+D_80103624	0x80103624	named_syms.txt:1678	b							dup
+D_8007A4C0	0x8007A4C0	named_syms.txt:1682	b							dup
+D_8007A4CC	0x8007A4CC	named_syms.txt:1683	b							dup
+_SsTrapIntrVSync	0x80083EDC	named_syms.txt:1684	al	build/src/main/psxsdk/libsnd/ssstart.o	.text	FUNC	LOCAL	0x80083EDC	Y	dup
+_SsSeqCalledTbyT_1per2	0x80083F1C	named_syms.txt:1685	al	build/src/main/psxsdk/libsnd/ssstart.o	.text	FUNC	LOCAL	0x80083F1C	Y	dup
+D_800A332C	0x800A332C	named_syms.txt:1690	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A332C	Y	
+D_800A3348	0x800A3348	named_syms.txt:1691	al	build/src/main/28708.o	.sbss	NOTYPE	LOCAL	0x800A3348	Y	
+g_ndata_pack	0x800A3398	named_syms.txt:1692	al	build/src/main/35000.o	.sbss	NOTYPE	LOCAL	0x800A3398	Y	
+g_motion_frame_buffers	0x800A3888	named_syms.txt:1693	b							
+D_800A388C	0x800A388C	named_syms.txt:1694	b							
+D_800A7FE0	0x800A7FE0	named_syms.txt:1695	b							dup
+D_800A87E0	0x800A87E0	named_syms.txt:1696	b							dup
+D_800EED00	0x800EED00	named_syms.txt:1697	b							
+D_800EF0BC	0x800EF0BC	named_syms.txt:1698	b							dup
+D_800EF0C0	0x800EF0C0	named_syms.txt:1699	b							dup
+D_800EF0C4	0x800EF0C4	named_syms.txt:1700	b							dup
+D_800EF0D8	0x800EF0D8	named_syms.txt:1701	b							dup
+D_800EF168	0x800EF168	named_syms.txt:1702	b							dup
+_svm_okon1	0x800F1B10	named_syms.txt:1703	b							dup
+_svm_okon2	0x800F1B12	named_syms.txt:1704	b							dup
+_svm_voice	0x800F4E18	named_syms.txt:1705	b							dup
+D_800F5344	0x800F5344	named_syms.txt:1706	b							dup
+D_800F5347	0x800F5347	named_syms.txt:1707	b							dup
+_snd_ev_flag	0x800FF630	named_syms.txt:1708	b							dup
+D_800FF6A8	0x800FF6A8	named_syms.txt:1709	b							dup
+_svm_vh	0x80101BC4	named_syms.txt:1710	b							dup
+g_replay_events	0x80101BF0	named_syms.txt:1711	b							
+D_80101F5E	0x80101F5E	named_syms.txt:1712	b							
+D_80101F7B	0x80101F7B	named_syms.txt:1713	b							
+D_80101FB4	0x80101FB4	named_syms.txt:1714	b							
+D_80101FB8	0x80101FB8	named_syms.txt:1715	b							
+D_80101FD0	0x80101FD0	named_syms.txt:1716	b							
+D_80101FD4	0x80101FD4	named_syms.txt:1717	b							
+D_80101FDC	0x80101FDC	named_syms.txt:1718	b							
+D_80101FE0	0x80101FE0	named_syms.txt:1719	b							
+D_80101FE4	0x80101FE4	named_syms.txt:1720	b							
+D_80101FEC	0x80101FEC	named_syms.txt:1721	b							
+D_80101FF0	0x80101FF0	named_syms.txt:1722	b							
+D_80101FF4	0x80101FF4	named_syms.txt:1723	b							
+D_80101FFC	0x80101FFC	named_syms.txt:1724	b							
+D_80102000	0x80102000	named_syms.txt:1725	b							
+D_80102004	0x80102004	named_syms.txt:1726	b							
+D_8010200C	0x8010200C	named_syms.txt:1727	b							
+D_80102010	0x80102010	named_syms.txt:1728	b							
+D_80102014	0x80102014	named_syms.txt:1729	b							
+D_80102016	0x80102016	named_syms.txt:1730	b							
+D_80102018	0x80102018	named_syms.txt:1731	b							
+D_8010201A	0x8010201A	named_syms.txt:1732	b							
+D_80102030	0x80102030	named_syms.txt:1733	b							
+D_801021E2	0x801021E2	named_syms.txt:1734	b							
+D_8010231A	0x8010231A	named_syms.txt:1735	b							
+D_801023AA	0x801023AA	named_syms.txt:1736	b							
+D_8010262E	0x8010262E	named_syms.txt:1737	b							
+D_801027D4	0x801027D4	named_syms.txt:1738	b							
+_svm_cur_plus_0x1	0x801027F1	named_syms.txt:1739	b							dup
+_svm_cur_plus_0x6	0x801027F6	named_syms.txt:1740	b							dup
+_svm_cur_plus_0x16	0x80102806	named_syms.txt:1741	b							dup
+D_8010367E	0x8010367E	named_syms.txt:1742	b							dup
+_SsMarkCallback	0x80106FA8	named_syms.txt:1743	b							dup
+_svm_vab_total	0x801077C8	named_syms.txt:1744	b							dup
+_svm_envx_hist	0x80107898	named_syms.txt:1745	b							dup
+_svm_okof1	0x801078D8	named_syms.txt:1746	b							dup
+_svm_okof2	0x801078DA	named_syms.txt:1747	b							dup
+D_1F80000C	0x1F80000C	named_syms.txt:1811	b							
+D_800A35C8	0x800A35C8	named_syms.txt:1812	al	build/src/main/5ED34.o	.sbss	NOTYPE	LOCAL	0x800A35C8	Y	
+D_800A381C	0x800A381C	named_syms.txt:1814	b							dup
+D_800A38B0	0x800A38B0	named_syms.txt:1815	b							dup
+D_800F1858	0x800F1858	named_syms.txt:1816	b							dup
+D_800F1B14	0x800F1B14	named_syms.txt:1817	b							dup
+D_800F2B68	0x800F2B68	named_syms.txt:1818	b							dup
+D_8010214E	0x8010214E	named_syms.txt:1819	b							
+D_8010259A	0x8010259A	named_syms.txt:1820	b							
+D_1F800018	0x1F800018	named_syms.txt:1828	b							
+D_1F800024	0x1F800024	named_syms.txt:1829	b							
+D_1F800028	0x1F800028	named_syms.txt:1830	b							
+D_1F800058	0x1F800058	named_syms.txt:1831	b							
+D_1F800060	0x1F800060	named_syms.txt:1832	b							
+D_800F185C	0x800F185C	named_syms.txt:1833	b							
+D_800F1860	0x800F1860	named_syms.txt:1834	b							
+D_800F1864	0x800F1864	named_syms.txt:1835	b							
+D_800F1868	0x800F1868	named_syms.txt:1836	b							
+D_800F186C	0x800F186C	named_syms.txt:1837	b							
+_svm_cur_plus_0x2	0x801027F2	named_syms.txt:1838	b							dup
+_svm_cur_plus_0x4	0x801027F4	named_syms.txt:1839	b							dup
+_svm_cur_plus_0x5	0x801027F5	named_syms.txt:1840	b							dup
+_svm_cur_plus_0xA	0x801027FA	named_syms.txt:1841	b							dup
+_svm_cur_plus_0xB	0x801027FB	named_syms.txt:1842	b							dup
+_svm_cur_plus_0xD	0x801027FD	named_syms.txt:1843	b							dup
+_svm_cur_plus_0xE	0x801027FE	named_syms.txt:1844	b							dup
+_svm_cur_plus_0x10	0x80102800	named_syms.txt:1845	b							dup
+_svm_cur_plus_0x14	0x80102804	named_syms.txt:1846	b							dup
 D_1F800038	0x1F800038	undefined_syms_auto.txt:1	b							
 D_80000004	0x80000004	undefined_syms_auto.txt:2	b							
 D_8007A4C0	0x8007A4C0	undefined_syms_auto.txt:3	b							dup
@@ -741,385 +593,378 @@ D_8007A4CC	0x8007A4CC	undefined_syms_auto.txt:4	b							dup
 cb_read	0x80082050	undefined_syms_auto.txt:5	al	build/src/main/psxsdk/libcd/cdread.o	.text	FUNC	LOCAL	0x80082050	Y	dup
 _SsTrapIntrVSync	0x80083EDC	undefined_syms_auto.txt:6	al	build/src/main/psxsdk/libsnd/ssstart.o	.text	FUNC	LOCAL	0x80083EDC	Y	dup
 _SsSeqCalledTbyT_1per2	0x80083F1C	undefined_syms_auto.txt:7	al	build/src/main/psxsdk/libsnd/ssstart.o	.text	FUNC	LOCAL	0x80083F1C	Y	dup
-D_80088BA0	0x80088BA0	undefined_syms_auto.txt:8	b							
-D_8008D070	0x8008D070	undefined_syms_auto.txt:9	b							
-D_800A33CA	0x800A33CA	undefined_syms_auto.txt:11	b							dup
-g_memcard_sw_event_new	0x800A3800	undefined_syms_auto.txt:12	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3804	0x800A3804	undefined_syms_auto.txt:13	b							dup
-D_800A3808	0x800A3808	undefined_syms_auto.txt:14	b							dup
-D_800A380C	0x800A380C	undefined_syms_auto.txt:15	b							dup
-g_comb_event_error	0x800A3810	undefined_syms_auto.txt:16	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3814	0x800A3814	undefined_syms_auto.txt:17	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3816	0x800A3816	undefined_syms_auto.txt:18	b							dup
-D_800A3817	0x800A3817	undefined_syms_auto.txt:19	b							dup
-D_800A3818	0x800A3818	undefined_syms_auto.txt:20	a	build/src/main/2B344.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A381C	0x800A381C	undefined_syms_auto.txt:21	b							dup
-D_800A381E	0x800A381E	undefined_syms_auto.txt:22	b							dup
-g_draw_queue_cursor	0x800A3820	undefined_syms_auto.txt:23	a	build/src/main/32D04.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3824	0x800A3824	undefined_syms_auto.txt:24	b							dup
-D_800A3828	0x800A3828	undefined_syms_auto.txt:25	a	build/src/main/32D04.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A382C	0x800A382C	undefined_syms_auto.txt:26	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A382D	0x800A382D	undefined_syms_auto.txt:27	b							dup
-D_800A382E	0x800A382E	undefined_syms_auto.txt:28	b							dup
-D_800A3834	0x800A3834	undefined_syms_auto.txt:29	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3836	0x800A3836	undefined_syms_auto.txt:30	b							dup
-g_memcard_hw_event_ioe	0x800A3838	undefined_syms_auto.txt:31	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-g_memcard_hw_event_err	0x800A383C	undefined_syms_auto.txt:32	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3844	0x800A3844	undefined_syms_auto.txt:33	b							dup
-g_memcard_hw_event_timeout	0x800A3848	undefined_syms_auto.txt:34	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A384C	0x800A384C	undefined_syms_auto.txt:35	b							dup
-g_memcard_hw_event_new	0x800A3850	undefined_syms_auto.txt:36	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3858	0x800A3858	undefined_syms_auto.txt:37	b							dup
-D_800A385C	0x800A385C	undefined_syms_auto.txt:38	b							dup
-D_800A3876	0x800A3876	undefined_syms_auto.txt:39	b							dup
-D_800A3878	0x800A3878	undefined_syms_auto.txt:40	b							dup
-D_800A387C	0x800A387C	undefined_syms_auto.txt:41	b							dup
-D_800A3890	0x800A3890	undefined_syms_auto.txt:42	a	build/src/main/28514.o	*COM*	OBJECT	GLOBAL		?	
-D_800A3894	0x800A3894	undefined_syms_auto.txt:43	b							dup
-D_800A3898	0x800A3898	undefined_syms_auto.txt:44	b							dup
-D_800A3899	0x800A3899	undefined_syms_auto.txt:45	b							dup
-D_800A389A	0x800A389A	undefined_syms_auto.txt:46	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A389C	0x800A389C	undefined_syms_auto.txt:47	b							dup
-D_800A38A0	0x800A38A0	undefined_syms_auto.txt:48	b							dup
-D_800A38A4	0x800A38A4	undefined_syms_auto.txt:49	b							dup
-D_800A38A8	0x800A38A8	undefined_syms_auto.txt:50	b							dup
-D_800A38AA	0x800A38AA	undefined_syms_auto.txt:51	b							dup
-D_800A38AB	0x800A38AB	undefined_syms_auto.txt:52	b							dup
-D_800A38AE	0x800A38AE	undefined_syms_auto.txt:53	b							dup
-D_800A38B0	0x800A38B0	undefined_syms_auto.txt:54	b							dup
-g_prim_buf_cursor	0x800A38B4	undefined_syms_auto.txt:55	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38B8	0x800A38B8	undefined_syms_auto.txt:56	b							dup
-D_800A38BA	0x800A38BA	undefined_syms_auto.txt:57	b							dup
-g_rng_state	0x800A38BC	undefined_syms_auto.txt:58	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38C4	0x800A38C4	undefined_syms_auto.txt:59	b							dup
-g_memcard_file_count	0x800A38C8	undefined_syms_auto.txt:60	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38CC	0x800A38CC	undefined_syms_auto.txt:61	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38D0	0x800A38D0	undefined_syms_auto.txt:62	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38D4	0x800A38D4	undefined_syms_auto.txt:63	b							dup
-D_800A38D6	0x800A38D6	undefined_syms_auto.txt:64	b							dup
-g_gpu_ot256_ptr	0x800A38D8	undefined_syms_auto.txt:65	a	build/src/main/368E4.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38DC	0x800A38DC	undefined_syms_auto.txt:66	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38DE	0x800A38DE	undefined_syms_auto.txt:67	b							dup
-D_800A38DF	0x800A38DF	undefined_syms_auto.txt:68	b							dup
-D_800A38E0	0x800A38E0	undefined_syms_auto.txt:69	b							dup
-D_800A38E1	0x800A38E1	undefined_syms_auto.txt:70	b							dup
-D_800A38E2	0x800A38E2	undefined_syms_auto.txt:71	b							dup
-D_800A38E4	0x800A38E4	undefined_syms_auto.txt:72	b							dup
-D_800A38E8	0x800A38E8	undefined_syms_auto.txt:73	b							dup
-D_800A38E9	0x800A38E9	undefined_syms_auto.txt:74	b							dup
-D_800A38EC	0x800A38EC	undefined_syms_auto.txt:75	b							dup
-D_800A38ED	0x800A38ED	undefined_syms_auto.txt:76	b							dup
-D_800A38EE	0x800A38EE	undefined_syms_auto.txt:77	b							dup
-D_800A38F0	0x800A38F0	undefined_syms_auto.txt:78	b							dup
-D_800A38F4	0x800A38F4	undefined_syms_auto.txt:79	b							dup
-D_800A38F8	0x800A38F8	undefined_syms_auto.txt:80	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A38FC	0x800A38FC	undefined_syms_auto.txt:81	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3900	0x800A3900	undefined_syms_auto.txt:82	a	build/src/main/596CC.o	*COM*	OBJECT	GLOBAL		?	
-D_800A3904	0x800A3904	undefined_syms_auto.txt:83	b							dup
-D_800A3906	0x800A3906	undefined_syms_auto.txt:84	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A3907	0x800A3907	undefined_syms_auto.txt:85	b							dup
-D_800A3908	0x800A3908	undefined_syms_auto.txt:86	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
-D_800A390C	0x800A390C	undefined_syms_auto.txt:87	b							dup
-D_800A390D	0x800A390D	undefined_syms_auto.txt:88	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
-D_800A390E	0x800A390E	undefined_syms_auto.txt:89	b							dup
-D_800A390F	0x800A390F	undefined_syms_auto.txt:90	b							dup
-D_800A3910	0x800A3910	undefined_syms_auto.txt:91	b							dup
-D_800A3912	0x800A3912	undefined_syms_auto.txt:92	b							dup
-D_800A3913	0x800A3913	undefined_syms_auto.txt:93	b							dup
-D_800A3914	0x800A3914	undefined_syms_auto.txt:94	b							dup
-D_800A3915	0x800A3915	undefined_syms_auto.txt:95	b							dup
-D_800A3916	0x800A3916	undefined_syms_auto.txt:96	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
-D_800A391E	0x800A391E	undefined_syms_auto.txt:97	b							dup
-D_800A391F	0x800A391F	undefined_syms_auto.txt:98	b							dup
-D_800A3920	0x800A3920	undefined_syms_auto.txt:99	b							dup
-D_800A3929	0x800A3929	undefined_syms_auto.txt:100	b							dup
-D_800A3D70	0x800A3D70	undefined_syms_auto.txt:101	b							dup
-D_800A4340	0x800A4340	undefined_syms_auto.txt:102	b							dup
-D_800A4750	0x800A4750	undefined_syms_auto.txt:103	b							dup
-D_800A6690	0x800A6690	undefined_syms_auto.txt:104	b							dup
-D_800A7EF0	0x800A7EF0	undefined_syms_auto.txt:105	b							
-D_800A7FE0	0x800A7FE0	undefined_syms_auto.txt:106	b							dup
-D_800A87E0	0x800A87E0	undefined_syms_auto.txt:107	b							dup
-D_800A93B0	0x800A93B0	undefined_syms_auto.txt:108	b							dup
-D_800A93BC	0x800A93BC	undefined_syms_auto.txt:109	b							dup
-D_800A9A20	0x800A9A20	undefined_syms_auto.txt:110	b							dup
-g_gpu_store_buf	0x800A9A24	undefined_syms_auto.txt:111	b							dup
-D_800A9B28	0x800A9B28	undefined_syms_auto.txt:112	b							dup
-D_800A9CF8	0x800A9CF8	undefined_syms_auto.txt:113	b							dup
-D_800A9CFA	0x800A9CFA	undefined_syms_auto.txt:114	b							dup
-D_800A9CFC	0x800A9CFC	undefined_syms_auto.txt:115	b							dup
-D_800A9CFE	0x800A9CFE	undefined_syms_auto.txt:116	b							dup
-D_800A9D00	0x800A9D00	undefined_syms_auto.txt:117	b							dup
-D_800A9D04	0x800A9D04	undefined_syms_auto.txt:118	b							dup
-D_800A9D08	0x800A9D08	undefined_syms_auto.txt:119	b							dup
-D_800EEDB2	0x800EEDB2	undefined_syms_auto.txt:120	b							dup
-D_800EEDB4	0x800EEDB4	undefined_syms_auto.txt:121	b							dup
-D_800EEDB6	0x800EEDB6	undefined_syms_auto.txt:122	b							dup
-D_800EEDB8	0x800EEDB8	undefined_syms_auto.txt:123	b							dup
-D_800EEDBA	0x800EEDBA	undefined_syms_auto.txt:124	b							dup
-D_800EEDBC	0x800EEDBC	undefined_syms_auto.txt:125	b							dup
-D_800EEDBE	0x800EEDBE	undefined_syms_auto.txt:126	b							dup
-D_800EEDC0	0x800EEDC0	undefined_syms_auto.txt:127	b							dup
-D_800EEDD0	0x800EEDD0	undefined_syms_auto.txt:128	b							dup
-D_800EEDD6	0x800EEDD6	undefined_syms_auto.txt:129	b							dup
-D_800EEDD8	0x800EEDD8	undefined_syms_auto.txt:130	b							dup
-D_800EEDF0	0x800EEDF0	undefined_syms_auto.txt:131	b							dup
-D_800EEDF8	0x800EEDF8	undefined_syms_auto.txt:132	b							dup
-D_800EEE00	0x800EEE00	undefined_syms_auto.txt:133	b							dup
-D_800EEE02	0x800EEE02	undefined_syms_auto.txt:134	b							dup
-D_800EEE1C	0x800EEE1C	undefined_syms_auto.txt:135	b							dup
-D_800EEE20	0x800EEE20	undefined_syms_auto.txt:136	b							dup
-D_800EEE24	0x800EEE24	undefined_syms_auto.txt:137	b							dup
-D_800EF070	0x800EF070	undefined_syms_auto.txt:138	b							dup
-D_800EF071	0x800EF071	undefined_syms_auto.txt:139	b							dup
-D_800EF076	0x800EF076	undefined_syms_auto.txt:140	b							dup
-D_800EF078	0x800EF078	undefined_syms_auto.txt:141	b							dup
-D_800EF07A	0x800EF07A	undefined_syms_auto.txt:142	b							dup
-D_800EF07C	0x800EF07C	undefined_syms_auto.txt:143	b							dup
-D_800EF080	0x800EF080	undefined_syms_auto.txt:144	b							dup
-D_800EF082	0x800EF082	undefined_syms_auto.txt:145	b							dup
-D_800EF084	0x800EF084	undefined_syms_auto.txt:146	b							dup
-D_800EF0BC	0x800EF0BC	undefined_syms_auto.txt:147	b							dup
-D_800EF0C0	0x800EF0C0	undefined_syms_auto.txt:148	b							dup
-D_800EF0C4	0x800EF0C4	undefined_syms_auto.txt:149	b							dup
-D_800EF0D8	0x800EF0D8	undefined_syms_auto.txt:150	b							dup
-D_800EF168	0x800EF168	undefined_syms_auto.txt:151	b							dup
-D_800EF558	0x800EF558	undefined_syms_auto.txt:152	b							dup
-D_800EF59C	0x800EF59C	undefined_syms_auto.txt:153	b							dup
-D_800EF7BC	0x800EF7BC	undefined_syms_auto.txt:154	b							dup
-D_800EF7C0	0x800EF7C0	undefined_syms_auto.txt:155	b							
-D_800EF800	0x800EF800	undefined_syms_auto.txt:156	b							dup
-D_800EF804	0x800EF804	undefined_syms_auto.txt:157	b							
-D_800EF848	0x800EF848	undefined_syms_auto.txt:158	b							dup
-D_800EF980	0x800EF980	undefined_syms_auto.txt:159	b							dup
-D_800EF9F2	0x800EF9F2	undefined_syms_auto.txt:160	b							dup
-D_800EF9F4	0x800EF9F4	undefined_syms_auto.txt:161	b							dup
-D_800EF9F8	0x800EF9F8	undefined_syms_auto.txt:162	b							dup
-D_800EFAE8	0x800EFAE8	undefined_syms_auto.txt:163	b							
-g_vab_vb_sbaddr	0x800EFB38	undefined_syms_auto.txt:164	b							dup
-g_vab_rec_ptr	0x800EFC38	undefined_syms_auto.txt:165	b							dup
-g_eff_particles	0x800EFC78	undefined_syms_auto.txt:166	b							
-D_800EFC8A	0x800EFC8A	undefined_syms_auto.txt:167	b							dup
-D_800F0B78	0x800F0B78	undefined_syms_auto.txt:168	b							dup
-D_800F0B7C	0x800F0B7C	undefined_syms_auto.txt:169	b							dup
-D_800F0B98	0x800F0B98	undefined_syms_auto.txt:170	b							dup
-D_800F0BA4	0x800F0BA4	undefined_syms_auto.txt:171	b							dup
-D_800F0BA8	0x800F0BA8	undefined_syms_auto.txt:172	b							
-D_800F0BCC	0x800F0BCC	undefined_syms_auto.txt:173	b							dup
-D_800F0BEC	0x800F0BEC	undefined_syms_auto.txt:174	b							dup
-D_800F0C04	0x800F0C04	undefined_syms_auto.txt:175	b							dup
-D_800F0C10	0x800F0C10	undefined_syms_auto.txt:176	b							dup
-D_800F0C14	0x800F0C14	undefined_syms_auto.txt:177	b							dup
-D_800F0C18	0x800F0C18	undefined_syms_auto.txt:178	b							dup
-D_800F0CA0	0x800F0CA0	undefined_syms_auto.txt:179	b							
-D_800F0D78	0x800F0D78	undefined_syms_auto.txt:180	b							dup
-D_800F0E38	0x800F0E38	undefined_syms_auto.txt:181	b							dup
-D_800F0EC8	0x800F0EC8	undefined_syms_auto.txt:182	b							dup
-D_800F0ECC	0x800F0ECC	undefined_syms_auto.txt:183	b							dup
-D_800F0ED0	0x800F0ED0	undefined_syms_auto.txt:184	b							dup
-D_800F0FB8	0x800F0FB8	undefined_syms_auto.txt:185	b							dup
-D_800F1000	0x800F1000	undefined_syms_auto.txt:186	b							dup
-D_800F1002	0x800F1002	undefined_syms_auto.txt:187	b							dup
-D_800F1004	0x800F1004	undefined_syms_auto.txt:188	b							dup
-D_800F10A0	0x800F10A0	undefined_syms_auto.txt:189	b							dup
-D_800F10D0	0x800F10D0	undefined_syms_auto.txt:190	b							dup
-D_800F1140	0x800F1140	undefined_syms_auto.txt:191	b							
-D_800F1150	0x800F1150	undefined_syms_auto.txt:192	b							dup
-D_800F1151	0x800F1151	undefined_syms_auto.txt:193	b							dup
-D_800F1152	0x800F1152	undefined_syms_auto.txt:194	b							dup
-D_800F1154	0x800F1154	undefined_syms_auto.txt:195	b							dup
-D_800F1158	0x800F1158	undefined_syms_auto.txt:196	b							dup
-D_800F115B	0x800F115B	undefined_syms_auto.txt:197	b							dup
-D_800F115C	0x800F115C	undefined_syms_auto.txt:198	b							dup
-D_800F1160	0x800F1160	undefined_syms_auto.txt:199	b							dup
-D_800F1164	0x800F1164	undefined_syms_auto.txt:200	b							dup
-D_800F1168	0x800F1168	undefined_syms_auto.txt:201	b							dup
-D_800F116A	0x800F116A	undefined_syms_auto.txt:202	b							dup
-D_800F116C	0x800F116C	undefined_syms_auto.txt:203	b							dup
-D_800F1178	0x800F1178	undefined_syms_auto.txt:204	b							dup
-D_800F117C	0x800F117C	undefined_syms_auto.txt:205	b							dup
-D_800F119C	0x800F119C	undefined_syms_auto.txt:206	b							dup
-D_800F11A0	0x800F11A0	undefined_syms_auto.txt:207	b							dup
-D_800F11E0	0x800F11E0	undefined_syms_auto.txt:208	b							
-D_800F1438	0x800F1438	undefined_syms_auto.txt:209	b							
-D_800F1498	0x800F1498	undefined_syms_auto.txt:210	b							
-patch0	0x800F1838	undefined_syms_auto.txt:211	b							dup
-patch0_plus_0x4	0x800F183C	undefined_syms_auto.txt:212	b							dup
-patch0_plus_0x8	0x800F1840	undefined_syms_auto.txt:213	b							dup
-patch0_plus_0xC	0x800F1844	undefined_syms_auto.txt:214	b							dup
-D_800F1848	0x800F1848	undefined_syms_auto.txt:215	b							
-column	0x800F1850	undefined_syms_auto.txt:216	b							dup
-D_800F1858	0x800F1858	undefined_syms_auto.txt:217	b							dup
-ctlbuf	0x800F189C	undefined_syms_auto.txt:218	b							dup
-Result	0x800F19A0	undefined_syms_auto.txt:219	b							dup
-Result_plus_0x8	0x800F19A8	undefined_syms_auto.txt:220	b							dup
-Result_plus_0x10	0x800F19B0	undefined_syms_auto.txt:221	b							dup
-D_800F19D0	0x800F19D0	undefined_syms_auto.txt:222	b							dup
-regs	0x800F1AD8	undefined_syms_auto.txt:223	b							
-CombWaitCallback	0x800F1AE8	undefined_syms_auto.txt:224	b							dup
-sen	0x800F1AEC	undefined_syms_auto.txt:225	b							dup
-D_800F1AFC	0x800F1AFC	undefined_syms_auto.txt:226	b							dup
-_svm_okon1	0x800F1B10	undefined_syms_auto.txt:227	b							dup
-_svm_okon2	0x800F1B12	undefined_syms_auto.txt:228	b							dup
-D_800F1B14	0x800F1B14	undefined_syms_auto.txt:229	b							dup
-D_800F1B18	0x800F1B18	undefined_syms_auto.txt:230	b							dup
-D_800F2B68	0x800F2B68	undefined_syms_auto.txt:231	b							dup
-D_800F2B70	0x800F2B70	undefined_syms_auto.txt:232	b							dup
-D_800F3340	0x800F3340	undefined_syms_auto.txt:233	b							
-D_800F33D8	0x800F33D8	undefined_syms_auto.txt:234	b							dup
-D_800F34D8	0x800F34D8	undefined_syms_auto.txt:235	b							dup
-_svm_voice	0x800F4E18	undefined_syms_auto.txt:236	b							dup
-_svm_voice_plus_0x6	0x800F4E1E	undefined_syms_auto.txt:237	b							dup
-_svm_voice_plus_0x1D	0x800F4E35	undefined_syms_auto.txt:238	b							dup
-D_800F4E36	0x800F4E36	undefined_syms_auto.txt:239	b							
-D_800F4E42	0x800F4E42	undefined_syms_auto.txt:240	b							
-D_800F5328	0x800F5328	undefined_syms_auto.txt:241	b							dup
-D_800F532C	0x800F532C	undefined_syms_auto.txt:242	b							dup
-D_800F5330	0x800F5330	undefined_syms_auto.txt:243	b							dup
-D_800F5344	0x800F5344	undefined_syms_auto.txt:244	b							dup
-D_800F5347	0x800F5347	undefined_syms_auto.txt:245	b							dup
-D_800F5358	0x800F5358	undefined_syms_auto.txt:246	b							dup
-D_800F535A	0x800F535A	undefined_syms_auto.txt:247	b							dup
-D_800F535C	0x800F535C	undefined_syms_auto.txt:248	b							dup
-D_800F5360	0x800F5360	undefined_syms_auto.txt:249	b							dup
-D_800F5362	0x800F5362	undefined_syms_auto.txt:250	b							dup
-D_800F5364	0x800F5364	undefined_syms_auto.txt:251	b							dup
-D_800F5368	0x800F5368	undefined_syms_auto.txt:252	b							dup
-g_scratchpad_save	0x800F5370	undefined_syms_auto.txt:253	b							dup
-_svm_rattr	0x800F5750	undefined_syms_auto.txt:254	b							dup
-g_gpu_ot256_db	0x800F5768	undefined_syms_auto.txt:255	b							
-D_800F5F68	0x800F5F68	undefined_syms_auto.txt:256	b							dup
-D_800F5F6C	0x800F5F6C	undefined_syms_auto.txt:257	b							
-D_800F62E0	0x800F62E0	undefined_syms_auto.txt:258	b							dup
-_svm_sreg_dirty	0x800F65E0	undefined_syms_auto.txt:259	b							dup
-D_800F6608	0x800F6608	undefined_syms_auto.txt:260	b							dup
-D_800F660C	0x800F660C	undefined_syms_auto.txt:261	b							dup
-D_800F6610	0x800F6610	undefined_syms_auto.txt:262	b							dup
-D_800F6618	0x800F6618	undefined_syms_auto.txt:263	b							dup
-D_800F661A	0x800F661A	undefined_syms_auto.txt:264	b							dup
-D_800F661C	0x800F661C	undefined_syms_auto.txt:265	b							dup
-D_800F6620	0x800F6620	undefined_syms_auto.txt:266	b							dup
-D_800F6626	0x800F6626	undefined_syms_auto.txt:267	b							dup
-D_800F6627	0x800F6627	undefined_syms_auto.txt:268	b							dup
-D_800F6638	0x800F6638	undefined_syms_auto.txt:269	b							dup
-D_800F663A	0x800F663A	undefined_syms_auto.txt:270	b							dup
-D_800F663C	0x800F663C	undefined_syms_auto.txt:271	b							dup
-D_800F6640	0x800F6640	undefined_syms_auto.txt:272	b							dup
-D_800F6642	0x800F6642	undefined_syms_auto.txt:273	b							dup
-D_800F6644	0x800F6644	undefined_syms_auto.txt:274	b							dup
-D_800F6650	0x800F6650	undefined_syms_auto.txt:275	b							dup
-D_800F6652	0x800F6652	undefined_syms_auto.txt:276	b							
-D_800F6654	0x800F6654	undefined_syms_auto.txt:277	b							dup
-D_800F6656	0x800F6656	undefined_syms_auto.txt:278	b							dup
-D_800F6658	0x800F6658	undefined_syms_auto.txt:279	b							dup
-D_800F665A	0x800F665A	undefined_syms_auto.txt:280	b							dup
-D_800F665C	0x800F665C	undefined_syms_auto.txt:281	b							dup
-_svm_vab_pg	0x800F6660	undefined_syms_auto.txt:282	b							dup
-_svm_vab_vh	0x800F66B8	undefined_syms_auto.txt:283	b							dup
-_svm_damper	0x800F66F8	undefined_syms_auto.txt:284	b							dup
-_svm_vab_tn	0x800F6700	undefined_syms_auto.txt:285	b							dup
-D_800F7298	0x800F7298	undefined_syms_auto.txt:286	b							dup
-_spu_RQ	0x800F7420	undefined_syms_auto.txt:287	b							dup
-_spu_RQ_plus_0x2	0x800F7422	undefined_syms_auto.txt:288	b							
-_spu_RQ_plus_0x4	0x800F7424	undefined_syms_auto.txt:289	b							dup
-_spu_RQ_plus_0x6	0x800F7426	undefined_syms_auto.txt:290	b							
-g_gpu_db	0x800F7438	undefined_syms_auto.txt:291	b							dup
-D_800FF558	0x800FF558	undefined_syms_auto.txt:292	b							dup
-_svm_stereo_mono	0x800FF578	undefined_syms_auto.txt:293	b							dup
-g_pad_buf	0x800FF580	undefined_syms_auto.txt:294	b							dup
-D_800FF610	0x800FF610	undefined_syms_auto.txt:295	b							dup
-_snd_ev_flag	0x800FF630	undefined_syms_auto.txt:296	b							dup
-kMaxPrograms	0x800FF634	undefined_syms_auto.txt:297	b							dup
-D_800FF638	0x800FF638	undefined_syms_auto.txt:298	b							dup
-_svm_pg	0x800FF6A0	undefined_syms_auto.txt:299	b							dup
-D_800FF6A8	0x800FF6A8	undefined_syms_auto.txt:300	b							dup
-_svm_vh	0x80101BC4	undefined_syms_auto.txt:301	b							dup
-_svm_tn	0x80101BC8	undefined_syms_auto.txt:302	b							dup
-_SsVmMaxVoice	0x80101BCC	undefined_syms_auto.txt:303	b							dup
-D_80101BD0	0x80101BD0	undefined_syms_auto.txt:304	b							dup
-D_80101DF0	0x80101DF0	undefined_syms_auto.txt:305	b							dup
-D_80101E58	0x80101E58	undefined_syms_auto.txt:306	b							
-D_80102092	0x80102092	undefined_syms_auto.txt:307	b							dup
-D_80102778	0x80102778	undefined_syms_auto.txt:308	b							
-g_pad_state	0x80102788	undefined_syms_auto.txt:309	b							dup
-g_pad_state_plus_0x4	0x8010278C	undefined_syms_auto.txt:310	b							dup
-g_pad_state_plus_0x6	0x8010278E	undefined_syms_auto.txt:311	b							dup
-D_801027A0	0x801027A0	undefined_syms_auto.txt:312	b							dup
-D_801027D8	0x801027D8	undefined_syms_auto.txt:313	b							dup
-_snd_openflag	0x801027E4	undefined_syms_auto.txt:314	b							dup
-D_801027E8	0x801027E8	undefined_syms_auto.txt:315	b							
-_svm_cur	0x801027F0	undefined_syms_auto.txt:316	b							
-_svm_cur_plus_0x1	0x801027F1	undefined_syms_auto.txt:317	b							dup
-_svm_cur_plus_0x2	0x801027F2	undefined_syms_auto.txt:318	b							dup
-_svm_cur_plus_0x3	0x801027F3	undefined_syms_auto.txt:319	b							
-_svm_cur_plus_0x4	0x801027F4	undefined_syms_auto.txt:320	b							dup
-_svm_cur_plus_0x5	0x801027F5	undefined_syms_auto.txt:321	b							dup
-_svm_cur_plus_0x6	0x801027F6	undefined_syms_auto.txt:322	b							dup
-_svm_cur_plus_0x7	0x801027F7	undefined_syms_auto.txt:323	b							dup
-_svm_cur_plus_0xA	0x801027FA	undefined_syms_auto.txt:324	b							dup
-_svm_cur_plus_0xB	0x801027FB	undefined_syms_auto.txt:325	b							dup
-_svm_cur_plus_0xC	0x801027FC	undefined_syms_auto.txt:326	b							dup
-_svm_cur_plus_0xD	0x801027FD	undefined_syms_auto.txt:327	b							dup
-_svm_cur_plus_0xE	0x801027FE	undefined_syms_auto.txt:328	b							dup
-_svm_cur_plus_0xF	0x801027FF	undefined_syms_auto.txt:329	b							
-_svm_cur_plus_0x10	0x80102800	undefined_syms_auto.txt:330	b							dup
-_svm_cur_plus_0x11	0x80102801	undefined_syms_auto.txt:331	b							
-_svm_cur_plus_0x12	0x80102802	undefined_syms_auto.txt:332	b							
-_svm_cur_plus_0x13	0x80102803	undefined_syms_auto.txt:333	b							
-_svm_cur_plus_0x14	0x80102804	undefined_syms_auto.txt:334	b							dup
-_svm_cur_plus_0x16	0x80102806	undefined_syms_auto.txt:335	b							dup
-_svm_cur_plus_0x18	0x80102808	undefined_syms_auto.txt:336	b							dup
-_svm_cur_plus_0x1A	0x8010280A	undefined_syms_auto.txt:337	b							dup
-_svm_cur_plus_0x1C	0x8010280C	undefined_syms_auto.txt:338	b							dup
-_svm_cur_plus_0x1E	0x8010280E	undefined_syms_auto.txt:339	b							dup
-g_memcard_file_list	0x80102810	undefined_syms_auto.txt:340	b							dup
-_svm_vab_used	0x80102A68	undefined_syms_auto.txt:341	b							dup
-_svm_sreg_buf	0x80102A78	undefined_syms_auto.txt:342	b							dup
-_svm_sreg_buf_plus_0x2	0x80102A7A	undefined_syms_auto.txt:343	b							dup
-D_80102A7C	0x80102A7C	undefined_syms_auto.txt:344	b							
-_svm_sreg_buf_plus_0x6	0x80102A7E	undefined_syms_auto.txt:345	b							dup
-_svm_sreg_buf_plus_0x8	0x80102A80	undefined_syms_auto.txt:346	b							dup
-_svm_sreg_buf_plus_0xA	0x80102A82	undefined_syms_auto.txt:347	b							dup
-D_80102BF8	0x80102BF8	undefined_syms_auto.txt:348	b							
-g_draw_queue	0x80102C00	undefined_syms_auto.txt:349	b							dup
-_svm_auto_kof_mode	0x80103600	undefined_syms_auto.txt:350	b							dup
-D_80103604	0x80103604	undefined_syms_auto.txt:351	b							
-D_80103608	0x80103608	undefined_syms_auto.txt:352	b							dup
-D_80103624	0x80103624	undefined_syms_auto.txt:353	b							dup
-D_80103658	0x80103658	undefined_syms_auto.txt:354	b							dup
-D_8010367E	0x8010367E	undefined_syms_auto.txt:355	b							dup
-_que	0x80103680	undefined_syms_auto.txt:356	b							dup
-VBLANK_MINUS	0x80104E80	undefined_syms_auto.txt:357	b							dup
-D_80104E88	0x80104E88	undefined_syms_auto.txt:358	b							dup
-D_80104F38	0x80104F38	undefined_syms_auto.txt:359	b							dup
-D_80106A50	0x80106A50	undefined_syms_auto.txt:360	b							
-_ss_score	0x80106F28	undefined_syms_auto.txt:361	b							dup
-_SsMarkCallback	0x80106FA8	undefined_syms_auto.txt:362	b							dup
-_snd_seq_s_max	0x801077A8	undefined_syms_auto.txt:363	b							
-_snd_seq_t_max	0x801077AA	undefined_syms_auto.txt:364	b							
-D_801077B0	0x801077B0	undefined_syms_auto.txt:365	b							dup
-_svm_vab_total	0x801077C8	undefined_syms_auto.txt:366	b							dup
-_svm_vab_count	0x80107808	undefined_syms_auto.txt:367	b							dup
-_svm_vab_start	0x80107810	undefined_syms_auto.txt:368	b							dup
-_svm_envx_hist	0x80107898	undefined_syms_auto.txt:369	b							dup
-_svm_okof1	0x801078D8	undefined_syms_auto.txt:370	b							dup
-_svm_okof2	0x801078DA	undefined_syms_auto.txt:371	b							dup
-D_801078E0	0x801078E0	undefined_syms_auto.txt:372	b							
-D_00000000	0x00000000	undefined_syms_auto.txt:373	b							
-D_800A1494	0x800A1494	undefined_syms_auto.txt:374	b							
-D_800F66A0	0x800F66A0	undefined_syms_auto.txt:375	b							dup
-D_800EEDD0	0x800EEDD0	undefined_syms_auto.txt:376	b							dup
-D_800EEDF0	0x800EEDF0	undefined_syms_auto.txt:377	b							dup
-D_800EEDF8	0x800EEDF8	undefined_syms_auto.txt:378	b							dup
-g_color_mode	0x800F6652	undefined_syms_auto.txt:385	b							dup
-D_800F6656	0x800F6656	undefined_syms_auto.txt:388	b							dup
-D_800F6654	0x800F6654	undefined_syms_auto.txt:389	b							dup
-D_800A9A10	0x800A9A10	undefined_syms_auto.txt:390	b							dup
-D_800EF848	0x800EF848	undefined_syms_auto.txt:392	b							dup
-D_800EF7BC	0x800EF7BC	undefined_syms_auto.txt:393	b							dup
-D_800EF800	0x800EF800	undefined_syms_auto.txt:394	b							dup
-D_800A8FB0	0x800A8FB0	undefined_syms_auto.txt:395	b							dup
-D_800A93BC	0x800A93BC	undefined_syms_auto.txt:396	b							dup
-D_800A93B0	0x800A93B0	undefined_syms_auto.txt:397	b							dup
-g_str_sio	0x800164A8	undefined_syms_auto.txt:398	b							dup
+D_8008D070	0x8008D070	undefined_syms_auto.txt:8	b							
+g_memcard_sw_event_new	0x800A3800	undefined_syms_auto.txt:10	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3804	0x800A3804	undefined_syms_auto.txt:11	b							dup
+D_800A3808	0x800A3808	undefined_syms_auto.txt:12	b							dup
+D_800A380C	0x800A380C	undefined_syms_auto.txt:13	b							dup
+g_comb_event_error	0x800A3810	undefined_syms_auto.txt:14	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3814	0x800A3814	undefined_syms_auto.txt:15	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3816	0x800A3816	undefined_syms_auto.txt:16	b							dup
+D_800A3817	0x800A3817	undefined_syms_auto.txt:17	b							dup
+D_800A3818	0x800A3818	undefined_syms_auto.txt:18	a	build/src/main/2B344.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A381C	0x800A381C	undefined_syms_auto.txt:19	b							dup
+D_800A381E	0x800A381E	undefined_syms_auto.txt:20	b							dup
+g_draw_queue_cursor	0x800A3820	undefined_syms_auto.txt:21	a	build/src/main/32D04.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3824	0x800A3824	undefined_syms_auto.txt:22	b							dup
+D_800A3828	0x800A3828	undefined_syms_auto.txt:23	a	build/src/main/32D04.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A382C	0x800A382C	undefined_syms_auto.txt:24	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A382D	0x800A382D	undefined_syms_auto.txt:25	b							dup
+D_800A382E	0x800A382E	undefined_syms_auto.txt:26	b							dup
+D_800A3834	0x800A3834	undefined_syms_auto.txt:27	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3836	0x800A3836	undefined_syms_auto.txt:28	b							dup
+g_memcard_hw_event_ioe	0x800A3838	undefined_syms_auto.txt:29	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+g_memcard_hw_event_err	0x800A383C	undefined_syms_auto.txt:30	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3844	0x800A3844	undefined_syms_auto.txt:31	b							dup
+g_memcard_hw_event_timeout	0x800A3848	undefined_syms_auto.txt:32	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A384C	0x800A384C	undefined_syms_auto.txt:33	b							dup
+g_memcard_hw_event_new	0x800A3850	undefined_syms_auto.txt:34	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3858	0x800A3858	undefined_syms_auto.txt:35	b							dup
+D_800A385C	0x800A385C	undefined_syms_auto.txt:36	b							dup
+D_800A3876	0x800A3876	undefined_syms_auto.txt:37	b							dup
+D_800A3878	0x800A3878	undefined_syms_auto.txt:38	b							dup
+D_800A387C	0x800A387C	undefined_syms_auto.txt:39	b							dup
+D_800A3890	0x800A3890	undefined_syms_auto.txt:40	a	build/src/main/28514.o	*COM*	OBJECT	GLOBAL		?	
+D_800A3894	0x800A3894	undefined_syms_auto.txt:41	b							dup
+D_800A3898	0x800A3898	undefined_syms_auto.txt:42	b							dup
+D_800A3899	0x800A3899	undefined_syms_auto.txt:43	b							dup
+D_800A389A	0x800A389A	undefined_syms_auto.txt:44	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A389C	0x800A389C	undefined_syms_auto.txt:45	b							dup
+D_800A38A0	0x800A38A0	undefined_syms_auto.txt:46	b							dup
+D_800A38A4	0x800A38A4	undefined_syms_auto.txt:47	b							dup
+D_800A38A8	0x800A38A8	undefined_syms_auto.txt:48	b							dup
+D_800A38AA	0x800A38AA	undefined_syms_auto.txt:49	b							dup
+D_800A38AB	0x800A38AB	undefined_syms_auto.txt:50	b							dup
+D_800A38AE	0x800A38AE	undefined_syms_auto.txt:51	b							dup
+D_800A38B0	0x800A38B0	undefined_syms_auto.txt:52	b							dup
+g_prim_buf_cursor	0x800A38B4	undefined_syms_auto.txt:53	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38B8	0x800A38B8	undefined_syms_auto.txt:54	b							dup
+D_800A38BA	0x800A38BA	undefined_syms_auto.txt:55	b							dup
+g_rng_state	0x800A38BC	undefined_syms_auto.txt:56	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38C4	0x800A38C4	undefined_syms_auto.txt:57	b							dup
+g_memcard_file_count	0x800A38C8	undefined_syms_auto.txt:58	a	build/src/main/memcard.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38CC	0x800A38CC	undefined_syms_auto.txt:59	a	build/src/main/28708.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38D0	0x800A38D0	undefined_syms_auto.txt:60	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38D4	0x800A38D4	undefined_syms_auto.txt:61	b							dup
+D_800A38D6	0x800A38D6	undefined_syms_auto.txt:62	b							dup
+g_gpu_ot256_ptr	0x800A38D8	undefined_syms_auto.txt:63	a	build/src/main/368E4.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38DC	0x800A38DC	undefined_syms_auto.txt:64	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38DE	0x800A38DE	undefined_syms_auto.txt:65	b							dup
+D_800A38DF	0x800A38DF	undefined_syms_auto.txt:66	b							dup
+D_800A38E0	0x800A38E0	undefined_syms_auto.txt:67	b							dup
+D_800A38E1	0x800A38E1	undefined_syms_auto.txt:68	b							dup
+D_800A38E2	0x800A38E2	undefined_syms_auto.txt:69	b							dup
+D_800A38E4	0x800A38E4	undefined_syms_auto.txt:70	b							dup
+D_800A38E8	0x800A38E8	undefined_syms_auto.txt:71	b							dup
+D_800A38E9	0x800A38E9	undefined_syms_auto.txt:72	b							dup
+D_800A38EC	0x800A38EC	undefined_syms_auto.txt:73	b							dup
+D_800A38ED	0x800A38ED	undefined_syms_auto.txt:74	b							dup
+D_800A38EE	0x800A38EE	undefined_syms_auto.txt:75	b							dup
+D_800A38F0	0x800A38F0	undefined_syms_auto.txt:76	b							dup
+D_800A38F4	0x800A38F4	undefined_syms_auto.txt:77	b							dup
+D_800A38F8	0x800A38F8	undefined_syms_auto.txt:78	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A38FC	0x800A38FC	undefined_syms_auto.txt:79	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3900	0x800A3900	undefined_syms_auto.txt:80	a	build/src/main/596CC.o	*COM*	OBJECT	GLOBAL		?	
+D_800A3904	0x800A3904	undefined_syms_auto.txt:81	b							dup
+D_800A3906	0x800A3906	undefined_syms_auto.txt:82	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A3907	0x800A3907	undefined_syms_auto.txt:83	b							dup
+D_800A3908	0x800A3908	undefined_syms_auto.txt:84	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
+D_800A390C	0x800A390C	undefined_syms_auto.txt:85	b							dup
+D_800A390D	0x800A390D	undefined_syms_auto.txt:86	a	build/src/main/6CF8.o	*COM*	OBJECT	GLOBAL		?	dup
+D_800A390E	0x800A390E	undefined_syms_auto.txt:87	b							dup
+D_800A390F	0x800A390F	undefined_syms_auto.txt:88	b							dup
+D_800A3910	0x800A3910	undefined_syms_auto.txt:89	b							dup
+D_800A3912	0x800A3912	undefined_syms_auto.txt:90	b							dup
+D_800A3913	0x800A3913	undefined_syms_auto.txt:91	b							dup
+D_800A3914	0x800A3914	undefined_syms_auto.txt:92	b							dup
+D_800A3915	0x800A3915	undefined_syms_auto.txt:93	b							dup
+D_800A3916	0x800A3916	undefined_syms_auto.txt:94	a	build/src/main/28708.o (+1)	*COM*	OBJECT	GLOBAL		?	dup
+D_800A391E	0x800A391E	undefined_syms_auto.txt:95	b							dup
+D_800A391F	0x800A391F	undefined_syms_auto.txt:96	b							dup
+D_800A3920	0x800A3920	undefined_syms_auto.txt:97	b							dup
+D_800A3929	0x800A3929	undefined_syms_auto.txt:98	b							dup
+D_800A3D70	0x800A3D70	undefined_syms_auto.txt:99	b							dup
+D_800A4340	0x800A4340	undefined_syms_auto.txt:100	b							dup
+D_800A4750	0x800A4750	undefined_syms_auto.txt:101	b							dup
+D_800A6690	0x800A6690	undefined_syms_auto.txt:102	b							dup
+D_800A7EF0	0x800A7EF0	undefined_syms_auto.txt:103	b							
+D_800A7FE0	0x800A7FE0	undefined_syms_auto.txt:104	b							dup
+D_800A87E0	0x800A87E0	undefined_syms_auto.txt:105	b							dup
+D_800A93B0	0x800A93B0	undefined_syms_auto.txt:106	b							dup
+D_800A93BC	0x800A93BC	undefined_syms_auto.txt:107	b							dup
+D_800A9A20	0x800A9A20	undefined_syms_auto.txt:108	b							dup
+g_gpu_store_buf	0x800A9A24	undefined_syms_auto.txt:109	b							dup
+D_800A9B28	0x800A9B28	undefined_syms_auto.txt:110	b							dup
+D_800A9CF8	0x800A9CF8	undefined_syms_auto.txt:111	b							dup
+D_800A9CFA	0x800A9CFA	undefined_syms_auto.txt:112	b							dup
+D_800A9CFC	0x800A9CFC	undefined_syms_auto.txt:113	b							dup
+D_800A9CFE	0x800A9CFE	undefined_syms_auto.txt:114	b							dup
+D_800A9D00	0x800A9D00	undefined_syms_auto.txt:115	b							dup
+D_800A9D04	0x800A9D04	undefined_syms_auto.txt:116	b							dup
+D_800A9D08	0x800A9D08	undefined_syms_auto.txt:117	b							dup
+D_800EEDB2	0x800EEDB2	undefined_syms_auto.txt:118	b							dup
+D_800EEDB4	0x800EEDB4	undefined_syms_auto.txt:119	b							dup
+D_800EEDB6	0x800EEDB6	undefined_syms_auto.txt:120	b							dup
+D_800EEDB8	0x800EEDB8	undefined_syms_auto.txt:121	b							dup
+D_800EEDBA	0x800EEDBA	undefined_syms_auto.txt:122	b							dup
+D_800EEDBC	0x800EEDBC	undefined_syms_auto.txt:123	b							dup
+D_800EEDBE	0x800EEDBE	undefined_syms_auto.txt:124	b							dup
+D_800EEDC0	0x800EEDC0	undefined_syms_auto.txt:125	b							dup
+D_800EEDD0	0x800EEDD0	undefined_syms_auto.txt:126	b							dup
+D_800EEDD6	0x800EEDD6	undefined_syms_auto.txt:127	b							dup
+D_800EEDD8	0x800EEDD8	undefined_syms_auto.txt:128	b							dup
+D_800EEDF0	0x800EEDF0	undefined_syms_auto.txt:129	b							dup
+D_800EEDF8	0x800EEDF8	undefined_syms_auto.txt:130	b							dup
+D_800EEE00	0x800EEE00	undefined_syms_auto.txt:131	b							dup
+D_800EEE02	0x800EEE02	undefined_syms_auto.txt:132	b							dup
+D_800EEE1C	0x800EEE1C	undefined_syms_auto.txt:133	b							dup
+D_800EEE20	0x800EEE20	undefined_syms_auto.txt:134	b							dup
+D_800EEE24	0x800EEE24	undefined_syms_auto.txt:135	b							dup
+D_800EF070	0x800EF070	undefined_syms_auto.txt:136	b							dup
+D_800EF071	0x800EF071	undefined_syms_auto.txt:137	b							dup
+D_800EF076	0x800EF076	undefined_syms_auto.txt:138	b							dup
+D_800EF078	0x800EF078	undefined_syms_auto.txt:139	b							dup
+D_800EF07A	0x800EF07A	undefined_syms_auto.txt:140	b							dup
+D_800EF07C	0x800EF07C	undefined_syms_auto.txt:141	b							dup
+D_800EF080	0x800EF080	undefined_syms_auto.txt:142	b							dup
+D_800EF082	0x800EF082	undefined_syms_auto.txt:143	b							dup
+D_800EF084	0x800EF084	undefined_syms_auto.txt:144	b							dup
+D_800EF0BC	0x800EF0BC	undefined_syms_auto.txt:145	b							dup
+D_800EF0C0	0x800EF0C0	undefined_syms_auto.txt:146	b							dup
+D_800EF0C4	0x800EF0C4	undefined_syms_auto.txt:147	b							dup
+D_800EF0D8	0x800EF0D8	undefined_syms_auto.txt:148	b							dup
+D_800EF168	0x800EF168	undefined_syms_auto.txt:149	b							dup
+D_800EF558	0x800EF558	undefined_syms_auto.txt:150	b							dup
+D_800EF59C	0x800EF59C	undefined_syms_auto.txt:151	b							dup
+D_800EF7BC	0x800EF7BC	undefined_syms_auto.txt:152	b							dup
+D_800EF7C0	0x800EF7C0	undefined_syms_auto.txt:153	b							
+D_800EF800	0x800EF800	undefined_syms_auto.txt:154	b							dup
+D_800EF804	0x800EF804	undefined_syms_auto.txt:155	b							
+D_800EF848	0x800EF848	undefined_syms_auto.txt:156	b							dup
+D_800EF980	0x800EF980	undefined_syms_auto.txt:157	b							dup
+D_800EF9F2	0x800EF9F2	undefined_syms_auto.txt:158	b							dup
+D_800EF9F4	0x800EF9F4	undefined_syms_auto.txt:159	b							dup
+D_800EF9F8	0x800EF9F8	undefined_syms_auto.txt:160	b							dup
+D_800EFAE8	0x800EFAE8	undefined_syms_auto.txt:161	b							
+g_vab_vb_sbaddr	0x800EFB38	undefined_syms_auto.txt:162	b							dup
+g_vab_rec_ptr	0x800EFC38	undefined_syms_auto.txt:163	b							dup
+g_eff_particles	0x800EFC78	undefined_syms_auto.txt:164	b							
+D_800EFC8A	0x800EFC8A	undefined_syms_auto.txt:165	b							dup
+D_800F0B78	0x800F0B78	undefined_syms_auto.txt:166	b							dup
+D_800F0B7C	0x800F0B7C	undefined_syms_auto.txt:167	b							dup
+D_800F0B98	0x800F0B98	undefined_syms_auto.txt:168	b							dup
+D_800F0BA4	0x800F0BA4	undefined_syms_auto.txt:169	b							dup
+D_800F0BA8	0x800F0BA8	undefined_syms_auto.txt:170	b							
+D_800F0BCC	0x800F0BCC	undefined_syms_auto.txt:171	b							dup
+D_800F0BEC	0x800F0BEC	undefined_syms_auto.txt:172	b							dup
+D_800F0C04	0x800F0C04	undefined_syms_auto.txt:173	b							dup
+D_800F0C10	0x800F0C10	undefined_syms_auto.txt:174	b							dup
+D_800F0C14	0x800F0C14	undefined_syms_auto.txt:175	b							dup
+D_800F0C18	0x800F0C18	undefined_syms_auto.txt:176	b							dup
+D_800F0CA0	0x800F0CA0	undefined_syms_auto.txt:177	b							
+D_800F0D78	0x800F0D78	undefined_syms_auto.txt:178	b							dup
+D_800F0E38	0x800F0E38	undefined_syms_auto.txt:179	b							dup
+D_800F0EC8	0x800F0EC8	undefined_syms_auto.txt:180	b							dup
+D_800F0ECC	0x800F0ECC	undefined_syms_auto.txt:181	b							dup
+D_800F0ED0	0x800F0ED0	undefined_syms_auto.txt:182	b							dup
+D_800F0FB8	0x800F0FB8	undefined_syms_auto.txt:183	b							dup
+D_800F1000	0x800F1000	undefined_syms_auto.txt:184	b							dup
+D_800F1002	0x800F1002	undefined_syms_auto.txt:185	b							dup
+D_800F1004	0x800F1004	undefined_syms_auto.txt:186	b							dup
+D_800F10A0	0x800F10A0	undefined_syms_auto.txt:187	b							dup
+D_800F1140	0x800F1140	undefined_syms_auto.txt:188	b							
+D_800F1151	0x800F1151	undefined_syms_auto.txt:189	b							dup
+D_800F1152	0x800F1152	undefined_syms_auto.txt:190	b							dup
+D_800F1154	0x800F1154	undefined_syms_auto.txt:191	b							dup
+D_800F1158	0x800F1158	undefined_syms_auto.txt:192	b							dup
+D_800F115B	0x800F115B	undefined_syms_auto.txt:193	b							dup
+D_800F115C	0x800F115C	undefined_syms_auto.txt:194	b							dup
+D_800F1160	0x800F1160	undefined_syms_auto.txt:195	b							dup
+D_800F1164	0x800F1164	undefined_syms_auto.txt:196	b							dup
+D_800F1168	0x800F1168	undefined_syms_auto.txt:197	b							dup
+D_800F116A	0x800F116A	undefined_syms_auto.txt:198	b							dup
+D_800F1178	0x800F1178	undefined_syms_auto.txt:199	b							dup
+D_800F117C	0x800F117C	undefined_syms_auto.txt:200	b							dup
+D_800F119C	0x800F119C	undefined_syms_auto.txt:201	b							dup
+D_800F11A0	0x800F11A0	undefined_syms_auto.txt:202	b							dup
+D_800F11E0	0x800F11E0	undefined_syms_auto.txt:203	b							
+D_800F1438	0x800F1438	undefined_syms_auto.txt:204	b							
+D_800F1498	0x800F1498	undefined_syms_auto.txt:205	b							
+patch0	0x800F1838	undefined_syms_auto.txt:206	b							dup
+patch0_plus_0x4	0x800F183C	undefined_syms_auto.txt:207	b							dup
+patch0_plus_0x8	0x800F1840	undefined_syms_auto.txt:208	b							dup
+patch0_plus_0xC	0x800F1844	undefined_syms_auto.txt:209	b							dup
+D_800F1848	0x800F1848	undefined_syms_auto.txt:210	b							
+column	0x800F1850	undefined_syms_auto.txt:211	b							dup
+D_800F1858	0x800F1858	undefined_syms_auto.txt:212	b							dup
+ctlbuf	0x800F189C	undefined_syms_auto.txt:213	b							dup
+Result	0x800F19A0	undefined_syms_auto.txt:214	b							dup
+Result_plus_0x8	0x800F19A8	undefined_syms_auto.txt:215	b							dup
+Result_plus_0x10	0x800F19B0	undefined_syms_auto.txt:216	b							dup
+D_800F19D0	0x800F19D0	undefined_syms_auto.txt:217	b							dup
+regs	0x800F1AD8	undefined_syms_auto.txt:218	b							
+CombWaitCallback	0x800F1AE8	undefined_syms_auto.txt:219	b							dup
+sen	0x800F1AEC	undefined_syms_auto.txt:220	b							dup
+D_800F1AFC	0x800F1AFC	undefined_syms_auto.txt:221	b							dup
+_svm_okon1	0x800F1B10	undefined_syms_auto.txt:222	b							dup
+_svm_okon2	0x800F1B12	undefined_syms_auto.txt:223	b							dup
+D_800F1B14	0x800F1B14	undefined_syms_auto.txt:224	b							dup
+D_800F2B68	0x800F2B68	undefined_syms_auto.txt:225	b							dup
+D_800F2B70	0x800F2B70	undefined_syms_auto.txt:226	b							dup
+D_800F3340	0x800F3340	undefined_syms_auto.txt:227	b							
+D_800F33D8	0x800F33D8	undefined_syms_auto.txt:228	b							dup
+D_800F34D8	0x800F34D8	undefined_syms_auto.txt:229	b							dup
+_svm_voice	0x800F4E18	undefined_syms_auto.txt:230	b							dup
+_svm_voice_plus_0x6	0x800F4E1E	undefined_syms_auto.txt:231	b							dup
+_svm_voice_plus_0x1D	0x800F4E35	undefined_syms_auto.txt:232	b							dup
+D_800F4E36	0x800F4E36	undefined_syms_auto.txt:233	b							
+D_800F4E42	0x800F4E42	undefined_syms_auto.txt:234	b							
+D_800F5328	0x800F5328	undefined_syms_auto.txt:235	b							dup
+D_800F532C	0x800F532C	undefined_syms_auto.txt:236	b							dup
+D_800F5330	0x800F5330	undefined_syms_auto.txt:237	b							dup
+D_800F5344	0x800F5344	undefined_syms_auto.txt:238	b							dup
+D_800F5347	0x800F5347	undefined_syms_auto.txt:239	b							dup
+D_800F5358	0x800F5358	undefined_syms_auto.txt:240	b							dup
+D_800F535A	0x800F535A	undefined_syms_auto.txt:241	b							dup
+D_800F535C	0x800F535C	undefined_syms_auto.txt:242	b							dup
+D_800F5360	0x800F5360	undefined_syms_auto.txt:243	b							dup
+D_800F5362	0x800F5362	undefined_syms_auto.txt:244	b							dup
+D_800F5364	0x800F5364	undefined_syms_auto.txt:245	b							dup
+D_800F5368	0x800F5368	undefined_syms_auto.txt:246	b							dup
+g_scratchpad_save	0x800F5370	undefined_syms_auto.txt:247	b							dup
+_svm_rattr	0x800F5750	undefined_syms_auto.txt:248	b							dup
+g_gpu_ot256_db	0x800F5768	undefined_syms_auto.txt:249	b							
+D_800F5F68	0x800F5F68	undefined_syms_auto.txt:250	b							dup
+D_800F5F6C	0x800F5F6C	undefined_syms_auto.txt:251	b							
+D_800F62E0	0x800F62E0	undefined_syms_auto.txt:252	b							dup
+_svm_sreg_dirty	0x800F65E0	undefined_syms_auto.txt:253	b							dup
+D_800F6608	0x800F6608	undefined_syms_auto.txt:254	b							dup
+D_800F660C	0x800F660C	undefined_syms_auto.txt:255	b							dup
+D_800F6610	0x800F6610	undefined_syms_auto.txt:256	b							dup
+D_800F6618	0x800F6618	undefined_syms_auto.txt:257	b							dup
+D_800F661A	0x800F661A	undefined_syms_auto.txt:258	b							dup
+D_800F661C	0x800F661C	undefined_syms_auto.txt:259	b							dup
+D_800F6620	0x800F6620	undefined_syms_auto.txt:260	b							dup
+D_800F6626	0x800F6626	undefined_syms_auto.txt:261	b							dup
+D_800F6627	0x800F6627	undefined_syms_auto.txt:262	b							dup
+D_800F6638	0x800F6638	undefined_syms_auto.txt:263	b							dup
+D_800F663A	0x800F663A	undefined_syms_auto.txt:264	b							dup
+D_800F663C	0x800F663C	undefined_syms_auto.txt:265	b							dup
+D_800F6640	0x800F6640	undefined_syms_auto.txt:266	b							dup
+D_800F6642	0x800F6642	undefined_syms_auto.txt:267	b							dup
+D_800F6644	0x800F6644	undefined_syms_auto.txt:268	b							dup
+D_800F6650	0x800F6650	undefined_syms_auto.txt:269	b							dup
+D_800F6652	0x800F6652	undefined_syms_auto.txt:270	b							
+D_800F6654	0x800F6654	undefined_syms_auto.txt:271	b							dup
+D_800F6656	0x800F6656	undefined_syms_auto.txt:272	b							dup
+D_800F6658	0x800F6658	undefined_syms_auto.txt:273	b							dup
+D_800F665A	0x800F665A	undefined_syms_auto.txt:274	b							dup
+D_800F665C	0x800F665C	undefined_syms_auto.txt:275	b							dup
+_svm_vab_pg	0x800F6660	undefined_syms_auto.txt:276	b							dup
+_svm_vab_vh	0x800F66B8	undefined_syms_auto.txt:277	b							dup
+_svm_damper	0x800F66F8	undefined_syms_auto.txt:278	b							dup
+_svm_vab_tn	0x800F6700	undefined_syms_auto.txt:279	b							dup
+D_800F7298	0x800F7298	undefined_syms_auto.txt:280	b							dup
+_spu_RQ	0x800F7420	undefined_syms_auto.txt:281	b							dup
+_spu_RQ_plus_0x2	0x800F7422	undefined_syms_auto.txt:282	b							
+_spu_RQ_plus_0x4	0x800F7424	undefined_syms_auto.txt:283	b							dup
+_spu_RQ_plus_0x6	0x800F7426	undefined_syms_auto.txt:284	b							
+g_gpu_db	0x800F7438	undefined_syms_auto.txt:285	b							dup
+D_800FF558	0x800FF558	undefined_syms_auto.txt:286	b							dup
+_svm_stereo_mono	0x800FF578	undefined_syms_auto.txt:287	b							dup
+g_pad_buf	0x800FF580	undefined_syms_auto.txt:288	b							dup
+D_800FF610	0x800FF610	undefined_syms_auto.txt:289	b							dup
+_snd_ev_flag	0x800FF630	undefined_syms_auto.txt:290	b							dup
+kMaxPrograms	0x800FF634	undefined_syms_auto.txt:291	b							dup
+D_800FF638	0x800FF638	undefined_syms_auto.txt:292	b							dup
+_svm_pg	0x800FF6A0	undefined_syms_auto.txt:293	b							dup
+D_800FF6A8	0x800FF6A8	undefined_syms_auto.txt:294	b							dup
+_svm_vh	0x80101BC4	undefined_syms_auto.txt:295	b							dup
+_svm_tn	0x80101BC8	undefined_syms_auto.txt:296	b							dup
+_SsVmMaxVoice	0x80101BCC	undefined_syms_auto.txt:297	b							dup
+D_80101BD0	0x80101BD0	undefined_syms_auto.txt:298	b							dup
+D_80101DF0	0x80101DF0	undefined_syms_auto.txt:299	b							dup
+D_80101E58	0x80101E58	undefined_syms_auto.txt:300	b							
+D_80102092	0x80102092	undefined_syms_auto.txt:301	b							dup
+D_80102778	0x80102778	undefined_syms_auto.txt:302	b							
+g_pad_state	0x80102788	undefined_syms_auto.txt:303	b							dup
+g_pad_state_plus_0x4	0x8010278C	undefined_syms_auto.txt:304	b							dup
+g_pad_state_plus_0x6	0x8010278E	undefined_syms_auto.txt:305	b							dup
+D_801027A0	0x801027A0	undefined_syms_auto.txt:306	b							dup
+D_801027D8	0x801027D8	undefined_syms_auto.txt:307	b							dup
+_snd_openflag	0x801027E4	undefined_syms_auto.txt:308	b							dup
+D_801027E8	0x801027E8	undefined_syms_auto.txt:309	b							
+_svm_cur	0x801027F0	undefined_syms_auto.txt:310	b							
+_svm_cur_plus_0x1	0x801027F1	undefined_syms_auto.txt:311	b							dup
+_svm_cur_plus_0x2	0x801027F2	undefined_syms_auto.txt:312	b							dup
+_svm_cur_plus_0x3	0x801027F3	undefined_syms_auto.txt:313	b							
+_svm_cur_plus_0x4	0x801027F4	undefined_syms_auto.txt:314	b							dup
+_svm_cur_plus_0x5	0x801027F5	undefined_syms_auto.txt:315	b							dup
+_svm_cur_plus_0x6	0x801027F6	undefined_syms_auto.txt:316	b							dup
+_svm_cur_plus_0x7	0x801027F7	undefined_syms_auto.txt:317	b							dup
+_svm_cur_plus_0xA	0x801027FA	undefined_syms_auto.txt:318	b							dup
+_svm_cur_plus_0xB	0x801027FB	undefined_syms_auto.txt:319	b							dup
+_svm_cur_plus_0xC	0x801027FC	undefined_syms_auto.txt:320	b							dup
+_svm_cur_plus_0xD	0x801027FD	undefined_syms_auto.txt:321	b							dup
+_svm_cur_plus_0xE	0x801027FE	undefined_syms_auto.txt:322	b							dup
+_svm_cur_plus_0xF	0x801027FF	undefined_syms_auto.txt:323	b							
+_svm_cur_plus_0x10	0x80102800	undefined_syms_auto.txt:324	b							dup
+_svm_cur_plus_0x11	0x80102801	undefined_syms_auto.txt:325	b							
+_svm_cur_plus_0x12	0x80102802	undefined_syms_auto.txt:326	b							
+_svm_cur_plus_0x13	0x80102803	undefined_syms_auto.txt:327	b							
+_svm_cur_plus_0x14	0x80102804	undefined_syms_auto.txt:328	b							dup
+_svm_cur_plus_0x16	0x80102806	undefined_syms_auto.txt:329	b							dup
+_svm_cur_plus_0x18	0x80102808	undefined_syms_auto.txt:330	b							dup
+_svm_cur_plus_0x1A	0x8010280A	undefined_syms_auto.txt:331	b							dup
+_svm_cur_plus_0x1C	0x8010280C	undefined_syms_auto.txt:332	b							dup
+_svm_cur_plus_0x1E	0x8010280E	undefined_syms_auto.txt:333	b							dup
+g_memcard_file_list	0x80102810	undefined_syms_auto.txt:334	b							dup
+_svm_vab_used	0x80102A68	undefined_syms_auto.txt:335	b							dup
+_svm_sreg_buf	0x80102A78	undefined_syms_auto.txt:336	b							dup
+_svm_sreg_buf_plus_0x2	0x80102A7A	undefined_syms_auto.txt:337	b							dup
+D_80102A7C	0x80102A7C	undefined_syms_auto.txt:338	b							
+_svm_sreg_buf_plus_0x6	0x80102A7E	undefined_syms_auto.txt:339	b							dup
+_svm_sreg_buf_plus_0x8	0x80102A80	undefined_syms_auto.txt:340	b							dup
+_svm_sreg_buf_plus_0xA	0x80102A82	undefined_syms_auto.txt:341	b							dup
+D_80102BF8	0x80102BF8	undefined_syms_auto.txt:342	b							
+g_draw_queue	0x80102C00	undefined_syms_auto.txt:343	b							dup
+_svm_auto_kof_mode	0x80103600	undefined_syms_auto.txt:344	b							dup
+D_80103604	0x80103604	undefined_syms_auto.txt:345	b							
+D_80103608	0x80103608	undefined_syms_auto.txt:346	b							dup
+D_80103624	0x80103624	undefined_syms_auto.txt:347	b							dup
+D_80103658	0x80103658	undefined_syms_auto.txt:348	b							dup
+D_8010367E	0x8010367E	undefined_syms_auto.txt:349	b							dup
+_que	0x80103680	undefined_syms_auto.txt:350	b							dup
+VBLANK_MINUS	0x80104E80	undefined_syms_auto.txt:351	b							dup
+D_80104E88	0x80104E88	undefined_syms_auto.txt:352	b							dup
+D_80104F38	0x80104F38	undefined_syms_auto.txt:353	b							dup
+D_80106A50	0x80106A50	undefined_syms_auto.txt:354	b							
+_ss_score	0x80106F28	undefined_syms_auto.txt:355	b							dup
+_SsMarkCallback	0x80106FA8	undefined_syms_auto.txt:356	b							dup
+_snd_seq_s_max	0x801077A8	undefined_syms_auto.txt:357	b							
+_snd_seq_t_max	0x801077AA	undefined_syms_auto.txt:358	b							
+D_801077B0	0x801077B0	undefined_syms_auto.txt:359	b							dup
+_svm_vab_total	0x801077C8	undefined_syms_auto.txt:360	b							dup
+_svm_vab_count	0x80107808	undefined_syms_auto.txt:361	b							dup
+_svm_vab_start	0x80107810	undefined_syms_auto.txt:362	b							dup
+_svm_envx_hist	0x80107898	undefined_syms_auto.txt:363	b							dup
+_svm_okof1	0x801078D8	undefined_syms_auto.txt:364	b							dup
+_svm_okof2	0x801078DA	undefined_syms_auto.txt:365	b							dup
+D_801078E0	0x801078E0	undefined_syms_auto.txt:366	b							
+D_00000000	0x00000000	undefined_syms_auto.txt:367	b							
+D_800A1494	0x800A1494	undefined_syms_auto.txt:368	b							
+D_800F66A0	0x800F66A0	undefined_syms_auto.txt:369	b							dup
+D_800EEDD0	0x800EEDD0	undefined_syms_auto.txt:370	b							dup
+D_800EEDF0	0x800EEDF0	undefined_syms_auto.txt:371	b							dup
+D_800EEDF8	0x800EEDF8	undefined_syms_auto.txt:372	b							dup
+g_color_mode	0x800F6652	undefined_syms_auto.txt:379	b							dup
+D_800F6656	0x800F6656	undefined_syms_auto.txt:382	b							dup
+D_800F6654	0x800F6654	undefined_syms_auto.txt:383	b							dup
+D_800A9A10	0x800A9A10	undefined_syms_auto.txt:384	b							dup
+D_800EF848	0x800EF848	undefined_syms_auto.txt:386	b							dup
+D_800EF7BC	0x800EF7BC	undefined_syms_auto.txt:387	b							dup
+D_800EF800	0x800EF800	undefined_syms_auto.txt:388	b							dup
+D_800A8FB0	0x800A8FB0	undefined_syms_auto.txt:389	b							dup
+D_800A93BC	0x800A93BC	undefined_syms_auto.txt:390	b							dup
+D_800A93B0	0x800A93B0	undefined_syms_auto.txt:391	b							dup
 func_842C2000	0x842C2000	undefined_funcs_auto.txt:1	b							
