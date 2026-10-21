@@ -1551,8 +1551,8 @@ typedef struct Unk80101EC8Record {
     Vec3i32 unk_174;
     Vec3i32 unk_180;
     Vec3i32 unk_18C;
-    /* fighter_UpdateBoneWorldData: bone 17 / 14 translations, y + ((size_scale
-     * * 71) >> 11) */
+    /* fighter_UpdateBoneWorldData: bone 17 / 14 translations,
+     * y + ((size_scale * 71) >> 11) */
     Vec3i32 unk_198[2];
     /* fighter_UpdateBoneWorldData: floor y under unk_198[i]
      * (collision_TestSegmentWithWork segment test) */
