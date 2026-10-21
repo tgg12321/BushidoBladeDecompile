@@ -168,7 +168,7 @@ NO_SR_FILES :=
 # -- Per-file -w (foundation backlog row hygiene-w) --
 # TUs that still compile with -w: they warn under WARN_FLAGS (implicit declarations,
 # pointer/integer mixes). Fix a TU's warnings, then drop it from this list.
-NOWARN_FILES := main/175A4 main/17AFC main/24F08 main/28708 main/2B344 main/309CC main/368E4 main/4BC3C main/51268 main/596CC main/63D2C main/9F9C main/memcard main/psxsdk/libc2/sprintf main/psxsdk/libcd/bios main/psxsdk/libcd/cdread main/psxsdk/libetc/intr main/psxsdk/libetc/intr_dma main/psxsdk/libetc/intr_vb main/psxsdk/libetc/vsync main/psxsdk/libgpu/sys main/psxsdk/libspu/7BC88 main/psxsdk/libspu/spu
+NOWARN_FILES := main/175A4 main/17AFC main/24F08 main/28708 main/2B344 main/309CC main/368E4 main/4BC3C main/51268 main/596CC main/63D2C main/9F9C main/memcard main/psxsdk/libc2/sprintf main/psxsdk/libcd/bios main/psxsdk/libcd/cdread main/psxsdk/libetc/intr main/psxsdk/libetc/vsync main/psxsdk/libgpu/sys main/psxsdk/libspu/7BC88 main/psxsdk/libspu/spu
 
 # Every per-file list names TU ids. An id that is not a TU stops the build: a
 # moved or renamed file must take its flags along, never silently lose them.

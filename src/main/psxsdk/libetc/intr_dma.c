@@ -4,6 +4,7 @@
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include "libetc_internal.h"
+#include <psxsdk/libc.h>
 
 /* trapIntrDMA's bus-error report (Q106 D4: every reader is in this file). */
 const char D_80016394[28] = "DMA bus error: code=%08x\n\0\0\0";
@@ -18,6 +19,7 @@ u32 *D_800A2660 = (u32 *)0x1F801080; /* DMA channel 0 MADR */
 
 void trapIntrDMA(void);
 s32 setIntrDMA(s32, s32);
+void sys_MemClear2(s32 *, s32);
 
 s32 startIntrDMA(void) {
     sys_MemClear2((s32 *)&D_800A2640, 8);

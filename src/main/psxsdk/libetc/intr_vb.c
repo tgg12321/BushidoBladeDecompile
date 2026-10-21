@@ -11,6 +11,7 @@ s32 *D_800A2638 = (s32 *)0x1F801114; /* root counter 1 mode */
 
 void trapIntrVSync(void);
 void setIntrVSync(s32, s32);
+void sys_MemClear(s32 *, s32);
 
 s32 startIntrVSync(void) {
     *D_800A2638 = 0x107;
