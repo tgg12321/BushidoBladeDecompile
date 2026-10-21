@@ -60,6 +60,7 @@ extern void ChangeClearRCnt(s32, s32); /* PsyQ: not in LIBAPI.H */
 extern void StartPAD(void);            /* PsyQ: long StartPAD(void) */
 extern void StopPAD(void);
 extern void ChangeClearPAD(s32);
+extern s32 ReadInitPadFlag(void); /* PsyQ: not in LIBAPI.H */
 extern void FlushCache(void);
 extern void SetSp(u32); /* PsyQ: unsigned long SetSp(unsigned long) */
 extern void SetMem(s32);
