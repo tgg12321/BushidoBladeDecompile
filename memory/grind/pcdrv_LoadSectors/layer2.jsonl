@@ -1,0 +1,1 @@
+{"func": "pcdrv_LoadSectors", "addr": "800165F8", "verdict": "PASS", "body_hash": "9b9cedb7c1a74cd7", "body_kind": "c", "file": "main/6CF8", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-21T14:41:16Z", "head": "483cd5988", "notes": "s32->char * name param; only use is PCopen(a0+4); bytes identical; no callers"}
