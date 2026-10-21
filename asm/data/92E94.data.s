@@ -3,47 +3,6 @@
 .section .data, "wa"
     .align 0
 
-nonmatching D_800A2668
-
-dlabel D_800A2668
-    /* 92E68 800A2668 00000000 */ .word 0x00000000
-enddlabel D_800A2668
-
-nonmatching __heapbase
-
-dlabel __heapbase
-    /* 92E6C 800A266C 00000000 */ .word 0x00000000
-enddlabel __heapbase
-
-nonmatching __heapsize
-
-dlabel __heapsize
-    /* 92E70 800A2670 00000000 */ .word 0x00000000
-enddlabel __heapsize
-
-nonmatching D_800A2674
-
-dlabel D_800A2674
-    /* 92E74 800A2674 F8640180 */ .word func_800164F8
-    /* 92E78 800A2678 786B0700 */ .word 0x00076B78
-    /* 92E7C 800A267C 70D00880 */ .word D_8008D070
-    /* 92E80 800A2680 5C600100 */ .word 0x0001605C
-    /* 92E84 800A2684 30390A80 */ .word g_font_sprites
-    /* 92E88 800A2688 B03F0600 */ .word 0x00063FB0
-enddlabel D_800A2674
-
-nonmatching _stacksize
-
-dlabel _stacksize
-    /* 92E8C 800A268C 00800000 */ .word 0x00008000
-enddlabel _stacksize
-
-nonmatching _ramsize
-
-dlabel _ramsize
-    /* 92E90 800A2690 00008000 */ .word 0x00800000
-enddlabel _ramsize
-
 nonmatching D_800A2694
 
 dlabel D_800A2694
