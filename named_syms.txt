@@ -659,7 +659,7 @@ D_801027BC                                    = 0x801027BC;  /* g_motion_fighter
 /* === Per-id state arrays (2026-05-17) === */
 /* Init pattern (51268.c, func_80064ED8..func_80065000): 12-byte record + D_800F10D0 slot set to 1 + 2-byte counter per id. */
 /* The per-id 12-byte state records and 2-byte counters are the arrays D_800F0CA0[18] and D_800F0BA8[18]
- * (include/game.h; merged 2026-09-30 with func_80065800, which retired their per-word alias names). */
+ * (include/game.h; merged 2026-09-30 with eff_DrawAnimatedQuads, which retired their per-word alias names). */
 /* 2026-10-16: D_800F10E0 retired -- elements of s32 D_800F10D0[] (include/bb2.h); no C names them. */
 
 /* === Pulled from symbol_addrs.txt (2026-05-17) -- 14 names === */
