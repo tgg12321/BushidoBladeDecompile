@@ -43,7 +43,7 @@ void func_800164F8(void) {
     }
 }
 
-s32 pcdrv_LoadFile(s32 a0, u8 *dest) {
+s32 pcdrv_LoadFile(char *a0, u8 *dest) {
     s32 fd;
     s32 total;
     s32 remaining;
@@ -74,7 +74,7 @@ s32 pcdrv_LoadFile(s32 a0, u8 *dest) {
     return total;
 }
 
-s32 pcdrv_LoadSectors(s32 a0, u8 *dest, s32 arg2, s32 count) {
+s32 pcdrv_LoadSectors(char *a0, u8 *dest, s32 arg2, s32 count) {
     s32 fd;
     s32 i;
 
