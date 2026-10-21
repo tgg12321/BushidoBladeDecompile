@@ -1,0 +1,79 @@
+wave39 local_reset PREPARE step 3 -- re-derivation at ff76626c0 (legacy cites c9b8df219)
+legacy rows 77 -> kept 38 (35 FAKE-labelled + 3 N1-contradiction rows), dropped 39: NOFAKE 17, GONE 22
+
+== PROBE (naming_keycheck.scoped_plan, base HEAD) ==
+each kept pair alone: all 38 OK (no refusals); joint plan of all 38 pairs: OK
+no kept function is K&R; none of the old names is a key in engine/volatile_cheats.py or volatile_extern_allowlist.txt; every destination checked fresh in the function, at file scope and in include/ (git grep -w); plan refusals: 0
+
+== ASM-ISLAND / REGION-GRANT ROWS (old local not inside any island; flagged, no grant edit needed) ==
+fighter_ResolveBodyOverlap:dist=var_13: function holds a tools/canonical_asm_regions.json grant (1 island `gte_Lzc(tbl, &lzc_out)`); the island's tokens contain neither dist nor var_13 (the `tbl` there is a different local); grant hash unaffected
+fighter_ResolveBodyOverlap:shift=var_20: same function/grant; island tokens contain neither shift nor var_20; hash unaffected
+math_MatrixToAngles:work=var_7: function holds a 5-island grant (gte_Lzc(temp,&sp_tmp), gte_SetRotMatrix(mat), gte_ldlv0(vec), gte_rtv0(), gte_stlvnl(vec)); no island token is work/var_7; hash unaffected
+func_8002F770:work=var_7: same 5-island grant shape; no island token is work/var_7; hash unaffected
+eff_DrawAnimatedQuads:tbl=var_18: function holds a 3-island grant (gte_SetRotMatrix(D_800A3474), gte_SetTransMatrix((MATRIX *)var_0), gte_RotTransPers(p_v, D_800A34B8, var_2, ...)); no island token is tbl/var_18; hash unaffected
+
+== FLAGGED COMMENT SPOTS ==
+[comment_hazard_prose]
+fighter_ResolveBodyOverlap:shift=var_20: src/main/17AFC.c:838-841 label says `the table shift` (prose) and `shift = 0x16 - (lzc_out & ~1)` (the local): substituting the word in both turns the prose into `the table var_20`; applier must edit only the code-spelled occurrence (or reword the prose)
+func_80043278:mask=var_0: src/main/32D04.c:526-527 label `constant holder for the 0xFFFFF000 mask` uses `mask` as prose, not as the local name: a pair-word substitution yields `0xFFFFF000 var_0`; reword or leave
+func_80058580:one=var_59: src/main/4510C.c:2037-2042 `!FAKE: the inner test contradicts the outer one,` (prose `one`, a different comment, not about the local) must NOT be substituted; the real mention is in the label at :2437-2443 (`function-scope one`, identifier use, fine)
+[comment_asserts_claim]
+fighter_ResolveBoneHit:tbl=var_0: src/main/17AFC.c:325 trailing comment `/* the record, read field by field */` names no old word but asserts a purpose for the reset local; reword or drop in the same wave
+fighter_ResolveBoneHit:tbl_arg=var_1: src/main/17AFC.c:326 trailing comment `/* the record, passed on to func_800278C0 */`: same; reword or drop
+
+== NON-FAKE / BORDERLINE ROWS ==
+[nonfake_contradiction_rows]
+func_8006BEC4:pos=var_2: no /* FAKE */ label; N1 contradiction row (uses read the pointee as a size, include/game.h:2263-2266, :2316); kept on refreshed contradiction evidence
+gpu_AddSpriteCells:env=arg0: no FAKE label; N1 contradiction / type-mismatch row (Unk8007352CRec is a per-call argument block, not a DRAWENV); K&R sibling gpu_AddRotatedSpriteQuads keeps env
+gpu_AddScaledSpriteQuads:env=arg0: same as gpu_AddSpriteCells:env
+[borderline_word_fits_value]
+fight_InsertBestTime:rec=var_0: label is a SOTN-precedent-admitted exception (`pointer to the record, admitted on SOTN precedent (Q50, Q53)`); N1 resets a FAKE local regardless, but `rec` arguably names the pointee
+func_800167EC:rec=var_1: FAKE `second handle to D_80106A50`; word fits the pointee; N1 resets regardless (decl-line comment is a harmless SOTN cite)
+pad_Update:rec=var_5: FAKE `rec holds (u8 *)var_1 + i * 8`; word fits the value
+func_80035280:base=var_2, memcard_BuildSaveBlock:base=var_3, func_800408F8:base=var_4: pointer/array-start holders; `base` is generic but FAKE-labelled here
+one x3 (fight_BuildOpponentOrder, func_80040CB8, func_80058580), zero x3 (comb_ExchangePad, menu_DrawSelGrid, func_80078654), reloc_KeepSelectedEntries:stop, func_80040CB8:kind, func_8005D554:scale, func_8006F100:cx/cy, func_8006C21C:mode: constant-holder FAKEs whose word names the held constant (1, 0, -2, 3, 0x100, screen centre); N1 resets regardless
+fight_BuildOpponentOrder:one=var_5: the FAKE label sits at the first use (:5322), not at the declaration (:5314)
+func_80040CB8:kind / :one: one `// FAKE (var_3/kind/one)` line-comment label above the group; var_3 is an existing name (listed in the comment, untouched here)
+[destination differs from legacy]
+func_80078654:zero: destination var_4, not the legacy var_2: declaration order is 3 (s, var_s0, i, zero) and var_3 is taken by a nested local, so the next free var_4
+
+== DROPPED ==
+NOFAKE	func_8002C22C:rec1=var_1	the only FAKE alias label for D_80101EC8[0]/[1] now sits in func_8002C61C (src/main/17AFC.c:2209), a different function; func_8002C22C declares rec0/rec1 with no label
+NOFAKE	func_8002D780:ax=var_11	the `ax holds cx - x0` label is gone; the only FAKE labels left in math_TestPreparedTriangleSphere's block (src/main/17AFC.c:2752) are about `flag`
+GONE	func_8003993C:next=var_18	local `next` no longer exists: current definition replay_PlayFrame has no `next` token (body rewritten / local removed)
+GONE	func_8003C42C:base=var_3	local `base` no longer exists: current definition func_8003C42C has no `base` token (body rewritten / local removed)
+GONE	func_8003C42C:base2=var_7	local `base2` no longer exists: current definition func_8003C42C has no `base2` token (body rewritten / local removed)
+GONE	func_80041604:val=var_1	local `val` no longer exists: current definition func_80041604 has no `val` token (body rewritten / local removed)
+GONE	func_80041650:val=var_1	local `val` no longer exists: current definition func_80041650 has no `val` token (body rewritten / local removed)
+GONE	func_800432A0:idx=var_1	local `idx` no longer exists: current definition gpu_OffsetBlockTexPrimStreams has no `idx` token (body rewritten / local removed)
+GONE	func_800432A0:base_addr=var_5	local `base_addr` no longer exists: current definition gpu_OffsetBlockTexPrimStreams has no `base_addr` token (body rewritten / local removed)
+NOFAKE	func_800475A4:neg=var_7	label `s16 temporary for the negated pitch` is gone (src/main/368E4.c:703 plain declaration)
+NOFAKE	func_80054604:id=var_1	label `id (a0 + 0x131) computed at entry` is gone (src/main/43500.c:571 plain declaration)
+GONE	func_8005D46C:ret=var_1	local `ret` no longer exists: current definition func_8005D46C has no `ret` token (body rewritten / local removed)
+NOFAKE	func_8005D814:end_off=var_6	func_8005D814 (src/main/4D0A8.c:464): `end_off` still exists but carries no /* FAKE */ label now (the legacy /* FAKE: the returned size... */ label was replaced by the plain comment `One past the chunk this function fills; it returns end_off - argN`; legacy text absent from the function; it is a plain descriptive comment)
+NOFAKE	func_8005E098:end_off=var_6	func_8005E098 (src/main/4D0A8.c:627): `end_off` still exists but carries no /* FAKE */ label now (the legacy /* FAKE: the returned size... */ label was replaced by the plain comment `One past the chunk this function fills; it returns end_off - argN`; legacy text absent from the function; it is a plain descriptive comment)
+NOFAKE	func_8005E54C:end_off=var_9	func_8005E54C (src/main/4D0A8.c:777): `end_off` still exists but carries no /* FAKE */ label now (the legacy /* FAKE: the returned size... */ label was replaced by the plain comment `One past the chunk this function fills; it returns end_off - argN`; legacy text absent from the function; it is a plain descriptive comment)
+NOFAKE	func_8005F1C8:end_off=var_6	func_8005F1C8 (src/main/4D0A8.c:1056): `end_off` still exists but carries no /* FAKE */ label now (the legacy /* FAKE: the returned size... */ label was replaced by the plain comment `One past the chunk this function fills; it returns end_off - argN`; legacy text absent from the function; it is a plain descriptive comment)
+GONE	func_8005FA98:ret=var_1	local `ret` no longer exists: current definition func_8005FA98 has no `ret` token (body rewritten / local removed)
+GONE	func_8005FA98:start=var_2	local `start` no longer exists: current definition func_8005FA98 has no `start` token (body rewritten / local removed)
+NOFAKE	func_8005FA98:end=var_3	func_8005FA98 (src/main/4D0A8.c:1234): `end` still exists but carries no /* FAKE */ label now (the legacy /* FAKE: the returned size... */ label was replaced by the plain comment `One past the chunk this function fills; it returns end - argN`; legacy text absent from the function; it is a plain descriptive comment)
+NOFAKE	func_8005FC9C:end_off=var_9	gpu_DrawImageAndAdvanceSplitWipe (src/main/4D0A8.c:1299): `end_off` still exists but carries no /* FAKE */ label now (the legacy /* FAKE: the returned size... */ label was replaced by the plain comment `One past the chunk this function fills; it returns end_off - argN`; legacy text absent from the function; it is a plain descriptive comment)
+NOFAKE	func_800600C8:end_off=var_4	func_800600C8 (src/main/4D0A8.c:1409): `end_off` still exists but carries no /* FAKE */ label now (the legacy /* FAKE: the returned size... */ label was replaced by the plain comment `One past the chunk this function fills; it returns end_off - argN`; legacy text absent from the function; it is a plain descriptive comment)
+NOFAKE	func_80060414:end_off=var_3	func_80060414 (src/main/4D0A8.c:1490): `end_off` still exists but carries no /* FAKE */ label now (the legacy /* FAKE: the returned size... */ label was replaced by the plain comment `One past the chunk this function fills; it returns end_off - argN`; legacy text absent from the function; it is a plain descriptive comment)
+NOFAKE	func_80060544:end_off=var_2	func_80060544 (src/main/4D0A8.c:1526): `end_off` still exists but carries no /* FAKE */ label now (the legacy /* FAKE: the returned size... */ label was replaced by the plain comment `One past the chunk this function fills; it returns end_off - argN`; legacy text absent from the function; it is a plain descriptive comment)
+NOFAKE	func_80060768:end_off=var_6	func_80060768 (src/main/4D0A8.c:1612): `end_off` still exists but carries no /* FAKE */ label now (the legacy /* FAKE: the returned size... */ label was replaced by the plain comment `One past the chunk this function fills; it returns end_off - argN`; legacy text absent from the function; it is a plain descriptive comment)
+GONE	func_80064E90:last=var_0	local `last` no longer exists: current definition func_80064E90 has no `last` token (body rewritten / local removed)
+GONE	func_80064ED8:last=var_0	local `last` no longer exists: current definition func_80064ED8 has no `last` token (body rewritten / local removed)
+GONE	func_80064F20:last=var_0	local `last` no longer exists: current definition func_80064F20 has no `last` token (body rewritten / local removed)
+GONE	func_80065000:last=var_1	local `last` no longer exists: current definition func_80065000 has no `last` token (body rewritten / local removed)
+GONE	func_8006505C:last=var_0	local `last` no longer exists: current definition func_8006505C has no `last` token (body rewritten / local removed)
+GONE	func_800650A4:last=var_0	local `last` no longer exists: current definition func_800650A4 has no `last` token (body rewritten / local removed)
+GONE	func_800650EC:last=var_0	local `last` no longer exists: current definition func_800650EC has no `last` token (body rewritten / local removed)
+GONE	func_80065134:last=var_0	local `last` no longer exists: current definition func_80065134 has no `last` token (body rewritten / local removed)
+GONE	func_80065264:last=var_0	local `last` no longer exists: current definition func_80065264 has no `last` token (body rewritten / local removed)
+GONE	func_800652AC:last=var_0	local `last` no longer exists: current definition func_800652AC has no `last` token (body rewritten / local removed)
+GONE	func_800693CC:mask_ptr=var_10	local `mask_ptr` no longer exists: current definition menu_UpdateRowMenu has no `mask_ptr` token (body rewritten / local removed)
+GONE	func_8001B478:cnt=var_11	local `cnt` no longer exists: current definition camera_UpdateTrackedFighterView has no `cnt` token (body rewritten / local removed)
+NOFAKE	func_8001BCF0:diff=var_0	label `diff computed at entry` is gone (src/main/9F9C.c:1000); the lone FAKE in the function (:1004) is about collision_pos
+NOFAKE	func_8001BCF0:div4=var_1	label `div4 taken first` is gone (src/main/9F9C.c:1014)
+NOFAKE	func_80021280:mode=var_10	the `D_800A38DC read once before the loop` label is gone; only t1/t4/t3/t2 carry FAKE labels (src/main/9F9C.c:3174-3180), mode (:3182) has none
