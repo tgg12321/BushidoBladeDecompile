@@ -6,7 +6,7 @@
 
 /* SSINIT .data (0x800A2694..0x800A26CC, 56 bytes; the module's .data in
  * LIBSND.LIB, no XDEF, no relocation). The first 8 bytes are read by no code;
- * the library object holds other values there (15107350 9CB14000). */
+ * the library object holds other values there (0x15107350, 0x0040B19C). */
 u32 D_800A2694[2] = {0x17107350, 0x404097E4};
 /* the 8 SPU voice registers written to each of the 24 voices: volume L/R 0,
  * pitch 0x1000, start address 0x3000, ADSR 0x00BF / 0 */
