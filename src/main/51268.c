@@ -1252,6 +1252,7 @@ u8 func_80063B34(void) {
 }
 
 s32 func_80063E10(s32);
+void eff_BuildUsedSlotRotMatrices(s32 *count, MATRIX *m, s32 idx);
 
 u8 func_80063B78(void) {
     *D_800A3480 = D_800A345C[0];

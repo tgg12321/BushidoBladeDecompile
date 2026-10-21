@@ -770,6 +770,7 @@ extern void gpu_MoveObjectClutsToFogBlock(s32);
 extern void gpu_RestoreObjectClutOffsets(void);
 extern s32 gpu_GetFogClutObject(void);
 extern u32 gpu_GetLastFogOtIndex(void);
+extern s32 gpu_DepthToOtIndex(s32, s32);
 extern void func_8003E6A0(s32, s32);
 extern void func_8003E6D8(s32);
 extern void func_8003EDC0(u16 *, s32);

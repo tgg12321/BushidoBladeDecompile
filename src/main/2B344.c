@@ -466,8 +466,6 @@ extern u8 D_800A8FB0[];
 
 extern void func_8003AF40(s32);
 
-extern s32 gpu_DepthToOtIndex(s32, s32);
-
 extern void gte_ReadFarColor(u8 *);
 
 extern s8 D_8008EA70[][2];
