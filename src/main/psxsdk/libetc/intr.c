@@ -37,6 +37,7 @@ static IntrCallback setIntr(s32 irq, IntrCallback handler);
 intrEnv_t *startIntr(void);
 static intrEnv_t *stopIntr(void);
 static intrEnv_t *restartIntr(void);
+void func_800831A4(); /* memclr, defined below; called with &intrEnv */
 
 /* .data 0x800A1578..0x800A2614, the module's own .data in definition order:
  * the state, the callbacks table that ResetCallback..RestartCallback call
