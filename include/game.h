@@ -973,9 +973,9 @@ typedef struct {
     u32 unk48[16];   /* per kept quad, its OT index */
 } Unk1F8000B8_800646E8;
 
-/* func_80065800's layout of the 51268 work area (Unk1F8000B8Union.v80065800).
- * Its gte_SetTransMatrix operand hands the GTE the area's base as a MATRIX,
- * whose t[] is unk14[0]. */
+/* eff_DrawAnimatedQuads's layout of the 51268 work area
+ * (Unk1F8000B8Union.v80065800). Its gte_SetTransMatrix operand hands the GTE
+ * the area's base as a MATRIX, whose t[] is unk14[0]. */
 typedef struct {
     u8 unk00[0x10]; /* no access */
     s32 unk10;      /* gte_stdp out; not read */

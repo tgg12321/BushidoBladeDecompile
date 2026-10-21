@@ -1,4 +1,4 @@
-glabel func_80065800
+glabel eff_DrawAnimatedQuads
     /* 56000 80065800 A8FFBD27 */  addiu      $sp, $sp, -0x58
     /* 56004 80065804 3000B0AF */  sw         $s0, 0x30($sp)
     /* 56008 80065808 2004908F */  lw         $s0, %gp_rel(D_800A34EC)($gp)
@@ -1531,4 +1531,4 @@ glabel func_80065800
     /* 576B4 80066EB4 5800BD27 */  addiu      $sp, $sp, 0x58
     /* 576B8 80066EB8 0800E003 */  jr         $ra
     /* 576BC 80066EBC 00000000 */   nop
-endlabel func_80065800
+endlabel eff_DrawAnimatedQuads

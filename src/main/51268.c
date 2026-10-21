@@ -1719,10 +1719,10 @@ void func_800652AC(void) {
     D_800F0BA8[17] = 0;
 }
 
-u8 func_80065800(s32);
+u8 eff_DrawAnimatedQuads(s32);
 
 u8 func_800652F4(void) {
-    u8 v0 = func_80065800(0);
+    u8 v0 = eff_DrawAnimatedQuads(0);
     s16 *p = &D_800F0BA8[0];
     s16 v1 = *p;
     v1 += 0x1FF;
@@ -1734,7 +1734,7 @@ u8 func_800652F4(void) {
 }
 
 u8 func_80065344(void) {
-    u8 v0 = func_80065800(1);
+    u8 v0 = eff_DrawAnimatedQuads(1);
     s16 *p = &D_800F0BA8[1];
     u16 v1 = *p;
     v1 += 0x1C6;
@@ -1746,7 +1746,7 @@ u8 func_80065344(void) {
 }
 
 u8 func_80065394(void) {
-    u8 v0 = func_80065800(2);
+    u8 v0 = eff_DrawAnimatedQuads(2);
     s16 *p = &D_800F0BA8[2];
     s16 v1 = *p;
     v1 += 0x1C6;
@@ -1758,7 +1758,7 @@ u8 func_80065394(void) {
 }
 
 u8 func_800653E4(void) {
-    u8 v0 = func_80065800(3);
+    u8 v0 = eff_DrawAnimatedQuads(3);
     s16 *p = &D_800F0BA8[3];
     s16 v1 = *p;
     v1 += 0x19;
@@ -1770,7 +1770,7 @@ u8 func_800653E4(void) {
 }
 
 u8 func_80065434(void) {
-    u8 v0 = func_80065800(4);
+    u8 v0 = eff_DrawAnimatedQuads(4);
     s16 *p = &D_800F0BA8[4];
     u16 v1 = *p;
     v1 += 0x19;
@@ -1785,7 +1785,7 @@ u8 func_80065484(void) {
     unsigned int temp_v1;
     u8 v0;
     *D_800A3484 = D_800A3440;
-    v0 = func_80065800(5);
+    v0 = eff_DrawAnimatedQuads(5);
     temp_v1 = *D_800A3484;
     switch (temp_v1) {
     case 0: {
@@ -1811,7 +1811,7 @@ u8 func_80065484(void) {
 }
 
 u8 func_80065540(void) {
-    u8 v0 = func_80065800(6);
+    u8 v0 = eff_DrawAnimatedQuads(6);
     s16 *p = &D_800F0BA8[6];
     u16 v1 = *p;
     v1 += 0x32;
@@ -1823,7 +1823,7 @@ u8 func_80065540(void) {
 }
 
 u8 func_80065590(void) {
-    u8 v0 = func_80065800(7);
+    u8 v0 = eff_DrawAnimatedQuads(7);
     s16 *p = &D_800F0BA8[7];
     u16 v1 = *p;
     v1 += 0x32;
@@ -1835,7 +1835,7 @@ u8 func_80065590(void) {
 }
 
 u8 func_800655E0(void) {
-    u8 v0 = func_80065800(0xA);
+    u8 v0 = eff_DrawAnimatedQuads(0xA);
     s16 *p = &D_800F0BA8[10];
     s16 v1 = *p;
     v1 += 0x32;
@@ -1847,7 +1847,7 @@ u8 func_800655E0(void) {
 }
 
 u8 func_80065630(void) {
-    u8 v0 = func_80065800(0xB);
+    u8 v0 = eff_DrawAnimatedQuads(0xB);
     s16 *p = &D_800F0BA8[11];
     s16 v1 = *p;
     v1 += 0x32;
@@ -1861,10 +1861,10 @@ u8 func_80065630(void) {
 s32 func_80065680(void) {
     s16 *v1;
     s32 v0;
-    func_80065800(0xC);
+    eff_DrawAnimatedQuads(0xC);
     v1 = &D_800F0BA8[12];
     *v1 = *v1 + 1;
-    v0 = func_80065800(0xE);
+    v0 = eff_DrawAnimatedQuads(0xE);
     D_800F0BA8[14] = D_800F0BA8[14] + 1;
     v0 &= 0xFF;
     if (D_800F0BA8[14] >= 11) {
@@ -1876,9 +1876,9 @@ s32 func_80065680(void) {
 s32 func_800656EC(void) {
     s16 *s0 = &D_800F0BA8[13];
     s32 v0;
-    func_80065800(0xD);
+    eff_DrawAnimatedQuads(0xD);
     *s0 = *s0 + 1;
-    v0 = func_80065800(0xF);
+    v0 = eff_DrawAnimatedQuads(0xF);
     D_800F0BA8[15] = D_800F0BA8[15] + 1;
     if ((s16)*s0 < 11) {
         return v0 & 0xFF;
@@ -1887,7 +1887,7 @@ s32 func_800656EC(void) {
 }
 
 u8 func_80065760(void) {
-    u8 v0 = func_80065800(0x10);
+    u8 v0 = eff_DrawAnimatedQuads(0x10);
     s16 *p = &D_800F0BA8[16];
     s16 v1 = *p;
     v1 += 0x1C6;
@@ -1899,7 +1899,7 @@ u8 func_80065760(void) {
 }
 
 u8 func_800657B0(void) {
-    u8 v0 = func_80065800(0x11);
+    u8 v0 = eff_DrawAnimatedQuads(0x11);
     s16 *p = &D_800F0BA8[17];
     s16 v1 = *p;
     v1 += 0x1C6;
@@ -1917,7 +1917,7 @@ u8 func_800657B0(void) {
  * 2) and links one POLY_FT4 into the OT. Modes 6/7 re-run the body for the
  * paired mode (arg0 + 2, i.e. 8/9) via `goto again`; the re-run is guarded by
  * `arg0 < 9`, so modes 10/11 draw once. */
-u8 func_80065800(s32 arg0) {
+u8 eff_DrawAnimatedQuads(s32 arg0) {
     extern s16 D_800A3834;
     extern s32 ReadGeomScreen(void);
     Unk1F8000B8_80065800 *var_0;

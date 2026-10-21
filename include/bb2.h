@@ -104,8 +104,8 @@ extern Unk8009B2BCRecord D_8009B2BC[3];
 extern Unk800EFAE8Rec D_800EFAE8;
 extern Unk800F0C10Record D_800F0C10[4][3];
 
-/* Per-effect-mode state, modes 0..0x11 (func_80065800): the timers here and
- * the position records in D_800F0CA0. The init functions func_80064E90..
+/* Per-effect-mode state, modes 0..0x11 (eff_DrawAnimatedQuads): the timers here
+ * and the position records in D_800F0CA0. The init functions func_80064E90..
  * func_800652AC fill them; the step functions func_800652F4..func_800657B0
  * advance the timers. */
 extern s16 D_800F0BA8[18];
