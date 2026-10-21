@@ -6,7 +6,7 @@ m09	member	landed	docs/naming/phase3/pending/m09	landed ab15e2b99 + 684eee9c5 + 
 m11	member	landed	docs/naming/phase3/pending/m11	landed 26cb5d587 + ed3ad4cb1 (5 pairs: Unk80101DF0Record matrix_state/rotation_order/light_setup_index/parent_node, MoveScript.first_move_frame); R6 PASS 5/5, blocking fix motion.md:45 applied. Advisory: census evidence text function-names.csv:439/448 cites old names (frozen)
 wave55	func	landed	docs/naming/phase3/pending/wave55	landed 9199cfae1 + cecd4b6e9; R6 12/12 after verbatim registry/rule comment fixes. Advisory: named_syms.txt:122-123 32D04.c line cites stale (pre-existing); symbol_addrs.txt:963 retired MISNAMED build_offset_table note. test_board_cards.py 2 failures (func_80016A8C) pre-exist
 wave69	func	landed	docs/naming/phase3/pending/wave69	landed 499709bd1 + 10a3f18db (fight_InitCommandStream 0x8003B20C, fight_RunCommandStream 0x8003B5A4); R6 PASS 2/2, no blocking fixes; wavefollow no-op. Advisory: pre-existing drifted line cites in named_syms D_800A3915, symbol_addrs D_800A37A0, menus.md, main_loop.md. menu_ Choice pair still neutral (re-mine with 9F9C twin)
-wave70	func	reviewed	docs/naming/phase3/pending/wave70	
+wave70	func	landed	docs/naming/phase3/pending/wave70	landed 638fd61b1; R6 PASS 2/2, no blocking fixes. Advisory: tools/rename_funcs.py:47 legacy map func_800472C0->camera_InitRotation (inert); lane gate scripts must not git add -A the worktree junctions
 wave71	func	reviewed	docs/naming/phase3/pending/wave71	
 wave72	func	reviewed	docs/naming/phase3/pending/wave72	
 wave74	func	reviewed	docs/naming/phase3/pending/wave74	
