@@ -1,4 +1,4 @@
-glabel func_8004C1F4
+glabel gpu_SubdivideAndEmitTexturedQuad
     /* 3C9F4 8004C1F4 28008014 */  bnez       $a0, .L8004C298
     /* 3C9F8 8004C1F8 00000000 */   nop
     /* 3C9FC 8004C1FC 080060CA */  lwc2       $0, 0x8($s3)
@@ -62,7 +62,7 @@ glabel func_8004C1F4
     /* 3CAE0 8004C2E0 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3CAE4 8004C2E4 20006622 */   addi      $a2, $s3, 0x20 /* handwritten instruction */
     /* 3CAE8 8004C2E8 04006486 */  lh         $a0, 0x4($s3)
-    /* 3CAEC 8004C2EC 7D30010C */  jal        func_8004C1F4
+    /* 3CAEC 8004C2EC 7D30010C */  jal        gpu_SubdivideAndEmitTexturedQuad
     /* 3CAF0 8004C2F0 00000000 */   nop
     /* 3CAF4 8004C2F4 E8FF688E */  lw         $t0, -0x18($s3)
     /* 3CAF8 8004C2F8 ECFF698E */  lw         $t1, -0x14($s3)
@@ -73,7 +73,7 @@ glabel func_8004C1F4
     /* 3CB0C 8004C30C E230010C */  jal        math_MidpointS16x3U8x2
     /* 3CB10 8004C310 18006622 */   addi      $a2, $s3, 0x18 /* handwritten instruction */
     /* 3CB14 8004C314 04006486 */  lh         $a0, 0x4($s3)
-    /* 3CB18 8004C318 7D30010C */  jal        func_8004C1F4
+    /* 3CB18 8004C318 7D30010C */  jal        gpu_SubdivideAndEmitTexturedQuad
     /* 3CB1C 8004C31C 00000000 */   nop
     /* 3CB20 8004C320 F8FF688E */  lw         $t0, -0x8($s3)
     /* 3CB24 8004C324 FCFF698E */  lw         $t1, -0x4($s3)
@@ -84,7 +84,7 @@ glabel func_8004C1F4
     /* 3CB38 8004C338 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3CB3C 8004C33C 10006622 */   addi      $a2, $s3, 0x10 /* handwritten instruction */
     /* 3CB40 8004C340 04006486 */  lh         $a0, 0x4($s3)
-    /* 3CB44 8004C344 7D30010C */  jal        func_8004C1F4
+    /* 3CB44 8004C344 7D30010C */  jal        gpu_SubdivideAndEmitTexturedQuad
     /* 3CB48 8004C348 00000000 */   nop
     /* 3CB4C 8004C34C F0FF688E */  lw         $t0, -0x10($s3)
     /* 3CB50 8004C350 F4FF698E */  lw         $t1, -0xC($s3)
@@ -95,10 +95,10 @@ glabel func_8004C1F4
     /* 3CB64 8004C364 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3CB68 8004C368 18006622 */   addi      $a2, $s3, 0x18 /* handwritten instruction */
     /* 3CB6C 8004C36C 04006486 */  lh         $a0, 0x4($s3)
-    /* 3CB70 8004C370 7D30010C */  jal        func_8004C1F4
+    /* 3CB70 8004C370 7D30010C */  jal        gpu_SubdivideAndEmitTexturedQuad
     /* 3CB74 8004C374 00000000 */   nop
     /* 3CB78 8004C378 00007F8E */  lw         $ra, 0x0($s3)
     /* 3CB7C 8004C37C 00000000 */  nop
     /* 3CB80 8004C380 0800E003 */  jr         $ra
     /* 3CB84 8004C384 D8FF7322 */   addi      $s3, $s3, -0x28 /* handwritten instruction */
-endlabel func_8004C1F4
+endlabel gpu_SubdivideAndEmitTexturedQuad

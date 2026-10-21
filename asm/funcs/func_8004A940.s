@@ -1150,7 +1150,7 @@ glabel func_8004A940
     /* 3C2E0 8004BAE0 1A0069A6 */  sh         $t1, 0x1A($s3)
     /* 3C2E4 8004BAE4 1C006AA6 */  sh         $t2, 0x1C($s3)
     /* 3C2E8 8004BAE8 1E006BA6 */  sh         $t3, 0x1E($s3)
-    /* 3C2EC 8004BAEC DA2E010C */  jal        func_8004BB68
+    /* 3C2EC 8004BAEC DA2E010C */  jal        gpu_SubdivideAndEmitTexturedTriangle
     /* 3C2F0 8004BAF0 2120E000 */   addu      $a0, $a3, $zero
     /* 3C2F4 8004BAF4 DC01E88E */  lw         $t0, (0x1F8001DC & 0xFFFF)($s7)
     /* 3C2F8 8004BAF8 24483E02 */  and        $t1, $s1, $fp

@@ -723,7 +723,8 @@ void func_8003C040(void) {
 
 void func_8003C2C0(void) {
     D_800A37B8 = D_800A37B8 + 1;
-    g_prim_buf_cursor += func_8005FC9C((s32)g_prim_buf_cursor, 1);
+    g_prim_buf_cursor +=
+        gpu_DrawImageAndAdvanceSplitWipe((s32)g_prim_buf_cursor, 1);
     if (func_80054F68() == 0 || (g_pad_state.pressed & 0x400040) != 0) {
         if ((u32)(D_800A38A4 - 6) < 2u && D_800A3781 != 0) {
             D_800A38A4 = D_8008D9EC[D_80101EC8[0].unk_0A] != 0 ? 9 : 8;

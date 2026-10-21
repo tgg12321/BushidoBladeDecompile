@@ -1,4 +1,4 @@
-glabel func_8005FC9C
+glabel gpu_DrawImageAndAdvanceSplitWipe
     /* 5049C 8005FC9C 58FFBD27 */  addiu      $sp, $sp, -0xA8
     /* 504A0 8005FCA0 9800B6AF */  sw         $s6, 0x98($sp)
     /* 504A4 8005FCA4 21B08000 */  addu       $s6, $a0, $zero
@@ -273,4 +273,4 @@ glabel func_8005FC9C
     /* 508BC 800600BC A800BD27 */  addiu      $sp, $sp, 0xA8
     /* 508C0 800600C0 0800E003 */  jr         $ra
     /* 508C4 800600C4 00000000 */   nop
-endlabel func_8005FC9C
+endlabel gpu_DrawImageAndAdvanceSplitWipe

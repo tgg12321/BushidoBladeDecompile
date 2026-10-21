@@ -402,14 +402,15 @@ typedef struct {
     DR_MODE unk_BB8;
 } Unk8005E54CRec;
 
-/* The draw chunk 4D0A8 func_8005FC9C builds at the address its caller passes:
- * SPRTs from +0 (gpu_AddSpriteCells's cursor), the DR_MODE at +0x280, two
- * POLY_G4 at +0x28C (at most one per pass) and three DR_AREA at +0x2D4 (the
- * first, then at most one per pass). func_8005FC9C returns the chunk size,
- * 0x2F8. The 32 SPRTs are the most it writes: gpu_AddSpriteCells writes at most
- * one per cell of the sheet header it is given (cell count: the byte at +2),
- * and each of the two passes draws D_8009B698's header and the one 12 bytes
- * after it (8 cells each). */
+/* The draw chunk 4D0A8 gpu_DrawImageAndAdvanceSplitWipe builds at the address
+ * its caller passes: SPRTs from +0 (gpu_AddSpriteCells's cursor), the DR_MODE
+ * at +0x280, two POLY_G4 at +0x28C (at most one per pass) and three DR_AREA at
+ * +0x2D4 (the first, then at most one per pass).
+ * gpu_DrawImageAndAdvanceSplitWipe returns the chunk size, 0x2F8. The 32 SPRTs
+ * are the most it writes: gpu_AddSpriteCells writes at most one per cell of the
+ * sheet header it is given (cell count: the byte at +2), and each of the two
+ * passes draws D_8009B698's header and the one 12 bytes after it (8 cells
+ * each). */
 typedef struct {
     SPRT unk_00[32];
     DR_MODE unk_280;

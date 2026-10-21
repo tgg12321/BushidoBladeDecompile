@@ -18,9 +18,9 @@ INCLUDE_ASM("asm/funcs", gte_ProjectPackedVertices);
 void func_8004A938(void) {}
 
 INCLUDE_ASM("asm/funcs", func_8004A940);
-INCLUDE_ASM("asm/funcs", func_8004BB68);
+INCLUDE_ASM("asm/funcs", gpu_SubdivideAndEmitTexturedTriangle);
 INCLUDE_ASM("asm/funcs", func_8004BCC0);
-INCLUDE_ASM("asm/funcs", func_8004C1F4);
+INCLUDE_ASM("asm/funcs", gpu_SubdivideAndEmitTexturedQuad);
 INCLUDE_ASM("asm/funcs", math_MidpointS16x3U8x2);
 INCLUDE_ASM("asm/funcs", func_8004C404);
 INCLUDE_ASM("asm/funcs", func_8004C994);

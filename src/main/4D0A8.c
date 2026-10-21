@@ -1284,7 +1284,7 @@ void func_8005FBC8(s32 arg0, u8 *arg1) {
 extern Unk8009B0E0Record D_8009B698[2];
 extern Unk8009B400Record D_8009B6B0[8];
 
-s32 func_8005FC9C(s32 arg0, s32 arg1) {
+s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 arg1) {
     Unk8005FC9CRec *var_0 = (Unk8005FC9CRec *)arg0;
     Unk8007352CRec s;
     RECT r;

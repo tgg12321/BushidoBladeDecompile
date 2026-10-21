@@ -929,7 +929,7 @@ extern s32 func_8005E54C(u32, s32, s32);
 extern s32 func_8005F1C8(Unk8001CD68Rec *, s32, s32, s32);
 extern s32 func_8005FA98(s32, s32, s32);
 extern void func_8005FBC8(s32, u8 *);
-extern s32 func_8005FC9C(s32, s32);
+extern s32 gpu_DrawImageAndAdvanceSplitWipe(s32, s32);
 extern s32 func_800600C8(s32, s32, s32);
 extern void func_800602AC(s32, s32 *);
 extern s32 func_80060544(s32, s32);

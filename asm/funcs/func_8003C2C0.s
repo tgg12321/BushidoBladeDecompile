@@ -8,7 +8,7 @@ glabel func_8003C2C0
     /* 2CAD8 8003C2D8 01004224 */  addiu      $v0, $v0, 0x1
     /* 2CADC 8003C2DC 0A80013C */  lui        $at, %hi(D_800A37B8)
     /* 2CAE0 8003C2E0 B83722AC */  sw         $v0, %lo(D_800A37B8)($at)
-    /* 2CAE4 8003C2E4 277F010C */  jal        func_8005FC9C
+    /* 2CAE4 8003C2E4 277F010C */  jal        gpu_DrawImageAndAdvanceSplitWipe
     /* 2CAE8 8003C2E8 01000524 */   addiu     $a1, $zero, 0x1
     /* 2CAEC 8003C2EC 0A80033C */  lui        $v1, %hi(g_prim_buf_cursor)
     /* 2CAF0 8003C2F0 B438638C */  lw         $v1, %lo(g_prim_buf_cursor)($v1)

@@ -1,4 +1,4 @@
-glabel func_8004BB68
+glabel gpu_SubdivideAndEmitTexturedTriangle
     /* 3C368 8004BB68 21008014 */  bnez       $a0, .L8004BBF0
     /* 3C36C 8004BB6C 00000000 */   nop
     /* 3C370 8004BB70 080060CA */  lwc2       $0, 0x8($s3)
@@ -51,14 +51,14 @@ glabel func_8004BB68
     /* 3C428 8004BC28 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3C42C 8004BC2C 18006622 */   addi      $a2, $s3, 0x18 /* handwritten instruction */
     /* 3C430 8004BC30 04006486 */  lh         $a0, 0x4($s3)
-    /* 3C434 8004BC34 DA2E010C */  jal        func_8004BB68
+    /* 3C434 8004BC34 DA2E010C */  jal        gpu_SubdivideAndEmitTexturedTriangle
     /* 3C438 8004BC38 00000000 */   nop
     /* 3C43C 8004BC3C E8FF6422 */  addi       $a0, $s3, -0x18 /* handwritten instruction */
     /* 3C440 8004BC40 F0FF6522 */  addi       $a1, $s3, -0x10 /* handwritten instruction */
     /* 3C444 8004BC44 E230010C */  jal        math_MidpointS16x3U8x2
     /* 3C448 8004BC48 08006622 */   addi      $a2, $s3, 0x8 /* handwritten instruction */
     /* 3C44C 8004BC4C 04006486 */  lh         $a0, 0x4($s3)
-    /* 3C450 8004BC50 DA2E010C */  jal        func_8004BB68
+    /* 3C450 8004BC50 DA2E010C */  jal        gpu_SubdivideAndEmitTexturedTriangle
     /* 3C454 8004BC54 00000000 */   nop
     /* 3C458 8004BC58 1000688E */  lw         $t0, 0x10($s3)
     /* 3C45C 8004BC5C 1400698E */  lw         $t1, 0x14($s3)
@@ -69,7 +69,7 @@ glabel func_8004BB68
     /* 3C470 8004BC70 100068AE */  sw         $t0, 0x10($s3)
     /* 3C474 8004BC74 140069AE */  sw         $t1, 0x14($s3)
     /* 3C478 8004BC78 04006486 */  lh         $a0, 0x4($s3)
-    /* 3C47C 8004BC7C DA2E010C */  jal        func_8004BB68
+    /* 3C47C 8004BC7C DA2E010C */  jal        gpu_SubdivideAndEmitTexturedTriangle
     /* 3C480 8004BC80 00000000 */   nop
     /* 3C484 8004BC84 2000688E */  lw         $t0, 0x20($s3)
     /* 3C488 8004BC88 2400698E */  lw         $t1, 0x24($s3)
@@ -80,10 +80,10 @@ glabel func_8004BB68
     /* 3C49C 8004BC9C 180068AE */  sw         $t0, 0x18($s3)
     /* 3C4A0 8004BCA0 1C0069AE */  sw         $t1, 0x1C($s3)
     /* 3C4A4 8004BCA4 04006486 */  lh         $a0, 0x4($s3)
-    /* 3C4A8 8004BCA8 DA2E010C */  jal        func_8004BB68
+    /* 3C4A8 8004BCA8 DA2E010C */  jal        gpu_SubdivideAndEmitTexturedTriangle
     /* 3C4AC 8004BCAC 00000000 */   nop
     /* 3C4B0 8004BCB0 00007F8E */  lw         $ra, 0x0($s3)
     /* 3C4B4 8004BCB4 00000000 */  nop
     /* 3C4B8 8004BCB8 0800E003 */  jr         $ra
     /* 3C4BC 8004BCBC D8FF7322 */   addi      $s3, $s3, -0x28 /* handwritten instruction */
-endlabel func_8004BB68
+endlabel gpu_SubdivideAndEmitTexturedTriangle
