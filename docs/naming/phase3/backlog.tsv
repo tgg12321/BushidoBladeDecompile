@@ -2,7 +2,7 @@ id	kind	stage	draft	note
 m08	member	landed	docs/naming/phase3/m08	landed e4bdf7ed6 + e2a8da42b; R6 PASS 9/9, no blocking fixes. Advisory: 'model id' wording for the same value in motion.md:17, bb2.h:404, game.h:711-712/721, named_syms.txt:725/922 (loose, not false)
 m10	member	landed	docs/naming/phase3/pending/m10	landed 73b6f1714 + 06dca3a7d (re-applied from bb250b9ed manifest after cherry-pick conflict); R6 PASS 12/12, no blocking fixes. Dropped rows unk_414/424/43E stay neutral; need fresh pre-apply review if revived
 m06	member	landed	docs/naming/phase3/m06	landed 9cf27d6a0 + 75f10a3bb (16 pairs, re-applied fresh; field_18=anchor dropped NO_NAME); R6 PASS 16/16, no blocking fixes. Optional: 6CF8.c:631 prose 'records a and b' -> 'nodes a and b'
-m09	member	reviewed	docs/naming/phase3/pending/m09	12 Unk80101EC8Record pairs, 12/12 pre-apply PASS; land after m08
+m09	member	landed	docs/naming/phase3/pending/m09	landed ab15e2b99 + 684eee9c5 + 918d4018f (R6 doc fixes ai.md/motion.md); R6 PASS 12/12, 15 keys moved. Advisory: function-names.csv KEEP evidence rows 144/743/744/746 cite old unk_ names
 m11	member	landed	docs/naming/phase3/pending/m11	landed 26cb5d587 + ed3ad4cb1 (5 pairs: Unk80101DF0Record matrix_state/rotation_order/light_setup_index/parent_node, MoveScript.first_move_frame); R6 PASS 5/5, blocking fix motion.md:45 applied. Advisory: census evidence text function-names.csv:439/448 cites old names (frozen)
 wave55	func	reviewed	docs/naming/phase3/pending/wave55	12 renames in 32D04.c (reloc_, gpu_, math_); also substitutes a fixture label in tools/test_board_cards.py: run its tests
 wave69	func	reviewed	docs/naming/phase3/pending/wave69	
