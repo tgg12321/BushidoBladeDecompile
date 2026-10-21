@@ -1,0 +1,1 @@
+{"func": "puts", "addr": "80082000", "verdict": "PASS", "body_hash": "b3bf5f559b5c979c", "body_kind": "c", "file": "main/psxsdk/libc2/puts", "reviewer": "cheat-reviewer:a2a4c655", "scope": "cheat-cleanup", "date": "2026-10-21T17:04:28Z", "head": "be15a0172", "notes": ""}
