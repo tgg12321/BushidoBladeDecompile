@@ -119,8 +119,8 @@ g_rand_state = 0x800F1848;
 
 /* === Data symbols of the 2026-05-17 batch 2 (all five since reset) === */
 /* Superseded evidence: docs/naming/data_evidence/D_{80103608,80103658,8009BD24,800A379E,800A3860}.md */
-D_80103608            = 0x80103608;  /* s32 *[]: first pointer slot of each relocated block, set by func_80044010 (32D04.c:935), read / moved by func_80044098 / func_80044100 (:950, :973-975) */  /* data-wave 2026-10-08: was g_tpage_slot_ptr */
-D_80103658          = 0x80103658;  /* u16[20]: slot count of each relocated block (header & 0x7FFF, func_80044010, 32D04.c:936); func_80044498 clears all 20 (:1152-1158) */  /* data-wave 2026-10-08: was g_tpage_slot_count */
+D_80103608            = 0x80103608;  /* s32 *[]: first pointer slot of each relocated block, set by reloc_RelocateBlock (32D04.c:935), read / moved by reloc_UnrelocateBlock / reloc_RebaseBlock (:950, :973-975) */  /* data-wave 2026-10-08: was g_tpage_slot_ptr */
+D_80103658          = 0x80103658;  /* u16[20]: slot count of each relocated block (header & 0x7FFF, reloc_RelocateBlock, 32D04.c:936); reloc_ClearCounts clears all 20 (:1152-1158) */  /* data-wave 2026-10-08: was g_tpage_slot_count */
 /* RENAME 0x800A379E: retired name 'D_800A379E' — preserved note: data-wave 2026-10-08: was g_motion_state_code */
 g_motion_fighter_buffers      = 0x800A3860;  /* data-wave 2026-10-08: was g_motion_data_base_ptr */
 
@@ -576,7 +576,7 @@ VBLANK_MINUS                                      = 0x80104E80;  /* ref: md_game
 /* RESET 0x80069120: retired name 'sync_flag_check_advance_80069120' — preserved note: 44-byte record table accessor with dirty-bit sync side-effect */
 /* Misc (2) */
 /* RESET 0x80044498: retired name 'clear_array_8010367E_80044498' — preserved note: clears D_80103658[0..19] (20-halfword zero loop down from D_8010367E, 32D04.c:1152-1158) */
-/* RESET 0x80046048: retired name 'audio_chain_fade_load_80046048' — preserved note: func_80044100(6, a1), then snd_VabFakeOpen(a1, ...) per entry of the func_800457A0(6) list (35000.c:787-811) */
+/* RESET 0x80046048: retired name 'audio_chain_fade_load_80046048' — preserved note: reloc_RebaseBlock(6, a1), then snd_VabFakeOpen(a1, ...) per entry of the func_800457A0(6) list (35000.c:787-811) */
 
 /* === rodata constant-table pass (2026-05-17) -- 19 entries, 2 retired === */
 /* D_* labels in rodata + .data sections, first classified by pattern; each */
