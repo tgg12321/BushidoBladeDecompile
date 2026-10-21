@@ -1,0 +1,33 @@
+# wave48 dry run (draft, VERDICT unset)
+# With VERDICT = "" (as committed) the census consumes no row, so dry.sh reports:
+#   rc=2 / FATAL: no operations to perform / NOTE: requested addresses with no usable op: ['0x80052b7c']
+# Below: the same dry.sh with VERDICT temporarily set to "CONFIRM" (simulation only, to show the
+# mechanics; the reviewer must set the real verdict and re-run build.py + dry.sh).rc=0
+==============================================================================
+NAMING WAVE — 1 operations (0 RESET, 1 RENAME)
+  1 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — src/main/31CFC.c is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (3) --
+  (root): 1 files, 1 substitutions
+      inline_asm_canonical.txt  (1)
+  asm: 1 files, 2 substitutions
+      asm/funcs/func_80052B7C.s  (2)
+  src: 1 files, 1 substitutions
+      src/main/3AB48.c  (1)
+
+-- .s file renames (1) --
+  asm/funcs/func_80052B7C.s -> asm/funcs/gte_TransformSVectorWithSeparateTranslation.s
+
+-- ledger directory renames (1) --
+  memory/grind/func_80052B7C -> memory/grind/gte_TransformSVectorWithSeparateTranslation
+
+-- symbol-registry line deletions (0) --
+
+-- JSON key/field edits (1) --
+  memory/grind/func_80052B7C/layer2.jsonl: 1 changes
+      line 1: func func_80052B7C -> gte_TransformSVectorWithSeparateTranslation
+
+DRY RUN — nothing written. Re-run with --apply.
+
