@@ -4,6 +4,10 @@
 #include "common.h"
 #include <psxsdk/libc.h>
 
+/* LIBC2 PRNT (libc2/prnt.c): s32 prnt(s32, u8 *, char *). Left unprototyped:
+ * printf passes fmt as the s32 word it spilled. */
+extern s32 prnt();
+
 void printf(s32 fmt, s32 a, s32 b, s32 c) {
     s32 *ap = &fmt;
     ap[1] = a;
