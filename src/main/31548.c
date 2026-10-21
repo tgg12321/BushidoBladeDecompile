@@ -68,7 +68,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         s0 = 0x11;
         p = &s3[17];
         do {
-            p->node.unk6 = 0;
+            p->node.matrix_state = 0;
             s0--;
             p--;
         } while (s0 >= 0);
@@ -96,7 +96,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         s3->node.xf.rot.vx = 0;
         s3->node.xf.rot.vy = 0;
         s3->node.xf.rot.vz = 0;
-        s3->node.unk6 = 0;
+        s3->node.matrix_state = 0;
         s3->node.work.t[0] = 0;
         s3->node.work.t[2] = 0;
         break;
@@ -117,7 +117,7 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
         s0 = 0;
         s1p = s3;
         s3->node.work.t[1] = (s3->node.work.t[1] * s4->position_scale) >> 12;
-        s5->node.unk6 = 0;
+        s5->node.matrix_state = 0;
         do {
             node_UpdateWorldMatrix(&s1p->node);
             s0++;
@@ -221,7 +221,7 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
         buf.vz = -p[2];
         math_RotMatrixZYX(&buf, out2);
         func_800523E0(a4, out2, a3, &ents[i].node.work);
-        ents[i].node.unk6 = 2;
+        ents[i].node.matrix_state = 2;
         i++;
     } while (i < 0x12);
     a1 += 0x6C;
@@ -251,7 +251,7 @@ loop2:
     a2 += 2;
     math_RotMatrixZYX(&buf, out3);
     func_800523E0(a4, out3, a3, &var_9->node.work);
-    var_9->node.unk6 = 1;
+    var_9->node.matrix_state = 1;
     var_9++;
     i++;
     if (i < 0x14) {

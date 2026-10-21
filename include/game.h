@@ -1405,7 +1405,7 @@ typedef struct MoveScript {
     /* row of the bank's 4-byte entry table (func_80021A98) */
     u16 unk_04;
     /* first frame: Unk80101EC8Record.move_frame starts here (func_80021A98) */
-    u8 unk_06;
+    u8 first_move_frame;
     u8 unk_07;
     u8 unk_08;
     u8 unk_09;
@@ -1918,17 +1918,17 @@ typedef struct {
 } Unk80101DF0Xform;
 
 typedef struct Unk80101DF0Record {
-    u8 unk0;                        /* +0x00 */
-    s8 unk1;                        /* +0x01 */
-    s16 unk2;                       /* +0x02 */
-    s16 unk4;                       /* +0x04 */
-    s16 unk6;                       /* +0x06 */
-    s16 unk8;                       /* +0x08 D_800F66A0 index */
-    s16 unkA;                       /* +0x0A */
-    struct Unk80101DF0Record *unkC; /* +0x0C */
-    Unk80101DF0Xform xf;            /* +0x10 */
-    MATRIX work;                    /* +0x38 */
-} Unk80101DF0Record;                /* 0x58 */
+    u8 unk0;                               /* +0x00 */
+    s8 unk1;                               /* +0x01 */
+    s16 unk2;                              /* +0x02 */
+    s16 unk4;                              /* +0x04 */
+    s16 matrix_state;                      /* +0x06 */
+    s16 rotation_order;                    /* +0x08 D_800F66A0 index */
+    s16 light_setup_index;                 /* +0x0A */
+    struct Unk80101DF0Record *parent_node; /* +0x0C */
+    Unk80101DF0Xform xf;                   /* +0x10 */
+    MATRIX work;                           /* +0x38 */
+} Unk80101DF0Record;                       /* 0x58 */
 
 /* The 8 light-setup records at 0x800F62E0 (0x60 each; base + n*0x60 in
  * math_LightPlaneProject, light_InitDefaults).  light_Unpack fills one from a

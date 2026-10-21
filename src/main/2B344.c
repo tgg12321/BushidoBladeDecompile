@@ -2113,9 +2113,9 @@ void func_8003EDC0(u16 *p, s32 arg1) {
     while ((w = *p++) != -1) {
         c = &D_800A6690[n++];
         c->node.unk1 = 0;
-        c->node.unkC = 0;
-        c->node.unk8 = 0;
-        c->node.unkA = 4;
+        c->node.parent_node = 0;
+        c->node.rotation_order = 0;
+        c->node.light_setup_index = 4;
         c->node.unk2 = w;
         c->node.unk4 = arg1;
         c->node.xf.mat.t[0] = *p++;
@@ -2132,7 +2132,7 @@ void func_8003EDC0(u16 *p, s32 arg1) {
         } else {
             c->node.unk0 = 0;
         }
-        D_800F66A0[c->node.unk8](&c->node.xf.rot, &c->node.xf.mat);
+        D_800F66A0[c->node.rotation_order](&c->node.xf.rot, &c->node.xf.mat);
         c->unk58 = 0;
     }
     for (i = 0; i < 32; i++) {

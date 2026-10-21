@@ -616,16 +616,16 @@ MATRIX *func_800472B0(void) { return &D_800EEDD0; }
 
 void func_800472C0(Unk80101DF0Record *node) {
     node->unk4 = 8;
-    node->unk8 = 0;
+    node->rotation_order = 0;
     node->unk2 = 0;
     node->unk0 = 0;
     node->unk1 = 0;
-    node->unkC = 0;
-    node->unkA = 4;
+    node->parent_node = 0;
+    node->light_setup_index = 4;
     node->xf.rot.vx = 0;
     node->xf.rot.vy = 0;
     node->xf.rot.vz = 0;
-    D_800F66A0[node->unk8](&node->xf.rot, &node->work);
+    D_800F66A0[node->rotation_order](&node->xf.rot, &node->work);
     node->work.t[2] = 0;
     node->work.t[1] = 0;
     node->work.t[0] = 0;
@@ -670,7 +670,7 @@ void wave_UpdateCallback(void) { wave_Update(); }
 
 void func_80047570(void) {
     func_800472C0(&D_800EEDF0);
-    D_800EEDF0.unk8 = 4;
+    D_800EEDF0.rotation_order = 4;
 }
 
 void func_800475A4(void) {
@@ -844,7 +844,7 @@ s32 wave_Init(void) {
     {
         Unk80101DF0Record *node = &D_800EF070;
         node->unk0 = 0xE;
-        node->unkA = 4;
+        node->light_setup_index = 4;
         node->work.t[0] = -0x2EE0;
         node->unk1 = 0;
         node->work.t[1] = 0;
@@ -852,9 +852,9 @@ s32 wave_Init(void) {
         node->xf.rot.vx = 0;
         node->xf.rot.vy = 0;
         node->xf.rot.vz = 0;
-        node->unk8 = 0;
-        node->unkC = 0;
-        node->unk6 = 0;
+        node->rotation_order = 0;
+        node->parent_node = 0;
+        node->matrix_state = 0;
         node_UpdateWorldMatrix(node);
     }
 
@@ -1921,9 +1921,9 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
     obj->node.unk1 = 0;
     obj->node.unk2 = D_800EF980[arg0] * 2;
     obj->node.unk4 = 6;
-    obj->node.unk8 = 0;
-    obj->node.unkC = 0;
-    obj->node.unkA = 4;
+    obj->node.rotation_order = 0;
+    obj->node.parent_node = 0;
+    obj->node.light_setup_index = 4;
     if (flags != 0) {
         if (flags == 1) {
             obj->node.xf.rot.vx = rot_in[0];
@@ -1952,14 +1952,14 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             ofs.vx = var_4->node.work.t[0];
             ofs.vy = var_4->node.work.t[1];
             ofs.vz = var_4->node.work.t[2];
-            ApplyMatrix(
-                &var_4->node.unkC->xf.mat, &ofs, (VECTOR *)obj->node.xf.mat.t);
+            ApplyMatrix(&var_4->node.parent_node->xf.mat, &ofs,
+                        (VECTOR *)obj->node.xf.mat.t);
             obj->node.xf.mat.t[0] =
-                obj->node.xf.mat.t[0] + var_4->node.unkC->xf.mat.t[0];
+                obj->node.xf.mat.t[0] + var_4->node.parent_node->xf.mat.t[0];
             obj->node.xf.mat.t[1] =
-                obj->node.xf.mat.t[1] + var_4->node.unkC->xf.mat.t[1];
+                obj->node.xf.mat.t[1] + var_4->node.parent_node->xf.mat.t[1];
             obj->node.xf.mat.t[2] =
-                obj->node.xf.mat.t[2] + var_4->node.unkC->xf.mat.t[2];
+                obj->node.xf.mat.t[2] + var_4->node.parent_node->xf.mat.t[2];
             /* SOTN: src/st/lib/e_shop.c:4625 @aa53500 */
             flags |= 0x8000;
             var_4->node.xf.mat = obj->node.xf.mat;
@@ -1983,10 +1983,10 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
                 *p58 = val58;
             }
             list = g_draw_queue_cursor;
-            obj->node.unkC = &obj[-1].node;
-            obj->node.unk6 = 1;
-            obj->node.unk8 = 0;
-            obj->node.unkA = 0;
+            obj->node.parent_node = &obj[-1].node;
+            obj->node.matrix_state = 1;
+            obj->node.rotation_order = 0;
+            obj->node.light_setup_index = 0;
             obj->node.unk4 = 6;
             obj->node.unk2 = entry * 2 + 1;
             g_draw_queue_cursor = list + 1;
@@ -2039,8 +2039,8 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
        stores the lh moves down to them (score: first 29, second 6, both 35). */
     a1_val = (*var_4) * 2;
     obj->node.unk4 = 6;
-    obj->node.unk8 = 0;
-    obj->node.unkA = 4;
+    obj->node.rotation_order = 0;
+    obj->node.light_setup_index = 4;
     obj->node.unk2 = a1_val;
     src = &D_80099D3C[(arg1 & 1) * 6];
     obj->node.work.t[0] = ((*src) * slot_obj->position_scale) >> 12;
@@ -2053,8 +2053,8 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     src++;
     obj->node.xf.rot.vy = *src;
     rot_z = src[1];
-    obj->node.unkC = &slot_obj->transform_nodes[12].node;
-    obj->node.unk6 = 0;
+    obj->node.parent_node = &slot_obj->transform_nodes[12].node;
+    obj->node.matrix_state = 0;
     obj->node.xf.rot.vz = rot_z;
     node_UpdateWorldMatrix(&obj->node);
     list = g_draw_queue_cursor;
@@ -2063,11 +2063,11 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     obj++;
     a1_val = (*var_4) * 2;
     obj->node.unk0 = 3;
-    obj->node.unkC = &obj[-1].node;
+    obj->node.parent_node = &obj[-1].node;
     obj->node.unk1 = 0;
-    obj->node.unk8 = 0;
-    obj->node.unk6 = 1;
-    obj->node.unkA = 0;
+    obj->node.rotation_order = 0;
+    obj->node.matrix_state = 1;
+    obj->node.light_setup_index = 0;
     obj->node.unk4 = 6;
     obj->node.unk2 = a1_val + 1;
     /* FAKE: unk58 stored through a pointer; the member store lets sched lift
@@ -2215,8 +2215,8 @@ void func_80049E4C(void) {
     D_80101DF0.work.t[0] = 0;
     D_80101DF0.work.t[1] = 0;
     D_80101DF0.work.t[2] = 0;
-    D_80101DF0.unkC = 0;
-    D_80101DF0.unk8 = 5;
+    D_80101DF0.parent_node = 0;
+    D_80101DF0.rotation_order = 5;
     node_SetMatrixFromNegatedRot(p1);
     p2->unk0 = 0x65;
     D_800FF638.unk1 = 0;
@@ -2226,8 +2226,8 @@ void func_80049E4C(void) {
     D_800FF638.work.t[0] = 0;
     D_800FF638.work.t[1] = 0;
     D_800FF638.work.t[2] = 0;
-    D_800FF638.unkC = 0;
-    D_800FF638.unk8 = 2;
+    D_800FF638.parent_node = 0;
+    D_800FF638.rotation_order = 2;
     node_SetMatrixFromNegatedRot(p2);
     D_800A3708 = p1;
     D_800A370C = p2;

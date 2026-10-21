@@ -1205,16 +1205,16 @@ void func_8004473C(void) {
         dst->node.unk1 = 0;
         dst->node.unk2 = 0;
         dst->node.unk4 = D_800A9CF8.unk0;
-        dst->node.unk8 = 0;
-        dst->node.unkC = 0;
-        dst->node.unkA = 4;
+        dst->node.rotation_order = 0;
+        dst->node.parent_node = 0;
+        dst->node.light_setup_index = 4;
         dst->node.xf.rot.vx = 0;
         dst->node.xf.rot.vy = 0;
         dst->node.xf.rot.vz = 0;
         dst->node.work.t[0] = src->node.xf.mat.t[0];
         dst->node.work.t[1] = src->node.xf.mat.t[1];
         dst->node.work.t[2] = src->node.xf.mat.t[2];
-        dst->node.unk6 = 0;
+        dst->node.matrix_state = 0;
         dst->unk58 = -1;
     }
 }

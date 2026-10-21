@@ -3384,7 +3384,7 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
         } while (0);
         s0->cur_move_slot = (u8)a3;
         {
-            u8 a1_val = v0_50->unk_06;
+            u8 a1_val = v0_50->first_move_frame;
             s0->prev_move_kind = old_kind;
             {
                 u8 *v1_58 = s0->motion_metadata;

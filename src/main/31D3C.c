@@ -124,23 +124,25 @@ extern void gte_SetMatrixRotTransIRVec(void *, void *, void *);
 void node_UpdateWorldMatrix(Unk80101DF0Record *a0) {
     RotMatrixFunc func;
 
-    if (a0->unk6 == 1) {
+    if (a0->matrix_state == 1) {
         return;
     }
-    if (a0->unk6 != 2) {
-        func = D_800F66A0[a0->unk8];
+    if (a0->matrix_state != 2) {
+        func = D_800F66A0[a0->rotation_order];
         func(&a0->xf.rot, &a0->work);
     }
-    if (a0->unkC != 0) {
-        if (a0->unkC->unk6 == 0) {
-            node_UpdateWorldMatrix(a0->unkC);
+    if (a0->parent_node != 0) {
+        if (a0->parent_node->matrix_state == 0) {
+            node_UpdateWorldMatrix(a0->parent_node);
         }
-        gte_MulMatrix0ClearTrans(&a0->unkC->xf.mat, &a0->work, &a0->xf.mat);
-        gte_SetMatrixRotTransIRVec(&a0->unkC->xf.mat, a0->work.t, a0->xf.mat.t);
+        gte_MulMatrix0ClearTrans(
+            &a0->parent_node->xf.mat, &a0->work, &a0->xf.mat);
+        gte_SetMatrixRotTransIRVec(
+            &a0->parent_node->xf.mat, a0->work.t, a0->xf.mat.t);
     } else {
         a0->xf.mat = a0->work;
     }
-    a0->unk6 = 1;
+    a0->matrix_state = 1;
 }
 
 void node_SetMatrixFromNegatedRot(Unk80101DF0Record *a0) {
@@ -148,7 +150,7 @@ void node_SetMatrixFromNegatedRot(Unk80101DF0Record *a0) {
     sp10.vx = -(u16)a0->xf.rot.vx;
     sp10.vy = -(u16)a0->xf.rot.vy;
     sp10.vz = -(u16)a0->xf.rot.vz;
-    D_800F66A0[a0->unk8](&sp10, &a0->work);
+    D_800F66A0[a0->rotation_order](&sp10, &a0->work);
     a0->xf.mat = a0->work;
 }
 

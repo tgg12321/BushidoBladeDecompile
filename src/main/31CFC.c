@@ -14,9 +14,9 @@ void node_RebaseParents(s32 delta, Unk80045878Node *rec, s32 n) {
     s32 i;
 
     for (i = n - 1; i != -1; i--) {
-        if (rec->node.unkC != 0) {
-            rec->node.unkC =
-                (Unk80101DF0Record *)((u8 *)rec->node.unkC + delta);
+        if (rec->node.parent_node != 0) {
+            rec->node.parent_node =
+                (Unk80101DF0Record *)((u8 *)rec->node.parent_node + delta);
         }
         rec++;
     }

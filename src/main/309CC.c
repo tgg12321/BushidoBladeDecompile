@@ -95,10 +95,10 @@ void func_80040400(Unk80045878Node *a0, Unk80045878Node *a1, s16 a2) {
     a1->node.unk2 = 2;
     a1->node.unk0 = 3;
     a1->node.unk1 = 0;
-    a1->node.unkC = &a0[6].node;
-    a1->node.unk6 = 1;
-    a1->node.unk8 = 0;
-    a1->node.unkA = 0;
+    a1->node.parent_node = &a0[6].node;
+    a1->node.matrix_state = 1;
+    a1->node.rotation_order = 0;
+    a1->node.light_setup_index = 0;
     a1->node.unk4 = a2;
     a1->unk58 = 0;
     a1[1].node.unk2 = -1;
@@ -299,13 +299,13 @@ void func_800408F8(Unk80045878Obj *a0) {
             s16 v1;
             p->node.unk0 = 0;
             p->node.unk1 = 0;
-            p->node.unk8 = 0;
+            p->node.rotation_order = 0;
             p->node.unk2 = -1;
             v1 = D_80094B96[i].unk_00;
             if (v1 != -1) {
-                p->node.unkC = &base[v1].node;
+                p->node.parent_node = &base[v1].node;
             } else {
-                p->node.unkC = 0;
+                p->node.parent_node = 0;
             }
             p->node.work.t[0] =
                 (D_80094B96[i].unk_02[0] * a0->position_scale) >> 12;
@@ -316,8 +316,8 @@ void func_800408F8(Unk80045878Obj *a0) {
             p->node.xf.rot.vx = 0;
             p->node.xf.rot.vy = 0;
             p->node.xf.rot.vz = 0;
-            p->node.unk6 = 0;
-            p->node.unkA = a0->unk_10;
+            p->node.matrix_state = 0;
+            p->node.light_setup_index = a0->unk_10;
             p->node.unk4 = a0->unk_14;
             p++;
             i++;

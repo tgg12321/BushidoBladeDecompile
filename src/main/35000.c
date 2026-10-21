@@ -45,7 +45,7 @@ void func_80044800(void) {
             rec->node.xf.rot.vx = *var_7++;
             rec->node.xf.rot.vy = *var_7++;
             rec->node.xf.rot.vz = *var_7++;
-            rec->node.unk6 = 0;
+            rec->node.matrix_state = 0;
             node_UpdateWorldMatrix(&rec->node);
             MulMatrix2(&mat, &rec->node.xf.mat);
             cos_val = Judge[(angle + 0x400) & 0xFFF];
@@ -78,7 +78,7 @@ void func_80044800(void) {
                 rec->node.xf.rot.vx = *var_7++;
                 rec->node.xf.rot.vy = *var_7++;
                 rec->node.xf.rot.vz = *var_7++;
-                rec->node.unk6 = 0;
+                rec->node.matrix_state = 0;
                 node_UpdateWorldMatrix(&rec->node);
                 rec->node.xf.mat.t[0] += var_0.vx;
                 rec->node.xf.mat.t[1] += var_0.vy;
@@ -134,11 +134,11 @@ void func_80044B30(s32 a0, s32 a1) {
     p->node.unk4 = D_800A9CF8.unk0;
     p->node.xf.rot.vy = a1;
     p->node.unk0 = 0;
-    p->node.unkC = 0;
+    p->node.parent_node = 0;
     p->node.xf.rot.vx = 0;
     p->node.xf.rot.vz = 0;
-    p->node.unk6 = 1;
-    D_800F66A0[p->node.unk8](&p->node.xf.rot, &p->node.xf.mat);
+    p->node.matrix_state = 1;
+    D_800F66A0[p->node.rotation_order](&p->node.xf.rot, &p->node.xf.mat);
     if (D_800A9CF8.unk4 == 0x12) {
         p->node.work.t[0] = p->node.xf.mat.t[0];
         p->node.work.t[1] = p->node.xf.mat.t[1];
