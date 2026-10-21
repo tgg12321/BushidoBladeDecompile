@@ -1400,16 +1400,16 @@ typedef struct Unk800F1B18Rec {
  * the low 7 bits, stored to D_800A38E8, are a frame threshold for
  * func_8002C0DC; fight_UpdatePairedMoves). */
 typedef struct MoveScript {
-    u16 unk_00;
-    u16 unk_02;
+    u16 event_move_table_id;
+    u16 fallback_move_id;
     /* row of the bank's 4-byte entry table (func_80021A98) */
-    u16 unk_04;
+    u16 motion_bank_entry_index;
     /* first frame: Unk80101EC8Record.move_frame starts here (func_80021A98) */
     u8 first_move_frame;
-    u8 unk_07;
-    u8 unk_08;
+    u8 last_move_frame;
+    u8 last_command_frame;
     u8 unk_09;
-    u16 unk_0A[1];
+    u16 transition_commands[1];
 } MoveScript;
 
 /* Per-character record table (base 0x80101EC8, stride 0x44C, 2 records;

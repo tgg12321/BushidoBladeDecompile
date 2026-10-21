@@ -2576,7 +2576,7 @@ Unk8001FAE4Entry *motion_FindPairedMoveEntry(MoveScript *arg0) {
     u16 v1;
     u16 *a0;
 
-    a0 = arg0->unk_0A;
+    a0 = arg0->transition_commands;
     v1 = *a0;
     while (v1 != 0) {
         if ((v1 & 0x4000) != 0) {
@@ -3360,7 +3360,7 @@ void func_80021A98(s32 arg0, MoveScript *arg1, s32 arg2) {
     s0->borrow_other_motion = 0;
     s0->cur_move = arg1;
     {
-        u16 v1 = arg1->unk_04;
+        u16 v1 = arg1->motion_bank_entry_index;
         s0->motion_entry_index = v1;
         if (arg2 != 0) {
             u16 *v0 = &g_motion_common_sections.unk_04[v1 * 2];
@@ -4476,7 +4476,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
         }
         rec->unk_31A = 0;
         table = motion_ResolveMoveData(
-            rec, rec->cur_move->unk_00, &rec->move_is_common);
+            rec, rec->cur_move->event_move_table_id, &rec->move_is_common);
         func_80021A98(
             arg0,
             motion_ResolveMoveData(
@@ -4494,7 +4494,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
             fighter_SetTurnDelta(rec, var_4);
             rec->unk_31A = 0;
             table = motion_ResolveMoveData(
-                rec, rec->cur_move->unk_00, &rec->move_is_common);
+                rec, rec->cur_move->event_move_table_id, &rec->move_is_common);
             func_80021A98(
                 arg0,
                 motion_ResolveMoveData(rec, table[0xD], &rec->move_is_common),
@@ -4504,7 +4504,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
             rec->unk_104.vz = 0;
         }
     }
-    if (rec->cur_move->unk_07 < rec->move_frame) {
+    if (rec->cur_move->last_move_frame < rec->move_frame) {
         if (rec->queued_move != NULL) {
             rec->move_is_common = rec->queued_move_is_common;
             if (rec->unk_82 & 0x1000) {
@@ -4512,28 +4512,30 @@ void fighter_Update(s32 arg0, PadState *pad) {
             }
             func_80021A98(arg0, rec->queued_move, rec->queued_move_is_common);
         } else {
-            if ((rec->cur_move->unk_0A[0] & 0x2000) && D_800A38AE != arg0) {
-                if (rec->cur_move->unk_0A[0] & 0x1000) {
+            if ((rec->cur_move->transition_commands[0] & 0x2000) &&
+                D_800A38AE != arg0) {
+                if (rec->cur_move->transition_commands[0] & 0x1000) {
                     rec->borrow_other_motion = 1;
                 }
-                func_80021A98(
-                    arg0,
-                    motion_ResolveMoveData(
-                        rec, rec->cur_move->unk_0A[1], &rec->move_is_common),
-                    rec->move_is_common);
+                func_80021A98(arg0,
+                              motion_ResolveMoveData(
+                                  rec, rec->cur_move->transition_commands[1],
+                                  &rec->move_is_common),
+                              rec->move_is_common);
             } else {
                 if (rec->cur_move->unk_09 & 0x20) {
                     rec->borrow_other_motion = 1;
                 }
-                func_80021A98(arg0,
-                              motion_ResolveMoveData(rec, rec->cur_move->unk_02,
-                                                     &rec->move_is_common),
-                              rec->move_is_common);
+                func_80021A98(
+                    arg0,
+                    motion_ResolveMoveData(rec, rec->cur_move->fallback_move_id,
+                                           &rec->move_is_common),
+                    rec->move_is_common);
             }
         }
     }
     if (rec->queued_move != NULL) {
-        if (rec->cur_move->unk_08 < rec->move_frame) {
+        if (rec->cur_move->last_command_frame < rec->move_frame) {
             if (rec->move_kind == 0x11) {
                 D_800A376E = 1;
                 D_800A36D8 = rec->queued_move;
@@ -4548,8 +4550,8 @@ void fighter_Update(s32 arg0, PadState *pad) {
                     arg0, rec->queued_move, rec->queued_move_is_common);
             }
         }
-    } else if (rec->cur_move->unk_08 >= rec->move_frame) {
-        ent = rec->cur_move->unk_0A;
+    } else if (rec->cur_move->last_command_frame >= rec->move_frame) {
+        ent = rec->cur_move->transition_commands;
         while ((var_7 = ent[0]) != 0) {
             if (!(var_7 & 0x8000) ||
                 ((ent[2] | ((u32)ent[3] << 16)) & (1 << rec->unk_0A))) {
@@ -4621,17 +4623,19 @@ void fighter_Update(s32 arg0, PadState *pad) {
                 u16 *table;
 
                 table = motion_ResolveMoveData(
-                    rec, rec->cur_move->unk_00, &rec->move_is_common);
+                    rec, rec->cur_move->event_move_table_id,
+                    &rec->move_is_common);
                 func_80021A98(arg0,
                               motion_ResolveMoveData(
                                   rec, table[rec->unk_94 != 0 ? 0x17 : 0x18],
                                   &rec->move_is_common),
                               rec->move_is_common);
             } else if (rec->unk_72 == 0) {
-                func_80021A98(arg0,
-                              motion_ResolveMoveData(rec, rec->cur_move->unk_02,
-                                                     &rec->move_is_common),
-                              rec->move_is_common);
+                func_80021A98(
+                    arg0,
+                    motion_ResolveMoveData(rec, rec->cur_move->fallback_move_id,
+                                           &rec->move_is_common),
+                    rec->move_is_common);
             }
             rec->unk_72 = 0;
         }
@@ -4642,7 +4646,7 @@ void fighter_Update(s32 arg0, PadState *pad) {
         u16 *table;
 
         table = motion_ResolveMoveData(
-            rec, rec->cur_move->unk_00, &rec->move_is_common);
+            rec, rec->cur_move->event_move_table_id, &rec->move_is_common);
         func_80021A98(
             arg0,
             motion_ResolveMoveData(rec, table[0x18], &rec->move_is_common),
@@ -4709,8 +4713,9 @@ void fighter_Update(s32 arg0, PadState *pad) {
     }
     if (rec->move_kind == 0x17 || rec->move_kind == 0x18 ||
         rec->move_kind == 0x28 || rec->move_kind == 0xA) {
-        if (rec->move_frame == rec->cur_move->unk_07 && rec->unk_104.vy > 0) {
-            rec->move_frame = rec->cur_move->unk_07 - 1;
+        if (rec->move_frame == rec->cur_move->last_move_frame &&
+            rec->unk_104.vy > 0) {
+            rec->move_frame = rec->cur_move->last_move_frame - 1;
         }
     }
     if (rec->move_started != 0 && rec->move_kind == 0x23) {

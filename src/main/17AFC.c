@@ -229,7 +229,7 @@ void func_80027640(Unk80101EC8Record *arg0) {
     arg0->unk_134.vy = 0;
     arg0->unk_134.vz = 0;
     r1 = motion_ResolveMoveData(
-        arg0, arg0->cur_move->unk_00, &arg0->move_is_common);
+        arg0, arg0->cur_move->event_move_table_id, &arg0->move_is_common);
     r2 = motion_ResolveMoveData(arg0, r1[0x1D], &arg0->move_is_common);
     func_80021A98(idx, r2, arg0->move_is_common);
     func_80032854(arg0->index, 0x30, &arg0->world_pos.x, 0);

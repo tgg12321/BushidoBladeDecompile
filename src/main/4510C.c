@@ -613,7 +613,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
         ((rec->other->move_kind == 2 || rec->other->move_kind == 0x1B ||
           rec->other->move_kind == 0x28 || rec->other->move_kind == 0x26 ||
           (rec->move_kind == 0x11 &&
-           rec->cur_move->unk_08 != rec->motion_metadata[1] - 1))
+           rec->cur_move->last_command_frame != rec->motion_metadata[1] - 1))
          << 7) |
         ((rec->move_kind == 0x13 || rec->move_kind == 0x1B ||
           rec->move_kind == 0x30)
@@ -697,7 +697,7 @@ void fighter_BuildCpuPad(s32 arg0, PadState *arg1) {
     if (!(rec->unk_430 & 0x80) ||
         (rec->move_kind != 0x11
              ? (hi < rec->other->move_frame || lo - rec->other->move_frame >= 9)
-             : rec->cur_move->unk_08 < rec->move_frame)) {
+             : rec->cur_move->last_command_frame < rec->move_frame)) {
         if (rec->unk_428 != -1) {
             if (rec->unk_424 != 0 &&
                 (func_800167BC() == 0 || D_800A38DC == 3)) {
@@ -1830,7 +1830,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
                 }
             }
         } else if (state == 0x11 && p->index != D_800A38AE &&
-                   p->move_frame == p->cur_move->unk_08 - 1) {
+                   p->move_frame == p->cur_move->last_command_frame - 1) {
             {
                 s32 a, b, c;
                 a = p->unk_26E;
@@ -1868,7 +1868,8 @@ s32 func_80058580(Unk80101EC8Record *p) {
                      work4 < sizeof(D_8009A850) / sizeof(D_8009A850[0]);
                      work4++) {
                     if (!(D_8009A850[work4][3] & 1) ||
-                        p->move_frame >= p->cur_move->unk_08 - 2 || work3) {
+                        p->move_frame >= p->cur_move->last_command_frame - 2 ||
+                        work3) {
                         work2 = D_8009A850[work4][2] * 16 + work1 +
                                 p->scale_distance_offset;
                         if ((D_800A387C < work2 &&

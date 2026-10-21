@@ -1426,12 +1426,14 @@ void replay_PlayFrame(void) {
         var_11->move_frame = p->b19;
         var_16 = var_11->motion_metadata;
         if (p->b17 & 1) {
-            entry = &g_motion_common_sections.unk_04[p->w0->unk_04 * 2];
+            entry = &g_motion_common_sections
+                         .unk_04[p->w0->motion_bank_entry_index * 2];
             var_11->motion_metadata =
                 g_motion_common_sections.unk_08 + entry[1];
         } else {
             temp = (p->b17 >> 1) & 1;
-            entry = &g_motion_fighter_sections[temp].unk_04[p->w0->unk_04 * 2];
+            entry = &g_motion_fighter_sections[temp]
+                         .unk_04[p->w0->motion_bank_entry_index * 2];
             var_11->motion_metadata =
                 g_motion_fighter_sections[temp].unk_08 + entry[1];
         }
