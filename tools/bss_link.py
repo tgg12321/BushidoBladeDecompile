@@ -12,9 +12,14 @@ shadowing a definition at its own address (class a, same=Y) and moves it to
 symbol_addrs.txt, so the labels are the only definitions left.
 
 Names come from the BSS-range pins plus the labels OUT already holds, so a
-second run (no pins left) writes the same file. A name a linked object already
-defines outside COMMON is left to that object. A name pinned at two addresses,
-or labelled at one and pinned at another, stops the script.
+second run (no pins left) writes the same file. A pinned name a linked object
+already defines outside COMMON is left to that object; a label already in OUT
+stays until it is removed by hand (do that when its variable moves into a C
+object's .bss, which also shifts every label after it). A name pinned at two
+addresses, or labelled at one and pinned at another, stops the script.
+
+Each address group starts with a `/* ADDR */` line, then bare `dlabel NAME`
+lines, the form other label scanners (data_wave.py, engine/score.py) read.
 
 Deterministic and re-runnable (Lane-Replay), in WSL at the repo root:
     make build/bb2.elf && python3 tools/bss_link.py && make build/bb2.elf \\
@@ -32,15 +37,29 @@ BSS_END_NAME = "D_801078E0"  # the end address crt0 zeroes up to
 OUT = "asm/data/94000.bss.s"
 OBJ_LINE = "        build/asm/data/94000.bss.o(.bss);\n"
 LD_END = "        main_BSS_END = .;\n"
-LABEL = re.compile(r"^dlabel (\S+) /\* ([0-9A-F]{8}) \*/$", re.M)
+ADDR_LINE = re.compile(r"^/\* ([0-9A-F]{8}) \*/$")
+LABEL = re.compile(r"^dlabel (\S+)(?: /\* ([0-9A-F]{8}) \*/)?$")
 
 
 def read_labels():
     try:
         with open(OUT, encoding="utf-8") as f:
-            return {m.group(1): int(m.group(2), 16) for m in LABEL.finditer(f.read())}
+            text = f.read()
     except FileNotFoundError:
         return {}
+    out, addr = {}, None
+    for line in text.split("\n"):
+        m = ADDR_LINE.match(line)
+        if m:
+            addr = int(m.group(1), 16)
+            continue
+        m = LABEL.match(line)
+        if m:
+            at = int(m.group(2), 16) if m.group(2) else addr
+            if at is None:
+                sys.exit("bss_link: %s in %s has no address" % (m.group(1), OUT))
+            out[m.group(1)] = at
+    return out
 
 
 def object_defined():
@@ -89,7 +108,8 @@ def main():
         lines += ["    .space 0x%X" % (addrs[0] - BSS_START), ""]
     for i, addr in enumerate(addrs):
         names = sorted(groups[addr])
-        lines += ["dlabel %s /* %08X */" % (n, addr) for n in names]
+        lines.append("/* %08X */" % addr)
+        lines += ["dlabel %s" % n for n in names]
         if i + 1 < len(addrs):
             lines.append("    .space 0x%X" % (addrs[i + 1] - addr))
         elif addr < end:
