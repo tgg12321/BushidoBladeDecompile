@@ -14,13 +14,35 @@ typedef struct {
     s32 dsr;
 } SioReq;
 
-extern volatile SioRegs *D_800A3044; /* SIO registers */
-extern volatile u32 *D_800A3048;     /* SIO_DATA as a word */
-extern s32 D_800A304C;               /* interrupt handler record */
-extern volatile u32 *D_800A305C;     /* I_STAT (I_MASK at [1]) */
-extern s16 D_800A3060[];             /* packet size -> SIO_CTRL rx bits */
-extern s16 D_800A3074[];             /* SIO_CTRL rx bits -> packet size */
-extern s32 D_800A307C;               /* "sio" device control block */
+/* PS1 kernel file control block handed to a device strategy routine. */
+typedef struct {
+    s32 flags;
+    s32 unit;
+    u8 *addr;
+    s32 count;
+    s32 pos;
+    s32 dev_flags;
+    s32 error;
+} Fcb;
+
+/* A kernel interrupt handler record (SysEnqIntRP): the BIOS calls `verify`
+ * on an interrupt and `handler` if it returned nonzero. */
+typedef struct {
+    void *next;
+    s32 (*handler)();
+    s32 (*verify)();
+    s32 unkC;
+} IntRP;
+
+/* A kernel device control block (AddDrv): name, flags, block size,
+ * description, then the 16 driver entry points. */
+struct DCB {
+    const char *name;
+    s32 flags;
+    s32 ssize;
+    const char *desc;
+    s32 (*fn[16])();
+};
 
 /* Module state (.bss): shadow SIO registers, wait callback, requests. */
 extern volatile SioRegs regs;
@@ -37,6 +59,39 @@ extern s32 SysDeqIntRP();
 
 const char D_8001649C[12] = "SIO console";
 const char D_800164A8[4] = "sio";
+
+static s32 EvalpSio(void);
+static s32 HandleSio(void);
+static s32 r_sioinit(void);
+static s32 r_sioopen(void);
+static s32 r_sioclose(void);
+static s32 r_sioremove(void);
+static s32 r_siostrategy(Fcb *fcb, s32 mode);
+static s32 __nulldev(void);
+
+/* .data 0x800A3044..0x800A30CC, the module's own .data in definition order. */
+volatile SioRegs *D_800A3044 = (volatile SioRegs *)0x1F801050; /* SIO 1 */
+volatile u32 *D_800A3048 = (volatile u32 *)0x1F801050; /* SIO_DATA as a word */
+
+IntRP D_800A304C = {0, HandleSio, EvalpSio, 0};
+
+volatile u32 *D_800A305C = (volatile u32 *)0x1F801070; /* I_STAT, I_MASK */
+
+/* packet size -> SIO_CTRL rx bits */
+s16 D_800A3060[10] = {-1, 0, 0x100, -1, 0x200, -1, -1, -1, 0x300, 0};
+
+/* SIO_CTRL rx bits -> packet size */
+s16 D_800A3074[4] = {1, 2, 4, 8};
+
+struct DCB D_800A307C = {
+    D_800164A8,
+    3,
+    1,
+    D_8001649C,
+    {r_sioinit, r_sioopen, r_siostrategy, r_sioclose, __nulldev, __nulldev,
+     __nulldev, __nulldev, __nulldev, __nulldev, __nulldev, __nulldev,
+     __nulldev, __nulldev, r_sioremove, __nulldev},
+};
 
 void AddCOMB(void) {
     s32 intr;
@@ -424,17 +479,6 @@ static s32 r_sioremove(void) {
     sen.len = D_800F1AFC.len = 0;
     return 0;
 }
-
-/* PS1 kernel file control block handed to a device strategy routine. */
-typedef struct {
-    s32 flags;
-    s32 unit;
-    u8 *addr;
-    s32 count;
-    s32 pos;
-    s32 dev_flags;
-    s32 error;
-} Fcb;
 
 static s32 r_siostrategy(Fcb *fcb, s32 mode) {
     fcb->error = 0;

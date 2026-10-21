@@ -557,6 +557,7 @@ SECTIONS
         build/src/main/psxsdk/libspu/s_gvv.o(.data);
         build/src/main/psxsdk/libspu/s_gvex.o(.data);
         build/src/main/psxsdk/libcomb/comb.o(.data);
+        build/asm/data/938CC.data.o(.data);
         build/src/main/psxsdk/libapi/a71.o(.data);
         build/src/main/psxsdk/libapi/a72.o(.data);
         build/src/main/d_7D870.o(.data);

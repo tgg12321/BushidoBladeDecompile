@@ -62,7 +62,8 @@ extern void SetSp(u32); /* PsyQ: unsigned long SetSp(unsigned long) */
 extern void SetMem(s32);
 /* PsyQ: long Exec(struct EXEC *, long, char **) */
 extern void Exec(struct EXEC *, s32, s32 *);
-extern void AddDrv(s32 *);         /* PsyQ: not in LIBAPI.H */
+struct DCB;
+extern void AddDrv(struct DCB *);  /* PsyQ: not in LIBAPI.H */
 extern s32 open(s32 *, s32);       /* PsyQ: long open(char *, unsigned long) */
 extern void read(s32, s32 *, s32); /* PsyQ: long read(long, void *, long) */
 extern void close(s32);            /* PsyQ: long close(long) */
