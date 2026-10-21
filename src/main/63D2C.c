@@ -40,7 +40,7 @@ s32 gpu_AddSpriteCells(Unk8007352CRec *arg0) {
             } else {
                 SetShadeTex(sp, 1);
             }
-            SetSemiTrans((s32)sp, arg0->semi);
+            SetSemiTrans(sp, arg0->semi);
             if (arg0->ot_idx >= 0x1006) {
                 arg0->ot_idx = 1;
                 ((void (*)())font_Printf)(D_800159A0);
