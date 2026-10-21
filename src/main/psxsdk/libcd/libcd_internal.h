@@ -15,8 +15,8 @@ extern u8 CD_com;
 extern CdlCB CD_cbsync;
 extern CdlCB CD_cbready;
 extern s32 CD_debug;
-extern s32 CD_comstr[];
-extern s32 CD_intstr[];
+extern char *CD_comstr[];
+extern char *CD_intstr[];
 
 extern s32 CD_init(void);
 extern void CD_initintr(void);

@@ -3,41 +3,12 @@
 .section .data, "wa"
     .align 0
 
-nonmatching D_800A14B0
+nonmatching D_800A14C4
 
-dlabel D_800A14B0
-dlabel g_cdrom_delay_reg
-    /* 91CB0 800A14B0 1810801F */ .word 0x1F801018
-enddlabel D_800A14B0
-
-nonmatching D_800A14B4
-
-dlabel D_800A14B4
-    /* 91CB4 800A14B4 F010801F */ .word 0x1F8010F0
-enddlabel D_800A14B4
-
-nonmatching D_800A14B8
-
-dlabel D_800A14B8
-dlabel g_cd_dma_dest
-    /* 91CB8 800A14B8 B010801F */ .word 0x1F8010B0
-enddlabel D_800A14B8
-
-nonmatching D_800A14BC
-
-dlabel D_800A14BC
-dlabel g_cd_dma_size
-    /* 91CBC 800A14BC B410801F */ .word 0x1F8010B4
-enddlabel D_800A14BC
-
-nonmatching D_800A14C0
-
-dlabel D_800A14C0
-dlabel g_cd_dma_ctrl
-    /* 91CC0 800A14C0 B810801F */ .word 0x1F8010B8
+dlabel D_800A14C4
     /* 91CC4 800A14C4 50730215 */ .word 0x15027350
     /* 91CC8 800A14C8 9C844000 */ .word 0x0040849C
-enddlabel D_800A14C0
+enddlabel D_800A14C4
 
 nonmatching g_CdReadCallback_func
 

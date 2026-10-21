@@ -9,22 +9,69 @@
 #include "libcd_internal.h"
 
 /* .rodata 0x8001607C..0x8001622C: the module's strings in front of getintr's
- * jump table: the CD_comstr / CD_intstr names, then get_alarm's and getintr's
- * messages (Q106 D4: every C reader is in this file). */
+ * jump table: the CD_comstr / CD_intstr names (the literals in their .data
+ * initializers below), then get_alarm's and getintr's messages (Q106 D4:
+ * every C reader is in this file). */
 
-/* the CD_comstr / CD_intstr names */
-const char D_8001607C[316] =
-    "CdlReadS\0\0\0\0CdlSeekP\0\0\0\0"
-    "CdlSeekL\0\0\0\0CdlGetTD\0\0\0\0CdlGetTN"
-    "\0\0\0\0CdlGetlocP\0\0CdlGetlocL\0\0?\0\0\0"
-    "CdlSetmode\0\0CdlSetfilter\0\0\0\0CdlD"
-    "emute\0\0\0CdlMute\0CdlReset\0\0\0\0CdlP"
-    "ause\0\0\0\0CdlStop\0CdlStandby\0\0CdlR"
-    "eadN\0\0\0\0CdlBackward\0CdlForward\0\0"
-    "CdlPlay\0CdlSetloc\0\0\0CdlNop\0\0CdlS"
-    "ync\0DiskError\0\0\0DataEnd\0Acknowle"
-    "dge\0Complete\0\0\0\0DataReady\0\0\0NoIn"
-    "tr\0\0";
+/* .data 0x800A11AC..0x800A1494, the first 0x2E8 bytes of the module's
+ * 792-byte .data in LIBCD.LIB (Intr, D_800A1498 and the DMA register pointers
+ * ahead of CD_getsector are the rest, 0x800A1494..0x800A14C4), in definition
+ * order. The first 8 bytes are read by no code and equal the
+ * library object's. The command and interrupt names are the module's own
+ * string literals: they make up .rodata 0x8001607C..0x800161B8. */
+u32 D_800A11AC[2] = {0x15047350, 0x0040859C};
+CdlCB CD_cbsync = NULL;
+CdlCB CD_cbready = NULL;
+CdlCB CD_cbread = NULL;
+s32 CD_debug = 0;
+s32 CD_status = 0;
+s32 CD_status1 = 0;
+s32 CD_nopen = 0;
+u8 CD_pos[4] = {2, 0, 0, 0};
+u8 CD_mode = 0;
+u8 CD_com = 0;
+s32 DS_active = 0;
+char *CD_comstr[] = {
+    "CdlSync",    "CdlNop",
+    "CdlSetloc",  "CdlPlay",
+    "CdlForward", "CdlBackward",
+    "CdlReadN",   "CdlStandby",
+    "CdlStop",    "CdlPause",
+    "CdlReset",   "CdlMute",
+    "CdlDemute",  "CdlSetfilter",
+    "CdlSetmode", "?",
+    "CdlGetlocL", "CdlGetlocP",
+    "?",          "CdlGetTN",
+    "CdlGetTD",   "CdlSeekL",
+    "CdlSeekP",   "?",
+    "?",          "?",
+    "?",          "CdlReadS",
+    "?",          "?",
+    "?",          "?",
+};
+char *CD_intstr[] = {
+    "NoIntr",  "DataReady", "Complete", "Acknowledge",
+    "DataEnd", "DiskError", "?",        "?",
+};
+/* per-command flags: INT3 is only the acknowledge, completion follows as INT2
+ * (SOTN D_80032B68) */
+static s32 D_800A127C[32] = {0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+                             0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0};
+/* per-command "clears ready" flags; [com + 0x40] = param count */
+static s32 D_800A12FC[32] = {0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0};
+/* per-command "status valid" flags */
+static s32 D_800A137C[32] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                             0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+/* per-command parameter counts; CD_set_test_parmnum sets CdlTest's (0x19) */
+static s32 D_800A13FC[32] = {0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0,
+                             0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static volatile u8 *libcd_CDRegister0 = (u8 *)0x1F801800;
+static volatile u8 *libcd_CDRegister1 = (u8 *)0x1F801801;
+static volatile u8 *libcd_CDRegister2 = (u8 *)0x1F801802;
+static volatile u8 *libcd_CDRegister3 = (u8 *)0x1F801803;
+static volatile u32 *g_com_delay_reg = (u32 *)0x1F801020;
+static volatile u16 *D_800A1490 = (u16 *)0x1F801C00; /* the SPU registers */
 
 const char D_800161B8[16] = "CD timeout: \0\0\0\0";
 
@@ -64,19 +111,9 @@ static inline void _memcpy(void *_dst, void *_src, u32 _size) {
  * report is two CD_debug-gated printf()s, and the error mask is 0x1D
  * (CdlStatError|SeekError|IdError|ShellOpen). */
 typedef char Result_t[8];
-extern s32 CD_status1; /* 0x800A11C8 = Sony CD_status1 */
-extern s32 CD_nopen;   /* Sony CD_nopen */
-/* per-command flags: INT3 is only the acknowledge, completion follows as INT2
- * (SOTN D_80032B68) */
-extern s32 D_800A127C[];
-extern s32 D_800A137C[]; /* per-command "status valid" flags */
-extern void Result;      /* Result_t result buffers */
+extern void Result; /* Result_t result buffers */
 extern void Result_plus_0x8;
 extern void Result_plus_0x10;
-extern volatile u8 *libcd_CDRegister0;
-extern volatile u8 *libcd_CDRegister1;
-extern volatile u8 *libcd_CDRegister2;
-extern volatile u8 *libcd_CDRegister3;
 extern void printf();
 
 s32 getintr(void) {
@@ -317,11 +354,6 @@ s32 CD_ready(s32 mode, u8 *result) {
 /* CD_cw: BB2's v1.86 sets CD_mode before issuing the command and copies the
  * result unconditionally (SOTN's is v1.77). */
 
-/* per-command "clears ready" flags; [com + 0x40] = param count */
-extern s32 D_800A12FC[];
-/* per-command "needs param" flags (= D_800A12FC + 0x40) */
-extern s32 D_800A13FC[];
-
 s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async) {
     /* FAKE: one counter for both loops, reused as SOTN's CD_cw reuses its i
      * (Q51, Q53); separate counters miss the target's allocation: score 7. */
@@ -390,8 +422,6 @@ s32 CD_vol(CdlATV *vol) {
     return 0;
 }
 
-extern volatile u32 *g_com_delay_reg;
-
 void CD_flush(void) {
     u8 v0;
     *libcd_CDRegister0 = 1;
@@ -410,8 +440,6 @@ void CD_flush(void) {
     *libcd_CDRegister3 = 0;
     *g_com_delay_reg = 0x1325;
 }
-
-extern volatile u16 *D_800A1490;
 
 s32 CD_initvol(void) {
     CdlATV vol;
@@ -436,7 +464,6 @@ s32 CD_initvol(void) {
     return 0;
 }
 
-extern s32 CD_status1;
 extern void InterruptCallback(s32, void *);
 void cdrom_IrqHandler(void);
 
@@ -508,7 +535,13 @@ s32 CD_init(void) {
 
 extern void printf();
 
-extern volatile u32 *g_cd_dma_ctrl;
+/* .data 0x800A14B0..0x800A14C4, the module's last 20 bytes: the CD-ROM
+ * delay/size register, DPCR and the DMA channel 3 (CD-ROM) registers. */
+static volatile u32 *g_cdrom_delay_reg = (u32 *)0x1F801018;
+static volatile u32 *D_800A14B4 = (u32 *)0x1F8010F0; /* DPCR */
+static volatile u32 *g_cd_dma_dest = (u32 *)0x1F8010B0;
+static volatile u32 *g_cd_dma_size = (u32 *)0x1F8010B4;
+static volatile u32 *g_cd_dma_ctrl = (u32 *)0x1F8010B8;
 
 /* SOTN: src/main/psxsdk/libcd/bios.c:459 @aa53500 */
 s32 CD_datasync(s32 mode) {
@@ -534,12 +567,6 @@ s32 CD_datasync(s32 mode) {
     }
     return ret;
 }
-
-extern volatile u32 *g_com_delay_reg;
-extern volatile u32 *g_cdrom_delay_reg;
-extern volatile u32 *D_800A14B4;
-extern volatile u32 *g_cd_dma_dest;
-extern volatile u32 *g_cd_dma_size;
 
 s32 CD_getsector(s32 a0, s32 a1) {
     *libcd_CDRegister0 = 0;
@@ -579,9 +606,7 @@ s32 CD_getsector2(s32 a0, s32 a1) {
     return 0;
 }
 
-extern s32 D_800A1460;
-
-void CD_set_test_parmnum(s32 a0) { D_800A1460 = a0; }
+void CD_set_test_parmnum(s32 a0) { D_800A13FC[0x19] = a0; }
 
 extern void Result_plus_0x8;
 extern void Result;
