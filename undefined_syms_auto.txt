@@ -1,8 +1,5 @@
 D_1F800038 = 0x1F800038;
 D_80000004 = 0x80000004;
-cb_read = 0x80082050;  /* data-wave 2026-09-24: was D_80082050 */
-_SsTrapIntrVSync = 0x80083EDC;  /* data-wave 2026-09-24: was D_80083EDC */
-_SsSeqCalledTbyT_1per2 = 0x80083F1C;  /* data-wave 2026-09-24: was D_80083F1C */
 /* data-wave 2026-09-29: D_8008D118 = 0x8008D118 retired; g_sqrt_table_u8 is now object-defined */
 g_memcard_sw_event_new = 0x800A3800;  /* data-wave 2026-09-24: was D_800A3800 */
 D_800A3804 = 0x800A3804;
