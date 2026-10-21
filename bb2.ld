@@ -450,10 +450,11 @@ SECTIONS
         build/src/main/psxsdk/libgte/fgo_04.o(.data);
         build/src/main/psxsdk/libgte/fgo_05.o(.data);
         build/src/main/psxsdk/libgte/fgo_06.o(.data);
+        build/asm/data/7D920.data.o(.data);
         build/src/main/psxsdk/libgte/ratan.o(.data);
+        build/asm/data/9192A.data.o(.data);
         build/src/main/psxsdk/libgte/patchgte.o(.data);
         build/src/main/psxsdk/libcd/event.o(.data);
-        build/asm/data/7D920.data.o(.data);
         build/src/main/psxsdk/libapi/a07.o(.data);
         build/src/main/psxsdk/libcd/sys.o(.data);
         /* libcd bios.c: Intr (static volatile CD_intr, defined in src/main/psxsdk/libcd/bios.c) at 0x800A1494 */
