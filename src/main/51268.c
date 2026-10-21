@@ -1057,8 +1057,9 @@ s32 eff_SpawnBillboardPair(void) {
 
 /* Draw the up-to-12 slots eff_SpawnBillboardPair spawns: per live slot i
    (bit i of D_800A3448, age D_800F0BEC[i], world position D_800F0E38[i]) emit
-   two textured POLY_FT4 billboards (j == 0, then j == 1 bobbing above it),
-   each rotated/translated relative to the camera, projected, sized from its
+   two textured POLY_FT4 billboards (j == 0, then j == 1 offset vertically by
+   an rsin of its age), each rotated/translated relative to the camera,
+   projected, sized from its
    depth and animated by its age, then linked into the OT at its depth. A slot
    whose age reaches 16 clears its bit. Returns nonzero while any slot is still
    live. */

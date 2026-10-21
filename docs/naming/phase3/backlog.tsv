@@ -8,7 +8,7 @@ wave55	func	landed	docs/naming/phase3/pending/wave55	landed 9199cfae1 + cecd4b6e
 wave69	func	landed	docs/naming/phase3/pending/wave69	landed 499709bd1 + 10a3f18db (fight_InitCommandStream 0x8003B20C, fight_RunCommandStream 0x8003B5A4); R6 PASS 2/2, no blocking fixes; wavefollow no-op. Advisory: pre-existing drifted line cites in named_syms D_800A3915, symbol_addrs D_800A37A0, menus.md, main_loop.md. menu_ Choice pair still neutral (re-mine with 9F9C twin)
 wave70	func	landed	docs/naming/phase3/pending/wave70	landed 638fd61b1; R6 PASS 2/2, no blocking fixes. Advisory: tools/rename_funcs.py:47 legacy map func_800472C0->camera_InitRotation (inert); lane gate scripts must not git add -A the worktree junctions
 wave71	func	landed	docs/naming/phase3/pending/wave71	landed 6d335c765 + cd6f10726 (snd_ShouldUpdateStageSoundSlots 0x8001DB58 [reviewer-suggested, judged fresh], math_ComputeBallisticVelocityXZ 0x800200DC); R6 PASS 2/2, no blocking fixes; wavefollow no-op. Advisory: reused-local-one-role.md:71 cites local y1, body now uses dy (pre-existing); 0x8001DA2C still neutral
-wave72	func	reviewed	docs/naming/phase3/pending/wave72	
+wave72	func	landed	docs/naming/phase3/pending/wave72	landed aeec8ddf6 + 07a0c0970; R6 PASS 3/3, no blocking fixes; advisory comment fix (func_80063084 j==1 offset) applied. Advisory: memory/grind/_completed/func_8006*.json keep old names (as waves 64-70); named_syms.txt:2460 RESET note says motutil_GetWalkDir (body calls RotMatrix)
 wave74	func	reviewed	docs/naming/phase3/pending/wave74	
 wave75	func	reviewed	docs/naming/phase3/pending/wave75	applier: fix include/game.h:55 comment
 wave77	func	reviewed	docs/naming/phase3/pending/wave77	1 row eff_DrawAnimatedQuads
