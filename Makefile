@@ -89,7 +89,7 @@ ASM_FUNC_O_FILES := $(patsubst %,$(BUILD_DIR)/$(ASM_DIR)/funcs/%.o,$(LINKED_ASM_
 ALL_O_FILES  := $(S_O_FILES) $(DATA_O_FILES) $(C_O_FILES) $(ASM_FUNC_O_FILES)
 
 # -- Top-level targets --
-.PHONY: all clean setup check clean-check
+.PHONY: all clean setup check clean-check shift
 
 all: check
 
@@ -104,6 +104,11 @@ check: $(EXE) $(TARGET).sha1
 clean-check:
 	$(MAKE) clean
 	$(MAKE) check
+
+# Shift test (non-matching): relink the objects with padding into build/shift/
+# and report address assumptions (tools/shift_test.py). Never writes the EXE.
+shift: $(ELF)
+	python3 tools/shift_test.py
 
 # -- SHA1 checksum file --
 $(TARGET).sha1:
