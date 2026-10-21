@@ -1341,13 +1341,13 @@ typedef struct NavPolySet {
 
 /* One decoded motion frame (0x84 bytes, 33 words): func_800198D0 decodes one
  * stream entry into one, and fighter_Update fills two per call
- * (Unk80101EC8Record.unk_290 holds the one it last used).  Only 16-bit
- * channels, so a whole-frame assignment is the halfword-aligned block copy
- * fighter_Update shows.  unk_00 is the root offset it negates, unk_02 / unk_04
- * the root heading and distance, unk_06.. unk_0A the three rotation angles it
- * hands math_RotMatrixZYXAngles.  unk_0C[] holds signed channels: func_8002F770
- * reads the triplet at +0x36 with lh, and func_800198D0 sign-extends the 12-bit
- * values at +0x6C..+0x70 / +0x78..+0x7C.
+ * (Unk80101EC8Record.saved_motion_frame holds the one it last used).  Only
+ * 16-bit channels, so a whole-frame assignment is the halfword-aligned block
+ * copy fighter_Update shows.  unk_00 is the root offset it negates, unk_02 /
+ * unk_04 the root heading and distance, unk_06.. unk_0A the three rotation
+ * angles it hands math_RotMatrixZYXAngles.  unk_0C[] holds signed channels:
+ * func_8002F770 reads the triplet at +0x36 with lh, and func_800198D0
+ * sign-extends the 12-bit values at +0x6C..+0x70 / +0x78..+0x7C.
  */
 typedef struct MotionFrame {
     s16 unk_00;
@@ -1601,7 +1601,8 @@ typedef struct Unk80101EC8Record {
     Vec3i32 pose_blend_base_shift;
     u8 unk_32C[0x330 - 0x32C];
     s16 carried_object_count;
-    /* queued kinds, unk_330 of them (object_InitKindQueue / object_QueueKind)
+    /* queued kinds, carried_object_count of them (object_InitKindQueue /
+     * object_QueueKind)
      */
     s16 carried_object_kinds[12];
     u8 unk_34A;

@@ -4381,8 +4381,9 @@ extern void func_800204C0(Unk80101EC8Record *);
  * *motion_entry, and by motion_metadata[1] in some states; state move_kind 0x33
  * instead copies g_motion_frame_buffers[arg0][move_frame] into both); when
  * unk_31A is 0 it mixes their root offsets into root_offset by the 4.12 weight
- * move_frame_frac, otherwise the first one's (by the weight unk_318) with
- * unk_290's less unk_320 (by 0x1000 - unk_318), integrates the velocities
+ * move_frame_frac, otherwise the first one's (by the weight
+ * pose_blend_progress) with saved_motion_frame's less pose_blend_base_shift
+ * (by 0x1000 - pose_blend_progress), integrates the velocities
  * (unk_104 / unk_134) into the position, resolves it (fighter_ResolveMovement),
  * then refreshes the bone points, the flags unk_62, unk_AE and unk_288, the
  * damping and the per-frame side effects. */

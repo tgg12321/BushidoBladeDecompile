@@ -192,7 +192,8 @@ extern Tbl8008E194 D_8008E194[];
 extern u8 D_8009BD58[8][2];
 
 extern Obj80106A78 g_object_pool[12];
-/* [unk_0A][i] -> Unk80101EC8Record.unk_332[i] (object_InitKindQueue) */
+/* [unk_0A][i] -> Unk80101EC8Record.carried_object_kinds[i]
+ * (object_InitKindQueue) */
 extern s8 D_8008E338[27][5];
 extern u16 D_8008E3C0[28]; /* [unk_0A] -> Unk80101EC8Record.unk_274 */
 /* [unk_0A][i] -> Unk80101EC8Record.unk_276[i] */
