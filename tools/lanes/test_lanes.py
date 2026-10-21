@@ -365,11 +365,33 @@ class LaneTest(unittest.TestCase):
         finally:
             lanes.run = real
         self.assertTrue(fired)
-        self.assertIn("was kept", self.last)
+        self.assertIn("was put back on it", self.last)
         self.assertTrue((self.wt("a") / "src" / "new.c").exists())
         self.assertEqual(sh("log", "-1", "--format=%s", "lanes/a", cwd=self.main), "precious")
         self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
         self.assertIn("landing 1 commit(s)", self.last)
+
+    def test_advance_leaves_detached_or_busy_lane_alone(self):
+        # eleventh review: detached HEAD / a rebase in progress are never moved or aborted
+        self.L("s1", "open", "a")
+        d = self.wt("a")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        sh("checkout", "-q", "--detach", cwd=d)
+        head = sh("rev-parse", "HEAD", cwd=d)
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("HEAD is not on the branch", self.last)
+        self.assertEqual(sh("rev-parse", "HEAD", cwd=d), head)
+        self.assertNotIn("raced", self.last)
+        sh("checkout", "-q", "lanes/a", cwd=d)
+        self.commit("a", "src/x1.c", "1\n", "x1")
+        self.commit("a", "src/x2.c", "2\n", "x2")
+        r = subprocess.run(["git", "-c", "user.email=t@example.com", "-c", "user.name=t", "rebase",
+                            "-q", "-x", "exit 1", "HEAD~1"], cwd=d, capture_output=True)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("is in progress", self.last)
+        self.assertTrue(Path(d, sh("rev-parse", "--git-path", "rebase-merge", cwd=d)).exists())
+        sh("rebase", "--abort", cwd=d)
 
     def test_mark_landed_failure_leaves_main_unmoved(self):
         # tenth review S1: the record is written before main moves

@@ -1015,6 +1015,14 @@ def advance_lane(ctx: Ctx, lane: str, landed_from: str):
         print(f"lanes: note: {len(left)} commit(s) of {br} are not in main (it changed during "
               f"the land); {br} was left as is, land again")
         return
+    attached = git("symbolic-ref", "-q", "HEAD", cwd=wt, check=False)
+    busy = [p for p in ("rebase-merge", "rebase-apply", "MERGE_HEAD", "CHERRY_PICK_HEAD",
+                        "REVERT_HEAD") if Path(wt, git("rev-parse", "--git-path", p, cwd=wt)).exists()]
+    if attached != f"refs/heads/{br}" or busy:
+        print(f"lanes: note: {br} was left as is ("
+              + (f"a {busy[0]} is in progress" if busy else "HEAD is not on the branch")
+              + "); the next `land` skips the already-landed commits")
+        return
     run(["git", "update-index", "-q", "--refresh"], cwd=wt, check=False)  # stale stat info
     # (a rewritten-but-unchanged file) makes reset --keep refuse
     head = git("rev-parse", "HEAD", cwd=wt)  # read last, right before the move
@@ -1026,13 +1034,14 @@ def advance_lane(ctx: Ctx, lane: str, landed_from: str):
             return
         # a commit made between the HEAD read and the reset is in the reflog entry the reset
         # wrote; put the branch back on it rather than strand it
-        old = git("rev-parse", f"{br}@{{1}}", cwd=wt, check=False)
+        old = git("rev-parse", "--verify", "-q", f"{br}@{{1}}", cwd=wt, check=False)
         if old and old != head and unlanded(ctx, lane, old, base=m):
-            git("update-ref", f"refs/lanes-backup/{lane}/raced-{old[:9]}", old, cwd=wt)
-            run(["git", "reset", "-q", "--keep", old], cwd=wt, check=False)
-            print(f"lanes: note: a commit arrived while {br} was being moved; it was kept "
-                  f"({br} at {git('rev-parse', '--short', 'HEAD', cwd=wt)}, also saved as "
-                  f"refs/lanes-backup/{lane}/raced-{old[:9]})")
+            ref = f"refs/lanes-backup/{lane}/raced-{old[:9]}"
+            git("update-ref", ref, old, cwd=wt)
+            back = run(["git", "reset", "-q", "--keep", old], cwd=wt, check=False).returncode == 0
+            print(f"lanes: note: a commit arrived while {br} was being moved; "
+                  + (f"{br} was put back on it" if back else f"{br} could not be put back on it")
+                  + f" (saved as {ref})")
         return
     if git("status", "--porcelain", "--untracked-files=no", cwd=wt):
         print(f"lanes: note: {br} gained commits during the land and has uncommitted edits; it "
@@ -1057,7 +1066,7 @@ def cmd_land(ctx: Ctx, a):
     commits = unlanded(ctx, lane, tipsrc)
     if not commits:
         print("lanes: nothing to land")
-        if wt.exists() and tipsrc != git("rev-parse", "main", cwd=ctx.main):
+        if wt.exists() and git("rev-list", "-n1", tipsrc, "^main", cwd=ctx.main):
             advance_lane(ctx, lane, tipsrc)  # a branch an earlier land had to leave as is
         return 0
     if any(len(git("rev-list", "--parents", "-n1", c, cwd=ctx.main).split()) > 2 for c in commits):
