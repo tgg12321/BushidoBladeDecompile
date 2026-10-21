@@ -11,7 +11,7 @@ const char D_800162CC[8] = "<NULL>\0\0";
    fallback. */
 extern void putchar();
 
-void puts(char *s) {
+void puts(const char *s) {
     char c;
 
     if (s == NULL) {

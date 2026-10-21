@@ -23,7 +23,7 @@ extern s32 sprintf(char *, char *, ...);
 /* PsyQ: int printf(char *, ...) -- the LIBC2 definition takes four s32 words
  * (it spills a1..a3 after fmt by hand), so callers see it unprototyped */
 extern void printf();
-extern void puts(char *);
+extern void puts(const char *);
 extern s32 setjmp(s32 *); /* PsyQ: int setjmp(jmp_buf) */
 
 #endif /* PSXSDK_LIBC_H */
