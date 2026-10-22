@@ -9,7 +9,7 @@ Terminology used throughout the BB2 decompilation. Organized by domain.
 | **PsyQ** | Sony's official PlayStation 1 development SDK (a.k.a. DTL-S3000 series). Version 3.5 is the toolchain BB2 was built with: GCC 2.7.2 (SN Systems fork) + ASPSX 2.34 assembler + PsyQ libraries (libgpu, libcd, libapi, libspu). |
 | **ASPSX** | The PsyQ assembler. The BB2 build was made with ASPSX 2.34. Notable differences from GNU `as`: different pseudo-instruction expansion (`la`, `lb sym`, `sw reg,sym`), GP-relative addressing rules, `.set reorder` behavior, lb/lh expansion. The project replicates ASPSX with `maspsx` (a GNU `as` wrapper). |
 | **cc1psx** | The C-frontend of GCC 2.7.2 SN Systems fork. PsyQ 3.5 ships with cc1psx that identifies as `GNU C 2.7.2.SN.1`. The vanilla decompals build identifies as `GNU C 2.7.2`. Byte-identical machine code across test inputs; the `.SN.1` differences are assembler-output format only. |
-| **VAB** | Voice Attribute Bank — Sony's audio bank format. BB2 uses several: `GAME.BNK`, `GAMECHAN.BNK`, `GAMEDAN.BNK`, `GAMESTO.BNK`, `GAMETRA.BNK`. |
+| **VAB** | Voice Attribute Bank — Sony's audio bank format (VH `pBAV` header + VB sample body). BB2 ships them as VAB packs: the `.SE` files and every `STAGE*.BIN` record (`docs/formats/SE.md`). |
 | **TIM** | Sony's standard texture image format. 4bpp / 8bpp / 16bpp paletted images for VRAM upload. |
 | **TMD** | Sony's standard 3D model format. Sequences of textured triangles/quads for the GPU. |
 | **BBM** | BB2-specific "Bushido Blade Motion" character animation bundle. Format undocumented publicly. |
@@ -145,9 +145,9 @@ Many function and global names in the source use Japanese romanization, inherite
 | Extension | Format |
 |---|---|
 | **`.BBM`** | Bushido Blade Motion — character animation bundle. Undocumented. Loaded from `disc/MOTION/`. |
-| **`.SE`** | Sound effect data. Loaded from `disc/LOADSE/`, `disc/LOADSE1/`. |
-| **`.BNK`** | Sound bank (Sony VAB format). `GAME.BNK`, `GAMECHAN.BNK`, etc. |
-| **`STAGE##.BIN`** | Stage geometry. 38 stages in `disc/LOADSE*/`. |
+| **`.SE`** | Sound effect bank: one VAB pack + 4 zero bytes (`docs/formats/SE.md`). In `disc/LOADSE/`. |
+| **`.BNK`** | `GAME.BNK`, `GAMECHAN.BNK`, etc. in `TIM2D/`; content format not established (`docs/formats/BNK.md`). |
+| **`STAGE##.BIN`** | Per-stage file: a 0x34-byte header (6 (offset, size) record pairs, then the offset of a billboard list that `func_8005BA8C` hands to `eff_SetBillboardList`), 6 records each shaped like an `.SE` file (`docs/formats/SE.md`), then the billboard list. 38 stages in `disc/LOADSE*/`. |
 | **`STG##.BIN`** | Stage background image. In `disc/U_PIC/`. |
 | **`NDATA.DAT`** + **`NDATA.INF`** | Large packed data archive (~55 MB) + index. Contains many in-game assets. |
 | **`MAR00.DAT`** – **`MAR22.DAT`** | "Marionation" data — likely animation/skeleton definitions per-character. In `disc/` data dirs. |

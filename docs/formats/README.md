@@ -11,9 +11,9 @@ the Bushido Blade 2 (SLUS-00663) disc.
 | **BBM**    | [BBM.md](BBM.md)      | `tools/inspect_bbm.py`     | Partially reversed (containers, not section-5 keyframe encoding) | `disc/MOTION/*.BBM` |
 | **WIN.DAT**| [BBM.md#WIN.DAT](BBM.md#windat) | `tools/inspect_windat.py` | Structure reversed (27×0x3800 records, i16 fixed-point); per-frame schema TBD | `disc/MOTION/WIN.DAT` |
 | **TIM**    | [TIM.md](TIM.md)      | `tools/inspect_tim.py`, `tools/repack_tim.py` (PNG round-trip) | Standard PSX format — fully implemented (PNG export) | `disc/TIM2D/*.TIM`, `disc/STR/TITLE.TIM` |
-| **STAGE_BIN** | [STAGE_BIN.md](STAGE_BIN.md) | `tools/inspect_stage.py` | Container reversed (incl. wrap5 family TIM/VAB embeds); inner Marionation geometry partial | `disc/{LOADSE,LOADSE1}/STAGE*.BIN`, `disc/U_PIC/STG*.BIN`, `disc/TIM2D/STG*.BIN`, plus SEL/NAR/MOD/STAFF/D_SEL BINs |
-| **BNK**    | [BNK.md](BNK.md)      | `tools/inspect_bnk.py`     | Reversed (VAB body)   | `disc/TIM2D/GAME*.BNK`   |
-| **SE**     | [SE.md](SE.md)        | (uses `inspect_bnk.py` / `inspect_stage.py`) | Container reversed (= one STAGE record) | `disc/LOADSE/*.SE` |
+| **STAGE_BIN** | [STAGE_BIN.md](STAGE_BIN.md) | `tools/inspect_stage.py` | Container reversed (incl. wrap5 family TIM/VAB embeds); `STAGE*.BIN` records are VAB packs ([SE.md](SE.md)), the doc's older reading is outdated | `disc/{LOADSE,LOADSE1}/STAGE*.BIN`, `disc/U_PIC/STG*.BIN`, `disc/TIM2D/STG*.BIN`, plus SEL/NAR/MOD/STAFF/D_SEL BINs |
+| **BNK**    | [BNK.md](BNK.md)      | `tools/inspect_bnk.py`     | Content format not established | `disc/TIM2D/GAME*.BNK`   |
+| **SE**     | [SE.md](SE.md)        | `tools/repack_vab.py` (round-trip) | VAB pack reversed (head, event table, VH, VB; = one STAGE record) | `disc/LOADSE/*.SE` |
 | **STR**    | [STR.md](STR.md)      | `tools/inspect_str.py`     | Standard PSX format — documented and inspected | `disc/STR/OPENING.STR` |
 | **MOVOVL** | [MOVOVL.md](MOVOVL.md)| `tools/inspect_movovl.py`  | PS-X EXE overlay characterised (header, BIOS, libs); decoder internals from PsyQ library | `disc/STR/MOVOVL.EXE` |
 | **XA**     | [XA.md](XA.md)        | (external tools)           | Standard PSX format — documented | `disc/XA_{0,1}/*.XA`, `disc/LOADSE/BB2_M*.XA` |
@@ -39,7 +39,7 @@ disc/
 │   └── STAGE{10..37}.BIN
 ├── TIM2D/
 │   ├── {LAS_*,LINK,LINK_M,SEA2_16}.TIM     Textures
-│   ├── GAME{,CHAN,DAN,STO,TRA}.BNK         VAB sample-bank bodies
+│   ├── GAME{,CHAN,DAN,STO,TRA}.BNK         content not established (see BNK.md)
 │   ├── STG{30,31}.BIN                      Stage-thumbnail TIM containers
 │   └── {SEL,SEL1,SEL2,D_SEL,MOD,NAR,STAFF}.BIN   Container files
 ├── U_PIC/
@@ -55,11 +55,13 @@ disc/
 
 * Internal byte encoding of BBM section 5 (the bulk packed keyframe
   payload) — requires Marionation runtime reverse-engineering.
-* Per-record Marionation geometry inside `STAGE\*.BIN` records (after the
-  VAB body).
 * Inner sub-section layout of SEL/NAR/MOD/STAFF/D_SEL containers beyond the
   5-u32 outer TOC.
-* Whether the 5 BNK files share VAGs or hold completely distinct samples.
+* `STAGE_BIN.md` predates [SE.md](SE.md): each `STAGE*.BIN` record is shaped
+  like an `.SE` file, a VAB pack plus 4 zero bytes (all 228 records, all VH
+  version 6), not the sub-TOC + geometry it describes; after record 5 comes
+  the billboard list header word 0x30 points at (`func_8005BA8C`).
+* What the 5 BNK files hold (`BNK.md`: the SPU-ADPCM reading fits badly).
 
 ## Tools summary
 
