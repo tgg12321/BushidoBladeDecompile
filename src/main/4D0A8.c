@@ -1693,7 +1693,7 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
 }
 
 /* .data 0x8009ADB4..0x8009B450, the head of this file's .data (4BC3C.c's
- * g_vab_id_list / D_8009AD1C in asm/data/8A588.data.s precede; D_8009B450 ..
+ * g_vab_id_list in asm/data/8A588.data.s and D_8009AD1C precede; D_8009B450 ..
  * in asm/data/8BC50.data.s follow). D_8009ADB4 is the 3-cell sheet header
  * whose cells are D_8009ADC0; D_8009ADD8 is 20 rows of three cells
  * (func_8005E54C picks a row by D_8009BD24's bd0, less 2 from 12; the old

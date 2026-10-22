@@ -583,3 +583,16 @@ void snd_FlushSoundQueue(void) {
         g_snd_queue[i].req = 0;
     }
 }
+
+/* .data 0x8009AD1C..0x8009ADB4, this file's whole .data after
+ * g_vab_id_list (still asm/data/8A588.data.s, 4 bytes, A3): snd_SetReverb's
+ * rows, picked by its argument (38, the size up to 4D0A8.c's .data); [0] is
+ * the reverb type it sets, or < 0 to leave the reverb as is; [1] has no
+ * reader. */
+s16 D_8009AD1C[38][2] = {
+    {2, 2},  {1, 2},  {1, 2},  {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0},
+    {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0},
+    {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0},
+    {4, 32}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 8}, {-1, 0}, {1, 8},  {-1, 2},
+    {1, 2},  {1, 2},  {-1, 2}, {1, 2},  {1, 2},  {-1, 0},
+};
