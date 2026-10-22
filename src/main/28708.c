@@ -1920,6 +1920,7 @@ u8 g_replay_replaying_event = 0;
 u8 D_800A3209 = 0;
 s16 D_800A320A = 0; /* not named by any code or data: size from the gap */
 u8 D_800A320C = 0;
+char g_str_sio_800A3210[5] = "sio:";
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
 s32 g_comb_recv_buf[2];
