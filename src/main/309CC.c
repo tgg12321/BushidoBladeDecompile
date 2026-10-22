@@ -375,7 +375,6 @@ void func_80040B44(Unk80045878Obj *arg0) {
     Unk80045878Node *t7;
     s32 *v1;
     u16 *t3;
-    u16 a0_val;
     s32 i;
 
     t5 = arg0->duplicate_nodes;
@@ -394,38 +393,22 @@ void func_80040B44(Unk80045878Obj *arg0) {
         i--;
     } while (i >= 0);
 
-    a0_val = *t3;
-    if (a0_val == 0xFFFF)
-        goto done;
+    while (*t3 != 0xFFFF) {
+        s32 id = *t3++;
+        s32 a3 = *t3++;
 
-    {
-        do {
-            s32 a3;
-            s32 t2;
-
-            t3++;
-            a3 = *t3;
-            t3++;
-            /* FAKE: t2 copies a0_val ahead of the var_0[] test; with a0_val
-             * itself the load and the cursor step re-seat (score 9). */
-            t2 = a0_val;
-
-            if (var_0[a3] == 0) {
-                t7[a3].node.unk2 = t2;
-                var_0[a3] = 1;
-                arg0->node_by_id[t2] = &t7[a3];
-            } else {
-                *t5 = t7[a3];
-                t5->node.unk2 = t2;
-                t5->unk58 = (s32)&t7[a3];
-                arg0->node_by_id[t2] = t5;
-                t5++;
-            }
-
-            a0_val = *t3;
-        } while (a0_val != 0xFFFF);
+        if (var_0[a3] == 0) {
+            t7[a3].node.unk2 = id;
+            var_0[a3] = 1;
+            arg0->node_by_id[id] = &t7[a3];
+        } else {
+            *t5 = t7[a3];
+            t5->node.unk2 = id;
+            t5->unk58 = (s32)&t7[a3];
+            arg0->node_by_id[id] = t5;
+            t5++;
+        }
     }
-done:
     t5->unk58 = 0;
 }
 
