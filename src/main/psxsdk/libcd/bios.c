@@ -356,8 +356,7 @@ s32 CD_ready(s32 mode, u8 *result) {
  * result unconditionally (SOTN's is v1.77). */
 
 s32 CD_cw(u8 com, u8 *param, u8 *result, s32 async) {
-    /* FAKE: one counter for both loops, reused as SOTN's CD_cw reuses its i
-     * (Q51, Q53); separate counters miss the target's allocation: score 7. */
+    /* the counter of both loops, as SOTN's CD_cw reuses its i (Q51) */
     s32 i; /* SOTN: src/main/psxsdk/libcd/bios.c:292 @aa53500 */
 
     if (CD_debug > 1) {
@@ -546,9 +545,8 @@ static volatile u32 *g_cd_dma_ctrl = (u32 *)0x1F8010B8;
 
 /* SOTN: src/main/psxsdk/libcd/bios.c:459 @aa53500 */
 s32 CD_datasync(s32 mode) {
-    /* FAKE: one return value set on each of the three exits, as SOTN's
-     * CD_datasync reuses its ret (Q51, Q53); direct returns: 94 insns, not 91.
-     */
+    /* the return value, set on each of the three exits as in SOTN's
+     * CD_datasync (Q51) */
     s32 ret; /* SOTN: src/main/psxsdk/libcd/bios.c:460 @aa53500 */
 
     set_alarm(D_800162C0);
