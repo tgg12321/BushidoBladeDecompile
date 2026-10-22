@@ -844,11 +844,11 @@ void fighter_ResolveBodyOverlap(void) {
             } else {
                 gte_Lzc(tbl, &lzc_out);
                 {
-                    /* FAKE: two values -- the leading-zero count, then the
-                     * amount var_13 is shifted right by to index
-                     * g_sqrt_table_u8; as one expression `var_20 = 0x16 -
-                     * (lzc_out & ~1)` the count lands in $a0 (target: $v1 /
-                     * $v0): score 4 */
+                    /* Ruling 11 (reused local), as in src/main/87A0.c:
+                     * leading-zero count, then the table shift computed from
+                     * it in place; used to index g_sqrt_table_u8 and derive
+                     * the final shift. The one-expression form
+                     * `var_20 = 0x16 - (lzc_out & ~1)` scores 4. */
                     s32 var_20;
                     var_20 = lzc_out;
                     var_20 = 0x16 - (var_20 & ~1);
