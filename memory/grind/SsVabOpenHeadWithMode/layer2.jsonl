@@ -1,0 +1,1 @@
+{"func": "SsVabOpenHeadWithMode", "addr": "800880E8", "verdict": "PASS", "body_hash": "33afbedb6e915bd5", "body_kind": "c", "file": "main/psxsdk/libsnd/vs_vh", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T21:31:47Z", "head": "d4797ecd2", "notes": ""}

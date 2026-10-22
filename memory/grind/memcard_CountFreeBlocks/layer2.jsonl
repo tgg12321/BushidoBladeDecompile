@@ -1,0 +1,1 @@
+{"func": "memcard_CountFreeBlocks", "addr": "80037AA4", "verdict": "PASS", "body_hash": "598ca5c6e91ba27d", "body_kind": "c", "file": "main/memcard", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T21:30:02Z", "head": "d4797ecd2", "notes": ""}
