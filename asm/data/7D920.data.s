@@ -23034,13 +23034,3 @@ dlabel _ctype__plus_0x1
     /* 8C608 8009BE08 10101010 */ .word 0x10101010
     /* 8C60C 8009BE0C 20000000 */ .word 0x00000020
 enddlabel _ctype__plus_0x1
-
-nonmatching D_8009BE10
-
-dlabel D_8009BE10
-    /* 8C610 8009BE10 00000000 */ .word 0x00000000
-    /* 8C614 8009BE14 00000000 */ .word 0x00000000
-    /* 8C618 8009BE18 00000000 */ .word 0x00000000
-    /* 8C61C 8009BE1C 50730315 */ .word 0x15037350
-    /* 8C620 8009BE20 9C854000 */ .word 0x0040859C
-enddlabel D_8009BE10

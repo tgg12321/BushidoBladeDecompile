@@ -399,6 +399,7 @@ SECTIONS
         build/src/main/psxsdk/libc2/ctype.o(.data);
         build/src/main/psxsdk/libc2/memchr.o(.data);
         build/src/main/psxsdk/libc2/putchar.o(.data);
+        build/asm/data/7D920.data.o(.data);
         build/src/main/psxsdk/libc2/sprintf.o(.data);
         build/src/main/psxsdk/libc2/memmove.o(.data);
         build/src/main/psxsdk/libcard/c171.o(.data);
@@ -413,7 +414,6 @@ SECTIONS
         build/src/main/psxsdk/libcard/end.o(.data);
         build/src/main/psxsdk/libgpu/ext.o(.data);
         build/src/main/psxsdk/libgpu/prim.o(.data);
-        build/asm/data/7D920.data.o(.data);
         build/src/main/psxsdk/libgpu/sys.o(.data);
         build/src/main/psxsdk/libapi/c73.o(.data);
         build/src/main/psxsdk/libgte/geo_00.o(.data);

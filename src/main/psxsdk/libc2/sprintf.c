@@ -333,3 +333,8 @@ end:
     out[written] = 0;
     return written;
 }
+
+/* .data 0x8009BE10..0x8009BE1C: LIBC2.LIB SPRINTF's 12-byte .data, the
+ * all-clear conversion spec each '%' starts from. Defined after the
+ * function, so its body still sees only the declaration. */
+printf_info D_8009BE10 = {0};
