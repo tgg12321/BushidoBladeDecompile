@@ -2613,8 +2613,10 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
 }
 
 s16 *softbody_SetAnchorWeights(SVECTOR *a0, s32 a1, s16 *a2) {
-    /* FAKE: also the point index read from a2 in the second loop; its own local
-     * there: score 12 */
+    /* the point loop counter, then each point index read from a2, the way
+     * SOTN's EntityBladeMaster runs its i as a loop counter and then reads it
+     * from a table as a subscript (Q51) */
+    /* SOTN: src/st/are/e_blade_master.c:485 @db41b28 */
     s32 i;
     for (i = 0; i < a1; i++) {
         a0[i].pad = -256;
