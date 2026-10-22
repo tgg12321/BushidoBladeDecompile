@@ -96,9 +96,9 @@ typedef struct {
 /* SOTN: src/main/psxsdk/libcd/bios.c:80 @db41b28 */
 static volatile CD_intr Intr = {0};
 
-static inline void _memcpy(void *_dst, void *_src, u32 _size) {
+static inline void _memcpy(void *_dst, volatile void *_src, u32 _size) {
     char *pDst = (char *)_dst;
-    char *pSrc = (char *)_src;
+    volatile char *pSrc = _src;
     if (pDst == 0) {
         return;
     }
@@ -242,13 +242,14 @@ extern void Result;
 extern void Result_plus_0x8;
 extern void Result_plus_0x10;
 
-/* bios.c's command-timeout alarm (Sony's Alarm_t {int, int, char *}), armed
- * and polled by the command wait loops.
+/* bios.c's command-timeout alarm (Sony's Alarm_t {int, int, char *}; name is
+ * const here because the caller names are const rodata strings), armed and
+ * polled by the command wait loops.
  * SOTN: src/main/psxsdk/libcd/bios.c:24 @aa53500 */
 typedef struct {
-    s32 time;   /* 0x800F19B8: VSync(-1) deadline */
-    s32 count;  /* 0x800F19BC: poll count */
-    char *name; /* 0x800F19C0: caller name for the timeout report */
+    s32 time;         /* 0x800F19B8: VSync(-1) deadline */
+    s32 count;        /* 0x800F19BC: poll count */
+    const char *name; /* 0x800F19C0: caller name for the timeout report */
 } Alarm_t;
 
 extern Alarm_t Alarm;
@@ -257,7 +258,7 @@ extern Alarm_t Alarm;
  * Alarm_t Alarm` only through a non-volatile `((Alarm_t *)&Alarm)->` view;
  * Alarm is declared non-volatile above.
  * SOTN: src/main/psxsdk/libcd/bios.c:95 @aa53500 */
-static inline void set_alarm(char *name) {
+static inline void set_alarm(const char *name) {
     Alarm.time = VSync(-1) + 0x3C0;
     Alarm.count = 0;
     Alarm.name = name;
