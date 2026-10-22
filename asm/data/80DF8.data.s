@@ -3,9 +3,10 @@
 .section .data, "wa"
     .align 0
 
-/* The .data from 0x800905F8 (after 2B344.c's .data head) to 0x80094CFC
- * (31548.c's .data), still asm: the rest of 2B344.c's .data
- * (g_gpu_last_fog_ot_index .. D_80094AEC) and 309CC.c's
+/* The .data from 0x800905F8 (after 2B344.c's .data head) to 0x80094C68
+ * (309CC.c's D_80094C68), still asm: the rest of 2B344.c's .data
+ * (g_gpu_last_fog_ot_index .. D_80094AEC) and 309CC.c's head
+ * (g_gpu_draw_move_table .. D_80094B96)
  * (docs/foundation/backlog.tsv data-split). */
 
 nonmatching g_gpu_last_fog_ot_index
@@ -4766,82 +4767,3 @@ dlabel D_80094B9E
     /* 85464 80094C64 */ .short 0x0000
     /* 85466 80094C66 */ .short 0x0000
 enddlabel D_80094B9E
-
-nonmatching D_80094C68
-
-dlabel D_80094C68
-    /* 85468 80094C68 */ .short 0x107A
-    /* 8546A 80094C6A */ .short 0x1000
-    /* 8546C 80094C6C */ .short 0x0F5C
-    /* 8546E 80094C6E */ .short 0x107A
-    /* 85470 80094C70 */ .short 0x1000
-    /* 85472 80094C72 */ .short 0x0F5C
-    /* 85474 80094C74 */ .short 0x1000
-    /* 85476 80094C76 */ .short 0x1000
-    /* 85478 80094C78 */ .short 0x1000
-    /* 8547A 80094C7A */ .short 0x1028
-    /* 8547C 80094C7C */ .short 0x10A3
-    /* 8547E 80094C7E */ .short 0x1000
-    /* 85480 80094C80 */ .short 0x1000
-    /* 85482 80094C82 */ .short 0x1000
-    /* 85484 80094C84 */ .short 0x1000
-    /* 85486 80094C86 */ .short 0x1051
-    /* 85488 80094C88 */ .short 0x1000
-    /* 8548A 80094C8A */ .short 0x0F85
-    /* 8548C 80094C8C */ .short 0x1051
-    /* 8548E 80094C8E */ .short 0x1000
-    /* 85490 80094C90 */ .short 0x0F85
-    /* 85492 80094C92 */ .short 0x1000
-    /* 85494 80094C94 */ .short 0x1000
-    /* 85496 80094C96 */ .short 0x1051
-    /* 85498 80094C98 */ .short 0x0F0A
-    /* 8549A 80094C9A */ .short 0x1000
-    /* 8549C 80094C9C */ .short 0x1051
-    /* 8549E 80094C9E */ .short 0x1000
-    /* 854A0 80094CA0 */ .short 0x107A
-    /* 854A2 80094CA2 */ .short 0x1000
-    /* 854A4 80094CA4 */ .short 0x1000
-    /* 854A6 80094CA6 */ .short 0x107A
-    /* 854A8 80094CA8 */ .short 0x1000
-    /* 854AA 80094CAA */ .short 0x0F5C
-    /* 854AC 80094CAC */ .short 0x1000
-    /* 854AE 80094CAE */ .short 0x1000
-    /* 854B0 80094CB0 */ .short 0x1000
-    /* 854B2 80094CB2 */ .short 0x1028
-    /* 854B4 80094CB4 */ .short 0x10A3
-    /* 854B6 80094CB6 */ .short 0x1000
-    /* 854B8 80094CB8 */ .short 0x1000
-    /* 854BA 80094CBA */ .short 0x1051
-    /* 854BC 80094CBC */ .short 0x1000
-    /* 854BE 80094CBE */ .short 0x0F85
-    /* 854C0 80094CC0 */ .short 0x1000
-    /* 854C2 80094CC2 */ .short 0x1000
-    /* 854C4 80094CC4 */ .short 0x1051
-    /* 854C6 80094CC6 */ .short 0x0F0A
-    /* 854C8 80094CC8 */ .short 0x1000
-    /* 854CA 80094CCA */ .short 0x1051
-    /* 854CC 80094CCC */ .short 0x1000
-    /* 854CE 80094CCE */ .short 0x1000
-    /* 854D0 80094CD0 */ .short 0x1000
-    /* 854D2 80094CD2 */ .short 0x1000
-    /* 854D4 80094CD4 */ .short 0x1000
-    /* 854D6 80094CD6 */ .short 0x1000
-    /* 854D8 80094CD8 */ .short 0x1000
-    /* 854DA 80094CDA */ .short 0x1000
-    /* 854DC 80094CDC */ .short 0x1000
-    /* 854DE 80094CDE */ .short 0x1000
-    /* 854E0 80094CE0 */ .short 0x1000
-    /* 854E2 80094CE2 */ .short 0x1000
-    /* 854E4 80094CE4 */ .short 0x1000
-    /* 854E6 80094CE6 */ .short 0x1000
-    /* 854E8 80094CE8 */ .short 0x1000
-    /* 854EA 80094CEA */ .short 0x1000
-    /* 854EC 80094CEC */ .short 0x1000
-    /* 854EE 80094CEE */ .short 0x1000
-    /* 854F0 80094CF0 */ .short 0x1000
-    /* 854F2 80094CF2 */ .short 0x1000
-    /* 854F4 80094CF4 */ .short 0xFFFF
-    /* 854F6 80094CF6 */ .short 0x0000
-    /* 854F8 80094CF8 */ .short 0x0000
-    /* 854FA 80094CFA */ .short 0x0000
-enddlabel D_80094C68
