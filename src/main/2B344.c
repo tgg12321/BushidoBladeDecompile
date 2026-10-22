@@ -1839,8 +1839,8 @@ void func_8003E6A0(s32 arg0, s32 arg1) {
 }
 
 extern s32 D_800A322C;
-extern s32 D_800927C0[64][32];
-extern s32 D_80090740[64][32];
+extern s32 D_800927C0[65][32];
+extern s32 D_80090740[65][32];
 extern s32 D_80094840[];
 /* func_8003E6D8's buffer of the queued Unk800A6690Rec */
 extern Unk800A6690Rec *D_800A7EF0[];
@@ -2749,8 +2749,8 @@ void softbody_RebaseObject(Unk80045878Obj *a0, s32 a1) {
 }
 
 /* .data 0x8008F220..0x800905F8, the head of this file's .data (28708.c's
- * .data precedes; g_gpu_last_fog_ot_index .. D_80094AEC in
- * asm/data/80DF8.data.s follow):
+ * .data precedes; g_gpu_last_fog_ot_index .. D_80094AEC in the data-only
+ * d_80DF8.c follow):
  * the fight command streams D_8008F220 .. D_8009000C (18 byte streams of
  * 188..224 bytes; D_8008F220 also fills the unused slots) and their pointer
  * table D_800900EC, which fight_InitCommandStream indexes. Only that table

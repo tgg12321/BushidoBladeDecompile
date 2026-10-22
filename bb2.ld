@@ -344,7 +344,8 @@ SECTIONS
         build/src/main/28514.o(.data);
         build/src/main/28708.o(.data);
         build/src/main/2B344.o(.data);
-        build/asm/data/80DF8.data.o(.data);
+        build/src/main/d_80DF8.o(.data);
+        build/asm/data/852F4.data.o(.data);
         build/src/main/309CC.o(.data);
         build/src/main/31548.o(.data);
         build/src/main/31CFC.o(.data);

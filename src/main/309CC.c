@@ -477,7 +477,7 @@ void func_80040CB8(Unk80045878Obj *arg0) {
 }
 
 /* .data 0x80094C68..0x80094CFC, the end of this file's .data (the rest,
- * g_gpu_draw_move_table .. D_80094B96, is still asm/data/80DF8.data.s;
+ * g_gpu_draw_move_table .. D_80094B96, is still asm/data/852F4.data.s;
  * 31548.c's D_80094CFC follows): D_80094C68, the position scales
  * func_800408F8 counts up to the -1 at [70] and indexes (9F9C.c reads it as
  * size_scale); three zero entries follow the -1. Defined after every
