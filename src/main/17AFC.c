@@ -795,9 +795,10 @@ void fighter_ResolveBodyOverlap(void) {
     s32 dy;
     s32 dz;
     s32 var_12;
-    /* FAKE: two values -- the squared distance, then its square root (clamped
-     * to 1); a separate squared-distance local reorders the copy and the r*r
-     * test (score 7) */
+    /* the squared distance, then its square root in place (clamped to 1),
+     * as SOTN's cloaked knight takes `distance = SquareRoot0(distance)`
+     * (Q51) */
+    /* SOTN: src/st/nz1/e_cloaked_knight.c:83 @db41b28 */
     s32 var_13;
     /* FAKE: two values -- the gte_Lzc input copy of the squared distance,
      * then the table byte; a fresh copy local (or var_13 itself) takes $v1, not
@@ -2546,8 +2547,10 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
         s32 ret;
         s32 neg_threshold = -threshold;
         s32 sq;
-        /* FAKE: two values -- r_sq - sq, then its square root (the sphere's
-         * half-chord along z); a separate root local: score 3 (Ruling 11) */
+        /* r_sq - sq, then its square root in place (the sphere's half-chord
+         * along z), as SOTN's cloaked knight takes
+         * `distance = SquareRoot0(distance)` (Q51) */
+        /* SOTN: src/st/nz1/e_cloaked_knight.c:83 @db41b28 */
         s32 rad;
 
         x = obj->unk100[0].x;
@@ -3205,8 +3208,10 @@ s32 math_TestPreparedSegmentSphere(
 
     {
         s32 y;
-        /* FAKE: two values -- r_sq - sq, then its square root (the sphere's
-         * half-chord along z); a separate root local: score 21 (Ruling 11) */
+        /* r_sq - sq, then its square root in place (the sphere's half-chord
+         * along z), as SOTN's cloaked knight takes
+         * `distance = SquareRoot0(distance)` (Q51) */
+        /* SOTN: src/st/nz1/e_cloaked_knight.c:83 @db41b28 */
         s32 rad;
         s32 sp_var;
         s32 min_z;
