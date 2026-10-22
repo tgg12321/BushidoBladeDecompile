@@ -11,68 +11,15 @@
  * bytes at p->unk17 are copied to D_80106A50.frec20. */
 void func_80034F88(void) {
     Unk8009BD24Block *p;
-    s32 v;
-    s32 c;
-    s32 u;
+    s32 i;
 
     p = func_80077D00();
-    {
-        /* FAKE: block 0's own address object (a second handle on
-         * D_80106A50.flags) for register-allocation priority; GCC 2.7.2 gives
-         * one hard register per allocno, so blocks 1/2 need their own. */
-        u8 *q = &D_80106A50.flags;
-
-        u = *q;
-        u = u & 0xF8;
-        *q = u;
-        /* FAKE: cse2 value invalidator: stops cse2 forwarding the sb into the
-         * following lbu; without it: score 27. */
-        u = 0;
-        u = *q;
-        c = p->unk20_0;
-        if (c) {
-            c = u | 1;
-        } else {
-            c = u;
-        }
-        *q = c;
-        {
-            /* FAKE: the address object for flag blocks 1 and 2 (one hard
-             * register per allocno, no live-range splitting); q reused or the
-             * global direct: score 39. */
-            u8 *r = &D_80106A50.flags;
-
-            v = *r;
-            /* FAKE: bits 1 and 2 read at their word position (<< 1 / << 2; c is
-               only tested); read plain, each extract adds an srl: score 4;
-               tested directly: 35. */
-            c = p->unk20_1 << 1;
-            if (c) {
-                c = v | 2;
-            } else {
-                c = v;
-            }
-            *r = c;
-
-            r = &D_80106A50.flags;
-            v = *r;
-            c = p->unk20_2 << 2;
-            if (c) {
-                c = v | 4;
-            } else {
-                c = v;
-            }
-            *r = c;
-        }
-
-        /* FAKE: the copy loop's counter is staged through the dead pointer q;
-         * the loop-weighted references lift its allocation priority so it
-         * takes $v1 and block 0's value lands in $a0, as in the target. No
-         * instruction is added; a separate s32 counter: score 15. */
-        for (q = 0; (s32)q < 3; q++) {
-            c = p->unk17[(s32)q];
-            D_80106A50.frec20[(s32)q] = c;
-        }
+    D_80106A50.flags &= ~7;
+    D_80106A50.flags |= p->unk20_0 ? 1 : 0;
+    D_80106A50.flags |= p->unk20_1 ? 2 : 0;
+    D_80106A50.flags |= p->unk20_2 ? 4 : 0;
+    for (i = 0; i < 3; i++) {
+        D_80106A50.frec20[i] = p->unk17[i];
     }
 }
 
@@ -163,11 +110,8 @@ void func_8003504C(void) {
 void func_80035280(void) {
     Unk8009BD24Block *p;
     u8 *src;
-    /* FAKE: one hoisted pointer to the three 8-byte clock records
-     * (D_80106A50.times) gives the target's single $a2 record cursor; indexing
-     * D_80106A50.times[i] at each use creates a second address movable
-     * (score 24). */
-    TimeRec *var_2;
+    /* the three 8-byte clock records */
+    TimeRec *times;
     s32 i;
 
     p = func_80077D00();
@@ -181,20 +125,20 @@ void func_80035280(void) {
         p->unk1D[i] = *src;
         src++;
     }
-    var_2 = D_80106A50.times;
+    times = D_80106A50.times;
     for (i = 0; i < 3; i++) {
         u8 var_4;
         u8 var_5;
         u8 var_6;
         s32 t;
 
-        var_4 = var_2[i].unk_4 / 1800;
+        var_4 = times[i].unk_4 / 1800;
         p->unk21[i].unk0 = var_4;
-        var_5 = (var_2[i].unk_4 / 30) % 60;
+        var_5 = (times[i].unk_4 / 30) % 60;
         p->unk21[i].unk1 = var_5;
-        var_6 = (var_2[i].unk_4 % 30) * 100 / 30;
+        var_6 = (times[i].unk_4 % 30) * 100 / 30;
         p->unk21[i].unk2 = var_6;
-        t = var_2[i].unk_0;
+        t = times[i].unk_0;
         p->unk21[i].unk3 = t;
     }
 }
