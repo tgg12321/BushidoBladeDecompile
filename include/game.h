@@ -581,6 +581,13 @@ typedef struct {
     s16 y;
 } Unk8009BC94Record;
 
+/* 0x8009BC40: one select-grid entry; value indexes D_8009BC7C's flags and
+ * picks the entry's sprite and sound. */
+typedef struct SelectEntryE534 {
+    u8 value;
+    u8 unk1;
+} SelectEntryE534;
+
 /* 0x8009B450: two {x, y} screen points (.short 0x01A2,0x0024,0x01F7,0x0037).
  * func_8005D814 uses x as a TILE's x0 (and w = 0x238 - x) and y as its y0 and
  * the text row. */

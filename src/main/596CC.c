@@ -2586,7 +2586,7 @@ s32 D_800A372C;
 s32 D_800A3900;
 
 /* .data 0x8009BC04..0x8009BC1C, this file's whole .data (51268.c's
- * D_8009BBFC ends at 0x8009BC04, 5ED34.c's D_8009BC1C follows): the list
+ * D_8009BBFC ends at 0x8009BC04, d_8C41C.c's D_8009BC1C follows): the list
  * menu's state, rows 0-7 switched on, row mask 0xBF, then the eight option
  * rows {state, mode}. Defined after every function, so no body sees a
  * definition where it saw an extern. */

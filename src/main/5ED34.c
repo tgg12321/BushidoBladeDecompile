@@ -13,13 +13,6 @@
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 extern void AddPrim(void *, void *);
 
-typedef struct SelectEntryE534 {
-    u8 value;
-    u8 unk1;
-} SelectEntryE534;
-
-extern SelectEntryE534 D_8009BC40[][6];
-extern u8 D_8009BC7C[];
 extern u8 D_800A32E8;
 extern u8 D_800A32E9;
 extern RECT D_800A32EC;
@@ -214,7 +207,6 @@ s32 func_8006EA28(Unk8006EA28Rec *a0) {
     return a0->unk_00.unk_04;
 }
 
-extern void (*D_8009BC1C[7])(Unk8006EACCRec *);
 void func_8006EC0C(void);
 void func_8006F528(Unk8006EACCRec *);
 
@@ -278,8 +270,6 @@ void func_8006EC0C(void) {
     }
 }
 
-extern u8 D_8009BC7C[];
-extern SelectEntryE534 D_8009BC40[][6];
 extern u8 D_800A32E8;
 extern u8 D_800A32E9;
 extern RECT D_800A32F4;
@@ -1106,8 +1096,6 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
     func_80073200(arg0);
 }
 
-extern u8 D_8009BC38[];
-
 void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
     /* several values of one kind, a sprite-sheet header table:
      * D_800A35A8->unk_74 (loaded at entry and again in the selected-slot arm)
@@ -1380,8 +1368,6 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
         }
     }
 }
-
-extern u8 D_8009BC7C[];
 
 s32 func_80071C20(void) {
     s32 v1;

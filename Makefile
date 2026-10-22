@@ -149,7 +149,7 @@ PSYQ_LIBRARY_FILES := main/psxsdk/libcomb/comb main/psxsdk/libgpu/sys main/psxsd
 # A file with no code whose small initialized objects the original keeps in .data (below the
 # .sdata range) is built without maspsx -G8 too. Derived by tools/psyq_library_files.py from the
 # link map and the objects' symbol tables, never hand-listed; `--check` verifies it.
-DATA_ONLY_NO_SDATA_FILES := main/psxsdk/libspu/s_m
+DATA_ONLY_NO_SDATA_FILES := main/d_8C41C main/psxsdk/libspu/s_m
 
 # -- Per-file lh expansion opt-in --
 # ASPSX expands lb→lbu+sll+sra and lh→lhu+sll+sra in certain contexts.

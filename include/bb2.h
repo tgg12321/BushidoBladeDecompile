@@ -66,6 +66,13 @@ extern u8 *D_800A36A0;
 extern MATRIX D_800FF558;
 
 extern Unk8009BC94Record D_8009BC94[][6];
+/* The SEL.BIN menu's tables (d_8C41C.c, read by 5ED34.c): the per-mode
+ * update handlers (func_8006EACC), menu_UpdateRowCursors' row values, the
+ * entry grid and its per-value flags. */
+extern void (*D_8009BC1C[7])(Unk8006EACCRec *);
+extern u8 D_8009BC38[];
+extern SelectEntryE534 D_8009BC40[][6];
+extern u8 D_8009BC7C[];
 /* Table of 4 sprite-sheet headers, 12 bytes each (func_8005E098,
  * func_8005E54C). */
 extern Unk8009B0E0Record D_8009B398[4];
