@@ -33,7 +33,9 @@ Windows Python. Usage (python tools/codex_worker.py ...):
   commit <item> --message-file m.txt              harvest -> THE item commit (replaces any previous)
   rebase <item> [--continue|--abort]              onto main, in the trusted tree; conflicts left there
   review <item> --kind K --verdict V --agent ID --summary S
-  layer2 <item> <func> --verdict-file v.json --reviewer ID --scope S   fold the layer-2 record in
+  layer2 <item> <func> --verdict-file v.json --reviewer ID --scope S [--notes N] [--message-file m.txt]
+                                                  record a layer-2 PASS/FAIL/NEEDS_USER (no item commit
+                                                  yet: a FAIL/NEEDS_USER becomes a ledger-only commit)
   land <item> [--dry-run] [--no-push]
   cleanup <item> [--drop]                         remove both worktrees + the branch (after landing)
 Exit: 0 ok, 2 refused, 3 bridge blocked/failed, 4 audit violation, 5 lock busy, 6 rebase conflict,
@@ -938,27 +940,15 @@ def cmd_commit(a):
           + ", ".join(kinds))
 
 
-def cmd_layer2(a):
-    """Record the cheat-reviewer's layer-2 verdict (completion-bar item 6) for a function whose body
-    the item changes, in the TRUSTED tree on the reviewed body, and fold the ledger line into the item
-    commit. The review key ignores the ledger, so the recorded reviews stay valid."""
-    main, scratch, trusted, branch = layout(a.item)
-    if not (TOKEN.match(a.func) and TOKEN.match(a.reviewer)):
-        refuse("func / reviewer must be plain identifiers")
-    if pin_file(main).exists():
-        refuse("a Codex run is live")
-    verify_trusted(main, trusted, branch)
-    codex_idle(main, scratch)
-    scratch_committed(main, a.item, scratch, branch)
-    base, tip = single_commit(main, branch)
-    key = diff_key(main, tip)
-    f = reviews_file(main, a.item)
-    recs = [json.loads(l) for l in f.read_text(encoding="utf-8").splitlines() if l.strip()] if f.exists() else []
-    cut = max((i for i, r in enumerate(recs) if r.get("kind") == "__invalidated__"), default=-1)
-    if not any(r.get("key") == key and r["kind"] == "cheat-reviewer" and r["verdict"] == "PASS"
-               and r["agent"] == a.reviewer for r in recs[cut + 1:]):
-        refuse(f"no cheat-reviewer PASS by {a.reviewer} recorded on this diff (key {key}); `review` it first")
-    vf = Path(a.verdict_file).resolve()
+VERDICTS = ("PASS", "FAIL", "NEEDS_USER")                   # engine/layer2.VERDICTS
+# --notes reaches bash through wteng.ps1, which quotes only tokens that contain whitespace
+NOTES_OK = re.compile(r"^[A-Za-z0-9_.,:/+=][A-Za-z0-9_.,:/+= -]*$")
+LEDGER_FILE = re.compile(r"^memory/grind/([^/]+)/layer2\.jsonl$")
+
+
+def load_verdict(vf, func):
+    """The reviewer's JSON verdict (any decision), wrapped in prose or not. Refuses unless it rules on
+    `func` with a 16-hex body_hash."""
     text = vf.read_text(encoding="utf-8")
     verdict = None
     for cand in [text] + re.findall(r"\{.*\}", text, re.S):   # reviewers may wrap the JSON in prose
@@ -970,18 +960,168 @@ def cmd_layer2(a):
     if not isinstance(verdict, dict):
         refuse(f"{vf} holds no JSON verdict")
     # the cheat-reviewer schema (and engine/layer2.read_verdict_file) carry the ruling in `decision`
-    if (verdict.get("decision") != "PASS" or verdict.get("function") != a.func
+    if (verdict.get("decision") not in VERDICTS or verdict.get("function") != func
             or not re.fullmatch(r"[0-9a-f]{16}", str(verdict.get("body_hash", "")))):
-        refuse(f"the verdict must be decision PASS for function {a.func} with a body_hash")
+        refuse(f"the verdict must be a decision ({'/'.join(VERDICTS)}) for function {func} with a body_hash")
+    return verdict
+
+
+def item_commits(main, branch):
+    """0 (the branch is still at its base) or 1; anything else is refused."""
+    base = git("merge-base", "main", branch, cwd=main)
+    n = int(git("rev-list", "--count", f"{base}..{branch}", cwd=main))
+    if n > 1:
+        refuse(f"{branch} must carry at most ONE commit on top of main (has {n})")
+    return n
+
+
+def engine_layer2_record(main, trusted, func, rel, verdict, reviewer, scope, notes):
+    cmd = ["pwsh", "-NoProfile", "-File", str(main / "tools" / "wteng.ps1"), str(trusted), "layer2", "record",
+           func, "--verdict-file", rel, "--verdict", verdict["decision"], "--expect-hash", verdict["body_hash"],
+           "--reviewer", reviewer, "--scope", scope]
+    if notes:
+        cmd += ["--notes", notes]
+    run_checked(cmd, f"layer2 record {func} {verdict['decision']}")
+
+
+def func_ledger_records(main, rev, func):
+    """Every layer-2 record for `func` at `rev` (its live ledger and any _completed/ archive)."""
+    out = []
+    for p in (f"memory/grind/_completed/{func}/layer2.jsonl", f"memory/grind/{func}/layer2.jsonl"):
+        for l in blob_at(main, rev, p).decode("utf-8", "replace").splitlines():
+            if not l.strip():
+                continue
+            try:
+                out.append(json.loads(l))
+            except ValueError:
+                refuse(f"{p} at {rev[:9]} holds a malformed line")
+    return out
+
+
+def read_reviews(f):
+    return [json.loads(l) for l in f.read_text(encoding="utf-8").splitlines() if l.strip()] if f.exists() else []
+
+
+def pass_after_last_veto(records, recs, mine, verdict_sha1):
+    """A PASS may not re-assert itself over a later FAIL / NEEDS_USER: refuse a verdict JSON already
+    in the ledger, and a `review` PASS (indices `mine` in the reviews file `recs`) that does not come
+    after the ledger's last non-PASS record. A veto `layer2` recorded for this item is ordered by its
+    position in the reviews file; one recorded elsewhere, by its date against the review's ts."""
+    if any(r.get("verdict_sha1") == verdict_sha1 for r in records):
+        refuse("this verdict JSON is already recorded in the ledger; a PASS after a FAIL needs a fresh review")
+    vetoes = [r for r in records if r.get("verdict") != "PASS"]
+    if not vetoes:
+        return
+    last = vetoes[-1]
+    pos = [i for i, r in enumerate(recs) if r.get("verdict") in ("FAIL", "NEEDS_USER")
+           and last.get("verdict_sha1") and r.get("verdict_sha1") == last.get("verdict_sha1")]
+    if pos:
+        ok = max(mine) > max(pos)
+    else:
+        try:
+            veto = dt.datetime.strptime(str(last.get("date")), "%Y-%m-%dT%H:%M:%SZ").replace(
+                tzinfo=dt.timezone.utc)
+        except ValueError:
+            refuse(f"the ledger's last {last.get('verdict')} carries no readable date")
+
+        def when(r):
+            try:
+                return dt.datetime.fromisoformat(str(r.get("ts")))
+            except ValueError:
+                return None
+        times = [t for t in (when(recs[i]) for i in mine) if t and t.tzinfo]
+        ok = bool(times) and max(times) > veto
+    if not ok:
+        refuse(f"the ledger's last record is a {last.get('verdict')} ({last.get('date')}, "
+               f"{last.get('reviewer')}), later than this reviewer's `review` PASS: a PASS over it "
+               "needs a fresh cheat-reviewer on the current body")
+
+
+def completed_pass(main, rev, func, body_hash):
+    """True when recording a FAIL / NEEDS_USER on `body_hash` would revoke a completion
+    (engine/departures.py): `func` is not on the queue at `rev` and its latest record on that body is
+    a PASS. Fails closed: an unreadable queue counts as `func` being off it."""
+    try:
+        items = json.loads(blob_at(main, rev, "engine/queue.json"))["items"]
+        if any(isinstance(it, dict) and it.get("func") == func for it in items):
+            return False
+    except (ValueError, KeyError, TypeError):
+        pass
+    on = [r for r in func_ledger_records(main, rev, func) if r.get("body_hash") == body_hash]
+    return bool(on) and on[-1].get("verdict") == "PASS"
+
+
+def cmd_layer2(a):
+    """Record a cheat-reviewer's layer-2 verdict (completion-bar item 6) -- PASS, FAIL or NEEDS_USER --
+    through the engine's `layer2 record`, in the TRUSTED tree, and fold the ledger line into the item
+    commit (the review key ignores the ledger, so recorded reviews stay valid). With no item commit
+    yet, a FAIL / NEEDS_USER becomes a ledger-only commit (--message-file) that `land` lands alone, so
+    main's ledger never keeps a PASS a reviewer has since failed. A PASS needs the item commit that
+    carries the reviewed body and a `review` PASS by the same reviewer on its diff."""
+    main, scratch, trusted, branch = layout(a.item)
+    if not (TOKEN.match(a.func) and TOKEN.match(a.reviewer)):
+        refuse("func / reviewer must be plain identifiers")
+    if a.notes and not NOTES_OK.match(a.notes):
+        refuse("--notes may hold only letters, digits, spaces and _.,:/+=- (default: the verdict's summary)")
+    if pin_file(main).exists():
+        refuse("a Codex run is live")
+    vf = Path(a.verdict_file).resolve()
+    verdict = load_verdict(vf, a.func)
+    decision = verdict["decision"]
+    msg = Path(a.message_file).resolve() if a.message_file else None
+    if msg and not msg.is_file():
+        refuse(f"no message file {msg}")
+    verify_trusted(main, trusted, branch)
+    codex_idle(main, scratch)
+    scratch_committed(main, a.item, scratch, branch)
+    n = item_commits(main, branch)
+    key = None
+    f = reviews_file(main, a.item)
+    recs = read_reviews(f)
+    tip = git("rev-parse", branch, cwd=main)
+    vsha = hashlib.sha1(vf.read_bytes()).hexdigest()
+    if n == 0:
+        if decision == "PASS":
+            refuse("a PASS lands with the reviewed code it covers: `commit` the item first")
+        if not msg:
+            refuse("no item commit yet: pass --message-file to create the ledger-only commit")
+        if completed_pass(main, tip, a.func, verdict["body_hash"]):
+            refuse(f"{a.func} is off the queue and its latest layer-2 record on body {verdict['body_hash']} "
+                   f"is a PASS: this {decision} un-completes it (engine/departures.py), so it must land with "
+                   "a `queue reopen` in the same commit -- through the manual lane (decomp-manual) or the "
+                   "owner, not codex_worker")
+    else:
+        key = diff_key(main, tip)
+        if decision == "PASS":
+            cut = max((i for i, r in enumerate(recs) if r.get("kind") == "__invalidated__"), default=-1)
+            mine = [i for i, r in enumerate(recs) if i > cut and r.get("key") == key
+                    and r.get("kind") == "cheat-reviewer" and r.get("verdict") == "PASS"
+                    and r.get("agent") == a.reviewer]
+            if not mine:
+                refuse(f"no cheat-reviewer PASS by {a.reviewer} recorded on this diff (key {key}); "
+                       "`review` it first")
+            pass_after_last_veto(func_ledger_records(main, tip, a.func), recs, mine, vsha)
+        elif a.func not in changed_bodies(main, tip, {a.func}):
+            refuse(f"this item does not change {a.func}'s body, so its {decision} could never be cleared "
+                   "here: record it in an item of its own (with no item commit it is a ledger-only commit)")
+    if decision != "PASS":
+        # on the key, the review gate blocks this diff: a FAIL for good, a NEEDS_USER until a later
+        # cheat-reviewer PASS (after the owner's ruling); its position orders later PASSes
+        f.parent.mkdir(parents=True, exist_ok=True)
+        with f.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps({"ts": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
+                                 "kind": "cheat-reviewer", "verdict": decision, "key": key, "commit": tip,
+                                 "agent": a.reviewer, "func": a.func, "body_hash": verdict["body_hash"],
+                                 "verdict_sha1": vsha,
+                                 "summary": f"layer-2 {decision} on {a.func} body {verdict['body_hash']}"})
+                     + "\n")
     reset_trusted(main, trusted)
     rel = f"tmp/codex/verdict-{a.func}.json"
     (trusted / rel).parent.mkdir(parents=True, exist_ok=True)
     (trusted / rel).write_bytes(vf.read_bytes())
     ledger = f"memory/grind/{a.func}/layer2.jsonl"
     old = (trusted / ledger).read_bytes() if (trusted / ledger).exists() else b""
-    run_checked(["pwsh", "-NoProfile", "-File", str(main / "tools" / "wteng.ps1"), str(trusted), "layer2",
-                 "record", a.func, "--verdict-file", rel, "--reviewer", a.reviewer, "--scope", a.scope],
-                f"layer2 record {a.func}")
+    engine_layer2_record(main, trusted, a.func, rel, verdict, a.reviewer, a.scope, a.notes)
     changed = sorted(e[3:] for e in git("status", "--porcelain", "-z", "-uall", cwd=trusted).split("\0") if e)
     copy = f"memory/grind/{a.func}/layer2_verdicts/{hashlib.sha1(vf.read_bytes()).hexdigest()}.json"
     new = (trusted / ledger).read_bytes() if (trusted / ledger).exists() else b""
@@ -991,23 +1131,26 @@ def cmd_layer2(a):
     except ValueError:
         added = []
     if (extra or ledger not in changed or not new.startswith(old) or len(added) != 1
-            or added[0].get("verdict") != "PASS" or added[0].get("body_hash") != verdict["body_hash"]
-            or added[0].get("func") != a.func
+            or added[0].get("verdict") != decision or added[0].get("body_hash") != verdict["body_hash"]
+            or added[0].get("func") != a.func or added[0].get("reviewer") != a.reviewer
             or (copy in changed and (trusted / copy).read_bytes() != vf.read_bytes())):
         reset_trusted(main, trusted)
         refuse(f"layer2 record changed more than {ledger} (+ its verdict copy): {changed}")
     git("add", "--", *[c for c in (ledger, copy) if c in changed], cwd=trusted)
-    r = subprocess.run(["git", "commit", "--amend", "--no-edit", "-q"], cwd=str(trusted), capture_output=True,
-                       text=True, env=clean_env())
+    how = ["-F", str(msg)] if msg else ["--no-edit"]
+    r = subprocess.run(["git", "commit", "-q", *(["--amend"] if n else []), *how], cwd=str(trusted),
+                       capture_output=True, text=True, env=clean_env())
     print((r.stdout + r.stderr).strip())
     if r.returncode != 0:
-        refuse("the repo hooks rejected the amend (output above)")
+        reset_trusted(main, trusted)
+        refuse("the repo hooks rejected the commit (output above)")
     tip2 = git("rev-parse", "HEAD", cwd=trusted)
-    if diff_key(main, tip2) != key:
+    if key is not None and diff_key(main, tip2) != key:
         refuse("internal: the ledger amend changed the review key")
     recreate_scratch(main, a.item, scratch, tip2)
-    print(f"codex_worker: layer-2 PASS for {a.func} recorded in {tip2[:9]} (review key unchanged {key}); "
-          "scratch re-created at it")
+    what = "folded into the item commit" if n else "as a ledger-only commit (`land` it)"
+    print(f"codex_worker: layer-2 {decision} for {a.func} (body {verdict['body_hash']}) recorded {what} "
+          f"{tip2[:9]}; scratch re-created at it")
 
 
 def reviews_file(main, item):
@@ -1031,21 +1174,162 @@ def cmd_review(a):
 def review_gate(main, item, tip):
     kinds, paths = required_kinds(main, tip)
     if not kinds:
-        return kinds, paths, ["the item commit carries no reviewable change (only ledger lines)"]
+        return kinds, paths, []     # ledger-only: ledger_problems decides
     key = diff_key(main, tip)
     f = reviews_file(main, item)
     recs = [json.loads(l) for l in f.read_text(encoding="utf-8").splitlines() if l.strip()] if f.exists() else []
     cut = max((i for i, r in enumerate(recs) if r.get("kind") == "__invalidated__"), default=-1)
     mine = [r for r in recs[cut + 1:] if r.get("key") == key]
     problems = []
-    fails = [r for r in mine if r["verdict"] != "PASS"]
+    # FAIL blocks the key for good; NEEDS_USER until a later PASS of its kind (the owner ruled)
+    fails = [r for i, r in enumerate(mine) if r["verdict"] != "PASS" and not (
+        r["verdict"] == "NEEDS_USER"
+        and any(q["kind"] == r["kind"] and q["verdict"] == "PASS" for q in mine[i + 1:]))]
     if fails:
         problems.append("FAIL recorded on this exact diff (a split verdict is a FAIL): "
-                        + "; ".join(f"{r['kind']} {r['agent']}" for r in fails))
+                        + "; ".join(f"{r['kind']} {r['agent']} {r['verdict']}" for r in fails))
     missing = [k for k in kinds if not any(r["kind"] == k and r["verdict"] == "PASS" for r in mine)]
     if missing:
         problems.append("no PASS on this exact diff from: " + ", ".join(missing))
     return kinds, paths, problems
+
+
+def blob_at(main, rev, path):
+    r = subprocess.run(["git", "cat-file", "blob", f"{rev}:{path}"], cwd=str(main), capture_output=True,
+                       env=clean_env())
+    return r.stdout if r.returncode == 0 else b""
+
+
+def ledger_changes(main, rev):
+    """{func: (ledger before, ledger after)} for each memory/grind/<func>/layer2.jsonl `rev` changes."""
+    out = {}
+    for p in git("diff", "--no-renames", "--name-only", "-z", f"{rev}^", rev, cwd=main).split("\0"):
+        m = LEDGER_FILE.match(p)
+        if m:
+            out[m.group(1)] = (blob_at(main, f"{rev}^", p), blob_at(main, rev, p))
+    return out
+
+
+def added_records(old, new):
+    """The records `new` appends to `old`, or None when it is not an append of well-formed lines."""
+    if not new.startswith(old):
+        return None
+    try:
+        return [json.loads(l) for l in new[len(old):].decode("utf-8").splitlines() if l.strip()]
+    except ValueError:
+        return None
+
+
+def ledger_problems(changes, reviewable, changed_bodies=()):
+    """The layer-2 half of the land gate. Every touched ledger is append-only. The LAST record wins:
+    a commit with reviewable code lands only if each ledger it touches ends in a PASS (the engine's
+    `layer2 check` then proves it is on the current body), so a FAIL recorded after a PASS blocks it.
+    A ledger-only commit lands FAIL / NEEDS_USER records only (a PASS lands with the code it covers).
+    `changed_bodies`: the functions whose body the commit changes (changed_layer2_bodies)."""
+    if not reviewable and not changes:
+        return ["the item commit carries neither a reviewable change nor a layer-2 record"]
+    problems = []
+    for func, (old, new) in sorted(changes.items()):
+        added = added_records(old, new)
+        if added is None:
+            problems.append(f"{func}: layer2.jsonl is append-only (well-formed lines); this commit "
+                            "rewrites, deletes or garbles records")
+            continue
+        last = json.loads(new.decode("utf-8").splitlines()[-1]) if added else None
+        if not added:
+            problems.append(f"{func}: layer2.jsonl changed but gained no record")
+        elif reviewable and last.get("verdict") != "PASS":
+            if func in changed_bodies:
+                problems.append(f"{func}: the latest layer-2 record is {last.get('verdict')} (body "
+                                f"{last.get('body_hash')}, {last.get('reviewer')}); the latest record wins, so "
+                                "the code lands only after a new PASS on its current body")
+            else:
+                problems.append(f"{func}: an unlanded layer-2 {last.get('verdict')} on a function this code "
+                                "does not change blocks it: land that FAIL first, as a ledger-only commit of "
+                                "its own item (`layer2 <item> <func> ... --message-file m.txt`, then `land`)")
+        elif not reviewable and any(r.get("verdict") == "PASS" for r in added):
+            problems.append(f"{func}: a ledger-only commit may add only FAIL / NEEDS_USER records; a PASS "
+                            "lands with the reviewed code it covers")
+    return problems
+
+
+VERDICT_COPY = re.compile(r"^memory/grind/[^/]+/layer2_verdicts/([0-9a-f]{40})\.json$")
+
+
+def verdict_copies(main, rev):
+    """{path: (status, blob at rev)} for each layer2_verdicts/ copy `rev` changes."""
+    raw = git("diff", "--no-renames", "--name-status", "-z", f"{rev}^", rev, cwd=main).split("\0")
+    return {path: (st, blob_at(main, rev, path)) for st, path in zip(raw[::2], raw[1::2])
+            if VERDICT_COPY.match(path)}
+
+
+def copy_problems(copies, changes):
+    """Each verdict copy a commit changes is NEW, named by its own SHA1, and the verdict_file of a
+    record the commit adds (`layer2 record --verdict-file` writes exactly that)."""
+    referenced = set()
+    for old, new in changes.values():
+        referenced.update(str(r.get("verdict_file")) for r in (added_records(old, new) or []))
+    problems = []
+    for path, (status, blob) in sorted(copies.items()):
+        if status != "A":
+            problems.append(f"{path}: a layer-2 verdict copy is write-once (status {status})")
+        elif hashlib.sha1(blob).hexdigest() != VERDICT_COPY.match(path).group(1):
+            problems.append(f"{path}: content does not match its SHA1 name")
+        elif path not in referenced:
+            problems.append(f"{path}: no record this commit adds points at it")
+    return problems
+
+
+def layer2_module(main):
+    """main's engine/layer2.py (trusted code, like tools/format.py in format_tree): the body key."""
+    if str(main) not in sys.path:
+        sys.path.insert(0, str(main))
+    import engine.layer2 as l2
+    return l2
+
+
+def changed_bodies(main, rev, names):
+    """Those of `names` whose layer-2 body key differs between rev^ and rev, in a src/**/*.c file the
+    commit changes or one naming a changed asm/**/<name>.s (INCLUDE_ASM / .include)."""
+    diff = [p for p in git("diff", "--no-renames", "--name-only", "-z", f"{rev}^", rev, cwd=main).split("\0") if p]
+    files = {p for p in diff if re.fullmatch(r"src/.+\.c", p)}
+    for p in diff:
+        m = re.fullmatch(r"asm/.+/([^/]+)\.s", p)
+        if m and m.group(1) in names:
+            for r in (f"{rev}^", rev):
+                hits = git("grep", "-l", "-F", "-e", m.group(1), r, "--", "src", cwd=main, check=False)
+                files.update(h.split(":", 1)[1] for h in hits.splitlines() if h.endswith(".c"))
+    if not files:
+        return set()
+    l2 = layer2_module(main)
+    out = set()
+    for f in sorted(files):
+        sides = []
+        for r in (f"{rev}^", rev):
+            sides.append((blob_at(main, r, f).decode("utf-8", "replace"),
+                          lambda q, r=r: blob_at(main, r, q).decode("utf-8", "replace") or None))
+        for n in names:
+            if all(n not in text for text, _ in sides):
+                continue
+            if len({l2.body_key(text, n, read) for text, read in sides}) > 1:
+                out.add(n)
+    return out
+
+
+def changed_layer2_bodies(main, rev):
+    """Functions that have a layer-2 ledger at `rev` (live or _completed/) whose body `rev` changes."""
+    names = set()
+    for p in git("ls-tree", "-r", "--name-only", "-z", rev, "--", "memory/grind", cwd=main).split("\0"):
+        m = re.fullmatch(r"memory/grind/(?:_completed/)?([^/]+)/layer2\.jsonl", p)
+        if m:
+            names.add(m.group(1))
+    return changed_bodies(main, rev, names)
+
+
+def engine_layer2_check(main, trusted, func):
+    """The engine's `queue done` gate: the latest record is a PASS on the body now in src/."""
+    run_checked(["pwsh", "-NoProfile", "-File", str(main / "tools" / "wteng.ps1"), str(trusted), "layer2",
+                 "check", func], f"layer2 check {func}", must_contain='"ok": true')
 
 
 # ---------------------------------------------------------------- rebase / land
@@ -1295,12 +1579,20 @@ def cmd_land(a):
                 after_rebase(main, a.item, scratch, trusted, branch)
                 continue
             kinds, paths, problems = review_gate(main, a.item, tip)
+            ledgers = ledger_changes(main, tip)
+            bodies = changed_layer2_bodies(main, tip) if kinds else set()
+            problems += [f"{f}: this commit changes its body, which has a layer-2 ledger, but records no "
+                         "verdict on it: a fresh cheat-reviewer on the new body, then `layer2` its verdict"
+                         for f in sorted(bodies - set(ledgers))]
+            problems += ledger_problems(ledgers, bool(kinds), bodies)
+            problems += copy_problems(verdict_copies(main, tip), ledgers)
             if problems:
-                print("codex_worker: review gate: required " + ", ".join(kinds))
+                print("codex_worker: review gate: required " + (", ".join(kinds) or "nothing (ledger-only)"))
                 for p in problems:
                     print("  ! " + p)
                 sys.exit(9)
-            print(f"codex_worker: reviews OK ({', '.join(kinds)}) on {tip[:9]}")
+            print(f"codex_worker: reviews OK ({', '.join(kinds) or 'ledger-only'}; layer-2 records: "
+                  f"{', '.join(sorted(ledgers)) or 'none'}) on {tip[:9]}")
             # The amend below re-stages nothing, so format_guard cannot see this commit's C; check
             # it here (a hand-resolved rebase conflict is the one way unformatted C gets in).
             tree0 = git("rev-parse", f"{tip}^{{tree}}", cwd=main)
@@ -1319,6 +1611,9 @@ def cmd_land(a):
             if diff_key(main, tip) != key0:
                 refuse("the hook re-commit changed the diff -- investigate")
             verify_tip(main, trusted, tip, paths)
+            if kinds:
+                for func in sorted(ledgers):
+                    engine_layer2_check(main, trusted, func)
             if a.dry_run:
                 print(f"codex_worker: DRY RUN -- {tip[:9]} is ready to fast-forward main; stopping here")
                 return
@@ -1423,9 +1718,13 @@ def main():
     v.add_argument("--summary", required=True)
     l2 = item(sp.add_parser("layer2"))
     l2.add_argument("func")
-    l2.add_argument("--verdict-file", required=True, help="the cheat-reviewer's JSON verdict (PASS + body_hash)")
-    l2.add_argument("--reviewer", required=True, help="the agent id recorded with `review`")
+    l2.add_argument("--verdict-file", required=True,
+                    help="the cheat-reviewer's JSON verdict (decision PASS/FAIL/NEEDS_USER + body_hash)")
+    l2.add_argument("--reviewer", required=True, help="the reviewer's agent id (a PASS: the one recorded with `review`)")
     l2.add_argument("--scope", required=True, choices=["match", "cheat-cleanup", "auth"])
+    l2.add_argument("--notes", default="", help="ledger notes (default: the verdict's summary)")
+    l2.add_argument("--message-file", default="",
+                    help="commit message for a ledger-only commit (no item commit yet) or to replace the item's")
     l = item(sp.add_parser("land"))
     l.add_argument("--dry-run", action="store_true")
     l.add_argument("--no-push", action="store_true")

@@ -14,7 +14,8 @@ description: >-
 Invoked with an issue: a backlog line (`item 13`, `F06`), or a described problem. The run
 **ends in exactly one of two states**:
 - **landed**: one commit on `main`, pushed to `origin`, every required reviewer PASS on that exact
-  diff, and a clean build of that exact commit byte-identical (SHA1 `62efab4f…`);
+  diff (a ledger-only layer-2 FAIL commit needs none), and a clean build of that exact commit
+  byte-identical (SHA1 `62efab4f…`);
 - **stopped with a reason**: blocked on an owner ruling, Codex quota, or a peer owning the area.
   Report the reason, and which gate is still open.
 
@@ -112,7 +113,7 @@ for junctions. Higher effort than medium needs the owner.
   `land` (step 7) are the first execution, and they run only after review.
 
 **5. Commit.** Write `tmp/codex/msg_<item>.txt` (Write tool) per `docs/COMMIT_CONVENTIONS.md`, and
-include the Codex run id in the body. Then:
+put a literal `Codex run: <run-id>` line in the body (the orchestrator attributes Codex landings by it). Then:
 `python tools/codex_worker.py commit <item> --message-file tmp/codex/msg_<item>.txt`.
 - It harvests the scratch tree into **the** item commit; re-running it replaces the commit.
 - Its parent is the item's base, and it contains no `tmp/`.
@@ -144,6 +145,23 @@ Record each verdict:
   touched the surrounding lines. A hand-resolved conflict invalidates every earlier verdict.
 - Records live in main's `tmp/`, where Codex can't write.
 
+**Layer-2 ledger.** Every cheat-reviewer verdict on a function body (its JSON names `function` and
+`body_hash`) is recorded in `memory/grind/<func>/layer2.jsonl`, whatever it decides, never only in a
+commit body or backlog note:
+`python tools/codex_worker.py layer2 <item> <func> --verdict-file <its JSON> --reviewer <id> --scope <match|cheat-cleanup|auth>`.
+- PASS: needs the item commit and a `review` PASS by the same reviewer on its key, newer than the
+  ledger's last FAIL / NEEDS_USER; a verdict JSON already in the ledger is refused.
+- FAIL / NEEDS_USER: folded into the item commit only when the item changes that function's body
+  (else refused). It is also recorded on the key: a FAIL blocks that diff for good (fix, `commit`,
+  fresh review); a NEEDS_USER blocks it until, after the owner's ruling, a fresh cheat-reviewer
+  PASSes it (`review`, then `layer2` that PASS). With no item commit (a FAIL on a body already on
+  main), add `--message-file tmp/codex/msg_<item>.txt` (`cheat-cleanup: record <func>'s layer-2
+  FAIL`, findings in the body): it becomes a ledger-only commit. Land it (step 7) even if nothing
+  else lands; a later `commit` carries it along, so restate it in that message.
+- A FAIL / NEEDS_USER on the PASSed body of a function off the queue un-completes it
+  (`engine/departures.py`) and must land with a `queue reopen`: `layer2` refuses it. Hand it to the
+  manual lane (`decomp-manual`) or the owner.
+
 On any FAIL: fix it (by Codex follow-up or by editing scratch), `commit` again, and run new
 reviewers on the new key. Repeat until every required kind PASSes on the same key. A FAIL that
 needs an owner ruling stops at step 0's rule.
@@ -151,7 +169,10 @@ needs an owner ruling stops at step 0's rule.
 **7. Land.** `python tools/codex_worker.py land <item>` (use `--dry-run` first if you like). It
 refuses while any Codex run is live, and refuses unless Codex is idle before it rebases. Then, in the trusted tree:
 1. Rebases onto the current main if main moved, and re-creates scratch at the result.
-2. Re-checks the review gate.
+2. Re-checks the review gate, and the layer-2 ledgers the commit touches: append-only; with code,
+   each must end in a PASS (re-proved by the engine's `layer2 check` after the build), and every
+   function with a ledger whose body the commit changes needs a verdict in it; a ledger-only
+   commit may add only FAIL / NEEDS_USER records (and their new, referenced verdict copies).
 3. Re-commits the same tree, so the repo hooks run on the reviewed content.
 4. Runs `make clean-check` and computes `build/bb2.exe`'s SHA1 itself.
 5. Runs `check_completion_integrity.py`, and `engine test` if code paths changed.
@@ -167,7 +188,7 @@ the count is printed. Exit codes:
 | 6 | rebase conflict | `codex_worker.py rebase <item>` leaves the conflict in the **trusted** worktree. Edit the files there (Edit tool), then `rebase <item> --continue`, which refuses while conflict markers remain and re-creates scratch afterwards. Land again; the gate says whether the resolved diff needs new reviews. |
 | 5 | lock held by a live session | wait (~10 min) and land again. Steal only a lock `reintegrate_lock.ps1 status` calls stale. |
 | 7 | a peer has uncommitted work on the same paths in the main checkout | wait until they commit or drop it (or message that session), then land again. If their commit moved main, `land` rebases onto it. |
-| 9 | review gate | step 6 for the missing or failed kind. |
+| 9 | review gate | step 6 for the missing or failed kind, or a new layer-2 PASS on the current body. |
 | 8 | push rejected | main is landed locally. Never force: `git fetch`, then report to the owner. `land` again retries only the push. |
 
 **8. Close.** `python tools/codex_worker.py cleanup <item>` removes both worktrees (junction-safe)
