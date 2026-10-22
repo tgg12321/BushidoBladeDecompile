@@ -115,22 +115,9 @@ void SetLineF4(LINE_F4 *p) { setLineF4(p); }
 void SetLineG4(LINE_G4 *p) { setLineG4(p); }
 
 void SetDrawTPage(DR_TPAGE *a0, s32 a1, s32 a2, s32 a3) {
-    u32 cmd;
-    u32 val;
     setlen(a0, 1);
-    cmd = GP0_DRAW_MODE;
-    if (a2) {
-        cmd = (GP0_DRAW_MODE | GPU_DRAW_MODE_DITHER);
-    }
-    if (a1) {
-        /* FAKE: `a3 & MASK` duplicated into both arms keeps the masked temp
-         * in $v0 rather than $a3; `val = a3 & MASK; if (a1) val |= TEXOFF;`:
-         * score 5 (duplicated-statement-into-arms) */
-        val = (a3 & GPU_DRAW_MODE_MASK) | GPU_DRAW_MODE_TEXOFF;
-    } else {
-        val = a3 & GPU_DRAW_MODE_MASK;
-    }
-    a0->code[0] = cmd | val;
+    a0->code[0] = GP0_DRAW_MODE | (a2 ? GPU_DRAW_MODE_DITHER : 0) |
+                  (a1 ? GPU_DRAW_MODE_TEXOFF : 0) | (a3 & GPU_DRAW_MODE_MASK);
 }
 
 /* Copy packet: tag followed by five GPU command words. */

@@ -15,7 +15,6 @@ static inline void vmSetStartAddr(u16 addr) {
 
 void _SsVmDoAllocate(void) {
     int i;
-    int progIdx;
 
     _svm_cur.voiceOffset = _svm_cur.voice * 8;
     _svm_cur.field_0x1e = _svm_cur.field_7_fake_program * 16 + _svm_cur.tone;
@@ -23,15 +22,10 @@ void _SsVmDoAllocate(void) {
     for (i = 0; i < 16; i++) {
         _svm_envx_hist[i] &= ~(1 << _svm_cur.voice);
     }
-    /* FAKE: progIdx computed in both arms (duplicated-statement-into-arms);
-     * hoisted above the test the lhu becomes lh and the frame grows (score 19).
-     */
     if ((_svm_cur.tone_vag_idx & 1) > 0) {
-        progIdx = (_svm_cur.tone_vag_idx - 1) / 2;
-        vmSetStartAddr(_svm_pg[progIdx].reserved2);
+        vmSetStartAddr(_svm_pg[(_svm_cur.tone_vag_idx - 1) / 2].reserved2);
     } else {
-        progIdx = (_svm_cur.tone_vag_idx - 1) / 2;
-        vmSetStartAddr(_svm_pg[progIdx].reserved3);
+        vmSetStartAddr(_svm_pg[(_svm_cur.tone_vag_idx - 1) / 2].reserved3);
     }
     _svm_sreg_buf[_svm_cur.voiceOffset + 4] =
         _svm_tn[_svm_cur.field_7_fake_program * 16 + _svm_cur.tone].adsr1;

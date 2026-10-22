@@ -1,0 +1,1 @@
+{"decision":"PASS","function":"SetDrawTPage","body_hash":"09ce92a532d1907e","summary":"cheat-reviewer a9e19d09e62a9be50: items 2-5 clean; Sony _get_mode OR expression, no FAKE left, existing DR_TPAGE/psx.h constants; candidate sandbox 0"}

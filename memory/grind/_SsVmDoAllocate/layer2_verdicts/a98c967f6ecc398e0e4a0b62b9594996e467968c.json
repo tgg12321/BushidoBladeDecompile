@@ -1,0 +1,1 @@
+{"decision":"PASS","function":"_SsVmDoAllocate","body_hash":"ed7d7777213470f6","summary":"cheat-reviewer a9e19d09e62a9be50: items 2-5 clean; progIdx FAKE removed, direct typed _svm_pg[...].reserved2/3 as psyz, no new FAKE; candidate sandbox 0"}
