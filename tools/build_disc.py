@@ -30,8 +30,8 @@ file that moves or changes size the tool rewrites:
 
 Every written sector gets its MSF address, subheader (data 0x08, last
 sector of a file 0x89) and EDC/ECC (the CD-ROM Mode 2 Form 1 code of
-ECMA-130 / CD-ROM XA, re-implemented). With no replacements the output equals the input byte for byte;
-`--verify` checks that. Writes OUT plus OUT's .cue.
+ECMA-130 / CD-ROM XA, re-implemented). With no replacements the output
+equals the input byte for byte; `--verify` checks that. Writes OUT plus OUT's .cue.
 """
 
 import argparse
@@ -250,6 +250,9 @@ def build(image, out, repl):
                          f"{INF_MAX}")
     exe_path = "SLUS_006.63"
     layout, end, tail = plan(img, files, repl)
+    if end + tail + 150 > 100 * 60 * 75:
+        raise ValueError(f"image would be {end + tail} sectors, past the "
+                         "99:59:74 that a BCD CdlLOC can address")
     moved = [p for p, v in layout.items()
              if v != (files[p]["lba"], files[p]["size"])]
     if moved:
@@ -266,9 +269,6 @@ def build(image, out, repl):
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(image, out)
     total = end + tail
-    if total + 150 > 99 * 60 * 75:
-        raise ValueError(f"image would be {total} sectors, past the 99:59:74 "
-                         "that a BCD CdlLOC can address")
     with open(out, "r+b") as o:
         def put(lba, sector):
             o.seek(lba * SECTOR)

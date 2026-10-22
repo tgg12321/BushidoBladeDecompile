@@ -74,8 +74,8 @@ by its old 8 bytes, so a rebuilt or shifted EXE works as long as its
 table still describes the input image; an entry it cannot find is an
 error), grows the volume size, and writes every touched sector with its
 address, subheader and EDC/ECC. Only plain data files can be replaced.
-A 74-minute CD-R holds 333,000 sectors, 34,652 more (about 71 MB of
-data) than the retail image.
+A 74-minute CD-R holds 332,850 sectors after the 2-second pregap,
+34,502 more (about 70 MB of data) than the retail image.
 
 ```
 python tools/build_disc.py --image "Bushido Blade 2 (USA).bin" --out mod.bin --verify   # no-op: must equal the retail image
