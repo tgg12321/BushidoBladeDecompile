@@ -41,7 +41,8 @@ void func_800831A4(); /* memclr, defined below; called with &intrEnv */
 
 /* .data 0x800A1520..0x800A2614, the module's own .data in definition order:
  * the library copyright string (no code reads it; the object's .data starts
- * with it and its first relocation, &intrEnv, is at .data+0x58), the state,
+ * with it, and its &intrEnv relocation, stored at .data+0x10DC, targets
+ * .data+0x58), the state,
  * the callbacks table that ResetCallback..RestartCallback call
  * through (slots 2/3/4/6 are the statics below, 1 and 5 are filled by
  * startIntr), the MMIO pointer statics and trapIntr's missed-count. */
