@@ -1,0 +1,1 @@
+{"decision": "PASS", "function": "func_800460E4", "body_hash": "8bf5a9849fb64526", "summary": "s3 reuse meets Q51 (one header count per buffer, read at once to index that buffer, as SOTN var_s2 posX then posY); s7, the s1 detour and case-3 hp keep measured FAKE labels; sandbox 0, no cheat-asm. Hygiene: 'header word count' is loose for s0[0] (an index of the size/trailer words)."}
