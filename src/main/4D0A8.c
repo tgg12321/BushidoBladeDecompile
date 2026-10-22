@@ -775,10 +775,11 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     /* One past the chunk this function fills; it returns end_off - arg1, the
      * chunk size. */
     s32 end_off;
-    /* FAKE: i counts the players (first loop) and then the rounds; j is the
-       player and k the mark; each phase restarts them as plain loop indices,
-       the counter reuse of func_8005E098 / func_8005F1C8. Separate counters
-       per phase (a round counter of its own): score 8. */
+    /* i counts the players (first loop) and then the rounds; j is the player
+       and k the mark; each phase restarts them loop to loop as plain indices,
+       the way SOTN's DebugCaptureScreen reuses its i for its file-search loop
+       and its row countdown (Q51), as func_8005E098 / func_8005F1C8 do */
+    /* SOTN: src/dra/42398.c:75 @aa53500 */
     s16 i;
     s16 j;
     s16 k;
