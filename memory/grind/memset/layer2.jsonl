@@ -1,0 +1,1 @@
+{"func": "memset", "addr": "8007DEE4", "verdict": "PASS", "body_hash": "ffef535d45e4bd63", "body_kind": "c", "file": "main/psxsdk/libgpu/sys", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T02:01:15Z", "head": "ac4ec910d", "notes": "K&R definition states the int-passing ABI (a u8 prototype narrows callers li a1,-1 to 255); byte-neutral"}
