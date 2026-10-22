@@ -93,10 +93,9 @@ extended, once a one-object spelling matches.
   a byte offset off the declared array and its [0] through a row pointer, both
   `/* FAKE */`-annotated (element reads schedule above the scalar stores: 8 / 9).
   followups/func_8003DA8C.stagetables.*.
-- **CdlREAD D_800A14D0 (Q99, item 4):** one `extern volatile CdlREAD D_800A14D0` in libcd.h;
-  cb_read only keeps one block-scope `extern volatile s32` line for cnt, size and tslmode,
-  `/* FAKE */`-annotated (none 2; the measured partial sets cnt, cnt+size, cnt+tslmode,
-  size+tslmode 2-3; singletons size / tslmode not measured). followups/cb_read.cdlread.*.
+- **CdlREAD D_800A14D0 (Q99, item 4):** one `extern volatile CdlREAD D_800A14D0` in libcd.h,
+  with the saved result pointer as `.result` at 0x34 (psyz ReadAttr); every cdread.c access goes
+  through it. The cb_read per-member FAKE is retired.
 
 Records: docs/grind/decisions.md OWNER RULING entries of 2026-08-17, 2026-09-03, 2026-09-26
 (Q7, Q13, Q14) and 2026-09-30 (Q63, Q73) and 2026-10-03 (Q96-Q99).
