@@ -226,8 +226,6 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     s32 sum;
     s32 i;
     s32 a3_off;
-    s32 bitpos;
-    u32 *p;
     u32 maskA;
     u32 maskB;
     u32 v;
@@ -237,24 +235,16 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     i = 0;
     arg1 <<= 4;
     one = 1;
-    /* FAKE: do{}while(0) around the loop seats sum in $t2 and bitpos in $t1
-     * (without it: score 7); the `one` constant-holder schedules `li $t6,1`
-     * at the preheader (the literal: score 2; both: 9). */
+    /* FAKE: do{}while(0) around the loop seats sum in $t2 and the reduced
+     * i * 16 in $t1 (without it: score 7); the `one` constant-holder schedules
+     * `li $t6,1` at the preheader (the literal: score 2). */
     do {
         a3_off = 0;
-        bitpos = 0;
-        p = D_800A32D0;
-
         do {
             /* FAKE: byte-offset step (arg3 += a3_off with an element count
              * scores 3) */
             arg3 = (s16 *)((u8 *)arg3 + a3_off);
-            /* FAKE: dead store -- v is reassigned from *arg0 before any read;
-             * removed, loop.c strength-reduces D_800A32C8[i] to a walking
-             * pointer (lui/addiu t3, addiu t3,t3,4) instead of the target's sll
-             * / addu indexed load: score 13 */
-            v = i * 4;
-            maskB = *p << arg1;
+            maskB = D_800A32D0[i] << arg1;
             maskA = D_800A32C8[i] << arg1;
             if (*arg2 == 0) {
                 v = *arg0;
@@ -272,25 +262,22 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
                 }
                 sval = *arg2;
                 if (sval >= 6) {
-                    sum += one << bitpos;
+                    sum += one << (i * 16);
                     *arg3 = 0;
                     *arg2 = 0;
                 } else if (sval < -5) {
-                    sum += 2 << bitpos;
+                    sum += 2 << (i * 16);
                     *arg3 = 0;
                     *arg2 = 0;
                 }
             }
             a3_off += 2;
-            bitpos += 0x10;
-            p++;
             i++;
             *arg2 = (u16)*arg2 + (u16)*arg3;
             arg2++;
         } while (i < 2);
-
-        return sum;
     } while (0);
+    return sum;
 }
 
 s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
