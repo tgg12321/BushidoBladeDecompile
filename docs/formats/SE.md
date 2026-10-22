@@ -9,8 +9,8 @@ unit `snd_LoadVabPack`
 `include/game.h`), an event table, a VAB header (VH, `pBAV`) and the VAB body
 (VB). Every `STAGE\*.BIN` record has exactly the shape of an `.SE` file (record
 0 of `STAGE00.BIN` starts at 0x34), and `MOD.BIN`'s head pointer leads to one
-(`docs/formats/STAGE_BIN.md` still describes the records with the older
-"sub-TOC" + geometry reading). VH field layout:
+(`STAGE*.BIN` container and repack tool:
+[STAGE_BIN.md](STAGE_BIN.md)). VH field layout:
 `docs/formats/BNK.md`.
 
 ## Layout

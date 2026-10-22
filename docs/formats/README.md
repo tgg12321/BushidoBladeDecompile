@@ -11,7 +11,7 @@ the Bushido Blade 2 (SLUS-00663) disc.
 | **BBM**    | [BBM.md](BBM.md)      | `tools/inspect_bbm.py`     | Partially reversed (containers, not section-5 keyframe encoding) | `disc/MOTION/*.BBM` |
 | **WIN.DAT**| [BBM.md#WIN.DAT](BBM.md#windat) | `tools/inspect_windat.py` | Structure reversed (27×0x3800 records, i16 fixed-point); per-frame schema TBD | `disc/MOTION/WIN.DAT` |
 | **TIM**    | [TIM.md](TIM.md)      | `tools/inspect_tim.py`, `tools/repack_tim.py` (PNG round-trip) | Standard PSX format — fully implemented (PNG export) | `disc/TIM2D/*.TIM`, `disc/STR/TITLE.TIM` |
-| **STAGE_BIN** | [STAGE_BIN.md](STAGE_BIN.md) | `tools/inspect_stage.py` | Container reversed (incl. wrap5 family TIM/VAB embeds); `STAGE*.BIN` records are VAB packs ([SE.md](SE.md)), the doc's older reading is outdated | `disc/{LOADSE,LOADSE1}/STAGE*.BIN`, `disc/U_PIC/STG*.BIN`, `disc/TIM2D/STG*.BIN`, plus SEL/NAR/MOD/STAFF/D_SEL BINs |
+| **STAGE_BIN** | [STAGE_BIN.md](STAGE_BIN.md) | `tools/inspect_stage.py`, `tools/repack_stage.py` (`STAGE*.BIN` round-trip) | Container reversed (incl. wrap5 family TIM/VAB embeds); `STAGE*.BIN` = 6 VAB packs ([SE.md](SE.md)) + billboard list | `disc/{LOADSE,LOADSE1}/STAGE*.BIN`, `disc/U_PIC/STG*.BIN`, `disc/TIM2D/STG*.BIN`, plus SEL/NAR/MOD/STAFF/D_SEL BINs |
 | **BNK**    | [BNK.md](BNK.md)      | `tools/inspect_bnk.py`     | Content format not established | `disc/TIM2D/GAME*.BNK`   |
 | **SE**     | [SE.md](SE.md)        | `tools/repack_vab.py` (round-trip) | VAB pack reversed (head, event table, VH, VB; = one STAGE record) | `disc/LOADSE/*.SE` |
 | **STR**    | [STR.md](STR.md)      | `tools/inspect_str.py`     | Standard PSX format — documented and inspected | `disc/STR/OPENING.STR` |
@@ -57,10 +57,6 @@ disc/
   payload) — requires Marionation runtime reverse-engineering.
 * Inner sub-section layout of SEL/NAR/MOD/STAFF/D_SEL containers beyond the
   5-u32 outer TOC.
-* `STAGE_BIN.md` predates [SE.md](SE.md): each `STAGE*.BIN` record is shaped
-  like an `.SE` file, a VAB pack plus 4 zero bytes (all 228 records, all VH
-  version 6), not the sub-TOC + geometry it describes; after record 5 comes
-  the billboard list header word 0x30 points at (`func_8005BA8C`).
 * What the 5 BNK files hold (`BNK.md`: the SPU-ADPCM reading fits badly).
 
 ## Tools summary
