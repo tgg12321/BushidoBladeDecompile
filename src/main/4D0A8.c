@@ -1629,7 +1629,8 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
         /* FAKE: increment staged through t1 (stored next line, then reused for
          * the product): the reassignment breaks cse's mem==reg equivalence, so
          * the clamp re-read emits lh (staged-value-reused-variable); direct
-         * increment: score 8 (with t2's: 16) */
+         * increment: score 8 (with t2's: 16); fresh s16/u16/s32 next
+         * locals or inline products at both sites: score 16 */
         t1 = cur1 + 1;
         D_800A32B4 = t1;
         t1 = (s32)((s16)cur1) * 0x1AA;
