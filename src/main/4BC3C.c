@@ -485,25 +485,17 @@ s32 snd_LoadVabPack(Unk8005C2A8Pack *arg0, s16 arg1, s32 arg2) {
  * (proven-spelling-class-reconstruction). */
 s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
     s32 idx;
-    Unk8005C2A8Pack **base;
-    Unk8005C2A8Pack **p;
-    Unk8005C2A8Pack *v;
     s16 ret;
     func_800858D0(0);
     idx = arg1;
-    /* FAKE: the slot array's address is staged in base ahead of the slot index:
-       written `&g_vab_rec_ptr[idx]`, the index's `sll s3,s2,2` rises above the
-       array's lui / addiu (score 2). */
-    base = g_vab_rec_ptr;
-    p = base + idx;
-    v = *p;
-    if (v != 0) {
-        v = (Unk8005C2A8Pack *)((u8 *)v + arg0);
-        *p = v;
-        v->unk_00 = v->unk_00 + arg0;
-        (*p)->unk_04 = (*p)->unk_04 + arg0;
+    if (g_vab_rec_ptr[idx] != 0) {
+        g_vab_rec_ptr[idx] =
+            (Unk8005C2A8Pack *)((u8 *)g_vab_rec_ptr[idx] + arg0);
+        g_vab_rec_ptr[idx]->unk_00 += arg0;
+        g_vab_rec_ptr[idx]->unk_04 += arg0;
         SsVabClose(idx);
-        ret = SsVabFakeHead((*p)->unk_04, idx, g_vab_vb_sbaddr[idx]);
+        ret = SsVabFakeHead(
+            g_vab_rec_ptr[idx]->unk_04, idx, g_vab_vb_sbaddr[idx]);
         if (ret != idx) {
             return ret;
         }
