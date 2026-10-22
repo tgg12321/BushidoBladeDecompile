@@ -1902,8 +1902,8 @@ end:
     VSync(2);
 }
 
-/* .data 0x8008F19C..0x8008F220 (cdrom.c's .data precedes; the unreferenced
- * D_8008F220.. in asm/data/7F99C.data.s follows), in address order:
+/* .data 0x8008F19C..0x8008F220 (cdrom.c's .data precedes; 2B344.c's
+ * D_8008F220.. follows), in address order:
  * memcard_BuildFileHeader's full-width Shift-JIS digit tables D_8008F19C
  * ("0".."4") and D_8008F1A8 ("0".."9"), the full-width save title D_8008F1C0
  * ("BB2 Narukagami:? VS Shainto:?", the two "?" overwritten with digits) and
