@@ -802,6 +802,10 @@ void func_80017F90(void) {}
 void func_80017F98(s32 arg0, s32 arg1, s32 arg2) {}
 
 /* Q65: this file's initialized small data (.sdata), in address order. */
+/* 0x800A30CC: the full 640x480 display area ClearImage clears */
+RECT g_gpu_clear_rect = {0, 0, 640, 480};
+/* 0x800A30D4: copied whole into a local RECT (rect = D_800A30D4) */
+RECT D_800A30D4 = {32, 96, 256, 48};
 s32 D_800A30DC = 0x13400;
 /* not named by any code or data: size from the gap */
 s32 D_800A30E0[2] = {(s32)D_8001004C, 0x190};
