@@ -1406,9 +1406,9 @@ void fighter_AppendNavDetour(
     u8 var_18;
     u8 var_19;
     u8 var_20;
-    /* FAKE: one counter for the edge scan and the route copy, reused the way
-     * SOTN's DebugCaptureScreen reuses its i for its file-search loop and its
-     * row countdown (Q51, Q53); a separate copy counter: score 79. */
+    /* the counter of the edge scan and the route copy, reused loop to loop
+     * the way SOTN's DebugCaptureScreen reuses its i for its file-search loop
+     * and its row countdown (Q51) */
     s16 i; /* SOTN: src/dra/42398.c:75 @aa53500 */
     s16 next;
     s16 ax;
