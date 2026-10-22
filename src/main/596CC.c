@@ -28,6 +28,15 @@ static Unk8009BD24Block *D_800A3524;
 static s16 D_800A3528;
 static s32 D_800A352C;
 
+extern void AddPrim(void *, void *);
+extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
+/* Declared unprototyped: the callers below pass an s32 where the definition
+ * takes a pointer, and func_80069250 calls func_80069E18 with 2 of its 1 args.
+ */
+s32 func_8006919C();
+void func_80069E18();
+extern void gpu_LoadVramBottomStrip();
+
 void menu_SetEnabledRows(s32 arg0) {
     s32 *p = &D_8009BC04.rows_on;
     s32 v = *p;
@@ -1735,7 +1744,7 @@ void func_8006C21C(s32 *arg0) {
     s.sprt_out = arg0[5];
     arg0[5] = gpu_AddSpriteCells(&s);
     SetDrawMode((DR_MODE *)arg0[7], 1, var_11,
-                gpu_GetSheetTPage(s.header, var_8), (RECT *)var_14);
+                gpu_GetSheetTPage(s.header, var_8), (RECT *)(s32)var_14);
     AddPrim(g_gpu_ot_ptr + 0xA, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
@@ -1761,7 +1770,7 @@ void func_8006C21C(s32 *arg0) {
     }
     s.header = table[13];
     SetDrawMode((DR_MODE *)arg0[7], 1, var_11,
-                gpu_GetSheetTPage(s.header, var_8), (RECT *)var_14);
+                gpu_GetSheetTPage(s.header, var_8), (RECT *)(s32)var_14);
     AddPrim(g_gpu_ot_ptr + 9, (DR_MODE *)arg0[7]);
     arg0[7] += 0xC;
 
@@ -2242,8 +2251,8 @@ s32 func_8006D74C(s32 arg0, s32 arg1) {
     D_800A3514 += 1;
     db = &g_gpu_db[D_800A36AC & 1];
     func_8006E390((s32)&sp_buf[0], (s32)&D_800A3518);
-    func_80069AE4((s32)&sp_buf[0], 1, db);
-    func_8006D3DC((s32)&sp_buf[0]);
+    func_80069AE4(&sp_buf[0], 1, db);
+    func_8006D3DC(&sp_buf[0]);
     result = func_8006D5D4(arg0, arg1);
     snd_FlushSoundQueue();
     return result;
