@@ -1830,9 +1830,10 @@ void func_80049584(s32 arg0) {
     s16 *dst;
     s16 *src;
     s16 *p;
-    /* FAKE: `i` carries both loop counters and the computed total: only a
-       pseudo crossing a call gets a call-saved reg, so sharing puts the
-       counter in $s0 as in the target; a separate `total`: 12 insns differ */
+    /* `i` counts both loops, then holds the pair index (a constant or
+       math_UnorderedPairIndex's result), the way SOTN's AluInit reuses its
+       loop counter i for the weapon id (Q51) */
+    /* SOTN: src/dra/692E8.c:299 @db41b28 */
     s32 i;
     s32 var_4;
     s32 var_5;
