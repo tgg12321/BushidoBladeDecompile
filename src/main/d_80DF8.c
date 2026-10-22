@@ -2,7 +2,7 @@
  * 2B344.c's .data (its head, D_8008F220 .. g_font_image, ends 2B344.c).
  * Owner ruling Q122 (data-only-no-sdata):
  * 1. One run: 2B344.c's g_font_image ends at 0x800905F8 and 309CC.c's
- *    g_gpu_draw_move_table (asm/data/852F4.data.s) starts at 0x80094AF4. No
+ *    g_gpu_draw_move_table (309CC.c's .data) starts at 0x80094AF4. No
  *    uninitialized objects.
  * 2. Small objects in .data, each sized by its own reader or the next one's:
  *    g_gpu_last_fog_ot_index (u32, gpu_GetLastFogOtIndex) and the unread

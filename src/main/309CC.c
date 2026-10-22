@@ -270,7 +270,16 @@ done_cases:
     func_80045A28(a0->arena_id, off);
 }
 
-extern Unk80094B96Rec D_80094B96[21];
+/* The 21 node-template records at 0x80094B96 follow an s16 -1 at 0x80094B94
+ * that no code reads. gcc word-aligns every top-level array and struct, so no
+ * object of this file can start at 0x80094B96: the -1 and the records are one
+ * word-aligned table, D_80094B94 (it ends at D_80094C68). */
+typedef struct {
+    s16 unk_00;
+    Unk80094B96Rec recs[21];
+} Unk80094B94Table;
+
+extern Unk80094B94Table D_80094B94;
 
 void func_800408F8(Unk80045878Obj *a0) {
     s16 *tbl;
@@ -301,18 +310,18 @@ void func_800408F8(Unk80045878Obj *a0) {
             p->node.unk1 = 0;
             p->node.rotation_order = 0;
             p->node.unk2 = -1;
-            v1 = D_80094B96[i].unk_00;
+            v1 = D_80094B94.recs[i].unk_00;
             if (v1 != -1) {
                 p->node.parent_node = &nodes[v1].node;
             } else {
                 p->node.parent_node = 0;
             }
             p->node.work.t[0] =
-                (D_80094B96[i].unk_02[0] * a0->position_scale) >> 12;
+                (D_80094B94.recs[i].unk_02[0] * a0->position_scale) >> 12;
             p->node.work.t[1] =
-                (D_80094B96[i].unk_02[1] * a0->position_scale) >> 12;
+                (D_80094B94.recs[i].unk_02[1] * a0->position_scale) >> 12;
             p->node.work.t[2] =
-                (D_80094B96[i].unk_02[2] * a0->position_scale) >> 12;
+                (D_80094B94.recs[i].unk_02[2] * a0->position_scale) >> 12;
             p->node.xf.rot.vx = 0;
             p->node.xf.rot.vy = 0;
             p->node.xf.rot.vz = 0;
@@ -426,14 +435,14 @@ void func_80040CB8(Unk80045878Obj *arg0) {
     /* FAKE: parents is &transform_nodes[1], indexed by i;
        &arg0->transform_nodes[i + 1] in place: score 3 */
     Unk80045878Node *parents;
-    /* FAKE: id points at record i's unk_08; D_80094B96[i].unk_08 read in
-       place: score 5 */
+    /* FAKE: id points at record i's unk_08; D_80094B94.recs[i].unk_08 read
+       in place: score 5 */
     s16 *id;
 
     p = arg0->projected_nodes;
     parents = &arg0->transform_nodes[1];
     for (i = 0; i < 18; i++) {
-        id = &D_80094B96[i].unk_08;
+        id = &D_80094B94.recs[i].unk_08;
         if (*id != -1) {
             p->node.unk2 = *id;
             p->node.unk0 = 3;
@@ -450,12 +459,47 @@ void func_80040CB8(Unk80045878Obj *arg0) {
     p->node.unk2 = -1;
 }
 
-/* .data 0x80094C68..0x80094CFC, the end of this file's .data (the rest,
- * g_gpu_draw_move_table .. D_80094B96, is still asm/data/852F4.data.s;
- * 31548.c's D_80094CFC follows): D_80094C68, the position scales
+/* .data 0x80094AF4..0x80094CFC, this file's whole .data (d_80DF8.c's
+ * D_80094AEC precedes it, 31548.c's D_80094CFC follows), in address order.
+ * Defined after every function, so no body sees a definition where it saw an
+ * extern. g_gpu_draw_move_table: gpu_AddDrawMove's seven 6-entry rows. */
+u16 g_gpu_draw_move_table[42] = {
+    0x0290, 0x0000, 0x0010, 0x0020, 0x0280, 0x0000, 0x02A0, 0x0000, 0x0010,
+    0x0020, 0x0280, 0x0000, 0x02B0, 0x0000, 0x0010, 0x0020, 0x0280, 0x0000,
+    0x0290, 0x0020, 0x0010, 0x0028, 0x0280, 0x0020, 0x02A0, 0x0020, 0x0010,
+    0x0028, 0x0280, 0x0020, 0x02C0, 0x0040, 0x0010, 0x0020, 0x0280, 0x0000,
+    0x02D0, 0x0040, 0x0010, 0x0028, 0x0280, 0x0020,
+};
+
+/* func_80040304's per-model masks, indexed by unk_08. */
+u8 D_80094B48[64] = {
+    0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,
+    0x1C, 0x1F, 0x1F, 0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,
+    0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x00, 0x1F, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x1C, 0x1F, 0x1F, 0x1F, 0x00, 0x1F,
+};
+
+/* Per arena_id: func_800404D8 clears the three slots. */
+s32 D_80094B88[3] = {-1, -1, -1};
+
+Unk80094B94Table D_80094B94 = {
+    -1,
+    {
+        {-1, {0, 0, 0}, -1},   {0, {0, 0, 0}, 0},        {1, {0, 10, 0}, 1},
+        {2, {468, 0, 0}, -1},  {2, {289, 0, -100}, 2},   {4, {140, 0, 0}, 3},
+        {5, {262, 0, 0}, 4},   {6, {211, 0, -3}, -1},    {2, {289, 0, 100}, 5},
+        {8, {140, 0, 0}, 6},   {9, {262, 0, 0}, 7},      {10, {211, 0, -2}, 8},
+        {1, {0, 10, 0}, 9},    {12, {180, 0, 110}, 10},  {13, {390, 0, 0}, 11},
+        {14, {441, 0, 0}, 12}, {12, {180, 0, -109}, 13}, {16, {390, 0, 0}, 14},
+        {17, {444, 0, 0}, -1}, {1, {0, 0, 0}, -1},       {1, {0, 0, 0}, 0},
+    },
+};
+
+/* D_80094C68, the position scales
  * func_800408F8 counts up to the -1 at [70] and indexes (9F9C.c reads it as
- * size_scale); three zero entries follow the -1. Defined after every
- * function, so no body sees a definition where it saw an extern. */
+ * size_scale); three zero entries follow the -1. */
 u16 D_80094C68[74] = {
     0x107A, 0x1000, 0x0F5C, 0x107A, 0x1000, 0x0F5C, 0x1000, 0x1000, 0x1000,
     0x1028, 0x10A3, 0x1000, 0x1000, 0x1000, 0x1000, 0x1051, 0x1000, 0x0F85,
