@@ -14,8 +14,8 @@ extern s32 collision_GetHitTag(void);
 extern void softbody_SolveSprings(Func80017A44Output *);
 
 typedef struct {
-    s32 d0[3];       /* 0x00 delta to focus 0 (GTE input) */
-    s32 d1[3];       /* 0x0C delta to focus 1 (GTE input) */
+    s32 d0[3];       /* 0x00 focus-0 or spring delta (GTE input) */
+    s32 d1[3];       /* 0x0C focus-1 delta or spring GTE squares */
     s32 scr18[3];    /* 0x18 transformed anchor, then the velocity */
     s32 dpos[3];     /* 0x24 displacement added to every node */
     s32 sq[3];       /* 0x30 GTE squares */
@@ -190,7 +190,7 @@ void softbody_SolveSprings(Func80017A44Output *arg0) {
     s32 lz[6];
     s32 f;
 
-    out = (s32 *)0x1F8000BC;
+    out = SCR->force[0];
     count = arg0->edge_count - 1;
     data = arg0->edges;
     base = arg0->nodes;
@@ -231,36 +231,36 @@ void softbody_SolveSprings(Func80017A44Output *arg0) {
             dy = p2->pos[1] - p1->pos[1];
             dz = p2->pos[2] - p1->pos[2];
         }
-        *(s32 *)0x1F800000 = dx >> 3;
-        *(s32 *)0x1F800004 = dy >> 3;
-        *(s32 *)0x1F800008 = dz >> 3;
-        gte_ldlvl((s32 *)0x1F800000);
+        SCR->d0[0] = dx >> 3;
+        SCR->d0[1] = dy >> 3;
+        SCR->d0[2] = dz >> 3;
+        gte_ldlvl(SCR->d0);
         gte_sqr0();
         data++;
         count--;
         thresh = data->ends.pair;
-        gte_stlvnl((s32 *)0x1F80000C);
-        sum = *(s32 *)0x1F80000C + *(s32 *)0x1F800010 + *(s32 *)0x1F800014;
+        gte_stlvnl(SCR->d1);
+        sum = SCR->d1[0] + SCR->d1[1] + SCR->d1[2];
         if (sum < 0x400) {
             len = g_sqrt_table_u8[sum];
             p1 = &base[thresh >> 16];
             p2 = &base[thresh & 0xFFFF];
         } else {
+            u32 shift, byte;
+
             gte_ldlzc(sum);
             /* the next link's node pointers fill the LZC result delay */
             p1 = &base[thresh >> 16];
             p2 = &base[thresh & 0xFFFF];
             gte_stlzc(lz);
-            /* FAKE: `len` carries the LZC count and the table shift before the
-             * root, and `sum` takes the table byte, keeping them in $v1 / $a0
-             * as the target does; fresh shift / byte locals: score 22
-             * (staged-value-reused-variable) */
+            /* FAKE: the leading-zero count staged through len (the root's
+             * local); a fresh count local: score 22 */
             len = lz[0];
-            len = 0x16 - (len & ~1);
-            sum = g_sqrt_table_u8[sum >> len];
-            len = (u32)(sum << 16) >> (0x10 - ((s32)len >> 1));
+            shift = 0x16 - (len & ~1);
+            byte = g_sqrt_table_u8[sum >> shift];
+            len = (u32)(byte << 16) >> (0x10 - ((s32)shift >> 1));
         }
-        gte_ldlvl((s32 *)0x1F800000);
+        gte_ldlvl(SCR->d0);
         f = (s32)((len - var_5) << 14) / (s32)len;
         var_5 = data->dist;
         thresh = var_5 * 3;
@@ -273,23 +273,25 @@ void softbody_SolveSprings(Func80017A44Output *arg0) {
         gte_stlvl(out);
         out += 3;
     }
-    *(s32 *)0x1F800000 = dx >> 3;
-    *(s32 *)0x1F800004 = dy >> 3;
-    *(s32 *)0x1F800008 = dz >> 3;
-    gte_Square0((s32 *)0x1F800000, (s32 *)0x1F80000C);
-    sum = *(s32 *)0x1F80000C + *(s32 *)0x1F800010 + *(s32 *)0x1F800014;
+    SCR->d0[0] = dx >> 3;
+    SCR->d0[1] = dy >> 3;
+    SCR->d0[2] = dz >> 3;
+    gte_Square0(SCR->d0, SCR->d1);
+    sum = SCR->d1[0] + SCR->d1[1] + SCR->d1[2];
     if (sum < 0x400) {
         len = g_sqrt_table_u8[sum];
     } else {
         gte_Lzc(sum, lz);
-        /* FAKE: same staged len/sum reuse as the loop's LZC arm above (fresh
-         * shift / byte locals: score 3). */
+        /* FAKE: len carries the leading-zero count, then the table shift,
+         * before the root, and sum takes the table byte; the loop arm's
+         * split form here too (fresh shift / byte locals): score 32;
+         * fresh count / shift / byte locals: score 32 */
         len = lz[0];
         len = 0x16 - (len & ~1);
         sum = g_sqrt_table_u8[sum >> len];
         len = (u32)(sum << 16) >> (0x10 - ((s32)len >> 1));
     }
-    gte_ldlvl((s32 *)0x1F800000);
+    gte_ldlvl(SCR->d0);
     f = (s32)((len - var_5) << 14) / (s32)len;
     gte_lddp(f);
     gte_gpf12();
