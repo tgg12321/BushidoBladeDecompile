@@ -523,14 +523,10 @@ s32 func_80043244(s32 a0) {
 }
 
 s32 func_80043278(s32 a0) {
-    /* FAKE: constant holder for 0xFFFFF000; with the literal the function is
-     * one insn longer (score 4) */
-    s32 var_0 = (s32)0xFFFFF000;
     s32 v0 = a0 >> *(s32 *)0x1F800008;
-    s32 a0_new = v0 >> 11;
-    v0 = (v0 & 0x7FF) | var_0;
-    v0 = v0 >> a0_new;
-    return v0 & 0xFFF;
+    s32 shift = v0 >> 11;
+    s32 mant = (v0 & 0x7FF) | -0x1000;
+    return (mant >> shift) & 0xFFF;
 }
 
 extern u16 D_80103658[];
