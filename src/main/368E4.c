@@ -88,8 +88,11 @@ void func_800460E4(s32 arg0, s32 arg1) {
     }
 
     if (arg1 != 0) {
-        /* FAKE: s3 (the slot buffer's word count) reused for arg1's word count;
-         * a separate local or the inline read scores 2. */
+        /* s3 is the header word count of the buffer being read (s0's in the
+         * case blocks and below, arg1's here), the way SOTN's white-dragon
+         * segment update reuses var_s2 for posX then posY (Q51; a separate
+         * local or the inline read: score 2) */
+        /* SOTN: src/st/rare/e_white_dragon.c:78 @db41b28 */
         s3 = *(s32 *)arg1;
         arena_Copy(arg1, (s32)s0, ((s32 *)arg1)[s3]);
     }
