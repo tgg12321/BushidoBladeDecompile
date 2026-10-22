@@ -1,0 +1,1 @@
+{"func": "gpu_LoadTim", "addr": "800482C8", "verdict": "PASS", "body_hash": "352aaf7d1f915380", "body_kind": "c", "file": "main/368E4", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T01:49:14Z", "head": "2133e7b25", "notes": "K&R definition states the implicit-call ABI (int args, callee narrows); prototype changes callers, byte-neutral"}
