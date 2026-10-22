@@ -2132,8 +2132,10 @@ void func_8003EDC0(u16 *p, s32 arg1) {
             D_800A7FE0[i][j] = -1;
         }
     }
-    /* FAKE: the grid row counter i is reused as the run-table fill index; a
-     * fresh index local moves the row counter from $a3 to $a1: score 5. */
+    /* the grid row counter i, restarted as the run-table fill index (its
+     * final value is the entry count), the way SOTN's DebugCaptureScreen
+     * reuses its i loop to loop (Q51) */
+    /* SOTN: src/dra/42398.c:75 @aa53500 */
     i = 0;
     while ((w = *p++) != -1) {
         x = w % 32;
