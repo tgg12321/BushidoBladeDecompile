@@ -543,28 +543,15 @@ void softbody_Step(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
 }
 
 void softbody_UpdateList(Unk80017FA0Rec *arg0, s32 arg1) {
-    s32 i = 0;
-    Unk80017FA0Rec *s0;
-    /* FAKE: pointer alias -- g_softbody_slots's address held in an integer
-     * local. Referenced directly, its lui/addiu is scheduled after `move s0,a0`
-     * (score 2); held as a u8 * the addu operands swap (score 2). */
-    s32 var_2;
+    s32 i;
 
-    if (i < arg1) {
-        var_2 = (s32)g_softbody_slots;
-        s0 = arg0;
-        do {
-            if (s0->snap & 1) {
-                s16 val = s0->slot_index;
-                softbody_SnapToPoints(
-                    s0, (Func80017A44Output *)(val * 52 + var_2));
-            } else {
-                s16 val = s0->slot_index;
-                softbody_Step(s0, (Func80017A44Output *)(val * 52 + var_2));
-            }
-            i++;
-            s0++;
-        } while (i < arg1);
+    for (i = 0; i < arg1; i++) {
+        if (arg0[i].snap & 1) {
+            softbody_SnapToPoints(
+                &arg0[i], &g_softbody_slots[arg0[i].slot_index]);
+        } else {
+            softbody_Step(&arg0[i], &g_softbody_slots[arg0[i].slot_index]);
+        }
     }
 }
 
