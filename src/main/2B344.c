@@ -1499,8 +1499,9 @@ void func_8003DDF8(u32 arg0) {
  * pass writes the far colour itself) and uploads the result one rect height
  * below the previous one, wrapping to the next column at y 0x200.
  *
- * FAKE constructs (each labelled at its site): the two combine-foldable
- * chain-extender detours (zero emitted bytes; dead-store-fake-exception). */
+ * FAKE constructs (each labelled at its site): the r_src / g_src far-colour
+ * staging and the two combine-foldable chain-extender detours (zero emitted
+ * bytes; dead-store-fake-exception). */
 void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
     u16 src_buf[0x200];
     u16 dst_buf[0x200];
@@ -1566,7 +1567,14 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
                             s32 var_22;
                             s32 var_23;
                             s32 green;
+                            /* the source blue, weighted, then blended in
+                             * place */
+                            s32 b_src;
                             src++;
+                            /* FAKE: r_src / g_src reused for the far-colour
+                             * term (r * factor, g * factor) between the
+                             * weighted source and the blend; fresh r_far /
+                             * g_far locals: score 33 */
                             var_22 = r_src * (0x1000 - factor);
                             r_src = r * factor;
                             sum = var_22 + r_src;
@@ -1576,13 +1584,13 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
                             g_src = g * factor;
                             sum = var_23 + g_src;
                             g_src = sum >> 10;
-                            px = ((u32)px >> 7) & 0xF8;
-                            px = px * (0x1000 - factor);
-                            sum = px + b * factor;
-                            px = sum >> 5;
+                            b_src = ((u32)px >> 7) & 0xF8;
+                            b_src = b_src * (0x1000 - factor);
+                            sum = b_src + b * factor;
+                            b_src = sum >> 5;
                             green = g_src & 0x3E0;
                             *dst = (pixel & 0x8000) | r_src | green |
-                                   (px & 0x7C00);
+                                   (b_src & 0x7C00);
                         }
                     }
                     dst++;
