@@ -2580,3 +2580,14 @@ DR_MODE *D_800A36E0;
 u8 *D_800A36E4;
 s32 D_800A372C;
 s32 D_800A3900;
+
+/* .data 0x8009BC04..0x8009BC1C, this file's whole .data (51268.c's
+ * D_8009BBFC ends at 0x8009BC04, 5ED34.c's D_8009BC1C follows): the list
+ * menu's state, rows 0-7 switched on, row mask 0xBF, then the eight option
+ * rows {state, mode}. Defined after every function, so no body sees a
+ * definition where it saw an extern. */
+MenuState D_8009BC04 = {
+    0xFF,
+    0xBF,
+    {{0, 3}, {1, 3}, {2, 3}, {4, 1}, {5, 1}, {6, 2}, {3, 3}, {7, 0}},
+};
