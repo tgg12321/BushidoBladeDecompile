@@ -417,12 +417,6 @@ void rcnt_StartCnt1(void) {
 void rcnt_GetCnt1(void) { GetRCnt(0xF2000001); }
 
 void func_80046B44(void) {
-    /* FAKE: constant-holder locals set in source order ahead of the fence
-       below so 1 seats in $v0 and 2 in $v1 before the store tail; literals:
-       score 6 */
-    s16 one;
-    s16 two;
-
     ndata_StartReadInf();
     arena_Reset();
     math_InitRotMatrixFuncs();
@@ -432,18 +426,12 @@ void func_80046B44(void) {
     gpu_InitFogDrawMoves();
     func_800404D8();
     func_8003F7F4();
-    one = 1;
-    two = 2;
-    /* FAKE: loop-note fence keeps the two constant sets out of the store
-       tail; without it 1/2/0x23 collapse into one serialized $v0 */
-    do {
-    } while (0);
-    D_800F6654 = one;
-    D_800F665A = one;
     g_color_mode = 0;
     D_800F6650 = 0;
+    D_800F6654 = 1;
     D_800F6656 = 0;
-    D_800F6658 = two;
+    D_800F6658 = 2;
+    D_800F665A = 1;
     D_800F665C = 0;
     D_800A3790 = 0x23;
     D_800A33BC = 0;
@@ -1404,14 +1392,10 @@ u16 cx, cy;
         } else {
             spr->clut = 0;
         }
-        p = tim + 2;
-        /* !FAKE: cancellation pair (F6): bumping tim stops cse rebasing the
-         * pixel-block reads onto tim, so they keep p as base as in the
-         * target; flow deletes both; without the pair: score 7 */
-        tim++;
-        tim--;
+        p = tim;
         spr->x = x;
         spr->y = y;
+        p += 2;
         spr->h = ((u16 *)p)[1];
         spr->w = *p++;
         spr->pixdata = p;
@@ -1812,15 +1796,11 @@ s32 math_UnorderedPairIndex(s32 arg0, s32 arg1, s32 arg2) {
     s32 sum = 0;
     s32 i;
     for (i = 0; i < arg1; i++) {
-        /* FAKE: do-while(0) loop-note ref weighting flips the sum/i allocno
-           priority so sum seats in $v1 and i in $a3 (matches target); without
-           it: score 6. */
-        do {
-            sum += arg0;
-            arg0 -= 1;
-        } while (0);
+        sum += arg0;
+        arg0--;
     }
-    return sum + (arg2 - arg1);
+    sum += arg2 - arg1;
+    return sum;
 }
 
 extern s16 D_80099C50[];
@@ -2023,37 +2003,27 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     // sp+0x10..sp+0x17 that no instruction touches
     volatile u32 pre_pad[2];
     u8 temp_v1;
-    s16 *new_var8;
-    s16 *var_4;
     s16 rot_z;
     s16 *src;
     Unk80045878Node *obj;
     Unk80045878Obj *slot_obj;
-    s16 a1_val;
     void **list;
 
     temp_v1 = D_80099CC8[arg0][arg2];
     if (temp_v1 == 0xFF) {
         return;
     }
-    /* FAKE: the table base in its own holder; &D_800EF980[temp_v1] emits the
-       shift ahead of the base load and swaps the addu operands (score 4). */
-    new_var8 = D_800EF980;
-    var_4 = new_var8 + temp_v1;
-    if ((*var_4) < 0) {
+    if (D_800EF980[temp_v1] < 0) {
         func_80052C10();
     }
     slot_obj = func_8004153C(arg1 >> 1);
     obj = (Unk80045878Node *)g_prim_buf_cursor;
     obj->node.unk0 = 0;
     obj->node.unk1 = 0;
-    /* FAKE: a1_val reads *var_4 ahead of each node's stores; read at the unk2
-       stores the lh moves down to them (score: first 29, second 6, both 35). */
-    a1_val = (*var_4) * 2;
+    obj->node.unk2 = D_800EF980[temp_v1] * 2;
     obj->node.unk4 = 6;
     obj->node.rotation_order = 0;
     obj->node.light_setup_index = 4;
-    obj->node.unk2 = a1_val;
     src = &D_80099D3C[(arg1 & 1) * 6];
     obj->node.work.t[0] = ((*src) * slot_obj->position_scale) >> 12;
     src++;
@@ -2073,7 +2043,7 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     g_draw_queue_cursor = list + 1;
     *list = obj;
     obj++;
-    a1_val = (*var_4) * 2;
+    obj->node.unk2 = D_800EF980[temp_v1] * 2 + 1;
     obj->node.unk0 = 3;
     obj->node.parent_node = &obj[-1].node;
     obj->node.unk1 = 0;
@@ -2081,7 +2051,6 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     obj->node.matrix_state = 1;
     obj->node.light_setup_index = 0;
     obj->node.unk4 = 6;
-    obj->node.unk2 = a1_val + 1;
     /* FAKE: unk58 stored through a pointer; the member store lets sched lift
        the g_draw_queue_cursor reload above the node's stores (score 17). */
     {
