@@ -51,6 +51,44 @@ disc/
     └── MOVOVL.EXE (122 KB)      MDEC playback overlay (standalone PS-X EXE)
 ```
 
+## Disc image and rebuild
+
+The retail image (`Bushido Blade 2 (USA).bin` + `.cue`) is one MODE2/2352
+data track of 298,348 sectors: ISO 9660 with XA extensions, each directory
+sector just ahead of its files, the 162 files back to back, then 150 empty
+sectors (header only). Plain data files use Form 1 sectors with subheader
+submode 0x08 (0x89 on a file's last sector); the `.XA` files are Form 2
+audio streams and `STR/OPENING.STR` is real-time video sectors.
+
+The game finds files through `g_cd_file_table` in the EXE (159
+`CdFileEntry {CdlLOC, u32 size}` entries, [file_io.md](../engine/file_io.md)),
+not through the ISO directory; every disc file has an entry except
+`SLUS_006.63`, `SYSTEM.CNF` and `TIM2D/LAS_DD.TIM`.
+
+`tools/build_disc.py` builds a modded image from the retail one. Replaced
+files may change size: one that still fits its sectors is written in place,
+a bigger one moves to the end of the files (before the 150 empty sectors).
+For each file that moves or changes size it rewrites the ISO directory
+record and the file's table entry in the EXE that goes on the disc (found
+by its old 8 bytes, so a rebuilt or shifted EXE works), grows the volume
+size, and writes every touched sector with its address, subheader and
+EDC/ECC. Only plain data files can be replaced.
+
+```
+python tools/build_disc.py --image "Bushido Blade 2 (USA).bin" --out mod.bin --verify   # no-op: must equal the retail image
+python tools/build_disc.py --image "Bushido Blade 2 (USA).bin" --out mod.bin \
+    --exe build/bb2.exe --dir mods/        # mods/TIM2D/GAME.BNK replaces TIM2D/GAME.BNK, etc.
+```
+
+Checked: the no-op build is byte-identical to the retail image; the sector
+writer reproduces retail sectors exactly; a build that grows two files and
+shrinks one re-parses with every file's bytes, sector EDC/ECC and
+subheaders, directory records and all 159 table entries consistent, and
+only table bytes changed in the EXE. Not yet run in an emulator.
+Per-format limits still apply: `NDATA.INF` is read as 2 sectors (the tool
+refuses one over 4,096 bytes), and `STAGE*.BIN` has its own
+([STAGE_BIN.md](STAGE_BIN.md)).
+
 ## Unverified / not yet documented
 
 * Internal byte encoding of BBM section 5 (the bulk packed keyframe
