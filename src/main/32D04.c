@@ -970,18 +970,15 @@ s32 reloc_KeepListedEntries(s32 *a0, ...) {
     va_list ap;
 
     base = a0;
-    old_first = *base;
+    old_first = *a0++;
     va_start(ap, a0);
     count = va_arg(ap, s32);
-    /* FAKE: a0 reused for base + 1; its own local: score 38 */
-    a0 = base + 1;
     *base = count;
     var_3 = a0;
     dest = (s32)base + *var_3;
     count--;
     if (count != -1) {
         do {
-            s32 *tbl;
             s32 cur_off;
 
             entry = va_arg(ap, s32);
@@ -989,10 +986,8 @@ s32 reloc_KeepListedEntries(s32 *a0, ...) {
                 func_80052C10();
             }
             count--;
-            /* FAKE: the word address as an integer sum; &a0[entry]: score 3. */
-            tbl = (s32 *)((entry * 4) + (s32)a0);
-            cur_off = *tbl;
-            size = *(tbl + 1);
+            cur_off = a0[entry];
+            size = a0[entry + 1];
             *var_3 = dest - (s32)base;
             var_3++;
             size = size - cur_off;
