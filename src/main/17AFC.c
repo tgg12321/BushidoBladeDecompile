@@ -2400,8 +2400,7 @@ void fighter_TestTriangleBoneHits(Unk80101EC8Record *a0, s32 a1, s32 a2) {
  * If n's components are within +-0x3FFF and |n| < 0x4000, the yaw (unkF8.vy)
  * and pitch (.vx) come from a and it returns 0; otherwise n is scaled down by
  * 64 and the angles come from n (returns 1). A rotation matrix built in unkD8
- * (RotMatrixY, RotMatrixX) then rotates a and b in place. `len` and `temp`
- * each hold two values (Ruling 11). */
+ * (RotMatrixY, RotMatrixX) then rotates a and b in place. */
 s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj) {
     s32 sp_tmp;
     s32 sp_tmp2;
@@ -2425,9 +2424,9 @@ s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj) {
     if ((u32)(obj->unkC8.x + 0x3FFF) < 0x7FFF &&
         (u32)(obj->unkC8.y + 0x3FFF) < 0x7FFF &&
         (u32)(obj->unkC8.z + 0x3FFF) < 0x7FFF) {
-        /* FAKE: len holds two values: |n| for the `< 0x4000` guard, then
-         * |a.xz| for the pitch's ratan2; one local per value: score 3 (Ruling
-         * 11) */
+        /* Successive vector lengths, |n| for the guard then |a.xz| for
+         * the pitch, each consumed before the next length is written (Q51). */
+        /* SOTN: src/dra/4B758.c:71 @db41b28 */
         s32 len;
         gte_sqr0();
         gte_stlvnl(&obj->unk100[0]);
