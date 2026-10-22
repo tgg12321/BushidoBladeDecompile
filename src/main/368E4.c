@@ -2117,8 +2117,8 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
     var_s3 = arg1;
     tail_off = tbl[count + 1];
     temp_a2 = tbl[2];
-    /* FAKE: var_s7 built in two steps; `var_s7 = arg0 + tail_off` swaps s7 / s8
-     * (score 6). */
+    /* Ruling 4 compound-assignment split; the one-expression form
+     * var_s7 = arg0 + tail_off scores 6. */
     var_s7 = arg0;
     var_s7 += tail_off;
     v0 = tbl[1];
