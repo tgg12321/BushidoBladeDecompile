@@ -1054,11 +1054,11 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     /* One past the chunk this function fills; it returns end_off - arg2, the
      * chunk size. */
     s32 end_off;
-    /* FAKE: i/row count the first phase's two loops; k and j are reused
-     * as plain loop indices by the later phases (tile strip k/j, timer j/k),
-     * the same counter reuse as func_8005E098 and the memcard_RestoreSaveBlock
-     * single-counter shape. Separate counters for the later phases: score 11.
-     */
+    /* i/row count the first phase's two loops; k and j are reused loop to
+     * loop as plain indices by the later phases (tile strip k/j, timer j/k),
+     * the way SOTN's DebugCaptureScreen reuses its i for its file-search loop
+     * and its row countdown (Q51) */
+    /* SOTN: src/dra/42398.c:75 @aa53500 */
     s16 i;
     s16 j;
     s16 k;
