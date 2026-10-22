@@ -1,0 +1,1 @@
+{"func": "rcos", "addr": "8007DFEC", "verdict": "PASS", "body_hash": "d8ae453e49e2bb48", "body_kind": "c", "file": "main/psxsdk/libgte/geo_01", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T10:59:22Z", "head": "926e30c41", "notes": "rsin_tbl[a0 - 0x400] / [a0 - 0xC00] replace link-order aliases D_8009B794 / D_8009A794; byte-identical"}

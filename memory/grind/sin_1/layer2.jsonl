@@ -1,0 +1,1 @@
+{"func": "sin_1", "addr": "8007DF5C", "verdict": "PASS", "body_hash": "061ed65774b6e132", "body_kind": "c", "file": "main/psxsdk/libgte/geo_00", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T10:59:05Z", "head": "926e30c41", "notes": "rsin_tbl[a0 - 0x800] replaces link-order alias D_8009AF94; byte-identical, relocs against rsin_tbl"}
