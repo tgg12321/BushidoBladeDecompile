@@ -1,0 +1,1 @@
+{"func": "prnt", "addr": "80079244", "verdict": "PASS", "body_hash": "f8620456a3b5d992", "body_kind": "c", "file": "main/psxsdk/libc2/prnt", "reviewer": "cheat-reviewer-a7ba64c1", "scope": "cheat-cleanup", "date": "2026-10-22T06:10:00Z", "head": "ca34d2464", "notes": ""}

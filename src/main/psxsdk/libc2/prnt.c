@@ -26,12 +26,12 @@ const char D_80015A84[20] = "0123456789ABCDEF\0\0\0\0";
 #define PRNT_HEXPREFIX 0x40
 #define PRNT_BUF 40
 
-extern u8 _ctype__plus_0x1;
+extern u8 _ctype_[];
 /* LIBC2 PUTCHAR (libc2/putchar.c): void putchar(s8). Left unprototyped, as in
  * puts.c: a prototype would narrow ch to s8 at each call. */
 extern void putchar();
 #define isascii(c) ((u32)(c) <= 0177)
-#define isdigit(c) ((&_ctype__plus_0x1)[c] & 4)
+#define isdigit(c) ((_ctype_ + 1)[c] & 4)
 #define todigit(c) ((c) - '0')
 
 #define __va_rounded_size(TYPE)                                                \

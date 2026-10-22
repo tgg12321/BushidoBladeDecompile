@@ -1,0 +1,1 @@
+{"func": "putchar", "addr": "8007997C", "verdict": "PASS", "body_hash": "8f84367e78d80572", "body_kind": "c", "file": "main/psxsdk/libc2/putchar", "reviewer": "cheat-reviewer-a7ba64c1", "scope": "cheat-cleanup", "date": "2026-10-22T06:08:35Z", "head": "ca34d2464", "notes": ""}

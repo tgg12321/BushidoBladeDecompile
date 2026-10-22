@@ -402,8 +402,8 @@ SECTIONS
         build/src/main/psxsdk/libc2/strlen.o(.data);
         build/src/main/psxsdk/libc2/printf.o(.data);
         build/src/main/psxsdk/libc2/prnt.o(.data);
-        build/asm/data/8C58C.data.o(.data);
         build/src/main/psxsdk/libc2/ctype.o(.data);
+        build/asm/data/8C60E.data.o(.data);
         build/src/main/psxsdk/libc2/memchr.o(.data);
         build/src/main/psxsdk/libc2/putchar.o(.data);
         build/src/main/psxsdk/libc2/sprintf.o(.data);

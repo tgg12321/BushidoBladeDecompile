@@ -7,7 +7,7 @@
 /* Declarations from the file this module was split from
  * (src/main/psxsdk/libc2/prnt.c). */
 extern s32 column;
-extern u8 _ctype__plus_0x1;
+extern u8 _ctype_[];
 
 void write(s32, u8 *, s32);
 
@@ -31,7 +31,7 @@ loop:
         return;
     goto loop;
 def:
-    if ((&_ctype__plus_0x1)[temp_a0] & 0x97) {
+    if ((_ctype_ + 1)[temp_a0] & 0x97) {
         column += 1;
     }
 tail:
