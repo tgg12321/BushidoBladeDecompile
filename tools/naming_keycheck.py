@@ -1024,9 +1024,9 @@ def literal_makefile(makefile):
     if re.search(r"(?m)^[^#\n\t]*:[^=\n]*\b" + names + r"\s*[:+?]?=", logical):
         raise ValueError("unsupported Makefile target-specific toolchain assignment")
     known = {
-        "FLAG_LISTS := GP_FILES PSYQ_LIBRARY_FILES EXPAND_LH_FILES NO_SR_FILES NOWARN_FILES",
+        "FLAG_LISTS := GP_FILES PSYQ_LIBRARY_FILES DATA_ONLY_NO_SDATA_FILES EXPAND_LH_FILES NO_SR_FILES NOWARN_FILES",
         "cc_flags_for = $(if $(filter $1,$(GP_FILES)),$(CC_FLAGS_GP),$(CC_FLAGS))$(if $(filter $1,$(NO_SR_FILES)), -fno-strength-reduce)$(if $(filter $1,$(NOWARN_FILES)), -w, $(WARN_FLAGS))",
-        "maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(PSYQ_LIBRARY_FILES)),, -G8)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)",
+        "maspsx_flags_for = $(if $(filter $1,$(GP_FILES)),$(MASPSX_FLAGS_GP),$(MASPSX_FLAGS))$(if $(filter $1,$(PSYQ_LIBRARY_FILES) $(DATA_ONLY_NO_SDATA_FILES)),, -G8)$(if $(filter $1,$(EXPAND_LH_FILES)), --expand-lh)",
         "$(foreach l,$(FLAG_LISTS),$(foreach f,$($(l)),$(if $(filter $(f),$(C_IDS)),,$(error $(l) names '$(f)', which is not a TU (no $(SRC_DIR)/$(f).c)))))",
     }
     for line in logical.splitlines():

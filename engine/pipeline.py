@@ -65,7 +65,7 @@ def c_pipeline_cmd(stem: str, out_o: str, cheat_overrides=None) -> str:
         cc_flags += " " + cfg.WARN_FLAGS
 
     maspsx_flags = cfg.MASPSX_FLAGS_GP if stem in cfg.GP_FILES else cfg.MASPSX_FLAGS
-    if stem not in cfg.PSYQ_LIBRARY_FILES:
+    if stem not in cfg.PSYQ_LIBRARY_FILES and stem not in cfg.DATA_ONLY_NO_SDATA_FILES:
         maspsx_flags += " -G8"
     if stem in cfg.EXPAND_LH_FILES:
         maspsx_flags += " --expand-lh"

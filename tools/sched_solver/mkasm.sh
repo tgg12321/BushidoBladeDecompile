@@ -13,8 +13,8 @@ CPP="mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D_
 CC1="tools/gcc-2.7.2/build/cc1"
 CC1F="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 MASPSX_FLAGS="--expand-div --aspsx-version=2.34 --expand-lb --expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt --expand-dest-funcs=expand_dest_funcs.txt"
-# owner rulings Q65/Q69: maspsx -G8 for every file except Sony library code (the Makefile's maspsx_flags_for)
-if python3 -c "import sys; sys.path.insert(0, '.'); from engine import buildconfig as c; sys.exit(0 if '$STEM' in c.PSYQ_LIBRARY_FILES else 1)"; then :; else MASPSX_FLAGS="$MASPSX_FLAGS -G8"; fi
+# owner rulings Q65/Q69: maspsx -G8 for every file except Sony library code and Q122 data-only files (the Makefile's maspsx_flags_for)
+if python3 -c "import sys; sys.path.insert(0, '.'); from engine import buildconfig as c; sys.exit(0 if '$STEM' in c.PSYQ_LIBRARY_FILES | c.DATA_ONLY_NO_SDATA_FILES else 1)"; then :; else MASPSX_FLAGS="$MASPSX_FLAGS -G8"; fi
 
 $CPP "src/$STEM.c" 2>/dev/null > "$OUT/$STEM.i"
 $CC1 $CC1F "$OUT/$STEM.i" -o "$OUT/$STEM.cc1.s" 2>/dev/null

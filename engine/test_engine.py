@@ -10510,6 +10510,16 @@ def test_psyq_library_files() -> None:
         lib, gp = plf.library_files(".")
         check("PSYQ_LIBRARY_FILES == the census library span over the link map", lib == mk)
         check("no gp-relative access in Sony library code", not gp)
+    # owner ruling Q122: data-only files whose small objects the original keeps in .data skip maspsx -G8
+    dmk, dbc = plf.declared_data_only(".")
+    check("DATA_ONLY_NO_SDATA_FILES: Makefile == engine/buildconfig.py", dmk is not None and dmk == dbc)
+    check("DATA_ONLY_NO_SDATA_FILES is disjoint from PSYQ_LIBRARY_FILES", not set(dmk or []) & set(mk))
+    if Path("build/bb2.map").exists() and plf.build_is_oracle("."):
+        check("DATA_ONLY_NO_SDATA_FILES == the data-only <= 8-byte .data files over the link map",
+              plf.data_only_files(".") == dmk)
+    for stem in dmk or []:
+        cmd = P.c_pipeline_cmd(stem, "o/d.o")
+        check(f"Q122: {stem} builds without maspsx -G8", not cmd.split("|")[3].rstrip().endswith("-G8"))
 
 
 def test_tus() -> None:
@@ -10992,10 +11002,11 @@ def test_move_tu() -> None:
             "bb2.ld": ("SECTIONS {\n        build/src/gpu.o(.rodata);\n        build/src/comb.o(.rodata);\n"
                        "        build/src/gpu.o(.text);\n        build/src/comb.o(.text);\n"
                        "        build/src/comb.o(.bss);\n}\n"),
-            "Makefile": ("GP_FILES := gpu\nPSYQ_LIBRARY_FILES := comb gpu\n"
+            "Makefile": ("GP_FILES := gpu\nPSYQ_LIBRARY_FILES := comb gpu\nDATA_ONLY_NO_SDATA_FILES :=\n"
                          "EXPAND_LH_FILES :=\nNO_SR_FILES :=\nNOWARN_FILES :=\n"),
             "engine/buildconfig.py": ('GP_FILES = {"gpu"}\nEXPAND_LH_FILES = set()\n'
-                                      'PSYQ_LIBRARY_FILES = {"comb", "gpu"}\nNO_SR_FILES = set()\n'
+                                      'PSYQ_LIBRARY_FILES = {"comb", "gpu"}\nDATA_ONLY_NO_SDATA_FILES = set()\n'
+                                      'NO_SR_FILES = set()\n'
                                       'NOWARN_FILES = set()\n'),
             "oracle/manifest.json": json.dumps({"corpus": {"src/comb.c": "h1", "src/gpu.c": "h2"},
                                                 "golden_fixtures": [{"name": "f", "file": "src/comb.c"}]},

@@ -35,7 +35,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-FLAG_LISTS = ("GP_FILES", "PSYQ_LIBRARY_FILES", "EXPAND_LH_FILES", "NO_SR_FILES", "NOWARN_FILES")
+FLAG_LISTS = ("GP_FILES", "PSYQ_LIBRARY_FILES", "DATA_ONLY_NO_SDATA_FILES", "EXPAND_LH_FILES", "NO_SR_FILES", "NOWARN_FILES")
 _ID_RE = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_.\-]*(/[A-Za-z0-9_][A-Za-z0-9_.\-]*)*$")
 RENAMES_HEADER = ("# TU renames (restructure, owner decision Q106 D9): old id, new id, and the\n"
                   "# HEAD the move was made on (`after:<sha>`; the move is the next commit that\n"
