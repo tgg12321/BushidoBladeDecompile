@@ -641,15 +641,14 @@ void pad_Update(s32 arg0) {
     var_1[2] = g_pad_buf[1][0];
     var_1[3] = g_pad_buf[1][1];
     do {
-        /* FAKE: var_5 holds (u8 *)var_1 + i * 8 for the loop body; indexing
-         * from var_1 at each read adds a second induction (score 18). */
-        u8 *var_5 = (u8 *)var_1 + i * 8;
+        /* pad i's copied receive packet: status, type << 4, button bytes */
+        u8 *pkt = (u8 *)var_1 + i * 8;
         s32 bits;
 
-        if (var_5[0] == 0) {
+        if (pkt[0] == 0) {
             s32 type_m1;
 
-            pad.type[i] = var_5[1] >> 4;
+            pad.type[i] = pkt[1] >> 4;
             pad.valid[i] = 1;
             type_m1 = (s16)((u16)pad.type[i] - 1);
 
@@ -660,7 +659,7 @@ void pad_Update(s32 arg0) {
             case 1:
             case 2:
             case 3:
-                bits = ~((var_5[2] << 8) | var_5[3]);
+                bits = ~((pkt[2] << 8) | pkt[3]);
                 break;
             case 0:
             case 5:
