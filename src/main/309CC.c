@@ -421,59 +421,33 @@ done:
 }
 
 void func_80040CB8(Unk80045878Obj *arg0) {
-    s16 id;
-    Unk80045878Node *var_1 = arg0->projected_nodes;
-    s32 i = 0;
-    // FAKE (var_3/var_4/var_5): constant-holders keep -1/3/1 in $t4/$t3/$t2
-    // across the goto-loop, which gets no LICM; literals: score 23
-    s32 var_3;
-    s32 var_4;
-    s32 var_5;
-    s32 var_6;
-    s16 *tbl;
-    s32 ent;
+    s32 i;
+    Unk80045878Node *p;
+    /* FAKE: parents is &transform_nodes[1], indexed by i;
+       &arg0->transform_nodes[i + 1] in place: score 3 */
+    Unk80045878Node *parents;
+    /* FAKE: id points at record i's unk_08; D_80094B96[i].unk_08 read in
+       place: score 5 */
+    s16 *id;
 
-    // FAKE: do-while(0) keeps the three constant loads ahead of the var_6/tbl
-    // initialisers; without it the scheduler sinks them: score 6
-    do {
-        var_3 = -1;
-        var_4 = 3;
-        var_5 = 1;
-    } while (0);
-    var_6 = (s32)&arg0->transform_nodes[1];
-    /* FAKE: tbl walks the records' unk_08 members, stepped by a record; a
-       record pointer: score 2, D_80094B96[i].unk_08: score 21 */
-    tbl = &D_80094B96[0].unk_08;
-    // FAKE: do-while(0) raises the loop depth that weights register allocation
-    // (seats id in $v1, the cursor in $a1); ent is set inside so the region is
-    // not a real loop and gets no extra induction pointer; without: score 21
-    do {
-        ent = (s32)&arg0->projected_nodes[0].unk58;
-    loop:
-        id = *tbl;
-        if (id != var_3) {
-            *(s16 *)(ent - 0x56) = id;
-            var_1->node.unk0 = var_4;
-            *(s8 *)(ent - 0x57) = 0;
-            *(s16 *)(ent - 0x50) = 0;
-            *(s32 *)(ent - 0x4C) = var_6;
-            *(s16 *)(ent - 0x52) = var_5;
-            *(s16 *)(ent - 0x4E) = 0;
-            {
-                u16 w = arg0->unk_16;
-                var_1++;
-                *(s32 *)ent = 0;
-                *(s16 *)(ent - 0x54) = w;
-                ent += 0x68;
-            }
+    p = arg0->projected_nodes;
+    parents = &arg0->transform_nodes[1];
+    for (i = 0; i < 18; i++) {
+        id = &D_80094B96[i].unk_08;
+        if (*id != -1) {
+            p->node.unk2 = *id;
+            p->node.unk0 = 3;
+            p->node.unk1 = 0;
+            p->node.rotation_order = 0;
+            p->node.parent_node = &parents[i].node;
+            p->node.matrix_state = 1;
+            p->node.light_setup_index = 0;
+            p->node.unk4 = arg0->unk_16;
+            p->unk58 = 0;
+            p++;
         }
-        var_6 += 0x68;
-        i++;
-        tbl = (s16 *)((u8 *)tbl + sizeof(Unk80094B96Rec));
-        if (i < 0x12)
-            goto loop;
-    } while (0);
-    var_1->node.unk2 = -1;
+    }
+    p->node.unk2 = -1;
 }
 
 /* .data 0x80094C68..0x80094CFC, the end of this file's .data (the rest,
