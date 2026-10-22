@@ -1709,34 +1709,27 @@ end:
 }
 
 POLY_G4 *gpu_AddPanelUpperQuad(s32 arg0, POLY_G4 *arg1) {
-    u8 var_v0;
-    /* FAKE: constant holder -- 0xFC held from before the branch; the literal at
-     * each store rematerialises it at the r3 store and swaps v0 / v1: score 5
-     */
-    int var_1;
-
     SetPolyG4(arg1);
     SetSemiTrans(arg1, 0);
-    var_1 = 0xFC;
     if (arg0 < 4) {
         arg1->r0 = 0;
         arg1->g0 = 0;
         arg1->b0 = 0;
-        arg1->r1 = var_1;
+        arg1->r1 = 0xFC;
         arg1->g1 = 0x82;
         arg1->b1 = 0;
-        arg1->r2 = var_1;
+        arg1->r2 = 0xFC;
         arg1->g2 = 0x82;
         arg1->b2 = 0;
         if (D_800A35C4->unk_08 & 4) {
+            arg1->r3 = 0xFC;
             arg1->g3 = 0xC3;
-            var_v0 = 0x1E;
+            arg1->b3 = 0x1E;
         } else {
+            arg1->r3 = 0xFC;
             arg1->g3 = 0xC3;
-            var_v0 = 0x50;
+            arg1->b3 = 0x50;
         }
-        arg1->r3 = var_1;
-        arg1->b3 = var_v0;
     } else {
         arg1->r0 = 0;
         arg1->g0 = 0;
