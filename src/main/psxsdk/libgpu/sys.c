@@ -6,6 +6,7 @@
 #include "common.h"
 #include <psxsdk/libgpu.h>
 #include "psx.h"
+#include <psxsdk/libc.h>
 
 /* PsyQ libgpu device table (_gpucb in psyz's sys.c; psyz's "gpu" is the
  * pointer): 0x40 bytes of function pointers at _gpucb, reached through the
@@ -21,9 +22,9 @@ typedef struct GpuDevTable {
     /* 0x1C */ s32 (*drs)();
     /* 0x20 */ s32 (*dws)();
     /* 0x24 */ s32 (*exeque)();
-    /* 0x28 */ s32 (*getctl)();
+    /* 0x28 */ u32 (*getctl)();
     /* 0x2C */ s32 (*otc)();
-    /* 0x30 */ s32 (*param)();
+    /* 0x30 */ u32 (*param)();
     /* 0x34 */ s32 (*reset)();
     /* 0x38 */ u32 (*status)();
     /* 0x3C */ s32 (*sync)();
@@ -140,6 +141,12 @@ s32 get_mode(s32, s32, s32);
 s32 get_cs(s16, s16);
 s32 get_ce(s16, s16);
 s32 get_ofs(s32, s32);
+s32 get_tw(RECT *);
+void SetDrawEnv2(DR_ENV *, DRAWENV *);
+s32 _reset(s32);
+extern void GPU_cw(u32);
+s32 DMACallback(s32, s32 (*)()); /* extern */
+void memset();
 
 extern volatile u32 *GPU_STATUS;
 extern volatile u32 *GPU_DATA;
@@ -899,15 +906,16 @@ u32 _param(u32 a0) {
     return *GPU_DATA & OT_ADDR_MASK;
 }
 
+s32 _addque2();
+
 void _addque(s32 a0, s32 a1, s32 a2) { _addque2(a0, a1, 0, a2); }
 
 extern volatile s32 _qin;
 extern volatile s32 _qout;
 
 s32 _exeque(void);
-s32 get_alarm();                 /* extern */
-s32 DMACallback(s32, s32 (*)()); /* extern */
-s32 SetIntrMask(s32);            /* extern */
+s32 get_alarm();      /* extern */
+s32 SetIntrMask(s32); /* extern */
 extern volatile s32 _qlog[];
 extern s32 *D_8009BF6C;
 extern s32 D_8009BF70;
@@ -943,7 +951,7 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 cb_arg) {
         for (i = 0; i < len / 4; i++) {
             _que[_qin].data[i] = arg[i];
         }
-        _que[_qin].arg = _que[_qin].data;
+        _que[_qin].arg = (s32 *)_que[_qin].data;
     } else {
         _que[_qin].arg = arg;
     }
@@ -988,7 +996,6 @@ s32 _exeque(void) {
     return (_qin - _qout) & 0x3F;
 }
 
-extern void memset(u8 *a0, u8 a1, s32 a2);
 extern s32 SetIntrMask(s32);
 extern s32 _version(s32);
 extern volatile s32 _qout;
@@ -1000,7 +1007,6 @@ extern volatile int *DPCR;
 extern volatile s32 _qlog[];
 
 extern s32 D_8009BF70;
-extern s32 printf();
 
 s32 _reset(s32 arg0) {
     D_8009BF88 = SetIntrMask(0);
@@ -1110,7 +1116,10 @@ s32 _version(s32 arg0) {
     return 4;
 }
 
-void memset(u8 *a0, u8 a1, s32 a2) {
+void memset(a0, a1, a2) u8 *a0;
+u8 a1;
+s32 a2;
+{
     s32 i;
     for (i = a2 - 1; i != -1; i--) {
         *a0++ = a1;
