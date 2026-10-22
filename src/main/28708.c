@@ -1906,10 +1906,9 @@ end:
  * memcard_BuildFileHeader's full-width Shift-JIS digit tables D_8008F19C
  * ("0".."4") and D_8008F1A8 ("0".."9"), the full-width save title D_8008F1C0
  * ("BB2 Narukagami:? VS Shainto:?", the two "?" overwritten with digits) and
- * the per-character
- * class bytes D_8008F204 (27 used; the 28th byte is zero). Only this file reads
- * them. Defined after every function, so no body sees a definition where it saw
- * an extern. */
+ * the per-character class bytes D_8008F204 (27 used; the 28th byte is zero).
+ * Only this file reads them. Defined after every function, so no body sees a
+ * definition where it saw an extern. */
 u8 D_8008F19C[12] = {
     0x82, 0x4F, 0x82, 0x50, 0x82, 0x51, 0x82, 0x52, 0x82, 0x53, 0x00, 0x00,
 };
