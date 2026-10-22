@@ -603,7 +603,8 @@ evidence: every label is read only by 368E4.c (D_80099478 / D_8009947A s16 scala
 > 8 bytes), and the run holds those <= 8-byte objects in .data, so a -G8 368E4.c cannot define them. Its .data link
 position is after 3AB48.o (368E4.o's and 3AB48.o's .data are empty), before 43500.o. 368E4.o (.sdata 0x8, .sbss 0x40,
 55 GPREL relocs) and 43500.o (.sbss 0x10, 58) use small data, but 3AB48.o has no .sdata/.sbss and 0 GPREL relocations
-(3AB48.c is all INCLUDE_ASM, 70 functions, so that is the original code's), and its .text is adjacent on both sides
+(3AB48.c is 70 INCLUDE_ASM functions and 3 empty C bodies, so that is the original code's), and its .text is adjacent
+on both sides
 (0x8004A348..0x80052D00): a -G0 3AB48.c could own the run, as for 7D920 / cdrom.o above.
 disposition taken: left as asm (data lane, 2026-10-22). Question for the owner: may a run whose code neighbour uses no
 small data but never reads the run (3AB48.c references none of its labels) become a Q122 data-only file (d_89C78.c)?
