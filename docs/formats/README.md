@@ -70,9 +70,12 @@ files may change size: one that still fits its sectors is written in place,
 a bigger one moves to the end of the files (before the 150 empty sectors).
 For each file that moves or changes size it rewrites the ISO directory
 record and the file's table entry in the EXE that goes on the disc (found
-by its old 8 bytes, so a rebuilt or shifted EXE works), grows the volume
-size, and writes every touched sector with its address, subheader and
-EDC/ECC. Only plain data files can be replaced.
+by its old 8 bytes, so a rebuilt or shifted EXE works as long as its
+table still describes the input image; an entry it cannot find is an
+error), grows the volume size, and writes every touched sector with its
+address, subheader and EDC/ECC. Only plain data files can be replaced.
+A 74-minute CD-R holds 333,000 sectors, 34,652 more (about 71 MB of
+data) than the retail image.
 
 ```
 python tools/build_disc.py --image "Bushido Blade 2 (USA).bin" --out mod.bin --verify   # no-op: must equal the retail image

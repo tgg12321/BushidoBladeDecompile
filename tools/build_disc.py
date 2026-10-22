@@ -23,12 +23,14 @@ file that moves or changes size the tool rewrites:
   the volume space size when the image grows;
 * its entry in the EXE's CD file table (`g_cd_file_table`, CdFileEntry
   {CdlLOC, u32 size}): the old entry's 8 bytes are found in the EXE that
-  goes on the disc (it must occur exactly once), so a shifted or rebuilt
-  EXE works too.
+  goes on the disc and must occur there exactly once, so a shifted or
+  rebuilt EXE works as long as its table still describes the input image.
+  A file with no entry in the input image's own EXE (SLUS_006.63,
+  SYSTEM.CNF, TIM2D/LAS_DD.TIM on the retail disc) only gets a note.
 
 Every written sector gets its MSF address, subheader (data 0x08, last
-sector of a file 0x89) and EDC/ECC (after Neill Corlett's ECM, public
-domain). With no replacements the output equals the input byte for byte;
+sector of a file 0x89) and EDC/ECC (the CD-ROM Mode 2 Form 1 code of
+ECMA-130 / CD-ROM XA, re-implemented). With no replacements the output equals the input byte for byte;
 `--verify` checks that. Writes OUT plus OUT's .cue.
 """
 
@@ -48,7 +50,7 @@ SYNC = b"\x00" + b"\xff" * 10 + b"\x00"
 INF_MAX = 2 * DATA  # ndata_StartReadInf reads NDATA.INF as 2 sectors
 
 # ---------------------------------------------------------------------------
-# EDC / ECC (after Neill Corlett's ECM, public domain)
+# EDC / ECC (ECMA-130 / CD-ROM XA Mode 2 Form 1)
 # ---------------------------------------------------------------------------
 EDC_TABLE = [0] * 256
 ECC_F = bytearray(256)
@@ -205,7 +207,9 @@ def plan(img, files, repl):
     return layout, end, tail
 
 
-def patch_exe(exe, files, layout):
+def patch_exe(exe, disc_exe, files, layout):
+    """Patch exe's table entries; disc_exe is the input image's own EXE,
+    which tells which files have an entry at all."""
     exe = bytearray(exe)
     for path, (lba, size) in layout.items():
         e = files[path]
@@ -218,8 +222,14 @@ def patch_exe(exe, files, layout):
             hits.append(i)
             i = exe.find(old, i + 1)
         if not hits:
-            print(f"note: {path} has no CD file table entry in the EXE "
-                  "(the game does not read it by table)")
+            if old in disc_exe:
+                raise ValueError(
+                    f"{path}: the EXE has no table entry {old.hex()} for it "
+                    "(the input image's EXE does); the EXE's table does not "
+                    "describe this image, so the game would read the old "
+                    "location")
+            print(f"note: {path} has no CD file table entry (the game does "
+                  "not read it by table)")
             continue
         if len(hits) > 1:
             raise ValueError(f"{path}: its table entry {old.hex()} occurs "
@@ -243,10 +253,11 @@ def build(image, out, repl):
     moved = [p for p, v in layout.items()
              if v != (files[p]["lba"], files[p]["size"])]
     if moved:
-        exe = repl.get(exe_path) or img.data(
+        disc_exe = img.data(
             files[exe_path]["lba"], nsectors(files[exe_path]["size"])
         )[:files[exe_path]["size"]]
-        patched = patch_exe(exe, files, layout)
+        exe = repl[exe_path] if exe_path in repl else disc_exe
+        patched = patch_exe(exe, disc_exe, files, layout)
         if patched != exe:
             repl[exe_path] = patched
             if exe_path not in layout:
@@ -255,6 +266,9 @@ def build(image, out, repl):
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(image, out)
     total = end + tail
+    if total + 150 > 99 * 60 * 75:
+        raise ValueError(f"image would be {total} sectors, past the 99:59:74 "
+                         "that a BCD CdlLOC can address")
     with open(out, "r+b") as o:
         def put(lba, sector):
             o.seek(lba * SECTOR)
