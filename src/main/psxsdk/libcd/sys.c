@@ -78,153 +78,41 @@ static s32 g_cd_setloc_flags[32] = {
     0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0};
 
-s32 CdControl(u8 a0, u8 *a1, u8 *a2) {
-    s32 result;
-    s32 idx;
-    CdlCB saved;
+/* Form of psyz decomp/src/libcd/sys.c (Xeeynamo/psyz @ 5d29a0f8e): the shared
+ * retry loop of CdControl / CdControlF / CdControlB, four tries. */
+static inline s32 cd_cw(u8 com, u8 *param, u8 *result, s32 arg3) {
+    CdlCB old = CD_cbsync;
     s32 count;
-    s32 *base;
-    s32 *elem;
 
-    idx = a0;
-    saved = CD_cbsync;
-    count = 3;
-    base = g_cd_setloc_flags;
-    elem = base + idx;
-    result = 0;
-
-loop:
-    /* FAKE: do-while(0) loop-depth weighting seats count/a1/a2/idx/a0/saved/
-       elem/result in s0..s7; a real-loop restructure does not
-       (do-while-zero-exception); without it: score 17 */
-    do {
+    for (count = 3; count != -1; count--) {
         CD_cbsync = 0;
-
-        if (idx != 1) {
-            if (CdStatus() & 0x10) {
-                CD_cw(1, 0, 0, 0);
-            }
-        }
-        if (a1 != 0) {
-            if ((*elem) != 0) {
-                if (CD_cw(2, a1, a2, 0) != 0) {
-                    goto next;
-                }
-            }
-        }
-        CD_cbsync = saved;
-        if (CD_cw(a0, a1, a2, 0) == 0) {
-            goto done;
-        }
-    next:
-        count--;
-
-        if (count != (-1)) {
-            goto loop;
-        }
-    } while (0);
-    CD_cbsync = saved;
-    result = -1;
-done:
-    return result + 1;
-}
-
-s32 CdControlF(u8 a0, u8 *a1) {
-    s32 result;
-    s32 idx;
-    CdlCB saved;
-    s32 count;
-    s32 *base;
-    s32 *elem;
-
-    idx = a0;
-    saved = CD_cbsync;
-    count = 3;
-    base = g_cd_setloc_flags;
-    elem = base + idx;
-    result = 0;
-
-loop:
-    /* FAKE: do-while(0) loop-depth weighting seats elem in s5 and result in
-       s6 (do-while-zero-exception); without it: score 20 */
-    do {
-        CD_cbsync = 0;
-
-        if (idx != 1) {
-            if (CdStatus() & 0x10) {
-                CD_cw(1, 0, 0, 0);
-            }
-        }
-        if (a1 != 0) {
-            if ((*elem) != 0) {
-                if (CD_cw(2, a1, 0, 0) != 0) {
-                    goto next;
-                }
-            }
-        }
-        CD_cbsync = saved;
-        if (CD_cw(a0, a1, 0, 1) == 0) {
-            goto done;
-        }
-    next:
-        count--;
-
-        if (count != (-1)) {
-            goto loop;
-        }
-    } while (0);
-    CD_cbsync = saved;
-    result = -1;
-done:
-    return result + 1;
-}
-
-s32 CdControlB(u8 a0, u8 *a1, u8 *a2) {
-    s32 count;
-    s32 idx;
-    CdlCB saved;
-    s32 *elem;
-    s32 *base;
-    s32 status;
-
-    saved = CD_cbsync;
-    count = 3;
-    idx = a0;
-    base = g_cd_setloc_flags;
-    elem = base + idx;
-
-loop:
-    CD_cbsync = 0;
-
-    if (idx != 1) {
-        if (CdStatus() & 0x10) {
+        if (com != 1 && (CdStatus() & 0x10)) {
             CD_cw(1, 0, 0, 0);
         }
-    }
-    if (a1 != 0) {
-        if ((*elem) != 0) {
-            if (CD_cw(2, a1, a2, 0) != 0) {
-                goto next;
+        if (param == 0 || g_cd_setloc_flags[com] == 0 ||
+            !CD_cw(2, param, result, 0)) {
+            CD_cbsync = old;
+            if (!CD_cw(com, param, result, arg3)) {
+                return 0;
             }
         }
     }
-    CD_cbsync = saved;
-    if (CD_cw(a0, a1, a2, 0) == 0) {
-        status = 0;
-        goto done;
-    }
-next:
-    count--;
-    status = -1;
-    if (count != (-1)) {
-        goto loop;
-    }
-    CD_cbsync = saved;
-done:
-    if (status != 0) {
+
+    CD_cbsync = old;
+    return -1;
+}
+
+s32 CdControl(u8 com, u8 *param, u8 *result) {
+    return cd_cw(com, param, result, 0) == 0;
+}
+
+s32 CdControlF(u8 com, u8 *param) { return cd_cw(com, param, 0, 1) == 0; }
+
+s32 CdControlB(u8 com, u8 *param, u8 *result) {
+    if (cd_cw(com, param, result, 0)) {
         return 0;
     }
-    return CD_sync(0, a2) == 2;
+    return CD_sync(0, result) == 2;
 }
 
 s32 CdMix(CdlATV *vol) {
