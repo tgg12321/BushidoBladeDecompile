@@ -645,3 +645,14 @@ void func_800548DC(void) {
     func_8004659C(-1);
     motion_FreePlaybackBlock();
 }
+
+/* .data 0x80099D54..0x80099D88, this file's whole .data (368E4.c's
+ * D_80099D3C ends at 0x80099D54; 4510C.c's D_80099D88 follows):
+ * per-entry base sequence ids (-1: none); func_80054884 starts sequence
+ * D_80099D54[a0] + a1 - 0x131. The final 0 fills the 0x34 bytes to D_80099D88.
+ * Defined after every function, so no body sees a definition where it saw
+ * an extern. */
+s16 D_80099D54[26] = {
+    0x131, 0x151, 0x171, 0x192, 0x1AD, -1,    0x1CB, 0x1E6, 0x204,
+    0x222, -1,    -1,    0x241, 0x264, 0x287, 0x2AA, -1,    0x2CD,
+    0x2F0, 0x30F, 0x32E, 0x351, 0x374, -1,    -1,    0x0};
