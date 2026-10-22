@@ -313,9 +313,8 @@ void func_80027A58(Unk80101EC8Record *a0) {
     if (v1 == a0->unk_88) {
         if (a0->unk_8A) {
             if (func_8002798C(a0)) {
-                u8 *v0 = func_80046DEC(a0->index);
-                object_DropQueuedHeadAt(
-                    a0, (Vec3i32 *)(*(s32 *)(v0 + 0x4C) + 0x14));
+                MATRIX **v0 = func_80046DEC(a0->index);
+                object_DropQueuedHeadAt(a0, (Vec3i32 *)v0[19]->t);
                 a0->unk_8A = 0;
                 a0->unk_86 = a0->unk_84;
             }
