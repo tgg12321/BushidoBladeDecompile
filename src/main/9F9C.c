@@ -397,11 +397,10 @@ void func_8001A67C(s16 *arg0, s32 *arg1, s32 *arg2) {
         u32 shift_b;
         gte_Lzc(dist_sq, &sp_tmp);
         {
-            /* FAKE: the -2 mask held in a local that then takes the masked
-             * count; as `0x16 - (sp_tmp & -2)`: score 3 */
-            s32 var_8 = -2;
-            var_8 = sp_tmp & var_8;
-            shift_a = 0x16 - var_8;
+            /* Ruling 4 split; one expression: score 3. */
+            s32 lzc_even = -2;
+            lzc_even &= sp_tmp;
+            shift_a = 0x16 - lzc_even;
         }
         shift_b = shift_a >> 1;
         var_3 = (((u32)((u8)(g_sqrt_table_u8[dist_sq >> shift_a]))) << 16) >>
