@@ -50,6 +50,11 @@ def check_billboards(b):
                              "the list would end there")
     if b[12 * n:] != bytes(12):
         raise ValueError("billboard list does not end with 12 zero bytes")
+    if n > 5:
+        # g_eff_billboards (0x800F1198) is followed by a symbol at
+        # 0x800F11E0: room for 5 entries and the terminator, inferred.
+        print(f"warning: {n} billboard entries; the game's copy seems to "
+              "hold 5", file=sys.stderr)
 
 
 def records(data):

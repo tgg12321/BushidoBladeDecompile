@@ -115,13 +115,15 @@ before it. `eff_DrawBillboardList` (`src/main/51268.c`) decodes an entry as:
 
 ```
 word 0   bit 0 = present, x = word0 / 2
-word 1   type = word1 & 7 (picks sprite size and frames), y = word1 / 8
+word 1   type = word1 & 7 (0..3 pick sprite size and frames; 4..7 keep
+         the previous entry's), y = word1 / 8
 word 2   z
 ```
 
 The next symbol after `g_eff_billboards` (0x800F1198) is at 0x800F11E0, so
 the copy apparently holds at most 5 entries plus the terminator (inferred
-from symbol spacing; the disc files use at most 4).
+from symbol spacing; the disc files use at most 4). `repack_stage.py`
+warns when a list holds more than 5.
 
 ### Repack
 

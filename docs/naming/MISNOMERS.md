@@ -62,11 +62,11 @@ Body uses `cdrom_SetCallbackB(0)` + `cdrom_BcdToFrames` and reads
 callback that loads NDATA-style sector chunks; not a camera-init
 function.
 
-* **Current name in src/**: `marionation_camera_Init_80036064`
+* **Current name in src/**: `cdrom_ReadyCallback` (src/main/267A8.c:32),
+  the CD ready callback `cdrom_Update` installs with `CdReadyCallback`
+  (src/main/26940.c:269)
 * **Proposed canonical**: `cdrom_stream_callback`
 * **Alias added**: `cdrom_stream_callback_80036064 = 0x80036064`
-* **Discussed in**: [`docs/formats/NDATA.md`](../formats/NDATA.md)
-  (now `cdrom_ReadyCallback`, src/main/267A8.c)
 
 ### `marionation_camera_Init_80037468` (src/code6cac_b2.c:651) -- actually a `bios_Exec` wrapper
 
