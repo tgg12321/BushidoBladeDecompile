@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 repack_vab.py - Split a BB2 VAB pack (the `.SE` files) into its parts and
-rebuild it. Format in docs/formats/SE.md (VH layout in docs/formats/BNK.md).
+rebuild it. Format (and VH layout) in docs/formats/SE.md.
 
     repack_vab.py unpack file.se OUTDIR
     repack_vab.py pack DIR out.se

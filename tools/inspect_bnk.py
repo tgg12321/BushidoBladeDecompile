@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """
-inspect_bnk.py - Inspect BB2 sound bank files (.BNK / .SE).
+inspect_bnk.py - Old inspector for .BNK / .SE files.
 
-BB2 uses split VAB sound banks:
-  * .BNK files = raw VAB body (concatenated SPU-ADPCM samples, no headers).
-  * .SE files  = container (same layout as one STAGE record) with the
-                 matching VH (pBAV header) embedded inside.
-
-See docs/formats/BNK.md for the format spec.
+It assumed BB2 used split VAB sound banks (.BNK = a raw VAB body of
+SPU-ADPCM samples, .SE = the matching VH container). Outdated: a BNK is raw VRAM data, not ADPCM (docs/formats/BNK.md,
+tools/repack_bnk.py), and .SE files are VAB packs (docs/formats/SE.md,
+tools/repack_vab.py).
 
 Usage:
     inspect_bnk.py FILE.BNK              ADPCM block stats

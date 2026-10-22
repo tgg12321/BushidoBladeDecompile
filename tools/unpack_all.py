@@ -143,10 +143,9 @@ def probe_bnk(path, blob):
     file_size = path.stat().st_size
     if file_size % 16 != 0 or file_size == 0:
         return None, ""
-    n_blocks = file_size // 16
-    loop_ends = sum(1 for i in range(len(blob) // 16) if blob[i * 16 + 1] & 1)
-    return ("BNK", f"{n_blocks} ADPCM blocks (~{loop_ends} sample boundaries "
-                   f"in first {len(blob)} B)")
+    # Raw 16-bit VRAM data, not sound (docs/formats/BNK.md).
+    return ("BNK", f"VRAM rects (896,0) 128x476 + (896,476) 112x36, "
+                   f"{file_size} B (tools/repack_bnk.py)")
 
 
 def probe_wrap5_bin(path, blob):
@@ -223,7 +222,7 @@ PROBES = [
     probe_wrap5_bin,  # 5-u32 outer TOC heuristic (SEL/NAR/MOD/...)
     probe_tim,        # TIM tag 0x10 with valid flags
     probe_xa,         # by .XA extension + sector alignment
-    probe_bnk,        # least specific: any 16-byte-block file with non-zero SF
+    probe_bnk,        # least specific: files named .BNK
 ]
 
 

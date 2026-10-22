@@ -12,7 +12,7 @@ the Bushido Blade 2 (SLUS-00663) disc.
 | **WIN.DAT**| [BBM.md#WIN.DAT](BBM.md#windat) | `tools/inspect_windat.py` | Structure reversed (27×0x3800 records, i16 fixed-point); per-frame schema TBD | `disc/MOTION/WIN.DAT` |
 | **TIM**    | [TIM.md](TIM.md)      | `tools/inspect_tim.py`, `tools/repack_tim.py` (PNG round-trip) | Standard PSX format — fully implemented (PNG export) | `disc/TIM2D/*.TIM`, `disc/STR/TITLE.TIM` |
 | **STAGE_BIN** | [STAGE_BIN.md](STAGE_BIN.md) | `tools/inspect_stage.py`, `tools/repack_stage.py` (`STAGE*.BIN` round-trip) | Container reversed (incl. wrap5 family TIM/VAB embeds); `STAGE*.BIN` = 6 VAB packs ([SE.md](SE.md)) + billboard list | `disc/{LOADSE,LOADSE1}/STAGE*.BIN`, `disc/U_PIC/STG*.BIN`, `disc/TIM2D/STG*.BIN`, plus SEL/NAR/MOD/STAFF/D_SEL BINs |
-| **BNK**    | [BNK.md](BNK.md)      | `tools/inspect_bnk.py`     | Content format not established | `disc/TIM2D/GAME*.BNK`   |
+| **BNK**    | [BNK.md](BNK.md)      | `tools/repack_bnk.py` (round-trip, via TIM) | Reversed: raw VRAM data for two rects at x = 896, effect textures and more (not sound) | `disc/TIM2D/GAME*.BNK`   |
 | **SE**     | [SE.md](SE.md)        | `tools/repack_vab.py` (round-trip) | VAB pack reversed (head, event table, VH, VB; = one STAGE record) | `disc/LOADSE/*.SE` |
 | **STR**    | [STR.md](STR.md)      | `tools/inspect_str.py`     | Standard PSX format — documented and inspected | `disc/STR/OPENING.STR` |
 | **MOVOVL** | [MOVOVL.md](MOVOVL.md)| `tools/inspect_movovl.py`  | PS-X EXE overlay characterised (header, BIOS, libs); decoder internals from PsyQ library | `disc/STR/MOVOVL.EXE` |
@@ -39,7 +39,7 @@ disc/
 │   └── STAGE{10..37}.BIN
 ├── TIM2D/
 │   ├── {LAS_*,LINK,LINK_M,SEA2_16}.TIM     Textures
-│   ├── GAME{,CHAN,DAN,STO,TRA}.BNK         content not established (see BNK.md)
+│   ├── GAME{,CHAN,DAN,STO,TRA}.BNK         VRAM blocks, not sound (BNK.md)
 │   ├── STG{30,31}.BIN                      Stage-thumbnail TIM containers
 │   └── {SEL,SEL1,SEL2,D_SEL,MOD,NAR,STAFF}.BIN   Container files
 ├── U_PIC/
@@ -57,7 +57,6 @@ disc/
   payload) — requires Marionation runtime reverse-engineering.
 * Inner sub-section layout of SEL/NAR/MOD/STAFF/D_SEL containers beyond the
   5-u32 outer TOC.
-* What the 5 BNK files hold (`BNK.md`: the SPU-ADPCM reading fits badly).
 
 ## Tools summary
 

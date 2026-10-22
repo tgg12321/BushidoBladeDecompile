@@ -146,7 +146,7 @@ Many function and global names in the source use Japanese romanization, inherite
 |---|---|
 | **`.BBM`** | Bushido Blade Motion — character animation bundle. Undocumented. Loaded from `disc/MOTION/`. |
 | **`.SE`** | Sound effect bank: one VAB pack + 4 zero bytes (`docs/formats/SE.md`). In `disc/LOADSE/`. |
-| **`.BNK`** | `GAME.BNK`, `GAMECHAN.BNK`, etc. in `TIM2D/`; content format not established (`docs/formats/BNK.md`). |
+| **`.BNK`** | `GAME.BNK`, `GAMECHAN.BNK`, etc. in `TIM2D/`: raw 16-bit VRAM data (effect textures in rows 0..255, the rest unattributed) for two rects at x = 896, picked by the main-menu row (`docs/formats/BNK.md`); not sound. |
 | **`STAGE##.BIN`** | Per-stage file: a 0x34-byte header (6 (offset, size) record pairs, then the offset of a billboard list that `func_8005BA8C` hands to `eff_SetBillboardList`), 6 records each shaped like an `.SE` file (`docs/formats/SE.md`), then the billboard list. 38 stages in `disc/LOADSE*/`. |
 | **`STG##.BIN`** | Stage background image. In `disc/U_PIC/`. |
 | **`NDATA.DAT`** + **`NDATA.INF`** | Large packed data archive (~55 MB) + index. Contains many in-game assets. |
