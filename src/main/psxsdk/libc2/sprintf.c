@@ -296,7 +296,7 @@ s32 sprintf(char *out, char *f, ...) {
             break;
 
         case 'n':
-            bufPtr = va_arg(args, s32 *);
+            bufPtr = va_arg(args, char *);
             if (info.isHalf) {
                 LOH(*bufPtr) = written;
             } else if (info.isLong) {
