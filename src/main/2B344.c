@@ -121,7 +121,6 @@ s32 comb_Connect(void) {
 }
 
 void func_8003AE5C(u8 *arg0) {
-    /* FAKE: the load address in a local; at the call: score 11 */
     s32 *addr = (s32 *)0x80190800;
     s32 result = -1;
     s32 var_2 = 0;
@@ -174,7 +173,6 @@ void func_8003AF40(s32 arg0) {
 }
 
 void func_8003AFFC(void) {
-    /* FAKE: the load address in a local; at the call: score 12 */
     s32 addr = (s32)0x80190800;
     s32 i;
 
@@ -1318,8 +1316,6 @@ s32 bitstream_ReadBits(BitStream *s, s32 n) {
         s32 shift;
         u32 *var_5;
         u32 w;
-        /* FAKE: `hi` names the masked high-bit slice of the loaded word;
-           written into the or: score 17 (s and n swap argument registers) */
         u32 hi;
 
         n -= var_0;
@@ -1391,9 +1387,6 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
     s32 offset;
 
     g_gpu_last_fog_ot_index = 0xFFFF;
-    /* FAKE: the pair read through a pointer local; a direct
-       `D_800906A4[arg0][0]` read is scheduled above the g_gpu_last_fog_ot_index
-       store: score 9 */
     rec = D_800906A4[arg0];
     if (rec[0] != 0) {
         {
