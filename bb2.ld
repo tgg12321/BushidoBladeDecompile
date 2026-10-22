@@ -358,7 +358,9 @@ SECTIONS
         build/src/main/51268.o(.data);
         build/src/main/596CC.o(.data);
         build/src/main/5ED34.o(.data);
+        build/asm/data/7D920.data.o(.data);
         build/src/main/63D2C.o(.data);
+        build/asm/data/8C4E4.data.o(.data);
         build/src/main/64FD8.o(.data);
         build/src/main/psxsdk/libapi/c67.o(.data);
         build/src/main/psxsdk/libapi/c112.o(.data);
@@ -378,7 +380,6 @@ SECTIONS
         build/src/main/psxsdk/libapi/a66.o(.data);
         build/src/main/psxsdk/libapi/a67.o(.data);
         build/src/main/psxsdk/libapi/a91.o(.data);
-        build/asm/data/7D920.data.o(.data);
         build/src/main/psxsdk/libapi/counter.o(.data);
         build/src/main/psxsdk/libapi/pad.o(.data);
         build/src/main/psxsdk/libapi/a18.o(.data);
