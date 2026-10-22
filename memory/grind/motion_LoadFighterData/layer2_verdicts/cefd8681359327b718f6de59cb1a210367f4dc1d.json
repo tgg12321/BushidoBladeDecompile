@@ -1,0 +1,1 @@
+{"decision": "PASS", "function": "motion_LoadFighterData", "body_hash": "b0a4856c416d0b4f", "summary": "Comment-only; j's two roles stated truly; Q51 reuse of SOTN EntityAlucard i at src/dra/692E8.c:693 @db41b28 verified (splat.us.dra C member, outside version guards); tag form correct; no code change.", "evidence": [], "next_action": "", "hygiene_debt": []}
