@@ -1755,10 +1755,15 @@ typedef s32 (*FuncBufType)(void *);
  * check in g_comb_send_buf_plus_0x4, and calls comb_Write8, comb_Read8 or
  * comb_WaitRead8 as D_800A3916 and D_800A38A0 select, returning early when
  * a transfer fails or after comb_ResetClose. If D_800A3916 is then 0, it
- * stores new values to a0->held and a0->type. FAKE: the tail's u16 loads
- * reuse the buf8 local; own locals: score 33. */
+ * stores new values to a0->held and a0->type. */
 void comb_ExchangePad(PadState *a0) {
-    s32 buf8;
+    /* buttons holds the input pad button word, then an outgoing button
+     * halfword (this exchange's, or the previous one's from D_800A36D0)
+     * being packed into held, as SOTN's CheckStageCollision reuses y for
+     * successive CheckCollision coordinates (Q51; separate locals: score
+     * 33). */
+    /* SOTN: src/dra/692E8.c:447 @db41b28 */
+    s32 buttons;
     s32 var_1;
     s32 hi16;
     s32 flag;
@@ -1770,12 +1775,12 @@ void comb_ExchangePad(PadState *a0) {
     s32 var_7;
 
     if (D_800A320C != 0) {
-        buf8 = a0->held;
+        buttons = a0->held;
         var_4 = D_800A38A0;
         var_7 = 0;
         var_1 = (var_4 << 31) | (g_comb_close_request << 30) |
                 ((g_comb_wait_state & 3) << 28) | (a0->type[0] << 16) |
-                (buf8 & 0xFFFF);
+                (buttons & 0xFFFF);
         g_comb_send_buf = var_1;
         hi16 = D_800A37C4 << 16;
         var_1 = var_1 ^ (var_1 >> 16);
@@ -1793,7 +1798,7 @@ void comb_ExchangePad(PadState *a0) {
                     comb_Abort();
                     return;
                 }
-                D_800A3908 += math_Popcount32(buf8 & 0xFFFF);
+                D_800A3908 += math_Popcount32(buttons & 0xFFFF);
                 comb_Read8();
             }
         } else {
@@ -1815,7 +1820,7 @@ void comb_ExchangePad(PadState *a0) {
                 comb_Abort();
                 return;
             }
-            D_800A3908 += math_Popcount32(buf8 & 0xFFFF);
+            D_800A3908 += math_Popcount32(buttons & 0xFFFF);
             comb_Read8();
             if (D_800A38A0 == 0) {
                 if (g_comb_close_request != var_7 ||
@@ -1836,13 +1841,13 @@ void comb_ExchangePad(PadState *a0) {
             D_800A38FC += math_Popcount32((u16)D_800A36C0);
             c0lo = (u16)D_800A36C0;
             if (D_800A38A0 == 0) {
-                buf8 = (u16)g_comb_send_buf;
-                *var_8 = (c0lo << 16) | buf8;
+                buttons = (u16)g_comb_send_buf;
+                *var_8 = (c0lo << 16) | buttons;
                 t = D_800A36C2;
                 type[1] = t & 0xF;
             } else {
-                buf8 = (u16)D_800A36D0;
-                *var_8 = (buf8 << 16) | c0lo;
+                buttons = (u16)D_800A36D0;
+                *var_8 = (buttons << 16) | c0lo;
                 t = D_800A36C2;
                 type[0] = t & 0xF;
                 t = D_800A36D2;
