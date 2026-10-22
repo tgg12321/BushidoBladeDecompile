@@ -452,16 +452,10 @@ void arena_SetBlockEnd(s32 a0, s32 a1) {
     }
 found:
     if (i < g_arena_block_count) {
-        s32 cur = g_arena_free_ptr;
-        s32 rest = g_arena_free_size;
-        /* FAKE: the dead parameter a0 reused for the new amt, computed into
-           $a0 as in the target; a fresh local: score 17 */
-        a0 = a1 - cur;
-        cur += a0;
-        rest -= a0;
-        e->amt = a0;
-        g_arena_free_ptr = cur;
-        g_arena_free_size = rest;
+        s32 amt = a1 - g_arena_free_ptr;
+        e->amt = amt;
+        g_arena_free_ptr += amt;
+        g_arena_free_size -= amt;
         return;
     }
 not_found:
