@@ -291,11 +291,8 @@ void func_800408F8(Unk80045878Obj *a0) {
     }
 
     {
+        Unk80045878Node *nodes = a0->transform_nodes;
         Unk80045878Node *p = a0->transform_nodes;
-        /* FAKE: var_4 keeps the array start (move t1,a3);
-         * &a0->transform_nodes[v1] rebuilds it from a0 (addiu 44 + addu) and
-         * the mflo temps move to t1 (score 9) */
-        Unk80045878Node *var_4 = p;
         s32 i = 0;
 
         do {
@@ -306,7 +303,7 @@ void func_800408F8(Unk80045878Obj *a0) {
             p->node.unk2 = -1;
             v1 = D_80094B96[i].unk_00;
             if (v1 != -1) {
-                p->node.parent_node = &var_4[v1].node;
+                p->node.parent_node = &nodes[v1].node;
             } else {
                 p->node.parent_node = 0;
             }
@@ -395,22 +392,18 @@ void func_80040B44(Unk80045878Obj *arg0) {
     {
         do {
             s32 a3;
-            s32 *a1;
             s32 t2;
 
             t3++;
             a3 = *t3;
             t3++;
-            /* FAKE: the slot address as integer arithmetic; &var_0[a3] swaps
-             * the addu operands (score 1) */
-            a1 = (s32 *)(a3 * 4 + (s32)&var_0[0]);
             /* FAKE: t2 copies a0_val ahead of the var_0[] test; with a0_val
              * itself the load and the cursor step re-seat (score 9). */
             t2 = a0_val;
 
-            if (*a1 == 0) {
+            if (var_0[a3] == 0) {
                 t7[a3].node.unk2 = t2;
-                *a1 = 1;
+                var_0[a3] = 1;
                 arg0->node_by_id[t2] = &t7[a3];
             } else {
                 *t5 = t7[a3];
