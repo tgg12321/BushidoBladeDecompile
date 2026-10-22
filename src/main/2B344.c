@@ -1499,9 +1499,8 @@ void func_8003DDF8(u32 arg0) {
  * pass writes the far colour itself) and uploads the result one rect height
  * below the previous one, wrapping to the next column at y 0x200.
  *
- * FAKE constructs (each labelled at its site): the `var_24` mask and the
- * two combine-foldable chain-extender detours (zero emitted bytes;
- * dead-store-fake-exception). */
+ * FAKE constructs (each labelled at its site): the two combine-foldable
+ * chain-extender detours (zero emitted bytes; dead-store-fake-exception). */
 void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
     u16 src_buf[0x200];
     u16 dst_buf[0x200];
@@ -1531,7 +1530,6 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
 
     i = 0;
     if (count > 0) {
-        s32 var_9 = 0x1000;
         do {
             s32 total = rect->w * rect->h;
             u16 *src = src_buf;
@@ -1539,7 +1537,6 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
             s32 factor = ((i + 1) << 12) / count;
             s32 j = 0;
             if (total > 0) {
-                s32 complement = var_9 - factor;
                 do {
                     if (i == count - 1) {
                         u16 pixel = *src;
@@ -1568,28 +1565,23 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
                             s32 sum;
                             s32 var_22;
                             s32 var_23;
-                            /* FAKE: naming var_24 makes g_src die at the mask,
-                             * not the store; the allocno priorities then give
-                             * px $a0, red $a1, green $v1 as in the target;
-                             * without it red outranks px and takes $a0: score
-                             * 17 */
-                            s32 var_24;
+                            s32 green;
                             src++;
-                            var_22 = r_src * complement;
+                            var_22 = r_src * (0x1000 - factor);
                             r_src = r * factor;
                             sum = var_22 + r_src;
                             r_src = sum >> 15;
                             r_src = r_src & 0x1F;
-                            var_23 = g_src * complement;
+                            var_23 = g_src * (0x1000 - factor);
                             g_src = g * factor;
                             sum = var_23 + g_src;
                             g_src = sum >> 10;
                             px = ((u32)px >> 7) & 0xF8;
-                            px = px * complement;
+                            px = px * (0x1000 - factor);
                             sum = px + b * factor;
                             px = sum >> 5;
-                            var_24 = g_src & 0x3E0;
-                            *dst = (pixel & 0x8000) | r_src | var_24 |
+                            green = g_src & 0x3E0;
+                            *dst = (pixel & 0x8000) | r_src | green |
                                    (px & 0x7C00);
                         }
                     }
@@ -1612,8 +1604,8 @@ void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
                 rect->x += rect->w;
             }
             /* FAKE: j chain extender (+j/-j folds away); the extra refs lift j
-             * above `complement` so the $t4/$t5 pair matches; without it they
-             * swap: score 7 (all three FAKEs reverted: score 25) */
+             * above the `0x1000 - factor` value so the $t4/$t5 pair matches;
+             * without it they swap: score 7 (both FAKEs reverted: score 10) */
             LoadImage(rect, (u32 *)(((s32)dst_buf + j) - j));
             DrawSync(0);
             i++;
