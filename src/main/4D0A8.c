@@ -370,8 +370,9 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
     s32 var_11; /* FAKE: constant 1 in a local; the literal: score 2 */
     /* FAKE: pointer alias of D_8009B2C8[0][2]; direct use: score 41 */
     Unk8009B0E0Record *var_12;
-    /* FAKE: the row's header 3 in a local; at the use: score 36 */
-    Unk8009B0E0Record *var_13;
+    /* Once-written named intermediate: row header 3, base for random
+     * header 3/4 selection; inline at use: score 36. */
+    Unk8009B0E0Record *random_header_pair;
 
     D_800A326C %= 4;
 
@@ -390,7 +391,7 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
         var_11 = 1;
         row_off = arg1 * 0x3C;
         var_12 = &D_8009B2C8[0][2];
-        var_13 = &D_8009B2C8[arg1][3];
+        random_header_pair = &D_8009B2C8[arg1][3];
         do {
             s.has_color = 0;
             /* FAKE: integer sum keeps `addu v0,s0,fp`; the byte-pointer sum
@@ -401,7 +402,7 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             s.scale_y = var_10;
             s.scale_x = var_10;
             D_800A3418 ^= rand();
-            /* FAKE: split init; one expression does not match (score 3) */
+            /* Ruling 4 compound-assignment split; one expression: score 3. */
             x = (s32)base_x - 0x19;
             x += ((u32)(D_800A3418 * 0x32) >> 0xF);
             /* FAKE: tmp1 is written twice (y base, then a copy of var_4) so
@@ -423,10 +424,9 @@ s32 func_8005D554(s32 arg0, s32 arg1) {
             s.scale_y = var_10;
             s.scale_x = var_10;
             s.table = &D_8009B388[1];
-            s.header = var_13 + (D_800A3418 & 1);
+            s.header = random_header_pair + (D_800A3418 & 1);
             D_800A3418 ^= rand();
-            /* FAKE: split init, as in the first half (one expression: score 3)
-             */
+            /* Ruling 4 compound-assignment split; one expression: score 3. */
             x = (s32)base_x - 0x32;
             x += ((u32)(D_800A3418 * 0x64) >> 0xF);
             /* FAKE: tmp2 written twice, as tmp1 above (no y-base write: score
