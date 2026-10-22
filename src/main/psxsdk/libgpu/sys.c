@@ -1,7 +1,8 @@
 /* PsyQ 4.0 LIBGPU SYS: the GPU system layer (ResetGraph .. memset; $Id:
  * sys.c,v 1.129). .text 0x8007AE7C..0x8007DF10, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. One file across the old cut at
- * 0x8007B244, which was mid-module (Q106 D3). */
+ * 0x8007B244, which was mid-module (Q106 D3). .data 0x8009BE24..0x8009BF94,
+ * the module's 368-byte .data in LIBGPU.LIB, defined at the end of the file. */
 #include "common.h"
 #include <psxsdk/libgpu.h>
 #include "psx.h"
@@ -149,7 +150,7 @@ extern u8 ctlbuf[];
 extern s32 D_8009BF8C;
 extern s32 D_8009BF90;
 
-extern s32 _gpucb;
+extern GpuDevTable _gpucb;
 extern s32 D_8009BEF4[];
 extern s32 D_8009BF08[];
 
@@ -328,7 +329,7 @@ s32 MoveImage(RECT *rect, int x, int y) {
         D_8009BE6C->cwc, move_image, sizeof(move_image), 0);
 }
 
-extern u32 g_gpu_ot_end;
+extern u32 g_gpu_ot_end[5];
 
 u32 *ClearOTag(u32 *a0, s32 a1) {
     if (g_gpu_ctx.debug_level >= 2) {
@@ -1115,3 +1116,56 @@ void memset(u8 *a0, u8 a1, s32 a2) {
         *a0++ = a1;
     }
 }
+
+/* .data 0x8009BE24..0x8009BF94: LIBGPU.LIB SYS's 368-byte .data, in the
+ * library object's order and equal to its bytes and relocations (XDEFs
+ * GPU_printf, _qlog, _qin, _qout). Defined after every function, so no
+ * function body sees a definition where it saw an extern. */
+
+/* 8 bytes no code reads (like LIBCD BIOS's D_800A11AC) */
+u32 D_8009BE24[2] = {0x15077350, 0x0040899C};
+
+GpuDevTable _gpucb = {
+    D_80015E28, _addque, _addque2, _clr, _ctl,   _cwb,   _cwc,    _drs,
+    _dws,       _exeque, _getctl,  _otc, _param, _reset, _status, _sync,
+};
+
+GpuDevTable *D_8009BE6C = &_gpucb;
+
+void (*GPU_printf)() = printf;
+
+GpuCtx g_gpu_ctx = {0};
+
+/* display width / height per graphics type (indexed by g_gpu_ctx.type) */
+s32 D_8009BEF4[5] = {1024, 1024, 1024, 1024, 1024};
+s32 D_8009BF08[5] = {512, 1024, 1024, 512, 1024};
+
+u32 move_image[5] = {0x04FFFFFF, 0x80000000, 0, 0, 0};
+
+/* the terminator packet ClearOTag / ClearOTagR link the last entry to */
+u32 g_gpu_ot_end[5] = {0x04FFFFFF, 0, 0, 0, 0};
+
+volatile u32 *GPU_DATA = (u32 *)0x1F801810;
+volatile u32 *GPU_STATUS = (u32 *)0x1F801814;
+volatile u32 *DMA2_MADR = (u32 *)0x1F8010A0;
+volatile u32 *DMA2_BCR = (u32 *)0x1F8010A4;
+volatile u32 *DMA2_CHCR = (u32 *)0x1F8010A8;
+volatile s32 *DMA6_MADR = (s32 *)0x1F8010E0;
+volatile s32 *DMA6_BCR = (s32 *)0x1F8010E4;
+volatile s32 *DMA6_CHCR = (s32 *)0x1F8010E8;
+volatile s32 *DPCR = (s32 *)0x1F8010F0;
+
+/* the last packet run: callback, argument, callback argument (one 16-byte
+ * _qlog record in the library object; the code reaches the fields by these
+ * names); D_8009BF74 is the record's unread fourth word */
+volatile s32 _qlog[1] = {0};
+s32 *D_8009BF6C = 0;
+s32 D_8009BF70 = 0;
+s32 D_8009BF74 = 0;
+volatile s32 _qin = 0;
+volatile s32 _qout = 0;
+s32 D_8009BF80 = 0; /* _addque2's saved interrupt mask */
+s32 D_8009BF84 = 0; /* _exeque's saved interrupt mask */
+s32 D_8009BF88 = 0; /* _reset's saved interrupt mask */
+s32 D_8009BF8C = 0; /* set_alarm's VSync deadline */
+s32 D_8009BF90 = 0; /* set_alarm's poll counter */
