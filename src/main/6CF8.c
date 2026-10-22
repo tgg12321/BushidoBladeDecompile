@@ -208,21 +208,11 @@ void func_80016A8C(u8 *arg0, void *arg1, s32 arg2) {
             s32 j;
 
             for (j = 0; j < rect.w * rect.h; j++, var_2++) {
-                u32 var_4 = *var_2;
-                s32 value = var_4 & 0x1F;
-                u32 temp;
+                u16 c = *var_2;
+                s32 r = c & 0x1F;
 
-                value >>= 1;
-                /* FAKE: no-op mask of the u16 read; removed: score 1 (the andi
-                 * goes) */
-                var_4 &= 0xFFFF;
-                temp = var_4 >> 1;
-                temp &= 0x1E0;
-                value += temp;
-                var_4 >>= 1;
-                var_4 &= 0x3C00;
-                value += var_4;
-                *var_2 = value;
+                *var_2 = (r >> 1) + ((((c >> 5) & 0x1F) >> 1) << 5) +
+                         ((((c >> 10) & 0x1F) >> 1) << 10);
             }
             LoadImage(&rect, (u32 *)(arg0 + 0x14));
         }
