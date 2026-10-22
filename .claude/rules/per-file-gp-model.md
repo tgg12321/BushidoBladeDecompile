@@ -9,8 +9,7 @@ metadata:
 # Per-file gp model (owner rulings Q65, Q67-Q72, Q79-Q81)
 
 Records: docs/grind/decisions.md OWNER RULING entries;
-evidence `docs/grind/gp-model-2026-09-30.md` (+ § Addendum). Adopted 2026-10-01 (b6c0c0d24..4fca9a4dd); the three
-`sdata_*.txt` lists are deleted.
+evidence `docs/grind/gp-model-2026-09-30.md` (+ § Addendum). Adopted 2026-10-01 (b6c0c0d24..4fca9a4dd).
 
 ## The rule (Sony ASPSX 2.34, measured: 6,337 accesses, 0 disagreements)
 
@@ -38,7 +37,7 @@ An indexed operand `S($reg)` is never gp. The answer is per FILE, identical for 
 2. **Flags:** `--sdata-syms/--sdata-funcs/--sdata-exclude` removed, maspsx `-G8` added; buildconfig mirrors
    the Makefile; the three lists are deleted. (A4, Q69) maspsx `-G8` is on for every C file except Sony
    library code (`.text` non-empty and entirely within 0x80078948..0x8008D070,
-   `memory/closer/psyq-library-census.md`), implemented by `tools/psyq_library_files.py` with an engine test.
+   `memory/closer/psyq-library-census.md`) and (Q122) [[data-only-no-sdata]] files; both sets derived by `tools/psyq_library_files.py` with an engine test.
    No file mixes the two (restructure 4a/4b). cc1's per-file `-G8` (`GP_FILES`) is a different switch,
    governed by [[compiler-flags-canonical]].
 3. **Definitions, file splits/merges** in the C per the tests below; initialized data moves from
