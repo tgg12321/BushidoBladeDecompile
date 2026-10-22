@@ -124,9 +124,9 @@ Total: 899 names. The runtime indexes 762 of them; the 137 `DATA8\*` names
 are placeholders that exist for build-pipeline bookkeeping but have no
 corresponding INF entry — they were never copied into NDATA.DAT.
 
-The executable does hold the pool's 899 pointers, as `.data` halfword pairs at 0x800955E0
-(`asm/data/7D920.data.s`), inside splat's D_80095588 label (indices 44 and up of that
-per-type size table). No code reads them.
+The executable does hold the pool's 899 pointers, as `.data` words at 0x800955E0
+(`D_800955E0`, `asm/data/85DE0.data.s`), right after 32D04.c's 44-halfword per-type size
+table D_80095588. No code reads them.
 
 The mapping from filename to file-ID is NOT a pointer table at runtime — it
 is fixed at build time by the *order* in which the path-string pool appears

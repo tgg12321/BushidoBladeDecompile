@@ -478,9 +478,9 @@ void math_MatrixToAnglesYXZ(MATRIX *a0, SVECTOR *a1) {
 
 extern void func_8004DDB4(s32, s32, s32, s32);
 extern MATRIX D_800FF610;
-extern s32 D_800951D8;
-extern s32 D_80095280;
-extern s32 D_80095328;
+extern void (*D_800951D8[])();
+extern void (*D_80095280[])();
+extern void (*D_80095328[])();
 extern Unk800F62E0Rec *D_800A3828;
 
 void func_800430E4(s32 arg0, s32 arg1, s16 arg2, u8 *arg3) {
@@ -1220,6 +1220,111 @@ void func_8004473C(void) {
         dst->unk58 = -1;
     }
 }
+
+/* .data 0x800951D8..0x800955E0 (the 899 NDATA path pointers that follow,
+ * 0x800955E0..0x800963EC, are still asm), in address order: five
+ * primitive-type handler tables (func_80044650, which calls func_80052C10, is
+ * the default entry; the others are 3AB48.c's draw routines) that func_800430E4
+ * installs at scratchpad word 0x1F80001C and 3AB48.c's func_8004A4E0 selects
+ * from, then gpu_OffsetTexPrimStream's per-type halfword sizes D_80095588.
+ * Sizes from the data labels. Defined after every function. */
+void func_8004D244();
+void func_8004D424();
+void func_8004D634();
+void func_8004D838();
+void func_8004E574();
+void func_8004E7E4();
+void func_8004EAC8();
+void func_8004ECC8();
+void func_8004EF10();
+void func_8004F0FC();
+void func_8004F314();
+void func_8004F53C();
+void func_8004F798();
+void func_8004F970();
+void func_8004FB74();
+void func_8004FD40();
+void func_8004FF40();
+void func_80050120();
+void func_80050334();
+void func_80050538();
+void func_80050774();
+void func_80050908();
+void func_80050AB8();
+void func_80050C68();
+void func_80050E60();
+void func_80051010();
+void func_80051208();
+void func_800513B0();
+void func_800515AC();
+void func_80051754();
+void func_80051D08();
+void func_80051ED4();
+void (*D_800951D8[42])() = {
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_8004E574, func_8004E7E4,
+    func_8004EAC8, func_8004ECC8,
+};
+void (*D_80095280[42])() = {
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80051208,
+    func_80044650, func_80051208, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_800513B0, func_80044650, func_800513B0,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_800515AC, func_80044650, func_800515AC, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80051754, func_80044650,
+    func_80051754, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80050AB8, func_80050C68,
+    func_80050E60, func_80051010,
+};
+void (*D_80095328[88])() = {
+    func_80044650, func_80044650, func_80044650, func_80044650, func_8004FB74,
+    func_8004F798, func_8004EF10, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_8004FD40, func_8004F970, func_8004F0FC,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80050334, func_80044650, func_8004F314, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80050538, func_80044650,
+    func_8004F53C, func_80044650, func_80050774, func_80050908, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_8004FF40, func_80050120, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80051208, func_80044650,
+    func_80051208, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_800513B0, func_80044650, func_800513B0, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_800515AC,
+    func_80044650, func_800515AC, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80051754, func_80044650, func_80051754,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650,
+};
+void (*D_80095488[32])() = {
+    func_80044650, func_80044650, func_80044650, func_80044650, func_8004D244,
+    func_8004F798, func_8004EF10, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_8004D424, func_8004F970, func_8004F0FC,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_8004D634, func_80044650, func_8004F314, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_8004D838, func_80044650,
+    func_8004F53C, func_80044650,
+};
+void (*D_80095508[32])() = {
+    func_80051D08, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80051ED4, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650, func_80044650, func_80044650, func_80044650,
+    func_80044650, func_80044650,
+};
+s16 D_80095588[44] = {
+    28, 22, 28, 22, 38, 34, 38, 0,  32, 26, 0,  0,  46, 42, 46,
+    0,  48, 0,  48, 0,  52, 0,  52, 0,  62, 0,  0,  0,  66, 0,
+    66, 0,  2,  2,  38, 46, 0,  40, 10, 12, 10, 12, 38, 46,
+};
 
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */

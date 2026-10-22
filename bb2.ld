@@ -349,7 +349,7 @@ SECTIONS
         build/src/main/31CFC.o(.data);
         build/src/main/31D3C.o(.data);
         build/src/main/32D04.o(.data);
-        build/asm/data/859D8.data.o(.data);
+        build/asm/data/85DE0.data.o(.data);
         build/src/main/35000.o(.data);
         build/src/main/368E4.o(.data);
         build/src/main/3AB48.o(.data);
