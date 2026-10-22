@@ -1682,10 +1682,12 @@ void func_8006C21C(s32 *arg0) {
      * gpu_GetSheetTPage's second argument; held in $s5 as in the target. A
      * literal 0 at every call: score 3. */
     s32 var_8;
-    /* FAKE: holds several values (Ruling 11, ordinary-c-judge-decidable): the
-     * phase-2 unlock-bit index,
-     * the phase-4 sprite index, the phase-6 tile row and the phase-8 gauge
-     * level; one counter per phase: score 90. */
+    /* `var_9` counts the phase-2 unlock-bit, phase-4 sprite and phase-6 tile
+     * row loops, then holds each player's gauge level (read from unk_28,
+     * tested against 5 and used as the recs subscript), the way SOTN's AluInit
+     * reuses its loop counter i for the weapon id (Q51); one local per role:
+     * score 90 */
+    /* SOTN: src/dra/692E8.c:299 @db41b28 */
     s32 var_9;
     /* FAKE: per-branch constant holder (named-local-fake-exception, Q27 (B)) --
      * the bar's far-corner red, 0 in two arms and 0x80 in the other two; set in
