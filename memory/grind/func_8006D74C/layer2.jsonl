@@ -1,0 +1,1 @@
+{"func": "func_8006D74C", "addr": "8006D74C", "verdict": "PASS", "body_hash": "351192ae3c1961c8", "body_kind": "c", "file": "main/596CC", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T04:30:16Z", "head": "1c4e91d5f", "notes": "hygiene-w 596CC: &sp_buf[0] passed as the s32 * func_80069AE4/func_8006D3DC take, (s32) casts dropped"}

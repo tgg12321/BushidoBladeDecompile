@@ -1712,7 +1712,8 @@ void func_8006C21C(s32 *arg0) {
      * position, read up to the phase-4 head; their dead extension temps take
      * the target's four untouched frame slots (0x60-0x78). `var_14` reaches
      * SetDrawMode's RECT *tw through a
-     * `(RECT *)var_14` conversion (Q113). Literals at every read: score 37. */
+     * `(RECT *)(s32)var_14` conversion (Q113). Literals at every read:
+     * score 37. */
     s16 var_11;
     s16 xpos;
     s16 ypos;

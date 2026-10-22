@@ -1,0 +1,1 @@
+{"func": "func_8006C21C", "addr": "8006C21C", "verdict": "PASS", "body_hash": "7b88f55cd74ee846", "body_kind": "c", "file": "main/596CC", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T04:29:59Z", "head": "1c4e91d5f", "notes": "hygiene-w 596CC: (RECT *)(s32)var_14 spells the s16->pointer widening (Q113 conversion); no bytes change"}
