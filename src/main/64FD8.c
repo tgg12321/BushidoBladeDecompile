@@ -1720,7 +1720,8 @@ s32 func_800788B0(void) {
     return D_800A3608 >= 0xB40;
 }
 
-/* Q65: this file's initialized small data (.sdata). */
+/* Q65: this file's initialized small data (.sdata), in address order. */
+RECT D_800A32FC = {640, 0, 64, 184};
 s32 D_800A3304 = 0;
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */

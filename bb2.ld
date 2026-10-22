@@ -600,7 +600,6 @@ SECTIONS
         build/src/main/51268.o(.sdata);
         build/src/main/596CC.o(.sdata);
         build/src/main/5ED34.o(.sdata);
-        build/asm/data/93AEA.data.o(.data);
         build/src/main/64FD8.o(.sdata);
         build/asm/data/93B08.data.o(.data);
         build/src/main/9F9C.o(.sbss);

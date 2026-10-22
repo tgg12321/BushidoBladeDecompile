@@ -2028,3 +2028,5 @@ void func_80073200(Unk8006EACCRec *arg0) {
 /* Q65: this file's initialized small data (.sdata), in address order. */
 u8 D_800A32E8 = 0;
 u8 D_800A32E9 = 0;
+RECT D_800A32EC = {144, 507, 48, 1};
+RECT D_800A32F4 = {896, 384, 64, 64};
