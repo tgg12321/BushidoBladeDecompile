@@ -2583,6 +2583,15 @@ s32 gpu_InitPrimBufferPair(s32 arg0, Unk8006E49CRec *arg1) {
     return (s32)(base4 + 0x1FB0);
 }
 
+/* Q65: this file's initialized small data (.sdata, 0x800A32C0..0x800A32E8),
+ * in address order; values from the original EXE. */
+/* copied whole into a local 8-byte buffer */
+u8 D_800A32C0[8] = {0x70, 0x00, 0xE1, 0x01, 0x30, 0x00, 0x01, 0x00};
+u32 D_800A32C8[2] = {0x2000, 0x4000};
+u32 D_800A32D0[2] = {0x8000, 0x1000};
+RECT D_800A32D8 = {0, 0, 640, 240};
+RECT D_800A32E0 = {0, 0, 640, 480};
+
 /* Q65: tentative definitions (COMMON) of the small data this file reaches
  * gp-relative. */
 TILE *D_800A36DC;
