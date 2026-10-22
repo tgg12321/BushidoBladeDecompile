@@ -51,6 +51,9 @@ extern s16 D_8009BCC4[3][2];
 /* The current scroll offset, one s16 per axis (menu_UpdateChoiceGrid). */
 extern s16 D_8009BCD0[2];
 
+/* 20 flag bytes indexed by entry id (bit 0 = selectable; mask 4 << player,
+ * i.e. bit 2 + player = taken by that player); d_8C4E4.c, read by 64FD8.c. */
+extern u8 D_8009BCE4[20];
 extern Unk8009BCF8Record D_8009BCF8[2][10];
 
 /* Two 2-byte records, {0x01, 0x02} and {0x03, 0x04}, indexed [row][col] by

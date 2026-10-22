@@ -532,10 +532,6 @@ void func_80075830(Unk8006EACCRec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
 }
 
-/* 20 flag bytes indexed by entry id (bit 0 = selectable; mask 4 << player,
- * i.e. bit 2 + player = taken by that player). */
-extern u8 D_8009BCE4[20];
-
 /* Character-select grid renderer (the draw half of menu_UpdateSelGridPicks),
  * once per player per frame: arg1 = page into D_8009BCF8, arg2 = pick list (-1
  * = cleared), arg3 = player. Draws the page frame, the page's 10 character

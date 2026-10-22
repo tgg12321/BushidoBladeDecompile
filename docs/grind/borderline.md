@@ -584,3 +584,15 @@ func_80027AD8 / func_8002AB08. One-object `s16 D_800A37E8[3]` scores 0 in func_8
 func_80027AD8 (Q96's basis: memory/grind/judge-decl-cleanup/followups/func_80027AD8.vec-investigation.md).
 disposition taken: unchanged; debt row (lt/plan.txt owner-blocked (3)). Question for the owner: extend Q96 to
 func_80031B24's two call sites (FAKE-labelled in Q96's form), or leave the debt row?
+
+## 2026-10-22 — asm/data/7D920.data.s (.data 0x8008D120..0x8008EC34) — Q122 owner unplaceable — policy-question
+category: policy-question
+evidence: the run holds initialized objects of <= 8 bytes in .data (D_8008D864 u8[8], D_8008EB04..D_8008EB18 s16/s32
+scalars read by 2B344.c, D_8008EB38 u8[8] 9F9C.c, D_8008EB6C u8[6] 175A4.c, D_8008EBF4 u8[6] 17AFC.c, D_8008EC30 u8[4]
+25788.c / cdrom.c). Its readers interleave against .data link order (9F9C, 17AFC, 2B344, 9F9C, 175A4, 17AFC, 25788; 2B344.o's
+.data links after cdrom.o), so no reading TU owns it, and Q122 condition 3 fails: the next .data module, cdrom.o, is game
+code with no small data (0 GPREL16 relocations, no .sdata/.sbss), so a -G0 cdrom.c could own the run; 87A0 / 175A4 /
+24BF0 / 25788 between are the same (0 gp relocations). The run also opens with D_8008D120, the tail of g_sqrt_table_u8,
+whose first 8 bytes are in d_7D870.c's .text.
+disposition taken: left as asm (data lane, 2026-10-22). Question for the owner: may a run whose following code neighbour
+uses no small data become a Q122 data-only file (d_7D920.c), or does cdrom.c's lack of gp evidence leave it open?

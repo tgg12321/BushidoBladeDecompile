@@ -461,7 +461,7 @@ u8 *D_800A36A0;
 
 /* .data 0x8009BCD4..0x8009BCE4, this file's whole .data (its one reader is
  * gpu_AddRotatedSpriteQuads; d_8C41C.c's D_8009BCD0 ends at 0x8009BCD4,
- * 64FD8.c's D_8009BCE4 follows): the ScaleMatrixL scale, x and z 1.0, y 0.5
+ * d_8C4E4.c's D_8009BCE4 follows): the ScaleMatrixL scale, x and z 1.0, y 0.5
  * (4.12). Defined after every function, so no body sees a definition where
  * it saw an extern. */
 VECTOR D_8009BCD4 = {0x1000, 0x800, 0x1000, 0};
