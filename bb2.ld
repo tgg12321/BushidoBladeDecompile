@@ -579,7 +579,6 @@ SECTIONS
         build/src/main/17AFC.o(.sdata);
         build/asm/data/93950.data.o(.data);
         build/src/main/24F08.o(.sdata);
-        build/asm/data/93978.data.o(.data);
         build/src/main/25C38.o(.sdata);
         build/asm/data/939DC.data.o(.data);
         build/src/main/267A8.o(.sdata);

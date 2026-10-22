@@ -179,5 +179,18 @@ void func_80034708(void) {
     }
 }
 
-/* Q65: this file's initialized small data (.sdata). */
+/* Q65: this file's initialized small data (.sdata, 0x800A3174..0x800A31D8),
+ * in address order; values from the original EXE. */
 s16 D_800A3174[2] = {0, 0};
+u8 D_800A3178[] = "~c777";
+u8 D_800A3180[] = "~c737";
+u8 D_800A3188[] = "%s%5d";
+u8 D_800A3190[] = "%s%3d\n";
+u8 D_800A3198[] = "%sC%4d";
+u8 D_800A31A0[] = "%sCL%3x";
+u8 D_800A31A8[] = "%s%3x\n";
+u8 D_800A31B0[] = "%s%5d\n";
+u8 D_800A31B8[] = "%sO%4d\n";
+u8 D_800A31C0[] = "%sL%4d\n";
+u8 D_800A31C8[] = "%sM%4d\n";
+u8 D_800A31D0[] = "%sD%4d\n";
