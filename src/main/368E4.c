@@ -1944,8 +1944,8 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             obj->node.xf.mat.t[1] = pos[1];
             obj->node.xf.mat.t[2] = pos[2];
         } else {
-            /* FAKE: flags rewritten in place, as SOTN reuses a parameter
-             * (Q51); a local copy flips the $s0 allocation order: score 63 */
+            /* flags rewritten in place (bit 15 cleared here, set below), as
+             * SOTN rewrites its itemId parameter (Q51) */
             /* SOTN: src/st/lib/e_shop.c:4621 @aa53500 */
             flags &= 0x7FFF;
             node_bit = flags & 1;
