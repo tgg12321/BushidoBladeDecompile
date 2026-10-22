@@ -609,8 +609,12 @@ void func_80045AA4(s32 a0, s32 a1) {
     ptr->unk_1C = ptr->unk_1C + a1;
     softbody_RebaseObject(ptr, a1);
     if ((ptr->unk_00.word >> 1) & 1) {
-        /* FAKE: idx (a0 - 3) is reused for the sound index; a fresh local swaps
-         * the s0 / s1 seats (score 8) */
+        /* idx holds the arena block index, then the VAB index, each passed to
+         * calls before reuse, as SOTN reuses y for successive computed call
+         * arguments and i for a call result then a loop counter (Q51).
+         * Separate locals score 8. */
+        /* SOTN: src/dra/692E8.c:447 @db41b28 */
+        /* SOTN: src/dra/692E8.c:693 @db41b28 */
         idx = 3 * ptr->arena_id + 1;
         snd_VabFakeOpen(a1, idx);
     }
