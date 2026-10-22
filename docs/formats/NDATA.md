@@ -41,15 +41,15 @@ Of the 762 non-sentinel entries, 760 pack the 28,376 sectors = the entire DAT fi
 are no gaps in the actual on-disc layout; each active entry begins where the
 previous active entry ended.
 
-### Trailing entries 898..900 (out-of-range)
+### Trailing entries 898..900 (sentinel + leftovers)
 
-Indices 898, 899, 900 lie at the very end of the INF and reference sectors past
-the end of NDATA.DAT:
+Indices 898, 899, 900 lie at the very end of the INF; 899 and 900 run past the
+end of NDATA.DAT (sector 0x6ED8):
 
 ```
 [898] start=0xFFFF  len=0xFFFF        (sentinel)
 [899] start=0x9800  len=0x0308        (would address byte 0x4C00000 — past DAT end)
-[900] start=0x1900  len=0x5956        (would address byte 0x39E0000 — past DAT end)
+[900] start=0x1900  len=0x5956        (bytes 0xC80000..0x392B000: overlaps live entries, ends past DAT end)
 ```
 
 These three slots appear to be footer-padding / abandoned indices left over from
@@ -165,7 +165,7 @@ start_sector, len_sectors, byte_offset, byte_length`.
 | ` 853..900`| DATA0 |    39 |   49,420,288 | `CHANBARA{0,1}.DAT` + `Mxxx.DAT` cinematics |
 
 (Note the absent ID **898** is a sentinel within the DATA0 range; **899**
-and **900** are the past-end leftover slots discussed below. Sentinels also
+and **900** are the leftover slots discussed below. Sentinels also
 appear inside DATA0 between `M004` (id 875) and `M003` (id 884), and inside
 DATA9 between `WEP0105` (id 708) and `WEP0104` (id 717) — they don't only
 fall on group boundaries.)
@@ -247,22 +247,22 @@ character roster tables (`src/ings2.c:162`).
 The 4 character-cinematic indices `M0..M3` are presumably the 4 ending /
 story-mode characters that receive cinematic treatment.
 
-### Past-end leftovers (file IDs 898, 899, 900)
+### Leftover slots (file IDs 898, 899, 900)
 
-The very last entries in INF reference sectors past the end of NDATA.DAT
-and are believed to be build-pipeline residue:
+Entry 898 is a sentinel; 899 and 900 run past the end of NDATA.DAT and are
+believed to be build-pipeline residue:
 
 ```
 [898] start=0xFFFF  len=0xFFFF        (sentinel)
 [899] start=0x9800  len=0x0308        addresses byte 0x4C00000 (past DAT end)
-[900] start=0x1900  len=0x5956        addresses byte 0x39E0000 (past DAT end)
+[900] start=0x1900  len=0x5956        starts inside the DAT (overlapping live entries), ends past it
 ```
 
 The pool, however, supplies names for the 762-th and 761-st non-DATA8
 slots — `DATA0\M001.DAT` and `DATA0\M000.DAT`. So these *would-be*
 character-0 motion-0 and motion-1 cinematics simply never made it into the
-final DAT; the runtime never queries IDs 899 or 900 (and would crash
-trying to disc-read past-end sectors if it did).
+final DAT; the runtime never queries IDs 899 or 900 (both would read past
+the end of NDATA.DAT if it did).
 
 ## Contents of a typical entry
 
@@ -320,6 +320,29 @@ python tools/inspect_ndata.py disc/NDATA/NDATA.INF --stats
 
 The DAT file is auto-located alongside the INF (same directory, `.DAT`
 extension).
+
+### `tools/repack_ndata.py` — rebuild INF + DAT from entries
+
+```
+python tools/repack_ndata.py --template disc/NDATA/NDATA.INF --entries extracted/ --out rebuilt/
+python tools/repack_ndata.py --roundtrip disc/NDATA/NDATA.INF   # extract+repack in memory, exit 1 unless identical
+```
+
+The inverse of `--dump-all`. The template INF supplies the 901 slots. The
+760 chained slots (every non-sentinel slot except the leftovers 899/900; the
+template must have them back to back from sector 0) are laid out again in id
+order, each `ndata_NNNN.bin` rounded up to whole sectors with a zero-padded
+tail, so an entry can change size and every later entry moves. Sentinels and
+the leftovers keep their INF words verbatim; leftover entry files are ignored.
+A file for a sentinel slot, an empty file for a chained slot, or any file in
+the directory not named `ndata_NNNN.bin` for a slot is an error. Repacking the
+unmodified dump reproduces both files byte-identically, and a repacked INF
+works as the next template. A resized NDATA.DAT also needs the disc's ISO
+directory and the EXE's static `g_cd_file_table` entry 0 (disc position +
+size; declared in `include/bb2.h`, values in `src/main/cdrom.c`) updated, and
+every file after it moved (row `disc-build` in `docs/foundation/backlog.tsv`);
+the EXE's pre-filled `g_ndata_inf` copy is overwritten by `ndata_StartReadInf`
+at init.
 
 ### `tools/extract_ndata_names.py` — build the file-ID -> name map
 
