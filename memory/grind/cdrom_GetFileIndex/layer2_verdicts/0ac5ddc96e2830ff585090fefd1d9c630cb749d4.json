@@ -1,0 +1,10 @@
+{
+  "verdict": "PASS",
+  "decision": "PASS",
+  "function": "cdrom_GetFileIndex",
+  "body_hash": "c6a0045a4d6645c4",
+  "summary": "The new body `return D_8008F12C[arg0] + arg1;` is plain, truthful C with no cheat or codegen-shaping constructs. The s16[8] type matches the 8 .short values at 0x8008F12C exactly (0,2,0x15,0x77,0x77,0x77,0x9C,0 = 0,2,21,119,119,119,156,0, a 16-byte object ending at D_8008F13C). There is one declaration (bb2.h) and one definition (cdrom.c). The only other reference is asm/funcs/cdrom_GetFileIndex.s (lh at %lo(D_8008F12C)), which is consistent. Sandbox --disable all scores 0 (6/6 insns, 0 cheat-asm stripped).",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": []
+}
