@@ -35,6 +35,8 @@ CFG = {
     "regenerate": [{"path": "census.csv", "cmd": "python gen_census.py", "subject": "docs: census refresh"}],
     "gates": {"naming": ["python gate.py"], "foundation": ["python gate.py"], "docs": []},
     "docs_only_paths": ["docs/"],
+    "inert_paths": ["docs/", "memory/", ".claude/"],
+    "quick_gates": ["python -c \"print('quick-gate')\""],
 }
 
 GEN = "import pathlib\nn=sum(1 for _ in pathlib.Path('.').glob('src/*.c'))\n" \
@@ -148,6 +150,16 @@ class LaneTest(unittest.TestCase):
         self.assertTrue((self.main / "src" / "b.c").exists())
         self.assertIn("regenerated census.csv", self.last)
         self.assertEqual(self.main_file("census.csv"), "files,2\n")
+        # the census is folded into the landed commit: no separate refresh commit
+        self.assertEqual(sh("log", "-1", "--format=%s", "main", cwd=self.main), "add b")
+        self.assertEqual(sh("show", "--name-only", "--format=", "main", cwd=self.main).split(),
+                         ["census.csv", "src/b.c"])
+        lane_sha = sh("rev-parse", "lanes/a@{1}", cwd=self.main)
+        reg = lanes.Ctx(self.main, "s1").load()
+        self.assertEqual(reg["lanes"]["a"]["landed_map"][lane_sha],
+                         sh("rev-parse", "main", cwd=self.main))
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)  # the amended commit counts
+        self.assertIn("nothing to land", self.last)
         self.assertEqual(sh("rev-parse", "main", cwd=self.main), sh("rev-parse", "origin/main", cwd=self.main))
         self.assertEqual(sh("rev-parse", "HEAD", cwd=self.wt("a")), sh("rev-parse", "main", cwd=self.main))
         self.assertIsNone(lanes.read_lock(lanes.Ctx(self.main, "s1")))
@@ -314,11 +326,11 @@ class LaneTest(unittest.TestCase):
         self.commit("a", "src/c2.c", "int c2;\n", "c2")
         real, fired = lanes.build_candidate, []
 
-        def racing(ctx, lane, ld, commits, base, log):
+        def racing(ctx, lane, ld, commits, base, log, **kw):
             if not fired:
                 fired.append(1)
                 sh("reset", "-q", "--hard", "origin/main", cwd=self.main)
-            return real(ctx, lane, ld, commits, base, log)
+            return real(ctx, lane, ld, commits, base, log, **kw)
         lanes.build_candidate = racing
         try:
             self.assertEqual(self.L("s1", "land", "a", "--no-push"), 0, self.last)
@@ -613,8 +625,8 @@ class LaneTest(unittest.TestCase):
         self.commit("a", "src/b.c", "int b;\n")
         real = lanes.build_candidate
 
-        def busy(ctx, lane, ld, commits, base, log):
-            tip = real(ctx, lane, ld, commits, base, log)
+        def busy(ctx, lane, ld, commits, base, log, **kw):
+            tip = real(ctx, lane, ld, commits, base, log, **kw)
             self.commit("a", "src/later.c", "int later;\n", "made during the land")
             return tip
 
@@ -636,9 +648,9 @@ class LaneTest(unittest.TestCase):
         self.commit("a", "src/b.c", "int b;\n")
         real = lanes.build_candidate
 
-        def busy(ctx, lane, ld, commits, base, log):
+        def busy(ctx, lane, ld, commits, base, log, **kw):
             (self.wt("a") / "src" / "a.c").write_text("int edited;\n", newline="\n")
-            return real(ctx, lane, ld, commits, base, log)
+            return real(ctx, lane, ld, commits, base, log, **kw)
 
         lanes.build_candidate = busy
         try:
@@ -787,8 +799,8 @@ class LaneTest(unittest.TestCase):
         real = lanes.build_candidate
         calls = []
 
-        def racing(ctx, lane, wt, commits, base, log):
-            tip = real(ctx, lane, wt, commits, base, log)
+        def racing(ctx, lane, wt, commits, base, log, **kw):
+            tip = real(ctx, lane, wt, commits, base, log, **kw)
             if not calls:  # the other lane lands while our gates run
                 calls.append(1)
                 lanes.build_candidate = real
@@ -803,6 +815,245 @@ class LaneTest(unittest.TestCase):
             lanes.build_candidate = real
         self.assertEqual(rc, 0, self.last)
         self.assertTrue((self.main / "src" / "b.c").exists() and (self.main / "src" / "c.c").exists())
+
+    # ---- cheap re-check when main moved only in disjoint files
+    def test_needs_full_gates_decision(self):
+        docs_only = ("docs/", "memory/")
+        merge = ("docs/naming/function-names.csv", "docs/naming/phase3/backlog.tsv")
+
+        def full(lane, moved):
+            return lanes.needs_full_gates(lane, moved, lanes.INERT_DEFAULT, docs_only, merge)[0]
+        # build-input lane, main moved only in docs/memory/.claude: cheap
+        self.assertFalse(full(["src/main/a.c", "include/bb2.h"],
+                              ["docs/x.md", "memory/grind/f/l.md", ".claude/rules/r.md"]))
+        # build inputs on both sides, even disjoint ones: full
+        self.assertTrue(full(["src/main/a.c"], ["src/main/b.c"]))
+        self.assertTrue(full(["src/main/a.c"], ["Makefile"]))
+        self.assertTrue(full(["named_syms.txt"], ["tools/lanes/lanes.py"]))
+        self.assertTrue(full(["engine/x.py"], ["bb2.ld"]))
+        self.assertTrue(full(["asm/funcs/f.s"], ["AGENTS.md"]))  # root files count as build inputs
+        # overlapping paths: full, inert or not
+        self.assertTrue(full(["src/a.c", "docs/n.md"], ["docs/n.md"]))
+        self.assertTrue(full(["docs/a.md"], ["DOCS/A.md"]))  # case-insensitive (NTFS)
+        # regenerated / row-merged files may change on both sides
+        self.assertFalse(full(["src/a.c", "docs/naming/function-names.csv",
+                               "docs/naming/phase3/backlog.tsv"],
+                              ["docs/naming/function-names.csv", "docs/naming/phase3/backlog.tsv",
+                               "docs/naming/phase3/m10/manifest.csv"]))
+        # docs-only lane: main's build inputs cannot touch it
+        self.assertFalse(full(["docs/a.md"], ["src/a.c", "Makefile"]))
+        # an inert lane that is still gated (.claude/ is not docs-only) needs main inert too
+        self.assertTrue(full([".claude/rules/r.md"], ["src/a.c"]))
+        self.assertFalse(full([".claude/rules/r.md"], ["docs/x.md"]))
+        # nothing relevant moved
+        self.assertFalse(full(["src/a.c"], []))
+        self.assertFalse(full(["src/a.c"], ["docs/naming/function-names.csv"]))
+        # backslashes normalise
+        self.assertTrue(full(["src\\a.c"], ["src/a.c"]))
+
+    def _race(self, mover):
+        """Wrap build_candidate: run mover(n) after its n-th call. Returns (real, the list of
+        quick_paths each call received); the caller restores lanes.build_candidate = real."""
+        real, seen = lanes.build_candidate, []
+
+        def racing(ctx, lane, ld, commits, base, log, **kw):
+            tip = real(ctx, lane, ld, commits, base, log, **kw)
+            seen.append(kw.get("quick_paths"))
+            mover(len(seen))
+            return tip
+        lanes.build_candidate = racing
+        return real, seen
+
+    def _main_commit(self, path, text):
+        p = self.main / path
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text, newline="\n")
+        sh("add", "-A", cwd=self.main)
+        sh("commit", "-q", "-m", f"main {path}", cwd=self.main)
+        sh("push", "-q", "origin", "main", cwd=self.main)
+
+    def test_main_moved_in_docs_gets_quick_recheck(self):
+        self.L("s1", "open", "a"); self.L("s2", "open", "b")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        self.commit("b", "docs/note.md", "n\n", "note")
+        box = {}
+
+        def other_lands(n):
+            if n == 1:  # lane b lands (unwrapped) while lane a's gates run
+                mine, lanes.build_candidate = lanes.build_candidate, box["real"]
+                rc = self.L("s2", "land", "b")
+                lanes.build_candidate = mine
+                self.assertEqual(rc, 0, self.last)
+        box["real"], seen = self._race(other_lands)
+        try:
+            rc = self.L("s1", "land", "a")
+        finally:
+            lanes.build_candidate = box["real"]
+        self.assertEqual(rc, 0, self.last)
+        self.assertEqual(len(seen), 2)
+        self.assertIsNone(seen[0])
+        self.assertIn("src/b.c", seen[1])
+        self.assertIn("quick re-check", self.last)
+        self.assertIn("quick-gate", self.last)
+        self.assertEqual(self.last.count("$ python gate.py"), 1)  # the full gates ran once
+        self.assertTrue((self.main / "src" / "b.c").exists())
+        self.assertTrue((self.main / "docs" / "note.md").exists())
+        self.assertEqual(self.main_file("census.csv"), "files,2\n")
+        self.assertEqual(sh("log", "-1", "--format=%s", "main", cwd=self.main), "add b")
+
+    def test_build_inputs_on_both_sides_regate_in_full(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        real, seen = self._race(
+            lambda n: self._main_commit("src/m.c", "int m;\n") if n == 1 else None)
+        try:
+            rc = self.L("s1", "land", "a")
+        finally:
+            lanes.build_candidate = real
+        self.assertEqual(rc, 0, self.last)
+        self.assertEqual(seen, [None, None])
+        self.assertNotIn("quick re-check", self.last)
+        self.assertIn("build inputs changed on both sides", self.last)
+        self.assertEqual(self.last.count("$ python gate.py"), 2)
+        self.assertEqual(self.main_file("census.csv"), "files,3\n")
+
+    def test_quick_recheck_still_fails_closed(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        cfg = dict(CFG, quick_gates=["python -c \"import sys; sys.exit(1)\""])
+        (self.main / "tools" / "lanes" / "lanes.json").write_text(json.dumps(cfg), newline="\n")
+        sh("commit", "-qam", "cfg", cwd=self.main)
+        sh("push", "-q", "origin", "main", cwd=self.main)
+        real, seen = self._race(
+            lambda n: self._main_commit("docs/d.md", "d\n") if n == 1 else None)
+        try:
+            rc = self.L("s1", "land", "a")
+        finally:
+            lanes.build_candidate = real
+        self.assertEqual(rc, 4, self.last)
+        self.assertEqual(len(seen), 1)  # the second (quick) call raised
+        self.assertFalse((self.main / "src" / "b.c").exists())
+
+    def test_retry_budget_full_and_quick(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        real, seen = self._race(lambda n: self._main_commit(f"src/m{n}.c", "int m;\n"))
+        try:
+            self.assertEqual(self.L("s1", "land", "a"), 1, self.last)
+        finally:
+            lanes.build_candidate = real
+        self.assertEqual(len(seen), lanes.FULL_GATE_ATTEMPTS)  # build inputs: full every time
+        self.assertIn("main kept moving", self.last)
+        self.assertFalse((self.main / "src" / "b.c").exists())
+        real, seen = self._race(lambda n: self._main_commit(f"docs/d{n}.md", "d\n"))
+        try:
+            self.assertEqual(self.L("s1", "land", "a"), 1, self.last)
+        finally:
+            lanes.build_candidate = real
+        self.assertEqual(len(seen), lanes.LAND_ATTEMPTS)  # docs only: one full, then quick ones
+        self.assertEqual(sum(q is None for q in seen), 1)
+        self.assertIn("main kept moving", self.last)
+
+    def _land_racing(self, mover, lane="a", rc=0):
+        real, seen = self._race(mover)
+        try:
+            got = self.L("s1", "land", lane)
+        finally:
+            lanes.build_candidate = real
+        self.assertEqual(got, rc, self.last)
+        return seen
+
+    def test_quick_fallback_on_new_path_respects_cap(self):
+        # quick replays that are never mechanical: each one falls back to the full gates, and the
+        # land stops at FULL_GATE_ATTEMPTS full runs (it never runs a fourth)
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        real_cheap = lanes.cheap_recheck_paths
+
+        def shrunk(*a):
+            got = real_cheap(*a)
+            return None if got is None else []  # every lane path now counts as new
+        lanes.cheap_recheck_paths = shrunk
+        try:
+            self._land_racing(lambda n: self._main_commit(f"docs/d{n}.md", "d\n"), rc=1)
+        finally:
+            lanes.cheap_recheck_paths = real_cheap
+        self.assertIn("not mechanical (new paths: src/b.c)", self.last)
+        self.assertEqual(self.last.count("$ python gate.py"), lanes.FULL_GATE_ATTEMPTS)
+        self.assertNotIn("quick-gate", self.last)
+        self.assertIn(f"during {lanes.FULL_GATE_ATTEMPTS + 1} land attempts "
+                      f"({lanes.FULL_GATE_ATTEMPTS} full gate runs)", self.last)
+        self.assertFalse((self.main / "src" / "b.c").exists())
+
+    def test_quick_fallback_on_lane_replay_lands_after_full_gates(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        real_replay = lanes.replay_commit
+
+        def as_replayed(*a):
+            real_replay(*a)
+            return "replayed"  # as if a Lane-Replay command had re-run on the new base
+        lanes.replay_commit = as_replayed
+        try:
+            self._land_racing(lambda n: self._main_commit("docs/d.md", "d\n") if n == 1 else None)
+        finally:
+            lanes.replay_commit = real_replay
+        self.assertIn("not mechanical (a Lane-Replay re-ran)", self.last)
+        self.assertEqual(self.last.count("$ python gate.py"), 2)
+        self.assertNotIn("quick-gate", self.last)
+        self.assertTrue((self.main / "src" / "b.c").exists())
+
+    def test_main_rewritten_since_gated_base_gets_full_gates(self):
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n", "add b")
+        self._main_commit("docs/y.md", "y\n")  # the gated base: main's tip above the lane's base
+
+        def rewrite(n):
+            if n == 1:  # that tip is replaced (docs only) and force-pushed
+                (self.main / "docs").mkdir(exist_ok=True)
+                (self.main / "docs" / "r.md").write_text("r\n", newline="\n")
+                sh("add", "-A", cwd=self.main)
+                sh("commit", "-q", "--amend", "-m", "y rewritten", cwd=self.main)
+                sh("push", "-q", "-f", "origin", "main", cwd=self.main)
+        seen = self._land_racing(rewrite)
+        self.assertEqual(seen, [None, None])
+        self.assertIn("main was rewritten", self.last)
+        self.assertEqual(self.last.count("$ python gate.py"), 2)
+        self.assertTrue((self.main / "src" / "b.c").exists())
+
+    def test_gated_claude_lane_regates_when_main_changes_build_inputs(self):
+        self.L("s1", "open", "a")
+        self.commit("a", ".claude/rules/r.md", "rule\n", "rule")  # inert, but not docs-only
+        seen = self._land_racing(
+            lambda n: self._main_commit("src/m.c", "int m;\n") if n == 1 else None)
+        self.assertEqual(seen, [None, None])
+        self.assertIn("main changed build inputs under a gated lane", self.last)
+        self.assertEqual(self.last.count("$ python gate.py"), 2)
+        self.assertEqual(self.main_file("census.csv"), "files,2\n")
+
+    def test_regen_only_commit_is_dropped_and_counts_as_landed(self):
+        self.L("s1", "open", "a")
+        before = sh("rev-parse", "main", cwd=self.main)
+        self.commit("a", "src/a.c", "int a2;\n", "edit a")  # the census does not change
+        self.commit("a", "census.csv", "stale\n", "hand-edited census")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("held only regenerated files and was dropped", self.last)
+        # the census-only lane commit vanished: regenerating undid it
+        self.assertEqual(sh("log", "--format=%s", f"{before}..main", cwd=self.main).splitlines(),
+                         ["edit a"])
+        self.assertEqual(self.main_file("census.csv"), "files,1\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("nothing to land", self.last)
+        # a lane holding nothing but a regenerated-file edit lands as nothing at all
+        self.commit("a", "census.csv", "stale\n", "hand-edited census 3")
+        head = sh("rev-parse", "main", cwd=self.main)
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("already in main", self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), head)
+        ctx = lanes.Ctx(self.main, "s1")
+        self.assertEqual(lanes.unlanded(ctx, "a", "lanes/a"), [])
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("nothing to land", self.last)
 
     def test_unpushed_main_commit_blocks_land(self):
         self.L("s1", "open", "a")

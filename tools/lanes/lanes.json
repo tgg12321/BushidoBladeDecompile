@@ -51,5 +51,8 @@
     ],
     "docs": []
   },
-  "docs_only_paths": ["docs/", "memory/"]
+  "docs_only_paths": ["docs/", "memory/"],
+  "inert_paths": ["docs/", "memory/", ".claude/"],
+  "quick_gates": ["python3 -m engine.cli tus-check",
+                  "python3 tools/check_completion_integrity.py"]
 }

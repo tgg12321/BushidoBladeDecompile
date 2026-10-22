@@ -5,11 +5,15 @@ A lane is a named worktree (`../bb2-worktrees/ln-<lane>`, branch `lanes/<lane>`)
 one Claude session. Lanes never edit the main checkout. Main is only a landing pad: `land`
 replays the lane's commits onto the current main in a private landing worktree, runs the gates
 there, and fast-forwards main to the gated commit under the main-reintegration lock
-(tools/reintegrate_lock.ps1, same lock file), so main never holds an ungated state.
+(tools/reintegrate_lock.ps1, same lock file), so main never holds an ungated state. If main
+moves while the gates run, the lane is replayed onto the new main; when the paths main changed
+since the gated base are disjoint from the lane's and at most one side touched build inputs
+(needs_full_gates), that replay gets only the quick checks (lanes.json "quick_gates", then
+regenerate), never when build inputs changed on both sides.
 
 Conflicts are handled without hand merges where the file allows it:
   - regenerated files (lanes.json "regenerate", e.g. the naming census) take main's side and are
-    rebuilt after the gates;
+    rebuilt after the gates, folded into the lane's last landed commit (no separate commit);
   - row-keyed TSV registries (lanes.json "rowmerge", the backlogs) are merged row by row;
   - a commit whose message carries `Lane-Replay: <shell command>` trailers is re-run on the new
     base instead of cherry-picked (use it only when the commit is exactly that tool output);
@@ -859,6 +863,46 @@ def check_untracked(wt: Path):
                      + ", ".join(extra[:10]) + ("..." if len(extra) > 10 else ""), 4)
 
 
+INERT_DEFAULT = ("docs/", "memory/", ".claude/")
+
+
+def needs_full_gates(lane_paths, main_paths, inert=INERT_DEFAULT, docs_only=("docs/", "memory/"),
+                     mergeable=()):
+    """Decide whether a candidate that passed the full gates on main M1 must be re-gated in full
+    after main moved to M2 (pure: two path lists in, (bool, reason) out).
+
+    `lane_paths`: what the lane changes; `main_paths`: what changed on main M1..M2. A path is a
+    BUILD INPUT unless it is under an `inert` prefix (docs/, memory/, .claude/): everything else
+    (src/, include/, asm/, Makefile, *.ld, engine/, tools/, root registries, AGENTS.md...) counts.
+    `mergeable` paths (regenerated outputs, row-merged registries) may change on both sides: the
+    replay merges them mechanically and the regenerate step rebuilds them on the final tree.
+    `docs_only` is the prefix set under which a lane skips gates and regeneration entirely.
+
+    A cheap re-check (clean replay + quick gates + regenerate) suffices only when the sides are
+    disjoint (outside `mergeable`) and at most one side touched build inputs. A lane that is not
+    docs-only also needs main's side to be inert: its regenerate step reads the previous build."""
+    def low(ps):
+        return {p.replace("\\", "/").lower() for p in ps}  # NTFS is case-insensitive
+
+    def all_under(ps, prefixes):
+        return all(any(p.startswith(x.lower()) for x in prefixes) for p in ps)
+
+    merge = low(mergeable)
+    lane, moved = low(lane_paths) - merge, low(main_paths) - merge
+    if not moved:
+        return False, "main changed nothing the lane's gates depend on"
+    both = sorted(lane & moved)
+    if both:
+        return True, "main changed paths the lane also changes: " + ", ".join(both[:5])
+    lane_build, main_build = not all_under(lane, inert), not all_under(moved, inert)
+    if lane_build and main_build:
+        return True, "build inputs changed on both sides"
+    if main_build and not all_under(low(lane_paths), docs_only):
+        return True, "main changed build inputs under a gated lane"
+    return False, ("main changed only " + ("docs" if not main_build else "build inputs the "
+                                           "docs-only lane cannot affect"))
+
+
 def paths_of(ctx: Ctx, commits) -> list:
     out = set()
     for c in commits:
@@ -944,14 +988,38 @@ def cmd_recover(ctx: Ctx, a):
     return 0
 
 
-def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log) -> str:
+class NeedFullGates(Exception):
+    """build_candidate's quick re-check found the replay was not mechanical."""
+
+
+# the full gates' integrity check reads "inert" files (layer2.jsonl ledgers, naming manifests,
+# the census), so it reruns on every quick re-check; it reuses the gated build/ (same inputs)
+QUICK_GATES_DEFAULT = ("python3 -m engine.cli tus-check", "python3 tools/check_completion_integrity.py")
+
+
+def mergeable_paths(ctx: Ctx) -> set:
+    """Paths both sides may change without a hand merge: regenerated outputs and row-merged
+    registries (see needs_full_gates)."""
+    return {g["path"] for g in ctx.cfg.get("regenerate", [])} | set(ctx.cfg.get("rowmerge", []))
+
+
+def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
+                    quick_paths=None) -> str:
     """Replay the lane's commits onto `base` in the private landing worktree, gate, regenerate.
     No lock is held: nothing here touches main or the lane worktree. Returns the gated tip
-    (equal to `base` if every commit was already in main)."""
+    (equal to `base` if every commit was already in main).
+
+    `quick_paths` (the lane's paths from an earlier full pass; cmd_land passes it only when
+    needs_full_gates() said no) runs the quick gates instead of the full ones, provided the replay
+    stays mechanical: no Lane-Replay re-run and no path outside that set. Otherwise it raises
+    NeedFullGates and the caller decides (within its full-run budget) whether to run them. Sets ctx.gated to "full" | "quick" | "docs" and ctx.cand_paths to the
+    candidate's changed paths (before regeneration)."""
     run(["git", "cherry-pick", "--abort"], cwd=ld, check=False)
     git("checkout", "-q", "--detach", "-f", base, cwd=ld)
     git("reset", "-q", "--hard", base, cwd=ld)
     ctx.replayed = {}  # lane sha -> the candidate commit holding it (base's tip if it was empty)
+    ctx.gated, ctx.cand_paths = "full", set()
+    hows = []
     for sha in commits:
         try:
             how = replay_commit(ctx, ld, sha, log)
@@ -960,40 +1028,92 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log) -> s
                 raise Refuse(f"{e}\n  Drop just this commit (later commits are kept) and redo it "
                              f"on the new main: python tools/lanes/lanes.py drop {lane} {sha[:9]}", 3)
             raise
+        hows.append(how)
         ctx.replayed[sha] = git("rev-parse", "HEAD", cwd=ld)
         print(f"lanes:   {sha[:9]} {how}", flush=True)
     new_paths = set(git("diff", "--name-only", "--no-renames", f"{base}..HEAD", cwd=ld).split())
+    ctx.cand_paths = new_paths
     if not new_paths:
         return git("rev-parse", "HEAD", cwd=ld)
     docs_only = all(any(p.startswith(d) for d in ctx.cfg.get("docs_only_paths", [])) for p in new_paths)
+    quick = quick_paths is not None and not docs_only
+    if quick:
+        allowed = {p.lower() for p in quick_paths} | {p.lower() for p in mergeable_paths(ctx)}
+        extra = sorted(p for p in new_paths if p.lower() not in allowed)
+        if "replayed" in hows or extra:
+            raise NeedFullGates("the replay onto the new main was not mechanical ("
+                                + ("a Lane-Replay re-ran" if "replayed" in hows else
+                                   "new paths: " + ", ".join(extra[:5])) + ")")
     kind = ctx.load()["lanes"][lane].get("kind", "foundation")
-    gates = [] if docs_only else ctx.cfg["gates"].get(kind, ctx.cfg["gates"]["foundation"])
     if docs_only:
+        gates = []
+        ctx.gated = "docs"
         print("lanes: docs-only change; build gates skipped")
+    elif quick:
+        gates = list(ctx.cfg.get("quick_gates", QUICK_GATES_DEFAULT))
+        ctx.gated = "quick"
+        print("lanes: main moved only in files disjoint from this lane (see needs_full_gates); "
+              "quick re-check instead of the full gates", flush=True)
+    else:
+        gates = ctx.cfg["gates"].get(kind, ctx.cfg["gates"]["foundation"])
     check_untracked(ld)
     for g in gates:
         if run_shell(ctx, ld, g, log) != 0:
             raise Refuse(f"gate failed: {g}  (log {log.name})", 4)
-    if gates and ctx.cfg.get("oracle_sha1"):
+    if gates and not quick and ctx.cfg.get("oracle_sha1"):
         exe = ld / ctx.cfg["oracle_exe"]
         got = hashlib.sha1(exe.read_bytes()).hexdigest() if exe.exists() else "missing"
         if got != ctx.cfg["oracle_sha1"]:
             raise Refuse(f"{exe} SHA1 {got} != oracle {ctx.cfg['oracle_sha1']}", 4)
         print(f"lanes: SHA1 == oracle ({got[:12]})")
     if not docs_only:
-        for g in ctx.cfg.get("regenerate", []):
-            if run_shell(ctx, ld, g["cmd"], log) != 0:
-                raise Refuse(f"regenerate failed: {g['cmd']}", 4)
-            git("add", "--", g["path"], cwd=ld)
-            if not git_ok("diff", "--cached", "--quiet", "--", g["path"], cwd=ld):
-                msgfile = ctx.state_dir / f"regen-msg-{lane}.txt"
-                msgfile.write_text(f"{g['subject']} after lane {lane}\n", encoding="utf-8", newline="\n")
-                git("commit", "-q", "-F", str(msgfile), cwd=ld)
-                print(f"lanes:   regenerated {g['path']}")
+        regenerate(ctx, lane, ld, log)
     if git("status", "--porcelain", "--untracked-files=no", cwd=ld):
         raise Refuse("the gates left tracked changes in the landing worktree: "
                      + git("status", "--porcelain", "--untracked-files=no", cwd=ld), 4)
     return git("rev-parse", "HEAD", cwd=ld)
+
+
+def regenerate(ctx: Ctx, lane: str, ld: Path, log):
+    """Rebuild the lanes.json "regenerate" outputs and fold any change into the candidate's last
+    lane commit (amend), so a land adds no separate refresh commit and every landed commit holds
+    a census that matches its tree. The amend keeps message and author and runs the commit-msg
+    chain like any commit (its staged diff is only the regenerated files). ctx.replayed entries
+    that pointed at the amended commit are moved to the new one."""
+    changed = []
+    for g in ctx.cfg.get("regenerate", []):
+        if run_shell(ctx, ld, g["cmd"], log) != 0:
+            raise Refuse(f"regenerate failed: {g['cmd']}", 4)
+        git("add", "--", g["path"], cwd=ld)
+        if not git_ok("diff", "--cached", "--quiet", "--", g["path"], cwd=ld):
+            changed.append(g)
+    if not changed:
+        return
+    old = git("rev-parse", "HEAD", cwd=ld)
+    if old in ctx.replayed.values() and git_ok("diff", "--cached", "--quiet", "HEAD~1", cwd=ld):
+        # the commit changed only regenerated files, and regeneration undid that: drop it (its
+        # lane commits count as landed in its parent)
+        git("reset", "-q", "--hard", "HEAD~1", cwd=ld)
+        new = git("rev-parse", "HEAD", cwd=ld)
+        ctx.replayed = {k: (new if v == old else v) for k, v in ctx.replayed.items()}
+        how = f"{old[:9]} held only regenerated files and was dropped"
+    elif old in ctx.replayed.values():
+        env = dict(os.environ, GIT_EDITOR="true")
+        r = run(["git", "commit", "-q", "--amend", "--no-edit"], cwd=ld, check=False, env=env)
+        if r.returncode != 0:
+            raise Refuse(f"could not fold the regenerated files into {old[:9]}:\n"
+                         f"{(r.stdout or '')[-1500:]}{(r.stderr or '')[-1500:]}", 4)
+        new = git("rev-parse", "HEAD", cwd=ld)
+        ctx.replayed = {k: (new if v == old else v) for k, v in ctx.replayed.items()}
+        how = f"folded into {git('log', '-1', '--format=%h %s', 'HEAD', cwd=ld)[:72]}"
+    else:  # HEAD is not a lane commit (cannot happen with a non-empty diff): own commit
+        msgfile = ctx.state_dir / f"regen-msg-{lane}.txt"
+        msgfile.write_text(f"{changed[0]['subject']} after lane {lane}\n", encoding="utf-8",
+                           newline="\n")
+        git("commit", "-q", "-F", str(msgfile), cwd=ld)
+        how = "own commit"
+    for g in changed:
+        print(f"lanes:   regenerated {g['path']} ({how})")
 
 
 def sync_main_with_remote(ctx: Ctx, remote: str):
@@ -1065,6 +1185,31 @@ def advance_lane(ctx: Ctx, lane: str, landed_from: str):
         print(f"lanes: {br}: commits made during the land were rebased onto the new main")
 
 
+LAND_ATTEMPTS = 6       # replays onto a moved main, cheap re-checks included
+FULL_GATE_ATTEMPTS = 3  # of which full gate runs (~25 min each with three lanes live)
+
+
+def cheap_recheck_paths(ctx: Ctx, full_pass, base: str, commits):
+    """The lane paths to hand build_candidate for a quick re-check onto `base`, or None when the
+    full gates must run: no earlier full pass, a different commit set, `base` not a descendant of
+    the gated base (main was reset), or needs_full_gates() over the gated base..`base` delta."""
+    if full_pass is None:
+        return None
+    gbase, gcommits, lane_paths = full_pass
+    if list(commits) != gcommits or gbase == base:
+        return None
+    if not git_ok("merge-base", "--is-ancestor", gbase, base, cwd=ctx.main):
+        print("lanes: main was rewritten since the gated base; full gates", flush=True)
+        return None
+    moved = git("diff", "--name-only", "--no-renames", gbase, base, cwd=ctx.main).split()
+    inert = ctx.cfg.get("inert_paths", list(INERT_DEFAULT))
+    full, why = needs_full_gates(lane_paths, moved, inert, ctx.cfg.get("docs_only_paths", []),
+                                 mergeable_paths(ctx))
+    print(f"lanes: main moved {gbase[:9]}..{base[:9]} ({len(moved)} path(s)): {why}"
+          + ("; full gates" if full else ""), flush=True)
+    return None if full else sorted(lane_paths)
+
+
 def cmd_land(ctx: Ctx, a):
     lane = a.lane
     ctx.update(lambda reg: require_owner(ctx, reg, lane))
@@ -1090,17 +1235,37 @@ def cmd_land(ctx: Ctx, a):
     log = open(logp, "w", encoding="utf-8", newline="\n")
     lk = read_lock(ctx)
     held_before = bool(lk and lk.get("session") == ctx.session)  # e.g. a codex-worker landing
+    full_pass = None  # (base, commits, lane paths) of the last full gate pass
+    full_runs = attempts = 0
     try:
-        for attempt in range(3):
+        for attempt in range(LAND_ATTEMPTS):
             base = git("rev-parse", "main", cwd=ctx.main)
             # against this attempt's base: main may have moved, or been reset, since the last look
             commits = unlanded(ctx, lane, tipsrc, base=base)
             if any(len(git("rev-list", "--parents", "-n1", c, cwd=ctx.main).split()) > 2
                    for c in commits):
                 raise Refuse("the lane holds merge commits; rebuild it as linear commits")
+            quick_paths = cheap_recheck_paths(ctx, full_pass, base, commits)
+            if quick_paths is None and full_runs >= FULL_GATE_ATTEMPTS:
+                break
+            attempts += 1
             print(f"lanes: landing {len(commits)} commit(s) of {lane} onto main {base[:9]}"
                   + (f" (retry {attempt}: main moved)" if attempt else ""), flush=True)
-            tip = build_candidate(ctx, lane, ld, commits, base, log)  # no lock held
+            tip = None
+            if quick_paths is not None:
+                try:
+                    tip = build_candidate(ctx, lane, ld, commits, base, log,  # no lock held
+                                          quick_paths=quick_paths)
+                except NeedFullGates as e:
+                    print(f"lanes: {e}; full gates", flush=True)
+                    if full_runs >= FULL_GATE_ATTEMPTS:
+                        break
+            if tip is None:
+                full_runs += 1
+                tip = build_candidate(ctx, lane, ld, commits, base, log)  # no lock held
+            if getattr(ctx, "gated", "full") != "quick":
+                full_pass = (base, list(commits),
+                             set(getattr(ctx, "cand_paths", ())) | set(paths_of(ctx, commits)))
             if tip == base:
                 print("lanes: every lane commit is already in main; nothing new to land")
                 mark_landed(ctx, lane, ctx.replayed)
@@ -1130,7 +1295,8 @@ def cmd_land(ctx: Ctx, a):
             print(f"lanes: main -> {tip[:9]} ({pushed})")
             advance_lane(ctx, lane, tipsrc)
             return 0
-        raise Refuse("main kept moving during three land attempts; try again", 1)
+        raise Refuse(f"main kept moving during {attempts} land attempts ({full_runs} full gate "
+                     f"runs); try again", 1)
     finally:
         run(["git", "cherry-pick", "--abort"], cwd=ld, check=False)
         try:
