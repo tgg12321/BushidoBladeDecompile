@@ -135,10 +135,10 @@ void memcard_AckHwEvents(void) {
 s32 memcard_CountFiles(s32 arg0, s32 arg1) {
     struct DIRENTRY *var_s0;
     s32 var_s1;
-    s32 sp10[8];
+    char sp10[32];
 
     var_s0 = g_memcard_file_list;
-    sprintf(sp10, g_str_memcard_fmt, arg0, arg1);
+    sprintf(sp10, (char *)g_str_memcard_fmt, arg0, arg1);
     var_s1 = 0;
     if (firstfile(sp10, var_s0) != 0) {
         do {
@@ -239,13 +239,11 @@ s32 memcard_HasFile(u8 *arg0) {
     return 0;
 }
 
-typedef void (*Func79A30_5)(s32 *, s32 *, s32, s32, s32);
-
-s32 memcard_ReadFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    s32 sp18[8];
+s32 memcard_ReadFile(s32 arg0, s32 arg1, s32 arg2, void *arg3, s32 arg4) {
+    char sp18[32];
     s32 temp_v0;
 
-    ((Func79A30_5)sprintf)(sp18, &D_800109BC, arg0, arg1, arg2);
+    sprintf(sp18, (char *)D_800109BC, arg0, arg1, arg2);
     temp_v0 = open(sp18, 0x8001);
     if (temp_v0 == -1) {
         return -1;
@@ -257,14 +255,14 @@ s32 memcard_ReadFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     return -(memcard_WaitHwEvent() != 1);
 }
 
-extern void write(s32, s32, s32);
+extern s32 write(s32, void *, s32); /* PsyQ: long write(long, void *, long) */
 
 s32 memcard_WriteFile(
-    s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
-    s32 sp18[8];
+    s32 arg0, s32 arg1, s32 arg2, void *arg3, s32 arg4, s32 arg5, s32 arg6) {
+    char sp18[32];
     s32 temp_v0;
 
-    ((Func79A30_5)sprintf)(sp18, &D_800109BC, arg0, arg1, arg2);
+    sprintf(sp18, (char *)D_800109BC, arg0, arg1, arg2);
     if (arg6 != 0) {
         temp_v0 = open(sp18, (arg4 << 16) | 0x200);
         if (temp_v0 == -1) {

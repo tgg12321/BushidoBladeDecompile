@@ -67,13 +67,14 @@ extern void SetMem(s32);
 /* PsyQ: long Exec(struct EXEC *, long, char **) */
 extern void Exec(struct EXEC *, s32, s32 *);
 struct DCB;
-extern void AddDrv(struct DCB *);  /* PsyQ: not in LIBAPI.H */
-extern s32 open(s32 *, s32);       /* PsyQ: long open(char *, unsigned long) */
-extern void read(s32, s32 *, s32); /* PsyQ: long read(long, void *, long) */
-extern void close(s32);            /* PsyQ: long close(long) */
+extern void AddDrv(struct DCB *);   /* PsyQ: not in LIBAPI.H */
+extern s32 open(char *, s32);       /* PsyQ: long open(char *, unsigned long) */
+extern void read(s32, void *, s32); /* PsyQ: long read(long, void *, long) */
+extern void close(s32);             /* PsyQ: long close(long) */
 extern s32 format(char *);
 /* PsyQ: struct DIRENTRY *firstfile(char *, struct DIRENTRY *) */
-extern struct DIRENTRY *firstfile(s32 *, struct DIRENTRY *);
+extern struct DIRENTRY *firstfile(char *, struct DIRENTRY *);
 extern struct DIRENTRY *nextfile(struct DIRENTRY *);
+extern void _bu_init(void);
 
 #endif /* PSXSDK_LIBAPI_H */

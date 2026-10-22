@@ -8,7 +8,7 @@
 #include "bb2.h"
 #include "bb2_const.h"
 
-extern s32 g_str_sio_800A3210;
+extern char g_str_sio_800A3210[5]; /* "sio:" */
 
 extern s32 D_800A36C0;
 
@@ -366,8 +366,8 @@ setup_load:
     memcard_ClearBuffer();
     memcard_BuildFileHeader(D_800F33D8);
     memcard_BuildSaveBlock(D_800F33D8 + 0x100);
-    if (memcard_WriteFile(
-            0, 0, D_800A31F0, (s32)D_800F33D8, 1, 0x200, var_s1) != 0) {
+    if (memcard_WriteFile(0, 0, D_800A31F0, D_800F33D8, 1, 0x200, var_s1) !=
+        0) {
         close(g_memcard_fd);
         var_v0 = 3;
         goto finish;
@@ -384,7 +384,7 @@ state_5:
     }
     g_memcard_request_status = 4;
     memcard_ClearBuffer();
-    if (memcard_ReadFile(0, 0, D_800A31F0, (s32)D_800F33D8, 0x200) != 0) {
+    if (memcard_ReadFile(0, 0, D_800A31F0, D_800F33D8, 0x200) != 0) {
         close(g_memcard_fd);
         var_v0 = 6;
         goto finish;
@@ -1564,11 +1564,11 @@ void comb_Init(void) {
     VSync(2);
     AddCOMB();
     do {
-        g_comb_write_fd = open(&g_str_sio_800A3210, 2);
+        g_comb_write_fd = open(g_str_sio_800A3210, 2);
     } while (g_comb_write_fd == neg1);
     neg1 = -1;
     do {
-        g_comb_read_fd = open(&g_str_sio_800A3210, 0x8001);
+        g_comb_read_fd = open(g_str_sio_800A3210, 0x8001);
     } while (g_comb_read_fd == neg1);
     _comb_control(2, 0, 0);
     _comb_control(1, 3, 0xE100);
