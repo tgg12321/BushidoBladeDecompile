@@ -871,9 +871,9 @@ extern void math_SetLightPlaneProjection(void);
 extern void gpu_LoadTimGroup(s32, s32);
 extern void gpu_LoadTimGroupOffset(s32, s32, s16, s16);
 extern void gpu_LoadTimGroupSplitOffset(s32, s32, s16, s16, s16, s16);
-/* gpu_LoadTim (u8 *, s16, s16, s16, u16) and gpu_LoadTimClut (u8 *, s16, s16)
- * have no declaration: 368E4.c calls them above their definitions, implicitly,
- * and their prototypes change its bytes. */
+/* gpu_LoadTim and gpu_LoadTimClut have no prototype: 368E4.c calls them
+ * above their old-style (K&R) definitions with int arguments, and a prototype's
+ * s16 / u16 parameters change its bytes. */
 extern s32 func_800486FC(void);
 extern void math_GrayscaleRgb555(u16 *, s32, u16 *);
 extern void gpu_TintVramRowInPlace(s32, s32, s32, s32, s32, s32);

@@ -12,6 +12,8 @@ extern void wave_SetCellBuffer(s32);
 extern s32 wave_GetCellBufferSize(void);
 extern void func_800481E8(s32, s32);
 extern void func_800466C0(s32, s32);
+void gpu_LoadTim();
+void gpu_LoadTimClut();
 
 #define ALIGN4(x) (((u32)(x) >> 2) << 2)
 #define PTR_OFF(base, off) ((s32)((u8 *)(base) + (off)))
@@ -238,7 +240,7 @@ void func_8004659C(s32 a0) {
     s0p = (s32 *)((u8 *)s0 + *(s32 *)(v0 + 4));
     reloc_UnrelocateBlock(7);
     reloc_RelocateBlock(s2, 7);
-    collision_SetGrid(s3);
+    collision_SetGrid((s32)s3);
     D_800A33B0 = (s32)s4p;
     D_800A33B4 = (s32)s1p;
     func_8003EDC0((u16 *)s0p, 7);
@@ -1218,7 +1220,12 @@ void func_800481E8(s32 arg0, s32 arg1) {
     }
 }
 
-void gpu_LoadTim(u8 *arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4) {
+void gpu_LoadTim(arg0, arg1, arg2, arg3, arg4) u8 *arg0;
+s16 arg1;
+s16 arg2;
+s16 arg3;
+u16 arg4;
+{
     RECT rect;
     u16 buf[512];
     u8 *var_2;
@@ -1296,7 +1303,10 @@ void gpu_LoadTimGroupClutsOffset(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
     }
 }
 
-void gpu_LoadTimClut(u8 *arg0, s16 arg1, s16 arg2) {
+void gpu_LoadTimClut(arg0, arg1, arg2) u8 *arg0;
+s16 arg1;
+s16 arg2;
+{
     RECT rect;
     u16 buf[512];
     u32 var_2;

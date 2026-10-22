@@ -89,7 +89,7 @@ PSYQ_LIBRARY_FILES = {"main/psxsdk/libcomb/comb", "main/psxsdk/libgpu/sys", "mai
 # One rule for all objects; the per-file .align sed is retired.
 RODATA_OBJ_ALIGN = "--set-section-alignment .rodata=4"
 NO_SR_FILES = set()
-NOWARN_FILES = {"main/175A4", "main/17AFC", "main/309CC", "main/368E4", "main/596CC", "main/memcard", "main/psxsdk/libgpu/sys", "main/psxsdk/libspu/spu"}
+NOWARN_FILES = {"main/175A4", "main/17AFC", "main/309CC", "main/596CC", "main/memcard", "main/psxsdk/libgpu/sys", "main/psxsdk/libspu/spu"}
 
 # Mirrors the Makefile LINKED_ASM_FUNCS list: per-function objects assembled
 # straight from asm/funcs/<name>.s and linked by bb2.ld. Explicit opt-in, never
