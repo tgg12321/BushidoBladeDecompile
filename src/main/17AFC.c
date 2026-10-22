@@ -4639,19 +4639,18 @@ void snd_QueuePositionalSound(s32 arg0, s32 *arg1) {
         } else {
             gte_Lzc(dist_sq, &sp_tmp);
             {
-                /* FAKE: v0_m holds the -2 mask (li -2 into v0, and v0,v1,v0);
-                   as a literal the mask lands in v1 and the clz in v0 (score
-                   3). */
-                u32 v0_m = (u32)-2;
-                u32 v1_m;
+                /* Ruling 4 split; one expression: score 3. */
+                u32 lzc_even = (u32)-2;
+                u32 shift;
                 u32 idx;
                 u32 hi;
-                v0_m &= sp_tmp;
-                v1_m = 0x16 - v0_m;
-                idx = dist_sq >> v1_m;
-                v1_m = v1_m >> 1;
+                lzc_even &= sp_tmp;
+                shift = 0x16 - lzc_even;
+                idx = dist_sq >> shift;
+                /* Halve the table-index shift for the result scale. */
+                shift = shift >> 1;
                 hi = (u32)((u8)(g_sqrt_table_u8[idx]));
-                var_4 = (hi << 16) >> (0x13 - v1_m);
+                var_4 = (hi << 16) >> (0x13 - shift);
             }
         }
     }
