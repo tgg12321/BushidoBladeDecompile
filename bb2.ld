@@ -621,7 +621,6 @@ SECTIONS
         build/asm/data/93C1C.data.o(.data);
         build/src/main/51268.o(.sbss);
         build/src/main/596CC.o(.sbss);
-        build/asm/data/93D30.data.o(.data);
         build/src/main/5ED34.o(.sbss);
         build/asm/data/93DCC.data.o(.data);
         build/src/main/64FD8.o(.sbss);

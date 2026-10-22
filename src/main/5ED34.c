@@ -26,6 +26,10 @@ extern RECT D_800A32EC;
 
 /* Q65: this file's statics (.sbss, allocated per file by PSYLINK), in
  * address order. */
+static s16 D_800A3530[2];
+static s16 D_800A3534[2];
+static s32 D_800A3538; /* not named by any code or data: size from the gap */
+static s32 D_800A353C; /* not named by any code or data: size from the gap */
 static s16 D_800A3540[2];
 static s16 D_800A3544[2];
 static s32 D_800A3548;
@@ -822,9 +826,6 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     gpu_AddGradientPanel(arg0);
     func_80073200(arg0);
 }
-
-extern s16 D_800A3530[];
-extern s16 D_800A3534[];
 
 void menu_UpdateEntryGridCursors(Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
