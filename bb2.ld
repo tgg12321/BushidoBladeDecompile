@@ -378,6 +378,7 @@ SECTIONS
         build/src/main/psxsdk/libapi/a66.o(.data);
         build/src/main/psxsdk/libapi/a67.o(.data);
         build/src/main/psxsdk/libapi/a91.o(.data);
+        build/asm/data/7D920.data.o(.data);
         build/src/main/psxsdk/libapi/counter.o(.data);
         build/src/main/psxsdk/libapi/pad.o(.data);
         build/src/main/psxsdk/libapi/a18.o(.data);
@@ -396,10 +397,10 @@ SECTIONS
         build/src/main/psxsdk/libc2/strlen.o(.data);
         build/src/main/psxsdk/libc2/printf.o(.data);
         build/src/main/psxsdk/libc2/prnt.o(.data);
+        build/asm/data/8C58C.data.o(.data);
         build/src/main/psxsdk/libc2/ctype.o(.data);
         build/src/main/psxsdk/libc2/memchr.o(.data);
         build/src/main/psxsdk/libc2/putchar.o(.data);
-        build/asm/data/7D920.data.o(.data);
         build/src/main/psxsdk/libc2/sprintf.o(.data);
         build/src/main/psxsdk/libc2/memmove.o(.data);
         build/src/main/psxsdk/libcard/c171.o(.data);

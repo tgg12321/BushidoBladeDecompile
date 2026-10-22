@@ -77,3 +77,10 @@ s32 ResetRCnt(u32 arg0) {
     D_8009BD6C[v].count = 0;
     return 1;
 }
+
+/* .data 0x8009BD68..0x8009BD80: LIBAPI.LIB COUNTER's 24-byte .data (no
+ * relocation, no XDEF). Defined after every function, so no body sees a
+ * definition where it saw an extern. */
+volatile s32 *D_8009BD68 = (s32 *)0x1F801070;   /* I_STAT; [1] is I_MASK */
+volatile RCnt *D_8009BD6C = (RCnt *)0x1F801100; /* root counter 0 */
+s32 D_8009BD70[4] = {0x10, 0x20, 0x40, 0x01};

@@ -131,3 +131,10 @@ s32 _IsVSync(void) {
     }
     return ret;
 }
+
+/* .data 0x8009BD80..0x8009BD8C: LIBAPI.LIB PAD's 12-byte .data (no
+ * relocation, no XDEF). Defined after every function, so no body sees a
+ * definition where it saw an extern. */
+s32 is_pad_init = 0;
+volatile SioRegs *D_8009BD84 = (SioRegs *)0x1F801040; /* SIO port 0 */
+volatile u32 *D_8009BD88 = (u32 *)0x1F801070;         /* I_STAT */
