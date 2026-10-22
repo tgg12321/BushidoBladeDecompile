@@ -1014,9 +1014,10 @@ s32 func_8006295C(void) {
         }
     }
     if (g_eff_quad_cursor != prim) {
-        /* FAKE: `end` keeps the fill position and prim walks the same buffer
-         * again to link each quad; with a fresh cursor local the registers
-         * rotate: score 37. */
+        /* `end` keeps the fill position; the quad cursor prim restarts at
+         * g_eff_quad_cursor to link each quad, the way SOTN's menu code
+         * restarts its fill cursor at the buffer to read it back (Q51) */
+        /* SOTN: src/dra/menu.c:3352 @db41b28 */
         end = prim;
         for (prim = g_eff_quad_cursor, k = 0; prim < end; prim++, k++) {
             AddPrim(g_gpu_ot_ptr + var_3[k], prim);
@@ -1402,9 +1403,10 @@ s32 func_80063E10(s32 arg0) {
             prim++;
         }
     }
-    /* FAKE: `end` keeps the fill position and prim walks the same buffer again
-     * to link each quad; with a fresh tail cursor sxy and prim swap s2/s3:
-     * score 36. */
+    /* `end` keeps the fill position; the quad cursor prim restarts at
+     * g_eff_quad_cursor to link each quad, the way SOTN's menu code restarts
+     * its fill cursor at the buffer to read it back (Q51) */
+    /* SOTN: src/dra/menu.c:3352 @db41b28 */
     end = prim;
     for (prim = g_eff_quad_cursor, k = 0; prim < end; prim++, k++) {
         D_800A34E8 = &prim->tag;
@@ -1425,8 +1427,7 @@ void eff_BuildUsedSlotRotMatrices(s32 *count, MATRIX *m, s32 idx) {
     s32 mask;
 
     for (i = 0; i < *count; i++) {
-        /* FAKE: setting mask twice keeps the target's `li v0,1; sllv` inside
-         * the loop; `mask = 1 << i` hoists the 1 into s5: score 12. */
+        /* slot i's bit: 1, shifted up by i */
         mask = 1;
         mask <<= i;
         if (D_800A3454[idx] & mask) {
