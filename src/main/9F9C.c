@@ -336,7 +336,7 @@ void font_PrintU16Triples(u16 *arg0) {
     p = arg0 + 2;
     do {
         i++;
-        font_Printf(D_800100A4, arg0[0], p[-1], p[0]);
+        font_Printf((u8 *)D_800100A4, arg0[0], p[-1], p[0]);
         p += 3;
         arg0 += 3;
     } while (i < 0x16);
