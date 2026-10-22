@@ -154,8 +154,11 @@ s32 memcard_CountFreeBlocks(void) {
     struct DIRENTRY *var_v1;
     s32 var_a1;
     s32 var_a2;
-    /* FAKE: reused -- the byte total, then the block count; returning
+    /* `var_a0` sums the entries' byte sizes, then holds the block count
+     * derived from that total (total / 8192), the way SOTN's cloaked knight
+     * takes `distance = SquareRoot0(distance)` (Q51); returning
      * 0xF - (var_v0 >> var_5) directly: score 15 */
+    /* SOTN: src/st/nz1/e_cloaked_knight.c:83 @db41b28 */
     s32 var_a0;
     /* FAKE: reused -- each entry's size, then the rounded total; its own
      * local for either: score 2 */
