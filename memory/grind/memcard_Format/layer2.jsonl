@@ -1,0 +1,1 @@
+{"func": "memcard_Format", "addr": "80037F08", "verdict": "PASS", "body_hash": "3ec5e7d455da9404", "body_kind": "c", "file": "main/28708", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T00:03:34Z", "head": "8455e3f19", "notes": "hygiene-w: char buf[8] + format(char *); whole body clean, oracle match"}
