@@ -1,0 +1,11 @@
+{
+  "func": "motion_UpdatePlayback",
+  "verdict": "PASS",
+  "decision": "PASS",
+  "function": "motion_UpdatePlayback",
+  "body_hash": "3b80ec26cd83e02b",
+  "summary": "Comment-only cheat-cleanup (word-diff touches only comment text; sandbox --disable all score 0; layer2 hash 3b80ec26cd83e02b). The var_5 reuse matches a valid Q51 citation, so the variable is ordinary C under the ordinary-c-judge-decidable multi-write clause and needs no FAKE label. SOTN check: src/st/nz0/e_left_secret_room_wall.c @db41b28 is the c member of config/splat.us.stnz0.yaml (src_path src/st/nz0). The file has no INCLUDE_ASM, NON_MATCHING or #if guard. At :74 and :87, EntityLeftSecretRoomWall's newEntity is assigned from AllocEntity, NULL-tested and passed to CreateEntityFromEntity once, then reassigned in a for loop. var_5 has the same single role, the Unk80045878Obj* returned by func_8004153C (bb2.h:802). It is written and consumed for objects 0 and 1 (NULL test, then softbody_RequestRebuild), then rewritten per loop iteration and read for position_scale. Each value is consumed before the next write, and the variable has no other role. The loop write has no NULL test, but that is a difference in the consumer, not in the variable's role. The new comment is true, and it carries the Q51 id and the SOTN tag as site-comment-content requires. var_6 keeps its FAKE label, and nothing else is newly unlabelled. Ruling 9 ban: the reused-local-meaning-source list says these locals are 'Still banned under Ruling 9', so it limits that ruling only. The same file's preamble names a Q51 citation as a separate admitting route, and Q91 makes the Rulings 5-12 dossiers hygiene tier. The '(except via Q51)' on func_8008B488 rate is a clarification and does not take the Q51 route away from the other entries. So the ban does not bar this route.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": ["var_5 / var_6 keep placeholder names (var_5 could be named for the func_8004153C object)", "reused-local-meaning-source Ruling 9 ban list could add '(except via Q51)' to motion_UpdatePlayback obj for consistency with the rate entry"]
+}
