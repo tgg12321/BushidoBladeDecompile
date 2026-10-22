@@ -38,10 +38,10 @@ void func_80026DA4(void) {
         idx = D_800A3876;
         if (idx == -1)
             goto tail;
-        /* FAKE: reuse the record pointers for the selected pair (restored at
-         * the tail join), keeping them in the original's call-preserved
-         * registers; separate pair locals, no join restore: score 18.
-         * SOTN: src/st/lib/unk_3B53C.c:41-55
+        /* `record` holds the selected record and `var_1` its partner, then
+           both return to the fixed pair, the way SOTN's tempEntity moves
+           between entities and returns to entity zero at the join (Q51) */
+        /* SOTN: src/st/lib/unk_3B53C.c:41-55
          * @db41b28eee52969244a52cc269c8163d1ed8826a */
         record = &D_80101EC8[idx];
         var_1 = D_80101EC8;
@@ -76,10 +76,10 @@ void func_80026DA4(void) {
                     (Judge[(u16)current->orientation.vy & 0xFFF] * var_6) / 256;
             }
         }
-        /* FAKE: re-materialize the same record base after the drift loop;
-         * GCC keeps the original base load across the block boundary;
-         * without it: score 61.
-         * SOTN: src/weapon/w_011.c:343-348
+        /* FAKE: re-sets record to the base it already holds after the drift
+         * loop (a same-value re-store, shaped like SOTN's prim re-assignment);
+         * without it: score 61 */
+        /* SOTN: src/weapon/w_011.c:343-348
          * @db41b28eee52969244a52cc269c8163d1ed8826a */
         record = D_80101EC8;
         var_1 = record + 1;
@@ -131,17 +131,15 @@ void func_80026DA4(void) {
             }
         }
     }
-    /* FAKE: restore record zero at the three-path join after selected-pair
-     * work, completing the pointer reuse above (record pointers kept in the
-     * original's call-preserved registers); reverted together with that reuse:
-     * score 18.
-     * SOTN: src/st/lib/unk_3B53C.c:41-55
+    /* `record` returns to record zero at the join, the way SOTN's
+       tempEntity returns to entity zero after selecting entities (Q51) */
+    /* SOTN: src/st/lib/unk_3B53C.c:41-55
      * @db41b28eee52969244a52cc269c8163d1ed8826a */
     record = D_80101EC8;
 tail:
-    /* FAKE: restore the second fixed record with the first at this join;
-     * D_80101EC8[1] direct in the tail: score 7.
-     * SOTN: src/st/lib/unk_3B53C.c:41-55
+    /* `var_1` returns to the second fixed record beside `record`, the way
+       SOTN's tempEntity returns to a fixed entity at the join (Q51) */
+    /* SOTN: src/st/lib/unk_3B53C.c:41-55
      * @db41b28eee52969244a52cc269c8163d1ed8826a */
     var_1 = record + 1;
     if (D_800A3910 == 0) {
