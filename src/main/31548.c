@@ -41,8 +41,9 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     case 0: {
         s32 *tbl;
         Unk80045878Node *p;
-        /* FAKE: s0 is the counter of all four loops in this function; a counter
-         * per loop scores 15. */
+        /* s0 is the counter of all four loops in this function, reused loop
+         * to loop the way SOTN's DebugCaptureScreen reuses its i (Q51) */
+        /* SOTN: src/dra/42398.c:75 @aa53500 */
         s0 = 1;
         tbl = D_80094CFC;
         /* FAKE: s1 copies the parameter arg4; using arg4 directly scores 78. */
