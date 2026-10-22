@@ -67,19 +67,14 @@ s32 SpuMalloc(s32 size) {
             _spu_AllocLastNum < _spu_AllocBlockNum) {
             u32 _addr = _spu_memList[var_s2].addr + size;
             u32 _size = _spu_memList[var_s2].size - size;
-            /* FAKE: record address as integer arithmetic (index first);
-               &_spu_memList[n] adds base first (addu operand order, score 1).
-             */
-            SpuMemRec *kb =
-                (SpuMemRec *)((_spu_AllocLastNum << 3) + (s32)_spu_memList);
-            u32 swapAddr = kb->addr;
-            u32 swapSize = kb->size;
+            u32 swapAddr = _spu_memList[_spu_AllocLastNum].addr;
+            u32 swapSize = _spu_memList[_spu_AllocLastNum].size;
 
-            kb->addr = _addr | 0x80000000;
-            kb->size = _size;
+            _spu_memList[_spu_AllocLastNum].addr = _addr | 0x80000000;
+            _spu_memList[_spu_AllocLastNum].size = _size;
+            _spu_memList[_spu_AllocLastNum + 1].addr = swapAddr;
+            _spu_memList[_spu_AllocLastNum + 1].size = swapSize;
             _spu_AllocLastNum++;
-            kb[1].addr = swapAddr;
-            kb[1].size = swapSize;
         }
 
         _spu_memList[var_s2].size = size;
