@@ -146,12 +146,10 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
 
             gte_Lzc(lut, &sp_tmp[0]);
             {
-                /* FAKE: the -2 mask held in a local that then takes the masked
-                 * count (li -2 / and v0,v1,v0); as `0x16 - (sp_tmp[0] & -2)`
-                 * the load and the AND move to $a0: score 3 */
-                s32 tmp = -2;
-                tmp = sp_tmp[0] & tmp;
-                shift_a = 0x16 - tmp;
+                /* Ruling 4 split; one expression: score 3. */
+                s32 lzc_even = -2;
+                lzc_even &= sp_tmp[0];
+                shift_a = 0x16 - lzc_even;
             }
             shift_b = shift_a >> 1;
             lut = (u8)(g_sqrt_table_u8[sum_sq >> shift_a]);
