@@ -1499,12 +1499,14 @@ void func_8003DDF8(u32 arg0) {
  * pass writes the far colour itself) and uploads the result one rect height
  * below the previous one, wrapping to the next column at y 0x200.
  *
- * FAKE constructs (each labelled at its site): the r_src / g_src far-colour
- * staging and the two combine-foldable chain-extender detours (zero emitted
- * bytes; dead-store-fake-exception). */
+ * FAKE constructs (each labelled at its site): the far-colour buffer's frame
+ * size, the r_src / g_src far-colour staging, and the two combine-foldable
+ * chain-extender detours (zero emitted bytes; dead-store-fake-exception). */
 void gpu_BuildFogImageLevels(RECT *rect, s32 count) {
     u16 src_buf[0x200];
     u16 dst_buf[0x200];
+    /* FAKE: frame layout. gte_ReadFarColor writes 3 bytes, but the target
+     * frame needs 0x19-0x20 bytes here; var_2[3] through [0x18]: score 22 */
     u8 var_2[0x20];
     s32 i;
     s32 saved_y;
