@@ -142,6 +142,30 @@ direct) is supported but unused in shipped BB2 files. Indexed PNG export uses
 the first CLUT row; subsequent CLUTs in a multi-palette TIM can be selected
 via `--clut N`.
 
+## Repack tool
+
+`tools/repack_tim.py` converts a TIM to an editable PNG and back (PMODE 0/1/2):
+
+```
+python tools/repack_tim.py decode file.tim out.png [--clut N]
+python tools/repack_tim.py encode out.png file.tim
+python tools/repack_tim.py --roundtrip disc/TIM2D        # exit 1 unless every TIM is byte-identical
+```
+
+The PNG carries every non-pixel byte (header, CLUT block, image-block header,
+trailing bytes) as JSON in a `bb2tim` text chunk, so `encode` needs a PNG that
+came from `decode`. 4/8-bit TIMs become indexed PNGs (indices = texels, palette
+= CLUT row N; edited palette entries are written back to that row, keeping each
+entry's STP bit). 16-bit TIMs become RGBA: alpha 0 = word 0x0000, 128 = STP set,
+255 = STP clear (on encode, 1..254 sets STP); the PNG must stay RGBA. Colours are
+cut from 8 to 5 bits per channel on encode, so anything darker than 8 per channel
+is black: an opaque 16-bit pixel there is rejected (it would become the
+transparent 0x0000; opaque black is alpha 128 = 0x8000), and a palette entry
+edited to it with STP clear becomes 0x0000. A resized image gets new header
+dimensions and a recomputed `block_length`; `TITLE.TIM`'s non-standard
+`block_length` is kept while its size is unchanged. All 14 disc TIMs round-trip
+byte-identically.
+
 ## Verified by
 
 * `disc/TIM2D/LAS_CN.TIM` first 16 bytes: `10 00 00 00 08 00 00 00 2c 00 00 00
