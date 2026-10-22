@@ -1556,10 +1556,8 @@ void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CRec *arg2, s32 arg3) {
     /* sprite-sheet header pointers, two per arg0: the unk_20 list of the
        MOD.BIN root (D_800A34FC->unk_24) */
     Unk8009B0E0Record **var_0;
-    /* FAKE: named intermediate (no-new-park-categories entry 6): the sheet's
-     * 8-byte cells start at header + 0xC; inline, fold reassociates the sum and
-     * loop.c strength-reduces it into its own register. Inline: score 31. */
-    Unk8009B400Record *var_1;
+    /* the sheet's 8-byte cells, just past its 12-byte header */
+    Unk8009B400Record *cells;
     s32 i, j, n;
 
     var_0 = D_800A34FC->unk_24->unk_20;
@@ -1589,8 +1587,8 @@ void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CRec *arg2, s32 arg3) {
             }
             arg2->semi = 0;
             arg2->sprt_out = (s32)D_800A36E4;
-            var_1 = arg2->header->cells;
-            arg2->table = var_1 + j;
+            cells = arg2->header->cells;
+            arg2->table = cells + j;
             D_800A36E4 = (u8 *)gpu_AddSpriteCells(arg2);
         }
 
