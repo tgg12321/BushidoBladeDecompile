@@ -1,0 +1,1 @@
+{"func": "bitstream_ReadBits", "addr": "8003D888", "verdict": "PASS", "body_hash": "4133e572f50a962d", "body_kind": "c", "file": "main/2B344", "reviewer": "cheat-reviewer:af355653", "scope": "cheat-cleanup", "date": "2026-10-22T08:59:26Z", "head": "94f04f287", "notes": "fake-reduce: once-written named intermediate, FAKE label retired (comment-only); sandbox 0, oracle SHA1 match"}
