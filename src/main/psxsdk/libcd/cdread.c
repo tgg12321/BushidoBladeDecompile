@@ -23,24 +23,19 @@ void cb_data(void);
 s32 cd_read_retry(s32);
 
 /* The cdread module state is D_800A14D0 (CdlREAD, include/psxsdk/libcd.h). */
-extern u8 *D_800A1504; /* v1.86: saved result ptr for cb dispatch */
 extern CdlCB g_CdReadCallback_func; /* CD_ReadCallbackFunc */
 
 /* cb_read (static in Sony's source); v1.86 deltas from SOTN's: the saved
-   result ptr D_800A1504 and the tsl-mode deferred advance via cb_data. */
+   result ptr (.result) and the tsl-mode deferred advance via cb_data. Every
+   access goes through the state struct, as psyz's cdread.c (ReadAttr). */
 static void cb_read(u8 intr, u8 *result) {
-    /* FAKE: second handles for D_800A14D0.cnt / .size / .tslmode, each read
-     * once below, so each is addressed as %hi/%lo of its own symbol instead
-     * of off one `la` base; all through the struct: score 2 (Q99,
-     * aggregate-merge-family) */
-    extern volatile s32 D_800A14E4, D_800A14E0, D_800A1500;
     s32 pos[3];
 
-    D_800A1504 = result;
+    D_800A14D0.result = result;
     if (intr == 1) {
-        if (D_800A14E4 > 0) {
-            if (D_800A14E0 == 0x200) {
-                if (D_800A1500 & 1) {
+        if (D_800A14D0.cnt > 0) {
+            if (D_800A14D0.size == 0x200) {
+                if (D_800A14D0.tslmode & 1) {
                     CdDataCallback(0);
                     CdGetSector2((s32)pos, 3);
                     CdDataSync(0);
@@ -102,7 +97,7 @@ void cb_data(void) {
     }
     CdControlF(9, 0);
     if (g_CdReadCallback_func != 0) {
-        g_CdReadCallback_func(2, D_800A1504);
+        g_CdReadCallback_func(2, D_800A14D0.result);
     }
 }
 

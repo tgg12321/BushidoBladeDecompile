@@ -34,9 +34,9 @@ typedef struct {
 typedef void (*CdlCB)(u8, u8 *);
 
 /* PsyQ 4.0 LIBCD cdread.c module state (SOTN's cdread.c: D_80032DBC): one
- * volatile block at 0x800A14D0, between g_CdReadCallback_func and the saved
- * result pointer D_800A1504. One object: CdReadSync reads cnt / t2 / sectors
- * off a cached &t1. Users are all in libcd/cdread.c (Q99,
+ * volatile block at 0x800A14D0 after g_CdReadCallback_func, ending with the
+ * saved result pointer (psyz's ReadAttr). One object: CdReadSync reads
+ * cnt / t2 / sectors off a cached &t1. Users are all in libcd/cdread.c (Q99,
  * aggregate-merge-family). */
 typedef struct {
     /* 0x00 */ s32 sectors;   /* D_800A14D0 */
@@ -52,6 +52,7 @@ typedef struct {
     /* 0x28 */ CdlCB cbready; /* D_800A14F8 */
     /* 0x2C */ s32 cbdata;    /* D_800A14FC */
     /* 0x30 */ s32 tslmode;   /* 0x800A1500 */
+    /* 0x34 */ u8 *result;    /* D_800A1504 */
 } CdlREAD;
 
 extern volatile CdlREAD D_800A14D0;
