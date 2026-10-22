@@ -1221,8 +1221,8 @@ void func_8004473C(void) {
     }
 }
 
-/* .data 0x800951D8..0x800955E0 (the 899 NDATA path pointers that follow,
- * 0x800955E0..0x800963EC, are still asm), in address order: five
+/* .data 0x800951D8..0x800955E0 (35000.c's NDATA path pointers D_800955E0
+ * follow), in address order: five
  * primitive-type handler tables (func_80044650, which calls func_80052C10, is
  * the default entry; the others are 3AB48.c's draw routines) that func_800430E4
  * installs at scratchpad word 0x1F80001C and 3AB48.c's func_8004A4E0 selects
