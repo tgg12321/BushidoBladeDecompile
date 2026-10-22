@@ -359,7 +359,7 @@ SECTIONS
         build/asm/data/8A588.data.o(.data);
         build/src/main/4BC3C.o(.data);
         build/src/main/4D0A8.o(.data);
-        build/asm/data/8BC50.data.o(.data);
+        build/src/main/d_8BC50.o(.data);
         build/src/main/51268.o(.data);
         build/src/main/596CC.o(.data);
         build/src/main/d_8C41C.o(.data);
