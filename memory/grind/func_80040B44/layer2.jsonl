@@ -1,0 +1,1 @@
+{"func": "func_80040B44", "addr": "80040B44", "verdict": "PASS", "body_hash": "9bc7af0956adb3ef", "body_kind": "c", "file": "main/309CC", "reviewer": "cheat-reviewer:a7ff13c2", "scope": "cheat-cleanup", "date": "2026-10-22T08:46:02Z", "head": "62ca51984", "notes": "fake-reduce: plain var_0[a3] subscripts; t2 FAKE stays (9 / 16); sandbox 0 (93/93), oracle SHA1 match"}
