@@ -84,8 +84,9 @@ void memcard_BuildSaveBlock(u8 *a0) {
 
 s32 memcard_RestoreSaveBlock(Unk800F34D8Save *arg0) {
     s32 i;
-    /* FAKE: one counter j for both loops lengthens its live range so sum,
-       not j, gets $a0; two counters: score 16 */
+    /* j counts the checksum loop and then the pointer-restore loop, reused
+       loop to loop the way SOTN's DebugCaptureScreen reuses its i (Q51) */
+    /* SOTN: src/dra/42398.c:75 @aa53500 */
     s32 j;
 
     i = 0;
