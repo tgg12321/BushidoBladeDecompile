@@ -1565,9 +1565,10 @@ s32 func_80048AD0(s32 arg0) {
     /* FAKE: q = p + 0xA, the target's second cursor (addiu a1,v1,10; stores at
      * -8 / -6 / -9 / 0 from it); through p the cursor goes (score 11) */
     q = p + 0xA;
-    /* FAKE: the record counter reuses `var_1`, inheriting its $a0
-       preference from func_800467B8's argument; a separate counter swaps
-       $a0/$a2 with delta: score 6 */
+    /* the record counter reuses `var_1` (the slot id, tested and passed to
+       func_800467B8 above), the way SOTN's EntityAlucard reuses its i, a
+       call result tested and passed on, as the next loop's counter (Q51) */
+    /* SOTN: src/dra/692E8.c:693 @db41b28 */
     for (var_1 = 0; var_1 < 0x11; var_1++) {
         *(s16 *)(q - 8 + var_1 * 0x68) = var_1;
         *(s16 *)(q - 6 + var_1 * 0x68) = 9;
