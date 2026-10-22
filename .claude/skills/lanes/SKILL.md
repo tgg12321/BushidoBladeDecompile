@@ -5,7 +5,8 @@ description: >-
   foundation) going through tools/lanes/orchestrate.py, change N while they run, show status, or
   drain. Use when asked to start / run / spin up lanes, run N lanes at once, run naming and
   foundation in parallel, change how many lanes are active, check on the lanes, or stop them.
-  Argument: a number (start with that many), `max N`, `status`, `plan`, or `stop`.
+  Argument: a number (start with that many), `max N`, `status`, `plan`, `stop`, `pause <lane>`,
+  `resume <lane>`, `ack <lane|all>`, or `codex on|off`.
 ---
 
 # BB2 lanes: one orchestrator
@@ -24,6 +25,9 @@ anything itself.
 | `/lanes max 5` | `python tools/lanes/orchestrate.py max 5` (0 = drain). Takes effect within a minute. |
 | `/lanes status` | `python tools/lanes/orchestrate.py status`, plus `python tools/lanes/lanes.py status`. |
 | `/lanes plan` | `python tools/lanes/orchestrate.py plan` (what would start next; starts nothing). |
+| `/lanes pause <lane> [--when-away]` / `resume <lane>` | `orchestrate.py pause` / `resume`: a paused lane is never started (`naming` = all naming lanes); `--when-away` starts it only after 20 min without owner input. Persists across runs (`tmp/lanes-state/paused.json`). Does not stop a running session. |
+| `/lanes ack <lane>` (or `all`) | `orchestrate.py ack ...`: clear attention items after reading them. |
+| `/lanes codex on` / `off` | `orchestrate.py codex on` / `off` (or `run --codex`): one extra `lane-codex` session outside N, following `tmp/codex/fake-lane-brief.md`. Restarted only while Codex is under 90% (5 h) / 80% (week) and not BLOCKED, and unless its last two sessions landed nothing (landed = a main commit with a `Codex run:` trailer); `codex on` re-arms. |
 | `/lanes stop` | `python tools/lanes/orchestrate.py max 0`: running sessions finish their units and close, none start, then the orchestrator exits. Never `claude stop` a session mid-land. |
 
 ## Start
@@ -51,3 +55,8 @@ When the background run exits, read the tail of its output and report: lanes fin
 - A session idle 90 min with its lane open is reported, never killed: usually it is waiting on a
   `lanes.py land`. Look with `claude attach <id>`.
 - A lane whose session changed nothing in its backlog is not restarted in that run.
+  Rows at stage `blocked` (waiting on an owner ruling) count as done, so their lanes don't start.
+- Attention: when a session finishes with no backlog progress, stalls, is lost, or (codex) lands
+  nothing, its last message is saved to `tmp/lanes-state/attention/<lane>-<id>.md`, logged as
+  `ATTENTION <lane>: ...`, and listed by `status` until `ack`. Relay those to the user: they are
+  usually the session's question.

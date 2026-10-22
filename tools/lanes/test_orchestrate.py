@@ -3,8 +3,10 @@
 
     python tools/lanes/test_orchestrate.py
 """
+import io
 import sys
 import time
+from contextlib import redirect_stdout
 import unittest
 from pathlib import Path
 
@@ -157,8 +159,19 @@ class Tick(unittest.TestCase):
         import tempfile
         self.d = Path(tempfile.mkdtemp(prefix="orch-test-"))
         self.saved = {k: getattr(o, k) for k in ("STATE", "MAX_FILE", "REGISTRY", "backlogs",
-                                                 "agents", "sh", "read_json")}
+                                                 "agents", "sh", "read_json", "PAUSED",
+                                                 "CODEX_FILE", "ATTENTION_DIR", "CODEX_BRIEF",
+                                                 "transcript_path", "bridge_status", "owner_away")}
         o.STATE, o.MAX_FILE = self.d / "state.json", self.d / "max"
+        o.PAUSED, o.CODEX_FILE = self.d / "paused.json", self.d / "codex.json"
+        o.ATTENTION_DIR, o.CODEX_BRIEF = self.d / "att", self.d / "brief.md"
+        o.CODEX_BRIEF.write_text("brief", encoding="utf-8")
+        o.transcript_path = lambda session, cwd, root=None: None
+        self.bridge = {"clear": True, "usage": {"primary": {"usedPercent": 10},
+                                                "secondary": {"usedPercent": 10}}}
+        o.bridge_status = lambda: self.bridge
+        o.owner_away = lambda: False
+        self.git_log = []
         self.reg = {"lanes": {}}
         self.listing = {}
         self.started, self.stopped = [], []
@@ -167,12 +180,23 @@ class Tick(unittest.TestCase):
         o.read_json = lambda p, d: self.reg if p == o.REGISTRY else real_read(p, d)
         o.agents = lambda: self.listing
 
+        self.fail_codex_start, self.codex_attempts = False, 0
+
         def fake_sh(cmd, timeout=0, cwd=None, merge=True):
+            if self.fail_codex_start and "--bg" in cmd and cmd[-1] == o.CODEX_PROMPT:
+                self.codex_attempts += 1
+                return 1, "boom"
             if "--bg" in cmd:
                 sid = f"{len(self.started) + 1:08x}"
                 self.started.append(cmd[-1])
-                self.listing[sid] = {"state": "working", "pid": 1, "sessionId": "S" + sid}
+                self.listing[sid] = {"state": "working", "pid": 1, "sessionId": "S" + sid,
+                                     "name": cmd[cmd.index("-n") + 1]}
                 return 0, f"backgrounded · {sid} · lane"
+            if cmd[0] == "git":
+                if "rev-parse" in cmd:
+                    return 0, "abc123\n"
+                # self.git_log: (subject, body) pairs, in `%ct%x1f%s%x1f%b%x1e` records
+                return 0, "".join(f"{int(time.time())}\x1f{s}\x1f{b}\x1e\n" for s, b in self.git_log)
             if cmd[1:2] == ["stop"]:
                 self.stopped.append(cmd[2])
                 self.listing[cmd[2]] = {"state": "done"}
@@ -189,6 +213,11 @@ class Tick(unittest.TestCase):
     def tearDown(self):
         for k, v in self.saved.items():
             setattr(o, k, v)
+        att = self.d / "att"
+        if att.is_dir():
+            for f in att.iterdir():
+                f.unlink()
+            att.rmdir()
         for f in self.d.iterdir():
             f.unlink()
         self.d.rmdir()
@@ -225,6 +254,387 @@ class Tick(unittest.TestCase):
         o.write_max(0)
         self.assertFalse(o.tick(self.args))
         self.assertEqual(self.started, [])
+
+    def test_no_progress_raises_attention(self):
+        o.write_max(1)
+        o.tick(self.args)
+        sid = next(iter(o.load_state()["sessions"]))
+        self.reg["lanes"]["pins"] = {"owner": None, "closed": time.time()}
+        self.listing[sid]["state"] = "done"
+        o.tick(self.args)
+        att = o.load_attention()
+        self.assertEqual([(i["lane"], i["sid"]) for i in att], [("pins", sid)])
+        self.assertTrue(Path(att[0]["path"]).is_file())
+        o.main(["ack", "all"])
+        self.assertEqual(o.load_attention(), [])
+
+    def test_ack_never_touches_runner_state(self):
+        o.update_attention(lambda items: items + [{"lane": "x", "sid": "1"}])
+        o.write_state({"sessions": {"a1": slot("pins")}, "no_progress": [], "codex_history": []})
+        before = o.STATE.read_bytes()
+        o.main(["ack", "x"])
+        o.main(["pause", "data"])
+        o.main(["codex", "on"])
+        self.assertEqual(o.STATE.read_bytes(), before)
+        o.write_state(o.load_state())  # a runner write cannot bring the item back
+        self.assertEqual(o.load_attention(), [])
+
+    def test_corrupt_state_skips_then_restores(self):
+        o.write_max(1)
+        o.tick(self.args)
+        good = o.load_state()
+        o.STATE.write_text("{not json", encoding="utf-8")
+        for _ in range(o.CORRUPT_TICKS - 1):
+            self.assertTrue(o.tick(self.args))
+            self.assertEqual(o.STATE.read_text(encoding="utf-8"), "{not json")  # never "{}"
+        self.assertEqual(len(self.started), 1)
+        self.assertTrue(o.tick(self.args))  # third in a row: set aside, last good restored
+        self.assertEqual(o.load_state()["sessions"].keys(), good["sessions"].keys())
+        self.assertTrue(any(f.name.startswith("state.json.corrupt-") for f in self.d.iterdir()))
+        with self.assertRaises(SystemExit):
+            o.STATE.write_text("[]", encoding="utf-8")
+            o.main(["status"])
+
+    def test_event_error_does_not_kill_the_tick(self):
+        o.write_max(1)
+        o.tick(self.args)
+        sid = next(iter(o.load_state()["sessions"]))
+        self.reg["lanes"]["pins"] = {"owner": None, "closed": time.time()}
+        self.listing[sid]["state"] = "done"
+        saved = o.raise_attention
+
+        def boom(*a, **k):
+            raise UnicodeEncodeError("charmap", "→", 0, 1, "nope")
+        o.raise_attention = boom
+        try:
+            self.assertTrue(o.tick(self.args))
+        finally:
+            o.raise_attention = saved
+        st = o.load_state()
+        self.assertNotIn(sid, st["sessions"])            # the finished slot is gone for good
+        self.assertEqual(self.started[-1], "/foundation-session data")
+
+    def test_when_away_waits_plain_pause_exits(self):
+        o.write_max(1)
+        o.main(["pause", "pins", "--when-away"])
+        o.main(["pause", "data"])
+        self.assertTrue(o.tick(self.args))               # pins waits for the owner to be away
+        self.assertEqual(self.started, [])
+        self.assertIn("pins", o.load_state()["waiting"])
+        o.owner_away = lambda: True
+        self.assertTrue(o.tick(self.args))
+        self.assertEqual(self.started, ["/foundation-session pins"])
+        o.owner_away = lambda: False
+        o.main(["pause", "pins"])                        # now a plain pause, like data
+        o.STATE.unlink()
+        for a in self.listing.values():                  # its session has exited (no pid)
+            a.pop("pid", None)
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            self.assertFalse(o.tick(self.args))
+        self.assertIn("remaining work is paused", buf.getvalue())
+
+    def test_codex_quota_block_alone_keeps_running(self):
+        o.backlogs = lambda: bl(naming_stages=(), foundation=())
+        o.main(["codex", "on"])
+        o.write_max(1)
+        self.bridge["usage"]["secondary"]["usedPercent"] = 85
+        self.assertTrue(o.tick(self.args))
+        self.assertIn("weekly", o.load_state()["waiting"])
+        o.main(["codex", "off"])
+        self.assertFalse(o.tick(self.args))
+
+    def test_unavailable_bridge_does_not_keep_it_alive(self):
+        o.backlogs = lambda: bl(naming_stages=(), foundation=())
+        o.main(["codex", "on"])
+        o.write_max(1)
+        o.bridge_status = lambda: None
+        self.assertFalse(o.tick(self.args))
+        st = o.load_state()
+        self.assertIn("unavailable", st["codex_blocked"])
+        self.assertNotIn("waiting", st)
+
+    def test_bridge_blocked_on_its_own_usage_window_waits(self):
+        o.backlogs = lambda: bl(naming_stages=(), foundation=())
+        o.main(["codex", "on"])
+        o.write_max(1)
+        self.bridge.update(clear=False, blockers=["5-hour window at 77% (block >= 75%), resets x"])
+        self.assertTrue(o.tick(self.args))
+        self.assertIn("BLOCKED", o.load_state()["waiting"])
+
+    def test_lost_state_write_adopts_instead_of_starting_twice(self):
+        o.write_max(2)
+        real = o.write_state
+        o.write_state = lambda st: None   # the start is never recorded
+        try:
+            o.tick(self.args)
+        finally:
+            o.write_state = real
+        self.assertEqual(self.started, ["/foundation-session pins", "/foundation-session data"])
+        self.assertEqual(o.load_state()["sessions"], {})
+        o.tick(self.args)                 # both adopted from the listing, neither started again
+        self.assertEqual(len(self.started), 2)
+        st = o.load_state()
+        self.assertEqual(sorted(s["lane"] for s in st["sessions"].values()), ["data", "pins"])
+        self.assertTrue(all(s.get("adopted") for s in st["sessions"].values()))
+
+    def test_untracked_duplicate_lane_counts_as_busy(self):
+        o.write_max(2)
+        self.listing["dddddddd"] = {"name": "lane-pins", "state": "working", "pid": 9,
+                                    "sessionId": "SD"}
+        o.tick(self.args)
+        self.assertNotIn("/foundation-session pins", self.started)
+        self.assertEqual(self.started, ["/foundation-session data"])
+
+    def test_codex_start_failure_backs_off(self):
+        o.main(["codex", "on"])
+        o.write_max(1)
+        self.fail_codex_start = True
+        o.tick(self.args)
+        o.tick(self.args)
+        self.assertEqual(self.codex_attempts, 1)
+        st = o.load_state()
+        st["codex_start_failed"] = time.time() - o.CODEX_RECHECK_SECS
+        o.write_state(st)
+        o.tick(self.args)
+        self.assertEqual(self.codex_attempts, 2)
+
+    def test_paused_lane_not_started_and_persists(self):
+        o.main(["pause", "pins"])
+        o.write_max(1)
+        o.tick(self.args)
+        self.assertEqual(self.started, ["/foundation-session data"])
+        self.assertIn("pins", o.load_paused())
+        o.main(["resume", "pins"])
+        self.assertEqual(o.load_paused(), {})
+
+    def _finish_codex(self):
+        cx = next(s for s, v in o.load_state()["sessions"].items() if v.get("kind") == "codex")
+        self.reg["lanes"]["codex"] = {"owner": None, "closed": time.time()}
+        self.listing[cx]["state"] = "done"
+        o.tick(self.args)
+
+    def test_codex_lane_outside_n_and_two_strikes(self):
+        o.main(["codex", "on"])
+        o.write_max(1)
+        o.tick(self.args)
+        self.assertEqual(self.started, ["/foundation-session pins", o.CODEX_PROMPT])
+        self._finish_codex()   # strike 1: restarted
+        self._finish_codex()   # strike 2: not restarted
+        st = o.load_state()
+        self.assertEqual(len(st["codex_history"]), 2)
+        self.assertFalse(any(v.get("kind") == "codex" for v in st["sessions"].values()))
+        self.assertIn("landed nothing", st["codex_blocked"])
+        self.assertEqual(sum(1 for i in o.load_attention() if i["lane"] == "codex"), 2)
+        self.assertEqual(self.started.count(o.CODEX_PROMPT), 2)
+        o.main(["codex", "on"])  # re-arms without an off first
+        o.tick(self.args)
+        self.assertEqual(self.started.count(o.CODEX_PROMPT), 3)
+
+    def test_codex_quota_drain_and_landing(self):
+        o.main(["codex", "on"])
+        o.write_max(0)  # drain: nothing starts, codex included
+        self.assertFalse(o.tick(self.args))
+        o.write_max(1)
+        self.bridge["usage"]["primary"]["usedPercent"] = 95
+        o.tick(self.args)
+        self.assertNotIn(o.CODEX_PROMPT, self.started)
+        self.bridge["usage"]["primary"]["usedPercent"] = 10
+        o.tick(self.args)  # rechecks only every CODEX_RECHECK_SECS
+        self.assertNotIn(o.CODEX_PROMPT, self.started)
+        st = o.load_state()
+        st["codex_checked"] = 0
+        o.write_state(st)
+        o.tick(self.args)
+        self.assertIn(o.CODEX_PROMPT, self.started)
+        self.git_log = [("4D0A8.c: func t1 label", "x\n\nCodex run: 20261022-1 (thread"),
+                        ("cheat-cleanup: claude fake lane", "body")]
+        self._finish_codex()
+        st = o.load_state()
+        self.assertEqual(st["codex_history"][-1]["landed"], ["4D0A8.c: func t1 label"])
+        self.assertEqual(self.started.count(o.CODEX_PROMPT), 2)
+        self.assertEqual(o.load_attention(), [])
+
+    def test_adopts_running_lane_codex(self):
+        self.listing["c0dec0de"] = {"name": "lane-codex", "state": "working", "pid": 5,
+                                    "sessionId": "SC", "startedAt": 1000}
+        o.write_max(1)
+        o.tick(self.args)
+        st = o.load_state()
+        self.assertEqual(st["sessions"]["c0dec0de"]["kind"], "codex")
+        self.assertNotIn(o.CODEX_PROMPT, self.started)
+
+
+class Pause(unittest.TestCase):
+    def test_pause_and_when_away(self):
+        p = {"pins": {"when_away": False}, "data": {"when_away": True}}
+        self.assertEqual(o.candidates(bl(), reg(), st(), NOW, "foundation", p, False), [])
+        self.assertEqual(o.candidates(bl(), reg(), st(), NOW, "foundation", p, True), ["data"])
+
+    def test_naming_group_and_single_lane_pause(self):
+        self.assertEqual(o.candidates(bl(), reg(), st(), NOW, "naming", {"naming": {}}), [])
+        self.assertEqual(o.candidates(bl(), reg(), st(), NOW, "naming", {"naming-a": {}}),
+                         ["naming-b", "naming-c"])
+
+
+class Io(unittest.TestCase):
+    def test_non_ascii_log_on_cp1252_stream(self):
+        raw = io.BytesIO()
+        stream = io.TextIOWrapper(raw, encoding="cp1252")
+        saved = sys.stdout, sys.stderr
+        sys.stdout = sys.stderr = stream
+        try:
+            with self.assertRaises(UnicodeEncodeError):
+                o.log("ATTENTION x: → 日本")
+            o.utf8_stdio()
+            o.log("ATTENTION x: → 日本")
+            stream.flush()
+        finally:
+            sys.stdout, sys.stderr = saved
+        self.assertIn("→ 日本".encode("utf-8"), raw.getvalue())
+
+    def test_write_json_unique_temp_and_retry(self):
+        import tempfile
+        d = Path(tempfile.mkdtemp(prefix="orch-io-"))
+        target = d / "x.json"
+        real, calls = o.os.replace, []
+
+        def flaky(src, dst):
+            calls.append(src)
+            if len(calls) < 3:
+                raise PermissionError("in use")
+            real(src, dst)
+        o.os.replace = flaky
+        try:
+            o.write_json(target, {"a": 1})
+        finally:
+            o.os.replace = real
+        self.assertEqual(len(calls), 3)
+        self.assertNotEqual(Path(calls[0]).name, "x.tmp")   # unique name, not a shared .tmp
+        self.assertEqual(o.read_json(target, None), {"a": 1})
+        self.assertEqual([f.name for f in d.iterdir()], ["x.json"])
+        target.unlink()
+        d.rmdir()
+
+
+class Live(unittest.TestCase):
+    def test_live_lanes(self):
+        ag = {"a": {"name": "lane-pins", "pid": 1, "state": "working"},
+              "b": {"name": "lane-data", "state": "done"},            # exited: no pid
+              "c": {"name": "Decompile next function", "pid": 2},
+              "d": {"name": "lane-", "pid": 3},
+              "e": {"name": "lane-naming-a", "pid": 4, "state": "done"}}  # idle, still alive
+        self.assertEqual(o.live_lanes(ag), {"pins": "a", "naming-a": "e"})
+
+    def test_candidates_treat_live_as_busy(self):
+        self.assertEqual(o.candidates(bl(), reg(), st(), NOW, "foundation", live={"pins"}),
+                         ["data"])
+        # a live naming session also uses up a workable naming row
+        self.assertEqual(o.candidates(bl(), reg(), st(), NOW, "naming", live={"naming-a"}),
+                         ["naming-b"])
+
+
+class Blocked(unittest.TestCase):
+    def test_blocked_rows_count_as_done(self):
+        b = bl(foundation=(("pins", "blocked"), ("data", "idea"), ("data", "blocked")))
+        self.assertEqual(o.candidates(b, reg(), st(), NOW, "foundation"), ["data"])
+
+
+class Codex(unittest.TestCase):
+    def test_landed_by_body(self):
+        commits = [("cheat-cleanup: a", "the Claude fake lane's own work"),
+                   ("docs: Codex lane note", ""),
+                   ("4D0A8.c: func_80060768 t1 label", "...\nCodex run: 20261022-165732-x (thread"),
+                   ("docs: fake-reduce", "for the fake lane, not the Codex lane."),
+                   ("Match: f", "")]
+        self.assertEqual(o.codex_landed(commits),
+                         ["docs: Codex lane note", "4D0A8.c: func_80060768 t1 label"])
+
+    def test_parse_log(self):
+        out = ("100\x1fs1\x1fb1\nmore\n\x1e\n"
+               "50\x1fs2: café\x1f\x1e\n"
+               "garbage\x1e")
+        self.assertEqual(o.parse_log(out), [("s1", "b1\nmore"), ("s2: café", "")])
+        self.assertEqual(o.parse_log(out, since_ts=60), [("s1", "b1\nmore")])
+
+    def test_gate(self):
+        on = {"enabled": True, "armed": 0}
+        self.assertIsNone(o.codex_gate(on, {}, False, []))
+        self.assertIn("off", o.codex_gate({}, {}, False, []))
+        self.assertIn("paused", o.codex_gate(on, {"codex": {"when_away": True}}, False, []))
+        self.assertIsNone(o.codex_gate(on, {"codex": {"when_away": True}}, True, []))
+        nothing, some = {"ended": 5, "landed": []}, {"ended": 5, "landed": ["x"]}
+        self.assertIsNone(o.codex_gate(on, {}, False, [nothing]))
+        self.assertIsNone(o.codex_gate(on, {}, False, [nothing, some]))
+        self.assertIsNone(o.codex_gate(on, {}, False, [nothing, some, nothing]))
+        self.assertIn("landed nothing", o.codex_gate(on, {}, False, [some, nothing, nothing]))
+        # re-armed after those two: allowed again
+        self.assertIsNone(o.codex_gate({"enabled": True, "armed": 6}, {}, False, [nothing, nothing]))
+
+    def test_quota(self):
+        ok = {"clear": True, "usage": {"primary": {"usedPercent": 89}, "secondary": {"usedPercent": 79}}}
+        self.assertIsNone(o.codex_quota_block(ok))
+        hi5 = {"clear": True, "usage": {"primary": {"usedPercent": 90}, "secondary": {"usedPercent": 1}}}
+        hiw = {"clear": True, "usage": {"primary": {"usedPercent": 1}, "secondary": {"usedPercent": 80}}}
+        self.assertIn("5-hour", o.codex_quota_block(hi5))
+        self.assertIn("weekly", o.codex_quota_block(hiw))
+        self.assertIn("BLOCKED", o.codex_quota_block({"clear": False, "blockers": ["busy"]}))
+        self.assertIsNotNone(o.codex_quota_block(None))
+        self.assertIn("unknown", o.codex_quota_block({"clear": True, "usage": None}))
+
+    def test_usage_block_vs_unavailable(self):
+        u = {"primary": {"usedPercent": 77}, "secondary": {"usedPercent": 10}}
+        self.assertTrue(o.codex_usage_block({"clear": True, "usage": {
+            "primary": {"usedPercent": 95}, "secondary": {"usedPercent": 1}}}))
+        self.assertTrue(o.codex_usage_block({"clear": False, "usage": u,
+                                             "blockers": ["5-hour window at 77% (block >= 75%)"]}))
+        self.assertFalse(o.codex_usage_block(None))                       # bridge failed
+        self.assertFalse(o.codex_usage_block({"clear": False, "usage": None,
+                                              "blockers": ["usage unknown"]}))
+        self.assertFalse(o.codex_usage_block({"clear": False, "usage": u, "blockers": [
+            "5-hour window at 77%", "another Codex headless-task is running (pid 1)"]}))
+
+
+class Transcript(unittest.TestCase):
+    CWD = "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile"
+
+    def setUp(self):
+        import tempfile
+        self.root = Path(tempfile.mkdtemp(prefix="orch-tr-"))
+        self.dir = self.root / "C--Users-Trenton-Desktop-Bushido-Blade-2-Decompile"
+        self.dir.mkdir()
+
+    def tearDown(self):
+        for f in self.dir.iterdir():
+            f.unlink()
+        self.dir.rmdir()
+        self.root.rmdir()
+
+    def test_slug(self):
+        self.assertEqual(o.project_slug(self.CWD), self.dir.name)
+
+    def test_last_message(self):
+        import json
+        recs = [{"type": "user", "message": {"role": "user", "content": "go"}},
+                {"type": "assistant", "message": {"content": [{"type": "text", "text": "Q: which?"}]}},
+                {"type": "assistant", "isSidechain": True,
+                 "message": {"content": [{"type": "text", "text": "subagent"}]}},
+                {"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "x"}]}},
+                {"type": "custom-title", "customTitle": "t"}]
+        p = self.dir / "abc-1.jsonl"
+        p.write_text("\n".join(json.dumps(r) for r in recs) + "\n{garbled", encoding="utf-8")
+        found = o.transcript_path("abc-1", self.CWD, self.root)
+        self.assertEqual(found, p)
+        self.assertEqual(o.last_assistant_text(found), "Q: which?")
+        self.assertEqual(o.last_assistant_text(found, tail_bytes=20), "Q: which?")  # falls back to full read
+
+    def test_missing_and_garbled(self):
+        self.assertIsNone(o.transcript_path("nope", self.CWD, self.root))
+        self.assertIsNone(o.transcript_path("../x", self.CWD, self.root))
+        self.assertEqual(o.last_assistant_text(None), "")
+        p = self.dir / "g.jsonl"
+        p.write_bytes(b"\xff\xfe not json\n[1,2]\n")
+        self.assertEqual(o.last_assistant_text(p), "")
 
 
 if __name__ == "__main__":
