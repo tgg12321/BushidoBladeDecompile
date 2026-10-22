@@ -344,7 +344,9 @@ SECTIONS
         build/src/main/28708.o(.data);
         build/src/main/2B344.o(.data);
         build/src/main/309CC.o(.data);
+        build/asm/data/7D920.data.o(.data);
         build/src/main/31548.o(.data);
+        build/asm/data/85540.data.o(.data);
         build/src/main/31CFC.o(.data);
         build/src/main/31D3C.o(.data);
         build/src/main/32D04.o(.data);
@@ -356,7 +358,6 @@ SECTIONS
         build/src/main/4BC3C.o(.data);
         build/src/main/4D0A8.o(.data);
         build/src/main/51268.o(.data);
-        build/asm/data/7D920.data.o(.data);
         build/src/main/596CC.o(.data);
         build/asm/data/8C41C.data.o(.data);
         build/src/main/5ED34.o(.data);

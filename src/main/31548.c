@@ -323,3 +323,11 @@ void func_80041430(s32 a0, s32 a1) {
     } while (i < 0x14);
     func_80040A78(s0);
 }
+
+/* .data 0x80094CFC..0x80094D40, this file's whole .data (D_80094C68, read by
+ * 309CC.c and 9F9C.c, ends at 0x80094CFC; 31D3C.c's D_80094D40 follows): 17
+ * node indices, a permutation of 1..17, that func_80040D48 and
+ * func_80041188 step through to index per-node rotation triples. Defined after
+ * every function, so no body sees a definition where it saw an extern. */
+s32 D_80094CFC[17] = {8,  9, 14, 15, 16, 17, 10, 11, 12,
+                      13, 1, 2,  3,  4,  5,  6,  7};
