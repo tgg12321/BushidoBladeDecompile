@@ -40,9 +40,10 @@ s32 motion_UpdatePlayback(void) {
     s16 var_2[0x42];
     s16 *v;
     s32 i;
-    /* FAKE: one variable for the three objects (func_8004153C(0) and (1)
-     * on the first frame, func_8004153C(i) in the loop): shared, it takes $s0
-     * for all three; one local per value: score 9 */
+    /* the func_8004153C object being handled: objects 0 and 1 on the first
+     * frame, object i in the loop, as SOTN's secret-room wall reuses
+     * newEntity for each AllocEntity result, once and then in a loop (Q51) */
+    /* SOTN: src/st/nz0/e_left_secret_room_wall.c:74 @db41b28 */
     Unk80045878Obj *var_5;
     /* FAKE: one variable for the camera-rotated z of the camera and of object
      * i's offset: read in two blocks it is not tied to the subtraction and
