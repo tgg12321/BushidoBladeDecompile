@@ -1,0 +1,1 @@
+{"func": "object_SubmitPoolTransforms", "addr": "80030208", "verdict": "PASS", "body_hash": "347d006393f76ec5", "body_kind": "c", "file": "main/17AFC", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T02:19:44Z", "head": "95535d32e", "notes": "&obj->pos.x for replay_RecordModelDraw's s32 *, as the line above; byte-neutral"}
