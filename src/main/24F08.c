@@ -56,9 +56,9 @@ void func_80034708(void) {
                 (s8)D_80102778.unk_D);
     font_Printf(D_800A31B8, (s32)(D_800A3174[0] == 6 ? var_2 : var_1),
                 (s8)D_80102778.unk_E);
-    font_Printf(D_80010834, (s32)(D_800A3174[0] == 7 ? var_2 : var_1),
+    font_Printf((u8 *)D_80010834, (s32)(D_800A3174[0] == 7 ? var_2 : var_1),
                 (s8)D_80102778.unk_F);
-    font_Printf(D_80010840, (s32)(D_800A3174[0] == 8 ? var_2 : var_1),
+    font_Printf((u8 *)D_80010840, (s32)(D_800A3174[0] == 8 ? var_2 : var_1),
                 D_80106A50.flags & 1);
     font_Printf(D_800A31C0, (s32)(D_800A3174[0] == 9 ? var_2 : var_1),
                 (D_80106A50.flags >> 1) & 1);
