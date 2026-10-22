@@ -14,14 +14,11 @@ void func_80040D48(s32 a0, s32 a1, s32 *a2, s16 *a3, s16 *arg4, s32 arg5) {
     Unk80045878Node *s2;
     s32 s0;
     s16 *s1;
-    Unk80045878Obj *ent;
 
-    ent = D_800A9A10[a0];
-    if (ent == 0) {
+    if (D_800A9A10[a0] == 0) {
         return;
     }
-    /* FAKE: s4 copies ent; using ent directly scores 4. */
-    s4 = ent;
+    s4 = D_800A9A10[a0];
 
     s4->transform_nodes[0].node.xf.rot.vx = a3[0];
     s4->transform_nodes[0].node.xf.rot.vy = a3[1];
