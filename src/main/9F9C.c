@@ -882,9 +882,11 @@ void camera_UpdateReplayView(
     s32 dx;
     s32 dy;
     s32 dz;
-    /* FAKE: cur / t are reused for the x, y and z steps, the pitch target and
-     * the w18 step; one local per role re-seats the products and moves the
-     * loads (score 23). */
+    /* cur / t are the current and target value of each eased step (x, y, z,
+     * then the pitch target and the w18 step), reused component to component
+     * the way SOTN's white-dragon segment update reuses var_s2 for posX
+     * then posY (Q51) */
+    /* SOTN: src/st/rare/e_white_dragon.c:78 @db41b28 */
     s32 cur;
     s32 var_8;
     s32 t;
