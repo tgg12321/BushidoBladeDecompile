@@ -79,7 +79,9 @@ static s32 g_cd_setloc_flags[32] = {
     0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0};
 
 /* Form of psyz decomp/src/libcd/sys.c (Xeeynamo/psyz @ 5d29a0f8e): the shared
- * retry loop of CdControl / CdControlF / CdControlB, four tries. */
+ * retry loop of CdControl / CdControlF / CdControlB, four tries. Two changes:
+ * the counted for header (psyz's `count = 4; while (count--)` tests before
+ * the decrement: score 8) and BB2's CdStatus() accessor for CD_status. */
 static inline s32 cd_cw(u8 com, u8 *param, u8 *result, s32 arg3) {
     CdlCB old = CD_cbsync;
     s32 count;
