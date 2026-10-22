@@ -735,8 +735,9 @@ extern s32 *func_800392B8(void);
 extern void replay_Reset(void);
 extern void replay_BeginFrame(void);
 extern void replay_RecordModelDraw(s32, s32, s32 *, s16 *);
-/* replay_RecordEvent (28708.c, u8 / u8 / s32 * / u16 *) has no declaration:
- * 17AFC.c calls it implicitly, and its prototype changes 17AFC.c's bytes. */
+/* replay_RecordEvent (28708.c, u8 / u8 / s32 * / u16 *) has no prototype here:
+ * 17AFC.c declares it unprototyped, as its prototype changes 17AFC.c's bytes.
+ */
 extern void replay_RecordFighter(Unk80101EC8Record *);
 extern void replay_AdvanceFrame(void);
 extern void comb_Init(void);

@@ -24,6 +24,13 @@ extern u8 D_800A3899;
 extern u8 D_800A38AA;
 extern u8 D_800A38AB;
 
+/* replay_RecordEvent (28708.c: u8, u8, s32 *, u16 *) and func_80061C00
+ * (51268.c: s32 *, s32, s32) are called without a prototype: the
+ * u8 prototype narrows func_80032854's arguments, and func_80061C00 is
+ * called with two of its three arguments. */
+extern void replay_RecordEvent();
+extern void func_80061C00();
+
 const char D_80010478[] = "ILLEGAL GUN MOTION : %d\n";
 const char D_80010494[] = "";
 
@@ -307,7 +314,8 @@ void func_80027A58(Unk80101EC8Record *a0) {
         if (a0->unk_8A) {
             if (func_8002798C(a0)) {
                 u8 *v0 = func_80046DEC(a0->index);
-                object_DropQueuedHeadAt(a0, *(s32 *)(v0 + 0x4C) + 0x14);
+                object_DropQueuedHeadAt(
+                    a0, (Vec3i32 *)(*(s32 *)(v0 + 0x4C) + 0x14));
                 a0->unk_8A = 0;
                 a0->unk_86 = a0->unk_84;
             }
@@ -3712,7 +3720,7 @@ void object_SubmitPoolTransforms(void) {
             lookup += 3;
         }
         func_80049718(lookup, 1, &obj->pos.x, obj->rot);
-        replay_RecordModelDraw(obj->slot, lookup, &obj->pos, obj->rot);
+        replay_RecordModelDraw(obj->slot, lookup, &obj->pos.x, obj->rot);
     }
 }
 
