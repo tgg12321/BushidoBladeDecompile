@@ -5,6 +5,9 @@
 #include "include_asm.h"
 #include "bb2.h"
 
+/* Unprototyped: func_80040594 passes arena_id * 3 + 1 as an int; the s16
+ * prototype 4BC3C defines it with narrows that argument before the call. */
+extern s32 snd_LoadVabPack();
 extern s32 g_gpu_draw_move_bank;
 extern u16 g_gpu_draw_move_table[];
 extern u8 D_80094B48[];
@@ -229,7 +232,7 @@ after_select:
         if (a0->arena_id != 0)
             goto done_cases;
 
-        gpu_LoadTimGroup(var_1, 0);
+        gpu_LoadTimGroup((s32)var_1, 0);
         if (gpu_GetFogClutObject() != 0)
             goto done_cases;
         gpu_OffsetBlockTexPrimStreams(a0->unk_14, 0, 0, -0x140, 0xE8);
@@ -237,7 +240,7 @@ after_select:
         goto done_cases;
 
     case_1:
-        gpu_LoadTimGroupOffset(var_1, 0, 0x80, 0);
+        gpu_LoadTimGroupOffset((s32)var_1, 0, 0x80, 0);
         if (gpu_GetFogClutObject() != 1)
             goto case_1_else;
         gpu_OffsetBlockTexPrimStreams(a0->unk_14, 0x80, 0, -0x140, 0xE8);
