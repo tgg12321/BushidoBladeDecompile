@@ -1,0 +1,1 @@
+{"func": "snd_VabFakeOpen", "addr": "8005C4C0", "verdict": "PASS", "body_hash": "b8827f22e64691a0", "body_kind": "c", "file": "main/4BC3C", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T07:26:25Z", "head": "7c32b7c4f", "notes": "cheat-reviewer PASS: plain g_vab_rec_ptr[idx] subscripts, base-staging FAKE retired; sandbox 0 hunks, oracle SHA1 match"}
