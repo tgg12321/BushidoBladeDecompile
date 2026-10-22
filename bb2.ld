@@ -338,13 +338,14 @@ SECTIONS
         build/src/main/26730.o(.data);
         build/src/main/267A8.o(.data);
         build/src/main/26940.o(.data);
+        build/asm/data/7D920.data.o(.data);
         build/src/main/cdrom.o(.data);
+        build/asm/data/7F99C.data.o(.data);
         build/src/main/memcard.o(.data);
         build/src/main/28514.o(.data);
         build/src/main/28708.o(.data);
         build/src/main/2B344.o(.data);
         build/src/main/309CC.o(.data);
-        build/asm/data/7D920.data.o(.data);
         build/src/main/31548.o(.data);
         build/src/main/31CFC.o(.data);
         build/src/main/31D3C.o(.data);

@@ -231,7 +231,7 @@ extern s32 D_8008EBE0[];
 extern u8 D_8008EBF4[6];
 extern Unk8008EA44Entry D_8008EBFC[6];
 extern u8 D_8008EC30[4];
-extern s16 D_8008F12C;
+extern s16 D_8008F12C[8];
 
 /* Twelve rows cdrom_StartAudioEntry reads by index: unk_0, the group-5 file
  * cdrom_GetFileIndex resolves; unk_1, cdrom_StartAudio's second argument;
