@@ -2708,9 +2708,9 @@ s32 func_80058580(Unk80101EC8Record *p) {
 
 #undef CPU_SQ
 
-/* .data 0x80099D88..0x8009A088, the head of this file's .data (43500.c's
- * D_80099D54 ends at 0x80099D88; D_8009A088 follows, still in
- * asm/data/8A588.data.s): the 32 CPU profiles, indexed by cpu_profile.
+/* .data 0x80099D88..0x8009A088, this file's .data (43500.c's D_80099D54
+ * ends at 0x80099D88; the data-only d_8A588.c's D_8009A088 follows): the 32
+ * CPU profiles, indexed by cpu_profile.
  * Defined after every function, so no body sees a definition where it saw
  * an extern. */
 Unk80099D88Rec D_80099D88[32] = {

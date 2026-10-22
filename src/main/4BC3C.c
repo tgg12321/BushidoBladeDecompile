@@ -584,8 +584,8 @@ void snd_FlushSoundQueue(void) {
     }
 }
 
-/* .data 0x8009AD1C..0x8009ADB4, this file's whole .data after
- * g_vab_id_list (still asm/data/8A588.data.s, 4 bytes, A3): snd_SetReverb's
+/* .data 0x8009AD1C..0x8009ADB4, this file's whole .data (the data-only
+ * d_8A588.c's g_vab_id_list precedes): snd_SetReverb's
  * rows, picked by its argument (38, the size up to 4D0A8.c's .data); [0] is
  * the reverb type it sets, or < 0 to leave the reverb as is; [1] has no
  * reader. */
