@@ -1155,8 +1155,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
          * pre-slim-2026-10-01). */
         RECT *var_6;
 
-        /* FAKE: base and step as two statements, here and in the locked-slot
-         * arm; `var_6 = D_800A35A8->unk_7C + i * 8` scores 28 */
+        /* Ruling 4 compound-assignment split, here and in the locked-slot
+         * arm; `var_6 = D_800A35A8->unk_7C + i * 8` scores 28. */
         var_6 = D_800A35A8->unk_7C;
         var_6 += i * 8;
         var_4 = i - var_5;
