@@ -1319,61 +1319,35 @@ s32 fighter_FindNearestNavCrossing(
 
 /* Per-vertex neighbour-angle midpoint: computes the bisector direction
  * at vertex arg1 of polygon arg0 and writes the offset point into *arg2 /
- * *arg3. FAKE: arg0->vtx is spelled at each of its five uses rather than cached
- * in a local (F3, no-new-park-categories entry 15; ruling 6b): cse folds them
- * to the target's two loads (the ratan2 call stops the fold); one local gives
- * one load: score 30. */
+ * *arg3. */
 void fighter_GetNavCornerPoint(NavPoly *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
-    unsigned short prev_idx;
-    unsigned short next_idx;
-    s32 ang_prev;
-    s32 ang_next;
-    s32 ang_mid;
-    s32 scale;
-    s32 antipode;
-    s32 half;
-    u16 cx;
-    s16 *p;
-    s32 var_10;
-    u16 cy;
+    s16 prev;
+    s16 next;
+    s16 cx, cy;
+    s32 ang_prev, ang_next, scale;
+    s16 ang_mid;
 
-    prev_idx = arg1 - 1;
+    prev = arg1 - 1;
     cx = arg0->vtx[arg1][0];
     cy = arg0->vtx[arg1][1];
-
-    if ((s16)prev_idx < 0) {
-        prev_idx = arg0->nvtx - 1;
+    if (prev < 0) {
+        prev = arg0->nvtx - 1;
     }
-
-    {
-        s32 tmp = arg1 + 1;
-        next_idx = tmp;
-        if ((s16)tmp >= (s32)arg0->nvtx) {
-            next_idx = 0;
-        }
+    next = arg1 + 1;
+    if (next >= arg0->nvtx) {
+        next = 0;
     }
-
-    var_10 = (s16)prev_idx;
-    ang_prev =
-        ratan2(arg0->vtx[var_10][0] - (s16)cx, arg0->vtx[var_10][1] - (s16)cy) &
-        0xFFF;
-    /* FAKE: the next vertex's address spelled as the integer sum, index first;
-     * every pointer spelling expands base first and local-alloc ties the sum to
-     * the table load (arg0->vtx[(s16)next_idx]: score 4) */
-    p = (s16 *)((((s32)(next_idx << 16) >> 16) << 2) + (s32)arg0->vtx);
-    ang_next = ratan2(p[0] - (s16)cx, p[1] - (s16)cy) & 0xFFF;
-
+    ang_prev = ratan2(arg0->vtx[prev][0] - cx, arg0->vtx[prev][1] - cy) & 0xFFF;
+    ang_next = ratan2(arg0->vtx[next][0] - cx, arg0->vtx[next][1] - cy) & 0xFFF;
     if (ang_next < ang_prev) {
-        antipode = ang_prev + 0x800;
-        half = (s32)(ang_prev - ang_next) / 2;
-        ang_mid = antipode - half;
+        s32 antipode = ang_prev + 0x800;
+        ang_mid = antipode - (ang_prev - ang_next) / 2;
     } else {
-        ang_mid = ((s32)(ang_next - ang_prev) / 2) + ang_prev;
+        ang_mid = (ang_next - ang_prev) / 2 + ang_prev;
     }
-
     scale = arg0->margin * 40;
-    *arg2 = cx + ((scale * (s32)Judge[ang_mid & 0xFFF]) >> 12);
-    *arg3 = cy + ((scale * (s32)Judge[((s16)ang_mid + 0x400) & 0xFFF]) >> 12);
+    *arg2 = cx + ((scale * Judge[ang_mid & 0xFFF]) >> 12);
+    *arg3 = cy + ((scale * Judge[(ang_mid + 0x400) & 0xFFF]) >> 12);
 }
 
 /* Walks the vertex ring of arg0's polygon arg1->polys[arg0->cpu_route.poly]
