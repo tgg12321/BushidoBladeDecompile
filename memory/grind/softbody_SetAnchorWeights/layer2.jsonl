@@ -1,0 +1,1 @@
+{"func": "softbody_SetAnchorWeights", "addr": "8003FE40", "verdict": "PASS", "body_hash": "7f29d808b6461cd7", "body_kind": "c", "file": "main/2B344", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T19:09:19Z", "head": "fdc59f393", "notes": "Q51 i reuse (e_blade_master.c:485/:503 @db41b28) comment-only; hygiene: commit body cites :503"}
