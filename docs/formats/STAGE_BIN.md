@@ -107,11 +107,21 @@ records 1..5 are the per-fighter-slot banks picked by `a` / `b` above.
 ### Billboard list
 
 12-byte entries (three s32, `Unk800F1198Record`, `include/game.h`).
-`eff_SetBillboardList` copies entries while word 0 has bit 0 set; the first
-entry with bit 0 clear ends the list. On disc the list ends with 12 zero
-bytes at end of file. 29 stages have no billboards (the terminator alone);
-the others hold 2 or 4 entries (24 or 48 bytes) before it. What the three
-words mean is drawn by `eff_DrawBillboardList` and not yet named.
+`eff_SetBillboardList` copies entries into `g_eff_billboards` while word 0
+has bit 0 set; the first entry with bit 0 clear ends the list. On disc the
+list ends with 12 zero bytes at end of file. 29 stages have no billboards
+(the terminator alone); the others hold 2 or 4 entries (24 or 48 bytes)
+before it. `eff_DrawBillboardList` (`src/main/51268.c`) decodes an entry as:
+
+```
+word 0   bit 0 = present, x = word0 / 2
+word 1   type = word1 & 7 (picks sprite size and frames), y = word1 / 8
+word 2   z
+```
+
+The next symbol after `g_eff_billboards` (0x800F1198) is at 0x800F11E0, so
+the copy apparently holds at most 5 entries plus the terminator (inferred
+from symbol spacing; the disc files use at most 4).
 
 ### Repack
 
@@ -125,9 +135,13 @@ python tools/repack_stage.py pack out/ STAGE00.BIN                 # rebuild
 python tools/repack_stage.py --roundtrip disc/LOADSE1              # exit 1 unless every STAGE*.BIN is byte-identical
 ```
 
-All 38 files round-trip byte-identically. A file that grows still has to
-fit the loader's buffer and the disc slot (see the `disc-build` row in
-`docs/foundation/backlog.tsv`).
+All 38 files round-trip byte-identically; both directions check the
+billboard list's shape. Size limits: `func_8001D790` (`src/main/9F9C.c`)
+panics when the compacted size `func_8005BA8C` returns reaches 0x2519. That
+size is the bytes ahead of the VB in the three loaded packs
+(`snd_LoadVabPack` returns the VB offset), so it grows with the event table
+and VH, not with VAGs. A file that grows also has to fit its disc slot (see
+the `disc-build` row in `docs/foundation/backlog.tsv`).
 
 ---
 
@@ -229,9 +243,9 @@ The tool detects:
 * `STAGE\*.BIN` by `0x34` as the first u32 plus a valid 6-pair TOC.
 * Generic "5-u32 TOC" BIN (SEL/NAR/MOD/STAFF/D_SEL family) by heuristic.
 
-It does not interpret inner VAB / Marionation geometry — for that, extract
-records with `--dump` and feed the VAB to `inspect_bnk.py` and any TIMs to
-`inspect_tim.py`.
+It does not interpret inner VABs or TIMs — for that, extract records with
+`--dump`, split `STAGE*.BIN` packs with `repack_stage.py` / `repack_vab.py`,
+and feed any TIMs to `inspect_tim.py`.
 
 ## Verified by
 
@@ -247,12 +261,12 @@ records with `--dump` and feed the VAB to `inspect_bnk.py` and any TIMs to
 * `STAGE*.BIN`: `tools/repack_stage.py --roundtrip` over `disc/LOADSE` and
   `disc/LOADSE1` (every record passes `repack_vab.py`'s VH / size-table
   checks; header and billboard-list checks as in §2), read against
-  `func_8005BA8C` and `eff_SetBillboardList`.
+  `func_8005BA8C`, `eff_SetBillboardList` and `eff_DrawBillboardList`.
 
 ## Unverified / TODO
 
 * What `D_8008E5A8` maps a fighter slot to (which of `STAGE*.BIN` records
-  1..5 it loads), and the meaning of the billboard entries' three words.
+  1..5 it loads), and what each billboard type draws.
 * Semantics of the 9-u32 secondary table in the `wrap5` family — confirmed
   to vary per file (mix of sizes and offsets), needs per-loader trace.
 * Schema of the raw VRAM-ready blocks in segments 3 and 4 of `D_SEL.BIN`,

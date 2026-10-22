@@ -14,16 +14,18 @@ then the offset of the billboard list), the six records back to back from
 (src/main/4BC3C.c) loads record 0 and two of records 1..5 with
 snd_LoadVabPack and hands the list to eff_SetBillboardList
 (src/main/51268.c): 12-byte entries (three s32), ending at the first entry
-whose word 0 has bit 0 clear (every file ends with 12 zero bytes).
-`unpack` writes:
+whose word 0 has bit 0 clear; on disc that terminator is 12 zero bytes at
+the end of the file. `unpack` writes:
 
     rec0/ .. rec5/    one repack_vab.py directory per record
     billboards.bin    the billboard list with its terminator, verbatim
 
 `pack` rebuilds each record with repack_vab.pack, lays them out back to back
 and recomputes the header, so a record may change size (it must stay a
-whole number of 4-byte words), and puts the billboard list after record 5. `--roundtrip` unpacks and repacks in memory
-and checks byte identity.
+whole number of 4-byte words), and puts the billboard list after record 5.
+Both directions check the list: whole 12-byte entries, word 0 bit 0 set in
+each but the last, and the last 12 zero bytes. `--roundtrip` unpacks and
+repacks in memory and checks byte identity.
 """
 
 import argparse
@@ -35,6 +37,19 @@ import repack_vab
 
 HDR = 0x34
 NREC = 6
+
+
+def check_billboards(b):
+    if len(b) < 12 or len(b) % 12:
+        raise ValueError(f"billboard list is {len(b)} bytes, not whole 12-byte "
+                         "entries ending in a terminator")
+    n = len(b) // 12 - 1
+    for i in range(n):
+        if not b[12 * i] & 1:
+            raise ValueError(f"billboard entry {i} has word 0 bit 0 clear: "
+                             "the list would end there")
+    if b[12 * n:] != bytes(12):
+        raise ValueError("billboard list does not end with 12 zero bytes")
 
 
 def records(data):
@@ -56,6 +71,7 @@ def records(data):
                          f"of record 5 0x{pos:x}")
     if pos > len(data):
         raise ValueError("records run past the end of the file")
+    check_billboards(data[pos:])
     return [data[o:o + s] for o, s in spans], data[pos:]
 
 
@@ -70,6 +86,7 @@ def build(recs, billboards):
         words += [pos, len(r)]
         pos += len(r)
     words.append(pos)
+    check_billboards(billboards)
     return struct.pack("<13I", *words) + b"".join(recs) + billboards
 
 
@@ -111,18 +128,22 @@ def read_dir(src):
             parts.append(repack_vab.read_dir(src / f"rec{i}"))
         except (OSError, ValueError) as e:
             raise ValueError(f"rec{i}: {e}") from None
-    return parts, (src / "billboards.bin").read_bytes()
+    try:
+        return parts, (src / "billboards.bin").read_bytes()
+    except OSError as e:
+        raise ValueError(f"billboards.bin: {e}") from None
 
 
 def roundtrip(path):
-    data = Path(path).read_bytes()
     try:
+        data = Path(path).read_bytes()
         back = pack(*unpack(data))
-    except ValueError as e:
+    except (OSError, ValueError) as e:
         print(f"{Path(path).name}: ERROR {e}")
         return False
     ok = back == data
-    print(f"{Path(path).name}: {'identical' if ok else 'DIFFERS'} ({len(data)} bytes)")
+    print(f"{Path(path).name}: {'identical' if ok else 'DIFFERS'} "
+          f"({len(data)} bytes)")
     return ok
 
 
@@ -138,6 +159,8 @@ def main():
 
     if args.roundtrip:
         p = Path(args.roundtrip)
+        if not p.exists():
+            sys.exit(f"error: {p} does not exist")
         files = sorted(f for f in p.iterdir()
                        if f.name.upper().startswith("STAGE")
                        and f.suffix.upper() == ".BIN") \
@@ -156,7 +179,7 @@ def main():
             out = pack(*read_dir(args.src))
             Path(args.dst).write_bytes(out)
             print(f"wrote {args.dst} ({len(out)} bytes)")
-    except ValueError as e:
+    except (OSError, ValueError) as e:
         sys.exit(f"error: {e}")
 
 

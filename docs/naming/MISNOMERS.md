@@ -65,9 +65,8 @@ function.
 * **Current name in src/**: `marionation_camera_Init_80036064`
 * **Proposed canonical**: `cdrom_stream_callback`
 * **Alias added**: `cdrom_stream_callback_80036064 = 0x80036064`
-* **Discussed in**: [`docs/formats/STAGE_BIN.md`](../formats/STAGE_BIN.md)
-  ("Naming caveat" section) and
-  [`docs/formats/NDATA.md`](../formats/NDATA.md)
+* **Discussed in**: [`docs/formats/NDATA.md`](../formats/NDATA.md)
+  (now `cdrom_ReadyCallback`, src/main/267A8.c)
 
 ### `marionation_camera_Init_80037468` (src/code6cac_b2.c:651) -- actually a `bios_Exec` wrapper
 
