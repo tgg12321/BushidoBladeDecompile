@@ -21,3 +21,7 @@ void puts(const char *s) {
         putchar(c);
     }
 }
+
+/* .data 0x800A14C4..0x800A14CC: LIBC2.LIB PUTS's 8-byte .data, which no code
+ * reads (equal to the library object's; like LIBCARD INIT's D_8009BE1C) */
+u32 D_800A14C4[2] = {0x15027350, 0x0040849C};

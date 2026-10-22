@@ -85,3 +85,17 @@ void v_wait(s32 a0, s32 a1) {
         }
     }
 }
+
+/* .data 0x800A1508..0x800A1520: LIBETC.LIB VSYNC's whole 24-byte .data, in
+ * definition order: 8 bytes no code reads (equal to the library object's),
+ * the GPUSTAT and root counter 1 count register pointers, Hcount (the
+ * module's XDEF, .data+0x10) and prevVcount. Defined after every function;
+ * the existing externs keep their spelling. */
+u32 D_800A1508[2] = {0x15067350, 0x0040889C};
+
+/* GPUSTAT */
+volatile s32 *g_vsync_gpu_stat_reg = (volatile s32 *)0x1F801814;
+/* RCNT1 count */
+volatile s32 *g_vsync_rcnt1_count_reg = (volatile s32 *)0x1F801110;
+s32 Hcount = 0;
+s32 prevVcount = 0;

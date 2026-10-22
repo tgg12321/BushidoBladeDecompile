@@ -220,3 +220,11 @@ s32 CdReadMode(s32 a0) {
     D_800A14D0.tslmode = a0;
     return old;
 }
+
+/* .data 0x800A14CC..0x800A1508: LIBCD.LIB CDREAD's whole 60-byte .data (all
+ * zero in the library object), in definition order: the CdReadCallback slot,
+ * then the module state. Defined after every function; the existing externs
+ * keep their spelling. */
+CdlCB g_CdReadCallback_func = 0;
+
+volatile CdlREAD D_800A14D0 = {0};
