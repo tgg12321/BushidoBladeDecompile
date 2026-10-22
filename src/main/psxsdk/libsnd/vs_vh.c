@@ -50,8 +50,10 @@ s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
             }
         }
     } else {
-        /* FAKE: var_a2 reused as the _svm_vab_used base and the header
-         * cursor; indexing _svm_vab_used directly scores 14 */
+        /* var_a2 is the _svm_vab_used base here and the header cursor below,
+         * as in SOTN's SsVabOpenHeadWithMode (Q51); indexing _svm_vab_used
+         * directly scores 14 */
+        /* SOTN: src/main/psxsdk/libsnd/vs_vh.c:51 @db41b28 */
         var_a2 = _svm_vab_used;
         if (var_a2[vabid] == 0) {
             _svm_vab_used[vabid] = 1;
