@@ -1,0 +1,1 @@
+{"func": "func_80034708", "addr": "80034708", "verdict": "PASS", "body_hash": "74f1524b2e1ce7bf", "body_kind": "c", "file": "main/24F08", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-22T00:26:22Z", "head": "c787a0c6b", "notes": "two casts of const rodata fmts to font_Printf's u8 * param; type-correctness, byte-neutral"}
