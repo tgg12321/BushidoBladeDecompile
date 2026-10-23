@@ -714,11 +714,10 @@ void gpu_OffsetTexPrimStream(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
                             SCRATCH_PTR += 12;
                             break;
                         case 2:
-                            /* FAKE: cases 2/3 repeat cases 0/1 (one body per
-                               kind, as in mode 1) instead of sharing their
-                               labels; cross-jump re-merges the copies, but
-                               their refs seat count/base/kind in s3/s4/s5.
-                               Shared labels: score 109. */
+                            /* one case per primitive kind, as in modes 0 and
+                               1: in this layout the GT3 / GT4 offsets equal
+                               the FT3 / FT4 ones (cross-jump merges the
+                               copies; shared labels: score 109). */
                             b[1] += arg1;
                             b[5] += arg1;
                             b[9] += arg1;
