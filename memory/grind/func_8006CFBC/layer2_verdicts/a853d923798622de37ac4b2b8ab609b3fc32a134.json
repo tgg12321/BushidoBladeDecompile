@@ -1,0 +1,20 @@
+{
+  "decision": "PASS",
+  "function": "func_8006CFBC",
+  "body_hash": "ae6084e919b0c5bd",
+  "summary": "PASS: the `cells` holder fits Ruling 11's non-hygiene shape (three real header + 0xC values computed by addiu in the target, every write read, a kind-name true of all three, Ruling 11 cited at the site) and is the zero-FAKE known form (direct 8, block local per write 8). The (s16) cast drop is byte-neutral. Sandbox 0; build SHA1 == oracle.",
+  "evidence": [
+    {"construct": "item 1", "test_failed": "none", "explanation": "sandbox --disable all 0; verify-oracle --rebuild build_matches true."},
+    {"construct": "`cells = s.header->cells; s.table = cells;` x3", "test_failed": "none (item 3 via Q91 multi-write clause / Ruling 11)", "explanation": "Function-scope, address never taken; each write read by the next statement; no held-value re-store on every path; per-write spelling g_block.c same statements, 8; addiu +0xC at all three sites; `cells` true of every value. Ruling 5 Extension and Ruling 9 do not fit, Ruling 11 does."},
+    {"construct": "site comment", "test_failed": "none (site-comment-content 2, 5)", "explanation": "Names Ruling 11; 12-byte header, +0xC cells and the three sources are true."},
+    {"construct": "item 5", "test_failed": "none", "explanation": "No byte-exact form with fewer FAKEs; this body has none."},
+    {"construct": "`return result;`", "test_failed": "none", "explanation": "result is s16; the cast was a no-op; score 0."},
+    {"construct": "rest of body", "test_failed": "none", "explanation": "Q33 counts union, one-role row index, table[14] header store in the target, var_8 real argument; existing types; no volatile/asm/pins/aliases."}
+  ],
+  "next_action": "",
+  "hygiene_debt": [
+    "Ruling 11 (D) dump proof not banked (hygiene since Q91).",
+    "Ruling 5 2(c) ledger note for the fallback write's possible re-store of table[12]->cells on the both-rows-empty path.",
+    "Neutral names var_3 / var_8 and the (Unk8006919CRec *)arg0[1] context-word cast remain uncertified."
+  ]
+}
