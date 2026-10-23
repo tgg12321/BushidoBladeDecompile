@@ -102,11 +102,21 @@ def _helper_issues(src_text: str | None, stem: str, ftab) -> list[str]:
       (4) a helper no function in the object reaches: its body is read by
           no gate;
       (5) any other function body with no symbol in the object (e.g.
-          `inline` spelled through a macro): no gate reads it at all."""
+          `inline` spelled through a macro): no gate reads it at all;
+      (6) unsafe TU indexing: lexical view/identifier/directive escapes;
+          brace/branch imbalance; unsafe macros/heads; duplicate definitions.
+          The walk reads one masked TU view only; headers/#include'd code
+          are unseen (see inlineasm._tu_index for the detailed rules)."""
     if not src_text:
         return []
     defs = inlineasm.static_inline_defs(src_text)
     out = []
+    if inlineasm.tu_unbalanced(src_text):
+        out.append(f"{stem}.c: file-scope braces do not balance or cannot be indexed "
+                   f"safely (lexical view/identifier/directive escapes; brace/branch "
+                   f"imbalance; unsafe macros/heads; duplicate definitions) -- walk "
+                   f"reads one masked TU view only (headers/#include'd code unseen); "
+                   f"use explicit, complete definitions")
     for h, spans in defs.items():
         if h in ftab:
             out.append(f"{h} ({stem}.c): static inline helper emitted out of line (in "

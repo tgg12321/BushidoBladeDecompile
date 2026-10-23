@@ -618,14 +618,35 @@ class _TUIndex(NamedTuple):
     pos: tuple
     functions: tuple    # TUFunction, file order
     macros: dict        # #define name -> identifiers of its body (and params)
+    unbalanced: bool    # unsafe brace walk, including file-scope brace macro use
+
+
+def _head_initializer(head: str) -> bool:
+    """A top-level assignment `=`, excluding comparisons and ()/[] contents."""
+    parens = brackets = 0
+    for i, c in enumerate(head):
+        if c == "(":
+            parens += 1
+        elif c == ")":
+            parens -= 1
+        elif c == "[":
+            brackets += 1
+        elif c == "]":
+            brackets -= 1
+        elif c == "=" and parens == 0 and brackets == 0:
+            before = head[i - 1] if i else ""
+            after = head[i + 1] if i + 1 < len(head) else ""
+            if before not in ("=", "<", ">", "!") and after != "=":
+                return True
+    return False
 
 
 def _head_function(head: str) -> tuple[str, frozenset] | None:
     """(name, head words) when a file-scope `head {` is a function definition
-    head: it has a parameter list and no `=` (an initializer). Attribute
+    head: it has a parameter list and no top-level initializer `=`. Attribute
     groups are skipped; the name is the identifier before the first
     remaining top-level `(`."""
-    if "=" in head:
+    if _head_initializer(head):
         return None
     m = _ATTRIBUTE_RE.search(head)
     while m:
@@ -644,11 +665,18 @@ def _head_function(head: str) -> tuple[str, frozenset] | None:
 
 
 def _tu_index(text: str) -> _TUIndex:
-    """Every file-scope function body and #define of `text`, read in the
-    compiler view (comments and literals blanked, backslash-newlines spliced),
-    so a head split over lines, broken by a comment or carrying an
-    `__attribute__` is still one head. Preprocessor lines are not code;
-    `#if 0` text is (a dead copy is still a definition)."""
+    """Index functions/#defines in one masked view of TU text only.
+
+    Headers and #include'd code are unseen; directives are skipped, #if 0
+    bodies kept. Comments/literals are blanked and line splices removed.
+    `unbalanced` refuses:
+    - literal-view disagreement, $, form feed/vertical tab, alternate tokens,
+      or unparsed define/conditional-looking directives;
+    - unmatched braces or nonzero/negative branch deltas (nesting independent);
+    - unbalanced macros, file-scope brace/paste macros (aliases included),
+      macro names/words in heads, unknown heads, or duplicate ordinary names.
+    Clear initializers/specifiers and body-only balanced macros are allowed.
+    """
     return _tu_index_cached(text)
 
 
@@ -659,6 +687,10 @@ def _tu_index_cached(text: str) -> _TUIndex:
     n = len(masked)
     functions, macros = [], {}
     depth, item, i, bol = 0, 0, 0, True
+    unbalanced = (masked != view.masked_eol or any(token in masked for token in
+                  ("$", "\f", "\v", "%:", "<%", "%>", "??=", "??<", "??>")))
+    branch_deltas = []  # innermost branch owns code braces, not directive braces
+    brace_macros, file_scope_names = set(), set()
     segs = [0]          # file-scope item starts since the last `}` (K&R heads)
     head_fn = None
     while i < n:
@@ -670,6 +702,38 @@ def _tu_index_cached(text: str) -> _TUIndex:
             if dm:
                 macros.setdefault(dm.group(1), set()).update(
                     _IDENT_TOKEN_RE.findall(dm.group(2)))
+                if any(token in dm.group(2) for token in ("{", "}", "##")):
+                    brace_macros.add(dm.group(1))
+                macro_depth = 0
+                for brace in dm.group(2):
+                    if brace == "{":
+                        macro_depth += 1
+                    elif brace == "}":
+                        macro_depth -= 1
+                        if macro_depth < 0:
+                            unbalanced = True
+                if macro_depth != 0:
+                    unbalanced = True
+            directive = re.match(r"#[ \t]*(\w+)", masked[i:eol])
+            looking = re.match(r"#\s*(define|if\w*|elif|else|endif)\b", masked[i:eol])
+            if looking:
+                kind = looking.group(1)
+                if (not directive or directive.group(1) != kind
+                        or (kind == "define" and not dm)
+                        or kind not in ("define", "if", "ifdef", "ifndef",
+                                        "elif", "else", "endif")):
+                    unbalanced = True
+            if directive:
+                kind = directive.group(1)
+                if kind in ("if", "ifdef", "ifndef"):
+                    branch_deltas.append(0)
+                elif kind in ("elif", "else", "endif") and branch_deltas:
+                    if branch_deltas[-1] != 0:
+                        unbalanced = True
+                    if kind == "endif":
+                        branch_deltas.pop()
+                    else:
+                        branch_deltas[-1] = 0
             if depth == 0:
                 item = eol
                 segs.append(eol)
@@ -679,7 +743,14 @@ def _tu_index_cached(text: str) -> _TUIndex:
             bol = True
         elif c not in " \t\r\f\v":
             bol = False
+        if depth == 0 and (i == 0 or not (
+                masked[i - 1].isalnum() or masked[i - 1] == "_")):
+            ident = _IDENT_TOKEN_RE.match(masked, i)
+            if ident:
+                file_scope_names.add(ident.group())
         if c == "{":
+            if branch_deltas:
+                branch_deltas[-1] += 1
             if depth == 0:
                 head = masked[item:i]
                 if not head.strip():
@@ -687,15 +758,25 @@ def _tu_index_cached(text: str) -> _TUIndex:
                     # with a parameter list; the rest declare parameters
                     for st in reversed(segs[:-1]):
                         seg = masked[st:item].split(";")[0]
-                        if "(" in seg and "=" not in seg:
+                        if "(" in seg and not _head_initializer(seg):
                             item = st
                             break
                     head = masked[item:i]
                 hf = _head_function(head)
+                if (hf is None and not _head_initializer(head)
+                        and not re.search(r"\b(?:struct|union|enum)"
+                                          r"(?:\s+[A-Za-z_]\w*)?\s*$", head)):
+                    unbalanced = True
                 lead = len(head) - len(head.lstrip())
                 head_fn = (hf, item + lead) if hf else None
             depth += 1
         elif c == "}":
+            if branch_deltas:
+                branch_deltas[-1] -= 1
+                if branch_deltas[-1] < 0:
+                    unbalanced = True
+            if depth == 0:
+                unbalanced = True
             depth = max(0, depth - 1)
             if depth == 0:
                 if head_fn:
@@ -708,8 +789,33 @@ def _tu_index_cached(text: str) -> _TUIndex:
             item = i + 1
             segs.append(item)
         i += 1
+    while True:
+        reached = {name for name, body in macros.items() if body & brace_macros}
+        if reached <= brace_macros:
+            break
+        brace_macros.update(reached)
+    ordinary_names = set()
+    for fn in functions:
+        if fn.name in macros or fn.words & macros.keys():
+            unbalanced = True
+        if not fn.static_inline:
+            if fn.name in ordinary_names:
+                unbalanced = True
+            ordinary_names.add(fn.name)
     return _TUIndex(masked, pos, tuple(functions),
-                    {k: frozenset(v) for k, v in macros.items()})
+                    {k: frozenset(v) for k, v in macros.items()},
+                    unbalanced or depth != 0 or any(branch_deltas)
+                    or bool(brace_macros & file_scope_names))
+
+
+def tu_unbalanced(text: str) -> bool:
+    """Whether one masked TU view is unsafe to index (headers/includes unseen):
+    - lexical view/identifier/directive escapes;
+    - brace/branch imbalance;
+    - unsafe macros/heads or duplicate ordinary definitions.
+    See `_tu_index` for exceptions and the complete refusal list.
+    """
+    return _tu_index(text).unbalanced
 
 
 def tu_functions(text: str) -> tuple[TUFunction, ...]:

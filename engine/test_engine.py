@@ -3508,6 +3508,111 @@ def test_q126_inline_helpers() -> None:
             "s32 func_D(s32 v) {\n    /* sq(v) in a comment */\n    return plain(v);\n}\n"
             "s32 func_E(s32 v) {\n    return v + 2;\n}\n")
     text = inc + sq + rest
+    split_head = ("#ifdef A\nint f(int a) {\n#else\nint f(int a, int b) {\n"
+                  "#endif\n    return a;\n}\n"
+                  "static inline int h(int x) { return x; }\n")
+    normal_tu = "int f(int a) { return a; }\n"
+    lexical_cases = [
+        ("stray quote pair", '#if 0\n"\n#endif\n'
+         'static inline int helper(int x) { return x; }\n'
+         '#if 0\n"\n#endif\nint f(int a) { return helper(a); }\n'),
+        ("dollar macro", "#define $H static inline int helper(int x) { return x; }\n$H\n"
+         + normal_tu),
+        ("form feed before directive", "\f#define H int x\n" + normal_tu),
+        ("form feed inside directive", "#\fdefine H int x\n" + normal_tu),
+        ("vertical tab", "#\vdefine H int x\n" + normal_tu),
+        ("unparsed define", "#define\n" + normal_tu),
+        ("unparsed conditional-looking directive", "#iffoo A\n" + normal_tu)]
+    for desc, src in lexical_cases:
+        eq(f"q126: {desc} fails closed", inlineasm.tu_unbalanced(src), True)
+    evasion_cases = [
+        (f"alternate token {token}", normal_tu + token + "\n")
+        for token in ("%:", "<%", "%>", "??=", "??<", "??>")]
+    evasion_cases += [
+        ("file-scope token pasting",
+         "#define CAT(a,b) a##b\n"
+         "#define HX static inline int k(int x) { return x; }\nCAT(H,X);\n"
+         + normal_tu),
+        ("function-like head macro",
+         "#define f(x) static inline int helper(int x)\n"
+         'f(y) { __asm__("nop"); return y; }\n#undef f\n'
+         "int f(int a) { return helper(a); }\n"),
+        ("head word macro", "#define INL inline\n"
+         "static INL int helper(int x) { return x; }\n" + normal_tu),
+        ("duplicate ordinary definition", normal_tu + "#if 0\n" + normal_tu + "#endif\n")]
+    for desc, src in evasion_cases:
+        eq(f"q126: {desc} fails closed", inlineasm.tu_unbalanced(src), True)
+    eq("q126: alternate tokens in comments/literals are masked",
+       inlineasm.tu_unbalanced('/* %: <% %> ??= ??< ??> */\n'
+                              'char *s = "%: <% %> ??= ??< ??>";\n' + normal_tu), False)
+    macro_head = ('#define HEAD static inline int helper(int x)\n'
+                  'HEAD { __asm__("nop"); return x; }\n'
+                  'int f(int a) { return helper(a); }\n')
+    eq("q126: a macro-only function head fails closed",
+       inlineasm.tu_unbalanced(macro_head), True)
+    comparison_heads = []
+    for op in ("==", "<=", ">=", "!="):
+        src = (f'static inline int helper(int (*p)[1 {op} 1]) {{ '
+               '__asm__("nop"); return 0; }\n'
+               'int f(int a) { return helper(0); }\n')
+        comparison_heads.append(src)
+        eq(f"q126: {op} in parameters does not hide the helper",
+           inlineasm.inline_helpers(src, "f"), ["helper"])
+        eq(f"q126: {op} in parameters leaves a recognized balanced head",
+           inlineasm.tu_unbalanced(src), False)
+    nonfunction_heads = ("int a[] = {1, 2};\n", "struct S { int x; };\n",
+                         "typedef struct { int x; } T;\n", "enum E { A, B };\n")
+    for src in nonfunction_heads:
+        eq(f"q126: clear nonfunction head is allowed: {src.strip()}",
+           inlineasm.tu_unbalanced(src), False)
+    dead_tu = "#if 0\n" + normal_tu + "#endif\n"
+    compensated = split_head + "#if 0\n}\n#endif\n"
+    complete_branches = ("#ifdef A\n" + normal_tu + "#else\n"
+                         + normal_tu.replace("int f(", "int g(") + "#endif\n")
+    brace_macro = "#define OPEN {\n" + normal_tu
+    close_macro = "#define CLOSE }\n" + normal_tu
+    balanced_macro = "#define BLK(x) { x; }\n" + normal_tu
+    reversed_macro = "#define REVERSE } {\n" + normal_tu
+    reopened_branch = ('static inline int h(int x) {\n#if 0\n}\n{\n#endif\n'
+                       '    __asm__("nop"); return x;\n}\n'
+                       'int f(int a) { return h(a); }\n')
+    replaced_branch = reopened_branch.replace("#if 0\n}\n{", "#ifdef A\n} int g(void) {")
+    hidden_macro = ('#define H static inline int h(int x) { '
+                    '__asm__("nop"); return x; }\nH\n' + normal_tu)
+    body_macro = "#define BLK(x) { x; }\nint f(int a) { BLK(a); return a; }\n"
+    hidden_alias = hidden_macro.replace("\nH\n", "\n#define G H\nG\n")
+    body_alias = body_macro.replace("\nint f", "\n#define G BLK\nint f").replace(
+        "{ BLK(a);", "{ G(a);")
+    eq("q126: a file-scope alias reaches the brace macro",
+       inlineasm.tu_unbalanced(hidden_alias), True)
+    eq("q126: an alias to a balanced brace macro inside a body is allowed",
+       inlineasm.tu_unbalanced(body_alias), False)
+    for desc, src in (("branch closes before reopening", reopened_branch),
+                      ("branch replaces a function head", replaced_branch),
+                      ("brace macro defines a file-scope helper", hidden_macro)):
+        eq(f"q126: {desc} is an unsafe TU walk", inlineasm.tu_unbalanced(src), True)
+    eq("q126: self-balanced brace macro use inside a body stays allowed",
+       inlineasm.tu_unbalanced(body_macro), False)
+    eq("q126: compensating EOF depth does not hide branch imbalance",
+       inlineasm.tu_unbalanced(compensated), True)
+    eq("q126: complete definitions in each conditional branch balance",
+       inlineasm.tu_unbalanced(complete_branches), False)
+    eq("q126: a brace macro makes the TU walk unreliable",
+       inlineasm.tu_unbalanced(brace_macro), True)
+    eq("q126: a closing brace macro makes the TU walk unreliable",
+       inlineasm.tu_unbalanced(close_macro), True)
+    eq("q126: a self-balanced brace macro does not shift the TU walk",
+       inlineasm.tu_unbalanced(balanced_macro), False)
+    eq("q126: zero net macro delta still refuses a negative running depth",
+       inlineasm.tu_unbalanced(reversed_macro), True)
+    eq("q126: alternative function heads leave the TU brace walk unbalanced",
+       inlineasm.tu_unbalanced(split_head), True)
+    eq("q126: a stray closing brace marks the TU unbalanced",
+       inlineasm.tu_unbalanced("}" + normal_tu), True)
+    eq("q126: a normal TU has balanced braces",
+       inlineasm.tu_unbalanced(normal_tu), False)
+    eq("q126: a complete function inside #if 0 has balanced braces",
+       inlineasm.tu_unbalanced(dead_tu), False)
     H = inlineasm.inline_helpers
     eq("q126: a called helper is attributed", H(text, "func_A"), ["sq"])
     eq("q126: helpers are reached transitively, in file order",
@@ -3816,6 +3921,57 @@ def test_q126_inline_helpers() -> None:
     ftab = {"func_A": 0, "func_B": 0, "func_C": 0, "func_D": 0, "func_E": 0, "plain": 0}
     eq("q126 integrity: all helpers inlined, nothing refused",
        CCI._helper_issues(text, "fake", ftab), [])
+    balance_issue = (
+        "fake.c: file-scope braces do not balance or cannot be indexed "
+        "safely (lexical view/identifier/directive escapes; brace/branch "
+        "imbalance; unsafe macros/heads; duplicate definitions) -- walk "
+        "reads one masked TU view only (headers/#include'd code unseen); "
+        "use explicit, complete definitions")
+    eq("q126 integrity: alternative function heads hiding a helper are refused",
+       CCI._helper_issues(split_head, "fake", {"f": 0}), [balance_issue])
+    for desc, src in evasion_cases:
+        check(f"q126 integrity: {desc} is refused",
+              balance_issue in CCI._helper_issues(src, "fake", {"f": 0}))
+    for desc, src in lexical_cases:
+        check(f"q126 integrity: {desc} is refused",
+              balance_issue in CCI._helper_issues(src, "fake", {"f": 0}))
+    eq("q126 integrity: a macro-only function head is refused",
+       CCI._helper_issues(macro_head, "fake", {"f": 0}), [balance_issue])
+    for src in comparison_heads:
+        eq("q126 integrity: a comparison parameter helper is attributed, not refused",
+           CCI._helper_issues(src, "fake", {"f": 0}), [])
+    for src in nonfunction_heads:
+        eq("q126 integrity: clear nonfunction brace head passes",
+           CCI._helper_issues(src, "fake", {}), [])
+    eq("q126 integrity: compensated branch imbalance is refused",
+       CCI._helper_issues(compensated, "fake", {"f": 0}), [balance_issue])
+    eq("q126 integrity: complete conditional definitions pass",
+       CCI._helper_issues(complete_branches, "fake", {"f": 0, "g": 0}), [])
+    eq("q126 integrity: a brace macro is refused",
+       CCI._helper_issues(brace_macro, "fake", {"f": 0}), [balance_issue])
+    eq("q126 integrity: a closing brace macro is refused",
+       CCI._helper_issues(close_macro, "fake", {"f": 0}), [balance_issue])
+    eq("q126 integrity: a self-balanced brace macro passes",
+       CCI._helper_issues(balanced_macro, "fake", {"f": 0}), [])
+    eq("q126 integrity: a macro closing before opening is refused",
+       CCI._helper_issues(reversed_macro, "fake", {"f": 0}), [balance_issue])
+    for desc, src in (("branch closes before reopening", reopened_branch),
+                      ("branch replaces a function head", replaced_branch),
+                      ("brace macro defines a file-scope helper", hidden_macro)):
+        check(f"q126 integrity: {desc} is refused",
+              balance_issue in CCI._helper_issues(src, "fake", {"f": 0}))
+    eq("q126 integrity: self-balanced brace macro use in a body passes",
+       CCI._helper_issues(body_macro, "fake", {"f": 0}), [])
+    eq("q126 integrity: a file-scope alias to a brace macro is refused",
+       CCI._helper_issues(hidden_alias, "fake", {"f": 0}), [balance_issue])
+    eq("q126 integrity: a body-only alias to a balanced brace macro passes",
+       CCI._helper_issues(body_alias, "fake", {"f": 0}), [])
+    eq("q126 integrity: a stray brace is refused even without helpers",
+       CCI._helper_issues("}" + normal_tu, "fake", {"f": 0}), [balance_issue])
+    eq("q126 integrity: a normal TU without helpers passes",
+       CCI._helper_issues(normal_tu, "fake", {"f": 0}), [])
+    eq("q126 integrity: a complete function inside #if 0 passes brace checking",
+       CCI._helper_issues(dead_tu, "fake", {"f": 0}), [])
     check("q126 integrity: a helper also emitted out of line is refused", any(
         "sq (fake.c): static inline helper emitted out of line" in i
         for i in CCI._helper_issues(text, "fake", dict(ftab, sq=0))))
