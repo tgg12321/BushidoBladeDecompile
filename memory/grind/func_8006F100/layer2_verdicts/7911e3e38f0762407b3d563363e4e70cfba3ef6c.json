@@ -1,0 +1,16 @@
+{
+  "verdict": "PASS",
+  "decision": "PASS",
+  "function": "func_8006F100",
+  "body_hash": "3c842d5a0d92fe22",
+  "summary": "Two FAKE constant-holder locals replaced by plain literals in a reassociated but semantically identical sum; no new construct, sandbox 0, oracle SHA1 matches.",
+  "findings": [
+    {"construct": "s.x = (D_8009BC94[i][D_800A3590[i]].x + 0x140) + t1 - ((dx * s.scale_x >> 8) / 2); (and s.y with 0x9D / t2)", "test_failed": "none (items 2-5 checked)", "explanation": "All operands promote to int; integer addition is associative, so it computes the same value as the old origin + (t1 + holder) - half. Picking the grouping by its codegen is the normal matching method (ordinary-c-judge-decidable Ruling 1(3)). No asm, pin, barrier, volatile, fabricated call or build change. The diff only touches src/main/5ED34.c."},
+    {"construct": "removed FAKE labels on var_10 / var_11", "test_failed": "none", "explanation": "The labels said the holders kept the centre-plus-shake grouping and that inline literals in that grouping score 44. The commit cites a re-measured 44 and 43 for those forms. Either way the labels are gone along with their locals, so nothing false is left in the code. The remaining body has no FAKE sites, and every remaining local has a purpose."},
+    {"construct": "D_8009BC94 / D_800A3590 access", "test_failed": "none (item 4)", "explanation": "Reached through the existing typed extern in include/bb2.h:71 (Unk8009BC94Record [][6]) and the file-static s16 D_800A3590[2]. No alias, no second extern, no raw-offset cast."},
+    {"construct": "mechanical verification", "test_failed": "none (item 1)", "explanation": "Independently re-ran in the trusted worktree at 03799300c: sandbox func_8006F100 --disable all = 0 (266/266 insns, 0 cheat-asm stripped); shadow make = 'OK: bb2 matches!' and tus-check OK."}
+  ],
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": ["Commit message calls 0x9D (157) the vertical 'screen centre'. That is not literally half of 240, so the wording is loose. It sits in the commit body, not in the code."]
+}
