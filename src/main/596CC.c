@@ -1172,9 +1172,10 @@ void func_8006B120(s32 *arg0) {
     u16 r[4];
     Unk8009B0E0Record **tbl;
     s32 i;
-    /* FAKE: single-use holder of the cell table ahead of the descriptor's table
-     * store; stored directly: score 11. */
-    Unk8009B400Record *p1;
+    /* the current sheet's cells, just past its 12-byte header, for s.table:
+     * one role per sheet drawn (Ruling 5 extension: s.header is set from tbl
+     * before each write) */
+    Unk8009B400Record *table;
 
     s.has_color = 0;
     s.ot_idx = 10;
@@ -1183,8 +1184,8 @@ void func_8006B120(s32 *arg0) {
     s.y = 0;
     s.x = 0;
     s.semi = 0;
-    p1 = s.header->cells;
-    s.table = p1;
+    table = s.header->cells;
+    s.table = table;
     s.sprt_out = arg0[5];
     arg0[5] = gpu_AddSpriteCells(&s);
     SetDrawMode((DR_MODE *)arg0[7], 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
@@ -1206,8 +1207,8 @@ void func_8006B120(s32 *arg0) {
             s.y = 0;
             s.semi = 1;
         }
-        p1 = s.header->cells;
-        s.table = p1;
+        table = s.header->cells;
+        s.table = table;
         s.sprt_out = arg0[5];
         arg0[5] = gpu_AddSpriteCells(&s);
         i++;
@@ -1235,8 +1236,8 @@ void func_8006B120(s32 *arg0) {
         } else {
             s.semi = 1;
         }
-        p1 = s.header->cells;
-        s.table = p1;
+        table = s.header->cells;
+        s.table = table;
         s.sprt_out = arg0[5];
         arg0[5] = gpu_AddSpriteCells(&s);
         i++;
@@ -1263,8 +1264,8 @@ void func_8006B120(s32 *arg0) {
         } else {
             s.semi = 1;
         }
-        p1 = s.header->cells;
-        s.table = p1;
+        table = s.header->cells;
+        s.table = table;
         s.sprt_out = arg0[5];
         arg0[5] = gpu_AddSpriteCells(&s);
         i++;
@@ -1291,8 +1292,8 @@ void func_8006B120(s32 *arg0) {
         } else {
             s.semi = 1;
         }
-        p1 = s.header->cells;
-        s.table = p1;
+        table = s.header->cells;
+        s.table = table;
         s.sprt_out = arg0[5];
         arg0[5] = gpu_AddSpriteCells(&s);
         i++;
