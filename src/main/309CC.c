@@ -232,19 +232,19 @@ after_select:
         if (a0->arena_id != 0)
             goto done_cases;
 
-        gpu_LoadTimGroup((s32)var_1, 0);
+        gpu_LoadTimGroup((u32 *)var_1, 0);
         if (gpu_GetFogClutObject() != 0)
             goto done_cases;
         gpu_OffsetBlockTexPrimStreams(a0->unk_14, 0, 0, -0x140, 0xE8);
-        gpu_LoadTimGroupSplitOffset((s32)var_1, 0, 0, 0, -0x140, 0xF0);
+        gpu_LoadTimGroupSplitOffset((u32 *)var_1, 0, 0, 0, -0x140, 0xF0);
         goto done_cases;
 
     case_1:
-        gpu_LoadTimGroupOffset((s32)var_1, 0, 0x80, 0);
+        gpu_LoadTimGroupOffset((u32 *)var_1, 0, 0x80, 0);
         if (gpu_GetFogClutObject() != 1)
             goto case_1_else;
         gpu_OffsetBlockTexPrimStreams(a0->unk_14, 0x80, 0, -0x140, 0xE8);
-        gpu_LoadTimGroupSplitOffset((s32)var_1, 0, 0x80, 0, -0x140, 0xF0);
+        gpu_LoadTimGroupSplitOffset((u32 *)var_1, 0, 0x80, 0, -0x140, 0xF0);
         goto case_1_done;
 
     case_1_else:

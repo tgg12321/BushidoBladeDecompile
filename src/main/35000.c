@@ -678,16 +678,20 @@ void func_80045B68(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         if (sp108[i] >= 0) {
             switch (n) {
             case 0:
-                gpu_LoadTimGroupSplitOffset(var_7, i, 0, 0, -0x180, 0xF0);
+                gpu_LoadTimGroupSplitOffset(
+                    (u32 *)var_7, i, 0, 0, -0x180, 0xF0);
                 break;
             case 1:
-                gpu_LoadTimGroupSplitOffset(var_7, i, 0, 0x40, -0x180, 0xF1);
+                gpu_LoadTimGroupSplitOffset(
+                    (u32 *)var_7, i, 0, 0x40, -0x180, 0xF1);
                 break;
             case 2:
-                gpu_LoadTimGroupSplitOffset(var_7, i, 0x80, 0, -0x160, 0xF0);
+                gpu_LoadTimGroupSplitOffset(
+                    (u32 *)var_7, i, 0x80, 0, -0x160, 0xF0);
                 break;
             case 3:
-                gpu_LoadTimGroupSplitOffset(var_7, i, 0x80, 0x40, -0x160, 0xF1);
+                gpu_LoadTimGroupSplitOffset(
+                    (u32 *)var_7, i, 0x80, 0x40, -0x160, 0xF1);
                 break;
             }
             sp108[i] = n;

@@ -170,16 +170,18 @@ void func_80041988(s32 a0, s32 a1, s32 a2, s32 a3) {
         switch (a0) {
         case 0:
             if (gpu_GetFogClutObject() == 0) {
-                gpu_LoadTimGroupSplitOffset(a3, i + 1, 0, 0, -0x140, 0xE8);
+                gpu_LoadTimGroupSplitOffset(
+                    (u32 *)a3, i + 1, 0, 0, -0x140, 0xE8);
             } else {
-                gpu_LoadTimGroup(a3, i + 1);
+                gpu_LoadTimGroup((u32 *)a3, i + 1);
             }
             break;
         case 1:
             if (gpu_GetFogClutObject() == a0) {
-                gpu_LoadTimGroupSplitOffset(a3, i + 1, 0x80, 0, -0x140, 0xE8);
+                gpu_LoadTimGroupSplitOffset(
+                    (u32 *)a3, i + 1, 0x80, 0, -0x140, 0xE8);
             } else {
-                gpu_LoadTimGroupOffset(a3, i + 1, 0x80, 0);
+                gpu_LoadTimGroupOffset((u32 *)a3, i + 1, 0x80, 0);
             }
             break;
         }

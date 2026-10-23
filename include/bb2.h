@@ -886,9 +886,9 @@ extern void func_80046E54(s32);
 extern s32 func_80046E7C(void);
 extern void func_80046EA0(s32);
 extern void math_SetLightPlaneProjection(void);
-extern void gpu_LoadTimGroup(s32, s32);
-extern void gpu_LoadTimGroupOffset(s32, s32, s16, s16);
-extern void gpu_LoadTimGroupSplitOffset(s32, s32, s16, s16, s16, s16);
+extern void gpu_LoadTimGroup(u32 *, s32);
+extern void gpu_LoadTimGroupOffset(u32 *, s32, s16, s16);
+extern void gpu_LoadTimGroupSplitOffset(u32 *, s32, s16, s16, s16, s16);
 /* gpu_LoadTim and gpu_LoadTimClut have no prototype: 368E4.c calls them
  * above their old-style (K&R) definitions with int arguments, and a prototype's
  * s16 / u16 parameters change its bytes. */

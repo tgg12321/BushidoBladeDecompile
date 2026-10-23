@@ -10,7 +10,7 @@
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void wave_SetCellBuffer(s32);
 extern s32 wave_GetCellBufferSize(void);
-extern void func_800481E8(s32, s32);
+extern void func_800481E8(u32 *, s32);
 extern void func_800466C0(s32, s32);
 void gpu_LoadTim();
 void gpu_LoadTimClut();
@@ -169,7 +169,7 @@ void func_800460E4(s32 arg0, s32 arg1) {
     }
 
     reloc_RelocateBlock(s6, 7);
-    func_800481E8((s32)var_7, 0);
+    func_800481E8((u32 *)var_7, 0);
     func_8003EDC0((u16 *)s4, 7);
     collision_SetGrid((s32)sp10);
     D_800A33B0 = (s32)sp18;
@@ -1010,26 +1010,20 @@ void wave_MoveCellBuffer(s32 a0) {
     g_wave_cell_buffer = (s16 *)((u8 *)g_wave_cell_buffer + a0);
 }
 
-void gpu_LoadTimGroup(s32 arg0, s32 arg1) {
+void gpu_LoadTimGroup(u32 *p, s32 arg1) {
     /* FAKE: unwritten volatile pad reproduces the target's untouched 32-byte
      * locals region (sp+0x18..0x37) (phantom-frame pad; without it: score
      * 10). SOTN precedent:
      * `volatile u32 pad; // !FAKE:` (src/st/sel/2C048.c:564), `volatile u32
      * pad[4]; // FAKE` (src/st/sel/stream.c:80). */
     volatile u32 pre_pad[8];
-    u32 *p;
     s32 saved;
     s16 new_var;
     s32 count;
     u32 v_off;
     unsigned int new_var2;
-    p = (u32 *)arg0;
     saved = (s32)p;
-    /* FAKE: dead store to a param; defeats cse2's substitution over
-     * {arg0, p, saved} so the second pointer binds addu $s0,$s2,$v0, not $a0
-     * (dead-store-fake-exception); without it: score 1 */
-    arg0 = 0;
-    p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
+    p += (s16)arg1;
     v_off = *p;
     p = (u32 *)(saved + ((v_off >> 2) << 2));
     count = *(p++);
@@ -1060,21 +1054,16 @@ void gpu_LoadTimGroup(s32 arg0, s32 arg1) {
     }
 }
 
-void gpu_LoadTimGroupOffset(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
+void gpu_LoadTimGroupOffset(u32 *p, s32 arg1, s16 arg2, s16 arg3) {
     // !FAKE: phantom-frame-slot pad, without it: score 14
     // (no-new-park-categories): target reserves 32 locals bytes at
     // sp+0x18..sp+0x37 that no instruction touches
     volatile u32 pre_pad[8];
-    u32 *p;
     s32 base_addr;
     s32 count;
     s32 new_var;
-    base_addr = arg0;
-    p = (u32 *)arg0;
-    /* FAKE: defeats cse2 folding the {arg0, p, base_addr} equivalence
-       class; without it: score 1 */
-    arg0 = 0;
-    p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
+    base_addr = (s32)p;
+    p += (s16)arg1;
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
     count = *(p++);
     if (count != 0) {
@@ -1107,21 +1096,15 @@ void gpu_LoadTimGroupOffset(s32 arg0, s32 arg1, s16 arg2, s16 arg3) {
 }
 
 void gpu_LoadTimGroupSplitOffset(
-    s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
+    u32 *p, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5) {
     // !FAKE: phantom-frame-slot pad (without it: score 20): target
     // reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction touches
     volatile u32 pre_pad[8];
-    u32 *p;
     s32 base_addr;
     s32 count;
     s32 new_var;
-    base_addr = arg0;
-    p = (u32 *)arg0;
-    // !FAKE: dead store to a parameter, as in gpu_LoadTimGroupOffset (without
-    // it: score 16); defeats cse folding {arg0, p, base_addr}, which emits one
-    // base copy instead of two
-    arg0 = 0;
-    p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
+    base_addr = (s32)p;
+    p += (s16)arg1;
     p = (u32 *)(base_addr + (((*p) >> 2) << 2));
     count = *(p++);
     if (count != 0) {
@@ -1157,9 +1140,7 @@ void gpu_LoadTimGroupSplitOffset(
     }
 }
 
-void func_800481E8(s32 arg0, s32 arg1) {
-    /* Base-copy staging with the `arg0 = 0;` FAKE below makes GCC stage arg0
-     * through $s0 first ($s0=$a0; $s2=$s0), as in the target. */
+void func_800481E8(u32 *p, s32 arg1) {
     /* FAKE: unwritten volatile pad reproduces the target's untouched 32-byte
      * locals region (sp+0x18..0x37), as the FAKE pads of gpu_LoadTimGroup /
      * gpu_LoadTimGroupOffset (phantom-frame pad; without it: score 10). SOTN
@@ -1167,18 +1148,11 @@ void func_800481E8(s32 arg0, s32 arg1) {
      * // !FAKE:` (src/st/sel/2C048.c:564), `volatile u32 pad[4]; // FAKE`
      * (src/st/sel/stream.c:80). */
     volatile u32 pre_pad[8];
-    u32 *p;
     u32 *base;
     s32 count;
     s32 var_4;
-    p = (u32 *)arg0;
     base = p;
-    /* FAKE: dead store to a param -- breaks the $a0==base association:
-     * without it GCC keeps arg0 live in $a0 and emits `addu $s0,$a0,$v0`;
-     * with it the second pointer binds to base in $s2, as in the target;
-     * without it: score 1. */
-    arg0 = 0;
-    p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
+    p += (s16)arg1;
     p = (u32 *)((s32)base + (((*p) >> 2) << 2));
     count = *(p++);
     if (count != 0) {
