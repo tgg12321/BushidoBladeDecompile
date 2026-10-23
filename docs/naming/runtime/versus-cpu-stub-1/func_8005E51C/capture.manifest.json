@@ -1,0 +1,360 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "61cf91c1a3159b40a8418e1a43bf5230f65fc2b8",
+      "size": 90476
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "16ff631c33cf0759335cd4c52a7d0d018dcde047",
+      "size": 26395
+    }
+  },
+  "git": {
+    "head": "b6747bbe8f779fae095a08a14f728faf42827e21",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "tools/trace/gdbtrace.py",
+    "run",
+    "--spec",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\spec.json",
+    "--out",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--emulator",
+    "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--bios",
+    "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+    "--cue",
+    "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+    "--portable-dir",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\redux-portable"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.map",
+      "sha1": "7ac1a1c965b06c897672d5cfd53118b50a31acfb",
+      "size": 399926
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.elf",
+      "sha1": "7f75416e71dc589a3e62e4226dbc081d272ea9a5",
+      "size": 850928
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\spec.json",
+    "sha1": "427f2d70c459259a989a5a2eb119ee580ad92626",
+    "size": 2996
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line",
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\redux-portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2345",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-bios",
+      "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.script.lua",
+      "sha1": "a8692a5f062926a429a9ddcfb2271f68165f4929",
+      "size": 5171
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 3,
+    "ambiguous_stops": 0,
+    "stubs": [
+      {
+        "at": "func_8005E51C",
+        "addr": 2147869980,
+        "when": "fight",
+        "ret": 0,
+        "words": "0800e00300000224",
+        "orig": "e8ffbd271000bfaf",
+        "applied": {
+          "frame": 8350,
+          "pc": 2148018824,
+          "ok": true,
+          "mid_stub": false
+        },
+        "at_end": "intact"
+      }
+    ],
+    "modified_game": "stubbed functions: hits and screenshots after a stub went in are from a modified game; cite with `compare` only",
+    "exe_changed_by_run": [
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1",
+      "0x8005E51C+5",
+      "0x8005E522+2"
+    ]
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.jsonl",
+      "sha1": "5d003ee01a4d941fc0e7c6a5ca51ab64be2eb8bf",
+      "size": 6174
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.top_menu.first.png",
+      "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
+      "size": 31550
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.top_menu.last.png",
+      "sha1": "57796f5581d020994b86527d04ce6154a42aff56",
+      "size": 29577
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.char_select.first.png",
+      "sha1": "12650dd73302791d6a75641d19b06d87746a5997",
+      "size": 20117
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.char_select.last.png",
+      "sha1": "2fb06c65e4209755a1cee5aff2b086341bf38fe2",
+      "size": 20796
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.weapon_select.first.png",
+      "sha1": "667c1ffaf2241b7013b0e9ad188224737f5c1d01",
+      "size": 19627
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.weapon_select.last.png",
+      "sha1": "8a0d4d9964d165274144ee5d6a06a0befc0947d0",
+      "size": 20381
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.t_load.mid.png",
+      "sha1": "f138c2114b0116972866751ca74fc598a0950654",
+      "size": 9152
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.fight.8350.png",
+      "sha1": "3854ff364f140c427352e83df9738d212b2daabd",
+      "size": 29906
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.fight.8410.png",
+      "sha1": "15066b9eb412e1e8b54233fb7c34d69a5b5edcbc",
+      "size": 29257
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.fight.8470.png",
+      "sha1": "a9e7277cb2e1253c8eb72bcab9ff0dff2e6f75b0",
+      "size": 35592
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.fight.8530.png",
+      "sha1": "cded678298ffad9175cd934aa75a9d687131ee02",
+      "size": 39250
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.fight.8590.png",
+      "sha1": "45abe8187ea8df64398c081127bac16b446dcc52",
+      "size": 39025
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.fight.last.png",
+      "sha1": "01b6a0bc37db0d1d59549ceff9a4c6d5d48b5114",
+      "size": 43175
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.after_ko.first.png",
+      "sha1": "fc35620e516e01f5bf43aa60ae529881bdd71839",
+      "size": 43227
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.after_ko.last.png",
+      "sha1": "75a8bc2d76dd6b295a1bd40969860c4d55e75c5f",
+      "size": 49700
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.script.log",
+      "sha1": "5acecb4ad23369a640984adb50464a6e22e38be7",
+      "size": 1429
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-cpu-stub-1\\func_8005E51C\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    }
+  ]
+}
