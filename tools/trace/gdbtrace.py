@@ -90,30 +90,47 @@ DEBUG = bool(os.environ.get("GDBTRACE_DEBUG"))  # log every packet to stderr
 # ----------------------------------------------------------------- symbols
 
 class Symbols:
-    """Address <-> name from a GNU ld map (`0xADDR   name` lines)."""
+    """Address <-> name for the matching build.
 
-    LINE = re.compile(r"^\s+0x([0-9a-fA-F]{8,16})\s+([A-Za-z_.$][\w.$]*)\s*$")
+    Sources, all merged: the GNU ld map's symbol lines (`0xADDR  name`) and
+    linker assignments (`0xADDR  name = ...`, e.g. pinned names), plus the
+    ELF symbol table next to it (`bb2.elf`), which alone has `static`
+    functions/objects and symbol sizes. With a size, an address past the
+    end of a symbol prints raw instead of being credited to it."""
 
-    def __init__(self, path: str | None):
+    LINE = re.compile(r"^\s+0x([0-9a-fA-F]{8,16})\s+([A-Za-z_.$][\w.$]*)"
+                      r"\s*(?:=.*)?$")
+
+    def __init__(self, path: str | None, elf: str | None = None):
         self.by_name: dict[str, int] = {}
+        self.size: dict[str, int] = {}
         pairs = []
+
+        def add(addr, name, size=0):
+            addr &= 0xFFFFFFFF
+            if not RAM_LO <= addr < RAM_HI:
+                return
+            # INCLUDE_ASM bodies also emit a `<name>.NON_MATCHING` alias at
+            # the same address; keep the plain name.
+            name = name.removesuffix(".NON_MATCHING")
+            if size:
+                self.size[name] = max(size, self.size.get(name, 0))
+            if name in self.by_name:
+                return
+            self.by_name[name] = addr
+            pairs.append((addr, name))
+
         if path and os.path.exists(path):
             with open(path, encoding="utf-8", errors="replace") as f:
                 for line in f:
                     m = self.LINE.match(line)
-                    if not m:
-                        continue
-                    addr = int(m.group(1), 16) & 0xFFFFFFFF
-                    name = m.group(2)
-                    if not RAM_LO <= addr < RAM_HI:
-                        continue
-                    # INCLUDE_ASM bodies also emit a `<name>.NON_MATCHING`
-                    # alias at the same address; keep the plain name.
-                    name = name.removesuffix(".NON_MATCHING")
-                    if name in self.by_name:
-                        continue
-                    self.by_name[name] = addr
-                    pairs.append((addr, name))
+                    if m:
+                        add(int(m.group(1), 16), m.group(2))
+        if elf is None and path:
+            elf = os.path.join(os.path.dirname(path), "bb2.elf")
+        if elf and os.path.exists(elf):
+            for addr, name, size in elf_symbols(elf):
+                add(addr, name, size)
         pairs.sort()
         self.addrs = [a for a, _ in pairs]
         self.names = [n for _, n in pairs]
@@ -134,17 +151,56 @@ class Symbols:
         raise SystemExit(f"gdbtrace: unknown symbol {text!r} (map: {self.path})")
 
     def name(self, addr: int) -> str:
-        if 0xA0000000 <= addr < 0xA0200000 or addr < 0x00200000:
-            addr = RAM_LO | (addr & 0x1FFFFFFF)  # KSEG1 / physical alias
+        if 0xA0000000 <= addr < 0xA0200000:  # KSEG1 alias (small ints stay raw)
+            addr = RAM_LO | (addr & 0x1FFFFFFF)
         if not RAM_LO <= addr < RAM_HI:
             return f"0x{addr:08X}"
         i = bisect.bisect_right(self.addrs, addr) - 1
         if i < 0:
             return f"0x{addr:08X}"
+        # Among names at the same address prefer one with a known size.
+        j = i
+        while j > 0 and self.addrs[j - 1] == self.addrs[i]:
+            j -= 1
+        cands = [k for k in range(j, i + 1) if self.names[k] in self.size]
+        if cands:
+            i = cands[0]
         off = addr - self.addrs[i]
+        size = self.size.get(self.names[i])
+        if size and off >= size:  # inside no known object: say so
+            return f"0x{addr:08X}"
         if off > MAX_SYM_OFF:  # past the last object: heap, stack, overlay
             return f"0x{addr:08X}"
         return self.names[i] if off == 0 else f"{self.names[i]}+0x{off:X}"
+
+
+def elf_symbols(path: str):
+    """(value, name, size) of FUNC/OBJECT symbols, locals included, from a
+    32-bit little-endian ELF (stdlib only)."""
+    import struct
+    with open(path, "rb") as f:
+        data = f.read()
+    if data[:4] != b"\x7fELF" or data[4] != 1 or data[5] != 1:
+        return []
+    shoff, = struct.unpack_from("<I", data, 0x20)
+    shentsize, shnum = struct.unpack_from("<HH", data, 0x2E)
+    secs = [struct.unpack_from("<10I", data, shoff + i * shentsize)
+            for i in range(shnum)]
+    out = []
+    for sh in secs:
+        if sh[1] != 2:  # SHT_SYMTAB
+            continue
+        strtab = secs[sh[6]]
+        s_off = strtab[4]
+        for k in range(sh[5] // 16):
+            st_name, value, size, info, _, _ = struct.unpack_from(
+                "<IIIBBH", data, sh[4] + 16 * k)
+            if info & 0xF not in (1, 2) or not st_name:  # OBJECT, FUNC
+                continue
+            end = data.index(b"\0", s_off + st_name)
+            out.append((value, data[s_off + st_name:end].decode("latin-1"),
+                        size))
+    return out
 
 
 # ------------------------------------------------------------ gdb protocol
@@ -305,11 +361,14 @@ def phys(addr: int) -> int:
     return addr & 0x1FFFFFFF
 
 
+UNALIGNED_OPS = {0x22, 0x26, 0x2A, 0x2E}  # lwl lwr swl swr
+
+
 def decode_access(gdb: Gdb, regs: list[int], pc: int):
-    """The load/store a watchpoint stop was raised for. Some stubs
-    (PCSX-Redux) send a bare T05 with no `watch:` address, so look at the
+    """Candidate load/stores a watchpoint stop was raised for. Some stubs
+    (PCSX-Redux) send a bare T05 with no `watch:` address, so decode the
     instruction at pc, then pc-4 (stubs differ on stopping before or after
-    it). Returns (insn_pc, addr, width, is_store, stored_value) or None."""
+    it). Yields (insn_pc, addr, width, is_store, stored_value)."""
     for at in (pc, pc - 4):
         try:
             insn = int.from_bytes(gdb.mem(at, 4), "little")
@@ -324,10 +383,11 @@ def decode_access(gdb: Gdb, regs: list[int], pc: int):
         imm -= 0x10000 if imm & 0x8000 else 0
         addr = (regs[base] + imm) & 0xFFFFFFFF
         value = None  # swc2 stores a GTE register, not GPR rt
-        if store and op != 0x3A:
+        if op in UNALIGNED_OPS:
+            addr &= ~3  # touches part of the aligned word; value is partial
+        elif store and op != 0x3A:
             value = regs[rt] & ((1 << (8 * width)) - 1)
-        return at, addr, width, store, value
-    return None
+        yield at, addr, width, store, value
 
 
 def resolve_dump(syms: Symbols, regs: list[int], d: dict) -> int:
@@ -355,7 +415,7 @@ def snapshot(gdb: Gdb, syms: Symbols, regs: list[int], dumps: list[dict]):
 
 
 def run(args) -> int:
-    syms = Symbols(args.map)
+    syms = Symbols(args.map, args.elf)
     with open(args.spec, encoding="utf-8") as f:
         spec = json.load(f)
 
@@ -374,7 +434,7 @@ def run(args) -> int:
                 print("gdbtrace: emulator left running; DuckStation may save "
                       "EnableGDBServer = true when you close it")
             else:
-                stop_emulator(proc, args.port)
+                stop_emulator(proc, getattr(proc, "stub_pid", None))
                 restore()
 
 
@@ -442,18 +502,22 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             # Our own ^C can land on any load/store; never a watch hit.
             return None, None
         m = re.search(r"(?:watch|rwatch|awatch):([0-9a-fA-F]+)", reply)
-        acc = decode_access(gdb, regs, pc)
-        a = int(m.group(1), 16) if m else (acc[1] if acc else None)
-        if a is None:
-            return None, acc
-        for e in watches:
-            n = acc[2] if acc else 1
-            if acc and e["kind"] != 4 and acc[3] != (e["kind"] == 2):
-                continue  # a load under a write watch, or vice versa
-            if (phys(a) < phys(e["addr"]) + e["len"]
-                    and phys(e["addr"]) < phys(a) + n):
-                return e, acc
-        return None, acc
+        reported = int(m.group(1), 16) if m else None
+        cands = list(decode_access(gdb, regs, pc))
+        # The access is the candidate whose own address overlaps a watch of
+        # its kind (and the stub's reported address, when it sends one).
+        for acc in cands:
+            a, n = acc[1], acc[2]
+            if reported is not None and not (
+                    phys(a) <= phys(reported) < phys(a) + n):
+                continue
+            for e in watches:
+                if e["kind"] != 4 and acc[3] != (e["kind"] == 2):
+                    continue  # a load under a write watch, or vice versa
+                if (phys(a) < phys(e["addr"]) + e["len"]
+                        and phys(e["addr"]) < phys(a) + n):
+                    return e, acc
+        return None, (cands[0] if cands else None)
 
     try:
         while events < max_events and time.time() - t0 < duration:
@@ -552,11 +616,12 @@ def check_port_free(host: str, port: int):
                      f"(pid {port_owner(port)}); stop it or pick --port")
 
 
-def stop_emulator(proc, port: int):
+def stop_emulator(proc, stub_pid: int | None):
     """PCSX-Redux's pcsx-redux.exe is a launcher for pcsx-redux.main, so
-    killing the Popen child is not enough: kill whoever owns the stub port,
+    killing the Popen child is not enough: kill the process that opened the
+    stub port (recorded at launch, when the port was known to be ours),
     then the launcher's tree."""
-    pids = [port_owner(port), proc.pid]
+    pids = [stub_pid, proc.pid]
     for pid in pids:
         if not pid:
             continue
@@ -603,9 +668,15 @@ def launch_redux(args):
         cmd += ["-bios", os.path.abspath(args.bios)]
     # cwd: its crash reporter writes .sentry-native/ into the working dir.
     proc = subprocess.Popen(cmd, cwd=portable)
-    wait_for_stub(proc, args.host, args.port, args.connect_timeout, "PCSX-Redux")
-    if args.boot_wait:
-        time.sleep(args.boot_wait)
+    try:
+        wait_for_stub(proc, args.host, args.port, args.connect_timeout,
+                      "PCSX-Redux")
+        proc.stub_pid = port_owner(args.port)
+        if args.boot_wait:
+            time.sleep(args.boot_wait)
+    except BaseException:
+        stop_emulator(proc, port_owner(args.port))
+        raise
     return proc, lambda: None
 
 
@@ -664,16 +735,6 @@ def launch_duckstation(args):
 
     patched = set_ini_key(text, "Debug", "EnableGDBServer", "true")
     patched = set_ini_key(patched, "Debug", "GDBServerPort", str(args.port))
-    try:
-        with open(ini, "wb") as f:
-            f.write(patched.encode("utf-8"))
-        proc = subprocess.Popen([exe, "-batch", "-fastboot", "--",
-                                 os.path.abspath(args.cue)])
-        wait_for_stub(proc, args.host, args.port, args.connect_timeout,
-                      "DuckStation")
-    finally:
-        with open(ini, "wb") as f:
-            f.write(original)
 
     def restore():
         # DuckStation may rewrite settings.ini from memory (stub on); put the
@@ -690,8 +751,28 @@ def launch_duckstation(args):
             with open(ini, "wb") as f:
                 f.write(fixed.encode("utf-8"))
 
-    if args.boot_wait:
-        time.sleep(args.boot_wait)
+    proc = None
+    try:
+        try:
+            with open(ini, "wb") as f:
+                f.write(patched.encode("utf-8"))
+            proc = subprocess.Popen([exe, "-batch", "-fastboot", "--",
+                                     os.path.abspath(args.cue)])
+            wait_for_stub(proc, args.host, args.port, args.connect_timeout,
+                          "DuckStation")
+            proc.stub_pid = port_owner(args.port)
+        finally:
+            with open(ini, "wb") as f:
+                f.write(original)
+        if args.boot_wait:
+            time.sleep(args.boot_wait)
+    except BaseException:
+        # Never leave a stub-enabled DuckStation behind: it could write
+        # EnableGDBServer = true back when it exits.
+        if proc is not None:
+            stop_emulator(proc, port_owner(args.port))
+            restore()
+        raise
     return proc, restore
 
 
@@ -728,7 +809,7 @@ def describe_words(syms: Symbols, samples: list[list[int]], label):
 
 
 def report(args) -> int:
-    syms = Symbols(args.map)
+    syms = Symbols(args.map, args.elf)
     hits = collections.defaultdict(list)
     polls = collections.defaultdict(list)
     start = end = None
@@ -792,11 +873,13 @@ def report(args) -> int:
                 w.append(f"| {name} | {len(c)} | {vals} |")
             w.append("")
         dumps = collections.defaultdict(list)
+        dump_addr = {}
         for r in recs:
             for d in r.get("dump", []):
                 if "hex" in d:
-                    dumps[json.dumps(d["spec"], sort_keys=True)].append(
-                        u32s(d["hex"]))
+                    key = json.dumps(d["spec"], sort_keys=True)
+                    dumps[key].append(u32s(d["hex"]))
+                    dump_addr.setdefault(key, d["addr"])
         for key, samples in dumps.items():
             d = json.loads(key)
             base = d.get("base", "?")
@@ -809,8 +892,7 @@ def report(args) -> int:
             if base in REG_INDEX:  # struct member offsets from the register
                 label = lambda o, b=base, x=off: f"{b}+0x{x + o:02X}"
             else:  # a global: name each word's own address
-                at0 = (syms.addr(base) + off) & 0xFFFFFFFF
-                label = lambda o, a=at0: syms.name(a + o)
+                label = lambda o, a=dump_addr[key]: syms.name(a + o)
             w += describe_words(syms, samples, label)
             w.append("")
     for at, recs in polls.items():
@@ -824,10 +906,13 @@ def report(args) -> int:
                             lambda o, a=at0: syms.name(a + o))
         w.append("")
     if start:
-        seen = {at for at, _ in hits}
+        seen = set(hits)
         spec = start.get("spec", {})
-        idle = [b["at"] for b in spec.get("breakpoints", []) + spec.get("watch", [])
-                if b["at"] not in seen]
+        armed = [(b["at"], 0) for b in spec.get("breakpoints", [])] + [
+            (b["at"], WATCH_KIND[b.get("kind", "write")])
+            for b in spec.get("watch", [])]
+        idle = [at if k == 0 else f"{at} (Z{k} watch)"
+                for at, k in armed if (at, k) not in seen]
         if idle:
             w.append("## Armed, never hit in this scenario")
             w.append("")
@@ -851,6 +936,8 @@ def main(argv=None) -> int:
     r.add_argument("--spec", required=True)
     r.add_argument("--out", required=True)
     r.add_argument("--map", default=default_map)
+    r.add_argument("--elf", help="ELF for statics/sizes (default: bb2.elf "
+                   "next to the map)")
     r.add_argument("--host", default="127.0.0.1")
     r.add_argument("--port", type=int, default=2345)
     r.add_argument("--duration", type=float, default=60.0,
@@ -872,6 +959,8 @@ def main(argv=None) -> int:
     p = sub.add_parser("report", help="summarize a trace as markdown evidence")
     p.add_argument("trace")
     p.add_argument("--map", default=default_map)
+    p.add_argument("--elf", help="ELF for statics/sizes (default: bb2.elf "
+                   "next to the map)")
     p.add_argument("--context", help="one line: what the run exercised")
     p.add_argument("--out")
 

@@ -412,9 +412,9 @@ re-derives the RENAME actions from there on regen.
 `tools/trace/gdbtrace.py` arms breakpoints, write/read watchpoints and memory polls in a running
 emulator over the GDB protocol and writes a JSONL trace; `gdbtrace.py report` turns it into a
 markdown evidence note: call sites, argument values, struct fields constant vs varying, and the
-instruction plus value of every write to a watched global. Tested backend: PCSX-Redux (interpreter
+load/store (with the value stored) behind each watchpoint stop. Tested backend: PCSX-Redux (interpreter
 core, launched by `run --launch pcsx-redux`); spec format and usage are in its docstring. Symbols
-come from `build/bb2.map`, so trace only a build whose SHA1 is the oracle. A trace shows what one
+come from `build/bb2.map` and `build/bb2.elf` (statics), so trace only a build whose SHA1 is the oracle. A trace shows what one
 scenario did, never everything a function can do: cite it with the scenario it ran.
 
 > **Trimmed 2026-10-01:** stale audits/plans (REMAINING_DATA_CATALOG, LEGACY_RENAMER_AUDIT, LONG_TERM_DX_PROMOTION_FIX, header-type/memory-project/proposals audits, ADDENDUM-APPLY-PLAN, naming-verification-2026-08-18, RODATA_CATALOG/RECORD_SCHEMA, charptr_functions), libscan reports (manifest_report, near/data verifier reports, callee_web, data_candidates) and generated views (suspect-list → `tmp/suspect-list.md` via build_suspect_list.py) resolve at git tag `pre-slim-2026-10-01`.
