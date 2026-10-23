@@ -2174,12 +2174,10 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
     return var_s1;
 }
 
-extern s16 D_80099CC2;
-
 void func_80049E1C(void) {
     s16 val = -1;
     s32 i = 0x39;
-    s16 *p = &D_80099CC2;
+    s16 *p = &D_80099C50[0x39];
     do {
         *p = val;
         i--;

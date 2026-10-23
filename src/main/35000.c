@@ -794,7 +794,7 @@ void func_80046048(s32 a0, s32 a1) {
     } while (count != -1);
 }
 
-/* .data 0x800955E0..0x80099478 (32D04.c's D_80095588 precedes, 368E4.c's
+/* .data 0x800955E0..0x80099478 (32D04.c's D_80095588 precedes, d_89C78.c's
  * D_80099478 follows), in address order: D_800955E0, the 899 NDATA asset path
  * pointers into d_15EC.c's pool (D_80010DEC, its strings in reverse address
  * order; no code reads them, docs/formats/NDATA.md); the NDATA.INF sector

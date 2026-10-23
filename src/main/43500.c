@@ -646,7 +646,7 @@ void func_800548DC(void) {
     motion_FreePlaybackBlock();
 }
 
-/* .data 0x80099D54..0x80099D88, this file's whole .data (368E4.c's
+/* .data 0x80099D54..0x80099D88, this file's whole .data (d_89C78.c's
  * D_80099D3C ends at 0x80099D54; 4510C.c's D_80099D88 follows):
  * per-entry base sequence ids (-1: none); func_80054884 starts sequence
  * D_80099D54[a0] + a1 - 0x131. The final 0 fills the 0x34 bytes to D_80099D88.
