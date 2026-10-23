@@ -1630,7 +1630,7 @@ s32 comb_WriteWaitCallback(s32 a0, u32 a1) {
     return 1;
 }
 
-s32 comb_Write8(void) {
+s32 comb_Write8(void *buf) {
     s32 s1;
     s32 s0;
 
@@ -1747,8 +1747,6 @@ s32 math_Popcount32(u32 arg0) {
 
 extern s32 D_800A36D0;
 
-typedef s32 (*FuncBufType)(void *);
-
 /* Clears g_comb_wait_state while D_800A320C is 0. Otherwise packs bits of
  * D_800A38A0, g_comb_close_request and g_comb_wait_state, a0->type[0] and the
  * low half of a0->held into g_comb_send_buf, puts D_800A37C4 and a 16-bit xor
@@ -1794,7 +1792,7 @@ void comb_ExchangePad(PadState *a0) {
             if (var_4 == 0) {
                 comb_Read8();
             } else {
-                if (((FuncBufType)comb_Write8)(&g_comb_send_buf) == 0) {
+                if (comb_Write8(&g_comb_send_buf) == 0) {
                     comb_Abort();
                     return;
                 }
@@ -1816,7 +1814,7 @@ void comb_ExchangePad(PadState *a0) {
                     return;
                 }
             }
-            if (((FuncBufType)comb_Write8)(&g_comb_send_buf) == 0) {
+            if (comb_Write8(&g_comb_send_buf) == 0) {
                 comb_Abort();
                 return;
             }
