@@ -1,0 +1,1 @@
+{"func": "func_80049E1C", "addr": "80049E1C", "verdict": "PASS", "body_hash": "ae4e15c2d59c39be", "body_kind": "c", "file": "main/368E4", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-23T03:04:41Z", "head": "662be06b3", "notes": "&D_80099CC2 -> &D_80099C50[0x39]: one 58-entry s16 array covered by both readers; no cheat constructs"}
