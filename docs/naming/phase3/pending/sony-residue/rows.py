@@ -1,0 +1,71 @@
+"""sony-residue rows (function wave): the one Sony library static that Codex's residue research
+(tmp/codex/sony-residue-research.md) could name, func_800831A4 -> memclr (PsyQ 4.0 LIBETC INTR
+static, SOTN spelling). 1 RENAME. Data rows (74 D_ symbols) are out of scope (all NO_NAME).
+
+NO_NAME (stay neutral, no verbatim identity or boundary-only; function addresses only):
+0x800790A4 0x80084CC0 0x800858D0 0x80086130 0x80087770 0x8008B488.
+"""
+
+VERDICT = "CONFIRM"
+VERIFIER_NOTE = 'naming-reviewer pre-apply (round 1, 1/1): memclr PASS. N3 tier 1: libscan places the PsyQ 4.0 INTR OBJ local symbol memclr at exactly 0x800831A4 (libsyms.json:3006, offset+placement, manifest.py:238); tier 2 SOTN libetc/intr.c:25/85/195 same routine and call. All 5 uses agree (one caller zeroes 0x41A words of intrEnv); no collision (siblings are sys_MemClear / sys_MemClear2). The single-TU rejection premise (sweep-2026-09-25:112) is gone. LAND notes: naming_wave cannot reach the address (no census row: .globl inside trapIntr.s); apply by hand with keycheck pairs exactly func_800831A4=memclr, including asm/funcs/SetIntrMask.s:31 and trapIntr.s:305-306; intr.c:40 comment becomes redundant; leave intr_vb.c:2 / intr_dma.c:2.'
+
+FUNCS = [
+    ('0x800831A4', 'memclr', 'RENAME',
+     "BODY src/main/psxsdk/libetc/intr.c:224-230: void func_800831A4(u16 *ptr, s32 size) casts ptr to s32 *, "
+     "then for (i = size - 1; i != -1; i--) stores 0 and advances one word; asm/funcs/trapIntr.s:306-326 "
+     "(inline body, jr ra at 0x800831C8, nop at 0x800831CC) skips on a1 == 0. It zeroes `size` 32-bit words "
+     "at ptr and returns nothing; the sole caller startIntr (intr.c:109) passes &intrEnv and 0x41A, the "
+     "word count of the 0x1068-byte intrEnv_t (intr.c:32 comment). "
+     "EVIDENCE (re-read): docs/naming/libscan/matches.json:2289-2299 LIBETC/INTR, 452 words, status "
+     "\"verbatim\", single vaddr 0x80082AC0 (module end 0x800831D0); 0x80082AC0 + 0x6E4 = 0x800831A4. "
+     "docs/naming/libscan/libsyms.json:3004-3012 key \"0x800831A4\": name \"memclr\", kind \"static\", lib "
+     "LIBETC, mod INTR, mod_start 0x80082AC0, mod_end 0x800831D0. docs/naming/libscan/rename_manifest.csv:294: "
+     "\"0x800831A4,func_800831A4,,,memclr,INTR,LIBETC,0x80082AC0,libscan-verbatim,MODULE_LOCAL_STATIC,True,"
+     "...,OBJ local symbol memclr (module-local static, NOT an exported name); propose nothing\" (no "
+     "proposal made there because three modules share the name inside one TU, see COUNTER-EVIDENCE). "
+     "SOTN (C:/Users/Trenton/Desktop/sotn-decomp, db41b28) src/main/psxsdk/libetc/intr.c:25 `static void "
+     "memclr(void* ptr, size_t size);`, :85 `memclr(&intrEnv, sizeof(intrEnv) / sizeof(s32));`, :195 the "
+     "definition (while (size--) *e++ = 0). Same routine, same call, same argument. "
+     "WHY: library-identity (N3 tier 1, Sony's own local symbol name from the PsyQ 4.0 INTR OBJ, "
+     "corroborated by tier 2 SOTN spelling); the verb/noun is Sony's, not ours. The body clears words, "
+     "which memclr (memory clear) covers entirely. "
+     "COUNTER-EVIDENCE: (1) Siblings in the same library, intr_vb.c:47 and intr_dma.c:70, carry Sony's "
+     "same local name memclr but are landed as sys_MemClear / sys_MemClear2 (sweep-2026-09-25/func_manifest.csv:112-113, "
+     "computation-restatement) because the earlier rejection (rejected/lib_followups.md:16-18, file gone; "
+     "quoted at sweep-2026-09-25/func_manifest.csv:112) held that the three copies sat in one TU (src/ings2.c) "
+     "so a bare memclr could name only one and suffixes would be an invented spelling. That premise is "
+     "gone: the TUs are split (intr.c / intr_vb.c / intr_dma.c, Q106), each Sony module holds exactly one. "
+     "SOTN itself names the three memclr (intr.c:195, static), DMA_memclr (intr_dma.c:63) and "
+     "VSync_memclr (intr_vb.c:45), so the BB2 sibling names are not SOTN's; the plain memclr is SOTN's "
+     "name for this very routine, so it is the exact corresponding spelling. The sibling names remain "
+     "valid restatements (no change to them proposed). Residual inconsistency: sibling comments at "
+     "intr_vb.c:2 and intr_dma.c:2 describe their function as 'the module's memclr, sys_MemClear[2]', "
+     "which stays true. (2) Link clash: Sony's memclr is a module-local static, BB2 defines it with external "
+     "linkage (void func_800831A4(...), intr.c:224; no `static`), so the new name becomes a global "
+     "symbol. grep -w memclr over asm/, src/, include/, bb2.ld, Makefile, tools/, engine/, named_syms.txt, "
+     "symbol_addrs.txt, undefined_syms_auto.txt: the only hits are the three prose mentions in intr.c:1,32,40,223 "
+     "and intr_vb.c:2 / intr_dma.c:2 comments; no definition, no extern, no libc memclr in the link (the "
+     "other 4.0 libs here define no memclr XDEF; libsyms.json lists only the three INTR statics at "
+     "0x800831A4 / 0x8008339C / 0x80083644). No clash. (3) The census (docs/naming/function-names.csv) has "
+     "NO row for 0x800831A4: its body is an inline block inside asm/funcs/trapIntr.s (comment 'Inline "
+     "function at 0x800831A4 (bzero-like, not recognized by splat)', .globl, not a glabel), so "
+     "tools/naming_wave.py --from-census may be unable to address it (see dry.txt). "
+     "HOMES / USES (every occurrence of func_800831A4 outside historical/sweep csvs and generated "
+     "files): src/main/psxsdk/libetc/intr.c:40 declaration `void func_800831A4(); /* memclr, defined "
+     "below; called with &intrEnv */`; src/main/psxsdk/libetc/intr.c:109 call `func_800831A4(&intrEnv, "
+     "0x41A)` in startIntr; src/main/psxsdk/libetc/intr.c:224 definition (comment at :223 `/* memclr "
+     "(LIBETC intr.c) */`); asm/funcs/SetIntrMask.s:31 `jal func_800831A4` (stale per-function asm; "
+     "intr.c has no INCLUDE_ASM); asm/funcs/trapIntr.s:305 `.globl func_800831A4` and :306 label (same "
+     "stale file). Registries: named_syms.txt, symbol_addrs.txt, undefined_syms_auto.txt, bb2.ld and "
+     "every *.txt pipeline list have no occurrence of func_800831A4 or 800831A4; docs registries that "
+     "mention it: docs/naming/libscan/libsyms.json:3004, docs/naming/libscan/rename_manifest.csv:294, "
+     "docs/naming/apiscan/evidence.json:1486 (SetIntrMask other_callees), docs/foundation/backlog.tsv:12 "
+     "('memclr func_800831A4 declared unprototyped: libetc intr'), docs/naming/phase3/backlog.tsv:21, "
+     "docs/naming/phase3/wave19/data_manifest.csv:14 (prose), docs/naming/sweep-2026-09-25/func_manifest.csv:112 "
+     "(prose, follow-up note 'the third copy 0x800831A4 stays func_'). Every use agrees: one caller, "
+     "zeroing 0x41A words of the freshly declared intrEnv before setjmp. "
+     "FRESH: no `memclr` identifier exists in src/ or include/ once comments are stripped (comment-only "
+     "hits at intr.c:1,32,40,223, intr_vb.c:2, intr_dma.c:2)."),
+]
+
+DATA = []

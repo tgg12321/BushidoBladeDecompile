@@ -1,0 +1,12 @@
+sony-residue dry run (naming-a, 2026-10-23), dry.sh:
+rc=2
+FATAL: no operations to perform
+
+Cause: docs/naming/build_census.py enumerates functions from asm/funcs glabels; 0x800831A4 is an
+inline body inside asm/funcs/trapIntr.s:305-306 (.globl, not glabel), so docs/naming/function-names.csv
+has no row for it and tools/naming_wave.py --from-census cannot address it. The siblings
+sys_MemClear (0x8008339C) and sys_MemClear2 (0x80083644) are glabels and have census rows (:1322, :1324).
+Live surfaces (re-derived): src/main/psxsdk/libetc/intr.c:40 declaration, :109 call, :224 definition;
+asm/funcs/SetIntrMask.s:31 jal and asm/funcs/trapIntr.s:305-306 label (both files unreferenced by
+any INCLUDE_ASM; intr.c is fully C). No registry (named_syms.txt, symbol_addrs.txt, pipeline *.txt)
+keys the name. The LAND unit must apply by hand or after a census/tooling fix.
