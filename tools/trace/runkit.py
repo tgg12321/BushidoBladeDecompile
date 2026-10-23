@@ -22,8 +22,13 @@ on frames 1..end_frame, a phase may also start at frame 0):
     "screenshots": [{"frame": 1400, "name": "title"}]
   }
 Buttons: SELECT START UP RIGHT DOWN LEFT L1 R1 L2 R2 TRIANGLE CIRCLE CROSS
-SQUARE (pad 1 of slot 1). A press holds for `hold` frames (default 4,
-at least 1); holds of one button need a released frame between them.
+SQUARE. An input goes to pad 1 (slot 1) unless it has "pad": 2 (slot 2:
+the 2P controller: -safe leaves it unplugged, so a script with a pad 2
+input plugs it in (PCSX.settings.pads[2].Connected) before the CPU
+starts, and logs `0 pad2 connected`). A press holds
+for `hold` frames (default 4, at least 1); holds of one button on one pad
+need a released frame between them. Pad 2 actions run and log as
+P2.<button> (pad 1 keeps the bare button name).
 
 The scripted emulator runs from PCSX-Redux defaults (-safe) plus the
 command line, starts held at the reset vector and only runs once the
@@ -96,6 +101,9 @@ def check_script(script: dict):
         f = frame_of(i)
         hold = i.get("hold", 4)
         press = i.get("press")
+        pad = i.get("pad", 1)
+        if isinstance(pad, bool) or pad not in (1, 2):
+            bad(f"{i}: pad must be 1 or 2")
         if not press or set(press) - BUTTONS:
             bad(f"{i}: press needs buttons from {sorted(BUTTONS)}")
         if not isinstance(hold, int) or hold < 1:
@@ -103,10 +111,11 @@ def check_script(script: dict):
         if f + hold > end:
             bad(f"{i}: the release (frame {f + hold}) is after end_frame")
         for b in press:
-            for f0, f1 in held.get(b, []):
+            for f0, f1 in held.get((pad, b), []):
                 if f <= f1 and f0 <= f + hold:  # needs a released frame
-                    bad(f"{i}: overlaps or touches another hold of {b}")
-            held.setdefault(b, []).append((f, f + hold))
+                    bad(f"{i}: overlaps or touches another hold of {b}"
+                        f" on pad {pad}")
+            held.setdefault((pad, b), []).append((f, f + hold))
     for item in script.get("phases", []) + script.get("screenshots", []):
         if not NAME_RE.fullmatch(str(item.get("name", ""))):
             bad(f"name {item.get('name')!r}: use letters, digits, _ . -")
@@ -177,6 +186,8 @@ def planned_actions(script: dict) -> list[tuple[int, str, str]]:
     acts = []
     for i in script.get("inputs", []):
         for b in i["press"]:
+            if i.get("pad", 1) == 2:
+                b = "P2." + b
             acts.append((int(i["frame"]), "press", b))
             acts.append((int(i["frame"]) + int(i.get("hold", 4)), "release", b))
     for sh in script.get("screenshots", []):
@@ -219,7 +230,7 @@ def write_lua(script: dict, out: str) -> str:
         f"local SHOT = {lua_str(os.path.abspath(companion(out, '')) + '.')}",
         "local log = io.open(LOG, 'w')",
         f"local frame, seq, cur = 0, 0, {lua_str(first_phase(script))}",
-        "local pad = PCSX.SIO0.slots[1].pads[1]",
+        "local pads = {PCSX.SIO0.slots[1].pads[1], PCSX.SIO0.slots[2].pads[1]}",
         "local B = PCSX.CONSTS.PAD.BUTTON",
         "local function L(s) log:write(frame .. ' ' .. s .. '\\n'); log:flush() end",
         "local function state(ended)",
@@ -229,8 +240,17 @@ def write_lua(script: dict, out: str) -> str:
         "  f:close()",
         "end",
         "local F = {}",
-        "function F.press(b) pad.setOverride(B[b]); L('press ' .. b) end",
-        "function F.release(b) pad.clearOverride(B[b]); L('release ' .. b) end",
+        "local function button(b)",
+        "  local n = b:match('^P2%.(.+)$')",
+        "  if n then return pads[2], B[n] end",
+        "  return pads[1], B[b]",
+        "end",
+        "function F.press(b)",
+        "  local p, k = button(b); p.setOverride(k); L('press ' .. b)",
+        "end",
+        "function F.release(b)",
+        "  local p, k = button(b); p.clearOverride(k); L('release ' .. b)",
+        "end",
         "function F.shot(name)",
         "  local s = PCSX.GPU.takeScreenShot()",
         "  local bpp = (tonumber(s.bpp) == 0) and 16 or 24",
@@ -248,8 +268,11 @@ def write_lua(script: dict, out: str) -> str:
     ]
     for frame in sorted(by_frame):
         lines.append(f"  [{frame}] = {{{', '.join(by_frame[frame])}}},")
+    lines += ["}"]
+    if any(i.get("pad", 1) == 2 for i in script.get("inputs", [])):
+        lines += ["PCSX.settings.pads[2].Connected = true",
+                  "L('pad2 connected')"]
     lines += [
-        "}",
         "state(0); L('phase ' .. cur)",
         "-- the latest pause (a breakpoint, ^C or ours): `count frame cycle`;",
         "-- an unchanged CPU cycle count means no instruction ran in between",
