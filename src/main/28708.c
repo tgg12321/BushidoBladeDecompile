@@ -842,17 +842,14 @@ s32 func_80038C70(void) {
     switch (v0) {
     case 0:
         var_3 = 0x11;
-        /* FAKE: duplicate of load_sel2's store — jump2 cross-jump re-merges it
-           (zero emitted bytes); the extra real def lifts var_1's reg_n_refs
-           priority above result's so RA lands var_1->$s2 / result->$s3
-           (target). SOTN duplicate-into-arms family; `goto load_sel2`
-           scores 13. */
+        /* each case that passes D_800A3350 to func_8006BEC4 sets var_1 in
+           its own body (cross-jump merges the stores; one shared store
+           reached by goto: score 13) */
         var_1 = D_800A3350;
         goto sel_dispatch;
     case 13:
     case 17:
         var_3 = 6;
-    load_sel2:
         var_1 = D_800A3350;
         goto sel_dispatch;
     case 1:
@@ -894,7 +891,8 @@ s32 func_80038C70(void) {
         if ((g_pad_state.pressed & 0xA000A000U) != 0) {
             D_800A3206 = 1;
         }
-        goto load_sel2;
+        var_1 = D_800A3350;
+        goto sel_dispatch;
     case 9:
     case 11:
     case9_11_sel:
