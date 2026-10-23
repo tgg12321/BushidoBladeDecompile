@@ -1524,7 +1524,11 @@ s32 func_80048AD0(s32 arg0) {
     delta = (s32)(p - base);
     D_800A33E4 = (s32)p;
     /* FAKE: q = p + 0xA, the target's second cursor (addiu a1,v1,10; stores at
-     * -8 / -6 / -9 / 0 from it); through p the cursor goes (score 11) */
+     * -8 / -6 / -9 / 0 from it). As Unk80045878Node stores (unk0 / unk1 /
+     * unk2 / unk4 / light_setup_index), no q: p[var_1] subscripts 11 (delta
+     * taken as the byte offset first 14, D_800A33E4 stored first 11), p++
+     * walk in the for header 12 (delta first 9, field order 0/1/2/4/A 12, p
+     * read back from D_800A33E4 9), delta first with p++ in the body 7 */
     q = p + 0xA;
     /* the record counter reuses `var_1` (the slot id, tested and passed to
        func_800467B8 above), the way SOTN's EntityAlucard reuses its i, a
