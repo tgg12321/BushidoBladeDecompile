@@ -1369,6 +1369,9 @@ u16 cx, cy;
         } else {
             spr->clut = 0;
         }
+        /* FAKE: the pixel-block cursor set to tim, then stepped past x / y
+         * after the spr->x / spr->y stores; `p = tim + 2` (or &tim[2]) after
+         * the stores: score 7 (Q129) */
         p = tim;
         spr->x = x;
         spr->y = y;
@@ -1530,9 +1533,9 @@ s32 func_80048AD0(s32 arg0) {
      * walk in the for header 12 (delta first 9, field order 0/1/2/4/A 12, p
      * read back from D_800A33E4 9), delta first with p++ in the body 7 */
     q = p + 0xA;
-    /* the record counter reuses `var_1` (the slot id, tested and passed to
-       func_800467B8 above), the way SOTN's EntityAlucard reuses its i, a
-       call result tested and passed on, as the next loop's counter (Q51) */
+    /* FAKE: the record counter reuses `var_1` (the slot id, tested and
+       passed to func_800467B8 above), inheriting its $a0 preference; a
+       separate counter swaps $a0/$a2 with delta: score 6 (Q129) */
     /* SOTN: src/dra/692E8.c:693 @db41b28 */
     for (var_1 = 0; var_1 < 0x11; var_1++) {
         *(s16 *)(q - 8 + var_1 * 0x68) = var_1;
@@ -1792,9 +1795,9 @@ void func_80049584(s32 arg0) {
     s16 *dst;
     s16 *src;
     s16 *p;
-    /* `i` counts both loops, then holds the pair index (a constant or
-       math_UnorderedPairIndex's result), the way SOTN's AluInit reuses its
-       loop counter i for the weapon id (Q51) */
+    /* FAKE: `i` counts both loops, then holds the pair index (a constant or
+       math_UnorderedPairIndex's result); sharing keeps the counter in $s0
+       as in the target; a separate `total`: score 12 (Q129) */
     /* SOTN: src/dra/692E8.c:299 @db41b28 */
     s32 i;
     s32 var_4;
@@ -1907,8 +1910,9 @@ void func_80049718(s32 arg0, s32 flags, s32 *pos, s16 *rot_in) {
             obj->node.xf.mat.t[1] = pos[1];
             obj->node.xf.mat.t[2] = pos[2];
         } else {
-            /* flags rewritten in place (bit 15 cleared here, set below), as
-             * SOTN rewrites its itemId parameter (Q51) */
+            /* FAKE: flags rewritten in place (bit 15 cleared here, set
+             * below); a local copy flips the $s0 allocation order: score 63
+             * (Q129) */
             /* SOTN: src/st/lib/e_shop.c:4621 @aa53500 */
             flags &= 0x7FFF;
             node_bit = flags & 1;
@@ -2067,8 +2071,8 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
     var_s3 = arg1;
     tail_off = tbl[count + 1];
     temp_a2 = tbl[2];
-    /* Ruling 4 compound-assignment split; the one-expression form
-     * var_s7 = arg0 + tail_off scores 6. */
+    /* FAKE: var_s7 built in two steps; `var_s7 = arg0 + tail_off` swaps
+     * s7 / s8: score 6 (Q129) */
     var_s7 = arg0;
     var_s7 += tail_off;
     v0 = tbl[1];
