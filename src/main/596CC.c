@@ -956,11 +956,9 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
        D_8009BC04.unk4 (scanned for the first row drawn) and .rows_on (rows
        switched on). */
     u32 row_mask;
-    /* Ruling 9: the sheet's cell array; every sheet drawn here has one 12-byte
-     * header, so the cells start at +0xC. FAKE: single-use holder of the cell
-     * table ahead of the descriptor's table store; stored directly: score 15.
-     */
-    Unk8009B400Record *var_5;
+    /* the sheet's cells, just past its 12-byte header, for s.table. Ruling 9:
+     * one meaning (s.header + 0xC) at five writes. */
+    Unk8009B400Record *cells;
     s32 yofs;
     s32 bit;
     s32 i;
@@ -1023,8 +1021,8 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
             s.y = y;
         }
         s.header = var_3[i];
-        var_5 = s.header->cells;
-        s.table = var_5;
+        cells = s.header->cells;
+        s.table = cells;
         s.sprt_out = *(s32 *)(arg0 + 0x14);
         *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(&s);
         SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
@@ -1042,8 +1040,8 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     s.x = 0;
     s.y = 0x41;
     s.header = var_3[D_800A34F8 & 0xF];
-    var_5 = s.header->cells;
-    s.table = var_5;
+    cells = s.header->cells;
+    s.table = cells;
     s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(&s);
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
@@ -1094,8 +1092,8 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     }
     s.ot_idx = 9;
     s.header = var_3[7];
-    var_5 = s.header->cells;
-    s.table = var_5;
+    cells = s.header->cells;
+    s.table = cells;
     s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(&s);
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
@@ -1123,8 +1121,8 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     s.has_color = 0;
     s.semi = 0;
     s.ot_idx = 0;
-    var_5 = s.header->cells;
-    s.table = var_5;
+    cells = s.header->cells;
+    s.table = cells;
     s.sprt_out = *(s32 *)(arg0 + 0x14);
     *(s32 *)(arg0 + 0x14) = gpu_AddSpriteCells(&s);
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
@@ -1132,6 +1130,8 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     AddPrim(g_gpu_ot_ptr, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
 
+    /* FAKE: reused: re-stores the unk_24 list var_3 already holds; dropped:
+     * score 3; read in place, or a second local: 2. */
     var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_24;
     s.header = var_3[D_800A34F8 & 0xF];
     s.scale_x = 0x200;
@@ -1141,8 +1141,8 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     s.has_color = 0;
     s.semi = 0;
     s.ot_idx = 0;
-    var_5 = s.header->cells;
-    s.table = var_5;
+    cells = s.header->cells;
+    s.table = cells;
     s.ft4_out = *(s32 *)(arg0 + 8);
     *(s32 *)(arg0 + 8) = gpu_AddScaledSpriteQuads(&s, 0);
 
