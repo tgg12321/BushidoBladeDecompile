@@ -1003,10 +1003,11 @@ s32 reloc_KeepSelectedEntries(s32 *base, s16 *offsets) {
     s32 count = 0;
     s32 *dest = (s32 *)((s32)b + b[1]);
     s32 v1;
-    s32 *var_5;
+    s32 *entries;
     s32 size;
     s32 cur_off;
     s32 ret;
+    s32 i;
 
     v1 = *offsets;
     offsets++;
@@ -1015,29 +1016,25 @@ s32 reloc_KeepSelectedEntries(s32 *base, s16 *offsets) {
         goto done;
     }
 
-    {
-        /* FAKE: constant-holder (named-local-fake-exception); the literal:
-         * score 2 */
-        s32 var_9 = -2;
-        var_5 = var_1;
-        do {
-            if (v1 >= 0) {
-                size = var_5[1];
-                cur_off = var_5[0];
-                *var_1 = (s32)dest - (s32)b;
-                var_1++;
-                count++;
-                size = size - cur_off;
-                func_800520B8((s32)b + cur_off, (s32)dest, size);
-                size = (u32)size >> 2;
-                size = size << 2;
-                dest = (s32 *)((s32)dest + size);
-            }
-            var_5++;
-            v1 = *offsets;
-            offsets++;
-        } while (v1 != var_9);
-    }
+    entries = var_1;
+    i = 0;
+    do {
+        if (v1 >= 0) {
+            size = entries[i + 1];
+            cur_off = entries[i];
+            *var_1 = (s32)dest - (s32)b;
+            var_1++;
+            count++;
+            size = size - cur_off;
+            func_800520B8((s32)b + cur_off, (s32)dest, size);
+            size = (u32)size >> 2;
+            size = size << 2;
+            dest = (s32 *)((s32)dest + size);
+        }
+        i++;
+        v1 = *offsets;
+        offsets++;
+    } while (v1 != -2);
     ret = (s32)dest;
 
 done:
