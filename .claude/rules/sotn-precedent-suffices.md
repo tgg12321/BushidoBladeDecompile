@@ -54,7 +54,8 @@ Psyz and other decompilations are not evidence. Every SOTN-admitted construct ca
   carries in the identical shape, not self-marked in Q52's sense and meeting conditions (1)-(4),
   is Sony's spelling: cite it with the `/* SOTN: */` tag; no `FAKE` label; layer-2 verifies it.
   Asked for PutDispEnv's empty then-arm (SOTN src/main/psxsdk/libgpu/sys.c:394 @db41b28). Game
-  code is not covered.
+  code is not covered. Not when SOTN labels the same construct anywhere else in that function or
+  file (SOTN's own sprintf labels one such do-while(0) and not its four siblings).
 
 A Q50 admission is not a frozen-list extension. Records: docs/grind/decisions.md 2026-09-30
 OWNER RULING — SOTN precedent suffices, and the Q51-Q53, Q55 entries.

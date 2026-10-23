@@ -109,5 +109,17 @@ global, not a literal-only tautology). Entry 16 of [[no-new-park-categories]]
 still governs conditions that leave no instruction of their own (`if (p && p)`, `if (!i) { }`).
 Asked for func_80058580's `&& var_38 == 1` and inner D_800A387C test.
 
+## Q129 — reuse/split relabels need a blind "natural C" verdict (owner, 2026-10-23)
+
+A FAKE label on a reused local (Q51, Rulings 5-12), a split statement (Ruling 4) or a
+once-written named intermediate comes off with no code change (renames count as none) only on
+a blind verdict of NATURAL to: "would a competent 1998 programmer writing it from a spec
+plausibly write it this way?" The label stays when a variable is borrowed
+for a role unrelated to its other uses, a statement is split or placed only where the compiler
+cares, or the only stated reason is a measured score. Blind reviewer: a general-purpose agent
+barred from `.claude/` and the commit's reasoning, shown the function, callers/callees and
+target asm. Commit body line: `Q129-blind: <func> <construct> natural|doubtful|contrived`.
+It is in addition to the layer-2 cheat-reviewer PASS and `layer2 record`, never instead.
+
 Related: [[no-new-park-categories]] · [[dead-store-fake-exception]] · [[judge-sole-gate]] ·
 [[review-discipline-before-commit]] · [[staged-value-reused-variable]]
