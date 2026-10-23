@@ -93,28 +93,51 @@ void softbody_LoadColliders(Unk80017FA0Rec *a0) {
 end:;
 }
 
+/* softbody_Sqrt -- integer square root of x >= 0 by the byte LUT (>> 3 below
+ * 0x400; above it the GTE LZC picks an even shift, x is replaced in place by
+ * the table byte of x >> shift, and the byte is scaled back up). */
+static inline s32 softbody_Sqrt(s32 x) {
+    /* FAKE: frame layout -- lz[0] is the live LZC output; the unwritten tail
+     * sizes the 16-byte locals region of softbody_PrepareStep's 0x30 frame
+     * (as s32 lz[1]: score 8) (dead-vars-local-array, oversized-locals) */
+    s32 lz[4];
+
+    if (x < 0x400) {
+        return g_sqrt_table_u8[x] >> 3;
+    } else {
+        s32 shift_a, shift_b;
+
+        gte_Lzc(x, &lz[0]);
+        {
+            /* Ruling 4 split; one expression: score 3. */
+            s32 lzc_even = -2;
+            lzc_even &= lz[0];
+            shift_a = 0x16 - lzc_even;
+        }
+        shift_b = shift_a >> 1;
+        /* x: the radicand, then its square-root table byte, looked up in
+         * place as SOTN's shop takes `itemId = D_us_801814D4[itemId]` (Q51);
+         * a fresh byte local: score 11 */
+        /* SOTN: src/st/lib/e_shop.c:3168 @db41b28 */
+        x = g_sqrt_table_u8[x >> shift_a];
+        return (x << 16) >> (0x13 - shift_b);
+    }
+}
+
 /* softbody_PrepareStep -- loads the GTE rotation/translation from arg0's MATRIX
  * (arg0->unk4), runs softbody_LoadColliders, writes that MATRIX's translation
  * minus the object's (arg1->matrix.t) to scratchpad, scales it by a factor
  * derived from its length (byte-LUT integer sqrt, GTE LZC above 0x400; 0x100
- * when the squared length exceeds 250000), copies the MATRIX to arg1->matrix
- * and runs softbody_SolveSprings. */
-typedef struct {
-    s32 pad[9];
-    s32 x, y, z;
-} ScrV;
-
-#define SCRV ((ScrV *)0x1F800000)
-
+ * when the squared length exceeds 250000, 0 when it is negative (overflowed)),
+ * copies the MATRIX to arg1->matrix and runs softbody_SolveSprings. */
 void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
-    /* FAKE: frame layout -- sp_tmp[0] is the live LZC output; the unwritten
-     * tail sizes the 16-byte locals region of the 0x30 frame (as s32
-     * sp_tmp[1]: score 8) (dead-vars-local-array, oversized-locals) */
-    s32 sp_tmp[4];
     s32 dx, dy, dz;
+    /* the squared length, then its square root in place, as SOTN's cloaked
+     * knight takes `distance = SquareRoot0(distance)` (Q51); a fresh root
+     * local: score 7 */
+    /* SOTN: src/st/nz1/e_cloaked_knight.c:83 @db41b28 */
     s32 sum_sq;
     s32 scale;
-    u32 lut;
 
     gte_SetRotMatrix(arg0->unk4);
     gte_SetTransMatrix(arg0->unk4);
@@ -122,11 +145,11 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     softbody_LoadColliders(arg0);
 
     dx = arg0->unk4->t[0] - arg1->matrix.t[0];
-    SCRV->x = dx;
+    SCR->dpos[0] = dx;
     dy = arg0->unk4->t[1] - arg1->matrix.t[1];
-    SCRV->y = dy;
+    SCR->dpos[1] = dy;
     dz = arg0->unk4->t[2] - arg1->matrix.t[2];
-    SCRV->z = dz;
+    SCR->dpos[2] = dz;
 
     sum_sq = (dx * dx) + (dy * dy) + (dz * dz);
 
@@ -135,31 +158,12 @@ void softbody_PrepareStep(Unk80017FA0Rec *arg0, Func80017A44Output *arg1) {
     } else if (sum_sq < 0) {
         scale = 0;
     } else {
-        /* FAKE: the LZC input staged through the still-dead `lut`, giving the
-         * target's `move $a0,$a1` in the beqz delay slot; input sum_sq, no
-         * copy: score 10 (staged-value-reused-variable) */
-        lut = sum_sq;
-        if (sum_sq < 0x400) {
-            sum_sq = (u8)(g_sqrt_table_u8[sum_sq]) >> 3;
-        } else {
-            s32 shift_a, shift_b;
-
-            gte_Lzc(lut, &sp_tmp[0]);
-            {
-                /* Ruling 4 split; one expression: score 3. */
-                s32 lzc_even = -2;
-                lzc_even &= sp_tmp[0];
-                shift_a = 0x16 - lzc_even;
-            }
-            shift_b = shift_a >> 1;
-            lut = (u8)(g_sqrt_table_u8[sum_sq >> shift_a]);
-            sum_sq = ((s32)(lut << 16)) >> (0x13 - shift_b);
-        }
+        sum_sq = softbody_Sqrt(sum_sq);
         scale = ((sum_sq << 6) / 500) + 0xC0;
     }
-    SCRV->x = (SCRV->x * scale) >> 1;
-    SCRV->y = (SCRV->y * scale) >> 1;
-    SCRV->z = (SCRV->z * scale) >> 1;
+    SCR->dpos[0] = (SCR->dpos[0] * scale) >> 1;
+    SCR->dpos[1] = (SCR->dpos[1] * scale) >> 1;
+    SCR->dpos[2] = (SCR->dpos[2] * scale) >> 1;
 
     arg1->matrix = *arg0->unk4;
     softbody_SolveSprings(arg1);

@@ -16,9 +16,9 @@
     "softbody_PrepareStep": {
       "file": "main/87A0",
       "sha256": [
+        "78cfdde9df73fd6916b4921487ae3de15f0671e90724aca8722b82e254d09e28",
         "b62d76a8485096d523094eea098f2ebe3341b964d9a99fe5eb3b114e6ce420f3",
-        "299092b3e70dea7f364484af37b2bcf6414671cc9ba676e1fb17ca047b324b22",
-        "a12120e27742dac37d5a4a2f466b33db9d8bca4a453002516b276180dbee7b88"
+        "299092b3e70dea7f364484af37b2bcf6414671cc9ba676e1fb17ca047b324b22"
       ]
     },
     "softbody_SnapToPoints": {
@@ -404,7 +404,7 @@
     "fighter_ResolveBodyOverlap": {
       "file": "main/17AFC",
       "sha256": [
-        "2f7f16231b85b4857425e569c6d174187c73af4c33a1f6e1092ba53f1139885e"
+        "26046039203cac52e0fd2716c85dede67ef02e6976cdde24fec853ddb138d5ff"
       ]
     },
     "fighter_UpdateBoneWorldData": {

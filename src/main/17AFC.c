@@ -773,6 +773,33 @@ void func_8002872C(void) {
 
 extern s32 D_800A3144[2];
 
+/* math_SqrtLut -- integer square root of x >= 0 by the byte LUT (>> 3 below
+ * 0x400; above it the GTE LZC picks an even shift, x is replaced in place by
+ * the table byte of x >> shift, and the byte is scaled back up). */
+static inline s32 math_SqrtLut(s32 x) {
+    s32 lzc_out;
+
+    if ((u32)x < 0x400) {
+        return (u32)g_sqrt_table_u8[x] >> 3;
+    } else {
+        /* Ruling 11 (reused local), as in src/main/87A0.c: leading-zero
+         * count, then the table shift computed from it in place; used to
+         * index g_sqrt_table_u8 and derive the final shift. The
+         * one-expression form `var_20 = 0x16 - (lzc_out & ~1)` scores 4. */
+        s32 var_20;
+
+        gte_Lzc(x, &lzc_out);
+        var_20 = lzc_out;
+        var_20 = 0x16 - (var_20 & ~1);
+        /* x: the radicand, then its square-root table byte, looked up in
+         * place as SOTN's shop takes `itemId = D_us_801814D4[itemId]` (Q51);
+         * a fresh byte local: score 12 */
+        /* SOTN: src/st/lib/e_shop.c:3168 @db41b28 */
+        x = g_sqrt_table_u8[(u32)x >> var_20];
+        return (u32)(x << 16) >> (0x13 - ((u32)var_20 >> 1));
+    }
+}
+
 /* Body-overlap push between the two characters (D_80101EC8[0] and [1]),
  * skipped while either's move_kind is 0x28. Each character's two points (joint
  * 1, and the midpoint of joints 15 and 19) are tested pairwise with the radii
@@ -782,7 +809,6 @@ extern s32 D_800A3144[2];
  * (pending_move_event, D_800A38A8 / D_800A3876). The push is added to
  * unk_134.vx / .vz. */
 void fighter_ResolveBodyOverlap(void) {
-    s32 lzc_out;
     s32 var_1;
     s32 i;
     s32 j;
@@ -800,10 +826,6 @@ void fighter_ResolveBodyOverlap(void) {
      * (Q51) */
     /* SOTN: src/st/nz1/e_cloaked_knight.c:83 @db41b28 */
     s32 var_13;
-    /* FAKE: two values -- the gte_Lzc input copy of the squared distance,
-     * then the table byte; a fresh copy local (or var_13 itself) takes $v1, not
-     * the target's $a0: score 13 (Q28) */
-    s32 tbl;
     s32 var_15;
     s32 var_16;
     s32 flag1;
@@ -838,24 +860,7 @@ void fighter_ResolveBodyOverlap(void) {
                 continue;
             }
             var_1++;
-            tbl = var_13;
-            if ((u32)var_13 < 0x400) {
-                var_13 = (u32)g_sqrt_table_u8[var_13] >> 3;
-            } else {
-                gte_Lzc(tbl, &lzc_out);
-                {
-                    /* Ruling 11 (reused local), as in src/main/87A0.c:
-                     * leading-zero count, then the table shift computed from
-                     * it in place; used to index g_sqrt_table_u8 and derive
-                     * the final shift. The one-expression form
-                     * `var_20 = 0x16 - (lzc_out & ~1)` scores 4. */
-                    s32 var_20;
-                    var_20 = lzc_out;
-                    var_20 = 0x16 - (var_20 & ~1);
-                    tbl = g_sqrt_table_u8[(u32)var_13 >> var_20];
-                    var_13 = (u32)(tbl << 16) >> (0x13 - ((u32)var_20 >> 1));
-                }
-            }
+            var_13 = math_SqrtLut(var_13);
             var_15 = var_12 - var_13;
             if (var_15 > 0x80) {
                 var_15 = 0x80;
