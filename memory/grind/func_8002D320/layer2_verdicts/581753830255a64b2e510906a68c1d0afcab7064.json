@@ -1,0 +1,13 @@
+{
+  "function": "func_8002D320",
+  "body_hash": "bfb9986fd5433eee",
+  "decision": "PASS",
+  "reasons": [
+    "Item 1: I re-ran sandbox --disable all on the worktree at e38b44a26: score 0, 0 cheat-asm stripped, 0 rules dropped. The worker reports the full build matches the oracle SHA1; I did not rebuild it myself.",
+    "Item 2: the body has no register pins, no hardcoded-$N or lowercase asm, no barriers and no build, Makefile or pipeline changes. The diff touches only src/main/17AFC.c. The only asm-like constructs are the canonical GTE macros (gte_ApplyRotMatrix, gte_Lzc).",
+    "Item 3: the new tail `if (max_z < z - rad || z + rad < min_z) return 0; return 1;` is plain, honest C. It behaves the same as the old tail, and the FAKE dead store (ret = 1; ret = 0;) and the ret local are gone. No FAKE labels remain in the body. There is no volatile, no fabricated call and no cross-symbol address.",
+    "Item 3, comments: the comment on rad ('r_sq - sq, then its square root in place, the sphere's half-chord along z') is true: rad = sqrt(r_sq - x^2 - y^2). Its SOTN tag checks out: src/st/nz1/e_cloaked_knight.c:83 @db41b28 is `distance = SquareRoot0(distance);` in matched C, and the file is a member of config/splat.us.stnz1.yaml. The local names (neg_threshold, min_z/max_z, az/bz, rad) match their use.",
+    "Item 4: every access goes through the existing Unk1F8002B8Rec / Unk80107850Rec types and g_sqrt_table_u8. There is no new extern, alias or raw-offset cast.",
+    "Item 5: this spelling removes the function's last FAKE, so no form with fewer FAKEs can exist. The alternative spellings the worker measured scored 3 to 5."
+  ]
+}

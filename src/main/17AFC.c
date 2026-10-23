@@ -2547,7 +2547,6 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
         s32 az;
         s32 bz;
         s32 z;
-        s32 ret;
         s32 neg_threshold = -threshold;
         s32 sq;
         /* r_sq - sq, then its square root in place (the sphere's half-chord
@@ -2598,18 +2597,9 @@ s32 func_8002D320(s32 flag, Unk1F8002B8Rec *obj, Unk80107850Rec *pos,
             max_z = bz;
         }
         z = obj->unk100[0].z;
-        if (max_z < z - rad)
+        if (max_z < z - rad || z + rad < min_z)
             return 0;
-        if (z + rad < min_z) {
-            /* FAKE: dead store, overwritten by `ret = 0;`: the two-set arm
-             * keeps the target's branch diamond instead of slt + xori
-             * (dead-store-fake-exception) */
-            ret = 1;
-            ret = 0;
-        } else {
-            ret = 1;
-        }
-        return ret;
+        return 1;
     }
 }
 
