@@ -922,7 +922,9 @@ s32 func_8006295C(void) {
     /* FAKE: the work-area base (D_800A34EC) is staged through `prim` before
      * prim becomes the quad cursor; keeps `mats = base + 0x78` out of the
      * loop's giv init (target keeps `move s4,v0`) and puts base in s1. A
-     * separate base local or the direct global: score 37. */
+     * separate `u8 *`/`s32`/`POLY_FT4 *` base, declaration/scope/setup-order
+     * variants, direct global, or local struct with sub-pointers: score 37;
+     * advancing mats as a cursor: 90; direct struct member accesses: 149. */
     prim = (POLY_FT4 *)D_800A34EC;
     count = 0;
     mats = (MATRIX *)((u8 *)prim + 0x78);
