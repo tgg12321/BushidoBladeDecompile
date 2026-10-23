@@ -391,7 +391,8 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
     Unk8009B400Record *var_3;
     /* FAKE: constant-holder: keeps the 0 for both gpu_GetSheetTPage calls in
        $s5 instead of `li $a1,0` (SOTN src/dra/7879C.c:2067 `s32 zero = 0;`);
-       the literal: score 9 */
+       measured without holder: literal / for / while / declaration order /
+       inline tail: 9; late semi: 12; header semi: 14; merged draw loop: 92. */
     s32 zero;
 
     zero = 0;
