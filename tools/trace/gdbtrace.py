@@ -37,6 +37,12 @@ Spec (JSON):
     "polls": [                       # pause, read, resume on a period
       {"at": "D_800A32B4", "len": 16, "every_s": 0.5}
     ],
+    "values": [                      # value watch (needs a script): read
+      {"at": "D_800A38DC", "len": 8},  # at every phase start after frame
+      {"at": "D_800A3910", "len": 32,  # 0 and at the end, while the
+       "ptr_off": 0}                   # script holds the emulator paused;
+    ],                               # ptr_off: read the u32 at `at`, then
+                                     # len bytes at that pointer + ptr_off
     "hitmap": {"tus": ["main/51268"],     # per-mode hit map (needs a script):
                "exclude": ["main/psxsdk/*"],  # Z0 on every function of the
                "per_phase": 1},               # TUs (fnmatch on the TU id),
@@ -856,6 +862,39 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
     polls = [{"spec": p, "addr": syms.addr(p["at"]), "len": int(p.get("len", 4)),
               "every": float(p.get("every_s", 1.0)), "next": 0.0}
              for p in spec.get("polls", [])]
+    values = [{"spec": v, "addr": syms.addr(v["at"]),
+               "len": int(v.get("len", 4))} for v in spec.get("values", [])]
+    if values and not spec.get("script"):
+        raise SystemExit("gdbtrace: values need a script (they are read at "
+                         "its stops)")
+    for v in values:
+        if "ptr_off" in v["spec"] and not isinstance(v["spec"]["ptr_off"],
+                                                     int):
+            raise SystemExit(f"gdbtrace: value {v['spec']['at']}: ptr_off "
+                             "must be an integer")
+
+    def read_values(frame, phase_name, end):
+        """Value watch: every "values" entry, read while the script holds
+        the emulator paused at a phase start or at its end."""
+        for i, v in enumerate(values):
+            sp = v["spec"]
+            rec = {"ev": "value", "i": i, "frame": frame, "phase": phase_name,
+                   "end": end, "at": sp["at"], "addr": v["addr"]}
+            try:
+                addr = v["addr"]
+                if "ptr_off" in sp:
+                    ptr = int.from_bytes(gdb.mem(addr, 4), "little")
+                    rec["ptr"] = ptr
+                    addr = (ptr + sp["ptr_off"]) & 0xFFFFFFFF
+                    rec["read_at"] = addr
+                    if not RAM_LO <= addr < RAM_HI:
+                        rec["error"] = "pointer is not RAM"
+                        emit(rec)
+                        continue
+                rec["hex"] = gdb.mem(addr, v["len"]).hex()
+            except GdbError as ex:
+                rec["error"] = str(ex)
+            emit(rec)
 
     script = spec.get("script")
     duration = float(spec.get("duration_s",
@@ -1013,6 +1052,9 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 emit({"ev": "phase", "t": round(time.time() - t0, 3),
                       "frame": new[1], "phase": phase, "end": new[3],
                       "pause": list(pause) if pause else None})
+                # Read before this phase's stubs go in (stubs from earlier
+                # phases already changed the game: the report says so).
+                read_values(new[1], phase, new[3])
                 if not new[3]:
                     apply_stubs(gdb, stubs, phase, regs, new[1], emit,
                                 armed, suspended)
@@ -1467,6 +1509,7 @@ def report(args) -> int:
     syms = Symbols(args.map, args.elf)
     hits = collections.defaultdict(list)
     polls = collections.defaultdict(list)
+    values = collections.defaultdict(list)
     phases = []
     odd = collections.Counter()
     disarmed = {}
@@ -1487,6 +1530,8 @@ def report(args) -> int:
                 hitmap = rec
             elif rec["ev"] == "poll":
                 polls[rec["at"]].append(rec)
+            elif rec["ev"] == "value":
+                values[rec["i"]].append(rec)
             elif rec["ev"] == "phase":
                 phases.append(rec)
             elif rec["ev"] in ("unmatched-stop", "ambiguous-stop"):
@@ -1645,6 +1690,37 @@ def report(args) -> int:
         w += describe_words(syms, [u32s(r["hex"]) for r in recs],
                             lambda o, a=at0: syms.name(a + o))
         w.append("")
+    vspecs = (start or {}).get("spec", {}).get("values", [])
+    for i, recs in sorted(values.items()):
+        sp = vspecs[i] if i < len(vspecs) else {"at": recs[0]["at"]}
+        what = (f"`{sp['at']}`" if "ptr_off" not in sp else
+                f"*`{sp['at']}` + 0x{sp['ptr_off']:X}")
+        w.append(f"## value {what}: {len(recs)} reads (each phase start "
+                 "and the end, emulator paused by the script)")
+        w.append("")
+        if stubs:
+            w.append("Stubbed run: reads after a stub went in are from a "
+                     "modified game.")
+            w.append("")
+        w.append("| phase | frame | pointer | bytes (hex, memory order) |")
+        w.append("|---|---|---|---|")
+        good = []
+        for r in recs:
+            label = r["phase"] + (" (end)" if r.get("end") else " (start)")
+            ptr = f"0x{r['ptr']:08X}" if "ptr" in r else "-"
+            shown = r.get("hex") or f"not read: {r.get('error')}"
+            if r.get("hex"):
+                shown = " ".join(r["hex"][j:j + 8]
+                                 for j in range(0, len(r["hex"]), 8))
+                good.append(u32s(r["hex"]))
+            w.append(f"| {label} | {r['frame']} | {ptr} | `{shown}` |")
+        w.append("")
+        if good and "ptr_off" not in sp:
+            w.append("| field | behaviour | values |")
+            w.append("|---|---|---|")
+            a0 = recs[0]["addr"]
+            w += describe_words(syms, good, lambda o, a=a0: syms.name(a + o))
+            w.append("")
     if start:
         seen = set(hits)
         spec = start.get("spec", {})
