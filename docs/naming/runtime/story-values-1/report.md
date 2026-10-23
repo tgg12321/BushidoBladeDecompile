@@ -71,9 +71,11 @@ Accessing instructions:
 | rematch_menu (start) | 10150 | - | `00000000` |
 | rematch_menu (end) | 10700 | - | `00000000` |
 
-| field | behaviour | values |
-|---|---|---|
-| D_800A38DC | const | 0x00000000 |
+| field | span (bytes to the next symbol) | behaviour | values |
+|---|---|---|---|
+| `D_800A38DC` (0x800A38DC) | 2 | const | 0x0000 |
+| `D_800A38DE` (0x800A38DE) | 1 | const | 0x00 |
+| `D_800A38DF` (0x800A38DF) | 1 | const | 0x00 |
 
 ## value `D_800A3910`: 15 reads (at phase starts and the end, emulator paused by the script)
 
@@ -95,9 +97,11 @@ Accessing instructions:
 | rematch_menu (start) | 10150 | - | `00000000` |
 | rematch_menu (end) | 10700 | - | `00000000` |
 
-| field | behaviour | values |
-|---|---|---|
-| D_800A3910 | const | 0x00000000 |
+| field | span (bytes to the next symbol) | behaviour | values |
+|---|---|---|---|
+| `D_800A3910` (0x800A3910) | 2 | const | 0x0000 |
+| `D_800A3912` (0x800A3912) | 1 | const | 0x00 |
+| `D_800A3913` (0x800A3913) | 1 | const | 0x00 |
 
 ## value `D_800A34F0`: 15 reads (at phase starts and the end, emulator paused by the script)
 
@@ -119,9 +123,10 @@ Accessing instructions:
 | rematch_menu (start) | 10150 | - | `00000000` |
 | rematch_menu (end) | 10700 | - | `00000000` |
 
-| field | behaviour | values |
-|---|---|---|
-| D_800A34F0 | const | 0x00000000 |
+| field | span (bytes to the next symbol) | behaviour | values |
+|---|---|---|---|
+| `D_800A34F0` (0x800A34F0) | 2 | const | 0x0000 |
+| `D_800A34F2` (0x800A34F2) | 2 | const | 0x0000 |
 
 ## value `D_800A3710`: 15 reads (at phase starts and the end, emulator paused by the script)
 
@@ -143,12 +148,15 @@ Accessing instructions:
 | rematch_menu (start) | 10150 | - | `00000000 00000100 00000000 00000000` |
 | rematch_menu (end) | 10700 | - | `00000000 00000100 00000000 00000000` |
 
-| field | behaviour | values |
-|---|---|---|
-| g_camera_distance_offset | const | 0x00000000 |
-| g_replay_model_draw_search_cursor | varies (2 values) | min 0x00000000 max 0x00010000; top 0x00000000, 0x00010000 |
-| g_cd_atv | varies (2 values) | min 0x00000000 max 0x00FF00FF; top 0x00000000, 0x00FF00FF |
-| D_800A371C | const | 0x00000000 |
+| field | span (bytes to the next symbol) | behaviour | values |
+|---|---|---|---|
+| `g_camera_distance_offset` (0x800A3710) | 2 | const | 0x0000 |
+| `D_800A3712` (0x800A3712) | 1 | const | 0x00 |
+| `D_800A3713` (0x800A3713) | 1 | const | 0x00 |
+| `g_replay_model_draw_search_cursor` (0x800A3714) | 2 | const | 0x0000 |
+| `D_800A3716` (0x800A3716) | 2 | varies (2 values) | 0x0000 x9, 0x0001 x6 |
+| `g_cd_atv` (0x800A3718) | 4 | varies (2 values) | 0x00000000 x10, 0x00FF00FF x5 |
+| `D_800A371C` (0x800A371C) | 4 | const | 0x00000000 |
 
 ## value `D_800A9CF8`: 15 reads (at phase starts and the end, emulator paused by the script)
 
@@ -170,11 +178,13 @@ Accessing instructions:
 | rematch_menu (start) | 10150 | - | `00000000 00000000 00000000 00000000 00000000` |
 | rematch_menu (end) | 10700 | - | `00000000 00000000 00000000 00000000 00000000` |
 
-| field | behaviour | values |
-|---|---|---|
-| D_800A9CF8 | const | 0x00000000 |
-| D_800A9CFC | const | 0x00000000 |
-| D_800A9D00 | const | 0x00000000 |
-| D_800A9D04 | const | 0x00000000 |
-| D_800A9D08 | const | 0x00000000 |
+| field | span (bytes to the next symbol) | behaviour | values |
+|---|---|---|---|
+| `D_800A9CF8` (0x800A9CF8) | 2 | const | 0x0000 |
+| `D_800A9CFA` (0x800A9CFA) | 2 | const | 0x0000 |
+| `D_800A9CFC` (0x800A9CFC) | 2 | const | 0x0000 |
+| `D_800A9CFE` (0x800A9CFE) | 2 | const | 0x0000 |
+| `D_800A9D00` (0x800A9D00) | 4 | const | 0x00000000 |
+| `D_800A9D04` (0x800A9D04) | 4 | const | 0x00000000 |
+| `D_800A9D08` (0x800A9D08) | 4 | const | 0x00000000 |
 
