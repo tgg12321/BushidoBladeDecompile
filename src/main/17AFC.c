@@ -2863,9 +2863,10 @@ s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
     obj->unkF8.vy = 0x800 - ratan2(obj->unkC8.x, obj->unkC8.z);
     obj->unkC8.x = obj->unkC8.x >> 6;
     obj->unkC8.y = obj->unkC8.y >> 6;
-    /* FAKE: the scaled z delta is staged through `dist` (dead until the
-     * if/else below); a block-local temp moves dist_sq from the target's $a0 to
-     * $a1: score 6 */
+    /* dist: the scaled z component, then the xz length below, as SOTN's
+     * no1 sound distance keeps `dx` for the halved x delta, then the root
+     * (Q51; a block-local z temp: score 6) */
+    /* SOTN: src/st/no1/unk_39184.c:420 @db41b28 */
     dist = obj->unkC8.z;
     dist >>= 6;
     dist_sq = obj->unkC8.x * obj->unkC8.x + dist * dist;
