@@ -1330,8 +1330,8 @@ s32 gpu_ReadTimGroupEntry(s32 arg0, s32 arg1, u32 arg2, s32 arg3) {
     s32 base, count, entry, a, b, c, d, off;
     off = ((s32 *)arg0)[arg1];
     base = arg0;
-    /* FAKE: off + base operand order; base + off emits the addu operands
-     * swapped (1 insn off) (single-order carve-out, or-tree-shape-shift) */
+    /* the group's offset relocated against the file base, written as
+     * `entry += base` relocates the entry's offset below */
     arg0 = off + base;
     count = *(s32 *)arg0;
     arg0 += 4;
