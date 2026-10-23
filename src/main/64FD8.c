@@ -213,10 +213,9 @@ void menu_DrawSelPanel(Unk8006EACCRec *arg0, s32 arg1) {
     TILE *prim;
     s32 var_5;
     s32 var_6;
-    /* the sheet's cell array, just past its 12-byte header (Ruling 9). FAKE:
-     * the holder between the header's cells and s.table; stored directly:
-     * score 12. */
-    Unk8009B400Record *var_7;
+    /* the sheet's cells, just past its 12-byte header, for s.table. Ruling 9:
+     * one meaning (s.header + 0xC) at four writes. */
+    Unk8009B400Record *cells;
     s16 i;
 
     prim = arg0->unk_04.unk_10;
@@ -247,13 +246,13 @@ void menu_DrawSelPanel(Unk8006EACCRec *arg0, s32 arg1) {
     do {
         s.y = (0xD2 - SELWORK->f0C[arg1]) * i;
         s.header = records[3];
-        var_7 = s.header->cells;
-        s.table = var_7;
+        cells = s.header->cells;
+        s.table = cells;
         s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         s.header = records[2];
-        var_7 = s.header->cells;
-        s.table = var_7;
+        cells = s.header->cells;
+        s.table = cells;
         s.sprt_out = arg0->unk_04.unk_0C;
         arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
         s.table += s.header->count;
@@ -267,8 +266,8 @@ void menu_DrawSelPanel(Unk8006EACCRec *arg0, s32 arg1) {
     s.x = arg1 * 0xF0;
     s.y = 0;
     s.header = records[0];
-    var_7 = s.header->cells;
-    s.table = var_7;
+    cells = s.header->cells;
+    s.table = cells;
     if (arg1 != 0) {
         s.ot_idx = 0x16;
     } else {
@@ -277,8 +276,8 @@ void menu_DrawSelPanel(Unk8006EACCRec *arg0, s32 arg1) {
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     s.header = records[1];
-    var_7 = s.header->cells;
-    s.table = var_7;
+    cells = s.header->cells;
+    s.table = cells;
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     SetDrawMode(arg0->unk_04.unk_14, 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
