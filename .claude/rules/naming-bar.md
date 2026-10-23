@@ -37,11 +37,12 @@ Without enough evidence, keep the neutral name (`func_8XXXXXXX`, `D_8XXXXXXX`, `
 No class is required. Where the sources disagree, the higher one wins, and a conflict the
 order does not settle fails the row:
 1. Sony's own name: verbatim PsyQ XDEF / libscan-xref, in-binary string, hardware role.
-2. SOTN or psyz name for the same PsyQ routine or data (BB2's libraries are 4.0-era,
+2. SOTN or psyz name for the same PsyQ routine or data (BB2 libs 4.0,
    `docs/naming/libscan/psyq_versions.txt`); a Sony static only after its verbatim placement
    is shown.
 3. Explained from the code: computation, typed restatement, or call-graph role (every caller
    uses it the same way, and its callees and data establish the subsystem).
+   Runtime: [[naming-runtime-evidence]].
 
 A string the function prints is context, not identity. Never evidence: a family prefix
 alone, a name another rename invented, comments, earlier agent claims not re-derived,
@@ -62,7 +63,7 @@ or renamed. It is not kept for history.
 
 An address-named game TU (`9F9C.c`) takes a subsystem name only when its whole content is that
 subsystem: the admitted names and data of every function in it agree. A mixed file keeps its
-ROM-offset name (most large game files hold several original TUs that the bytes cannot
+ROM-offset name (most large game files hold several original TUs the bytes cannot
 separate). The move uses `tools/move_tu.py`, and the top comment keeps its boundary evidence.
 
 ## The wave
@@ -106,8 +107,7 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
      `build/bb2.map`, so it runs after the rebuild). `docs/naming/phase3/**` is the
      only free path. Registries change line by line, only into what naming_wave / data_wave
      emit for that line. Other text files (gate lists, tools) change only by the pairs.
-   - `.claude/**`, `movovl/**` (not oracle-covered) and the tool itself
-     never change.
+   - `.claude/**`, `movovl/**` (not oracle-covered) and the tool never change.
    - Global pairs: a new non-auto name must not already exist in a build or tool file; an auto
      name must carry the old name's address; old names may share a new name only when they name
      one address; no old name survives in a build file (C comments included).

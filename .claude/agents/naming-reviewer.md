@@ -63,6 +63,8 @@ For each row:
     `docs/naming/phase3/**`. Read the `note` lines and the diffs of those files.
 - **RESET rows:** PASS when the current name fails N1 at a cited use, or has no recorded basis
   and no use supports it. A RESET to the neutral name needs no positive evidence.
+- **Runtime evidence (owner ruling Q124, `.claude/rules/naming-runtime-evidence.md`):** a trace
+  capture only corroborates a name the code already supports; check its conditions and SHA1.
 - **Bulk local reset waves (owner ruling Q119, `.claude/rules/naming-bulk-reset.md`):** no
   pre-apply pass. On R6, check the keycheck and moved keys as above, sample at least 20 rows or
   10% (the larger) and FAIL the wave if a sampled row is outside that rule's scope, and check

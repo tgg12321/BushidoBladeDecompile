@@ -643,3 +643,5 @@ disposition taken: left as asm (data lane, 2026-10-23). The nine 2-byte alignmen
 Question for the owner: (a) may data-split close with (1)-(4) as its documented asm residue (recommended: (1) is
 hand-written module data like the canonical asm bodies, (2) waits on a COMMON placement ruling, (3)/(4) have no
 evidence for a C home), or (b) should any class move anyway, and where?
+resolution (owner, 2026-10-23): (a). data-split closes; (1)-(4) are its documented asm residue (reopen only on new
+evidence: a COMMON placement ruling for (2), or an owner for (3)/(4)).
