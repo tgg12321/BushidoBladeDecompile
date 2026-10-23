@@ -1,0 +1,27 @@
+{
+  "decision": "PASS",
+  "function": "func_80040CB8",
+  "body_hash": "4eefa4d9f0d0cc57",
+  "summary": "Comment-only cleanup is honest: parents and id are fresh named intermediates that are written once (per iteration for id) and hold the exact values in target registers $t0 (a0+0x94, stepped by 0x68) and $a3 (D_80094B9E, stepped by 0xA). Each is the only handle to its object. They read truthfully, so entry 6 / Ruling 1(3) needs no label. The comments' claims and the scores 3 / 5 were re-measured and are true. The body has no other codegen-only construct.",
+  "evidence": [
+    {
+      "construct": "Unk80045878Node *parents = &arg0->transform_nodes[1]; ... parent_node = &parents[i].node",
+      "test_failed": "none (completion-bar item 3 checked)",
+      "explanation": "Written once before the loop. The target computes $t0 = a0+0x94 (= transform_nodes[1], since 0x2C+0x68) and stores it to parent_node each iteration, so the local names a real value only where the target already holds it. No other local or expression in the body reaches transform_nodes, so there is no extra handle. A programmer would plausibly write it this way: projected node i's parent is transform node i+1. Ablating it (in place, &arg0->transform_nodes[i + 1].node) gives sandbox score 3, which I re-measured and which matches the comment."
+    },
+    {
+      "construct": "s16 *id = &D_80094B94.recs[i].unk_08; if (*id != -1) p->node.unk2 = *id;",
+      "test_failed": "none (completion-bar item 3 checked)",
+      "explanation": "One assignment site per iteration, fresh, not borrowed. $a3 is exactly &recs[i].unk_08 (D_80094B96 recs + 8 = D_80094B9E, stride 0xA): it is loaded with lh, tested with beq against -1 and stored with sh at -0x56($a1), which is projected node +2 = unk2. The comment is true. The name id fits the header (unk_08 is the node's id, -1 = no node) and the sibling func_80040B44, which stores ids into unk2. Ablating it (read in place) gives sandbox score 5, re-measured, which matches the comment."
+    },
+    {
+      "construct": "rest of body (p walk over projected_nodes, field stores, terminator unk2 = -1)",
+      "test_failed": "none (items 2, 4, 5 checked)",
+      "explanation": "No asm, pins, barriers, volatile or build changes. It uses the existing Unk80045878Obj / Unk80094B94Table types from game.h and the file, with no raw offsets or second extern. It has zero FAKE labels, so no lighter form is possible under item 5."
+    }
+  ],
+  "next_action": "",
+  "hygiene_debt": [
+    "Optional: the 'in place: score N' measurement notes in the two site comments could move to the commit body (site-comment-content permits either). A truthful named intermediate needs no label (Ruling 1(3))."
+  ]
+}

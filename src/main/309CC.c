@@ -415,11 +415,13 @@ void func_80040B44(Unk80045878Obj *arg0) {
 void func_80040CB8(Unk80045878Obj *arg0) {
     s32 i;
     Unk80045878Node *p;
-    /* FAKE: parents is &transform_nodes[1], indexed by i;
-       &arg0->transform_nodes[i + 1] in place: score 3 */
+    /* Once-written named intermediate (no-new-park-categories entry 6):
+     * parents[i].node is transform_nodes[i + 1].node, used as parent_node.
+     * &arg0->transform_nodes[i + 1].node in place: score 3. */
     Unk80045878Node *parents;
-    /* FAKE: id points at record i's unk_08; D_80094B94.recs[i].unk_08 read
-       in place: score 5 */
+    /* Once-written per iteration named intermediate (entry 6): id points at
+     * record i's unk_08, tested for -1 and stored into p->node.unk2.
+     * D_80094B94.recs[i].unk_08 read in place: score 5. */
     s16 *id;
 
     p = arg0->projected_nodes;
