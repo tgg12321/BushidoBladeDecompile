@@ -42,7 +42,8 @@ Spec (JSON):
       {"at": "D_800A3910", "len": 32,  # 0 and at the end, while the
        "ptr_off": 0}                   # script holds the emulator paused;
     ],                               # ptr_off: read the u32 at `at`, then
-                                     # len bytes at that pointer + ptr_off
+                                     # len (default 4) bytes at that
+                                     # pointer + ptr_off
     "hitmap": {"tus": ["main/51268"],     # per-mode hit map (needs a script):
                "exclude": ["main/psxsdk/*"],  # Z0 on every function of the
                "per_phase": 1},               # TUs (fnmatch on the TU id),
@@ -868,18 +869,24 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
         raise SystemExit("gdbtrace: values need a script (they are read at "
                          "its stops)")
     for v in values:
-        if "ptr_off" in v["spec"] and not isinstance(v["spec"]["ptr_off"],
-                                                     int):
+        off = v["spec"].get("ptr_off", 0)
+        if type(off) is not int or off < 0:
             raise SystemExit(f"gdbtrace: value {v['spec']['at']}: ptr_off "
-                             "must be an integer")
+                             "must be an integer >= 0")
+        if v["len"] < 1:
+            raise SystemExit(f"gdbtrace: value {v['spec']['at']}: len must "
+                             "be >= 1")
 
-    def read_values(frame, phase_name, end):
+    def read_values(frame, phase_name, end, pause):
         """Value watch: every "values" entry, read while the script holds
-        the emulator paused at a phase start or at its end."""
+        the emulator paused at a phase start or at its end. pause_frame is
+        the frame the Lua's latest pause recorded (== frame unless that
+        pause stop was missed)."""
         for i, v in enumerate(values):
             sp = v["spec"]
             rec = {"ev": "value", "i": i, "frame": frame, "phase": phase_name,
-                   "end": end, "at": sp["at"], "addr": v["addr"]}
+                   "end": end, "at": sp["at"], "addr": v["addr"],
+                   "pause_frame": pause[1] if pause else None}
             try:
                 addr = v["addr"]
                 if "ptr_off" in sp:
@@ -887,8 +894,9 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                     rec["ptr"] = ptr
                     addr = (ptr + sp["ptr_off"]) & 0xFFFFFFFF
                     rec["read_at"] = addr
-                    if not RAM_LO <= addr < RAM_HI:
-                        rec["error"] = "pointer is not RAM"
+                    if not (RAM_LO <= addr < RAM_HI
+                            or 0x1F800000 <= addr < 0x1F800400):
+                        rec["error"] = "pointer is not RAM or scratchpad"
                         emit(rec)
                         continue
                 rec["hex"] = gdb.mem(addr, v["len"]).hex()
@@ -1054,7 +1062,7 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                       "pause": list(pause) if pause else None})
                 # Read before this phase's stubs go in (stubs from earlier
                 # phases already changed the game: the report says so).
-                read_values(new[1], phase, new[3])
+                read_values(new[1], phase, new[3], pause)
                 if not new[3]:
                     apply_stubs(gdb, stubs, phase, regs, new[1], emit,
                                 armed, suspended)
@@ -1695,8 +1703,9 @@ def report(args) -> int:
         sp = vspecs[i] if i < len(vspecs) else {"at": recs[0]["at"]}
         what = (f"`{sp['at']}`" if "ptr_off" not in sp else
                 f"*`{sp['at']}` + 0x{sp['ptr_off']:X}")
-        w.append(f"## value {what}: {len(recs)} reads (each phase start "
-                 "and the end, emulator paused by the script)")
+        w.append(f"## value {what}: {len(recs)} reads (at phase starts"
+                 + (" and the end" if any(r.get("end") for r in recs)
+                    else "; no end read") + ", emulator paused by the script)")
         w.append("")
         if stubs:
             w.append("Stubbed run: reads after a stub went in are from a "
@@ -1713,7 +1722,10 @@ def report(args) -> int:
                 shown = " ".join(r["hex"][j:j + 8]
                                  for j in range(0, len(r["hex"]), 8))
                 good.append(u32s(r["hex"]))
-            w.append(f"| {label} | {r['frame']} | {ptr} | `{shown}` |")
+            fr = r["frame"]
+            if r.get("pause_frame", fr) != fr:
+                fr = f"{fr} (WARNING: paused at {r['pause_frame']})"
+            w.append(f"| {label} | {fr} | {ptr} | `{shown}` |")
         w.append("")
         if good and "ptr_off" not in sp:
             w.append("| field | behaviour | values |")
