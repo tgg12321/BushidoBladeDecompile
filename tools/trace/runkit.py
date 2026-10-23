@@ -31,7 +31,7 @@ need a released frame between them. Pad 2 actions run and log as
 P2.<button> (pad 1 keeps the bare button name).
 
 The scripted emulator runs from PCSX-Redux defaults (-safe) plus the
-command line, starts held at the reset vector and only runs once the
+command line and the settings the script Lua sets (pad 2), starts held at the reset vector and only runs once the
 harness has armed, so coverage starts at frame 0 (recorded as
 armed_frame). The manifest records the outcome and, taken before launch,
 the SHA1 of the tools (with their git status), the build, the spec, the
@@ -486,6 +486,7 @@ def inputs_record(args, start: dict, repo: str) -> dict:
                                    else [])
                                   if n.lower().endswith(".dll")],
                          "settings": "defaults (-safe) + command line"
+                         " + script Lua settings"
                          if args.lua else "the portable dir's pcsx.json"}
         if args.bios:
             m["bios"] = file_rec(args.bios)
