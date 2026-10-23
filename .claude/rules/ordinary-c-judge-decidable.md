@@ -100,5 +100,14 @@ re-opened by Q91 clause D.
   redundant-width-cast refusal, with a comment citing the sign-extend pair, the Q75 value and the measured
   alternatives. No other cast or site.
 
+## Q127 — conditions the target keeps are reconstruction (owner, 2026-10-23)
+
+A redundant or contradictory condition is ordinary C, with no FAKE label, when each of its tests
+emits its own compare-and-branch (deleting the test deletes that instruction from the output),
+the target has that instruction, and the test reads a real program value (a variable, field or
+global, not a literal-only tautology). Entry 16 of [[no-new-park-categories]]
+still governs conditions that leave no instruction of their own (`if (p && p)`, `if (!i) { }`).
+Asked for func_80058580's `&& var_38 == 1` and inner D_800A387C test.
+
 Related: [[no-new-park-categories]] · [[dead-store-fake-exception]] · [[judge-sole-gate]] ·
 [[review-discipline-before-commit]] · [[staged-value-reused-variable]]

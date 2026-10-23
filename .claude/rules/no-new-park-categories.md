@@ -89,7 +89,7 @@ has no semantic purpose) and honesty (blocking); exhaustion, named mechanism (hy
     argument instead of a pointer local): value consumed at each site; annotation at the site.
 16. **F6 cancellation pair / redundant condition**: exactly `i++; i--;` adjacent, or an
     empty-if / redundant condition (`if (!i) { }`, `if (p && p)`); `!FAKE` annotation;
-    exhaustion ledger (hygiene since Q91).
+    exhaustion ledger (hygiene since Q91). Tests the target keeps: Q127.
 17. **F7 common store duplicated into both arms**: values real and required; annotation.
 18. **Phantom-frame-slot volatile pad** (+ Q35 trailing sibling array) —
     [[phantom-frame-pad-family]].

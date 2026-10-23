@@ -47,6 +47,14 @@ Psyz and other decompilations are not evidence. Every SOTN-admitted construct ca
   (asked for libgpu prim.c), reading a RECT's x/y or w/h pair as one word
   (`*(u32 *)&rect->x`, SOTN's `LOW(rect->x)`) is Sony's own idiom, not a FAKE. Cite it in a
   plain comment with the `/* SOTN: */` tag; no `FAKE` label. Game code is not covered.
+- **Shapes SOTN's matched copy carries unmarked (Q128, owner 2026-10-23):** in a `src/main/psxsdk/`
+  module placed verbatim by libscan (docs/naming/libscan), a branch or arm shape or condition form
+  (nothing [[completion-bar]] items 2-3 refuse: volatile, asm, fabricated calls and cross-symbol
+  derivation stay on the labelled Q55 route) that SOTN's matched source of the same function
+  carries in the identical shape, not self-marked in Q52's sense and meeting conditions (1)-(4),
+  is Sony's spelling: cite it with the `/* SOTN: */` tag; no `FAKE` label; layer-2 verifies it.
+  Asked for PutDispEnv's empty then-arm (SOTN src/main/psxsdk/libgpu/sys.c:394 @db41b28). Game
+  code is not covered.
 
 A Q50 admission is not a frozen-list extension. Records: docs/grind/decisions.md 2026-09-30
 OWNER RULING — SOTN precedent suffices, and the Q51-Q53, Q55 entries.

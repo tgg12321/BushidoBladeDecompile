@@ -1424,3 +1424,12 @@ Question (fake lane session 28, fake-reduce row): 87A0 softbody_PrepareStep `lut
 Orchestrator: "(a) Recommended: yes, with the engine taught first. Credit a called static inline helper's GTE calls and tokens to each caller, for the GTE-call approvals, the review hash and the integrity check, with tests. Then the fake lane lands the two retirements. [...] (b) No: GTE calls stay in the function bodies, and both FAKE labels stay."
 Owner: "Yes, go ahead with A".
 Rule: inline-asm-policy.md GTE macro calls condition 3 (Q126). Next: engine change (attribution), then the fake lane lands the two retirements with fresh layer-2.
+
+## 2026-10-23 — OWNER RULINGS — Q127: conditions the target keeps are reconstruction; Q128: SOTN's unlabelled shapes in Sony modules are Sony's spelling
+
+Q127 (fake lane, fake-reduce row): 4510C func_80058580's redundant `&& var_38 == 1` and contradictory inner D_800A387C test are in the target bytes; review kept FAKE labels under entry 16.
+Orchestrator: "(a) Recommended: a comparison that compiles to a compare instruction actually present in the original bytes, testing a real program value, is ordinary C, and needs no FAKE label even if it's logically redundant. Entry 16 still covers redundant conditions that produce no instruction of their own. The fake lane then removes the two labels in func_80058580 with a fresh review, and applies the same test elsewhere."
+Owner: "Agreed with A on that last item".
+Q128 (fake and Codex lanes): libgpu sys PutDispEnv's empty then-arm is FAKE-labelled here; SOTN's matched PutDispEnv (src/main/psxsdk/libgpu/sys.c @db41b28) carries the identical `if (env->disp.h <= ...) { } else { cmd |= 0x24; }` with no label (no FAKE comment anywhere in SOTN's sys.c).
+Orchestrator: "(a) Recommended: yes, under narrow conditions: the module is Sony library code that's a byte-exact match to PsyQ; SOTN's matched source for the same function has the identical shape; a /* SOTN: */ citation stays at the site. The label is then removed with a fresh review. [...] It doesn't apply to game code". Owner asked "Does SOTN consider it FAKE?"; answered no, with the SOTN source. Owner: "Sure go with A".
+Rules: ordinary-c-judge-decidable.md Q127 (pointer from no-new-park-categories entry 16); sotn-precedent-suffices.md Q128. Next (fake lane): drop the two func_80058580 labels and the PutDispEnv label with fresh layer-2.
