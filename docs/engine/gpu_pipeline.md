@@ -66,51 +66,51 @@ on with `SetDispMask(1)` (src/main/6CF8.c:439).
 ## libgpu SYS internals
 
 `sys.c` (`$Id: sys.c,v 1.129`) reaches the hardware through a device table
-`GpuDevTable` (src/main/psxsdk/libgpu/sys.c:12-29). The table is at
+`GpuDevTable` (src/main/psxsdk/libgpu/sys.c:14-31). The table is at
 `_gpucb`, and the pointer `D_8009BE6C` points to it. Its members:
 
 | Member | Body | Used by |
 | --- | --- | --- |
-| `addque2` | `_addque2` (:916) | every queued call |
-| `clr` | `_clr` (:729) | `ClearImage` / `ClearImage2` (:290, :297) |
-| `ctl` / `getctl` | `_ctl` / `_getctl` (:873, :878) | GP1 writes, mirrored in `ctlbuf` |
-| `cwb` | `_cwb` (:880) | `DrawPrim` (:355): GP0 word writes |
-| `cwc` | `_cwc` (:889) | `DrawOTag`, `PutDrawEnv`, `DrawOTagEnv`, `MoveImage` |
-| `dws` / `drs` | `_dws` / `_drs` (:775, :823) | `LoadImage` / `StoreImage` (:304, :309) |
-| `otc` | `_otc` (:708) | `ClearOTagR` (:346) |
-| `reset` / `sync` | `_reset` / `_sync` (:1004, :1032) | `ResetGraph` / `DrawSync` |
+| `addque2` | `_addque2` (:924) | every queued call |
+| `clr` | `_clr` (:738) | `ClearImage` / `ClearImage2` (:298, :305) |
+| `ctl` / `getctl` | `_ctl` / `_getctl` (:882, :887) | GP1 writes, mirrored in `ctlbuf` |
+| `cwb` | `_cwb` (:889) | `DrawPrim` (:363): GP0 word writes |
+| `cwc` | `_cwc` (:898) | `DrawOTag`, `PutDrawEnv`, `DrawOTagEnv`, `MoveImage` |
+| `dws` / `drs` | `_dws` / `_drs` (:784, :832) | `LoadImage` / `StoreImage` (:312, :317) |
+| `otc` | `_otc` (:717) | `ClearOTagR` (:354) |
+| `reset` / `sync` | `_reset` / `_sync` (:1003, :1031) | `ResetGraph` / `DrawSync` |
 
-`g_gpu_ctx` (`GpuCtx`, :38-51) is the module state. It holds the GPU type,
+`g_gpu_ctx` (`GpuCtx`, :40-53) is the module state. It holds the GPU type,
 the queue mode, the debug level, the VRAM width and height, the
 DrawSync callback, and the last DRAWENV and DISPENV.
 
-`ResetGraph(0)` (:156) works as follows:
+`ResetGraph(0)` (:164) works as follows:
 
 - prints `jtb=` (the `_gpucb` address) and `env=` (`&g_gpu_ctx`);
 - clears `g_gpu_ctx`;
-- sets the type from `_reset`, which calls `_version` (:1091);
+- sets the type from `_reset`, which calls `_version` (:1090);
 - sets `width = D_8009BEF4[type]` and `height = D_8009BF08[type]`.
 
-**Queue.** `_que[64]` (:61-68) is a ring of 0x60-byte `GpuQueueItem`s. Each
+**Queue.** `_que[64]` (:63-70) is a ring of 0x60-byte `GpuQueueItem`s. Each
 holds a function, an argument pointer, a second argument and 21 data words,
 indexed by `_qin` / `_qout`. `_addque2(func, arg, len, cb_arg)` runs `func`
 at once when the queue is empty, DMA 2 is idle and no DrawSync callback is
 set. Otherwise it copies `len` bytes of `arg` into the slot and queues it,
-with `_exeque` as the DMA-2 callback. `_exeque` (:959) runs queued calls
+with `_exeque` as the DMA-2 callback. `_exeque` (:967) runs queued calls
 while DMA 2 is idle. It calls the DrawSync callback once the queue drains.
 The 16-byte `_qlog` record (words 0-2) logs the last call. The GPU
-`get_alarm` (:1070) prints them on a timeout and resets the queue. The
-timeout is 0xF0 vsyncs, set by `set_alarm` (:1065).
+`get_alarm` (:1069) prints them on a timeout and resets the queue. The
+timeout is 0xF0 vsyncs, set by `set_alarm` (:1064).
 
 **DMA.**
 
-- `_cwc` (:889) sends a packet chain on DMA channel 2 in linked-list mode.
+- `_cwc` (:898) sends a packet chain on DMA channel 2 in linked-list mode.
   It writes GP1 `0x04000002` (`GP1_DMA_DIR_FIFO`, include/psx.h:26), then
   `DMA2_MADR = chain`, `DMA2_BCR = 0` and `DMA2_CHCR = DMA_GPU_LINKED_LIST`.
 - `_dws` / `_drs` move image data. They send the copy command and the leading
   `n % 16` words through GP0, then the remaining 16-word blocks on DMA 2 in
   block mode (`DMA2_CHCR = 0x01000201` / `0x01000200`, GP1 direction 2 / 3).
-- `_otc` (src/main/psxsdk/libgpu/sys.c:708) builds the reverse OT on DMA
+- `_otc` (src/main/psxsdk/libgpu/sys.c:717) builds the reverse OT on DMA
   channel 6. It writes `DMA6_MADR = ot + n*4 - 4`, `DMA6_BCR = n` and
   `DMA6_CHCR = 0x11000002`, then polls bit 24.
 
