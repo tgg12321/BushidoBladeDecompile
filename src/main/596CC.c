@@ -957,7 +957,9 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
        switched on). */
     u32 row_mask;
     /* the sheet's cells, just past its 12-byte header, for s.table. Ruling 9:
-     * one meaning (s.header + 0xC) at five writes. */
+     * one meaning (s.header + 0xC) at five writes. FAKE: single-use holder of
+     * the cell table ahead of the descriptor's table store; stored directly:
+     * score 15 (Q129). */
     Unk8009B400Record *cells;
     s32 yofs;
     s32 bit;
@@ -1174,7 +1176,8 @@ void func_8006B120(s32 *arg0) {
     s32 i;
     /* the current sheet's cells, just past its 12-byte header, for s.table:
      * one role per sheet drawn (Ruling 5 extension: s.header is set from tbl
-     * before each write) */
+     * before each write). FAKE: single-use holder of the cell table ahead of
+     * the descriptor's table store; stored directly: score 11 (Q129). */
     Unk8009B400Record *table;
 
     s.has_color = 0;
@@ -1720,7 +1723,9 @@ void func_8006C21C(s32 *arg0) {
     s32 row;
     s32 var_18;
     /* the sprite sheet's 8-byte cells, just past its 12-byte header, for
-     * s.table. Ruling 9: one meaning, header + 0xC at every write. */
+     * s.table. Ruling 9: one meaning, header + 0xC at every write. FAKE:
+     * single-use holder of the cell table ahead of the descriptor's table
+     * store; stored directly: score 12 (Q129). */
     Unk8009B400Record *cells;
 
     var_8 = 0;
@@ -2049,7 +2054,9 @@ s32 func_8006CFBC(s32 *arg0) {
     s16 result;
     /* the sheet's cells, just past its 12-byte header, for s.table. Ruling 11:
      * holds three values, each s.header + 0xC (for table[column + 8],
-     * table[12] and table[17..19]). */
+     * table[12] and table[17..19]). FAKE: single-use holder of the cell
+     * table ahead of the descriptor's table store; stored directly: score 8
+     * (Q129). */
     Unk8009B400Record *cells;
 
     result = 0;
