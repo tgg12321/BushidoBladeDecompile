@@ -1,0 +1,273 @@
+{
+ "max_events": 1000,
+ "duration_s": 3600,
+ "script": {
+  "end_frame": 9300,
+  "phases": [
+   {
+    "frame": 0,
+    "name": "boot_intro"
+   },
+   {
+    "frame": 5490,
+    "name": "t_menu"
+   },
+   {
+    "frame": 6060,
+    "name": "top_menu"
+   },
+   {
+    "frame": 6100,
+    "name": "t_story"
+   },
+   {
+    "frame": 6810,
+    "name": "story_text"
+   },
+   {
+    "frame": 6910,
+    "name": "t_char"
+   },
+   {
+    "frame": 6950,
+    "name": "char_select"
+   },
+   {
+    "frame": 7300,
+    "name": "t_weapon"
+   },
+   {
+    "frame": 7360,
+    "name": "weapon_select"
+   },
+   {
+    "frame": 7900,
+    "name": "t_stage"
+   },
+   {
+    "frame": 8360,
+    "name": "stage_card"
+   },
+   {
+    "frame": 8800,
+    "name": "t_fight"
+   },
+   {
+    "frame": 8900,
+    "name": "fight"
+   },
+   {
+    "frame": 9200,
+    "name": "t_ko"
+   }
+  ],
+  "inputs": [
+   {
+    "frame": 5200,
+    "press": [
+     "START"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 5500,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 5800,
+    "press": [
+     "START"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6100,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6400,
+    "press": [
+     "START"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6700,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 7000,
+    "press": [
+     "START"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 7300,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 7600,
+    "press": [
+     "START"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 7900,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 8200,
+    "press": [
+     "START"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 8500,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 8800,
+    "press": [
+     "START"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 9000,
+    "press": [
+     "SQUARE"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 9060,
+    "press": [
+     "SQUARE"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 9120,
+    "press": [
+     "SQUARE"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 9180,
+    "press": [
+     "SQUARE"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 9240,
+    "press": [
+     "SQUARE"
+    ],
+    "hold": 6
+   }
+  ],
+  "screenshots": [
+   {
+    "frame": 5489,
+    "name": "boot_intro.last"
+   },
+   {
+    "frame": 6060,
+    "name": "top_menu.first"
+   },
+   {
+    "frame": 6099,
+    "name": "top_menu.last"
+   },
+   {
+    "frame": 6810,
+    "name": "story_text.first"
+   },
+   {
+    "frame": 6909,
+    "name": "story_text.last"
+   },
+   {
+    "frame": 6950,
+    "name": "char_select.first"
+   },
+   {
+    "frame": 7299,
+    "name": "char_select.last"
+   },
+   {
+    "frame": 7360,
+    "name": "weapon_select.first"
+   },
+   {
+    "frame": 7899,
+    "name": "weapon_select.last"
+   },
+   {
+    "frame": 8360,
+    "name": "stage_card.first"
+   },
+   {
+    "frame": 8799,
+    "name": "stage_card.last"
+   },
+   {
+    "frame": 8900,
+    "name": "fight.8900"
+   },
+   {
+    "frame": 8960,
+    "name": "fight.8960"
+   },
+   {
+    "frame": 9020,
+    "name": "fight.9020"
+   },
+   {
+    "frame": 9080,
+    "name": "fight.9080"
+   },
+   {
+    "frame": 9140,
+    "name": "fight.9140"
+   },
+   {
+    "frame": 9199,
+    "name": "fight.last"
+   },
+   {
+    "frame": 9299,
+    "name": "t_ko.f9299"
+   }
+  ]
+ },
+ "stubs": [
+  {
+   "at": "func_8003E6D8",
+   "phase": "t_fight"
+  }
+ ]
+}
