@@ -1,0 +1,13 @@
+{
+  "decision": "PASS",
+  "function": "func_800233AC",
+  "body_hash": "2687fc708bd6c14c",
+  "summary": "The FAKE tbl/row second handle is replaced by a plain D_8008EB40[a0_idx][a1_idx] read through its existing s16[3][3] declaration. Sandbox --disable all is 0, the full build matches the oracle, the body has no FAKEs, asm, volatile or alias left, and every name and prototype use is truthful.",
+  "evidence": [
+    {"construct": "a1_val = D_8008EB40[a0_idx][a1_idx];", "test_failed": "none (items 3/4/5 checked)", "explanation": "This uses the header declaration extern s16 D_8008EB40[3][3] (include/bb2.h:138, defined 3x3 in src/main/d_7D920.c:621). The indices are 0..2 from the pad's diagonal bits. No second handle, alias or raw offset is left."},
+    {"construct": "px local, scoped angle/var_N temps, (s32)0x1F8002B8 work-area argument", "test_failed": "none", "explanation": "px names collision_pos.vx, which is used for both pos[0] and off[0], so it is ordinary C. The temps carry true sine-table reads (Judge, cos = +0x400). The scratchpad argument matches the existing collision_TestSegmentWithWork prototype, (s32*, s32*, s32*, s16*, s32). None of these is cheat-asm, volatile or a fabricated call."},
+    {"construct": "mechanical", "test_failed": "none (item 1)", "explanation": "shadow sandbox func_800233AC --disable all: score 0, cheat_asm_stripped 0. shadow make: 'OK: bb2 matches!', and tus-check passes."}
+  ],
+  "next_action": "",
+  "hygiene_debt": ["src/main/9F9C.c:4072-4075 (func_80023648's FAKE label) still says 'pointer alias to D_8008EB40 ... as in func_800233AC'. After this commit func_800233AC has no such alias, so that cross-reference is stale. Drop 'as in func_800233AC' in a follow-up, or fold it into this commit, since it is a comment-only, byte-neutral edit."]
+}

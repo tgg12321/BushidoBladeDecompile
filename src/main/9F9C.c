@@ -3991,20 +3991,11 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
     }
 
     {
-        /* FAKE: pointer alias to D_8008EB40 (pointer-alias-fake-exception): the
-         * row pointer puts the table address in a register ahead of the
-         * a0_idx * 6 row offset, as the target does; written directly as
-         * D_8008EB40[a0_idx], EXPAND_SUM keeps the base a constant term until
-         * after the index insns (direct D_8008EB40[a0_idx]: score 13).
-         * D_8008EB40[a0_idx][a1_idx] and D_8008EB40 + a0_idx * 3 also miss. */
-        s16(*tbl)[3] = D_8008EB40;
         s32 px;
-        s16 *row;
         s32 a1_val;
 
         px = arg0->collision_pos.vx;
-        row = tbl[a0_idx];
-        a1_val = row[a1_idx];
+        a1_val = D_8008EB40[a0_idx][a1_idx];
 
         pos[0] = px;
         pos[1] = arg0->collision_pos.vy - 0x64;
