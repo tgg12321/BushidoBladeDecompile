@@ -356,9 +356,14 @@ class Gdb:
         while length > 0:
             n = min(length, 0x400)
             reply = self.cmd(f"m{addr:x},{n:x}")
-            if reply.startswith("E") or len(reply) != 2 * n:
+            # An error is `Exx`; data may itself start with hex `E`.
+            if len(reply) != 2 * n:
                 raise GdbError(f"read 0x{addr:08X},{n}: {reply[:16]}")
-            out += bytes.fromhex(reply)
+            try:
+                out += bytes.fromhex(reply)
+            except ValueError:
+                raise GdbError(f"read 0x{addr:08X},{n}: not hex "
+                               f"{reply[:16]!r}") from None
             addr += n
             length -= n
         return out
@@ -419,14 +424,12 @@ def decode_access(gdb: Gdb, regs: list[int], pc: int, also_prev: bool):
         yield at, addr, width, store, value
 
 
-def compare_memory(gdb: Gdb, addr: int, path: str | None, offset: int,
-                   n: int) -> str:
-    """"matches" when n bytes at addr equal the file's bytes at offset."""
-    if not path:
-        return "no file to compare"
-    want = runkit.read_head(path, n, offset)
-    if want is None or len(want) < n:
-        return f"cannot read {n} bytes of {path}"
+def compare_memory(gdb: Gdb, addr: int, want: bytes | None) -> str:
+    """"matches" when memory at addr holds exactly `want` (file bytes read
+    before the emulator started)."""
+    if not want:
+        return "nothing to compare"
+    n = len(want)
     try:
         got = gdb.mem(addr, n)
     except GdbError as ex:
@@ -487,8 +490,10 @@ def run(args) -> int:
         kind = "attached to a running emulator"
     start = {"kind": kind}
     start.update(prepare_memcards(args))
-    # Every input is hashed before the emulator can touch it.
+    # Every input is hashed before the emulator can touch it, and the bytes
+    # compared in memory later are read now.
     inputs = runkit.inputs_record(args, start, REPO)
+    args.expect = runkit.expected_memory(args)
     if not inputs["build"]["oracle_match"]:
         print("gdbtrace: WARNING build/bb2.exe is not the oracle; addresses "
               "may not describe the original game", file=sys.stderr)
@@ -621,7 +626,9 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
         # and no pause has been recorded past frame 0.
         armed_pc = gdb.regs()[37]
         paused = runkit.read_pause_frame(args.out)
-        if armed_pc == RESET_VECTOR and paused in (None, 0):
+        loaded = state == (1, 0, runkit.first_phase(script), False)
+        args.result["script_loaded_at_arming"] = loaded
+        if armed_pc == RESET_VECTOR and paused in (None, 0) and loaded:
             armed_frame = 0
         else:
             armed_frame = paused  # None: unknown
@@ -630,10 +637,11 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
         # Redux falls back to OpenBIOS when it cannot load --bios: compare
         # the ROM it is running with the recorded file.
         args.result["bios_in_memory"] = compare_memory(
-            gdb, RESET_VECTOR, args.bios, 0, 0x400)
+            gdb, RESET_VECTOR, args.expect.get("bios"))
         emit({"ev": "phase", "t": 0.0, "frame": state[1] if state else 0,
               "phase": phase, "armed_frame": armed_frame})
     after_script_stop = None  # regs at the last script stop
+    ambiguous = 0
 
     def entry_for_stop(regs, reply, interrupted):
         pc = regs[37] if len(regs) > 37 else 0
@@ -714,6 +722,10 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                     # paused on cannot be told from the pause: say so.
                     e2, acc2 = entry_for_stop(regs, reply, False)
                     if e2 is not None:
+                        # Redux may raise the watch again on resume: let
+                        # that stop through as the hit.
+                        after_script_stop = None
+                        ambiguous += 1
                         emit({"ev": "ambiguous-stop", "pc": regs[37],
                               "at": e2["spec"]["at"], "phase": phase,
                               "access": list(acc2) if acc2 else None})
@@ -748,6 +760,11 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             if e["hits"] >= int(sp.get("max_hits", 1 << 30)):
                 gdb.clear_bp(e["kind"], e["addr"], e["len"])
                 del armed[(e["kind"], e["addr"])]
+                # From here on this entry covers nothing: a hit map must
+                # not read later phases as "not reached".
+                emit({"ev": "disarmed", "t": round(time.time() - t0, 3),
+                      "at": sp["at"], "kind": e["kind"], "phase": phase,
+                      "after_hits": e["hits"]})
                 if not armed and not polls and not script:
                     break
     finally:
@@ -757,16 +774,16 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             except (GdbError, OSError):
                 pass
         ended = bool(state and state[3])
-        args.result.update({"script_ended": ended, "events": events})
+        args.result.update({"script_ended": ended, "events": events,
+                            "ambiguous_stops": ambiguous})
         if ended:
-            # The disc's EXE is the oracle build: its first 8 KiB (.rodata
-            # then .text, loaded at 0x80010000) is in RAM as built.
+            # The disc booted the build's EXE: all of .rodata + .text
+            # (0x80010000 up to the end of the last code section) is in RAM
+            # byte for byte as built.
             try:
-                exe = os.path.join(os.path.dirname(os.path.abspath(
-                    args.map)), "bb2.exe")
                 args.result["exe_in_memory"] = compare_memory(
-                    gdb, EXE_LOAD, exe, 0x800, 0x2000)
-            except (GdbError, OSError) as ex:
+                    gdb, EXE_LOAD, args.expect.get("exe"))
+            except OSError as ex:
                 args.result["exe_in_memory"] = f"not read: {ex}"
         if not ended:  # a finished script stays paused: cards stay as-is
             try:
@@ -1017,6 +1034,8 @@ def report(args) -> int:
     hits = collections.defaultdict(list)
     polls = collections.defaultdict(list)
     phases = []
+    odd = collections.Counter()
+    disarmed = {}
     start = end = None
     with open(args.trace, encoding="utf-8") as f:
         for line in f:
@@ -1027,6 +1046,10 @@ def report(args) -> int:
                 polls[rec["at"]].append(rec)
             elif rec["ev"] == "phase":
                 phases.append(rec)
+            elif rec["ev"] in ("unmatched-stop", "ambiguous-stop"):
+                odd[rec["ev"]] += 1
+            elif rec["ev"] == "disarmed":
+                disarmed[(rec["at"], rec["kind"])] = rec
             elif rec["ev"] == "start":
                 start = rec
             elif rec["ev"] == "end":
@@ -1069,6 +1092,16 @@ def report(args) -> int:
         label = at if kind == 0 else f"{at} (Z{kind} watch)"
         w.append(f"## {label}: {len(recs)} hits")
         w.append("")
+        if any(r.get("phase") for r in recs):
+            per = collections.Counter(r.get("phase") for r in recs)
+            w.append("Hits per phase: " + ", ".join(
+                f"{ph} {n}" for ph, n in per.items()))
+        d = disarmed.get((at, kind))
+        if d:
+            w.append(f"Disarmed after {d['after_hits']} hits (max_hits) in "
+                     f"phase {d.get('phase')}: later phases are not covered.")
+        if any(r.get("phase") for r in recs) or d:
+            w.append("")
         if kind == 0:
             sites = collections.Counter(
                 syms.name((r["ra"] - 8) & 0xFFFFFFFF) for r in recs)
@@ -1125,6 +1158,11 @@ def report(args) -> int:
                 label = lambda o, a=dump_addr[key]: syms.name(a + o)
             w += describe_words(syms, samples, label)
             w.append("")
+    if odd:
+        w.append("## Stops not credited to any entry")
+        w.append("")
+        w += [f"- {k}: {n} (see the capture)" for k, n in odd.items()]
+        w.append("")
     for at, recs in polls.items():
         w.append(f"## poll {at}: {len(recs)} samples over "
                  f"{recs[-1]['t'] - recs[0]['t']:.1f} s")

@@ -463,6 +463,9 @@ def inputs_record(args, start: dict, repo: str) -> dict:
         missing.append("committed trace tools (tools/trace is dirty)")
     if not m["build"]["oracle_match"]:
         missing.append("a build that is the oracle")
+    elif not elf_matches_exe(m["build"]["elf"]["path"],
+                             m["build"]["exe"]["path"]):
+        missing.append("an ELF (symbols) built with this EXE")
     if m.get("disc") and not m["disc"]["tracks"]:
         missing.append("disc tracks (the cue names no FILE)")
     if args.launch == "pcsx-redux" and str(
@@ -496,6 +499,75 @@ def read_head(path: str, n: int, offset: int = 0) -> bytes | None:
         return None
 
 
+def elf_sections(path: str):
+    """(addr, size, flags, file_offset, type) of each ELF32 LE section."""
+    with open(path, "rb") as f:
+        data = f.read()
+    if data[:4] != b"\x7fELF" or data[4] != 1 or data[5] != 1:
+        return data, []
+    shoff, = struct.unpack_from("<I", data, 0x20)
+    shentsize, shnum = struct.unpack_from("<HH", data, 0x2E)
+    out = []
+    for i in range(shnum):
+        sh = struct.unpack_from("<10I", data, shoff + i * shentsize)
+        out.append((sh[3], sh[5], sh[2], sh[4], sh[1]))
+    return data, out
+
+
+EXE_LOAD, EXE_HEADER = 0x80010000, 0x800
+
+
+MAP_TEXT = re.compile(r"^\s*\.text\s+0x([0-9a-fA-F]+)\s+0x([0-9a-fA-F]+)\s+\S")
+
+
+def map_text_end(map_path: str) -> int | None:
+    """End of the last object's .text in the link map (the ELF has one
+    .main section for .rodata + .text + .data, so it cannot say)."""
+    end = None
+    with open(map_path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            m = MAP_TEXT.match(line)
+            if m and int(m.group(2), 16):
+                e = int(m.group(1), 16) + int(m.group(2), 16)
+                end = e if end is None else max(end, e)
+    return end
+
+
+def expected_memory(args) -> dict:
+    """Bytes to find in emulated memory, read before launch: the BIOS ROM
+    head, and the EXE image from its load address to the end of .text
+    (.rodata then .text: data the game never writes)."""
+    exp = {}
+    if args.bios:
+        exp["bios"] = read_head(args.bios, 0x400)
+    d = os.path.dirname(os.path.abspath(args.map))
+    try:
+        end = map_text_end(args.map)
+    except OSError:
+        return exp
+    if end and end > EXE_LOAD:
+        exp["exe"] = read_head(os.path.join(d, "bb2.exe"), end - EXE_LOAD,
+                               EXE_HEADER)
+    return exp
+
+
+def elf_matches_exe(elf: str, exe: str) -> bool:
+    """The ELF that names symbols is the build of this EXE: every loaded
+    section's bytes sit at its address in the EXE image."""
+    try:
+        data, secs = elf_sections(elf)
+        with open(exe, "rb") as f:
+            image = f.read()[EXE_HEADER:]
+    except OSError:
+        return False
+    loaded = [(a, n, off) for a, n, fl, off, t in secs
+              if fl & 2 and t != 8 and n and a >= EXE_LOAD]  # ALLOC, !NOBITS
+    if not loaded:
+        return False
+    return all(data[off:off + n] == image[a - EXE_LOAD:a - EXE_LOAD + n]
+               for a, n, off in loaded)
+
+
 def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
     """Write <out>.manifest.json: inputs (hashed before launch), the
     emulator command, the outcome, and the SHA1 of every output."""
@@ -514,7 +586,10 @@ def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
         if result.get("bios_in_memory") != "matches":
             missing.append("the BIOS in memory is the recorded file")
         if result.get("exe_in_memory") != "matches":
-            missing.append("the EXE the disc loaded is the oracle build")
+            missing.append("the disc's EXE in RAM (.rodata+.text) is the "
+                           "oracle build")
+        if result.get("ambiguous_stops"):
+            missing.append("no watch access ambiguous with a script pause")
         problems = check_log(args.spec_obj["script"], args.out)
         m["script"] = {**m["script"], "problems": problems}
         if problems:
