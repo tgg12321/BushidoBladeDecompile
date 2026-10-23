@@ -1,0 +1,14 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6050	6199	top menu: first frame Story Mode highlighted, last frame Vs. CPU Mode highlighted	6080:DOWN	capture.top_menu.first.png,capture.top_menu.last.png
+t_char	6200	6499	transition; no screen claim	6200:CROSS	-
+char_select	6500	6799	Select Character	6500:START	capture.char_select.first.png,capture.char_select.last.png
+t_weapon	6800	6899	transition; no screen claim	6800:CROSS	-
+weapon_select	6900	7399	Select Weapon	7100:START	capture.weapon_select.first.png,capture.weapon_select.last.png
+t_load	7400	8349	transition; no screen claim (its one screenshot, frame 8000, shows red splatter and the Bushido Blade 2 logo)	7400:CROSS,7700:START,8000:CROSS,8300:START	capture.t_load.mid.png
+fight	8350	8649	first Vs. CPU Mode fight (0 KILLS), up to the opponent's hit on the player	8500:SQUARE,8560:SQUARE,8620:SQUARE	capture.fight.first.png,capture.fight.last.png
+t_ko	8650	8749	transition; no screen claim	-	-
+after_ko	8750	9299	player down after the KO, no menu	9000:CROSS	capture.after_ko.first.png,capture.after_ko.last.png
+t_pause	9300	9399	transition; no screen claim	9300:START	-
+pause_menu	9400	9999	Pause Menu (Continue / Return to Sub Menu / Return to Top Menu) over the post-KO scene	-	capture.pause_menu.first.png,capture.pause_menu.last.png
