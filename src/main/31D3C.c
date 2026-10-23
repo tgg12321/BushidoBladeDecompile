@@ -311,9 +311,7 @@ void light_ApplyPointLight(s32 a0, s32 a1) {
      * call; naming D_800F62E0 directly re-forms the address and the registers
      * rotate (score 45). */
     var_0 = D_800F62E0;
-    var_1 = 0;
-
-    do {
+    for (var_1 = 0; var_1 < 2; var_1++) {
         tbl = var_0;
         if (var_1 == 0) {
             ptr = (s32 *)a0;
@@ -374,14 +372,11 @@ void light_ApplyPointLight(s32 a0, s32 a1) {
         tbl->cmat.m[0][1] = D_800A3238[0];
         tbl->cmat.m[1][1] = D_800A3238[1];
         tbl->cmat.m[2][1] = D_800A3238[2];
-        goto end_loop;
+        continue;
 
     skip:
         tbl->light[1].on = 0;
-
-    end_loop:
-        var_1++;
-    } while (var_1 < 2);
+    }
 
     calc_LightMatrix(var_0);
     calc_LightMatrix(&D_800F62E0[1]);
