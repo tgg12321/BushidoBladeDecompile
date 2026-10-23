@@ -133,9 +133,10 @@ s32 sprintf(char *out, char *f, ...) {
         case 'd':
         case 'i':
             num = va_arg(args, s32);
-            /* FAKE: do-while(0) kept from SOTN; without it the va_arg load and
-             * the isHalf test swap v0/v1 and reorder: score 5 (all four:
-             * 23) */
+            /* do-while(0), as SOTN's sprintf (owner ruling Q128); without it
+             * the va_arg load and the isHalf test swap v0/v1 and reorder: score
+             * 5 (all four: 23) */
+            /* SOTN: src/main/psxsdk/libc/sprintf.c:116 @db41b28 */
             do {
                 if (info.isHalf) {
                     num = (s16)num;
@@ -151,9 +152,10 @@ s32 sprintf(char *out, char *f, ...) {
 
         case 'u':
             num = va_arg(args, u32);
-            /* FAKE: do-while(0) kept from SOTN; without it the va_arg load and
-             * the isHalf test swap v0/v1 and reorder: score 8 (all four:
-             * 23) */
+            /* do-while(0), as SOTN's sprintf (owner ruling Q128); without it
+             * the va_arg load and the isHalf test swap v0/v1 and reorder: score
+             * 8 (all four: 23) */
+            /* SOTN: src/main/psxsdk/libc/sprintf.c:135 @db41b28 */
             do {
                 if (info.isHalf) {
                     num = (u16)num;
@@ -190,9 +192,10 @@ s32 sprintf(char *out, char *f, ...) {
 
         case 'o':
             num = va_arg(args, u32);
-            /* FAKE: do-while(0) kept from SOTN; without it the va_arg load and
-             * the isHalf test swap v0/v1 and reorder: score 5 (all four:
-             * 23) */
+            /* do-while(0), as SOTN's sprintf (owner ruling Q128); without it
+             * the va_arg load and the isHalf test swap v0/v1 and reorder: score
+             * 5 (all four: 23) */
+            /* SOTN: src/main/psxsdk/libc/sprintf.c:171 @db41b28 */
             do {
                 if (info.isHalf) {
                     num = (u16)num;
@@ -234,9 +237,10 @@ s32 sprintf(char *out, char *f, ...) {
             hexChars = "0123456789abcdef";
         printHex:
             num = va_arg(args, u32);
-            /* FAKE: do-while(0) kept from SOTN; without it the va_arg load and
-             * the isHalf test swap v0/v1 and reorder: score 5 (all four:
-             * 23) */
+            /* do-while(0), as SOTN's sprintf (owner ruling Q128); without it
+             * the va_arg load and the isHalf test swap v0/v1 and reorder: score
+             * 5 (all four: 23) */
+            /* SOTN: src/main/psxsdk/libc/sprintf.c:212 @db41b28 */
             do {
                 if (info.isHalf) {
                     num = (u16)num;
