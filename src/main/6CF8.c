@@ -313,7 +313,8 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
     var_3 = 0;
     /* FAKE: pass-through handle on the parameter, used once at DrawOTag;
        moves the prologue's $s5 save/init group from first to third. Removed:
-       score 4 (pointer-alias-fake-exception) */
+       score 4; removed with the do-while wrapper: score 25
+       (pointer-alias-fake-exception) */
     var_7 = arg0;
     if (D_800A38DC == 2) {
         var_3 = D_800A389A < 1;
@@ -346,7 +347,12 @@ void menu_RunPauseMenu(GpuDb *arg0, s32 arg1) {
         DrawSync(0);
         VSync(2);
         /* FAKE: do-while(0) raises var_1's loop-depth weight above var_2's,
-           seating var_1 in $s0 and var_2 in $s1; unwrapped: score 21
+           seating var_1 in $s0 and var_2 in $s1; unwrapped: score 21.
+           Unwrapped trials: buffer-first/inline idx/pointer base/for: 21;
+           cursor if/else: 23; preincrement/decrement wrap: 24;
+           post-loop switch: 28; buffer-derived indices: 45; var_1 as
+           g_gpu_db + idx or declared first / last: 21; set just before
+           PutDispEnv: 65; no var_1 (g_gpu_db[idx] at both calls): 73
            (do-while-zero-exception) */
         do {
             PutDispEnv(&var_1->disp);

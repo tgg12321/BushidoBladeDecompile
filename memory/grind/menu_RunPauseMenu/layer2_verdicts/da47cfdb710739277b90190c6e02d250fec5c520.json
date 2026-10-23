@@ -1,0 +1,20 @@
+{
+  "decision": "PASS",
+  "verdict": "PASS",
+  "function": "menu_RunPauseMenu",
+  "body_hash": "ffab90cb2c008157",
+  "summary": "Comment-only update of two existing FAKE labels; body_hash unchanged vs main; the new scores re-measured live and they match the comments.",
+  "evidence": [],
+  "findings": [
+    "Diff fce7dd85e (parent 42530c936) touches only src/main/6CF8.c, and only inside the two /* FAKE */ comments in menu_RunPauseMenu: 8 lines added, 2 removed. No code token changes. layer2 body_hash is ffab90cb2c008157 on both main and the trusted tree, so the code is identical.",
+    "Item 2: no asm, register pins, barriers, pipeline, Makefile or flag edits. Item 4: no new externs or types. Neither label changes which constructs the code uses.",
+    "Item 3, do-while(0) label: I re-scored the unwrapped forms from the main checkout through codex_worker shadow. pause_unwrap 21, pause_cursor_if 23, pause_cursor_wrap 24 (uses --var_2 and ++var_2, so 'preincrement/decrement' is accurate), cl_late 65, cl_direct 73. Each candidate differs from the committed body only as its name describes. The label stays measured and true; the wrapper is not byte-neutral.",
+    "Item 3, var_7 label: the new clause 'removed with the do-while wrapper: score 25' re-measured as 25 (pause_both_removed: var_7 dropped, DrawOTag(&arg0->ot[0x1007]), unwrapped). The existing 'Removed: score 4' clause is unchanged by this commit.",
+    "Item 5: no zero-score form with fewer FAKEs was found or claimed. Every ablation measured scores above 0 (4, 21, 23, 24, 25, 65, 73)."
+  ],
+  "next_action": "",
+  "hygiene_debt": [
+    "Commit body says 'pre-decrement wrap 24', but the variant pre-increments as well as pre-decrements; the in-source comment ('preincrement/decrement') is the accurate one.",
+    "The scores 28 (post-loop switch) and 45 (buffer-derived indices) were not re-scored by this reviewer; they are the worker's measurements."
+  ]
+}
