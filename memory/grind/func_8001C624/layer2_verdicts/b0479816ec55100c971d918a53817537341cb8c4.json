@@ -1,0 +1,1 @@
+{"decision": "PASS", "function": "func_8001C624", "body_hash": "a6caba0779165616", "summary": "The setVector raising local by 0x384 is the target's own work (lw/addiu -900/sw on 16/20/24($sp) after the escaping call), not a codegen-only construct, so it needs no FAKE label; the new note is true; rest of body plain C. sandbox 0, SHA1 == oracle."}

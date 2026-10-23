@@ -1,0 +1,1 @@
+{"decision": "PASS", "function": "fighter_Update", "body_hash": "1840857cbf787430", "summary": "The mirrored `rec->unk_A6 >= rec->move_frame` is a truthful spelling choice (Ruling 1(3)), not a codegen-only construct, so it needs no FAKE label; the remaining four-role temp label is accurate and load-bearing (25). Items 2-5 met; sandbox 0, SHA1 == oracle."}
