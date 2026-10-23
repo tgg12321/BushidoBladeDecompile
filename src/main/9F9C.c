@@ -3727,11 +3727,6 @@ void fighter_Init(s32 idx, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
             var_1 = p->other->base_pos;
             func_80022224(idx, &p->base_pos.x, &var_1.x);
         } else {
-            /* FAKE: default's two fight_GetStartPosition calls repeated in this
-             * arm (duplicated-statement-into-arms, Q47); cross-jump merges the
-             * copies. With the copy, the dispatch tests mode == 0 first and
-             * reaches case 2/3 through the target's `j`; every shared form
-             * lays the dispatch out in another order. */
             fight_GetStartPosition(idx, &p->base_pos.x, var_5);
             fight_GetStartPosition(idx == 0, &var_1.x, var_5);
         }
