@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80049C24",
+  "body_hash": "6eaa0b0a4769ab3f",
+  "summary": "FAKE label retired honestly: count_slot is the output buffer's reserved count-header word (target 0x80049D18-0x80049D30 copies the cursor to v1, steps s3, stores the count through v1; the 2 / 5 pack ids follow, data at arg1 + 0xC), written once and read once; var_14 = ~var_s0; var_14 >>= 31 is a Ruling 4 split with no dead statement (one expression 2, re-measured). Remaining var_s0 = var_s2 FAKE carries a measured reason. Sandbox --disable all 0, no cheat-asm."
+}
