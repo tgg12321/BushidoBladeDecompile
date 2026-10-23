@@ -566,7 +566,10 @@ void camera_UpdateTwoFighterView(
     var_16 = var_2->unk_10.vx;
 
     for (p = 0; p < 2; p++) {
-        s32 hi, lo;
+        /* The far end of either arm's bisection (above work when the eye is
+         * blocked, below it when clear); a separate hi / lo per arm: score
+         * 29. */
+        s32 bound;
 
         work = var_16;
         var_2->unk_10.vx = work;
@@ -593,19 +596,13 @@ void camera_UpdateTwoFighterView(
             } else if (D_800A30F4[p] > 0x200) {
                 D_800A30F4[p] = 0x200;
             }
-            hi = work + D_800A30F4[p] / 8;
-            /* FAKE: cancellation pair (F6, no-new-park-categories): the extra
-             * references to `hi` raise its allocation priority above work's, so
-             * the bounds take $s0 and `work` $s1, as in the target; combine
-             * folds the pair to nothing. Without: score 29. */
-            hi++;
-            hi--;
+            bound = work + D_800A30F4[p] / 8;
             for (i = 0; i < 2; i++) {
-                s32 d = (work - hi) & 0xFFF;
+                s32 d = (work - bound) & 0xFFF;
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
-                var_2->unk_10.vx = hi + d / 2;
+                var_2->unk_10.vx = bound + d / 2;
                 camera_CalcEye(var_2, &scr->eye.vx);
                 if (collision_TestSegmentWithWork(
                         (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
@@ -613,10 +610,10 @@ void camera_UpdateTwoFighterView(
                     scr->nrm[1] < -0x320) {
                     work = var_2->unk_10.vx;
                 } else {
-                    hi = var_2->unk_10.vx;
+                    bound = var_2->unk_10.vx;
                 }
             }
-            work = hi;
+            work = bound;
             D_800A30F0[p] = 1;
         } else {
             if (D_800A30F0[p]) {
@@ -630,20 +627,20 @@ void camera_UpdateTwoFighterView(
             } else if (D_800A30F4[p] > 0x100) {
                 D_800A30F4[p] = 0x100;
             }
-            lo = work - D_800A30F4[p] / 8;
+            bound = work - D_800A30F4[p] / 8;
             for (j = 0; j < 2; j++) {
-                s32 d = (work - lo) & 0xFFF;
+                s32 d = (work - bound) & 0xFFF;
                 if (d >= 0x800) {
                     d -= 0x1000;
                 }
-                var_2->unk_10.vx = lo + d / 2;
+                var_2->unk_10.vx = bound + d / 2;
                 camera_CalcEye(var_2, &scr->eye.vx);
                 if (collision_TestSegmentWithWork(
                         (s32 *)&scr->scr28, (s32 *)&scr->eye, scr->hit,
                         scr->nrm, (s32)&scr->unk60) &&
                     scr->nrm[1] < -0x320) {
                     func_8001A67C(var_2->h30[p], (s32 *)&scr->eye, scr->hit);
-                    lo = var_2->unk_10.vx;
+                    bound = var_2->unk_10.vx;
                 } else {
                     work = var_2->unk_10.vx;
                 }
