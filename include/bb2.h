@@ -298,12 +298,20 @@ extern s32 D_800A36AC;
  * placed (read by snd_QueuePositionalSound as the listener) */
 extern Rec44 *g_listener_cam;
 extern CdlATV g_cd_atv_target;
+/* FAKE: the high halfword (+2) of the s32 link pad word D_800A36C0 as its own
+ * symbol. comb_ExchangePad reads it lui / %lo (symbol + 2) while the word
+ * and its low half go gp-relative; one Q33 union per pad word scores 4
+ * (member reads force the address into $s0). Owner ruling pending. */
 extern s16 D_800A36C2;
 extern s32 D_800A36C4;
 extern s16 D_800A36C6;
 extern u8 D_800A36C8;
 extern u16 D_800A36CA;
 extern u8 D_800A36CC;
+/* FAKE: the high halfword (+2) of the s32 link pad word D_800A36D0 as its own
+ * symbol. comb_ExchangePad reads it lui / %lo (symbol + 2) while the word
+ * and its low half go gp-relative; one Q33 union per pad word scores 4
+ * (member reads force the address into $s0). Owner ruling pending. */
 extern s16 D_800A36D2;
 extern s32 D_800A36D4;
 extern MoveScript *D_800A36D8;

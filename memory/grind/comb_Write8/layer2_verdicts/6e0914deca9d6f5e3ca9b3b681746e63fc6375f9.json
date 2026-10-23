@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "comb_Write8",
+  "body_hash": "b8f1e0bbce743b8b",
+  "summary": "Pure C, sandbox 0, no codegen-shaping constructs. The unused void *buf parameter is the honest signature: both callers in the target load &g_comb_send_buf into $a0 before the jal, and comb_Write8's target never reads $a0 (its first use is lui $a0 for GetRCnt).",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": ["The parameter is unused: the body writes g_comb_send_buf directly. A one-line comment saying so would help readers. Not a gate."]
+}
