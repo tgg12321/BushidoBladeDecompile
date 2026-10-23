@@ -1,0 +1,14 @@
+{
+  "decision": "PASS",
+  "function": "func_800692C0",
+  "body_hash": "4e8121b30bcfa26e",
+  "summary": "Comment-only relabel of the three FAKEs in func_800692C0. I re-measured every score on behaviour-equivalent rewrites and each label is true; no FAKE subset reaches 0; no unlabelled cheat.",
+  "evidence": [
+    {"construct": "`one = 1` constant holder (FAKE)", "test_failed": "none (items 3/5 checked)", "explanation": "Re-measured: replacing it with the literal 1 scores 2, as the label says. Labelled, with a measured reason."},
+    {"construct": "do { ... } while (0) wrapper (FAKE)", "test_failed": "none (items 3/5 checked)", "explanation": "Re-measured: unwrapped scores 7, and a plain for loop with arg2++/arg3++ in the header and all three FAKEs removed scores 15, both as labelled. Pairwise removals also stay nonzero: literal+unwrap 9, element step+literal 5, element step+unwrap 10, all three with the element step 12. So no lighter byte-exact form is known (item 5)."},
+    {"construct": "byte-offset cursor `arg3 = (s16 *)((u8 *)arg3 + a3_off)` (FAKE)", "test_failed": "none (items 3/5 checked)", "explanation": "Same behaviour as arg3[i] (offsets are 0 then 2 bytes). Re-measured: element-count step scores 3; arg3[i] with the *arg2 update before i++ (the equivalent form; this corrects the prior FAIL's arg3[i+1] trial) scores 11; Codex's plain_index.c (for loop, arg3[i], literal, no wrapper) scores 18, as labelled."},
+    {"construct": "D_800A32D0 file-scope extern, D_800A32C8 via bb2.h", "test_failed": "none (item 4 checked)", "explanation": "D_800A32D0 is defined only in this TU and has no header declaration, so there is no duplicate type. Item 2: no asm, pins, barriers or build changes. The current body scores 0 under sandbox --disable all."}
+  ],
+  "next_action": "",
+  "hygiene_debt": ["The '18 with the other two FAKEs also removed' figure is spelling-dependent: the same arg3[i] form written as a do-while (unwrapped, literal 1) scores 17. That is true as measured but not a minimum. The 'for header 9' figure was not independently re-measured (the header spelling is ambiguous)."]
+}

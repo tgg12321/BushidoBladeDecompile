@@ -234,15 +234,17 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     sum = 0;
     i = 0;
     arg1 <<= 4;
+    /* FAKE: `one` constant holder schedules `li $t6,1` at the preheader;
+     * literal 1: score 2 (also 2 with the *arg2 update before i++). */
     one = 1;
     /* FAKE: do{}while(0) around the loop seats sum in $t2 and the reduced
-     * i * 16 in $t1 (without it: score 7); the `one` constant-holder schedules
-     * `li $t6,1` at the preheader (the literal: score 2). */
+     * i * 16 in $t1; unwrapped: score 7 (for header 9). All three FAKEs
+     * removed, plain for / while / do-while with arg2++ / arg3++: 15. */
     do {
         a3_off = 0;
         do {
-            /* FAKE: byte-offset step (arg3 += a3_off with an element count
-             * scores 3) */
+            /* FAKE: byte-offset step; element-count step: score 3,
+             * arg3[i]: 11 (18 with the other two FAKEs also removed). */
             arg3 = (s16 *)((u8 *)arg3 + a3_off);
             maskB = D_800A32D0[i] << arg1;
             maskA = D_800A32C8[i] << arg1;
