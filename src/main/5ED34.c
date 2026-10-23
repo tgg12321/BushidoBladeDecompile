@@ -1070,12 +1070,10 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
      * ordinary-c-judge-decidable). */
     Unk8009B0E0Record **var_0;
     s32 flag;
-    /* several values of one kind: the cell table following a sheet
-     * header (s->header->cells in the two loop-2 draws, s->header[2].cells
-     * for the last loop) (Ruling 11, proof at tag pre-slim-2026-10-01). FAKE:
-     * the holder between the header's cells and s->table; stored directly:
-     * score 9. */
-    Unk8009B400Record *var_2;
+    /* the cell table following a sheet header (s->header->cells in the two
+     * loop-2 draws, s->header[2].cells for the last loop). Ruling 11: several
+     * values of that one kind (proof at tag pre-slim-2026-10-01). */
+    Unk8009B400Record *cells;
     s16 i;
     s16 var_4;
     s16 var_5;
@@ -1215,6 +1213,9 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 if (D_800A35C4->unk_04[i] != 0) {
                     D_800A35C4->unk_04[i]--;
                 }
+                /* FAKE: reused: re-stores the unk_74 table var_0 already
+                 * holds; dropped: score 4; read in place, or a second local:
+                 * 2. */
                 var_0 = D_800A35A8->unk_74;
                 s->header = var_0[3];
                 if (D_800A3540[i] < 12) {
@@ -1222,8 +1223,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 }
                 s->header->count = D_800A3540[i];
                 s->has_color = 0;
-                var_2 = s->header->cells;
-                s->table = var_2;
+                cells = s->header->cells;
+                s->table = cells;
                 s->x = (D_800A3590[i] << 6) + 0x85;
                 s->y = 0xB6 - (D_800A3594[i] << 5);
                 s->ot_idx = 7;
@@ -1243,8 +1244,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 } else {
                     s->header = var_0[i];
                 }
-                var_2 = s->header->cells;
-                s->table = var_2;
+                cells = s->header->cells;
+                s->table = cells;
                 s->col_r = s->col_g = s->col_b =
                     ((rsin(((D_800A35C4->unk_08 & 0x1F) << D_800A3544[i]) +
                            i * 511) *
@@ -1267,6 +1268,9 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
 
                     snd_QueueSound(1, 0x7F, 0x7F);
                     flag = 2;
+                    /* FAKE: reused: recomputes the rect row var_6 already
+                     * holds; dropped: score 32; a block-scoped second local,
+                     * or computing it only in the live arm: 12. */
                     var_6 = D_800A35A8->unk_7C;
                     var_6 += i * 8;
                     if (D_8009BC7C[D_800A3560.rec[i].unk1] & 2) {
@@ -1303,11 +1307,11 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
     s->scale_y = 0x80;
     s->has_color = 0;
     s->ot_idx = 0xC;
-    var_2 = s->header[2].cells;
+    cells = s->header[2].cells;
     for (i = 0; i < 1 + D_800A35B0 + D_800A3558; i++) {
         if (D_800A3560.rec[i].unk0 != 5 && D_800A3560.rec[i].unk0 != 0x10 &&
             D_800A3578 != 3) {
-            s->table = var_2;
+            s->table = cells;
             s->x = (D_800A3590[i] << 6) + 0x80;
             s->y = 0xAC - (D_800A3594[i] << 5);
             if (D_800A35BC == 2 && !(D_800A3568->unk14_17) && i == 1) {
