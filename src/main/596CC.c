@@ -1678,6 +1678,10 @@ s32 func_8006C1FC(s32 a0, s32 a1) { return func_8006C168(a0, a1); }
 void func_8006C21C(s32 *arg0) {
     Unk8007352CRec s;
     s32 j;
+    /* FAKE: reused: re-stored with the sheet list it already holds at the
+     * start of phases 2, 3 and 4 (one pseudo across the function); each
+     * re-store dropped: score 8 / 15 / 18, all three 28; a once-written local
+     * per phase: 15 */
     Unk8009B0E0Record **table;
     Rec_8006C21C *recs;
     Rec_8006C21C *rec;
@@ -1715,11 +1719,9 @@ void func_8006C21C(s32 *arg0) {
     s32 x;
     s32 row;
     s32 var_18;
-    /* the sprite sheet's 8-byte cells, just past its 12-byte header. Ruling 9:
-     * one meaning, header + 0xC at every write. FAKE: single-use holder of the
-     * cell table ahead of the descriptor's table store; stored directly:
-     * score 12. */
-    Unk8009B400Record *var_19;
+    /* the sprite sheet's 8-byte cells, just past its 12-byte header, for
+     * s.table. Ruling 9: one meaning, header + 0xC at every write. */
+    Unk8009B400Record *cells;
 
     var_8 = 0;
     var_11 = 0;
@@ -1733,8 +1735,8 @@ void func_8006C21C(s32 *arg0) {
     s.x = xpos;
     s.header = table[0];
     s.semi = 0;
-    var_19 = s.header->cells;
-    s.table = var_19;
+    cells = s.header->cells;
+    s.table = cells;
     s.sprt_out = arg0[5];
     arg0[5] = gpu_AddSpriteCells(&s);
     SetDrawMode((DR_MODE *)arg0[7], 1, var_11,
@@ -1754,8 +1756,8 @@ void func_8006C21C(s32 *arg0) {
                     ((1 << var_9) << (var_15 * 4))) {
                     s.header = table[var_9 + 13];
                     s.semi = 0;
-                    var_19 = s.header->cells;
-                    s.table = var_19;
+                    cells = s.header->cells;
+                    s.table = cells;
                     s.sprt_out = arg0[5];
                     arg0[5] = gpu_AddSpriteCells(&s);
                 }
@@ -1775,8 +1777,8 @@ void func_8006C21C(s32 *arg0) {
     table = ((Unk8006919CRec *)arg0[1])->unk_30;
     s.header = table[1];
     s.semi = 0;
-    var_19 = s.header->cells;
-    s.table = var_19;
+    cells = s.header->cells;
+    s.table = cells;
     s.sprt_out = arg0[5];
     arg0[5] = gpu_AddSpriteCells(&s);
     for (var_9 = 0; var_9 < 6; var_9++) {
@@ -1785,8 +1787,8 @@ void func_8006C21C(s32 *arg0) {
         s.has_color = 0;
         s.semi = 0;
         s.y = 0;
-        var_19 = s.header->cells;
-        s.table = var_19;
+        cells = s.header->cells;
+        s.table = cells;
         for (j = 0; j < 2; j++) {
             s.x = j ? 280 : 0;
             s.sprt_out = arg0[5];
