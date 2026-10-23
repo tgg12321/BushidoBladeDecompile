@@ -31,6 +31,9 @@ SECTIONS
     header_ROM_END = __romPos;
     header_VRAM_END = .;
 
+    /* .main is SUBALIGN(2): the objects declare 16-byte section alignment,
+     * which the original layout does not follow. `. = ALIGN(4);` stands
+     * where a word-aligned module section follows one ending at 2 mod 4. */
     main_ROM_START = __romPos;
     main_VRAM = ADDR(.main);
     .main 0x80010000 : AT(main_ROM_START) SUBALIGN(2)
@@ -404,7 +407,7 @@ SECTIONS
         build/src/main/psxsdk/libc2/printf.o(.data);
         build/src/main/psxsdk/libc2/prnt.o(.data);
         build/src/main/psxsdk/libc2/ctype.o(.data);
-        build/asm/data/8C60E.data.o(.data);
+        . = ALIGN(4);
         build/src/main/psxsdk/libc2/memchr.o(.data);
         build/src/main/psxsdk/libc2/putchar.o(.data);
         build/src/main/psxsdk/libc2/sprintf.o(.data);
@@ -459,11 +462,12 @@ SECTIONS
         build/src/main/psxsdk/libgte/fgo_05.o(.data);
         build/src/main/psxsdk/libgte/fgo_06.o(.data);
         build/src/main/psxsdk/libgte/sincos.o(.data);
-        build/asm/data/8CF96.data.o(.data);
+        . = ALIGN(4);
+        build/asm/data/8CF98.data.o(.data);
         build/src/main/psxsdk/libgte/sqrtbl.o(.data);
         build/src/main/psxsdk/libgte/cstbl.o(.data);
         build/src/main/psxsdk/libgte/ratan.o(.data);
-        build/asm/data/9192A.data.o(.data);
+        . = ALIGN(4);
         build/src/main/psxsdk/libgte/patchgte.o(.data);
         build/src/main/psxsdk/libcd/event.o(.data);
         build/src/main/psxsdk/libapi/a07.o(.data);
@@ -519,7 +523,7 @@ SECTIONS
         build/src/main/psxsdk/libsnd/vm_f.o(.data);
         build/src/main/psxsdk/libsnd/vm_init.o(.data);
         build/src/main/psxsdk/libsnd/vm_n2p.o(.data);
-        build/asm/data/93066.data.o(.data);
+        . = ALIGN(4);
         build/src/main/psxsdk/libsnd/vm_no1.o(.data);
         build/src/main/psxsdk/libsnd/vm_nowof.o(.data);
         build/src/main/psxsdk/libsnd/vm_nowon.o(.data);
@@ -574,7 +578,7 @@ SECTIONS
         build/src/main/psxsdk/libapi/a72.o(.data);
         build/src/main/d_7D870.o(.data);
         build/src/main/6CF8.o(.sdata);
-        build/asm/data/938EA.data.o(.data);
+        . = ALIGN(4);
         build/src/main/9F9C.o(.sdata);
         build/asm/data/938FE.data.o(.data);
         build/src/main/17AFC.o(.sdata);
@@ -583,14 +587,14 @@ SECTIONS
         build/src/main/25C38.o(.sdata);
         build/asm/data/939DC.data.o(.data);
         build/src/main/267A8.o(.sdata);
-        build/asm/data/939E6.data.o(.data);
+        . = ALIGN(4);
         build/src/main/28514.o(.sdata);
         build/src/main/28708.o(.sdata);
-        build/asm/data/93A16.data.o(.data);
+        . = ALIGN(4);
         build/src/main/2B344.o(.sdata);
         build/src/main/309CC.o(.sdata);
         build/src/main/31D3C.o(.sdata);
-        build/asm/data/93A3E.data.o(.data);
+        . = ALIGN(4);
         build/src/main/35000.o(.sdata);
         build/src/main/368E4.o(.sdata);
         build/src/main/3AB48.o(.sdata);
@@ -606,7 +610,7 @@ SECTIONS
         build/src/main/9F9C.o(.sbss);
         build/asm/data/93B12.data.o(.data);
         build/src/main/28708.o(.sbss);
-        build/asm/data/93B56.data.o(.data);
+        . = ALIGN(4);
         build/src/main/2B344.o(.sbss);
         build/src/main/309CC.o(.sbss);
         build/asm/data/93B7C.data.o(.data);

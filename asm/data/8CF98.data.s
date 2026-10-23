@@ -3,7 +3,6 @@
 .section .data, "wa"
     .align 0
 
-    /* 8CF96 8009C796 */ .short 0x0000  /* padding: MSC00's .data starts 4-aligned */
 
 nonmatching D_8009C798
 
