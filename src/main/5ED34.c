@@ -1944,12 +1944,6 @@ void func_80073200(Unk8006EACCRec *arg0) {
         } else {
             s.col_r = 0xA8;
             s.col_g = 0x6E;
-            /* FAKE: `s.col_b = 0x14;` written in both arms instead of once at
-             * the join (cross-jump re-merges them: no extra insn). Keeping
-             * the sb stores out of the join block lets the first
-             * gpu_AddScaledSpriteQuads call's `&s` argument set land after
-             * them, as in the target; stored once at the join it is emitted
-             * first: score 2 */
             s.col_b = 0x14;
         }
         s.ot_idx = 0x14;
