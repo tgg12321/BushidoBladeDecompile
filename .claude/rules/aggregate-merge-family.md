@@ -1,7 +1,7 @@
 ---
 name: aggregate-merge-family
 paths: [".claude/rules/aggregate-merge-family.md"]
-description: "Frozen-list family: merging per-word splat D_ scalars into one aggregate — prongs (a)-(e), compiler-necessity evidence (a1)-(a4′), forced-in bytes (Q13/Q14), and the narrow per-function F4/item-4 exceptions (Q63, Q73, Q96-Q99)."
+description: "Frozen-list family: merging per-word splat D_ scalars into one aggregate — prongs (a)-(e), compiler-necessity evidence (a1)-(a4′), forced-in bytes (Q13/Q14), and the narrow per-function F4/item-4 exceptions (Q63, Q73, Q96-Q99, Q125)."
 metadata:
   type: rules
   tier: hygiene
@@ -60,7 +60,7 @@ sub-word reads) AND signed/unsigned builds of every C accessor are byte-identica
 member keeps main's current type (or the SDK type assigned to it), named in the ledger. Names
 follow the naming-evidence rules (offset names always ok).
 
-## Narrow per-function exceptions (Q63, Q73, Q96-Q99); nothing else may cite them
+## Narrow per-function exceptions (Q63, Q73, Q96-Q99, Q125); nothing else may cite them
 
 Interim labels for the named functions only (owner direction 2026-10-03): each is retired, not
 extended, once a one-object spelling matches.
@@ -96,9 +96,16 @@ extended, once a one-object spelling matches.
 - **CdlREAD D_800A14D0 (Q99, item 4):** one `extern volatile CdlREAD D_800A14D0` in libcd.h,
   with the saved result pointer as `.result` at 0x34 (psyz ReadAttr); every cdread.c access goes
   through it. The cb_read per-member FAKE is retired.
+- **D_800A36C2 / D_800A36D2 (Q125, item 4):** comb_ExchangePad only. The high halfwords (+2) of
+  the s32 link pad words D_800A36C0 / D_800A36D0 as their own `extern s16` in bb2.h, each
+  `/* FAKE */`-annotated with the measured scores; every other access goes through the s32 words.
+  Basis: the original reads each word and its low half gp-relative and the high half lui / %lo
+  (the `.comm` S+k rule of [[per-file-gp-model]]); every one-object form measured failing (Q33 union
+  per word 4, its member reads forcing the address into $s0; (u16) word low reads 4; u16 h[2] 7;
+  s16 h[2] with casts 4; aligned halves 4), scores in the fake-reduce row.
 
 Records: docs/grind/decisions.md OWNER RULING entries of 2026-08-17, 2026-09-03, 2026-09-26
-(Q7, Q13, Q14) and 2026-09-30 (Q63, Q73) and 2026-10-03 (Q96-Q99).
+(Q7, Q13, Q14) and 2026-09-30 (Q63, Q73) and 2026-10-03 (Q96-Q99) and 2026-10-23 (Q125).
 
 Related: [[aggregate-declaration-views]] · [[split-scalars-hide-aggregate]] ·
 [[header-type-correction-from-use-sites]]

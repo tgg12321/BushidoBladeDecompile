@@ -54,7 +54,7 @@ item that links them (e.g. [[phantom-frame-pad-family]]'s allowlist row and labe
      file's conditions (1)-(4) and its `/* SOTN: */` tag are blocking for this route.
 4. **Existing types.** When a header already declares the object (struct, array, typed
    extern), access it through that declaration: no second extern, alias symbol or
-   raw-offset cast for the same bytes (per-function exceptions Q98/Q99:
+   raw-offset cast for the same bytes (per-function exceptions Q98/Q99/Q125:
    [[aggregate-merge-family]]). A new aggregate the function needs goes in the shared
    header, not at block scope.
 5. **Simplest known form.** Of the byte-exact spellings known, land the one with the fewest

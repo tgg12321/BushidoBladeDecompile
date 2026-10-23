@@ -59,6 +59,9 @@ GTE code in a C body is CALLS to the macros of Sony's PsyQ 4.0 headers, vendored
    spelling of a header macro (written-out bodies, joined statements, edited clobbers, hand
    command words) and no standalone call of a macro without a cop2 or trap instruction
    (`gte_nop()`).
+   (Q126) The call may sit in a `static inline` helper defined in the same TU; the engine
+   attributes a called helper's calls and tokens to each caller (region hashes, layer-2 key,
+   integrity). Until it does, such a body cannot land.
 4. **Arguments are C**, reviewed as such; Q115 governs respelling them.
 5. **Bytes and record.** Sandbox 0, full-build SHA1 == oracle; call-site hashes in
    `tools/canonical_asm_regions.json` (`engine/completion.py region_hashes`; an argument or
