@@ -1401,3 +1401,7 @@ Question (data lane, session 4ab059f7): every remaining `asm/data/*.data.s` run 
 ## 2026-10-22 — OWNER RULING — Q123: a no-small-data neighbour blocks a Q122 data-only file only if it reads the run
 
 Question (data lane, borderline.md 2026-10-22 entries for 7D920.data.s and 89C78.data.s): Q122 condition 3 failed because a neighbouring game module (cdrom.o; 3AB48.o) has no small data, so a -G0 build of it could own the run. Answer: a neighbour with no small data counts as a possible owner only if its code reads objects in the run. 89C78 (read only by 368E4.c; 3AB48.c reads none) becomes d_89C78.c. 7D920 becomes d_7D920.c, its start following the g_sqrt_table_u8 evidence. The owner's carve-out of D_8008EC30 rested on "cdrom.c reads it", which review found false (only 25788.c reads it); it stays asm pending a re-ask (borderline.md). Rule: `.claude/rules/data-only-no-sdata.md` condition 3.
+
+## 2026-10-23 — OWNER RULING — Q123 follow-up: D_8008EC30 joins the 7D920 data-only file
+
+Re-asked after review found the Q123 carve-out's premise false (cdrom.c does not read D_8008EC30; only 25788.c does). Orchestrator: "Should D_8008EC30 (a) join the data-only file (my recommendation) or (b) stay as assembly?" Owner: "Go ahead and have it join the data-only file". It follows Q123 condition 3 like the rest of the 7D920 tail.

@@ -599,7 +599,8 @@ uses no small data become a Q122 data-only file (d_7D920.c), or does cdrom.c's l
 resolution (owner, 2026-10-22, Q123): yes; its start follows the g_sqrt_table_u8 evidence (no split of the table).
 The owner also carved out D_8008EC30 as "read by cdrom.c", but that premise was false (only 25788.c, not a .data
 neighbour, reads it; review of the Q123 commit). Open question to the owner: under Q123 D_8008EC30 joins d_7D920.c;
-(a) join, or (b) stay asm by explicit carve-out? Until answered it stays asm and d_7D920.c ends before it.
+(a) join, or (b) stay asm by explicit carve-out?
+resolution (owner, 2026-10-23, Q123 follow-up): (a). D_8008EC30 joins the 7D920 data-only C with the rest of the tail.
 
 ## 2026-10-22 — asm/data/89C78.data.s (.data 0x80099478..0x80099D54) — Q122 condition 3 fails — policy-question
 category: policy-question
