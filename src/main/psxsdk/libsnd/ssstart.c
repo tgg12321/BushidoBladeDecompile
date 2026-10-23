@@ -105,8 +105,9 @@ static void _SsTrapIntrVSync(void) {
     ((void (*)(void))_snd_seq_tick_env.unk8)();
 }
 
-/* Every other tick: reads the half-rate toggle through `env`, flips it and
- * stores it back (pointer read-modify-write, pointer-alias-fake-exception). */
+/* Runs the tick handler (unk8) on every other call: reads the half-rate
+ * toggle through `env`, flips it and stores it back (pointer read-modify-write,
+ * pointer-alias-fake-exception). */
 static void _SsSeqCalledTbyT_1per2(void) {
     SndSeqTickEnv *env = &_snd_seq_tick_env;
 
