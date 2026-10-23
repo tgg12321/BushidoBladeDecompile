@@ -4399,10 +4399,10 @@ void func_80032040(void) {
 }
 
 Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
-    /* FAKE: constant holders for 0x50 (the factor of the two Judge[] products
-     * stored to unk_1C.x / .z) and -0xC8 (stored to unk_1C.y); as literals the
-     * li pair reorders (var_0: score 12; var_1: score 7). */
-    s32 var_0 = 0x50;
+    s32 speed = 0x50;
+    /* FAKE: constant holder for -0xC8 (stored to unk_1C.y); the literal
+     * reorders the li pair: score 7 (y store moved after .z: 8, before .x:
+     * 10). */
     s32 var_1 = -0xC8;
     s32 i = 0;
     Unk80104E88Rec *ptr = D_80104E88;
@@ -4430,10 +4430,10 @@ Unk80104E88Rec *func_80032064(Unk80101EC8Record *src, s32 type) {
         s0->unk_04.y = src->collision_pos.vy - (v1 >> 5);
     }
     s0->unk_04.z = src->world_pos.z;
-    s0->unk_1C.x = ((s32)Judge[src->orientation.vy & 0xFFF] * var_0) >> 12;
+    s0->unk_1C.x = ((s32)Judge[src->orientation.vy & 0xFFF] * speed) >> 12;
     s0->unk_1C.y = var_1;
     s0->unk_1C.z =
-        ((s32)Judge[(src->orientation.vy + 0x400) & 0xFFF] * var_0) >> 12;
+        ((s32)Judge[(src->orientation.vy + 0x400) & 0xFFF] * speed) >> 12;
     s0->unk_10 = s0->unk_04;
     s0->unk_28 = src->collision_pos.vy;
     var_5[1] = src->orientation.vy;
