@@ -811,9 +811,11 @@ s32 func_80038C70(void) {
         goto end;
     }
 
-    /* FAKE: the two empty arms reproduce the target's dead `== 2` / `== 3`
-     * tests that branch straight to the join; without them those 4 insns are
-     * gone (score 5; a switch scores 14) */
+    /* states 2 and 3 keep v0: their empty arms are the target's `== 2` /
+     * `== 3` tests that branch straight to the join, as SOTN's matched
+     * _SsSndSetVabAttr lists its reverb modes 1-3 (without them: score 5;
+     * a switch: 14) */
+    /* SOTN: src/main/psxsdk/libsnd/seqread.c:396 @db41b28 */
     if (D_800A3207 == 1) {
         v0 = 0;
     } else if (D_800A3207 == 2) {
