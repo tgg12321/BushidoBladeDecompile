@@ -1,5 +1,6 @@
 /* PsyQ 4.0 LIBETC INTR_DMA: the DMA interrupt hooks (startIntrDMA, trapIntrDMA,
- * setIntrDMA and the module's memclr, sys_MemClear2; SOTN libetc/intr_dma.c).
+ * setIntrDMA and the module's word-clear static, sys_MemClear2; SOTN
+ * libetc/intr_dma.c).
  * .text 0x800833C8..0x80083670, a verbatim LIBSCAN module span
  * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"

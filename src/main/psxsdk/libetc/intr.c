@@ -1,6 +1,7 @@
-/* PsyQ 4.0 LIBETC INTR: the interrupt dispatcher (ResetCallback .. memclr; $Id:
- * intr.c,v 1.76; SOTN libetc/intr.c). .text 0x80082AC0..0x800831D0, a verbatim
- * LIBSCAN module span (docs/naming/libscan/matches.json), Q106 D3. */
+/* PsyQ 4.0 LIBETC INTR: the interrupt dispatcher (ResetCallback ..
+ * func_800831A4; $Id: intr.c,v 1.76; SOTN libetc/intr.c). .text
+ * 0x80082AC0..0x800831D0, a verbatim LIBSCAN module span
+ * (docs/naming/libscan/matches.json), Q106 D3. */
 #include "common.h"
 #include <psxsdk/libapi.h>
 #include "libetc_internal.h"
@@ -29,7 +30,7 @@ typedef struct {
     s32 savedPcr;               /* +0x34 */
     s32 buf[12];                /* +0x38 jmp_buf; [1] = JB_SP = D_800A15B4 */
     s32 stack[1024];            /* +0x68 */
-} intrEnv_t;                    /* sizeof 0x1068; memclr count 0x41A words */
+} intrEnv_t; /* sizeof 0x1068; func_800831A4 count 0x41A words */
 
 typedef void (*IntrCallback)(void);
 
@@ -37,7 +38,7 @@ static IntrCallback setIntr(s32 irq, IntrCallback handler);
 intrEnv_t *startIntr(void);
 static intrEnv_t *stopIntr(void);
 static intrEnv_t *restartIntr(void);
-void func_800831A4(); /* memclr, defined below; called with &intrEnv */
+void func_800831A4(); /* defined below; called with &intrEnv */
 
 /* .data 0x800A1520..0x800A2614, the module's own .data in definition order:
  * the library copyright string (no code reads it; the object's .data starts
@@ -220,7 +221,7 @@ static intrEnv_t *restartIntr(void) {
     return &intrEnv;
 }
 
-/* memclr (LIBETC intr.c) */
+/* func_800831A4 (LIBETC intr.c) */
 void func_800831A4(u16 *ptr, s32 size) {
     s32 *e = (s32 *)ptr;
     s32 i;

@@ -54,7 +54,7 @@ with open(os.path.join(OUT, "symbol_addrs.movovl.txt"), "w", newline="\n") as f:
     f.write("// MOVOVL.EXE symbol map — seeded from docs/naming/movovl_scan/symbols.txt\n")
     f.write("// (264 bit-verbatim PsyQ library symbols) + the 16 game-code function\n")
     f.write("// starts verified independently (see docs/movovl/ notes). Statics that\n")
-    f.write("// collide across modules carry a _<MODULE> suffix (memclr x3).\n")
+    f.write("// collide across modules carry a _<MODULE> suffix (the three INTR word-clear statics).\n")
     for va, name in rows:
         f.write("%s = 0x%08X; // type:func\n" % (name, va))
 
