@@ -2220,13 +2220,12 @@ void func_8002C22C(void) {
  * back); unk_18C is the centroid of SPAD->unkA8[k][1..3] and unk_174 the
  * midpoint of SPAD->unkA8[k][4..5]. */
 void func_8002C61C(void) {
-    /* FAKE: pointer aliases to D_80101EC8[0] / [1]: the target keeps both
-     * bases in $s1 / $s0 for update_count / pending_move_event / unk_0C /
-     * world_pos / unk_28C; without them those accesses become absolute lui
-     * pairs (GO_IF_LEGITIMATE_ADDRESS, mips.h:2286): 12 more instructions,
-     * score 38 (pointer-alias-fake-exception) */
-    Unk80101EC8Record *s1 = &D_80101EC8[0];
-    Unk80101EC8Record *s0 = &D_80101EC8[1];
+    /* Pointer read-modify-write on a global (pointer-alias-fake-exception):
+     * both players' pending_move_event values are tested before the clash
+     * checks select event 0xA; contact resolution also reads and clears
+     * unk_AD. */
+    Unk80101EC8Record *firstPlayer = &D_80101EC8[0];
+    Unk80101EC8Record *secondPlayer = &D_80101EC8[1];
     s32 i;
     u16 mode;
 
@@ -2244,25 +2243,29 @@ void func_8002C61C(void) {
         if (D_800A3824 >= 0) {
             func_8002C22C();
         }
-        if (D_800A3824 >= 0 && (s1->unk_AD != 0 || s0->unk_AD != 0)) {
-            fighter_ResolveWeaponContact(s1, &SPAD->unk2B8.rec.unk13C.x);
-            fighter_ResolveWeaponContact(s0, &SPAD->unk2B8.rec.unk13C.x);
-            s0->unk_AD = 0;
-            s1->unk_AD = 0;
+        if (D_800A3824 >= 0 &&
+            (firstPlayer->unk_AD != 0 || secondPlayer->unk_AD != 0)) {
+            fighter_ResolveWeaponContact(
+                firstPlayer, &SPAD->unk2B8.rec.unk13C.x);
+            fighter_ResolveWeaponContact(
+                secondPlayer, &SPAD->unk2B8.rec.unk13C.x);
+            secondPlayer->unk_AD = 0;
+            firstPlayer->unk_AD = 0;
         } else {
             fighter_ProcessWeaponBodyHits(0);
         }
-        if (s1->update_count >= 3 && s0->update_count >= 3 && D_800A38A8 != 0 &&
-            s1->pending_move_event == -1 && s0->pending_move_event == -1 &&
-            s1->unk_0C != 0x1F && s0->unk_0C != 0x1F) {
-            s32 diff = s1->world_pos.y - s0->world_pos.y;
+        if (firstPlayer->update_count >= 3 && secondPlayer->update_count >= 3 &&
+            D_800A38A8 != 0 && firstPlayer->pending_move_event == -1 &&
+            secondPlayer->pending_move_event == -1 &&
+            firstPlayer->unk_0C != 0x1F && secondPlayer->unk_0C != 0x1F) {
+            s32 diff = firstPlayer->world_pos.y - secondPlayer->world_pos.y;
             if (diff < 0)
                 diff = -diff;
             if (diff < 0x3E8) {
-                s1->pending_move_event = 0xA;
-                s0->pending_move_event = 0xA;
-                s0->unk_28C = 0;
-                s1->unk_28C = 0;
+                firstPlayer->pending_move_event = 0xA;
+                secondPlayer->pending_move_event = 0xA;
+                secondPlayer->unk_28C = 0;
+                firstPlayer->unk_28C = 0;
                 D_800A3910 = 0;
                 D_800A389C = 0;
             }
@@ -2306,10 +2309,10 @@ void func_8002C61C(void) {
     }
 
     {
-        s16 saved = s1->pending_move_event;
+        s16 saved = firstPlayer->pending_move_event;
         if (saved == -1) {
             object_ResolveFighterHits();
-            if (s1->pending_move_event == saved) {
+            if (firstPlayer->pending_move_event == saved) {
                 func_80032314();
             }
         }
