@@ -59,7 +59,8 @@ A trace covers one scenario, never everything a function can do.
 
 Reproducible runs (owner ruling Q124): with a "script" block the run starts
 at power-on, runs to the script's end_frame, and every hit carries the
-phase it fell in. Each run writes <out>.manifest.json next to the capture
+phase it fell in, and a canary breakpoint on the EXE entry (hit once per
+boot, never reported as a hit) proves Z0 fires on game code. Each run writes <out>.manifest.json next to the capture
 (see runkit.py): the run's outcome, SHA1 of every input taken before
 launch, and of every output after it. Only a scripted PCSX-Redux run can
 meet Q124 (manifest `q124_complete`). Cite a capture by its manifest.
@@ -244,6 +245,7 @@ class Gdb:
         self.sock = socket.create_connection((host, port), timeout=timeout)
         self.buf = b""
         self.console: list[str] = []
+        self.late_stops: list[str] = []  # stop replies cmd() read past
         self.features = self.cmd("qSupported:swbreak+;hwbreak+")
 
     def close(self):
@@ -310,7 +312,8 @@ class Gdb:
                 raise GdbError(f"no reply to {payload[:20]!r}")
             # A late stop reply (breakpoint racing an interrupt) can arrive
             # ahead of the answer; S/T are not hex, so it cannot be data.
-            if payload != "?" and re.match(r"[ST][0-9a-fA-F]{2}", reply):
+            if payload != "?" and re.match(r"[STWX][0-9a-fA-F]{2}", reply):
+                self.late_stops.append(reply)
                 continue
             if self._console(reply):
                 continue
@@ -479,6 +482,10 @@ def run(args) -> int:
             raise SystemExit("gdbtrace: a script starts at power-on; drop "
                              "--boot-wait")
         runkit.check_script(script)
+    if args.bios and (not os.path.isfile(args.bios)
+                      or os.path.getsize(args.bios) != 0x80000):
+        raise SystemExit(f"gdbtrace: --bios {args.bios} is not a 512 KiB "
+                         "(0x80000-byte) PS1 BIOS ROM")
     runkit.clean_outputs(args.out, script)
     if script:
         args.lua = runkit.write_lua(script, args.out)
@@ -598,6 +605,27 @@ def connect(host: str, port: int, wait: float) -> Gdb:
             time.sleep(0.5)
 
 
+def exe_entry(map_path: str) -> int:
+    """Initial pc from the PS-X EXE header of the build next to the map."""
+    exe = os.path.join(os.path.dirname(os.path.abspath(map_path)), "bb2.exe")
+    head = runkit.read_head(exe, 4, 0x10)
+    if not head or len(head) != 4:
+        raise SystemExit(f"gdbtrace: cannot read the entry point of {exe}")
+    return int.from_bytes(head, "little")
+
+
+def pause_dup(now, at_stop) -> tuple[bool, bool]:
+    """(duplicate, blind). Duplicate: the emulator has not run since the
+    script stop: the latest pause record is the script stop's own, or a
+    later one at the same CPU cycle. Blind: no cycle count to tell, so the
+    caller's registers + Lua state test decided alone."""
+    if now is not None and at_stop is not None and now[0] == at_stop[0]:
+        return True, False
+    if now is None or at_stop is None or now[2] is None or at_stop[2] is None:
+        return True, True
+    return now[2] == at_stop[2], False
+
+
 def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
     out = open(args.out, "w", encoding="utf-8", newline="\n")
 
@@ -631,6 +659,18 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                              "(DuckStation has none; use PCSX-Redux)")
         armed[(kind, addr)] = {"spec": w, "hits": 0, "kind": kind,
                                "addr": addr, "len": n}
+
+    if spec.get("script"):
+        # Canary: the EXE entry runs exactly once per boot; its hit proves
+        # Z0 breakpoints fire on game code in this emulator build.
+        entry = exe_entry(args.map)
+        if (0, entry) in armed:
+            armed[(0, entry)]["canary"] = True
+        elif gdb.set_bp(0, entry):
+            armed[(0, entry)] = {"spec": {"at": f"0x{entry:08X}"}, "hits": 0,
+                                 "kind": 0, "addr": entry, "len": 4,
+                                 "canary_only": True}
+        args.result["canary_at"] = entry
 
     polls = [{"spec": p, "addr": syms.addr(p["at"]), "len": int(p.get("len", 4)),
               "every": float(p.get("every_s", 1.0)), "next": 0.0}
@@ -666,6 +706,7 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
         emit({"ev": "phase", "t": 0.0, "frame": state[1] if state else 0,
               "phase": phase, "armed_frame": armed_frame})
     after_script_stop = None  # regs at the last script stop
+    script_pause = None  # runkit.read_pause() at the last script stop
     ambiguous = 0
 
     def entry_for_stop(regs, reply, interrupted):
@@ -715,28 +756,55 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                       "text": "".join(gdb.console)})
                 gdb.console.clear()
             interrupted = reply is None
+            extra = []
+            gdb.late_stops.clear()
             if interrupted:
-                # Poll or deadline due: stop the target. A breakpoint may
-                # have raced the interrupt; its stop reply is handled below.
+                # Poll or deadline due: stop the target. A breakpoint or
+                # watch may have raced the interrupt: then the stub answers
+                # twice. Read the second answer now rather than as the next
+                # stop after `c`: wait briefly, then `g` (below), which the
+                # stub answers only after any stop reply it sent first.
                 reply = gdb.interrupt()
-                # Both the racing stop and the ^C may be answered; the CPU
-                # is stopped either way, so drop a second reply now rather
-                # than read it as the next stop after `c`.
                 late = gdb.wait_stop(0.2)
-                if late is not None and late.startswith(("W", "X")):
-                    reply = late
-            if reply.startswith(("W", "X")):
-                emit({"ev": "exit", "reply": reply})
+                if late is not None:
+                    extra.append(late)
+            ends = [s for s in [reply] + extra if s.startswith(("W", "X"))]
+            if not ends:
+                try:
+                    regs = gdb.regs()
+                except GdbError:
+                    # The target exited while we asked: its W/X was read
+                    # past as a late stop.
+                    if not any(s.startswith(("W", "X"))
+                               for s in gdb.late_stops):
+                        raise
+                extra += gdb.late_stops
+                ends = [s for s in extra if s.startswith(("W", "X"))]
+            if ends:
+                emit({"ev": "exit", "reply": ends[0]})
                 break
-            regs = gdb.regs()
+            # Two stop replies to one ^C: one was a real trap, so this stop
+            # is decoded like any trap. (Redux answers a plain ^C with T05,
+            # like a trap, so a lone reply cannot be told apart.)
+            raced = interrupted and any(s.startswith(("S", "T"))
+                                        for s in extra)
             new = runkit.read_state(args.out) if script else None
+            pause = runkit.read_pause(args.out) if script else None
             if (after_script_stop is not None and regs == after_script_stop
                     and new == state):
-                # A breakpoint and the Lua pause on the same instruction can
-                # arrive as two stops; nothing ran in between (same
-                # registers, no new Lua state): skip it.
-                after_script_stop = None
-                continue
+                dup, blind = pause_dup(pause, script_pause)
+                if blind:
+                    # Without the cycle count a busy-loop re-hit looks
+                    # the same as a duplicate: the run cannot meet Q124.
+                    args.result["dedupe_without_cycle"] = \
+                        args.result.get("dedupe_without_cycle", 0) + 1
+                if dup:
+                    # A breakpoint and the Lua pause on the same
+                    # instruction can arrive as two stops; nothing ran in
+                    # between (same registers, no new Lua state, same CPU
+                    # cycle): skip it.
+                    after_script_stop = None
+                    continue
             after_script_stop = None
             script_stop = bool(new and new != state)
             if script_stop:
@@ -745,14 +813,33 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 # the phase that starts here.
                 state, phase = new, new[2]
                 after_script_stop = regs
+                script_pause = pause
                 emit({"ev": "phase", "t": round(time.time() - t0, 3),
-                      "frame": new[1], "phase": phase, "end": new[3]})
+                      "frame": new[1], "phase": phase, "end": new[3],
+                      "pause": list(pause) if pause else None})
             # A Lua pause can land on any load/store, like our own ^C.
-            e, acc = entry_for_stop(regs, reply, interrupted or script_stop)
+            e, acc = entry_for_stop(regs, reply,
+                                    (interrupted and not raced) or script_stop)
+            if e is not None and e.get("canary_only"):
+                # The canary proves Z0 fires on game code; it is no hit.
+                args.result["canary_hit"] = {"pc": regs[37], "phase": phase}
+                emit({"ev": "canary", "t": round(time.time() - t0, 3),
+                      "pc": regs[37], "phase": phase})
+                gdb.clear_bp(0, e["addr"], 4)
+                del armed[(0, e["addr"])]
+                if script_stop and state[3]:
+                    break
+                continue
+            if e is not None and e.get("canary") and \
+                    "canary_hit" not in args.result:
+                args.result["canary_hit"] = {"pc": regs[37], "phase": phase}
+                emit({"ev": "canary", "t": round(time.time() - t0, 3),
+                      "pc": regs[37], "phase": phase})
             if e is None:
-                if script_stop and any(k for k, _ in armed):
+                if (script_stop or interrupted) and any(k for k, _ in armed):
                     # A watched access on the very instruction the Lua
-                    # paused on cannot be told from the pause: say so.
+                    # pause or our ^C stopped on cannot be told from the
+                    # pause: say so (the run then cannot meet Q124).
                     e2, acc2 = entry_for_stop(regs, reply, False)
                     if e2 is not None:
                         # Redux may raise the watch again on resume: let
@@ -764,7 +851,7 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                               "access": list(acc2) if acc2 else None})
                 if script_stop and state[3]:
                     break
-                if not interrupted and not script_stop:
+                if (not interrupted or raced) and not script_stop:
                     emit({"ev": "unmatched-stop", "pc": regs[37],
                           "ra": regs[31], "stop": reply,
                           "access": list(acc) if acc else None})
@@ -1069,7 +1156,7 @@ def report(args) -> int:
     phases = []
     odd = collections.Counter()
     disarmed = {}
-    start = end = None
+    start = end = canary = None
     with open(args.trace, encoding="utf-8") as f:
         for line in f:
             rec = json.loads(line)
@@ -1083,6 +1170,8 @@ def report(args) -> int:
                 odd[rec["ev"]] += 1
             elif rec["ev"] == "disarmed":
                 disarmed[(rec["at"], rec["kind"])] = rec
+            elif rec["ev"] == "canary":
+                canary = rec
             elif rec["ev"] == "start":
                 start = rec
             elif rec["ev"] == "end":
@@ -1108,6 +1197,10 @@ def report(args) -> int:
         w.append(f"- WARNING: breakpoints were armed at frame "
                  f"{armed if armed is not None else 'unknown'}; earlier "
                  "frames are not covered")
+    if phases:
+        w.append(f"- canary breakpoint (EXE entry) "
+                 + (f"hit at 0x{canary['pc']:08X} in phase {canary['phase']}"
+                    if canary else "not recorded in this capture"))
     if phases:
         spans = []
         for i, ph in enumerate(phases):

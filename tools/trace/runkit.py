@@ -246,10 +246,19 @@ def write_lua(script: dict, out: str) -> str:
     lines += [
         "}",
         "state(0); L('phase ' .. cur)",
-        "-- the frame of the latest pause (a breakpoint, ^C or ours)",
+        "-- the latest pause (a breakpoint, ^C or ours): `count frame cycle`;",
+        "-- an unchanged CPU cycle count means no instruction ran in between",
+        "local npause = 0",
+        "local function cycle()",
+        "  local ok, c = pcall(PCSX.getCPUCycles)",
+        "  local s = ok and c ~= nil and tostring(c):gsub('%D', '') or ''",
+        "  return s ~= '' and s or '-'",
+        "end",
         "_G.gdbtrace_pause = PCSX.Events.createEventListener(",
         "  'ExecutionFlow::Pause', function()",
-        "    local f = io.open(PAUSED, 'w'); f:write(frame .. '\\n'); f:close()",
+        "    npause = npause + 1",
+        "    local f = io.open(PAUSED, 'w')",
+        "    f:write(npause .. ' ' .. frame .. ' ' .. cycle() .. '\\n'); f:close()",
         "  end)",
         "_G.gdbtrace_vsync = PCSX.Events.createEventListener('GPU::Vsync',",
         "  function()",
@@ -292,14 +301,21 @@ def check_log(script: dict, out: str) -> list[str]:
     return problems
 
 
-def read_pause_frame(out: str) -> int | None:
-    """Frame of the emulator's latest pause, or None if no pause was seen
-    (the caller decides what that means)."""
+def read_pause(out: str):
+    """(count, frame, cycle) of the emulator's latest pause, or None if no
+    pause was seen (the caller decides what that means). cycle is the CPU
+    cycle counter as a decimal string, None when Redux did not expose it."""
     try:
         with open(companion(out, ".frame"), encoding="utf-8") as f:
-            return int(f.read().split()[0])
-    except (OSError, ValueError, IndexError):
+            count, frame, cyc = f.read().split()
+        return int(count), int(frame), (cyc if cyc.isdigit() else None)
+    except (OSError, ValueError):
         return None
+
+
+def read_pause_frame(out: str) -> int | None:
+    p = read_pause(out)
+    return p[1] if p else None
 
 
 def read_state(out: str):
@@ -421,6 +437,7 @@ def inputs_record(args, start: dict, repo: str) -> dict:
         "tool": {f: file_rec(os.path.join(here, f), repo)
                  for f in ("gdbtrace.py", "runkit.py")},
         "git": git_state(repo),
+        "python": {"version": sys.version, "executable": sys.executable},
         "argv": sys.argv,
         "build": build_rec(args.map, args.elf),
         "spec": file_rec(args.spec),
@@ -436,6 +453,10 @@ def inputs_record(args, start: dict, repo: str) -> dict:
         m["emulator"] = {"name": "pcsx-redux", **redux_version(args.emulator),
                          "exe": file_rec(os.path.abspath(args.emulator)),
                          "main": file_rec(os.path.join(d, "pcsx-redux.main")),
+                         "dlls": [file_rec(os.path.join(d, n)) for n in
+                                  (sorted(os.listdir(d)) if os.path.isdir(d)
+                                   else [])
+                                  if n.lower().endswith(".dll")],
                          "settings": "defaults (-safe) + command line"
                          if args.lua else "the portable dir's pcsx.json"}
         if args.bios:
@@ -590,6 +611,10 @@ def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
                            "oracle build")
         if result.get("ambiguous_stops"):
             missing.append("no watch access ambiguous with a script pause")
+        if result.get("dedupe_without_cycle"):
+            missing.append("duplicate stops told apart by the CPU cycle count")
+        if not result.get("canary_hit"):
+            missing.append("the canary breakpoint (EXE entry) fired")
         problems = check_log(args.spec_obj["script"], args.out)
         m["script"] = {**m["script"], "problems": problems}
         if problems:
