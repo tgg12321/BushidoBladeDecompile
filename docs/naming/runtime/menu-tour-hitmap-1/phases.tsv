@@ -1,0 +1,16 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6050	6459	top menu, cursor moved down one entry per DOWN: Story Mode, Vs. CPU Mode, Training Mode, Vs. Mode, Group Battle Mode, Link Mode, Option Menu (the right panel names each; entry1..entry7 shots)	6080:DOWN,6140:DOWN,6200:DOWN,6260:DOWN,6320:DOWN,6380:DOWN	capture.top_menu.first.png,capture.top_menu.entry1.png,capture.top_menu.entry2.png,capture.top_menu.entry3.png,capture.top_menu.entry4.png,capture.top_menu.entry5.png,capture.top_menu.entry6.png,capture.top_menu.entry7.png,capture.top_menu.last.png
+t_option	6460	6559	transition; no screen claim	6460:CROSS	-
+option_menu	6560	6599	Option Menu (Monitor Color, Difficulty Hard, Music On, Memory Card, Key Configuration, Return to Top Menu), Key Configuration highlighted	-	capture.option_menu.first.png,capture.option_menu.last.png
+t_key	6600	6639	transition; no screen claim	6600:CROSS	-
+key_config	6640	6749	Key Configuration (1P and 2P pads), EXIT highlighted on both	-	capture.key_config.first.png,capture.key_config.last.png
+t_key_exit	6750	6799	transition; no screen claim	6750:CROSS	-
+option_menu_2	6800	6959	Option Menu again, settings unchanged; first frame Key Configuration highlighted	6900:UP	capture.option_menu_2.first.png,capture.option_menu_2.last.png
+t_card	6960	6999	transition; no screen claim	6960:CROSS	-
+memory_card	7000	7299	Memory Card screen (Load Data and Save Data greyed, Return highlighted; no card contents drawn; the cards are blank per the manifest start.memcard1/2)	-	capture.memory_card.first.png,capture.memory_card.last.png
+t_card_exit	7300	7349	transition; no screen claim	7300:TRIANGLE	-
+option_toggles	7350	8149	Option Menu: UP to Music and RIGHT (Music Off), UP to Difficulty and LEFT (Difficulty Easy), UP to Monitor and RIGHT (Monitor B&W: the screen turns black and white), then five DOWNs	7400:UP,7460:RIGHT,7550:UP,7610:LEFT,7700:UP,7760:RIGHT,7850:DOWN,7910:DOWN,7970:DOWN,8030:DOWN,8090:DOWN	capture.option_toggles.first.png,capture.option_toggles.music.png,capture.option_toggles.difficulty.png,capture.option_toggles.monitor.png,capture.option_toggles.last.png
+t_top	8150	8349	transition; no screen claim	8150:CROSS	-
+top_menu_2	8350	8999	top menu again with Monitor B&W (background and panel grey; the cursor highlight stays coloured), Option Menu entry highlighted and named in the right panel	-	capture.top_menu_2.first.png,capture.top_menu_2.last.png
