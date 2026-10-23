@@ -1446,12 +1446,10 @@ void menu_UpdateChoiceGrid(
     RECT rect;
     u8 *var_3;
     Unk8009B0E0Record **var_4;
-    /* several values of one kind: the cell table following the
-     * header(s) of each sheet drawn (s.header[1].cells for the two-header
-     * sheet, s.header->cells for the others) (Ruling 11,
-     * ordinary-c-judge-decidable). FAKE: the holder
-     * between the header's cells and s.table; stored directly: score 123. */
-    Unk8009B400Record *var_5;
+    /* the cell table following the header(s) of each sheet drawn
+     * (s.header[1].cells for the two-header sheet, s.header->cells for the
+     * others). Ruling 11: several values of that one kind. */
+    Unk8009B400Record *cells;
     s32 i;
     s32 j;
     s32 d;
@@ -1480,10 +1478,10 @@ void menu_UpdateChoiceGrid(
         s.y = -5;
         var_4 = D_800A35A8->unk_74;
         s.header = var_4[4];
-        var_5 = s.header[1].cells;
+        cells = s.header[1].cells;
         if (!(D_800A359C * 2 + D_800A3598 == 3 && D_800A35BC == 6 &&
               mode == 2)) {
-            s.table = var_5;
+            s.table = cells;
             s.table += (D_800A359C + mode * 3) * 2 + D_800A3598;
             s.sprt_out = arg0->unk_04.unk_0C;
             arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
@@ -1492,7 +1490,7 @@ void menu_UpdateChoiceGrid(
         for (i = 0; i < 6; i++) {
             if (!(i == 3 && D_800A35BC == 6 && mode == 2) &&
                 D_800A359C * 2 + D_800A3598 != i) {
-                s.table = var_5 + (mode * 6 + i);
+                s.table = cells + (mode * 6 + i);
                 s.sprt_out = arg0->unk_04.unk_0C;
                 arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
             }
@@ -1507,8 +1505,8 @@ void menu_UpdateChoiceGrid(
     s.x = 0x90;
     s.y = 0x28;
     s.header = arg1[0];
-    var_5 = s.header->cells;
-    s.table = var_5;
+    cells = s.header->cells;
+    s.table = cells;
     s.sprt_out = arg0->unk_04.unk_0C;
     arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
     D_800A35C4->unk_10[0] = D_800A35C0->draw.ofs[0] - D_8009BCC4[mode][0];
@@ -1553,8 +1551,8 @@ void menu_UpdateChoiceGrid(
     s.header = arg1[1];
     s.scale_x += 0x80;
     s.scale_y += 0x20;
-    var_5 = s.header->cells;
-    s.table = var_5;
+    cells = s.header->cells;
+    s.table = cells;
     s.ft4_out = arg0->unk_04.unk_00;
     arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
     s.table += s.header->count;
@@ -1597,8 +1595,8 @@ void menu_UpdateChoiceGrid(
     s.x = 0;
     s.ot_idx = 1;
     s.header = arg1[2];
-    var_5 = s.header->cells;
-    s.table = var_5;
+    cells = s.header->cells;
+    s.table = cells;
     s.ft4_out = arg0->unk_04.unk_00;
     arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
     var_1[2] = 0x111;
@@ -1623,16 +1621,16 @@ void menu_UpdateChoiceGrid(
             } else {
                 s.header = arg1[12];
             }
-            var_5 = s.header->cells;
-            s.table = var_5;
+            cells = s.header->cells;
+            s.table = cells;
             s.ft4_out = arg0->unk_04.unk_00;
             arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
         }
     }
     s.has_color = 0;
     s.header = arg1[11];
-    var_5 = s.header->cells;
-    s.table = var_5;
+    cells = s.header->cells;
+    s.table = cells;
     s.ft4_out = arg0->unk_04.unk_00;
     arg0->unk_04.unk_00 = gpu_AddScaledSpriteQuads(&s, 0);
 
