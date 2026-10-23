@@ -1,0 +1,16 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV	5200:START	capture.boot_intro.last.png
+t_menu	5490	6059	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6060	6099	top menu, Story Mode highlighted	-	capture.top_menu.first.png,capture.top_menu.last.png
+t_story	6100	6809	transition; no screen claim	6100:CROSS,6400:START,6700:CROSS	-
+story_text	6810	6909	story opening text	-	capture.story_text.first.png,capture.story_text.last.png
+t_char	6910	6949	transition; no screen claim	-	-
+char_select	6950	7299	Select Character	7000:START	capture.char_select.first.png,capture.char_select.last.png
+t_weapon	7300	7359	transition; no screen claim	7300:CROSS	-
+weapon_select	7360	7899	Select Weapon	7600:START	capture.weapon_select.first.png,capture.weapon_select.last.png
+t_stage	7900	8359	transition; no screen claim	7900:CROSS,8200:START	-
+stage_card	8360	8799	Next Battle Stage card (Outside the Meikyokan)	8500:CROSS	capture.stage_card.first.png,capture.stage_card.last.png
+t_fight	8800	8899	transition; no screen claim	8800:START	-
+fight	8900	9199	first story fight, before the KO	9000:SQUARE,9060:SQUARE,9120:SQUARE,9180:SQUARE	capture.fight.first.png,capture.fight.last.png
+t_ko	9200	10149	transition; no screen claim	9240:SQUARE,9300:SQUARE,9360:SQUARE,9420:SQUARE	-
+rematch_menu	10150	10699	Rematch / Return menu after the loss	-	capture.rematch_menu.first.png,capture.rematch_menu.last.png
