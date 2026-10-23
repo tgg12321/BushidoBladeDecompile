@@ -1056,7 +1056,7 @@ Unk8006E49CRec *func_80077098(s32 a0) { return &D_800A35D8[a0]; }
 extern s32 menu_RelocateSelLists(s32 *);
 
 s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
-    s16 sp[2];
+    s16 sp[2] = {0, 0};
     /* work: the entry list pointer (arg0 + 0x58), then the work area
        gpu_InitPrimBufferPair returns (Ruling 11, Q78) */
     void *work;
@@ -1064,13 +1064,6 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     s16 t0;
     s16 a2;
 
-    /* FAKE: empty do-while(0) bounds the scheduling region so the frame-save
-       stores are not interleaved with the first body insns
-       (do-while-zero-exception); without it: score 5 */
-    do {
-    } while (0);
-    sp[0] = 0;
-    sp[1] = 0;
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
     work = (void *)(arg0 + 0x58);
     D_800A35D8 = (Unk8006E49CRec *)arg0;

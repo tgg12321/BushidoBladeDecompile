@@ -1,0 +1,1 @@
+{"decision": "PASS", "verdict": "PASS", "function": "menu_InitSelScreen", "body_hash": "d9b2470e73942541", "summary": "The initialiser is plain, honest C that replaces a labelled do-while(0) scheduling wrap: sandbox 0, FAKE count 3 -> 2, remaining labels still true, commit message accurate."}
