@@ -978,9 +978,10 @@ typedef struct Unk80070C70Rec {
 } Unk80070C70Rec;
 
 void menu_UpdateRow(Unk8006EACCRec *arg0) {
-    /* FAKE: constant-holder local kept in a callee-saved register across
-     * the calls (the target's `li s4,96`, then `move a1,s4`); the inline
-     * literal re-materializes `li a1,0x60` at each call site: score 7 */
+    /* FAKE: constant-holder kept in s4 across calls; literal re-materializes
+     * li a1,96: score 7. Inline tail helper (literal / parameter): 7 / 7;
+     * gpu_GetSheetTPage(header, 0) + 0x60: 11; six-draw do loop: 7;
+     * semi initialization moved to first use: 9. */
     s32 c60 = 0x60;
     Unk8007352CRec var_1;
     u16 var_2[4];

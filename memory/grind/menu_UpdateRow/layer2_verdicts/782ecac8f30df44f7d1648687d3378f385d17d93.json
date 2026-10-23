@@ -1,0 +1,15 @@
+{
+  "verdict": "PASS",
+  "decision": "PASS",
+  "function": "menu_UpdateRow",
+  "body_hash": "4c57ce9a53c70877",
+  "summary": "Comment-only rewording of the existing c60 constant-holder FAKE label; every score it states re-measured and confirmed; no code change.",
+  "findings": [
+    {"construct": "diff f31e048a8 vs 978e671f1", "test_failed": "none (items 1-2)", "explanation": "Only src/main/5ED34.c changes, 4+/3- lines, all inside the FAKE comment at the top of menu_UpdateRow. The body outside the comment matches the scratch original.c. No build, pipeline, asm or pin changes."},
+    {"construct": "s32 c60 = 0x60; /* FAKE: constant-holder kept in s4 across calls ... score 7 */", "test_failed": "none (item 3)", "explanation": "This is a pre-existing constant-holder, annotated as FAKE with a measured reason. The target asm bears out the claim: addiu $s4,$zero,0x60 in the prologue, then addu $a1,$s4,$zero at the 2nd and 3rd gpu_GetSheetTPage calls. The label's alternatives re-scored through the codex_worker shadow: literal 7, helper_literal 7, helper_parameter 7, six_do_loop 7, arithmetic 11, semi_late 9. Each matches the label and the commit body. The arithmetic probe is labelled as a measured spelling, not as an equivalence claim."},
+    {"construct": "simplest form", "test_failed": "none (item 5)", "explanation": "Every ablation tried (holder removed under four structural rewrites) scores >0, so no byte-exact form with fewer FAKEs is known. The t holder FAKE is unchanged by this commit."}
+  ],
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": ["The first SetDrawMode call's li a1,0x60 (target line 36) is not mentioned. The label could say the holder serves the 2nd and 3rd calls only; this is not a falsehood, since c60 is still the source of the value."]
+}
