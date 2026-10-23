@@ -77,10 +77,10 @@ glabel _addque2
     /* 6DD14 8007D514 0A80023C */  lui        $v0, %hi(_qlog)
     /* 6DD18 8007D518 68BF4224 */  addiu      $v0, $v0, %lo(_qlog)
     /* 6DD1C 8007D51C 000053AC */  sw         $s3, 0x0($v0)
-    /* 6DD20 8007D520 0A80013C */  lui        $at, %hi(D_8009BF6C)
-    /* 6DD24 8007D524 6CBF30AC */  sw         $s0, %lo(D_8009BF6C)($at)
-    /* 6DD28 8007D528 0A80013C */  lui        $at, %hi(D_8009BF70)
-    /* 6DD2C 8007D52C 70BF32AC */  sw         $s2, %lo(D_8009BF70)($at)
+    /* 6DD20 8007D520 0A80013C */  lui        $at, %hi(_qlog + 0x4)
+    /* 6DD24 8007D524 6CBF30AC */  sw         $s0, %lo(_qlog + 0x4)($at)
+    /* 6DD28 8007D528 0A80013C */  lui        $at, %hi(_qlog + 0x8)
+    /* 6DD2C 8007D52C 70BF32AC */  sw         $s2, %lo(_qlog + 0x8)($at)
     /* 6DD30 8007D530 0F0B020C */  jal        SetIntrMask
     /* 6DD34 8007D534 00000000 */   nop
     /* 6DD38 8007D538 AEF50108 */  j          .L8007D6B8

@@ -917,8 +917,6 @@ s32 _exeque(void);
 s32 get_alarm();      /* extern */
 s32 SetIntrMask(s32); /* extern */
 extern volatile s32 _qlog[];
-extern s32 *D_8009BF6C;
-extern s32 D_8009BF70;
 extern s32 D_8009BF80;
 extern s32 D_8009BF84;
 
@@ -941,8 +939,8 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 cb_arg) {
         }
         func(arg, cb_arg);
         _qlog[0] = (s32)func;
-        D_8009BF6C = arg;
-        D_8009BF70 = cb_arg;
+        _qlog[1] = (s32)arg;
+        _qlog[2] = cb_arg;
         SetIntrMask(D_8009BF80);
         return 0;
     }
@@ -978,13 +976,8 @@ s32 _exeque(void) {
         }
         _que[_qout].func(_que[_qout].arg, _que[_qout].cb_arg);
         _qlog[0] = (s32)_que[_qout].func;
-        D_8009BF6C = _que[_qout].arg;
-        /* FAKE: do-while(0) keeps this log store between the arg log store
-         * and the _qout advance; without it both sink to the loop test: score
-         * 10. */
-        do {
-            D_8009BF70 = _que[_qout].cb_arg;
-        } while (0);
+        _qlog[1] = (s32)_que[_qout].arg;
+        _qlog[2] = _que[_qout].cb_arg;
         _qout = (_qout + 1) & 0x3F;
     }
     SetIntrMask(D_8009BF84);
@@ -1005,8 +998,6 @@ extern u8 ctlbuf[];
 extern volatile u32 *DMA2_MADR;
 extern volatile int *DPCR;
 extern volatile s32 _qlog[];
-
-extern s32 D_8009BF70;
 
 s32 _reset(s32 arg0) {
     D_8009BF88 = SetIntrMask(0);
@@ -1080,7 +1071,7 @@ s32 get_alarm(void) {
         *GPU_STATUS;
         printf(g_str_gpu_timeout, (_qin - _qout) & 0x3F, *GPU_STATUS,
                *DMA2_CHCR, *DMA2_MADR);
-        printf(D_80016044, _qlog[0], D_8009BF6C, D_8009BF70);
+        printf(D_80016044, _qlog[0], _qlog[1], _qlog[2]);
         temp_v0 = SetIntrMask(0);
         _qout = 0;
         D_8009BF88 = temp_v0;
@@ -1164,13 +1155,10 @@ volatile s32 *DMA6_BCR = (s32 *)0x1F8010E4;
 volatile s32 *DMA6_CHCR = (s32 *)0x1F8010E8;
 volatile s32 *DPCR = (s32 *)0x1F8010F0;
 
-/* the last packet run: callback, argument, callback argument (one 16-byte
- * _qlog record in the library object; the code reaches the fields by these
- * names); D_8009BF74 is the record's unread fourth word */
-volatile s32 _qlog[1] = {0};
-s32 *D_8009BF6C = 0;
-s32 D_8009BF70 = 0;
-s32 D_8009BF74 = 0;
+/* the last packet run: callback, argument, callback argument, written by
+ * _addque2 / _exeque and printed by get_alarm (the library object's one
+ * 16-byte _qlog record; [3] is never read) */
+volatile s32 _qlog[4] = {0};
 volatile s32 _qin = 0;
 volatile s32 _qout = 0;
 s32 D_8009BF80 = 0; /* _addque2's saved interrupt mask */

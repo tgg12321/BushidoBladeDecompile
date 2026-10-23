@@ -110,8 +110,8 @@ glabel _exeque
     /* 6E078 8007D878 1080013C */  lui        $at, %hi(_que + 0x4)
     /* 6E07C 8007D87C 21082200 */  addu       $at, $at, $v0
     /* 6E080 8007D880 8436228C */  lw         $v0, %lo(_que + 0x4)($at)
-    /* 6E084 8007D884 0A80013C */  lui        $at, %hi(D_8009BF6C)
-    /* 6E088 8007D888 6CBF22AC */  sw         $v0, %lo(D_8009BF6C)($at)
+    /* 6E084 8007D884 0A80013C */  lui        $at, %hi(_qlog + 0x4)
+    /* 6E088 8007D888 6CBF22AC */  sw         $v0, %lo(_qlog + 0x4)($at)
     /* 6E08C 8007D88C 0A80033C */  lui        $v1, %hi(_qout)
     /* 6E090 8007D890 7CBF638C */  lw         $v1, %lo(_qout)($v1)
     /* 6E094 8007D894 00000000 */  nop
@@ -121,8 +121,8 @@ glabel _exeque
     /* 6E0A4 8007D8A4 1080013C */  lui        $at, %hi(_que + 0x8)
     /* 6E0A8 8007D8A8 21082200 */  addu       $at, $at, $v0
     /* 6E0AC 8007D8AC 8836228C */  lw         $v0, %lo(_que + 0x8)($at)
-    /* 6E0B0 8007D8B0 0A80013C */  lui        $at, %hi(D_8009BF70)
-    /* 6E0B4 8007D8B4 70BF22AC */  sw         $v0, %lo(D_8009BF70)($at)
+    /* 6E0B0 8007D8B0 0A80013C */  lui        $at, %hi(_qlog + 0x8)
+    /* 6E0B4 8007D8B4 70BF22AC */  sw         $v0, %lo(_qlog + 0x8)($at)
     /* 6E0B8 8007D8B8 0A80023C */  lui        $v0, %hi(_qout)
     /* 6E0BC 8007D8BC 7CBF428C */  lw         $v0, %lo(_qout)($v0)
     /* 6E0C0 8007D8C0 00000000 */  nop
