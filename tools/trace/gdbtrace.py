@@ -1288,11 +1288,21 @@ def hitmap_section(hitmap: dict, hm_hits, phases: list, args) -> list[str]:
     for i, ph in enumerate(phases):
         if ph.get("end"):
             continue
+        name = str(ph["phase"])
         # Fully covered: armed by its first frame, and a later phase event
-        # (the next phase or the script's end) closes it.
-        full[ph["phase"]] = (armed is not None and armed <= ph["frame"]
-                             and i + 1 < len(phases))
-        names.append(ph["phase"])
+        # (the next phase or the script's end) closes it. A name seen twice
+        # (older captures) merges two spans: never a full-coverage claim.
+        ok = (armed is not None and armed <= ph["frame"]
+              and i + 1 < len(phases) and name not in full)
+        if name in full:
+            full[name] = False
+            continue
+        full[name] = ok
+        names.append(name)
+    w = [f"## Hit map: {len(hitmap['targets'])} functions, "
+         f"{per} hit(s) per phase recorded", ""]
+    if not names:
+        return w + ["No phase recorded: no claims.", ""]
 
     def cell(n, p):
         if not n:
@@ -1302,8 +1312,6 @@ def hitmap_section(hitmap: dict, hm_hits, phases: list, args) -> list[str]:
     def row(a):
         return [cell(hm_hits[a].get(p, 0), p) for p in names]
 
-    w = [f"## Hit map: {len(hitmap['targets'])} functions, "
-         f"{per} hit(s) per phase recorded", ""]
     partial = [p for p in names if not full[p]]
     if partial:
         w.append("Partly covered phases (`?` = no claim): " +
@@ -1311,7 +1319,10 @@ def hitmap_section(hitmap: dict, hm_hits, phases: list, args) -> list[str]:
         w.append("")
     hit = [(n, a) for n, a in hitmap["targets"] if hm_hits.get(a)]
     never = [n for n, a in hitmap["targets"] if not hm_hits.get(a)]
-    w.append(f"{len(hit)} reached, {len(never)} never reached in any phase.")
+    scope = ("in any phase" if not partial else
+             "in the fully covered phases (no claim for the partly "
+             "covered ones)")
+    w.append(f"{len(hit)} reached, {len(never)} not hit {scope}.")
     w.append("")
     w.append("| function | " + " | ".join(names) + " |")
     w.append("|---|" + "---|" * len(names))
@@ -1319,7 +1330,7 @@ def hitmap_section(hitmap: dict, hm_hits, phases: list, args) -> list[str]:
         w.append(f"| `{n}` | " + " | ".join(row(a)) + " |")
     w.append("")
     if never:
-        w.append("Never reached: " + ", ".join(f"`{n}`" for n in never))
+        w.append(f"Not hit {scope}: " + ", ".join(f"`{n}`" for n in never))
         w.append("")
     if args.hitmap_tsv:
         with open(args.hitmap_tsv, "w", encoding="utf-8", newline="\n") as f:
@@ -1342,7 +1353,7 @@ def report(args) -> int:
         for line in f:
             rec = json.loads(line)
             if rec["ev"] == "hit" and rec.get("hm"):
-                hm_hits[rec["addr"]][rec.get("phase")] += 1
+                hm_hits[rec["addr"]][str(rec.get("phase"))] += 1
             elif rec["ev"] == "hit":
                 hits[(rec["at"], rec["kind"])].append(rec)
             elif rec["ev"] == "hitmap":
@@ -1393,7 +1404,10 @@ def report(args) -> int:
                 continue
             nxt = phases[i + 1]["frame"] if i + 1 < len(phases) else "?"
             first = max(ph["frame"], armed or 0)
-            spans.append(f"{ph['phase']} (frames {first}-{nxt})")
+            if isinstance(nxt, int) and first >= nxt:
+                spans.append(f"{ph['phase']} (not covered: armed later)")
+            else:
+                spans.append(f"{ph['phase']} (frames {first}-{nxt})")
         last = phases[-1]
         w.append("- phases covered: " + ", ".join(spans) +
                  ("; script reached its end" if last.get("end") else
