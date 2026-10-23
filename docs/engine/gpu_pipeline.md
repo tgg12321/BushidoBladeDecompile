@@ -98,7 +98,7 @@ at once when the queue is empty, DMA 2 is idle and no DrawSync callback is
 set. Otherwise it copies `len` bytes of `arg` into the slot and queues it,
 with `_exeque` as the DMA-2 callback. `_exeque` (:959) runs queued calls
 while DMA 2 is idle. It calls the DrawSync callback once the queue drains.
-`_qlog`, `D_8009BF6C` and `D_8009BF70` record the last call. The GPU
+The 16-byte `_qlog` record (words 0-2) logs the last call. The GPU
 `get_alarm` (:1070) prints them on a timeout and resets the queue. The
 timeout is 0xF0 vsyncs, set by `set_alarm` (:1065).
 
