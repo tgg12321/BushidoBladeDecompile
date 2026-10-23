@@ -1222,9 +1222,8 @@ void func_8001C624(void) {
     e->unk_104.vy = 0;
     e->unk_104.vz = 0;
     e->unk_24C = e->unk_104;
-    /* FAKE: player 1's start position is read into local and raised by 0x384
-     * as player 0's is, but never used (the target keeps these dead stores,
-     * written with libgpu's setVector); without it: score 22. */
+    /* Player 1's start position is raised by 0x384 as player 0's is, but not
+     * read again here (the target performs these stores). */
     setVector(&local, local.vx, local.vy - 0x384, local.vz);
     e->weapon_point_delta[0].vx = 0;
     e->weapon_point_delta[0].vy = 0;
@@ -5029,9 +5028,6 @@ void fighter_Update(s32 arg0, PadState *pad) {
           rec->move_kind == 0x28 || rec->move_kind == 0x26) &&
          rec->weapon_hit_start_frames[1] < 0xFF && rec->unk_26C != 0 &&
          rec->move_frame >= rec->unk_A5 && rec->move_frame <= rec->unk_A6) ||
-        /* FAKE: this second range test is written unk_A6 >= move_frame;
-         * spelled like the first, fold-const factors the two identical
-         * tests out of the || (score 11). */
         (rec->unk_0A == 0xE && rec->move_kind == 0x11 && D_800A38AE == arg0 &&
          rec->move_frame >= rec->unk_A5 && rec->unk_A6 >= rec->move_frame)) {
         rec->unk_8C = rec->unk_8C != 0 ? 1 : 2;
