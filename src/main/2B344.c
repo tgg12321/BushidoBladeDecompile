@@ -1923,9 +1923,6 @@ void func_8003E6D8(s32 arg0) {
         for (j = 0; j < 0x1F; j++) {
             col = x + j;
             if (col < 0) {
-                /* FAKE: the column shift written in both arms instead of the
-                 * for-increment (cross-jump re-merges it); the extra refs
-                 * rank bits above a3, giving bits->$t1 / a3->$t2: score 9 */
                 bits <<= 1;
                 continue;
             }
