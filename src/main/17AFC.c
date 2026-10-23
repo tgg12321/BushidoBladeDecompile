@@ -4476,76 +4476,52 @@ void func_800321E8(void) {
 }
 
 void func_80032314(void) {
-    Unk80104E88Rec *t0 = D_80104E88;
-    s32 t1 = 0;
-    /* FAKE: a second, byte cursor a3 at each record's unk_02, read for unk_02
-       (*a3) and, through rec (the record a3 sits in), unk_03 and unk_04;
-       reading all three through t0 drops the second induction register
-       (score 21); *a3 as rec->unk_02: score 2. */
-    u8 *a3 = &D_80104E88[0].unk_02;
-    Unk80104E88Rec *rec;
-    Unk80101EC8Record *ent;
-    u16 state;
+    Unk80104E88Rec *rec = D_80104E88;
+    s32 i;
+    for (i = 0; i < 4; i++, rec++) {
+        Unk80101EC8Record *ent;
+        u16 state;
+        s32 dx, dy, dz;
+        u32 dist_sq;
+        u32 dist;
 
-loop:
-    rec = (Unk80104E88Rec *)(a3 - 2);
-    if (t0->unk_00 == 0)
-        goto next;
-    {
-        /* the other player's index (unk_03 is the owner) */
-        s32 other = (rec->unk_03 == 0);
-        ent = &D_80101EC8[other];
-    }
-    state = ent->move_kind;
-    if (state == 4 || state == 0x14 || state == 0xF || state == 0x1C ||
-        state == 0x1D || state == 0x1E || state == 0x1F || state == 0x20 ||
-        state == 0x21 || state == 0x11)
-        goto next;
-    /* FAKE: do-while(0) loop depth re-ranks register allocation into
-     * the target's $a1/$a2/$a3 seating; without it: score 15
-     * (do-while-zero-exception) */
-    do {
+        if (rec->unk_00 == 0)
+            continue;
         {
-            s32 dx = ent->world_pos.x - rec->unk_04.x;
-            s32 dy = ent->world_pos.y - rec->unk_04.y;
-            s32 dz = ent->world_pos.z - rec->unk_04.z;
-            u32 dist_sq;
-            u32 var_10;
-            dist_sq = (u32)(dx * dx + dy * dy + dz * dz);
-            if (dist_sq < 0x400) {
-                var_10 = (u32)(g_sqrt_table_u8[dist_sq]) >> 3;
-            } else {
-                s32 clz = 0;
-                s32 sp_tmp;
-                if ((s32)dist_sq >= 0) {
-                    gte_Lzc(dist_sq, &sp_tmp);
-                    clz = sp_tmp;
-                }
-                {
-                    u32 v1_m;
-                    u32 idx;
-                    u32 hi;
-                    v1_m = 0x16 - (clz & (u32)-2);
-                    idx = dist_sq >> v1_m;
-                    v1_m = v1_m >> 1;
-                    hi = (u32)((u8)(g_sqrt_table_u8[idx]));
-                    var_10 = (hi << 16) >> (0x13 - v1_m);
-                }
+            /* the other player's index (unk_03 is the owner) */
+            s32 other = (rec->unk_03 == 0);
+            ent = &D_80101EC8[other];
+        }
+        state = ent->move_kind;
+        if (state == 4 || state == 0x14 || state == 0xF || state == 0x1C ||
+            state == 0x1D || state == 0x1E || state == 0x1F || state == 0x20 ||
+            state == 0x21 || state == 0x11)
+            continue;
+
+        dx = ent->world_pos.x - rec->unk_04.x;
+        dy = ent->world_pos.y - rec->unk_04.y;
+        dz = ent->world_pos.z - rec->unk_04.z;
+        dist_sq = dx * dx + dy * dy + dz * dz;
+        if (dist_sq < 0x400) {
+            dist = (u32)g_sqrt_table_u8[dist_sq] >> 3;
+        } else {
+            s32 clz = 0;
+            s32 sp_tmp;
+            if ((s32)dist_sq >= 0) {
+                gte_Lzc(dist_sq, &sp_tmp);
+                clz = sp_tmp;
             }
             {
-                if (var_10 < (u32)(*a3 * 30 + 0x1F4)) {
-                    ent->pending_move_event = 5;
-                    t0->unk_00 = 0;
-                }
+                u32 shift = 0x16 - (clz & (u32)-2);
+                dist = ((u32)g_sqrt_table_u8[dist_sq >> shift] << 16) >>
+                       (0x13 - (shift >> 1));
             }
         }
-    } while (0);
-next:
-    t1 += 1;
-    a3 += 0x2C;
-    t0++;
-    if (t1 < 4)
-        goto loop;
+        if (dist < (u32)(rec->unk_02 * 30 + 0x1F4)) {
+            ent->pending_move_event = 5;
+            rec->unk_00 = 0;
+        }
+    }
 }
 
 void fighter_ReadFrameMetadata(Unk80101EC8Record *rec) {
