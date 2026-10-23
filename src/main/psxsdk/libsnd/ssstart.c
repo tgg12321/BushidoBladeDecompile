@@ -105,17 +105,15 @@ static void _SsTrapIntrVSync(void) {
     ((void (*)(void))_snd_seq_tick_env.unk8)();
 }
 
-/* FAKE: the toggle's read goes through an inline accessor; the direct read
-   lets CSE share one base register across the three unk20 accesses (score
-   12). Same accessor in SOTN:
-   SOTN: src/main/psxsdk/libsnd/ssstart.c:24 @db41b28 */
-static inline s32 get20(void) { return _snd_seq_tick_env.unk20; }
-
+/* Every other tick: reads the half-rate toggle through `env`, flips it and
+ * stores it back (pointer read-modify-write, pointer-alias-fake-exception). */
 static void _SsSeqCalledTbyT_1per2(void) {
-    if (get20() == 0) {
-        _snd_seq_tick_env.unk20 = 1;
+    SndSeqTickEnv *env = &_snd_seq_tick_env;
+
+    if (env->unk20 == 0) {
+        env->unk20 = 1;
     } else {
-        _snd_seq_tick_env.unk20 = 0;
-        ((void (*)(void))_snd_seq_tick_env.unk8)();
+        env->unk20 = 0;
+        ((void (*)(void))env->unk8)();
     }
 }
