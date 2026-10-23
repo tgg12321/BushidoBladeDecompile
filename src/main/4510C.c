@@ -2011,9 +2011,10 @@ s32 func_80058580(Unk80101EC8Record *p) {
                             }
                             /* the inner test contradicts the outer one, so
                              * pick2's body runs only by the goto above; the
-                             * target compares twice, and failing either compare
-                             * still reaches the var_8 call test (owner ruling
-                             * Q127); without the work2 == 5 arm: score 20 */
+                             * target compares twice, and failing the inner
+                             * compare still reaches the var_8 call test (owner
+                             * ruling Q127); without the work2 == 5 arm: score
+                             * 20 */
                             if (work2 == 5 &&
                                 p->other->unk_404[p->other->unk_86] <
                                     D_800A387C) {
