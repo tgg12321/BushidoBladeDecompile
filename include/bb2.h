@@ -299,8 +299,10 @@ extern Rec44 *g_listener_cam;
 extern CdlATV g_cd_atv_target;
 /* FAKE: the high halfword (+2) of the s32 link pad word D_800A36C0 as its own
  * symbol. comb_ExchangePad reads it lui / %lo (symbol + 2) while the word
- * and its low half go gp-relative; one Q33 union per pad word scores 4
- * (member reads force the address into $s0). Owner ruling pending. */
+ * and its low half go gp-relative. One-object forms score: Q33 union per
+ * pad word 4 (member reads force the address into $s0), (u16) word low
+ * reads 4, u16 h[2] 7, s16 h[2] with casts 4, aligned halves 4. Owner
+ * ruling Q125: comb_ExchangePad only. */
 extern s16 D_800A36C2;
 extern s32 D_800A36C4;
 extern s16 D_800A36C6;
@@ -309,8 +311,10 @@ extern u16 D_800A36CA;
 extern u8 D_800A36CC;
 /* FAKE: the high halfword (+2) of the s32 link pad word D_800A36D0 as its own
  * symbol. comb_ExchangePad reads it lui / %lo (symbol + 2) while the word
- * and its low half go gp-relative; one Q33 union per pad word scores 4
- * (member reads force the address into $s0). Owner ruling pending. */
+ * and its low half go gp-relative. One-object forms score: Q33 union per
+ * pad word 4 (member reads force the address into $s0), (u16) word low
+ * reads 4, u16 h[2] 7, s16 h[2] with casts 4, aligned halves 4. Owner
+ * ruling Q125: comb_ExchangePad only. */
 extern s16 D_800A36D2;
 extern s32 D_800A36D4;
 extern MoveScript *D_800A36D8;
