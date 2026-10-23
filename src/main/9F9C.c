@@ -4371,7 +4371,7 @@ void func_80023E40(Unk80101EC8Record *arg0) {
 extern s16 D_8008E0BC[27][4];
 /* [D_8008D9EC[unk_0A]][unk_0E]: the move command fighter_Update hands
  * object_SpawnScatteredAt. */
-extern u8 D_8008D90C[28][8];
+extern u8 D_8008D90C[2][8];
 extern void func_800204C0(Unk80101EC8Record *);
 
 /* Per-frame update of character `arg0`'s record from this frame's pad input:

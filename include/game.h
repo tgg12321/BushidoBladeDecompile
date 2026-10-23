@@ -722,7 +722,7 @@ typedef struct {
  * from CD file n + 2. */
 typedef struct {
     s32 id;
-    char *name;
+    const char *name;
 } Unk8008DCCCEntry;
 
 /* The file motion_LoadFighterData loads into g_motion_fighter_buffers[slot]

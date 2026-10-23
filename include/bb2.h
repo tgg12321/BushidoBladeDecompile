@@ -128,8 +128,7 @@ extern void (*D_8008D090[])(void);
 
 extern u8 D_8008E778[][4];
 
-/* g_sqrt_table_u8[i] = floor(8 * sqrt(i)), i = 0..0x3FF (the first 8 bytes
- * are the last words of .text). */
+/* g_sqrt_table_u8[i] = floor(8 * sqrt(i)), i = 0..0x3FF (d_7D920.c). */
 extern u8 g_sqrt_table_u8[0x400];
 
 extern Unk8008DCCCEntry D_8008DCCC[18];
