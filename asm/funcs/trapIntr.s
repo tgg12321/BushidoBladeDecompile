@@ -302,8 +302,8 @@ glabel trapIntr
     /* 7399C 8008319C 0800E003 */  jr         $ra
     /* 739A0 800831A0 00000000 */   nop
     /* Inline function at 0x800831A4 (bzero-like, not recognized by splat) */
-    .globl func_800831A4
-func_800831A4:
+    .globl memclr
+memclr:
     /* 739A4 800831A4 F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 739A8 800831A8 0600A010 */  beqz       $a1, .L800831C4_inline
     /* 739AC 800831AC FFFFA224 */   addiu     $v0, $a1, -0x1

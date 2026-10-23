@@ -28,7 +28,7 @@ glabel SetIntrMask
     /* 734A4 80082CA4 0C26428C */  lw         $v0, %lo(d_pcr)($v0)
     /* 734A8 80082CA8 21200002 */  addu       $a0, $s0, $zero
     /* 734AC 80082CAC 000045AC */  sw         $a1, 0x0($v0)
-    /* 734B0 80082CB0 690C020C */  jal        func_800831A4
+    /* 734B0 80082CB0 690C020C */  jal        memclr
     /* 734B4 80082CB4 1A040524 */   addiu     $a1, $zero, 0x41A
     /* 734B8 80082CB8 880C020C */  jal        setjmp
     /* 734BC 80082CBC 38000426 */   addiu     $a0, $s0, 0x38
