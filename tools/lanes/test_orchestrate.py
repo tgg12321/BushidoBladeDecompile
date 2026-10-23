@@ -77,6 +77,20 @@ class Phase(unittest.TestCase):
         r = reg(pins={"owner": None, "closed": NOW - 7200})
         self.assertEqual(o.session_phase(slot("pins"), {"state": "done", "pid": 1}, r, NOW), "running")
 
+    def test_idle_without_ever_opening_is_finished_after_grace(self):
+        a = {"state": "done", "status": "idle", "pid": 1}
+        g = o.NO_OPEN_GRACE_SECS
+        self.assertEqual(o.session_phase(slot("codex", idle_since=NOW - g + 5), a, reg(), NOW),
+                         "running")
+        self.assertEqual(o.session_phase(slot("codex", idle_since=NOW - g), a, reg(), NOW),
+                         "finished")
+        # someone else owning the lane does not make it this session's
+        r = reg(pins={"owner": "OTHER", "heartbeat": NOW})
+        self.assertEqual(o.session_phase(slot("pins", idle_since=NOW - g), a, r, NOW), "finished")
+        # owning its lane while idle keeps the stalled path
+        r = reg(pins={"owner": "S1", "heartbeat": NOW})
+        self.assertEqual(o.session_phase(slot("pins", idle_since=NOW - g), a, r, NOW), "running")
+
     def test_exited_without_closing_is_lost(self):
         r = reg(pins={"owner": "S1"})
         self.assertEqual(o.session_phase(slot("pins"), None, r, NOW), "lost")
@@ -101,6 +115,15 @@ class Slots(unittest.TestCase):
         self.assertTrue(s["sessions"]["a1"]["seen_open"])
         ev = o.update_slots(s, {"a1": {"state": "done", "pid": 1}}, reg(pins={"owner": None}), bl(), NOW)
         self.assertEqual(ev, [("no-progress", "a1")] if s["no_progress"] else [("finished", "a1")])
+        self.assertEqual(s["sessions"], {})
+
+    def test_never_opened_idle_counts_as_no_progress(self):
+        b = bl()
+        s = st({"a1": slot("pins", progress_at_start=o.progress_key(b, "pins"))})
+        a = {"a1": {"state": "done", "status": "idle", "pid": 1}}
+        self.assertEqual(o.update_slots(s, a, reg(), b, NOW), [])  # idle_since set now
+        later = NOW + o.NO_OPEN_GRACE_SECS
+        self.assertEqual(o.update_slots(s, a, reg(), b, later), [("no-progress", "a1")])
         self.assertEqual(s["sessions"], {})
 
     def test_stall_warned_once(self):
@@ -465,6 +488,46 @@ class Tick(unittest.TestCase):
         self.assertNotIn(o.CODEX_PROMPT, self.started)
 
 
+    def test_finished_idle_session_not_adopted_nor_busy(self):
+        # an idle `lane-codex` / `lane-pins` long done: process alive, lane not owned
+        self.listing["41a20439"] = {"name": "lane-codex", "state": "done", "status": "idle",
+                                    "pid": 5, "sessionId": "SC", "startedAt": 1000}
+        self.listing["dddddddd"] = {"name": "lane-pins", "state": "done", "status": "idle",
+                                    "pid": 9, "sessionId": "SD", "startedAt": 1000}
+        o.write_max(1)
+        o.tick(self.args)
+        st = o.load_state()
+        self.assertNotIn("41a20439", st["sessions"])
+        self.assertNotIn("dddddddd", st["sessions"])
+        self.assertEqual(self.started, ["/foundation-session pins"])
+
+    def test_idle_session_owning_its_lane_is_adopted(self):
+        self.listing["dddddddd"] = {"name": "lane-pins", "state": "done", "status": "idle",
+                                    "pid": 9, "sessionId": "SD", "startedAt": 1000}
+        self.reg["lanes"]["pins"] = {"owner": "SD", "heartbeat": time.time()}
+        o.write_max(1)
+        o.tick(self.args)
+        self.assertTrue(o.load_state()["sessions"]["dddddddd"]["adopted"])
+        self.assertNotIn("/foundation-session pins", self.started)
+
+    def test_codex_idle_without_opening_finishes_after_grace(self):
+        o.main(["codex", "on"])
+        o.write_max(1)
+        o.tick(self.args)
+        cx = next(s for s, v in o.load_state()["sessions"].items() if v.get("kind") == "codex")
+        self.listing[cx].update(state="done", status="idle")
+        o.tick(self.args)  # idle, never opened: within the grace period it is still running
+        self.assertIn(cx, o.load_state()["sessions"])
+        st = o.load_state()
+        st["sessions"][cx]["idle_since"] = time.time() - o.NO_OPEN_GRACE_SECS
+        o.write_state(st)
+        o.tick(self.args)
+        st = o.load_state()
+        self.assertEqual(st["codex_history"][-1]["sid"], cx)
+        self.assertEqual(st["codex_history"][-1]["event"], "finished")
+        self.assertIn(cx, self.stopped)
+
+
 class Pause(unittest.TestCase):
     def test_pause_and_when_away(self):
         p = {"pins": {"when_away": False}, "data": {"when_away": True}}
@@ -523,8 +586,15 @@ class Live(unittest.TestCase):
               "b": {"name": "lane-data", "state": "done"},            # exited: no pid
               "c": {"name": "Decompile next function", "pid": 2},
               "d": {"name": "lane-", "pid": 3},
-              "e": {"name": "lane-naming-a", "pid": 4, "state": "done"}}  # idle, still alive
-        self.assertEqual(o.live_lanes(ag), {"pins": "a", "naming-a": "e"})
+              "e": {"name": "lane-naming-a", "pid": 4, "state": "done"},  # idle, still alive
+              "f": {"name": "lane-naming-b", "pid": 6, "status": "idle", "sessionId": "SF"},
+              "g": {"name": "lane-codex", "pid": 7, "state": "done", "status": "idle",
+                    "sessionId": "SG"}}  # finished hours ago; codex lane free
+        r = reg(**{"naming-b": {"owner": "SF", "heartbeat": NOW},
+                   "codex": {"owner": None, "closed": NOW - 9999}})
+        # idle sessions count only while they own their lane (waiting on a land)
+        self.assertEqual(o.live_lanes(ag, r), {"pins": "a", "naming-b": "f"})
+        self.assertEqual(o.live_lanes(ag, reg()), {"pins": "a"})
 
     def test_candidates_treat_live_as_busy(self):
         self.assertEqual(o.candidates(bl(), reg(), st(), NOW, "foundation", live={"pins"}),
@@ -546,9 +616,12 @@ class Codex(unittest.TestCase):
                    ("docs: Codex lane note", ""),
                    ("4D0A8.c: func_80060768 t1 label", "...\nCodex run: 20261022-165732-x (thread"),
                    ("docs: fake-reduce", "for the fake lane, not the Codex lane."),
-                   ("Match: f", "")]
-        self.assertEqual(o.codex_landed(commits),
-                         ["docs: Codex lane note", "4D0A8.c: func_80060768 t1 label"])
+                   ("Match: f", ""),
+                   ("tools: orchestrate.py surfaces stopped lanes' questions, persistent pause, "
+                    "built-in Codex lane", "the Codex lane restarts while usage allows"),
+                   ("tools: codex_worker records every layer-2 verdict", "see the Codex run: line"),
+                   ("Match: g", "x\n  Codex run: indented is not the line")]
+        self.assertEqual(o.codex_landed(commits), ["4D0A8.c: func_80060768 t1 label"])
 
     def test_parse_log(self):
         out = ("100\x1fs1\x1fb1\nmore\n\x1e\n"

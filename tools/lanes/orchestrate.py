@@ -17,7 +17,8 @@
 
 Each session is `claude --bg` running `/naming-session <lane>` or `/foundation-session <lane>`
 from the main checkout. Watch one with `claude attach lane-<lane>`. A session is finished when it
-has closed its lane (`lanes.py close`) and gone idle; the orchestrator then stops it (the
+has closed its lane (`lanes.py close`) and gone idle, or has sat idle 5 minutes without ever
+opening it (it found no work); the orchestrator then stops it (the
 conversation is kept: `claude attach <id>` reopens it) and starts the next lane with work, until the backlogs run
 dry. A session idle for 90 minutes with its lane still open is reported as needing attention and keeps
 its slot. A lane whose session finished without changing its backlog is not started again this run.
@@ -36,8 +37,9 @@ count as workable. `max 0` drains: running sessions finish, then the orchestrato
 Codex lane (`--codex` / `codex on`): one extra session `lane-codex`, outside the N slots, that
 follows tmp/codex/fake-lane-brief.md. It is restarted when it finishes only while Codex usage is
 under 90% (5 h) / 80% (week), the bridge is not BLOCKED, and its last two sessions did not both
-land nothing (a main commit whose body has a `Codex run:` trailer or whose subject names the
-Codex lane); `codex on` re-arms that. With nothing running it keeps polling only while work
+land nothing (a main commit whose body has a line starting `Codex run:`); `codex on` re-arms
+that. An untracked `lane-<x>` session (from before a restart) is adopted, and keeps lane x busy,
+only while it works or, idle, still owns lane x in the registry. With nothing running it keeps polling only while work
 waits for the owner to be away or the codex lane waits on usage; attention: attention/index.json.
 """
 from __future__ import annotations
@@ -69,6 +71,7 @@ NAMING_WORKABLE = {"idea", "researched", "reviewed"}
 FOUNDATION_DONE = {"landed", "dropped", "blocked"}  # blocked = waits on an owner ruling
 ENDED_STATES = {"exited", "stopped", "failed", "killed", "error"}
 STALL_SECS = 90 * 60
+NO_OPEN_GRACE_SECS = 5 * 60  # idle this long without ever opening its lane = finished
 POLL_SECS = 60
 MISS_TICKS = 3      # a session absent from this many good listings in a row has ended
 CMD_TIMEOUT = 120
@@ -355,8 +358,9 @@ def session_phase(slot: dict, ag: dict | None, reg: dict, now: float) -> str:
 
     A session has released its lane once it opened the lane (seen owning it, or the lane was
     closed after the session started) and no longer owns it. Finished = released and idle (or
-    exited). An idle session usually just waits on a background `lanes.py land`; it is only
-    reported as stalled after STALL_SECS."""
+    exited). A session idle for NO_OPEN_GRACE_SECS that never opened its lane (it found no
+    work) is finished too. An idle session that owns its lane usually just waits on a
+    background `lanes.py land`; it is only reported as stalled after STALL_SECS."""
     e = reg.get("lanes", {}).get(slot["lane"]) or {}
     owns = bool(slot.get("session")) and e.get("owner") == slot["session"]
     released = not owns and (slot.get("seen_open") or float(e.get("closed") or 0) >= slot["started"])
@@ -365,7 +369,11 @@ def session_phase(slot: dict, ag: dict | None, reg: dict, now: float) -> str:
     if is_idle(ag):
         if released:
             return "finished"
-        if now - slot.get("idle_since", now) >= STALL_SECS:
+        idle_for = now - slot.get("idle_since", now)
+        if (slot.get("session") and not owns and not slot.get("seen_open")
+                and idle_for >= NO_OPEN_GRACE_SECS):
+            return "finished"  # decided there was no work and never opened its lane
+        if idle_for >= STALL_SECS:
             return "stalled"
     return "running"
 
@@ -380,13 +388,21 @@ def pause_blocks(paused: dict, lane: str, away: bool) -> bool:
     return False
 
 
-def live_lanes(ag: dict) -> dict[str, str]:
-    """lane -> short id of every live (not ended) background session named `lane-<lane>`."""
+def live_lanes(ag: dict, reg: dict) -> dict[str, str]:
+    """lane -> short id of every background session named `lane-<lane>` that is still at work:
+    not ended, and either not idle or idle while it owns its lane in the registry (waiting on a
+    land). An idle session keeps its process long after it finished; that one does not count."""
     out = {}
     for sid, a in sorted(ag.items()):
         name = a.get("name") or ""
-        if name.startswith("lane-") and len(name) > 5 and not is_ended(a):
-            out.setdefault(name[5:], sid)
+        if not name.startswith("lane-") or len(name) <= 5 or is_ended(a):
+            continue
+        lane = name[5:]
+        if is_idle(a):
+            owner = (reg.get("lanes", {}).get(lane) or {}).get("owner")
+            if not owner or owner != a.get("sessionId"):
+                continue
+        out.setdefault(lane, sid)
     return out
 
 
@@ -459,9 +475,10 @@ def update_slots(st: dict, ag: dict, reg: dict, bl: dict, now: float) -> list[tu
 
 def codex_landed(commits: list[tuple[str, str]]) -> list[str]:
     """Subjects of the (subject, body) main commits that are the Codex lane's own landings:
-    a body carrying the bridge's `Codex run:` trailer, or a subject naming the Codex lane. (A
-    Claude lane's body may merely *mention* the Codex lane, so bodies need the trailer.)"""
-    return [s for s, b in commits if "Codex run:" in b or "codex lane" in s.lower()]
+    a body with a line starting `Codex run:` (the codex-worker skill requires it). Subjects
+    and bodies that merely mention the Codex lane (the owner's tooling commits) do not count."""
+    return [s for s, b in commits
+            if any(re.match(r"Codex run: \S+", ln) for ln in b.splitlines())]
 
 
 def codex_gate(cfg: dict, paused: dict, away: bool, history: list[dict]) -> str | None:
@@ -657,13 +674,14 @@ def pid_alive(pid: int) -> bool:
 
 # ---------------------------------------------------------------- codex lane
 
-def adopt_sessions(st: dict, ag: dict, bl: dict):
+def adopt_sessions(st: dict, ag: dict, bl: dict, reg: dict):
     """Track every live `lane-<x>` session the state does not know: one started before a
     restart, or one whose start was never written (write_state failed). Otherwise the next
-    tick could start lane x a second time before the first session opens it."""
+    tick could start lane x a second time before the first session opens it. A finished
+    (idle, lane not owned) session is not adopted: see live_lanes."""
     tracked_lanes = {s["lane"] for s in st["sessions"].values()}
     known_codex = {h.get("sid") for h in st["codex_history"]}
-    for lane, sid in live_lanes(ag).items():
+    for lane, sid in live_lanes(ag, reg).items():
         if sid in st["sessions"] or lane in tracked_lanes:
             continue
         a = ag[sid]
@@ -777,14 +795,14 @@ def tick(args) -> bool:
     if ag is None:
         log("`claude agents --json` failed; skipping this pass")
         return True
-    adopt_sessions(st, ag, bl)
+    adopt_sessions(st, ag, bl, reg)
     slots = dict(st["sessions"])  # the same slot dicts: update_slots fills in, then drops them
     for ev, sid in update_slots(st, ag, reg, bl, now):
         _guarded(f"handling {ev} of session {sid}", handle_event, st, ev, sid, slots[sid], ag,
                  now)
     write_state(st)
     # live lane sessions, minus the ones this pass just found finished (still listed until gone)
-    live = {lane for lane, sid in live_lanes(ag).items() if sid not in slots or sid in st["sessions"]}
+    live = {lane for lane, sid in live_lanes(ag, reg).items() if sid not in slots or sid in st["sessions"]}
     limit = read_max()
     paused = load_paused()
     away = owner_away() if any(p.get("when_away") for p in paused.values()) else False
@@ -973,8 +991,9 @@ def cmd_plan(args):
     paused = load_paused()
     away = owner_away() if any(p.get("when_away") for p in paused.values()) else False
     ag = agents() or {}
-    lanes = candidates(backlogs(), read_json(REGISTRY, {"lanes": {}}), st, time.time(), args.only,
-                       paused, away, set(live_lanes(ag)))
+    reg = read_json(REGISTRY, {"lanes": {}})
+    lanes = candidates(backlogs(), reg, st, time.time(), args.only,
+                       paused, away, set(live_lanes(ag, reg)))
     print("next lanes, in order: " + (" ".join(lanes) or "(none: no work left)"))
     if paused:
         print("paused: " + ", ".join(sorted(paused)))
