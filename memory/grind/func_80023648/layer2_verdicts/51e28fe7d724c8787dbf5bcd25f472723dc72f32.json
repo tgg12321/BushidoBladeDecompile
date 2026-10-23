@@ -1,0 +1,15 @@
+{
+  "decision": "PASS",
+  "function": "func_80023648",
+  "body_hash": "cfd2e58e645f68d9",
+  "summary": "Retiring the FAKE tbl/row second handle for a plain D_8008EB40[a0][a1] through the header's s16[3][3] declaration matches the bytes (sandbox 0, oracle SHA1 matched) and is honest. The three remaining FAKE reused-local stagings each re-measure exactly at their labelled scores (15, 11, 30), and removing them together scores 32, so they are the simplest known form.",
+  "evidence": [
+    {"construct": "a2 = D_8008EB40[a0][a1];", "test_failed": "none (items 3, 4 checked)", "explanation": "This reads through the existing header type: include/bb2.h:138 declares extern s16 D_8008EB40[3][3], and src/main/d_7D920.c:621 defines it as a 3x3 s16 table. The index ranges a0, a1 in {0,1,2} fit it. There is no alias symbol, cast or second handle."},
+    {"construct": "FAKE: |unk_150| staged through a2", "test_failed": "none (items 3, 5 checked)", "explanation": "Using a fresh local instead re-measures at score 15, as the label says. The claim that the table value is dead there is true on both paths."},
+    {"construct": "FAKE: size_scale re-read staged through sub_result", "test_failed": "none (items 3, 5 checked)", "explanation": "Reading the field in place re-measures at score 11, as the label says."},
+    {"construct": "FAKE: >>12 speed staged through a2", "test_failed": "none (items 3, 5 checked)", "explanation": "A fresh local re-measures at score 30, as the label says. Ablating whole clusters is worse too: removing the first two scores 17 and removing all three scores 32."},
+    {"construct": "whole body", "test_failed": "none (item 2 checked)", "explanation": "The body has no asm, register pins, volatile, barriers or build-pipeline edits; the commit touches only src/main/9F9C.c. The names Judge (the sine table documented at bb2.h:140), size_scale, forward_move_rate and new_14e are consistent with the headers."}
+  ],
+  "next_action": "",
+  "hygiene_debt": ["The three remaining FAKE comments carry no admitting id (site-comment-content item 2). These are plain item-3 reused-local FAKEs, so there is no special ruling to name. This predates the change."]
+}

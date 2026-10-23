@@ -4069,11 +4069,6 @@ s32 func_800233AC(Unk80101EC8Record *arg0, s32 *arg1) {
 
 void func_80023648(Unk80101EC8Record *arg0) {
     u16 kind = arg0->move_kind;
-    /* FAKE: pointer alias to D_8008EB40 (pointer-alias-fake-exception), as
-     * in func_800233AC: the table
-     * address is in a register ahead of the a0 * 6 row offset; direct
-     * D_8008EB40[a0]: score 14. */
-    s16(*tbl)[3];
 
     if (kind == 0x13 || kind == 0x1B || kind == 0x30) {
         s32 a2;
@@ -4081,7 +4076,6 @@ void func_80023648(Unk80101EC8Record *arg0) {
         if (bits & 0xF000) {
             s32 a1 = (bits >> 14) & 1;
             s32 a0;
-            s16 *row;
 
             if (!(bits & 0x1000)) {
                 a1++;
@@ -4091,9 +4085,7 @@ void func_80023648(Unk80101EC8Record *arg0) {
                 a0++;
             }
 
-            tbl = D_8008EB40;
-            row = tbl[a0];
-            a2 = row[a1];
+            a2 = D_8008EB40[a0][a1];
 
             if (D_800A38BA != 0 && arg0->cpu_controlled == 0) {
                 fighter_SetTurnDelta(arg0, arg0->orientation.vy + a2 / 4);
