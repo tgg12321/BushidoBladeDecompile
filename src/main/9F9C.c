@@ -745,9 +745,11 @@ void camera_InitTrackedFighterFocus(
 }
 
 void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
-    /* FAKE: s2 holds &D_800F5328 in a saved register; through the symbol each
-     * access re-forms the address (score 34). */
-    Rec44 *s2 = &D_800F5328;
+    /* Pointer read-modify-write on a global (pointer-alias-fake-exception):
+     * the tracked camera target's height, rotation and h1C are each read,
+     * eased toward the fighter and stored back through cam; through the
+     * symbol each access re-forms the address (score 34). */
+    Rec44 *cam = &D_800F5328;
     s32 a2;
     s32 val;
     s32 var_3;
@@ -760,8 +762,8 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
     if (obj->move_kind == 0x2A) {
         val = 0x200;
     } else {
-        s2->unk_00.x = obj->unk_180.x;
-        s2->unk_00.z = obj->unk_180.z;
+        cam->unk_00.x = obj->unk_180.x;
+        cam->unk_00.z = obj->unk_180.z;
         val = obj->unk_180.y;
 
         if (!var_3) {
@@ -773,18 +775,18 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
         }
 
         {
-            s32 diff = val - s2->unk_00.y;
+            s32 diff = val - cam->unk_00.y;
             if (diff < 0) {
                 diff += 3;
             }
-            a2 = s2->unk_00.y + (diff >> 2);
-            s2->unk_00.y = a2;
+            a2 = cam->unk_00.y + (diff >> 2);
+            cam->unk_00.y = a2;
         }
 
         if (obj->move_kind == 0x2A) {
             val = 0x200;
         } else {
-            val = (-obj->opponent_bearing - s2->unk_10.vy) & 0xFFF;
+            val = (-obj->opponent_bearing - cam->unk_10.vy) & 0xFFF;
 
             if (val >= 0x800) {
                 val = 0x1000 - val;
@@ -800,14 +802,14 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
     }
 
     {
-        s16 old = s2->unk_10.vx;
+        s16 old = cam->unk_10.vx;
         s32 diff = val - old;
         if (diff < 0) {
             diff += 7;
         }
-        s2->unk_10.vx = old + (diff >> 3);
+        cam->unk_10.vx = old + (diff >> 3);
     }
-    s2->unk_10.vz = 0;
+    cam->unk_10.vz = 0;
 
     {
         s16 counter;
@@ -815,30 +817,30 @@ void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
         counter = D_800A36FC;
 
         if (counter != 0) {
-            s16 old12 = s2->unk_10.vy;
+            s16 old12 = cam->unk_10.vy;
             s32 diff = val - old12;
             if (diff < 0) {
                 diff += 3;
             }
             {
                 counter--;
-                s2->unk_10.vy = old12 + (diff >> 2);
+                cam->unk_10.vy = old12 + (diff >> 2);
                 D_800A36FC = counter;
             }
 
             {
-                s32 var_12 = s2->h1C * 3;
+                s32 var_12 = cam->h1C * 3;
                 if (var_12 < 0) {
                     var_12 += 3;
                 }
-                s2->h1C = var_12 >> 2;
+                cam->h1C = var_12 >> 2;
             }
         } else {
-            s2->unk_10.vy = val;
-            s2->h1C = 0;
+            cam->unk_10.vy = val;
+            cam->h1C = 0;
         }
     }
-    s2->w18 = 0;
+    cam->w18 = 0;
 }
 
 void func_8001B690(s32 arg0, s32 arg1) {
