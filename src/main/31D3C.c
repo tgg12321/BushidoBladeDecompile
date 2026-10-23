@@ -241,13 +241,10 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2) {
     s32 yoff;
     s16 *tbl;
     s32 idx;
-    /* FAKE: constant holder for the trailing `== 1` test; with the literal
-     * the 1 lands in $v1, not the target's $t0: score 2
-     * (named-local-fake-exception) */
-    s32 one = 1;
+    s32 slot = 1;
     RECT rect;
 
-    obj = func_8004153C(1);
+    obj = func_8004153C(slot);
     if (obj == 0) {
         return;
     }
@@ -282,7 +279,7 @@ void func_80041BF4(s32 a0, s32 a1, s32 a2) {
             gpu_TintVramRowInPlace(rect.x, rect.y, 0x10, r, g, b);
         }
     }
-    if (gpu_GetFogClutObject() == one) {
+    if (gpu_GetFogClutObject() == slot) {
         func_8003E120();
     }
 }
