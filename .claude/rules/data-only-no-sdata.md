@@ -7,7 +7,7 @@ metadata:
   tier: blocking
 ---
 
-# Data-only files without small data (owner ruling Q122)
+# Data-only files without small data (owner rulings Q122, Q123)
 
 Extends [[per-file-gp-model]] (A4, Q69), which turns maspsx `-G8` off only for Sony library code.
 Under `-G8`, (A3) moves any initialized object of total size <= 8 bytes from `.data` to `.sdata`,
@@ -30,8 +30,12 @@ missing file. A new file in the set must also meet:
    typed honestly as objects > 8 bytes, it stays `-G8` and needs no file of its own.
 3. **No owning neighbour:** each neighbouring module in `.data` link order either uses small data (its
    own `.sdata`, `.sbss` or gp accesses) or is Sony library code, and no `.text` between them is
-   unaccounted for, so no code module could own the object. Anything else goes to
-   `docs/grind/borderline.md`; never "because it matches".
+   unaccounted for, so no code module could own the object. (Q123) A neighbouring game module with no
+   small data counts as a possible owner only if it references objects in the run (loads, stores or
+   takes their address, from its C, its INCLUDE_ASM bodies or its own data relocations): one that
+   references none does not block the file; objects it does reference stay in asm as an open case,
+   and the run splits around them (each side meets 1-4 on its own). Anything else goes to `docs/grind/borderline.md`; never
+   "because it matches".
 4. **Top comment** states 1-3: the address range, the small objects that place it, and its readers.
 
 Contents are the original bytes, typed per [[per-file-gp-model]]'s K-kinds and existing declarations.

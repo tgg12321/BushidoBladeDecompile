@@ -589,13 +589,17 @@ func_80031B24's two call sites (FAKE-labelled in Q96's form), or leave the debt 
 category: policy-question
 evidence: the run holds initialized objects of <= 8 bytes in .data (D_8008D864 u8[8], D_8008EB04..D_8008EB18 s16/s32
 scalars read by 2B344.c, D_8008EB38 u8[8] 9F9C.c, D_8008EB6C u8[6] 175A4.c, D_8008EBF4 u8[6] 17AFC.c, D_8008EC30 u8[4]
-25788.c / cdrom.c). Its readers interleave against .data link order (9F9C, 17AFC, 2B344, 9F9C, 175A4, 17AFC, 25788; 2B344.o's
+25788.c (cdrom.c names it only in a comment, cdrom.c:251)). Its readers interleave against .data link order (9F9C, 17AFC, 2B344, 9F9C, 175A4, 17AFC, 25788; 2B344.o's
 .data links after cdrom.o), so no reading TU owns it, and Q122 condition 3 fails: the next .data module, cdrom.o, is game
 code with no small data (0 GPREL16 relocations, no .sdata/.sbss), so a -G0 cdrom.c could own the run; 87A0 / 175A4 /
 24BF0 / 25788 between are the same (0 gp relocations). The run also opens with D_8008D120, the tail of g_sqrt_table_u8,
 whose first 8 bytes are in d_7D870.c's .text.
 disposition taken: left as asm (data lane, 2026-10-22). Question for the owner: may a run whose following code neighbour
 uses no small data become a Q122 data-only file (d_7D920.c), or does cdrom.c's lack of gp evidence leave it open?
+resolution (owner, 2026-10-22, Q123): yes; its start follows the g_sqrt_table_u8 evidence (no split of the table).
+The owner also carved out D_8008EC30 as "read by cdrom.c", but that premise was false (only 25788.c, not a .data
+neighbour, reads it; review of the Q123 commit). Open question to the owner: under Q123 D_8008EC30 joins d_7D920.c;
+(a) join, or (b) stay asm by explicit carve-out? Until answered it stays asm and d_7D920.c ends before it.
 
 ## 2026-10-22 — asm/data/89C78.data.s (.data 0x80099478..0x80099D54) — Q122 condition 3 fails — policy-question
 category: policy-question
@@ -607,3 +611,5 @@ position is after 3AB48.o (368E4.o's and 3AB48.o's .data are empty), before 4350
 on both sides (0x8004A348..0x80052D00): a -G0 3AB48.c could own the run, as for 7D920 / cdrom.o above.
 disposition taken: left as asm (data lane, 2026-10-22). Question for the owner: may a run whose code neighbour uses no
 small data but never reads the run (3AB48.c references none of its labels) become a Q122 data-only file (d_89C78.c)?
+resolution (owner, 2026-10-22, Q123): yes. 3AB48.c reads none of the run, so it is not an owner candidate; the run
+becomes d_89C78.c.
