@@ -582,23 +582,9 @@ void func_8006F528(Unk8006EACCRec *arg0) {
 
     switch (state) {
     case 2:
-    case 4: {
-        /* FAKE: one-use alias of D_800A35C4 for the offset store: written
-           `D_800A35C4->unk_10[0] = offset_x`, the D_800A35C4 load (`lw a1`)
-           sinks from the state test to the store, the test's 2 moves from $a2
-           to $a1 and offset_x from $v0 to $v1 (score 8). */
-        Unk800A35C4Rec *var_6;
-        s32 x;
-        s32 offset_x;
-
-        var_6 = D_800A35C4;
-        x = D_800A35C0->draw.ofs[0];
-        if (state == 2) {
-            offset_x = x - D_800A3570;
-        } else {
-            offset_x = x + D_800A3570;
-        }
-        var_6->unk_10[0] = offset_x;
+    case 4:
+        D_800A35C4->unk_10[0] =
+            D_800A35C0->draw.ofs[0] + (state == 2 ? -D_800A3570 : D_800A3570);
         D_800A35C4->unk_10[1] = D_800A35C0->draw.ofs[1];
         SetDrawOffset(arg0->unk_04.unk_1C, D_800A35C4->unk_10);
         AddPrim(g_gpu_ot_ptr + 0xF, arg0->unk_04.unk_1C);
@@ -610,7 +596,6 @@ void func_8006F528(Unk8006EACCRec *arg0) {
         AddPrim(g_gpu_ot_ptr + 6, arg0->unk_04.unk_1C);
         arg0->unk_04.unk_1C++;
         break;
-    }
     }
 
     prim = arg0->unk_04.unk_10;
