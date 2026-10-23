@@ -2979,30 +2979,32 @@ void fighter_UpdateBoneWorldData(Unk80101EC8Record *rec, Unk80107850Rec *arg1,
     rec->unk_1C2 = ratan2(m->m[0][2], m->m[2][2]) + 0x800;
 }
 
+/* D_800A38C4[i] is the fighter motion id loaded into slot i; 0xFFFF in slot 1
+ * marks an ndata pack there (func_8001DB9C). Both functions read slot 1's id
+ * through `ids`, invalidate the pack if it holds one and store the slot back
+ * (pointer read-modify-write, pointer-alias-fake-exception; the direct
+ * D_800A38C4[1] form keeps the address live across ndata_InvalidatePack:
+ * score 10 / 9). */
 void func_80020CDC(void) {
-    /* FAKE: direct D_800A38C4[1] puts the constant address in a pseudo that CSE
-     * keeps live across ndata_InvalidatePack (+3 insns) */
-    u16 *p = D_800A38C4;
+    u16 *ids = D_800A38C4;
 
-    if (p[1] == 0xFFFF) {
+    if (ids[1] == 0xFFFF) {
         ndata_InvalidatePack();
     }
     g_motion_common_loaded = 0;
-    p[1] = 0;
-    p[0] = 0;
+    ids[1] = 0;
+    ids[0] = 0;
     g_motion_frame_set_ids[1] = 0xFF;
     g_motion_frame_set_ids[0] = 0xFF;
 }
 
 void func_80020D38(void) {
-    /* FAKE: direct D_800A38C4[1] puts the constant address in a pseudo that CSE
-     * keeps live across ndata_InvalidatePack (+3 insns) */
-    u16 *p = D_800A38C4;
+    u16 *ids = D_800A38C4;
 
-    if (p[1] == 0xFFFF) {
+    if (ids[1] == 0xFFFF) {
         ndata_InvalidatePack();
     }
-    p[1] = 0;
+    ids[1] = 0;
 }
 
 void motion_InitBuffers(void) {
