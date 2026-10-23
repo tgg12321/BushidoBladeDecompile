@@ -47,7 +47,13 @@ Examples
   python tools/trace/gdbtrace.py run --spec tmp/spec.json --out tmp/t.jsonl \\
       --launch pcsx-redux --emulator tmp/pcsx-redux/pcsx-redux.exe \\
       --bios scph1001.bin --cue "Bushido Blade 2 (USA).cue" --boot-wait 20
-  python tools/trace/gdbtrace.py report tmp/t.jsonl > tmp/evidence.md
+  python tools/trace/gdbtrace.py report tmp/t.jsonl --out tmp/evidence.md
+
+Reading a report: call sites are ra-8, i.e. the `jal`/`jalr` that entered the
+function; a function reached by a tail-call `j` is credited to its caller's
+caller. Watch hits name the load/store at the stop pc (or pc-4); a store in
+a branch delay slot may be missed and then shows as an `unmatched-stop` event.
+A trace covers one scenario, never everything a function can do.
 """
 
 from __future__ import annotations
@@ -128,6 +134,8 @@ class Symbols:
         raise SystemExit(f"gdbtrace: unknown symbol {text!r} (map: {self.path})")
 
     def name(self, addr: int) -> str:
+        if 0xA0000000 <= addr < 0xA0200000 or addr < 0x00200000:
+            addr = RAM_LO | (addr & 0x1FFFFFFF)  # KSEG1 / physical alias
         if not RAM_LO <= addr < RAM_HI:
             return f"0x{addr:08X}"
         i = bisect.bisect_right(self.addrs, addr) - 1
@@ -151,7 +159,6 @@ class Gdb:
     def __init__(self, host: str, port: int, timeout: float = 10.0):
         self.sock = socket.create_connection((host, port), timeout=timeout)
         self.buf = b""
-        self.late_stops: list[str] = []
         self.console: list[str] = []
         self.features = self.cmd("qSupported:swbreak+;hwbreak+")
 
@@ -220,7 +227,6 @@ class Gdb:
             # A late stop reply (breakpoint racing an interrupt) can arrive
             # ahead of the answer; S/T are not hex, so it cannot be data.
             if payload != "?" and re.match(r"[ST][0-9a-fA-F]{2}", reply):
-                self.late_stops.append(reply)
                 continue
             if self._console(reply):
                 continue
@@ -291,7 +297,8 @@ WATCH_KIND = {"write": 2, "read": 3, "access": 4}
 MEM_OPS = {0x20: (1, False), 0x21: (2, False), 0x22: (4, False),
            0x23: (4, False), 0x24: (1, False), 0x25: (2, False),
            0x26: (4, False), 0x28: (1, True), 0x29: (2, True),
-           0x2A: (4, True), 0x2B: (4, True), 0x2E: (4, True)}
+           0x2A: (4, True), 0x2B: (4, True), 0x2E: (4, True),
+           0x32: (4, False), 0x3A: (4, True)}  # lwc2 / swc2 (GTE)
 
 
 def phys(addr: int) -> int:
@@ -316,7 +323,9 @@ def decode_access(gdb: Gdb, regs: list[int], pc: int):
         imm = insn & 0xFFFF
         imm -= 0x10000 if imm & 0x8000 else 0
         addr = (regs[base] + imm) & 0xFFFFFFFF
-        value = regs[rt] & ((1 << (8 * width)) - 1) if store else None
+        value = None  # swc2 stores a GTE register, not GPR rt
+        if store and op != 0x3A:
+            value = regs[rt] & ((1 << (8 * width)) - 1)
         return at, addr, width, store, value
     return None
 
@@ -362,7 +371,8 @@ def run(args) -> int:
         if emu is not None:
             proc, restore = emu
             if args.keep_emulator:
-                print("gdbtrace: emulator left running")
+                print("gdbtrace: emulator left running; DuckStation may save "
+                      "EnableGDBServer = true when you close it")
             else:
                 stop_emulator(proc, args.port)
                 restore()
@@ -423,12 +433,13 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
     events = 0
     totals = {}
 
-    def entry_for_stop(regs, reply):
+    def entry_for_stop(regs, reply, interrupted):
         pc = regs[37] if len(regs) > 37 else 0
         if (0, pc) in armed:
             return armed[(0, pc)], None
         watches = [e for (k, _), e in armed.items() if k]
-        if not watches:
+        if not watches or interrupted:
+            # Our own ^C can land on any load/store; never a watch hit.
             return None, None
         m = re.search(r"(?:watch|rwatch|awatch):([0-9a-fA-F]+)", reply)
         acc = decode_access(gdb, regs, pc)
@@ -437,6 +448,8 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             return None, acc
         for e in watches:
             n = acc[2] if acc else 1
+            if acc and e["kind"] != 4 and acc[3] != (e["kind"] == 2):
+                continue  # a load under a write watch, or vice versa
             if (phys(a) < phys(e["addr"]) + e["len"]
                     and phys(e["addr"]) < phys(a) + n):
                 return e, acc
@@ -468,7 +481,7 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 emit({"ev": "exit", "reply": reply})
                 break
             regs = gdb.regs()
-            e, acc = entry_for_stop(regs, reply)
+            e, acc = entry_for_stop(regs, reply, interrupted)
             if e is None:
                 if not interrupted:
                     emit({"ev": "unmatched-stop", "pc": regs[37],
@@ -571,6 +584,8 @@ def wait_for_stub(proc, host: str, port: int, wait: float, name: str):
             if proc.poll() is not None:
                 raise SystemExit(f"gdbtrace: {name} exited at boot")
             time.sleep(0.5)
+    raise SystemExit(f"gdbtrace: {name} GDB stub did not open "
+                     f"{host}:{port} within {wait:.0f} s")
 
 
 def launch_redux(args):
@@ -649,9 +664,9 @@ def launch_duckstation(args):
 
     patched = set_ini_key(text, "Debug", "EnableGDBServer", "true")
     patched = set_ini_key(patched, "Debug", "GDBServerPort", str(args.port))
-    with open(ini, "wb") as f:
-        f.write(patched.encode("utf-8"))
     try:
+        with open(ini, "wb") as f:
+            f.write(patched.encode("utf-8"))
         proc = subprocess.Popen([exe, "-batch", "-fastboot", "--",
                                  os.path.abspath(args.cue)])
         wait_for_stub(proc, args.host, args.port, args.connect_timeout,
@@ -666,9 +681,11 @@ def launch_duckstation(args):
         with open(ini, "rb") as f:
             now = f.read().decode("utf-8")
         fixed = now
+        defaults = {"EnableGDBServer": "false"}  # absent key = off
         for key in ("EnableGDBServer", "GDBServerPort"):
-            if key in orig_debug:
-                fixed = set_ini_key(fixed, "Debug", key, orig_debug[key])
+            value = orig_debug.get(key, defaults.get(key))
+            if value is not None:
+                fixed = set_ini_key(fixed, "Debug", key, value)
         if fixed != now:
             with open(ini, "wb") as f:
                 f.write(fixed.encode("utf-8"))
@@ -685,8 +702,9 @@ def u32s(hexstr: str):
     return [int.from_bytes(b[i:i + 4], "little") for i in range(0, len(b) - 3, 4)]
 
 
-def describe_words(syms: Symbols, samples: list[list[int]], base_label: str):
-    """Per-u32 offset: constant / varying, value range, pointer targets."""
+def describe_words(syms: Symbols, samples: list[list[int]], label):
+    """Per-u32 word: constant / varying, value range, pointer targets.
+    label(byte_offset) names the word's row."""
     lines = []
     width = min(len(s) for s in samples) if samples else 0
     for i in range(width):
@@ -705,7 +723,7 @@ def describe_words(syms: Symbols, samples: list[list[int]], base_label: str):
                 shown += "; all RAM pointers -> " + ", ".join(
                     f"`{n}`" for n in
                     sorted({syms.name(p).split('+')[0] for p in ptrs})[:4])
-        lines.append(f"| {base_label}+0x{4 * i:02X} | {kind} | {shown} |")
+        lines.append(f"| {label(4 * i)} | {kind} | {shown} |")
     return lines
 
 
@@ -787,7 +805,13 @@ def report(args) -> int:
             w.append("")
             w.append("| field | behaviour | values |")
             w.append("|---|---|---|")
-            w += describe_words(syms, samples, base)
+            off = int(d.get("off", 0))
+            if base in REG_INDEX:  # struct member offsets from the register
+                label = lambda o, b=base, x=off: f"{b}+0x{x + o:02X}"
+            else:  # a global: name each word's own address
+                at0 = (syms.addr(base) + off) & 0xFFFFFFFF
+                label = lambda o, a=at0: syms.name(a + o)
+            w += describe_words(syms, samples, label)
             w.append("")
     for at, recs in polls.items():
         w.append(f"## poll {at}: {len(recs)} samples over "
@@ -795,8 +819,20 @@ def report(args) -> int:
         w.append("")
         w.append("| field | behaviour | values |")
         w.append("|---|---|---|")
-        w += describe_words(syms, [u32s(r["hex"]) for r in recs], at)
+        at0 = recs[0]["addr"]
+        w += describe_words(syms, [u32s(r["hex"]) for r in recs],
+                            lambda o, a=at0: syms.name(a + o))
         w.append("")
+    if start:
+        seen = {at for at, _ in hits}
+        spec = start.get("spec", {})
+        idle = [b["at"] for b in spec.get("breakpoints", []) + spec.get("watch", [])
+                if b["at"] not in seen]
+        if idle:
+            w.append("## Armed, never hit in this scenario")
+            w.append("")
+            w += [f"- `{a}`" for a in idle]
+            w.append("")
     text = "\n".join(w) + "\n"
     if args.out:
         with open(args.out, "w", encoding="utf-8", newline="\n") as f:
