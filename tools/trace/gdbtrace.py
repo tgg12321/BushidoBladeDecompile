@@ -494,6 +494,11 @@ def run(args) -> int:
     # compared in memory later are read now.
     inputs = runkit.inputs_record(args, start, REPO)
     args.expect = runkit.expected_memory(args)
+    inputs["build"]["map_matches_elf"] = map_matches_elf(syms, args)
+    if not inputs["build"]["map_matches_elf"]:
+        inputs["q124_complete"] = False
+        inputs.setdefault("q124_missing", []).append(
+            "a link map from the same link as the ELF")
     if not inputs["build"]["oracle_match"]:
         print("gdbtrace: WARNING build/bb2.exe is not the oracle; addresses "
               "may not describe the original game", file=sys.stderr)
@@ -533,6 +538,26 @@ def run(args) -> int:
                   file=sys.stderr)
             rc = 1
     return rc
+
+
+def map_matches_elf(syms: Symbols, args) -> bool:
+    """The map (breakpoint addresses) and the ELF (checked against the
+    EXE) come from one link: every global the ELF and the map both name
+    has one address in both."""
+    elf = args.elf or os.path.join(os.path.dirname(os.path.abspath(
+        args.map)), "bb2.elf")
+    try:
+        in_elf = {n: a & 0xFFFFFFFF for a, n, _ in elf_symbols(elf)}
+        with open(args.map, encoding="utf-8", errors="replace") as f:
+            in_map = {}
+            for line in f:
+                m = Symbols.LINE.match(line)
+                if m:
+                    in_map.setdefault(m.group(2), int(m.group(1), 16))
+    except OSError:
+        return False
+    common = [n for n in in_map if n in in_elf]
+    return len(common) > 100 and all(in_map[n] == in_elf[n] for n in common)
 
 
 def prepare_memcards(args) -> dict:
@@ -635,7 +660,7 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
         args.result.update({"armed_frame": armed_frame,
                             "armed_pc": armed_pc})
         # Redux falls back to OpenBIOS when it cannot load --bios: compare
-        # the ROM it is running with the recorded file.
+        # the whole ROM it is running with the file read before launch.
         args.result["bios_in_memory"] = compare_memory(
             gdb, RESET_VECTOR, args.expect.get("bios"))
         emit({"ev": "phase", "t": 0.0, "frame": state[1] if state else 0,
@@ -694,17 +719,25 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 # Poll or deadline due: stop the target. A breakpoint may
                 # have raced the interrupt; its stop reply is handled below.
                 reply = gdb.interrupt()
+                # Both the racing stop and the ^C may be answered; the CPU
+                # is stopped either way, so drop a second reply now rather
+                # than read it as the next stop after `c`.
+                late = gdb.wait_stop(0.2)
+                if late is not None and late.startswith(("W", "X")):
+                    reply = late
             if reply.startswith(("W", "X")):
                 emit({"ev": "exit", "reply": reply})
                 break
             regs = gdb.regs()
-            if after_script_stop is not None and regs == after_script_stop:
+            new = runkit.read_state(args.out) if script else None
+            if (after_script_stop is not None and regs == after_script_stop
+                    and new == state):
                 # A breakpoint and the Lua pause on the same instruction can
-                # arrive as two stops; nothing ran in between: skip it.
+                # arrive as two stops; nothing ran in between (same
+                # registers, no new Lua state): skip it.
                 after_script_stop = None
                 continue
             after_script_stop = None
-            new = runkit.read_state(args.out) if script else None
             script_stop = bool(new and new != state)
             if script_stop:
                 # The Lua paused the emulator at a phase change or the end.

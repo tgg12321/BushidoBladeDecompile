@@ -539,7 +539,7 @@ def expected_memory(args) -> dict:
     (.rodata then .text: data the game never writes)."""
     exp = {}
     if args.bios:
-        exp["bios"] = read_head(args.bios, 0x400)
+        exp["bios"] = read_head(args.bios, 0x80000)  # the whole 512 KiB ROM
     d = os.path.dirname(os.path.abspath(args.map))
     try:
         end = map_text_end(args.map)
@@ -606,8 +606,10 @@ def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
         mc = companion(args.out, f".mc{n}.mcd")
         if os.path.exists(mc):
             outputs.append(mc)
-    m["outputs_note"] = ("cards are hashed as on disk after the emulator "
-                         "was stopped")
+    m["outputs_note"] = ("cards are hashed as on disk after the run; the "
+                         "emulator was " + ("left running" if
+                                            args.keep_emulator else
+                                            "stopped first"))
     m["outputs"] = [file_rec(p) for p in outputs]
     path = companion(args.out, ".manifest.json")
     with open(path, "w", encoding="utf-8", newline="\n") as f:

@@ -426,8 +426,9 @@ screenshots as PNG). Every run writes `<capture>.manifest.json`: the outcome, th
 input taken before launch (tools + git status, build/oracle, spec, emulator executables and
 version, BIOS, disc tracks, memory cards, Lua) and of each output. `q124_complete: true` needs a
 scripted Redux run from committed tools and the oracle build, with every input file present, an
-explicit BIOS that matches the ROM read back from the emulator, the EXE loaded from the disc
-matching the build (first 8 KiB in RAM), breakpoints armed at frame 0, every script action run
+explicit BIOS that matches the whole ROM read back from the emulator, the EXE loaded from the
+disc matching the build in RAM (all of .rodata + .text), a map and ELF from the same link as that
+EXE, breakpoints armed at frame 0, every script action run
 (checked against its log) and the script's end reached.
 When a trace counts as naming evidence, and what a capture must record, is
 `.claude/rules/naming-runtime-evidence.md` (owner ruling Q124).
