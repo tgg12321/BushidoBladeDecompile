@@ -1,22 +1,23 @@
-/* Data-only file: .data 0x8008D118..0x8008E914 (ROM 0x7D918), the head of
- * the game's .data: g_sqrt_table_u8 and the fighter, motion and object tables.
+/* Data-only file: .data 0x8008D118..0x8008EC30 (ROM 0x7D918), the game's
+ * first .data run: g_sqrt_table_u8 and the fighter, motion, object and
+ * stage-sound tables.
  * Owner rulings Q122 / Q123 (data-only-no-sdata):
  * 1. One run: it opens .data (libsn's __data is D_8008D070; d_7D870.c's .text
  *    block ends at 0x8008D118 and every .data input section linked before
- *    this one is empty) and ends where asm/data/7D920.data.s's D_8008E914
- *    begins. No uninitialized objects.
- * 2. Small object in .data: D_8008D864 (u8[8], fighter_UpdateBoneWorldData:
- *    one point count per D_8008D86C set, whose 8 sets fix the size; D_8008D86C
- *    after it has its own reader). Under -G8 the original compiler puts it in
- *    .sdata, so no -G8 file defined it.
+ *    this one is empty) and ends at D_8008EC30. No uninitialized objects.
+ * 2. Small objects in .data: D_8008D864 (u8[8]: one point count per
+ *    D_8008D86C set), D_8008EB04 .. D_8008EB0C (s16) and D_8008EB10 ..
+ *    D_8008EB18 (s32), each with its own reader in func_8003CF84,
+ *    D_8008EB38 (u8[8], fighter_Init), D_8008EB6C (u8[6], func_80026DA4,
+ *    after D_8008EB54's 6 rows) and D_8008EBF4 (u8[6], snd_UpdateStageSounds,
+ *    before D_8008EBFC's 6 pairs). Under -G8 the original compiler puts them
+ *    in .sdata, so no -G8 file defined them.
  * 3. Neighbours: before it, d_7D870.c's .text (game data words, no small
  *    data, none pointing into the run) and in .data link order 26940.o's
- *    empty .data (26940.c is -G8, gp accesses). After it, the asm tail
- *    0x8008E914..0x8008EC34 (asm/data/7D920.data.s), an open case: 17AFC.c's
- *    snd_UpdateStageSounds reads D_8008EA00[type] for type 5 / 6, a base
- *    folded into D_8008E914's rows, so that piece waits on a 17AFC.c body
- *    change (and D_8008EC30 on the owner); then cdrom.o, a game module with
- *    no small data that references no object in the run (Q123).
+ *    empty .data (26940.c is -G8, gp accesses). After it, D_8008EC30
+ *    (asm/data/7D920.data.s, read only by 25788.c), an open case pending the
+ *    owner; then cdrom.o, a game module with no small data that references
+ *    no object in the run (Q123: not an owner candidate).
  * Readers: 9F9C.c, 175A4.c, 17AFC.c, 24BF0.c, 25788.c, 28708.c, 2B344.c,
  * 4510C.c (interleaved against .data link order, so no reader owns it).
  * Not including bb2.h: it declares D_8008D518, D_8008D55C, D_8008E748 and
@@ -26,9 +27,16 @@
 #include "game.h"
 
 extern const char D_800100FC[66][12];
+extern const char g_str_chanbara[];
+extern const char g_str_practice[];
 extern char D_800A3114[];
 extern char D_800A311C[];
 extern char D_800A3124[];
+extern char D_800A3150[];
+extern char D_800A3158[];
+extern char D_800A3160[];
+extern char D_800A3164[];
+extern char D_800A316C[];
 
 /* g_sqrt_table_u8[i] = floor(8 * sqrt(i)), i = 0..0x3FF (17AFC.c's distance and
  * length helpers). */
@@ -515,6 +523,144 @@ u8 D_8008E778[100][4] = {
     {3, 112, 112, 32}, {3, 80, 32, 175},  {3, 48, 48, 255},  {3, 255, 255, 48},
     {3, 48, 255, 48},  {2, 144, 48, 144}, {2, 255, 48, 48},  {4, 0, 0, 0}};
 
-/* func_80033DF4's move rows (with D_8008EC24's rank rows); the 2 zero bytes
- * after it are D_8008E914's alignment (7D920.data.s). */
+/* func_80033DF4's move rows (with D_8008EC24's rank rows). */
 u8 D_8008E908[2][5] = {{7, 2, 10, 0, 32}, {7, 2, 10, 0, 30}};
+
+/* Per stage (D_800A36A4; 38 rows, as D_8009947C): the four (type, value)
+ * sound pairs snd_UpdateStageSounds walks. */
+u8 D_8008E914[38][8] = {
+    {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x01, 0x50, 0x03, 0x40, 0x03, 0x20, 0x04, 0x7F},
+    {0x03, 0x40, 0x02, 0x60, 0x00, 0x00, 0x00, 0x00},
+    {0x03, 0x40, 0x02, 0x60, 0x01, 0x40, 0x00, 0x00},
+    {0x03, 0x40, 0x02, 0x60, 0x01, 0x40, 0x00, 0x00},
+    {0x03, 0x40, 0x01, 0x40, 0x00, 0x00, 0x00, 0x00},
+    {0x03, 0x40, 0x02, 0x60, 0x01, 0x20, 0x00, 0x00},
+    {0x03, 0x40, 0x02, 0x60, 0x01, 0x40, 0x02, 0x60},
+    {0x01, 0x40, 0x02, 0x60, 0x00, 0x00, 0x00, 0x00},
+    {0x01, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x01, 0x7F, 0x04, 0x7F, 0x00, 0x00, 0x00, 0x00},
+    {0x02, 0x7F, 0x04, 0x7F, 0x01, 0x40, 0x04, 0x3F},
+    {0x01, 0x40, 0x01, 0x40, 0x00, 0x00, 0x00, 0x00},
+    {0x01, 0x40, 0x04, 0x7F, 0x00, 0x00, 0x00, 0x00},
+    {0x03, 0x40, 0x02, 0x60, 0x01, 0x30, 0x00, 0x00},
+    {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x01, 0x40, 0x04, 0x7F, 0x00, 0x00, 0x00, 0x00},
+    {0x01, 0x40, 0x04, 0x7F, 0x00, 0x00, 0x00, 0x00},
+    {0x01, 0x40, 0x04, 0x05, 0x00, 0x00, 0x00, 0x00},
+    {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x03, 0x60, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00},
+    {0x01, 0x40, 0x04, 0x10, 0x00, 0x00, 0x00, 0x00},
+    {0x03, 0x40, 0x02, 0x60, 0x01, 0x20, 0x00, 0x00},
+    {0x03, 0x40, 0x02, 0x60, 0x01, 0x40, 0x03, 0x40},
+    {0x03, 0x40, 0x01, 0x60, 0x06, 0x7F, 0x03, 0x40},
+    {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x03, 0x40, 0x02, 0x60, 0x01, 0x40, 0x04, 0x50},
+    {0x01, 0x40, 0x03, 0x10, 0x00, 0x00, 0x00, 0x00},
+    {0x03, 0x40, 0x02, 0x60, 0x01, 0x40, 0x03, 0x40},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
+
+/* snd_UpdateStageSounds's {a, b} thresholds of types 2..6. */
+Unk8008EA44Entry D_8008EA44[5] = {
+    {6, 9}, {15, 15}, {10, 13}, {10, 10}, {5, 15}};
+
+/* The source positions of sound types 5 and 6 (snd_UpdateStageSounds:
+ * D_8008EA50[type - 5]). */
+s32 D_8008EA50[2][4] = {{0, 0, 0, 0}, {190, 0, -10, 0}};
+
+/* [D_800A38A4] (func_8003C040, 2B344.c); 40 pairs from the gap. */
+s8 D_8008EA70[40][2] = {
+    {33, 4}, {33, 5}, {33, 0}, {33, 1}, {33, 2}, {33, 3}, {-1, 0}, {-1, 0},
+    {-1, 0}, {-1, 0}, {-1, 0}, {0, 0},  {1, 7},  {1, 13}, {2, 1},  {1, 2},
+    {1, 3},  {-1, 0}, {2, 0},  {1, 4},  {1, 5},  {1, 14}, {-1, 0}, {-1, 3},
+    {1, 0},  {1, 1},  {1, 6},  {1, 12}, {-1, 0}, {1, 9},  {1, 11}, {1, 10},
+    {1, 8},  {2, 2},  {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {0, 0}};
+
+/* per-stage s16 table, 34 entries (func_8003CF84) */
+s16 D_8008EAC0[34] = {130, 130, 130, 130, 130, 130, 130, 130, 130, 130, -1, -1,
+                      135, 230, 130, 130, 130, 130, 230, 130, 130, 130, -1, -1,
+                      -1,  -1,  -1,  130, -1,  -1,  130, -1,  130, 0};
+
+/* func_8003CF84's parameters, one reader each. */
+s16 D_8008EB04 = 155;
+
+s16 D_8008EB06 = 159;
+
+s16 D_8008EB08 = 160;
+
+s16 D_8008EB0A = 198;
+
+s16 D_8008EB0C = 159;
+
+s32 D_8008EB10 = 0;
+
+s32 D_8008EB14 = -800;
+
+s32 D_8008EB18 = 0;
+
+/* [D_800A384C] (func_800224E0); 6 pairs from the gap. */
+u8 D_8008EB1C[6][2] = {{1, 2}, {3, 1}, {1, 2}, {2, 1}, {2, 1}, {0, 0}};
+
+/* [unk_0E][flag] -> Unk80101EC8Record.unk_12 */
+u8 D_8008EB28[8][2] = {
+    {0, 1}, {2, 3}, {4, 5}, {6, 7}, {8, 9}, {8, 9}, {46, 47}, {46, 47}};
+
+/* [unk_0E] -> Unk80101EC8Record.unk_12 */
+u8 D_8008EB38[8] = {51, 52, 53, 54, 55, 56, 51, 51};
+
+/* 3 x 3 s16 angle offsets, [row][col] from the pad bits (func_800233AC,
+ * func_80023648). */
+s16 D_8008EB40[3][3] = {{-512, 0, 512}, {-1024, 0, 1024}, {-1536, 2048, 1536}};
+
+/* func_80026DA4's 6 rows (D_80101EC8[0].move_kind mode). */
+Tbl8008EB54Entry D_8008EB54[6] = {{0, -1280}, {-149, -680}, {-112, -1280},
+                                  {0, -1280}, {112, -1280}, {149, -680}};
+
+/* func_80032854's arg1 per D_8008EB54 row. */
+u8 D_8008EB6C[6] = {5, 8, 7, 6, 7, 8};
+
+/* fighter_ResolveBoneHit's table */
+u8 D_8008EB74[3][2][2] = {{{1, 2}, {0, 0}}, {{0, 1}, {0, 1}}, {{0, 2}, {0, 1}}};
+
+/* [Unk80101EC8Record.unk_14] and [object kind]: the id handed to
+ * func_800493E4 / func_80049718 / func_80049A2C; 32 from the gap. */
+u8 D_8008EB80[32] = {
+    0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14,
+    0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x39, 0x00, 0x01, 0x02, 0x03,
+    0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x2E, 0x2F, 0x30, 0x31};
+
+/* per-limb angle (object_DeflectFromFighterHit: [j], j < 22) */
+u16 D_8008EBA0[22] = {
+    0x780,  0xF880, 0xFA00, 0x600, 0xFA80, 0x580, 0xFB00, 0xFB80,
+    0xFE00, 0xFE80, 0x500,  0x480, 0x200,  0x180, 0xFD00, 0xFD80,
+    0xFF00, 0xFF80, 0x300,  0x280, 0x100,  0x80};
+
+/* fighter_DispatchFrameEvent / func_80032854; D_8008EBCC and D_8008EBE0
+ * sized from the gaps. */
+s32 D_8008EBCC[5] = {0, 51, 58, 65, 72};
+
+s32 D_8008EBE0[5] = {0, 262144, 131072, 393216, 0};
+
+/* Per snd_GetStageSoundIndex category: the first of three sound ids. */
+u8 D_8008EBF4[6] = {0x7C, 0x7D, 0x7D, 0x7E, 0x7C, 0x7D};
+
+/* Per category: the ticks of the second and third sound. */
+Unk8008EA44Entry D_8008EBFC[6] = {{0x2E, 0x5C}, {0x2E, 0x62}, {0x2E, 0x62},
+                                  {0x2E, 0x2E}, {0x32, 0x62}, {0x2E, 0x62}};
+
+/* No reader: seven pointers to the mode name strings (STORY, VSCPU,
+ * PRACTICE, CHANBARA, VS, TEAM, NETWORK). */
+const char *D_8008EC08[7] = {
+    D_800A316C, D_800A3164, g_str_practice, g_str_chanbara,
+    D_800A3160, D_800A3158, D_800A3150};
+
+/* func_80033DF4's rank rows. */
+u8 D_8008EC24[2][5] = {{58, 59, 60, 61, 30}, {58, 59, 60, 61, 63}};

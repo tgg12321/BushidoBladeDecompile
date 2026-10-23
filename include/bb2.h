@@ -549,7 +549,7 @@ extern void cdrom_Update(void);
 /* Declared by more than one translation unit: data, then functions, by name. */
 extern u8 D_8008E908[][5];
 extern u8 D_8008E914[][8];
-extern s32 D_8008EA00[][4];
+extern s32 D_8008EA50[2][4];
 extern u8 D_8008EC24[][5];
 /* 51268's sprite texture records (TexRec runs 0x8009B890..0x8009B9FF; sizes
  * from the data labels) */

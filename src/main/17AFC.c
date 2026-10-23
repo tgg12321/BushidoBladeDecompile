@@ -5280,7 +5280,8 @@ void snd_UpdateStageSounds(void) {
                     buf[i] = 0;
                     type = *tbl;
                     if ((u32)(type - 5) < 2) {
-                        snd_QueuePositionalSound(0x7B + i, D_8008EA00[type]);
+                        snd_QueuePositionalSound(
+                            0x7B + i, D_8008EA50[type - 5]);
                         continue;
                     }
                     goto call_default;
