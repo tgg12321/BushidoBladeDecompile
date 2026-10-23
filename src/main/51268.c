@@ -1329,8 +1329,12 @@ s32 func_80063E10(s32 arg0) {
 
     /* FAKE: the work-area base (D_800A34EC) is staged through `prim` before
      * prim becomes the quad cursor: prim's pseudo lives across the calls and
-     * gets s2, where the target holds the base (a fresh local gets v0:
-     * score 12; direct global: 12). */
+     * gets s2, where the target holds the base. Separate u8 *base: 12;
+     * inline mats argument: 9; all four other pointers after call in
+     * declaration / var_5-first order: 56 / 88; direct sxy: 17;
+     * direct var_2: 83; direct var_2 + sxy: 41; direct sxy with
+     * s32 / void * / MATRIX *base: 17 each; direct sxy plus other pointers
+     * after call: 50; direct sxy with load-then-clamp count: 47. */
     prim = (POLY_FT4 *)D_800A34EC;
     mats = (MATRIX *)((u8 *)prim + 0x28);
     var_2 = (MATRIX *)((u8 *)prim + 0x168);
