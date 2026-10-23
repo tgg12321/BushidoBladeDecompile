@@ -105,6 +105,10 @@ reviewed`.
 1. `idea`: write the Codex prompt (templates: `tmp/codex/prompt-research-m05.md` for members,
    `tmp/mkprompt.py` and `tmp/queued_in.py` for functions). Tell it which names are taken and which
    earlier rows failed. Launch it, mark the row `researching`, and that ends the unit.
+   For functions, take the target list from `python tools/naming_noname.py free <tu,...>`: it
+   skips every function in the NO_NAME ledger (`docs/naming/phase3/no_name.tsv`). Bring one back
+   only with new evidence (a neighbour named since, a type landed, a Q124 trace capture):
+   `--revive <addr>=<evidence>`. Put the printed `# revive` lines in the prompt and the row note.
 2. `researching` or `researched`: `python tmp/codex/extract_final.py <run dir> tmp/codex/<id>-research.md`.
 3. Sonnet drafter (foreground) writes `docs/naming/phase3/pending/<id>/`. For members this
    includes a compiled dry run, run from PowerShell inside the worktree:
@@ -139,6 +143,9 @@ reviewed`.
    - For function waves, run `cd "<wt>" && python tools/naming_wavefollow.py <id> symbol_addrs.txt`.
      It is deterministic, so commit it on its own with the trailer
      `Lane-Replay: python3 tools/naming_wavefollow.py <id> symbol_addrs.txt`.
+   - For function waves, record the research's NO_NAME rows in the ledger:
+     `python tools/naming_noname.py add tmp/codex/<id>-research.md --tag <id> --commit <wave sha>`
+     (it also prunes rows named since). Commit `docs/naming/phase3/no_name.tsv` with the row.
    - Set the backlog row to `landed` and commit.
    - Run `python tools/lanes/lanes.py land <lane>`. It rebuilds, regenerates the census, runs
      `test_label_census.py` and the integrity check, fast-forwards main and pushes. That is the

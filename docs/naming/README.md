@@ -41,6 +41,8 @@ error. So the burden of proof sits on the *name*, not on the doubt.
 explains from the code across every use and a fresh `naming-reviewer` passes it
 (`.claude/rules/naming-bar.md`, which supersedes the evidence-class gate below; the classes now only
 settle conflicts). Waves live in `docs/naming/phase3/<wave>/` (census origin `sotn-review`, CORROBORATED).
+Functions researched and left neutral are in `docs/naming/phase3/no_name.tsv` (`tools/naming_noname.py`);
+waves skip them unless new evidence exists.
 
 **Phase 1 — census (done).** Read-only with respect to the build: `function-names.csv`
 enumerates every function, attributes each name to a recorded evidence path, tiers it, and
