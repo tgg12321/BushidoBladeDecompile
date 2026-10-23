@@ -116,6 +116,8 @@ def check_script(script: dict):
     if len(pf) != len(set(pf)):
         bad("two phases start on one frame")
     pn = [ph["name"] for ph in script.get("phases", [])]
+    if 0 not in pf:
+        pn.append(first_phase(script))  # the implicit "start" phase
     if len(pn) != len(set(pn)):
         bad("phase names must be unique (hit maps count per name)")
     names = [sh["name"] for sh in script.get("screenshots", [])]

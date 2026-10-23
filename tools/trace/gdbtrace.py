@@ -774,6 +774,10 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
     duration = float(spec.get("duration_s",
                               3600 if script else args.duration))
     max_events = int(spec.get("max_events", 5000))
+    if hm and "max_events" not in spec:
+        # Room for every hit-map credit in every phase, plus the rest.
+        max_events = len(targets) * per * (
+            len(spec["script"].get("phases", [])) + 1) + 5000
     t0 = time.time()
     events = 0
     totals = {}
@@ -1274,27 +1278,45 @@ def describe_words(syms: Symbols, samples: list[list[int]], label):
 def hitmap_section(hitmap: dict, hm_hits, phases: list, args) -> list[str]:
     """Function x phase table. A cell is the hit count, capped: `N+` means
     the per-phase limit was reached (the breakpoint was then off until the
-    next phase); `.` means armed through the whole phase and never hit."""
+    next phase); `.` means armed through the whole phase and never hit;
+    `?` means not hit while the phase was only partly covered (armed after
+    it began, or the run stopped inside it): no claim either way."""
     per = hitmap["per_phase"]
-    names = []
-    for ph in phases:
-        if not ph.get("end") and ph["phase"] not in names:
-            names.append(ph["phase"])
+    armed = next((p["armed_frame"] for p in phases if "armed_frame" in p),
+                 None)
+    names, full = [], {}
+    for i, ph in enumerate(phases):
+        if ph.get("end"):
+            continue
+        # Fully covered: armed by its first frame, and a later phase event
+        # (the next phase or the script's end) closes it.
+        full[ph["phase"]] = (armed is not None and armed <= ph["frame"]
+                             and i + 1 < len(phases))
+        names.append(ph["phase"])
 
-    def cell(n):
-        return "." if not n else (f"{n}+" if n >= per else str(n))
+    def cell(n, p):
+        if not n:
+            return "." if full[p] else "?"
+        return f"{n}+" if n >= per else str(n)
+
+    def row(a):
+        return [cell(hm_hits[a].get(p, 0), p) for p in names]
 
     w = [f"## Hit map: {len(hitmap['targets'])} functions, "
          f"{per} hit(s) per phase recorded", ""]
-    hit = [(n, a) for n, a in hitmap["targets"] if hm_hits.get(n)]
-    never = [n for n, _ in hitmap["targets"] if not hm_hits.get(n)]
+    partial = [p for p in names if not full[p]]
+    if partial:
+        w.append("Partly covered phases (`?` = no claim): " +
+                 ", ".join(partial))
+        w.append("")
+    hit = [(n, a) for n, a in hitmap["targets"] if hm_hits.get(a)]
+    never = [n for n, a in hitmap["targets"] if not hm_hits.get(a)]
     w.append(f"{len(hit)} reached, {len(never)} never reached in any phase.")
     w.append("")
     w.append("| function | " + " | ".join(names) + " |")
     w.append("|---|" + "---|" * len(names))
-    for n, _ in hit:
-        w.append(f"| `{n}` | " + " | ".join(cell(hm_hits[n].get(p, 0))
-                                            for p in names) + " |")
+    for n, a in hit:
+        w.append(f"| `{n}` | " + " | ".join(row(a)) + " |")
     w.append("")
     if never:
         w.append("Never reached: " + ", ".join(f"`{n}`" for n in never))
@@ -1303,8 +1325,7 @@ def hitmap_section(hitmap: dict, hm_hits, phases: list, args) -> list[str]:
         with open(args.hitmap_tsv, "w", encoding="utf-8", newline="\n") as f:
             f.write("function\taddr\t" + "\t".join(names) + "\n")
             for n, a in hitmap["targets"]:
-                f.write(f"{n}\t0x{a:08X}\t" + "\t".join(
-                    cell(hm_hits[n].get(p, 0)) for p in names) + "\n")
+                f.write(f"{n}\t0x{a:08X}\t" + "\t".join(row(a)) + "\n")
     return w
 
 
@@ -1321,7 +1342,7 @@ def report(args) -> int:
         for line in f:
             rec = json.loads(line)
             if rec["ev"] == "hit" and rec.get("hm"):
-                hm_hits[rec["at"]][rec.get("phase")] += 1
+                hm_hits[rec["addr"]][rec.get("phase")] += 1
             elif rec["ev"] == "hit":
                 hits[(rec["at"], rec["kind"])].append(rec)
             elif rec["ev"] == "hitmap":
@@ -1388,6 +1409,12 @@ def report(args) -> int:
             per = collections.Counter(r.get("phase") for r in recs)
             w.append("Hits per phase: " + ", ".join(
                 f"{ph} {n}" for ph, n in per.items()))
+        capped = [b.get("per_phase") for b in
+                  (start or {}).get("spec", {}).get("breakpoints", [])
+                  if b.get("at") == at and "per_phase" in b]
+        if kind == 0 and capped:
+            w.append(f"At most {capped[0]} hit(s) recorded per phase "
+                     "(per_phase): counts and the tables below are capped.")
         d = disarmed.get((at, kind))
         if d:
             w.append(f"Disarmed after {d['after_hits']} hits (max_hits) in "
