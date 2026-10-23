@@ -1,0 +1,1 @@
+{"func": "snd_UpdateStageSounds", "addr": "800335D8", "verdict": "PASS", "body_hash": "480e699004f19d72", "body_kind": "c", "file": "main/17AFC", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-23T04:58:53Z", "head": "784904676", "notes": "D_8008EA00[type] -> D_8008EA50[type - 5]: D_8008EA00 was the folded base inside D_8008E914[38][8]; no FAKE"}
