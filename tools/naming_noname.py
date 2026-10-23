@@ -14,12 +14,17 @@ evidence exists.
   prune
       drop rows whose function has been named since.
 
+add and prune also fill each `-` commit from git: the `naming: waveNN` commit of
+the row's last wave, else a commit whose body cites `wNN-research.md`. Lane
+commits are replayed when they land, so `-` is right until the wave is on main.
+
 Run at the repo root.
 """
 import argparse
 import csv
 import io
 import re
+import subprocess
 import sys
 
 LEDGER = 'docs/naming/phase3/no_name.tsv'
@@ -30,7 +35,33 @@ csv.field_size_limit(10**8)
 
 
 def norm(addr):
-    return '0x' + addr[2:].upper()
+    a = addr.strip()
+    if a[:2].lower() == '0x':
+        a = a[2:]
+    return '0x' + a.upper()
+
+
+_found = {}
+
+
+def wave_commit(tag):
+    m = re.match(r'w(\d+)', tag)
+    if not m:
+        return ''
+    if tag not in _found:
+        def log(*grep):
+            out = subprocess.run(['git', 'log', '--format=%h', *grep, 'HEAD'],
+                                 capture_output=True, text=True).stdout.split()
+            return out[-1] if out else ''
+        _found[tag] = (log('-E', f'--grep=^naming: wave{m.group(1)}([^0-9]|$)')
+                       or log('-F', f'--grep={tag}-research.md'))
+    return _found[tag]
+
+
+def resolve(rows):
+    for r in rows.values():
+        if r['commit'] == '-':
+            r['commit'] = wave_commit(r['waves'].split(',')[-1]) or '-'
 
 
 def load_census():
@@ -95,7 +126,9 @@ def prune(rows, census):
 
 def cmd_free(args):
     census, rows = load_census(), load()
-    tus = tuple(args.tus.split(','))
+    tus = tuple(t for t in args.tus.split(',') if t)
+    if not tus:
+        sys.exit('free: give at least one TU prefix')
     revive = {}
     for spec in args.revive:
         addr, _, why = spec.partition('=')
@@ -117,6 +150,7 @@ def cmd_free(args):
     if revive:
         sys.exit('not in the ledger for these TUs: ' + ' '.join(revive))
     skipped = sum(1 for a, c in census.items() if a in rows
+                  and c['current_name'].startswith('func_')
                   and (c.get('src_location') or '').startswith(tus)) - len(notes)
     print('\n'.join(free))
     for n in notes:
@@ -135,6 +169,8 @@ def cmd_add(args):
         r = rows.get(a)
         waves = r['waves'].split(',') if r else []
         if args.tag in waves:
+            if args.commit:
+                r['commit'] = args.commit
             continue
         rows[a] = {
             'address': a, 'name': c['current_name'], 'kind': 'func',
@@ -146,6 +182,7 @@ def cmd_add(args):
         }
         n += 1
     gone = prune(rows, census)
+    resolve(rows)
     save(rows)
     print(f'added {n}, pruned {len(gone)} named since, ledger {len(rows)}')
 
@@ -153,6 +190,7 @@ def cmd_add(args):
 def cmd_prune(args):
     rows = load()
     gone = prune(rows, load_census())
+    resolve(rows)
     save(rows)
     print(f'pruned {len(gone)}: {" ".join(gone)}' if gone else 'nothing to prune')
 
