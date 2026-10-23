@@ -1299,6 +1299,9 @@ void func_8006B120(s32 *arg0) {
         i++;
     } while (i < 2);
 
+    /* FAKE: same-value re-store of `tbl` (it already holds this list): the
+     * reload shares tbl's pseudo with the loops' base; without it: score 23;
+     * a second local or the list read in place: score 20 */
     tbl = ((Unk8006919CRec *)arg0[1])->unk_28;
     s.header = tbl[1];
     SetDrawMode((DR_MODE *)arg0[7], 1, 0, gpu_GetSheetTPage(s.header, 0), 0);
