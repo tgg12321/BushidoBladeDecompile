@@ -1438,8 +1438,6 @@ void func_80077D94(Unk8006EACCRec *arg0) {
     table = D_800A35F8->table;
     out = D_800A35F8->out34;
     var_5 = 0x20;
-    /* FAKE (duplicated-statement-into-arms): both fade arms store their own
-       has_color/r/g/b; cross-jump merges them. Shared tail: score 23. */
     if (D_800A35F0 < in[D_800A3600] + 60 && D_800A35F0 >= in[D_800A3600]) {
         v = ((D_800A35F0 - in[D_800A3600]) << 7) / 60;
         s.has_color = 1;
@@ -1553,8 +1551,6 @@ void func_80077D94(Unk8006EACCRec *arg0) {
            `&D_800A35F8->nar2C[i]`: score 1; `w = nar2C; w += i`: 2 */
         w = (Unk80077D94Entry *)(i * 4 + (s32)D_800A35F8->nar2C);
         if (D_800A35F0 < w->off + 60 && D_800A35F0 >= w->on) {
-            /* FAKE (duplicated-statement-into-arms): each arm stores its own
-               r/g/b chain; cross-jump merges them. Shared tail: score 54. */
             if (D_800A35F0 < w->on + 60) {
                 s.has_color = 1;
                 v = ((D_800A35F0 - w->on) * 112) / 60;
