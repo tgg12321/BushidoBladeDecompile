@@ -35,6 +35,13 @@ Spec (JSON):
     "polls": [                       # pause, read, resume on a period
       {"at": "D_800A32B4", "len": 16, "every_s": 0.5}
     ],
+    "hitmap": {"tus": ["main/51268"],     # per-mode hit map (needs a script):
+               "exclude": ["main/psxsdk/*"],  # Z0 on every function of the
+               "per_phase": 1},               # TUs (fnmatch on the TU id),
+                                     # credited per_phase times per phase,
+                                     # then off until the next phase.
+                                     # ("per_phase" also works on one
+                                     # breakpoint instead of max_hits.)
     "script": {...}                  # PCSX-Redux scripted run: frame-timed
   }                                  # inputs, phases, screenshots (runkit.py)
 `at`/`base` take a symbol from the link map, a 0x address, `sym+0xNN`, or (for
@@ -203,9 +210,47 @@ class Symbols:
         return self.names[i] if off == 0 else f"{self.names[i]}+0x{off:X}"
 
 
-def elf_symbols(path: str):
-    """(value, name, size) of FUNC/OBJECT symbols, locals included, from a
-    32-bit little-endian ELF (stdlib only)."""
+MAP_TU_TEXT = re.compile(r"^\s*\.text\s+0x([0-9a-fA-F]+)\s+0x([0-9a-fA-F]+)"
+                         r"\s+build/src/(\S+)\.o\s*$")
+
+
+def hitmap_targets(map_path: str, elf: str | None, hm: dict):
+    """[(name, addr)] for a spec's "hitmap" block: every function (ELF FUNC
+    symbol, statics included) whose address lies in the .text of a TU
+    matching one of hm["tus"] (fnmatch on the TU id, e.g. main/51268 or
+    main/*), minus hm["exclude"] patterns."""
+    import fnmatch
+    ranges = []
+    with open(map_path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            m = MAP_TU_TEXT.match(line)
+            if not m or not int(m.group(2), 16):
+                continue
+            tu = m.group(3)
+            if any(fnmatch.fnmatchcase(tu, p) for p in hm.get("tus", [])) \
+                    and not any(fnmatch.fnmatchcase(tu, p)
+                                for p in hm.get("exclude", [])):
+                lo = int(m.group(1), 16)
+                ranges.append((lo, lo + int(m.group(2), 16), tu))
+    for p in hm.get("tus", []):
+        if not any(fnmatch.fnmatchcase(tu, p) for _, _, tu in ranges):
+            raise SystemExit(f"gdbtrace: hitmap: no linked TU matches {p!r}")
+    elf = elf or os.path.join(os.path.dirname(os.path.abspath(map_path)),
+                              "bb2.elf")
+    funcs = {}
+    for addr, name, _size in elf_symbols(elf, kinds=(2,)):
+        addr &= 0xFFFFFFFF
+        name = name.removesuffix(".NON_MATCHING")
+        if any(lo <= addr < hi for lo, hi, _ in ranges):
+            funcs.setdefault(addr, name)
+    out = sorted((a, n) for a, n in funcs.items())
+    return [(n, a) for a, n in out]
+
+
+def elf_symbols(path: str, kinds=(1, 2)):
+    """(value, name, size) of FUNC/OBJECT symbols (STT 2/1; `kinds`
+    narrows), locals included, from a 32-bit little-endian ELF (stdlib
+    only)."""
     import struct
     with open(path, "rb") as f:
         data = f.read()
@@ -224,7 +269,7 @@ def elf_symbols(path: str):
         for k in range(sh[5] // 16):
             st_name, value, size, info, _, _ = struct.unpack_from(
                 "<IIIBBH", data, sh[4] + 16 * k)
-            if info & 0xF not in (1, 2) or not st_name:  # OBJECT, FUNC
+            if info & 0xF not in kinds or not st_name:  # OBJECT, FUNC
                 continue
             end = data.index(b"\0", s_off + st_name)
             out.append((value, data[s_off + st_name:end].decode("latin-1"),
@@ -443,6 +488,28 @@ def compare_memory(gdb: Gdb, addr: int, want: bytes | None) -> str:
     return f"differs at 0x{addr + first:08X}"
 
 
+def diff_ranges(gdb: Gdb, addr: int, want: bytes | None, cap: int = 64):
+    """["0xSTART+LEN", ...] where memory at addr differs from `want`
+    (at most `cap` ranges; "..." marks more)."""
+    if not want:
+        return []
+    got = gdb.mem(addr, len(want))
+    out, i, n = [], 0, len(want)
+    while i < n:
+        if got[i] == want[i]:
+            i += 1
+            continue
+        j = i
+        while j < n and got[j] != want[j]:
+            j += 1
+        if len(out) == cap:
+            out.append("...")
+            break
+        out.append(f"0x{addr + i:08X}+{j - i}")
+        i = j
+    return out
+
+
 def resolve_dump(syms: Symbols, regs: list[int], d: dict) -> int:
     base = d.get("base", "0")
     if base in REG_INDEX:
@@ -651,6 +718,33 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             raise SystemExit(f"gdbtrace: stub refused Z0 at 0x{addr:08X}")
         armed[(0, addr)] = {"spec": bp, "hits": 0, "kind": 0, "addr": addr,
                             "len": 4}
+        if "per_phase" in bp:
+            if not spec.get("script") or "max_hits" in bp:
+                raise SystemExit(f"gdbtrace: {bp['at']}: per_phase needs a "
+                                 "script and no max_hits")
+            armed[(0, addr)].update(per_phase=int(bp["per_phase"]),
+                                    phase_hits=0)
+    hm = spec.get("hitmap")
+    if hm:
+        # Per-mode hit map: a breakpoint on every function of the chosen
+        # TUs, credited at most per_phase times in each phase, then cleared
+        # until the next phase starts (so every phase is fully covered).
+        if not spec.get("script"):
+            raise SystemExit("gdbtrace: a hitmap needs a script (phases)")
+        per = int(hm.get("per_phase", 1))
+        targets = hitmap_targets(args.map, args.elf, hm)
+        emit({"ev": "hitmap", "per_phase": per,
+              "targets": [[n, a] for n, a in targets]})
+        for name, addr in targets:
+            if (0, addr) in armed:
+                raise SystemExit(f"gdbtrace: {name} is both a breakpoint and "
+                                 "in the hitmap; drop one")
+            if not gdb.set_bp(0, addr):
+                raise SystemExit(f"gdbtrace: stub refused Z0 at 0x{addr:08X}")
+            armed[(0, addr)] = {"spec": {"at": name}, "hits": 0, "kind": 0,
+                                "addr": addr, "len": 4, "per_phase": per,
+                                "phase_hits": 0, "hitmap": True}
+    suspended = {}  # per-phase entries done for this phase
     for w in spec.get("watch", []):
         kind = WATCH_KIND[w.get("kind", "write")]
         addr, n = syms.addr(w["at"]), int(w.get("len", 4))
@@ -814,12 +908,30 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 state, phase = new, new[2]
                 after_script_stop = regs
                 script_pause = pause
+                if not new[3]:
+                    # A new phase: per-phase entries start counting again.
+                    for key, ent in list(suspended.items()):
+                        if not gdb.set_bp(ent["kind"], ent["addr"], ent["len"]):
+                            raise GdbError(f"re-arm 0x{ent['addr']:08X} "
+                                           "refused")
+                        armed[key] = ent
+                    suspended.clear()
+                    for ent in armed.values():
+                        if "per_phase" in ent:
+                            ent["phase_hits"] = 0
                 emit({"ev": "phase", "t": round(time.time() - t0, 3),
                       "frame": new[1], "phase": phase, "end": new[3],
                       "pause": list(pause) if pause else None})
             # A Lua pause can land on any load/store, like our own ^C.
             e, acc = entry_for_stop(regs, reply,
                                     (interrupted and not raced) or script_stop)
+            if e is not None and (e.get("canary_only") or e.get("canary")) \
+                    and "canary_hit" not in args.result:
+                # At the EXE entry no game code has run yet: the disc's EXE
+                # must be in RAM as built. (Later the game patches its own
+                # code, e.g. the sites listed at D_80015820.)
+                args.result["exe_in_memory"] = compare_memory(
+                    gdb, EXE_LOAD, args.expect.get("exe"))
             if e is not None and e.get("canary_only"):
                 # The canary proves Z0 fires on game code; it is no hit.
                 args.result["canary_hit"] = {"pc": regs[37], "phase": phase}
@@ -866,6 +978,8 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                    "stop": reply}
             if script:
                 rec["phase"] = phase
+            if e.get("hitmap"):
+                rec["hm"] = 1
             if acc:
                 rec["access"] = {"pc": acc[0], "addr": acc[1], "width": acc[2],
                                  "store": acc[3], "value": acc[4]}
@@ -877,6 +991,15 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             events += 1
             if script_stop and state[3]:
                 break
+            if "per_phase" in e:
+                e["phase_hits"] += 1
+                if e["phase_hits"] >= e["per_phase"]:
+                    # Enough for this phase: off until the next one.
+                    gdb.clear_bp(e["kind"], e["addr"], e["len"])
+                    key = (e["kind"], e["addr"])
+                    del armed[key]
+                    suspended[key] = e
+                continue
             if e["hits"] >= int(sp.get("max_hits", 1 << 30)):
                 gdb.clear_bp(e["kind"], e["addr"], e["len"])
                 del armed[(e["kind"], e["addr"])]
@@ -897,14 +1020,13 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
         args.result.update({"script_ended": ended, "events": events,
                             "ambiguous_stops": ambiguous})
         if ended:
-            # The disc booted the build's EXE: all of .rodata + .text
-            # (0x80010000 up to the end of the last code section) is in RAM
-            # byte for byte as built.
+            # Information only (the gate is the check at the EXE entry):
+            # which .rodata + .text bytes the run itself changed.
             try:
-                args.result["exe_in_memory"] = compare_memory(
+                args.result["exe_changed_by_run"] = diff_ranges(
                     gdb, EXE_LOAD, args.expect.get("exe"))
-            except OSError as ex:
-                args.result["exe_in_memory"] = f"not read: {ex}"
+            except (GdbError, OSError) as ex:
+                args.result["exe_changed_by_run"] = f"not read: {ex}"
         if not ended:  # a finished script stays paused: cards stay as-is
             try:
                 gdb.cont()
@@ -1149,6 +1271,43 @@ def describe_words(syms: Symbols, samples: list[list[int]], label):
     return lines
 
 
+def hitmap_section(hitmap: dict, hm_hits, phases: list, args) -> list[str]:
+    """Function x phase table. A cell is the hit count, capped: `N+` means
+    the per-phase limit was reached (the breakpoint was then off until the
+    next phase); `.` means armed through the whole phase and never hit."""
+    per = hitmap["per_phase"]
+    names = []
+    for ph in phases:
+        if not ph.get("end") and ph["phase"] not in names:
+            names.append(ph["phase"])
+
+    def cell(n):
+        return "." if not n else (f"{n}+" if n >= per else str(n))
+
+    w = [f"## Hit map: {len(hitmap['targets'])} functions, "
+         f"{per} hit(s) per phase recorded", ""]
+    hit = [(n, a) for n, a in hitmap["targets"] if hm_hits.get(n)]
+    never = [n for n, _ in hitmap["targets"] if not hm_hits.get(n)]
+    w.append(f"{len(hit)} reached, {len(never)} never reached in any phase.")
+    w.append("")
+    w.append("| function | " + " | ".join(names) + " |")
+    w.append("|---|" + "---|" * len(names))
+    for n, _ in hit:
+        w.append(f"| `{n}` | " + " | ".join(cell(hm_hits[n].get(p, 0))
+                                            for p in names) + " |")
+    w.append("")
+    if never:
+        w.append("Never reached: " + ", ".join(f"`{n}`" for n in never))
+        w.append("")
+    if args.hitmap_tsv:
+        with open(args.hitmap_tsv, "w", encoding="utf-8", newline="\n") as f:
+            f.write("function\taddr\t" + "\t".join(names) + "\n")
+            for n, a in hitmap["targets"]:
+                f.write(f"{n}\t0x{a:08X}\t" + "\t".join(
+                    cell(hm_hits[n].get(p, 0)) for p in names) + "\n")
+    return w
+
+
 def report(args) -> int:
     syms = Symbols(args.map, args.elf)
     hits = collections.defaultdict(list)
@@ -1156,12 +1315,17 @@ def report(args) -> int:
     phases = []
     odd = collections.Counter()
     disarmed = {}
-    start = end = canary = None
+    start = end = canary = hitmap = None
+    hm_hits = collections.defaultdict(collections.Counter)
     with open(args.trace, encoding="utf-8") as f:
         for line in f:
             rec = json.loads(line)
-            if rec["ev"] == "hit":
+            if rec["ev"] == "hit" and rec.get("hm"):
+                hm_hits[rec["at"]][rec.get("phase")] += 1
+            elif rec["ev"] == "hit":
                 hits[(rec["at"], rec["kind"])].append(rec)
+            elif rec["ev"] == "hitmap":
+                hitmap = rec
             elif rec["ev"] == "poll":
                 polls[rec["at"]].append(rec)
             elif rec["ev"] == "phase":
@@ -1214,6 +1378,8 @@ def report(args) -> int:
                  ("; script reached its end" if last.get("end") else
                   "; run stopped before the script's end"))
     w.append("")
+    if hitmap:
+        w += hitmap_section(hitmap, hm_hits, phases, args)
     for (at, kind), recs in hits.items():
         label = at if kind == 0 else f"{at} (Z{kind} watch)"
         w.append(f"## {label}: {len(recs)} hits")
@@ -1359,6 +1525,8 @@ def main(argv=None) -> int:
     p.add_argument("--elf", help="ELF for statics/sizes (default: bb2.elf "
                    "next to the map)")
     p.add_argument("--context", help="one line: what the run exercised")
+    p.add_argument("--hitmap-tsv", help="also write the hit map as TSV "
+                   "(function, addr, one column per phase)")
     p.add_argument("--out")
 
     args = ap.parse_args(argv)

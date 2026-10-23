@@ -115,6 +115,9 @@ def check_script(script: dict):
     pf = [frame_of(ph, 0) for ph in script.get("phases", [])]
     if len(pf) != len(set(pf)):
         bad("two phases start on one frame")
+    pn = [ph["name"] for ph in script.get("phases", [])]
+    if len(pn) != len(set(pn)):
+        bad("phase names must be unique (hit maps count per name)")
     names = [sh["name"] for sh in script.get("screenshots", [])]
     if len(names) != len(set(names)):
         bad("screenshot names must be unique")
@@ -557,7 +560,8 @@ def map_text_end(map_path: str) -> int | None:
 def expected_memory(args) -> dict:
     """Bytes to find in emulated memory, read before launch: the BIOS ROM
     head, and the EXE image from its load address to the end of .text
-    (.rodata then .text: data the game never writes)."""
+    (.rodata then .text), compared at the EXE entry before any game code
+    runs (the game later patches some of its own code)."""
     exp = {}
     if args.bios:
         exp["bios"] = read_head(args.bios, 0x80000)  # the whole 512 KiB ROM
@@ -607,8 +611,8 @@ def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
         if result.get("bios_in_memory") != "matches":
             missing.append("the BIOS in memory is the recorded file")
         if result.get("exe_in_memory") != "matches":
-            missing.append("the disc's EXE in RAM (.rodata+.text) is the "
-                           "oracle build")
+            missing.append("the disc's EXE in RAM (.rodata+.text) at its "
+                           "entry is the oracle build")
         if result.get("ambiguous_stops"):
             missing.append("no watch access ambiguous with a script pause")
         if result.get("dedupe_without_cycle"):
