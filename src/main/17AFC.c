@@ -5463,18 +5463,18 @@ void fight_AdvanceOpponentOrder(void) {
 }
 
 void fight_InsertBestTime(void) {
-    /* FAKE: pointer to the record, admitted on SOTN precedent (Q50, Q53);
-     * mechanism: its register (t1) is the base of every times[] access and of
-     * the shift loop's pointer; written directly, each D_80106A50.times[]
-     * access is its own lui/addu/%lo: score 34. */
-    FileRecord *var_0 = &D_80106A50; /* SOTN: src/dra/4CE2C.c:63 @db41b28 */
+    /* Pointer read-modify-write on a global (pointer-alias-fake-exception):
+     * the best-time table is searched, shifted down one slot and the new
+     * time stored, all through record; written directly, each
+     * D_80106A50.times[] access is its own lui/addu/%lo: score 34. */
+    FileRecord *record = &D_80106A50; /* SOTN: src/dra/4CE2C.c:63 @db41b28 */
     s32 n = 3;
     s32 j;
     s32 k;
 
     while (1) {
         j = n - 1;
-        if (var_0->times[j].unk_4 < D_800A3858) {
+        if (record->times[j].unk_4 < D_800A3858) {
             break;
         }
         n = j;
@@ -5485,11 +5485,11 @@ void fight_InsertBestTime(void) {
     D_800A38E9 = (u8)n;
     if (n < 3) {
         for (k = 2; k > n; k--) {
-            var_0->times[k] = var_0->times[k - 1];
+            record->times[k] = record->times[k - 1];
         }
-        var_0->times[n].unk_0 = (u8)D_80101EC8[0].unk_0A;
-        var_0->times[n].unk_1 = (u8)D_80101EC8[0].unk_0E;
-        var_0->times[n].unk_4 = D_800A3858;
+        record->times[n].unk_0 = (u8)D_80101EC8[0].unk_0A;
+        record->times[n].unk_1 = (u8)D_80101EC8[0].unk_0E;
+        record->times[n].unk_4 = D_800A3858;
     }
 }
 
