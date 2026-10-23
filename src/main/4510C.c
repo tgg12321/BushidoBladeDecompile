@@ -1640,7 +1640,7 @@ s32 func_80058580(Unk80101EC8Record *p) {
     u8 *e;
     u8 *var_32;
     /* FAKE: second handle to var_32's value, see `q = var_32;` (read through
-     * var_32: score 58) */
+     * var_32: score 58; e[4]/e[8..5]: 18, also with wrapper removed) */
     u8 *q;
     u16 off;
     s16 var_35;
@@ -2427,7 +2427,13 @@ s32 func_80058580(Unk80101EC8Record *p) {
                          * below): the target copies var_32's value into its
                          * own register and reads the 0x40 character-mask header
                          * through it while var_32 stays in $s6; read through
-                         * var_32 the allocation order shifts: score 58 */
+                         * var_32 the allocation order shifts: score 58.
+                         * e[4]/e[8..5]: 18; same with wrapper removed;
+                         * e + 4 cursor initialization: 24 (e reads), 30
+                         * (var_32 reads); cursor = e + 9: 19 (e reads) /
+                         * 25 (var_32 reads); mask inline or in a u32
+                         * local, wrapper also removed: 21 (e reads) / 61
+                         * (var_32 reads) */
                         /* SOTN: src/st/no0/e_stone_rose.c:611 @aa53500 */
                         q = var_32;
                         if (D_80099D88[p->cpu_profile].flags & 0xFF00) {
@@ -2503,7 +2509,11 @@ s32 func_80058580(Unk80101EC8Record *p) {
                         /* FAKE: do-while(0): its loop depth weights var_18's
                          * references so var_18 is allocated ahead of var_32
                          * (var_18 $s5, var_32 $s6, as in the target);
-                         * unwrapped: score 10 (do-while-zero-exception) */
+                         * unwrapped: score 10 (do-while-zero-exception);
+                         * before work1 = e[1] * 40 or as if subject: 10;
+                         * before 0x80 test: 20; loop-scope var_18, var_32,
+                         * e separately or together: 10; no-alias cluster
+                         * through e / var_32: 18 / 58 */
                         do {
                             var_18 = e[0] & 7;
                         } while (0);
