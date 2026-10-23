@@ -1,0 +1,6 @@
+{
+  "decision": "PASS",
+  "function": "func_80041188",
+  "body_hash": "735477dcf7c1a24a",
+  "summary": "Second copy of a4 + 1 gone: out2 is written once before loop 2 and read there (once-written named intermediate, Ruling 1(3)); loop 1 spells a4 + 1 inline. Re-measured: one name for both loops 4, inline in both 10, offset FAKE still needed (4 without). Sandbox 0, SHA1 == oracle. Hygiene: a1/a2 raw u16 reads of MotionFrame data; math_LerpShortVectorsNegateYZ's s32 4th parameter."
+}
