@@ -416,7 +416,8 @@ DISPENV *PutDispEnv(DISPENV *env) {
             : ((env->disp.y & 0x3FF) << 10) | (env->disp.x & 0x3FF) |
                   0x05000000);
     /* FAKE: volatile reads of the saved environment (8 casts) keep the target's
-       lhu + sll + sra extend; plain reads fold to lh: score 71 (Q100).
+       lhu + sll + sra extend; plain reads fold to lh: score 71 (Q100). Each
+       cast is needed (any one plain: 6-7; either rect plain: 24-25).
        SOTN: src/main/psxsdk/libspu/s_m_m.c:48 @db41b28
      */
     if (!(*(volatile s16 *)&g_gpu_ctx.disp_env.screen.x == env->screen.x &&
@@ -429,7 +430,7 @@ DISPENV *PutDispEnv(DISPENV *env) {
         h_end = h_start + (env->screen.w ? env->screen.w * 10 : 2560);
         v_end = v_start + (env->screen.h ? env->screen.h : 240);
         /* each value clamped in place. SOTN: src/main/psxsdk/libgpu/sys.c:358
-         * @aa53500 */
+         * @db41b28 */
         h_start = h_start < 500 ? 500 : (h_start > 3290 ? 3290 : h_start);
         h_end = h_end < h_start + 0x50 ? h_start + 0x50
                                        : (h_end > 3290 ? 3290 : h_end);
@@ -450,7 +451,7 @@ DISPENV *PutDispEnv(DISPENV *env) {
     /* isinter..pad1 compared as one word: the shipped bytes are a single lw at
        +0x10 on both sides. It is the same compare SOTN spells with its LOW()
        macro, i.e. the `*(s32 *)&` cast used here.
-       SOTN: src/main/psxsdk/libgpu/sys.c:367 @aa53500 */
+       SOTN: src/main/psxsdk/libgpu/sys.c:367 @db41b28 */
     if (*(s32 *)&g_gpu_ctx.disp_env.isinter != *(s32 *)&env->isinter ||
         !(*(volatile s16 *)&g_gpu_ctx.disp_env.disp.x == env->disp.x &&
           *(volatile s16 *)&g_gpu_ctx.disp_env.disp.y == env->disp.y &&
