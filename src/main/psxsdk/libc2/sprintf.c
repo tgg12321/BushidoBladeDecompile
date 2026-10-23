@@ -7,10 +7,8 @@
     (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
 
 /* PsyQ LIBC SPRINTF: sprintf. C ref: SOTN src/main/psxsdk/libc/sprintf.c
- * (@8bd7c77); here %c reads its slot as s32 and '+' is a plain else-if (SOTN's
+ * (@db41b28); here %c reads its slot as s32 and '+' is a plain else-if (SOTN's
  * do-while(0) FAKE is not needed here). */
-#define __va_rounded_size(TYPE)                                                \
-    (((sizeof(TYPE) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
 #define va_start(AP, LASTARG)                                                  \
     (AP = ((char *)&(LASTARG) + __va_rounded_size(LASTARG)))
 #define va_arg(AP, TYPE)                                                       \
