@@ -1,0 +1,17 @@
+{
+  "decision": "PASS",
+  "function": "func_8006B120",
+  "body_hash": "922204e978904863",
+  "summary": "Body at be3ae3102 matches (sandbox 0, verify-oracle SHA1 62efab4f...). The `table` holder meets every clause of the Ruling 5 Extension (written for this function), the post-loop `tbl` same-value re-store carries a FAKE label, every measured score in both labels re-measured true (direct 11, block locals 11, re-store dropped 23, in-place / second local 20), and no other unlabelled codegen-only construct was found.",
+  "evidence": [
+    {"construct": "byte match", "test_failed": "none (item 1 checked)", "explanation": "sandbox --disable all 0; verify-oracle build_sha1 == oracle, fresh."},
+    {"construct": "function-scope `table` written 5x (`table = s.header->cells; s.table = table;`)", "test_failed": "none (item 3 checked, via Ruling 5 Extension)", "explanation": "(A) identical writes and consumers; (B) s.header assigned from the one base tbl (tbl[0], tbl[i+1/7/9/11]), tbl not written between, i reset before each loop and stepped once, s.header has other readers, intervening writes are other members; (C) one function-scope site then one per sibling loop body; (D) one declaration, different element each write; 1(e) addiu $v1,$v0,0xC in the target; 1(f) named for s.table; 2(b) same statement list as the per-write spelling."},
+    {"construct": "post-loop `tbl = ((Unk8006919CRec *)arg0[1])->unk_28;` with its FAKE label", "test_failed": "none (item 3 checked; Q91 multi-write clause)", "explanation": "Multi-write outside Rulings 5-12, so labelled; scores 23 / 20 true; the target re-reads arg0[1]->unk_28 into the loops' base register."},
+    {"construct": "rest of the body", "test_failed": "none (items 3-5 checked)", "explanation": "Semantic stores (s.x = 0 is a store the target performs after &s escaped), once-written block locals, casts over the caller's plain s32[10] context; no lighter byte-exact form known."}
+  ],
+  "next_action": "",
+  "hygiene_debt": [
+    "Ruling 5 prong 4 receipts for `table` live in the 2026-09-23 decisions.md evidence and the memory/grind/func_8006B120 ledger.",
+    "The redundant forward prototype `void func_8006B120(s32 *arg0);` before the definition could be dropped in a tidy-up."
+  ]
+}
