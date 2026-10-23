@@ -100,6 +100,8 @@ def check_script(script: dict):
             bad(f"{i}: press needs buttons from {sorted(BUTTONS)}")
         if not isinstance(hold, int) or hold < 1:
             bad(f"{i}: hold must be an integer >= 1")
+        if f + hold > end:
+            bad(f"{i}: the release (frame {f + hold}) is after end_frame")
         for b in press:
             for f0, f1 in held.get(b, []):
                 if f <= f1 and f0 <= f + hold:  # needs a released frame
@@ -457,10 +459,41 @@ def inputs_record(args, start: dict, repo: str) -> dict:
         m["script"] = {"lua": file_rec(args.lua)}
     if "error" in m["git"]:
         missing.append("tool version (git)")
+    elif m["git"]["tools_trace_status"] != "clean":
+        missing.append("committed trace tools (tools/trace is dirty)")
+    if not m["build"]["oracle_match"]:
+        missing.append("a build that is the oracle")
+    if m.get("disc") and not m["disc"]["tracks"]:
+        missing.append("disc tracks (the cue names no FILE)")
+    if args.launch == "pcsx-redux" and str(
+            m["emulator"].get("version", "")).startswith("unknown"):
+        missing.append("emulator version (version.json)")
+    missing += [f"input file {r['path']}" for r in missing_files(m)]
     m["q124_complete"] = not missing
     if missing:
         m["q124_missing"] = missing
     return m
+
+
+def missing_files(node):
+    """Every file record in a manifest subtree marked missing."""
+    if isinstance(node, dict):
+        if node.get("missing"):
+            yield node
+        for v in node.values():
+            yield from missing_files(v)
+    elif isinstance(node, list):
+        for v in node:
+            yield from missing_files(v)
+
+
+def read_head(path: str, n: int, offset: int = 0) -> bytes | None:
+    try:
+        with open(path, "rb") as f:
+            f.seek(offset)
+            return f.read(n)
+    except OSError:
+        return None
 
 
 def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
@@ -478,6 +511,10 @@ def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
     if args.lua:
         if result.get("armed_frame") != 0:
             missing.append("breakpoints armed at frame 0")
+        if result.get("bios_in_memory") != "matches":
+            missing.append("the BIOS in memory is the recorded file")
+        if result.get("exe_in_memory") != "matches":
+            missing.append("the EXE the disc loaded is the oracle build")
         problems = check_log(args.spec_obj["script"], args.out)
         m["script"] = {**m["script"], "problems": problems}
         if problems:

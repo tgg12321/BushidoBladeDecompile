@@ -95,6 +95,7 @@ REG_INDEX.update({"s8": 30, "sr": 32, "lo": 33, "hi": 34, "bad": 35,
 
 RAM_LO, RAM_HI = 0x80000000, 0x80200000
 RESET_VECTOR = 0xBFC00000
+EXE_LOAD = 0x80010000  # PS-X EXE load address (header: asm/header.s)
 MAX_SYM_OFF = 0x4000  # larger offsets print raw: no symbol spans that far
 DEBUG = bool(os.environ.get("GDBTRACE_DEBUG"))  # log every packet to stderr
 
@@ -418,6 +419,24 @@ def decode_access(gdb: Gdb, regs: list[int], pc: int, also_prev: bool):
         yield at, addr, width, store, value
 
 
+def compare_memory(gdb: Gdb, addr: int, path: str | None, offset: int,
+                   n: int) -> str:
+    """"matches" when n bytes at addr equal the file's bytes at offset."""
+    if not path:
+        return "no file to compare"
+    want = runkit.read_head(path, n, offset)
+    if want is None or len(want) < n:
+        return f"cannot read {n} bytes of {path}"
+    try:
+        got = gdb.mem(addr, n)
+    except GdbError as ex:
+        return f"not read: {ex}"
+    if got == want:
+        return "matches"
+    first = next(i for i in range(n) if got[i] != want[i])
+    return f"differs at 0x{addr + first:08X}"
+
+
 def resolve_dump(syms: Symbols, regs: list[int], d: dict) -> int:
     base = d.get("base", "0")
     if base in REG_INDEX:
@@ -608,6 +627,10 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             armed_frame = paused  # None: unknown
         args.result.update({"armed_frame": armed_frame,
                             "armed_pc": armed_pc})
+        # Redux falls back to OpenBIOS when it cannot load --bios: compare
+        # the ROM it is running with the recorded file.
+        args.result["bios_in_memory"] = compare_memory(
+            gdb, RESET_VECTOR, args.bios, 0, 0x400)
         emit({"ev": "phase", "t": 0.0, "frame": state[1] if state else 0,
               "phase": phase, "armed_frame": armed_frame})
     after_script_stop = None  # regs at the last script stop
@@ -644,9 +667,12 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             for p in polls:
                 if now >= p["next"]:
                     p["next"] = now + p["every"]
-                    emit({"ev": "poll", "t": round(now - t0, 3),
-                          "at": p["spec"]["at"], "addr": p["addr"],
-                          "hex": gdb.mem(p["addr"], p["len"]).hex()})
+                    rec = {"ev": "poll", "t": round(now - t0, 3),
+                           "at": p["spec"]["at"], "addr": p["addr"],
+                           "hex": gdb.mem(p["addr"], p["len"]).hex()}
+                    if script:
+                        rec["phase"] = phase
+                    emit(rec)
                     events += 1
             gdb.cont()
             until = min([p["next"] for p in polls] + [t0 + duration])
@@ -683,6 +709,14 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             # A Lua pause can land on any load/store, like our own ^C.
             e, acc = entry_for_stop(regs, reply, interrupted or script_stop)
             if e is None:
+                if script_stop and any(k for k, _ in armed):
+                    # A watched access on the very instruction the Lua
+                    # paused on cannot be told from the pause: say so.
+                    e2, acc2 = entry_for_stop(regs, reply, False)
+                    if e2 is not None:
+                        emit({"ev": "ambiguous-stop", "pc": regs[37],
+                              "at": e2["spec"]["at"], "phase": phase,
+                              "access": list(acc2) if acc2 else None})
                 if script_stop and state[3]:
                     break
                 if not interrupted and not script_stop:
@@ -724,6 +758,16 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 pass
         ended = bool(state and state[3])
         args.result.update({"script_ended": ended, "events": events})
+        if ended:
+            # The disc's EXE is the oracle build: its first 8 KiB (.rodata
+            # then .text, loaded at 0x80010000) is in RAM as built.
+            try:
+                exe = os.path.join(os.path.dirname(os.path.abspath(
+                    args.map)), "bb2.exe")
+                args.result["exe_in_memory"] = compare_memory(
+                    gdb, EXE_LOAD, exe, 0x800, 0x2000)
+            except (GdbError, OSError) as ex:
+                args.result["exe_in_memory"] = f"not read: {ex}"
         if not ended:  # a finished script stays paused: cards stay as-is
             try:
                 gdb.cont()
