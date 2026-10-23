@@ -196,12 +196,10 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
     SVECTOR buf;
     Unk80045878Node *ents;
     MATRIX *out2;
-    MATRIX *out3;
     s32 offset;
     u16 *p;
     Unk80045878Node *var_9;
     ents = &base->transform_nodes[1];
-    out2 = a4 + 1;
     do {
         offset = (*tbl) * 6;
         p = (u16 *)(offset + (s32)a1);
@@ -217,8 +215,8 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
         buf.vx = p[0];
         buf.vy = -p[1];
         buf.vz = -p[2];
-        math_RotMatrixZYX(&buf, out2);
-        func_800523E0(a4, out2, a3, &ents[i].node.work);
+        math_RotMatrixZYX(&buf, a4 + 1);
+        func_800523E0(a4, a4 + 1, a3, &ents[i].node.work);
         ents[i].node.matrix_state = 2;
         i++;
     } while (i < 0x12);
@@ -226,9 +224,9 @@ void func_80041188(s32 a0, u8 *a1, u8 *a2, s32 a3, MATRIX *a4) {
     a2 += 0x6C;
     i = 0x12;
     var_9 = &ents[18];
-    /* FAKE: a second copy of a4 + 1 for the second loop (s3); reusing out2
-     * drops the copy and moves lw t0,24(sp) up (score 4) */
-    out3 = a4 + 1;
+    /* the second matrix, named for the interpolation loop; loop 1 passes
+     * a4 + 1 inline (one name for both loops: score 4; inline in both: 10) */
+    out2 = a4 + 1;
 loop2:
     math_LerpShortVectorsNegateYZ(
         (s16 *)a1, (s16 *)a2, a3, (s32)var_9->node.work.t);
@@ -247,8 +245,8 @@ loop2:
     a2 += 2;
     buf.vz = -(*((u16 *)a2));
     a2 += 2;
-    math_RotMatrixZYX(&buf, out3);
-    func_800523E0(a4, out3, a3, &var_9->node.work);
+    math_RotMatrixZYX(&buf, out2);
+    func_800523E0(a4, out2, a3, &var_9->node.work);
     var_9->node.matrix_state = 1;
     var_9++;
     i++;
