@@ -1301,8 +1301,12 @@ def hitmap_section(hitmap: dict, hm_hits, phases: list, args) -> list[str]:
         names.append(name)
     w = [f"## Hit map: {len(hitmap['targets'])} functions, "
          f"{per} hit(s) per phase recorded", ""]
+    if args.hitmap_tsv and os.path.exists(args.hitmap_tsv):
+        os.remove(args.hitmap_tsv)  # never leave an older TSV looking current
     if not names:
         return w + ["No phase recorded: no claims.", ""]
+    if not any(full.values()):
+        w += ["No phase was fully covered: no claims (`?` everywhere).", ""]
 
     def cell(n, p):
         if not n:
@@ -1321,7 +1325,8 @@ def hitmap_section(hitmap: dict, hm_hits, phases: list, args) -> list[str]:
     never = [n for n, a in hitmap["targets"] if not hm_hits.get(a)]
     scope = ("in any phase" if not partial else
              "in the fully covered phases (no claim for the partly "
-             "covered ones)")
+             "covered ones)" if any(full.values()) else
+             "(no fully covered phase: no claim)")
     w.append(f"{len(hit)} reached, {len(never)} not hit {scope}.")
     w.append("")
     w.append("| function | " + " | ".join(names) + " |")
@@ -1329,7 +1334,7 @@ def hitmap_section(hitmap: dict, hm_hits, phases: list, args) -> list[str]:
     for n, a in hit:
         w.append(f"| `{n}` | " + " | ".join(row(a)) + " |")
     w.append("")
-    if never:
+    if never and any(full.values()):
         w.append(f"Not hit {scope}: " + ", ".join(f"`{n}`" for n in never))
         w.append("")
     if args.hitmap_tsv:
