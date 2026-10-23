@@ -416,5 +416,7 @@ load/store (with the value stored) behind each watchpoint stop. Tested backend: 
 core, launched by `run --launch pcsx-redux`); spec format and usage are in its docstring. Symbols
 come from `build/bb2.map` and `build/bb2.elf` (statics), so trace only a build whose SHA1 is the oracle. A trace shows what one
 scenario did, never everything a function can do: cite it with the scenario it ran.
+When a trace counts as naming evidence, and what a capture must record, is
+`.claude/rules/naming-runtime-evidence.md` (owner ruling Q124).
 
 > **Trimmed 2026-10-01:** stale audits/plans (REMAINING_DATA_CATALOG, LEGACY_RENAMER_AUDIT, LONG_TERM_DX_PROMOTION_FIX, header-type/memory-project/proposals audits, ADDENDUM-APPLY-PLAN, naming-verification-2026-08-18, RODATA_CATALOG/RECORD_SCHEMA, charptr_functions), libscan reports (manifest_report, near/data verifier reports, callee_web, data_candidates) and generated views (suspect-list → `tmp/suspect-list.md` via build_suspect_list.py) resolve at git tag `pre-slim-2026-10-01`.
