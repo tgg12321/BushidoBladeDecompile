@@ -1,0 +1,1 @@
+{"func": "fight_InsertBestTime", "addr": "80033D38", "verdict": "PASS", "body_hash": "0c390086539d891b", "body_kind": "c", "file": "main/17AFC", "reviewer": "cheat-reviewer", "scope": "cheat-cleanup", "date": "2026-10-23T11:23:12Z", "head": "008335daa", "notes": "pointer RMW clause: record searches, shifts and stores D_80106A50.times[]; FAKE label retired; direct 34"}
