@@ -3153,88 +3153,36 @@ void motion_InitStreams(void) {
 
 /* The record's motion_data_id -> its slot in D_800A38C4 (motion_slot); for
  * ids below 0x2000, the nibble positions of 4 and 5 (unk_88 / unk_8E),
- * copying unk_26C into unk_8A / unk_90 under conditions on D_800A38DC. The
- * loop-tail duplication is accepted by an owner ruling on SOTN evidence; every
- * codegen-only local is FAKE-labelled with what its natural spelling breaks. */
+ * copying unk_26C into unk_8A / unk_90 under conditions on D_800A38DC. */
 void func_80021280(s32 a0) {
-    s32 a1 = 0;
-    Unk80101EC8Record *a2 = &D_80101EC8[a0];
-    s32 a3 = a2->motion_data_id;
-    u16 *v1 = D_800A38C4;
+    s32 i = 0;
+    Unk80101EC8Record *rec = &D_80101EC8[a0];
+    s32 id = rec->motion_data_id;
+    u16 *p = D_800A38C4;
 
-loop1_21280:
-    if (a3 == *v1)
-        goto done1_21280;
-    a1++;
-    v1++;
-    if (a1 < 2)
-        goto loop1_21280;
-done1_21280:
-
-{
-    u16 val = a2->motion_data_id;
-    a2->motion_slot = a1;
-    a2->borrow_other_motion = 0;
-
-    if ((u32)(val >> 12) < 2) {
-        u16 t1; /* FAKE: copy of val (shifting val directly: score 7) */
-        /* FAKE: holds the constant 4 (a literal: score 16) */
-        s32 t4;
-        /* FAKE: holds the constant 3 (a literal: score 20) */
-        s32 t3;
-        /* FAKE: holds the constant 1 (a literal: score 20) */
-        s32 t2;
-        u8 t0;
-        s32 mode;
-        s32 k;
-
-        k = 0;
-        t1 = val;
-        t4 = 4;
-        t3 = 3;
-        t2 = 1;
-        mode = D_800A38DC;
-        t0 = D_800A384C;
-    loop2_21280: {
-        u16 nibble = (t1 >> (k << 2)) & 0xF;
-        if (nibble != t4)
-            goto not4_21280;
-        a2->unk_88 = k;
-        if (mode != t3)
-            goto store4_21280;
-        if (a0 != t2)
-            goto store4_21280;
-        if (t0 != nibble)
-            goto next_21280;
-    store4_21280:
-        a2->unk_8A = a2->unk_26C;
-        goto next_21280;
-    not4_21280:
-        if (nibble != 5)
-            goto next_21280;
-        a2->unk_8E = k;
-        if (mode != 0)
-            goto store5_21280;
-        if (D_800A385C == 0)
-            goto store5_21280;
-        if (a0 == 0) {
-            /* FAKE: loop tail duplicated into this arm (jump2 cross-jump
-               re-merges it to identical bytes); with `goto next_21280` instead,
-               the counters and the record pointer swap $a1 / $a2: score 19 */
-            k++;
-            if (k < 3)
-                goto loop2_21280;
-            return;
+    for (; i < 2; i++, p++) {
+        if (id == *p) {
+            break;
         }
-    store5_21280:
-        a2->unk_90 = a2->unk_26C;
     }
-    next_21280:
-        k++;
-        if (k < 3)
-            goto loop2_21280;
+    rec->motion_slot = i;
+    rec->borrow_other_motion = 0;
+    if ((u32)(rec->motion_data_id >> 12) < 2) {
+        for (i = 0; i < 3; i++) {
+            s32 nibble = (rec->motion_data_id >> (i << 2)) & 0xF;
+            if (nibble == 4) {
+                rec->unk_88 = i;
+                if (D_800A38DC != 3 || a0 != 1 || D_800A384C == nibble) {
+                    rec->unk_8A = rec->unk_26C;
+                }
+            } else if (nibble == 5) {
+                rec->unk_8E = i;
+                if (D_800A38DC != 0 || D_800A385C == 0 || a0 != 0) {
+                    rec->unk_90 = rec->unk_26C;
+                }
+            }
+        }
     }
-}
 }
 
 void func_800213A0(Unk80101EC8Record *arg0) {
