@@ -1443,6 +1443,41 @@ def describe_words(syms: Symbols, samples: list[list[int]], label):
     return lines
 
 
+def describe_fields(syms: Symbols, addr: int, samples: list[bytes]):
+    """A value read split at every map/ELF symbol inside it (not at u32
+    boundaries, which would credit a sub-word symbol's change to the
+    symbol the word starts at). Each field runs to the next symbol or the
+    end of the read and is shown as a little-endian integer."""
+    n = min(len(s) for s in samples)
+    starts = {}
+    i = bisect.bisect_left(syms.addrs, addr)
+    while i < len(syms.addrs) and syms.addrs[i] < addr + n:
+        starts.setdefault(syms.addrs[i], []).append(syms.names[i])
+        i += 1
+    if addr not in starts:
+        starts[addr] = [syms.name(addr)]
+    order = sorted(starts)
+    lines = ["| field | span (bytes to the next symbol) | behaviour | values |",
+             "|---|---|---|---|"]
+    for k, a in enumerate(order):
+        end = order[k + 1] if k + 1 < len(order) else addr + n
+        vals = [int.from_bytes(s[a - addr:end - addr], "little")
+                for s in samples]
+        width = end - a
+        digits = 2 * min(width, 4)
+        distinct = collections.Counter(vals)
+        fmt = lambda v: f"0x{v:0{digits}X}"
+        if len(distinct) == 1:
+            kind, shown = "const", fmt(vals[0])
+        else:
+            kind = f"varies ({len(distinct)} values)"
+            shown = ", ".join(f"{fmt(v)} x{c}"
+                              for v, c in distinct.most_common(4))
+        label = " = ".join(f"`{x}`" for x in dict.fromkeys(starts[a]))
+        lines.append(f"| {label} (0x{a:08X}) | {width} | {kind} | {shown} |")
+    return lines
+
+
 def hitmap_section(hitmap: dict, hm_hits, phases: list, args) -> list[str]:
     """Function x phase table. A cell is the hit count, capped: `N+` means
     the per-phase limit was reached (the breakpoint was then off until the
@@ -1728,10 +1763,9 @@ def report(args) -> int:
             w.append(f"| {label} | {fr} | {ptr} | `{shown}` |")
         w.append("")
         if good and "ptr_off" not in sp:
-            w.append("| field | behaviour | values |")
-            w.append("|---|---|---|")
-            a0 = recs[0]["addr"]
-            w += describe_words(syms, good, lambda o, a=a0: syms.name(a + o))
+            w += describe_fields(syms, recs[0]["addr"],
+                                 [bytes.fromhex(r["hex"]) for r in recs
+                                  if r.get("hex")])
             w.append("")
     if start:
         seen = set(hits)
