@@ -1,16 +1,16 @@
 ---
 name: naming-bar
 paths: [".claude/rules/naming-bar.md", ".claude/agents/naming-reviewer.md", "docs/naming/**", "tools/naming_wave.py", "tools/data_wave.py", "tools/naming_keycheck.py"]
-description: "Owner ruling Q111 (2026-10-04, step 0 answers 2026-10-07): the Phase 3 naming bar, SOTN-equivalent. A name lands when it explains from the code across every use and a fresh naming-reviewer passes it; evidence classes settle conflicts, they do not gate. Neutral names beat guesses. Waves are tooled and identifier-only. Not a completion-bar item."
+description: "Owner ruling Q111 (2026-10-04, step 0 answers 2026-10-07): the Phase 3 naming bar, SOTN-equivalent. A name lands when it explains from the code across every use and a fresh naming-reviewer passes it; evidence classes settle conflicts, they do not gate. Neutral names beat guesses. Waves are tooled and identifier-only."
 metadata:
   type: rule
   tier: hygiene
 ---
 
-# The naming bar (owner ruling Q111)
+# The naming bar
 
-Applies to every name a naming wave lands or keeps: functions, globals, types, struct members,
-locals and parameters, file names. It never decides a function's completion state
+Applies to every name a naming wave lands or keeps: functions, globals, types, members,
+locals, parameters, file names. It never decides a function's completion state
 ([[completion-bar]] does).
 
 ## N1 — the SOTN bar
@@ -29,8 +29,8 @@ One contradicting use fails the name.
 
 ## N2 — neutral beats a guess
 
-Without enough evidence, keep the neutral name (`func_8XXXXXXX`, `D_8XXXXXXX`, `Unk<addr>Rec`,
-`unk_XX`). A neutral name makes no claim; a false one sends the next reader down a false trail.
+Lacking evidence, keep the neutral name (`func_8XXXXXXX`, `D_8XXXXXXX`, `Unk<addr>Rec`,
+`unk_XX`). A neutral name makes no claim; a false one misleads.
 
 ## N3 — evidence: conflict order, not a gate
 
@@ -57,7 +57,7 @@ A subsystem prefix (`camera_`, `model_`, `stage_`, `snd_`, `cd_`...) must itself
 ## N5 — existing names
 
 An existing INFERRED or unattributed name meets the same bar. If it fails N1, it is RESET
-or renamed. It is not kept for history.
+or renamed, not kept for history.
 
 ## N6 — file names
 
@@ -82,7 +82,7 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
    Neutral resets: [[naming-bulk-reset]] (Q119, Q120).
 3. **Census:** `python3 docs/naming/build_census.py`.
 4. **Apply:** with a clean tree and the Grinder stopped, run `tools/naming_wave.py --from-census
-   --only <addrs>` (dry run, then `--apply`), commit that as a temporary commit (data_wave refuses
+   --only <addrs>` (dry run, then `--apply`), commit it temporarily (data_wave refuses
    paths already dirty), run `tools/data_wave.py --manifest-csv <csv> --apply`, then
    `git reset --soft HEAD~1` so the wave lands as one commit. The pairs are every `old_names` /
    `olds` entry of the two tools' `--manifest` JSON (an auto name and its alias may share a new
@@ -90,7 +90,7 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
    Types, members and locals are edited in C (`T.m=n`: the declaration of `m` in `T` and its
    `.`/`->` accesses, via `tools/naming_member_apply.py <pairs.txt>`, which lists lines to
    hand-edit; `f:l=n`: one binding in the unique definition of `f`). Then the comment pass,
-   `python3 tools/naming_keycheck.py --pairs <global pairs> --sub-comments`, and edit by hand,
+   `python3 tools/naming_keycheck.py --pairs <global pairs> --sub-comments`, and hand-edit,
    in the wave, every comment still naming an old member or local.
 5. **Gates:** `verify-oracle --rebuild` (SHA1 == oracle); `tus-check`;
    `tools/check_completion_integrity.py`; `engine test`; then stage the whole wave (`git add -A`)
@@ -102,15 +102,17 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
      `tools/format.py` lands them (a longer name can re-wrap or hoist a comment). Any other moved
      comment, or a `#define NAME(` spacing change, fails.
    - Each moved `layer2.jsonl` must equal naming_wave's retarget of the old record. Every other
-     moved ledger file moves unchanged, and nothing else under `memory/` changes.
-   - The census CSV must equal a fresh `build_census.py` run (working tree only; it reads
-     `build/bb2.map`, so it runs after the rebuild). `docs/naming/phase3/**` is the
+     moved ledger file is unchanged, and nothing else under `memory/` changes.
+   - The census CSV must equal a fresh `build_census.py` run (working tree only, after the
+     rebuild: it reads `build/bb2.map`). `docs/naming/phase3/**` is the
      only free path. Registries change line by line, only into what naming_wave / data_wave
      emit for that line. Other text files (gate lists, tools) change only by the pairs.
    - `.claude/**`, `movovl/**` (not oracle-covered) and the tool never change.
    - Global pairs: a new non-auto name must not already exist in a build or tool file; an auto
      name must carry the old name's address; old names may share a new name only when they name
      one address; no old name survives in a build file (C comments included).
+     `movovl/` definitions of, and in-module references to, the same routine of the same verbatim
+     Sony module pass (Q130); other movovl hits block.
    - `T.m=n`: `n` is no member, type, macro, paste or keyword name in `src/` / `include/` C
      (base and post-global trees), save that members the code shows alike may share `n` in one
      wave; accesses resolve to `T` only by the oracle build.
@@ -119,8 +121,8 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
 
    These are **the wave's surfaces**.
 6. **Moved layer-2 keys:** a completed body whose key moved only by the wave's pairs (the
-   keycheck proves it) needs no new cheat review. Instead, a second, post-apply `naming-reviewer`
-   pass checks the diff and the keycheck report (R6). That pass is required for every wave.
+   keycheck proves it) needs no new cheat review; a second, post-apply `naming-reviewer`
+   pass checks the diff and the keycheck report (R6), required for every wave.
 7. **Commit:** one commit per wave, subject `naming: <wave>`. The body gives the manifest path,
    both review verdicts, the oracle line, the keycheck line and moved-key count, and the census
    regenerated in the same commit.

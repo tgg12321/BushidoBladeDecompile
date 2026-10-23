@@ -4930,6 +4930,95 @@ def test_layer2_gate() -> None:
              Q.O.verify) = saved
 
 
+def test_naming_keycheck_movovl_q130() -> None:
+    """Owner ruling Q130: a movovl/ freshness hit is excused only for the same verbatim routine."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+    import naming_keycheck as nk
+
+    def tree(**over):
+        t = {
+            nk.LIBSCAN_SYMS: json.dumps({
+                "0x80001010": [{"name": "zap", "kind": "static", "lib": "LIBX", "mod": "M",
+                                "mod_start": "0x80001000", "mod_end": "0x80001020"}],
+                "0x80002008": [{"name": "zap", "kind": "static", "lib": "LIBX", "mod": "M_VB",
+                                "mod_start": "0x80002000", "mod_end": "0x80002010"}]}),
+            nk.LIBSCAN_MATCHES: json.dumps({"results": [
+                {"lib": "LIBX", "mod": "M", "words": 8, "status": "verbatim", "vaddrs": ["0x80001000"]},
+                {"lib": "LIBX", "mod": "M_VB", "words": 4, "status": "verbatim", "vaddrs": ["0x80002000"]}]}),
+            nk.MOVOVL_SCAN + "matches.json": json.dumps({"results": [
+                {"lib": "LIBX", "mod": "M", "words": 8, "status": "verbatim", "vaddrs": ["0x801E0000"]},
+                {"lib": "LIBX", "mod": "M_VB", "words": 4, "status": "verbatim", "vaddrs": ["0x801E0100"]}]}),
+            nk.MOVOVL_SCAN + "placements.json": json.dumps({"modules": [
+                ["0x801E0000", "0x801E0020", "LIBX", "M"], ["0x801E0100", "0x801E0110", "LIBX", "M_VB"]]}),
+            nk.MOVOVL_SCAN + "symbols.txt": "# vaddr lib/module symbol(s)\n"
+                "0x801E0010 LIBX/M                zap (static)\n"
+                "0x801E0108 LIBX/M_VB             zap (static)\n",
+            nk.MOVOVL_SYMADDRS: "// header: names collide across modules\n"
+                "zap = 0x801E0010; // type:func\nzap_M_VB = 0x801E0108; // type:func\n",
+            "movovl/asm/libx_m.s": "glabel other\n"
+                "    /* 0 801E0000 0800E003 */  jal        zap\n"
+                "nonmatching zap, 0x8\n\nglabel zap\n"
+                "    /* 10 801E0010 0800E003 */  jr         $ra\n"
+                "    /* 14 801E0014 00000000 */   nop\n"
+                "endlabel zap\n",
+            "movovl/asm/libx_other.s": "    /* 40 801E0040 0480070C */  jal        zap\n",
+        }
+        t.update(over)
+        return lambda p: t.get(p)
+
+    psx = ["src/main/psxsdk/libx/m.c"]
+    ok = nk.movovl_same_routine(tree(), "zap", "80001010", psx)
+    check("keycheck Q130: same verbatim routine admits its movovl lines",
+          ok == {nk.MOVOVL_SYMADDRS: {2}, "movovl/asm/libx_m.s": {2, 3, 5, 8}})
+    for path in (nk.MOVOVL_SYMADDRS, "movovl/asm/libx_m.s"):
+        check("keycheck Q130: same-routine hit excused in " + path,
+              nk.movovl_hit_excused(tree()(path), path, ["zap"], {"zap": ok}) is None)
+    check("keycheck Q130: a comment naming it still blocks",
+          nk.movovl_hit_excused("// zap here\n", nk.MOVOVL_SYMADDRS, ["zap"], {"zap": ok}) is not None)
+    check("keycheck Q130: a reference outside the module's own asm still blocks",
+          nk.movovl_hit_excused(tree()("movovl/asm/libx_other.s"), "movovl/asm/libx_other.s",
+                                ["zap"], {"zap": ok}) is not None)
+    # git grep -w words are ASCII: "ézap" is a hit there, so it must not be excused here.
+    asm_m = tree()("movovl/asm/libx_m.s")
+    check("keycheck Q130: a non-ASCII-prefixed name is still a hit and blocks",
+          nk.movovl_hit_excused(asm_m + "    ézap\n", "movovl/asm/libx_m.s", ["zap"], {"zap": ok}) is not None)
+    check("keycheck Q130: a grep hit file with no matching line blocks",
+          nk.movovl_hit_excused("nothing here\n", nk.MOVOVL_SYMADDRS, ["zap"], {"zap": ok}) is not None)
+    bad_sym = tree(**{nk.MOVOVL_SCAN + "symbols.txt": "0xZZZZ LIBX/M zap (static)\n"})
+    try:
+        why = nk.movovl_same_routine(bad_sym, "zap", "80001010", psx)
+    except Exception as e:  # noqa: BLE001
+        why = e
+    check("keycheck Q130: a malformed symbols.txt line is a reason, not a crash (" + repr(why) + ")",
+          isinstance(why, str))
+    check("keycheck Q130: a movovl hit for an unevaluated name blocks",
+          nk.movovl_hit_excused("zap = 0x801E0010;\n", nk.MOVOVL_SYMADDRS, ["zap"], {}) is not None)
+    # A different routine with the same name: M_VB's zap is movovl's zap_M_VB, not its `zap`.
+    why = nk.movovl_same_routine(tree(), "zap", "80002008", ["src/main/psxsdk/libx/m_vb.c"])
+    check("keycheck Q130: different routine with the same name blocked (" + str(why) + ")",
+          isinstance(why, str) and nk.movovl_hit_excused(
+              tree()(nk.MOVOVL_SYMADDRS), nk.MOVOVL_SYMADDRS, ["zap"], {"zap": why}) is not None)
+    shifted = tree(**{nk.MOVOVL_SCAN + "symbols.txt": "0x801E0014 LIBX/M zap (static)\n"})
+    check("keycheck Q130: same module, different offset blocked",
+          isinstance(nk.movovl_same_routine(shifted, "zap", "80001010", psx), str))
+    resized = tree(**{nk.MOVOVL_SCAN + "matches.json": json.dumps({"results": [
+        {"lib": "LIBX", "mod": "M", "words": 9, "status": "verbatim", "vaddrs": ["0x801E0000"]}]})})
+    check("keycheck Q130: a differently sized movovl module blocked",
+          isinstance(nk.movovl_same_routine(resized, "zap", "80001010", psx), str))
+    # Not a libscan-verbatim src/main/psxsdk/ module.
+    check("keycheck Q130: an old name outside src/main/psxsdk/ blocked",
+          isinstance(nk.movovl_same_routine(tree(), "zap", "80001010", ["src/main/368E4.c"]), str))
+    check("keycheck Q130: an address libscan does not name blocked",
+          isinstance(nk.movovl_same_routine(tree(), "zap", "80001014", psx), str))
+    near = tree(**{nk.LIBSCAN_MATCHES: json.dumps({"results": [
+        {"lib": "LIBX", "mod": "M", "words": 8, "status": "near", "vaddrs": ["0x80001000"]}]})})
+    check("keycheck Q130: a near-tier (not verbatim) main module blocked",
+          isinstance(nk.movovl_same_routine(near, "zap", "80001010", psx), str))
+    check("keycheck Q130: no base address blocked",
+          isinstance(nk.movovl_same_routine(tree(), "zap", None, psx), str))
+
+
 def test_naming_keycheck_scoped_pairs() -> None:
     """Pure-logic scoped proof regressions; no build/toolchain or git writes."""
     import sys
@@ -12739,6 +12828,7 @@ def main() -> int:
     test_note_kind_function_reset()
     test_naming_wave_renames()
     test_naming_keycheck_scoped_pairs()
+    test_naming_keycheck_movovl_q130()
     test_volatile_unused_locals()
     test_always_true_if_scaffolds()
     test_empty_do_while_zero()

@@ -30,7 +30,9 @@ same substitutions the wave tools apply (tools/naming_wave.py, tools/data_wave.p
 A path rename must be the old path with the pairs substituted; an added or deleted file must be
 one side of such a rename. Two tree-wide checks: a non-auto new name must not already occur in
 the base tree's build, tool and rule files (src, include, asm, tools, engine, movovl, .claude,
-*.ld, *.txt, Makefile; docs/ and memory/ cite proposals). An auto name must carry the old
+*.ld, *.txt, Makefile; docs/ and memory/ cite proposals), save movovl/ lines that define or
+reference the same routine in the overlay's copy of the same libscan-verbatim Sony module
+(owner ruling Q130, movovl_same_routine). An auto name must carry the old
 name's address; several old names may share a new name only when they name one address, and
 no old name may survive in
 a build file (src/, include/, asm/, *.ld, root *.txt, Makefile; C comments included).
@@ -3645,6 +3647,111 @@ def base_addr(base: str, name: str) -> str | None:
     return next(iter(addrs)) if len(addrs) == 1 else None
 
 
+# Owner ruling Q130: the MOVOVL overlay links its own copy of some verbatim Sony modules. A
+# movovl/ line naming the new name is no freshness collision when it names the same routine.
+LIBSCAN_SYMS, LIBSCAN_MATCHES = "docs/naming/libscan/libsyms.json", "docs/naming/libscan/matches.json"
+MOVOVL_SCAN = "docs/naming/movovl_scan/"
+MOVOVL_SYMADDRS = "movovl/symbol_addrs.movovl.txt"
+
+
+def _verbatim_module(matches, lib, mod, start):
+    """The one verbatim libscan placement of lib/mod, which must sit at `start` alone."""
+    rows = [r for r in matches.get("results", []) if r.get("lib") == lib and r.get("mod") == mod
+            and r.get("status") == "verbatim"]
+    if len(rows) != 1 or [int(v, 16) for v in rows[0].get("vaddrs", [])] != [start]:
+        return None
+    return rows[0]
+
+
+def movovl_same_routine(read, new: str, addr: str | None, old_src: list[str]):
+    """Q130: the movovl/ lines (path -> line numbers) that name main's renamed routine itself.
+
+    `read(path)` reads the base tree; `addr` is the old name's base address; `old_src` the src/
+    files naming it. Admitted only when the old name lives in src/main/psxsdk/ alone, libscan
+    places it verbatim as `new` (libsyms.json + matches.json), the overlay scan places the same
+    lib/module verbatim once with the same word count, and its `new` sits at the same module
+    offset (movovl_scan/symbols.txt). Then the lines are: that address's `new = 0x...;` row in
+    symbol_addrs.movovl.txt, and in the module's own asm file the glabel/endlabel/nonmatching
+    lines and instruction operands naming it. Any failure returns the reason (fail closed)."""
+    if addr is None:
+        return "the old name has no single base address"
+    if not old_src or any(not p.startswith("src/main/psxsdk/") for p in old_src):
+        return "the old name does not live in src/main/psxsdk/ alone"
+    try:
+        syms = json.loads(read(LIBSCAN_SYMS) or "{}")
+        matches = json.loads(read(LIBSCAN_MATCHES) or "{}")
+        o_matches = json.loads(read(MOVOVL_SCAN + "matches.json") or "{}")
+        o_place = json.loads(read(MOVOVL_SCAN + "placements.json") or "{}")
+        va = int(addr, 16)
+        rows = [r for r in syms.get(f"0x{va:08X}", []) if r.get("name") == new]
+        if len(rows) != 1:
+            return f"libscan names no single {new} at 0x{va:08X}"
+        lib, mod = rows[0]["lib"], rows[0]["mod"]
+        start, end = int(rows[0]["mod_start"], 16), int(rows[0]["mod_end"], 16)
+        main_mod = _verbatim_module(matches, lib, mod, start)
+        if main_mod is None or main_mod["words"] * 4 != end - start or not start <= va < end:
+            return f"{lib}/{mod} is not one verbatim libscan placement holding 0x{va:08X}"
+        placed = [(int(a, 16), int(b, 16)) for a, b, pl, pm in o_place.get("modules", [])
+                  if (pl, pm) == (lib, mod)]
+        if len(placed) != 1:
+            return f"movovl places {lib}/{mod} {len(placed)} times"
+        o_start, o_end = placed[0]
+        o_mod = _verbatim_module(o_matches, lib, mod, o_start)
+        if o_mod is None or o_mod["words"] != main_mod["words"] or o_end - o_start != o_mod["words"] * 4:
+            return f"movovl's {lib}/{mod} is not the same verbatim module"
+    except (ValueError, KeyError, TypeError, AttributeError) as e:
+        return f"libscan evidence unreadable ({e})"
+    want = o_start + (va - start)
+    at = []
+    for k, line in enumerate((read(MOVOVL_SCAN + "symbols.txt") or "").splitlines(), 1):
+        parts = line.split()
+        if line.startswith("#") or len(parts) < 3:
+            continue
+        names = [t for t in parts[2:] if not t.startswith("(")]
+        if parts[1] == f"{lib}/{mod}" and new in names:
+            try:
+                at.append(int(parts[0], 16))
+            except ValueError:
+                return f"{MOVOVL_SCAN}symbols.txt:{k}: unreadable address {parts[0]!r}"
+    if at != [want]:
+        return f"movovl's {lib}/{mod} does not name {new} at the same offset (0x{want:08X})"
+    allowed: dict[str, set[int]] = {}
+    sym_rows = [(i, m) for i, l in enumerate((read(MOVOVL_SYMADDRS) or "").splitlines(), 1)
+                if (m := SYM_LINE.match(l)) and m.group(2) == new]
+    if len(sym_rows) != 1 or int(sym_rows[0][1].group(4), 16) != want:
+        return f"{MOVOVL_SYMADDRS} does not declare {new} once at 0x{want:08X}"
+    allowed[MOVOVL_SYMADDRS] = {sym_rows[0][0]}
+    asm = f"movovl/asm/{lib.lower()}_{mod.lower()}.s"
+    lines = (read(asm) or "").splitlines()
+    w = re.escape(new)
+    label = re.compile(rf"^\s*(?:glabel|endlabel)\s+{w}\s*$|^\s*nonmatching\s+{w},\s*0x[0-9A-Fa-f]+\s*$", re.A)
+    insn = re.compile(r"^\s*/\* [0-9A-F]+ ([0-9A-F]{8}) [0-9A-F]{8} \*/\s+[a-z][\w.]*\s+(.*)$", re.A)
+    glabels = [i for i, l in enumerate(lines) if re.fullmatch(rf"\s*glabel\s+{w}\s*", l, re.A)]
+    first = next((insn.match(l) for l in lines[glabels[0] + 1:] if insn.match(l)), None) if glabels else None
+    if len(glabels) != 1 or first is None or int(first.group(1), 16) != want:
+        return f"{asm} does not define {new} once at 0x{want:08X}"
+    word = re.compile(rf"(?<!\w){w}(?!\w)", re.A)
+    allowed[asm] = {i for i, l in enumerate(lines, 1) if word.search(l) and (
+        label.match(l) or ((m := insn.match(l)) and "/*" not in m.group(2) and "#" not in m.group(2)))}
+    return allowed
+
+
+def movovl_hit_excused(text: str, path: str, news: list[str], q130: dict) -> str | None:
+    """None when every line of movovl `path` naming a new name is a Q130 same-routine line.
+    Words are ASCII, as git grep -w sees them; a hit file with no such line fails."""
+    seen = False
+    for i, line in enumerate(text.splitlines(), 1):
+        for n in news:
+            if re.search(rf"(?<![A-Za-z0-9_]){re.escape(n)}(?![A-Za-z0-9_])", line):
+                seen = True
+                allowed = q130.get(n)
+                if not isinstance(allowed, dict):
+                    return f"line {i}: {n}: {allowed or 'not the same routine'}"
+                if i not in allowed.get(path, ()):
+                    return f"line {i}: {n}: not a definition or reference of the same routine"
+    return None if seen else "no line names a new name as git grep -w does"
+
+
 def _is_macro(base: str, name: str) -> bool:
     """True when src/ or include/ #defines `name` in the base tree."""
     return bool(git("grep", "-l", "-E", r"^\s*#\s*define\s+" + re.escape(name) + r"\b",
@@ -4212,8 +4319,24 @@ def main() -> int:
         hits = git("grep", "-l", "-w", "-E", "|".join(news), a.base, "--", "src", "include", "asm",
                    "tools", "engine", "movovl", ".claude", "*.ld", "*.txt", "Makefile", ":!docs", ":!memory",
                    check=False).splitlines()
+        q130 = {}
+        if any(h.split(":", 1)[1].startswith("movovl/") for h in hits):
+            read_base = lambda p: show(a.base, p)  # noqa: E731
+            for o, n in pairs.items():
+                if n not in news:
+                    continue
+                old_src = [h.split(":", 1)[1] for h in git("grep", "-l", "-w", "-F", o, a.base, "--", "src",
+                                                            check=False).splitlines()]
+                q130[n] = ("several old names share it" if n in q130 else
+                           movovl_same_routine(read_base, n, base_addr(a.base, o), old_src))
         for h in hits:
-            fails.append(f"new name already in the base tree: {h.split(':', 1)[1]}")
+            path = h.split(":", 1)[1]
+            why = (movovl_hit_excused(show(a.base, path) or "", path, news, q130)
+                   if path.startswith("movovl/") else "")
+            if why is None:
+                notes.append(f"{path}: names the same verbatim Sony routine (Q130)")
+            else:
+                fails.append(f"new name already in the base tree: {path}" + (f" ({why})" if why else ""))
     grep_rev = [a.new] if a.new else []
     grep_options = [] if a.new else ["--untracked"]
     for h in git("grep", "-l", "-w", "-E", *grep_options, "|".join(map(re.escape, pairs)) or r"a^", *grep_rev,
