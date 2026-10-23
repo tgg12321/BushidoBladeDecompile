@@ -1,0 +1,19 @@
+{
+  "decision": "PASS",
+  "function": "func_8006C21C",
+  "body_hash": "703358c9f237632c",
+  "summary": "Body at c26de71a3 matches (sandbox 0; verify-oracle SHA1 62efab4f..., build and artifact match). `cells` meets Ruling 9 (a)-(h) as a truthful named intermediate (entry 6) with an honest Ruling 9 comment; table's three same-value re-stores carry a FAKE label whose scores (8/15/18, 28, 15) re-measure true; cells alternatives (12/12) re-measure true. No unlabelled codegen-only construct or false claim in the body.",
+  "evidence": [
+    {"construct": "body identity and match", "test_failed": "none (item 1 checked)", "explanation": "layer2 hash 703358c9f237632c; sandbox --disable all 0; verify-oracle build_matches and artifact_matches true."},
+    {"construct": "`cells = s.header->cells; s.table = cells;` x4", "test_failed": "none (item 3 / Ruling 9 checked)", "explanation": "(a) one identical consumer; (b) BASE s.header + 0xC via the declared cells[0] member, one sub-object kind; (c) read once immediately; (d) addiu $a1,$v0,0xC at all four sites; (e) gpu_AddSpriteCells reads table before the next store; (f) `cells` true of every write; (g)/(h) prongs 2-3 hold. Entry 6 named intermediate of a real value, no label needed."},
+    {"construct": "cells alternatives (direct 12, block local per write 12)", "test_failed": "none (item 5 checked)", "explanation": "Re-measured; no lighter form."},
+    {"construct": "table's re-stores with the FAKE: reused label", "test_failed": "none (items 3 / 5 checked)", "explanation": "Multi-write outside Rulings 5-12 / Q51, so a labelled FAKE; callees never write arg0[1]->unk_30, so 'already holds' is true; scores re-measured."},
+    {"construct": "rest of the body", "test_failed": "none (items 3-4 checked)", "explanation": "Pre-existing labels present and true as far as checked; repeated descriptor stores are semantic (&s escapes); existing types used."}
+  ],
+  "next_action": "",
+  "hygiene_debt": [
+    "Ruling 9 (i) receipts and (b) layout evidence for `cells` (game.h cells[0], gpu_AddSpriteCells reader) could be banked in memory/grind/func_8006C21C/.",
+    "table's label sits at the declaration, not at the three re-store statements; the target does reload arg0[1]->unk_30 per phase, so a future ruling may read these as reconstruction.",
+    "Plain item-3 FAKE labels here and in func_8006B120 carry no admitting id (codebase convention); site-comment-content item 2 could be read as asking for `Q91`."
+  ]
+}
