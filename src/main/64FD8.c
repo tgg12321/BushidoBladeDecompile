@@ -545,10 +545,10 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
        page sheet (cells at +0xC), three in loops 1-3 (normal, then one cursor
        highlight per player; cells at +0x24). Loop 2 views the one-header 0x14
        placeholder sheet as three headers too, so +0x24 runs past it into
-       unreferenced bytes (Ruling 9).
-       FAKE: the holder between the header's cells and s.table; stored directly:
-       score 25. */
-    Unk8009B400Record *var_4;
+       unreferenced bytes. Ruling 9 (b'): one meaning (the cells after the
+       sheet's header(s), s.header + 0xC or + 0x24) at four writes, for
+       s.table. */
+    Unk8009B400Record *cells;
 
     var_2 = 0;
     s.semi = 0;
@@ -557,8 +557,8 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     s.header = table[0];
     s.x = arg3 * 240 + 0x88;
     s.y = 0x33;
-    var_4 = s.header->cells;
-    s.table = var_4;
+    cells = s.header->cells;
+    s.table = cells;
     if (arg3 != 0) {
         s.ot_idx = 0x16;
     } else {
@@ -596,8 +596,8 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
 
         if (D_8009BCE4[entry] & 1) {
             s.header = table[entry + 1];
-            var_4 = s.header[2].cells;
-            s.table = var_4;
+            cells = s.header[2].cells;
+            s.table = cells;
             if (D_8009BCF8[arg1][SELWORK->f1C.half[arg3] * 5 +
                                  SELWORK->f20.half[arg3]]
                     .unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
@@ -620,7 +620,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = 0; i < SELWORK->f3C[arg3] + 1; i++) {
         if (arg2[i] >= 0) {
             s.header = table[arg2[i] + 1];
-            var_4 = s.header[2].cells;
+            cells = s.header[2].cells;
             if (i != SELWORK->f3C[arg3]) {
                 s.has_color = 0;
             } else {
@@ -628,7 +628,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
                 s.header += 1 + arg3;
             }
             s.y = i * 17;
-            s.table = var_4;
+            s.table = cells;
             s.table += s.header->count;
             s.sprt_out = arg0->unk_04.unk_0C;
             arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
@@ -639,11 +639,11 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = 0; i < SELWORK->f65 + 3; i++) {
         table = arg0->unk_00.v80076FF8->unk_20[SELWORK->f65];
         s.header = table[i];
-        var_4 = s.header[2].cells;
+        cells = s.header[2].cells;
         if (i == SELWORK->f3C[arg3]) {
             s.header += 1 + arg3;
         }
-        s.table = var_4;
+        s.table = cells;
         s.x = arg3 * 240;
         s.y = i * 17;
         if (arg3 != 0) {
