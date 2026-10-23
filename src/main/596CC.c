@@ -2047,12 +2047,10 @@ s32 func_8006CFBC(s32 *arg0) {
     s16 column;
     s16 row;
     s16 result;
-    /* Ruling 11 (ordinary-c-judge-decidable): holds three values, each
-     * s.header + 0xC stored to s.table
-     * (for table[column + 8], table[12] and table[17..19]). FAKE: single-use
-     * holder of the cell table ahead of the descriptor's table store; stored
-     * directly: score 8. */
-    Unk8009B400Record *temp;
+    /* the sheet's cells, just past its 12-byte header, for s.table. Ruling 11:
+     * holds three values, each s.header + 0xC (for table[column + 8],
+     * table[12] and table[17..19]). */
+    Unk8009B400Record *cells;
 
     result = 0;
     table = ((Unk8006919CRec *)arg0[1])->unk_30;
@@ -2067,8 +2065,8 @@ s32 func_8006CFBC(s32 *arg0) {
         column = 0;
         do {
             s.header = table[column + 8];
-            temp = s.header->cells;
-            s.table = temp;
+            cells = s.header->cells;
+            s.table = cells;
             for (row = 0; row < 2; row++) {
                 if (D_800A3524->unk17[var_3] & ((1 << (row * 4)) << column)) {
                     s.x = row * 280 + counts.count[row] * 23;
@@ -2086,8 +2084,8 @@ s32 func_8006CFBC(s32 *arg0) {
                 s.x = row * 280;
                 result |= 1 << row;
                 s.header = table[12];
-                temp = s.header->cells;
-                s.table = temp;
+                cells = s.header->cells;
+                s.table = cells;
                 s.sprt_out = arg0[5];
                 arg0[5] = gpu_AddSpriteCells(&s);
             }
@@ -2107,8 +2105,8 @@ s32 func_8006CFBC(s32 *arg0) {
         }
         s.x = row * 280;
         s.y = 0;
-        temp = s.header->cells;
-        s.table = temp;
+        cells = s.header->cells;
+        s.table = cells;
         s.sprt_out = arg0[5];
         arg0[5] = gpu_AddSpriteCells(&s);
         row++;
@@ -2127,7 +2125,7 @@ s32 func_8006CFBC(s32 *arg0) {
         var_8[3] = 1;
         func_80069898(arg0, var_8, 0x11);
     }
-    return (s16)result;
+    return result;
 }
 
 void menu_ResetRowBitCursors(void) {
