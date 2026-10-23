@@ -2147,10 +2147,10 @@ void func_8003EDC0(u16 *p, s32 arg1) {
     }
     D_800A3230 = (D_800A3230 >= i) ? D_800A3230 : i;
     if (D_800A3230 >= 1000) {
-        /* FAKE: the argument is unproven -- the halt stub ignores its
-         * arguments (softbody_CreateForNode passes it a string). The target
-         * holds the count in $a0 at this jal; without the argument it is given
-         * $v1: score 5. */
+        /* The overflowing count is passed to the halt stub: the target loads
+         * it into $a0 for this jal (no argument puts it in $v1: score 5), as
+         * softbody_CreateForNode's call loads its message string into $a0.
+         * The stub's body ignores its arguments. */
         func_80052C10(D_800A3230);
     }
     D_800A3678[0] = 0;
