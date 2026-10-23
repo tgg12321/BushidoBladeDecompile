@@ -562,9 +562,10 @@ void func_800174F4(void) {
         if (0xF0 / (temp2 + 1) >= ++D_800A37C0) {
             break;
         }
-        /* FAKE: the common `D_800A38F8 = cur + 1` store written in both arms
-         * (F7), as the target computes it per arm; one hoisted store: score 6
-         * (131/136 insns). */
+        /* each arm advances D_800A38F8 itself: at the last step it only
+         * advances; before it, it also restarts the D_800A37C0 count and
+         * passes D_800A37A8[cur] to func_80060414, flagged 0x8000 when the
+         * next step is the last (one store before the test: score 6) */
         if (cur == temp2) {
             D_800A38F8 = cur + 1;
         } else {
