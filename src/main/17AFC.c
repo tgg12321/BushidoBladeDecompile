@@ -2407,8 +2407,9 @@ s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj) {
     s32 sp_tmp3;
     s32 len_sq;
     s32 xz_sq;
-    /* FAKE: temp holds two values: n.x*n.x + n.z*n.z, then the square-root
-     * table byte; one local per value: score 6 (Ruling 11) */
+    /* temp: n.x*n.x + n.z*n.z, then its square-root table byte, looked up in
+     * place as SOTN's shop takes `itemId = D_us_801814D4[itemId]` (Q51) */
+    /* SOTN: src/st/lib/e_shop.c:3168 @db41b28 */
     s32 temp;
     s32 nxz_len;
 
@@ -3407,8 +3408,9 @@ void math_MatrixToAngles(MATRIX *a0, s16 *a1) {
     s32 i0, i1, i2;
     s32 r0, r1, r2;
     s32 ang_z, ang_y;
-    /* FAKE: two values -- i0*i0 + i1*i1, then the square-root table byte;
-     * a separate table-byte local: score 6 (Ruling 11) */
+    /* temp: i0*i0 + i1*i1, then its square-root table byte, looked up in
+     * place as SOTN's shop takes `itemId = D_us_801814D4[itemId]` (Q51) */
+    /* SOTN: src/st/lib/e_shop.c:3168 @db41b28 */
     s32 temp;
     s32 sp_tmp;
 
@@ -3487,8 +3489,9 @@ void func_8002F770(s16 *angles, s32 z, s32 y, s32 x) {
     s32 i0, i1, i2;
     s32 r0, r1, r2;
     s32 ang_z, ang_y;
-    /* FAKE: two values -- i0*i0 + i1*i1, then the square-root table byte;
-     * a separate table-byte local: score 6 (Ruling 11) */
+    /* temp: i0*i0 + i1*i1, then its square-root table byte, looked up in
+     * place as SOTN's shop takes `itemId = D_us_801814D4[itemId]` (Q51) */
+    /* SOTN: src/st/lib/e_shop.c:3168 @db41b28 */
     s32 temp;
     s32 sp_tmp;
 
