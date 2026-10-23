@@ -157,7 +157,7 @@ s32 memcard_CountFreeBlocks(void) {
     /* `var_a0` sums the entries' byte sizes, then holds the block count
      * derived from that total (total / 8192), the way SOTN's cloaked knight
      * takes `distance = SquareRoot0(distance)` (Q51); returning
-     * 0xF - (var_v0 >> var_5) directly: score 15 */
+     * 0xF - (var_v0 >> var_5) directly: score 11 */
     /* SOTN: src/st/nz1/e_cloaked_knight.c:83 @db41b28 */
     s32 var_a0;
     /* the total biased for the signed shift (+0x1FFF when negative) */
