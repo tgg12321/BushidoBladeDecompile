@@ -51,8 +51,9 @@ Examples
 
 Reading a report: call sites are ra-8, i.e. the `jal`/`jalr` that entered the
 function; a function reached by a tail-call `j` is credited to its caller's
-caller. Watch hits name the load/store at the stop pc (or pc-4); a store in
-a branch delay slot may be missed and then shows as an `unmatched-stop` event.
+caller. Watch hits name the load/store at the stop pc (pc-4 too when the stub reports
+the address); a store in a branch delay slot may be missed and then shows as an
+`unmatched-stop` event.
 A trace covers one scenario, never everything a function can do.
 """
 
@@ -113,6 +114,8 @@ class Symbols:
             # INCLUDE_ASM bodies also emit a `<name>.NON_MATCHING` alias at
             # the same address; keep the plain name.
             name = name.removesuffix(".NON_MATCHING")
+            if name.startswith("."):  # .L jump labels, section markers
+                return
             if size:
                 self.size[name] = max(size, self.size.get(name, 0))
             if name in self.by_name:
@@ -134,7 +137,21 @@ class Symbols:
         pairs.sort()
         self.addrs = [a for a, _ in pairs]
         self.names = [n for _, n in pairs]
+        self.sized = sorted((a, a + self.size[n], n) for a, n in pairs
+                            if n in self.size)
+        self.sized_starts = [a for a, _, _ in self.sized]
+        self.max_size = max((e - a for a, e, _ in self.sized), default=0)
         self.path = os.path.abspath(path) if self.addrs else None
+
+    def covering(self, addr: int):
+        """Innermost sized symbol containing addr: (start, name) or None."""
+        i = bisect.bisect_right(self.sized_starts, addr) - 1
+        while i >= 0 and self.sized[i][0] > addr - self.max_size - 1:
+            start, end, name = self.sized[i]
+            if start <= addr < end:
+                return start, name
+            i -= 1
+        return None
 
     def addr(self, text: str) -> int:
         text = text.strip()
@@ -158,13 +175,12 @@ class Symbols:
         i = bisect.bisect_right(self.addrs, addr) - 1
         if i < 0:
             return f"0x{addr:08X}"
-        # Among names at the same address prefer one with a known size.
-        j = i
-        while j > 0 and self.addrs[j - 1] == self.addrs[i]:
-            j -= 1
-        cands = [k for k in range(j, i + 1) if self.names[k] in self.size]
-        if cands:
-            i = cands[0]
+        # A sized symbol that contains addr wins over unsized labels inside
+        # it (jump-table / data labels placed on instructions).
+        cov = self.covering(addr)
+        if cov:
+            off = addr - cov[0]
+            return cov[1] if off == 0 else f"{cov[1]}+0x{off:X}"
         off = addr - self.addrs[i]
         size = self.size.get(self.names[i])
         if size and off >= size:  # inside no known object: say so
@@ -364,12 +380,13 @@ def phys(addr: int) -> int:
 UNALIGNED_OPS = {0x22, 0x26, 0x2A, 0x2E}  # lwl lwr swl swr
 
 
-def decode_access(gdb: Gdb, regs: list[int], pc: int):
+def decode_access(gdb: Gdb, regs: list[int], pc: int, also_prev: bool):
     """Candidate load/stores a watchpoint stop was raised for. Some stubs
     (PCSX-Redux) send a bare T05 with no `watch:` address, so decode the
-    instruction at pc, then pc-4 (stubs differ on stopping before or after
-    it). Yields (insn_pc, addr, width, is_store, stored_value)."""
-    for at in (pc, pc - 4):
+    instruction at pc (PCSX-Redux stops on the access itself). pc-4 is also
+    tried only when the stub reported the address (`watch:`), which then
+    decides between them. Yields (insn_pc, addr, width, is_store, value)."""
+    for at in ((pc, pc - 4) if also_prev else (pc,)):
         try:
             insn = int.from_bytes(gdb.mem(at, 4), "little")
         except GdbError:
@@ -503,7 +520,7 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             return None, None
         m = re.search(r"(?:watch|rwatch|awatch):([0-9a-fA-F]+)", reply)
         reported = int(m.group(1), 16) if m else None
-        cands = list(decode_access(gdb, regs, pc))
+        cands = list(decode_access(gdb, regs, pc, reported is not None))
         # The access is the candidate whose own address overlaps a watch of
         # its kind (and the stub's reported address, when it sends one).
         for acc in cands:
