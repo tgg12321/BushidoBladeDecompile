@@ -556,7 +556,8 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
        unreferenced bytes. Ruling 9 (b'): one meaning (the cells after the
        sheet's header(s), s.header + 0xC or + 0x24) at four writes, for
        s.table. FAKE: the holder between the header's cells and s.table;
-       stored directly: score 25 (Q129). */
+       stored directly at the page and loop-1 sites: score 25; at every site
+       (loops 2 / 3 storing s.table before the header step): 39 (Q129). */
     Unk8009B400Record *cells;
 
     var_2 = 0;
