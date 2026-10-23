@@ -65,6 +65,7 @@ import json
 import os
 import re
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 
 from . import layer2
@@ -239,12 +240,39 @@ def _tree_sources(batch: _Batch, rev: str) -> list[tuple[str, str]]:
 
 
 # Owner ruling Q126 keys a body with the same-TU `static inline` helpers it
-# reaches (layer2.body_key). A record dated before the engine change was
-# written against the definition-only key, so for it that key stands in:
-# layer2.record refuses a PASS on any key but the current (helper-inclusive)
-# one, so a record on a definition-only key dated after this instant can only
-# be a FAIL/NEEDS_USER, which never clears a departure anyway.
+# reaches (layer2.body_key). The legacy definition-only key stands in only
+# when BOTH the departure commit's committer timestamp and the record's valid,
+# timezone-aware ISO-8601 timestamp precede this cutoff (compared in UTC).
+# Working-tree / unknown departures and missing or invalid record dates never
+# qualify; an old caller-only review cannot clear a new helper-inclusive body.
 Q126_CUTOFF = "2026-10-24T00:00:00Z"
+_Q126_INSTANT = datetime.fromisoformat(Q126_CUTOFF.replace("Z", "+00:00"))
+
+
+def _record_pre_q126(date) -> bool:
+    """Only a valid ISO-8601 timestamp with a known UTC offset qualifies."""
+    if not isinstance(date, str):
+        return False
+    try:
+        stamp = datetime.fromisoformat(date.replace("Z", "+00:00"))
+        return stamp.tzinfo is not None and stamp.astimezone(timezone.utc) < _Q126_INSTANT
+    except (ValueError, OverflowError):
+        return False
+
+
+def _pre_q126(batch: _Batch, c: str | None) -> bool:
+    """A real departure commit predates Q126, by its committer instant."""
+    if c is None or c == "WORKTREE":
+        return False
+    commit = batch.must(c, "departure commit")
+    header = commit.split(b"\n\n", 1)[0]
+    m = re.search(rb"^committer .* (-?\d+) [+-]\d{4}$", header, re.M)
+    if m:
+        try:
+            return datetime.fromtimestamp(int(m[1]), timezone.utc) < _Q126_INSTANT
+        except (ValueError, OverflowError, OSError):
+            pass
+    raise _AuditError(f"departure commit {c} has an invalid committer timestamp")
 
 
 def _keys(text: str, name: str, read=layer2._disk) -> tuple[str, str] | None:
@@ -256,13 +284,15 @@ def _keys(text: str, name: str, read=layer2._disk) -> tuple[str, str] | None:
     return k[1], own[1] if own else k[1]
 
 
-def _on_body(rec: dict, keys: tuple[str, str] | None) -> bool:
+def _on_body(rec: dict, keys: tuple[str, str] | None, pre_q126: bool) -> bool:
     """`rec` is a record on the body `keys` (_keys): its helper-inclusive key,
-    or — for a record dated before Q126_CUTOFF — its definition-only key."""
+    or its definition-only key only for a pre-cutoff departure commit AND a
+    valid, timezone-aware record timestamp before Q126_CUTOFF (in UTC)."""
     if not keys:
         return False
     h = rec.get("body_hash")
-    return h == keys[0] or (h == keys[1] and str(rec.get("date", "")) < Q126_CUTOFF)
+    return h == keys[0] or (pre_q126 and h == keys[1] and
+                           _record_pre_q126(rec.get("date")))
 
 
 def _body_at(batch: _Batch, rev: str, name: str,
@@ -465,6 +495,7 @@ def unreviewed_departures() -> list[str]:
         index = None
         for a in departed:
             c, item = left.get(a, (None, listed[a][1]))
+            pre_q126 = _pre_q126(batch, c)
             name, file = item.get("func"), item.get("file")
 
             def body_of(n):
@@ -488,7 +519,7 @@ def unreviewed_departures() -> list[str]:
                 """The latest record on body `b`: only records on the body that
                 left count — a later reviewed body (a cheat-cleanup) neither
                 clears nor revokes this departure."""
-                on_body = [r for r in recs if _on_body(r, b)]
+                on_body = [r for r in recs if _on_body(r, b, pre_q126)]
                 return on_body[-1] if on_body else None
             last = verdict_on(body)
             if last and last.get("verdict") == "PASS":

@@ -3896,16 +3896,55 @@ def test_q126_inline_helpers() -> None:
     eq("q126 departures: both keys of a helper caller",
        both, (k(text, "func_A"), own(text, "func_A")))
     before, after = "2026-10-01T00:00:00Z", DEP.Q126_CUTOFF
-    check("q126 departures: a record on the helper-inclusive key matches",
-          DEP._on_body({"body_hash": both[0], "date": after}, both))
+    for pre in (False, True):
+        for fields in ({}, {"date": ""}, {"date": "garbage"}, {"date": after}):
+            check("q126 departures: a helper-inclusive key always matches",
+                  DEP._on_body({"body_hash": both[0], **fields}, both, pre))
     check("q126 departures: a pre-Q126 record on the definition-only key matches",
-          DEP._on_body({"body_hash": both[1], "date": before}, both))
-    check("q126 departures: ... not one dated from the cutoff on",
-          not DEP._on_body({"body_hash": both[1], "date": after}, both))
+          DEP._on_body({"body_hash": both[1], "date": before}, both, True))
+    for fields in ({}, {"date": ""}, {"date": "garbage"}, {"date": None},
+                   {"date": "2026-10-01"}, {"date": "2026-10-01T00:00:00"},
+                   {"date": after}, {"date": "2026-10-25T00:00:00Z"},
+                   {"date": "2026-10-23T23:30:00-01:00"}):
+        check(f"q126 departures: invalid or non-pre-cutoff date {fields} cannot fall back",
+              not DEP._on_body({"body_hash": both[1], **fields}, both, True))
+    for date in (before, "2026-10-24T00:30:00+01:00"):
+        check("q126 departures: record offsets compare as UTC instants",
+              DEP._on_body({"body_hash": both[1], "date": date}, both, True))
+        check("q126 departures: a new departure never uses an old definition-only PASS",
+              not DEP._on_body({"body_hash": both[1], "date": date}, both, False))
     check("q126 departures: an unrelated key never matches",
-          not DEP._on_body({"body_hash": "0" * 16, "date": before}, both))
+          not DEP._on_body({"body_hash": "0" * 16, "date": before}, both, True))
     check("q126 departures: no body, no match",
-          not DEP._on_body({"body_hash": both[0], "date": before}, None))
+          not DEP._on_body({"body_hash": both[0], "date": before}, None, True))
+
+    class CommitBatch:
+        def __init__(self, data):
+            self.data = data
+
+        def must(self, obj, what):
+            eq("q126 departures: reads the departure commit", obj, "commit-id")
+            return self.data
+
+    from datetime import datetime
+    cutoff_epoch = int(datetime.fromisoformat(after.replace("Z", "+00:00")).timestamp())
+    for delta in (-1, 0, 1):
+        for offset in ("+1400", "-1200"):
+            data = (f"author A <a@b> 0 +0000\n"
+                    f"committer C <c@d> {cutoff_epoch + delta} {offset}\n\nmessage\n").encode()
+            eq("q126 departures: uses committer epoch, independent of displayed offset",
+               DEP._pre_q126(CommitBatch(data), "commit-id"), delta < 0)
+    for c in (None, "WORKTREE"):
+        eq("q126 departures: unknown / working-tree departure never reads a commit",
+           DEP._pre_q126(None, c), False)
+    for data in (b"author A <a@b> 0 +0000\n\ncommitter fake 0 +0000\n",
+                 b"committer C <c@d> garbage +0000\n\nmessage\n"):
+        try:
+            DEP._pre_q126(CommitBatch(data), "commit-id")
+        except DEP._AuditError:
+            check("q126 departures: malformed committer date fails closed", True)
+        else:
+            check("q126 departures: malformed committer date fails closed", False)
 
     # integrity: an out-of-line helper is refused; an unrecognized helper too
     import importlib
