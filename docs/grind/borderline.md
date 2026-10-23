@@ -624,10 +624,11 @@ module, INCLUDE_ASM in libgte/msc00.c), but msc00.o(.data) links before mtx_*.o 
 D_8009C798 sits after sincos's .data, so no C definition in msc00.c lands there without breaking the one object
 order across sections (tus-check). D_800A3308 (93B08.data.s, 8 zero bytes before the first .sbss block) is
 __SN_ENTRY_POINT's clear start (libsn asm). 93E18.data.s's head D_800A3618..D_800A3668 holds the $ra / state slots of
-the asmpsx modules (_patch_pad, EnablePAD/DisablePAD, _send_pad, _remove_ChgclrPAD, _ExitCard, _patch_gte).
+the asmpsx modules (_patch_pad, EnablePAD/DisablePAD, _send_pad/_SendPAD, _remove_ChgclrPAD, _ExitCard, _patch_gte,
+__SN_ENTRY_POINT).
 (2) COMMON. 93E18.data.s from D_800A3670 to 0x800A3800 is the COMMON block; its owners interleave (D_800A36AC: 9 TUs,
 g_gpu_ot_ptr: 11), and C tentative definitions would leave the order to the linker's COMMON allocation.
-(3) interleaved owners. 938FE.data.s (0x800A30FE..0x800A3140, between 9F9C.o and 17AFC.o .sdata): D_800A3100 u8[3][4]
+(3) interleaved owners. 938FE.data.s (0x800A30FE..0x800A3140, between 9F9C.o and 17AFC.o .sdata): 2 zero bytes, D_800A3100 u8[3][4]
 (12 bytes, 9F9C.c; a -G8 C definition of 12 bytes goes to .data, not .sdata), D_800A310C (9F9C.c), ON/GS/GN.BBM
 (only via d_7D920.c's D_8008DCCC), D_800A312C (2B344.c), D_800A3134 (17AFC.c), D_800A3138 (9F9C.c): readers out of
 link order.
@@ -636,6 +637,8 @@ through d_7D920.c's D_8008EC08, which has no reader), 939DC.data.s ("%s" and a p
 267A8.o .sdata; no reference), and the zero words in the .sbss run 93B12 (0x800A3312, 6 bytes), 93B7C (4), 93B8C (12),
 93C1C (4), 93DCC (4), each between two TUs' .sbss and referenced by nothing. Both neighbours are -G8 game files, so
 either could have defined them, and a data-only file would claim a module boundary nothing shows.
+For (3) and (4) the Q122/Q123 route that placed 7D920 and 89C78 is closed by rule: data-only-no-sdata.md admits only
+.data below 0x800A30DC, and every piece here lies at or above 0x800A30FE.
 disposition taken: left as asm (data lane, 2026-10-23). The nine 2-byte alignment pads are `. = ALIGN(4);` in bb2.ld.
 Question for the owner: (a) may data-split close with (1)-(4) as its documented asm residue (recommended: (1) is
 hand-written module data like the canonical asm bodies, (2) waits on a COMMON placement ruling, (3)/(4) have no
