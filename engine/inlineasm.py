@@ -744,17 +744,41 @@ def macro_named_helpers(text: str) -> set[str]:
 # `T name;` / `T *name = ...` / `T name[...]`: a local declaration of {0}
 _LOCAL_DECL = (r"(?:^|[;{{}}(,])\s*(?!(?:return|case|goto|else|do|sizeof)\b)"
                r"(?:[A-Za-z_]\w*[\s\*]+)+\**\s*{0}\s*[;=\[,)]")
+_OBJECT_SPECIFIERS = frozenset(
+    "void char short int long float double signed unsigned const volatile "
+    "register auto static struct union enum".split())
 
 
 def _refs(idx: _TUIndex, span: tuple[int, int], names) -> set[str]:
     """Names (of `names`) a body refers to: identifiers not after `.` / `->`,
-    each expanded through the TU's #define bodies, transitively. A name the
-    body re-declares as a local, and neither calls nor reaches through a
-    macro, is the local, not the helper."""
+    each expanded through the TU's #define bodies, transitively. Discard a
+    non-macro-reached helper only if declared as a parameter in the head's
+    top-level parameter list or a local at brace depth 1 whose declarator is
+    the first non-member occurrence of the name after the head and is at
+    parenthesis depth 0 since the last `;`, `{` or `}`, and neither
+    `name(...)` nor `(name)(...)` (with optional whitespace) occurs anywhere.
+    Nested-block declarations never discard helpers: fail closed for other
+    call forms and address-taking outside the nested block. The declaration
+    test is heuristic and errs toward keeping the helper; a name immediately
+    preceded by `struct`, `union` or `enum` is a tag, never a shadowing name.
+    Brace depth starts at the head's opening `{`, ignoring any preceding
+    stray `}`. A preprocessor directive line or any same-TU macro identifier
+    in the span disables all shadow-based discards, retaining every found
+    helper. Macros defined in headers are not seen. A depth-1 local must have
+    no `extern` / `typedef` specifier and only C keywords in _OBJECT_SPECIFIERS
+    (after removing struct/union/enum tag pairs) before its name; pointer/array/
+    initializer syntax alone is insufficient. This object test does not
+    apply to head parameters. All typedef prefixes, including project integer
+    typedefs, keep the helper because they may denote function types. Locate
+    the first top-level parameter list after blanking attributes, then its
+    following body brace. Missing lists/braces, any `{` before the matching
+    `)`, or non-blank text between `)` and the body brace disable all shadow
+    discards (including K&R declarations and trailing attributes)."""
     masked, pos = idx.masked, idx.pos
     lo = bisect.bisect_left(pos, span[0])
     hi = bisect.bisect_left(pos, span[1])
     body = masked[lo:hi]
+    occurrences = []
     direct, todo = set(), []
     for m in _IDENT_TOKEN_RE.finditer(body):
         k = m.start() - 1
@@ -763,6 +787,7 @@ def _refs(idx: _TUIndex, span: tuple[int, int], names) -> set[str]:
         if k >= 0 and (body[k] == "." or (body[k] == ">" and k > 0 and body[k - 1] == "-")):
             continue
         direct.add(m.group(0))
+        occurrences.append((m.group(0), m.start()))
     found, seen, via_macro = set(), set(), set()
     todo = [(i, False) for i in direct]
     while todo:
@@ -775,9 +800,70 @@ def _refs(idx: _TUIndex, span: tuple[int, int], names) -> set[str]:
             if expanded:
                 via_macro.add(ident)
         todo += [(i, True) for i in idx.macros.get(ident, ())]
+    if (re.search(r"(?m)^[^\S\n]*#", body)
+            or set(_IDENT_TOKEN_RE.findall(body)) & idx.macros.keys()):
+        return found
+    # Attributes are not the head's parameter list. Preserve offsets.
+    head = body
+    for attr in reversed(list(_ATTRIBUTE_RE.finditer(head))):
+        close = _match_paren(head, attr.end() - 1)
+        if close < 0:
+            return found
+        head = head[:attr.start()] + " " * (close - attr.start()) + head[close:]
+    param_open = head.find("(")
+    param_close = _match_paren(head, param_open) if param_open >= 0 else -1
+    if param_close < 0 or "{" in body[:param_close]:
+        return found
+    body_open = body.find("{", param_close)
+    if body_open < 0 or body[param_close:body_open].strip():
+        return found
+    head = head[:body_open]
+    first_use = {}
+    for ident, offset in occurrences:
+        if offset > body_open:
+            first_use.setdefault(ident, offset)
+    # Spans include the function head; depth 1 is its outermost block.
+    depths, parens, depth, statement_parens = [], [], 0, 0
+    for i, char in enumerate(body):
+        depths.append(depth)
+        parens.append(statement_parens)
+        if body_open < 0 or i < body_open:
+            continue
+        if char in ";{}":
+            statement_parens = 0
+        elif char == "(":
+            statement_parens += 1
+        elif char == ")":
+            statement_parens -= 1
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth = max(0, depth - 1)
+
+    def object_decl(m) -> bool:
+        prefix = body[m.start():m.start("shadow")]
+        words = set(_IDENT_TOKEN_RE.findall(prefix))
+        if words & {"extern", "typedef"}:
+            return False
+        specifiers = re.sub(r"\b(?:struct|union|enum)\s+[A-Za-z_]\w*", "", prefix)
+        return set(_IDENT_TOKEN_RE.findall(specifiers)) <= _OBJECT_SPECIFIERS
+
     for name in found - via_macro:
-        if (re.search(_LOCAL_DECL.format(re.escape(name)), body)
-                and not re.search(r"\b" + re.escape(name) + r"\s*\(", body)):
+        decls = re.finditer(_LOCAL_DECL.format("(?P<shadow>" + re.escape(name) + ")"), body)
+        whole_body_local = any(
+            (depths[m.start("shadow")] == 1
+             and parens[m.start("shadow")] == 0
+             and m.start("shadow") == first_use.get(name)
+             and object_decl(m))
+            or (param_open < m.start("shadow") < param_close
+                and head[param_open:m.start("shadow")].count("(")
+                - head[param_open:m.start("shadow")].count(")") == 1)
+            for m in decls
+            if not re.search(r"\b(?:struct|union|enum)\s*$",
+                             body[:m.start("shadow")]))
+        if (whole_body_local
+                and not re.search(r"(?:\b" + re.escape(name) + r"\s*\(|\(\s*"
+                                  + re.escape(name) + r"\s*\)\s*\()", body)):
             found.discard(name)
     return found
 

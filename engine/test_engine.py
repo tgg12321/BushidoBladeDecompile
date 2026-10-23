@@ -3548,11 +3548,105 @@ def test_q126_inline_helpers() -> None:
     # false positives: member access and a shadowing local
     member = text.replace("return v + 2;", "return p->sq + q.sq + v;")
     eq("q126: `->sq` / `.sq` member names are not the helper", H(member, "func_E"), [])
-    local = text.replace("return v + 2;", "s32 sq = v;\n    return sq + 2;")
+    local = text.replace("return v + 2;", "int sq = v;\n    return sq + 2;")
     eq("q126: a local re-declaring the name (never called) is not the helper",
        H(local, "func_E"), [])
     called = text.replace("return v + 2;", "s32 sq = v;\n    return sq(v);")
     eq("q126: ... but a call of the name still is", H(called, "func_E"), ["sq"])
+    helper = "static inline int h(int a) { return a + 1; }\n"
+    for call in ("(h)(a)", "(h) (a)", "( h )(a)", "((h))(a)", "(*h)(a)",
+                 "(**h)(a)", "(&h)(a)", "(0, h)(a)", "(c ? h : h)(a)"):
+        paren_call = (helper + "int f(int a) {\n"
+                      "    { int h = 2; a += h; }\n"
+                      f"    return {call};\n}}\n")
+        eq(f"q126: {call} reaches the helper despite an inner-block local",
+           H(paren_call, "f"), ["h"])
+    indirect = (helper + "int f(int a) {\n"
+                "    int (*fp)(int);\n"
+                "    { int h = 2; a += h; }\n"
+                "    fp = h; return fp(a);\n}\n")
+    eq("q126: an address taken outside an inner-block local reaches the helper",
+       H(indirect, "f"), ["h"])
+    parameter = helper + "int f(int h) { return h; }\n"
+    eq("q126: a parameter shadows the helper for the whole body",
+       H(parameter, "f"), [])
+    local_only = helper + "int f(void) { int h = 2; return h; }\n"
+    eq("q126: only using a same-name local does not reach the helper",
+       H(local_only, "f"), [])
+    for call in ("(*h)(a)", "((h))(a)"):
+        brace_head = (helper + "}int f(int a) {\n"
+                      "    { int h = 2; a += h; }\n"
+                      f"    return {call};\n}}\n")
+        eq(f"q126: brace-prefixed head preserves nested shadowing for {call}",
+           H(brace_head, "f"), ["h"])
+    brace_local = helper + "}int f(void) { int h = 2; return h; }\n"
+    eq("q126: brace-prefixed head still recognizes an outermost local",
+       H(brace_local, "f"), [])
+    for initializer, result in (
+            ("int (*fp)(int) = h;", "fp(a)"),
+            ("int r = (*h)(a);", "r"),
+            ("int (*t[1])(int) = {h};", "t[0](a)")):
+        early_use = (helper + f"int f(int a) {{ {initializer} int h = 2; "
+                     f"return {result} + h; }}\n")
+        eq(f"q126: {initializer} reaches the helper before a later local",
+           H(early_use, "f"), ["h"])
+    for member_expr in ("s.h", "p->h"):
+        member_only = helper + f"int f(void) {{ return {member_expr}; }}\n"
+        eq(f"q126: {member_expr} is not a helper reference",
+           H(member_only, "f"), [])
+    for tag_decl in ("struct h;", "union h *p;"):
+        tag_use = helper + f"int f(int a) {{ {tag_decl} return (*h)(a); }}\n"
+        eq(f"q126: {tag_decl} declares a tag, not a shadowing local",
+           H(tag_use, "f"), ["h"])
+    for body in (
+            "extern int other(int h); return (*h)(a) + other(a);",
+            "int (*g)(int h); g = h; return g(a);",
+            "int (*g)(int); g = (int (*)(int h)) h; return g(a);",
+            "\n#if 0\n    int x; int h;\n#endif\n    return (*h)(a);\n"):
+        hidden_use = helper + f"int f(int a) {{ {body} }}\n"
+        eq(f"q126: prototype/cast names or directives retain the helper: {body}",
+           H(hidden_use, "f"), ["h"])
+    function_type = "typedef int FN(int);\n"
+    for body in ("extern FN h; return (*h)(a);",
+                 "int (*fp)(int); FN h; fp = h; return fp(a);"):
+        redeclared = function_type + helper + f"int f(int a) {{ {body} }}\n"
+        eq(f"q126: a block-scope function declaration retains the helper: {body}",
+           H(redeclared, "f"), ["h"])
+    for body in ("int h = 2; return h;", "int *h = 0; return h != 0;",
+                 "struct S h; return 0;"):
+        object_local = (function_type + "struct S { int x; };\n" + helper
+                        + f"int f(void) {{ {body} }}\n")
+        eq(f"q126: a certain object declaration shadows the helper: {body}",
+           H(object_local, "f"), [])
+    typedef_pointer = function_type + helper + (
+        "int f(void) { FN *h = 0; return h != 0; }\n")
+    eq("q126: an unknown typedef prefix keeps the helper even with a pointer",
+       H(typedef_pointer, "f"), ["h"])
+    for typedef, body in (
+            ("", "typedef int s32(int); s32 h; return (*h)(a);"),
+            ("", "typedef int u8(int); u8 h; int (*fp)(int) = h; return fp(a);"),
+            ("typedef int u8(int);\n", "u8 h; return (*h)(a);")):
+        typedef_use = typedef + helper + f"int f(int a) {{ {body} }}\n"
+        eq(f"q126: a project typedef name may denote a function: {typedef}{body}",
+           H(typedef_use, "f"), ["h"])
+    for macros, body in (
+            ("#define V (void)\n", "V *h; return (*h)(a);"),
+            ("#define WHEN if (a)\n", "WHEN *h; return (*h)(a);"),
+            ("#define Z 0,\n", "Z *h; return (*h)(a);"),
+            ("#define SET fp =\n", "int (*fp)(int); SET *h; return fp(a);"),
+            ("#define OPEN {\n#define CLOSE }\n",
+             "OPEN int h = 2; a += h; CLOSE return (*h)(a);")):
+        macro_use = macros + helper + f"int f(int a) {{ {body} }}\n"
+        eq(f"q126: a same-TU macro disables shadow discards: {body}",
+           H(macro_use, "f"), ["h"])
+    for definition in (
+            "int f(struct S { int h; } *p) { return (*h)(p->h); }",
+            "int f(union U { int h; } *p) { int (*fp)(int) = h; return fp(1); }",
+            "int f(int a, struct S { int x; int h; } *p) { return (&h)(a); }",
+            "int f(a) int a; { int h = 2; return (*h)(a); }"):
+        uncertain_head = helper + definition + "\n"
+        eq(f"q126: an uncertain function head retains the helper: {definition}",
+           H(uncertain_head, "f"), ["h"])
     addr = text.replace("return v + 2;", "return sq;")
     eq("q126: `return sq;` (the helper's address) is not a local declaration",
        H(addr, "func_E"), ["sq"])
