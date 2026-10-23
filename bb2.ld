@@ -31,8 +31,8 @@ SECTIONS
     header_ROM_END = __romPos;
     header_VRAM_END = .;
 
-    /* .main is SUBALIGN(2): the objects declare 16-byte section alignment,
-     * which the original layout does not follow. `. = ALIGN(4);` stands
+    /* .main is SUBALIGN(2): the objects declare 4- or 16-byte section
+     * alignment, which the original layout does not follow. `. = ALIGN(4);` stands
      * where a word-aligned module section follows one ending at 2 mod 4. */
     main_ROM_START = __romPos;
     main_VRAM = ADDR(.main);
