@@ -1161,10 +1161,6 @@ void func_80044650(void) { func_80052C10(); }
 
 s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
     s32 v0;
-    /* FAKE: keeps reorg from inverting the stage-id switch's two default-path
-       j/nop pairs; removed: score 4 */
-    do {
-    } while (0);
     D_800A9CF8.unk0 = a1;
     D_800A9CF8.unk2 = *a0++;
     D_800A9CF8.unk8 = (s32)a0;
@@ -1182,7 +1178,8 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
         D_800A9CF8.unk6 = 0xA;
         break;
     }
-    return a2 + D_800A9CF8.unk6 * 104;
+    a2 += D_800A9CF8.unk6 * 104;
+    return a2;
 }
 
 void func_8004473C(void) {

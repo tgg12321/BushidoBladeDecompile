@@ -1,0 +1,1 @@
+{"decision": "PASS", "verdict": "PASS", "function": "func_80044670", "body_hash": "ec037bb9298545db", "summary": "The wrap's FAKE label was wrong and is gone; the in-place a2 += is an honest Ruling 4 split with both writes read; sandbox 0; comments and message true."}
