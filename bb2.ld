@@ -339,7 +339,6 @@ SECTIONS
         build/src/main/267A8.o(.data);
         build/src/main/26940.o(.data);
         build/src/main/d_7D920.o(.data);
-        build/asm/data/7D920.data.o(.data);
         build/src/main/cdrom.o(.data);
         build/src/main/memcard.o(.data);
         build/src/main/28514.o(.data);

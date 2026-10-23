@@ -1,27 +1,27 @@
-/* Data-only file: .data 0x8008D118..0x8008EC30 (ROM 0x7D918), the game's
+/* Data-only file: .data 0x8008D118..0x8008EC34 (ROM 0x7D918), the game's
  * first .data run: g_sqrt_table_u8 and the fighter, motion, object and
  * stage-sound tables.
  * Owner rulings Q122 / Q123 (data-only-no-sdata):
  * 1. One run: it opens .data (libsn's __data is D_8008D070; d_7D870.c's .text
  *    block ends at 0x8008D118 and every .data input section linked before
- *    this one is empty) and ends at D_8008EC30. No uninitialized objects.
+ *    this one is empty) and ends where cdrom.c's .data starts, 0x8008EC34.
+ *    No uninitialized objects.
  * 2. Small objects in .data: D_8008D864 (u8[8]: one point count per
  *    D_8008D86C set), D_8008EB04 .. D_8008EB0C (s16) and D_8008EB10 ..
  *    D_8008EB18 (s32), each with its own reader in func_8003CF84,
  *    D_8008EB38 (u8[8], fighter_Init), D_8008EB6C (u8[6], func_80026DA4,
- *    after D_8008EB54's 6 rows) and D_8008EBF4 (u8[6], snd_UpdateStageSounds,
- *    before D_8008EBFC's 6 pairs). Under -G8 the original compiler puts them
- *    in .sdata, so no -G8 file defined them.
+ *    after D_8008EB54's 6 rows), D_8008EBF4 (u8[6], snd_UpdateStageSounds,
+ *    before D_8008EBFC's 6 pairs) and D_8008EC30 (u8[4], 25788.c's
+ *    D_800A36CC per setting; the run's end). Under -G8 the original compiler
+ * puts them in .sdata, so no -G8 file defined them.
  * 3. Neighbours: before it, d_7D870.c's .text (game data words, no small
  *    data, none pointing into the run) and in .data link order 26940.o's
- *    empty .data (26940.c is -G8, gp accesses). After it, D_8008EC30
- *    (asm/data/7D920.data.s, read only by 25788.c), an open case pending the
- *    owner; then cdrom.o, a game module with no small data that references
- *    no object in the run (Q123: not an owner candidate).
- * Readers: 9F9C.c, 175A4.c, 17AFC.c, 24BF0.c, 25788.c, 28708.c, 2B344.c,
- * 4510C.c (interleaved against .data link order, so no reader owns it).
- * Not including bb2.h: it declares D_8008D518, D_8008D55C, D_8008E748 and
- * D_8008E75C as scalars (their readers index &D_8008xxxx), which these
+ *    empty .data (26940.c is -G8, gp accesses). After it, cdrom.o, a
+ *    game module with no small data that references no object in the run (Q123:
+ * not an owner candidate). Readers: 9F9C.c, 175A4.c, 17AFC.c, 24BF0.c, 25788.c,
+ * 28708.c, 2B344.c, 4510C.c (interleaved against .data link order, so no reader
+ * owns it). Not including bb2.h: it declares D_8008D518, D_8008D55C, D_8008E748
+ * and D_8008E75C as scalars (their readers index &D_8008xxxx), which these
  * array definitions would contradict. */
 #include "common.h"
 #include "game.h"
@@ -664,3 +664,6 @@ const char *D_8008EC08[7] = {
 
 /* func_80033DF4's rank rows. */
 u8 D_8008EC24[2][5] = {{58, 59, 60, 61, 30}, {58, 59, 60, 61, 63}};
+
+/* 25788.c's D_800A36CC per setting (D_8008EC30[p->unk14_12]). */
+u8 D_8008EC30[4] = {30, 60, 120, 0};

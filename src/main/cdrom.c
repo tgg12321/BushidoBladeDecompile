@@ -248,7 +248,7 @@ void sys_ExecMovieOverlay(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     sys_Exec(6, sp, v0 + 0x7FC);
 }
 
-/* .data 0x8008EC34..0x8008F19C (25788.c's D_8008EC30 precedes, 28708.c's
+/* .data 0x8008EC34..0x8008F19C (d_7D920.c's D_8008EC30 precedes, 28708.c's
  * D_8008F19C follows), in address order: the disc file table g_cd_file_table
  * ({CdlLOC, size} per file), cdrom_GetFileIndex's per-group first-file index
  * D_8008F12C, and cdrom_StartAudioEntry's rows D_8008F13C. Only this file reads
