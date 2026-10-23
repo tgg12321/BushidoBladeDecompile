@@ -496,7 +496,7 @@ address,current_name,glabel,name_layer,aliases,insns,src_location,origin,tier,ev
 0x80044504,func_80044504,func_80044504,glabel,,83,src/main/32D04.c:1130,splat-auto,AUTO,splat-generated placeholder; makes no semantic claim,KEEP,,
 0x80044650,func_80044650,func_80044650,glabel,,8,src/main/32D04.c:1160,splat-auto,AUTO,splat-generated placeholder; makes no semantic claim,KEEP,,
 0x80044670,func_80044670,func_80044670,glabel,,51,src/main/32D04.c:1162,splat-auto,AUTO,splat-generated placeholder; makes no semantic claim,KEEP,,
-0x8004473C,func_8004473C,func_8004473C,glabel,,49,src/main/32D04.c:1188,splat-auto,AUTO,splat-generated placeholder; makes no semantic claim,KEEP,,
+0x8004473C,func_8004473C,func_8004473C,glabel,,49,src/main/32D04.c:1185,splat-auto,AUTO,splat-generated placeholder; makes no semantic claim,KEEP,,
 0x80044800,func_80044800,func_80044800,glabel,,204,src/main/35000.c:11,splat-auto,AUTO,splat-generated placeholder; makes no semantic claim,KEEP,,
 0x80044B30,func_80044B30,func_80044B30,glabel,,80,src/main/35000.c:104,splat-auto,AUTO,splat-generated placeholder; makes no semantic claim,KEEP,,
 0x80044C70,func_80044C70,func_80044C70,glabel,,23,src/main/35000.c:149,splat-auto,AUTO,splat-generated placeholder; makes no semantic claim,KEEP,,

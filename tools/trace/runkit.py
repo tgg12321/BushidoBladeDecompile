@@ -621,6 +621,14 @@ def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
             missing.append("duplicate stops told apart by the CPU cycle count")
         if not result.get("canary_hit"):
             missing.append("the canary breakpoint (EXE entry) fired")
+        for st in result.get("stubs") or []:
+            ap = st.get("applied") or {}
+            if not ap.get("ok") or ap.get("mid_stub") \
+                    or st.get("at_end") != "intact":
+                missing.append(f"stub {st['at']} applied whole and still in "
+                               "place at the end")
+        if result.get("stub_leaks"):
+            missing.append("no code ran past a stub (leak breakpoints)")
         problems = check_log(args.spec_obj["script"], args.out)
         m["script"] = {**m["script"], "problems": problems}
         if problems:

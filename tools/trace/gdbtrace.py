@@ -19,6 +19,8 @@ Backends: any PS1 emulator with a GDB stub.
 Subcommands
   run     connect (or launch an emulator), arm the spec, record events as JSONL
   report  summarize a trace into an evidence note (markdown) naming lanes cite
+  compare stub-and-observe: diff a stubbed run's screenshots against a
+          baseline run of the same script (same tools, build, BIOS, disc)
 
 Spec (JSON):
   {
@@ -42,6 +44,10 @@ Spec (JSON):
                                      # then off until the next phase.
                                      # ("per_phase" also works on one
                                      # breakpoint instead of max_hits.)
+    "stubs": [{"at": "func_80051234",  # stub-and-observe (needs a script):
+               "phase": "fight",      # patched to `jr ra` when this phase
+               "ret": 0}],            # starts (no phase: at the EXE entry);
+                                     # ret sets v0 (none: v0 unchanged)
     "script": {...}                  # PCSX-Redux scripted run: frame-timed
   }                                  # inputs, phases, screenshots (runkit.py)
 `at`/`base` take a symbol from the link map, a 0x address, `sym+0xNN`, or (for
@@ -422,6 +428,9 @@ class Gdb:
     def clear_bp(self, kind: int, addr: int, length: int = 4) -> bool:
         return self.cmd(f"z{kind},{addr:x},{length:x}") == "OK"
 
+    def write(self, addr: int, data: bytes) -> bool:
+        return self.cmd(f"M{addr:x},{len(data):x}:{data.hex()}") == "OK"
+
     def cont(self):
         self._send("c")
 
@@ -508,6 +517,63 @@ def diff_ranges(gdb: Gdb, addr: int, want: bytes | None, cap: int = 64):
         out.append(f"0x{addr + i:08X}+{j - i}")
         i = j
     return out
+
+
+JR_RA = 0x03E00008
+
+
+def stub_words(st: dict) -> bytes:
+    """`jr ra` + delay slot: `addiu v0, zero, ret` or (no ret) a nop."""
+    ret = st.get("ret")
+    if ret is None:
+        slot = 0
+    elif isinstance(ret, int) and -0x8000 <= ret <= 0x7FFF:
+        slot = 0x24020000 | (ret & 0xFFFF)
+    else:
+        raise SystemExit(f"gdbtrace: stub {st.get('at')}: ret must be an "
+                         "integer in -32768..32767 (or absent)")
+    return JR_RA.to_bytes(4, "little") + slot.to_bytes(4, "little")
+
+
+def apply_stubs(gdb: Gdb, stubs: list[dict], when: str, regs: list[int],
+                frame, emit, armed: dict, suspended: dict) -> None:
+    """Patch every stub due at `when` ("entry" or a phase name) to return.
+    A stop between the two patched words would run half a stub: flagged.
+    Two breakpoints prove the stub works: one on the entry, credited once
+    per phase (the stub was called), one on the word after the stub, which
+    a working stub never reaches (a leak)."""
+    pc = regs[37] if len(regs) > 37 else None
+    for st in stubs:
+        if st["when"] != when or "applied" in st:
+            continue
+        a = st["addr"]
+        st["orig"] = gdb.mem(a, 8).hex()
+        ok = gdb.write(a, st["words"]) and gdb.mem(a, 8) == st["words"]
+        st["applied"] = {"frame": frame, "pc": pc, "ok": ok,
+                         "mid_stub": pc is not None and a < pc < a + 8}
+        emit({"ev": "stub", "at": st["spec"]["at"], "addr": a, "when": when,
+              "frame": frame, "pc": pc, "orig": st["orig"],
+              "words": st["words"].hex(), "ok": ok})
+        if not ok:
+            raise SystemExit(f"gdbtrace: stub write at 0x{a:08X} refused")
+        name = st["spec"]["at"]
+        if (0, a) in suspended:  # its per-phase credit is used up
+            suspended[(0, a)]["stub_call"] = True
+        elif (0, a) in armed:
+            armed[(0, a)]["stub_call"] = True  # credited as its own hit
+        elif gdb.set_bp(0, a):
+            armed[(0, a)] = {"spec": {"at": name}, "hits": 0, "kind": 0,
+                             "addr": a, "len": 4, "per_phase": 1,
+                             "phase_hits": 0, "stub_call": True}
+        else:
+            raise SystemExit(f"gdbtrace: stub refused Z0 at 0x{a:08X}")
+        if (0, a + 8) in armed or (0, a + 8) in suspended \
+                or not gdb.set_bp(0, a + 8):
+            raise SystemExit(f"gdbtrace: no leak breakpoint at 0x{a + 8:08X}")
+        armed[(0, a + 8)] = {"spec": {"at": f"{name}+0x8"}, "hits": 0,
+                             "kind": 0, "addr": a + 8, "len": 4,
+                             "per_phase": 1, "phase_hits": 0,
+                             "stub_leak": True}
 
 
 def resolve_dump(syms: Symbols, regs: list[int], d: dict) -> int:
@@ -754,6 +820,27 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
         armed[(kind, addr)] = {"spec": w, "hits": 0, "kind": kind,
                                "addr": addr, "len": n}
 
+    # Stub-and-observe: patch a function to return at the EXE entry (before
+    # any game code runs) or when a phase starts.
+    stubs = []
+    phase_names = {ph["name"] for ph in (spec.get("script") or {}).get(
+        "phases", [])}
+    for st in spec.get("stubs", []):
+        if not spec.get("script"):
+            raise SystemExit("gdbtrace: stubs need a script")
+        when = st.get("phase", "entry")
+        if when != "entry" and when not in phase_names:
+            raise SystemExit(f"gdbtrace: stub {st['at']}: no phase {when!r}")
+        if when == runkit.first_phase(spec["script"]):
+            raise SystemExit(f"gdbtrace: stub {st['at']}: {when!r} is the "
+                             "first phase; omit phase to stub at the EXE "
+                             "entry")
+        addr = syms.addr(st["at"])
+        if any(x["addr"] == addr for x in stubs):
+            raise SystemExit(f"gdbtrace: {st['at']} is stubbed twice")
+        stubs.append({"spec": st, "addr": addr, "when": when,
+                      "words": stub_words(st)})
+
     if spec.get("script"):
         # Canary: the EXE entry runs exactly once per boot; its hit proves
         # Z0 breakpoints fire on game code in this emulator build.
@@ -926,6 +1013,9 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 emit({"ev": "phase", "t": round(time.time() - t0, 3),
                       "frame": new[1], "phase": phase, "end": new[3],
                       "pause": list(pause) if pause else None})
+                if not new[3]:
+                    apply_stubs(gdb, stubs, phase, regs, new[1], emit,
+                                armed, suspended)
             # A Lua pause can land on any load/store, like our own ^C.
             e, acc = entry_for_stop(regs, reply,
                                     (interrupted and not raced) or script_stop)
@@ -936,6 +1026,9 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 # code, e.g. the sites listed at D_80015820.)
                 args.result["exe_in_memory"] = compare_memory(
                     gdb, EXE_LOAD, args.expect.get("exe"))
+                apply_stubs(gdb, stubs, "entry", regs,
+                            state[1] if state else None, emit, armed,
+                            suspended)
             if e is not None and e.get("canary_only"):
                 # The canary proves Z0 fires on game code; it is no hit.
                 args.result["canary_hit"] = {"pc": regs[37], "phase": phase}
@@ -984,6 +1077,12 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 rec["phase"] = phase
             if e.get("hitmap"):
                 rec["hm"] = 1
+            if e.get("stub_call"):
+                rec["stub_call"] = 1
+            if e.get("stub_leak"):
+                rec["stub_leak"] = 1
+                args.result["stub_leaks"] = \
+                    args.result.get("stub_leaks", 0) + 1
             if acc:
                 rec["access"] = {"pc": acc[0], "addr": acc[1], "width": acc[2],
                                  "store": acc[3], "value": acc[4]}
@@ -1023,6 +1122,25 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
         ended = bool(state and state[3])
         args.result.update({"script_ended": ended, "events": events,
                             "ambiguous_stops": ambiguous})
+        recs = []
+        for st in stubs:
+            rec = {"at": st["spec"]["at"], "addr": st["addr"],
+                   "when": st["when"], "ret": st["spec"].get("ret"),
+                   "words": st["words"].hex(), "orig": st.get("orig"),
+                   "applied": st.get("applied")}
+            if "applied" in st:
+                # The game may rewrite its own code: still a stub at the end?
+                try:
+                    rec["at_end"] = ("intact" if gdb.mem(st["addr"], 8)
+                                     == st["words"] else "overwritten")
+                except (GdbError, OSError) as ex:
+                    rec["at_end"] = f"not read: {ex}"
+            recs.append(rec)
+        if recs:
+            args.result["stubs"] = recs
+            args.result["modified_game"] = (
+                "stubbed functions: hits and screenshots after a stub went "
+                "in are from a modified game; cite with `compare` only")
         if ended:
             # Information only (the gate is the check at the EXE entry):
             # which .rodata + .text bytes the run itself changed.
@@ -1353,10 +1471,14 @@ def report(args) -> int:
     odd = collections.Counter()
     disarmed = {}
     start = end = canary = hitmap = None
+    stubs = []
+    stub_calls = collections.defaultdict(list)
     hm_hits = collections.defaultdict(collections.Counter)
     with open(args.trace, encoding="utf-8") as f:
         for line in f:
             rec = json.loads(line)
+            if rec["ev"] == "hit" and rec.get("stub_call"):
+                stub_calls[rec["addr"]].append(rec.get("phase"))
             if rec["ev"] == "hit" and rec.get("hm"):
                 hm_hits[rec["addr"]][str(rec.get("phase"))] += 1
             elif rec["ev"] == "hit":
@@ -1373,6 +1495,8 @@ def report(args) -> int:
                 disarmed[(rec["at"], rec["kind"])] = rec
             elif rec["ev"] == "canary":
                 canary = rec
+            elif rec["ev"] == "stub":
+                stubs.append(rec)
             elif rec["ev"] == "start":
                 start = rec
             elif rec["ev"] == "end":
@@ -1402,6 +1526,16 @@ def report(args) -> int:
         w.append(f"- canary breakpoint (EXE entry) "
                  + (f"hit at 0x{canary['pc']:08X} in phase {canary['phase']}"
                     if canary else "not recorded in this capture"))
+    for st in stubs:
+        calls = stub_calls.get(st["addr"], [])
+        leaks = hits.get((f"{st['at']}+0x8", 0), [])
+        w.append(f"- STUBBED: `{st['at']}` (0x{st['addr']:08X}) returns at "
+                 f"once from {st['when']} (frame {st['frame']}): every hit "
+                 "after that is from a modified game. Called while stubbed "
+                 "in phases: " + (", ".join(dict.fromkeys(
+                     str(ph) for ph in calls)) or "none")
+                 + "; " + (f"LEAKED past the stub in {len(leaks)} phase(s)"
+                           if leaks else "never ran past the stub"))
     if phases:
         spans = []
         for i, ph in enumerate(phases):
@@ -1533,6 +1667,195 @@ def report(args) -> int:
     return 0
 
 
+# ------------------------------------------------------ stub-and-observe
+
+def read_png(path: str):
+    """(width, height, rgb) of a PNG written by runkit.png (8-bit RGB,
+    filter 0 on every row)."""
+    with open(path, "rb") as f:
+        data = f.read()
+    if data[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError(f"{path}: not a PNG")
+    pos, idat, w, h = 8, b"", None, None
+    while pos < len(data):
+        n, = runkit.struct.unpack(">I", data[pos:pos + 4])
+        tag, body = data[pos + 4:pos + 8], data[pos + 8:pos + 8 + n]
+        if tag == b"IHDR":
+            w, h, depth, ctype = runkit.struct.unpack(">IIBB", body[:10])
+            if (depth, ctype) != (8, 2):
+                raise ValueError(f"{path}: not 8-bit RGB")
+        elif tag == b"IDAT":
+            idat += body
+        pos += 12 + n
+    raw = runkit.zlib.decompress(idat)
+    stride = w * 3 + 1
+    if len(raw) != stride * h or any(raw[y * stride] for y in range(h)):
+        raise ValueError(f"{path}: not a runkit PNG (size or row filters)")
+    return w, h, b"".join(raw[y * stride + 1:(y + 1) * stride]
+                          for y in range(h))
+
+
+def diff_shot(a: str, b: str, out_png: str | None):
+    """Changed pixels between two screenshots: ((count, total, bbox), None)
+    or (None, why not); with out_png, an image of `a` dimmed with the
+    changed pixels in red."""
+    wa, ha, pa = read_png(a)
+    wb, hb, pb = read_png(b)
+    if (wa, ha) != (wb, hb):
+        return None, f"sizes differ: {wa}x{ha} vs {wb}x{hb}"
+    n, box = 0, None
+    img = bytearray(len(pa))
+    for i in range(0, len(pa), 3):
+        if pa[i:i + 3] != pb[i:i + 3]:
+            n += 1
+            x, y = (i // 3) % wa, (i // 3) // wa
+            box = (x, y, x, y) if box is None else (
+                min(box[0], x), min(box[1], y), max(box[2], x), max(box[3], y))
+            img[i:i + 3] = b"\xff\x00\x00"
+        else:
+            img[i:i + 3] = bytes(v // 3 for v in pa[i:i + 3])
+    if out_png and n:
+        runkit.png(out_png, wa, ha, bytes(img))
+    return (n, wa * ha, box), None
+
+
+# Manifest parts two compared runs must share (SHA1s; lists compare whole).
+SAME_INPUTS = [("tool", "gdbtrace.py"), ("tool", "runkit.py"),
+               ("build", "exe"), ("build", "elf"), ("bios",),
+               ("disc", "tracks"), ("emulator", "exe"), ("emulator", "main"),
+               ("emulator", "version"), ("start", "memcard1", "sha1_at_start"),
+               ("start", "memcard2", "sha1_at_start")]
+
+
+def manifest_part(m: dict, path: tuple):
+    for k in path:
+        m = (m or {}).get(k)
+    if isinstance(m, dict):
+        return m.get("sha1")
+    if isinstance(m, list):
+        return [x.get("sha1") for x in m]
+    return m
+
+
+def compare(args) -> int:
+    """Stub-and-observe evidence: a stubbed run against a baseline run of
+    the same script on the same inputs; every screenshot both runs took
+    is diffed. Exit 1 when the runs are not comparable."""
+    mans = []
+    for cap in (args.base, args.other):
+        path = runkit.companion(cap, ".manifest.json")
+        with open(path, encoding="utf-8") as f:
+            mans.append((path, json.load(f)))
+    (pa, ma), (pb, mb) = mans
+    problems = []
+    for path in SAME_INPUTS:
+        if manifest_part(ma, path) != manifest_part(mb, path):
+            problems.append("different " + "/".join(path))
+    specs = []
+    for m, given, label in ((ma, args.base_spec, "baseline"),
+                            (mb, args.other_spec, "stubbed")):
+        path = given or m["spec"]["path"]
+        if runkit.sha1_file(path) != m["spec"].get("sha1"):
+            problems.append(f"{label} spec {path} is not the one recorded")
+        with open(path, encoding="utf-8") as f:
+            specs.append(json.load(f))
+    sa, sb = specs
+    if sa.get("script") != sb.get("script"):
+        problems.append("different scripts (inputs, phases or screenshots)")
+    if sa.get("stubs"):
+        problems.append("the baseline has stubs")
+    if not sb.get("stubs"):
+        problems.append("the second run has no stubs")
+    calls = collections.defaultdict(list)  # stub -> phases it was called in
+    with open(args.other, encoding="utf-8") as f:
+        for line in f:
+            rec = json.loads(line)
+            if rec.get("ev") == "hit" and rec.get("stub_call"):
+                calls[rec["addr"]].append(rec.get("phase"))
+    for st in mb.get("result", {}).get("stubs") or []:
+        if not calls.get(st["addr"]):
+            problems.append(f"stub {st['at']} was never called while "
+                            "stubbed")
+    for m, label in ((ma, "baseline"), (mb, "stubbed")):
+        if not m.get("q124_complete"):
+            problems.append(f"{label} is not q124_complete: "
+                            f"{m.get('q124_missing')}")
+    for m, cap, label in ((ma, args.base, "baseline"),
+                          (mb, args.other, "stubbed")):
+        # The outputs on disk are the ones the manifest recorded.
+        d = os.path.dirname(os.path.abspath(cap))
+        for rec in m.get("outputs", []):
+            p = os.path.join(d, os.path.basename(rec["path"]))
+            if not os.path.isfile(p) or runkit.sha1_file(p) != rec.get("sha1"):
+                problems.append(f"{label} output {os.path.basename(p)} "
+                                "differs from its manifest")
+
+    base_dir = os.path.dirname(os.path.abspath(args.out)) if args.out \
+        else os.getcwd()
+    w = [f"# Stub-and-observe: {os.path.basename(os.path.dirname(os.path.abspath(args.other)))}"
+         f" against {os.path.basename(os.path.dirname(os.path.abspath(args.base)))}",
+         ""]
+    if args.context:
+        w.append(f"- scenario: {args.context}")
+    for label, p, m in (("baseline", pa, ma), ("stubbed", pb, mb)):
+        r = m.get("result", {})
+        try:
+            shown = os.path.relpath(p, base_dir)
+        except ValueError:  # another drive
+            shown = p
+        w.append(f"- {label}: `{shown}` (SHA1 "
+                 f"{runkit.sha1_file(p)}), outcome {r.get('outcome')}, script "
+                 f"ended {r.get('script_ended')}, q124_complete "
+                 f"{m.get('q124_complete')}")
+    stubs = mb.get("result", {}).get("stubs") or []
+    w.append("- stubs: " + (", ".join(
+        f"`{s['at']}` (0x{s['addr']:08X}) from "
+        + ("the EXE entry" if s["when"] == "entry" else f"phase {s['when']}")
+        + f" (frame {(s.get('applied') or {}).get('frame')}), returns "
+        + ("with v0 unchanged" if s.get("ret") is None else f"{s['ret']}")
+        + f", {s.get('at_end')} at the end, called while stubbed in "
+        + (", ".join(dict.fromkeys(str(x) for x in calls.get(s["addr"], [])))
+           or "no phase") for s in stubs) or "none"))
+    w.append("- " + ("same inputs and script" if not problems else
+                     "NOT COMPARABLE: " + "; ".join(problems)))
+    w += ["", "| screenshot | changed pixels | bounding box (x0,y0-x1,y1) |",
+          "|---|---|---|"]
+    stem_a, stem_b = (runkit.companion(os.path.abspath(c), "")
+                      for c in (args.base, args.other))
+    for sh in (sa.get("script") or {}).get("screenshots", []):
+        name = sh["name"]
+        fa, fb = f"{stem_a}.{name}.png", f"{stem_b}.{name}.png"
+        if not (os.path.isfile(fa) and os.path.isfile(fb)):
+            w.append(f"| {name} (frame {sh['frame']}) | missing | - |")
+            continue
+        out_png = (runkit.companion(args.out[:-3] if args.out.endswith(".md")
+                                    else args.out, f".{name}.diff.png")
+                   if args.out else None)
+        res, err = diff_shot(fa, fb, out_png)
+        if err:
+            w.append(f"| {name} (frame {sh['frame']}) | {err} | - |")
+            continue
+        n, total, box = res
+        w.append(f"| {name} (frame {sh['frame']}) | {n} of {total} "
+                 f"({100 * n / total:.2f}%) | "
+                 + (f"{box[0]},{box[1]}-{box[2]},{box[3]}" if box else "-")
+                 + " |")
+    w += ["", "A stub counts only if the game kept running (both runs reached "
+          "the script's end) and the lost effect is the function's own output "
+          "(.claude/rules/naming-runtime-evidence.md). Pixels that differ "
+          "beyond the function's own drawing point at changed game state. "
+          "A call already in progress when the stub went in finishes "
+          "normally (a leak breakpoint catches only code reaching the word "
+          "after the stub)."]
+    text = "\n".join(w) + "\n"
+    if args.out:
+        with open(args.out, "w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+    else:
+        sys.stdout.write(text)
+    return 1 if problems else 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -1575,11 +1898,22 @@ def main(argv=None) -> int:
                    "(function, addr, one column per phase)")
     p.add_argument("--out")
 
+    c = sub.add_parser("compare", help="stub-and-observe: diff a stubbed run's "
+                       "screenshots against a baseline run")
+    c.add_argument("base", help="baseline capture (.jsonl)")
+    c.add_argument("other", help="stubbed capture (.jsonl)")
+    c.add_argument("--base-spec", help="spec path if it moved since the run")
+    c.add_argument("--other-spec", help="spec path if it moved since the run")
+    c.add_argument("--context", help="one line: what the runs exercised")
+    c.add_argument("--out", help="markdown; <out stem>.<shot>.diff.png too")
+
     args = ap.parse_args(argv)
     if args.cmd == "run":
         if args.launch and not args.cue:
             ap.error("--launch needs --cue")
         return run(args)
+    if args.cmd == "compare":
+        return compare(args)
     return report(args)
 
 
