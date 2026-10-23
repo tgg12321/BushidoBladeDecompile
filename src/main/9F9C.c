@@ -746,9 +746,10 @@ void camera_InitTrackedFighterFocus(
 
 void camera_UpdateTrackedFighterView(Unk80101EC8Record *obj) {
     /* Pointer read-modify-write on a global (pointer-alias-fake-exception):
-     * the tracked camera target's height, rotation and h1C are each read,
-     * eased toward the fighter and stored back through cam; through the
-     * symbol each access re-forms the address (score 34). */
+     * the tracked camera target's height and rotation are read, eased toward
+     * the fighter and stored back through cam, and h1C is read, decayed by
+     * 3/4 and stored back; through the symbol each access re-forms the
+     * address (score 34). */
     Rec44 *cam = &D_800F5328;
     s32 a2;
     s32 val;
