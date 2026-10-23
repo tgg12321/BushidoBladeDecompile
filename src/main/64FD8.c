@@ -585,9 +585,13 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = arg1 * 10; i < arg1 * 10 + 10; i++) {
         /* i indexes the whole table flat (arg1 * 10 + cell). */
         /* SOTN: src/dra/62DEC.c:1091 @aa53500 */
-        /* FAKE: pointer form of the flat read lets the table base be hoisted
-         * into $s6; D_8009BCF8[0][i].unk0 folds the symbol into each load:
-         * score 44 (Q53) */
+        /* FAKE: pointer form of the flat read hoists the base into $s6.
+         * All three reads: D_8009BCF8[0][i].unk0 -> score 44 (Q53);
+         * D_8009BCF8[arg1][i - arg1 * 10].unk0 -> score 51;
+         * same row read once into entry, reused -> score 58.
+         * Column loop (i = 0; i < 10; i++), passing arg1 * 10 + i:
+         * D_8009BCF8[arg1][i].unk0 at all three reads -> score 53;
+         * same column read once into entry, reused -> score 69. */
         u8 entry = (&D_8009BCF8[0][0] + i)->unk0;
 
         if (D_8009BCE4[entry] & 1) {
