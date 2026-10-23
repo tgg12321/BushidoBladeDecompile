@@ -1106,8 +1106,8 @@ def _body_open(text: str, span: tuple[int, int]) -> int:
     return span[0]
 
 
-def call_sites(text: str, func: str,
-               root: str | Path = REPO_ROOT) -> list[tuple[int, int, str]]:
+def call_sites(text: str, func: str, root: str | Path = REPO_ROOT,
+               span: tuple[int, int] | None = None) -> list[tuple[int, int, str]]:
     """(start, end, macro) for every call of a vendored macro in `func`'s body,
     end just past its `;`. Every TU is scanned, whether or not it includes a
     vendored header itself (a game header or a computed #include can bring
@@ -1117,8 +1117,11 @@ def call_sites(text: str, func: str,
     statement — raises ValueError otherwise (fail closed), as for a call not
     followed by `;`, one nested in another's arguments, and a vendored name
     not directly followed by `(` (`(gte_nop)()`, `CALL(gte_nop)`: a macro
-    reached through another name is no call the gates can see)."""
-    span = inlineasm._func_body_span(text, func)
+    reached through another name is no call the gates can see). `span`: the
+    definition span to scan instead of locating `func`'s (a Q126 helper found
+    in the compiler view, engine.inlineasm.attributed_spans)."""
+    if span is None:
+        span = inlineasm._func_body_span(text, func)
     names = vendored_names(root)
     if span is None or not names:
         return []
@@ -1155,7 +1158,8 @@ def call_sites(text: str, func: str,
 _ARG_ASM_RE = re.compile(r"\b(?:__asm__|__asm|asm)\b|\(\s*\{")
 
 
-def call_issues(text: str, func: str, root: str | Path = REPO_ROOT) -> list[str]:
+def call_issues(text: str, func: str, root: str | Path = REPO_ROOT,
+                span: tuple[int, int] | None = None) -> list[str]:
     """Why `func`'s vendored macro calls cannot be admitted, [] when they can:
     a header that is not Sony's text, a macro the TU's header does not define
     (wrong header, or gtemac.h without an inline header), a macro that is not
@@ -1164,7 +1168,7 @@ def call_issues(text: str, func: str, root: str | Path = REPO_ROOT) -> list[str]
     arguments, a call in a TU that does not #include a vendored header itself,
     and a source-file #define / #undef of a vendored name.
     call_sites / tu_header errors propagate as ValueError."""
-    calls = call_sites(text, func, root)
+    calls = call_sites(text, func, root, span)
     if not calls:
         return []
     issues = [f"vendored header: {i}" for i in check_vendored(root)]

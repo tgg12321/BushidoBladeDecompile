@@ -238,8 +238,36 @@ def _tree_sources(batch: _Batch, rev: str) -> list[tuple[str, str]]:
     return out
 
 
-def _body_at(batch: _Batch, rev: str, name: str, file: str | None) -> str | None:
-    """body_key of `name` in the source at `rev` — its item's file first, then
+# Owner ruling Q126 keys a body with the same-TU `static inline` helpers it
+# reaches (layer2.body_key). A record dated before the engine change was
+# written against the definition-only key, so for it that key stands in:
+# layer2.record refuses a PASS on any key but the current (helper-inclusive)
+# one, so a record on a definition-only key dated after this instant can only
+# be a FAIL/NEEDS_USER, which never clears a departure anyway.
+Q126_CUTOFF = "2026-10-24T00:00:00Z"
+
+
+def _keys(text: str, name: str, read=layer2._disk) -> tuple[str, str] | None:
+    """(helper-inclusive key, definition-only key) of `name` in `text`."""
+    k = layer2.body_key(text, name, read)
+    if not k:
+        return None
+    own = layer2.body_key(text, name, read, helpers=False)
+    return k[1], own[1] if own else k[1]
+
+
+def _on_body(rec: dict, keys: tuple[str, str] | None) -> bool:
+    """`rec` is a record on the body `keys` (_keys): its helper-inclusive key,
+    or — for a record dated before Q126_CUTOFF — its definition-only key."""
+    if not keys:
+        return False
+    h = rec.get("body_hash")
+    return h == keys[0] or (h == keys[1] and str(rec.get("date", "")) < Q126_CUTOFF)
+
+
+def _body_at(batch: _Batch, rev: str, name: str,
+             file: str | None) -> tuple[str, str] | None:
+    """_keys of `name` in the source at `rev` — its item's file first, then
     any source file — with included .s read at `rev` as well."""
     def read(path):
         return batch.text(f"{rev}:{path}")
@@ -252,21 +280,21 @@ def _body_at(batch: _Batch, rev: str, name: str, file: str | None) -> str | None
             raise _AuditError(f"source blob {sha} ({path} at {rev}) is missing from the "
                               f"object store")
         if name in text:
-            k = layer2.body_key(text, name, read)
+            k = _keys(text, name, read)
             if k:
-                return k[1]
+                return k
     return None
 
 
-def _body_now(name: str, file: str | None) -> str | None:
+def _body_now(name: str, file: str | None) -> tuple[str, str] | None:
     paths = [Path(f"src/{file}.c")] if file else []
     for pat in ("src/**/*.c", "src/**/*.h", "include/**/*.h"):
         paths += sorted(Path(".").glob(pat))
     for p in paths:
         text = layer2._read_text(p)
-        k = layer2.body_key(text, name) if text and name in text else None
+        k = _keys(text, name) if text and name in text else None
         if k:
-            return k[1]
+            return k
     return None
 
 
@@ -460,7 +488,7 @@ def unreviewed_departures() -> list[str]:
                 """The latest record on body `b`: only records on the body that
                 left count — a later reviewed body (a cheat-cleanup) neither
                 clears nor revokes this departure."""
-                on_body = [r for r in recs if b and r.get("body_hash") == b]
+                on_body = [r for r in recs if _on_body(r, b)]
                 return on_body[-1] if on_body else None
             last = verdict_on(body)
             if last and last.get("verdict") == "PASS":
@@ -483,7 +511,7 @@ def unreviewed_departures() -> list[str]:
                    f"the latest record on that body is {last.get('verdict')} "
                    f"({last.get('func')}, {last.get('date', '?')})")
             out.append(f"{name or '?'} (addr {a}): left {QUEUE_FILE} in {where} — body "
-                       f"{body or '(not found)'} — without a layer-2 PASS on that body: {why}. "
+                       f"{body[0] if body else '(not found)'} — without a layer-2 PASS on that body: {why}. "
                        f"{_fix(now_name or '<name>', now_file or '<file>')}")
         batch.close()
         batch = None

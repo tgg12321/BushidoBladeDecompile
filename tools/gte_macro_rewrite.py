@@ -329,7 +329,7 @@ def _runs(text: str, func: str):
     completion, _G, inlineasm = _engine()
     masked = inlineasm._code_without_comments_and_strings(text)
     runs = []
-    for s, e in completion.blocks(text, func):
+    for s, e in completion.own_blocks(text, func):
         while e < len(text) and text[e - 1] != ";" and text[e] in " \t":
             e += 1
         if e < len(text) and text[e - 1] != ";" and text[e] == ";":
@@ -494,7 +494,7 @@ def _functions(target: str) -> list[tuple[str, str]]:
         out = []
         for f in dict.fromkeys(names):
             try:
-                if inlineasm._func_body_span(text, f) and completion.blocks(text, f):
+                if inlineasm._func_body_span(text, f) and completion.own_blocks(text, f):
                     out.append((f, target))
             except ValueError:
                 continue

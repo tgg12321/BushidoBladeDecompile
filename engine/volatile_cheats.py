@@ -1717,34 +1717,56 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
     the qualifier changes that function's codegen. The same is true for plain
     `extern volatile T D_x;` decls at file scope. The strip path already
     removes ALL such qualifiers file-wide; this count makes sure `mark_done`
-    refuses every function the strip would touch."""
-    span = _func_body_span(text, func)
-    if span is None:
+    refuses every function the strip would touch.
+
+    Owner ruling Q126: every same-TU `static inline` helper `func` reaches
+    (inlineasm.inline_helpers) is read as part of `func` — its in-body cheats,
+    the names it uses, and its per-body roster, judged with `func`'s own
+    allowlist rows (_SANCTIONED_UNWRITTEN_PADS / _SANCTIONED_EMPTY_IFS are
+    keyed by the function whose frame the inlined helper lands in; a row
+    keyed by the helper's name admits nothing)."""
+    from .inlineasm import attributed_spans  # local: inlineasm imports us lazily
+    try:
+        spans = attributed_spans(text, func)
+    except ValueError:
+        return -1  # an ambiguous helper: unknown
+    if not spans:
         return -1
-    lo, hi = span
-    used = _names_used_in_body(text, lo, hi)
+
+    def inside(s: int) -> bool:
+        return any(lo <= s < hi for _n, (lo, hi) in spans)
+
+    used: set[str] = set()
+    for _n, (lo, hi) in spans:
+        used |= _names_used_in_body(text, lo, hi)
     counted_vol_positions: set[int] = set()
+    # find_all_cheats judges each body's roster under that body's own name; a
+    # helper's roster is judged under `func` below instead.
+    helper_roster: set[tuple[int, int]] = set()
+    for name, span in spans[1:]:
+        helper_roster |= set(body_cheat_spans(text, span[0], span[1],
+                                              _extract_func_params(text, span), name))
     # In-body cheats (inline casts, in-body extern decls).
-    for s, _e, vp in find_all_cheats(text):
-        if lo <= s < hi:
+    for s, e, vp in find_all_cheats(text):
+        if inside(s) and not (vp == s and (s, e) in helper_roster):
             counted_vol_positions.add(vp)
     label_decls = _asm_label_decls(text)
     # File-scope alias renames whose alias name is referenced inside body.
     for kind, s, _e, vp, name, _le in label_decls:
-        if kind != "vol" or lo <= s < hi:
+        if kind != "vol" or inside(s):
             continue  # already counted above
         if name in used:
             counted_vol_positions.add(vp)
     # File-scope plain volatile externs whose symbol is referenced inside body.
     for s, e, vp in find_plain_volatile_externs(text):
-        if lo <= s < hi:
+        if inside(s):
             continue
         m = _PLAIN_VOLATILE_RE.search(text, s, e)
         if m and m.group("name") in used:
             counted_vol_positions.add(vp)
     # Non-volatile alias renames (in-body or file-scope-with-body-use).
     for kind, s, _e, asm_pos, name, _le in label_decls:
-        if kind == "nonvol" and (lo <= s < hi or name in used):
+        if kind == "nonvol" and (inside(s) or name in used):
             counted_vol_positions.add(asm_pos)
     # Macro `__asm__` definitions whose macro name is referenced in body.
     for s, e, name in find_macro_asm_defs(text):
@@ -1753,9 +1775,10 @@ def func_volatile_cheat_count(text: str, func: str) -> int:
     # In-body cheats (unused locals, dead stores, orphaned declarations, ...) —
     # the same roster the strip path removes, so the gate refuses exactly what
     # the sandbox makes invisible.
-    params = _extract_func_params(text, span)
-    for s, _e in body_cheat_spans(text, lo, hi, params, func):
-        counted_vol_positions.add(s)
+    for _n, span in spans:
+        params = _extract_func_params(text, span)
+        for s, _e in body_cheat_spans(text, span[0], span[1], params, func):
+            counted_vol_positions.add(s)
     return len(counted_vol_positions)
 
 

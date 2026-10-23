@@ -3482,6 +3482,284 @@ s32 func_MIX(s32 value) {
           wired is not None and verdict_at is not None and wired < verdict_at)
 
 
+def test_q126_inline_helpers() -> None:
+    """Owner ruling Q126: a same-TU `static inline` helper's islands, calls and
+    tokens are attributed to each caller (region hashes, layer-2 key, cheat
+    audits, integrity); helper-free bodies key exactly as before."""
+    from engine import gtemacro as G
+    from engine import layer2 as L2
+    if not all(Path(r).exists() for r in G.VENDORED):
+        skip("q126 inline helpers", "include/psxsdk vendored headers absent")
+        return
+    inc = "#include <psxsdk/inline_o.h>\n#include <psxsdk/gtemac.h>\n"
+    sq = ("static inline s32 sq(s32 x) {\n"
+          "    s32 lz[4]; /* FAKE: frame layout */\n"
+          "    gte_Lzc(x, &lz[0]);\n"
+          "    return lz[0];\n"
+          "}\n")
+    rest = ("static inline s32 outer(s32 x) { return sq(x) * 2; }\n"
+            "static inline s32 ping(s32 x);\n"
+            "static inline s32 pong(s32 x) { return ping(x); }\n"
+            "static inline s32 ping(s32 x) { return x ? pong(x - 1) : 0; }\n"
+            "static s32 plain(s32 x) {\n    s32 lz;\n    gte_Lzc(x, &lz);\n    return lz;\n}\n"
+            "s32 func_A(s32 v) {\n    return sq(v) + 1;\n}\n"
+            "s32 func_B(s32 v) {\n    return outer(v);\n}\n"
+            "s32 func_C(s32 v) {\n    return ping(v);\n}\n"
+            "s32 func_D(s32 v) {\n    /* sq(v) in a comment */\n    return plain(v);\n}\n"
+            "s32 func_E(s32 v) {\n    return v + 2;\n}\n")
+    text = inc + sq + rest
+    H = inlineasm.inline_helpers
+    eq("q126: a called helper is attributed", H(text, "func_A"), ["sq"])
+    eq("q126: helpers are reached transitively, in file order",
+       H(text, "func_B"), ["sq", "outer"])
+    eq("q126: a helper cycle terminates (and a prototype is not a definition)",
+       H(text, "func_C"), ["pong", "ping"])
+    eq("q126: a helper reaching itself back excludes the function", H(text, "ping"), ["pong"])
+    eq("q126: a non-inline static is not attributed, nor a comment mention",
+       H(text, "func_D"), [])
+    eq("q126: a helper-free body has no helpers", H(text, "func_E"), [])
+    spliced = text.replace("return sq(v) + 1;", "return s\\\nq(v) + 1;")
+    eq("q126: a backslash-newline inside the helper name does not hide it",
+       H(spliced, "func_A"), ["sq"])
+    inl2 = text.replace("static inline s32 outer", "inline static s32 outer")
+    eq("q126: `inline static` spelling is a helper too", H(inl2, "func_B"), ["sq", "outer"])
+
+    # helpers reached through a macro (expanded transitively)
+    mac = text.replace("s32 func_A(s32 v) {\n    return sq(v) + 1;\n}\n",
+                       "#define CALLSQ(x) sq(x)\n#define SQ2 CALLSQ\n"
+                       "s32 func_A(s32 v) {\n    return SQ2(v) + 1;\n}\n")
+    eq("q126: a helper reached through #define bodies is attributed",
+       H(mac, "func_A"), ["sq"])
+    eq("q126: ... and its island is the caller's",
+       completion.region_hashes(mac, "func_A"), completion.region_hashes(text, "sq"))
+    alias = text.replace("s32 func_A(s32 v) {\n    return sq(v) + 1;\n}\n",
+                         "#define SQ sq\ns32 func_A(s32 v) {\n    return SQ(v) + 1;\n}\n")
+    eq("q126: an object-like alias macro reaches the helper", H(alias, "func_A"), ["sq"])
+    # head layouts the line regex missed
+    for desc, head in (("type and name on two lines", "static inline s32\nsq(s32 x) {"),
+                       ("a comment inside the head", "static /*x*/ inline s32 sq(s32 x) {"),
+                       ("an __attribute__ group",
+                        "static inline s32 __attribute__((unused)) sq(s32 x) {"),
+                       ("a K&R head", "static inline s32 sq(x) s32 x; {")):
+        lay = text.replace("static inline s32 sq(s32 x) {", head)
+        eq(f"q126: layout ({desc}) is a helper", H(lay, "func_A"), ["sq"])
+        eq(f"q126: layout ({desc}): its island is the caller's",
+           [lay[s:e] for s, e in completion.blocks(lay, "func_A")], ["gte_Lzc(x, &lz[0]);"])
+    # false positives: member access and a shadowing local
+    member = text.replace("return v + 2;", "return p->sq + q.sq + v;")
+    eq("q126: `->sq` / `.sq` member names are not the helper", H(member, "func_E"), [])
+    local = text.replace("return v + 2;", "s32 sq = v;\n    return sq + 2;")
+    eq("q126: a local re-declaring the name (never called) is not the helper",
+       H(local, "func_E"), [])
+    called = text.replace("return v + 2;", "s32 sq = v;\n    return sq(v);")
+    eq("q126: ... but a call of the name still is", H(called, "func_E"), ["sq"])
+    addr = text.replace("return v + 2;", "return sq;")
+    eq("q126: `return sq;` (the helper's address) is not a local declaration",
+       H(addr, "func_E"), ["sq"])
+    # an ambiguous helper (an #if 0 copy before the live one) fails closed
+    amb = text.replace(sq, "#if 0\nstatic inline s32 sq(s32 x) { return x; }\n#endif\n" + sq)
+    eq("q126: an ambiguous helper makes the cheat count unknown",
+       inlineasm.func_cheat_asm_count(amb, "func_A"), -1)
+    eq("q126: ... and the volatile count unknown",
+       volatile_cheats.func_volatile_cheat_count(amb, "func_A"), -1)
+    old_read2 = inlineasm._read_src_cached
+    try:
+        inlineasm._read_src_cached = lambda stem: amb
+        check("q126: ... and source_issues refuses it", any(
+            "definitions (ambiguous)" in i
+            for i in completion.source_issues("fake", "func_A", canonical=True)))
+    finally:
+        inlineasm._read_src_cached = old_read2
+    eq("q126: ... and the caller has no layer-2 key", L2.body_key(amb, "func_A"), None)
+    eq("q126: own_blocks excludes helper islands (rewrite tools)",
+       completion.own_blocks(text, "func_A"), [])
+    eq("q126: own_blocks of the helper is its own island",
+       [text[s:e] for s, e in completion.own_blocks(text, "sq")], ["gte_Lzc(x, &lz[0]);"])
+    import importlib
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+    GMR = importlib.import_module("gte_macro_rewrite")
+    eq("q126 rewrite tool: a caller's runs exclude its helper's islands",
+       GMR._runs(text, "func_A"), [])
+    eq("q126 rewrite tool: the helper is rewritten as its own target",
+       [[text[s:e] for s, e, _st in run] for run in GMR._runs(text, "sq")],
+       [["gte_Lzc(x, &lz[0]);"]])
+
+    # islands / region hashes
+    eq("q126: the helper's macro call is the caller's island",
+       [text[s:e] for s, e in completion.blocks(text, "func_A")], ["gte_Lzc(x, &lz[0]);"])
+    eq("q126: caller's region hashes are the helper's",
+       completion.region_hashes(text, "func_A"), completion.region_hashes(text, "sq"))
+    eq("q126: transitive caller gets the inner helper's island",
+       completion.region_hashes(text, "func_B"), completion.region_hashes(text, "sq"))
+    eq("q126: non-inline static's island stays its own", completion.blocks(text, "func_D"), [])
+    eq("q126: helper-free body has no islands", completion.blocks(text, "func_E"), [])
+
+    with tempfile.TemporaryDirectory() as td:
+        grants = Path(td) / "regions.json"
+        old_read, old_regions = inlineasm._read_src_cached, completion.REGIONS
+
+        def issues(src: str, func: str = "func_A", canonical: bool = True) -> list[str]:
+            inlineasm._read_src_cached = lambda stem: src
+            return completion.source_issues("fake", func, canonical=canonical)
+        try:
+            completion.REGIONS = grants
+            check("q126: a non-canonical caller of an island helper is refused",
+                  any("requires canonical" in i for i in issues(text, canonical=False)))
+            grants.write_text(json.dumps({"schema": 2, "functions": {"func_A": {
+                "file": "fake", "sha256": completion.region_hashes(text, "func_A")}}}))
+            eq("q126: a granted caller of an island helper passes", issues(text), [])
+            check("q126: a helper island edit voids the caller's grant", any(
+                "changed since review" in i
+                for i in issues(text.replace("gte_Lzc(x, &lz[0]);", "gte_Lzc(x + 1, &lz[0]);"))))
+            pinned = text.replace("    return lz[0];\n}\n",
+                                  "    register s32 r asm(\"$8\") = lz[0];\n    return r;\n}\n", 1)
+            eq("q126: a register pin inside the helper is the caller's cheat (qualifier + hint)",
+               inlineasm.func_cheat_asm_count(pinned, "func_A"), 2)
+            check("q126: ... and the caller's granted islands no longer match", any(
+                "changed since review" in i for i in issues(pinned)))
+            unwritten = text.replace("    gte_Lzc(x, &lz[0]);\n",
+                                     "    s32 pad[4];\n    gte_Lzc(x, &lz[0]);\n", 1)
+            eq("q126: an unwritten array in the helper fails the caller's source check",
+               issues(unwritten), ["1 cheat construct(s) outside approved assembly"])
+            nop = text.replace("    return lz[0];\n}\n", "    gte_nop();\n    return lz[0];\n}\n", 1)
+            check("q126: gte_nop() inside the helper is refused for the caller", any(
+                "gte_nop" in i for i in issues(nop)))
+        finally:
+            inlineasm._read_src_cached, completion.REGIONS = old_read, old_regions
+
+    # cheat counts: every detector reads the helper as part of the caller
+    eq("q126: the 87A0 shape (lz[4], lz[0] live) counts as in the caller: 0",
+       inlineasm.func_cheat_asm_count(text, "func_A"), 0)
+    in_caller = (inc + "s32 func_A(s32 v) {\n    s32 lz[4]; /* FAKE: frame layout */\n"
+                 "    gte_Lzc(v, &lz[0]);\n    return lz[0] + 1;\n}\n")
+    eq("q126: ... the same count as the pad written in the caller",
+       inlineasm.func_cheat_asm_count(in_caller, "func_A"),
+       inlineasm.func_cheat_asm_count(text, "func_A"))
+    dead = text.replace("    s32 lz[4]; /* FAKE: frame layout */\n",
+                        "    s32 lz[4]; /* FAKE: frame layout */\n    s32 pad[4];\n", 1)
+    eq("q126: an unwritten local array in the helper counts against the caller",
+       inlineasm.func_cheat_asm_count(dead, "func_A"), 1)
+    eq("q126: ... and against a transitive caller",
+       inlineasm.func_cheat_asm_count(dead, "func_B"), 1)
+    eq("q126: ... but not against a caller of a non-inline static",
+       inlineasm.func_cheat_asm_count(dead, "func_D"), 0)
+    vpad = text.replace("    s32 lz[4]; /* FAKE: frame layout */\n",
+                        "    s32 lz[4]; /* FAKE: frame layout */\n"
+                        "    volatile u32 pre_pad[2]; /* FAKE: frame layout */\n", 1)
+    rows = volatile_cheats._SANCTIONED_UNWRITTEN_PADS
+    try:
+        volatile_cheats._SANCTIONED_UNWRITTEN_PADS = {"func_A": frozenset({("pre_pad", 2)})}
+        eq("q126: a pad in the helper is admitted by the CALLER's pad row",
+           volatile_cheats.func_volatile_cheat_count(vpad, "func_A"), 0)
+        eq("q126: ... not for another caller without the row",
+           volatile_cheats.func_volatile_cheat_count(vpad, "func_B"), 1)
+        volatile_cheats._SANCTIONED_UNWRITTEN_PADS = {"sq": frozenset({("pre_pad", 2)})}
+        eq("q126: a row keyed by the helper's name admits nothing",
+           volatile_cheats.func_volatile_cheat_count(vpad, "func_A"), 1)
+    finally:
+        volatile_cheats._SANCTIONED_UNWRITTEN_PADS = rows
+    vext = ("extern volatile s32 D_80001234;\n" + inc
+            + "static inline s32 rd(void) { return D_80001234; }\n"
+            "s32 func_V(void) {\n    return rd();\n}\n")
+    check("q126: a volatile extern read only in the helper counts for the caller",
+          volatile_cheats.func_volatile_cheat_count(vext, "func_V") >= 1)
+
+    # layer-2 key
+    k = lambda src, f: L2.body_key(src, f)[1]  # noqa: E731
+    own = lambda src, f: L2._key(src[inlineasm._func_body_span(src, f)[0]:  # noqa: E731
+                                     inlineasm._func_body_span(src, f)[1]])
+    eq("q126: a helper-free body keys exactly as its own definition",
+       k(text, "func_E"), own(text, "func_E"))
+    eq("q126: ... whatever helpers the TU defines",
+       k(text, "func_E"), k(inc + "s32 func_E(s32 v) {\n    return v + 2;\n}\n", "func_E"))
+    eq("q126: a non-inline static's caller keys as its own definition",
+       k(text, "func_D"), own(text, "func_D"))
+    check("q126: a helper caller's key covers the helper", k(text, "func_A") != own(text, "func_A"))
+    check("q126: a helper token edit moves the caller's key",
+          k(text, "func_A") != k(text.replace("return lz[0];", "return lz[1];"), "func_A"))
+    check("q126: ... and a transitive caller's key",
+          k(text, "func_B") != k(text.replace("return lz[0];", "return lz[1];"), "func_B"))
+    eq("q126: a helper comment edit keeps the caller's key",
+       k(text, "func_A"), k(text.replace("/* FAKE: frame layout */", "/* FAKE: other */"),
+                            "func_A"))
+    eq("q126: a non-inline static's edit does not move its caller's key",
+       k(text, "func_D"), k(text.replace("return lz;", "return lz + 0;"), "func_D"))
+    eq("q126: a cyclic helper graph keys (no recursion)",
+       L2.body_key(text, "func_C")[0], "c")
+    dup = text + "#if 0\nstatic inline s32 sq(s32 x) { return x; }\n#endif\n"
+    eq("q126: a helper with two definitions leaves the caller unkeyed (fail closed)",
+       L2.body_key(dup, "func_A"), None)
+    eq("q126: helpers=False is the pre-Q126 definition-only key",
+       L2.body_key(text, "func_A", helpers=False)[1], own(text, "func_A"))
+    from engine import departures as DEP
+    both = DEP._keys(text, "func_A")
+    eq("q126 departures: both keys of a helper caller",
+       both, (k(text, "func_A"), own(text, "func_A")))
+    before, after = "2026-10-01T00:00:00Z", DEP.Q126_CUTOFF
+    check("q126 departures: a record on the helper-inclusive key matches",
+          DEP._on_body({"body_hash": both[0], "date": after}, both))
+    check("q126 departures: a pre-Q126 record on the definition-only key matches",
+          DEP._on_body({"body_hash": both[1], "date": before}, both))
+    check("q126 departures: ... not one dated from the cutoff on",
+          not DEP._on_body({"body_hash": both[1], "date": after}, both))
+    check("q126 departures: an unrelated key never matches",
+          not DEP._on_body({"body_hash": "0" * 16, "date": before}, both))
+    check("q126 departures: no body, no match",
+          not DEP._on_body({"body_hash": both[0], "date": before}, None))
+
+    # integrity: an out-of-line helper is refused; an unrecognized helper too
+    import importlib
+    cwd = os.getcwd()
+    try:
+        CCI = importlib.import_module("tools.check_completion_integrity")
+    except ImportError:
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+        CCI = importlib.import_module("check_completion_integrity")
+    finally:
+        os.chdir(cwd)
+    ftab = {"func_A": 0, "func_B": 0, "func_C": 0, "func_D": 0, "func_E": 0, "plain": 0}
+    eq("q126 integrity: all helpers inlined, nothing refused",
+       CCI._helper_issues(text, "fake", ftab), [])
+    check("q126 integrity: a helper also emitted out of line is refused", any(
+        "sq (fake.c): static inline helper emitted out of line" in i
+        for i in CCI._helper_issues(text, "fake", dict(ftab, sq=0))))
+    hidden = text.replace("static s32 plain", "static INL s32 plain")
+    del ftab["plain"]
+    check("q126 integrity: a symbol-less definition that is no recognized helper is refused",
+          any("plain (fake.c): function body with no symbol" in i
+              for i in CCI._helper_issues(hidden, "fake", ftab)))
+    ftab["plain"] = 0
+    check("q126 integrity: a duplicated helper is refused", any(
+        "sq (fake.c): static inline helper defined 2 times" in i
+        for i in CCI._helper_issues(dup, "fake", ftab)))
+    viamac = text + "#define CALLSQ(x) sq(x)\n"
+    check("q126 integrity: a helper named in a #define body is refused", any(
+        "sq (fake.c): static inline helper named in a #define" in i
+        for i in CCI._helper_issues(viamac, "fake", ftab)))
+    orphan = text + "static inline s32 unused_h(s32 x) { return x; }\n"
+    check("q126 integrity: a helper no function reaches is refused", any(
+        "unused_h (fake.c): static inline helper that no function in the object reaches" in i
+        for i in CCI._helper_issues(orphan, "fake", ftab)))
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        (root / "include/psxsdk").mkdir(parents=True)
+        (root / "src/main").mkdir(parents=True)
+        (root / "include/game.h").write_text("extern s32 g;\n#define SQ(x) ((x) * (x))\n")
+        (root / "include/bad.h").write_text("static inline s32 h(s32 x) {\n    return x;\n}\n")
+        (root / "src/main/local.h").write_text("s32 f(void) { return 0; }\n")
+        (root / "include/psxsdk/inline_o.h").write_text("static inline s32 v(void) { return 0; }\n")
+        eq("q126 integrity: function bodies in project headers are refused (vendored excepted)",
+           [i.split(":")[0] + ":" + i.split("definition ")[1].split(" ")[0]
+            for i in CCI._header_function_issues(root)],
+           ["include/bad.h:h", "src/main/local.h:f"])
+    eq("q126 integrity: helper island blocks count for the caller",
+       CCI._attributed_islands({"sq": 2, "func_A": 1}, text, "func_B"), 2)
+    eq("q126 integrity: ... and add to the caller's own",
+       CCI._attributed_islands({"sq": 2, "func_A": 1}, text, "func_A"), 3)
+
+
 def test_buildstamp() -> None:
     """A matching old artifact stops being evidence as soon as inputs drift."""
     with tempfile.TemporaryDirectory() as td:
@@ -12155,6 +12433,7 @@ def main() -> int:
     with _synth_addrs():
         test_include_asm_whole_body()
     test_completion_region_grants()
+    test_q126_inline_helpers()
     test_buildstamp()
     with _synth_addrs():
         test_canonical_completion_is_the_drop()

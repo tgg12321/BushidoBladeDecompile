@@ -77,6 +77,81 @@ def _island_funcs(src_text: str | None, stem: str) -> dict[str, int]:
             out[fname] = out.get(fname, 0) + 1
     return out
 
+
+def _attributed_islands(island_funcs: dict[str, int], src_text: str | None,
+                        func: str) -> int:
+    """island_funcs[func] plus those of every same-TU `static inline` helper
+    func reaches (owner ruling Q126: an inlined helper's code is its caller's,
+    and the helper has no symbol of its own for this loop to visit)."""
+    helpers = inlineasm.inline_helpers(src_text, func) if src_text else []
+    return island_funcs.get(func, 0) + sum(island_funcs.get(h, 0) for h in helpers)
+
+
+def _helper_issues(src_text: str | None, stem: str, ftab) -> list[str]:
+    """Owner ruling Q126 audits a same-TU `static inline` helper only as part
+    of the functions that call it, which holds only while every gate can see
+    which functions those are. REFUSED, per TU (every file-scope function body
+    found in the compiler view, inlineasm.tu_functions):
+      (1) a static inline helper GCC also emits out of line (a symbol of its
+          own in the object's function table) -- code no caller's review
+          covers as its own function;
+      (2) a helper with more than one definition (e.g. an `#if 0` copy):
+          which body is compiled is ambiguous;
+      (3) a helper named in a #define body: a macro is a path to it the
+          caller's text does not spell;
+      (4) a helper no function in the object reaches: its body is read by
+          no gate;
+      (5) any other function body with no symbol in the object (e.g.
+          `inline` spelled through a macro): no gate reads it at all."""
+    if not src_text:
+        return []
+    defs = inlineasm.static_inline_defs(src_text)
+    out = []
+    for h, spans in defs.items():
+        if h in ftab:
+            out.append(f"{h} ({stem}.c): static inline helper emitted out of line (in "
+                       f"the object's function table) -- refused: Q126 audits a helper "
+                       f"only through its callers; make it an ordinary function or keep "
+                       f"every use inlined")
+        if len(spans) > 1:
+            out.append(f"{h} ({stem}.c): static inline helper defined {len(spans)} times "
+                       f"(ambiguous) -- keep one definition")
+    for h in sorted(inlineasm.macro_named_helpers(src_text)):
+        out.append(f"{h} ({stem}.c): static inline helper named in a #define body -- "
+                   f"call it directly, so its callers are visible")
+    reached: set[str] = set()
+    for f in ftab:
+        reached.update(inlineasm.inline_helpers(src_text, f))
+    for h in defs:
+        if h not in reached and h not in ftab:
+            out.append(f"{h} ({stem}.c): static inline helper that no function in the "
+                       f"object reaches -- no gate reads its body (remove it)")
+    for fn in inlineasm.tu_functions(src_text):
+        if not fn.static_inline and fn.name not in ftab:
+            out.append(f"{fn.name} ({stem}.c): function body with no symbol in the object "
+                       f"and not a recognized `static inline` helper -- no gate reads it "
+                       f"(spell a helper `static inline`, or remove it)")
+    return out
+
+
+def _header_function_issues(root: Path = REPO) -> list[str]:
+    """Function definitions in project headers (include/**/*.h, src/**/*.h;
+    the vendored PsyQ headers excepted): a body there is outside every
+    per-TU gate (Q126 attributes same-TU helpers only)."""
+    vendored = set(gtemacro.VENDORED)
+    out = []
+    for pat in ("include/**/*.h", "src/**/*.h"):
+        for p in sorted(root.glob(pat)):
+            rel = p.relative_to(root).as_posix()
+            if rel in vendored:
+                continue
+            text = p.read_text(encoding="utf-8", errors="replace")
+            out += [f"{rel}: function definition {fn.name} in a project header -- "
+                    f"define it in the .c file that uses it"
+                    for fn in inlineasm.tu_functions(text)]
+    return out
+
+
 QUEUE = REPO / "engine" / "queue.json"
 
 
@@ -113,6 +188,7 @@ def main() -> int:
         island_funcs = _island_funcs(src_text, stem)
         whole_asm = inlineasm.whole_body_asm_funcs(src_text) if src_text else set()
         ftab = score._o_func_table(ref_o)
+        violations.extend(_helper_issues(src_text, stem, ftab))
         for func in ftab:
             fsize = ftab[func][1]
             if func in in_queue:
@@ -172,7 +248,7 @@ def main() -> int:
                 violations.append(
                     f"{func} ({stem}.c): NOT in queue and NOT canonical, but has "
                     f"{cheat_count} cheat construct(s) in source — should be INCOMPLETE")
-            elif func in island_funcs:
+            elif _attributed_islands(island_funcs, src_text, func):
                 # The engine's cheat count treats a canonical cop2 island (GTE
                 # mnemonics + its hardcoded-GPR addressing preamble) as
                 # non-cheat, so `queue done` records the function COMPLETED-C.
@@ -185,7 +261,8 @@ def main() -> int:
                 violations.append(
                     f"{func} ({stem}.c): NOT canonical but carries a multi-insn "
                     f"inline-asm island with non-cop2 instructions "
-                    f"({island_funcs[func]} block(s)) — either the island is "
+                    f"({_attributed_islands(island_funcs, src_text, func)} block(s), "
+                    f"its static inline helpers' included) — either the island is "
                     f"canonical hand-asm (authorize it in inline_asm_canonical.txt "
                     f"with evidence; honest bucket COMPLETED-INLINE-ASM-CANONICAL) "
                     f"or it is injection (should be INCOMPLETE)")
@@ -235,6 +312,9 @@ def main() -> int:
     # gates read unexpanded source, so such a macro would be invisible).
     violations.extend(f"vendored header: {i}" for i in gtemacro.check_vendored())
     violations.extend(gtemacro.header_registry_issues())
+    # Q126: helpers are attributed within one .c file; no project header may
+    # carry a function body.
+    violations.extend(_header_function_issues())
     # No TU uses `##`: a token paste can assemble asm or a vendored name that
     # no gate sees by name (counted and stripped as a cheat construct).
     violations.extend(f"src/{stem}.c: `##` token paste (cheat construct)"

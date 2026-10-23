@@ -5,6 +5,10 @@ must instead match the reviewed assembly islands, and all remaining C is still
 checked. Region hashes include operands/constraints, not just opcode strings.
 An island is an asm statement or a call of a vendored PsyQ macro
 (engine.gtemacro.call_sites); a call must also pass gtemacro.call_issues.
+A function's islands, calls and cheat count include those of every same-TU
+`static inline` helper it reaches (inlineasm.inline_helpers, owner ruling
+Q126): the inlined helper's code is the caller's code, and has no symbol of
+its own that any per-function gate would read.
 """
 from __future__ import annotations
 
@@ -26,33 +30,59 @@ REGIONS_SCHEMA = 2
 REFUSE_WRITTEN_OUT_UNITS = False
 
 
-def _islands(text: str, func: str) -> list[tuple[int, int, str | None]]:
-    """(start, end, header): every assembly island of func's body — asm
-    keyword statements (header None) and calls of vendored PsyQ macros
+def _islands(text: str, func: str,
+             helpers: bool = True) -> list[tuple[int, int, str | None]]:
+    """(start, end, header): every assembly island of func's body and of each
+    same-TU `static inline` helper it reaches (inlineasm.attributed_spans) —
+    asm keyword statements (header None) and calls of vendored PsyQ macros
     (header = gtemacro.call_header: the TU's inline header, or libsn.h for
-    its own macros; engine.gtemacro.call_sites) — sorted."""
-    span = inlineasm._func_body_span(text, func)
-    if span is None:
+    its own macros; engine.gtemacro.call_sites) — sorted by position. With
+    no helper this is exactly func's own islands (unchanged region hashes).
+    helpers=False: func's own body only. Raises ValueError on an ambiguous
+    helper (inlineasm.attributed_spans)."""
+    spans = inlineasm.attributed_spans(text, func)
+    if not helpers:
+        spans = spans[:1]
+    if not spans:
         return []
     result = []
     # Every asm keyword spelling, found the way cc1 tokenizes (comments and
     # backslash-newlines before the `(` are whitespace).
     for kw in inlineasm.cia.find_asm_keywords(text, inlineasm.cia.ASM_SPELLINGS):
-        if not span[0] <= kw.start < span[1]:
+        owner = next((n for n, (lo, hi) in spans if lo <= kw.start < hi), None)
+        if owner is None:
             continue
         if kw.paren < 0:
-            raise ValueError(f'{func}: assembly keyword without an operand list')
+            raise ValueError(f'{owner}: assembly keyword without an operand list')
         if kw.end < 0:
-            raise ValueError(f'{func}: unclosed assembly block')
+            raise ValueError(f'{owner}: unclosed assembly block')
         result.append((kw.start, kw.end + 1, None))
-    result += [(s, e, gtemacro.call_header(text, name))
-               for s, e, name in gtemacro.call_sites(text, func)]
+    for name, span in spans:
+        result += [(s, e, gtemacro.call_header(text, macro))
+                   for s, e, macro in gtemacro.call_sites(text, name, span=span)]
     return sorted(result)
 
 
 def blocks(text: str, func: str) -> list[tuple[int, int]]:
-    """Spans of func's assembly islands: asm statements and vendored macro calls."""
+    """Spans of func's assembly islands (its reached `static inline` helpers'
+    included): asm statements and vendored macro calls."""
     return [(s, e) for s, e, _h in _islands(text, func)]
+
+
+def own_blocks(text: str, func: str) -> list[tuple[int, int]]:
+    """Spans of the islands in func's own definition only (helpers excluded):
+    for tools that EDIT a body (tools/gte_macro_rewrite.py), which must
+    rewrite a helper as its own target, never through each caller."""
+    return [(s, e) for s, e, _h in _islands(text, func, helpers=False)]
+
+
+def call_issues(text: str, func: str) -> list[str]:
+    """gtemacro.call_issues for func and each helper it reaches, each issue
+    once (TU-level issues repeat per body)."""
+    out: list[str] = []
+    for name, span in inlineasm.attributed_spans(text, func):
+        out += [i for i in gtemacro.call_issues(text, name, span=span) if i not in out]
+    return out
 
 
 def region_hashes(text: str, func: str) -> list[str]:
@@ -121,7 +151,7 @@ def source_issues(stem: str, func: str, canonical: bool | None = None) -> list[s
                 'assemble an asm keyword or a vendored macro name no gate sees)']
     try:
         islands = blocks(text, func)
-        call_problems = gtemacro.call_issues(text, func)
+        call_problems = call_issues(text, func)
     except ValueError as exc:
         return [str(exc)]
     if islands and not canonical:
@@ -129,7 +159,9 @@ def source_issues(stem: str, func: str, canonical: bool | None = None) -> list[s
     if call_problems:
         return call_problems
     if canonical and REFUSE_WRITTEN_OUT_UNITS:
-        units = sorted({m for s, _e, m in gtemacro.unit_spans(text) if span[0] <= s < span[1]})
+        units = sorted({m for s, _e, m in gtemacro.unit_spans(text)
+                        if any(lo <= s < hi for _n, (lo, hi)
+                               in inlineasm.attributed_spans(text, func))})
         if units:
             return [f'written-out PsyQ macro {m}: write the macro call' for m in units]
     if canonical:

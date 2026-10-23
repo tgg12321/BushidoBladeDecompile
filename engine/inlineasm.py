@@ -17,10 +17,12 @@ file-wide strip + masked scoring triages every cheat-asm function in one build.
 """
 from __future__ import annotations
 
+import bisect
 import functools
 import re
 import sys
 from pathlib import Path
+from typing import NamedTuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 import classify_inline_asm as cia  # noqa: E402
@@ -583,20 +585,271 @@ def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
     return None
 
 
+# --- same-TU `static inline` helpers (owner ruling Q126, 2026-10-23) ---------
+# "A GTE macro call may sit in a `static inline` helper defined in the same TU;
+# the engine attributes a called helper's calls and tokens to each caller
+# (region hashes, layer-2 key, integrity)." A helper GCC inlines has no symbol
+# of its own, so no per-function gate would ever read it: every gate that reads
+# a function's body (completion islands and region hashes, this cheat count,
+# engine.volatile_cheats, the layer-2 key) reads its helpers' bodies too, as
+# part of the caller. Scope: `static` + `inline` (`__inline`, `__inline__`)
+# definitions in the same .c text only — not plain statics (a function of
+# their own, audited as such), not headers.
+_INLINE_WORDS = frozenset({"inline", "__inline", "__inline__"})
+_IDENT_TOKEN_RE = re.compile(r"[A-Za-z_]\w*")
+_ATTRIBUTE_RE = re.compile(r"\b__attribute(?:__)?\s*\(")
+_PP_DEFINE_RE = re.compile(r"[ \t]*#[ \t]*define[ \t]+([A-Za-z_]\w*)(.*)")
+
+
+class TUFunction(NamedTuple):
+    """One file-scope function body found in the compiler view."""
+    name: str
+    words: frozenset    # identifiers of the head before the name (storage, type)
+    start: int          # original-text index of the head's first token
+    end: int            # original-text index just past the closing `}`
+
+    @property
+    def static_inline(self) -> bool:
+        return "static" in self.words and bool(self.words & _INLINE_WORDS)
+
+
+class _TUIndex(NamedTuple):
+    masked: str
+    pos: tuple
+    functions: tuple    # TUFunction, file order
+    macros: dict        # #define name -> identifiers of its body (and params)
+
+
+def _head_function(head: str) -> tuple[str, frozenset] | None:
+    """(name, head words) when a file-scope `head {` is a function definition
+    head: it has a parameter list and no `=` (an initializer). Attribute
+    groups are skipped; the name is the identifier before the first
+    remaining top-level `(`."""
+    if "=" in head:
+        return None
+    m = _ATTRIBUTE_RE.search(head)
+    while m:
+        close = _match_paren(head, m.end() - 1)
+        if close < 0:
+            return None
+        head = head[:m.start()] + " " * (close - m.start()) + head[close:]
+        m = _ATTRIBUTE_RE.search(head)
+    p = head.find("(")
+    if p < 0:
+        return None
+    nm = re.search(r"([A-Za-z_]\w*)\s*$", head[:p])
+    if not nm:
+        return None
+    return nm.group(1), frozenset(_IDENT_TOKEN_RE.findall(head[:nm.start()]))
+
+
+def _tu_index(text: str) -> _TUIndex:
+    """Every file-scope function body and #define of `text`, read in the
+    compiler view (comments and literals blanked, backslash-newlines spliced),
+    so a head split over lines, broken by a comment or carrying an
+    `__attribute__` is still one head. Preprocessor lines are not code;
+    `#if 0` text is (a dead copy is still a definition)."""
+    return _tu_index_cached(text)
+
+
+@functools.lru_cache(maxsize=4)
+def _tu_index_cached(text: str) -> _TUIndex:
+    view = cia.compiler_view(text)
+    masked, pos = view.masked, view.pos
+    n = len(masked)
+    functions, macros = [], {}
+    depth, item, i, bol = 0, 0, 0, True
+    segs = [0]          # file-scope item starts since the last `}` (K&R heads)
+    head_fn = None
+    while i < n:
+        c = masked[i]
+        if bol and c == "#":
+            eol = masked.find("\n", i)
+            eol = n if eol < 0 else eol
+            dm = _PP_DEFINE_RE.match(masked, masked.rfind("\n", 0, i) + 1, eol)
+            if dm:
+                macros.setdefault(dm.group(1), set()).update(
+                    _IDENT_TOKEN_RE.findall(dm.group(2)))
+            if depth == 0:
+                item = eol
+                segs.append(eol)
+            i = eol
+            continue
+        if c == "\n":
+            bol = True
+        elif c not in " \t\r\f\v":
+            bol = False
+        if c == "{":
+            if depth == 0:
+                head = masked[item:i]
+                if not head.strip():
+                    # K&R: `T f(a) T a; {` -- the head is the nearest item
+                    # with a parameter list; the rest declare parameters
+                    for st in reversed(segs[:-1]):
+                        seg = masked[st:item].split(";")[0]
+                        if "(" in seg and "=" not in seg:
+                            item = st
+                            break
+                    head = masked[item:i]
+                hf = _head_function(head)
+                lead = len(head) - len(head.lstrip())
+                head_fn = (hf, item + lead) if hf else None
+            depth += 1
+        elif c == "}":
+            depth = max(0, depth - 1)
+            if depth == 0:
+                if head_fn:
+                    (name, words), hs = head_fn
+                    functions.append(TUFunction(name, words, pos[hs], pos[i] + 1))
+                head_fn = None
+                item = i + 1
+                segs = [item]
+        elif c == ";" and depth == 0:
+            item = i + 1
+            segs.append(item)
+        i += 1
+    return _TUIndex(masked, pos, tuple(functions),
+                    {k: frozenset(v) for k, v in macros.items()})
+
+
+def tu_functions(text: str) -> tuple[TUFunction, ...]:
+    """Every file-scope function body of `text` (compiler view), file order."""
+    return _tu_index(text).functions
+
+
+def static_inline_defs(text: str) -> dict[str, list[tuple[int, int]]]:
+    """name -> definition spans (start, end) of every `static inline`
+    function defined in `text`, in file order. More than one span: the name
+    is ambiguous (e.g. an `#if 0` copy) and every gate fails closed on it."""
+    if "inline" not in text:
+        return {}
+    out: dict[str, list[tuple[int, int]]] = {}
+    for f in tu_functions(text):
+        if f.static_inline:
+            out.setdefault(f.name, []).append((f.start, f.end))
+    return out
+
+
+def macro_named_helpers(text: str) -> set[str]:
+    """`static inline` helpers whose name appears in a #define body."""
+    defs = static_inline_defs(text)
+    if not defs:
+        return set()
+    named: set[str] = set()
+    for body in _tu_index(text).macros.values():
+        named |= body
+    return named & defs.keys()
+
+
+# `T name;` / `T *name = ...` / `T name[...]`: a local declaration of {0}
+_LOCAL_DECL = (r"(?:^|[;{{}}(,])\s*(?!(?:return|case|goto|else|do|sizeof)\b)"
+               r"(?:[A-Za-z_]\w*[\s\*]+)+\**\s*{0}\s*[;=\[,)]")
+
+
+def _refs(idx: _TUIndex, span: tuple[int, int], names) -> set[str]:
+    """Names (of `names`) a body refers to: identifiers not after `.` / `->`,
+    each expanded through the TU's #define bodies, transitively. A name the
+    body re-declares as a local, and neither calls nor reaches through a
+    macro, is the local, not the helper."""
+    masked, pos = idx.masked, idx.pos
+    lo = bisect.bisect_left(pos, span[0])
+    hi = bisect.bisect_left(pos, span[1])
+    body = masked[lo:hi]
+    direct, todo = set(), []
+    for m in _IDENT_TOKEN_RE.finditer(body):
+        k = m.start() - 1
+        while k >= 0 and body[k] in " \t\n":
+            k -= 1
+        if k >= 0 and (body[k] == "." or (body[k] == ">" and k > 0 and body[k - 1] == "-")):
+            continue
+        direct.add(m.group(0))
+    found, seen, via_macro = set(), set(), set()
+    todo = [(i, False) for i in direct]
+    while todo:
+        ident, expanded = todo.pop()
+        if (ident, expanded) in seen:
+            continue
+        seen.add((ident, expanded))
+        if ident in names:
+            found.add(ident)
+            if expanded:
+                via_macro.add(ident)
+        todo += [(i, True) for i in idx.macros.get(ident, ())]
+    for name in found - via_macro:
+        if (re.search(_LOCAL_DECL.format(re.escape(name)), body)
+                and not re.search(r"\b" + re.escape(name) + r"\s*\(", body)):
+            found.discard(name)
+    return found
+
+
+def inline_helpers(text: str, func: str) -> list[str]:
+    """The same-TU `static inline` functions `func` reaches, transitively
+    (cycle-safe; `func` itself excluded), in file order. A helper counts when
+    its name appears as an identifier in a reached body (a call, or its
+    address taken) or in a #define body such an identifier expands to — read
+    in the compiler view, so comments and literals never count and a
+    backslash-newline inside a name does not hide it. An ambiguous helper
+    (more than one definition) is listed; attributed_spans refuses it."""
+    defs = static_inline_defs(text)
+    if not defs:
+        return []
+    span = _func_body_span(text, func)
+    if span is None:
+        return []
+    return list(_inline_helpers_cached(text, func, span))
+
+
+@functools.lru_cache(maxsize=256)
+def _inline_helpers_cached(text: str, func: str, span: tuple[int, int]) -> tuple[str, ...]:
+    defs = static_inline_defs(text)
+    idx = _tu_index(text)
+    seen: set[str] = set()
+    todo = [span]
+    while todo:
+        for name in _refs(idx, todo.pop(), defs.keys()):
+            if name != func and name not in seen:
+                seen.add(name)
+                todo += defs[name]
+    return tuple(sorted(seen, key=lambda n: defs[n][0]))
+
+
+def attributed_spans(text: str, func: str) -> list[tuple[str, tuple[int, int]]]:
+    """(name, definition span) of `func`'s body and then of each helper it
+    reaches (inline_helpers): every span a per-function gate reads for `func`.
+    [] when `func` has no C body. Raises ValueError when a reached helper has
+    more than one definition (ambiguous: fail closed)."""
+    span = _func_body_span(text, func)
+    if span is None:
+        return []
+    defs = static_inline_defs(text)
+    out = [(func, span)]
+    for h in inline_helpers(text, func):
+        if len(defs[h]) != 1:
+            raise ValueError(f"{func}: static inline helper {h} has {len(defs[h])} "
+                             f"definitions (ambiguous)")
+        out.append((h, defs[h][0]))
+    return out
+
+
 def func_cheat_asm_count(text: str, func: str) -> int:
-    """Number of cheat constructs inside func's body: cheat-asm strip-spans
-    (asm blocks + register pins), plain `register` hints, and volatile-coercion
-    cheats (alias renames + `*(volatile T *)&D_x` casts + scalar
-    `extern volatile T D_x;` decls — see engine.volatile_cheats). -1 if the
-    body can't be located.
+    """Number of cheat constructs inside func's body — and inside every
+    same-TU `static inline` helper it reaches (inline_helpers, owner ruling
+    Q126): cheat-asm strip-spans (asm blocks + register pins), plain
+    `register` hints, and volatile-coercion cheats (alias renames +
+    `*(volatile T *)&D_x` casts + scalar `extern volatile T D_x;` decls — see
+    engine.volatile_cheats, which reads the helpers as part of `func` too).
+    -1 if the body can't be located.
 
     `queue done` (engine/queue.py) refuses to mark COMPLETED-C if this count > 0
     for a non-canonical-asm function, so adding volatile cheats here is what
     makes them a hard-stop in the same way `register T x asm("$N")` pins
     already are.
     """
-    span = _func_body_span(text, func)
-    if span is None:
+    try:
+        spans = attributed_spans(text, func)
+    except ValueError:
+        return -1  # an ambiguous helper: unknown, never clean
+    if not spans:
         # No C body. If the file supplies this function wholly from asm
         # (INCLUDE_ASM invocation or a `glabel <func>` block), that construct IS
         # the cheat construct and is attributed to `func` — otherwise a function
@@ -604,9 +857,9 @@ def func_cheat_asm_count(text: str, func: str) -> int:
         # Only when nothing explains the symbol do we report -1 (UNKNOWN), which
         # callers must treat as not-clean rather than as zero.
         return 1 if func in whole_body_asm_funcs(text) else -1
-    lo, hi = span
     strip_spans = _strip_spans(text) + register_hint_spans(text)
-    cheat_asm = sum(1 for s, _e in strip_spans if lo <= s < hi)
+    cheat_asm = sum(1 for s, _e in strip_spans
+                    if any(lo <= s < hi for _n, (lo, hi) in spans))
     from . import volatile_cheats  # local import to avoid cycle
     vol = volatile_cheats.func_volatile_cheat_count(text, func)
     return cheat_asm + (vol if vol > 0 else 0)

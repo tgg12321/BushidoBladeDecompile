@@ -39,11 +39,16 @@ type through the closing brace, as located by inlineasm._func_body_span)
 reduced to its C token sequence: comments dropped, string/char literals kept
 verbatim, preprocessor lines newline-terminated, tokens joined by one space.
 A comment or layout edit inside the definition keeps the hash; a token change
-inside it moves it. SCOPE: the definition only — file-scope macros, typedefs,
-globals, prototypes and helper functions the body depends on can change
-without moving the key; the reviewer and the oracle cover those, not this
-hash. A function with more than one definition in the file (e.g. an `#if 0`
-copy), or with both a C definition and an asm body, has NO key (fail closed).
+inside it moves it. SCOPE: the definition plus, appended in file order, the
+definition of every same-TU `static inline` helper it reaches
+(inlineasm.inline_helpers, owner ruling Q126; a body with no helper keys
+exactly as before; engine/departures.py judges records dated before Q126 by
+the definition-only key). File-scope macros, typedefs, globals, prototypes and
+other helper functions the body depends on can change without moving the
+key; the reviewer and the oracle cover those, not this hash. A function with
+more than one definition in the file (e.g. an `#if 0` copy), or with both a C
+definition and an asm body, or reaching a helper that has either, has NO key
+(fail closed).
 Deliberately NOT grindlib.body_hash, which collapses whitespace inside
 strings, strips `//` inside strings, merges `- --` into `---`, omits the
 return type, and keys K&R definitions by the whole file (layer-2 review of
@@ -169,8 +174,10 @@ def _asm_pieces(text: str, func: str, read=_disk) -> list[str]:
     return pieces
 
 
-def body_source(text: str, func: str, read=_disk) -> tuple[str, str] | None:
-    """(kind, source text) the key covers — the one C definition, or the asm
+def body_source(text: str, func: str, read=_disk,
+                helpers: bool = True) -> tuple[str, str] | None:
+    """(kind, source text) the key covers — the one C definition (with its
+    reached same-TU `static inline` helpers unless helpers=False), or the asm
     that supplies the function — or None when there is no single body."""
     span = inlineasm._func_body_span(text, func)
     pieces = _asm_pieces(text, func, read)
@@ -179,17 +186,31 @@ def body_source(text: str, func: str, read=_disk) -> tuple[str, str] | None:
             return None  # a second definition, or C AND asm: ambiguous
         # A definition sharing a line with the previous function's `}` starts
         # its span at that brace; it is not part of this function.
-        return "c", re.sub(r"^\}", "", text[span[0]:span[1]])
+        parts = [re.sub(r"^\}", "", text[span[0]:span[1]])]
+        # Owner ruling Q126: each same-TU `static inline` helper the body
+        # reaches is part of the reviewed body. Appended in file order; a
+        # helper with no single definition leaves the caller unkeyed.
+        if helpers:
+            defs = inlineasm.static_inline_defs(text)
+            for helper in inlineasm.inline_helpers(text, func):
+                if len(defs[helper]) != 1 or _asm_pieces(text, helper, read):
+                    return None
+                hs, he = defs[helper][0]
+                parts.append(text[hs:he])
+        return "c", "\n".join(parts)
     if pieces:
         return "asm", "\n".join(pieces)
     return None
 
 
-def body_key(text: str, func: str, read=_disk) -> tuple[str, str] | None:
+def body_key(text: str, func: str, read=_disk,
+             helpers: bool = True) -> tuple[str, str] | None:
     """(kind, 16-hex hash) of `func`'s body in the C file `text`, or None when
     there is no single body (fail closed: nothing to key a verdict to).
-    `read(path)` supplies included .s files (default: the working tree)."""
-    src = body_source(text, func, read)
+    `read(path)` supplies included .s files (default: the working tree).
+    helpers=False: the pre-Q126 key, the definition alone (engine/departures.py
+    judges records dated before Q126 by it)."""
+    src = body_source(text, func, read, helpers)
     return None if src is None else (src[0], _key(src[1]))
 
 
