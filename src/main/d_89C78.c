@@ -11,7 +11,7 @@
  *    .sdata, so no -G8 file defined them.
  * 3. Neighbours in .data link order: 3AB48.c, a code module with no small
  *    data, references no object in the run (Q123: not an owner candidate);
- *    43500.c is a -G8 code module with its own .sdata and gp accesses, whose
+ *    43500.c is a -G8 code module with its own .sbss and gp accesses, whose
  *    .text follows 3AB48.c's.
  * Readers: all 368E4.c; D_8009947C also through func_80046F14 (9F9C.c,
  * 17AFC.c, 43500.c). */
