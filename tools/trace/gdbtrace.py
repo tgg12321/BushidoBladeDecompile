@@ -94,6 +94,7 @@ REG_INDEX.update({"s8": 30, "sr": 32, "lo": 33, "hi": 34, "bad": 35,
                   "cause": 36, "pc": 37})
 
 RAM_LO, RAM_HI = 0x80000000, 0x80200000
+RESET_VECTOR = 0xBFC00000
 MAX_SYM_OFF = 0x4000  # larger offsets print raw: no symbol spans that far
 DEBUG = bool(os.environ.get("GDBTRACE_DEBUG"))  # log every packet to stderr
 
@@ -447,6 +448,7 @@ def run(args) -> int:
         spec = json.load(f)
 
     args.lua = None
+    args.spec_obj = spec
     script = spec.get("script")
     if script:
         if args.launch != "pcsx-redux":
@@ -475,6 +477,7 @@ def run(args) -> int:
     args.result = {}
     outcome = "error"
     emu = None
+    rc = 1
     try:
         if args.launch == "duckstation":
             emu = launch_duckstation(args)
@@ -483,7 +486,6 @@ def run(args) -> int:
         gdb = connect(args.host, args.port, args.connect_timeout)
         rc = trace(gdb, syms, spec, args)
         outcome = "ok"
-        return rc
     except BaseException as e:
         outcome = f"error: {type(e).__name__}: {e}"
         raise
@@ -505,6 +507,8 @@ def run(args) -> int:
         except Exception as e:  # noqa: BLE001
             print(f"gdbtrace: manifest not written: {type(e).__name__}: {e}",
                   file=sys.stderr)
+            rc = 1
+    return rc
 
 
 def prepare_memcards(args) -> dict:
@@ -518,7 +522,8 @@ def prepare_memcards(args) -> dict:
     for n in (1, 2):
         dst = runkit.companion(args.out, f".mc{n}.mcd")
         src = getattr(args, f"memcard{n}")
-        if src and os.path.abspath(src) == os.path.abspath(dst):
+        if src and os.path.normcase(os.path.abspath(src)) == \
+                os.path.normcase(os.path.abspath(dst)):
             raise SystemExit(f"gdbtrace: --memcard{n} is this run's own card "
                              "copy; copy it elsewhere first")
         if os.path.exists(dst):
@@ -593,8 +598,16 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
     phase = state[2] if state else None
     if script:
         # Frames emulated before the breakpoints were armed are not covered.
-        armed_frame = runkit.read_pause_frame(args.out)
-        args.result["armed_frame"] = armed_frame
+        # Frame 0 is claimed only when the CPU is seen at the reset vector
+        # and no pause has been recorded past frame 0.
+        armed_pc = gdb.regs()[37]
+        paused = runkit.read_pause_frame(args.out)
+        if armed_pc == RESET_VECTOR and paused in (None, 0):
+            armed_frame = 0
+        else:
+            armed_frame = paused  # None: unknown
+        args.result.update({"armed_frame": armed_frame,
+                            "armed_pc": armed_pc})
         emit({"ev": "phase", "t": 0.0, "frame": state[1] if state else 0,
               "phase": phase, "armed_frame": armed_frame})
     after_script_stop = None  # regs at the last script stop
@@ -667,7 +680,8 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 after_script_stop = regs
                 emit({"ev": "phase", "t": round(time.time() - t0, 3),
                       "frame": new[1], "phase": phase, "end": new[3]})
-            e, acc = entry_for_stop(regs, reply, interrupted)
+            # A Lua pause can land on any load/store, like our own ^C.
+            e, acc = entry_for_stop(regs, reply, interrupted or script_stop)
             if e is None:
                 if script_stop and state[3]:
                     break
@@ -990,9 +1004,10 @@ def report(args) -> int:
                  f"{runkit.sha1_file(args.trace)}")
     armed = next((p["armed_frame"] for p in phases if "armed_frame" in p),
                  None)
-    if armed:
-        w.append(f"- WARNING: breakpoints were armed at frame {armed}; "
-                 "frames before it are not covered")
+    if phases and armed != 0:
+        w.append(f"- WARNING: breakpoints were armed at frame "
+                 f"{armed if armed is not None else 'unknown'}; earlier "
+                 "frames are not covered")
     if phases:
         spans = []
         for i, ph in enumerate(phases):

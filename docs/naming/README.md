@@ -419,11 +419,13 @@ core, launched by `run --launch pcsx-redux`); spec format and usage are in its d
 come from `build/bb2.map` and `build/bb2.elf` (statics), so trace only a build whose SHA1 is the oracle. A trace shows what one
 scenario did, never everything a function can do: cite it with the scenario it ran.
 A spec's `script` block (`tools/trace/runkit.py`) makes the run reproducible: it starts at
-power-on (default settings, breakpoints armed before the first instruction) and drives
+power-on (default settings; breakpoints armed while the CPU is checked to sit at the reset
+vector) and drives
 PCSX-Redux through generated Lua (frame-timed pad inputs, phase labels that tag every hit,
 screenshots as PNG). Every run writes `<capture>.manifest.json`: the outcome, the SHA1 of each
 input taken before launch (tools + git status, build/oracle, spec, emulator executables and
-version, BIOS, disc tracks, memory cards, Lua) and of each output. Only a scripted Redux run that
+version, BIOS, disc tracks, memory cards, Lua) and of each output. Only a scripted Redux run with
+an explicit BIOS that was armed at frame 0, ran every script action (checked against its log) and
 reached its end has `q124_complete: true`.
 When a trace counts as naming evidence, and what a capture must record, is
 `.claude/rules/naming-runtime-evidence.md` (owner ruling Q124).
