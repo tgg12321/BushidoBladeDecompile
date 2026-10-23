@@ -10,6 +10,8 @@
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void AddPrim(void *, void *);
 
+/* func_800747D8: the duplicated `var_7 = 4;` (duplicated-statement-into-arms)
+ * carries its FAKE label inline. */
 /* Q65: this file's statics (.sbss), in address order. D_800A35D0: one {s16,
  * s16} pair per player, passed to func_800692C0 beside SelWork f40[player]. */
 static s16 D_800A35D0[2][2];
@@ -74,9 +76,10 @@ s32 func_800747D8(u32 arg0) {
                 } else {
                     SELWORK->f65 += 1;
                 }
-                /* each cursor move sets its selection sound itself (4, or 0
-                 * below when f64 != 0); one store after the label: jump.c
-                 * folds the pair into a branchless sltiu/sll store-flag */
+                /* FAKE: `var_7 = 4;` in both arms instead of once after the
+                 * label keeps jump.c from the branchless sltiu/sll store-flag
+                 * fold (duplicated-statement-into-arms); one store after the
+                 * label: score 8 (Q129) */
                 var_7 = 4;
                 goto selection_sound;
             case 2:
@@ -85,6 +88,10 @@ s32 func_800747D8(u32 arg0) {
                 } else {
                     SELWORK->f65 -= 1;
                 }
+                /* FAKE: `var_7 = 4;` in both arms instead of once after the
+                 * label keeps jump.c from the branchless sltiu/sll store-flag
+                 * fold (duplicated-statement-into-arms); one store after the
+                 * label: score 8 (Q129) */
                 var_7 = 4;
                 goto selection_sound;
             }
@@ -214,7 +221,8 @@ void menu_DrawSelPanel(Unk8006EACCRec *arg0, s32 arg1) {
     s32 var_5;
     s32 var_6;
     /* the sheet's cells, just past its 12-byte header, for s.table. Ruling 9:
-     * one meaning (s.header + 0xC) at four writes. */
+     * one meaning (s.header + 0xC) at four writes. FAKE: the holder between
+     * the header's cells and s.table; stored directly: score 12 (Q129). */
     Unk8009B400Record *cells;
     s16 i;
 
@@ -547,7 +555,8 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
        placeholder sheet as three headers too, so +0x24 runs past it into
        unreferenced bytes. Ruling 9 (b'): one meaning (the cells after the
        sheet's header(s), s.header + 0xC or + 0x24) at four writes, for
-       s.table. */
+       s.table. FAKE: the holder between the header's cells and s.table;
+       stored directly: score 25 (Q129). */
     Unk8009B400Record *cells;
 
     var_2 = 0;
