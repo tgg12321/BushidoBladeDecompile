@@ -34,8 +34,9 @@ Spec (JSON):
     ],
     "polls": [                       # pause, read, resume on a period
       {"at": "D_800A32B4", "len": 16, "every_s": 0.5}
-    ]
-  }
+    ],
+    "script": {...}                  # PCSX-Redux scripted run: frame-timed
+  }                                  # inputs, phases, screenshots (runkit.py)
 `at`/`base` take a symbol from the link map, a 0x address, `sym+0xNN`, or (for
 `base` only) a register name (a0..a3, sp, gp, s0..s7, v0, v1, ra).
 
@@ -55,6 +56,13 @@ caller. Watch hits name the load/store at the stop pc (pc-4 too when the stub re
 the address); a store in a branch delay slot may be missed and then shows as an
 `unmatched-stop` event.
 A trace covers one scenario, never everything a function can do.
+
+Reproducible runs (owner ruling Q124): with a "script" block the run starts
+at power-on, runs to the script's end_frame, and every hit carries the
+phase it fell in. Each run writes <out>.manifest.json next to the capture:
+SHA1 of the emulator version, BIOS, disc tracks, build map/ELF/EXE (oracle
+check), spec, start state (memory cards), generated Lua and every output.
+Cite a capture by its manifest.
 """
 
 from __future__ import annotations
@@ -71,6 +79,8 @@ import socket
 import subprocess
 import sys
 import time
+
+import runkit
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -435,6 +445,30 @@ def run(args) -> int:
     syms = Symbols(args.map, args.elf)
     with open(args.spec, encoding="utf-8") as f:
         spec = json.load(f)
+    build = runkit.build_rec(args.map, args.elf)
+    if not build["oracle_match"]:
+        print("gdbtrace: WARNING build/bb2.exe is not the oracle; addresses "
+              "may not describe the original game", file=sys.stderr)
+
+    args.lua = None
+    if spec.get("script"):
+        if args.launch != "pcsx-redux":
+            raise SystemExit("gdbtrace: a script needs --launch pcsx-redux")
+        if args.boot_wait:
+            raise SystemExit("gdbtrace: a script starts at power-on; drop "
+                             "--boot-wait")
+        stale = runkit.companion(args.out, ".state")
+        if os.path.exists(stale):
+            os.remove(stale)
+        args.lua = runkit.write_lua(spec["script"], args.out)
+    if args.lua:
+        kind = "power-on"
+    elif args.launch:
+        kind = f"attached after {args.boot_wait:g} s boot-wait"
+    else:
+        kind = "attached to a running emulator"
+    start = {"argv": sys.argv, "kind": kind}
+    start.update(prepare_memcards(args))
 
     emu = None
     if args.launch == "duckstation":
@@ -453,6 +487,39 @@ def run(args) -> int:
             else:
                 stop_emulator(proc, getattr(proc, "stub_pid", None))
                 restore()
+        outputs = [args.out] + runkit.convert_shots(args.out)
+        st = runkit.companion(args.out, ".state")
+        if os.path.exists(st):
+            os.remove(st)
+        for n in (1, 2):
+            mc = runkit.companion(args.out, f".mc{n}.mcd")
+            if os.path.exists(mc):
+                outputs.append(mc)
+        man = runkit.write_manifest(
+            args, args.spec, spec,
+            getattr(emu[0], "cmd", None) if emu else None, start, outputs,
+            REPO)
+        print(f"gdbtrace: manifest -> {man}")
+
+
+def prepare_memcards(args) -> dict:
+    """Memory cards are part of the start state. Each run gets its own
+    pair next to the capture: a copy of --memcardN, or none (PCSX-Redux
+    then creates a blank card). Returns the start-state record."""
+    rec = {}
+    if args.launch != "pcsx-redux":
+        return rec
+    for n in (1, 2):
+        dst = runkit.companion(args.out, f".mc{n}.mcd")
+        if os.path.exists(dst):
+            os.remove(dst)
+        src = getattr(args, f"memcard{n}")
+        if src:
+            shutil.copyfile(src, dst)
+            rec[f"memcard{n}"] = runkit.file_rec(src)
+        else:
+            rec[f"memcard{n}"] = "none: blank card created by the emulator"
+    return rec
 
 
 def connect(host: str, port: int, wait: float) -> Gdb:
@@ -504,11 +571,17 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
               "every": float(p.get("every_s", 1.0)), "next": 0.0}
              for p in spec.get("polls", [])]
 
-    duration = float(spec.get("duration_s", args.duration))
+    script = spec.get("script")
+    duration = float(spec.get("duration_s",
+                              900 if script else args.duration))
     max_events = int(spec.get("max_events", 5000))
     t0 = time.time()
     events = 0
     totals = {}
+    state = runkit.read_state(args.out) if script else None
+    phase = state[2] if state else None
+    if state:
+        emit({"ev": "phase", "t": 0.0, "frame": state[1], "phase": phase})
 
     def entry_for_stop(regs, reply, interrupted):
         pc = regs[37] if len(regs) > 37 else 0
@@ -562,9 +635,18 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 emit({"ev": "exit", "reply": reply})
                 break
             regs = gdb.regs()
+            new = runkit.read_state(args.out) if script else None
+            script_stop = bool(new and new != state)
+            if script_stop:
+                # The Lua paused the emulator at a phase change or the end.
+                state, phase = new, new[2]
+                emit({"ev": "phase", "t": round(time.time() - t0, 3),
+                      "frame": new[1], "phase": phase, "end": new[3]})
+                if new[3]:
+                    break
             e, acc = entry_for_stop(regs, reply, interrupted)
             if e is None:
-                if not interrupted:
+                if not interrupted and not script_stop:
                     emit({"ev": "unmatched-stop", "pc": regs[37],
                           "ra": regs[31], "stop": reply,
                           "access": list(acc) if acc else None})
@@ -577,6 +659,8 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                    "n": e["hits"], "pc": regs[37], "ra": regs[31],
                    "args": regs[4:8], "v0": regs[2], "sp": regs[29],
                    "stop": reply}
+            if script:
+                rec["phase"] = phase
             if acc:
                 rec["access"] = {"pc": acc[0], "addr": acc[1], "width": acc[2],
                                  "store": acc[3], "value": acc[4]}
@@ -589,7 +673,7 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             if e["hits"] >= int(sp.get("max_hits", 1 << 30)):
                 gdb.clear_bp(e["kind"], e["addr"], e["len"])
                 del armed[(e["kind"], e["addr"])]
-                if not armed and not polls:
+                if not armed and not polls and not script:
                     break
     finally:
         for (kind, addr), e in list(armed.items()):
@@ -601,7 +685,8 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             gdb.cont()
         except (GdbError, OSError):
             pass
-        emit({"ev": "end", "events": events,
+        emit({"ev": "end", "events": events, "phase": phase,
+              "script_ended": bool(state and state[3]),
               "elapsed": round(time.time() - t0, 3), "hits": totals})
         out.close()
         gdb.close()
@@ -683,8 +768,14 @@ def launch_redux(args):
            "-fastboot", "-run", "-noupdate"]  # dynarec skips breakpoints
     if args.bios:
         cmd += ["-bios", os.path.abspath(args.bios)]
+    for n in (1, 2):
+        cmd += [f"-memcard{n}",
+                os.path.abspath(runkit.companion(args.out, f".mc{n}.mcd"))]
+    if getattr(args, "lua", None):
+        cmd += ["-dofile", os.path.abspath(args.lua)]
     # cwd: its crash reporter writes .sentry-native/ into the working dir.
     proc = subprocess.Popen(cmd, cwd=portable)
+    proc.cmd = cmd
     try:
         wait_for_stub(proc, args.host, args.port, args.connect_timeout,
                       "PCSX-Redux")
@@ -829,6 +920,7 @@ def report(args) -> int:
     syms = Symbols(args.map, args.elf)
     hits = collections.defaultdict(list)
     polls = collections.defaultdict(list)
+    phases = []
     start = end = None
     with open(args.trace, encoding="utf-8") as f:
         for line in f:
@@ -837,6 +929,8 @@ def report(args) -> int:
                 hits[(rec["at"], rec["kind"])].append(rec)
             elif rec["ev"] == "poll":
                 polls[rec["at"]].append(rec)
+            elif rec["ev"] == "phase":
+                phases.append(rec)
             elif rec["ev"] == "start":
                 start = rec
             elif rec["ev"] == "end":
@@ -851,6 +945,22 @@ def report(args) -> int:
                  f"{end['elapsed'] if end else '?'} s")
     if args.context:
         w.append(f"- scenario: {args.context}")
+    man = runkit.companion(args.trace, ".manifest.json")
+    if os.path.isfile(man):
+        w.append(f"- manifest `{os.path.basename(man)}` "
+                 f"(SHA1 {runkit.sha1_file(man)}), capture SHA1 "
+                 f"{runkit.sha1_file(args.trace)}")
+    if phases:
+        spans = []
+        for i, ph in enumerate(phases):
+            if ph.get("end"):
+                continue
+            nxt = phases[i + 1]["frame"] if i + 1 < len(phases) else "?"
+            spans.append(f"{ph['phase']} (frames {ph['frame']}-{nxt})")
+        last = phases[-1]
+        w.append("- phases covered: " + ", ".join(spans) +
+                 ("; script reached its end" if last.get("end") else
+                  "; run stopped before the script's end"))
     w.append("")
     for (at, kind), recs in hits.items():
         label = at if kind == 0 else f"{at} (Z{kind} watch)"
@@ -972,6 +1082,9 @@ def main(argv=None) -> int:
     r.add_argument("--boot-wait", type=float, default=0.0,
                    help="seconds to let the game run before arming")
     r.add_argument("--keep-emulator", action="store_true")
+    for n in (1, 2):
+        r.add_argument(f"--memcard{n}", help=f"pcsx-redux: start with a copy "
+                       f"of this card in slot {n} (default: a blank card)")
 
     p = sub.add_parser("report", help="summarize a trace as markdown evidence")
     p.add_argument("trace")
