@@ -480,9 +480,10 @@ DISPENV *PutDispEnv(DISPENV *env) {
                 mode |= 3;
             }
         }
-        /* FAKE: empty then-arm; the direct `if (env->disp.h > ...) mode |=
-           0x24;` adds 4 insns (score 5). SOTN: src/main/psxsdk/libgpu/sys.c:394
-           @aa53500 (same form). */
+        /* empty then-arm, as SOTN's PutDispEnv (owner ruling Q128); the
+           direct `if (env->disp.h > ...) mode |= 0x24;` adds 4 insns (score
+           5) */
+        /* SOTN: src/main/psxsdk/libgpu/sys.c:394 @db41b28 */
         if (env->disp.h <= (env->pad0 ? 288 : 256)) {
         } else {
             mode |= 0x24;

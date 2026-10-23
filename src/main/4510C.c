@@ -1908,11 +1908,9 @@ s32 func_80058580(Unk80101EC8Record *p) {
             tz = p->unk_3A2;
             var_38 = p->unk_39E;
         }
-        /* !FAKE: the trailing `&& var_38 == 1` repeats the first test
-         * (redundant condition, no-new-park-categories entry 16): the target
-         * re-tests $s2 after the || chain; without it the chain is two
-         * instructions shorter
-         */
+        /* the trailing `&& var_38 == 1` repeats the first test: the target
+         * re-tests $s2 after the || chain (without it the chain is two
+         * instructions shorter), so it is reconstruction (owner ruling Q127) */
         if (!(var_38 == 1 &&
               (p->other->move_kind == 0xA || p->cpu_profile == 0xA ||
                (p->unk_0E >= 6 && p->unk_34A == 0)) &&
@@ -2011,12 +2009,11 @@ s32 func_80058580(Unk80101EC8Record *p) {
                                     p->other->unk_404[p->other->unk_86]) {
                                 goto pick2;
                             }
-                            /* !FAKE: the inner test contradicts the outer one,
-                             * so pick2's body runs only by the goto above; the
+                            /* the inner test contradicts the outer one, so
+                             * pick2's body runs only by the goto above; the
                              * target compares twice, and failing either compare
-                             * still reaches the var_8 call test (redundant
-                             * condition, no-new-park-categories entry 16);
-                             * without the work2 == 5 arm: score 20 */
+                             * still reaches the var_8 call test (owner ruling
+                             * Q127); without the work2 == 5 arm: score 20 */
                             if (work2 == 5 &&
                                 p->other->unk_404[p->other->unk_86] <
                                     D_800A387C) {
