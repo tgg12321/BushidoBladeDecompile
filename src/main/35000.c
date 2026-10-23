@@ -433,24 +433,14 @@ s32 *arena_OpenBlock(s32 a0) {
 }
 
 void arena_SetBlockEnd(s32 a0, s32 a1) {
-    s32 i = 0;
-    s32 count = g_arena_block_count;
+    s32 i;
     Unk800EED10Entry *e;
-    if (i >= count)
-        goto not_found;
-    {
-        Unk800EED10Entry *p = g_arena_blocks;
-        do {
-            /* FAKE: cursor `p` and tested entry `e` are two names for one
-               walk, both live as in the target; one pointer `e++`: score 7 */
-            e = p;
-            if (e->id == a0)
-                goto found;
-            i++;
-            p = e + 1;
-        } while (i < count);
+
+    for (i = 0; i < g_arena_block_count; i++) {
+        e = &g_arena_blocks[i];
+        if (e->id == a0)
+            break;
     }
-found:
     if (i < g_arena_block_count) {
         s32 amt = a1 - g_arena_free_ptr;
         e->amt = amt;
@@ -458,7 +448,6 @@ found:
         g_arena_free_size -= amt;
         return;
     }
-not_found:
     func_80052C10();
 }
 
