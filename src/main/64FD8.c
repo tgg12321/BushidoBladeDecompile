@@ -10,8 +10,6 @@
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void AddPrim(void *, void *);
 
-/* func_800747D8: the duplicated `var_7 = 4;` (duplicated-statement-into-arms)
- * carries its FAKE label inline. */
 /* Q65: this file's statics (.sbss), in address order. D_800A35D0: one {s16,
  * s16} pair per player, passed to func_800692C0 beside SelWork f40[player]. */
 static s16 D_800A35D0[2][2];
@@ -76,9 +74,9 @@ s32 func_800747D8(u32 arg0) {
                 } else {
                     SELWORK->f65 += 1;
                 }
-                /* FAKE: `var_7 = 4;` in both arms instead of once after the
-                 * label keeps jump.c from the branchless sltiu/sll store-flag
-                 * fold (duplicated-statement-into-arms) */
+                /* each cursor move sets its selection sound itself (4, or 0
+                 * below when f64 != 0); one store after the label: jump.c
+                 * folds the pair into a branchless sltiu/sll store-flag */
                 var_7 = 4;
                 goto selection_sound;
             case 2:
@@ -87,9 +85,6 @@ s32 func_800747D8(u32 arg0) {
                 } else {
                     SELWORK->f65 -= 1;
                 }
-                /* FAKE: `var_7 = 4;` in both arms instead of once after the
-                 * label keeps jump.c from the branchless sltiu/sll store-flag
-                 * fold (duplicated-statement-into-arms) */
                 var_7 = 4;
                 goto selection_sound;
             }
