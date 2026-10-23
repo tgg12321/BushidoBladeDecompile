@@ -59,10 +59,10 @@ A trace covers one scenario, never everything a function can do.
 
 Reproducible runs (owner ruling Q124): with a "script" block the run starts
 at power-on, runs to the script's end_frame, and every hit carries the
-phase it fell in. Each run writes <out>.manifest.json next to the capture:
-SHA1 of the emulator version, BIOS, disc tracks, build map/ELF/EXE (oracle
-check), spec, start state (memory cards), generated Lua and every output.
-Cite a capture by its manifest.
+phase it fell in. Each run writes <out>.manifest.json next to the capture
+(see runkit.py): the run's outcome, SHA1 of every input taken before
+launch, and of every output after it. Only a scripted PCSX-Redux run can
+meet Q124 (manifest `q124_complete`). Cite a capture by its manifest.
 """
 
 from __future__ import annotations
@@ -445,39 +445,48 @@ def run(args) -> int:
     syms = Symbols(args.map, args.elf)
     with open(args.spec, encoding="utf-8") as f:
         spec = json.load(f)
-    build = runkit.build_rec(args.map, args.elf)
-    if not build["oracle_match"]:
-        print("gdbtrace: WARNING build/bb2.exe is not the oracle; addresses "
-              "may not describe the original game", file=sys.stderr)
 
     args.lua = None
-    if spec.get("script"):
+    script = spec.get("script")
+    if script:
         if args.launch != "pcsx-redux":
             raise SystemExit("gdbtrace: a script needs --launch pcsx-redux")
         if args.boot_wait:
             raise SystemExit("gdbtrace: a script starts at power-on; drop "
                              "--boot-wait")
-        stale = runkit.companion(args.out, ".state")
-        if os.path.exists(stale):
-            os.remove(stale)
-        args.lua = runkit.write_lua(spec["script"], args.out)
+        runkit.check_script(script)
+    runkit.clean_outputs(args.out, script)
+    if script:
+        args.lua = runkit.write_lua(script, args.out)
     if args.lua:
-        kind = "power-on"
+        kind = "power-on: emulator held at the reset vector until armed"
     elif args.launch:
         kind = f"attached after {args.boot_wait:g} s boot-wait"
     else:
         kind = "attached to a running emulator"
-    start = {"argv": sys.argv, "kind": kind}
+    start = {"kind": kind}
     start.update(prepare_memcards(args))
+    # Every input is hashed before the emulator can touch it.
+    inputs = runkit.inputs_record(args, start, REPO)
+    if not inputs["build"]["oracle_match"]:
+        print("gdbtrace: WARNING build/bb2.exe is not the oracle; addresses "
+              "may not describe the original game", file=sys.stderr)
 
+    args.result = {}
+    outcome = "error"
     emu = None
-    if args.launch == "duckstation":
-        emu = launch_duckstation(args)
-    elif args.launch == "pcsx-redux":
-        emu = launch_redux(args)
     try:
+        if args.launch == "duckstation":
+            emu = launch_duckstation(args)
+        elif args.launch == "pcsx-redux":
+            emu = launch_redux(args)
         gdb = connect(args.host, args.port, args.connect_timeout)
-        return trace(gdb, syms, spec, args)
+        rc = trace(gdb, syms, spec, args)
+        outcome = "ok"
+        return rc
+    except BaseException as e:
+        outcome = f"error: {type(e).__name__}: {e}"
+        raise
     finally:
         if emu is not None:
             proc, restore = emu
@@ -487,38 +496,40 @@ def run(args) -> int:
             else:
                 stop_emulator(proc, getattr(proc, "stub_pid", None))
                 restore()
-        outputs = [args.out] + runkit.convert_shots(args.out)
-        st = runkit.companion(args.out, ".state")
-        if os.path.exists(st):
-            os.remove(st)
-        for n in (1, 2):
-            mc = runkit.companion(args.out, f".mc{n}.mcd")
-            if os.path.exists(mc):
-                outputs.append(mc)
-        man = runkit.write_manifest(
-            args, args.spec, spec,
-            getattr(emu[0], "cmd", None) if emu else None, start, outputs,
-            REPO)
-        print(f"gdbtrace: manifest -> {man}")
+        # Errors here must not hide the run's own exception.
+        try:
+            man = runkit.finish_manifest(
+                args, inputs, getattr(emu[0], "cmd", None) if emu else None,
+                {"outcome": outcome, **args.result})
+            print(f"gdbtrace: manifest -> {man}")
+        except Exception as e:  # noqa: BLE001
+            print(f"gdbtrace: manifest not written: {type(e).__name__}: {e}",
+                  file=sys.stderr)
 
 
 def prepare_memcards(args) -> dict:
-    """Memory cards are part of the start state. Each run gets its own
-    pair next to the capture: a copy of --memcardN, or none (PCSX-Redux
-    then creates a blank card). Returns the start-state record."""
+    """Memory cards are part of the start state. Each PCSX-Redux run gets
+    its own pair next to the capture: a copy of --memcardN, or a freshly
+    formatted blank card. Returns the start-state record (hashed later,
+    before launch)."""
     rec = {}
     if args.launch != "pcsx-redux":
         return rec
     for n in (1, 2):
         dst = runkit.companion(args.out, f".mc{n}.mcd")
+        src = getattr(args, f"memcard{n}")
+        if src and os.path.abspath(src) == os.path.abspath(dst):
+            raise SystemExit(f"gdbtrace: --memcard{n} is this run's own card "
+                             "copy; copy it elsewhere first")
         if os.path.exists(dst):
             os.remove(dst)
-        src = getattr(args, f"memcard{n}")
         if src:
             shutil.copyfile(src, dst)
-            rec[f"memcard{n}"] = runkit.file_rec(src)
+            rec[f"memcard{n}"] = {"from": os.path.abspath(src)}
         else:
-            rec[f"memcard{n}"] = "none: blank card created by the emulator"
+            runkit.write_blank_card(dst)
+            rec[f"memcard{n}"] = {"from": "blank card (runkit.write_blank_card)"}
+        rec[f"memcard{n}"]["card"] = dst
     return rec
 
 
@@ -573,15 +584,20 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
 
     script = spec.get("script")
     duration = float(spec.get("duration_s",
-                              900 if script else args.duration))
+                              3600 if script else args.duration))
     max_events = int(spec.get("max_events", 5000))
     t0 = time.time()
     events = 0
     totals = {}
     state = runkit.read_state(args.out) if script else None
     phase = state[2] if state else None
-    if state:
-        emit({"ev": "phase", "t": 0.0, "frame": state[1], "phase": phase})
+    if script:
+        # Frames emulated before the breakpoints were armed are not covered.
+        armed_frame = runkit.read_pause_frame(args.out)
+        args.result["armed_frame"] = armed_frame
+        emit({"ev": "phase", "t": 0.0, "frame": state[1] if state else 0,
+              "phase": phase, "armed_frame": armed_frame})
+    after_script_stop = None  # regs at the last script stop
 
     def entry_for_stop(regs, reply, interrupted):
         pc = regs[37] if len(regs) > 37 else 0
@@ -635,17 +651,26 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 emit({"ev": "exit", "reply": reply})
                 break
             regs = gdb.regs()
+            if after_script_stop is not None and regs == after_script_stop:
+                # A breakpoint and the Lua pause on the same instruction can
+                # arrive as two stops; nothing ran in between: skip it.
+                after_script_stop = None
+                continue
+            after_script_stop = None
             new = runkit.read_state(args.out) if script else None
             script_stop = bool(new and new != state)
             if script_stop:
                 # The Lua paused the emulator at a phase change or the end.
+                # A breakpoint on the same instruction is still a hit, in
+                # the phase that starts here.
                 state, phase = new, new[2]
+                after_script_stop = regs
                 emit({"ev": "phase", "t": round(time.time() - t0, 3),
                       "frame": new[1], "phase": phase, "end": new[3]})
-                if new[3]:
-                    break
             e, acc = entry_for_stop(regs, reply, interrupted)
             if e is None:
+                if script_stop and state[3]:
+                    break
                 if not interrupted and not script_stop:
                     emit({"ev": "unmatched-stop", "pc": regs[37],
                           "ra": regs[31], "stop": reply,
@@ -670,6 +695,8 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 rec["dump"] = snapshot(gdb, syms, regs, sp["dump"])
             emit(rec)
             events += 1
+            if script_stop and state[3]:
+                break
             if e["hits"] >= int(sp.get("max_hits", 1 << 30)):
                 gdb.clear_bp(e["kind"], e["addr"], e["len"])
                 del armed[(e["kind"], e["addr"])]
@@ -681,12 +708,15 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 gdb.clear_bp(kind, addr, e["len"])
             except (GdbError, OSError):
                 pass
-        try:
-            gdb.cont()
-        except (GdbError, OSError):
-            pass
+        ended = bool(state and state[3])
+        args.result.update({"script_ended": ended, "events": events})
+        if not ended:  # a finished script stays paused: cards stay as-is
+            try:
+                gdb.cont()
+            except (GdbError, OSError):
+                pass
         emit({"ev": "end", "events": events, "phase": phase,
-              "script_ended": bool(state and state[3]),
+              "script_ended": ended,
               "elapsed": round(time.time() - t0, 3), "hits": totals})
         out.close()
         gdb.close()
@@ -765,7 +795,15 @@ def launch_redux(args):
     cmd = [os.path.abspath(args.emulator), "-portable", portable,
            "-iso", os.path.abspath(args.cue),
            "-gdb", "-gdb-port", str(args.port), "-debugger", "-interpreter",
-           "-fastboot", "-run", "-noupdate"]  # dynarec skips breakpoints
+           "-fastboot", "-noupdate"]  # dynarec skips breakpoints
+    if getattr(args, "lua", None):
+        # -safe: default settings (+ these flags) instead of whatever
+        # pcsx.json holds, so the version + command line fix the setup.
+        # No -run: the CPU waits at the reset vector for the first `c`,
+        # after the breakpoints are armed.
+        cmd += ["-safe"]
+    else:
+        cmd += ["-run"]
     if args.bios:
         cmd += ["-bios", os.path.abspath(args.bios)]
     for n in (1, 2):
@@ -950,13 +988,19 @@ def report(args) -> int:
         w.append(f"- manifest `{os.path.basename(man)}` "
                  f"(SHA1 {runkit.sha1_file(man)}), capture SHA1 "
                  f"{runkit.sha1_file(args.trace)}")
+    armed = next((p["armed_frame"] for p in phases if "armed_frame" in p),
+                 None)
+    if armed:
+        w.append(f"- WARNING: breakpoints were armed at frame {armed}; "
+                 "frames before it are not covered")
     if phases:
         spans = []
         for i, ph in enumerate(phases):
             if ph.get("end"):
                 continue
             nxt = phases[i + 1]["frame"] if i + 1 < len(phases) else "?"
-            spans.append(f"{ph['phase']} (frames {ph['frame']}-{nxt})")
+            first = max(ph["frame"], armed or 0)
+            spans.append(f"{ph['phase']} (frames {first}-{nxt})")
         last = phases[-1]
         w.append("- phases covered: " + ", ".join(spans) +
                  ("; script reached its end" if last.get("end") else
