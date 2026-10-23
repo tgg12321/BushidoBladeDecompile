@@ -774,10 +774,6 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
                 s.y = col << 4;
                 s.x = row * 116 + (row >> 1) * 20;
                 s.has_color = 0;
-                /* FAKE: the draw tail is written in both arms, as the two tails
-                 * the target cross-jumped; one shared tail after the if/else
-                 * puts the a0 setup after the label: score 29
-                 * (duplicated-statement-into-arms) */
                 s.header = var_3[21];
                 var_4 = s.header->cells;
                 s.table = var_4;
