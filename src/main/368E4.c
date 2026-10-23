@@ -2054,8 +2054,8 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
     s32 var_s2;
     s32 var_s1;
     s32 var_s3;
-    s32 v1;
-    s32 var_14;
+    s32 *count_slot;
+    u32 var_14;
     s32 a0_arg;
     s32 *tbl = (s32 *)arg0;
 
@@ -2106,18 +2106,17 @@ s32 func_80049C24(s32 arg0, s32 arg1) {
         func_80052C10();
     }
 
-    /* FAKE: var_14 built in two steps (one expression emits the nor after the
-     * slot copy, score 2); v1 holds var_s3's old value so var_s3 steps
-     * before the store (stored through var_s3, the step follows the store,
-     * score 4). */
+    /* the entry count's header slot is reserved before the entries are
+     * written; the count is (var_s0 >= 0) + (var_s2 >= 0), its first term
+     * built as ~var_s0 >> 31 (Ruling 4 split; one expression: score 2) */
     var_14 = ~var_s0;
-    v1 = var_s3;
+    count_slot = (s32 *)var_s3;
     var_s3 += 4;
-    var_14 = (u32)var_14 >> 31;
+    var_14 >>= 31;
     if (var_s2 >= 0) {
         var_14 += 1;
     }
-    *(s32 *)v1 = var_14;
+    *count_slot = var_14;
 
     if (var_s0 >= 0) {
         *(s32 *)var_s3 = 2;
