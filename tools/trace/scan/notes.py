@@ -3,6 +3,8 @@
 
 All relative CLI paths are repository-relative. Capture and phase identifiers
 are copied verbatim; summaries describe only the supplied facts.
+Check reads only per-TU filenames (TU slashes encoded as __); decoded TU ids
+must contain a slash, so shared tables such as events.tsv are skipped.
 """
 
 import argparse
@@ -172,7 +174,8 @@ def main(argv=None):
     try:
         out_dir = REPO_ROOT / args.out_dir
         tus = args.tu if args.command == "build" else [
-            p.stem.replace("__", "/") for p in sorted(out_dir.glob("*.tsv"))]
+            p.stem.replace("__", "/") for p in sorted(out_dir.glob("*.tsv"))
+            if "/" in p.stem.replace("__", "/")]
         if args.command == "build" and not tus:
             raise ValueError("build requires --tu")
         for tu in tus:

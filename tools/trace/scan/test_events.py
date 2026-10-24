@@ -21,15 +21,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from tools.trace.scan import events
 
 
+def clean_env():
+    return {key: value for key, value in os.environ.items()
+            if not key.startswith("GIT_")}
+
+
 class EventsTest(unittest.TestCase):
     def setUp(self):
+        env_patch = patch.dict(os.environ, clean_env(), clear=True)
+        env_patch.start()
+        self.addCleanup(env_patch.stop)
         scratch = events.REPO_ROOT / "tmp"
         scratch.mkdir(exist_ok=True)
         self.root = scratch / ("events-test-" + uuid.uuid4().hex)
         self.root.mkdir()
-        subprocess.run(["git", "init", "-q", str(self.root)], check=True)
-        self.git("config", "core.autocrlf", "false")
         self.addCleanup(self.cleanup)
+        self.git("init", "-q")
+        self.git("config", "core.autocrlf", "false")
         self.runtime = self.root / "docs/naming/runtime"
         self.capture = self.runtime / "sample"
         self.capture.mkdir(parents=True)
@@ -99,7 +107,7 @@ class EventsTest(unittest.TestCase):
 
     def git(self, *args):
         return subprocess.run(["git", *args], cwd=self.root, check=True,
-                              capture_output=True)
+                              capture_output=True, env=clean_env())
 
     def snapshot(self):
         # Only this throwaway repository's index is ever written by the tests.
@@ -112,11 +120,54 @@ class EventsTest(unittest.TestCase):
 
     def render(self):
         self.snapshot()
-        return events.render()
+        with patch.dict(os.environ, clean_env(), clear=True):
+            return events.render()
 
     def main(self, args):
         self.snapshot()
-        return events.main(args)
+        with patch.dict(os.environ, clean_env(), clear=True):
+            return events.main(args)
+
+    def test_git_helpers_ignore_inherited_git_environment(self):
+        before = self.render()
+        with patch.dict(os.environ, {
+                "GIT_DIR": str(self.root / "bogus.git"),
+                "GIT_INDEX_FILE": str(self.root / "bogus-index"),
+                "GIT_WORK_TREE": str(self.root / "bogus-worktree")}):
+            top = self.git("rev-parse", "--show-toplevel").stdout.decode().strip()
+            self.assertEqual(Path(top).resolve(), self.root.resolve())
+            self.assertEqual(self.render(), before)
+            self.assertEqual(self.main(["build"]), 0)
+            self.assertFalse((self.root / "bogus-index").exists())
+            self.assertFalse((self.root / "bogus.git").exists())
+            self.assertFalse((self.root / "bogus-worktree").exists())
+
+    def test_normalized_duplicate_declarations_keep_last_entry(self):
+        first = dict(at="0xA0089010", max_hits=10)
+        last = dict(at="0x80089010", max_hits=20)
+        # Current behavior collapses aliases to one key; the last declaration wins.
+        self.assertEqual(events.declarations(dict(breakpoints=[first, last])),
+                         {("0x80089010", 0): last})
+
+    def test_explicit_coverage_end_is_clipped_by_next_start(self):
+        self.records = [self.watch(), self.watch()]
+        self.records[1]["access"]["pc"] = 0x80030030
+        self.save()
+        (self.capture / "report.md").unlink()
+        matrix = self.runtime / "matrix"
+        matrix.mkdir()
+        (matrix / "coverage.tsv").write_bytes(
+            b"addr\tcapture_name\tend_addr\n"
+            b"0x80030000\tfirst\t0x80030100\n"
+            b"0x80030020\tnext\t0x80030200\n")
+        rows = self.rows()
+        self.assertEqual(len(rows), 2)
+        self.assertEqual({r["site"]: r["site_function"] for r in rows},
+                         {"0x80030010": "first", "0x80030030": "next"})
+        for row in rows:
+            self.assertEqual(row["attrib"], "coverage")
+            self.assertEqual(row["reason"], "")
+            self.assertEqual(row["inconclusive"], "0")
 
     def test_two_phases_write_read_call_and_citations(self):
         rows = self.rows()

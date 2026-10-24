@@ -176,6 +176,8 @@ class NotesTest(unittest.TestCase):
                 "docs/naming/runtime/matrix/sources.tsv", "--out-dir", "output",
                 "--ld", "bb2.ld", "--src", "src"]
         self.assertEqual(notes.main(["build", "--tu", "main/800", "--tu", "main/named"] + args), 0)
+        self.write("output/events.tsv", "shared event evidence\n")
+        self.write("output/other.tsv", "non-TU table\n")
         self.assertEqual(notes.main(["check"] + args), 0)
         path = self.root / "output/main__800.tsv"
         original = path.read_bytes()
