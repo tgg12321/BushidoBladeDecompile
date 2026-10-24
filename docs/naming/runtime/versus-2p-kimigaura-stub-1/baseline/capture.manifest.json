@@ -1,0 +1,807 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "2fc341959410e73d841580ee9d6cb6eeead240c8",
+      "size": 96073
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "a7066f35d3f65aac8a8876d34607d846f053a85f",
+      "size": 28157
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "c798f911805346a600c589d205eb56ab5871b4d5",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tools\\trace\\gdbtrace.py",
+    "run",
+    "--spec",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\spec.json",
+    "--out",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.jsonl",
+    "--map",
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.map",
+    "--launch",
+    "pcsx-redux",
+    "--emulator",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--cue",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+    "--bios",
+    "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "--headless",
+    "--slot-wait",
+    "86400"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.map",
+      "sha1": "5ede770aab8d7468a0fa3984c5e09e51e5077dcd",
+      "size": 547657
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.elf",
+      "sha1": "1b93789287300d338d56ffaf43549479864d0c4e",
+      "size": 889736
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\spec.json",
+    "sha1": "138e827845f9c7d3c775226d95cb095107bd5af2",
+    "size": 30815
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-4\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2404",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.script.lua",
+      "sha1": "6bb4c73b0c48a00381356517d9e03e5b5471a4fe",
+      "size": 36852
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 4,
+    "port": 2404,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-4\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 0,
+    "ambiguous_stops": 0,
+    "exe_changed_by_run": [
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.jsonl",
+      "sha1": "ed5bb539c31c184a0dcd9571ea3bc861a04f10b8",
+      "size": 20771
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.top_menu.first.png",
+      "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
+      "size": 31550
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.top_menu.last.png",
+      "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
+      "size": 31607
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.char_select.first.png",
+      "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
+      "size": 23135
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.char_select.last.png",
+      "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
+      "size": 22155
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.weapon_select.first.png",
+      "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
+      "size": 22616
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.weapon_select.last.png",
+      "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
+      "size": 4459
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.t_stage.mid.png",
+      "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
+      "size": 5188
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.stage_select.first.png",
+      "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
+      "size": 21853
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.stage_select.7299.png",
+      "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
+      "size": 21972
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.stage_select.7325.png",
+      "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
+      "size": 18207
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.stage_select.7355.png",
+      "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
+      "size": 22809
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.stage_select.last.png",
+      "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
+      "size": 22781
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.t_load.mid.png",
+      "sha1": "35444b75f27e4a3b1f33389032feeb565f75072f",
+      "size": 9489
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.t_load.last.png",
+      "sha1": "2cffc4b4614f621d4a63100d706f3020964a4a0a",
+      "size": 55445
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.first.png",
+      "sha1": "aa4cda7bc1ec0ce22348b12572dde5308c90ee9a",
+      "size": 54529
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8280.png",
+      "sha1": "ea526b4237abf5e316916ab4da5f1a91ed3fb6a8",
+      "size": 51306
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8330.png",
+      "sha1": "a507f1381f38d428bb5138709dd4dbc0f0027f8e",
+      "size": 51221
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8380.png",
+      "sha1": "e86f10d8de310db053998298c02d510f592ad85a",
+      "size": 51320
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8430.png",
+      "sha1": "ad145dd09ca9f3acbf1cfc7aab3067fd1bb87445",
+      "size": 51237
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8480.png",
+      "sha1": "81c0ff70eca0fdf596beb45c48e295d14e64b113",
+      "size": 51315
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8530.png",
+      "sha1": "05c0c67a4d703230ba15a610a733e7f404f290ae",
+      "size": 53035
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8580.png",
+      "sha1": "0b7b7638df6fc7aa986b5b837e775bc59165d19c",
+      "size": 54483
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8630.png",
+      "sha1": "412e9200fe7dec798184d10b2626fb83f3abecad",
+      "size": 55678
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8680.png",
+      "sha1": "291c41bcab51823e8cc3d6f29c37fddeab9e4fcd",
+      "size": 56073
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8730.png",
+      "sha1": "7492e27dae0e334cd78270220ef020a066661cb4",
+      "size": 57199
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8780.png",
+      "sha1": "d14016cd5055b6a991b341f02754687c21bf1233",
+      "size": 57756
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8830.png",
+      "sha1": "35e5c8b89422ce652406664d6037d8b8ebd90d6a",
+      "size": 56005
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8880.png",
+      "sha1": "01899b44221c32c88489ddd7cdb194211850a2b6",
+      "size": 56567
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8930.png",
+      "sha1": "1e83236a8151634a0ad2f3df7b84f629c25ca7fb",
+      "size": 56381
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.8980.png",
+      "sha1": "ce9cb16f86746a7948a4168d9d9a6c14967d8e89",
+      "size": 54828
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9030.png",
+      "sha1": "3a7e6ab2a8c06f939f80967d51a6b32b740be903",
+      "size": 55813
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9080.png",
+      "sha1": "e9f287c6c027053f30ce6fda487199275c732e29",
+      "size": 56175
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9130.png",
+      "sha1": "929ac2b8fd9e73953a79acd8ebba62751c64db4a",
+      "size": 55847
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9180.png",
+      "sha1": "e6e281b2e89e98eb18d96327b3c463a083a7b78f",
+      "size": 56144
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9230.png",
+      "sha1": "fed84e4684d9f6c0935222b9b2bb6b6527a98efd",
+      "size": 56959
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9280.png",
+      "sha1": "36608389a5100eaca6151f67551afd781c862eaa",
+      "size": 54961
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9330.png",
+      "sha1": "0791e8c22de94d90d2686e3c5fe9f3ee17c888c8",
+      "size": 53931
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9380.png",
+      "sha1": "c15759f0fe1107ecb5f6f8f995031e01bbcc2348",
+      "size": 54095
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9430.png",
+      "sha1": "efe917c94e929078723cdfe147bc7972680ff066",
+      "size": 52962
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9480.png",
+      "sha1": "8360b2e49cc198c2d6a2a4e1ae4879295dda00ba",
+      "size": 52428
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9530.png",
+      "sha1": "f2902657e22888a8ee31fe45119d81c1b4d24085",
+      "size": 52147
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9580.png",
+      "sha1": "82e819219802700c4bb36e0be5b90b72e8444268",
+      "size": 51836
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9630.png",
+      "sha1": "6fa3773e30f2424e211b9160733a8d37ac6ed2ab",
+      "size": 52054
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9680.png",
+      "sha1": "5bca1dd35407a08403ecd0acf2e4906b637fa99c",
+      "size": 50124
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9730.png",
+      "sha1": "14ca3eebf7fd2a8083d00954191516d39da4a691",
+      "size": 50453
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9780.png",
+      "sha1": "21be12265269a6e80932791d9fbdb36af04901db",
+      "size": 50684
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9830.png",
+      "sha1": "c1909f25dc6126406d341d0d80e0b825305b5add",
+      "size": 50536
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9880.png",
+      "sha1": "6c605e583422e40021ecdc244cf1873ca7414611",
+      "size": 50777
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9930.png",
+      "sha1": "ed4bc3a35aec243382ffbdc6f4b79bd23186cbb0",
+      "size": 49600
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.9980.png",
+      "sha1": "c2654a1ae7f04fd813fd890e5f6b8e9138e2a97b",
+      "size": 49812
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10030.png",
+      "sha1": "bb8d9b2bf042e018df96cac872ff1a6f92ce78fc",
+      "size": 50730
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10080.png",
+      "sha1": "ca4f019b3f5229e8e842311c80667d9ef2e9ce64",
+      "size": 51611
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10130.png",
+      "sha1": "615a4ae92123d5e25915b73fbb568691511543dc",
+      "size": 53660
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10180.png",
+      "sha1": "c018d2f76d0e3be955549e8d00a0dfc2576ce634",
+      "size": 55820
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10230.png",
+      "sha1": "ceb455fc95fb03af75bf9fe9b42305a3c5c6fe9e",
+      "size": 55580
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10280.png",
+      "sha1": "a3bb84452d78496f1785c7307c2d6899571b455c",
+      "size": 53376
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10330.png",
+      "sha1": "9751d25e5904794ee2d5cad8a54d8c28979fcb23",
+      "size": 55328
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10380.png",
+      "sha1": "0269983a372a8e59278987a23235bad97709ec65",
+      "size": 54376
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10430.png",
+      "sha1": "a0bfa967d9feab9db547745d9afca5f7c854d2e3",
+      "size": 55049
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10480.png",
+      "sha1": "0283df677109c295bf7212e60e011e97f9ada9e1",
+      "size": 53526
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10530.png",
+      "sha1": "dff89b76faa8dfcde5da53071f86ecdb5d339c65",
+      "size": 52204
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10580.png",
+      "sha1": "422c7b6a0c45ca83605c42bd6b561bedc35c773e",
+      "size": 52694
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10630.png",
+      "sha1": "6cc6fcf831de9dd3b77d00d0aafd207384604a2b",
+      "size": 52941
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10680.png",
+      "sha1": "36d5aefc7da06c645370af6b19d1d8860c07f8f4",
+      "size": 52957
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10730.png",
+      "sha1": "94445874f556399b7afe40eae506d2e6806e6846",
+      "size": 51116
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10780.png",
+      "sha1": "9ccead00ad14e246ffab4c37c0449a9cf2957d2a",
+      "size": 52497
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10830.png",
+      "sha1": "ca670e7591498dfc98e4294a204cfdb77e1f288c",
+      "size": 52336
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10880.png",
+      "sha1": "3d7148588d456c929ea53b7e581925756a624d6e",
+      "size": 53060
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10930.png",
+      "sha1": "b234665d44dee9dd5416e17623c723af0a6c8c7c",
+      "size": 43497
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.10980.png",
+      "sha1": "4f6a3a69ff9ece56fb571956cae72dd190095ce7",
+      "size": 37048
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11030.png",
+      "sha1": "edb64f983a347718613ab70b58dd76820364bb87",
+      "size": 36699
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11080.png",
+      "sha1": "2202f5aec097307cce935613095be52f8b3ee19e",
+      "size": 37608
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11130.png",
+      "sha1": "a9b27dfe3384bb7209f2fdaf75419be6bbaabc3c",
+      "size": 41445
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11180.png",
+      "sha1": "ccc7e7cd71f85f4d62a3d9aa99905e480f6720b1",
+      "size": 34675
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11230.png",
+      "sha1": "aa7772a73363f76f635db2eeb5a4f697de95bac1",
+      "size": 37552
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11280.png",
+      "sha1": "8237e096de52ef25bc431fd8f6c3b06c153220e2",
+      "size": 37108
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11330.png",
+      "sha1": "0f21ee69401c8dfc2e4c9ae3ca6c2e18c18c432e",
+      "size": 37068
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11380.png",
+      "sha1": "a48a07ecca020b4da9930c3e8495bbd78581d53c",
+      "size": 34350
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11430.png",
+      "sha1": "fb2c6320b8227bf12dcf4e625de30bc959c3b9eb",
+      "size": 35559
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11480.png",
+      "sha1": "114cebe207871e9355e9c3910e9df0d3a39bd27b",
+      "size": 37278
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11530.png",
+      "sha1": "5f7a93c3064c337ba815a227c231d56ca0c637bd",
+      "size": 37417
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11580.png",
+      "sha1": "b07ca7fc1a1c0e6a8c7193b743202743f3522d33",
+      "size": 39950
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11630.png",
+      "sha1": "a6e99bd4d81079e5d0df01b2aa0f29f39024cb67",
+      "size": 38511
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11680.png",
+      "sha1": "f472ebe24d83ec1c3ec9816dde1f15a7a5decaa7",
+      "size": 43036
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11730.png",
+      "sha1": "2d9aa84f0a1237468d63e414a7204f530339085b",
+      "size": 43206
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11780.png",
+      "sha1": "21feb0102c0aa52bc14ccd1ffac6facc0dad1e11",
+      "size": 42606
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11830.png",
+      "sha1": "165c29d9ef527daaeaae374d12f9334c77572df1",
+      "size": 42328
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11880.png",
+      "sha1": "f389f68697cbc9258b8bdf634c40d3505667b12b",
+      "size": 39786
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11930.png",
+      "sha1": "6b9a65120046e98e5c5e22dec5ccec16d3316f97",
+      "size": 33988
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.11980.png",
+      "sha1": "237936396a4aeca2489c4cc06fc3ccd39a041022",
+      "size": 40043
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12030.png",
+      "sha1": "c041393280dc6844866207c0b2c318239aec66ac",
+      "size": 34667
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12080.png",
+      "sha1": "1c084c054412ee38239dd58f13d2ad127515385a",
+      "size": 37572
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12130.png",
+      "sha1": "488d9567c25ba6cb7d97367ae7cb91de559d6c70",
+      "size": 36974
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12180.png",
+      "sha1": "27b9b215ced88339fb0bc222c76f4dd7067d7d41",
+      "size": 38297
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12230.png",
+      "sha1": "8b0e577ef8130edfb59329b04b3a5e3760c48acd",
+      "size": 38407
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12280.png",
+      "sha1": "7ec1fd274f621e88d4adc0c8518dc5bb1d562cc7",
+      "size": 37041
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12330.png",
+      "sha1": "c0e68930226aeeea56a960eef8b04bb3400c5d9a",
+      "size": 37312
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12380.png",
+      "sha1": "865055a7147ba6402653c019a851b338e9ff6bbc",
+      "size": 37570
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12430.png",
+      "sha1": "5cc22585e40fecc3291aac00259fbd9034f06445",
+      "size": 36736
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12480.png",
+      "sha1": "195d257c211cd905f221016b899df29852db9dc6",
+      "size": 36645
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12530.png",
+      "sha1": "ab7d50e1dc3a5aea5ae3ff54e4e2a9647008bf6f",
+      "size": 36481
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12580.png",
+      "sha1": "7789ce38dd6cd0b395a5d74f4ac6cc03c6c12792",
+      "size": 36557
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12630.png",
+      "sha1": "3dc1d9585a024e16b8e5f5fe76160ca81fc68778",
+      "size": 37192
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.12680.png",
+      "sha1": "5357093ac76c4acbe22eb1bc93fd35171db967db",
+      "size": 36809
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.fight.last.png",
+      "sha1": "7ca00038ec827fb1332be2d5522d0b07bb87deb4",
+      "size": 37147
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.script.log",
+      "sha1": "e007580ae93a3a0f16609bd9b49d633e66aedcf4",
+      "size": 16828
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    },
+    {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\docs\\naming\\runtime\\versus-2p-kimigaura-stub-1\\baseline\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    }
+  ]
+}
