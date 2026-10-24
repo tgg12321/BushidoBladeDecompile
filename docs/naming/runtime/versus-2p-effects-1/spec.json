@@ -1,0 +1,2337 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "script": {
+    "end_frame": 13970,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6260,
+        "name": "t_char"
+      },
+      {
+        "frame": 6550,
+        "name": "char_select"
+      },
+      {
+        "frame": 6700,
+        "name": "weapon_select"
+      },
+      {
+        "frame": 7000,
+        "name": "t_stage"
+      },
+      {
+        "frame": 7175,
+        "name": "stage_select"
+      },
+      {
+        "frame": 7525,
+        "name": "t_load"
+      },
+      {
+        "frame": 8300,
+        "name": "fight"
+      },
+      {
+        "frame": 12513,
+        "name": "t_ko"
+      },
+      {
+        "frame": 12970,
+        "name": "rematch_menu"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6140,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6260,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6600,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6640,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 6900,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6940,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 7500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 8525,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8530,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 8550,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 8560,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 8585,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8590,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 8610,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 8620,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 8645,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8650,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 8670,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 8680,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 8705,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8710,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 8730,
+        "press": [
+          "L1"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 8740,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 8765,
+        "press": [
+          "RIGHT",
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8770,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 8790,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 8800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 8825,
+        "press": [
+          "RIGHT",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8830,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 8850,
+        "press": [
+          "LEFT",
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 8860,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 8885,
+        "press": [
+          "L1"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8890,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 8910,
+        "press": [
+          "R1"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 8920,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 8945,
+        "press": [
+          "R1"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8950,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 8970,
+        "press": [
+          "DOWN",
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 8980,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9005,
+        "press": [
+          "L2"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9010,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9030,
+        "press": [
+          "R2"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9040,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9065,
+        "press": [
+          "R2"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9070,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9090,
+        "press": [
+          "L2"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9125,
+        "press": [
+          "UP",
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9130,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9150,
+        "press": [
+          "UP",
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9160,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9185,
+        "press": [
+          "DOWN",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9190,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9210,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9220,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9245,
+        "press": [
+          "CIRCLE",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9250,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9270,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9280,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9305,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9310,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9330,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9340,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9365,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9370,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9390,
+        "press": [
+          "L1"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9400,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9425,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9430,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9450,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9460,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9485,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9490,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9510,
+        "press": [
+          "LEFT",
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9520,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9545,
+        "press": [
+          "RIGHT",
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9550,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9570,
+        "press": [
+          "R1"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9580,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9605,
+        "press": [
+          "RIGHT",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9610,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9630,
+        "press": [
+          "DOWN",
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9640,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9665,
+        "press": [
+          "L1"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9670,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9690,
+        "press": [
+          "R2"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9700,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9725,
+        "press": [
+          "R1"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9730,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9750,
+        "press": [
+          "L2"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9760,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9785,
+        "press": [
+          "L2"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9790,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9810,
+        "press": [
+          "UP",
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9820,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9845,
+        "press": [
+          "R2"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9850,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9870,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9880,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9905,
+        "press": [
+          "UP",
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9910,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9930,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 9940,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 9965,
+        "press": [
+          "DOWN",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 9970,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 9990,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10000,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10025,
+        "press": [
+          "CIRCLE",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10030,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10050,
+        "press": [
+          "L1"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10060,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10085,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10090,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10110,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10120,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10145,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10150,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10170,
+        "press": [
+          "LEFT",
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10180,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10205,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10210,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10230,
+        "press": [
+          "R1"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10240,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10265,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10270,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10290,
+        "press": [
+          "DOWN",
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10300,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10325,
+        "press": [
+          "RIGHT",
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10330,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10350,
+        "press": [
+          "R2"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10360,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10385,
+        "press": [
+          "RIGHT",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10390,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10410,
+        "press": [
+          "L2"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10420,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10445,
+        "press": [
+          "L1"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10450,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10470,
+        "press": [
+          "UP",
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10480,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10505,
+        "press": [
+          "R1"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10510,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10530,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10540,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10565,
+        "press": [
+          "L2"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10570,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10590,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10600,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10625,
+        "press": [
+          "R2"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10630,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10650,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10660,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10685,
+        "press": [
+          "UP",
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10690,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10710,
+        "press": [
+          "L1"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10720,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10745,
+        "press": [
+          "DOWN",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10750,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10770,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10780,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10805,
+        "press": [
+          "CIRCLE",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10810,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10830,
+        "press": [
+          "LEFT",
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10840,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10865,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10870,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10890,
+        "press": [
+          "R1"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10900,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10925,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10930,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 10950,
+        "press": [
+          "DOWN",
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 10960,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 10985,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 10990,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11010,
+        "press": [
+          "R2"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11020,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11045,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11050,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11070,
+        "press": [
+          "L2"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11080,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11105,
+        "press": [
+          "RIGHT",
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11110,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11130,
+        "press": [
+          "UP",
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11140,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11165,
+        "press": [
+          "RIGHT",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11170,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11190,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11200,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11225,
+        "press": [
+          "L1"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11230,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11250,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11260,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11285,
+        "press": [
+          "R1"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11290,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11310,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11320,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11345,
+        "press": [
+          "L2"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11350,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11370,
+        "press": [
+          "L1"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11380,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11405,
+        "press": [
+          "R2"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11410,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11430,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11440,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11465,
+        "press": [
+          "UP",
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11470,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11490,
+        "press": [
+          "LEFT",
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11500,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11525,
+        "press": [
+          "DOWN",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11530,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11550,
+        "press": [
+          "R1"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11560,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11585,
+        "press": [
+          "CIRCLE",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11590,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11610,
+        "press": [
+          "DOWN",
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11620,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11645,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11650,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11670,
+        "press": [
+          "R2"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11680,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11705,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11710,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11730,
+        "press": [
+          "L2"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11740,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11765,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11770,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11790,
+        "press": [
+          "UP",
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11800,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11825,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11830,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11850,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11860,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11885,
+        "press": [
+          "RIGHT",
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11890,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11910,
+        "press": [
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11920,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 11945,
+        "press": [
+          "RIGHT",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 11950,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 11970,
+        "press": [
+          "TRIANGLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 11980,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 12005,
+        "press": [
+          "L1"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12010,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 12030,
+        "press": [
+          "L1"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 12040,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 12065,
+        "press": [
+          "R1"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12070,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 12090,
+        "press": [
+          "SQUARE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 12100,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 12125,
+        "press": [
+          "L2"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12130,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 12150,
+        "press": [
+          "LEFT",
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 12160,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 12185,
+        "press": [
+          "R2"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12190,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 12210,
+        "press": [
+          "R1"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 12220,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 12245,
+        "press": [
+          "UP",
+          "CIRCLE"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12250,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 12270,
+        "press": [
+          "DOWN",
+          "CIRCLE"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 12280,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 12305,
+        "press": [
+          "DOWN",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12310,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 12330,
+        "press": [
+          "R2"
+        ],
+        "hold": 6,
+        "pad": 2
+      },
+      {
+        "frame": 12340,
+        "press": [
+          "RIGHT"
+        ],
+        "hold": 20
+      },
+      {
+        "frame": 12365,
+        "press": [
+          "CIRCLE",
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 12370,
+        "press": [
+          "LEFT"
+        ],
+        "hold": 15,
+        "pad": 2
+      },
+      {
+        "frame": 12390,
+        "press": [
+          "L2"
+        ],
+        "hold": 6,
+        "pad": 2
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6259,
+        "name": "top_menu.last"
+      },
+      {
+        "frame": 6550,
+        "name": "char_select.first"
+      },
+      {
+        "frame": 6699,
+        "name": "char_select.last"
+      },
+      {
+        "frame": 6700,
+        "name": "weapon_select.first"
+      },
+      {
+        "frame": 6999,
+        "name": "weapon_select.last"
+      },
+      {
+        "frame": 7100,
+        "name": "t_stage.mid"
+      },
+      {
+        "frame": 7175,
+        "name": "stage_select.first"
+      },
+      {
+        "frame": 7499,
+        "name": "stage_select.last"
+      },
+      {
+        "frame": 7900,
+        "name": "t_load.mid"
+      },
+      {
+        "frame": 8300,
+        "name": "fight.first"
+      },
+      {
+        "frame": 8500,
+        "name": "fight.8500"
+      },
+      {
+        "frame": 8700,
+        "name": "fight.8700"
+      },
+      {
+        "frame": 8900,
+        "name": "fight.8900"
+      },
+      {
+        "frame": 9100,
+        "name": "fight.9100"
+      },
+      {
+        "frame": 9300,
+        "name": "fight.9300"
+      },
+      {
+        "frame": 9500,
+        "name": "fight.9500"
+      },
+      {
+        "frame": 9700,
+        "name": "fight.9700"
+      },
+      {
+        "frame": 9900,
+        "name": "fight.9900"
+      },
+      {
+        "frame": 10100,
+        "name": "fight.10100"
+      },
+      {
+        "frame": 10300,
+        "name": "fight.10300"
+      },
+      {
+        "frame": 10500,
+        "name": "fight.10500"
+      },
+      {
+        "frame": 10700,
+        "name": "fight.10700"
+      },
+      {
+        "frame": 10900,
+        "name": "fight.10900"
+      },
+      {
+        "frame": 11100,
+        "name": "fight.11100"
+      },
+      {
+        "frame": 11300,
+        "name": "fight.11300"
+      },
+      {
+        "frame": 11500,
+        "name": "fight.11500"
+      },
+      {
+        "frame": 11700,
+        "name": "fight.11700"
+      },
+      {
+        "frame": 11900,
+        "name": "fight.11900"
+      },
+      {
+        "frame": 12100,
+        "name": "fight.12100"
+      },
+      {
+        "frame": 12300,
+        "name": "fight.12300"
+      },
+      {
+        "frame": 12400,
+        "name": "fight.12400"
+      },
+      {
+        "frame": 12410,
+        "name": "fight.12410"
+      },
+      {
+        "frame": 12500,
+        "name": "fight.12500"
+      },
+      {
+        "frame": 12512,
+        "name": "fight.last"
+      },
+      {
+        "frame": 12520,
+        "name": "t_ko.12520"
+      },
+      {
+        "frame": 12600,
+        "name": "t_ko.12600"
+      },
+      {
+        "frame": 12650,
+        "name": "t_ko.12650"
+      },
+      {
+        "frame": 12700,
+        "name": "t_ko.12700"
+      },
+      {
+        "frame": 12800,
+        "name": "t_ko.12800"
+      },
+      {
+        "frame": 12900,
+        "name": "t_ko.12900"
+      },
+      {
+        "frame": 12969,
+        "name": "t_ko.last"
+      },
+      {
+        "frame": 12970,
+        "name": "rematch_menu.first"
+      },
+      {
+        "frame": 13300,
+        "name": "rematch_menu.13300"
+      },
+      {
+        "frame": 13600,
+        "name": "rematch_menu.13600"
+      },
+      {
+        "frame": 13969,
+        "name": "rematch_menu.last"
+      }
+    ]
+  }
+}
