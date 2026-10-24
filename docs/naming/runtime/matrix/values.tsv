@@ -2534,6 +2534,16 @@ story-values-1	rematch_menu	D_800A3910		00000000		10700	1	0x800A3910		true	10700
 story-values-1	rematch_menu	D_800A34F0		00000000		10700	2	0x800A34F0		true	10700		4
 story-values-1	rematch_menu	D_800A3710		00000000000001000000000000000000		10700	3	0x800A3710		true	10700		16
 story-values-1	rematch_menu	D_800A9CF8		0000000000000000000000000000000000000000		10700	4	0x800A9CF8		true	10700		20
+versus-2p-kimigaura-events-1	t_menu	D_800A36A4		00000000		5490	0	0x800A36A4		false	5490		4
+versus-2p-kimigaura-events-1	top_menu	D_800A36A4		00000000		6050	0	0x800A36A4		false	6050		4
+versus-2p-kimigaura-events-1	t_char	D_800A36A4		00000000		6260	0	0x800A36A4		false	6260		4
+versus-2p-kimigaura-events-1	char_select	D_800A36A4		00000000		6550	0	0x800A36A4		false	6550		4
+versus-2p-kimigaura-events-1	weapon_select	D_800A36A4		00000000		6700	0	0x800A36A4		false	6700		4
+versus-2p-kimigaura-events-1	t_stage	D_800A36A4		00000000		7000	0	0x800A36A4		false	7000		4
+versus-2p-kimigaura-events-1	stage_select	D_800A36A4		00000000		7175	0	0x800A36A4		false	7175		4
+versus-2p-kimigaura-events-1	t_load	D_800A36A4		00000000		7450	0	0x800A36A4		false	7450		4
+versus-2p-kimigaura-events-1	fight	D_800A36A4		0b000000		8230	0	0x800A36A4		false	8230		4
+versus-2p-kimigaura-events-1	fight	D_800A36A4		0b000000		12730	0	0x800A36A4		true	12730		4
 versus-cpu-values-1	t_menu	D_800A38DC		00000000		5490	0	0x800A38DC		false	5490		4
 versus-cpu-values-1	t_menu	D_800A3910		00000000		5490	1	0x800A3910		false	5490		4
 versus-cpu-values-1	t_menu	D_800A34F0		00000000		5490	2	0x800A34F0		false	5490		4

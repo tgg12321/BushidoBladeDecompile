@@ -29,6 +29,9 @@ class MatrixTest(unittest.TestCase):
         root_patch = patch.object(matrix, "REPO_ROOT", self.root)
         root_patch.start()
         self.addCleanup(root_patch.stop)
+        scenario_patch = patch.object(matrix.scen, "HERE", str(self.root / "tools/trace/scenarios"))
+        scenario_patch.start()
+        self.addCleanup(scenario_patch.stop)
         self.a = self.capture("a", 10, "function\taddr\tboot\tfight\n"
                               "old\t0x80010000\t1+\t?\n"
                               "quiet\t0x80010004\t.\t.\n")
@@ -106,7 +109,11 @@ class MatrixTest(unittest.TestCase):
                 expected_sources += (f"{path.name}\t{kind}\ttrue\tcommit\tclean\toracle\t{time}\t"
                                      f"{name}\t{hashlib.sha1(data).hexdigest()}\n")
         expected = {"coverage.tsv": expected_coverage, "values.tsv": expected_values,
-                    "sources.tsv": expected_sources}
+                    "sources.tsv": expected_sources,
+                    "scenarios.tsv": "capture\tscenario\textends\tcovers\tkind\tmanifest_sha1\tmatch\n"
+                    + "".join(f"{p.name}\t-\t-\t-\thitmap\t"
+                              f"{hashlib.sha1((p / 'capture.manifest.json').read_bytes()).hexdigest()}\t-\n"
+                              for p in [self.a, self.b])}
         self.assertEqual(matrix.render(self.paths, self.registry), expected)
         self.assertEqual(matrix.render(list(reversed(self.paths)), self.registry), expected)
         self.assertEqual(self.cli("build"), (0, ""))
@@ -121,6 +128,124 @@ class MatrixTest(unittest.TestCase):
         code, error = self.cli("check")
         self.assertEqual(code, 1)
         self.assertIn("coverage.tsv", error)
+
+    def scenario(self, name, **spec):
+        library = self.root / "tools/trace/scenarios"
+        library.mkdir(parents=True, exist_ok=True)
+        spec.setdefault("end_frame", 10)
+        self.write(library / (name + ".json"), json.dumps(spec) + "\n")
+
+    def test_scenario_index_claimed_and_unclaimed(self):
+        self.scenario("base", covers=["mode:base"])
+        self.scenario("middle", extends="base")
+        self.scenario("run", extends="middle", covers=["menu:top", "event:win"],
+                      evidence=["a/capture.manifest.json"])
+        outputs = matrix.render([self.b, self.a])
+        rows = list(matrix.csv.DictReader(io.StringIO(outputs["scenarios.tsv"]), delimiter="\t"))
+        sha1 = hashlib.sha1((self.a / "capture.manifest.json").read_bytes()).hexdigest()
+        self.assertEqual(rows, [
+            dict(capture="a", scenario="run", extends="base<middle<run",
+                 covers="event:win,menu:top", kind="hitmap", manifest_sha1=sha1, match="evidence"),
+            dict(capture="b", scenario="-", extends="-", covers="-",
+                 kind="hitmap", manifest_sha1=sha1, match="-")])
+        self.assertEqual([r["capture"] for r in rows],
+                         outputs["coverage.tsv"].splitlines()[0].split("\t")[5:])
+        # The scenario loader's native spec.json evidence joins the same manifest.
+        self.scenario("another", covers=["menu:top", "mode:versus"], evidence=["a/spec.json"])
+        row = list(matrix.csv.DictReader(io.StringIO(matrix.render([self.a, self.b])[
+            "scenarios.tsv"]), delimiter="\t"))[0]
+        self.assertEqual(row["scenario"], "another,run")
+        self.assertEqual(row["covers"], "event:win,menu:top,mode:versus")
+        self.assertEqual(row["extends"], "base<middle<run")
+
+    def test_scenario_missing_base_bad_evidence_and_cycle(self):
+        self.scenario("run", extends="missing", evidence=["a/capture.manifest.json"])
+        code, error = self.cli("build")
+        self.assertEqual(code, 1)
+        self.assertIn("no scenario 'missing'", error)
+        for evidence in ["absent/capture.manifest.json", "a/unrelated.json", "v/spec.json"]:
+            self.scenario("run", evidence=[evidence])
+            with self.assertRaisesRegex(matrix.InvalidCapture,
+                                        "scenario run: evidence .*is not a capture read"):
+                matrix.render([self.a, self.b], all_evidence=True)
+        self.scenario("run", extends="run")
+        self.assertIn("extends cycle", self.cli("build")[1])
+        self.assertFalse(self.out.exists())
+
+    def test_explicit_capture_skips_other_evidence_but_all_refuses(self):
+        self.scenario("run", evidence=["b/spec.json"])
+        self.assertEqual(self.cli("build", [self.a]), (0, ""))
+        self.assertEqual(self.cli("check", [self.a]), (0, ""))
+        with contextlib.redirect_stderr(io.StringIO()) as stderr:
+            code = matrix.main(["build", str(self.a), "--all", "--out", str(self.out)])
+        self.assertEqual(code, 1)
+        self.assertIn("scenario run: evidence", stderr.getvalue())
+
+    def test_scenario_evidence_uses_normalized_case(self):
+        self.scenario("run", evidence=["A/SPEC.JSON"])
+        # Exercise Windows-style case normalization even on a POSIX test host.
+        with patch.object(matrix.os.path, "normcase", side_effect=lambda p: str(p).lower()):
+            rows = list(matrix.csv.DictReader(io.StringIO(matrix.render(
+                [self.a], all_evidence=True)["scenarios.tsv"]), delimiter="\t"))
+        self.assertEqual((rows[0]["scenario"], rows[0]["match"]), ("run", "evidence"))
+
+    def test_scenario_staleness(self):
+        self.assertEqual(self.cli("build"), (0, ""))
+        self.assertEqual(self.cli("check"), (0, ""))
+        self.scenario("run", evidence=["a/spec.json"], covers=["menu:top"])
+        code, error = self.cli("check")
+        self.assertEqual((code, error.strip()), (1, "matrix: matrix differs: scenarios.tsv"))
+        self.assertEqual(self.cli("build"), (0, ""))
+        self.assertEqual(self.cli("check"), (0, ""))
+        (self.out / "scenarios.tsv").unlink()
+        self.assertEqual(self.cli("check")[0], 1)
+
+    def test_scenario_combined_kinds(self):
+        path = self.a / "capture.jsonl"
+        events = [json.loads(line) for line in path.read_text().splitlines()]
+        events[0]["spec"].update(values=[{"at": "recorded"}], stubs=[{"at": "recorded"}])
+        self.write(path, "".join(json.dumps(e) + "\n" for e in events))
+        row = list(matrix.csv.DictReader(io.StringIO(matrix.render([self.a])[
+            "scenarios.tsv"]), delimiter="\t"))[0]
+        self.assertEqual(row["kind"], "hitmap,stub,values")
+
+    def test_scenario_script_match_and_precedence(self):
+        self.scenario("run", inputs=["1:CROSS/1"], covers=["menu:top"])
+        script = matrix.scen.compile_script("run")
+        path = self.b / "capture.jsonl"
+        events = [json.loads(line) for line in path.read_text().splitlines()]
+        # Instrumentation is outside the script and cannot prevent a match.
+        events[0]["spec"] = {"script": script, "values": [{"at": "recorded"}],
+                              "hitmap": {"tus": ["main/*"]}}
+        self.write(path, "".join(json.dumps(e) + "\n" for e in events))
+        def row():
+            return list(matrix.csv.DictReader(io.StringIO(matrix.render([self.b])[
+                "scenarios.tsv"]), delimiter="\t"))[0]
+        self.assertEqual((row()["scenario"], row()["match"]), ("run", "script"))
+        self.scenario("explicit", evidence=["b/spec.json"])
+        self.assertEqual((row()["scenario"], row()["match"]), ("explicit", "evidence"))
+
+    def test_scenario_dirname_fallback_requires_existing_scenario(self):
+        self.scenario("run")
+        hitmap = "function\taddr\tfight\nf\t0x80010000\t1\n"
+        known = self.capture("lib-run-2", 10, hitmap)
+        unknown = self.capture("lib-missing-1", 20, hitmap)
+        rows = list(matrix.csv.DictReader(io.StringIO(matrix.render([known, unknown])[
+            "scenarios.tsv"]), delimiter="\t"))
+        self.assertEqual([(r["scenario"], r["match"]) for r in rows],
+                         [("-", "-"), ("run", "dirname")])
+
+    def test_scenario_script_comparison_is_exact(self):
+        self.scenario("run")
+        script = matrix.scen.compile_script("run")
+        script["end_frame"] = float(script["end_frame"])
+        path = self.a / "capture.jsonl"
+        events = [json.loads(line) for line in path.read_text().splitlines()]
+        events[0]["spec"]["script"] = script
+        self.write(path, "".join(json.dumps(e) + "\n" for e in events))
+        row = list(matrix.csv.DictReader(io.StringIO(matrix.render([self.a])[
+            "scenarios.tsv"]), delimiter="\t"))[0]
+        self.assertEqual((row["scenario"], row["match"]), ("-", "-"))
 
     def test_value_length_from_watch_and_byte_fallback(self):
         path = self.v / "capture.jsonl"

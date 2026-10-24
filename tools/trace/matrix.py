@@ -31,9 +31,12 @@ import hashlib
 import io
 import json
 import math
+import os
 from pathlib import Path
 import re
 import sys
+
+from scenarios import scen
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -201,11 +204,94 @@ def load_capture(path):
                        scalar(event.get("end", "")),
                        scalar(event.get("pause_frame", "")),
                        recorded_address(event.get("ptr", "")), scalar(length)])
-    return dict(ident=ident, kind=kind, manifest=manifest, start=when, order=order,
+    kinds = sorted(k for k, present in (("hitmap", has_map), ("values", is_values),
+                                       ("stub", is_stub), ("events", kind == "events"))
+                   if present)
+    return dict(ident=ident, kind=kind, kinds=kinds, path=path,
+                manifest=manifest, script=spec.get("script"), start=when, order=order,
                 hashes=hashes, functions=functions, mapped=mapped, values=values)
 
 
-def render(paths, no_name=None):
+def scenario_rows(captures, all_evidence=False):
+    """Join captures by evidence, exact script, or a guarded lib-dir fallback.
+
+    scen evidence currently names spec.json, but manifest paths are also
+    accepted. Both refer to the same capture directory. Covers are the keys
+    explicitly recorded on each claiming scenario, as in scen's coverage:
+    they are the scenario spec's claims, not observations in this capture.
+    Multiple claims union covers and list their base-to-derived chains sorted.
+    Match precedence is evidence, exact recorded script, then lib-<scenario>-N.
+    JSONL's start spec embeds the runkit script referenced by the manifest;
+    instrumentation (values/hitmap) is outside that script and is not compared.
+    With --all, all evidence must resolve to a capture read by this run,
+    including captures without coverage columns. Explicit-capture runs skip
+    evidence outside the selected captures. Only mapped captures get rows.
+    """
+    library = REPO_ROOT / "tools/trace/scenarios"
+    try:
+        scenarios = {p.stem: scen.load(str(p)) for p in sorted(library.glob("*.json"))
+                     if p.name != "targets.json"}
+    except scen.ScenError as ex:
+        raise InvalidCapture(str(ex)) from None
+    def path_key(path):
+        return os.path.normcase(str(path.resolve()))
+
+    claims = {path_key(c["path"]): set() for c in captures}
+
+    def chain(name, seen=()):
+        if name not in scenarios:
+            raise InvalidCapture("no scenario " + repr(name))
+        if name in seen:
+            raise InvalidCapture("extends cycle through " + name)
+        base = scenarios[name].get("extends")
+        return chain(base, seen + (name,)) + [name] if base else [name]
+
+    chains = {}
+    for name, spec in sorted(scenarios.items()):
+        lineage = chain(name)
+        chains[name] = "<".join(lineage) if len(lineage) > 1 else "-"
+        for evidence in spec.get("evidence", []):
+            path = (REPO_ROOT / evidence).resolve()
+            key = path_key(path.parent)
+            if key not in claims and not all_evidence:
+                continue
+            if (os.path.normcase(path.name) not in {"spec.json", "capture.manifest.json"}
+                    or key not in claims):
+                raise InvalidCapture(f"scenario {name}: evidence {evidence!r} "
+                                     "is not a capture read by the matrix")
+            claims[key].add(name)
+    scripts = {}
+    try:
+        for name in sorted(scenarios):
+            script = scen.compile_script(str(library / (name + ".json")))
+            scripts.setdefault(json.dumps(script, sort_keys=True), set()).add(name)
+    except scen.ScenError as ex:
+        raise InvalidCapture(str(ex)) from None
+    rows = [["capture", "scenario", "extends", "covers", "kind", "manifest_sha1", "match"]]
+    for capture in captures:
+        if not capture["mapped"]:
+            continue
+        names = sorted(claims[path_key(capture["path"])])
+        match = "evidence" if names else "-"
+        if not names and capture["script"] is not None:
+            names = sorted(scripts.get(json.dumps(capture["script"], sort_keys=True), set()))
+            if names:
+                match = "script"
+        if not names:
+            convention = re.fullmatch(r"lib-(.+)-[0-9]+", capture["path"].name)
+            if convention and convention[1] in scenarios:
+                names = [convention[1]]
+                match = "dirname"
+        covers = sorted({key for name in names for key in scenarios[name].get("covers", [])})
+        lineage = sorted({chains[name] for name in names} - {"-"})
+        rows.append([capture["ident"], ",".join(names) or "-",
+                     ",".join(lineage) or "-", ",".join(covers) or "-",
+                     ",".join(capture["kinds"]) or "-",
+                     capture["hashes"]["capture.manifest.json"], match])
+    return rows
+
+
+def render(paths, no_name=None, all_evidence=False):
     captures = []
     for path in paths:
         path = Path(path)
@@ -254,7 +340,8 @@ def render(paths, no_name=None):
                             manifest.get("build", {}).get("exe", {}).get("sha1", ""),
                             scalar(capture["start"]), filename, sha1])
     return {"coverage.tsv": tsv(coverage), "values.tsv": tsv(values),
-            "sources.tsv": tsv(sources)}
+            "sources.tsv": tsv(sources),
+            "scenarios.tsv": tsv(scenario_rows(captures, all_evidence))}
 
 
 def discover(root):
@@ -285,7 +372,7 @@ def main(argv=None):
         if not paths:
             raise InvalidCapture("no capture directories found")
         no_name = REPO_ROOT / args.no_name if args.no_name is not None else None
-        outputs = render(paths, no_name)
+        outputs = render(paths, no_name, all_evidence=args.all)
         out = REPO_ROOT / args.out
         if args.command == "check":
             expected = set(outputs)
