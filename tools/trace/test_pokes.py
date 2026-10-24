@@ -39,11 +39,11 @@ SCRIPT = {"phases": [{"frame": 0, "name": "boot"},
 NAMES = {"boot", "fight"}
 
 
-def parse(pokes, script=SCRIPT):
+def parse(pokes, script=SCRIPT, stubs=()):
     spec = {"pokes": pokes}
     if script:
         spec["script"] = script
-    return gdbtrace.parse_pokes(spec, Syms(), NAMES, "boot")
+    return gdbtrace.parse_pokes(spec, Syms(), NAMES, "boot", stubs)
 
 
 class ParseTest(unittest.TestCase):
@@ -55,20 +55,40 @@ class ParseTest(unittest.TestCase):
 
     def test_refusals(self):
         bad = [
-            ([{"at": "D_80101EC8", "hex": "06", "phase": "fight"}], None),
-            ([{"at": "D_80101EC8", "hex": "06"}], SCRIPT),
-            ([{"at": "D_80101EC8", "hex": "06", "phase": "boot"}], SCRIPT),
-            ([{"at": "D_80101EC8", "hex": "06", "phase": "nope"}], SCRIPT),
-            ([{"at": "D_80101EC8", "hex": "", "phase": "fight"}], SCRIPT),
-            ([{"at": "D_80101EC8", "hex": "0g", "phase": "fight"}], SCRIPT),
-            ([{"at": "0x801FFFFF", "hex": "0000", "phase": "fight"}], SCRIPT),
-            ([{"at": "0x1F8003FF", "hex": "0000", "phase": "fight"}], SCRIPT),
+            ([{"at": "D_80101EC8", "hex": "06", "phase": "fight"}], None,
+             "need a script"),
+            ([{"at": "D_80101EC8", "hex": "06"}], SCRIPT, "not None"),
+            ([{"at": "D_80101EC8", "hex": "06", "phase": "boot"}], SCRIPT,
+             "not 'boot'"),
+            ([{"at": "D_80101EC8", "hex": "06", "phase": "nope"}], SCRIPT,
+             "not 'nope'"),
+            ([{"at": "D_80101EC8", "hex": "", "phase": "fight"}], SCRIPT,
+             "hex must be"),
+            ([{"at": "D_80101EC8", "hex": "0g", "phase": "fight"}], SCRIPT,
+             "hex must be"),
+            ([{"at": "D_80101EC8", "hex": 6, "phase": "fight"}], SCRIPT,
+             "hex must be"),
+            ([{"at": "0x801FFFFF", "hex": "0000", "phase": "fight"}], SCRIPT,
+             "not RAM"),
+            ([{"at": "0x1F8003FF", "hex": "0000", "phase": "fight"}], SCRIPT,
+             "not RAM"),
             ([{"at": "D_80101EC8", "hex": "0600", "phase": "fight"},
-              {"at": "D_80101EC8+0x1", "hex": "00", "phase": "fight"}], SCRIPT),
+              {"at": "D_80101EC8+0x1", "hex": "00", "phase": "fight"}], SCRIPT,
+             "overlaps poke D_80101EC8"),
         ]
-        for pokes, script in bad:
-            with self.subTest(pokes=pokes), self.assertRaises(SystemExit):
+        for pokes, script, msg in bad:
+            with self.subTest(pokes=pokes), \
+                    self.assertRaisesRegex(SystemExit, msg):
                 parse(pokes, script)
+
+    def test_stub_overlap_refused(self):
+        stub = [{"spec": {"at": "func_80101EC0"}, "addr": 0x80101EC0}]
+        with self.assertRaisesRegex(SystemExit, "overlaps stub func_80101EC0"):
+            parse([{"at": "0x80101EC7", "hex": "00", "phase": "fight"}],
+                  stubs=stub)
+        self.assertEqual(len(parse(
+            [{"at": "D_80101EC8", "hex": "00", "phase": "fight"}],
+            stubs=stub)), 1)  # first byte after the stub's two words
 
     def test_adjacent_and_scratchpad_ok(self):
         p = parse([{"at": "D_80101EC8", "hex": "0600", "phase": "fight"},
@@ -93,6 +113,18 @@ class ApplyTest(unittest.TestCase):
         gdb.ram.clear()
         gdbtrace.apply_pokes(gdb, p, "fight", regs, 200, out.append)
         self.assertEqual(len(out), 1)  # once only
+
+    def test_read_back_mismatch_stops_the_run(self):
+        class Liar(FakeGdb):
+            def mem(self, addr, n):
+                return b"\x00" * n
+
+        p = parse([{"at": "D_80101EC8", "hex": "06", "phase": "fight"}])
+        out = []
+        with self.assertRaisesRegex(SystemExit, "poke write at 0x80101EC8"):
+            gdbtrace.apply_pokes(Liar(), p, "fight", [0] * 38, 100,
+                                 out.append)
+        self.assertFalse(out[0]["ok"])
 
     def test_refused_write_stops_the_run(self):
         p = parse([{"at": "D_80101EC8", "hex": "06", "phase": "fight"}])

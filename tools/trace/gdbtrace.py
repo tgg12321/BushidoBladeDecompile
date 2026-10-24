@@ -555,11 +555,12 @@ def stub_words(st: dict) -> bytes:
     return JR_RA.to_bytes(4, "little") + slot.to_bytes(4, "little")
 
 
-def parse_pokes(spec: dict, syms, phase_names: set, first: str) -> list[dict]:
+def parse_pokes(spec: dict, syms, phase_names: set, first: str,
+                stubs: list[dict] = ()) -> list[dict]:
     """Validate spec["pokes"]: each writes `hex` at `at` when `phase` starts.
     A poke needs a script phase other than the first (at power-on the game
     has not set anything up yet), RAM or scratchpad bytes, and no overlap
-    with another poke."""
+    with another poke or a stub's two words."""
     pokes = []
     for pk in spec.get("pokes", []):
         if not spec.get("script"):
@@ -586,6 +587,10 @@ def parse_pokes(spec: dict, syms, phase_names: set, first: str) -> list[dict]:
             if addr < o["addr"] + len(o["data"]) and o["addr"] < end:
                 raise SystemExit(f"gdbtrace: poke {at} overlaps poke "
                                  f"{o['spec']['at']}")
+        for st in stubs:
+            if addr < st["addr"] + 8 and st["addr"] < end:
+                raise SystemExit(f"gdbtrace: poke {at} overlaps stub "
+                                 f"{st['spec']['at']}")
         pokes.append({"spec": pk, "addr": addr, "when": when, "data": data})
     return pokes
 
@@ -978,7 +983,7 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
     # Set-and-observe: write chosen bytes once when a phase starts.
     pokes = parse_pokes(spec, syms, phase_names,
                         runkit.first_phase(spec["script"])
-                        if spec.get("script") else "start")
+                        if spec.get("script") else "start", stubs)
 
     if spec.get("script"):
         # Canary: the EXE entry runs exactly once per boot; its hit proves
