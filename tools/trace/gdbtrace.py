@@ -47,7 +47,10 @@ Spec (JSON):
        "ptr_off": 0}                   # script holds the emulator paused;
     ],                               # ptr_off: read the u32 at `at`, then
                                      # len (default 4) bytes at that
-                                     # pointer + ptr_off
+                                     # pointer + ptr_off; "phases": [names]
+                                     # reads only at those phase starts
+                                     # (not at the end): RAM dumps for
+                                     # tools/trace/movegraph.py
     "hitmap": {"tus": ["main/51268"],     # per-mode hit map (needs a script):
                "exclude": ["main/psxsdk/*"],  # Z0 on every function of the
                "per_phase": 1},               # TUs (fnmatch on the TU id),
@@ -96,6 +99,7 @@ import argparse
 import bisect
 import collections
 import configparser
+import hashlib
 import json
 import os
 import re
@@ -123,6 +127,7 @@ RAM_LO, RAM_HI = 0x80000000, 0x80200000
 RESET_VECTOR = 0xBFC00000
 EXE_LOAD = 0x80010000  # PS-X EXE load address (header: asm/header.s)
 MAX_SYM_OFF = 0x4000  # larger offsets print raw: no symbol spans that far
+DUMP_SHOWN = 0x1000  # value reads longer than this are dumps: report a SHA1
 DEBUG = bool(os.environ.get("GDBTRACE_DEBUG"))  # log every packet to stderr
 
 
@@ -943,6 +948,12 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
         if v["len"] < 1:
             raise SystemExit(f"gdbtrace: value {v['spec']['at']}: len must "
                              "be >= 1")
+        only = v["spec"].get("phases")
+        if only is not None:
+            names = {p["name"] for p in spec["script"].get("phases", [])}
+            if not isinstance(only, list) or not set(only) <= names:
+                raise SystemExit(f"gdbtrace: value {v['spec']['at']}: phases "
+                                 f"must be a list of script phase names")
 
     def read_values(frame, phase_name, end, pause):
         """Value watch: every "values" entry, read while the script holds
@@ -951,6 +962,9 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
         pause stop was missed)."""
         for i, v in enumerate(values):
             sp = v["spec"]
+            only = sp.get("phases")
+            if only is not None and (end or phase_name not in only):
+                continue
             rec = {"ev": "value", "i": i, "frame": frame, "phase": phase_name,
                    "end": end, "at": sp["at"], "addr": v["addr"],
                    "pause_frame": pause[1] if pause else None}
@@ -1852,6 +1866,16 @@ def report(args) -> int:
             w.append("Stubbed run: reads after a stub went in are from a "
                      "modified game.")
             w.append("")
+        if any(len(r.get("hex", "")) > 2 * DUMP_SHOWN for r in recs):
+            # A RAM dump (movegraph.py reads it from the capture): one line
+            # per read, no bytes or field table.
+            for r in recs:
+                n = len(r.get("hex", "")) // 2
+                w.append(f"- {r['phase']} (frame {r['frame']}): "
+                         + (f"{n} bytes, SHA1 {hashlib.sha1(bytes.fromhex(r['hex'])).hexdigest()}"
+                            if r.get("hex") else f"not read: {r.get('error')}"))
+            w.append("")
+            continue
         w.append("| phase | frame | pointer | bytes (hex, memory order) |")
         w.append("|---|---|---|---|")
         good = []
