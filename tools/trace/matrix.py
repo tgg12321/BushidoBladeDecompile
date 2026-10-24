@@ -11,6 +11,10 @@ Value len is int(watch len) from the spec watch, 4 when the watch sets none
 (gdbtrace's own default); only an event whose watch index does not resolve
 falls back to len(hex_string)//2. The entry column retains the watch index for
 end-reading comparisons.
+Poll rows (polls.tsv) restate every gdbtrace poll event in JSONL order: the
+wall-clock t since arming (not a frame), the phase when the run had a script,
+and len from the first spec poll with the same `at` (gdbtrace's default 4 when
+it sets none), else len(hex_string)//2. Polls never touch coverage.
 Stub leaf IDs include their parent directory to distinguish baseline captures.
 An events capture (breakpoints, watch or polls, no hit-map declaration and no
 hitmap.tsv) adds sources rows only: no coverage column, and its phases.tsv is
@@ -204,12 +208,26 @@ def load_capture(path):
                        scalar(event.get("end", "")),
                        scalar(event.get("pause_frame", "")),
                        recorded_address(event.get("ptr", "")), scalar(length)])
+    polls = []
+    for event in events:
+        if event["ev"] != "poll":
+            continue
+        if not all(key in event for key in ("at", "hex", "t")):
+            raise InvalidCapture("malformed poll event")
+        spec_poll = next((p for p in spec.get("polls", [])
+                          if isinstance(p, dict) and p.get("at") == event["at"]), None)
+        length = (int(spec_poll.get("len", 4)) if spec_poll is not None
+                  else len(event["hex"]) // 2)
+        polls.append([ident, scalar(event.get("phase", "")), scalar(event["at"]),
+                      recorded_address(event.get("addr", "")), scalar(event["t"]),
+                      scalar(event["hex"]), scalar(length)])
     kinds = sorted(k for k, present in (("hitmap", has_map), ("values", is_values),
                                        ("stub", is_stub), ("events", kind == "events"))
                    if present)
     return dict(ident=ident, kind=kind, kinds=kinds, path=path,
                 manifest=manifest, script=spec.get("script"), start=when, order=order,
-                hashes=hashes, functions=functions, mapped=mapped, values=values)
+                hashes=hashes, functions=functions, mapped=mapped, values=values,
+                polls=polls)
 
 
 def scenario_rows(captures, all_evidence=False):
@@ -324,10 +342,12 @@ def render(paths, no_name=None, all_evidence=False):
                          sum(r[2] for r in readings)] + [r[1] for r in readings])
     values = [["capture", "phase", "symbol/entry", "offset", "bytes",
                "error", "frame", "entry", "addr", "read_at", "end", "pause_frame", "ptr", "len"]]
+    polls = [["capture", "phase", "symbol/entry", "addr", "t", "bytes", "len"]]
     sources = [["capture", "kind", "q124_complete", "git_commit", "tools_trace_status",
                 "build_sha1", "start_time", "input_file", "input_sha1"]]
     for capture in captures:
         values.extend(capture["values"])
+        polls.extend(capture["polls"])
         manifest = capture["manifest"]
         git = manifest.get("git", {})
         trace_status = git.get("tools_trace_status", "")
@@ -340,6 +360,7 @@ def render(paths, no_name=None, all_evidence=False):
                             manifest.get("build", {}).get("exe", {}).get("sha1", ""),
                             scalar(capture["start"]), filename, sha1])
     return {"coverage.tsv": tsv(coverage), "values.tsv": tsv(values),
+            "polls.tsv": tsv(polls),
             "sources.tsv": tsv(sources),
             "scenarios.tsv": tsv(scenario_rows(captures, all_evidence))}
 

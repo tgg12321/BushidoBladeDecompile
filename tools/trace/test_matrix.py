@@ -109,6 +109,7 @@ class MatrixTest(unittest.TestCase):
                 expected_sources += (f"{path.name}\t{kind}\ttrue\tcommit\tclean\toracle\t{time}\t"
                                      f"{name}\t{hashlib.sha1(data).hexdigest()}\n")
         expected = {"coverage.tsv": expected_coverage, "values.tsv": expected_values,
+                    "polls.tsv": "capture\tphase\tsymbol/entry\taddr\tt\tbytes\tlen\n",
                     "sources.tsv": expected_sources,
                     "scenarios.tsv": "capture\tscenario\textends\tcovers\tkind\tmanifest_sha1\tmatch\n"
                     + "".join(f"{p.name}\t-\t-\t-\thitmap\t"
@@ -351,6 +352,32 @@ class MatrixTest(unittest.TestCase):
         (path / "phases.tsv").unlink()
         self.assertEqual(matrix.load_capture(path)["kind"], "events")
         self.assertFalse(matrix.load_capture(path)["mapped"])
+
+    def test_poll_rows_in_order_with_length(self):
+        path = self.capture("polls", 60)
+        events = [json.loads(line) for line in (path / "capture.jsonl").read_text().splitlines()]
+        events[0]["spec"] = {"polls": [{"at": "0x80010010", "len": 4, "every_s": 0.5},
+                                       {"at": "D_80010020"}]}
+        events += [{"ev": "poll", "t": 0.0, "at": "0x80010010", "addr": 2147549200,
+                    "hex": "01020304", "phase": "boot"},
+                   {"ev": "poll", "t": 0.5, "at": "D_80010020", "addr": 2147549216,
+                    "hex": "aabbccdd"},
+                   {"ev": "poll", "t": 1.0, "at": "unknown", "addr": 2147549232, "hex": "ee"}]
+        self.write(path / "capture.jsonl", "".join(json.dumps(e) + "\n" for e in events))
+        outputs = matrix.render([path, self.a])
+        self.assertEqual(outputs["polls.tsv"],
+                         "capture\tphase\tsymbol/entry\taddr\tt\tbytes\tlen\n"
+                         "polls\tboot\t0x80010010\t0x80010010\t0.0\t01020304\t4\n"
+                         "polls\t\tD_80010020\t0x80010020\t0.5\taabbccdd\t4\n"
+                         "polls\t\tunknown\t0x80010030\t1.0\tee\t1\n")
+        # polls stay out of coverage and values
+        self.assertEqual(outputs["coverage.tsv"].splitlines()[0].split("\t")[-1], "a")
+        self.assertEqual(outputs["values.tsv"].count("\n"), 1)
+        self.assertEqual(matrix.load_capture(path)["kind"], "events")
+        del events[-1]["hex"]
+        self.write(path / "capture.jsonl", "".join(json.dumps(e) + "\n" for e in events))
+        with self.assertRaisesRegex(matrix.InvalidCapture, "malformed poll event"):
+            matrix.render([path])
 
     def test_manifest_time_wins_over_trace_time(self):
         path = self.a / "capture.manifest.json"
