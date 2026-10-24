@@ -12,7 +12,8 @@
   ],
   "evidence": [
     "docs/naming/runtime/versus-2p-stage-bamboo-1/spec.json",
-    "docs/naming/runtime/lib-versus-2p-bamboo-1/spec.json"
+    "docs/naming/runtime/lib-versus-2p-bamboo-1/spec.json",
+    "docs/naming/runtime/fighter-values-versus-2p-bamboo-1/spec.json"
   ],
   "use": [
     "boot",

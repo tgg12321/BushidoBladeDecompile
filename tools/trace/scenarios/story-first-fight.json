@@ -14,7 +14,8 @@
   "evidence": [
     "docs/naming/runtime/story-hitmap-1/spec.json",
     "docs/naming/runtime/story-values-1/spec.json",
-    "docs/naming/runtime/lib-story-first-fight-1/spec.json"
+    "docs/naming/runtime/lib-story-first-fight-1/spec.json",
+    "docs/naming/runtime/fighter-values-story-first-fight-1/spec.json"
   ],
   "use": [
     "boot"
