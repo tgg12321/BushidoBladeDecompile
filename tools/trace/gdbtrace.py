@@ -11,6 +11,10 @@ Backends: any PS1 emulator with a GDB stub.
     starts it in portable mode (settings in --portable-dir, never the
     owner's) with the GDB server and debugger on. Windows nightlies:
     https://github.com/grumpycoders/pcsx-redux#where
+    `--headless` runs it with no window (-no-ui; pcsx-redux.main started
+    directly, no console) on an instance slot of tools/trace/pool.py: its
+    own GDB port and profile dir, under a machine-wide cap, so many runs
+    can go at once from any worktree (`python tools/trace/pool.py status`).
   * DuckStation: execution breakpoints (Z0) only. `--launch duckstation`
     sets [Debug] EnableGDBServer in its settings.ini only until the stub
     listens. On the owner's machine (0.1.11295) its socket layer fails
@@ -101,6 +105,7 @@ import subprocess
 import sys
 import time
 
+import pool
 import runkit
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -637,9 +642,41 @@ def run(args) -> int:
         kind = "attached to a running emulator"
     start = {"kind": kind}
     start.update(prepare_memcards(args))
+    args.slot = acquire_slot(args)
+    try:
+        return run_launched(args, syms, spec, start)
+    finally:
+        if args.slot is not None:
+            args.slot.release()
+
+
+def acquire_slot(args):
+    """--headless: a pool slot (GDB port + profile dir), else None."""
+    if not args.headless:
+        return None
+    if args.launch != "pcsx-redux":
+        raise SystemExit("gdbtrace: --headless needs --launch pcsx-redux")
+    if args.keep_emulator:
+        raise SystemExit("gdbtrace: --headless releases its instance at the "
+                         "end; drop --keep-emulator")
+    slot = pool.acquire(f"gdbtrace run {os.path.abspath(args.out)}",
+                        args.slot_wait)
+    if args.portable_dir:  # settings to start from (runs without -safe)
+        src = os.path.join(args.portable_dir, "pcsx.json")
+        if os.path.isfile(src):
+            shutil.copyfile(src, os.path.join(slot.profile, "pcsx.json"))
+    args.port = slot.port
+    args.portable_dir = slot.profile
+    print(f"gdbtrace: headless instance slot {slot.n}, port {slot.port}")
+    return slot
+
+
+def run_launched(args, syms, spec, start) -> int:
     # Every input is hashed before the emulator can touch it, and the bytes
     # compared in memory later are read now.
     inputs = runkit.inputs_record(args, start, REPO)
+    if args.slot is not None:
+        inputs["instance"] = args.slot.describe()
     args.expect = runkit.expected_memory(args)
     inputs["build"]["map_matches_elf"] = map_matches_elf(syms, args)
     if not inputs["build"]["map_matches_elf"]:
@@ -672,8 +709,16 @@ def run(args) -> int:
                 print("gdbtrace: emulator left running; DuckStation may save "
                       "EnableGDBServer = true when you close it")
             else:
+                # Not None: the emulator exited (or crashed) before the end.
+                args.result["emulator_exit_before_stop"] = proc.poll()
                 stop_emulator(proc, getattr(proc, "stub_pid", None))
                 restore()
+            log = getattr(proc, "log", None)
+            if log is not None:
+                log.close()
+                if outcome != "ok":
+                    print(f"gdbtrace: emulator log {log.name}, last lines:\n"
+                          + tail(log.name, 20), file=sys.stderr)
         # Errors here must not hide the run's own exception.
         try:
             man = runkit.finish_manifest(
@@ -752,6 +797,28 @@ def exe_entry(map_path: str) -> int:
     if not head or len(head) != 4:
         raise SystemExit(f"gdbtrace: cannot read the entry point of {exe}")
     return int.from_bytes(head, "little")
+
+
+def wait_running(gdb: Gdb, until: float, out: str | None, stall: float):
+    """wait_stop until `until`; with a script, give up when the emulated
+    frame count (the Lua's .beat file) has not moved for `stall` s while
+    the target is meant to run: a hung or wedged instance (seen with
+    PCSX-Redux at a script pause) fails the run instead of idling to the
+    deadline."""
+    if out is None or stall <= 0:
+        return gdb.wait_stop(max(0.05, until - time.time()))
+    last, since = runkit.read_beat(out), time.time()
+    while True:
+        reply = gdb.wait_stop(max(0.05, min(until, time.time() + 10)
+                                  - time.time()))
+        if reply is not None or time.time() >= until:
+            return reply
+        beat = runkit.read_beat(out)
+        if beat != last:
+            last, since = beat, time.time()
+        elif time.time() - since > stall:
+            raise GdbError(f"stalled: no emulated frame for {stall:.0f} s "
+                           f"while running (last frame {last})")
 
 
 def pause_dup(now, at_stop) -> tuple[bool, bool]:
@@ -982,7 +1049,8 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                     events += 1
             gdb.cont()
             until = min([p["next"] for p in polls] + [t0 + duration])
-            reply = gdb.wait_stop(max(0.05, until - time.time()))
+            reply = wait_running(gdb, until, args.out if script else None,
+                                 args.stall)
             if gdb.console:
                 emit({"ev": "tty", "t": round(time.time() - t0, 3),
                       "text": "".join(gdb.console)})
@@ -1293,6 +1361,8 @@ def launch_redux(args):
         cmd += ["-safe"]
     else:
         cmd += ["-run"]
+    if getattr(args, "headless", False):
+        cmd += ["-no-ui"]
     if args.bios:
         cmd += ["-bios", os.path.abspath(args.bios)]
     for n in (1, 2):
@@ -1301,18 +1371,49 @@ def launch_redux(args):
     if getattr(args, "lua", None):
         cmd += ["-dofile", os.path.abspath(args.lua)]
     # cwd: its crash reporter writes .sentry-native/ into the working dir.
-    proc = subprocess.Popen(cmd, cwd=portable)
+    slot = getattr(args, "slot", None)
+    if slot is None:
+        proc = subprocess.Popen(cmd, cwd=portable)
+        proc.log = None
+    else:
+        # No console window either: pcsx-redux.exe is a launcher whose child
+        # opens a visible console, so start pcsx-redux.main (the emulator,
+        # hashed in the manifest) itself; its output goes to the slot's log.
+        main = os.path.join(os.path.dirname(cmd[0]), "pcsx-redux.main")
+        if os.path.isfile(main):
+            cmd[0] = main
+        log = open(os.path.join(slot.dir, "emulator.log"), "w",
+                   encoding="utf-8", newline="\n")
+        proc = subprocess.Popen(
+            cmd, cwd=portable, stdin=subprocess.DEVNULL, stdout=log,
+            stderr=subprocess.STDOUT,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        proc.log = log
+        slot.record(emulator_pids=[proc.pid])
     proc.cmd = cmd
     try:
         wait_for_stub(proc, args.host, args.port, args.connect_timeout,
                       "PCSX-Redux")
         proc.stub_pid = port_owner(args.port)
+        if slot is not None:
+            slot.record(emulator_pids=[p for p in dict.fromkeys(
+                (proc.pid, proc.stub_pid)) if p])
         if args.boot_wait:
             time.sleep(args.boot_wait)
     except BaseException:
         stop_emulator(proc, port_owner(args.port))
+        if proc.log is not None:
+            proc.log.close()
         raise
     return proc, lambda: None
+
+
+def tail(path: str, n: int) -> str:
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            return "".join(f.readlines()[-n:])
+    except OSError as e:
+        return f"(unreadable: {e})"
 
 
 DUCK_PACKAGES = os.path.join(
@@ -1873,6 +1974,10 @@ def compare(args) -> int:
     for path in SAME_INPUTS:
         if manifest_part(ma, path) != manifest_part(mb, path):
             problems.append("different " + "/".join(path))
+    # Older manifests predate --headless: absent means windowed.
+    if bool(manifest_part(ma, ("emulator", "headless"))) != \
+            bool(manifest_part(mb, ("emulator", "headless"))):
+        problems.append("different emulator/headless (one run windowed)")
     specs = []
     for m, given, label in ((ma, args.base_spec, "baseline"),
                             (mb, args.other_spec, "stubbed")):
@@ -2000,12 +2105,22 @@ def main(argv=None) -> int:
     r.add_argument("--cue", help="disc image for --launch")
     r.add_argument("--bios", help="BIOS image for pcsx-redux (default OpenBIOS)")
     r.add_argument("--portable-dir",
-                   default=os.path.join(REPO, "tmp", "redux-portable"),
-                   help="pcsx-redux settings/saves directory")
+                   help="pcsx-redux settings/saves directory (default "
+                   "tmp/redux-portable; with --headless, the instance's own "
+                   "profile, seeded with this dir's pcsx.json)")
     r.add_argument("--duckstation-ini", help="DuckStation settings.ini path")
     r.add_argument("--boot-wait", type=float, default=0.0,
                    help="seconds to let the game run before arming")
     r.add_argument("--keep-emulator", action="store_true")
+    r.add_argument("--headless", action="store_true",
+                   help="pcsx-redux with no window (-no-ui) on a pool "
+                   "instance slot (tools/trace/pool.py: its own GDB port and "
+                   "profile; --port is ignored)")
+    r.add_argument("--stall", type=float, default=120.0,
+                   help="script runs: fail when no emulated frame passes "
+                   "for this many seconds while the target runs (0: off)")
+    r.add_argument("--slot-wait", type=float, default=3600.0,
+                   help="--headless: seconds to wait for a free slot")
     for n in (1, 2):
         r.add_argument(f"--memcard{n}", help=f"pcsx-redux: start with a copy "
                        f"of this card in slot {n} (default: a blank card)")
@@ -2033,6 +2148,8 @@ def main(argv=None) -> int:
     if args.cmd == "run":
         if args.launch and not args.cue:
             ap.error("--launch needs --cue")
+        if not args.headless and not args.portable_dir:
+            args.portable_dir = os.path.join(REPO, "tmp", "redux-portable")
         return run(args)
     if args.cmd == "compare":
         return compare(args)

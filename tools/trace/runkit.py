@@ -138,7 +138,8 @@ def clean_outputs(out: str, script: dict | None):
     """Remove what an earlier run with the same --out left, so a failed run
     can never be recorded around an old capture."""
     stale = [out] + [companion(out, x) for x in (
-        ".state", ".frame", ".script.lua", ".script.log", ".manifest.json")]
+        ".state", ".frame", ".beat", ".script.lua", ".script.log",
+        ".manifest.json")]
     for sh in (script or {}).get("screenshots", []):
         stale += [companion(out, f".{sh['name']}.raw"),
                   companion(out, f".{sh['name']}.png")]
@@ -226,6 +227,7 @@ def write_lua(script: dict, out: str) -> str:
         f"local LOG = {lua_str(os.path.abspath(companion(out, '.script.log')))}",
         f"local STATE = {lua_str(os.path.abspath(companion(out, '.state')))}",
         f"local PAUSED = {lua_str(os.path.abspath(companion(out, '.frame')))}",
+        f"local BEAT = {lua_str(os.path.abspath(companion(out, '.beat')))}",
         # abspath() would drop a trailing '.' on Windows: add it after.
         f"local SHOT = {lua_str(os.path.abspath(companion(out, '')) + '.')}",
         "local log = io.open(LOG, 'w')",
@@ -291,6 +293,9 @@ def write_lua(script: dict, out: str) -> str:
         "_G.gdbtrace_vsync = PCSX.Events.createEventListener('GPU::Vsync',",
         "  function()",
         "    frame = frame + 1",
+        "    if frame % 60 == 0 then  -- heartbeat for the stall watchdog",
+        "      local b = io.open(BEAT, 'w'); b:write(frame .. '\\n'); b:close()",
+        "    end",
         "    for _, a in ipairs(acts[frame] or {}) do",
         "      local ok, err = pcall(F[a[1]], a[2])",
         "      if not ok then",
@@ -338,6 +343,15 @@ def read_pause(out: str):
             count, frame, cyc = f.read().split()
         return int(count), int(frame), (cyc if cyc.isdigit() else None)
     except (OSError, ValueError):
+        return None
+
+
+def read_beat(out: str) -> str | None:
+    """The Lua's heartbeat (the frame count, every 60 frames), or None."""
+    try:
+        with open(companion(out, ".beat"), encoding="utf-8") as f:
+            return f.read().strip()
+    except OSError:
         return None
 
 
@@ -463,7 +477,7 @@ def inputs_record(args, start: dict, repo: str) -> dict:
     here = os.path.dirname(os.path.abspath(__file__))
     m = {
         "tool": {f: file_rec(os.path.join(here, f), repo)
-                 for f in ("gdbtrace.py", "runkit.py")},
+                 for f in ("gdbtrace.py", "runkit.py", "pool.py")},
         "git": git_state(repo),
         "python": {"version": sys.version, "executable": sys.executable},
         "argv": sys.argv,
@@ -487,7 +501,8 @@ def inputs_record(args, start: dict, repo: str) -> dict:
                                   if n.lower().endswith(".dll")],
                          "settings": "defaults (-safe) + command line"
                          " + script Lua settings"
-                         if args.lua else "the portable dir's pcsx.json"}
+                         if args.lua else "the portable dir's pcsx.json",
+                         "headless": bool(getattr(args, "headless", False))}
         if args.bios:
             m["bios"] = file_rec(args.bios)
         else:
@@ -660,7 +675,7 @@ def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
     if missing:
         m["q124_complete"] = False
         m["q124_missing"] = m.get("q124_missing", []) + missing
-    for x in (".state", ".frame"):
+    for x in (".state", ".frame", ".beat"):
         if os.path.exists(companion(args.out, x)):
             os.remove(companion(args.out, x))
     if args.lua:
