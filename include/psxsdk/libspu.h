@@ -75,7 +75,7 @@ extern s32 SpuInitMalloc(s32, s32 *);
 extern s32 SpuMalloc(s32);
 extern void SpuFree(u32);
 extern void SpuSetKey(s32, u32);
-extern s32 SpuGetKeyStatus(s32);
+extern s32 SpuGetKeyStatus(u32);
 extern void SpuGetAllKeysStatus(u8 *);
 extern void SpuGetVoiceEnvelope(s32, u16 *);
 extern void SpuGetVoiceVolume(s32, s16 *, s16 *);
