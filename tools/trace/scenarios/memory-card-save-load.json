@@ -1,0 +1,11 @@
+{
+  "description": "Option Menu UP to Memory Card (blank cards): Load Data finds no data, Save Data (YES) to slot 1, Load Data loads it back, TRIANGLE to the Option Menu",
+  "use": ["boot"],
+  "end_frame": 8100,
+  "inputs": ["6080:DOWN", "6140:DOWN", "6200:DOWN", "6260:DOWN", "6320:DOWN", "6380:DOWN", "6460:CROSS", "6600:UP", "6660:CROSS",
+             "6800:DOWN", "6860:CROSS", "7060:DOWN", "7120:CROSS", "7300:CROSS", "7500:UP", "7560:CROSS", "7850:TRIANGLE"],
+  "phases": ["6050:top_menu", "6460:t_option", "6560:option_menu", "6660:t_card", "6700:memory_card", "6860:load_empty", "7120:save", "7560:load", "7850:t_card_exit", "7875:option_menu_2"],
+  "shots": ["6050:top_menu.first", "6459:top_menu.last", "6560:option_menu.first", "6640:option_menu.card_cursor", "6700:memory_card.first", "6825:memory_card.load_cursor",
+            "6875:load_empty.checking", "6925:load_empty.no_data", "7075:load_empty.save_cursor", "7200:save.prompt", "7325:save.checking", "7350:save.saving", "7400:save.completed", "7450:save.last",
+            "7550:save.load_cursor", "7600:load.checking", "7650:load.loading", "7700:load.completed", "7800:load.last", "7900:option_menu_2.first", "8099:option_menu_2.last"]
+}
