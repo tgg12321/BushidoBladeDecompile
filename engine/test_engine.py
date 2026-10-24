@@ -11357,6 +11357,75 @@ def test_psyq_library_files() -> None:
         check(f"Q122: {stem} builds without maspsx -G8", not cmd.split("|")[3].rstrip().endswith("-G8"))
 
 
+def test_data_only_files_fixture() -> None:
+    """Q122: derive the exclusions without a real build or a cross-toolchain."""
+    import importlib.util
+    from subprocess import CompletedProcess
+    from unittest.mock import patch
+
+    spec = importlib.util.spec_from_file_location("plf_fixture", "tools/psyq_library_files.py")
+    plf = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(plf)
+    small = "00000000 g     O .data 00000004 small\n"
+    # (input sections, objdump -t output, expected inclusion)
+    cases = {
+        "main/at_lower_bound": ([('.data', 0x800A3000, 4)], small, True),
+        "main/at_upper_bound": ([('.data', 0x800A30D4, 8)],
+                                "00000000 l     O .data 00000008 small\n", True),
+        "main/one_byte": ([('.data', 0x800A3004, 1), ('.text', 0, 0)],
+                          "00000000 g     O .data 00000001 small\n", True),
+        "main/code": ([('.data', 0x800A3010, 4), ('.text', 0x80010000, 4)], small, False),
+        "main/rodata_only": ([('.rodata', 0x80090000, 4)], small, False),
+        "main/above_sdata": ([('.data', 0x800A30E0, 4)], small, False),
+        "main/starts_at_sdata": ([('.data', 0x800A30DC, 4)], small, False),
+        "main/crosses_sdata": ([('.data', 0x800A30D8, 8)], small, False),
+        "main/zero_address": ([('.data', 0, 4)], small, False),
+        "main/empty_data": ([('.data', 0x800A3020, 0)], small, False),
+        "main/no_data": ([('.text', 0, 0)], small, False),
+        "main/function_symbol": ([('.data', 0x800A3020, 4)],
+                                 small + "00000000 g     F .text 00000004 function\n", False),
+        "main/zero_size": ([('.data', 0x800A3024, 4)],
+                           "00000000 g     O .data 00000000 empty\n", False),
+        "main/large_object": ([('.data', 0x800A3028, 9)],
+                              "00000000 g     O .data 00000009 large\n", False),
+        "main/wrong_section": ([('.data', 0x800A3034, 4)],
+                               "00000000 g     O .rodata 00000004 constant\n", False),
+        # six fields, so it passes the length guard and only the "O" flag rejects it
+        "main/not_object": ([('.data', 0x800A3038, 4)],
+                            "00000000 l     d .data 00000004 label\n", False),
+        "main/no_symbols": ([('.data', 0x800A303C, 4)], "", False),
+        "main/malformed_symbols": ([('.data', 0x800A3040, 4)],
+                                   "header g O .data 00000004 ignored\n00000000 g O\n", False),
+    }
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        (root / "build").mkdir()
+        # The original .data range starts at the lowest non-empty .data of any object
+        # (here an asm one); only address 0 falls below it.
+        lines = [" .data 0x800a3000 0x4 build/asm/data/start.o\n"]
+        symbols = {}
+        for tu, (sections, stdout, _) in cases.items():
+            lines.extend(f" {section} 0x{address:08x} 0x{size:x} build/src/{tu}.o\n"
+                         for section, address, size in sections)
+            symbols[root / f"build/src/{tu}.o"] = stdout
+        (root / "build/bb2.map").write_text("".join(lines), encoding="utf-8")
+
+        def objdump(cmd, **kwargs):
+            eq("Q122 fixture: only objdump's symbol table is requested",
+               cmd[:2], ["mipsel-linux-gnu-objdump", "-t"])
+            eq("Q122 fixture: objdump captures text", kwargs,
+               {"capture_output": True, "text": True})
+            # The keyed lookup also rejects any request outside the fixture root.
+            return CompletedProcess(cmd, 0, stdout=symbols[Path(cmd[2])])
+
+        with patch.object(plf.subprocess, "run", side_effect=objdump):
+            got = plf.data_only_files(root)
+        for tu, (_, _, included) in cases.items():
+            eq(f"Q122 fixture: {tu}", tu in got, included)
+        eq("Q122 fixture: exact sorted TU set", got,
+           sorted(tu for tu, (_, _, included) in cases.items() if included))
+
+
 def test_tus() -> None:
     """Restructure step 0 (Q106 D1/D8): TU ids are paths under src/ without .c;
     the linked set comes from bb2.ld; tus.check is the bb2.ld consistency audit."""
@@ -13027,6 +13096,7 @@ def main() -> int:
     test_maspsx_static_lcomm()
     test_maspsx_small_data_sdata()
     test_psyq_library_files()
+    test_data_only_files_fixture()
     test_tus()
     test_naming_member_apply()
     test_move_tu()
