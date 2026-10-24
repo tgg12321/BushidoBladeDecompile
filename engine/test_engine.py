@@ -3892,6 +3892,8 @@ def test_q126_inline_helpers() -> None:
     eq("q126: helpers=False is the pre-Q126 definition-only key",
        L2.body_key(text, "func_A", helpers=False)[1], own(text, "func_A"))
     from engine import departures as DEP
+    eq("q126 departures: cutoff is the committer instant of b832f3d48",
+       DEP.Q126_CUTOFF, "2026-10-23T18:12:59Z")
     both = DEP._keys(text, "func_A")
     eq("q126 departures: both keys of a helper caller",
        both, (k(text, "func_A"), own(text, "func_A")))
@@ -3905,10 +3907,14 @@ def test_q126_inline_helpers() -> None:
     for fields in ({}, {"date": ""}, {"date": "garbage"}, {"date": None},
                    {"date": "2026-10-01"}, {"date": "2026-10-01T00:00:00"},
                    {"date": after}, {"date": "2026-10-25T00:00:00Z"},
+                   {"date": "2026-10-23T18:12:59Z"},
+                   {"date": "2026-10-23T18:13:00Z"},
+                   {"date": "2026-10-23T23:30:00Z"},
+                   {"date": "2026-10-24T00:30:00+01:00"},
                    {"date": "2026-10-23T23:30:00-01:00"}):
         check(f"q126 departures: invalid or non-pre-cutoff date {fields} cannot fall back",
               not DEP._on_body({"body_hash": both[1], **fields}, both, True))
-    for date in (before, "2026-10-24T00:30:00+01:00"):
+    for date in (before, "2026-10-23T13:12:58-05:00"):
         check("q126 departures: record offsets compare as UTC instants",
               DEP._on_body({"body_hash": both[1], "date": date}, both, True))
         check("q126 departures: a new departure never uses an old definition-only PASS",

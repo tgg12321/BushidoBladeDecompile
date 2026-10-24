@@ -242,10 +242,11 @@ def _tree_sources(batch: _Batch, rev: str) -> list[tuple[str, str]]:
 # Owner ruling Q126 keys a body with the same-TU `static inline` helpers it
 # reaches (layer2.body_key). The legacy definition-only key stands in only
 # when BOTH the departure commit's committer timestamp and the record's valid,
-# timezone-aware ISO-8601 timestamp precede this cutoff (compared in UTC).
+# timezone-aware ISO-8601 timestamp precede this cutoff (compared in UTC),
+# the committer instant of the Q126 engine commit b832f3d48.
 # Working-tree / unknown departures and missing or invalid record dates never
 # qualify; an old caller-only review cannot clear a new helper-inclusive body.
-Q126_CUTOFF = "2026-10-24T00:00:00Z"
+Q126_CUTOFF = "2026-10-23T18:12:59Z"
 _Q126_INSTANT = datetime.fromisoformat(Q126_CUTOFF.replace("Z", "+00:00"))
 
 
