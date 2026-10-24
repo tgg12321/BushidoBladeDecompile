@@ -1387,6 +1387,9 @@ void func_8003DA8C(s32 arg0, s32 arg1) {
     s32 offset;
 
     g_gpu_last_fog_ot_index = 0xFFFF;
+    /* FAKE: the pair read through a pointer local; a direct
+       `D_800906A4[arg0][0]` read is scheduled above the g_gpu_last_fog_ot_index
+       store: score 9 (Q129) */
     rec = D_800906A4[arg0];
     if (rec[0] != 0) {
         {
