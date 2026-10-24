@@ -1,0 +1,563 @@
+{
+ "max_events": 60000,
+ "duration_s": 7200,
+ "breakpoints": [
+  {
+   "at": "func_80032854",
+   "max_hits": 2000
+  },
+  {
+   "at": "func_80032064",
+   "max_hits": 2000
+  },
+  {
+   "at": "object_ThrowQueuedKind",
+   "max_hits": 2000
+  },
+  {
+   "at": "object_PickUpNearby",
+   "max_hits": 2000
+  },
+  {
+   "at": "object_SpawnFromFighter",
+   "max_hits": 2000
+  }
+ ],
+ "values": [],
+ "script": {
+  "end_frame": 10230,
+  "phases": [
+   {
+    "frame": 0,
+    "name": "boot_intro"
+   },
+   {
+    "frame": 5490,
+    "name": "t_menu"
+   },
+   {
+    "frame": 6050,
+    "name": "top_menu"
+   },
+   {
+    "frame": 6260,
+    "name": "t_char"
+   },
+   {
+    "frame": 6550,
+    "name": "char_select"
+   },
+   {
+    "frame": 6700,
+    "name": "weapon_select"
+   },
+   {
+    "frame": 7000,
+    "name": "t_stage"
+   },
+   {
+    "frame": 7175,
+    "name": "stage_select"
+   },
+   {
+    "frame": 7450,
+    "name": "t_load"
+   },
+   {
+    "frame": 8230,
+    "name": "fight"
+   },
+   {
+    "frame": 8430,
+    "name": "in_00_square"
+   },
+   {
+    "frame": 8520,
+    "name": "in_01_triangle"
+   },
+   {
+    "frame": 8610,
+    "name": "in_02_circle"
+   },
+   {
+    "frame": 8700,
+    "name": "in_03_cross"
+   },
+   {
+    "frame": 8790,
+    "name": "in_04_l1"
+   },
+   {
+    "frame": 8880,
+    "name": "in_05_l2"
+   },
+   {
+    "frame": 8970,
+    "name": "in_06_r1"
+   },
+   {
+    "frame": 9060,
+    "name": "in_07_r2"
+   },
+   {
+    "frame": 9150,
+    "name": "in_08_r2_square"
+   },
+   {
+    "frame": 9240,
+    "name": "in_09_r2_triangle"
+   },
+   {
+    "frame": 9330,
+    "name": "in_10_r2_circle"
+   },
+   {
+    "frame": 9420,
+    "name": "in_11_r2_cross"
+   },
+   {
+    "frame": 9510,
+    "name": "in_12_l2_square"
+   },
+   {
+    "frame": 9600,
+    "name": "in_13_l2_triangle"
+   },
+   {
+    "frame": 9690,
+    "name": "in_14_l2_circle"
+   },
+   {
+    "frame": 9780,
+    "name": "in_15_l2_cross"
+   },
+   {
+    "frame": 9870,
+    "name": "in_16_l1_square"
+   },
+   {
+    "frame": 9960,
+    "name": "in_17_l1_cross"
+   },
+   {
+    "frame": 10050,
+    "name": "in_18_r1_square"
+   },
+   {
+    "frame": 10140,
+    "name": "in_19_r1_cross"
+   }
+  ],
+  "inputs": [
+   {
+    "frame": 5200,
+    "press": [
+     "START"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 5500,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 5800,
+    "press": [
+     "START"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6080,
+    "press": [
+     "DOWN"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6140,
+    "press": [
+     "DOWN"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6200,
+    "press": [
+     "DOWN"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6260,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6600,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6640,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 6900,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 6940,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6,
+    "pad": 2
+   },
+   {
+    "frame": 7300,
+    "press": [
+     "LEFT"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 7450,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 6
+   },
+   {
+    "frame": 8430,
+    "press": [
+     "SQUARE"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 8520,
+    "press": [
+     "TRIANGLE"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 8610,
+    "press": [
+     "CIRCLE"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 8700,
+    "press": [
+     "CROSS"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 8790,
+    "press": [
+     "L1"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 8880,
+    "press": [
+     "L2"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 8970,
+    "press": [
+     "R1"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 9060,
+    "press": [
+     "R2"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 9150,
+    "press": [
+     "R2",
+     "SQUARE"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 9240,
+    "press": [
+     "R2",
+     "TRIANGLE"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 9330,
+    "press": [
+     "R2",
+     "CIRCLE"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 9420,
+    "press": [
+     "R2",
+     "CROSS"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 9510,
+    "press": [
+     "L2",
+     "SQUARE"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 9600,
+    "press": [
+     "L2",
+     "TRIANGLE"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 9690,
+    "press": [
+     "L2",
+     "CIRCLE"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 9780,
+    "press": [
+     "L2",
+     "CROSS"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 9870,
+    "press": [
+     "L1",
+     "SQUARE"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 9960,
+    "press": [
+     "L1",
+     "CROSS"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 10050,
+    "press": [
+     "R1",
+     "SQUARE"
+    ],
+    "hold": 8
+   },
+   {
+    "frame": 10140,
+    "press": [
+     "R1",
+     "CROSS"
+    ],
+    "hold": 8
+   }
+  ],
+  "screenshots": [
+   {
+    "frame": 5489,
+    "name": "boot_intro.last"
+   },
+   {
+    "frame": 6050,
+    "name": "top_menu.first"
+   },
+   {
+    "frame": 6259,
+    "name": "top_menu.last"
+   },
+   {
+    "frame": 6550,
+    "name": "char_select.first"
+   },
+   {
+    "frame": 6699,
+    "name": "char_select.last"
+   },
+   {
+    "frame": 6700,
+    "name": "weapon_select.first"
+   },
+   {
+    "frame": 6999,
+    "name": "weapon_select.last"
+   },
+   {
+    "frame": 7100,
+    "name": "t_stage.mid"
+   },
+   {
+    "frame": 7175,
+    "name": "stage_select.first"
+   },
+   {
+    "frame": 7299,
+    "name": "stage_select.7299"
+   },
+   {
+    "frame": 7325,
+    "name": "stage_select.7325"
+   },
+   {
+    "frame": 7355,
+    "name": "stage_select.7355"
+   },
+   {
+    "frame": 7449,
+    "name": "stage_select.last"
+   },
+   {
+    "frame": 7900,
+    "name": "t_load.mid"
+   },
+   {
+    "frame": 8229,
+    "name": "t_load.last"
+   },
+   {
+    "frame": 8230,
+    "name": "fight.first"
+   },
+   {
+    "frame": 8460,
+    "name": "in_00_square.30"
+   },
+   {
+    "frame": 8550,
+    "name": "in_01_triangle.30"
+   },
+   {
+    "frame": 8640,
+    "name": "in_02_circle.30"
+   },
+   {
+    "frame": 8730,
+    "name": "in_03_cross.30"
+   },
+   {
+    "frame": 8820,
+    "name": "in_04_l1.30"
+   },
+   {
+    "frame": 8910,
+    "name": "in_05_l2.30"
+   },
+   {
+    "frame": 9000,
+    "name": "in_06_r1.30"
+   },
+   {
+    "frame": 9090,
+    "name": "in_07_r2.30"
+   },
+   {
+    "frame": 9180,
+    "name": "in_08_r2_square.30"
+   },
+   {
+    "frame": 9270,
+    "name": "in_09_r2_triangle.30"
+   },
+   {
+    "frame": 9360,
+    "name": "in_10_r2_circle.30"
+   },
+   {
+    "frame": 9450,
+    "name": "in_11_r2_cross.30"
+   },
+   {
+    "frame": 9540,
+    "name": "in_12_l2_square.30"
+   },
+   {
+    "frame": 9630,
+    "name": "in_13_l2_triangle.30"
+   },
+   {
+    "frame": 9720,
+    "name": "in_14_l2_circle.30"
+   },
+   {
+    "frame": 9810,
+    "name": "in_15_l2_cross.30"
+   },
+   {
+    "frame": 9900,
+    "name": "in_16_l1_square.30"
+   },
+   {
+    "frame": 9990,
+    "name": "in_17_l1_cross.30"
+   },
+   {
+    "frame": 10080,
+    "name": "in_18_r1_square.30"
+   },
+   {
+    "frame": 10170,
+    "name": "in_19_r1_cross.30"
+   },
+   {
+    "frame": 10229,
+    "name": "last"
+   }
+  ]
+ },
+ "watch": [
+  {
+   "at": "0x80101F32",
+   "len": 2,
+   "kind": "write",
+   "max_hits": 20000
+  },
+  {
+   "at": "0x8010237E",
+   "len": 2,
+   "kind": "write",
+   "max_hits": 20000
+  }
+ ]
+}
