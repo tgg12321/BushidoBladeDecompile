@@ -2416,9 +2416,8 @@ s32 math_PrepareTriangleCollisionFrame(Unk1F8002B8Rec *obj) {
     s32 sp_tmp3;
     s32 len_sq;
     s32 xz_sq;
-    /* temp: n.x*n.x + n.z*n.z, then its square-root table byte, looked up in
-     * place as SOTN's shop takes `itemId = D_us_801814D4[itemId]` (Q51) */
-    /* SOTN: src/st/lib/e_shop.c:3168 @db41b28 */
+    /* FAKE: temp holds two values: n.x*n.x + n.z*n.z, then the square-root
+     * table byte; one local per value: score 6 (Ruling 11, Q129) */
     s32 temp;
     s32 nxz_len;
 
