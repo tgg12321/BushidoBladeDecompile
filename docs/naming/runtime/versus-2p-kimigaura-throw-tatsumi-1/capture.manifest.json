@@ -1,0 +1,515 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "de1cfe396d54e5e1d2d32b9e299b2f68f6d72b0a",
+      "size": 97578
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "a7066f35d3f65aac8a8876d34607d846f053a85f",
+      "size": 28157
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "29036f4d8da61dcfae2b7528275b970a416fff62",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tools\\trace\\gdbtrace.py",
+    "run",
+    "--spec",
+    "tmp/throwchars/out\\tatsumi\\spec.json",
+    "--out",
+    "tmp/throwchars/out\\tatsumi\\capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--emulator",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--cue",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+    "--bios",
+    "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "--headless",
+    "--slot-wait",
+    "3600.0"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.map",
+      "sha1": "5ede770aab8d7468a0fa3984c5e09e51e5077dcd",
+      "size": 547657
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.elf",
+      "sha1": "1b93789287300d338d56ffaf43549479864d0c4e",
+      "size": 889736
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "tmp/throwchars/out\\tatsumi\\spec.json",
+    "sha1": "8c2f1165c20dfd952e0944e8c249fcd1e1cebe85",
+    "size": 9545
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "tmp/throwchars/out\\tatsumi\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "tmp/throwchars/out\\tatsumi\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-2\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2402",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\throwchars\\out\\tatsumi\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\throwchars\\out\\tatsumi\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\throwchars\\out\\tatsumi\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.script.lua",
+      "sha1": "9053dd3d58a6f48c1e893675ab19d3d016a332d3",
+      "size": 9405
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 2,
+    "port": 2402,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-2\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 222,
+    "ambiguous_stops": 0,
+    "exe_changed_by_run": [
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.jsonl",
+      "sha1": "7424fb50d70b549f5b8df199c72e793323dd4134",
+      "size": 72672
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.top_menu.first.png",
+      "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
+      "size": 31550
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.top_menu.last.png",
+      "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
+      "size": 31607
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.char_select.first.png",
+      "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
+      "size": 23135
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.char_select.pre.png",
+      "sha1": "566857c09ce68bf863f8baef20175d243b608f6d",
+      "size": 21757
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.char_select.last.png",
+      "sha1": "edb6bb38d635470b02d6bd86a41e1535f7cdaf99",
+      "size": 21701
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.weapon_select.first.png",
+      "sha1": "7549ab8e0ed97eb976d7775e106f542e9beb3e46",
+      "size": 22168
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.weapon_select.last.png",
+      "sha1": "3ab192a15e80eaec9ae430236c70001bc7ffd14d",
+      "size": 4504
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.t_stage.mid.png",
+      "sha1": "595bfa10846a8a501789e24c51d8dd5001f5bb65",
+      "size": 5188
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.stage_select.first.png",
+      "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
+      "size": 21853
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.stage_select.7299.png",
+      "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
+      "size": 21972
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.stage_select.7325.png",
+      "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
+      "size": 18207
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.stage_select.7355.png",
+      "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
+      "size": 22809
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.stage_select.last.png",
+      "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
+      "size": 22781
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.t_load.mid.png",
+      "sha1": "ec2f99d4d7f08ab237e79512b7a7da417af722f4",
+      "size": 9149
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.t_load.last.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.fight.first.png",
+      "sha1": "5a01b4b272fb595479a807216bb09f56d0768a96",
+      "size": 526
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_00_r2_circle_3.15.png",
+      "sha1": "6c6e4db7e4c386f8f6ac03783be6551554ab61a1",
+      "size": 49468
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_00_r2_circle_3.30.png",
+      "sha1": "42a72bad753d0a7c70e5423a2a3a1bd12b58d9b3",
+      "size": 49752
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_00_r2_circle_3.60.png",
+      "sha1": "032c004c5f60adf76ec8e89f40e67525efd8e68c",
+      "size": 49397
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_01_r2_cross_3.15.png",
+      "sha1": "3b6667ffa80399da97751c343984f37cba9f3b93",
+      "size": 48812
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_01_r2_cross_3.30.png",
+      "sha1": "2cb08847aa747751ae6ca20d95eaa28a3a944ad8",
+      "size": 48192
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_01_r2_cross_3.60.png",
+      "sha1": "552726e88d0dbf92297d58a2d7c8ca909534b2eb",
+      "size": 53346
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_02_r2_circle_1.15.png",
+      "sha1": "4c2cab5110129dfc792307c628901b1532d389a0",
+      "size": 56784
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_02_r2_circle_1.30.png",
+      "sha1": "136758b21c6569b181aea13044473512af1ccdcf",
+      "size": 20545
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_02_r2_circle_1.60.png",
+      "sha1": "680f08a73590d434b9874bc67be3e95e794f0d72",
+      "size": 19663
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_03_r2_cross_5.15.png",
+      "sha1": "9da94ae39fa9a2e276f322ad7e6147cf1bfb675b",
+      "size": 32526
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_03_r2_cross_5.30.png",
+      "sha1": "5d04c69f43d69f5abdb65e1ca9bb730a1adc4cc2",
+      "size": 31164
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_03_r2_cross_5.60.png",
+      "sha1": "467f3c8799f3ff3eb30acd15e8bff86b5be9867d",
+      "size": 27879
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_04_r2_circle_7.15.png",
+      "sha1": "bb0d702d9a4a1bbb88436bb45fa4bd307e0b8839",
+      "size": 34831
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_04_r2_circle_7.30.png",
+      "sha1": "3ee1d4a29ea7ea6619a3b7f89f6e7e9f0b002e90",
+      "size": 37589
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_04_r2_circle_7.60.png",
+      "sha1": "af96fb91867b8d144559ceb97b81654f184fd8e1",
+      "size": 42652
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_05_r2_square_3.15.png",
+      "sha1": "18f73a99f7319e936b93eda76e52e3b35aac9aa4",
+      "size": 32084
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_05_r2_square_3.30.png",
+      "sha1": "f0b0f1787d28af9c8972f39248077a7deeda236e",
+      "size": 33281
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_05_r2_square_3.60.png",
+      "sha1": "0d07d50ba2a6bec12251413d2f1b7e93c860afd2",
+      "size": 34801
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_06_r2_alone.15.png",
+      "sha1": "6d5483cfa947c069d47f238c98f57e19a9ea15a6",
+      "size": 32611
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_06_r2_alone.30.png",
+      "sha1": "62474b19d3d7db4dcd45886b59bf0f52d292962d",
+      "size": 32672
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_06_r2_alone.60.png",
+      "sha1": "e6f0c95459c5530e5e8b4f6efd27ee34fe74d8c1",
+      "size": 31466
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_07_r2_circle_3b.15.png",
+      "sha1": "67c6670060d0668d5064bcf68fb22b2d25eef579",
+      "size": 26015
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_07_r2_circle_3b.30.png",
+      "sha1": "2556adddf29549e046576c73c578afbbe9dc9c81",
+      "size": 28090
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_07_r2_circle_3b.60.png",
+      "sha1": "5b8a716c9b6e6a884c29ebced74037fc656389e8",
+      "size": 32024
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_08_r2_alone_b.15.png",
+      "sha1": "e5ead65382bf6b3785a7f675e92558999dafabfd",
+      "size": 34052
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_08_r2_alone_b.30.png",
+      "sha1": "29320743de412b554f842dbc9cf69e4179e70613",
+      "size": 34384
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_08_r2_alone_b.60.png",
+      "sha1": "6f54162c932237f0567e543b07500122e1fba424",
+      "size": 33573
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_09_r2_cross_3b.15.png",
+      "sha1": "3ca7b0c20a2ef8d81444f4e053c4f39a29092825",
+      "size": 24912
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_09_r2_cross_3b.30.png",
+      "sha1": "7d712327dad02cf0574ca6c9ace01b3651ad76cf",
+      "size": 27213
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.in_09_r2_cross_3b.60.png",
+      "sha1": "2fa72a17cae1e72f3b0a2f7090c99e6949d99aa7",
+      "size": 30516
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.last.png",
+      "sha1": "b61d45223921b274522e80976234aaebb81dce9a",
+      "size": 32951
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.script.log",
+      "sha1": "e326ad6b71c4c989e4439022883c34a3e6975bf4",
+      "size": 3692
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    },
+    {
+      "path": "tmp/throwchars/out\\tatsumi\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    }
+  ]
+}
