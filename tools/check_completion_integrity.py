@@ -97,8 +97,8 @@ def _helper_issues(src_text: str | None, stem: str, ftab) -> list[str]:
           covers as its own function;
       (2) a helper with more than one definition (e.g. an `#if 0` copy):
           which body is compiled is ambiguous;
-      (3) a helper named in a #define body: a macro is a path to it the
-          caller's text does not spell;
+      (3) a helper named in a #define body here (headers checked separately):
+          a macro is a path to it the caller's text does not spell;
       (4) a helper no function in the object reaches: its body is read by
           no gate;
       (5) any other function body with no symbol in the object (e.g.
@@ -147,18 +147,33 @@ def _helper_issues(src_text: str | None, stem: str, ftab) -> list[str]:
 def _header_function_issues(root: Path = REPO) -> list[str]:
     """Function definitions in project headers (include/**/*.h, src/**/*.h;
     the vendored PsyQ headers excepted): a body there is outside every
-    per-TU gate (Q126 attributes same-TU helpers only)."""
+    per-TU gate (Q126 attributes same-TU helpers only). Also refuse a .c-local
+    helper named in, or as, a #define in any header, vendored ones included:
+    the macro is a path to (or a rewrite of) the helper the TU walk never sees."""
     vendored = set(gtemacro.VENDORED)
+    helpers: dict[str, list[str]] = {}
+    for p in sorted(root.glob("src/**/*.c")):
+        stem = p.relative_to(root / "src").with_suffix("").as_posix()
+        text = p.read_text(encoding="utf-8", errors="replace")
+        for h in inlineasm.static_inline_defs(text):
+            helpers.setdefault(h, []).append(stem)
     out = []
     for pat in ("include/**/*.h", "src/**/*.h"):
         for p in sorted(root.glob(pat)):
             rel = p.relative_to(root).as_posix()
-            if rel in vendored:
-                continue
             text = p.read_text(encoding="utf-8", errors="replace")
-            out += [f"{rel}: function definition {fn.name} in a project header -- "
-                    f"define it in the .c file that uses it"
-                    for fn in inlineasm.tu_functions(text)]
+            if rel not in vendored:
+                out += [f"{rel}: function definition {fn.name} in a project header -- "
+                        f"define it in the .c file that uses it"
+                        for fn in inlineasm.tu_functions(text)]
+            named: set[str] = set()
+            for name, body in inlineasm._tu_index(text).macros.items():
+                named |= body | {name}
+            for h in sorted(named & helpers.keys()):
+                for stem in helpers[h]:
+                    out.append(f"{h} ({stem}.c): static inline helper named in a "
+                               f"#define body in {rel} -- call it directly, so its "
+                               f"callers are visible")
     return out
 
 

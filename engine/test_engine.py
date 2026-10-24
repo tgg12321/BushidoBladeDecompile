@@ -4150,6 +4150,38 @@ def test_q126_inline_helpers() -> None:
            [i.split(":")[0] + ":" + i.split("definition ")[1].split(" ")[0]
             for i in CCI._header_function_issues(root)],
            ["include/bad.h:h", "src/main/local.h:f"])
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        (root / "include/psxsdk").mkdir(parents=True)
+        (root / "src/main").mkdir(parents=True)
+        (root / "src/main/a.c").write_text(
+            "static inline s32 sq(s32 x) { return x * x; }\n"
+            "s32 f(s32 x) { return sq(x); }\n")
+        issue = ("sq (main/a.c): static inline helper named in a #define body in "
+                 "include/game.h -- call it directly, so its callers are visible")
+        for desc, header, expected in (
+                ("replacement list", "#define SQ2(x) sq(x)\n", [issue]),
+                ("line splice", "#define SQ2(x) s\\\nq(x)\n", [issue]),
+                ("parameter list", "#define SQ2(sq) 0\n", [issue]),
+                ("multiple macros report once",
+                 "#define SQ2(x) sq(x)\n#define SQ3(x) sq(x)\n", [issue]),
+                ("comments", "/* sq */\n#define SQ2(x) (x) /* sq */\n", []),
+                ("string literal", '#define SQ2 "sq"\n', []),
+                ("non-define line", "extern s32 sq(s32 x);\n", []),
+                ("unrelated macro", "#define SQ2(x) other(x)\n", []),
+                ("identifier boundary", "#define SQ2(x) sq_more(x)\n", []),
+                ("macro named like the helper", "#define sq(x) ((x) * (x))\n",
+                 [issue])):
+            (root / "include/game.h").write_text(header)
+            eq(f"q126 integrity: header macro helper check: {desc}",
+               CCI._header_function_issues(root), expected)
+        (root / "include/game.h").write_text("#define SQ2(x) sq(x)\n")
+        (root / "include/psxsdk/inline_o.h").write_text("#define SQ3(x) sq(x)\n")
+        (root / "src/main/local.h").write_text("#define SQ4(x) sq(x)\n")
+        eq("q126 integrity: helper macros in vendored and src headers are refused too",
+           CCI._header_function_issues(root),
+           [issue, issue.replace("include/game.h", "include/psxsdk/inline_o.h"),
+            issue.replace("include/game.h", "src/main/local.h")])
     eq("q126 integrity: helper island blocks count for the caller",
        CCI._attributed_islands({"sq": 2, "func_A": 1}, text, "func_B"), 2)
     eq("q126 integrity: ... and add to the caller's own",
