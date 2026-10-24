@@ -1,5 +1,7 @@
 {
   "description": "Option Menu UP to Memory Card (blank cards): Load Data finds no data, Save Data (YES) to slot 1, Load Data loads it back, TRIANGLE to the Option Menu",
+  "covers": ["menu:top", "menu:option", "menu:memory_card", "event:save", "event:load"],
+  "evidence": ["docs/naming/runtime/memory-card-hitmap-1/spec.json"],
   "use": ["boot"],
   "end_frame": 8100,
   "inputs": ["6080:DOWN", "6140:DOWN", "6200:DOWN", "6260:DOWN", "6320:DOWN", "6380:DOWN", "6460:CROSS", "6600:UP", "6660:CROSS",
