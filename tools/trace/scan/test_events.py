@@ -10,8 +10,9 @@ import os
 from pathlib import Path
 import sys
 import shutil
+import stat
+import subprocess
 import uuid
-from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -26,6 +27,8 @@ class EventsTest(unittest.TestCase):
         scratch.mkdir(exist_ok=True)
         self.root = scratch / ("events-test-" + uuid.uuid4().hex)
         self.root.mkdir()
+        subprocess.run(["git", "init", "-q", str(self.root)], check=True)
+        self.git("config", "core.autocrlf", "false")
         self.addCleanup(self.cleanup)
         self.runtime = self.root / "docs/naming/runtime"
         self.capture = self.runtime / "sample"
@@ -34,10 +37,6 @@ class EventsTest(unittest.TestCase):
         root_patch.start()
         self.addCleanup(root_patch.stop)
         self.tracked = ["docs/naming/runtime/sample/capture.manifest.json"]
-        git_patch = patch.object(events.subprocess, "run", side_effect=lambda *a, **kw:
-                                 SimpleNamespace(stdout="\0".join(self.tracked).encode()))
-        git_patch.start()
-        self.addCleanup(git_patch.stop)
         self.records = []
         self.spec = dict(breakpoints=[dict(at="func_80010000", max_hits=100)],
                          watch=[dict(at="D_800A3910+0x2", kind=k, max_hits=100, len=2)
@@ -58,6 +57,7 @@ class EventsTest(unittest.TestCase):
             if path.is_dir():
                 path.rmdir()
             else:
+                path.chmod(stat.S_IWRITE | stat.S_IREAD)
                 path.unlink()
         self.root.rmdir()
 
@@ -95,7 +95,28 @@ class EventsTest(unittest.TestCase):
         (self.capture / "report.md").write_bytes(report.encode())
 
     def rows(self):
-        return list(csv.DictReader(io.StringIO(events.render()), delimiter="\t"))
+        return list(csv.DictReader(io.StringIO(self.render()), delimiter="\t"))
+
+    def git(self, *args):
+        return subprocess.run(["git", *args], cwd=self.root, check=True,
+                              capture_output=True)
+
+    def snapshot(self):
+        # Only this throwaway repository's index is ever written by the tests.
+        self.git("read-tree", "--empty")
+        paths = [p.relative_to(self.root).as_posix() for p in self.runtime.rglob("*")
+                 if p.is_file() and (p.name != "capture.manifest.json" or
+                                    p.relative_to(self.root).as_posix() in self.tracked)]
+        if paths:
+            self.git("add", "--", *paths)
+
+    def render(self):
+        self.snapshot()
+        return events.render()
+
+    def main(self, args):
+        self.snapshot()
+        return events.main(args)
 
     def test_two_phases_write_read_call_and_citations(self):
         rows = self.rows()
@@ -128,8 +149,8 @@ class EventsTest(unittest.TestCase):
         for row in rows:
             self.assertEqual(row["count"], "11")
             vals = json.loads(row["values"])
-            self.assertEqual(vals[-1], "+3 more")
-            self.assertEqual(vals[:-1], list(range(8)) if row["kind"] == "write"
+            self.assertEqual(row["values_omitted"], "3")
+            self.assertEqual(vals, list(range(8)) if row["kind"] == "write"
                              else [[v, 2, 3, 4] for v in range(8)])
 
     def test_partial_data_and_raw_site_are_inconclusive(self):
@@ -171,7 +192,7 @@ class EventsTest(unittest.TestCase):
                 (self.capture / "capture.jsonl").write_bytes(
                     (json.dumps(broken) + "\n").encode())
                 with contextlib.redirect_stderr(io.StringIO()) as error:
-                    self.assertEqual(events.main(["build"]), 1)
+                    self.assertEqual(self.main(["build"]), 1)
                 self.assertIn("sample", error.getvalue())
                 self.assertIn("capture.jsonl:1:", error.getvalue())
 
@@ -179,16 +200,16 @@ class EventsTest(unittest.TestCase):
         old_cwd = Path.cwd()
         try:
             os.chdir(self.capture)
-            self.assertEqual(events.main(["build"]), 0)
-            self.assertEqual(events.main(["check"]), 0)
+            self.assertEqual(self.main(["build"]), 0)
+            self.assertEqual(self.main(["check"]), 0)
             out = self.runtime / "evidence/events.tsv"
             original = out.read_bytes()
             self.assertNotIn(b"\r", original)
-            self.assertEqual(events.main(["build"]), 0)
+            self.assertEqual(self.main(["build"]), 0)
             self.assertEqual(out.read_bytes(), original)
             out.write_bytes(original + b"stale\n")
             with contextlib.redirect_stderr(io.StringIO()) as error:
-                self.assertEqual(events.main(["check"]), 1)
+                self.assertEqual(self.main(["check"]), 1)
             self.assertIn("events differ", error.getvalue())
         finally:
             os.chdir(old_cwd)
@@ -240,26 +261,26 @@ class EventsTest(unittest.TestCase):
         watch["access"]["pc"] = 0xBFC0D864
         key, _, reasons = events.observation(watch, {})
         self.assertEqual(key[2], "BIOS")
-        self.assertEqual(key[4:6], ("0xBFC0D864", "bios"))
+        self.assertEqual(key[4:6], ("0x9FC0D864", "bios"))
         self.assertNotIn("unresolved_function", reasons)
         watch["access"]["pc"] = 0xA0089010
         resolved = {}
-        events.resolve_ranges([watch], resolved, [(0x80089000, 0x80089100, "sdk_writer")])
+        events.resolve_ranges([watch], resolved, [(0x80089000, 0x80089100, "sdk_writer", False)])
         key, _, reasons = events.observation(watch, resolved)
         self.assertEqual(key[2], "sdk_writer")
         self.assertFalse(reasons)
 
     def test_absolute_manifest_elf_path_is_ignored(self):
-        before = events.render()
+        before = self.render()
         manifest = dict(q124_complete=True, build=dict(elf=dict(
             path=str(self.root / "nonexistent.elf"), sha1="0" * 40)))
         (self.capture / "capture.manifest.json").write_bytes(json.dumps(manifest).encode())
-        self.assertEqual(events.render(), before)
+        self.assertEqual(self.render(), before)
         (self.root / "nonexistent.elf").write_bytes(b"mismatching local build")
-        self.assertEqual(events.render(), before)
+        self.assertEqual(self.render(), before)
         manifest["build"]["elf"]["path"] = "C:/other/worktree/build/bb2.elf"
         (self.capture / "capture.manifest.json").write_bytes(json.dumps(manifest).encode())
-        self.assertEqual(events.render(), before)
+        self.assertEqual(self.render(), before)
 
     def test_exact_wider_and_partial_stores(self):
         entry = events.declarations(self.spec)[("D_800A3910+0x2", 2)]
@@ -310,6 +331,106 @@ class EventsTest(unittest.TestCase):
                          "sdk_writer")
         self.assertTrue(all(r["inconclusive"] == "1" for r in rows))
         self.assertTrue(all("group_has_unresolved_site" in r["reason"] for r in rows))
+
+    def test_kseg_aliases_merge_into_one_canonical_site(self):
+        self.records = [self.watch(), self.watch()]
+        self.records[1]["access"]["pc"] = 0xA0030010
+        self.save()
+        rows = self.rows()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["site"], "0x80030010")
+        self.assertEqual(rows[0]["count"], "2")
+
+    def test_inconsistent_named_offsets_fail(self):
+        self.records = [self.watch(), self.watch()]
+        self.records[1]["access"]["pc"] += 4
+        self.save()
+        report = self.capture / "report.md"
+        report.write_bytes(report.read_bytes().replace(
+            b"- `func_80030000+0x10` x2",
+            b"- `writer+0x10` x1\n- `writer+0x18` x1"))
+        with self.assertRaisesRegex(ValueError, "named offset"):
+            self.rows()
+
+    def test_named_offset_coverage_disagreement_fails(self):
+        report = self.capture / "report.md"
+        report.write_bytes(report.read_bytes().replace(b"func_80030000", b"writer"))
+        matrix = self.runtime / "matrix"
+        matrix.mkdir()
+        # Even the last coverage start (without a range) constrains the name.
+        (matrix / "coverage.tsv").write_bytes(
+            b"addr\tcapture_name\n0x80030004\twriter\n")
+        with self.assertRaisesRegex(ValueError, "named offset"):
+            self.rows()
+
+    def test_end_counter_missing_or_mismatch_is_target_local(self):
+        for hits in ({}, {"Z2:D_800A3910+0x2": 1},
+                     {"Z2:D_800A3910+0x2": 3}):
+            with self.subTest(hits=hits):
+                self.end_changes["hits"] = {
+                    "Z0:func_80010000": 2, "Z3:D_800A3910+0x2": 2, **hits}
+                self.save()
+                for row in self.rows():
+                    self.assertEqual(row["inconclusive"], "1" if row["kind"] == "write" else "0")
+                    self.assertEqual("hit_count_mismatch:Z2:D_800A3910+0x2" in row["reason"],
+                                     row["kind"] == "write")
+
+    def test_end_counter_includes_hitmap_and_stub_hits_across_phases(self):
+        call = self.records[2]
+        self.records += [dict(call, phase="q", **{flag: 1})
+                         for flag in ("hm", "stub_call", "stub_leak")]
+        self.save()
+        (self.capture / "report.md").unlink()
+        self.assertTrue(all("hit_count_mismatch" not in r["reason"] for r in self.rows()))
+
+    def test_coverage_next_start_reason_is_informational(self):
+        self.records = [self.watch()]
+        self.save()
+        (self.capture / "report.md").unlink()
+        matrix = self.runtime / "matrix"
+        matrix.mkdir()
+        for column, bound in (("", ""), ("end_addr", "0x80030020"), ("size", "0x20")):
+            with self.subTest(column=column):
+                (matrix / "coverage.tsv").write_bytes(
+                    (f"addr\tcapture_name\t{column}\n0x80030000\twriter\t{bound}\n"
+                     "0x80030100\tlast\t\n").encode())
+                row, = self.rows()
+                self.assertEqual(row["inconclusive"], "0")
+                self.assertEqual(row["reason"], "" if column else "coverage_next_start_bound")
+
+    def test_unstaged_inputs_do_not_change_output(self):
+        matrix = self.runtime / "matrix"
+        matrix.mkdir()
+        (matrix / "coverage.tsv").write_bytes(b"addr\tcapture_name\n0x80030000\tfunc_80030000\n")
+        before = self.render()
+        for path in (self.capture / "capture.jsonl", self.capture / "report.md",
+                     self.capture / "capture.manifest.json", matrix / "coverage.tsv"):
+            path.write_bytes(b"unstaged invalid input\r\n")
+            self.assertEqual(events.render(), before)
+
+    def test_index_capture_bytes_preserve_crlf_for_digest(self):
+        path = self.capture / "capture.jsonl"
+        original = path.read_bytes()
+        raw = original.replace(b"\n", b"\r\n")
+        path.write_bytes(raw)
+        report = self.capture / "report.md"
+        report.write_bytes(report.read_bytes().replace(
+            hashlib.sha1(original).hexdigest().encode(), hashlib.sha1(raw).hexdigest().encode()))
+        rows = self.rows()
+        self.assertTrue(all(r["captures"] == "sample@" + hashlib.sha1(raw).hexdigest()[:12]
+                            for r in rows))
+
+    def test_missing_end_has_missing_counter_reason(self):
+        event = self.records[0]
+        entry = self.spec["watch"][0]
+        self.assertEqual(events.limits(self.spec, self.records, None, entry, event),
+                         {"missing_end_record", "hit_count_mismatch:Z2:D_800A3910+0x2"})
+
+    def test_tsv_rejects_control_characters(self):
+        self.records[0]["phase"] = "bad\tphase"
+        self.save()
+        with self.assertRaisesRegex(ValueError, "tab/newline"):
+            self.rows()
 
 
 if __name__ == "__main__":

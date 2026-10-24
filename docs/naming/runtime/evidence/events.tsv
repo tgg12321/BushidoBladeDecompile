@@ -1,274 +1,345 @@
-target	kind	site_function	phase	site	attrib	store_offset	store_width	count	values	captures	inconclusive	reason
-D_800A34F0	write	BIOS	boot_intro	0xBFC0D864	bios	0	4	1	[0]	story-values-1@86b4866e3da8	0	
-D_800A34F0	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	story-values-1@86b4866e3da8	0	
-D_800A38DC	write	BIOS	boot_intro	0xBFC0D864	bios	0	4	1	[0]	story-values-1@86b4866e3da8	0	
-D_800A38DC	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	story-values-1@86b4866e3da8	0	
-D_800A38DC	write	func_800343F0	t_stage	0x80034440	report	0	2	1	[0]	story-values-1@86b4866e3da8	0	partial_store
-D_800A3910	write	BIOS	boot_intro	0xBFC0D864	bios	0	4	1	[0]	story-values-1@86b4866e3da8	0	
-D_800A3910	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	story-values-1@86b4866e3da8	0	
-D_800A3910	write	BIOS	boot_intro	0xBFC0D864	bios	0	4	1	[0]	versus-2p-effects-events-1@2fa05558de81	0	
-D_800A3910	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	versus-2p-effects-events-1@2fa05558de81	0	
-D_800A3910	write	func_80026DA4	fight	0x800272D8	report	0	2	620	"[0,1,2,3,4,5,6,7,""+8 more""]"	versus-2p-effects-events-1@2fa05558de81	0	partial_store
-D_800A3910	write	func_8002C61C	fight	0x8002C800	report	0	2	2	[0]	versus-2p-effects-events-1@2fa05558de81	0	partial_store
-D_800A3910	write	func_80032854	fight	0x80032A40	report	0	2	6	[1]	versus-2p-effects-events-1@2fa05558de81	0	partial_store
-D_800A3910	write	func_80032854	fight	0x80032A70	report	0	2	9	[16]	versus-2p-effects-events-1@2fa05558de81	0	partial_store
-D_800A3910	write	func_80032854	fight	0x80032AA0	report	0	2	45	[8]	versus-2p-effects-events-1@2fa05558de81	0	partial_store
-D_800A3910	write	func_80032854	fight	0x80032AD0	report	0	2	24	[5]	versus-2p-effects-events-1@2fa05558de81	0	partial_store
-func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DA4	report			1	[[1,2,528482856,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DE8	coverage			1	[[0,37,528482856,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	fighter_ResolveBoneHit	fight	0x80027E3C	coverage			1	[[1,37,528482856,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	fighter_ResolveBoneHit	fight	0x800280F4	coverage			1	[[1,3,528482760,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[0,3,528482544,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002852C	report			3	[[1,1,528483316,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028540	report			3	[[1,37,528483316,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028628	report			3	[[0,38,528483316,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002863C	report			3	[[0,45,528483316,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	func_80026DA4	fight	0x80027064	report			12	[[0,45,2148540348,0],[1,45,2148541448,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	func_80026DA4	fight	0x800272C0	report			84	[[0,5,2149580408,0],[0,6,2149580408,0],[0,7,2149580408,0],[0,8,2149580408,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	func_800278C0	fight	0x80027974	report			3	[[0,34,528482736,0],[0,35,528482760,0],[1,36,528482544,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	object_UpdatePool	fight	0x800315A0	report			3	[[1,41,2148559524,0]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	report			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	versus-2p-effects-events-1@2fa05558de81	0	
-func_80032854	call	fighter_DispatchFrameEvent	fight	0x80033058	report			33	[[0,9,2149579848,0],[1,9,2149579848,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DA4	report			1	[[1,2,528482736,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DE8	report			1	[[0,37,528482736,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80032854	call	fighter_ResolveBoneHit	fight	0x80027E3C	coverage			1	[[1,37,528482736,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[0,3,528482556,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80032854	call	fighter_ResolveBoneHit	fight	0x80028338	coverage			1	[[0,3,528482628,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002852C	report			4	[[1,1,528483316,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028540	report			4	[[1,37,528483316,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028628	report			3	[[0,38,528483316,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002863C	report			3	[[0,45,528483316,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80032854	call	func_80026DA4	fight	0x80027064	report			8	[[0,45,2148540348,0],[1,45,2148541448,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80032854	call	func_80026DA4	fight	0x800272C0	report			45	[[0,5,2149580408,0],[0,6,2149580408,0],[0,7,2149580408,0],[0,8,2149580408,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80032854	call	func_800278C0	fight	0x80027974	report			2	[[1,36,528482556,0],[1,36,528482628,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_800619A4	call	func_80032854	fight	0x80032ADC	report			33	[[2149579848,8,2149579848,0]]	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80061A3C	call	fighter_DispatchFrameEvent	fight	0x80032E8C	report			20	"[[2149579848,114,262144,0],[2149579848,125,262144,0],[2149579848,211,262144,0],[2149579848,325,262144,0],[2149579848,330,262144,0],[2149579848,379,262144,0],[2149579848,465,262144,0],[2149579848,473,262144,0],""+12 more""]"	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-func_80061A3C	call	fighter_DispatchFrameEvent	fight	0x80032F98	report			29	"[[2149579848,25,262144,0],[2149579848,66,262144,0],[2149579848,76,262144,0],[2149579848,106,262144,0],[2149579848,120,262144,0],[2149579848,121,262144,0],[2149579848,286,262144,0],[2149579848,1522,131072,1],""+20 more""]"	versus-2p-kimigaura-events-1@97c1903fa67d	0	
-0x80101F32	write	BIOS	boot_intro	0xBFC0D864	bios	-2	4	1	[0]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_00_square	0x80021BB0	report	0	2	3	[21,37]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_01_triangle	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_02_circle	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_03_cross	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_04_l1	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_05_l2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_06_r1	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_07_r2	0x80021BB0	report	0	2	2	[21,42]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_08_r2_square	0x80021BB0	report	0	2	2	[21,42]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_09_r2_triangle	0x80021BB0	report	0	2	2	[21,42]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_10_r2_circle	0x80021BB0	report	0	2	2	[21,42]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_11_r2_cross	0x80021BB0	report	0	2	2	[21,42]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_12_l2_square	0x80021BB0	report	0	2	3	[21,37]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_13_l2_triangle	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_14_l2_circle	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_15_l2_cross	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_16_l1_square	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_17_l1_cross	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_18_r1_square	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	in_19_r1_cross	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	BIOS	boot_intro	0xBFC0D864	bios	-2	4	1	[0]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_00_square	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_01_triangle	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_02_circle	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_03_cross	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_04_l1	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_05_l2	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_06_r1	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_07_r2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_08_r2_square	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_09_r2_triangle	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_10_r2_circle	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_11_r2_cross	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_12_l2_square	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_13_l2_triangle	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_14_l2_circle	0x80021BB0	report	0	2	2	[3,21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_15_l2_cross	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_16_l1_square	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_17_l1_cross	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_18_r1_square	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	in_19_r1_cross	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-func_80032854	call	fighter_ResolveBoneHit	in_14_l2_circle	0x80028338	report			1	[[1,3,528482736,0]]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-func_80032854	call	func_800278C0	in_14_l2_circle	0x80027974	report			1	[[0,34,528482736,0]]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-object_PickUpNearby	call	fighter_Update	in_07_r2	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-object_PickUpNearby	call	fighter_Update	in_08_r2_square	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-object_PickUpNearby	call	fighter_Update	in_09_r2_triangle	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-object_PickUpNearby	call	fighter_Update	in_10_r2_circle	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-object_PickUpNearby	call	fighter_Update	in_11_r2_cross	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	versus-2p-kimigaura-moves-1@49037fc14f76	0	
-0x80101F32	write	BIOS	boot_intro	0xBFC0D864	bios	-2	4	1	[0]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_00_square_triangle	0x80021BB0	report	0	2	3	[21,37]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_01_triangle_circle	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_02_square_circle	0x80021BB0	report	0	2	3	[21,37]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_03_cross_circle	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_04_square_cross	0x80021BB0	report	0	2	3	[21,37]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_05_triangle_cross	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_06_square_triangle_circle	0x80021BB0	report	0	2	3	[21,37]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_07_l1_r1	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_08_l2_r2	0x80021BB0	report	0	2	2	[21,42]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_09_l1_l2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_10_r1_r2	0x80021BB0	report	0	2	2	[21,42]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_11_l1_r1_l2_r2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_12_select	0x80021BB0	report	0	2	1	[45]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_14_l1_r2	0x80021BB0	report	0	2	1	[5]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_18_circle_cross_square	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	in_19_triangle_cross_circle	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	BIOS	boot_intro	0xBFC0D864	bios	-2	4	1	[0]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_00_square_triangle	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_01_triangle_circle	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_02_square_circle	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_03_cross_circle	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_04_square_cross	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_05_triangle_cross	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_06_square_triangle_circle	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_07_l1_r1	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_08_l2_r2	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_09_l1_l2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_10_r1_r2	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_11_l1_r1_l2_r2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_12_select	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_13_l2_r2_square	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_18_circle_cross_square	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	in_19_triangle_cross_circle	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-object_PickUpNearby	call	fighter_Update	in_08_l2_r2	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-object_PickUpNearby	call	fighter_Update	in_10_r1_r2	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	versus-2p-kimigaura-moves-2@6409520cc954	0	
-0x80101F32	write	BIOS	boot_intro	0xBFC0D864	bios	-2	4	1	[0]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_00_up_cross	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_01_down_cross	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_02_left_cross	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_03_up_square	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_04_up_triangle	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_05_up_circle	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_06_down_square	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_07_down_triangle	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_08_down_circle	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_09_left_square	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_10_left_triangle	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_11_left_circle	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_12_up_r2	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_13_down_r2	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_14_left_r2	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_15_up_l2	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_16_down_l2	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_17_left_l2	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_18_up_l1	0x80021BB0	report	0	2	5	[19,21,25,48,49]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	in_19_down_r1	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	BIOS	boot_intro	0xBFC0D864	bios	-2	4	1	[0]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_00_up_cross	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_01_down_cross	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_02_left_cross	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_03_up_square	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_04_up_triangle	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_05_up_circle	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_06_down_square	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_07_down_triangle	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_08_down_circle	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_09_left_square	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_10_left_triangle	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_11_left_circle	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_12_up_r2	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_13_down_r2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_14_left_r2	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_15_up_l2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_16_down_l2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_17_left_l2	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_18_up_l1	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	in_19_down_r1	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
-0x80101F32	write	BIOS	boot_intro	0xBFC0D864	bios	-2	4	1	[0]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_00_right_r2	0x80021BB0	report	0	2	2	[21,42]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_01_right_l2	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_02_right_l1	0x80021BB0	report	0	2	5	[19,21,48,49]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_03_right_r1	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_04_right_select	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_05_down_select	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_06_up_select	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_07_left_select	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_08_up_r1	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_09_down_l1	0x80021BB0	report	0	2	5	[19,21,25,48,49]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_10_left_l1	0x80021BB0	report	0	2	5	[19,21,25,48,49]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_11_left_r1	0x80021BB0	report	0	2	4	[21,25]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_12_hold_r2	0x80021BB0	report	0	2	2	[21,42]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_13_hold_l2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_14_hold_l1	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_15_hold_select	0x80021BB0	report	0	2	1	[45]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	in_17_right_square	0x80021BB0	report	0	2	1	[5]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	BIOS	boot_intro	0xBFC0D864	bios	-2	4	1	[0]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_00_right_r2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_01_right_l2	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_02_right_l1	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_03_right_r1	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_04_right_select	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_05_down_select	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_06_up_select	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_07_left_select	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_08_up_r1	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_09_down_l1	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_10_left_l1	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_11_left_r1	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_12_hold_r2	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_13_hold_l2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_14_hold_l1	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_15_hold_select	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	in_16_right_cross	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-object_PickUpNearby	call	fighter_Update	in_00_right_r2	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-object_PickUpNearby	call	fighter_Update	in_12_hold_r2	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
-0x80101F32	write	BIOS	boot_intro	0xBFC0D864	bios	-2	4	1	[0]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	func_80021A98	in_00_r2_r2	0x80021BB0	report	0	2	2	[21,42]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	func_80021A98	in_01_l2_l2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	func_80021A98	in_02_select_cross	0x80021BB0	report	0	2	1	[45]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	func_80021A98	in_04_l1_l1	0x80021BB0	report	0	2	1	[5]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	func_80021A98	in_14_l2_then_square	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	func_80021A98	in_15_hold_l2_square	0x80021BB0	report	0	2	2	[21,37]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	func_80021A98	in_16_hold_r1_square	0x80021BB0	report	0	2	2	[2,21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	func_80021A98	in_17_hold_l1_square	0x80021BB0	report	0	2	3	[21,37]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	func_80021A98	in_18_right_right	0x80021BB0	report	0	2	4	[21,25,26]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	func_80021A98	in_19_right_right_cross	0x80021BB0	report	0	2	4	[21,25,26]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	BIOS	boot_intro	0xBFC0D864	bios	-2	4	1	[0]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	in_00_r2_r2	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	in_01_l2_l2	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	in_02_select_cross	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	in_03_r2_then_l2	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	in_04_l1_l1	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	in_14_l2_then_square	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	in_15_hold_l2_square	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	in_16_hold_r1_square	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	in_17_hold_l1_square	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	in_18_right_right	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	in_19_right_right_cross	0x80021BB0	report	0	2	2	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-object_PickUpNearby	call	fighter_Update	in_00_r2_r2	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	versus-2p-kimigaura-moves-5@722c58f45488	0	
-D_800A34F0	write	BIOS	boot_intro	0xBFC0D864	bios	0	4	1	[0]	versus-cpu-values-1@f7af68406dd1	0	
-D_800A34F0	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	versus-cpu-values-1@f7af68406dd1	0	
-D_800A38DC	write	BIOS	boot_intro	0xBFC0D864	bios	0	4	1	[0]	versus-cpu-values-1@f7af68406dd1	0	
-D_800A38DC	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	versus-cpu-values-1@f7af68406dd1	0	
-D_800A38DC	write	func_800343F0	t_load	0x80034440	report	0	2	1	[1]	versus-cpu-values-1@f7af68406dd1	0	partial_store
-D_800A3910	write	BIOS	boot_intro	0xBFC0D864	bios	0	4	1	[0]	versus-cpu-values-1@f7af68406dd1	0	
-D_800A3910	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	versus-cpu-values-1@f7af68406dd1	0	
+target	kind	site_function	phase	site	attrib	store_offset	store_width	count	values	values_omitted	captures	inconclusive	reason
+D_800A34F0	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
+D_800A34F0	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
+D_800A38DC	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
+D_800A38DC	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
+D_800A38DC	write	func_800343F0	t_stage	0x80034440	report	0	2	1	[0]	0	story-values-1@86b4866e3da8	0	partial_store
+D_800A3910	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
+D_800A3910	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
+D_800A3910	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-2p-effects-events-1@2fa05558de81	0	
+D_800A3910	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	versus-2p-effects-events-1@2fa05558de81	0	
+D_800A3910	write	func_80026DA4	fight	0x800272D8	report	0	2	620	[0,1,2,3,4,5,6,7]	8	versus-2p-effects-events-1@2fa05558de81	0	partial_store
+D_800A3910	write	func_8002C61C	fight	0x8002C800	report	0	2	2	[0]	0	versus-2p-effects-events-1@2fa05558de81	0	partial_store
+D_800A3910	write	func_80032854	fight	0x80032A40	report	0	2	6	[1]	0	versus-2p-effects-events-1@2fa05558de81	0	partial_store
+D_800A3910	write	func_80032854	fight	0x80032A70	report	0	2	9	[16]	0	versus-2p-effects-events-1@2fa05558de81	0	partial_store
+D_800A3910	write	func_80032854	fight	0x80032AA0	report	0	2	45	[8]	0	versus-2p-effects-events-1@2fa05558de81	0	partial_store
+D_800A3910	write	func_80032854	fight	0x80032AD0	report	0	2	24	[5]	0	versus-2p-effects-events-1@2fa05558de81	0	partial_store
+func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DA4	report			1	[[1,2,528482856,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
+func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DE8	coverage			1	[[0,37,528482856,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x80027E3C	coverage			1	[[1,37,528482856,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800280F4	coverage			1	[[1,3,528482760,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[0,3,528482544,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002852C	report			3	[[1,1,528483316,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
+func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028540	report			3	[[1,37,528483316,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
+func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028628	report			3	[[0,38,528483316,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
+func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002863C	report			3	[[0,45,528483316,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	versus-2p-effects-events-1@2fa05558de81	0	coverage_next_start_bound
+func_80032854	call	func_80026DA4	fight	0x80027064	report			12	[[0,45,2148540348,0],[1,45,2148541448,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
+func_80032854	call	func_80026DA4	fight	0x800272C0	report			84	[[0,5,2149580408,0],[0,6,2149580408,0],[0,7,2149580408,0],[0,8,2149580408,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
+func_80032854	call	func_800278C0	fight	0x80027974	report			3	[[0,34,528482736,0],[0,35,528482760,0],[1,36,528482544,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
+func_80032854	call	object_UpdatePool	fight	0x800315A0	report			3	[[1,41,2148559524,0]]	0	versus-2p-effects-events-1@2fa05558de81	0	
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	report			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	versus-2p-effects-events-1@2fa05558de81	0	
+func_80032854	call	fighter_DispatchFrameEvent	fight	0x80033058	report			33	[[0,9,2149579848,0],[1,9,2149579848,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DA4	report			1	[[1,2,528482736,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DE8	report			1	[[0,37,528482736,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_80032854	call	fighter_ResolveBoneHit	fight	0x80027E3C	coverage			1	[[1,37,528482736,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[0,3,528482556,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x80028338	coverage			1	[[0,3,528482628,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002852C	report			4	[[1,1,528483316,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028540	report			4	[[1,37,528483316,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028628	report			3	[[0,38,528483316,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002863C	report			3	[[0,45,528483316,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_80032854	call	func_80026DA4	fight	0x80027064	report			8	[[0,45,2148540348,0],[1,45,2148541448,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_80032854	call	func_80026DA4	fight	0x800272C0	report			45	[[0,5,2149580408,0],[0,6,2149580408,0],[0,7,2149580408,0],[0,8,2149580408,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_80032854	call	func_800278C0	fight	0x80027974	report			2	[[1,36,528482556,0],[1,36,528482628,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_800619A4	call	func_80032854	fight	0x80032ADC	report			33	[[2149579848,8,2149579848,0]]	0	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_80061A3C	call	fighter_DispatchFrameEvent	fight	0x80032E8C	report			20	[[2149579848,114,262144,0],[2149579848,125,262144,0],[2149579848,211,262144,0],[2149579848,325,262144,0],[2149579848,330,262144,0],[2149579848,379,262144,0],[2149579848,465,262144,0],[2149579848,473,262144,0]]	12	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+func_80061A3C	call	fighter_DispatchFrameEvent	fight	0x80032F98	report			29	[[2149579848,25,262144,0],[2149579848,66,262144,0],[2149579848,76,262144,0],[2149579848,106,262144,0],[2149579848,120,262144,0],[2149579848,121,262144,0],[2149579848,286,262144,0],[2149579848,1522,131072,1]]	20	versus-2p-kimigaura-events-1@97c1903fa67d	0	
+0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_00_square	0x80021BB0	report	0	2	3	[21,37]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_01_triangle	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_02_circle	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_03_cross	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_04_l1	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_05_l2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_06_r1	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_07_r2	0x80021BB0	report	0	2	2	[21,42]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_08_r2_square	0x80021BB0	report	0	2	2	[21,42]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_09_r2_triangle	0x80021BB0	report	0	2	2	[21,42]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_10_r2_circle	0x80021BB0	report	0	2	2	[21,42]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_11_r2_cross	0x80021BB0	report	0	2	2	[21,42]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_12_l2_square	0x80021BB0	report	0	2	3	[21,37]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_13_l2_triangle	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_14_l2_circle	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_15_l2_cross	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_16_l1_square	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_17_l1_cross	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_18_r1_square	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	in_19_r1_cross	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_00_square	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_01_triangle	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_02_circle	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_03_cross	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_04_l1	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_05_l2	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_06_r1	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_07_r2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_08_r2_square	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_09_r2_triangle	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_10_r2_circle	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_11_r2_cross	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_12_l2_square	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_13_l2_triangle	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_14_l2_circle	0x80021BB0	report	0	2	2	[3,21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_15_l2_cross	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_16_l1_square	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_17_l1_cross	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_18_r1_square	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	in_19_r1_cross	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+func_80032854	call	fighter_ResolveBoneHit	in_14_l2_circle	0x80028338	report			1	[[1,3,528482736,0]]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+func_80032854	call	func_800278C0	in_14_l2_circle	0x80027974	report			1	[[0,34,528482736,0]]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+object_PickUpNearby	call	fighter_Update	in_07_r2	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+object_PickUpNearby	call	fighter_Update	in_08_r2_square	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+object_PickUpNearby	call	fighter_Update	in_09_r2_triangle	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+object_PickUpNearby	call	fighter_Update	in_10_r2_circle	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+object_PickUpNearby	call	fighter_Update	in_11_r2_cross	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-moves-1@49037fc14f76	0	
+0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_00_square_triangle	0x80021BB0	report	0	2	3	[21,37]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_01_triangle_circle	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_02_square_circle	0x80021BB0	report	0	2	3	[21,37]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_03_cross_circle	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_04_square_cross	0x80021BB0	report	0	2	3	[21,37]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_05_triangle_cross	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_06_square_triangle_circle	0x80021BB0	report	0	2	3	[21,37]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_07_l1_r1	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_08_l2_r2	0x80021BB0	report	0	2	2	[21,42]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_09_l1_l2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_10_r1_r2	0x80021BB0	report	0	2	2	[21,42]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_11_l1_r1_l2_r2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_12_select	0x80021BB0	report	0	2	1	[45]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_14_l1_r2	0x80021BB0	report	0	2	1	[5]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_18_circle_cross_square	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	in_19_triangle_cross_circle	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_00_square_triangle	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_01_triangle_circle	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_02_square_circle	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_03_cross_circle	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_04_square_cross	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_05_triangle_cross	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_06_square_triangle_circle	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_07_l1_r1	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_08_l2_r2	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_09_l1_l2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_10_r1_r2	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_11_l1_r1_l2_r2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_12_select	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_13_l2_r2_square	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_18_circle_cross_square	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	in_19_triangle_cross_circle	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+object_PickUpNearby	call	fighter_Update	in_08_l2_r2	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+object_PickUpNearby	call	fighter_Update	in_10_r1_r2	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-moves-2@6409520cc954	0	
+0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_00_up_cross	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_01_down_cross	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_02_left_cross	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_03_up_square	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_04_up_triangle	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_05_up_circle	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_06_down_square	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_07_down_triangle	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_08_down_circle	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_09_left_square	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_10_left_triangle	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_11_left_circle	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_12_up_r2	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_13_down_r2	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_14_left_r2	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_15_up_l2	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_16_down_l2	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_17_left_l2	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_18_up_l1	0x80021BB0	report	0	2	5	[19,21,25,48,49]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	in_19_down_r1	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_00_up_cross	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_01_down_cross	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_02_left_cross	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_03_up_square	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_04_up_triangle	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_05_up_circle	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_06_down_square	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_07_down_triangle	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_08_down_circle	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_09_left_square	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_10_left_triangle	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_11_left_circle	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_12_up_r2	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_13_down_r2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_14_left_r2	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_15_up_l2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_16_down_l2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_17_left_l2	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_18_up_l1	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	in_19_down_r1	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-3@2ad22c3470b4	0	
+0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_00_right_r2	0x80021BB0	report	0	2	2	[21,42]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_01_right_l2	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_02_right_l1	0x80021BB0	report	0	2	5	[19,21,48,49]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_03_right_r1	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_04_right_select	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_05_down_select	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_06_up_select	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_07_left_select	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_08_up_r1	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_09_down_l1	0x80021BB0	report	0	2	5	[19,21,25,48,49]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_10_left_l1	0x80021BB0	report	0	2	5	[19,21,25,48,49]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_11_left_r1	0x80021BB0	report	0	2	4	[21,25]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_12_hold_r2	0x80021BB0	report	0	2	2	[21,42]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_13_hold_l2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_14_hold_l1	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_15_hold_select	0x80021BB0	report	0	2	1	[45]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	in_17_right_square	0x80021BB0	report	0	2	1	[5]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_00_right_r2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_01_right_l2	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_02_right_l1	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_03_right_r1	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_04_right_select	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_05_down_select	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_06_up_select	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_07_left_select	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_08_up_r1	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_09_down_l1	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_10_left_l1	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_11_left_r1	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_12_hold_r2	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_13_hold_l2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_14_hold_l1	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_15_hold_select	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	in_16_right_cross	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+object_PickUpNearby	call	fighter_Update	in_00_right_r2	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+object_PickUpNearby	call	fighter_Update	in_12_hold_r2	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-moves-4@8f5e5ad346c7	0	
+0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	func_80021A98	in_00_r2_r2	0x80021BB0	report	0	2	2	[21,42]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	func_80021A98	in_01_l2_l2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	func_80021A98	in_02_select_cross	0x80021BB0	report	0	2	1	[45]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	func_80021A98	in_04_l1_l1	0x80021BB0	report	0	2	1	[5]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	func_80021A98	in_14_l2_then_square	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	func_80021A98	in_15_hold_l2_square	0x80021BB0	report	0	2	2	[21,37]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	func_80021A98	in_16_hold_r1_square	0x80021BB0	report	0	2	2	[2,21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	func_80021A98	in_17_hold_l1_square	0x80021BB0	report	0	2	3	[21,37]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	func_80021A98	in_18_right_right	0x80021BB0	report	0	2	4	[21,25,26]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	func_80021A98	in_19_right_right_cross	0x80021BB0	report	0	2	4	[21,25,26]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	in_00_r2_r2	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	in_01_l2_l2	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	in_02_select_cross	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	in_03_r2_then_l2	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	in_04_l1_l1	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	in_14_l2_then_square	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	in_15_hold_l2_square	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	in_16_hold_r1_square	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	in_17_hold_l1_square	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	in_18_right_right	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	in_19_right_right_cross	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+object_PickUpNearby	call	fighter_Update	in_00_r2_r2	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-moves-5@722c58f45488	0	
+0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	func_80021A98	in_00_r2_circle_3	0x80021BB0	report	0	2	3	[11,21,42]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	func_80021A98	in_01_r2_cross_3	0x80021BB0	report	0	2	3	[18,21,42]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	func_80021A98	in_02_r2_circle_1	0x80021BB0	report	0	2	3	[21,42]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	func_80021A98	in_03_r2_cross_5	0x80021BB0	report	0	2	3	[18,21,42]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	func_80021A98	in_04_r2_circle_7	0x80021BB0	report	0	2	3	[11,21,42]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	func_80021A98	in_05_r2_square_3	0x80021BB0	report	0	2	3	[21,42]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	func_80021A98	in_06_r2_alone	0x80021BB0	report	0	2	3	[21,42]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	func_80021A98	in_07_r2_circle_3b	0x80021BB0	report	0	2	3	[11,21,42]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	func_80021A98	in_08_r2_alone_b	0x80021BB0	report	0	2	3	[21,42]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	func_80021A98	in_09_r2_cross_3b	0x80021BB0	report	0	2	3	[18,21,42]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	func_80021A98	in_00_r2_circle_3	0x80021BB0	report	0	2	3	[3,21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	func_80021A98	in_01_r2_cross_3	0x80021BB0	report	0	2	2	[3,21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	func_80021A98	in_02_r2_circle_1	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	func_80021A98	in_03_r2_cross_5	0x80021BB0	report	0	2	3	[3,21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	func_80021A98	in_04_r2_circle_7	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	func_80021A98	in_05_r2_square_3	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	func_80021A98	in_06_r2_alone	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	func_80021A98	in_07_r2_circle_3b	0x80021BB0	report	0	2	2	[3,21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	func_80021A98	in_08_r2_alone_b	0x80021BB0	report	0	2	2	[21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	func_80021A98	in_09_r2_cross_3b	0x80021BB0	report	0	2	2	[3,21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032064	call	fighter_Update	in_01_r2_cross_3	0x80026C38	report			1	[[2148540104,1,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032064	call	fighter_Update	in_03_r2_cross_5	0x80026C38	report			1	[[2148540104,1,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032064	call	fighter_Update	in_09_r2_cross_3b	0x80026C38	report			1	[[2148540104,1,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	fighter_ResolveBoneHit	in_00_r2_circle_3	0x80028338	report			1	[[1,3,528482748,0]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	fighter_ResolveBoneHit	in_07_r2_circle_3b	0x80028338	report			1	[[1,3,528482748,0]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	func_80032064	in_01_r2_cross_3	0x800321C8	report			1	[[0,12,2148552332,2149579880]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	func_80032064	in_03_r2_cross_5	0x800321C8	report			1	[[0,12,2148552332,2149579880]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	func_80032064	in_09_r2_cross_3b	0x800321C8	report			1	[[0,12,2148552332,2149579880]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	object_PickUpNearby	in_05_r2_square_3	0x80030CC0	report			1	[[0,17,2148540348,0]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	object_PickUpNearby	in_08_r2_alone_b	0x80030CC0	report			1	[[0,17,2148540348,0]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	object_ResolveFighterHits	in_00_r2_circle_3	0x80031FCC	report			1	[[0,43,528482748,0]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	object_ResolveFighterHits	in_07_r2_circle_3b	0x80031FCC	report			1	[[0,43,528482748,0]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	object_ThrowQueuedKind	in_00_r2_circle_3	0x800308D4	report			1	[[0,42,2148559524,0]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	object_ThrowQueuedKind	in_07_r2_circle_3b	0x800308D4	report			1	[[0,42,2148559524,0]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	object_UpdatePool	in_00_r2_circle_3	0x800315A0	report			2	[[0,44,2148559524,0]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+func_80032854	call	object_UpdatePool	in_07_r2_circle_3b	0x800315A0	report			3	[[0,44,2148559524,0]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_PickUpNearby	call	fighter_Update	in_00_r2_circle_3	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_PickUpNearby	call	fighter_Update	in_01_r2_cross_3	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_PickUpNearby	call	fighter_Update	in_02_r2_circle_1	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_PickUpNearby	call	fighter_Update	in_03_r2_cross_5	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_PickUpNearby	call	fighter_Update	in_04_r2_circle_7	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_PickUpNearby	call	fighter_Update	in_05_r2_square_3	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_PickUpNearby	call	fighter_Update	in_06_r2_alone	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_PickUpNearby	call	fighter_Update	in_07_r2_circle_3b	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_PickUpNearby	call	fighter_Update	in_08_r2_alone_b	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_PickUpNearby	call	fighter_Update	in_09_r2_cross_3b	0x80026BBC	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_SpawnFromFighter	call	object_ThrowQueuedKind	in_00_r2_circle_3	0x80030840	report			1	[[2148540104,0,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_SpawnFromFighter	call	object_ThrowQueuedKind	in_07_r2_circle_3b	0x80030840	report			1	[[2148540104,0,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_ThrowQueuedKind	call	fighter_Update	in_00_r2_circle_3	0x80026B38	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_ThrowQueuedKind	call	fighter_Update	in_04_r2_circle_7	0x80026B38	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_ThrowQueuedKind	call	fighter_Update	in_07_r2_circle_3b	0x80026B38	report			1	[[2148540104,528483200,2,1]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
+object_UpdatePool	call	fight_Update	fight	0x8001E940	report			3	[[4294967239,528483068,2200,2148552506]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	1	per_phase_reached:3
+object_UpdatePool	call	fight_Update	in_00_r2_circle_3	0x8001E940	report			3	[[4294967239,528483068,2200,2148552506]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	1	per_phase_reached:3
+object_UpdatePool	call	fight_Update	in_01_r2_cross_3	0x8001E940	report			3	[[4294967017,528483068,2200,2148552506]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	1	per_phase_reached:3
+object_UpdatePool	call	fight_Update	in_02_r2_circle_1	0x8001E940	report			3	[[4294966826,528483068,2200,2148552506],[4294966830,528483068,2200,2148552506],[4294966837,528483068,2200,2148552506]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	1	per_phase_reached:3
+object_UpdatePool	call	fight_Update	in_03_r2_cross_5	0x8001E940	report			3	[[4294966795,528483068,2200,2148552506]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	1	per_phase_reached:3
+object_UpdatePool	call	fight_Update	in_04_r2_circle_7	0x8001E940	report			3	[[4294966632,528483068,2200,2148552506],[4294966664,528483068,2200,2148552506],[4294966705,528483068,2200,2148552506]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	1	per_phase_reached:3
+object_UpdatePool	call	fight_Update	in_05_r2_square_3	0x8001E940	report			3	[[4294966573,528483068,2200,2148552506]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	1	per_phase_reached:3
+object_UpdatePool	call	fight_Update	in_06_r2_alone	0x8001E940	report			3	[[4294966573,528483068,2200,2148552506]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	1	per_phase_reached:3
+object_UpdatePool	call	fight_Update	in_07_r2_circle_3b	0x8001E940	report			3	[[4294966573,528483068,2200,2148552506]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	1	per_phase_reached:3
+object_UpdatePool	call	fight_Update	in_08_r2_alone_b	0x8001E940	report			3	[[4294965781,528483068,2200,2148552506]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	1	per_phase_reached:3
+object_UpdatePool	call	fight_Update	in_09_r2_cross_3b	0x8001E940	report			3	[[4294965781,528483068,2200,2148552506]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	1	per_phase_reached:3
+object_UpdatePool	call	fight_Update	t_load	0x8001E940	report			3	[[4294967239,528483068,2200,2148552506]]	0	versus-2p-kimigaura-throw-1@07248dcc4352	1	per_phase_reached:3
+D_800A34F0	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-values-1@f7af68406dd1	0	
+D_800A34F0	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	versus-cpu-values-1@f7af68406dd1	0	
+D_800A38DC	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-values-1@f7af68406dd1	0	
+D_800A38DC	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	versus-cpu-values-1@f7af68406dd1	0	
+D_800A38DC	write	func_800343F0	t_load	0x80034440	report	0	2	1	[1]	0	versus-cpu-values-1@f7af68406dd1	0	partial_store
+D_800A3910	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-values-1@f7af68406dd1	0	
+D_800A3910	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	versus-cpu-values-1@f7af68406dd1	0	

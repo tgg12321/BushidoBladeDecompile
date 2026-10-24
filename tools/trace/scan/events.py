@@ -4,6 +4,10 @@
 All relative CLI paths are repository-relative. Counts describe recorded watch
 hits and explicitly declared breakpoints, never hit-map or stub entries. Values are
 compact JSON lists (call values are a0..a3 tuples), sorted and capped at eight.
+values_omitted counts additional distinct values. All inputs are exact index
+blobs, not working-tree files. Site PCs print KSEG0 aliases, including BIOS
+(0xBFC0xxxx prints 0x9FC0xxxx). coverage_next_start_bound is informational:
+the coverage list supplies the upper bound rather than an explicit end/size.
 Rows stay separate per capture, instruction site, and access offset/width.
 Values describe only the intersection of the access and watched byte range,
 decoded little-endian. store_offset/store_width describe the original instruction
@@ -31,7 +35,7 @@ import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 HEADER = ["target", "kind", "site_function", "phase", "site", "attrib",
-          "store_offset", "store_width", "count", "values",
+          "store_offset", "store_width", "count", "values", "values_omitted",
           "captures", "inconclusive", "reason"]
 
 
@@ -71,8 +75,9 @@ def selected(event, declared):
 
 def limits(spec, events, end, entry, event):
     reasons = set()
+    counter = f"Z{event['kind']}:{entry['at']}"
     if end is None:
-        return {"missing_end_record"}
+        return {"missing_end_record", f"hit_count_mismatch:{counter}"}
     if end.get("script_ended") is not True:
         reasons.add("script_not_ended")
     max_events = int(spec.get("max_events", 5000))
@@ -83,7 +88,11 @@ def limits(spec, events, end, entry, event):
                       (len(spec.get("script", {}).get("phases", [])) + 1) + 5000)
     if end.get("events", 0) >= max_events:
         reasons.add(f"max_events_reached:{max_events}")
-    counter = f"Z{event['kind']}:{entry['at']}"
+    # Runner totals include hm/stub hits and survive phase resets/disarming.
+    recorded = sum(e.get("ev") == "hit" and e.get("kind") == event["kind"]
+                   and e.get("at") == entry["at"] for e in events)
+    if end.get("hits", {}).get(counter) != recorded:
+        reasons.add(f"hit_count_mismatch:{counter}")
     maximum = int(entry.get("max_hits", 1 << 30))
     if end.get("hits", {}).get(counter, 0) >= maximum:
         reasons.add(f"max_hits_reached:{counter}:{maximum}")
@@ -122,20 +131,22 @@ def site(event):
     return None if pc is None else canonical(pc)
 
 
-def coverage_ranges(path):
+def coverage_rows(raw):
+    if raw is None:
+        return []
+    reader = csv.DictReader(io.StringIO(raw.decode("utf-8")), delimiter="\t")
+    if not {"addr", "capture_name"} <= set(reader.fieldnames or []):
+        raise ValueError("coverage.tsv missing addr/capture_name")
+    return sorted(reader, key=lambda r: canonical(int(r["addr"], 0)))
+
+
+def coverage_ranges(rows):
     """Bound each recorded start by the next listed start; never extend the last.
 
     The matrix is a capture-time function list, not a current-tree symbol map.
     An explicit end_addr/size, when supplied, bounds a range more tightly. A
     changed/ambiguous recorded name is not selected from other_capture_names.
     """
-    if not path.is_file():
-        return []
-    with path.open(encoding="utf-8", newline="") as stream:
-        reader = csv.DictReader(stream, delimiter="\t")
-        if not {"addr", "capture_name"} <= set(reader.fieldnames or []):
-            raise ValueError("coverage.tsv missing addr/capture_name")
-        rows = sorted(reader, key=lambda r: int(r["addr"], 0))
     functions = []
     for i, row in enumerate(rows):
         start = canonical(int(row["addr"], 0))
@@ -145,7 +156,8 @@ def coverage_ranges(path):
         elif row.get("size"):
             end = min(end, start + int(row["size"], 0)) if end > start else start + int(row["size"], 0)
         if row["capture_name"] and end > start:
-            functions.append((start, end, row["capture_name"]))
+            functions.append((start, end, row["capture_name"],
+                              not (row.get("end_addr") or row.get("size"))))
     return functions
 
 
@@ -157,26 +169,26 @@ def resolve_ranges(events, resolved, functions):
         key = ((event["at"], event["kind"]), pc)
         if pc is None or key in resolved:
             continue
-        covering = [(end - start, name) for start, end, name in functions
+        covering = [(end - start, name, inferred) for start, end, name, inferred in functions
                     if start <= pc < end]
         if covering:
-            smallest = min(size for size, _ in covering)
-            names = {name for size, name in covering if size == smallest}
+            smallest = min(size for size, _, _ in covering)
+            names = {name for size, name, _ in covering if size == smallest}
             if len(names) == 1:
-                resolved[key] = (names.pop(), "coverage")
+                inferred = any(bound for size, _, bound in covering if size == smallest)
+                resolved[key] = (names.pop(), "coverage_next_start_bound" if inferred else "coverage")
 
 
-def report_sites(path, events, digest):
+def report_sites(raw, events, digest, coverage):
     """Invert the report's lossless top-site projection, not a symbol guess.
 
     Symbols.name is one-to-one for canonical PCs (its offset is retained).
     Counter preserves first occurrence for ties. Hit-map hits are explicitly
     excluded by gdbtrace.report and therefore have no site list to invert.
     """
-    report = path / "report.md"
-    if not report.is_file():
+    if raw is None:
         return {}
-    text = report.read_text(encoding="utf-8")
+    text = raw.decode("utf-8")
     if "capture SHA1 " + digest not in text:
         raise ValueError("report.md does not cite capture SHA1 " + digest)
     groups = defaultdict(list)
@@ -184,6 +196,10 @@ def report_sites(path, events, digest):
         if event.get("ev") == "hit" and not event.get("hm"):
             groups[(event["at"], event["kind"])].append(event)
     resolved = {}
+    starts = {}
+    for row in coverage:
+        if row["capture_name"]:
+            starts.setdefault(row["capture_name"], set()).add(canonical(int(row["addr"], 0)))
     for section in re.split(r"^## ", text, flags=re.M)[1:]:
         heading = re.match(r"(.+?)(?: \(Z([234]) watch\))?: \d+ hits\n", section)
         if not heading:
@@ -205,11 +221,16 @@ def report_sites(path, events, digest):
             raise ValueError("report site counts disagree with capture: " + key[0])
         for (pc, _), (label, _) in zip(ranked, labels):
             encoded = re.fullmatch(r"func_([0-9A-Fa-f]{8})(?:\+0x([0-9A-Fa-f]+))?", label)
-            if encoded and pc != int(encoded[1], 16) + int(encoded[2] or "0", 16):
+            if encoded and pc != canonical(int(encoded[1], 16) + int(encoded[2] or "0", 16)):
                 raise ValueError("report site address disagrees with capture: " + label)
             if not re.fullmatch(r"[A-Za-z_.$][\w.$]*(?:\+0x[0-9A-Fa-f]+)?", label):
                 continue
-            resolved[(key, pc)] = (label.split("+", 1)[0], "report")
+            name, _, offset = label.partition("+0x")
+            start = pc - int(offset or "0", 16)
+            if name in starts and starts[name] != {start}:
+                raise ValueError("report named offset disagrees with function start: " + label)
+            starts[name] = {start}
+            resolved[(key, pc)] = (name, "report")
     return resolved
 
 
@@ -230,6 +251,9 @@ def observation(event, resolved, entry=None):
         attrib = "bios"
     store_offset, store_width = "", ""
     reasons = set()
+    if attrib == "coverage_next_start_bound":
+        reasons.add(attrib)
+        attrib = "coverage"
     if "?" in target or "?" in phase:
         reasons.add("unknown_target_or_phase")
     if function == "?":
@@ -291,7 +315,7 @@ def observation(event, resolved, entry=None):
         if value is None:
             reasons.add("missing_value")
     return (normalized_target(target), kind, function, phase,
-            "?" if pc is None else f"0x{raw_site(event):08X}", attrib,
+            "?" if pc is None else f"0x{pc:08X}", attrib,
             str(store_offset), str(store_width)), value, reasons
 
 
@@ -299,29 +323,51 @@ def capped(values):
     # Integer/tuple sort, with unknown components last; never sort decimal text.
     ordered = sorted(values, key=lambda v: (v is None, tuple(
         (x is None, x or 0) for x in v) if isinstance(v, tuple) else (v or 0,)))
-    result = ordered[:8]
-    if len(ordered) > 8:
-        result.append(f"+{len(ordered) - 8} more")
-    return json.dumps(result, separators=(",", ":"))
+    return json.dumps(ordered[:8], separators=(",", ":")), max(0, len(ordered) - 8)
+
+
+def index_inputs(runtime):
+    """Read runtime inputs in one binary cat-file batch, preserving blob bytes."""
+    tracked = subprocess.run(["git", "ls-files", "-z"], cwd=REPO_ROOT,
+                             check=True, capture_output=True).stdout.decode("utf-8").split("\0")
+    prefix = runtime.relative_to(REPO_ROOT).as_posix() + "/"
+    names = sorted(n for n in tracked if n.startswith(prefix) and
+                   (n.endswith(("/capture.manifest.json", "/capture.jsonl", "/report.md"))
+                    or n == prefix + "matrix/coverage.tsv"))
+    if not names:
+        return {}
+    raw = subprocess.run(["git", "cat-file", "--batch"], cwd=REPO_ROOT,
+                         input="".join(":" + n + "\n" for n in names).encode("utf-8"),
+                         check=True, capture_output=True).stdout
+    stream = io.BytesIO(raw)
+    blobs = {}
+    for name in names:
+        header = stream.readline().split()
+        if len(header) != 3 or header[1] != b"blob":
+            raise ValueError("missing index blob: " + name)
+        size = int(header[2])
+        blobs[REPO_ROOT / name] = stream.read(size)
+        if len(blobs[REPO_ROOT / name]) != size or stream.read(1) != b"\n":
+            raise ValueError("invalid index blob: " + name)
+    return blobs
 
 
 def render(runtime=None):
     runtime = Path(runtime) if runtime is not None else REPO_ROOT / "docs/naming/runtime"
-    tracked = subprocess.run(["git", "ls-files", "-z"], cwd=REPO_ROOT,
-                             check=True, capture_output=True).stdout.decode("utf-8").split("\0")
+    blobs = index_inputs(runtime)
     groups = {}
-    functions = coverage_ranges(runtime / "matrix/coverage.tsv")
-    for name in sorted(n for n in tracked if n.endswith("/capture.manifest.json")):
-        manifest_path = REPO_ROOT / name
+    coverage = coverage_rows(blobs.get(runtime / "matrix/coverage.tsv"))
+    functions = coverage_ranges(coverage)
+    for manifest_path in sorted(p for p in blobs if p.name == "capture.manifest.json"):
         try:
             relative = manifest_path.parent.relative_to(runtime)
         except ValueError:
             continue
         try:
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest = json.loads(blobs[manifest_path])
             if manifest.get("q124_complete") is not True:
                 continue
-            raw = manifest_path.with_name("capture.jsonl").read_bytes()
+            raw = blobs[manifest_path.with_name("capture.jsonl")]
             digest = hashlib.sha1(raw).hexdigest()
             events = []
             for line, text in enumerate(raw.decode("utf-8").splitlines(), 1):
@@ -342,7 +388,7 @@ def render(runtime=None):
             declared = declarations(spec)
             if not any(selected(e, declared) for e in events):
                 continue
-            resolved = report_sites(manifest_path.parent, events, digest)
+            resolved = report_sites(blobs.get(manifest_path.with_name("report.md")), events, digest, coverage)
             resolve_ranges(events, resolved, functions)
             ends = [e for e in events if e["ev"] == "end"]
             if len(ends) > 1:
@@ -366,16 +412,21 @@ def render(runtime=None):
         except (OSError, ValueError, KeyError, TypeError) as ex:
             raise ValueError(f"{manifest_path.parent}: {ex}") from ex
     out = io.StringIO(newline="\n")
-    writer = csv.writer(out, delimiter="\t", lineterminator="\n")
-    writer.writerow(HEADER)
+    writer = csv.writer(out, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_NONE,
+                        quotechar=None)
+    def write_row(cells):
+        if any("\t" in str(cell) or "\n" in str(cell) or "\r" in str(cell) for cell in cells):
+            raise ValueError("tab/newline in TSV cell")
+        writer.writerow(cells)
+    write_row(HEADER)
     unresolved = {(key[0], key[1], key[2], key[4]) for key in groups if key[3] == "?"}
     for key, group in sorted(groups.items()):
         reasons = group["reasons"]
         if (key[0], key[1], key[2], key[4]) in unresolved:
             reasons.add("group_has_unresolved_site")
-        writer.writerow([*key[1:], group["count"], capped(group["values"]),
+        write_row([*key[1:], group["count"], *capped(group["values"]),
                          ";".join(sorted(group["captures"])),
-                         int(bool(reasons - {"partial_store", "partial_read"})),
+                         int(bool(reasons - {"partial_store", "partial_read", "coverage_next_start_bound"})),
                          ";".join(sorted(reasons))])
     return out.getvalue()
 
