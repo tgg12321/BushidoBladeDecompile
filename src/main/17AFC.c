@@ -324,6 +324,22 @@ void func_80027A58(Unk80101EC8Record *a0) {
 
 extern u8 D_8008EB74[3][2][2];
 
+/* the tail fighter_ResolveBoneHit's cases 0, 1-3 and 4-5 share */
+static inline s32 fighter_ResolveBoneHitTail(
+    s32 arg0, Tbl8008E194 *var_0, Unk80101EC8Record *arg1, s32 var_4,
+    s32 *scr) {
+    if (arg0 == 1 && var_0->unkD == 2) {
+        arg1->unk_272++;
+    }
+    if (D_800A38DC != 5) {
+        arg1->unk_272++;
+    }
+    arg1->pending_move_event = 5;
+    func_80032854(var_4, 3, scr, 0);
+    func_80027A58(arg1);
+    return 0;
+}
+
 s32 fighter_ResolveBoneHit(
     s32 arg0, Unk80101EC8Record *arg1, s32 arg2, s32 thresh, s32 flag,
     Tbl8008E194 *rec, s32 arg6, s32 *out) {
@@ -480,20 +496,7 @@ s32 fighter_ResolveBoneHit(
             func_80027A58(arg1);
             return 1;
         }
-        /* FAKE: count/return tail duplicated into each arm: the extra copies
-         * raise var_0's reference count (allocation priority) before
-         * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
-         * 4-5 copy: score 31 */
-        if (arg0 == 1 && var_0->unkD == 2) {
-            arg1->unk_272++;
-        }
-        if (D_800A38DC != 5) {
-            arg1->unk_272++;
-        }
-        arg1->pending_move_event = 5;
-        func_80032854(var_4, 3, scr, 0);
-        func_80027A58(arg1);
-        return 0;
+        return fighter_ResolveBoneHitTail(arg0, var_0, arg1, var_4, scr);
     case 1:
     case 2:
     case 3:
@@ -503,37 +506,11 @@ s32 fighter_ResolveBoneHit(
             func_80027A58(arg1);
             return 1;
         }
-        /* FAKE: count/return tail duplicated into each arm: the extra copies
-         * raise var_0's reference count (allocation priority) before
-         * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
-         * 4-5 copy: score 31 */
-        if (arg0 == 1 && var_0->unkD == 2) {
-            arg1->unk_272++;
-        }
-        if (D_800A38DC != 5) {
-            arg1->unk_272++;
-        }
-        arg1->pending_move_event = 5;
-        func_80032854(var_4, 3, scr, 0);
-        func_80027A58(arg1);
-        return 0;
+        return fighter_ResolveBoneHitTail(arg0, var_0, arg1, var_4, scr);
     case 4:
     case 5:
         if (!flag) {
-            /* FAKE: count/return tail duplicated into each arm: the extra
-             * copies raise var_0's reference count (allocation priority) before
-             * cross-jumping re-merges them; cases 0, 1-3 jumping to the case
-             * 4-5 copy: score 31 */
-            if (arg0 == 1 && var_0->unkD == 2) {
-                arg1->unk_272++;
-            }
-            if (D_800A38DC != 5) {
-                arg1->unk_272++;
-            }
-            arg1->pending_move_event = 5;
-            func_80032854(var_4, 3, scr, 0);
-            func_80027A58(arg1);
-            return 0;
+            return fighter_ResolveBoneHitTail(arg0, var_0, arg1, var_4, scr);
         }
         arg1->pending_move_event = thresh > 0x400 ? 8 : 9;
         func_800203B4(arg1, arg2, vec);

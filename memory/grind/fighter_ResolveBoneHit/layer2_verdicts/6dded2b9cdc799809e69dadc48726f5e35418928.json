@@ -1,0 +1,12 @@
+{
+  "decision": "PASS",
+  "function": "fighter_ResolveBoneHit",
+  "body_hash": "c28579d9d2627c98",
+  "summary": "The three FAKE-labelled copies of the tail become one same-TU static inline helper with the identical body (Q126 attribution confirmed). Sandbox candidate scores 0; the helper is not emitted (nm); names, comment and quoted dead-end scores are true; the remaining var_0/var_1 FAKE still measures 78 with the helper in place; no new cheat construct.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": [
+    "The body hash was computed from the branch blob via engine.layer2.body_key, not from a landed src/ tree; re-run `layer2 hash fighter_ResolveBoneHit` after landing to confirm c28579d9d2627c98 before `queue done`.",
+    "The commit body's 'first variant tried' claim cannot be checked; it carries no weight."
+  ]
+}
