@@ -1,0 +1,349 @@
+==============================================================================
+NAMING WAVE — 57 operations (0 RESET, 57 RENAME)
+  57 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — volatile_extern_allowlist.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (95) --
+  (root): 1 files, 2 substitutions
+      symbol_addrs.txt  (2)
+  asm: 84 files, 232 substitutions
+      asm/funcs/func_80035480.s  (1)
+      asm/funcs/func_80035618.s  (13)
+      asm/funcs/func_80035828.s  (10)
+      asm/funcs/func_80035DC8.s  (1)
+      asm/funcs/func_8003880C.s  (1)
+      asm/funcs/func_800388A8.s  (1)
+      ... and 78 more
+  engine: 1 files, 5 substitutions
+      engine/test_engine.py  (5)
+  include: 1 files, 25 substitutions
+      include/bb2.h  (25)
+  src: 8 files, 189 substitutions
+      src/main/25C38.c  (25)
+      src/main/28708.c  (6)
+      src/main/2B344.c  (2)
+      src/main/4D0A8.c  (1)
+      src/main/596CC.c  (91)
+      src/main/5ED34.c  (3)
+      ... and 2 more
+
+-- .s file renames (57) --
+  asm/funcs/func_80068F70.s -> asm/funcs/menu_LoadResourcesInitStateSelectFirstEnabledRow.s
+  asm/funcs/func_80069120.s -> asm/funcs/gpu_GetPrimBufferAndRefreshStrip.s
+  asm/funcs/func_8006919C.s -> asm/funcs/reloc_RelocateTwelveListsAndLoadVabPack.s
+  asm/funcs/func_80069250.s -> asm/funcs/gpu_DrawWhiteTileAndSheetsTestPadMask.s
+  asm/funcs/func_800692C0.s -> asm/funcs/pad_StepOffsetsGetDirectionEvents.s
+  asm/funcs/func_80069898.s -> asm/funcs/gpu_AddThreeGreyTilesStackedUp.s
+  asm/funcs/func_80069A30.s -> asm/funcs/gpu_SetTileRgbFromBlockFlag.s
+  asm/funcs/func_80069A8C.s -> asm/funcs/gpu_SetPolyF4RgbFromBlockFlag.s
+  asm/funcs/func_80069AE4.s -> asm/funcs/gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads.s
+  asm/funcs/func_80069F80.s -> asm/funcs/menu_DrawModeBit1Sheets.s
+  ... and 47 more
+
+-- ledger directory renames (68) --
+  memory/grind/func_80068F70 -> memory/grind/menu_LoadResourcesInitStateSelectFirstEnabledRow
+  memory/grind/func_800692C0 -> memory/grind/pad_StepOffsetsGetDirectionEvents
+  memory/grind/func_8006A564 -> memory/grind/menu_DrawRowThreeThinTilesAndTwoSheets
+  memory/grind/func_8006A880 -> memory/grind/menu_DrawMaskedRowList
+  memory/grind/func_8006B120 -> memory/grind/menu_DrawToggleChoices
+  memory/grind/func_8006B578 -> memory/grind/menu_HandleToggleChoices
+  memory/grind/func_8006B898 -> memory/grind/menu_UpdateToggleChoices
+  memory/grind/func_8006B92C -> memory/grind/menu_HandleReturningChoices
+  memory/grind/func_8006BD28 -> memory/grind/gpu_DrawIndexedSheetPair
+  memory/grind/func_8006C21C -> memory/grind/menu_DrawRowBitSheetsTilesAndGradientQuads
+  ... and 58 more
+
+-- symbol-registry line deletions (2) --
+  symbol_addrs.txt:984  func_80077B20 = 0x80077B20; /* MISNAMED: not gauge init; 1-line D_800A35E4 = 1 */
+  symbol_addrs.txt:992  func_80077A04 = 0x80077A04; /* MISNAMED: not ground display; D_800A35E4=0 then func_8006D74C(a0, a1) */
+
+-- JSON key/field edits (68) --
+  memory/grind/func_80068F70/layer2.jsonl: 1 changes
+      line 1: func func_80068F70 -> menu_LoadResourcesInitStateSelectFirstEnabledRow
+  memory/grind/func_800692C0/layer2.jsonl: 2 changes
+      line 1: func func_800692C0 -> pad_StepOffsetsGetDirectionEvents
+      line 2: func func_800692C0 -> pad_StepOffsetsGetDirectionEvents
+  memory/grind/func_8006A564/layer2.jsonl: 1 changes
+      line 1: func func_8006A564 -> menu_DrawRowThreeThinTilesAndTwoSheets
+  memory/grind/func_8006A880/layer2.jsonl: 2 changes
+      line 1: func func_8006A880 -> menu_DrawMaskedRowList
+      line 2: func func_8006A880 -> menu_DrawMaskedRowList
+  memory/grind/func_8006B120/layer2.jsonl: 1 changes
+      line 1: func func_8006B120 -> menu_DrawToggleChoices
+  memory/grind/func_8006B578/layer2.jsonl: 1 changes
+      line 1: func func_8006B578 -> menu_HandleToggleChoices
+  memory/grind/func_8006B898/layer2.jsonl: 1 changes
+      line 1: func func_8006B898 -> menu_UpdateToggleChoices
+  memory/grind/func_8006B92C/layer2.jsonl: 1 changes
+      line 1: func func_8006B92C -> menu_HandleReturningChoices
+  memory/grind/func_8006BD28/layer2.jsonl: 1 changes
+      line 1: func func_8006BD28 -> gpu_DrawIndexedSheetPair
+  memory/grind/func_8006C21C/layer2.jsonl: 3 changes
+      line 1: func func_8006C21C -> menu_DrawRowBitSheetsTilesAndGradientQuads
+      line 2: func func_8006C21C -> menu_DrawRowBitSheetsTilesAndGradientQuads
+      line 3: func func_8006C21C -> menu_DrawRowBitSheetsTilesAndGradientQuads
+  memory/grind/func_8006D74C/layer2.jsonl: 1 changes
+      line 1: func func_8006D74C -> menu_UpdateStoredChoice
+  memory/grind/func_8006D808/layer2.jsonl: 1 changes
+      line 1: func func_8006D808 -> gpu_DrawIndexedCellsAndDecimalDigitPairs
+  memory/grind/func_800747D8/layer2.jsonl: 1 changes
+      line 1: func func_800747D8 -> menu_HandleSelPhase0CursorInput
+  memory/grind/func_80077B30/layer2.jsonl: 1 changes
+      line 1: func func_80077B30 -> menu_RunFlowStateWithRowBitEdit
+  memory/grind/func_80077D94/layer2.jsonl: 3 changes
+      line 1: func func_80077D94 -> gpu_DrawAndAdvanceTimedSpriteSequence
+      line 2: func func_80077D94 -> gpu_DrawAndAdvanceTimedSpriteSequence
+      line 3: func func_80077D94 -> gpu_DrawAndAdvanceTimedSpriteSequence
+  memory/grind/func_80078654/layer2.jsonl: 1 changes
+      line 1: func func_80078654 -> gpu_DrawScrollingAndDelayedSheets
+  memory/grind/_completed/func_80068F70/layer2.jsonl: 7 changes
+      line 1: func func_80068F70 -> menu_LoadResourcesInitStateSelectFirstEnabledRow
+      line 2: func func_80068F70 -> menu_LoadResourcesInitStateSelectFirstEnabledRow
+      line 3: func func_80068F70 -> menu_LoadResourcesInitStateSelectFirstEnabledRow
+      line 4: func func_80068F70 -> menu_LoadResourcesInitStateSelectFirstEnabledRow
+      line 5: func func_80068F70 -> menu_LoadResourcesInitStateSelectFirstEnabledRow
+      ... and 2 more
+  memory/grind/_completed/func_80069120/layer2.jsonl: 3 changes
+      line 1: func func_80069120 -> gpu_GetPrimBufferAndRefreshStrip
+      line 2: func func_80069120 -> gpu_GetPrimBufferAndRefreshStrip
+      line 3: func func_80069120 -> gpu_GetPrimBufferAndRefreshStrip
+  memory/grind/_completed/func_8006919C/layer2.jsonl: 3 changes
+      line 1: func func_8006919C -> reloc_RelocateTwelveListsAndLoadVabPack
+      line 2: func func_8006919C -> reloc_RelocateTwelveListsAndLoadVabPack
+      line 3: func func_8006919C -> reloc_RelocateTwelveListsAndLoadVabPack
+  memory/grind/_completed/func_800692C0/layer2.jsonl: 1 changes
+      line 1: func func_800692C0 -> pad_StepOffsetsGetDirectionEvents
+  memory/grind/_completed/func_80069898/layer2.jsonl: 4 changes
+      line 1: func func_80069898 -> gpu_AddThreeGreyTilesStackedUp
+      line 2: func func_80069898 -> gpu_AddThreeGreyTilesStackedUp
+      line 3: func func_80069898 -> gpu_AddThreeGreyTilesStackedUp
+      line 4: func func_80069898 -> gpu_AddThreeGreyTilesStackedUp
+  memory/grind/_completed/func_80069A30/layer2.jsonl: 2 changes
+      line 1: func func_80069A30 -> gpu_SetTileRgbFromBlockFlag
+      line 2: func func_80069A30 -> gpu_SetTileRgbFromBlockFlag
+  memory/grind/_completed/func_80069A8C/layer2.jsonl: 2 changes
+      line 1: func func_80069A8C -> gpu_SetPolyF4RgbFromBlockFlag
+      line 2: func func_80069A8C -> gpu_SetPolyF4RgbFromBlockFlag
+  memory/grind/_completed/func_80069AE4/layer2.jsonl: 8 changes
+      line 1: func func_80069AE4 -> gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads
+      line 2: func func_80069AE4 -> gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads
+      line 3: func func_80069AE4 -> gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads
+      line 4: func func_80069AE4 -> gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads
+      line 5: func func_80069AE4 -> gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads
+      ... and 3 more
+  memory/grind/_completed/func_80069F80/layer2.jsonl: 7 changes
+      line 1: func func_80069F80 -> menu_DrawModeBit1Sheets
+      line 2: func func_80069F80 -> menu_DrawModeBit1Sheets
+      line 3: func func_80069F80 -> menu_DrawModeBit1Sheets
+      line 4: func func_80069F80 -> menu_DrawModeBit1Sheets
+      line 5: func func_80069F80 -> menu_DrawModeBit1Sheets
+      ... and 2 more
+  memory/grind/_completed/func_8006A1A0/layer2.jsonl: 7 changes
+      line 1: func func_8006A1A0 -> menu_DrawModeBit0Sheets
+      line 2: func func_8006A1A0 -> menu_DrawModeBit0Sheets
+      line 3: func func_8006A1A0 -> menu_DrawModeBit0Sheets
+      line 4: func func_8006A1A0 -> menu_DrawModeBit0Sheets
+      line 5: func func_8006A1A0 -> menu_DrawModeBit0Sheets
+      ... and 2 more
+  memory/grind/_completed/func_8006A3CC/layer2.jsonl: 5 changes
+      line 1: func func_8006A3CC -> gpu_DrawList1CEntry4SpriteCellsAtOrigin
+      line 2: func func_8006A3CC -> gpu_DrawList1CEntry4SpriteCellsAtOrigin
+      line 3: func func_8006A3CC -> gpu_DrawList1CEntry4SpriteCellsAtOrigin
+      line 4: func func_8006A3CC -> gpu_DrawList1CEntry4SpriteCellsAtOrigin
+      line 5: func func_8006A3CC -> gpu_DrawList1CEntry4SpriteCellsAtOrigin
+  memory/grind/_completed/func_8006A494/layer2.jsonl: 6 changes
+      line 1: func func_8006A494 -> menu_DrawList1CEntry9UnitScaleQuadsAtOrigin
+      line 2: func func_8006A494 -> menu_DrawList1CEntry9UnitScaleQuadsAtOrigin
+      line 3: func func_8006A494 -> menu_DrawList1CEntry9UnitScaleQuadsAtOrigin
+      line 4: func func_8006A494 -> menu_DrawList1CEntry9UnitScaleQuadsAtOrigin
+      line 5: func func_8006A494 -> menu_DrawList1CEntry9UnitScaleQuadsAtOrigin
+      ... and 1 more
+  memory/grind/_completed/func_8006A564/layer2.jsonl: 6 changes
+      line 1: func func_8006A564 -> menu_DrawRowThreeThinTilesAndTwoSheets
+      line 2: func func_8006A564 -> menu_DrawRowThreeThinTilesAndTwoSheets
+      line 3: func func_8006A564 -> menu_DrawRowThreeThinTilesAndTwoSheets
+      line 4: func func_8006A564 -> menu_DrawRowThreeThinTilesAndTwoSheets
+      line 5: func func_8006A564 -> menu_DrawRowThreeThinTilesAndTwoSheets
+      ... and 1 more
+  memory/grind/_completed/func_8006A880/layer2.jsonl: 8 changes
+      line 1: func func_8006A880 -> menu_DrawMaskedRowList
+      line 2: func func_8006A880 -> menu_DrawMaskedRowList
+      line 3: func func_8006A880 -> menu_DrawMaskedRowList
+      line 4: func func_8006A880 -> menu_DrawMaskedRowList
+      line 5: func func_8006A880 -> menu_DrawMaskedRowList
+      ... and 3 more
+  memory/grind/_completed/func_8006B120/layer2.jsonl: 8 changes
+      line 1: func func_8006B120 -> menu_DrawToggleChoices
+      line 2: func func_8006B120 -> menu_DrawToggleChoices
+      line 3: func func_8006B120 -> menu_DrawToggleChoices
+      line 4: func func_8006B120 -> menu_DrawToggleChoices
+      line 5: func func_8006B120 -> menu_DrawToggleChoices
+      ... and 3 more
+  memory/grind/_completed/func_8006B578/layer2.jsonl: 4 changes
+      line 1: func func_8006B578 -> menu_HandleToggleChoices
+      line 2: func func_8006B578 -> menu_HandleToggleChoices
+      line 3: func func_8006B578 -> menu_HandleToggleChoices
+      line 4: func func_8006B578 -> menu_HandleToggleChoices
+  memory/grind/_completed/func_8006B898/layer2.jsonl: 3 changes
+      line 1: func func_8006B898 -> menu_UpdateToggleChoices
+      line 2: func func_8006B898 -> menu_UpdateToggleChoices
+      line 3: func func_8006B898 -> menu_UpdateToggleChoices
+  memory/grind/_completed/func_8006B92C/layer2.jsonl: 2 changes
+      line 1: func func_8006B92C -> menu_HandleReturningChoices
+      line 2: func func_8006B92C -> menu_HandleReturningChoices
+  memory/grind/_completed/func_8006BB68/layer2.jsonl: 7 changes
+      line 1: func func_8006BB68 -> menu_DrawReturningChoices
+      line 2: func func_8006BB68 -> menu_DrawReturningChoices
+      line 3: func func_8006BB68 -> menu_DrawReturningChoices
+      line 4: func func_8006BB68 -> menu_DrawReturningChoices
+      line 5: func func_8006BB68 -> menu_DrawReturningChoices
+      ... and 2 more
+  memory/grind/_completed/func_8006BD28/layer2.jsonl: 6 changes
+      line 1: func func_8006BD28 -> gpu_DrawIndexedSheetPair
+      line 2: func func_8006BD28 -> gpu_DrawIndexedSheetPair
+      line 3: func func_8006BD28 -> gpu_DrawIndexedSheetPair
+      line 4: func func_8006BD28 -> gpu_DrawIndexedSheetPair
+      line 5: func func_8006BD28 -> gpu_DrawIndexedSheetPair
+      ... and 1 more
+  memory/grind/_completed/func_8006BEC4/layer2.jsonl: 5 changes
+      line 1: func func_8006BEC4 -> gpu_DrawSheetPairCenteredTileWithOptionalSelection
+      line 2: func func_8006BEC4 -> gpu_DrawSheetPairCenteredTileWithOptionalSelection
+      line 3: func func_8006BEC4 -> gpu_DrawSheetPairCenteredTileWithOptionalSelection
+      line 4: func func_8006BEC4 -> gpu_DrawSheetPairCenteredTileWithOptionalSelection
+      line 5: func func_8006BEC4 -> gpu_DrawSheetPairCenteredTileWithOptionalSelection
+  memory/grind/_completed/func_8006C168/layer2.jsonl: 1 changes
+      line 1: func func_8006C168 -> menu_UpdateReturningChoices
+  memory/grind/_completed/func_8006C21C/layer2.jsonl: 10 changes
+      line 1: func func_8006C21C -> menu_DrawRowBitSheetsTilesAndGradientQuads
+      line 2: func func_8006C21C -> menu_DrawRowBitSheetsTilesAndGradientQuads
+      line 3: func func_8006C21C -> menu_DrawRowBitSheetsTilesAndGradientQuads
+      line 4: func func_8006C21C -> menu_DrawRowBitSheetsTilesAndGradientQuads
+      line 5: func func_8006C21C -> menu_DrawRowBitSheetsTilesAndGradientQuads
+      ... and 5 more
+  memory/grind/_completed/func_8006D3DC/layer2.jsonl: 8 changes
+      line 1: func func_8006D3DC -> menu_DrawStoredChoice
+      line 2: func func_8006D3DC -> menu_DrawStoredChoice
+      line 3: func func_8006D3DC -> menu_DrawStoredChoice
+      line 4: func func_8006D3DC -> menu_DrawStoredChoice
+      line 5: func func_8006D3DC -> menu_DrawStoredChoice
+      ... and 3 more
+  memory/grind/_completed/func_8006D5D4/layer2.jsonl: 3 changes
+      line 1: func func_8006D5D4 -> menu_HandleStoredChoice
+      line 2: func func_8006D5D4 -> menu_HandleStoredChoice
+      line 3: func func_8006D5D4 -> menu_HandleStoredChoice
+  memory/grind/_completed/func_8006D74C/layer2.jsonl: 1 changes
+      line 1: func func_8006D74C -> menu_UpdateStoredChoice
+  memory/grind/_completed/func_8006D808/layer2.jsonl: 5 changes
+      line 1: func func_8006D808 -> gpu_DrawIndexedCellsAndDecimalDigitPairs
+      line 2: func func_8006D808 -> gpu_DrawIndexedCellsAndDecimalDigitPairs
+      line 3: func func_8006D808 -> gpu_DrawIndexedCellsAndDecimalDigitPairs
+      line 4: func func_8006D808 -> gpu_DrawIndexedCellsAndDecimalDigitPairs
+      line 5: func func_8006D808 -> gpu_DrawIndexedCellsAndDecimalDigitPairs
+  memory/grind/_completed/func_8006DD94/layer2.jsonl: 7 changes
+      line 1: func func_8006DD94 -> menu_DrawConfirmSheetsAndDigitPairs
+      line 2: func func_8006DD94 -> menu_DrawConfirmSheetsAndDigitPairs
+      line 3: func func_8006DD94 -> menu_DrawConfirmSheetsAndDigitPairs
+      line 4: func func_8006DD94 -> menu_DrawConfirmSheetsAndDigitPairs
+      line 5: func func_8006DD94 -> menu_DrawConfirmSheetsAndDigitPairs
+      ... and 2 more
+  memory/grind/_completed/func_8006E390/layer2.jsonl: 2 changes
+      line 1: func func_8006E390 -> gpu_AdvanceBufferCounterAndBuildDrawContext
+      line 2: func func_8006E390 -> gpu_AdvanceBufferCounterAndBuildDrawContext
+  memory/grind/_completed/func_800747D8/layer2.jsonl: 4 changes
+      line 1: func func_800747D8 -> menu_HandleSelPhase0CursorInput
+      line 2: func func_800747D8 -> menu_HandleSelPhase0CursorInput
+      line 3: func func_800747D8 -> menu_HandleSelPhase0CursorInput
+      line 4: func func_800747D8 -> menu_HandleSelPhase0CursorInput
+  memory/grind/_completed/func_80074D2C/layer2.jsonl: 5 changes
+      line 1: func func_80074D2C -> menu_DrawSelPhaseSheet
+      line 2: func func_80074D2C -> menu_DrawSelPhaseSheet
+      line 3: func func_80074D2C -> menu_DrawSelPhaseSheet
+      line 4: func func_80074D2C -> menu_DrawSelPhaseSheet
+      line 5: func func_80074D2C -> menu_DrawSelPhaseSheet
+  memory/grind/_completed/func_800753D8/layer2.jsonl: 6 changes
+      line 1: func func_800753D8 -> menu_DrawSelOpposedChoice
+      line 2: func func_800753D8 -> menu_DrawSelOpposedChoice
+      line 3: func func_800753D8 -> menu_DrawSelOpposedChoice
+      line 4: func func_800753D8 -> menu_DrawSelOpposedChoice
+      line 5: func func_800753D8 -> menu_DrawSelOpposedChoice
+      ... and 1 more
+  memory/grind/_completed/func_80075670/layer2.jsonl: 4 changes
+      line 1: func func_80075670 -> menu_HandleSelOpposedChoice
+      line 2: func func_80075670 -> menu_HandleSelOpposedChoice
+      line 3: func func_80075670 -> menu_HandleSelOpposedChoice
+      line 4: func func_80075670 -> menu_HandleSelOpposedChoice
+  memory/grind/_completed/func_80075830/layer2.jsonl: 6 changes
+      line 1: func func_80075830 -> menu_DrawSelGridCellOverlay
+      line 2: func func_80075830 -> menu_DrawSelGridCellOverlay
+      line 3: func func_80075830 -> menu_DrawSelGridCellOverlay
+      line 4: func func_80075830 -> menu_DrawSelGridCellOverlay
+      line 5: func func_80075830 -> menu_DrawSelGridCellOverlay
+      ... and 1 more
+  memory/grind/_completed/func_8007636C/layer2.jsonl: 6 changes
+      line 1: func func_8007636C -> menu_DrawSelListPicks
+      line 2: func func_8007636C -> menu_DrawSelListPicks
+      line 3: func func_8007636C -> menu_DrawSelListPicks
+      line 4: func func_8007636C -> menu_DrawSelListPicks
+      line 5: func func_8007636C -> menu_DrawSelListPicks
+      ... and 1 more
+  memory/grind/_completed/func_80077820/layer2.jsonl: 1 changes
+      line 1: func func_80077820 -> InitRowMenuBlackBgResetFlow
+  memory/grind/_completed/func_80077894/layer2.jsonl: 2 changes
+      line 1: func func_80077894 -> menu_UpdateRowMenuStoreResult
+      line 2: func func_80077894 -> menu_UpdateRowMenuStoreResult
+  memory/grind/_completed/func_80077904/layer2.jsonl: 2 changes
+      line 1: func func_80077904 -> ResetFlowAndFetchRowTablePair
+      line 2: func func_80077904 -> ResetFlowAndFetchRowTablePair
+  memory/grind/_completed/func_80077984/layer2.jsonl: 1 changes
+      line 1: func func_80077984 -> InitWithCachedValueAndStoredBitsBlackBg
+  memory/grind/_completed/func_800779C8/layer2.jsonl: 1 changes
+      line 1: func func_800779C8 -> StepThenCloseVab1OnNonzero
+  memory/grind/_completed/func_80077A04/layer2.jsonl: 1 changes
+      line 1: func func_80077A04 -> menu_ResetFlowThenRunUpdate
+  memory/grind/_completed/func_80077A80/layer2.jsonl: 1 changes
+      line 1: func func_80077A80 -> menu_InitSelWithStoredBits
+  memory/grind/_completed/func_80077B30/layer2.jsonl: 3 changes
+      line 1: func func_80077B30 -> menu_RunFlowStateWithRowBitEdit
+      line 2: func func_80077B30 -> menu_RunFlowStateWithRowBitEdit
+      line 3: func func_80077B30 -> menu_RunFlowStateWithRowBitEdit
+  memory/grind/_completed/func_80077D74/layer2.jsonl: 1 changes
+      line 1: func func_80077D74 -> gpu_GetTimedSpritePrimBuffer
+  memory/grind/_completed/func_80077D94/layer2.jsonl: 7 changes
+      line 1: func func_80077D94 -> gpu_DrawAndAdvanceTimedSpriteSequence
+      line 2: func func_80077D94 -> gpu_DrawAndAdvanceTimedSpriteSequence
+      line 3: func func_80077D94 -> gpu_DrawAndAdvanceTimedSpriteSequence
+      line 4: func func_80077D94 -> gpu_DrawAndAdvanceTimedSpriteSequence
+      line 5: func func_80077D94 -> gpu_DrawAndAdvanceTimedSpriteSequence
+      ... and 2 more
+  memory/grind/_completed/func_800784E4/layer2.jsonl: 4 changes
+      line 1: func func_800784E4 -> InitTimedSpriteSequence
+      line 2: func func_800784E4 -> InitTimedSpriteSequence
+      line 3: func func_800784E4 -> InitTimedSpriteSequence
+      line 4: func func_800784E4 -> InitTimedSpriteSequence
+  memory/grind/_completed/func_8007855C/layer2.jsonl: 2 changes
+      line 1: func func_8007855C -> StepTimedSpriteSequenceWithSkip
+      line 2: func func_8007855C -> StepTimedSpriteSequenceWithSkip
+  memory/grind/_completed/func_80078628/layer2.jsonl: 1 changes
+      line 1: func func_80078628 -> GetScrollingSpriteRecordWord1
+  memory/grind/_completed/func_80078634/layer2.jsonl: 1 changes
+      line 1: func func_80078634 -> gpu_GetScrollingSpritePrimBuffer
+  memory/grind/_completed/func_80078654/layer2.jsonl: 5 changes
+      line 1: func func_80078654 -> gpu_DrawScrollingAndDelayedSheets
+      line 2: func func_80078654 -> gpu_DrawScrollingAndDelayedSheets
+      line 3: func func_80078654 -> gpu_DrawScrollingAndDelayedSheets
+      line 4: func func_80078654 -> gpu_DrawScrollingAndDelayedSheets
+      line 5: func func_80078654 -> gpu_DrawScrollingAndDelayedSheets
+  memory/grind/_completed/func_80078824/layer2.jsonl: 5 changes
+      line 1: func func_80078824 -> InitScrollingSpriteDisplay
+      line 2: func func_80078824 -> InitScrollingSpriteDisplay
+      line 3: func func_80078824 -> InitScrollingSpriteDisplay
+      line 4: func func_80078824 -> InitScrollingSpriteDisplay
+      line 5: func func_80078824 -> InitScrollingSpriteDisplay
+  memory/grind/_completed/func_800788B0/layer2.jsonl: 1 changes
+      line 1: func func_800788B0 -> StepScrollingSpriteDisplay
+
+-- OUT OF SCOPE / manual follow-up (1) --
+  ~ tools/resplit_convert.py:L154: ['func_8006B120', 'func_8006B578'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.
