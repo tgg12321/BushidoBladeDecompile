@@ -31,6 +31,11 @@ Scenario keys (all optional except end_frame, unless "extends" gives it):
   phases       "FRAME:name"
   shots        "FRAME:name"
   shots_drop   screenshot names removed (after extends/use)
+  pokes        [{"at": ADDR, "hex": BYTES, "phase": NAME}]: game state the
+               run needs (e.g. an unlock word), written when the phase
+               starts (gdbtrace pokes); part of the run, so a build puts
+               them ahead of any instrument pokes and `verify` requires
+               them at the head of each evidence capture's spec "pokes"
 
   python tools/trace/scenarios/scen.py list
   python tools/trace/scenarios/scen.py show <name> [--instrument I]
@@ -76,7 +81,9 @@ TOKEN_RE = re.compile(r"(\d+):([A-Z0-9_|+]+)(?:/(\d+))?(?:@([12]))?")
 STEP_RE = re.compile(r"\+(\d+):([A-Z0-9_|+]+)(?:/(\d+))?(?:@([12]))?")
 MARK_RE = re.compile(r"(\d+):(\S+)")
 KEYS = {"description", "covers", "evidence", "extends", "use", "end_frame",
-        "inputs", "repeat", "phases", "shots", "shots_drop", "segment"}
+        "inputs", "repeat", "phases", "shots", "shots_drop", "segment",
+        "pokes"}
+POKE_KEYS = {"at", "hex", "phase"}
 INSTRUMENT = {
     "none": {"max_events": 200000, "duration_s": 7200},
     "hitmap": {"max_events": 200000, "duration_s": 7200,
@@ -188,7 +195,25 @@ def parse_marks(tokens, where: str, what: str) -> list[dict]:
     return out
 
 
+def parse_pokes(pokes, where: str) -> list[dict]:
+    out = []
+    for pk in pokes:
+        if not isinstance(pk, dict) or set(pk) != POKE_KEYS or \
+                not all(isinstance(v, str) and v for v in pk.values()):
+            raise ScenError(f"{where}: a poke is {{\"at\", \"hex\", "
+                            f"\"phase\"}} strings, not {pk!r}")
+        try:
+            data = bytes.fromhex(pk["hex"])
+        except ValueError:
+            data = b""
+        if not data:
+            raise ScenError(f"{where}: poke {pk['at']}: bad hex {pk['hex']!r}")
+        out.append(dict(pk))
+    return out
+
+
 def merge(acc: dict, d: dict, where: str):
+    acc["pokes"] += parse_pokes(d.get("pokes", []), where)
     acc["inputs"] += parse_inputs(d.get("inputs", []), where)
     acc["inputs"] += expand_repeat(d.get("repeat", []), where)
     acc["phases"] += parse_marks(d.get("phases", []), where, "phase")
@@ -207,7 +232,8 @@ def collect(name: str, seen=()) -> tuple[dict, int | None, dict]:
     if "extends" in d:
         acc, end, _ = collect(d["extends"], seen + (name,))
     else:
-        acc, end = {"inputs": [], "phases": [], "screenshots": []}, None
+        acc, end = {"inputs": [], "phases": [], "screenshots": [],
+                    "pokes": []}, None
     for seg in d.get("use", []):
         sp = segment_path(seg)
         if not os.path.exists(sp):
@@ -256,6 +282,18 @@ def compile_script(name: str) -> dict:
     return script
 
 
+def compile_pokes(name: str) -> list[dict]:
+    """The scenario's own pokes; each phase must be a script phase other
+    than the first (gdbtrace's rule: nothing is set up at power-on)."""
+    acc, _, _ = collect(name)
+    phases = [p["name"] for p in compile_script(name)["phases"]]
+    for pk in acc["pokes"]:
+        if pk["phase"] not in phases[1:]:
+            raise ScenError(f"{name}: poke {pk['at']}: phase must be a script "
+                            f"phase other than the first, not {pk['phase']!r}")
+    return acc["pokes"]
+
+
 def instrument(arg: str | None) -> dict:
     if not arg or arg in INSTRUMENT:
         return dict(INSTRUMENT[arg or "hitmap"])
@@ -268,6 +306,9 @@ def instrument(arg: str | None) -> dict:
 def build_spec(name: str, inst: str | None) -> dict:
     spec = instrument(inst)
     spec["script"] = compile_script(name)
+    pokes = compile_pokes(name)
+    if pokes:
+        spec["pokes"] = pokes + spec.get("pokes", [])
     return spec
 
 
@@ -340,6 +381,7 @@ def cmd_verify(args) -> int:
         try:
             _, _, d = collect(n)
             script = compile_script(n)
+            pokes = compile_pokes(n)
         except ScenError as e:
             print(f"FAIL {n}: {e}")
             ok = False
@@ -356,14 +398,21 @@ def cmd_verify(args) -> int:
             claimed.setdefault(os.path.normcase(os.path.abspath(p)), []).append(n)
             try:
                 with open(p, encoding="utf-8") as f:
-                    want = json.load(f).get("script")
-            except (OSError, ValueError) as e:
+                    spec = json.load(f)
+                want = spec.get("script")
+                want_pokes = spec.get("pokes", [])[:len(pokes)]
+            except (OSError, ValueError, AttributeError) as e:
                 print(f"FAIL {n}: evidence {ev}: {e}")
                 ok = False
                 continue
             if json.dumps(want, sort_keys=True) != \
                     json.dumps(script, sort_keys=True):  # 1 != 1.0 != true
                 print(f"FAIL {n}: evidence {ev}: {first_diff(script, want)}")
+                ok = False
+            elif json.dumps(want_pokes, sort_keys=True) != \
+                    json.dumps(pokes, sort_keys=True):
+                print(f"FAIL {n}: evidence {ev}: "
+                      f"{first_diff(pokes, want_pokes, 'pokes')}")
                 ok = False
             else:
                 print(f"ok   {n} == {ev}")

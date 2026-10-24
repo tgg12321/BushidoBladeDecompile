@@ -58,15 +58,32 @@
       }
     },
     "characters": {
-      "open": "the six characters of the two schools Select School draws (Narukagami, Shainto: group-battle-hitmap-1 school_select); hidden or unlockable characters not seen yet (Select Character draws five rows per school, three named and two blank: versus-2p-stage-map1-6 char_select.first)",
+      "open": "Select School draws two schools, Narukagami and Shainto (group-battle-hitmap-1 school_select); 2P Vs. Mode Select Character is a grid of four columns by five rows: the six default fighters (versus-2p-stage-map1-6 char_select.first), and with the unlock word D_80106A50.unk_00 set (versus-2p-hidden-roster-1) all 20 names; each further fighter's own fight not yet captured",
       "keys": [
         "char:kannuki",
         "char:mikado",
         "char:tatsumi",
         "char:gengoro",
         "char:kaun",
-        "char:jo"
-      ]
+        "char:jo",
+        "char:utsusemi",
+        "char:red_shadow",
+        "char:matsumushi",
+        "char:suminagashi",
+        "char:nightstalker",
+        "char:sazanka",
+        "char:tsubame",
+        "char:chihiro",
+        "char:isohachi",
+        "char:utamaru",
+        "char:hongou",
+        "char:tony_umeda",
+        "char:highwayman",
+        "char:katze"
+      ],
+      "notes": {
+        "char:utsusemi": "char:utsusemi .. char:katze: the 14 names drawn only with the unlock word set, reached by P1's cursor on Select Character (portrait drawn, versus-2p-hidden-roster-1 char_select.* shots); only HIGHWAYMAN fought"
+      }
     },
     "weapons": {
       "open": "hidden or unlockable weapons not seen yet",

@@ -187,6 +187,38 @@ def main():
                 run("runkit error: " + name, lambda n=name, m=message:
                     rejects(lambda: scen.compile_script(n), m))
 
+            poke = {"at": "0x80106A50", "hex": "FFF33F05", "phase": "edge"}
+            write(root, "poked", {"extends": "base", "pokes": [poke]})
+            write(root, "poked-child", {"extends": "poked"})
+            inst_pokes = write(root, "inst-pokes", {
+                "pokes": [{"at": "0x80100000", "hex": "01",
+                           "phase": "after"}]})
+            run("scenario pokes go ahead of instrument pokes", lambda: equal(
+                scen.build_spec("poked", inst_pokes)["pokes"],
+                [poke, {"at": "0x80100000", "hex": "01", "phase": "after"}]))
+            run("pokes leave the script alone", lambda: equal(
+                scen.build_spec("poked", "none")["script"],
+                scen.compile_script("base")))
+            run("no scenario pokes: spec has none", lambda: equal(
+                "pokes" in scen.build_spec("base", "none"), False))
+            run("extends inherits pokes", lambda: equal(
+                scen.compile_pokes("poked-child"), [poke]))
+            for label, pk, message in (
+                ("first phase", {**poke, "phase": "before"}, "other than"),
+                ("unknown phase", {**poke, "phase": "nope"}, "other than"),
+                ("bad hex", {**poke, "hex": "XY"}, "bad hex"),
+                ("missing key", {"at": "0x80106A50", "hex": "00"},
+                 "a poke is"),
+                ("extra key", {**poke, "when": "x"}, "a poke is"),
+            ):
+                path = write(root, "bad-poke", {"extends": "base",
+                                                "pokes": [pk]})
+                run("reject poke " + label, lambda p=path, m=message:
+                    rejects(lambda: scen.compile_pokes(p), m))
+            write(root, "poke-cut", {"extends": "poked", "end_frame": 100})
+            run("reject poke whose phase the cut drops", lambda: rejects(
+                lambda: scen.build_spec("poke-cut", "none"), "other than"))
+
             run("instrument hitmap preset", lambda: equal(
                 scen.instrument("hitmap"), {
                     "max_events": 200000, "duration_s": 7200,
