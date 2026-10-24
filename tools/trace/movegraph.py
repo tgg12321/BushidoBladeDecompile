@@ -24,7 +24,11 @@ paired start reset that record's unk_86 to unk_84:
     0x1000, a fallback of a move with unk_09 & 0x20 (func_80021A98 clears
     it on every install); 0x7FF0..0x7FFF the executing record's variant
     roots (unk_84 / unk_86 as read, or unk_84 after a paired start; 0x7FF1
-    first advances unk_86);
+    first advances unk_86). Not modelled: the variant skip on unk_88/8A/8E/90
+    and the mode-3 CPU branch, 0x7FF0's lasting unk_86 = unk_84, unk_86
+    changes along a path; move_kind is read from the script's file, while
+    func_80021A98 reads the borrow-selected one (they differ only for a
+    variant id under borrow or a hand-off without 0x1000);
   * input edges: transition_commands entries (button bit = flags & 0xF, with
     9 -> 3 and 0xA -> 5 under their conditions; flags & 0x30 held / pressed /
     unheld / released; entries with 0x8000 only when the mask in their extra
@@ -38,8 +42,11 @@ paired start reset that record's unk_86 to unk_84:
     borrow_other_motion and unk_86 = unk_84. The input loop would also test
     its button bit (and, with 0x8000, its bytes as a mask); not walked;
   * move ended: the tc[0] 0x2000 end transition for a record that is not
-    D_800A38AE, else the header fallback (landing, kind 0xA / unk_72, is not
-    walked); event codes 0xD / 0x17 / 0x18 of the event table.
+    D_800A38AE, else the header fallback;
+  * event-table edges only where fighter_Update takes them: 0xD (turn) from
+    kinds 0x15/0x19/0x1A/0x13/0x30/0x31 with R1 and a direction held; 0x17 /
+    0x18 on landing from kind 0xA. Not walked: landing with unk_72 set or
+    after a 0x17/0x18 move, and pending_move_event codes set elsewhere;
   * the walk of record i follows the other record only while it runs the
     paired script (a node in record i's file); targets are listed for the
     nodes of either record, one shortest path per move, file and record;
@@ -55,7 +62,7 @@ D_800A38DC 6 the record that is not D_800A38A0 uses D_800A3912..14), 8
 SELECT, 11 START, 12..15 UP RIGHT DOWN LEFT; for record 1 outside mode 6 the
 directions are mirrored (game UP/RIGHT/DOWN/LEFT = pad DOWN/LEFT/UP/RIGHT).
 L3 / R3 fold into bits 3 / 5. D_800A38BA's swap (fighter_Update) is not
-applied.
+read or applied: names assume it is 0.
 
 Static graph only: whether a branch fires at run time still depends on the
 frame window, distance (paired), unk_26C and the other fighter's state.
@@ -230,7 +237,9 @@ class Fight:
             k = r.u84 if mid == 0x7FF0 else \
                 (u86 + 1) % f14 if mid == 0x7FF1 else u86
             return f00 + 2 * m.u16(buf + 0x4E + 2 * k), r.slot, \
-                f"variant f4E[{k}] (unk_86 as read)"
+                f"variant f4E[{k}] (" + ("unk_84" if mid == 0x7FF0 else
+                                         "unk_86 + 1" if mid == 0x7FF1 else
+                                         "unk_86") + ")"
         if mid == 0x7FF3:
             t = (u86 + 1) % f14
             return f00 + 2 * m.u16(buf + 0x54 + (u86 * 3 + t) * 2), \
@@ -328,7 +337,9 @@ class Fight:
                        f"distance {b[0] * 20}..{b[1] * 20}, height gap < 100, "
                        f"other in kind 0x15/0x2C/0xE/0x19, func_8001FB34 "
                        f"(not modes 2/3/5"
-                       + ("; needs unk_26C" if b[3] & 0x80 else "") + ")")
+                       + ("; needs unk_26C" if b[3] & 0x80 else "") + "); "
+                       "tested only on the frame the move starts, with no "
+                       "pending move event and neither fighter defeated")
                 t = target(mid)
                 if t is None:
                     self.dropped.append((node, lab, mid))
@@ -358,7 +369,8 @@ class Fight:
                 lab += f" -> id {mid:#06x}" + (f" ({note})" if note else "")
                 out.append(((na, ns, ex, ae, reset),
                             lab + " (paired hand-off, both records)"))
-                out.append(((na, ns, ae, ae, reset),
+                # D_800A38AE's unk_86 is not reset (only the other's, 2720)
+                out.append(((na, ns, ae, ae, False),
                             lab + " (paired hand-off, run by D_800A38AE)"))
                 continue
             add(mid, lab, bool(f & 0x1000))
@@ -371,8 +383,14 @@ class Fight:
                 bool(h["unk_09"] & 0x20))
         tbl, _, _ = self.resolve(h["event_table"], ex, False, reset)
         if m.covered(tbl, 0x32):
-            for code in (0xD, 0x17, 0x18):
-                add(m.u16(tbl + 2 * code), f"event {code:#x}")
+            if kind in (0x15, 0x19, 0x1A, 0x13, 0x30, 0x31):
+                add(m.u16(tbl + 2 * 0xD), "held R1/L3 + a direction (event "
+                    "0xD, if func_800233AC finds a turn)")
+            if kind == 0xA:
+                for code in (0x17, 0x18):
+                    add(m.u16(tbl + 2 * code), f"landing after a fall of more "
+                        f"than 0xFA0 (event {code:#x}, unk_94 "
+                        f"{'set' if code == 0x17 else 'clear'})")
         return out
 
     def walk(self, idx):
