@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import json
 import os
+import random
 import socket
 import subprocess
 import sys
@@ -65,13 +66,18 @@ def image_name(pid: int) -> str | None:
     if not pid:
         return None
     if os.name == "nt":
-        r = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV",
-                            "/NH"], capture_output=True, text=True)
+        try:
+            r = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/FO",
+                                "CSV", "/NH"], capture_output=True, text=True)
+        except OSError:
+            return "?"  # cannot tell: never treat as dead
         for line in r.stdout.splitlines():
             f = [x.strip('"') for x in line.split('","')]
             if len(f) >= 2 and f[1].strip('"') == str(pid):
                 return f[0].strip('"')
-        return None
+        if r.returncode == 0 and "No tasks" in r.stdout:
+            return None
+        return "?"  # tasklist failed or printed something else
     try:
         os.kill(pid, 0)
     except OSError:
@@ -170,7 +176,8 @@ def cap(reg: str, running: int) -> tuple[int, str]:
 def owner_alive(rec: dict) -> bool:
     name = image_name(int(rec.get("pid") or 0))
     want = (rec.get("image") or "").lower()
-    return name is not None and (not want or name.lower() == want)
+    return name is not None and (name == "?" or not want
+                                 or name.lower() == want)
 
 
 def reap(reg: str, log=print) -> list[int]:
@@ -203,7 +210,8 @@ def reap(reg: str, log=print) -> list[int]:
                 continue  # being written right now
             for pid in (rec or {}).get("emulator_pids", []):
                 name = image_name(pid)
-                if name and name.lower().startswith("pcsx-redux"):
+                if name and name != "?" and (
+                        name.lower().startswith("pcsx-redux")):
                     kill_tree(pid)
                     log(f"pool: slot {n}: killed {name} pid {pid} of dead "
                         f"owner pid {(rec or {}).get('pid')}")
@@ -214,7 +222,10 @@ def reap(reg: str, log=print) -> list[int]:
             except OSError:
                 pass
     finally:
-        os.remove(mutex)
+        try:
+            os.remove(mutex)
+        except OSError:
+            pass
     return freed
 
 
@@ -223,6 +234,18 @@ def age(path: str) -> float:
         return time.time() - os.path.getmtime(path)
     except OSError:
         return 0.0
+
+
+def retry(fn, tries: int = 50):
+    """Windows refuses to replace or remove a file another process has
+    open (a reader of the lock): try again for a few seconds."""
+    for i in range(tries):
+        try:
+            return fn()
+        except PermissionError:
+            if i == tries - 1:
+                raise
+            time.sleep(0.1)
 
 
 class Slot:
@@ -240,12 +263,12 @@ class Slot:
         tmp = self.lock + f".{os.getpid()}.tmp"
         with open(tmp, "w", encoding="utf-8", newline="\n") as f:
             json.dump(self.rec, f)
-        os.replace(tmp, self.lock)
+        retry(lambda: os.replace(tmp, self.lock))
 
     def release(self):
         rec = read_lock(self.lock)
         if rec and rec.get("token") == self.rec.get("token"):
-            os.remove(self.lock)
+            retry(lambda: os.remove(self.lock))
 
     def describe(self) -> dict:
         return {"slot": self.n, "port": self.port, "registry": self.reg,
@@ -278,6 +301,9 @@ def acquire(purpose: str, wait_s: float = 3600.0, log=print) -> Slot:
                 with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
                     json.dump(rec, f)
                 slot = Slot(reg, n, rec)
+                if len(held(reg)) > limit:  # raced other acquirers: back off
+                    slot.release()
+                    break
                 if port_in_use(slot.port):  # not ours: try the next slot
                     log(f"pool: port {slot.port} has a foreign listener; "
                         f"skipping slot {n}")
@@ -290,7 +316,7 @@ def acquire(purpose: str, wait_s: float = 3600.0, log=print) -> Slot:
         if not said:
             log(f"pool: {len(taken)} of {limit} instances busy; waiting")
             said = True
-        time.sleep(2.0)
+        time.sleep(1.0 + random.random() * 2)  # jitter: racers spread out
 
 
 # -------------------------------------------------------------------- CLI

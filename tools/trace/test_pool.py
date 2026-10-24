@@ -42,6 +42,7 @@ def unit() -> int:
     os.makedirs(reg)
     os.environ["BB2_TRACE_INSTANCES"] = reg
     os.environ["BB2_TRACE_MAX"] = "2"
+    os.environ["BB2_TRACE_PORT_BASE"] = "47600"  # clear of real instances
     import pool
     quiet = lambda *a, **k: None  # noqa: E731
     ok = True
@@ -75,7 +76,7 @@ def unit() -> int:
         c.release()
         ok &= check(not pool.held(reg), "all released")
     finally:
-        for n in range(4):
+        for n in range(pool.MAX_SLOTS):
             for p in (pool.lock_path(reg, n),
                       os.path.join(reg, f"slot-{n}", "portable"),
                       os.path.join(reg, f"slot-{n}")):

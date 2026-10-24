@@ -1384,14 +1384,19 @@ def launch_redux(args):
             cmd[0] = main
         log = open(os.path.join(slot.dir, "emulator.log"), "w",
                    encoding="utf-8", newline="\n")
-        proc = subprocess.Popen(
-            cmd, cwd=portable, stdin=subprocess.DEVNULL, stdout=log,
-            stderr=subprocess.STDOUT,
-            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        try:
+            proc = subprocess.Popen(
+                cmd, cwd=portable, stdin=subprocess.DEVNULL, stdout=log,
+                stderr=subprocess.STDOUT,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        except BaseException:
+            log.close()
+            raise
         proc.log = log
-        slot.record(emulator_pids=[proc.pid])
     proc.cmd = cmd
     try:
+        if slot is not None:
+            slot.record(emulator_pids=[proc.pid])
         wait_for_stub(proc, args.host, args.port, args.connect_timeout,
                       "PCSX-Redux")
         proc.stub_pid = port_owner(args.port)
