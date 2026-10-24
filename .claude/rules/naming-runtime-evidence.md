@@ -1,7 +1,7 @@
 ---
 name: naming-runtime-evidence
 paths: ["docs/naming/**", "tools/trace/**", ".claude/agents/naming-reviewer.md", ".claude/rules/naming-runtime-evidence.md"]
-description: "Owner ruling Q124 (2026-10-23): a recorded runtime observation (trace) is corroborating evidence for a name the code already supports (naming-bar N1, N3 tier 3); it never establishes a name on its own and never overrides Sony/SOTN names."
+description: "Owner ruling Q124 (2026-10-23): a recorded runtime observation (trace) is corroborating evidence for a name the code already supports (naming-bar N1, N3 tier 3); it never establishes a name on its own and never overrides Sony/SOTN names. Q132 (2026-10-24): a knockout or only-X hit map may supply a name's role part when coverage and every static caller agree."
 metadata:
   type: rule
 ---
@@ -12,8 +12,11 @@ Extends [[naming-bar]] N3. A runtime observation corroborates a name the code al
 (N1, tier 3); it never establishes a name on its own: the code must show what the function
 does. **Q132:** the role part of a name (which screen, mode or event it serves: `options_` in
 `options_DrawCursor`) may rest on a stub-and-observe result or an "only X" hit map alone, when
-the code shows the mechanics. Any other narrower part needs code evidence; the trace only
-corroborates it. On its own it can back a NO_NAME or a neutral KEEP. It counts when ALL hold:
+the code shows the mechanics AND the role covers every use: the coverage matrix
+(`docs/naming/runtime/matrix/`) shows no hit outside X, and every static caller is itself
+within X (only-X by the same test); a caller reached from a mode no capture covers blocks the
+role. Otherwise the role stays out of the name. Any other narrower part needs code evidence;
+the trace only corroborates it. On its own it can back a NO_NAME or a neutral KEEP. It counts when ALL hold:
 
 1. **Recorded, reproducible:** the trace script, the emulator name and version, the BIOS, the
    disc image SHA1, the starting point (savestate or memory-card file SHA1, plus the scripted

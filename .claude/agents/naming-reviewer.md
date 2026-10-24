@@ -69,7 +69,8 @@ For each row:
   capture only corroborates a name the code already supports; check its conditions and SHA1.
   Q132: the role part alone (screen, mode, event) may rest on a stub-and-observe screenshot pair
   or a full-coverage "only X" hit map; open both screenshots and check the claim names only the
-  difference.
+  difference. Either route also needs the coverage matrix to show no hit outside X and every
+  static caller within X (no caller from an uncaptured mode); else FAIL the role word.
 - **Bulk local reset waves (owner ruling Q119, `.claude/rules/naming-bulk-reset.md`):** no
   pre-apply pass. On R6, check the keycheck and moved keys as above, sample at least 20 rows or
   10% (the larger) and FAIL the wave if a sampled row is outside that rule's scope, and check
