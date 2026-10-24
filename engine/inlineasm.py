@@ -598,6 +598,14 @@ def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
 _INLINE_WORDS = frozenset({"inline", "__inline", "__inline__"})
 _IDENT_TOKEN_RE = re.compile(r"[A-Za-z_]\w*")
 _ATTRIBUTE_RE = re.compile(r"\b__attribute(?:__)?\s*\(")
+_HEAD_KEYWORDS = frozenset(
+    "auto break case char const continue default do double else enum extern "
+    "float for goto if inline int long register restrict return short signed "
+    "sizeof static struct switch typedef union unsigned void volatile while "
+    "_Alignas _Alignof _Atomic _Bool _Complex _Generic _Imaginary _Noreturn "
+    "_Static_assert _Thread_local typeof __typeof __typeof__ __alignof "
+    "__alignof__ __inline __inline__ __const __volatile__ __restrict "
+    "__restrict__ __extension__".split())
 _PP_DEFINE_RE = re.compile(r"[ \t]*#[ \t]*define[ \t]+([A-Za-z_]\w*)(.*)")
 
 
@@ -642,10 +650,12 @@ def _head_initializer(head: str) -> bool:
 
 
 def _head_function(head: str) -> tuple[str, frozenset] | None:
-    """(name, head words) when a file-scope `head {` is a function definition
-    head: it has a parameter list and no top-level initializer `=`. Attribute
-    groups are skipped; the name is the identifier before the first
-    remaining top-level `(`."""
+    """(name, head words) of a file-scope function definition head, by a
+    fail-closed parse of specifiers + declarator; None when unsure.
+
+    Attribute groups are blanked; initializers, typeof/sizeof specifiers,
+    parenthesised names and `T (x..)` heads whose T may be a typedef return
+    type or the name (no basic type / tag before T) return None."""
     if _head_initializer(head):
         return None
     m = _ATTRIBUTE_RE.search(head)
@@ -655,13 +665,139 @@ def _head_function(head: str) -> tuple[str, frozenset] | None:
             return None
         head = head[:m.start()] + " " * (close - m.start()) + head[close:]
         m = _ATTRIBUTE_RE.search(head)
-    p = head.find("(")
-    if p < 0:
+    token_re = re.compile(r"\s*([A-Za-z_]\w*|[\*\^()\[\],])")
+
+    def token(at):
+        return token_re.match(head, at)
+
+    qualifiers = {"const", "volatile", "restrict", "__const", "__volatile__",
+                  "__restrict", "__restrict__", "__extension__"}
+    forbidden = {"typeof", "__typeof", "__typeof__", "sizeof", "_Alignof",
+                 "__alignof", "__alignof__"}
+    basic = {"void", "char", "short", "int", "long", "float", "double",
+             "signed", "unsigned", "_Bool", "_Complex", "struct", "union", "enum"}
+
+    def ident(t):
+        return (t is not None and _IDENT_TOKEN_RE.fullmatch(t.group(1))
+                and t.group(1) not in _HEAD_KEYWORDS)
+
+    def named(t):
+        """`t` is the name: its parameter list follows. -> (name, params, end)"""
+        opening = token(t.end())
+        if not opening or opening.group(1) != "(":
+            return None
+        end = _match_paren(head, opening.start(1))
+        if end < 0:
+            return None
+        return t, head[opening.end():end - 1], end
+
+    def suffixes(end):
+        """Skip return-type suffixes `(..)` / `[..]` after a grouping paren."""
+        suffix = token(end)
+        while suffix and suffix.group(1) in {"(", "["}:
+            if suffix.group(1) == "(":
+                end = _match_paren(head, suffix.start(1))
+                if end < 0:
+                    return -1
+            else:
+                depth, end = 1, suffix.end()
+                while end < len(head) and depth:
+                    if head[end] == "[":
+                        depth += 1
+                    elif head[end] == "]":
+                        depth -= 1
+                    end += 1
+                if depth:
+                    return -1
+            suffix = token(end)
+        return end
+
+    def grouped(at, depth=0):
+        """The declarator inside the grouping paren opening at token `at`."""
+        if depth > 32:
+            return None
+        t = token(at)
+        while t and (t.group(1) in {"*", "^"} | qualifiers):
+            t = token(t.end())
+        if not t:
+            return None
+        if t.group(1) == "(":
+            parsed = grouped(t.end(), depth + 1)
+        elif ident(t):
+            parsed = named(t)
+        else:
+            return None
+        if parsed is None:
+            return None
+        name, params, end = parsed
+        close = token(end)
+        if not close or close.group(1) != ")":
+            return None
+        end = suffixes(close.end())
+        return None if end < 0 else (name, params, end)
+
+    def tail_ok(params, end):
+        """Only an asm label or K&R parameter declarations may follow."""
+        tail = head[end:].strip()
+        label = re.match(r"(?:asm|__asm__)\s*\(", tail)
+        if label:
+            close = _match_paren(tail, label.end() - 1)
+            return close >= 0 and not tail[close:].strip()
+        # K&R declarations: no `ident(` but a function-pointer group `T (*p)`,
+        # so a real declarator (`ATTR(x) f(a) int a;`) never hides in them
+        return not tail or bool(
+            re.fullmatch(r"\s*[A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)*\s*", params)
+            and re.fullmatch(r"(?:[A-Za-z_][\w\s*(),\[\]]*;\s*)+", tail)
+            and not re.search(r"[A-Za-z_]\w*\s*\((?!\s*[\*\^])", tail))
+
+    units, at = [], 0
+    t = token(at)
+    while t and _IDENT_TOKEN_RE.fullmatch(t.group(1)):
+        if t.group(1) in forbidden:
+            return None
+        units.append(t)
+        at = t.end()
+        if t.group(1) in {"struct", "union", "enum"}:
+            tag = token(at)
+            if not tag or not _IDENT_TOKEN_RE.fullmatch(tag.group(1)):
+                return None
+            at = tag.end()
+        t = token(at)
+    if not units:
         return None
-    nm = re.search(r"([A-Za-z_]\w*)\s*$", head[:p])
-    if not nm:
+    readings = []
+    # A: the last specifier-run identifier is the name (needs a type before it)
+    if len(units) >= 2 and ident(units[-1]) and t and t.group(1) == "(":
+        a = named(units[-1])
+        a = a if (a and not re.match(r"\s*[\*\^(]", a[1])
+                  and tail_ok(a[1], a[2])) else None
+        if any(u.group(1) in basic for u in units[:-1]):
+            readings = [a] if a else []   # a basic type / tag before it: it is the name
+            t = None
+        elif a:
+            readings.append(a)
+    # B: a grouping paren after the specifiers holds the declarator
+    stars = False
+    while t and t.group(1) in {"*", "^"} | qualifiers:
+        stars = stars or t.group(1) in {"*", "^"}
+        t = token(t.end())
+    if t and t.group(1) == "(":
+        first = token(t.end())
+        b = grouped(t.end())
+        if (b and not stars and ident(units[-1])
+                and not (first and first.group(1) in {"*", "^", "("})):
+            return None   # `T (x..)`: T a typedef (B) or the name (A) -- unsure
+        if b and tail_ok(b[1], b[2]):
+            readings.append(b)
+    elif t and ident(t) and not readings:
+        # `T *f(..)`: pointer return, name after the stars
+        c = named(t)
+        if c and tail_ok(c[1], c[2]):
+            readings.append(c)
+    if len(readings) != 1:
         return None
-    return nm.group(1), frozenset(_IDENT_TOKEN_RE.findall(head[:nm.start()]))
+    name = readings[0][0]
+    return name.group(1), frozenset(_IDENT_TOKEN_RE.findall(head[:name.start(1)]))
 
 
 def _tu_index(text: str) -> _TUIndex:

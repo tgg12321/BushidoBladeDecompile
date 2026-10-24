@@ -3488,6 +3488,107 @@ def test_q126_inline_helpers() -> None:
     audits, integrity); helper-free bodies key exactly as before."""
     from engine import gtemacro as G
     from engine import layer2 as L2
+    for head, name, words in (
+            ("void (*getp(int a))(void) ", "getp", {"void"}),
+            ("s32 (*f(void))[3]", "f", {"s32"}),
+            ("u8 (*getp(int a))(void)", "getp", {"u8"}),
+            ("struct S (*f(void))", "f", {"struct", "S"}),
+            ("static inline MyFn (*getp(void))", "getp", {"static", "inline", "MyFn"}),
+            ("static inline u8 (*getp(int a))(void)", "getp", {"static", "inline", "u8"}),
+            ("int (f(int x))", "f", {"int"}),
+            ("void f(T(int))", "f", {"void"}),
+            ("inline void f(T(int))", "f", {"inline", "void"}),
+            ("void f(u8 (x))", "f", {"void"}),
+            ("static void f(UNUSED(x))", "f", {"static", "void"}),
+            ('void f(M(a)) asm("x")', "f", {"void"}),
+            ("static inline s32 f(DECL(int) x)", "f", {"static", "inline", "s32"}),
+            ("static inline int f(g(h))", "f", {"static", "inline", "int"}),
+            ("static inline s32 f(s32 (x), s32 y)", "f", {"static", "inline", "s32"}),
+            ("int f(a, cb) char *a; int (*cb)(int); ", "f", {"int"}),
+            ("static T (*f(void))", "f", {"static", "T"}),
+            ("static const T (*f(void))", "f", {"static", "const", "T"}),
+            ("static inline s32 *f(void)", "f", {"static", "inline", "s32"}),
+            ("static inline int helper(int (*p)[1 == 1])",
+             "helper", {"static", "inline", "int"}),
+            ("s32 *(*f(void))[3]", "f", {"s32"}),
+            ("struct S (f(void))", "f", {"struct", "S"}),
+            ("int (* const h(void))(void)", "h", {"int", "const"}),
+            ("void (^b(void))(void)", "b", {"void"}),
+            ("u8 (*(*f(int))(int))(void)", "f", {"u8"}),
+            ("void (*getp(int (*cb)(void)))(void)", "getp", {"void"}),
+            ("static inline s32 *(*f(void))[3]", "f", {"static", "inline", "s32"}),
+            ("static inline s32 sq(s32 x)", "sq", {"static", "inline", "s32"}),
+            ("static inline s32 __attribute__((unused)) sq(s32 x)",
+             "sq", {"static", "inline", "s32"}),
+            ("void f(void)", "f", {"void"}),
+            ("int f(a)", "f", {"int"}),
+            ("int f(cb) int (*cb)();", "f", {"int"}),
+            ('void f(void) asm("y")', "f", {"void"}),
+            ('void f(void) __asm__("y")', "f", {"void"})):
+        eq(f"q126: declarator head {head!r}", inlineasm._head_function(head),
+           (name, frozenset(words)))
+    for head in ("void *p", "void (*p)[3]", "sizeof(int)", "typeof(int)",
+                 "__typeof__(int)", "int a = getp(1)",
+                 "u8 (getp)(int a)", "int (f)(int x)",
+                 "void ((f))(void)", "int (*(h)(void))(void)",
+                 "__typeof__(g(1)) f(void)", "typeof(g(1)) f(void)",
+                 "typeof(int) f(void)", "DECL(int) f(void)",
+                 "FOO(x) void f(void)", "_Pragma(   ) void f(void)",
+                 "f(void)", "static inline u8 (sq)(u8 x)", "static u8 (f)(int x)",
+                 "extern u8 (g)(int)", "static u8 (const f(void))",
+                 "u8 (f(int x))", "MyFn (getp(void))", "__inline__ static u8 (f(void))",
+                 "extern T (f(int x))", "static X(g(int a))", "f (T(int))",
+                 "static inline u8 (sq(u8 x))",
+                 "static inline s32 f(s32 (x))", "static inline s32 f(MATRIX(m))",
+                 "static inline T f(U(x))",
+                 "int ATTR(x) f(a) int a; ", "T ATTR(x) f(a) int a; ",
+                 "T *ATTR(x) f(a) int a; ", "int (*ATTR(x))(void) f(a) int a; ",
+                 "int f(a) g(b) int b; ",
+                 "int " + "(" * 5000 + "f(void)" + ")" * 5000):
+        eq(f"q126: head without a function name {head!r}",
+           inlineasm._head_function(head), None)
+    fnptr_tu = ("static inline void (*getp(int a))(void) { return 0; }\n"
+                "void caller(void) { getp(1)(); }\n")
+    eq("q126: function-pointer-returning helper has its real name",
+       list(inlineasm.static_inline_defs(fnptr_tu)), ["getp"])
+    eq("q126: function-pointer-returning helper is attributed to its caller",
+       inlineasm.inline_helpers(fnptr_tu, "caller"), ["getp"])
+    eq("q126: function-pointer-returning head leaves a balanced TU",
+       inlineasm.tu_unbalanced(fnptr_tu), False)
+    typedef_fnptr_tu = fnptr_tu.replace("inline void", "inline u8")
+    eq("q126: typedef-returning helper has its real name",
+       list(inlineasm.static_inline_defs(typedef_fnptr_tu)), ["getp"])
+    eq("q126: typedef-returning helper is attributed to its caller",
+       inlineasm.inline_helpers(typedef_fnptr_tu, "caller"), ["getp"])
+    eq("q126: typedef-returning head leaves a balanced TU",
+       inlineasm.tu_unbalanced(typedef_fnptr_tu), False)
+    grouped_tu = ("static inline int (sq(int x)) { return x; }\n"
+                  "void caller(void) { sq(1); }\n")
+    eq("q126: grouped helper has its real name",
+       list(inlineasm.static_inline_defs(grouped_tu)), ["sq"])
+    eq("q126: grouped helper is attributed to its caller",
+       inlineasm.inline_helpers(grouped_tu, "caller"), ["sq"])
+    eq("q126: grouped helper leaves a balanced TU",
+       inlineasm.tu_unbalanced(grouped_tu), False)
+    unused_tu = ("static inline void h(UNUSED(x)) { }\n"
+                 "void caller(void) { h(1); }\n")
+    eq("q126: a macro-wrapped parameter keeps the helper's name",
+       list(inlineasm.static_inline_defs(unused_tu)), ["h"])
+    eq("q126: ... and its attribution",
+       inlineasm.inline_helpers(unused_tu, "caller"), ["h"])
+    typedef_grouped_tu = ("static inline u8 (sq(u8 x)) { return x; }\n"
+                          "void caller(void) { sq(1); }\n")
+    eq("q126: an ambiguous typedef-grouped helper head fails closed",
+       inlineasm.tu_unbalanced(typedef_grouped_tu), True)
+    macro_type_tu = ("static inline DECL(int) sq(int x) { return x; }\n"
+                     "void caller(void) { sq(1); }\n")
+    eq("q126: uncertain macro type fails closed",
+       inlineasm.tu_unbalanced(macro_type_tu), True)
+    kr_tu = "int f(cb) int (*cb)(); { return cb(); }\n"
+    eq("q126: K&R declaration segments retain the function name",
+       [fn.name for fn in inlineasm.tu_functions(kr_tu)], ["f"])
+    eq("q126: K&R declaration segments leave a balanced TU",
+       inlineasm.tu_unbalanced(kr_tu), False)
     if not all(Path(r).exists() for r in G.VENDORED):
         skip("q126 inline helpers", "include/psxsdk vendored headers absent")
         return
