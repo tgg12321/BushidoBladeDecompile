@@ -1,5 +1,5 @@
 {
-  "description": "versus-2p flow, stage LEFT to the [Map 1] scroll: Kimigaura Coast (capture by the trace lane); fight inputs from 9200, Rematch menu (no fighter down shown; capture notes)",
+  "description": "versus-2p flow, stage LEFT to the [Map 1] scroll: Kimigaura Coast (capture by the trace lane); fight inputs from 9200, a fighter lying on the ground in t_ko, Rematch menu (event:ko not claimed: the captures' notes do not call the KO)",
   "covers": [
     "mode:vs_2p",
     "menu:stage_select",

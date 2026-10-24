@@ -409,13 +409,13 @@ def cmd_run(args) -> int:
     cue = args.cue or os.environ.get("BB2_CUE") or \
         os.path.join(main, "Bushido Blade 2 (USA).cue")
     bios = args.bios or os.environ.get("BB2_BIOS")
-    for what, p in (("emulator", emu), ("cue", cue), ("bios", bios)):
-        if not p or not os.path.exists(p):
-            raise SystemExit(f"scen: {what} not found ({p}); pass --{what}")
     if bool(args.out_root) == bool(args.dir):
         raise SystemExit("scen: give --out-root, or --dir with one scenario")
     if args.dir and len(args.names) != 1:
         raise SystemExit("scen: --dir takes exactly one scenario")
+    for what, p in (("emulator", emu), ("cue", cue), ("bios", bios)):
+        if not p or not os.path.exists(p):
+            raise SystemExit(f"scen: {what} not found ({p}); pass --{what}")
     if args.dir:  # e.g. the committed capture dir docs/naming/runtime/<capture>
         args.out_root, args.names = os.path.dirname(os.path.abspath(args.dir)), \
             [args.names[0]]
@@ -434,8 +434,12 @@ def cmd_run(args) -> int:
                "--launch", "pcsx-redux", "--emulator", emu, "--cue", cue,
                "--bios", bios, "--headless",
                "--slot-wait", str(args.slot_wait)]
-        log = open(os.path.join(d, "run.log"), "w", encoding="utf-8",
-                   newline="\n")
+        # a committed capture dir (--dir) keeps only the capture's own files
+        log_path = os.path.join(main, "tmp", "scen-logs",
+                                os.path.basename(d) + ".run.log") \
+            if args.dir else os.path.join(d, "run.log")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        log = open(log_path, "w", encoding="utf-8", newline="\n")
         procs.append((n, d, subprocess.Popen(cmd, stdout=log,
                                              stderr=subprocess.STDOUT), log))
         print(f"scen: started {n} -> {d}")

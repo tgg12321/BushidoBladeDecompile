@@ -18,7 +18,6 @@
     "weapon:long_sword",
     "weapon:nodachi",
     "event:round_start",
-    "event:hit",
     "event:out_of_bounds",
     "event:ko",
     "event:win"

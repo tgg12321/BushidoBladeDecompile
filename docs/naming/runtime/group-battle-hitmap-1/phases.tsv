@@ -3,7 +3,7 @@ boot_intro	0	5489	power-on through the intro; only the last frame is shown: intr
 t_menu	5490	6049	transition; no screen claim	5500:CROSS,5800:START	-
 top_menu	6050	6319	top menu; last frame Group Battle Mode (May the Best School Win) named in the right panel	6080:DOWN,6140:DOWN,6200:DOWN,6260:DOWN	capture.top_menu.last.png
 t_group	6320	6549	transition; no screen claim	6320:CROSS	-
-group_settings	6550	6619	Group Battle Mode settings: Number of Entries 3 / 4, Match 1 point / 3 point, Time Limit 60 sec / 120 sec, Start, Return to Top Menu	6600:CROSS,6640:CROSS@2	capture.group_settings.first.png
+group_settings	6550	6619	Group Battle Mode settings: Number of Entries 3 / 4 / 5, Match 1 point / 3 point, Time Limit 60 sec / 120 sec, Start, Return to Top Menu	6600:CROSS,6640:CROSS@2	capture.group_settings.first.png
 school_select	6620	6949	Select School, one scroll per side (Narukagami, Shainto); P1 cursor on Narukagami, P2 on Shainto	6900:CROSS,6940:CROSS@2	capture.school_select.first.png,capture.school_select.mid.png
 t_char	6950	6999	transition; no screen claim	-	-
 char_select	7000	7649	Select Character per side (Narukagami: KANNUKI, MIKADO, TATSUMI; Shainto: GENGORO, KAUN, JO) with a 1ST / 2ND / 3RD table; after the picks P1 KANNUKI, MIKADO, TATSUMI, P2 GENGORO, KAUN, JO	7200:CROSS,7240:CROSS@2,7300:DOWN,7340:DOWN@2,7400:CROSS,7440:CROSS@2,7500:DOWN,7540:DOWN@2,7600:CROSS,7640:CROSS@2	capture.char_select.first.png,capture.char_select.pick1.png,capture.char_select.pick2.png

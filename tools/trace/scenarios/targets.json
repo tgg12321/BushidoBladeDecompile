@@ -91,7 +91,7 @@
       "notes": {
         "event:ko": "a fighter down for good (no health bar: one cut can kill)",
         "event:win": "player 1 wins a fight",
-        "event:hit": "a cut lands without a KO, shown on screen (Group Battle: an IPPON call)",
+        "event:hit": "a cut lands without a KO, shown on screen (an IPPON call is the killing cut, not this)",
         "event:guard": "a blocked cut, shown on screen",
         "event:save": "data saved to a memory card",
         "event:load": "data loaded from a memory card",
