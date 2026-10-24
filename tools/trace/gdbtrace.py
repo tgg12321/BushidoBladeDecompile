@@ -951,7 +951,9 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
         only = v["spec"].get("phases")
         if only is not None:
             names = {p["name"] for p in spec["script"].get("phases", [])}
-            if not isinstance(only, list) or not set(only) <= names:
+            if (not isinstance(only, list) or not only
+                    or not all(isinstance(p, str) for p in only)
+                    or not set(only) <= names):
                 raise SystemExit(f"gdbtrace: value {v['spec']['at']}: phases "
                                  f"must be a list of script phase names")
 
