@@ -1,0 +1,69 @@
+{
+  "description": "versus-2p flow, stage LEFT, LEFT, DOWN on the [Map 1] scroll: Shainto Cemetery (capture by the trace lane); fight inputs from 9200, Rematch menu (no fighter down shown; capture notes)",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:shainto_cemetery",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-stage-map1-2/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 11580,
+  "inputs": [
+    "7300:LEFT",
+    "7360:LEFT",
+    "7420:DOWN",
+    "7480:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 9200,
+      "every": 100,
+      "count": 23,
+      "steps": [
+        "+0:RIGHT/40",
+        "+50:TRIANGLE|CIRCLE|SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "7480:t_load",
+    "8250:fight",
+    "10120:t_ko",
+    "10580:rematch_menu"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7325:stage_select.7325",
+    "7385:stage_select.7385",
+    "7445:stage_select.7445",
+    "7479:stage_select.last",
+    "7900:t_load.mid",
+    "8249:t_load.last",
+    "8250:fight.first",
+    "8700:fight.8700",
+    "9200:fight.9200",
+    "9500:fight.9500",
+    "9800:fight.9800",
+    "9980:fight.9980",
+    "10040:fight.10040",
+    "10119:fight.last",
+    "10200:t_ko.10200",
+    "10300:t_ko.10300",
+    "10400:t_ko.10400",
+    "10500:t_ko.10500",
+    "10579:t_ko.last",
+    "10580:rematch_menu.first",
+    "10900:rematch_menu.10900",
+    "11200:rematch_menu.11200",
+    "11579:rematch_menu.last"
+  ]
+}

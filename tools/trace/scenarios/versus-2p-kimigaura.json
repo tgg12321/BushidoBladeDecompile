@@ -1,0 +1,67 @@
+{
+  "description": "versus-2p flow, stage LEFT to the [Map 1] scroll: Kimigaura Coast (capture by the trace lane); fight inputs from 9200, Rematch menu (no fighter down shown; capture notes)",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:kimigaura_coast",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-stage-map1-1/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 12180,
+  "inputs": [
+    "7300:LEFT",
+    "7450:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 9200,
+      "every": 100,
+      "count": 29,
+      "steps": [
+        "+0:RIGHT/40",
+        "+50:TRIANGLE|CIRCLE|SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "7450:t_load",
+    "8230:fight",
+    "10720:t_ko",
+    "11180:rematch_menu"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7325:stage_select.7325",
+    "7355:stage_select.7355",
+    "7449:stage_select.last",
+    "7900:t_load.mid",
+    "8229:t_load.last",
+    "8230:fight.first",
+    "8700:fight.8700",
+    "9200:fight.9200",
+    "9600:fight.9600",
+    "9850:fight.9850",
+    "10050:fight.10050",
+    "10300:fight.10300",
+    "10650:fight.10650",
+    "10719:fight.last",
+    "10800:t_ko.10800",
+    "10900:t_ko.10900",
+    "11000:t_ko.11000",
+    "11100:t_ko.11100",
+    "11179:t_ko.last",
+    "11180:rematch_menu.first",
+    "11500:rematch_menu.11500",
+    "11800:rematch_menu.11800",
+    "12179:rematch_menu.last"
+  ]
+}
