@@ -131,14 +131,16 @@ void func_80026DA4(void) {
             }
         }
     }
-    /* `record` returns to record zero at the join, the way SOTN's
-       tempEntity returns to entity zero after selecting entities (Q51) */
+    /* FAKE: restores record zero at the three-path join after the
+       selected-pair work, completing the pointer reuse above; reverted
+       together with that reuse: score 18 (Q129) */
     /* SOTN: src/st/lib/unk_3B53C.c:41-55
      * @db41b28eee52969244a52cc269c8163d1ed8826a */
     record = D_80101EC8;
 tail:
-    /* `var_1` returns to the second fixed record beside `record`, the way
-       SOTN's tempEntity returns to a fixed entity at the join (Q51) */
+    /* FAKE: sets the second fixed record from `record` at this join (a
+       restore after the selected pair, the first write on the goto-tail
+       paths); D_80101EC8[1] direct in the tail: score 7 (Q129) */
     /* SOTN: src/st/lib/unk_3B53C.c:41-55
      * @db41b28eee52969244a52cc269c8163d1ed8826a */
     var_1 = record + 1;
