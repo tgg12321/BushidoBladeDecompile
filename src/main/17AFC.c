@@ -784,8 +784,9 @@ static inline s32 math_SqrtLut(s32 x) {
     } else {
         /* Ruling 11 (reused local), as in src/main/87A0.c: leading-zero
          * count, then the table shift computed from it in place; used to
-         * index g_sqrt_table_u8 and derive the final shift. The
-         * one-expression form `var_20 = 0x16 - (lzc_out & ~1)` scores 4. */
+         * index g_sqrt_table_u8 and derive the final shift. FAKE: the copy
+         * of lzc_out, then overwritten; the one-expression form
+         * `var_20 = 0x16 - (lzc_out & ~1)`: score 4 (Q129) */
         s32 var_20;
 
         gte_Lzc(x, &lzc_out);
@@ -2861,9 +2862,9 @@ s32 math_TryPrepareTriangleNormalFrame(Unk1F8002B8Rec *obj) {
     obj->unkF8.vy = 0x800 - ratan2(obj->unkC8.x, obj->unkC8.z);
     obj->unkC8.x = obj->unkC8.x >> 6;
     obj->unkC8.y = obj->unkC8.y >> 6;
-    /* dist: the scaled z component, then the xz length below, as SOTN's
-     * no1 sound distance keeps `dx` for the halved x delta, then the root
-     * (Q51; a block-local z temp: score 6) */
+    /* FAKE: the scaled z delta is staged through `dist` (dead until the
+     * if/else below writes the xz length into it); a block-local z temp
+     * moves dist_sq from the target's $a0 to $a1: score 6 (Q129) */
     /* SOTN: src/st/no1/unk_39184.c:420 @db41b28 */
     dist = obj->unkC8.z;
     dist >>= 6;
