@@ -136,5 +136,57 @@ class ApplyTest(unittest.TestCase):
         self.assertFalse(p[0]["applied"]["ok"])
 
 
+class CompareTextTest(unittest.TestCase):
+    """compare names the second run by what it changed."""
+
+    def run_compare(self, root, stubs, pokes):
+        import argparse
+        import json
+        caps = []
+        for name, spec, result in (
+                ("baseline", {"script": {"screenshots": []}}, {}),
+                ("other", dict({"script": {"screenshots": []}},
+                               **({"stubs": [{"at": "f"}]} if stubs else {}),
+                               **({"pokes": [{"at": "D_80101EC8"}]} if pokes
+                                  else {})),
+                 {"pokes": [{"at": "D_80101EC8", "addr": 0x80101EC8,
+                             "hex": "06", "orig": "02", "when": "fight",
+                             "applied": {"frame": 9}, "at_end": "06"}]
+                  if pokes else []})):
+            d = root / name
+            d.mkdir()
+            (d / "spec.json").write_text(json.dumps(spec), encoding="utf-8")
+            (d / "capture.jsonl").write_text("", encoding="utf-8")
+            manifest = {"q124_complete": True, "result": result, "outputs": [],
+                        "spec": {"path": str(d / "spec.json"),
+                                 "sha1": gdbtrace.runkit.sha1_file(
+                                     str(d / "spec.json"))}}
+            (d / "capture.manifest.json").write_text(json.dumps(manifest),
+                                                    encoding="utf-8")
+            caps.append(str(d / "capture.jsonl"))
+        out = root / "other" / "compare.md"
+        code = gdbtrace.compare(argparse.Namespace(
+            base=caps[0], other=caps[1], base_spec=None, other_spec=None,
+            context=None, out=str(out)))
+        return code, out.read_text(encoding="utf-8")
+
+    def test_titles_labels_and_notes(self):
+        import tempfile
+        cases = {(False, True): ("Set-and-observe", "- poked:"),
+                 (True, False): ("Stub-and-observe", "- stubbed:"),
+                 (True, True): ("Stub- and set-and-observe",
+                                "- stubbed and poked:")}
+        for (stubs, pokes), (title, label) in cases.items():
+            with self.subTest(stubs=stubs, pokes=pokes), \
+                    tempfile.TemporaryDirectory() as tmp:
+                got, text = self.run_compare(Path(tmp), stubs, pokes)
+                self.assertEqual(got, 0)
+                self.assertTrue(text.startswith(f"# {title}: other against "
+                                                "baseline\n"))
+                self.assertIn(label, text)
+                self.assertEqual("A stub counts only" in text, stubs)
+                self.assertEqual("A poke counts only" in text, pokes)
+
+
 if __name__ == "__main__":
     unittest.main()

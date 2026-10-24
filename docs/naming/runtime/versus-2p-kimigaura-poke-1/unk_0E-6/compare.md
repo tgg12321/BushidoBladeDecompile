@@ -1,8 +1,8 @@
-# Stub-and-observe: unk_0E-6 against baseline
+# Set-and-observe: unk_0E-6 against baseline
 
 - scenario: versus-2p-kimigaura-weapon-nodachi-katana script; P1 unk_0E (D_80101EC8+0xE) poked 2 -> 6 when fight starts
 - baseline: `..\baseline\capture.manifest.json` (SHA1 d04553d4bd7ff999795ba04212519ac8089c48b3), outcome ok, script ended True, q124_complete True
-- stubbed: `capture.manifest.json` (SHA1 ccf1d8488feca406eeec35b0d7d512790a042d0d), outcome ok, script ended True, q124_complete True
+- poked: `capture.manifest.json` (SHA1 ccf1d8488feca406eeec35b0d7d512790a042d0d), outcome ok, script ended True, q124_complete True
 - stubs: none
 - pokes: `D_80101EC8+0xE` (0x80101ED6) = 0600 (was 0200) from phase fight (frame 8230), 0600 at the end
 - same inputs and script
@@ -50,4 +50,4 @@
 | fight.10430 (frame 10430) | 153112 of 153600 (99.68%) | 0,0-639,239 |
 | fight.10530 (frame 10530) | 152834 of 153600 (99.50%) | 0,0-639,239 |
 
-A stub counts only if the game kept running (both runs reached the script's end) and the lost effect is the function's own output (.claude/rules/naming-runtime-evidence.md). Pixels that differ beyond the function's own drawing point at changed game state. A call already in progress when the stub went in finishes normally (a leak breakpoint catches only code reaching the word after the stub).
+A poke counts only if the game kept running (both runs reached the script's end). Everything after it went in is a modified game: the differences show what the game does with the poked value, not what an unmodified run reaches.

@@ -2086,9 +2086,10 @@ def manifest_part(m: dict, path: tuple):
 
 
 def compare(args) -> int:
-    """Stub-and-observe evidence: a stubbed run against a baseline run of
-    the same script on the same inputs; every screenshot both runs took
-    is diffed. Exit 1 when the runs are not comparable."""
+    """Stub-and-observe / set-and-observe evidence: a stubbed or poked run
+    against a baseline run of the same script on the same inputs; every
+    screenshot both runs took is diffed. Exit 1 when the runs are not
+    comparable."""
     mans = []
     for cap in (args.base, args.other):
         path = runkit.companion(cap, ".manifest.json")
@@ -2105,13 +2106,17 @@ def compare(args) -> int:
         problems.append("different emulator/headless (one run windowed)")
     specs = []
     for m, given, label in ((ma, args.base_spec, "baseline"),
-                            (mb, args.other_spec, "stubbed")):
+                            (mb, args.other_spec, "second run")):
         path = given or m["spec"]["path"]
         if runkit.sha1_file(path) != m["spec"].get("sha1"):
             problems.append(f"{label} spec {path} is not the one recorded")
         with open(path, encoding="utf-8") as f:
             specs.append(json.load(f))
     sa, sb = specs
+    # Names the second run in the note by what it changed.
+    has_stubs, has_pokes = bool(sb.get("stubs")), bool(sb.get("pokes"))
+    other = ("stubbed and poked" if has_stubs and has_pokes else
+             "poked" if has_pokes else "stubbed")
     if sa.get("script") != sb.get("script"):
         problems.append("different scripts (inputs, phases or screenshots)")
     if sa.get("stubs") or sa.get("pokes"):
@@ -2128,12 +2133,12 @@ def compare(args) -> int:
         if not calls.get(st["addr"]):
             problems.append(f"stub {st['at']} was never called while "
                             "stubbed")
-    for m, label in ((ma, "baseline"), (mb, "stubbed")):
+    for m, label in ((ma, "baseline"), (mb, other)):
         if not m.get("q124_complete"):
             problems.append(f"{label} is not q124_complete: "
                             f"{m.get('q124_missing')}")
     for m, cap, label in ((ma, args.base, "baseline"),
-                          (mb, args.other, "stubbed")):
+                          (mb, args.other, other)):
         # The outputs on disk are the ones the manifest recorded.
         d = os.path.dirname(os.path.abspath(cap))
         for rec in m.get("outputs", []):
@@ -2144,12 +2149,14 @@ def compare(args) -> int:
 
     base_dir = os.path.dirname(os.path.abspath(args.out)) if args.out \
         else os.getcwd()
-    w = [f"# Stub-and-observe: {os.path.basename(os.path.dirname(os.path.abspath(args.other)))}"
+    title = ("Stub- and set-and-observe" if has_stubs and has_pokes else
+             "Set-and-observe" if has_pokes else "Stub-and-observe")
+    w = [f"# {title}: {os.path.basename(os.path.dirname(os.path.abspath(args.other)))}"
          f" against {os.path.basename(os.path.dirname(os.path.abspath(args.base)))}",
          ""]
     if args.context:
         w.append(f"- scenario: {args.context}")
-    for label, p, m in (("baseline", pa, ma), ("stubbed", pb, mb)):
+    for label, p, m in (("baseline", pa, ma), (other, pb, mb)):
         r = m.get("result", {})
         try:
             shown = os.path.relpath(p, base_dir)
@@ -2199,13 +2206,19 @@ def compare(args) -> int:
                  f"({100 * n / total:.2f}%) | "
                  + (f"{box[0]},{box[1]}-{box[2]},{box[3]}" if box else "-")
                  + " |")
-    w += ["", "A stub counts only if the game kept running (both runs reached "
-          "the script's end) and the lost effect is the function's own output "
-          "(.claude/rules/naming-runtime-evidence.md). Pixels that differ "
-          "beyond the function's own drawing point at changed game state. "
-          "A call already in progress when the stub went in finishes "
-          "normally (a leak breakpoint catches only code reaching the word "
-          "after the stub)."]
+    if has_stubs or not has_pokes:
+        w += ["", "A stub counts only if the game kept running (both runs "
+              "reached the script's end) and the lost effect is the "
+              "function's own output (.claude/rules/naming-runtime-evidence.md)."
+              " Pixels that differ beyond the function's own drawing point at "
+              "changed game state. A call already in progress when the stub "
+              "went in finishes normally (a leak breakpoint catches only code "
+              "reaching the word after the stub)."]
+    if has_pokes:
+        w += ["", "A poke counts only if the game kept running (both runs "
+              "reached the script's end). Everything after it went in is a "
+              "modified game: the differences show what the game does with "
+              "the poked value, not what an unmodified run reaches."]
     text = "\n".join(w) + "\n"
     if args.out:
         with open(args.out, "w", encoding="utf-8", newline="\n") as f:
