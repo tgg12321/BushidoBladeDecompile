@@ -385,11 +385,11 @@ void fighter_InitCpuControl(s32 arg0, u16 *arg1, u16 *arg2) {
                 hi2_val = 0x7530;
                 hi1_val = 0x7530;
             } else {
-                /* Ruling 4 compound-assignment split: hi2_val starts at the
-                 * shared base (rec's scale_distance_offset + 100), which
-                 * lo_val and hi1_val read, then adds its own offset. A
-                 * separate base local: score 6; the base inline in all three
-                 * sums: 6-23. */
+                /* FAKE: the shared base (rec's scale_distance_offset + 100) is
+                 * staged through hi2_val, completed below; a separate base
+                 * local is tied to the lh result (target: lh v0; addiu
+                 * v1,v0,100); a separate base local: score 6; the base inline
+                 * in all three sums: 6-23 (Q129) */
                 hi2_val = rec->scale_distance_offset + 100;
                 lo_val = hi2_val + lo * 40;
                 hi1_val = hi2_val + hi1 * 40;
