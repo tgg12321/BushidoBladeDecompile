@@ -3529,7 +3529,9 @@ def test_q126_inline_helpers() -> None:
            (name, frozenset(words)))
     for head in ("void *p", "void (*p)[3]", "sizeof(int)", "typeof(int)",
                  "__typeof__(int)", "int a = getp(1)",
-                 "u8 (getp)(int a)", "int (f)(int x)",
+                 "u8 (getp)(int a)", "int (f)(int x)", "T (h)(int)",
+                 "int (*h)(int)", "int (h)(int)(void)",
+                 "static inline int (h)(int x)",
                  "void ((f))(void)", "int (*(h)(void))(void)",
                  "__typeof__(g(1)) f(void)", "typeof(g(1)) f(void)",
                  "typeof(int) f(void)", "DECL(int) f(void)",
@@ -3714,6 +3716,150 @@ def test_q126_inline_helpers() -> None:
        inlineasm.tu_unbalanced(normal_tu), False)
     eq("q126: a complete function inside #if 0 has balanced braces",
        inlineasm.tu_unbalanced(dead_tu), False)
+    header_facts = (inlineasm.tu_macro_facts(
+        "#define OPEN {\n#define CLOSE }\n#define BLK { x(); }\n"
+        "#define PASTE(a,b) a ## b\n#define TYPE int\n")
+        | inlineasm.tu_macro_facts("#define H_ALIAS OPEN\n#define BACK TU_ALIAS\n"))
+    header_cases = (
+        ("header brace at file scope", "OPEN\nvoid f(void) {}", True),
+        ("unbalanced header brace in body", "void f(void) { OPEN }", True),
+        ("balanced header brace in body", "void f(void) { BLK }", False),
+        ("header brace alias in body", "void f(void) { H_ALIAS }", True),
+        ("TU brace alias in body",
+         "#define LOCAL OPEN\nvoid f(void) { LOCAL }", True),
+        ("header macro splits function bodies",
+         "void f(void) { CLOSE static inline int h(int x) { x = 0; return 1; } "
+         "static int d[] = OPEN 0 };\nint k(void) { return h(2); }", True),
+        ("header alias at file scope", "H_ALIAS\nvoid f(void) {}", True),
+        ("TU alias to header brace", "#define LOCAL H_ALIAS\nLOCAL\nvoid f(void) {}", True),
+        ("header alias through TU", "#define TU_ALIAS OPEN\nBACK\nvoid f(void) {}", True),
+        ("header paste at file scope", "PASTE(a,b)\nvoid f(void) {}", True),
+        ("header paste rebuilds brace macros in body",
+         "void f(void) { PASTE(CL,OSE) static inline int h(int x) "
+         "{ x = 0; return 1; } static int d[] = PASTE(OP,EN) 0 };\n"
+         "int k(void) { return h(2); }", True),
+        ("header macro in head", "TYPE f(void) {}", True),
+        ("header macro as function name", "void TYPE(void) {}", True),
+        ("header macro in parameters", "int f(TYPE x) { return x; }", True),
+        ("header macro in K&R tail", "int f(x) TYPE x; { return x; }", True),
+        ("header macro in attributes",
+         "int f(void) __attribute__((TYPE)) { return 0; }", True),
+        ("unused header macros", "void f(void) {}", False))
+    for desc, src, unsafe in header_cases:
+        eq(f"q126: {desc}", inlineasm.tu_unbalanced(src, header_facts), unsafe)
+        eq(f"q126: {desc} leaves default unchanged",
+           inlineasm.tu_unbalanced(src), inlineasm.tu_unbalanced(src, frozenset()))
+    eq("q126: absent header facts preserve unseen file-scope macro behavior",
+       inlineasm.tu_unbalanced("OPEN\nvoid f(void) {}"), False)
+    paren_helper = ("static inline int (h)(int x) { x = 0; return 1; }\n"
+                    "int f(void) { return h(1); }")
+    eq("q126: parenthesised helper fails closed for all body readers",
+       inlineasm.tu_unbalanced(paren_helper), True)
+    walk_cases = (
+        ("TU macro rewrites parameter list",
+         "#define P void); static inline int realh(int x\n"
+         "static inline int fakeh(P) { return x; }", True),
+        ("TU macro in K&R parameter declaration",
+         "#define PARAM int\nint f(x) PARAM x; { return x; }", True),
+        ("TU macro in attributes",
+         "#define ATTR unused\nint f(void) __attribute__((ATTR)) { return 0; }", True),
+        ("ordinary typedef parameters", "s32 f(s32 a, u8 *b) { return a; }", False),
+        ("semicolon in macro arguments hides helper",
+         "#define EAT(...)\nEAT(;=0) static inline int h(int x) { x = 0; return 1; }\n"
+         "int f(void) { return h(2); }", True),
+        ("directive in macro arguments hides helper",
+         "#define EAT(...)\nEAT(\n#if 1\n#endif\n=0) "
+         "static inline int h(int x) { x = 0; return 1; }\n"
+         "int f(void) { return h(2); }", True),
+        ("macro in initializer head", "#define EAT(...)\nEAT(0) int a[] = {1};", True),
+        ("ordinary initializer", "int a[2] = {1, 2};", False),
+        ("body-only initializer macro",
+         "#define F(x) (x)\nstatic s32 t[] = { F(1), F(2) };", False),
+        ("unclosed file-scope paren", "int f(", True),
+        ("negative file-scope paren", ") void f(void) {}", True),
+        ("paren open at brace", "int a[2] = ( {1, 2};", True),
+        ("C include", '#include "part.c"\nvoid f(void) {}', True),
+        ("C import", '#import "h.c"\nvoid f(void) {}', True),
+        ("header import", '#import "h.h"\nvoid f(void) {}', False),
+        ("parent header path", '#include "../outside.h"\nvoid f(void) {}', True),
+        ("angle parent header path", '#include <dir/../x.h>\nvoid f(void) {}', True),
+        ("comment after include", '#include "foo.h" // c\nvoid f(void) {}', False),
+        ("spaced include", '#  include <x.h>\nvoid f(void) {}', False),
+        ("macro include", '#include MACRO\nvoid f(void) {}', True),
+        ("include_next", '#include_next "x.h"\nvoid f(void) {}', True),
+        ("include inside body",
+         'void f(void) {\n#include "close.h"\n'
+         'static inline int h(int x) { x = 0; return 1; }\n'
+         '#include "open.h"\n0 };\nint k(void) { return h(2); }', True),
+        ("import inside body", 'void f(void) {\n#import "x.h"\n}', True),
+        ("include inside parentheses", 'int f(\n#include "x.h"\nvoid) {}', True),
+        ("absolute POSIX include", '#include "/x.h"\n', True),
+        ("absolute drive include", '#include "C:/x.h"\n', True),
+        ("absolute backslash include", '#include <\\x.h>\n', True),
+        ("inc include", '#include "x.inc"\nvoid f(void) {}', True),
+        ("angle non-header include", '#include <part.c>\nvoid f(void) {}', True),
+        ("quoted header include", '#include "foo.h"\nvoid f(void) {}', False),
+        ("angle header include", '#include <libgte.h>\nvoid f(void) {}', False))
+    for desc, src, unsafe in walk_cases:
+        eq(f"q126: {desc}", inlineasm.tu_unbalanced(src), unsafe)
+    eq("q126: header macro in initializer head is refused",
+       inlineasm.tu_unbalanced("TYPE a[] = {1};", header_facts), True)
+    eq("q126: variadic macro parameters are excluded from aliases",
+       inlineasm._tu_index("#define F(a, ...) a + __VA_ARGS__ + real\n").macro_aliases["F"],
+       frozenset({"real"}))
+    eq("q126: object-like parenthesised replacement keeps alias",
+       inlineasm._tu_index("#define F (x)\n").macro_aliases["F"], frozenset({"x"}))
+    unsafe_headers = (
+        "%:define P void); static inline int realh(int x\n",
+        "#define\fP void); static inline int realh(int x\n",
+        "#define\vP 0\n", "#define $P 0\n", "??=define P 0\n",
+        "#define\n", "}\n", "static int pad[] = {\n", "int f(\n",
+        "static inline", "static inline int h(int x)")
+    for header in unsafe_headers:
+        eq(f"q126: unsafe header refused {header!r}", inlineasm.header_unsafe(header), True)
+    eq("q126: unbalanced define alone is not an unsafe header",
+       inlineasm.header_unsafe("#define OPEN {\n#define CLOSE }\n"), False)
+    eq("q126: balanced define is a safe header",
+       inlineasm.header_unsafe("#define BLK { x(); }\n"), False)
+    linkage_header = ('#if defined(__cplusplus)\nextern "C" {\n#endif\n'
+                      'int f(void);\n#if defined(__cplusplus)\n}\n#endif\n')
+    eq("q126: balanced conditional SDK C++ linkage wrapper is safe",
+       inlineasm.header_unsafe(linkage_header), False)
+    eq("q126: unclosed SDK C++ linkage wrapper is refused",
+       inlineasm.header_unsafe(linkage_header.replace("}\n", "")), True)
+    hidden_linkage_helper = ('#ifdef __cplusplus\nextern "C" {\n#endif\n'
+                             'static inline int h(int x) { return x + 1; }\n'
+                             '#ifdef __cplusplus\n}\n#endif\n')
+    eq("q126: helper body inside C++ linkage wrapper is refused",
+       inlineasm.header_unsafe(hidden_linkage_helper), True)
+    eq("q126: real libsn linkage wrapper remains safe",
+       inlineasm.header_unsafe(Path("include/psxsdk/libsn.h").read_text(encoding="utf-8")),
+       False)
+    paste_facts = inlineasm.tu_macro_facts(
+        "#define PASTE(a,b) a##b\n#define ALIAS PASTE\n#define STR(a) #a\n")
+    eq("q126: paste macros and aliases are unsafe but stringizing stays balanced",
+       {fact[0]: fact[3] for fact in paste_facts},
+       {"PASTE": False, "ALIAS": False, "STR": True})
+    eq("q126: header paste alias in body is refused",
+       inlineasm.tu_unbalanced("void f(void) { ALIAS(CL,OSE) }", paste_facts), True)
+    eq("q126: header facts carry per-macro balance",
+       {fact[0]: fact[3] for fact in inlineasm.tu_macro_facts(
+           "#define OPEN {\n#define ALIAS OPEN\n#define BLK { x(); }\n")},
+       {"OPEN": False, "ALIAS": False, "BLK": True})
+    wrap_facts = inlineasm.tu_macro_facts("#define WRAP(NAME) NAME\n#define REAL NAME\n")
+    for seed in ("{", "{}"):
+        wrapped = f"#define NAME {seed}\nWRAP(x);\nvoid f(void) {{}}"
+        eq("q126: own macro parameter is not a brace alias",
+           "WRAP" in inlineasm._tu_index(wrapped, wrap_facts).brace_macros, False)
+        eq("q126: genuine header alias still propagates",
+           "REAL" in inlineasm._tu_index(wrapped, wrap_facts).brace_macros, True)
+    eq("q126: macro parameter does not refuse file-scope WRAP use",
+       inlineasm.tu_unbalanced("#define NAME {}\nWRAP(x);\nvoid f(void) {}", wrap_facts), False)
+    eq("q126: TU macro parameters are excluded from alias closure too",
+       inlineasm.tu_unbalanced("#define NAME {}\n#define WRAP(NAME) NAME\n"
+                               "WRAP(x);\nvoid f(void) {}"), False)
+    eq("q126: genuine alias use remains refused",
+       inlineasm.tu_unbalanced("#define NAME {}\nREAL\nvoid f(void) {}", wrap_facts), True)
     H = inlineasm.inline_helpers
     eq("q126: a called helper is attributed", H(text, "func_A"), ["sq"])
     eq("q126: helpers are reached transitively, in file order",
@@ -4071,8 +4217,18 @@ def test_q126_inline_helpers() -> None:
         "fake.c: file-scope braces do not balance or cannot be indexed "
         "safely (lexical view/identifier/directive escapes; brace/branch "
         "imbalance; unsafe macros/heads; duplicate definitions) -- walk "
-        "reads one masked TU view only (headers/#include'd code unseen); "
+        "reads one masked TU view with supplied header macro facts "
+        "(included bodies unseen); "
         "use explicit, complete definitions")
+    for desc, src, unsafe in header_cases:
+        eq(f"q126 integrity: {desc}",
+           balance_issue in CCI._helper_issues(src, "fake", {"f": 0}, header_facts),
+           unsafe)
+    for desc, src, unsafe in walk_cases:
+        eq(f"q126 integrity: {desc}",
+           balance_issue in CCI._helper_issues(src, "fake", {"f": 0}), unsafe)
+    check("q126 integrity: parenthesised helper with dead assignment is refused",
+          balance_issue in CCI._helper_issues(paren_helper, "fake", {"f": 0}))
     eq("q126 integrity: alternative function heads hiding a helper are refused",
        CCI._helper_issues(split_head, "fake", {"f": 0}), [balance_issue])
     for desc, src in evasion_cases:
@@ -4150,6 +4306,30 @@ def test_q126_inline_helpers() -> None:
            [i.split(":")[0] + ":" + i.split("definition ")[1].split(" ")[0]
             for i in CCI._header_function_issues(root)],
            ["include/bad.h:h", "src/main/local.h:f"])
+        (root / "include/psxsdk/inline_o.h").write_text("#define OPEN {\n")
+        (root / "src/main/local.h").write_text("#define LOCAL OPEN\n")
+        facts = CCI._header_macro_facts(root)
+        eq("q126 integrity: gathers vendored brace macro and src header alias",
+           inlineasm.tu_unbalanced("LOCAL\nvoid f(void) {}", facts), True)
+        eq("q126 integrity: gathered unbalanced header macros refuse body uses",
+           CCI._helper_issues("void f(void) { LOCAL }", "fake", {"f": 0}, facts),
+           [balance_issue])
+        (root / "movovl/include").mkdir(parents=True)
+        (root / "movovl/include/overlay.h").write_text(
+            "#define OVERLAY_OPEN {\n", encoding="utf-8")
+        eq("q126 integrity: movovl header macros are collected",
+           inlineasm.tu_unbalanced("OVERLAY_OPEN\nvoid f(void) {}",
+                                   CCI._header_macro_facts(root)), True)
+        eq("q126 integrity: unbalanced defines alone do not refuse headers",
+           CCI._header_safety_issues(root), [])
+        for rel in ("include/psxsdk/unsafe.h", "src/main/unsafe.h",
+                    "movovl/include/unsafe.h"):
+            p = root / rel
+            for header in unsafe_headers:
+                p.write_text(header, encoding="utf-8")
+                eq(f"q126 integrity: unsafe header {rel}: {header!r}",
+                   [i.split(":")[0] for i in CCI._header_safety_issues(root)], [rel])
+            p.unlink()
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
         (root / "include/psxsdk").mkdir(parents=True)

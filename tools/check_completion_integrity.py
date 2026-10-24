@@ -87,7 +87,8 @@ def _attributed_islands(island_funcs: dict[str, int], src_text: str | None,
     return island_funcs.get(func, 0) + sum(island_funcs.get(h, 0) for h in helpers)
 
 
-def _helper_issues(src_text: str | None, stem: str, ftab) -> list[str]:
+def _helper_issues(src_text: str | None, stem: str, ftab,
+                   header_macros: frozenset = frozenset()) -> list[str]:
     """Owner ruling Q126 audits a same-TU `static inline` helper only as part
     of the functions that call it, which holds only while every gate can see
     which functions those are. REFUSED, per TU (every file-scope function body
@@ -104,18 +105,20 @@ def _helper_issues(src_text: str | None, stem: str, ftab) -> list[str]:
       (5) any other function body with no symbol in the object (e.g.
           `inline` spelled through a macro): no gate reads it at all;
       (6) unsafe TU indexing: lexical view/identifier/directive escapes;
-          brace/branch imbalance; unsafe macros/heads; duplicate definitions.
-          The walk reads one masked TU view only; headers/#include'd code
-          are unseen (see inlineasm._tu_index for the detailed rules)."""
+          brace/branch imbalance; unsafe macros anywhere in heads; duplicate
+          definitions; includes other than literal .h paths.
+          The walk reads one masked TU view with supplied project header macro
+          facts; included bodies are unseen (see inlineasm._tu_index)."""
     if not src_text:
         return []
     defs = inlineasm.static_inline_defs(src_text)
     out = []
-    if inlineasm.tu_unbalanced(src_text):
+    if inlineasm.tu_unbalanced(src_text, header_macros):
         out.append(f"{stem}.c: file-scope braces do not balance or cannot be indexed "
                    f"safely (lexical view/identifier/directive escapes; brace/branch "
                    f"imbalance; unsafe macros/heads; duplicate definitions) -- walk "
-                   f"reads one masked TU view only (headers/#include'd code unseen); "
+                   f"reads one masked TU view with supplied header macro facts "
+                   f"(included bodies unseen); "
                    f"use explicit, complete definitions")
     for h, spans in defs.items():
         if h in ftab:
@@ -142,6 +145,18 @@ def _helper_issues(src_text: str | None, stem: str, ftab) -> list[str]:
                        f"and not a recognized `static inline` helper -- no gate reads it "
                        f"(spell a helper `static inline`, or remove it)")
     return out
+
+
+def _header_macro_facts(root: Path = REPO) -> frozenset:
+    """All project header macros, including vendored PsyQ and movovl headers.
+
+    Deliberately ignore include graphs: any header may affect a TU's walk.
+    """
+    return frozenset(fact
+                     for pat in ("include/**/*.h", "src/**/*.h", "movovl/include/**/*.h")
+                     for p in sorted(root.glob(pat))
+                     for fact in inlineasm.tu_macro_facts(
+                         p.read_text(encoding="utf-8", errors="replace")))
 
 
 def _header_function_issues(root: Path = REPO) -> list[str]:
@@ -177,6 +192,15 @@ def _header_function_issues(root: Path = REPO) -> list[str]:
     return out
 
 
+def _header_safety_issues(root: Path = REPO) -> list[str]:
+    """Refuse unsafe syntax in all scanned headers, including vendored ones."""
+    return [f"{p.relative_to(root).as_posix()}: unsafe header syntax -- "
+            "lexical/directive escape or unsafe file-scope walk"
+            for pat in ("include/**/*.h", "src/**/*.h", "movovl/include/**/*.h")
+            for p in sorted(root.glob(pat))
+            if inlineasm.header_unsafe(p.read_text(encoding="utf-8", errors="replace"))]
+
+
 QUEUE = REPO / "engine" / "queue.json"
 
 
@@ -186,6 +210,7 @@ def main() -> int:
         q = json.loads(QUEUE.read_text())
         in_queue = {it["func"] for it in q.get("items", [])}
     canon = cheats.canonical_asm_funcs()
+    header_macros = _header_macro_facts()
 
     violations: list[str] = []
     freshness = buildstamp.check()
@@ -213,7 +238,7 @@ def main() -> int:
         island_funcs = _island_funcs(src_text, stem)
         whole_asm = inlineasm.whole_body_asm_funcs(src_text) if src_text else set()
         ftab = score._o_func_table(ref_o)
-        violations.extend(_helper_issues(src_text, stem, ftab))
+        violations.extend(_helper_issues(src_text, stem, ftab, header_macros))
         for func in ftab:
             fsize = ftab[func][1]
             if func in in_queue:
@@ -340,6 +365,7 @@ def main() -> int:
     # Q126: helpers are attributed within one .c file; no project header may
     # carry a function body.
     violations.extend(_header_function_issues())
+    violations.extend(_header_safety_issues())
     # No TU uses `##`: a token paste can assemble asm or a vendored name that
     # no gate sees by name (counted and stripped as a cheat construct).
     violations.extend(f"src/{stem}.c: `##` token paste (cheat construct)"

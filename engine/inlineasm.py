@@ -626,6 +626,9 @@ class _TUIndex(NamedTuple):
     pos: tuple
     functions: tuple    # TUFunction, file order
     macros: dict        # #define name -> identifiers of its body (and params)
+    macro_aliases: dict  # replacement identifiers, excluding own parameters
+    brace_macros: frozenset  # brace/paste macros, closed over aliases
+    unbalanced_macros: frozenset  # brace-unbalanced macros, closed over aliases
     unbalanced: bool    # unsafe brace walk, including file-scope brace macro use
 
 
@@ -800,33 +803,44 @@ def _head_function(head: str) -> tuple[str, frozenset] | None:
     return name.group(1), frozenset(_IDENT_TOKEN_RE.findall(head[:name.start(1)]))
 
 
-def _tu_index(text: str) -> _TUIndex:
+def _tu_index(text: str, header_macros: frozenset = frozenset()) -> _TUIndex:
     """Index functions/#defines in one masked view of TU text only.
 
-    Headers and #include'd code are unseen; directives are skipped, #if 0
+    Optional header macro facts (name, identifier set, brace/paste flag,
+    balanced flag) are included. Naming a brace-unbalanced header macro or
+    its alias anywhere refuses the TU; balanced brace macros allow body uses.
+    Includes/imports must be relative literal .h paths without '..', outside
+    bodies and parentheses, because included bodies are unseen. Other directives
+    are skipped, #if 0
     bodies kept. Comments/literals are blanked and line splices removed.
     `unbalanced` refuses:
     - literal-view disagreement, $, form feed/vertical tab, alternate tokens,
       or unparsed define/conditional-looking directives;
-    - unmatched braces or nonzero/negative branch deltas (nesting independent);
+    - unmatched braces/parentheses, directives inside file-scope parentheses,
+      or nonzero/negative branch deltas (nesting independent);
     - unbalanced macros, file-scope brace/paste macros (aliases included),
-      macro names/words in heads, unknown heads, or duplicate ordinary names.
+      macro names anywhere in heads, unknown heads, or duplicate ordinary names.
     Clear initializers/specifiers and body-only balanced macros are allowed.
     """
-    return _tu_index_cached(text)
+    return _tu_index_cached(text, header_macros)
 
 
 @functools.lru_cache(maxsize=4)
-def _tu_index_cached(text: str) -> _TUIndex:
+def _tu_index_cached(text: str, header_macros: frozenset = frozenset(),
+                     _ignore_macro_braces: bool = False) -> _TUIndex:
     view = cia.compiler_view(text)
     masked, pos = view.masked, view.pos
     n = len(masked)
     functions, macros = [], {}
+    macro_aliases, head_words = {}, set()
     depth, item, i, bol = 0, 0, 0, True
+    parens = 0         # file-scope parentheses only; bodies have their own syntax
     unbalanced = (masked != view.masked_eol or any(token in masked for token in
                   ("$", "\f", "\v", "%:", "<%", "%>", "??=", "??<", "??>")))
     branch_deltas = []  # innermost branch owns code braces, not directive braces
     brace_macros, file_scope_names = set(), set()
+    unbalanced_macros, all_names = set(), set()
+    linkage_depths = set()  # header-only C++ linkage blocks, not function bodies
     segs = [0]          # file-scope item starts since the last `}` (K&R heads)
     head_fn = None
     while i < n:
@@ -838,6 +852,19 @@ def _tu_index_cached(text: str) -> _TUIndex:
             if dm:
                 macros.setdefault(dm.group(1), set()).update(
                     _IDENT_TOKEN_RE.findall(dm.group(2)))
+                body, params = dm.group(2), set()
+                # Only an immediately adjacent '(' makes a function macro.
+                if body.startswith("("):
+                    close = body.find(")")
+                    if close < 0:
+                        unbalanced = True
+                    else:
+                        params.update(_IDENT_TOKEN_RE.findall(body[1:close]))
+                        if "..." in body[1:close]:
+                            params.add("__VA_ARGS__")
+                        body = body[close + 1:]
+                macro_aliases.setdefault(dm.group(1), set()).update(
+                    set(_IDENT_TOKEN_RE.findall(body)) - params)
                 if any(token in dm.group(2) for token in ("{", "}", "##")):
                     brace_macros.add(dm.group(1))
                 macro_depth = 0
@@ -847,9 +874,9 @@ def _tu_index_cached(text: str) -> _TUIndex:
                     elif brace == "}":
                         macro_depth -= 1
                         if macro_depth < 0:
-                            unbalanced = True
+                            unbalanced_macros.add(dm.group(1))
                 if macro_depth != 0:
-                    unbalanced = True
+                    unbalanced_macros.add(dm.group(1))
             directive = re.match(r"#[ \t]*(\w+)", masked[i:eol])
             looking = re.match(r"#\s*(define|if\w*|elif|else|endif)\b", masked[i:eol])
             if looking:
@@ -861,6 +888,14 @@ def _tu_index_cached(text: str) -> _TUIndex:
                     unbalanced = True
             if directive:
                 kind = directive.group(1)
+                if kind in ("include", "import", "include_next"):
+                    inc = re.fullmatch(
+                        r'#[ \t]*(?:include|import)[ \t]+(?:"([^"\n]+\.h)"|<([^>\n]+\.h)>)[ \t]*',
+                        view.code[i:eol])
+                    path = (inc.group(1) or inc.group(2)) if inc else ""
+                    if (not inc or ".." in path or path.startswith(("/", "\\"))
+                            or re.match(r"[A-Za-z]:", path) or depth > 0 or parens):
+                        unbalanced = True
                 if kind in ("if", "ifdef", "ifndef"):
                     branch_deltas.append(0)
                 elif kind in ("elif", "else", "endif") and branch_deltas:
@@ -871,23 +906,37 @@ def _tu_index_cached(text: str) -> _TUIndex:
                     else:
                         branch_deltas[-1] = 0
             if depth == 0:
-                item = eol
-                segs.append(eol)
+                if parens:
+                    unbalanced = True
+                else:
+                    item = eol
+                    segs.append(eol)
             i = eol
             continue
         if c == "\n":
             bol = True
         elif c not in " \t\r\f\v":
             bol = False
-        if depth == 0 and (i == 0 or not (
-                masked[i - 1].isalnum() or masked[i - 1] == "_")):
+        if i == 0 or not (
+                masked[i - 1].isalnum() or masked[i - 1] == "_"):
             ident = _IDENT_TOKEN_RE.match(masked, i)
             if ident:
-                file_scope_names.add(ident.group())
+                all_names.add(ident.group())
+                if depth == 0:
+                    file_scope_names.add(ident.group())
+        if depth == 0 and c in "()":
+            parens += 1 if c == "(" else -1
+            if parens < 0:
+                unbalanced = True
+                parens = 0
         if c == "{":
+            if linkage_depths:
+                unbalanced = True  # a C++ linkage wrapper must contain no bodies
             if branch_deltas:
                 branch_deltas[-1] += 1
             if depth == 0:
+                if parens:
+                    unbalanced = True
                 head = masked[item:i]
                 if not head.strip():
                     # K&R: `T f(a) T a; {` -- the head is the nearest item
@@ -899,7 +948,14 @@ def _tu_index_cached(text: str) -> _TUIndex:
                             break
                     head = masked[item:i]
                 hf = _head_function(head)
-                if (hf is None and not _head_initializer(head)
+                linkage = (_ignore_macro_braces and re.fullmatch(
+                    r'\s*extern\s+"C"\s*', view.code[item:i]))
+                if linkage:
+                    linkage_depths.add(depth + 1)
+                    if branch_deltas:
+                        branch_deltas[-1] -= 1
+                head_words.update(_IDENT_TOKEN_RE.findall(head))
+                if (hf is None and not linkage and not _head_initializer(head)
                         and not re.search(r"\b(?:struct|union|enum)"
                                           r"(?:\s+[A-Za-z_]\w*)?\s*$", head)):
                     unbalanced = True
@@ -907,7 +963,9 @@ def _tu_index_cached(text: str) -> _TUIndex:
                 head_fn = (hf, item + lead) if hf else None
             depth += 1
         elif c == "}":
-            if branch_deltas:
+            if depth in linkage_depths:
+                linkage_depths.remove(depth)
+            elif branch_deltas:
                 branch_deltas[-1] -= 1
                 if branch_deltas[-1] < 0:
                     unbalanced = True
@@ -921,37 +979,92 @@ def _tu_index_cached(text: str) -> _TUIndex:
                 head_fn = None
                 item = i + 1
                 segs = [item]
-        elif c == ";" and depth == 0:
+        elif c == ";" and depth == 0 and parens == 0:
             item = i + 1
             segs.append(item)
         i += 1
+    all_macros = {name: set(body) for name, body in macro_aliases.items()}
+    local_macro_imbalance = bool(unbalanced_macros)
+    for name, body, brace, balanced in header_macros:
+        all_macros.setdefault(name, set()).update(body)
+        if brace:
+            brace_macros.add(name)
+        if not balanced:
+            unbalanced_macros.add(name)
     while True:
-        reached = {name for name, body in macros.items() if body & brace_macros}
+        reached = {name for name, body in all_macros.items() if body & brace_macros}
         if reached <= brace_macros:
             break
         brace_macros.update(reached)
+    while True:
+        reached = {name for name, body in all_macros.items() if body & unbalanced_macros}
+        if reached <= unbalanced_macros:
+            break
+        unbalanced_macros.update(reached)
     ordinary_names = set()
+    if head_words & all_macros.keys():
+        unbalanced = True
     for fn in functions:
-        if fn.name in macros or fn.words & macros.keys():
-            unbalanced = True
         if not fn.static_inline:
             if fn.name in ordinary_names:
                 unbalanced = True
             ordinary_names.add(fn.name)
     return _TUIndex(masked, pos, tuple(functions),
                     {k: frozenset(v) for k, v in macros.items()},
-                    unbalanced or depth != 0 or any(branch_deltas)
+                    {k: frozenset(v) for k, v in macro_aliases.items()},
+                    frozenset(brace_macros),
+                    frozenset(unbalanced_macros),
+                    unbalanced or depth != 0 or parens != 0 or any(branch_deltas)
+                    or (_ignore_macro_braces and bool(masked[item:].strip()))
+                    or (local_macro_imbalance and not _ignore_macro_braces)
+                    or bool(unbalanced_macros & all_names)
                     or bool(brace_macros & file_scope_names))
 
 
-def tu_unbalanced(text: str) -> bool:
-    """Whether one masked TU view is unsafe to index (headers/includes unseen):
+def tu_macro_facts(text: str) -> frozenset:
+    """Hashable (name, identifiers, brace/paste flag, balanced flag) facts.
+
+    Retain alias edges, excluding own parameters, so closure can span headers
+    and the TU.
+    Brace-unbalanced or token-pasting macros and their aliases refuse any TU naming them,
+    including inside bodies. Balanced brace macro body uses remain allowed.
+    """
+    idx = _tu_index(text)
+    unsafe = set(idx.unbalanced_macros)
+    for line in cia.compiler_view(text).masked.split("\n"):
+        dm = _PP_DEFINE_RE.match(line)
+        if dm and "##" in dm.group(2):
+            unsafe.add(dm.group(1))
+    while True:
+        reached = {name for name, body in idx.macro_aliases.items() if body & unsafe}
+        if reached <= unsafe:
+            break
+        unsafe.update(reached)
+    return frozenset((name, body, name in idx.brace_macros,
+                      name not in unsafe)
+                     for name, body in idx.macro_aliases.items())
+
+
+def header_unsafe(text: str) -> bool:
+    """Refuse unsafe header syntax, except brace-unbalanced #define bodies.
+
+    Those bodies are tracked per macro and refused when named by a TU.
+    Lexical/directive escapes and literal brace/parenthesis imbalance remain
+    unsafe, as do other TU-index refusals. Balanced C++ extern "C" linkage
+    wrappers may cross conditional branches in SDK headers but contain no
+    further opening braces. Trailing incomplete file-scope items are refused.
+    """
+    return _tu_index_cached(text, frozenset(), True).unbalanced
+
+
+def tu_unbalanced(text: str, header_macros: frozenset = frozenset()) -> bool:
+    """Whether one masked TU view is unsafe to index (optional header macros seen):
     - lexical view/identifier/directive escapes;
     - brace/branch imbalance;
     - unsafe macros/heads or duplicate ordinary definitions.
     See `_tu_index` for exceptions and the complete refusal list.
     """
-    return _tu_index(text).unbalanced
+    return _tu_index(text, header_macros).unbalanced
 
 
 def tu_functions(text: str) -> tuple[TUFunction, ...]:
