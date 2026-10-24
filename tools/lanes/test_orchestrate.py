@@ -45,6 +45,33 @@ class Candidates(unittest.TestCase):
         self.assertEqual(o.candidates(b, reg(), st({"x": slot("naming-a")}), NOW, "naming"), [])
         self.assertEqual(o.candidates(b, reg(), st(), NOW, "naming"), ["naming-a"])
 
+    def test_researching_row_workable_once_its_codex_run_finished(self):
+        import json
+        import tempfile
+        saved = o.CODEX_RUNS
+        with tempfile.TemporaryDirectory() as d:
+            o.CODEX_RUNS = Path(d)
+            try:
+                def run(rid, **meta):
+                    (Path(d) / rid).mkdir()
+                    (Path(d) / rid / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
+                run("20261024-070301-research-w78", status="ok", finished="2026-10-24T07:13")
+                run("20261024-080000-research-w79", status="running")
+                row = lambda note: {"id": "x", "stage": "researching", "note": note}
+                self.assertTrue(o.naming_row_workable(
+                    row("run ~/.claude/codex-bridge/runs/20261024-070301-research-w78; prompt")))
+                self.assertFalse(o.naming_row_workable(row("run 20261024-080000-research-w79")))
+                self.assertFalse(o.naming_row_workable(
+                    row("20261024-070301-research-w78 then 20261024-080000-research-w79")))
+                self.assertFalse(o.naming_row_workable(row("Codex busy, prompt ready")))
+                self.assertFalse(o.naming_row_workable(row("run 20261024-090000-research-gone")))
+                self.assertFalse(o.naming_row_workable(
+                    {"id": "x", "stage": "landed", "note": "20261024-070301-research-w78"}))
+                b = {"naming": [row("20261024-070301-research-w78")], "foundation": []}
+                self.assertEqual(o.candidates(b, reg(), st(), NOW, "naming"), ["naming-a"])
+            finally:
+                o.CODEX_RUNS = saved
+
     def test_skips_running_owned_and_no_progress(self):
         r = reg(pins={"owner": "other", "heartbeat": NOW}, **{"naming-a": {"owner": "z", "heartbeat": NOW}})
         self.assertEqual(o.candidates(bl(), r, st(), NOW, None), ["naming-b", "data"])

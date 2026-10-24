@@ -31,8 +31,8 @@ docs/foundation/backlog.tsv order while a lane has rows not landed/dropped/block
 (blocked = waits on an owner ruling). Naming and foundation
 alternate. Lanes owned in the registry by any live session are skipped, and so are paused lanes
 (tmp/lanes-state/paused.json; `naming` pauses every naming lane; a `--when-away` lane starts only
-after 20 min without keyboard/mouse input). `researching` rows wait on a Codex job, so they do not
-count as workable. `max 0` drains: running sessions finish, then the orchestrator exits.
+after 20 min without keyboard/mouse input). `researching` rows wait on a Codex job: they count as
+workable once every Codex bridge run their note cites by run id has finished. `max 0` drains: running sessions finish, then the orchestrator exits.
 
 Codex lane (`--codex` / `codex on`): one extra session `lane-codex`, outside the N slots, that
 follows tmp/codex/fake-lane-brief.md. It is restarted when it finishes only while Codex usage is
@@ -68,6 +68,8 @@ REGISTRY = MAIN / "tmp" / "lanes-state" / "registry.json"
 NAMING_BACKLOG = MAIN / "docs" / "naming" / "phase3" / "backlog.tsv"
 FOUNDATION_BACKLOG = MAIN / "docs" / "foundation" / "backlog.tsv"
 NAMING_WORKABLE = {"idea", "researched", "reviewed"}
+CODEX_RUNS = Path.home() / ".claude" / "codex-bridge" / "runs"
+CODEX_RUN_ID = re.compile(r"\b(\d{8}-\d{6}-[A-Za-z0-9][\w.-]*)")
 FOUNDATION_DONE = {"landed", "dropped", "blocked"}  # blocked = waits on an owner ruling
 ENDED_STATES = {"exited", "stopped", "failed", "killed", "error"}
 STALL_SECS = 90 * 60
@@ -406,6 +408,30 @@ def live_lanes(ag: dict, reg: dict) -> dict[str, str]:
     return out
 
 
+def naming_row_workable(r: dict) -> bool:
+    """A naming row a session can take now. A `researching` row waits on its Codex run; once
+    every bridge run its note cites (by run id, at least one found) has finished, it is
+    workable: the session harvests the result and moves the row on."""
+    stage = r.get("stage")
+    if stage in NAMING_WORKABLE:
+        return True
+    if stage != "researching":
+        return False
+    found = False
+    for rid in CODEX_RUN_ID.findall(r.get("note") or ""):
+        meta = CODEX_RUNS / rid / "meta.json"
+        if not meta.is_file():
+            continue
+        try:
+            m = json.loads(meta.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return False
+        if not m.get("finished"):
+            return False
+        found = True
+    return found
+
+
 def candidates(bl: dict, reg: dict, st: dict, now: float, only: str | None,
                paused: dict | None = None, away: bool = False,
                live: set | frozenset = frozenset()) -> list[str]:
@@ -416,7 +442,7 @@ def candidates(bl: dict, reg: dict, st: dict, now: float, only: str | None,
     skip = set(st["no_progress"])
     naming: list[str] = []
     if only in (None, "naming") and "naming" not in skip:
-        workable = sum(1 for r in bl["naming"] if r.get("stage") in NAMING_WORKABLE)
+        workable = sum(1 for r in bl["naming"] if naming_row_workable(r))
         owned = {l for l in reg.get("lanes", {}) if lane_owned(reg, l, now)}
         active = sum(1 for lane in busy | owned if lane.startswith("naming"))
         free = [f"naming-{c}" for c in "abcdefghijklmnopqrstuvwxyz"
