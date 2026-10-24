@@ -1,0 +1,1 @@
+{"decision": "PASS", "function": "_spu_note2pitch", "body_hash": "5db64fae90ff843c", "summary": "FAKE dead staging (diff = atten) removed; atten passed directly to the inlined _spu_2pitch; sandbox 0; _spu_pitch2note unaffected.", "evidence": [], "next_action": "", "hygiene_debt": ["psyz cite: s_n2p.c is INCLUDE_ASM at d0a56bb; C form on psyz's current default branch"]}
