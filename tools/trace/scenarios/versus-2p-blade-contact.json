@@ -1,5 +1,5 @@
 {
-  "description": "versus-2p-effects with fight screenshots every 5 frames from 30 before to 60 after each of the three blade contacts (fighter_ResolveWeaponContact at 9235, 10557, 10615): the dark-robed fighter's cut meets the yellow-sashed fighter's blade, a white spark where they meet, a pink-white streak, the dark-robed fighter tinted pink, the yellow-sashed fighter recoiling, nobody down",
+  "description": "versus-2p-effects with fight screenshots every 5 frames from 30 before to 60 after each of the three blade contacts (fighter_ResolveWeaponContact at 9235, 10557, 10615): P2's cut (D_80101EC8[1], move_kind 2, in its hit window) meets the blade of P1 (D_80101EC8[0]) walking in on a held RIGHT (move_kind 0x19, no button), a white spark where they meet, a pink-white streak, P1 goes into the common reaction move kind 0x2C and P2 into its own kind 0xE, nobody down: a blocked cut",
   "covers": [
     "mode:vs_2p",
     "event:guard"

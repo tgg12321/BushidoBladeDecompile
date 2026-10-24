@@ -42,6 +42,46 @@ D_800A38DC	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	story
 D_800A38DC	write	func_800343F0	t_stage	0x80034440	report	0	2	1	[0]	0	story-values-1@86b4866e3da8	0	partial_store
 D_800A3910	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
 D_800A3910	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	story-values-1@86b4866e3da8	0	
+0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	181	[2,3,15,19,21,25,26,28]	10	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+0x80101F32	write	func_80021A98	rematch_menu	0x80021BB0	report	0	2	125	[51]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+0x80101F32	write	func_80021A98	t_ko	0x80021BB0	report	0	2	6	[51]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+0x8010237E	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	181	[2,4,6,9,13,14,15,19]	13	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+0x8010237E	write	func_80021A98	rematch_menu	0x80021BB0	report	0	2	83	[4]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+0x8010237E	write	func_80021A98	t_ko	0x80021BB0	report	0	2	18	[4]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+fighter_ResolveWeaponContact	call	func_8002C61C	fight	0x8002C710	report			3	[[2148540104,528483316,4294950316,4294959845],[2148540104,528483316,4294950382,4294960066],[2148540104,528483316,4294959152,4294966300]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+fighter_ResolveWeaponContact	call	func_8002C61C	fight	0x8002C720	report			3	[[2148541204,528483316,654373,1],[2148541204,528483316,2142824,1],[2148541204,528483316,4294857096,1]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80021A98	call	fight_Init	t_load	0x8001E2E0	report			1	[[0,2148834040,0,4]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80021A98	call	fight_Init	t_load	0x8001E304	report			1	[[1,2149128316,0,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80021A98	call	fighter_Update	fight	0x800241F4	report			42	[[0,2148663352,1,18],[0,2148663364,1,24],[0,2148663376,1,30],[0,2148663388,1,36],[0,2148663400,1,42],[0,2148663412,1,48],[0,2148663448,1,66],[0,2148663520,1,102]]	15	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80021A98	call	fighter_Update	fight	0x8002439C	report			138	[[0,2148663472,1,78],[0,2148663484,1,84],[0,2148663496,1,90],[0,2148663508,1,96],[0,2148664108,1,14614528],[0,2148831148,0,32753],[0,2148831148,0,32756],[0,2148831148,0,33666]]	14	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80021A98	call	fighter_Update	fight	0x80024438	report			1	[[0,2148665464,1,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80021A98	call	fighter_Update	fight	0x80024670	report			181	[[0,2148829924,0,33054],[0,2148830512,0,33348],[0,2148830596,0,33390],[0,2148830668,0,33426],[0,2148830740,0,33462],[0,2148830752,0,33468],[0,2148830928,0,32757],[0,2148830952,0,33568]]	37	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80021A98	call	fighter_Update	rematch_menu	0x8002439C	report			208	[[0,2148663592,1,138],[1,2148665640,1,1162]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80021A98	call	fighter_Update	t_ko	0x8002439C	report			23	[[0,2148663592,1,138],[1,2148665640,1,1162]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80021A98	call	func_8001EEB4	t_ko	0x8001EF60	report			1	[[0,2148663604,1,1]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_8002C61C+0x10C	call	func_8002C61C	fight	0x8002C720	report			3	[[2148117496,127,127,2]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DA4	report			1	[[1,2,528482856,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80032854	call	fighter_ResolveBoneHit	fight	0x80027DE8	coverage			1	[[0,37,528482856,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x80027E3C	coverage			1	[[1,37,528482856,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800280F4	coverage			1	[[1,3,528482760,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[0,3,528482544,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002852C	report			3	[[1,1,528483316,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028540	report			3	[[1,37,528483316,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80032854	call	fighter_ResolveWeaponContact	fight	0x80028628	report			3	[[0,38,528483316,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80032854	call	fighter_ResolveWeaponContact	fight	0x8002863C	report			3	[[0,45,528483316,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	coverage_next_start_bound
+func_80032854	call	func_80026DA4	fight	0x80027064	report			12	[[0,45,2148540348,0],[1,45,2148541448,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80032854	call	func_80026DA4	fight	0x800272C0	report			84	[[0,5,2149580408,0],[0,6,2149580408,0],[0,7,2149580408,0],[0,8,2149580408,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80032854	call	func_800278C0	fight	0x80027974	report			3	[[0,34,528482736,0],[0,35,528482760,0],[1,36,528482544,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80032854	call	object_UpdatePool	fight	0x800315A0	report			3	[[1,41,2148559524,0]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	report			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	versus-2p-blade-contact-1@1e1cfebac1a9	0	
 D_800A3910	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-2p-effects-events-1@2fa05558de81	0	
 D_800A3910	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	versus-2p-effects-events-1@2fa05558de81	0	
 D_800A3910	write	func_80026DA4	fight	0x800272D8	report	0	2	620	[0,1,2,3,4,5,6,7]	8	versus-2p-effects-events-1@2fa05558de81	0	partial_store
@@ -894,6 +934,35 @@ func_80032854	call	func_800204C0	fight	0x80020674	report			1	[[0,4,528482496,214
 func_80032854	call	func_800278C0	fight	0x80027974	report			2	[[0,35,528482760,0],[1,34,528482472,0]]	0	versus-2p-kimigaura-weapon-nodachi-katana-1@d28ca5916c38	0	
 func_80032854	call	object_UpdatePool	fight	0x800315A0	report			3	[[0,41,2148559524,0]]	0	versus-2p-kimigaura-weapon-nodachi-katana-1@d28ca5916c38	0	
 func_80032854	call	replay_PlayFrame	fight	0x80039E1C	report			6	[[0,4,2149580056,2149580072],[0,41,2149580056,2149580072],[0,46,2149580056,2149580072],[1,34,2149580056,2149580072]]	0	versus-2p-kimigaura-weapon-nodachi-katana-1@d28ca5916c38	0	
+0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	85	[2,21,25,37]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+0x80101F32	write	func_80021A98	rematch_menu	0x80021BB0	report	0	2	13	[51]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+0x80101F32	write	func_80021A98	t_ko	0x80021BB0	report	0	2	13	[21,25,37,51]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+0x80101F32	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+0x8010237E	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+0x8010237E	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+0x8010237E	write	func_80021A98	fight	0x80021BB0	report	0	2	42	[2,3,6,20,21,37]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+0x8010237E	write	func_80021A98	rematch_menu	0x80021BB0	report	0	2	8	[4]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+0x8010237E	write	func_80021A98	t_ko	0x80021BB0	report	0	2	20	[4]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+0x8010237E	write	func_80021A98	t_load	0x80021BB0	report	0	2	1	[21]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+fighter_ResolveBoneHit	call	fighter_ProcessWeaponBodyHits	fight	0x8002BC10	report			4	[[0,2148541204,1,859],[0,2148541204,18,1036],[0,2148541204,18,1117],[0,2148541204,21,2031]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80021A98	call	fight_Init	t_load	0x8001E2E0	report			1	[[0,2148834040,0,4]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80021A98	call	fight_Init	t_load	0x8001E304	report			1	[[1,2149128316,0,0]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80021A98	call	fighter_Update	fight	0x800241F4	report			4	[[1,2148664824,1,754],[1,2148664860,1,772],[1,2148665688,1,1186]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80021A98	call	fighter_Update	fight	0x8002439C	report			75	[[0,2148831116,0,33650],[0,2148831148,0,32753],[0,2148831148,0,33666],[0,2148832428,0,34306],[0,2148832460,0,32753],[0,2148832460,0,34322],[0,2148834008,0,35096],[0,2148834040,0,32753]]	5	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80021A98	call	fighter_Update	fight	0x80024670	report			48	[[0,2148829924,0,33054],[0,2148830740,0,33462],[0,2148831116,0,33650],[0,2148831344,0,33764],[0,2148832284,0,34234],[0,2148832428,0,34306],[0,2148833352,0,34768],[0,2148833552,0,34868]]	7	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80021A98	call	fighter_Update	rematch_menu	0x8002439C	report			21	[[0,2148663592,1,138],[1,2148664812,1,748]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80021A98	call	fighter_Update	t_ko	0x8002439C	report			28	[[0,2148663592,1,138],[0,2148831148,0,33666],[0,2148834040,0,32753],[1,2148664812,1,748]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80021A98	call	fighter_Update	t_ko	0x80024670	report			4	[[0,2148829924,0,33054],[0,2148831116,0,33650],[0,2148834008,0,35096],[0,2148834328,0,32755]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80021A98	call	func_8001EEB4	t_ko	0x8001EF60	report			1	[[0,2148663604,1,1]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800280F4	report			2	[[1,3,528482952,0]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80032854	call	fighter_ResolveBoneHit	fight	0x80028388	report			1	[[1,3,528482988,0]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80032854	call	fighter_Update	fight	0x800269D0	report			1	[[1,46,2148541448,0]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80032854	call	func_800204C0	fight	0x80020674	report			1	[[1,4,528482748,2149579872]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80032854	call	func_800278C0	fight	0x80027974	report			4	[[0,35,528482748,0],[0,36,528482952,0],[0,36,528482988,0]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80032854	call	object_UpdatePool	t_ko	0x800315A0	report			4	[[1,41,2148559524,0]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	report			7	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	versus-2p-wound-moves-1@6528da690f5e	0	
 D_800A34F0	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-values-1@f7af68406dd1	0	
 D_800A34F0	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	0	4	1	[0]	0	versus-cpu-values-1@f7af68406dd1	0	
 D_800A38DC	write	BIOS	boot_intro	0x9FC0D864	bios	0	4	1	[0]	0	versus-cpu-values-1@f7af68406dd1	0	

@@ -12,7 +12,8 @@
     "event:ko"
   ],
   "evidence": [
-    "docs/naming/runtime/versus-2p-wound-hitmap-1/spec.json"
+    "docs/naming/runtime/versus-2p-wound-hitmap-1/spec.json",
+    "docs/naming/runtime/versus-2p-wound-moves-1/spec.json"
   ],
   "use": [
     "boot",

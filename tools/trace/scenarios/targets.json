@@ -98,7 +98,7 @@
         "event:ko": "a fighter down for good (no health bar: one cut can kill)",
         "event:win": "player 1 wins a fight",
         "event:hit": "a cut lands without a KO, shown on screen (an IPPON call is the killing cut, not this)",
-        "event:guard": "a blocked cut, shown on screen; not told apart yet: the ring marker, pink tint and spark show on a landed cut (versus-2p-wound-hitmap-1 fight.9488..9500) and on exchanges where nobody goes down; blade-on-blade contacts are found in code (fighter_ResolveWeaponContact, versus-2p-effects frames 9235, 10557, 10615: an attack in its hit window against a record in move_kind 0x19), but telling a guard from a parry or clash needs move_kind 0x19 and the reaction moves identified (backlog trace-scenarios note)",
+        "event:guard": "a blocked cut, shown on screen: an attack inside its blade's hit window meets the blade of a fighter that is not attacking, and both stay up. Code-level test (versus-2p-blade-contact-1, all three contacts at 9235, 10557, 10615): fighter_ResolveWeaponContact runs (blade on blade); the attacker in move_kind 2 with unk_288 5, the other fighter in walk move 0x801494ac (move_kind 0x19, reached by holding RIGHT with no button, movegraph) with unk_288 0 and only RIGHT held on its pad; after it the walker gets the common-file move kind 0x2C and the attacker its own kind 0xE, kinds no input reaches (0x2C offers a CROSS counter-cut, taken after the first contact); the landed leg cut instead gives the target the common kind 3 and the attacker carries on (versus-2p-wound-moves-1, 9482)",
         "event:save": "data saved to a memory card",
         "event:load": "data loaded from a memory card",
         "event:out_of_bounds": "OUT OF BOUNDS (場外) call"
