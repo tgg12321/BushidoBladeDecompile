@@ -1,0 +1,25 @@
+{
+  "description": "story-first-fight cut at frame 9300 (just after the first KO), fight screenshots every 60 frames: the stub-and-observe baseline",
+  "evidence": [
+    "docs/naming/runtime/story-stub-1/baseline/spec.json",
+    "docs/naming/runtime/story-stub-1/func_8001CE60/spec.json",
+    "docs/naming/runtime/story-stub-1/func_8003DA8C/spec.json",
+    "docs/naming/runtime/story-stub-1/func_8003E6D8/spec.json",
+    "docs/naming/runtime/story-stub-1/func_80040304/spec.json",
+    "docs/naming/runtime/story-stub-1/func_80046DA8/spec.json",
+    "docs/naming/runtime/story-stub-1/func_80049A2C/spec.json"
+  ],
+  "extends": "story-first-fight",
+  "end_frame": 9300,
+  "shots_drop": [
+    "fight.first"
+  ],
+  "shots": [
+    "8900:fight.8900",
+    "8960:fight.8960",
+    "9020:fight.9020",
+    "9080:fight.9080",
+    "9140:fight.9140",
+    "9299:t_ko.f9299"
+  ]
+}

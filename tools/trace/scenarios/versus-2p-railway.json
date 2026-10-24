@@ -1,0 +1,73 @@
+{
+  "description": "versus-2p flow, stage DOWN, DOWN, RIGHT, RIGHT to the [Map 3] scroll: Railway; fight inputs from 9500, one fighter down, Rematch menu",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:railway",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-stage-map3-1/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 11900,
+  "inputs": [
+    "7300:DOWN",
+    "7360:DOWN",
+    "7420:RIGHT",
+    "7480:RIGHT",
+    "7600:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 9500,
+      "every": 100,
+      "count": 23,
+      "steps": [
+        "+0:RIGHT/40",
+        "+50:TRIANGLE|CIRCLE|SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "7600:t_load",
+    "8400:fight",
+    "10350:t_ko",
+    "10900:rematch_menu"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7350:stage_select.7350",
+    "7410:stage_select.7410",
+    "7470:stage_select.7470",
+    "7530:stage_select.7530",
+    "7599:stage_select.last",
+    "8000:t_load.mid",
+    "8399:t_load.last",
+    "8400:fight.first",
+    "8900:fight.8900",
+    "9400:fight.9400",
+    "9700:fight.9700",
+    "10000:fight.10000",
+    "10200:fight.10200",
+    "10300:fight.10300",
+    "10349:fight.last",
+    "10400:t_ko.10400",
+    "10500:t_ko.10500",
+    "10600:t_ko.10600",
+    "10700:t_ko.10700",
+    "10800:t_ko.10800",
+    "10899:t_ko.last",
+    "10900:rematch_menu.first",
+    "11300:rematch_menu.11300",
+    "11600:rematch_menu.11600",
+    "11899:rematch_menu.last"
+  ]
+}

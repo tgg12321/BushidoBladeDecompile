@@ -1,0 +1,75 @@
+{
+  "description": "Story Mode: story text, default character and weapon, stage card, first fight (SQUAREs), first KO, rematch menu",
+  "covers": [
+    "mode:story",
+    "menu:top",
+    "menu:story_text",
+    "menu:char_select",
+    "menu:weapon_select",
+    "menu:stage_card",
+    "menu:rematch",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/story-hitmap-1/spec.json",
+    "docs/naming/runtime/story-values-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 10700,
+  "inputs": [
+    "6100:CROSS",
+    "6400:START",
+    "6700:CROSS",
+    "7000:START",
+    "7300:CROSS",
+    "7600:START",
+    "7900:CROSS",
+    "8200:START",
+    "8500:CROSS",
+    "8800:START"
+  ],
+  "repeat": [
+    {
+      "from": 9000,
+      "every": 60,
+      "count": 8,
+      "steps": [
+        "+0:SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "6060:top_menu",
+    "6100:t_story",
+    "6810:story_text",
+    "6910:t_char",
+    "6950:char_select",
+    "7300:t_weapon",
+    "7360:weapon_select",
+    "7900:t_stage",
+    "8360:stage_card",
+    "8800:t_fight",
+    "8900:fight",
+    "9200:t_ko",
+    "10150:rematch_menu"
+  ],
+  "shots": [
+    "6060:top_menu.first",
+    "6099:top_menu.last",
+    "6810:story_text.first",
+    "6909:story_text.last",
+    "6950:char_select.first",
+    "7299:char_select.last",
+    "7360:weapon_select.first",
+    "7899:weapon_select.last",
+    "8360:stage_card.first",
+    "8799:stage_card.last",
+    "8900:fight.first",
+    "9199:fight.last",
+    "10150:rematch_menu.first",
+    "10699:rematch_menu.last"
+  ]
+}

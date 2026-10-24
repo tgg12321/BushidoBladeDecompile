@@ -1,0 +1,89 @@
+{
+  "description": "Training Mode: settings screen, character and weapon select incl. the enemy cursor, Pause Menu with the Ninja settings, fight against the Ninja (RIGHT holds, SQUAREs), no KO",
+  "covers": [
+    "mode:training",
+    "menu:top",
+    "menu:training_settings",
+    "menu:char_select",
+    "menu:weapon_select",
+    "menu:pause",
+    "event:round_start"
+  ],
+  "evidence": [
+    "docs/naming/runtime/training-hitmap-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 12200,
+  "inputs": [
+    "6080:DOWN",
+    "6140:DOWN",
+    "6200:CROSS",
+    "6500:START",
+    "6800:CROSS",
+    "7100:START",
+    "7400:CROSS",
+    "7700:START",
+    "8000:CROSS",
+    "8300:START",
+    "8500:CROSS",
+    "8800:CROSS",
+    "9100:CROSS",
+    "9400:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 9500,
+      "every": 300,
+      "count": 10,
+      "steps": [
+        "+0:RIGHT/90",
+        "+110:SQUARE",
+        "+150:SQUARE",
+        "+190:SQUARE",
+        "+230:SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6200:t_training",
+    "6300:training_menu",
+    "7000:t_char",
+    "7050:char_select",
+    "7400:t_weapon",
+    "7450:weapon_select",
+    "8500:t_load",
+    "9300:pause_menu",
+    "9400:t_fight",
+    "9450:fight"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6199:top_menu.last",
+    "6300:training_menu.first",
+    "6999:training_menu.last",
+    "7050:char_select.first",
+    "7399:char_select.last",
+    "7450:weapon_select.first",
+    "7999:weapon_select.mid",
+    "8350:weapon_select.enemy",
+    "8499:weapon_select.last",
+    "8650:t_load.mid",
+    "9300:pause_menu.first",
+    "9399:pause_menu.last",
+    "9450:fight.first",
+    "9700:fight.9700",
+    "9950:fight.9950",
+    "10200:fight.10200",
+    "10450:fight.10450",
+    "10700:fight.10700",
+    "10950:fight.10950",
+    "11200:fight.11200",
+    "11450:fight.11450",
+    "11700:fight.11700",
+    "11950:fight.11950",
+    "12199:fight.last"
+  ]
+}

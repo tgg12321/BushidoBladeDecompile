@@ -1,0 +1,16 @@
+{
+  "description": "menu-tour with one more screenshot inside each screen: the stub-and-observe baseline",
+  "evidence": [
+    "docs/naming/runtime/menu-tour-stub-1/baseline/spec.json",
+    "docs/naming/runtime/menu-tour-stub-1/func_8006BB68/spec.json",
+    "docs/naming/runtime/menu-tour-stub-1/func_8006C21C/spec.json"
+  ],
+  "extends": "menu-tour",
+  "shots": [
+    "6620:t_key.6620",
+    "6700:key_config.6700",
+    "6880:option_menu_2.6880",
+    "7150:memory_card.7150",
+    "7500:option_toggles.7500"
+  ]
+}

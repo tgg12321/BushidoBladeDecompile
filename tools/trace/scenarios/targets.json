@@ -1,0 +1,32 @@
+{
+  "groups": {
+    "modes": {
+      "keys": ["mode:story", "mode:vs_cpu", "mode:training", "mode:vs_2p", "mode:group_battle", "mode:link"],
+      "notes": {
+        "mode:link": "two consoles over a link cable: not reachable with one emulator"
+      }
+    },
+    "menus": {
+      "keys": ["menu:top", "menu:story_text", "menu:char_select", "menu:weapon_select", "menu:stage_select", "menu:stage_card", "menu:training_settings", "menu:pause", "menu:rematch", "menu:option", "menu:key_config", "menu:memory_card"]
+    },
+    "stages": {
+      "open": "names read off the Select Battle Stage scrolls ([Map 2] and [Map 3] in versus-2p-stage-map3-1); the scroll left of [Map 2] is not read yet",
+      "keys": ["stage:building_rooftop", "stage:purple_cavern", "stage:building_parking_lot", "stage:abandoned_station", "stage:future_dump_site", "stage:bamboo_thicket", "stage:abandoned_tunnel", "stage:meikyokan_dojo", "stage:terraced_fields", "stage:castle_rooftop", "stage:railway", "stage:under_railway"]
+    },
+    "characters": {
+      "open": "only the default Vs. Mode cursors are named from screenshots so far",
+      "keys": ["char:kannuki", "char:gengoro"]
+    },
+    "events": {
+      "keys": ["event:round_start", "event:hit", "event:guard", "event:ko", "event:win", "event:save", "event:load", "event:options_change"],
+      "notes": {
+        "event:ko": "a fighter down for good (no health bar: one cut can kill)",
+        "event:win": "player 1 wins a fight",
+        "event:hit": "a cut lands without a KO, shown on screen",
+        "event:guard": "a blocked cut, shown on screen",
+        "event:save": "data saved to a memory card",
+        "event:load": "data loaded from a memory card"
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "segment": true,
+  "description": "top menu DOWN x3 to Vs. Mode; P1 and P2 take the default character and weapon (cursors KANNUKI and GENGORO, Katana both); ends on Select Battle Stage [Map 2]",
+  "inputs": [
+    "6080:DOWN",
+    "6140:DOWN",
+    "6200:DOWN",
+    "6260:CROSS",
+    "6600:CROSS",
+    "6640:CROSS@2",
+    "6900:CROSS",
+    "6940:CROSS@2"
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6260:t_char",
+    "6550:char_select",
+    "6700:weapon_select",
+    "7000:t_stage",
+    "7175:stage_select"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6259:top_menu.last",
+    "6550:char_select.first",
+    "6699:char_select.last",
+    "6700:weapon_select.first",
+    "6999:weapon_select.last",
+    "7100:t_stage.mid",
+    "7175:stage_select.first"
+  ]
+}

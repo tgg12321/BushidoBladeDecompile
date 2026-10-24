@@ -1,0 +1,16 @@
+{
+  "segment": true,
+  "description": "power-on intro to the title, START, CROSS, START to the top menu",
+  "inputs": [
+    "5200:START",
+    "5500:CROSS",
+    "5800:START"
+  ],
+  "phases": [
+    "0:boot_intro",
+    "5490:t_menu"
+  ],
+  "shots": [
+    "5489:boot_intro.last"
+  ]
+}

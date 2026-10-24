@@ -1,0 +1,64 @@
+{
+  "description": "2P Vs. Mode on the first [Map 2] stage (Building Rooftop: the cursor starts there; its stage_select.last is pixel-identical to frame 7299 of versus-2p-stage-bamboo-1, where one DOWN lights Building Parking Lot; fight at night by a railing); P1 RIGHT + TRIANGLE/CIRCLE/SQUARE, P2 idle; one fighter down, Rematch menu",
+  "covers": [
+    "mode:vs_2p",
+    "menu:top",
+    "menu:char_select",
+    "menu:weapon_select",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:building_rooftop",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-hitmap-1/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 12000,
+  "inputs": [
+    "7500:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 8500,
+      "every": 100,
+      "count": 33,
+      "steps": [
+        "+0:RIGHT/40",
+        "+50:TRIANGLE|CIRCLE|SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "7525:t_load",
+    "8300:fight",
+    "10200:t_ko",
+    "10500:rematch_menu"
+  ],
+  "shots": [
+    "7499:stage_select.last",
+    "7900:t_load.mid",
+    "8300:fight.first",
+    "8500:fight.8500",
+    "8700:fight.8700",
+    "8900:fight.8900",
+    "9100:fight.9100",
+    "9300:fight.9300",
+    "9500:fight.9500",
+    "9700:fight.9700",
+    "9900:fight.9900",
+    "10100:fight.10100",
+    "10199:fight.last",
+    "10300:t_ko.mid",
+    "10500:rematch_menu.first",
+    "11000:rematch_menu.11000",
+    "11500:rematch_menu.11500",
+    "11999:rematch_menu.last"
+  ]
+}

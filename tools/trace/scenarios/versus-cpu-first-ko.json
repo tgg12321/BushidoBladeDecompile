@@ -1,0 +1,20 @@
+{
+  "description": "versus-cpu-first-fight cut at frame 9300 (before the Pause Menu), fight screenshots every 60 frames: the stub-and-observe baseline",
+  "evidence": [
+    "docs/naming/runtime/versus-cpu-stub-1/baseline/spec.json",
+    "docs/naming/runtime/versus-cpu-stub-1/func_8005E098/spec.json",
+    "docs/naming/runtime/versus-cpu-stub-1/func_8005E51C/spec.json"
+  ],
+  "extends": "versus-cpu-first-fight",
+  "end_frame": 9300,
+  "shots_drop": [
+    "fight.first"
+  ],
+  "shots": [
+    "8350:fight.8350",
+    "8410:fight.8410",
+    "8470:fight.8470",
+    "8530:fight.8530",
+    "8590:fight.8590"
+  ]
+}
