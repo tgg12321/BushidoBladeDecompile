@@ -14,33 +14,36 @@ globals of the pad remap); a read of all of main RAM works too.
 
 The walk follows fighter_Update / fight_UpdatePairedMoves /
 motion_ResolveMoveData / func_80021A98 (src/main/9F9C.c). A node is a move
-script, the file its 0x8000 ids came from, the record executing it and
-whether that record started the paired move (D_800A38AE):
+script, the file it was read from, the record executing it, D_800A38AE (the
+record that started the last paired move: read, else 0) and whether a
+paired start reset that record's unk_86 to unk_84:
   * move_kind is byte 0 of the move's motion metadata (func_80021A98);
   * ids: < 0x8000 the common file; 0x8000 | n entry n of the executing
     record's file, or of the other record's file while borrow_other_motion
     is set: by a command with flag 0x1000, a tc[0] end transition with
     0x1000, a fallback of a move with unk_09 & 0x20 (func_80021A98 clears
     it on every install); 0x7FF0..0x7FFF the executing record's variant
-    roots (unk_84 / unk_86 as read; 0x7FF1 first advances unk_86);
+    roots (unk_84 / unk_86 as read, or unk_84 after a paired start; 0x7FF1
+    first advances unk_86);
   * input edges: transition_commands entries (button bit = flags & 0xF, with
     9 -> 3 and 0xA -> 5 under their conditions; flags & 0x30 held / pressed /
     unheld / released; entries with 0x8000 only when the mask in their extra
     halfwords holds the executing record's unk_0A; 0x2000 entries never fire;
-    none fire for the record that started a kind-0x11 paired move);
-  * a 0x4000 entry is the paired move fight_UpdatePairedMoves starts by
-    distance (not by input; its extra bytes are distance data): both records
-    install it, from the starter's file; the other record runs it with
-    borrow_other_motion. The input loop would also test its button bit (and,
-    with 0x8000, its distance bytes as a mask); that use is not walked;
-  * other edges: the header fallback (move ended), the tc[0] 0x2000 end
-    transition (only the record that did not start a paired move), event
-    codes 0xD / 0x17 / 0x18 of the event table.
+    none fire for D_800A38AE in a kind-0x11 move; the other record's input
+    there is handed off (D_800A376E) and installs the move on both);
+  * the first 0x4000 entry is the paired move fight_UpdatePairedMoves
+    starts by distance (not by input; its extra bytes are distance data;
+    the label lists its gates): both records install it from the starter's
+    file, D_800A38AE becomes the starter, the other runs it with
+    borrow_other_motion and unk_86 = unk_84. The input loop would also test
+    its button bit (and, with 0x8000, its bytes as a mask); not walked;
+  * move ended: the tc[0] 0x2000 end transition for a record that is not
+    D_800A38AE, else the header fallback (landing, kind 0xA / unk_72, is not
+    walked); event codes 0xD / 0x17 / 0x18 of the event table.
   * the walk of record i follows the other record only while it runs the
     paired script (a node in record i's file); targets are listed for the
-    nodes of either record, one shortest path per move and record (a node
-    flagged "paired starter" is the same move after record i started a
-    paired move: D_800A38AE stays set);
+    nodes of either record, one shortest path per move, file and record;
+    edges whose target does not read as a move script are dropped and listed;
   * the window: entries are read while move_frame <= last_command_frame
     (move_frame advances move_frame_step / 0x1000 per frame); in a move with
     unk_09 & 0x80 the chosen move is queued and starts after
@@ -80,8 +83,9 @@ KEY_CONFIG = 0x80106A70  # D_80106A50.frec20[3]
 MODE = 0x800A38DC  # D_800A38DC (s16)
 MODE6_PLAYER = 0x800A38A0  # D_800A38A0 (s32)
 MODE6_CONFIG = 0x800A3912  # D_800A3912..14
+PAIRED_STARTER = 0x800A38AE  # D_800A38AE (s16)
 
-# motion_Init (9F9C.c): common file at 0x80120000, fighter files at
+# motion_InitBuffers (9F9C.c): common file at 0x80120000, fighter files at
 # 0x80148800 / 0x80190800, 0x48000 apart.
 SPEC_VALUES = [
     {"at": "g_motion_fighter_buffers", "len": 8},
@@ -92,6 +96,7 @@ SPEC_VALUES = [
     {"at": "D_800A38DC", "len": 2},
     {"at": "D_800A38A0", "len": 4},
     {"at": "D_800A3912", "len": 3},
+    {"at": "D_800A38AE", "len": 2},
     {"at": "0x80120000", "len": 0x801D8800 - 0x80120000},
 ]
 
@@ -174,6 +179,12 @@ class Fight:
         else:
             self.mode = None
             self.notes.append("D_800A38DC not read: mode assumed not 6")
+        if m.covered(PAIRED_STARTER, 2):
+            self.ae = m.s16(PAIRED_STARTER)
+        else:
+            self.ae = 0
+            self.notes.append("D_800A38AE not read: assumed 0 (BSS; only "
+                              "fight_UpdatePairedMoves writes it)")
         self.buttons = [self._buttons(i) for i in (0, 1)]
         self.dropped = []  # edges whose target does not read as a script
 
@@ -190,7 +201,8 @@ class Fight:
         else:
             if not m.covered(KEY_CONFIG, 3):
                 raise SystemExit("movegraph: key config 0x80106A70 not read")
-            nib = [(m.u8(KEY_CONFIG + i) >> (4 * idx)) & 0xF for i in range(3)]
+            shift = 0 if mode == 6 else 4 * idx  # func_8001BE20's temp
+            nib = [(m.u8(KEY_CONFIG + i) >> shift) & 0xF for i in range(3)]
         for bit, n in zip((5, 6, 7), nib):
             pads = [name for k, (name, _) in enumerate(NIBBLE_PAD) if n & (1 << k)]
             names[bit] = "/".join(pads) or f"bit{bit}(no button)"
@@ -204,24 +216,25 @@ class Fight:
         b = COMMON_SECTIONS if slot is None else FIGHTER_SECTIONS + slot * SECTIONS_SIZE
         return self.m.u32(b), self.m.u32(b + 4), self.m.u32(b + 8)
 
-    def resolve(self, mid, ex, borrow=False):
+    def resolve(self, mid, ex, borrow=False, reset=False):
         """motion_ResolveMoveData for executing record `ex` ->
         (addr, file slot or None for common, note)"""
         m, r = self.m, self.recs[ex]
         buf, f00 = r.buf, self.sections(r.slot)[0]
+        u86 = r.u84 if reset else r.u86  # paired start: other's unk_86 = unk_84
         if 0x7FF5 <= mid <= 0x7FFF:
-            i = m.u16(buf + 0x66 + ((mid - 0x7FF5) * 3 + r.u86) * 2)
-            return f00 + 2 * i, r.slot, f"f66[{mid - 0x7FF5}][{r.u86}]"
+            i = m.u16(buf + 0x66 + ((mid - 0x7FF5) * 3 + u86) * 2)
+            return f00 + 2 * i, r.slot, f"f66[{mid - 0x7FF5}][{u86}]"
         f14 = m.s16(buf + 0x14)
         if mid in (0x7FF0, 0x7FF1, 0x7FF2, 0x7FF4):
             k = r.u84 if mid == 0x7FF0 else \
-                (r.u86 + 1) % f14 if mid == 0x7FF1 else r.u86
+                (u86 + 1) % f14 if mid == 0x7FF1 else u86
             return f00 + 2 * m.u16(buf + 0x4E + 2 * k), r.slot, \
-                f"variant f4E[{k}] (unk_86 as read; may skip a variant)"
+                f"variant f4E[{k}] (unk_86 as read)"
         if mid == 0x7FF3:
-            t = (r.u86 + 1) % f14
-            return f00 + 2 * m.u16(buf + 0x54 + (r.u86 * 3 + t) * 2), \
-                r.slot, f"variant f54[{r.u86}][{t}]"
+            t = (u86 + 1) % f14
+            return f00 + 2 * m.u16(buf + 0x54 + (u86 * 3 + t) * 2), \
+                r.slot, f"variant f54[{u86}][{t}]"
         if mid & 0x8000:
             slot = self.recs[1 - ex].slot if borrow else r.slot
             return self.sections(slot)[0] + 2 * (mid & 0x7FFF), slot, \
@@ -271,7 +284,7 @@ class Fight:
         bit, cond = f & 0xF, []
         if bit == 9:
             bit = 3
-            cond.append("other fighter in kind 6 or before its unk_AB frame")
+            cond.append("other fighter in kind 6 or at/after its unk_AB frame")
         elif bit == 0xA:
             bit = 5
             cond.append("needs unk_26C")
@@ -284,48 +297,79 @@ class Fight:
 
     def edges(self, node):
         """-> [(node, label)] for node (addr, file slot, executing record,
-        started a paired move)"""
-        a, _, ex, starter = node
+        D_800A38AE, unk_86 reset to unk_84 by a paired start)"""
+        a, _, ex, ae, reset = node
         r, m = self.recs[ex], self.m
         h = self.header(a)
         kind = self.move_kind(a, node[1])
         out = []
 
-        def add(mid, lab, borrow=False, who=ex, st=starter):
-            na, ns, note = self.resolve(mid, who, borrow)
-            if self.valid(na, ns):
-                out.append(((na, ns, who, st), f"{lab} -> id {mid:#06x}"
-                            + (f" ({note})" if note else "")))
-            else:
-                self.dropped.append((node, lab, mid, na))
+        def target(mid, borrow=False):
+            na, ns, note = self.resolve(mid, ex, borrow, reset)
+            return (na, ns, note) if self.valid(na, ns) else None
 
+        def add(mid, lab, borrow=False):
+            t = target(mid, borrow)
+            if t is None:
+                self.dropped.append((node, lab, mid))
+                return
+            na, ns, note = t
+            out.append(((na, ns, ex, ae, reset), f"{lab} -> id {mid:#06x}"
+                        + (f" ({note})" if note else "")))
+
+        paired_seen = False
         for f, mid, extra in self.commands(a):
             if f & 0x4000:
+                if paired_seen:
+                    continue  # motion_FindPairedMoveEntry: the first only
+                paired_seen = True
                 b = extra.to_bytes(4, "little")
-                lab = (f"paired move (fight_UpdatePairedMoves): distance "
-                       f"{b[0] * 20}..{b[1] * 20}, other in kind "
-                       f"0x15/0x2C/0xE/0x19")
-                na, ns, note = self.resolve(mid, ex)
-                if not self.valid(na, ns):
-                    self.dropped.append((node, lab, mid, na))
-                else:
-                    out.append(((na, ns, ex, True), f"{lab} -> id {mid:#06x}"))
-                    out.append(((na, ns, 1 - ex, False),
-                                f"{lab}, run by the other record -> id {mid:#06x}"))
+                lab = (f"paired move (fight_UpdatePairedMoves, not input): "
+                       f"distance {b[0] * 20}..{b[1] * 20}, height gap < 100, "
+                       f"other in kind 0x15/0x2C/0xE/0x19, func_8001FB34 "
+                       f"(not modes 2/3/5"
+                       + ("; needs unk_26C" if b[3] & 0x80 else "") + ")")
+                t = target(mid)
+                if t is None:
+                    self.dropped.append((node, lab, mid))
+                    continue
+                na, ns, _ = t
+                # both install it from the starter's file; D_800A38AE = ex;
+                # the other gets borrow_other_motion and unk_86 = unk_84
+                out.append(((na, ns, ex, ex, reset), f"{lab} -> id {mid:#06x}"))
+                out.append(((na, ns, 1 - ex, ex, True),
+                            f"{lab}, run by the other record -> id {mid:#06x}"))
                 continue
             if f & 0x2000:
                 continue  # var_8 = 0: never fires on input
-            if kind == 0x11 and starter:
+            if kind == 0x11 and ex == ae:
                 continue  # var_8 = 0 for D_800A38AE in a kind-0x11 move
             if f & 0x8000 and not (extra >> r.unk_0A) & 1:
                 continue  # character mask excludes the executing record
-            add(mid, self.label(f, extra, ex), bool(f & 0x1000))
-        add(h["fallback"], "fallback (move ended)", bool(h["unk_09"] & 0x20))
+            lab = self.label(f, extra, ex)
+            if kind == 0x11:
+                # D_800A376E hand-off: fight_UpdatePairedMoves installs the
+                # move on D_800A38AE and on the other (borrow if 0x1000)
+                t = target(mid, bool(f & 0x1000))
+                if t is None:
+                    self.dropped.append((node, lab, mid))
+                    continue
+                na, ns, note = t
+                lab += f" -> id {mid:#06x}" + (f" ({note})" if note else "")
+                out.append(((na, ns, ex, ae, reset),
+                            lab + " (paired hand-off, both records)"))
+                out.append(((na, ns, ae, ae, reset),
+                            lab + " (paired hand-off, run by D_800A38AE)"))
+                continue
+            add(mid, lab, bool(f & 0x1000))
         tc0 = m.u16(a + 10)
-        if tc0 & 0x2000 and not starter:
-            add(m.u16(a + 12), "end transition (tc[0] & 0x2000)",
+        if tc0 & 0x2000 and ex != ae:
+            add(m.u16(a + 12), "end transition (move ended, tc[0] & 0x2000)",
                 bool(tc0 & 0x1000))
-        tbl, _, _ = self.resolve(h["event_table"], ex)
+        else:
+            add(h["fallback"], "fallback (move ended)",
+                bool(h["unk_09"] & 0x20))
+        tbl, _, _ = self.resolve(h["event_table"], ex, False, reset)
         if m.covered(tbl, 0x32):
             for code in (0xD, 0x17, 0x18):
                 add(m.u16(tbl + 2 * code), f"event {code:#x}")
@@ -333,10 +377,10 @@ class Fight:
 
     def walk(self, idx):
         r = self.recs[idx]
-        roots = [((r.cur, r.slot, idx, False), "cur_move")]
+        roots = [((r.cur, r.slot, idx, self.ae, False), "cur_move")]
         for k in range(3):
             a = self.sections(r.slot)[0] + 2 * self.m.u16(r.buf + 0x4E + 2 * k)
-            roots.append(((a, r.slot, idx, False), f"root f4E[{k}]"))
+            roots.append(((a, r.slot, idx, self.ae, False), f"root f4E[{k}]"))
         seen, q = {}, collections.deque()
         for node, lab in roots:
             if node not in seen:
@@ -353,14 +397,14 @@ class Fight:
         return seen
 
     def describe(self, node):
-        a, s, ex, starter = node
+        a, s, ex, ae, reset = node
         h = self.header(a)
         return (f"{a:#010x} kind {self.move_kind(a, s):#04x} "
                 f"({'common' if s is None else f'file slot {s}'}, run by "
-                f"record {ex}{', paired starter' if starter else ''}; frames "
+                f"record {ex}, D_800A38AE {ae}"
+                f"{', unk_86 = unk_84' if reset else ''}; frames "
                 f"{h['first']}..{h['last']}, input to {h['last_cmd']}"
                 f"{', queued' if h['unk_09'] & 0x80 else ''})")
-
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
@@ -386,7 +430,7 @@ def main(argv=None):
     fight = Fight(load_dump(args.capture, args.phase))
     for n in fight.notes:
         print(f"note: {n}")
-    print(f"mode D_800A38DC {fight.mode}")
+    print(f"mode D_800A38DC {fight.mode}, D_800A38AE {fight.ae}")
     kinds = {int(k, 0) for k in args.kinds.split(",") if k}
     recs = (0, 1) if args.record is None else (args.record,)
     if args.move and args.record is None:
@@ -396,20 +440,20 @@ def main(argv=None):
         print(f"record {idx}: unk_0A {r.unk_0A:#x} unk_0C {r.unk_0C:#x} "
               f"unk_0E {r.unk_0E} slot {r.slot} unk_26C {r.unk_26C} "
               f"move_frame_step {r.step:#x} (base {r.base_step:#x}); "
-              f"cur_move {fight.describe((r.cur, r.slot, idx, False))}")
+              f"cur_move {fight.describe((r.cur, r.slot, idx, fight.ae, False))}")
         print("  buttons: " + ", ".join(
             f"bit {b} {fight.buttons[idx][b]}" for b in (5, 6, 7, 12, 13, 14, 15)))
         if args.move:
             addr, _, file = args.move.partition(":")
             node = (int(addr, 0), None if file == "common"
-                    else int(file) if file else r.slot, idx, False)
+                    else int(file) if file else r.slot, idx, fight.ae, False)
             print(f"  move {fight.describe(node)}")
             fight.dropped = []
             for nn, lab in fight.edges(node):
                 print(f"  {lab}\n      => {fight.describe(nn)}")
-            for _, lab, mid, na in fight.dropped:
-                print(f"  {lab} -> id {mid:#06x}\n      => {na:#010x}: not a "
-                      "move script (dropped)")
+            for _, lab, mid in fight.dropped:
+                print(f"  {lab} -> id {mid:#06x}\n      => not a move "
+                      "script (dropped)")
             continue
         fight.dropped = []
         seen = fight.walk(idx)
@@ -417,7 +461,7 @@ def main(argv=None):
             print(f"  {len(fight.dropped)} edges dropped (target does not read "
                   "as a move script): " + "; ".join(sorted({
                       f"from {n[0]:#x} (record {n[2]}) {lab} -> id {mid:#06x}"
-                      for n, lab, mid, _ in fight.dropped})))
+                      for n, lab, mid in fight.dropped})))
         hist = collections.Counter(fight.move_kind(n[0], n[1]) for n in seen)
         print(f"  {len(seen)} nodes reachable; kinds: " + ", ".join(
             f"{k:#x} x{n}" for k, n in sorted(hist.items())))
