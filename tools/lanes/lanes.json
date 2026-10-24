@@ -33,6 +33,12 @@
       "path": "docs/naming/function-names.csv",
       "cmd": "python3 docs/naming/build_census.py",
       "subject": "docs: census refresh"
+    },
+    {
+      "path": "docs/naming/runtime/evidence/events.tsv",
+      "cmd": "python3 tools/trace/scan/events.py build",
+      "subject": "docs: runtime event evidence refresh",
+      "inputs": ["docs/naming/runtime/"]
     }
   ],
   "gates": {

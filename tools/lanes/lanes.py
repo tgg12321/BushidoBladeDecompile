@@ -876,7 +876,8 @@ def needs_full_gates(lane_paths, main_paths, inert=INERT_DEFAULT, docs_only=("do
     (src/, include/, asm/, Makefile, *.ld, engine/, tools/, root registries, AGENTS.md...) counts.
     `mergeable` paths (regenerated outputs, row-merged registries) may change on both sides: the
     replay merges them mechanically and the regenerate step rebuilds them on the final tree.
-    `docs_only` is the prefix set under which a lane skips gates and regeneration entirely.
+    `docs_only` is the prefix set under which a lane skips gates and regeneration entries
+    without declared inputs.
 
     A cheap re-check (clean replay + quick gates + regenerate) suffices only when the sides are
     disjoint (outside `mergeable`) and at most one side touched build inputs. A lane that is not
@@ -1066,22 +1067,32 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
         if got != ctx.cfg["oracle_sha1"]:
             raise Refuse(f"{exe} SHA1 {got} != oracle {ctx.cfg['oracle_sha1']}", 4)
         print(f"lanes: SHA1 == oracle ({got[:12]})")
-    if not docs_only:
-        regenerate(ctx, lane, ld, log)
+    regenerate(ctx, lane, ld, log, docs_only=docs_only)
     if git("status", "--porcelain", "--untracked-files=no", cwd=ld):
         raise Refuse("the gates left tracked changes in the landing worktree: "
                      + git("status", "--porcelain", "--untracked-files=no", cwd=ld), 4)
     return git("rev-parse", "HEAD", cwd=ld)
 
 
-def regenerate(ctx: Ctx, lane: str, ld: Path, log):
+def regenerate(ctx: Ctx, lane: str, ld: Path, log, docs_only=False):
     """Rebuild the lanes.json "regenerate" outputs and fold any change into the candidate's last
     lane commit (amend), so a land adds no separate refresh commit and every landed commit holds
     a census that matches its tree. The amend keeps message and author and runs the commit-msg
     chain like any commit (its staged diff is only the regenerated files). ctx.replayed entries
-    that pointed at the amended commit are moved to the new one."""
+    that pointed at the amended commit are moved to the new one.
+
+    Entries with inputs run only when the candidate's pre-regeneration paths touch an input
+    prefix (excluding the output itself), including on docs-only lands. Thus a failing runtime
+    events build refuses only lands touching its capture inputs. Entries without inputs keep
+    running on every non-docs land and never on docs-only lands."""
     changed = []
     for g in ctx.cfg.get("regenerate", []):
+        if "inputs" in g:
+            if not any(p != g["path"] and any(p.startswith(i) for i in g["inputs"])
+                       for p in ctx.cand_paths):
+                continue
+        elif docs_only:
+            continue
         if run_shell(ctx, ld, g["cmd"], log) != 0:
             raise Refuse(f"regenerate failed: {g['cmd']}", 4)
         git("add", "--", g["path"], cwd=ld)

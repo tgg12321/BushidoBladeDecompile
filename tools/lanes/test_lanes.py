@@ -541,6 +541,88 @@ class LaneTest(unittest.TestCase):
         self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
         self.assertIn("docs-only", self.last)
 
+    def _inputs_regen(self, cmd="python gen_events.py", initial="stale\n"):
+        self._main_commit("docs/runtime/events.tsv", initial)
+        self._main_commit("gen_events.py", "from pathlib import Path\n"
+                          "Path('docs/runtime/events.tsv').write_text('fresh\\n')\n")
+        entry = {"path": "docs/runtime/events.tsv", "cmd": cmd,
+                 "subject": "docs: events refresh", "inputs": ["docs/runtime/"]}
+        cfg = dict(CFG, regenerate=CFG["regenerate"] + [entry])
+        self._main_commit("tools/lanes/lanes.json", json.dumps(cfg))
+
+    def test_docs_inputs_regenerate_and_fold(self):
+        self._inputs_regen()
+        self.L("s1", "open", "a")
+        self.commit("a", "docs/runtime/capture.txt", "capture\n", "capture")
+        before = sh("rev-parse", "main", cwd=self.main)
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("docs-only", self.last)
+        self.assertNotIn("$ python gate.py", self.last)
+        self.assertNotIn("quick-gate", self.last)
+        self.assertNotIn("$ python gen_census.py", self.last)
+        self.assertEqual(self.main_file("docs/runtime/events.tsv"), "fresh\n")
+        self.assertEqual(sh("log", "--format=%s", f"{before}..main", cwd=self.main), "capture")
+        self.assertEqual(sh("show", "--name-only", "--format=", "main", cwd=self.main).split(),
+                         ["docs/runtime/capture.txt", "docs/runtime/events.tsv"])
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("nothing to land", self.last)
+
+    def test_docs_unrelated_to_inputs_skips_regeneration(self):
+        self._inputs_regen()
+        self.L("s1", "open", "a")
+        self.commit("a", "docs/note.md", "note\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertNotIn("$ python gen_events.py", self.last)
+        self.assertNotIn("$ python gen_census.py", self.last)
+        self.assertEqual(self.main_file("docs/runtime/events.tsv"), "stale\n")
+
+    def test_non_docs_unrelated_to_inputs_still_runs_census(self):
+        self._inputs_regen()
+        self.L("s1", "open", "a")
+        self.commit("a", "src/b.c", "int b;\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertNotIn("$ python gen_events.py", self.last)
+        self.assertIn("regenerated census.csv", self.last)
+        self.assertEqual(self.main_file("census.csv"), "files,2\n")
+        self.assertEqual(self.main_file("docs/runtime/events.tsv"), "stale\n")
+
+    def test_inputs_output_only_does_not_trigger(self):
+        self._inputs_regen()
+        self.L("s1", "open", "a")
+        self.commit("a", "docs/runtime/events.tsv", "manual\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertNotIn("$ python gen_events.py", self.last)
+        self.assertEqual(self.main_file("docs/runtime/events.tsv"), "manual\n")
+
+    def test_failing_inputs_command_refuses_only_touching_land(self):
+        self._inputs_regen(cmd='python -c "import sys; sys.exit(1)"')
+        self.L("s1", "open", "a")
+        self.L("s2", "open", "b")
+        self.commit("a", "docs/runtime/capture.txt", "bad capture\n")
+        before = sh("rev-parse", "main", cwd=self.main)
+        self.assertEqual(self.L("s1", "land", "a"), 4, self.last)
+        self.assertIn("regenerate failed", self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), before)
+        self.commit("b", "docs/note.md", "note\n")
+        self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        self.commit("b", "src/b.c", "int b;\n")
+        self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
+        self.assertIn("regenerated census.csv", self.last)
+        self.assertEqual(self.main_file("docs/runtime/events.tsv"), "stale\n")
+
+    def test_docs_inputs_regen_only_last_commit_dropped(self):
+        self._inputs_regen(initial="fresh\n")
+        self.L("s1", "open", "a")
+        before = sh("rev-parse", "main", cwd=self.main)
+        self.commit("a", "docs/runtime/capture.txt", "capture\n", "capture")
+        self.commit("a", "docs/runtime/events.tsv", "manual\n", "manual events")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("held only regenerated files and was dropped", self.last)
+        self.assertEqual(sh("log", "--format=%s", f"{before}..main", cwd=self.main), "capture")
+        self.assertEqual(self.main_file("docs/runtime/events.tsv"), "fresh\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertIn("nothing to land", self.last)
+
     def test_freeze_blocks_other_landing(self):
         self.L("s1", "open", "pins"); self.L("s2", "open", "naming-a")
         self.assertEqual(self.L("s1", "claim", "pins", "path:shared.txt!"), 0, self.last)
