@@ -1,4 +1,4 @@
-glabel func_8006CFBC
+glabel menu_DrawRowBitsGetEmptyRowSides
     /* 5D7BC 8006CFBC 78FFBD27 */  addiu      $sp, $sp, -0x88
     /* 5D7C0 8006CFC0 6800B2AF */  sw         $s2, 0x68($sp)
     /* 5D7C4 8006CFC4 21908000 */  addu       $s2, $a0, $zero
@@ -227,4 +227,4 @@ glabel func_8006CFBC
     /* 5DB18 8006D318 8800BD27 */  addiu      $sp, $sp, 0x88
     /* 5DB1C 8006D31C 0800E003 */  jr         $ra
     /* 5DB20 8006D320 00000000 */   nop
-endlabel func_8006CFBC
+endlabel menu_DrawRowBitsGetEmptyRowSides

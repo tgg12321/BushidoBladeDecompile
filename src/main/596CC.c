@@ -2044,7 +2044,7 @@ typedef union {
     s32 word;
 } Counts_8006CFBC;
 
-s32 func_8006CFBC(s32 *arg0) {
+s32 menu_DrawRowBitsGetEmptyRowSides(s32 *arg0) {
     Unk8007352CRec s;
     Counts_8006CFBC counts;
     Unk8009B0E0Record **table;
@@ -2141,7 +2141,7 @@ void menu_ResetRowBitCursors(void) {
 }
 
 extern void func_8006C21C(s32 *);
-extern s32 func_8006CFBC(s32 *);
+extern s32 menu_DrawRowBitsGetEmptyRowSides(s32 *);
 
 s32 menu_UpdateRowBitMenu(s32 arg0, s32 arg1) {
     s32 sp10[22];
@@ -2152,7 +2152,7 @@ s32 menu_UpdateRowBitMenu(s32 arg0, s32 arg1) {
     func_8006E390(sp10, &D_800A3518);
     func_80069AE4(sp10, 2, t);
     func_8006C21C(sp10);
-    r = func_8006CFBC(sp10);
+    r = menu_DrawRowBitsGetEmptyRowSides(sp10);
     return menu_HandleRowBitInput(&arg0, &arg1, (s32)((r << 16) >> 16));
 }
 

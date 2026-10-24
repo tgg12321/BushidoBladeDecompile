@@ -1,4 +1,4 @@
-glabel func_80077098
+glabel menu_GetSelPrimBuffer
     /* 67898 80077098 40100400 */  sll        $v0, $a0, 1
     /* 6789C 8007709C 21104400 */  addu       $v0, $v0, $a0
     /* 678A0 800770A0 80100200 */  sll        $v0, $v0, 2
@@ -7,4 +7,4 @@ glabel func_80077098
     /* 678AC 800770AC 80100200 */  sll        $v0, $v0, 2
     /* 678B0 800770B0 0800E003 */  jr         $ra
     /* 678B4 800770B4 21106200 */   addu      $v0, $v1, $v0
-endlabel func_80077098
+endlabel menu_GetSelPrimBuffer

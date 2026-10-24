@@ -1062,7 +1062,7 @@ s32 menu_RelocateSelLists(s32 *a0) {
     return a0[1];
 }
 
-Unk8006E49CRec *func_80077098(s32 a0) { return &D_800A35D8[a0]; }
+Unk8006E49CRec *menu_GetSelPrimBuffer(s32 a0) { return &D_800A35D8[a0]; }
 
 extern s32 menu_RelocateSelLists(s32 *);
 
@@ -1234,7 +1234,7 @@ s32 menu_StepSelScreen(s32 arg0, s32 arg1) {
     temp_v1 = SELWORK->f30 + 1;
     SELWORK->f34 = SELWORK->f34 + 1;
     SELWORK->f30 = temp_v1;
-    p = func_80077098(temp_v1 & 1);
+    p = menu_GetSelPrimBuffer(temp_v1 & 1);
     SELWORK->f2C = p;
     s.unk_00.v80076FF8 = SELWORK->f04;
     s.unk_04.unk_00 = p->unk_00;

@@ -22,7 +22,7 @@ glabel menu_StepSelScreen
     /* 67F74 80077774 01006430 */  andi       $a0, $v1, 0x1
     /* 67F78 80077778 01004224 */  addiu      $v0, $v0, 0x1
     /* 67F7C 8007777C 3400A2A4 */  sh         $v0, 0x34($a1)
-    /* 67F80 80077780 26DC010C */  jal        func_80077098
+    /* 67F80 80077780 26DC010C */  jal        menu_GetSelPrimBuffer
     /* 67F84 80077784 3000A3AC */   sw        $v1, 0x30($a1)
     /* 67F88 80077788 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
     /* 67F8C 8007778C 00000000 */  nop

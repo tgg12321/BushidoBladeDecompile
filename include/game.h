@@ -2368,9 +2368,9 @@ typedef struct {
  * - unk_0C: the s16 pair func_800692C0 steps (its arg2); the draw functions use
  * unk_0C[0] / [1] as x / y offsets.
  * - unk_28: one s16 per player (func_8006C21C, menu_SetExclusiveRowBit,
- * menu_HandleRowBitInput); menu_HandleRowBitInput and func_8006CFBC also test
- * the pair as one word (== 0x50005: both 5), as SelWork's f1C / f20. No code
- * touches the other bytes. */
+ * menu_HandleRowBitInput); menu_HandleRowBitInput and
+ * menu_DrawRowBitsGetEmptyRowSides also test the pair as one word (== 0x50005:
+ * both 5), as SelWork's f1C / f20. No code touches the other bytes. */
 typedef struct {
     u8 pad00[0xC];
     s16 unk_0C[2];
