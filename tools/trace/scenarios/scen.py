@@ -37,7 +37,7 @@ Scenario keys (all optional except end_frame, unless "extends" gives it):
   python tools/trace/scenarios/scen.py build <name> --out spec.json [--instrument I]
   python tools/trace/scenarios/scen.py verify       # compile all, match evidence
   python tools/trace/scenarios/scen.py coverage     # targets reached / missing
-  python tools/trace/scenarios/scen.py run <name>... --out-root DIR \\
+  python tools/trace/scenarios/scen.py run <name>... (--out-root DIR | --dir D) \\
       [--instrument I] [--bios B] [--emulator E] [--cue C]
       one headless gdbtrace run per scenario, all at once (the pool caps
       how many emulators run; the rest wait for a slot)
@@ -412,7 +412,15 @@ def cmd_run(args) -> int:
     for what, p in (("emulator", emu), ("cue", cue), ("bios", bios)):
         if not p or not os.path.exists(p):
             raise SystemExit(f"scen: {what} not found ({p}); pass --{what}")
-    dirs = [short(n) for n in args.names]
+    if bool(args.out_root) == bool(args.dir):
+        raise SystemExit("scen: give --out-root, or --dir with one scenario")
+    if args.dir and len(args.names) != 1:
+        raise SystemExit("scen: --dir takes exactly one scenario")
+    if args.dir:  # e.g. the committed capture dir docs/naming/runtime/<capture>
+        args.out_root, args.names = os.path.dirname(os.path.abspath(args.dir)), \
+            [args.names[0]]
+    dirs = [os.path.basename(os.path.abspath(args.dir))] if args.dir else \
+        [short(n) for n in args.names]
     if len(set(dirs)) != len(dirs):
         raise SystemExit(f"scen: two runs would share an output dir: {dirs}")
     specs = [(n, os.path.join(args.out_root, s), build_spec(n, args.instrument))
@@ -463,7 +471,8 @@ def main(argv=None) -> int:
     sub.add_parser("coverage")
     p = sub.add_parser("run")
     p.add_argument("names", nargs="+")
-    p.add_argument("--out-root", required=True)
+    p.add_argument("--out-root", help="one <out-root>/<scenario>/ per run")
+    p.add_argument("--dir", help="one scenario: capture into exactly this dir")
     p.add_argument("--instrument")
     p.add_argument("--emulator")
     p.add_argument("--cue")
