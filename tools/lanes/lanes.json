@@ -39,6 +39,21 @@
       "cmd": "python3 tools/trace/scan/events.py build",
       "subject": "docs: runtime event evidence refresh",
       "inputs": ["docs/naming/runtime/", "tools/trace/scan/events.py"]
+    },
+    {
+      "path": "docs/naming/runtime/evidence/main__596CC.tsv",
+      "cmd": "python3 tools/trace/scan/notes.py build --tu main/596CC",
+      "subject": "docs: runtime evidence notes refresh (main/596CC)",
+      "inputs": ["docs/naming/runtime/matrix/", "tools/trace/scan/notes.py",
+                 "tools/trace/scan/facts.py", "engine/tus.py", "bb2.ld"]
+    },
+    {
+      "path": "docs/naming/runtime/evidence/main__64FD8.tsv",
+      "cmd": "python3 tools/trace/scan/notes.py build --tu main/64FD8",
+      "subject": "docs: runtime evidence notes refresh (main/64FD8)",
+      "inputs": ["docs/naming/runtime/matrix/", "tools/trace/scan/notes.py",
+                 "tools/trace/scan/facts.py", "engine/tus.py", "bb2.ld",
+                 "src/main/psxsdk/libapi/c67.c"]
     }
   ],
   "gates": {
