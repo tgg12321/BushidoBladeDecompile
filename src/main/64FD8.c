@@ -595,14 +595,15 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     for (i = arg1 * 10; i < arg1 * 10 + 10; i++) {
         /* i indexes the whole table flat (arg1 * 10 + cell). */
         /* SOTN: src/dra/62DEC.c:1091 @aa53500 */
-        /* FAKE: pointer form of the flat read hoists the base into $s6.
-         * All three reads: D_8009BCF8[0][i].unk0 -> score 44 (Q53);
+        /* The flat read through the element pointer (the target adds i * 2
+         * to the hoisted table base). Subscripted instead:
+         * D_8009BCF8[0][i].unk0 at all three reads -> score 44 (Q53);
          * D_8009BCF8[arg1][i - arg1 * 10].unk0 -> score 51;
          * same row read once into entry, reused -> score 58.
          * Column loop (i = 0; i < 10; i++), passing arg1 * 10 + i:
          * D_8009BCF8[arg1][i].unk0 at all three reads -> score 53;
          * same column read once into entry, reused -> score 69. */
-        u8 entry = (&D_8009BCF8[0][0] + i)->unk0;
+        u8 entry = ((Unk8009BCF8Record *)D_8009BCF8)[i].unk0;
 
         if (D_8009BCE4[entry] & 1) {
             s.header = table[entry + 1];
@@ -610,7 +611,7 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             s.table = cells;
             if (D_8009BCF8[arg1][SELWORK->f1C.half[arg3] * 5 +
                                  SELWORK->f20.half[arg3]]
-                    .unk0 == (&D_8009BCF8[0][0] + i)->unk0) {
+                    .unk0 == ((Unk8009BCF8Record *)D_8009BCF8)[i].unk0) {
                 s.has_color = 1;
                 s.header += 1 + arg3;
             } else {
@@ -619,7 +620,8 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             s.y = 0;
             s.sprt_out = arg0->unk_04.unk_0C;
             arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
-            if (D_8009BCE4[(&D_8009BCF8[0][0] + i)->unk0] & (4 << arg3)) {
+            if (D_8009BCE4[((Unk8009BCF8Record *)D_8009BCF8)[i].unk0] &
+                (4 << arg3)) {
                 func_80075830(arg0, i, arg3, 1);
             }
         } else {
