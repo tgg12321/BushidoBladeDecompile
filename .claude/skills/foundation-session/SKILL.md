@@ -92,7 +92,8 @@ live session owns, and say which one you took.
   updating `bb2.ld` object order: run `tus-check`.
 - **fake**: one TU per unit, claimed as `path:src/main/<tu>.c`. Naming lanes may still rename
   symbols in it; that merges line by line on land.
-- **assets / trace**: tools and docs only, no build input. `land` still runs the full gates when
+- **assets / trace** (also trace-a, trace-b, trace-c: parallel trace lanes, each its own row; each
+  agent runs its own headless emulators via the shared runner): tools and docs only, no build input. `land` still runs the full gates when
   anything outside `docs/` or `memory/` changes (a `tools/` script can be a build input).
 
 ## Hard limits
