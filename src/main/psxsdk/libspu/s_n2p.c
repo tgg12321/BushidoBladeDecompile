@@ -8,14 +8,13 @@
    of-two step 0x103B/0x1000 once per 32 cents (rem >> 5), then linearly
    interpolates the remaining 0..31 cents between the two adjacent steps. */
 inline u32 _spu_2pitch(u32 atten, u32 rem) {
-    u32 ratio = 0x103B;
     u32 lower = atten << 12;
+    u32 ratio = 0x103B;
+    u32 upper = atten * ratio;
+    s32 steps = rem / 32;
+    s32 frac = rem % 32;
     s32 i;
-    s32 steps = rem >> 5;
-    u32 frac = rem & 0x1F;
-    u32 upper;
 
-    upper = atten * ratio;
     for (i = 0; i < steps; i++) {
         lower = atten * ratio;
         ratio *= 0x103B;
@@ -54,11 +53,7 @@ u16 _spu_note2pitch(u16 cen_note, u16 cen_fine, u16 note, u16 fine) {
         }
         atten = 0x1000 >> oct;
     }
-    /* FAKE: staging the attenuation through the dead `diff` puts the
-       widening `andi` before the inlinee's `li 0x103B`; a fresh local or no
-       staging reverses the pair: score 2 (staged-value-reused-variable) */
-    diff = atten;
-    pitch = _spu_2pitch(diff, (rem < 0) ? -rem : rem);
+    pitch = _spu_2pitch(atten, (rem < 0) ? -rem : rem);
     if (pitch >= 0x4000) {
         pitch = 0x3FFF;
     }
