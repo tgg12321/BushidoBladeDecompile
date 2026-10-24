@@ -66,7 +66,11 @@ paired start reset that record's unk_86 to unk_84:
     unk_09 & 0x80 the chosen move is queued and starts after
     last_command_frame.
 Button names are the physical buttons (func_8001BE20 and pad_Update in
-src/main/87A0.c): game bits 0 L2, 1 R2, 2 L1, 3 R1, 5/6/7 the attack
+src/main/87A0.c): game bits 0 L2 (never set for a human pad: pad_Update's
+camera_UpdatePadOffset clears it, 9F9C.c:702; bit 4 is never set either, so
+for a record that is not cpu_controlled their held / pressed / released
+entries are left out and an unheld one always fires, ending the loop),
+1 R2, 2 L1, 3 R1, 5/6/7 the attack
 buttons of the key config (D_80106A50.frec20, a nibble per player; in mode
 D_800A38DC 6 the record that is not D_800A38A0 uses D_800A3912..14), 8
 SELECT, 11 START, 12..15 UP RIGHT DOWN LEFT; for record 1 outside mode 6 the
@@ -76,8 +80,14 @@ read or applied: names assume it is 0. pressed SELECT is cleared in modes
 2 / 3 / 5 and in mode 0 with D_800A385C. A cpu_controlled record's input
 comes from fighter_BuildCpuPad: the button names do not apply to it.
 
+In kinds 0x15/0x19/0x1A/0x13/0x30/0x31 the 0xD turn (held R1/L3 and a
+direction) is tested before the loop and is listed as an earlier entry.
+
 Static graph only: whether a branch fires at run time still depends on the
-frame window, distance (paired), unk_26C and the other fighter's state.
+frame window, distance (paired), unk_26C and the other fighter's state, and
+on timing: an input in the same game update as the previous edge's input
+(e.g. CIRCLE 1 frame after R2, before the R2 move is installed) is not seen
+by the new move.
 Confirm a path with a capture before citing it.
 
   python tools/trace/movegraph.py <capture.jsonl> --phase fight --kinds 0xB,0x12
@@ -124,6 +134,17 @@ TYPES = {0x00: "held", 0x10: "pressed", 0x20: "unheld", 0x30: "released"}
 # ~old, unheld = ~held, released = ~held & old)
 NOT_FIRING = {0x00: "{} not held", 0x10: "{} not newly pressed",
               0x20: "{} held", 0x30: "{} not just released"}
+# bits 3 / 5 are each an OR of two pad buttons (R1|L3, CIRCLE|R3)
+NOT_FIRING_FOLDED = {0x00: "neither of {} held",
+                     0x10: "neither of {} newly pressed (with the other up)",
+                     0x20: "both of {} held",
+                     0x30: "not the last of {} just released"}
+# game bits a human pad never sets: 0 (camera_UpdatePadOffset masks
+# 0xFFFEFFFE, 9F9C.c:702) and 4 (func_8001BE20 clears 0xF0 and sets only
+# 0x20 / 0x40 / 0x80)
+DEAD_BITS = (0, 4)
+# kinds where fighter_Update tests event 0xD (turn) before the input loop
+TURN_KINDS = (0x15, 0x19, 0x1A, 0x13, 0x30, 0x31)
 NIBBLE_PAD = (("CIRCLE", 0x20), ("TRIANGLE", 0x10), ("CROSS", 0x40),
               ("SQUARE", 0x80))  # func_8001BE20: nibble bit k tests these
 
@@ -178,6 +199,7 @@ class Rec:
         if not m.covered(b, REC_SIZE):
             raise SystemExit(f"movegraph: record {idx} was not read")
         self.idx = idx
+        self.cpu = m.s16(b + 0x06) != 0  # cpu_controlled
         self.unk_0A = m.s16(b + 0x0A)
         self.unk_0C = m.s16(b + 0x0C)
         self.unk_0E = m.s16(b + 0x0E)
@@ -321,9 +343,11 @@ class Fight:
             bit = 5
             cond.append("needs unk_26C")
         s = f"{TYPES[f & 0x30]} {self.buttons[ex].get(bit, f'bit{bit}')}"
-        if f & 0x20 and bit in (3, 5):
+        if bit in (3, 5) and f & 0x30 == 0x20:
             # the game bit is an OR of two pad bits (func_8001BE20)
             cond.append("fires unless both buttons are held")
+        elif bit in (3, 5) and f & 0x30 == 0x30:
+            cond.append("fires when the last held of the two is released")
         if f & 0x8000:
             cond.append(f"char mask {extra:#x}")
         if f & 0x1000:
@@ -352,8 +376,11 @@ class Fight:
             out.append(((na, ns, ex, ae, reset), f"{lab} -> id {mid:#06x}"
                         + (f" ({note})" if note else "")))
 
-        paired_seen = False
+        paired_seen = stop = False
         earlier = []  # what the earlier live entries need to not fire
+        if kind in TURN_KINDS:
+            earlier.append("not (held R1/L3 + a direction with a turn: "
+                           "event 0xD runs before the loop)")
         covered = set()  # (bit, input type) an earlier live entry takes
         # an entry of type t on bit b never fires once an unconditional
         # entry of a type implying t on b came first (the loop breaks)
@@ -385,6 +412,8 @@ class Fight:
                                 f"{lab}, run by the other record -> id "
                                 f"{mid:#06x}"))
             # the input loop (9F9C.c:4489-4552) also tests 0x4000 entries
+            if stop:
+                continue  # an always-firing entry came first
             if f & 0x2000:
                 continue  # var_8 = 0: never fires on input
             if kind == 0x11 and ex == ae:
@@ -395,7 +424,13 @@ class Fight:
             key_bit = {9: 3, 0xA: 5}.get(bit, bit)
             if any((key_bit, t) in covered for t in implied_by[typ]):
                 continue  # an earlier entry takes this input first
+            dead = not r.cpu and key_bit in DEAD_BITS
+            if dead and typ != 0x20:
+                continue  # the bit is never set for a human pad
             lab = self.label(f, extra, ex)
+            if dead:
+                lab += " [always fires: the bit is never set for a human pad]"
+                stop = True
             if earlier:
                 # first match: every earlier live entry must not fire
                 lab += " [and none earlier fires: " + "; ".join(earlier) + "]"
@@ -404,7 +439,8 @@ class Fight:
                 earlier.append(f"not ({TYPES[typ]} {name} with its condition)")
             else:
                 covered.add((key_bit, typ))
-                earlier.append(NOT_FIRING[typ].format(name))
+                earlier.append((NOT_FIRING_FOLDED if key_bit in (3, 5)
+                                else NOT_FIRING)[typ].format(name))
             if f & 0x4000:
                 lab += " (paired entry tested as an input)"
             if kind == 0x11:
