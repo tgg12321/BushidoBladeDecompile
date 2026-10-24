@@ -1,0 +1,89 @@
+{
+  "description": "versus-2p flow, stage LEFT to the [Map 1] scroll: Kimigaura Coast; P2 idle, P1 every 100 frames from 8430: RIGHT held 45 frames, LEFT held 12 frames at +55, CROSS at +60 (the held-LEFT-then-CROSS kind 0x2 move from tools/trace/movegraph.py), one phase per cycle; in cycle 4 (separation about 1650 at its start) the move becomes the paired kind 0x11 move and the round ends",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "stage:kimigaura_coast",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-kimigaura-paired-1/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 9430,
+  "inputs": [
+    "7300:LEFT",
+    "7450:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 8430,
+      "every": 100,
+      "count": 10,
+      "steps": [
+        "+0:RIGHT/45",
+        "+55:LEFT/12",
+        "+60:CROSS"
+      ]
+    }
+  ],
+  "phases": [
+    "7450:t_load",
+    "8230:fight",
+    "8430:c00",
+    "8530:c01",
+    "8630:c02",
+    "8730:c03",
+    "8830:c04",
+    "8930:c05",
+    "9030:c06",
+    "9130:c07",
+    "9230:c08",
+    "9330:c09"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7325:stage_select.7325",
+    "7355:stage_select.7355",
+    "7449:stage_select.last",
+    "7900:t_load.mid",
+    "8229:t_load.last",
+    "8230:fight.first",
+    "8485:c00.55",
+    "8505:c00.75",
+    "8525:c00.95",
+    "8585:c01.55",
+    "8605:c01.75",
+    "8625:c01.95",
+    "8685:c02.55",
+    "8705:c02.75",
+    "8725:c02.95",
+    "8785:c03.55",
+    "8805:c03.75",
+    "8825:c03.95",
+    "8885:c04.55",
+    "8905:c04.75",
+    "8925:c04.95",
+    "8985:c05.55",
+    "9005:c05.75",
+    "9025:c05.95",
+    "9085:c06.55",
+    "9105:c06.75",
+    "9125:c06.95",
+    "9185:c07.55",
+    "9205:c07.75",
+    "9225:c07.95",
+    "9285:c08.55",
+    "9305:c08.75",
+    "9325:c08.95",
+    "9385:c09.55",
+    "9405:c09.75",
+    "9425:c09.95",
+    "9429:last"
+  ]
+}
