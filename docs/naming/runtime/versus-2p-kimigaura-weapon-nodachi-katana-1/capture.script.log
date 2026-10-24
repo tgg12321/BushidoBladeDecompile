@@ -1,0 +1,416 @@
+0 pad2 connected
+0 phase boot_intro
+5200 press START
+5206 release START
+5489 shot boot_intro.last 320 240 24
+5490 phase t_menu
+5500 press CROSS
+5506 release CROSS
+5800 press START
+5806 release START
+6050 shot top_menu.first 640 240 16
+6050 phase top_menu
+6080 press DOWN
+6086 release DOWN
+6140 press DOWN
+6146 release DOWN
+6200 press DOWN
+6206 release DOWN
+6259 shot top_menu.last 640 240 16
+6260 press CROSS
+6260 phase t_char
+6266 release CROSS
+6550 shot char_select.first 640 240 16
+6550 phase char_select
+6600 press CROSS
+6606 release CROSS
+6640 press P2.CROSS
+6646 release P2.CROSS
+6699 shot char_select.last 640 240 16
+6700 shot weapon_select.first 640 240 16
+6700 phase weapon_select
+6720 press RIGHT
+6726 release RIGHT
+6880 shot weapon_select.pick 640 240 16
+6900 press CROSS
+6906 release CROSS
+6940 press P2.CROSS
+6946 release P2.CROSS
+6999 shot weapon_select.last 640 240 16
+7000 phase t_stage
+7100 shot t_stage.mid 640 240 16
+7175 shot stage_select.first 640 240 16
+7175 phase stage_select
+7299 shot stage_select.7299 640 240 16
+7300 press LEFT
+7306 release LEFT
+7325 shot stage_select.7325 640 240 16
+7355 shot stage_select.7355 640 240 16
+7449 shot stage_select.last 640 240 16
+7450 press CROSS
+7450 phase t_load
+7456 release CROSS
+7900 shot t_load.mid 640 240 16
+8229 shot t_load.last 640 240 16
+8230 shot fight.first 640 240 16
+8230 phase fight
+8330 shot fight.8330 640 240 16
+8430 press RIGHT
+8430 shot fight.8430 640 240 16
+8450 release RIGHT
+8455 press CIRCLE
+8460 press P2.LEFT
+8461 release CIRCLE
+8475 release P2.LEFT
+8480 press P2.CROSS
+8486 release P2.CROSS
+8490 press RIGHT
+8510 release RIGHT
+8515 press CROSS
+8520 press P2.LEFT
+8521 release CROSS
+8530 shot fight.8530 640 240 16
+8535 release P2.LEFT
+8540 press P2.CIRCLE
+8546 release P2.CIRCLE
+8550 press RIGHT
+8570 release RIGHT
+8575 press SQUARE
+8580 press P2.LEFT
+8581 release SQUARE
+8595 release P2.LEFT
+8600 press P2.TRIANGLE
+8606 release P2.TRIANGLE
+8610 press RIGHT
+8630 release RIGHT
+8630 shot fight.8630 640 240 16
+8635 press TRIANGLE
+8640 press P2.LEFT
+8641 release TRIANGLE
+8655 release P2.LEFT
+8660 press P2.L1
+8666 release P2.L1
+8670 press RIGHT
+8690 release RIGHT
+8695 press CIRCLE
+8695 press RIGHT
+8700 press P2.LEFT
+8701 release CIRCLE
+8701 release RIGHT
+8715 release P2.LEFT
+8720 press P2.SQUARE
+8726 release P2.SQUARE
+8730 press RIGHT
+8730 shot fight.8730 640 240 16
+8750 release RIGHT
+8755 press CROSS
+8755 press RIGHT
+8760 press P2.LEFT
+8761 release CROSS
+8761 release RIGHT
+8775 release P2.LEFT
+8780 press P2.CIRCLE
+8780 press P2.LEFT
+8786 release P2.CIRCLE
+8786 release P2.LEFT
+8790 press RIGHT
+8810 release RIGHT
+8815 press L1
+8820 press P2.LEFT
+8821 release L1
+8830 shot fight.8830 640 240 16
+8835 release P2.LEFT
+8840 press P2.R1
+8846 release P2.R1
+8850 press RIGHT
+8870 release RIGHT
+8875 press R1
+8880 press P2.LEFT
+8881 release R1
+8895 release P2.LEFT
+8900 press P2.CIRCLE
+8900 press P2.DOWN
+8906 release P2.CIRCLE
+8906 release P2.DOWN
+8910 press RIGHT
+8930 release RIGHT
+8930 shot fight.8930 640 240 16
+8935 press L2
+8940 press P2.LEFT
+8941 release L2
+8955 release P2.LEFT
+8960 press P2.R2
+8966 release P2.R2
+8970 press RIGHT
+8990 release RIGHT
+8995 press R2
+9000 press P2.LEFT
+9001 release R2
+9015 release P2.LEFT
+9020 press P2.L2
+9026 release P2.L2
+9030 press RIGHT
+9030 shot fight.9030 640 240 16
+9050 release RIGHT
+9055 press CIRCLE
+9055 press UP
+9060 press P2.LEFT
+9061 release CIRCLE
+9061 release UP
+9075 release P2.LEFT
+9080 press P2.CROSS
+9080 press P2.UP
+9086 release P2.CROSS
+9086 release P2.UP
+9090 press RIGHT
+9110 release RIGHT
+9115 press CROSS
+9115 press DOWN
+9120 press P2.LEFT
+9121 release CROSS
+9121 release DOWN
+9130 shot fight.9130 640 240 16
+9135 release P2.LEFT
+9140 press P2.CROSS
+9146 release P2.CROSS
+9150 press RIGHT
+9170 release RIGHT
+9175 press CIRCLE
+9175 press CROSS
+9180 press P2.LEFT
+9181 release CIRCLE
+9181 release CROSS
+9195 release P2.LEFT
+9200 press P2.CIRCLE
+9206 release P2.CIRCLE
+9210 press RIGHT
+9230 release RIGHT
+9230 shot fight.9230 640 240 16
+9235 press CIRCLE
+9240 press P2.LEFT
+9241 release CIRCLE
+9255 release P2.LEFT
+9260 press P2.TRIANGLE
+9266 release P2.TRIANGLE
+9270 press RIGHT
+9290 release RIGHT
+9295 press CROSS
+9300 press P2.LEFT
+9301 release CROSS
+9315 release P2.LEFT
+9320 press P2.L1
+9326 release P2.L1
+9330 press RIGHT
+9330 shot fight.9330 640 240 16
+9350 release RIGHT
+9355 press SQUARE
+9360 press P2.LEFT
+9361 release SQUARE
+9375 release P2.LEFT
+9380 press P2.SQUARE
+9386 release P2.SQUARE
+9390 press RIGHT
+9410 release RIGHT
+9415 press TRIANGLE
+9420 press P2.LEFT
+9421 release TRIANGLE
+9430 shot fight.9430 640 240 16
+9435 release P2.LEFT
+9440 press P2.CIRCLE
+9440 press P2.LEFT
+9446 release P2.CIRCLE
+9446 release P2.LEFT
+9450 press RIGHT
+9470 release RIGHT
+9475 press CIRCLE
+9475 press RIGHT
+9480 press P2.LEFT
+9481 release CIRCLE
+9481 release RIGHT
+9495 release P2.LEFT
+9500 press P2.R1
+9506 release P2.R1
+9510 press RIGHT
+9530 release RIGHT
+9530 shot fight.9530 640 240 16
+9535 press CROSS
+9535 press RIGHT
+9540 press P2.LEFT
+9541 release CROSS
+9541 release RIGHT
+9555 release P2.LEFT
+9560 press P2.CIRCLE
+9560 press P2.DOWN
+9566 release P2.CIRCLE
+9566 release P2.DOWN
+9570 press RIGHT
+9590 release RIGHT
+9595 press L1
+9600 press P2.LEFT
+9601 release L1
+9615 release P2.LEFT
+9620 press P2.R2
+9626 release P2.R2
+9630 press RIGHT
+9630 shot fight.9630 640 240 16
+9650 release RIGHT
+9655 press R1
+9660 press P2.LEFT
+9661 release R1
+9675 release P2.LEFT
+9680 press P2.L2
+9686 release P2.L2
+9690 press RIGHT
+9710 release RIGHT
+9715 press L2
+9720 press P2.LEFT
+9721 release L2
+9730 shot fight.9730 640 240 16
+9735 release P2.LEFT
+9740 press P2.CROSS
+9740 press P2.UP
+9746 release P2.CROSS
+9746 release P2.UP
+9750 press RIGHT
+9770 release RIGHT
+9775 press R2
+9780 press P2.LEFT
+9781 release R2
+9795 release P2.LEFT
+9800 press P2.CROSS
+9806 release P2.CROSS
+9810 press RIGHT
+9830 release RIGHT
+9830 shot fight.9830 640 240 16
+9835 press CIRCLE
+9835 press UP
+9840 press P2.LEFT
+9841 release CIRCLE
+9841 release UP
+9855 release P2.LEFT
+9860 press P2.CIRCLE
+9866 release P2.CIRCLE
+9870 press RIGHT
+9890 release RIGHT
+9895 press CROSS
+9895 press DOWN
+9900 press P2.LEFT
+9901 release CROSS
+9901 release DOWN
+9915 release P2.LEFT
+9920 press P2.TRIANGLE
+9926 release P2.TRIANGLE
+9930 press RIGHT
+9930 shot fight.9930 640 240 16
+9950 release RIGHT
+9955 press CIRCLE
+9955 press CROSS
+9960 press P2.LEFT
+9961 release CIRCLE
+9961 release CROSS
+9975 release P2.LEFT
+9980 press P2.L1
+9986 release P2.L1
+9990 press RIGHT
+10010 release RIGHT
+10015 press CIRCLE
+10020 press P2.LEFT
+10021 release CIRCLE
+10030 shot fight.10030 640 240 16
+10035 release P2.LEFT
+10040 press P2.SQUARE
+10046 release P2.SQUARE
+10050 press RIGHT
+10070 release RIGHT
+10075 press CROSS
+10080 press P2.LEFT
+10081 release CROSS
+10095 release P2.LEFT
+10100 press P2.CIRCLE
+10100 press P2.LEFT
+10106 release P2.CIRCLE
+10106 release P2.LEFT
+10110 press RIGHT
+10130 release RIGHT
+10130 shot fight.10130 640 240 16
+10135 press SQUARE
+10140 press P2.LEFT
+10141 release SQUARE
+10155 release P2.LEFT
+10160 press P2.R1
+10166 release P2.R1
+10170 press RIGHT
+10190 release RIGHT
+10195 press TRIANGLE
+10200 press P2.LEFT
+10201 release TRIANGLE
+10215 release P2.LEFT
+10220 press P2.CIRCLE
+10220 press P2.DOWN
+10226 release P2.CIRCLE
+10226 release P2.DOWN
+10230 press RIGHT
+10230 shot fight.10230 640 240 16
+10250 release RIGHT
+10255 press CIRCLE
+10255 press RIGHT
+10260 press P2.LEFT
+10261 release CIRCLE
+10261 release RIGHT
+10275 release P2.LEFT
+10280 press P2.R2
+10286 release P2.R2
+10290 press RIGHT
+10310 release RIGHT
+10315 press CROSS
+10315 press RIGHT
+10320 press P2.LEFT
+10321 release CROSS
+10321 release RIGHT
+10330 shot fight.10330 640 240 16
+10335 release P2.LEFT
+10340 press P2.L2
+10346 release P2.L2
+10350 press RIGHT
+10370 release RIGHT
+10375 press L1
+10380 press P2.LEFT
+10381 release L1
+10395 release P2.LEFT
+10400 press P2.CROSS
+10400 press P2.UP
+10406 release P2.CROSS
+10406 release P2.UP
+10410 press RIGHT
+10430 release RIGHT
+10430 shot fight.10430 640 240 16
+10435 press R1
+10440 press P2.LEFT
+10441 release R1
+10455 release P2.LEFT
+10460 press P2.CROSS
+10466 release P2.CROSS
+10470 press RIGHT
+10490 release RIGHT
+10495 press L2
+10500 press P2.LEFT
+10501 release L2
+10515 release P2.LEFT
+10520 press P2.CIRCLE
+10526 release P2.CIRCLE
+10530 press RIGHT
+10530 shot fight.10530 640 240 16
+10550 release RIGHT
+10555 press R2
+10560 press P2.LEFT
+10561 release R2
+10575 release P2.LEFT
+10580 press P2.TRIANGLE
+10586 release P2.TRIANGLE
+10590 press RIGHT
+10610 release RIGHT
+10615 press CIRCLE
+10615 press UP
+10621 release CIRCLE
+10621 release UP
+10630 finish -
