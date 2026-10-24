@@ -152,14 +152,10 @@ def _header_macro_facts(root: Path = REPO) -> frozenset:
 
     Deliberately ignore include graphs: any header may affect a TU's walk.
     """
-    return frozenset(fact
-                     for pat in ("include/**/*.h", "src/**/*.h", "movovl/include/**/*.h")
-                     for p in sorted(root.glob(pat))
-                     for fact in inlineasm.tu_macro_facts(
-                         p.read_text(encoding="utf-8", errors="replace")))
+    return inlineasm.project_header_macro_facts(root)
 
 
-def _header_function_issues(root: Path = REPO) -> list[str]:
+def _header_function_issues(root: Path = REPO, headers=None) -> list[str]:
     """Function definitions in project headers (include/**/*.h, src/**/*.h;
     the vendored PsyQ headers excepted): a body there is outside every
     per-TU gate (Q126 attributes same-TU helpers only). Also refuse a .c-local
@@ -173,16 +169,18 @@ def _header_function_issues(root: Path = REPO) -> list[str]:
         for h in inlineasm.static_inline_defs(text):
             helpers.setdefault(h, []).append(stem)
     out = []
-    for pat in ("include/**/*.h", "src/**/*.h"):
-        for p in sorted(root.glob(pat)):
-            rel = p.relative_to(root).as_posix()
-            text = p.read_text(encoding="utf-8", errors="replace")
+    if headers is None:
+        headers = inlineasm.project_header_texts(root)
+    for p, text in headers:
+        if p.relative_to(root.resolve()).parts[0] != "movovl":
+            rel = p.relative_to(root.resolve()).as_posix()
+            _facts, idx, _unsafe = inlineasm.project_header_analysis(p, text)
             if rel not in vendored:
                 out += [f"{rel}: function definition {fn.name} in a project header -- "
                         f"define it in the .c file that uses it"
-                        for fn in inlineasm.tu_functions(text)]
+                        for fn in idx.functions]
             named: set[str] = set()
-            for name, body in inlineasm._tu_index(text).macros.items():
+            for name, body in idx.macros.items():
                 named |= body | {name}
             for h in sorted(named & helpers.keys()):
                 for stem in helpers[h]:
@@ -192,13 +190,13 @@ def _header_function_issues(root: Path = REPO) -> list[str]:
     return out
 
 
-def _header_safety_issues(root: Path = REPO) -> list[str]:
+def _header_safety_issues(root: Path = REPO, headers=None) -> list[str]:
     """Refuse unsafe syntax in all scanned headers, including vendored ones."""
-    return [f"{p.relative_to(root).as_posix()}: unsafe header syntax -- "
+    if headers is None:
+        headers = inlineasm.project_header_texts(root)
+    return [f"{p.relative_to(root.resolve()).as_posix()}: unsafe header syntax -- "
             "lexical/directive escape or unsafe file-scope walk"
-            for pat in ("include/**/*.h", "src/**/*.h", "movovl/include/**/*.h")
-            for p in sorted(root.glob(pat))
-            if inlineasm.header_unsafe(p.read_text(encoding="utf-8", errors="replace"))]
+            for p, text in headers if inlineasm.project_header_analysis(p, text)[2]]
 
 
 QUEUE = REPO / "engine" / "queue.json"
@@ -210,7 +208,8 @@ def main() -> int:
         q = json.loads(QUEUE.read_text())
         in_queue = {it["func"] for it in q.get("items", [])}
     canon = cheats.canonical_asm_funcs()
-    header_macros = _header_macro_facts()
+    headers = inlineasm.project_header_texts(REPO)
+    header_macros = inlineasm.project_header_macro_facts(REPO, headers=headers)
 
     violations: list[str] = []
     freshness = buildstamp.check()
@@ -364,8 +363,8 @@ def main() -> int:
     violations.extend(gtemacro.header_registry_issues())
     # Q126: helpers are attributed within one .c file; no project header may
     # carry a function body.
-    violations.extend(_header_function_issues())
-    violations.extend(_header_safety_issues())
+    violations.extend(_header_function_issues(headers=headers))
+    violations.extend(_header_safety_issues(headers=headers))
     # No TU uses `##`: a token paste can assemble asm or a vendored name that
     # no gate sees by name (counted and stripped as a cheat construct).
     violations.extend(f"src/{stem}.c: `##` token paste (cheat construct)"

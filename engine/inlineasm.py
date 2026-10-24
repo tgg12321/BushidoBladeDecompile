@@ -803,6 +803,62 @@ def _head_function(head: str) -> tuple[str, frozenset] | None:
     return name.group(1), frozenset(_IDENT_TOKEN_RE.findall(head[:name.start(1)]))
 
 
+@functools.lru_cache(maxsize=256)
+def _project_header_text(path: Path, stamp: tuple[int, int, int]) -> str:
+    return path.read_text(encoding="utf-8", errors="replace")
+
+
+def project_header_texts(root: Path) -> tuple[tuple[Path, str], ...]:
+    """Project headers, vendored included, without resolving include graphs.
+
+    Stat each live path to invalidate reads on edits; unchanged contents reuse
+    the path/content-keyed macro facts and compiler views below.
+    The read cache is stamp-keyed: a same-size edit within one timestamp tick
+    can be missed in a long-lived process. The CLI and audit are one-shot.
+    """
+    out = []
+    for pat in ("include/**/*.h", "src/**/*.h", "movovl/include/**/*.h"):
+        for p in sorted(root.resolve().glob(pat)):
+            st = p.stat()
+            out.append((p, _project_header_text(
+                p, (st.st_mtime_ns, st.st_ctime_ns, st.st_size))))
+    return tuple(out)
+
+
+@functools.lru_cache(maxsize=4)
+def _project_header_macro_facts(headers: tuple[tuple[Path, str], ...]) -> frozenset:
+    return frozenset(fact for path, text in headers
+                     for fact in project_header_analysis(path, text)[0])
+
+
+@functools.lru_cache(maxsize=256)
+def project_header_analysis(path: Path, text: str) -> tuple:
+    """Facts, index and safety for one (path, content), sharing compiler views."""
+    return tu_macro_facts(text), _tu_index(text), header_unsafe(text)
+
+
+def project_header_macro_facts(
+        root: Path, headers: tuple[tuple[Path, str], ...] | None = None) -> frozenset:
+    """All header facts, cached by (path, content); optionally reuse a snapshot.
+
+    Without `headers`, gather the project headers without an include graph.
+    """
+    if headers is None:
+        headers = project_header_texts(root)
+    return _project_header_macro_facts(headers)
+
+
+def live_tu_refusal(stem: str) -> str | None:
+    """Refuse an unsafe live TU before per-function attribution/keying."""
+    p = Path(f"src/{stem}.c")
+    if p.exists() and tu_unbalanced(p.read_text(encoding="utf-8", errors="replace"),
+                                  project_header_macro_facts(Path.cwd())):
+        return (f"src/{stem}.c: unsafe file-scope brace walk with project header "
+                "macro facts (unbalanced braces/branches or unsafe macros/heads); "
+                "cannot safely index every body")
+    return None
+
+
 def _tu_index(text: str, header_macros: frozenset = frozenset()) -> _TUIndex:
     """Index functions/#defines in one masked view of TU text only.
 
@@ -810,7 +866,8 @@ def _tu_index(text: str, header_macros: frozenset = frozenset()) -> _TUIndex:
     balanced flag) are included. Naming a brace-unbalanced header macro or
     its alias anywhere refuses the TU; balanced brace macros allow body uses.
     Includes/imports must be relative literal .h paths without '..', outside
-    bodies and parentheses, because included bodies are unseen. Other directives
+    bodies and parentheses, because included bodies are unseen. include_next
+    always refuses, even with a literal .h path (fails safe). Other directives
     are skipped, #if 0
     bodies kept. Comments/literals are blanked and line splices removed.
     `unbalanced` refuses:

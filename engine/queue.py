@@ -668,6 +668,9 @@ def mark_done(func: str) -> dict:
                                f"land here. Treat it as an explanation of the "
                                f"absence, not as certification.")}
         return {"ok": False, "func": func, "reason": "not in queue"}
+    unsafe = inlineasm.live_tu_refusal(item["file"])
+    if unsafe:
+        return {"ok": False, "func": func, "reason": unsafe}
     rules = _rule_count(func)
     if rules > 0:
         if cheats.is_canonical_extraction_only(func):

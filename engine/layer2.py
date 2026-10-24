@@ -179,7 +179,8 @@ def body_source(text: str, func: str, read=_disk,
                 helpers: bool = True) -> tuple[str, str] | None:
     """(kind, source text) the key covers — the one C definition (with its
     reached same-TU `static inline` helpers unless helpers=False), or the asm
-    that supplies the function — or None when there is no single body."""
+    that supplies the function — or None when there is no single body.
+    TU-only: historical `read=` callers do not consult live headers."""
     span = inlineasm._func_body_span(text, func)
     pieces = _asm_pieces(text, func, read)
     if span is not None:
@@ -209,6 +210,8 @@ def body_key(text: str, func: str, read=_disk,
     """(kind, 16-hex hash) of `func`'s body in the C file `text`, or None when
     there is no single body (fail closed: nothing to key a verdict to).
     `read(path)` supplies included .s files (default: the working tree).
+    Header-independent and TU-only, including historical `read=` keying in
+    departures.py. Live record/check gates validate project header facts first.
     helpers=False: the pre-Q126 key, the definition alone. engine/departures.py
     accepts it only for a real departure commit committed before
     departures.Q126_CUTOFF and a record with a valid timezone-aware date before
@@ -457,7 +460,8 @@ def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
            stem: str | None = None, expect_hash: str | None = None,
            extra: dict | None = None) -> dict:
     """Append one verdict for the body the reviewer reported (`expect_hash`).
-    A PASS is refused unless src/ holds that body; a FAIL/NEEDS_USER is not."""
+    A PASS is refused unless src/ holds that body; a FAIL/NEEDS_USER is not.
+    The unsafe header-aware live TU walk refusal applies only to PASS."""
     if verdict not in VERDICTS:
         return {"ok": False, "func": func, "reason": f"verdict must be one of {VERDICTS}"}
     if scope not in SCOPES:
@@ -476,6 +480,9 @@ def record(func: str, verdict: str, reviewer: str, scope: str, notes: str = "",
         stem = stem or locate_stem(func)
     except AmbiguousStem as e:
         return {"ok": False, "func": func, "reason": str(e), "candidates": e.stems}
+    unsafe = inlineasm.live_tu_refusal(stem) if stem and verdict == "PASS" else None
+    if unsafe:
+        return {"ok": False, "func": func, "reason": unsafe}
     key = current_key(func, stem) if stem else None
     if verdict == "PASS":
         if key is None:
@@ -560,7 +567,11 @@ def addr_dates(addr: str) -> list[str]:
 
 def gate(func: str, stem: str) -> str | None:
     """None when the latest layer-2 record for `func` is a PASS on the current
-    body; otherwise the refusal reason, naming the fix."""
+    body and the header-aware live TU walk is safe; otherwise the refusal
+    reason, naming the fix. Historical body keys remain TU-only."""
+    unsafe = inlineasm.live_tu_refusal(stem)
+    if unsafe:
+        return f"layer-2 gate: {unsafe}"
     fix = (f"Fix: spawn a fresh cheat-reviewer (layer 2) on the exact body being landed; on PASS "
            f"run `python3 -m engine.cli layer2 record {func} --reviewer <id> "
            f"--scope <{'|'.join(SCOPES)}> --verdict-file <its JSON verdict>` (or --verdict PASS "

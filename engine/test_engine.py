@@ -4709,6 +4709,137 @@ def test_canonical_completion_is_the_drop() -> None:
              cheats.is_canonical_extraction_only, Q.layer2.gate) = orig
 
 
+def test_header_facts_gates() -> None:
+    """Live per-function gates see headers; historical body keys do not."""
+    from unittest.mock import patch
+    from engine import layer2
+    import check_completion_integrity as CCI
+
+    cwd = Path.cwd()
+    with tempfile.TemporaryDirectory() as td, contextlib.ExitStack() as stack:
+        root = Path(td).resolve()
+        os.chdir(root)
+        stack.callback(os.chdir, cwd)
+        Path("src").mkdir()
+        Path("include").mkdir()
+        src = ("CLOSE;\nstatic inline int helper(int x) { return x + 1; }\n"
+               "int func_80011000(int x) { return helper(x); }\n")
+        Path("src/gates.c").write_text(src, encoding="utf-8")
+        func = "func_80011000"
+        h = layer2.body_key(src, func)[1]
+        item = {"func": func, "file": "gates", "status": "active"}
+        for obj, name, value in (
+                (Q, "load", lambda: {"items": [item]}),
+                (Q, "_rule_count", lambda f: 0),
+                (Q, "_locked", contextlib.nullcontext),
+                (Q, "_fingerprint", lambda: "fixture"),
+                (Q, "save", lambda *a, **kw: None),
+                (cheats, "func_prologue_count", lambda f: 0),
+                (cheats, "canonical_asm_funcs", lambda: set()),
+                (cheats, "maspsx_gate_entries", lambda f: []),
+                (completion, "source_issues", lambda *a: []),
+                (Q.O, "verify", lambda **kw: {"build_matches": True}),
+                (layer2, "addr_of", lambda f: "80011000"),
+                (layer2, "addr_dates", lambda a: []),
+                (layer2, "_head", lambda: "fixture")):
+            stack.enter_context(patch.object(obj, name, value))
+
+        def record(verdict="PASS"):
+            return layer2.record(func, verdict, "fixture-reviewer", "match",
+                                 stem="gates", expect_hash=h)
+
+        eq("header gates: TU alone balances", inlineasm.tu_unbalanced(src), False)
+        check("header gates: record without header accepted", record()["ok"])
+        eq("header gates: check without header accepted", layer2.gate(func, "gates"), None)
+        check("header gates: queue done without header accepted", Q.mark_done(func)["ok"])
+        before = layer2.record_path(func).read_bytes()
+        header = Path("include/brace.h")
+        header.write_text("#define CLOSE }\n", encoding="utf-8")
+        facts = inlineasm.project_header_macro_facts(root)
+        eq("header gates: project facts refuse TU", inlineasm.tu_unbalanced(src, facts), True)
+        for label, result in (("queue done", Q.mark_done(func)),
+                              ("record PASS", record())):
+            check(f"header gates: {label} refused with TU and cause",
+                  not result["ok"] and "src/gates.c" in result["reason"]
+                  and "project header macro facts" in result["reason"])
+        why = layer2.gate(func, "gates") or ""
+        check("header gates: check refused with TU and cause",
+              "src/gates.c" in why and "project header macro facts" in why)
+        import sys
+        from engine import cli
+        for args in (("check", func, "--file", "gates"),
+                     ("record", func, "--file", "gates", "--verdict", "PASS",
+                      "--reviewer", "fixture-reviewer", "--scope", "match",
+                      "--expect-hash", h)):
+            out = io.StringIO()
+            with patch.object(sys, "argv", ["engine.cli", "layer2", *args]), \
+                    contextlib.redirect_stdout(out):
+                rc = cli.main()
+            check(f"header gates: CLI {args[0]} refuses",
+                  rc == 1 and "src/gates.c" in out.getvalue()
+                  and "project header macro facts" in out.getvalue())
+        eq("header gates: refused records write nothing", layer2.record_path(func).read_bytes(), before)
+        eq("header gates: body key stays TU-only", layer2.body_key(src, func)[1], h)
+        eq("header gates: integrity fixture same refusal with shared facts",
+           CCI._helper_issues(src, "gates", {func: 0}, facts),
+           CCI._helper_issues(src, "gates", {func: 0}, inlineasm.tu_macro_facts(header.read_text())))
+        for verdict in ("NEEDS_USER", "FAIL"):
+            lines = len(layer2.read_records(func))
+            check(f"header gates: unsafe TU accepts {verdict}", record(verdict)["ok"])
+            recs = layer2.read_records(func)
+            check(f"header gates: unsafe TU appends {verdict}",
+                  len(recs) == lines + 1 and recs[-1]["verdict"] == verdict)
+            check(f"header gates: unsafe TU gate stays closed after {verdict}",
+                  "project header macro facts" in (layer2.gate(func, "gates") or ""))
+        header.unlink()
+        check("header gates: reverted header cannot revive PASS after FAIL",
+              "latest layer-2 verdict for func_80011000 is FAIL"
+              in (layer2.gate(func, "gates") or ""))
+        check("header gates: queue stays closed after header reversion",
+              not Q.mark_done(func)["ok"])
+        check("header gates: record after header removal accepted", record()["ok"])
+        eq("header gates: check after header removal accepted", layer2.gate(func, "gates"), None)
+        check("header gates: queue after header removal accepted", Q.mark_done(func)["ok"])
+
+
+def test_project_header_facts_cache() -> None:
+    from unittest.mock import patch
+    import check_completion_integrity as CCI
+
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td).resolve()
+        header = root / "include/brace.h"
+        header.parent.mkdir()
+        header.write_text("#define CLOSE }\n", encoding="utf-8")
+        reads = []
+        original = Path.read_text
+
+        def read(p, *args, **kwargs):
+            reads.append(p)
+            return original(p, *args, **kwargs)
+
+        with patch.object(Path, "read_text", read):
+            a = inlineasm.project_header_macro_facts(root)
+            b = inlineasm.project_header_macro_facts(root)
+            eq("header cache: facts same object for same content", a is b, True)
+            eq("header cache: audit shares gathering", CCI._header_macro_facts(root), a)
+            eq("header cache: safety fixture unchanged", CCI._header_safety_issues(root), [])
+            eq("header cache: one read for unchanged content", reads, [header])
+            snapshot = inlineasm.project_header_texts(root)
+            with patch.object(inlineasm, "project_header_texts",
+                              side_effect=AssertionError("snapshot must be reused")):
+                eq("header cache: public snapshot API reuses gathering",
+                   inlineasm.project_header_macro_facts(root, headers=snapshot), a)
+            stamp = header.stat()
+            header.write_text("#define CLOSE 0\n", encoding="utf-8")
+            os.utime(header, ns=(stamp.st_atime_ns, stamp.st_mtime_ns + 2_000_000_000))
+            c = inlineasm.project_header_macro_facts(root)
+            check("header cache: changed same-size content invalidates facts", c != a)
+            eq("header cache: changed header read once", reads, [header, header])
+            eq("header cache: changed content cached", inlineasm.project_header_macro_facts(root), c)
+            eq("header cache: no additional read", reads, [header, header])
+
+
 def test_layer2_gate() -> None:
     """Owner ruling Q39 (2026-09-29): `queue done` refuses unless the latest
     layer-2 verdict recorded in memory/grind/<func>/layer2.jsonl is a PASS on
@@ -13188,6 +13319,8 @@ def test_retired_names_audit() -> None:
 
 
 def main() -> int:
+    test_header_facts_gates()
+    test_project_header_facts_cache()
     test_retired_names_audit()
     test_data_wave_round4_edge_cases()
     test_keycheck_pre_read_candidates()
