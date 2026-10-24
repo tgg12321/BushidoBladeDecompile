@@ -5,7 +5,10 @@ The fact column is compact JSON. Inconclusive is 0/1; reasons, when present,
 are in fact.reason. Value identities are (symbol, offset, len), retained in
 fact.offset and fact.len. End readings compare only with the preceding reading
 of the same watch index in the same capture; missing/failed comparisons are
-unknown. capture_only compares captures, without inferring modes. Phase lists
+unknown. capture_only compares captures, without inferring modes. value_range
+splits each changing reading into little-endian unsigned words (4 bytes when
+len is a multiple of 4, else 2, else 1) and, for each word that takes more than
+one value, gives distinct/min/max and a per-capture trend in frame order. Phase lists
 follow phases.tsv run order (JSONL order for TSV-less value captures). All CLI relative
 paths are repository-relative. Facts describe only the supplied captures.
 """
@@ -130,6 +133,55 @@ def value_changes(item, readings):
     return value_fact(item, readings, "value_changes")
 
 
+def word_width(length):
+    return 4 if length % 4 == 0 else 2 if length % 2 == 0 else 1
+
+
+def trend(values):
+    if len(set(values)) == 1:
+        return "constant"
+    if all(a <= b for a, b in zip(values, values[1:])):
+        return "nondecreasing"
+    if all(a >= b for a, b in zip(values, values[1:])):
+        return "nonincreasing"
+    return "mixed"
+
+
+def value_range(item, readings):
+    good = [r for r in readings if not r["error"]]
+    errors = len(readings) - len(good)
+    lengths = {len(r["bytes"]) // 2 for r in good}
+    if len({r["bytes"] for r in good}) < 2:
+        return []
+    if len(lengths) != 1 or any(len(r["bytes"]) % 2 for r in good):
+        raise ValueError("value bytes disagree with len: " + item["addr"])
+    if any(not r["frame"].isdigit() for r in good):
+        raise ValueError("value reading without a frame: " + item["addr"])
+    length = lengths.pop()
+    width = word_width(length)
+    series = {}
+    for row in sorted(good, key=lambda r: (int(r["frame"]), int(r["entry"] or 0))):
+        raw = bytes.fromhex(row["bytes"])
+        words = [int.from_bytes(raw[i:i + width], "little")
+                 for i in range(0, length, width)]
+        series.setdefault(row["capture"], []).append((row["frame"], words))
+    rows = []
+    for index in range(length // width):
+        per = {c: [w[index] for _, w in s] for c, s in series.items()}
+        seen = sorted({v for values in per.values() for v in values})
+        if len(seen) < 2:
+            continue
+        digits = "0" + str(2 * width) + "X"
+        detail = dict(offset=item["offset"], len=item["len"], word_offset=index * width,
+                      width=width, distinct=len(seen), min=format(seen[0], digits),
+                      max=format(seen[-1], digits),
+                      trend={c: trend(v) for c, v in per.items()},
+                      readings={c: len(v) for c, v in per.items()}, errors=errors)
+        rows.append(fact_row("value_range", item, detail, {r["capture"] for r in readings},
+                             "read_errors" if errors else ""))
+    return rows
+
+
 def render(matrix, no_name, runtime=None):
     matrix = Path(matrix)
     runtime = Path(runtime) if runtime is not None else REPO_ROOT / "docs/naming/runtime"
@@ -171,7 +223,8 @@ def render(matrix, no_name, runtime=None):
         for scanner in (reach, never_hit, phase_only, capture_only):
             rows.extend(scanner(item))
     _, readings = read_table(matrix / "values.tsv",
-                             ["capture", "phase", "symbol/entry", "offset", "len", "entry", "bytes", "error", "end"])
+                             ["capture", "phase", "symbol/entry", "offset", "len", "entry", "bytes", "error", "end",
+                              "frame"])
     phase_order = {}
     for capture in sorted({r["capture"] for r in readings}):
         path = runtime / capture / "phases.tsv"
@@ -186,7 +239,7 @@ def render(matrix, no_name, runtime=None):
         addr = "0x" + symbol[2:] if re.fullmatch(r"D_[0-9A-Fa-f]{8}", symbol) else symbol
         item = dict(addr=symbol, offset=offset, len=length, phase_order=phase_order,
                     no_name=addr.upper() in registry)
-        for scanner in (value_constant, value_changes):
+        for scanner in (value_constant, value_changes, value_range):
             rows.extend(scanner(item, readings))
     rows.sort(key=lambda r: (r["kind"], r["addr"], r["fact"], r["captures"]))
     stream = io.StringIO(newline="\n")

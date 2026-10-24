@@ -42,12 +42,12 @@ class FactsTest(unittest.TestCase):
                    "a\thitmap\tphases.tsv\nb\thitmap\tphases.tsv\nc\thitmap\tphases.tsv\n"
                    "v\tvalues\tcapture.jsonl\n")
         self.write(self.matrix / "values.tsv",
-                   "capture\tphase\tsymbol/entry\toffset\tbytes\terror\tend\tlen\tentry\n"
-                   "v\tp\tD_80010010\t4\taa\t\tfalse\t1\t0\n"
-                   "v\tq\tD_80010010\t4\taa\t\ttrue\t1\t0\n"
-                   "v\tp\tD_80010010\t8\taa\t\tfalse\t1\t1\n"
-                   "v\tq\tD_80010010\t8\tbb\t\ttrue\t1\t1\n"
-                   "v\tq\tD_80010014\t\t\tread failed\ttrue\t1\t2\n")
+                   "capture\tphase\tsymbol/entry\toffset\tbytes\terror\tend\tlen\tentry\tframe\n"
+                   "v\tp\tD_80010010\t4\taa\t\tfalse\t1\t0\t0\n"
+                   "v\tq\tD_80010010\t4\taa\t\ttrue\t1\t0\t5\n"
+                   "v\tp\tD_80010010\t8\taa\t\tfalse\t1\t1\t0\n"
+                   "v\tq\tD_80010010\t8\tbb\t\ttrue\t1\t1\t5\n"
+                   "v\tq\tD_80010014\t\t\tread failed\ttrue\t1\t2\t5\n")
         for capture in "abc":
             path = self.matrix.parent / capture
             self.write(path / "phases.tsv",
@@ -147,11 +147,11 @@ class FactsTest(unittest.TestCase):
 
     def test_different_watch_lengths_do_not_claim_changes(self):
         self.write(self.matrix / "values.tsv",
-                   "capture\tphase\tsymbol/entry\toffset\tbytes\terror\tend\tlen\tentry\n"
-                   "v\tp\tD_80010010\t\t01020304\t\tfalse\t4\t0\n"
-                   "v\tq\tD_80010010\t\t01020304\t\ttrue\t4\t0\n"
-                   "w\tp\tD_80010010\t\t0102030405060708090a0b0c0d0e0f10\t\tfalse\t16\t0\n"
-                   "w\tq\tD_80010010\t\t0102030405060708090a0b0c0d0e0f10\t\ttrue\t16\t0\n")
+                   "capture\tphase\tsymbol/entry\toffset\tbytes\terror\tend\tlen\tentry\tframe\n"
+                   "v\tp\tD_80010010\t\t01020304\t\tfalse\t4\t0\t0\n"
+                   "v\tq\tD_80010010\t\t01020304\t\ttrue\t4\t0\t5\n"
+                   "w\tp\tD_80010010\t\t0102030405060708090a0b0c0d0e0f10\t\tfalse\t16\t0\t0\n"
+                   "w\tq\tD_80010010\t\t0102030405060708090a0b0c0d0e0f10\t\ttrue\t16\t0\t5\n")
         rows = [r for r in self.rows() if r["kind"].startswith("value_")]
         self.assertEqual(len(rows), 2)
         self.assertEqual({r["kind"] for r in rows}, {"value_constant"})
@@ -160,12 +160,12 @@ class FactsTest(unittest.TestCase):
 
     def test_end_readings_stay_with_same_watch_index(self):
         self.write(self.matrix / "values.tsv",
-                   "capture\tphase\tsymbol/entry\toffset\tbytes\terror\tend\tlen\tentry\n"
-                   "v\tp\tD_80010010\t4\taa\t\tfalse\t1\t0\n"
-                   "v\tp\tD_80010010\t4\tbb\t\tfalse\t1\t1\n"
-                   "v\tq\tD_80010010\t4\taa\t\ttrue\t1\t0\n"
-                   "v\tq\tD_80010010\t4\tbb\t\ttrue\t1\t1\n"
-                   "v\tq\tD_80010010\t4\tbb\t\ttrue\t1\t2\n")
+                   "capture\tphase\tsymbol/entry\toffset\tbytes\terror\tend\tlen\tentry\tframe\n"
+                   "v\tp\tD_80010010\t4\taa\t\tfalse\t1\t0\t0\n"
+                   "v\tp\tD_80010010\t4\tbb\t\tfalse\t1\t1\t0\n"
+                   "v\tq\tD_80010010\t4\taa\t\ttrue\t1\t0\t5\n"
+                   "v\tq\tD_80010010\t4\tbb\t\ttrue\t1\t1\t5\n"
+                   "v\tq\tD_80010010\t4\tbb\t\ttrue\t1\t2\t5\n")
         detail = json.loads(self.get("value_changes", "D_80010010")["fact"])
         self.assertEqual([(r["entry"], r["differs"]) for r in detail["end"]],
                          [("0", False), ("1", False), ("2", None)])
@@ -187,6 +187,49 @@ class FactsTest(unittest.TestCase):
         item = dict(addr="x", cells={"a": {"z": "?", "a": "?"}})
         self.assertEqual(json.loads(facts.reach(item)[0]["fact"])["unknown"],
                          {"a": ["z", "a"]})
+
+    def test_value_range_words_trend_and_errors(self):
+        self.write(self.matrix / "values.tsv",
+                   "capture\tphase\tsymbol/entry\toffset\tbytes\terror\tend\tlen\tentry\tframe\n"
+                   "v\tp\tD_80010010\t\t0100000000000000\t\tfalse\t8\t0\t0\n"
+                   "v\tq\tD_80010010\t\t0300000000000000\t\tfalse\t8\t0\t5\n"
+                   "v\tr\tD_80010010\t\t0200000000000000\t\ttrue\t8\t0\t10\n"
+                   "w\tq\tD_80010010\t\tFF000000000000FF\t\tfalse\t8\t0\t9\n"
+                   "w\tp\tD_80010010\t\t02000000000000FF\t\tfalse\t8\t0\t2\n"
+                   "w\tr\tD_80010010\t\t\tread failed\ttrue\t8\t0\t12\n"
+                   "v\tp\tD_80010014\t\t0102\t\tfalse\t2\t1\t0\n"
+                   "v\tq\tD_80010014\t\t0102\t\ttrue\t2\t1\t5\n"
+                   "v\tp\tD_80010018\t\t010203\t\tfalse\t3\t2\t0\n"
+                   "v\tq\tD_80010018\t\t010204\t\ttrue\t3\t2\t5\n")
+        rows = [r for r in self.rows() if r["kind"] == "value_range"]
+        self.assertEqual([r["addr"] for r in rows], ["D_80010010", "D_80010010", "D_80010018"])
+        first, second = sorted((json.loads(r["fact"]) for r in rows[:2]),
+                               key=lambda d: d["word_offset"])
+        self.assertEqual((first["word_offset"], first["width"], first["distinct"],
+                          first["min"], first["max"]), (0, 4, 4, "00000001", "000000FF"))
+        self.assertEqual(first["trend"], {"v": "mixed", "w": "nondecreasing"})
+        self.assertEqual(first["readings"], {"v": 3, "w": 2})
+        self.assertEqual(first["errors"], 1)
+        self.assertEqual(rows[0]["inconclusive"], "1")
+        self.assertEqual((second["word_offset"], second["min"], second["max"]),
+                         (4, "00000000", "FF000000"))
+        self.assertEqual(second["trend"], {"v": "constant", "w": "constant"})
+        odd = json.loads(rows[2]["fact"])
+        self.assertEqual((odd["width"], odd["word_offset"], odd["min"], odd["max"],
+                          odd["trend"]), (1, 2, "03", "04", {"v": "nondecreasing"}))
+
+    def test_value_range_rejects_bad_lengths(self):
+        item = dict(addr="x", offset="", len="2")
+        readings = [dict(capture="v", phase="p", bytes="0102", error="", frame="0", entry="0"),
+                    dict(capture="v", phase="q", bytes="010203", error="", frame="1", entry="0")]
+        with self.assertRaises(ValueError):
+            facts.value_range(item, readings)
+        self.assertEqual(facts.value_range(item, readings[:1]), [])
+        readings[1].update(bytes="0103", frame="")
+        with self.assertRaises(ValueError):
+            facts.value_range(item, readings)
+        self.assertEqual(facts.word_width(16), 4)
+        self.assertEqual(facts.trend([3, 2, 2]), "nonincreasing")
 
     def test_build_check_corruption_and_repo_relative_paths(self):
         old_cwd = Path.cwd()
