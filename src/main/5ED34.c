@@ -1072,7 +1072,9 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
     s32 flag;
     /* the cell table following a sheet header (s->header->cells in the two
      * loop-2 draws, s->header[2].cells for the last loop). Ruling 11: several
-     * values of that one kind (proof at tag pre-slim-2026-10-01). */
+     * values of that one kind (proof at tag pre-slim-2026-10-01). FAKE: the
+     * holder between the header's cells and s->table at the two single-use
+     * loop-2 sites; stored directly: score 9 (Q129). */
     Unk8009B400Record *cells;
     s16 i;
     s16 var_4;
@@ -1108,8 +1110,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
          * pre-slim-2026-10-01). */
         RECT *var_6;
 
-        /* Ruling 4 compound-assignment split, here and in the locked-slot
-         * arm; `var_6 = D_800A35A8->unk_7C + i * 8` scores 28. */
+        /* FAKE: base and step as two statements, here and in the locked-slot
+         * arm; `var_6 = D_800A35A8->unk_7C + i * 8`: score 28 (Q129) */
         var_6 = D_800A35A8->unk_7C;
         var_6 += i * 8;
         var_4 = i - var_5;
@@ -1452,7 +1454,9 @@ void menu_UpdateChoiceGrid(
     Unk8009B0E0Record **var_4;
     /* the cell table following the header(s) of each sheet drawn
      * (s.header[1].cells for the two-header sheet, s.header->cells for the
-     * others). Ruling 11: several values of that one kind. */
+     * others). Ruling 11: several values of that one kind. FAKE: the holder
+     * between the header's cells and s.table at the single-use sites (all
+     * but the first value, read twice); stored directly: score 123 (Q129). */
     Unk8009B400Record *cells;
     s32 i;
     s32 j;
