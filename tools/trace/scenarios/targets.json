@@ -92,7 +92,7 @@
         "event:ko": "a fighter down for good (no health bar: one cut can kill)",
         "event:win": "player 1 wins a fight",
         "event:hit": "a cut lands without a KO, shown on screen (an IPPON call is the killing cut, not this)",
-        "event:guard": "a blocked cut, shown on screen",
+        "event:guard": "a blocked cut, shown on screen; not told apart yet: a cut that lands (versus-2p-wound-hitmap-1 fight.9488..9500) shows the same ring marker and spark as the unexplained one at fight.10395..10405",
         "event:save": "data saved to a memory card",
         "event:load": "data loaded from a memory card",
         "event:out_of_bounds": "OUT OF BOUNDS (場外) call"

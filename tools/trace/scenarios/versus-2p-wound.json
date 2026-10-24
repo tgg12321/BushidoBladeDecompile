@@ -1,0 +1,102 @@
+{
+  "description": "versus-2p flow on Bamboo Thicket; P1 RIGHT + TRIANGLE/CIRCLE/SQUARE, P2 answers each cut with the same button 4 frames later: a cut lands on P2's legs without a kill (ring marker and spark, P2 down and fighting on), later the killing cut (blood spray), Rematch menu",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:bamboo_thicket",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:hit",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-wound-hitmap-1/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 11400,
+  "inputs": [
+    "7300:DOWN",
+    "7360:DOWN",
+    "7420:RIGHT",
+    "7500:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 9000,
+      "every": 100,
+      "count": 24,
+      "steps": [
+        "+0:RIGHT/40",
+        "+50:TRIANGLE|CIRCLE|SQUARE",
+        "+54:TRIANGLE|CIRCLE|SQUARE@2"
+      ]
+    }
+  ],
+  "phases": [
+    "7525:t_load",
+    "8350:fight",
+    "10690:t_ko",
+    "11300:rematch_menu"
+  ],
+  "shots": [
+    "8350:fight.first",
+    "9000:fight.9000",
+    "9300:fight.9300",
+    "9480:fight.9480",
+    "9484:fight.9484",
+    "9488:fight.9488",
+    "9492:fight.9492",
+    "9496:fight.9496",
+    "9500:fight.9500",
+    "9504:fight.9504",
+    "9508:fight.9508",
+    "9512:fight.9512",
+    "9516:fight.9516",
+    "9520:fight.9520",
+    "9524:fight.9524",
+    "9528:fight.9528",
+    "9532:fight.9532",
+    "9536:fight.9536",
+    "9540:fight.9540",
+    "9544:fight.9544",
+    "9548:fight.9548",
+    "9552:fight.9552",
+    "9556:fight.9556",
+    "9560:fight.9560",
+    "9600:fight.9600",
+    "10000:fight.10000",
+    "10380:fight.10380",
+    "10385:fight.10385",
+    "10390:fight.10390",
+    "10395:fight.10395",
+    "10400:fight.10400",
+    "10405:fight.10405",
+    "10410:fight.10410",
+    "10415:fight.10415",
+    "10420:fight.10420",
+    "10425:fight.10425",
+    "10430:fight.10430",
+    "10600:fight.10600",
+    "10689:fight.last",
+    "10690:t_ko.10690",
+    "10695:t_ko.10695",
+    "10700:t_ko.10700",
+    "10705:t_ko.10705",
+    "10710:t_ko.10710",
+    "10715:t_ko.10715",
+    "10720:t_ko.10720",
+    "10725:t_ko.10725",
+    "10730:t_ko.10730",
+    "10735:t_ko.10735",
+    "10740:t_ko.10740",
+    "11000:t_ko.11000",
+    "11299:t_ko.last",
+    "11300:rematch_menu.first",
+    "11399:rematch_menu.last"
+  ]
+}
