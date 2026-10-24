@@ -158,6 +158,15 @@ class FactsTest(unittest.TestCase):
         self.assertEqual({json.loads(r["fact"])["len"] for r in rows}, {"4", "16"})
         self.assertTrue(all(json.loads(r["fact"])["end"][0]["differs"] is False for r in rows))
 
+    def test_value_cell_beyond_csv_default_limit(self):
+        big = "ab" * 100000  # 200000 chars, past csv's 131072 default
+        self.write(self.matrix / "values.tsv",
+                   "capture\tphase\tsymbol/entry\toffset\tbytes\terror\tend\tlen\tentry\tframe\n"
+                   f"v\tp\tD_80010010\t\t{big}\t\tfalse\t100000\t0\t0\n"
+                   f"v\tq\tD_80010010\t\t{big}\t\ttrue\t100000\t0\t5\n")
+        rows = [r for r in self.rows() if r["kind"].startswith("value_")]
+        self.assertEqual({r["kind"] for r in rows}, {"value_constant"})
+
     def test_end_readings_stay_with_same_watch_index(self):
         self.write(self.matrix / "values.tsv",
                    "capture\tphase\tsymbol/entry\toffset\tbytes\terror\tend\tlen\tentry\tframe\n"

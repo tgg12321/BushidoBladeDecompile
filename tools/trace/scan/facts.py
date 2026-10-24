@@ -27,6 +27,9 @@ HEADER = ["kind", "addr", "capture_name", "no_name", "fact", "captures",
 
 
 def read_table(path, required):
+    # A value watch can read a whole buffer (values.tsv holds 1.5M-char
+    # cells), past csv's 131072 default; 2**31-1 fits a C long on Windows.
+    csv.field_size_limit(2**31 - 1)
     with Path(path).open(encoding="utf-8", newline="") as stream:
         reader = csv.DictReader(stream, delimiter="\t")
         if not reader.fieldnames or not set(required) <= set(reader.fieldnames):
