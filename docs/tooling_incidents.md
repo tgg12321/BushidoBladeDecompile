@@ -93,3 +93,8 @@ mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC
 - **Permanent guard:** `tools/hooks/shell_footgun_guard.py` blocks a `$VAR` expansion plus a file write inside a
   `wsl bash -c` body, and any direct ln/cp/mv/rm of `build/cc1` (install only via the script); `wsl.exe` now counts
   as wsl. Unit-tested on 14 cases.
+
+## 2026-10-24 04:28:02 — FALSE POSITIVE (crlf/crlf-build-file)
+- **Triggering command:** `Edit C:\Users\Trenton\AppData\Local\Temp\rv\hm.py`
+- **Why not a real failure:** scratch Python script in %TEMP% outside the repo, not a build file; CRLF is harmless for python
+- **Action:** tighten signature `crlf-build-file` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.
