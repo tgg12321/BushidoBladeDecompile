@@ -1,0 +1,170 @@
+0 pad2 connected
+0 phase boot_intro
+5200 press START
+5206 release START
+5489 shot boot_intro.last 320 240 24
+5490 phase t_menu
+5500 press CROSS
+5506 release CROSS
+5800 press START
+5806 release START
+6050 shot top_menu.first 640 240 16
+6050 phase top_menu
+6080 press DOWN
+6086 release DOWN
+6140 press DOWN
+6146 release DOWN
+6200 press DOWN
+6206 release DOWN
+6259 shot top_menu.last 640 240 16
+6260 press CROSS
+6260 phase t_char
+6266 release CROSS
+6550 shot char_select.first 640 240 16
+6550 phase char_select
+6600 press CROSS
+6606 release CROSS
+6640 press P2.CROSS
+6646 release P2.CROSS
+6699 shot char_select.last 640 240 16
+6700 shot weapon_select.first 640 240 16
+6700 phase weapon_select
+6900 press CROSS
+6906 release CROSS
+6940 press P2.CROSS
+6946 release P2.CROSS
+6999 shot weapon_select.last 640 240 16
+7000 phase t_stage
+7100 shot t_stage.mid 640 240 16
+7175 shot stage_select.first 640 240 16
+7175 phase stage_select
+7299 shot stage_select.7299 640 240 16
+7300 press DOWN
+7306 release DOWN
+7325 shot stage_select.7325 640 240 16
+7360 press DOWN
+7366 release DOWN
+7385 shot stage_select.7385 640 240 16
+7419 shot stage_select.last 640 240 16
+7420 press CROSS
+7420 phase t_load
+7426 release CROSS
+7900 shot t_load.mid 640 240 16
+8244 shot t_load.last 640 240 16
+8245 shot fight.first 640 240 16
+8245 phase fight
+8700 shot fight.8700 640 240 16
+9200 press RIGHT
+9200 shot fight.9200 640 240 16
+9240 release RIGHT
+9250 press TRIANGLE
+9256 release TRIANGLE
+9300 press RIGHT
+9340 release RIGHT
+9350 press CIRCLE
+9356 release CIRCLE
+9400 press RIGHT
+9440 release RIGHT
+9450 press SQUARE
+9456 release SQUARE
+9500 press RIGHT
+9540 release RIGHT
+9550 press TRIANGLE
+9556 release TRIANGLE
+9600 press RIGHT
+9600 shot fight.9600 640 240 16
+9640 release RIGHT
+9650 press CIRCLE
+9656 release CIRCLE
+9700 press RIGHT
+9740 release RIGHT
+9750 press SQUARE
+9756 release SQUARE
+9800 press RIGHT
+9840 release RIGHT
+9850 press TRIANGLE
+9856 release TRIANGLE
+9900 press RIGHT
+9940 release RIGHT
+9950 press CIRCLE
+9956 release CIRCLE
+10000 press RIGHT
+10000 shot fight.10000 640 240 16
+10040 release RIGHT
+10050 press SQUARE
+10056 release SQUARE
+10070 shot fight.10070 640 240 16
+10100 press RIGHT
+10129 shot fight.last 640 240 16
+10130 phase t_ko
+10140 release RIGHT
+10150 press TRIANGLE
+10156 release TRIANGLE
+10175 shot t_ko.10175 640 240 16
+10200 press RIGHT
+10240 release RIGHT
+10250 press CIRCLE
+10256 release CIRCLE
+10275 shot t_ko.10275 640 240 16
+10300 press RIGHT
+10340 release RIGHT
+10350 press SQUARE
+10356 release SQUARE
+10375 shot t_ko.10375 640 240 16
+10400 press RIGHT
+10440 release RIGHT
+10450 press TRIANGLE
+10456 release TRIANGLE
+10475 shot t_ko.10475 640 240 16
+10500 press RIGHT
+10540 release RIGHT
+10550 press CIRCLE
+10556 release CIRCLE
+10575 shot t_ko.10575 640 240 16
+10579 shot t_ko.last 640 240 16
+10580 shot rematch_menu.first 640 240 16
+10580 phase rematch_menu
+10600 press RIGHT
+10640 release RIGHT
+10650 press SQUARE
+10656 release SQUARE
+10700 press RIGHT
+10740 release RIGHT
+10750 press TRIANGLE
+10756 release TRIANGLE
+10800 press RIGHT
+10840 release RIGHT
+10850 press CIRCLE
+10856 release CIRCLE
+10880 shot rematch_menu.10880 640 240 16
+10900 press RIGHT
+10940 release RIGHT
+10950 press SQUARE
+10956 release SQUARE
+11000 press RIGHT
+11040 release RIGHT
+11050 press TRIANGLE
+11056 release TRIANGLE
+11100 press RIGHT
+11140 release RIGHT
+11150 press CIRCLE
+11156 release CIRCLE
+11180 shot rematch_menu.11180 640 240 16
+11200 press RIGHT
+11240 release RIGHT
+11250 press SQUARE
+11256 release SQUARE
+11300 press RIGHT
+11340 release RIGHT
+11350 press TRIANGLE
+11356 release TRIANGLE
+11400 press RIGHT
+11440 release RIGHT
+11450 press CIRCLE
+11456 release CIRCLE
+11500 press RIGHT
+11540 release RIGHT
+11550 press SQUARE
+11556 release SQUARE
+11579 shot rematch_menu.last 640 240 16
+11580 finish -
