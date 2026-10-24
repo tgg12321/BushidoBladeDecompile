@@ -1908,9 +1908,11 @@ s32 func_80058580(Unk80101EC8Record *p) {
             tz = p->unk_3A2;
             var_38 = p->unk_39E;
         }
-        /* the trailing `&& var_38 == 1` repeats the first test: the target
-         * re-tests $s2 after the || chain (without it the chain is two
-         * instructions shorter), so it is reconstruction (owner ruling Q127) */
+        /* FAKE: the trailing `&& var_38 == 1` repeats the first test
+         * (redundant condition, no-new-park-categories entry 16; owner ruling
+         * Q131). The target's $s2 re-test after the || chain is real (without
+         * it the chain is two instructions shorter), but this C spelling is
+         * our reconstruction */
         if (!(var_38 == 1 &&
               (p->other->move_kind == 0xA || p->cpu_profile == 0xA ||
                (p->unk_0E >= 6 && p->unk_34A == 0)) &&
@@ -2009,12 +2011,14 @@ s32 func_80058580(Unk80101EC8Record *p) {
                                     p->other->unk_404[p->other->unk_86]) {
                                 goto pick2;
                             }
-                            /* the inner test contradicts the outer one, so
-                             * pick2's body runs only by the goto above; the
-                             * target compares twice, and failing the inner
-                             * compare still reaches the var_8 call test (owner
-                             * ruling Q127); without the work2 == 5 arm: score
-                             * 20 */
+                            /* FAKE: the inner test contradicts the outer one,
+                             * so pick2's body runs only by the goto above
+                             * (contradictory condition, no-new-park-categories
+                             * entry 16; owner ruling Q131). The target's two
+                             * compares are real, and failing the inner compare
+                             * still reaches the var_8 call test, but this C
+                             * spelling is our reconstruction; without the
+                             * work2 == 5 arm: score 20 */
                             if (work2 == 5 &&
                                 p->other->unk_404[p->other->unk_86] <
                                     D_800A387C) {

@@ -481,10 +481,11 @@ DISPENV *PutDispEnv(DISPENV *env) {
                 mode |= 3;
             }
         }
-        /* empty then-arm, as SOTN's PutDispEnv (owner ruling Q128); the
-           direct `if (env->disp.h > ...) mode |= 0x24;` adds 4 insns (score
-           5) */
-        /* SOTN: src/main/psxsdk/libgpu/sys.c:394 @db41b28 */
+        /* FAKE: empty then-arm (owner ruling Q131: SOTN is itself a
+           decompilation). The target's compare and branch are real, but this
+           C spelling is our reconstruction; the direct `if (env->disp.h >
+           ...) mode |= 0x24;` adds 4 insns (score 5) */
+        /* SOTN: src/main/psxsdk/libgpu/sys.c:394 @db41b28 (same form) */
         if (env->disp.h <= (env->pad0 ? 288 : 256)) {
         } else {
             mode |= 0x24;
