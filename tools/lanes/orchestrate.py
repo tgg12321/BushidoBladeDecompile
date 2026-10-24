@@ -70,7 +70,7 @@ NAMING_BACKLOG = MAIN / "docs" / "naming" / "phase3" / "backlog.tsv"
 FOUNDATION_BACKLOG = MAIN / "docs" / "foundation" / "backlog.tsv"
 NAMING_WORKABLE = {"idea", "researched", "reviewed"}
 CODEX_RUNS = Path.home() / ".claude" / "codex-bridge" / "runs"
-CODEX_RUN_ID = re.compile(r"\b(\d{8}-\d{6}-[A-Za-z0-9](?:[\w.-]*\w)?)")
+CODEX_RUN_ID = re.compile(r"\b(\d{8}-\d{6}-[A-Za-z0-9][\w.-]*)")  # ids may end in `-`
 FOUNDATION_DONE = {"landed", "dropped", "blocked"}  # blocked = waits on an owner ruling
 ENDED_STATES = {"exited", "stopped", "failed", "killed", "error"}
 STALL_SECS = 90 * 60
@@ -420,7 +420,7 @@ def naming_row_workable(r: dict) -> bool:
         return False
     found = False
     for rid in CODEX_RUN_ID.findall(r.get("note") or ""):
-        meta = CODEX_RUNS / rid / "meta.json"
+        meta = CODEX_RUNS / rid.rstrip(".") / "meta.json"  # a sentence's full stop
         if not meta.is_file():
             continue
         try:
