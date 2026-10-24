@@ -14,7 +14,8 @@
     "event:ko"
   ],
   "evidence": [
-    "docs/naming/runtime/versus-2p-hitmap-1/spec.json"
+    "docs/naming/runtime/versus-2p-hitmap-1/spec.json",
+    "docs/naming/runtime/lib-versus-2p-rooftop-1/spec.json"
   ],
   "use": [
     "boot",

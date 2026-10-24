@@ -8,7 +8,9 @@
     "event:options_change"
   ],
   "evidence": [
-    "docs/naming/runtime/menu-tour-hitmap-1/spec.json"
+    "docs/naming/runtime/menu-tour-hitmap-1/spec.json",
+    "docs/naming/runtime/lib-menu-tour-1/spec.json",
+    "docs/naming/runtime/menu-tour-values-1/spec.json"
   ],
   "use": [
     "boot"

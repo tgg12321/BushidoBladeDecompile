@@ -1,0 +1,94 @@
+{
+  "description": "2P Vs. Mode on Building Rooftop (default stage, KANNUKI vs GENGORO, Katana both); from 8500 both pads move toward each other and press a cycle of face buttons, shoulder buttons and direction+button every 60 frames; blade clashes with spark flashes, a blue ring at 9300, a yellow flash at 12400, the dark-robed fighter lying from 12500, Rematch menu",
+  "covers": [
+    "mode:vs_2p",
+    "menu:top",
+    "menu:char_select",
+    "menu:weapon_select",
+    "menu:stage_select",
+    "stage:building_rooftop",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko",
+    "menu:rematch"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-effects-1/spec.json",
+    "docs/naming/runtime/versus-2p-effects-events-1/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 13970,
+  "inputs": [
+    "7500:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 8500,
+      "every": 60,
+      "count": 65,
+      "steps": [
+        "+0:RIGHT/20",
+        "+25:CIRCLE|CROSS|SQUARE|TRIANGLE|RIGHT+CIRCLE|RIGHT+CROSS|L1|R1|L2|R2|UP+CIRCLE|DOWN+CROSS|CIRCLE+CROSS"
+      ]
+    },
+    {
+      "from": 8530,
+      "every": 60,
+      "count": 65,
+      "steps": [
+        "+0:LEFT/15@2",
+        "+20:CROSS|CIRCLE|TRIANGLE|L1|SQUARE|LEFT+CIRCLE|R1|DOWN+CIRCLE|R2|L2|UP+CROSS@2"
+      ]
+    }
+  ],
+  "phases": [
+    "7525:t_load",
+    "8300:fight",
+    "12513:t_ko",
+    "12970:rematch_menu"
+  ],
+  "shots": [
+    "7499:stage_select.last",
+    "7900:t_load.mid",
+    "8300:fight.first",
+    "8500:fight.8500",
+    "8700:fight.8700",
+    "8900:fight.8900",
+    "9100:fight.9100",
+    "9300:fight.9300",
+    "9500:fight.9500",
+    "9700:fight.9700",
+    "9900:fight.9900",
+    "10100:fight.10100",
+    "10300:fight.10300",
+    "10500:fight.10500",
+    "10700:fight.10700",
+    "10900:fight.10900",
+    "11100:fight.11100",
+    "11300:fight.11300",
+    "11500:fight.11500",
+    "11700:fight.11700",
+    "11900:fight.11900",
+    "12100:fight.12100",
+    "12300:fight.12300",
+    "12400:fight.12400",
+    "12410:fight.12410",
+    "12500:fight.12500",
+    "12512:fight.last",
+    "12520:t_ko.12520",
+    "12600:t_ko.12600",
+    "12650:t_ko.12650",
+    "12700:t_ko.12700",
+    "12800:t_ko.12800",
+    "12900:t_ko.12900",
+    "12969:t_ko.last",
+    "12970:rematch_menu.first",
+    "13300:rematch_menu.13300",
+    "13600:rematch_menu.13600",
+    "13969:rematch_menu.last"
+  ]
+}

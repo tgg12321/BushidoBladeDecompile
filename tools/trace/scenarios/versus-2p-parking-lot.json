@@ -1,0 +1,68 @@
+{
+  "description": "versus-2p flow, stage DOWN on the [Map 2] scroll: Building Parking Lot; fight inputs from 9200, the dark-robed fighter down, Rematch menu",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:building_parking_lot",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-stage-map2-2/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 12470,
+  "inputs": [
+    "7300:DOWN",
+    "7360:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 9200,
+      "every": 100,
+      "count": 33,
+      "steps": [
+        "+0:RIGHT/40",
+        "+50:TRIANGLE|CIRCLE|SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "7360:t_load",
+    "8130:fight",
+    "11015:t_ko",
+    "11470:rematch_menu"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7325:stage_select.7325",
+    "7359:stage_select.last",
+    "7900:t_load.mid",
+    "8129:t_load.last",
+    "8130:fight.first",
+    "8700:fight.8700",
+    "9200:fight.9200",
+    "9600:fight.9600",
+    "10000:fight.10000",
+    "10400:fight.10400",
+    "10800:fight.10800",
+    "10955:fight.10955",
+    "11014:fight.last",
+    "11060:t_ko.11060",
+    "11160:t_ko.11160",
+    "11260:t_ko.11260",
+    "11360:t_ko.11360",
+    "11460:t_ko.11460",
+    "11469:t_ko.last",
+    "11470:rematch_menu.first",
+    "11770:rematch_menu.11770",
+    "12070:rematch_menu.12070",
+    "12469:rematch_menu.last"
+  ]
+}

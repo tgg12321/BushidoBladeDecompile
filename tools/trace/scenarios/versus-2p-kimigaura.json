@@ -10,7 +10,8 @@
     "event:round_start"
   ],
   "evidence": [
-    "docs/naming/runtime/versus-2p-stage-map1-1/spec.json"
+    "docs/naming/runtime/versus-2p-stage-map1-1/spec.json",
+    "docs/naming/runtime/lib-versus-2p-kimigaura-1/spec.json"
   ],
   "use": [
     "boot",

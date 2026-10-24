@@ -23,7 +23,8 @@
     "event:win"
   ],
   "evidence": [
-    "docs/naming/runtime/group-battle-hitmap-1/spec.json"
+    "docs/naming/runtime/group-battle-hitmap-1/spec.json",
+    "docs/naming/runtime/lib-group-battle-3-0-1/spec.json"
   ],
   "use": [
     "boot"

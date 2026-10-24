@@ -1,0 +1,69 @@
+{
+  "description": "versus-2p flow, stage LEFT, DOWN to the [Map 1] scroll: Snake Cliff; fight inputs from 9200, the dark-robed fighter down, Rematch menu",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:snake_cliff",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-stage-map1-3/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 12205,
+  "inputs": [
+    "7300:LEFT",
+    "7360:DOWN",
+    "7420:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 9200,
+      "every": 100,
+      "count": 30,
+      "steps": [
+        "+0:RIGHT/40",
+        "+50:TRIANGLE|CIRCLE|SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "7420:t_load",
+    "8195:fight",
+    "10755:t_ko",
+    "11205:rematch_menu"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7325:stage_select.7325",
+    "7385:stage_select.7385",
+    "7419:stage_select.last",
+    "7900:t_load.mid",
+    "8194:t_load.last",
+    "8195:fight.first",
+    "8700:fight.8700",
+    "9200:fight.9200",
+    "9600:fight.9600",
+    "10000:fight.10000",
+    "10400:fight.10400",
+    "10695:fight.10695",
+    "10754:fight.last",
+    "10800:t_ko.10800",
+    "10900:t_ko.10900",
+    "11000:t_ko.11000",
+    "11100:t_ko.11100",
+    "11200:t_ko.11200",
+    "11204:t_ko.last",
+    "11205:rematch_menu.first",
+    "11505:rematch_menu.11505",
+    "11805:rematch_menu.11805",
+    "12204:rematch_menu.last"
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "description": "versus-2p flow, stage LEFT to the [Map 1] scroll: Kimigaura Coast; the versus-2p-effects fight inputs 70 frames earlier (200 frames after the fight start, as there), both pads acting every 60 frames; no KO by the end",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "stage:kimigaura_coast",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-kimigaura-events-1/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 12730,
+  "inputs": [
+    "7300:LEFT",
+    "7450:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 8430,
+      "every": 60,
+      "count": 65,
+      "steps": [
+        "+0:RIGHT/20",
+        "+25:CIRCLE|CROSS|SQUARE|TRIANGLE|RIGHT+CIRCLE|RIGHT+CROSS|L1|R1|L2|R2|UP+CIRCLE|DOWN+CROSS|CIRCLE+CROSS"
+      ]
+    },
+    {
+      "from": 8460,
+      "every": 60,
+      "count": 65,
+      "steps": [
+        "+0:LEFT/15@2",
+        "+20:CROSS|CIRCLE|TRIANGLE|L1|SQUARE|LEFT+CIRCLE|R1|DOWN+CIRCLE|R2|L2|UP+CROSS@2"
+      ]
+    }
+  ],
+  "phases": [
+    "7450:t_load",
+    "8230:fight"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7325:stage_select.7325",
+    "7355:stage_select.7355",
+    "7449:stage_select.last",
+    "7900:t_load.mid",
+    "8229:t_load.last",
+    "8230:fight.first",
+    "8330:fight.8330",
+    "8430:fight.8430",
+    "8530:fight.8530",
+    "8630:fight.8630",
+    "8730:fight.8730",
+    "8830:fight.8830",
+    "8930:fight.8930",
+    "9030:fight.9030",
+    "9130:fight.9130",
+    "9230:fight.9230",
+    "9330:fight.9330",
+    "9430:fight.9430",
+    "9530:fight.9530",
+    "9630:fight.9630",
+    "9730:fight.9730",
+    "9830:fight.9830",
+    "9930:fight.9930",
+    "10030:fight.10030",
+    "10130:fight.10130",
+    "10230:fight.10230",
+    "10330:fight.10330",
+    "10430:fight.10430",
+    "10530:fight.10530",
+    "10630:fight.10630",
+    "10730:fight.10730",
+    "10830:fight.10830",
+    "10930:fight.10930",
+    "11030:fight.11030",
+    "11130:fight.11130",
+    "11230:fight.11230",
+    "11330:fight.11330",
+    "11430:fight.11430",
+    "11530:fight.11530",
+    "11630:fight.11630",
+    "11730:fight.11730",
+    "11830:fight.11830",
+    "11930:fight.11930",
+    "12030:fight.12030",
+    "12130:fight.12130",
+    "12230:fight.12230",
+    "12330:fight.12330",
+    "12430:fight.12430",
+    "12530:fight.12530",
+    "12630:fight.12630",
+    "12729:fight.last"
+  ]
+}

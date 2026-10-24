@@ -1,0 +1,68 @@
+{
+  "description": "versus-2p flow, stage DOWN, DOWN on the [Map 2] scroll: Future Dump Site; fight inputs from 9200, the dark-robed fighter down, Rematch menu",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:future_dump_site",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-stage-map2-4/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 11580,
+  "inputs": [
+    "7300:DOWN",
+    "7360:DOWN",
+    "7420:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 9200,
+      "every": 100,
+      "count": 24,
+      "steps": [
+        "+0:RIGHT/40",
+        "+50:TRIANGLE|CIRCLE|SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "7420:t_load",
+    "8245:fight",
+    "10130:t_ko",
+    "10580:rematch_menu"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7325:stage_select.7325",
+    "7385:stage_select.7385",
+    "7419:stage_select.last",
+    "7900:t_load.mid",
+    "8244:t_load.last",
+    "8245:fight.first",
+    "8700:fight.8700",
+    "9200:fight.9200",
+    "9600:fight.9600",
+    "10000:fight.10000",
+    "10070:fight.10070",
+    "10129:fight.last",
+    "10175:t_ko.10175",
+    "10275:t_ko.10275",
+    "10375:t_ko.10375",
+    "10475:t_ko.10475",
+    "10575:t_ko.10575",
+    "10579:t_ko.last",
+    "10580:rematch_menu.first",
+    "10880:rematch_menu.10880",
+    "11180:rematch_menu.11180",
+    "11579:rematch_menu.last"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "description": "versus-2p flow, stage LEFT, LEFT, DOWN, DOWN to the [Map 1] scroll: Ferry Dock; fight inputs from 9200, the dark-robed fighter down, Rematch menu",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:ferry_dock",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-stage-map1-5/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 12165,
+  "inputs": [
+    "7300:LEFT",
+    "7360:LEFT",
+    "7420:DOWN",
+    "7480:DOWN",
+    "7540:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 9200,
+      "every": 100,
+      "count": 30,
+      "steps": [
+        "+0:RIGHT/40",
+        "+50:TRIANGLE|CIRCLE|SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "7540:t_load",
+    "8320:fight",
+    "10710:t_ko",
+    "11165:rematch_menu"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7325:stage_select.7325",
+    "7385:stage_select.7385",
+    "7445:stage_select.7445",
+    "7505:stage_select.7505",
+    "7539:stage_select.last",
+    "7900:t_load.mid",
+    "8319:t_load.last",
+    "8320:fight.first",
+    "8700:fight.8700",
+    "9200:fight.9200",
+    "9600:fight.9600",
+    "10000:fight.10000",
+    "10400:fight.10400",
+    "10650:fight.10650",
+    "10709:fight.last",
+    "10755:t_ko.10755",
+    "10855:t_ko.10855",
+    "10955:t_ko.10955",
+    "11055:t_ko.11055",
+    "11155:t_ko.11155",
+    "11164:t_ko.last",
+    "11165:rematch_menu.first",
+    "11465:rematch_menu.11465",
+    "11765:rematch_menu.11765",
+    "12164:rematch_menu.last"
+  ]
+}

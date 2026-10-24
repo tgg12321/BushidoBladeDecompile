@@ -1,0 +1,66 @@
+{
+  "description": "versus-2p flow, stage RIGHT on the [Map 2] scroll: Purple Cavern; fight inputs from 9200, the dark-robed fighter down, Rematch menu",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:purple_cavern",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-stage-map2-1/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 11560,
+  "inputs": [
+    "7300:RIGHT",
+    "7360:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 9200,
+      "every": 100,
+      "count": 24,
+      "steps": [
+        "+0:RIGHT/40",
+        "+50:TRIANGLE|CIRCLE|SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "7360:t_load",
+    "8125:fight",
+    "10110:t_ko",
+    "10560:rematch_menu"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7325:stage_select.7325",
+    "7359:stage_select.last",
+    "7900:t_load.mid",
+    "8124:t_load.last",
+    "8125:fight.first",
+    "8700:fight.8700",
+    "9200:fight.9200",
+    "9600:fight.9600",
+    "10000:fight.10000",
+    "10050:fight.10050",
+    "10109:fight.last",
+    "10155:t_ko.10155",
+    "10255:t_ko.10255",
+    "10355:t_ko.10355",
+    "10455:t_ko.10455",
+    "10555:t_ko.10555",
+    "10559:t_ko.last",
+    "10560:rematch_menu.first",
+    "10860:rematch_menu.10860",
+    "11160:rematch_menu.11160",
+    "11559:rematch_menu.last"
+  ]
+}

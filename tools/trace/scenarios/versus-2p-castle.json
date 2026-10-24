@@ -1,0 +1,78 @@
+{
+  "description": "versus-2p flow, stage DOWN, DOWN, RIGHT, RIGHT to the [Map 3] scroll, then UP, RIGHT: Castle Rooftop; fight inputs from 9500, one fighter down, Rematch menu",
+  "covers": [
+    "mode:vs_2p",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:castle_rooftop",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-stage-map3-5/spec.json"
+  ],
+  "use": [
+    "boot",
+    "versus_2p_select"
+  ],
+  "end_frame": 11855,
+  "inputs": [
+    "7300:DOWN",
+    "7360:DOWN",
+    "7420:RIGHT",
+    "7480:RIGHT",
+    "7600:UP",
+    "7660:RIGHT",
+    "7720:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 9500,
+      "every": 100,
+      "count": 24,
+      "steps": [
+        "+0:RIGHT/40",
+        "+50:TRIANGLE|CIRCLE|SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "7720:t_load",
+    "8490:fight",
+    "10400:t_ko",
+    "10855:rematch_menu"
+  ],
+  "shots": [
+    "7299:stage_select.7299",
+    "7350:stage_select.7350",
+    "7410:stage_select.7410",
+    "7470:stage_select.7470",
+    "7530:stage_select.7530",
+    "7599:stage_select.7599",
+    "7645:stage_select.7645",
+    "7705:stage_select.7705",
+    "7719:stage_select.last",
+    "8120:t_load.mid",
+    "8489:t_load.last",
+    "8490:fight.first",
+    "8900:fight.8900",
+    "9400:fight.9400",
+    "9700:fight.9700",
+    "10000:fight.10000",
+    "10200:fight.10200",
+    "10300:fight.10300",
+    "10399:fight.last",
+    "10450:t_ko.10450",
+    "10550:t_ko.10550",
+    "10650:t_ko.10650",
+    "10750:t_ko.10750",
+    "10850:t_ko.10850",
+    "10854:t_ko.last",
+    "10855:rematch_menu.first",
+    "11255:rematch_menu.11255",
+    "11555:rematch_menu.11555",
+    "11854:rematch_menu.last"
+  ]
+}
