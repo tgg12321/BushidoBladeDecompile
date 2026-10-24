@@ -1,0 +1,1 @@
+{"function": "func_8005D814", "body_hash": "78c8b16a8f6e35b7", "decision": "PASS", "findings": "Comment-only. end_off = arg2 + sizeof(Unk8005D814Rec) at entry (l.480), return end_off - arg2 (l.614), and end_off has no other use. The SIZE named in the label matches the code. Score 76 matches 42605ccc8."}

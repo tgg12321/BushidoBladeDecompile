@@ -1,0 +1,1 @@
+{"function": "func_8005FA98", "body_hash": "a058707654cb9761", "decision": "PASS", "findings": "The variable is named `end`, as the label says: end = arg1 + 0x190 (l.1240), return end - arg1 (l.1267). Constant 0x190 and score 12 match the retiring commit."}

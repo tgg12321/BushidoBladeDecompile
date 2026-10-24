@@ -2545,9 +2545,10 @@ extern s16 D_800F0B98[];
 u8 eff_PrepareParticles(s32 arg0, s32 arg1) {
     extern s32 *D_800A3724;
     Unk1F8000B8_800678A8 *var_0 = &D_800A34EC->v800678A8;
-    /* work-area fields through pointers to them, the style of the file's
-     * scratchpad pointers (D_800A3490 .., set by eff_BindScratchpad) and of
-     * eff_UpdateParticles's locals */
+    /* FAKE: unk00 / unk02 / unk04 / unk6C / unk80 are reached through the
+     * plain pointers p0 / p2 / p4 / p6C / p80: member stores are
+     * MEM_IN_STRUCT_P and let scalar accesses move across them (as members, p0:
+     * scores 6, p4 2, p80 2, p2 24, p6C 38; all five 49) (Q129). */
     u16 *p0 = &var_0->unk00;
     u16 *p2 = &var_0->unk02;
     u32 *p4 = &var_0->unk04;

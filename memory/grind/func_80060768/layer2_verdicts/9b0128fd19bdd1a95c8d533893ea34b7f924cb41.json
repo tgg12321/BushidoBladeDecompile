@@ -1,0 +1,1 @@
+{"function": "func_80060768", "body_hash": "4fcd3a0bad0e518f", "decision": "PASS", "findings": "end_off = arg0 + 0xAC8 (l.1627), return end_off - arg0 (l.1703). Constant 0xAC8 and score 26 match."}

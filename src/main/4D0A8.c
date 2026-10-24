@@ -459,8 +459,9 @@ s32 func_8005D814(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     TILE *tile;
     s32 cur;
     DR_MODE *mode_off;
-    /* One past the chunk this function fills; it returns end_off - arg2, the
-     * chunk size. */
+    /* FAKE: the returned size is computed as the chunk end minus its start
+     * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
+     * score 76 (Q129). */
     s32 end_off;
     s16 i;
     s16 j;
@@ -622,8 +623,9 @@ s32 func_8005E098(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     TILE *tile;
     s32 cur;
     DR_MODE *mode_off;
-    /* One past the chunk this function fills; it returns end_off - arg2, the
-     * chunk size. */
+    /* FAKE: the returned size is computed as the chunk end minus its start
+     * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
+     * score 53 (Q129). */
     s32 end_off;
     s16 i;
     s16 j;
@@ -772,8 +774,9 @@ s32 func_8005E54C(u32 arg0, s32 arg1, s32 arg2) {
     s32 cur;
     s32 var_7;
     DR_MODE *mode_off;
-    /* One past the chunk this function fills; it returns end_off - arg1, the
-     * chunk size. */
+    /* FAKE: the returned size is computed as the chunk end minus its start
+     * (end_off - arg1); returning sizeof(Unk8005E54CRec) directly:
+     * score 75 (Q129). */
     s32 end_off;
     /* i counts the players (first loop) and then the rounds; j is the player
        and k the mark; each phase restarts them loop to loop as plain indices,
@@ -1052,8 +1055,9 @@ s32 func_8005F1C8(Unk8001CD68Rec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     TILE *tile;
     s32 cur;
     DR_MODE *mode_off;
-    /* One past the chunk this function fills; it returns end_off - arg2, the
-     * chunk size. */
+    /* FAKE: the returned size is computed as the chunk end minus its start
+     * (end_off - arg2); returning sizeof(Unk8005D814Rec) directly:
+     * score 97 (Q129). */
     s32 end_off;
     /* i/row count the first phase's two loops; k and j are reused loop to
      * loop as plain indices by the later phases (tile strip k/j, timer j/k),
@@ -1230,8 +1234,9 @@ extern Unk8009B400Record D_8009B660[7];
 s32 func_8005FA98(s32 arg0, s32 arg1, s32 arg2) {
     Unk8007352CRec s;
     s32 cursor = arg1;
-    /* One past the chunk this function fills; it returns end - arg1, the chunk
-     * size. */
+    /* FAKE: the returned size is computed as the chunk end minus its start
+     * (end - arg1); returning 0x190 directly:
+     * score 12 (Q129). */
     s32 end = arg1 + 0x190;
 
     s.scale_x = 0x200;
@@ -1295,8 +1300,9 @@ s32 gpu_DrawImageAndAdvanceSplitWipe(s32 arg0, s32 arg1) {
     DR_MODE *mode_off;
     POLY_G4 *poly;
     DR_AREA *area;
-    /* One past the chunk this function fills; it returns end_off - arg0, the
-     * chunk size. */
+    /* FAKE: the returned size is computed as the chunk end minus its start
+     * (end_off - arg0); returning sizeof(Unk8005FC9CRec) directly:
+     * score 55 (Q129). */
     s32 end_off;
     s16 j;
     s16 i;
@@ -1405,8 +1411,9 @@ s32 func_800600C8(s32 arg0, s32 arg1, s32 arg2) {
     s16 d[2];
     Unk800600C8Rec *var_2 = (Unk800600C8Rec *)arg1;
     DR_MODE *mode_off = &var_2->unk_B4;
-    /* One past the chunk this function fills; it returns end_off - arg1, the
-     * chunk size. */
+    /* FAKE: the returned size is computed as the chunk end minus its start
+     * (end_off - arg1); returning sizeof(Unk800600C8Rec) directly:
+     * score 20 (Q129). */
     s32 end_off = arg1 + sizeof(Unk800600C8Rec);
     s32 cur = arg1;
     s32 i;
@@ -1486,8 +1493,9 @@ s32 func_80060414(s16 arg0, s32 arg1, s32 arg2) {
     Unk8007352CRec s;
     Unk80060414Rec *var_1 = (Unk80060414Rec *)arg1;
     DR_MODE *mode_off;
-    /* One past the chunk this function fills; it returns end_off - arg1, the
-     * chunk size. */
+    /* FAKE: the returned size is computed as the chunk end minus its start
+     * (end_off - arg1); returning sizeof(Unk80060414Rec) directly:
+     * score 22 (Q129). */
     s32 end_off;
     mode_off = &var_1->unk_14;
     end_off = arg1 + sizeof(Unk80060414Rec);
@@ -1522,8 +1530,9 @@ extern Unk8009B400Record D_8009B840[2];
 s32 func_80060544(s32 arg0, s32 arg1) {
     Unk80060544Rec *var_0 = (Unk80060544Rec *)arg0;
     Unk8007352CRec s;
-    /* One past the chunk this function fills; it returns end_off - arg0, the
-     * chunk size. */
+    /* FAKE: the returned size is computed as the chunk end minus its start
+     * (end_off - arg0); returning sizeof(Unk80060544Rec) directly:
+     * score 25 (Q129). */
     s32 end_off;
     s32 var_3;
     s32 i;
@@ -1608,8 +1617,9 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     s32 t2;
     u16 cur1;
     u16 cur2;
-    /* One past the chunk this function fills; it returns end_off - arg0, the
-     * chunk size. */
+    /* FAKE: the returned size is computed as the chunk end minus its start
+     * (end_off - arg0); returning 0xAC8 directly:
+     * score 26 (Q129). */
     s32 end_off;
     s32 var_7;
 

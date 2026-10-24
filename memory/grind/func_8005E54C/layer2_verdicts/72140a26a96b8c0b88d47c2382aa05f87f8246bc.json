@@ -1,0 +1,1 @@
+{"function": "func_8005E54C", "body_hash": "68a4dd234112179f", "decision": "PASS", "findings": "end_off = arg1 + sizeof(Unk8005E54CRec) (l.799), return end_off - arg1 (l.1043). Label matches. Score 75 matches. The existing second-DR_MODE comment is unchanged and still agrees with the label."}

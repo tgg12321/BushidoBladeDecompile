@@ -1,0 +1,1 @@
+{"function": "gpu_DrawImageAndAdvanceSplitWipe", "body_hash": "efaf512c43c6a3c5", "decision": "PASS", "findings": "This is the old func_8005FC9C. end_off = arg0 + sizeof(Unk8005FC9CRec) (l.1317), return end_off - arg0 (l.1400). Label matches. Score 55 matches."}

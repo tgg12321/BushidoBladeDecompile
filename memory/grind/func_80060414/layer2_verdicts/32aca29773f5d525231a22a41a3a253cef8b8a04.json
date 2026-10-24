@@ -1,0 +1,1 @@
+{"function": "func_80060414", "body_hash": "1de2fe4f039ecea5", "decision": "PASS", "findings": "end_off = arg1 + sizeof(Unk80060414Rec) (l.1501), return end_off - arg1 (l.1519). Label matches. Score 22 matches."}

@@ -1,0 +1,1 @@
+{"function": "func_8005E098", "body_hash": "f46a55904e645d9f", "decision": "PASS", "findings": "end_off = arg2 + sizeof(Unk8005D814Rec) (l.641), return end_off - arg2 (l.731), no other use. Label matches the code. Score 53 matches the retiring commit."}
