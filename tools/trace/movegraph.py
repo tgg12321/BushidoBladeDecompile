@@ -35,7 +35,10 @@ paired start reset that record's unk_86 to unk_84:
     halfwords holds the executing record's unk_0A; 0x2000 entries never fire;
     the loop takes the first entry that fires, so an entry is left out when
     an earlier unconditional entry on the same bit fires whenever it would
-    (same type, held before pressed, unheld before released);
+    (same type, held before pressed, unheld before released), and every
+    printed input edge carries what the earlier live entries need to not
+    fire ("[and none earlier fires: L1 held; RIGHT not held; ...]": an
+    earlier "unheld X" means X must stay held);
     none fire for D_800A38AE in a kind-0x11 move; the other record's input
     there is handed off (D_800A376E) and installs the move on both);
   * the first 0x4000 entry is the paired move fight_UpdatePairedMoves
@@ -54,7 +57,8 @@ paired start reset that record's unk_86 to unk_84:
     0x18 on landing from kind 0xA. Not walked: landing with unk_72 set or
     after a 0x17/0x18 move, and pending_move_event codes set elsewhere;
   * the walk of record i follows the other record only while it runs the
-    paired script (a node in record i's file); targets are listed for the
+    paired script (a node in record i's file; when both records share a
+    motion slot it follows the other record everywhere); targets are listed for the
     nodes of either record, one shortest path per move, file and record;
     edges whose target does not read as a move script are dropped and listed;
   * the window: entries are read while move_frame <= last_command_frame
@@ -116,6 +120,10 @@ SPEC_VALUES = [
 ]
 
 TYPES = {0x00: "held", 0x10: "pressed", 0x20: "unheld", 0x30: "released"}
+# what keeps an entry of each type from firing (pad_Update: pressed = held &
+# ~old, unheld = ~held, released = ~held & old)
+NOT_FIRING = {0x00: "{} not held", 0x10: "{} not newly pressed",
+              0x20: "{} held", 0x30: "{} not just released"}
 NIBBLE_PAD = (("CIRCLE", 0x20), ("TRIANGLE", 0x10), ("CROSS", 0x40),
               ("SQUARE", 0x80))  # func_8001BE20: nibble bit k tests these
 
@@ -313,6 +321,9 @@ class Fight:
             bit = 5
             cond.append("needs unk_26C")
         s = f"{TYPES[f & 0x30]} {self.buttons[ex].get(bit, f'bit{bit}')}"
+        if f & 0x20 and bit in (3, 5):
+            # the game bit is an OR of two pad bits (func_8001BE20)
+            cond.append("fires unless both buttons are held")
         if f & 0x8000:
             cond.append(f"char mask {extra:#x}")
         if f & 0x1000:
@@ -342,6 +353,7 @@ class Fight:
                         + (f" ({note})" if note else "")))
 
         paired_seen = False
+        earlier = []  # what the earlier live entries need to not fire
         covered = set()  # (bit, input type) an earlier live entry takes
         # an entry of type t on bit b never fires once an unconditional
         # entry of a type implying t on b came first (the loop breaks)
@@ -383,9 +395,16 @@ class Fight:
             key_bit = {9: 3, 0xA: 5}.get(bit, bit)
             if any((key_bit, t) in covered for t in implied_by[typ]):
                 continue  # an earlier entry takes this input first
-            if bit not in (9, 0xA):
-                covered.add((key_bit, typ))
             lab = self.label(f, extra, ex)
+            if earlier:
+                # first match: every earlier live entry must not fire
+                lab += " [and none earlier fires: " + "; ".join(earlier) + "]"
+            name = self.buttons[ex].get(key_bit, f"bit{key_bit}")
+            if bit in (9, 0xA):
+                earlier.append(f"not ({TYPES[typ]} {name} with its condition)")
+            else:
+                covered.add((key_bit, typ))
+                earlier.append(NOT_FIRING[typ].format(name))
             if f & 0x4000:
                 lab += " (paired entry tested as an input)"
             if kind == 0x11:
