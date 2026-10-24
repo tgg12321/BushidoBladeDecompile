@@ -2,7 +2,9 @@
 """Build/check docs/naming/runtime/evidence/events.tsv from committed Q124 captures.
 
 All relative CLI paths are repository-relative. Counts describe recorded watch
-hits and explicitly declared breakpoints, never hit-map or stub entries. Values are
+hits and explicitly declared breakpoints, never hit-map or stub entries. A
+capture from a modified game (spec stubs or pokes, or stub/poke records: the
+test tools/trace/matrix.py uses for kind stub) contributes no rows. Values are
 compact JSON lists (call values are a0..a3 tuples), sorted and capped at eight.
 values_omitted counts additional distinct values. All inputs are exact index
 blobs, not working-tree files. Site PCs print KSEG0 aliases, including BIOS
@@ -71,6 +73,12 @@ def selected(event, declared):
     return (event.get("ev") == "hit" and not any(
         event.get(flag) for flag in ("hm", "stub_call", "stub_leak")) and
         (normalized_target(event["at"]), event["kind"]) in declared)
+
+
+def modified(spec, events):
+    # Hits after a stub or poke went in are from a modified game.
+    return bool(spec.get("stubs") or spec.get("pokes")) or any(
+        e["ev"] in ("stub", "poke") for e in events)
 
 
 def limits(spec, events, end, entry, event):
@@ -385,6 +393,8 @@ def render(runtime=None):
             if len(starts) != 1:
                 raise ValueError("expected exactly one start record")
             spec = starts[0].get("spec", {})
+            if modified(spec, events):
+                continue
             declared = declarations(spec)
             if not any(selected(e, declared) for e in events):
                 continue

@@ -280,6 +280,25 @@ class EventsTest(unittest.TestCase):
         self.save()
         self.assertEqual(self.rows(), [])
 
+    def test_stubbed_and_poked_captures_are_skipped(self):
+        baseline = self.rows()
+        self.assertTrue(baseline)
+        for key, entry in (("stubs", dict(at="func_80010000", phase="q")),
+                           ("pokes", dict(at="D_800A3910", hex="06", phase="q"))):
+            with self.subTest(spec=key):
+                self.spec[key] = [entry]
+                self.save()
+                self.assertEqual(self.rows(), [])
+                del self.spec[key]
+        for ev in ("stub", "poke"):
+            with self.subTest(record=ev):
+                self.records.insert(3, dict(ev=ev, at="D_800A3910", when="q"))
+                self.save()
+                self.assertEqual(self.rows(), [])
+                del self.records[3]
+        self.save()
+        self.assertEqual(self.rows(), baseline)
+
     def test_missing_frames_are_not_inconclusive(self):
         for r in self.records:
             r.pop("frame")

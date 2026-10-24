@@ -11,6 +11,8 @@ len is a multiple of 4, else 2, else 1) and, for each word that takes more than
 one value, gives distinct/min/max and a per-capture trend in frame order. Phase lists
 follow phases.tsv run order (JSONL order for TSV-less value captures). All CLI relative
 paths are repository-relative. Facts describe only the supplied captures.
+Readings from kind-stub captures (stubbed or poked: a modified game) give no
+value facts.
 """
 
 import argparse
@@ -228,6 +230,7 @@ def render(matrix, no_name, runtime=None):
     _, readings = read_table(matrix / "values.tsv",
                              ["capture", "phase", "symbol/entry", "offset", "len", "entry", "bytes", "error", "end",
                               "frame"])
+    readings = [r for r in readings if kinds.get(r["capture"]) != "stub"]
     phase_order = {}
     for capture in sorted({r["capture"] for r in readings}):
         path = runtime / capture / "phases.tsv"

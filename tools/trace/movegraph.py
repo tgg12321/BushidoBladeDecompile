@@ -520,6 +520,23 @@ class Fight:
                 f"{h['first']}..{h['last']}, input to {h['last_cmd']}"
                 f"{', queued' if h['unk_09'] & 0x80 else ''})")
 
+def modifications(path: str) -> list[str]:
+    """The capture's stub and poke records, one line each. gdbtrace writes
+    them after a phase's value reads; an "entry" stub precedes every read."""
+    out = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            e = json.loads(line)
+            if e.get("ev") not in ("stub", "poke"):
+                continue
+            when = e.get("when")
+            out.append(f"{e['ev']} {e.get('at')} " + (
+                "at the EXE entry: every read is from a modified game"
+                if when == "entry" else f"when phase {when} starts, after its "
+                "value reads: later phases read a modified game"))
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("capture", nargs="?")
@@ -542,6 +559,8 @@ def main(argv=None):
     if not args.capture:
         ap.error("capture is required")
     fight = Fight(load_dump(args.capture, args.phase))
+    for m in modifications(args.capture):
+        print(f"note: modified run: {m}")
     for n in fight.notes:
         print(f"note: {n}")
     print(f"mode D_800A38DC {fight.mode}, D_800A38AE {fight.ae}")

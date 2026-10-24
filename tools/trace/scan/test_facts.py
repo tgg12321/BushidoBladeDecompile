@@ -133,6 +133,17 @@ class FactsTest(unittest.TestCase):
         self.assertEqual(json.loads(error["fact"])["errors"][0]["error"], "read failed")
         self.assertIsNone(json.loads(error["fact"])["end"][0]["differs"])
 
+    def test_stub_capture_readings_give_no_value_facts(self):
+        before = [r for r in self.rows() if r["kind"].startswith("value_")]
+        with (self.matrix / "sources.tsv").open("ab") as stream:
+            stream.write(b"s\tstub\tcapture.jsonl\n")
+        with (self.matrix / "values.tsv").open("ab") as stream:
+            stream.write(b"s\tp\tD_80010010\t4\tcc\t\tfalse\t1\t0\t0\n"
+                         b"s\tq\tD_80010020\t\t06\t\ttrue\t1\t1\t5\n")
+        after = [r for r in self.rows() if r["kind"].startswith("value_")]
+        self.assertEqual(after, before)
+        self.assertEqual(self.get("value_constant", "D_80010010")["captures"], "v")
+
     def test_value_cross_capture_and_failed_comparison(self):
         item = dict(addr="x", offset="", len="1")
         readings = [dict(capture="a", phase="p", bytes="aa", error="", end="false"),
