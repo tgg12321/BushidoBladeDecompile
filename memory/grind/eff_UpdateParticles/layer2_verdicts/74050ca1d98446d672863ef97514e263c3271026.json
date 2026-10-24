@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "eff_UpdateParticles",
+  "body_hash": "ce54c2637e261bae",
+  "summary": "Comment-only commit: adds a truthful, measured FAKE (Q129) label over the 14 scratchpad field pointers. Tokens and layer-2 hash unchanged; re-measured p_count 94/1052, p_prim 43/1046, p_r 119/1045, all-fourteen 230/984 all match the label; the unk70 s8-to-96(sp) spill is confirmed in the diff.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": ["The label's opening 'reached through the plain pointers below' could be read as also covering the three ordinary array bases (p_out, var_13, var_9); naming 'the fourteen pointers listed' would be clearer.", "The blind-pass verdicts and the best-pair / best-four scores (159 / 195) were not re-run by this reviewer."]
+}
