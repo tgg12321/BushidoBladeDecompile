@@ -7,6 +7,10 @@ phase lists; a lone dot means targeted with no hits in fully covered phases.
 A dash (-) means the function was not targeted by that capture. capture_name
 and other_capture_names are recorded symbols, not current-tree names. Value rows
 retain JSONL order within each capture, including duplicate readings and errors.
+Value len is int(watch len) from the spec watch, 4 when the watch sets none
+(gdbtrace's own default); only an event whose watch index does not resolve
+falls back to len(hex_string)//2. The entry column retains the watch index for
+end-reading comparisons.
 Stub leaf IDs include their parent directory to distinguish baseline captures.
 sources.tsv has one row per input file per capture (including the optional
 no-name registry). Start time uses manifest start.time/start_time, falling back
@@ -175,6 +179,10 @@ def load_capture(path):
         watches = spec.get("values", [])
         watch = watches[index] if isinstance(index, int) and 0 <= index < len(watches) else {}
         offset = event.get("offset", watch.get("ptr_off", watch.get("offset", "")))
+        # gdbtrace reads int(v.get("len", 4)) for every watch; only an event whose
+        # watch index does not resolve falls back to the length of its bytes
+        length = (int(watch.get("len", 4)) if watch
+                  else len(event.get("hex", "")) // 2)
         values.append([ident, scalar(event["phase"]), scalar(event["at"]), scalar(offset),
                        scalar(event.get("hex", "")),
                        scalar(event.get("error", "")), scalar(event.get("frame", "")),
@@ -183,7 +191,7 @@ def load_capture(path):
                        recorded_address(event.get("read_at", "")),
                        scalar(event.get("end", "")),
                        scalar(event.get("pause_frame", "")),
-                       recorded_address(event.get("ptr", ""))])
+                       recorded_address(event.get("ptr", "")), scalar(length)])
     return dict(ident=ident, kind=kind, manifest=manifest, start=when, order=order,
                 hashes=hashes, functions=functions, mapped=mapped, values=values)
 
@@ -220,7 +228,7 @@ def render(paths, no_name=None):
         coverage.append([f"0x{addr:08X}", name, others, int(addr in registry),
                          sum(r[2] for r in readings)] + [r[1] for r in readings])
     values = [["capture", "phase", "symbol/entry", "offset", "bytes",
-               "error", "frame", "entry", "addr", "read_at", "end", "pause_frame", "ptr"]]
+               "error", "frame", "entry", "addr", "read_at", "end", "pause_frame", "ptr", "len"]]
     sources = [["capture", "kind", "q124_complete", "git_commit", "tools_trace_status",
                 "build_sha1", "start_time", "input_file", "input_sha1"]]
     for capture in captures:
@@ -267,11 +275,13 @@ def main(argv=None):
             paths = sorted({p.resolve() for p in paths}, key=lambda p: p.as_posix())
         if not paths:
             raise InvalidCapture("no capture directories found")
-        outputs = render(paths, args.no_name)
-        out = Path(args.out)
+        no_name = REPO_ROOT / args.no_name if args.no_name is not None else None
+        outputs = render(paths, no_name)
+        out = REPO_ROOT / args.out
         if args.command == "check":
             expected = set(outputs)
-            actual = {p.name for p in out.iterdir() if p.is_file()} if out.is_dir() else set()
+            actual = ({p.name for p in out.iterdir() if p.is_file()
+                       and p.name != "facts.tsv"} if out.is_dir() else set())
             different = expected ^ actual
             for name, content in outputs.items():
                 if not (out / name).is_file() or (out / name).read_bytes() != content.encode("utf-8"):

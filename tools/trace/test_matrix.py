@@ -58,7 +58,7 @@ class MatrixTest(unittest.TestCase):
                                                    "tools_trace_status": "clean"},
                     "build": {"exe": {"sha1": "oracle"}}}
         self.write(path / "capture.manifest.json", json.dumps(manifest) + "\n")
-        spec = {"values": [{"at": "D_80010010", "ptr_off": 4}]} if values else {}
+        spec = {"values": [{"at": "D_80010010", "ptr_off": 4, "len": 2}]} if values else {}
         if stub:
             spec["stubs"] = [{"at": "recorded"}]
         events = [{"ev": "start", "time": time, "spec": spec}]
@@ -92,10 +92,10 @@ class MatrixTest(unittest.TestCase):
             "0x80010004\tquiet\t\t0\t0\t.\t-\n"
             "0x80010008\textra\t\t0\t0\t-\tfight:?\n")
         expected_values = (
-            "capture\tphase\tsymbol/entry\toffset\tbytes\terror\tframe\tentry\taddr\tread_at\tend\tpause_frame\tptr\n"
-            "v\tfight\tD_80010010\t4\taabb\t\t5\t0\t0x80010010\t0x80010020\tfalse\t5\t0x8001001C\n"
-            "v\tfight\tD_80010010\t4\taabb\t\t5\t0\t0x80010010\t0x80010020\tfalse\t5\t0x8001001C\n"
-            "v\tfight\tD_80010010\t4\t\tpointer is not RAM or scratchpad\t\t0\t\t\ttrue\tnull\t0x00000000\n")
+            "capture\tphase\tsymbol/entry\toffset\tbytes\terror\tframe\tentry\taddr\tread_at\tend\tpause_frame\tptr\tlen\n"
+            "v\tfight\tD_80010010\t4\taabb\t\t5\t0\t0x80010010\t0x80010020\tfalse\t5\t0x8001001C\t2\n"
+            "v\tfight\tD_80010010\t4\taabb\t\t5\t0\t0x80010010\t0x80010020\tfalse\t5\t0x8001001C\t2\n"
+            "v\tfight\tD_80010010\t4\t\tpointer is not RAM or scratchpad\t\t0\t\t\ttrue\tnull\t0x00000000\t2\n")
         expected_sources = ("capture\tkind\tq124_complete\tgit_commit\ttools_trace_status\t"
                             "build_sha1\tstart_time\tinput_file\tinput_sha1\n")
         for path, kind, time in [(self.a, "hitmap", 10), (self.b, "hitmap", 20),
@@ -121,6 +121,47 @@ class MatrixTest(unittest.TestCase):
         code, error = self.cli("check")
         self.assertEqual(code, 1)
         self.assertIn("coverage.tsv", error)
+
+    def test_value_length_from_watch_and_byte_fallback(self):
+        path = self.v / "capture.jsonl"
+        events = [json.loads(line) for line in path.read_text().splitlines()]
+        events[0]["spec"]["values"][0]["len"] = 16
+        self.write(path, "".join(json.dumps(e) + "\n" for e in events))
+        rows = list(matrix.csv.DictReader(io.StringIO(matrix.render([self.v])["values.tsv"]),
+                                         delimiter="\t"))
+        self.assertEqual([r["len"] for r in rows], ["16", "16", "16"])
+        self.assertEqual([r["entry"] for r in rows], ["0", "0", "0"])
+        del events[0]["spec"]["values"][0]["len"]
+        self.write(path, "".join(json.dumps(e) + "\n" for e in events))
+        rows = list(matrix.csv.DictReader(io.StringIO(matrix.render([self.v])["values.tsv"]),
+                                         delimiter="\t"))
+        # no len in the watch: gdbtrace's default 4, for the failed reading too
+        self.assertEqual([r["len"] for r in rows], ["4", "4", "4"])
+        for event in events:
+            if event["ev"] == "value":
+                event["i"] = 99
+        self.write(path, "".join(json.dumps(e) + "\n" for e in events))
+        rows = list(matrix.csv.DictReader(io.StringIO(matrix.render([self.v])["values.tsv"]),
+                                         delimiter="\t"))
+        # an unresolved watch index: the length of the recorded bytes
+        self.assertEqual([r["len"] for r in rows], ["2", "2", "0"])
+
+    def test_repo_relative_defaults_and_derived_facts(self):
+        old_cwd = Path.cwd()
+        try:
+            os.chdir(self.a)
+            args = ["--no-name", "no_name.tsv"] + [str(p) for p in self.paths]
+            self.assertEqual(matrix.main(["build"] + args), 0)
+            out = self.root / "docs/naming/runtime/matrix"
+            self.assertTrue((out / "coverage.tsv").is_file())
+            self.assertFalse((self.a / "docs").exists())
+            self.write(out / "facts.tsv", "derived facts\n")
+            self.assertEqual(matrix.main(["check"] + args), 0)
+            self.write(out / "unexpected.tsv", "unexpected\n")
+            with contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(matrix.main(["check"] + args), 1)
+        finally:
+            os.chdir(old_cwd)
 
     def test_q124_refused_without_output(self):
         for marker in [False, "true", None]:
