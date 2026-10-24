@@ -2551,6 +2551,10 @@ u8 *softbody_CreateForNode(Unk8003F824Rec *rec, s16 *cmds, u8 *cur) {
      * straight into count the load is lhu and the copy goes (score 8) */
     for (n = (s16)*src++, count = n; n != 0; n = (s16)*src++, count = n) {
         flags = *src++;
+        /* FAKE: mode computed once ahead of the record loop; indexing
+         * D_80094AEC with the expression moves the addiu s0 / andi pair (score
+         * 6). The following tests re-derive ((s16)flags >> 3) & 1 / & 2 from
+         * flags rather than reading mode (Q129 blind verdict doubtful). */
         mode = ((s16)flags >> 3) & 3;
         if (((s16)flags >> 3) & 1) {
             while (--count != -1) {

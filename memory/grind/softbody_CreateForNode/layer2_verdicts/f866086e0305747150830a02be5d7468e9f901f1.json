@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "softbody_CreateForNode",
+  "body_hash": "4ca91d8f109d5ae5",
+  "summary": "Comment-only restore of the `mode` FAKE label; every claim checked against the code (tests re-derive the bits from flags, only the D_80094AEC indexes read mode), score 6 re-measured with sandbox --candidate, Q129 line present, commit body accurate.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": []
+}
