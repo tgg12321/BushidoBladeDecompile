@@ -1,0 +1,107 @@
+{
+  "description": "Story Mode: story text, default character (KANNUKI) and weapon, stage card, first fight with P1 idle (the ninja's first KO, Rematch), then P1 CROSS every 200 frames from 10300 (Rematch on each loss; ninjas fall to the CROSS presses and the next one comes in), screenshots every 150 frames (capture by the trace lane)",
+  "covers": [
+    "mode:story",
+    "menu:top",
+    "menu:story_text",
+    "menu:char_select",
+    "menu:weapon_select",
+    "menu:stage_card",
+    "menu:rematch",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/story-ninja-cross-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 16000,
+  "inputs": [
+    "6100:CROSS",
+    "6400:START",
+    "6700:CROSS",
+    "7000:START",
+    "7300:CROSS",
+    "7600:START",
+    "7900:CROSS",
+    "8200:START",
+    "8500:CROSS",
+    "8800:START"
+  ],
+  "repeat": [
+    {
+      "from": 10300,
+      "every": 200,
+      "count": 28,
+      "steps": [
+        "+0:CROSS"
+      ]
+    }
+  ],
+  "phases": [
+    "6060:top_menu",
+    "6100:t_story",
+    "6810:story_text",
+    "6910:t_char",
+    "6950:char_select",
+    "7300:t_weapon",
+    "7360:weapon_select",
+    "7900:t_stage",
+    "8360:stage_card",
+    "8800:t_fight",
+    "8900:fight",
+    "10200:later"
+  ],
+  "shots": [
+    "8900:s.8900",
+    "9050:s.9050",
+    "9200:s.9200",
+    "9350:s.9350",
+    "9500:s.9500",
+    "9650:s.9650",
+    "9800:s.9800",
+    "9950:s.9950",
+    "10100:s.10100",
+    "10250:s.10250",
+    "10400:s.10400",
+    "10550:s.10550",
+    "10700:s.10700",
+    "10850:s.10850",
+    "11000:s.11000",
+    "11150:s.11150",
+    "11300:s.11300",
+    "11450:s.11450",
+    "11600:s.11600",
+    "11750:s.11750",
+    "11900:s.11900",
+    "12050:s.12050",
+    "12200:s.12200",
+    "12350:s.12350",
+    "12500:s.12500",
+    "12650:s.12650",
+    "12800:s.12800",
+    "12950:s.12950",
+    "13100:s.13100",
+    "13250:s.13250",
+    "13400:s.13400",
+    "13550:s.13550",
+    "13700:s.13700",
+    "13850:s.13850",
+    "14000:s.14000",
+    "14150:s.14150",
+    "14300:s.14300",
+    "14450:s.14450",
+    "14600:s.14600",
+    "14750:s.14750",
+    "14900:s.14900",
+    "15050:s.15050",
+    "15200:s.15200",
+    "15350:s.15350",
+    "15500:s.15500",
+    "15650:s.15650",
+    "15800:s.15800",
+    "15950:s.15950"
+  ]
+}
