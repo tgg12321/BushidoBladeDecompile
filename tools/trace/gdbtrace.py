@@ -950,7 +950,8 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                              "be >= 1")
         only = v["spec"].get("phases")
         if only is not None:
-            names = {p["name"] for p in spec["script"].get("phases", [])}
+            names = {p["name"] for p in
+                     (spec.get("script") or {}).get("phases", [])}
             if (not isinstance(only, list) or not only
                     or not all(isinstance(p, str) for p in only)
                     or not set(only) <= names):

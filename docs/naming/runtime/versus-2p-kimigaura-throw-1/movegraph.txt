@@ -7,14 +7,14 @@ record 0: unk_0A 0x0 unk_0C 0x3 unk_0E 0 slot 0 unk_26C 1 move_frame_step 0xdf0 
       => 0x80149af8 kind 0x15 (file slot 0, run by record 0, D_800A38AE 0; frames 0..24, input to 24)
     pressed R2 [and none earlier fires: not (held R1/L3 + a direction with a turn: event 0xD runs before the loop); not (pressed R1/L3 with its condition); LEFT not held; UP not held; DOWN not held; L1 not held] -> id 0x88a0
       => 0x801499e8 kind 0x2a (file slot 0, run by record 0, D_800A38AE 0; frames 0..19, input to 6, queued)
-    pressed CIRCLE/R3 [and none earlier fires: neither of R1/L3 newly pressed (with the other up)] -> id 0x00fc (common)
+    pressed CIRCLE/R3 [fires when either button is newly pressed] [and none earlier fires: neither of R1/L3 newly pressed] -> id 0x00fc (common)
       => 0x8012020c kind 0x0b (common, run by record 0, D_800A38AE 0; frames 0..19, input to 12, queued)
   path to 0x801201f8 kind 0x12 (common, run by record 0, D_800A38AE 0; frames 0..28, input to 15, queued):
     cur_move
       => 0x80149af8 kind 0x15 (file slot 0, run by record 0, D_800A38AE 0; frames 0..24, input to 24)
     pressed R2 [and none earlier fires: not (held R1/L3 + a direction with a turn: event 0xD runs before the loop); not (pressed R1/L3 with its condition); LEFT not held; UP not held; DOWN not held; L1 not held] -> id 0x88a0
       => 0x801499e8 kind 0x2a (file slot 0, run by record 0, D_800A38AE 0; frames 0..19, input to 6, queued)
-    pressed CROSS [and none earlier fires: neither of R1/L3 newly pressed (with the other up); neither of CIRCLE/R3 newly pressed (with the other up)] -> id 0x00f2 (common)
+    pressed CROSS [and none earlier fires: neither of R1/L3 newly pressed; neither of CIRCLE/R3 newly pressed] -> id 0x00f2 (common)
       => 0x801201f8 kind 0x12 (common, run by record 0, D_800A38AE 0; frames 0..28, input to 15, queued)
 record 1: unk_0A 0xc unk_0C 0x12 unk_0E 0 slot 1 unk_26C 1 move_frame_step 0xe18 (base 0xe18); cur_move 0x8019187c kind 0x15 (file slot 1, run by record 1, D_800A38AE 0; frames 0..24, input to 24)
   buttons: bit 5 CIRCLE/R3, bit 6 CROSS, bit 7 SQUARE, bit 12 DOWN, bit 13 LEFT, bit 14 UP, bit 15 RIGHT
@@ -24,21 +24,21 @@ record 1: unk_0A 0xc unk_0C 0x12 unk_0E 0 slot 1 unk_26C 1 move_frame_step 0xe18
       => 0x8019187c kind 0x15 (file slot 1, run by record 1, D_800A38AE 0; frames 0..24, input to 24)
     pressed R2 [and none earlier fires: not (held R1/L3 + a direction with a turn: event 0xD runs before the loop); not (pressed R1/L3 with its condition); RIGHT not held; DOWN not held; UP not held; L1 not held] -> id 0x8762
       => 0x8019176c kind 0x2a (file slot 1, run by record 1, D_800A38AE 0; frames 0..19, input to 6, queued)
-    pressed CIRCLE/R3 [and none earlier fires: neither of R1/L3 newly pressed (with the other up)] -> id 0x00fc (common)
+    pressed CIRCLE/R3 [fires when either button is newly pressed] [and none earlier fires: neither of R1/L3 newly pressed] -> id 0x00fc (common)
       => 0x8012020c kind 0x0b (common, run by record 1, D_800A38AE 0; frames 0..19, input to 12, queued)
   path to 0x801201f8 kind 0x12 (common, run by record 1, D_800A38AE 0; frames 0..28, input to 15, queued):
     cur_move
       => 0x8019187c kind 0x15 (file slot 1, run by record 1, D_800A38AE 0; frames 0..24, input to 24)
     pressed R2 [and none earlier fires: not (held R1/L3 + a direction with a turn: event 0xD runs before the loop); not (pressed R1/L3 with its condition); RIGHT not held; DOWN not held; UP not held; L1 not held] -> id 0x8762
       => 0x8019176c kind 0x2a (file slot 1, run by record 1, D_800A38AE 0; frames 0..19, input to 6, queued)
-    pressed CROSS [and none earlier fires: neither of R1/L3 newly pressed (with the other up); neither of CIRCLE/R3 newly pressed (with the other up)] -> id 0x00f2 (common)
+    pressed CROSS [and none earlier fires: neither of R1/L3 newly pressed; neither of CIRCLE/R3 newly pressed] -> id 0x00f2 (common)
       => 0x801201f8 kind 0x12 (common, run by record 1, D_800A38AE 0; frames 0..28, input to 15, queued)
   path to 0x801201e0 kind 0x0b (common, run by record 1, D_800A38AE 0; frames 0..30, input to 30, queued):
     cur_move
       => 0x8019187c kind 0x15 (file slot 1, run by record 1, D_800A38AE 0; frames 0..24, input to 24)
     pressed R2 [and none earlier fires: not (held R1/L3 + a direction with a turn: event 0xD runs before the loop); not (pressed R1/L3 with its condition); RIGHT not held; DOWN not held; UP not held; L1 not held] -> id 0x8762
       => 0x8019176c kind 0x2a (file slot 1, run by record 1, D_800A38AE 0; frames 0..19, input to 6, queued)
-    pressed CIRCLE/R3 [and none earlier fires: neither of R1/L3 newly pressed (with the other up)] -> id 0x00fc (common)
+    pressed CIRCLE/R3 [fires when either button is newly pressed] [and none earlier fires: neither of R1/L3 newly pressed] -> id 0x00fc (common)
       => 0x8012020c kind 0x0b (common, run by record 1, D_800A38AE 0; frames 0..19, input to 12, queued)
-    pressed CIRCLE/R3 [char mask 0x81144] -> id 0x00e6 (common)
+    pressed CIRCLE/R3 [fires when either button is newly pressed; char mask 0x81144] -> id 0x00e6 (common)
       => 0x801201e0 kind 0x0b (common, run by record 1, D_800A38AE 0; frames 0..30, input to 30, queued)
