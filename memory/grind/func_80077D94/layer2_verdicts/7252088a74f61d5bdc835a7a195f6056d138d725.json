@@ -1,0 +1,1 @@
+{"function": "func_80077D94", "body_hash": "45da7b0722b1187c", "decision": "PASS", "findings": "The slot label is on `slot = &D_800A35F8->img38[i]`, dereferenced at once by LoadImage in the case-3 loop (9); the cnt_60ago label is on `D_800A35F0 - 60`, used once in v (16). Both match ca875deb2. The nearby integer-sum FAKE on w is still accurate."}

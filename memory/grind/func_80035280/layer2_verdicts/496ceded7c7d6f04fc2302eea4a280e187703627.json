@@ -1,0 +1,1 @@
+{"function": "func_80035280", "body_hash": "49b8ca495c62fb44", "decision": "PASS", "findings": "The label sits at the top of loop 2's body (the times loop) and names var_4, var_5, var_6 and t, declared right below it; TimeRec.unk_0 is a u8, so 'raw record byte' is true for t. Text and score 15 match 70f656589."}

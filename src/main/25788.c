@@ -127,6 +127,12 @@ void func_80035280(void) {
     }
     times = D_80106A50.times;
     for (i = 0; i < 3; i++) {
+        /* FAKE: the clock fields and the raw record byte are each staged
+         * through a named intermediate (var_4 / var_5 / var_6 / t); they raise
+         * loop 2's insn count from 55 to 59, past loop.c's hoist threshold
+         * (58), so the /1800 magic constant's lui/ori stays in the loop as in
+         * the target. combine folds the copies away; direct stores: score 15
+         * (Q129). */
         u8 var_4;
         u8 var_5;
         u8 var_6;

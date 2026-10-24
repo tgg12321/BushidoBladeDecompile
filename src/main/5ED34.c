@@ -1151,6 +1151,12 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 if (D_800A35BC == 3) {
                     s32 sel;
                     s32 id;
+                    /* FAKE: named intermediate for the address of the image
+                     * pointer LoadImage reads: under `*(...)` the sum expands
+                     * as an address and the 0x14 moves into the load offset; as
+                     * a local it computes id * 8 + 0x14 first, as the target
+                     * does. Same at the confirm and locked sites. Written
+                     * inline: score 27 (Q129). */
                     s32 *tim;
 
                     snd_QueueSound(1, 0x7F, 0x7F);
@@ -1168,6 +1174,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                 } else if (D_800A354C & (0x40 << (var_4 * 16))) {
                     s32 sel;
                     s32 id;
+                    /* FAKE: image pointer address, mechanism and score at the
+                     * == 3 `tim` (Q129). */
                     s32 *tim;
 
                     snd_QueueSound(1, 0x7F, 0x7F);
@@ -1266,6 +1274,8 @@ void menu_UpdateRowCursors(Unk8006EACCRec *arg0, Unk8007352CRec *s) {
                     D_800A35C4->unk_04[i == 0 ? 1 : 0] == 0) {
                     s32 sel;
                     s32 id;
+                    /* FAKE: image pointer address, mechanism and score at the
+                     * == 3 `tim` (Q129). */
                     s32 *tim;
 
                     snd_QueueSound(1, 0x7F, 0x7F);

@@ -2471,6 +2471,8 @@ s32 menu_UpdateConfirmMenu(s32 arg0, s32 arg1) {
 extern RECT D_800A32D8;
 
 s32 gpu_BeginFullscreenImageDisplay(void) {
+    /* FAKE: read at entry and held in $s3 across the calls; read at the
+     * LoadImage call: score 22 (Q129). */
     s32 temp_s3 = D_800A3500;
     RECT rect;
     s32 v0;

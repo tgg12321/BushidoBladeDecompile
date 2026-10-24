@@ -2022,6 +2022,8 @@ void func_80049A2C(s32 arg0, s32 arg1, s32 arg2) {
     obj->node.xf.rot.vx = *src;
     src++;
     obj->node.xf.rot.vy = *src;
+    /* FAKE: rot.vz's value read into rot_z ahead of the parent store; read at
+     * its own store it scores 8 (Q129). */
     rot_z = src[1];
     obj->node.parent_node = &slot_obj->transform_nodes[12].node;
     obj->node.matrix_state = 0;

@@ -1,0 +1,1 @@
+{"function": "gpu_BeginFullscreenImageDisplay", "body_hash": "7853b42864c956e2", "decision": "PASS", "findings": "The label is on `s32 temp_s3 = D_800A3500;` at entry; LoadImage uses temp_s3 + 0x14 and cdrom_StartRead re-reads D_800A3500. Text and score 22 match the label 70f656589 removed from func_8006E10C."}

@@ -1,0 +1,1 @@
+{"function": "func_80049A2C", "body_hash": "891fdac95ef9ec36", "decision": "PASS", "findings": "Only a comment is added. The label sits on `rot_z = src[1];`, read after the rot.vy store and before the parent_node and matrix_state stores; rot.vz is stored after those. Score 8 matches the label d14f899a5 removed."}
