@@ -107,7 +107,7 @@ emits its own compare-and-branch (deleting the test deletes that instruction fro
 the target has that instruction, and the test reads a real program value (a variable, field or
 global, not a literal-only tautology). Entry 16 of [[no-new-park-categories]]
 still governs conditions that leave no instruction of their own (`if (p && p)`, `if (!i) { }`).
-Asked for func_80058580's `&& var_38 == 1` and inner D_800A387C test.
+A Q127 removal also needs a Q129 blind verdict of NATURAL.
 
 ## Q129 — reuse/split relabels need a blind "natural C" verdict (owner, 2026-10-23)
 
