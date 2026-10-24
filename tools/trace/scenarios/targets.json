@@ -58,7 +58,7 @@
       }
     },
     "characters": {
-      "open": "the six Select School names (Narukagami, Shainto); hidden or unlockable characters not seen yet",
+      "open": "the six characters of the two schools Select School draws (Narukagami, Shainto: group-battle-hitmap-1 school_select); hidden or unlockable characters not seen yet (Select Character draws five rows per school, three named and two blank: versus-2p-stage-map1-6 char_select.first)",
       "keys": [
         "char:kannuki",
         "char:mikado",
