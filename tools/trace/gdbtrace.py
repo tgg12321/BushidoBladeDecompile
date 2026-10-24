@@ -62,6 +62,9 @@ Spec (JSON):
                "phase": "fight",      # patched to `jr ra` when this phase
                "ret": 0}],            # starts (no phase: at the EXE entry);
                                      # ret sets v0 (none: v0 unchanged)
+    "pokes": [{"at": "D_80101EC8+0xE",  # set-and-observe (needs a script):
+               "hex": "0600",         # these bytes written once when the
+               "phase": "fight"}],    # phase starts (after its value reads)
     "script": {...}                  # PCSX-Redux scripted run: frame-timed
   }                                  # inputs, phases, screenshots (runkit.py)
 `at`/`base` take a symbol from the link map, a 0x address, `sym+0xNN`, or (for
@@ -552,6 +555,59 @@ def stub_words(st: dict) -> bytes:
     return JR_RA.to_bytes(4, "little") + slot.to_bytes(4, "little")
 
 
+def parse_pokes(spec: dict, syms, phase_names: set, first: str) -> list[dict]:
+    """Validate spec["pokes"]: each writes `hex` at `at` when `phase` starts.
+    A poke needs a script phase other than the first (at power-on the game
+    has not set anything up yet), RAM or scratchpad bytes, and no overlap
+    with another poke."""
+    pokes = []
+    for pk in spec.get("pokes", []):
+        if not spec.get("script"):
+            raise SystemExit("gdbtrace: pokes need a script")
+        at = pk.get("at")
+        when = pk.get("phase")
+        if when not in phase_names or when == first:
+            raise SystemExit(f"gdbtrace: poke {at}: phase must be a script "
+                             f"phase other than the first, not {when!r}")
+        try:
+            data = bytes.fromhex(pk.get("hex") or "")
+        except (TypeError, ValueError):
+            data = b""
+        if not data:
+            raise SystemExit(f"gdbtrace: poke {at}: hex must be one or more "
+                             "bytes in hex (memory order)")
+        addr = syms.addr(at)
+        end = addr + len(data)
+        if not ((RAM_LO <= addr and end <= RAM_HI)
+                or (0x1F800000 <= addr and end <= 0x1F800400)):
+            raise SystemExit(f"gdbtrace: poke {at}: 0x{addr:08X}+{len(data)} "
+                             "is not RAM or scratchpad")
+        for o in pokes:
+            if addr < o["addr"] + len(o["data"]) and o["addr"] < end:
+                raise SystemExit(f"gdbtrace: poke {at} overlaps poke "
+                                 f"{o['spec']['at']}")
+        pokes.append({"spec": pk, "addr": addr, "when": when, "data": data})
+    return pokes
+
+
+def apply_pokes(gdb: Gdb, pokes: list[dict], when: str, regs: list[int],
+                frame, emit) -> None:
+    """Write every poke due when phase `when` starts; read back to prove it."""
+    pc = regs[37] if len(regs) > 37 else None
+    for pk in pokes:
+        if pk["when"] != when or "applied" in pk:
+            continue
+        a, data = pk["addr"], pk["data"]
+        pk["orig"] = gdb.mem(a, len(data)).hex()
+        ok = gdb.write(a, data) and gdb.mem(a, len(data)) == data
+        pk["applied"] = {"frame": frame, "pc": pc, "ok": ok}
+        emit({"ev": "poke", "at": pk["spec"]["at"], "addr": a, "when": when,
+              "frame": frame, "pc": pc, "orig": pk["orig"],
+              "hex": data.hex(), "ok": ok})
+        if not ok:
+            raise SystemExit(f"gdbtrace: poke write at 0x{a:08X} refused")
+
+
 def apply_stubs(gdb: Gdb, stubs: list[dict], when: str, regs: list[int],
                 frame, emit, armed: dict, suspended: dict) -> None:
     """Patch every stub due at `when` ("entry" or a phase name) to return.
@@ -919,6 +975,10 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             raise SystemExit(f"gdbtrace: {st['at']} is stubbed twice")
         stubs.append({"spec": st, "addr": addr, "when": when,
                       "words": stub_words(st)})
+    # Set-and-observe: write chosen bytes once when a phase starts.
+    pokes = parse_pokes(spec, syms, phase_names,
+                        runkit.first_phase(spec["script"])
+                        if spec.get("script") else "start")
 
     if spec.get("script"):
         # Canary: the EXE entry runs exactly once per boot; its hit proves
@@ -1151,6 +1211,7 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                 if not new[3]:
                     apply_stubs(gdb, stubs, phase, regs, new[1], emit,
                                 armed, suspended)
+                    apply_pokes(gdb, pokes, phase, regs, new[1], emit)
             # A Lua pause can land on any load/store, like our own ^C.
             e, acc = entry_for_stop(regs, reply,
                                     (interrupted and not raced) or script_stop)
@@ -1276,6 +1337,25 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             args.result["modified_game"] = (
                 "stubbed functions: hits and screenshots after a stub went "
                 "in are from a modified game; cite with `compare` only")
+        precs = []
+        for pk in pokes:
+            rec = {"at": pk["spec"]["at"], "addr": pk["addr"],
+                   "when": pk["when"], "hex": pk["data"].hex(),
+                   "orig": pk.get("orig"), "applied": pk.get("applied")}
+            if "applied" in pk:
+                # Information only: the game may legitimately rewrite data.
+                try:
+                    rec["at_end"] = gdb.mem(pk["addr"], len(pk["data"])).hex()
+                except (GdbError, OSError) as ex:
+                    rec["at_end"] = f"not read: {ex}"
+            precs.append(rec)
+        if precs:
+            args.result["pokes"] = precs
+            args.result["modified_game"] = (
+                ("stubbed functions and poked memory" if recs else
+                 "poked memory")
+                + ": hits and screenshots after a stub or poke went in are "
+                "from a modified game; cite with `compare` only")
         if ended:
             # Information only (the gate is the check at the EXE entry):
             # which .rodata + .text bytes the run itself changed.
@@ -1681,6 +1761,7 @@ def report(args) -> int:
     disarmed = {}
     start = end = canary = hitmap = None
     stubs = []
+    pokes = []
     stub_calls = collections.defaultdict(list)
     hm_hits = collections.defaultdict(collections.Counter)
     with open(args.trace, encoding="utf-8") as f:
@@ -1708,6 +1789,8 @@ def report(args) -> int:
                 canary = rec
             elif rec["ev"] == "stub":
                 stubs.append(rec)
+            elif rec["ev"] == "poke":
+                pokes.append(rec)
             elif rec["ev"] == "start":
                 start = rec
             elif rec["ev"] == "end":
@@ -1747,6 +1830,11 @@ def report(args) -> int:
                      str(ph) for ph in calls)) or "none")
                  + "; " + (f"LEAKED past the stub in {len(leaks)} phase(s)"
                            if leaks else "never ran past the stub"))
+    for pk in pokes:
+        w.append(f"- POKED: `{pk['at']}` (0x{pk['addr']:08X}) set to "
+                 f"{pk['hex']} (was {pk['orig']}) when {pk['when']} started "
+                 f"(frame {pk['frame']}): every hit and read after that is "
+                 "from a modified game")
     if phases:
         spans = []
         for i, ph in enumerate(phases):
@@ -1865,9 +1953,9 @@ def report(args) -> int:
                  + (" and the end" if any(r.get("end") for r in recs)
                     else "; no end read") + ", emulator paused by the script)")
         w.append("")
-        if stubs:
-            w.append("Stubbed run: reads after a stub went in are from a "
-                     "modified game.")
+        if stubs or pokes:
+            w.append("Modified run: reads after a stub or poke went in are "
+                     "from a modified game.")
             w.append("")
         if any(len(r.get("hex", "")) > 2 * DUMP_SHOWN for r in recs):
             # A RAM dump (movegraph.py reads it from the capture): one line
@@ -2021,10 +2109,10 @@ def compare(args) -> int:
     sa, sb = specs
     if sa.get("script") != sb.get("script"):
         problems.append("different scripts (inputs, phases or screenshots)")
-    if sa.get("stubs"):
-        problems.append("the baseline has stubs")
-    if not sb.get("stubs"):
-        problems.append("the second run has no stubs")
+    if sa.get("stubs") or sa.get("pokes"):
+        problems.append("the baseline has stubs or pokes")
+    if not sb.get("stubs") and not sb.get("pokes"):
+        problems.append("the second run has no stubs or pokes")
     calls = collections.defaultdict(list)  # stub -> phases it was called in
     with open(args.other, encoding="utf-8") as f:
         for line in f:
@@ -2075,6 +2163,13 @@ def compare(args) -> int:
         + f", {s.get('at_end')} at the end, called while stubbed in "
         + (", ".join(dict.fromkeys(str(x) for x in calls.get(s["addr"], [])))
            or "no phase") for s in stubs) or "none"))
+    pokes = mb.get("result", {}).get("pokes") or []
+    if pokes:
+        w.append("- pokes: " + ", ".join(
+            f"`{p['at']}` (0x{p['addr']:08X}) = {p['hex']} (was "
+            f"{p.get('orig')}) from phase {p['when']} (frame "
+            f"{(p.get('applied') or {}).get('frame')}), {p.get('at_end')} at "
+            "the end" for p in pokes))
     w.append("- " + ("same inputs and script" if not problems else
                      "NOT COMPARABLE: " + "; ".join(problems)))
     w += ["", "| screenshot | changed pixels | bounding box (x0,y0-x1,y1) |",

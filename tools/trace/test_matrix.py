@@ -327,6 +327,16 @@ class MatrixTest(unittest.TestCase):
         with self.assertRaisesRegex(matrix.InvalidCapture, "duplicate capture ID"):
             matrix.render([self.a, self.a])
 
+    def test_poke_capture_is_sources_only_like_a_stub(self):
+        path = self.capture("poked", 45)
+        events = [json.loads(line) for line in (path / "capture.jsonl").read_text().splitlines()]
+        events[0]["spec"] = {"pokes": [{"at": "D_80010010", "hex": "06", "phase": "fight"}]}
+        self.write(path / "capture.jsonl", "".join(json.dumps(e) + "\n" for e in events))
+        outputs = matrix.render([path])
+        self.assertIn("poked\tstub\ttrue", outputs["sources.tsv"])
+        self.assertEqual(outputs["coverage.tsv"],
+                         "addr\tcapture_name\tother_capture_names\tno_name\tcaptures_hit\n")
+
     def test_events_capture_sources_only(self):
         path = self.capture("events", 50)
         events = [json.loads(line) for line in (path / "capture.jsonl").read_text().splitlines()]

@@ -127,8 +127,10 @@ def load_capture(path):
         relative = path.relative_to(REPO_ROOT / "docs/naming/runtime")
     except ValueError:
         relative = Path()
+    # Poked captures are modified games too: sources only, like stubs.
     is_stub = any("-stub-" in part for part in relative.parts) or any(
-        e["ev"] == "stub" for e in events) or bool(spec.get("stubs"))
+        e["ev"] in ("stub", "poke") for e in events) or bool(
+        spec.get("stubs") or spec.get("pokes"))
     is_values = bool(spec.get("values")) or any(e["ev"] == "value" for e in events)
     has_map = (path / "hitmap.tsv").exists()
     declares_map = bool(spec.get("hitmap")) or any(e["ev"] == "hitmap" for e in events)

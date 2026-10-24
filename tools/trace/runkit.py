@@ -666,6 +666,9 @@ def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
                     or st.get("at_end") != "intact":
                 missing.append(f"stub {st['at']} applied whole and still in "
                                "place at the end")
+        for pk in result.get("pokes") or []:
+            if not (pk.get("applied") or {}).get("ok"):
+                missing.append(f"poke {pk['at']} written and read back")
         if result.get("stub_leaks"):
             missing.append("no code ran past a stub (leak breakpoints)")
         problems = check_log(args.spec_obj["script"], args.out)
