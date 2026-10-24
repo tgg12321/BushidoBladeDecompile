@@ -298,6 +298,16 @@ class EventsTest(unittest.TestCase):
                 del self.records[3]
         self.save()
         self.assertEqual(self.rows(), baseline)
+        for family in ("x-stub-1", "x-poke-1"):
+            with self.subTest(family=family):
+                nested = self.runtime / family / "baseline"
+                shutil.copytree(self.capture, nested)
+                self.tracked = [f"docs/naming/runtime/{family}/baseline/capture.manifest.json"]
+                self.assertEqual(self.rows(), [])
+                for path in sorted(nested.iterdir()):
+                    path.unlink()
+                nested.rmdir()
+                nested.parent.rmdir()
 
     def test_missing_frames_are_not_inconclusive(self):
         for r in self.records:

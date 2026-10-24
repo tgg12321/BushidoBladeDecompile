@@ -103,6 +103,10 @@ def table(text, header):
     return rows
 
 
+def family(part):
+    return "-stub-" in part or "-poke-" in part
+
+
 def load_capture(path):
     path = path.resolve()
     require_leaf(path)
@@ -127,8 +131,9 @@ def load_capture(path):
         relative = path.relative_to(REPO_ROOT / "docs/naming/runtime")
     except ValueError:
         relative = Path()
-    # Poked captures are modified games too: sources only, like stubs.
-    is_stub = any("-stub-" in part for part in relative.parts) or any(
+    # Poked captures are modified games too: sources only, like stubs. A
+    # -stub- or -poke- family (its baseline included) is a compare set.
+    is_stub = any(family(part) for part in relative.parts) or any(
         e["ev"] in ("stub", "poke") for e in events) or bool(
         spec.get("stubs") or spec.get("pokes"))
     is_values = bool(spec.get("values")) or any(e["ev"] == "value" for e in events)
@@ -139,7 +144,7 @@ def load_capture(path):
     kind = ("stub" if is_stub else "hitmap" if has_map else "values" if is_values
             else "events" if is_events else "other")
     ident = (path.parent.name + "/" + path.name
-             if len(relative.parts) > 1 and "-stub-" in relative.parts[-2] else path.name)
+             if len(relative.parts) > 1 and family(relative.parts[-2]) else path.name)
     start_context = manifest.get("start", {})
     when = (start_context.get("time") if isinstance(start_context, dict) else None)
     if when is None:

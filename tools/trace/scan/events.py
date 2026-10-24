@@ -3,8 +3,9 @@
 
 All relative CLI paths are repository-relative. Counts describe recorded watch
 hits and explicitly declared breakpoints, never hit-map or stub entries. A
-capture from a modified game (spec stubs or pokes, or stub/poke records: the
-test tools/trace/matrix.py uses for kind stub) contributes no rows. Values are
+capture from a modified game or its compare set (spec stubs or pokes,
+stub/poke records, or a -stub-/-poke- family directory: the test
+tools/trace/matrix.py uses for kind stub) contributes no rows. Values are
 compact JSON lists (call values are a0..a3 tuples), sorted and capped at eight.
 values_omitted counts additional distinct values. All inputs are exact index
 blobs, not working-tree files. Site PCs print KSEG0 aliases, including BIOS
@@ -75,9 +76,11 @@ def selected(event, declared):
         (normalized_target(event["at"]), event["kind"]) in declared)
 
 
-def modified(spec, events):
-    # Hits after a stub or poke went in are from a modified game.
-    return bool(spec.get("stubs") or spec.get("pokes")) or any(
+def modified(relative, spec, events):
+    # Hits after a stub or poke went in are from a modified game; a family's
+    # baseline is there for compare (matrix.py: kind stub as well).
+    return any("-stub-" in part or "-poke-" in part for part in relative.parts) or bool(
+        spec.get("stubs") or spec.get("pokes")) or any(
         e["ev"] in ("stub", "poke") for e in events)
 
 
@@ -393,7 +396,7 @@ def render(runtime=None):
             if len(starts) != 1:
                 raise ValueError("expected exactly one start record")
             spec = starts[0].get("spec", {})
-            if modified(spec, events):
+            if modified(relative, spec, events):
                 continue
             declared = declarations(spec)
             if not any(selected(e, declared) for e in events):
