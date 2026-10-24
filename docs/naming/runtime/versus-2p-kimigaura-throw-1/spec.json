@@ -57,6 +57,27 @@
    ]
   },
   {
+   "at": "D_800A38DC",
+   "len": 2,
+   "phases": [
+    "fight"
+   ]
+  },
+  {
+   "at": "D_800A38A0",
+   "len": 4,
+   "phases": [
+    "fight"
+   ]
+  },
+  {
+   "at": "D_800A3912",
+   "len": 3,
+   "phases": [
+    "fight"
+   ]
+  },
+  {
    "at": "0x80120000",
    "len": 755712,
    "phases": [
