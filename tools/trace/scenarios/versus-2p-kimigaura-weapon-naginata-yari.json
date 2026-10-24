@@ -1,0 +1,26 @@
+{
+  "description": "versus-kimigaura-effects run with other weapons: on Select Weapon (cursors start on Katana) P1 (KANNUKI) LEFT LEFT to Naginata, P2 RIGHT RIGHT RIGHT to Yari; the same fight inputs to frame 10630 (capture by the trace lane: unk_0E per weapon, codes 10/11)",
+  "covers": [
+    "mode:vs_2p",
+    "menu:weapon_select",
+    "stage:kimigaura_coast",
+    "char:kannuki",
+    "char:gengoro",
+    "event:round_start"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-kimigaura-weapon-naginata-yari-1/spec.json"
+  ],
+  "extends": "versus-2p-kimigaura-effects",
+  "end_frame": 10630,
+  "inputs": [
+    "6720:LEFT",
+    "6750:LEFT",
+    "6735:RIGHT@2",
+    "6765:RIGHT@2",
+    "6795:RIGHT@2"
+  ],
+  "shots": [
+    "6880:weapon_select.pick"
+  ]
+}
