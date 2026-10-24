@@ -45,6 +45,8 @@ For each row:
   earlier claim is a FAIL.
 - **R4 — specificity (N2/N4).** The name asserts no more than the code shows. A prefix needs its
   subsystem explained; a verb or noun that is a guess FAILs. Say which word is unsupported.
+  Q132: a mechanical name (what the body does, no claimed identity) that tells the function from
+  its siblings PASSes R4; an unknown screen/setting/asset identity is not a FAIL ground.
 - **R5 — collisions.** No existing symbol, struct, typedef, macro or PsyQ/SDK name is shadowed
   or duplicated. No `_2` disambiguation. Library code keeps Sony spelling.
 - **R6 — the applied wave (the post-apply pass, required for every wave).** Given the applied
@@ -65,6 +67,9 @@ For each row:
   and no use supports it. A RESET to the neutral name needs no positive evidence.
 - **Runtime evidence (owner ruling Q124, `.claude/rules/naming-runtime-evidence.md`):** a trace
   capture only corroborates a name the code already supports; check its conditions and SHA1.
+  Q132: the role part alone (screen, mode, event) may rest on a stub-and-observe screenshot pair
+  or a full-coverage "only X" hit map; open both screenshots and check the claim names only the
+  difference.
 - **Bulk local reset waves (owner ruling Q119, `.claude/rules/naming-bulk-reset.md`):** no
   pre-apply pass. On R6, check the keycheck and moved keys as above, sample at least 20 rows or
   10% (the larger) and FAIL the wave if a sampled row is outside that rule's scope, and check

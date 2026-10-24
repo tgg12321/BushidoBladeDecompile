@@ -53,6 +53,9 @@ size-only matches. Library code keeps Sony's spelling.
 A subsystem prefix (`camera_`, `model_`, `stage_`, `snd_`, `cd_`...) must itself be explained
 (callees, data, or callers of that subsystem). Claim no more than the code shows:
 `camera_Update`, not `camera_UpdateReplayTilt`, when "replay" and "tilt" are guesses.
+**Q132:** an unknown identity is no ground for neutral: name what the code shows the function
+does (`menu_HandleCursorInput`), worded to tell it from its siblings, else neutral. An
+"identity unknown" NO_NAME objection doesn't block it.
 
 ## N5 — existing names
 
@@ -61,10 +64,9 @@ or renamed, not kept for history.
 
 ## N6 — file names
 
-An address-named game TU (`9F9C.c`) takes a subsystem name only when its whole content is that
-subsystem: the admitted names and data of every function in it agree. A mixed file keeps its
-ROM-offset name (most large game files hold several original TUs the bytes cannot
-separate). The move uses `tools/move_tu.py`, and the top comment keeps its boundary evidence.
+An address-named game TU (`9F9C.c`) takes a subsystem name only when the admitted names and
+data of every function in it agree on that subsystem; a mixed file keeps its ROM-offset name.
+Moves use `tools/move_tu.py`; the top comment keeps its boundary evidence.
 
 ## The wave
 
@@ -85,8 +87,7 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
    --only <addrs>` (dry run, then `--apply`), commit it temporarily (data_wave refuses
    paths already dirty), run `tools/data_wave.py --manifest-csv <csv> --apply`, then
    `git reset --soft HEAD~1` so the wave lands as one commit. The pairs are every `old_names` /
-   `olds` entry of the two tools' `--manifest` JSON (an auto name and its alias may share a new
-   name).
+   `olds` entry of the two tools' `--manifest` JSON.
    Types, members and locals are edited in C (`T.m=n`: the declaration of `m` in `T` and its
    `.`/`->` accesses, via `tools/naming_member_apply.py <pairs.txt>`, which lists lines to
    hand-edit; `f:l=n`: one binding in the unique definition of `f`). Then the comment pass,
@@ -121,8 +122,7 @@ separate). The move uses `tools/move_tu.py`, and the top comment keeps its bound
 
    These are **the wave's surfaces**.
 6. **Moved layer-2 keys:** a completed body whose key moved only by the wave's pairs (the
-   keycheck proves it) needs no new cheat review; a second, post-apply `naming-reviewer`
-   pass checks the diff and the keycheck report (R6), required for every wave.
-7. **Commit:** one commit per wave, subject `naming: <wave>`. The body gives the manifest path,
-   both review verdicts, the oracle line, the keycheck line and moved-key count, and the census
-   regenerated in the same commit.
+   keycheck proves it) needs no new cheat review; the required post-apply `naming-reviewer`
+   pass (R6) checks the diff and the keycheck report.
+7. **Commit:** one per wave, `naming: <wave>`; body: manifest path, both verdicts, oracle and
+   keycheck lines, moved-key count; census regenerated in the same commit.

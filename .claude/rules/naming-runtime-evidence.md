@@ -9,9 +9,11 @@ metadata:
 # Runtime observation as naming evidence (owner ruling Q124)
 
 Extends [[naming-bar]] N3. A runtime observation corroborates a name the code already supports
-(N1, tier 3); it never establishes a name on its own. A narrower name needs code evidence for
-the narrower part too; the trace only corroborates it. On its own it can back a NO_NAME or a
-neutral KEEP. It counts when ALL hold:
+(N1, tier 3); it never establishes a name on its own: the code must show what the function
+does. **Q132:** the role part of a name (which screen, mode or event it serves: `options_` in
+`options_DrawCursor`) may rest on a stub-and-observe result or an "only X" hit map alone, when
+the code shows the mechanics. Any other narrower part needs code evidence; the trace only
+corroborates it. On its own it can back a NO_NAME or a neutral KEEP. It counts when ALL hold:
 
 1. **Recorded, reproducible:** the trace script, the emulator name and version, the BIOS, the
    disc image SHA1, the starting point (savestate or memory-card file SHA1, plus the scripted
@@ -22,7 +24,8 @@ neutral KEEP. It counts when ALL hold:
      hits outside X. A function hit in every mode gets no role from a hit map.
    - stub-and-observe (the function patched to return). It counts only if the game keeps
      running and the lost effect is the function's own output (its writes or its callees'), not
-     something downstream of a crash, hang or corrupted state.
+     something downstream of a crash, hang or corrupted state. The capture holds the baseline
+     and stubbed screenshots of the same frame; the claim names only what differs.
    - a value watch (what a field or `D_` object holds across named game events).
 3. **Claims only what was observed** ([[naming-bar]] N4). A conflict with the code fails the
    row; tiers 1-2 always win.
