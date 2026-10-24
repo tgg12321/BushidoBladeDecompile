@@ -13,10 +13,11 @@ Extends [[naming-bar]] N3. A runtime observation corroborates a name the code al
 does. **Q132:** the role part of a name (which screen, mode or event it serves: `options_` in
 `options_DrawCursor`) may rest on a stub-and-observe result or an "only X" hit map alone, when
 the code shows the mechanics AND the role covers every use: the coverage matrix
-(`docs/naming/runtime/matrix/`) shows no hit outside X, and every static caller is itself
-within X (only-X by the same test); a caller reached from a mode no capture covers blocks the
-role. Otherwise the role stays out of the name. Any other narrower part needs code evidence;
-the trace only corroborates it. On its own it can back a NO_NAME or a neutral KEEP. It counts when ALL hold:
+(`docs/naming/runtime/matrix/`) shows a hit in X and none outside it, and every static caller or
+address-taken site is itself within X (only-X by the same test); a caller reached from a mode
+no capture covers blocks the role. Otherwise the role stays out of the name. Any other narrower
+part needs code evidence; the trace only corroborates it. On its own it can back a NO_NAME or
+a neutral KEEP. It counts when ALL hold:
 
 1. **Recorded, reproducible:** the trace script, the emulator name and version, the BIOS, the
    disc image SHA1, the starting point (savestate or memory-card file SHA1, plus the scripted
