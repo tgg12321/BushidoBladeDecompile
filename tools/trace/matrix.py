@@ -12,6 +12,9 @@ Value len is int(watch len) from the spec watch, 4 when the watch sets none
 falls back to len(hex_string)//2. The entry column retains the watch index for
 end-reading comparisons.
 Stub leaf IDs include their parent directory to distinguish baseline captures.
+An events capture (breakpoints, watch or polls, no hit-map declaration and no
+hitmap.tsv) adds sources rows only: no coverage column, and its phases.tsv is
+hashed but not validated.
 sources.tsv has one row per input file per capture (including the optional
 no-name registry). Start time uses manifest start.time/start_time, falling back
 to the JSONL start event because existing manifests record only start context.
@@ -121,7 +124,11 @@ def load_capture(path):
         e["ev"] == "stub" for e in events) or bool(spec.get("stubs"))
     is_values = bool(spec.get("values")) or any(e["ev"] == "value" for e in events)
     has_map = (path / "hitmap.tsv").exists()
-    kind = "stub" if is_stub else "hitmap" if has_map else "values" if is_values else "other"
+    declares_map = bool(spec.get("hitmap")) or any(e["ev"] == "hitmap" for e in events)
+    # breakpoint / watch / poll captures with no hit map: provenance rows only
+    is_events = not declares_map and any(spec.get(k) for k in ("breakpoints", "watch", "polls"))
+    kind = ("stub" if is_stub else "hitmap" if has_map else "values" if is_values
+            else "events" if is_events else "other")
     ident = (path.parent.name + "/" + path.name
              if len(relative.parts) > 1 and "-stub-" in relative.parts[-2] else path.name)
     start_context = manifest.get("start", {})
@@ -131,10 +138,12 @@ def load_capture(path):
     order = timestamp(when)
 
     # TSV-less value and stub captures are explicit alternate layouts. A
-    # hitmap declaration or either TSV always requires both validated TSVs.
-    mapped = (has_map or (path / "phases.tsv").exists()
-              or bool(spec.get("hitmap")) or any(e["ev"] == "hitmap" for e in events)
-              or kind == "other")
+    # hitmap declaration or either TSV always requires both validated TSVs,
+    # except that an events capture's phases.tsv is only recorded in sources.
+    mapped = (has_map or ((path / "phases.tsv").exists() and kind != "events")
+              or declares_map or kind == "other")
+    if kind == "events" and (path / "phases.tsv").exists():
+        read("phases.tsv")
     functions = {}
     if mapped:
         phases = table(read("phases.tsv"), ["phase", "first_frame", "last_frame",

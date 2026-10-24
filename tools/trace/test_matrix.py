@@ -201,6 +201,32 @@ class MatrixTest(unittest.TestCase):
         with self.assertRaisesRegex(matrix.InvalidCapture, "duplicate capture ID"):
             matrix.render([self.a, self.a])
 
+    def test_events_capture_sources_only(self):
+        path = self.capture("events", 50)
+        events = [json.loads(line) for line in (path / "capture.jsonl").read_text().splitlines()]
+        events[0]["spec"] = {"breakpoints": [{"at": "f"}], "watch": [{"at": "D_80010010"}]}
+        self.write(path / "capture.jsonl", "".join(json.dumps(e) + "\n" for e in events))
+        phases = "phase\tfirst_frame\tlast_frame\tscreen\tinputs\tscreenshots\nfight\t0\t9\t-\t-\t-\n"
+        self.write(path / "phases.tsv", phases)
+        outputs = matrix.render([path, self.a])
+        self.assertEqual(outputs["coverage.tsv"].splitlines()[0],
+                         "addr\tcapture_name\tother_capture_names\tno_name\tcaptures_hit\ta")
+        rows = [r.split("\t") for r in outputs["sources.tsv"].splitlines()[1:]]
+        self.assertEqual({(r[1], r[7]) for r in rows if r[0] == "events"},
+                         {("events", "capture.jsonl"), ("events", "capture.manifest.json"),
+                          ("events", "phases.tsv")})
+        # a hit-map declaration still needs both TSVs
+        events[0]["spec"]["hitmap"] = {"tus": ["main/*"]}
+        self.write(path / "capture.jsonl", "".join(json.dumps(e) + "\n" for e in events))
+        with self.assertRaises(OSError):
+            matrix.load_capture(path)
+        # breakpoints alone with no phases.tsv: still sources only
+        del events[0]["spec"]["hitmap"]
+        self.write(path / "capture.jsonl", "".join(json.dumps(e) + "\n" for e in events))
+        (path / "phases.tsv").unlink()
+        self.assertEqual(matrix.load_capture(path)["kind"], "events")
+        self.assertFalse(matrix.load_capture(path)["mapped"])
+
     def test_manifest_time_wins_over_trace_time(self):
         path = self.a / "capture.manifest.json"
         manifest = json.loads(path.read_text())
