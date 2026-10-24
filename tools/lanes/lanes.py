@@ -14,6 +14,7 @@ regenerate), never when build inputs changed on both sides.
 Conflicts are handled without hand merges where the file allows it:
   - regenerated files (lanes.json "regenerate", e.g. the naming census) take main's side and are
     rebuilt after the gates, folded into the lane's last landed commit (no separate commit);
+    entries with "inputs" run only when the lane changes an input (including docs-only lands);
   - row-keyed TSV registries (lanes.json "rowmerge", the backlogs) are merged row by row;
   - a commit whose message carries `Lane-Replay: <shell command>` trailers is re-run on the new
     base instead of cherry-picked (use it only when the commit is exactly that tool output);
@@ -1094,7 +1095,7 @@ def regenerate(ctx: Ctx, lane: str, ld: Path, log, docs_only=False):
         elif docs_only:
             continue
         if run_shell(ctx, ld, g["cmd"], log) != 0:
-            raise Refuse(f"regenerate failed: {g['cmd']}", 4)
+            raise Refuse(f"regenerate failed: {g['cmd']}  (log {log.name})", 4)
         git("add", "--", g["path"], cwd=ld)
         if not git_ok("diff", "--cached", "--quiet", "--", g["path"], cwd=ld):
             changed.append(g)

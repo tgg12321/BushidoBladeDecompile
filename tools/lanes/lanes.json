@@ -38,7 +38,7 @@
       "path": "docs/naming/runtime/evidence/events.tsv",
       "cmd": "python3 tools/trace/scan/events.py build",
       "subject": "docs: runtime event evidence refresh",
-      "inputs": ["docs/naming/runtime/"]
+      "inputs": ["docs/naming/runtime/", "tools/trace/scan/events.py"]
     }
   ],
   "gates": {

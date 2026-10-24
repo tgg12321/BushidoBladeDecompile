@@ -544,7 +544,7 @@ class LaneTest(unittest.TestCase):
     def _inputs_regen(self, cmd="python gen_events.py", initial="stale\n"):
         self._main_commit("docs/runtime/events.tsv", initial)
         self._main_commit("gen_events.py", "from pathlib import Path\n"
-                          "Path('docs/runtime/events.tsv').write_text('fresh\\n')\n")
+                          "Path('docs/runtime/events.tsv').write_text('fresh\\n', newline='\\n')\n")
         entry = {"path": "docs/runtime/events.tsv", "cmd": cmd,
                  "subject": "docs: events refresh", "inputs": ["docs/runtime/"]}
         cfg = dict(CFG, regenerate=CFG["regenerate"] + [entry])
@@ -602,6 +602,7 @@ class LaneTest(unittest.TestCase):
         before = sh("rev-parse", "main", cwd=self.main)
         self.assertEqual(self.L("s1", "land", "a"), 4, self.last)
         self.assertIn("regenerate failed", self.last)
+        self.assertRegex(self.last, r"regenerate failed: .*  \(log .*\.log\)")
         self.assertEqual(sh("rev-parse", "main", cwd=self.main), before)
         self.commit("b", "docs/note.md", "note\n")
         self.assertEqual(self.L("s2", "land", "b"), 0, self.last)
