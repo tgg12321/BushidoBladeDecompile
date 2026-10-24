@@ -9256,6 +9256,7 @@ def test_departures() -> None:
     writes loose objects read-only; the tests that delete one chmod first)."""
     import re
     import subprocess
+    from datetime import datetime, timedelta
     from engine import departures, layer2
 
     def git(*a, date=None):
@@ -9388,6 +9389,45 @@ def test_departures() -> None:
                departures._git_cmd("nt"),
                ["git", "--no-replace-objects", "--git-dir=C:/Repo/.git/worktrees/w"])
             Path(".git").unlink()
+
+            # Q126: thread the departure's committer date into the legacy-key
+            # fallback; an old record alone cannot clear a new departure.
+            cutoff = datetime.fromisoformat(departures.Q126_CUTOFF.replace("Z", "+00:00"))
+            before = (cutoff - timedelta(seconds=1)).isoformat()
+            after = (cutoff + timedelta(seconds=1)).isoformat()
+            for case, date, full_key, rec_date, expected in (
+                    ("pre-cutoff", before, False, None, []),
+                    ("at-cutoff", cutoff.isoformat(), False, None, ["func_Q126"]),
+                    ("worktree", None, False, None, ["func_Q126"]),
+                    ("post-cutoff-record", before, False, after, ["func_Q126"]),
+                    ("current-key", after, True, None, [])):
+                new_repo(Path(td) / ("q126-" + case), ["func_Q126"])
+                text = ("static inline int helper(int a) { return a + 1; }\n"
+                        "int func_Q126(int a) { return helper(a); }\n")
+                Path("src/k.c").write_text(text)
+                helper_key = layer2.body_key(text, "func_Q126")
+                own_key = layer2.body_key(text, "func_Q126", helpers=False)
+                check("departures (q126): helper changes key " + case,
+                      helper_key is not None and own_key is not None
+                      and helper_key != own_key)
+                rec("func_Q126", helper_key[1] if full_key else own_key[1])
+                record = json.loads(layer2.record_path("func_Q126").read_text())
+                if rec_date is not None:
+                    record["date"] = rec_date
+                    layer2.record_path("func_Q126").write_text(json.dumps(record) + "\n")
+                record_date = datetime.fromisoformat(record["date"].replace("Z", "+00:00"))
+                check("departures (q126): record date as intended " + case,
+                      record_date.tzinfo is not None
+                      and (record_date < cutoff) == (rec_date is None))
+                commit("queued helper body and pre-cutoff PASS")
+                drop("func_Q126")
+                if date is not None:
+                    commit("departure " + case, date=date)
+                v, fl = audit()
+                eq("departures (q126): " + case, fl, expected)
+                if not expected:
+                    eq("departures (q126): the audit itself is clean " + case, v, [])
+            addrs.clear()                  # repo a builds its repo without new_repo
 
             # ── repo a: record semantics, TU split, asm body, reopen ─────────
             fns = ["func_X", "func_Y", "func_Z", "func_V", "func_W", "func_K", "func_R",

@@ -42,13 +42,14 @@ A comment or layout edit inside the definition keeps the hash; a token change
 inside it moves it. SCOPE: the definition plus, appended in file order, the
 definition of every same-TU `static inline` helper it reaches
 (inlineasm.inline_helpers, owner ruling Q126; a body with no helper keys
-exactly as before; engine/departures.py judges records dated before Q126 by
-the definition-only key). File-scope macros, typedefs, globals, prototypes and
-other helper functions the body depends on can change without moving the
-key; the reviewer and the oracle cover those, not this hash. A function with
-more than one definition in the file (e.g. an `#if 0` copy), or with both a C
-definition and an asm body, or reaching a helper that has either, has NO key
-(fail closed).
+exactly as before; engine/departures.py accepts the definition-only key only
+for a real departure commit committed before departures.Q126_CUTOFF and a
+record with a valid timezone-aware date before that cutoff). File-scope
+macros, typedefs, globals, prototypes and other helper functions the body
+depends on can change without moving the key; the reviewer and the oracle
+cover those, not this hash. A function with more than one definition in the
+file (e.g. an `#if 0` copy), or with both a C definition and an asm body, or
+reaching a helper that has either, has NO key (fail closed).
 Deliberately NOT grindlib.body_hash, which collapses whitespace inside
 strings, strips `//` inside strings, merges `- --` into `---`, omits the
 return type, and keys K&R definitions by the whole file (layer-2 review of
@@ -208,8 +209,10 @@ def body_key(text: str, func: str, read=_disk,
     """(kind, 16-hex hash) of `func`'s body in the C file `text`, or None when
     there is no single body (fail closed: nothing to key a verdict to).
     `read(path)` supplies included .s files (default: the working tree).
-    helpers=False: the pre-Q126 key, the definition alone (engine/departures.py
-    judges records dated before Q126 by it)."""
+    helpers=False: the pre-Q126 key, the definition alone. engine/departures.py
+    accepts it only for a real departure commit committed before
+    departures.Q126_CUTOFF and a record with a valid timezone-aware date before
+    that cutoff."""
     src = body_source(text, func, read, helpers)
     return None if src is None else (src[0], _key(src[1]))
 
