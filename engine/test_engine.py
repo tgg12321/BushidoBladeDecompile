@@ -55,6 +55,20 @@ def _synth_addrs():
         layer2.addr_index, layer2.addr_of = real_index, real_of
 
 
+@contextlib.contextmanager
+def _stub_tus(root, sources):
+    """Give synthetic queue items real TUs without bypassing the live walk."""
+    from engine import gtemacro
+    from unittest.mock import patch
+    root = Path(root).resolve()
+    for stem, text in sources.items():
+        path = root / f"src/{stem}.c"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    with patch.object(gtemacro, "REPO_ROOT", root):
+        yield
+
+
 def check(desc: str, cond: bool) -> None:
     global _passed, _failed
     if cond:
@@ -1726,7 +1740,8 @@ def test_cheats() -> None:
     # fabricated function keeps the routing pinned: the recognizer must still
     # refuse a wiring-only function if one is ever introduced again.
     from engine import queue as _q
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory() as td, _stub_tus(td, {
+            "text1a_post": 'INCLUDE_ASM("asm/funcs", canon_zz);\n'}):
         rf = Path(td) / "regfix.txt";        rf.write_text("")
         rf2 = Path(td) / "regfix_stage2.txt"; rf2.write_text("")
         af = Path(td) / "asmfix.txt"
@@ -1748,7 +1763,9 @@ def test_cheats() -> None:
                   cheats.is_canonical_extraction_only(func="canon_zz"))
             r = _q.mark_done("canon_zz")
             check("canon-extract: mark_done still REFUSES wiring-only func",
-                  not r.get("ok"))
+                  not r.get("ok")
+                  and "replace_with_asmfile" in r.get("reason", "")
+                  and "missing; cannot check" not in r.get("reason", ""))
             check("canon-extract: the refusal names the wiring, not a bare rule count",
                   "replace_with_asmfile" in r.get("reason", ""))
         finally:
@@ -3328,7 +3345,9 @@ def test_include_asm_whole_body() -> None:
     #    path — the 66 authorized functions must reach zero-rule canonical
     #    completion once their asmfix wiring is retired).
     def _done_with(cheat_count: int, canon: set) -> dict:
-        with tempfile.TemporaryDirectory() as td:
+        with tempfile.TemporaryDirectory() as td, _stub_tus(td, {
+                "faketu": ('INCLUDE_ASM("asm/funcs", func_WB);\n' if canon
+                           else "void other(void) {}\n")}):
             qp = Path(td) / "queue.json"
             qp.write_text(json.dumps(
                 {"items": [{"func": "func_WB", "file": "faketu", "distance": 0,
@@ -3358,10 +3377,14 @@ def test_include_asm_whole_body() -> None:
 
     r_attr = _done_with(1, set())
     check("include_asm: queue done REFUSES attributed cheat-asm",
-          r_attr.get("ok") is False)
+          r_attr.get("ok") is False
+          and "cheat construct(s)" in r_attr.get("reason", "")
+          and "missing; cannot check" not in r_attr.get("reason", ""))
     r_unk = _done_with(-1, set())
     check("include_asm: queue done REFUSES an UNKNOWN cheat count",
-          r_unk.get("ok") is False)
+          r_unk.get("ok") is False
+          and "UNKNOWN" in r_unk.get("reason", "")
+          and "missing; cannot check" not in r_unk.get("reason", ""))
     check("include_asm: UNKNOWN refusal names the missing C body",
           "UNKNOWN" in r_unk.get("reason", ""))
     r_canon = _done_with(1, {"func_WB"})
@@ -4588,7 +4611,8 @@ def test_canonical_completion_is_the_drop() -> None:
                        "verdict": "ASM-WHOLE", "rules": 0, "status": "authorize"}],
             "counts": {}}
 
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory() as td, _stub_tus(td, {
+            "faketu": 'INCLUDE_ASM("asm/funcs", func_CANON);\n'}):
         qp = Path(td) / "queue.json"
         orig = (Q.QUEUE_PATH, Q.Path, P.c_stems, canonical.scan_all,
                 cheats.canonical_asm_funcs, Q._rule_count,
@@ -4651,7 +4675,9 @@ def test_canonical_completion_is_the_drop() -> None:
             qp.write_text(json.dumps(regen))
             r2 = Q.mark_done("func_CANON")
             check("canon-drop: mark_done after the drop is REFUSED",
-                  r2.get("ok") is False)
+                  r2.get("ok") is False
+                  and "COMPLETED-INLINE-ASM-CANONICAL" in r2.get("reason", "")
+                  and "missing; cannot check" not in r2.get("reason", ""))
             check("canon-drop: refusal names the completion, not 'not in queue'",
                   "COMPLETED-INLINE-ASM-CANONICAL" in r2.get("reason", ""))
             check("canon-drop: refusal is not the bare not-in-queue string",
@@ -4712,12 +4738,13 @@ def test_canonical_completion_is_the_drop() -> None:
 def test_header_facts_gates() -> None:
     """Live per-function gates see headers; historical body keys do not."""
     from unittest.mock import patch
-    from engine import layer2
+    from engine import gtemacro, layer2
     import check_completion_integrity as CCI
 
     cwd = Path.cwd()
     with tempfile.TemporaryDirectory() as td, contextlib.ExitStack() as stack:
         root = Path(td).resolve()
+        stack.enter_context(patch.object(gtemacro, "REPO_ROOT", root))
         os.chdir(root)
         stack.callback(os.chdir, cwd)
         Path("src").mkdir()
@@ -4802,6 +4829,44 @@ def test_header_facts_gates() -> None:
         check("header gates: queue after header removal accepted", Q.mark_done(func)["ok"])
 
 
+def test_live_tu_refusal_root() -> None:
+    """Live checks anchor both TU and headers independently of the cwd."""
+    from unittest.mock import patch
+    from engine import gtemacro
+
+    cwd = Path.cwd()
+    with tempfile.TemporaryDirectory() as td, contextlib.ExitStack() as stack:
+        root = Path(td).resolve()
+        stack.enter_context(patch.object(gtemacro, "REPO_ROOT", root))
+        (root / "src/main").mkdir(parents=True)
+        (root / "include").mkdir()
+        other = root / "elsewhere"
+        (other / "src/main").mkdir(parents=True)
+        # A cwd-relative implementation would read this clean decoy instead.
+        (other / "src/main/rooted.c").write_text("int decoy;\n", encoding="utf-8")
+        tu = root / "src/main/rooted.c"
+        tu.write_text("CLOSE;\nint rooted(void) { return 0; }\n", encoding="utf-8")
+        os.chdir(other)
+        stack.callback(os.chdir, cwd)
+        eq("live root: safe TU outside cwd accepted",
+           inlineasm.live_tu_refusal("main/rooted"), None)
+        header = root / "include/brace.h"
+        header.write_text("#define CLOSE }\n", encoding="utf-8")
+        check("live root: header under root refuses TU outside cwd",
+              "project header macro facts" in
+              (inlineasm.live_tu_refusal("main/rooted") or ""))
+        header.unlink()
+        tu.write_text("int rooted(void) {\n", encoding="utf-8")
+        check("live root: unsafe TU under root seen outside cwd",
+              "unsafe file-scope brace walk" in
+              (inlineasm.live_tu_refusal("main/rooted") or ""))
+        tu.unlink()
+        eq("live root: missing TU refuses despite cwd decoy",
+           inlineasm.live_tu_refusal("main/rooted"),
+           "src/main/rooted.c: missing; cannot check the header-aware brace walk")
+        eq("live root: empty stem remains unchecked", inlineasm.live_tu_refusal(""), None)
+
+
 def test_project_header_facts_cache() -> None:
     from unittest.mock import patch
     import check_completion_integrity as CCI
@@ -4853,7 +4918,8 @@ def test_layer2_gate() -> None:
     record, a later FAIL, or a changed body all refuse; the refusal names the
     fix; and neither mark_done nor any regen drop point has a way around it.
     """
-    from engine import layer2
+    from engine import gtemacro, layer2
+    from unittest.mock import patch
 
     src = ("/* header */\nint other(void) { return 1; }\n"
            "int func_L2(int a) {\n    /* why */\n    return a + 1;\n}\n")
@@ -4921,7 +4987,8 @@ def test_layer2_gate() -> None:
                        "func_D"), None)
 
     cwd = os.getcwd()
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory() as td, \
+            patch.object(gtemacro, "REPO_ROOT", Path(td).resolve()):
         os.chdir(td)
         saved = (Q.QUEUE_PATH, Q._rule_count, cheats.func_prologue_count,
                  cheats.canonical_asm_funcs, cheats.maspsx_gate_entries,
@@ -10180,9 +10247,11 @@ def test_layer2_addresses() -> None:
     (a fresh clone has no build/), the link map's assignment lines, refusals
     for an item or record without one, the gate refusing a pre-address record,
     and record() never stamping a date earlier than its file's last."""
-    from engine import layer2
+    from engine import gtemacro, layer2
+    from unittest.mock import patch
     cwd = os.getcwd()
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory() as td, \
+            patch.object(gtemacro, "REPO_ROOT", Path(td).resolve()):
         os.chdir(td)
         try:
             Path("engine").mkdir()
@@ -10840,7 +10909,9 @@ def test_queue_write_serialization() -> None:
                   "rules": 0, "status": "active"} for f in funcs]
         qp.write_text(json.dumps({"items": items, "counts": {}}, indent=2) + "\n")
 
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory() as td, _stub_tus(td, {
+            "text1a_c": "void func_A(void) {}\nvoid func_LAST(void) {}\n",
+            "x": "void func_Z(void) {}\n"}):
         qp = Path(td) / "queue.json"
         orig_path = Q.QUEUE_PATH
         Q.QUEUE_PATH = str(qp)
@@ -13319,6 +13390,7 @@ def test_retired_names_audit() -> None:
 
 
 def main() -> int:
+    test_live_tu_refusal_root()
     test_header_facts_gates()
     test_project_header_facts_cache()
     test_retired_names_audit()

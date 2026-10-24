@@ -850,9 +850,15 @@ def project_header_macro_facts(
 
 def live_tu_refusal(stem: str) -> str | None:
     """Refuse an unsafe live TU before per-function attribution/keying."""
-    p = Path(f"src/{stem}.c")
-    if p.exists() and tu_unbalanced(p.read_text(encoding="utf-8", errors="replace"),
-                                  project_header_macro_facts(Path.cwd())):
+    from . import gtemacro  # local import: gtemacro imports this module
+    if not stem:
+        return None  # gate callers may have no located TU
+    root = gtemacro.REPO_ROOT
+    p = root / f"src/{stem}.c"
+    if not p.exists():
+        return f"src/{stem}.c: missing; cannot check the header-aware brace walk"
+    if tu_unbalanced(p.read_text(encoding="utf-8", errors="replace"),
+                     project_header_macro_facts(root)):
         return (f"src/{stem}.c: unsafe file-scope brace walk with project header "
                 "macro facts (unbalanced braces/branches or unsafe macros/heads); "
                 "cannot safely index every body")
