@@ -1433,7 +1433,8 @@ void eff_BuildUsedSlotRotMatrices(s32 *count, MATRIX *m, s32 idx) {
     s32 mask;
 
     for (i = 0; i < *count; i++) {
-        /* slot i's bit: 1, shifted up by i */
+        /* FAKE: setting mask twice keeps the target's `li v0,1; sllv` inside
+         * the loop; `mask = 1 << i` hoists the 1 into s5: score 12 (Q129) */
         mask = 1;
         mask <<= i;
         if (D_800A3454[idx] & mask) {
