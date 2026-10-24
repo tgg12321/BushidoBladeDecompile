@@ -1,0 +1,475 @@
+{
+  "tool": {
+    "gdbtrace.py": {
+      "path": "tools\\trace\\gdbtrace.py",
+      "sha1": "de1cfe396d54e5e1d2d32b9e299b2f68f6d72b0a",
+      "size": 97578
+    },
+    "runkit.py": {
+      "path": "tools\\trace\\runkit.py",
+      "sha1": "a7066f35d3f65aac8a8876d34607d846f053a85f",
+      "size": 28157
+    },
+    "pool.py": {
+      "path": "tools\\trace\\pool.py",
+      "sha1": "4799deb57b790adc321a9a7e3feb7a0b22ec4790",
+      "size": 12429
+    }
+  },
+  "git": {
+    "head": "3491e3642b355dfd6e5228404b58764f61e441c8",
+    "tools_trace_status": "clean"
+  },
+  "python": {
+    "version": "3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Trenton\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"
+  },
+  "argv": [
+    "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tools\\trace\\gdbtrace.py",
+    "run",
+    "--spec",
+    "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\spec.json",
+    "--out",
+    "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.jsonl",
+    "--launch",
+    "pcsx-redux",
+    "--emulator",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+    "--cue",
+    "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+    "--bios",
+    "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "--headless",
+    "--slot-wait",
+    "86400.0"
+  ],
+  "build": {
+    "map": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.map",
+      "sha1": "5ede770aab8d7468a0fa3984c5e09e51e5077dcd",
+      "size": 547657
+    },
+    "elf": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.elf",
+      "sha1": "1b93789287300d338d56ffaf43549479864d0c4e",
+      "size": 889736
+    },
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\build\\bb2.exe",
+      "sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa",
+      "size": 606208
+    },
+    "oracle_match": true,
+    "map_matches_elf": true
+  },
+  "spec": {
+    "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\spec.json",
+    "sha1": "6bac0a10baf522ae0d8d90538ee1ad8d4892e5c6",
+    "size": 23690
+  },
+  "start": {
+    "kind": "power-on: emulator held at the reset vector until armed",
+    "memcard1": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.mc1.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    },
+    "memcard2": {
+      "from": "blank card (runkit.write_blank_card)",
+      "card": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.mc2.mcd",
+      "sha1_at_start": "1b3c99be55273085e14b30983b636529b6dd7f46"
+    }
+  },
+  "emulator": {
+    "name": "pcsx-redux",
+    "version": "29234.20261023.20.x64",
+    "changeset": "a75a2a79078e33d4da207c351286ca5e5e755fb4",
+    "buildId": 669,
+    "channel": "dev",
+    "exe": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.exe",
+      "sha1": "537e744f65a094983526fed8829f5b217237a682",
+      "size": 315904
+    },
+    "main": {
+      "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "sha1": "f3aba2a0d4b66be40c0b6a6b22761e008da956ec",
+      "size": 22101504
+    },
+    "dlls": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avcodec-63.dll",
+        "sha1": "521654055795329bd5a1c98c7d246103abd7c5a0",
+        "size": 33607680
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avdevice-63.dll",
+        "sha1": "a3f48bcf1808d3f17ff570b923bae2ff8a2feb9c",
+        "size": 137216
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avfilter-12.dll",
+        "sha1": "fe59958df98ad3840b1979adaba41b0e5fdf664f",
+        "size": 3999744
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avformat-63.dll",
+        "sha1": "6567e55329378fb60c5019209b01ce76eda5fc54",
+        "size": 3906048
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\avutil-61.dll",
+        "sha1": "fe85f6581271798359db6a2145e41c20f3de854d",
+        "size": 1041920
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\crashpad_wer.dll",
+        "sha1": "c59e36108e3fd70b9358eff085b2d52271e98d67",
+        "size": 12800
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\libwinpthread-1.dll",
+        "sha1": "e25736c581f249089007d5a0ed066949f30e826b",
+        "size": 597415
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\lua51.dll",
+        "sha1": "fd9cec402503e04ed66f8210f39ebf0bb84350e0",
+        "size": 613376
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\sentry.dll",
+        "sha1": "c1d593c0a94bb20960d892aae6a2eb8b940c5a3b",
+        "size": 477696
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swresample-7.dll",
+        "sha1": "541efada4e77c0871d69828a2178b137d688c3c4",
+        "size": 121344
+      },
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\swscale-10.dll",
+        "sha1": "a9e359dcbcd976efc0b8dd3151119d40cd232b24",
+        "size": 1167360
+      }
+    ],
+    "settings": "defaults (-safe) + command line + script Lua settings",
+    "headless": true,
+    "command": [
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\pcsx-redux\\pcsx-redux.main",
+      "-portable",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-1\\portable",
+      "-iso",
+      "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "-gdb",
+      "-gdb-port",
+      "2401",
+      "-debugger",
+      "-interpreter",
+      "-fastboot",
+      "-noupdate",
+      "-safe",
+      "-no-ui",
+      "-bios",
+      "C:\\Users\\Trenton\\Desktop\\BizHawk-2.9.1-win-x64 (1)\\Firmware\\ps-30a.bin",
+      "-memcard1",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\weap\\final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.mc1.mcd",
+      "-memcard2",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\weap\\final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.mc2.mcd",
+      "-dofile",
+      "C:\\Users\\Trenton\\Desktop\\bb2-worktrees\\ln-trace\\tmp\\weap\\final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.script.lua"
+    ]
+  },
+  "bios": {
+    "path": "C:/Users/Trenton/Desktop/BizHawk-2.9.1-win-x64 (1)/Firmware/ps-30a.bin",
+    "sha1": "0555c6fae8906f3f09baf5988f00e55f88e9f30b",
+    "size": 524288
+  },
+  "disc": {
+    "cue": {
+      "path": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).cue",
+      "sha1": "02906efdf44d234aa0ad15872f69e150c551c2a0",
+      "size": 87
+    },
+    "tracks": [
+      {
+        "path": "C:\\Users\\Trenton\\Desktop\\Bushido Blade 2 Decompile\\Bushido Blade 2 (USA).bin",
+        "sha1": "89c1ad4025bfdb78e387ae9acc43e33b7f51db19",
+        "size": 701714496
+      }
+    ]
+  },
+  "script": {
+    "lua": {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.script.lua",
+      "sha1": "c4b4a2fbf97017f43e39e9871d59fb8f5f0b395a",
+      "size": 22230
+    },
+    "problems": []
+  },
+  "q124_complete": true,
+  "instance": {
+    "slot": 1,
+    "port": 2401,
+    "registry": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances",
+    "profile": "C:/Users/Trenton/Desktop/Bushido Blade 2 Decompile\\tmp\\trace-instances\\slot-1\\portable"
+  },
+  "result": {
+    "outcome": "ok",
+    "canary_at": 2148021996,
+    "script_loaded_at_arming": true,
+    "armed_frame": 0,
+    "armed_pc": 3217031168,
+    "bios_in_memory": "matches",
+    "exe_in_memory": "matches",
+    "canary_hit": {
+      "pc": 2148021996,
+      "phase": "boot_intro"
+    },
+    "script_ended": true,
+    "events": 782,
+    "ambiguous_stops": 0,
+    "exe_changed_by_run": [
+      "0x80050C0C+1",
+      "0x80050C10+1",
+      "0x80050DAC+1",
+      "0x80050DB0+1",
+      "0x80050FB4+1",
+      "0x80050FB8+1",
+      "0x80051154+1",
+      "0x80051158+1",
+      "0x80051358+1",
+      "0x8005135C+1",
+      "0x800514FC+1",
+      "0x80051500+1",
+      "0x800516FC+1",
+      "0x80051700+1",
+      "0x80051894+1",
+      "0x80051898+1"
+    ],
+    "emulator_exit_before_stop": null
+  },
+  "outputs_note": "cards are hashed as on disk after the run; the emulator was stopped first",
+  "outputs": [
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.jsonl",
+      "sha1": "837a7fcb88319b207be9d6ce8edb69271339540a",
+      "size": 227236
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.boot_intro.last.png",
+      "sha1": "e7bfd030cbff2cb3d9d97e34ff786655c085bfe5",
+      "size": 79155
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.top_menu.first.png",
+      "sha1": "3ac52ba0daf7dbdc7b7bb994d0f8fba85f5c9a39",
+      "size": 31550
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.top_menu.last.png",
+      "sha1": "abf5f1567f6cff29b350b461969482a307cba211",
+      "size": 31607
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.char_select.first.png",
+      "sha1": "14a18a064bee4eb51e16f9d889bfb80f8cfad1a4",
+      "size": 23135
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.char_select.last.png",
+      "sha1": "0b7a8c48db0fe2b32a5c53ef551c0bc5e9fe20b5",
+      "size": 22155
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.weapon_select.first.png",
+      "sha1": "884d57f2a2c17bdb225fcaf5bedc8a81367d7059",
+      "size": 22616
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.weapon_select.pick.png",
+      "sha1": "15745078289b77e607ea79420818bc12a751af8a",
+      "size": 22501
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.weapon_select.last.png",
+      "sha1": "ec51a8f3bcd5ad8afd4cff91f2c0d203898beb34",
+      "size": 4459
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.t_stage.mid.png",
+      "sha1": "b6029d7a56d34804506dde7467b20a911a23d4bc",
+      "size": 4872
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.stage_select.first.png",
+      "sha1": "d13ca6ed48e88da09c2ef415450c29716c8878f6",
+      "size": 21853
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.stage_select.7299.png",
+      "sha1": "726a8ff15038438b8445237e5387fec52d82e497",
+      "size": 21972
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.stage_select.7325.png",
+      "sha1": "f8ebbd062ddcf4385cf9063dc50c56819c806185",
+      "size": 18207
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.stage_select.7355.png",
+      "sha1": "22f454a190df0eaac4e41a85affed0193df4c86f",
+      "size": 22809
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.stage_select.last.png",
+      "sha1": "7c37f2bcc2db289968f370ecd44a3f18e94b582f",
+      "size": 22781
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.t_load.mid.png",
+      "sha1": "03289951f450d5a50c08ca77beb439d067f8f28f",
+      "size": 10320
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.t_load.last.png",
+      "sha1": "1ee0a4e6afa52881246743e7ae29213a09bee877",
+      "size": 836
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.first.png",
+      "sha1": "1ee0a4e6afa52881246743e7ae29213a09bee877",
+      "size": 836
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8330.png",
+      "sha1": "05f8fb70fd21f979873db4c493dc45d8711063ec",
+      "size": 51341
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8430.png",
+      "sha1": "6ac85257a1f919fe95c899b008dd96f56c56d292",
+      "size": 51714
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8530.png",
+      "sha1": "b19c4218f1f394ba39866b86c98298b018fd0ea7",
+      "size": 52005
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8630.png",
+      "sha1": "a17e6f3ac3734732d68e438a280fc796f4608f42",
+      "size": 52437
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8730.png",
+      "sha1": "c393d0b41bab2527c7d8a23fe247435879150da9",
+      "size": 55497
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8830.png",
+      "sha1": "23ef34587ba902cc8578c888b60e1fba9d5a6e01",
+      "size": 41659
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.8930.png",
+      "sha1": "7475fddd99464ffc3f372f02f8a89d64b23e53d3",
+      "size": 31131
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9030.png",
+      "sha1": "62ed38c83e3bcbfcbe92c6e9d3a0064ef8d24837",
+      "size": 21700
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9130.png",
+      "sha1": "de1017622d64a007822f63c580e1c02eb7033155",
+      "size": 27058
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9230.png",
+      "sha1": "84281f1b8bf08d0a79ff6719ddaac6a2e03b5c44",
+      "size": 32832
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9330.png",
+      "sha1": "9759328b7ac6feeb521caecacd6ceeaf77364c50",
+      "size": 29504
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9430.png",
+      "sha1": "ca113398fa063ba2ca3509340187f12be8ac271e",
+      "size": 28207
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9530.png",
+      "sha1": "29b41aa55a07a084aa54802a4642d4b477768501",
+      "size": 48755
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9630.png",
+      "sha1": "1179e3f7783359e7dc497b61e53a7a461a776ea3",
+      "size": 53975
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9730.png",
+      "sha1": "4110d8c4af058c6acc07686945391bafc7c2b2fc",
+      "size": 57563
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9830.png",
+      "sha1": "57ad3ad9a5e48b952b13691abcfe6aa9f312136f",
+      "size": 52868
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.9930.png",
+      "sha1": "6084ddbbcf87b9323cf1c53175f26de981611cf6",
+      "size": 54113
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.10030.png",
+      "sha1": "eccf81d70d2699b8bd6b6cb2325cbd5d56494d24",
+      "size": 22950
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.10130.png",
+      "sha1": "414962731d837e0ddb0a75c3a711448dcd743aef",
+      "size": 51654
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.10230.png",
+      "sha1": "53b219ef1417dd6dd1ffdab30cdd172fb94cc18c",
+      "size": 32773
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.10330.png",
+      "sha1": "c3c9b7cca2081f84d3f7cd2aef6b971a33718b16",
+      "size": 32703
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.10430.png",
+      "sha1": "b3102cec27a4aaa078251d2bc2c3a4037e522961",
+      "size": 32586
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.fight.10530.png",
+      "sha1": "854c0f3618d53d3f3bd563948af08a8fa884c7c7",
+      "size": 52500
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.script.log",
+      "sha1": "866c9a1434ae1eb83d5051d46ff3df5d673e7b90",
+      "size": 9161
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.mc1.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    },
+    {
+      "path": "tmp/weap/final\\versus-2p-kimigaura-weapon-naginata-yari\\capture.mc2.mcd",
+      "sha1": "1b3c99be55273085e14b30983b636529b6dd7f46",
+      "size": 131072
+    }
+  ]
+}
