@@ -26,7 +26,10 @@
         "menu:rematch",
         "menu:option",
         "menu:key_config",
-        "menu:memory_card"
+        "menu:memory_card",
+        "menu:group_settings",
+        "menu:school_select",
+        "menu:team_roster"
       ]
     },
     "stages": {
@@ -55,10 +58,22 @@
       }
     },
     "characters": {
-      "open": "only the default Vs. Mode cursors are named from screenshots so far",
+      "open": "the six Select School names (Narukagami, Shainto); hidden or unlockable characters not seen yet",
       "keys": [
         "char:kannuki",
-        "char:gengoro"
+        "char:mikado",
+        "char:tatsumi",
+        "char:gengoro",
+        "char:kaun",
+        "char:jo"
+      ]
+    },
+    "weapons": {
+      "open": "the three Group Battle picks' weapons; the full Select Weapon list not read yet",
+      "keys": [
+        "weapon:katana",
+        "weapon:long_sword",
+        "weapon:nodachi"
       ]
     },
     "events": {
@@ -66,6 +81,7 @@
         "event:round_start",
         "event:hit",
         "event:guard",
+        "event:out_of_bounds",
         "event:ko",
         "event:win",
         "event:save",
@@ -75,10 +91,11 @@
       "notes": {
         "event:ko": "a fighter down for good (no health bar: one cut can kill)",
         "event:win": "player 1 wins a fight",
-        "event:hit": "a cut lands without a KO, shown on screen",
+        "event:hit": "a cut lands without a KO, shown on screen (Group Battle: an IPPON call)",
         "event:guard": "a blocked cut, shown on screen",
         "event:save": "data saved to a memory card",
-        "event:load": "data loaded from a memory card"
+        "event:load": "data loaded from a memory card",
+        "event:out_of_bounds": "OUT OF BOUNDS (場外) call"
       }
     }
   }

@@ -1,0 +1,25 @@
+phase	first_frame	last_frame	screen	inputs	screenshots
+boot_intro	0	5489	power-on through the intro; only the last frame is shown: intro FMV	5200:START	capture.boot_intro.last.png
+t_menu	5490	6049	transition; no screen claim	5500:CROSS,5800:START	-
+top_menu	6050	6319	top menu; last frame Group Battle Mode (May the Best School Win) named in the right panel	6080:DOWN,6140:DOWN,6200:DOWN,6260:DOWN	capture.top_menu.last.png
+t_group	6320	6549	transition; no screen claim	6320:CROSS	-
+group_settings	6550	6619	Group Battle Mode settings: Number of Entries 3 / 4, Match 1 point / 3 point, Time Limit 60 sec / 120 sec, Start, Return to Top Menu	6600:CROSS,6640:CROSS@2	capture.group_settings.first.png
+school_select	6620	6949	Select School, one scroll per side (Narukagami, Shainto); P1 cursor on Narukagami, P2 on Shainto	6900:CROSS,6940:CROSS@2	capture.school_select.first.png,capture.school_select.mid.png
+t_char	6950	6999	transition; no screen claim	-	-
+char_select	7000	7649	Select Character per side (Narukagami: KANNUKI, MIKADO, TATSUMI; Shainto: GENGORO, KAUN, JO) with a 1ST / 2ND / 3RD table; after the picks P1 KANNUKI, MIKADO, TATSUMI, P2 GENGORO, KAUN, JO	7200:CROSS,7240:CROSS@2,7300:DOWN,7340:DOWN@2,7400:CROSS,7440:CROSS@2,7500:DOWN,7540:DOWN@2,7600:CROSS,7640:CROSS@2	capture.char_select.first.png,capture.char_select.pick1.png,capture.char_select.pick2.png
+t_weapon	7650	7699	transition; no screen claim	-	-
+weapon_select	7700	8549	Select Weapon per pick: 1ST Katana, 2ND Long Sword, 3RD Nodachi on both sides	7900:CROSS,7940:CROSS@2,8200:CROSS,8240:CROSS@2,8500:CROSS,8540:CROSS@2	capture.weapon_select.first.png,capture.weapon_select.8000.png,capture.weapon_select.8300.png,capture.weapon_select.last.png
+t_roster	8550	8699	transition; no screen claim	-	-
+roster	8700	9349	team roster: Narukagami KANNUKI / MIKADO / TATSUMI vs Shainto GENGORO / KAUN / JO, 1ST / 2ND / 3RD, score 0 - 0	8800:CROSS,8840:CROSS@2,9100:CROSS,9140:CROSS@2	capture.roster.first.png,capture.roster.mid.png
+t_bout1	9350	9399	transition; no screen claim	-	-
+bout1	9400	15199	first bout on a dojo floor, timer from 120"00, IPPON and WARNING rows for each side; P1 RIGHT + TRIANGLE/CIRCLE/SQUARE every 100 frames from 9600, P2 idle: IPPON call at 10400 and 14950, OUT OF BOUNDS at 11800 and 13000, P2 fighter on the ground at 15100 (P1 two IPPON flags)	9400:CROSS,9440:CROSS@2,RIGHT/TRIANGLE/CIRCLE/SQUARE from 9600	capture.bout1.first.png,capture.bout1.ippon.png,capture.bout1.out_of_bounds.png,capture.bout1.13000.png,capture.bout1.14950.png,capture.bout1.down.png
+t_result1	15200	15399	transition; no screen claim	fight inputs continue	-
+roster_1	15400	15599	team roster, 1ST row KANNUKI ○ - × GENGORO, score 1 - 0	fight inputs continue	capture.roster_1.first.png,capture.roster_1.last.png
+t_bout2	15600	15699	transition; no screen claim	fight inputs continue	-
+bout2	15700	21899	second bout (the 2ND row pair: roster_2 marks that row next), timer from 120"00: IPPON at 16750 and 21550, OUT OF BOUNDS at 20050, P2 fighter on the ground at 21850	fight inputs continue	capture.bout2.first.png,capture.bout2.16750.png,capture.bout2.20050.png,capture.bout2.21550.png,capture.bout2.last.png
+t_result2	21900	21999	transition; no screen claim	fight inputs continue	-
+roster_2	22000	22399	team roster, 1ST and 2ND rows ○ - ×, score 2 - 0	fight inputs continue	capture.roster_2.first.png,capture.roster_2.last.png
+t_bout3	22400	22449	transition; no screen claim	fight inputs continue	-
+bout3	22450	25799	third bout (the 3RD row pair: roster_3 marks that row next), timer from 120"00: IPPON at 23950 and 25450, P2 fighter on the ground at 25750	fight inputs continue	capture.bout3.first.png,capture.bout3.23950.png,capture.bout3.25450.png,capture.bout3.last.png
+t_result3	25800	25899	transition; no screen claim	last fight input 25850	-
+roster_3	25900	26999	team roster, all three rows ○ - ×, score 3 - 0 (to 26200); then Narukagami Victorious! In Honor of Both Schools, Bushido Dance 御鏡之舞 Mikagaminomai over a P1 fighter (26500), the fighter alone (26800, 26999)	-	capture.roster_3.first.png,capture.roster_3.26200.png,capture.roster_3.26500.png,capture.roster_3.26800.png,capture.roster_3.last.png
