@@ -684,6 +684,10 @@ s32 fighter_ResolveWeaponContact(Unk80101EC8Record *arg0, s32 *arg1) {
                         goto block_49;
                     }
                     {
+                        /* FAKE: named intermediate for the selected constant
+                         * keeps the two constants in the target's order (a
+                         * plain ternary into var_v0_2 reorders them: score
+                         * 2) (Q129). */
                         s32 next_286 = (var_s1 == 0) ? 0xB : 0x19;
                         var_v0_2 = next_286;
                     }
@@ -2761,6 +2765,8 @@ s32 math_TestPreparedTriangleSphere(
             var_9 = z2 * cx - x2 * cz;
             var_10 = z2 * px - x2 * pz;
             if ((var_9 ^ var_10) >= 0) {
+                /* FAKE: ax holds cx - x0 ahead of the dx set-up; written in
+                 * the product the subtraction moves (score 2) (Q129). */
                 s32 ax = cx - x0;
                 s32 dx;
                 /* FAKE: the third edge's z2 - z0 is staged through the finished

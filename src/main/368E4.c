@@ -693,6 +693,9 @@ void func_800475A4(void) {
 
     base = &D_800EEDF0;
     {
+        /* FAKE: s16 temporary for the negated pitch; storing -ratan2()
+         * straight into base->xf.rot.vx moves its negu and the addiu: score
+         * 3 (Q129). */
         s16 neg = -ratan2(result.vy, var_5);
         base->xf.rot.vx = neg;
     }

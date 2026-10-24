@@ -1013,6 +1013,8 @@ void camera_SetInterpolatedFighterView(Unk80101EC8Record *arg0, s32 arg1) {
     D_800F6608.unk_10.vx = 0x100 - (arg1 * 288) / 4096;
 
     {
+        /* FAKE: div4 taken first; written at its use the multiply chain is
+         * rebuilt after the shift (score 17) (Q129). */
         s32 div4 = arg1 / 4;
         u16 rot_y = arg0->orientation.vy;
         s32 val;
@@ -4657,6 +4659,10 @@ void fighter_Update(s32 arg0, PadState *pad) {
         rec->unk_1F8.y += 0x898;
     }
     {
+        /* FAKE: named intermediate: move_kind is read into `state` before
+         * the move_started test, as the target loads it; with direct reads
+         * the load follows the branch and jump threading adds 2 insns (score
+         * 3); a u16 `state` also misses (Q129). */
         s32 state = rec->move_kind;
 
         if (rec->move_started != 0 && state == 6) {
