@@ -33,16 +33,22 @@ paired start reset that record's unk_86 to unk_84:
     9 -> 3 and 0xA -> 5 under their conditions; flags & 0x30 held / pressed /
     unheld / released; entries with 0x8000 only when the mask in their extra
     halfwords holds the executing record's unk_0A; 0x2000 entries never fire;
+    the loop takes the first entry that fires, so an entry is left out when
+    an earlier unconditional entry on the same bit fires whenever it would
+    (same type, held before pressed, unheld before released);
     none fire for D_800A38AE in a kind-0x11 move; the other record's input
     there is handed off (D_800A376E) and installs the move on both);
   * the first 0x4000 entry is the paired move fight_UpdatePairedMoves
-    starts by distance (not by input; its extra bytes are distance data;
-    the label lists its gates): both records install it from the starter's
-    file, D_800A38AE becomes the starter, the other runs it with
-    borrow_other_motion and unk_86 = unk_84. The input loop would also test
-    its button bit (and, with 0x8000, its bytes as a mask); not walked;
+    starts by distance (its extra bytes are distance data; the label lists
+    its gates): both records install it from the starter's file,
+    D_800A38AE becomes the starter, the other runs it with
+    borrow_other_motion and unk_86 = unk_84. The input loop also tests every
+    0x4000 entry as an ordinary entry (with 0x8000, its bytes as the mask);
+    those edges are labelled. Modes 2 / 5 never run fight_UpdatePairedMoves,
+    so there neither paired starts nor kind-0x11 hand-offs happen;
   * move ended: the tc[0] 0x2000 end transition for a record that is not
-    D_800A38AE, else the header fallback;
+    D_800A38AE, else the header fallback; a kind-0xA move also lands on its
+    fallback (no borrow);
   * event-table edges only where fighter_Update takes them: 0xD (turn) from
     kinds 0x15/0x19/0x1A/0x13/0x30/0x31 with R1 and a direction held; 0x17 /
     0x18 on landing from kind 0xA. Not walked: landing with unk_72 set or
@@ -62,7 +68,9 @@ D_800A38DC 6 the record that is not D_800A38A0 uses D_800A3912..14), 8
 SELECT, 11 START, 12..15 UP RIGHT DOWN LEFT; for record 1 outside mode 6 the
 directions are mirrored (game UP/RIGHT/DOWN/LEFT = pad DOWN/LEFT/UP/RIGHT).
 L3 / R3 fold into bits 3 / 5. D_800A38BA's swap (fighter_Update) is not
-read or applied: names assume it is 0.
+read or applied: names assume it is 0. pressed SELECT is cleared in modes
+2 / 3 / 5 and in mode 0 with D_800A385C. A cpu_controlled record's input
+comes from fighter_BuildCpuPad: the button names do not apply to it.
 
 Static graph only: whether a branch fires at run time still depends on the
 frame window, distance (paired), unk_26C and the other fighter's state.
@@ -256,16 +264,23 @@ class Fight:
         return self.m.u8(s08 + self.m.u16(ent + 2))
 
     def valid(self, a, slot):
-        """a reads as a move script: RAM that was read, a command list
-        that ends, a motion entry and metadata inside the read RAM."""
+        """a reads as a move script: RAM that was read, first_move_frame <=
+        last_move_frame, a command list that ends, a
+        motion entry and metadata inside the read RAM, move_kind < 0x40
+        (a heuristic: every kind seen in the walks so far is below 0x33)."""
         m = self.m
         if not (RAM0 <= a < RAM0 + RAMSZ - 0x400) or not m.covered(a, 12):
+            return False
+        h = self.header(a)
+        if h["first"] > h["last"]:
             return False
         try:
             self.commands(a)
             _, s04, s08 = self.sections(slot)
             ent = s04 + m.u16(a + 4) * 4
-            return m.covered(ent, 4) and m.covered(s08 + m.u16(ent + 2), 3)
+            meta = s08 + m.u16(ent + 2)
+            return m.covered(ent, 4) and m.covered(meta, 3) \
+                and m.u8(meta) < 0x40
         except (ValueError, struct.error, IndexError):
             return False
 
@@ -327,37 +342,52 @@ class Fight:
                         + (f" ({note})" if note else "")))
 
         paired_seen = False
+        covered = set()  # (bit, input type) an earlier live entry takes
+        # an entry of type t on bit b never fires once an unconditional
+        # entry of a type implying t on b came first (the loop breaks)
+        implied_by = {0x00: (0x00,), 0x10: (0x00, 0x10), 0x20: (0x20,),
+                      0x30: (0x20, 0x30)}
         for f, mid, extra in self.commands(a):
-            if f & 0x4000:
-                if paired_seen:
-                    continue  # motion_FindPairedMoveEntry: the first only
-                paired_seen = True
+            if f & 0x4000 and not paired_seen:
+                paired_seen = True  # motion_FindPairedMoveEntry: the first
                 b = extra.to_bytes(4, "little")
                 lab = (f"paired move (fight_UpdatePairedMoves, not input): "
                        f"distance {b[0] * 20}..{b[1] * 20}, height gap < 100, "
                        f"other in kind 0x15/0x2C/0xE/0x19, func_8001FB34 "
-                       f"(not modes 2/3/5"
+                       f"(not modes 2/3/5, nor mode 0 with D_800A385C; the "
+                       f"other's unk_0C not 0xD/0x1C; unk_0A 0xE needs a "
+                       f"carried kind-0xA object"
                        + ("; needs unk_26C" if b[3] & 0x80 else "") + "); "
                        "tested only on the frame the move starts, with no "
-                       "pending move event and neither fighter defeated")
+                       "pending move event on either record")
                 t = target(mid)
                 if t is None:
                     self.dropped.append((node, lab, mid))
-                    continue
-                na, ns, _ = t
-                # both install it from the starter's file; D_800A38AE = ex;
-                # the other gets borrow_other_motion and unk_86 = unk_84
-                out.append(((na, ns, ex, ex, reset), f"{lab} -> id {mid:#06x}"))
-                out.append(((na, ns, 1 - ex, ex, True),
-                            f"{lab}, run by the other record -> id {mid:#06x}"))
-                continue
+                else:
+                    na, ns, _ = t
+                    # both install it from the starter's file; D_800A38AE =
+                    # ex; the other gets borrow_other_motion, unk_86 = unk_84
+                    out.append(((na, ns, ex, ex, reset),
+                                f"{lab} -> id {mid:#06x}"))
+                    out.append(((na, ns, 1 - ex, ex, True),
+                                f"{lab}, run by the other record -> id "
+                                f"{mid:#06x}"))
+            # the input loop (9F9C.c:4489-4552) also tests 0x4000 entries
             if f & 0x2000:
                 continue  # var_8 = 0: never fires on input
             if kind == 0x11 and ex == ae:
                 continue  # var_8 = 0 for D_800A38AE in a kind-0x11 move
             if f & 0x8000 and not (extra >> r.unk_0A) & 1:
-                continue  # character mask excludes the executing record
+                continue  # mask (a paired entry's bytes) excludes the record
+            bit, typ = f & 0xF, f & 0x30
+            key_bit = {9: 3, 0xA: 5}.get(bit, bit)
+            if any((key_bit, t) in covered for t in implied_by[typ]):
+                continue  # an earlier entry takes this input first
+            if bit not in (9, 0xA):
+                covered.add((key_bit, typ))
             lab = self.label(f, extra, ex)
+            if f & 0x4000:
+                lab += " (paired entry tested as an input)"
             if kind == 0x11:
                 # D_800A376E hand-off: fight_UpdatePairedMoves installs the
                 # move on D_800A38AE and on the other (borrow if 0x1000)
@@ -381,6 +411,9 @@ class Fight:
         else:
             add(h["fallback"], "fallback (move ended)",
                 bool(h["unk_09"] & 0x20))
+        if kind == 0xA:
+            add(h["fallback"], "landing after a fall of 0xFA0 or less "
+                "(fallback, no borrow)")
         tbl, _, _ = self.resolve(h["event_table"], ex, False, reset)
         if m.covered(tbl, 0x32):
             if kind in (0x15, 0x19, 0x1A, 0x13, 0x30, 0x31):
