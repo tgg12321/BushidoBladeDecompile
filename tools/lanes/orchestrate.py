@@ -32,7 +32,8 @@ docs/foundation/backlog.tsv order while a lane has rows not landed/dropped/block
 alternate. Lanes owned in the registry by any live session are skipped, and so are paused lanes
 (tmp/lanes-state/paused.json; `naming` pauses every naming lane; a `--when-away` lane starts only
 after 20 min without keyboard/mouse input). `researching` rows wait on a Codex job: they count as
-workable once every Codex bridge run their note cites by run id has finished. `max 0` drains: running sessions finish, then the orchestrator exits.
+workable once their note cites a Codex bridge run id and every cited run has finished (any
+status). `max 0` drains: running sessions finish, then the orchestrator exits.
 
 Codex lane (`--codex` / `codex on`): one extra session `lane-codex`, outside the N slots, that
 follows tmp/codex/fake-lane-brief.md. It is restarted when it finishes only while Codex usage is
@@ -69,7 +70,7 @@ NAMING_BACKLOG = MAIN / "docs" / "naming" / "phase3" / "backlog.tsv"
 FOUNDATION_BACKLOG = MAIN / "docs" / "foundation" / "backlog.tsv"
 NAMING_WORKABLE = {"idea", "researched", "reviewed"}
 CODEX_RUNS = Path.home() / ".claude" / "codex-bridge" / "runs"
-CODEX_RUN_ID = re.compile(r"\b(\d{8}-\d{6}-[A-Za-z0-9][\w.-]*)")
+CODEX_RUN_ID = re.compile(r"\b(\d{8}-\d{6}-[A-Za-z0-9](?:[\w.-]*\w)?)")
 FOUNDATION_DONE = {"landed", "dropped", "blocked"}  # blocked = waits on an owner ruling
 ENDED_STATES = {"exited", "stopped", "failed", "killed", "error"}
 STALL_SECS = 90 * 60

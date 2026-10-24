@@ -72,7 +72,8 @@ Invocation: `/naming-session [lane]`, for example `/naming-session naming-b`. Th
   `git worktree remove`). Report one line per unit, say plainly that the session is complete, and
   stop. Don't hand off and don't wait on anything. The next session starts from the backlog.
 - **Pick order:** LAND first (oldest `reviewed` row no other lane claims), then PREPARE (first
-  unclaimed `idea` row).
+  unclaimed `researched` row, or `researching` row whose cited Codex run has finished, then
+  `idea` row).
 
 ## Agents are bounded
 
@@ -110,6 +111,8 @@ reviewed`.
    only with new evidence (a neighbour named since, a type landed, a Q124 trace capture):
    `--revive <addr>=<evidence>`. Put the printed `# revive` lines in the prompt and the row note.
 2. `researching` or `researched`: `python tmp/codex/extract_final.py <run dir> tmp/codex/<id>-research.md`.
+   A run that ended `failed` / `timeout` / `cancelled` (its `meta.json`): relaunch it (step 1)
+   with the new run id in the note, or `dropped` with the reason.
 3. Sonnet drafter (foreground) writes `docs/naming/phase3/pending/<id>/`. For members this
    includes a compiled dry run, run from PowerShell inside the worktree:
    `cd "<wt>"; python tools/naming_member_apply.py --dry-run <pairs.txt>`.
