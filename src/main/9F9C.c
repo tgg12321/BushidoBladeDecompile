@@ -3048,11 +3048,9 @@ void motion_LoadFighterData(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
      * the wrong frame); without it: score 20. */
     u16 var_0[130];
     s32 i;
-    /* j holds the frame-set id (arg0 / arg2), tested, stored and passed to
-       cdrom_StartReadAt, then the D_8008DCCC search index, the way SOTN's
-       EntityAlucard reuses its i, a call result tested and passed on, as the
-       next loop's counter (Q51) */
-    /* SOTN: src/dra/692E8.c:693 @db41b28 */
+    /* FAKE: one local for loop 1's arg0 / arg2 and loop 2's D_8008DCCC index;
+     * separate locals seat the index in $a1, the target keeps both in $s0
+     * (score 3) (Q129). */
     s32 j;
 
     if (g_motion_common_loaded == 0) {
