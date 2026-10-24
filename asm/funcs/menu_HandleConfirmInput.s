@@ -14,7 +14,7 @@ glabel menu_HandleConfirmInput
     /* 5E798 8006DF98 0C35E724 */  addiu      $a3, $a3, %lo(D_800A350C)
     /* 5E79C 8006DF9C 2000BFAF */  sw         $ra, 0x20($sp)
     /* 5E7A0 8006DFA0 1000A2AF */  sw         $v0, 0x10($sp)
-    /* 5E7A4 8006DFA4 B0A4010C */  jal        func_800692C0
+    /* 5E7A4 8006DFA4 B0A4010C */  jal        pad_StepOffsetsGetDirectionEvents
     /* 5E7A8 8006DFA8 0C00C624 */   addiu     $a2, $a2, 0xC
     /* 5E7AC 8006DFAC 03140200 */  sra        $v0, $v0, 16
     /* 5E7B0 8006DFB0 FF004230 */  andi       $v0, $v0, 0xFF

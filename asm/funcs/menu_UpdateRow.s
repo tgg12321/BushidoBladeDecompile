@@ -58,7 +58,7 @@ glabel menu_UpdateRow
     /* 61550 80070D50 25000224 */  addiu      $v0, $zero, 0x25
     /* 61554 80070D54 4A00A2A7 */  sh         $v0, 0x4A($sp)
     /* 61558 80070D58 01000224 */  addiu      $v0, $zero, 0x1
-    /* 6155C 80070D5C 26A6010C */  jal        func_80069898
+    /* 6155C 80070D5C 26A6010C */  jal        gpu_AddThreeGreyTilesStackedUp
     /* 61560 80070D60 4E00A2A7 */   sh        $v0, 0x4E($sp)
     /* 61564 80070D64 0000428E */  lw         $v0, 0x0($s2)
     /* 61568 80070D68 0A001324 */  addiu      $s3, $zero, 0xA

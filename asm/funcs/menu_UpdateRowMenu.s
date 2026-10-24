@@ -17,7 +17,7 @@ glabel menu_UpdateRowMenu
     /* 59C08 80069408 00110200 */  sll        $v0, $v0, 4
     /* 59C0C 8006940C 0F80033C */  lui        $v1, %hi(g_gpu_db)
     /* 59C10 80069410 38746324 */  addiu      $v1, $v1, %lo(g_gpu_db)
-    /* 59C14 80069414 E4B8010C */  jal        func_8006E390
+    /* 59C14 80069414 E4B8010C */  jal        gpu_AdvanceBufferCounterAndBuildDrawContext
     /* 59C18 80069418 21884300 */   addu      $s1, $v0, $v1
     /* 59C1C 8006941C 4000A427 */  addiu      $a0, $sp, 0x40
     /* 59C20 80069420 21280000 */  addu       $a1, $zero, $zero
@@ -28,7 +28,7 @@ glabel menu_UpdateRowMenu
     /* 59C34 80069434 0A80073C */  lui        $a3, %hi(D_800A350C)
     /* 59C38 80069438 0C35E724 */  addiu      $a3, $a3, %lo(D_800A350C)
     /* 59C3C 8006943C 4000A2AF */  sw         $v0, 0x40($sp)
-    /* 59C40 80069440 B0A4010C */  jal        func_800692C0
+    /* 59C40 80069440 B0A4010C */  jal        pad_StepOffsetsGetDirectionEvents
     /* 59C44 80069444 0C00C624 */   addiu     $a2, $a2, 0xC
     /* 59C48 80069448 21384000 */  addu       $a3, $v0, $zero
     /* 59C4C 8006944C 031C0700 */  sra        $v1, $a3, 16
@@ -184,7 +184,7 @@ glabel menu_UpdateRowMenu
   .L80069670:
     /* 59E70 80069670 1000A427 */  addiu      $a0, $sp, 0x10
     /* 59E74 80069674 21280000 */  addu       $a1, $zero, $zero
-    /* 59E78 80069678 B9A6010C */  jal        func_80069AE4
+    /* 59E78 80069678 B9A6010C */  jal        gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads
     /* 59E7C 8006967C 21302002 */   addu      $a2, $s1, $zero
     /* 59E80 80069680 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
     /* 59E84 80069684 1000A427 */  addiu      $a0, $sp, 0x10
@@ -193,7 +193,7 @@ glabel menu_UpdateRowMenu
     /* 59E90 80069690 0A80013C */  lui        $at, %hi(D_8009BC0D)
     /* 59E94 80069694 21082200 */  addu       $at, $at, $v0
     /* 59E98 80069698 0DBC2690 */  lbu        $a2, %lo(D_8009BC0D)($at)
-    /* 59E9C 8006969C 20AA010C */  jal        func_8006A880
+    /* 59E9C 8006969C 20AA010C */  jal        menu_DrawMaskedRowList
     /* 59EA0 800696A0 21282002 */   addu      $a1, $s1, $zero
     /* 59EA4 800696A4 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
     /* 59EA8 800696A8 00000000 */  nop
@@ -202,7 +202,7 @@ glabel menu_UpdateRowMenu
     /* 59EB4 800696B4 0A80013C */  lui        $at, %hi(D_8009BC0D)
     /* 59EB8 800696B8 21082200 */  addu       $at, $at, $v0
     /* 59EBC 800696BC 0DBC2590 */  lbu        $a1, %lo(D_8009BC0D)($at)
-    /* 59EC0 800696C0 E0A7010C */  jal        func_80069F80
+    /* 59EC0 800696C0 E0A7010C */  jal        menu_DrawModeBit1Sheets
     /* 59EC4 800696C4 1000A427 */   addiu     $a0, $sp, 0x10
     /* 59EC8 800696C8 2C04828F */  lw         $v0, %gp_rel(D_800A34F8)($gp)
     /* 59ECC 800696CC 00000000 */  nop
@@ -211,7 +211,7 @@ glabel menu_UpdateRowMenu
     /* 59ED8 800696D8 0A80013C */  lui        $at, %hi(D_8009BC0D)
     /* 59EDC 800696DC 21082200 */  addu       $at, $at, $v0
     /* 59EE0 800696E0 0DBC2590 */  lbu        $a1, %lo(D_8009BC0D)($at)
-    /* 59EE4 800696E4 68A8010C */  jal        func_8006A1A0
+    /* 59EE4 800696E4 68A8010C */  jal        menu_DrawModeBit0Sheets
     /* 59EE8 800696E8 1000A427 */   addiu     $a0, $sp, 0x10
     /* 59EEC 800696EC 40000232 */  andi       $v0, $s0, 0x40
     /* 59EF0 800696F0 1B004010 */  beqz       $v0, .L80069760

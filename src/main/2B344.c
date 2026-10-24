@@ -595,7 +595,7 @@ void func_8003BE10(void) {
     func_800415C4(1);
     eff_ClearInitFlag();
     func_8005B72C();
-    func_80078824((s32)0x80118800);
+    InitScrollingSpriteDisplay((s32)0x80118800);
     snd_SerialMixOn();
     {
         s32 v0 = cdrom_GetFileIndex(5, 0x20);
@@ -612,7 +612,7 @@ void func_8003BEA8(void) {
     s32 old;
     s32 bit;
 
-    go = func_800788B0() != 0;
+    go = StepScrollingSpriteDisplay() != 0;
     if (g_pad_state.pressed & 0x40) {
         go = 1;
     }

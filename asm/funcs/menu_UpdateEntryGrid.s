@@ -511,7 +511,7 @@ glabel menu_UpdateEntryGrid
     /* 60910 80070110 25000224 */  addiu      $v0, $zero, 0x25
     /* 60914 80070114 5200A2A7 */  sh         $v0, 0x52($sp)
     /* 60918 80070118 01000224 */  addiu      $v0, $zero, 0x1
-    /* 6091C 8007011C 26A6010C */  jal        func_80069898
+    /* 6091C 8007011C 26A6010C */  jal        gpu_AddThreeGreyTilesStackedUp
     /* 60920 80070120 5600A2A7 */   sh        $v0, 0x56($sp)
     /* 60924 80070124 62C0010C */  jal        menu_UpdateEntryGridCursors
     /* 60928 80070128 21208002 */   addu      $a0, $s4, $zero

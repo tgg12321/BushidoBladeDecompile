@@ -181,7 +181,7 @@ glabel menu_DrawSelGrid
     /* 66478 80075C78 21304002 */  addu       $a2, $s2, $zero
     /* 6647C 80075C7C 21380000 */  addu       $a3, $zero, $zero
   .L80075C80:
-    /* 66480 80075C80 0CD6010C */  jal        func_80075830
+    /* 66480 80075C80 0CD6010C */  jal        menu_DrawSelGridCellOverlay
     /* 66484 80075C84 00000000 */   nop
     /* 66488 80075C88 01002326 */  addiu      $v1, $s1, 0x1
   .L80075C8C:

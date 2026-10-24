@@ -29,7 +29,7 @@ glabel func_80038988
     /* 291F0 800389F0 06006010 */  beqz       $v1, .L80038A0C
     /* 291F4 800389F4 21804000 */   addu      $s0, $v0, $zero
     /* 291F8 800389F8 0A000424 */  addiu      $a0, $zero, 0xA
-    /* 291FC 800389FC B1AF010C */  jal        func_8006BEC4
+    /* 291FC 800389FC B1AF010C */  jal        gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 29200 80038A00 FFFF0524 */   addiu     $a1, $zero, -0x1
     /* 29204 80038A04 00E30008 */  j          .L80038C00
     /* 29208 80038A08 00000000 */   nop
@@ -87,7 +87,7 @@ glabel func_80038988
   .L80038AB0:
     /* 292B0 80038AB0 03008004 */  bltz       $a0, .L80038AC0
     /* 292B4 80038AB4 00000000 */   nop
-    /* 292B8 80038AB8 B1AF010C */  jal        func_8006BEC4
+    /* 292B8 80038AB8 B1AF010C */  jal        gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 292BC 80038ABC FFFF0524 */   addiu     $a1, $zero, -0x1
   .L80038AC0:
     /* 292C0 80038AC0 30018293 */  lbu        $v0, %gp_rel(D_800A31FC)($gp)

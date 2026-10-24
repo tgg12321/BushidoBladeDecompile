@@ -981,7 +981,7 @@ comb_Read8 = 0x8003A574; /* MISNAMED: not motion-pre-calc; calls bios_FileRead_B
 def_cbsync = 0x80080014; /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x20) */
 def_cbready = 0x8008003C; /* MISNAMED: not motion-pre-calc; calls bios_DeliverEvent(0xF0000003, 0x40) */
 def_cbread = 0x80080064; /* MISNAMED: not motion-pre-calc; duplicate of 0x8008003C (bios_DeliverEvent(0xF0000003, 0x40)) */
-func_80077B20 = 0x80077B20; /* MISNAMED: not gauge init; 1-line D_800A35E4 = 1 */
+// RENAME 0x80077B20: retired name 'func_80077B20' — preserved note: MISNAMED: not gauge init; 1-line D_800A35E4 = 1
 func_80077D00 = 0x80077D00; /* MISNAMED: not gauge init; returns &D_8009BD24 (gauge data struct ptr) */
 func_80044F80 = 0x80044F80; /* MISNAMED: not Satan2 info init; 1-line wrapper of ndata_Read(a0+0x4D, a1) */
 func_8006C1FC = 0x8006C1FC; /* MISNAMED: not Satan2 info init; 1-line wrapper of func_8006C168(a0, a1) */
@@ -989,7 +989,7 @@ func_80077A60 = 0x80077A60; /* MISNAMED: not Satan2 info init; 1-line wrapper of
 func_80077AC0 = 0x80077AC0; /* 1-line wrapper of menu_StepSelScreen() */
 func_800444BC = 0x800444BC; /* MISNAMED: not ground display; 1-line wrapper of func_80044504(D_800A378C) */
 func_80046020 = 0x80046020; /* MISNAMED: not ground display; arena_Free(6) then func_8005B6AC() */
-func_80077A04 = 0x80077A04; /* MISNAMED: not ground display; D_800A35E4=0 then func_8006D74C(a0, a1) */
+// RENAME 0x80077A04: retired name 'func_80077A04' — preserved note: MISNAMED: not ground display; D_800A35E4=0 then func_8006D74C(a0, a1)
 func_8004A940 = 0x8004A940; /* MISNAMED: not local matrix calc; u16 stream decoder dispatching to gte_ProjectSVectorTriples */
 D_80090600 = 0x80090600; /* cached distance: the step between packets func_8003DBE4 inserts (written by func_8003DA8C) */  /* data-wave 2026-10-08: was g_status_up_cached_idx_plus_8 */
 D_8009A838 = 0x8009A838; /* s8[8] (dlabel D_8009A838, read lb); func_80056FE8, func_80058580 */  /* data-wave 2026-10-08: was g_text1b_motion_byte_table_8x3_plus_8 */

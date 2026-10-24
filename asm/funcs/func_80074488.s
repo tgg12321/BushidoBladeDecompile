@@ -214,7 +214,7 @@ glabel func_80074488
     /* 64F9C 8007479C 25000224 */  addiu      $v0, $zero, 0x25
     /* 64FA0 800747A0 4A00A2A7 */  sh         $v0, 0x4A($sp)
     /* 64FA4 800747A4 01000224 */  addiu      $v0, $zero, 0x1
-    /* 64FA8 800747A8 26A6010C */  jal        func_80069898
+    /* 64FA8 800747A8 26A6010C */  jal        gpu_AddThreeGreyTilesStackedUp
     /* 64FAC 800747AC 4E00A2A7 */   sh        $v0, 0x4E($sp)
     /* 64FB0 800747B0 6800BF8F */  lw         $ra, 0x68($sp)
     /* 64FB4 800747B4 6400B58F */  lw         $s5, 0x64($sp)

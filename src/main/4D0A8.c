@@ -1627,7 +1627,8 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
     end_off = arg0 + 0xAC8;
     sp18 = arg0;
     sp1C = arg0 + 0x870;
-    func_8006D808(&sp18, &sp1C, &D_8009B0C0, arg1, arg2);
+    gpu_DrawIndexedCellsAndDecimalDigitPairs(
+        &sp18, &sp1C, &D_8009B0C0, arg1, arg2);
     if ((u32)arg2 < 3U) {
         SetTile((TILE *)var_7);
         *(u8 *)(arg0 + 0x7D4) = 0xFF;
@@ -1710,8 +1711,9 @@ s32 func_80060768(s32 arg0, s32 arg1, s32 arg2) {
  * (func_8005E54C picks a row by D_8009BD24's bd0, less 2 from 12; the old
  * D_8009AF94 label inside row 18 was only sin_1's folded rsin_tbl base),
  * D_8009AFB8 20 x offsets (D_8009B0C0.unk_1C). D_8009ADD8 must follow
- * D_8009ADC0: func_8006D808 reaches row idx as D_8009B0C0.unk_10 + 3 + idx * 3,
- * so the two read as one table of a 3-cell group and 20 rows. */
+ * D_8009ADC0: gpu_DrawIndexedCellsAndDecimalDigitPairs reaches row idx as
+ * D_8009B0C0.unk_10 + 3 + idx * 3, so the two read as one table of a 3-cell
+ * group and 20 rows. */
 Unk8009B0E0Record D_8009ADB4 = {0x1F, 0x00, 3, 0x00, 0x3C0, 0x1FF, 0x0, 0x77};
 Unk8009B400Record D_8009ADC0[3] = {
     {48, 80, 0xB0, 0x00, 0x10, 0x0C},

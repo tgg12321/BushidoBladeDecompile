@@ -22,13 +22,13 @@ glabel menu_UpdateConfirmMenu
     /* 5E8B8 8006E0B8 480482AF */  sw         $v0, %gp_rel(D_800A3514)($gp)
     /* 5E8BC 8006E0BC 0F80023C */  lui        $v0, %hi(g_gpu_db)
     /* 5E8C0 8006E0C0 38744224 */  addiu      $v0, $v0, %lo(g_gpu_db)
-    /* 5E8C4 8006E0C4 E4B8010C */  jal        func_8006E390
+    /* 5E8C4 8006E0C4 E4B8010C */  jal        gpu_AdvanceBufferCounterAndBuildDrawContext
     /* 5E8C8 8006E0C8 21800202 */   addu      $s0, $s0, $v0
     /* 5E8CC 8006E0CC 1000A427 */  addiu      $a0, $sp, 0x10
     /* 5E8D0 8006E0D0 01000524 */  addiu      $a1, $zero, 0x1
-    /* 5E8D4 8006E0D4 B9A6010C */  jal        func_80069AE4
+    /* 5E8D4 8006E0D4 B9A6010C */  jal        gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads
     /* 5E8D8 8006E0D8 21300002 */   addu      $a2, $s0, $zero
-    /* 5E8DC 8006E0DC 65B7010C */  jal        func_8006DD94
+    /* 5E8DC 8006E0DC 65B7010C */  jal        menu_DrawConfirmSheetsAndDigitPairs
     /* 5E8E0 8006E0E0 1000A427 */   addiu     $a0, $sp, 0x10
     /* 5E8E4 8006E0E4 21202002 */  addu       $a0, $s1, $zero
     /* 5E8E8 8006E0E8 DAB7010C */  jal        menu_HandleConfirmInput

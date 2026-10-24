@@ -1,7 +1,7 @@
 glabel func_80077860
     /* 68060 80077860 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 68064 80077864 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 68068 80077868 94A4010C */  jal        func_80069250
+    /* 68068 80077868 94A4010C */  jal        gpu_DrawWhiteTileAndSheetsTestPadMask
     /* 6806C 8007786C 00000000 */   nop
     /* 68070 80077870 01000324 */  addiu      $v1, $zero, 0x1
     /* 68074 80077874 03004314 */  bne        $v0, $v1, .L80077884

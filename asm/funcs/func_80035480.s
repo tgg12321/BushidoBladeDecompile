@@ -35,7 +35,7 @@ glabel func_80035480
     /* 25CFC 800354FC 0ED5000C */  jal        func_80035438
     /* 25D00 80035500 00000000 */   nop
     /* 25D04 80035504 1180043C */  lui        $a0, (0x80118800 >> 16)
-    /* 25D08 80035508 08DE010C */  jal        func_80077820
+    /* 25D08 80035508 08DE010C */  jal        InitRowMenuBlackBgResetFlow
     /* 25D0C 8003550C 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25D10 80035510 09000224 */  addiu      $v0, $zero, 0x9
     /* 25D14 80035514 0A80013C */  lui        $at, %hi(D_800A37B8)

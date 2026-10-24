@@ -30,7 +30,7 @@ glabel func_8003880C
     /* 29070 80038870 FFFF1024 */  addiu      $s0, $zero, -0x1
   jlabel .L80038874
     /* 29074 80038874 21200000 */  addu       $a0, $zero, $zero
-    /* 29078 80038878 B1AF010C */  jal        func_8006BEC4
+    /* 29078 80038878 B1AF010C */  jal        gpu_DrawSheetPairCenteredTileWithOptionalSelection
     /* 2907C 8003887C FFFF0524 */   addiu     $a1, $zero, -0x1
     /* 29080 80038880 03000012 */  beqz       $s0, .L80038890
     /* 29084 80038884 01000224 */   addiu     $v0, $zero, 0x1

@@ -15,7 +15,7 @@ glabel func_80035618
     /* 25E48 80035648 00000000 */  nop
     /* 25E4C 8003564C 0B004014 */  bnez       $v0, .L8003567C
     /* 25E50 80035650 1180043C */   lui       $a0, (0x80118800 >> 16)
-    /* 25E54 80035654 39E1010C */  jal        func_800784E4
+    /* 25E54 80035654 39E1010C */  jal        InitTimedSpriteSequence
     /* 25E58 80035658 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25E5C 8003565C EAD7000C */  jal        snd_SerialMixOn
     /* 25E60 80035660 00000000 */   nop
@@ -26,7 +26,7 @@ glabel func_80035618
     /* 25E74 80035674 06D60008 */  j          .L80035818
     /* 25E78 80035678 00000000 */   nop
   .L8003567C:
-    /* 25E7C 8003567C 61DE010C */  jal        func_80077984
+    /* 25E7C 8003567C 61DE010C */  jal        InitWithCachedValueAndStoredBitsBlackBg
     /* 25E80 80035680 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25E84 80035684 03D60008 */  j          .L8003580C
     /* 25E88 80035688 03000224 */   addiu     $v0, $zero, 0x3
@@ -38,12 +38,12 @@ glabel func_80035618
     /* 25E98 80035698 00000000 */  nop
     /* 25E9C 8003569C 05004014 */  bnez       $v0, .L800356B4
     /* 25EA0 800356A0 1180043C */   lui       $a0, (0x80118800 >> 16)
-    /* 25EA4 800356A4 8ADE010C */  jal        func_80077A28
+    /* 25EA4 800356A4 8ADE010C */  jal        menu_ResetFlowBackgroundAndConfirmCursor
     /* 25EA8 800356A8 00000000 */   nop
     /* 25EAC 800356AC 03D60008 */  j          .L8003580C
     /* 25EB0 800356B0 06000224 */   addiu     $v0, $zero, 0x6
   .L800356B4:
-    /* 25EB4 800356B4 61DE010C */  jal        func_80077984
+    /* 25EB4 800356B4 61DE010C */  jal        InitWithCachedValueAndStoredBitsBlackBg
     /* 25EB8 800356B8 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25EBC 800356BC 03000224 */  addiu      $v0, $zero, 0x3
     /* 25EC0 800356C0 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)
@@ -56,7 +56,7 @@ glabel func_80035618
     /* 25ED8 800356D8 00000000 */  nop
     /* 25EDC 800356DC 05004010 */  beqz       $v0, .L800356F4
     /* 25EE0 800356E0 1180043C */   lui       $a0, (0x80118800 >> 16)
-    /* 25EE4 800356E4 61DE010C */  jal        func_80077984
+    /* 25EE4 800356E4 61DE010C */  jal        InitWithCachedValueAndStoredBitsBlackBg
     /* 25EE8 800356E8 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25EEC 800356EC 03D60008 */  j          .L8003580C
     /* 25EF0 800356F0 03000224 */   addiu     $v0, $zero, 0x3
@@ -75,10 +75,10 @@ glabel func_80035618
     /* 25F20 80035720 FFF36334 */  ori        $v1, $v1, (0x3FF3FF & 0xFFFF)
     /* 25F24 80035724 25208200 */  or         $a0, $a0, $v0
     /* 25F28 80035728 07708434 */  ori        $a0, $a0, 0x7007
-    /* 25F2C 8003572C 50DE010C */  jal        func_80077940
+    /* 25F2C 8003572C 50DE010C */  jal        StoreCompactedBits
     /* 25F30 80035730 24208300 */   and       $a0, $a0, $v1
     /* 25F34 80035734 1180043C */  lui        $a0, (0x80118800 >> 16)
-    /* 25F38 80035738 61DE010C */  jal        func_80077984
+    /* 25F38 80035738 61DE010C */  jal        InitWithCachedValueAndStoredBitsBlackBg
     /* 25F3C 8003573C 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25F40 80035740 03D60008 */  j          .L8003580C
     /* 25F44 80035744 03000224 */   addiu     $v0, $zero, 0x3
@@ -103,10 +103,10 @@ glabel func_80035618
     /* 25F88 80035788 1080043C */  lui        $a0, %hi(D_80106A50)
     /* 25F8C 8003578C 506A848C */  lw         $a0, %lo(D_80106A50)($a0)
     /* 25F90 80035790 DFF34234 */  ori        $v0, $v0, (0x3EF3DF & 0xFFFF)
-    /* 25F94 80035794 50DE010C */  jal        func_80077940
+    /* 25F94 80035794 50DE010C */  jal        StoreCompactedBits
     /* 25F98 80035798 24208200 */   and       $a0, $a0, $v0
     /* 25F9C 8003579C 1180043C */  lui        $a0, (0x80118800 >> 16)
-    /* 25FA0 800357A0 61DE010C */  jal        func_80077984
+    /* 25FA0 800357A0 61DE010C */  jal        InitWithCachedValueAndStoredBitsBlackBg
     /* 25FA4 800357A4 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25FA8 800357A8 03D60008 */  j          .L8003580C
     /* 25FAC 800357AC 03000224 */   addiu     $v0, $zero, 0x3
@@ -115,10 +115,10 @@ glabel func_80035618
     /* 25FB4 800357B4 1080043C */  lui        $a0, %hi(D_80106A50)
     /* 25FB8 800357B8 506A848C */  lw         $a0, %lo(D_80106A50)($a0)
     /* 25FBC 800357BC FFF34234 */  ori        $v0, $v0, (0x3FF3FF & 0xFFFF)
-    /* 25FC0 800357C0 50DE010C */  jal        func_80077940
+    /* 25FC0 800357C0 50DE010C */  jal        StoreCompactedBits
     /* 25FC4 800357C4 24208200 */   and       $a0, $a0, $v0
     /* 25FC8 800357C8 1180043C */  lui        $a0, (0x80118800 >> 16)
-    /* 25FCC 800357CC A0DE010C */  jal        func_80077A80
+    /* 25FCC 800357CC A0DE010C */  jal        menu_InitSelWithStoredBits
     /* 25FD0 800357D0 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 25FD4 800357D4 03D60008 */  j          .L8003580C
     /* 25FD8 800357D8 0A000224 */   addiu     $v0, $zero, 0xA
@@ -127,10 +127,10 @@ glabel func_80035618
     /* 25FE0 800357E0 1080043C */  lui        $a0, %hi(D_80106A50)
     /* 25FE4 800357E4 506A848C */  lw         $a0, %lo(D_80106A50)($a0)
     /* 25FE8 800357E8 FFF34234 */  ori        $v0, $v0, (0x53FF3FF & 0xFFFF)
-    /* 25FEC 800357EC 50DE010C */  jal        func_80077940
+    /* 25FEC 800357EC 50DE010C */  jal        StoreCompactedBits
     /* 25FF0 800357F0 24208200 */   and       $a0, $a0, $v0
     /* 25FF4 800357F4 1180043C */  lui        $a0, (0x80118800 >> 16)
-    /* 25FF8 800357F8 61DE010C */  jal        func_80077984
+    /* 25FF8 800357F8 61DE010C */  jal        InitWithCachedValueAndStoredBitsBlackBg
     /* 25FFC 800357FC 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 26000 80035800 03D60008 */  j          .L8003580C
     /* 26004 80035804 03000224 */   addiu     $v0, $zero, 0x3

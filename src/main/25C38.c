@@ -47,7 +47,7 @@ void func_80035480(void) {
     }
     D_800A31D8 = 1;
     func_80035438();
-    func_80077820((s32)0x80118800);
+    InitRowMenuBlackBgResetFlow((s32)0x80118800);
     D_800A37B8 = 0;
     D_800A3834 = 9;
     gpu_SetDispMaskOn();
@@ -103,13 +103,13 @@ void func_80035618(s32 arg0) {
     switch (arg0) {
     case 0:
         if (D_800A31DA == 0) {
-            func_800784E4(0x80118800);
+            InitTimedSpriteSequence(0x80118800);
             snd_SerialMixOn();
             cdrom_StartAudioEntry(0);
             D_800A3740 = 4;
             return;
         }
-        func_80077984(0x80118800);
+        InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         D_800A3740 = 3;
         func_800355E8();
         return;
@@ -121,10 +121,10 @@ void func_80035618(s32 arg0) {
 
     case 3:
         if (D_800A31DA == 0) {
-            func_80077A28();
+            menu_ResetFlowBackgroundAndConfirmCursor();
             D_800A3740 = 6;
         } else {
-            func_80077984(0x80118800);
+            InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
             D_800A3740 = 3;
             func_800355E8();
         }
@@ -133,7 +133,7 @@ void func_80035618(s32 arg0) {
 
     case 6:
         if (D_800A31DA != 0) {
-            func_80077984(0x80118800);
+            InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
             D_800A3740 = 3;
             func_800355E8();
             return;
@@ -141,9 +141,9 @@ void func_80035618(s32 arg0) {
 
         temp = comb_Connect();
         if (temp == 1) {
-            func_80077940(
+            StoreCompactedBits(
                 (D_80106A50.unk_00 | D_800A38E4 | 0x7007) & 0x003FF3FF);
-            func_80077984(0x80118800);
+            InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
             D_800A3740 = 3;
             func_800355E8();
             return;
@@ -158,22 +158,22 @@ void func_80035618(s32 arg0) {
         return;
 
     case 1:
-        func_80077940(D_80106A50.unk_00 & 0x003EF3DF);
-        func_80077984(0x80118800);
+        StoreCompactedBits(D_80106A50.unk_00 & 0x003EF3DF);
+        InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         D_800A3740 = 3;
         func_800355E8();
         return;
 
     case 5:
-        func_80077940(D_80106A50.unk_00 & 0x003FF3FF);
-        func_80077A80(0x80118800);
+        StoreCompactedBits(D_80106A50.unk_00 & 0x003FF3FF);
+        menu_InitSelWithStoredBits(0x80118800);
         D_800A3740 = 0xA;
         func_800355E8();
         return;
 
     case 4:
-        func_80077940(D_80106A50.unk_00 & 0x053FF3FF);
-        func_80077984(0x80118800);
+        StoreCompactedBits(D_80106A50.unk_00 & 0x053FF3FF);
+        InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         D_800A3740 = 3;
         func_800355E8();
         return;
@@ -247,7 +247,8 @@ void func_80035828(void) {
         if (D_800A37B8 >= 0xCA9) {
             D_800A3834 = 0xF;
         }
-        ret = func_80077894(g_pad_state.held, g_pad_state.pressed);
+        ret = menu_UpdateRowMenuStoreResult(
+            g_pad_state.held, g_pad_state.pressed);
         if (ret == 0) {
             break;
         }
@@ -265,7 +266,7 @@ void func_80035828(void) {
     case 11:
         if (--D_800A37B8 == 0) {
             cdrom_PauseAndWait();
-            D_80102778.unk_D = func_80077904();
+            D_80102778.unk_D = ResetFlowAndFetchRowTablePair();
             func_80035618((s8)D_80102778.unk_D);
         }
         break;
@@ -276,7 +277,8 @@ void func_80035828(void) {
         }
         break;
     case 2:
-        switch (func_80077B30(g_pad_state.held, g_pad_state.pressed)) {
+        switch (menu_RunFlowStateWithRowBitEdit(
+            g_pad_state.held, g_pad_state.pressed)) {
         case -1:
         case 1:
             cdrom_PauseAndWait();
@@ -304,7 +306,7 @@ void func_80035828(void) {
     case 13:
         func_8006C1FC(0, 0);
         if (func_80038988() != 0) {
-            func_80077B20();
+            SetFlowStateOne();
             func_80035280();
             D_800A3740 = 2;
         }
@@ -312,12 +314,12 @@ void func_80035828(void) {
     case 14:
         func_8006C1FC(0, 0);
         if (func_80038C70() != 0) {
-            func_80077B20();
+            SetFlowStateOne();
             D_800A3740 = 2;
         }
         break;
     case 3:
-        ret = func_800779C8(g_pad_state.held, g_pad_state.pressed);
+        ret = StepThenCloseVab1OnNonzero(g_pad_state.held, g_pad_state.pressed);
         if (ret == 0) {
             break;
         }
@@ -326,7 +328,7 @@ void func_80035828(void) {
         }
         goto check_quit;
     case 4:
-        ret = func_8007855C(g_pad_state.pressed);
+        ret = StepTimedSpriteSequenceWithSkip(g_pad_state.pressed);
         if (ret == 0) {
             break;
         }
@@ -335,7 +337,8 @@ void func_80035828(void) {
         }
         goto check_quit;
     case 5:
-        ret = func_80077A04(g_pad_state.held, g_pad_state.pressed);
+        ret =
+            menu_ResetFlowThenRunUpdate(g_pad_state.held, g_pad_state.pressed);
         if (ret == 0) {
             break;
         }
@@ -353,8 +356,8 @@ void func_80035828(void) {
         }
     load:
         cdrom_PauseAndWait();
-        func_80077940(D_80106A50.unk_00 & 0x3EF3DF);
-        func_80077984(0x80118800);
+        StoreCompactedBits(D_80106A50.unk_00 & 0x3EF3DF);
+        InitWithCachedValueAndStoredBitsBlackBg(0x80118800);
         D_800A3740 = 3;
         func_800355E8();
         break;
@@ -399,7 +402,7 @@ void func_80035DC8(void) {
     func_800415C4(1);
     eff_ClearInitFlag();
     func_8005B72C();
-    func_80077820((s32)0x80118800);
+    InitRowMenuBlackBgResetFlow((s32)0x80118800);
     D_800A3834 = 0x1B;
     gpu_SetDispMaskOn();
 }

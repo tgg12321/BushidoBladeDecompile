@@ -55,7 +55,7 @@ glabel menu_RunSelPhases
     /* 67C38 80077438 00141300 */  sll        $v0, $s3, 16
     /* 67C3C 8007743C A8004014 */  bnez       $v0, .L800776E0
     /* 67C40 80077440 01006226 */   addiu     $v0, $s3, 0x1
-    /* 67C44 80077444 F6D1010C */  jal        func_800747D8
+    /* 67C44 80077444 F6D1010C */  jal        menu_HandleSelPhase0CursorInput
     /* 67C48 80077448 21208002 */   addu      $a0, $s4, $zero
     /* 67C4C 8007744C 21A84000 */  addu       $s5, $v0, $zero
     /* 67C50 80077450 22D1010C */  jal        func_80074488
@@ -66,7 +66,7 @@ glabel menu_RunSelPhases
     /* 67C60 80077460 21208002 */  addu       $a0, $s4, $zero
     /* 67C64 80077464 00841300 */  sll        $s0, $s3, 16
     /* 67C68 80077468 03841000 */  sra        $s0, $s0, 16
-    /* 67C6C 8007746C 9CD5010C */  jal        func_80075670
+    /* 67C6C 8007746C 9CD5010C */  jal        menu_HandleSelOpposedChoice
     /* 67C70 80077470 21280002 */   addu      $a1, $s0, $zero
     /* 67C74 80077474 21204002 */  addu       $a0, $s2, $zero
     /* 67C78 80077478 D405838F */  lw         $v1, %gp_rel(D_800A36A0)($gp)
@@ -76,10 +76,10 @@ glabel menu_RunSelPhases
     /* 67C88 80077488 21280002 */  addu       $a1, $s0, $zero
     /* 67C8C 8007748C FFFFC624 */  addiu      $a2, $a2, -0x1
     /* 67C90 80077490 00340600 */  sll        $a2, $a2, 16
-    /* 67C94 80077494 4BD3010C */  jal        func_80074D2C
+    /* 67C94 80077494 4BD3010C */  jal        menu_DrawSelPhaseSheet
     /* 67C98 80077498 03340600 */   sra       $a2, $a2, 16
     /* 67C9C 8007749C 21204002 */  addu       $a0, $s2, $zero
-    /* 67CA0 800774A0 F6D4010C */  jal        func_800753D8
+    /* 67CA0 800774A0 F6D4010C */  jal        menu_DrawSelOpposedChoice
     /* 67CA4 800774A4 21280002 */   addu      $a1, $s0, $zero
     /* 67CA8 800774A8 B5DD0108 */  j          .L800776D4
     /* 67CAC 800774AC 21204002 */   addu      $a0, $s2, $zero
@@ -105,7 +105,7 @@ glabel menu_RunSelPhases
     /* 67CF8 800774F8 21280002 */  addu       $a1, $s0, $zero
     /* 67CFC 800774FC FFFFC624 */  addiu      $a2, $a2, -0x1
     /* 67D00 80077500 00340600 */  sll        $a2, $a2, 16
-    /* 67D04 80077504 4BD3010C */  jal        func_80074D2C
+    /* 67D04 80077504 4BD3010C */  jal        menu_DrawSelPhaseSheet
     /* 67D08 80077508 03340600 */   sra       $a2, $a2, 16
     /* 67D0C 8007750C 21204002 */  addu       $a0, $s2, $zero
     /* 67D10 80077510 21280002 */  addu       $a1, $s0, $zero
@@ -142,7 +142,7 @@ glabel menu_RunSelPhases
     /* 67D88 80077588 21280002 */  addu       $a1, $s0, $zero
     /* 67D8C 8007758C FFFFC624 */  addiu      $a2, $a2, -0x1
     /* 67D90 80077590 00340600 */  sll        $a2, $a2, 16
-    /* 67D94 80077594 4BD3010C */  jal        func_80074D2C
+    /* 67D94 80077594 4BD3010C */  jal        menu_DrawSelPhaseSheet
     /* 67D98 80077598 03340600 */   sra       $a2, $a2, 16
     /* 67D9C 8007759C 21204002 */  addu       $a0, $s2, $zero
     /* 67DA0 800775A0 21280002 */  addu       $a1, $s0, $zero
@@ -153,7 +153,7 @@ glabel menu_RunSelPhases
     /* 67DB4 800775B4 21380002 */  addu       $a3, $s0, $zero
     /* 67DB8 800775B8 2110D000 */  addu       $v0, $a2, $s0
     /* 67DBC 800775BC 68004590 */  lbu        $a1, 0x68($v0)
-    /* 67DC0 800775C0 DBD8010C */  jal        func_8007636C
+    /* 67DC0 800775C0 DBD8010C */  jal        menu_DrawSelListPicks
     /* 67DC4 800775C4 2130D100 */   addu      $a2, $a2, $s1
     /* 67DC8 800775C8 B5DD0108 */  j          .L800776D4
     /* 67DCC 800775CC 21204002 */   addu      $a0, $s2, $zero
@@ -162,7 +162,7 @@ glabel menu_RunSelPhases
     /* 67DD4 800775D4 00141300 */  sll        $v0, $s3, 16
     /* 67DD8 800775D8 03840200 */  sra        $s0, $v0, 16
     /* 67DDC 800775DC 21280002 */  addu       $a1, $s0, $zero
-    /* 67DE0 800775E0 4BD3010C */  jal        func_80074D2C
+    /* 67DE0 800775E0 4BD3010C */  jal        menu_DrawSelPhaseSheet
     /* 67DE4 800775E4 02000624 */   addiu     $a2, $zero, 0x2
     /* 67DE8 800775E8 21204002 */  addu       $a0, $s2, $zero
     /* 67DEC 800775EC 21280002 */  addu       $a1, $s0, $zero
@@ -177,7 +177,7 @@ glabel menu_RunSelPhases
     /* 67E10 80077610 6A00C624 */  addiu      $a2, $a2, 0x6A
     /* 67E14 80077614 21107000 */  addu       $v0, $v1, $s0
     /* 67E18 80077618 68004590 */  lbu        $a1, 0x68($v0)
-    /* 67E1C 8007761C DBD8010C */  jal        func_8007636C
+    /* 67E1C 8007761C DBD8010C */  jal        menu_DrawSelListPicks
     /* 67E20 80077620 21306600 */   addu      $a2, $v1, $a2
     /* 67E24 80077624 21204002 */  addu       $a0, $s2, $zero
     /* 67E28 80077628 82D3010C */  jal        menu_DrawSelPanel
@@ -203,7 +203,7 @@ glabel menu_RunSelPhases
     /* 67E74 80077674 00841300 */  sll        $s0, $s3, 16
     /* 67E78 80077678 03841000 */  sra        $s0, $s0, 16
     /* 67E7C 8007767C 21280002 */  addu       $a1, $s0, $zero
-    /* 67E80 80077680 4BD3010C */  jal        func_80074D2C
+    /* 67E80 80077680 4BD3010C */  jal        menu_DrawSelPhaseSheet
     /* 67E84 80077684 02000624 */   addiu     $a2, $zero, 0x2
     /* 67E88 80077688 21204002 */  addu       $a0, $s2, $zero
     /* 67E8C 8007768C 21280002 */  addu       $a1, $s0, $zero
@@ -218,7 +218,7 @@ glabel menu_RunSelPhases
     /* 67EB0 800776B0 6A00C624 */  addiu      $a2, $a2, 0x6A
     /* 67EB4 800776B4 21107000 */  addu       $v0, $v1, $s0
     /* 67EB8 800776B8 68004590 */  lbu        $a1, 0x68($v0)
-    /* 67EBC 800776BC DBD8010C */  jal        func_8007636C
+    /* 67EBC 800776BC DBD8010C */  jal        menu_DrawSelListPicks
     /* 67EC0 800776C0 21306600 */   addu      $a2, $v1, $a2
     /* 67EC4 800776C4 5DDB010C */  jal        menu_FadeOutSelAndWriteResult
     /* 67EC8 800776C8 21204002 */   addu      $a0, $s2, $zero

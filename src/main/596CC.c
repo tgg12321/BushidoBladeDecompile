@@ -1,9 +1,10 @@
-/* 48 game functions: the row menu (menu_SetEnabledRows, func_80068F70,
- * func_8006B578, ..., gpu_InitPrimBufferPair). .text 0x80068ECC (ROM 0x596CC).
- * Start boundary: SEAM (owner ruling 2026-10-17; Codex seam #99): no direct
- * call or static crosses the cut; 51268.c's .sbss ends at D_800A34F4 and these
- * functions own D_800A34F8..D_800A352C; .rodata 0x80015988+0x28
- * (func_8006B578's table, D_800159A0) follows 51268.o's. */
+/* 48 game functions: the row menu (menu_SetEnabledRows,
+ * menu_LoadResourcesInitStateSelectFirstEnabledRow, menu_HandleToggleChoices,
+ * ..., gpu_InitPrimBufferPair). .text 0x80068ECC (ROM 0x596CC). Start boundary:
+ * SEAM (owner ruling 2026-10-17; Codex seam #99): no direct call or static
+ * crosses the cut; 51268.c's .sbss ends at D_800A34F4 and these functions own
+ * D_800A34F8..D_800A352C; .rodata 0x80015988+0x28 (menu_HandleToggleChoices's
+ * table, D_800159A0) follows 51268.o's. */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -31,9 +32,10 @@ static s32 D_800A352C;
 extern void AddPrim(void *, void *);
 extern s32 snd_LoadVabPack(Unk8005C2A8Pack *, s16, s32);
 /* Declared unprototyped: the callers below pass an s32 where the definition
- * takes a pointer, and func_80069250 calls func_80069E18 with 2 of its 1 args.
+ * takes a pointer, and gpu_DrawWhiteTileAndSheetsTestPadMask calls
+ * func_80069E18 with 2 of its 1 args.
  */
-s32 func_8006919C();
+s32 reloc_RelocateTwelveListsAndLoadVabPack();
 void func_80069E18();
 extern void gpu_LoadVramBottomStrip();
 
@@ -62,7 +64,8 @@ void menu_SetEnabledRows(s32 arg0) {
 extern s32 D_800A372C;
 extern u8 D_800A32C0[8];
 
-s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
+s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
+    s32 arg0, Unk8009BD24Block *arg1) {
     RECT buf;
     s32 temp_s0;
     s32 var_2;
@@ -75,7 +78,7 @@ s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
     func_80046AA0();
     func_8006E950(2, (Unk8006E950Head *)D_800A3500);
     D_800A372C = D_800A3500;
-    var_2 = func_8006919C(D_800A3500);
+    var_2 = reloc_RelocateTwelveListsAndLoadVabPack(D_800A3500);
     D_800A3500 = var_2;
     v0_e49c = (Unk800A34FCRec *)gpu_InitPrimBufferPair(var_2, D_800A351C);
     v0_e49c->unk_24 = (Unk8006919CRec *)temp_s0;
@@ -169,7 +172,7 @@ s32 func_80068F70(s32 arg0, Unk8009BD24Block *arg1) {
     return 1;
 }
 
-Unk8006E49CRec *func_80069120(s32 a0) {
+Unk8006E49CRec *gpu_GetPrimBufferAndRefreshStrip(s32 a0) {
     Unk8009BD24Block *v0 = D_800A3524;
     Unk800A34FCRec *v1 = D_800A34FC;
     if (v1->unk_30 != v0->unk20_0) {
@@ -181,7 +184,7 @@ Unk8006E49CRec *func_80069120(s32 a0) {
     return &D_800A351C[a0];
 }
 
-s32 func_8006919C(Unk8006919CRec *a0) {
+s32 reloc_RelocateTwelveListsAndLoadVabPack(Unk8006919CRec *a0) {
     s32 i = 0;
     Unk8009B0E0Record ***p = &a0->unk_14;
     do {
@@ -205,12 +208,12 @@ void reloc_RelocateOffsetList(s32 *a0, s32 a1) {
     }
 }
 
-extern void func_8006E390();
+extern void gpu_AdvanceBufferCounterAndBuildDrawContext();
 
-s32 func_80069250(s32 arg0, s32 arg1) {
+s32 gpu_DrawWhiteTileAndSheetsTestPadMask(s32 arg0, s32 arg1) {
     s32 sp10[10];
     D_800A3514 = 0;
-    func_8006E390(sp10, &D_800A3518);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
     func_80069E18(sp10, 0);
     if ((arg1 & 0x400040) != 0) {
         snd_QueueSound(1, 0x7F, 0x7F);
@@ -221,7 +224,8 @@ s32 func_80069250(s32 arg0, s32 arg1) {
 
 extern u32 D_800A32D0[2];
 
-s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
+s32 pad_StepOffsetsGetDirectionEvents(
+    u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
     s32 one;
     s32 sum;
     s32 i;
@@ -283,22 +287,24 @@ s32 func_800692C0(u32 *arg0, s32 arg1, s16 *arg2, s16 *arg3) {
 }
 
 s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
-    extern void func_80069AE4(s32 *, s32, GpuDb *);
-    extern void func_8006A880(u8 *, u16 *, s32);
-    extern void func_80069F80(s32 *, s32);
-    extern void func_8006A1A0(s32 *, s32);
-    /* FAKE: frame layout. func_8006E390 fills words 1..9 (siblings: s32
-     * sp10[10]); the folded `arg1` word sits at word 12 and the
-     * saved row mask at word 14 only to reproduce the target's 0x60 frame
-     * (sp+0x40 / sp+0x48); separate locals give the wrong frame: score 11. */
+    extern void gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(
+        s32 *, s32, GpuDb *);
+    extern void menu_DrawMaskedRowList(u8 *, u16 *, s32);
+    extern void menu_DrawModeBit1Sheets(s32 *, s32);
+    extern void menu_DrawModeBit0Sheets(s32 *, s32);
+    /* FAKE: frame layout. gpu_AdvanceBufferCounterAndBuildDrawContext fills
+     * words 1..9 (siblings: s32 sp10[10]); the folded `arg1` word sits at word
+     * 12 and the saved row mask at word 14 only to reproduce the target's 0x60
+     * frame (sp+0x40 / sp+0x48); separate locals give the wrong frame:
+     * score 11. */
     s32 var_0[15];
     s32 result;
     GpuDb *var_2;
     var_2 = &g_gpu_db[D_800A36AC & 1];
-    func_8006E390(var_0, &D_800A3518);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(var_0, &D_800A3518);
     var_0[12] = (arg1 & 0xFFFF) | ((u32)arg1 >> 16);
-    result =
-        func_800692C0((u32 *)&var_0[12], 0, D_800A34FC->unk_0C, D_800A350C);
+    result = pad_StepOffsetsGetDirectionEvents(
+        (u32 *)&var_0[12], 0, D_800A34FC->unk_0C, D_800A350C);
     switch (result >> 16) {
     case 1:
         do {
@@ -344,11 +350,11 @@ s32 menu_UpdateRowMenu(s32 arg0, s32 arg1) {
             D_8009BC04.unk4 = 0x9F;
         }
     }
-    func_80069AE4(var_0, 0, var_2);
-    func_8006A880(
+    gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(var_0, 0, var_2);
+    menu_DrawMaskedRowList(
         (u8 *)var_0, (u16 *)var_2, D_8009BC04.opt[D_800A34F8 & 0xF].mode);
-    func_80069F80(var_0, D_8009BC04.opt[D_800A34F8 & 0xF].mode);
-    func_8006A1A0(var_0, D_8009BC04.opt[D_800A34F8 & 0xF].mode);
+    menu_DrawModeBit1Sheets(var_0, D_8009BC04.opt[D_800A34F8 & 0xF].mode);
+    menu_DrawModeBit0Sheets(var_0, D_8009BC04.opt[D_800A34F8 & 0xF].mode);
     if (arg1 & 0x40) {
         switch (D_8009BC04.opt[D_800A34F8 & 0xF].state) {
         case 4:
@@ -393,7 +399,7 @@ cancel:
     return -1;
 }
 
-void func_80069898(s32 *arg0, u16 *arg1, s32 arg2) {
+void gpu_AddThreeGreyTilesStackedUp(s32 *arg0, u16 *arg1, s32 arg2) {
     TILE *p = (TILE *)arg0[6];
 
     SetTile(p);
@@ -438,7 +444,7 @@ void func_80069898(s32 *arg0, u16 *arg1, s32 arg2) {
     arg0[6] = (s32)p;
 }
 
-void func_80069A30(void *arg0) {
+void gpu_SetTileRgbFromBlockFlag(void *arg0) {
     TILE *a0 = arg0;
     Unk8009BD24Block *p = func_80077D00();
     s32 v0;
@@ -455,7 +461,7 @@ void func_80069A30(void *arg0) {
     a0->b0 = v0;
 }
 
-void func_80069A8C(void *arg0) {
+void gpu_SetPolyF4RgbFromBlockFlag(void *arg0) {
     POLY_F4 *a0 = arg0;
     Unk8009BD24Block *p = func_80077D00();
     s32 v0;
@@ -471,7 +477,8 @@ void func_80069A8C(void *arg0) {
     a0->b0 = v0;
 }
 
-void func_80069AE4(s32 *arg0, s32 mode, GpuDb *arg2) {
+void gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(
+    s32 *arg0, s32 mode, GpuDb *arg2) {
     TILE *p;
     POLY_F4 *poly;
     Unk8009B0E0Record **qbase;
@@ -483,7 +490,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *arg2) {
 
     if (mode == 2) {
         SetTile(p);
-        func_80069A30(p);
+        gpu_SetTileRgbFromBlockFlag(p);
         p->x0 = 0x4E;
         p->y0 = 0x30;
         p->w = 0xCC;
@@ -492,7 +499,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *arg2) {
         AddPrim(g_gpu_ot_ptr + 0x11, p);
         p++;
         SetTile(p);
-        func_80069A30(p);
+        gpu_SetTileRgbFromBlockFlag(p);
         p->x0 = 0x166;
         p->y0 = 0x30;
         p->w = 0xCC;
@@ -502,7 +509,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *arg2) {
         p++;
     } else if (mode == 1) {
         SetTile(p);
-        func_80069A30(p);
+        gpu_SetTileRgbFromBlockFlag(p);
         p->x0 = 0x3F;
         p->y0 = 0x30;
         p->w = 0x202;
@@ -512,7 +519,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *arg2) {
         p++;
     } else {
         SetTile(p);
-        func_80069A30(p);
+        gpu_SetTileRgbFromBlockFlag(p);
         p->x0 = 0x130;
         p->y0 = 0x3A;
         p->w = 0x126;
@@ -549,7 +556,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *arg2) {
     poly = (POLY_F4 *)arg0[3];
     arg0[7] += 0xC;
     SetPolyF4(poly);
-    func_80069A8C(poly);
+    gpu_SetPolyF4RgbFromBlockFlag(poly);
     poly->x0 = 0;
     poly->y0 = 0xB9;
     poly->x1 = 0x122;
@@ -563,7 +570,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *arg2) {
     poly++;
 
     SetPolyF4(poly);
-    func_80069A8C(poly);
+    gpu_SetPolyF4RgbFromBlockFlag(poly);
     poly->x0 = 0x15E;
     poly->x1 = 0x27F;
     poly->y0 = 0;
@@ -577,7 +584,7 @@ void func_80069AE4(s32 *arg0, s32 mode, GpuDb *arg2) {
     poly++;
 
     SetPolyF4(poly);
-    func_80069A8C(poly);
+    gpu_SetPolyF4RgbFromBlockFlag(poly);
     poly->x0 = 0x122;
     poly->y0 = 0;
     poly->x1 = 0x15E;
@@ -647,13 +654,14 @@ void func_80069E18(s32 arg0) {
 
 /* FAKE: frame layout (oversized live object): the descriptor plus an
  * unwritten tail, so the locals region reaches the target's frame. The plain
- * descriptor scores 12 (func_80069F80) / 14 (func_8006A1A0). */
+ * descriptor scores 12 (menu_DrawModeBit1Sheets) / 14
+ * (menu_DrawModeBit0Sheets). */
 typedef struct {
     Unk8007352CRec fr00;
     s32 tail[4];
 } Unk80069F80Rec;
 
-void func_80069F80(s32 *arg0, s32 arg1) {
+void menu_DrawModeBit1Sheets(s32 *arg0, s32 arg1) {
     /* FAKE: frame layout - `s` is the live descriptor (its address goes to
      * gpu_AddScaledSpriteQuads / gpu_AddSpriteCells); tail[0..3] is unwritten
      * padding that brings the locals to the target's 0x70 frame (the 0x2C
@@ -729,7 +737,7 @@ void func_80069F80(s32 *arg0, s32 arg1) {
     }
 }
 
-void func_8006A1A0(s32 *arg0, s32 arg1) {
+void menu_DrawModeBit0Sheets(s32 *arg0, s32 arg1) {
     /* FAKE: frame layout - `s` is the live descriptor (its address goes to
      * gpu_AddScaledSpriteQuads / gpu_AddSpriteCells); tail[0..3] is unwritten
      * padding that brings the locals to the target's 0x70 frame (the 0x2C
@@ -807,7 +815,7 @@ void func_8006A1A0(s32 *arg0, s32 arg1) {
     }
 }
 
-void func_8006A3CC(s32 *arg0, Unk8007352CRec *arg1) {
+void gpu_DrawList1CEntry4SpriteCellsAtOrigin(s32 *arg0, Unk8007352CRec *arg1) {
     arg1->header = ((Unk8006919CRec *)arg0[1])->unk_1C[4];
     arg1->x = 0;
     arg1->y = 0;
@@ -823,7 +831,8 @@ void func_8006A3CC(s32 *arg0, Unk8007352CRec *arg1) {
     arg0[7] += 0xC;
 }
 
-void func_8006A494(s32 *arg0, Unk8007352CRec *arg1) {
+void menu_DrawList1CEntry9UnitScaleQuadsAtOrigin(
+    s32 *arg0, Unk8007352CRec *arg1) {
     arg1->header = ((Unk8006919CRec *)arg0[1])->unk_1C[9];
     arg1->x = 0;
     arg1->y = 0;
@@ -841,7 +850,8 @@ void func_8006A494(s32 *arg0, Unk8007352CRec *arg1) {
     arg0[7] += 0xC;
 }
 
-void func_8006A564(u8 *arg0, Unk8007352CRec *arg1, s32 arg2) {
+void menu_DrawRowThreeThinTilesAndTwoSheets(
+    u8 *arg0, Unk8007352CRec *arg1, s32 arg2) {
     TILE *tile;
     Unk8009B0E0Record **tbl;
     s32 s4;
@@ -937,12 +947,12 @@ void func_8006A564(u8 *arg0, Unk8007352CRec *arg1, s32 arg2) {
 /* Draws the eight-row list screen from the MOD.BIN resource (ctx+4): the row
  * sheets (cursor row flashing, rows switched on in D_8009BC04.rows_on lit), a
  * counter frame, row 7, the frame icons and a TILE. arg0 = the words
- * func_8006E390 fills (+0x8 POLY_FT4 cursor, +0x14 SPRT cursor,
- * +0x18 TILE cursor, +0x1C DR_MODE cursor, +0x20 DR_AREA cursor,
- * +0x24 DR_OFFSET cursor), accessed as byte offsets like func_8006A564;
- * arg1 = the display environment's clip RECT and ofs[2]; arg2 (passed by
- * menu_UpdateRowMenu) is unused. */
-void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
+ * gpu_AdvanceBufferCounterAndBuildDrawContext fills (+0x8 POLY_FT4 cursor,
+ * +0x14 SPRT cursor, +0x18 TILE cursor, +0x1C DR_MODE cursor, +0x20 DR_AREA
+ * cursor, +0x24 DR_OFFSET cursor), accessed as byte offsets like
+ * menu_DrawRowThreeThinTilesAndTwoSheets; arg1 = the display environment's clip
+ * RECT and ofs[2]; arg2 (passed by menu_UpdateRowMenu) is unused. */
+void menu_DrawMaskedRowList(u8 *arg0, u16 *arg1, s32 arg2) {
     Unk8007352CRec s;
     RECT rect;
     s16 ofs[2];
@@ -1032,7 +1042,7 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
         AddPrim(g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
         *(s32 *)(arg0 + 0x1C) += 0xC;
         s.has_color = 1;
-        func_8006A564(arg0, &s, i);
+        menu_DrawRowThreeThinTilesAndTwoSheets(arg0, &s, i);
     }
 
     var_3 = (*(Unk8006919CRec **)(arg0 + 4))->unk_40;
@@ -1103,8 +1113,8 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
     AddPrim(g_gpu_ot_ptr + s.ot_idx, (DR_MODE *)*(s32 *)(arg0 + 0x1C));
     *(s32 *)(arg0 + 0x1C) += 0xC;
     s.has_color = 1;
-    func_8006A564(arg0, &s, 7);
-    func_8006A494((s32 *)arg0, &s);
+    menu_DrawRowThreeThinTilesAndTwoSheets(arg0, &s, 7);
+    menu_DrawList1CEntry9UnitScaleQuadsAtOrigin((s32 *)arg0, &s);
 
     s.has_color = 0;
     SetDrawMode((DR_MODE *)*(s32 *)(arg0 + 0x1C), 1, 0,
@@ -1167,9 +1177,9 @@ void func_8006A880(u8 *arg0, u16 *arg1, s32 arg2) {
 }
 
 /* One argument: the caller's s32[10] (asm reads a0 only). */
-void func_8006B120(s32 *arg0);
+void menu_DrawToggleChoices(s32 *arg0);
 
-void func_8006B120(s32 *arg0) {
+void menu_DrawToggleChoices(s32 *arg0) {
     Unk8007352CRec s;
     u16 r[4];
     Unk8009B0E0Record **tbl;
@@ -1314,12 +1324,12 @@ void func_8006B120(s32 *arg0) {
     r[0] = 0xE8;
     r[1] = 0x25;
     r[3] = 1;
-    func_80069898(arg0, r, 0x11);
+    gpu_AddThreeGreyTilesStackedUp(arg0, r, 0x11);
 }
 
-/* func_8006B578 — menu/config input dispatch. Its second switch's 6-entry
- * jump table lands at 0x80015988 in this TU's .rodata. */
-s32 func_8006B578(s32 *arg0, u32 *arg1) {
+/* menu_HandleToggleChoices — menu/config input dispatch. Its second switch's
+ * 6-entry jump table lands at 0x80015988 in this TU's .rodata. */
+s32 menu_HandleToggleChoices(s32 *arg0, u32 *arg1) {
     u32 v;
     s32 sp10;
     s32 ret;
@@ -1327,7 +1337,8 @@ s32 func_8006B578(s32 *arg0, u32 *arg1) {
 
     v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
-    ret = func_800692C0((u32 *)&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
+    ret = pad_StepOffsetsGetDirectionEvents(
+        (u32 *)&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
     switch (ret >> 16) {
     case 1:
         if ((D_800A34F8 & 0x1C00) == 0x1400) {
@@ -1417,18 +1428,18 @@ s32 func_8006B578(s32 *arg0, u32 *arg1) {
  * switch tables. */
 const u8 D_800159A0[16] = "warning\n";
 
-s32 func_8006B898(s32 arg0, u32 arg1) {
+s32 menu_UpdateToggleChoices(s32 arg0, u32 arg1) {
     s32 sp10[10];
     GpuDb *t;
     D_800A3514 += 1;
     t = &g_gpu_db[D_800A36AC & 1];
-    func_8006E390(sp10, &D_800A3518);
-    func_80069AE4(sp10, 1, t);
-    func_8006B120(sp10);
-    return func_8006B578(&arg0, &arg1);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
+    gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 1, t);
+    menu_DrawToggleChoices(sp10);
+    return menu_HandleToggleChoices(&arg0, &arg1);
 }
 
-s32 func_8006B92C(s32 *arg0, u32 *arg1) {
+s32 menu_HandleReturningChoices(s32 *arg0, u32 *arg1) {
     u32 v;
     s32 sp10;
     s32 ret;
@@ -1437,7 +1448,8 @@ s32 func_8006B92C(s32 *arg0, u32 *arg1) {
 
     v = *arg1;
     sp10 = (v & 0xFFFF) | (v >> 16);
-    ret = func_800692C0(&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
+    ret = pad_StepOffsetsGetDirectionEvents(
+        &sp10, 0, D_800A34FC->unk_0C, D_800A350C);
     switch (ret >> 16) {
     case 1:
         if ((D_800A34F8 & 0xE000) == 0x4000) {
@@ -1490,7 +1502,7 @@ s32 func_8006B92C(s32 *arg0, u32 *arg1) {
     return var_s0;
 }
 
-void func_8006BB68(s32 *arg0) {
+void menu_DrawReturningChoices(s32 *arg0) {
     Unk8007352CRec s;
     u16 var_1[4];
     s32 i;
@@ -1542,13 +1554,14 @@ void func_8006BB68(s32 *arg0) {
     var_1[0] = 0xE8;
     var_1[1] = 0x25;
     var_1[3] = 1;
-    func_80069898(arg0, var_1, 0x11);
+    gpu_AddThreeGreyTilesStackedUp(arg0, var_1, 0x11);
 }
 
 extern DR_MODE *D_800A36E0;
 extern u8 *D_800A36E4;
 
-void func_8006BD28(s32 arg0, s32 arg1, Unk8007352CRec *arg2, s32 arg3) {
+void gpu_DrawIndexedSheetPair(
+    s32 arg0, s32 arg1, Unk8007352CRec *arg2, s32 arg3) {
     /* sprite-sheet header pointers, two per arg0: the unk_20 list of the
        MOD.BIN root (D_800A34FC->unk_24) */
     Unk8009B0E0Record **var_0;
@@ -1600,7 +1613,7 @@ extern u8 D_800F11E0[];
 extern DR_MODE D_800F1438[];
 extern TILE D_800F1498[];
 
-void func_8006BEC4(s32 arg0, s32 arg1) {
+void gpu_DrawSheetPairCenteredTileWithOptionalSelection(s32 arg0, s32 arg1) {
     Unk8007352CRec sp10;
     s32 var_1;
     Size2s16 *var_2;
@@ -1615,7 +1628,7 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
     D_800A36E4 = D_800F11E0 + var_1 * 0x12C;
     D_800A36E0 = D_800F1438 + var_1 * 4;
     D_800A36DC = D_800F1498 + var_1 * 4;
-    func_8006BD28(arg0, 0, &sp10, 0);
+    gpu_DrawIndexedSheetPair(arg0, 0, &sp10, 0);
     h = 0;
     var_2 = D_800A34FC->unk_24->unk_48;
     var_2 += arg0;
@@ -1623,7 +1636,7 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
         w = arg1 ? 0x1F : 0x28;
         h = 0x10;
         D_800A3900 = (var_2->y + 0x10) >> 1;
-        func_8006BD28(0x12, D_800A3900, &sp10, arg1);
+        gpu_DrawIndexedSheetPair(0x12, D_800A3900, &sp10, arg1);
         x0 = (arg1 & 1) * 0x3A + 0x113;
         for (i = 0; i < 3; i++) {
             SetTile(D_800A36DC);
@@ -1658,27 +1671,29 @@ void func_8006BEC4(s32 arg0, s32 arg1) {
     D_800A36DC++;
 }
 
-extern s32 func_8006B92C();
+extern s32 menu_HandleReturningChoices();
 
-s32 func_8006C168(s32 arg0, s32 arg1) {
+s32 menu_UpdateReturningChoices(s32 arg0, s32 arg1) {
     s32 sp10[22];
     GpuDb *t;
     D_800A3514 += 1;
     t = &g_gpu_db[D_800A36AC & 1];
-    func_8006E390(sp10, &D_800A3518);
-    func_80069AE4(sp10, 1, t);
-    func_8006BB68(sp10);
-    return func_8006B92C(&arg0, &arg1);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
+    gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 1, t);
+    menu_DrawReturningChoices(sp10);
+    return menu_HandleReturningChoices(&arg0, &arg1);
 }
 
-s32 func_8006C1FC(s32 a0, s32 a1) { return func_8006C168(a0, a1); }
+s32 func_8006C1FC(s32 a0, s32 a1) {
+    return menu_UpdateReturningChoices(a0, a1);
+}
 
 #define setXYWH(p, _x0, _y0, _w, _h)                                           \
     (p)->x0 = (_x0), (p)->y0 = (_y0), (p)->x1 = (_x0) + (_w), (p)->y1 = (_y0), \
     (p)->x2 = (_x0), (p)->y2 = (_y0) + (_h), (p)->x3 = (_x0) + (_w),           \
     (p)->y3 = (_y0) + (_h)
 
-void func_8006C21C(s32 *arg0) {
+void menu_DrawRowBitSheetsTilesAndGradientQuads(s32 *arg0) {
     Unk8007352CRec s;
     s32 j;
     /* FAKE: reused: re-stored with the sheet list it already holds at the
@@ -2130,7 +2145,7 @@ s32 menu_DrawRowBitsGetEmptyRowSides(s32 *arg0) {
         var_8[0] = 0xCF;
         var_8[1] = 0x25;
         var_8[3] = 1;
-        func_80069898(arg0, var_8, 0x11);
+        gpu_AddThreeGreyTilesStackedUp(arg0, var_8, 0x11);
     }
     return result;
 }
@@ -2140,7 +2155,7 @@ void menu_ResetRowBitCursors(void) {
     D_800A34FC->unk_28.half[0] = 5;
 }
 
-extern void func_8006C21C(s32 *);
+extern void menu_DrawRowBitSheetsTilesAndGradientQuads(s32 *);
 extern s32 menu_DrawRowBitsGetEmptyRowSides(s32 *);
 
 s32 menu_UpdateRowBitMenu(s32 arg0, s32 arg1) {
@@ -2149,14 +2164,14 @@ s32 menu_UpdateRowBitMenu(s32 arg0, s32 arg1) {
     s32 r;
     D_800A3514 += 1;
     t = &g_gpu_db[D_800A36AC & 1];
-    func_8006E390(sp10, &D_800A3518);
-    func_80069AE4(sp10, 2, t);
-    func_8006C21C(sp10);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
+    gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 2, t);
+    menu_DrawRowBitSheetsTilesAndGradientQuads(sp10);
     r = menu_DrawRowBitsGetEmptyRowSides(sp10);
     return menu_HandleRowBitInput(&arg0, &arg1, (s32)((r << 16) >> 16));
 }
 
-void func_8006D3DC(s32 *arg0) {
+void menu_DrawStoredChoice(s32 *arg0) {
     Unk8007352CRec s;
     u16 var_1[4];
     Unk8009B0E0Record **q;
@@ -2205,17 +2220,18 @@ void func_8006D3DC(s32 *arg0) {
     var_1[1] = 0x25;
     var_1[2] = 0xCB;
     var_1[3] = 1;
-    func_80069898(arg0, var_1, 0x11);
+    gpu_AddThreeGreyTilesStackedUp(arg0, var_1, 0x11);
 }
 
-s32 func_8006D5D4(s32 arg0, u32 arg1) {
+s32 menu_HandleStoredChoice(s32 arg0, u32 arg1) {
     s32 sp10;
     s32 result = 0;
     s32 ret;
     s32 sval;
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
-    ret = func_800692C0(&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
+    ret = pad_StepOffsetsGetDirectionEvents(
+        &sp10, 0, D_800A34FC->unk_0C, D_800A350C);
     if ((ret >> 16) == 1) {
         D_800A3528 = D_800A3528 + 1;
         snd_QueueSound(0, 0x7F, 0x7F);
@@ -2243,18 +2259,19 @@ s32 func_8006D5D4(s32 arg0, u32 arg1) {
     return result;
 }
 
-extern s32 func_8006D5D4(s32, u32);
+extern s32 menu_HandleStoredChoice(s32, u32);
 
-s32 func_8006D74C(s32 arg0, s32 arg1) {
+s32 menu_UpdateStoredChoice(s32 arg0, s32 arg1) {
     s32 sp_buf[22];
     s32 result;
     GpuDb *db;
     D_800A3514 += 1;
     db = &g_gpu_db[D_800A36AC & 1];
-    func_8006E390((s32)&sp_buf[0], (s32)&D_800A3518);
-    func_80069AE4(&sp_buf[0], 1, db);
-    func_8006D3DC(&sp_buf[0]);
-    result = func_8006D5D4(arg0, arg1);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(
+        (s32)&sp_buf[0], (s32)&D_800A3518);
+    gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(&sp_buf[0], 1, db);
+    menu_DrawStoredChoice(&sp_buf[0]);
+    result = menu_HandleStoredChoice(arg0, arg1);
     snd_FlushSoundQueue();
     return result;
 }
@@ -2264,7 +2281,7 @@ s32 menu_ResetConfirmCursor(void) {
     return 1;
 }
 
-void func_8006D808(
+void gpu_DrawIndexedCellsAndDecimalDigitPairs(
     s32 *arg0, s32 *arg1, Unk8006D808Rec *arg2, s32 arg3, s32 arg4) {
     Unk8007352CRec s;
     /* FAKE: oversized digit array (dead-vars-local-array OVERSIZED-LOCALS):
@@ -2376,7 +2393,7 @@ typedef struct {
     s32 tail[2];
 } Unk8006DD94Rec;
 
-void func_8006DD94(s32 *arg0) {
+void menu_DrawConfirmSheetsAndDigitPairs(s32 *arg0) {
     /* FAKE: frame layout - `s` is the live descriptor (its address goes to
      * gpu_AddSpriteCells); tail[0..1] is unwritten padding that brings the
      * locals to the target's 0x78 frame with var_1 at sp+0x50 (an 8-aligned
@@ -2419,13 +2436,14 @@ void func_8006DD94(s32 *arg0) {
         arg0[7] += 0xC;
     }
 
-    func_8006D808(&arg0[5], &arg0[7], &q->unk_00, s.dd94_00.ot_idx, -1);
+    gpu_DrawIndexedCellsAndDecimalDigitPairs(
+        &arg0[5], &arg0[7], &q->unk_00, s.dd94_00.ot_idx, -1);
 
     var_1[2] = 0x96;
     var_1[0] = 0xF5;
     var_1[1] = 0x25;
     var_1[3] = 1;
-    func_80069898(arg0, var_1, 0x11);
+    gpu_AddThreeGreyTilesStackedUp(arg0, var_1, 0x11);
 }
 
 s32 menu_HandleConfirmInput(s32 arg0, u32 arg1) {
@@ -2434,7 +2452,8 @@ s32 menu_HandleConfirmInput(s32 arg0, u32 arg1) {
     s32 result = 0;
 
     sp10 = (arg1 & 0xFFFF) | (arg1 >> 16);
-    ret = func_800692C0(&sp10, 0, D_800A34FC->unk_0C, D_800A350C);
+    ret = pad_StepOffsetsGetDirectionEvents(
+        &sp10, 0, D_800A34FC->unk_0C, D_800A350C);
     if (((ret >> 16) & 0xFF) != 0) {
         D_800A352C += 1;
         snd_QueueSound(0, 0x7F, 0x7F);
@@ -2462,9 +2481,9 @@ s32 menu_UpdateConfirmMenu(s32 arg0, s32 arg1) {
     GpuDb *t;
     D_800A3514 += 1;
     t = &g_gpu_db[D_800A36AC & 1];
-    func_8006E390(sp10, &D_800A3518);
-    func_80069AE4(sp10, 1, t);
-    func_8006DD94(sp10);
+    gpu_AdvanceBufferCounterAndBuildDrawContext(sp10, &D_800A3518);
+    gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads(sp10, 1, t);
+    menu_DrawConfirmSheetsAndDigitPairs(sp10);
     return menu_HandleConfirmInput(arg0, arg1);
 }
 
@@ -2522,13 +2541,13 @@ s32 gpu_EndFullscreenImageDisplay(void) {
     return 1;
 }
 
-Unk8006E49CRec *func_80069120(s32);
+Unk8006E49CRec *gpu_GetPrimBufferAndRefreshStrip(s32);
 
-void func_8006E390(s32 *a0, s32 *a1) {
+void gpu_AdvanceBufferCounterAndBuildDrawContext(s32 *a0, s32 *a1) {
     s32 *s0 = a0;
     Unk8006E49CRec *v0;
     a1[0]++;
-    v0 = func_80069120(a1[0] & 1);
+    v0 = gpu_GetPrimBufferAndRefreshStrip(a1[0] & 1);
     s0[1] = (s32)D_800A34FC->unk_24;
     s0[3] = (s32)v0->unk_04;
     s0[2] = v0->unk_00;

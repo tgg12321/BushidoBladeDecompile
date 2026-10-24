@@ -33,7 +33,7 @@ glabel menu_UpdateSelListPicks
     /* 67154 80076954 0A80073C */  lui        $a3, %hi(D_800A35D0)
     /* 67158 80076958 D035E724 */  addiu      $a3, $a3, %lo(D_800A35D0)
     /* 6715C 8007695C 21386700 */  addu       $a3, $v1, $a3
-    /* 67160 80076960 B0A4010C */  jal        func_800692C0
+    /* 67160 80076960 B0A4010C */  jal        pad_StepOffsetsGetDirectionEvents
     /* 67164 80076964 21304600 */   addu      $a2, $v0, $a2
     /* 67168 80076968 FF004330 */  andi       $v1, $v0, 0xFF
     /* 6716C 8007696C 01000224 */  addiu      $v0, $zero, 0x1

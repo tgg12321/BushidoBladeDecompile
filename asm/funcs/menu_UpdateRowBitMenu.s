@@ -20,13 +20,13 @@ glabel menu_UpdateRowBitMenu
     /* 5DB80 8006D380 480482AF */  sw         $v0, %gp_rel(D_800A3514)($gp)
     /* 5DB84 8006D384 0F80023C */  lui        $v0, %hi(g_gpu_db)
     /* 5DB88 8006D388 38744224 */  addiu      $v0, $v0, %lo(g_gpu_db)
-    /* 5DB8C 8006D38C E4B8010C */  jal        func_8006E390
+    /* 5DB8C 8006D38C E4B8010C */  jal        gpu_AdvanceBufferCounterAndBuildDrawContext
     /* 5DB90 8006D390 21800202 */   addu      $s0, $s0, $v0
     /* 5DB94 8006D394 1000A427 */  addiu      $a0, $sp, 0x10
     /* 5DB98 8006D398 02000524 */  addiu      $a1, $zero, 0x2
-    /* 5DB9C 8006D39C B9A6010C */  jal        func_80069AE4
+    /* 5DB9C 8006D39C B9A6010C */  jal        gpu_DrawModeTilesThreeSheetsAndThreeFlatQuads
     /* 5DBA0 8006D3A0 21300002 */   addu      $a2, $s0, $zero
-    /* 5DBA4 8006D3A4 87B0010C */  jal        func_8006C21C
+    /* 5DBA4 8006D3A4 87B0010C */  jal        menu_DrawRowBitSheetsTilesAndGradientQuads
     /* 5DBA8 8006D3A8 1000A427 */   addiu     $a0, $sp, 0x10
     /* 5DBAC 8006D3AC EFB3010C */  jal        menu_DrawRowBitsGetEmptyRowSides
     /* 5DBB0 8006D3B0 1000A427 */   addiu     $a0, $sp, 0x10

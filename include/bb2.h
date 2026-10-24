@@ -57,7 +57,7 @@ extern u8 D_8009BCE4[20];
 extern Unk8009BCF8Record D_8009BCF8[2][10];
 
 /* Two 2-byte records, {0x01, 0x02} and {0x03, 0x04}, indexed [row][col] by
- * func_800747D8, func_80074488 and menu_InitSelScreen. */
+ * menu_HandleSelPhase0CursorInput, func_80074488 and menu_InitSelScreen. */
 extern u8 D_8009BD20[2][2];
 
 extern u8 *D_800A36A0;
@@ -195,7 +195,7 @@ extern u16 D_8008DF78[27][6];
 extern Tbl8008E194 D_8008E194[];
 
 /* 8 byte pairs ({0,0} {1,0} {2,0} {3,0} {4,1} {5,1} {6,1} {7,0});
- * func_80077904 returns [n][0] and caches [n][1] in D_800A35E0,
+ * ResetFlowAndFetchRowTablePair returns [n][0] and caches [n][1] in D_800A35E0,
  * n = D_8009BD24.unk14_0. */
 extern u8 D_8009BD58[8][2];
 
@@ -980,22 +980,24 @@ extern void func_80061EC0(s32 *);
 extern void eff_SetRotMatrix(s16 *, s32 *, MATRIX *);
 extern void eff_DrawBillboardList(s16 *, s32 *);
 extern void menu_SetEnabledRows(s32);
-extern s32 func_80068F70(s32, Unk8009BD24Block *);
+extern s32 menu_LoadResourcesInitStateSelectFirstEnabledRow(
+    s32, Unk8009BD24Block *);
 extern void reloc_RelocateOffsetList(s32 *, s32);
-extern s32 func_80069250(s32, s32);
-extern s32 func_800692C0(u32 *, s32, s16 *, s16 *);
+extern s32 gpu_DrawWhiteTileAndSheetsTestPadMask(s32, s32);
+extern s32 pad_StepOffsetsGetDirectionEvents(u32 *, s32, s16 *, s16 *);
 extern s32 menu_UpdateRowMenu(s32, s32);
-extern void func_80069898(s32 *, u16 *, s32);
-extern void func_80069A30(void *);
-extern void func_80069A8C(void *);
-extern s32 func_8006B898(s32, u32);
-extern void func_8006BEC4(s32, s32);
+extern void gpu_AddThreeGreyTilesStackedUp(s32 *, u16 *, s32);
+extern void gpu_SetTileRgbFromBlockFlag(void *);
+extern void gpu_SetPolyF4RgbFromBlockFlag(void *);
+extern s32 menu_UpdateToggleChoices(s32, u32);
+extern void gpu_DrawSheetPairCenteredTileWithOptionalSelection(s32, s32);
 extern s32 func_8006C1FC(s32, s32);
 extern void menu_ResetRowBitCursors(void);
 extern s32 menu_UpdateRowBitMenu(s32, s32);
-extern s32 func_8006D74C(s32, s32);
+extern s32 menu_UpdateStoredChoice(s32, s32);
 extern s32 menu_ResetConfirmCursor(void);
-extern void func_8006D808(s32 *, s32 *, Unk8006D808Rec *, s32, s32);
+extern void gpu_DrawIndexedCellsAndDecimalDigitPairs(
+    s32 *, s32 *, Unk8006D808Rec *, s32, s32);
 extern s32 menu_UpdateConfirmMenu(s32, s32);
 extern s32 gpu_BeginFullscreenImageDisplay(void);
 extern s32 gpu_EndFullscreenImageDisplay(void);
@@ -1014,26 +1016,26 @@ extern s32 gpu_AddScaledSpriteQuads(Unk8007352CRec *, s32);
 extern s32 gpu_AddRotatedSpriteQuads();
 extern void func_80074220(Unk8006EACCRec *, s32);
 extern void func_80074488(Unk8006EACCRec *);
-extern s32 func_80077820(s32);
-extern s32 func_80077894(s32, s32);
-extern s32 func_80077904(void);
-extern void func_80077940(s32);
-extern s32 func_80077984(s32);
-extern s32 func_800779C8(s32, s32);
-extern s32 func_80077A04(s32, s32);
+extern s32 InitRowMenuBlackBgResetFlow(s32);
+extern s32 menu_UpdateRowMenuStoreResult(s32, s32);
+extern s32 ResetFlowAndFetchRowTablePair(void);
+extern void StoreCompactedBits(s32);
+extern s32 InitWithCachedValueAndStoredBitsBlackBg(s32);
+extern s32 StepThenCloseVab1OnNonzero(s32, s32);
+extern s32 menu_ResetFlowThenRunUpdate(s32, s32);
 extern s32 func_80077A60(s32, s32);
 extern s32 func_80077AC0(s32, s32);
-extern void func_80077A28(void);
-extern s32 func_80077A80(s32);
+extern void menu_ResetFlowBackgroundAndConfirmCursor(void);
+extern s32 menu_InitSelWithStoredBits(s32);
 extern void func_80077AE0(void);
 extern void func_80077B00(void);
-extern void func_80077B20(void);
-extern s32 func_80077B30(s32, s32);
+extern void SetFlowStateOne(void);
+extern s32 menu_RunFlowStateWithRowBitEdit(s32, s32);
 extern Unk8009BD24Block *func_80077D00(void);
-extern s32 func_800784E4(s32);
-extern s32 func_8007855C(s32);
-extern s32 func_80078824(s32);
-extern s32 func_800788B0(void);
+extern s32 InitTimedSpriteSequence(s32);
+extern s32 StepTimedSpriteSequenceWithSkip(s32);
+extern s32 InitScrollingSpriteDisplay(s32);
+extern s32 StepScrollingSpriteDisplay(void);
 extern void eff_StopCommands(void);
 extern void cdrom_WaitIdle(void);
 extern void *func_8003F1D4(void);

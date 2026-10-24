@@ -286,7 +286,7 @@ void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
     if (arg1 == 0) {
         t = arg0->unk_04.unk_10;
         SetTile(t);
-        func_80069A30(t);
+        gpu_SetTileRgbFromBlockFlag(t);
         t->x0 = 0x3F;
         t->y0 = 0x30;
         t->w = 0x202;
@@ -315,7 +315,7 @@ void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
     q = arg0->unk_04.unk_04;
     arg0->unk_04.unk_14++;
     SetPolyF4(q);
-    func_80069A8C(q);
+    gpu_SetPolyF4RgbFromBlockFlag(q);
     q->x0 = 0;
     q->y0 = 0xB9;
     q->x1 = 0x122;
@@ -329,7 +329,7 @@ void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
     q++;
 
     SetPolyF4(q);
-    func_80069A8C(q);
+    gpu_SetPolyF4RgbFromBlockFlag(q);
     q->x0 = 0x15E;
     q->y0 = 0;
     q->x1 = 0x27F;
@@ -343,7 +343,7 @@ void func_80074220(Unk8006EACCRec *arg0, s32 arg1) {
     q++;
 
     SetPolyF4(q);
-    func_80069A8C(q);
+    gpu_SetPolyF4RgbFromBlockFlag(q);
     q->x0 = 0x122;
     q->y0 = 0;
     q->x1 = 0x15E;
@@ -450,9 +450,9 @@ void func_80074488(Unk8006EACCRec *arg0) {
     var_4[1] = 0x25;
     var_4[3] = 1;
     /* The original passes its own context base here, unadjusted:
-     * func_80069898 reads +0x18 as its TILE cursor, which in this context is
-     * the DR_MODE cursor. */
-    func_80069898((s32 *)arg0, (u16 *)var_4, 2);
+     * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, which in
+     * this context is the DR_MODE cursor. */
+    gpu_AddThreeGreyTilesStackedUp((s32 *)arg0, (u16 *)var_4, 2);
 }
 
 /* Tentative definitions (COMMON) of the small data this file reaches

@@ -525,7 +525,7 @@ glabel menu_UpdateChoiceGrid
     /* 630C0 800728C0 25000224 */  addiu      $v0, $zero, 0x25
     /* 630C4 800728C4 4A00A2A7 */  sh         $v0, 0x4A($sp)
     /* 630C8 800728C8 01000224 */  addiu      $v0, $zero, 0x1
-    /* 630CC 800728CC 26A6010C */  jal        func_80069898
+    /* 630CC 800728CC 26A6010C */  jal        gpu_AddThreeGreyTilesStackedUp
     /* 630D0 800728D0 4E00A2A7 */   sh        $v0, 0x4E($sp)
     /* 630D4 800728D4 0A000224 */  addiu      $v0, $zero, 0xA
     /* 630D8 800728D8 2C00A2AF */  sw         $v0, 0x2C($sp)

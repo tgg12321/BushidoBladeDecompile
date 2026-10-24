@@ -18,7 +18,7 @@ glabel func_80060768
     /* 50FA8 800607A8 3000B4AF */  sw         $s4, 0x30($sp)
     /* 50FAC 800607AC 1800B2AF */  sw         $s2, 0x18($sp)
     /* 50FB0 800607B0 1C00A2AF */  sw         $v0, 0x1C($sp)
-    /* 50FB4 800607B4 02B6010C */  jal        func_8006D808
+    /* 50FB4 800607B4 02B6010C */  jal        gpu_DrawIndexedCellsAndDecimalDigitPairs
     /* 50FB8 800607B8 1000B0AF */   sw        $s0, 0x10($sp)
     /* 50FBC 800607BC 0300022E */  sltiu      $v0, $s0, 0x3
     /* 50FC0 800607C0 37004010 */  beqz       $v0, .L800608A0

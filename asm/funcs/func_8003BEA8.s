@@ -2,7 +2,7 @@ glabel func_8003BEA8
     /* 2C6A8 8003BEA8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 2C6AC 8003BEAC 1000B0AF */  sw         $s0, 0x10($sp)
     /* 2C6B0 8003BEB0 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 2C6B4 8003BEB4 2CE2010C */  jal        func_800788B0
+    /* 2C6B4 8003BEB4 2CE2010C */  jal        StepScrollingSpriteDisplay
     /* 2C6B8 8003BEB8 21800000 */   addu      $s0, $zero, $zero
     /* 2C6BC 8003BEBC 1080033C */  lui        $v1, %hi(g_pad_state + 0xC)
     /* 2C6C0 8003BEC0 9427638C */  lw         $v1, %lo(g_pad_state + 0xC)($v1)

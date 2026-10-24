@@ -82,7 +82,7 @@ glabel menu_UpdateSelGridPicks
     /* 668B4 800760B4 21306600 */  addu       $a2, $v1, $a2
     /* 668B8 800760B8 0A80073C */  lui        $a3, %hi(D_800A35D0)
     /* 668BC 800760BC D035E724 */  addiu      $a3, $a3, %lo(D_800A35D0)
-    /* 668C0 800760C0 B0A4010C */  jal        func_800692C0
+    /* 668C0 800760C0 B0A4010C */  jal        pad_StepOffsetsGetDirectionEvents
     /* 668C4 800760C4 21384700 */   addu      $a3, $v0, $a3
     /* 668C8 800760C8 21984000 */  addu       $s3, $v0, $zero
     /* 668CC 800760CC 00F00234 */  ori        $v0, $zero, 0xF000

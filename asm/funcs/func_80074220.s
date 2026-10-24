@@ -11,7 +11,7 @@ glabel func_80074220
     /* 64A44 80074244 1400908E */  lw         $s0, 0x14($s4)
     /* 64A48 80074248 B4EA010C */  jal        SetTile
     /* 64A4C 8007424C 21200002 */   addu      $a0, $s0, $zero
-    /* 64A50 80074250 8CA6010C */  jal        func_80069A30
+    /* 64A50 80074250 8CA6010C */  jal        gpu_SetTileRgbFromBlockFlag
     /* 64A54 80074254 21200002 */   addu      $a0, $s0, $zero
     /* 64A58 80074258 21200002 */  addu       $a0, $s0, $zero
     /* 64A5C 8007425C 01000524 */  addiu      $a1, $zero, 0x1
@@ -78,7 +78,7 @@ glabel func_80074220
     /* 64B48 80074348 0C004224 */  addiu      $v0, $v0, 0xC
     /* 64B4C 8007434C 82EA010C */  jal        SetPolyF4
     /* 64B50 80074350 180082AE */   sw        $v0, 0x18($s4)
-    /* 64B54 80074354 A3A6010C */  jal        func_80069A8C
+    /* 64B54 80074354 A3A6010C */  jal        gpu_SetPolyF4RgbFromBlockFlag
     /* 64B58 80074358 21200002 */   addu      $a0, $s0, $zero
     /* 64B5C 8007435C 21200002 */  addu       $a0, $s0, $zero
     /* 64B60 80074360 21280000 */  addu       $a1, $zero, $zero
@@ -102,7 +102,7 @@ glabel func_80074220
     /* 64BA8 800743A8 80008424 */   addiu     $a0, $a0, 0x80
     /* 64BAC 800743AC 82EA010C */  jal        SetPolyF4
     /* 64BB0 800743B0 21200002 */   addu      $a0, $s0, $zero
-    /* 64BB4 800743B4 A3A6010C */  jal        func_80069A8C
+    /* 64BB4 800743B4 A3A6010C */  jal        gpu_SetPolyF4RgbFromBlockFlag
     /* 64BB8 800743B8 21200002 */   addu      $a0, $s0, $zero
     /* 64BBC 800743BC 21200002 */  addu       $a0, $s0, $zero
     /* 64BC0 800743C0 21280000 */  addu       $a1, $zero, $zero
@@ -126,7 +126,7 @@ glabel func_80074220
     /* 64C08 80074408 80008424 */   addiu     $a0, $a0, 0x80
     /* 64C0C 8007440C 82EA010C */  jal        SetPolyF4
     /* 64C10 80074410 21200002 */   addu      $a0, $s0, $zero
-    /* 64C14 80074414 A3A6010C */  jal        func_80069A8C
+    /* 64C14 80074414 A3A6010C */  jal        gpu_SetPolyF4RgbFromBlockFlag
     /* 64C18 80074418 21200002 */   addu      $a0, $s0, $zero
     /* 64C1C 8007441C 21200002 */  addu       $a0, $s0, $zero
     /* 64C20 80074420 21280000 */  addu       $a1, $zero, $zero

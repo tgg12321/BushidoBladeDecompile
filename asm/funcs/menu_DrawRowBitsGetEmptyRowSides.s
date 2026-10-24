@@ -210,7 +210,7 @@ glabel menu_DrawRowBitsGetEmptyRowSides
     /* 5DAD4 8006D2D4 25000224 */  addiu      $v0, $zero, 0x25
     /* 5DAD8 8006D2D8 5200A2A7 */  sh         $v0, 0x52($sp)
     /* 5DADC 8006D2DC 01000224 */  addiu      $v0, $zero, 0x1
-    /* 5DAE0 8006D2E0 26A6010C */  jal        func_80069898
+    /* 5DAE0 8006D2E0 26A6010C */  jal        gpu_AddThreeGreyTilesStackedUp
     /* 5DAE4 8006D2E4 5600A2A7 */   sh        $v0, 0x56($sp)
     /* 5DAE8 8006D2E8 00141E00 */  sll        $v0, $fp, 16
     /* 5DAEC 8006D2EC 03140200 */  sra        $v0, $v0, 16

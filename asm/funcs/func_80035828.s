@@ -118,7 +118,7 @@ glabel func_80035828
   .L800359D4:
     /* 261D4 800359D4 1080053C */  lui        $a1, %hi(g_pad_state + 0xC)
     /* 261D8 800359D8 9427A58C */  lw         $a1, %lo(g_pad_state + 0xC)($a1)
-    /* 261DC 800359DC 25DE010C */  jal        func_80077894
+    /* 261DC 800359DC 25DE010C */  jal        menu_UpdateRowMenuStoreResult
     /* 261E0 800359E0 00000000 */   nop
     /* 261E4 800359E4 21184000 */  addu       $v1, $v0, $zero
     /* 261E8 800359E8 EC006010 */  beqz       $v1, .L80035D9C
@@ -160,7 +160,7 @@ glabel func_80035828
     /* 2626C 80035A6C 00000000 */   nop
     /* 26270 80035A70 B0DC000C */  jal        cdrom_PauseAndWait
     /* 26274 80035A74 00000000 */   nop
-    /* 26278 80035A78 41DE010C */  jal        func_80077904
+    /* 26278 80035A78 41DE010C */  jal        ResetFlowAndFetchRowTablePair
     /* 2627C 80035A7C 00000000 */   nop
     /* 26280 80035A80 1080013C */  lui        $at, %hi(D_80102778 + 0xD)
     /* 26284 80035A84 852722A0 */  sb         $v0, %lo(D_80102778 + 0xD)($at)
@@ -190,7 +190,7 @@ glabel func_80035828
     /* 262DC 80035ADC 9027848C */  lw         $a0, %lo(g_pad_state + 0x8)($a0)
     /* 262E0 80035AE0 1080053C */  lui        $a1, %hi(g_pad_state + 0xC)
     /* 262E4 80035AE4 9427A58C */  lw         $a1, %lo(g_pad_state + 0xC)($a1)
-    /* 262E8 80035AE8 CCDE010C */  jal        func_80077B30
+    /* 262E8 80035AE8 CCDE010C */  jal        menu_RunFlowStateWithRowBitEdit
     /* 262EC 80035AEC 00000000 */   nop
     /* 262F0 80035AF0 01004324 */  addiu      $v1, $v0, 0x1
     /* 262F4 80035AF4 0500622C */  sltiu      $v0, $v1, 0x5
@@ -247,7 +247,7 @@ glabel func_80035828
     /* 263AC 80035BAC 00000000 */   nop
     /* 263B0 80035BB0 7A004010 */  beqz       $v0, .L80035D9C
     /* 263B4 80035BB4 00000000 */   nop
-    /* 263B8 80035BB8 C8DE010C */  jal        func_80077B20
+    /* 263B8 80035BB8 C8DE010C */  jal        SetFlowStateOne
     /* 263BC 80035BBC 00000000 */   nop
     /* 263C0 80035BC0 A0D4000C */  jal        func_80035280
     /* 263C4 80035BC4 00000000 */   nop
@@ -261,7 +261,7 @@ glabel func_80035828
     /* 263E0 80035BE0 00000000 */   nop
     /* 263E4 80035BE4 6D004010 */  beqz       $v0, .L80035D9C
     /* 263E8 80035BE8 00000000 */   nop
-    /* 263EC 80035BEC C8DE010C */  jal        func_80077B20
+    /* 263EC 80035BEC C8DE010C */  jal        SetFlowStateOne
     /* 263F0 80035BF0 00000000 */   nop
     /* 263F4 80035BF4 02000224 */  addiu      $v0, $zero, 0x2
   .L80035BF8:
@@ -273,7 +273,7 @@ glabel func_80035828
     /* 26408 80035C08 9027848C */  lw         $a0, %lo(g_pad_state + 0x8)($a0)
     /* 2640C 80035C0C 1080053C */  lui        $a1, %hi(g_pad_state + 0xC)
     /* 26410 80035C10 9427A58C */  lw         $a1, %lo(g_pad_state + 0xC)($a1)
-    /* 26414 80035C14 72DE010C */  jal        func_800779C8
+    /* 26414 80035C14 72DE010C */  jal        StepThenCloseVab1OnNonzero
     /* 26418 80035C18 00000000 */   nop
     /* 2641C 80035C1C 21184000 */  addu       $v1, $v0, $zero
     /* 26420 80035C20 5E006010 */  beqz       $v1, .L80035D9C
@@ -285,7 +285,7 @@ glabel func_80035828
   jlabel .L80035C38
     /* 26438 80035C38 1080043C */  lui        $a0, %hi(g_pad_state + 0xC)
     /* 2643C 80035C3C 9427848C */  lw         $a0, %lo(g_pad_state + 0xC)($a0)
-    /* 26440 80035C40 57E1010C */  jal        func_8007855C
+    /* 26440 80035C40 57E1010C */  jal        StepTimedSpriteSequenceWithSkip
     /* 26444 80035C44 00000000 */   nop
     /* 26448 80035C48 21184000 */  addu       $v1, $v0, $zero
     /* 2644C 80035C4C 53006010 */  beqz       $v1, .L80035D9C
@@ -299,7 +299,7 @@ glabel func_80035828
     /* 26468 80035C68 9027848C */  lw         $a0, %lo(g_pad_state + 0x8)($a0)
     /* 2646C 80035C6C 1080053C */  lui        $a1, %hi(g_pad_state + 0xC)
     /* 26470 80035C70 9427A58C */  lw         $a1, %lo(g_pad_state + 0xC)($a1)
-    /* 26474 80035C74 81DE010C */  jal        func_80077A04
+    /* 26474 80035C74 81DE010C */  jal        menu_ResetFlowThenRunUpdate
     /* 26478 80035C78 00000000 */   nop
     /* 2647C 80035C7C 21184000 */  addu       $v1, $v0, $zero
     /* 26480 80035C80 46006010 */  beqz       $v1, .L80035D9C
@@ -327,10 +327,10 @@ glabel func_80035828
     /* 264D0 80035CD0 1080043C */  lui        $a0, %hi(D_80106A50)
     /* 264D4 80035CD4 506A848C */  lw         $a0, %lo(D_80106A50)($a0)
     /* 264D8 80035CD8 DFF34234 */  ori        $v0, $v0, (0x3EF3DF & 0xFFFF)
-    /* 264DC 80035CDC 50DE010C */  jal        func_80077940
+    /* 264DC 80035CDC 50DE010C */  jal        StoreCompactedBits
     /* 264E0 80035CE0 24208200 */   and       $a0, $a0, $v0
     /* 264E4 80035CE4 1180043C */  lui        $a0, (0x80118800 >> 16)
-    /* 264E8 80035CE8 61DE010C */  jal        func_80077984
+    /* 264E8 80035CE8 61DE010C */  jal        InitWithCachedValueAndStoredBitsBlackBg
     /* 264EC 80035CEC 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
     /* 264F0 80035CF0 03000224 */  addiu      $v0, $zero, 0x3
     /* 264F4 80035CF4 740682A3 */  sb         $v0, %gp_rel(D_800A3740)($gp)

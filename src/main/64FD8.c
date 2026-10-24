@@ -1,7 +1,7 @@
-/* Game functions func_800747D8 .. func_800788B0, the character-select screen
- * among them. .text 0x800747D8 (ROM 0x64FD8). Start boundary: PHASE (site 5).
- * Ends where the PsyQ 4.0 LIBAPI C67 module starts (0x80078948, LIBSCAN, Q106
- * D3). */
+/* Game functions menu_HandleSelPhase0CursorInput .. StepScrollingSpriteDisplay,
+ * the character-select screen among them. .text 0x800747D8 (ROM 0x64FD8). Start
+ * boundary: PHASE (site 5). Ends where the PsyQ 4.0 LIBAPI C67 module starts
+ * (0x80078948, LIBSCAN, Q106 D3). */
 #define INCLUDE_ASM_USE_MACRO_INC 1
 #include "common.h"
 #include "include_asm.h"
@@ -10,10 +10,11 @@
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern void AddPrim(void *, void *);
 
-/* func_800747D8: the duplicated `var_7 = 4;` (duplicated-statement-into-arms)
- * carries its FAKE label inline. */
+/* menu_HandleSelPhase0CursorInput: the duplicated `var_7 = 4;`
+ * (duplicated-statement-into-arms) carries its FAKE label inline. */
 /* Q65: this file's statics (.sbss), in address order. D_800A35D0: one {s16,
- * s16} pair per player, passed to func_800692C0 beside SelWork f40[player]. */
+ * s16} pair per player, passed to pad_StepOffsetsGetDirectionEvents beside
+ * SelWork f40[player]. */
 static s16 D_800A35D0[2][2];
 static Unk8006E49CRec *D_800A35D8;
 static s8 D_800A35DC;
@@ -32,7 +33,7 @@ static Unk8006E49CRec *D_800A360C;
 static Unk80078824Rec *D_800A3610;
 static s32 D_800A3614;
 
-s32 func_800747D8(u32 arg0) {
+s32 menu_HandleSelPhase0CursorInput(u32 arg0) {
     SelWork *base;
     s32 sp10;
     s32 ret;
@@ -46,7 +47,8 @@ s32 func_800747D8(u32 arg0) {
     result = 0;
     if (base->f10.word == 0) {
         sp10 = (arg0 & 0xFFFF) | (arg0 >> 16);
-        ret = func_800692C0((u32 *)&sp10, 0, base->f40[0], D_800A35D0[0]);
+        ret = pad_StepOffsetsGetDirectionEvents(
+            (u32 *)&sp10, 0, base->f40[0], D_800A35D0[0]);
         switch (ret >> 16) {
         case 1:
             SELWORK->f34 = 0;
@@ -190,7 +192,7 @@ void menu_DrawSelRowTiles(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
     arg0->unk_04.unk_10 = p;
 }
 
-void func_80074D2C(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
+void menu_DrawSelPhaseSheet(Unk8006EACCRec *arg0, s32 arg1, s32 arg2) {
     Unk8007352CRec s;
     s32 var_1;
 
@@ -389,7 +391,7 @@ void menu_StepSelPanelSlides(void) {
    table and two layered elements from the 0x2C table, a SetDrawMode prim after
    each group. Player 1 sits one screen-half right; the frame colour breathes
    with rsin of the 5-bit timer at 0x34. */
-void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
+void menu_DrawSelOpposedChoice(Unk8006EACCRec *arg0, s32 arg1) {
     Unk8007352CRec s;
     Unk8009B0E0Record **tbl;
     s16 i;
@@ -460,7 +462,7 @@ void func_800753D8(Unk8006EACCRec *arg0, s32 arg1) {
     } while (i < 2);
 }
 
-void func_80075670(s32 arg0, s32 arg1) {
+void menu_HandleSelOpposedChoice(s32 arg0, s32 arg1) {
     s16 i;
     SelWork *base;
     SelWork *work;
@@ -469,8 +471,9 @@ void func_80075670(s32 arg0, s32 arg1) {
     if (base->f10.word != 0) {
         return;
     }
-    if ((func_800692C0(&arg0, arg1, base->f40[arg1], D_800A35D0[arg1]) >> 16) !=
-        0) {
+    if ((pad_StepOffsetsGetDirectionEvents(
+             &arg0, arg1, base->f40[arg1], D_800A35D0[arg1]) >>
+         16) != 0) {
         SELWORK->f34 = 0;
         SELWORK->f68[arg1] = SELWORK->f68[arg1] + 1;
         SELWORK->f68[arg1] &= 1;
@@ -502,7 +505,8 @@ void func_80075670(s32 arg0, s32 arg1) {
     }
 }
 
-void func_80075830(Unk8006EACCRec *arg0, s32 arg1, s32 arg2, s32 arg3) {
+void menu_DrawSelGridCellOverlay(
+    Unk8006EACCRec *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Unk8007352CRec s;
     s16 var_a1;
     s16 var_a2;
@@ -622,10 +626,10 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
             arg0->unk_04.unk_0C = gpu_AddSpriteCells(&s);
             if (D_8009BCE4[((Unk8009BCF8Record *)D_8009BCF8)[i].unk0] &
                 (4 << arg3)) {
-                func_80075830(arg0, i, arg3, 1);
+                menu_DrawSelGridCellOverlay(arg0, i, arg3, 1);
             }
         } else {
-            func_80075830(arg0, i, arg3, 0);
+            menu_DrawSelGridCellOverlay(arg0, i, arg3, 0);
         }
     }
 
@@ -724,7 +728,8 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
         return;
     }
 
-    result = func_800692C0(&arg0, arg3, SELWORK->f40[arg3], D_800A35D0[arg3]);
+    result = pad_StepOffsetsGetDirectionEvents(
+        &arg0, arg3, SELWORK->f40[arg3], D_800A35D0[arg3]);
     if (arg0 & (0xF000 << (arg3 * 16))) {
         snd_QueueSound(0, 0x7F, 0x7F);
     }
@@ -800,7 +805,8 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     }
 }
 
-void func_8007636C(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
+void menu_DrawSelListPicks(
+    Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     Unk8007352CRec s;
     s32 var_1;
     Unk8009B0E0Record **table;
@@ -920,7 +926,7 @@ void menu_UpdateSelListPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
     if (arg0 & (0xA000 << (arg3 * 16))) {
         snd_QueueSound(0, 0x7F, 0x7F);
     }
-    switch (func_800692C0(
+    switch (pad_StepOffsetsGetDirectionEvents(
                 (u32 *)&arg0, arg3, SELWORK->f40[arg3], D_800A35D0[arg3]) &
             0xFF) {
     case 1:
@@ -1158,7 +1164,7 @@ s32 menu_InitSelScreen(s32 arg0, Unk8009BD24Block *arg1, s32 arg2) {
     return 1;
 }
 
-/* Tail word after func_800747D8's switch table. */
+/* Tail word after menu_HandleSelPhase0CursorInput's switch table. */
 const u32 D_80015A20[1] = {0x00000000};
 
 s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *arg1) {
@@ -1180,34 +1186,34 @@ s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *arg1) {
         switch (SELWORK->f14.half[i]) {
         case 0:
             if (i == 0) {
-                ret = func_800747D8(arg0);
+                ret = menu_HandleSelPhase0CursorInput(arg0);
                 func_80074488(arg1);
             }
             break;
         case 1:
-            func_80075670(arg0, i);
-            func_80074D2C(arg1, i, (s16)(SELWORK->f14.half[i] - 1));
-            func_800753D8(arg1, i);
+            menu_HandleSelOpposedChoice(arg0, i);
+            menu_DrawSelPhaseSheet(arg1, i, (s16)(SELWORK->f14.half[i] - 1));
+            menu_DrawSelOpposedChoice(arg1, i);
             menu_DrawSelPanel(arg1, i);
             break;
         case 2:
             menu_UpdateSelGridPicks(arg0, SELWORK->f68[i], SELWORK->f6A[i], i);
-            func_80074D2C(arg1, i, (s16)(SELWORK->f14.half[i] - 1));
+            menu_DrawSelPhaseSheet(arg1, i, (s16)(SELWORK->f14.half[i] - 1));
             menu_DrawSelRowTiles(arg1, i, 0);
             menu_DrawSelGrid(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
             menu_DrawSelPanel(arg1, i);
             break;
         case 3:
             menu_UpdateSelListPicks(arg0, SELWORK->f68[i], SELWORK->f6A[i], i);
-            func_80074D2C(arg1, i, (s16)(SELWORK->f14.half[i] - 1));
+            menu_DrawSelPhaseSheet(arg1, i, (s16)(SELWORK->f14.half[i] - 1));
             menu_DrawSelRowTiles(arg1, i, 1);
-            func_8007636C(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
+            menu_DrawSelListPicks(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
             menu_DrawSelPanel(arg1, i);
             break;
         case 4:
-            func_80074D2C(arg1, i, 2);
+            menu_DrawSelPhaseSheet(arg1, i, 2);
             menu_DrawSelRowTiles(arg1, i, 1);
-            func_8007636C(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
+            menu_DrawSelListPicks(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
             menu_DrawSelPanel(arg1, i);
             if (arg0 & (0x10 << (i * 16))) {
                 snd_QueueSound(2, 0x7F, 0x7F);
@@ -1215,9 +1221,9 @@ s32 menu_RunSelPhases(s32 arg0, Unk8006EACCRec *arg1) {
             }
             break;
         case 5:
-            func_80074D2C(arg1, i, 2);
+            menu_DrawSelPhaseSheet(arg1, i, 2);
             menu_DrawSelRowTiles(arg1, i, 1);
-            func_8007636C(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
+            menu_DrawSelListPicks(arg1, SELWORK->f68[i], SELWORK->f6A[i], i);
             ret = menu_FadeOutSelAndWriteResult(arg1);
             menu_DrawSelPanel(arg1, i);
             break;
@@ -1249,22 +1255,22 @@ s32 menu_StepSelScreen(s32 arg0, s32 arg1) {
     return menu_RunSelPhases(arg1, &s);
 }
 
-s32 func_80077820(s32 a0) {
-    func_80068F70(a0, &D_8009BD24);
+s32 InitRowMenuBlackBgResetFlow(s32 a0) {
+    menu_LoadResourcesInitStateSelectFirstEnabledRow(a0, &D_8009BD24);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     D_800A35E4 = 0;
     return 1;
 }
 
 s32 func_80077860(void) {
-    if (((s32(*)())func_80069250)() == 1) {
+    if (((s32(*)())gpu_DrawWhiteTileAndSheetsTestPadMask)() == 1) {
         D_800A35E4 = 0;
         return 1;
     }
     return 0;
 }
 
-s32 func_80077894(s32 arg0, s32 arg1) {
+s32 menu_UpdateRowMenuStoreResult(s32 arg0, s32 arg1) {
     s32 ret;
     s32 result;
 
@@ -1280,25 +1286,25 @@ s32 func_80077894(s32 arg0, s32 arg1) {
     return ret;
 }
 
-s32 func_80077904(void) {
+s32 ResetFlowAndFetchRowTablePair(void) {
     D_800A35E4 = 0;
     D_800A35E0 = D_8009BD58[D_8009BD24.unk14_0][1];
     return D_8009BD58[D_8009BD24.unk14_0][0];
 }
 
-void func_80077940(s32 arg0) {
+void StoreCompactedBits(s32 arg0) {
     D_800A35E8 =
         (arg0 & 0x3FF) + ((u32)(arg0 & 0x3FF000) >> 2) +
         ((u32)(arg0 & 0x01000000) >> 4) + ((u32)(arg0 & 0x04000000) >> 5);
 }
 
-s32 func_80077984(s32 a0) {
+s32 InitWithCachedValueAndStoredBitsBlackBg(s32 a0) {
     func_8006E534(a0, D_800A35E0, &D_8009BD24, D_800A35E8);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
 }
 
-s32 func_800779C8(s32 arg0, s32 arg1) {
+s32 StepThenCloseVab1OnNonzero(s32 arg0, s32 arg1) {
     s32 ret = func_8006EACC(arg0, arg1);
     if (ret) {
         snd_CloseVab1();
@@ -1306,12 +1312,12 @@ s32 func_800779C8(s32 arg0, s32 arg1) {
     return ret;
 }
 
-s32 func_80077A04(s32 a0, s32 a1) {
+s32 menu_ResetFlowThenRunUpdate(s32 a0, s32 a1) {
     D_800A35E4 = 0;
-    return func_8006D74C(a0, a1);
+    return menu_UpdateStoredChoice(a0, a1);
 }
 
-void func_80077A28(void) {
+void menu_ResetFlowBackgroundAndConfirmCursor(void) {
     D_800A35E4 = 0;
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     menu_ResetConfirmCursor();
@@ -1323,7 +1329,7 @@ s32 func_80077A60(s32 arg0, s32 arg1) {
 
 s32 menu_InitSelScreen(s32, Unk8009BD24Block *, s32);
 
-s32 func_80077A80(s32 a0) {
+s32 menu_InitSelWithStoredBits(s32 a0) {
     menu_InitSelScreen(a0, &D_8009BD24, D_800A35E8);
     gpu_SetDrawEnvBg(1, 0, 0, 0);
     return 1;
@@ -1335,21 +1341,21 @@ void func_80077AE0(void) { gpu_BeginFullscreenImageDisplay(); }
 
 void func_80077B00(void) { gpu_EndFullscreenImageDisplay(); }
 
-void func_80077B20(void) { D_800A35E4 = 1; }
+void SetFlowStateOne(void) { D_800A35E4 = 1; }
 
 /* ---- merged section (owner ruling Q67: one original file) ---- */
 extern s32 column;
 
 extern s32 rand(void);
 
-s32 func_80077B30(s32 arg0, s32 arg1) {
+s32 menu_RunFlowStateWithRowBitEdit(s32 arg0, s32 arg1) {
     s32 s2;
     s32 result;
 
     switch (D_800A35E4) {
     case 0:
         s2 = 0;
-        result = func_8006B898(arg0, arg1);
+        result = menu_UpdateToggleChoices(arg0, arg1);
         switch (result) {
         case 1:
             s2 = -1;
@@ -1404,7 +1410,7 @@ s32 func_80077B30(s32 arg0, s32 arg1) {
 
 Unk8009BD24Block *func_80077D00(void) { return &D_8009BD24; }
 
-s32 func_80077D10(s32 *a0) {
+s32 reloc_RelocateFiveOffsetListsAndGetWord1(s32 *a0) {
     reloc_RelocateOffsetList(a0, a0[6]);
     reloc_RelocateOffsetList(a0, a0[7]);
     reloc_RelocateOffsetList(a0, a0[8]);
@@ -1413,11 +1419,11 @@ s32 func_80077D10(s32 *a0) {
     return a0[1];
 }
 
-Unk8006E49CRec *func_80077D74(s32 a0) { return &D_800A35F4[a0]; }
+Unk8006E49CRec *gpu_GetTimedSpritePrimBuffer(s32 a0) { return &D_800A35F4[a0]; }
 
 extern RECT D_800A32FC;
 
-void func_80077D94(Unk8006EACCRec *arg0) {
+void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *arg0) {
     Unk8007352CRec s;
     RECT rect;
     s16 *in;
@@ -1586,7 +1592,7 @@ void func_80077D94(Unk8006EACCRec *arg0) {
     }
 }
 
-s32 func_800784E4(s32 arg0) {
+s32 InitTimedSpriteSequence(s32 arg0) {
     Ctx77D94 *s0;
     s32 r;
 
@@ -1595,7 +1601,7 @@ s32 func_800784E4(s32 arg0) {
     D_800A35F4 = (Unk8006E49CRec *)arg0;
     D_800A35F8 = s0;
     func_8006E950(0x32, &s0->unk_00);
-    r = func_80077D10((s32 *)s0);
+    r = reloc_RelocateFiveOffsetListsAndGetWord1((s32 *)s0);
     gpu_InitPrimBufferPair(r, D_800A35F4);
     D_800A35FC = 0;
     D_800A35F0 = 0;
@@ -1603,15 +1609,15 @@ s32 func_800784E4(s32 arg0) {
     return 1;
 }
 
-extern void func_80077D94(Unk8006EACCRec *);
+extern void gpu_DrawAndAdvanceTimedSpriteSequence(Unk8006EACCRec *);
 
-s32 func_8007855C(s32 arg0) {
+s32 StepTimedSpriteSequenceWithSkip(s32 arg0) {
     Unk8006EACCRec s;
     Unk8006E49CRec *p;
     s32 c;
     c = D_800A35FC + 1;
     D_800A35FC = c;
-    p = func_80077D74(c & 1);
+    p = gpu_GetTimedSpritePrimBuffer(c & 1);
     s.unk_04.unk_00 = p->unk_00;
     s.unk_04.unk_08 = p->unk_08;
     s.unk_04.unk_0C = p->unk_10;
@@ -1622,7 +1628,7 @@ s32 func_8007855C(s32 arg0) {
     if (D_800A35F0 > 0 && (arg0 & 0x40)) {
         return 1;
     }
-    func_80077D94(&s);
+    gpu_DrawAndAdvanceTimedSpriteSequence(&s);
     {
         s16 *out = D_800A35F8->out34;
         s32 new_val = D_800A35F0 + 1;
@@ -1632,11 +1638,15 @@ s32 func_8007855C(s32 arg0) {
     }
 }
 
-s32 func_80078628(Unk80078824Rec *a0) { return a0->unk_00.unk_04; }
+s32 GetScrollingSpriteRecordWord1(Unk80078824Rec *a0) {
+    return a0->unk_00.unk_04;
+}
 
-Unk8006E49CRec *func_80078634(s32 a0) { return &D_800A360C[a0]; }
+Unk8006E49CRec *gpu_GetScrollingSpritePrimBuffer(s32 a0) {
+    return &D_800A360C[a0];
+}
 
-void func_80078654(Unk800788B0Rec *arg0) {
+void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *arg0) {
     Unk8007352CRec s;
     Unk8009B0E0Record **var_s0;
     s32 i;
@@ -1684,7 +1694,7 @@ void func_80078654(Unk800788B0Rec *arg0) {
 
 extern s32 D_800A3304;
 
-s32 func_80078824(s32 arg0) {
+s32 InitScrollingSpriteDisplay(s32 arg0) {
     Unk80078824Rec *s0;
 
     ClearOTagR(g_gpu_ot_ptr, 0x1008);
@@ -1692,7 +1702,7 @@ s32 func_80078824(s32 arg0) {
     D_800A360C = (Unk8006E49CRec *)arg0;
     D_800A3610 = s0;
     func_8006E950(0x5F, &s0->unk_00);
-    gpu_InitPrimBufferPair(func_80078628(s0), D_800A360C);
+    gpu_InitPrimBufferPair(GetScrollingSpriteRecordWord1(s0), D_800A360C);
     D_800A3304 = 0;
     D_800A3608 = 0;
     D_800A3614 = 0;
@@ -1700,13 +1710,13 @@ s32 func_80078824(s32 arg0) {
     return 1;
 }
 
-void func_80078654(Unk800788B0Rec *);
+void gpu_DrawScrollingAndDelayedSheets(Unk800788B0Rec *);
 
-s32 func_800788B0(void) {
+s32 StepScrollingSpriteDisplay(void) {
     Unk800788B0Rec buf;
     Unk8006E49CRec *v0;
     D_800A3304++;
-    v0 = func_80078634(D_800A3304 & 1);
+    v0 = gpu_GetScrollingSpritePrimBuffer(D_800A3304 & 1);
     buf.unk_00 = v0->unk_00;
     buf.unk_08 = v0->unk_08;
     buf.unk_0C = v0->unk_10;
@@ -1714,7 +1724,7 @@ s32 func_800788B0(void) {
     buf.unk_14 = v0->unk_14;
     buf.unk_18 = v0->unk_18;
     buf.unk_1C = v0->unk_1C;
-    func_80078654(&buf);
+    gpu_DrawScrollingAndDelayedSheets(&buf);
     D_800A3608++;
     return D_800A3608 >= 0xB40;
 }

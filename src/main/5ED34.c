@@ -772,9 +772,9 @@ void menu_UpdateEntryGrid(Unk8006EACCRec *arg0) {
     var_2[1] = 0x25;
     var_2[3] = 1;
     /* The original passes arg0 (the Unk8006EACCRec) here, unadjusted:
-     * func_80069898 reads +0x18 as its TILE cursor, and arg0's +0x18 is the
-     * DR_MODE cursor unk_04.unk_14. */
-    func_80069898((s32 *)arg0, var_2, 1);
+     * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, and arg0's
+     * +0x18 is the DR_MODE cursor unk_04.unk_14. */
+    gpu_AddThreeGreyTilesStackedUp((s32 *)arg0, var_2, 1);
     menu_UpdateEntryGridCursors(arg0);
     func_8006ECF4(arg0);
     D_800A32E8 = D_800A3560.rec[1].unk1;
@@ -1018,9 +1018,9 @@ void menu_UpdateRow(Unk8006EACCRec *arg0) {
     var_2[1] = 0x25;
     var_2[3] = 1;
     /* The original passes arg0 (the Unk8006EACCRec) here, unadjusted:
-     * func_80069898 reads +0x18 as its TILE cursor, and arg0's +0x18 is the
-     * DR_MODE cursor unk_04.unk_14. */
-    func_80069898((s32 *)arg0, var_2, 1);
+     * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, and arg0's
+     * +0x18 is the DR_MODE cursor unk_04.unk_14. */
+    gpu_AddThreeGreyTilesStackedUp((s32 *)arg0, var_2, 1);
     var_1.header = var_3[0];
     t = var_1.header[5].cells;
     var_1.table = t;
@@ -1622,9 +1622,9 @@ void menu_UpdateChoiceGrid(
     var_1[1] = 0x25;
     var_1[3] = 1;
     /* The original passes arg0 (the Unk8006EACCRec) here, unadjusted:
-     * func_80069898 reads +0x18 as its TILE cursor, and arg0's +0x18 is the
-     * DR_MODE cursor unk_04.unk_14. */
-    func_80069898((s32 *)arg0, var_1, 1);
+     * gpu_AddThreeGreyTilesStackedUp reads +0x18 as its TILE cursor, and arg0's
+     * +0x18 is the DR_MODE cursor unk_04.unk_14. */
+    gpu_AddThreeGreyTilesStackedUp((s32 *)arg0, var_1, 1);
     s.ot_idx = 0xA;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 2; j++) {

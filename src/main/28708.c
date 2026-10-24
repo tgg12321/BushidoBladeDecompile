@@ -550,7 +550,7 @@ s32 func_8003880C(void) {
         s0 = -1;
         break;
     }
-    func_8006BEC4(0, -1);
+    gpu_DrawSheetPairCenteredTileWithOptionalSelection(0, -1);
     if (s0) {
         D_800A3203 = 1;
         D_800A31FC = 0;
@@ -599,7 +599,7 @@ s32 func_800388A8(void) {
         snd_QueueSound(0, 0x7F, 0x7F);
         D_800A3318 = 1;
     }
-    func_8006BEC4(0x13, D_800A3318);
+    gpu_DrawSheetPairCenteredTileWithOptionalSelection(0x13, D_800A3318);
     if (result != 0) {
         D_800A3204 = 1;
     }
@@ -630,7 +630,7 @@ s32 func_80038988(void) {
     v0 = memcard_Update();
 
     if (D_800A333C != 0) {
-        func_8006BEC4(0xA, -1);
+        gpu_DrawSheetPairCenteredTileWithOptionalSelection(0xA, -1);
         goto timer;
     }
 
@@ -688,7 +688,7 @@ s32 func_80038988(void) {
     }
 
     if (var_2 >= 0) {
-        func_8006BEC4(var_2, -1);
+        gpu_DrawSheetPairCenteredTileWithOptionalSelection(var_2, -1);
     }
 
     if (D_800A31FC != 0) {
@@ -798,7 +798,7 @@ s32 func_80038C70(void) {
     v0 = memcard_Update();
 
     if (D_800A3354 != 0) {
-        func_8006BEC4(0xA, -1);
+        gpu_DrawSheetPairCenteredTileWithOptionalSelection(0xA, -1);
         D_800A334C--;
         if (((u8)D_800A334C) == 0 || (g_pad_state.pressed & 0x100010)) {
             snd_QueueSound(2, 0x7F, 0x7F);
@@ -842,9 +842,10 @@ s32 func_80038C70(void) {
     switch (v0) {
     case 0:
         var_3 = 0x11;
-        /* each case that passes D_800A3350 to func_8006BEC4 sets var_1 in
-           its own body (cross-jump merges the stores; one shared store
-           reached by goto: score 13) */
+        /* each case that passes D_800A3350 to
+           gpu_DrawSheetPairCenteredTileWithOptionalSelection sets var_1 in its
+           own body (cross-jump merges the stores; one shared store reached by
+           goto: score 13) */
         var_1 = D_800A3350;
         goto sel_dispatch;
     case 13:
@@ -909,7 +910,7 @@ s32 func_80038C70(void) {
 
 sel_dispatch:
     if (var_3 >= 0) {
-        func_8006BEC4(var_3, var_1);
+        gpu_DrawSheetPairCenteredTileWithOptionalSelection(var_3, var_1);
     }
 
     if (D_800A31FC != 0) {
