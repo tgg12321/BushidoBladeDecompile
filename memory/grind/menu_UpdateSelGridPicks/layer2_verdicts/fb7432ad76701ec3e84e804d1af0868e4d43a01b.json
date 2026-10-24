@@ -1,0 +1,9 @@
+{
+  "decision": "PASS",
+  "function": "menu_UpdateSelGridPicks",
+  "body_hash": "9314310613616091",
+  "summary": "The tail written twice becomes one honest same-TU static inline helper, inlined at both calls (no out-of-line symbol); sandbox 0 at 251/251, 0 FAKEs, names and comments true, nothing past the wall.",
+  "evidence": [],
+  "next_action": "",
+  "hygiene_debt": ["The helper comment says 'pad bit 0x40'; more precisely it is the player's bit 0x40 << player*16. Not false, could be sharper.", "The owner's 2026-10-23 targeting (a repeated computation may become a same-TU static inline helper) is cited from conversation and is not in a landed rules: commit; worth writing into inline-asm-policy.md or a technique rule."]
+}

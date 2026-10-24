@@ -679,6 +679,15 @@ void menu_DrawSelGrid(Unk8006EACCRec *arg0, s32 arg1, s16 *arg2, s32 arg3) {
     arg0->unk_04.unk_14++;
 }
 
+/* the shared tail of menu_UpdateSelGridPicks: the 0x14 placeholder into
+ * the player's current pick slot, sound 4 if the pad bit 0x40 is set */
+static inline void selgrid_StorePlaceholder(s32 pad, s16 *picks, s32 player) {
+    picks[SELWORK->f3C[player]] = 0x14;
+    if (pad & (0x40 << (player * 16))) {
+        snd_QueueSound(4, 0x7F, 0x7F);
+    }
+}
+
 /* Character-select cursor / pick handler, once per player per frame.
  *   arg0 = pad bits, both players packed (player N in bits N*16)
  *   arg1 = select page into D_8009BCF8 (2 rows x 5 columns per page)
@@ -784,19 +793,9 @@ void menu_UpdateSelGridPicks(s32 arg0, s32 arg1, s16 *arg2, s32 arg3) {
                 }
                 return;
             }
-            arg2[SELWORK->f3C[arg3]] = 0x14;
-            if (arg0 & (0x40 << (arg3 * 16))) {
-                snd_QueueSound(4, 0x7F, 0x7F);
-            }
+            selgrid_StorePlaceholder(arg0, arg2, arg3);
         } else {
-            /* FAKE: placeholder tail duplicated into both arms so cse reuses
-             * the work-area address; cross-jump merges the tails back. One
-             * shared tail recomputes the address (duplicated-statement-into-
-             * arms, Q47): score 6 */
-            arg2[SELWORK->f3C[arg3]] = 0x14;
-            if (arg0 & (0x40 << (arg3 * 16))) {
-                snd_QueueSound(4, 0x7F, 0x7F);
-            }
+            selgrid_StorePlaceholder(arg0, arg2, arg3);
         }
     }
 }
