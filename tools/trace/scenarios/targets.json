@@ -69,12 +69,18 @@
       ]
     },
     "weapons": {
-      "open": "the three Group Battle picks' weapons; the full Select Weapon list not read yet",
+      "open": "hidden or unlockable weapons not seen yet",
       "keys": [
+        "weapon:naginata",
+        "weapon:broadsword",
         "weapon:katana",
+        "weapon:nodachi",
         "weapon:long_sword",
-        "weapon:nodachi"
-      ]
+        "weapon:yari"
+      ],
+      "notes": {
+        "weapon:naginata": "the six weapons drawn on the 2P Vs. Mode Select Weapon scroll, left to right, names as the label under the portrait shows them (versus-2p-weapon-tour-1); KANNUKI's cursor stops at Long Sword, GENGORO's reaches Yari"
+      }
     },
     "events": {
       "keys": [
