@@ -98,8 +98,8 @@ assigns to `D_800A3834` itself.
 | 5 | `replay_PlayFrame` (src/main/28708.c:1338) | 0xC, 0x10, 0x1E | rebuilds the fighters from the per-frame records `g_replay_fighter_frames` ([motion.md](motion.md)) |
 | 6 | `func_8003B9D0` (src/main/2B344.c:478) | 7 | loads a script scene ([menus.md](menus.md)) |
 | 7 | `func_8003BCB4` (src/main/2B344.c:550) | 0 | waits, then the next script step |
-| 8 | `func_80035480` (src/main/25C38.c:34) | 9 | resets the scene, requests the link close (`comb_RequestClose`, unless `D_800A31DA` is set), sets up the row menu (`func_80077820`) |
-| 9 | `func_80035828` (src/main/25C38.c:195) | 0, 0xF, 8 | the row-menu flow (`func_80077894`) with CD audio and memory-card calls |
+| 8 | `func_80035480` (src/main/25C38.c:34) | 9 | resets the scene, requests the link close (`comb_RequestClose`, unless `D_800A31DA` is set), sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
+| 9 | `func_80035828` (src/main/25C38.c:195) | 0, 0xF, 8 | the row-menu flow (`menu_UpdateRowMenuStoreResult`) with CD audio and memory-card calls |
 | 10 | `func_8003BE10` (src/main/2B344.c:595) | 0xB | resets the scene, starts CD audio track `(5, 0x20)` |
 | 11 | `func_8003BEA8` (src/main/2B344.c:614) | 0x1A, 8 | waits for Cross, merges unlock bits into `D_80106A50` |
 | 12 | `func_8001EA04` (src/main/9F9C.c:2060) | 0xD | |
@@ -116,7 +116,7 @@ assigns to `D_800A3834` itself.
 | 23 | `func_8003B8E4` (src/main/2B344.c:432) | | on its third frame runs the next script step (`fight_RunCommandStream`) |
 | 24 | `func_8003C958` (src/main/2B344.c:877) | 0x19 | |
 | 25 | `func_8003C9A4` (src/main/2B344.c:886) | 0, 8 | view (`func_80046BF4`) and its own per-frame work |
-| 26 | `func_80035DC8` (src/main/25C38.c:394) | 0x1B | resets the scene, sets up the row menu (`func_80077820`) |
+| 26 | `func_80035DC8` (src/main/25C38.c:394) | 0x1B | resets the scene, sets up the row menu (`InitRowMenuBlackBgResetFlow`) |
 | 27 | `func_80035E38` (src/main/25C38.c:407) | 8 | screen gradient and the memory-card flow `func_80038C70` |
 | 28 | `func_8003CE18` (src/main/2B344.c:990) | 0x1D | view and scene setup |
 | 29 | `func_8003CF84` (src/main/2B344.c:1039) | 0x18 | frame-threshold cues on `D_800A37B8` |

@@ -387,10 +387,11 @@ void menu_StepSelPanelSlides(void) {
     } while (i < 2);
 }
 
-/* Per-player gauge draw: the gauge frame, two fixed sub-elements from the 0x14
+/* Per-player draw of the opposed choice: the 0x2C table's sheet arg1 + 2 at
+   y = f68[arg1] * 90 plus the f40 offset, two fixed sub-elements from the 0x14
    table and two layered elements from the 0x2C table, a SetDrawMode prim after
-   each group. Player 1 sits one screen-half right; the frame colour breathes
-   with rsin of the 5-bit timer at 0x34. */
+   each group. Player 1 sits one screen-half right; the first sheet's colour
+   breathes with rsin of the 5-bit timer at 0x34. */
 void menu_DrawSelOpposedChoice(Unk8006EACCRec *arg0, s32 arg1) {
     Unk8007352CRec s;
     Unk8009B0E0Record **tbl;

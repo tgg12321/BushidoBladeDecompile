@@ -57,11 +57,11 @@ Handlers that the script's modes reach:
   or calls `fight_RunCommandStream` for the next script step.
 - `func_8003BE10` (src/main/2B344.c:595, mode 10) resets the scene state
   (`func_80020CDC`, `func_800415C4`, `eff_ClearInitFlag`, `func_8005B72C`,
-  `func_80078824(0x80118800)`), starts CD audio
+  `InitScrollingSpriteDisplay(0x80118800)`), starts CD audio
   (`cdrom_GetFileIndex(5, 0x20)`), waits for it, sets mode 0xB and turns the
   display on.
 - `func_8003BEA8` (src/main/2B344.c:614, mode 11) waits for Cross (0x40,
-  player 0) or `func_800788B0()`, merges `D_800A37A4` into
+  player 0) or `StepScrollingSpriteDisplay()`, merges `D_800A37A4` into
   `D_80106A50.unk_00` and a per-character bit into `unk_04`, and sets mode
   0x1A when either changed, else 8.
 - `func_8003BFC4` (src/main/2B344.c:651, mode 15) runs the FMV overlay
@@ -76,22 +76,22 @@ Handlers that the script's modes reach:
 
 Cited by function name.
 
-- `func_80068F70` sets up the menu block `D_800A34FC`, clears the row index,
+- `menu_LoadResourcesInitStateSelectFirstEnabledRow` sets up the menu block `D_800A34FC`, clears the row index,
   steps it to the first enabled row, and sets the cursor field to 4 (its
-  caller is `func_80077820`, src/main/64FD8.c:1249).
+  caller is `InitRowMenuBlackBgResetFlow`, src/main/64FD8.c:1258).
 - `D_800A34F8` packs three cursors: bits 0-3 the row index 0..7, which skips
   rows whose bit in `D_8009BC04.rows_on` is clear; bits 10-12 a cursor
   0..5; bits 13-15 a cursor 0..2.
-- `func_800692C0` reads the pad word and returns, in its high half, 1 or 2
+- `pad_StepOffsetsGetDirectionEvents` reads the pad word and returns, in its high half, 1 or 2
   for a step one way or the other.
-- `menu_UpdateRowMenu` (called from `func_80077894`, src/main/64FD8.c:1268) moves
+- `menu_UpdateRowMenu` (called from `menu_UpdateRowMenuStoreResult`, src/main/64FD8.c:1273) moves
   the row index with that result, applies the row's `opt[].mode` to
   `D_800A3524->unk20_3`, and on Cross (with per-player conditions on the
   row's `state`) returns that `state`; Triangle returns -2, otherwise -1.
-- `func_8006B578` steps the bits 10-12 cursor; in positions 0..2 the
+- `menu_HandleToggleChoices` steps the bits 10-12 cursor; in positions 0..2 the
   low-half result toggles `D_800A3524->unk20_0..2`, and Cross advances the
   cursor; positions 3, 4, 5 return 2, 3, 1 on Cross, and Triangle returns 1.
-- `func_8006B92C` steps the bits 13-15 cursor and returns 2, 3 or 1 on Cross
+- `menu_HandleReturningChoices` steps the bits 13-15 cursor and returns 2, 3 or 1 on Cross
   (position 2 also advances the bits 10-12 cursor); Triangle returns 1.
 
 ## The selection screen (src/main/5ED34.c)
@@ -100,7 +100,7 @@ Cited by function name.
   `D_800A354C`, runs `func_8006EC0C`, calls `func_8006F528`
   (src/main/5ED34.c:503) unless the screen mode
   `D_800A3580` is 2 or 3, and calls `D_8009BC1C[D_800A3580]`; it returns
-  `D_800A35A0`. Its caller is `func_800779C8` (src/main/64FD8.c:1297).
+  `D_800A35A0`. Its caller is `StepThenCloseVab1OnNonzero` (src/main/64FD8.c:1307).
 - `func_8006EC0C` (src/main/5ED34.c:249) slides `D_800A3570` by 0x20 a frame:
   states 1 / 3 (low byte of `D_800A3578`) slide in to 0x1E8 and then switch
   `D_800A3580` to `D_800A3584`; states 2 / 4 slide back to 0, playing sound 5

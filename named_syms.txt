@@ -471,7 +471,7 @@
 /*     (596CC.c:71-74), accessed at offsets 0x12/0x10/0xE/ */
 /*     0xC/0x28/0x2A/0x30 */
 /*   - D_800A3514 is a counter (only += 1 or = 0; see its line) */
-/*   - func_8006B92C is a menu input handler: parses pad input, */
+/*   - menu_HandleReturningChoices is a menu input handler: parses pad input, */
 /*     decodes direction (1=down, 2=up), navigates cursor, */
 /*     calls snd_QueueSound for menu sound effects */
 
@@ -592,7 +592,7 @@
 /* === gpu_InitPrimBufferPair result pointer + its argument (2026-05-17) -- 2 highs === */
 /* menu_InitSelScreen saves its arg0 in D_800A35D8, passes it to */
 /* gpu_InitPrimBufferPair and stores the result in D_800A36A0 (64FD8.c:1076-1083), */
-/* the pattern func_80068F70 follows with D_800A351C / D_800A34FC */
+/* the pattern menu_LoadResourcesInitStateSelectFirstEnabledRow follows with D_800A351C / D_800A34FC */
 /* (596CC.c:56-74). */
 /* See each line. */
 
@@ -881,15 +881,15 @@
 /* counter access + delta calculation between calls.  Companions to */
 /* g_vsync_gpu_stat_reg (0x800A1510). */
 
-/* === func_80068F70 state cells (2026-05-17) -- 8 highs === */
-/* From 596CC.c func_80068F70 and the functions it sets up. */
+/* === menu_LoadResourcesInitStateSelectFirstEnabledRow state cells (2026-05-17) -- 8 highs === */
+/* From 596CC.c menu_LoadResourcesInitStateSelectFirstEnabledRow and the functions it sets up. */
 
 /* === Effect slot pools (2026-05-17) -- 4 highs === */
 /* From text1b.c func_8005B43C and get_point_value: 3 parallel slot */
 /* pools cleared together on system shutdown / reset.  Paired with */
 /* already-named g_effect_struct_b (D_800EFC38). */
 
-/* === D_800A32BC countdown + func_80077B30 state (2026-05-17) -- 2 highs === */
+/* === D_800A32BC countdown + menu_RunFlowStateWithRowBitEdit state (2026-05-17) -- 2 highs === */
 
 /* === D_800A3608 frame count + LIBAPI PAD init flag (2026-05-17) -- 2 highs === */
 
@@ -897,10 +897,10 @@
 /* Statics of src/main/64FD8.c (:24-28), the counterpart of the */
 /* D_800A34F8 cluster (0x800A34F8-3528) for a second menu screen. */
 
-/* === func_80078824 work-area state (2026-05-17) -- 4 highs === */
-/* func_80078824 (64FD8.c:1739-1745) stores its work-area argument, */
+/* === InitScrollingSpriteDisplay work-area state (2026-05-17) -- 4 highs === */
+/* InitScrollingSpriteDisplay (64FD8.c:1697-1711) stores its work-area argument, */
 /* passes it to gpu_InitPrimBufferPair and resets these cells; D_800A3608 is */
-/* the frame count func_800788B0 advances. */
+/* the frame count StepScrollingSpriteDisplay advances. */
 
 /* === Char-class / ctype table + toupper/tolower (2026-05-17) -- 3 highs === */
 /* From text1b_b.c func_800798CC and func_800798FC: classic libc-style */
@@ -913,7 +913,7 @@
 /* RENAME 0x8007997C: retired name 'bb2_putchar_stdout' — preserved note: fputc to stdout (fd 1): expands TAB (9) to spaces, converts LF (0xA) to CRLF, tracks column; submits via bios_FileWrite_B(1, &c, 1) */
 
 /* === D_8009BD24 unk17 / unk1D byte triples (2026-05-17) -- 6 highs === */
-/* func_80077B30 (64FD8.c:1375-1414), switching on D_800A35E4: on */
+/* menu_RunFlowStateWithRowBitEdit (64FD8.c:1351-1409), switching on D_800A35E4: on */
 /* entering state 4 it copies unk1D[] into unk17[]; when menu_UpdateRowBitMenu */
 /* returns 1 it copies unk17[] back into unk1D[].  The code that edits */
 /* the bytes works on unk17[] (596CC.c:1939-1941). */
@@ -1009,7 +1009,7 @@
 /* From text1a.c around lines 317, 347, 353-354: fixed-point scale */
 /* factors and dispatch tables for attack/animation. */
 
-/* === func_80077940 packed value, D_8009BD58 byte, D_800A324C cache (2026-05-17) -- 3 highs === */
+/* === StoreCompactedBits packed value, D_8009BD58 byte, D_800A324C cache (2026-05-17) -- 3 highs === */
 
 /* === GPU MoveImage packet buffer + ordering-table slot cache (2026-05-17) -- 3 highs === */
 /* RENAME 0x800905F8: retired name 'D_800905F8' — preserved note: 0xFFFF (func_8003DA8C) or the ordering-table slot of the last DR_MOVE packet func_8003DBE4 inserted; read by gpu_GetLastFogOtIndex */  /* data-wave 2026-10-08: was g_status_up_cached_idx */

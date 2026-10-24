@@ -117,9 +117,9 @@ is `softbody_SolveSprings` (step 4); the reset wave retired that name.
 The two other "rob back" names sit on unrelated code: `func_80035618`
 (src/main/25C38.c:96, once `replay_camera_rob_back_loose2`) is a switch on its
 argument (0..7) that sets the state `D_800A3740` and, by case, calls
-`func_800784E4`, `func_80077984` and `func_80077A80` (each with the buffer
+`InitTimedSpriteSequence`, `InitWithCachedValueAndStoredBitsBlackBg` and `menu_InitSelWithStoredBits` (each with the buffer
 address 0x80118800), `snd_SerialMixOn`, `cdrom_StartAudioEntry`,
-`func_80077A28`, `comb_Connect`, `func_80077940`, `snd_QueueSound` and
+`menu_ResetFlowBackgroundAndConfirmCursor`, `comb_Connect`, `StoreCompactedBits`, `snd_QueueSound` and
 `func_800355E8`;
 `math_RotMatrixYXZ` (src/main/32D04.c:268, once
 `replay_camera_rob_back_loose3`) builds a rotation matrix from three angles.

@@ -9,7 +9,7 @@ no header, uploaded as two rectangles in the VRAM column x = 896..1023.
 ## Loader (`eff_LoadImagesAndSetup`, `src/main/51268.c`)
 
 It reads one BNK into a buffer, picked by `D_8009BD24.unk14_0` (the row
-`func_80077894` stores from the main row menu), and uploads it with
+`menu_UpdateRowMenuStoreResult` stores from the main row menu), and uploads it with
 `LoadImage`:
 
 | `unk14_0` | CD table entry | File           |
