@@ -1,8 +1,8 @@
 # Runtime trace evidence: capture.jsonl
 
-- recorded 2026-10-24 09:12, map `C:\Users\Trenton\Desktop\bb2-worktrees\ln-trace\build\bb2.map`, 135 events in 190.802 s
+- recorded 2026-10-24 09:22, map `C:\Users\Trenton\Desktop\bb2-worktrees\ln-trace\build\bb2.map`, 135 events in 191.811 s
 - scenario: 2P Vs. Kimigaura Coast (versus-2p-kimigaura-moves-5 menus), P2 idle; P1 R2 then CIRCLE / CROSS / SQUARE 1-7 frames later (the R2 move's command window from tools/trace/movegraph.py), one input every 120 frames from 8430, one phase per input; Z2 write watches on move_kind (+0x6A) of D_80101EC8[0] and [1]; Z0 on func_80032854, func_80032064, object_ThrowQueuedKind, object_PickUpNearby, object_SpawnFromFighter, object_UpdatePool (3 per phase); movegraph value reads at the fight start
-- manifest `capture.manifest.json` (SHA1 d94f3347a12883719320c240de7e6416657e878e), capture SHA1 7a4470838d5b80a6f6ee000c56acd16b761de327
+- manifest `capture.manifest.json` (SHA1 33c311b84e77c6fa297c17fcbda9f213ac8e2fee), capture SHA1 07248dcc4352c6498dc9c257a0950bf0c2a92eac
 - canary breakpoint (EXE entry) hit at 0x800836EC in phase boot_intro
 - phases covered: boot_intro (frames 0-5490), t_menu (frames 5490-6050), top_menu (frames 6050-6260), t_char (frames 6260-6550), char_select (frames 6550-6700), weapon_select (frames 6700-7000), t_stage (frames 7000-7175), stage_select (frames 7175-7450), t_load (frames 7450-8230), fight (frames 8230-8430), in_00_r2_circle_3 (frames 8430-8550), in_01_r2_cross_3 (frames 8550-8670), in_02_r2_circle_1 (frames 8670-8790), in_03_r2_cross_5 (frames 8790-8910), in_04_r2_circle_7 (frames 8910-9030), in_05_r2_square_3 (frames 9030-9150), in_06_r2_alone (frames 9150-9270), in_07_r2_circle_3b (frames 9270-9390), in_08_r2_alone_b (frames 9390-9510), in_09_r2_cross_3b (frames 9510-9630); script reached its end
 
@@ -274,6 +274,16 @@ Call sites (ra-8):
 | `D_800A3912` (0x800A3912) | 1 | const | 0x00 |
 | `D_800A3913` (0x800A3913) | 1 | const | 0x00 |
 | `D_800A3914` (0x800A3914) | 1 | const | 0x00 |
+
+## value `D_800A38AE`: 1 reads (at phase starts; no end read, emulator paused by the script)
+
+| phase | frame | pointer | bytes (hex, memory order) |
+|---|---|---|---|
+| fight (start) | 8230 | - | `0000` |
+
+| field | span (bytes to the next symbol) | behaviour | values |
+|---|---|---|---|
+| `D_800A38AE` (0x800A38AE) | 2 | const | 0x0000 |
 
 ## value `0x80120000`: 1 reads (at phase starts; no end read, emulator paused by the script)
 
