@@ -433,4 +433,21 @@ EXE, breakpoints armed at frame 0, every script action run
 When a trace counts as naming evidence, and what a capture must record, is
 `.claude/rules/naming-runtime-evidence.md` (owner ruling Q124).
 
+**Capture store.** Git keeps each capture's small files (manifest, spec, Lua, TSVs, reports);
+bulk output (`capture.jsonl`, PNGs, `*.script.log`, `*.mcd`) lives untracked in the capture
+store, `bb2-captures/` next to the main checkout, keyed by the path under the repo
+(`BB2_CAPTURE_STORE` overrides; from WSL give an absolute path), shared by every worktree.
+Writers offload it after sealing the manifest. Every reader resolves it through
+`tools/trace/store.py`: a local file is used as-is when present (the events index reader skips
+untracked local files); a file taken from the store must match its manifest outputs record
+(SHA1 + byte count) or the read fails. A fresh clone has no store: copy an existing
+`bb2-captures/` next to its main checkout (or point `BB2_CAPTURE_STORE` at a copy) before
+running any trace reader, then `python3 tools/trace/store.py verify` (minutes over `/mnt/c`;
+expect `lost_or_mismatched=0`, which also counts manifests differing from HEAD, so run it on a
+clean tree; legacy never-published records are listed, not lost). `store.py check-commit --rev`
+runs on every replayed commit of a lane land touching `docs/naming/runtime/`: each bulk output
+record (legacy never-published ones and recorded absences excepted) must be in the index or the store with matching SHA1 and size (so a clone without the
+store, or a shallow one, is refused), and bulk added to git after the migration (`dab4c0fc1`)
+is refused.
+
 > **Trimmed 2026-10-01:** stale audits/plans (REMAINING_DATA_CATALOG, LEGACY_RENAMER_AUDIT, LONG_TERM_DX_PROMOTION_FIX, header-type/memory-project/proposals audits, ADDENDUM-APPLY-PLAN, naming-verification-2026-08-18, RODATA_CATALOG/RECORD_SCHEMA, charptr_functions), libscan reports (manifest_report, near/data verifier reports, callee_web, data_candidates) and generated views (suspect-list → `tmp/suspect-list.md` via build_suspect_list.py) resolve at git tag `pre-slim-2026-10-01`.
