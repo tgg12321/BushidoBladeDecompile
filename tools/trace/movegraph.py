@@ -105,6 +105,9 @@ import collections
 import json
 import struct
 import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.trace import store
 
 RAM0, RAMSZ = 0x80000000, 0x200000
 COMMON_SECTIONS = 0x80102760  # g_motion_common_sections
@@ -180,7 +183,7 @@ def load_dump(path: str, phase: str) -> Ram:
     """Main RAM as the value reads at the start of `phase` saw it (bytes no
     read covered are zero; Ram.covered tells)."""
     ram, read, phases = bytearray(RAMSZ), bytearray(RAMSZ), set()
-    with open(path, encoding="utf-8") as f:
+    with open(store.capture_path(path), encoding="utf-8") as f:
         for line in f:
             e = json.loads(line)
             if e.get("ev") != "value" or "hex" not in e or "ptr" in e:
@@ -524,7 +527,7 @@ def modifications(path: str) -> list[str]:
     """The capture's stub and poke records, one line each. gdbtrace writes
     them after a phase's value reads; an "entry" stub precedes every read."""
     out = []
-    with open(path, encoding="utf-8") as f:
+    with open(store.capture_path(path), encoding="utf-8") as f:
         for line in f:
             e = json.loads(line)
             if e.get("ev") not in ("stub", "poke"):

@@ -50,6 +50,10 @@ import subprocess
 import sys
 import zlib
 
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.trace import store
+
 ORACLE_SHA1 = "62efab4f73f992798c43e8c730aa43baa10bb4fa"
 BUTTONS = {"SELECT", "START", "UP", "RIGHT", "DOWN", "LEFT", "L1", "R1",
            "L2", "R2", "TRIANGLE", "CIRCLE", "CROSS", "SQUARE"}
@@ -316,8 +320,10 @@ def check_log(script: dict, out: str) -> list[str]:
     failed actions, screenshots without a PNG. Empty when it ran as
     written."""
     try:
-        with open(companion(out, ".script.log"), encoding="utf-8") as f:
+        with open(store.capture_path(companion(out, ".script.log")), encoding="utf-8") as f:
             log = [line.split() for line in f]
+    except store.StoreUnverified as exc:
+        return [str(exc)]
     except OSError:
         return ["no script log"]
     done = {(int(p[0]), p[1], p[2]) for p in log
@@ -326,9 +332,13 @@ def check_log(script: dict, out: str) -> list[str]:
     for frame, act, arg in planned_actions(script):
         if (frame, act, arg) not in done:
             problems.append(f"not run: frame {frame} {act} {arg}")
-        if act == "shot" and not os.path.isfile(
-                companion(out, f".{arg}.png")):
-            problems.append(f"no PNG for screenshot {arg}")
+        if act == "shot":
+            try:
+                store.capture_path(companion(out, f".{arg}.png"))
+            except store.StoreMissing:
+                problems.append(f"no PNG for screenshot {arg}")
+            except store.StoreError as exc:
+                problems.append(str(exc))
     if (0, "phase", first_phase(script)) not in done:
         problems.append("the script never loaded")
     return problems
@@ -388,8 +398,11 @@ def convert_shots(out: str) -> list[str]:
     """Turn the Lua's raw screenshots into PNGs (raw files removed)."""
     done = []
     try:
-        with open(companion(out, ".script.log"), encoding="utf-8") as f:
+        with open(store.capture_path(companion(out, ".script.log")), encoding="utf-8") as f:
             log = f.read().splitlines()
+    except store.StoreUnverified as exc:
+        print(store.problem(exc, companion(out, ".script.log")), file=sys.stderr)
+        return done
     except OSError:
         return done
     for line in log:

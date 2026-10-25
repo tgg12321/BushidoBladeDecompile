@@ -86,7 +86,7 @@ def render(runtime=None):
             if manifest.get("q124_complete") is not True:
                 continue
             relative = path.parent.relative_to(runtime)
-            raw = blobs[path.with_name("capture.jsonl")]
+            raw = events.capture_bytes(blobs, path, manifest)
             records = [json.loads(line) for line in raw.decode("utf-8").splitlines()]
             for event in records:
                 if not isinstance(event, dict) or not isinstance(event.get("ev"), str):

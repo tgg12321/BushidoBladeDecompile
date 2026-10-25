@@ -26,6 +26,9 @@ from pathlib import Path
 import struct
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from tools.trace import store
+
 GRID = 0x800A33F0
 HEADER = ["cx", "cz", "x0", "z0", "face", "tag", "points", "nx", "ny", "nz",
           "d"]
@@ -33,7 +36,7 @@ HEADER = ["cx", "cz", "x0", "z0", "face", "tag", "points", "nx", "ny", "nz",
 
 def grid_bytes(capture_dir):
     """The first successful pointer read of the grid base in the capture."""
-    with open(Path(capture_dir) / "capture.jsonl", encoding="utf-8") as f:
+    with store.open_capture_file(capture_dir, "capture.jsonl") as f:
         for line in f:
             e = json.loads(line)
             if (e.get("ev") == "value" and "hex" in e and "ptr" in e

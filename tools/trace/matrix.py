@@ -49,6 +49,8 @@ import re
 import sys
 
 from scenarios import scen
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.trace import store
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -121,7 +123,8 @@ def load_capture(path):
     hashes = {}
 
     def read(name):
-        data = (path / name).read_bytes()
+        source = store.resolve(path, name, manifest) if store.is_bulk(name) else path / name
+        data = source.read_bytes()
         hashes[name] = hashlib.sha1(data).hexdigest()
         return data.decode("utf-8")
 

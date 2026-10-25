@@ -37,6 +37,7 @@ import subprocess
 import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO_ROOT))
 HEADER = ["target", "kind", "site_function", "phase", "site", "attrib",
           "store_offset", "store_width", "count", "values", "values_omitted",
           "captures", "inconclusive", "reason"]
@@ -364,6 +365,15 @@ def index_inputs(runtime):
     return blobs
 
 
+def capture_bytes(blobs, manifest_path, manifest):
+    """Keep indexed capture bytes when present; otherwise read the store."""
+    from tools.trace import store
+    path = manifest_path.with_name("capture.jsonl")
+    if path in blobs:
+        return blobs[path]
+    return store.resolve(path.parent, path.name, manifest, allow_local=False).read_bytes()
+
+
 def render(runtime=None):
     runtime = Path(runtime) if runtime is not None else REPO_ROOT / "docs/naming/runtime"
     blobs = index_inputs(runtime)
@@ -379,7 +389,7 @@ def render(runtime=None):
             manifest = json.loads(blobs[manifest_path])
             if manifest.get("q124_complete") is not True:
                 continue
-            raw = blobs[manifest_path.with_name("capture.jsonl")]
+            raw = capture_bytes(blobs, manifest_path, manifest)
             digest = hashlib.sha1(raw).hexdigest()
             events = []
             for line, text in enumerate(raw.decode("utf-8").splitlines(), 1):

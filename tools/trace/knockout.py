@@ -23,6 +23,8 @@ import sys
 
 import gdbtrace
 import runkit
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.trace import store
 from scenarios import scen
 
 REPO = Path(__file__).resolve().parents[2]
@@ -89,8 +91,11 @@ def run_capture(directory, spec, passthrough):
 def capture_state(directory, func):
     man = read_json(directory / 'capture.manifest.json')
     result = man.get('result', {})
-    events = [json.loads(x) for x in
-              (directory / 'capture.jsonl').read_text(encoding='utf-8').splitlines()]
+    try:
+        events = [json.loads(x) for x in
+                  store.resolve(directory, 'capture.jsonl', man).read_text(encoding='utf-8').splitlines()]
+    except store.StoreError as exc:
+        return False, False, [store.problem(exc, directory / 'capture.jsonl')]
     stubs = [s for s in result.get('stubs', []) if s.get('at') == func]
     called = bool(stubs) and any(e.get('ev') == 'hit' and e.get('stub_call')
                                 and e.get('addr') == stubs[0]['addr']
@@ -127,7 +132,13 @@ def summarize(out, funcs, returns, frames, scenario, codes, baseline_problem=Non
             if codes[func] != 0:
                 reasons.append(f'run exit {codes[func]}')
             script = read_json(other / 'spec.json')['script']
-            live = other / 'capture.knockout.live.png'
+            try:
+                live = store.resolve(other, 'capture.knockout.live.png')
+            except store.StoreMissing:
+                live = other / 'capture.knockout.live.png'
+            except store.StoreUnverified as exc:
+                reasons.append(store.problem(exc, other / 'capture.knockout.live.png'))
+                live = other / 'capture.knockout.live.png'
             if not live.is_file() or script['end_frame'] <= max(frames):
                 reasons.append('no later liveness screenshot/end_frame')
             # compare prints to a buffer so it creates no unrecorded diff PNGs.
@@ -155,7 +166,8 @@ def summarize(out, funcs, returns, frames, scenario, codes, baseline_problem=Non
             notes += [text]
         except (OSError, ValueError, KeyError) as exc:
             called, leak, alive, status = False, False, False, 'not_alive'
-            reason = f'incomplete capture: {exc}'
+            detail = store.problem(exc, other) if isinstance(exc, store.StoreError) else str(exc)
+            reason = f'incomplete capture: {detail}'
             for directory in (base, other):
                 if not (directory / 'capture.manifest.json').is_file():
                     reason += f'; no capture manifest: {directory.name}'
@@ -169,8 +181,15 @@ def summarize(out, funcs, returns, frames, scenario, codes, baseline_problem=Non
                        baseline_png=a.relative_to(out).as_posix(),
                        stub_png=b.relative_to(out).as_posix())
             for key, path in [('baseline_sha1', a), ('stub_sha1', b)]:
-                row[key] = runkit.sha1_file(str(path)) if path.is_file() else ''
-            if status == 'ok':
+                try:
+                    row[key] = runkit.sha1_file(str(store.capture_path(path)))
+                except store.StoreMissing:
+                    row[key] = ''
+                except store.StoreError as exc:
+                    row[key] = ''
+                    row.update(status='inconclusive' if row['status'] == 'ok' else row['status'],
+                               reason=f"{row['reason']}; {store.problem(exc, path)}")
+            if row['status'] == 'ok':
                 try:
                     res, err = gdbtrace.diff_shot(str(a), str(b), None)
                 except (OSError, ValueError) as exc:
@@ -266,10 +285,23 @@ def check(out):
     def recorded_absence(path, allowed):
         if not allowed:
             errors.append(f'absence not permitted by records: {path}')
-        if path.exists():
+        try:
+            present = store.capture_path(path).exists() if store.is_bulk(path.name) else path.exists()
+        except store.StoreMissing:
+            present = False
+        except store.StoreError as exc:
+            errors.append(str(exc))
+            present = True
+        if present:
             errors.append(f'recorded missing but present: {path}')
 
     def verify(path, sha):
+        if store.is_bulk(path.name):
+            try:
+                path = store.capture_path(path)
+            except (store.StoreMissing, ValueError) as exc:
+                errors.append(str(exc))
+                return
         if not path.is_file() or runkit.sha1_file(str(path)) != sha:
             errors.append(f'hash mismatch/missing: {path}')
 

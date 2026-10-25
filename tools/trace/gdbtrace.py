@@ -110,10 +110,13 @@ import shutil
 import socket
 import subprocess
 import sys
+from pathlib import Path
 import time
 
 import pool
 import runkit
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.trace import store
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -1818,7 +1821,7 @@ def report(args) -> int:
     pokes = []
     stub_calls = collections.defaultdict(list)
     hm_hits = collections.defaultdict(collections.Counter)
-    with open(args.trace, encoding="utf-8") as f:
+    with open(store.capture_path(args.trace), encoding="utf-8") as f:
         for line in f:
             rec = json.loads(line)
             if rec["ev"] == "hit" and rec.get("stub_call"):
@@ -1863,7 +1866,7 @@ def report(args) -> int:
     if os.path.isfile(man):
         w.append(f"- manifest `{os.path.basename(man)}` "
                  f"(SHA1 {runkit.sha1_file(man)}), capture SHA1 "
-                 f"{runkit.sha1_file(args.trace)}")
+                 f"{runkit.sha1_file(str(store.capture_path(args.trace)))}")
     armed = next((p["armed_frame"] for p in phases if "armed_frame" in p),
                  None)
     if phases and armed != 0:
@@ -2069,7 +2072,7 @@ def report(args) -> int:
 def read_png(path: str):
     """(width, height, rgb) of a PNG written by runkit.png (8-bit RGB,
     filter 0 on every row)."""
-    with open(path, "rb") as f:
+    with open(store.capture_path(path), "rb") as f:
         data = f.read()
     if data[:8] != b"\x89PNG\r\n\x1a\n":
         raise ValueError(f"{path}: not a PNG")
@@ -2173,11 +2176,14 @@ def compare(args) -> int:
     if not sb.get("stubs") and not sb.get("pokes"):
         problems.append("the second run has no stubs or pokes")
     calls = collections.defaultdict(list)  # stub -> phases it was called in
-    with open(args.other, encoding="utf-8") as f:
-        for line in f:
-            rec = json.loads(line)
-            if rec.get("ev") == "hit" and rec.get("stub_call"):
-                calls[rec["addr"]].append(rec.get("phase"))
+    try:
+        with open(store.capture_path(args.other, mb), encoding="utf-8") as f:
+            for line in f:
+                rec = json.loads(line)
+                if rec.get("ev") == "hit" and rec.get("stub_call"):
+                    calls[rec["addr"]].append(rec.get("phase"))
+    except store.StoreError as exc:
+        problems.append(store.problem(exc, args.other))
     for st in mb.get("result", {}).get("stubs") or []:
         if not calls.get(st["addr"]):
             problems.append(f"stub {st['at']} was never called while "
@@ -2191,7 +2197,18 @@ def compare(args) -> int:
         # The outputs on disk are the ones the manifest recorded.
         d = os.path.dirname(os.path.abspath(cap))
         for rec in m.get("outputs", []):
+            if not isinstance(rec, dict) or not isinstance(rec.get("path"), str):
+                problems.append(f"{label} has an invalid output record")
+                continue
             p = os.path.join(d, os.path.basename(rec["path"]))
+            if store.is_bulk(os.path.basename(p)):
+                try:
+                    p = str(store.capture_path(p, m))
+                except store.StoreError as exc:
+                    problems.append(f"{label} output {os.path.basename(p)} "
+                                    "differs from its manifest")
+                    problems.append(store.problem(exc, p))
+                    continue
             if not os.path.isfile(p) or runkit.sha1_file(p) != rec.get("sha1"):
                 problems.append(f"{label} output {os.path.basename(p)} "
                                 "differs from its manifest")
@@ -2210,7 +2227,7 @@ def compare(args) -> int:
         try:
             shown = os.path.relpath(p, base_dir)
         except ValueError:  # another drive
-            shown = p
+            shown = os.path.basename(p)
         w.append(f"- {label}: `{shown}` (SHA1 "
                  f"{runkit.sha1_file(p)}), outcome {r.get('outcome')}, script "
                  f"ended {r.get('script_ended')}, q124_complete "
@@ -2240,8 +2257,16 @@ def compare(args) -> int:
     for sh in (sa.get("script") or {}).get("screenshots", []):
         name = sh["name"]
         fa, fb = f"{stem_a}.{name}.png", f"{stem_b}.{name}.png"
-        if not (os.path.isfile(fa) and os.path.isfile(fb)):
+        try:
+            store.capture_path(fa, ma)
+            store.capture_path(fb, mb)
+        except store.StoreMissing:
             w.append(f"| {name} (frame {sh['frame']}) | missing | - |")
+            continue
+        except store.StoreError as exc:
+            diagnostic = store.problem(exc, f"capture.{name}.png")
+            w.append(f"| {name} (frame {sh['frame']}) | unavailable: {diagnostic} | - |")
+            problems.append(diagnostic)
             continue
         out_png = (runkit.companion(args.out[:-3] if args.out.endswith(".md")
                                     else args.out, f".{name}.diff.png")
@@ -2268,6 +2293,9 @@ def compare(args) -> int:
               "reached the script's end). Everything after it went in is a "
               "modified game: the differences show what the game does with "
               "the poked value, not what an unmodified run reaches."]
+    if problems:
+        w = ["- NOT COMPARABLE: " + "; ".join(problems)
+             if line == "- same inputs and script" else line for line in w]
     text = "\n".join(w) + "\n"
     if args.out:
         with open(args.out, "w", encoding="utf-8", newline="\n") as f:
