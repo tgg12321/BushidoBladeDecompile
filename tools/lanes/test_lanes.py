@@ -35,7 +35,7 @@ CFG = {
     "regenerate": [{"path": "census.csv", "cmd": "python gen_census.py", "subject": "docs: census refresh"}],
     "gates": {"naming": ["python gate.py"], "foundation": ["python gate.py"], "docs": []},
     "docs_only_paths": ["docs/"],
-    "inert_paths": ["docs/", "memory/", ".claude/"],
+    "inert_paths": ["docs/", "memory/", ".claude/", "tools/trace/", "tools/lanes/"],
     "quick_gates": ["python -c \"print('quick-gate')\""],
 }
 
@@ -900,6 +900,22 @@ class LaneTest(unittest.TestCase):
         self.assertTrue((self.main / "src" / "b.c").exists() and (self.main / "src" / "c.c").exists())
 
     # ---- cheap re-check when main moved only in disjoint files
+    def test_tooling_inert_paths(self):
+        cfg = json.loads((Path(__file__).parent / "lanes.json").read_text(encoding="utf-8"))
+        for path in ("tools/trace/scan/events.py", "tools/lanes/lanes.py"):
+            with self.subTest(path=path):
+                def full(lane, moved):
+                    return lanes.needs_full_gates(lane, moved, cfg["inert_paths"],
+                                                 cfg["docs_only_paths"])[0]
+                self.assertFalse(full([path], ["docs/new.md"]))
+                self.assertFalse(full(["src/main/a.c"], [path]))
+                self.assertFalse(full(["tools/trace/a.py"], ["tools/lanes/b.py"]))
+                for build in ("tools/other.py", "engine/cli.py"):
+                    self.assertTrue(full(["src/main/a.c"], [path, build]))
+                    self.assertTrue(full([path, build], ["src/main/b.c"]))
+                self.assertTrue(full([path], [path]))  # overlap still requires full gates
+                self.assertTrue(full([path], ["src/main/b.c"]))  # inert is not docs-only
+
     def test_needs_full_gates_decision(self):
         docs_only = ("docs/", "memory/")
         merge = ("docs/naming/function-names.csv", "docs/naming/phase3/backlog.tsv")

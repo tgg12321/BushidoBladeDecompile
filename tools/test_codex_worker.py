@@ -44,6 +44,140 @@ def rec(verdict, h=H1, reviewer="r1"):
                        "reviewer": reviewer}) + "\n"
 
 
+class CodexIdle(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix="cw-idle-")
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        # Pure metadata paths: the test itself may live inside a forbidden codex-* tree.
+        self.main = Path(self.root.anchor) / "cw-idle-fixture" / "main"
+        self.scratch = self.main.parent / "bb2-worktrees" / "codex-item"
+        self.snap = self.main.parent / "bb2-worktrees" / "codexr-research"
+        self.meta = {"run_id": "research-1", "sandbox": "read-only", "cwd": str(self.snap)}
+        self.meta_file = self.root / "bridge" / "runs" / "research-1" / "meta.json"
+        self.meta_file.parent.mkdir(parents=True)
+        self.meta_file.write_text(json.dumps(self.meta), encoding="utf-8")
+        self.status = {"bridge_slot": {"busy": True, "holder": {"run_id": "research-1", "codex_pid": 41}},
+                       "processes": [{"pid": 41, "kind": "headless-task", "cmd": self.exec_cmd()}]}
+        self.env = mock.patch.dict(os.environ, CODEX_BRIDGE_HOME=str(self.root / "bridge"))
+        self.env.start()
+        self.addCleanup(self.env.stop)
+
+    def exec_cmd(self, sandbox="read-only", cwd=None, extra=""):
+        # The bridge's own exec command line (codex_bridge.py run).
+        return (f'codex.exe exec --json -o last.md -m gpt -c model_reasoning_effort="medium" '
+                f'-c sandbox_mode="{sandbox}" -c approval_policy="never" {extra}'
+                f'-C {cwd or self.snap} -')
+
+    def check(self, allowed):
+        results = [SimpleNamespace(returncode=0, stdout=json.dumps(self.status)),
+                   SimpleNamespace(returncode=0, stdout="unrelated process")]
+        with mock.patch.object(cw, "pin_file", return_value=self.root / "pin"), \
+                mock.patch.object(cw.subprocess, "run", side_effect=results), \
+                redirect_stderr(io.StringIO()):
+            if allowed:
+                cw.codex_idle(self.main, self.scratch)
+            else:
+                with self.assertRaises(SystemExit) as err:
+                    cw.codex_idle(self.main, self.scratch)
+                self.assertEqual(err.exception.code, 2)
+
+    def test_readonly_research_exec_attributed(self):
+        self.check(True)
+
+    def test_readonly_research_second_process_attributed(self):
+        self.status["processes"].append({"pid": 42, "kind": "headless-task",
+                                         "cmd": self.exec_cmd().replace("/", "\\").upper()})
+        self.check(True)
+
+    def test_no_listed_process_or_unlisted_holder_refused(self):
+        procs = self.status["processes"]
+        self.status["processes"] = []
+        self.check(False)
+        self.status["processes"] = [dict(procs[0], pid=42)]
+        self.check(False)
+        self.status["processes"] = procs
+        for pid in (None, "41", 0, True):
+            with self.subTest(pid=pid):
+                self.status["bridge_slot"]["holder"]["codex_pid"] = pid
+                self.check(False)
+
+    def test_holder_pid_alone_not_exempt(self):
+        self.status["processes"][0]["cmd"] = "codex exec"
+        self.check(False)
+
+    def test_command_line_must_show_readonly_exec_of_snapshot(self):
+        for cmd in (self.exec_cmd(sandbox="workspace-write"),
+                    self.exec_cmd(cwd=self.scratch, extra=f"--add-dir {self.snap} "),
+                    self.exec_cmd(extra=f"--add-dir {self.scratch} "),
+                    self.exec_cmd(cwd=f"{self.snap}-other"),
+                    f"codex.exe exec -C {self.snap} -",
+                    self.exec_cmd(extra='-c sandbox_mode="danger-full-access" '),
+                    self.exec_cmd(extra="-s workspace-write "),
+                    self.exec_cmd(extra="--sandbox=workspace-write "),
+                    self.exec_cmd(extra="--full-auto "),
+                    self.exec_cmd(extra="--yolo "),
+                    self.exec_cmd(extra="--dangerously-bypass-approvals-and-sandbox ")):
+            with self.subTest(cmd=cmd):
+                self.status["processes"][0]["cmd"] = cmd
+                self.check(False)
+
+    def test_unsafe_metadata_refused(self):
+        for change in ({"sandbox": "workspace-write"}, {"cwd": str(self.scratch)},
+                       {"cwd": str(self.main)}, {"cwd": str(self.snap / "nested")},
+                       {"cwd": str(self.root / "codexr-research")}, {"cwd": ""},
+                       {"cwd": "relative/codexr-research"}, {"cwd": None},
+                       {"cwd": str(self.snap.parent / "codexv-research")},
+                       {"run_id": "different"}):
+            with self.subTest(change=change):
+                self.meta_file.write_text(json.dumps(dict(self.meta, **change)), encoding="utf-8")
+                self.check(False)
+
+    def test_unreadable_or_malformed_metadata_refused(self):
+        self.meta_file.unlink()
+        self.check(False)
+        for data in ("{", "[]", "null", "{}"):
+            self.meta_file.write_text(data, encoding="utf-8")
+            self.check(False)
+
+    def test_extra_unattributed_process_refused(self):
+        for cmd in ("codex exec", self.exec_cmd(cwd=f"{self.snap}-other"),
+                    self.exec_cmd(cwd=f"prefix{self.snap}")):
+            self.status["processes"] = [self.status["processes"][0],
+                                        {"pid": 42, "kind": "headless-task", "cmd": cmd}]
+            self.check(False)
+
+    def test_pin_refused(self):
+        (self.root / "pin").touch()
+        self.check(False)
+
+    def test_free_bridge_cannot_exempt_process(self):
+        self.status["bridge_slot"]["busy"] = False
+        self.check(False)
+
+    def test_bad_status_refused(self):
+        for status in ([], None, {"processes": None}, {"processes": [None]},
+                       {"processes": [], "bridge_slot": []}):
+            self.status = status
+            self.check(False)
+
+    def test_no_codex_running_still_refuses_research(self):
+        with mock.patch.object(cw, "pin_file", return_value=self.root / "pin"), \
+                mock.patch.object(cw.subprocess, "run", return_value=SimpleNamespace(
+                    returncode=0, stdout=json.dumps(self.status))), redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                cw.no_codex_running(self.main)
+
+    def test_idle_still_checks_processes_for_scratch(self):
+        with mock.patch.object(cw, "pin_file", return_value=self.root / "pin"), \
+                mock.patch.object(cw.subprocess, "run", side_effect=[
+                    SimpleNamespace(returncode=0, stdout=json.dumps(self.status)),
+                    SimpleNamespace(returncode=0, stdout=f'editor "{self.scratch}"')]), \
+                redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                cw.codex_idle(self.main, self.scratch)
+
+
 class LedgerProblems(unittest.TestCase):
     def test_reviewable_latest_pass_ok(self):
         self.assertEqual(cw.ledger_problems({FUNC: (b"", rec("PASS").encode())}, True), [])

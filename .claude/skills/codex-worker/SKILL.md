@@ -207,8 +207,10 @@ read-only: Claude edits, commits and lands there while it reads.
 
 Codex never blocks Claude's own mainline commits. The steps that delete or re-create an item's scratch tree
 (`land`'s and `rebase`'s rebases, `rebase --continue`, `layer2`, `cleanup`, and `commit` when formatting
-changed the tree) **refuse** (exit 2) unless no Codex task is running: a Codex process's writable reach cannot
-be bounded from outside its sandbox. Each check runs before anything moves or is removed, so a refusal there leaves
+changed the tree) **refuse** (exit 2) unless no Codex task is running: a writing Codex process's reach cannot
+be bounded from outside its sandbox. One exception: a `research` run (read-only sandbox, in its `codexr-`
+snapshot) does not block them, when the bridge's run record and every Codex process's own command line show
+exactly that read-only exec; anything else still refuses. Each check runs before anything moves or is removed, so a refusal there leaves
 nothing half-done; if a task starts mid-step, a later check refuses and re-running the step finishes it. `land`, `rebase`, `commit`, `layer2`
 and `cleanup` also refuse while any item's run is live (the pin is global).
 

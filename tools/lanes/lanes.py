@@ -873,8 +873,9 @@ def needs_full_gates(lane_paths, main_paths, inert=INERT_DEFAULT, docs_only=("do
     after main moved to M2 (pure: two path lists in, (bool, reason) out).
 
     `lane_paths`: what the lane changes; `main_paths`: what changed on main M1..M2. A path is a
-    BUILD INPUT unless it is under an `inert` prefix (docs/, memory/, .claude/): everything else
-    (src/, include/, asm/, Makefile, *.ld, engine/, tools/, root registries, AGENTS.md...) counts.
+    BUILD INPUT unless it is under an `inert` prefix (lanes.json inert_paths: docs/, memory/,
+    .claude/, tools/trace/, tools/lanes/): everything else (src/, include/, asm/, Makefile, *.ld,
+    engine/, other tools/, root registries, AGENTS.md...) counts.
     `mergeable` paths (regenerated outputs, row-merged registries) may change on both sides: the
     replay merges them mechanically and the regenerate step rebuilds them on the final tree.
     `docs_only` is the prefix set under which a lane skips gates and regeneration entries

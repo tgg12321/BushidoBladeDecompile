@@ -1334,20 +1334,89 @@ def engine_layer2_check(main, trusted, func):
 
 # ---------------------------------------------------------------- rebase / land
 
+def readonly_research_running(main, scratch, st, busy):
+    """Only the active bridge run may exempt attributed research processes from land's idle gate.
+
+    Metadata is read from the same runs directory as the bridge, never inferred from its label,
+    and every busy process must also prove it is that read-only exec on its own command line.
+    Any missing/malformed evidence leaves the normal refusal in force.
+    """
+    try:
+        slot = st["bridge_slot"]
+        if slot["busy"] is not True:
+            return False
+        holder = slot["holder"]
+        run_id = holder["run_id"]
+        if not isinstance(run_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]+", run_id):
+            return False
+        home = Path(os.environ.get("CODEX_BRIDGE_HOME") or Path.home() / ".claude" / "codex-bridge")
+        meta = json.loads((home / "runs" / run_id / "meta.json").read_text(encoding="utf-8"))
+        if meta["run_id"] != run_id or meta["sandbox"] != "read-only":
+            return False
+        cwd = meta["cwd"]
+        if not isinstance(cwd, str) or not cwd or not Path(cwd).is_absolute():
+            return False
+        snap = Path(cwd).resolve()
+        main = main.resolve()
+        root = (main.parent / "bb2-worktrees").resolve()
+        if (snap.parent != root or not snap.name.startswith("codexr-")
+                or not SLUG.fullmatch(snap.name[len("codexr-"):])
+                or snap.is_relative_to(main) or snap.is_relative_to(scratch.resolve())
+                or any(p.name.lower().startswith(("codex-", "codexv-"))
+                       for p in (snap, *snap.parents))):
+            return False
+        # Every busy process must show, on its own OS-supplied command line, the
+        # bridge's read-only exec of exactly this snapshot: `-c
+        # sandbox_mode="read-only"` and `-C <snapshot>` (whole path, so
+        # codexr-abc-2 is not codexr-abc). meta.json alone is not trusted, and
+        # a holder pid earns no exemption.
+        # The bridge reports a failed process enumeration as an empty list, so
+        # proof needs the slot holder's own codex pid listed among the busy
+        # processes (and, like every other one, passing the test below).
+        pid = holder["codex_pid"]
+        if not busy or type(pid) is not int or pid <= 0 or pid not in [p["pid"] for p in busy]:
+            return False
+        snap_norm = norm(snap).lower()
+        cwd_flag = re.compile(r"(?:^|\s)-c\s+" + re.escape(snap_norm) + r"(?=\s|$)")
+        for proc in busy:
+            proc_pid, cmd = proc["pid"], proc.get("cmd", "")
+            if type(proc_pid) is not int or proc_pid <= 0 or not isinstance(cmd, str):
+                return False
+            flat = cmd.lower().replace('\\"', '"').replace('"', "").replace("'", "")
+            flat = flat.replace("/", "\\")
+            # Exactly one sandbox setting, and none of the flags that override it.
+            if (len(re.findall(r"sandbox_mode=", flat)) != 1
+                    or not re.search(r"(?:^|\s)-c\s+sandbox_mode=read-only(?=\s|$)", flat)
+                    or re.search(r"(?:^|\s)(?:-s|--sandbox|--full-auto|--yolo"
+                                 r"|--dangerously-bypass\S*)(?=[\s=]|$)", flat)
+                    or "--add-dir" in flat or not cwd_flag.search(flat)):
+                return False
+        return True
+    except Exception:
+        return False
+
+
 def codex_idle(main, scratch):
-    """No live run, no bridge task, no codex exec/CLI process, no process naming the scratch tree."""
+    """No live writer or unattributed Codex task, and no process naming the scratch tree."""
     if pin_file(main).exists():
         refuse("a Codex run is live")
-    r = subprocess.run([sys.executable, str(BRIDGE), "status", "--json"], capture_output=True, text=True,
-                       env=clean_env())
     try:
+        r = subprocess.run([sys.executable, str(BRIDGE), "status", "--json"], capture_output=True, text=True,
+                           env=clean_env())
+        if r.returncode != 0:
+            raise ValueError("bridge status failed")
         st = json.loads(r.stdout)
+        if not isinstance(st, dict) or not isinstance(st.get("processes"), (list, type(None))):
+            raise ValueError("malformed bridge status")
+        busy = [p for p in (st.get("processes") or []) if p.get("kind") not in ("desktop-app", "service")]
+        slot = st.get("bridge_slot", {})
+        if not isinstance(slot, dict) or type(slot.get("busy")) is not bool:
+            raise ValueError("malformed bridge slot")
     except Exception:
         refuse("cannot read codex_bridge status to confirm Codex is idle")
     if st.get("processes") is None:
         refuse("codex_bridge could not list Codex processes; cannot confirm Codex is idle")
-    busy = [p for p in st["processes"] if p.get("kind") not in ("desktop-app", "service")]
-    if st.get("bridge_slot", {}).get("busy") or busy:
+    if (slot["busy"] or busy) and not readonly_research_running(main, scratch, st, busy):
         refuse("Codex is still running (bridge slot or codex processes); wait for it to finish")
     try:
         ps = subprocess.run(["pwsh", "-NoProfile", "-Command",
