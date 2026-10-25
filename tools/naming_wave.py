@@ -51,6 +51,9 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from engine import inlineasm  # noqa: E402
+
 CENSUS = ROOT / "docs/naming/function-names.csv"
 
 AUTO_RE = re.compile(r"^func_[0-9A-Fa-f]{8}$")
@@ -771,15 +774,14 @@ _SRC_DEF_CACHE: dict[str, bool] = {}
 def _defined_in_src(name: str) -> bool:
     if name in _SRC_DEF_CACHE:
         return _SRC_DEF_CACHE[name]
-    pat = re.compile(r"^[A-Za-z_][\w \t\*]*\b" + re.escape(name) + r"\s*\(", re.M)
     found = False
     for p in sorted((ROOT / "src").rglob("*.c")):
         t = read(p)
-        for m in pat.finditer(t):
-            line = t[t.rfind("\n", 0, m.start()) + 1: m.end()]
-            if "extern" not in line:
-                found = True
-                break
+        candidates = inlineasm.func_definition_candidates(t, name)
+        if len(candidates) > 1:
+            _SRC_DEF_CACHE[name] = False
+            return False
+        found = bool(candidates)
         if found:
             break
     _SRC_DEF_CACHE[name] = found

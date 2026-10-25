@@ -24,6 +24,8 @@ import os
 import re
 from pathlib import Path
 
+from engine import inlineasm
+
 QUEUE = "engine/queue.json"
 BORDERLINE = "docs/grind/borderline.md"
 DECISIONS = "docs/grind/decisions.md"
@@ -62,13 +64,12 @@ def _src_representation(func: str, stem: str | None) -> tuple[str, str]:
     matching — comment text mentioning INCLUDE_ASM must not count (the
     func_800481E8 false-escape lesson, 2026-08-24)."""
     inc = re.compile(r'^INCLUDE_ASM\("asm/funcs", ' + re.escape(func) + r"\);", re.M)
-    body = re.compile(r"^[A-Za-z_][\w \t\*]*\b" + re.escape(func) + r"\s*\(", re.M)
     paths = [f"src/{stem}.c"] if stem else sorted(str(p) for p in Path("src").rglob("*.c"))
     for p in paths:
         t = _read(p)
         if inc.search(t):
             return ("include_asm", p)
-        if body.search(t):
+        if inlineasm.func_definition_candidates(t, func):
             return ("c_body", p)
     if stem:  # fall back to whole-src scan when the hinted stem missed
         return _src_representation(func, None)

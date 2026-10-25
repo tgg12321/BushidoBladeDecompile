@@ -4140,8 +4140,8 @@ def main() -> int:
         import data_wave as dw
         texts = _FILE_TEXTS.get((str(ROOT), a.base), {})
         if any((path.startswith("asm/") and any(m.group(1) == old for m in dw.LABEL.finditer(text or ""))) or
-               (path.startswith("src/") and re.search(r"(?m)^[\w \t*]+\b" + re.escape(old) +
-                 r"\s*\([^;{}]*\)\s*\{", text or "")) for path, text in texts.items()):
+               (path.startswith("src/") and inlineasm.func_definition_candidates(
+                   text or "", old)) for path, text in texts.items()):
             fails.append(f"{old} -> {kept}: retire-alias cannot retire a function or assembly definition label")
     notes: list[str] = []
     scope_edits = {}

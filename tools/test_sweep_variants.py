@@ -30,6 +30,15 @@ class TestWriteRetry(unittest.TestCase):
 
 
 class TestSpan(unittest.TestCase):
+    def test_split_head(self):
+        t = "static s32\nf(void) { return 1; }\n"
+        self.assertEqual(find_function_span(t, "f"), (0, len(t)))
+
+    def test_ambiguous_definition_refuses_asm_fallback(self):
+        t = 's32\nf(void) {}\ns32 f(void) {}\nINCLUDE_ASM("asm/funcs", f);\n'
+        with self.assertRaisesRegex(ValueError, "ambiguous"):
+            find_function_span(t, "f")
+
     def test_c_body(self):
         t = "s32 f(void);\n\ns32 f(void)\n{\n    return 1;\n}\n\nvoid g(void) { f(); }\n"
         s, e = find_function_span(t, "f")

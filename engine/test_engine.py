@@ -13994,7 +13994,58 @@ def test_retired_names_audit() -> None:
           wired is not None and verdict_at is not None and wired < verdict_at)
 
 
+def test_private_head_sites() -> None:
+    """Source consumers share the engine's split definition/declaration heads."""
+    import sys
+    from unittest.mock import patch
+    from engine import dossier
+    import naming_wave as nw
+    import naming_keycheck as nk
+    import resplit_convert as rc
+
+    definition = "static s32\nfixture_old(void) { return 1; }\n"
+    declaration = "static s32\nfixture_old(void);\n"
+    check("resplit sees split declaration", rc.has_declaration(declaration, "fixture_old"))
+    check("resplit excludes split definition", not rc.has_declaration(definition, "fixture_old"))
+    root = Path("tmp/head-sites-fixture").resolve()
+    for text, expected in ((definition, True), (declaration, False),
+                           (definition * 2, True)):
+        with patch.object(nw, "ROOT", root), patch.object(nw, "_SRC_DEF_CACHE", {}), \
+                patch.object(nw, "read", return_value=text), \
+                patch.object(Path, "rglob", return_value=[Path("src/a.c")]):
+            eq("naming wave split head / declaration / duplicate", nw._defined_in_src(
+                "fixture_old"), expected and text != definition * 2)
+        with patch.object(dossier, "_read", return_value=text), \
+                patch.object(Path, "rglob", return_value=[Path("src/a.c")]):
+            eq("dossier split head / declaration / duplicate", dossier._src_representation(
+                "fixture_old", "a")[0], "c_body" if expected else "absent")
+
+    manifest = json.dumps({"ops": [{"kind": "retire-alias",
+        "olds": ["fixture_old"], "new": "fixture_kept"}]})
+    for text in (definition, definition * 2):
+        def index(*args, **kwargs):
+            key = (str(root), "HEAD")
+            nk._DEFINITION_INDEXES[key] = {"fixture_kept": {"80011000"}}
+            nk._FILE_TEXTS[key] = {"src/a.c": text}
+            return ({}, set())
+
+        output = io.StringIO()
+        with patch.object(nk, "ROOT", root), patch.object(nk, "tree_address_index", index), \
+                patch.object(nk, "base_addr", return_value="80011000"), \
+                patch.object(nk, "changed_files", return_value=[]), \
+                patch.object(nk, "git", return_value=""), \
+                patch.object(nk, "show", return_value=""), \
+                patch.object(nk, "verify_working_storage", return_value=None), \
+                patch.object(Path, "read_text", return_value=manifest), \
+                patch.object(sys, "argv", ["keycheck", "--from-manifests", "fixture.json"]), \
+                contextlib.redirect_stdout(output):
+            eq("retire-alias refuses split and ambiguous definitions", nk.main(), 1)
+        check("retire-alias reports function label refusal",
+              "cannot retire a function or assembly definition label" in output.getvalue())
+
+
 def main() -> int:
+    test_private_head_sites()
     test_live_tu_refusal_root()
     test_header_facts_gates()
     test_project_header_facts_cache()

@@ -47,6 +47,8 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from engine import inlineasm  # noqa: E402
 
 
 def find_function_span(text: str, func: str) -> tuple[int, int]:
@@ -57,80 +59,14 @@ def find_function_span(text: str, func: str) -> tuple[int, int]:
     brace (+ trailing newline). Brace matching skips string/char literals and
     comments. Raises ValueError if not found or unbalanced.
     """
-    # Signature line: <func> followed by ( on a line that doesn't end in ';'
-    # and isn't a call (must start a definition: return type or name at col 0
-    # area). We search for a line containing `<func>(` or `<func> (` whose
-    # statement ends with `{` before a `;`.
-    sig_re = re.compile(
-        r"^[ \t]*[A-Za-z_][\w \t\*]*\b" + re.escape(func) + r"[ \t]*\(",
-        re.MULTILINE,
-    )
-    for m in sig_re.finditer(text):
-        # Find the opening brace of the body (skip the parameter list).
-        i = m.end() - 1  # at '('
-        depth_paren = 0
-        n = len(text)
-        while i < n:
-            c = text[i]
-            if c == "(":
-                depth_paren += 1
-            elif c == ")":
-                depth_paren -= 1
-                if depth_paren == 0:
-                    i += 1
-                    break
-            i += 1
-        # After params: skip whitespace/comments; expect '{' (definition) or
-        # ';' (prototype -> keep searching).
-        while i < n and text[i] in " \t\r\n":
-            i += 1
-        if i >= n or text[i] != "{":
-            continue  # prototype or macro use; try next match
-        # Brace-match the body.
-        depth = 0
-        j = i
-        in_str = in_chr = in_line_comment = in_block_comment = False
-        while j < n:
-            c = text[j]
-            nxt = text[j + 1] if j + 1 < n else ""
-            if in_line_comment:
-                if c == "\n":
-                    in_line_comment = False
-            elif in_block_comment:
-                if c == "*" and nxt == "/":
-                    in_block_comment = False
-                    j += 1
-            elif in_str:
-                if c == "\\":
-                    j += 1
-                elif c == '"':
-                    in_str = False
-            elif in_chr:
-                if c == "\\":
-                    j += 1
-                elif c == "'":
-                    in_chr = False
-            elif c == "/" and nxt == "/":
-                in_line_comment = True
-                j += 1
-            elif c == "/" and nxt == "*":
-                in_block_comment = True
-                j += 1
-            elif c == '"':
-                in_str = True
-            elif c == "'":
-                in_chr = True
-            elif c == "{":
-                depth += 1
-            elif c == "}":
-                depth -= 1
-                if depth == 0:
-                    end = j + 1
-                    if end < n and text[end] == "\n":
-                        end += 1
-                    return m.start(), end
-            j += 1
-        raise ValueError(f"unbalanced braces matching {func}")
+    candidates = inlineasm.func_definition_candidates(text, func)
+    if len(candidates) > 1:
+        raise ValueError(f"ambiguous definitions of {func}")
+    if candidates:
+        start, end = candidates[0]
+        if end < len(text) and text[end] == "\n":
+            end += 1
+        return start, end
     # asm-until-matched (owner ruling 2026-08-19): an INCOMPLETE function is
     # committed as INCLUDE_ASM("asm/funcs", <func>); — splice candidates over
     # that line so variants can be swept from a clean tree.

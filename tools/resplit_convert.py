@@ -182,8 +182,8 @@ def has_declaration(text: str, func: str) -> bool:
     """True when `text` already declares `func` (a `... func(...) ;` at line
     start) — src/ings.c declares func_80017A44 on the line after its
     definition."""
-    for m in re.finditer(rf'(?m)^[A-Za-z_][\w \t\*]*\b{re.escape(func)}\s*\(', text):
-        i = inlineasm._match_paren(text, m.end() - 1)
+    for _name, _start, head_end in inlineasm._definition_heads(text, re.escape(func)):
+        i = inlineasm._match_paren(text, head_end - 1)
         if i < 0:
             continue
         j = i
