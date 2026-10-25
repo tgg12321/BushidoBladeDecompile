@@ -66,7 +66,7 @@ REPO = next(p for p in Path(__file__).resolve().parents if (p / "engine").is_dir
 sys.path.insert(0, str(REPO))
 os.chdir(REPO)
 
-from engine import queue as Q  # noqa: E402
+from engine import gtemacro, queue as Q  # noqa: E402
 
 _spec = importlib.util.spec_from_file_location(
     "_spotcheck", Path(__file__).resolve().parent / "spot_check_completed.py")
@@ -87,9 +87,9 @@ def regen_to_scratch(workdir: str) -> dict:
     REAL queue's state, so the recomputation is faithful; the save() at the end
     of generate() then lands on the scratch file instead of engine/queue.json.
     """
-    scratch = Path(SCRATCH)
+    scratch = gtemacro.REPO_ROOT / SCRATCH
     scratch.parent.mkdir(parents=True, exist_ok=True)
-    real = Path(Q.QUEUE_PATH)
+    real = Q._queue_path()
     if real.exists():
         shutil.copyfile(real, scratch)
     original = Q.QUEUE_PATH

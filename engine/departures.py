@@ -7,9 +7,11 @@ violation.
 
 KEYED BY ADDRESS. Every queue item carries `addr`, its function's VRAM
 address (engine/queue.py fills it and refuses an item without one;
-layer2.addr_index: glabel files, the tracked symbol files and census, the link
-map), and every layer-2 record carries the same field. A rename — a naming wave, a revert, a reset —
-changes names, never addresses, so the audit needs no rename tracking at all.
+layer2.addr_index / lookup supply working-tree addresses with layer2's shared
+precedence; layer2.addr_at supplies historical addresses from tracked files),
+and every layer-2 record carries the same field. A rename — a naming wave, a
+revert, a reset — changes names, never addresses, so the audit needs no rename
+tracking at all.
 
 ANCHOR: the oldest commit (topological order) in HEAD's queue.json history
 whose version gives EVERY item an `addr`. Versions from the anchor on — every
@@ -86,27 +88,6 @@ def _repo_path(path: str | Path) -> Path:
     return gtemacro.REPO_ROOT / path
 
 
-def _disk(path: str) -> str | None:
-    return layer2._read_text(_repo_path(path))
-
-
-def _addr_index() -> dict[str, str]:
-    # Explicit readers keep this audit independent of layer2's cwd defaults.
-    out = {}
-    for p in sorted(_repo_path("asm/funcs").glob("*.s")):
-        text = layer2._read_text(p) or ""
-        g = layer2._GLABEL_RE.search(text)
-        a = layer2._asm_addr(text, g.group(1)) if g else None
-        if a:
-            out.setdefault(g.group(1), a)
-    for n, a in layer2._registry_addrs(_disk).items():
-        out.setdefault(n, a)
-    for m in layer2._MAP_DEF.finditer(_disk("build/bb2.map") or ""):
-        out.setdefault(m.group(2), layer2.auto_addr(m.group(2)) or
-                       m.group(1).upper().zfill(8))
-    return out
-
-
 def _gitdir_line(text: str) -> str | None:
     m = re.match(r"\s*gitdir:\s*(.+?)\s*$", text or "", re.S)
     return m.group(1) if m else None
@@ -127,7 +108,7 @@ def win_gitdir(git_file_text: str) -> str | None:
 def _git_cmd(osname: str | None = None) -> list[str]:
     cmd = ["git", "--no-replace-objects"]
     if _repo_path(".git").is_file():
-        text = _disk(".git") or ""
+        text = layer2._disk(".git") or ""
         g = (wsl_gitdir if (osname or os.name) == "posix" else win_gitdir)(text)
         if g:
             cmd.append(f"--git-dir={g}")
@@ -302,7 +283,7 @@ def _pre_q126(batch: _Batch, c: str | None) -> bool:
     raise _AuditError(f"departure commit {c} has an invalid committer timestamp")
 
 
-def _keys(text: str, name: str, read=_disk) -> tuple[str, str] | None:
+def _keys(text: str, name: str, read=layer2._disk) -> tuple[str, str] | None:
     """(helper-inclusive key, definition-only key) of `name` in `text`."""
     k = layer2.body_key(text, name, read)
     if not k:
@@ -394,7 +375,7 @@ def _current_name(addr: str, index: dict, name: str | None, file: str | None):
         paths += sorted(_repo_path("src").glob("**/*.c"))
         for p in paths:
             text = layer2._read_text(p)
-            if text and n in text and layer2.body_key(text, n, _disk):
+            if text and n in text and layer2.body_key(text, n, layer2._disk):
                 return n, p.relative_to(_repo_path("src")).with_suffix("").as_posix()
     return name, file
 
@@ -416,7 +397,7 @@ def _no_grafts() -> None:
 
 def unreviewed_departures() -> list[str]:
     """Violations (strings) — see the module docstring."""
-    cur_text = _disk(QUEUE_FILE)
+    cur_text = layer2._disk(QUEUE_FILE)
     try:
         current = _items(cur_text.encode()) if cur_text is not None else None
     except AttributeError:
@@ -425,7 +406,7 @@ def unreviewed_departures() -> list[str]:
         return [f"Q39 departures audit: working-tree {QUEUE_FILE} is unreadable or has no "
                 f"addresses"]
     for k in [k for k in current if k.startswith("?")]:
-        a = layer2.lookup(_addr_index(), k[1:])  # working tree's files
+        a = layer2.lookup(layer2.addr_index(), k[1:])  # working tree's files
         if a:
             current[a] = current.pop(k)
     out = [f"Q39 departures audit: working-tree {QUEUE_FILE} item {k[1:]} has no valid "
@@ -536,7 +517,7 @@ def unreviewed_departures() -> list[str]:
             def at_d(n):
                 """n's address in D's own files (the working tree's for "WORKTREE")."""
                 if c == "WORKTREE":
-                    return layer2.lookup(_addr_index(), n)
+                    return layer2.lookup(layer2.addr_index(), n)
                 return layer2.addr_at(n, lambda p: batch.text(f"{c}:{p}"))
             # name@D's body only where D's files do not give name@D ANOTHER
             # address (a chain rename in the same wave: X->Y and W->X)
@@ -564,7 +545,7 @@ def unreviewed_departures() -> list[str]:
                        for n in alt):
                     continue
             if index is None:
-                index = _addr_index()
+                index = layer2.addr_index()
             now_name, now_file = _current_name(a, index, name, file)
             why = ("no layer-2 record carries this address" if not recs else
                    f"no record on that body (latest: {recs[-1].get('verdict')} on "

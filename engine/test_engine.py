@@ -10079,6 +10079,53 @@ def test_queue_repo_root() -> None:
                 os.chdir(cwd)
 
 
+def test_queue_regen_diff_repo_root() -> None:
+    """Scratch regen seeds and writes the call-time root, even from another cwd."""
+    from unittest.mock import patch
+    from engine import gtemacro
+    from tools.spotcheck import queue_regen_diff as regen
+
+    cwd = Path.cwd()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td).resolve()
+        other = root / "elsewhere"
+        (root / "engine").mkdir()
+        (other / "engine").mkdir(parents=True)
+        queue = root / "engine/queue.json"
+        seed = '{"items": [{"func": "rooted", "parked": true}]}\n'
+        queue.write_text(seed, encoding="utf-8")
+        decoy = other / "engine/queue.json"
+        decoy.write_text('{"items": []}\n', encoding="utf-8")
+        scratch = root / regen.SCRATCH
+
+        def generate(**kwargs):
+            eq("regen root: scratch preserves real queue input",
+               Q._queue_path().read_text(encoding="utf-8"), seed)
+            eq("regen root: scratch resolves from repo root", Q._queue_path(), scratch)
+            eq("regen root: generation options", kwargs,
+               {"workdir": "unused", "preserve": True})
+            scratch.with_name(scratch.name + ".lock").write_text("", encoding="utf-8")
+            return {"items": []}
+
+        try:
+            os.chdir(other)
+            with patch.object(gtemacro, "REPO_ROOT", root), \
+                    patch.object(Q, "generate", side_effect=generate):
+                for path in ("engine/queue.json", str(queue)):
+                    with patch.object(Q, "QUEUE_PATH", path):
+                        eq("regen root: mocked generation result",
+                           regen.regen_to_scratch("unused"), {"items": []})
+                        eq("regen root: queue path restored", Q.QUEUE_PATH, path)
+                    check("regen root: scratch lock removed",
+                          not scratch.with_name(scratch.name + ".lock").exists())
+            eq("regen root: real queue unchanged", queue.read_text(encoding="utf-8"), seed)
+            eq("regen root: cwd queue unchanged",
+               decoy.read_text(encoding="utf-8"), '{"items": []}\n')
+            check("regen root: no scratch tree in cwd", not (other / "tmp").exists())
+        finally:
+            os.chdir(cwd)
+
+
 def test_departures() -> None:
     """Q39 departures audit (engine/departures.py), keyed by function ADDRESS,
     on throwaway git repos: every departure shape the name-keyed rounds had to
@@ -10247,7 +10294,7 @@ def test_departures() -> None:
                 eq("departures root: foreign cwd reads git, source, asm and ledger",
                    audit(), ([], []))
                 eq("departures root: current name returns a relative TU",
-                   departures._current_name(addrs["func_ROOT"], departures._addr_index(),
+                   departures._current_name(addrs["func_ROOT"], layer2.addr_index(),
                                             None, None), ("func_ROOT", "k"))
                 ledger = root / "memory/grind/func_ROOT/layer2.jsonl"
                 ledger.write_text("{broken\n")
@@ -10258,6 +10305,14 @@ def test_departures() -> None:
                 ledger.unlink()
                 eq("departures root: foreign cwd sees an unreviewed hand-drop",
                    audit()[1], ["func_ROOT"])
+                with patch.object(layer2, "addr_index", return_value={
+                        "shared_name": addrs["func_ROOT"]}), \
+                        patch.object(departures, "_current_name",
+                                     wraps=departures._current_name) as current_name:
+                    audit()
+                    eq("departures root: audit uses layer2's address index",
+                       current_name.call_args.args[1],
+                       {"shared_name": addrs["func_ROOT"]})
                 graft = root / ".git/info/grafts"
                 graft.parent.mkdir(exist_ok=True)
                 graft.write_text("\n")
@@ -14218,6 +14273,7 @@ def main() -> int:
     with _synth_addrs():
         test_layer2_gate()
     test_queue_repo_root()
+    test_queue_regen_diff_repo_root()
     test_departures()
     test_layer2_repo_paths()
     test_layer2_addresses()
