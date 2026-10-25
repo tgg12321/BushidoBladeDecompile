@@ -911,13 +911,10 @@ def _iter_func_bodies(text: str):
     """
     from . import inlineasm
 
-    seen_names, seen_spans = set(), set()
-    for m in re.finditer(r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*\b"
-                         r"([A-Za-z_]\w*)\s*\(", text):
-        fname = m.group(1)
-        if fname in seen_names:
-            continue
-        seen_names.add(fname)
+    seen_spans = set()
+    # The engine's head grammar (one-line and split heads), so no body that
+    # func_definition_candidates can return is skipped here.
+    for fname in inlineasm.definition_head_names(text):
         for span in inlineasm.func_definition_candidates(text, fname):
             if span in seen_spans:
                 continue

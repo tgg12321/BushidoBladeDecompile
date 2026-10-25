@@ -248,7 +248,7 @@ CODE = Path(__file__).resolve().parent.parent
 ROOT = Path(os.environ.get("NAMING_KEYCHECK_ROOT") or CODE).resolve()
 sys.path.insert(0, str(CODE))
 sys.path.insert(0, str(CODE / "tools"))
-from engine import layer2  # noqa: E402
+from engine import inlineasm, layer2  # noqa: E402
 import naming_wave as nw  # noqa: E402
 
 IDENT = re.compile(r"[A-Za-z_]\w*")
@@ -984,9 +984,11 @@ def original_census(text):
     directives, _ = pp_regions(text)
     for a, b in reversed(directives):
         text = text[:a] + re.sub(r"[^\n]", " ", text[a:b]) + text[b:]
-    return {m.group(1) for m in re.finditer(
-        r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*?\b([A-Za-z_]\w*)\s*\(", text)
-        if m.group(1) not in C_KEYWORDS}
+    names = {m.group(1) for m in re.finditer(
+        r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*?\b([A-Za-z_]\w*)\s*\(", text)}
+    # Split heads (return type on its own line), as the engine reads them.
+    names.update(inlineasm.definition_head_names(text))
+    return names - C_KEYWORDS
 
 
 def macro_uses(text: str, name: str, body_only=False, name_only=False) -> bool:

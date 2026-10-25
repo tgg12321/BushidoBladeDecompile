@@ -532,6 +532,30 @@ def _func_body_span(text: str, func: str) -> tuple[int, int] | None:
 _DEFINITION_HEAD_PREFIX = r"(?m)^(?:\}[ \t]*)?[A-Za-z_][\w \t\*]*\b"
 
 
+def _definition_heads(
+    text: str, name: str = r"[A-Za-z_]\w*"
+) -> list[tuple[str, int, int]]:
+    """Return (name, definition start, opening-paren end) in head order."""
+    heads = [(m.group(1), m.start(), m.end()) for m in re.finditer(
+        _DEFINITION_HEAD_PREFIX + "(" + name + r")\s*\(", text)]
+    for m in re.finditer(r"(?m)^(" + name + r")\s*\(", text):
+        # A bare column-0 name needs a preceding return-type line. Keep this
+        # raw, like the one-line heads: disabled/comment copies count too.
+        previous_end = len(text[:m.start()].rstrip(" \t\r\n"))
+        previous_start = text.rfind("\n", 0, previous_end) + 1
+        previous = text[previous_start:previous_end]
+        if re.fullmatch(r"(?:[A-Za-z_]\w*|[ \t*])+", previous):
+            heads.append((m.group(1), previous_start, m.end()))
+    return sorted(heads, key=lambda head: head[1])
+
+
+def definition_head_names(text: str) -> list[str]:
+    """Unique names of every raw definition-shaped head (one-line or split),
+    in head order, before the `)`-then-`{` test: the name list every body
+    walk must start from, so a split head is never skipped."""
+    return list(dict.fromkeys(h[0] for h in _definition_heads(text)))
+
+
 def definition_names(text: str) -> list[str]:
     """Unique names with at least one raw definition candidate, in head order.
 
@@ -539,8 +563,7 @@ def definition_names(text: str) -> list[str]:
     Declarations alone do not qualify. Comments/strings/directives are unmasked,
     exactly as in func_definition_candidates.
     """
-    heads = re.finditer(_DEFINITION_HEAD_PREFIX + r"([A-Za-z_]\w*)\s*\(", text)
-    return [name for name in dict.fromkeys(m.group(1) for m in heads)
+    return [name for name in definition_head_names(text)
             if func_definition_candidates(text, name)]
 
 
@@ -570,16 +593,16 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
         because that is what distinguishes a definition from a call.
       * `void calc_LightMatrix(arg0) Unk800F62E0Rec *arg0;` (368E4.c) — old-style K&R
         parameter declarations sit between `)` and `{`.
+    A bare column-0 name also qualifies after a non-blank line containing only
+    declaration-specifier identifiers and `*`; its span includes that type line.
     """
     # Leading whitespace is permitted ONLY after a closing `}`; a bare indented
     # line stays non-matching, which is what separates a definition from a call.
-    pattern = re.compile(_DEFINITION_HEAD_PREFIX
-                         + re.escape(func) + r"\s*\(")
     spans = []
     n = len(text)
-    for m in pattern.finditer(text):
+    for _name, start, head_end in _definition_heads(text, re.escape(func)):
         # Walk to the matching `)` of the opening `(`.
-        i, depth, in_str = m.end(), 1, False
+        i, depth, in_str = head_end, 1, False
         while i < n and depth > 0:
             c = text[i]
             if in_str:
@@ -618,7 +641,7 @@ def func_definition_candidates(text: str, func: str) -> list[tuple[int, int]]:
             continue  # declaration or other; skip this candidate
         end = _match_brace(text, j)
         if end != -1:
-            spans.append((m.start(), end))
+            spans.append((start, end))
     return spans
 
 

@@ -3114,6 +3114,51 @@ def test_substitute_body() -> None:
         check("substitute_body: absent function raises", True)
 
 
+def test_split_definition_head() -> None:
+    split = "static s32\n\nfunc_X(s32 a) { return a; }"
+    src = "extern int g;\n" + split + "\nint tail;\n"
+    expected = [(src.index("static"), src.index("}") + 1)]
+    eq("split head: span includes type line, exclusive end",
+       inlineasm.func_definition_candidates(src, "func_X"), expected)
+    eq("split head: definition census", inlineasm.definition_names(src), ["func_X"])
+    replacement = "s32 func_X(s32 a) { return 1; }"
+    eq("split head: substitution replaces both lines",
+       inlineasm.substitute_body(src, "func_X", replacement),
+       "extern int g;\n" + replacement + "\nint tail;\n")
+    decoy = "#if 0\ns32 func_X(s32 a) { return 0; }\n#endif\n"
+    ambiguous = decoy + split
+    eq("split head: disabled copy is ambiguous",
+       len(inlineasm.func_definition_candidates(ambiguous, "func_X")), 2)
+    try:
+        inlineasm.substitute_body(ambiguous, "func_X", replacement)
+    except KeyError:
+        refused = True
+    else:
+        refused = False
+    check("split head: ambiguous substitution refuses", refused)
+    declared = "extern s32 func_X(s32 a);\n" + split
+    eq("split head: extern declaration adds no candidate",
+       inlineasm.func_definition_candidates(declared, "func_X"),
+       [(declared.index("static"), len(declared))])
+    for desc, text in (
+            ("indented name", "static s32\n    func_X(s32 a) { return a; }"),
+            ("semicolon", "static s32;\nfunc_X(s32 a) { return a; }"),
+            ("closing paren", "other()\nfunc_X(s32 a) { return a; }")):
+        eq(f"split head: reject {desc}",
+           inlineasm.func_definition_candidates(text, "func_X"), [])
+    knr = "static s32 *\nfunc_X(a) s32 a; { return 0; }"
+    eq("split head: pointer return and K&R declarations",
+       inlineasm.func_definition_candidates(knr, "func_X"), [(0, len(knr))])
+    from engine import volatile_cheats
+    eq("split head: the cheat roster's body walk sees it",
+       [(f, lo, hi) for f, lo, hi, _ in volatile_cheats._iter_func_bodies(src)],
+       [("func_X", *expected[0])])
+    eq("split head: decoy and split body both walked",
+       len(list(volatile_cheats._iter_func_bodies(ambiguous))), 2)
+    eq("split head: head names list it", inlineasm.definition_head_names(src),
+       ["func_X"])
+
+
 def test_body_span_ambiguous() -> None:
     from engine import layer2
 
@@ -9876,8 +9921,11 @@ def test_naming_keycheck_scoped_pairs() -> None:
     print(f"  fake-cpp main timing: 30 functions, 30 pairs: {elapsed:.3f}s")
     result, output = run_main("f:l=fresh", local.replace("int f", "int\nf"),
                              local_new.replace("int f", "int\nf"))
-    check("keycheck: unkeyable multiline function fails closed",
-          result == 1 and "layer-2 cannot key" in output)
+    # A split head (return type on its own line) is a definition candidate
+    # now, so layer-2 keys it like the one-line form above.
+    check("keycheck: split-head function is keyed like a one-line head",
+          result == 0 and "pairs: 0 " in output
+          and "moved layer-2 keys: 1" in output)
     result, output = run_main("old=new", "int old(void) { return 1; }",
                               "int new(void) { return 1; }")
     check("keycheck: global substitution path unchanged", result == 0 and "pairs: 1 " in output)
@@ -13998,6 +14046,7 @@ def main() -> int:
     test_asm_keyword_recognition()
     test_macro_asm_strip_round_trip()
     test_substitute_body()
+    test_split_definition_head()
     test_definition_names()
     test_tool_definition_heads()
     test_queue_ambiguous_definition_message()
