@@ -70,8 +70,14 @@ live session owns, and say which one you took.
      `git -C "<wt>" commit -F "<main>\tmp\<msg>.txt"`. A relative `tmp/...` resolves inside
      `<wt>` under `-C` (conventions:
      `docs/COMMIT_CONVENTIONS.md`: `build:`, `data:`, `tools:`, `cheat-cleanup:`, or
-     `<tu>.c: <action>`). In the same or a following commit, update the row's
-     `stage`/`note` in `docs/foundation/backlog.tsv` (backlog rows merge row by row on land).
+     `<tu>.c: <action>`). Update the row's `stage`/`note` in `docs/foundation/backlog.tsv`
+     in the unit's hand-edit commit (backlog rows merge row by row on land).
+   - **One commit per unit (owner 2026-10-25):** a unit is one hand-edit commit (backlog row
+     included, review fixes and wording corrections folded in with
+     `git -C "<wt>" commit --amend --no-edit` or `--amend -F <abs msg>`) plus at most its
+     deterministic `Lane-Replay` commit(s), which stay tool output only. A unit made only of
+     replayed output records its backlog row in one `docs:` commit. A fix to something already
+     on main is its own commit.
    - `python tools/lanes/lanes.py land <lane>`, then `lanes.py unclaim <lane>` for the unit's
      claims. That is the stopping point.
 4. **Stop** after 3 units, or earlier if context passes ~300k or a unit fails twice. Before calling

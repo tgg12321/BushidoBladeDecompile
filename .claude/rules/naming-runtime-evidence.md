@@ -22,6 +22,8 @@ a neutral KEEP. It counts when ALL hold:
 1. **Recorded, reproducible:** the trace script, the emulator name and version, the BIOS, the
    disc image SHA1, the starting point (savestate or memory-card file SHA1, plus the scripted
    input sequence) and the captured output; the capture's path + SHA1 is in the manifest row.
+   Bulk output (raw logs, screenshots) may live in the untracked capture store, named with its
+   SHA1 in the committed capture manifest; the files a manifest row cites stay readable there.
 2. **One of the admitted kinds, read narrowly:**
    - a hit map (which game mode, screen, stage or event reaches the function or touches the
      data). An "only X" claim lists every mode, screen and stage the run covered and shows zero

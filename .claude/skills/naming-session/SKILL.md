@@ -142,15 +142,16 @@ reviewed`.
 2. `naming-reviewer` R6 (foreground) on those commits: identifiers only, comments true, no stale
    old names in live docs and registries, and suggested names judged fresh.
 3. In the lane worktree:
-   - Apply R6's blocking fixes verbatim in a `docs:` commit.
+   - Apply R6's blocking fixes verbatim, amended into the wave's `docs:` comment commit (one
+     commit per purpose, owner 2026-10-25: no separate `R6 fixes` commit).
    - For function waves, run `cd "<wt>" && python tools/naming_wavefollow.py <id> symbol_addrs.txt`.
      It is deterministic, so commit it on its own with the trailer
      `Lane-Replay: python3 tools/naming_wavefollow.py <id> symbol_addrs.txt`.
    - For function waves, record the research's NO_NAME rows in the ledger:
      `python tools/naming_noname.py add tmp/codex/<id>-research.md --tag <research tag, e.g. w78>`
      (it also prunes rows named since; commits stay `-` until the wave is on main, and the next
-     `add` or `prune` fills them). Commit `docs/naming/phase3/no_name.tsv` with the row.
-   - Set the backlog row to `landed` and commit.
+     `add` or `prune` fills them). Commit `docs/naming/phase3/no_name.tsv` together with the
+     backlog row set to `landed`, in one commit.
    - Run `python tools/lanes/lanes.py land <lane>`. It rebuilds, regenerates the census, runs
      `test_label_census.py` and the integrity check, fast-forwards main and pushes. That is the
      stopping point.
