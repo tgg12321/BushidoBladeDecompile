@@ -3,7 +3,20 @@
   "evidence": [
     "docs/naming/runtime/menu-tour-stub-1/baseline/spec.json",
     "docs/naming/runtime/menu-tour-stub-1/func_8006BB68/spec.json",
-    "docs/naming/runtime/menu-tour-stub-1/func_8006C21C/spec.json"
+    "docs/naming/runtime/menu-tour-stub-1/func_8006C21C/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-1/baseline/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-1/func_8006C1FC/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-1/menu_DrawReturningChoices/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-1/menu_DrawRowBitSheetsTilesAndGradientQuads/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-1/menu_DrawRowBitsGetEmptyRowSides/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-1/menu_DrawToggleChoices/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-1/menu_HandleReturningChoices/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-1/menu_HandleToggleChoices/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-1/menu_RunFlowStateWithRowBitEdit/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-1/menu_UpdateReturningChoices/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-1/menu_UpdateToggleChoices/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-2/baseline/spec.json",
+    "docs/naming/runtime/menu-tour-knockout-2/menu_UpdateToggleChoices/spec.json"
   ],
   "extends": "menu-tour",
   "shots": [

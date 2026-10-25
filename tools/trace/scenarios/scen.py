@@ -19,7 +19,9 @@ Scenario keys (all optional except end_frame, unless "extends" gives it):
   covers       target keys reached, each backed by the evidence capture's
                screenshots (targets.json)
   evidence     committed captures (spec.json paths, repo-relative) whose
-               "script" this scenario compiles to exactly (`verify`)
+               "script" this scenario compiles to exactly (`verify`); a
+               tools/trace/knockout.py run counts when its script is
+               exactly knockout_script(this scenario's, its frames)
   extends      another scenario: start from its compiled lists
   use          segment names, merged in order
   end_frame    last frame; inputs released after it, phases and
@@ -282,6 +284,41 @@ def compile_script(name: str) -> dict:
     return script
 
 
+KNOCKOUT_SHOT = re.compile(r"knockout\.(\d+)")
+
+
+def knockout_script(script: dict, frames) -> dict:
+    """The script tools/trace/knockout.py runs: the scenario's own inputs,
+    phases and shots, plus one knockout.<frame> shot per compare frame and
+    knockout.live at the end (end_frame extended if the frames need it)."""
+    frames = sorted(set(frames))
+    script = json.loads(json.dumps(script))
+    live = max(script["end_frame"] - 1, frames[-1] + 60)
+    script["end_frame"] = max(script["end_frame"], live + 1)
+    shots = [{"frame": n, "name": f"knockout.{n}"} for n in frames]
+    shots.append({"frame": live, "name": "knockout.live"})
+    if {s["name"] for s in script["screenshots"]} & \
+            {s["name"] for s in shots}:
+        raise ValueError("scenario uses reserved knockout screenshot names")
+    script["screenshots"] = sorted(script["screenshots"] + shots,
+                                   key=lambda s: s["frame"])
+    return script
+
+
+def knockout_frames(script) -> list[int] | None:
+    """The compare frames of a knockout.py run's script, else None."""
+    if not isinstance(script, dict) or \
+            not isinstance(script.get("screenshots"), list):
+        return None
+    names = [s.get("name") for s in script["screenshots"]
+             if isinstance(s, dict)]
+    if "knockout.live" not in names:
+        return None
+    frames = [int(m.group(1)) for m in
+              (KNOCKOUT_SHOT.fullmatch(str(n)) for n in names) if m]
+    return frames or None
+
+
 def compile_pokes(name: str) -> list[dict]:
     """The scenario's own pokes; each phase must be a script phase other
     than the first (gdbtrace's rule: nothing is set up at power-on)."""
@@ -409,9 +446,19 @@ def cmd_verify(args) -> int:
                 print(f"FAIL {n}: evidence {ev}: {e}")
                 ok = False
                 continue
+            expect, how = script, ""
+            frames = knockout_frames(want)
+            if frames:
+                try:
+                    expect = knockout_script(script, frames)
+                    how = " (knockout run)"
+                except ValueError as e:
+                    print(f"FAIL {n}: evidence {ev}: {e}")
+                    ok = False
+                    continue
             if json.dumps(want, sort_keys=True) != \
-                    json.dumps(script, sort_keys=True):  # 1 != 1.0 != true
-                print(f"FAIL {n}: evidence {ev}: {first_diff(script, want)}")
+                    json.dumps(expect, sort_keys=True):  # 1 != 1.0 != true
+                print(f"FAIL {n}: evidence {ev}: {first_diff(expect, want)}")
                 ok = False
             elif json.dumps(want_pokes, sort_keys=True) != \
                     json.dumps(pokes, sort_keys=True):
@@ -419,7 +466,7 @@ def cmd_verify(args) -> int:
                       f"{first_diff(pokes, want_pokes, 'pokes')}")
                 ok = False
             else:
-                print(f"ok   {n} == {ev}")
+                print(f"ok   {n} == {ev}{how}")
     for p in sorted(glob.glob(os.path.join(REPO, RUNTIME, "**", "spec.json"),
                               recursive=True)):
         with open(p, encoding="utf-8") as f:

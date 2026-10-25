@@ -219,15 +219,7 @@ def run_batch(args, passthrough):
         raise ValueError('cannot stub at the first phase; omit --phase to stub at EXE entry')
     if args.phase and next(p['frame'] for p in script['phases'] if p['name'] == args.phase) >= frames[0]:
         raise ValueError('requested frames must be strictly after the stub phase start frame')
-    # Preserve scenario inputs/phases/shots, extending only for observation.
-    live = max(script['end_frame'] - 1, frames[-1] + 60)
-    script['end_frame'] = max(script['end_frame'], live + 1)
-    names = {s['name'] for s in script['screenshots']}
-    shots = [{'frame': n, 'name': f'knockout.{n}'} for n in frames]
-    shots.append({'frame': live, 'name': 'knockout.live'})
-    if names & {s['name'] for s in shots}:
-        raise ValueError('scenario uses reserved knockout screenshot names')
-    script['screenshots'] = sorted(script['screenshots'] + shots, key=lambda s: s['frame'])
+    script = scen.knockout_script(script, frames)
     runkit.check_script(script)
     duration = float(args.duration) if args.duration is not None else 7200
     if not math.isfinite(duration) or duration <= 0:

@@ -285,7 +285,64 @@ def main():
             finally:
                 scen.HERE, scen.REPO = real
 
+    def verify_knockout():
+        real = (scen.HERE, scen.REPO)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            scen.HERE = str(root / "scen")
+            scen.REPO = str(root)
+            try:
+                write(root / "scen", "targets", {"groups": {}})
+                write(root / "scen", "k", {
+                    "end_frame": 100, "phases": ["0:boot", "50:menu"],
+                    "shots": ["60:menu.first"],
+                    "evidence": ["docs/naming/runtime/c/spec.json"]})
+                script = scen.compile_script("k")
+                ko = scen.knockout_script(script, [30, 20])
+                run("knockout_script: shots added, end_frame kept",
+                    lambda: equal((ko["end_frame"], [
+                        (s["frame"], s["name"]) for s in ko["screenshots"]]),
+                        (100, [(20, "knockout.20"), (30, "knockout.30"),
+                               (60, "menu.first"),
+                               (99, "knockout.live")])))
+                late = scen.knockout_script(script, [90])
+                run("knockout_script: end_frame extended for a late frame",
+                    lambda: equal((late["end_frame"],
+                                   late["screenshots"][-1]),
+                                  (151, {"frame": 150,
+                                         "name": "knockout.live"})))
+                run("knockout_script leaves the scenario script alone",
+                    lambda: equal(len(script["screenshots"]), 1))
+                moved = json.loads(json.dumps(ko))
+                moved["screenshots"][1]["frame"] = 71
+                extra = json.loads(json.dumps(ko))
+                extra["inputs"] = [{"frame": 55, "press": ["CROSS"],
+                                    "hold": 6}]
+                nolive = json.loads(json.dumps(ko))
+                nolive["screenshots"] = [s for s in nolive["screenshots"]
+                                         if s["name"] != "knockout.live"]
+                for label, want_script, want in (
+                    ("verify: knockout run of the scenario", ko, 0),
+                    ("verify: knockout run, shot frame not its name",
+                     moved, 1),
+                    ("verify: knockout run with an extra input", extra, 1),
+                    ("verify: knockout shots without knockout.live",
+                     nolive, 1),
+                ):
+                    write(root / "docs/naming/runtime/c", "spec",
+                          {"script": want_script})
+                    output = io.StringIO()
+                    with contextlib.redirect_stdout(output):
+                        got = scen.main(["verify"])
+                    run(label, lambda g=got, w=want, o=output.getvalue():
+                        equal((g, o.strip().splitlines()[-1]),
+                              (w, "scen verify: " +
+                               ("PASS" if w == 0 else "FAIL"))))
+            finally:
+                scen.HERE, scen.REPO = real
+
     verify_pokes()
+    verify_knockout()
     run("real library verify", verify_library)
     return 0 if ok else 1
 
