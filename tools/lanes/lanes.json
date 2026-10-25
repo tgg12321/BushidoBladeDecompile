@@ -28,6 +28,12 @@
     "docs/naming/phase3/backlog.tsv",
     "docs/foundation/backlog.tsv"
   ],
+  "input_checks": [
+    {
+      "cmd": "python3 tools/trace/store.py check-commit",
+      "inputs": ["docs/naming/runtime/"]
+    }
+  ],
   "regenerate": [
     {
       "path": "docs/naming/function-names.csv",

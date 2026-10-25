@@ -62,6 +62,62 @@ def sh(*args, cwd):
     return r.stdout.strip()
 
 
+class InputCheckTest(unittest.TestCase):
+    """Dispatch tests independent of shell transport and lane fixture setup."""
+
+    def context(self):
+        from types import SimpleNamespace
+        return SimpleNamespace(cfg={"input_checks": [{"cmd": "python3 store.py check-commit",
+                                "inputs": ["docs/naming/runtime/"]}]})
+
+    def test_every_matching_replayed_tree_is_checked_in_order(self):
+        from unittest.mock import patch
+        calls = []
+        def git(*args, **kwargs):
+            calls.append(args)
+            if args[0] == "rev-list":
+                return "a" * 40 + "\n" + "b" * 40 + "\n" + "c" * 40
+            return "docs/naming/runtime/capture.manifest.json" if args[-1] != "b" * 40 else "src/a.c"
+        with patch.object(lanes, "git", side_effect=git), \
+                patch.object(lanes, "run_shell", return_value=0) as run:
+            lanes.input_checks(self.context(), Path("candidate"), "base", io.StringIO())
+        self.assertEqual(calls[0], ("rev-list", "--reverse", "base..HEAD"))
+        self.assertEqual([call.args[2] for call in run.call_args_list], [
+            "python3 store.py check-commit --rev " + "a" * 40,
+            "python3 store.py check-commit --rev " + "c" * 40])
+
+    def test_refusal_stops_before_later_commits(self):
+        from unittest.mock import patch
+        with patch.object(lanes, "git", side_effect=["a\nb", "docs/naming/runtime/capture.jsonl"]), \
+                patch.object(lanes, "run_shell", return_value=1) as run:
+            log = io.StringIO()
+            log.name = "capture-check.log"
+            with self.assertRaisesRegex(lanes.Refuse, "input check failed: .* --rev a"):
+                lanes.input_checks(self.context(), Path("candidate"), "base", log)
+        self.assertEqual(run.call_count, 1)
+
+    def test_nul_paths_with_unicode_special_characters_and_case_variants(self):
+        from unittest.mock import patch
+        names = "docs/naming/runtime/é/shot\nname.png\0Docs/Naming/Runtime/other.png\0"
+        with patch.object(lanes, "git", side_effect=["a", names]) as git, \
+                patch.object(lanes, "run_shell", return_value=0) as run:
+            lanes.input_checks(self.context(), Path("candidate"), "base", io.StringIO())
+        self.assertIn("-z", git.call_args_list[1].args)
+        self.assertEqual(run.call_count, 1)
+        # A case-variant spelling alone also triggers the input gate.
+        with patch.object(lanes, "git", side_effect=["b", "Docs/naming/runtime/é.png\0"]), \
+                patch.object(lanes, "run_shell", return_value=0) as run:
+            lanes.input_checks(self.context(), Path("candidate"), "base", io.StringIO())
+        self.assertEqual(run.call_count, 1)
+
+    def test_no_checks_does_not_walk_history(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        with patch.object(lanes, "git") as git:
+            lanes.input_checks(SimpleNamespace(cfg={}), Path("candidate"), "base", io.StringIO())
+        git.assert_not_called()
+
+
 class LaneTest(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp(prefix="lanes-test-"))
@@ -540,6 +596,72 @@ class LaneTest(unittest.TestCase):
         self.commit("a", "docs/FAIL", "x\n")  # would fail the gate if it ran
         self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
         self.assertIn("docs-only", self.last)
+
+    def _capture_checks(self):
+        source = Path(__file__).resolve().parents[1] / "trace/store.py"
+        self._main_commit("tools/trace/store.py", source.read_text(encoding="utf-8"))
+        cfg = dict(CFG, input_checks=[{
+            "cmd": "python tools/trace/store.py check-commit",
+            "inputs": ["docs/naming/runtime/"]}])
+        self._main_commit("tools/lanes/lanes.json", json.dumps(cfg))
+
+    def test_input_check_skips_unrelated_docs_and_build_inputs(self):
+        self._capture_checks()
+        self.L("s1", "open", "a")
+        self.commit("a", "docs/note.txt", "note")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertNotIn("store.py check-commit --rev", self.last)
+        self.commit("a", "src/b.c", "int b;\n")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        self.assertNotIn("store.py check-commit --rev", self.last)
+
+    def test_capture_check_uses_replayed_commit_tree_on_docs_land(self):
+        import hashlib
+        self._capture_checks()
+        self.L("s1", "open", "a")
+        self.commit("a", "docs/naming/runtime/sample/capture.jsonl", "right")
+        rec = dict(path="capture.jsonl", sha1=hashlib.sha1(b"right").hexdigest(), size=5)
+        self.commit("a", "docs/naming/runtime/sample/capture.manifest.json",
+                    json.dumps(dict(outputs=[rec])))
+        # Force replay onto a different parent; judge the new SHA, not the lane SHA.
+        old = sh("rev-parse", "HEAD", cwd=self.wt("a"))
+        self._main_commit("docs/unrelated.txt", "main advanced")
+        self.assertEqual(self.L("s1", "land", "a"), 0, self.last)
+        new = sh("rev-parse", "main", cwd=self.main)
+        self.assertNotEqual(old, new)
+        self.assertIn("check-commit --rev " + new, self.last)
+        self.assertIn("outputs=1 refused=0", self.last)
+        self.assertIn("docs-only", self.last)
+
+    def test_capture_check_refuses_invalid_intermediate_commit(self):
+        import hashlib
+        self._capture_checks()
+        self.L("s1", "open", "a")
+        self.commit("a", "docs/naming/runtime/sample/capture.jsonl", "wrong")
+        rec = dict(path="capture.jsonl", sha1=hashlib.sha1(b"right").hexdigest(), size=5)
+        self.commit("a", "docs/naming/runtime/sample/capture.manifest.json",
+                    json.dumps(dict(outputs=[rec])))
+        # The final tree is valid, but the preceding commit is not publishable.
+        self.commit("a", "docs/naming/runtime/sample/capture.jsonl", "right")
+        before = sh("rev-parse", "main", cwd=self.main)
+        self.assertEqual(self.L("s1", "land", "a"), 4, self.last)
+        self.assertIn("input check failed", self.last)
+        self.assertIn("SHA1/size mismatch", self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), before)
+
+    def test_input_check_runs_when_commits_cancel_in_final_diff(self):
+        self._main_commit("check_tree.py", "import sys\nprint('TREE REFUSED')\nsys.exit(1)\n")
+        cfg = dict(CFG, input_checks=[{"cmd": "python check_tree.py",
+                                       "inputs": ["docs/runtime/"]}])
+        self._main_commit("tools/lanes/lanes.json", json.dumps(cfg))
+        self._main_commit("docs/runtime/capture.txt", "old")
+        self.L("s1", "open", "a")
+        self.commit("a", "docs/runtime/capture.txt", "new")
+        self.commit("a", "docs/runtime/capture.txt", "old")
+        before = sh("rev-parse", "main", cwd=self.main)
+        self.assertEqual(self.L("s1", "land", "a"), 4, self.last)
+        self.assertIn("TREE REFUSED", self.last)
+        self.assertEqual(sh("rev-parse", "main", cwd=self.main), before)
 
     def _inputs_regen(self, cmd="python gen_events.py", initial="stale\n"):
         self._main_commit("docs/runtime/events.tsv", initial)

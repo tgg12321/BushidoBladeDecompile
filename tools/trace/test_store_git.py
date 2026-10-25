@@ -276,6 +276,283 @@ class PublicationGitTest(unittest.TestCase):
         self.commit_manifest()
         self.assert_both_refuse()
 
+    def test_index_blob_digest_and_size_ignore_working_bytes(self):
+        manifest = self.seal()
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        self.trace.write_bytes(b"working edit must not matter")
+        self.assertEqual(self.command("check-commit")[0], 0)
+        self.git("add", "--", self.trace.relative_to(self.repo).as_posix())
+        self.trace.write_bytes(b'{"ev":"start"}\n')
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1)
+        self.assertIn("SHA1/size mismatch", output)
+        # A correct digest cannot conceal a wrong size.
+        manifest["outputs"][0] = store.file_record(self.trace)
+        manifest["outputs"][0]["size"] += 1
+        store.write_manifest(self.manifest_path, manifest)
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        self.assertEqual(self.command("check-commit")[0], 1)
+
+    def test_missing_record_refuses_local_index_and_store(self):
+        manifest = dict(outputs=[dict(path="capture.jsonl", missing=True)])
+        store.write_manifest(self.manifest_path, manifest)
+        self.commit_manifest()
+        self.trace.write_bytes(b"unexpected local file")
+        self.assertIn("missing record has existing", self.command("check-commit")[1])
+        self.git("add", "--", self.trace.relative_to(self.repo).as_posix())
+        self.trace.unlink()
+        self.assertEqual(self.command("check-commit")[0], 1)
+        self.git("rm", "--cached", "--", self.trace.relative_to(self.repo).as_posix())
+        self.stored_trace.parent.mkdir(parents=True)
+        self.stored_trace.write_bytes(b"unexpected store file")
+        self.assertEqual(self.command("check-commit")[0], 1)
+        self.stored_trace.unlink()
+        self.assertEqual(self.command("check-commit")[0], 0)
+
+    def test_record_removal_requires_index_and_store_removal(self):
+        manifest = self.seal()
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        self.git("commit", "-m", "Capture with tracked output")
+        store.write_manifest(self.manifest_path, dict(outputs=[]))
+        self.git("add", "--", self.manifest_path.relative_to(self.repo).as_posix())
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1)
+        self.assertIn("removed output record capture.jsonl still indexed or stored", output)
+        self.git("rm", "--", self.trace.relative_to(self.repo).as_posix())
+        self.stored_trace.parent.mkdir(parents=True)
+        self.stored_trace.write_bytes(b"still published")
+        self.assertEqual(self.command("check-commit")[0], 1)
+        self.stored_trace.unlink()
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 0)
+        self.assertIn("REMOVED ", output)
+        self.assertIn("full removal", output)
+
+    def test_rerecord_updates_existing_path_with_verified_generation(self):
+        manifest = self.seal()
+        store.offload(self.capture, manifest)
+        self.commit_manifest()
+        self.trace.write_bytes(b"new generation")
+        manifest = dict(outputs=[store.file_record(self.trace)])
+        store.offload(self.capture, manifest, manifest_path=self.manifest_path)
+        self.assertIn("store_name", manifest["outputs"][0])
+        self.git("add", "--", self.manifest_path.relative_to(self.repo).as_posix())
+        self.assertEqual(self.command("check-commit")[0], 0)
+
+    def test_deleted_manifest_cannot_hide_store_generation(self):
+        manifest = self.seal()
+        store.offload(self.capture, manifest)
+        self.commit_manifest()
+        self.git("rm", "--", self.manifest_path.relative_to(self.repo).as_posix())
+        self.assertEqual(self.command("check-commit")[0], 1)
+        self.stored_trace.unlink()
+        self.assertIn("REMOVED ", self.command("check-commit")[1])
+        self.assertEqual(self.command("check-commit")[0], 0)
+
+    def test_rev_judges_commit_not_index_or_working_tree(self):
+        self.seal()
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        self.git("commit", "-m", "Valid capture")
+        valid = self.git("rev-parse", "HEAD").strip()
+        self.trace.write_bytes(b"bad indexed content")
+        self.git("add", "--", self.trace.relative_to(self.repo).as_posix())
+        self.git("commit", "-m", "Broken capture")
+        invalid = self.git("rev-parse", "HEAD").strip()
+        self.seal()
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        self.assertEqual(self.command("check-commit")[0], 0)
+        self.assertEqual(self.command("check-commit", "--rev", valid)[0], 0)
+        self.assertEqual(self.command("check-commit", "--rev", invalid)[0], 1)
+
+    def test_legacy_walk_retains_deleted_bulk_history(self):
+        self.seal()
+        self.commit_manifest(legacy=True)
+        self.git("add", "--", self.trace.relative_to(self.repo).as_posix())
+        self.git("commit", "-m", "Once published")
+        self.git("rm", "--", self.trace.relative_to(self.repo).as_posix())
+        self.git("commit", "-m", "Bulk removed")
+        self.assert_both_refuse()
+
+    def test_legacy_walk_keeps_manifest_paths_separate_and_handles_spaces(self):
+        self.seal()
+        self.trace.unlink()
+        self.commit_manifest(legacy=True)
+        other = self.capture / "other manifest.manifest.json"
+        self.git("mv", "--", self.manifest_path.relative_to(self.repo).as_posix(),
+                 other.relative_to(self.repo).as_posix())
+        self.git("commit", "-m", "Renamed manifest cannot borrow age")
+        self.assert_both_refuse()
+
+    def test_shallow_history_refuses_legacy_exemption(self):
+        self.seal()
+        self.trace.unlink()
+        self.commit_manifest(legacy=True)
+        real = store.git_output
+        def shallow(*args):
+            return "true" if args == ("rev-parse", "--is-shallow-repository") else real(*args)
+        with patch.object(store, "git_output", side_effect=shallow):
+            self.assertEqual(self.command("check-commit")[0], 1)
+            self.assertIn("requires complete Git history", self.command("check-commit")[1])
+
+    def test_rollback_git_failure_preserves_publication_error(self):
+        manifest = self.seal()
+        with patch.object(store, "move_verified", side_effect=OSError("original publish error")), \
+                patch.object(store, "head_blob", side_effect=store.StoreUnverified("git failed")):
+            with self.assertRaises(store.StoreUnverified) as raised:
+                store.offload(self.capture, manifest)
+        self.assertIn("original publish error", str(raised.exception))
+        self.assertIn("git failed", str(raised.exception))
+        self.assertIsInstance(raised.exception.__cause__, OSError)
+        self.assertTrue(self.trace.exists())
+
+    def test_migration_rollback_error_reports_original(self):
+        self.seal()
+        self.commit_manifest()
+        with patch.object(store, "move_verified", side_effect=OSError("original migration error")), \
+                patch.object(store, "rollback_stored", side_effect=store.StoreUnverified("git failed")):
+            code, output = self.command("migrate", "--apply")
+        self.assertEqual(code, 1)
+        self.assertIn("original migration error", output)
+        self.assertIn("git failed", output)
+        self.assertTrue(self.trace.exists())
+
+
+    def test_rerecord_absolute_paths_from_other_worktrees_and_slashes(self):
+        manifest = self.seal()
+        manifest["outputs"][0]["path"] = r"C:\old\ln-trace\capture.jsonl"
+        store.write_manifest(self.manifest_path, manifest)
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        self.git("commit", "-m", "Old writer absolute path")
+        for name in ("D:/other/ln-trace-a/capture.jsonl", r"E:\main\tmp\capture.jsonl"):
+            manifest["outputs"][0]["path"] = name
+            store.write_manifest(self.manifest_path, manifest)
+            self.git("add", "--", self.manifest_path.relative_to(self.repo).as_posix())
+            code, output = self.command("check-commit")
+            self.assertEqual(code, 0, output)
+            self.assertNotIn("removed output", output)
+            self.git("commit", "-m", "Re-record from another worktree")
+
+    def test_missing_cannot_forge_store_name_or_hide_any_generation(self):
+        manifest = self.seal()
+        record = manifest["outputs"][0]
+        record["store_name"] = "capture.jsonl.sha1-" + record["sha1"]
+        target = store.store_target(self.trace, [record])
+        target.parent.mkdir(parents=True)
+        target.write_bytes(self.trace.read_bytes())
+        self.trace.unlink()
+        store.write_manifest(self.manifest_path, manifest)
+        self.commit_manifest()
+        missing = dict(path="capture.jsonl", missing=True,
+                       store_name="capture.jsonl.sha1-" + "0" * 40)
+        for forged in (True, False):
+            if not forged:
+                missing.pop("store_name")
+            store.write_manifest(self.manifest_path, dict(outputs=[missing]))
+            self.git("add", "--", self.manifest_path.relative_to(self.repo).as_posix())
+            code, output = self.command("check-commit")
+            self.assertEqual(code, 1, output)
+            self.assertIn("missing record", output)
+        # Still refuse a generation not mentioned by the parent manifest.
+        target.rename(target.with_name("capture.jsonl.sha1-" + "1" * 40))
+        self.assertEqual(self.command("check-commit")[0], 1)
+        target.with_name("capture.jsonl.sha1-" + "1" * 40).unlink()
+        self.stored_trace.write_bytes(b"plain key")
+        self.assertEqual(self.command("check-commit")[0], 1)
+        self.stored_trace.unlink()
+        self.assertEqual(self.command("check-commit")[0], 0)
+
+    def test_rev_missing_ignores_later_tree_and_leftover_working_file(self):
+        store.write_manifest(self.manifest_path,
+                             dict(outputs=[dict(path="capture.jsonl", missing=True)]))
+        self.commit_manifest()
+        absent = self.git("rev-parse", "HEAD").strip()
+        self.seal()
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        self.git("commit", "-m", "Later commit adds capture")
+        code, output = self.command("check-commit", "--rev", absent)
+        self.assertEqual(code, 0, output)
+        self.assertIn("outputs=0 refused=0", output)
+
+    def test_case_variant_runtime_root_is_refused_in_index_and_commit(self):
+        self.seal()
+        blob = self.git("hash-object", "-w", str(self.manifest_path)).strip()
+        key = "Docs/naming/runtime/sample/capture.manifest.json"
+        self.git("update-index", "--add", "--cacheinfo", "100644," + blob + "," + key)
+        code, output = self.command("check-commit")
+        self.assertEqual(code, 1, output)
+        self.assertIn("case-variant runtime root", output)
+        self.git("commit", "-m", "Case variant fixture")
+        self.assertIn("case-variant runtime root", self.command("check-commit", "--rev", "HEAD")[1])
+
+    def test_verify_reports_nonregular_entry_and_continues(self):
+        self.seal()
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        blob = self.git("hash-object", "-w", str(self.trace)).strip()
+        key = self.capture.relative_to(self.repo).as_posix() + "/link"
+        self.git("update-index", "--add", "--cacheinfo", "120000," + blob + "," + key)
+        self.git("commit", "-m", "Nonregular entry fixture")
+        code, output = self.command("verify")
+        self.assertEqual(code, 1, output)
+        self.assertIn("expected regular file", output)
+        self.assertIn("verify: files=1", output)
+
+    def test_gate_resolve_call_count_does_not_scale_with_records(self):
+        manifest = self.seal()
+        manifest["outputs"] *= 200
+        store.write_manifest(self.manifest_path, manifest)
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        with patch.object(Path, "resolve", side_effect=AssertionError("per-record resolve")):
+            code, output = self.command("check-commit")
+        self.assertEqual(code, 0, output)
+        self.assertIn("outputs=200 refused=0", output)
+
+    def test_lane_dispatch_reads_real_git_unicode_and_case_variant_paths(self):
+        from types import SimpleNamespace
+        from tools.lanes import lanes
+        base = self.git("rev-parse", "HEAD").strip()
+        directory = self.capture / "é"
+        directory.mkdir()
+        note = directory / "note.txt"
+        note.write_text("input", encoding="utf-8")
+        self.git("add", "--", self.capture.relative_to(self.repo).as_posix())
+        self.git("commit", "-m", "Unicode capture input")
+        blob = self.git("hash-object", "-w", str(note)).strip()
+        self.git("update-index", "--add", "--cacheinfo",
+                 "100644," + blob + ",Docs/naming/runtime/é.txt")
+        self.git("commit", "-m", "Case variant capture input")
+        ctx = SimpleNamespace(cfg={"input_checks": [{"cmd": "python store.py check-commit",
+                                  "inputs": ["docs/naming/runtime/"]}]})
+        with patch.object(lanes, "git", side_effect=lambda *args, **kwargs: self.git(*args)), \
+                patch.object(lanes, "run_shell", return_value=0) as run:
+            lanes.input_checks(ctx, self.repo, base, io.StringIO())
+        self.assertEqual(run.call_count, 2)
+
+    def test_bulk_digest_streams_large_blob_in_bounded_chunks(self):
+        data = b"x" * (3 * 1024 * 1024 + 7)
+        self.trace.write_bytes(data)
+        blob = self.git("hash-object", "-w", str(self.trace)).strip()
+        real = subprocess.Popen
+        reads = []
+        class Reader:
+            def __init__(self, wrapped):
+                self.wrapped = wrapped
+            def read(self, size):
+                reads.append(size)
+                return self.wrapped.read(size)
+            def readline(self):
+                return self.wrapped.readline()
+            def close(self):
+                return self.wrapped.close()
+        def process(*args, **kwargs):
+            result = real(*args, **kwargs)
+            result.stdout = Reader(result.stdout)
+            return result
+        with patch.object(store.subprocess, "Popen", side_effect=process):
+            digests = store.git_blob_digests([blob])
+        self.assertEqual(digests[blob], (store.hashlib.sha1(data).hexdigest(), len(data)))
+        self.assertGreater(len(reads), 3)
+        self.assertLessEqual(max(reads), 1024 * 1024)
+
     def test_publish_failure_preserves_identical_committed_flag(self):
         manifest = self.seal()
         manifest["outputs"][0]["stored"] = True
@@ -287,6 +564,25 @@ class PublicationGitTest(unittest.TestCase):
             self.assertTrue(json.loads(self.manifest_path.read_text(encoding="utf-8"))["outputs"][0]["stored"])
             self.assertEqual(self.command("migrate", "--apply")[0], 1)
             self.assertTrue(json.loads(self.manifest_path.read_text(encoding="utf-8"))["outputs"][0]["stored"])
+
+
+class RepositoryHistoryTest(unittest.TestCase):
+    def test_historical_rerecord_d01de4456(self):
+        # Read-only regression on the actual recorded absolute worktree paths.
+        probe = subprocess.run(["git", "-C", str(store.REPO_ROOT), "rev-parse",
+                                "--verify", "d01de4456^{commit}"], capture_output=True)
+        if probe.returncode:
+            self.skipTest("historical regression commit not available")
+        external = Path(tempfile.gettempdir()) / ("store-history-" + uuid.uuid4().hex)
+        external.mkdir()
+        try:
+            with patch.dict(os.environ, {"BB2_CAPTURE_STORE": str(external)}), \
+                    contextlib.redirect_stdout(io.StringIO()) as output:
+                code = store.main(["check-commit", "--rev", "d01de4456"])
+            self.assertEqual(code, 0, output.getvalue())
+            self.assertIn("outputs=2577 refused=0", output.getvalue())
+        finally:
+            shutil.rmtree(external)
 
 
 if __name__ == "__main__":

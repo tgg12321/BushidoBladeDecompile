@@ -39,7 +39,10 @@ class WriterTest(unittest.TestCase):
                                 "BB2_CAPTURE_STORE_WRITE": "1"}),
                             patch.object(store, "head_blob", side_effect=lambda p: self.head.get(str(Path(p).resolve()))),
                             patch.object(store, "git_output", side_effect=self.git_read),
-                            patch.object(store, "ever_committed", return_value=False)):
+                            patch.object(store, "ever_committed", return_value=False),
+                            patch.object(store, "git_blobs", side_effect=lambda objects: {
+                                obj: next(data for path, data in self.head_contents.items()
+                                          if self.head[path] == obj) for obj in objects})):
             replacement.start()
             self.addCleanup(replacement.stop)
 
@@ -53,8 +56,14 @@ class WriterTest(unittest.TestCase):
             return self.blob(args[-1])
         if args[0] == "ls-files":
             return ""
+        if args[0] == "rev-parse":
+            return "false"
         if args[0] == "log":
             return ""
+        if args[0] == "ls-tree" and "-z" in args:
+            return "".join("100644 blob " + blob + "\t" +
+                           Path(path).relative_to(self.repo).as_posix() + "\0"
+                           for path, blob in self.head.items())
         if args[0] == "ls-tree":
             return "\n".join(Path(p).relative_to(self.repo).as_posix()
                              for p in self.head if p.endswith(".manifest.json"))

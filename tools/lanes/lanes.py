@@ -1037,6 +1037,7 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
     new_paths = set(git("diff", "--name-only", "--no-renames", f"{base}..HEAD", cwd=ld).split())
     ctx.cand_paths = new_paths
     if not new_paths:
+        input_checks(ctx, ld, base, log)
         return git("rev-parse", "HEAD", cwd=ld)
     docs_only = all(any(p.startswith(d) for d in ctx.cfg.get("docs_only_paths", [])) for p in new_paths)
     quick = quick_paths is not None and not docs_only
@@ -1070,10 +1071,33 @@ def build_candidate(ctx: Ctx, lane: str, ld: Path, commits, base: str, log,
             raise Refuse(f"{exe} SHA1 {got} != oracle {ctx.cfg['oracle_sha1']}", 4)
         print(f"lanes: SHA1 == oracle ({got[:12]})")
     regenerate(ctx, lane, ld, log, docs_only=docs_only)
+    input_checks(ctx, ld, base, log)
     if git("status", "--porcelain", "--untracked-files=no", cwd=ld):
         raise Refuse("the gates left tracked changes in the landing worktree: "
                      + git("status", "--porcelain", "--untracked-files=no", cwd=ld), 4)
     return git("rev-parse", "HEAD", cwd=ld)
+
+
+def input_checks(ctx: Ctx, ld: Path, base: str, log):
+    """Gate every landed tree, including intermediate commits and amended tips.
+
+    Scope each command by that commit's inputs, so docs-only and quick lands
+    receive the same checks and a later fix cannot conceal an invalid commit.
+    """
+    checks = ctx.cfg.get("input_checks", [])
+    if not checks:
+        return
+    commits = git("rev-list", "--reverse", f"{base}..HEAD", cwd=ld).splitlines()
+    for commit in commits:
+        paths = git("diff-tree", "--no-commit-id", "--name-only", "-z", "-r",
+                    "--no-renames", commit, cwd=ld).split("\0")
+        for check in checks:
+            if not any(p.casefold().startswith(prefix.casefold())
+                       for p in paths for prefix in check["inputs"]):
+                continue
+            cmd = check["cmd"] + " --rev " + commit
+            if run_shell(ctx, ld, cmd, log) != 0:
+                raise Refuse(f"input check failed: {cmd}  (log {log.name})", 4)
 
 
 def regenerate(ctx: Ctx, lane: str, ld: Path, log, docs_only=False):

@@ -8,6 +8,8 @@ To re-record, run the capture writer again at the same logical path. offload()
 automatically selects <filename>.sha1-<SHA1> when the old key has different
 bytes, and records that sibling as outputs[].store_name before publication.
 Existing manifests continue to resolve their original immutable generation.
+Removing a published capture directory is refused while its store copy exists;
+remove both indexed bulk and stored generations for a deliberate full removal.
 """
 import hashlib
 import json
@@ -194,7 +196,7 @@ def store_key(path):
     return Path(path).resolve().relative_to(REPO_ROOT.resolve())
 
 
-def store_target(path, records):
+def store_target(path, records, key=None, external=None):
     """store_name is a sibling content generation, never a path supplied by a writer."""
     names = []
     for rec in records:
@@ -209,7 +211,8 @@ def store_target(path, records):
     if name != Path(path).name and (not isinstance(name, str) or not re.fullmatch(
             re.escape(Path(path).name) + r"\.sha1-[0-9a-f]{40}", name)):
         raise StoreUnverified(f"{path}: invalid store generation")
-    return store_root() / store_key(path).parent / name
+    return (external if external is not None else store_root()) / (
+        key if key is not None else store_key(path)).parent / name
 
 
 def select_generation(path, records):
@@ -426,11 +429,14 @@ def offload(capture_dir, manifest, keep_cards=False, manifest_path=None):
     for name in names:
         try:
             move_verified(capture_dir / name, _records(manifest, name))
-        except Exception:
+        except Exception as original:
             # A concurrent publisher may have taken the preflighted key.
             # Never leave publication intent claiming its different bytes.
-            rollback_stored(manifest_path, manifest,
-                            [n for n in names if (capture_dir / n).is_file()])
+            try:
+                rollback_stored(manifest_path, manifest,
+                                [n for n in names if (capture_dir / n).is_file()])
+            except Exception as rollback:
+                raise StoreUnverified(f"publication failed: {original}; rollback failed: {rollback}") from original
             raise
 
 
@@ -602,9 +608,12 @@ def migrate(root, apply=False):
                     mark_stored(owner, owning_manifest, [path.name])
                 try:
                     move_verified(path, records)
-                except Exception:
-                    for owner, owning_manifest in owners:
-                        rollback_stored(owner, owning_manifest, [path.name])
+                except Exception as original:
+                    try:
+                        for owner, owning_manifest in owners:
+                            rollback_stored(owner, owning_manifest, [path.name])
+                    except Exception as rollback:
+                        raise StoreUnverified(f"publication failed: {original}; rollback failed: {rollback}") from original
                     raise
             count += 1
             size += length
@@ -633,42 +642,146 @@ def recorded_absence(rec):
     return rec.get("missing") is True and "sha1" not in rec
 
 
-class LegacyRecords:
-    """Per-command provenance cache, using ancestry rather than commit dates.
+def repo_key(path):
+    """Lexical key for trusted tree paths: no filesystem access on /mnt/c."""
+    return Path(os.path.abspath(path)).relative_to(Path(os.path.abspath(REPO_ROOT))).as_posix()
 
-    Only identical path/SHA1/size records in a same-path manifest blob at an
-    ancestor of module 2's parent qualify. Renamed manifests may stay refused
-    (we deliberately do not follow renames). New/changed records cannot borrow
-    a manifest's age. Bulk paths with any HEAD-reachable history never qualify.
+
+def _git_blob_records(objects, hashed=False):
+    """One request at a time bounds pipe and capture memory to a 1 MiB chunk."""
+    objects = list(dict.fromkeys(objects))
+    if not objects:
+        return
+    try:
+        process = subprocess.Popen(
+            ["git", "-C", str(REPO_ROOT), "cat-file", "--batch"],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except OSError as exc:
+        raise StoreUnverified(f"cannot read Git blobs: {exc}") from exc
+    try:
+        for obj in objects:
+            process.stdin.write((obj + "\n").encode("utf-8"))
+            process.stdin.flush()
+            header = process.stdout.readline().split()
+            if len(header) != 3 or header[1] != b"blob":
+                raise StoreUnverified(f"{obj}: expected Git blob")
+            size = remaining = int(header[2])
+            digest = hashlib.sha1()
+            data = bytearray()
+            while remaining:
+                chunk = process.stdout.read(min(remaining, 1024 * 1024))
+                if not chunk:
+                    raise StoreUnverified(f"{obj}: truncated Git blob")
+                remaining -= len(chunk)
+                if hashed:
+                    digest.update(chunk)
+                else:
+                    data.extend(chunk)
+            if process.stdout.read(1) != b"\n":
+                raise StoreUnverified(f"{obj}: invalid Git blob delimiter")
+            yield obj, (digest.hexdigest(), size) if hashed else bytes(data)
+        process.stdin.close()
+        if process.wait() != 0:
+            raise StoreUnverified("cannot read Git blobs: " + process.stderr.read().decode("utf-8", "replace"))
+    finally:
+        if process.poll() is None:
+            process.terminate()
+        for stream in (process.stdin, process.stdout, process.stderr):
+            stream.close()
+        process.wait()
+
+
+def git_blobs(objects):
+    """Batch metadata blobs; bulk callers use incremental digests instead."""
+    return dict(_git_blob_records(objects))
+
+
+def git_blob_digests(objects):
+    return dict(_git_blob_records(objects, hashed=True))
+
+
+def tree_entries(root, revision, problems=None):
+    key = repo_key(root)
+    if revision == ":":
+        raw = git_output("ls-files", "-s", "-z", "--", ":(icase)" + key)
+    else:
+        raw = git_output("ls-tree", "-r", "-z", revision)
+    entries = {}
+    for item in raw.split("\0"):
+        if not item:
+            continue
+        info, name = item.split("\t", 1)
+        if key != "." and not (name.casefold() == key.casefold() or
+                               name.casefold().startswith(key.casefold() + "/")):
+            continue
+        fields = info.split()
+        error = None
+        if key != "." and not (name == key or name.startswith(key + "/")):
+            error = f"{name}: case-variant runtime root (expected {key})"
+        if revision == ":" and fields[2] != "0":
+            error = f"{name}: unmerged index entry"
+        mode = fields[0]
+        blob = fields[1] if revision == ":" else fields[2]
+        if mode not in ("100644", "100755"):
+            error = f"{name}: expected regular file"
+        if error:
+            if problems is None:
+                raise StoreUnverified(error)
+            problems.append(error)
+            continue
+        entries[name] = blob
+    return entries
+
+
+class LegacyRecords:
+    """Two root-wide history walks and one blob batch, cached per command.
+
+    The boundary walk is ancestry based, never date based. Keep manifest paths
+    separate even when blobs are shared; renamed manifests cannot borrow age.
     """
 
-    def __init__(self):
-        self.manifests = {}
-        self.histories = {}
+    def __init__(self, root=None, revision="HEAD"):
+        self.root = root or REPO_ROOT / "docs/naming/runtime"
+        self.revision = revision
+        self.manifests = None
+        self.histories = None
+        self.manifest_errors = {}
 
-    def was_committed(self, logical):
-        directory = store_key(logical).parent.as_posix()
-        if directory not in self.histories:
-            self.histories[directory] = set(git_output(
-                "log", "--full-history", "--format=", "--name-only", "--no-renames", "--",
-                directory).splitlines())
-        return store_key(logical).as_posix() in self.histories[directory]
-
-    def qualifies(self, manifest_path, rec):
-        if "stored" in rec:
-            return False
-        name = PureWindowsPath(rec["path"]).name
-        if self.was_committed(manifest_path.parent / name):
-            return False
-        key = store_key(manifest_path).as_posix()
-        if key not in self.manifests:
+    def _load(self):
+        if self.manifests is not None:
+            return
+        if git_output("rev-parse", "--is-shallow-repository") == "true":
+            raise StoreUnverified("legacy provenance requires complete Git history")
+        key = repo_key(self.root)
+        histories = set()
+        versions = {}
+        for revision, legacy in ((self.revision, False), (LEGACY_BASE, True)):
+            raw = git_output("log", "--full-history", "-m", "--format=", "--raw",
+                             "--no-abbrev", "-z", "--no-renames", revision, "--", key)
+            items = iter(raw.split("\0"))
+            for item in items:
+                header = item.strip()
+                if not header:
+                    continue
+                if not header.startswith(":"):
+                    raise StoreUnverified("unexpected Git raw history entry")
+                name = next(items)
+                fields = header[1:].split()
+                if legacy:
+                    if name.endswith(".manifest.json") and fields[4] in ("A", "M"):
+                        versions.setdefault(name, set()).add(fields[3])
+                else:
+                    histories.add(name)
+        blobs = git_blobs(blob for values in versions.values() for blob in values)
+        manifests = {}
+        for name, values in versions.items():
             records = set()
-            # Restrict traversal to the fixed boundary's ancestors. Backdated
-            # descendants and unrelated commits cannot enter this walk.
-            commits = git_output("log", "--full-history", "--format=%H", "--diff-filter=AM",
-                                 "--no-renames", LEGACY_BASE, "--", key)
-            for commit in commits.splitlines():
-                old = json.loads(git_output("show", commit + ":" + key))
+            for blob in values:
+                try:
+                    old = json.loads(blobs[blob])
+                except (ValueError, UnicodeError) as exc:
+                    self.manifest_errors[name] = str(exc)
+                    continue
                 if isinstance(old, dict) and isinstance(old.get("outputs"), list):
                     for output in old["outputs"]:
                         if (isinstance(output, dict) and "stored" not in output
@@ -676,36 +789,104 @@ class LegacyRecords:
                                 and isinstance(output.get("sha1"), str)
                                 and type(output.get("size", output.get("bytes"))) is int):
                             records.add(record_identity(output))
-            self.manifests[key] = records
-        return record_identity(rec) in self.manifests[key]
+            manifests[name] = records
+        self.histories, self.manifests = histories, manifests
+
+    def was_committed(self, logical):
+        self._load()
+        return repo_key(logical) in self.histories
+
+    def qualifies(self, manifest_path, rec):
+        if "stored" in rec:
+            return False
+        name = PureWindowsPath(rec["path"]).name
+        if self.was_committed(manifest_path.parent / name):
+            return False
+        key = repo_key(manifest_path)
+        if key in self.manifest_errors:
+            raise StoreUnverified(f"{manifest_path}: malformed legacy manifest: {self.manifest_errors[key]}")
+        return record_identity(rec) in self.manifests.get(key, set())
 
 
-def check_commit(root):
-    """Check the proposed index, including ignored bulk absent from that index.
-
-    Local ignored files are deliberately insufficient: a manifest-only commit
-    must have verified store bytes or be a historical never-published record.
-    """
+def check_commit(root, revision=None):
+    """Judge index vs HEAD, or a commit's immutable tree vs its first parent."""
     count = failed = legacy = 0
-    history = LegacyRecords()
-    indexed = set(git_output("ls-files", "--", store_key(root).as_posix()).splitlines())
-    for path in sorted(tracked_manifests(root, ":")):
+    if revision is None:
+        proposed, parent, history_rev = ":", "HEAD", "HEAD"
+    else:
+        proposed = git_output("rev-parse", "--verify", revision + "^{commit}")
+        parents = git_output("rev-list", "--parents", "-n1", proposed).split()
+        if len(parents) > 2:
+            raise StoreUnverified("check-commit --rev requires a non-merge commit")
+        parent = parents[1] if len(parents) == 2 else None
+        history_rev = proposed
+    history = LegacyRecords(root, history_rev)
+    external = store_root()
+    indexed = tree_entries(root, proposed)
+    previous = tree_entries(root, parent) if parent else {}
+    manifest_keys = {key for key in indexed.keys() | previous.keys()
+                     if key.endswith(".manifest.json")}
+    blobs = git_blobs([entries[key] for entries in (indexed, previous)
+                       for key in manifest_keys if key in entries])
+    digests = git_blob_digests(blob for key, blob in indexed.items() if is_bulk(key))
+    for key in sorted(manifest_keys, key=lambda key: REPO_ROOT / key):
+        path = REPO_ROOT / key
         try:
-            manifest = json.loads(git_output("show", ":" + store_key(path).as_posix()))
-            if not isinstance(manifest, dict) or not isinstance(manifest.get("outputs", []), list):
-                raise StoreUnverified("manifest must be an object with outputs list")
-            for rec in manifest.get("outputs", []):
-                if not isinstance(rec, dict) or not isinstance(rec.get("path"), str):
+            manifest = json.loads(blobs[indexed[key]]) if key in indexed else {"outputs": []}
+            old = json.loads(blobs[previous[key]]) if key in previous else {"outputs": []}
+            for value in (manifest, old):
+                if not isinstance(value, dict) or not isinstance(value.get("outputs", []), list):
+                    raise StoreUnverified("manifest must be an object with outputs list")
+                if any(not isinstance(r, dict) or not isinstance(r.get("path"), str)
+                       for r in value.get("outputs", [])):
                     raise StoreUnverified("invalid output record")
+            new_records = manifest.get("outputs", [])
+            # A re-record updates the same output path; its replacement bytes
+            # are verified below. Disappearing paths require full removal.
+            output_paths = {PureWindowsPath(rec["path"]).name for rec in new_records}
+            for rec in old.get("outputs", []):
                 name = PureWindowsPath(rec["path"]).name
-                if not is_bulk(name) or recorded_absence(rec):
+                if not is_bulk(name) or name in output_paths:
                     continue
                 logical = path.parent / name
+                bulk_key = (Path(key).parent / name).as_posix()
+                present = (bulk_key in indexed or
+                           store_target(logical, [rec], Path(bulk_key), external).exists())
+                print(f"{'REFUSE' if present else 'REMOVED'} {path}: removed output record {name}"
+                      + (" still indexed or stored" if present else " (full removal)"))
+                if present:
+                    failed += 1
+            for rec in new_records:
+                name = PureWindowsPath(rec["path"]).name
+                if not is_bulk(name):
+                    continue
+                logical = path.parent / name
+                bulk_key = (Path(key).parent / name).as_posix()
+                if rec.get("missing") is True:
+                    if "store_name" in rec:
+                        raise StoreUnverified(f"{name}: missing record cannot have store_name")
+                    plain = external / bulk_key
+                    old_targets = [store_target(logical, [r], Path(bulk_key), external)
+                                   for r in old.get("outputs", [])
+                                   if PureWindowsPath(r["path"]).name == name]
+                    if (bulk_key in indexed or (revision is None and logical.exists()) or
+                            plain.exists() or any(candidate.name.casefold().startswith(
+                                (name + ".sha1-").casefold())
+                                for candidate in plain.parent.glob("*")) or
+                            any(target.exists() for target in old_targets)):
+                        raise StoreUnverified(f"{name}: missing record has existing bulk file")
+                    if recorded_absence(rec):
+                        continue
                 count += 1
-                if store_key(logical).as_posix() in indexed:
+                if bulk_key in indexed:
+                    digest, size = digests[indexed[bulk_key]]
+                    _check_digest(logical, [rec], digest, size)
                     continue
                 try:
-                    resolve(path.parent, name, manifest, allow_local=False)
+                    target = store_target(logical, _records(manifest, name), Path(bulk_key), external)
+                    if not target.is_file():
+                        raise StoreMissing(f"{name}: store file absent")
+                    verify(target, rec)
                 except StoreMissing:
                     if history.qualifies(path, rec):
                         legacy += 1
@@ -721,17 +902,22 @@ def check_commit(root):
 def verify_tree(root):
     root = Path(root).resolve()
     count = size = failed = never_published = 0
-    history = LegacyRecords()
-    tracked = tracked_manifests(root)
+    history = LegacyRecords(root)
+    problems = []
+    entries = tree_entries(root, "HEAD", problems)
+    for error in problems:
+        print(f"FAIL {error}")
+        failed += 1
+    tracked = {REPO_ROOT / key for key in entries if key.endswith(".manifest.json")}
+    blobs = git_blobs(entries[repo_key(path)] for path in tracked)
     for path in sorted(set(Path(root).rglob("*.manifest.json")) | tracked):
         try:
             if path in tracked:
-                try:
-                    check_head(path, required=True)
-                except (OSError, StoreError) as exc:
-                    print(f"MANIFEST DIFFERS {path}: {exc}")
+                data = blobs[entries[repo_key(path)]]
+                if not path.is_file() or path.read_bytes() != data:
+                    print(f"MANIFEST DIFFERS {path}: working file differs from HEAD")
                     failed += 1
-                manifest = json.loads(git_output("show", "HEAD:" + store_key(path).as_posix()))
+                manifest = json.loads(data)
             else:
                 manifest = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError, StoreError) as exc:
@@ -791,17 +977,23 @@ def main(argv=None):
         sub.add_argument("--root", type=Path, default=REPO_ROOT / "docs/naming/runtime")
         if command == "backfill-records":
             sub.add_argument("--check", action="store_true")
+        if command == "check-commit":
+            sub.add_argument("--rev", help="judge a commit tree against its parent")
         if command == "migrate":
             sub.add_argument("--apply", action="store_true")
     args = parser.parse_args(argv)
-    if not args.root.is_dir():
+    if args.command != "check-commit" and not args.root.is_dir():
         parser.error(f"root is not a directory: {args.root}")
     if args.command == "backfill-records":
         return backfill_records(args.root, args.check)
     if args.command == "migrate":
         return migrate(args.root, args.apply)
     if args.command == "check-commit":
-        return check_commit(args.root)
+        try:
+            return check_commit(args.root, args.rev)
+        except (OSError, ValueError, StoreError) as exc:
+            print(f"REFUSE check-commit: {exc}")
+            return 1
     return verify_tree(args.root)
 
 
