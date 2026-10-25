@@ -116,6 +116,7 @@
         "event:win",
         "event:save",
         "event:load",
+        "event:overwrite",
         "event:options_change"
       ],
       "notes": {
@@ -125,6 +126,7 @@
         "event:guard": "a blocked cut, shown on screen: an attack inside its blade's hit window meets the blade of a fighter that is not attacking, and both stay up. Code-level test (versus-2p-blade-contact-1, all three contacts at 9235, 10557, 10615): fighter_ResolveWeaponContact runs (blade on blade); the attacker in move_kind 2 with unk_288 5, the other fighter in walk move 0x801494ac (move_kind 0x19, reached by holding RIGHT with no button, movegraph) with unk_288 0 and only RIGHT held on its pad; after it the walker gets the common-file move kind 0x2C and the attacker its own kind 0xE, kinds no input reaches (0x2C offers a CROSS counter-cut, taken after the first contact); the landed leg cut instead gives the target the common kind 3 and the attacker carries on (versus-2p-wound-moves-1, 9482)",
         "event:save": "data saved to a memory card",
         "event:load": "data loaded from a memory card",
+        "event:overwrite": "a save written over earlier save data on the card, after the Overwrite data? / Previous data will be erased prompt (memory-card-overwrite-1)",
         "event:out_of_bounds": "OUT OF BOUNDS (場外) call"
       }
     }

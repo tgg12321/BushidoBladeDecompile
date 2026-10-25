@@ -1,0 +1,69 @@
+{
+  "description": "Option Menu UP to Memory Card (blank cards): Load Data finds no data, Save Data (YES) to slot 1, Load Data loads it back, then Save Data again: YES, Overwrite data? YES, the save is written over the first",
+  "covers": [
+    "menu:top",
+    "menu:option",
+    "menu:memory_card",
+    "event:save",
+    "event:load",
+    "event:overwrite"
+  ],
+  "evidence": [
+    "docs/naming/runtime/memory-card-overwrite-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 8600,
+  "inputs": [
+    "6080:DOWN",
+    "6140:DOWN",
+    "6200:DOWN",
+    "6260:DOWN",
+    "6320:DOWN",
+    "6380:DOWN",
+    "6460:CROSS",
+    "6600:UP",
+    "6660:CROSS",
+    "6800:DOWN",
+    "6860:CROSS",
+    "7060:DOWN",
+    "7120:CROSS",
+    "7300:CROSS",
+    "7500:UP",
+    "7560:CROSS",
+    "7840:DOWN",
+    "7900:CROSS",
+    "8080:CROSS",
+    "8300:CROSS"
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6460:t_option",
+    "6560:option_menu",
+    "6660:t_card",
+    "6700:memory_card",
+    "6860:load_empty",
+    "7120:save",
+    "7560:load",
+    "7900:save_2",
+    "8080:overwrite_prompt",
+    "8300:overwrite"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6700:memory_card.first",
+    "6925:load_empty.no_data",
+    "7200:save.prompt",
+    "7400:save.completed",
+    "7700:load.completed",
+    "7830:load.last",
+    "7950:save_2.prompt",
+    "8120:overwrite_prompt.checking",
+    "8250:overwrite_prompt.overwrite",
+    "8290:overwrite_prompt.last",
+    "8320:overwrite.completed",
+    "8420:overwrite.menu",
+    "8599:overwrite.last"
+  ]
+}

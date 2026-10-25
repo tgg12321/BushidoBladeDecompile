@@ -1,0 +1,296 @@
+{
+  "max_events": 200000,
+  "duration_s": 7200,
+  "hitmap": {
+    "tus": [
+      "main/*"
+    ],
+    "exclude": [
+      "main/psxsdk/*",
+      "main/d_*"
+    ],
+    "per_phase": 1
+  },
+  "script": {
+    "end_frame": 8600,
+    "phases": [
+      {
+        "frame": 0,
+        "name": "boot_intro"
+      },
+      {
+        "frame": 5490,
+        "name": "t_menu"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu"
+      },
+      {
+        "frame": 6460,
+        "name": "t_option"
+      },
+      {
+        "frame": 6560,
+        "name": "option_menu"
+      },
+      {
+        "frame": 6660,
+        "name": "t_card"
+      },
+      {
+        "frame": 6700,
+        "name": "memory_card"
+      },
+      {
+        "frame": 6860,
+        "name": "load_empty"
+      },
+      {
+        "frame": 7120,
+        "name": "save"
+      },
+      {
+        "frame": 7560,
+        "name": "load"
+      },
+      {
+        "frame": 7900,
+        "name": "save_2"
+      },
+      {
+        "frame": 8080,
+        "name": "overwrite_prompt"
+      },
+      {
+        "frame": 8300,
+        "name": "overwrite"
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 5200,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5500,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 5800,
+        "press": [
+          "START"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6080,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6140,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6200,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6260,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6320,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6380,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6460,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6600,
+        "press": [
+          "UP"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6660,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6800,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 6860,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7060,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7120,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7300,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7500,
+        "press": [
+          "UP"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7560,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7840,
+        "press": [
+          "DOWN"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 7900,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8080,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      },
+      {
+        "frame": 8300,
+        "press": [
+          "CROSS"
+        ],
+        "hold": 6
+      }
+    ],
+    "screenshots": [
+      {
+        "frame": 5489,
+        "name": "boot_intro.last"
+      },
+      {
+        "frame": 6050,
+        "name": "top_menu.first"
+      },
+      {
+        "frame": 6700,
+        "name": "memory_card.first"
+      },
+      {
+        "frame": 6925,
+        "name": "load_empty.no_data"
+      },
+      {
+        "frame": 7200,
+        "name": "save.prompt"
+      },
+      {
+        "frame": 7400,
+        "name": "save.completed"
+      },
+      {
+        "frame": 7700,
+        "name": "load.completed"
+      },
+      {
+        "frame": 7830,
+        "name": "load.last"
+      },
+      {
+        "frame": 7950,
+        "name": "save_2.prompt"
+      },
+      {
+        "frame": 8120,
+        "name": "overwrite_prompt.checking"
+      },
+      {
+        "frame": 8250,
+        "name": "overwrite_prompt.overwrite"
+      },
+      {
+        "frame": 8290,
+        "name": "overwrite_prompt.last"
+      },
+      {
+        "frame": 8320,
+        "name": "overwrite.completed"
+      },
+      {
+        "frame": 8420,
+        "name": "overwrite.menu"
+      },
+      {
+        "frame": 8599,
+        "name": "overwrite.last"
+      }
+    ]
+  }
+}
