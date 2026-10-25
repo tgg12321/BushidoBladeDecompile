@@ -1,0 +1,328 @@
+==============================================================================
+NAMING WAVE — 47 operations (0 RESET, 47 RENAME)
+  47 identifiers remapped
+  link map: STALE — build/bb2.map is STALE — undefined_syms_auto.txt is newer than the map, so its symbol table may not describe the current tree
+==============================================================================
+
+-- file edits (99) --
+  (root): 2 files, 8 substitutions
+      inline_asm_canonical.txt  (6)
+      symbol_addrs.txt  (2)
+  asm: 85 files, 257 substitutions
+      asm/funcs/fight_Init.s  (10)
+      asm/funcs/fight_RunCommandStream.s  (1)
+      asm/funcs/fight_Update.s  (7)
+      asm/funcs/fight_UpdatePairedMoves.s  (5)
+      asm/funcs/fighter_CastWeaponSegment.s  (2)
+      asm/funcs/fighter_DispatchFrameEvent.s  (3)
+      ... and 79 more
+  include: 1 files, 25 substitutions
+      include/bb2.h  (25)
+  src: 8 files, 254 substitutions
+      src/main/175A4.c  (6)
+      src/main/17AFC.c  (126)
+      src/main/28708.c  (3)
+      src/main/2B344.c  (4)
+      src/main/4510C.c  (1)
+      src/main/51268.c  (19)
+      ... and 2 more
+  tools: 3 files, 6 substitutions
+      tools/grinder/scope_allow.txt  (3)
+      tools/test_board_cards.py  (2)
+      tools/trace/movegraph.py  (1)
+
+-- .s file renames (47) --
+  asm/funcs/func_8001B690.s -> asm/funcs/camera_StartTurnEasingOnLargeHeadingChange.s
+  asm/funcs/func_8001BAE4.s -> asm/funcs/camera_UpdateReplayViewWithSineYawOffset.s
+  asm/funcs/func_8001BBD8.s -> asm/funcs/camera_UpdateReplayViewWithConstantYawOffset.s
+  asm/funcs/func_8001BE20.s -> asm/funcs/fighter_BuildCpuOrMappedPadState.s
+  asm/funcs/func_8001C820.s -> asm/funcs/fight_QueuePositionalSoundWithRandomAlternate.s
+  asm/funcs/func_8001C8DC.s -> asm/funcs/fight_UpdateDefeatDelayAndModeProgress.s
+  asm/funcs/func_8001CE60.s -> asm/funcs/fight_UpdateModeDisplaysAndMatchProgress.s
+  asm/funcs/func_8001DBE4.s -> asm/funcs/fight_WaitForCounterThenClearAndEnableDisplay.s
+  asm/funcs/func_8002006C.s -> asm/funcs/fight_UpdateSeparationAndPairedMoves.s
+  asm/funcs/func_80021280.s -> asm/funcs/fighter_AssignMotionSlotAndScanDataIdNibbles.s
+  ... and 37 more
+
+-- ledger directory renames (70) --
+  memory/grind/func_8001C8DC -> memory/grind/fight_UpdateDefeatDelayAndModeProgress
+  memory/grind/func_80021280 -> memory/grind/fighter_AssignMotionSlotAndScanDataIdNibbles
+  memory/grind/func_80021A98 -> memory/grind/fighter_StartMoveScript
+  memory/grind/func_800233AC -> memory/grind/fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow
+  memory/grind/func_80023648 -> memory/grind/fighter_UpdateInputSteeredForwardMotion
+  memory/grind/func_800238C4 -> memory/grind/fighter_HandleMissingSupportWhileDescending
+  memory/grind/func_80023E40 -> memory/grind/fighter_UpdateGroundYByMoveKind
+  memory/grind/func_80027A58 -> memory/grind/fighter_TryDropQueuedHeadAtBone
+  memory/grind/func_8002872C -> memory/grind/fighter_TriggerOpponentResponseOnMoveFrame
+  memory/grind/func_8002BEA0 -> memory/grind/fighter_CalcSeparationErrorAndOpposedOffsets
+  ... and 60 more
+
+-- symbol-registry line deletions (2) --
+  symbol_addrs.txt:966  func_8001DBE4 = 0x8001DBE4; /* MISNAMED: not a camera fn; returns unless D_800A3768 == DISP_ACTIVE (0x14); the
+  symbol_addrs.txt:973  func_8001C820 = 0x8001C820; /* MISNAMED: not voice data; conditional snd_QueuePositionalSound with sound IDs 0
+
+-- JSON key/field edits (71) --
+  tools/canonical_asm_regions.json: 6 changes
+      func_8002BEA0
+      func_8002D320
+      func_8002FDB0
+      func_80032314
+      func_80063E10
+      ... and 1 more
+  memory/grind/func_8001C8DC/layer2.jsonl: 1 changes
+      line 1: func func_8001C8DC -> fight_UpdateDefeatDelayAndModeProgress
+  memory/grind/func_80021280/layer2.jsonl: 2 changes
+      line 1: func func_80021280 -> fighter_AssignMotionSlotAndScanDataIdNibbles
+      line 2: func func_80021280 -> fighter_AssignMotionSlotAndScanDataIdNibbles
+  memory/grind/func_80021A98/layer2.jsonl: 1 changes
+      line 1: func func_80021A98 -> fighter_StartMoveScript
+  memory/grind/func_800233AC/layer2.jsonl: 1 changes
+      line 1: func func_800233AC -> fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow
+  memory/grind/func_80023648/layer2.jsonl: 1 changes
+      line 1: func func_80023648 -> fighter_UpdateInputSteeredForwardMotion
+  memory/grind/func_800238C4/layer2.jsonl: 1 changes
+      line 1: func func_800238C4 -> fighter_HandleMissingSupportWhileDescending
+  memory/grind/func_80023E40/layer2.jsonl: 1 changes
+      line 1: func func_80023E40 -> fighter_UpdateGroundYByMoveKind
+  memory/grind/func_80027A58/layer2.jsonl: 1 changes
+      line 1: func func_80027A58 -> fighter_TryDropQueuedHeadAtBone
+  memory/grind/func_8002872C/layer2.jsonl: 1 changes
+      line 1: func func_8002872C -> fighter_TriggerOpponentResponseOnMoveFrame
+  memory/grind/func_8002BEA0/layer2.jsonl: 2 changes
+      line 1: func func_8002BEA0 -> fighter_CalcSeparationErrorAndOpposedOffsets
+      line 2: func func_8002BEA0 -> fighter_CalcSeparationErrorAndOpposedOffsets
+  memory/grind/func_8002C22C/layer2.jsonl: 1 changes
+      line 1: func func_8002C22C -> fighter_BlendCurrentAndPreviousContactPoints
+  memory/grind/func_8002C61C/layer2.jsonl: 2 changes
+      line 1: func func_8002C61C -> fight_UpdateFighterInteractionsAndPointCaches
+      line 2: func func_8002C61C -> fight_UpdateFighterInteractionsAndPointCaches
+  memory/grind/func_8002D320/layer2.jsonl: 3 changes
+      line 1: func func_8002D320 -> math_TestSphereAgainstPreparedAxialVertexSpan
+      line 2: func func_8002D320 -> math_TestSphereAgainstPreparedAxialVertexSpan
+      line 3: func func_8002D320 -> math_TestSphereAgainstPreparedAxialVertexSpan
+  memory/grind/func_8002F770/layer2.jsonl: 2 changes
+      line 1: func func_8002F770 -> math_ComposeAxisRotationsAndRewriteAngles
+      line 2: func func_8002F770 -> math_ComposeAxisRotationsAndRewriteAngles
+  memory/grind/func_8002FDB0/layer2.jsonl: 1 changes
+      line 1: func func_8002FDB0 -> fighter_IsBoneTriangleCrossYPositive
+  memory/grind/func_80032314/layer2.jsonl: 4 changes
+      line 1: func func_80032314 -> fight_TriggerOpposingFighterEventFromNearBallisticRecords
+      line 2: func func_80032314 -> fight_TriggerOpposingFighterEventFromNearBallisticRecords
+      line 3: func func_80032314 -> fight_TriggerOpposingFighterEventFromNearBallisticRecords
+      line 4: func func_80032314 -> fight_TriggerOpposingFighterEventFromNearBallisticRecords
+  memory/grind/func_80061250/layer2.jsonl: 2 changes
+      line 1: func func_80061250 -> eff_StartRecycledCommandWithRoseLight
+      line 2: func func_80061250 -> eff_StartRecycledCommandWithRoseLight
+  memory/grind/func_8006133C/layer2.jsonl: 1 changes
+      line 1: func func_8006133C -> eff_StartCosineScaledQuadWithPaleBlueLight
+  memory/grind/func_8006156C/layer2.jsonl: 2 changes
+      line 1: func func_8006156C -> eff_StartRecycledCommandWithPaleRedLight
+      line 2: func func_8006156C -> eff_StartRecycledCommandWithPaleRedLight
+  memory/grind/func_80061658/layer2.jsonl: 2 changes
+      line 1: func func_80061658 -> eff_StartArgSelectedCommandWithCyanLight
+      line 2: func func_80061658 -> eff_StartArgSelectedCommandWithCyanLight
+  memory/grind/func_800617C8/layer2.jsonl: 2 changes
+      line 1: func func_800617C8 -> eff_StartRecycledCommandWithOrangeLight
+      line 2: func func_800617C8 -> eff_StartRecycledCommandWithOrangeLight
+  memory/grind/func_800618B4/layer2.jsonl: 2 changes
+      line 1: func func_800618B4 -> eff_StartRecycledVectorCommandWithRedLight
+      line 2: func func_800618B4 -> eff_StartRecycledVectorCommandWithRedLight
+  memory/grind/func_80061A3C/layer2.jsonl: 1 changes
+      line 1: func func_80061A3C -> eff_StartYawedQuadSlotCommand
+  memory/grind/func_80063BD0/layer2.jsonl: 1 changes
+      line 1: func func_80063BD0 -> eff_AllocateOrRecycleYawedQuadSlot
+  memory/grind/func_80063E10/layer2.jsonl: 3 changes
+      line 1: func func_80063E10 -> eff_DrawYawedSlotQuads
+      line 2: func func_80063E10 -> eff_DrawYawedSlotQuads
+      line 3: func func_80063E10 -> eff_DrawYawedSlotQuads
+  memory/grind/func_80064E90/layer2.jsonl: 1 changes
+      line 1: func func_80064E90 -> eff_InitCosineScaledQuad
+  memory/grind/func_80065000/layer2.jsonl: 1 changes
+      line 1: func func_80065000 -> eff_InitRateSelectedCosineScaledQuad
+  memory/grind/_completed/func_8001BAE4/layer2.jsonl: 9 changes
+      line 1: func func_8001BAE4 -> camera_UpdateReplayViewWithSineYawOffset
+      line 2: func func_8001BAE4 -> camera_UpdateReplayViewWithSineYawOffset
+      line 3: func func_8001BAE4 -> camera_UpdateReplayViewWithSineYawOffset
+      line 4: func func_8001BAE4 -> camera_UpdateReplayViewWithSineYawOffset
+      line 5: func func_8001BAE4 -> camera_UpdateReplayViewWithSineYawOffset
+      ... and 4 more
+  memory/grind/_completed/func_8001BBD8/layer2.jsonl: 1 changes
+      line 1: func func_8001BBD8 -> camera_UpdateReplayViewWithConstantYawOffset
+  memory/grind/_completed/func_8001BE20/layer2.jsonl: 1 changes
+      line 1: func func_8001BE20 -> fighter_BuildCpuOrMappedPadState
+  memory/grind/_completed/func_8001C820/layer2.jsonl: 3 changes
+      line 1: func func_8001C820 -> fight_QueuePositionalSoundWithRandomAlternate
+      line 2: func func_8001C820 -> fight_QueuePositionalSoundWithRandomAlternate
+      line 3: func func_8001C820 -> fight_QueuePositionalSoundWithRandomAlternate
+  memory/grind/_completed/func_8001C8DC/layer2.jsonl: 8 changes
+      line 1: func func_8001C8DC -> fight_UpdateDefeatDelayAndModeProgress
+      line 2: func func_8001C8DC -> fight_UpdateDefeatDelayAndModeProgress
+      line 3: func func_8001C8DC -> fight_UpdateDefeatDelayAndModeProgress
+      line 4: func func_8001C8DC -> fight_UpdateDefeatDelayAndModeProgress
+      line 5: func func_8001C8DC -> fight_UpdateDefeatDelayAndModeProgress
+      ... and 3 more
+  memory/grind/_completed/func_8001CE60/layer2.jsonl: 5 changes
+      line 1: func func_8001CE60 -> fight_UpdateModeDisplaysAndMatchProgress
+      line 2: func func_8001CE60 -> fight_UpdateModeDisplaysAndMatchProgress
+      line 3: func func_8001CE60 -> fight_UpdateModeDisplaysAndMatchProgress
+      line 4: func func_8001CE60 -> fight_UpdateModeDisplaysAndMatchProgress
+      line 5: func func_8001CE60 -> fight_UpdateModeDisplaysAndMatchProgress
+  memory/grind/_completed/func_80021280/layer2.jsonl: 5 changes
+      line 1: func func_80021280 -> fighter_AssignMotionSlotAndScanDataIdNibbles
+      line 2: func func_80021280 -> fighter_AssignMotionSlotAndScanDataIdNibbles
+      line 3: func func_80021280 -> fighter_AssignMotionSlotAndScanDataIdNibbles
+      line 4: func func_80021280 -> fighter_AssignMotionSlotAndScanDataIdNibbles
+      line 5: func func_80021280 -> fighter_AssignMotionSlotAndScanDataIdNibbles
+  memory/grind/_completed/func_80021A98/layer2.jsonl: 8 changes
+      line 1: func func_80021A98 -> fighter_StartMoveScript
+      line 2: func func_80021A98 -> fighter_StartMoveScript
+      line 3: func func_80021A98 -> fighter_StartMoveScript
+      line 4: func func_80021A98 -> fighter_StartMoveScript
+      line 5: func func_80021A98 -> fighter_StartMoveScript
+      ... and 3 more
+  memory/grind/_completed/func_80022568/layer2.jsonl: 1 changes
+      line 1: func func_80022568 -> fighter_ResetBoneGroupHitAccumulators
+  memory/grind/_completed/func_80022F34/layer2.jsonl: 6 changes
+      line 1: func func_80022F34 -> fighter_ConfigureCpuControl
+      line 2: func func_80022F34 -> fighter_ConfigureCpuControl
+      line 3: func func_80022F34 -> fighter_ConfigureCpuControl
+      line 4: func func_80022F34 -> fighter_ConfigureCpuControl
+      line 5: func func_80022F34 -> fighter_ConfigureCpuControl
+      ... and 1 more
+  memory/grind/_completed/func_800233AC/layer2.jsonl: 10 changes
+      line 1: func func_800233AC -> fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow
+      line 2: func func_800233AC -> fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow
+      line 3: func func_800233AC -> fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow
+      line 4: func func_800233AC -> fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow
+      line 5: func func_800233AC -> fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow
+      ... and 5 more
+  memory/grind/_completed/func_80023648/layer2.jsonl: 10 changes
+      line 1: func func_80023648 -> fighter_UpdateInputSteeredForwardMotion
+      line 2: func func_80023648 -> fighter_UpdateInputSteeredForwardMotion
+      line 3: func func_80023648 -> fighter_UpdateInputSteeredForwardMotion
+      line 4: func func_80023648 -> fighter_UpdateInputSteeredForwardMotion
+      line 5: func func_80023648 -> fighter_UpdateInputSteeredForwardMotion
+      ... and 5 more
+  memory/grind/_completed/func_800238C4/layer2.jsonl: 2 changes
+      line 1: func func_800238C4 -> fighter_HandleMissingSupportWhileDescending
+      line 2: func func_800238C4 -> fighter_HandleMissingSupportWhileDescending
+  memory/grind/_completed/func_80023D28/layer2.jsonl: 4 changes
+      line 1: func func_80023D28 -> fighter_CacheDownwardProbeHit
+      line 2: func func_80023D28 -> fighter_CacheDownwardProbeHit
+      line 3: func func_80023D28 -> fighter_CacheDownwardProbeHit
+      line 4: func func_80023D28 -> fighter_CacheDownwardProbeHit
+  memory/grind/_completed/func_80023E40/layer2.jsonl: 2 changes
+      line 1: func func_80023E40 -> fighter_UpdateGroundYByMoveKind
+      line 2: func func_80023E40 -> fighter_UpdateGroundYByMoveKind
+  memory/grind/_completed/func_80027334/layer2.jsonl: 1 changes
+      line 1: func func_80027334 -> motion_SetFixedChannelBlock
+  memory/grind/_completed/func_80027438/layer2.jsonl: 1 changes
+      line 1: func func_80027438 -> fighter_AccumulateOrClearByBoneGroup
+  memory/grind/_completed/func_800278C0/layer2.jsonl: 2 changes
+      line 1: func func_800278C0 -> fighter_DispatchBoneHitSoundEvent
+      line 2: func func_800278C0 -> fighter_DispatchBoneHitSoundEvent
+  memory/grind/_completed/func_80027A58/layer2.jsonl: 2 changes
+      line 1: func func_80027A58 -> fighter_TryDropQueuedHeadAtBone
+      line 2: func func_80027A58 -> fighter_TryDropQueuedHeadAtBone
+  memory/grind/_completed/func_8002872C/layer2.jsonl: 3 changes
+      line 1: func func_8002872C -> fighter_TriggerOpponentResponseOnMoveFrame
+      line 2: func func_8002872C -> fighter_TriggerOpponentResponseOnMoveFrame
+      line 3: func func_8002872C -> fighter_TriggerOpponentResponseOnMoveFrame
+  memory/grind/_completed/func_800290B8/layer2.jsonl: 1 changes
+      line 1: func func_800290B8 -> fight_ProcessPositionRecordsInQuad
+  memory/grind/_completed/func_8002BEA0/layer2.jsonl: 8 changes
+      line 1: func func_8002BEA0 -> fighter_CalcSeparationErrorAndOpposedOffsets
+      line 2: func func_8002BEA0 -> fighter_CalcSeparationErrorAndOpposedOffsets
+      line 3: func func_8002BEA0 -> fighter_CalcSeparationErrorAndOpposedOffsets
+      line 4: func func_8002BEA0 -> fighter_CalcSeparationErrorAndOpposedOffsets
+      line 5: func func_8002BEA0 -> fighter_CalcSeparationErrorAndOpposedOffsets
+      ... and 3 more
+  memory/grind/_completed/func_8002C22C/layer2.jsonl: 4 changes
+      line 1: func func_8002C22C -> fighter_BlendCurrentAndPreviousContactPoints
+      line 2: func func_8002C22C -> fighter_BlendCurrentAndPreviousContactPoints
+      line 3: func func_8002C22C -> fighter_BlendCurrentAndPreviousContactPoints
+      line 4: func func_8002C22C -> fighter_BlendCurrentAndPreviousContactPoints
+  memory/grind/_completed/func_8002C61C/layer2.jsonl: 7 changes
+      line 1: func func_8002C61C -> fight_UpdateFighterInteractionsAndPointCaches
+      line 2: func func_8002C61C -> fight_UpdateFighterInteractionsAndPointCaches
+      line 3: func func_8002C61C -> fight_UpdateFighterInteractionsAndPointCaches
+      line 4: func func_8002C61C -> fight_UpdateFighterInteractionsAndPointCaches
+      line 5: func func_8002C61C -> fight_UpdateFighterInteractionsAndPointCaches
+      ... and 2 more
+  memory/grind/_completed/func_8002D320/layer2.jsonl: 8 changes
+      line 1: func func_8002D320 -> math_TestSphereAgainstPreparedAxialVertexSpan
+      line 2: func func_8002D320 -> math_TestSphereAgainstPreparedAxialVertexSpan
+      line 3: func func_8002D320 -> math_TestSphereAgainstPreparedAxialVertexSpan
+      line 4: func func_8002D320 -> math_TestSphereAgainstPreparedAxialVertexSpan
+      line 5: func func_8002D320 -> math_TestSphereAgainstPreparedAxialVertexSpan
+      ... and 3 more
+  memory/grind/_completed/func_8002F770/layer2.jsonl: 12 changes
+      line 1: func func_8002F770 -> math_ComposeAxisRotationsAndRewriteAngles
+      line 2: func func_8002F770 -> math_ComposeAxisRotationsAndRewriteAngles
+      line 3: func func_8002F770 -> math_ComposeAxisRotationsAndRewriteAngles
+      line 4: func func_8002F770 -> math_ComposeAxisRotationsAndRewriteAngles
+      line 5: func func_8002F770 -> math_ComposeAxisRotationsAndRewriteAngles
+      ... and 7 more
+  memory/grind/_completed/func_8002FDB0/layer2.jsonl: 2 changes
+      line 1: func func_8002FDB0 -> fighter_IsBoneTriangleCrossYPositive
+      line 2: func func_8002FDB0 -> fighter_IsBoneTriangleCrossYPositive
+  memory/grind/_completed/func_80032040/layer2.jsonl: 1 changes
+      line 1: func func_80032040 -> fight_ClearBallisticRecords
+  memory/grind/_completed/func_800321E8/layer2.jsonl: 3 changes
+      line 1: func func_800321E8 -> fight_UpdateBallisticRecords
+      line 2: func func_800321E8 -> fight_UpdateBallisticRecords
+      line 3: func func_800321E8 -> fight_UpdateBallisticRecords
+  memory/grind/_completed/func_80032314/layer2.jsonl: 10 changes
+      line 1: func func_80032314 -> fight_TriggerOpposingFighterEventFromNearBallisticRecords
+      line 2: func func_80032314 -> fight_TriggerOpposingFighterEventFromNearBallisticRecords
+      line 3: func func_80032314 -> fight_TriggerOpposingFighterEventFromNearBallisticRecords
+      line 4: func func_80032314 -> fight_TriggerOpposingFighterEventFromNearBallisticRecords
+      line 5: func func_80032314 -> fight_TriggerOpposingFighterEventFromNearBallisticRecords
+      ... and 5 more
+  memory/grind/_completed/func_80032854/layer2.jsonl: 1 changes
+      line 1: func func_80032854 -> fight_RecordAndDispatchSoundEffectEvent
+  memory/grind/_completed/func_80061250/layer2.jsonl: 2 changes
+      line 1: func func_80061250 -> eff_StartRecycledCommandWithRoseLight
+      line 2: func func_80061250 -> eff_StartRecycledCommandWithRoseLight
+  memory/grind/_completed/func_8006133C/layer2.jsonl: 2 changes
+      line 1: func func_8006133C -> eff_StartCosineScaledQuadWithPaleBlueLight
+      line 2: func func_8006133C -> eff_StartCosineScaledQuadWithPaleBlueLight
+  memory/grind/_completed/func_8006156C/layer2.jsonl: 2 changes
+      line 1: func func_8006156C -> eff_StartRecycledCommandWithPaleRedLight
+      line 2: func func_8006156C -> eff_StartRecycledCommandWithPaleRedLight
+  memory/grind/_completed/func_80061658/layer2.jsonl: 2 changes
+      line 1: func func_80061658 -> eff_StartArgSelectedCommandWithCyanLight
+      line 2: func func_80061658 -> eff_StartArgSelectedCommandWithCyanLight
+  memory/grind/_completed/func_800617C8/layer2.jsonl: 2 changes
+      line 1: func func_800617C8 -> eff_StartRecycledCommandWithOrangeLight
+      line 2: func func_800617C8 -> eff_StartRecycledCommandWithOrangeLight
+  memory/grind/_completed/func_800618B4/layer2.jsonl: 4 changes
+      line 1: func func_800618B4 -> eff_StartRecycledVectorCommandWithRedLight
+      line 2: func func_800618B4 -> eff_StartRecycledVectorCommandWithRedLight
+      line 3: func func_800618B4 -> eff_StartRecycledVectorCommandWithRedLight
+      line 4: func func_800618B4 -> eff_StartRecycledVectorCommandWithRedLight
+  memory/grind/_completed/func_80061A3C/layer2.jsonl: 1 changes
+      line 1: func func_80061A3C -> eff_StartYawedQuadSlotCommand
+  memory/grind/_completed/func_80063BD0/layer2.jsonl: 1 changes
+      line 1: func func_80063BD0 -> eff_AllocateOrRecycleYawedQuadSlot
+  memory/grind/_completed/func_80063E10/layer2.jsonl: 6 changes
+      line 1: func func_80063E10 -> eff_DrawYawedSlotQuads
+      line 2: func func_80063E10 -> eff_DrawYawedSlotQuads
+      line 3: func func_80063E10 -> eff_DrawYawedSlotQuads
+      line 4: func func_80063E10 -> eff_DrawYawedSlotQuads
+      line 5: func func_80063E10 -> eff_DrawYawedSlotQuads
+      ... and 1 more
+  memory/grind/_completed/func_80064E90/layer2.jsonl: 1 changes
+      line 1: func func_80064E90 -> eff_InitCosineScaledQuad
+  memory/grind/_completed/func_80065000/layer2.jsonl: 2 changes
+      line 1: func func_80065000 -> eff_InitRateSelectedCosineScaledQuad
+      line 2: func func_80065000 -> eff_InitRateSelectedCosineScaledQuad
+  memory/grind/_completed/func_80065484/layer2.jsonl: 1 changes
+      line 1: func func_80065484 -> eff_DrawAndAdvanceRateSelectedCosineScaledQuad
+
+-- OUT OF SCOPE / manual follow-up (3) --
+  ~ engine/gtemacro.py:L1: ['func_8002F770'] in prose/docstring — NOT rewritten
+  ~ engine/test_engine.py:L7918: ['func_80032854'] in prose/docstring — NOT rewritten
+  ~ tools/trace/movegraph.py:L2: ['func_8001BE20', 'func_80021A98'] in prose/docstring — NOT rewritten
+
+DRY RUN — nothing written. Re-run with --apply.
