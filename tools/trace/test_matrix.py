@@ -335,7 +335,9 @@ class MatrixTest(unittest.TestCase):
         outputs = matrix.render([knockout, failed])
         self.assertIn("scenario-knockout-1/func\tstub\tfalse", outputs["sources.tsv"])
         self.assertNotIn("scenario-knockout-1/func", outputs["values.tsv"])
-        for path, manifest in [(failed, {}), (knockout, {"q124_complete": False})]:
+        lone = self.capture("docs/naming/runtime/scenario-knockout-2", 42)
+        for path, manifest in [(failed, {}), (knockout, {"q124_complete": False}),
+                               (lone, {"q124_complete": False})]:
             self.write(path / "capture.manifest.json", json.dumps(manifest))
             with self.assertRaisesRegex(matrix.InvalidCapture, "q124_complete"):
                 matrix.render([path])

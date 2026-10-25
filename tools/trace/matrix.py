@@ -132,7 +132,8 @@ def load_capture(path):
         relative = Path()
     in_family = any(family(part) for part in relative.parts)
     complete = manifest.get("q124_complete") is True
-    failed_leaf = (in_family and path.name != "baseline"
+    failed_leaf = (any(family(part) for part in relative.parts[:-1])
+                   and path.name != "baseline"
                    and manifest.get("q124_complete") is False)
     if not complete and not failed_leaf:
         raise InvalidCapture("manifest requires q124_complete: true")
