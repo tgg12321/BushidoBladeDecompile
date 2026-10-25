@@ -141,6 +141,20 @@ class DiffTest(unittest.TestCase):
         self.assertEqual((row["capture_name"], row["no_name"], row["axis"]),
                          ("recorded", "1", "mode"))
 
+    def test_stub_scenario_row_adds_no_axis_values(self):
+        def covered(extra_kind):
+            self.tables()
+            self.write_table(self.matrix / "scenarios.tsv", ["capture", "scenario", "covers", "kind"],
+                             [list(r) + ["hitmap"] for r in self.scenarios]
+                             + [["s", "four", "menu:top,mode:z,stage:a", extra_kind]])
+            content, sets = diff.render(self.matrix)
+            self.sets = {r["set_id"]: r for r in csv.DictReader(io.StringIO(sets), delimiter="\t")}
+            row = next(r for r in csv.DictReader(io.StringIO(content), delimiter="\t")
+                       if r["kind"] == "only_x" and r["tag"] == "mode:x")
+            return self.members(row["axis_values_covered"])
+        self.assertEqual(covered("hitmap,stub"), ["x", "y"])
+        self.assertEqual(covered("hitmap"), ["x", "y", "z"])
+
     def test_hit_outside_no_row(self):
         self.cells[-1] = "p:1"
         self.assertFalse(any(r["tag"] == "mode:x" for r in self.rows()))

@@ -59,7 +59,8 @@ zero_captures, axis_values_covered and covered_tags reference only_x_sets.tsv
 (set_id, kind captures|values|tags, members). IDs are the first 12 SHA1 hex of
 sorted compact JSON members. Each used set is written once; empty cells do
 not reference sets. Check rebuilds both tables byte-for-byte. Axis values use
-all scenarios.tsv captures; covered_tags includes all axes of every matrix
+all scenarios.tsv captures except stub ones (kind includes stub: a stubbed
+or poked run is a modified game); covered_tags includes all axes of every matrix
 capture on every row. No names or roles are inferred.
 All relative CLI paths are repository-relative.
 """
@@ -379,11 +380,13 @@ def render(matrix):
         covers = set(entry["covers"].split(",")) if entry["covers"] not in ("", "-") else set()
         if capture in tags:
             raise ValueError("duplicate scenario capture: " + capture)
+        stub = "stub" in entry.get("kind", "").split(",")
         for tag in covers:
             if not re.fullmatch(r"[^:,\s]+:[^:,\s]+", tag):
                 raise ValueError("invalid covers tag: " + tag)
             axis, value = tag.split(":", 1)
-            axes.setdefault(axis, set()).add(value)
+            if not stub:
+                axes.setdefault(axis, set()).add(value)
         tags[capture], scenario[capture] = covers, name
         if name in scenario_tags and scenario_tags[name] != covers:
             raise ValueError("conflicting covers for scenario: " + name)
