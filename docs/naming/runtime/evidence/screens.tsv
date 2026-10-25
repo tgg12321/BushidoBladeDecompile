@@ -6417,6 +6417,7 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80022580	fighter_Init	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	t_load	7695	7695	2	t_load.mid@8060#7011db60e54e	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80022580	fighter_Init	ground-tag-versus-2p-tunnel-1@69a2954298ca	t_load	7755	7755	2	t_load.mid@8120#2060c3b5e9fe	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80022580	fighter_Init	ground-tag-versus-2p-underrail-1@ea88b127e2b5	t_load	7695	7695	2	t_load.mid@8060#7011db60e54e	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x80022580	fighter_Init	versus-2p-kimigaura-shore-kick-1@509182615398	t_load	7485	7485	1	t_load.last@8229#2cffc4b4614f	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x80022580	fighter_Init	versus-2p-pair-abandoned-station-1@35cceb29cd54	t_load	7875	7875	1	t_load.mid@8200#7ca4e26af107	hitmap:first 1 hits per phase only	0	
 0x80022580	fighter_Init	versus-2p-pair-abandoned-station-2@5fdd6dc95b9d	t_load	7875	7875	1	t_load.mid@8200#7ca4e26af107	hitmap:first 1 hits per phase only	0	
 0x80022580	fighter_Init	versus-2p-pair-bamboo-1@07355ecd9358	t_load	7875	7875	1	t_load.mid@8200#d8d5628340eb	hitmap:first 1 hits per phase only	0	
@@ -6561,6 +6562,24 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x8002304C	fighter_ResolveMovement	ground-tag-versus-2p-underrail-1@ea88b127e2b5	rematch_menu	10860	11858	1000	rematch_menu.11260@11260#4325fe20159b;rematch_menu.11560@11560#96fa6621bb1a;rematch_menu.last@11859#ea43e2cc196d	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8002304C	fighter_ResolveMovement	ground-tag-versus-2p-underrail-1@ea88b127e2b5	t_ko	10640	10858	218	t_ko.10655@10655#910266385cb6;t_ko.10755@10755#1f63b8f0393f;t_ko.10855@10855#5a01b4b272fb;t_ko.last@10859#f11d1cbbfe0e	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8002304C	fighter_ResolveMovement	ground-tag-versus-2p-underrail-1@ea88b127e2b5	t_load	8435	8444	10	fight.first@8445#7d242a1f66e7;t_load.last@8444#137f6050b674	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	fight	8231	8429	100		recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	kick_0	8511	8629	60	kick_0.15@8525#4fc93bc00f9e;kick_0.30@8540#e696af056d95;kick_0.60@8570#a013104c6b35	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	kick_1	8711	8829	60	kick_1.15@8725#af1894ede4ff;kick_1.30@8740#4ebd96908548;kick_1.60@8770#0f1d73fef466	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	kick_2	8911	9029	60	kick_2.15@8925#507e19b0bed9;kick_2.30@8940#b6c6f43188f9;kick_2.60@8970#86a986077ce6	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	kick_3	9111	9228	59	kick_3.15@9125#d73b9e074a20;kick_3.30@9140#f15a48bf8100;kick_3.60@9170#275ab6891650	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	kick_4	9310	9428	60	kick_4.15@9325#b78b5c1c1e84;kick_4.30@9340#a2ec5e74bcda;kick_4.60@9370#4e7390c4a17e	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	kick_5	9510	9628	60	kick_5.15@9525#b0779131ef76;kick_5.30@9540#854e104d0426;kick_5.60@9570#78e6367dae52	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	kick_6	9710	9829	59	kick_6.15@9725#39ab3deac874;kick_6.30@9740#8942d756d3e4;kick_6.60@9770#95e0de7bf26d	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	kick_7	9911	10059	73	kick_7.15@9925#f42d3afd6a4b;kick_7.30@9940#522fe5d411da;kick_7.60@9970#389c9a8647be;last@10059#09a601d4a201	recorded hits only; capture limits apply	1	coverage_next_start_bound;no_later_screenshot
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	t_load	8220	8229	5	fight.first@8230#aa4cda7bc1ec;t_load.last@8229#2cffc4b4614f	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	walk_0	8431	8509	40	kick_0.0@8510#30c968f1ea46	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	walk_1	8631	8709	40	kick_1.0@8710#97188b6d9aba	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	walk_2	8831	8909	40	kick_2.0@8910#04b31e286367	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	walk_3	9031	9109	40	kick_3.0@9110#78fe1359a0b0	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	walk_4	9230	9308	40	kick_4.0@9310#6df36a1c8836	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	walk_5	9430	9508	40	kick_5.0@9510#af17316bb385	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	walk_6	9630	9708	40	kick_6.0@9710#a6472c1e4dfc	recorded hits only; capture limits apply	1	coverage_next_start_bound
+0x8002304C	fighter_ResolveMovement	versus-2p-kimigaura-shore-kick-1@509182615398	walk_7	9831	9909	40	kick_7.0@9910#9b632d6b2eb7	recorded hits only; capture limits apply	1	coverage_next_start_bound
 0x8002304C	fighter_ResolveMovement	versus-2p-pair-abandoned-station-1@35cceb29cd54	fight	8700	8700	1	fight.9000@9000#116b88a2d586	hitmap:first 1 hits per phase only	0	
 0x8002304C	fighter_ResolveMovement	versus-2p-pair-abandoned-station-1@35cceb29cd54	fight_tail	10150	10150	1	fight_tail.last@10199#68bf22be3008	hitmap:first 1 hits per phase only	0	
 0x8002304C	fighter_ResolveMovement	versus-2p-pair-abandoned-station-1@35cceb29cd54	t_load	8621	8621	1	t_load.last@8699#fdb84ef799f0	hitmap:first 1 hits per phase only	0	
@@ -9475,6 +9494,14 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 0x80032854	func_80032854	ground-tag-versus-2p-tunnel-1@69a2954298ca	t_ko	10511	10607	6	t_ko.10550@10550#e88be0aeb7bb;t_ko.10650@10650#ec7cc2fc1266	recorded hits only; capture limits apply	0	
 0x80032854	func_80032854	ground-tag-versus-2p-underrail-1@ea88b127e2b5	fight	10268	10368	6	fight.10300@10300#1c499cbb7661;fight.last@10404#21cb1a21652d	recorded hits only; capture limits apply	0	
 0x80032854	func_80032854	ground-tag-versus-2p-underrail-1@ea88b127e2b5	t_ko	10514	10610	6	t_ko.10555@10555#849325cb2190;t_ko.10655@10655#910266385cb6	recorded hits only; capture limits apply	0	
+0x80032854	func_80032854	versus-2p-kimigaura-shore-kick-1@509182615398	kick_0	8549	8549	1	kick_0.60@8570#a013104c6b35	recorded hits only; capture limits apply	0	
+0x80032854	func_80032854	versus-2p-kimigaura-shore-kick-1@509182615398	kick_1	8749	8749	1	kick_1.60@8770#0f1d73fef466	recorded hits only; capture limits apply	0	
+0x80032854	func_80032854	versus-2p-kimigaura-shore-kick-1@509182615398	kick_2	8949	8949	1	kick_2.60@8970#86a986077ce6	recorded hits only; capture limits apply	0	
+0x80032854	func_80032854	versus-2p-kimigaura-shore-kick-1@509182615398	kick_3	9149	9149	1	kick_3.60@9170#275ab6891650	recorded hits only; capture limits apply	0	
+0x80032854	func_80032854	versus-2p-kimigaura-shore-kick-1@509182615398	kick_4	9348	9348	1	kick_4.60@9370#4e7390c4a17e	recorded hits only; capture limits apply	0	
+0x80032854	func_80032854	versus-2p-kimigaura-shore-kick-1@509182615398	kick_5	9548	9548	1	kick_5.60@9570#78e6367dae52	recorded hits only; capture limits apply	0	
+0x80032854	func_80032854	versus-2p-kimigaura-shore-kick-1@509182615398	kick_6	9749	9749	1	kick_6.60@9770#95e0de7bf26d	recorded hits only; capture limits apply	0	
+0x80032854	func_80032854	versus-2p-kimigaura-shore-kick-1@509182615398	kick_7	9949	9949	1	kick_7.60@9970#389c9a8647be	recorded hits only; capture limits apply	0	
 0x8003339C	fighter_ProcessFrameEvents	versus-2p-pair-abandoned-station-1@35cceb29cd54	fight	8700	8700	1	fight.9000@9000#116b88a2d586	hitmap:first 1 hits per phase only	0	
 0x8003339C	fighter_ProcessFrameEvents	versus-2p-pair-abandoned-station-1@35cceb29cd54	fight_tail	10150	10150	1	fight_tail.last@10199#68bf22be3008	hitmap:first 1 hits per phase only	0	
 0x8003339C	fighter_ProcessFrameEvents	versus-2p-pair-abandoned-station-1@35cceb29cd54	t_load	8624	8624	1	t_load.last@8699#fdb84ef799f0	hitmap:first 1 hits per phase only	0	
@@ -41309,3 +41336,4 @@ addr	name	capture	phase	first_frame	last_frame	hits_with_frame	screens	coverage	
 ?	?	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	boot_intro	273	464	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	ground-tag-versus-2p-tunnel-1@69a2954298ca	boot_intro	273	464	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
 ?	?	ground-tag-versus-2p-underrail-1@ea88b127e2b5	boot_intro	273	464	4	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
+?	?	versus-2p-kimigaura-shore-kick-1@509182615398	boot_intro	273	464	2	boot_intro.last@5489#e7bfd030cbff	recorded hits only; capture limits apply	1	unknown_function_address;unresolved_function
