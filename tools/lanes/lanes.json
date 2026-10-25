@@ -68,6 +68,13 @@
       "subject": "docs: runtime only-X evidence refresh",
       "inputs": ["docs/naming/runtime/", "tools/trace/scan/diff.py",
                  "tools/trace/scan/facts.py", "tools/trace/runkit.py", "tools/trace/gdbtrace.py"]
+    },
+    {
+      "path": "docs/naming/runtime/evidence/screens.tsv",
+      "cmd": "python3 tools/trace/scan/screens.py build",
+      "subject": "docs: runtime screen evidence refresh",
+      "inputs": ["docs/naming/runtime/", "tools/trace/scan/screens.py",
+                 "tools/trace/scan/events.py", "tools/trace/runkit.py", "tools/trace/gdbtrace.py"]
     }
   ],
   "gates": {

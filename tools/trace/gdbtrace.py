@@ -899,10 +899,45 @@ def pause_dup(now, at_stop) -> tuple[bool, bool]:
     return now[2] == at_stop[2], False
 
 
+def frame_fields(pause, last_n, lagged):
+    """Frame stamp for the records of one stop, from the Lua pause line
+    `pause` read at that stop: ({fields}, lagged).
+
+    The script's ExecutionFlow::Pause listener writes `count frame cycle` at
+    every pause (a breakpoint, ^C or the Lua's own), so at a stop whose count
+    is exactly one past the previous stop's (`last_n`) the line is this
+    stop's, and its frame is the frame the stop happened in: runkit's count
+    (GPU::Vsync from power-on), the one phases and screenshots use. Anything
+    else gives no frame, only a frame_note. A count that did not move at a
+    stop that is no skipped duplicate is unexpected (the stub answers `g`
+    after the Pause listeners ran) and is taken as a lagging line: a later
+    line could then belong to an earlier stop, so no frame is stamped for
+    the rest of the run (lagged).
+    """
+    if lagged:
+        return {"frame_note": "Lua pause line lagged earlier in the run"}, True
+    if pause is None or last_n is None:
+        return {"frame_note": "no Lua pause recorded"}, False
+    if pause[0] == last_n:
+        return {"frame_note": "Lua pause count did not move"}, True
+    if pause[0] != last_n + 1:
+        return {"frame_note": f"Lua pause count moved {last_n} -> "
+                              f"{pause[0]}"}, False
+    return {"frame": pause[1], "pause_n": pause[0]}, False
+
+
 def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
     out = open(args.out, "w", encoding="utf-8", newline="\n")
+    # frame_fields() of the current stop (script runs): set once per stop
+    # in the loop below, stamped on that stop's hit / canary / ambiguous /
+    # unmatched records.
+    stamp = {"fields": None, "last_n": None, "lagged": False}
 
     def emit(rec):
+        if (stamp["fields"] is not None
+                and rec["ev"] in ("hit", "canary", "ambiguous-stop",
+                                  "unmatched-stop")):
+            rec.update(stamp["fields"])
         out.write(json.dumps(rec, separators=(",", ":")) + "\n")
         out.flush()
 
@@ -1086,6 +1121,11 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
             gdb, RESET_VECTOR, args.expect.get("bios"))
         emit({"ev": "phase", "t": 0.0, "frame": state[1] if state else 0,
               "phase": phase, "armed_frame": armed_frame})
+        # The pause count once arming is done (many round trips after the
+        # stop it ran in): the first stop in the loop must be one past it.
+        # No line yet means no pause since the Lua loaded.
+        armed_pause = runkit.read_pause(args.out)
+        stamp["last_n"] = armed_pause[0] if armed_pause else 0
     after_script_stop = None  # regs at the last script stop
     script_pause = None  # runkit.read_pause() at the last script stop
     ambiguous = 0
@@ -1186,8 +1226,17 @@ def trace(gdb: Gdb, syms: Symbols, spec: dict, args) -> int:
                     # between (same registers, no new Lua state, same CPU
                     # cycle): skip it.
                     after_script_stop = None
+                    if pause is not None:
+                        stamp["last_n"] = max(stamp["last_n"], pause[0])
                     continue
             after_script_stop = None
+            if script:
+                # After the duplicate test: a skipped duplicate stop is no
+                # lagging pause line.
+                stamp["fields"], stamp["lagged"] = frame_fields(
+                    pause, stamp["last_n"], stamp["lagged"])
+                if pause is not None:
+                    stamp["last_n"] = pause[0]
             script_stop = bool(new and new != state)
             if script_stop:
                 # The Lua paused the emulator at a phase change or the end.
