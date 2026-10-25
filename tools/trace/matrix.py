@@ -18,7 +18,10 @@ it sets none), else len(hex_string)//2. Polls never touch coverage.
 Stub leaf IDs include their parent directory to distinguish baseline captures.
 An events capture (breakpoints, watch or polls, no hit-map declaration and no
 hitmap.tsv) adds sources rows only: no coverage column, and its phases.tsv is
-hashed but not validated.
+hashed but not validated; the same holds for the phases.tsv of such a capture
+that also reads values (kind values). A stub or poked capture (kind stub) with
+a hit map has its TSVs validated but gets no coverage column; it keeps a
+scenarios.tsv row of kind hitmap,stub.
 sources.tsv has one row per input file per capture (including the optional
 no-name registry). Start time uses manifest start.time/start_time, falling back
 to the JSONL start event because existing manifests record only start context.
@@ -153,10 +156,13 @@ def load_capture(path):
 
     # TSV-less value and stub captures are explicit alternate layouts. A
     # hitmap declaration or either TSV always requires both validated TSVs,
-    # except that an events capture's phases.tsv is only recorded in sources.
-    mapped = (has_map or ((path / "phases.tsv").exists() and kind != "events")
+    # except that the phases.tsv of a capture with breakpoints, watches or
+    # polls and no hit map (kind events, or values when it also reads
+    # values; not a stub) is only recorded in sources.
+    unmapped_phases = is_events and not has_map and not is_stub
+    mapped = (has_map or ((path / "phases.tsv").exists() and not unmapped_phases)
               or declares_map or kind == "other")
-    if kind == "events" and (path / "phases.tsv").exists():
+    if unmapped_phases and (path / "phases.tsv").exists():
         read("phases.tsv")
     functions = {}
     if mapped:
@@ -334,7 +340,9 @@ def render(paths, no_name=None, all_evidence=False):
         registry_hash = hashlib.sha1(data).hexdigest()
         rows = table(data.decode("utf-8"), ["address"])
         registry = {address(row[0]) for row in rows[1:]}
-    mapped = [c for c in captures if c["mapped"]]
+    # a stub or poked capture's hit map is validated but gives no coverage
+    # column: it is a modified game (sources only, like any stub)
+    mapped = [c for c in captures if c["mapped"] and c["kind"] != "stub"]
     functions = {}
     for capture in mapped:
         for addr, (name, cell, hit) in capture["functions"].items():

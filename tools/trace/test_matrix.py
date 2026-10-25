@@ -339,6 +339,22 @@ class MatrixTest(unittest.TestCase):
         self.assertIn("poked\tstub\ttrue", outputs["sources.tsv"])
         self.assertEqual(outputs["coverage.tsv"],
                          "addr\tcapture_name\tother_capture_names\tno_name\tcaptures_hit\n")
+        # a poked run with a hit map (a scenario's setup poke): TSVs still
+        # validated, but no coverage column
+        mapped = self.capture("poked-map", 46, hitmap="function\taddr\tfight\nf\t0x80010000\t1\n")
+        events = [json.loads(line) for line in (mapped / "capture.jsonl").read_text().splitlines()]
+        events[0]["spec"] = {"pokes": [{"at": "D_80010010", "hex": "06", "phase": "boot"}]}
+        self.write(mapped / "capture.jsonl", "".join(json.dumps(e) + "\n" for e in events))
+        outputs = matrix.render([mapped, self.a])
+        self.assertIn("poked-map\tstub\ttrue", outputs["sources.tsv"])
+        self.assertEqual(outputs["coverage.tsv"].splitlines()[0],
+                         "addr\tcapture_name\tother_capture_names\tno_name\tcaptures_hit\ta")
+        # its scenarios.tsv row stays, kind "hitmap,stub" (diff.py leaves
+        # stub rows out of its axes)
+        self.assertIn("\npoked-map\t-\t-\t-\thitmap,stub\t", outputs["scenarios.tsv"])
+        self.write(mapped / "hitmap.tsv", "wrong\n")
+        with self.assertRaises(matrix.InvalidCapture):
+            matrix.render([mapped])
 
     def test_events_capture_sources_only(self):
         path = self.capture("events", 50)
@@ -365,6 +381,20 @@ class MatrixTest(unittest.TestCase):
         (path / "phases.tsv").unlink()
         self.assertEqual(matrix.load_capture(path)["kind"], "events")
         self.assertFalse(matrix.load_capture(path)["mapped"])
+        # breakpoints plus value reads (kind values) with a phases.tsv and no
+        # hit map: phases.tsv recorded, not validated, no hitmap.tsv needed
+        events[0]["spec"]["values"] = [{"at": "D_80010010", "len": 4}]
+        self.write(path / "capture.jsonl", "".join(json.dumps(e) + "\n" for e in events))
+        self.write(path / "phases.tsv", phases)
+        loaded = matrix.load_capture(path)
+        self.assertEqual(loaded["kind"], "values")
+        self.assertFalse(loaded["mapped"])
+        # value reads alone (no breakpoints, watches or polls) with a
+        # phases.tsv still need hitmap.tsv
+        events[0]["spec"] = {"values": [{"at": "D_80010010", "len": 4}]}
+        self.write(path / "capture.jsonl", "".join(json.dumps(e) + "\n" for e in events))
+        with self.assertRaises(OSError):
+            matrix.load_capture(path)
 
     def test_poll_rows_in_order_with_length(self):
         path = self.capture("polls", 60)
