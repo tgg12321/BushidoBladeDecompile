@@ -1,0 +1,115 @@
+{
+  "description": "Story Mode, default KANNUKI, with the block of his command stream's last op 17 (opponent 0x1C) moved to the front: the 10 bytes at 0x8008F2D9 (11 1C 00 C0 13 15 15 04 03 12; op 17 opponent 0x1C weapon 0 0xC0, op 19, op 18) poked over the stream's first op 16 at 0x8008F222 when top_menu starts (a modified game); stage card Outside the Meikyokan, close views of both fighters, then from 10200 P1 every 20 frames RIGHT 12 frames and R2 + CIRCLE (capture by the trace lane)",
+  "covers": [
+    "mode:story",
+    "menu:top",
+    "menu:story_text",
+    "menu:char_select",
+    "menu:weapon_select",
+    "menu:stage_card",
+    "event:round_start"
+  ],
+  "evidence": [
+    "docs/naming/runtime/story-final-fight-poke-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 11400,
+  "inputs": [
+    "6100:CROSS",
+    "6400:START",
+    "6700:CROSS",
+    "7000:START",
+    "7300:CROSS",
+    "7600:START",
+    "7900:CROSS",
+    "8200:START",
+    "8500:CROSS",
+    "8800:START"
+  ],
+  "repeat": [
+    {
+      "from": 10200,
+      "every": 20,
+      "count": 60,
+      "steps": [
+        "+0:RIGHT/12",
+        "+12:R2/4",
+        "+15:CIRCLE/4"
+      ]
+    }
+  ],
+  "phases": [
+    "6060:top_menu",
+    "6100:t_story",
+    "6810:story_text",
+    "6910:t_char",
+    "6950:char_select",
+    "7300:t_weapon",
+    "7360:weapon_select",
+    "7900:t_stage",
+    "8100:stage_card",
+    "8600:intro",
+    "9800:fight"
+  ],
+  "shots": [
+    "6060:top_menu.first",
+    "6099:top_menu.last",
+    "6810:story_text.first",
+    "6909:story_text.last",
+    "6950:char_select.first",
+    "7299:char_select.last",
+    "7360:weapon_select.first",
+    "7899:weapon_select.last",
+    "7900:s.7900",
+    "8050:s.8050",
+    "8200:s.8200",
+    "8350:s.8350",
+    "8500:s.8500",
+    "8650:s.8650",
+    "8800:s.8800",
+    "8950:s.8950",
+    "9100:s.9100",
+    "9250:s.9250",
+    "9400:s.9400",
+    "9550:s.9550",
+    "9700:s.9700",
+    "9850:s.9850",
+    "10000:s.10000",
+    "10050:s.10050",
+    "10100:s.10100",
+    "10150:s.10150",
+    "10200:s.10200",
+    "10250:s.10250",
+    "10300:s.10300",
+    "10350:s.10350",
+    "10400:s.10400",
+    "10450:s.10450",
+    "10500:s.10500",
+    "10550:s.10550",
+    "10600:s.10600",
+    "10650:s.10650",
+    "10700:s.10700",
+    "10750:s.10750",
+    "10800:s.10800",
+    "10850:s.10850",
+    "10900:s.10900",
+    "10950:s.10950",
+    "11000:s.11000",
+    "11050:s.11050",
+    "11100:s.11100",
+    "11150:s.11150",
+    "11200:s.11200",
+    "11250:s.11250",
+    "11300:s.11300",
+    "11350:s.11350"
+  ],
+  "pokes": [
+    {
+      "at": "0x8008F222",
+      "hex": "111C00C0131515040312",
+      "phase": "top_menu"
+    }
+  ]
+}
