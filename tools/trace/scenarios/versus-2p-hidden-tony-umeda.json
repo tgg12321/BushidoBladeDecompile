@@ -1,0 +1,106 @@
+{
+  "description": "hidden fighter's own fight: the versus-2p-hidden-katze script (unlock word poked at the top menu, P1 R2 throw attempts at 8900/9020/9140, then the hidden-roster fight inputs) with only the Select Character cursor path changed: P1 DOWN x2, RIGHT x3 to TONY UMEDA (TONY UMEDA vs GENGORO, default weapons, Building Rooftop); one fight phase from 8805 to the end: the KO and the Rematch menu fall at fighter-dependent frames inside it",
+  "covers": [
+    "mode:vs_2p",
+    "menu:char_select",
+    "menu:weapon_select",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:building_rooftop",
+    "char:tony_umeda",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-hidden-tony-umeda-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 11800,
+  "pokes": [
+    {
+      "at": "0x80106A50",
+      "hex": "FFF33F05",
+      "phase": "top_menu"
+    }
+  ],
+  "inputs": [
+    "6080:DOWN",
+    "6140:DOWN",
+    "6200:DOWN",
+    "6260:CROSS",
+    "6600:DOWN",
+    "6630:DOWN",
+    "6660:RIGHT",
+    "6690:RIGHT",
+    "6720:RIGHT",
+    "7290:CROSS",
+    "7330:CROSS@2",
+    "7590:CROSS",
+    "7630:CROSS@2",
+    "8040:CROSS",
+    "8900:R2/4",
+    "8903:CIRCLE/4",
+    "9020:R2/4",
+    "9023:CROSS/4",
+    "9140:R2/4",
+    "9143:CIRCLE/4"
+  ],
+  "repeat": [
+    {
+      "from": 9180,
+      "every": 100,
+      "count": 15,
+      "steps": [
+        "+0:RIGHT/40",
+        "+50:TRIANGLE|CIRCLE|SQUARE"
+      ]
+    }
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6260:t_char",
+    "6550:char_select",
+    "7380:weapon_select",
+    "7680:t_stage",
+    "7850:stage_select",
+    "8040:t_load",
+    "8805:fight"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6259:top_menu.last",
+    "6550:char_select.first",
+    "7285:char_select.pick",
+    "7374:char_select.last",
+    "7380:weapon_select.first",
+    "7650:weapon_select.7650",
+    "7679:weapon_select.last",
+    "7780:t_stage.mid",
+    "7850:stage_select.first",
+    "8039:stage_select.last",
+    "8400:t_load.mid",
+    "8799:t_load.last",
+    "8805:fight.first",
+    "8950:fight.8950",
+    "9070:fight.9070",
+    "9100:fight.9100",
+    "9400:fight.9400",
+    "9700:fight.9700",
+    "10000:fight.10000",
+    "10300:fight.10300",
+    "10560:fight.10560",
+    "10580:fight.10580",
+    "10650:fight.10650",
+    "10699:fight.10699",
+    "10800:fight.10800",
+    "10950:fight.10950",
+    "11100:fight.11100",
+    "11149:fight.11149",
+    "11155:fight.11155",
+    "11500:fight.11500",
+    "11799:fight.last"
+  ]
+}
