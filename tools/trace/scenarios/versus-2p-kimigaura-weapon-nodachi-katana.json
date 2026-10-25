@@ -9,7 +9,9 @@
     "event:round_start"
   ],
   "evidence": [
-    "docs/naming/runtime/versus-2p-kimigaura-weapon-nodachi-katana-1/spec.json"
+    "docs/naming/runtime/versus-2p-kimigaura-weapon-nodachi-katana-1/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-poke-1/baseline/spec.json",
+    "docs/naming/runtime/versus-2p-kimigaura-poke-1/unk_0E-6/spec.json"
   ],
   "extends": "versus-2p-kimigaura-effects",
   "end_frame": 10630,
