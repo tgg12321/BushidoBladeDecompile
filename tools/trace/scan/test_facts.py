@@ -169,6 +169,25 @@ class FactsTest(unittest.TestCase):
         self.assertEqual({json.loads(r["fact"])["len"] for r in rows}, {"4", "16"})
         self.assertTrue(all(json.loads(r["fact"])["end"][0]["differs"] is False for r in rows))
 
+    def test_pointer_reads_through_different_pointers(self):
+        self.write(self.matrix / "values.tsv",
+                   "capture\tphase\tsymbol/entry\toffset\tbytes\terror\tend\tlen\tentry\tframe\tptr\n"
+                   "v\tp\t0x80010010\t0\t0102\t\tfalse\t2\t0\t0\t0x800C0000\n"
+                   "w\tp\t0x80010010\t0\t0304\t\tfalse\t2\t0\t0\t0x800C1000\n"
+                   "w\tq\t0x80010010\t0\t\tpointer is not RAM or scratchpad\tfalse\t2\t0\t5\t0x00000000\n"
+                   "v\tp\t0x80010020\t0\t0102\t\tfalse\t2\t0\t0\t0x800C0000\n"
+                   "v\tq\t0x80010020\t0\t0304\t\tfalse\t2\t0\t5\t0x800C0000\n")
+        rows = [r for r in self.rows() if r["kind"].startswith("value_")]
+        differ = [r for r in rows if r["addr"] == "0x80010010"]
+        self.assertEqual([r["kind"] for r in differ], ["value_changes"])
+        fact = json.loads(differ[0]["fact"])
+        self.assertEqual(fact["reason"], "pointers_differ")
+        self.assertEqual(fact["pointers"], {"0x800C0000": ["v"], "0x800C1000": ["w"]})
+        self.assertNotIn("values", fact)
+        self.assertEqual(differ[0]["inconclusive"], "1")
+        same = {r["kind"] for r in rows if r["addr"] == "0x80010020"}
+        self.assertEqual(same, {"value_changes", "value_range"})
+
     def test_value_cell_beyond_csv_default_limit(self):
         big = "ab" * 100000  # 200000 chars, past csv's 131072 default
         self.write(self.matrix / "values.tsv",

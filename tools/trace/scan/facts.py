@@ -12,7 +12,11 @@ one value, gives distinct/min/max and a per-capture trend in frame order. Phase 
 follow phases.tsv run order (JSONL order for TSV-less value captures). All CLI relative
 paths are repository-relative. Facts describe only the supplied captures.
 Readings from kind-stub captures (stubbed or poked: a modified game) give no
-value facts.
+value facts. A pointer read (values.tsv ptr set) describes the bytes at that
+pointer: when the successful readings of one (symbol, offset, len) went
+through more than one pointer they describe different objects, so they give
+one inconclusive value_changes row (reason pointers_differ) listing the
+pointers per capture, and no value bytes or value_range rows.
 """
 
 import argparse
@@ -245,6 +249,16 @@ def render(matrix, no_name, runtime=None):
         addr = "0x" + symbol[2:] if re.fullmatch(r"D_[0-9A-Fa-f]{8}", symbol) else symbol
         item = dict(addr=symbol, offset=offset, len=length, phase_order=phase_order,
                     no_name=addr.upper() in registry)
+        pointers = {}
+        for row in readings:
+            if not row["error"] and row.get("ptr"):
+                pointers.setdefault(row["ptr"], set()).add(row["capture"])
+        if len(pointers) > 1:
+            rows.append(fact_row("value_changes", item, dict(
+                offset=offset, len=length,
+                pointers={p: sorted(c) for p, c in pointers.items()}),
+                {r["capture"] for r in readings}, "pointers_differ"))
+            continue
         for scanner in (value_constant, value_changes, value_range):
             rows.extend(scanner(item, readings))
     rows.sort(key=lambda r: (r["kind"], r["addr"], r["fact"], r["captures"]))
