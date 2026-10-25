@@ -1,0 +1,113 @@
+{
+  "description": "versus-2p-hidden-katze flow (unlock word poked at the top menu, KATZE vs GENGORO, default weapons, Building Rooftop), then P1 presses TRIANGLE, CIRCLE, SQUARE, CROSS in turn every 100 frames from 8900 with no movement (P2 idle): four rounds (WINS 00 to 03 on the screenshots), each KATZE's shot, GENGORO down, the Rematch menu taken by the CROSS press, REMATCH; one phase 'rounds' from 8805 to the end, a screenshot every 100 frames 50 after each press (capture by the trace lane)",
+  "covers": [
+    "mode:vs_2p",
+    "menu:char_select",
+    "menu:weapon_select",
+    "menu:stage_select",
+    "menu:rematch",
+    "stage:building_rooftop",
+    "char:katze",
+    "char:gengoro",
+    "event:round_start",
+    "event:ko"
+  ],
+  "evidence": [
+    "docs/naming/runtime/versus-2p-hidden-katze-gun-1/spec.json"
+  ],
+  "use": [
+    "boot"
+  ],
+  "end_frame": 11800,
+  "pokes": [
+    {
+      "at": "0x80106A50",
+      "hex": "FFF33F05",
+      "phase": "top_menu"
+    }
+  ],
+  "inputs": [
+    "6080:DOWN",
+    "6140:DOWN",
+    "6200:DOWN",
+    "6260:CROSS",
+    "6600:DOWN",
+    "6630:DOWN",
+    "6660:DOWN",
+    "6690:DOWN",
+    "6720:RIGHT",
+    "6750:RIGHT",
+    "6780:RIGHT",
+    "7290:CROSS",
+    "7330:CROSS@2",
+    "7590:CROSS",
+    "7630:CROSS@2",
+    "8040:CROSS"
+  ],
+  "repeat": [
+    {
+      "from": 8900,
+      "every": 100,
+      "count": 28,
+      "steps": [
+        "+0:TRIANGLE|CIRCLE|SQUARE|CROSS"
+      ]
+    }
+  ],
+  "phases": [
+    "6050:top_menu",
+    "6260:t_char",
+    "6550:char_select",
+    "7380:weapon_select",
+    "7680:t_stage",
+    "7850:stage_select",
+    "8040:t_load",
+    "8805:rounds"
+  ],
+  "shots": [
+    "6050:top_menu.first",
+    "6259:top_menu.last",
+    "6550:char_select.first",
+    "7285:char_select.pick",
+    "7374:char_select.last",
+    "7380:weapon_select.first",
+    "7650:weapon_select.7650",
+    "7679:weapon_select.last",
+    "7780:t_stage.mid",
+    "7850:stage_select.first",
+    "8039:stage_select.last",
+    "8400:t_load.mid",
+    "8799:t_load.last",
+    "8805:rounds.first",
+    "8950:rounds.8950",
+    "9050:rounds.9050",
+    "9150:rounds.9150",
+    "9250:rounds.9250",
+    "9350:rounds.9350",
+    "9450:rounds.9450",
+    "9550:rounds.9550",
+    "9650:rounds.9650",
+    "9750:rounds.9750",
+    "9850:rounds.9850",
+    "9950:rounds.9950",
+    "10050:rounds.10050",
+    "10150:rounds.10150",
+    "10250:rounds.10250",
+    "10350:rounds.10350",
+    "10450:rounds.10450",
+    "10550:rounds.10550",
+    "10650:rounds.10650",
+    "10750:rounds.10750",
+    "10850:rounds.10850",
+    "10950:rounds.10950",
+    "11050:rounds.11050",
+    "11150:rounds.11150",
+    "11250:rounds.11250",
+    "11350:rounds.11350",
+    "11450:rounds.11450",
+    "11550:rounds.11550",
+    "11650:rounds.11650",
+    "11750:rounds.11750",
+    "11799:rounds.last"
+  ]
+}
