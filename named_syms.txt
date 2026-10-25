@@ -913,7 +913,7 @@
 /* RENAME 0x8007997C: retired name 'bb2_putchar_stdout' — preserved note: fputc to stdout (fd 1): expands TAB (9) to spaces, converts LF (0xA) to CRLF, tracks column; submits via bios_FileWrite_B(1, &c, 1) */
 
 /* === D_8009BD24 unk17 / unk1D byte triples (2026-05-17) -- 6 highs === */
-/* menu_RunOptionModeFlowStateWithRowBitEdit (64FD8.c:1351-1409), switching on D_800A35E4: on */
+/* menu_RunOptionModeFlowStateWithRowBitEdit (64FD8.c:1352-1410), switching on D_800A35E4: on */
 /* entering state 4 it copies unk1D[] into unk17[]; when menu_UpdateRowBitMenu */
 /* returns 1 it copies unk17[] back into unk1D[].  The code that edits */
 /* the bytes works on unk17[] (596CC.c:1939-1941). */
