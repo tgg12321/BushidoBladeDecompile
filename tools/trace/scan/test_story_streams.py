@@ -39,6 +39,10 @@ class Decode(unittest.TestCase):
         self.assertEqual(got[3], (S0 + 9, 17, bytes([0x1C, 0, 0xC0])))
         self.assertEqual(got[7], (S0 + 22, 0x42, b""))
 
+    def test_op2(self):
+        args = bytes(range(29))
+        self.assertEqual(story_streams.opponent(2, args), "0x0E|0x1D then 0x06")
+
     def test_overrun(self):
         with self.assertRaises(ValueError):
             list(story_streams.decode(bytes([17, 1]), S0))

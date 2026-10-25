@@ -3,7 +3,7 @@
 
 fight_InitCommandStream (2B344.c:217) points D_800A3844 at
 D_800900EC[D_8008D538[P1's character id]], one of 32 pointers to the byte
-streams D_8008F220 .. D_8009000C (2B344.c:2755-3118; the table is at
+streams D_8008F220 .. D_8009000C (2B344.c:2763-3118; the table is at
 2B344.c:3119); fight_RunCommandStream (2B344.c:318) then reads one opcode
 byte and its operands per command, until
 a command ends the call. This lists every command of every stream, read from
@@ -17,7 +17,9 @@ fighter_Init's arg2 for fighter 1, 9F9C.c:1796):
         unk_A[1] = op2
   op 3  (2): unk_4[1] = op0, unk_4[3] = op1
   op 2  (29): D_800A3894 = the operands, func_8003B3A4(operands + 1)
-        (0xE or 0x1D as op 16), then as op 18
+        (0xE or 0x1D as op 16), then as op 18; after that fight
+        func_8003B484(D_800A3894 + 6) (28708.c:1511, 9F9C.c:1300) sets
+        unk_4[1] = operand 6, shown as "0x0E|0x1D then 0xNN"
   op 20 (12): D_800A385C = the operands, func_8003B4DC: unk_4[1] = 0x1F,
         func_8003B56C(1): D_800A3834 = 6, ends the call
   op 1  (1): D_800A36A4 = op0, D_800A3834 = 22, ends the call
@@ -39,7 +41,7 @@ LOAD = 0x80010000
 HEADER_SIZE = 0x800
 OPERANDS = {16: 5, 17: 3, 3: 2, 2: 29, 20: 12, 1: 1, 19: 4, 0: 0, 18: 0}
 SIDE = "0x0E|0x1D"
-COLUMNS = ["stream", "table_entry", "addr", "op", "operands", "unk_4_1"]
+COLUMNS = ["entry", "stream", "addr", "op", "operands", "unk_4_1"]
 
 
 def map_symbols(map_path, names):
@@ -83,8 +85,10 @@ def decode(buf, base):
 
 
 def opponent(op, args):
-    if op in (16, 2):
+    if op == 16:
         return SIDE
+    if op == 2:
+        return f"{SIDE} then 0x{args[6]:02X}"
     if op in (17, 3):
         return f"0x{args[0]:02X}"
     if op == 20:
@@ -94,8 +98,8 @@ def opponent(op, args):
 
 def rows(exe, table_addr, stream_bound):
     """One row per command of the stream behind each of the 32 table
-    entries; stream_bound(addr) is the end of the bytes the stream at addr
-    may occupy (its .data object)."""
+    entries (entry index, stream address, ...); stream_bound(addr) is the
+    end of the bytes the stream at addr may occupy (its .data object)."""
     table = read(exe, table_addr, 32 * 4)
     for i in range(32):
         addr = int.from_bytes(table[i * 4:i * 4 + 4], "little")
