@@ -1,4 +1,398 @@
 target	kind	site_function	phase	site	attrib	store_offset	store_width	count	values	values_omitted	captures	inconclusive	reason
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	1246	[1,4]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[1]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	1246	[1,4]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[4]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[4]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[4]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			2	[[0,35,528482748,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-abandoned-station-1@80f303c239c6	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	767	[3]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	525	[3]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	152	[3]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	20	[3]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	120	[3]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	767	[3]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	525	[3]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	152	[3]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	20	[3]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	120	[3,255]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			1	[[0,34,528482736,0]]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-bamboo-1@62861b8b921c	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	954	[1,7]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	109	[1]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	951	[1]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	109	[1]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	10	[255]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			1	[[0,34,528482736,0]]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			3	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-castle-1@e5e3b7f93222	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	899	[1]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[1]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	899	[1]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[1]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	10	[255]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482832,0]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			2	[[0,34,528482736,0],[0,36,528482832,0]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-dojo-1@72bcce925d4b	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	1191	[1]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[1]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	1191	[1]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[1]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			2	[[0,35,528482748,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-ferry-dock-1@a3d1e01d5438	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	923	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	5	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	115	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	923	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	5	[3]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	115	[3,255]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482832,0]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			2	[[0,34,528482736,0],[0,36,528482832,0]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-future-dump-1@d4a4124c92cb	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	1236	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	110	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	2	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	118	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	1236	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	110	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	2	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	118	[3]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			2	[[0,35,528482748,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-kimigaura-1@dc436935ef56	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	1228	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	109	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	3	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	117	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	1228	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	109	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	3	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	117	[3]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			2	[[0,35,528482748,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-lumberyard-1@c9dbd589f5fb	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	1431	[1]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	110	[1]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	1431	[1]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	110	[1]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[1]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			2	[[0,35,528482772,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-parking-lot-1@9d1a17089354	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	983	[1]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[1]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[1]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	983	[1]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[1]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[1]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	10	[255]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482832,0]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			2	[[0,34,528482736,0],[0,36,528482832,0]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-purple-cavern-1@479feda7c253	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-railway-1@2ea26514010e	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-railway-1@2ea26514010e	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	975	[1]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	152	[1]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	13	[1]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-railway-1@2ea26514010e	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-railway-1@2ea26514010e	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	975	[1]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[1]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	152	[1]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	13	[1]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	10	[255]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			1	[[0,34,528482736,0]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			1	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	t_ko	0x800315A0	coverage			2	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-railway-1@2ea26514010e	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	851	[1]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	750	[1]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	117	[1]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	19	[1]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	851	[1]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	750	[1]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	117	[1]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	19	[1]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			2	[[0,35,528482748,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	fight	0x80039E1C	coverage			4	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			2	[[1,41,2149580056,2149580072]]	0	ground-tag-versus-2p-rooftop-1@083d98ed80ef	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	920	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	110	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	2	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	118	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	920	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	110	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	2	[3]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	118	[3,255]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			1	[[0,34,528482736,0]]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-shainto-cemetery-1@40b53a3a1852	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	951	[1]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	512	[1]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	109	[1]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	7	[1]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	951	[1]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	512	[1]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	109	[1]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	7	[1]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	10	[255]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			1	[[0,34,528482736,0]]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-shainto-gate-1@f1f09f5625ae	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	1232	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	5	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	115	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	1232	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	5	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	115	[3]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482820,0]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482748,2149579872]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			2	[[0,35,528482748,0],[0,36,528482820,0]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,35,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-snake-cliff-1@aa59bbdc1e62	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	986	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	109	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	3	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	3	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	117	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	986	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	109	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	3	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	3	[3]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	117	[3,255]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482832,0]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			2	[[0,34,528482736,0],[0,36,528482832,0]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-terraced-1@2ebfd6703fa1	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	946	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	3	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	117	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	946	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	108	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	4	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	3	[4]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	117	[4,255]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+func_80032854	call	fighter_ResolveBoneHit	fight	0x800282E4	coverage			1	[[1,3,528482832,0]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			2	[[0,34,528482736,0],[0,36,528482832,0]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-tunnel-1@69a2954298ca	0	coverage_next_start_bound
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	973	[4]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[4]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	109	[4]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[4]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	4	[4]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x80101F79	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	116	[4]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x801023C5	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	1	group_has_unresolved_site;unresolved_function
+0x801023C5	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	1	group_has_unresolved_site
+0x801023C5	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	975	[4,7]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	rematch_menu	0x80023134	coverage	0	1	500	[4]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_ko	0x80023134	coverage	0	1	109	[4]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x801023C5	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[4]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	fight	0x80039CA4	coverage	0	1	4	[4]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+0x801023C5	write	replay_PlayFrame	t_ko	0x80039CA4	coverage	0	1	116	[4,255]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+func_80032854	call	fighter_Update	fight	0x800269D0	coverage			1	[[1,46,2148541448,0]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+func_80032854	call	func_800204C0	fight	0x80020674	coverage			1	[[1,4,528482760,2149579872]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+func_80032854	call	func_800278C0	fight	0x80027974	coverage			1	[[0,34,528482736,0]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+func_80032854	call	object_UpdatePool	fight	0x800315A0	coverage			3	[[1,41,2148559524,0]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
+func_80032854	call	replay_PlayFrame	t_ko	0x80039E1C	coverage			6	[[0,34,2149580056,2149580072],[1,4,2149580056,2149580072],[1,41,2149580056,2149580072],[1,46,2149580056,2149580072]]	0	ground-tag-versus-2p-underrail-1@ea88b127e2b5	0	coverage_next_start_bound
 0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	story-ninja-cross-1@592828dcce41	0	
 0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	story-ninja-cross-1@592828dcce41	0	
 0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	35	[3,4,6,20,21]	0	story-ninja-cross-1@592828dcce41	0	
