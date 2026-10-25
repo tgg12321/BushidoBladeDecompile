@@ -602,12 +602,13 @@ class Housekeeping(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
             old = time.time() - 10 * 86400
-            for name in ("rev-old", "lanes-state", "fresh", "rev-touched"):
+            kept = ("ra_solver_work", "cc1build", "p3s0", "scan")
+            for name in ("rev-old", "lanes-state", "fresh", "rev-touched") + kept:
                 (root / name).mkdir()
             (root / "rev-old" / "f.txt").write_text("x")
             (root / "rev-touched" / "sub").mkdir()
             for p in (root / "rev-old" / "f.txt", root / "rev-old", root / "lanes-state",
-                      root / "rev-touched"):
+                      root / "rev-touched") + tuple(root / name for name in kept):
                 os.utime(p, (old, old))
             (root / "file.txt").write_text("x")
             self.assertEqual(o.stale_tmp_dirs(root, time.time()), ["rev-old"])

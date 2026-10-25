@@ -315,8 +315,12 @@ TMP_STALE_DAYS = 3          # tmp/ scratch untouched this long is reported (sess
 TMP_SCAN_SECS = 60 * 60
 # long-lived tooling state under tmp/ (not scratch): lanes, Codex prompts, trace runners, emulator
 # build and portable profile (gdbtrace --portable_dir), Grinder log/lock, manual lane, cc1psx workdir
+# tool work dirs: ra_solver_work (tools/ra_solver/extract.py), cc1build (tools/build_oracle_cc1.sh),
+# scan (engine/diagnose.py, engine/orchestrator.py defaults); p3s0 is 2026-10-07 probe scratch
+# (named in an engine/test_engine.py docstring), kept by owner request
 TMP_KEEP = {"lanes-state", "codex", "trace-instances", "audit", "grind", "redux-portable",
-            "pcsx-redux", "manual", "cc1psx", "decomp_me_corpus"}
+            "pcsx-redux", "manual", "cc1psx", "decomp_me_corpus",
+            "ra_solver_work", "cc1build", "p3s0", "scan"}
 
 
 def disk_free_gb(path: Path = MAIN) -> float | None:
