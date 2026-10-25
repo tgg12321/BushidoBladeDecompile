@@ -469,6 +469,45 @@ def write_manifest(path, manifest):
             os.unlink(temporary)
 
 
+def unstored_sha1(manifest):
+    """SHA1 of a manifest as written before offload marked records stored.
+
+    migrate --apply added only `stored` flags, through write_manifest, so
+    pre-migration citations (knockout inventories, report and compare headers)
+    name this digest of the current manifest.
+    """
+    plain = json.loads(json.dumps(manifest))
+    if isinstance(plain, dict) and isinstance(plain.get("outputs"), list):
+        for rec in plain["outputs"]:
+            if isinstance(rec, dict):
+                rec.pop("stored", None)
+    return hashlib.sha1((json.dumps(plain, indent=2) + "\n").encode("utf-8")).hexdigest()
+
+
+def manifest_cited(path, sha1):
+    """True when a cited SHA1 names this manifest, now or before offload."""
+    data = Path(path).read_bytes()
+    if hashlib.sha1(data).hexdigest() == sha1:
+        return True
+    try:
+        manifest = json.loads(data)
+    except ValueError:
+        return False
+    stored = isinstance(manifest, dict) and any(
+        isinstance(rec, dict) and "stored" in rec for rec in manifest.get("outputs") or [])
+    return stored and unstored_sha1(manifest) == sha1
+
+
+def inventoried_before_migration(inventory, rel, sha1):
+    """The inventory held rel -> sha1 at MIGRATION_COMMIT (legacy entry)."""
+    key = repo_key(inventory)
+    try:
+        old = json.loads(git_output("show", f"{MIGRATION_COMMIT}:{key}"))
+    except (StoreError, ValueError):
+        return False
+    return isinstance(old, dict) and old.get(rel) == sha1
+
+
 def manifests(root):
     for path in sorted(Path(root).rglob("*.manifest.json")):
         yield path, json.loads(path.read_text(encoding="utf-8"))
@@ -1004,6 +1043,8 @@ def verify_tree(root):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    sub = commands.add_parser("manifest-sha1", help="current and pre-store SHA1 of manifests")
+    sub.add_argument("manifests", nargs="+", type=Path)
     for command in ("backfill-records", "migrate", "verify", "check-commit"):
         sub = commands.add_parser(command)
         sub.add_argument("--root", type=Path, default=REPO_ROOT / "docs/naming/runtime")
@@ -1014,6 +1055,11 @@ def main(argv=None):
         if command == "migrate":
             sub.add_argument("--apply", action="store_true")
     args = parser.parse_args(argv)
+    if args.command == "manifest-sha1":
+        for path in args.manifests:
+            data = path.read_bytes()
+            print(hashlib.sha1(data).hexdigest(), unstored_sha1(json.loads(data)), path)
+        return 0
     if args.command != "check-commit" and not args.root.is_dir():
         parser.error(f"root is not a directory: {args.root}")
     if args.command == "backfill-records":

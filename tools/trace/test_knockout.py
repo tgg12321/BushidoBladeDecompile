@@ -188,6 +188,42 @@ class KnockoutTest(unittest.TestCase):
             p.write_bytes(original)
         self.assertEqual(k.check(self.out), 0)
 
+    def test_inventory_cites_manifest_before_stored_flags(self):
+        self.batch(('one',))
+        path = self.out / 'one/capture.manifest.json'
+        manifest = k.read_json(path)
+        k.store.mark_stored(path, manifest, ['capture.jsonl'])
+        self.assertEqual(k.check(self.out), 0)
+        manifest['q124_complete'] = False
+        k.store.write_manifest(path, manifest)
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            self.assertEqual(k.check(self.out), 1)
+        self.assertIn('hash mismatch/missing', err.getvalue())
+
+    def test_missing_unpublished_file_not_legacy_without_inventory_blob(self):
+        self.batch(('one',))
+        with patch.object(k.store, 'inventoried_before_migration', return_value=False), \
+                patch.object(k.store, 'ever_committed', return_value=False):
+            (self.out / 'one/spec.json').unlink()
+            with contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(k.check(self.out), 1)
+
+    def test_legacy_never_published_entry_reported(self):
+        self.batch(('one',))
+        log = self.out / 'one/run.log'
+        inventory = k.read_json(self.out / 'knockout.manifest.json')
+        inventory['one/run.log'] = '3' * 40
+        k.write_json(self.out / 'knockout.manifest.json', inventory)
+        with patch.object(k.store, 'inventoried_before_migration', return_value=True), \
+                patch.object(k.store, 'ever_committed', return_value=False), \
+                contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(k.check(self.out), 0)
+        self.assertIn(f'never published (legacy): {log}', out.getvalue())
+        with patch.object(k.store, 'inventoried_before_migration', return_value=True), \
+                patch.object(k.store, 'ever_committed', return_value=True), \
+                contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(k.check(self.out), 1)
+
     def test_phase_and_passthrough(self):
         _, rows = self.batch(('one',), ('--phase', 'menu', '--ret', '0',
                                         '--slot-wait', '12', '--duration', '42'))

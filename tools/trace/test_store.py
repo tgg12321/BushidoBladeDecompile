@@ -335,6 +335,36 @@ class StoreTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "SHA1/size mismatch"):
             store.resolve(self.capture, "custom.shot.png")
 
+    def test_manifest_cited_before_and_after_stored_flags(self):
+        path = self.capture / "capture.manifest.json"
+        manifest = {"outputs": [{"path": "capture.jsonl", "sha1": "0" * 40, "size": 1}]}
+        store.write_manifest(path, manifest)
+        before = hashlib.sha1(path.read_bytes()).hexdigest()
+        store.mark_stored(path, manifest, ["capture.jsonl"])
+        after = hashlib.sha1(path.read_bytes()).hexdigest()
+        self.assertNotEqual(before, after)
+        self.assertTrue(store.manifest_cited(path, after))
+        self.assertTrue(store.manifest_cited(path, before))
+        self.assertEqual(store.unstored_sha1(json.loads(path.read_bytes())), before)
+        manifest["outputs"][0]["size"] = 2
+        store.write_manifest(path, manifest)
+        self.assertFalse(store.manifest_cited(path, before))
+        unflagged = {"outputs": [{"path": "capture.jsonl", "sha1": "0" * 40, "size": 1}]}
+        # Same content as `before` but reformatted and never flagged: no equivalence.
+        path.write_text(json.dumps(unflagged), encoding="utf-8")
+        self.assertEqual(store.unstored_sha1(unflagged), before)
+        self.assertFalse(store.manifest_cited(path, before))
+
+    def test_inventory_entry_needs_migration_commit_blob(self):
+        inventory = self.capture / "knockout.manifest.json"
+        with patch.object(store, "git_output", return_value=json.dumps({"a/run.log": "1" * 40})) as show:
+            self.assertTrue(store.inventoried_before_migration(inventory, "a/run.log", "1" * 40))
+            self.assertFalse(store.inventoried_before_migration(inventory, "a/run.log", "2" * 40))
+            self.assertFalse(store.inventoried_before_migration(inventory, "b/run.log", "1" * 40))
+        self.assertEqual(show.call_args.args, ("show", f"{store.MIGRATION_COMMIT}:sample/knockout.manifest.json"))
+        with patch.object(store, "git_output", side_effect=store.StoreUnverified("no blob")):
+            self.assertFalse(store.inventoried_before_migration(inventory, "a/run.log", "1" * 40))
+
 
 if __name__ == "__main__":
     unittest.main()

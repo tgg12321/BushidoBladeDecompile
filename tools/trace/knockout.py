@@ -295,21 +295,46 @@ def check(out):
         if present:
             errors.append(f'recorded missing but present: {path}')
 
-    def verify(path, sha):
+    history = store.LegacyRecords()
+
+    def never_published(path, legacy):
+        # A pre-migration run's file that no commit ever carried (gitignored
+        # run.log, uncopied .mcd / .script.log) is reported, not lost.
+        try:
+            if store.ever_committed(path) or not legacy():
+                return False
+        except (OSError, ValueError, store.StoreError):
+            return False
+        print(f'never published (legacy): {path}')
+        return True
+
+    def verify(path, sha, legacy=lambda: False):
         if store.is_bulk(path.name):
             try:
                 path = store.capture_path(path)
-            except (store.StoreMissing, ValueError) as exc:
+            except store.StoreMissing as exc:
+                if not never_published(path, legacy):
+                    errors.append(str(exc))
+                return
+            except ValueError as exc:
                 errors.append(str(exc))
                 return
-        if not path.is_file() or runkit.sha1_file(str(path)) != sha:
+        if not path.is_file():
+            if not never_published(path, legacy):
+                errors.append(f'hash mismatch/missing: {path}')
+        elif path.name.endswith('.manifest.json'):
+            # Pre-migration inventories cite the manifest before its `stored` flags.
+            if not store.manifest_cited(path, sha):
+                errors.append(f'hash mismatch/missing: {path}')
+        elif runkit.sha1_file(str(path)) != sha:
             errors.append(f'hash mismatch/missing: {path}')
 
     for rel, sha in inventory.items():
         path = (out / rel).resolve()
         if not path.is_relative_to(out):
             raise ValueError('inventory path escapes output directory')
-        verify(path, sha)
+        verify(path, sha, lambda rel=rel, sha=sha: store.inventoried_before_migration(
+            out / 'knockout.manifest.json', rel, sha))
     directories = {'baseline', *(r['func'] for r in rows),
                    *(p.name for p in out.iterdir() if p.is_dir())}
     for name in sorted(directories):
@@ -326,7 +351,8 @@ def check(out):
         outputs = {Path(r['path'].replace('\\', '/')).name: r for r in man.get('outputs', [])}
         for name, rec in outputs.items():
             if rec.get('sha1') and not rec.get('missing'):
-                verify(directory / name, rec['sha1'])
+                verify(directory / name, rec['sha1'],
+                       lambda rec=rec: history.qualifies(manifest, rec))
             else:
                 recorded_absence(directory / name, rec.get('missing') is True
                                  and not rec.get('sha1') and bool(affected)

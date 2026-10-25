@@ -448,6 +448,10 @@ clean tree; legacy never-published records are listed, not lost). `store.py chec
 runs on every replayed commit of a lane land touching `docs/naming/runtime/`: each bulk output
 record (legacy never-published ones and recorded absences excepted) must be in the index or the store with matching SHA1 and size (so a clone without the
 store, or a shallow one, is refused), and bulk added to git after the migration (`dab4c0fc1`)
-is refused.
+is refused. A `capture.manifest.json` SHA1 cited before the migration (knockout inventories,
+report / compare / knockout headers, naming evidence) names the manifest without its `stored`
+flags: `store.py manifest-sha1 <manifest>` prints the current and the pre-store digest, and
+`knockout.py check` accepts either; it reports an inventoried pre-migration file that no commit
+ever carried (gitignored `run.log`, uncopied `.mcd` / `.script.log`) as never published.
 
 > **Trimmed 2026-10-01:** stale audits/plans (REMAINING_DATA_CATALOG, LEGACY_RENAMER_AUDIT, LONG_TERM_DX_PROMOTION_FIX, header-type/memory-project/proposals audits, ADDENDUM-APPLY-PLAN, naming-verification-2026-08-18, RODATA_CATALOG/RECORD_SCHEMA, charptr_functions), libscan reports (manifest_report, near/data verifier reports, callee_web, data_candidates) and generated views (suspect-list → `tmp/suspect-list.md` via build_suspect_list.py) resolve at git tag `pre-slim-2026-10-01`.
