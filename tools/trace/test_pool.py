@@ -28,6 +28,9 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
+sys.path.insert(0, REPO)
+from pathlib import Path
+from tools.trace import store
 
 
 def check(cond, msg):
@@ -109,9 +112,10 @@ def cut_spec(spec: dict, frames: int) -> dict:
 WALL_CLOCK = {"t", "time", "elapsed"}
 
 
-def events(path: str) -> list:
+def events(path: str, manifest=None) -> list:
     out = []
-    with open(path, encoding="utf-8") as f:
+    path = Path(path)
+    with store.resolve(path.parent, path.name, manifest).open(encoding="utf-8") as f:
         for line in f:
             e = json.loads(line)
             out.append({k: v for k, v in e.items() if k not in WALL_CLOCK})
@@ -172,7 +176,7 @@ def parallel(args) -> int:
     ref = None
     for i, cap in enumerate(caps):
         try:
-            ev = events(cap)
+            ev = events(cap, mans[i])
         except (OSError, ValueError) as e:
             ok &= check(False, f"run{i} capture readable ({e})")
             continue

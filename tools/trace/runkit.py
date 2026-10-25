@@ -709,4 +709,6 @@ def finish_manifest(args, inputs: dict, emu_cmd, result: dict) -> str:
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(m, f, indent=2)
         f.write("\n")
+    store.offload_report(Path(args.out).parent, m, keep_cards=args.keep_emulator,
+                         manifest_path=path)
     return path

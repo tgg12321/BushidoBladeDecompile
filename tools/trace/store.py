@@ -10,6 +10,9 @@ import os
 from pathlib import Path, PureWindowsPath
 import subprocess
 import sys
+import argparse
+import tempfile
+import re
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _warned_git_fallback = False
@@ -166,3 +169,412 @@ def problem(error, path):
 def open_capture_file(capture_dir, name, manifest=None, mode="r"):
     path = resolve(capture_dir, name, manifest)
     return path.open(mode, **({} if "b" in mode else {"encoding": "utf-8"}))
+
+
+def file_record(path):
+    path = Path(path)
+    data = path.read_bytes()
+    return dict(path=path.name, sha1=hashlib.sha1(data).hexdigest(), size=len(data))
+
+
+def store_key(path):
+    return Path(path).resolve().relative_to(REPO_ROOT.resolve())
+
+
+def git_output(*args):
+    try:
+        return subprocess.run(["git", "-C", str(REPO_ROOT), *args], check=True,
+                              capture_output=True, text=True, encoding="utf-8").stdout.strip()
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise StoreUnverified(f"cannot establish committed provenance: {exc}") from exc
+
+
+def head_blob(path):
+    key = store_key(path).as_posix()
+    entry = git_output("ls-tree", "HEAD", "--", key)
+    return entry.split()[2] if entry else None
+
+
+def check_head(path, required=False):
+    """Raw working bytes must equal HEAD whenever HEAD owns this path."""
+    blob = head_blob(path)
+    if blob is None:
+        if required or git_output("ls-files", "--", store_key(path).as_posix()):
+            raise StoreUnverified(f"{path}: not tracked in HEAD")
+        return
+    if git_output("hash-object", "--no-filters", "--", str(Path(path).resolve())) != blob:
+        raise StoreUnverified(f"{path}: working file differs from HEAD")
+
+
+def ever_committed(path):
+    return bool(git_output("log", "-1", "--format=%H", "--", store_key(path).as_posix()))
+
+
+def _check_digest(path, records, digest, size):
+    for rec in records:
+        expected_size = rec.get("size", rec.get("bytes"))
+        if type(expected_size) is not int or expected_size < 0 or not isinstance(rec.get("sha1"), str):
+            raise StoreUnverified(f"{path}: outputs record requires SHA1 and byte count")
+        if rec["sha1"] != digest or expected_size != size:
+            raise StoreMismatch(f"{path}: capture store SHA1/size mismatch")
+
+
+def copy_recorded(path, temporary, records):
+    """Hash the source once while copying; verify the disk copy separately."""
+    digest = hashlib.sha1()
+    size = 0
+    with Path(path).open("rb") as source, Path(temporary).open("wb") as target:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            target.write(chunk)
+            digest.update(chunk)
+            size += len(chunk)
+    _check_digest(path, records, digest.hexdigest(), size)
+
+
+def mark_stored(manifest_path, manifest, names):
+    """Persist publication intent in the metadata that travels with a capture."""
+    changed = False
+    for name in names:
+        for rec in _records(manifest, name):
+            if rec.get("stored") is not True:
+                rec["stored"] = True
+                changed = True
+    if changed:
+        write_manifest(manifest_path, manifest)
+
+
+def check_migration_manifest(path, manifest):
+    """Allow only our exact stored-flag additions when resuming a migration."""
+    try:
+        check_head(path)
+        return
+    except StoreUnverified:
+        if head_blob(path) is None:
+            raise
+    committed = json.loads(git_output("show", "HEAD:" + store_key(path).as_posix()))
+    added = False
+    for old, new in zip(committed.get("outputs", []), manifest.get("outputs", [])):
+        if isinstance(old, dict) and isinstance(new, dict) and "stored" not in old and new.get("stored") is True:
+            old["stored"] = True
+            added = True
+    if (not added or committed != manifest or
+            Path(path).read_bytes() != (json.dumps(committed, indent=2) + "\n").encode("utf-8")):
+        raise StoreUnverified(f"{path}: working manifest differs from HEAD beyond stored flags")
+
+
+def move_verified(path, records):
+    """Publish a verified copy before removing the source; failures keep it."""
+    path = Path(path)
+    if not records:
+        raise StoreUnverified(f"{path}: no outputs record")
+    before = path.stat()
+    target = store_root() / store_key(path)
+    if target.resolve() == path.resolve():
+        raise StoreUnverified(f"{path}: store target is the local source")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        data = file_record(path)
+        _check_digest(path, records, data["sha1"], data["size"])
+        for rec in records:
+            try:
+                verify(target, rec)
+            except StoreMismatch as exc:
+                raise StoreMismatch(f"store key {store_key(path).as_posix()} already has different bytes; local kept") from exc
+    else:
+        fd, temporary = tempfile.mkstemp(prefix=".capture-", dir=str(target.parent))
+        os.close(fd)
+        try:
+            copy_recorded(path, temporary, records)
+            for rec in records:
+                verify(temporary, rec)
+            try:
+                # Exclusive atomic publication: another lane can win the race,
+                # but can never have its bytes overwritten.
+                os.link(temporary, target)
+            except FileExistsError:
+                for rec in records:
+                    verify(target, rec)
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
+    after = path.stat()
+    if (after.st_size, after.st_mtime_ns, after.st_ino) != (before.st_size, before.st_mtime_ns, before.st_ino):
+        raise StoreMismatch(f"{path}: source changed during publication; local kept")
+    path.unlink()
+
+
+def offload(capture_dir, manifest, keep_cards=False, manifest_path=None):
+    """Called after publishing a writer's manifest, while outputs are local."""
+    if os.environ.get("BB2_CAPTURE_STORE_WRITE") == "0":
+        return
+    capture_dir = Path(capture_dir).resolve()
+    try:
+        capture_dir.relative_to((REPO_ROOT / "docs/naming/runtime").resolve())
+    except ValueError:
+        return
+    names = sorted({PureWindowsPath(r["path"]).name
+                    for r in manifest.get("outputs", []) if "path" in r})
+    names = [name for name in names if is_bulk(name) and (capture_dir / name).is_file()
+             and not (keep_cards and name.endswith(".mcd"))]
+    if not names:
+        return
+    if manifest_path is None:
+        manifest_path = next((p for p in sorted(capture_dir.glob("*.manifest.json"))
+                              if json.loads(p.read_text(encoding="utf-8")) == manifest), None)
+    if manifest_path is None:
+        raise StoreUnverified(f"{capture_dir}: offload requires an owning manifest")
+    mark_stored(manifest_path, manifest, names)
+    for name in names:
+        move_verified(capture_dir / name, _records(manifest, name))
+
+
+def offload_report(capture_dir, manifest, keep_cards=False, manifest_path=None):
+    try:
+        offload(capture_dir, manifest, keep_cards, manifest_path)
+    except (OSError, ValueError, StoreError) as exc:
+        remaining = [PureWindowsPath(r["path"]).name for r in manifest["outputs"]
+                     if is_bulk(r["path"]) and (Path(capture_dir) / PureWindowsPath(r["path"]).name).is_file()]
+        print(f"capture store: manifest written; offload failed: {exc}; "
+              f"stayed local: {', '.join(remaining)}", file=sys.stderr)
+        return False
+    return True
+
+
+def write_manifest(path, manifest):
+    """Publish metadata first; a crash during offload leaves readable outputs."""
+    path = Path(path)
+    fd, temporary = tempfile.mkstemp(prefix=".manifest-", dir=str(path.parent))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as stream:
+            json.dump(manifest, stream, indent=2)
+            stream.write("\n")
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def manifests(root):
+    for path in sorted(Path(root).rglob("*.manifest.json")):
+        yield path, json.loads(path.read_text(encoding="utf-8"))
+
+
+def bulk_files(root):
+    return [p for p in sorted(Path(root).rglob("*")) if p.is_file() and is_bulk(p.name)]
+
+
+def compare_manifest_path(report):
+    path = Path(report).with_suffix(".manifest.json")
+    if path.name == "capture.manifest.json":
+        raise StoreUnverified("capture.md would overwrite capture.manifest.json; choose another report name")
+    return path
+
+
+def compare_manifest(report, base, other, outputs):
+    """Versioned compare schema; input paths are relative to this summary."""
+    directory = Path(report).resolve().parent
+    return dict(kind="compare", version=1,
+                base=Path(os.path.relpath(Path(base).resolve(), directory)).as_posix(),
+                other=Path(os.path.relpath(Path(other).resolve(), directory)).as_posix(),
+                outputs=outputs)
+
+
+def legacy_diff(path, report, shot):
+    """Require committed evidence and reproduce the exact committed image."""
+    check_head(path, required=True)
+    check_head(report, required=True)
+    original = path.read_bytes()
+    text = report.read_text(encoding="utf-8")
+    if f"| {shot} (frame " not in text:
+        raise StoreUnverified(f"{report}: no screenshot row for {shot}")
+    references = re.findall(r"^- (?:baseline|stubbed|poked|modified): `([^`]+\.manifest\.json)`", text, re.M)
+    if len(references) != 2:
+        raise StoreUnverified(f"{report}: cannot attribute both input manifests")
+    captures = []
+    screenshots = []
+    for reference in references:
+        source = (report.parent / reference.replace("\\", "/")).resolve()
+        check_head(source, required=True)
+        manifest = json.loads(source.read_text(encoding="utf-8"))
+        stem = source.name[:-len(".manifest.json")]
+        name = stem + "." + shot + ".png"
+        records = _records(manifest, name)
+        if not records:
+            raise StoreUnverified(f"{source}: no source screenshot record for {shot}")
+        screenshot = resolve(source.parent, name, manifest)
+        for rec in records:
+            verify(screenshot, rec)
+        captures.append(source.parent / (stem + ".jsonl"))
+        screenshots.append(screenshot)
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import gdbtrace
+    fd, temporary = tempfile.mkstemp(suffix=".png")
+    os.close(fd)
+    try:
+        result, error = gdbtrace.diff_shot(str(screenshots[0]), str(screenshots[1]), temporary)
+        if error or not result[0] or Path(temporary).read_bytes() != original:
+            raise StoreUnverified(f"{path}: regenerated diff does not match committed image")
+    finally:
+        os.unlink(temporary)
+    record = dict(path=path.name, sha1=hashlib.sha1(original).hexdigest(), size=len(original))
+    return compare_manifest(report, captures[0], captures[1], []), record
+
+
+def backfill_records(root, check=False):
+    """Attribute legacy compare images using their report and source records."""
+    changed = {}
+    count = size = unrecorded = 0
+    for path in bulk_files(root):
+        try:
+            manifest = _manifest(path.parent, path.name)
+            if _records(manifest, path.name):
+                continue
+        except StoreUnverified:
+            pass
+        owner = None
+        summary = None
+        if path.name.endswith(".diff.png"):
+            for report in sorted(path.parent.glob("*.md")):
+                prefix = report.stem + "."
+                if not path.name.startswith(prefix):
+                    continue
+                shot = path.name[len(prefix):-len(".diff.png")]
+                try:
+                    owner = compare_manifest_path(report)
+                    summary, record = legacy_diff(path, report, shot)
+                    break
+                except (OSError, ValueError, StoreError) as exc:
+                    print(f"REFUSE {path}: {exc}")
+                    owner = None
+        if owner is None:
+            print(f"UNATTRIBUTED {path}")
+            unrecorded += 1
+            continue
+        if owner not in changed:
+            changed[owner] = summary
+            if owner.exists():
+                changed[owner]["outputs"] = json.loads(owner.read_text(encoding="utf-8")).get("outputs", [])
+        changed[owner].setdefault("outputs", []).append(record)
+        print(f"RECORD {path} -> {owner}")
+        count += 1
+        size += record["size"]
+    if not check:
+        for path, manifest in sorted(changed.items()):
+            manifest["outputs"].sort(key=lambda r: r["path"])
+            write_manifest(path, manifest)
+    print(f"backfill-records: files={count} bytes={size} manifests={len(changed)} "
+          f"unattributed={unrecorded} check={check}")
+    return int(bool(unrecorded or (check and changed)))
+
+
+def migrate(root, apply=False):
+    count = size = refused = 0
+    checked = set()
+    for path in bulk_files(root):
+        try:
+            check_head(path)
+            manifest = _manifest(path.parent, path.name)
+            owners = []
+            for owner in sorted(path.parent.glob("*.manifest.json")):
+                owning_manifest = json.loads(owner.read_text(encoding="utf-8"))
+                if _records(owning_manifest, path.name):
+                    if owner not in checked:
+                        check_migration_manifest(owner, owning_manifest)
+                        checked.add(owner)
+                    owners.append((owner, owning_manifest))
+            records = _records(manifest, path.name)
+            if not records:
+                raise StoreUnverified(f"{path}: no outputs record")
+            for rec in records:
+                verify(path, rec)
+            key = store_key(path)
+            print(f"{'MOVE' if apply else 'PLAN'} {path}: {records} key={key.as_posix()}")
+            length = path.stat().st_size
+            if apply:
+                for owner, owning_manifest in owners:
+                    mark_stored(owner, owning_manifest, [path.name])
+                move_verified(path, records)
+            count += 1
+            size += length
+        except (OSError, ValueError, StoreError) as exc:
+            print(f"REFUSE {path}: {exc}")
+            refused += 1
+    print(f"migrate: files={count} bytes={size} refused={refused} apply={apply}")
+    return int(bool(refused))
+
+
+def verify_tree(root):
+    count = size = failed = never_published = 0
+    for path in sorted(Path(root).rglob("*.manifest.json")):
+        try:
+            manifest = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            print(f"MALFORMED {path}: {exc}")
+            failed += 1
+            continue
+        if not isinstance(manifest, dict) or not isinstance(manifest.get("outputs", []), list):
+            print(f"MALFORMED {path}: outputs must be a list")
+            failed += 1
+            continue
+        for rec in manifest.get("outputs", []):
+            if not isinstance(rec, dict) or not isinstance(rec.get("path"), str):
+                print(f"MALFORMED {path}: invalid output record")
+                failed += 1
+                continue
+            name = PureWindowsPath(rec["path"]).name
+            if not is_bulk(name):
+                continue
+            try:
+                if not rec.get("missing"):
+                    # Validate metadata before classifying an absent output.
+                    size_rec = rec.get("size", rec.get("bytes"))
+                    sha1_rec = rec.get("sha1")
+                    if type(size_rec) is not int or size_rec < 0 or not isinstance(sha1_rec, str) or not re.fullmatch(r"[0-9a-f]{40}", sha1_rec):
+                        raise StoreUnverified(f"{path}: malformed SHA1/byte count for {name}")
+                resolved = resolve(path.parent, name, manifest)
+                verify(resolved, rec)
+                count += 1
+                size += resolved.stat().st_size
+            except StoreMissing as exc:
+                logical = path.parent / name
+                try:
+                    lost = rec.get("stored") is True or ever_committed(logical)
+                except (OSError, ValueError, StoreError):
+                    lost = True
+                if lost:
+                    print(f"LOST {logical}: {exc}")
+                    failed += 1
+                else:
+                    print(f"NEVER PUBLISHED {logical}")
+                    never_published += 1
+            except (OSError, StoreError) as exc:
+                logical = path.parent / name
+                label = "LOST" if rec.get("stored") is True and not logical.is_file() else "FAIL"
+                print(f"{label} {logical}: {exc}")
+                failed += 1
+    print(f"verify: files={count} bytes={size} lost_or_mismatched={failed} never_published={never_published}")
+    return int(bool(failed))
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="command", required=True)
+    for command in ("backfill-records", "migrate", "verify"):
+        sub = commands.add_parser(command)
+        sub.add_argument("--root", type=Path, default=REPO_ROOT / "docs/naming/runtime")
+        if command == "backfill-records":
+            sub.add_argument("--check", action="store_true")
+        if command == "migrate":
+            sub.add_argument("--apply", action="store_true")
+    args = parser.parse_args(argv)
+    if not args.root.is_dir():
+        parser.error(f"root is not a directory: {args.root}")
+    if args.command == "backfill-records":
+        return backfill_records(args.root, args.check)
+    if args.command == "migrate":
+        return migrate(args.root, args.apply)
+    return verify_tree(args.root)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -2142,6 +2142,10 @@ def compare(args) -> int:
     against a baseline run of the same script on the same inputs; every
     screenshot both runs took is diffed. Exit 1 when the runs are not
     comparable."""
+    # Validate the output name before writing any report or image.
+    summary_path = store.compare_manifest_path(args.out) if args.out else None
+    previous_summary = (json.loads(summary_path.read_text(encoding="utf-8"))
+                        if summary_path and summary_path.exists() else {})
     mans = []
     for cap in (args.base, args.other):
         path = runkit.companion(cap, ".manifest.json")
@@ -2254,6 +2258,7 @@ def compare(args) -> int:
           "|---|---|---|"]
     stem_a, stem_b = (runkit.companion(os.path.abspath(c), "")
                       for c in (args.base, args.other))
+    diff_outputs = []
     for sh in (sa.get("script") or {}).get("screenshots", []):
         name = sh["name"]
         fa, fb = f"{stem_a}.{name}.png", f"{stem_b}.{name}.png"
@@ -2276,6 +2281,19 @@ def compare(args) -> int:
             w.append(f"| {name} (frame {sh['frame']}) | {err} | - |")
             continue
         n, total, box = res
+        if out_png and n and os.path.isfile(out_png):
+            diff_outputs.append(store.file_record(out_png))
+        elif out_png and not n:
+            # Immutable shared images may still serve another lane's manifest.
+            # Keep the previous image AND its provenance on a zero-change run.
+            retained = store._records(previous_summary, Path(out_png).name)
+            if retained:
+                previous_png = store.capture_path(out_png, previous_summary)
+                for rec in retained:
+                    store.verify(previous_png, rec)
+                diff_outputs.extend(retained)
+            elif os.path.isfile(out_png):
+                os.unlink(out_png)
         w.append(f"| {name} (frame {sh['frame']}) | {n} of {total} "
                  f"({100 * n / total:.2f}%) | "
                  + (f"{box[0]},{box[1]}-{box[2]},{box[3]}" if box else "-")
@@ -2300,6 +2318,11 @@ def compare(args) -> int:
     if args.out:
         with open(args.out, "w", encoding="utf-8", newline="\n") as f:
             f.write(text)
+        summary = store.compare_manifest(args.out, args.base, args.other, diff_outputs)
+        store.write_manifest(summary_path, summary)
+        if not store.offload_report(Path(args.out).parent, summary,
+                                    manifest_path=summary_path):
+            return 1
     else:
         sys.stdout.write(text)
     return 1 if problems else 0

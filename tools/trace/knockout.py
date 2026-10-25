@@ -208,7 +208,8 @@ def summarize(out, funcs, returns, frames, scenario, codes, baseline_problem=Non
     (out / 'knockout.md').write_text('\n'.join(notes), encoding='utf-8', newline='\n')
     # Seal capture manifests and the TSV too, so neither can silently be edited.
     inventory = {p.relative_to(out).as_posix(): runkit.sha1_file(str(p))
-                 for p in sorted(out.rglob('*')) if p.is_file()}
+                 for p in sorted(out.rglob('*')) if p.is_file()
+                 and p.name != '.capture-store.json'}
     write_json(out / 'knockout.manifest.json', inventory)
     return 0 if all(r['status'] == 'ok' for r in rows) else 1
 
@@ -307,6 +308,8 @@ def check(out):
 
     for rel, sha in inventory.items():
         path = (out / rel).resolve()
+        if path.name == '.capture-store.json':
+            continue  # Obsolete informational receipts are not evidence.
         if not path.is_relative_to(out):
             raise ValueError('inventory path escapes output directory')
         verify(path, sha)
@@ -347,7 +350,7 @@ def check(out):
                 recorded_absence(path, row['status'] != 'ok')
     # Catch new PNGs/captures as well as edits to inventoried files.
     for path in out.rglob('*'):
-        if path.is_file() and path.name != 'knockout.manifest.json' and path.relative_to(out).as_posix() not in inventory:
+        if path.is_file() and path.name not in ('knockout.manifest.json', '.capture-store.json') and path.relative_to(out).as_posix() not in inventory:
             errors.append(f'unrecorded file: {path}')
     for error in errors:
         print(error, file=sys.stderr)
