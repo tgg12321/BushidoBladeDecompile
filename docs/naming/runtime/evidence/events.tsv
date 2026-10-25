@@ -824,6 +824,35 @@ func_80032854	call	fighter_ProcessWeaponBodyHits	c05	0x8002B59C	report			1	[[1,4
 func_80032854	call	fighter_Update	c05	0x800269D0	report			1	[[1,46,2148541448,0]]	0	versus-2p-kimigaura-paired-1@db49d604bf16	0	
 func_80032854	call	object_UpdatePool	c05	0x800315A0	report			1	[[1,41,2148559524,0]]	0	versus-2p-kimigaura-paired-1@db49d604bf16	0	
 func_80032854	call	object_UpdatePool	c06	0x800315A0	report			2	[[1,41,2148559524,0]]	0	versus-2p-kimigaura-paired-1@db49d604bf16	0	
+0x80101F79	write	?	boot_intro	0x800836FC	none	-1	4	1	[0]	0	versus-2p-kimigaura-shore-kick-1@509182615398	1	group_has_unresolved_site;unresolved_function
+0x80101F79	write	BIOS	boot_intro	0x9FC0D864	bios	-1	4	1	[0]	0	versus-2p-kimigaura-shore-kick-1@509182615398	1	group_has_unresolved_site
+0x80101F79	write	fighter_Init	t_load	0x80022D18	coverage	0	1	1	[7]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	fight	0x80023134	coverage	0	1	100	[3]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	kick_0	0x80023134	coverage	0	1	60	[3]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	kick_1	0x80023134	coverage	0	1	60	[3]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	kick_2	0x80023134	coverage	0	1	60	[3]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	kick_3	0x80023134	coverage	0	1	59	[6]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	kick_4	0x80023134	coverage	0	1	60	[6]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	kick_5	0x80023134	coverage	0	1	60	[6]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	kick_6	0x80023134	coverage	0	1	59	[6]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	kick_7	0x80023134	coverage	0	1	73	[6]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	t_load	0x80023134	coverage	0	1	5	[3]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	walk_0	0x80023134	coverage	0	1	40	[3]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	walk_1	0x80023134	coverage	0	1	40	[3]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	walk_2	0x80023134	coverage	0	1	40	[3]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	walk_3	0x80023134	coverage	0	1	40	[3,6]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	walk_4	0x80023134	coverage	0	1	40	[6]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	walk_5	0x80023134	coverage	0	1	40	[6]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	walk_6	0x80023134	coverage	0	1	40	[6]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+0x80101F79	write	fighter_ResolveMovement	walk_7	0x80023134	coverage	0	1	40	[6]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+func_80032854	call	func_80032064	kick_0	0x800321C8	coverage			1	[[0,12,2148552332,2149579880]]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+func_80032854	call	func_80032064	kick_1	0x800321C8	coverage			1	[[0,12,2148552332,2149579880]]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+func_80032854	call	func_80032064	kick_2	0x800321C8	coverage			1	[[0,12,2148552332,2149579880]]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+func_80032854	call	func_80032064	kick_3	0x800321C8	coverage			1	[[1,13,2148552332,2149579880]]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+func_80032854	call	func_80032064	kick_4	0x800321C8	coverage			1	[[1,13,2148552332,2149579880]]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+func_80032854	call	func_80032064	kick_5	0x800321C8	coverage			1	[[1,13,2148552332,2149579880]]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+func_80032854	call	func_80032064	kick_6	0x800321C8	coverage			1	[[1,13,2148552332,2149579880]]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
+func_80032854	call	func_80032064	kick_7	0x800321C8	coverage			1	[[1,13,2148552332,2149579880]]	0	versus-2p-kimigaura-shore-kick-1@509182615398	0	coverage_next_start_bound
 0x80101F32	write	BIOS	boot_intro	0x9FC0D864	bios	-2	4	1	[0]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
 0x80101F32	write	__SN_ENTRY_POINT	boot_intro	0x800836FC	report	-2	4	1	[0]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
 0x80101F32	write	func_80021A98	fight	0x80021BB0	report	0	2	3	[21]	0	versus-2p-kimigaura-throw-1@07248dcc4352	0	
