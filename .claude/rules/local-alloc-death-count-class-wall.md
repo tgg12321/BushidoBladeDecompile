@@ -54,8 +54,8 @@ pseudo **is** the wall. `.greg`: `"N regs to allocate: ..."` — a pseudo absent
 if the reused temp is the only entry, you are in this class. cc1psx emits the same wall on the same
 C, so the original source was not this C shape.
 
-Examples: func_800611A4, func_80061658, func_80061710, func_80057CC8 (text1b.c; ledgers in
-`memory/grind/<func>/evidence.md`); likely siblings func_800617C8, func_800618B4, func_8006133C.
+Examples: func_800611A4, eff_StartArgSelectedCommandWithCyanLight, func_80061710, func_80057CC8 (text1b.c; ledgers in
+`memory/grind/<func>/evidence.md`); likely siblings eff_StartRecycledCommandWithOrangeLight, eff_StartRecycledVectorCommandWithRedLight, eff_StartCosineScaledQuadWithPaleBlueLight.
 
 Related: [[register-alloc-pure-c]] · `pre-slim-2026-10-01:memory/project/register-alloc-deep-dive.md` (the global.c
 priority wall — distinguish by `.lreg` death count) · [[staged-value-reused-variable]] ·

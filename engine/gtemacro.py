@@ -54,7 +54,7 @@ fighter_CastWeaponSegment, math_PrepareTriangleCollisionFrame and func_80018300;
 gte_stlvnl / gte_ApplyRotMatrix of func_8002DE20; gte_ldlvl / gte_lddp /
 gte_rtv0tr / gte_sqr0 / gte_gpf0 / gte_gpl12 / gte_stlvl of func_800187F4,
 owner ruling 2026-09-28, Q29; gte_ldlv0 / gte_SetRotMatrix of the
-math_ScaleVectorInDirectionFrame / func_8002F2D0 / func_8002F770 cluster, pinned as the 2026-09-26
+math_ScaleVectorInDirectionFrame / func_8002F2D0 / math_ComposeAxisRotationsAndRewriteAngles cluster, pinned as the 2026-09-26
 class grant's (A) allows: an engine: commit with layer-2). Each excerpt is the header's
 own lines, byte for byte; `engine test` re-hashes them. Adding a macro means
 adding its verbatim lines with the same provenance fields.

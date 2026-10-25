@@ -48,7 +48,7 @@ which only has record-2 references).
 | +0x04C | s32 | 0,3   | 4  | (asm-only refs) | -- |
 | +0x054 | s32 | 2,3   | 24 | `s32 v0 = (&D_801027B4)[idx] + (v1 * 4);` | base of indexed table |
 | +0x05E | ?   | 0,1   | 22 | `D_80101F26 = 0;` and `s0 = &D_80102372` | cleared cell + base-of-array |
-| **+0x06A** | u16 | 0,1   | 57 | `if ((u16)D_80101EC8[0].move_kind == 0x11 \|\| (u16)D_80101EC8[1].move_kind == 0x11)` (9F9C.c:2046-2047) | `move_kind` (include/game.h:1424): compared with many constants (6, 5, 0xF, 0x11, 0x13, 0x15, 0x1C, 0x21, 0x28: 9F9C.c:1656, 175A4.c:34/:52/:88, 17AFC.c:913/:982/:1010/:2409); byte 0 of the current move's metadata, written only by func_80021A98 |
+| **+0x06A** | u16 | 0,1   | 57 | `if ((u16)D_80101EC8[0].move_kind == 0x11 \|\| (u16)D_80101EC8[1].move_kind == 0x11)` (9F9C.c:2046-2047) | `move_kind` (include/game.h:1424): compared with many constants (6, 5, 0xF, 0x11, 0x13, 0x15, 0x1C, 0x21, 0x28: 9F9C.c:1656, 175A4.c:34/:52/:88, 17AFC.c:913/:982/:1010/:2409); byte 0 of the current move's metadata, written only by fighter_StartMoveScript |
 | +0x07A | ?   | 0,1   | 4  | (asm-only refs) | -- |
 | +0x084 | s16 | 0,2   | 12 | `*(u16 *)((u8 *)&D_80101F4E + offset) = *(u16 *)((u8 *)&D_80101F4C + offset);` | **previous-frame keyframe field** (copy-old-to-new pattern) |
 | +0x096 | s16 | 0,1,2 | 55 | `if (D_80101F5E != 0 \|\| D_801023AA != 0)` | flag tested across records (player-1 vs player-2 OR) |
@@ -173,11 +173,11 @@ structure to identify several sub-fields and clusters:
 
 ### Vec3i32 members at +0x174 and +0x18C
 
-Two adjacent Vec3i32 members that func_8002C61C fills with averages of
+Two adjacent Vec3i32 members that fight_UpdateFighterInteractionsAndPointCaches fills with averages of
 scratchpad points (17AFC.c:2428-2442) and func_80022580 sets to `unk_F4`
 (9F9C.c:4100, :4102):
 
-| Offset | Member (rec[0] address) | func_8002C61C computation (record i) |
+| Offset | Member (rec[0] address) | fight_UpdateFighterInteractionsAndPointCaches computation (record i) |
 |---|---|---|
 | +0x174 | `unk_174.x` (`D_8010203C`) | `(SPAD->unkA8[i][4].x + SPAD->unkA8[i][5].x) / 2` |
 | +0x178 | `unk_174.y` (`D_80102040`) | same, `.y` |

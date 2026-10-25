@@ -239,7 +239,7 @@ def test_build_board_set_park_reason_carried():
     eq("park reason carried", board["func_p"]["park_reason"], "blocked: foo")
 
 
-# --- WIP reader (real func_8002BEA0) ---------------------------------------
+# --- WIP reader (real fighter_CalcSeparationErrorAndOpposedOffsets) ---------------------------------------
 
 def test_read_wip_real_func_8002bea0():
     wip = bc.read_wip("fighter_CalcSeparationErrorAndOpposedOffsets")

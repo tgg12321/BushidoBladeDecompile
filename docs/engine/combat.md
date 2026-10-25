@@ -6,9 +6,9 @@ opponent. Most of the code below is in src/main/17AFC.c. Field names are the
 header's `unk_NN` names; where a field's role is shown by the code it is
 stated, otherwise only its use is described.
 
-## Per-frame entry: `func_8002C61C`
+## Per-frame entry: `fight_UpdateFighterInteractionsAndPointCaches`
 
-`func_8002C61C` (src/main/17AFC.c:2194) runs once per frame; its callers are
+`fight_UpdateFighterInteractionsAndPointCaches` (src/main/17AFC.c:2194) runs once per frame; its callers are
 src/main/9F9C.c:2044, :2088 and :2197, each followed by `object_UpdatePool` (the
 object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
 `move_kind`:
@@ -16,7 +16,7 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
 - 0xF, 0x1C..0x21: `func_80026DA4` (src/main/175A4.c:21) only.
 - 0x11: `func_8002C0DC` (src/main/17AFC.c:2061) only.
 - otherwise, in order:
-  1. `func_8002872C` (src/main/17AFC.c:736): per-fighter checks of
+  1. `fighter_TriggerOpponentResponseOnMoveFrame` (src/main/17AFC.c:736): per-fighter checks of
      `unk_0C == 0x1B` records against the opponent's state.
   2. `fighter_ResolveBodyOverlap` (src/main/17AFC.c:773): the body-overlap push (its
      comment at :766): two points per fighter tested pairwise against the
@@ -25,7 +25,7 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
   3. `D_800A3824 = fighter_ProcessWeaponContacts()` (src/main/17AFC.c:1077): the blade
      contact test between the two fighters (comment at :1065); it returns
      `(fighter-1 grid << 1) | fighter-0 grid` on contact, else -1.
-  4. On contact, `func_8002C22C` (src/main/17AFC.c:2118), then
+  4. On contact, `fighter_BlendCurrentAndPreviousContactPoints` (src/main/17AFC.c:2118), then
      `fighter_ResolveWeaponContact` (src/main/17AFC.c:574) for each fighter when either has
      `unk_AD` set; otherwise `fighter_ProcessWeaponBodyHits(0)` (below).
   5. When both fighters have `update_count >= 3`, `D_800A38A8` is set, both
@@ -37,7 +37,7 @@ object-pool update, src/main/17AFC.c:3991). It branches on fighter 0's state
   (the centroid of points 1..3) and `unk_174` (the midpoint of points 4..5)
   (src/main/17AFC.c:2252-2278); and while fighter 0's `pending_move_event` is -1,
   `object_ResolveFighterHits` (src/main/17AFC.c:4246) tests the pool objects against the
-  fighters, followed by `func_80032314` (src/main/17AFC.c:4432) when that
+  fighters, followed by `fight_TriggerOpposingFighterEventFromNearBallisticRecords` (src/main/17AFC.c:4432) when that
   left `pending_move_event` unchanged.
 
 `pending_move_event` is the reaction code these paths write; -1 means none pending.
@@ -89,16 +89,16 @@ src/main/17AFC.c:1954 records both call shapes). Its branches, in order:
 - `rec->unk_0C == 0xD` (outside state 0x2E): `func_80027640`, see
   [ai.md](ai.md).
 - `move_kind` 4 or 0x14, or `unk_0C == 0x1F`: `func_800203B4`
-  (src/main/9F9C.c:2779) and `func_800278C0` (src/main/17AFC.c:238); the
+  (src/main/9F9C.c:2779) and `fighter_DispatchBoneHitSoundEvent` (src/main/17AFC.c:238); the
   latter case also sets `pending_move_event = 7`.
 - The target in an attack state (2, 0x1B, 0x28, 0x26) with `move_frame < unk_A0`:
   with `src == 0` the reaction code
   comes from `D_8008EB74[math_ClassifyAbsMagnitude(diff)][sign][same]`, where `diff` is
   the difference of the two `unk_20` values and `same` whether their `unk_AF`
   match; codes 0..2 play cue pairs (0x25 / 0x26 / 0x2D), and code 2 also runs
-  `func_80027A58`. With `src == 1` the table record's `unkC` picks code 0
+  `fighter_TryDropQueuedHeadAtBone`. With `src == 1` the table record's `unkC` picks code 0
   or 1.
-- Otherwise `func_800278C0` runs and the code is chosen by the target's state
+- Otherwise `fighter_DispatchBoneHitSoundEvent` runs and the code is chosen by the target's state
   (6 / 9: codes 3, 4, 6 or 7), or is 0x1B when `src == 1`, `tbl->unk0 == 4`
   and the target's `unk_0A` is 2, 4, 0xE or 0xF; else a `switch` on the struck
   limb picks it.
@@ -133,7 +133,7 @@ Both walk the byte stream at `rec->motion_metadata + 4`; 0 ends it.
 - `math_PointInTriangleXZ` (src/main/17AFC.c:3082): point in triangle.
 - `func_8002FC80` (src/main/17AFC.c:3535): the GTE cross product of
   `(a1 - a0)` and `(a2 - a0)`, returning `ratan2` of its x/z (+0x800 when y is
-  positive). `func_8002FDB0` (src/main/17AFC.c:3563) takes the same cross
+  positive). `fighter_IsBoneTriangleCrossYPositive` (src/main/17AFC.c:3563) takes the same cross
   product for a fighter's scratchpad points 2 and 3 about point 1 and returns
   1 when its y is positive, else 0; the result is stored in `unk_1DA`
   (src/main/9F9C.c:5038).

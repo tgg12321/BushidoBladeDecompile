@@ -36,7 +36,7 @@ x = *(s16 *)((u8 *)&Tbl + ((var >> 1) & 0x1FFE)) * 3;   /* keeps sra */
 ```
 
 With no `>>1`/`*2` round-trip for combine to fold, `sra` and the `andi` survive, mirroring the
-target's `addu $at,$at,$v0`. Example: func_8001BAE4 (code6cac.c), distance 1 → 0.
+target's `addu $at,$at,$v0`. Example: camera_UpdateReplayViewWithSineYawOffset (code6cac.c), distance 1 → 0.
 
 Leave already-matching signed-division corrections (`if (x<0) x+=3;` branch forms) alone — `x / 4`
 may emit the branchless form instead.

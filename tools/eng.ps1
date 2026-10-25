@@ -5,10 +5,10 @@
 # ZERO hand-written shell quoting:
 #
 #   pwsh tools/eng.ps1 queue next
-#   pwsh tools/eng.ps1 canonical func_800233AC
-#   pwsh tools/eng.ps1 sandbox func_800233AC --disable all
+#   pwsh tools/eng.ps1 canonical fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow
+#   pwsh tools/eng.ps1 sandbox fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow --disable all
 #   pwsh tools/eng.ps1 verify-oracle --rebuild
-#   pwsh tools/eng.ps1 retire func_800233AC
+#   pwsh tools/eng.ps1 retire fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow
 #
 # Why this exists: the engine toolchain only runs under WSL (Linux cc1/maspsx/
 # ld), so every engine call is really `wsl bash -c 'cd <root> && source .venv
@@ -30,7 +30,7 @@ Runs `python3 -m engine.cli <args>` inside WSL with cwd = repo root and the
 
 Examples:
   pwsh tools/eng.ps1 queue next
-  pwsh tools/eng.ps1 sandbox func_800233AC --disable all
+  pwsh tools/eng.ps1 sandbox fighter_ProbeInputDirectedSurfaceClearanceAndSurfaceBelow --disable all
   pwsh tools/eng.ps1 verify-oracle --rebuild
 '@
     exit 2

@@ -424,7 +424,7 @@
 
 /* Vec3i32 unk_D8: records 0 and 1 differenced in x and z, squared and looked up in g_sqrt_table_u8 (17AFC.c:2104-2108) */
 /* Vec3i32 unk_F4: set to unk_D8 with y - 0x384 (9F9C.c:1305-1307) or to unk_D8 + unk_E8 (:4060, :5286) */
-/* +0x4A load slot and the +0x84 / +0x86 indices (func_80021280, func_800213A0, motion_ResolveMoveData) */
+/* +0x4A load slot and the +0x84 / +0x86 indices (fighter_AssignMotionSlotAndScanDataIdNibbles, func_800213A0, motion_ResolveMoveData) */
 
 /* === Sony LIBSND _svm_voice per-voice records (struct SpuVoice, src/main/psxsdk/libsnd/libsnd_i.h; */
 /* base _svm_voice 0x800F4E18, 0x36-byte records, 24 voices). The per-word rows */
@@ -444,7 +444,7 @@
 /* g_pad_analog_state at 0x800F33D8 already named in batch 5; ALSO passed to camera_SetMatrix in code6cac_c_mid (shared state buffer) */
 
 /* === Per-id state arrays (2026-05-17) === */
-/* Init pattern (51268.c, func_80064ED8..func_80065000): 12-byte record + g_eff_command_phase slot set to 1 + 2-byte counter per id. */
+/* Init pattern (51268.c, func_80064ED8..eff_InitRateSelectedCosineScaledQuad): 12-byte record + g_eff_command_phase slot set to 1 + 2-byte counter per id. */
 /* The per-id 12-byte state records and 2-byte counters are the arrays D_800F0CA0[18] and D_800F0BA8[18]
  * (include/game.h; merged 2026-09-30 with eff_DrawAnimatedQuads, which retired their per-word alias names). */
 /* 2026-10-16: D_800F10E0 retired -- elements of s32 g_eff_command_phase[] (include/bb2.h); no C names them. */
@@ -606,7 +606,7 @@
 /* D_800A35A0 is func_8006EACC's result. */
 
 /* === g_eff_command_block command-block cluster (2026-05-17) -- 4 highs === */
-/* From 51268.c func_800617C8 etc.  Complements the command block */
+/* From 51268.c eff_StartRecycledCommandWithOrangeLight etc.  Complements the command block */
 /* g_eff_command_block (unk0C = D_800F1178, unk10 = D_800F117C, */
 /* unk14 at 0x800F1180). D_800F1160 / D_800F1152 / D_800F1164 are status */
 /* bytes of g_eff_command_status[], tested and cleared in pairs before a command; */
@@ -934,7 +934,7 @@
 /* per-frame counters. */
 
 /* === D_800F1159 status bytes (2026-05-17) -- 1 high === */
-/* From 51268.c func_80061250: same pattern as D_800F1160 / D_800F1164 */
+/* From 51268.c eff_StartRecycledCommandWithRoseLight: same pattern as D_800F1160 / D_800F1164 */
 /* -- status bytes for commands 0x210009 / 0x21000A. */
 
 /* === char-id tables indexed by g_fight_match_cursor (2026-05-17) -- 2 highs === */
@@ -1255,7 +1255,7 @@ D_1F800110                                       = 0x1F800110;  /* data-wave 202
 /* convention. NOTE: src/*.c usages stay as D_<addr>; promoting them */
 /* triggers the GCC cascade (LONG_TERM_DX_PROMOTION_FIX.md). */
 D_1F80000C                                  = 0x1F80000C;  /* 14 refs; scratchpad RAM offset 0xC (0x1F800000 + 0xC) */  /* data-wave 2026-10-10: was g_scratchpad_ptr_c_1F80000C */
-/* 2026-10-16: D_800A377B retired -- not an object: func_8001CE60 reads D_800A377C[D_800A3874 - 1], whose folded base is 0x800A377B (the last byte of D_800A3778). */
+/* 2026-10-16: D_800A377B retired -- not an object: fight_UpdateModeDisplaysAndMatchProgress reads D_800A377C[D_800A3874 - 1], whose folded base is 0x800A377B (the last byte of D_800A3778). */
 
 /* === Data symbol naming pass 2 (6-9 ref unnamed) (2026-05-18) === */
 /* 30 cluster-evidenced D_* aliases. Selective filter: skipped 21 weak */

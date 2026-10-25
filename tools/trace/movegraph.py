@@ -13,21 +13,21 @@ globals of the pad remap); a read of all of main RAM works too.
 `--spec-values <phase>` prints those entries.
 
 The walk follows fighter_Update / fight_UpdatePairedMoves /
-motion_ResolveMoveData / func_80021A98 (src/main/9F9C.c). A node is a move
+motion_ResolveMoveData / fighter_StartMoveScript (src/main/9F9C.c). A node is a move
 script, the file it was read from, the record executing it, D_800A38AE (the
 record that started the last paired move: read, else 0) and whether a
 paired start reset that record's unk_86 to unk_84:
-  * move_kind is byte 0 of the move's motion metadata (func_80021A98);
+  * move_kind is byte 0 of the move's motion metadata (fighter_StartMoveScript);
   * ids: < 0x8000 the common file; 0x8000 | n entry n of the executing
     record's file, or of the other record's file while borrow_other_motion
     is set: by a command with flag 0x1000, a tc[0] end transition with
-    0x1000, a fallback of a move with unk_09 & 0x20 (func_80021A98 clears
+    0x1000, a fallback of a move with unk_09 & 0x20 (fighter_StartMoveScript clears
     it on every install); 0x7FF0..0x7FFF the executing record's variant
     roots (unk_84 / unk_86 as read, or unk_84 after a paired start; 0x7FF1
     first advances unk_86). Not modelled: the variant skip on unk_88/8A/8E/90
     and the mode-3 CPU branch, 0x7FF0's lasting unk_86 = unk_84, unk_86
     changes along a path; move_kind is read from the script's file, while
-    func_80021A98 reads the borrow-selected one (they differ only for a
+    fighter_StartMoveScript reads the borrow-selected one (they differ only for a
     variant id under borrow or a hand-off without 0x1000);
   * input edges: transition_commands entries (button bit = flags & 0xF, with
     9 -> 3 and 0xA -> 5 under their conditions; flags & 0x30 held / pressed /
@@ -65,13 +65,13 @@ paired start reset that record's unk_86 to unk_84:
     (move_frame advances move_frame_step / 0x1000 per frame); in a move with
     unk_09 & 0x80 the chosen move is queued and starts after
     last_command_frame.
-Button names are the physical buttons (func_8001BE20 and pad_Update in
+Button names are the physical buttons (fighter_BuildCpuOrMappedPadState and pad_Update in
 src/main/87A0.c): game bits 0 L2 (never held for a human pad: pad_Update's
 camera_UpdatePadOffset clears it in held before pressed / released / unheld
 are derived, 9F9C.c:702, so for a record that is not cpu_controlled its
 held / pressed / released entries are left out and an unheld one always
 fires, ending the loop; bit 4 is cleared in all four words by
-func_8001BE20, so no entry on it fires),
+fighter_BuildCpuOrMappedPadState, so no entry on it fires),
 1 R2, 2 L1, 3 R1, 5/6/7 the attack
 buttons of the key config (D_80106A50.frec20, a nibble per player; in mode
 D_800A38DC 6 the record that is not D_800A38A0 uses D_800A3912..14), 8
@@ -146,14 +146,14 @@ NOT_FIRING_FOLDED = {0x00: "neither of {} held",
                      0x30: "neither of {} just released"}
 # for a human pad: bit 0 is cleared in held before the other words are
 # derived (camera_UpdatePadOffset masks 0xFFFEFFFE, 9F9C.c:702), so its
-# unheld is always set; bit 4 is cleared in all four words (func_8001BE20
+# unheld is always set; bit 4 is cleared in all four words (fighter_BuildCpuOrMappedPadState
 # keeps none of 0xF0 but 0x20 / 0x40 / 0x80), so nothing on it fires
 CLEARED_HELD_BIT = 0
 CLEARED_BIT = 4
 # kinds where fighter_Update tests event 0xD (turn) before the input loop
 TURN_KINDS = (0x15, 0x19, 0x1A, 0x13, 0x30, 0x31)
 NIBBLE_PAD = (("CIRCLE", 0x20), ("TRIANGLE", 0x10), ("CROSS", 0x40),
-              ("SQUARE", 0x80))  # func_8001BE20: nibble bit k tests these
+              ("SQUARE", 0x80))  # fighter_BuildCpuOrMappedPadState: nibble bit k tests these
 
 
 class Ram:
@@ -253,7 +253,7 @@ class Fight:
         else:
             if not m.covered(KEY_CONFIG, 3):
                 raise SystemExit("movegraph: key config 0x80106A70 not read")
-            shift = 0 if mode == 6 else 4 * idx  # func_8001BE20's temp
+            shift = 0 if mode == 6 else 4 * idx  # fighter_BuildCpuOrMappedPadState's temp
             nib = [(m.u8(KEY_CONFIG + i) >> shift) & 0xF for i in range(3)]
         for bit, n in zip((5, 6, 7), nib):
             pads = [name for k, (name, _) in enumerate(NIBBLE_PAD) if n & (1 << k)]
@@ -351,7 +351,7 @@ class Fight:
             cond.append("needs unk_26C")
         s = f"{TYPES[f & 0x30]} {self.buttons[ex].get(bit, f'bit{bit}')}"
         if bit in (3, 5) and f & 0x30 == 0x20:
-            # the game bit is an OR of two pad bits (func_8001BE20)
+            # the game bit is an OR of two pad bits (fighter_BuildCpuOrMappedPadState)
             cond.append("fires unless both buttons are held")
         elif bit in (3, 5) and f & 0x30 in (0x10, 0x30):
             cond.append("fires when either button is "

@@ -37,7 +37,7 @@ the data comes from are described in [../formats/BBM.md](../formats/BBM.md).
   opponent's when `borrow_other_motion` is set);
 - the rest index the common file's streams, and `*out` is set to 1.
 
-`func_80021A98(i, script, common)` (src/main/9F9C.c:3311) makes `script` the
+`fighter_StartMoveScript(i, script, common)` (src/main/9F9C.c:3311) makes `script` the
 current move of fighter `i`: `cur_move = script`, `motion_entry_index = script->motion_bank_entry_index`, and
 `motion_entry` / `motion_metadata` point at the script's entry in the file's `unk_04` table
 and at the byte stream it names in `unk_08` (the frame-window stream that
@@ -74,14 +74,14 @@ per-joint channels (the comment at include/game.h:1317).
 
 ## Per-frame update: `fighter_Update`
 
-The fighter loop calls `func_8001BE20(i, pad)` and then `fighter_Update(i, pad)`
+The fighter loop calls `fighter_BuildCpuOrMappedPadState(i, pad)` and then `fighter_Update(i, pad)`
 for each fighter (src/main/9F9C.c:2040-2043); the variants at :2086 and :2195
 call only `fighter_Update`, with a pad cleared by `pad_ClearStateBits`.
 `fighter_Update` (src/main/9F9C.c:4337; its comment lists the whole sequence):
 
 1. converts the pad bits, advances the frame `move_frame` and runs the move
    script's command list, switching moves through `motion_ResolveMoveData` /
-   `func_80021A98`;
+   `fighter_StartMoveScript`;
 2. decodes the frames at `move_frame` and the next one with `motion_DecodeFrame`
    (src/main/9F9C.c:4704-4705), or copies `g_motion_frame_buffers[i][move_frame]` in state
    0x33; the frame keys go to `unk_64` / `unk_66` as `(slot << 14) | frame`

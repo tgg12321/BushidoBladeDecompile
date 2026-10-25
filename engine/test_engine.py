@@ -963,7 +963,7 @@ def test_gte_macro_units() -> None:
     as_today("rtv0tr word with a 9-digit spelling", vsrc(*cmd("0x04A480012")))
 
     # --- gte_ldlv0 / gte_SetRotMatrix pinned (2026-09-26 class grant (A): an engine:
-    # commit with layer-2; the func_8002EBDC / func_8002F2D0 / func_8002F770 cluster).
+    # commit with layer-2; the func_8002EBDC / func_8002F2D0 / math_ComposeAxisRotationsAndRewriteAngles cluster).
     eq("gtemacro: gte_ldlv0 expands to 7 statements", len(macros["gte_ldlv0"][1]), 7)
     eq("gtemacro: gte_SetRotMatrix expands to 11 statements", len(macros["gte_SetRotMatrix"][1]), 11)
     ldlv0 = [stmt("move  $12,%0", "&v"), stmt("lhu   $14,4($12)"), stmt("lhu   $13,($12)"),
